@@ -431,6 +431,9 @@ QDBusMessage QDBusConnection::call(const QDBusMessage &message, QDBus::CallMode 
 
     See the QDBusInterface::asyncCall() function for a more friendly way
     of placing calls.
+
+    \note Method calls to objects registered by the application itself are never
+    asynchronous due to implementation limitations.
 */
 QDBusPendingCall QDBusConnection::asyncCall(const QDBusMessage &message, int timeout) const
 {

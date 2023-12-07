@@ -500,6 +500,9 @@ QDBusMessage QDBusAbstractInterface::callWithArgumentList(QDBus::CallMode mode,
 
     Normally, you should place calls using asyncCall().
 
+    \note Method calls to objects registered by the application itself are never
+    asynchronous due to implementation limitations.
+
     \threadsafe
 */
 QDBusPendingCall QDBusAbstractInterface::asyncCallWithArgumentList(const QString& method,
@@ -535,6 +538,9 @@ QDBusPendingCall QDBusAbstractInterface::asyncCallWithArgumentList(const QString
     by the function call. Optionally, it may have a QDBusMessage
     parameter as its last or only parameter.  The \a errorMethod must
     have a QDBusError as its only parameter.
+
+    \note Method calls to objects registered by the application itself are never
+    asynchronous due to implementation limitations.
 
     \since 4.3
     \sa QDBusError, QDBusMessage
@@ -762,6 +768,9 @@ void QDBusAbstractInterface::internalPropSet(const char *propname, const QVarian
     Unicode string, the second call to \c "ProcessWork" will contain one string and one byte array).
 
     \note Before Qt 5.14, this function accepted a maximum of just eight (8) arguments.
+
+    \note Method calls to local \c{QDBusServer}'s are never asynchronous
+    due to implementation limitations.
 
     \sa asyncCallWithArgumentList()
 */
