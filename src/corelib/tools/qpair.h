@@ -4,6 +4,7 @@
 #ifndef QPAIR_H
 #define QPAIR_H
 
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qglobal.h>
 
 QT_BEGIN_NAMESPACE
@@ -11,9 +12,6 @@ QT_BEGIN_NAMESPACE
 #if 0
 #pragma qt_class(QPair)
 #endif
-
-template <typename T1, typename T2>
-using QPair = std::pair<T1, T2>;
 
 template <typename T1, typename T2>
 constexpr decltype(auto) qMakePair(T1 &&value1, T2 &&value2)
