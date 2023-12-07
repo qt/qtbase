@@ -160,8 +160,6 @@ async function qtLoad(config)
         config.preRun = [];
     config.preRun.push(qtPreRun);
 
-    config.onRuntimeInitialized = () => config.qt.onLoaded?.();
-
     const originalLocateFile = config.locateFile;
     config.locateFile = filename =>
     {

@@ -217,6 +217,9 @@ QEventDispatcherWasm::QEventDispatcherWasm()
 #if QT_CONFIG(thread)
         g_mainThread = pthread_self();
 #endif
+        // Call the "onLoaded" JavaScript callback, unless startup tasks
+        // have been registered which should complete first.
+        checkCallQtLoaded();
     } else {
 #if QT_CONFIG(thread)
         std::lock_guard<std::mutex> lock(g_staticDataMutex);
@@ -892,6 +895,45 @@ void QEventDispatcherWasm::socketSelect(int timeout, int socket, bool waitForRea
 
     eventDispatcher->waitForSocketState(timeout, socket, waitForRead, waitForWrite,
                                         selectForRead, selectForWrite, socketDisconnect);
+}
+
+namespace {
+    int g_startupTasks = 0;
+}
+
+// The following functions manages sending the "qtLoaded" event/callback
+// from qtloader.js on startup, once Qt initialization has been completed
+// and the application is ready to display the first frame. This can be
+// either as soon as the event loop is running, or later, if additional
+// startup tasks (e.g. local font loading) have been registered.
+
+void QEventDispatcherWasm::registerStartupTask()
+{
+    ++g_startupTasks;
+}
+
+void QEventDispatcherWasm::completeStarupTask()
+{
+    --g_startupTasks;
+    checkCallQtLoaded();
+}
+
+void QEventDispatcherWasm::checkCallQtLoaded()
+{
+    if (g_startupTasks > 0)
+        return;
+
+    static bool qtLoadedCalled = false;
+    if (qtLoadedCalled)
+        return;
+    qtLoadedCalled = true;
+
+    QTimer::singleShot(0, [](){
+        emscripten::val qt = emscripten::val::module_property("qt");
+        if (qt.isUndefined())
+            return;
+        qt.call<void>("onLoaded");
+    });
 }
 
 namespace {

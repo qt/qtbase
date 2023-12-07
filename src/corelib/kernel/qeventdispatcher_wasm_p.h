@@ -56,6 +56,11 @@ public:
     static void runOnMainThreadAsync(std::function<void(void)> fn);
     static void socketSelect(int timeout, int socket, bool waitForRead, bool waitForWrite,
                             bool *selectForRead, bool *selectForWrite, bool *socketDisconnect);
+
+    static void registerStartupTask();
+    static void completeStarupTask();
+    static void checkCallQtLoaded();
+
 protected:
     virtual bool processPostedEvents();
 
