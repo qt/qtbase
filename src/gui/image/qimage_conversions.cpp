@@ -165,7 +165,7 @@ void convert_generic(QImageData *dest, const QImageData *src, Qt::ImageConversio
     if (srcLayout->hasAlphaChannel && !srcLayout->premultiplied &&
             !destLayout->hasAlphaChannel && destLayout->storeFromRGB32) {
         // Avoid unnecessary premultiply and unpremultiply when converting from unpremultiplied src format.
-        fetch = qPixelLayouts[src->format + 1].fetchToARGB32PM;
+        fetch = qPixelLayouts[qt_toPremultipliedFormat(src->format)].fetchToARGB32PM;
         if (dest->format == QImage::Format_RGB32)
             store = storeRGB32FromARGB32;
         else
@@ -383,7 +383,7 @@ bool convert_generic_inplace(QImageData *data, QImage::Format dst_format, Qt::Im
     if (srcLayout->hasAlphaChannel && !srcLayout->premultiplied &&
             !destLayout->hasAlphaChannel && destLayout->storeFromRGB32) {
         // Avoid unnecessary premultiply and unpremultiply when converting from unpremultiplied src format.
-        fetch = qPixelLayouts[data->format + 1].fetchToARGB32PM;
+        fetch = qPixelLayouts[qt_toPremultipliedFormat(data->format)].fetchToARGB32PM;
         if (data->format == QImage::Format_RGB32)
             store = storeRGB32FromARGB32;
         else
@@ -485,9 +485,8 @@ bool convert_generic_inplace_over_rgb64(QImageData *data, QImage::Format dst_for
     if (srcLayout->hasAlphaChannel && !srcLayout->premultiplied &&
         destLayout->hasAlphaChannel && !destLayout->premultiplied) {
         // Avoid unnecessary premultiply and unpremultiply when converting between two unpremultiplied formats.
-        // This abuses the fact unpremultiplied formats are always before their premultiplied counterparts.
-        fetch = qPixelLayouts[data->format + 1].fetchToRGBA64PM;
-        store = qStoreFromRGBA64PM[dst_format + 1];
+        fetch = qPixelLayouts[qt_toPremultipliedFormat(data->format)].fetchToRGBA64PM;
+        store = qStoreFromRGBA64PM[qt_toPremultipliedFormat(dst_format)];
     }
 
     auto convertSegment = [=](int yStart, int yEnd) {
@@ -580,9 +579,8 @@ bool convert_generic_inplace_over_rgba32f(QImageData *data, QImage::Format dst_f
     if (srcLayout->hasAlphaChannel && !srcLayout->premultiplied &&
         destLayout->hasAlphaChannel && !destLayout->premultiplied) {
         // Avoid unnecessary premultiply and unpremultiply when converting between two unpremultiplied formats.
-        // This abuses the fact unpremultiplied formats are always before their premultiplied counterparts.
-        fetch = qFetchToRGBA32F[data->format + 1];
-        store = qStoreFromRGBA32F[dst_format + 1];
+        fetch = qFetchToRGBA32F[qt_toPremultipliedFormat(data->format)];
+        store = qStoreFromRGBA32F[qt_toPremultipliedFormat(dst_format)];
     }
 
     auto convertSegment = [=](int yStart, int yEnd) {
@@ -1323,7 +1321,7 @@ static void convert_ARGB32_to_RGBA64(QImageData *dest, const QImageData *src, Qt
 
     const uchar *src_data = src->data;
     uchar *dest_data = dest->data;
-    const FetchAndConvertPixelsFunc64 fetch = qPixelLayouts[src->format + 1].fetchToRGBA64PM;
+    const FetchAndConvertPixelsFunc64 fetch = qPixelLayouts[qt_toPremultipliedFormat(src->format)].fetchToRGBA64PM;
 
     for (int i = 0; i < src->height; ++i) {
         fetch(reinterpret_cast<QRgba64 *>(dest_data), src_data, 0, src->width, nullptr, nullptr);

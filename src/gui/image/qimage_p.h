@@ -21,6 +21,8 @@
 #include <QtCore/private/qnumeric_p.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qmap.h>
+#include <QtCore/qttypetraits.h>
+
 
 QT_BEGIN_NAMESPACE
 
@@ -313,6 +315,20 @@ inline QImage::Format qt_alphaVersion(QImage::Format format)
         break;
     }
     return QImage::Format_ARGB32_Premultiplied;
+}
+
+constexpr QImage::Format qt_toUnpremultipliedFormat(QImage::Format format)
+{
+    // Assumes input is already a premultiplied format with an unpremultiplied counterpart
+    // This abuses the fact unpremultiplied formats are always before their premultiplied counterparts.
+    return static_cast<QImage::Format>(qToUnderlying(format) - 1);
+}
+
+constexpr QImage::Format qt_toPremultipliedFormat(QImage::Format format)
+{
+    // Assumes input is already an unpremultiplied format
+    // This abuses the fact unpremultiplied formats are always before their premultiplied counterparts.
+    return static_cast<QImage::Format>(qToUnderlying(format) + 1);
 }
 
 inline bool qt_highColorPrecision(QImage::Format format, bool opaque = false)

@@ -238,6 +238,9 @@ private slots:
     void fromMonoHBITMAP();
 #endif // Q_OS_WIN
 
+    void tofromPremultipliedFormat_data();
+    void tofromPremultipliedFormat();
+
 private:
     const QString m_prefix;
 };
@@ -4210,6 +4213,28 @@ void tst_QImage::fromMonoHBITMAP() // QTBUG-72343, corruption for mono bitmaps
 }
 
 #endif // Q_OS_WIN
+
+void tst_QImage::tofromPremultipliedFormat_data()
+{
+    QTest::addColumn<QImage::Format>("unpremul");
+    QTest::addColumn<QImage::Format>("premul");
+
+    // Test all available formats with both premultiplied and unpremultiplied versions
+    QTest::newRow("argb32")     << QImage::Format_ARGB32     << QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("rgba8888")   << QImage::Format_RGBA8888   << QImage::Format_RGBA8888_Premultiplied;
+    QTest::newRow("rgba64")     << QImage::Format_RGBA64     << QImage::Format_RGBA64_Premultiplied;
+    QTest::newRow("rgba16fpx4") << QImage::Format_RGBA16FPx4 << QImage::Format_RGBA16FPx4_Premultiplied;
+    QTest::newRow("rgba32fpx4") << QImage::Format_RGBA32FPx4 << QImage::Format_RGBA32FPx4_Premultiplied;
+}
+
+void tst_QImage::tofromPremultipliedFormat()
+{
+    QFETCH(QImage::Format, unpremul);
+    QFETCH(QImage::Format, premul);
+
+    QCOMPARE(qt_toPremultipliedFormat(unpremul), premul);
+    QCOMPARE(qt_toUnpremultipliedFormat(premul), unpremul);
+}
 
 QTEST_GUILESS_MAIN(tst_QImage)
 #include "tst_qimage.moc"
