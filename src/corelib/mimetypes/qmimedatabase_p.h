@@ -66,9 +66,10 @@ public:
     QMimeGlobMatchResult findByFileName(const QString &fileName);
 
     // API for QMimeType. Takes care of locking the mutex.
-    void loadMimeTypePrivate(QMimeTypePrivate &mimePrivate);
-    void loadGenericIcon(QMimeTypePrivate &mimePrivate);
-    void loadIcon(QMimeTypePrivate &mimePrivate);
+    QMimeTypePrivate::LocaleHash localeComments(const QString &name);
+    QStringList globPatterns(const QString &name);
+    QString genericIcon(const QString &name);
+    QString icon(const QString &name);
     QStringList mimeParents(const QString &mimeName);
     QStringList listAliases(const QString &mimeName);
     bool mimeInherits(const QString &mime, const QString &parent);
@@ -81,7 +82,7 @@ private:
     QString fallbackParent(const QString &mimeTypeName) const;
 
     const QString m_defaultMimeType;
-    mutable Providers m_providers;
+    mutable Providers m_providers; // most local first, most global last
     QElapsedTimer m_lastCheck;
 
 public:

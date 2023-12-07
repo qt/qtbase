@@ -16,13 +16,28 @@
 // We mean it.
 //
 
-#include "qmimedatabase_p.h"
+#include <QtCore/qtconfigmacros.h>
 
 QT_REQUIRE_CONFIG(mimetype);
 
 #include "qmimeprovider_p.h"
 
 QT_BEGIN_NAMESPACE
+
+class QMimeTypeXMLData
+{
+public:
+    void clear();
+
+    void addGlobPattern(const QString &pattern);
+
+    bool hasGlobDeleteAll = false; // true if the mimetype has a glob-deleteall tag
+    QString name;
+    QMimeTypePrivate::LocaleHash localeComments;
+    QString genericIconName; // TODO move to a struct that's specific to the XML provider
+    QString iconName; // TODO move to a struct that's specific to the XML provider
+    QStringList globPatterns;
+};
 
 class QIODevice;
 
@@ -39,7 +54,7 @@ public:
     static bool parseNumber(QStringView n, int *target, QString *errorMessage);
 
 protected:
-    virtual bool process(const QMimeType &t, QString *errorMessage) = 0;
+    virtual bool process(const QMimeTypeXMLData &t, QString *errorMessage) = 0;
     virtual bool process(const QMimeGlobPattern &t, QString *errorMessage) = 0;
     virtual void processParent(const QString &child, const QString &parent) = 0;
     virtual void processAlias(const QString &alias, const QString &name) = 0;
@@ -73,7 +88,7 @@ public:
     explicit QMimeTypeParser(QMimeXMLProvider &provider) : m_provider(provider) {}
 
 protected:
-    inline bool process(const QMimeType &t, QString *) override
+    inline bool process(const QMimeTypeXMLData &t, QString *) override
     { m_provider.addMimeType(t); return true; }
 
     inline bool process(const QMimeGlobPattern &glob, QString *) override

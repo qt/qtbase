@@ -165,8 +165,7 @@ static CreateMagicMatchRuleResult createMagicMatchRule(const QXmlStreamAttribute
 bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString *errorMessage)
 {
 #if QT_CONFIG(xmlstreamreader)
-    QMimeTypePrivate data;
-    data.loaded = true;
+    QMimeTypeXMLData data;
     int priority = 50;
     QStack<QMimeMagicRule *> currentRules; // stack for the nesting of rules
     QList<QMimeMagicRule> rules; // toplevel rules
@@ -273,7 +272,7 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
         {
             const auto elementName = reader.name();
             if (elementName == QLatin1StringView(mimeTypeTagC)) {
-                if (!process(QMimeType(data), errorMessage))
+                if (!process(data, errorMessage))
                     return false;
                 data.clear();
             } else if (elementName == QLatin1StringView(matchTagC)) {
@@ -312,6 +311,21 @@ bool QMimeTypeParserBase::parse(QIODevice *dev, const QString &fileName, QString
         *errorMessage = "QXmlStreamReader is not available, cannot parse '%1'."_L1.arg(fileName);
     return false;
 #endif // feature xmlstreamreader
+}
+
+void QMimeTypeXMLData::clear()
+{
+    hasGlobDeleteAll = false;
+    name.clear();
+    localeComments.clear();
+    genericIconName.clear();
+    iconName.clear();
+    globPatterns.clear();
+}
+
+void QMimeTypeXMLData::addGlobPattern(const QString &pattern)
+{
+    globPatterns.append(pattern);
 }
 
 QT_END_NAMESPACE
