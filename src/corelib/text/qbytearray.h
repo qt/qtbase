@@ -429,8 +429,8 @@ public:
     const_iterator begin() const noexcept { return data(); }
     const_iterator cbegin() const noexcept { return begin(); }
     const_iterator constBegin() const noexcept { return begin(); }
-    iterator end() { return data() + size(); }
-    const_iterator end() const noexcept { return data() + size(); }
+    iterator end() { return begin() + size(); }
+    const_iterator end() const noexcept { return begin() + size(); }
     const_iterator cend() const noexcept { return end(); }
     const_iterator constEnd() const noexcept { return end(); }
     reverse_iterator rbegin() { return reverse_iterator(end()); }
