@@ -748,9 +748,4 @@ QDeadlineTimer operator+(QDeadlineTimer dt, qint64 msecs)
   Returns the time remaining before the deadline.
  */
 
-/*!
-  \fn QPair<qint64, unsigned> QDeadlineTimer::_q_data() const
-  \internal
-*/
-
 QT_END_NAMESPACE
