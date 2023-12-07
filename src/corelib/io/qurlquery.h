@@ -5,7 +5,6 @@
 #ifndef QURLQUERY_H
 #define QURLQUERY_H
 
-#include <QtCore/qpair.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qurl.h>
 
