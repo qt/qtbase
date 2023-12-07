@@ -565,16 +565,27 @@ void QWindowsFontDatabaseBase::createDirectWriteFactory(IDWriteFactory **factory
     IUnknown *result = nullptr;
 
 #  if QT_CONFIG(directwrite3)
-    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory5), &result);
-
-    if (result == nullptr)
-        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory3), &result);
-#  endif
-
-    if (result == nullptr)
-        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2), &result);
+    qCDebug(lcQpaFonts) << "Trying to create IDWriteFactory6";
+    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory6), &result);
 
     if (result == nullptr) {
+        qCDebug(lcQpaFonts) << "Trying to create IDWriteFactory5";
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory5), &result);
+    }
+
+    if (result == nullptr) {
+        qCDebug(lcQpaFonts) << "Trying to create IDWriteFactory3";
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory3), &result);
+    }
+#  endif
+
+    if (result == nullptr) {
+        qCDebug(lcQpaFonts) << "Trying to create IDWriteFactory2";
+        DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory2), &result);
+    }
+
+    if (result == nullptr) {
+        qCDebug(lcQpaFonts) << "Trying to create plain IDWriteFactory";
         if (FAILED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), &result))) {
             qErrnoWarning("DWriteCreateFactory failed");
             return;

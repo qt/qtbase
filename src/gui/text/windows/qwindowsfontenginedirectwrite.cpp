@@ -365,6 +365,8 @@ void QWindowsFontEngineDirectWrite::collectMetrics()
         quint16 advanceWidthMax = qFromBigEndian<quint16>(table.constData() + advanceWidthMaxLocation);
         m_maxAdvanceWidth = DESIGN_TO_LOGICAL(advanceWidthMax);
     }
+
+    loadKerningPairs(emSquareSize() / QFixed::fromReal(fontDef.pixelSize));
 }
 
 QFixed QWindowsFontEngineDirectWrite::underlinePosition() const
@@ -672,7 +674,8 @@ QImage QWindowsFontEngineDirectWrite::alphaMapForGlyph(glyph_t glyph,
 
 bool QWindowsFontEngineDirectWrite::supportsHorizontalSubPixelPositions() const
 {
-    return true;
+    DWRITE_RENDERING_MODE renderMode = hintingPreferenceToRenderingMode(fontDef);
+    return (renderMode != DWRITE_RENDERING_MODE_GDI_CLASSIC && renderMode != DWRITE_RENDERING_MODE_GDI_NATURAL);
 }
 
 QFontEngine::Properties QWindowsFontEngineDirectWrite::properties() const

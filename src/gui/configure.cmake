@@ -580,7 +580,7 @@ qt_config_compile_test(directwrite3
 int main(int, char **)
 {
     IUnknown *factory = nullptr;
-    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory3),
+    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory6),
                         &factory);
     return 0;
 }

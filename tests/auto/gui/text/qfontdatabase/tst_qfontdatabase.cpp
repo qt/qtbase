@@ -423,8 +423,10 @@ void tst_QFontDatabase::condensedFontMatching()
     QFont f;
     f.setStyleStrategy(QFont::NoFontMerging);
     QFontPrivate *font_d = QFontPrivate::get(f);
-    if (font_d->engineForScript(QChar::Script_Common)->type() != QFontEngine::Freetype)
+    if (font_d->engineForScript(QChar::Script_Common)->type() != QFontEngine::Freetype
+        && font_d->engineForScript(QChar::Script_Common)->type() != QFontEngine::DirectWrite) {
         QEXPECT_FAIL("","No matching of sub-family by stretch on Windows", Continue);
+    }
 #endif
 
     QCOMPARE(QFontMetrics(tfcByStretch).horizontalAdvance(testString()),
