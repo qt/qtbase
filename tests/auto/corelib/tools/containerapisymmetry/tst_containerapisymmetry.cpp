@@ -793,9 +793,24 @@ void tst_ContainerApiSymmetry::resize_impl() const
 }
 
 template <typename T>
+[[maybe_unused]]
 constexpr bool is_vector_v = false;
 template <typename...Args>
 constexpr bool is_vector_v<std::vector<Args...>> = true;
+
+template <typename Container, typename Value>
+void wrap_resize(Container &c, typename Container::size_type n, const Value &v)
+{
+#ifdef __GLIBCXX__ // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83981
+    if constexpr (is_vector_v<Container>) {
+        while (c.size() < n)
+            c.push_back(v);
+    } else
+#endif
+    {
+        c.resize(n, v);
+    }
+}
 
 template <typename Container>
 void tst_ContainerApiSymmetry::copesWithValueTypesWithConstMembers_impl()
@@ -827,24 +842,9 @@ void tst_ContainerApiSymmetry::copesWithValueTypesWithConstMembers_impl()
     // make sure they work
     c.reserve(S(5));
     c.shrink_to_fit();
-#ifdef __GLIBCXX__ // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83981
-    if constexpr (is_vector_v<Container>) {
-        c.push_back(V(42));
-    } else
-#endif
-    {
-        c.resize(1, V(42));
-    }
+    wrap_resize(c, 1, V(42));
     QCOMPARE(c[0], V(42));
-#ifdef __GLIBCXX__ // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83981
-    if constexpr (is_vector_v<Container>) {
-        c.push_back(V(48));
-        c.push_back(V(48));
-    } else
-#endif
-    {
-        c.resize(2, V(48));
-    }
+    wrap_resize(c, 2, V(48));
     QCOMPARE(c[0], V(42));
     QCOMPARE(c[1], V(48));
     c.clear();
