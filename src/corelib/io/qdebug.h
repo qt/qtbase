@@ -421,9 +421,6 @@ template <typename T>
 QDebug operator<<(QDebug debug, const QSet<T> &set);
 
 template <class T1, class T2>
-QDebug operator<<(QDebug debug, const QPair<T1, T2> &pair);
-
-template <class T1, class T2>
 QDebug operator<<(QDebug debug, const std::pair<T1, T2> &pair);
 
 template <typename T>

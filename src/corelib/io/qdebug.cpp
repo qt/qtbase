@@ -980,14 +980,6 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
-    \fn template <class T1, class T2> QDebug operator<<(QDebug debug, const QPair<T1, T2> &pair)
-    \relates QDebug
-
-    Writes the contents of \a pair to \a debug. Both \c T1 and
-    \c T2 need to support streaming into QDebug.
-*/
-
-/*!
     \fn template <class T1, class T2> QDebug operator<<(QDebug debug, const std::pair<T1, T2> &pair)
     \relates QDebug
 
