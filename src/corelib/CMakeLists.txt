@@ -280,7 +280,6 @@ qt_internal_add_module(Core
         tools/qflatmap_p.h
         tools/qfreelist.cpp tools/qfreelist_p.h
         tools/qfunctionaltools_impl.h
-        tools/quniquehandle_p.h
         tools/qhashfunctions.h
         tools/qiterator.h
         tools/qline.cpp tools/qline.h
@@ -309,6 +308,7 @@ qt_internal_add_module(Core
         tools/qstack.h
         tools/qtaggedpointer.h
         tools/qtools_p.h
+        tools/quniquehandle_p.h
         tools/qvarlengtharray.h
         tools/qvector.h
         tools/qversionnumber.cpp tools/qversionnumber.h
