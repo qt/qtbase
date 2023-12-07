@@ -1540,3 +1540,5 @@ QByteArray QNetworkHeadersPrivate::toHttpDate(const QDateTime &dt)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qnetworkrequest.cpp"

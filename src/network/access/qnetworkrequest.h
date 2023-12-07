@@ -19,6 +19,7 @@ class QHttp1Configuration;
 class QNetworkRequestPrivate;
 class Q_NETWORK_EXPORT QNetworkRequest
 {
+    Q_GADGET
 public:
     enum KnownHeaders {
         ContentTypeHeader,
@@ -35,6 +36,8 @@ public:
         IfMatchHeader,
         IfNoneMatchHeader
     };
+    Q_ENUM(KnownHeaders)
+
     enum Attribute {
         HttpStatusCodeAttribute,
         HttpReasonPhraseAttribute,
