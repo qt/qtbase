@@ -135,7 +135,7 @@ static inline bool foldAndCompare(const T a, const T b)
 */
 static inline qsizetype qFindChar(QStringView str, QChar ch, qsizetype from, Qt::CaseSensitivity cs) noexcept
 {
-    if (-from > str.size())
+    if (from < -str.size()) // from < 0 && abs(from) > str.size(), avoiding overflow
         return -1;
     if (from < 0)
         from = qMax(from + str.size(), qsizetype(0));
