@@ -102,6 +102,11 @@ endfunction()
 function(_qt_internal_collect_buildsystem_targets result dir)
     cmake_parse_arguments(arg "" "" "EXCLUDE;INCLUDE" ${ARGN})
 
+    if(NOT _qt_internal_collect_buildsystem_targets_inner)
+        set(${result} "")
+        set(_qt_internal_collect_buildsystem_targets_inner TRUE)
+    endif()
+
     set(forward_args "")
     if(arg_EXCLUDE)
         set(forward_args APPEND EXCLUDE ${arg_EXCLUDE})
