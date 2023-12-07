@@ -95,7 +95,7 @@ struct QArrayData
     static Q_CORE_EXPORT void *allocate2(QArrayData **pdata, qsizetype capacity,
                                          AllocationOption option = QArrayData::KeepSize) noexcept;
 
-    [[nodiscard]] static Q_CORE_EXPORT QPair<QArrayData *, void *> reallocateUnaligned(QArrayData *data, void *dataPointer,
+    [[nodiscard]] static Q_CORE_EXPORT std::pair<QArrayData *, void *> reallocateUnaligned(QArrayData *data, void *dataPointer,
             qsizetype objectSize, qsizetype newCapacity, AllocationOption option) noexcept;
     static Q_CORE_EXPORT void deallocate(QArrayData *data, qsizetype objectSize,
             qsizetype alignment) noexcept;
@@ -125,7 +125,7 @@ struct QTypedArrayData
 {
     struct AlignmentDummy { QtPrivate::AlignedQArrayData header; T data; };
 
-    [[nodiscard]] static QPair<QTypedArrayData *, T *> allocate(qsizetype capacity, AllocationOption option = QArrayData::KeepSize)
+    [[nodiscard]] static std::pair<QTypedArrayData *, T *> allocate(qsizetype capacity, AllocationOption option = QArrayData::KeepSize)
     {
         static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
         QArrayData *d;
@@ -143,16 +143,16 @@ struct QTypedArrayData
         // and yet we do offer results that have stricter alignment
         result = __builtin_assume_aligned(result, Q_ALIGNOF(AlignmentDummy));
 #endif
-        return qMakePair(static_cast<QTypedArrayData *>(d), static_cast<T *>(result));
+        return {static_cast<QTypedArrayData *>(d), static_cast<T *>(result)};
     }
 
-    static QPair<QTypedArrayData *, T *>
+    static std::pair<QTypedArrayData *, T *>
     reallocateUnaligned(QTypedArrayData *data, T *dataPointer, qsizetype capacity, AllocationOption option)
     {
         static_assert(sizeof(QTypedArrayData) == sizeof(QArrayData));
-        QPair<QArrayData *, void *> pair =
+        std::pair<QArrayData *, void *> pair =
                 QArrayData::reallocateUnaligned(data, dataPointer, sizeof(T), capacity, option);
-        return qMakePair(static_cast<QTypedArrayData *>(pair.first), static_cast<T *>(pair.second));
+        return {static_cast<QTypedArrayData *>(pair.first), static_cast<T *>(pair.second)};
     }
 
     static void deallocate(QArrayData *data) noexcept
