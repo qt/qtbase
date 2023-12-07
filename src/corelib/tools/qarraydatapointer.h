@@ -47,7 +47,7 @@ public:
     }
 
     Q_NODISCARD_CTOR
-    explicit QArrayDataPointer(QPair<QTypedArrayData<T> *, T *> adata, qsizetype n = 0) noexcept
+    explicit QArrayDataPointer(std::pair<QTypedArrayData<T> *, T *> adata, qsizetype n = 0) noexcept
         : d(adata.first), ptr(adata.second), size(n)
     {
     }

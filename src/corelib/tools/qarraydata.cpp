@@ -222,7 +222,7 @@ void *QArrayData::allocate2(QArrayData **dptr, qsizetype capacity, AllocationOpt
     return r.data;
 }
 
-QPair<QArrayData *, void *>
+std::pair<QArrayData *, void *>
 QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
                                 qsizetype objectSize, qsizetype capacity, AllocationOption option) noexcept
 {
@@ -233,7 +233,7 @@ QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
     qsizetype allocSize = r.size;
     capacity = r.elementCount;
     if (Q_UNLIKELY(allocSize < 0))
-        return qMakePair<QArrayData *, void *>(nullptr, nullptr);
+        return {};
 
     const qptrdiff offset = dataPointer
             ? reinterpret_cast<char *>(dataPointer) - reinterpret_cast<char *>(data)
@@ -248,7 +248,7 @@ QArrayData::reallocateUnaligned(QArrayData *data, void *dataPointer,
     } else {
         dataPointer = nullptr;
     }
-    return qMakePair(static_cast<QArrayData *>(header), dataPointer);
+    return {header, dataPointer};
 }
 
 void QArrayData::deallocate(QArrayData *data, qsizetype objectSize,
