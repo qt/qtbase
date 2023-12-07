@@ -303,8 +303,11 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
                 QVarLengthArray<FT_Fixed, 16> coords(var->num_axis);
                 FT_Get_Var_Design_Coordinates(face, var->num_axis, coords.data());
                 for (FT_UInt i = 0; i < var->num_axis; ++i) {
-                    if (const auto tag = QFont::Tag::fromValue(var->axis[i].tag))
-                        coords[i] = FT_Fixed(face_id.variableAxes.value(*tag, coords[i]));
+                    if (const auto tag = QFont::Tag::fromValue(var->axis[i].tag)) {
+                        const auto it = face_id.variableAxes.constFind(*tag);
+                        if (it != face_id.variableAxes.constEnd())
+                            coords[i] = FT_Fixed(*it * 65536);
+                    }
                 }
                 FT_Set_Var_Design_Coordinates(face, var->num_axis, coords.data());
                 FT_Done_MM_Var(qt_getFreetype(), var);
