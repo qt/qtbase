@@ -32,7 +32,7 @@ QT_BEGIN_NAMESPACE
 
 // like std::dynamic_extent
 namespace q20 {
-    inline constexpr std::size_t dynamic_extent = -1;
+    inline constexpr auto dynamic_extent = std::size_t(-1);
 } // namespace q20
 
 template <typename T, std::size_t E = q20::dynamic_extent> class QSpan;
