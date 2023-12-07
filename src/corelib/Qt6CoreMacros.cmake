@@ -2932,6 +2932,7 @@ endfunction()
 
 # Write deployment information for the targets of the project.
 function(_qt_internal_write_target_deploy_info out_file)
+    set(targets "")
     _qt_internal_collect_buildsystem_targets(targets
         "${CMAKE_SOURCE_DIR}" INCLUDE EXECUTABLE SHARED_LIBRARY MODULE_LIBRARY)
     set(content "")
