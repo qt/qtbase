@@ -1128,6 +1128,17 @@ void QComboBoxPrivate::rowsInserted(const QModelIndex &parent, int start, int en
     // set current index if combo was previously empty and there is no placeholderText
     if (start == 0 && (end - start + 1) == q->count() && !currentIndex.isValid() &&
         placeholderText.isEmpty()) {
+#if QT_CONFIG(accessibility)
+        // This might have been called by the model emitting rowInserted(), at which
+        // point the view won't have updated the accessibility bridge yet about its new
+        // dimensions. Do it now so that the change of the selection matches the row
+        // indexes of the accessibility bridge's representation.
+        if (container && container->itemView()) {
+            QAccessibleTableModelChangeEvent event(container->itemView(),
+                                                   QAccessibleTableModelChangeEvent::ModelReset);
+            QAccessible::updateAccessibility(&event);
+        }
+#endif
         q->setCurrentIndex(0);
         // need to emit changed if model updated index "silently"
     } else if (currentIndex.row() != indexBeforeChange) {
