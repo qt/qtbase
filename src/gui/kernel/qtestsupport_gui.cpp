@@ -29,7 +29,7 @@ QT_BEGIN_NAMESPACE
     \note Since focus is an exclusive property, \a window may loose its focus to another window at
     any time - even after the method has returned \c true.
 
-    \sa qWaitForWindowExposed(), QWindow::isActive()
+    \sa qWaitForWindowExposed(), qWaitForWindowFocused(), QWindow::isActive()
 */
 Q_GUI_EXPORT bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
 {
@@ -42,6 +42,27 @@ Q_GUI_EXPORT bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
         return qWaitForWindowExposed(window, timeout);
     }
     return QTest::qWaitFor([&]() { return window->isActive(); }, timeout);
+}
+
+/*!
+    \since 6.7
+
+    Returns \c true, if \a window is the focus window within \a timeout milliseconds. Otherwise returns \c false.
+
+    The method is useful in tests that call QWindow::show() and rely on the window
+    having focus (for receiving keyboard events e.g.) before proceeding.
+
+    \note  The method will time out and return \c false if another window prevents \a window from
+    becoming focused.
+
+    \note Since focus is an exclusive property, \a window may loose its focus to another window at
+    any time - even after the method has returned \c true.
+
+    \sa qWaitForWindowExposed(), qWaitForWindowActive(), QGuiApplication::focusWindow()
+*/
+Q_GUI_EXPORT bool QTest::qWaitForWindowFocused(QWindow *window, int timeout)
+{
+    return QTest::qWaitFor([&]() { return qGuiApp->focusWindow() == window; }, timeout);
 }
 
 /*!
