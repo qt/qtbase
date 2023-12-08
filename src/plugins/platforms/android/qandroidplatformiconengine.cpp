@@ -59,7 +59,7 @@ static QString fetchFont(const QString &query)
         const QByteArray fontData = file.readAll();
         int fontId = QFontDatabase::addApplicationFontFromData(fontData);
         loadedFamilies << QFontDatabase::applicationFontFamilies(fontId);
-    } else {
+    } else if (!query.startsWith(u":/"_s)) {
         const QString package = u"com.google.android.gms"_s;
         const QString authority = u"com.google.android.gms.fonts"_s;
 
@@ -250,17 +250,33 @@ QAndroidPlatformIconEngine::QAndroidPlatformIconEngine(const QString &iconName)
     : m_iconName(iconName)
     , m_glyphs(glyphs())
 {
-    // The MaterialIcons-Regular.ttf font file is available from
-    // https://github.com/google/material-design-icons/tree/master/font. If it's packaged
-    // as a resource with the application, then we use it. Otherwise we try to download
-    // the Outlined version of Material Symbols, and failing that we try Material Icons.
-    QString fontFamily = FontProvider::fetchFont(u":/qt-project.org/icons/MaterialIcons-Regular.ttf"_s);
+    QString fontFamily;
+    // The MaterialIcons-*.ttf and MaterialSymbols* font files are available from
+    // https://github.com/google/material-design-icons/tree/master. If one of them is
+    // packaged as a resource with the application, then we use it. We prioritize
+    // a variable font.
+    const QStringList fontCandidates = {
+        "MaterialSymbolsOutlined[FILL,GRAD,opsz,wght].ttf",
+        "MaterialSymbolsRounded[FILL,GRAD,opsz,wght].ttf",
+        "MaterialSymbolsSharp[FILL,GRAD,opsz,wght].ttf",
+        "MaterialIcons-Regular.ttf",
+        "MaterialIconsOutlined-Regular.otf",
+        "MaterialIconsRound-Regular.otf",
+        "MaterialIconsSharp-Regular.otf",
+        "MaterialIconsTwoTone-Regular.otf",
+    };
+    for (const auto &fontCandidate : fontCandidates) {
+        fontFamily = FontProvider::fetchFont(u":/qt-project.org/icons/%1"_s.arg(fontCandidate));
+        if (!fontFamily.isEmpty())
+            break;
+    }
 
+    // Otherwise we try to download the Outlined version of Material Symbols
     const QString key = qEnvironmentVariable("QT_GOOGLE_FONTS_KEY");
     if (fontFamily.isEmpty() && !key.isEmpty())
         fontFamily = FontProvider::fetchFont(u"key=%1&name=Material+Symbols+Outlined"_s.arg(key));
 
-    // last resort - use the old Material Icons
+    // last resort - use any Material Icons
     if (fontFamily.isEmpty())
         fontFamily = u"Material Icons"_s;
     m_iconFont = QFont(fontFamily);
