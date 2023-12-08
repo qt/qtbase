@@ -99,8 +99,6 @@ QList<QByteArray> supportedImageFormats(Capability cap)
 
 static constexpr QByteArrayView imagePrefix() noexcept { return "image/"; }
 
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_GCC("-Warray-bounds") // QTBUG-116763
 QList<QByteArray> supportedMimeTypes(Capability cap)
 {
     QList<QByteArray> mimeTypes;
@@ -116,7 +114,6 @@ QList<QByteArray> supportedMimeTypes(Capability cap)
     mimeTypes.erase(std::unique(mimeTypes.begin(), mimeTypes.end()), mimeTypes.end());
     return mimeTypes;
 }
-QT_WARNING_POP
 
 QList<QByteArray> imageFormatsForMimeType(QByteArrayView mimeType, Capability cap)
 {
