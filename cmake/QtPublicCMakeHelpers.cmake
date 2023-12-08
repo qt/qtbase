@@ -117,6 +117,18 @@ function(_qt_internal_collect_buildsystem_targets result dir)
     endif()
 
     get_property(subdirs DIRECTORY "${dir}" PROPERTY SUBDIRECTORIES)
+
+    # Make sure that we don't hit endless recursion when running qt-cmake-standalone-test on a
+    # in-source test dir, where the currently processed directory lists itself in its SUBDIRECTORIES
+    # property.
+    # See https://bugreports.qt.io/browse/QTBUG-119998
+    # and https://gitlab.kitware.com/cmake/cmake/-/issues/25489
+    # Do it only when QT_INTERNAL_IS_STANDALONE_TEST is set, to avoid the possible slowdown when
+    # processing many subdirectores when configuring all standalone tests rather than just one.
+    if(QT_INTERNAL_IS_STANDALONE_TEST)
+        list(REMOVE_ITEM subdirs "${dir}")
+    endif()
+
     foreach(subdir IN LISTS subdirs)
         _qt_internal_collect_buildsystem_targets(${result} "${subdir}" ${forward_args})
     endforeach()
