@@ -76,9 +76,12 @@ private:
         const qsizetype len = QConcatenable< QStringBuilder<A, B> >::size(*this);
         T s(len, Qt::Uninitialized);
 
-        // we abuse const_cast / constData here because we know we've just
-        // allocated the data and we're the only reference count
-        typename T::iterator d = const_cast<typename T::iterator>(s.constData());
+        // Using data_ptr() here (private API) so we can bypass the
+        // isDetached() and the replacement of a null pointer with _empty in
+        // both QString and QByteArray's data() and constData(). The result is
+        // the same if len != 0.
+        auto d = reinterpret_cast<typename T::iterator>(s.data_ptr().data());
+
         typename T::const_iterator const start = d;
         QConcatenable< QStringBuilder<A, B> >::appendTo(*this, d);
 
