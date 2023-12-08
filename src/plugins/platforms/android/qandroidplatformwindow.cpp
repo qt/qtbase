@@ -51,12 +51,10 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
     if (parent())
         m_nativeParentQtWindow = static_cast<QAndroidPlatformWindow*>(parent())->nativeWindow();
 
-    QNativeInterface::QAndroidApplication::runOnAndroidMainThread([this]() {
-        m_nativeQtWindow = QJniObject::construct<QtJniTypes::QtWindow>(
-            QNativeInterface::QAndroidApplication::context(),
-            m_nativeParentQtWindow);
-        m_nativeViewId = m_nativeQtWindow.callMethod<jint>("getId");
-    }).waitForFinished();
+    m_nativeQtWindow = QJniObject::construct<QtJniTypes::QtWindow>(
+        QNativeInterface::QAndroidApplication::context(),
+        m_nativeParentQtWindow);
+    m_nativeViewId = m_nativeQtWindow.callMethod<jint>("getId");
 
     if (window->isTopLevel())
         platformScreen()->addWindow(this);

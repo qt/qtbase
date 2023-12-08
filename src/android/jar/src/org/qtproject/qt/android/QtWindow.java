@@ -11,31 +11,44 @@ import android.view.ViewGroup;
 
 import java.util.HashMap;
 
-public class QtWindow extends QtLayout implements QtSurface.SurfaceChangedCallback {
+public class QtWindow implements QtSurface.SurfaceChangedCallback {
     private final static String TAG = "QtWindow";
 
+    private QtLayout m_layout;
     private QtSurface m_surface;
     private View m_nativeView;
     private HashMap<Integer, QtWindow> m_childWindows = new HashMap<Integer, QtWindow>();
     private QtWindow m_parentWindow;
+    private int m_id;
 
     private static native void setSurface(int windowId, Surface surface);
 
     public QtWindow(Context context, QtWindow parentWindow)
     {
-        super(context);
-        setId(View.generateViewId());
-
-        setParent(parentWindow);
+        m_id = View.generateViewId();
+        QtNative.runAction(() -> {
+            m_layout = new QtLayout(context);
+            setParent(parentWindow);
+        });
     }
 
     void setVisible(boolean visible) {
         QtNative.runAction(() -> {
             if (visible)
-                setVisibility(View.VISIBLE);
+                m_layout.setVisibility(View.VISIBLE);
             else
-                setVisibility(View.INVISIBLE);
+                m_layout.setVisibility(View.INVISIBLE);
         });
+    }
+
+    public int getId()
+    {
+        return m_id;
+    }
+
+    public QtLayout getLayout()
+    {
+        return m_layout;
     }
 
     @Override
@@ -58,15 +71,15 @@ public class QtWindow extends QtLayout implements QtSurface.SurfaceChangedCallba
             @Override
             public void run() {
                 if (m_surface != null)
-                    removeView(m_surface);
+                    m_layout.removeView(m_surface);
 
-                setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                m_layout.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
                 // TODO currently setting child windows to onTop, since their surfaces
                 // now get created earlier than the parents -> they are behind the parent window
                 // without this, and SurfaceView z-ordering is limited
                 boolean tempOnTop = onTop || (m_parentWindow != null);
 
-                QtSurface surface = new QtSurface(getContext(), QtWindow.this,
+                QtSurface surface = new QtSurface(m_layout.getContext(), QtWindow.this,
                                                   QtWindow.this.getId(), tempOnTop, imageDepth);
                 surface.setLayoutParams(new QtLayout.LayoutParams(
                                                             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -74,7 +87,7 @@ public class QtWindow extends QtLayout implements QtSurface.SurfaceChangedCallba
 
                 // The QtSurface of this window will be added as the first of the stack.
                 // All other views are stacked based on the order they are created.
-                addView(surface, 0);
+                m_layout.addView(surface, 0);
                 m_surface = surface;
             }
         });
@@ -86,7 +99,7 @@ public class QtWindow extends QtLayout implements QtSurface.SurfaceChangedCallba
             @Override
             public void run() {
                 if (m_surface != null) {
-                    removeView(m_surface);
+                    m_layout.removeView(m_surface);
                     m_surface = null;
                 }
             }
@@ -98,7 +111,7 @@ public class QtWindow extends QtLayout implements QtSurface.SurfaceChangedCallba
         QtNative.runAction(new Runnable() {
             @Override
             public void run() {
-                QtWindow.this.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                m_layout.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
             }
         });
     }
@@ -109,7 +122,7 @@ public class QtWindow extends QtLayout implements QtSurface.SurfaceChangedCallba
             @Override
             public void run() {
                 m_childWindows.put(window.getId(), window);
-                addView(window, getChildCount());
+                m_layout.addView(window.getLayout(), m_layout.getChildCount());
             }
         });
     }
@@ -120,7 +133,7 @@ public class QtWindow extends QtLayout implements QtSurface.SurfaceChangedCallba
             @Override
             public void run() {
                 if (m_childWindows.containsKey(id))
-                    removeView(m_childWindows.remove(id));
+                    m_layout.removeView(m_childWindows.remove(id).getLayout());
             }
         });
     }
@@ -132,33 +145,35 @@ public class QtWindow extends QtLayout implements QtSurface.SurfaceChangedCallba
             @Override
             public void run() {
                 if (m_nativeView != null)
-                    removeView(m_nativeView);
+                    m_layout.removeView(m_nativeView);
 
                 m_nativeView = view;
-                QtWindow.this.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                m_layout.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
                 m_nativeView.setLayoutParams(new QtLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                                                        ViewGroup.LayoutParams.MATCH_PARENT));
-                addView(m_nativeView);
+                m_layout.addView(m_nativeView);
             }
         });
     }
 
     public void bringChildToFront(int id)
     {
-        View view = m_childWindows.get(id);
-        if (view != null) {
-            if (getChildCount() > 0)
-                moveChild(view, getChildCount() - 1);
-        }
+        QtNative.runAction(()-> {
+            QtWindow window = m_childWindows.get(id);
+            if (window != null) {
+                if (m_layout.getChildCount() > 0)
+                    m_layout.moveChild(window.getLayout(), m_layout.getChildCount() - 1);
+            }
+        });
     }
 
     public void bringChildToBack(int id) {
         QtNative.runAction(new Runnable() {
             @Override
             public void run() {
-                View view = m_childWindows.get(id);
-                if (view != null) {
-                    moveChild(view, 0);
+                QtWindow window = m_childWindows.get(id);
+                if (window != null) {
+                    m_layout.moveChild(window.getLayout(), 0);
                 }
             }
         });
@@ -170,7 +185,7 @@ public class QtWindow extends QtLayout implements QtSurface.SurfaceChangedCallba
             @Override
             public void run() {
                 if (m_nativeView != null) {
-                    removeView(m_nativeView);
+                    m_layout.removeView(m_nativeView);
                     m_nativeView = null;
                 }
             }
