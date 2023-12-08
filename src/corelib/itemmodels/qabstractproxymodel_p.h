@@ -30,7 +30,9 @@ public:
     QAbstractProxyModelPrivate()
         : QAbstractItemModelPrivate(),
         sourceHadZeroRows(false),
-        sourceHadZeroColumns(false)
+        sourceHadZeroColumns(false),
+        updateVerticalHeader(false),
+        updateHorizontalHeader(false)
     {}
     void setModelForwarder(QAbstractItemModel *sourceModel)
     {
@@ -57,8 +59,13 @@ public:
     void mapDropCoordinatesToSource(int row, int column, const QModelIndex &parent,
                                     int *source_row, int *source_column, QModelIndex *source_parent) const;
 
+    void scheduleHeaderUpdate(Qt::Orientation orientation);
+    void emitHeaderDataChanged();
+
     unsigned int sourceHadZeroRows : 1;
     unsigned int sourceHadZeroColumns : 1;
+    unsigned int updateVerticalHeader : 1;
+    unsigned int updateHorizontalHeader : 1;
 };
 
 QT_END_NAMESPACE
