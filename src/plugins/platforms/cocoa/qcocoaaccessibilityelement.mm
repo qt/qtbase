@@ -9,11 +9,14 @@
 #include "qcocoawindow.h"
 #include "qcocoascreen.h"
 
+#include <QtCore/qlogging.h>
 #include <QtGui/private/qaccessiblecache_p.h>
 #include <QtGui/private/qaccessiblebridgeutils_p.h>
 #include <QtGui/qaccessible.h>
 
 QT_USE_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcAccessibilityTable, "qt.accessibility.table")
 
 #if QT_CONFIG(accessibility)
 
@@ -131,6 +134,12 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
                         auto *tableElement = [QMacAccessibilityElement elementWithInterface:table];
                         Q_ASSERT(tableElement);
                         Q_ASSERT(tableElement->rows);
+
+                        qCDebug(lcAccessibilityTable) << "Creating cell representation for"
+                                                      << m_rowIndex << m_columnIndex
+                                                      << "in table with"
+                                                      << tableElement->rows.count << "rows";
+
                         Q_ASSERT(int(tableElement->rows.count) > m_rowIndex);
                         auto *rowElement = tableElement->rows[m_rowIndex];
                         if (!rowElement->columns) {
@@ -273,6 +282,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     if (QAccessibleInterface *iface = self.qtInterface) {
         if (QAccessibleTableInterface *table = iface->tableInterface()) {
             Q_ASSERT(!self.isManagedByParent);
+            qCDebug(lcAccessibilityTable) << "Updating table representation with"
+                                          << table->rowCount() << table->columnCount();
             rows = [self populateTableArray:rows role:NSAccessibilityRowRole count:table->rowCount()];
             columns = [self populateTableArray:columns role:NSAccessibilityColumnRole count:table->columnCount()];
         }
