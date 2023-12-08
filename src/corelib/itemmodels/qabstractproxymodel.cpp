@@ -55,11 +55,39 @@ void QAbstractProxyModelPrivate::_q_sourceModelDestroyed()
     model = QAbstractItemModelPrivate::staticEmptyModel();
 }
 
-static auto emitHeaderDataChanged(QAbstractItemModel *model,
-                                  Qt::Orientation orientation,
-                                  int count)
+void QAbstractProxyModelPrivate::emitHeaderDataChanged()
 {
-    return [=](){ emit model->headerDataChanged(orientation, 0, count); };
+    Q_Q(QAbstractProxyModel);
+
+    if (updateHorizontalHeader) {
+        if (auto columnCount = q->columnCount(); columnCount > 0)
+            emit q->headerDataChanged(Qt::Horizontal, 0, columnCount - 1);
+    }
+
+    if (updateVerticalHeader) {
+        if (auto rowCount = q->rowCount(); rowCount > 0)
+            emit q->headerDataChanged(Qt::Vertical, 0, rowCount - 1);
+    }
+
+    updateHorizontalHeader = false;
+    updateVerticalHeader = false;
+}
+
+void QAbstractProxyModelPrivate::scheduleHeaderUpdate(Qt::Orientation orientation)
+{
+    const bool isUpdateScheduled = updateHorizontalHeader || updateVerticalHeader;
+
+    if (orientation == Qt::Horizontal && !updateHorizontalHeader)
+        updateHorizontalHeader = true;
+    else if (orientation == Qt::Vertical && !updateVerticalHeader)
+        updateVerticalHeader = true;
+    else
+        return;
+
+    if (!isUpdateScheduled) {
+        Q_Q(QAbstractProxyModel);
+        QMetaObject::invokeMethod(q, [this]() { emitHeaderDataChanged(); }, Qt::QueuedConnection);
+    }
 }
 
 void QAbstractProxyModelPrivate::_q_sourceModelRowsAboutToBeInserted(const QModelIndex &parent, int, int)
@@ -73,25 +101,16 @@ void QAbstractProxyModelPrivate::_q_sourceModelRowsInserted(const QModelIndex &p
 {
     if (parent.isValid())
         return;
-    if (sourceHadZeroRows) {
-        Q_Q(QAbstractProxyModel);
-        const int columnCount = q->columnCount();
-        if (columnCount > 0)
-            QMetaObject::invokeMethod(q, emitHeaderDataChanged(q, Qt::Horizontal, columnCount - 1), Qt::QueuedConnection);
-    }
+    if (sourceHadZeroRows)
+        scheduleHeaderUpdate(Qt::Horizontal);
 }
-
 
 void QAbstractProxyModelPrivate::_q_sourceModelRowsRemoved(const QModelIndex &parent, int, int)
 {
     if (parent.isValid())
         return;
-    if (model->rowCount() == 0) {
-        Q_Q(QAbstractProxyModel);
-        const int columnCount = q->columnCount();
-        if (columnCount > 0)
-            QMetaObject::invokeMethod(q, emitHeaderDataChanged(q, Qt::Horizontal, columnCount - 1), Qt::QueuedConnection);
-    }
+    if (model->rowCount() == 0)
+        scheduleHeaderUpdate(Qt::Horizontal);
 }
 
 void QAbstractProxyModelPrivate::_q_sourceModelColumnsAboutToBeInserted(const QModelIndex &parent, int, int)
@@ -105,24 +124,16 @@ void QAbstractProxyModelPrivate::_q_sourceModelColumnsInserted(const QModelIndex
 {
     if (parent.isValid())
         return;
-    if (sourceHadZeroColumns) {
-        Q_Q(QAbstractProxyModel);
-        const int rowCount = q->rowCount();
-        if (rowCount > 0)
-            QMetaObject::invokeMethod(q, emitHeaderDataChanged(q, Qt::Vertical, rowCount - 1), Qt::QueuedConnection);
-    }
+    if (sourceHadZeroColumns)
+        scheduleHeaderUpdate(Qt::Vertical);
 }
 
 void QAbstractProxyModelPrivate::_q_sourceModelColumnsRemoved(const QModelIndex &parent, int, int)
 {
     if (parent.isValid())
         return;
-    if (model->columnCount() == 0) {
-        Q_Q(QAbstractProxyModel);
-        const int rowCount = q->rowCount();
-        if (rowCount > 0)
-            QMetaObject::invokeMethod(q, emitHeaderDataChanged(q, Qt::Vertical, rowCount - 1), Qt::QueuedConnection);
-    }
+    if (model->columnCount() == 0)
+        scheduleHeaderUpdate(Qt::Vertical);
 }
 
 /*!
