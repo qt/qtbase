@@ -47,6 +47,8 @@ class QtNative
     private static ClassLoader m_classLoader = null;
 
     private static final Runnable runPendingCppRunnablesRunnable = QtNative::runPendingCppRunnables;
+    private static final ArrayList<AppStateDetailsListener> m_appStateListeners = new ArrayList<>();
+    private static final Object m_appStateListenersLock = new Object();
 
     @UsedFromNativeCode
     public static ClassLoader classLoader()
@@ -193,6 +195,10 @@ class QtNative
         return m_qtThread;
     }
 
+    interface AppStateDetailsListener {
+        void onAppStateDetailsChanged(ApplicationStateDetails details);
+    }
+
     // Keep in sync with src/corelib/global/qnamespace.h
     public static class ApplicationState {
         static final int ApplicationSuspended = 0x0;
@@ -215,12 +221,14 @@ class QtNative
     public static void setStarted(boolean started)
     {
         m_stateDetails.isStarted = started;
+        notifyAppStateDetailsChanged(m_stateDetails);
     }
 
     @UsedFromNativeCode
     public static void notifyNativePluginIntegrationReady(boolean ready)
     {
         m_stateDetails.nativePluginIntegrationReady = ready;
+        notifyAppStateDetailsChanged(m_stateDetails);
     }
 
     public static void setApplicationState(int state)
@@ -234,6 +242,27 @@ class QtNative
             }
         }
         updateApplicationState(state);
+        notifyAppStateDetailsChanged(m_stateDetails);
+    }
+
+    static void registerAppStateListener(AppStateDetailsListener listener) {
+        synchronized (m_appStateListenersLock) {
+            if (!m_appStateListeners.contains(listener))
+                m_appStateListeners.add(listener);
+        }
+    }
+
+    static void unregisterAppStateListener(AppStateDetailsListener listener) {
+        synchronized (m_appStateListenersLock) {
+            m_appStateListeners.remove(listener);
+        }
+    }
+
+    static void notifyAppStateDetailsChanged(ApplicationStateDetails details) {
+        synchronized (m_appStateListenersLock) {
+            for (AppStateDetailsListener listener : m_appStateListeners)
+                listener.onAppStateDetailsChanged(details);
+        }
     }
 
     // Post a runnable to Main (UI) Thread if the app is active,
@@ -289,6 +318,7 @@ class QtNative
             m_qtThread.post(QtNative::startQtApplication);
             waitForServiceSetup();
             m_stateDetails.isStarted = true;
+            notifyAppStateDetailsChanged(m_stateDetails);
         }
     }
 
@@ -301,6 +331,7 @@ class QtNative
             if (isServiceValid())
                 m_service.get().stopSelf();
             m_stateDetails.isStarted = false;
+            // Likely no use to call notifyAppStateDetailsChanged at this point since we are exiting
         });
     }
 
