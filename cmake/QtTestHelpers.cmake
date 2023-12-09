@@ -637,8 +637,8 @@ function(qt_internal_add_test name)
                 endif()
             else()
                 message(STATUS "The argument BUNDLE_ANDROID_OPENSSL_LIBS is set "
-                               "but OPENSSL_ROOT_DIR parameter is not set."
-                               "Test should bundle OpenSSL libraries but they are not found."
+                               "but OPENSSL_ROOT_DIR parameter is not set. "
+                               "Test should bundle OpenSSL libraries but they are not found. "
                                "This is fine if OpenSSL was built statically.")
             endif()
         endif()
