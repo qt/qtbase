@@ -48,7 +48,7 @@ void qYieldCpu(void)
 
 #elif __has_builtin(__builtin_arm_yield)
     __builtin_arm_yield();
-#elif defined(Q_PROCESSOR_ARM) && Q_PROCESSOR_ARM >= 7
+#elif defined(Q_PROCESSOR_ARM) && Q_PROCESSOR_ARM >= 7 && defined(Q_CC_GNU)
     asm("yield");           // this works everywhere
 
 #elif __has_builtin(__builtin_riscv_pause)
