@@ -74,6 +74,7 @@ public:
 
 public: // for QNSOpenSavePanelDelegate
     void panelClosed(NSInteger result);
+    void panelDirectoryDidChange(NSString *path);
 
 private:
     void createNSOpenSavePanelDelegate();
