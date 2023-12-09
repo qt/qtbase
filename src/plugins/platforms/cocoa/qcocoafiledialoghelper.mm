@@ -55,7 +55,6 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     NSPopUpButton *m_popupButton;
     NSTextField *m_textField;
     QPointer<QCocoaFileDialogHelper> m_helper;
-    NSString *m_currentDirectory;
 
     SharedPointerFileDialogOptions m_options;
     QString m_currentSelection;
@@ -86,10 +85,10 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 
         const QFileInfo sel(selectFile);
         if (sel.isDir() && !sel.isBundle()){
-            m_currentDirectory = [sel.absoluteFilePath().toNSString() retain];
+            m_panel.directoryURL = [NSURL fileURLWithPath:sel.absoluteFilePath().toNSString()];
             m_currentSelection.clear();
         } else {
-            m_currentDirectory = [sel.absolutePath().toNSString() retain];
+            m_panel.directoryURL = [NSURL fileURLWithPath:sel.absolutePath().toNSString()];
             m_currentSelection = sel.absoluteFilePath();
         }
 
@@ -99,7 +98,7 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 
         m_panel.accessoryView = m_nameFilterDropDownList.size() > 1 ? m_accessoryView : nil;
         // -setAccessoryView: can result in -panel:directoryDidChange:
-        // resetting our m_currentDirectory, set the delegate
+        // resetting our current directory. Set the delegate
         // here to make sure it gets the correct value.
         m_panel.delegate = self;
 
@@ -120,7 +119,6 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     [m_accessoryView release];
     m_panel.delegate = nil;
     [m_panel release];
-    [m_currentDirectory release];
     [super dealloc];
 }
 
@@ -132,7 +130,6 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     bool selectable = (m_options->acceptMode() == QFileDialogOptions::AcceptSave)
         || [self panel:m_panel shouldEnableURL:url];
 
-    m_panel.directoryURL = [NSURL fileURLWithPath:m_currentDirectory];
     m_panel.nameFieldStringValue = selectable ? info.fileName().toNSString() : @"";
 
     [self updateProperties];
@@ -379,17 +376,7 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     if (!m_helper)
         return;
 
-    if (!path || [path isEqual:NSNull.null] || !path.length)
-        return;
-
-    if ([path isEqualToString:m_currentDirectory])
-        return;
-
-    [m_currentDirectory release];
-    m_currentDirectory = [path retain];
-
-    // ### fixme: priv->setLastVisitedDirectory(newDir);
-    emit m_helper->directoryEntered(QUrl::fromLocalFile(QString::fromNSString(m_currentDirectory)));
+    m_helper->panelDirectoryDidChange(path);
 }
 
 /*
@@ -516,19 +503,30 @@ void QCocoaFileDialogHelper::panelClosed(NSInteger result)
 
 void QCocoaFileDialogHelper::setDirectory(const QUrl &directory)
 {
+    m_directory = directory;
+
     if (m_delegate)
         m_delegate->m_panel.directoryURL = [NSURL fileURLWithPath:directory.toLocalFile().toNSString()];
-    else
-        m_directory = directory;
 }
 
 QUrl QCocoaFileDialogHelper::directory() const
 {
-    if (m_delegate) {
-        QString path = QString::fromNSString(m_delegate->m_panel.directoryURL.path).normalized(QString::NormalizationForm_C);
-        return QUrl::fromLocalFile(path);
-    }
     return m_directory;
+}
+
+void QCocoaFileDialogHelper::panelDirectoryDidChange(NSString *path)
+{
+    if (!path || [path isEqual:NSNull.null] || !path.length)
+        return;
+
+    const auto oldDirectory = m_directory;
+    m_directory = QUrl::fromLocalFile(
+        QString::fromNSString(path).normalized(QString::NormalizationForm_C));
+
+    if (m_directory != oldDirectory) {
+        // FIXME: Plumb old directory back to QFileDialog's lastVisitedDir?
+        emit directoryEntered(m_directory);
+    }
 }
 
 void QCocoaFileDialogHelper::selectFile(const QUrl &filename)
