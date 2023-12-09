@@ -414,7 +414,13 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
 {
     Q_UNUSED(sender);
 
-    if (!(path && path.length) || [path isEqualToString:m_currentDirectory])
+    if (!m_helper)
+        return;
+
+    if (!path || [path isEqual:NSNull.null] || !path.length)
+        return;
+
+    if ([path isEqualToString:m_currentDirectory])
         return;
 
     [m_currentDirectory release];
