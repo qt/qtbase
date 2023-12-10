@@ -2425,6 +2425,24 @@ void QObject::deleteLater()
     if (qApp == this)
         qWarning("You are deferring the delete of QCoreApplication, this may not work as expected.");
 #endif
+
+    {
+        // De-bounce QDeferredDeleteEvents. Use the post event list mutex
+        // to guard access to deleteLaterCalled, so we don't need a separate
+        // mutex in QObjectData.
+        auto locker = QCoreApplicationPrivate::lockThreadPostEventList(this);
+
+        // FIXME: The deleteLaterCalled flag is part of a bit field,
+        // so we likely have data races here, even with the mutex above,
+        // as long as we're not guarding every access to the bit field.
+
+        Q_D(QObject);
+        if (d->deleteLaterCalled)
+            return;
+
+        d->deleteLaterCalled = true;
+    }
+
     QCoreApplication::postEvent(this, new QDeferredDeleteEvent());
 }
 
