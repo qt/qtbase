@@ -642,10 +642,10 @@ Q_IMPL_EVENT_COMMON(QDynamicPropertyChangeEvent)
 */
 
 /*!
-    Constructs a deferred delete event with an initial loopLevel() of zero.
+    Constructs a deferred delete event with the given loop and scope level.
 */
-QDeferredDeleteEvent::QDeferredDeleteEvent()
-    : QEvent(QEvent::DeferredDelete)
+QDeferredDeleteEvent::QDeferredDeleteEvent(int loopLevel, int scopeLevel)
+    : QEvent(QEvent::DeferredDelete), m_loopLevel(loopLevel), m_scopeLevel(scopeLevel)
 { }
 
 Q_IMPL_EVENT_COMMON(QDeferredDeleteEvent)

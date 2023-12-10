@@ -1677,31 +1677,6 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         return;
     }
 
-    if (event->type() == QEvent::DeferredDelete && data == QThreadData::current()) {
-        // remember the current running eventloop for DeferredDelete
-        // events posted in the receiver's thread.
-
-        // Events sent by non-Qt event handlers (such as glib) may not
-        // have the scopeLevel set correctly. The scope level makes sure that
-        // code like this:
-        //     foo->deleteLater();
-        //     qApp->processEvents(); // without passing QEvent::DeferredDelete
-        // will not cause "foo" to be deleted before returning to the event loop.
-
-        // If the scope level is 0 while loopLevel != 0, we are called from a
-        // non-conformant code path, and our best guess is that the scope level
-        // should be 1. (Loop level 0 is special: it means that no event loops
-        // are running.)
-        int loopLevel = data->loopLevel;
-        int scopeLevel = data->scopeLevel;
-        if (scopeLevel == 0 && loopLevel != 0)
-            scopeLevel = 1;
-
-        QDeferredDeleteEvent *deleteEvent = static_cast<QDeferredDeleteEvent *>(event);
-        deleteEvent->m_loopLevel = loopLevel;
-        deleteEvent->m_scopeLevel = scopeLevel;
-    }
-
     // delete the event on exceptions to protect against memory leaks till the event is
     // properly owned in the postEventList
     std::unique_ptr<QEvent> eventDeleter(event);

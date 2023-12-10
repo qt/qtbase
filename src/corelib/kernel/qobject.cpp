@@ -2437,24 +2437,53 @@ void QObject::deleteLater()
         qWarning("You are deferring the delete of QCoreApplication, this may not work as expected.");
 #endif
 
-    {
-        // De-bounce QDeferredDeleteEvents. Use the post event list mutex
-        // to guard access to deleteLaterCalled, so we don't need a separate
-        // mutex in QObjectData.
-        auto locker = QCoreApplicationPrivate::lockThreadPostEventList(this);
 
-        // FIXME: The deleteLaterCalled flag is part of a bit field,
-        // so we likely have data races here, even with the mutex above,
-        // as long as we're not guarding every access to the bit field.
+    // De-bounce QDeferredDeleteEvents. Use the post event list mutex
+    // to guard access to deleteLaterCalled, so we don't need a separate
+    // mutex in QObjectData.
+    auto eventListLocker = QCoreApplicationPrivate::lockThreadPostEventList(this);
+    if (!eventListLocker.threadData)
+        return;
 
-        Q_D(QObject);
-        if (d->deleteLaterCalled)
-            return;
+    // FIXME: The deleteLaterCalled flag is part of a bit field,
+    // so we likely have data races here, even with the mutex above,
+    // as long as we're not guarding every access to the bit field.
 
-        d->deleteLaterCalled = true;
+    Q_D(QObject);
+    if (d->deleteLaterCalled)
+        return;
+
+    d->deleteLaterCalled = true;
+
+    int loopLevel = 0;
+    int scopeLevel = 0;
+
+    auto *objectThreadData = eventListLocker.threadData;
+    if (objectThreadData == QThreadData::current()) {
+        // Remember the current running eventloop for deleteLater
+        // calls in the object's own thread.
+
+        // Events sent by non-Qt event handlers (such as glib) may not
+        // have the scopeLevel set correctly. The scope level makes sure that
+        // code like this:
+        //     foo->deleteLater();
+        //     qApp->processEvents(); // without passing QEvent::DeferredDelete
+        // will not cause "foo" to be deleted before returning to the event loop.
+
+        loopLevel = objectThreadData->loopLevel;
+        scopeLevel = objectThreadData->scopeLevel;
+
+        // If the scope level is 0 while loopLevel != 0, we are called from a
+        // non-conformant code path, and our best guess is that the scope level
+        // should be 1. (Loop level 0 is special: it means that no event loops
+        // are running.)
+        if (scopeLevel == 0 && loopLevel != 0)
+            scopeLevel = 1;
     }
 
-    QCoreApplication::postEvent(this, new QDeferredDeleteEvent());
+    eventListLocker.unlock();
+    QCoreApplication::postEvent(this,
+        new QDeferredDeleteEvent(loopLevel, scopeLevel));
 }
 
 /*!
