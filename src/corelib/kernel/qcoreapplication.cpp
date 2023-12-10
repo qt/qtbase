@@ -1677,9 +1677,6 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         return;
     }
 
-    if (event->type() == QEvent::DeferredDelete)
-        receiver->d_ptr->deleteLaterCalled = true;
-
     if (event->type() == QEvent::DeferredDelete && data == QThreadData::current()) {
         // remember the current running eventloop for DeferredDelete
         // events posted in the receiver's thread.
@@ -1747,17 +1744,6 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
             if (--receiverPostedEvents)
                 it = std::find_if(it + 1, postedEvents->cend(), sameReceiver);
         }
-        return false;
-    }
-
-    if (event->type() == QEvent::DeferredDelete) {
-        if (receiver->d_ptr->deleteLaterCalled) {
-            // there was a previous DeferredDelete event, so we can drop the new one
-            delete event;
-            return true;
-        }
-        // deleteLaterCalled is set to true in postedEvents when queueing the very first
-        // deferred deletion event.
         return false;
     }
 

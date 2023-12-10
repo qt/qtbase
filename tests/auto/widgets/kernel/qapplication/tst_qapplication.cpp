@@ -19,7 +19,6 @@
 #if QT_CONFIG(process)
 # include <QtCore/QProcess>
 #endif
-#include <QtCore/private/qcoreevent_p.h>
 #include <QtCore/private/qeventloop_p.h>
 
 #include <QtGui/QFontDatabase>
@@ -1166,7 +1165,7 @@ void SendPostedEventsTester::doTest()
     QPointer<SendPostedEventsTester> p = this;
     QApplication::postEvent(this, new QEvent(QEvent::User));
     // DeferredDelete should not be delivered until returning from this function
-    QApplication::postEvent(this, new QDeferredDeleteEvent());
+    deleteLater();
 
     QEventLoop eventLoop;
     QMetaObject::invokeMethod(&eventLoop, "quit", Qt::QueuedConnection);
