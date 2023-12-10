@@ -15,17 +15,24 @@ QRhiBackingStore::~QRhiBackingStore()
 {
 }
 
-void QRhiBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
+void QRhiBackingStore::flush(QWindow *flushedWindow, const QRegion &region, const QPoint &offset)
 {
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
-    if (window != this->window())
+    if (flushedWindow->surfaceType() != window()->surfaceType()) {
+        qWarning() << "Cannot flush child window" << flushedWindow
+            << "with surface type" << flushedWindow->surfaceType() << ";"
+            << "Must match" << window()->surfaceType() << "of" << window();
+
+        // FIXME: Support different surface types by not tying the
+        // RHI config to the backing store itself (per window config).
         return;
+    }
 
     if (!rhi()) {
         QPlatformBackingStoreRhiConfig rhiConfig;
-        switch (window->surfaceType()) {
+        switch (window()->surfaceType()) {
         case QSurface::OpenGLSurface:
             rhiConfig.setApi(QPlatformBackingStoreRhiConfig::OpenGL);
             break;
@@ -41,7 +48,8 @@ void QRhiBackingStore::flush(QWindow *window, const QRegion &region, const QPoin
 
     static QPlatformTextureList emptyTextureList;
     bool translucentBackground = m_image.hasAlphaChannel();
-    rhiFlush(window, window->devicePixelRatio(), region, offset, &emptyTextureList, translucentBackground);
+    rhiFlush(flushedWindow, flushedWindow->devicePixelRatio(),
+        region, offset, &emptyTextureList, translucentBackground);
 }
 
 QImage::Format QRhiBackingStore::format() const
