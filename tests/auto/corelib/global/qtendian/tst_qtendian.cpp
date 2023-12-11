@@ -124,34 +124,36 @@ static const RawTestData inLittleEndian = {
     do {                                    \
         /* Unsigned tests */                \
         ONLY_INT128(                        \
-        ENDIAN_TEST(endian, quint, 128);    \
+        ENDIAN_TEST_INT(endian, ui, 128);   \
         )                                   \
-        ENDIAN_TEST(endian, quint, 64);     \
-        ENDIAN_TEST(endian, quint, 32);     \
-        ENDIAN_TEST(endian, quint, 16);     \
-        ENDIAN_TEST(endian, quint, 8);      \
+        ENDIAN_TEST_INT(endian, ui, 64);    \
+        ENDIAN_TEST_INT(endian, ui, 32);    \
+        ENDIAN_TEST_INT(endian, ui, 16);    \
+        ENDIAN_TEST_INT(endian, ui, 8);     \
                                             \
         /* Signed tests */                  \
         ONLY_INT128(                        \
-        ENDIAN_TEST(endian, qint, 128);     \
+        ENDIAN_TEST_INT(endian, i, 128);    \
         )                                   \
-        ENDIAN_TEST(endian, qint, 64);      \
-        ENDIAN_TEST(endian, qint, 32);      \
-        ENDIAN_TEST(endian, qint, 16);      \
-        ENDIAN_TEST(endian, qint, 8);       \
+        ENDIAN_TEST_INT(endian, i, 64);     \
+        ENDIAN_TEST_INT(endian, i, 32);     \
+        ENDIAN_TEST_INT(endian, i, 16);     \
+        ENDIAN_TEST_INT(endian, i, 8);      \
     } while (false)                         \
     /**/
 
-#define ENDIAN_TEST(endian, type, size)                                                 \
+#define ENDIAN_TEST_INT(Endian, Uns, Size) \
+    ENDIAN_TEST(Endian, q ## Uns ## nt ## Size, data ## Size)
+
+#define ENDIAN_TEST(endian, Type, Data)                                                 \
     do {                                                                                \
-        static_assert(std::is_same_v<decltype(qbswap(std::declval<type ## size>())),    \
-                                     type ## size>);                                    \
+        static_assert(std::is_same_v<decltype(qbswap(std::declval<Type>())), Type>);    \
         QCOMPARE(qFrom ## endian ## Endian(                                             \
-                    (type ## size)(in ## endian ## Endian.data.data ## size)),          \
-                (type ## size)(inNativeEndian.data ## size));                           \
-        QCOMPARE(qFrom ## endian ## Endian<type ## size>(                               \
-                    in ## endian ## Endian.rawData + offsetof(TestData, data ## size)), \
-                (type ## size)(inNativeEndian.data ## size));                           \
+                    (Type)(in ## endian ## Endian.data.Data)),                          \
+                (Type)(inNativeEndian.Data));                                           \
+        QCOMPARE(qFrom ## endian ## Endian<Type>(                                       \
+                    in ## endian ## Endian.rawData + offsetof(TestData, Data)),         \
+                (Type)(inNativeEndian.Data));                                           \
     } while (false)                                                                     \
     /**/
 
@@ -272,18 +274,18 @@ void tst_QtEndian::fromLittleEndianRegion()
     }
 }
 
-#define ENDIAN_TEST(endian, type, size)                                                 \
-    do {                                                                                \
-        QCOMPARE(qTo ## endian ## Endian(                                               \
-                    (type ## size)(inNativeEndian.data ## size)),                       \
-                (type ## size)(in ## endian ## Endian.data.data ## size));              \
-                                                                                        \
-        RawTestData test;                                                               \
-        qTo ## endian ## Endian(                                                        \
-                (type ## size)(inNativeEndian.data ## size),                            \
-                test.rawData + offsetof(TestData, data ## size));                       \
-        QCOMPARE(test.data.data ## size, in ## endian ## Endian.data.data ## size );    \
-    } while (false)                                                                     \
+#define ENDIAN_TEST(endian, Type, Data)                                 \
+    do {                                                                \
+        QCOMPARE(qTo ## endian ## Endian(                               \
+                    (Type)(inNativeEndian.Data)),                       \
+                (Type)(in ## endian ## Endian.data.Data));              \
+                                                                        \
+        RawTestData test;                                               \
+        qTo ## endian ## Endian(                                        \
+                (Type)(inNativeEndian.Data),                            \
+                test.rawData + offsetof(TestData, Data));               \
+        QCOMPARE(test.data.Data, in ## endian ## Endian.data.Data );    \
+    } while (false)                                                     \
     /**/
 
 void tst_QtEndian::toBigEndian()
