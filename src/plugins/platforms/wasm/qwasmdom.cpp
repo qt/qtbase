@@ -14,9 +14,6 @@
 
 QT_BEGIN_NAMESPACE
 
-// this needs to live outside the life of DataTransfer
-Q_GLOBAL_STATIC(QMimeData, resultMimeData);
-
 namespace dom {
 namespace {
 std::string dropActionToDropEffect(Qt::DropAction action)
@@ -82,17 +79,56 @@ void DataTransfer::setDataFromMimeData(const QMimeData &mimeData)
     }
 }
 
-QMimeData *DataTransfer::toMimeDataWithFile(std::function<void(QMimeData &)> callback)
+// Converts a DataTransfer instance to a QMimeData instance. Invokes the
+// given callback when the conversion is complete. The callback takes ownership
+// of the QMimeData.
+void DataTransfer::toMimeDataWithFile(std::function<void(QMimeData *)> callback)
 {
-    resultMimeData->clear();
     enum class ItemKind {
         File,
         String,
     };
 
+    class MimeContext {
+
+    public:
+        MimeContext(int itemCount, std::function<void(QMimeData *)> callback)
+        :m_remainingItemCount(itemCount), m_callback(callback)
+        {
+
+        }
+
+        void deref() {
+            if (--m_remainingItemCount > 0)
+                return;
+
+            mimeData->setUrls(fileUrls);
+
+            m_callback(mimeData);
+
+            // Delete files; we expect that the user callback reads/copies
+            // file content before returning.
+            // Fixme: tie file lifetime to lifetime of the QMimeData?
+            for (QUrl fileUrl: fileUrls)
+                QFile(fileUrl.toLocalFile()).remove();
+
+            delete this;
+        }
+
+        QMimeData *mimeData = new QMimeData();
+        QList<QUrl> fileUrls;
+
+    private:
+        int m_remainingItemCount;
+        std::function<void(QMimeData *)> m_callback;
+    };
+
     const auto items = webDataTransfer["items"];
-    QList<QUrl> uriList;
-    for (int i = 0; i < items["length"].as<int>(); ++i) {
+    const int itemCount = items["length"].as<int>();
+    const int fileCount = webDataTransfer["files"]["length"].as<int>();
+    MimeContext *mimeContext = new MimeContext(itemCount, callback);
+
+    for (int i = 0; i < itemCount; ++i) {
         const auto item = items[i];
         const auto itemKind =
                 item["kind"].as<std::string>() == "string" ? ItemKind::String : ItemKind::File;
@@ -100,50 +136,58 @@ QMimeData *DataTransfer::toMimeDataWithFile(std::function<void(QMimeData &)> cal
 
         switch (itemKind) {
         case ItemKind::File: {
-            m_webFile = item.call<emscripten::val>("getAsFile");
-            qstdweb::File webfile(m_webFile);
-            if (webfile.size() == 0
-                || webfile.size() > 1e+9) { // limit file size to 1 GB
-                qWarning() << "Something happened, File size is" << webfile.size();
+            qstdweb::File webfile(item.call<emscripten::val>("getAsFile"));
+
+            if (webfile.size() > 1e+9) { // limit file size to 1 GB
+                qWarning() << "File is too large (> 1GB) and will be skipped. File size is" << webfile.size();
+                mimeContext->deref();
                 continue;
             }
-            QByteArray fileContent(webfile.size(), Qt::Uninitialized);
-            QString  mimeFormat = QString::fromStdString(webfile.type());
+
+            QString mimeFormat = QString::fromStdString(webfile.type());
             QString fileName = QString::fromStdString(webfile.name());
 
             // there's a file, now read it
+            QByteArray fileContent(webfile.size(), Qt::Uninitialized);
             webfile.stream(fileContent.data(), [=]() {
-                QList<QUrl> fileUriList;
-                if (!fileContent.isEmpty()) {
-                     if (mimeFormat.contains("image/")) {
-                        QImage image;
-                        image.loadFromData(fileContent, nullptr);
-                        resultMimeData->setImageData(image);
-                    } else {
-                        QUrl fileUrl(QStringLiteral("file:///") +
-                                    QString::fromStdString(webfile.name()));
-                        fileUriList.append(fileUrl);
-                        QFile file(fileName);
-                        if (!file.open(QFile::WriteOnly)) {
-                            qWarning() << "File was not opened";
-                            return;
-                        }
-
-                        if (file.write(fileContent) < 0)
-                            qWarning() << "Write failed";
-
-                        file.close();
-                        resultMimeData->setUrls(fileUriList);
-                    }
-                    callback(*resultMimeData);
+                
+                // If we get a single file, and that file is an image, then
+                // try to decode the image data. This handles the case where
+                // image data (i.e. not an image file) is pasted. The browsers
+                // will then create a fake "image.png" file which has the image
+                // data. As a side effect Qt will also decode the image for 
+                // single-image-file drops, since there is no way to differentiate
+                // the fake "image.png" from a real one.
+                if (fileCount == 1 && mimeFormat.contains("image/")) {
+                    QImage image;
+                    if (image.loadFromData(fileContent))
+                        mimeContext->mimeData->setImageData(image);
                 }
-            });
 
+                QDir qtTmpDir("/qt/tmp/"); // "tmp": indicate that these files won't stay around
+                qtTmpDir.mkpath(qtTmpDir.path());
+
+                QUrl fileUrl = QUrl::fromLocalFile(qtTmpDir.filePath(QString::fromStdString(webfile.name())));
+                mimeContext->fileUrls.append(fileUrl);
+
+                QFile file(fileName);
+                if (!file.open(QFile::WriteOnly)) {
+                    qWarning() << "File was not opened";
+                    mimeContext->deref();
+                    return;
+                }
+                if (file.write(fileContent) < 0) {
+                    qWarning() << "Write failed";
+                    file.close();
+                }
+                mimeContext->deref();
+            });
             break;
         }
         case ItemKind::String:
             if (itemMimeType.contains("STRING", Qt::CaseSensitive)
                 || itemMimeType.contains("TEXT", Qt::CaseSensitive)) {
+                mimeContext->deref();
                 break;
             }
             QString a;
@@ -152,33 +196,25 @@ QMimeData *DataTransfer::toMimeDataWithFile(std::function<void(QMimeData &)> cal
 
             if (!data.isEmpty()) {
                 if (itemMimeType == "text/html")
-                    resultMimeData->setHtml(data);
+                    mimeContext->mimeData->setHtml(data);
                 else if (itemMimeType.isEmpty() || itemMimeType == "text/plain")
-                    resultMimeData->setText(data); // the type can be empty
+                    mimeContext->mimeData->setText(data); // the type can be empty
                 else {
                     // TODO improve encoding
                     if (data.startsWith("QB64")) {
                         data.remove(0, 4);
-                        resultMimeData->setData(itemMimeType,
+                        mimeContext->mimeData->setData(itemMimeType,
                                                   QByteArray::fromBase64(QByteArray::fromStdString(
                                                           data.toStdString())));
                     } else {
-                        resultMimeData->setData(itemMimeType, data.toLocal8Bit());
+                        mimeContext->mimeData->setData(itemMimeType, data.toLocal8Bit());
                     }
                 }
             }
+            mimeContext->deref();
             break;
         }
-    } // end items
-
-    if (!uriList.isEmpty()) {
-        resultMimeData->setUrls(uriList);
-    }
-
-    if (resultMimeData->formats().length() > 0)
-        callback(*resultMimeData);
-
-    return resultMimeData;
+    } // for items
 }
 
 QMimeData *DataTransfer::toMimeDataPreview()

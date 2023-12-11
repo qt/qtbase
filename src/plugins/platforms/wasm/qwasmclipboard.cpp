@@ -285,20 +285,20 @@ void QWasmClipboard::writeToClipboard()
 
 void QWasmClipboard::sendClipboardData(emscripten::val event)
 {
-    dom::DataTransfer transfer(event["clipboardData"]);
-    QMimeData *mData;
-    const auto pointerCallback = std::function([&](QMimeData &data) {
-        mData = &data;
+    qDebug() << "sendClipboardData";
+
+    dom::DataTransfer *transfer = new dom::DataTransfer(event["clipboardData"]);
+    const auto mimeCallback = std::function([transfer](QMimeData *data) {
+
         // Persist clipboard data so that the app can read it when handling the CTRL+V
-        QWasmIntegration::get()->clipboard()->QPlatformClipboard::setMimeData(mData,
-                                                                              QClipboard::Clipboard);
+        QWasmIntegration::get()->clipboard()->QPlatformClipboard::setMimeData(data, QClipboard::Clipboard);
         QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyPress, Qt::Key_V,
                                                Qt::ControlModifier, "V");
         QWindowSystemInterface::handleKeyEvent(0, QEvent::KeyRelease, Qt::Key_V,
                                                Qt::ControlModifier, "V");
+        delete transfer;
     });
 
-    transfer.toMimeDataWithFile(pointerCallback); // mimedata
-
+    transfer->toMimeDataWithFile(mimeCallback);
 }
 QT_END_NAMESPACE

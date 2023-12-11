@@ -146,11 +146,11 @@ void QWasmDrag::onNativeDrop(DragEvent *event)
 {
     QWasmWindow *wasmWindow = QWasmWindow::fromWindow(event->targetWindow);
 
-    const auto localScreenElementPoint = dom::mapPoint(
+    const auto screenElementPos = dom::mapPoint(
         event->target(), wasmWindow->platformScreen()->element(), event->localPoint);
-    const auto pointInQtScreen =
-            wasmWindow->platformScreen()->mapFromLocal(localScreenElementPoint);
-    const QPointF pointInTargetWindowCoords = event->targetWindow->mapFromGlobal(pointInQtScreen);
+    const auto screenPos =
+            wasmWindow->platformScreen()->mapFromLocal(screenElementPos);
+    const QPoint targetWindowPos = event->targetWindow->mapFromGlobal(screenPos).toPoint();
 
     const Qt::DropActions actions = m_dragState
                                         ? m_dragState->drag->supportedActions()
@@ -159,25 +159,29 @@ void QWasmDrag::onNativeDrop(DragEvent *event)
     Qt::MouseButton mouseButton = event->mouseButton;
     QFlags<Qt::KeyboardModifier> modifiers = event->modifiers;
 
-    const auto pointerCallback = std::function([&, wasmWindow, pointInTargetWindowCoords,
-    actions, mouseButton, modifiers](QMimeData &data) {
-        if (data.formats().count() == 0)
-            return;
-        auto dropResponse = std::make_shared<QPlatformDropQtResponse>(true, Qt::DropAction::CopyAction);
+    // Accept the native drop event: We are going to async read any dropped
+    // files, but the
+    event->acceptDrop();
 
-        *dropResponse = QWindowSystemInterface::handleDrop(wasmWindow->window(), &data,
-                                                           pointInTargetWindowCoords.toPoint(), actions,
+    qDebug() << "QWasmDrag::onNativeDrop" << event;
+
+    const auto dropCallback = [&m_dragState = m_dragState, wasmWindow, targetWindowPos,
+        actions, mouseButton, modifiers](QMimeData *mimeData) {
+
+        qDebug() << "QWasmDrag::onNativeDrop callback";
+
+        auto dropResponse = std::make_shared<QPlatformDropQtResponse>(true, Qt::DropAction::CopyAction);
+        *dropResponse = QWindowSystemInterface::handleDrop(wasmWindow->window(), mimeData,
+                                                           targetWindowPos, actions,
                                                            mouseButton, modifiers);
 
-        if (dropResponse->isAccepted()) {
-//            event->acceptDrop(); // boom
-//            event->dataTransfer.setDropAction(dropResponse->acceptedAction());
-
+        if (dropResponse->isAccepted())
             m_dragState->dropAction = dropResponse->acceptedAction();
-        }
-    });
 
-     event->dataTransfer.toMimeDataWithFile(pointerCallback);
+        delete mimeData;
+    };
+
+     event->dataTransfer.toMimeDataWithFile(dropCallback);
 }
 
 void QWasmDrag::onNativeDragFinished(DragEvent *event)

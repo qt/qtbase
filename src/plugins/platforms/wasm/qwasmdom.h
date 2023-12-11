@@ -36,7 +36,7 @@ struct DataTransfer
     DataTransfer &operator=(const DataTransfer &other);
     DataTransfer &operator=(DataTransfer &&other);
 
-    QMimeData *toMimeDataWithFile(std::function<void(QMimeData &)> callback);
+    void toMimeDataWithFile(std::function<void(QMimeData *)> callback);
     QMimeData *toMimeDataPreview();
     void setDragImage(emscripten::val element, const QPoint &hotspot);
     void setData(std::string format, std::string data);
@@ -44,8 +44,6 @@ struct DataTransfer
     void setDataFromMimeData(const QMimeData &mimeData);
 
     emscripten::val webDataTransfer;
-    emscripten::val m_webFile = emscripten::val::undefined();
-    qstdweb::File m_file;
 };
 
 inline emscripten::val document()
