@@ -294,6 +294,11 @@ private slots:
     void inputRejected();
     void keyReleasePropagates();
 
+#if QT_CONFIG(shortcut)
+    void deleteWordByKeySequence_data();
+    void deleteWordByKeySequence();
+#endif
+
 protected slots:
     void editingFinished();
 
@@ -5214,6 +5219,112 @@ void tst_QLineEdit::keyReleasePropagates()
     QCOMPARE(dialog.releasedKey, Qt::Key_Alt);
 }
 
+#if QT_CONFIG(shortcut)
+
+void tst_QLineEdit::deleteWordByKeySequence_data()
+{
+    QTest::addColumn<QString>("startText");
+    QTest::addColumn<int>("selectionStart");
+    QTest::addColumn<int>("selectionEnd");
+    QTest::addColumn<int>("cursorPosition");
+    QTest::addColumn<QKeySequence::StandardKey>("key");
+    QTest::addColumn<QString>("expectedText");
+    QTest::addColumn<int>("expectedCursorPosition");
+
+    QTest::newRow("Delete start, no selection")
+            << QStringLiteral("Some Text") << 0 << 0 << 9 << QKeySequence::DeleteStartOfWord
+            << QStringLiteral("Some ") << 5;
+    QTest::newRow("Delete end, no selection")
+            << QStringLiteral("Some Text") << 0 << 0 << 5 << QKeySequence::DeleteEndOfWord
+            << QStringLiteral("Some ") << 5;
+    QTest::newRow("Delete start from middle, no selection")
+            << QStringLiteral("Some Text") << 0 << 0 << 7 << QKeySequence::DeleteStartOfWord
+            << QStringLiteral("Some xt") << 5;
+    QTest::newRow("Delete end from middle, no selection")
+            << QStringLiteral("Some Text") << 0 << 0 << 7 << QKeySequence::DeleteEndOfWord
+            << QStringLiteral("Some Te") << 7;
+    QTest::newRow("Delete end from first, no selection")
+            << QStringLiteral("Some Text") << 0 << 0 << 0 << QKeySequence::DeleteEndOfWord
+            << QStringLiteral("Text") << 0;
+
+    QTest::newRow("Delete start, full selection")
+            << QStringLiteral("Some Text") << 0 << 9 << 0 << QKeySequence::DeleteStartOfWord
+            << QStringLiteral("") << 0;
+    QTest::newRow("Delete end, full selection")
+            << QStringLiteral("Some Text") << 0 << 9 << 0 << QKeySequence::DeleteEndOfWord
+            << QStringLiteral("") << 0;
+    QTest::newRow("Delete start, full selection, single word")
+            << QStringLiteral("Some") << 0 << 4 << 0 << QKeySequence::DeleteStartOfWord
+            << QStringLiteral("") << 0;
+    QTest::newRow("Delete end, full selection, single word")
+            << QStringLiteral("Some") << 0 << 4 << 0 << QKeySequence::DeleteEndOfWord
+            << QStringLiteral("") << 0;
+
+    QTest::newRow("Delete start, word selection")
+            << QStringLiteral("Some Text") << 5 << 9 << 0 << QKeySequence::DeleteStartOfWord
+            << QStringLiteral("Some ") << 5;
+    QTest::newRow("Delete end, word selection")
+            << QStringLiteral("Some Text") << 5 << 9 << 0 << QKeySequence::DeleteEndOfWord
+            << QStringLiteral("Some ") << 5;
+    QTest::newRow("Delete start, partial word selection")
+            << QStringLiteral("Some Text") << 5 << 7 << 0 << QKeySequence::DeleteStartOfWord
+            << QStringLiteral("Some xt") << 5;
+    QTest::newRow("Delete end, partial word selection")
+            << QStringLiteral("Some Text") << 5 << 7 << 0 << QKeySequence::DeleteEndOfWord
+            << QStringLiteral("Some xt") << 5;
+    QTest::newRow("Delete start, partial inner word selection")
+            << QStringLiteral("Some Text") << 6 << 8 << 0 << QKeySequence::DeleteStartOfWord
+            << QStringLiteral("Some Tt") << 6;
+    QTest::newRow("Delete end, partial inner word selection")
+            << QStringLiteral("Some Text") << 6 << 8 << 0 << QKeySequence::DeleteEndOfWord
+            << QStringLiteral("Some Tt") << 6;
+    QTest::newRow("Delete start, selection with space")
+            << QStringLiteral("Some Text") << 3 << 9 << 0 << QKeySequence::DeleteStartOfWord
+            << QStringLiteral("Som") << 3;
+    QTest::newRow("Delete end, selection with space")
+            << QStringLiteral("Some Text") << 3 << 9 << 0 << QKeySequence::DeleteEndOfWord
+            << QStringLiteral("Som") << 3;
+    QTest::newRow("Delete start, partial word selection with space")
+            << QStringLiteral("Some Text") << 3 << 7 << 0 << QKeySequence::DeleteStartOfWord
+            << QStringLiteral("Somxt") << 3;
+    QTest::newRow("Delete end, partial selection with space")
+            << QStringLiteral("Some Text") << 3 << 7 << 0 << QKeySequence::DeleteEndOfWord
+            << QStringLiteral("Somxt") << 3;
+}
+
+void tst_QLineEdit::deleteWordByKeySequence()
+{
+    QFETCH(QString, startText);
+    QFETCH(int, selectionStart);
+    QFETCH(int, selectionEnd);
+    QFETCH(int, cursorPosition);
+    QFETCH(QKeySequence::StandardKey, key);
+    QFETCH(QString, expectedText);
+    QFETCH(int, expectedCursorPosition);
+
+    QWidget widget;
+
+    QLineEdit *lineEdit = new QLineEdit(startText, &widget);
+    lineEdit->setFocus();
+    lineEdit->setCursorPosition(cursorPosition);
+    if (selectionStart != selectionEnd)
+        lineEdit->setSelection(selectionStart, selectionEnd - selectionStart);
+
+    widget.show();
+
+    QVERIFY(QTest::qWaitForWindowActive(&widget));
+
+    QTestEventList keys;
+    addKeySequenceStandardKey(keys, key);
+    keys.simulate(lineEdit);
+
+    QCOMPARE(lineEdit->text(), expectedText);
+    QCOMPARE(lineEdit->selectionStart(), -1);
+    QCOMPARE(lineEdit->selectionEnd(), -1);
+    QCOMPARE(lineEdit->cursorPosition(), expectedCursorPosition);
+}
+
+#endif // QT_CONFIG(shortcut)
 
 QTEST_MAIN(tst_QLineEdit)
 #include "tst_qlineedit.moc"
