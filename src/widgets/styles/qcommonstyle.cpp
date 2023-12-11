@@ -5616,8 +5616,10 @@ QIcon QCommonStylePrivate::iconFromWindowsTheme(QCommonStyle::StandardPixmap sta
     case QStyle::SP_MessageBoxQuestion:
         if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
             QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
-            for (int size = 16 ; size <= 32 ; size += 16) {
-                QPixmap pixmap = theme->standardPixmap(sp, QSizeF(size, size));
+            const auto dpr = qt_getDevicePixelRatio(widget);
+            for (const int size : {16, 32}) {
+                QPixmap pixmap = theme->standardPixmap(sp, QSizeF(size, size) * dpr);
+                pixmap.setDevicePixelRatio(dpr);
                 icon.addPixmap(pixmap, QIcon::Normal);
             }
         }
@@ -5628,11 +5630,14 @@ QIcon QCommonStylePrivate::iconFromWindowsTheme(QCommonStyle::StandardPixmap sta
             QPlatformTheme::StandardPixmap spOff = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
             QPlatformTheme::StandardPixmap spOn = standardIcon == QStyle::SP_DirIcon ? QPlatformTheme::DirOpenIcon
                                                                                      : QPlatformTheme::DirLinkOpenIcon;
-            for (int size = 16 ; size <= 32 ; size += 16) {
-                QSizeF pixSize(size, size);
+            const auto dpr = qt_getDevicePixelRatio(widget);
+            for (const int size : {16, 32}) {
+                const QSizeF pixSize = QSizeF(size, size) * dpr;
                 QPixmap pixmap = theme->standardPixmap(spOff, pixSize);
+                pixmap.setDevicePixelRatio(dpr);
                 icon.addPixmap(pixmap, QIcon::Normal, QIcon::Off);
                 pixmap = theme->standardPixmap(spOn, pixSize);
+                pixmap.setDevicePixelRatio(dpr);
                 icon.addPixmap(pixmap, QIcon::Normal, QIcon::On);
             }
         }

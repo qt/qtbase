@@ -943,15 +943,18 @@ QPixmap QWindowsTheme::standardPixmap(StandardPixmap sp, const QSizeF &pixmapSiz
     }
 
     if (stockId != SIID_INVALID) {
-        QPixmap pixmap;
         SHSTOCKICONINFO iconInfo;
         memset(&iconInfo, 0, sizeof(iconInfo));
         iconInfo.cbSize = sizeof(iconInfo);
-        stockFlags |= (pixmapSize.width() > 16 ? SHGFI_LARGEICON : SHGFI_SMALLICON);
-        if (SHGetStockIconInfo(stockId, SHGFI_ICON | stockFlags, &iconInfo) == S_OK) {
-            pixmap = qt_pixmapFromWinHICON(iconInfo.hIcon);
-            DestroyIcon(iconInfo.hIcon);
-            return pixmap;
+        stockFlags |= SHGSI_ICONLOCATION;
+        if (SHGetStockIconInfo(stockId, stockFlags, &iconInfo) == S_OK) {
+            const auto iconSize = pixmapSize.width();
+            HICON icon;
+            if (SHDefExtractIcon(iconInfo.szPath, iconInfo.iIcon, 0, &icon, nullptr, iconSize) == S_OK) {
+                QPixmap pixmap = qt_pixmapFromWinHICON(icon);
+                DestroyIcon(icon);
+                return pixmap;
+            }
         }
     }
 
