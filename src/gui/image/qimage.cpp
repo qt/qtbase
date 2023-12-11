@@ -4921,7 +4921,14 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::transformed(const QTransform &matrix, Q
 
     if (target_format >= QImage::Format_RGB32) {
         // Prevent QPainter from applying devicePixelRatio corrections
-        const QImage sImage = (devicePixelRatio() != 1) ? QImage(constBits(), width(), height(), format()) : *this;
+        QImage sImage = (devicePixelRatio() != 1) ? QImage(constBits(), width(), height(), format()) : *this;
+        if (sImage.d != d
+            && (d->format == QImage::Format_MonoLSB
+             || d->format == QImage::Format_Mono
+             || d->format == QImage::Format_Indexed8)) {
+            sImage.d->colortable = d->colortable;
+            sImage.d->has_alpha_clut = d->has_alpha_clut;
+        }
 
         Q_ASSERT(sImage.devicePixelRatio() == 1);
         Q_ASSERT(sImage.devicePixelRatio() == dImage.devicePixelRatio());
