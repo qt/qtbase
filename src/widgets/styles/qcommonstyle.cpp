@@ -5617,8 +5617,9 @@ QIcon QCommonStylePrivate::iconFromWindowsTheme(QCommonStyle::StandardPixmap sta
         if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
             QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardIcon);
             const auto dpr = qt_getDevicePixelRatio(widget);
-            for (const int size : {16, 32}) {
-                QPixmap pixmap = theme->standardPixmap(sp, QSizeF(size, size) * dpr);
+            const QList<QSize> sizes = theme->themeHint(QPlatformTheme::IconPixmapSizes).value<QList<QSize>>();
+            for (const QSize &size : sizes) {
+                QPixmap pixmap = theme->standardPixmap(sp, size * dpr);
                 pixmap.setDevicePixelRatio(dpr);
                 icon.addPixmap(pixmap, QIcon::Normal);
             }
@@ -5631,8 +5632,9 @@ QIcon QCommonStylePrivate::iconFromWindowsTheme(QCommonStyle::StandardPixmap sta
             QPlatformTheme::StandardPixmap spOn = standardIcon == QStyle::SP_DirIcon ? QPlatformTheme::DirOpenIcon
                                                                                      : QPlatformTheme::DirLinkOpenIcon;
             const auto dpr = qt_getDevicePixelRatio(widget);
-            for (const int size : {16, 32}) {
-                const QSizeF pixSize = QSizeF(size, size) * dpr;
+            const QList<QSize> sizes = theme->themeHint(QPlatformTheme::IconPixmapSizes).value<QList<QSize>>();
+            for (const QSize &size : sizes) {
+                const QSizeF pixSize = size * dpr;
                 QPixmap pixmap = theme->standardPixmap(spOff, pixSize);
                 pixmap.setDevicePixelRatio(dpr);
                 icon.addPixmap(pixmap, QIcon::Normal, QIcon::Off);
