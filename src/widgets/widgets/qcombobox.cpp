@@ -1064,7 +1064,9 @@ QComboBoxPrivateContainer* QComboBoxPrivate::viewContainer()
 
     Q_Q(QComboBox);
     container = new QComboBoxPrivateContainer(new QComboBoxListView(q), q);
+    disconnectModel();
     container->itemView()->setModel(model);
+    connectModel();
     container->itemView()->setTextElideMode(Qt::ElideMiddle);
     updateDelegate(true);
     updateLayoutDirection();
@@ -2055,7 +2057,6 @@ void QComboBox::setModel(QAbstractItemModel *model)
     }
 
     d->model = model;
-    d->connectModel();
 
     if (d->container) {
         d->container->itemView()->setModel(model);
@@ -2063,6 +2064,8 @@ void QComboBox::setModel(QAbstractItemModel *model)
                                 &QItemSelectionModel::currentChanged,
                                 d, &QComboBoxPrivate::emitHighlighted, Qt::UniqueConnection);
     }
+
+    d->connectModel();
 
     setRootModelIndex(QModelIndex());
 
@@ -2487,8 +2490,11 @@ void QComboBox::setView(QAbstractItemView *itemView)
         return;
     }
 
-    if (itemView->model() != d->model)
+    if (itemView->model() != d->model) {
+        d->disconnectModel();
         itemView->setModel(d->model);
+        d->connectModel();
+    }
     d->viewContainer()->setItemView(itemView);
 }
 
