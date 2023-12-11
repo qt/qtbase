@@ -226,7 +226,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::get(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::get(
                     const QNetworkRequest &request,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -247,7 +247,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::get(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::get(
                     const QNetworkRequest &request, const QByteArray &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -268,7 +268,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::get(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::get(
                     const QNetworkRequest &request, const QJsonObject &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -277,7 +277,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::get(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::get(
                     const QNetworkRequest &request, QIODevice *data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -286,7 +286,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::post(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::post(
                     const QNetworkRequest &request, const QJsonObject &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -323,7 +323,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::post(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::post(
                     const QNetworkRequest &request, const QJsonArray &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -332,7 +332,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::post(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::post(
                     const QNetworkRequest &request, const QVariantMap &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -341,7 +341,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::post(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::post(
                     const QNetworkRequest &request, const QByteArray &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -350,7 +350,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::post(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::post(
                     const QNetworkRequest &request, QHttpMultiPart *data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -359,7 +359,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::post(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::post(
                     const QNetworkRequest &request, QIODevice *data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -368,7 +368,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::put(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::put(
                     const QNetworkRequest &request, const QJsonObject &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -404,7 +404,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::put(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::put(
                     const QNetworkRequest &request, const QJsonArray &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -413,7 +413,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::put(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::put(
                     const QNetworkRequest &request, const QVariantMap &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -422,7 +422,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::put(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::put(
                     const QNetworkRequest &request, const QByteArray &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -431,7 +431,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::put(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::put(
                     const QNetworkRequest &request, QHttpMultiPart *data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -440,7 +440,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::put(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::put(
                     const QNetworkRequest &request, QIODevice *data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -449,7 +449,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
                     const QNetworkRequest &request, const QJsonObject &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -484,7 +484,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
                     const QNetworkRequest &request, const QJsonArray &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -493,7 +493,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
                     const QNetworkRequest &request, const QVariantMap &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -502,7 +502,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
                     const QNetworkRequest &request, const QByteArray &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -511,7 +511,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::patch(
                     const QNetworkRequest &request, QIODevice *data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -520,7 +520,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::head(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::head(
                     const QNetworkRequest &request,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -543,7 +543,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::deleteResource(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::deleteResource(
                     const QNetworkRequest &request,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
@@ -566,7 +566,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::sendCustomRequest(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::sendCustomRequest(
             const QNetworkRequest& request, const QByteArray &method, const QByteArray &data,
             const ContextTypeForFunctor<Functor> *context,
             Functor &&callback)
@@ -586,7 +586,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::sendCustomRequest(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::sendCustomRequest(
             const QNetworkRequest& request, const QByteArray &method, QIODevice *data,
             const ContextTypeForFunctor<Functor> *context,
             Functor &&callback)
@@ -595,7 +595,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, if_compatible_callback<Functor>> QRestReply *QRestAccessManager::sendCustomRequest(
+    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QRestReply *QRestAccessManager::sendCustomRequest(
             const QNetworkRequest& request, const QByteArray &method, QHttpMultiPart *data,
             const ContextTypeForFunctor<Functor> *context,
             Functor &&callback)
