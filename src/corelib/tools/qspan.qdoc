@@ -279,7 +279,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> template <typename It, if_compatible_iterator<It>> QSpan<T,E>::QSpan(It first, qsizetype count)
+    \fn template <typename T, size_t E> template <typename It, QSpan<T, E>::if_compatible_iterator<It>> QSpan<T,E>::QSpan(It first, qsizetype count)
 
     Constructs a QSpan referencing the data starting at \a first and having length
     \a count.
@@ -291,7 +291,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> template <typename It, if_compatible_iterator<It>> QSpan<T,E>::QSpan(It first, It last)
+    \fn template <typename T, size_t E> template <typename It, QSpan<T, E>::if_compatible_iterator<It>> QSpan<T,E>::QSpan(It first, It last)
 
     Constructs a QSpan referencing the data starting at \a first and having length
     (\a last - \a first).
@@ -304,8 +304,8 @@
 
 /*!
     \fn template <typename T, size_t E> template <size_t N> QSpan<T,E>::QSpan(q20::type_identity_t<T> (&arr)[N]);
-    \fn template <typename T, size_t E> template <typename S, size_t N, if_qualification_conversion<S> = true> QSpan<T,E>::QSpan(std::array<S, N> &arr);
-    \fn template <typename T, size_t E> template <typename S, size_t N, if_qualification_conversion<S> = true> QSpan<T,E>::QSpan(const std::array<S, N> &arr);
+    \fn template <typename T, size_t E> template <typename S, size_t N, QSpan<T, E>::if_qualification_conversion<S> = true> QSpan<T,E>::QSpan(std::array<S, N> &arr);
+    \fn template <typename T, size_t E> template <typename S, size_t N, QSpan<T, E>::if_qualification_conversion<S> = true> QSpan<T,E>::QSpan(const std::array<S, N> &arr);
 
     Constructs a QSpan referencing the data in the supplied array \a arr.
 
@@ -320,7 +320,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> template <typename Range, if_compatible_range<Range> = true> QSpan<T,E>::QSpan(Range &&r)
+    \fn template <typename T, size_t E> template <typename Range, QSpan<T, E>::if_compatible_range<Range> = true> QSpan<T,E>::QSpan(Range &&r)
 
     Constructs a QSpan referencing the data in the supplied range \a r.
 
@@ -329,8 +329,8 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> template <typename S, size_t N, if_qualification_conversion<S> = true> QSpan<T,E>::QSpan(QSpan<S, N> other);
-    \fn template <typename T, size_t E> template <typename S, size_t N, if_qualification_conversion<S> = true> QSpan<T,E>::QSpan(std::span<S, N> other);
+    \fn template <typename T, size_t E> template <typename S, size_t N, QSpan<T, E>::if_qualification_conversion<S> = true> QSpan<T,E>::QSpan(QSpan<S, N> other);
+    \fn template <typename T, size_t E> template <typename S, size_t N, QSpan<T, E>::if_qualification_conversion<S> = true> QSpan<T,E>::QSpan(std::span<S, N> other);
 
     Constructs a QSpan referencing the data in the supplied span \a other.
 
@@ -346,7 +346,7 @@
 //
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::size() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::size() const
 
     Returns the size of the span, that is, the number of elements it references.
 
@@ -354,7 +354,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::size_bytes() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::size_bytes() const
 
     Returns the size of the span in bytes, that is, the number of elements
     multiplied by \c{sizeof(T)}.
@@ -363,8 +363,8 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::empty() const
-    \fn template <typename T, size_t E> QSpan<T, E>::isEmpty() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::empty() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::isEmpty() const
 
     Returns whether the span is empty, that is, whether \c{size() == 0}.
 
@@ -390,7 +390,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::front() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::front() const
 
     Returns a reference to the first element in the span.
 
@@ -400,7 +400,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::back() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::back() const
 
     Returns a reference to the last element in the span.
 
@@ -410,7 +410,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::data() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::data() const
 
     Returns a pointer to the beginning of the span.
 
@@ -424,7 +424,7 @@
 //
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::begin() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::begin() const
 
     Returns an interator pointing at the beginning of the span.
 
@@ -435,7 +435,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::end() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::end() const
 
     Returns an iterator pointing to one past the end of the span.
 
@@ -446,7 +446,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::cbegin() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::cbegin() const
 
     Returns a const_iterator pointing to the beginning of the span.
 
@@ -461,7 +461,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::cend() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::cend() const
 
     Returns a const_iterator pointing to one past the end of the span.
 
@@ -469,7 +469,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::rbegin() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::rbegin() const
 
     Returns a reverse_iterator pointing to the beginning of the reversed span.
 
@@ -477,7 +477,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::rend() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::rend() const
 
     Returns a reverse_iterator pointing to one past the end of the reversed span.
 
@@ -485,7 +485,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::crbegin() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::crbegin() const
 
     Returns a const_reverse_iterator pointing to the beginning of the reversed span.
 
@@ -493,7 +493,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::crend() const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::crend() const
 
     Returns a const_reverse_iterator pointing to one past the end of the reversed span.
 
@@ -505,7 +505,7 @@
 //
 
 /*!
-    \fn template <typename T, size_t E> template <size_t Count> QSpan<T, E>::first() const
+    \fn template <typename T, size_t E> template <std::size_t Count> auto QSpan<T, E>::first() const
     \keyword first-t
 
     Returns a fixed-sized span of size \c{Count} referencing the first \c{Count} elements of \c{*this}.
@@ -517,7 +517,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> template <size_t Count> QSpan<T, E>::last() const
+    \fn template <typename T, size_t E> template <std::size_t Count> auto QSpan<T, E>::last() const
     \keyword last-t
 
     Returns a fixed-sized span of size \c{Count} referencing the last \c{Count} elements of \c{*this}.
@@ -529,7 +529,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> template <size_t Offset> QSpan<T, E>::subspan() const
+    \fn template <typename T, size_t E> template <std::size_t Offset> auto QSpan<T, E>::subspan() const
     \keyword subspan-t1
 
     Returns a span of size \c{E - Offset} referencing the remainder of this span
@@ -546,7 +546,7 @@
 
 #if 0 // needs fix for QTBUG-118080 integrated into qt5.git
 /*!
-    \fn template <typename T, size_t E> template <size_t Offset, size_t Count> QSpan<T, E>::subspan() const
+    \fn template <typename T, size_t E> template <std::size_t Offset, std::size_t Count> auto QSpan<T, E>::subspan() const
     \keyword subspan-t2
 
     Returns a span of size \c{Count} referencing the \c{Count} elements of this
@@ -568,7 +568,7 @@
 //
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::first(qsizetype n) const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::first(qsizetype n) const
     \keyword first-n
 
     Returns a variable-sized span of size \a n referencing the first \a n elements of \c{*this}.
@@ -584,7 +584,7 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::last(qsizetype n) const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::last(qsizetype n) const
     \keyword last-n
 
     Returns a variable-sized span of size \a n referencing the last \a n elements of \c{*this}.
@@ -599,8 +599,8 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::subspan(qsizetype pos) const
-    \fn template <typename T, size_t E> QSpan<T, E>::sliced(qsizetype pos) const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::subspan(qsizetype pos) const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::sliced(qsizetype pos) const
     \keyword subspan-n1
 
     Returns a variable-sized span of size \c{size() - pos} referencing the
@@ -618,8 +618,8 @@
 */
 
 /*!
-    \fn template <typename T, size_t E> QSpan<T, E>::subspan(qsizetype pos, qsizetype n) const
-    \fn template <typename T, size_t E> QSpan<T, E>::sliced(qsizetype pos, qsizetype n) const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::subspan(qsizetype pos, qsizetype n) const
+    \fn template <typename T, size_t E> auto QSpan<T, E>::sliced(qsizetype pos, qsizetype n) const
     \keyword subspan-n2
 
     Returns a variable-sized span of size \a n referencing the \a n elements of
