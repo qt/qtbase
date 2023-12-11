@@ -2121,10 +2121,6 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     as QString. The numeric value can be recovered using \l QString::toInt(), \l
     QString::toDouble() and related functions.
 
-    The \l{tools/settingseditor}{Settings Editor} example lets you
-    experiment with different settings location and with fallbacks
-    turned on or off.
-
     \section1 Restoring the State of a GUI Application
 
     QSettings is often used to store the state of a GUI
@@ -2365,7 +2361,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
 
     \endlist
 
-    \sa QVariant, QSessionManager, {Settings Editor Example}
+    \sa QVariant, QSessionManager
 */
 
 /*! \enum QSettings::Status
