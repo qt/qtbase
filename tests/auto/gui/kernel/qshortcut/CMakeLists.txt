@@ -16,4 +16,5 @@ qt_internal_add_test(tst_qshortcut_kernel
         tst_qshortcut.cpp
     LIBRARIES
         Qt::Gui
+        Qt::GuiPrivate
 )
