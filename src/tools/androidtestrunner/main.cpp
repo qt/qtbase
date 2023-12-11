@@ -1,6 +1,6 @@
 // Copyright (C) 2019 BogDan Vatra <bogdan@kde.org>
 // Copyright (C) 2022 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
 #include <QCoreApplication>
 #include <QDir>
