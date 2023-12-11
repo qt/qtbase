@@ -4812,6 +4812,7 @@ bool QD3D12ShaderResourceBindings::create()
 
 void QD3D12ShaderResourceBindings::updateResources(UpdateFlags flags)
 {
+    Q_UNUSED(flags);
     generation += 1;
 }
 
