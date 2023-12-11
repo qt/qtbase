@@ -4,7 +4,6 @@
 qt_internal_add_example(completer)
 qt_internal_add_example(customcompleter)
 qt_internal_add_example(regularexpression)
-qt_internal_add_example(settingseditor)
 qt_internal_add_example(styleplugin)
 qt_internal_add_example(treemodelcompleter)
 qt_internal_add_example(undoframework)

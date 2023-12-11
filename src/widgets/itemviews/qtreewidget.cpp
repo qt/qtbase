@@ -2453,7 +2453,7 @@ void QTreeWidgetPrivate::dataChanged(const QModelIndex &topLeft,
   whether sorting is enabled.
 
   \sa QTreeWidgetItem, QTreeWidgetItemIterator, QTreeView,
-  {Model/View Programming}, {Settings Editor Example}
+  {Model/View Programming}
 */
 
 /*!

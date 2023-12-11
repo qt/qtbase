@@ -4,7 +4,6 @@ SUBDIRS       = \
                 customcompleter \
                 echoplugin \
                 regularexpression \
-                settingseditor \
                 styleplugin \
                 treemodelcompleter \
                 undoframework
