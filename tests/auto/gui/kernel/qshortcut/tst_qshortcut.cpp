@@ -7,6 +7,9 @@
 #include <QtGui/qwindow.h>
 #include <QtTest/qsignalspy.h>
 
+#include <QtGui/private/qguiapplication_p.h>
+#include <qpa/qplatformintegration.h>
+
 class tst_QShortcut : public QObject
 {
     Q_OBJECT
@@ -18,6 +21,9 @@ private slots:
 
 void tst_QShortcut::applicationShortcut()
 {
+    if (!QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::WindowActivation))
+        QSKIP("Window activation is not supported");
+
     auto *shortcut = new QShortcut(Qt::CTRL | Qt::Key_A, this);
     shortcut->setContext(Qt::ApplicationShortcut);
     QSignalSpy activatedSpy(shortcut, &QShortcut::activated);
