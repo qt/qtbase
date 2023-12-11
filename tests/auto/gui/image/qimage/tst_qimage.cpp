@@ -231,6 +231,7 @@ private slots:
     void largeRasterScale();
 
     void metadataChangeWithReadOnlyPixels();
+    void scaleIndexed();
 
 #if defined(Q_OS_WIN)
     void toWinHBITMAP_data();
@@ -4097,6 +4098,16 @@ void tst_QImage::metadataChangeWithReadOnlyPixels()
     // image metadata forces pixel detach (remove this sub-test if that ever changes).
     QVERIFY(image2.constBits() != (const uchar *)data);
     QCOMPARE(image.constBits(), (const uchar *)data);
+}
+
+void tst_QImage::scaleIndexed()
+{
+    QImage image(10, 10, QImage::Format_Indexed8);
+    image.setColor(0, qRgb(0,0,0));
+    image.setColor(1, qRgb(1,1,1));
+    image.fill(1);
+    image.setDevicePixelRatio(2);
+    QImage image2 = image.scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation); // do not crash
 }
 
 #if defined(Q_OS_WIN)
