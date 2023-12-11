@@ -973,9 +973,8 @@
     be preferred.
 
     QMutableHashIterator\<Key, T\> allows you to iterate over a QHash
-    (or a QMultiHash) and modify the hash. If you don't want to modify
-    the hash (or have a const QHash), use the slightly faster
-    QHashIterator instead.
+    and modify the hash. If you don't want to modify the hash (or have
+    a const QHash), use the slightly faster QHashIterator instead.
 
     The QMutableHashIterator constructor takes a QHash as argument.
     After construction, the iterator is located at the very beginning
