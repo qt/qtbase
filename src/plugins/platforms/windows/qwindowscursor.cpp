@@ -103,14 +103,16 @@ static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
         hotSpot.setX(width / 2);
     if (hotSpot.y() < 0)
         hotSpot.setY(height / 2);
-    const int n = qMax(1, width / 8);
-    QScopedArrayPointer<uchar> xBits(new uchar[height * n]);
-    QScopedArrayPointer<uchar> xMask(new uchar[height * n]);
+    // a ddb is word aligned, QImage depends on bow it was created
+    const auto bplDdb = qMax(1, ((width + 15) >> 4) << 1);
+    const auto bplImg = int(bbits.bytesPerLine());
+    QScopedArrayPointer<uchar> xBits(new uchar[height * bplDdb]);
+    QScopedArrayPointer<uchar> xMask(new uchar[height * bplDdb]);
     int x = 0;
     for (int i = 0; i < height; ++i) {
         const uchar *bits = bbits.constScanLine(i);
         const uchar *mask = mbits.constScanLine(i);
-        for (int j = 0; j < n; ++j) {
+        for (int j = 0; j < bplImg && j < bplDdb; ++j) {
             uchar b = bits[j];
             uchar m = mask[j];
             if (invb)
@@ -119,6 +121,11 @@ static HCURSOR createBitmapCursor(const QImage &bbits, const QImage &mbits,
                 m ^= 0xff;
             xBits[x] = ~m;
             xMask[x] = b ^ m;
+            ++x;
+        }
+        for (int i = bplImg; i < bplDdb; ++i) {
+            xBits[x] = 0;
+            xMask[x] = 0;
             ++x;
         }
     }
