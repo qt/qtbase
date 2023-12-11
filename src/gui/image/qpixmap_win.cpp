@@ -305,6 +305,7 @@ HBITMAP qt_imageToWinHBITMAP(const QImage &imageIn, int hbitmapFormat)
         return nullptr;
     }
     if (!pixels) {
+        DeleteObject(bitmap);
         qErrnoWarning("%s, did not allocate pixel data", __FUNCTION__);
         return nullptr;
     }
