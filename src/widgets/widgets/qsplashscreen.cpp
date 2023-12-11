@@ -32,6 +32,8 @@ public:
     int currAlign;
 
     inline QSplashScreenPrivate();
+
+    void handlePaintEvent();
 };
 
 /*!
@@ -67,9 +69,9 @@ public:
    \snippet qsplashscreen/main.cpp 1
 
    The user can hide the splash screen by clicking on it with the
-   mouse. Since the splash screen is typically displayed before the
-   event loop has started running, it is necessary to periodically
-   call QCoreApplication::processEvents() to receive the mouse clicks.
+   mouse. For mouse handling to work, call QApplication::processEvents()
+   periodically during startup.
+
 
    It is sometimes useful to update the splash screen with messages,
    for example, announcing connections established or modules loaded
@@ -201,18 +203,21 @@ void QSplashScreen::clearMessage()
     repaint();
 }
 
-// A copy of Qt Test's qWaitForWindowExposed() and qSleep().
-inline static bool waitForWindowExposed(QWindow *window, int timeout = 1000)
+static bool waitForWidgetMapped(QWidget *widget, int timeout = 1000)
 {
     enum { TimeOutMs = 10 };
+    auto isMapped = [widget](){
+        return widget->windowHandle() && widget->windowHandle()->isVisible();
+    };
+
     QElapsedTimer timer;
     timer.start();
-    while (!window->isExposed()) {
+    while (!isMapped()) {
         const int remaining = timeout - int(timer.elapsed());
         if (remaining <= 0)
             break;
         QCoreApplication::processEvents(QEventLoop::AllEvents, remaining);
-        QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+        QCoreApplication::sendPostedEvents();
 #if defined(Q_OS_WIN)
         Sleep(uint(TimeOutMs));
 #else
@@ -220,7 +225,7 @@ inline static bool waitForWindowExposed(QWindow *window, int timeout = 1000)
         nanosleep(&ts, nullptr);
 #endif
     }
-    return window->isExposed();
+    return isMapped();
 }
 
 /*!
@@ -233,7 +238,7 @@ void QSplashScreen::finish(QWidget *mainWin)
     if (mainWin) {
         if (!mainWin->windowHandle())
             mainWin->createWinId();
-        waitForWindowExposed(mainWin->windowHandle());
+        waitForWidgetMapped(mainWin);
     }
     close();
 }
@@ -311,18 +316,33 @@ void QSplashScreen::drawContents(QPainter *painter)
     }
 }
 
+void QSplashScreenPrivate::handlePaintEvent()
+{
+    Q_Q(QSplashScreen);
+    QPainter painter(q);
+    painter.setRenderHints(QPainter::SmoothPixmapTransform);
+    painter.setLayoutDirection(q->layoutDirection());
+    if (!pixmap.isNull())
+        painter.drawPixmap(QPoint(), pixmap);
+    q->drawContents(&painter);
+}
+
 /*! \reimp */
 bool QSplashScreen::event(QEvent *e)
 {
-    if (e->type() == QEvent::Paint) {
-        Q_D(QSplashScreen);
-        QPainter painter(this);
-        painter.setRenderHints(QPainter::SmoothPixmapTransform);
-        painter.setLayoutDirection(layoutDirection());
-        if (!d->pixmap.isNull())
-            painter.drawPixmap(QPoint(), d->pixmap);
-        drawContents(&painter);
+    Q_D(QSplashScreen);
+
+    switch (e->type()) {
+    case QEvent::Paint:
+        d->handlePaintEvent();
+        break;
+    case QEvent::Show:
+        waitForWidgetMapped(this);
+        break;
+    default:
+        break;
     }
+
     return QWidget::event(e);
 }
 
