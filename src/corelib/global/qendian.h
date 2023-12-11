@@ -116,7 +116,7 @@ inline constexpr quint128 qbswap(quint128 source)
     return result;
 }
 
-inline constexpr quint128 qbswap(qint128 source)
+inline constexpr qint128 qbswap(qint128 source)
 {
     return qint128(qbswap(quint128(source)));
 }

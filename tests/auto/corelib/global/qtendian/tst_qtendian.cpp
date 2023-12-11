@@ -7,6 +7,12 @@
 #include <QtCore/private/qendian_p.h>
 #include <QtCore/qsysinfo.h>
 
+#if QT_SUPPORTS_INT128
+#define ONLY_INT128(...) __VA_ARGS__
+#else
+#define ONLY_INT128(...)
+#endif
+
 class tst_QtEndian: public QObject
 {
     Q_OBJECT
@@ -41,6 +47,9 @@ private slots:
 
 struct TestData
 {
+    ONLY_INT128(
+    quint128 data128;
+    )
     quint64 data64;
     quint32 data32;
     quint16 data16;
@@ -57,6 +66,9 @@ template <> quint8 getData(const TestData &d) { return d.data8; }
 template <> quint16 getData(const TestData &d) { return d.data16; }
 template <> quint32 getData(const TestData &d) { return d.data32; }
 template <> quint64 getData(const TestData &d) { return d.data64; }
+ONLY_INT128(
+template <> quint128 getData(const TestData &d) { return d.data128; }
+)
 template <> float getData(const TestData &d) { return d.dataFloat; }
 
 union RawTestData
@@ -74,6 +86,9 @@ Float int2Float(typename QIntegerForSizeof<Float>::Unsigned i)
 }
 
 static const TestData inNativeEndian = {
+    ONLY_INT128(
+    Q_UINT128_C(0x0123'4567'89ab'cdef'18ba'df00'd1da'cafe),
+    )
     Q_UINT64_C(0x0123456789abcdef),
     0x00c0ffee,
     0xcafe,
@@ -83,6 +98,9 @@ static const TestData inNativeEndian = {
     '\0'
 };
 static const RawTestData inBigEndian = {
+    ONLY_INT128(
+    "\x01\x23\x45\x67\x89\xab\xcd\xef\x18\xba\xdf\x00\xd1\xda\xca\xfe"
+    )
     "\x01\x23\x45\x67\x89\xab\xcd\xef"
     "\x00\xc0\xff\xee"
     "\xca\xfe"
@@ -91,6 +109,9 @@ static const RawTestData inBigEndian = {
     "\x01\x23\x45\x67\x89\xab\xcd\xef"
 };
 static const RawTestData inLittleEndian = {
+    ONLY_INT128(
+    "\xfe\xca\xda\xd1\x00\xdf\xba\x18\xef\xcd\xab\x89\x67\x45\x23\x01"
+    )
     "\xef\xcd\xab\x89\x67\x45\x23\x01"
     "\xee\xff\xc0\x00"
     "\xfe\xca"
@@ -102,12 +123,18 @@ static const RawTestData inLittleEndian = {
 #define EXPAND_ENDIAN_TEST(endian)          \
     do {                                    \
         /* Unsigned tests */                \
+        ONLY_INT128(                        \
+        ENDIAN_TEST(endian, quint, 128);    \
+        )                                   \
         ENDIAN_TEST(endian, quint, 64);     \
         ENDIAN_TEST(endian, quint, 32);     \
         ENDIAN_TEST(endian, quint, 16);     \
         ENDIAN_TEST(endian, quint, 8);      \
                                             \
         /* Signed tests */                  \
+        ONLY_INT128(                        \
+        ENDIAN_TEST(endian, qint, 128);     \
+        )                                   \
         ENDIAN_TEST(endian, qint, 64);      \
         ENDIAN_TEST(endian, qint, 32);      \
         ENDIAN_TEST(endian, qint, 16);      \
@@ -117,6 +144,8 @@ static const RawTestData inLittleEndian = {
 
 #define ENDIAN_TEST(endian, type, size)                                                 \
     do {                                                                                \
+        static_assert(std::is_same_v<decltype(qbswap(std::declval<type ## size>())),    \
+                                     type ## size>);                                    \
         QCOMPARE(qFrom ## endian ## Endian(                                             \
                     (type ## size)(in ## endian ## Endian.data.data ## size)),          \
                 (type ## size)(inNativeEndian.data ## size));                           \
