@@ -294,8 +294,8 @@ MakefileGenerator::findFilesInVPATH(ProStringList l, uchar flags, const QString 
                     QStringList files = QDir(real_dir).entryList(QStringList(regex),
                                                 QDir::NoDotAndDotDot | QDir::AllEntries);
                     if(files.isEmpty()) {
-                        debug_msg(1, "%s:%d Failure to find %s in vpath (%s)",
-                                  __FILE__, __LINE__, val.toLatin1().constData(),
+                        debug_msg(1, "makefile.cpp:%d Failure to find %s in vpath (%s)",
+                                  __LINE__, val.toLatin1().constData(),
                                   vpath.join(QString("::")).toLatin1().constData());
                         if (flags & VPATH_RemoveMissingFiles)
                             remove_file = true;
@@ -312,8 +312,8 @@ MakefileGenerator::findFilesInVPATH(ProStringList l, uchar flags, const QString 
                         }
                     }
                 } else {
-                    debug_msg(1, "%s:%d Cannot match %s%s, as %s does not exist.",
-                              __FILE__, __LINE__, real_dir.toLatin1().constData(),
+                    debug_msg(1, "makefile.cpp:%d Cannot match %s%s, as %s does not exist.",
+                              __LINE__, real_dir.toLatin1().constData(),
                               regex.toLatin1().constData(), real_dir.toLatin1().constData());
                     if (flags & VPATH_RemoveMissingFiles)
                         remove_file = true;
