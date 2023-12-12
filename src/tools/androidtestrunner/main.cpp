@@ -452,6 +452,9 @@ static void waitForStartedAndFinished()
             break;
         QThread::msleep(250);
     } while (!finishedDeadline.hasExpired() && !isTestRunnerInterrupted.load());
+
+    if (finishedDeadline.hasExpired())
+        qWarning() << "Timed out while waiting for the test to finish";
 }
 
 static void obtainSdkVersion()
