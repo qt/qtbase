@@ -762,7 +762,7 @@ public:
         return isEmpty();
     }
 
-    QPair<iterator, iterator> equal_range(const Key &akey)
+    std::pair<iterator, iterator> equal_range(const Key &akey)
     {
         const auto copy = d.isShared() ? *this : QMap(); // keep `key` alive across the detach
         detach();
@@ -770,7 +770,7 @@ public:
         return {iterator(result.first), iterator(result.second)};
     }
 
-    QPair<const_iterator, const_iterator> equal_range(const Key &akey) const
+    std::pair<const_iterator, const_iterator> equal_range(const Key &akey) const
     {
         if (!d)
             return {};
@@ -1492,7 +1492,7 @@ public:
     // STL compatibility
     inline bool empty() const { return isEmpty(); }
 
-    QPair<iterator, iterator> equal_range(const Key &akey)
+    std::pair<iterator, iterator> equal_range(const Key &akey)
     {
         const auto copy = d.isShared() ? *this : QMultiMap(); // keep `key` alive across the detach
         detach();
@@ -1500,7 +1500,7 @@ public:
         return {iterator(result.first), iterator(result.second)};
     }
 
-    QPair<const_iterator, const_iterator> equal_range(const Key &akey) const
+    std::pair<const_iterator, const_iterator> equal_range(const Key &akey) const
     {
         if (!d)
             return {};

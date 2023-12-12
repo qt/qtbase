@@ -1234,22 +1234,22 @@ public:
         return i;
     }
 
-    QPair<iterator, iterator> equal_range(const Key &key)
+    std::pair<iterator, iterator> equal_range(const Key &key)
     {
         auto first = find(key);
         auto second = first;
         if (second != iterator())
             ++second;
-        return qMakePair(first, second);
+        return {first, second};
     }
 
-    QPair<const_iterator, const_iterator> equal_range(const Key &key) const noexcept
+    std::pair<const_iterator, const_iterator> equal_range(const Key &key) const noexcept
     {
         auto first = find(key);
         auto second = first;
         if (second != iterator())
             ++second;
-        return qMakePair(first, second);
+        return {first, second};
     }
 
     typedef iterator Iterator;
@@ -2125,26 +2125,26 @@ public:
         return *this;
     }
 
-    QPair<iterator, iterator> equal_range(const Key &key)
+    std::pair<iterator, iterator> equal_range(const Key &key)
     {
         const auto copy = isDetached() ? QMultiHash() : *this; // keep 'key' alive across the detach
         detach();
         auto pair = std::as_const(*this).equal_range(key);
-        return qMakePair(iterator(pair.first.i), iterator(pair.second.i));
+        return {iterator(pair.first.i), iterator(pair.second.i)};
     }
 
-    QPair<const_iterator, const_iterator> equal_range(const Key &key) const noexcept
+    std::pair<const_iterator, const_iterator> equal_range(const Key &key) const noexcept
     {
         if (!d)
-            return qMakePair(end(), end());
+            return {end(), end()};
 
         auto bucket = d->findBucket(key);
         if (bucket.isUnused())
-            return qMakePair(end(), end());
+            return {end(), end()};
         auto it = bucket.toIterator(d);
         auto end = it;
         ++end;
-        return qMakePair(const_iterator(it), const_iterator(end));
+        return {const_iterator(it), const_iterator(end)};
     }
 
 private:
