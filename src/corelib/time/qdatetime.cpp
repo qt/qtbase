@@ -3299,7 +3299,7 @@ static void setDateTime(QDateTimeData &d, QDate date, QTime time)
     }
 }
 
-static QPair<QDate, QTime> getDateTime(const QDateTimeData &d)
+static std::pair<QDate, QTime> getDateTime(const QDateTimeData &d)
 {
     auto status = getStatus(d);
     const qint64 msecs = getMSecs(d);
@@ -4568,7 +4568,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
         return buf;
     default:
     case Qt::TextDate: {
-        const QPair<QDate, QTime> p = getDateTime(d);
+        const std::pair<QDate, QTime> p = getDateTime(d);
         buf = toStringTextDate(p.first);
         // Insert time between date's day and year:
         buf.insert(buf.lastIndexOf(u' '),
@@ -4596,7 +4596,7 @@ QString QDateTime::toString(Qt::DateFormat format) const
     }
     case Qt::ISODate:
     case Qt::ISODateWithMs: {
-        const QPair<QDate, QTime> p = getDateTime(d);
+        const std::pair<QDate, QTime> p = getDateTime(d);
         buf = toStringIsoDate(p.first);
         if (buf.isEmpty())
             return QString();   // failed to convert
@@ -4720,7 +4720,7 @@ QDateTime QDateTime::addDays(qint64 ndays) const
         return QDateTime();
 
     QDateTime dt(*this);
-    QPair<QDate, QTime> p = getDateTime(d);
+    std::pair<QDate, QTime> p = getDateTime(d);
     massageAdjustedDateTime(dt.d, p.first.addDays(ndays), p.second, ndays >= 0);
     return dt;
 }
@@ -4746,7 +4746,7 @@ QDateTime QDateTime::addMonths(int nmonths) const
         return QDateTime();
 
     QDateTime dt(*this);
-    QPair<QDate, QTime> p = getDateTime(d);
+    std::pair<QDate, QTime> p = getDateTime(d);
     massageAdjustedDateTime(dt.d, p.first.addMonths(nmonths), p.second, nmonths >= 0);
     return dt;
 }
@@ -4772,7 +4772,7 @@ QDateTime QDateTime::addYears(int nyears) const
         return QDateTime();
 
     QDateTime dt(*this);
-    QPair<QDate, QTime> p = getDateTime(d);
+    std::pair<QDate, QTime> p = getDateTime(d);
     massageAdjustedDateTime(dt.d, p.first.addYears(nyears), p.second, nyears >= 0);
     return dt;
 }
@@ -5941,7 +5941,7 @@ QDataStream &operator>>(QDataStream &in, QTime &time)
 */
 QDataStream &operator<<(QDataStream &out, const QDateTime &dateTime)
 {
-    QPair<QDate, QTime> dateAndTime;
+    std::pair<QDate, QTime> dateAndTime;
 
     // TODO: new version, route spec and details via QTimeZone
     if (out.version() >= QDataStream::Qt_5_2) {
