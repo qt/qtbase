@@ -1741,6 +1741,7 @@ bool QMainWindowLayout::restoreDockWidget(QDockWidget *dockwidget)
 #if QT_CONFIG(tabbar)
 void QMainWindowLayout::tabifyDockWidget(QDockWidget *first, QDockWidget *second)
 {
+    applyRestoredState();
     addChildWidget(second);
     layoutState.dockAreaLayout.tabifyDockWidget(first, second);
     emit second->dockLocationChanged(dockWidgetArea(first));
@@ -1862,6 +1863,7 @@ void QMainWindowLayout::splitDockWidget(QDockWidget *after,
                                         QDockWidget *dockwidget,
                                         Qt::Orientation orientation)
 {
+    applyRestoredState();
     addChildWidget(dockwidget);
     layoutState.dockAreaLayout.splitDockWidget(after, dockwidget, orientation);
     emit dockwidget->dockLocationChanged(dockWidgetArea(after));
@@ -2209,6 +2211,32 @@ QLayoutItem *QMainWindowLayout::takeAt(int index)
     }
 
     return nullptr;
+}
+
+
+/*!
+    \internal
+
+    restoredState stores what we earlier read from storage, but it couldn't
+    be applied as the mainwindow wasn't large enough (yet) to fit the state.
+    Usually, the restored state would be applied lazily in setGeometry below.
+    However, if the mainwindow's layout is modified (e.g. by a call to tabify or
+    splitDockWidgets), then we have to forget the restored state as it might contain
+    dangling pointers (QDockWidgetLayoutItem has a copy constructor that copies the
+    layout item pointer, and splitting or tabify might have to delete some of those
+    layout structures).
+
+    Functions that might result in the QMainWindowLayoutState storing dangling pointers
+    have to call this function first, so that the restoredState becomes the actual state
+    first, and is forgotten afterwards.
+*/
+void QMainWindowLayout::applyRestoredState()
+{
+    if (restoredState) {
+        layoutState = *restoredState;
+        restoredState.reset();
+        discardRestoredStateTimer.stop();
+    }
 }
 
 void QMainWindowLayout::setGeometry(const QRect &_r)
