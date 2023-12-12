@@ -203,7 +203,7 @@ void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
         //let's update currentInterval
         QVariantAnimation::KeyValues::const_iterator it = std::lower_bound(keyValues.constBegin(),
                                                                            keyValues.constEnd(),
-                                                                           qMakePair(progress, QVariant()),
+                                                                           std::pair{progress, QVariant{}},
                                                                            animationValueLessThan);
         if (it == keyValues.constBegin()) {
             //the item pointed to by it is the start element in the range
@@ -211,7 +211,7 @@ void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
                 currentInterval.start = *it;
                 currentInterval.end = *(it+1);
             } else {
-                currentInterval.start = qMakePair(qreal(0), defaultStartEndValue);
+                currentInterval.start = {qreal(0), defaultStartEndValue};
                 currentInterval.end = *it;
             }
         } else if (it == keyValues.constEnd()) {
@@ -223,7 +223,7 @@ void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
             } else {
                 //we use the default end value here
                 currentInterval.start = *it;
-                currentInterval.end = qMakePair(qreal(1), defaultStartEndValue);
+                currentInterval.end = {qreal(1), defaultStartEndValue};
             }
         } else {
             currentInterval.start = *(it-1);
@@ -264,9 +264,10 @@ void QVariantAnimationPrivate::setCurrentValueForProgress(const qreal progress)
 
 QVariant QVariantAnimationPrivate::valueAt(qreal step) const
 {
-    QVariantAnimation::KeyValues::const_iterator result =
-        std::lower_bound(keyValues.constBegin(), keyValues.constEnd(), qMakePair(step, QVariant()), animationValueLessThan);
-    if (result != keyValues.constEnd() && !animationValueLessThan(qMakePair(step, QVariant()), *result))
+    const auto sought = std::pair{step, QVariant()};
+    const auto result = std::lower_bound(keyValues.cbegin(), keyValues.cend(), sought,
+                                         animationValueLessThan);
+    if (result != keyValues.cend() && !animationValueLessThan(sought, *result))
         return result->second;
 
     return QVariant();
@@ -552,7 +553,7 @@ QVariant QVariantAnimation::keyValueAt(qreal step) const
 /*!
     \typedef QVariantAnimation::KeyValue
 
-    This is a typedef for QPair<qreal, QVariant>.
+    This is a typedef for std::pair<qreal, QVariant>.
 */
 /*!
     \typedef QVariantAnimation::KeyValues

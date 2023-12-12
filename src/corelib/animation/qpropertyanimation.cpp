@@ -261,7 +261,7 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
     {
         Q_CONSTINIT static QBasicMutex mutex;
         auto locker = qt_unique_lock(mutex);
-        typedef QPair<QObject *, QByteArray> QPropertyAnimationPair;
+        using QPropertyAnimationPair = std::pair<QObject *, QByteArray>;
         typedef QHash<QPropertyAnimationPair, QPropertyAnimation*> QPropertyAnimationHash;
         Q_CONSTINIT static QPropertyAnimationHash hash;
 
