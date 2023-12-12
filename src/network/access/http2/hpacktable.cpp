@@ -26,7 +26,9 @@ HeaderSize entry_size(QByteArrayView name, QByteArrayView value)
     // for counting the number of references to the name and value would have
     // 32 octets of overhead."
 
-    const unsigned sum = unsigned(name.size() + value.size());
+    size_t sum;
+    if (qAddOverflow(size_t(name.size()), size_t(value.size()), &sum))
+        return HeaderSize();
     if (sum > (std::numeric_limits<unsigned>::max() - 32))
         return HeaderSize();
     return HeaderSize(true, quint32(sum + 32));
