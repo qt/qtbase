@@ -292,12 +292,12 @@ bool QStringListModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
     return true;
 }
 
-static bool ascendingLessThan(const QPair<QString, int> &s1, const QPair<QString, int> &s2)
+static bool ascendingLessThan(const std::pair<QString, int> &s1, const std::pair<QString, int> &s2)
 {
     return s1.first < s2.first;
 }
 
-static bool decendingLessThan(const QPair<QString, int> &s1, const QPair<QString, int> &s2)
+static bool decendingLessThan(const std::pair<QString, int> &s1, const std::pair<QString, int> &s2)
 {
     return s1.first > s2.first;
 }
@@ -309,11 +309,11 @@ void QStringListModel::sort(int, Qt::SortOrder order)
 {
     emit layoutAboutToBeChanged(QList<QPersistentModelIndex>(), VerticalSortHint);
 
-    QList<QPair<QString, int>> list;
+    QList<std::pair<QString, int>> list;
     const int lstCount = lst.size();
     list.reserve(lstCount);
     for (int i = 0; i < lstCount; ++i)
-        list.append(QPair<QString, int>(lst.at(i), i));
+        list.emplace_back(lst.at(i), i);
 
     if (order == Qt::AscendingOrder)
         std::sort(list.begin(), list.end(), ascendingLessThan);

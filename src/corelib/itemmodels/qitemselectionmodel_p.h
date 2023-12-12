@@ -82,8 +82,8 @@ public:
     QItemSelectionModel::SelectionFlags currentCommand;
     QList<QPersistentModelIndex> savedPersistentIndexes;
     QList<QPersistentModelIndex> savedPersistentCurrentIndexes;
-    QList<QPair<QPersistentModelIndex, uint>> savedPersistentRowLengths;
-    QList<QPair<QPersistentModelIndex, uint>> savedPersistentCurrentRowLengths;
+    QList<std::pair<QPersistentModelIndex, uint>> savedPersistentRowLengths;
+    QList<std::pair<QPersistentModelIndex, uint>> savedPersistentCurrentRowLengths;
     // optimization when all indexes are selected
     bool tableSelected;
     QPersistentModelIndex tableParent;

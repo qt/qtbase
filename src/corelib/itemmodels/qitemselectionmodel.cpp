@@ -238,7 +238,7 @@ QItemSelectionRange QItemSelectionRange::intersected(const QItemSelectionRange &
 
 */
 
-static void rowLengthsFromRange(const QItemSelectionRange &range, QList<QPair<QPersistentModelIndex, uint>> &result)
+static void rowLengthsFromRange(const QItemSelectionRange &range, QList<std::pair<QPersistentModelIndex, uint>> &result)
 {
     if (range.isValid() && range.model()) {
         const QModelIndex topLeft = range.topLeft();
@@ -249,7 +249,7 @@ static void rowLengthsFromRange(const QItemSelectionRange &range, QList<QPair<QP
             // We don't need to keep track of ItemIsSelectable and ItemIsEnabled here. That is
             // required in indexesFromRange() because that method is called from public API
             // which requires the limitation.
-            result.push_back(qMakePair(QPersistentModelIndex(topLeft.sibling(row, column)), width));
+            result.emplace_back(topLeft.sibling(row, column), width);
         }
     }
 }
@@ -432,9 +432,9 @@ QModelIndexList QItemSelection::indexes() const
     return qSelectionIndexes<QModelIndexList>(*this);
 }
 
-static QList<QPair<QPersistentModelIndex, uint>> qSelectionPersistentRowLengths(const QItemSelection &sel)
+static QList<std::pair<QPersistentModelIndex, uint>> qSelectionPersistentRowLengths(const QItemSelection &sel)
 {
-    QList<QPair<QPersistentModelIndex, uint>> result;
+    QList<std::pair<QPersistentModelIndex, uint>> result;
     for (const QItemSelectionRange &range : sel)
         rowLengthsFromRange(range, result);
     return result;
@@ -875,7 +875,7 @@ void QItemSelectionModelPrivate::layoutAboutToBeChanged(const QList<QPersistentM
 /*!
     \internal
 */
-static QItemSelection mergeRowLengths(const QList<QPair<QPersistentModelIndex, uint>> &rowLengths)
+static QItemSelection mergeRowLengths(const QList<std::pair<QPersistentModelIndex, uint>> &rowLengths)
 {
     if (rowLengths.isEmpty())
       return QItemSelection();
