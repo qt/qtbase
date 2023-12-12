@@ -63,6 +63,7 @@ struct MyWidget : public QWidget
     void wrapper13();
     void wrapper14();
     void wrapper15();
+    void concentricCircles();
 };
 QLine drawingCode;
 
@@ -355,4 +356,21 @@ painter.drawRect(rectangle.adjusted(0, 0, -pen.width(), -pen.width()));
 
 
 } // MyWidget::wrapper15
+
+void MyWidget::concentricCircles()
+{
+//! [renderHint]
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+//! [renderHint]
+    int diameter = 50;
+//! [floatBased]
+    painter.drawEllipse(QRectF(-diameter / 2.0, -diameter / 2.0, diameter, diameter));
+//! [floatBased]
+//! [intBased]
+    painter.drawEllipse(QRect(-diameter / 2, -diameter / 2, diameter, diameter));
+//! [intBased]
+
+} // MyWidget::concentricCircles
+
 } // src_gui_painting_qpainter2
