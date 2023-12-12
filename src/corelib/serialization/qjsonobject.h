@@ -21,7 +21,7 @@ class Q_CORE_EXPORT QJsonObject
 public:
     QJsonObject();
 
-    QJsonObject(std::initializer_list<QPair<QString, QJsonValue> > args);
+    QJsonObject(std::initializer_list<std::pair<QString, QJsonValue> > args);
 
     ~QJsonObject();
 
