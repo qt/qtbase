@@ -1,6 +1,5 @@
 TEMPLATE      = subdirs
 SUBDIRS       = basicdrawing \
-                concentriccircles \
                 affine \
                 composition \
                 deform \

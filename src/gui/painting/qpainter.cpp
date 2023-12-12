@@ -1125,24 +1125,22 @@ void QPainterPrivate::updateState(QPainterState *newState)
     The QPainter class also provides a means of controlling the
     rendering quality through its RenderHint enum and the support for
     floating point precision: All the functions for drawing primitives
-    has a floating point version. These are often used in combination
+    have floating point versions.
+
+    \snippet code/src_gui_painting_qpainter.cpp floatBased
+
+    These are often used in combination
     with the \l {RenderHint}{QPainter::Antialiasing} render hint.
+
+    \snippet code/src_gui_painting_qpainter.cpp renderHint
 
     \table 100%
     \row
+    \li Comparing concentric circles with int and float, and with or without
+        anti-aliased rendering. Using the floating point precision versions
+        produces evenly spaced rings. Anti-aliased rendering results in
+        smooth circles.
     \li \inlineimage qpainter-concentriccircles.png
-    \li
-    \b {Concentric Circles Example}
-
-    The \l {painting/concentriccircles}{Concentric Circles} example
-    shows the improved rendering quality that can be obtained using
-    floating point precision and anti-aliasing when drawing custom
-    widgets.
-
-    The application's main window displays several widgets which are
-    drawn using the various combinations of precision and
-    anti-aliasing.
-
     \endtable
 
     The RenderHint enum specifies flags to QPainter that may or may
