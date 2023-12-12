@@ -92,12 +92,12 @@ bool Moc::parseClassHead(ClassDef *def)
             if (test(LPAREN)) {
                 until(RPAREN);
             } else {
-                def->superclassList += qMakePair(type, access);
+                def->superclassList += SuperClass{type, access};
             }
         } while (test(COMMA));
 
         if (!def->superclassList.isEmpty()
-            && knownGadgets.contains(def->superclassList.constFirst().first)) {
+            && knownGadgets.contains(def->superclassList.constFirst().classname)) {
             // Q_GADGET subclasses are treated as Q_GADGETs
             knownGadgets.insert(def->classname, def->qualified);
             knownGadgets.insert(def->qualified, def->qualified);
@@ -1811,7 +1811,7 @@ bool Moc::until(Token target) {
 
 void Moc::checkSuperClasses(ClassDef *def)
 {
-    const QByteArray firstSuperclass = def->superclassList.value(0).first;
+    const QByteArray firstSuperclass = def->superclassList.value(0).classname;
 
     if (!knownQObjectClasses.contains(firstSuperclass)) {
         // enable once we /require/ include paths
@@ -1838,7 +1838,7 @@ void Moc::checkSuperClasses(ClassDef *def)
     auto it = std::next(def->superclassList.cbegin(),
                         !def->superclassList.isEmpty() ? 1 : 0);
     for (; it != end; ++it) {
-        const QByteArray &superClass = it->first;
+        const QByteArray &superClass = it->classname;
         if (knownQObjectClasses.contains(superClass)) {
             const QByteArray msg
                     = "Class "
@@ -1996,11 +1996,9 @@ QJsonObject ClassDef::toJson() const
     QJsonArray superClasses;
 
     for (const auto &super: std::as_const(superclassList)) {
-        const auto name = super.first;
-        const auto access = super.second;
         QJsonObject superCls;
-        superCls["name"_L1] = QString::fromUtf8(name);
-        FunctionDef::accessToJson(&superCls, access);
+        superCls["name"_L1] = QString::fromUtf8(super.classname);
+        FunctionDef::accessToJson(&superCls, super.access);
         superClasses.append(superCls);
     }
 
