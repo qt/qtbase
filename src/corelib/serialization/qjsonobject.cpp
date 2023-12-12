@@ -85,7 +85,7 @@ QT_BEGIN_NAMESPACE
 QJsonObject::QJsonObject() = default;
 
 /*!
-    \fn QJsonObject::QJsonObject(std::initializer_list<QPair<QString, QJsonValue> > args)
+    \fn QJsonObject::QJsonObject(std::initializer_list<std::pair<QString, QJsonValue> > args)
     \since 5.4
     Constructs a QJsonObject instance initialized from \a args initialization list.
     For example:
@@ -111,7 +111,7 @@ QJsonObject::QJsonObject(QCborContainerPrivate *object)
  */
 QJsonObject::~QJsonObject() = default;
 
-QJsonObject::QJsonObject(std::initializer_list<QPair<QString, QJsonValue> > args)
+QJsonObject::QJsonObject(std::initializer_list<std::pair<QString, QJsonValue> > args)
 {
     for (const auto &arg : args)
         insert(arg.first, arg.second);

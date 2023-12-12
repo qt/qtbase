@@ -20,7 +20,7 @@ class QCborContainerPrivate;
 class Q_CORE_EXPORT QCborMap
 {
 public:
-    typedef QPair<QCborValue, QCborValue> value_type;
+    typedef std::pair<QCborValue, QCborValue> value_type;
     typedef QCborValue key_type;
     typedef QCborValue mapped_type;
     typedef qsizetype size_type;
@@ -34,9 +34,9 @@ public:
     public:
         typedef std::random_access_iterator_tag iterator_category;
         typedef qsizetype difference_type;
-        typedef QPair<QCborValueConstRef, QCborValueRef> value_type;
-        typedef QPair<QCborValueConstRef, QCborValueRef> reference;
-        typedef QPair<QCborValueConstRef, QCborValueRef> pointer;
+        typedef std::pair<QCborValueConstRef, QCborValueRef> value_type;
+        typedef std::pair<QCborValueConstRef, QCborValueRef> reference;
+        typedef std::pair<QCborValueConstRef, QCborValueRef> pointer;
 
         constexpr Iterator() = default;
         constexpr Iterator(const Iterator &) = default;
@@ -94,9 +94,9 @@ public:
     public:
         typedef std::random_access_iterator_tag iterator_category;
         typedef qsizetype difference_type;
-        typedef QPair<QCborValueConstRef, QCborValueConstRef> value_type;
-        typedef QPair<QCborValueConstRef, QCborValueConstRef> reference;
-        typedef QPair<QCborValueConstRef, QCborValueConstRef> pointer;
+        typedef std::pair<QCborValueConstRef, QCborValueConstRef> value_type;
+        typedef std::pair<QCborValueConstRef, QCborValueConstRef> reference;
+        typedef std::pair<QCborValueConstRef, QCborValueConstRef> pointer;
 
         constexpr ConstIterator() = default;
         constexpr ConstIterator(const ConstIterator &) = default;
