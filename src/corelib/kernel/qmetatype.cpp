@@ -269,7 +269,7 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
     \li Pointers to classes derived from QObject
     \li QList<T>, QQueue<T>, QStack<T> or QSet<T>
         where T is a registered meta type
-    \li QHash<T1, T2>, QMap<T1, T2> or QPair<T1, T2> where T1 and T2 are
+    \li QHash<T1, T2>, QMap<T1, T2> or std::pair<T1, T2> where T1 and T2 are
         registered meta types
     \li QPointer<T>, QSharedPointer<T>, QWeakPointer<T>, where T is a class that derives from QObject
     \li Enumerations registered with Q_ENUM or Q_FLAG
@@ -1693,13 +1693,13 @@ private:
     QHash<Key, T> map;
 };
 
-typedef QMetaTypeFunctionRegistry<QMetaType::ConverterFunction,QPair<int,int> >
-QMetaTypeConverterRegistry;
+using QMetaTypeConverterRegistry
+        = QMetaTypeFunctionRegistry<QMetaType::ConverterFunction, std::pair<int,int>>;
 
 Q_GLOBAL_STATIC(QMetaTypeConverterRegistry, customTypesConversionRegistry)
 
 using QMetaTypeMutableViewRegistry
-        = QMetaTypeFunctionRegistry<QMetaType::MutableViewFunction, QPair<int,int>>;
+        = QMetaTypeFunctionRegistry<QMetaType::MutableViewFunction, std::pair<int,int>>;
 Q_GLOBAL_STATIC(QMetaTypeMutableViewRegistry, customTypesMutableViewRegistry)
 
 /*!
@@ -1755,7 +1755,7 @@ Q_GLOBAL_STATIC(QMetaTypeMutableViewRegistry, customTypesMutableViewRegistry)
 */
 bool QMetaType::registerConverterFunction(const ConverterFunction &f, QMetaType from, QMetaType to)
 {
-    if (!customTypesConversionRegistry()->insertIfNotContains(qMakePair(from.id(), to.id()), f)) {
+    if (!customTypesConversionRegistry()->insertIfNotContains({from.id(), to.id()}, f)) {
         qWarning("Type conversion already registered from type %s to type %s",
                  from.name(), to.name());
         return false;
@@ -1788,7 +1788,7 @@ bool QMetaType::registerConverterFunction(const ConverterFunction &f, QMetaType 
 */
 bool QMetaType::registerMutableViewFunction(const MutableViewFunction &f, QMetaType from, QMetaType to)
 {
-    if (!customTypesMutableViewRegistry()->insertIfNotContains(qMakePair(from.id(), to.id()), f)) {
+    if (!customTypesMutableViewRegistry()->insertIfNotContains({from.id(), to.id()}, f)) {
         qWarning("Mutable view on type already registered from type %s to type %s",
                  from.name(), to.name());
         return false;
@@ -2079,9 +2079,9 @@ static bool convertIterableToVariantHash(QMetaType fromType, const void *from, v
 
 static bool convertIterableToVariantPair(QMetaType fromType, const void *from, void *to)
 {
-    const QMetaType::ConverterFunction * const f =
-        customTypesConversionRegistry()->function(qMakePair(fromType.id(),
-                                                            qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>()));
+    const int targetId = qMetaTypeId<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
+    const auto f = customTypesConversionRegistry()->function({fromType.id(), targetId});
+
     if (!f)
         return false;
 
@@ -2359,8 +2359,7 @@ bool QMetaType::convert(QMetaType fromType, const void *from, QMetaType toType, 
         if (moduleHelper->convert(from, fromTypeId, to, toTypeId))
             return true;
     }
-    const QMetaType::ConverterFunction * const f =
-        customTypesConversionRegistry()->function(qMakePair(fromTypeId, toTypeId));
+    const auto f = customTypesConversionRegistry()->function({fromTypeId, toTypeId});
     if (f)
         return (*f)(from, to);
 
@@ -2415,8 +2414,7 @@ bool QMetaType::view(QMetaType fromType, void *from, QMetaType toType, void *to)
     int fromTypeId = fromType.id();
     int toTypeId = toType.id();
 
-    const QMetaType::MutableViewFunction * const f =
-        customTypesMutableViewRegistry()->function(qMakePair(fromTypeId, toTypeId));
+    const auto f = customTypesMutableViewRegistry()->function({fromTypeId, toTypeId});
     if (f)
         return (*f)(from, to);
 
@@ -2458,8 +2456,7 @@ bool QMetaType::canView(QMetaType fromType, QMetaType toType)
     if (fromTypeId == UnknownType || toTypeId == UnknownType)
         return false;
 
-    const MutableViewFunction * const f =
-        customTypesMutableViewRegistry()->function(qMakePair(fromTypeId, toTypeId));
+    const auto f = customTypesMutableViewRegistry()->function({fromTypeId, toTypeId});
     if (f)
         return true;
 
@@ -2633,7 +2630,7 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
 */
 bool QMetaType::hasRegisteredConverterFunction(QMetaType fromType, QMetaType toType)
 {
-    return customTypesConversionRegistry()->contains(qMakePair(fromType.id(), toType.id()));
+    return customTypesConversionRegistry()->contains({fromType.id(), toType.id()});
 }
 
 /*!
@@ -2650,7 +2647,7 @@ bool QMetaType::hasRegisteredConverterFunction(QMetaType fromType, QMetaType toT
 */
 bool QMetaType::hasRegisteredMutableViewFunction(QMetaType fromType, QMetaType toType)
 {
-    return customTypesMutableViewRegistry()->contains(qMakePair(fromType.id(), toType.id()));
+    return customTypesMutableViewRegistry()->contains({fromType.id(), toType.id()});
 }
 
 /*!
