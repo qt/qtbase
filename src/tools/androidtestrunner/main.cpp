@@ -156,12 +156,12 @@ static bool execCommand(const QString &program, const QStringList &args,
     const auto command = program + " "_L1 + args.join(u' ');
 
     if (verbose && g_options.verbose)
-        fprintf(stdout, "Execute %s.\n", command.toUtf8().constData());
+        qDebug("Execute %s.\n", command.toUtf8().constData());
 
     QProcess process;
     process.start(program, args);
     if (!process.waitForStarted()) {
-        fprintf(stderr, "Cannot execute command %s.\n", qPrintable(command));
+        qCritical("Cannot execute command %s.\n", qPrintable(command));
         return false;
     }
 
@@ -169,7 +169,7 @@ static bool execCommand(const QString &program, const QStringList &args,
     // QProcess::waitForFinished() 30 secs, so for that use a higher timeout.
     const int FinishTimeout = program.endsWith("adb"_L1) ? 30000 : g_options.timeoutSecs * 1000;
     if (!process.waitForFinished(FinishTimeout)) {
-        fprintf(stderr, "Execution of command %s timed out.\n", qPrintable(command));
+        qCritical("Execution of command %s timed out.\n", qPrintable(command));
         return false;
     }
 
@@ -178,7 +178,7 @@ static bool execCommand(const QString &program, const QStringList &args,
         output->append(stdOut);
 
     if (verbose && g_options.verbose)
-        fprintf(stdout, "%s", stdOut.constData());
+        qDebug() << stdOut.constData();
 
     return process.exitCode() == 0;
 }
@@ -275,7 +275,7 @@ static bool parseOptions()
 
 static void printHelp()
 {
-    fprintf(stderr, "Syntax: %s <options> -- [TESTARGS] \n"
+    qWarning(       "Syntax: %s <options> -- [TESTARGS] \n"
                     "\n"
                     "  Creates an Android package in a temp directory <destination> and\n"
                     "  runs it on the default emulator/device or on the one specified by\n"
@@ -490,12 +490,10 @@ static void obtainSdkVersion()
     execAdbCommand(versionArgs, &output, false);
     bool ok = false;
     int sdkVersion = output.toInt(&ok);
-    if (ok) {
+    if (ok)
         g_testInfo.sdkVersion = sdkVersion;
-    } else {
-        fprintf(stderr, "Unable to obtain the SDK version of the target.\n");
-        fflush(stderr);
-    }
+    else
+        qCritical() << "Unable to obtain the SDK version of the target.\n";
 }
 
 static bool pullFiles()
@@ -534,8 +532,7 @@ static bool pullFiles()
         auto checkerIt = g_options.checkFiles.find(outSuffix);
         ret &= (checkerIt != g_options.checkFiles.end() && checkerIt.value()(output));
         if (it.value() == "-"_L1) {
-            fprintf(stdout, "%s", output.constData());
-            fflush(stdout);
+            qDebug() << output.constData();
         } else {
             QFile out{it.value()};
             if (!out.open(QIODevice::WriteOnly))
@@ -718,9 +715,8 @@ int main(int argc, char *argv[])
     }
 
     if (g_options.makeCommand.isEmpty()) {
-        fprintf(stderr,
-                "It is required to provide a make command with the \"--make\" parameter "
-                "to generate the apk.\n");
+        qCritical() << "It is required to provide a make command with the \"--make\" parameter "
+                       "to generate the apk.\n";
         return 1;
     }
     if (!execCommand(g_options.makeCommand, nullptr, true)) {
@@ -737,10 +733,9 @@ int main(int argc, char *argv[])
     }
 
     if (!QFile::exists(g_options.apkPath)) {
-        fprintf(stderr,
-                "No apk \"%s\" found after running the make command. Check the provided path and "
-                "the make command.\n",
-                qPrintable(g_options.apkPath));
+        qCritical("No apk \"%s\" found after running the make command. "
+                  "Check the provided path and the make command.\n",
+                  qPrintable(g_options.apkPath));
         return 1;
     }
 
@@ -784,7 +779,6 @@ int main(int argc, char *argv[])
     }
 
     success &= uninstallTestPackage();
-    fflush(stdout);
 
     testRunnerLock.release();
 
