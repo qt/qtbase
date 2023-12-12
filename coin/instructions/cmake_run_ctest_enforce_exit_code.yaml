@@ -85,21 +85,6 @@ instructions:
 
   - !include "{{qt/qtbase}}/coin_module_test_android_start_emulator.yaml"
 
-  - type: EnvironmentVariable
-    variableName: COIN_COMMAND_OUTPUT_TIMEOUT
-    variableValue: "900"
-    disable_if:
-      condition: property
-      property: features
-      contains_value: UseAddressSanitizer
-  - type: EnvironmentVariable
-    variableName: COIN_COMMAND_OUTPUT_TIMEOUT
-    variableValue: "10800"
-    enable_if:
-      condition: property
-      property: features
-      contains_value: UseAddressSanitizer
-
   - type: ExecuteCommand
     command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
     executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
