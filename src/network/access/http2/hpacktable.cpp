@@ -40,6 +40,7 @@
 #include "hpacktable_p.h"
 
 #include <QtCore/qdebug.h>
+#include <QtCore/private/qnumeric_p.h>
 
 #include <algorithm>
 #include <cstddef>
@@ -62,7 +63,9 @@ HeaderSize entry_size(const QByteArray &name, const QByteArray &value)
     // for counting the number of references to the name and value would have
     // 32 octets of overhead."
 
-    const unsigned sum = unsigned(name.size() + value.size());
+    size_t sum;
+    if (add_overflow(size_t(name.size()), size_t(value.size()), &sum))
+        return HeaderSize();
     if (sum > (std::numeric_limits<unsigned>::max() - 32))
         return HeaderSize();
     return HeaderSize(true, quint32(sum + 32));
