@@ -22,8 +22,10 @@ template <typename Key, typename T> class QHash;
 template <typename Key, typename T> class QMap;
 template <typename Key, typename T> class QMultiHash;
 template <typename Key, typename T> class QMultiMap;
+#ifndef QT_NO_QPAIR
 template <typename T1, typename T2>
 using QPair = std::pair<T1, T2>;
+#endif
 template <typename T> class QQueue;
 template <typename T> class QSet;
 template <typename T, std::size_t E = std::size_t(-1) /* = std::dynamic_extent*/> class QSpan;
