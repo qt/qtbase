@@ -63,7 +63,7 @@ HeaderSize entry_size(const QByteArray &name, const QByteArray &value)
     // 32 octets of overhead."
 
     const unsigned sum = unsigned(name.size() + value.size());
-    if (std::numeric_limits<unsigned>::max() - 32 < sum)
+    if (sum > (std::numeric_limits<unsigned>::max() - 32))
         return HeaderSize();
     return HeaderSize(true, quint32(sum + 32));
 }
