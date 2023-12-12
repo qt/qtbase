@@ -436,7 +436,7 @@ public:
 
 private:
     QMacVersion() = default;
-    using VersionTuple = QPair<QOperatingSystemVersion, QOperatingSystemVersion>;
+    using VersionTuple = std::pair<QOperatingSystemVersion, QOperatingSystemVersion>;
     static VersionTuple versionsForImage(const mach_header *machHeader);
     static VersionTuple applicationVersion();
     static VersionTuple libraryVersion();
