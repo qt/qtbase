@@ -224,7 +224,7 @@ struct Options
         qtPluginsDirectory = directories["qtPluginsDirectory"_L1];
         qtQmlDirectory = directories["qtQmlDirectory"_L1];
     }
-    typedef QPair<QString, QString> BundledFile;
+    using BundledFile = std::pair<QString, QString>;
     QHash<QString, QList<BundledFile>> bundledFiles;
     QHash<QString, QList<QtDependency>> qtDependencies;
     QHash<QString, QStringList> localLibs;
@@ -2582,7 +2582,7 @@ bool copyQtFiles(Options *options)
                                     *options)) {
             return false;
         }
-        options->bundledFiles[options->currentArchitecture] += qMakePair(destinationFileName, qtDependency.relativePath);
+        options->bundledFiles[options->currentArchitecture] += std::make_pair(destinationFileName, qtDependency.relativePath);
     }
 
     return true;
