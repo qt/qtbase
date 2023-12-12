@@ -26,7 +26,7 @@ class Q_CORE_EXPORT QVariantAnimation : public QAbstractAnimation
                BINDABLE bindableEasingCurve)
 
 public:
-    typedef QPair<qreal, QVariant> KeyValue;
+    using KeyValue = std::pair<qreal, QVariant>;
     typedef QList<KeyValue> KeyValues;
 
     QVariantAnimation(QObject *parent = nullptr);
