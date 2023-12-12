@@ -41,6 +41,7 @@ private slots:
     void body();
     void json();
     void text();
+    void textStreaming();
     void download();
     void upload();
     void timeout();
@@ -793,9 +794,19 @@ void tst_QRestAccessManager::json()
 }
 
 #define VERIFY_TEXT_REPLY_OK \
+    manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; }); \
     QTRY_VERIFY(replyFromServer); \
     responseString = replyFromServer->text(); \
     QCOMPARE(responseString, sourceString); \
+    replyFromServer->deleteLater(); \
+    replyFromServer = nullptr; \
+
+#define VERIFY_TEXT_REPLY_ERROR(WARNING_MESSAGE) \
+    manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; }); \
+    QTRY_VERIFY(replyFromServer); \
+    QTest::ignoreMessage(QtWarningMsg, WARNING_MESSAGE); \
+    responseString = replyFromServer->text(); \
+    QVERIFY(responseString.isEmpty()); \
     replyFromServer->deleteLater(); \
     replyFromServer = nullptr; \
 
@@ -835,32 +846,27 @@ void tst_QRestAccessManager::text()
     // Successful UTF-8
     serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; charset=UTF-8"_ba);
     serverSideResponse.body = encUTF8(sourceString);
-    manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; });
     VERIFY_TEXT_REPLY_OK;
 
     // Successful UTF-16
     serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; charset=UTF-16"_ba);
     serverSideResponse.body = encUTF16(sourceString);
-    manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; });
     VERIFY_TEXT_REPLY_OK;
 
     // Successful UTF-16, parameter case insensitivity
     serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; chARset=uTf-16"_ba);
     serverSideResponse.body = encUTF16(sourceString);
-    manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; });
     VERIFY_TEXT_REPLY_OK;
 
     // Successful UTF-32
     serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; charset=UTF-32"_ba);
     serverSideResponse.body = encUTF32(sourceString);
-    manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; });
     VERIFY_TEXT_REPLY_OK;
 
     // Successful UTF-32 with spec-wise allowed extra content in the Content-Type header value
     serverSideResponse.headers.insert("Content-Type:"_ba,
                                       "text/plain; charset = \"UTF-32\";extraparameter=bar"_ba);
     serverSideResponse.body = encUTF32(sourceString);
-    manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; });
     VERIFY_TEXT_REPLY_OK;
 
     // Unsuccessful UTF-32, wrong encoding indicated (indicated charset UTF-32 but data is UTF-8)
@@ -873,16 +879,68 @@ void tst_QRestAccessManager::text()
     replyFromServer->deleteLater();
     replyFromServer = nullptr;
 
-    // Unsupported encoding, defaults to UTF-8
+    // Unsupported encoding
     serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; charset=foo"_ba);
     serverSideResponse.body = encUTF8(sourceString);
-    manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; });
-    QTRY_VERIFY(replyFromServer);
-    QTest::ignoreMessage(QtWarningMsg, "Charset \"foo\" is not supported, defaulting to UTF-8");
-    responseString = replyFromServer->text();
-    QCOMPARE(responseString, sourceString);
-    replyFromServer->deleteLater();
-    replyFromServer = nullptr;
+    VERIFY_TEXT_REPLY_ERROR("text(): Charset \"foo\" is not supported")
+
+    // Broken UTF-8
+    serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; charset=UTF-8"_ba);
+    serverSideResponse.body = "\xF0\x28\x8C\x28\xA0\xB0\xC0\xD0"; // invalid characters
+    VERIFY_TEXT_REPLY_ERROR("text() Decoding error occurred");
+}
+
+void tst_QRestAccessManager::textStreaming()
+{
+    // Tests textual data received in chunks
+    QRestAccessManager manager;
+    manager.setDeletesRepliesOnFinished(false);
+    HttpTestServer server;
+    QTRY_VERIFY(server.isListening());
+
+    // Create long text data
+    const QString expectedData = u"사랑abcd€fghiklmnΩpqrstuvwx愛사랑A사랑BCD€FGHIJKLMNΩPQRsTUVWXYZ愛"_s;
+    QString cumulativeReceivedText;
+    QStringEncoder encUTF8("UTF-8");
+    ResponseControl *responseControl = nullptr;
+
+    HttpData serverSideResponse; // The response data the server responds with
+    serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; charset=UTF-8"_ba);
+    serverSideResponse.body = encUTF8(expectedData);
+    serverSideResponse.status = 200;
+
+    server.setHandler([&](HttpData, HttpData &response, ResponseControl &control) {
+        response = serverSideResponse;
+        responseControl = &control; // store for later
+        control.responseChunkSize = 5; // tell testserver to send data in chunks of this size
+    });
+
+    QNetworkRequest request(server.url());
+    QRestReply *reply = manager.get(request);
+    QObject::connect(reply, &QRestReply::readyRead, this, [&](QRestReply *reply) {
+        cumulativeReceivedText += reply->text();
+        // Tell testserver that test is ready for next chunk
+        responseControl->readyForNextChunk = true;
+    });
+    QTRY_VERIFY(reply->isFinished());
+    QCOMPARE(cumulativeReceivedText, expectedData);
+
+    cumulativeReceivedText.clear();
+    // Broken UTF-8 characters after first five ok characters
+    serverSideResponse.body =
+            "12345"_ba + "\xF0\x28\x8C\x28\xA0\xB0\xC0\xD0" + "abcde"_ba;
+    reply = manager.get(request);
+    QObject::connect(reply, &QRestReply::readyRead, this, [&](QRestReply *reply) {
+        static bool firstTime = true;
+        if (!firstTime) // First text part is without warnings
+            QTest::ignoreMessage(QtWarningMsg, "text() Decoding error occurred");
+        firstTime = false;
+        cumulativeReceivedText += reply->text();
+        // Tell testserver that test is ready for next chunk
+        responseControl->readyForNextChunk = true;
+    });
+    QTRY_VERIFY(reply->isFinished());
+    QCOMPARE(cumulativeReceivedText, "12345"_ba);
 }
 
 void tst_QRestAccessManager::download()
@@ -920,14 +978,11 @@ void tst_QRestAccessManager::download()
     QObject::connect(reply, &QRestReply::readyRead, this, [&](QRestReply *reply) {
         static bool testOnce = true;
         if (!reply->isFinished() && testOnce) {
-            // Test once that reading jsonObject or text of an unfinished reply will not work
+            // Test once that reading json of an unfinished reply will not work
             testOnce = false;
             QTest::ignoreMessage(QtWarningMsg, "Attempt to read json() of an unfinished"
                                                " reply, ignoring.");
             reply->json();
-            QTest::ignoreMessage(QtWarningMsg, "Attempt to read text() of an unfinished reply,"
-                                               " ignoring.");
-            (void)reply->text();
         }
 
         cumulativeReceivedBytesAvailable += reply->bytesAvailable();
