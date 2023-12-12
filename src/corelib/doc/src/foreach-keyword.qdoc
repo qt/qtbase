@@ -31,7 +31,7 @@
 
     \snippet code/doc_src_containers.cpp 16
 
-    Unless the data type contains a comma (e.g., \c{QPair<int,
+    Unless the data type contains a comma (e.g., \c{std::pair<int,
     int>}), the variable used for iteration can be defined within the
     \c foreach statement:
 
