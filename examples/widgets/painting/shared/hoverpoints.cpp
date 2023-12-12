@@ -127,6 +127,7 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
             const int id = point.id();
             switch (point.state()) {
             case QEventPoint::Pressed:
+            case QEventPoint::Stationary:
             {
                 // find the point, move it
                 const auto mappedPoints = m_fingerPointMapping.values();
@@ -151,7 +152,7 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
                     }
                 }
                 if (activePoint != -1) {
-                    m_fingerPointMapping.insert(point.id(), activePoint);
+                    m_fingerPointMapping.insert(id, activePoint);
                     movePoint(activePoint, point.position());
                 }
             }
@@ -160,8 +161,10 @@ bool HoverPoints::eventFilter(QObject *object, QEvent *event)
             {
                 // move the point and release
                 const auto it = m_fingerPointMapping.constFind(id);
-                movePoint(it.value(), point.position());
-                m_fingerPointMapping.erase(it);
+                if (it != m_fingerPointMapping.constEnd()) {
+                    movePoint(it.value(), point.position());
+                    m_fingerPointMapping.erase(it);
+                }
             }
             break;
             case QEventPoint::Updated:
