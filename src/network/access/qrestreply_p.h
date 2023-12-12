@@ -19,7 +19,11 @@
 #include <QtNetwork/qnetworkreply.h>
 #include <QtCore/qjsondocument.h>
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
+
+class QStringDecoder;
 
 class QRestReplyPrivate : public QObjectPrivate
 {
@@ -28,6 +32,7 @@ public:
     ~QRestReplyPrivate() override;
 
     QNetworkReply *networkReply = nullptr;
+    std::optional<QStringDecoder> decoder;
 
     QByteArray contentCharset() const;
     bool hasNonHttpError() const;

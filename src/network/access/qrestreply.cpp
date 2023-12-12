@@ -222,7 +222,7 @@ QByteArray QRestReply::body()
 }
 
 /*!
-    Returns the received data as a QString. Requires the reply to be finished.
+    Returns the received data as a QString.
 
     The received data is decoded into a QString (UTF-16). The decoding
     uses the \e Content-Type header's \e charset parameter to determine the
@@ -230,33 +230,36 @@ QByteArray QRestReply::body()
     available or not supported by \l QStringConverter, UTF-8 is used as a
     default.
 
-    Calling this function consumes the received data, and any further calls
-    to get response data will return empty.
-
-    This function returns a default-constructed value and will not consume
-    any data if the reply is not finished.
+    Calling this function consumes the data received so far. Returns
+    a default constructed value if no new data is available, or if the
+    decoding is not supported by \l QStringConverter, or if the decoding
+    has errors (for example invalid characters).
 
     \sa json(), body(), isFinished(), finished()
 */
 QString QRestReply::text()
 {
     Q_D(QRestReply);
-    if (!isFinished()) {
-        qCWarning(lcQrest, "Attempt to read text() of an unfinished reply, ignoring.");
-        return {};
-    }
+    QString result;
+
     QByteArray data = d->networkReply->readAll();
     if (data.isEmpty())
-        return {};
+        return result;
 
-    const QByteArray charset = d->contentCharset();
-    QStringDecoder decoder(charset);
-    if (!decoder.isValid()) { // the decoder may not support the mimetype's charset
-        qCWarning(lcQrest, "Charset \"%s\" is not supported, defaulting to UTF-8",
-                  charset.constData());
-        decoder = QStringDecoder(QStringDecoder::Utf8);
+    if (!d->decoder) {
+        const QByteArray charset = d->contentCharset();
+        d->decoder = QStringDecoder(charset);
+        if (!d->decoder->isValid()) { // the decoder may not support the mimetype's charset
+            qCWarning(lcQrest, "text(): Charset \"%s\" is not supported", charset.constData());
+            return result;
+        }
     }
-    return decoder(data);
+    // Check if the decoder already had an error, or has errors after decoding current data chunk
+    if (d->decoder->hasError() || (result = (*d->decoder)(data), d->decoder->hasError())) {
+        qCWarning(lcQrest, "text() Decoding error occurred");
+        return {};
+    }
+    return result;
 }
 
 /*!
