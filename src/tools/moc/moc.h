@@ -7,7 +7,6 @@
 #include "parser.h"
 #include <qstringlist.h>
 #include <qmap.h>
-#include <qpair.h>
 #include <qjsondocument.h>
 #include <qjsonarray.h>
 #include <qjsonobject.h>
@@ -156,8 +155,14 @@ struct BaseDef {
     qsizetype end = 0;
 };
 
+struct SuperClass {
+    QByteArray classname;
+    FunctionDef::Access access;
+};
+Q_DECLARE_TYPEINFO(SuperClass, Q_RELOCATABLE_TYPE);
+
 struct ClassDef : BaseDef {
-    QList<QPair<QByteArray, FunctionDef::Access>> superclassList;
+    QList<SuperClass> superclassList;
 
     struct Interface
     {
