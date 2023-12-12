@@ -104,6 +104,7 @@ private slots:
     void restoreStateFromPreviousVersion();
     void restoreStateSizeChanged_data();
     void restoreStateSizeChanged();
+    void restoreAndModify();
     void createPopupMenu();
     void hideBeforeLayout();
 #ifdef QT_BUILD_INTERNAL
@@ -1474,6 +1475,70 @@ void tst_QMainWindow::restoreStateSizeChanged()
         }
         QCOMPARE(dockWidget->width(), dockWidgetWidth);
     }
+}
+
+/*!
+    If a main window's state is restored but also modified, then we
+    might have to forget the restored state to avoid dangling pointers.
+    See comment in QMainWindowLayout::applyRestoredState() and QTBUG-120025.
+*/
+void tst_QMainWindow::restoreAndModify()
+{
+    class MainWindow : public QMainWindow
+    {
+    public:
+        MainWindow()
+        {
+            setCentralWidget(new QTextEdit);
+
+            customers = new QDockWidget(tr("Customers"), this);
+            customers->setObjectName("Customers");
+            customers->setAllowedAreas(Qt::LeftDockWidgetArea |
+                                                  Qt::RightDockWidgetArea);
+            customers->setWidget(new QTextEdit);
+            addDockWidget(Qt::RightDockWidgetArea, customers);
+
+            paragraphs = new QDockWidget(tr("Paragraphs"), this);
+            paragraphs->setObjectName("Paragraphs");
+            paragraphs->setWidget(new QTextEdit);
+            addDockWidget(Qt::RightDockWidgetArea, paragraphs);
+        }
+
+        void restore()
+        {
+            if (!savedGeometry.isEmpty())
+                restoreGeometry(savedGeometry);
+            setWindowState(Qt::WindowMaximized);
+            if (!savedState.isEmpty())
+                restoreState(savedState);
+
+            tabifyDockWidget(customers, paragraphs);
+        }
+    protected:
+        void closeEvent(QCloseEvent *event) override
+        {
+            savedGeometry = saveGeometry();
+            savedState = saveState();
+
+            return QMainWindow::closeEvent(event);
+        }
+    private:
+        QByteArray savedGeometry;
+        QByteArray savedState;
+
+        QDockWidget *customers;
+        QDockWidget *paragraphs;
+
+    } mainWindow;
+
+    mainWindow.restore();
+    mainWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
+    mainWindow.close();
+
+    mainWindow.restore();
+    mainWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&mainWindow));
 }
 
 void tst_QMainWindow::createPopupMenu()
