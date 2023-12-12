@@ -125,10 +125,10 @@ QString QWinRegistryKey::stringValue(QStringView subKey) const
     return value<QString>(subKey).value_or(QString());
 }
 
-QPair<DWORD, bool> QWinRegistryKey::dwordValue(QStringView subKey) const
+std::pair<DWORD, bool> QWinRegistryKey::dwordValue(QStringView subKey) const
 {
     const std::optional<DWORD> val = value<DWORD>(subKey);
-    return qMakePair(val.value_or(0), val.has_value());
+    return {val.value_or(0), val.has_value()};
 }
 
 QT_END_NAMESPACE
