@@ -585,6 +585,7 @@ public:
     QLayoutItem *unplug(QWidget *widget, QDockWidgetPrivate::DragScope scope);
     void revert(QLayoutItem *widgetItem);
     void applyState(QMainWindowLayoutState &newState, bool animate = true);
+    void applyRestoredState();
     void restore(bool keepSavedState = false);
     void animationFinished(QWidget *widget);
 
