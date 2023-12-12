@@ -47,7 +47,7 @@ class QVariant;
 using QVariantList = QList<QVariant>;
 using QVariantMap = QMap<QString, QVariant>;
 using QVariantHash = QHash<QString, QVariant>;
-using QVariantPair = QPair<QVariant, QVariant>;
+using QVariantPair = std::pair<QVariant, QVariant>;
 
 QT_END_NAMESPACE
 
