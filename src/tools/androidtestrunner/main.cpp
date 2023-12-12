@@ -124,8 +124,6 @@ struct Options
     QStringList amStarttestArgs;
     QString apkPath;
     QString ndkStackPath;
-    int sdkVersion = -1;
-    int pid = -1;
     bool showLogcatOutput = false;
     const QHash<QString, std::function<bool(const QByteArray &)>> checkFiles = {
         {"txt"_L1, checkTxt},
@@ -140,6 +138,17 @@ struct Options
 };
 
 static Options g_options;
+
+struct TestInfo
+{
+    int sdkVersion = -1;
+    int pid = -1;
+
+    std::atomic<bool> isPackageInstalled { false };
+    std::atomic<bool> isTestRunnerInterrupted { false };
+};
+
+static TestInfo g_testInfo;
 
 static bool execCommand(const QString &program, const QStringList &args,
                         QByteArray *output = nullptr, bool verbose = false)
@@ -431,11 +440,11 @@ static bool obtainPid() {
     if (columns.size() < 3)
         return false;
 
-    if (g_options.pid == -1) {
+    if (g_testInfo.pid == -1) {
         bool ok = false;
         int pid = columns.at(1).toInt(&ok);
         if (ok)
-            g_options.pid = pid;
+            g_testInfo.pid = pid;
     }
 
     return true;
@@ -450,9 +459,6 @@ static bool isRunning() {
     return output.indexOf(QLatin1StringView(" " + g_options.package.toUtf8())) > -1;
 }
 
-std::atomic<bool> isPackageInstalled { false };
-std::atomic<bool> isTestRunnerInterrupted { false };
-
 static void waitForStartedAndFinished()
 {
     // wait to start and set PID
@@ -461,7 +467,7 @@ static void waitForStartedAndFinished()
         if (obtainPid())
             break;
         QThread::msleep(100);
-    } while (!startDeadline.hasExpired() && !isTestRunnerInterrupted.load());
+    } while (!startDeadline.hasExpired() && !g_testInfo.isTestRunnerInterrupted.load());
 
     // Wait to finish
     QDeadlineTimer finishedDeadline(g_options.timeoutSecs * 1000);
@@ -469,7 +475,7 @@ static void waitForStartedAndFinished()
         if (!isRunning())
             break;
         QThread::msleep(250);
-    } while (!finishedDeadline.hasExpired() && !isTestRunnerInterrupted.load());
+    } while (!finishedDeadline.hasExpired() && !g_testInfo.isTestRunnerInterrupted.load());
 
     if (finishedDeadline.hasExpired())
         qWarning() << "Timed out while waiting for the test to finish";
@@ -485,7 +491,7 @@ static void obtainSdkVersion()
     bool ok = false;
     int sdkVersion = output.toInt(&ok);
     if (ok) {
-        g_options.sdkVersion = sdkVersion;
+        g_testInfo.sdkVersion = sdkVersion;
     } else {
         fprintf(stderr, "Unable to obtain the SDK version of the target.\n");
         fflush(stderr);
@@ -497,7 +503,7 @@ static bool pullFiles()
     bool ret = true;
     QByteArray userId;
     // adb get-current-user command is available starting from API level 26.
-    if (g_options.sdkVersion >= 26) {
+    if (g_testInfo.sdkVersion >= 26) {
         const QStringList userIdArgs = {"shell"_L1, "cmd"_L1, "activity"_L1, "get-current-user"_L1};
         if (!execAdbCommand(userIdArgs, &userId)) {
             qCritical() << "Error: failed to retrieve the user ID";
@@ -543,10 +549,10 @@ static bool pullFiles()
 void printLogcat(const QString &formattedTime)
 {
     QStringList logcatArgs = { "logcat"_L1 };
-    if (g_options.sdkVersion <= 23 || g_options.pid == -1)
+    if (g_testInfo.sdkVersion <= 23 || g_testInfo.pid == -1)
         logcatArgs << "-t"_L1 << formattedTime;
     else
-        logcatArgs << "-d"_L1 << "--pid=%1"_L1.arg(QString::number(g_options.pid));
+        logcatArgs << "-d"_L1 << "--pid=%1"_L1.arg(QString::number(g_testInfo.pid));
 
     QByteArray logcat;
     if (!execAdbCommand(logcatArgs, &logcat, false)) {
@@ -645,7 +651,7 @@ void printLogcatCrashBuffer(const QString &formattedTime)
 
 static QString getCurrentTimeString()
 {
-    const QString timeFormat = (g_options.sdkVersion <= 23) ?
+    const QString timeFormat = (g_testInfo.sdkVersion <= 23) ?
             "%m-%d %H:%M:%S.000"_L1 : "%Y-%m-%d %H:%M:%S.%3N"_L1;
 
     QStringList dateArgs = { "shell"_L1, "date"_L1, "+'%1'"_L1.arg(timeFormat) };
@@ -695,9 +701,9 @@ void sigHandler(int signal)
     // and we can't use QSocketNotifier because this tool doesn't spin
     // a main event loop. Since, there's no other alternative to do this,
     // let's do the cleanup anyway.
-    if (!isPackageInstalled.load())
+    if (!g_testInfo.isPackageInstalled.load())
         _exit(-1);
-    isTestRunnerInterrupted.store(true);
+    g_testInfo.isTestRunnerInterrupted.store(true);
 }
 
 int main(int argc, char *argv[])
@@ -753,8 +759,8 @@ int main(int argc, char *argv[])
     testRunnerLock.acquire();
 
     const QStringList installArgs = { "install"_L1, "-r"_L1, "-g"_L1, g_options.apkPath };
-    isPackageInstalled.store(execAdbCommand(installArgs, nullptr));
-    if (!isPackageInstalled)
+    g_testInfo.isPackageInstalled.store(execAdbCommand(installArgs, nullptr));
+    if (!g_testInfo.isPackageInstalled)
         return 1;
 
     const QString formattedTime = getCurrentTimeString();
@@ -782,7 +788,7 @@ int main(int argc, char *argv[])
 
     testRunnerLock.release();
 
-    if (isTestRunnerInterrupted.load()) {
+    if (g_testInfo.isTestRunnerInterrupted.load()) {
         qCritical() << "The androidtestrunner was interrupted and the was test cleaned up.";
         return 1;
     }
