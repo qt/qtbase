@@ -46,6 +46,7 @@ qt_internal_add_module(DBus
         DBUS_API_SUBJECT_TO_CHANGE
         QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
+        QT_NO_QPAIR
     LIBRARIES
         Qt::CorePrivate
     PUBLIC_LIBRARIES

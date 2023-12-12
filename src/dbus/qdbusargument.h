@@ -304,7 +304,7 @@ inline QDBusArgument &operator<<(QDBusArgument &arg, const QVariantHash &map)
 }
 
 template <typename T1, typename T2>
-inline QDBusArgument &operator<<(QDBusArgument &arg, const QPair<T1, T2> &pair)
+inline QDBusArgument &operator<<(QDBusArgument &arg, const std::pair<T1, T2> &pair)
 {
     arg.beginStructure();
     arg << pair.first << pair.second;
@@ -313,7 +313,7 @@ inline QDBusArgument &operator<<(QDBusArgument &arg, const QPair<T1, T2> &pair)
 }
 
 template <typename T1, typename T2>
-inline const QDBusArgument &operator>>(const QDBusArgument &arg, QPair<T1, T2> &pair)
+inline const QDBusArgument &operator>>(const QDBusArgument &arg, std::pair<T1, T2> &pair)
 {
     arg.beginStructure();
     arg >> pair.first >> pair.second;
