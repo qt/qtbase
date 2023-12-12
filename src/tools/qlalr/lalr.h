@@ -9,7 +9,6 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qtextstream.h>
-#include <QtCore/qpair.h>
 
 #include <algorithm>
 #include <functional>
@@ -117,8 +116,8 @@ public:
   inline bool operator != (const State &other) const
   { return kernel != other.kernel; }
 
-  QPair<ItemPointer, bool> insert (const Item &item);
-  QPair<ItemPointer, bool> insertClosure (const Item &item);
+  std::pair<ItemPointer, bool> insert(const Item &item);
+  std::pair<ItemPointer, bool> insertClosure(const Item &item);
 
 public: // attributes
   ItemList kernel;
@@ -143,7 +142,7 @@ public:
 public:
   static iterator get (_Tp data);
 
-  QPair<edge_iterator, bool> insertEdge (iterator other) const;
+  std::pair<edge_iterator, bool> insertEdge(iterator other) const;
 
   inline edge_iterator begin () const
   { return outs.begin (); }
@@ -198,15 +197,15 @@ typename Node<_Tp>::iterator Node<_Tp>::get (_Tp data)
 }
 
 template <typename _Tp>
-QPair<typename std::list<typename Node<_Tp>::iterator>::iterator, bool> Node<_Tp>::insertEdge(typename Node<_Tp>::iterator other) const
+std::pair<typename std::list<typename Node<_Tp>::iterator>::iterator, bool> Node<_Tp>::insertEdge(typename Node<_Tp>::iterator other) const
 {
   edge_iterator it = std::find (outs.begin (), outs.end (), other);
 
   if (it != outs.end ())
-    return qMakePair (it, false);
+    return {it, false};
 
   other->root = false;
-  return qMakePair (outs.insert (outs.end (), other), true);
+  return {outs.insert (outs.end (), other), true};
 }
 
 /////////////////////////////////////////////////////////////
@@ -312,7 +311,7 @@ class Automaton
 public:
   Automaton (Grammar *g);
 
-  QPair<StatePointer, bool> internState (const State &state);
+  std::pair<StatePointer, bool> internState (const State &state);
 
   typedef Node<Read> ReadsGraph;
   typedef ReadsGraph::iterator ReadNode;

@@ -21,6 +21,7 @@ qt_internal_add_tool(${target_name}
         recognizer.cpp recognizer.h
     DEFINES
         QT_NO_FOREACH
+        QT_NO_QPAIR
     LIBRARIES
         Qt::Core
         Qt::CorePrivate

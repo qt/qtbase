@@ -139,24 +139,24 @@ State::State (Grammar *g):
 {
 }
 
-QPair<ItemPointer, bool> State::insert (const Item &item)
+std::pair<ItemPointer, bool> State::insert(const Item &item)
 {
   ItemPointer it = std::find (kernel.begin (), kernel.end (), item);
 
   if (it != kernel.end ())
-    return qMakePair (it, false);
+    return {it, false};
 
-  return qMakePair (kernel.insert (it, item), true);
+  return {kernel.insert(it, item), true};
 }
 
-QPair<ItemPointer, bool> State::insertClosure (const Item &item)
+std::pair<ItemPointer, bool> State::insertClosure(const Item &item)
 {
   ItemPointer it = std::find (closure.begin (), closure.end (), item);
 
   if (it != closure.end ())
-    return qMakePair (it, false);
+    return {it, false};
 
-  return qMakePair (closure.insert (it, item), true);
+  return {closure.insert (it, item), true};
 }
 
 
@@ -296,14 +296,14 @@ void Automaton::buildNullables ()
 #endif
 }
 
-QPair<StatePointer, bool> Automaton::internState (const State &state)
+std::pair<StatePointer, bool> Automaton::internState(const State &state)
 {
   StatePointer it = std::find (states.begin (), states.end (), state);
 
   if (it != states.end ())
-    return qMakePair (it, false);
+    return {it, false};
 
-  return qMakePair (states.insert (it, state), true);
+  return {states.insert (it, state), true};
 }
 
 struct _Bucket
@@ -359,7 +359,7 @@ void Automaton::closure (StatePointer state)
               ii.rule = rule;
               ii.dot = rule->rhs.begin ();
 
-              QPair<ItemPointer, bool> r = state->insertClosure (ii);
+              std::pair<ItemPointer, bool> r = state->insertClosure(ii);
 
               if (r.second)
                 working_list.push (r.first);
@@ -371,7 +371,7 @@ void Automaton::closure (StatePointer state)
 
   for (bucket_map_type::iterator bucket = buckets.begin (); bucket != buckets.end (); ++bucket)
     {
-      QPair<StatePointer, bool> r = internState (bucket->toState (this));
+      std::pair<StatePointer, bool> r = internState(bucket->toState(this));
 
       StatePointer target = r.first;
 

@@ -66,7 +66,7 @@ inline std::wostream &operator<<(std::wostream &str, const QString &s)
 // Container class for JSON output
 class JsonOutput
 {
-    using SourceTargetMapping = QPair<QString, QString>;
+    using SourceTargetMapping = std::pair<QString, QString>;
     using SourceTargetMappings = QList<SourceTargetMapping>;
 
 public:
