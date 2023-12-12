@@ -633,14 +633,16 @@ QIconEngine *QIconLoader::iconEngine(const QString &iconName) const
         qCDebug(lcIconLoader) << "Icon is not available from theme or fallback theme.";
         if (auto *platformTheme = QGuiApplicationPrivate::platformTheme()) {
             qCDebug(lcIconLoader) << "Trying platform engine.";
-            iconEngine.reset(platformTheme->createIconEngine(iconName));
+            std::unique_ptr<QIconEngine> themeEngine(platformTheme->createIconEngine(iconName));
+            if (themeEngine && !themeEngine->isNull()) {
+                iconEngine = std::move(themeEngine);
+                qCDebug(lcIconLoader) << "Icon provided by platform engine.";
+            }
         }
-        // We need to maintain the invariant that the QIcon has a valid engine
-        if (!iconEngine || iconEngine->isNull())
-            iconEngine.reset(new QIconLoaderEngine(iconName));
-        else
-            qCDebug(lcIconLoader) << "Icon provided by platform engine.";
     }
+    // We need to maintain the invariant that the QIcon has a valid engine
+    if (!iconEngine)
+        iconEngine.reset(new QIconLoaderEngine(iconName));
 
     qCDebug(lcIconLoader) << "Resulting engine" << iconEngine.get();
     return iconEngine.release();
