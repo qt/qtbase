@@ -183,7 +183,7 @@ using namespace Qt::StringLiterals;
 //! [21]
 
 //! [22]
-   void appendMap(QCborStreamWriter &writer, const QList<QPair<int, QString>> &values)
+   void appendMap(QCborStreamWriter &writer, const QList<std::pair<int, QString>> &values)
    {
        writer.startMap();
        for (const auto pair : values) {
