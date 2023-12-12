@@ -25,6 +25,7 @@
 #include "QtCore/qsettings.h"
 #endif
 #ifndef QT_NO_QOBJECT
+#include <qloggingcategory.h>
 #include "private/qobject_p.h"
 #include "private/qlocking_p.h"
 #endif
@@ -34,6 +35,10 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_QOBJECT
+Q_DECLARE_LOGGING_CATEGORY(lcDeleteLater)
+#endif
 
 typedef QList<QTranslator*> QTranslatorList;
 

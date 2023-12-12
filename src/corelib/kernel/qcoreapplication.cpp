@@ -111,6 +111,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_QOBJECT
+Q_LOGGING_CATEGORY(lcDeleteLater, "qt.core.qobject.deletelater")
+#endif
+
 using namespace Qt::StringLiterals;
 
 Q_TRACE_PREFIX(qtcore,
@@ -1494,6 +1498,8 @@ void QCoreApplicationPrivate::execCleanup()
 {
     threadData.loadRelaxed()->quitNow = false;
     in_exec = false;
+
+    qCDebug(lcDeleteLater) << "Sending deferred delete events as part of exec cleanup";
     QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
 }
 
@@ -1856,16 +1862,37 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
             //    events posted by the current event loop; or
             // 3) if the event was posted before the outermost event loop.
 
-            const int eventLoopLevel = static_cast<QDeferredDeleteEvent *>(pe.event)->loopLevel();
-            const int eventScopeLevel = static_cast<QDeferredDeleteEvent *>(pe.event)->scopeLevel();
+            const auto *event = static_cast<QDeferredDeleteEvent *>(pe.event);
+            qCDebug(lcDeleteLater) << "Processing deferred delete event for" << pe.receiver
+                << "with loop level" << event->loopLevel() << "and scope level" << event->scopeLevel();
 
-            const bool postedBeforeOutermostLoop = eventLoopLevel == 0;
-            const bool allowDeferredDelete =
-                (eventLoopLevel + eventScopeLevel > data->loopLevel + data->scopeLevel
-                 || (postedBeforeOutermostLoop && data->loopLevel > 0)
-                 || (event_type == QEvent::DeferredDelete
-                     && eventLoopLevel + eventScopeLevel == data->loopLevel + data->scopeLevel));
+            qCDebug(lcDeleteLater) << "Checking" << data->thread << "with loop level"
+                << data->loopLevel << "and scope level" << data->scopeLevel;
+
+            bool allowDeferredDelete = false;
+            if (event->loopLevel() == 0 && data->loopLevel > 0) {
+                qCDebug(lcDeleteLater) << "Event was posted outside outermost event loop"
+                    << "and current thread has an event loop running.";
+                allowDeferredDelete = true;
+            } else {
+                const int totalEventLevel = event->loopLevel() + event->scopeLevel();
+                const int totalThreadLevel = data->loopLevel + data->scopeLevel;
+
+                if (totalEventLevel > totalThreadLevel) {
+                    qCDebug(lcDeleteLater) << "Combined levels of event" << totalEventLevel
+                        << "is higher than thread" << totalThreadLevel;
+                    allowDeferredDelete = true;
+                } else if (event_type == QEvent::DeferredDelete && totalEventLevel == totalThreadLevel) {
+                    qCDebug(lcDeleteLater) << "Explicit send of DeferredDelete and"
+                        << "levels of event" << totalEventLevel
+                        << "is same as thread" << totalThreadLevel;
+                    allowDeferredDelete = true;
+                }
+            }
+
             if (!allowDeferredDelete) {
+                qCDebug(lcDeleteLater) << "Failed conditions for deferred delete. Deferring again";
+
                 // cannot send deferred delete
                 if (!event_type && !receiver) {
                     // we must copy it first; we want to re-post the event
@@ -1882,6 +1909,8 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
                     data->postEventList.addEvent(pe_copy);
                 }
                 continue;
+            } else {
+                qCDebug(lcDeleteLater) << "Sending deferred delete to" << pe.receiver;
             }
         }
 

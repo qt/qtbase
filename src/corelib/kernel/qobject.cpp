@@ -1430,6 +1430,7 @@ bool QObject::event(QEvent *e)
         break;
 
     case QEvent::DeferredDelete:
+        qCDebug(lcDeleteLater) << "Deferred deleting" << this;
         delete this;
         break;
 
@@ -2450,8 +2451,10 @@ void QObject::deleteLater()
     // as long as we're not guarding every access to the bit field.
 
     Q_D(QObject);
-    if (d->deleteLaterCalled)
+    if (d->deleteLaterCalled) {
+        qCDebug(lcDeleteLater) << "Skipping deleteLater for already deferred object" << this;
         return;
+    }
 
     d->deleteLaterCalled = true;
 
@@ -2477,9 +2480,15 @@ void QObject::deleteLater()
         // non-conformant code path, and our best guess is that the scope level
         // should be 1. (Loop level 0 is special: it means that no event loops
         // are running.)
-        if (scopeLevel == 0 && loopLevel != 0)
+        if (scopeLevel == 0 && loopLevel != 0) {
+            qCDebug(lcDeleteLater) << "Delete later called with scope level 0"
+                << "but loop level is > 0. Assuming scope is 1";
             scopeLevel = 1;
+        }
     }
+
+    qCDebug(lcDeleteLater) << "Posting deferred delete for" << this
+        << "with loop level" << loopLevel << "and scope level" << scopeLevel;
 
     eventListLocker.unlock();
     QCoreApplication::postEvent(this,

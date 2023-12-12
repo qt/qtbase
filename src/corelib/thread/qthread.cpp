@@ -147,6 +147,21 @@ void QAdoptedThread::run()
     qFatal("QAdoptedThread::run(): Internal error, this implementation should never be called.");
 }
 
+QScopedScopeLevelCounter::QScopedScopeLevelCounter(QThreadData *threadData)
+    : threadData(threadData)
+{
+    ++threadData->scopeLevel;
+    qCDebug(lcDeleteLater) << "Increased" << threadData->thread
+                      << "scope level to" << threadData->scopeLevel;
+}
+
+QScopedScopeLevelCounter::~QScopedScopeLevelCounter()
+{
+    --threadData->scopeLevel;
+    qCDebug(lcDeleteLater) << "Decreased" << threadData->thread
+                      << "scope level to" << threadData->scopeLevel;
+}
+
 /*
   QThreadPrivate
 */

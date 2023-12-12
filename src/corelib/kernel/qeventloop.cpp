@@ -151,6 +151,9 @@ int QEventLoop::exec(ProcessEventsFlags flags)
             auto threadData = d->threadData.loadRelaxed();
             ++threadData->loopLevel;
             threadData->eventLoops.push(d->q_func());
+            qCDebug(lcDeleteLater) << "Increased" << threadData->thread
+                      << "loop level to" << threadData->loopLevel
+                      << "with leaf loop now" << threadData->eventLoops.last();
 
             locker.unlock();
         }
@@ -169,6 +172,12 @@ int QEventLoop::exec(ProcessEventsFlags flags)
             Q_UNUSED(eventLoop); // --release warning
             d->inExec = false;
             --threadData->loopLevel;
+
+            qCDebug(lcDeleteLater) << "Decreased" << threadData->thread
+                      << "loop level to" << threadData->loopLevel
+                      << "with leaf loop now" << (threadData->eventLoops.isEmpty()
+                        ? nullptr : threadData->eventLoops.last());
+
         }
     };
     LoopReference ref(d, locker);
