@@ -1905,17 +1905,32 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
                 int precedingCharacterFontEngine = glyphs->glyphs[glyph_pos - 1] >> 24;
 
                 if (selectorFontEngine != precedingCharacterFontEngine) {
-                    QFontEngine *engine = m_engines.at(selectorFontEngine);
-                    glyph_t glyph = engine->glyphIndex(previousUcs4);
-                    if (glyph != 0) {
-                        glyphs->glyphs[glyph_pos - 1] = glyph;
-                        if (!(flags & GlyphIndicesOnly)) {
-                            QGlyphLayout g = glyphs->mid(glyph_pos - 1, 1);
-                            engine->recalcAdvances(&g, flags);
-                        }
+                    // Emoji variant selectors are specially handled and should affect font
+                    // selection. If VS-16 is used, then this means we want to select a color
+                    // font. If the selected font is already a color font, we do not need search
+                    // again. If the VS-15 is used, then this means we want to select a non-color
+                    // font. If the selected font is not a color font, we don't do anything.
+                    const QFontEngine *selectedEngine = m_engines.at(precedingCharacterFontEngine);
+                    const bool colorFont = selectedEngine->isColorFont();
+                    const char32_t vs15 = 0xFE0E;
+                    const char32_t vs16 = 0xFE0F;
+                    bool adaptVariantSelector = ucs4 < vs15
+                                                || (ucs4 == vs15 && colorFont)
+                                                || (ucs4 == vs16 && !colorFont);
 
-                        // set the high byte to indicate which engine the glyph came from
-                        glyphs->glyphs[glyph_pos - 1] |= (selectorFontEngine << 24);
+                    if (adaptVariantSelector) {
+                        QFontEngine *engine = m_engines.at(selectorFontEngine);
+                        glyph_t glyph = engine->glyphIndex(previousUcs4);
+                        if (glyph != 0) {
+                            glyphs->glyphs[glyph_pos - 1] = glyph;
+                            if (!(flags & GlyphIndicesOnly)) {
+                                QGlyphLayout g = glyphs->mid(glyph_pos - 1, 1);
+                                engine->recalcAdvances(&g, flags);
+                            }
+
+                            // set the high byte to indicate which engine the glyph came from
+                            glyphs->glyphs[glyph_pos - 1] |= (selectorFontEngine << 24);
+                        }
                     }
                 }
             }
