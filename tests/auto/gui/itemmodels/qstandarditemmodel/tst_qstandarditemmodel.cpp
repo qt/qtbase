@@ -1847,9 +1847,9 @@ void tst_QStandardItemModel::takeChild()  // QTBUG-117900
       QStandardItem base2("base2");
       model2.setItem(0, 0, &base2);
       auto item = new QStandardItem("item1");
-      item->appendRow({new QStandardItem("child")});
-      base1.appendRow({item});
-      base2.appendRow({base1.takeChild(0, 0)});
+      item->appendRow(new QStandardItem("child"));
+      base1.appendRow(item);
+      base2.appendRow(base1.takeChild(0, 0));
       QCOMPARE(base1.child(0, 0), nullptr);
       QCOMPARE(base2.child(0, 0), item);
   }
@@ -1858,9 +1858,9 @@ void tst_QStandardItemModel::takeChild()  // QTBUG-117900
       QStandardItem base1("base1");
       QStandardItem base2("base2");
       auto item = new QStandardItem("item1");
-      item->appendRow({new QStandardItem("child")});
-      base1.appendRow({item});
-      base2.appendRow({base1.takeChild(0, 0)});
+      item->appendRow(new QStandardItem("child"));
+      base1.appendRow(item);
+      base2.appendRow(base1.takeChild(0, 0));
       QCOMPARE(base1.child(0, 0), nullptr);
       QCOMPARE(base2.child(0, 0), item);
   }
