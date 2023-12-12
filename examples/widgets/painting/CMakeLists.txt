@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 qt_internal_add_example(basicdrawing)
-qt_internal_add_example(concentriccircles)
 qt_internal_add_example(affine)
 # qt_internal_add_example(composition) # FIXME: Seems buggy wrt. usesOpenGL function
 qt_internal_add_example(deform)

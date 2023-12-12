@@ -63,7 +63,6 @@
 "painting/affine Example", "examples/widgets/painting/affine", "affine", 0, -1
 "painting/basicdrawing Example", "examples/widgets/painting/basicdrawing", "basicdrawing", 10, -1
 "painting/composition Example", "examples/widgets/painting/composition", "composition", 0, -1
-"painting/concentriccircles Example", "examples/widgets/painting/concentriccircles", "concentriccircles", 0, -1
 "painting/deform Example", "examples/widgets/painting/deform", "deform", 0, -1
 "painting/fontsampler Example", "examples/widgets/painting/fontsampler", "fontsampler", 0, -1
 "painting/gradients Example", "examples/widgets/painting/gradients", "gradients", 0, -1
