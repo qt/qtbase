@@ -164,6 +164,27 @@ QT_BEGIN_NAMESPACE
     If no full packet is received, this code restores the stream to the
     initial position, after which you need to wait for more data to arrive.
 
+    \section1 Corruption and Security
+
+    QDataStream is not resilient against corrupted data inputs and should
+    therefore not be used for security-sensitive situations, even when using
+    transactions. Transactions will help determine if a valid input can
+    currently be decoded with the data currently available on an asynchronous
+    device, but will assume that the data that is available is correctly
+    formed.
+
+    Additionally, many QDataStream demarshalling operators will allocate memory
+    based on information found in the stream. Those operators perform no
+    verification on whether the requested amount of memory is reasonable or if
+    it is compatible with the amount of data available in the stream (example:
+    demarshalling a QByteArray or QString may see the request for allocation of
+    several gigabytes of data).
+
+    QDataStream should not be used on content whose provenance cannot be
+    trusted. Applications should be designed to attempt to decode only streams
+    whose provenance is at least as trustworthy as that of the application
+    itself or its plugins.
+
     \sa QTextStream, QVariant
 */
 
