@@ -153,6 +153,7 @@ struct BaseDef {
 
 struct SuperClass {
     QByteArray classname;
+    QByteArray qualified;
     FunctionDef::Access access;
 };
 Q_DECLARE_TYPEINFO(SuperClass, Q_RELOCATABLE_TYPE);
@@ -233,6 +234,8 @@ public:
     inline bool inNamespace(const NamespaceDef *def) const {
         return index > def->begin && index < def->end - 1;
     }
+
+    const QByteArray &toFullyQualified(const QByteArray &name) const noexcept;
 
     void prependNamespaces(BaseDef &def, const QList<NamespaceDef> &namespaceList) const;
 
