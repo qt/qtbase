@@ -25,6 +25,7 @@ set(JSON_HEADERS
         moc_include.h
         namespace.h
         namespaced-flags.h
+        namespaced-base-class.h
         no-keywords.h
         non-gadget-parent-class.h
         oldstyle-casts.h

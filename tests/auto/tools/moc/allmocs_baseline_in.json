@@ -1322,6 +1322,35 @@
     {
         "classes": [
             {
+                "className": "Base",
+                "object": true,
+                "qualifiedClassName": "QTBUG_101141::Base",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            },
+            {
+                "className": "Derived",
+                "object": true,
+                "qualifiedClassName": "QTBUG_101141::Derived",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "fullyQualifiedName": "QTBUG_101141::Base",
+                        "name": "Base"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "namespaced-base-class.h",
+        "outputRevision": 68
+    },
+    {
+        "classes": [
+            {
                 "className": "Bar",
                 "enums": [
                     {
