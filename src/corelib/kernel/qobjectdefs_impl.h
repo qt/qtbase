@@ -589,6 +589,7 @@ namespace QtPrivate {
         static_assert(int(ActualSignature::ArgumentCount) <= int(ExpectedSignature::ArgumentCount),
             "Functor requires more arguments than what can be provided.");
 
+        // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
         return new QtPrivate::QCallableObject<std::decay_t<Functor>, ActualArguments, ExpectedReturnType>(std::forward<Functor>(func));
     }
 
