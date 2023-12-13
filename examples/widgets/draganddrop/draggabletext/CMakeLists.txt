@@ -30,6 +30,10 @@ target_link_libraries(draggabletext PRIVATE
     Qt6::Widgets
 )
 
+if(EMSCRIPTEN)
+    target_link_options(draggabletext PUBLIC -sASYNCIFY -Os)
+endif()
+
 # Resources:
 set(draggabletext_resource_files
     "words.txt"
