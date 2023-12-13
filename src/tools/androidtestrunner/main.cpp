@@ -156,12 +156,12 @@ static bool execCommand(const QString &program, const QStringList &args,
     const auto command = program + " "_L1 + args.join(u' ');
 
     if (verbose && g_options.verbose)
-        qDebug("Execute %s.\n", command.toUtf8().constData());
+        qDebug("Execute %s.", command.toUtf8().constData());
 
     QProcess process;
     process.start(program, args);
     if (!process.waitForStarted()) {
-        qCritical("Cannot execute command %s.\n", qPrintable(command));
+        qCritical("Cannot execute command %s.", qPrintable(command));
         return false;
     }
 
@@ -169,7 +169,7 @@ static bool execCommand(const QString &program, const QStringList &args,
     // QProcess::waitForFinished() 30 secs, so for that use a higher timeout.
     const int FinishTimeout = program.endsWith("adb"_L1) ? 30000 : g_options.timeoutSecs * 1000;
     if (!process.waitForFinished(FinishTimeout)) {
-        qCritical("Execution of command %s timed out.\n", qPrintable(command));
+        qCritical("Execution of command %s timed out.", qPrintable(command));
         return false;
     }
 
@@ -277,9 +277,8 @@ static void printHelp()
 {
     qWarning(       "Syntax: %s <options> -- [TESTARGS] \n"
                     "\n"
-                    "  Creates an Android package in a temp directory <destination> and\n"
-                    "  runs it on the default emulator/device or on the one specified by\n"
-                    "  \"ANDROID_DEVICE_SERIAL\" environment variable.\n"
+                    "  Runs an Android test on the default emulator/device or on the one\n"
+                    "  specified by \"ANDROID_DEVICE_SERIAL\" environment variable.\n"
                     "\n"
                     "  Mandatory arguments:\n"
                     "    --path <path>: The path where androiddeployqt builds the android package.\n"
@@ -289,7 +288,7 @@ static void printHelp()
                     "\n"
                     "  Optional arguments:\n"
                     "    --make <make cmd>: make command, needed to install the qt library.\n"
-                    "       For Qt 5.14+ this can be \"make apk\".\n"
+                    "       For Qt 6, this can be \"cmake --build . --target <target>_make_apk\".\n"
                     "\n"
                     "    --adb <adb cmd>: The Android ADB command. If missing the one from\n"
                     "       $PATH will be used.\n"
@@ -310,7 +309,7 @@ static void printHelp()
                     "\n"
                     "    --verbose: Prints out information during processing.\n"
                     "\n"
-                    "    --help: Displays this information.\n\n",
+                    "    --help: Displays this information.\n",
                     qPrintable(QCoreApplication::arguments().at(0))
             );
 }
@@ -401,7 +400,7 @@ static bool parseTestArgs()
         testAppArgs += "-o output.%1,%1 "_L1.arg(format);
 
     testAppArgs += unhandledArgs.join(u' ').trimmed();
-    testAppArgs = "\"%1\""_L1.arg(testAppArgs);
+    testAppArgs = "\"%1\""_L1.arg(testAppArgs.trimmed());
     const QString activityName = "%1/%2"_L1.arg(g_options.package).arg(g_options.activity);
 
     // Pass over any testlib env vars if set
@@ -493,7 +492,7 @@ static void obtainSdkVersion()
     if (ok)
         g_testInfo.sdkVersion = sdkVersion;
     else
-        qCritical() << "Unable to obtain the SDK version of the target.\n";
+        qCritical() << "Unable to obtain the SDK version of the target.";
 }
 
 static bool pullFiles()
@@ -503,7 +502,7 @@ static bool pullFiles()
     // adb get-current-user command is available starting from API level 26.
     if (g_testInfo.sdkVersion >= 26) {
         const QStringList userIdArgs = {"shell"_L1, "cmd"_L1, "activity"_L1, "get-current-user"_L1};
-        if (!execAdbCommand(userIdArgs, &userId)) {
+        if (!execAdbCommand(userIdArgs, &userId, false)) {
             qCritical() << "Error: failed to retrieve the user ID";
             return false;
         }
@@ -716,7 +715,7 @@ int main(int argc, char *argv[])
 
     if (g_options.makeCommand.isEmpty()) {
         qCritical() << "It is required to provide a make command with the \"--make\" parameter "
-                       "to generate the apk.\n";
+                       "to generate the apk.";
         return 1;
     }
     if (!execCommand(g_options.makeCommand, nullptr, true)) {
@@ -734,7 +733,7 @@ int main(int argc, char *argv[])
 
     if (!QFile::exists(g_options.apkPath)) {
         qCritical("No apk \"%s\" found after running the make command. "
-                  "Check the provided path and the make command.\n",
+                  "Check the provided path and the make command.",
                   qPrintable(g_options.apkPath));
         return 1;
     }
