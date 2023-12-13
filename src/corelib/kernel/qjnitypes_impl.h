@@ -156,7 +156,7 @@ struct Traits {
     // The return type of className/signature becomes void for any type
     // not handled here. This indicates that the Traits type is not specialized
     // for the respective type, which we use to detect invalid types in the
-    // ValidSignatureTypes and ValidFieldType predicates below.
+    // IfValidSignatureTypes and IfValidFieldType predicates below.
 
     static constexpr auto className()
     {
@@ -281,17 +281,17 @@ constexpr bool ValidSignatureTypesDetail = !std::disjunction<std::is_same<
                                                     void>...,
                                                     IsStringType<Types>...>::value;
 template<typename ...Types>
-using ValidSignatureTypes = std::enable_if_t<
+using IfValidSignatureTypes = std::enable_if_t<
     ValidSignatureTypesDetail<q20::remove_cvref_t<Types>...>, bool>;
 
 template<typename Type>
 constexpr bool ValidFieldTypeDetail = isObjectType<Type>() || isPrimitiveType<Type>();
 template<typename Type>
-using ValidFieldType = std::enable_if_t<
+using IfValidFieldType = std::enable_if_t<
     ValidFieldTypeDetail<q20::remove_cvref_t<Type>>, bool>;
 
 
-template<typename R, typename ...Args, ValidSignatureTypes<R, Args...> = true>
+template<typename R, typename ...Args, IfValidSignatureTypes<R, Args...> = true>
 static constexpr auto methodSignature()
 {
     return (CTString("(") +
@@ -300,25 +300,25 @@ static constexpr auto methodSignature()
             + Traits<R>::signature();
 }
 
-template<typename T, ValidSignatureTypes<T> = true>
+template<typename T, IfValidSignatureTypes<T> = true>
 static constexpr auto fieldSignature()
 {
     return QtJniTypes::Traits<T>::signature();
 }
 
-template<typename ...Args, ValidSignatureTypes<Args...> = true>
+template<typename ...Args, IfValidSignatureTypes<Args...> = true>
 static constexpr auto constructorSignature()
 {
     return methodSignature<void, Args...>();
 }
 
-template<typename Ret, typename ...Args, ValidSignatureTypes<Ret, Args...> = true>
+template<typename Ret, typename ...Args, IfValidSignatureTypes<Ret, Args...> = true>
 static constexpr auto nativeMethodSignature(Ret (*)(JNIEnv *, jobject, Args...))
 {
     return methodSignature<Ret, Args...>();
 }
 
-template<typename Ret, typename ...Args, ValidSignatureTypes<Ret, Args...> = true>
+template<typename Ret, typename ...Args, IfValidSignatureTypes<Ret, Args...> = true>
 static constexpr auto nativeMethodSignature(Ret (*)(JNIEnv *, jclass, Args...))
 {
     return methodSignature<Ret, Args...>();

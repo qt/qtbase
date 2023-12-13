@@ -34,12 +34,17 @@ struct Object : QJniObject
     // avoid ambiguities with deleted const char * constructor
     Q_IMPLICIT Object(std::nullptr_t) : QJniObject() {}
 
-    // this intentionally includes the default constructor
-    template<typename ...Args
-            , ValidSignatureTypes<Args...> = true
+    Object()
+        : QJniObject(QtJniTypes::Traits<Class>::className())
+    {}
+
+    template<typename Arg, typename ...Args
+            , std::enable_if_t<!std::is_same_v<Arg, Object>, bool> = true
+            , IfValidSignatureTypes<Arg, Args...> = true
     >
-    explicit Object(Args &&...args)
-        : QJniObject(QtJniTypes::Traits<Class>::className(), std::forward<Args>(args)...)
+    explicit Object(Arg && arg, Args &&...args)
+        : QJniObject(QtJniTypes::Traits<Class>::className(), std::forward<Arg>(arg),
+                                                             std::forward<Args>(args)...)
     {}
 
     // named constructors avoid ambiguities
@@ -56,7 +61,7 @@ struct Object : QJniObject
     // public API forwarding to QJniObject, with the implicit Class template parameter
     template <typename Ret, typename ...Args
 #ifndef Q_QDOC
-        , QtJniTypes::ValidSignatureTypes<Ret, Args...> = true
+        , QtJniTypes::IfValidSignatureTypes<Ret, Args...> = true
 #endif
     >
     static auto callStaticMethod(const char *name, Args &&...args)
@@ -66,7 +71,7 @@ struct Object : QJniObject
     }
     template <typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     static auto getStaticField(const char *field)
@@ -75,7 +80,7 @@ struct Object : QJniObject
     }
     template <typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     static void setStaticField(const char *field, T &&value)
@@ -86,7 +91,7 @@ struct Object : QJniObject
     // keep only these overloads, the rest is made private
     template <typename Ret, typename ...Args
 #ifndef Q_QDOC
-        , QtJniTypes::ValidSignatureTypes<Ret, Args...> = true
+        , QtJniTypes::IfValidSignatureTypes<Ret, Args...> = true
 #endif
     >
     auto callMethod(const char *method, Args &&...args) const
@@ -95,7 +100,7 @@ struct Object : QJniObject
     }
     template <typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     auto getField(const char *fieldName) const
@@ -105,7 +110,7 @@ struct Object : QJniObject
 
     template <typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     void setField(const char *fieldName, T &&value)
