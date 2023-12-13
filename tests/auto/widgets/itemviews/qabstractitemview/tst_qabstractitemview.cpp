@@ -149,6 +149,7 @@ private slots:
     void selectionAutoScrolling();
     void testSpinBoxAsEditor_data();
     void testSpinBoxAsEditor();
+    void removeIndexWhileEditing();
 
 private:
     static QAbstractItemView *viewFromString(const QByteArray &viewType, QWidget *parent = nullptr)
@@ -3461,6 +3462,63 @@ void tst_QAbstractItemView::testSpinBoxAsEditor()
     QTest::mouseDClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, clickpos);
 
     QCOMPARE(model.data(model.index(0, 1)).toInt(), 1);
+}
+
+void tst_QAbstractItemView::removeIndexWhileEditing()
+{
+    QTreeView view;
+    QStandardItemModel treeModel;
+    auto editableItem1 = new QStandardItem("aa");
+    auto editableItem2 = new QStandardItem("ab");
+    auto editableItem3 = new QStandardItem("ac");
+    auto item = new QStandardItem("a");
+    item->appendRow(editableItem1);
+    item->appendRow(editableItem2);
+    item->appendRow(editableItem3);
+    treeModel.setItem(0, 0, item);
+    QSortFilterProxyModel filterModel;
+    filterModel.setSourceModel(&treeModel);
+    view.setModel(&filterModel);
+    view.show();
+
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    view.setExpanded(item->index(), true);
+
+    filterModel.setFilterRegularExpression("a.*");
+
+    QTest::failOnWarning(QRegularExpression("QAbstractItemView::closeEditor called with an editor "
+                                            "that does not belong to this view"));
+
+    // Verify that we shut editing down cleanly if the index we are editing is
+    // filtered out after committing
+    {
+        const QModelIndex filteredIndex = filterModel.mapFromSource(editableItem1->index());
+        QVERIFY(filteredIndex.isValid());
+        view.edit(filteredIndex);
+        QCOMPARE(view.state(), QAbstractItemView::EditingState);
+        QPointer<QLineEdit> lineEdit = qobject_cast<QLineEdit *>(QApplication::focusWidget());
+        QVERIFY(lineEdit);
+        lineEdit->setText("c");
+        QTest::keyClick(lineEdit, Qt::Key_Enter);
+        QTRY_VERIFY(!lineEdit);
+        QCOMPARE(editableItem1->data(Qt::DisplayRole), "c");
+        QCOMPARE(view.state(), QAbstractItemView::NoState);
+    }
+
+    // If we change the filter while we edit, then we should clean up state as well
+    {
+        const QModelIndex filteredIndex = filterModel.mapFromSource(editableItem2->index());
+        QVERIFY(filteredIndex.isValid());
+        view.edit(filteredIndex);
+        QCOMPARE(view.state(), QAbstractItemView::EditingState);
+        QPointer<QLineEdit> lineEdit = qobject_cast<QLineEdit *>(QApplication::focusWidget());
+        QVERIFY(lineEdit);
+        filterModel.setFilterFixedString("c");
+        QVERIFY(!filterModel.mapFromSource(editableItem2->index()).isValid());
+        QTRY_VERIFY(!lineEdit);
+        QCOMPARE(view.state(), QAbstractItemView::NoState);
+    }
 }
 
 QTEST_MAIN(tst_QAbstractItemView)
