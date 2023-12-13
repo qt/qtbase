@@ -30,6 +30,11 @@ target_link_libraries(draggableicons PRIVATE
     Qt6::Widgets
 )
 
+if(EMSCRIPTEN)
+    target_link_options(draggableicons PUBLIC -sASYNCIFY -Os)
+endif()
+
+
 # Resources:
 set(draggableicons_resource_files
     "images/boat.png"
