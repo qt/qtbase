@@ -181,6 +181,7 @@ struct Options {
     bool systemDxc = true;
     bool compilerRunTime = false;
     bool softwareRasterizer = true;
+    bool ffmpeg = true;
     PluginLists pluginSelections;
     Platform platform = WindowsDesktopMsvc;
     ModuleBitset additionalLibraries;
@@ -471,6 +472,11 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
                                                         QStringLiteral("Do not deploy the software rasterizer library."));
     parser->addOption(suppressSoftwareRasterizerOption);
 
+    QCommandLineOption noFFmpegOption(QStringLiteral("no-ffmpeg"),
+                                      QStringLiteral("Do not deploy the ffmpeg libraries."));
+    parser->addOption(noFFmpegOption);
+
+
     QCommandLineOption listOption(QStringLiteral("list"),
                                                 "Print only the names of the files copied.\n"
                                                 "Available options:\n"
@@ -588,6 +594,9 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
 
     if (parser->isSet(suppressSoftwareRasterizerOption))
         options->softwareRasterizer = false;
+
+    if (parser->isSet(noFFmpegOption))
+        options->ffmpeg = false;
 
     if (parser->isSet(forceOption))
         options->updateFileFlags |= ForceUpdateFile;
@@ -1141,6 +1150,33 @@ static bool deployTranslations(const QString &sourcePath, const ModuleBitset &us
     return true;
 }
 
+static QStringList findFFmpegLibs(const QString &qtBinDir, Platform platform)
+{
+    const std::vector<QLatin1StringView> ffmpegHints = { "avcodec"_L1, "avformat"_L1, "avutil"_L1,
+                                                         "swresample"_L1, "swscale"_L1 };
+    const QStringList bundledLibs =
+            findSharedLibraries(qtBinDir, platform, MatchDebugOrRelease, {});
+
+    QStringList ffmpegLibs;
+    for (const QLatin1StringView &libHint : ffmpegHints) {
+        const QStringList ffmpegLib = bundledLibs.filter(libHint, Qt::CaseInsensitive);
+
+        if (ffmpegLib.empty()) {
+            std::wcerr << "Warning: Cannot find FFmpeg libraries. Multimedia features will not work as expected.\n";
+            return {};
+        } else if (ffmpegLib.size() != 1u) {
+            std::wcerr << "Warning: Multiple versions of FFmpeg libraries found. Multimedia features will not work as expected.\n";
+            return {};
+        }
+
+        const QChar slash(u'/');
+        QFileInfo ffmpegLibPath{ qtBinDir + slash + ffmpegLib.front() };
+        ffmpegLibs.append(ffmpegLibPath.absoluteFilePath());
+    }
+
+    return ffmpegLibs;
+}
+
 struct DeployResult
 {
     operator bool() const { return success; }
@@ -1561,6 +1597,12 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
                 std::wcerr << "Warning: Cannot find any version of the dxcompiler.dll and dxil.dll.\n";
         }
     } // Windows
+
+    // Add ffmpeg if we deploy the ffmpeg backend
+    if (options.ffmpeg
+        && !plugins.filter(QStringLiteral("ffmpegmediaplugin"), Qt::CaseInsensitive).empty()) {
+        deployedQtLibraries.append(findFFmpegLibs(qtBinDir, options.platform));
+    }
 
     // Update libraries
     if (options.libraries) {
