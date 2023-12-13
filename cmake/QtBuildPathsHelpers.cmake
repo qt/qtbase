@@ -205,6 +205,18 @@ macro(qt_internal_set_qt_cmake_dir)
     set(QT_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 endmacro()
 
+macro(qt_internal_set_qt_apple_support_files_path)
+    # This is analogous to what we have in QtConfig.cmake.in. It's copied here so that iOS
+    # tests can be built in tree.
+    if(APPLE)
+        if(NOT CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+            set(__qt_internal_cmake_apple_support_files_path "${QT_CMAKE_DIR}/macos")
+        elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
+            set(__qt_internal_cmake_apple_support_files_path "${QT_CMAKE_DIR}/ios")
+        endif()
+    endif()
+endmacro()
+
 macro(qt_internal_set_qt_staging_prefix)
     if(NOT "${CMAKE_STAGING_PREFIX}" STREQUAL "")
         set(QT_STAGING_PREFIX "${CMAKE_STAGING_PREFIX}")
@@ -227,4 +239,6 @@ macro(qt_internal_setup_paths_and_prefixes)
     qt_internal_set_cmake_install_libdir()
 
     qt_internal_set_qt_cmake_dir()
+
+    qt_internal_set_qt_apple_support_files_path()
 endmacro()
