@@ -625,7 +625,7 @@ public:
 Q_DECLARE_TYPEINFO(QRenderRule, Q_RELOCATABLE_TYPE);
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-static const char knownStyleHints[][45] = {
+static constexpr std::array<const char*, 90> knownStyleHints = {
     "activate-on-singleclick",
     "alignment",
     "arrow-keys-navigate-into-children",
@@ -718,13 +718,10 @@ static const char knownStyleHints[][45] = {
     "widget-animation-duration"
 };
 
-static const int numKnownStyleHints = sizeof(knownStyleHints)/sizeof(knownStyleHints[0]);
-
-static QList<QVariant> subControlLayout(const QString& layout)
+static QList<QVariant> subControlLayout(QByteArrayView layout)
 {
     QList<QVariant> buttons;
-    for (int i = 0; i < layout.size(); i++) {
-        int button = layout[i].toLatin1();
+    for (int button : layout) {
         switch (button) {
         case 'm':
             buttons.append(PseudoElement_MdiMinButton);
@@ -786,10 +783,9 @@ QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget 
     int offsets[3] = { 0, 0, 0 };
     enum Where { Left, Right, Center, NoWhere } where = Left;
     QList<ButtonInfo> infos;
-    const int numLayouts = layout.size();
-    infos.reserve(numLayouts);
-    for (int i = 0; i < numLayouts; i++) {
-        const int element = layout[i].toInt();
+    infos.reserve(layout.size());
+    for (const QVariant &val : std::as_const(layout)) {
+        const int element = val.toInt();
         if (element == '(') {
             where = Center;
         } else if (element == ')') {
@@ -848,8 +844,7 @@ QHash<QStyle::SubControl, QRect> QStyleSheetStyle::titleBarLayout(const QWidget 
         }
     }
 
-    for (int i = 0; i < infos.size(); i++) {
-        const ButtonInfo &info = infos[i];
+    for (const ButtonInfo &info : std::as_const(infos)) {
         QRect lr = cr;
         switch (info.where) {
         case Center: {
@@ -1030,8 +1025,8 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
             // intentionally left blank...
         } else if (decl.d->propertyId == UnknownProperty) {
             bool knownStyleHint = false;
-            for (int i = 0; i < numKnownStyleHints; i++) {
-                QLatin1StringView styleHint(knownStyleHints[i]);
+            for (const auto sh : knownStyleHints) {
+                QLatin1StringView styleHint(sh);
                 if (decl.d->property.compare(styleHint) == 0) {
                     QString hintName = QString(styleHint);
                     QVariant hintValue;
@@ -1073,7 +1068,7 @@ QRenderRule::QRenderRule(const QList<Declaration> &declarations, const QObject *
                         hintValue = decl.iconValue();
                     } else if (hintName == "button-layout"_L1 && decl.d->values.size() != 0
                                && decl.d->values.at(0).type == QCss::Value::String) {
-                        hintValue = subControlLayout(decl.d->values.at(0).variant.toString());
+                        hintValue = subControlLayout(decl.d->values.at(0).variant.toString().toLatin1());
                     } else {
                         int integer;
                         decl.intValue(&integer);
@@ -3508,12 +3503,12 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             || hasStyleRule(w, PseudoElement_MdiMinButton)) {
             QList<QVariant> layout = rule.styleHint("button-layout"_L1).toList();
             if (layout.isEmpty())
-                layout = subControlLayout("mNX"_L1);
+                layout = subControlLayout("mNX");
 
             QStyleOptionComplex optCopy(*opt);
             optCopy.subControls = { };
-            for (int i = 0; i < layout.size(); i++) {
-                int layoutButton = layout[i].toInt();
+            for (const QVariant &val : std::as_const(layout)) {
+                int layoutButton = val.toInt();
                 if (layoutButton < PseudoElement_MdiCloseButton
                     || layoutButton > PseudoElement_MdiNormalButton)
                     continue;
@@ -3583,7 +3578,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 drawItemPixmap(p, ir, Qt::AlignCenter, pm);
             }
 
-            int pes[] = {
+            constexpr std::array<int, 6> pes = {
                 PseudoElement_TitleBarMaxButton,
                 PseudoElement_TitleBarMinButton,
                 PseudoElement_TitleBarNormalButton,
@@ -3592,8 +3587,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 PseudoElement_TitleBarContextHelpButton
             };
 
-            for (unsigned int i = 0; i < sizeof(pes)/sizeof(int); i++) {
-                int pe = pes[i];
+            for (int pe : pes) {
                 QStyle::SubControl sc = knownPseudoElements[pe].subControl;
                 ir = layout[sc];
                 if (!ir.isValid())
@@ -5499,11 +5493,11 @@ QSize QStyleSheetStyle::sizeFromContents(ContentsType ct, const QStyleOption *op
 
             QList<QVariant> layout = rule.styleHint("button-layout"_L1).toList();
             if (layout.isEmpty())
-                layout = subControlLayout("mNX"_L1);
+                layout = subControlLayout("mNX");
 
             int width = 0, height = 0;
-            for (int i = 0; i < layout.size(); i++) {
-                int layoutButton = layout[i].toInt();
+            for (const QVariant &val : std::as_const(layout)) {
+                int layoutButton = val.toInt();
                 if (layoutButton < PseudoElement_MdiCloseButton
                     || layoutButton > PseudoElement_MdiNormalButton)
                     continue;
@@ -6065,12 +6059,12 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
             || hasStyleRule(w, PseudoElement_MdiMinButton)) {
             QList<QVariant> layout = rule.styleHint("button-layout"_L1).toList();
             if (layout.isEmpty())
-                layout = subControlLayout("mNX"_L1);
+                layout = subControlLayout("mNX");
 
             int x = 0, width = 0;
             QRenderRule subRule;
-            for (int i = 0; i < layout.size(); i++) {
-                int layoutButton = layout[i].toInt();
+            for (const QVariant &val : std::as_const(layout)) {
+                int layoutButton = val.toInt();
                 if (layoutButton < PseudoElement_MdiCloseButton
                     || layoutButton > PseudoElement_MdiNormalButton)
                     continue;
