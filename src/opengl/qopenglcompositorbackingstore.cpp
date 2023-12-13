@@ -249,6 +249,8 @@ void QOpenGLCompositorBackingStore::resize(const QSize &size, const QRegion &sta
 
     QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
     QOpenGLContext *dstCtx = compositor->context();
+    if (!dstCtx)
+        return;
     QWindow *dstWin = compositor->targetWindow();
     if (!dstWin)
         return;
