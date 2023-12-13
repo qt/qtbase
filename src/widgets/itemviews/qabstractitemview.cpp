@@ -2924,41 +2924,50 @@ void QAbstractItemView::closeEditor(QWidget *editor, QAbstractItemDelegate::EndE
 
     // Close the editor
     if (editor) {
-        bool isPersistent = d->persistent.contains(editor);
-        bool hadFocus = editor->hasFocus();
-        QModelIndex index = d->indexForEditor(editor);
+        const bool isPersistent = d->persistent.contains(editor);
+        const QModelIndex index = d->indexForEditor(editor);
         if (!index.isValid()) {
-            qWarning("QAbstractItemView::closeEditor called with an editor that does not belong to this view");
-            return; // the editor was not registered
-        }
-
-        // start a timer that expires immediately when we return to the event loop
-        // to identify whether this close was triggered by a mousepress-initiated
-        // focus event
-        d->pressClosedEditorWatcher.start(0, this);
-        d->lastEditedIndex = index;
-
-        if (!isPersistent) {
-            setState(NoState);
-            QModelIndex index = d->indexForEditor(editor);
-            editor->removeEventFilter(itemDelegateForIndex(index));
-            d->removeEditor(editor);
-        }
-        if (hadFocus) {
-            if (focusPolicy() != Qt::NoFocus)
-                setFocus(); // this will send a focusLost event to the editor
-            else
-                editor->clearFocus();
+            if (!editor->isVisible()) {
+                // The commit might have removed the index (e.g. it might get filtered), in
+                // which case the editor is already hidden and scheduled for deletion. We
+                // don't have to do anything, except reset the state, and continue with
+                // EndEditHint processing.
+                if (!isPersistent)
+                    setState(NoState);
+            } else {
+                qWarning("QAbstractItemView::closeEditor called with an editor that does not belong to this view");
+                return;
+            }
         } else {
-            d->checkPersistentEditorFocus();
+            const bool hadFocus = editor->hasFocus();
+            // start a timer that expires immediately when we return to the event loop
+            // to identify whether this close was triggered by a mousepress-initiated
+            // focus event
+            d->pressClosedEditorWatcher.start(0, this);
+            d->lastEditedIndex = index;
+
+            if (!isPersistent) {
+                setState(NoState);
+                QModelIndex index = d->indexForEditor(editor);
+                editor->removeEventFilter(itemDelegateForIndex(index));
+                d->removeEditor(editor);
+            }
+            if (hadFocus) {
+                if (focusPolicy() != Qt::NoFocus)
+                    setFocus(); // this will send a focusLost event to the editor
+                else
+                    editor->clearFocus();
+            } else {
+                d->checkPersistentEditorFocus();
+            }
+
+            QPointer<QWidget> ed = editor;
+            QCoreApplication::sendPostedEvents(editor, 0);
+            editor = ed;
+
+            if (!isPersistent && editor)
+                d->releaseEditor(editor, index);
         }
-
-        QPointer<QWidget> ed = editor;
-        QCoreApplication::sendPostedEvents(editor, 0);
-        editor = ed;
-
-        if (!isPersistent && editor)
-            d->releaseEditor(editor, index);
     }
 
     // The EndEditHint part
