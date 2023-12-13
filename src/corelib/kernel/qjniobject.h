@@ -116,7 +116,7 @@ public:
 
     template <typename Ret, typename ...Args
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<Ret> = true
+        , QtJniTypes::IfValidFieldType<Ret> = true
 #endif
     >
     auto callMethod(const char *methodName, const char *signature, Args &&...args) const
@@ -148,7 +148,7 @@ public:
 
     template <typename Ret, typename ...Args
 #ifndef Q_QDOC
-        , QtJniTypes::ValidSignatureTypes<Ret, Args...> = true
+        , QtJniTypes::IfValidSignatureTypes<Ret, Args...> = true
 #endif
     >
     auto callMethod(const char *methodName, Args &&...args) const
@@ -159,7 +159,7 @@ public:
 
     template <typename Ret, typename ...Args
 #ifndef Q_QDOC
-        , QtJniTypes::ValidSignatureTypes<Ret, Args...> = true
+        , QtJniTypes::IfValidSignatureTypes<Ret, Args...> = true
 #endif
     >
     QJniObject callObjectMethod(const char *methodName, Args &&...args) const
@@ -192,7 +192,7 @@ public:
 
     template <typename Ret, typename ...Args
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<Ret> = true
+        , QtJniTypes::IfValidFieldType<Ret> = true
 #endif
     >
     static auto callStaticMethod(jclass clazz, jmethodID methodId, Args &&...args)
@@ -223,7 +223,7 @@ public:
 
     template <typename Ret, typename ...Args
 #ifndef Q_QDOC
-        , QtJniTypes::ValidSignatureTypes<Ret, Args...> = true
+        , QtJniTypes::IfValidSignatureTypes<Ret, Args...> = true
 #endif
     >
     static auto callStaticMethod(const char *className, const char *methodName, Args &&...args)
@@ -238,7 +238,7 @@ public:
 
     template <typename Ret, typename ...Args
 #ifndef Q_QDOC
-        , QtJniTypes::ValidSignatureTypes<Ret, Args...> = true
+        , QtJniTypes::IfValidSignatureTypes<Ret, Args...> = true
 #endif
     >
     static auto callStaticMethod(jclass clazz, const char *methodName, Args &&...args)
@@ -248,7 +248,7 @@ public:
     }
     template <typename Klass, typename Ret, typename ...Args
 #ifndef Q_QDOC
-        , QtJniTypes::ValidSignatureTypes<Ret, Args...> = true
+        , QtJniTypes::IfValidSignatureTypes<Ret, Args...> = true
 #endif
     >
     static auto callStaticMethod(const char *methodName, Args &&...args)
@@ -273,7 +273,7 @@ public:
 
     template <typename Ret, typename ...Args
 #ifndef Q_QDOC
-        , QtJniTypes::ValidSignatureTypes<Ret, Args...> = true
+        , QtJniTypes::IfValidSignatureTypes<Ret, Args...> = true
 #endif
     >
     static QJniObject callStaticObjectMethod(const char *className, const char *methodName, Args &&...args)
@@ -287,7 +287,7 @@ public:
 
     template <typename Ret, typename ...Args
 #ifndef Q_QDOC
-        , QtJniTypes::ValidSignatureTypes<Ret, Args...> = true
+        , QtJniTypes::IfValidSignatureTypes<Ret, Args...> = true
 #endif
     >
     static QJniObject callStaticObjectMethod(jclass clazz, const char *methodName, Args &&...args)
@@ -301,7 +301,7 @@ public:
 
     template <typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     auto getField(const char *fieldName) const
@@ -324,7 +324,7 @@ public:
 
     template <typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     static auto getStaticField(const char *className, const char *fieldName)
@@ -342,7 +342,7 @@ public:
 
     template <typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     static auto getStaticField(jclass clazz, const char *fieldName)
@@ -365,7 +365,7 @@ public:
 
     template <typename Klass, typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     static auto getStaticField(const char *fieldName)
@@ -417,7 +417,7 @@ public:
 
     template <typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     void setField(const char *fieldName, T value)
@@ -432,7 +432,7 @@ public:
 
     template <typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     void setField(const char *fieldName, const char *signature, T value)
@@ -446,7 +446,7 @@ public:
 
     template <typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     static void setStaticField(const char *className, const char *fieldName, T value)
@@ -468,7 +468,7 @@ public:
 
     template <typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     static void setStaticField(const char *className, const char *fieldName,
@@ -490,7 +490,7 @@ public:
 
     template <typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     static void setStaticField(jclass clazz, const char *fieldName,
@@ -507,7 +507,7 @@ public:
 
     template <typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     static void setStaticField(jclass clazz, const char *fieldName, T value)
@@ -517,7 +517,7 @@ public:
 
     template <typename Klass, typename T
 #ifndef Q_QDOC
-        , QtJniTypes::ValidFieldType<T> = true
+        , QtJniTypes::IfValidFieldType<T> = true
 #endif
     >
     static void setStaticField(const char *fieldName, T value)
@@ -793,7 +793,7 @@ auto QJniObject::LocalFrame<Args...>::convertToJni(T &&value)
     } else if constexpr (std::is_base_of_v<QJniObject, Type>) {
         return value.object();
     } else {
-        return static_cast<T &&>(value);
+        return std::forward<T>(value);
     }
 }
 
@@ -812,7 +812,7 @@ auto QJniObject::LocalFrame<Args...>::convertFromJni(QJniObject &&object)
         // then that QJniArray would have elements of type
         using ElementType = typename QJniArrayType::Type;
         // construct a QJniArray from a jobject pointer of that type
-        return QJniArray<ElementType>(object.template object<jarray>()).asContainer();
+        return QJniArray<ElementType>(object.template object<jarray>()).toContainer();
     } else if constexpr (std::is_array_v<Type>) {
         using ElementType = std::remove_extent_t<Type>;
         return QJniArray<ElementType>{object};

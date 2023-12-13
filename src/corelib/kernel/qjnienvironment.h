@@ -64,7 +64,11 @@ public:
         return registerNativeMethods(clazz, std::data(methods), methods.size());
     }
 
-    template<typename Class>
+    template<typename Class
+#ifndef Q_QDOC
+             , std::enable_if_t<QtJniTypes::isObjectType<Class>(), bool> = true
+#endif
+    >
     bool registerNativeMethods(std::initializer_list<JNINativeMethod> methods)
     {
         return registerNativeMethods(QtJniTypes::Traits<Class>::className().data(), methods);

@@ -18,10 +18,10 @@ template <typename T> class QJniArray;
 template <typename T>
 struct QJniArrayIterator
 {
-    QJniArrayIterator(const QJniArrayIterator &other) = default;
-    QJniArrayIterator(QJniArrayIterator &&other) noexcept = default;
-    QJniArrayIterator &operator=(const QJniArrayIterator &other) = default;
-    QJniArrayIterator &operator=(QJniArrayIterator &&other) noexcept = default;
+    constexpr QJniArrayIterator(const QJniArrayIterator &other) noexcept = default;
+    constexpr QJniArrayIterator(QJniArrayIterator &&other) noexcept = default;
+    constexpr QJniArrayIterator &operator=(const QJniArrayIterator &other) noexcept = default;
+    constexpr QJniArrayIterator &operator=(QJniArrayIterator &&other) noexcept = default;
 
     friend bool operator==(const QJniArrayIterator<T> &lhs, const QJniArrayIterator<T> &rhs) noexcept
     {
@@ -31,7 +31,7 @@ struct QJniArrayIterator
     {
         return !(lhs == rhs);
     }
-    const T operator*() const
+    T operator*() const
     {
         return m_array->at(m_index);
     }
@@ -196,7 +196,7 @@ public:
     const_iterator constEnd() const { return {end()}; }
     const_iterator cend() const { return {end()}; }
 
-    const T operator[](qsizetype i) const { return at(i); } // const return value to disallow assignment
+    T operator[](qsizetype i) const { return at(i); }
     T at(qsizetype i) const
     {
         JNIEnv *env = jniEnv();
@@ -227,7 +227,7 @@ public:
             return res;
         }
     }
-    auto asContainer() const
+    auto toContainer() const
     {
         JNIEnv *env = jniEnv();
         if constexpr (std::is_same_v<T, jobject>) {
@@ -337,14 +337,14 @@ namespace QtJniTypes
 template <typename T> struct IsJniArray: std::false_type {};
 template <typename T> struct IsJniArray<QJniArray<T>> : std::true_type {};
 template <typename T> struct Traits<QJniArray<T>> {
-    template <ValidFieldType<T> = true>
+    template <IfValidFieldType<T> = true>
     static constexpr auto signature()
     {
         return CTString("[") + Traits<T>::signature();
     }
 };
 template <typename T> struct Traits<QList<T>> {
-    template <ValidFieldType<T> = true>
+    template <IfValidFieldType<T> = true>
     static constexpr auto signature()
     {
         return CTString("[") + Traits<T>::signature();
