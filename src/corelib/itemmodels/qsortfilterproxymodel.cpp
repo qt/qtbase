@@ -832,10 +832,9 @@ QList<QPair<int, QList<int>>> QSortFilterProxyModelPrivate::proxy_intervals_for_
     int proxy_low = 0;
     int proxy_item = 0;
     int source_items_index = 0;
-    QList<int> source_items_in_interval;
     bool compare = (orient == Qt::Vertical && source_sort_column >= 0 && dynamic_sortfilter);
     while (source_items_index < source_items.size()) {
-        source_items_in_interval.clear();
+        QList<int> source_items_in_interval;
         int first_new_source_item = source_items.at(source_items_index);
         source_items_in_interval.append(first_new_source_item);
         ++source_items_index;
