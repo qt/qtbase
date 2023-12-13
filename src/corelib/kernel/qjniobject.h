@@ -662,6 +662,144 @@ inline bool operator!=(const QJniObject &obj1, const QJniObject &obj2)
     return !obj1.isSameObject(obj2);
 }
 
+namespace QtJniTypes {
+struct JObjectBase
+{
+    operator QJniObject() const { return m_object; }
+
+    bool isValid() const { return m_object.isValid(); }
+    jclass objectClass() const { return m_object.objectClass(); }
+    QString toString() const { return m_object.toString(); }
+
+    template <typename T = jobject>
+    T object() const {
+        return m_object.object<T>();
+    }
+
+protected:
+    JObjectBase() = default;
+    ~JObjectBase() = default;
+
+    Q_IMPLICIT JObjectBase(jobject object) : m_object(object) {}
+    Q_IMPLICIT JObjectBase(const QJniObject &object) : m_object(object) {}
+    Q_IMPLICIT JObjectBase(QJniObject &&object) noexcept : m_object(std::move(object)) {}
+
+    QJniObject m_object;
+};
+
+template<typename Type>
+class JObject : public JObjectBase
+{
+public:
+    using Class = Type;
+
+    JObject()
+        : JObjectBase{QJniObject(QtJniTypes::Traits<Class>::className())}
+    {}
+    Q_IMPLICIT JObject(jobject object) : JObjectBase(object) {}
+    Q_IMPLICIT JObject(const QJniObject &object) : JObjectBase(object) {}
+    Q_IMPLICIT JObject(QJniObject &&object) noexcept : JObjectBase(std::move(object)) {}
+
+    // base class destructor is protected, so need to provide all SMFs
+    JObject(const JObject &other) = default;
+    JObject(JObject &&other) noexcept = default;
+    JObject &operator=(const JObject &other) = default;
+    JObject &operator=(JObject &&other) noexcept = default;
+
+    ~JObject() = default;
+
+    template<typename Arg, typename ...Args
+            , std::enable_if_t<!std::is_same_v<Arg, JObject>, bool> = true
+            , IfValidSignatureTypes<Arg, Args...> = true
+    >
+    explicit JObject(Arg && arg, Args &&...args)
+        : JObjectBase{QJniObject(QtJniTypes::Traits<Class>::className(),
+                                 std::forward<Arg>(arg), std::forward<Args>(args)...)}
+    {}
+
+    // named constructors avoid ambiguities
+    static Type fromJObject(jobject object) { return Type(object); }
+    template <typename ...Args>
+    static Type construct(Args &&...args) { return Type(std::forward<Args>(args)...); }
+    static Type fromLocalRef(jobject lref) { return Type(QJniObject::fromLocalRef(lref)); }
+
+    static bool registerNativeMethods(std::initializer_list<JNINativeMethod> methods)
+    {
+        QJniEnvironment env;
+        return env.registerNativeMethods<Class>(methods);
+    }
+
+    // public API forwarding to QJniObject, with the implicit Class template parameter
+    template <typename Ret, typename ...Args
+#ifndef Q_QDOC
+        , QtJniTypes::IfValidSignatureTypes<Ret, Args...> = true
+#endif
+    >
+    static auto callStaticMethod(const char *name, Args &&...args)
+    {
+        return QJniObject::callStaticMethod<Class, Ret, Args...>(name,
+                                                                 std::forward<Args>(args)...);
+    }
+    template <typename T
+#ifndef Q_QDOC
+        , QtJniTypes::IfValidFieldType<T> = true
+#endif
+    >
+    static auto getStaticField(const char *field)
+    {
+        return QJniObject::getStaticField<Class, T>(field);
+    }
+    template <typename T
+#ifndef Q_QDOC
+        , QtJniTypes::IfValidFieldType<T> = true
+#endif
+    >
+    static void setStaticField(const char *field, T &&value)
+    {
+        QJniObject::setStaticField<Class, T>(field, std::forward<T>(value));
+    }
+
+    // keep only these overloads, the rest is made private
+    template <typename Ret, typename ...Args
+#ifndef Q_QDOC
+        , QtJniTypes::IfValidSignatureTypes<Ret, Args...> = true
+#endif
+    >
+    auto callMethod(const char *method, Args &&...args) const
+    {
+        return m_object.callMethod<Ret>(method, std::forward<Args>(args)...);
+    }
+    template <typename T
+#ifndef Q_QDOC
+        , QtJniTypes::IfValidFieldType<T> = true
+#endif
+    >
+    auto getField(const char *fieldName) const
+    {
+        return m_object.getField<T>(fieldName);
+    }
+
+    template <typename T
+#ifndef Q_QDOC
+        , QtJniTypes::IfValidFieldType<T> = true
+#endif
+    >
+    void setField(const char *fieldName, T &&value)
+    {
+        m_object.setField(fieldName, std::forward<T>(value));
+    }
+
+    QByteArray className() const {
+        return QtJniTypes::Traits<Class>::className().data();
+    }
+
+private:
+    friend bool comparesEqual(const JObject &lhs, const JObject &rhs) noexcept
+    { return lhs.m_object == rhs.m_object; }
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(JObject);
+};
+}
+
 // This cannot be included earlier as QJniArray is a QJniObject subclass, but it
 // must be included so that we can implement QJniObject::LocalFrame conversion.
 QT_END_NAMESPACE
@@ -681,7 +819,8 @@ auto QJniObject::LocalFrame<Args...>::convertToJni(T &&value)
         using QJniArrayType = decltype(QJniArrayBase::fromContainer(std::forward<T>(value)));
         using ArrayType = decltype(std::declval<QJniArrayType>().arrayObject());
         return newLocalRef<ArrayType>(QJniArrayBase::fromContainer(std::forward<T>(value)).template object<jobject>());
-    } else if constexpr (std::is_base_of_v<QJniObject, Type>) {
+    } else if constexpr (std::is_base_of_v<QJniObject, Type>
+                      || std::is_base_of_v<QtJniTypes::JObjectBase, Type>) {
         return value.object();
     } else {
         return std::forward<T>(value);
@@ -709,6 +848,8 @@ auto QJniObject::LocalFrame<Args...>::convertFromJni(QJniObject &&object)
         return QJniArray<ElementType>{object};
     } else if constexpr (std::is_base_of_v<QJniObject, Type>
                         && !std::is_same_v<QJniObject, Type>) {
+        return T{std::move(object)};
+    } else if constexpr (std::is_base_of_v<QtJniTypes::JObjectBase, Type>) {
         return T{std::move(object)};
     } else {
         return std::move(object);
