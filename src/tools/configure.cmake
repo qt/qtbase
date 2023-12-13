@@ -17,7 +17,7 @@ qt_feature("macdeployqt" PRIVATE
 qt_feature("windeployqt" PRIVATE
     SECTION "Deployment"
     LABEL "Windows deployment tool"
-    PURPOSE "The Windows deployment tool is designed to automate the process of creating a deployable folder containing the Qt-related dependencies (libraries, QML imports, plugins, and translations) required to run the application from that folder. It creates a sandbox for Universal Windows Platform (UWP) or an installation tree for Windows desktop applications, which can be easily bundled into an installation package."
+    PURPOSE "The Windows deployment tool is designed to automate the process of creating a deployable folder containing the Qt-related dependencies (libraries, QML imports, plugins, and translations) required to run the application from that folder. The folder can be easily bundled into an installation package."
     AUTODETECT CMAKE_HOST_WIN32
     CONDITION WIN32)
 
