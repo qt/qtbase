@@ -3539,6 +3539,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 break;
             subRule.drawRule(p, opt->rect);
             QHash<QStyle::SubControl, QRect> layout = titleBarLayout(w, tb);
+            const auto paintDeviceDpr = p->device()->devicePixelRatio();
 
             QRect ir;
             ir = layout[SC_TitleBarLabel];
@@ -3549,8 +3550,6 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 p->drawText(ir.x(), ir.y(), ir.width(), ir.height(), Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine, tb->text);
             }
 
-            QPixmap pm;
-
             ir = layout[SC_TitleBarSysMenu];
             if (ir.isValid()) {
                 QRenderRule subSubRule = renderRule(w, opt, PseudoElement_TitleBarSysMenu);
@@ -3560,7 +3559,9 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                     tb->icon.paint(p, ir);
                 } else {
                     int iconSize = pixelMetric(PM_SmallIconSize, tb, w);
-                    pm = standardIcon(SP_TitleBarMenuButton, nullptr, w).pixmap(iconSize, iconSize);
+                    const QSize sz(iconSize, iconSize);
+                    const auto pm = standardIcon(SP_TitleBarMenuButton, nullptr, w)
+                        .pixmap(sz, paintDeviceDpr);
                     drawItemPixmap(p, ir, Qt::AlignCenter, pm);
                 }
             }
@@ -3570,11 +3571,10 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 QRenderRule subSubRule = renderRule(w, opt, PseudoElement_TitleBarCloseButton);
                 subSubRule.drawRule(p, ir);
 
-                QSize sz = subSubRule.contentsRect(ir).size();
-                if ((tb->titleBarFlags & Qt::WindowType_Mask) == Qt::Tool)
-                    pm = standardIcon(SP_DockWidgetCloseButton, nullptr, w).pixmap(sz);
-                else
-                    pm = standardIcon(SP_TitleBarCloseButton, nullptr, w).pixmap(sz);
+                const QSize sz = subSubRule.contentsRect(ir).size();
+                const auto type = ((tb->titleBarFlags & Qt::WindowType_Mask) == Qt::Tool)
+                    ? SP_DockWidgetCloseButton : SP_TitleBarCloseButton;
+                const auto pm = standardIcon(type, nullptr, w).pixmap(sz, paintDeviceDpr);
                 drawItemPixmap(p, ir, Qt::AlignCenter, pm);
             }
 
@@ -3594,7 +3594,8 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                     continue;
                 QRenderRule subSubRule = renderRule(w, opt, pe);
                 subSubRule.drawRule(p, ir);
-                pm = standardIcon(subControlIcon(pe), nullptr, w).pixmap(subSubRule.contentsRect(ir).size());
+                const QSize sz = subSubRule.contentsRect(ir).size();
+                const auto pm = standardIcon(subControlIcon(pe), nullptr, w).pixmap(sz, paintDeviceDpr);
                 drawItemPixmap(p, ir, Qt::AlignCenter, pm);
             }
 
@@ -3617,7 +3618,9 @@ void QStyleSheetStyle::renderMenuItemIcon(const QStyleOptionMenuItem *mi, QPaint
                            ? (mi->state & QStyle::State_Selected ? QIcon::Active : QIcon::Normal)
                            : QIcon::Disabled;
     const bool checked = mi->checkType != QStyleOptionMenuItem::NotCheckable && mi->checked;
-    const QPixmap pixmap(mi->icon.pixmap(pixelMetric(PM_SmallIconSize), mode,
+    const auto iconSize = pixelMetric(PM_SmallIconSize, mi, w);
+    const QSize sz(iconSize, iconSize);
+    const QPixmap pixmap(mi->icon.pixmap(sz, p->device()->devicePixelRatio(), mode,
                         checked ? QIcon::On : QIcon::Off));
     const int pixw = pixmap.width() / pixmap.devicePixelRatio();
     const int pixh = pixmap.height() / pixmap.devicePixelRatio();
@@ -3752,7 +3755,8 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     if (button->state & State_On)
                         state = QIcon::On;
 
-                    QPixmap pixmap = icon.pixmap(button->iconSize, mode, state);
+                    const auto paintDeviceDpr = p->device()->devicePixelRatio();
+                    QPixmap pixmap = icon.pixmap(button->iconSize, paintDeviceDpr, mode, state);
                     int pixmapWidth = pixmap.width() / pixmap.devicePixelRatio();
                     int pixmapHeight = pixmap.height() / pixmap.devicePixelRatio();
                     int labelWidth = pixmapWidth;
@@ -4054,7 +4058,8 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 if (spacing == -1)
                     spacing = 6;
                 QIcon::Mode mode = cb->state & State_Enabled ? QIcon::Normal : QIcon::Disabled;
-                QPixmap pixmap = cb->currentIcon.pixmap(cb->iconSize, mode);
+                const auto paintDeviceDpr = p->device()->devicePixelRatio();
+                QPixmap pixmap = cb->currentIcon.pixmap(cb->iconSize, paintDeviceDpr, mode);
                 QRect iconRect(editRect);
                 iconRect.setWidth(cb->iconSize.width());
                 iconRect = alignedRect(cb->direction,
@@ -5624,7 +5629,8 @@ QPixmap QStyleSheetStyle::standardPixmap(StandardPixmap standardPixmap, const QS
         QRenderRule rule = renderRule(w, opt);
         if (rule.hasStyleHint(s)) {
             QIcon icon = qvariant_cast<QIcon>(rule.styleHint(s));
-            return icon.pixmap(16, 16); // ###: unhard-code this if someone complains
+            const auto dpr = w ? w->devicePixelRatio() : qApp->devicePixelRatio();
+            return icon.pixmap(QSize(16, 16), dpr);
         }
     }
     return baseStyle()->standardPixmap(standardPixmap, opt, w);
