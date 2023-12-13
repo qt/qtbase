@@ -421,6 +421,7 @@ struct Q_CORE_EXPORT QMetaObject
                  Qt::ConnectionType type = Qt::AutoConnection,
                  typename QtPrivate::FunctionPointer<Func>::ReturnType *ret = nullptr)
     {
+        // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
         return invokeMethodImpl(object, new QtPrivate::QSlotObjectWithNoArgs<Func>(function), type, ret);
     }
 
@@ -432,6 +433,7 @@ struct Q_CORE_EXPORT QMetaObject
                  Func function,
                  typename QtPrivate::FunctionPointer<Func>::ReturnType *ret)
     {
+        // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
         return invokeMethodImpl(object, new QtPrivate::QSlotObjectWithNoArgs<Func>(function), Qt::AutoConnection, ret);
     }
 
@@ -444,6 +446,7 @@ struct Q_CORE_EXPORT QMetaObject
                  Qt::ConnectionType type = Qt::AutoConnection,
                  typename QtPrivate::FunctionPointer<Func>::ReturnType *ret = nullptr)
     {
+        // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
         return invokeMethodImpl(context, new QtPrivate::QFunctorSlotObjectWithNoArgsImplicitReturn<Func>(function), type, ret);
     }
 
@@ -454,6 +457,7 @@ struct Q_CORE_EXPORT QMetaObject
     invokeMethod(QObject *context, Func function,
                  typename QtPrivate::FunctionPointer<Func>::ReturnType *ret)
     {
+        // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
         return invokeMethodImpl(context, new QtPrivate::QFunctorSlotObjectWithNoArgsImplicitReturn<Func>(function), Qt::AutoConnection, ret);
     }
 
@@ -465,10 +469,12 @@ struct Q_CORE_EXPORT QMetaObject
     invokeMethod(QObject *context, Func function,
                  Qt::ConnectionType type = Qt::AutoConnection, decltype(function()) *ret = nullptr)
     {
+        // NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
         return invokeMethodImpl(context,
                                 new QtPrivate::QFunctorSlotObjectWithNoArgs<Func, decltype(function())>(std::move(function)),
                                 type,
                                 ret);
+        // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
     }
 
     template <typename Func>
@@ -477,10 +483,12 @@ struct Q_CORE_EXPORT QMetaObject
                                    && !std::is_convertible<Func, const char*>::value, bool>::type
     invokeMethod(QObject *context, Func function, decltype(function()) *ret)
     {
+        // NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
         return invokeMethodImpl(context,
                                 new QtPrivate::QFunctorSlotObjectWithNoArgs<Func, decltype(function())>(std::move(function)),
                                 Qt::AutoConnection,
                                 ret);
+        // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
     }
 
 #endif

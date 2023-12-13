@@ -85,8 +85,10 @@ public:
         static_assert(int(SlotType::ArgumentCount) == 0,
                           "The slot must not have any arguments.");
 
+        // NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
         singleShotImpl(interval, timerType, receiver,
                        new QtPrivate::QSlotObject<Func1, typename SlotType::Arguments, void>(slot));
+        // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
     }
     // singleShot to a functor or function pointer (without context)
     template <typename Duration, typename Func1>
@@ -120,9 +122,11 @@ public:
         typedef QtPrivate::FunctionPointer<Func1> SlotType;
         static_assert(int(SlotType::ArgumentCount) <= 0,  "The slot must not have any arguments.");
 
+        // NOLINTBEGIN(clang-analyzer-cplusplus.NewDeleteLeaks)
         singleShotImpl(interval, timerType, context,
                        new QtPrivate::QFunctorSlotObject<Func1, 0,
                             typename QtPrivate::List_Left<void, 0>::Value, void>(std::move(slot)));
+        // NOLINTEND(clang-analyzer-cplusplus.NewDeleteLeaks)
     }
 
     template <typename ... Args>
