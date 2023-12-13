@@ -204,6 +204,8 @@ public:
             jobject element = env->GetObjectArrayElement(object<jobjectArray>(), i);
             if constexpr (std::is_base_of_v<QJniObject, T>)
                 return QJniObject::fromLocalRef(element);
+            else if constexpr (std::is_base_of_v<QtJniTypes::JObjectBase, T>)
+                return T::fromLocalRef(element);
             else
                 return T{element};
         } else {
