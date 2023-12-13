@@ -138,19 +138,6 @@ template<> struct IsStringType<const char*, 0> : std::true_type {};
 template<size_t N> struct IsStringType<CTString<N>> : std::true_type {};
 template<size_t N> struct IsStringType<const char[N]> : std::true_type {};
 
-template<bool flag = false>
-static void staticAssertTypeMismatch()
-{
-    static_assert(flag, "The used type is not supported by this template call. "
-                        "Use a JNI based type instead.");
-}
-
-template<bool flag = false>
-static void staticAssertClassNotRegistered()
-{
-    static_assert(flag, "Class not registered, use Q_DECLARE_JNI_CLASS");
-}
-
 template <typename T>
 struct Traits {
     // The return type of className/signature becomes void for any type
@@ -241,6 +228,56 @@ struct Traits {
         // else: return void -> not implemented
     }
 };
+
+template <typename Have, typename Want>
+static constexpr bool sameTypeForJni = (QtJniTypes::Traits<Have>::signature()
+                                        == QtJniTypes::Traits<Want>::signature())
+                                    && (sizeof(Have) == sizeof(Want));
+
+template <typename, typename = void>
+struct Caller
+{};
+
+#define MAKE_CALLER(Type, Method) \
+template <typename T> \
+struct Caller<T, std::enable_if_t<sameTypeForJni<T, Type>>> \
+{ \
+    static constexpr void callMethodForType(JNIEnv *env, T &res, jobject obj, jmethodID id, va_list args) \
+    { \
+        res = T(env->Call##Method##MethodV(obj, id, args)); \
+    } \
+    static constexpr void callStaticMethodForType(JNIEnv *env, T &res, jclass clazz, jmethodID id, va_list args) \
+    { \
+        res = T(env->CallStatic##Method##MethodV(clazz, id, args)); \
+    } \
+    static constexpr void getFieldForType(JNIEnv *env, T &res, jobject obj, jfieldID id) \
+    { \
+        res = T(env->Get##Method##Field(obj, id)); \
+    } \
+    static constexpr void getStaticFieldForType(JNIEnv *env, T &res, jclass clazz, jfieldID id) \
+    { \
+        res = T(env->GetStatic##Method##Field(clazz, id)); \
+    } \
+    static constexpr void setFieldForType(JNIEnv *env, jobject obj, jfieldID id, T value) \
+    { \
+        env->Set##Method##Field(obj, id, static_cast<Type>(value)); \
+    } \
+    static constexpr void setStaticFieldForType(JNIEnv *env, jclass clazz, jfieldID id, T value) \
+    { \
+        env->SetStatic##Method##Field(clazz, id, static_cast<Type>(value)); \
+    } \
+}
+
+MAKE_CALLER(jboolean, Boolean);
+MAKE_CALLER(jbyte, Byte);
+MAKE_CALLER(jchar, Char);
+MAKE_CALLER(jshort, Short);
+MAKE_CALLER(jint, Int);
+MAKE_CALLER(jlong, Long);
+MAKE_CALLER(jfloat, Float);
+MAKE_CALLER(jdouble, Double);
+
+#undef MAKE_CALLER
 
 template<typename T>
 static constexpr bool isPrimitiveType()
