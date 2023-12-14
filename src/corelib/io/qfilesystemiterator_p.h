@@ -26,6 +26,10 @@
 #include <QtCore/private/qfilesystementry_p.h>
 #include <QtCore/private/qfilesystemmetadata_p.h>
 
+#if !defined(Q_OS_WIN)
+#include <private/qstringconverter_p.h>
+#endif
+
 #include <memory>
 
 QT_BEGIN_NAMESPACE
@@ -39,11 +43,11 @@ public:
     bool advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData);
 
 private:
-    QFileSystemEntry::NativePath nativePath;
+    QString dirPath;
 
     // Platform-specific data
 #if defined(Q_OS_WIN)
-    QString dirPath;
+    QFileSystemEntry::NativePath nativePath;
     HANDLE findFileHandle;
     QStringList uncShares;
     bool uncFallback;
@@ -58,6 +62,7 @@ private:
 
     QT_DIRENT *dirEntry = nullptr;
     int lastError = 0;
+    QStringDecoder toUtf16;
 #endif
 
     Q_DISABLE_COPY_MOVE(QFileSystemIterator)

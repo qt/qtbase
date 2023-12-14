@@ -15,8 +15,8 @@ using namespace Qt::StringLiterals;
 bool done = true;
 
 QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters)
-    : nativePath(entry.nativeFilePath())
-    , dirPath(entry.filePath())
+    : dirPath(entry.filePath())
+    , nativePath(entry.nativeFilePath())
     , findFileHandle(INVALID_HANDLE_VALUE)
     , uncFallback(false)
     , uncShareIndex(0)
