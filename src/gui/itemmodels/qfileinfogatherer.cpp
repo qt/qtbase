@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qfileinfogatherer_p.h"
+#include <qcoreapplication.h>
 #include <qdebug.h>
 #include <qdiriterator.h>
 #include <private/qfileinfo_p.h>
@@ -59,11 +60,40 @@ QFileInfoGatherer::QFileInfoGatherer(QObject *parent)
 */
 QFileInfoGatherer::~QFileInfoGatherer()
 {
-    abort.storeRelaxed(true);
+    requestAbort();
+    wait();
+}
+
+bool QFileInfoGatherer::event(QEvent *event)
+{
+    if (event->type() == QEvent::DeferredDelete && isRunning()) {
+        // We have been asked to shut down later but were blocked,
+        // so the owning QFileSystemModel proceeded with its shut-down
+        // and deferred the destruction of the gatherer.
+        // If we are still blocked now, then we have three bad options:
+        // terminate, wait forever (preventing the process from shutting down),
+        // or accept a memory leak.
+        requestAbort();
+        if (!wait(5000)) {
+            // If the application is shutting down, then we terminate.
+            // Otherwise assume that sooner or later the thread will finish,
+            // and we delete it then.
+            if (QCoreApplication::closingDown())
+                terminate();
+            else
+                connect(this, &QThread::finished, this, [this]{ delete this; });
+            return true;
+        }
+    }
+
+    return QThread::event(event);
+}
+
+void QFileInfoGatherer::requestAbort()
+{
+    requestInterruption();
     QMutexLocker locker(&mutex);
     condition.wakeAll();
-    locker.unlock();
-    wait();
 }
 
 void QFileInfoGatherer::setResolveSymlinks(bool enable)
@@ -282,10 +312,13 @@ void QFileInfoGatherer::list(const QString &directoryPath)
 void QFileInfoGatherer::run()
 {
     forever {
+        // Disallow termination while we are holding a mutex or can be
+        // woken up cleanly.
+        setTerminationEnabled(false);
         QMutexLocker locker(&mutex);
-        while (!abort.loadRelaxed() && path.isEmpty())
+        while (!isInterruptionRequested() && path.isEmpty())
             condition.wait(&mutex);
-        if (abort.loadRelaxed())
+        if (isInterruptionRequested())
             return;
         const QString thisPath = std::as_const(path).front();
         path.pop_front();
@@ -293,6 +326,10 @@ void QFileInfoGatherer::run()
         files.pop_front();
         locker.unlock();
 
+        // Some of the system APIs we call when gathering file infomration
+        // might hang (e.g. waiting for network), so we explicitly allow
+        // termination now.
+        setTerminationEnabled(true);
         getFileInfos(thisPath, thisList);
     }
 }
@@ -371,7 +408,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
     QStringList allFiles;
     if (files.isEmpty()) {
         QDirIterator dirIt(path, QDir::AllEntries | QDir::System | QDir::Hidden);
-        while (!abort.loadRelaxed() && dirIt.hasNext()) {
+        while (!isInterruptionRequested() && dirIt.hasNext()) {
             fileInfo = dirIt.nextFileInfo();
             fileInfo.stat();
             allFiles.append(fileInfo.fileName());
@@ -382,7 +419,7 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
         emit newListOfFiles(path, allFiles);
 
     QStringList::const_iterator filesIt = filesToCheck.constBegin();
-    while (!abort.loadRelaxed() && filesIt != filesToCheck.constEnd()) {
+    while (!isInterruptionRequested() && filesIt != filesToCheck.constEnd()) {
         fileInfo.setFile(path + QDir::separator() + *filesIt);
         ++filesIt;
         fileInfo.stat();

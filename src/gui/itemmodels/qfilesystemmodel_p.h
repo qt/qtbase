@@ -259,9 +259,9 @@ public:
 #if QT_CONFIG(filesystemwatcher)
 #  ifdef Q_OS_WIN
     QStringList unwatchPathsAt(const QModelIndex &);
-    void watchPaths(const QStringList &paths) { fileInfoGatherer.watchPaths(paths); }
+    void watchPaths(const QStringList &paths) { fileInfoGatherer->watchPaths(paths); }
 #  endif // Q_OS_WIN
-    QFileInfoGatherer fileInfoGatherer;
+    std::unique_ptr<QFileInfoGatherer> fileInfoGatherer;
 #endif // filesystemwatcher
     QTimer delayedSortTimer;
     QHash<const QFileSystemNode*, bool> bypassFilters;

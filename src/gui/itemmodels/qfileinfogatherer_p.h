@@ -148,6 +148,8 @@ public:
     QAbstractFileIconProvider *iconProvider() const;
     bool resolveSymlinks() const;
 
+    void requestAbort();
+
 public Q_SLOTS:
     void list(const QString &directoryPath);
     void fetchExtendedInformation(const QString &path, const QStringList &files);
@@ -158,6 +160,9 @@ public Q_SLOTS:
 private Q_SLOTS:
     void driveAdded();
     void driveRemoved();
+
+protected:
+    bool event(QEvent *event) override;
 
 private:
     void run() override;
@@ -175,7 +180,6 @@ private:
     QStack<QString> path;
     QStack<QStringList> files;
     // end protected by mutex
-    QAtomicInt abort;
 
 #if QT_CONFIG(filesystemwatcher)
     QFileSystemWatcher *m_watcher = nullptr;
