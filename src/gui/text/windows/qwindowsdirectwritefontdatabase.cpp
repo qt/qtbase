@@ -243,28 +243,43 @@ QFontEngine *QWindowsDirectWriteFontDatabase::fontEngine(const QFontDef &fontDef
     IDWriteFontFace *face = reinterpret_cast<IDWriteFontFace *>(handle);
     Q_ASSERT(face != nullptr);
 
+    DWRITE_FONT_SIMULATIONS simulations = DWRITE_FONT_SIMULATIONS_NONE;
+    if (fontDef.weight >= QFont::DemiBold || fontDef.style != QFont::StyleNormal) {
+        DirectWriteScope<IDWriteFontFace3> face3;
+        if (SUCCEEDED(face->QueryInterface(__uuidof(IDWriteFontFace3),
+                                           reinterpret_cast<void **>(&face3)))) {
+            if (fontDef.weight >= QFont::DemiBold && face3->GetWeight() < DWRITE_FONT_WEIGHT_DEMI_BOLD)
+                simulations |= DWRITE_FONT_SIMULATIONS_BOLD;
+
+            if (fontDef.style != QFont::StyleNormal && face3->GetStyle() == DWRITE_FONT_STYLE_NORMAL)
+                simulations |= DWRITE_FONT_SIMULATIONS_OBLIQUE;
+        }
+    }
+
     DirectWriteScope<IDWriteFontFace5> newFace;
-    if (!fontDef.variableAxisValues.isEmpty()) {
+    if (!fontDef.variableAxisValues.isEmpty() || simulations != DWRITE_FONT_SIMULATIONS_NONE) {
         DirectWriteScope<IDWriteFontFace5> face5;
         if (SUCCEEDED(face->QueryInterface(__uuidof(IDWriteFontFace5),
                                            reinterpret_cast<void **>(&face5)))) {
             DirectWriteScope<IDWriteFontResource> font;
             if (SUCCEEDED(face5->GetFontResource(&font))) {
                 UINT32 fontAxisCount = font->GetFontAxisCount();
-
                 QVarLengthArray<DWRITE_FONT_AXIS_VALUE, 8> fontAxisValues(fontAxisCount);
-                if (SUCCEEDED(face5->GetFontAxisValues(fontAxisValues.data(), fontAxisCount))) {
-                    for (UINT32 i = 0; i < fontAxisCount; ++i) {
-                        if (auto maybeTag = QFont::Tag::fromValue(qToBigEndian<UINT32>(fontAxisValues[i].axisTag))) {
-                            if (fontDef.variableAxisValues.contains(*maybeTag))
-                                fontAxisValues[i].value = fontDef.variableAxisValues.value(*maybeTag);
+
+                if (!fontDef.variableAxisValues.isEmpty()) {
+                    if (SUCCEEDED(face5->GetFontAxisValues(fontAxisValues.data(), fontAxisCount))) {
+                        for (UINT32 i = 0; i < fontAxisCount; ++i) {
+                            if (auto maybeTag = QFont::Tag::fromValue(qToBigEndian<UINT32>(fontAxisValues[i].axisTag))) {
+                                if (fontDef.variableAxisValues.contains(*maybeTag))
+                                    fontAxisValues[i].value = fontDef.variableAxisValues.value(*maybeTag);
+                            }
                         }
                     }
                 }
 
-                if (SUCCEEDED(font->CreateFontFace(DWRITE_FONT_SIMULATIONS_NONE,
-                                                   fontAxisValues.data(),
-                                                   fontAxisCount,
+                if (SUCCEEDED(font->CreateFontFace(simulations,
+                                                   !fontDef.variableAxisValues.isEmpty() ? fontAxisValues.data() : nullptr,
+                                                   !fontDef.variableAxisValues.isEmpty() ? fontAxisCount : 0,
                                                    &newFace))) {
                     face = *newFace;
                 } else {
