@@ -96,6 +96,31 @@ static qreal qt_getDevicePixelRatio(const QWidget *widget)
     return widget ? widget->devicePixelRatio() : qApp->devicePixelRatio();
 }
 
+struct QPainterStateSaver
+{
+   QPainterStateSaver(QPainter *p, bool bSaveRestore = true)
+      : m_painter(p)
+      , m_bSaveRestore(bSaveRestore)
+   {
+      if (m_bSaveRestore)
+          m_painter->save();
+   }
+   ~QPainterStateSaver()
+   {
+      restore();
+   }
+   void restore()
+   {
+       if (m_bSaveRestore) {
+           m_bSaveRestore = false;
+           m_painter->restore();
+       }
+   }
+private:
+   QPainter *m_painter;
+   bool m_bSaveRestore;
+};
+
 /*!
     \class QCommonStyle
     \brief The QCommonStyle class encapsulates the common Look and Feel of a GUI.
@@ -228,11 +253,10 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             --yy;
         }
         if (!(opt->state & State_Enabled) && !(opt->state & State_On)) {
-            p->save();
+            QPainterStateSaver pss(p);
             p->translate(1, 1);
             p->setPen(opt->palette.light().color());
             p->drawLines(a);
-            p->restore();
         }
         p->setPen((opt->state & State_On) ? opt->palette.highlightedText().color() : opt->palette.text().color());
         p->drawLines(a);
@@ -354,7 +378,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
     case PE_FrameTabBarBase:
         if (const QStyleOptionTabBarBase *tbb
                 = qstyleoption_cast<const QStyleOptionTabBarBase *>(opt)) {
-            p->save();
+            QPainterStateSaver pss(p);
             switch (tbb->shape) {
             case QTabBar::RoundedNorth:
             case QTabBar::TriangularNorth:
@@ -381,7 +405,6 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                 p->drawLine(tbb->rect.topRight(), tbb->rect.bottomRight());
                 break;
             }
-            p->restore();
         }
         break;
     case PE_IndicatorTabClose: {
@@ -441,8 +464,8 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         break;
 #endif // QT_CONFIG(dockwidget)
 #if QT_CONFIG(toolbar)
-    case PE_IndicatorToolBarHandle:
-        p->save();
+    case PE_IndicatorToolBarHandle: {
+        QPainterStateSaver pss(p);
         p->translate(opt->rect.x(), opt->rect.y());
         if (opt->state & State_Horizontal) {
             int x = opt->rect.width() / 3;
@@ -463,8 +486,8 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                                 opt->palette, false, 1, nullptr);
             }
         }
-        p->restore();
         break;
+    }
     case PE_IndicatorToolBarSeparator:
         {
             QPoint p1, p2;
@@ -489,7 +512,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         int y = br.y();
         int w = br.width();
         int h = br.height();
-        p->save();
+        QPainterStateSaver pss(p);
         const qreal devicePixelRatio = p->device()->devicePixelRatio();
         if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
             const qreal inverseScale = qreal(1) / devicePixelRatio;
@@ -516,7 +539,6 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         p->fillRect(-len / 2, -step2, len, step, opt->palette.buttonText());
         if (pe == PE_IndicatorSpinPlus)
             p->fillRect(-step2, -len / 2, step, len, opt->palette.buttonText());
-        p->restore();
         break; }
     case PE_IndicatorSpinUp:
     case PE_IndicatorSpinDown: {
@@ -527,7 +549,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         int y = r.y();
         int w = r.width();
         int h = r.height();
-        p->save();
+        QPainterStateSaver pss(p);
         const qreal devicePixelRatio = p->device()->devicePixelRatio();
         if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
             const qreal inverseScale = qreal(1) / devicePixelRatio;
@@ -568,7 +590,6 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             const QPoint points[] = { QPoint(0, sh-1), QPoint(sw-1, sh-1), QPoint(sh-2, 1) };
             p->drawPolygon(points, sizeof points / sizeof *points);
         }
-        p->restore();
         break; }
 #endif // QT_CONFIG(spinbox)
     case PE_PanelTipLabel: {
@@ -626,7 +647,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
     case PE_IndicatorColumnViewArrow: {
     if (const QStyleOptionViewItem *viewOpt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
         bool reverse = (viewOpt->direction == Qt::RightToLeft);
-        p->save();
+        QPainterStateSaver pss(p);
         QPainterPath path;
         int x = viewOpt->rect.x() + 1;
         int offset = (viewOpt->rect.height() / 3);
@@ -671,7 +692,6 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             p->setPen(color);
             p->drawPath(lines);
         }
-        p->restore();
     }
     break; }
 #endif //QT_CONFIG(columnview)
@@ -1818,8 +1838,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         break;
     case CE_TabBarTabShape:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
-            p->save();
-
+            QPainterStateSaver pss(p);
             QRect rect(tab->rect);
             bool selected = tab->state & State_Selected;
             bool onlyOne = tab->position == QStyleOptionTab::OnlyOneTab;
@@ -1920,7 +1939,6 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             default:
                 break;
             }
-            p->restore();
         }
         break;
     case CE_ToolBoxTabLabel:
@@ -1981,8 +1999,8 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             if (!proxy()->styleHint(SH_UnderlineShortcut, opt, widget))
                 alignment |= Qt::TextHideMnemonic;
 
+            QPainterStateSaver pss(p, verticalTabs);
             if (verticalTabs) {
-                p->save();
                 int newX, newY, newRot;
                 if (tab->shape == QTabBar::RoundedEast || tab->shape == QTabBar::TriangularEast) {
                     newX = tr.width() + tr.x();
@@ -2015,8 +2033,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 
             proxy()->drawItemText(p, tr, alignment, tab->palette, tab->state & State_Enabled, tab->text,
                                   widget ? widget->foregroundRole() : QPalette::WindowText);
-            if (verticalTabs)
-                p->restore();
+            pss.restore();
 
             if (tab->state & State_HasFocus) {
                 const int OFFSET = 1 + pixelMetric(PM_DefaultFrameWidth);
@@ -2036,7 +2053,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 #endif // QT_CONFIG(tabbar)
 #if QT_CONFIG(sizegrip)
     case CE_SizeGrip: {
-        p->save();
+        QPainterStateSaver pss(p);
         int x, y, w, h;
         opt->rect.getRect(&x, &y, &w, &h);
 
@@ -2105,7 +2122,6 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                 sy += s;
             }
         }
-        p->restore();
         break; }
 #endif // QT_CONFIG(sizegrip)
 #if QT_CONFIG(rubberband)
@@ -2122,7 +2138,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             // ### workaround for borked XRENDER
             tiledPixmap = QPixmap::fromImage(tiledPixmap.toImage());
 
-            p->save();
+            QPainterStateSaver pss(p);
             QRect r = opt->rect;
             QStyleHintReturnMask mask;
             if (proxy()->styleHint(QStyle::SH_RubberBand_Mask, opt, widget, &mask))
@@ -2133,7 +2149,6 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             p->drawRect(r.adjusted(0, 0, -1, -1));
             if (rbOpt->shape == QRubberBand::Rectangle)
                 p->drawRect(r.adjusted(3, 3, -4, -4));
-            p->restore();
         }
         break; }
 #endif // QT_CONFIG(rubberband)
@@ -2149,10 +2164,10 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             if (!dwOpt->title.isEmpty()) {
                 const bool verticalTitleBar = dwOpt->verticalTitleBar;
 
+                QPainterStateSaver pss(p, verticalTitleBar);
                 if (verticalTitleBar) {
                     r = r.transposed();
 
-                    p->save();
                     p->translate(r.left(), r.top() + r.width());
                     p->rotate(-90);
                     p->translate(-r.left(), -r.top());
@@ -2163,9 +2178,6 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                               Qt::AlignLeft | Qt::AlignVCenter, dwOpt->palette,
                               dwOpt->state & State_Enabled, dwOpt->title,
                               QPalette::WindowText);
-
-                if (verticalTitleBar)
-                    p->restore();
             }
         }
         break;
@@ -2207,7 +2219,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
     case CE_ComboBoxLabel:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             QRect editRect = proxy()->subControlRect(CC_ComboBox, cb, SC_ComboBoxEditField, widget);
-            p->save();
+            QPainterStateSaver pss(p);
             p->setClipRect(editRect);
             if (!cb->currentIcon.isNull()) {
                 QIcon::Mode mode = cb->state & State_Enabled ? QIcon::Normal
@@ -2232,7 +2244,6 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                              visualAlignment(cb->direction, cb->textAlignment),
                              cb->palette, cb->state & State_Enabled, cb->currentText);
             }
-            p->restore();
         }
         break;
 #endif // QT_CONFIG(combobox)
@@ -2278,7 +2289,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 #if QT_CONFIG(itemviews)
     case CE_ItemViewItem:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
-            p->save();
+            QPainterStateSaver pss(p);
             // the style calling this might want to clip, so respect any region already set
             const QRegion clipRegion = p->hasClipping() ? (p->clipRegion() & opt->rect) : opt->rect;
             p->setClipRegion(clipRegion);
@@ -2352,8 +2363,6 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                                              ? QPalette::Highlight : QPalette::Window);
                 proxy()->drawPrimitive(QStyle::PE_FrameFocusRect, &o, p, widget);
             }
-
-             p->restore();
         }
         break;
 
@@ -3275,7 +3284,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 int fudge = len / 2;
                 int pos;
                 // Since there is no subrect for tickmarks do a translation here.
-                p->save();
+                QPainterStateSaver pss(p);
                 p->translate(slider->rect.x(), slider->rect.y());
                 p->setPen(slider->palette.windowText().color());
                 int v = slider->minimum;
@@ -3304,7 +3313,6 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                         break;
                     v = nextInterval;
                 }
-                p->restore();
             }
         }
         break;
@@ -3570,12 +3578,11 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
 
-                p->save();
+                QPainterStateSaver pss(p, down);
                 if (down)
                     p->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
                                  proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
                 proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
-                p->restore();
             }
 
             if (tb->subControls & SC_TitleBarMaxButton
@@ -3589,12 +3596,11 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
 
-                p->save();
+                QPainterStateSaver pss(p, down);
                 if (down)
                     p->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
                                  proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
                 proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
-                p->restore();
             }
 
             if (tb->subControls & SC_TitleBarMinButton
@@ -3607,12 +3613,11 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
 
-                p->save();
+                QPainterStateSaver pss(p, down);
                 if (down)
                     p->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
                                  proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
                 proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
-                p->restore();
             }
 
             bool drawNormalButton = (tb->subControls & SC_TitleBarNormalButton)
@@ -3629,12 +3634,11 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
 
-                p->save();
+                QPainterStateSaver pss(p, down);
                 if (down)
                     p->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
                                  proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
                 proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
-                p->restore();
             }
 
             if (tb->subControls & SC_TitleBarShadeButton
@@ -3646,12 +3650,11 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
-                p->save();
+                QPainterStateSaver pss(p, down);
                 if (down)
                     p->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
                                  proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
                 proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
-                p->restore();
             }
 
             if (tb->subControls & SC_TitleBarUnshadeButton
@@ -3664,12 +3667,11 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
-                p->save();
+                QPainterStateSaver pss(p, down);
                 if (down)
                     p->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
                                  proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
                 proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
-                p->restore();
             }
             if (tb->subControls & SC_TitleBarContextHelpButton
                     && tb->titleBarFlags & Qt::WindowContextHelpButtonHint) {
@@ -3680,12 +3682,11 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
-                p->save();
+                QPainterStateSaver pss(p, down);
                 if (down)
                     p->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
                                  proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
                 proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
-                p->restore();
             }
             if (tb->subControls & SC_TitleBarSysMenu && tb->titleBarFlags & Qt::WindowSystemMenuHint) {
                 ir = proxy()->subControlRect(CC_TitleBar, tb, SC_TitleBarSysMenu, widget);
@@ -3695,9 +3696,8 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                     int iconSize = proxy()->pixelMetric(PM_SmallIconSize, tb, widget);
                     pm = proxy()->standardIcon(SP_TitleBarMenuButton, &tool, widget).pixmap(QSize(iconSize, iconSize), p->device()->devicePixelRatio());
                     tool.rect = ir;
-                    p->save();
+                    QPainterStateSaver pss(p);
                     proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
-                    p->restore();
                 }
             }
         }
@@ -3706,7 +3706,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
     case CC_Dial:
         if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             // OK, this is more a port of things over
-            p->save();
+            QPainterStateSaver pss(p);
 
             // avoid dithering
             if (p->paintEngine()->hasFeature(QPaintEngine::Antialiasing))
@@ -3791,7 +3791,6 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 fropt.rect = br.adjusted(-2, -2, 2, 2);
                 proxy()->drawPrimitive(QStyle::PE_FrameFocusRect, &fropt, p, widget);
             }
-            p->restore();
         }
         break;
 #endif // QT_CONFIG(dial)
@@ -3808,7 +3807,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 frame.lineWidth = groupBox->lineWidth;
                 frame.midLineWidth = groupBox->midLineWidth;
                 frame.rect = proxy()->subControlRect(CC_GroupBox, opt, SC_GroupBoxFrame, widget);
-                p->save();
+                QPainterStateSaver pss(p);
                 QRegion region(groupBox->rect);
                 if (!groupBox->text.isEmpty()) {
                     bool ltr = groupBox->direction == Qt::LeftToRight;
@@ -3823,7 +3822,6 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 }
                 p->setClipRegion(region);
                 proxy()->drawPrimitive(PE_FrameGroupBox, &frame, p, widget);
-                p->restore();
             }
 
             // Draw title
