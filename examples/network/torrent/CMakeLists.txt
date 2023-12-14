@@ -44,14 +44,15 @@ target_link_libraries(torrent PRIVATE
 
 # Resources:
 set(icons_resource_files
-    "icons/1downarrow.png"
-    "icons/1uparrow.png"
-    "icons/bottom.png"
-    "icons/exit.png"
-    "icons/peertopeer.png"
-    "icons/player_pause.png"
-    "icons/player_play.png"
-    "icons/player_stop.png"
+    "icons/1downarrow.svg"
+    "icons/1uparrow.svg"
+    "icons/bottom.svg"
+    "icons/exit.svg"
+    "icons/peertopeer.svg"
+    "icons/player_pause.svg"
+    "icons/player_play.svg"
+    "icons/player_stop.svg"
+    "icons/about.svg"
 )
 
 qt_add_resources(torrent "icons"
