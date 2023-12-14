@@ -387,6 +387,14 @@ QFunctionPointer QEglFSIntegration::platformFunction(const QByteArray &function)
     return qt_egl_device_integration()->platformFunction(function);
 }
 
+QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
+{
+    if (hint == QPlatformIntegration::ShowIsFullScreen)
+        return true;
+
+    return QPlatformIntegration::styleHint(hint);
+}
+
 #if QT_CONFIG(evdev)
 void QEglFSIntegration::loadKeymap(const QString &filename)
 {

@@ -76,6 +76,8 @@ public:
 
     QFunctionPointer platformFunction(const QByteArray &function) const override;
 
+    QVariant styleHint(QPlatformIntegration::StyleHint hint) const override;
+
     QFbVtHandler *vtHandler() { return m_vtHandler.data(); }
 
     QPointer<QWindow> pointerWindow() { return m_pointerWindow; }
