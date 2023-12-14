@@ -2661,6 +2661,20 @@ function(_qt_internal_setup_deploy_support)
         endif()
     endif()
 
+    # Generate path to the target (not host) qtpaths file. Needed for windeployqt when
+    # cross-compiling from an x86_64 host to an arm64 target, so it knows which architecture
+    # libraries should be deployed.
+    if(CMAKE_HOST_WIN32)
+        if(CMAKE_CROSSCOMPILING)
+            set(qt_paths_ext ".bat")
+        else()
+            set(qt_paths_ext ".exe")
+        endif()
+    else()
+        set(qt_paths_ext "")
+    endif()
+    set(target_qtpaths_path "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_BINS}/qtpaths${qt_paths_ext}")
+
     file(GENERATE OUTPUT "${QT_DEPLOY_SUPPORT}" CONTENT
 "cmake_minimum_required(VERSION 3.16...3.21)
 
@@ -2707,6 +2721,7 @@ set(__QT_DEPLOY_QT_INSTALL_PREFIX \"${QT6_INSTALL_PREFIX}\")
 set(__QT_DEPLOY_QT_INSTALL_BINS \"${QT6_INSTALL_BINS}\")
 set(__QT_DEPLOY_QT_INSTALL_PLUGINS \"${QT6_INSTALL_PLUGINS}\")
 set(__QT_DEPLOY_QT_INSTALL_TRANSLATIONS \"${QT6_INSTALL_TRANSLATIONS}\")
+set(__QT_DEPLOY_TARGET_QT_PATHS_PATH \"${target_qtpaths_path}\")
 set(__QT_DEPLOY_PLUGINS \"\")
 set(__QT_DEPLOY_MUST_ADJUST_PLUGINS_RPATH \"${must_adjust_plugins_rpath}\")
 set(__QT_DEPLOY_USE_PATCHELF \"${QT_DEPLOY_USE_PATCHELF}\")

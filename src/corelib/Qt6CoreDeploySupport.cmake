@@ -403,6 +403,13 @@ function(qt6_deploy_runtime_dependencies)
         if(arg_NO_COMPILER_RUNTIME)
             list(APPEND tool_options --no-compiler-runtime)
         endif()
+
+        # Specify path to target Qt's qtpaths .exe or .bat file, so windeployqt deploys the correct
+        # libraries when cross-compiling from x86_64 to arm64 windows.
+        if(__QT_DEPLOY_TARGET_QT_PATHS_PATH)
+            list(APPEND tool_options --qtpaths "${__QT_DEPLOY_TARGET_QT_PATHS_PATH}")
+        endif()
+
     elseif(__QT_DEPLOY_SYSTEM_NAME STREQUAL Darwin)
         set(extra_binaries_option "-executable=")
         if(NOT arg_NO_APP_STORE_COMPLIANCE)
