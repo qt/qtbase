@@ -168,9 +168,10 @@ void tst_QHttpHeaders::accessors()
     QVERIFY(h1.has(QHttpHeaders::WellKnownHeader::Accept));
     QVERIFY(h1.has("accept"));
 
-    // values()
+    // values()/value()
 #define EXISTS_NOT(H, N) do {                       \
         QVERIFY(!H.has(N));                         \
+        QCOMPARE(H.value(N, "ENOENT"), "ENOENT");   \
         const auto values = H.values(N);            \
         QVERIFY(values.isEmpty());                  \
         QVERIFY(H.combinedValue(N).isNull());       \
@@ -180,6 +181,7 @@ void tst_QHttpHeaders::accessors()
         const std::array expected = { __VA_ARGS__ };                \
         static_assert(std::tuple_size_v<decltype(expected)> == X);  \
         QVERIFY(H.has(N));                                          \
+        QCOMPARE(H.value(N, "ENOENT"), expected.front());           \
         const auto values = H.values(N);                            \
         QCOMPARE(values.size(), X);                                 \
         QCOMPARE(values.front(), expected.front());                 \

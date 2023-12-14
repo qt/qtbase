@@ -975,6 +975,29 @@ void QHttpHeaders::removeAt(qsizetype i)
 }
 
 /*!
+    Returns the value of the (first) header \a name, or \a defaultValue if it
+    doesn't exist.
+
+    \sa value(QHttpHeaders::WellKnownHeader, QByteArrayView)
+*/
+QByteArrayView QHttpHeaders::value(QAnyStringView name, QByteArrayView defaultValue) const noexcept
+{
+    for (const auto &h : std::as_const(d->headers)) {
+        if (headerNameIs(h, name))
+            return h.value;
+    }
+    return defaultValue;
+}
+
+/*!
+    \overload value(QAnyStringView, QByteArrayView)
+*/
+QByteArrayView QHttpHeaders::value(WellKnownHeader name, QByteArrayView defaultValue) const noexcept
+{
+    return value(headerNames[qToUnderlying(name)], defaultValue);
+}
+
+/*!
     Returns the values of header \a name in a list. Returns an empty
     list if header with \a name doesn't exist.
 
