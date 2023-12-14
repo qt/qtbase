@@ -1,12 +1,13 @@
-<!DOCTYPE RCC><RCC version="1.0">
-<qresource prefix="/">
-    <file>icons/peertopeer.png</file>
-    <file>icons/1uparrow.png</file>
-    <file>icons/1downarrow.png</file>
-    <file>icons/bottom.png</file>
-    <file>icons/player_pause.png</file>
-    <file>icons/player_play.png</file>
-    <file>icons/player_stop.png</file>
-    <file>icons/exit.png</file>
-</qresource>
+<RCC>
+    <qresource prefix="/">
+        <file>icons/peertopeer.svg</file>
+        <file>icons/1uparrow.svg</file>
+        <file>icons/1downarrow.svg</file>
+        <file>icons/bottom.svg</file>
+        <file>icons/player_pause.svg</file>
+        <file>icons/player_play.svg</file>
+        <file>icons/player_stop.svg</file>
+        <file>icons/exit.svg</file>
+        <file>icons/about.svg</file>
+    </qresource>
 </RCC>
