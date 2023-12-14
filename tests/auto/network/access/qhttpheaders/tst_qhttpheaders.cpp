@@ -203,12 +203,12 @@ void tst_QHttpHeaders::accessors()
     h1.append(n1, v1);
     QCOMPARE(h1.names().size(), 1);
     QCOMPARE(h1.size(), 1);
-    QVERIFY(h1.names().contains(n1.toString().toLatin1()));
+    QVERIFY(h1.names().contains(n1));
     h1.append(n2, v2);
     QCOMPARE(h1.names().size(), 2);
     QCOMPARE(h1.size(), 2);
-    QVERIFY(h1.names().contains(n1.toString().toLatin1()));
-    QVERIFY(h1.names().contains(n2.toString().toLatin1()));
+    QVERIFY(h1.names().contains(n1));
+    QVERIFY(h1.names().contains(n2));
     h1.append(n1, v1);
     h1.append(n1, v1);
     QCOMPARE(h1.size(), 4);
