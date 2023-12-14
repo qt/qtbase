@@ -169,33 +169,58 @@ void tst_QHttpHeaders::accessors()
     QVERIFY(h1.has("accept"));
 
     // values()
-    QCOMPARE(h1.values(n1).at(0), v1);
-    QCOMPARE(h1.values(N1).at(0), v1);
-    QCOMPARE(h1.values(QHttpHeaders::WellKnownHeader::Accept).at(0), "nothing");
-    QCOMPARE(h1.values("Accept").at(0), "nothing");
-    QVERIFY(h1.values(N2).isEmpty());
-    QVERIFY(h1.values(QHttpHeaders::WellKnownHeader::Allow).isEmpty());
+#define EXISTS_NOT(H, N) do {                       \
+        QVERIFY(!H.has(N));                         \
+        const auto values = H.values(N);            \
+        QVERIFY(values.isEmpty());                  \
+        QVERIFY(H.combinedValue(N).isNull());       \
+    } while (false)
+
+#define EXISTS_N_TIMES(X, H, N, ...) do {                           \
+        const std::array expected = { __VA_ARGS__ };                \
+        static_assert(std::tuple_size_v<decltype(expected)> == X);  \
+        QVERIFY(H.has(N));                                          \
+        const auto values = H.values(N);                            \
+        QCOMPARE(values.size(), X);                                 \
+        QCOMPARE(values.front(), expected.front());                 \
+        /* ignore in-between */                                     \
+        QCOMPARE(values.back(), expected.back());                   \
+        QCOMPARE(H.combinedValue(N), values.join(','));             \
+    } while (false)
+
+#define EXISTS_ONCE(H, N, V) EXISTS_N_TIMES(1, H, N, V)
+
+    EXISTS_ONCE(h1, n1, v1);
+    EXISTS_ONCE(h1, N1, v1);
+    EXISTS_ONCE(h1, QHttpHeaders::WellKnownHeader::Accept, "nothing");
+    EXISTS_ONCE(h1, "Accept", "nothing");
+
+    EXISTS_NOT(h1, N2);
+    EXISTS_NOT(h1, QHttpHeaders::WellKnownHeader::Allow);
+
     h1.clear();
-    QVERIFY(h1.values(n1).isEmpty());
+
+    EXISTS_NOT(h1, n1);
+
     h1.append(n1, v1);
     h1.append(n1, v2);
     h1.append(n1, v3);
     h1.append(n2, v2);
     h1.append(n3, ""); // empty value
-    QCOMPARE(h1.values(n1).size(), 3);
-    QCOMPARE(h1.values(n1).at(0), v1);
-    QCOMPARE(h1.values(n1).at(1), v2);
-    QCOMPARE(h1.values(n1).at(2), v3);
-    QCOMPARE(h1.values(n1), h1.values(N1));
-    QVERIFY(!h1.values(n3).isEmpty());
-    QCOMPARE(h1.values(n3).at(0), "");
-    QVERIFY(!h1.combinedValue(n1).isNull());
-    QCOMPARE(h1.combinedValue(n1), "value1,value2,value3"_ba);
+
+    EXISTS_N_TIMES(3, h1, n1, v1, v2, v3);
+    EXISTS_N_TIMES(3, h1, N1, v1, v2, v3);
+    EXISTS_ONCE(h1, n3, ""); // empty value
+
     h1.append(QHttpHeaders::WellKnownHeader::Accept, "nothing");
     h1.append(QHttpHeaders::WellKnownHeader::Accept, "ever");
-    QVERIFY(!h1.combinedValue(QHttpHeaders::WellKnownHeader::Accept).isNull());
-    QCOMPARE(h1.combinedValue(QHttpHeaders::WellKnownHeader::Accept), "nothing,ever");
-    QVERIFY(h1.combinedValue("nonexistent").isNull());
+
+    EXISTS_N_TIMES(2, h1, QHttpHeaders::WellKnownHeader::Accept, "nothing", "ever");
+    EXISTS_NOT(h1, "nonexistent");
+
+#undef EXISTS_ONCE
+#undef EXISTS_N_TIMES
+#undef EXISTS_NOT
 
     // names()
     h1.clear();
