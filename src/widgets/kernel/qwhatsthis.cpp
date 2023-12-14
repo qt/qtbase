@@ -97,8 +97,6 @@ QT_BEGIN_NAMESPACE
     \sa QToolTip
 */
 
-Q_CORE_EXPORT void qDeleteInEventHandler(QObject *o);
-
 class QWhatsThat : public QWidget
 {
     Q_OBJECT
@@ -610,7 +608,7 @@ void QWhatsThis::showText(const QPoint &pos, const QString &text, QWidget *w)
 */
 void QWhatsThis::hideText()
 {
-    qDeleteInEventHandler(QWhatsThat::instance);
+    delete QWhatsThat::instance;
 }
 
 /*!

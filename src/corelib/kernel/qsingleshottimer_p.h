@@ -118,7 +118,7 @@ void QSingleShotTimer::timerEvent(QTimerEvent *)
     // we would like to use delete later here, but it feels like a
     // waste to post a new event to handle this event, so we just unset the flag
     // and explicitly delete...
-    qDeleteInEventHandler(this);
+    delete this;
 }
 
 QT_END_NAMESPACE

@@ -460,8 +460,6 @@ private:
     bool reset;
 };
 
-void Q_CORE_EXPORT qDeleteInEventHandler(QObject *o);
-
 struct QAbstractDynamicMetaObject;
 struct Q_CORE_EXPORT QDynamicMetaObjectData
 {

@@ -1430,7 +1430,7 @@ bool QObject::event(QEvent *e)
         break;
 
     case QEvent::DeferredDelete:
-        qDeleteInEventHandler(this);
+        delete this;
         break;
 
     case QEvent::MetaCall:
@@ -4939,11 +4939,6 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 
     Synonym for QList<QObject *>.
 */
-
-void qDeleteInEventHandler(QObject *o)
-{
-    delete o;
-}
 
 /*!
     \fn template<typename PointerToMemberFunction> QMetaObject::Connection QObject::connect(const QObject *sender, PointerToMemberFunction signal, const QObject *receiver, PointerToMemberFunction method, Qt::ConnectionType type)

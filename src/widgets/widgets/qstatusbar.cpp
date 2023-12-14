@@ -520,7 +520,7 @@ void QStatusBar::clearMessage()
     if (d->tempItem.isEmpty())
         return;
     if (d->timer) {
-        qDeleteInEventHandler(d->timer);
+        delete d->timer;
         d->timer = nullptr;
     }
     d->tempItem.clear();

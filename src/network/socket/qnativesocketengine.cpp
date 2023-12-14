@@ -948,15 +948,15 @@ void QNativeSocketEngine::close()
     d->peerAddress.clear();
     d->inboundStreamCount = d->outboundStreamCount = 0;
     if (d->readNotifier) {
-        qDeleteInEventHandler(d->readNotifier);
+        delete d->readNotifier;
         d->readNotifier = nullptr;
     }
     if (d->writeNotifier) {
-        qDeleteInEventHandler(d->writeNotifier);
+        delete d->writeNotifier;
         d->writeNotifier = nullptr;
     }
     if (d->exceptNotifier) {
-        qDeleteInEventHandler(d->exceptNotifier);
+        delete d->exceptNotifier;
         d->exceptNotifier = nullptr;
     }
 }
