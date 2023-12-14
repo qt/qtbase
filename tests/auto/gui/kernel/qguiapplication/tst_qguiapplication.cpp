@@ -460,16 +460,12 @@ void tst_QGuiApplication::keyboardModifiers()
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
 
     // wheel events
-    QPoint global = window->mapToGlobal(center);
     QPoint delta(0, 1);
-    QWindowSystemInterface::handleWheelEvent(window.data(), center, global, delta, delta, Qt::NoModifier);
-    QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
+    QTest::wheelEvent(window.data(), center, delta, delta, Qt::NoModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::NoModifier);
-    QWindowSystemInterface::handleWheelEvent(window.data(), center, global, delta, delta, Qt::AltModifier);
-    QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
+    QTest::wheelEvent(window.data(), center, delta, delta, Qt::AltModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::AltModifier);
-    QWindowSystemInterface::handleWheelEvent(window.data(), center, global, delta, delta, Qt::ControlModifier);
-    QWindowSystemInterface::sendWindowSystemEvents(QEventLoop::AllEvents);
+    QTest::wheelEvent(window.data(), center, delta, delta, Qt::ControlModifier);
     QCOMPARE(QGuiApplication::keyboardModifiers(), Qt::ControlModifier);
 
     // touch events
