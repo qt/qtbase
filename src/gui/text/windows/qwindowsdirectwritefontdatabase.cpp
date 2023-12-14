@@ -18,6 +18,32 @@ QT_BEGIN_NAMESPACE
 // Defined in gui/text/qfontdatabase.cpp
 Q_GUI_EXPORT QFontDatabase::WritingSystem qt_writing_system_for_script(int script);
 
+template<typename T>
+struct DirectWriteScope {
+    DirectWriteScope(T *res = nullptr) : m_res(res) {}
+    ~DirectWriteScope() {
+        if (m_res != nullptr)
+            m_res->Release();
+    }
+
+    T **operator&()
+    {
+        return &m_res;
+    }
+
+    T *operator->()
+    {
+        return m_res;
+    }
+
+    T *operator*() {
+        return m_res;
+    }
+
+private:
+    T *m_res;
+};
+
 QWindowsDirectWriteFontDatabase::QWindowsDirectWriteFontDatabase()
 {
     qCDebug(lcQpaFonts) << "Creating DirectWrite database";
@@ -216,6 +242,34 @@ QFontEngine *QWindowsDirectWriteFontDatabase::fontEngine(const QFontDef &fontDef
 {
     IDWriteFontFace *face = reinterpret_cast<IDWriteFontFace *>(handle);
     Q_ASSERT(face != nullptr);
+
+    DWRITE_FONT_SIMULATIONS simulations = DWRITE_FONT_SIMULATIONS_NONE;
+    if (fontDef.weight >= QFont::DemiBold || fontDef.style != QFont::StyleNormal) {
+        DirectWriteScope<IDWriteFontFace3> face3;
+        if (SUCCEEDED(face->QueryInterface(__uuidof(IDWriteFontFace3),
+                                           reinterpret_cast<void **>(&face3)))) {
+            if (fontDef.weight >= QFont::DemiBold && face3->GetWeight() < DWRITE_FONT_WEIGHT_DEMI_BOLD)
+                simulations |= DWRITE_FONT_SIMULATIONS_BOLD;
+
+            if (fontDef.style != QFont::StyleNormal && face3->GetStyle() == DWRITE_FONT_STYLE_NORMAL)
+                simulations |= DWRITE_FONT_SIMULATIONS_OBLIQUE;
+        }
+    }
+
+    DirectWriteScope<IDWriteFontFace5> newFace;
+    if (simulations != DWRITE_FONT_SIMULATIONS_NONE) {
+        DirectWriteScope<IDWriteFontFace5> face5;
+        if (SUCCEEDED(face->QueryInterface(__uuidof(IDWriteFontFace5),
+                                           reinterpret_cast<void **>(&face5)))) {
+            DirectWriteScope<IDWriteFontResource> font;
+            if (SUCCEEDED(face5->GetFontResource(&font))) {
+                if (SUCCEEDED(font->CreateFontFace(simulations, nullptr, 0, &newFace)))
+                    face = *newFace;
+                else
+                    qCWarning(lcQpaFonts) << "DirectWrite: Can't create font face for variable axis values";
+            }
+        }
+    }
 
     QWindowsFontEngineDirectWrite *fontEngine = new QWindowsFontEngineDirectWrite(face, fontDef.pixelSize, data());
     fontEngine->initFontInfo(fontDef, defaultVerticalDPI());
