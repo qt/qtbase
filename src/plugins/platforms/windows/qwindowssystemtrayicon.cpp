@@ -215,24 +215,13 @@ void QWindowsSystemTrayIcon::showMessage(const QString &title, const QString &me
     qStringToLimitedWCharArray(title, tnd.szInfoTitle, 64);
 
     tnd.uID = q_uNOTIFYICONID;
-    tnd.dwInfoFlags = NIIF_USER;
 
-    QSize size(GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON));
-    const QSize largeIcon(GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
-    const QSize more = icon.actualSize(largeIcon);
-    if (more.height() > (largeIcon.height() * 3/4) || more.width() > (largeIcon.width() * 3/4)) {
-        tnd.dwInfoFlags |= NIIF_LARGE_ICON;
-        size = largeIcon;
-    }
+    const auto size = icon.actualSize(QSize(256, 256));
     QPixmap pm = icon.pixmap(size);
     if (pm.isNull()) {
         tnd.dwInfoFlags = NIIF_INFO;
     } else {
-        if (pm.size() != size) {
-            qWarning("QSystemTrayIcon::showMessage: Wrong icon size (%dx%d), please add standard one: %dx%d",
-                      pm.size().width(), pm.size().height(), size.width(), size.height());
-            pm = pm.scaled(size, Qt::IgnoreAspectRatio);
-        }
+        tnd.dwInfoFlags = NIIF_USER | NIIF_LARGE_ICON;
         tnd.hBalloonIcon = qt_pixmapToWinHICON(pm);
     }
     tnd.hWnd = m_hwnd;
