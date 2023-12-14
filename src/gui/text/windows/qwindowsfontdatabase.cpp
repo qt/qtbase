@@ -1230,6 +1230,7 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
             HRESULT hr = data->directWriteGdiInterop->CreateFontFaceFromHdc(data->hdc, &directWriteFontFace);
             if (SUCCEEDED(hr)) {
                 bool isColorFont = false;
+                bool needsSimulation = false;
 #if QT_CONFIG(direct2d)
                 IDWriteFontFace2 *directWriteFontFace2 = nullptr;
                 if (SUCCEEDED(directWriteFontFace->QueryInterface(__uuidof(IDWriteFontFace2),
@@ -1237,10 +1238,12 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
                     if (directWriteFontFace2->IsColorFont())
                         isColorFont = directWriteFontFace2->GetPaletteEntryCount() > 0;
 
+                    needsSimulation = directWriteFontFace2->GetSimulations() != DWRITE_FONT_SIMULATIONS_NONE;
+
                     directWriteFontFace2->Release();
                 }
 #endif // direct2d
-                useDw = useDw || useDirectWrite(hintingPreference, fam, isColorFont);
+                useDw = useDw || useDirectWrite(hintingPreference, fam, isColorFont) || needsSimulation;
                 qCDebug(lcQpaFonts)
                         << __FUNCTION__ << request.families.first() << request.pointSize << "pt"
                         << "hintingPreference=" << hintingPreference << "color=" << isColorFont
