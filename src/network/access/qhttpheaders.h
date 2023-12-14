@@ -237,6 +237,9 @@ public:
     Q_NETWORK_EXPORT void removeAll(WellKnownHeader name);
     Q_NETWORK_EXPORT void removeAt(qsizetype i);
 
+    Q_NETWORK_EXPORT QByteArrayView value(QAnyStringView name, QByteArrayView defaultValue = {}) const noexcept;
+    Q_NETWORK_EXPORT QByteArrayView value(WellKnownHeader name, QByteArrayView defaultValue = {}) const noexcept;
+
     Q_NETWORK_EXPORT QList<QByteArray> values(QAnyStringView name) const;
     Q_NETWORK_EXPORT QList<QByteArray> values(WellKnownHeader name) const;
 
