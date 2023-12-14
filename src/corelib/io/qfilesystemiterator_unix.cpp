@@ -26,15 +26,13 @@ static bool checkNameDecodable(const char *d_name, qsizetype len)
 QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters,
                                          const QStringList &nameFilters, QDirIterator::IteratorFlags flags)
     : nativePath(entry.nativeFilePath())
-    , dir(nullptr)
-    , dirEntry(nullptr)
-    , lastError(0)
 {
     Q_UNUSED(filters);
     Q_UNUSED(nameFilters);
     Q_UNUSED(flags);
 
-    if ((dir = QT_OPENDIR(nativePath.constData())) == nullptr) {
+    dir.reset(QT_OPENDIR(entry.nativeFilePath().constData()));
+    if (!dir) {
         lastError = errno;
     } else {
         if (!nativePath.endsWith('/'))
@@ -42,11 +40,7 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
     }
 }
 
-QFileSystemIterator::~QFileSystemIterator()
-{
-    if (dir)
-        QT_CLOSEDIR(dir);
-}
+QFileSystemIterator::~QFileSystemIterator() = default;
 
 bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData)
 {
@@ -54,7 +48,7 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
         return false;
 
     for (;;) {
-        dirEntry = QT_READDIR(dir);
+        dirEntry = QT_READDIR(dir.get());
 
         if (dirEntry) {
             qsizetype len = strlen(dirEntry->d_name);
