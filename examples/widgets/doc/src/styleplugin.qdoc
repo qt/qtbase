@@ -130,8 +130,4 @@
     In addition to the plugin \l{How to Create Qt Plugins}{overview
     document}, we have other examples and articles that concern
     plugins.
-
-    In the \l{Echo Plugin Example}{echo plugin example} we show how to
-    implement plugins that extends Qt applications rather than Qt
-    itself, which is the case with the style plugin of this example.
 */

@@ -7,7 +7,3 @@ qt_internal_add_example(regularexpression)
 qt_internal_add_example(styleplugin)
 qt_internal_add_example(treemodelcompleter)
 qt_internal_add_example(undoframework)
-
-if(QT_FEATURE_library)
-    qt_internal_add_example(echoplugin)
-endif()
