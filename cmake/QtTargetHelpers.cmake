@@ -852,7 +852,7 @@ endif()
         # the target.  It is not built by default.
         if(NOT QT_WILL_INSTALL AND QT_FEATURE_debug_and_release)
             get_target_property(excluded_genex ${target} EXCLUDE_FROM_ALL)
-            if(NOT excluded_genex STREQUAL "")
+            if(excluded_genex)
                 string(APPEND content "
 # ${full_target} is not built by default in the Debug configuration. Check existence.
 get_target_property(_qt_imported_location ${full_target} IMPORTED_LOCATION_DEBUG)
