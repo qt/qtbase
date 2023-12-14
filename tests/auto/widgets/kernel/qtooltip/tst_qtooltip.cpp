@@ -26,6 +26,7 @@ private slots:
     void setPalette();
     void qtbug64550_stylesheet();
     void dontCrashOutsideScreenGeometry();
+    void marginSetWithStyleSheet();
 };
 
 void tst_QToolTip::init()
@@ -211,6 +212,31 @@ void tst_QToolTip::qtbug64550_stylesheet()
 void tst_QToolTip::dontCrashOutsideScreenGeometry() {
     QToolTip::showText(QPoint(-10000, -10000), "tip outside monitor", nullptr);
     QTRY_VERIFY(QToolTip::isVisible());
+    QToolTip::hideText();
+}
+
+void tst_QToolTip::marginSetWithStyleSheet()
+{
+    const char *toolTipText = "Test Tool Tip";
+
+    qApp->setStyleSheet("QToolTip {font-size: 8px; margin: 5px;}");
+    QToolTip::showText(QGuiApplication::primaryScreen()->availableGeometry().topLeft(), toolTipText);
+    QTRY_VERIFY(QToolTip::isVisible());
+    QWidget *toolTip = findToolTip();
+    QVERIFY(toolTip);
+    QTRY_VERIFY(toolTip->isVisible());
+    int toolTipHeight = toolTip->size().height();
+    qApp->setStyleSheet(QString());
+    QToolTip::hideText();
+
+    qApp->setStyleSheet("QToolTip {font-size: 8px; margin: 10px;}");
+    QToolTip::showText(QGuiApplication::primaryScreen()->availableGeometry().topLeft(), toolTipText);
+    QTRY_VERIFY(QToolTip::isVisible());
+    toolTip = findToolTip();
+    QVERIFY(toolTip);
+    QTRY_VERIFY(toolTip->isVisible());
+    QCOMPARE_LE(toolTip->size().height(), toolTipHeight + 10);
+    qApp->setStyleSheet(QString());
     QToolTip::hideText();
 }
 
