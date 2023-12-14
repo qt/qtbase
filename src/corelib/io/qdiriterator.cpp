@@ -72,20 +72,12 @@
 #include <QtCore/private/qduplicatetracker_p.h>
 
 #include <memory>
+#include <stack>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
-
-template <class Iterator>
-class QDirIteratorPrivateIteratorStack : public QStack<Iterator *>
-{
-public:
-    ~QDirIteratorPrivateIteratorStack()
-    {
-        qDeleteAll(*this);
-    }
-};
 
 class QDirIteratorPrivate
 {
@@ -109,9 +101,11 @@ public:
     QList<QRegularExpression> nameRegExps;
 #endif
 
-    QDirIteratorPrivateIteratorStack<QAbstractFileEngineIterator> fileEngineIterators;
+    using FEngineIteratorPtr = std::unique_ptr<QAbstractFileEngineIterator>;
+    std::stack<FEngineIteratorPtr, std::vector<FEngineIteratorPtr>> fileEngineIterators;
 #ifndef QT_NO_FILESYSTEMITERATOR
-    QDirIteratorPrivateIteratorStack<QFileSystemIterator> nativeIterators;
+    using FsIteratorPtr = std::unique_ptr<QFileSystemIterator>;
+    std::stack<FsIteratorPtr, std::vector<FsIteratorPtr>> nativeIterators;
 #endif
 
     QFileInfo currentFileInfo;
@@ -170,15 +164,14 @@ void QDirIteratorPrivate::pushDirectory(const QFileInfo &fileInfo)
         QAbstractFileEngineIterator *it = engine->beginEntryList(filters, nameFilters);
         if (it) {
             it->setPath(path);
-            fileEngineIterators << it;
+            fileEngineIterators.emplace(FEngineIteratorPtr(it));
         } else {
             // No iterator; no entry list.
         }
     } else {
 #ifndef QT_NO_FILESYSTEMITERATOR
-        QFileSystemIterator *it = new QFileSystemIterator(fileInfo.d_ptr->fileEntry,
-            filters, nameFilters, iteratorFlags);
-        nativeIterators << it;
+        nativeIterators.emplace(std::make_unique<QFileSystemIterator>(
+            fileInfo.d_ptr->fileEntry, filters, nameFilters, iteratorFlags));
 #else
         qWarning("Qt was built with -no-feature-filesystemiterator: no files/plugins will be found!");
 #endif
@@ -202,31 +195,46 @@ inline bool QDirIteratorPrivate::entryMatches(const QString & fileName, const QF
 
 /*!
     \internal
+
+    Advances the internal iterator, either a QAbstractFileEngineIterator (e.g.
+    QResourceFileEngineIterator) or a QFileSystemIterator (which uses low-level
+    system methods, e.g. readdir() on Unix).
+
+    An iterator stack is used for holding the iterators.
+
+    A typical example of doing recursive iteration:
+    - while iterating directory A we find a sub-dir B
+    - an iterator for B is added to the iterator stack
+    - B's iterator is processed (the top() of the stack) first; then loop
+      goes back to processing A's iterator
 */
 void QDirIteratorPrivate::advance()
 {
+    // Use get() in both code paths below because the iterator returned by top()
+    // may be invalidated due to reallocation when appending new iterators in
+    // pushDirectory().
+
     if (engine) {
-        while (!fileEngineIterators.isEmpty()) {
+        while (!fileEngineIterators.empty()) {
             // Find the next valid iterator that matches the filters.
             QAbstractFileEngineIterator *it;
-            while (it = fileEngineIterators.top(), it->hasNext()) {
+            while (it = fileEngineIterators.top().get(), it->hasNext()) {
                 it->next();
                 if (entryMatches(it->currentFileName(), it->currentFileInfo()))
                     return;
             }
 
             fileEngineIterators.pop();
-            delete it;
         }
     } else {
 #ifndef QT_NO_FILESYSTEMITERATOR
         QFileSystemEntry nextEntry;
         QFileSystemMetaData nextMetaData;
 
-        while (!nativeIterators.isEmpty()) {
+        while (!nativeIterators.empty()) {
             // Find the next valid iterator that matches the filters.
             QFileSystemIterator *it;
-            while (it = nativeIterators.top(), it->advance(nextEntry, nextMetaData)) {
+            while (it = nativeIterators.top().get(), it->advance(nextEntry, nextMetaData)) {
                 QFileInfo info(new QFileInfoPrivate(nextEntry, nextMetaData));
 
                 if (entryMatches(nextEntry.fileName(), info))
@@ -235,7 +243,6 @@ void QDirIteratorPrivate::advance()
             }
 
             nativeIterators.pop();
-            delete it;
         }
 #endif
     }
@@ -513,10 +520,10 @@ QFileInfo QDirIterator::nextFileInfo()
 bool QDirIterator::hasNext() const
 {
     if (d->engine)
-        return !d->fileEngineIterators.isEmpty();
+        return !d->fileEngineIterators.empty();
     else
 #ifndef QT_NO_FILESYSTEMITERATOR
-        return !d->nativeIterators.isEmpty();
+        return !d->nativeIterators.empty();
 #else
         return false;
 #endif
