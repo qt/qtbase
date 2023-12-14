@@ -2811,6 +2811,7 @@ bool QMessageBoxPrivate::canBeNativeDialog() const
         return true;
     if (QCoreApplication::testAttribute(Qt::AA_DontUseNativeDialogs)
         || q->testAttribute(Qt::WA_DontShowOnScreen)
+        || q->testAttribute(Qt::WA_StyleSheet)
         || (options->options() & QMessageDialogOptions::Option::DontUseNativeDialog)) {
         return false;
     }
