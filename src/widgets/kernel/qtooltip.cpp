@@ -356,10 +356,12 @@ void QTipLabel::placeTip(const QPoint &pos, QWidget *w)
         if (w) {
             connect(w, SIGNAL(destroyed()),
                 QTipLabel::instance, SLOT(styleSheetParentDestroyed()));
-            // QTBUG-64550: A font inherited by the style sheet might change the size,
-            // particular on Windows, where the tip is not parented on a window.
-            QTipLabel::instance->updateSize(pos);
         }
+        // QTBUG-64550: A font inherited by the style sheet might change the size,
+        // particular on Windows, where the tip is not parented on a window.
+        // The updatesSize() also makes sure that the content size be updated with
+        // correct content margin.
+        QTipLabel::instance->updateSize(pos);
     }
 #endif //QT_NO_STYLE_STYLESHEET
 
