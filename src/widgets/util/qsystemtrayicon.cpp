@@ -61,7 +61,7 @@ static QIcon messageIcon2qIcon(QSystemTrayIcon::MessageIcon icon)
     called the \e{system tray} or \e{notification area}, where long-running
     applications can display icons and short messages.
 
-    \image system-tray.png The system tray on Windows XP.
+    \image system-tray.webp The system tray on Windows 10.
 
     The QSystemTrayIcon class can be used on the following platforms:
 
