@@ -405,7 +405,6 @@ QT_USE_NAMESPACE
     if (!platformItem || platformItem->menu())
         return;
 
-    QScopedScopeLevelCounter scopeLevelCounter(QGuiApplicationPrivate::instance()->threadData.loadRelaxed());
     QGuiApplicationPrivate::modifier_buttons = QAppleKeyMapper::fromCocoaModifiers([NSEvent modifierFlags]);
 
     static QMetaMethod activatedSignal = QMetaMethod::fromSignal(&QCocoaMenuItem::activated);
