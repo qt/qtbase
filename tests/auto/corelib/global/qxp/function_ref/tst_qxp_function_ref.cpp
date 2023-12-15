@@ -249,6 +249,8 @@ void tst_qxp_function_ref::ctad()
         qxp::function_ref f2 = &fun; \
         static_assert(std::is_same_v<decltype(f2), \
                                     qxp::function_ref<sig>>); \
+        static_assert(std::is_trivially_copyable_v<decltype(f)>); \
+        static_assert(std::is_trivially_copyable_v<decltype(f2)>); \
     } while (false)
 
     CHECK(i_f_i_nx, int (int) noexcept);
