@@ -1585,7 +1585,7 @@ void QWindowsFileDialogHelper::selectFile(const QUrl &fileName)
     qCDebug(lcQpaDialogs) << __FUNCTION__ << fileName.toString();
 
     if (hasNativeDialog()) // Might be invoked from the QFileDialog constructor.
-        nativeFileDialog()->selectFile(fileName.toLocalFile()); // ## should use QUrl::fileName() once it exists
+        nativeFileDialog()->selectFile(fileName.fileName());
 }
 
 QList<QUrl> QWindowsFileDialogHelper::selectedFiles() const
