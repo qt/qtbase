@@ -184,7 +184,7 @@ QT_SPECIALIZE_FUNCTION_REF(const, true );
 
 template <
     class F,
-    std::enable_if_t<std::is_function_v<F>, bool> = true
+    detail::if_function<F> = true
 >
 function_ref(F*) -> function_ref<F>;
 
