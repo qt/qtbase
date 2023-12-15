@@ -83,6 +83,28 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
         QString selectedVisualNameFilter = m_options->initiallySelectedNameFilter();
         m_selectedNameFilter = [self findStrippedFilterWithVisualFilterName:selectedVisualNameFilter];
 
+        // Explicitly show extensions if we detect a filter
+        // that has a multi-part extension. This prevents
+        // confusing situations where the user clicks e.g.
+        // 'foo.tar.gz' and 'foo.tar' is populated in the
+        // file name box, but when then clicking save macOS
+        // will warn that the file needs to end in .gz,
+        // due to thinking the user tried to save the file
+        // as a 'tar' file instead. Unfortunately this
+        // property can only be set before the panel is
+        // shown, so we can't toggle it on and off based
+        // on the active filter.
+        m_panel.extensionHidden = [&]{
+            for (const auto &nameFilter : m_nameFilterDropDownList) {
+                 const auto extensions = QPlatformFileDialogHelper::cleanFilterList(nameFilter);
+                 for (const auto &extension : extensions) {
+                    if (extension.count('.') > 1)
+                        return false;
+                 }
+            }
+            return true;
+        }();
+
         const QFileInfo sel(selectFile);
         if (sel.isDir() && !sel.isBundle()){
             m_panel.directoryURL = [NSURL fileURLWithPath:sel.absoluteFilePath().toNSString()];
@@ -332,20 +354,6 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     m_popupButton.hidden = chooseDirsOnly;    // TODO hide the whole sunken pane instead?
 
     m_panel.allowedFileTypes = [self computeAllowedFileTypes];
-
-    // Explicitly show extensions if we detect a filter
-    // that has a multi-part extension. This prevents
-    // confusing situations where the user clicks e.g.
-    // 'foo.tar.gz' and 'foo.tar' is populated in the
-    // file name box, but when then clicking save macOS
-    // will warn that the file needs to end in .gz,
-    // due to thinking the user tried to save the file
-    // as a 'tar' file instead. Unfortunately this
-    // property can only be set before the panel is
-    // shown, so it will not have any effect when
-    // switching filters in an already opened dialog.
-    if (m_panel.allowedFileTypes.count > 2)
-        m_panel.extensionHidden = NO;
 
     m_panel.showsHiddenFiles = m_options->filter().testFlag(QDir::Hidden);
 
