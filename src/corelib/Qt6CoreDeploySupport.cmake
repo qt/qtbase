@@ -293,6 +293,7 @@ function(qt6_deploy_runtime_dependencies)
         EXECUTABLE
         BIN_DIR
         LIB_DIR
+        LIBEXEC_DIR
         PLUGINS_DIR
         QML_DIR
     )
@@ -333,6 +334,9 @@ function(qt6_deploy_runtime_dependencies)
     # None of these are used if the executable is a macOS app bundle
     if(NOT arg_BIN_DIR)
         set(arg_BIN_DIR "${QT_DEPLOY_BIN_DIR}")
+    endif()
+    if(NOT arg_LIBEXEC_DIR)
+        set(arg_LIBEXEC_DIR "${QT_DEPLOY_LIBEXEC_DIR}")
     endif()
     if(NOT arg_LIB_DIR)
         set(arg_LIB_DIR "${QT_DEPLOY_LIB_DIR}")
