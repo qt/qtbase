@@ -115,8 +115,11 @@ public:
 
 QtFreetypeData::~QtFreetypeData()
 {
-    for (QHash<QFontEngine::FaceId, QFreetypeFace *>::ConstIterator iter = faces.cbegin(); iter != faces.cend(); ++iter)
+    for (auto iter = faces.cbegin(); iter != faces.cend(); ++iter) {
         iter.value()->cleanup();
+        if (!iter.value()->ref.deref())
+            delete iter.value();
+    }
     faces.clear();
     FT_Done_FreeType(library);
     library = nullptr;
@@ -213,10 +216,28 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
 
     QtFreetypeData *freetypeData = qt_getFreetypeData();
 
-    QFreetypeFace *freetype = freetypeData->faces.value(face_id, nullptr);
-    if (freetype) {
-        freetype->ref.ref();
-    } else {
+    QFreetypeFace *freetype = nullptr;
+    auto it = freetypeData->faces.find(face_id);
+    if (it != freetypeData->faces.end()) {
+        freetype = *it;
+
+        Q_ASSERT(freetype->ref.loadRelaxed() > 0);
+        if (freetype->ref.loadRelaxed() == 1) {
+            // If there is only one reference left to the face, it means it is only referenced by
+            // the cache itself, and thus it is in cleanup state (but the final outside reference
+            // was removed on a different thread so it could not be deleted right away). We then
+            // complete the cleanup and pretend we didn't find it, so that it can be re-created with
+            // the present state.
+            freetype->cleanup();
+            freetypeData->faces.erase(it);
+            delete freetype;
+            freetype = nullptr;
+        } else {
+            freetype->ref.ref();
+        }
+    }
+
+    if (!freetype) {
         const auto deleter = [](QFreetypeFace *f) { delete f; };
         std::unique_ptr<QFreetypeFace, decltype(deleter)> newFreetype(new QFreetypeFace, deleter);
         FT_Face face;
@@ -322,6 +343,7 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
             QT_RETHROW;
         }
         freetype = newFreetype.release();
+        freetype->ref.ref();
     }
     return freetype;
 }
@@ -335,24 +357,36 @@ void QFreetypeFace::cleanup()
 
 void QFreetypeFace::release(const QFontEngine::FaceId &face_id)
 {
-    if (!ref.deref()) {
-        if (face) {
-            QtFreetypeData *freetypeData = qt_getFreetypeData();
+    Q_UNUSED(face_id);
+    bool deleteThis = !ref.deref();
 
-            cleanup();
-
-            auto it = freetypeData->faces.constFind(face_id);
-            if (it != freetypeData->faces.constEnd())
-                freetypeData->faces.erase(it);
-
-            if (freetypeData->faces.isEmpty()) {
-                FT_Done_FreeType(freetypeData->library);
-                freetypeData->library = nullptr;
+    // If the only reference left over is the cache's reference, we remove it from the cache,
+    // granted that we are on the correct thread. If not, we leave it there to be cleaned out
+    // later. While we are at it, we also purge all left over faces which are only referenced
+    // from the cache.
+    if (face && ref.loadRelaxed() == 1) {
+        QtFreetypeData *freetypeData = qt_getFreetypeData();
+        for (auto it = freetypeData->faces.constBegin(); it != freetypeData->faces.constEnd(); ) {
+            if (it.value()->ref.loadRelaxed() == 1) {
+                it.value()->cleanup();
+                if (it.value() == this)
+                    deleteThis = true; // This face, delete at end of function for safety
+                else
+                    delete it.value();
+                it = freetypeData->faces.erase(it);
+            } else {
+                ++it;
             }
         }
 
-        delete this;
+        if (freetypeData->faces.isEmpty()) {
+            FT_Done_FreeType(freetypeData->library);
+            freetypeData->library = nullptr;
+        }
     }
+
+    if (deleteThis)
+        delete this;
 }
 
 static int computeFaceIndex(const QString &faceFileName, const QString &styleName)
