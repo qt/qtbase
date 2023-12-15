@@ -47,8 +47,9 @@ scripts should assume that the working directory is already set to the base
 install location and just use the prefix-relative \c{QT_DEPLOY_..._DIR}
 variables.
 
-\sa QT_DEPLOY_SUPPORT, QT_DEPLOY_BIN_DIR, QT_DEPLOY_LIB_DIR,
-    QT_DEPLOY_PLUGINS_DIR, QT_DEPLOY_QML_DIR, QT_DEPLOY_TRANSLATIONS_DIR
+\sa QT_DEPLOY_SUPPORT, QT_DEPLOY_BIN_DIR, QT_DEPLOY_LIBEXEC_DIR,
+    QT_DEPLOY_LIB_DIR, QT_DEPLOY_PLUGINS_DIR, QT_DEPLOY_QML_DIR,
+    QT_DEPLOY_TRANSLATIONS_DIR
 */
 
 /*!
@@ -87,7 +88,47 @@ should not be used for that scenario.
 
 \include cmake-deploy-runtime-dependencies.qdocinc
 
-\sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_LIB_DIR,
+\sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_LIBEXEC_DIR,
+    QT_DEPLOY_LIB_DIR, QT_DEPLOY_PLUGINS_DIR, QT_DEPLOY_QML_DIR,
+    QT_DEPLOY_TRANSLATIONS_DIR
+*/
+
+/*!
+\page cmake-variable-qt-deploy-libexec-dir.html
+\ingroup cmake-variables-qtcore
+
+\title QT_DEPLOY_LIBEXEC_DIR
+\target cmake-variable-QT_DEPLOY_LIBEXEC_DIR
+
+\summary {Prefix-relative subdirectory for deploying program executables on some target platforms.}
+
+\include cmake-deploy-var-usage.qdocinc
+
+\cmakevariablesince 6.8
+
+Projects should use \c QT_DEPLOY_LIBEXEC_DIR in their deploy scripts to avoid
+hard-coding a particular directory in which to deploy the following types of
+binaries:
+
+\list
+\li Helper executables that are local to the project on Unix derivatives.
+\endlist
+
+\c QT_DEPLOY_LIBEXEC_DIR defaults to the value of \c${CMAKE_INSTALL_LIBEXECDIR}
+(usually \c{libexec}), which is provided by CMake's \l{GNUInstallDirs} module.
+To change the value of \c QT_DEPLOY_LIBEXEC_DIR, ensure that the project sets
+\c{CMAKE_INSTALL_LIBEXECDIR} before the \c Core package is found.
+
+The \c QT_DEPLOY_LIBEXEC_DIR path is relative to \l{QT_DEPLOY_PREFIX}.
+
+This variable is not meaningful when deploying into a macOS app bundle and
+should not be used for that scenario.
+
+\section1 Example
+
+\include cmake-deploy-modified-variable-values.qdocinc
+
+\sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_BIN_DIR, QT_DEPLOY_LIB_DIR,
     QT_DEPLOY_PLUGINS_DIR, QT_DEPLOY_QML_DIR, QT_DEPLOY_TRANSLATIONS_DIR
 */
 
@@ -163,8 +204,9 @@ bundle contents.
 
 \include cmake-deploy-modified-variable-values.qdocinc
 
-\sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_BIN_DIR, QT_DEPLOY_LIB_DIR,
-    QT_DEPLOY_QML_DIR, QT_DEPLOY_TRANSLATIONS_DIR
+\sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_BIN_DIR,
+    QT_DEPLOY_LIBEXEC_DIR, QT_DEPLOY_LIB_DIR, QT_DEPLOY_QML_DIR,
+    QT_DEPLOY_TRANSLATIONS_DIR
 */
 
 /*!
@@ -200,8 +242,9 @@ to be deployed to different locations within the app bundle.
 
 \include cmake-deploy-modified-variable-values.qdocinc
 
-\sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_BIN_DIR, QT_DEPLOY_LIB_DIR,
-    QT_DEPLOY_PLUGINS_DIR, QT_DEPLOY_TRANSLATIONS_DIR
+\sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_BIN_DIR,
+    QT_DEPLOY_LIBEXEC_DIR, QT_DEPLOY_LIB_DIR, QT_DEPLOY_PLUGINS_DIR,
+    QT_DEPLOY_TRANSLATIONS_DIR
 */
 
 /*!
@@ -233,7 +276,7 @@ This variable is not meaningful when deploying on macOS or Windows.
 \include cmake-deploy-modified-variable-values.qdocinc
 
 \sa QT_DEPLOY_SUPPORT, QT_DEPLOY_PREFIX, QT_DEPLOY_BIN_DIR, QT_DEPLOY_LIB_DIR,
-    QT_DEPLOY_PLUGINS_DIR, QT_DEPLOY_QML_DIR
+    QT_DEPLOY_LIBEXEC_DIR, QT_DEPLOY_PLUGINS_DIR, QT_DEPLOY_QML_DIR
 */
 
 /*!
