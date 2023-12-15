@@ -1145,30 +1145,8 @@ QPoint QTransform::map(const QPoint &p) const
     qreal x = 0, y = 0;
 
     TransformationType t = inline_type();
-    switch(t) {
-    case TxNone:
-        x = fx;
-        y = fy;
-        break;
-    case TxTranslate:
-        x = fx + m_matrix[2][0];
-        y = fy + m_matrix[2][1];
-        break;
-    case TxScale:
-        x = m_matrix[0][0] * fx + m_matrix[2][0];
-        y = m_matrix[1][1] * fy + m_matrix[2][1];
-        break;
-    case TxRotate:
-    case TxShear:
-    case TxProject:
-        x = m_matrix[0][0] * fx + m_matrix[1][0] * fy + m_matrix[2][0];
-        y = m_matrix[0][1] * fx + m_matrix[1][1] * fy + m_matrix[2][1];
-        if (t == TxProject) {
-            qreal w = 1./(m_matrix[0][2] * fx + m_matrix[1][2] * fy + m_matrix[2][2]);
-            x *= w;
-            y *= w;
-        }
-    }
+    MAP(fx, fy, x, y);
+
     return QPoint(qRound(x), qRound(y));
 }
 
@@ -1196,30 +1174,8 @@ QPointF QTransform::map(const QPointF &p) const
     qreal x = 0, y = 0;
 
     TransformationType t = inline_type();
-    switch(t) {
-    case TxNone:
-        x = fx;
-        y = fy;
-        break;
-    case TxTranslate:
-        x = fx + m_matrix[2][0];
-        y = fy + m_matrix[2][1];
-        break;
-    case TxScale:
-        x = m_matrix[0][0] * fx + m_matrix[2][0];
-        y = m_matrix[1][1] * fy + m_matrix[2][1];
-        break;
-    case TxRotate:
-    case TxShear:
-    case TxProject:
-        x = m_matrix[0][0] * fx + m_matrix[1][0] * fy + m_matrix[2][0];
-        y = m_matrix[0][1] * fx + m_matrix[1][1] * fy + m_matrix[2][1];
-        if (t == TxProject) {
-            qreal w = 1./(m_matrix[0][2] * fx + m_matrix[1][2] * fy + m_matrix[2][2]);
-            x *= w;
-            y *= w;
-        }
-    }
+    MAP(fx, fy, x, y);
+
     return QPointF(x, y);
 }
 
@@ -1267,41 +1223,9 @@ QLine QTransform::map(const QLine &l) const
     qreal x1 = 0, y1 = 0, x2 = 0, y2 = 0;
 
     TransformationType t = inline_type();
-    switch(t) {
-    case TxNone:
-        x1 = fx1;
-        y1 = fy1;
-        x2 = fx2;
-        y2 = fy2;
-        break;
-    case TxTranslate:
-        x1 = fx1 + m_matrix[2][0];
-        y1 = fy1 + m_matrix[2][1];
-        x2 = fx2 + m_matrix[2][0];
-        y2 = fy2 + m_matrix[2][1];
-        break;
-    case TxScale:
-        x1 = m_matrix[0][0] * fx1 + m_matrix[2][0];
-        y1 = m_matrix[1][1] * fy1 + m_matrix[2][1];
-        x2 = m_matrix[0][0] * fx2 + m_matrix[2][0];
-        y2 = m_matrix[1][1] * fy2 + m_matrix[2][1];
-        break;
-    case TxRotate:
-    case TxShear:
-    case TxProject:
-        x1 = m_matrix[0][0] * fx1 + m_matrix[1][0] * fy1 + m_matrix[2][0];
-        y1 = m_matrix[0][1] * fx1 + m_matrix[1][1] * fy1 + m_matrix[2][1];
-        x2 = m_matrix[0][0] * fx2 + m_matrix[1][0] * fy2 + m_matrix[2][0];
-        y2 = m_matrix[0][1] * fx2 + m_matrix[1][1] * fy2 + m_matrix[2][1];
-        if (t == TxProject) {
-            qreal w = 1./(m_matrix[0][2] * fx1 + m_matrix[1][2] * fy1 + m_matrix[2][2]);
-            x1 *= w;
-            y1 *= w;
-            w = 1./(m_matrix[0][2] * fx2 + m_matrix[1][2] * fy2 + m_matrix[2][2]);
-            x2 *= w;
-            y2 *= w;
-        }
-    }
+    MAP(fx1, fy1, x1, y1);
+    MAP(fx2, fy2, x2, y2);
+
     return QLine(qRound(x1), qRound(y1), qRound(x2), qRound(y2));
 }
 
@@ -1326,41 +1250,9 @@ QLineF QTransform::map(const QLineF &l) const
     qreal x1 = 0, y1 = 0, x2 = 0, y2 = 0;
 
     TransformationType t = inline_type();
-    switch(t) {
-    case TxNone:
-        x1 = fx1;
-        y1 = fy1;
-        x2 = fx2;
-        y2 = fy2;
-        break;
-    case TxTranslate:
-        x1 = fx1 + m_matrix[2][0];
-        y1 = fy1 + m_matrix[2][1];
-        x2 = fx2 + m_matrix[2][0];
-        y2 = fy2 + m_matrix[2][1];
-        break;
-    case TxScale:
-        x1 = m_matrix[0][0] * fx1 + m_matrix[2][0];
-        y1 = m_matrix[1][1] * fy1 + m_matrix[2][1];
-        x2 = m_matrix[0][0] * fx2 + m_matrix[2][0];
-        y2 = m_matrix[1][1] * fy2 + m_matrix[2][1];
-        break;
-    case TxRotate:
-    case TxShear:
-    case TxProject:
-        x1 = m_matrix[0][0] * fx1 + m_matrix[1][0] * fy1 + m_matrix[2][0];
-        y1 = m_matrix[0][1] * fx1 + m_matrix[1][1] * fy1 + m_matrix[2][1];
-        x2 = m_matrix[0][0] * fx2 + m_matrix[1][0] * fy2 + m_matrix[2][0];
-        y2 = m_matrix[0][1] * fx2 + m_matrix[1][1] * fy2 + m_matrix[2][1];
-        if (t == TxProject) {
-            qreal w = 1./(m_matrix[0][2] * fx1 + m_matrix[1][2] * fy1 + m_matrix[2][2]);
-            x1 *= w;
-            y1 *= w;
-            w = 1./(m_matrix[0][2] * fx2 + m_matrix[1][2] * fy2 + m_matrix[2][2]);
-            x2 *= w;
-            y2 *= w;
-        }
-    }
+    MAP(fx1, fy1, x1, y1);
+    MAP(fx2, fy2, x2, y2);
+
     return QLineF(x1, y1, x2, y2);
 }
 
