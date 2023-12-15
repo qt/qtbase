@@ -387,7 +387,7 @@ Qt::Orientation QHeaderView::orientation() const
 int QHeaderView::offset() const
 {
     Q_D(const QHeaderView);
-    return d->offset;
+    return d->headerOffset;
 }
 
 /*!
@@ -401,10 +401,10 @@ int QHeaderView::offset() const
 void QHeaderView::setOffset(int newOffset)
 {
     Q_D(QHeaderView);
-    if (d->offset == (int)newOffset)
+    if (d->headerOffset == newOffset)
         return;
-    int ndelta = d->offset - newOffset;
-    d->offset = newOffset;
+    int ndelta = d->headerOffset - newOffset;
+    d->headerOffset = newOffset;
     if (d->orientation == Qt::Horizontal)
         d->viewport->scroll(isRightToLeft() ? -ndelta : ndelta, 0);
     else
@@ -560,7 +560,7 @@ int QHeaderView::visualIndexAt(int position) const
 
     if (d->reverse())
         vposition = d->viewport->width() - vposition - 1;
-    vposition += d->offset;
+    vposition += d->headerOffset;
 
     if (vposition > d->length)
         return -1;
@@ -650,7 +650,7 @@ int QHeaderView::sectionViewportPosition(int logicalIndex) const
     int position = sectionPosition(logicalIndex);
     if (position < 0)
         return position; // the section was hidden
-    int offsetPosition = position - d->offset;
+    int offsetPosition = position - d->headerOffset;
     if (d->reverse())
         return d->viewport->width() - (offsetPosition + sectionSize(logicalIndex));
     return offsetPosition;
@@ -2493,9 +2493,9 @@ void QHeaderView::paintEvent(QPaintEvent *e)
     for (int a = 0, i = 0; i < d->sectionItems.count(); ++i) {
         QColor color((i & 4 ? 255 : 0), (i & 2 ? 255 : 0), (i & 1 ? 255 : 0));
         if (d->orientation == Qt::Horizontal)
-            painter.fillRect(a - d->offset, 0, d->sectionItems.at(i).size, 4, color);
+            painter.fillRect(a - d->headerOffset, 0, d->sectionItems.at(i).size, 4, color);
         else
-            painter.fillRect(0, a - d->offset, 4, d->sectionItems.at(i).size, color);
+            painter.fillRect(0, a - d->headerOffset, 4, d->sectionItems.at(i).size, color);
         a += d->sectionItems.at(i).size;
     }
 
@@ -2597,7 +2597,7 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
                 if (visual == 0 && logicalIndex(0) == 0 && !d->allowUserMoveOfSection0)
                     return;
 
-                const int posThreshold = d->headerSectionPosition(visual) - d->offset + d->headerSectionSize(visual) / 2;
+                const int posThreshold = d->headerSectionPosition(visual) - d->headerOffset + d->headerSectionSize(visual) / 2;
                 const int checkPos = d->reverse() ? d->viewport->width() - pos : pos;
                 int moving = visualIndex(d->section);
                 int oldTarget = d->target;
@@ -2621,7 +2621,7 @@ void QHeaderView::mouseMoveEvent(QMouseEvent *e)
             return;
         }
         case QHeaderViewPrivate::SelectSections: {
-            int logical = logicalIndexAt(qMax(-d->offset, pos));
+            int logical = logicalIndexAt(qMax(-d->headerOffset, pos));
             if (logical == -1 && pos > 0)
                 logical = logicalIndex(d->lastVisibleVisualIndex());
             if (logical == d->pressed)
@@ -3043,7 +3043,7 @@ int QHeaderView::horizontalOffset() const
 {
     Q_D(const QHeaderView);
     if (d->orientation == Qt::Horizontal)
-        return d->offset;
+        return d->headerOffset;
     return 0;
 }
 
@@ -3058,7 +3058,7 @@ int QHeaderView::verticalOffset() const
 {
     Q_D(const QHeaderView);
     if (d->orientation == Qt::Vertical)
-        return d->offset;
+        return d->headerOffset;
     return 0;
 }
 
