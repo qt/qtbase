@@ -54,7 +54,7 @@ static void nanWarning(const char *func)
             if (t == TxProject) {                                       \
                 qreal w = (m_matrix[0][2] * FX_ + m_matrix[1][2] * FY_ + m_matrix[2][2]);              \
                 if (w < qreal(Q_NEAR_CLIP)) w = qreal(Q_NEAR_CLIP);     \
-                w = 1./w;                                               \
+                w = qreal(1.)/w;                                        \
                 nx *= w;                                                \
                 ny *= w;                                                \
             }                                                           \
@@ -1256,28 +1256,6 @@ QLineF QTransform::map(const QLineF &l) const
     return QLineF(x1, y1, x2, y2);
 }
 
-static QPolygonF mapProjective(const QTransform &transform, const QPolygonF &poly)
-{
-    if (poly.size() == 0)
-        return poly;
-
-    if (poly.size() == 1)
-        return QPolygonF() << transform.map(poly.at(0));
-
-    QPainterPath path;
-    path.addPolygon(poly);
-
-    path = transform.map(path);
-
-    QPolygonF result;
-    const int elementCount = path.elementCount();
-    result.reserve(elementCount);
-    for (int i = 0; i < elementCount; ++i)
-        result << path.elementAt(i);
-    return result;
-}
-
-
 /*!
     \fn QPolygonF operator *(const QPolygonF &polygon, const QTransform &matrix)
     \since 4.3
@@ -1311,9 +1289,6 @@ QPolygonF QTransform::map(const QPolygonF &a) const
     if (t <= TxTranslate)
         return a.translated(m_matrix[2][0], m_matrix[2][1]);
 
-    if (t >= QTransform::TxProject)
-        return mapProjective(*this, a);
-
     int size = a.size();
     int i;
     QPolygonF p(size);
@@ -1340,9 +1315,6 @@ QPolygon QTransform::map(const QPolygon &a) const
     TransformationType t = inline_type();
     if (t <= TxTranslate)
         return a.translated(qRound(m_matrix[2][0]), qRound(m_matrix[2][1]));
-
-    if (t >= QTransform::TxProject)
-        return mapProjective(*this, QPolygonF(a)).toPolygon();
 
     int size = a.size();
     int i;
@@ -1774,14 +1746,6 @@ void QTransform::setMatrix(qreal m11, qreal m12, qreal m13,
     m_dirty = TxProject;
 }
 
-static inline bool needsPerspectiveClipping(const QRectF &rect, const QTransform &transform)
-{
-    const qreal wx = qMin(transform.m13() * rect.left(), transform.m13() * rect.right());
-    const qreal wy = qMin(transform.m23() * rect.top(), transform.m23() * rect.bottom());
-
-    return wx + wy + transform.m33() < Q_NEAR_CLIP;
-}
-
 QRect QTransform::mapRect(const QRect &rect) const
 {
     TransformationType t = inline_type();
@@ -1802,8 +1766,7 @@ QRect QTransform::mapRect(const QRect &rect) const
             y -= h;
         }
         return QRect(x, y, w, h);
-    } else if (t < TxProject || !needsPerspectiveClipping(rect, *this)) {
-        // see mapToPolygon for explanations of the algorithm.
+    } else {
         qreal x = 0, y = 0;
         MAP(rect.left(), rect.top(), x, y);
         qreal xmin = x;
@@ -1825,11 +1788,7 @@ QRect QTransform::mapRect(const QRect &rect) const
         ymin = qMin(ymin, y);
         xmax = qMax(xmax, x);
         ymax = qMax(ymax, y);
-        return QRect(qRound(xmin), qRound(ymin), qRound(xmax)-qRound(xmin), qRound(ymax)-qRound(ymin));
-    } else {
-        QPainterPath path;
-        path.addRect(rect);
-        return map(path).boundingRect().toRect();
+        return QRectF(xmin, ymin, xmax-xmin, ymax-ymin).toRect();
     }
 }
 
@@ -1872,7 +1831,7 @@ QRectF QTransform::mapRect(const QRectF &rect) const
             y -= h;
         }
         return QRectF(x, y, w, h);
-    } else if (t < TxProject || !needsPerspectiveClipping(rect, *this)) {
+    } else {
         qreal x = 0, y = 0;
         MAP(rect.x(), rect.y(), x, y);
         qreal xmin = x;
@@ -1895,10 +1854,6 @@ QRectF QTransform::mapRect(const QRectF &rect) const
         xmax = qMax(xmax, x);
         ymax = qMax(ymax, y);
         return QRectF(xmin, ymin, xmax-xmin, ymax - ymin);
-    } else {
-        QPainterPath path;
-        path.addRect(rect);
-        return map(path).boundingRect();
     }
 }
 
