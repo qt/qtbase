@@ -4,6 +4,7 @@ project(MyThings)
 
 set(CMAKE_INSTALL_BINDIR "mybindir")
 set(CMAKE_INSTALL_LIBDIR "mylibdir")
+set(CMAKE_INSTALL_LIBEXECDIR "mylibexecdir")
 
 find_package(Qt6 REQUIRED COMPONENTS Core)
 qt_standard_project_setup()
