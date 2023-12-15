@@ -2428,10 +2428,6 @@ void QObject::removeEventFilter(QObject *obj)
     );
     \endcode
 
-    \note It is safe to call this function more than once; when the
-    first deferred deletion event is delivered, any pending events for the
-    object are removed from the event queue.
-
     \sa destroyed(), QPointer
 */
 void QObject::deleteLater()
