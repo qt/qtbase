@@ -2416,9 +2416,20 @@ void QObject::removeEventFilter(QObject *obj)
     event loop was still running: the Qt event loop will delete those objects
     as soon as the new nested event loop starts.
 
-    \note It is safe to call this function more than once; when the
-    first deferred deletion event is delivered, any pending events for the
-    object are removed from the event queue.
+    In situations where Qt is not driving the event dispatcher via e.g.
+    QCoreApplication::exec() or QEventLoop::exec(), deferred deletes
+    will not be processed automatically. To ensure deferred deletion in
+    this scenario, the following workaround can be used:
+
+    \code
+    const auto *eventDispatcher = QThread::currentThread()->eventDispatcher();
+    QObject::connect(eventDispatcher, &QAbstractEventDispatcher::aboutToBlock,
+        QThread::currentThread(), []{
+            if (QThread::currentThread()->loopLevel() == 0)
+                QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+        }
+    );
+    \endcode
 
     \sa destroyed(), QPointer
 */
