@@ -31,6 +31,7 @@ qt_deploy_runtime_dependencies(
     [ADDITIONAL_MODULES files...]
     [GENERATE_QT_CONF]
     [BIN_DIR bin_dir]
+    [LIBEXEC_DIR libexec_dir]
     [LIB_DIR lib_dir]
     [PLUGINS_DIR plugins_dir]
     [QML_DIR qml_dir]
@@ -103,10 +104,10 @@ directory structure. If the \c{GENERATE_QT_CONF} option is given, an appropriate
 \c{qt.conf} file will be written to the same directory as the \c{executable}.
 The paths in that \c{qt.conf} file will be based on the \c{CMAKE_INSTALL_xxxDIR}
 variables, whose defaults are provided by CMake's \l{GNUInstallDirs} module.
-You can override some of those defaults with the \c{BIN_DIR}, \c{LIB_DIR},
-\c{PLUGINS_DIR}, and \c{QML_DIR} options, all of which are expected to be
-relative to the base install location. A \c{qt.conf} file is always written if
-\c{executable} is a macOS app bundle, regardless of whether or not
+You can override some of those defaults with the \c{BIN_DIR}, \c{LIBEXEC_DIR},
+\c{LIB_DIR}, \c{PLUGINS_DIR}, and \c{QML_DIR} options, all of which are expected
+to be relative to the base install location. A \c{qt.conf} file is always
+written if \c{executable} is a macOS app bundle, regardless of whether or not
 \c{GENERATE_QT_CONF} is provided. The \c{..._DIR} options are also ignored in
 that case, since the directory layout of an app bundle is dictated by Apple's
 requirements.
