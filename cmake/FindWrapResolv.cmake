@@ -31,7 +31,7 @@ check_cxx_source_compiles("
 
 int main(int, char **argv)
 {
-    res_state statep;
+    res_state statep = 0;
     int n = res_nmkquery(statep, 0, argv[1], 0, 0, NULL, 0, NULL, NULL, 0);
     n = res_nsend(statep, NULL, 0, NULL, 0);
     n = dn_expand(NULL, NULL, NULL, NULL, 0);
