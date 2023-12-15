@@ -106,7 +106,7 @@ over:
 \badcode
 set_target_properties(MyApp PROPERTIES
     QT_ANDROID_EXTRA_LIBS
-        ${CMAKE_CURRENT_BINARY_DIR}/libA_${CMAKE_ANDROID_ARCH_ABI}.so
+        ${CMAKE_CURRENT_BINARY_DIR}/libA_${CMAKE_ANDROID_ARCH_ABI}.so)
 \endcode
 
 \sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
