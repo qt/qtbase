@@ -37,7 +37,7 @@ public:
 
     QHeaderViewPrivate()
         : state(NoState),
-          offset(0),
+          headerOffset(0),
           sortIndicatorOrder(Qt::DescendingOrder),
           sortIndicatorSection(0),
           sortIndicatorShown(false),
@@ -219,7 +219,7 @@ public:
 
     enum State { NoState, ResizeSection, MoveSection, SelectSections, NoClear } state;
 
-    int offset;
+    int headerOffset;
     Qt::Orientation orientation;
     Qt::SortOrder sortIndicatorOrder;
     int sortIndicatorSection;
