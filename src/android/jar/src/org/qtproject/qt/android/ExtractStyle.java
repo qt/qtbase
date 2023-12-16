@@ -154,11 +154,14 @@ class ExtractStyle {
         String dataDir = activity.getApplicationInfo().dataDir;
         m_stylePath = dataDir + "/qt-reserved-files/android-style/" + dpi + "/";
 
+        if (extractOption.isEmpty())
+            extractOption = "minimal";
+
         if (!extractOption.equals("default") && !extractOption.equals("full")
                 && !extractOption.equals("minimal") && !extractOption.equals("none")) {
             Log.e(QtTAG, "Invalid extract_android_style option \"" + extractOption
-                    + "\", defaulting to \"default\"");
-            extractOption = "default";
+                    + "\", defaulting to \"minimal\"");
+            extractOption = "minimal";
         }
 
         // QTBUG-69810: The extraction code will trigger compatibility warnings on Android
