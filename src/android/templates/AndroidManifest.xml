@@ -36,10 +36,6 @@
           <meta-data
                 android:name="android.app.arguments"
                 android:value="-- %%INSERT_APP_ARGUMENTS%% --" />
-
-            <meta-data
-                android:name="android.app.extract_android_style"
-                android:value="minimal" />
         </activity>
 
         <provider
