@@ -23,6 +23,8 @@
 #include <QStandardPaths>
 #endif
 
+using namespace Qt::StringLiterals;
+
 Q_DECLARE_METATYPE(QDirIterator::IteratorFlags)
 Q_DECLARE_METATYPE(QDir::Filters)
 
@@ -356,8 +358,8 @@ void tst_QDirIterator::iterateRelativeDirectory()
     sortedEntries.sort();
 
     if (sortedEntries != list) {
-        qDebug() << "EXPECTED:" << sortedEntries;
         qDebug() << "ACTUAL:  " << list;
+        qDebug() << "EXPECTED:" << sortedEntries;
     }
 
     QCOMPARE(list, sortedEntries);
@@ -374,13 +376,14 @@ void tst_QDirIterator::iterateResource_data()
     QTest::newRow("invalid") << QString::fromLatin1(":/testdata/burpaburpa") << QDirIterator::IteratorFlags{}
                              << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
                              << QStringList();
-    QTest::newRow(":/testdata") << QString::fromLatin1(":/testdata/") << QDirIterator::IteratorFlags{}
+    QTest::newRow("qrc:/testdata") << u":/testdata/"_s << QDirIterator::IteratorFlags{}
                                << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
                                << QString::fromLatin1(":/testdata/entrylist").split(QLatin1String(","));
-    QTest::newRow(":/testdata/entrylist") << QString::fromLatin1(":/testdata/entrylist") << QDirIterator::IteratorFlags{}
+    QTest::newRow("qrc:/testdata/entrylist") << u":/testdata/entrylist"_s << QDirIterator::IteratorFlags{}
                                << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
                                << QString::fromLatin1(":/testdata/entrylist/directory,:/testdata/entrylist/file").split(QLatin1String(","));
-    QTest::newRow(":/testdata recursive") << QString::fromLatin1(":/testdata") << QDirIterator::IteratorFlags(QDirIterator::Subdirectories)
+    QTest::newRow("qrc:/testdata recursive") << u":/testdata"_s
+                                         << QDirIterator::IteratorFlags(QDirIterator::Subdirectories)
                                          << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
                                          << QString::fromLatin1(":/testdata/entrylist,:/testdata/entrylist/directory,:/testdata/entrylist/directory/dummy,:/testdata/entrylist/file").split(QLatin1String(","));
 }
@@ -406,8 +409,8 @@ void tst_QDirIterator::iterateResource()
     sortedEntries.sort();
 
     if (sortedEntries != list) {
-        qDebug() << "EXPECTED:" << sortedEntries;
         qDebug() << "ACTUAL:" << list;
+        qDebug() << "EXPECTED:" << sortedEntries;
     }
 
     QCOMPARE(list, sortedEntries);
