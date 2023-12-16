@@ -58,7 +58,7 @@
     with \c androiddeployqt without deploying it the device, run the following:
 
     \badcode
-   .androiddeployqt --input $BUILD_DIR/android-project-deployment-settings.json --output $ANDROID_BUILD_DIR
+    androiddeployqt --input $BUILD_DIR/android-project-deployment-settings.json --output $ANDROID_BUILD_DIR
     \endcode
 
     To deploy the built package to the device:
