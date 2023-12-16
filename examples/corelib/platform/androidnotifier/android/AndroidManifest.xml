@@ -4,12 +4,8 @@
     android:installLocation="auto"
     android:versionCode="1"
     android:versionName="1.0">
-    <!-- The comment below will be replaced with dependencies permissions upon deployment.
-             Remove the comment if you do not require these default permissions. -->
-    <!-- %%INSERT_PERMISSIONS -->
 
-    <!-- The comment below will be replaced with dependencies permissions upon deployment.
-             Remove the comment if you do not require these default features. -->
+    <!-- %%INSERT_PERMISSIONS -->
     <!-- %%INSERT_FEATURES -->
 
     <supports-screens
