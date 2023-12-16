@@ -71,6 +71,22 @@ macro.QtAA                = "Qt for Android Automotive"
 macro.QOI                 = "Qt Online Installer"
 macro.QMT                 = "Qt Maintenance Tool"
 
+# The following macros are used for various Android docs. The purpose is to keep
+# it as simple as updating these instead of updating multiple lines in scattered locations.
+macro.AndroidAbis         = "\\c{arm64-v8}, \\c{x86_64}, \\c{x86}, and \\c{armeabi-v7a}"
+macro.NdkVer              = "r26"
+macro.NdkFullVer          = "26.0.10792818"
+macro.NdkCompilerVer      = "Clang 14.0.6"
+macro.JdkVer              = "17"
+macro.AndroidMinApiVer    = "26"
+macro.AndroidMaxApiVer    = "34"
+macro.AndroidMinVer       = "8.0"
+macro.AndroidMaxVer       = "14"
+macro.AndroidPlatformVer  = "33"
+macro.AndroidBuildToolsVer = "34.0.0"
+macro.GradleVer           = "8.3"
+macro.AGPVer              = "7.4.1"
+
 macro.beginfloatleft.HTML   = "<div style=\"float: left; margin-right: 2em\">"
 macro.beginfloatright.HTML  = "<div style=\"float: right; margin-left: 2em\">"
 macro.endfloat.HTML         = "</div>"
