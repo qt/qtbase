@@ -68,7 +68,7 @@ Qt sets the following manifest configuration by default:
         default values are \c anyDensity, \c largeScreens,
         \c normalScreens, and \c smallScreens.
 \row
-    \li {1, 7} \l {Android: App Manifest <application>}{<application>}
+    \li {1, 6} \l {Android: App Manifest <application>}{<application>}
     \li android:name
     \li The application class name. Default value is
         \c {org.qtproject.qt.android.bindings.QtApplication}.
@@ -91,12 +91,9 @@ Qt sets the following manifest configuration by default:
     \li Whether or not to use Auto Backup on devices where it is available.
         The default value is \c false.
 \row
-    \li {1, 7} \l {Android: App Manifest <activity>}{<activity>}
+    \li {1, 6} \l {Android: App Manifest <activity>}{<activity>}
     \li android:name
     \li The activity class name. The default value is \c {org.qtproject.qt.android.bindings.QtActivity}.
-\row
-    \li android:label
-    \li The activity name label. Default value is the Qt project's target name.
 \row
     \li android:configChanges
     \li Lists configuration changes that the activity handles. Default value is
