@@ -1,2 +1,2 @@
-[processEvents:gui]
+[processEvents]
 qnx # QTBUG-119359
