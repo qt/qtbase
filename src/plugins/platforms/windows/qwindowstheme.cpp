@@ -180,8 +180,8 @@ public:
         QComHelper comHelper(COINIT_MULTITHREADED);
 
         QMutexLocker readyLocker(&m_readyMutex);
-        while (!m_cancelled.loadRelaxed()) {
-            if (!m_params && !m_cancelled.loadRelaxed()
+        while (!isInterruptionRequested()) {
+            if (!m_params && !isInterruptionRequested()
                 && !m_readyCondition.wait(&m_readyMutex, QDeadlineTimer(1000ll)))
                 continue;
 
@@ -191,15 +191,14 @@ public:
                 const bool result = SHGetFileInfo(reinterpret_cast<const wchar_t *>(fileName.utf16()),
                                                   m_params->attributes, &info, sizeof(SHFILEINFO),
                                                   m_params->flags);
-                m_doneMutex.lock();
-                if (!m_cancelled.loadRelaxed()) {
+                QMutexLocker doneLocker(&m_doneMutex);
+                if (!isInterruptionRequested()) {
                     *m_params->result = result;
                     memcpy(m_params->info, &info, sizeof(SHFILEINFO));
                 }
                 m_params = nullptr;
 
                 m_doneCondition.wakeAll();
-                m_doneMutex.unlock();
             }
         }
     }
@@ -219,13 +218,12 @@ public:
     void cancel()
     {
         QMutexLocker doneLocker(&m_doneMutex);
-        m_cancelled.storeRelaxed(1);
+        requestInterruption();
         m_readyCondition.wakeAll();
     }
 
 private:
     QShGetFileInfoParams *m_params;
-    QAtomicInt m_cancelled;
     QWaitCondition m_readyCondition;
     QWaitCondition m_doneCondition;
     QMutex m_readyMutex;
