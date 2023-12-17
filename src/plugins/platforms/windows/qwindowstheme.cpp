@@ -15,9 +15,7 @@
 #include "qwindowsscreen.h"
 #include <commctrl.h>
 #include <objbase.h>
-#ifndef Q_CC_MINGW
-#  include <commoncontrols.h>
-#endif
+#include <commoncontrols.h>
 #include <shellapi.h>
 
 #include <QtCore/qvariant.h>
@@ -49,10 +47,6 @@
 
 #   include <winrt/Windows.UI.ViewManagement.h>
 #endif // QT_CONFIG(cpp_winrt)
-
-#if defined(__IImageList_INTERFACE_DEFINED__) && defined(__IID_DEFINED__)
-#  define USE_IIMAGELIST
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -824,11 +818,7 @@ void QWindowsTheme::refreshIconPixmapSizes()
         fileIconSizes[LargeFileIcon] + fileIconSizes[LargeFileIcon] / 2;
     fileIconSizes[JumboFileIcon] = 8 * fileIconSizes[LargeFileIcon]; // empirical, has not been observed to work
 
-#ifdef USE_IIMAGELIST
     int *availEnd = fileIconSizes + JumboFileIcon + 1;
-#else
-    int *availEnd = fileIconSizes + LargeFileIcon + 1;
-#endif // USE_IIMAGELIST
     m_fileIconSizes = QAbstractFileIconEngine::toSizeList(fileIconSizes, availEnd);
     qCDebug(lcQpaWindow) << __FUNCTION__ << m_fileIconSizes;
 }
@@ -1022,7 +1012,6 @@ public:
 static QPixmap pixmapFromShellImageList(int iImageList, const SHFILEINFO &info)
 {
     QPixmap result;
-#ifdef USE_IIMAGELIST
     // For MinGW:
     static const IID iID_IImageList = {0x46eb5926, 0x582e, 0x4017, {0x9f, 0xdf, 0xe8, 0x99, 0x8d, 0xaa, 0x9, 0x50}};
 
@@ -1037,10 +1026,6 @@ static QPixmap pixmapFromShellImageList(int iImageList, const SHFILEINFO &info)
         DestroyIcon(hIcon);
     }
     imageList->Release();
-#else
-    Q_UNUSED(iImageList);
-    Q_UNUSED(info);
-#endif // USE_IIMAGELIST
     return result;
 }
 
@@ -1092,13 +1077,9 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
     const int width = int(size.width());
     const int iconSize = width > fileIconSizes[SmallFileIcon] ? SHGFI_LARGEICON : SHGFI_SMALLICON;
     const int requestedImageListSize =
-#ifdef USE_IIMAGELIST
         width > fileIconSizes[ExtraLargeFileIcon]
             ? sHIL_JUMBO
             : (width > fileIconSizes[LargeFileIcon] ? sHIL_EXTRALARGE : 0);
-#else
-        0;
-#endif // !USE_IIMAGELIST
     bool cacheableDirIcon = fileInfo().isDir() && !fileInfo().isRoot();
     if (cacheableDirIcon) {
         QMutexLocker locker(&mx);
