@@ -439,18 +439,19 @@ public:
         }
         QString currentFileName() const override
         {
-            return names.at(index);
+            if (!names.isEmpty() && index < names.size())
+                return names.at(index);
+            return {};
         }
-        bool hasNext() const override
+        bool advance() override
         {
-            return index < names.size() - 1;
-        }
-        QString next() override
-        {
-            if (!hasNext())
-                return QString();
-            ++index;
-            return currentFilePath();
+            if (names.isEmpty())
+                return false;
+            if (index < names.size() - 1) {
+                ++index;
+                return true;
+            }
+            return false;
         }
         QStringList names;
         int index;

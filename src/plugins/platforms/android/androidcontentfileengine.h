@@ -55,8 +55,9 @@ public:
     AndroidContentFileEngineIterator(const QString &path, QDir::Filters filters,
                                      const QStringList &filterNames);
     ~AndroidContentFileEngineIterator();
-    QString next() override;
-    bool hasNext() const override;
+
+    bool advance() override;
+
     QString currentFileName() const override;
     QString currentFilePath() const override;
 private:

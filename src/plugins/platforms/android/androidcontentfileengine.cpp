@@ -276,15 +276,7 @@ AndroidContentFileEngineIterator::~AndroidContentFileEngineIterator()
 {
 }
 
-QString AndroidContentFileEngineIterator::next()
-{
-    if (!hasNext())
-        return QString();
-    ++m_index;
-    return currentFilePath();
-}
-
-bool AndroidContentFileEngineIterator::hasNext() const
+bool AndroidContentFileEngineIterator::advance()
 {
     if (m_index == -1 && m_files.isEmpty()) {
         const auto currentPath = path();
@@ -295,9 +287,18 @@ bool AndroidContentFileEngineIterator::hasNext() const
         if (iterDoc->isDirectory())
             for (const auto &doc : iterDoc->listFiles())
                 m_files.append(doc);
+        if (m_files.isEmpty())
+            return false;
+        m_index = 0;
+        return true;
     }
 
-    return m_index < (m_files.size() - 1);
+    if (m_index < m_files.size() - 1) {
+        ++m_index;
+        return true;
+    }
+
+    return false;
 }
 
 QString AndroidContentFileEngineIterator::currentFileName() const

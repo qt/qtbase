@@ -59,17 +59,15 @@ public:
         entries << "entry1" << "entry2" << "entry3";
     }
 
-    bool hasNext() const override
+    bool advance() override
     {
-        return index < entries.size() - 1;
-    }
-
-    QString next() override
-    {
-       if (!hasNext())
-           return QString();
-       ++index;
-       return currentFilePath();
+        if (entries.isEmpty())
+            return false;
+        if (index < entries.size() - 1) {
+            ++index;
+            return true;
+        }
+        return false;
     }
 
     QString currentFileName() override

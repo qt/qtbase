@@ -142,17 +142,13 @@ public:
         return m_path + at(m_index).name;
     }
 
-    bool hasNext() const
+    bool advance()
     {
-        return !empty() && m_index + 1 < size();
-    }
-
-    std::optional<std::pair<QString, AssetItem>> next()
-    {
-        if (!hasNext())
-            return {};
-        ++m_index;
-        return std::pair<QString, AssetItem>(currentFileName(), at(m_index));
+        if (!empty() && m_index + 1 < size()) {
+            ++m_index;
+            return true;
+        }
+        return false;
     }
 
 private:
@@ -195,21 +191,9 @@ public:
         return m_currentIterator->currentFilePath();
     }
 
-    bool hasNext() const override
+    bool advance() override
     {
-        if (!m_currentIterator)
-            return false;
-        return m_currentIterator->hasNext();
-    }
-
-    QString next() override
-    {
-        if (!m_currentIterator)
-            return {};
-        auto res = m_currentIterator->next();
-        if (!res)
-            return {};
-        return res->first;
+        return m_currentIterator ? m_currentIterator->advance() : false;
     }
 
 private:

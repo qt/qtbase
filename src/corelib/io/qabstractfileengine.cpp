@@ -862,10 +862,11 @@ bool QAbstractFileEngine::cloneTo(QAbstractFileEngine *target)
     You can call dirName() to get the directory name, nameFilters() to get a
     stringlist of name filters, and filters() to get the entry filters.
 
-    The pure virtual function hasNext() returns \c true if the current directory
-    has at least one more entry (i.e., the directory name is valid and
-    accessible, and we have not reached the end of the entry list), and false
-    otherwise. Reimplement next() to seek to the next entry.
+    The pure virtual function advance(), as its name implies, advances the
+    iterator to the next entry in the current directory; if the operation
+    was successful this method returns \c true, otherwise it returns \c
+    false. You have to reimplement this function in your sub-class to work
+    with your file engine implementation.
 
     The pure virtual function currentFileName() returns the name of the
     current entry without advancing the iterator. The currentFilePath()
@@ -995,23 +996,16 @@ QFileInfo QAbstractFileEngineIterator::currentFileInfo() const
 }
 
 /*!
-    \fn virtual QString QAbstractFileEngineIterator::next() = 0
+    \fn virtual bool QAbstractFileEngineIterator::advance() = 0
 
     This pure virtual function advances the iterator to the next directory
-    entry, and returns the file path to the current entry.
+    entry; if the operation was successful this method returns \c true,
+    otherwise it returs \c false.
 
     This function can optionally make use of nameFilters() and filters() to
     optimize its performance.
 
     Reimplement this function in a subclass to advance the iterator.
-*/
-
-/*!
-    \fn virtual bool QAbstractFileEngineIterator::hasNext() const = 0
-
-    This pure virtual function returns \c true if there is at least one more
-    entry in the current directory (i.e., the iterator path is valid and
-    accessible, and the iterator has not reached the end of the entry list).
 */
 
 /*!

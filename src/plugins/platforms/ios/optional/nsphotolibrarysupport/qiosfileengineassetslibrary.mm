@@ -270,8 +270,11 @@ public:
         g_iteratorCurrentUrl.setLocalData(QString());
     }
 
-    QString next() override
+    bool advance() override
     {
+        if (!m_enumerator->hasNext())
+            return false;
+
         // Cache the URL that we are about to return, since QDir will immediately create a
         // new file engine on the file and ask if it exists. Unless we do this, we end up
         // creating a new ALAsset just to verify its existence, which will be especially
@@ -279,12 +282,7 @@ public:
         ALAsset *asset = m_enumerator->next();
         QString url = QUrl::fromNSURL([asset valueForProperty:ALAssetPropertyAssetURL]).toString();
         g_iteratorCurrentUrl.setLocalData(url);
-        return url;
-    }
-
-    bool hasNext() const override
-    {
-        return m_enumerator->hasNext();
+        return true;
     }
 
     QString currentFileName() const override

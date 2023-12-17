@@ -12,7 +12,7 @@ QT_BEGIN_NAMESPACE
 QFSFileEngineIterator::QFSFileEngineIterator(const QString &path, QDir::Filters filters,
                                              const QStringList &filterNames)
     : QAbstractFileEngineIterator(path, filters, filterNames),
-      done(false)
+      nativeIterator(new QFileSystemIterator(QFileSystemEntry(path), filters))
 {
 }
 
@@ -20,47 +20,30 @@ QFSFileEngineIterator::~QFSFileEngineIterator()
 {
 }
 
-bool QFSFileEngineIterator::hasNext() const
+bool QFSFileEngineIterator::advance()
 {
-    if (!done && !nativeIterator) {
-        nativeIterator.reset(new QFileSystemIterator(QFileSystemEntry(path()), filters()));
-        advance();
-    }
-
-    return !done;
-}
-
-QString QFSFileEngineIterator::next()
-{
-    if (!hasNext())
-        return QString();
-
-    advance();
-    return currentFilePath();
-}
-
-void QFSFileEngineIterator::advance() const
-{
-    currentInfo = nextInfo;
+    if (!nativeIterator)
+        return false;
 
     QFileSystemEntry entry;
     QFileSystemMetaData data;
     if (nativeIterator->advance(entry, data)) {
-        nextInfo = QFileInfo(new QFileInfoPrivate(entry, data));
+        m_fileInfo = QFileInfo(new QFileInfoPrivate(entry, data));
+        return true;
     } else {
-        done = true;
         nativeIterator.reset();
+        return false;
     }
 }
 
 QString QFSFileEngineIterator::currentFileName() const
 {
-    return currentInfo.fileName();
+    return m_fileInfo.fileName();
 }
 
 QFileInfo QFSFileEngineIterator::currentFileInfo() const
 {
-    return currentInfo;
+    return m_fileInfo;
 }
 
 QT_END_NAMESPACE

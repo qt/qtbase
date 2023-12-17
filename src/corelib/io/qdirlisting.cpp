@@ -215,8 +215,7 @@ void QDirListingPrivate::advance()
         while (!fileEngineIterators.empty()) {
             // Find the next valid iterator that matches the filters.
             QAbstractFileEngineIterator *it;
-            while (it = fileEngineIterators.top().get(), it->hasNext()) {
-                it->next();
+            while (it = fileEngineIterators.top().get(), it->advance()) {
                 QDirEntryInfo entryInfo;
                 entryInfo.fileInfoOpt = it->currentFileInfo();
                 if (entryMatches(entryInfo)) {

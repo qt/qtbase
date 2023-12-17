@@ -28,10 +28,10 @@ public:
                                 const QStringList &filterNames);
     ~QResourceFileEngineIterator();
 
-    QString next() override;
-    bool hasNext() const override;
+    bool advance() override;
 
     QString currentFileName() const override;
+    QFileInfo currentFileInfo() const override;
 
 private:
     mutable QStringList entries;

@@ -202,8 +202,7 @@ public:
                                 const QStringList &nameFilters);
     virtual ~QAbstractFileEngineIterator();
 
-    virtual QString next() = 0;
-    virtual bool hasNext() const = 0;
+    virtual bool advance() = 0;
 
     QString path() const;
     QStringList nameFilters() const;
