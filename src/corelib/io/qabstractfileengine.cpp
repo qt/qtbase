@@ -871,28 +871,11 @@ bool QAbstractFileEngine::cloneTo(QAbstractFileEngine *target)
 */
 
 /*!
-    \enum QAbstractFileEngineIterator::EntryInfoType
-    \internal
-
-    This enum describes the different types of information that can be
-    requested through the QAbstractFileEngineIterator::entryInfo() function.
-*/
-
-/*!
     \typedef QAbstractFileEngine::Iterator
     \since 4.3
 
     Synonym for QAbstractFileEngineIterator.
 */
-
-class QAbstractFileEngineIteratorPrivate
-{
-public:
-    QString path;
-    QDir::Filters filters;
-    QStringList nameFilters;
-    QFileInfo fileInfo;
-};
 
 /*!
     Constructs a QAbstractFileEngineIterator, using the entry filters \a
@@ -900,10 +883,9 @@ public:
 */
 QAbstractFileEngineIterator::QAbstractFileEngineIterator(QDir::Filters filters,
                                                          const QStringList &nameFilters)
-    : d(new QAbstractFileEngineIteratorPrivate)
+    : m_filters(filters),
+      m_nameFilters(nameFilters)
 {
-    d->nameFilters = nameFilters;
-    d->filters = filters;
 }
 
 /*!
@@ -926,7 +908,7 @@ QAbstractFileEngineIterator::~QAbstractFileEngineIterator()
 */
 QString QAbstractFileEngineIterator::path() const
 {
-    return d->path;
+    return m_path;
 }
 
 /*!
@@ -937,7 +919,7 @@ QString QAbstractFileEngineIterator::path() const
 */
 void QAbstractFileEngineIterator::setPath(const QString &path)
 {
-    d->path = path;
+    m_path = path;
 }
 
 /*!
@@ -947,7 +929,7 @@ void QAbstractFileEngineIterator::setPath(const QString &path)
 */
 QStringList QAbstractFileEngineIterator::nameFilters() const
 {
-    return d->nameFilters;
+    return m_nameFilters;
 }
 
 /*!
@@ -957,7 +939,7 @@ QStringList QAbstractFileEngineIterator::nameFilters() const
 */
 QDir::Filters QAbstractFileEngineIterator::filters() const
 {
-    return d->filters;
+    return m_filters;
 }
 
 /*!
@@ -1001,26 +983,11 @@ QString QAbstractFileEngineIterator::currentFilePath() const
 QFileInfo QAbstractFileEngineIterator::currentFileInfo() const
 {
     QString path = currentFilePath();
-    if (d->fileInfo.filePath() != path)
-        d->fileInfo.setFile(path);
+    if (m_fileInfo.filePath() != path)
+        m_fileInfo.setFile(path);
 
     // return a shallow copy
-    return d->fileInfo;
-}
-
-/*!
-    \internal
-
-    Returns the entry info \a type for this iterator's current directory entry
-    as a QVariant. If \a type is undefined for this entry, a null QVariant is
-    returned.
-
-    \sa QAbstractFileEngine::beginEntryList(), QDir::beginEntryList()
-*/
-QVariant QAbstractFileEngineIterator::entryInfo(EntryInfoType type) const
-{
-    Q_UNUSED(type);
-    return QVariant();
+    return m_fileInfo;
 }
 
 /*!

@@ -191,7 +191,6 @@ public:
     virtual QAbstractFileEngine *create(const QString &fileName) const = 0;
 };
 
-class QAbstractFileEngineIteratorPrivate;
 class Q_CORE_EXPORT QAbstractFileEngineIterator
 {
 public:
@@ -201,6 +200,7 @@ public:
     virtual QString next() = 0;
     virtual bool hasNext() const = 0;
 
+    void setPath(const QString &path);
     QString path() const;
     QStringList nameFilters() const;
     QDir::Filters filters() const;
@@ -210,17 +210,17 @@ public:
     virtual QString currentFilePath() const;
 
 protected:
-    enum EntryInfoType {
-    };
-    virtual QVariant entryInfo(EntryInfoType type) const;
+    mutable QFileInfo m_fileInfo;
 
 private:
     Q_DISABLE_COPY_MOVE(QAbstractFileEngineIterator)
     friend class QDirIterator;
     friend class QDirIteratorPrivate;
     friend class QDirListingPrivate;
-    void setPath(const QString &path);
-    QScopedPointer<QAbstractFileEngineIteratorPrivate> d;
+
+    QDir::Filters m_filters;
+    QStringList m_nameFilters;
+    QString m_path;
 };
 
 class QAbstractFileEnginePrivate
