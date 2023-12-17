@@ -248,10 +248,10 @@ QString AndroidContentFileEngine::fileName(FileName f) const
     return QString();
 }
 
-QAbstractFileEngine::Iterator *AndroidContentFileEngine::beginEntryList(QDir::Filters filters,
-                                                                    const QStringList &filterNames)
+QAbstractFileEngine::IteratorUniquePtr
+AndroidContentFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
 {
-    return new AndroidContentFileEngineIterator(filters, filterNames);
+    return std::make_unique<AndroidContentFileEngineIterator>(filters, filterNames);
 }
 
 AndroidContentFileEngineHandler::AndroidContentFileEngineHandler() = default;

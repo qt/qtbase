@@ -1534,11 +1534,10 @@ QDateTime QResourceFileEngine::fileTime(FileTime time) const
 /*!
     \internal
 */
-QAbstractFileEngine::Iterator *QResourceFileEngine::beginEntryList(QDir::Filters filters,
-                                                                   const QStringList &filterNames)
+QAbstractFileEngine::IteratorUniquePtr
+QResourceFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
 {
-    return new QResourceFileEngineIterator(filters, filterNames);
-
+    return std::make_unique<QResourceFileEngineIterator>(filters, filterNames);
 }
 
 bool QResourceFileEngine::extension(Extension extension, const ExtensionOption *option, ExtensionReturn *output)

@@ -421,8 +421,8 @@ public:
         : QFSFileEngine(fileName)
     { }
 
-    QAbstractFileEngineIterator *beginEntryList(QDir::Filters, const QStringList &) override
-    { return 0; }
+    IteratorUniquePtr beginEntryList(QDir::Filters, const QStringList &) override
+    { return nullptr; }
 };
 
 class EngineWithNoIteratorHandler : public QAbstractFileEngineHandler

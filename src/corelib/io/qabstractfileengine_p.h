@@ -19,6 +19,7 @@
 #include "QtCore/qfile.h"
 #include "QtCore/qdir.h"
 
+#include <memory>
 #include <optional>
 
 #ifdef open
@@ -126,8 +127,11 @@ public:
     bool unmap(uchar *ptr);
 
     typedef QAbstractFileEngineIterator Iterator;
-    virtual Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames);
-    virtual Iterator* endEntryList() { return nullptr; }
+    using IteratorUniquePtr = std::unique_ptr<Iterator>;
+
+    virtual IteratorUniquePtr
+    beginEntryList(QDir::Filters filters, const QStringList &filterNames);
+    virtual IteratorUniquePtr endEntryList() { return {}; }
 
     virtual qint64 read(char *data, qint64 maxlen);
     virtual qint64 readLine(char *data, qint64 maxlen);

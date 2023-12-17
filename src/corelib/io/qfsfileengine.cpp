@@ -791,9 +791,10 @@ qint64 QFSFileEnginePrivate::writeFdFh(const char *data, qint64 len)
 /*!
     \internal
 */
-QAbstractFileEngine::Iterator *QFSFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
+QAbstractFileEngine::IteratorUniquePtr
+QFSFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
 {
-    return new QFSFileEngineIterator(filters, filterNames);
+    return std::make_unique<QFSFileEngineIterator>(filters, filterNames);
 }
 
 #endif // QT_NO_FILESYSTEMITERATOR

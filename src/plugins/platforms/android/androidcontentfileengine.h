@@ -30,7 +30,8 @@ public:
     QDateTime fileTime(FileTime time) const override;
     FileFlags fileFlags(FileFlags type = FileInfoAll) const override;
     QString fileName(FileName file = DefaultName) const override;
-    QAbstractFileEngine::Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override;
+    IteratorUniquePtr beginEntryList(QDir::Filters filters,
+                                     const QStringList &filterNames) override;
 
 private:
     void closeNativeFileDescriptor();

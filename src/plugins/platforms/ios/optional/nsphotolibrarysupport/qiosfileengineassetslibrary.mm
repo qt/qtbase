@@ -440,10 +440,10 @@ void QIOSFileEngineAssetsLibrary::setFileName(const QString &file)
 
 #ifndef QT_NO_FILESYSTEMITERATOR
 
-QAbstractFileEngine::Iterator *QIOSFileEngineAssetsLibrary::beginEntryList(
-        QDir::Filters filters, const QStringList &filterNames)
+QAbstractFileEngine::IteratorUniquePtr
+QIOSFileEngineAssetsLibrary::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
 {
-    return new QIOSFileEngineIteratorAssetsLibrary(filters, filterNames);
+    return std::make_unique<QIOSFileEngineIteratorAssetsLibrary>(filters, filterNames);
 }
 
 QT_END_NAMESPACE

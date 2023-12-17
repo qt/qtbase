@@ -367,10 +367,11 @@ public:
         m_assetsInfoCache.insert(m_fileName, newAssetInfoPtr);
     }
 
-    Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override
+    IteratorUniquePtr
+    beginEntryList(QDir::Filters filters, const QStringList &filterNames) override
     {
         if (m_assetInfo && m_assetInfo->type == AssetItem::Type::Folder)
-            return new AndroidAbstractFileEngineIterator(filters, filterNames, m_fileName);
+            return std::make_unique<AndroidAbstractFileEngineIterator>(filters, filterNames, m_fileName);
         return nullptr;
     }
 

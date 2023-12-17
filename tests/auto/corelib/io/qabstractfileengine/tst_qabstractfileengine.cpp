@@ -459,9 +459,11 @@ public:
         : QFSFileEngine(fileName)
     {
     }
-    Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override
+
+    IteratorUniquePtr
+    beginEntryList(QDir::Filters filters, const QStringList &filterNames) override
     {
-        return new Iterator(filters, filterNames);
+        return std::make_unique<Iterator>(filters, filterNames);
     }
     FileFlags fileFlags(FileFlags type) const override
     {

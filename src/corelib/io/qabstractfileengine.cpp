@@ -891,6 +891,14 @@ bool QAbstractFileEngine::cloneTo(QAbstractFileEngine *target)
 */
 
 /*!
+    \typedef QAbstractFileEngine::IteratorUniquePtr
+    \since 6.8
+
+    Synonym for std::unique_ptr<Iterator> (that is a
+    std::unique_ptr<QAbstractFileEngineIterator>).
+*/
+
+/*!
     Constructs a QAbstractFileEngineIterator, using the entry filters \a
     filters, and wildcard name filters \a nameFilters.
 */
@@ -1019,20 +1027,19 @@ QFileInfo QAbstractFileEngineIterator::currentFileInfo() const
 */
 
 /*!
-    Returns an instance of a QAbstractFileEngineIterator using \a filters for
-    entry filtering and \a filterNames for name filtering. This function is
-    called by QDirListing to initiate directory iteration.
-
-    QDirListing takes ownership of the returned instance, and deletes it when
-    it's done.
+    Returns a QAbstractFileEngine::IteratorUniquePtr, that uses \a filters
+    for entry filtering and \a filterNames for name filtering. This function
+    is called by QDirListing to initiate directory iteration.
 
     \sa QDirListing
 */
-QAbstractFileEngine::Iterator *QAbstractFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
+QAbstractFileEngine::IteratorUniquePtr
+QAbstractFileEngine::beginEntryList(QDir::Filters filters,
+                                    const QStringList &filterNames)
 {
     Q_UNUSED(filters);
     Q_UNUSED(filterNames);
-    return nullptr;
+    return {};
 }
 
 /*!

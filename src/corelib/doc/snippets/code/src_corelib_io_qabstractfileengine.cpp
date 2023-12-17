@@ -38,10 +38,10 @@ QAbstractSocketEngine *ZipEngineHandler::create(const QString &fileName) const
 
 
 //! [2]
-QAbstractFileEngineIterator *
+QAbstractFileEngine::IteratorUniquePtr
 CustomFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
 {
-    return new CustomFileEngineIterator(filters, filterNames);
+    return std::make_unique<CustomFileEngineIterator>(filters, filterNames);
 }
 //! [2]
 
