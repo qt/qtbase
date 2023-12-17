@@ -23,6 +23,10 @@ static bool checkNameDecodable(const char *d_name, qsizetype len)
     return QUtf8::isValidUtf8(QByteArrayView(d_name, len)).isValidUtf8;
 }
 
+/*
+    Native filesystem iterator, which uses ::opendir()/readdir()/dirent from the system
+    libraries to iterate over the directory represented by \a entry.
+*/
 QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters,
                                          const QStringList &nameFilters, QDirIterator::IteratorFlags flags)
     : nativePath(entry.nativeFilePath())
@@ -48,6 +52,12 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
         return false;
 
     for (;;) {
+        // From readdir man page:
+        // If the end of the directory stream is reached, NULL is returned and errno is
+        // not changed. If an error occurs, NULL is returned and errno is set to indicate
+        // the error. To distinguish end of stream from an error, set errno to zero before
+        // calling readdir() and then check the value of errno if NULL is returned.
+        errno = 0;
         dirEntry = QT_READDIR(dir.get());
 
         if (dirEntry) {
@@ -56,6 +66,8 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
                 fileEntry = QFileSystemEntry(nativePath + QByteArray(dirEntry->d_name, len), QFileSystemEntry::FromNativePath());
                 metaData.fillFromDirEnt(*dirEntry);
                 return true;
+            } else {
+                errno = EILSEQ; // Invalid or incomplete multibyte or wide character
             }
         } else {
             break;
