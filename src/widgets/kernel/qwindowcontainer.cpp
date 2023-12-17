@@ -219,7 +219,8 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
 
     setAcceptDrops(true);
 
-    connect(QGuiApplication::instance(), SIGNAL(focusWindowChanged(QWindow*)), this, SLOT(focusWindowChanged(QWindow*)));
+    connect(qGuiApp, &QGuiApplication::focusWindowChanged,
+            this, &QWindowContainer::focusWindowChanged);
 }
 
 QWindow *QWindowContainer::containedWindow() const
