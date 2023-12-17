@@ -1693,14 +1693,6 @@ static int QT_WIN_CALLBACK xpFileDialogGetExistingDirCallbackProc(HWND hwnd, UIN
     return dialog->existingDirCallback(hwnd, uMsg, lParam);
 }
 
-/* The correct declaration of the SHGetPathFromIDList symbol is
- * being used in mingw-w64 as of r6215, which is a v3 snapshot.  */
-#if defined(Q_CC_MINGW) && (!defined(__MINGW64_VERSION_MAJOR) || __MINGW64_VERSION_MAJOR < 3)
-typedef ITEMIDLIST *qt_LpItemIdList;
-#else
-using qt_LpItemIdList = PIDLIST_ABSOLUTE;
-#endif
-
 int QWindowsXpNativeFileDialog::existingDirCallback(HWND hwnd, UINT uMsg, LPARAM lParam)
 {
     switch (uMsg) {
@@ -1714,7 +1706,7 @@ int QWindowsXpNativeFileDialog::existingDirCallback(HWND hwnd, UINT uMsg, LPARAM
         break;
     case BFFM_SELCHANGED: {
         wchar_t path[MAX_PATH];
-        const bool ok = SHGetPathFromIDList(reinterpret_cast<qt_LpItemIdList>(lParam), path)
+        const bool ok = SHGetPathFromIDList(reinterpret_cast<PIDLIST_ABSOLUTE>(lParam), path)
                         && path[0];
         SendMessage(hwnd, BFFM_ENABLEOK, ok ? 1 : 0, 1);
     }
@@ -1736,7 +1728,7 @@ QList<QUrl> QWindowsXpNativeFileDialog::execExistingDir(HWND owner)
     bi.lpfn = xpFileDialogGetExistingDirCallbackProc;
     bi.lParam = LPARAM(this);
     QList<QUrl> selectedFiles;
-    if (qt_LpItemIdList pItemIDList = SHBrowseForFolder(&bi)) {
+    if (const auto pItemIDList = SHBrowseForFolder(&bi)) {
         wchar_t path[MAX_PATH];
         path[0] = 0;
         if (SHGetPathFromIDList(pItemIDList, path) && path[0])
