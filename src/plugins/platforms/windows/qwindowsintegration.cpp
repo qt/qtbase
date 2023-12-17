@@ -80,31 +80,6 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-/*!
-    \class QWindowsIntegration
-    \brief QPlatformIntegration implementation for Windows.
-    \internal
-
-    \section1 Programming Considerations
-
-    The platform plugin should run on Desktop Windows from Windows XP onwards
-    and Windows Embedded.
-
-    It should compile with:
-    \list
-    \li Microsoft Visual Studio 2013 or later (using the Microsoft Windows SDK,
-        (\c Q_CC_MSVC).
-    \li Stock \l{http://mingw.org/}{MinGW} (\c Q_CC_MINGW).
-        This version ships with headers that are missing a lot of WinAPI.
-    \li MinGW distributions using GCC 4.7 or higher and a recent MinGW-w64 runtime API,
-        such as \l{http://tdm-gcc.tdragon.net/}{TDM-GCC}, or
-        \l{http://mingwbuilds.sourceforge.net/}{MinGW-builds}
-        (\c Q_CC_MINGW and \c __MINGW64_VERSION_MAJOR indicating the version).
-        MinGW-w64 provides more complete headers (compared to stock MinGW from mingw.org),
-        including a considerable part of the Windows SDK.
-    \endlist
-*/
-
 struct QWindowsIntegrationPrivate
 {
     Q_DISABLE_COPY_MOVE(QWindowsIntegrationPrivate)
