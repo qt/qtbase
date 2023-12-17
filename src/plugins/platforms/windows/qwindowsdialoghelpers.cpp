@@ -1551,7 +1551,7 @@ QWindowsNativeDialogBase *QWindowsFileDialogHelper::createNativeDialog()
             if (!info.isDir())
                 result->selectFile(info.fileName());
         } else {
-            result->selectFile(url.path()); // TODO url.fileName() once it exists
+            result->selectFile(url.fileName());
         }
     }
     // No need to select initialNameFilter if mode is Dir
