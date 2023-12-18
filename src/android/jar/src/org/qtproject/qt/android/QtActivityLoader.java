@@ -44,6 +44,10 @@ class QtActivityLoader extends QtLoader {
     }
 
     private void showErrorDialog() {
+        if (m_activity == null) {
+            Log.w(QtTAG, "cannot show the error dialog from a null activity object");
+            return;
+        }
         Resources resources = m_activity.getResources();
         String packageName = m_activity.getPackageName();
         AlertDialog errorDialog = new AlertDialog.Builder(m_activity).create();
@@ -57,6 +61,10 @@ class QtActivityLoader extends QtLoader {
 
     @Override
     protected void finish() {
+        if (m_activity == null) {
+            Log.w(QtTAG, "finish() called when activity object is null");
+            return;
+        }
         showErrorDialog();
         m_activity.finish();
     }
