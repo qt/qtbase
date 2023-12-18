@@ -513,18 +513,6 @@ QT_WARNING_DISABLE_DEPRECATED
     ret = QMessageBox::information(nullptr, "title", "text", "Yes", "No", QString(), 1);
     QCOMPARE(ret, 1);
     QVERIFY(closeHelper.done());
-
-    if (0) { // don't run these tests since the dialog won't close!
-        closeHelper.start(Qt::Key_Escape);
-        ret = QMessageBox::information(nullptr, "title", "text", "Yes", "No", QString(), 1);
-        QCOMPARE(ret, -1);
-        QVERIFY(closeHelper.done());
-
-        closeHelper.start(Qt::Key_Escape);
-        ret = QMessageBox::information(nullptr, "title", "text", "Yes", "No", QString(), 0, 1);
-        QCOMPARE(ret, 1);
-        QVERIFY(closeHelper.done());
-    }
 #endif // QT_DEPRECATED_SINCE(6, 2)
 QT_WARNING_POP
 }
