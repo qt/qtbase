@@ -2280,12 +2280,13 @@ QList<QUrl> QFileDialog::getOpenFileUrls(QWidget *parent,
     This is a convenience static function that returns the content of a file
     selected by the user.
 
-    This function is used to access local files on Qt for WebAssembly, where the web
-    sandbox places restrictions on how such access can happen. Its implementation will
-    make the browser display a native file dialog, where the user makes the file selection
-    based on the parameter \a nameFilter.
+    Use this function to access local files on Qt for WebAssembly, if the web sandbox
+    restricts file access. Its implementation enables displaying a native file dialog in
+    the browser, where the user selects a file based on the \a nameFilter parameter.
 
-    It can also be used on other platforms, where it falls back to using QFileDialog.
+    \a parent is ignored on Qt for WebAssembly. Pass \a parent on other platforms, to make
+    the popup a child of another widget. If the platform doesn't support native file
+    dialogs, the function falls back to QFileDialog.
 
     The function is asynchronous and returns immediately. The \a fileOpenCompleted
     callback will be called when a file has been selected and its contents have been
@@ -2294,9 +2295,10 @@ QList<QUrl> QFileDialog::getOpenFileUrls(QWidget *parent,
     \snippet code/src_gui_dialogs_qfiledialog.cpp 15
     \since 5.13
 */
-void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::function<void(const QString &, const QByteArray &)> &fileOpenCompleted)
+void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::function<void(const QString &, const QByteArray &)> &fileOpenCompleted, QWidget *parent)
 {
 #ifdef Q_OS_WASM
+    Q_UNUSED(parent);
     auto openFileImpl = std::make_shared<std::function<void(void)>>();
     QString fileName;
     QByteArray fileContent;
@@ -2326,9 +2328,10 @@ void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::funct
 
     (*openFileImpl)();
 #else
-    QFileDialog *dialog = new QFileDialog();
+    QFileDialog *dialog = new QFileDialog(parent);
     dialog->setFileMode(QFileDialog::ExistingFile);
     dialog->setNameFilter(nameFilter);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
 
     auto fileSelected = [=](const QString &fileName) {
         QByteArray fileContent;
@@ -2341,7 +2344,6 @@ void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::funct
     };
 
     connect(dialog, &QFileDialog::fileSelected, dialog, fileSelected);
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
     dialog->show();
 #endif
 }
@@ -2351,23 +2353,26 @@ void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::funct
     a file name and location chosen by the user. \a fileNameHint can be provided to
     suggest a file name to the user.
 
-    This function is used to save files to the local file system on Qt for WebAssembly, where
-    the web sandbox places restrictions on how such access can happen. Its implementation will
-    make the browser display a native file dialog, where the user makes the file selection.
+    Use this function to save content to local files on Qt for WebAssembly, if the web sandbox
+    restricts file access. Its implementation enables displaying a native file dialog in the
+    browser, where the user specifies an output file based on the \a fileNameHint argument.
 
-    It can also be used on other platforms, where it falls back to using QFileDialog.
+    \a parent is ignored on Qt for WebAssembly. Pass \a parent on other platforms, to make
+    the popup a child of another widget. If the platform doesn't support native file
+    dialogs, the function falls back to QFileDialog.
 
     The function is asynchronous and returns immediately.
 
     \snippet code/src_gui_dialogs_qfiledialog.cpp 16
     \since 5.14
 */
-void QFileDialog::saveFileContent(const QByteArray &fileContent, const QString &fileNameHint)
+void QFileDialog::saveFileContent(const QByteArray &fileContent, const QString &fileNameHint, QWidget *parent)
 {
 #ifdef Q_OS_WASM
+    Q_UNUSED(parent);
     QWasmLocalFileAccess::saveFile(fileContent, fileNameHint.toStdString());
 #else
-    QFileDialog *dialog = new QFileDialog();
+    QFileDialog *dialog = new QFileDialog(parent);
     dialog->setAcceptMode(QFileDialog::AcceptSave);
     dialog->setFileMode(QFileDialog::AnyFile);
     dialog->selectFile(fileNameHint);
