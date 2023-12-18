@@ -18,7 +18,8 @@
     manipulated through their properties.
 
     The example also demonstrates how signals and slots can be used to
-    synchronize the behavior of two or more widgets.
+    synchronize the behavior of two or more widgets, and how to override
+    \l{QWidget::}{resizeEvent()} to implement a responsive layout.
 
     \borderedimage sliders-example.png
     \caption Screenshot of the Sliders example
@@ -31,10 +32,8 @@
     QScrollBar and a QDial.
 
     \li \c Window is the main widget combining a QGroupBox and a
-    QStackedWidget. In this example, the QStackedWidget provides a
-    stack of two \c SlidersGroup widgets. The QGroupBox contain
-    several widgets that control the behavior of the slider-like
-    widgets.
+    SlidersGroup. The QGroupBox contains several widgets that control
+    the behavior of the slider-like widgets.
 
     \endlist
 
@@ -56,28 +55,14 @@
 
     \snippet widgets/sliders/window.cpp 0
 
-    In the constructor we first create the two \c SlidersGroup
-    widgets that display the slider widgets horizontally and
-    vertically, and add them to the QStackedWidget. QStackedWidget
-    provides a stack of widgets where only the top widget is visible.
-    With \c createControls() we create a connection from a
-    controlling widget to the QStackedWidget, making the user able to
-    choose between horizontal and vertical orientation of the slider
-    widgets. The rest of the controlling mechanisms is implemented by
-    the same function call.
+    In the constructor we first create the \c SlidersGroup widget
+    that displays the slider widgets. With \c createControls() we
+    create the controlling widgets, and connect those to to the
+    sliders.
 
     \snippet widgets/sliders/window.cpp 1
-    \snippet widgets/sliders/window.cpp 2
 
-    Then we connect the \c horizontalSliders, \c verticalSliders and
-    \c valueSpinBox to each other, so that the slider widgets and the
-    control widget will behave synchronized when the current value of
-    one of them changes. The \c valueChanged() signal is emitted with
-    the new value as argument. The \c setValue() slot sets the
-    current value of the widget to the new value, and emits \c
-    valueChanged() if the new value is different from the old one.
-
-    We put the group of control widgets and the stacked widget in a
+    We put the groups of control widgets and the sliders in a
     horizontal layout before we initialize the minimum, maximum and
     current values. The initialization of the current value will
     propagate to the slider widgets through the connection we made
@@ -85,15 +70,14 @@
     minimum and maximum values propagate through the connections we
     created with \c createControls().
 
+    \snippet widgets/sliders/window.cpp 2
     \snippet widgets/sliders/window.cpp 3
-    \snippet widgets/sliders/window.cpp 4
 
     In the private \c createControls() function, we let a QGroupBox
     (\c controlsGroup) display the control widgets. A group box can
     provide a frame, a title and a keyboard shortcut, and displays
     various other widgets inside itself. The group of control widgets
-    is composed by two checkboxes, three spin boxes (with labels) and
-    one combobox.
+    is composed by two checkboxes, and three spin boxes with labels.
 
     After creating the labels, we create the two checkboxes.
     Checkboxes are typically used to represent features in an
@@ -131,8 +115,8 @@
     bindings are inverted by default: \uicontrol PageDown increases the
     current value, and \uicontrol PageUp decreases it.
 
+    \snippet widgets/sliders/window.cpp 4
     \snippet widgets/sliders/window.cpp 5
-    \snippet widgets/sliders/window.cpp 6
 
     Then we create the spin boxes. QSpinBox allows the user to choose
     a value by clicking the up and down buttons or pressing the \uicontrol
@@ -141,14 +125,15 @@
     manually. The spin boxes control the minimum, maximum and current
     values for the QSlider, QScrollBar, and QDial widgets.
 
-    We create a QComboBox that allows the user to choose the
-    orientation of the slider widgets. The QComboBox widget is a
-    combined button and popup list. It provides a means of presenting
-    a list of options to the user in a way that takes up the minimum
-    amount of screen space.
+    \snippet widgets/sliders/window.cpp 6
 
-    \snippet widgets/sliders/window.cpp 7
-    \snippet widgets/sliders/window.cpp 8
+    Then we connect the \c slidersGroup and the \c valueSpinBox to each
+    other, so that the slider widgets and the control widget will behave
+    synchronized when the current value of one of them changes.
+    The \c valueChanged() signal is emitted with the new value as
+    argument. The \c setValue() slot sets the current value of the
+    widget to the new value, and emits \c valueChanged() if the new
+    value is different from the old one.
 
     We synchronize the behavior of the control widgets and the slider
     widgets through their signals and slots. We connect each control
@@ -157,6 +142,17 @@
     QStackedWidget, so that the correct "page" is shown. Finally, we
     lay out the control widgets in a QGridLayout within the \c
     controlsGroup group box.
+
+    \snippet widgets/sliders/window.cpp 7
+
+    Lastly, we override resizeEvent() from QWidget. We guard against
+    dividing by zero, and otherwise compute the aspect ratio of the
+    widget. If the window has a portrait format, then we set the
+    layout to organize the groups of control widgets and sliders
+    vertically, and we give the sliders a horizontal orientation.
+    If the window has a landscape format, then we change the layout
+    to show the sliders and controlling widgets side by side, and
+    give the sliders a vertical orientation.
 
     \section1 SlidersGroup Class Definition
 
@@ -170,7 +166,8 @@
     slot with equivalent functionality to the ones in QAbstractSlider
     and QSpinBox. In addition, we implement several other public
     slots to set the minimum and maximum value, and invert the slider
-    widgets' appearance as well as key bindings.
+    widgets' appearance as well as key bindings, and set the
+    orientation.
 
     \section1 SlidersGroup Class Implementation
 
@@ -183,24 +180,21 @@
     focus. The Qt::StrongFocus policy means that the widget accepts
     focus by both tabbing and clicking.
 
+    \snippet widgets/sliders/slidersgroup.cpp 1
+
     Then we connect the widgets with each other, so that they will
     stay synchronized when the current value of one of them changes.
-
-    \snippet widgets/sliders/slidersgroup.cpp 1
-    \snippet widgets/sliders/slidersgroup.cpp 2
 
     We connect \c {dial}'s \c valueChanged() signal to the
     \c{SlidersGroup}'s \c valueChanged() signal, to notify the other
     widgets in the application (i.e., the control widgets) of the
     changed value.
 
-    \snippet widgets/sliders/slidersgroup.cpp 3
     \codeline
     \snippet widgets/sliders/slidersgroup.cpp 4
 
-    Finally, depending on the \l {Qt::Orientation}{orientation} given
-    at the time of construction, we choose and create the layout for
-    the slider widgets within the group box.
+    Finally, we create the layout for the slider widgets within the
+    group box. We start with a horizontal arrangement of the sliders.
 
     \snippet widgets/sliders/slidersgroup.cpp 5
     \snippet widgets/sliders/slidersgroup.cpp 6
@@ -233,4 +227,12 @@
     \l{QAbstractSlider::invertedAppearance}{invertedAppearance} and
     \l{QAbstractSlider::invertedControls}{invertedControls}
     properties.
+
+    \snippet widgets/sliders/slidersgroup.cpp 15
+
+    The setOrientation() slot controls the direction of the layout
+    and the orientation of the sliders. In a horizontal group, the
+    sliders have a horizontal orientation, and are laid out on top
+    of each other. In a vertical group, the sliders have a vertical
+    orientation, and are laid out next to each other.
 */

@@ -9,39 +9,28 @@
 #include <QSlider>
 
 //! [0]
-SlidersGroup::SlidersGroup(Qt::Orientation orientation, const QString &title,
-                           QWidget *parent)
+SlidersGroup::SlidersGroup(const QString &title, QWidget *parent)
     : QGroupBox(title, parent)
 {
-    slider = new QSlider(orientation);
+    slider = new QSlider;
     slider->setFocusPolicy(Qt::StrongFocus);
     slider->setTickPosition(QSlider::TicksBothSides);
     slider->setTickInterval(10);
     slider->setSingleStep(1);
 
-    scrollBar = new QScrollBar(orientation);
+    scrollBar = new QScrollBar;
     scrollBar->setFocusPolicy(Qt::StrongFocus);
 
     dial = new QDial;
     dial->setFocusPolicy(Qt::StrongFocus);
 
+//! [0] //! [1]
     connect(slider, &QSlider::valueChanged, scrollBar, &QScrollBar::setValue);
     connect(scrollBar, &QScrollBar::valueChanged, dial, &QDial::setValue);
     connect(dial, &QDial::valueChanged, slider, &QSlider::setValue);
-//! [0] //! [1]
     connect(dial, &QDial::valueChanged, this, &SlidersGroup::valueChanged);
-//! [1] //! [2]
-
-//! [2] //! [3]
-    QBoxLayout::Direction direction;
-//! [3] //! [4]
-
-    if (orientation == Qt::Horizontal)
-        direction = QBoxLayout::TopToBottom;
-    else
-        direction = QBoxLayout::LeftToRight;
-
-    QBoxLayout *slidersLayout = new QBoxLayout(direction);
+//! [1] //! [4]
+    slidersLayout = new QBoxLayout(QBoxLayout::LeftToRight);
     slidersLayout->addWidget(slider);
     slidersLayout->addWidget(scrollBar);
     slidersLayout->addWidget(dial);
@@ -96,3 +85,14 @@ void SlidersGroup::invertKeyBindings(bool invert)
     dial->setInvertedControls(invert);
 }
 //! [14]
+
+//! [15]
+void SlidersGroup::setOrientation(Qt::Orientation orientation)
+{
+    slidersLayout->setDirection(orientation == Qt::Horizontal
+                                ? QBoxLayout::TopToBottom
+                                : QBoxLayout::LeftToRight);
+    scrollBar->setOrientation(orientation);
+    slider->setOrientation(orientation);
+}
+//! [15]

@@ -10,6 +10,7 @@ QT_BEGIN_NAMESPACE
 class QDial;
 class QScrollBar;
 class QSlider;
+class QBoxLayout;
 QT_END_NAMESPACE
 
 //! [0]
@@ -18,8 +19,7 @@ class SlidersGroup : public QGroupBox
     Q_OBJECT
 
 public:
-    SlidersGroup(Qt::Orientation orientation, const QString &title,
-                 QWidget *parent = nullptr);
+    SlidersGroup(const QString &title, QWidget *parent = nullptr);
 
 signals:
     void valueChanged(int value);
@@ -30,11 +30,13 @@ public slots:
     void setMaximum(int value);
     void invertAppearance(bool invert);
     void invertKeyBindings(bool invert);
+    void setOrientation(Qt::Orientation orientation);
 
 private:
     QSlider *slider;
     QScrollBar *scrollBar;
     QDial *dial;
+    QBoxLayout *slidersLayout;
 };
 //! [0]
 
