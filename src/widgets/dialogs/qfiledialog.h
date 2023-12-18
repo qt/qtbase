@@ -213,8 +213,20 @@ public:
                                        const QStringList &supportedSchemes = QStringList());
 
     static void getOpenFileContent(const QString &nameFilter,
+                                   const std::function<void(const QString &, const QByteArray &)> &fileContentsReady,
+                                   QWidget *parent);
+
+    static void saveFileContent(const QByteArray &fileContent,
+                                const QString &fileNameHint,
+                                QWidget *parent = nullptr);
+
+#if QT_WIDGETS_REMOVED_SINCE(6, 7)
+    static void getOpenFileContent(const QString &nameFilter,
                                    const std::function<void(const QString &, const QByteArray &)> &fileContentsReady);
-    static void saveFileContent(const QByteArray &fileContent, const QString &fileNameHint = QString());
+    static void saveFileContent(const QByteArray &fileContent,
+                                const QString &fileNameHint = QString());
+#endif
+
 
 protected:
     QFileDialog(const QFileDialogArgs &args);
