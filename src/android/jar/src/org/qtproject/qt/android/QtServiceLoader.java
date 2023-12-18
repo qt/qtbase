@@ -25,8 +25,8 @@ class QtServiceLoader extends QtLoader {
     @Override
     protected void initContextInfo() {
         try {
-            m_contextInfo = m_service.getPackageManager().getServiceInfo(
-                    new ComponentName(m_service, m_service.getClass()),
+            m_contextInfo = m_context.getPackageManager().getServiceInfo(
+                    new ComponentName(m_context, m_context.getClass()),
                     PackageManager.GET_META_DATA);
         } catch (Exception e) {
             e.printStackTrace();
