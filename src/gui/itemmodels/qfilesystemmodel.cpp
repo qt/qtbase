@@ -2069,12 +2069,15 @@ QStringList QFileSystemModelPrivate::unwatchPathsAt(const QModelIndex &index)
 #endif // filesystemwatcher && Q_OS_WIN
 
 QFileSystemModelPrivate::QFileSystemModelPrivate()
+#if QT_CONFIG(filesystemwatcher)
     : fileInfoGatherer(new QFileInfoGatherer)
+#endif // filesystemwatcher
 {
 }
 
 QFileSystemModelPrivate::~QFileSystemModelPrivate()
 {
+#if QT_CONFIG(filesystemwatcher)
     fileInfoGatherer->requestInterruption();
     if (!fileInfoGatherer->wait(1000)) {
         // If the thread hangs, perhaps because the network was disconnected
@@ -2085,6 +2088,7 @@ QFileSystemModelPrivate::~QFileSystemModelPrivate()
         auto *rawGatherer = fileInfoGatherer.release();
         rawGatherer->deleteLater();
     }
+#endif // filesystemwatcher
 }
 
 /*!
