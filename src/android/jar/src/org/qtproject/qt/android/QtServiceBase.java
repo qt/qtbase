@@ -14,8 +14,6 @@ public class QtServiceBase extends Service {
     {
         super.onCreate();
 
-        QtNative.setApplicationState(QtNative.ApplicationState.ApplicationHidden);
-
         // the application has already started, do not reload everything again
         if (QtNative.getStateDetails().isStarted) {
             Log.w(QtNative.QtTAG,
@@ -30,6 +28,7 @@ public class QtServiceBase extends Service {
         QtServiceLoader loader = new QtServiceLoader(this);
         loader.loadQtLibraries();
         QtNative.startApplication(loader.getApplicationParameters(), loader.getMainLibrary());
+        QtNative.setApplicationState(QtNative.ApplicationState.ApplicationHidden);
     }
 
     @Override
