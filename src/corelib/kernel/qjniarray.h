@@ -70,18 +70,6 @@ class QJniArrayBase : public QJniObject
                            > : std::true_type {};
 
 public:
-    explicit QJniArrayBase(jarray array)
-        : QJniObject(static_cast<jobject>(array))
-    {
-        static_assert(sizeof(QJniArrayBase) == sizeof(QJniObject),
-                      "QJniArrayBase must have the same size as QJniObject!");
-    }
-    explicit QJniArrayBase(const QJniObject &object)
-        : QJniObject(object)
-    {}
-    explicit QJniArrayBase(QJniObject &&object) noexcept
-        : QJniObject(std::move(object))
-    {}
 
     qsizetype size() const
     {
@@ -91,9 +79,11 @@ public:
     }
 
     template <typename Container>
-    static constexpr bool CanConvert = CanConvertHelper<Container>::value;
+    static constexpr bool canConvert = CanConvertHelper<Container>::value;
+    template <typename Container>
+    using IfCanConvert = std::enable_if_t<canConvert<Container>, bool>;
     template <typename Container
-        , std::enable_if_t<CanConvert<Container>, bool> = true
+        , IfCanConvert<Container> = true
     >
     static auto fromContainer(Container &&container)
     {
@@ -136,6 +126,20 @@ public:
 
 protected:
     QJniArrayBase() = default;
+    ~QJniArrayBase() = default;
+
+    explicit QJniArrayBase(jarray array)
+        : QJniObject(static_cast<jobject>(array))
+    {
+        static_assert(sizeof(QJniArrayBase) == sizeof(QJniObject),
+                      "QJniArrayBase must have the same size as QJniObject!");
+    }
+    explicit QJniArrayBase(const QJniObject &object)
+        : QJniObject(object)
+    {}
+    explicit QJniArrayBase(QJniObject &&object) noexcept
+        : QJniObject(std::move(object))
+    {}
 
     template <typename ElementType, typename List, typename NewFn, typename SetFn>
     static auto makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion);
@@ -151,10 +155,19 @@ public:
     using Type = T;
     using const_iterator = const QJniArrayIterator<T>;
 
-    using QJniArrayBase::QJniArrayBase;
+    QJniArray() = default;
+    explicit QJniArray(jarray array) : QJniArrayBase(array) {}
+    explicit QJniArray(const QJniObject &object) : QJniArrayBase(object) {}
+    explicit QJniArray(QJniObject &&object) noexcept : QJniArrayBase(std::move(object)) {}
+
+    // base class destructor is protected, so need to provide all SMFs
+    QJniArray(const QJniArray &other) = default;
+    QJniArray(QJniArray &&other) noexcept = default;
+    QJniArray &operator=(const QJniArray &other) = default;
+    QJniArray &operator=(QJniArray &&other) noexcept = default;
 
     template <typename Container
-        , std::enable_if_t<QJniArrayBase::CanConvert<Container>, bool> = true
+        , IfCanConvert<Container> = true
     >
     explicit QJniArray(Container &&container);
 
@@ -326,12 +339,11 @@ auto QJniArrayBase::makeObjectArray(List &&list)
 
 template <typename T>
 template <typename Container
-    , std::enable_if_t<QJniArrayBase::CanConvert<Container>, bool>
+    , QJniArrayBase::IfCanConvert<Container>
 >
 QJniArray<T>::QJniArray(Container &&container)
-    : QJniArrayBase()
+    : QJniArrayBase(QJniArrayBase::fromContainer(std::forward<Container>(container)))
 {
-    *this = QJniArrayBase::fromContainer(std::forward<Container>(container));
 }
 
 namespace QtJniTypes
