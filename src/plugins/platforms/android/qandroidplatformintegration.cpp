@@ -304,11 +304,11 @@ static bool needsBasicRenderloopWorkaround()
 
 void QAndroidPlatformIntegration::initialize()
 {
-    const QString icStr = QPlatformInputContextFactory::requested();
-    if (icStr.isNull())
+    const auto icStrs = QPlatformInputContextFactory::requested();
+    if (icStrs.isEmpty())
         m_inputContext.reset(new QAndroidInputContext);
     else
-        m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
+        m_inputContext.reset(QPlatformInputContextFactory::create(icStrs));
 }
 
 bool QAndroidPlatformIntegration::hasCapability(Capability cap) const

@@ -344,11 +344,12 @@ void QXcbIntegration::initialize()
     const auto defaultInputContext = "compose"_L1;
     // Perform everything that may potentially need the event dispatcher (timers, socket
     // notifiers) here instead of the constructor.
-    QString icStr = QPlatformInputContextFactory::requested();
-    if (icStr.isNull())
-        icStr = defaultInputContext;
-    m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
-    if (!m_inputContext && icStr != defaultInputContext && icStr != "none"_L1)
+    auto icStrs = QPlatformInputContextFactory::requested();
+    if (icStrs.isEmpty())
+        icStrs = { defaultInputContext };
+    m_inputContext.reset(QPlatformInputContextFactory::create(icStrs));
+    if (!m_inputContext && !icStrs.contains(defaultInputContext)
+        && icStrs != QStringList{"none"_L1})
         m_inputContext.reset(QPlatformInputContextFactory::create(defaultInputContext));
 
     connection()->keyboard()->initialize();

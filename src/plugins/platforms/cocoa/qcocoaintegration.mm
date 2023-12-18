@@ -125,9 +125,9 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
 #endif
         mFontDb.reset(new QCoreTextFontDatabaseEngineFactory<QCoreTextFontEngine>);
 
-    QString icStr = QPlatformInputContextFactory::requested();
-    icStr.isNull() ? mInputContext.reset(new QCocoaInputContext)
-                   : mInputContext.reset(QPlatformInputContextFactory::create(icStr));
+    auto icStrs = QPlatformInputContextFactory::requested();
+    icStrs.isEmpty() ? mInputContext.reset(new QCocoaInputContext)
+                     : mInputContext.reset(QPlatformInputContextFactory::create(icStrs));
 
     initResources();
     QMacAutoReleasePool pool;

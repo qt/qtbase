@@ -27,6 +27,7 @@
 #include <QtGui/qaccessible.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qwindow.h>
+#include <qpa/qplatforminputcontextfactory_p.h>
 
 #if !defined(Q_CC_BOR) && !defined (Q_CC_GNU)
 #include <comdef.h>
@@ -434,7 +435,7 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
 
             // The native OSK should be disabled if the Qt OSK is in use,
             // or if disabled via application attribute.
-            static bool imModuleEmpty = qEnvironmentVariableIsEmpty("QT_IM_MODULE");
+            static bool imModuleEmpty = QPlatformInputContextFactory::requested().isEmpty();
             bool nativeVKDisabled = QCoreApplication::testAttribute(Qt::AA_DisableNativeVirtualKeyboard);
 
             // If we want to disable the native OSK auto-showing
