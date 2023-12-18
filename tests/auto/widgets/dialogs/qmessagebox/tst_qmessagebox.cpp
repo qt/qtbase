@@ -473,6 +473,12 @@ void tst_QMessageBox::staticSourceCompat()
     // source compat tests for < 4.2
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
+#define COMPARE(real, exp) do {\
+    const auto pressed = static_cast<QMessageBox::StandardButton>(real);\
+    const auto expected = static_cast<QMessageBox::StandardButton>(exp);\
+    if (!QTest::qCompare(pressed, expected, #real, #exp, __FILE__, __LINE__)) \
+        return; } while (false)
+
     ExecCloseHelper closeHelper;
     closeHelper.start(Qt::Key_Enter);
     ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes, QMessageBox::No);
@@ -483,37 +489,38 @@ QT_WARNING_DISABLE_DEPRECATED
             || dialogButtonBoxLayout == QDialogButtonBox::GnomeLayout)
             expectedButton = int(QMessageBox::No);
     }
-    QCOMPARE(ret, expectedButton);
+    COMPARE(ret, expectedButton);
     QVERIFY(closeHelper.done());
 
     closeHelper.start(Qt::Key_Enter);
     ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No);
-    QCOMPARE(ret, int(QMessageBox::Yes));
+    COMPARE(ret, int(QMessageBox::Yes));
     QVERIFY(closeHelper.done());
 
 #if QT_DEPRECATED_SINCE(6, 2)
     // The overloads below are valid only before 6.2
     closeHelper.start(Qt::Key_Enter);
     ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes, QMessageBox::No | QMessageBox::Default);
-    QCOMPARE(ret, int(QMessageBox::No));
+    COMPARE(ret, int(QMessageBox::No));
     QVERIFY(closeHelper.done());
 
     closeHelper.start(Qt::Key_Enter);
     ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes | QMessageBox::Default, QMessageBox::No | QMessageBox::Escape);
-    QCOMPARE(ret, int(QMessageBox::Yes));
+    COMPARE(ret, int(QMessageBox::Yes));
     QVERIFY(closeHelper.done());
 
     closeHelper.start(Qt::Key_Enter);
     ret = QMessageBox::information(nullptr, "title", "text", QMessageBox::Yes | QMessageBox::Escape, QMessageBox::No | QMessageBox::Default);
-    QCOMPARE(ret, int(QMessageBox::No));
+    COMPARE(ret, int(QMessageBox::No));
     QVERIFY(closeHelper.done());
 
     // the button text versions
     closeHelper.start(Qt::Key_Enter);
     ret = QMessageBox::information(nullptr, "title", "text", "Yes", "No", QString(), 1);
-    QCOMPARE(ret, 1);
+    COMPARE(ret, 1);
     QVERIFY(closeHelper.done());
 #endif // QT_DEPRECATED_SINCE(6, 2)
+#undef COMPARE
 QT_WARNING_POP
 }
 
