@@ -300,7 +300,7 @@ abstract class QtLoader {
         if (metadata == null || !metadata.containsKey(key))
             return "";
 
-        return metadata.getString(key);
+        return String.valueOf(metadata.get(key));
     }
 
     @SuppressLint("DiscouragedApi")
