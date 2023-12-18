@@ -191,7 +191,7 @@ static bool execAdbCommand(const QStringList &args, QByteArray *output = nullptr
 
 static bool execCommand(const QString &command, QByteArray *output = nullptr, bool verbose = true)
 {
-    auto args = command.split(u' ');
+    auto args = QProcess::splitCommand(command);
     const auto program = args.first();
     args.removeOne(program);
     return execCommand(program, args, output, verbose);
