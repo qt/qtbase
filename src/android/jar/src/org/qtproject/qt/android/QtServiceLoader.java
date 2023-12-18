@@ -36,7 +36,10 @@ class QtServiceLoader extends QtLoader {
 
     @Override
     protected void finish() {
-        m_service.stopSelf();
+        if (m_service != null)
+            m_service.stopSelf();
+        else
+            Log.w(QtTAG, "finish() called when service object is null");
     }
 
     @Override
