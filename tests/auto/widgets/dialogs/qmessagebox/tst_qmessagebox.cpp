@@ -797,7 +797,7 @@ void tst_QMessageBox::hideNativeByDestruction()
     // Make it application modal so that we don't end up with a sheet on macOS
     dialog->setWindowModality(Qt::ApplicationModal);
     window.show();
-    QVERIFY(QTest::qWaitForWindowActive(&window));
+    QVERIFY(QTest::qWaitForWindowExposed(&window));
     dialog->open();
 
     // We test that the dialog opens and closes by watching the activation of the
