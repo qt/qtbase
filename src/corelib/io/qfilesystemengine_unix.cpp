@@ -1124,7 +1124,7 @@ static bool createDirectoryWithParents(const QByteArray &nativeName, mode_t mode
 bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool createParents,
                                         std::optional<QFile::Permissions> permissions)
 {
-    QString dirName = entry.filePath();
+    QByteArray dirName = entry.nativeFilePath();
     Q_CHECK_FILE_NAME(dirName, false);
 
     // Darwin doesn't support trailing /'s, so remove for everyone
@@ -1132,14 +1132,13 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
         dirName.chop(1);
 
     // try to mkdir this directory
-    QByteArray nativeName = QFile::encodeName(dirName);
     mode_t mode = permissions ? QtPrivate::toMode_t(*permissions) : 0777;
-    if (QT_MKDIR(nativeName, mode) == 0)
+    if (QT_MKDIR(dirName, mode) == 0)
         return true;
     if (!createParents)
         return false;
 
-    return createDirectoryWithParents(nativeName, mode, false);
+    return createDirectoryWithParents(dirName, mode, false);
 }
 
 //static
