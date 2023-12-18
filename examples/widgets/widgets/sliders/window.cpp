@@ -13,29 +13,15 @@
 Window::Window(QWidget *parent)
     : QWidget(parent)
 {
-    horizontalSliders = new SlidersGroup(Qt::Horizontal, tr("Horizontal"));
-    verticalSliders = new SlidersGroup(Qt::Vertical, tr("Vertical"));
-
-    stackedWidget = new QStackedWidget;
-    stackedWidget->addWidget(horizontalSliders);
-    stackedWidget->addWidget(verticalSliders);
+    slidersGroup = new SlidersGroup(tr("Sliders"));
 
     createControls(tr("Controls"));
 //! [0]
 
 //! [1]
-    connect(horizontalSliders, &SlidersGroup::valueChanged,
-//! [1] //! [2]
-            verticalSliders, &SlidersGroup::setValue);
-    connect(verticalSliders, &SlidersGroup::valueChanged,
-            valueSpinBox, &QSpinBox::setValue);
-    connect(valueSpinBox, &QSpinBox::valueChanged,
-            horizontalSliders, &SlidersGroup::setValue);
-
-    layout = new QGridLayout;
-    layout->addWidget(stackedWidget, 0, 1);
-    layout->addWidget(controlsGroup, 0, 0);
-
+    layout = new QBoxLayout(QBoxLayout::LeftToRight);
+    layout->addWidget(controlsGroup);
+    layout->addWidget(slidersGroup);
     setLayout(layout);
 
     minimumSpinBox->setValue(0);
@@ -44,11 +30,11 @@ Window::Window(QWidget *parent)
 
     setWindowTitle(tr("Sliders"));
 }
-//! [2]
+//! [1]
 
-//! [3]
+//! [2]
 void Window::createControls(const QString &title)
-//! [3] //! [4]
+//! [2] //! [3]
 {
     controlsGroup = new QGroupBox(title);
 
@@ -59,9 +45,9 @@ void Window::createControls(const QString &title)
     invertedAppearance = new QCheckBox(tr("Inverted appearance"));
     invertedKeyBindings = new QCheckBox(tr("Inverted key bindings"));
 
-//! [4] //! [5]
+//! [3] //! [4]
     minimumSpinBox = new QSpinBox;
-//! [5] //! [6]
+//! [4] //! [5]
     minimumSpinBox->setRange(-100, 100);
     minimumSpinBox->setSingleStep(1);
 
@@ -73,30 +59,19 @@ void Window::createControls(const QString &title)
     valueSpinBox->setRange(-100, 100);
     valueSpinBox->setSingleStep(1);
 
-    orientationCombo = new QComboBox;
-    orientationCombo->addItem(tr("Horizontal slider-like widgets"));
-    orientationCombo->addItem(tr("Vertical slider-like widgets"));
-
-//! [6] //! [7]
-    connect(orientationCombo, &QComboBox::activated,
-//! [7] //! [8]
-            stackedWidget, &QStackedWidget::setCurrentIndex);
+//! [5] //! [6]
+    connect(slidersGroup, &SlidersGroup::valueChanged,
+            valueSpinBox, &QSpinBox::setValue);
+    connect(valueSpinBox, &QSpinBox::valueChanged,
+            slidersGroup, &SlidersGroup::setValue);
     connect(minimumSpinBox, &QSpinBox::valueChanged,
-            horizontalSliders, &SlidersGroup::setMinimum);
-    connect(minimumSpinBox, &QSpinBox::valueChanged,
-            verticalSliders, &SlidersGroup::setMinimum);
+            slidersGroup, &SlidersGroup::setMinimum);
     connect(maximumSpinBox, &QSpinBox::valueChanged,
-            horizontalSliders, &SlidersGroup::setMaximum);
-    connect(maximumSpinBox, &QSpinBox::valueChanged,
-            verticalSliders, &SlidersGroup::setMaximum);
+            slidersGroup, &SlidersGroup::setMaximum);
     connect(invertedAppearance, &QCheckBox::toggled,
-            horizontalSliders, &SlidersGroup::invertAppearance);
-    connect(invertedAppearance, &QCheckBox::toggled,
-            verticalSliders, &SlidersGroup::invertAppearance);
+            slidersGroup, &SlidersGroup::invertAppearance);
     connect(invertedKeyBindings, &QCheckBox::toggled,
-            horizontalSliders, &SlidersGroup::invertKeyBindings);
-    connect(invertedKeyBindings, &QCheckBox::toggled,
-            verticalSliders, &SlidersGroup::invertKeyBindings);
+            slidersGroup, &SlidersGroup::invertKeyBindings);
 
     QGridLayout *controlsLayout = new QGridLayout;
     controlsLayout->addWidget(minimumLabel, 0, 0);
@@ -107,40 +82,26 @@ void Window::createControls(const QString &title)
     controlsLayout->addWidget(valueSpinBox, 2, 1);
     controlsLayout->addWidget(invertedAppearance, 0, 2);
     controlsLayout->addWidget(invertedKeyBindings, 1, 2);
-    controlsLayout->addWidget(orientationCombo, 3, 0, 1, 3);
     controlsGroup->setLayout(controlsLayout);
 
 }
-//! [8]
+//! [6]
 
 
-void Window::resizeEvent(QResizeEvent *e)
+//! [7]
+void Window::resizeEvent(QResizeEvent *)
 {
-    Q_UNUSED(e);
     if (width() == 0 || height() == 0)
         return;
 
-     const double aspectRatio = double(width()) / double(height());
+    const double aspectRatio = double(width()) / double(height());
 
-    if ((aspectRatio < 1.0) && (oldAspectRatio > 1.0)) {
-        layout->removeWidget(controlsGroup);
-        layout->removeWidget(stackedWidget);
-
-        layout->addWidget(stackedWidget, 1, 0);
-        layout->addWidget(controlsGroup, 0, 0);
-
-        oldAspectRatio = aspectRatio;
-    }
-    else if ((aspectRatio > 1.0) && (oldAspectRatio < 1.0)) {
-        layout->removeWidget(controlsGroup);
-        layout->removeWidget(stackedWidget);
-
-        layout->addWidget(stackedWidget, 0, 1);
-        layout->addWidget(controlsGroup, 0, 0);
-
-        oldAspectRatio = aspectRatio;
+    if (aspectRatio < 1.0) {
+        layout->setDirection(QBoxLayout::TopToBottom);
+        slidersGroup->setOrientation(Qt::Horizontal);
+    } else if (aspectRatio > 1.0) {
+        layout->setDirection(QBoxLayout::LeftToRight);
+        slidersGroup->setOrientation(Qt::Vertical);
     }
 }
-
-
-
+//! [7]

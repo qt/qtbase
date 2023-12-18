@@ -29,9 +29,7 @@ private:
     void createControls(const QString &title);
     void resizeEvent(QResizeEvent *e);
 
-    SlidersGroup *horizontalSliders;
-    SlidersGroup *verticalSliders;
-    QStackedWidget *stackedWidget;
+    SlidersGroup *slidersGroup;
 
     QGroupBox *controlsGroup;
     QLabel *minimumLabel;
@@ -42,9 +40,7 @@ private:
     QSpinBox *minimumSpinBox;
     QSpinBox *maximumSpinBox;
     QSpinBox *valueSpinBox;
-    QComboBox *orientationCombo;
-    QGridLayout *layout;
-    double oldAspectRatio;
+    QBoxLayout *layout;
 };
 //! [0]
 
