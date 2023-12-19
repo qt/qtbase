@@ -534,7 +534,7 @@
     Other references to delegates in Qt Documentation:
 
     \list
-    \li \l{Spin Box Delegate Example}
+    \li \l{Delegate Classes}
     \li \l{QAbstractItemDelegate}{QAbstractItemDelegate Class Reference}
     \li \l{QSqlRelationalDelegate}{QSqlRelationalDelegate Class Reference}
     \li \l{QStyledItemDelegate}{QStyledItemDelegate Class Reference}
@@ -826,11 +826,6 @@
             \li  QDataWidgetMapper to map QLineEdit, QTextEdit and QSpinBox
             \li  QStandardItemModel
             \li  Basic QDataWidgetMapper usage
-        \row
-            \li  Spin Box Delegate
-            \li  QTableView
-            \li  QStandardItemModel
-            \li  Custom delegate that uses a spin box as a cell editor
         \row
             \li  Spreadsheet
             \li  {2, 1}  QTableView

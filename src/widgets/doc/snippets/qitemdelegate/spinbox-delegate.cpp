@@ -1,25 +1,37 @@
-// Copyright (C) 2016 The Qt Company Ltd.
+// Copyright (C) 2023 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-/*
-    delegate.cpp
-
-    A delegate that allows the user to change integer values from the model
-    using a spin box widget.
-*/
-
-#include "delegate.h"
-
+#include <QStyledItemDelegate>
 #include <QSpinBox>
 
-//! [0]
+//! [declaration]
+class SpinBoxDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT
+
+public:
+    SpinBoxDelegate(QObject *parent = nullptr);
+
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
+                          const QModelIndex &index) const override;
+
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override;
+    void setModelData(QWidget *editor, QAbstractItemModel *model,
+                      const QModelIndex &index) const override;
+
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option,
+                              const QModelIndex &index) const override;
+};
+//! [declaration]
+
+//! [constructor]
 SpinBoxDelegate::SpinBoxDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
 {
 }
-//! [0]
+//! [constructor]
 
-//! [1]
+//! [createEditor]
 QWidget *SpinBoxDelegate::createEditor(QWidget *parent,
                                        const QStyleOptionViewItem &/* option */,
                                        const QModelIndex &/* index */) const
@@ -31,9 +43,9 @@ QWidget *SpinBoxDelegate::createEditor(QWidget *parent,
 
     return editor;
 }
-//! [1]
+//! [createEditor]
 
-//! [2]
+//! [setEditorData]
 void SpinBoxDelegate::setEditorData(QWidget *editor,
                                     const QModelIndex &index) const
 {
@@ -42,9 +54,9 @@ void SpinBoxDelegate::setEditorData(QWidget *editor,
     QSpinBox *spinBox = static_cast<QSpinBox*>(editor);
     spinBox->setValue(value);
 }
-//! [2]
+//! [setEditorData]
 
-//! [3]
+//! [setModelData]
 void SpinBoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
                                    const QModelIndex &index) const
 {
@@ -54,13 +66,14 @@ void SpinBoxDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
 
     model->setData(index, value, Qt::EditRole);
 }
-//! [3]
+//! [setModelData]
 
-//! [4]
+//! [updateEditorGeometry]
 void SpinBoxDelegate::updateEditorGeometry(QWidget *editor,
                                            const QStyleOptionViewItem &option,
                                            const QModelIndex &/* index */) const
 {
     editor->setGeometry(option.rect);
 }
-//! [4]
+//! [updateEditorGeometry]
+

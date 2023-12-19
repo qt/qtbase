@@ -8,6 +8,5 @@ SUBDIRS       = addressbook \
                 fetchmore \
                 frozencolumn \
                 simpletreemodel \
-                spinboxdelegate \
                 spreadsheet \
                 stardelegate
