@@ -18,20 +18,15 @@
 
     \section1 Overview
 
-    In the \l{Custom Type Example}, we showed how to integrate custom types with
-    the meta-object system, enabling them to be stored in QVariant objects, written
-    out in debugging information and used in signal-slot communication.
-
-    In this example, we create a new value class, \c Block, and register it
-    with the meta-object system to enable us to send instances of it between
-    threads using queued signals and slots.
+    In this example, we create a value class, \c Block, and register it with
+    the meta-object system to enable us to send instances of it between threads
+    using queued signals and slots.
 
     \section1 The Block Class
 
-    The \c Block class is similar to the \c Message class described in the
-    \l{Custom Type Example}. It provides the default constructor, copy
-    constructor and destructor in the public section of the class that the
-    meta-object system requires. It describes a colored rectangle.
+    The \c Block class provides the default constructor, copy constructor, and
+    a destructor in the public section of the class as required by the
+    meta-object system. The class describes a colored rectangle.
 
     \snippet threads/queuedcustomtype/block.h custom type definition and meta-type declaration
 
@@ -127,9 +122,7 @@
 
     This example showed how a custom type can be registered with the
     meta-object system so that it can be used with signal-slot connections
-    between threads. For ordinary communication involving direct signals and
-    slots, it is enough to simply declare the type in the way described in the
-    \l{Custom Type Example}.
+    between threads.
 
     In practice, both the Q_DECLARE_METATYPE() macro and the qRegisterMetaType()
     template function can be used to register custom types, but
