@@ -1496,7 +1496,9 @@ qint64 QFileInfo::size() const
     (not the symlink).
 
     \since 6.6
-    \sa lastModified(const QTimeZone &), lastRead(const QTimeZone &), metadataChangeTime(const QTimeZone &), fileTime(QFile::FileTime, const QTimeZone &)
+    \sa lastModified(const QTimeZone &), lastRead(const QTimeZone &),
+        metadataChangeTime(const QTimeZone &),
+        fileTime(QFileDevice::FileTime, const QTimeZone &)
 */
 
 /*!
@@ -1533,8 +1535,9 @@ qint64 QFileInfo::size() const
     (not the symlink).
 
     \since 6.6
-    \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &), lastRead(const QTimeZone &),
-    fileTime(QFile::FileTime time, const QTimeZone &)
+    \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &),
+        lastRead(const QTimeZone &),
+        fileTime(QFileDevice::FileTime time, const QTimeZone &)
 */
 
 /*!
@@ -1562,7 +1565,9 @@ qint64 QFileInfo::size() const
     (not the symlink).
 
     \since 6.6
-    \sa birthTime(const QTimeZone &), lastRead(const QTimeZone &), metadataChangeTime(const QTimeZone &), fileTime(QFile::FileTime, const QTimeZone &)
+    \sa birthTime(const QTimeZone &), lastRead(const QTimeZone &),
+        metadataChangeTime(const QTimeZone &),
+        fileTime(QFileDevice::FileTime, const QTimeZone &)
 */
 
 /*!
@@ -1596,7 +1601,9 @@ qint64 QFileInfo::size() const
     (not the symlink).
 
     \since 6.6
-    \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &), metadataChangeTime(const QTimeZone &), fileTime(QFile::FileTime, const QTimeZone &)
+    \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &),
+        metadataChangeTime(const QTimeZone &),
+        fileTime(QFileDevice::FileTime, const QTimeZone &)
 */
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
@@ -1609,7 +1616,7 @@ qint64 QFileInfo::size() const
     (not the symlink).
 
     This function overloads
-    \l{QFileInfo::fileTime(QFile::FileTime, const QTimeZone &)},
+    \l{QFileInfo::fileTime(QFileDevice::FileTime, const QTimeZone &)},
     and returns the same as \c{fileTime(time, QTimeZone::LocalTime)}.
 
     \since 5.10
@@ -1637,7 +1644,9 @@ QDateTime QFileInfo::fileTime(QFile::FileTime time) const {
     (not the symlink).
 
     \since 6.6
-    \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &), lastRead(const QTimeZone &), metadataChangeTime(const QTimeZone &), QDateTime::isValid()
+    \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &),
+        lastRead(const QTimeZone &), metadataChangeTime(const QTimeZone &),
+        QDateTime::isValid()
 */
 QDateTime QFileInfo::fileTime(QFile::FileTime time, const QTimeZone &tz) const
 {

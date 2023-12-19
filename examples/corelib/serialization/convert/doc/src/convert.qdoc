@@ -19,7 +19,7 @@
 
     \image convert.png
 
-    \sa {Parsing and displaying CBOR data}, {JSON Save Game}
+    \sa {Parsing and displaying CBOR data}, {Saving and Loading a Game}
 
     \section1 The Converter Class
 

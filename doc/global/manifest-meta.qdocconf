@@ -108,7 +108,7 @@ manifestmeta.android.tags              =   android
 
 manifestmeta.ios.names              =  "QtCore/Contiguous Cache Example" \
                                        "QtCore/Mandelbrot Example" \
-                                       "QtCore/Queued Custom Type Example" \
+                                       "QtCore/Queued Custom Type" \
                                        "QtGui/OpenGL Window Example" \
                                        "QtGui/Raster Window Example" \
                                        "QtNetwork/Network Chat Example" \
@@ -201,7 +201,6 @@ manifestmeta.ios.tags                  = ios
 manifestmeta.thumbnail.attributes  = "imageUrl:qthelp\://org.qt-project.qtdoc.$QT_VERSION_TAG/qtdoc/images/qt-codesample.png"
 
 manifestmeta.thumbnail.names    =      "QtCore/Contiguous Cache Example" \
-                                       "QtCore/Custom Type Example" \
                                        "QtCore/Saving and Loading a Game" \
                                        "QtCore/Producer and Consumer using Semaphores" \
                                        "QtCore/Producer and Consumer using Wait Conditions" \

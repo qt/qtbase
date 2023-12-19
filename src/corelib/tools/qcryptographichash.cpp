@@ -1420,7 +1420,7 @@ void QMessageAuthenticationCodePrivate::initMessageHash() noexcept
     Use the QMessageAuthenticationCode class to generate hash-based message
     authentication codes (HMACs). The class supports all cryptographic
     hash algorithms from \l QCryptographicHash (see also
-    \l{QCryptographicHash::Algorithms}).
+    \l{QCryptographicHash::Algorithm}).
 
     To generate a message authentication code, pass a suitable hash
     algorithm and secret key to the constructor. Then process the message
@@ -1442,7 +1442,7 @@ void QMessageAuthenticationCodePrivate::initMessageHash() noexcept
     size of the secret key, and the security of the
     underlying hash function.
 
-    \sa QCryptographicHash, QCryptographicHash::Algorithms
+    \sa QCryptographicHash, QCryptographicHash::Algorithm
 */
 
 /*!
