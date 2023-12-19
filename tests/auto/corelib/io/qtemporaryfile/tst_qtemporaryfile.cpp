@@ -630,7 +630,7 @@ void tst_QTemporaryFile::renameFdLeak()
 
 void tst_QTemporaryFile::moveToTrash()
 {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS) || defined(Q_OS_VXWORKS)
     QSKIP("This platform doesn't implement a trash bin");
 #endif
 #ifdef Q_OS_WIN

@@ -3994,7 +3994,7 @@ void tst_QFile::moveToTrash_data()
 
 void tst_QFile::moveToTrash()
 {
-#if defined(Q_OS_ANDROID) or defined(Q_OS_WEBOS)
+#if defined(Q_OS_ANDROID) or defined(Q_OS_WEBOS) or defined(Q_OS_VXWORKS)
     QSKIP("This platform doesn't implement a trash bin");
 #endif
     QFETCH(QString, source);
@@ -4096,7 +4096,7 @@ void tst_QFile::moveToTrash()
 
 void tst_QFile::moveToTrashDuplicateName()
 {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS) || defined(Q_OS_VXWORKS)
     QSKIP("This platform doesn't implement a trash bin");
 #endif
     QString origFileName = []() {
@@ -4151,7 +4151,7 @@ void tst_QFile::moveToTrashOpenFile_data()
 
 void tst_QFile::moveToTrashOpenFile()
 {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS) || defined(Q_OS_VXWORKS)
     QSKIP("This platform doesn't implement a trash bin");
 #endif
     QFETCH(bool, useStatic);
@@ -4211,6 +4211,9 @@ void tst_QFile::moveToTrashOpenFile()
 
 void tst_QFile::moveToTrashXdgSafety()
 {
+#if defined(Q_OS_VXWORKS)
+    QSKIP("This platform doesn't implement a trash bin");
+#endif
 #if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS)
     QSKIP("This test is specific to XDG Unix systems");
 #else
