@@ -999,6 +999,10 @@ bool QThread::isInterruptionRequested() const
     return false;
 }
 
+void QThread::setTerminationEnabled(bool)
+{
+}
+
 // No threads: so we can just use static variables
 Q_CONSTINIT static QThreadData *data = nullptr;
 
