@@ -57,6 +57,7 @@ private slots:
     void testDockWidget();
     void testNativeContainerParent();
     void testPlatformSurfaceEvent();
+    void embedWidgetWindow();
     void cleanup();
 
 private:
@@ -408,6 +409,39 @@ void tst_QWindowContainer::testPlatformSurfaceEvent()
 
     QCOMPARE(window.data(), nullptr);
     QVERIFY(ok);
+}
+
+void tst_QWindowContainer::embedWidgetWindow()
+{
+    {
+        QWidget parent;
+        QWidget *widget = new QWidget;
+        widget->show();
+        QVERIFY(QTest::qWaitForWindowExposed(widget));
+        QVERIFY(widget->windowHandle());
+        QPointer<QWindow> widgetWindow = widget->windowHandle();
+        auto *container = QWidget::createWindowContainer(widgetWindow, &parent);
+        QCOMPARE(container, widget);
+        QCOMPARE(widget->parent(), &parent);
+        delete widget;
+        QTRY_VERIFY(widgetWindow.isNull());
+    }
+
+    QPointer<QWidget> widget = new QWidget;
+    QPointer<QWindow> widgetWindow;
+    {
+        QWidget parent;
+        widget->show();
+        QVERIFY(QTest::qWaitForWindowExposed(widget));
+        QVERIFY(widget->windowHandle());
+        widgetWindow = widget->windowHandle();
+        auto *container = QWidget::createWindowContainer(widgetWindow, &parent);
+        QCOMPARE(container, widget);
+        QCOMPARE(widget->parent(), &parent);
+    }
+    QTRY_VERIFY(widget.isNull());
+    QTRY_VERIFY(widgetWindow.isNull());
+
 }
 
 QTEST_MAIN(tst_QWindowContainer)

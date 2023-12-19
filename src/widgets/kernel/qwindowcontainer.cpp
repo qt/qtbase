@@ -3,6 +3,7 @@
 
 #include "qwindowcontainer_p.h"
 #include "qwidget_p.h"
+#include "qwidgetwindow_p.h"
 #include <QtGui/qwindow.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
@@ -164,11 +165,31 @@ public:
     application can greatly hurt the overall performance of the
     application.
 
+    \li Since 6.7, if \a window belongs to a widget (that is, \a window
+    was received from calling \l windowHandle()), no container will be
+    created. Instead, this function will return the widget itself, after
+    being reparented to \l parent. Since no container will be created,
+    \a flags will be ignored. In other words, if \a window belongs to
+    a widget, consider just reparenting that widget to \a parent instead
+    of using this function.
+
     \endlist
  */
 
 QWidget *QWidget::createWindowContainer(QWindow *window, QWidget *parent, Qt::WindowFlags flags)
 {
+    // Embedding a QWidget in a window container doesn't make sense,
+    // and has various issues in practice, so just return the widget
+    // itself.
+    if (auto *widgetWindow = qobject_cast<QWidgetWindow *>(window)) {
+        QWidget *widget = widgetWindow->widget();
+        if (flags != Qt::WindowFlags()) {
+            qWarning() << window << "refers to a widget:" << widget
+                       << "WindowFlags" << flags << "will be ignored.";
+        }
+        widget->setParent(parent);
+        return widget;
+    }
     return new QWindowContainer(window, parent, flags);
 }
 
