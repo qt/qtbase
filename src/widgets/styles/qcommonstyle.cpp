@@ -35,6 +35,7 @@
 #include <qpainter.h>
 #include <qpaintengine.h>
 #include <qpainterpath.h>
+#include <qpainterstateguard.h>
 #if QT_CONFIG(slider)
 #include <qslider.h>
 #endif
@@ -90,31 +91,6 @@ QT_BEGIN_NAMESPACE
 Q_STATIC_LOGGING_CATEGORY(lcCommonStyle, "qt.widgets.commonstyle");
 
 using namespace Qt::StringLiterals;
-
-struct QPainterStateSaver
-{
-   QPainterStateSaver(QPainter *p, bool bSaveRestore = true)
-      : m_painter(p)
-      , m_bSaveRestore(bSaveRestore)
-   {
-      if (m_bSaveRestore)
-          m_painter->save();
-   }
-   ~QPainterStateSaver()
-   {
-      restore();
-   }
-   void restore()
-   {
-       if (m_bSaveRestore) {
-           m_bSaveRestore = false;
-           m_painter->restore();
-       }
-   }
-private:
-   QPainter *m_painter;
-   bool m_bSaveRestore;
-};
 
 /*!
     \class QCommonStyle
@@ -248,7 +224,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             --yy;
         }
         if (!(opt->state & State_Enabled) && !(opt->state & State_On)) {
-            QPainterStateSaver pss(p);
+            QPainterStateGuard psg(p);
             p->translate(1, 1);
             p->setPen(opt->palette.light().color());
             p->drawLines(a);
@@ -373,7 +349,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
     case PE_FrameTabBarBase:
         if (const QStyleOptionTabBarBase *tbb
                 = qstyleoption_cast<const QStyleOptionTabBarBase *>(opt)) {
-            QPainterStateSaver pss(p);
+            QPainterStateGuard psg(p);
             switch (tbb->shape) {
             case QTabBar::RoundedNorth:
             case QTabBar::TriangularNorth:
@@ -460,7 +436,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
 #endif // QT_CONFIG(dockwidget)
 #if QT_CONFIG(toolbar)
     case PE_IndicatorToolBarHandle: {
-        QPainterStateSaver pss(p);
+        QPainterStateGuard psg(p);
         p->translate(opt->rect.x(), opt->rect.y());
         if (opt->state & State_Horizontal) {
             int x = opt->rect.width() / 3;
@@ -507,7 +483,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         int y = br.y();
         int w = br.width();
         int h = br.height();
-        QPainterStateSaver pss(p);
+        QPainterStateGuard psg(p);
         const qreal devicePixelRatio = QStyleHelper::getDpr(p);
         if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
             const qreal inverseScale = qreal(1) / devicePixelRatio;
@@ -544,7 +520,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         int y = r.y();
         int w = r.width();
         int h = r.height();
-        QPainterStateSaver pss(p);
+        QPainterStateGuard psg(p);
         const qreal devicePixelRatio = QStyleHelper::getDpr(p);
         if (!qFuzzyCompare(devicePixelRatio, qreal(1))) {
             const qreal inverseScale = qreal(1) / devicePixelRatio;
@@ -642,7 +618,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
     case PE_IndicatorColumnViewArrow: {
     if (const QStyleOptionViewItem *viewOpt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
         bool reverse = (viewOpt->direction == Qt::RightToLeft);
-        QPainterStateSaver pss(p);
+        QPainterStateGuard psg(p);
         QPainterPath path;
         int x = viewOpt->rect.x() + 1;
         int offset = (viewOpt->rect.height() / 3);
@@ -1841,7 +1817,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         break;
     case CE_TabBarTabShape:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
-            QPainterStateSaver pss(p);
+            QPainterStateGuard psg(p);
             QRect rect(tab->rect);
             bool selected = tab->state & State_Selected;
             bool onlyOne = tab->position == QStyleOptionTab::OnlyOneTab;
@@ -2002,8 +1978,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             if (!proxy()->styleHint(SH_UnderlineShortcut, opt, widget))
                 alignment |= Qt::TextHideMnemonic;
 
-            QPainterStateSaver pss(p, verticalTabs);
+            QPainterStateGuard psg(p, QPainterStateGuard::InitialState::NoSave);
             if (verticalTabs) {
+                psg.save();
                 int newX, newY, newRot;
                 if (tab->shape == QTabBar::RoundedEast || tab->shape == QTabBar::TriangularEast) {
                     newX = tr.width() + tr.x();
@@ -2036,7 +2013,8 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 
             proxy()->drawItemText(p, tr, alignment, tab->palette, tab->state & State_Enabled, tab->text,
                                   widget ? widget->foregroundRole() : QPalette::WindowText);
-            pss.restore();
+            if (verticalTabs)
+                psg.restore();
 
             if (tab->state & State_HasFocus) {
                 const int OFFSET = 1 + pixelMetric(PM_DefaultFrameWidth, opt, widget);
@@ -2056,7 +2034,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 #endif // QT_CONFIG(tabbar)
 #if QT_CONFIG(sizegrip)
     case CE_SizeGrip: {
-        QPainterStateSaver pss(p);
+        QPainterStateGuard psg(p);
         int x, y, w, h;
         opt->rect.getRect(&x, &y, &w, &h);
 
@@ -2141,7 +2119,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             // ### workaround for borked XRENDER
             tiledPixmap = QPixmap::fromImage(tiledPixmap.toImage());
 
-            QPainterStateSaver pss(p);
+            QPainterStateGuard psg(p);
             QRect r = opt->rect;
             QStyleHintReturnMask mask;
             if (proxy()->styleHint(QStyle::SH_RubberBand_Mask, opt, widget, &mask))
@@ -2167,8 +2145,9 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             if (!dwOpt->title.isEmpty()) {
                 const bool verticalTitleBar = dwOpt->verticalTitleBar;
 
-                QPainterStateSaver pss(p, verticalTitleBar);
+                QPainterStateGuard psg(p, QPainterStateGuard::InitialState::NoSave);
                 if (verticalTitleBar) {
+                    psg.save();
                     r = r.transposed();
 
                     p->translate(r.left(), r.top() + r.width());
@@ -2222,7 +2201,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
     case CE_ComboBoxLabel:
         if (const QStyleOptionComboBox *cb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             QRect editRect = proxy()->subControlRect(CC_ComboBox, cb, SC_ComboBoxEditField, widget);
-            QPainterStateSaver pss(p);
+            QPainterStateGuard psg(p);
             p->setClipRect(editRect);
             if (!cb->currentIcon.isNull()) {
                 QIcon::Mode mode = cb->state & State_Enabled ? QIcon::Normal
@@ -2293,7 +2272,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 #if QT_CONFIG(itemviews)
     case CE_ItemViewItem:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
-            QPainterStateSaver pss(p);
+            QPainterStateGuard psg(p);
             // the style calling this might want to clip, so respect any region already set
             const QRegion clipRegion = p->hasClipping() ? (p->clipRegion() & opt->rect) : opt->rect;
             p->setClipRegion(clipRegion);
@@ -3288,7 +3267,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 int fudge = len / 2;
                 int pos;
                 // Since there is no subrect for tickmarks do a translation here.
-                QPainterStateSaver pss(p);
+                QPainterStateGuard psg(p);
                 p->translate(slider->rect.x(), slider->rect.y());
                 p->setPen(slider->palette.windowText().color());
                 int v = slider->minimum;
@@ -3582,7 +3561,8 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
 
-                QPainterStateSaver pss(p, down);
+                QPainterStateGuard psg(p, down ? QPainterStateGuard::InitialState::Save
+                                               : QPainterStateGuard::InitialState::NoSave);
                 if (down)
                     p->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
                                  proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
@@ -3600,7 +3580,8 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
 
-                QPainterStateSaver pss(p, down);
+                QPainterStateGuard psg(p, down ? QPainterStateGuard::InitialState::Save
+                                               : QPainterStateGuard::InitialState::NoSave);
                 if (down)
                     p->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
                                  proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
@@ -3617,7 +3598,8 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
 
-                QPainterStateSaver pss(p, down);
+                QPainterStateGuard psg(p, down ? QPainterStateGuard::InitialState::Save
+                                               : QPainterStateGuard::InitialState::NoSave);
                 if (down)
                     p->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
                                  proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
@@ -3638,7 +3620,8 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
 
-                QPainterStateSaver pss(p, down);
+                QPainterStateGuard psg(p, down ? QPainterStateGuard::InitialState::Save
+                                               : QPainterStateGuard::InitialState::NoSave);
                 if (down)
                     p->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
                                  proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
@@ -3654,7 +3637,9 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
-                QPainterStateSaver pss(p, down);
+
+                QPainterStateGuard psg(p, down ? QPainterStateGuard::InitialState::Save
+                                               : QPainterStateGuard::InitialState::NoSave);
                 if (down)
                     p->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
                                  proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
@@ -3671,7 +3656,9 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
-                QPainterStateSaver pss(p, down);
+
+                QPainterStateGuard psg(p, down ? QPainterStateGuard::InitialState::Save
+                                               : QPainterStateGuard::InitialState::NoSave);
                 if (down)
                     p->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
                                  proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
@@ -3686,7 +3673,9 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 tool.rect = ir;
                 tool.state = down ? State_Sunken : State_Raised;
                 proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
-                QPainterStateSaver pss(p, down);
+
+                QPainterStateGuard psg(p, down ? QPainterStateGuard::InitialState::Save
+                                               : QPainterStateGuard::InitialState::NoSave);
                 if (down)
                     p->translate(proxy()->pixelMetric(PM_ButtonShiftHorizontal, tb, widget),
                                  proxy()->pixelMetric(PM_ButtonShiftVertical, tb, widget));
@@ -3700,7 +3689,6 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                     int iconSize = proxy()->pixelMetric(PM_SmallIconSize, tb, widget);
                     pm = proxy()->standardIcon(SP_TitleBarMenuButton, &tool, widget).pixmap(QSize(iconSize, iconSize), QStyleHelper::getDpr(p));
                     tool.rect = ir;
-                    QPainterStateSaver pss(p);
                     proxy()->drawItemPixmap(p, ir, Qt::AlignCenter, pm);
                 }
             }
@@ -3710,7 +3698,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
     case CC_Dial:
         if (const QStyleOptionSlider *dial = qstyleoption_cast<const QStyleOptionSlider *>(opt)) {
             // OK, this is more a port of things over
-            QPainterStateSaver pss(p);
+            QPainterStateGuard psg(p);
 
             // avoid dithering
             if (p->paintEngine()->hasFeature(QPaintEngine::Antialiasing))
@@ -3811,7 +3799,7 @@ void QCommonStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCompl
                 frame.lineWidth = groupBox->lineWidth;
                 frame.midLineWidth = groupBox->midLineWidth;
                 frame.rect = proxy()->subControlRect(CC_GroupBox, opt, SC_GroupBoxFrame, widget);
-                QPainterStateSaver pss(p);
+                QPainterStateGuard psg(p);
                 QRegion region(groupBox->rect);
                 if (!groupBox->text.isEmpty()) {
                     bool ltr = groupBox->direction == Qt::LeftToRight;
