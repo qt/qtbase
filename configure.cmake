@@ -970,16 +970,24 @@ qt_feature_config("gui" QMAKE_PUBLIC_QT_CONFIG
     NEGATE)
 qt_feature("network" PRIVATE
     LABEL "Qt Network"
+    SECTION "Module"
+    PURPOSE "Provides the Qt Network module."
 )
 qt_feature("printsupport" PRIVATE
     LABEL "Qt PrintSupport"
     CONDITION QT_FEATURE_widgets
+    SECTION "Module"
+    PURPOSE "Provides the Qt PrintSupport module."
 )
 qt_feature("sql" PRIVATE
     LABEL "Qt Sql"
+    SECTION "Module"
+    PURPOSE "Provides the Sql module."
 )
 qt_feature("testlib" PRIVATE
     LABEL "Qt Testlib"
+    SECTION "Module"
+    PURPOSE "Provides the Qt Testlib module."
 )
 qt_feature("widgets" PRIVATE
     LABEL "Qt Widgets"
@@ -991,6 +999,8 @@ qt_feature_config("widgets" QMAKE_PUBLIC_QT_CONFIG
     NEGATE)
 qt_feature("xml" PRIVATE
     LABEL "Qt Xml"
+    SECTION "Module"
+    PURPOSE "Provides the Qt Xml module."
 )
 qt_feature("libudev" PRIVATE
     LABEL "udev"
