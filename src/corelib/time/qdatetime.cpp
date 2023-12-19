@@ -348,6 +348,12 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
     \reentrant
     \brief The QDate class provides date functions.
 
+    \compares strong
+    \compareswith strong std::chrono::year_month_day std::chrono::year_month_day_last \
+                  std::chrono::year_month_weekday std::chrono::year_month_weekday_last
+    These comparison operators are only available when using C++20.
+    \endcompareswith
+
     A QDate object represents a particular day, regardless of calendar, locale
     or other settings used when creating it or supplied by the system.  It can
     report the year, month and day of the month that represent the day with
@@ -1948,6 +1954,8 @@ bool QDate::isLeapYear(int y)
     \reentrant
 
     \brief The QTime class provides clock time functions.
+
+    \compares strong
 
     A QTime object contains a clock time, which it can express as the numbers of
     hours, minutes, seconds, and milliseconds since midnight. It provides
@@ -3555,6 +3563,8 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
     \ingroup shared
     \reentrant
     \brief The QDateTime class provides date and time functions.
+
+    \compares weak
 
     A QDateTime object encodes a calendar date and a clock time (a "datetime")
     in accordance with a time representation. It combines features of the QDate
