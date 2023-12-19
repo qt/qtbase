@@ -182,18 +182,28 @@ private:
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_FLOAT_COMPARE
 
-    friend bool comparesEqual(const qfloat16 &lhs, const qfloat16 &rhs) noexcept
+#if QFLOAT16_IS_NATIVE
+#  define QF16_CONSTEXPR constexpr
+#  define QF16_PARTIALLY_ORDERED Q_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE
+#else
+#  define QF16_CONSTEXPR
+#  define QF16_PARTIALLY_ORDERED Q_DECLARE_PARTIALLY_ORDERED
+#endif
+
+    friend QF16_CONSTEXPR bool comparesEqual(const qfloat16 &lhs, const qfloat16 &rhs) noexcept
     { return static_cast<NearestFloat>(lhs) == static_cast<NearestFloat>(rhs); }
-    friend Qt::partial_ordering compareThreeWay(const qfloat16 &lhs, const qfloat16 &rhs) noexcept
+    friend QF16_CONSTEXPR
+    Qt::partial_ordering compareThreeWay(const qfloat16 &lhs, const qfloat16 &rhs) noexcept
     { return Qt::compareThreeWay(static_cast<NearestFloat>(lhs), static_cast<NearestFloat>(rhs)); }
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16)
+    QF16_PARTIALLY_ORDERED(qfloat16)
 
 #define QF16_MAKE_ORDER_OP_FP(FP) \
-    friend bool comparesEqual(const qfloat16 &lhs, FP rhs) noexcept \
+    friend QF16_CONSTEXPR bool comparesEqual(const qfloat16 &lhs, FP rhs) noexcept \
     { return static_cast<FP>(lhs) == rhs; } \
-    friend Qt::partial_ordering compareThreeWay(const qfloat16 &lhs, FP rhs) noexcept \
+    friend QF16_CONSTEXPR \
+    Qt::partial_ordering compareThreeWay(const qfloat16 &lhs, FP rhs) noexcept \
     { return Qt::compareThreeWay(static_cast<FP>(lhs), rhs); } \
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, FP)
+    QF16_PARTIALLY_ORDERED(qfloat16, FP)
 
     QF16_MAKE_ORDER_OP_FP(long double)
     QF16_MAKE_ORDER_OP_FP(double)
@@ -204,26 +214,29 @@ QT_WARNING_DISABLE_FLOAT_COMPARE
 #undef QF16_MAKE_ORDER_OP_FP
 
     template <typename T, if_type_is_integral<T> = true>
-    friend bool comparesEqual(const qfloat16 &lhs, T rhs) noexcept
+    friend QF16_CONSTEXPR bool comparesEqual(const qfloat16 &lhs, T rhs) noexcept
     { return static_cast<NearestFloat>(lhs) == static_cast<NearestFloat>(rhs); }
     template <typename T, if_type_is_integral<T> = true>
-    friend Qt::partial_ordering compareThreeWay(const qfloat16 &lhs, T rhs) noexcept
+    friend QF16_CONSTEXPR Qt::partial_ordering compareThreeWay(const qfloat16 &lhs, T rhs) noexcept
     { return Qt::compareThreeWay(static_cast<NearestFloat>(lhs), static_cast<NearestFloat>(rhs)); }
 
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, qint8)
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, quint8)
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, qint16)
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, quint16)
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, qint32)
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, quint32)
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, long)
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, unsigned long)
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, qint64)
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, quint64)
+    QF16_PARTIALLY_ORDERED(qfloat16, qint8)
+    QF16_PARTIALLY_ORDERED(qfloat16, quint8)
+    QF16_PARTIALLY_ORDERED(qfloat16, qint16)
+    QF16_PARTIALLY_ORDERED(qfloat16, quint16)
+    QF16_PARTIALLY_ORDERED(qfloat16, qint32)
+    QF16_PARTIALLY_ORDERED(qfloat16, quint32)
+    QF16_PARTIALLY_ORDERED(qfloat16, long)
+    QF16_PARTIALLY_ORDERED(qfloat16, unsigned long)
+    QF16_PARTIALLY_ORDERED(qfloat16, qint64)
+    QF16_PARTIALLY_ORDERED(qfloat16, quint64)
 #ifdef QT_SUPPORTS_INT128
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, qint128)
-    Q_DECLARE_PARTIALLY_ORDERED(qfloat16, quint128)
+    QF16_PARTIALLY_ORDERED(qfloat16, qint128)
+    QF16_PARTIALLY_ORDERED(qfloat16, quint128)
 #endif
+
+#undef QF16_PARTIALLY_ORDERED
+#undef QF16_CONSTEXPR
 
 QT_WARNING_POP
 

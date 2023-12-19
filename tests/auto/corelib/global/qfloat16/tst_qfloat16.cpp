@@ -21,6 +21,7 @@ class tst_qfloat16: public QObject
 
 private slots:
     void compareCompiles();
+    void relationalOperatorsAreConstexpr();
     void ordering_data();
     void ordering();
     void fuzzyCompare_data();
@@ -78,6 +79,45 @@ void tst_qfloat16::compareCompiles()
     QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, qint128>();
     QTestPrivate::testAllComparisonOperatorsCompile<qfloat16, quint128>();
 #endif
+}
+
+void tst_qfloat16::relationalOperatorsAreConstexpr()
+{
+#if QFLOAT16_IS_NATIVE
+
+#define CHECK_CONSTEXPR(Type) \
+    do { \
+        constexpr qfloat16 lhs = qfloat16(0.0f); \
+        constexpr Type rhs = 1; \
+        static_assert(lhs < rhs); \
+        static_assert(rhs >= lhs); \
+    } while (false)
+
+    CHECK_CONSTEXPR(qfloat16);
+    CHECK_CONSTEXPR(float);
+    CHECK_CONSTEXPR(double);
+    CHECK_CONSTEXPR(long double);
+    CHECK_CONSTEXPR(qfloat16::NativeType);
+    CHECK_CONSTEXPR(qint8);
+    CHECK_CONSTEXPR(quint8);
+    CHECK_CONSTEXPR(qint16);
+    CHECK_CONSTEXPR(quint16);
+    CHECK_CONSTEXPR(qint32);
+    CHECK_CONSTEXPR(quint32);
+    CHECK_CONSTEXPR(long);
+    CHECK_CONSTEXPR(unsigned long);
+    CHECK_CONSTEXPR(qint64);
+    CHECK_CONSTEXPR(quint64);
+#ifdef QT_SUPPORTS_INT128
+    CHECK_CONSTEXPR(qint128);
+    CHECK_CONSTEXPR(quint128);
+#endif
+
+#undef CHECK_CONSTEXPR
+
+#else
+    QSKIP("This check is only relevant for native float16 types");
+#endif // QFLOAT16_IS_NATIVE
 }
 
 void tst_qfloat16::ordering_data()
