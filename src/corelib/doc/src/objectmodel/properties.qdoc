@@ -277,7 +277,9 @@
 
     Connected to the property system is an additional macro,
     Q_CLASSINFO(), that can be used to attach additional
-    \e{name}--\e{value} pairs to a class's meta-object, for example:
+    \e{name}--\e{value} pairs to a class's meta-object. This is
+    used for instance to mark a property as the \e default one
+    in the context of \l{QML Object Types}:
 
     \snippet code/doc_src_properties.cpp 7
 
@@ -299,5 +301,5 @@
     and the general tips on implementing and using
     \l {Qt Bindable Properties}{bindable properties}.
 
-    \sa {Qt Bindable Properties}
+    \sa {Qt Bindable Properties}, {Defining QML Types from C++}
 */
