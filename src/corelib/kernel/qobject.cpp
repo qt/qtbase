@@ -4417,19 +4417,22 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     \relates QObject
 
     This macro associates extra information to the class, which is available
-    using QObject::metaObject(). Qt makes only limited use of this feature in
-    \l{Qt D-Bus} and \l{Qt Qml} modules.
-
-    The extra information takes the form of a \a Name string and a \a Value
-    literal string.
+    using QObject::metaObject(). The extra information takes the form of a
+    \a Name string and a \a Value literal string.
 
     Example:
 
     \snippet code/src_corelib_kernel_qobject.cpp 35
 
+    Qt makes use of the macro in \l{Qt D-Bus} and \l{Qt Qml} modules.
+    For instance, when defining \l{QML Object Types} in C++, you can
+    designate a property as the \e default one:
+
+    \snippet code/doc_src_properties.cpp 7
+
     \sa QMetaObject::classInfo()
     \sa {Using Qt D-Bus Adaptors}
-    \sa {Extending QML}
+    \sa {Defining QML Types from C++}
 */
 
 /*!
