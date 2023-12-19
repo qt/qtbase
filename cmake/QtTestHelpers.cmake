@@ -695,7 +695,7 @@ function(qt_internal_add_test name)
             set_tests_properties(${testname} PROPERTIES TIMEOUT ${arg_TIMEOUT})
         endif()
 
-        if(ANDROID)
+        if(ANDROID AND NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
             # Set timeout signal and some time for androidtestrunner to do cleanup
             set_tests_properties(${testname} PROPERTIES
                 TIMEOUT_SIGNAL_NAME "SIGINT"
