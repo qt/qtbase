@@ -132,7 +132,7 @@
     \since 6.1
     \overload
     \fn template <typename Tx, typename Ty> auto qHypot(Tx x, Ty y)
-    Returns the distance of a point (x, y) from the origin (0, 0).
+    Returns the distance of a point (\a x, \a y) from the origin (0, 0).
 
     This is qSqrt(x * x + y * y), optimized.
     In particular, underflow and overflow may be avoided.

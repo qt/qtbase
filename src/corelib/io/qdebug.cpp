@@ -985,8 +985,8 @@ QDebug &QDebug::resetFormat()
 */
 
 /*!
-    \fn template <typename T, if_qint128<T>> QDebug::operator<<(T i)
-    \fn template <typename T, if_quint128<T>> QDebug::operator<<(T i)
+    \fn template <typename T, QDebug::if_qint128<T>> QDebug::operator<<(T i)
+    \fn template <typename T, QDebug::if_quint128<T>> QDebug::operator<<(T i)
     \since 6.7
 
     Prints the textual representation of the 128-bit integer \a i.

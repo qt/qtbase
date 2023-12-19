@@ -513,7 +513,7 @@
     The span must hold at least \c{Count} elements (\c{E} >= \c{Count} \e{and}
     size() >= \c{Count}), otherwise the behavior is undefined.
 
-    \sa first(QSpan::size_type), last(), subspan()
+    \sa first(QSpan<T,E>::size_type), last(), subspan()
 */
 
 /*!
@@ -525,7 +525,7 @@
     The span must hold at least \c{Count} elements (\c{E} >= \c{Count} \e{and}
     size() >= \c{Count}), otherwise the behavior is undefined.
 
-    \sa last(QSpan::size_type), first(), subspan()
+    \sa last(QSpan<T,E>::size_type), first(), subspan()
 */
 
 /*!
@@ -541,7 +541,7 @@
     This span must hold at least \c{Offset} elements (\c{E} >= \c{Offset} \e{and}
     size() >= \c{Offset}), otherwise the behavior is undefined.
 
-    \sa subspan(QSpan::size_type), subspan(), first(), last()
+    \sa subspan(QSpan<T,E>::size_type), subspan(), first(), last()
 */
 
 #if 0 // needs fix for QTBUG-118080 integrated into qt5.git
@@ -559,7 +559,7 @@
     \c{Offset + Count} \e{and} size() >= \c{Offset + Count}), otherwise the
     behavior is undefined.
 
-    \sa subspan(QSpan::size_type, QSpan::size_type), subspan(), first(), last()
+    \sa subspan(QSpan<T,E>::size_type, QSpan<T,E>::size_type), subspan(), first(), last()
 */
 #endif
 
@@ -578,8 +578,8 @@
     The span must hold at least \a n elements (\c{E} >= \a n \e{and} size() >=
     \a n), otherwise the behavior is undefined.
 
-    \sa {first-t}{first<N>()}, last(QSpan::size_type), subspan(QSpan::size_type),
-        subspan(QSpan::size_type, QSpan::size_type)
+    \sa {first-t}{first<N>()}, last(QSpan<T,E>::size_type), subspan(QSpan<T,E>::size_type),
+        subspan(QSpan<T,E>::size_type, QSpan<T,E>::size_type)
     \sa sliced()
 */
 
@@ -594,8 +594,8 @@
     The span must hold at least \a n elements (\c{E} >= \a n \e{and}
     size() >= \a n), otherwise the behavior is undefined.
 
-    \sa last(), first(QSpan::size_type), subspan(QSpan::size_type),
-        subspan(QSpan::size_type, QSpan::size_type), sliced()
+    \sa last(), first(QSpan<T,E>::size_type), subspan(QSpan<T,E>::size_type),
+        subspan(QSpan<T,E>::size_type, QSpan<T,E>::size_type), sliced()
 */
 
 /*!
@@ -614,7 +614,7 @@
     These functions do the same thing: subspan() is provided for STL
     compatibility and sliced() is provided for Qt compatibility.
 
-    \sa subspan(), first(QSpan::size_type), last(QSpan::size_type)
+    \sa subspan(), first(QSpan<T,E>::size_type), last(QSpan<T,E>::size_type)
 */
 
 /*!
@@ -634,6 +634,6 @@
     These functions do the same thing: subspan() is provided for STL
     compatibility and sliced() is provided for Qt compatibility.
 
-    \sa subspan(), first(QSpan::size_type), last(QSpan::size_type)
+    \sa subspan(), first(QSpan<T,E>::size_type), last(QSpan<T,E>::size_type)
 */
 
