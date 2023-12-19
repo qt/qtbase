@@ -51,6 +51,17 @@ public:
                 widget->setAttribute(Qt::WA_WState_ExplicitShowHide, wasExplicitShowHide);
                 widget->setAttribute(Qt::WA_WState_Hidden, wasHidden);
             }
+
+            // The call to QWidgetPrivate::setVisible() above will normally
+            // recurse back into QWidgetWindow::setNativeWindowVisibility()
+            // to update the QWindow state, but during QWidget::destroy()
+            // this is not the case, as Qt::WA_WState_Created has been
+            // unset by the time we check if we should call hide_helper().
+            // We don't want to change the QWidget logic, as that has
+            // other side effects, so as a targeted fix we sync up the
+            // visibility here if needed.
+            if (q->isVisible() != visible)
+                QWindowPrivate::setVisible(visible);
         } else {
             QWindowPrivate::setVisible(visible);
         }
