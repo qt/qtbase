@@ -266,8 +266,8 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     made available to delegates with the default item editor
     factory. This way, there is no need to subclass QItemDelegate.  An
     alternative is to reimplement createEditor(), setEditorData(),
-    setModelData(), and updateEditorGeometry(). This process is
-    described in the \l{Spin Box Delegate Example}.
+    setModelData(), and updateEditorGeometry(). This process is described
+    in the \l{A simple delegate}{Model/View Programming overview documentation}.
 
     \section1 QStyledItemDelegate vs. QItemDelegate
 
@@ -281,8 +281,7 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     for either class should be equal unless the custom delegate needs to use
     the style for drawing.
 
-    \sa {Delegate Classes}, QStyledItemDelegate, QAbstractItemDelegate,
-        {Spin Box Delegate Example}
+    \sa {Delegate Classes}, QStyledItemDelegate, QAbstractItemDelegate
 */
 
 /*!

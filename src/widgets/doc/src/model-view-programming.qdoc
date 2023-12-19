@@ -686,9 +686,8 @@
     implementations of these functions.
 
     Editors for delegates can be implemented either by using widgets to manage
-    the editing process or by handling events directly.
-    The first approach is covered later in this section, and it is also
-    shown in the \l{Spin Box Delegate Example}{Spin Box Delegate} example.
+    the editing process or by handling events directly. The first approach is
+    covered later in this section.
 
     \section2 Using an existing delegate
 
@@ -718,13 +717,15 @@
     data entry. We construct a table view to display the contents of
     the model, and this will use the custom delegate for editing.
 
-    \image spinboxdelegate-example.png
+    \image spinboxdelegate-example.webp
 
     We subclass the delegate from \l QStyledItemDelegate because we do not want
     to write custom display functions. However, we must still provide
     functions to manage the editor widget:
 
-    \snippet itemviews/spinboxdelegate/delegate.h 0
+    \snippet qitemdelegate/spinbox-delegate.cpp declaration
+    \codeline
+    \snippet qitemdelegate/spinbox-delegate.cpp constructor
 
     Note that no editor widgets are set up when the delegate is
     constructed. We only construct an editor widget when it is needed.
@@ -738,7 +739,7 @@
     supplied with everything that the delegate needs to be able to set up
     a suitable widget:
 
-    \snippet itemviews/spinboxdelegate/delegate.cpp 1
+    \snippet qitemdelegate/spinbox-delegate.cpp createEditor
 
     Note that we do not need to keep a pointer to the editor widget because
     the view takes responsibility for destroying it when it is no longer
@@ -762,7 +763,7 @@
     \l{Qt::ItemDataRole}{display role}, and set the value in the
     spin box accordingly.
 
-    \snippet itemviews/spinboxdelegate/delegate.cpp 2
+    \snippet qitemdelegate/spinbox-delegate.cpp setEditorData
 
     In this example, we know that the editor widget is a spin box, but we
     could have provided different editors for different types of data in
@@ -775,7 +776,7 @@
     asks the delegate to store the edited value in the model by calling the
     \l{QAbstractItemDelegate::setModelData()}{setModelData()} function.
 
-    \snippet itemviews/spinboxdelegate/delegate.cpp 3
+    \snippet qitemdelegate/spinbox-delegate.cpp setModelData
 
     Since the view manages the editor widgets for the delegate, we only
     need to update the model with the contents of the editor supplied.
@@ -786,8 +787,8 @@
     finished editing by emitting the
     \l{QAbstractItemDelegate::closeEditor()}{closeEditor()} signal.
     The view ensures that the editor widget is closed and destroyed. In
-    this example, we only provide simple editing facilities, so we need
-    never emit this signal.
+    this example, we only provide simple editing facilities, so we never
+    need to emit this signal.
 
     All the operations on data are performed through the interface
     provided by \l QAbstractItemModel. This makes the delegate mostly
@@ -806,7 +807,7 @@
     the view provides all the necessary geometry information inside a
     \l{QStyleOptionViewItem}{view option} object.
 
-    \snippet itemviews/spinboxdelegate/delegate.cpp 4
+    \snippet qitemdelegate/spinbox-delegate.cpp updateEditorGeometry
 
     In this case, we just use the geometry information provided by the
     view option in the item rectangle. A delegate that renders items with
@@ -2308,7 +2309,6 @@
     \section1 Related Examples
 
     \list
-    \li \l{itemviews/spinboxdelegate}{Spin Box Delegate}
     \li \l{itemviews/simpletreemodel}{Simple Tree Model}
     \endlist
 */

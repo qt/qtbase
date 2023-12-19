@@ -204,8 +204,7 @@ public:
     documentation for details.
 
     \sa {Delegate Classes}, QItemDelegate, QAbstractItemDelegate, QStyle,
-        {Spin Box Delegate Example}, {Star Delegate Example}, {Color
-         Editor Factory Example}
+        {Star Delegate Example}, {Color Editor Factory Example}
 */
 
 
