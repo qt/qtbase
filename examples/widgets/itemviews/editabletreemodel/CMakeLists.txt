@@ -65,6 +65,12 @@ target_link_libraries(editabletreemodel_tester PRIVATE
     Qt6::Test
 )
 
+if(ANDROID)
+    target_link_libraries(editabletreemodel_tester PRIVATE
+        Qt6::Gui
+    )
+endif()
+
 qt_add_resources(editabletreemodel_tester "editabletreemodel"
     PREFIX
         "/"

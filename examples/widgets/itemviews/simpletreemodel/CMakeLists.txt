@@ -64,6 +64,12 @@ target_link_libraries(simpletreemodel_tester PRIVATE
     Qt6::Test
 )
 
+if(ANDROID)
+    target_link_libraries(simpletreemodel_tester PRIVATE
+        Qt6::Gui
+    )
+endif()
+
 qt_add_resources(simpletreemodel_tester "simpletreemodel"
     PREFIX
         "/"
