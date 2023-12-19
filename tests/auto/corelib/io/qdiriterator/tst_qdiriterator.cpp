@@ -70,6 +70,8 @@ private slots:
     void stopLinkLoop();
 #ifdef QT_BUILD_INTERNAL
     void engineWithNoIterator();
+    void testQFsFileEngineIterator_data() { iterateRelativeDirectory_data(); }
+    void testQFsFileEngineIterator();
 #endif
     void absoluteFilePathsFromRelativeIteratorPath();
     void recurseWithFilters() const;
@@ -455,6 +457,38 @@ void tst_QDirIterator::engineWithNoIterator()
 
     QDir("entrylist").entryList();
     QVERIFY(true); // test that the above line doesn't crash
+}
+
+class CustomEngineHandler : public QAbstractFileEngineHandler
+{
+public:
+    QAbstractFileEngine *create(const QString &fileName) const override
+    {
+        // We want to test QFSFileEngine specifically, so force QDirIterator to use it
+        // over the default QFileSystemEngine
+        return new QFSFileEngine(fileName);
+    }
+};
+
+void tst_QDirIterator::testQFsFileEngineIterator()
+{
+    QFETCH(QString, dirName);
+    QFETCH(QStringList, nameFilters);
+    QFETCH(QDir::Filters, filters);
+    QFETCH(QDirIterator::IteratorFlags, flags);
+
+    if (dirName == u"empty")
+        return; // This row isn't useful in this test
+
+    CustomEngineHandler handler;
+    bool isEmpty = true;
+    QDirIterator iter(dirName, nameFilters, filters, flags);
+    while (iter.hasNext()) {
+        const QFileInfo &fi = iter.nextFileInfo();
+        if (fi.filePath().contains(u"entrylist"))
+            isEmpty = false;  // At least one entry in `entrylist` dir
+    }
+    QVERIFY(!isEmpty);
 }
 #endif
 
