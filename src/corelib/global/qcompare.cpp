@@ -156,16 +156,16 @@ CHECK(strong, equivalent);
 
     A value of type Qt::strong_ordering is typically returned from a three-way
     comparison function. Such a function compares two objects and establishes
-    that the two objects are in a strict ordering relationship; that is, the
-    function establishes a well-defined total order.
+    how they are ordered. It uses this return type to indicate that the ordering
+    is strict; that is, the function establishes a well-defined total order.
 
-    The possible values of type Qt::strong_ordering are fully represented by the
-    following four symbolic constants:
+    Qt::strong_ordering has four values, represented by the following symbolic
+    constants:
 
     \list
     \li \l less represents that the left operand is less than the right;
     \li \l equal represents that the left operand is equivalent to the right;
-    \li \l equivalent is an alias for \c Equal;
+    \li \l equivalent is an alias for \c equal;
     \li \l greater represents that the left operand is greater than the right.
     \endlist
 
@@ -341,10 +341,11 @@ CHECK(strong, equivalent);
 
     A value of type Qt::weak_ordering is typically returned from a three-way
     comparison function. Such a function compares two objects and establishes
-    the order of the elements relative to each other.
+    how they are ordered. It uses this return type to indicate that the ordering
+    is weak; that is, equivalent values may be distinguishable.
 
-    The possible values of type Qt::weak_ordering are fully represented by the
-    following three symbolic constants:
+    Qt::weak_ordering has three values, represented by the following symbolic
+    constants:
 
     \list
     \li \l less represents that the left operand is less than the right;
@@ -489,21 +490,19 @@ CHECK(strong, equivalent);
     \since 6.7
 
     A value of type Qt::partial_ordering is typically returned from a
-    three-way comparison function. Such a function compares two
-    objects, and it may either establish that the two objects are
-    ordered relative to each other, or that they are not ordered. The
-    Qt::partial_ordering value returned from the comparison function
-    represents one of those possibilities.
+    three-way comparison function. Such a function compares two objects,
+    establishing whether they are ordered and, if so, their ordering. It uses
+    this return type to indicate that the ordering is partial; that is, not all
+    pairs of values are ordered.
 
-    The possible values of type Qt::partial_ordering are, in fact, fully
-    represented by the following four symbolic constants:
+    Qt::partial_ordering has four values, represented by the following symbolic
+    constants:
 
     \list
     \li \l less represents that the left operand is less than the right;
-    \li \l equivalent represents that left operand is equivalent to the right;
+    \li \l equivalent represents that the two operands are equivalent;
     \li \l greater represents that the left operand is greater than the right;
-    \li \l unordered represents that the left operand is \e {not ordered} with
-    respect to the right operand.
+    \li \l unordered represents that the two operands are \e {not ordered}.
     \endlist
 
     Qt::partial_ordering is idiomatically used by comparing an instance
@@ -528,8 +527,8 @@ CHECK(strong, equivalent);
 
     \endcode
 
-    A Qt::partial_ordering value which represents an unordered result will
-    always return false when compared against literal 0.
+    Comparing Qt::partial_ordering::unordered against literal 0 always returns
+    a \c false result.
 */
 
 /*!
@@ -615,8 +614,7 @@ CHECK(strong, equivalent);
 /*!
     \variable Qt::partial_ordering::equivalent
 
-    Represents the result of a comparison where the left operand is equivalent
-    to the right operand.
+    Represents the result of a comparison where the two operands are equivalent.
 */
 
 /*!
@@ -629,8 +627,8 @@ CHECK(strong, equivalent);
 /*!
     \variable Qt::partial_ordering::unordered
 
-    Represents the result of a comparison where the left operand is not ordered
-    with respect to the right operand.
+    Represents the result of a comparison where there is no ordering
+    relationship between the two operands.
 */
 
 /*!
@@ -642,21 +640,19 @@ CHECK(strong, equivalent);
     \since 6.0
 
     A value of type QPartialOrdering is typically returned from a
-    three-way comparison function. Such a function compares two
-    objects, and it may either establish that the two objects are
-    ordered relative to each other, or that they are not ordered. The
-    QPartialOrdering value returned from the comparison function
-    represents one of those possibilities.
+    three-way comparison function. Such a function compares two objects,
+    establishing whether they are ordered and, if so, their ordering. It uses
+    this return type to indicate that the ordering is partial; that is, not all
+    pairs of values are ordered.
 
-    The possible values of type QPartialOrdering are, in fact, fully
-    represented by the following four symbolic constants:
+    QPartialOrdering has four values, represented by the following symbolic
+    constants:
 
     \list
-    \li \c less represents that the left operand is less than the right;
-    \li \c equivalent represents that left operand is equivalent to the right;
-    \li \c greater represents that the left operand is greater than the right;
-    \li \c unordered represents that the left operand is \e {not ordered} with
-    respect to the right operand.
+    \li \l less represents that the left operand is less than the right;
+    \li \l equivalent represents that the two operands are equivalent;
+    \li \l greater represents that the left operand is greater than the right;
+    \li \l unordered represents that the two operands are \e {not ordered}.
     \endlist
 
     QPartialOrdering is idiomatically used by comparing an instance
@@ -681,8 +677,8 @@ CHECK(strong, equivalent);
 
     \endcode
 
-    A QPartialOrdering value which represents an unordered result will
-    always return false when compared against literal 0.
+    Comparing QPartialOrdering::unordered against literal 0 always returns
+    a \c false result.
 */
 
 /*!
@@ -769,8 +765,7 @@ CHECK(strong, equivalent);
 /*!
     \variable QPartialOrdering::equivalent
 
-    Represents the result of a comparison where the left operand is equivalent
-    to the right operand.
+    Represents the result of a comparison where the two operands are equivalent.
 */
 
 /*!
@@ -783,8 +778,8 @@ CHECK(strong, equivalent);
 /*!
     \variable QPartialOrdering::unordered
 
-    Represents the result of a comparison where the left operand is not ordered
-    with respect to the right operand.
+    Represents the result of a comparison where there is no ordering
+    relationship between the two operands.
 */
 
 /*!
@@ -797,8 +792,7 @@ CHECK(strong, equivalent);
 /*!
     \variable QPartialOrdering::Equivalent
 
-    Represents the result of a comparison where the left operand is equivalent
-    to the right operand.
+    Represents the result of a comparison where the two operands are equivalent.
 */
 
 /*!
@@ -811,8 +805,8 @@ CHECK(strong, equivalent);
 /*!
     \variable QPartialOrdering::Unordered
 
-    Represents the result of a comparison where the left operand is not ordered
-    with respect to the right operand.
+    Represents the result of a comparison where there is no ordering
+    relationship between the two operands.
 */
 
 /*!
