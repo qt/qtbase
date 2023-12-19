@@ -80,6 +80,8 @@ Q_GLOBAL_STATIC(QTimeZoneSingleton, global_tz);
 
     \brief QTimeZone identifies how a time representation relates to UTC.
 
+    \compares equality
+
     When dates and times are combined, the meaning of the result depends on how
     time is being represented. There are various international standards for
     representing time; one of these, UTC, corresponds to the traditional
