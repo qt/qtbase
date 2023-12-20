@@ -2754,10 +2754,11 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     if (slider->upsideDown)
                         clipRect = QRect(handle.right(), groove.top(), groove.right() - handle.right(), groove.height());
                     else
-                        clipRect = QRect(groove.left(), groove.top(), handle.left(), groove.height());
+                        clipRect = QRect(groove.left(), groove.top(),
+                                         handle.left() - slider->rect.left(), groove.height());
                 } else {
                     if (slider->upsideDown)
-                        clipRect = QRect(groove.left(), handle.bottom(), groove.width(), groove.height() - handle.bottom());
+                        clipRect = QRect(groove.left(), handle.bottom(), groove.width(), groove.height() - (handle.bottom() - slider->rect.top()));
                     else
                         clipRect = QRect(groove.left(), groove.top(), groove.width(), handle.top() - groove.top());
                 }
@@ -2768,6 +2769,8 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             }
 
             if (option->subControls & SC_SliderTickmarks) {
+                painter->save();
+                painter->translate(slider->rect.x(), slider->rect.y());
                 painter->setPen(outline);
                 int tickSize = proxy()->pixelMetric(PM_SliderTickmarkOffset, option, widget);
                 int available = proxy()->pixelMetric(PM_SliderSpaceAvailable, slider, widget);
@@ -2823,6 +2826,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     v = nextInterval;
                 }
                 painter->drawLines(lines);
+                painter->restore();
             }
             // draw handle
             if ((option->subControls & SC_SliderHandle) ) {
