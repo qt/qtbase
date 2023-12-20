@@ -133,9 +133,10 @@ void qt_jspi_suspend_js()
     Q_UNREACHABLE();
 }
 
-void qt_jspi_resume_js()
+bool qt_jspi_resume_js()
 {
     Q_UNREACHABLE();
+    return false;
 }
 
 bool qt_jspi_can_resume_js()
