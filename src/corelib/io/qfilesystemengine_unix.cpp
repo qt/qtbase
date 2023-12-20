@@ -19,6 +19,7 @@
 # include <QtCore/private/qtemporaryfile_p.h>
 #endif // QT_BOOTSTRAPPED
 
+#include <grp.h>
 #include <pwd.h>
 #include <stdlib.h> // for realpath()
 #include <unistd.h>
@@ -798,7 +799,7 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
     QVarLengthArray<char, 1024> buf(size_max);
 #endif
 
-#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_WASM) && !defined(Q_OS_VXWORKS) 
+#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_WASM)
     struct group *gr = nullptr;
 #if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_VXWORKS) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID) && (__ANDROID_API__ >= 24))
     size_max = sysconf(_SC_GETGR_R_SIZE_MAX);
