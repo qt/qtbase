@@ -50,8 +50,10 @@ Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QString 
 Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, QAnyStringView name,
                                            const QMetaObject &mo, QList<void *> *list,
                                            Qt::FindChildOptions options);
+#if QT_CORE_REMOVED_SINCE(6, 7)
 Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QMetaObject &mo,
                                            QList<void *> *list, Qt::FindChildOptions options);
+#endif
 Q_CORE_EXPORT void qt_qFindChildren_helper(const QObject *parent, const QRegularExpression &re,
                                            const QMetaObject &mo, QList<void *> *list, Qt::FindChildOptions options);
 #if QT_CORE_REMOVED_SINCE(6, 7)
