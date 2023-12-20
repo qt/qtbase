@@ -10,7 +10,7 @@
     This example shows how to enable gestures for a widget and use gesture input
     to perform actions.
 
-    \image imagegestures-example.jpg
+    \image imagegestures-example.png
 
     We use two classes to create the user interface for the application: \c MainWidget
     and \c ImageWidget. The \c MainWidget class is simply used as a container for the

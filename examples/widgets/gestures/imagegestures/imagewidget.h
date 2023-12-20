@@ -25,7 +25,7 @@ class ImageWidget : public QWidget
 
 public:
     ImageWidget(QWidget *parent = nullptr);
-    void openDirectory(const QString &path);
+    void openDirectory(const QString &url);
     void grabGestures(const QList<Qt::GestureType> &gestures);
 
 protected:

@@ -41,6 +41,12 @@ void ImageWidget::paintEvent(QPaintEvent*)
 {
     QPainter p(this);
 
+    if (files.isEmpty() && !path.isEmpty()) {
+        p.drawText(rect(), Qt::AlignCenter|Qt::TextWordWrap,
+                         tr("No supported image formats found"));
+        return;
+    }
+
     const qreal iw = currentImage.width();
     const qreal ih = currentImage.height();
     const qreal wh = height();
@@ -144,11 +150,15 @@ void ImageWidget::resizeEvent(QResizeEvent*)
     update();
 }
 
-void ImageWidget::openDirectory(const QString &path)
+void ImageWidget::openDirectory(const QString &url)
 {
-    this->path = path;
+    path = url;
     QDir dir(path);
-    const QStringList nameFilters{"*.jpg", "*.png"};
+
+    QStringList nameFilters;
+    const QList<QByteArray> supportedFormats = QImageReader::supportedImageFormats();
+    for (const QByteArray &format : supportedFormats)
+        nameFilters.append(QLatin1String("*.") + QString::fromLatin1(format));
     files = dir.entryInfoList(nameFilters, QDir::Files|QDir::Readable, QDir::Name);
 
     position = 0;
