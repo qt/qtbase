@@ -834,6 +834,12 @@ QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCal
 
 #include "qobject.h"
 
+void qt_qFindChildren_helper(const QObject *parent, const QMetaObject &mo,
+                             QList<void*> *list, Qt::FindChildOptions options)
+{
+    qt_qFindChildren_helper(parent, QAnyStringView(), mo, list, options);
+}
+
 void qt_qFindChildren_helper(const QObject *parent, const QString &name, const QMetaObject &mo,
                              QList<void*> *list, Qt::FindChildOptions options)
 {
