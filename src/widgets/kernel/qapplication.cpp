@@ -3039,8 +3039,16 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 #endif
                 w = qobject_cast<QWidget *>(QDragManager::self()->currentTarget());
 
-            if (!w)
-                break;
+            if (!w) {
+                // The widget that received DragEnter didn't accept the event, so we have no
+                // current drag target in the QDragManager. But DragLeave still needs to be
+                // dispatched so that enter/leave events are in balance (and so that UnderMouse
+                // gets cleared).
+                if (e->type() == QEvent::DragLeave)
+                    w = static_cast<QWidget *>(receiver);
+                else
+                    break;
+            }
             if (e->type() == QEvent::DragMove || e->type() == QEvent::Drop) {
                 QDropEvent *dragEvent = static_cast<QDropEvent *>(e);
                 QWidget *origReceiver = static_cast<QWidget *>(receiver);
