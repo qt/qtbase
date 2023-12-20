@@ -13,6 +13,7 @@
 #include <qlineedit.h>
 #include <qlistview.h>
 #include <qmessagebox.h>
+#include <qmimedata.h>
 #include <qpainter.h>
 #include <qpoint.h>
 #include <qpushbutton.h>
@@ -37,6 +38,7 @@
 #include <QtGui/qbackingstore.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qpa/qplatformwindow.h>
+#include <QtGui/qpa/qplatformdrag.h>
 #include <QtGui/qscreen.h>
 #include <qmenubar.h>
 #include <qcompleter.h>
@@ -432,6 +434,8 @@ private slots:
 #ifdef Q_OS_ANDROID
     void showFullscreenAndroid();
 #endif
+
+    void dragEnterLeaveSymmetry();
 
 private:
     const QString m_platform;
@@ -13412,6 +13416,98 @@ void tst_QWidget::showFullscreenAndroid()
     QCOMPARE(img, expectedImg);
 }
 #endif // Q_OS_ANDROID
+
+/*!
+    Verify that we deliver DragEnter/Leave events symmetrically, even if the
+    widget entered didn't accept the DragEnter event.
+*/
+void tst_QWidget::dragEnterLeaveSymmetry()
+{
+    QWidget widget;
+    widget.setAcceptDrops(true);
+    QLineEdit lineEdit;
+    QLabel label("Hello world");
+    label.setAcceptDrops(true);
+
+    struct EventFilter : QObject
+    {
+        bool eventFilter(QObject *receiver, QEvent *event) override
+        {
+            switch (event->type()) {
+            case QEvent::DragEnter:
+            case QEvent::DragLeave:
+                receivers[event->type()] << receiver;
+                break;
+
+            default:
+                break;
+            }
+
+            return false;
+        }
+
+        QMap<QEvent::Type, QList<QObject *>> receivers;
+
+        void clear() { receivers.clear(); }
+        bool hasEntered(QWidget *widget) const
+        {
+            return receivers.value(QEvent::DragEnter).contains(widget);
+        }
+        bool hasLeft(QWidget *widget) const
+        {
+            return receivers.value(QEvent::DragLeave).contains(widget);
+        }
+    } filter;
+
+    widget.installEventFilter(&filter);
+    lineEdit.installEventFilter(&filter);
+    label.installEventFilter(&filter);
+
+    QVBoxLayout vbox;
+    vbox.setContentsMargins(10, 10, 10, 10);
+    vbox.addWidget(&lineEdit);
+    vbox.addWidget(&label);
+    widget.setLayout(&vbox);
+
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    QMimeData data;
+    data.setColorData(QVariant::fromValue(Qt::red));
+    QWindowSystemInterface::handleDrag(widget.windowHandle(), &data, QPoint(1, 1),
+                                       Qt::ActionMask, Qt::LeftButton, {});
+    QVERIFY(filter.hasEntered(&widget));
+    QVERIFY(!filter.hasEntered(&lineEdit));
+    QVERIFY(!filter.hasEntered(&label));
+    QVERIFY(widget.underMouse());
+    QVERIFY(!lineEdit.underMouse());
+    filter.clear();
+
+    QWindowSystemInterface::handleDrag(widget.windowHandle(), &data, lineEdit.geometry().center(),
+                                       Qt::ActionMask, Qt::LeftButton, {});
+    // DragEnter propagates as the lineEdit doesn't want it, so the widget
+    // sees both a Leave and an Enter event
+    QVERIFY(filter.hasLeft(&widget));
+    QVERIFY(filter.hasEntered(&widget));
+    QVERIFY(filter.hasEntered(&widget));
+    // both have the UnderMouse attribute set
+    QVERIFY(lineEdit.underMouse());
+    QVERIFY(widget.underMouse());
+
+    // The lineEdit didn't accept the DragEnter, but it should still has to
+    // get the DragLeave so that UnderMouse is cleared; the widget gets both
+    // Leave and Enter through propagation.
+    QWindowSystemInterface::handleDrag(widget.windowHandle(), &data, label.geometry().center(),
+                                       Qt::ActionMask, Qt::LeftButton, {});
+    QVERIFY(filter.hasLeft(&lineEdit));
+    QVERIFY(filter.hasLeft(&widget));
+    QVERIFY(filter.hasEntered(&label));
+    QVERIFY(filter.hasEntered(&widget));
+
+    QVERIFY(!lineEdit.underMouse());
+    QVERIFY(label.underMouse());
+    QVERIFY(widget.underMouse());
+}
 
 QTEST_MAIN(tst_QWidget)
 #include "tst_qwidget.moc"
