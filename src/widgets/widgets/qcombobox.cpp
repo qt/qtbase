@@ -761,9 +761,7 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
             QModelIndex indexUnderMouse = view->indexAt(m->position().toPoint());
             if (indexUnderMouse.isValid()
                      && !QComboBoxDelegate::isSeparator(indexUnderMouse)) {
-                // Request for comments: To show selected item with AccentColor bar indicator and hovered
-                // items in the flyout, the next line needs to be removed.
-                //view->setCurrentIndex(indexUnderMouse);
+                view->setCurrentIndex(indexUnderMouse);
             }
         }
         break;
