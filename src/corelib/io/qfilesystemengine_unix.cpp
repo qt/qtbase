@@ -19,6 +19,7 @@
 # include <QtCore/private/qtemporaryfile_p.h>
 #endif // QT_BOOTSTRAPPED
 
+#include <grp.h>
 #include <pwd.h>
 #include <stdlib.h> // for realpath()
 #include <unistd.h>
