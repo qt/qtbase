@@ -53,6 +53,10 @@ private slots:
     void toString();
     void isNull_data();
     void isNull();
+    void iterators_data();
+    void iterators();
+    void iteratorsAreDefaultConstructible();
+    void valueInitializedIteratorsCompareEqual();
     void serialize_data();
     void serialize();
     void moveSemantics();
@@ -573,6 +577,45 @@ void tst_QVersionNumber::isNull()
     QVersionNumber version(segments);
 
     QCOMPARE(version.isNull(), isNull);
+}
+
+void tst_QVersionNumber::iterators_data()
+{
+    singleInstanceData();
+}
+
+void tst_QVersionNumber::iterators()
+{
+    QFETCH(const QList<int>, segments);
+    QFETCH(QVersionNumber, expectedVersion);
+
+    QVERIFY(std::equal(expectedVersion.begin(), expectedVersion.end(),
+                       segments.begin(), segments.end()));
+    QVERIFY(std::equal(std::as_const(expectedVersion).begin(), std::as_const(expectedVersion).end(),
+                       segments.begin(), segments.end()));
+    QVERIFY(std::equal(expectedVersion.cbegin(), expectedVersion.cend(),
+                       segments.cbegin(), segments.cend()));
+    QVERIFY(std::equal(expectedVersion.rbegin(), expectedVersion.rend(),
+                       segments.rbegin(), segments.rend()));
+    QVERIFY(std::equal(std::as_const(expectedVersion).rbegin(), std::as_const(expectedVersion).rend(),
+                       segments.rbegin(), segments.rend()));
+    QVERIFY(std::equal(expectedVersion.crbegin(), expectedVersion.crend(),
+                       segments.crbegin(), segments.crend()));
+}
+
+void tst_QVersionNumber::iteratorsAreDefaultConstructible()
+{
+    static_assert(std::is_default_constructible_v<QVersionNumber::const_iterator>);
+    [[maybe_unused]] QVersionNumber::const_iterator ci;
+    [[maybe_unused]] QVersionNumber::const_reverse_iterator cri;
+}
+
+void tst_QVersionNumber::valueInitializedIteratorsCompareEqual()
+{
+    QVersionNumber::const_iterator it = {}, jt = {};
+    QCOMPARE_EQ(it, jt);
+    QVersionNumber::const_reverse_iterator rit = {}, rjt = {};
+    QCOMPARE_EQ(rit, rjt);
 }
 
 void tst_QVersionNumber::serialize_data()
