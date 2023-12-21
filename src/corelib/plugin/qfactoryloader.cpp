@@ -13,7 +13,7 @@
 #include "qcbormap.h"
 #include "qcborstreamreader.h"
 #include "qcborvalue.h"
-#include "qdiriterator.h"
+#include "qdirlisting.h"
 #include "qfileinfo.h"
 #include "qjsonarray.h"
 #include "qjsondocument.h"
@@ -303,7 +303,7 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
 
     qCDebug(lcFactoryLoader) << "checking directory path" << path << "...";
 
-    QDirIterator plugins(path,
+    QDirListing plugins(path,
 #if defined(Q_OS_WIN)
                 QStringList(QStringLiteral("*.dll")),
 #elif defined(Q_OS_ANDROID)
@@ -311,8 +311,8 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
 #endif
                 QDir::Files);
 
-    while (plugins.hasNext()) {
-        QString fileName = plugins.next();
+    for (const auto &dirEntry : plugins) {
+        const QString &fileName = dirEntry.fileName();
 #ifdef Q_OS_DARWIN
         const bool isDebugPlugin = fileName.endsWith("_debug.dylib"_L1);
         const bool isDebugLibrary =
@@ -337,7 +337,7 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
         Q_TRACE(QFactoryLoader_update, fileName);
 
         QLibraryPrivate::UniquePtr library;
-        library.reset(QLibraryPrivate::findOrCreate(QFileInfo(fileName).canonicalFilePath()));
+        library.reset(QLibraryPrivate::findOrCreate(dirEntry.canonicalFilePath()));
         if (!library->isPlugin()) {
             qCDebug(lcFactoryLoader) << library->errorString << Qt::endl
                                      << "         not a plugin";

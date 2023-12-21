@@ -20,7 +20,6 @@
 #ifndef QT_NO_FILESYSTEMITERATOR
 
 #include <QtCore/qdir.h>
-#include <QtCore/qdiriterator.h>
 #include <QtCore/qstringlist.h>
 
 #include <QtCore/private/qfilesystementry_p.h>

@@ -6,7 +6,6 @@
 #include "qfsfileengine_iterator_p.h"
 #include "qfilesystemengine_p.h"
 #include "qdatetime.h"
-#include "qdiriterator.h"
 #include "qset.h"
 #include <QtCore/qdebug.h>
 

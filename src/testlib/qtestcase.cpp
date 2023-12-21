@@ -10,7 +10,7 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qdir.h>
-#include <QtCore/qdiriterator.h>
+#include <QtCore/qdirlisting.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qfloat16.h>
@@ -3010,22 +3010,18 @@ QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
           return result;
       }
 
-      QDirIterator it(resourcePath, QDirIterator::Subdirectories);
-      if (!it.hasNext()) {
-          qWarning("Resource directory '%s' is empty.", qPrintable(resourcePath));
-          return result;
-      }
-
-      while (it.hasNext()) {
-          QFileInfo fileInfo = it.nextFileInfo();
-
-          if (!fileInfo.isDir()) {
-              const QString destination = dataPath + u'/' + QStringView{fileInfo.filePath()}.mid(resourcePath.size());
+      bool isResourceDirEmpty = true;
+      for (const auto &dirEntry : QDirListing(resourcePath, QDirListing::IteratorFlag::Recursive)) {
+          isResourceDirEmpty = false;
+          if (!dirEntry.isDir()) {
+              const QString &filePath = dirEntry.filePath();
+              const QString destination =
+                  dataPath + u'/' + QStringView{filePath}.sliced(resourcePath.size());
               QFileInfo destinationFileInfo(destination);
               QDir().mkpath(destinationFileInfo.path());
-              QFile file(fileInfo.filePath());
+              QFile file(filePath);
               if (!file.copy(destination)) {
-                  qWarning("Failed to copy '%ls': %ls.", qUtf16Printable(fileInfo.filePath()),
+                  qWarning("Failed to copy '%ls': %ls.", qUtf16Printable(filePath),
                            qUtf16Printable(file.errorString()));
                   return result;
               }
@@ -3037,6 +3033,11 @@ QSharedPointer<QTemporaryDir> QTest::qExtractTestData(const QString &dirName)
                   return result;
               }
           }
+      }
+
+      if (isResourceDirEmpty) {
+          qWarning("Resource directory '%s' is empty.", qPrintable(resourcePath));
+          return result;
       }
 
       result = std::move(tempDir);

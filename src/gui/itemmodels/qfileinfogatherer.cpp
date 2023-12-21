@@ -4,7 +4,7 @@
 #include "qfileinfogatherer_p.h"
 #include <qcoreapplication.h>
 #include <qdebug.h>
-#include <qdiriterator.h>
+#include <qdirlisting.h>
 #include <private/qabstractfileiconprovider_p.h>
 #include <private/qfileinfo_p.h>
 #ifndef Q_OS_WIN
@@ -419,9 +419,11 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
 
     QStringList allFiles;
     if (files.isEmpty()) {
-        QDirIterator dirIt(path, QDir::AllEntries | QDir::System | QDir::Hidden);
-        while (!isInterruptionRequested() && dirIt.hasNext()) {
-            fileInfo = dirIt.nextFileInfo();
+        constexpr auto dirFilters = QDir::AllEntries | QDir::System | QDir::Hidden;
+        for (const auto &dirEntry : QDirListing(path, dirFilters)) {
+            if (isInterruptionRequested())
+                break;
+            fileInfo = dirEntry.fileInfo();
             fileInfo.stat();
             allFiles.append(fileInfo.fileName());
             fetch(fileInfo, base, firstTime, updatedFiles, path);

@@ -9,7 +9,6 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qdir.h>
 #include <QtGui/qicon.h>
-#include <QtCore/qdiriterator.h>
 
 QT_REQUIRE_CONFIG(filesystemmodel);
 

@@ -13,7 +13,7 @@
 #include <QXmlStreamReader>
 #include <QStandardPaths>
 #include <QUuid>
-#include <QDirIterator>
+#include <QDirListing>
 #include <QElapsedTimer>
 #include <QRegularExpression>
 #include <QSettings>
@@ -1222,6 +1222,7 @@ bool readInputFile(Options *options)
     }
 
     {
+        using ItFlag = QDirListing::IteratorFlag;
         const QJsonValue deploymentDependencies = jsonObject.value("deployment-dependencies"_L1);
         if (!deploymentDependencies.isUndefined()) {
             QString deploymentDependenciesString = deploymentDependencies.toString();
@@ -1230,11 +1231,9 @@ bool readInputFile(Options *options)
                 QString path = options->qtInstallDirectory + QChar::fromLatin1('/');
                 path += dependency;
                 if (QFileInfo(path).isDir()) {
-                    QDirIterator iterator(path, QDirIterator::Subdirectories);
-                    while (iterator.hasNext()) {
-                        iterator.next();
-                        if (iterator.fileInfo().isFile()) {
-                            QString subPath = iterator.filePath();
+                    for (const auto &dirEntry : QDirListing(path, ItFlag::Recursive)) {
+                        if (dirEntry.isFile()) {
+                            const QString subPath = dirEntry.filePath();
                             auto arch = fileArchitecture(*options, subPath);
                             if (!arch.isEmpty()) {
                                 options->qtDependencies[arch].append(QtDependency(subPath.mid(options->qtInstallDirectory.size() + 1),
@@ -2724,12 +2723,11 @@ static bool mergeGradleProperties(const QString &path, GradleProperties properti
 void checkAndWarnGradleLongPaths(const QString &outputDirectory)
 {
     QStringList longFileNames;
-    QDirIterator it(outputDirectory, QStringList(QStringLiteral("*.java")), QDir::Files,
-                    QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        const QString &filePath = it.next();
-        if (filePath.size() >= MAX_PATH)
-            longFileNames.append(filePath);
+    using F = QDirListing::IteratorFlag;
+    for (const auto &dirEntry : QDirListing(outputDirectory, QStringList(u"*.java"_s),
+                                            QDir::Files, F::Recursive)) {
+        if (dirEntry.size() >= MAX_PATH)
+            longFileNames.append(dirEntry.filePath());
     }
 
     if (!longFileNames.isEmpty()) {

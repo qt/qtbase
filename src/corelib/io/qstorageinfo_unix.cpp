@@ -5,7 +5,6 @@
 
 #include "qstorageinfo_p.h"
 
-#include <QtCore/qdiriterator.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qtextstream.h>
 

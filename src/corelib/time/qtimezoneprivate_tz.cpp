@@ -10,7 +10,7 @@
 
 #include <QtCore/QDataStream>
 #include <QtCore/QDateTime>
-#include <QtCore/QDirIterator>
+#include <QtCore/QDirListing>
 #include <QtCore/QFile>
 #include <QtCore/QCache>
 #include <QtCore/QMap>
@@ -121,9 +121,7 @@ static QTzTimeZoneHash loadTzTimeZones()
     const qsizetype cut = path.lastIndexOf(u'/');
     Q_ASSERT(cut > 0);
     const QDir zoneDir = QDir(path.first(cut));
-    QDirIterator zoneFiles(zoneDir, QDirIterator::Subdirectories);
-    while (zoneFiles.hasNext()) {
-        const QFileInfo info = zoneFiles.nextFileInfo();
+    for (const auto &info : QDirListing(zoneDir, QDirListing::IteratorFlag::Recursive)) {
         if (!(info.isFile() || info.isSymLink()))
             continue;
         const QString name = zoneDir.relativeFilePath(info.filePath());

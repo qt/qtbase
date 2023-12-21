@@ -12,7 +12,7 @@
 #include <qdir.h>
 #include <qdatastream.h>
 #include <qdatetime.h>
-#include <qdiriterator.h>
+#include <qdirlisting.h>
 #include <qurl.h>
 #include <qcryptographichash.h>
 #include <qdebug.h>
@@ -478,7 +478,6 @@ qint64 QNetworkDiskCache::expire()
     d->lastItem.reset();
 
     const QDir::Filters filters = QDir::AllDirs | QDir:: Files | QDir::NoDotAndDotDot;
-    QDirIterator it(cacheDirectory(), filters, QDirIterator::Subdirectories);
 
     struct CacheItem
     {
@@ -488,11 +487,12 @@ qint64 QNetworkDiskCache::expire()
     };
     std::vector<CacheItem> cacheItems;
     qint64 totalSize = 0;
-    while (it.hasNext()) {
-        QFileInfo info = it.nextFileInfo();
-        if (!info.fileName().endsWith(CACHE_POSTFIX))
+    using F = QDirListing::IteratorFlag;
+    for (const auto &dirEntry : QDirListing(cacheDirectory(), filters, F::Recursive)) {
+        if (!dirEntry.fileName().endsWith(CACHE_POSTFIX))
             continue;
 
+        const QFileInfo &info = dirEntry.fileInfo();
         QDateTime fileTime = info.birthTime(QTimeZone::UTC);
         if (!fileTime.isValid())
             fileTime = info.metadataChangeTime(QTimeZone::UTC);

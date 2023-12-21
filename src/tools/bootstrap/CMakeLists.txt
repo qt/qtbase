@@ -27,7 +27,7 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/io/qbuffer.cpp
         ../../corelib/io/qdebug.cpp
         ../../corelib/io/qdir.cpp
-        ../../corelib/io/qdiriterator.cpp
+        ../../corelib/io/qdirlisting.cpp
         ../../corelib/io/qfile.cpp
         ../../corelib/io/qfiledevice.cpp
         ../../corelib/io/qfileinfo.cpp

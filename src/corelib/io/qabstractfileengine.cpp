@@ -10,7 +10,7 @@
 #include "qreadwritelock.h"
 #include "qvariant.h"
 // built-in handlers
-#include "qdiriterator.h"
+#include "qdirlisting.h"
 #include "qstringbuilder.h"
 
 #include <QtCore/private/qfilesystementry_p.h>
@@ -590,11 +590,8 @@ bool QAbstractFileEngine::isRelativePath() const
 QStringList QAbstractFileEngine::entryList(QDir::Filters filters, const QStringList &filterNames) const
 {
     QStringList ret;
-    QDirIterator it(fileName(), filterNames, filters);
-    while (it.hasNext()) {
-        it.next();
-        ret << it.fileName();
-    }
+    for (const auto &dirEntry : QDirListing(fileName(), filterNames, filters))
+        ret.emplace_back(dirEntry.fileName());
     return ret;
 }
 
@@ -826,11 +823,12 @@ bool QAbstractFileEngine::cloneTo(QAbstractFileEngine *target)
     \internal
 
     If all you want is to iterate over entries in a directory, see
-    QDirIterator instead. This class is only for custom file engine authors.
+    QDirListing instead. This class is useful only for custom file engine
+    authors.
 
     QAbstractFileEngineIterator is a unidirectional single-use virtual
-    iterator that plugs into QDirIterator, providing transparent proxy
-    iteration for custom file engines.
+    iterator that plugs into QDirListing, providing transparent proxy
+    iteration for custom file engines (for example, QResourceFileEngine).
 
     You can subclass QAbstractFileEngineIterator to provide an iterator when
     writing your own file engine. To plug the iterator into your file system,
@@ -869,7 +867,7 @@ bool QAbstractFileEngine::cloneTo(QAbstractFileEngine *target)
     Note: QAbstractFileEngineIterator does not deal with QDir::IteratorFlags;
     it simply returns entries for a single directory.
 
-    \sa QDirIterator
+    \sa QDirListing
 */
 
 /*!
@@ -911,15 +909,18 @@ QAbstractFileEngineIterator::QAbstractFileEngineIterator(QDir::Filters filters,
 /*!
     Destroys the QAbstractFileEngineIterator.
 
-    \sa QDirIterator
+    \sa QDirListing
 */
 QAbstractFileEngineIterator::~QAbstractFileEngineIterator()
 {
 }
 
 /*!
-    Returns the path for this iterator. QDirIterator is responsible for
-    assigning this path; it cannot change during the iterator's lifetime.
+
+    Returns the path for this iterator. It can be set using setPath().
+    Typically the path is passed to beginEntryList(), which sets the path.
+
+    \note The path should't be changed once iteration begins.
 
     \sa nameFilters(), filters()
 */
@@ -932,7 +933,7 @@ QString QAbstractFileEngineIterator::path() const
     \internal
 
     Sets the iterator path to \a path. This function is called from within
-    QDirIterator.
+    QDirListing.
 */
 void QAbstractFileEngineIterator::setPath(const QString &path)
 {
@@ -1032,8 +1033,6 @@ QVariant QAbstractFileEngineIterator::entryInfo(EntryInfoType type) const
     optimize its performance.
 
     Reimplement this function in a subclass to advance the iterator.
-
-    \sa QDirIterator::next()
 */
 
 /*!
@@ -1042,19 +1041,17 @@ QVariant QAbstractFileEngineIterator::entryInfo(EntryInfoType type) const
     This pure virtual function returns \c true if there is at least one more
     entry in the current directory (i.e., the iterator path is valid and
     accessible, and the iterator has not reached the end of the entry list).
-
-    \sa QDirIterator::hasNext()
 */
 
 /*!
     Returns an instance of a QAbstractFileEngineIterator using \a filters for
     entry filtering and \a filterNames for name filtering. This function is
-    called by QDirIterator to initiate directory iteration.
+    called by QDirListing to initiate directory iteration.
 
-    QDirIterator takes ownership of the returned instance, and deletes it when
+    QDirListing takes ownership of the returned instance, and deletes it when
     it's done.
 
-    \sa QDirIterator
+    \sa QDirListing
 */
 QAbstractFileEngine::Iterator *QAbstractFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
 {

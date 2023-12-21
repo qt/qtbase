@@ -8,7 +8,7 @@
 #include <qdatetime.h>
 #include <qdebug.h>
 #include <qdir.h>
-#include <qdiriterator.h>
+#include <qdirlisting.h>
 #include <qfile.h>
 #include <qiodevice.h>
 #include <qlocale.h>
@@ -634,12 +634,12 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                         alias += slash;
 
                     QStringList filePaths;
-                    QDirIterator it(dir, QDirIterator::FollowSymlinks|QDirIterator::Subdirectories);
-                    while (it.hasNext()) {
-                        it.next();
-                        if (it.fileName() == "."_L1 || it.fileName() == ".."_L1)
+                    using F = QDirListing::IteratorFlag;
+                    for (const auto &entry : QDirListing(dir, F::FollowSymlinks | F::Recursive)) {
+                        const QString &fileName = entry.fileName();
+                        if (fileName == "."_L1 || fileName == ".."_L1)
                             continue;
-                        filePaths.append(it.filePath());
+                        filePaths.emplace_back(entry.filePath());
                     }
 
                     // make rcc output deterministic

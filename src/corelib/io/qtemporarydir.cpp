@@ -7,7 +7,6 @@
 #ifndef QT_NO_TEMPORARYFILE
 
 #include "qdebug.h"
-#include "qdiriterator.h"
 #include "qplatformdefs.h"
 #include "qrandom.h"
 #include "private/qtemporaryfile_p.h"

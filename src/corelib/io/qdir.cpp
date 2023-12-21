@@ -9,7 +9,7 @@
 #ifndef QT_NO_DEBUG_STREAM
 #include "qdebug.h"
 #endif
-#include "qdiriterator.h"
+#include "qdirlisting.h"
 #include "qdatetime.h"
 #include "qstring.h"
 #if QT_CONFIG(regularexpression)
@@ -346,9 +346,8 @@ inline void QDirPrivate::initFileLists(const QDir &dir) const
     QMutexLocker locker(&fileCache.mutex);
     if (!fileCache.fileListsInitialized) {
         QFileInfoList l;
-        QDirIterator it(dir);
-        while (it.hasNext())
-            l.append(it.nextFileInfo());
+        for (const auto &dirEntry : QDirListing(dir))
+            l.emplace_back(dirEntry.fileInfo());
 
         sortFileList(sort, l, &fileCache.files, &fileCache.fileInfos);
         fileCache.fileListsInitialized = true;
@@ -1427,18 +1426,16 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
         }
     }
 
-    QDirIterator it(d->dirEntry.filePath(), nameFilters, filters);
+    QDirListing dirList(d->dirEntry.filePath(), nameFilters, filters);
     QStringList ret;
     if (needsSorting) {
         QFileInfoList l;
-        while (it.hasNext())
-            l.append(it.nextFileInfo());
+        for (const auto &dirEntry : dirList)
+            l.emplace_back(dirEntry.fileInfo());
         d->sortFileList(sort, l, &ret, nullptr);
     } else {
-        while (it.hasNext()) {
-            it.next();
-            ret.append(it.fileName());
-        }
+        for (const auto &dirEntry : dirList)
+            ret.emplace_back(dirEntry.fileName());
     }
     return ret;
 }
@@ -1475,9 +1472,8 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
     }
 
     QFileInfoList l;
-    QDirIterator it(d->dirEntry.filePath(), nameFilters, filters);
-    while (it.hasNext())
-        l.append(it.nextFileInfo());
+    for (const auto &dirEntry : QDirListing(d->dirEntry.filePath(), nameFilters, filters))
+        l.emplace_back(dirEntry.fileInfo());
     QFileInfoList ret;
     d->sortFileList(sort, l, nullptr, &ret);
     return ret;
@@ -1646,12 +1642,11 @@ bool QDir::removeRecursively()
     bool success = true;
     const QString dirPath = path();
     // not empty -- we must empty it first
-    QDirIterator di(dirPath, QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
-    while (di.hasNext()) {
-        const QFileInfo fi = di.nextFileInfo();
-        const QString &filePath = di.filePath();
+    constexpr auto dirFilters = QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot;
+    for (const auto &dirEntry : QDirListing(dirPath, dirFilters)) {
+        const QString &filePath = dirEntry.filePath();
         bool ok;
-        if (fi.isDir() && !fi.isSymLink()) {
+        if (dirEntry.isDir() && !dirEntry.isSymLink()) {
             ok = QDir(filePath).removeRecursively(); // recursive
         } else {
             ok = QFile::remove(filePath);
@@ -1969,8 +1964,8 @@ bool QDir::exists(const QString &name) const
 bool QDir::isEmpty(Filters filters) const
 {
     Q_D(const QDir);
-    QDirIterator it(d->dirEntry.filePath(), d->nameFilters, filters);
-    return !it.hasNext();
+    QDirListing dirList(d->dirEntry.filePath(), d->nameFilters, filters);
+    return dirList.cbegin() == dirList.cend();
 }
 
 /*!

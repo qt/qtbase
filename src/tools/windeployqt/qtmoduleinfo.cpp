@@ -4,7 +4,7 @@
 #include "qtmoduleinfo.h"
 #include "utils.h"
 
-#include <QDirIterator>
+#include <QDirListing>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QDebug>
@@ -134,10 +134,8 @@ bool QtModuleInfoStore::populate(const QString &modulesDir, const QString &trans
     }
 
     // Read modules, and assign a bit as ID.
-    QDirIterator dit(modulesDir, { QLatin1String("*.json") }, QDir::Files);
-    while (dit.hasNext()) {
-        QString filePath = dit.next();
-        QtModule module = moduleFromJsonFile(filePath, errorString);
+    for (const auto &dirEntry : QDirListing(modulesDir, {u"*.json"_s}, QDir::Files)) {
+        QtModule module = moduleFromJsonFile(dirEntry.filePath(), errorString);
         if (!errorString->isEmpty())
             return false;
         if (module.internal && module.name.endsWith(QStringLiteral("Private")))
