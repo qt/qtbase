@@ -16,9 +16,21 @@ qt_add_dbus_interface(controller_SRCS
 )
 
 qt_add_executable(controller
-    controller.cpp controller.h controller.ui
+    controller.cpp controller.h
     main.cpp
     ${controller_SRCS}
+)
+
+qt_add_resources(controller
+    PREFIX
+        "/"
+    FILES
+    down.svg
+    left.svg
+    right.svg
+    up.svg
+    connected.svg
+    connecting.svg
 )
 
 set_target_properties(controller PROPERTIES

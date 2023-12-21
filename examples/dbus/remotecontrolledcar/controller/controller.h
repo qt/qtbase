@@ -4,7 +4,10 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#include "ui_controller.h"
+#include <QWidget>
+#include <QPushButton>
+#include <QLabel>
+
 #include "car_interface.h"
 
 class Controller : public QWidget
@@ -18,8 +21,13 @@ protected:
     void timerEvent(QTimerEvent *event) override;
 
 private:
-    Ui::Controller ui;
     org::example::Examples::CarInterface *car;
+    QPushButton *accelerate;
+    QPushButton *decelerate;
+    QPushButton *left;
+    QPushButton *right;
+    QLabel *statusSymbol;
+    QLabel *status;
 };
 
 #endif
