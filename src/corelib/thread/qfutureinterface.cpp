@@ -77,7 +77,7 @@ void QtPrivate::watchContinuationImpl(const QObject *context, QSlotObjectBase *s
     auto watcherMutex = std::make_shared<QRecursiveMutex>();
     const auto destroyWatcher = [watcherMutex, watcher]() mutable {
         QMutexLocker lock(watcherMutex.get());
-        watcher->deleteLater();
+        delete watcher;
     };
 
     // ### we're missing a convenient way to `QObject::connect()` to a `QSlotObjectBase`...
