@@ -87,7 +87,7 @@ QT_BEGIN_NAMESPACE
     contains() a QPoint or QRect. The bounding rectangle can be found
     with boundingRect().
 
-    Iteration over the region (with begin(), end(), or C++11
+    Iteration over the region (with begin(), end(), or
     ranged-for loops) gives a decomposition of the region into
     rectangles.
 

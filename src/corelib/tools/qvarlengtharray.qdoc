@@ -110,9 +110,6 @@
     \since 5.5
 
     Constructs an array from the std::initializer_list given by \a args.
-
-    This constructor is only enabled if the compiler supports C++11 initializer
-    lists.
 */
 
 /*! \fn template<class T, qsizetype Prealloc> template<typename InputIterator> QVarLengthArray<T, Prealloc>::QVarLengthArray(InputIterator first, InputIterator last)
@@ -419,9 +416,6 @@
     \since 5.5
 
     Assigns the values of \a list to this array, and returns a reference to this array.
-
-    This constructor is only enabled if the compiler supports C++11 initializer
-    lists.
 */
 
 /*! \fn template<class T, qsizetype Prealloc> QVarLengthArray<T, Prealloc>::QVarLengthArray(const QVarLengthArray<T, Prealloc> &other)

@@ -105,8 +105,6 @@ QT_BEGIN_NAMESPACE
     \fn QVersionNumber::QVersionNumber(QList<int> &&seg)
 
     Move-constructs a version number from the list of numbers contained in \a seg.
-
-    This constructor is only enabled if the compiler supports C++11 move semantics.
 */
 
 /*!
@@ -114,9 +112,6 @@ QT_BEGIN_NAMESPACE
 
     Construct a version number from the std::initializer_list specified by
     \a args.
-
-    This constructor is only enabled if the compiler supports C++11 initializer
-    lists.
 */
 
 /*!
