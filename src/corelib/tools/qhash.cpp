@@ -2593,9 +2593,6 @@ uint qHash(long double key, uint seed) noexcept
 
     Constructs a multi-hash with a copy of each of the elements in the
     initializer list \a list.
-
-    This function is only available if the program is being
-    compiled in C++11 mode.
 */
 
 /*! \fn template <class Key, class T> QMultiHash<Key, T>::QMultiHash(const QHash<Key, T> &other)
