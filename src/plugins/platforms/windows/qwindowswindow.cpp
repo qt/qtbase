@@ -1014,6 +1014,21 @@ static QSize toNativeSizeConstrained(QSize dip, const QScreen *s)
     return dip;
 }
 
+// Helper for checking if frame adjustment needs to be skipped
+// NOTE: Unmaximized frameless windows will skip margins calculation
+static bool shouldOmitFrameAdjustment(const Qt::WindowFlags flags, DWORD style)
+{
+    return flags.testFlag(Qt::FramelessWindowHint) && !(style & WS_MAXIMIZE);
+}
+
+// Helper for checking if frame adjustment needs to be skipped
+// NOTE: Unmaximized frameless windows will skip margins calculation
+static bool shouldOmitFrameAdjustment(const Qt::WindowFlags flags, HWND hwnd)
+{
+    DWORD style = hwnd != nullptr ? DWORD(GetWindowLongPtr(hwnd, GWL_STYLE)) : 0;
+    return flags.testFlag(Qt::FramelessWindowHint) && !(style & WS_MAXIMIZE);
+}
+
 /*!
     \class QWindowsGeometryHint
     \brief Stores geometry constraints and provides utility functions.
@@ -1026,7 +1041,7 @@ static QSize toNativeSizeConstrained(QSize dip, const QScreen *s)
 
 QMargins QWindowsGeometryHint::frameOnPrimaryScreen(const QWindow *w, DWORD style, DWORD exStyle)
 {
-    if (!w->isTopLevel() || w->flags().testFlag(Qt::FramelessWindowHint))
+    if (!w->isTopLevel() || shouldOmitFrameAdjustment(w->flags(), style))
         return {};
     RECT rect = {0,0,0,0};
     style &= ~DWORD(WS_OVERLAPPED); // Not permitted, see docs.
@@ -1042,15 +1057,13 @@ QMargins QWindowsGeometryHint::frameOnPrimaryScreen(const QWindow *w, DWORD styl
 
 QMargins QWindowsGeometryHint::frameOnPrimaryScreen(const QWindow *w, HWND hwnd)
 {
-    if (!w->isTopLevel() || w->flags().testFlag(Qt::FramelessWindowHint))
-        return {};
     return frameOnPrimaryScreen(w, DWORD(GetWindowLongPtr(hwnd, GWL_STYLE)),
                                 DWORD(GetWindowLongPtr(hwnd, GWL_EXSTYLE)));
 }
 
 QMargins QWindowsGeometryHint::frame(const QWindow *w, DWORD style, DWORD exStyle, qreal dpi)
 {
-    if (!w->isTopLevel() || w->flags().testFlag(Qt::FramelessWindowHint))
+    if (!w->isTopLevel() || shouldOmitFrameAdjustment(w->flags(), style))
         return {};
     RECT rect = {0,0,0,0};
     style &= ~DWORD(WS_OVERLAPPED); // Not permitted, see docs.
@@ -1068,7 +1081,7 @@ QMargins QWindowsGeometryHint::frame(const QWindow *w, DWORD style, DWORD exStyl
 
 QMargins QWindowsGeometryHint::frame(const QWindow *w, HWND hwnd, DWORD style, DWORD exStyle)
 {
-    if (!w->isTopLevel() || w->flags().testFlag(Qt::FramelessWindowHint))
+    if (!w->isTopLevel() || shouldOmitFrameAdjustment(w->flags(), style))
         return {};
     if (QWindowsScreenManager::isSingleScreen())
         return frameOnPrimaryScreen(w, style, exStyle);
@@ -1082,8 +1095,6 @@ QMargins QWindowsGeometryHint::frame(const QWindow *w, HWND hwnd, DWORD style, D
 
 QMargins QWindowsGeometryHint::frame(const QWindow *w, HWND hwnd)
 {
-    if (!w->isTopLevel() || w->flags().testFlag(Qt::FramelessWindowHint))
-        return {};
     return frame(w, hwnd, DWORD(GetWindowLongPtr(hwnd, GWL_STYLE)),
                  DWORD(GetWindowLongPtr(hwnd, GWL_EXSTYLE)));
 }
@@ -1092,7 +1103,7 @@ QMargins QWindowsGeometryHint::frame(const QWindow *w, HWND hwnd)
 QMargins QWindowsGeometryHint::frame(const QWindow *w, const QRect &geometry,
                                      DWORD style, DWORD exStyle)
 {
-    if (!w->isTopLevel() || w->flags().testFlag(Qt::FramelessWindowHint))
+    if (!w->isTopLevel() || shouldOmitFrameAdjustment(w->flags(), style))
         return {};
     if (QWindowsScreenManager::isSingleScreen()
         || !QWindowsContext::shouldHaveNonClientDpiScaling(w)) {
@@ -2029,7 +2040,7 @@ void QWindowsWindow::handleDpiChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
         // If the window does not have a frame, WM_MOVE and WM_SIZE won't be
         // called which prevents the content from being scaled appropriately
         // after a DPI change.
-        if (m_data.flags & Qt::FramelessWindowHint)
+        if (shouldOmitFrameAdjustment(m_data.flags, m_data.hwnd))
             handleGeometryChange();
     }
 
@@ -2745,7 +2756,7 @@ bool QWindowsWindow::handleGeometryChanging(MSG *message) const
 
 void QWindowsWindow::setFullFrameMargins(const QMargins &newMargins)
 {
-    if (m_data.flags & Qt::FramelessWindowHint)
+    if (shouldOmitFrameAdjustment(m_data.flags, m_data.hwnd))
         return;
     if (m_data.fullFrameMargins != newMargins) {
         qCDebug(lcQpaWindow) << __FUNCTION__ << window() <<  m_data.fullFrameMargins  << "->" << newMargins;
@@ -2764,7 +2775,7 @@ void QWindowsWindow::updateFullFrameMargins()
 
 void QWindowsWindow::calculateFullFrameMargins()
 {
-    if (m_data.flags & Qt::FramelessWindowHint)
+    if (shouldOmitFrameAdjustment(m_data.flags, m_data.hwnd))
         return;
 
     // QTBUG-113736: systemMargins depends on AdjustWindowRectExForDpi. This doesn't take into
@@ -2815,7 +2826,7 @@ QMargins QWindowsWindow::frameMargins() const
 
 QMargins QWindowsWindow::fullFrameMargins() const
 {
-    if (m_data.flags & Qt::FramelessWindowHint)
+    if (shouldOmitFrameAdjustment(m_data.flags, m_data.hwnd))
         return {};
     return m_data.fullFrameMargins;
 }
