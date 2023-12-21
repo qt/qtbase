@@ -93,5 +93,24 @@ void Car::timerEvent(QTimerEvent *event)
 
     setTransform(QTransform().rotate(rotation), true);
     setTransform(QTransform::fromTranslate(0, -speed), true);
+
+    if (!scene()->views().isEmpty()) {
+        QRect viewRect = scene()->views().at(0)->sceneRect().toRect();
+        QTransform fx = transform();
+        qreal dx = fx.dx();
+        qreal dy = fx.dy();
+        while (dx < viewRect.left() - 10)
+            dx += viewRect.width();
+        while (dy < viewRect.top() - 10)
+            dy += viewRect.height();
+        while (dx > viewRect.right() + 10)
+            dx -= viewRect.width();
+        while (dy > viewRect.bottom() + 10)
+            dy -= viewRect.width();
+        setTransform(QTransform(fx.m11(), fx.m12(), fx.m13(),
+                                fx.m21(), fx.m22(), fx.m23(),
+                                dx, dy, fx.m33()));
+    }
+
     update();
 }

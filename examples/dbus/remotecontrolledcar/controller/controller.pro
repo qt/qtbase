@@ -1,9 +1,9 @@
 QT += dbus widgets
 
 DBUS_INTERFACES += ../common/car.xml
-FORMS += controller.ui
 HEADERS += controller.h
 SOURCES += main.cpp controller.cpp
+RESOURCES += icons.qrc
 
 # Work-around CI issue. Not needed in user code.
 CONFIG += no_batch
