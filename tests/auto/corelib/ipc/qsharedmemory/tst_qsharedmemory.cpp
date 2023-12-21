@@ -583,6 +583,10 @@ void tst_QSharedMemory::attachBeforeCreate()
  */
 void tst_QSharedMemory::useTooMuchMemory()
 {
+    if (QSysInfo::productType() == QLatin1String("Debian")
+        || QSysInfo::productType() == QLatin1String("debian"))
+        QSKIP("This test is unstable: QTBUG-119321");
+
 #ifdef Q_OS_LINUX
     bool success = true;
     int count = 0;
