@@ -1916,7 +1916,7 @@ void tst_QPlainTextEdit::placeholderVisibility()
 
     plainTextEdit.show();
     QVERIFY(QTest::qWaitForWindowExposed(&plainTextEdit));
-    QTRY_VERIFY(plainTextEdit_d->isPlaceHolderTextVisible() == placeholderVisible);
+    QTRY_COMPARE(plainTextEdit_d->placeholderTextShown, placeholderVisible);
 }
 
 
