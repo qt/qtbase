@@ -50,6 +50,7 @@ public:
     bool isActive() const;
     bool isNull(int field) const;
     bool isNull(const QString &name) const;
+    bool isNull(QStringView name) const;
     int at() const;
     QString lastQuery() const;
     int numRowsAffected() const;
@@ -64,7 +65,8 @@ public:
     void setForwardOnly(bool forward);
     bool exec(const QString& query);
     QVariant value(int i) const;
-    QVariant value(const QString& name) const;
+    QVariant value(const QString &name) const;
+    QVariant value(QStringView name) const;
 
     void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy);
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
