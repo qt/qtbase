@@ -57,12 +57,12 @@ public:
                          const QString &title, QFontDialog::FontDialogOptions options);
 
     void init();
-    void _q_sizeChanged(const QString &);
-    void _q_familyHighlighted(int);
-    void _q_writingSystemHighlighted(int);
-    void _q_styleHighlighted(int);
-    void _q_sizeHighlighted(int);
-    void _q_updateSample();
+    void sizeChanged(const QString &);
+    void familyHighlighted(int);
+    void writingSystemHighlighted(int);
+    void styleHighlighted(int);
+    void sizeHighlighted(int);
+    void updateSample();
     void updateSampleFont(const QFont &newFont);
     void retranslateStrings();
 

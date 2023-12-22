@@ -208,14 +208,21 @@ void QFontDialogPrivate::init()
     size = 0;
     smoothScalable = false;
 
-    QObject::connect(writingSystemCombo, SIGNAL(activated(int)), q, SLOT(_q_writingSystemHighlighted(int)));
-    QObject::connect(familyList, SIGNAL(highlighted(int)), q, SLOT(_q_familyHighlighted(int)));
-    QObject::connect(styleList, SIGNAL(highlighted(int)), q, SLOT(_q_styleHighlighted(int)));
-    QObject::connect(sizeList, SIGNAL(highlighted(int)), q, SLOT(_q_sizeHighlighted(int)));
-    QObject::connect(sizeEdit, SIGNAL(textChanged(QString)), q, SLOT(_q_sizeChanged(QString)));
+    QObjectPrivate::connect(writingSystemCombo, &QComboBox::activated,
+                            this, &QFontDialogPrivate::writingSystemHighlighted);
+    QObjectPrivate::connect(familyList, &QFontListView::highlighted,
+                            this, &QFontDialogPrivate::familyHighlighted);
+    QObjectPrivate::connect(styleList, &QFontListView::highlighted,
+                            this, &QFontDialogPrivate::styleHighlighted);
+    QObjectPrivate::connect(sizeList, &QFontListView::highlighted,
+                            this, &QFontDialogPrivate::sizeHighlighted);
+    QObjectPrivate::connect(sizeEdit, &QLineEdit::textChanged,
+                            this, &QFontDialogPrivate::sizeChanged);
 
-    QObject::connect(strikeout, SIGNAL(clicked()), q, SLOT(_q_updateSample()));
-    QObject::connect(underline, SIGNAL(clicked()), q, SLOT(_q_updateSample()));
+    QObjectPrivate::connect(strikeout, &QCheckBox::clicked,
+                            this, &QFontDialogPrivate::updateSample);
+    QObjectPrivate::connect(underline, &QCheckBox::clicked, this,
+                            &QFontDialogPrivate::updateSample);
 
     for (int i = 0; i < QFontDatabase::WritingSystemsCount; ++i) {
         QFontDatabase::WritingSystem ws = QFontDatabase::WritingSystem(i);
@@ -277,11 +284,11 @@ void QFontDialogPrivate::init()
 
     QPushButton *button
             = static_cast<QPushButton *>(buttonBox->addButton(QDialogButtonBox::Ok));
-    QObject::connect(buttonBox, SIGNAL(accepted()), q, SLOT(accept()));
+    QObject::connect(buttonBox, &QDialogButtonBox::accepted, q, &QDialog::accept);
     button->setDefault(true);
 
     buttonBox->addButton(QDialogButtonBox::Cancel);
-    QObject::connect(buttonBox, SIGNAL(rejected()), q, SLOT(reject()));
+    QObject::connect(buttonBox, &QDialogButtonBox::rejected, q, &QDialog::reject);
 
     q->resize(500, 360);
 
@@ -430,8 +437,10 @@ void QFontDialogPrivate::initHelper(QPlatformDialogHelper *h)
     auto *fontDialogHelper = static_cast<QPlatformFontDialogHelper *>(h);
     fontDialogHelper->setOptions(options);
     fontDialogHelper->setCurrentFont(q->currentFont());
-    QObject::connect(h, SIGNAL(currentFontChanged(QFont)), q, SIGNAL(currentFontChanged(QFont)));
-    QObject::connect(h, SIGNAL(fontSelected(QFont)), q, SIGNAL(fontSelected(QFont)));
+    QObject::connect(fontDialogHelper, &QPlatformFontDialogHelper::currentFontChanged,
+                     q, &QFontDialog::currentFontChanged);
+    QObject::connect(fontDialogHelper, &QPlatformFontDialogHelper::fontSelected,
+                     q, &QFontDialog::fontSelected);
 }
 
 void QFontDialogPrivate::helperPrepareShow(QPlatformDialogHelper *)
@@ -622,10 +631,10 @@ void QFontDialogPrivate::updateSizes()
         sizeEdit->clear();
     }
 
-    _q_updateSample();
+    updateSample();
 }
 
-void QFontDialogPrivate::_q_updateSample()
+void QFontDialogPrivate::updateSample()
 {
     // compute new font
     int pSize = sizeEdit->text().toInt();
@@ -651,7 +660,7 @@ void QFontDialogPrivate::updateSampleFont(const QFont &newFont)
 /*!
     \internal
 */
-void QFontDialogPrivate::_q_writingSystemHighlighted(int index)
+void QFontDialogPrivate::writingSystemHighlighted(int index)
 {
     writingSystem = QFontDatabase::WritingSystem(index);
     sampleEdit->setText(QFontDatabase::writingSystemSample(writingSystem));
@@ -661,7 +670,7 @@ void QFontDialogPrivate::_q_writingSystemHighlighted(int index)
 /*!
     \internal
 */
-void QFontDialogPrivate::_q_familyHighlighted(int i)
+void QFontDialogPrivate::familyHighlighted(int i)
 {
     Q_Q(QFontDialog);
     family = familyList->text(i);
@@ -678,7 +687,7 @@ void QFontDialogPrivate::_q_familyHighlighted(int i)
     \internal
 */
 
-void QFontDialogPrivate::_q_styleHighlighted(int index)
+void QFontDialogPrivate::styleHighlighted(int index)
 {
     Q_Q(QFontDialog);
     QString s = styleList->text(index);
@@ -697,7 +706,7 @@ void QFontDialogPrivate::_q_styleHighlighted(int index)
     \internal
 */
 
-void QFontDialogPrivate::_q_sizeHighlighted(int index)
+void QFontDialogPrivate::sizeHighlighted(int index)
 {
     Q_Q(QFontDialog);
     QString s = sizeList->text(index);
@@ -707,7 +716,7 @@ void QFontDialogPrivate::_q_sizeHighlighted(int index)
         sizeEdit->selectAll();
 
     size = s.toInt();
-    _q_updateSample();
+    updateSample();
 }
 
 /*!
@@ -716,7 +725,7 @@ void QFontDialogPrivate::_q_sizeHighlighted(int index)
     The size is passed in the \a s argument as a \e string.
 */
 
-void QFontDialogPrivate::_q_sizeChanged(const QString &s)
+void QFontDialogPrivate::sizeChanged(const QString &s)
 {
     // no need to check if the conversion is valid, since we have an QIntValidator in the size edit
     int size = s.toInt();
@@ -736,7 +745,7 @@ void QFontDialogPrivate::_q_sizeChanged(const QString &s)
         else
             sizeList->clearSelection();
     }
-    _q_updateSample();
+    updateSample();
 }
 
 void QFontDialogPrivate::retranslateStrings()
