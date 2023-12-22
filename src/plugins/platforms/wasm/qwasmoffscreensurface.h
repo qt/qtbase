@@ -20,6 +20,7 @@ public:
     ~QWasmOffscreenSurface() final;
 
     const std::string &id() const { return m_specialTargetId; }
+    bool isValid() const override;
 
 private:
     std::string m_specialTargetId;
