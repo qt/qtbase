@@ -8,8 +8,8 @@
 #include <qobject.h>
 #include <qmetaobject.h>
 #include <qjsondocument.h>
-#include <qversionnumber.h>
 #include <qregularexpression.h>
+#include <qtyperevision.h>
 
 #include <private/qobject_p.h>
 
