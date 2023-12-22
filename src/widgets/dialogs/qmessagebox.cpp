@@ -98,8 +98,8 @@ public:
         layout->addWidget(textEdit);
         setLayout(layout);
 
-        connect(textEdit, SIGNAL(copyAvailable(bool)),
-                this, SLOT(textCopyAvailable(bool)));
+        connect(textEdit, &TextEdit::copyAvailable,
+                this, &QMessageBoxDetailsText::textCopyAvailable);
     }
     void setText(const QString &text) { textEdit->setPlainText(text); }
     QString text() const { return textEdit->toPlainText(); }
@@ -178,8 +178,8 @@ public:
 
     void init(const QString &title = QString(), const QString &text = QString());
     void setupLayout();
-    void _q_buttonClicked(QAbstractButton *);
-    void _q_helperClicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role);
+    void buttonClicked(QAbstractButton *);
+    void helperClicked(QPlatformDialogHelper::StandardButton button, QPlatformDialogHelper::ButtonRole role);
     void setClickedButton(QAbstractButton *button);
 
     QAbstractButton *findButton(int button0, int button1, int button2, int flags);
@@ -257,8 +257,8 @@ void QMessageBoxPrivate::init(const QString &title, const QString &text)
     buttonBox = new QDialogButtonBox;
     buttonBox->setObjectName("qt_msgbox_buttonbox"_L1);
     buttonBox->setCenterButtons(q->style()->styleHint(QStyle::SH_MessageBox_CenterButtons, nullptr, q));
-    QObject::connect(buttonBox, SIGNAL(clicked(QAbstractButton*)),
-                     q, SLOT(_q_buttonClicked(QAbstractButton*)));
+    QObjectPrivate::connect(buttonBox, &QDialogButtonBox::clicked,
+                            this, &QMessageBoxPrivate::buttonClicked);
     setupLayout();
     if (!title.isEmpty() || !text.isEmpty()) {
         q->setWindowTitle(title);
@@ -462,7 +462,7 @@ int QMessageBoxPrivate::dialogCode() const
     return QDialogPrivate::dialogCode();
 }
 
-void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
+void QMessageBoxPrivate::buttonClicked(QAbstractButton *button)
 {
     Q_Q(QMessageBox);
 #if QT_CONFIG(textedit)
@@ -496,7 +496,7 @@ void QMessageBoxPrivate::setClickedButton(QAbstractButton *button)
     q->done(resultCode);
 }
 
-void QMessageBoxPrivate::_q_helperClicked(QPlatformDialogHelper::StandardButton helperButton, QPlatformDialogHelper::ButtonRole role)
+void QMessageBoxPrivate::helperClicked(QPlatformDialogHelper::StandardButton helperButton, QPlatformDialogHelper::ButtonRole role)
 {
     Q_UNUSED(role);
     Q_Q(QMessageBox);
@@ -511,7 +511,7 @@ void QMessageBoxPrivate::_q_helperClicked(QPlatformDialogHelper::StandardButton 
 
     // Simulate click by explicitly clicking the button. This will ensure that
     // any logic of the button that responds to the click is respected, including
-    // plumbing back to _q_buttonClicked above based on the clicked() signal.
+    // plumbing back to buttonClicked above based on the clicked() signal.
     dialogButton->click();
 }
 
@@ -2766,19 +2766,13 @@ QPixmap QMessageBoxPrivate::standardIcon(QMessageBox::Icon icon, QMessageBox *mb
 
 void QMessageBoxPrivate::initHelper(QPlatformDialogHelper *h)
 {
-    Q_Q(QMessageBox);
-    QObject::connect(h, SIGNAL(clicked(QPlatformDialogHelper::StandardButton,QPlatformDialogHelper::ButtonRole)),
-                     q, SLOT(_q_helperClicked(QPlatformDialogHelper::StandardButton,QPlatformDialogHelper::ButtonRole)));
-
     auto *messageDialogHelper = static_cast<QPlatformMessageDialogHelper *>(h);
-    QObject::connect(messageDialogHelper, &QPlatformMessageDialogHelper::checkBoxStateChanged, q,
-        [this](Qt::CheckState state) {
-            if (checkbox)
-                checkbox->setCheckState(state);
-        }
-    );
+    QObjectPrivate::connect(messageDialogHelper, &QPlatformMessageDialogHelper::clicked,
+                            this, &QMessageBoxPrivate::helperClicked);
+    QObject::connect(messageDialogHelper, &QPlatformMessageDialogHelper::checkBoxStateChanged,
+                     checkbox, &QCheckBox::setCheckState);
 
-    static_cast<QPlatformMessageDialogHelper *>(h)->setOptions(options);
+    messageDialogHelper->setOptions(options);
 }
 
 static QMessageDialogOptions::StandardIcon helperIcon(QMessageBox::Icon i)

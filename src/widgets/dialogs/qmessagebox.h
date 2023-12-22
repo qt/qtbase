@@ -314,9 +314,6 @@ protected:
     void changeEvent(QEvent *event) override;
 
 private:
-    Q_PRIVATE_SLOT(d_func(), void _q_buttonClicked(QAbstractButton *))
-    Q_PRIVATE_SLOT(d_func(), void _q_helperClicked(QPlatformDialogHelper::StandardButton, QPlatformDialogHelper::ButtonRole))
-
     Q_DISABLE_COPY(QMessageBox)
     Q_DECLARE_PRIVATE(QMessageBox)
 };
