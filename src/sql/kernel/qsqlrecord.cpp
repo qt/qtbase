@@ -75,7 +75,7 @@ QSqlRecord::QSqlRecord()
     of a record in \l{constant time}.
 */
 
-QSqlRecord::QSqlRecord(const QSqlRecord& other)
+QSqlRecord::QSqlRecord(const QSqlRecord &other)
     = default;
 
 /*!
@@ -116,7 +116,7 @@ QSqlRecord::QSqlRecord(const QSqlRecord& other)
     of a record in \l{constant time}.
 */
 
-QSqlRecord& QSqlRecord::operator=(const QSqlRecord& other)
+QSqlRecord& QSqlRecord::operator=(const QSqlRecord &other)
     = default;
 
 /*!
@@ -169,7 +169,7 @@ QVariant QSqlRecord::value(int index) const
     \sa indexOf()
 */
 
-QVariant QSqlRecord::value(const QString& name) const
+QVariant QSqlRecord::value(const QString &name) const
 {
     return value(indexOf(name));
 }
@@ -195,7 +195,7 @@ QString QSqlRecord::fieldName(int index) const
     \sa fieldName()
 */
 
-int QSqlRecord::indexOf(const QString& name) const
+int QSqlRecord::indexOf(const QString &name) const
 {
     QStringView tableName;
     QStringView fieldName(name);
@@ -244,7 +244,7 @@ QSqlField QSqlRecord::field(const QString &name) const
     \sa insert(), replace(), remove()
 */
 
-void QSqlRecord::append(const QSqlField& field)
+void QSqlRecord::append(const QSqlField &field)
 {
     detach();
     d->fields.append(field);
@@ -255,7 +255,7 @@ void QSqlRecord::append(const QSqlField& field)
 
     \sa append(), replace(), remove()
  */
-void QSqlRecord::insert(int pos, const QSqlField& field)
+void QSqlRecord::insert(int pos, const QSqlField &field)
 {
    detach();
    d->fields.insert(pos, field);
@@ -268,7 +268,7 @@ void QSqlRecord::insert(int pos, const QSqlField& field)
     \sa append(), insert(), remove()
 */
 
-void QSqlRecord::replace(int pos, const QSqlField& field)
+void QSqlRecord::replace(int pos, const QSqlField &field)
 {
     if (!d->contains(pos))
         return;
@@ -323,7 +323,7 @@ bool QSqlRecord::isEmpty() const
     otherwise returns \c false.
 */
 
-bool QSqlRecord::contains(const QString& name) const
+bool QSqlRecord::contains(const QString &name) const
 {
     return indexOf(name) >= 0;
 }
@@ -351,7 +351,7 @@ void QSqlRecord::clearValues()
     \sa isGenerated()
 */
 
-void QSqlRecord::setGenerated(const QString& name, bool generated)
+void QSqlRecord::setGenerated(const QString &name, bool generated)
 {
     setGenerated(indexOf(name), generated);
 }
@@ -389,7 +389,7 @@ bool QSqlRecord::isNull(int index) const
 
     \sa setNull()
 */
-bool QSqlRecord::isNull(const QString& name) const
+bool QSqlRecord::isNull(const QString &name) const
 {
     return isNull(indexOf(name));
 }
@@ -414,7 +414,7 @@ void QSqlRecord::setNull(int index)
     Sets the value of the field called \a name to null. If the field
     does not exist, nothing happens.
 */
-void QSqlRecord::setNull(const QString& name)
+void QSqlRecord::setNull(const QString &name)
 {
     setNull(indexOf(name));
 }
@@ -426,7 +426,7 @@ void QSqlRecord::setNull(const QString& name)
 
     \sa setGenerated()
 */
-bool QSqlRecord::isGenerated(const QString& name) const
+bool QSqlRecord::isGenerated(const QString &name) const
 {
     return isGenerated(indexOf(name));
 }
@@ -461,7 +461,7 @@ int QSqlRecord::count() const
     \sa setNull()
 */
 
-void QSqlRecord::setValue(int index, const QVariant& val)
+void QSqlRecord::setValue(int index, const QVariant &val)
 {
     if (!d->contains(index))
         return;
@@ -477,7 +477,7 @@ void QSqlRecord::setValue(int index, const QVariant& val)
     does not exist, nothing happens.
 */
 
-void QSqlRecord::setValue(const QString& name, const QVariant& val)
+void QSqlRecord::setValue(const QString &name, const QVariant &val)
 {
     setValue(indexOf(name), val);
 }

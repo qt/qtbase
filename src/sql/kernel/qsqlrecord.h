@@ -20,9 +20,9 @@ class Q_SQL_EXPORT QSqlRecord
 {
 public:
     QSqlRecord();
-    QSqlRecord(const QSqlRecord& other);
+    QSqlRecord(const QSqlRecord &other);
     QSqlRecord(QSqlRecord &&other) noexcept = default;
-    QSqlRecord& operator=(const QSqlRecord& other);
+    QSqlRecord& operator=(const QSqlRecord &other);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QSqlRecord)
     ~QSqlRecord();
 
@@ -32,14 +32,14 @@ public:
     inline bool operator!=(const QSqlRecord &other) const { return !operator==(other); }
 
     QVariant value(int i) const;
-    QVariant value(const QString& name) const;
-    void setValue(int i, const QVariant& val);
-    void setValue(const QString& name, const QVariant& val);
+    QVariant value(const QString &name) const;
+    void setValue(int i, const QVariant &val);
+    void setValue(const QString &name, const QVariant &val);
 
     void setNull(int i);
-    void setNull(const QString& name);
+    void setNull(const QString &name);
     bool isNull(int i) const;
-    bool isNull(const QString& name) const;
+    bool isNull(const QString &name) const;
 
     int indexOf(const QString &name) const;
     QString fieldName(int i) const;
@@ -48,17 +48,17 @@ public:
     QSqlField field(const QString &name) const;
 
     bool isGenerated(int i) const;
-    bool isGenerated(const QString& name) const;
-    void setGenerated(const QString& name, bool generated);
+    bool isGenerated(const QString &name) const;
+    void setGenerated(const QString &name, bool generated);
     void setGenerated(int i, bool generated);
 
-    void append(const QSqlField& field);
-    void replace(int pos, const QSqlField& field);
-    void insert(int pos, const QSqlField& field);
+    void append(const QSqlField &field);
+    void replace(int pos, const QSqlField &field);
+    void insert(int pos, const QSqlField &field);
     void remove(int pos);
 
     bool isEmpty() const;
-    bool contains(const QString& name) const;
+    bool contains(const QString &name) const;
     void clear();
     void clearValues();
     int count() const;
