@@ -47,6 +47,7 @@ public:
     };
 
     QUrlModel(QObject *parent = nullptr);
+    ~QUrlModel();
 
     QStringList mimeTypes() const override;
     QMimeData *mimeData(const QModelIndexList &indexes) const override;
@@ -80,6 +81,7 @@ private:
 
     QList<WatchItem> watching;
     QList<QUrl> invalidUrls;
+    std::array<QMetaObject::Connection, 3> modelConnections;
 };
 Q_DECLARE_TYPEINFO(QUrlModel::WatchItem, Q_RELOCATABLE_TYPE);
 
