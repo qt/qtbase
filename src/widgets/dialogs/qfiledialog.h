@@ -238,36 +238,6 @@ private:
     Q_DECLARE_PRIVATE(QFileDialog)
     Q_DISABLE_COPY(QFileDialog)
 
-    Q_PRIVATE_SLOT(d_func(), void _q_pathChanged(const QString &))
-
-    Q_PRIVATE_SLOT(d_func(), void _q_navigateBackward())
-    Q_PRIVATE_SLOT(d_func(), void _q_navigateForward())
-    Q_PRIVATE_SLOT(d_func(), void _q_navigateToParent())
-    Q_PRIVATE_SLOT(d_func(), void _q_createDirectory())
-    Q_PRIVATE_SLOT(d_func(), void _q_showListView())
-    Q_PRIVATE_SLOT(d_func(), void _q_showDetailsView())
-    Q_PRIVATE_SLOT(d_func(), void _q_showContextMenu(const QPoint &))
-    Q_PRIVATE_SLOT(d_func(), void _q_renameCurrent())
-    Q_PRIVATE_SLOT(d_func(), void _q_deleteCurrent())
-    Q_PRIVATE_SLOT(d_func(), void _q_showHidden())
-    Q_PRIVATE_SLOT(d_func(), void _q_updateOkButton())
-    Q_PRIVATE_SLOT(d_func(), void _q_currentChanged(const QModelIndex &index))
-    Q_PRIVATE_SLOT(d_func(), void _q_enterDirectory(const QModelIndex &index))
-    Q_PRIVATE_SLOT(d_func(), void _q_emitUrlSelected(const QUrl &))
-    Q_PRIVATE_SLOT(d_func(), void _q_emitUrlsSelected(const QList<QUrl> &))
-    Q_PRIVATE_SLOT(d_func(), void _q_nativeCurrentChanged(const QUrl &))
-    Q_PRIVATE_SLOT(d_func(), void _q_nativeEnterDirectory(const QUrl&))
-    Q_PRIVATE_SLOT(d_func(), void _q_goToDirectory(const QString &path))
-    Q_PRIVATE_SLOT(d_func(), void _q_useNameFilter(int index))
-    Q_PRIVATE_SLOT(d_func(), void _q_selectionChanged())
-    Q_PRIVATE_SLOT(d_func(), void _q_goToUrl(const QUrl &url))
-    Q_PRIVATE_SLOT(d_func(), void _q_goHome())
-    Q_PRIVATE_SLOT(d_func(), void _q_showHeader(QAction *))
-    Q_PRIVATE_SLOT(d_func(), void _q_autoCompleteFileName(const QString &text))
-    Q_PRIVATE_SLOT(d_func(), void _q_rowsInserted(const QModelIndex & parent))
-    Q_PRIVATE_SLOT(d_func(), void _q_fileRenamed(const QString &path,
-                                                 const QString &oldName,
-                                                 const QString &newName))
     friend class QPlatformDialogHelper;
 };
 
