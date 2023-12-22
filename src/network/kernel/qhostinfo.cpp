@@ -965,7 +965,7 @@ void QHostInfoLookupManager::rescheduleWithMutexHeld()
                                        isAlreadyRunning).second,
                            scheduledLookups.end());
 
-    const int availableThreads = threadPool.maxThreadCount() - currentLookups.size();
+    const int availableThreads = std::max(threadPool.maxThreadCount(), 1) - currentLookups.size();
     if (availableThreads > 0) {
         int readyToStartCount = qMin(availableThreads, scheduledLookups.size());
         auto it = scheduledLookups.begin();
