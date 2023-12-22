@@ -33,23 +33,31 @@ public:
 
     QVariant value(int i) const;
     QVariant value(const QString &name) const;
+    QVariant value(QStringView name) const;
     void setValue(int i, const QVariant &val);
     void setValue(const QString &name, const QVariant &val);
+    void setValue(QStringView name, const QVariant &val);
 
     void setNull(int i);
     void setNull(const QString &name);
+    void setNull(QStringView name);
     bool isNull(int i) const;
     bool isNull(const QString &name) const;
+    bool isNull(QStringView name) const;
 
     int indexOf(const QString &name) const;
+    int indexOf(QStringView name) const;
     QString fieldName(int i) const;
 
     QSqlField field(int i) const;
     QSqlField field(const QString &name) const;
+    QSqlField field(QStringView name) const;
 
     bool isGenerated(int i) const;
     bool isGenerated(const QString &name) const;
+    bool isGenerated(QStringView name) const;
     void setGenerated(const QString &name, bool generated);
+    void setGenerated(QStringView name, bool generated);
     void setGenerated(int i, bool generated);
 
     void append(const QSqlField &field);
@@ -59,6 +67,7 @@ public:
 
     bool isEmpty() const;
     bool contains(const QString &name) const;
+    bool contains(QStringView name) const;
     void clear();
     void clearValues();
     int count() const;
