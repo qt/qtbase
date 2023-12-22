@@ -27,4 +27,9 @@ QWasmOffscreenSurface::~QWasmOffscreenSurface()
     emscripten::val::module_property("specialHTMLTargets").delete_(m_specialTargetId);
 }
 
+bool QWasmOffscreenSurface::isValid() const
+{
+    return !m_offscreenCanvas.isNull() && !m_offscreenCanvas.isUndefined();
+}
+
 QT_END_NAMESPACE
