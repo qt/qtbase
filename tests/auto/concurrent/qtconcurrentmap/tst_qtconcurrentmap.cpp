@@ -209,6 +209,17 @@ void tst_QtConcurrentMap::map()
         QCOMPARE(list, NonTemplateSequence({ 2, 4, 6 }));
     }
 
+    // custom pool with invalid number of threads
+    {
+        QList<int> list;
+        list << 1 << 2 << 3;
+        QThreadPool pool;
+        pool.setMaxThreadCount(0); // explicitly set incorrect value
+        // This should not crash
+        QtConcurrent::map(&pool, list, MultiplyBy2InPlace()).waitForFinished();
+        QCOMPARE(list, QList<int>() << 2 << 4 << 6);
+    }
+
 #if 0
     // not allowed: map() with immutable sequences makes no sense
     {
@@ -1045,6 +1056,17 @@ void tst_QtConcurrentMap::mappedReducedThreadPool()
         auto result = QtConcurrent::blockingMappedReduced(&pool, MoveOnlyVector<int>({ 1, 2, 3 }),
                                                           intCube, intSumReduce);
         QCOMPARE(result, sumOfCubes);
+    }
+
+    {
+        // pool with invalid number of threads
+        QThreadPool pool;
+        pool.setMaxThreadCount(0); // explicitly set incorrect value
+
+        // This should not crash
+        NonTemplateSequence list { 1, 2, 3 };
+        auto future = QtConcurrent::mappedReduced(&pool, list, multiplyBy2, intSumReduce);
+        QCOMPARE(future.result(), 12);
     }
 }
 
