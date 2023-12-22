@@ -70,13 +70,6 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFontDialog)
-
-    Q_PRIVATE_SLOT(d_func(), void _q_sizeChanged(const QString &))
-    Q_PRIVATE_SLOT(d_func(), void _q_familyHighlighted(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_writingSystemHighlighted(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_styleHighlighted(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_sizeHighlighted(int))
-    Q_PRIVATE_SLOT(d_func(), void _q_updateSample())
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QFontDialog::FontDialogOptions)
