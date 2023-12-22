@@ -161,9 +161,6 @@ public:
 
 private:
     Q_DISABLE_COPY(QInputDialog)
-    Q_PRIVATE_SLOT(d_func(), void _q_textChanged(const QString&))
-    Q_PRIVATE_SLOT(d_func(), void _q_plainTextEditTextChanged())
-    Q_PRIVATE_SLOT(d_func(), void _q_currentRowChanged(const QModelIndex&, const QModelIndex&))
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QInputDialog::InputDialogOptions)

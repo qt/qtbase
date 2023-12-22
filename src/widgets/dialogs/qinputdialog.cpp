@@ -70,8 +70,10 @@ class QInputDialogSpinBox : public QSpinBox
 public:
     QInputDialogSpinBox(QWidget *parent)
         : QSpinBox(parent) {
-        connect(lineEdit(), SIGNAL(textChanged(QString)), this, SLOT(notifyTextChanged()));
-        connect(this, SIGNAL(editingFinished()), this, SLOT(notifyTextChanged()));
+        connect(lineEdit(), &QLineEdit::textChanged,
+                this, &QInputDialogSpinBox::notifyTextChanged);
+        connect(this, &QInputDialogSpinBox::editingFinished,
+                this, &QInputDialogSpinBox::notifyTextChanged);
     }
 
 signals:
@@ -103,8 +105,10 @@ class QInputDialogDoubleSpinBox : public QDoubleSpinBox
 public:
     QInputDialogDoubleSpinBox(QWidget *parent = nullptr)
         : QDoubleSpinBox(parent) {
-        connect(lineEdit(), SIGNAL(textChanged(QString)), this, SLOT(notifyTextChanged()));
-        connect(this, SIGNAL(editingFinished()), this, SLOT(notifyTextChanged()));
+        connect(lineEdit(), &QLineEdit::textChanged,
+                this, &QInputDialogDoubleSpinBox::notifyTextChanged);
+        connect(this, &QInputDialogDoubleSpinBox::editingFinished,
+                this, &QInputDialogDoubleSpinBox::notifyTextChanged);
     }
 
 signals:
@@ -163,9 +167,9 @@ public:
     QString listViewText() const;
     void ensureLayout() const { const_cast<QInputDialogPrivate *>(this)->ensureLayout(); }
     bool useComboBoxOrListView() const { return comboBox && comboBox->count() > 0; }
-    void _q_textChanged(const QString &text);
-    void _q_plainTextEditTextChanged();
-    void _q_currentRowChanged(const QModelIndex &newIndex, const QModelIndex &oldIndex);
+    void textChanged(const QString &text);
+    void plainTextEditTextChanged();
+    void currentRowChanged(const QModelIndex &newIndex, const QModelIndex &oldIndex);
 
     mutable QLabel *label;
     mutable QDialogButtonBox *buttonBox;
@@ -209,8 +213,8 @@ void QInputDialogPrivate::ensureLayout()
     label->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
 
     buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, q);
-    QObject::connect(buttonBox, SIGNAL(accepted()), q, SLOT(accept()));
-    QObject::connect(buttonBox, SIGNAL(rejected()), q, SLOT(reject()));
+    QObject::connect(buttonBox, &QDialogButtonBox::accepted, q, &QDialog::accept);
+    QObject::connect(buttonBox, &QDialogButtonBox::rejected, q, &QDialog::reject);
 
     mainLayout = new QVBoxLayout(q);
     mainLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
@@ -230,8 +234,8 @@ void QInputDialogPrivate::ensureLineEdit()
         qt_widget_private(lineEdit)->inheritsInputMethodHints = 1;
 #endif
         lineEdit->hide();
-        QObject::connect(lineEdit, SIGNAL(textChanged(QString)),
-                         q, SLOT(_q_textChanged(QString)));
+        QObjectPrivate::connect(lineEdit, &QLineEdit::textChanged,
+                                this, &QInputDialogPrivate::textChanged);
     }
 }
 
@@ -245,8 +249,8 @@ void QInputDialogPrivate::ensurePlainTextEdit()
         qt_widget_private(plainTextEdit)->inheritsInputMethodHints = 1;
 #endif
         plainTextEdit->hide();
-        QObject::connect(plainTextEdit, SIGNAL(textChanged()),
-                         q, SLOT(_q_plainTextEditTextChanged()));
+        QObjectPrivate::connect(plainTextEdit, &QPlainTextEdit::textChanged,
+                                this, &QInputDialogPrivate::plainTextEditTextChanged);
     }
 }
 
@@ -259,10 +263,10 @@ void QInputDialogPrivate::ensureComboBox()
         qt_widget_private(comboBox)->inheritsInputMethodHints = 1;
 #endif
         comboBox->hide();
-        QObject::connect(comboBox, SIGNAL(editTextChanged(QString)),
-                         q, SLOT(_q_textChanged(QString)));
-        QObject::connect(comboBox, SIGNAL(currentTextChanged(QString)),
-                         q, SLOT(_q_textChanged(QString)));
+        QObjectPrivate::connect(comboBox, &QComboBox::editTextChanged,
+                                this, &QInputDialogPrivate::textChanged);
+        QObjectPrivate::connect(comboBox, &QComboBox::currentTextChanged,
+                                this, &QInputDialogPrivate::textChanged);
     }
 }
 
@@ -277,9 +281,9 @@ void QInputDialogPrivate::ensureListView()
         listView->setSelectionMode(QAbstractItemView::SingleSelection);
         listView->setModel(comboBox->model());
         listView->setCurrentIndex(QModelIndex()); // ###
-        QObject::connect(listView->selectionModel(),
-                         SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),
-                         q, SLOT(_q_currentRowChanged(QModelIndex,QModelIndex)));
+        QObjectPrivate::connect(listView->selectionModel(),
+                                &QItemSelectionModel::currentRowChanged,
+                                this, &QInputDialogPrivate::currentRowChanged);
     }
 }
 
@@ -289,8 +293,8 @@ void QInputDialogPrivate::ensureIntSpinBox()
     if (!intSpinBox) {
         intSpinBox = new QInputDialogSpinBox(q);
         intSpinBox->hide();
-        QObject::connect(intSpinBox, SIGNAL(valueChanged(int)),
-                         q, SIGNAL(intValueChanged(int)));
+        QObject::connect(intSpinBox, &QInputDialogSpinBox::valueChanged,
+                         q, &QInputDialog::intValueChanged);
     }
 }
 
@@ -300,8 +304,8 @@ void QInputDialogPrivate::ensureDoubleSpinBox()
     if (!doubleSpinBox) {
         doubleSpinBox = new QInputDialogDoubleSpinBox(q);
         doubleSpinBox->hide();
-        QObject::connect(doubleSpinBox, SIGNAL(valueChanged(double)),
-                         q, SIGNAL(doubleValueChanged(double)));
+        QObject::connect(doubleSpinBox, &QInputDialogDoubleSpinBox::valueChanged,
+                         q, &QInputDialog::doubleValueChanged);
     }
 }
 
@@ -376,9 +380,9 @@ void QInputDialogPrivate::chooseRightTextInputWidget()
     setInputWidget(widget);
 
     if (inputWidget == comboBox) {
-        _q_textChanged(comboBox->currentText());
+        textChanged(comboBox->currentText());
     } else if (inputWidget == listView) {
-        _q_textChanged(listViewText());
+        textChanged(listViewText());
     }
 }
 
@@ -412,7 +416,7 @@ QString QInputDialogPrivate::listViewText() const
     }
 }
 
-void QInputDialogPrivate::_q_textChanged(const QString &text)
+void QInputDialogPrivate::textChanged(const QString &text)
 {
     Q_Q(QInputDialog);
     if (textValue != text) {
@@ -421,7 +425,7 @@ void QInputDialogPrivate::_q_textChanged(const QString &text)
     }
 }
 
-void QInputDialogPrivate::_q_plainTextEditTextChanged()
+void QInputDialogPrivate::plainTextEditTextChanged()
 {
     Q_Q(QInputDialog);
     QString text = plainTextEdit->toPlainText();
@@ -431,10 +435,10 @@ void QInputDialogPrivate::_q_plainTextEditTextChanged()
     }
 }
 
-void QInputDialogPrivate::_q_currentRowChanged(const QModelIndex &newIndex,
-                                               const QModelIndex & /* oldIndex */)
+void QInputDialogPrivate::currentRowChanged(const QModelIndex &newIndex,
+                                            const QModelIndex & /* oldIndex */)
 {
-    _q_textChanged(comboBox->model()->data(newIndex).toString());
+    textChanged(comboBox->model()->data(newIndex).toString());
     buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
 }
 
