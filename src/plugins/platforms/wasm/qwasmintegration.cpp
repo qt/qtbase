@@ -22,6 +22,7 @@
 #include <qpa/qwindowsysteminterface.h>
 #include <QtCore/qcoreapplication.h>
 #include <qpa/qplatforminputcontextfactory_p.h>
+#include <qpa/qwindowsysteminterface_p.h>
 
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
@@ -95,6 +96,7 @@ QWasmIntegration::QWasmIntegration()
         qt_set_sequence_auto_mnemonic(false);
 
     touchPoints = emscripten::val::global("navigator")["maxTouchPoints"].as<int>();
+    QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
 
     // Create screens for container elements. Each container element will ultimately become a
     // div element. Qt historically supported supplying canvas for screen elements - these elements

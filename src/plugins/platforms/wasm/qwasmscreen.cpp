@@ -92,6 +92,16 @@ QWasmScreen::QWasmScreen(const emscripten::val &containerOrCanvas)
             QPointingDevice::Capability::Position | QPointingDevice::Capability::Area
                     | QPointingDevice::Capability::NormalizedPosition,
             10, 0);
+    m_tabletDevice = std::make_unique<QPointingDevice>(
+            "stylus", 2, QInputDevice::DeviceType::Stylus,
+            QPointingDevice::PointerType::Pen,
+            QPointingDevice::Capability::Position | QPointingDevice::Capability::Pressure
+                | QPointingDevice::Capability::NormalizedPosition
+                | QInputDevice::Capability::MouseEmulation
+                | QInputDevice::Capability::Hover | QInputDevice::Capability::Rotation
+                | QInputDevice::Capability::XTilt | QInputDevice::Capability::YTilt
+                | QInputDevice::Capability::TangentialPressure,
+            0, 0);
 
     QWindowSystemInterface::registerInputDevice(m_touchDevice.get());
 }

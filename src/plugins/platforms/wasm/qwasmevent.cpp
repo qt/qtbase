@@ -184,6 +184,10 @@ PointerEvent::PointerEvent(EventType type, emscripten::val event) : MouseEvent(t
     width = event["width"].as<qreal>();
     height = event["height"].as<qreal>();
     pressure = event["pressure"].as<qreal>();
+    tiltX = event["tiltX"].as<qreal>();
+    tiltY = event["tiltY"].as<qreal>();
+    tangentialPressure = event["tangentialPressure"].as<qreal>();
+    twist = event["twist"].as<qreal>();
     isPrimary = event["isPrimary"].as<bool>();
 }
 

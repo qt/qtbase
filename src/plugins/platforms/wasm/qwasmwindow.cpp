@@ -490,7 +490,7 @@ bool QWasmWindow::processKey(const KeyEvent &event)
 
 bool QWasmWindow::processPointer(const PointerEvent &event)
 {
-    if (event.pointerType != PointerType::Mouse)
+    if (event.pointerType != PointerType::Mouse && event.pointerType != PointerType::Pen)
         return false;
 
     switch (event.type) {
