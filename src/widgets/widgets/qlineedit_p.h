@@ -190,25 +190,27 @@ public:
 
     QRect adjustedContentsRect() const;
 
-    void _q_handleWindowActivate();
-    void _q_textEdited(const QString &);
-    void _q_cursorPositionChanged(int, int);
+    void handleWindowActivate();
+    void textEdited(const QString &);
+    void cursorPositionChanged(int, int);
 #ifdef QT_KEYPAD_NAVIGATION
-    void _q_editFocusChange(bool);
+    void editFocusChange(bool);
 #endif
-    void _q_selectionChanged();
-    void _q_updateNeeded(const QRect &);
+    void selectionChanged();
+    void updateNeeded(const QRect &);
 #if QT_CONFIG(completer)
-    void _q_completionHighlighted(const QString &);
+    void connectCompleter();
+    void disconnectCompleter();
+    void completionHighlighted(const QString &);
 #endif
     QPoint mousePressPos;
 #if QT_CONFIG(draganddrop)
     QBasicTimer dndTimer;
     void drag();
 #endif
-    void _q_textChanged(const QString &);
-    void _q_clearButtonClicked();
-    void _q_controlEditingFinished();
+    void textChanged(const QString &);
+    void clearButtonClicked();
+    void controlEditingFinished();
 
     QMargins textMargins; // use effectiveTextMargins() in case of icon.
 

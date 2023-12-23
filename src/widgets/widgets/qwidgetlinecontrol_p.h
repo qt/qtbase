@@ -516,6 +516,8 @@ private:
 
     // accessibility events are sent for this object
     QObject *m_accessibleObject;
+
+    friend class QLineEdit;
 };
 
 QT_END_NAMESPACE
