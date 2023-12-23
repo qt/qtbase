@@ -1171,12 +1171,14 @@ void QLabel::setBuddy(QWidget *buddy)
     Q_D(QLabel);
 
     if (d->buddy)
-        disconnect(d->buddy, SIGNAL(destroyed()), this, SLOT(_q_buddyDeleted()));
+        QObjectPrivate::disconnect(d->buddy, &QObject::destroyed,
+                                   d, &QLabelPrivate::buddyDeleted);
 
     d->buddy = buddy;
 
     if (buddy)
-        connect(buddy, SIGNAL(destroyed()), this, SLOT(_q_buddyDeleted()));
+        QObjectPrivate::connect(buddy, &QObject::destroyed,
+                                d, &QLabelPrivate::buddyDeleted);
 
     if (d->isTextLabel) {
         if (d->shortcutId)
@@ -1219,7 +1221,7 @@ void QLabelPrivate::updateShortcut()
 }
 
 
-void QLabelPrivate::_q_buddyDeleted()
+void QLabelPrivate::buddyDeleted()
 {
     Q_Q(QLabel);
     q->setBuddy(nullptr);
@@ -1228,7 +1230,7 @@ void QLabelPrivate::_q_buddyDeleted()
 #endif // QT_NO_SHORTCUT
 
 #if QT_CONFIG(movie)
-void QLabelPrivate::_q_movieUpdated(const QRect& rect)
+void QLabelPrivate::movieUpdated(const QRect &rect)
 {
     Q_Q(QLabel);
     if (movie && movie->isValid()) {
@@ -1251,12 +1253,12 @@ void QLabelPrivate::_q_movieUpdated(const QRect& rect)
     }
 }
 
-void QLabelPrivate::_q_movieResized(const QSize& size)
+void QLabelPrivate::movieResized(const QSize &size)
 {
     Q_Q(QLabel);
     q->update(); //we need to refresh the whole background in case the new size is smaller
     valid_hints = false;
-    _q_movieUpdated(QRect(QPoint(0,0), size));
+    movieUpdated(QRect(QPoint(0,0), size));
     q->updateGeometry();
 }
 
@@ -1278,8 +1280,10 @@ void QLabel::setMovie(QMovie *movie)
         return;
 
     d->movie = movie;
-    connect(movie, SIGNAL(resized(QSize)), this, SLOT(_q_movieResized(QSize)));
-    connect(movie, SIGNAL(updated(QRect)), this, SLOT(_q_movieUpdated(QRect)));
+    d->movieConnections = {
+        QObjectPrivate::connect(movie, &QMovie::resized, d, &QLabelPrivate::movieResized),
+        QObjectPrivate::connect(movie, &QMovie::updated, d, &QLabelPrivate::movieUpdated),
+    };
 
     // Assume that if the movie is running,
     // resize/update signals will come soon enough
@@ -1317,10 +1321,8 @@ void QLabelPrivate::clearContents()
     shortcutId = 0;
 #endif
 #if QT_CONFIG(movie)
-    if (movie) {
-        QObject::disconnect(movie, SIGNAL(resized(QSize)), q, SLOT(_q_movieResized(QSize)));
-        QObject::disconnect(movie, SIGNAL(updated(QRect)), q, SLOT(_q_movieUpdated(QRect)));
-    }
+    for (const auto &conn : std::as_const(movieConnections))
+        QObject::disconnect(conn);
     movie = nullptr;
 #endif
 #ifndef QT_NO_CURSOR
@@ -1580,12 +1582,12 @@ void QLabelPrivate::ensureTextControl() const
         control->setOpenExternalLinks(openExternalLinks);
         control->setPalette(q->palette());
         control->setFocus(q->hasFocus());
-        QObject::connect(control, SIGNAL(updateRequest(QRectF)),
-                         q, SLOT(update()));
-        QObject::connect(control, SIGNAL(linkHovered(QString)),
-                         q, SLOT(_q_linkHovered(QString)));
-        QObject::connect(control, SIGNAL(linkActivated(QString)),
-                         q, SIGNAL(linkActivated(QString)));
+        QObject::connect(control, &QWidgetTextControl::updateRequest,
+                         q, qOverload<>(&QLabel::update));
+        QObject::connect(control, &QWidgetTextControl::linkActivated,
+                         q, &QLabel::linkActivated);
+        QObjectPrivate::connect(control, &QWidgetTextControl::linkHovered,
+                                this, &QLabelPrivate::linkHovered);
         textLayoutDirty = true;
         textDirty = true;
     }
@@ -1601,7 +1603,7 @@ void QLabelPrivate::sendControlEvent(QEvent *e)
     control->processEvent(e, -layoutRect().topLeft(), q);
 }
 
-void QLabelPrivate::_q_linkHovered(const QString &anchor)
+void QLabelPrivate::linkHovered(const QString &anchor)
 {
     Q_Q(QLabel);
 #ifndef QT_NO_CURSOR
