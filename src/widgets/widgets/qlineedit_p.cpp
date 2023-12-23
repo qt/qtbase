@@ -74,8 +74,25 @@ QRect QLineEditPrivate::cursorRect() const
 }
 
 #if QT_CONFIG(completer)
+void QLineEditPrivate::connectCompleter()
+{
+    Q_Q(const QLineEdit);
+    QObject::connect(control->completer(), qOverload<const QString &>(&QCompleter::activated),
+                     q, &QLineEdit::setText);
+    QObjectPrivate::connect(control->completer(), qOverload<const QString &>(&QCompleter::highlighted),
+                            this, &QLineEditPrivate::completionHighlighted);
+}
 
-void QLineEditPrivate::_q_completionHighlighted(const QString &newText)
+void QLineEditPrivate::disconnectCompleter()
+{
+    Q_Q(const QLineEdit);
+    QObject::disconnect(control->completer(), qOverload<const QString &>(&QCompleter::activated),
+                        q, &QLineEdit::setText);
+    QObjectPrivate::disconnect(control->completer(), qOverload<const QString &>(&QCompleter::highlighted),
+                               this, &QLineEditPrivate::completionHighlighted);
+}
+
+void QLineEditPrivate::completionHighlighted(const QString &newText)
 {
     Q_Q(QLineEdit);
     if (control->completer()->completionMode() != QCompleter::InlineCompletion) {
@@ -96,14 +113,14 @@ void QLineEditPrivate::_q_completionHighlighted(const QString &newText)
 
 #endif // QT_CONFIG(completer)
 
-void QLineEditPrivate::_q_handleWindowActivate()
+void QLineEditPrivate::handleWindowActivate()
 {
     Q_Q(QLineEdit);
     if (!q->hasFocus() && control->hasSelectedText())
         control->deselect();
 }
 
-void QLineEditPrivate::_q_textEdited(const QString &text)
+void QLineEditPrivate::textEdited(const QString &text)
 {
     Q_Q(QLineEdit);
     edited = true;
@@ -115,7 +132,7 @@ void QLineEditPrivate::_q_textEdited(const QString &text)
 #endif
 }
 
-void QLineEditPrivate::_q_cursorPositionChanged(int from, int to)
+void QLineEditPrivate::cursorPositionChanged(int from, int to)
 {
     Q_Q(QLineEdit);
     q->update();
@@ -123,14 +140,14 @@ void QLineEditPrivate::_q_cursorPositionChanged(int from, int to)
 }
 
 #ifdef QT_KEYPAD_NAVIGATION
-void QLineEditPrivate::_q_editFocusChange(bool e)
+void QLineEditPrivate::editFocusChange(bool e)
 {
     Q_Q(QLineEdit);
     q->setEditFocus(e);
 }
 #endif
 
-void QLineEditPrivate::_q_selectionChanged()
+void QLineEditPrivate::selectionChanged()
 {
     Q_Q(QLineEdit);
     if (control->preeditAreaText().isEmpty()) {
@@ -150,7 +167,7 @@ void QLineEditPrivate::_q_selectionChanged()
 #endif
 }
 
-void QLineEditPrivate::_q_updateNeeded(const QRect &rect)
+void QLineEditPrivate::updateNeeded(const QRect &rect)
 {
     q_func()->update(adjustedControlRect(rect));
 }
@@ -158,45 +175,51 @@ void QLineEditPrivate::_q_updateNeeded(const QRect &rect)
 void QLineEditPrivate::init(const QString& txt)
 {
     Q_Q(QLineEdit);
+
+    const auto qUpdateMicroFocus = [q]()
+    {
+        q->updateMicroFocus();
+    };
     control = new QWidgetLineControl(txt);
     control->setParent(q);
     control->setFont(q->font());
-    QObject::connect(control, SIGNAL(textChanged(QString)),
-            q, SIGNAL(textChanged(QString)));
-    QObject::connect(control, SIGNAL(textEdited(QString)),
-            q, SLOT(_q_textEdited(QString)));
-    QObject::connect(control, SIGNAL(cursorPositionChanged(int,int)),
-            q, SLOT(_q_cursorPositionChanged(int,int)));
-    QObject::connect(control, SIGNAL(selectionChanged()),
-            q, SLOT(_q_selectionChanged()));
-    QObject::connect(control, SIGNAL(editingFinished()),
-            q, SLOT(_q_controlEditingFinished()));
+    QObject::connect(control, &QWidgetLineControl::textChanged,
+                     q, &QLineEdit::textChanged);
+    QObjectPrivate::connect(control, &QWidgetLineControl::textEdited,
+                            this, &QLineEditPrivate::textEdited);
+    QObjectPrivate::connect(control, &QWidgetLineControl::cursorPositionChanged,
+                            this, &QLineEditPrivate::cursorPositionChanged);
+    QObjectPrivate::connect(control, &QWidgetLineControl::selectionChanged,
+                            this, &QLineEditPrivate::selectionChanged);
+    QObjectPrivate::connect(control, &QWidgetLineControl::editingFinished,
+                            this, &QLineEditPrivate::controlEditingFinished);
 #ifdef QT_KEYPAD_NAVIGATION
-    QObject::connect(control, SIGNAL(editFocusChange(bool)),
-            q, SLOT(_q_editFocusChange(bool)));
+    QObject::connect(control, &QWidgetLineControl::editFocusChange,
+                     this, &QLineEditPrivate::editFocusChange);
 #endif
-    QObject::connect(control, SIGNAL(cursorPositionChanged(int,int)),
-            q, SLOT(updateMicroFocus()));
+    QObject::connect(control, &QWidgetLineControl::cursorPositionChanged,
+                     q, qUpdateMicroFocus);
 
-    QObject::connect(control, SIGNAL(textChanged(QString)),
-            q, SLOT(updateMicroFocus()));
+    QObject::connect(control, &QWidgetLineControl::textChanged,
+                     q, qUpdateMicroFocus);
 
-    QObject::connect(control, SIGNAL(updateMicroFocus()),
-            q, SLOT(updateMicroFocus()));
+    QObject::connect(control, &QWidgetLineControl::updateMicroFocus,
+                     q, qUpdateMicroFocus);
 
     // for now, going completely overboard with updates.
-    QObject::connect(control, SIGNAL(selectionChanged()),
-            q, SLOT(update()));
+    QObject::connect(control, &QWidgetLineControl::selectionChanged,
+                     q, qOverload<>(&QLineEdit::update));
 
-    QObject::connect(control, SIGNAL(selectionChanged()),
-            q, SLOT(updateMicroFocus()));
+    QObject::connect(control, &QWidgetLineControl::selectionChanged,
+                     q, qUpdateMicroFocus);
 
-    QObject::connect(control, SIGNAL(displayTextChanged(QString)),
-            q, SLOT(update()));
+    QObject::connect(control, &QWidgetLineControl::displayTextChanged,
+                     q, qOverload<>(&QLineEdit::update));
 
-    QObject::connect(control, SIGNAL(updateNeeded(QRect)),
-            q, SLOT(_q_updateNeeded(QRect)));
-    QObject::connect(control, SIGNAL(inputRejected()), q, SIGNAL(inputRejected()));
+    QObjectPrivate::connect(control, &QWidgetLineControl::updateNeeded,
+                            this, &QLineEditPrivate::updateNeeded);
+    QObject::connect(control, &QWidgetLineControl::inputRejected,
+                     q, &QLineEdit::inputRejected);
 
     QStyleOptionFrame opt;
     q->initStyleOption(&opt);
@@ -436,7 +459,7 @@ static void displayWidgets(const QLineEditPrivate::SideWidgetEntryList &widgets,
 }
 #endif
 
-void QLineEditPrivate::_q_textChanged(const QString &text)
+void QLineEditPrivate::textChanged(const QString &text)
 {
     if (hasSideWidgets()) {
         const int newTextSize = text.size();
@@ -451,16 +474,16 @@ void QLineEditPrivate::_q_textChanged(const QString &text)
     }
 }
 
-void QLineEditPrivate::_q_clearButtonClicked()
+void QLineEditPrivate::clearButtonClicked()
 {
     Q_Q(QLineEdit);
     if (!q->text().isEmpty()) {
         q->clear();
-        _q_textEdited(QString());
+        textEdited(QString());
     }
 }
 
-void QLineEditPrivate::_q_controlEditingFinished()
+void QLineEditPrivate::controlEditingFinished()
 {
     Q_Q(QLineEdit);
     edited = false;
@@ -554,7 +577,8 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
     if (!newAction)
         return nullptr;
     if (!hasSideWidgets()) { // initial setup.
-        QObject::connect(q, SIGNAL(textChanged(QString)), q, SLOT(_q_textChanged(QString)));
+        QObjectPrivate::connect(q, &QLineEdit::textChanged,
+                                this, &QLineEditPrivate::textChanged);
         lastTextSize = q->text().size();
     }
     QWidget *w = nullptr;
@@ -570,7 +594,8 @@ QWidget *QLineEditPrivate::addAction(QAction *newAction, QAction *before, QLineE
         toolButton->setIcon(newAction->icon());
         toolButton->setOpacity(lastTextSize > 0 || !(flags & SideWidgetFadeInWithText) ? 1 : 0);
         if (flags & SideWidgetClearButton) {
-            QObject::connect(toolButton, SIGNAL(clicked()), q, SLOT(_q_clearButtonClicked()));
+            QObjectPrivate::connect(toolButton, &QToolButton::clicked,
+                                    this, &QLineEditPrivate::clearButtonClicked);
 
 #if QT_CONFIG(animation)
             // The clear button is handled only by this widget. The button should be really
@@ -633,7 +658,8 @@ void QLineEditPrivate::removeAction(QAction *action)
          delete entry.widget;
      positionSideWidgets();
      if (!hasSideWidgets()) // Last widget, remove connection
-         QObject::disconnect(q, SIGNAL(textChanged(QString)), q, SLOT(_q_textChanged(QString)));
+         QObjectPrivate::connect(q, &QLineEdit::textChanged,
+                                 this, &QLineEditPrivate::textChanged);
      q->update();
 }
 #endif // QT_CONFIG(action)

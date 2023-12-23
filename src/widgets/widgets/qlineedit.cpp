@@ -622,7 +622,7 @@ void QLineEdit::setCompleter(QCompleter *c)
     if (c == d->control->completer())
         return;
     if (d->control->completer()) {
-        disconnect(d->control->completer(), nullptr, this, nullptr);
+        d->disconnectCompleter();
         d->control->completer()->setWidget(nullptr);
         if (d->control->completer()->parent() == this)
             delete d->control->completer();
@@ -632,12 +632,8 @@ void QLineEdit::setCompleter(QCompleter *c)
         return;
     if (c->widget() == nullptr)
         c->setWidget(this);
-    if (hasFocus()) {
-        QObject::connect(d->control->completer(), SIGNAL(activated(QString)),
-                         this, SLOT(setText(QString)));
-        QObject::connect(d->control->completer(), SIGNAL(highlighted(QString)),
-                         this, SLOT(_q_completionHighlighted(QString)));
-    }
+    if (hasFocus())
+        d->connectCompleter();
 }
 
 /*!
@@ -1447,7 +1443,10 @@ bool QLineEdit::event(QEvent * e)
 #endif
         //d->separate();
     } else if (e->type() == QEvent::WindowActivate) {
-        QTimer::singleShot(0, this, SLOT(_q_handleWindowActivate()));
+        QTimer::singleShot(0, this, [this]() {
+            Q_D(QLineEdit);
+            d->handleWindowActivate();
+        });
 #ifndef QT_NO_SHORTCUT
     } else if (e->type() == QEvent::ShortcutOverride) {
         QKeyEvent *ke = static_cast<QKeyEvent*>(e);
@@ -1924,10 +1923,7 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
 #if QT_CONFIG(completer)
     if (d->control->completer()) {
         d->control->completer()->setWidget(this);
-        QObject::connect(d->control->completer(), SIGNAL(activated(QString)),
-                         this, SLOT(setText(QString)));
-        QObject::connect(d->control->completer(), SIGNAL(highlighted(QString)),
-                         this, SLOT(_q_completionHighlighted(QString)));
+        d->connectCompleter();
     }
 #endif
     update();
@@ -1966,9 +1962,8 @@ void QLineEdit::focusOutEvent(QFocusEvent *e)
     d->control->setCancelText(QString());
 #endif
 #if QT_CONFIG(completer)
-    if (d->control->completer()) {
-        QObject::disconnect(d->control->completer(), nullptr, this, nullptr);
-    }
+    if (d->control->completer())
+        d->disconnectCompleter();
 #endif
     QWidget::focusOutEvent(e);
 }
@@ -2215,12 +2210,12 @@ QMenu *QLineEdit::createStandardContextMenu()
         action = popup->addAction(QLineEdit::tr("&Undo") + ACCEL_KEY(QKeySequence::Undo));
         action->setEnabled(d->control->isUndoAvailable());
         setActionIcon(action, QStringLiteral("edit-undo"));
-        connect(action, SIGNAL(triggered()), SLOT(undo()));
+        connect(action, &QAction::triggered, this, &QLineEdit::undo);
 
         action = popup->addAction(QLineEdit::tr("&Redo") + ACCEL_KEY(QKeySequence::Redo));
         action->setEnabled(d->control->isRedoAvailable());
         setActionIcon(action, QStringLiteral("edit-redo"));
-        connect(action, SIGNAL(triggered()), SLOT(redo()));
+        connect(action, &QAction::triggered, this, &QLineEdit::redo);
 
         popup->addSeparator();
     }
@@ -2231,20 +2226,20 @@ QMenu *QLineEdit::createStandardContextMenu()
         action->setEnabled(!d->control->isReadOnly() && d->control->hasSelectedText()
                 && d->control->echoMode() == QLineEdit::Normal);
         setActionIcon(action, QStringLiteral("edit-cut"));
-        connect(action, SIGNAL(triggered()), SLOT(cut()));
+        connect(action, &QAction::triggered, this, &QLineEdit::cut);
     }
 
     action = popup->addAction(QLineEdit::tr("&Copy") + ACCEL_KEY(QKeySequence::Copy));
     action->setEnabled(d->control->hasSelectedText()
             && d->control->echoMode() == QLineEdit::Normal);
     setActionIcon(action, QStringLiteral("edit-copy"));
-    connect(action, SIGNAL(triggered()), SLOT(copy()));
+    connect(action, &QAction::triggered, this, &QLineEdit::copy);
 
     if (!isReadOnly()) {
         action = popup->addAction(QLineEdit::tr("&Paste") + ACCEL_KEY(QKeySequence::Paste));
         action->setEnabled(!d->control->isReadOnly() && !QGuiApplication::clipboard()->text().isEmpty());
         setActionIcon(action, QStringLiteral("edit-paste"));
-        connect(action, SIGNAL(triggered()), SLOT(paste()));
+        connect(action, &QAction::triggered, this, &QLineEdit::paste);
     }
 #endif
 
@@ -2252,7 +2247,8 @@ QMenu *QLineEdit::createStandardContextMenu()
         action = popup->addAction(QLineEdit::tr("Delete"));
         action->setEnabled(!d->control->isReadOnly() && !d->control->text().isEmpty() && d->control->hasSelectedText());
         setActionIcon(action, QStringLiteral("edit-delete"));
-        connect(action, SIGNAL(triggered()), d->control, SLOT(_q_deleteSelected()));
+        connect(action, &QAction::triggered,
+                d->control, &QWidgetLineControl::_q_deleteSelected);
     }
 
     if (!popup->isEmpty())
@@ -2262,7 +2258,7 @@ QMenu *QLineEdit::createStandardContextMenu()
     action->setEnabled(!d->control->text().isEmpty() && !d->control->allSelected());
     setActionIcon(action, QStringLiteral("edit-select-all"));
     d->selectAllAction = action;
-    connect(action, SIGNAL(triggered()), SLOT(selectAll()));
+    connect(action, &QAction::triggered, this, &QLineEdit::selectAll);
 
     if (!d->control->isReadOnly() && QGuiApplication::styleHints()->useRtlExtensions()) {
         popup->addSeparator();
