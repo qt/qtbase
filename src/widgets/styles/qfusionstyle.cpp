@@ -3295,17 +3295,21 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
 #endif // QT_CONFIG(spinbox)
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
+            const int groupBoxTextAlignment = groupBox->textAlignment;
+            const int fontMetricsHeight = groupBox->text.isEmpty() ? 0 : groupBox->fontMetrics.height();
+
             rect = option->rect;
             if (subControl == SC_GroupBoxFrame)
-                return rect.adjusted(0, 0, 0, 0);
+                if ((groupBoxTextAlignment & Qt::AlignVertical_Mask) == Qt::AlignVCenter)
+                    return rect.adjusted(0, -(fontMetricsHeight + 4) / 2, 0, 0);
+                else
+                    return rect;
             else if (subControl == SC_GroupBoxContents) {
                 QRect frameRect = option->rect.adjusted(0, 0, 0, -groupBoxBottomMargin);
                 int margin = 3;
                 int leftMarginExtension = 0;
                 const int exclusiveIndicatorHeight = option->subControls.testFlag(SC_GroupBoxCheckBox) ?
                                                         pixelMetric(PM_ExclusiveIndicatorHeight) : 0;
-                const int fontMetricsHeight = groupBox->text.isEmpty() ? 0 :
-                                                groupBox->fontMetrics.height();
                 const int topMargin = qMax(exclusiveIndicatorHeight, fontMetricsHeight) +
                                         groupBoxTopMargin;
                 return frameRect.adjusted(leftMarginExtension + margin, margin + topMargin, -margin, -margin - groupBoxBottomMargin);
@@ -3321,7 +3325,7 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
             rect = QRect();
 
             if (option->rect.width() > width) {
-                switch (groupBox->textAlignment & Qt::AlignHorizontal_Mask) {
+                switch (groupBoxTextAlignment & Qt::AlignHorizontal_Mask) {
                 case Qt::AlignHCenter:
                     rect.moveLeft((option->rect.width() - width) / 2);
                     break;
