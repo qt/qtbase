@@ -130,15 +130,6 @@ protected:
 private:
     Q_DISABLE_COPY(QLabel)
     Q_DECLARE_PRIVATE(QLabel)
-#if QT_CONFIG(movie)
-    Q_PRIVATE_SLOT(d_func(), void _q_movieUpdated(const QRect&))
-    Q_PRIVATE_SLOT(d_func(), void _q_movieResized(const QSize&))
-#endif
-    Q_PRIVATE_SLOT(d_func(), void _q_linkHovered(const QString &))
-
-#ifndef QT_NO_SHORTCUT
-    Q_PRIVATE_SLOT(d_func(), void _q_buddyDeleted())
-#endif
     friend class QTipLabel;
     friend class QMessageBoxPrivate;
     friend class QBalloonTip;
