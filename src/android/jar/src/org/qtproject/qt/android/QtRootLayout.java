@@ -16,31 +16,13 @@ import android.view.Surface;
     A layout which corresponds to one Activity, i.e. is the root layout where the top level window
     and handles orientation changes.
 */
-public class QtRootLayout extends QtLayout
+class QtRootLayout extends QtLayout
 {
-    private int m_activityDisplayRotation = -1;
-    private int m_ownDisplayRotation = -1;
-    private int m_nativeOrientation = -1;
     private int m_previousRotation = -1;
 
     public QtRootLayout(Context context)
     {
         super(context);
-    }
-
-    public void setActivityDisplayRotation(int rotation)
-    {
-        m_activityDisplayRotation = rotation;
-    }
-
-    public void setNativeOrientation(int orientation)
-    {
-        m_nativeOrientation = orientation;
-    }
-
-    public int displayRotation()
-    {
-        return m_ownDisplayRotation;
     }
 
     @Override

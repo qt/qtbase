@@ -6,7 +6,6 @@ package org.qtproject.qt.android;
 import android.content.Context;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.util.Log;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,11 +13,9 @@ import android.view.ViewGroup;
 import java.util.HashMap;
 
 class QtWindow extends QtLayout implements QtSurfaceInterface {
-    private final static String TAG = "QtWindow";
-
     private View m_surfaceContainer;
     private View m_nativeView;
-    private HashMap<Integer, QtWindow> m_childWindows = new HashMap<Integer, QtWindow>();
+    private final HashMap<Integer, QtWindow> m_childWindows = new HashMap<>();
     private QtWindow m_parentWindow;
     private GestureDetector m_gestureDetector;
     private final QtEditText m_editText;
@@ -40,6 +37,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         QtNative.runAction(() -> {
             m_gestureDetector =
                 new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+                    @Override
                     public void onLongPress(MotionEvent event) {
                         QtInputDelegate.longPress(getId(), (int) event.getX(), (int) event.getY());
                     }
@@ -48,6 +46,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         });
     }
 
+    @UsedFromNativeCode
     void setVisible(boolean visible) {
         QtNative.runAction(() -> {
             if (visible)
@@ -86,12 +85,14 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         return QtInputDelegate.sendGenericMotionEvent(event, getId());
     }
 
+    @UsedFromNativeCode
     public void removeWindow()
     {
         if (m_parentWindow != null)
             m_parentWindow.removeChildWindow(getId());
     }
 
+    @UsedFromNativeCode
     public void createSurface(final boolean onTop,
                               final int x, final int y, final int w, final int h,
                               final int imageDepth, final boolean isOpaque,
@@ -117,6 +118,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         });
     }
 
+    @UsedFromNativeCode
     public void destroySurface()
     {
         QtNative.runAction(()-> {
@@ -127,6 +129,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         }, false);
     }
 
+    @UsedFromNativeCode
     public void setGeometry(final int x, final int y, final int w, final int h)
     {
         QtNative.runAction(()-> {
@@ -151,6 +154,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         });
     }
 
+    @UsedFromNativeCode
     public void setNativeView(final View view,
                               final int x, final int y, final int w, final int h)
     {
@@ -166,6 +170,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         });
     }
 
+    @UsedFromNativeCode
     public void bringChildToFront(int id)
     {
         QtNative.runAction(()-> {
@@ -177,6 +182,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         });
     }
 
+    @UsedFromNativeCode
     public void bringChildToBack(int id) {
         QtNative.runAction(()-> {
             View view = m_childWindows.get(id);
@@ -186,6 +192,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         });
     }
 
+    @UsedFromNativeCode
     public void removeNativeView()
     {
         QtNative.runAction(()-> {
@@ -207,10 +214,5 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         m_parentWindow = parentWindow;
         if (m_parentWindow != null)
             m_parentWindow.addChildWindow(this);
-    }
-
-    QtWindow parent()
-    {
-        return m_parentWindow;
     }
 }

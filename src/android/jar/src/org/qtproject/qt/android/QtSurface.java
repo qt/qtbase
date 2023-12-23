@@ -14,7 +14,7 @@ import android.view.SurfaceView;
 @SuppressLint("ViewConstructor")
 class QtSurface extends SurfaceView implements SurfaceHolder.Callback
 {
-    private QtSurfaceInterface m_surfaceCallback;
+    private final QtSurfaceInterface m_surfaceCallback;
 
     public QtSurface(Context context, QtSurfaceInterface surfaceCallback, boolean onTop, int imageDepth)
     {

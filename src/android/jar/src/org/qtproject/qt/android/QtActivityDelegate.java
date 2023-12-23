@@ -9,7 +9,6 @@ import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.Rect;
@@ -42,7 +41,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
     private boolean m_backendsRegistered = false;
 
     private View m_dummyView = null;
-    private HashMap<Integer, View> m_nativeViews = new HashMap<Integer, View>();
+    private final HashMap<Integer, View> m_nativeViews = new HashMap<>();
     private QtAccessibilityDelegate m_accessibilityDelegate = null;
 
     QtActivityDelegate(Activity activity)
@@ -473,7 +472,8 @@ class QtActivityDelegate extends QtActivityDelegateBase
         QtNative.runAction(() -> {
             if (m_nativeViews.containsKey(id)) {
                 View view = m_nativeViews.get(id);
-                view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                if (view != null)
+                    view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
             } else {
                 Log.e(QtTAG, "View " + id + " not found!");
             }

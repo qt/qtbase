@@ -428,10 +428,6 @@ class QtNative
     public static native boolean updateNativeActivity();
     // application methods
 
-    // surface methods
-    public static native void setSurface(int id, Object surface);
-    // surface methods
-
     // window methods
     public static native void updateWindow();
     // window methods

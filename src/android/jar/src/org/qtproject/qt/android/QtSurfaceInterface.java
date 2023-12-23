@@ -6,8 +6,7 @@ package org.qtproject.qt.android;
 
 import android.view.Surface;
 
-
-public interface QtSurfaceInterface
+interface QtSurfaceInterface
 {
     void onSurfaceChanged(Surface surface);
 }
