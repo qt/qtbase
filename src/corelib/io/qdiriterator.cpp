@@ -90,9 +90,7 @@ public:
 class QDirIteratorPrivate
 {
 public:
-    QDirIteratorPrivate(const QFileSystemEntry &entry, const QStringList &nameFilters,
-                        QDir::Filters _filters, QDirIterator::IteratorFlags flags, bool resolveEngine = true);
-
+    void init(bool resolveEngine);
     void advance();
 
     bool entryMatches(const QString & fileName, const QFileInfo &fileInfo);
@@ -103,9 +101,9 @@ public:
     std::unique_ptr<QAbstractFileEngine> engine;
 
     QFileSystemEntry dirEntry;
-    const QStringList nameFilters;
-    const QDir::Filters filters;
-    const QDirIterator::IteratorFlags iteratorFlags;
+    QStringList nameFilters;
+    QDir::Filters filters;
+    QDirIterator::IteratorFlags iteratorFlags;
 
 #if QT_CONFIG(regularexpression)
     QList<QRegularExpression> nameRegExps;
@@ -123,16 +121,14 @@ public:
     QDuplicateTracker<QString> visitedLinks;
 };
 
-/*!
-    \internal
-*/
-QDirIteratorPrivate::QDirIteratorPrivate(const QFileSystemEntry &entry, const QStringList &nameFilters,
-                                         QDir::Filters _filters, QDirIterator::IteratorFlags flags, bool resolveEngine)
-    : dirEntry(entry)
-      , nameFilters(nameFilters.contains("*"_L1) ? QStringList() : nameFilters)
-      , filters(QDir::NoFilter == _filters ? QDir::AllEntries : _filters)
-      , iteratorFlags(flags)
+void QDirIteratorPrivate::init(bool resolveEngine = true)
 {
+    if (nameFilters.contains("*"_L1))
+        nameFilters.clear();
+
+    if (filters == QDir::NoFilter)
+        filters = QDir::AllEntries;
+
 #if QT_CONFIG(regularexpression)
     nameRegExps.reserve(nameFilters.size());
     for (const auto &filter : nameFilters) {
@@ -380,9 +376,15 @@ bool QDirIteratorPrivate::matchesFilters(const QString &fileName, const QFileInf
     \sa hasNext(), next(), IteratorFlags
 */
 QDirIterator::QDirIterator(const QDir &dir, IteratorFlags flags)
+    : d(new QDirIteratorPrivate)
 {
     const QDirPrivate *other = dir.d_ptr.constData();
-    d.reset(new QDirIteratorPrivate(other->dirEntry, other->nameFilters, other->filters, flags, bool(other->fileEngine)));
+    d->dirEntry = other->dirEntry;
+    d->nameFilters = other->nameFilters;
+    d->filters = other->filters;
+    d->iteratorFlags = flags;
+    const bool resolveEngine = other->fileEngine ? true : false;
+    d->init(resolveEngine);
 }
 
 /*!
@@ -399,8 +401,12 @@ QDirIterator::QDirIterator(const QDir &dir, IteratorFlags flags)
     \sa hasNext(), next(), IteratorFlags
 */
 QDirIterator::QDirIterator(const QString &path, QDir::Filters filters, IteratorFlags flags)
-    : d(new QDirIteratorPrivate(QFileSystemEntry(path), QStringList(), filters, flags))
+    : d(new QDirIteratorPrivate)
 {
+    d->dirEntry = QFileSystemEntry(path);
+    d->filters = filters;
+    d->iteratorFlags = flags;
+    d->init();
 }
 
 /*!
@@ -416,8 +422,12 @@ QDirIterator::QDirIterator(const QString &path, QDir::Filters filters, IteratorF
     \sa hasNext(), next(), IteratorFlags
 */
 QDirIterator::QDirIterator(const QString &path, IteratorFlags flags)
-    : d(new QDirIteratorPrivate(QFileSystemEntry(path), QStringList(), QDir::NoFilter, flags))
+    : d(new QDirIteratorPrivate)
 {
+    d->dirEntry = QFileSystemEntry(path);
+    d->filters = QDir::NoFilter;
+    d->iteratorFlags = flags;
+    d->init();
 }
 
 /*!
@@ -440,8 +450,13 @@ QDirIterator::QDirIterator(const QString &path, IteratorFlags flags)
 */
 QDirIterator::QDirIterator(const QString &path, const QStringList &nameFilters,
                            QDir::Filters filters, IteratorFlags flags)
-    : d(new QDirIteratorPrivate(QFileSystemEntry(path), nameFilters, filters, flags))
+    : d(new QDirIteratorPrivate)
 {
+    d->dirEntry = QFileSystemEntry(path);
+    d->nameFilters = nameFilters;
+    d->filters = filters;
+    d->iteratorFlags = flags;
+    d->init();
 }
 
 /*!
