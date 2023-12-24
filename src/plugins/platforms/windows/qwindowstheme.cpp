@@ -18,12 +18,14 @@
 #include <commoncontrols.h>
 #include <shellapi.h>
 
+#include <QtCore/qapplicationstatic.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qsysinfo.h>
 #include <QtCore/qcache.h>
 #include <QtCore/qthread.h>
+#include <QtCore/qqueue.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qwaitcondition.h>
 #include <QtGui/qcolor.h>
@@ -146,106 +148,106 @@ static inline QColor getSysColor(int index)
 // QTBUG-48823/Windows 10: SHGetFileInfo() (as called by item views on file system
 // models has been observed to trigger a WM_PAINT on the mainwindow. Suppress the
 // behavior by running it in a thread.
-
-struct QShGetFileInfoParams
-{
-    QShGetFileInfoParams(const QString &fn, DWORD a, SHFILEINFO *i, UINT f, bool *r)
-        : fileName(fn), attributes(a), flags(f), info(i), result(r)
-    { }
-
-    const QString &fileName;
-    const DWORD attributes;
-    const UINT flags;
-    SHFILEINFO *const info;
-    bool *const result;
-};
-
 class QShGetFileInfoThread : public QThread
 {
 public:
-    explicit QShGetFileInfoThread()
-        : QThread(), m_params(nullptr)
+    struct Task
     {
-        connect(this, &QThread::finished, this, &QObject::deleteLater);
+        Task(const QString &fn, DWORD a, UINT f)
+            : fileName(fn), attributes(a), flags(f)
+        {}
+        Q_DISABLE_COPY(Task)
+        ~Task()
+        {
+            DestroyIcon(hIcon);
+            hIcon = 0;
+        }
+        // Request
+        const QString fileName;
+        const DWORD attributes;
+        const UINT flags;
+        // Result
+        HICON hIcon = 0;
+        int iIcon = -1;
+        bool finished = false;
+        bool resultValid() const { return hIcon != 0 && iIcon >= 0 && finished; }
+    };
+
+    QShGetFileInfoThread()
+        : QThread()
+    {
+        start();
+    }
+
+    ~QShGetFileInfoThread()
+    {
+        cancel();
+        wait();
+    }
+
+    QSharedPointer<Task> getNextTask()
+    {
+        QMutexLocker l(&m_waitForTaskMutex);
+        while (!isInterruptionRequested()) {
+            if (!m_taskQueue.isEmpty())
+                return m_taskQueue.dequeue();
+            m_waitForTaskCondition.wait(&m_waitForTaskMutex);
+        }
+        return nullptr;
     }
 
     void run() override
     {
         QComHelper comHelper(COINIT_MULTITHREADED);
 
-        QMutexLocker readyLocker(&m_readyMutex);
         while (!isInterruptionRequested()) {
-            if (!m_params && !isInterruptionRequested()
-                && !m_readyCondition.wait(&m_readyMutex, QDeadlineTimer(1000ll)))
-                continue;
-
-            if (m_params) {
-                const QString fileName = m_params->fileName;
+            auto task = getNextTask();
+            if (task) {
                 SHFILEINFO info;
-                const bool result = SHGetFileInfo(reinterpret_cast<const wchar_t *>(fileName.utf16()),
-                                                  m_params->attributes, &info, sizeof(SHFILEINFO),
-                                                  m_params->flags);
-                QMutexLocker doneLocker(&m_doneMutex);
-                if (!isInterruptionRequested()) {
-                    *m_params->result = result;
-                    memcpy(m_params->info, &info, sizeof(SHFILEINFO));
+                const bool result = SHGetFileInfo(reinterpret_cast<const wchar_t *>(task->fileName.utf16()),
+                                                  task->attributes, &info, sizeof(SHFILEINFO),
+                                                  task->flags);
+                if (result) {
+                    task->hIcon = info.hIcon;
+                    task->iIcon = info.iIcon;
                 }
-                m_params = nullptr;
-
+                task->finished = true;
                 m_doneCondition.wakeAll();
             }
         }
     }
 
-    bool runWithParams(QShGetFileInfoParams *params, qint64 timeOutMSecs)
+    void runWithParams(const QSharedPointer<Task> &task,
+                       std::chrono::milliseconds timeout = std::chrono::milliseconds(5000))
     {
+        {
+            QMutexLocker l(&m_waitForTaskMutex);
+            m_taskQueue.enqueue(task);
+            m_waitForTaskCondition.wakeAll();
+        }
+
         QMutexLocker doneLocker(&m_doneMutex);
-
-        m_readyMutex.lock();
-        m_params = params;
-        m_readyCondition.wakeAll();
-        m_readyMutex.unlock();
-
-        return m_doneCondition.wait(&m_doneMutex, QDeadlineTimer(timeOutMSecs));
+        while (!task->finished && !isInterruptionRequested()) {
+            if (!m_doneCondition.wait(&m_doneMutex, QDeadlineTimer(timeout)))
+                return;
+        }
     }
 
     void cancel()
     {
-        QMutexLocker doneLocker(&m_doneMutex);
         requestInterruption();
-        m_readyCondition.wakeAll();
+        m_doneCondition.wakeAll();
+        m_waitForTaskCondition.wakeAll();
     }
 
 private:
-    QShGetFileInfoParams *m_params;
-    QWaitCondition m_readyCondition;
+    QQueue<QSharedPointer<Task>> m_taskQueue;
     QWaitCondition m_doneCondition;
-    QMutex m_readyMutex;
+    QWaitCondition m_waitForTaskCondition;
     QMutex m_doneMutex;
+    QMutex m_waitForTaskMutex;
 };
-
-static bool shGetFileInfoBackground(const QString &fileName, DWORD attributes,
-                                    SHFILEINFO *info, UINT flags,
-                                    qint64 timeOutMSecs = 5000)
-{
-    static QShGetFileInfoThread *getFileInfoThread = nullptr;
-    if (!getFileInfoThread) {
-        getFileInfoThread = new QShGetFileInfoThread;
-        getFileInfoThread->start();
-    }
-
-    bool result = false;
-    QShGetFileInfoParams params(fileName, attributes, info, flags, &result);
-    if (!getFileInfoThread->runWithParams(&params, timeOutMSecs)) {
-        // Cancel and reset getFileInfoThread. It'll
-        // be reinitialized the next time we get called.
-        getFileInfoThread->cancel();
-        getFileInfoThread = nullptr;
-        qWarning().noquote() << "SHGetFileInfo() timed out for " << fileName;
-        return false;
-    }
-    return result;
-}
+Q_APPLICATION_STATIC(QShGetFileInfoThread, s_shGetFileInfoThread)
 
 // from QStyle::standardPalette
 static inline QPalette standardPalette()
@@ -1012,7 +1014,7 @@ public:
 
 // Shell image list helper functions.
 
-static QPixmap pixmapFromShellImageList(int iImageList, const SHFILEINFO &info)
+static QPixmap pixmapFromShellImageList(int iImageList, int iIcon)
 {
     QPixmap result;
     // For MinGW:
@@ -1023,7 +1025,7 @@ static QPixmap pixmapFromShellImageList(int iImageList, const SHFILEINFO &info)
     if (hr != S_OK)
         return result;
     HICON hIcon;
-    hr = imageList->GetIcon(info.iIcon, ILD_TRANSPARENT, &hIcon);
+    hr = imageList->GetIcon(iIcon, ILD_TRANSPARENT, &hIcon);
     if (hr == S_OK) {
         result = qt_pixmapFromWinHICON(hIcon);
         DestroyIcon(hIcon);
@@ -1098,7 +1100,6 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
         }
     }
 
-    SHFILEINFO info;
     unsigned int flags = SHGFI_ICON | iconSize | SHGFI_SYSICONINDEX | SHGFI_ADDOVERLAYS | SHGFI_OVERLAYINDEX;
     DWORD attributes = 0;
     QString path = filePath;
@@ -1110,43 +1111,43 @@ QPixmap QWindowsFileIconEngine::filePixmap(const QSize &size, QIcon::Mode, QIcon
         flags |= SHGFI_USEFILEATTRIBUTES;
         attributes |= FILE_ATTRIBUTE_NORMAL;
     }
-    const bool val = shGetFileInfoBackground(path, attributes, &info, flags);
-
+    auto task = QSharedPointer<QShGetFileInfoThread::Task>(
+            new QShGetFileInfoThread::Task(path, attributes, flags));
+    s_shGetFileInfoThread()->runWithParams(task);
     // Even if GetFileInfo returns a valid result, hIcon can be empty in some cases
-    if (val && info.hIcon) {
+    if (task->resultValid()) {
         QString key;
         if (cacheableDirIcon) {
             if (useDefaultFolderIcon && defaultFolderIIcon < 0)
-                defaultFolderIIcon = info.iIcon;
+                defaultFolderIIcon = task->iIcon;
 
             //using the unique icon index provided by windows save us from duplicate keys
-            key = dirIconPixmapCacheKey(info.iIcon, iconSize, requestedImageListSize);
+            key = dirIconPixmapCacheKey(task->iIcon, iconSize, requestedImageListSize);
             QPixmapCache::find(key, &pixmap);
             if (!pixmap.isNull()) {
                 QMutexLocker locker(&mx);
-                dirIconEntryCache.insert(filePath, FakePointer<int>::create(info.iIcon));
+                dirIconEntryCache.insert(filePath, FakePointer<int>::create(task->iIcon));
             }
         }
 
         if (pixmap.isNull()) {
             if (requestedImageListSize) {
-                pixmap = pixmapFromShellImageList(requestedImageListSize, info);
+                pixmap = pixmapFromShellImageList(requestedImageListSize, task->iIcon);
                 if (pixmap.isNull() && requestedImageListSize == sHIL_JUMBO)
-                    pixmap = pixmapFromShellImageList(sHIL_EXTRALARGE, info);
+                    pixmap = pixmapFromShellImageList(sHIL_EXTRALARGE, task->iIcon);
             }
             if (pixmap.isNull())
-                pixmap = qt_pixmapFromWinHICON(info.hIcon);
+                pixmap = qt_pixmapFromWinHICON(task->hIcon);
             if (!pixmap.isNull()) {
                 if (cacheableDirIcon) {
                     QMutexLocker locker(&mx);
                     QPixmapCache::insert(key, pixmap);
-                    dirIconEntryCache.insert(filePath, FakePointer<int>::create(info.iIcon));
+                    dirIconEntryCache.insert(filePath, FakePointer<int>::create(task->iIcon));
                 }
             } else {
                 qWarning("QWindowsTheme::fileIconPixmap() no icon found");
             }
         }
-        DestroyIcon(info.hIcon);
     }
 
     return pixmap;
