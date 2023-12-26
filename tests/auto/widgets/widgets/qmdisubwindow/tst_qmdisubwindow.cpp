@@ -1867,7 +1867,6 @@ void tst_QMdiSubWindow::closeOnDoubleClick()
 
 void tst_QMdiSubWindow::setFont()
 {
-    QSKIP("This test function is unstable in CI, please see QTBUG-22544");
     QMdiArea mdiArea;
     mdiArea.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     QMdiSubWindow *subWindow = mdiArea.addSubWindow(new TestPushButton(QLatin1String("test")));
