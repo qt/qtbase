@@ -55,9 +55,12 @@ public:
     void setRotation(int degrees);
     QOpenGLContext *context() const { return m_context; }
     QWindow *targetWindow() const { return m_targetWindow; }
+    QRect nativeTargetGeometry() const { return m_nativeTargetGeometry; }
 
     void update();
     QImage grab();
+
+    bool grabToFrameBufferObject(QOpenGLFramebufferObject *fbo);
 
     QList<QOpenGLCompositorWindow *> windows() const { return m_windows; }
     void addWindow(QOpenGLCompositorWindow *window);
