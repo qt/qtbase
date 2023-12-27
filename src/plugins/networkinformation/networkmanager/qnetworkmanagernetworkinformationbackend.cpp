@@ -1,9 +1,7 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtNetwork/private/qnetworkinformation_p.h>
-
-#include "qnetworkmanagerservice.h"
+#include "qnetworkmanagernetworkinformationbackend.h"
 
 #include <QtCore/qglobal.h>
 #include <QtCore/private/qobject_p.h>
@@ -104,35 +102,10 @@ static QString backendName()
                                       [QNetworkInformationBackend::PluginNamesLinuxIndex]);
 }
 
-class QNetworkManagerNetworkInformationBackend : public QNetworkInformationBackend
+QString QNetworkManagerNetworkInformationBackend::name() const
 {
-    Q_OBJECT
-public:
-    QNetworkManagerNetworkInformationBackend();
-    ~QNetworkManagerNetworkInformationBackend() = default;
-
-    QString name() const override { return backendName(); }
-    QNetworkInformation::Features featuresSupported() const override
-    {
-        if (!isValid())
-            return {};
-        return featuresSupportedStatic();
-    }
-
-    static QNetworkInformation::Features featuresSupportedStatic()
-    {
-        using Feature = QNetworkInformation::Feature;
-        return QNetworkInformation::Features(Feature::Reachability | Feature::CaptivePortal
-                                             | Feature::TransportMedium | Feature::Metered);
-    }
-
-    bool isValid() const { return iface.isValid(); }
-
-private:
-    Q_DISABLE_COPY_MOVE(QNetworkManagerNetworkInformationBackend)
-
-    QNetworkManagerInterface iface;
-};
+    return backendName();
+}
 
 class QNetworkManagerNetworkInformationBackendFactory : public QNetworkInformationBackendFactory
 {
