@@ -39,7 +39,7 @@ sock.connectToHost(url.host(), url.port(80));
 
 
 //! [4]
-http://www.example.com/cgi-bin/drawgraph.cgi?type(pie)color(green)
+http://www.example.com/cgi-bin/drawgraph.cgi?type,pie;color,green
 //! [4]
 
 
