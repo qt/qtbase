@@ -1981,10 +1981,15 @@ static inline bool doCheckUnGrabAncestor(QXcbConnection *conn)
     return true;
 }
 
-static bool ignoreLeaveEvent(quint8 mode, quint8 detail, QXcbConnection *conn = nullptr)
+static bool windowContainsGlobalPoint(QXcbWindow *window, int x, int y)
+{
+    return window ? window->geometry().contains(window->mapFromGlobal(QPoint(x, y))) : false;
+}
+
+static bool ignoreLeaveEvent(quint8 mode, quint8 detail, QXcbConnection *conn)
 {
     return ((doCheckUnGrabAncestor(conn)
-             && mode == XCB_NOTIFY_MODE_GRAB && detail == XCB_NOTIFY_DETAIL_ANCESTOR)
+            && mode == XCB_NOTIFY_MODE_GRAB && detail == XCB_NOTIFY_DETAIL_ANCESTOR)
             || (mode == XCB_NOTIFY_MODE_UNGRAB && detail == XCB_NOTIFY_DETAIL_INFERIOR)
             || detail == XCB_NOTIFY_DETAIL_VIRTUAL
             || detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL);
@@ -2004,14 +2009,13 @@ void QXcbWindow::handleEnterNotifyEvent(int event_x, int event_y, int root_x, in
 {
     connection()->setTime(timestamp);
 
-    const QPoint global = QPoint(root_x, root_y);
-
     if (ignoreEnterEvent(mode, detail, connection()) || connection()->mousePressWindow())
         return;
 
     // Updates scroll valuators, as user might have done some scrolling outside our X client.
     connection()->xi2UpdateScrollingDevices();
 
+    const QPoint global = QPoint(root_x, root_y);
     const QPoint local(event_x, event_y);
     QWindowSystemInterface::handleEnterEvent(window(), local, global);
 }
@@ -2021,8 +2025,11 @@ void QXcbWindow::handleLeaveNotifyEvent(int root_x, int root_y,
 {
     connection()->setTime(timestamp);
 
-    if (ignoreLeaveEvent(mode, detail, connection()) || connection()->mousePressWindow())
+    QXcbWindow *mousePressWindow = connection()->mousePressWindow();
+    if (ignoreLeaveEvent(mode, detail, connection())
+        || (mousePressWindow && windowContainsGlobalPoint(mousePressWindow, root_x, root_y))) {
         return;
+    }
 
     // check if enter event is buffered
     auto event = connection()->eventQueue()->peek([](xcb_generic_event_t *event, int type) {
@@ -2040,6 +2047,8 @@ void QXcbWindow::handleLeaveNotifyEvent(int root_x, int root_y,
         QWindowSystemInterface::handleEnterLeaveEvent(enterWindow->window(), window(), local, global);
     } else {
         QWindowSystemInterface::handleLeaveEvent(window());
+        if (!windowContainsGlobalPoint(this, root_x, root_y))
+            connection()->setMousePressWindow(nullptr);
     }
 
     free(enter);
