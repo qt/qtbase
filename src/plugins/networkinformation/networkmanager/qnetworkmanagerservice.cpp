@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qnetworkmanagerservice.h"
+#include "qnetworkmanagernetworkinformationbackend.h"
 
 #include <QObject>
 #include <QList>
@@ -152,6 +153,11 @@ auto QNetworkManagerInterface::extractDeviceMetered(const QDBusObjectPath &devic
     return static_cast<NMMetered>(metered.toUInt());
 }
 
+void QNetworkManagerInterface::setBackend(QNetworkManagerNetworkInformationBackend *ourBackend)
+{
+    backend = ourBackend;
+}
+
 void QNetworkManagerInterface::setProperties(const QString &interfaceName,
                                              const QMap<QString, QVariant> &map,
                                              const QStringList &invalidatedProperties)
@@ -173,16 +179,16 @@ void QNetworkManagerInterface::setProperties(const QString &interfaceName,
         if (valueChanged) {
             if (i.key() == "State"_L1) {
                 quint32 state = i.value().toUInt();
-                Q_EMIT stateChanged(static_cast<NMState>(state));
+                backend->onStateChanged(static_cast<NMState>(state));
             } else if (i.key() == "Connectivity"_L1) {
                 quint32 state = i.value().toUInt();
-                Q_EMIT connectivityChanged(static_cast<NMConnectivityState>(state));
+                backend->onConnectivityChanged(static_cast<NMConnectivityState>(state));
             } else if (i.key() == "PrimaryConnection"_L1) {
                 const QDBusObjectPath devicePath = i->value<QDBusObjectPath>();
-                Q_EMIT deviceTypeChanged(extractDeviceType(devicePath));
-                Q_EMIT meteredChanged(extractDeviceMetered(devicePath));
+                backend->onDeviceTypeChanged(extractDeviceType(devicePath));
+                backend->onMeteredChanged(extractDeviceMetered(devicePath));
             } else if (i.key() == "Metered"_L1) {
-                Q_EMIT meteredChanged(static_cast<NMMetered>(i->toUInt()));
+                backend->onMeteredChanged(static_cast<NMMetered>(i->toUInt()));
             }
         }
     }
