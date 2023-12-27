@@ -136,11 +136,12 @@ public:
                     "catch",
                     emscripten::val::module_property(thunkName(CallbackType::Catch, id()).data()));
             }
-            if (callbacks.finallyFunc) {
-                target = target.call<val>(
-                    "finally",
-                    emscripten::val::module_property(thunkName(CallbackType::Finally, id()).data()));
-            }
+            // Guarantee the invocation of at least one callback by always
+            // registering 'finally'. This is required by WebPromiseManager
+            // design
+            target = target.call<val>(
+                "finally", emscripten::val::module_property(
+                               thunkName(CallbackType::Finally, id()).data()));
         }
 
     private:
@@ -321,25 +322,21 @@ void WebPromiseManager::promiseThunkCallback(int context, CallbackType type, ems
     auto* promiseState = &m_promiseRegistry[context];
 
     auto* callbacks = &promiseState->callbacks;
-    bool expectingOtherCallbacks;
     switch (type) {
         case CallbackType::Then:
             callbacks->thenFunc(result);
-            // At this point, if there is no finally function, we are sure that the Catch callback won't be issued.
-            expectingOtherCallbacks = !!callbacks->finallyFunc;
             break;
         case CallbackType::Catch:
             callbacks->catchFunc(result);
-            expectingOtherCallbacks = !!callbacks->finallyFunc;
             break;
         case CallbackType::Finally:
-            callbacks->finallyFunc();
-            expectingOtherCallbacks = false;
+            // Final callback may be empty, used solely for promise unregistration
+            if (callbacks->finallyFunc) {
+                callbacks->finallyFunc();
+            }
+            unregisterPromise(context);
             break;
-    }
-
-    if (!expectingOtherCallbacks)
-        unregisterPromise(context);
+        }
 }
 
 void WebPromiseManager::registerPromise(
