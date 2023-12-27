@@ -558,7 +558,7 @@ QString QUrlQuery::query(QUrl::ComponentFormattingOptions encoding) const
     representation of the keys and values of the query string are
     percent encoded when returned in query().
 
-    If \a valueDelimiter is set to '(' and \a pairDelimiter is ')',
+    If \a valueDelimiter is set to ',' and \a pairDelimiter is ';',
     the above query string would instead be represented like this:
 
     \snippet code/src_corelib_io_qurl.cpp 4
@@ -569,7 +569,7 @@ QString QUrlQuery::query(QUrl::ComponentFormattingOptions encoding) const
     \snippet code/src_corelib_io_qurlquery.cpp 0
 
     Use of other characters is not supported and may result in unexpected
-    behaviour. This method does not verify that you passed a valid delimiter.
+    behavior. This method does not verify that you passed a valid delimiter.
 
     \sa queryValueDelimiter(), queryPairDelimiter()
 */
