@@ -47,7 +47,7 @@ QOffscreenSurface  *QNativeInterface::QAndroidOffscreenSurface::fromNative(ANati
 */
 /*!
     \fn int QNativeInterface::QAndroidScreen::displayId() const;
-    \return The Id of the underlying Android display.
+    \return the id of the underlying Android display.
 */
 QT_DEFINE_NATIVE_INTERFACE(QAndroidScreen);
 
