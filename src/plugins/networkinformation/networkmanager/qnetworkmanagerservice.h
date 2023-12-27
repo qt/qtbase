@@ -39,6 +39,7 @@ enum NMDeviceState {
 QT_BEGIN_NAMESPACE
 
 class QDBusObjectPath;
+class QNetworkManagerNetworkInformationBackend;
 
 // This tiny class exists for the purpose of seeing if NetworkManager is available without
 // initializing everything the derived/full class needs.
@@ -131,18 +132,14 @@ public:
     explicit QNetworkManagerInterface(QObject *parent = nullptr);
     ~QNetworkManagerInterface();
 
+    void setBackend(QNetworkManagerNetworkInformationBackend *ourBackend);
+
     NMState state() const;
     NMConnectivityState connectivityState() const;
     NMDeviceType deviceType() const;
     NMMetered meteredState() const;
 
     bool isValid() const { return QDBusAbstractInterface::isValid() && validDBusConnection; }
-
-Q_SIGNALS:
-    void stateChanged(NMState);
-    void connectivityChanged(NMConnectivityState);
-    void deviceTypeChanged(NMDeviceType);
-    void meteredChanged(NMMetered);
 
 private Q_SLOTS:
     void setProperties(const QString &interfaceName, const QMap<QString, QVariant> &map,
@@ -157,6 +154,7 @@ private:
     std::optional<QDBusObjectPath> primaryConnectionDevicePath() const;
 
     QVariantMap propertyMap;
+    QNetworkManagerNetworkInformationBackend *backend = nullptr;
     bool validDBusConnection = true;
 };
 

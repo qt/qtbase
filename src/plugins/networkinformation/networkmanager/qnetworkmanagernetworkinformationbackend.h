@@ -44,6 +44,11 @@ public:
 
     bool isValid() const { return iface.isValid(); }
 
+    void onStateChanged(QNetworkManagerInterface::NMState state);
+    void onConnectivityChanged(QNetworkManagerInterface::NMConnectivityState connectivityState);
+    void onDeviceTypeChanged(QNetworkManagerInterface::NMDeviceType deviceType);
+    void onMeteredChanged(QNetworkManagerInterface::NMMetered metered);
+
 private:
     Q_DISABLE_COPY_MOVE(QNetworkManagerNetworkInformationBackend)
 
