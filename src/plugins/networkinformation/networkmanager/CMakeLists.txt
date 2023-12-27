@@ -7,6 +7,7 @@ qt_internal_add_plugin(QNetworkManagerNetworkInformationPlugin
     PLUGIN_TYPE networkinformation
     DEFAULT_IF LINUX
     SOURCES
+        qnetworkmanagernetworkinformationbackend.h
         qnetworkmanagernetworkinformationbackend.cpp
         qnetworkmanagerservice.h
         qnetworkmanagerservice.cpp
