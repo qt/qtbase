@@ -142,33 +142,38 @@ QNetworkManagerNetworkInformationBackend::QNetworkManagerNetworkInformationBacke
 {
     if (!iface.isValid())
         return;
-    auto updateReachability = [this](QNetworkManagerInterface::NMState newState) {
-        setReachability(reachabilityFromNMState(newState));
-    };
-    updateReachability(iface.state());
-    connect(&iface, &QNetworkManagerInterface::stateChanged, this, std::move(updateReachability));
-
-    auto updateBehindCaptivePortal = [this](QNetworkManagerInterface::NMConnectivityState state) {
-        const bool behindPortal = (state == QNetworkManagerInterface::NM_CONNECTIVITY_PORTAL);
-        setBehindCaptivePortal(behindPortal);
-    };
-    updateBehindCaptivePortal(iface.connectivityState());
-    connect(&iface, &QNetworkManagerInterface::connectivityChanged, this,
-            std::move(updateBehindCaptivePortal));
-
-    auto updateTransportMedium = [this](QNetworkManagerInterface::NMDeviceType newDevice) {
-        setTransportMedium(transportMediumFromDeviceType(newDevice));
-    };
-    updateTransportMedium(iface.deviceType());
-    connect(&iface, &QNetworkManagerInterface::deviceTypeChanged, this,
-            std::move(updateTransportMedium));
-
-    auto updateMetered = [this](QNetworkManagerInterface::NMMetered metered) {
-        setMetered(isMeteredFromNMMetered(metered));
-    };
-    updateMetered(iface.meteredState());
-    connect(&iface, &QNetworkManagerInterface::meteredChanged, this, std::move(updateMetered));
+    iface.setBackend(this);
+    onStateChanged(iface.state());
+    onConnectivityChanged(iface.connectivityState());
+    onDeviceTypeChanged(iface.deviceType());
+    onMeteredChanged(iface.meteredState());
 }
+
+void QNetworkManagerNetworkInformationBackend::onStateChanged(
+        QNetworkManagerInterface::NMState newState)
+{
+    setReachability(reachabilityFromNMState(newState));
+}
+
+void QNetworkManagerNetworkInformationBackend::onConnectivityChanged(
+        QNetworkManagerInterface::NMConnectivityState connectivityState)
+{
+    const bool behindPortal =
+            (connectivityState == QNetworkManagerInterface::NM_CONNECTIVITY_PORTAL);
+    setBehindCaptivePortal(behindPortal);
+}
+
+void QNetworkManagerNetworkInformationBackend::onDeviceTypeChanged(
+        QNetworkManagerInterface::NMDeviceType newDevice)
+{
+    setTransportMedium(transportMediumFromDeviceType(newDevice));
+}
+
+void QNetworkManagerNetworkInformationBackend::onMeteredChanged(
+        QNetworkManagerInterface::NMMetered metered)
+{
+    setMetered(isMeteredFromNMMetered(metered));
+};
 
 QT_END_NAMESPACE
 
