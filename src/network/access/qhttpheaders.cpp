@@ -23,9 +23,8 @@ Q_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
 
     \brief QHttpHeaders is a class for holding HTTP headers.
 
-    The primary use case for the class is to provide an interface type
-    for Qt networking APIs that use/consume such headers. Historically
-    various QList, QMultiMap, and QMultiHash constructs have been used.
+    The class is an interface type for Qt networking APIs that
+    use or consume such headers.
 
     \section1 Allowed field name and value characters
 
