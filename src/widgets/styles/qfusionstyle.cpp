@@ -2785,6 +2785,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
                 int v = slider->minimum;
                 int len = proxy()->pixelMetric(PM_SliderLength, slider, widget);
+                QVector<QLine> lines;
                 while (v <= slider->maximum + 1) {
                     if (v == slider->maximum + 1 && interval == 1)
                         break;
@@ -2798,21 +2799,21 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
                     if (horizontal) {
                         if (ticksAbove) {
-                            painter->drawLine(pos, slider->rect.top() + extra,
-                                              pos, slider->rect.top() + tickSize);
+                            lines += QLine(pos, slider->rect.top() + extra,
+                                           pos, slider->rect.top() + tickSize);
                         }
                         if (ticksBelow) {
-                            painter->drawLine(pos, slider->rect.bottom() - extra,
-                                              pos, slider->rect.bottom() - tickSize);
+                            lines += QLine(pos, slider->rect.bottom() - extra,
+                                           pos, slider->rect.bottom() - tickSize);
                         }
                     } else {
                         if (ticksAbove) {
-                            painter->drawLine(slider->rect.left() + extra, pos,
-                                              slider->rect.left() + tickSize, pos);
+                            lines += QLine(slider->rect.left() + extra, pos,
+                                           slider->rect.left() + tickSize, pos);
                         }
                         if (ticksBelow) {
-                            painter->drawLine(slider->rect.right() - extra, pos,
-                                              slider->rect.right() - tickSize, pos);
+                            lines += QLine(slider->rect.right() - extra, pos,
+                                           slider->rect.right() - tickSize, pos);
                         }
                     }
                     // in the case where maximum is max int
@@ -2821,6 +2822,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                         break;
                     v = nextInterval;
                 }
+                painter->drawLines(lines);
             }
             // draw handle
             if ((option->subControls & SC_SliderHandle) ) {
