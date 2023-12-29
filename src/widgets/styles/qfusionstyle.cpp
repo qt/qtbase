@@ -424,10 +424,10 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     QRect rect = option->rect;
     int state = option->state;
 
-    QColor outline = d->outline(option->palette);
-    QColor highlightedOutline = d->highlightedOutline(option->palette);
+    const QColor outline = d->outline(option->palette);
+    const QColor highlightedOutline = d->highlightedOutline(option->palette);
 
-    QColor tabFrameColor = d->tabFrameColor(option->palette);
+    const QColor tabFrameColor = d->tabFrameColor(option->palette);
 
     switch (elem) {
 
@@ -2830,13 +2830,13 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                     }
                     QColor highlight = d->highlight(option->palette);
                     QColor highlightedoutline = highlight.darker(140);
-                    if (qGray(outline.rgb()) > qGray(highlightedoutline.rgb()))
-                        outline = highlightedoutline;
-
+                    QColor grooveOutline = outline;
+                    if (qGray(grooveOutline.rgb()) > qGray(highlightedoutline.rgb()))
+                        grooveOutline = highlightedoutline;
 
                     groovePainter.setRenderHint(QPainter::Antialiasing, true);
                     groovePainter.translate(0.5, 0.5);
-                    groovePainter.setPen(QPen(outline));
+                    groovePainter.setPen(QPen(grooveOutline));
                     gradient.setColorAt(0, activeHighlight);
                     gradient.setColorAt(1, activeHighlight.lighter(130));
                     groovePainter.setBrush(gradient);
