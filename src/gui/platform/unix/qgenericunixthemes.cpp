@@ -148,7 +148,7 @@ public:
     enum class Setting {
         Theme,
         ApplicationStyle,
-        ColorTheme,
+        ColorScheme,
     };
     Q_ENUM(Setting)
 
@@ -375,7 +375,7 @@ void QGenericUnixThemeDBusListener::populateSignalMap()
                        ChangeSignal(Provider::Gtk, Setting::Theme));
 
     m_signalMap.insert(DBusKey("org.freedesktop.appearance"_L1, "color-scheme"_L1),
-                       ChangeSignal(Provider::Gnome, Setting::ColorTheme));
+                       ChangeSignal(Provider::Gnome, Setting::ColorScheme));
 
     const QString &saveJsonFile = qEnvironmentVariable("QT_QPA_DBUS_SIGNALS_SAVE");
     if (!saveJsonFile.isEmpty())
@@ -594,7 +594,7 @@ void QKdeThemePrivate::settingChangedHandler(QGenericUnixThemeDBusListener::Prov
         return;
 
     switch (setting) {
-    case QGenericUnixThemeDBusListener::Setting::ColorTheme:
+    case QGenericUnixThemeDBusListener::Setting::ColorScheme:
         qCDebug(lcQpaThemeDBus) << "KDE color theme changed to:" << value;
         break;
     case QGenericUnixThemeDBusListener::Setting::Theme:
