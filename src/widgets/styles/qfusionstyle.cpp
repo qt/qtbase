@@ -3455,6 +3455,10 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
                 case Qt::AlignRight:
                     rect.moveLeft(option->rect.width() - width);
                     break;
+                case Qt::AlignLeft:
+                    if ((groupBoxTextAlignment & Qt::AlignVertical_Mask) == Qt::AlignVCenter)
+                        rect.moveLeft(proxy()->pixelMetric(PM_LayoutLeftMargin, option, widget));
+                    break;
                 }
             }
 
