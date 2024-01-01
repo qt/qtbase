@@ -1837,7 +1837,23 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 frame.lineWidth = groupBox->lineWidth;
                 frame.midLineWidth = groupBox->midLineWidth;
                 frame.rect = proxy()->subControlRect(CC_GroupBox, option, SC_GroupBoxFrame, widget);
+                painter->save();
+                QRegion region(groupBox->rect);
+                if (!groupBox->text.isEmpty()) {
+                    bool ltr = groupBox->direction == Qt::LeftToRight;
+                    QRect finalRect;
+                    if (groupBox->subControls & QStyle::SC_GroupBoxCheckBox) {
+                        finalRect = checkBoxRect.united(textRect);
+                        finalRect.adjust(ltr ? -4 : -2, 0, ltr ? 2 : 4, 0);
+                    } else {
+                        finalRect = textRect;
+                        finalRect.adjust(-2, 0, 2, 0);
+                    }
+                    region -= finalRect.adjusted(0, 0, 0, 3 - textRect.height() / 2);
+                }
+                painter->setClipRegion(region);
                 proxy()->drawPrimitive(PE_FrameGroupBox, &frame, painter, widget);
+                painter->restore();
             }
 
             // Draw title
