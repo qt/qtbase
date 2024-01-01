@@ -352,7 +352,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             // Shrinking the topMargin if Not checkable AND title is empty
             topMargin = groupBoxTopMargin;
         } else {
-            topMargin = qMax(pixelMetric(PM_ExclusiveIndicatorHeight, option, widget), option->fontMetrics.height()) + groupBoxTopMargin;
+            topMargin = qMax(pixelMetric(PM_IndicatorHeight, option, widget), option->fontMetrics.height()) + groupBoxTopMargin;
         }
         QRect frame = option->rect.adjusted(0, topMargin, 0, 0);
         qDrawBorderPixmap(painter, frame, QMargins(6, 6, 6, 6), pixmap);
@@ -3048,7 +3048,7 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
         break;
     case CT_GroupBox:
         if (option) {
-            int topMargin = qMax(pixelMetric(PM_ExclusiveIndicatorHeight, option, widget), option->fontMetrics.height()) + groupBoxTopMargin;
+            int topMargin = qMax(pixelMetric(PM_IndicatorHeight, option, widget), option->fontMetrics.height()) + groupBoxTopMargin;
             newSize += QSize(10, topMargin); // Add some space below the groupbox
         }
         break;
@@ -3340,9 +3340,9 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
                 QRect frameRect = option->rect.adjusted(0, 0, 0, -groupBoxBottomMargin);
                 int margin = 3;
                 int leftMarginExtension = 0;
-                const int exclusiveIndicatorHeight = option->subControls.testFlag(SC_GroupBoxCheckBox) ?
-                                                        pixelMetric(PM_ExclusiveIndicatorHeight, option, widget) : 0;
-                const int topMargin = qMax(exclusiveIndicatorHeight, fontMetricsHeight) +
+                const int indicatorHeight = option->subControls.testFlag(SC_GroupBoxCheckBox) ?
+                                                        pixelMetric(PM_IndicatorHeight, option, widget) : 0;
+                const int topMargin = qMax(indicatorHeight, fontMetricsHeight) +
                                         groupBoxTopMargin;
                 return frameRect.adjusted(leftMarginExtension + margin, margin + topMargin, -margin, -margin - groupBoxBottomMargin);
             }
