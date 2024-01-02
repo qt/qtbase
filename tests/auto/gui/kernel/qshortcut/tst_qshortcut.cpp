@@ -42,6 +42,10 @@ void tst_QShortcut::windowShortcut()
     new QShortcut(Qt::CTRL | Qt::Key_Q, &w, SLOT(close()));
     w.show();
     QVERIFY(QTest::qWaitForWindowExposed(&w));
+
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QEXPECT_FAIL("", "It failed on Wayland, QTBUG-120334", Abort);
+
     QTRY_VERIFY(QGuiApplication::applicationState() == Qt::ApplicationActive);
     QTest::sendKeyEvent(QTest::Click, &w, Qt::Key_Q, 'q', Qt::ControlModifier);
     QTRY_VERIFY(!w.isVisible());
