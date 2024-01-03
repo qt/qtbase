@@ -170,7 +170,7 @@ void DataTransfer::toMimeDataWithFile(std::function<void(QMimeData *)> callback)
                 QUrl fileUrl = QUrl::fromLocalFile(qtTmpDir.filePath(QString::fromStdString(webfile.name())));
                 mimeContext->fileUrls.append(fileUrl);
 
-                QFile file(fileName);
+                QFile file(fileUrl.toLocalFile());
                 if (!file.open(QFile::WriteOnly)) {
                     qWarning() << "File was not opened";
                     mimeContext->deref();
