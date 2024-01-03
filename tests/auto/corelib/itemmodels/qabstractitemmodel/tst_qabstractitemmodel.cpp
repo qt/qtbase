@@ -1000,18 +1000,12 @@ void tst_QAbstractItemModel::modelIndexComparisons()
     QPersistentModelIndex pmi11 = mi11;
     QPersistentModelIndex pmi22 = mi22;
 
-    QTestPrivate::testEqualityOperators(mi11, mi11, true);
-    if (QTest::currentTestFailed()) return;
-    QTestPrivate::testEqualityOperators(mi11, mi22, false);
-    if (QTest::currentTestFailed()) return;
-    QTestPrivate::testEqualityOperators(pmi11, pmi11, true);
-    if (QTest::currentTestFailed()) return;
-    QTestPrivate::testEqualityOperators(pmi11, pmi22, false);
-    if (QTest::currentTestFailed()) return;
-    QTestPrivate::testEqualityOperators(pmi11, mi11, true);
-    if (QTest::currentTestFailed()) return;
-    QTestPrivate::testEqualityOperators(pmi11, mi22, false);
-    if (QTest::currentTestFailed()) return;
+    QT_TEST_EQUALITY_OPS(mi11, mi11, true);
+    QT_TEST_EQUALITY_OPS(mi11, mi22, false);
+    QT_TEST_EQUALITY_OPS(pmi11, pmi11, true);
+    QT_TEST_EQUALITY_OPS(pmi11, pmi22, false);
+    QT_TEST_EQUALITY_OPS(pmi11, mi11, true);
+    QT_TEST_EQUALITY_OPS(pmi11, mi22, false);
 }
 
 void tst_QAbstractItemModel::testMoveSameParentDown_data()

@@ -1041,9 +1041,7 @@ void tst_QDate::operator_eq_eq()
     QFETCH(QDate, d2);
     QFETCH(bool, expectEqual);
 
-    QTestPrivate::testEqualityOperators(d1, d2, expectEqual);
-    if (QTest::currentTestFailed())
-        return;
+    QT_TEST_EQUALITY_OPS(d1, d2, expectEqual);
 
     if (expectEqual)
         QVERIFY(qHash(d1) == qHash(d2));
@@ -1077,7 +1075,7 @@ void tst_QDate::ordering()
     QFETCH(QDate, right);
     QFETCH(Qt::strong_ordering, expectedOrdering);
 
-    QTestPrivate::testAllComparisonOperators(left, right, expectedOrdering);
+    QT_TEST_ALL_COMPARISON_OPS(left, right, expectedOrdering);
 }
 
 void tst_QDate::ordering_chrono_types()
@@ -1086,43 +1084,37 @@ void tst_QDate::ordering_chrono_types()
     using namespace std::chrono;
     QDate friday(2001, 11, 30); // the 5th Friday of November 2001
     // std::chrono::year_month_day
-    QTestPrivate::testAllComparisonOperators(friday, year_month_day(2001y, November, 29d),
-                                             Qt::strong_ordering::greater);
-    QTestPrivate::testAllComparisonOperators(friday, year_month_day(2001y, November, 30d),
-                                             Qt::strong_ordering::equivalent);
-    QTestPrivate::testAllComparisonOperators(friday, year_month_day(2001y, December, 1d),
-                                             Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(friday, year_month_day(2001y, November, 29d),
+                               Qt::strong_ordering::greater);
+    QT_TEST_ALL_COMPARISON_OPS(friday, year_month_day(2001y, November, 30d),
+                               Qt::strong_ordering::equivalent);
+    QT_TEST_ALL_COMPARISON_OPS(friday, year_month_day(2001y, December, 1d),
+                               Qt::strong_ordering::less);
 
     // std::chrono::year_month_day_last
-    QTestPrivate::testAllComparisonOperators(friday, year_month_day_last(2001y, {October / last}),
-                                             Qt::strong_ordering::greater);
-    QTestPrivate::testAllComparisonOperators(friday, year_month_day_last(2001y, {November / last}),
-                                             Qt::strong_ordering::equivalent);
-    QTestPrivate::testAllComparisonOperators(friday, year_month_day_last(2001y, {December / last}),
-                                             Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(friday, year_month_day_last(2001y, {October / last}),
+                               Qt::strong_ordering::greater);
+    QT_TEST_ALL_COMPARISON_OPS(friday, year_month_day_last(2001y, {November / last}),
+                               Qt::strong_ordering::equivalent);
+    QT_TEST_ALL_COMPARISON_OPS(friday, year_month_day_last(2001y, {December / last}),
+                               Qt::strong_ordering::less);
 
     // std::chrono::year_month_weekday
-    QTestPrivate::testAllComparisonOperators(friday,
-                                             year_month_weekday(2001y, November, Thursday[5]),
-                                             Qt::strong_ordering::greater);
-    QTestPrivate::testAllComparisonOperators(friday,
-                                             year_month_weekday(2001y, November, Friday[5]),
-                                             Qt::strong_ordering::equivalent);
-    QTestPrivate::testAllComparisonOperators(friday,
-                                             year_month_weekday(2001y, December, Saturday[1]),
-                                             Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(friday, year_month_weekday(2001y, November, Thursday[5]),
+                               Qt::strong_ordering::greater);
+    QT_TEST_ALL_COMPARISON_OPS(friday, year_month_weekday(2001y, November, Friday[5]),
+                               Qt::strong_ordering::equivalent);
+    QT_TEST_ALL_COMPARISON_OPS(friday, year_month_weekday(2001y, December, Saturday[1]),
+                               Qt::strong_ordering::less);
 
     // std::chrono::year_month_weekday_last
     QDate thursday(2001, 11, 29); // the last Thursday of November 2001
-    QTestPrivate::testAllComparisonOperators(thursday, year_month_weekday_last(2001y, November,
-                                                                               Wednesday[last]),
-                                             Qt::strong_ordering::greater);
-    QTestPrivate::testAllComparisonOperators(thursday, year_month_weekday_last(2001y, November,
-                                                                               Thursday[last]),
-                                             Qt::strong_ordering::equivalent);
-    QTestPrivate::testAllComparisonOperators(thursday, year_month_weekday_last(2001y, November,
-                                                                               Friday[last]),
-                                             Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(thursday, year_month_weekday_last(2001y, November, Wednesday[last]),
+                               Qt::strong_ordering::greater);
+    QT_TEST_ALL_COMPARISON_OPS(thursday, year_month_weekday_last(2001y, November, Thursday[last]),
+                               Qt::strong_ordering::equivalent);
+    QT_TEST_ALL_COMPARISON_OPS(thursday, year_month_weekday_last(2001y, November, Friday[last]),
+                               Qt::strong_ordering::less);
 #else
     QSKIP("This test requires C++20-level <chrono> support enabled in the standard library.");
 #endif // __cpp_lib_chrono >= 201907L

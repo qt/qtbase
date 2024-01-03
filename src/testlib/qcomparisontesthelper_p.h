@@ -330,6 +330,46 @@ void testAllComparisonOperators(LeftType lhs, RightType rhs, OrderingType expect
 
 } // namespace QTestPrivate
 
+/*!
+    \internal
+
+    A helper macro that calls QTestPrivate::testEqualityOperators(), checks the
+    test's state after the function is executed, and generates a meaningful
+    debug message with the original file and line numbers if the test has
+    failed.
+*/
+#define QT_TEST_EQUALITY_OPS(Left, Right, Expected) \
+    do { \
+        auto report = qScopeGuard([] { \
+            qDebug("testEqualityOperators(" #Left ", " #Right ", " #Expected ") " \
+                   "failed in " __FILE__ " on line %d", __LINE__); \
+        }); \
+        QTestPrivate::testEqualityOperators(Left, Right, Expected); \
+        if (QTest::currentTestFailed()) \
+            return; \
+        report.dismiss(); \
+    } while (false)
+
+/*!
+    \internal
+
+    A helper macro that calls QTestPrivate::testAllComparisonOperators(), checks
+    the test's state after the function is executed, and generates a meaningful
+    debug message with the original file and line numbers if the test has
+    failed.
+*/
+#define QT_TEST_ALL_COMPARISON_OPS(Left, Right, Expected) \
+    do { \
+        auto report = qScopeGuard([] { \
+            qDebug("testAllComparisonOperators(" #Left ", " #Right ", " #Expected ") " \
+                   "failed in " __FILE__ " on line %d", __LINE__); \
+        }); \
+        QTestPrivate::testAllComparisonOperators(Left, Right, Expected); \
+        if (QTest::currentTestFailed()) \
+            return; \
+        report.dismiss(); \
+    } while (false)
+
 QT_END_NAMESPACE
 
 #endif // QCOMPARISONTESTHELPER_P_H

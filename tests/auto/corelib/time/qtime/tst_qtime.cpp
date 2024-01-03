@@ -350,9 +350,7 @@ void tst_QTime::operator_eq_eq()
     QFETCH(QTime, t2);
     QFETCH(bool, expectEqual);
 
-    QTestPrivate::testEqualityOperators(t1, t2, expectEqual);
-    if (QTest::currentTestFailed())
-        return;
+    QT_TEST_EQUALITY_OPS(t1, t2, expectEqual);
 
     if (expectEqual)
         QVERIFY(qHash(t1) == qHash(t2));
@@ -387,7 +385,7 @@ void tst_QTime::ordering()
     QFETCH(QTime, right);
     QFETCH(Qt::strong_ordering, expectedOrdering);
 
-    QTestPrivate::testAllComparisonOperators(left, right, expectedOrdering);
+    QT_TEST_ALL_COMPARISON_OPS(left, right, expectedOrdering);
 }
 
 #if QT_CONFIG(datestring)
