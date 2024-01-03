@@ -56,6 +56,7 @@ qt_internal_add_plugin(QCocoaIntegrationPlugin
         ${FWIOSurface}
         ${FWMetal}
         ${FWQuartzCore}
+        ${FWUniformTypeIdentifiers}
         Qt::Core
         Qt::CorePrivate
         Qt::Gui

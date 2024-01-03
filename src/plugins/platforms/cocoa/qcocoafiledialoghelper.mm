@@ -27,6 +27,8 @@
 #include <qpa/qplatformtheme.h>
 #include <qpa/qplatformnativeinterface.h>
 
+#include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+
 QT_USE_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -437,6 +439,24 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     m_popupButton.hidden = chooseDirsOnly;    // TODO hide the whole sunken pane instead?
 
     m_panel.allowedFileTypes = [self computeAllowedFileTypes];
+
+    // Setting allowedFileTypes to nil is not enough to reset any
+    // automatically added extension based on a previous filter.
+    // This is problematic because extensions can in some cases
+    // be hidden from the user, resulting in confusion when the
+    // resulting file name doesn't match the current empty filter.
+    // We work around this by temporarily resetting the allowed
+    // content type to one without an extension, which forces
+    // the save panel to update and remove the extension.
+    const bool nameFieldHasExtension = m_panel.nameFieldStringValue.pathExtension.length > 0;
+    if (!m_panel.allowedFileTypes && !nameFieldHasExtension && !openpanel_cast(m_panel)) {
+        if (!UTTypeDirectory.preferredFilenameExtension) {
+            m_panel.allowedContentTypes = @[ UTTypeDirectory ];
+            m_panel.allowedFileTypes = nil;
+        } else {
+            qWarning() << "UTTypeDirectory unexpectedly reported an extension";
+        }
+    }
 
     m_panel.showsHiddenFiles = m_options->filter().testFlag(QDir::Hidden);
 

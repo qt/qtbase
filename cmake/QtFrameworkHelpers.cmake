@@ -37,6 +37,7 @@ macro(qt_find_apple_system_frameworks)
         qt_internal_find_apple_system_framework(FWContacts Contacts)
         qt_internal_find_apple_system_framework(FWEventKit EventKit)
         qt_internal_find_apple_system_framework(FWHealthKit HealthKit)
+        qt_internal_find_apple_system_framework(FWUniformTypeIdentifiers UniformTypeIdentifiers)
     endif()
 endmacro()
 
