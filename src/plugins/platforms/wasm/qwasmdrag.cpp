@@ -160,15 +160,12 @@ void QWasmDrag::onNativeDrop(DragEvent *event)
     QFlags<Qt::KeyboardModifier> modifiers = event->modifiers;
 
     // Accept the native drop event: We are going to async read any dropped
-    // files, but the
+    // files, but the browser expects that accepted state is set before any
+    // async calls.
     event->acceptDrop();
-
-    qDebug() << "QWasmDrag::onNativeDrop" << event;
 
     const auto dropCallback = [&m_dragState = m_dragState, wasmWindow, targetWindowPos,
         actions, mouseButton, modifiers](QMimeData *mimeData) {
-
-        qDebug() << "QWasmDrag::onNativeDrop callback";
 
         auto dropResponse = std::make_shared<QPlatformDropQtResponse>(true, Qt::DropAction::CopyAction);
         *dropResponse = QWindowSystemInterface::handleDrop(wasmWindow->window(), mimeData,
