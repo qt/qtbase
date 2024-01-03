@@ -201,15 +201,10 @@ void tst_QCompareHelpers::compareImpl()
     QFETCH(RightType, rhs);
     QFETCH(OrderingType, expectedOrdering);
 
-    QTestPrivate::testAllComparisonOperators(lhs, rhs, expectedOrdering);
-    if (QTest::currentTestFailed())
-        return;
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, expectedOrdering);
 #ifdef __cpp_lib_three_way_comparison
     // Also check std types.
-    QTestPrivate::testAllComparisonOperators(lhs, rhs,
-                                             QtOrderingPrivate::to_std(expectedOrdering));
-    if (QTest::currentTestFailed())
-        return;
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, QtOrderingPrivate::to_std(expectedOrdering));
 #endif // __cpp_lib_three_way_comparison
 }
 

@@ -2472,17 +2472,9 @@ void tst_QDateTime::operator_eqeq()
     QFETCH(bool, expectEqual);
     QFETCH(bool, checkEuro);
 
-    QTestPrivate::testEqualityOperators(dt1, dt1, true);
-    if (QTest::currentTestFailed())
-        return;
-
-    QTestPrivate::testEqualityOperators(dt2, dt2, true);
-    if (QTest::currentTestFailed())
-        return;
-
-    QTestPrivate::testEqualityOperators(dt1, dt2, expectEqual);
-    if (QTest::currentTestFailed())
-        return;
+    QT_TEST_EQUALITY_OPS(dt1, dt1, true);
+    QT_TEST_EQUALITY_OPS(dt2, dt2, true);
+    QT_TEST_EQUALITY_OPS(dt1, dt2, expectEqual);
 
     QVERIFY(dt1 != QDateTime::currentDateTime());
     QVERIFY(dt2 != QDateTime::currentDateTime());
@@ -2553,7 +2545,7 @@ void tst_QDateTime::ordering()
     QFETCH(QDateTime, right);
     QFETCH(Qt::weak_ordering, expectedOrdering);
 
-    QTestPrivate::testAllComparisonOperators(left, right, expectedOrdering);
+    QT_TEST_ALL_COMPARISON_OPS(left, right, expectedOrdering);
 }
 
 Q_DECLARE_METATYPE(QDataStream::Version)

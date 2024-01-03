@@ -365,7 +365,7 @@ void tst_QTimeZone::compare()
     QFETCH(QTimeZone, right);
     QFETCH(bool, expectedEqual);
 
-    QTestPrivate::testEqualityOperators(left, right, expectedEqual);
+    QT_TEST_EQUALITY_OPS(left, right, expectedEqual);
 }
 
 void tst_QTimeZone::timespec()
