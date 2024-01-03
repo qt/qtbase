@@ -91,7 +91,8 @@ private Q_SLOTS:
     {
         QFileDialog::getOpenFileContent(
             m_filterEdit->text(),
-            std::bind(&AppWindow::onFileContentReady, this, std::placeholders::_1, std::placeholders::_2));
+            std::bind(&AppWindow::onFileContentReady, this, std::placeholders::_1, std::placeholders::_2),
+            &m_loadFileUi);
     }
 
     void onSaveClicked()
