@@ -14,6 +14,7 @@
 #include <QKeyEvent>
 #include <QMimeDatabase>
 #include <QFileInfo>
+#include <QCryptographicHash>
 
 #ifdef Q_OS_WASM
 #include <emscripten.h>
@@ -264,20 +265,19 @@ void MainWindow::dropEvent(QDropEvent* e)
         QString urlStr = url.toDisplayString();
         int size = urlStr.length();
         sizeStr.setNum(size);
-        ui->textEdit_2->insertPlainText("    Drop has url data length: " + sizeStr + "\n");
-        ui->textEdit_2->insertPlainText(urlStr + "\n");
 
-        QString fname = url.toLocalFile();
-        QFileInfo info(fname);
-        if (info.exists()) { // this is a file
-            QMimeDatabase db;
-            QMimeType mt = db.mimeTypeForFile(info);
-            if (mt.name().contains("image")) {
-                QImage image = QImage(fname);
-                setImage(image);
-            }
+        QString fileName = url.toLocalFile();
+        QString sha1;
+        QFile file(fileName);
+        if (file.exists()) {
+            file.open(QFile::ReadOnly);
+            sha1 = QCryptographicHash::hash(file.readAll(), QCryptographicHash::Sha1).toHex();
         }
+
+        ui->textEdit_2->insertPlainText("    Drop has url data length: " + sizeStr + "\n");
+        ui->textEdit_2->insertPlainText("        " + urlStr + " sha1 " + sha1.left(8) + "\n");
     }
+    ui->textEdit_2->insertPlainText("\n");
 
     if (e->mimeData()->hasImage()) {
         qsizetype imageSize = qvariant_cast<QImage>(e->mimeData()->imageData()).sizeInBytes();
@@ -294,14 +294,15 @@ void MainWindow::dropEvent(QDropEvent* e)
         int size = e->mimeData()->html().length();
         sizeStr.setNum(size);
         ui->textEdit_2->insertPlainText("    Drop has html data length: " + sizeStr + "\n");
-        ui->textEdit_2->insertPlainText(e->mimeData()->html()+"\n");
-        ui->textEdit->insertHtml(e->mimeData()->html()+"<br>");
+        for (const auto &line : e->mimeData()->html().split('\n', Qt::SkipEmptyParts))
+            ui->textEdit_2->insertPlainText("        " + line + "\n");
     }
     if (e->mimeData()->hasText()) {
         int size = e->mimeData()->text().length();
         sizeStr.setNum(size);
         ui->textEdit_2->insertPlainText("    Drop has text data length: " + sizeStr + "\n");
-        ui->textEdit_2->insertPlainText(e->mimeData()->text());
+        for (const auto &line : e->mimeData()->text().split('\n', Qt::SkipEmptyParts))
+            ui->textEdit_2->insertPlainText("        " + line + "\n");
     }
 
     const QString message = tr("    Drop accepted, %1 ")
