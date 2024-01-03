@@ -368,6 +368,14 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     if (!m_helper)
         return;
 
+    // Save panels only allow you to select directories, which
+    // means currentChanged will only be emitted when selecting
+    // a directory, and if so, with the latest chosen file name,
+    // which is confusing and inconsistent. We choose to bail
+    // out entirely for save panels, to give consistent behavior.
+    if (!openpanel_cast(m_panel))
+        return;
+
     if (m_panel.visible) {
         const QString selection = QString::fromNSString(m_panel.URL.path);
         if (selection != m_currentSelection) {
