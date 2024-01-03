@@ -834,8 +834,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
         caps.maxDrawBuffers = 1;
         caps.hasDrawBuffersFunc = false;
         // This does not mean MSAA is not supported, just that we cannot query
-        // the supported sample counts.
-        caps.maxSamples = 1;
+        // the supported sample counts. Assume that 4x is always supported.
+        caps.maxSamples = 4;
     }
 
     caps.msaaRenderBuffer = f->hasOpenGLExtension(QOpenGLExtensions::FramebufferMultisample)
