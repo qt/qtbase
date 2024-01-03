@@ -117,7 +117,7 @@ function(qt_internal_add_docs)
         )
     endif()
 
-    if(QT_SUPERBUILD)
+    if(QT_SUPERBUILD OR "${PROJECT_NAME}" STREQUAL "QtBase")
         set(qt_install_docs_env "${QtBase_BINARY_DIR}/${INSTALL_DOCDIR}")
     else()
         set(qt_install_docs_env "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${INSTALL_DOCDIR}")
