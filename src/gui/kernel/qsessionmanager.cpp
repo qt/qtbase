@@ -281,10 +281,6 @@ void QSessionManager::setRestartCommand(const QStringList &command)
 /*!
     Returns the currently set restart command.
 
-    To iterate over the list, you can use the \l foreach pseudo-keyword:
-
-    \snippet code/src_gui_kernel_qguiapplication.cpp 3
-
     \sa setRestartCommand(), restartHint()
 */
 QStringList QSessionManager::restartCommand() const
@@ -306,10 +302,6 @@ void QSessionManager::setDiscardCommand(const QStringList &command)
 
 /*!
     Returns the currently set discard command.
-
-    To iterate over the list, you can use the \l foreach pseudo-keyword:
-
-    \snippet code/src_gui_kernel_qguiapplication.cpp 4
 
     \sa setDiscardCommand(), restartCommand(), setRestartCommand()
 */
