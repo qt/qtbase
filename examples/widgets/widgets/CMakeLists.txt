@@ -4,7 +4,6 @@
 qt_internal_add_example(analogclock)
 qt_internal_add_example(calculator)
 qt_internal_add_example(calendarwidget)
-qt_internal_add_example(groupbox)
 qt_internal_add_example(lineedits)
 qt_internal_add_example(scribble)
 qt_internal_add_example(shapedclock)
