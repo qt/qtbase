@@ -4876,6 +4876,9 @@ void tst_QString::arg()
     QCOMPARE( s4.arg("foo", 10), QLatin1String("[       foo]") );
     QCOMPARE( s4.arg("foo", -10), QLatin1String("[foo       ]") );
 
+    // QStringRef argument in multi-arg:
+    QCOMPARE(QString("%1;%2").arg(QStringRef(), QString()), ";");
+
     QString firstName( "James" );
     QString lastName( "Bond" );
     QString fullName = QString( "My name is %2, %1 %2" )

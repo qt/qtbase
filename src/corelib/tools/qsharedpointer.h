@@ -82,7 +82,12 @@ public:
     QSharedPointer<T> &operator=(const QSharedPointer<T> &other);
     QSharedPointer<T> &operator=(const QWeakPointer<T> &other);
 
-    void swap(QSharedPointer<T> &other);
+    template <class X>
+    QSharedPointer(QSharedPointer<X> && other) noexcept;
+    template <class X>
+    QSharedPointer &operator=(QSharedPointer<X> && other) noexcept;
+
+    void swap(QSharedPointer<T> &other) noexcept;
 
     QWeakPointer<T> toWeakRef() const;
 
@@ -102,6 +107,9 @@ public:
     template <typename... Args>
     static inline QSharedPointer<T> create(Args &&... args);
 };
+
+template <class T>
+size_t qHash(const QSharedPointer<T> &key, size_t seed = 0) noexcept;
 
 template <class T>
 class QWeakPointer

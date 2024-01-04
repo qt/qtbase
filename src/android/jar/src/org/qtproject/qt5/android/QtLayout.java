@@ -106,111 +106,34 @@ public class QtLayout extends ViewGroup
         final WindowManager windowManager = activity.getWindowManager();
         Display display;
 
-        int appWidth = 0;
-        int appHeight = 0;
-
-        int insetLeft = 0;
-        int insetTop = 0;
+        final WindowInsets rootInsets = getRootWindowInsets();
 
         int maxWidth = 0;
         int maxHeight = 0;
 
-        double xdpi = 0;
-        double ydpi = 0;
-        double scaledDensity = 0;
-        double density = 0;
-
         if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-             display = windowManager.getDefaultDisplay();
+            display = windowManager.getDefaultDisplay();
 
-             final DisplayMetrics appMetrics = new DisplayMetrics();
-             display.getMetrics(appMetrics);
-
-             final WindowInsets rootInsets = getRootWindowInsets();
-
-             insetLeft = rootInsets.getStableInsetLeft();
-             insetTop = rootInsets.getStableInsetTop();
-
-             int insetsWidth = rootInsets.getStableInsetRight() + rootInsets.getStableInsetLeft();
-             int insetsHeight = rootInsets.getStableInsetTop() + rootInsets.getStableInsetBottom();
-
-             appWidth = appMetrics.widthPixels - insetsWidth;
-             appHeight = appMetrics.heightPixels - insetsHeight;
-
-             final DisplayMetrics maxMetrics = new DisplayMetrics();
-             display.getRealMetrics(maxMetrics);
-
-             maxWidth = maxMetrics.widthPixels;
-             maxHeight = maxMetrics.heightPixels;
-
-             density = appMetrics.density;
-             xdpi = appMetrics.xdpi;
-             ydpi = appMetrics.ydpi;
-             scaledDensity = appMetrics.scaledDensity;
+            final DisplayMetrics maxMetrics = new DisplayMetrics();
+            display.getRealMetrics(maxMetrics);
+            maxWidth = maxMetrics.widthPixels;
+            maxHeight = maxMetrics.heightPixels;
         } else {
-            // after API 30 use getCurrentWindowMetrics for application metrics
-            // getMaximumWindowMetrics for the screen metrics
-            // resource configuration for density as best practice
-            // and the resource display metrics for the rest
             display = activity.getDisplay();
 
-            final WindowMetrics appMetrics = windowManager.getCurrentWindowMetrics();
             final WindowMetrics maxMetrics = windowManager.getMaximumWindowMetrics();
-
-            final WindowInsets windowInsets = appMetrics.getWindowInsets();
-            Insets insets = windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.navigationBars()
-                     | WindowInsets.Type.displayCutout());
-
-            insetLeft = insets.left;
-            insetTop = insets.top;
-
-            int insetsWidth = insets.right + insets.left;
-            int insetsHeight = insets.top + insets.bottom;
-
-            if (h == maxMetrics.getBounds().height()) {
-                //when h == maxheight the system is ignoring insets
-                insetsWidth = insetsHeight = insetLeft = insetTop = 0;
-            }
-
-            appWidth = appMetrics.getBounds().width() - insetsWidth;
-            appHeight = appMetrics.getBounds().height() - insetsHeight;
-
             maxWidth = maxMetrics.getBounds().width();
             maxHeight = maxMetrics.getBounds().height();
-
-            final Resources resources = activity.getResources();
-            final Configuration configuration = resources.getConfiguration();
-            density = configuration.densityDpi / (float) DisplayMetrics.DENSITY_DEFAULT;
-
-            final DisplayMetrics displayMetrics = resources.getDisplayMetrics();
-            xdpi = displayMetrics.xdpi;
-            ydpi = displayMetrics.ydpi;
-            density = displayMetrics.density;
-            scaledDensity = displayMetrics.scaledDensity;
         }
 
+        final DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
+        double xdpi = displayMetrics.xdpi;
+        double ydpi = displayMetrics.ydpi;
+        double density = displayMetrics.density;
+        double scaledDensity = displayMetrics.scaledDensity;
         float refreshRate = display.getRefreshRate();
 
-        if ((appWidth > appHeight) != (w > h)) {
-            // This is an intermediate state during display rotation.
-            // The new size is still reported for old orientation, while
-            // realMetrics contain sizes for new orientation. Setting
-            // such parameters will produce inconsistent results, so
-            // we just skip them.
-            // We will have another onSizeChanged() with normal values
-            // a bit later.
-            return;
-        }
-
-        final int flag =
-            activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN;
-        if (flag == WindowManager.LayoutParams.FLAG_FULLSCREEN) {
-            // immersive mode uses the whole screen
-            appWidth = maxWidth;
-            appHeight = maxHeight;
-        }
-
-        QtNative.setApplicationDisplayMetrics(maxWidth, maxHeight, appWidth, appHeight,
+        QtNative.setApplicationDisplayMetrics(maxWidth, maxHeight, w, h,
                                               xdpi,ydpi,scaledDensity, density,
                                               refreshRate);
 

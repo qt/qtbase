@@ -53,10 +53,8 @@
 #include <QMetaEnum>
 #include <QTextStream>
 
-Character::Character() :
-    mLevel(0),
-    mClassType(Warrior) {
-}
+Character::Character()
+    = default;
 
 Character::Character(const QString &name,
                      int level,

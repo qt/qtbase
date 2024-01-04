@@ -6091,7 +6091,7 @@ static inline void alphargbblend_argb32(quint32 *dst, uint coverage, const QRgba
 static inline void rgbBlendPixel(QRgba64 &dst, int coverage, QRgba64 slinear, const QColorTrcLut *colorProfile)
 {
     // Do a gammacorrected RGB alphablend...
-    const QRgba64 dlinear = colorProfile ? colorProfile->toLinear64(dst) : dst;
+    const QRgba64 dlinear = colorProfile ? colorProfile->toLinear(dst) : dst;
 
     QRgba64 blend = rgbBlend(dlinear, slinear, coverage);
 
