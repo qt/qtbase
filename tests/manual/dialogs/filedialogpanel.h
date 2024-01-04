@@ -9,6 +9,8 @@
 #include <QPointer>
 
 QT_BEGIN_NAMESPACE
+
+class QAbstractFileIconProvider;
 class QPushButton;
 class QCheckBox;
 class QComboBox;
@@ -52,7 +54,7 @@ private:
     QString filterString() const;
     QFileDialog::Options options() const;
     QStringList allowedSchemes() const;
-    void applySettings(QFileDialog *d) const;
+    void applySettings(QFileDialog *d);
 
     QFormLayout *filesLayout;
     QCheckBox *m_showDirsOnly;
@@ -62,6 +64,9 @@ private:
     QCheckBox *m_resolveSymLinks;
     QCheckBox *m_native;
     QCheckBox *m_customDirIcons;
+    QCheckBox *m_noIconProvider = nullptr;
+    QAbstractFileIconProvider *m_origIconProvider = nullptr;
+
     QComboBox *m_acceptMode;
     QComboBox *m_fileMode;
     QComboBox *m_viewMode;

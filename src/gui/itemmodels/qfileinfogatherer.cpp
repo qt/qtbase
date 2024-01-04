@@ -5,6 +5,7 @@
 #include <qcoreapplication.h>
 #include <qdebug.h>
 #include <qdiriterator.h>
+#include <private/qabstractfileiconprovider_p.h>
 #include <private/qfileinfo_p.h>
 #ifndef Q_OS_WIN
 #  include <unistd.h>
@@ -344,8 +345,12 @@ void QFileInfoGatherer::run()
 QExtendedInformation QFileInfoGatherer::getInfo(const QFileInfo &fileInfo) const
 {
     QExtendedInformation info(fileInfo);
-    info.icon = m_iconProvider->icon(fileInfo);
-    info.displayType = m_iconProvider->type(fileInfo);
+    if (m_iconProvider) {
+        info.icon = m_iconProvider->icon(fileInfo);
+        info.displayType = m_iconProvider->type(fileInfo);
+    } else {
+        info.displayType = QAbstractFileIconProviderPrivate::getFileType(fileInfo);
+    }
 #if QT_CONFIG(filesystemwatcher)
     // ### Not ready to listen all modifications by default
     static const bool watchFiles = qEnvironmentVariableIsSet("QT_FILESYSTEMMODEL_WATCH_FILES");

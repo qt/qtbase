@@ -150,8 +150,12 @@ public:
             return visibleChildren.indexOf(childName);
         }
         void updateIcon(QAbstractFileIconProvider *iconProvider, const QString &path) {
+            if (!iconProvider)
+                return;
+
             if (info)
                 info->icon = iconProvider->icon(QFileInfo(path));
+
             for (QFileSystemNode *child : std::as_const(children)) {
                 //On windows the root (My computer) has no path so we don't want to add a / for nothing (e.g. /C:/)
                 if (!path.isEmpty()) {
@@ -165,6 +169,9 @@ public:
         }
 
         void retranslateStrings(QAbstractFileIconProvider *iconProvider, const QString &path) {
+            if (!iconProvider)
+                return;
+
             if (info)
                 info->displayType = iconProvider->type(QFileInfo(path));
             for (QFileSystemNode *child : std::as_const(children)) {
