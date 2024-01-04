@@ -409,7 +409,7 @@ void QLineEditIconButton::animateShow(bool visible)
 
 void QLineEditIconButton::startOpacityAnimation(qreal endValue)
 {
-    QPropertyAnimation *animation = new QPropertyAnimation(this, QByteArrayLiteral("opacity"));
+    QPropertyAnimation *animation = new QPropertyAnimation(this, QByteArrayLiteral("opacity"), this);
     connect(animation, &QPropertyAnimation::finished, this, &QLineEditIconButton::onAnimationFinished);
 
     animation->setDuration(160);
