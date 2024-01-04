@@ -74,26 +74,4 @@ appname -session id
 
 */ // wrap snippet 2
 
-
-void wrapper0() {
-
-
-//! [3]
-const QStringList commands = mySession.restartCommand();
-for (const QString &command : commands)
-    do_something(command);
-//! [3]
-
-} // wrapper0
-
-
-void wrapper1() {
-//! [4]
-const QStringList commands = mySession.discardCommand();
-for (const QString &command : mySession.discardCommand())
-    do_something(command);
-//! [4]
-
-
-} // wrapper1
 } // src_gui_kernel_qguiapplication
