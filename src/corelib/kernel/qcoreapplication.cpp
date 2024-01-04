@@ -2965,11 +2965,6 @@ Q_GLOBAL_STATIC(QRecursiveMutex, libraryPathMutex)
     directory (and its existence) may change when the directory of
     the application executable becomes known.
 
-    If you want to iterate over the list, you can use the \l foreach
-    pseudo-keyword:
-
-    \snippet code/src_corelib_kernel_qcoreapplication.cpp 2
-
     \sa setLibraryPaths(), addLibraryPath(), removeLibraryPath(), QLibrary,
         {How to Create Qt Plugins}
 */

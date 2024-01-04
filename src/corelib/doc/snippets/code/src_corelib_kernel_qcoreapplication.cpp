@@ -13,12 +13,6 @@ connect(quitButton, &QPushButton::clicked, &app, &QCoreApplication::quit, Qt::Qu
 //! [1]
 
 
-//! [2]
-foreach (const QString &path, app.libraryPaths())
-    do_something(path);
-//! [2]
-
-
 //! [3]
 // Called once QCoreApplication exists
 static void preRoutineMyDebugTool()
