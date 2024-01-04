@@ -3413,7 +3413,6 @@ static void QT_FASTCALL getRadialGradientValues(RadialGradientValues *v, const Q
     v->sqrfr = data->gradient.radial.focal.radius * data->gradient.radial.focal.radius;
 
     v->a = v->dr * v->dr - v->dx*v->dx - v->dy*v->dy;
-    v->inv2a = 1 / (2 * v->a);
 
     v->extended = !qFuzzyIsNull(data->gradient.radial.focal.radius) || v->a <= 0;
 }
