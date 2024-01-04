@@ -41,6 +41,7 @@ Q_MOC_INCLUDE(<QtNetwork/QNetworkProxy>)
 Q_MOC_INCLUDE(<QtNetwork/QAuthenticator>)
 
 #include <private/qdecompresshelper_p.h>
+#include <QtNetwork/qhttpheaders.h>
 
 #include <QtCore/qpointer.h>
 
@@ -72,7 +73,7 @@ public:
     qint64 contentLength() const override;
     void setContentLength(qint64 length) override;
 
-    QList<QPair<QByteArray, QByteArray> > header() const override;
+    QHttpHeaders header() const override;
     QByteArray headerField(QByteArrayView name, const QByteArray &defaultValue = QByteArray()) const override;
     void setHeaderField(const QByteArray &name, const QByteArray &data) override;
     void appendHeaderField(const QByteArray &name, const QByteArray &data);

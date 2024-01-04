@@ -9,6 +9,7 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qurl.h>
 
+#include <QtNetwork/qhttpheaders.h>
 #include <QtNetwork/private/qhstsstore_p.h>
 #include <QtNetwork/private/qhsts_p.h>
 
@@ -189,110 +190,108 @@ void tst_QHsts::testPolicyExpiration()
 void tst_QHsts::testSTSHeaderParser()
 {
     QHstsHeaderParser parser;
-    using Header = QPair<QByteArray, QByteArray>;
-    using Headers = QList<Header>;
 
     QVERIFY(!parser.includeSubDomains());
     QVERIFY(!parser.expirationDate().isValid());
-    Headers list;
-    QVERIFY(!parser.parse(list));
+    QHttpHeaders headers;
+    QVERIFY(!parser.parse(headers));
     QVERIFY(!parser.includeSubDomains());
     QVERIFY(!parser.expirationDate().isValid());
 
-    list << Header("Strict-Transport-security", "200");
-    QVERIFY(!parser.parse(list));
+    headers.append("Strict-Transport-security", "200");
+    QVERIFY(!parser.parse(headers));
     QVERIFY(!parser.includeSubDomains());
     QVERIFY(!parser.expirationDate().isValid());
 
     // This header is missing REQUIRED max-age directive, so we'll ignore it:
-    list << Header("Strict-Transport-Security", "includeSubDomains");
-    QVERIFY(!parser.parse(list));
+    headers.append("Strict-Transport-Security", "includeSubDomains");
+    QVERIFY(!parser.parse(headers));
     QVERIFY(!parser.includeSubDomains());
     QVERIFY(!parser.expirationDate().isValid());
 
-    list.pop_back();
-    list << Header("Strict-Transport-Security", "includeSubDomains;max-age=1000");
-    QVERIFY(parser.parse(list));
+    headers.removeAt(headers.size() - 1);
+    headers.append("Strict-Transport-Security", "includeSubDomains;max-age=1000");
+    QVERIFY(parser.parse(headers));
     QVERIFY(parser.expirationDate() > QDateTime::currentDateTimeUtc());
     QVERIFY(parser.includeSubDomains());
 
-    list.pop_back();
-    list << Header("strict-transport-security", "includeSubDomains;max-age=1000");
-    QVERIFY(parser.parse(list));
+    headers.removeAt(headers.size() - 1);
+    headers.append("strict-transport-security", "includeSubDomains;max-age=1000");
+    QVERIFY(parser.parse(headers));
     QVERIFY(parser.expirationDate() > QDateTime::currentDateTimeUtc());
     QVERIFY(parser.includeSubDomains());
 
-    list.pop_back();
+    headers.removeAt(headers.size() - 1);
     // Invalid (includeSubDomains twice):
-    list << Header("Strict-Transport-Security", "max-age = 1000 ; includeSubDomains;includeSubDomains");
-    QVERIFY(!parser.parse(list));
+    headers.append("Strict-Transport-Security", "max-age = 1000 ; includeSubDomains;includeSubDomains");
+    QVERIFY(!parser.parse(headers));
     QVERIFY(!parser.includeSubDomains());
     QVERIFY(!parser.expirationDate().isValid());
 
-    list.pop_back();
+    headers.removeAt(headers.size() - 1);
     // Invalid (weird number of seconds):
-    list << Header("Strict-Transport-Security", "max-age=-1000   ; includeSubDomains");
-    QVERIFY(!parser.parse(list));
+    headers.append("Strict-Transport-Security", "max-age=-1000   ; includeSubDomains");
+    QVERIFY(!parser.parse(headers));
     QVERIFY(!parser.includeSubDomains());
     QVERIFY(!parser.expirationDate().isValid());
 
-    list.pop_back();
+    headers.removeAt(headers.size() - 1);
     // Note, directives are case-insensitive + we should ignore unknown directive.
-    list << Header("Strict-Transport-Security", ";max-age=1000 ;includesubdomains;;"
+    headers.append("Strict-Transport-Security", ";max-age=1000 ;includesubdomains;;"
                    "nowsomeunknownheader=\"somevaluewithescapes\\;\"");
-    QVERIFY(parser.parse(list));
+    QVERIFY(parser.parse(headers));
     QVERIFY(parser.includeSubDomains());
     QVERIFY(parser.expirationDate().isValid());
 
-    list.pop_back();
+    headers.removeAt(headers.size() - 1);
     // Check that we know how to unescape max-age:
-    list << Header("Strict-Transport-Security", "max-age=\"1000\"");
-    QVERIFY(parser.parse(list));
+    headers.append("Strict-Transport-Security", "max-age=\"1000\"");
+    QVERIFY(parser.parse(headers));
     QVERIFY(!parser.includeSubDomains());
     QVERIFY(parser.expirationDate().isValid());
 
-    list.pop_back();
+    headers.removeAt(headers.size() - 1);
     // The only STS header, with invalid syntax though, to be ignored:
-    list << Header("Strict-Transport-Security", "max-age; max-age=15768000");
-    QVERIFY(!parser.parse(list));
+    headers.append("Strict-Transport-Security", "max-age; max-age=15768000");
+    QVERIFY(!parser.parse(headers));
     QVERIFY(!parser.includeSubDomains());
     QVERIFY(!parser.expirationDate().isValid());
 
     // Now we check that our parse chosses the first valid STS header and ignores
     // others:
-    list.clear();
-    list << Header("Strict-Transport-Security", "includeSubdomains; max-age=\"hehehe\";");
-    list << Header("Strict-Transport-Security", "max-age=10101");
-    QVERIFY(parser.parse(list));
+    headers.clear();
+    headers.append("Strict-Transport-Security", "includeSubdomains; max-age=\"hehehe\";");
+    headers.append("Strict-Transport-Security", "max-age=10101");
+    QVERIFY(parser.parse(headers));
     QVERIFY(!parser.includeSubDomains());
     QVERIFY(parser.expirationDate().isValid());
 
 
-    list.clear();
-    list << Header("Strict-Transport-Security", "max-age=0");
-    QVERIFY(parser.parse(list));
+    headers.clear();
+    headers.append("Strict-Transport-Security", "max-age=0");
+    QVERIFY(parser.parse(headers));
     QVERIFY(!parser.includeSubDomains());
     QVERIFY(parser.expirationDate() <= QDateTime::currentDateTimeUtc());
 
     // Parsing is case-insensitive:
-    list.pop_back();
-    list << Header("Strict-Transport-Security", "Max-aGE=1000; InclUdesUbdomains");
-    QVERIFY(parser.parse(list));
+    headers.removeAt(headers.size() - 1);
+    headers.append("Strict-Transport-Security", "Max-aGE=1000; InclUdesUbdomains");
+    QVERIFY(parser.parse(headers));
     QVERIFY(parser.includeSubDomains());
     QVERIFY(parser.expirationDate().isValid());
 
     // Grammar of STS header is quite permissive, let's check we can parse
     // some weird but valid header:
-    list.pop_back();
-    list << Header("Strict-Transport-Security", ";;; max-age = 17; ; ; ; ;;; ;;"
+    headers.removeAt(headers.size() - 1);
+    headers.append("Strict-Transport-Security", ";;; max-age = 17; ; ; ; ;;; ;;"
                     ";;; ; includeSubdomains ;;thisIsUnknownDirective;;;;");
-    QVERIFY(parser.parse(list));
+    QVERIFY(parser.parse(headers));
     QVERIFY(parser.includeSubDomains());
     QVERIFY(parser.expirationDate().isValid());
 
-    list.pop_back();
-    list << Header("Strict-Transport-Security", "max-age=1000; includeSubDomains bogon");
-    QVERIFY(!parser.parse(list));
+    headers.removeAt(headers.size() - 1);
+    headers.append("Strict-Transport-Security", "max-age=1000; includeSubDomains bogon");
+    QVERIFY(!parser.parse(headers));
     QVERIFY(!parser.includeSubDomains());
     QVERIFY(!parser.expirationDate().isValid());
 }

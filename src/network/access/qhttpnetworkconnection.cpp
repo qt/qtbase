@@ -411,7 +411,7 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
 
     resend = false;
     //create the response header to be used with QAuthenticatorPrivate.
-    QList<QPair<QByteArray, QByteArray> > fields = reply->header();
+    const auto headers = reply->header();
 
     // Check that any of the proposed authenticate methods are supported
     const QByteArray header = isProxy ? "proxy-authenticate" : "www-authenticate";
@@ -427,7 +427,7 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
         if (auth->isNull())
             auth->detach();
         QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(*auth);
-        priv->parseHttpResponse(fields, isProxy, reply->url().host());
+        priv->parseHttpResponse(headers, isProxy, reply->url().host());
         // Update method in case it changed
         if (priv->method == QAuthenticatorPrivate::None)
             return false;
@@ -523,12 +523,9 @@ QHttpNetworkConnectionPrivate::parseRedirectResponse(QHttpNetworkReply *reply)
         return {{}, QNetworkReply::NoError};
 
     QUrl redirectUrl;
-    const QList<QPair<QByteArray, QByteArray> > fields = reply->header();
-    for (const QNetworkReply::RawHeaderPair &header : fields) {
-        if (header.first.compare("location", Qt::CaseInsensitive) == 0) {
-            redirectUrl = QUrl::fromEncoded(header.second);
-            break;
-        }
+    const QHttpHeaders fields = reply->header();
+    if (const auto h = fields.values(QHttpHeaders::WellKnownHeader::Location); !h.empty()) {
+        redirectUrl = QUrl::fromEncoded(h.first());
     }
 
     // If the location url is invalid/empty, we return ProtocolUnknownError

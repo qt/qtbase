@@ -3,6 +3,8 @@
 
 #include "qhsts_p.h"
 
+#include "qhttpheaders.h"
+
 #include "QtCore/private/qipaddress_p.h"
 #include "QtCore/qlist.h"
 
@@ -40,7 +42,7 @@ static bool is_valid_domain_name(const QString &host)
     return true;
 }
 
-void QHstsCache::updateFromHeaders(const QList<QPair<QByteArray, QByteArray>> &headers,
+void QHstsCache::updateFromHeaders(const QHttpHeaders &headers,
                                    const QUrl &url)
 {
     if (!url.isValid())
@@ -324,27 +326,25 @@ quoted-pair    = "\" CHAR
 
 */
 
-bool QHstsHeaderParser::parse(const QList<QPair<QByteArray, QByteArray>> &headers)
+bool QHstsHeaderParser::parse(const QHttpHeaders &headers)
 {
-    for (const auto &h : headers) {
-        // We compare directly because header name was already 'trimmed' for us:
-        if (h.first.compare("Strict-Transport-Security", Qt::CaseInsensitive) == 0) {
-            header = h.second;
-            // RFC6797, 8.1:
-            //
-            //  The UA MUST ignore any STS header fields not conforming to the
-            // grammar specified in Section 6.1 ("Strict-Transport-Security HTTP
-            // Response Header Field").
-            //
-            // If a UA receives more than one STS header field in an HTTP
-            // response message over secure transport, then the UA MUST process
-            // only the first such header field.
-            //
-            // We read this as: ignore all invalid headers and take the first valid:
-            if (parseSTSHeader() && maxAgeFound) {
-                expiry = QDateTime::currentDateTimeUtc().addSecs(maxAge);
-                return true;
-            }
+    for (const auto &value : headers.values(
+                 QHttpHeaders::WellKnownHeader::StrictTransportSecurity)) {
+        header = value;
+        // RFC6797, 8.1:
+        //
+        //  The UA MUST ignore any STS header fields not conforming to the
+        // grammar specified in Section 6.1 ("Strict-Transport-Security HTTP
+        // Response Header Field").
+        //
+        // If a UA receives more than one STS header field in an HTTP
+        // response message over secure transport, then the UA MUST process
+        // only the first such header field.
+        //
+        // We read this as: ignore all invalid headers and take the first valid:
+        if (parseSTSHeader() && maxAgeFound) {
+            expiry = QDateTime::currentDateTimeUtc().addSecs(maxAge);
+            return true;
         }
     }
 

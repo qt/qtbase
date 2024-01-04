@@ -184,14 +184,13 @@ QNetworkReply::NetworkError qt_error(quint32 errorCode)
 
 bool is_protocol_upgraded(const QHttpNetworkReply &reply)
 {
-    if (reply.statusCode() == 101) {
-        // Do some minimal checks here - we expect 'Upgrade: h2c' to be found.
-        const auto &header = reply.header();
-        for (const QPair<QByteArray, QByteArray> &field : header) {
-            if (field.first.compare("upgrade", Qt::CaseInsensitive) == 0 &&
-                    field.second.compare("h2c", Qt::CaseInsensitive) == 0)
-                return true;
-        }
+    if (reply.statusCode() != 101)
+        return false;
+
+    // Do some minimal checks here - we expect 'Upgrade: h2c' to be found.
+    for (const auto &v : reply.header().values(QHttpHeaders::WellKnownHeader::Upgrade)) {
+        if (v.compare("h2c", Qt::CaseInsensitive) == 0)
+            return true;
     }
 
     return false;

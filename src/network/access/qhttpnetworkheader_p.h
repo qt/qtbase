@@ -17,6 +17,7 @@
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include <QtNetwork/private/qhttpheaderparser_p.h>
+#include <QtNetwork/qhttpheaders.h>
 
 #include <qshareddata.h>
 #include <qurl.h>
@@ -40,7 +41,7 @@ public:
     virtual qint64 contentLength() const = 0;
     virtual void setContentLength(qint64 length) = 0;
 
-    virtual QList<QPair<QByteArray, QByteArray> > header() const = 0;
+    virtual QHttpHeaders header() const = 0;
     virtual QByteArray headerField(QByteArrayView name, const QByteArray &defaultValue = QByteArray()) const = 0;
     virtual void setHeaderField(const QByteArray &name, const QByteArray &data) = 0;
 };
@@ -61,7 +62,7 @@ public:
     void setHeaderField(const QByteArray &name, const QByteArray &data);
     void prependHeaderField(const QByteArray &name, const QByteArray &data);
     void clearHeaders();
-    QList<QPair<QByteArray, QByteArray> > headers() const;
+    QHttpHeaders headers() const;
     bool operator==(const QHttpNetworkHeaderPrivate &other) const;
 
 };

@@ -53,7 +53,7 @@ void QHttpNetworkHeaderPrivate::prependHeaderField(const QByteArray &name, const
     parser.prependHeaderField(name, data);
 }
 
-QList<QPair<QByteArray, QByteArray> > QHttpNetworkHeaderPrivate::headers() const
+QHttpHeaders QHttpNetworkHeaderPrivate::headers() const
 {
     return parser.headers();
 }

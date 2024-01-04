@@ -731,11 +731,11 @@ private:
 
     void parseContentLength()
     {
-        int index = receivedData.indexOf("Content-Length:");
+        int index = receivedData.indexOf("content-length:");
         if (index == -1)
             return;
 
-        index += sizeof("Content-Length:") - 1;
+        index += sizeof("content-length:") - 1;
         const auto end = std::find(receivedData.cbegin() + index, receivedData.cend(), '\r');
         auto num = receivedData.mid(index, std::distance(receivedData.cbegin() + index, end));
         bool ok;
@@ -3451,7 +3451,7 @@ void tst_QNetworkReply::connectToIPv6Address()
     if (!QtNetworkSettings::hasIPv6())
         QSKIP("system doesn't support ipv6!");
 
-    QByteArray httpResponse = QByteArray("HTTP/1.0 200 OK\r\nContent-Length: ");
+    QByteArray httpResponse = QByteArray("HTTP/1.0 200 OK\r\ncontent-length: ");
     httpResponse += QByteArray::number(dataToSend.size());
     httpResponse += "\r\n\r\n";
     httpResponse += dataToSend;
@@ -3466,7 +3466,7 @@ void tst_QNetworkReply::connectToIPv6Address()
     QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
     QByteArray content = reply->readAll();
     //qDebug() << server.receivedData;
-    QByteArray hostinfo = "\r\nHost: " + hostfield + ':' + QByteArray::number(server.serverPort()) + "\r\n";
+    QByteArray hostinfo = "\r\nhost: " + hostfield + ':' + QByteArray::number(server.serverPort()) + "\r\n";
     QVERIFY(server.receivedData.contains(hostinfo));
     QCOMPARE(content, dataToSend);
     QCOMPARE(reply->url(), request.url());
@@ -6275,7 +6275,7 @@ void tst_QNetworkReply::httpProxyCommands()
 
     manager.setProxy(proxy);
     QNetworkRequest request(url);
-    request.setRawHeader("User-Agent", "QNetworkReplyAutoTest/1.0");
+    request.setRawHeader("user-agent", "QNetworkReplyAutoTest/1.0");
     QNetworkReplyPtr reply(manager.get(request));
 
     // wait for the finished signal
@@ -6292,10 +6292,11 @@ void tst_QNetworkReply::httpProxyCommands()
     QCOMPARE(receivedHeader, expectedCommand);
 
     //QTBUG-17223 - make sure the user agent from the request is sent to proxy server even for CONNECT
-    int uapos = proxyServer.receivedData.indexOf("User-Agent");
+    const QByteArray cUserAgent = "user-agent: ";
+    int uapos = proxyServer.receivedData.toLower().indexOf(cUserAgent) + cUserAgent.size();
     int uaend = proxyServer.receivedData.indexOf("\r\n", uapos);
     QByteArray uaheader = proxyServer.receivedData.mid(uapos, uaend - uapos);
-    QCOMPARE(uaheader, QByteArray("User-Agent: QNetworkReplyAutoTest/1.0"));
+    QCOMPARE(uaheader, QByteArray("QNetworkReplyAutoTest/1.0"));
 }
 
 class ProxyChangeHelper : public QObject
@@ -8513,7 +8514,7 @@ void tst_QNetworkReply::httpUserAgent()
 
     QVERIFY(reply->isFinished());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
-    QVERIFY(server.receivedData.contains("\r\nUser-Agent: abcDEFghi\r\n"));
+    QVERIFY(server.receivedData.contains("\r\nuser-agent: abcDEFghi\r\n"));
 }
 
 void tst_QNetworkReply::synchronousAuthenticationCache()
@@ -8533,7 +8534,7 @@ void tst_QNetworkReply::synchronousAuthenticationCache()
                 "Content-Type: text/plain\r\n"
                 "\r\n"
                 "auth";
-            QRegularExpression rx("Authorization: Basic ([^\r\n]*)\r\n");
+            QRegularExpression rx("authorization: Basic ([^\r\n]*)\r\n");
             QRegularExpressionMatch match = rx.match(receivedData);
             if (match.hasMatch()) {
                 if (QByteArray::fromBase64(match.captured(1).toLatin1()) == "login:password") {
@@ -9190,7 +9191,7 @@ void tst_QNetworkReply::ioHttpCookiesDuringRedirect()
     manager.setRedirectPolicy(oldRedirectPolicy);
 
     QVERIFY(waitForFinish(reply) == Success);
-    QVERIFY(target.receivedData.contains("\r\nCookie: hello=world\r\n"));
+    QVERIFY(target.receivedData.contains("\r\ncookie: hello=world\r\n"));
     QVERIFY(validateRedirectedResponseHeaders(reply));
 }
 
@@ -10081,7 +10082,7 @@ void tst_QNetworkReply::contentEncoding()
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
     if (!decompress) {
         // This disables decompression of the received content:
-        request.setRawHeader("Accept-Encoding", QLatin1String("%1").arg(encoding).toLatin1());
+        request.setRawHeader("accept-encoding", QLatin1String("%1").arg(encoding).toLatin1());
         // This disables the zerocopy optimization
         request.setAttribute(QNetworkRequest::MaximumDownloadBufferSizeAttribute, 0);
     }
@@ -10093,7 +10094,7 @@ void tst_QNetworkReply::contentEncoding()
     {
         // Check that we included the content encoding method in our Accept-Encoding header
         const QByteArray &receivedData = server.receivedData;
-        int start = receivedData.indexOf("Accept-Encoding");
+        int start = receivedData.indexOf("accept-encoding");
         QVERIFY(start != -1);
         int end = receivedData.indexOf("\r\n", start);
         QVERIFY(end != -1);

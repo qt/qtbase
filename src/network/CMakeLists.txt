@@ -20,6 +20,7 @@ qt_internal_add_module(Network
         access/qnetworkcookie.cpp access/qnetworkcookie.h access/qnetworkcookie_p.h
         access/qnetworkcookiejar.cpp access/qnetworkcookiejar.h access/qnetworkcookiejar_p.h
         access/qnetworkfile.cpp access/qnetworkfile_p.h
+        access/qhttpheaders.cpp access/qhttpheaders.h
         access/qhttpheaderparser.cpp access/qhttpheaderparser_p.h
         access/qnetworkreply.cpp access/qnetworkreply.h access/qnetworkreply_p.h
         access/qnetworkreplydataimpl.cpp access/qnetworkreplydataimpl_p.h
@@ -124,7 +125,6 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_http
         access/qhttp2configuration.cpp access/qhttp2configuration.h
         access/qhttp2connection.cpp access/qhttp2connection_p.h
         access/qhttp2protocolhandler.cpp access/qhttp2protocolhandler_p.h
-        access/qhttpheaders.cpp access/qhttpheaders.h
         access/qhttpmultipart.cpp access/qhttpmultipart.h access/qhttpmultipart_p.h
         access/qhttpnetworkconnection.cpp access/qhttpnetworkconnection_p.h
         access/qhttpnetworkconnectionchannel.cpp access/qhttpnetworkconnectionchannel_p.h

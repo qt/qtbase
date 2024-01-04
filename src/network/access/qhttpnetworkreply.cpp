@@ -67,7 +67,7 @@ void QHttpNetworkReply::setContentLength(qint64 length)
     d->setContentLength(length);
 }
 
-QList<QPair<QByteArray, QByteArray> > QHttpNetworkReply::header() const
+QHttpHeaders QHttpNetworkReply::header() const
 {
     return d_func()->parser.headers();
 }

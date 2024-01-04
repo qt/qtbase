@@ -33,6 +33,7 @@
 #include "private/qnoncontiguousbytedevice_p.h"
 #include "qnetworkaccessauthenticationmanager_p.h"
 #include <QtNetwork/private/http2protocol_p.h>
+#include <QtNetwork/qhttpheaders.h>
 
 QT_REQUIRE_CONFIG(http);
 
@@ -74,7 +75,7 @@ public:
 
     // outgoing, Retrieved in the synchronous HTTP case
     QByteArray synchronousDownloadData;
-    QList<QPair<QByteArray,QByteArray> > incomingHeaders;
+    QHttpHeaders incomingHeaders;
     int incomingStatusCode;
     QString incomingReasonPhrase;
     bool isPipeliningUsed;
@@ -112,7 +113,7 @@ signals:
 #endif
     void socketStartedConnecting();
     void requestSent();
-    void downloadMetaData(const QList<QPair<QByteArray,QByteArray> > &, int, const QString &, bool,
+    void downloadMetaData(const QHttpHeaders &, int, const QString &, bool,
                           QSharedPointer<char>, qint64, qint64, bool, bool);
     void downloadProgress(qint64, qint64);
     void downloadData(const QByteArray &);

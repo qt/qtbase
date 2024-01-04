@@ -31,11 +31,13 @@
 
 QT_BEGIN_NAMESPACE
 
+class QHttpHeaders;
+
 class Q_AUTOTEST_EXPORT QHstsCache
 {
 public:
 
-    void updateFromHeaders(const QList<QPair<QByteArray, QByteArray>> &headers,
+    void updateFromHeaders(const QHttpHeaders &headers,
                            const QUrl &url);
     void updateFromPolicies(const QList<QHstsPolicy> &hosts);
     void updateKnownHost(const QUrl &url, const QDateTime &expires,
@@ -90,7 +92,7 @@ class Q_AUTOTEST_EXPORT QHstsHeaderParser
 {
 public:
 
-    bool parse(const QList<QPair<QByteArray, QByteArray>> &headers);
+    bool parse(const QHttpHeaders &headers);
 
     QDateTime expirationDate() const { return expiry; }
     bool includeSubDomains() const { return subDomainsFound; }

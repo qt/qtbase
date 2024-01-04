@@ -112,7 +112,7 @@ QByteArray QHttpNetworkRequest::uri(bool throughProxy) const
 
 QByteArray QHttpNetworkRequestPrivate::header(const QHttpNetworkRequest &request, bool throughProxy)
 {
-    const QList<QPair<QByteArray, QByteArray> > fields = request.header();
+    const QList<QPair<QByteArray, QByteArray> > fields = request.header().toListOfPairs();
     QByteArray ba;
     ba.reserve(40 + fields.size()*25); // very rough lower bound estimation
 
@@ -235,7 +235,7 @@ void QHttpNetworkRequest::setContentLength(qint64 length)
     d->setContentLength(length);
 }
 
-QList<QPair<QByteArray, QByteArray> > QHttpNetworkRequest::header() const
+QHttpHeaders QHttpNetworkRequest::header() const
 {
     return d->parser.headers();
 }

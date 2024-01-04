@@ -22,6 +22,8 @@
 using namespace Qt::StringLiterals;
 using namespace std::chrono_literals;
 
+using Header = QHttpHeaders::WellKnownHeader;
+
 class tst_QRestAccessManager : public QObject
 {
     Q_OBJECT
@@ -533,9 +535,9 @@ void tst_QRestAccessManager::authentication()
 
     HttpData serverSideRequest;
     server.setHandler([&](HttpData request, HttpData &response, ResponseControl&) {
-        if (!request.headers.contains("Authorization"_ba)) {
+        if (!request.headers.contains(Header::Authorization)) {
             response.status = 401;
-            response.headers.insert("WWW-Authenticate: "_ba, "Basic realm=\"secret_place\""_ba);
+            response.headers.append(Header::WWWAuthenticate, "Basic realm=\"secret_place\""_ba);
         } else {
             response.status = 200;
         }
@@ -557,7 +559,9 @@ void tst_QRestAccessManager::authentication()
     QTRY_VERIFY(replyFromServer);
     // Server and QRestAM/QNAM exchange req/res twice, but finished() should be emitted just once
     QCOMPARE(finishedCount, 1);
-    QCOMPARE(serverSideRequest.headers["Authorization"_ba], "Basic YV91c2VyOmFfcGFzc3dvcmQ="_ba);
+    const auto resultHeaders = serverSideRequest.headers.values(Header::Authorization);
+    QVERIFY(!resultHeaders.empty());
+    QCOMPARE(resultHeaders.first(), "Basic YV91c2VyOmFfcGFzc3dvcmQ="_ba);
 }
 
 void tst_QRestAccessManager::userInfo()
@@ -576,9 +580,9 @@ void tst_QRestAccessManager::userInfo()
 
     HttpData serverSideRequest;
     server.setHandler([&](HttpData request, HttpData& response, ResponseControl&) {
-        if (!request.headers.contains("Authorization"_ba)) {
+        if (!request.headers.contains(Header::Authorization)) {
             response.status = 401;
-            response.headers.insert("WWW-Authenticate: "_ba, "Basic realm=\"secret_place\""_ba);
+            response.headers.append(Header::WWWAuthenticate,"Basic realm=\"secret_place\""_ba);
         } else {
             response.status = 200;
         }
@@ -589,7 +593,9 @@ void tst_QRestAccessManager::userInfo()
     QTRY_VERIFY(reply.get()->isFinished());
     QVERIFY(reply.get()->isSuccess());
     QCOMPARE(reply.get()->httpStatus(), 200);
-    QCOMPARE(serverSideRequest.headers["Authorization"_ba], "Basic YV91c2VyOmFfcGFzc3dvcmQ="_ba);
+    const auto resultHeaders = serverSideRequest.headers.values(Header::Authorization);
+    QVERIFY(!resultHeaders.empty());
+    QCOMPARE(resultHeaders.first(), "Basic YV91c2VyOmFfcGFzc3dvcmQ="_ba);
 
     // Verify that debug output does not contain password
     QString debugOutput;
@@ -864,33 +870,38 @@ void tst_QRestAccessManager::text()
     // QString from text() should match with the original (UTF-16) QString.
 
     // Successful UTF-8
-    serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; charset=UTF-8"_ba);
+    serverSideResponse.headers.append(Header::ContentType, "text/plain; charset=UTF-8"_ba);
     serverSideResponse.body = encUTF8(sourceString);
     VERIFY_TEXT_REPLY_OK;
 
     // Successful UTF-16
-    serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; charset=UTF-16"_ba);
+    serverSideResponse.headers.removeAll(Header::ContentType);
+    serverSideResponse.headers.append(Header::ContentType, "text/plain; charset=UTF-16"_ba);
     serverSideResponse.body = encUTF16(sourceString);
     VERIFY_TEXT_REPLY_OK;
 
     // Successful UTF-16, parameter case insensitivity
-    serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; chARset=uTf-16"_ba);
+    serverSideResponse.headers.removeAll(Header::ContentType);
+    serverSideResponse.headers.append(Header::ContentType, "text/plain; chARset=uTf-16"_ba);
     serverSideResponse.body = encUTF16(sourceString);
     VERIFY_TEXT_REPLY_OK;
 
     // Successful UTF-32
-    serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; charset=UTF-32"_ba);
+    serverSideResponse.headers.removeAll(Header::ContentType);
+    serverSideResponse.headers.append(Header::ContentType, "text/plain; charset=UTF-32"_ba);
     serverSideResponse.body = encUTF32(sourceString);
     VERIFY_TEXT_REPLY_OK;
 
     // Successful UTF-32 with spec-wise allowed extra content in the Content-Type header value
-    serverSideResponse.headers.insert("Content-Type:"_ba,
+    serverSideResponse.headers.removeAll(Header::ContentType);
+    serverSideResponse.headers.append(Header::ContentType,
                                       "text/plain; charset = \"UTF-32\";extraparameter=bar"_ba);
     serverSideResponse.body = encUTF32(sourceString);
     VERIFY_TEXT_REPLY_OK;
 
     // Unsuccessful UTF-32, wrong encoding indicated (indicated charset UTF-32 but data is UTF-8)
-    serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; charset=UTF-32"_ba);
+    serverSideResponse.headers.removeAll(Header::ContentType);
+    serverSideResponse.headers.append(Header::ContentType, "text/plain; charset=UTF-32"_ba);
     serverSideResponse.body = encUTF8(sourceString);
     manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; });
     QTRY_VERIFY(replyFromServer);
@@ -900,12 +911,14 @@ void tst_QRestAccessManager::text()
     replyFromServer = nullptr;
 
     // Unsupported encoding
-    serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; charset=foo"_ba);
+    serverSideResponse.headers.removeAll(Header::ContentType);
+    serverSideResponse.headers.append(Header::ContentType, "text/plain; charset=foo"_ba);
     serverSideResponse.body = encUTF8(sourceString);
     VERIFY_TEXT_REPLY_ERROR("text(): Charset \"foo\" is not supported")
 
     // Broken UTF-8
-    serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; charset=UTF-8"_ba);
+    serverSideResponse.headers.removeAll(Header::ContentType);
+    serverSideResponse.headers.append(Header::ContentType, "text/plain; charset=UTF-8"_ba);
     serverSideResponse.body = "\xF0\x28\x8C\x28\xA0\xB0\xC0\xD0"; // invalid characters
     VERIFY_TEXT_REPLY_ERROR("text() Decoding error occurred");
 }
@@ -925,7 +938,8 @@ void tst_QRestAccessManager::textStreaming()
     ResponseControl *responseControl = nullptr;
 
     HttpData serverSideResponse; // The response data the server responds with
-    serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; charset=UTF-8"_ba);
+    serverSideResponse.headers.removeAll(Header::ContentType);
+    serverSideResponse.headers.append(Header::ContentType, "text/plain; charset=UTF-8"_ba);
     serverSideResponse.body = encUTF8(expectedData);
     serverSideResponse.status = 200;
 
@@ -983,7 +997,7 @@ void tst_QRestAccessManager::download()
     ResponseControl *responseControl = nullptr;
     serverSideResponse.status = 200;
     // Set content-length header so that underlying QNAM is able to report bytesTotal correctly
-    serverSideResponse.headers.insert("Content-Length: ",
+    serverSideResponse.headers.append(Header::ContentType,
                                        QString::number(expectedData.size()).toLatin1());
     server.setHandler([&](HttpData, HttpData &response, ResponseControl &control) {
         response = serverSideResponse;

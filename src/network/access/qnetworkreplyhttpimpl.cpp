@@ -1325,7 +1325,7 @@ void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
     }
 }
 
-void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByteArray,QByteArray> > &hm,
+void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QHttpHeaders &hm,
                                                          int sc, const QString &rp, bool pu,
                                                          QSharedPointer<char> db,
                                                          qint64 contentLength,
@@ -1364,7 +1364,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QList<QPair<QByte
     const bool autoDecompress = request.rawHeader("accept-encoding").isEmpty();
     const bool shouldDecompress = isCompressed && autoDecompress;
     // reconstruct the HTTP header
-    for (const auto &[key, originValue] : hm) {
+    for (const auto &[key, originValue] : hm.toListOfPairs()) {
         QByteArray value = q->rawHeader(key);
 
         // Reset any previous "location" header set in the reply. In case of

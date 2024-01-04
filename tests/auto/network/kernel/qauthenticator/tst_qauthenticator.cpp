@@ -6,6 +6,7 @@
 #include <QTest>
 #include <QtCore/QCoreApplication>
 #include <QtNetwork/QAuthenticator>
+#include <QtNetwork/QHttpHeaders>
 
 #include <private/qauthenticator_p.h>
 
@@ -60,8 +61,8 @@ void tst_QAuthenticator::basicAuth()
     QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(auth);
     QCOMPARE(priv->phase, QAuthenticatorPrivate::Start);
 
-    QList<QPair<QByteArray, QByteArray> > headers;
-    headers << qMakePair(QByteArray("WWW-Authenticate"), "Basic " + data.toUtf8());
+    QHttpHeaders headers;
+    headers.append(QByteArray("WWW-Authenticate"), "Basic " + data.toUtf8());
     priv->parseHttpResponse(headers, /*isProxy = */ false, {});
 
     QCOMPARE(auth.realm(), realm);
@@ -103,13 +104,13 @@ void tst_QAuthenticator::ntlmAuth()
     QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(auth);
     QCOMPARE(priv->phase, QAuthenticatorPrivate::Start);
 
-    QList<QPair<QByteArray, QByteArray> > headers;
+    QHttpHeaders headers;
 
     // NTLM phase 1: negotiate
     // This phase of NTLM contains no information, other than what we're willing to negotiate
     // Current implementation uses flags:
     //  NTLMSSP_NEGOTIATE_UNICODE | NTLMSSP_NEGOTIATE_NTLM | NTLMSSP_REQUEST_TARGET
-    headers << qMakePair(QByteArrayLiteral("WWW-Authenticate"), QByteArrayLiteral("NTLM"));
+    headers.append(QByteArrayLiteral("WWW-Authenticate"), QByteArrayLiteral("NTLM"));
     priv->parseHttpResponse(headers, /*isProxy = */ false, {});
     if (sso)
         QVERIFY(priv->calculateResponse("GET", "/", u"").startsWith("NTLM "));
@@ -118,7 +119,7 @@ void tst_QAuthenticator::ntlmAuth()
 
     // NTLM phase 2: challenge
     headers.clear();
-    headers << qMakePair(QByteArray("WWW-Authenticate"), "NTLM " + data.toUtf8());
+    headers.append(QByteArray("WWW-Authenticate"), "NTLM " + data.toUtf8());
     priv->parseHttpResponse(headers, /*isProxy = */ false, {});
 
     QEXPECT_FAIL("with-realm", "NTLM authentication code doesn't extract the realm", Continue);
@@ -143,10 +144,10 @@ void tst_QAuthenticator::sha256AndMd5Digest()
     QVERIFY(priv->isMethodSupported("digest")); // sanity check
 
     QCOMPARE(priv->phase, QAuthenticatorPrivate::Start);
-    QList<QPair<QByteArray, QByteArray>> headers;
+    QHttpHeaders headers;
     // Put sha256 first, so that its parsed first...
-    headers.emplace_back("WWW-Authenticate", sha256);
-    headers.emplace_back("WWW-Authenticate", md5);
+    headers.append("WWW-Authenticate", sha256);
+    headers.append("WWW-Authenticate", md5);
     priv->parseHttpResponse(headers, false, QString());
 
     QByteArray response = priv->calculateResponse("GET", "/index", {});

@@ -14,6 +14,7 @@
 #include <qstring.h>
 #include <qdatetime.h>
 #include <qrandom.h>
+#include <QtNetwork/qhttpheaders.h>
 
 #ifdef Q_OS_WIN
 #include <qmutex.h>
@@ -444,14 +445,14 @@ static bool verifyDigestMD5(QByteArrayView value)
     return true; // assume it's ok if algorithm is not specified
 }
 
-void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByteArray>> &values,
+void QAuthenticatorPrivate::parseHttpResponse(const QHttpHeaders &headers,
                                               bool isProxy, QStringView host)
 {
 #if !QT_CONFIG(gssapi)
     Q_UNUSED(host);
 #endif
-    const auto search = isProxy ?
-            QByteArrayView("proxy-authenticate") : QByteArrayView("www-authenticate");
+    const auto search = isProxy ? QHttpHeaders::WellKnownHeader::ProxyAuthenticate
+                                : QHttpHeaders::WellKnownHeader::WWWAuthenticate;
 
     method = None;
     /*
@@ -465,23 +466,21 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
     */
 
     QByteArrayView headerVal;
-    for (const auto &current : values) {
-        if (current.first.compare(search, Qt::CaseInsensitive) != 0)
-            continue;
-        const QLatin1StringView str(current.second);
+    for (const auto &current : headers.values(search)) {
+        const QLatin1StringView str(current);
         if (method < Basic && str.startsWith("basic"_L1, Qt::CaseInsensitive)) {
             method = Basic;
-            headerVal = QByteArrayView(current.second).mid(6);
+            headerVal = QByteArrayView(current).mid(6);
         } else if (method < Ntlm && str.startsWith("ntlm"_L1, Qt::CaseInsensitive)) {
             method = Ntlm;
-            headerVal = QByteArrayView(current.second).mid(5);
+            headerVal = QByteArrayView(current).mid(5);
         } else if (method < DigestMd5 && str.startsWith("digest"_L1, Qt::CaseInsensitive)) {
             // Make sure the algorithm is actually MD5 before committing to it:
-            if (!verifyDigestMD5(QByteArrayView(current.second).sliced(7)))
+            if (!verifyDigestMD5(QByteArrayView(current).sliced(7)))
                 continue;
 
             method = DigestMd5;
-            headerVal = QByteArrayView(current.second).mid(7);
+            headerVal = QByteArrayView(current).mid(7);
         } else if (method < Negotiate && str.startsWith("negotiate"_L1, Qt::CaseInsensitive)) {
 #if QT_CONFIG(sspi) || QT_CONFIG(gssapi) // if it's not supported then we shouldn't try to use it
 #if QT_CONFIG(gssapi)
@@ -492,7 +491,7 @@ void QAuthenticatorPrivate::parseHttpResponse(const QList<QPair<QByteArray, QByt
                 continue;
 #endif
             method = Negotiate;
-            headerVal = QByteArrayView(current.second).mid(10);
+            headerVal = QByteArrayView(current).mid(10);
 #endif
         }
     }

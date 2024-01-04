@@ -67,8 +67,9 @@ void HttpTestServer::handleDataAvailable()
     Q_ASSERT(m_handler);
     Q_ASSERT(state == State::AllDone);
 
-    if (m_request.headers.contains("Host")) {
-        const auto parts = m_request.headers["Host"].split(':');
+    if (auto values = m_request.headers.values(
+                    QHttpHeaders::WellKnownHeader::Host); !values.empty()) {
+        const auto parts = values.first().split(':');
         m_request.url.setHost(parts.at(0));
         if (parts.size() == 2)
             m_request.url.setPort(parts.at(1).toUInt());
@@ -83,8 +84,9 @@ void HttpTestServer::handleDataAvailable()
     responseMessage += QByteArray::number(response.status);
     responseMessage += CRLF;
     // Insert headers if any
-    for (const auto &[name,value] : response.headers.asKeyValueRange()) {
+    for (const auto &[name,value] : response.headers.toListOfPairs()) {
         responseMessage += name;
+        responseMessage += ": ";
         responseMessage += value;
         responseMessage += CRLF;
     }
@@ -236,7 +238,7 @@ bool HttpTestServer::readHeaders(QTcpSocket *socket)
 
                 QByteArray key = fragment.sliced(0, index).trimmed();
                 QByteArray value = fragment.sliced(index + 1).trimmed();
-                m_request.headers.insert(std::move(key), std::move(value));
+                m_request.headers.append(key, value);
                 fragment.clear();
             }
         }
@@ -247,9 +249,10 @@ bool HttpTestServer::readHeaders(QTcpSocket *socket)
 bool HttpTestServer::readBody(QTcpSocket *socket)
 {
     qint64 bytesLeft = 0;
-    if (m_request.headers.contains("Content-Length")) {
+    if (auto values = m_request.headers.values(
+                QHttpHeaders::WellKnownHeader::ContentLength); !values.empty()) {
         bool conversionResult;
-        bytesLeft = m_request.headers["Content-Length"].toInt(&conversionResult);
+        bytesLeft = values.first().toInt(&conversionResult);
         if (!conversionResult)
             return false;
         fragment.resize(bytesLeft);

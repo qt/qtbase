@@ -16,6 +16,7 @@
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
+#include <QtNetwork/qhttpheaders.h>
 
 #include <QByteArray>
 #include <QList>
@@ -52,7 +53,7 @@ public:
     bool parseHeaders(QByteArrayView headers);
     bool parseStatus(QByteArrayView status);
 
-    const QList<QPair<QByteArray, QByteArray> >& headers() const;
+    const QHttpHeaders& headers() const;
     void setStatusCode(int code);
     int getStatusCode() const;
     int getMajorVersion() const;
@@ -83,7 +84,7 @@ public:
     qsizetype maxHeaderFields() const { return maxFieldCount; }
 
 private:
-    QList<QPair<QByteArray, QByteArray> > fields;
+    QHttpHeaders fields;
     QString reasonPhrase;
     int statusCode;
     int majorVersion;
