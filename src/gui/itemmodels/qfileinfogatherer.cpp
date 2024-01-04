@@ -249,6 +249,15 @@ bool QFileInfoGatherer::isWatching() const
     return result;
 }
 
+/*! \internal
+
+    If \a v is \c false, the QFileSystemWatcher used internally will be deleted
+    and subsequent calls to watchPaths() will do nothing.
+
+    If \a v is \c true, subsequent calls to watchPaths() will add those paths to
+    the filesystem watcher; watchPaths() will initialize a QFileSystemWatcher if
+    one hasn't already been initialized.
+*/
 void QFileInfoGatherer::setWatching(bool v)
 {
 #if QT_CONFIG(filesystemwatcher)
