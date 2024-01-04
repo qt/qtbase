@@ -65,6 +65,7 @@ private slots:
     void rootPath();
     void readOnly();
     void iconProvider();
+    void nullIconProvider();
 
     void rowCount();
 
@@ -309,6 +310,19 @@ void tst_QFileSystemModel::iconProvider()
 
     QPixmap mb = QApplication::style()->standardIcon(QStyle::SP_MessageBoxCritical).pixmap(50, 50);
     QCOMPARE(myModel->fileIcon(myModel->index(QDir::homePath())).pixmap(50, 50), mb);
+}
+
+void tst_QFileSystemModel::nullIconProvider()
+{
+    QFileSystemModel model;
+    QAbstractItemModelTester tester(&model);
+    tester.setUseFetchMore(false);
+    QVERIFY(model.iconProvider());
+    // No crash when setIconProvider(nullptr) is used
+    model.setIconProvider(nullptr);
+    const auto documentPaths = QStandardPaths::standardLocations(QStandardPaths::DocumentsLocation);
+    QVERIFY(!documentPaths.isEmpty());
+    model.setRootPath(documentPaths.constFirst());
 }
 
 bool tst_QFileSystemModel::createFiles(QFileSystemModel *model, const QString &test_path,

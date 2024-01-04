@@ -177,11 +177,14 @@ void QUrlModel::setUrl(const QModelIndex &index, const QUrl &url, const QModelIn
             setData(index, true, EnabledRole);
         }
 
+        // newIcon could be null if fileSystemModel->iconProvider() returns null
+        if (!newIcon.isNull()) {
         // Make sure that we have at least 32x32 images
-        const QSize size = newIcon.actualSize(QSize(32,32));
-        if (size.width() < 32) {
-            QPixmap smallPixmap = newIcon.pixmap(QSize(32, 32));
-            newIcon.addPixmap(smallPixmap.scaledToWidth(32, Qt::SmoothTransformation));
+            const QSize size = newIcon.actualSize(QSize(32,32));
+            if (size.width() < 32) {
+                QPixmap smallPixmap = newIcon.pixmap(QSize(32, 32));
+                newIcon.addPixmap(smallPixmap.scaledToWidth(32, Qt::SmoothTransformation));
+            }
         }
 
         if (index.data().toString() != newName)

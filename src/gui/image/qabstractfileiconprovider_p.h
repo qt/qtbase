@@ -37,6 +37,7 @@ public:
     QIcon getIconThemeIcon(const QFileInfo &info) const;
 
     static void clearIconTypeCache();
+    static QString getFileType(const QFileInfo &info);
 
     QAbstractFileIconProvider *q_ptr = nullptr;
     QAbstractFileIconProvider::Options options = {};

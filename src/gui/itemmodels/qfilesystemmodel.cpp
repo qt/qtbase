@@ -693,7 +693,9 @@ QVariant QFileSystemModel::myComputer(int role) const
         return QFileSystemModelPrivate::myComputer();
 #if QT_CONFIG(filesystemwatcher)
     case Qt::DecorationRole:
-        return d->fileInfoGatherer->iconProvider()->icon(QAbstractFileIconProvider::Computer);
+        if (auto *provider = d->fileInfoGatherer->iconProvider())
+            return provider->icon(QAbstractFileIconProvider::Computer);
+    break;
 #endif
     }
     return QVariant();
@@ -733,10 +735,9 @@ QVariant QFileSystemModel::data(const QModelIndex &index, int role) const
             QIcon icon = d->icon(index);
 #if QT_CONFIG(filesystemwatcher)
             if (icon.isNull()) {
-                if (d->node(index)->isDir())
-                    icon = d->fileInfoGatherer->iconProvider()->icon(QAbstractFileIconProvider::Folder);
-                else
-                    icon = d->fileInfoGatherer->iconProvider()->icon(QAbstractFileIconProvider::File);
+                using P = QAbstractFileIconProvider;
+                if (auto *provider = d->fileInfoGatherer->iconProvider())
+                    icon = provider->icon(d->node(index)->isDir() ? P::Folder: P::File);
             }
 #endif // filesystemwatcher
             return icon;
@@ -1569,7 +1570,7 @@ QAbstractFileIconProvider *QFileSystemModel::iconProvider() const
     Q_D(const QFileSystemModel);
     return d->fileInfoGatherer->iconProvider();
 #else
-    return 0;
+    return nullptr;
 #endif
 }
 
