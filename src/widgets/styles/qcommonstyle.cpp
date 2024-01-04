@@ -2175,7 +2175,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
 
                 const int indent = p->fontMetrics().descent();
                 proxy()->drawItemText(p, r.adjusted(indent + 1, 1, -indent - 1, -1),
-                              Qt::AlignLeft | Qt::AlignVCenter, dwOpt->palette,
+                              Qt::AlignLeft | Qt::AlignVCenter | Qt::TextHideMnemonic, dwOpt->palette,
                               dwOpt->state & State_Enabled, dwOpt->title,
                               QPalette::WindowText);
             }
