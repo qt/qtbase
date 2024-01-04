@@ -1285,7 +1285,8 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         Q_ASSERT(margins.size() == 4);
         d->m_pageLayout.setUnits(QPageLayout::Point);
         d->m_pageLayout.setMargins(QMarginsF(margins.at(0).toReal(), margins.at(1).toReal(),
-                                             margins.at(2).toReal(), margins.at(3).toReal()));
+                                             margins.at(2).toReal(), margins.at(3).toReal()),
+                                   QPageLayout::OutOfBoundsPolicy::Clamp);
         d->updateMetrics();
 #ifdef QT_DEBUG_METRICS
         qDebug() << "QWin32PrintEngine::setProperty(PPK_PageMargins," << margins << ')';
@@ -1313,7 +1314,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
     case PPK_QPageMargins: {
         QPair<QMarginsF, QPageLayout::Unit> pair = value.value<QPair<QMarginsF, QPageLayout::Unit> >();
         d->m_pageLayout.setUnits(pair.second);
-        d->m_pageLayout.setMargins(pair.first);
+        d->m_pageLayout.setMargins(pair.first, QPageLayout::OutOfBoundsPolicy::Clamp);
         d->updateMetrics();
 #ifdef QT_DEBUG_METRICS
         qDebug() << "QWin32PrintEngine::setProperty(PPK_QPageMargins," << pair.first << pair.second << ')';
@@ -1329,7 +1330,7 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
             setProperty(PPK_FullPage, pageLayout.mode() == QPageLayout::FullPageMode);
             setProperty(PPK_Orientation, QVariant::fromValue(pageLayout.orientation()));
             d->m_pageLayout.setUnits(pageLayout.units());
-            d->m_pageLayout.setMargins(pageLayout.margins());
+            d->m_pageLayout.setMargins(pageLayout.margins(), QPageLayout::OutOfBoundsPolicy::Clamp);
             d->updateMetrics();
 #ifdef QT_DEBUG_METRICS
             qDebug() << "QWin32PrintEngine::setProperty(PPK_QPageLayout," << pageLayout << ')';

@@ -184,7 +184,8 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
         Q_ASSERT(margins.size() == 4);
         d->m_pageLayout.setUnits(QPageLayout::Point);
         d->m_pageLayout.setMargins(QMarginsF(margins.at(0).toReal(), margins.at(1).toReal(),
-                                             margins.at(2).toReal(), margins.at(3).toReal()));
+                                             margins.at(2).toReal(), margins.at(3).toReal()),
+                                   QPageLayout::OutOfBoundsPolicy::Clamp);
         break;
     }
     case PPK_QPageSize: {
@@ -196,7 +197,7 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
     case PPK_QPageMargins: {
         QPair<QMarginsF, QPageLayout::Unit> pair = qvariant_cast<QPair<QMarginsF, QPageLayout::Unit> >(value);
         d->m_pageLayout.setUnits(pair.second);
-        d->m_pageLayout.setMargins(pair.first);
+        d->m_pageLayout.setMargins(pair.first, QPageLayout::OutOfBoundsPolicy::Clamp);
         break;
     }
     case PPK_QPageLayout: {

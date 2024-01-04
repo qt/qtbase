@@ -12,6 +12,7 @@ private slots:
     void invalid();
     void basics();
     void setGetMargins();
+    void setGetClampedMargins();
     void setUnits_data();
     void setUnits();
 };
@@ -216,7 +217,7 @@ void tst_QPageLayout::basics()
 
 void tst_QPageLayout::setGetMargins()
 {
-    // A4, 20pt margins
+    // A4, 10pt margins
     QMarginsF margins = QMarginsF(10, 10, 10, 10);
     QMarginsF min = QMarginsF(10, 10, 10, 10);
     QMarginsF max = QMarginsF(585, 832, 585, 832);
@@ -229,7 +230,7 @@ void tst_QPageLayout::setGetMargins()
     QCOMPARE(change.minimumMargins(), min);
     QCOMPARE(change.maximumMargins(), max);
 
-    // Set magins within min/max ok
+    // Set margins within min/max ok
     margins = QMarginsF(20, 20, 20, 20);
     change.setMargins(margins);
     QCOMPARE(change.margins(QPageLayout::Millimeter), QMarginsF(7.06, 7.06, 7.06, 7.06));
@@ -289,7 +290,7 @@ void tst_QPageLayout::setGetMargins()
     fullPage.setMargins(margins);
     QCOMPARE(fullPage.margins(), margins);
 
-    // Set margins all above max is rejected
+    // Set margins all above max is accepted
     margins = QMarginsF(1000, 1000, 1000, 1000);
     fullPage.setMargins(margins);
     QCOMPARE(fullPage.margins(), margins);
@@ -310,6 +311,126 @@ void tst_QPageLayout::setGetMargins()
     QCOMPARE(fullPage.margins(), margins);
     QCOMPARE(fullPage.minimumMargins(), min);
     QCOMPARE(fullPage.maximumMargins(), max);
+}
+
+void tst_QPageLayout::setGetClampedMargins()
+{
+    // A4, 10pt margins
+    QMarginsF margins = QMarginsF(10, 10, 10, 10);
+    QMarginsF min = QMarginsF(10, 10, 10, 10);
+    QMarginsF max = QMarginsF(585, 832, 585, 832);
+    QPageLayout change = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, margins, QPageLayout::Point, min);
+    QCOMPARE(change.isValid(), true);
+
+    // Clamp margins within min/max ok
+    margins = QMarginsF(20, 20, 20, 20);
+    change.setMargins(margins, QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins(QPageLayout::Millimeter), QMarginsF(7.06, 7.06, 7.06, 7.06));
+    QCOMPARE(change.marginsPoints(), QMargins(20, 20, 20, 20));
+    QCOMPARE(change.marginsPixels(72), QMargins(20, 20, 20, 20));
+    QCOMPARE(change.margins(), margins);
+
+    // Clamp margins all below min
+    change.setMargins(QMarginsF(0, 0, 0, 0), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins(), change.minimumMargins());
+
+    // Clamp margins all above max
+    change.setMargins(QMarginsF(1000, 1000, 1000, 1000), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins(), change.maximumMargins());
+
+    // Only 1 wrong, clamp still works
+    change.setMargins(QMarginsF(50, 50, 50, 0), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins(), QMarginsF(50, 50, 50, change.minimumMargins().bottom()));
+
+    // A4, 20pt margins
+    margins = QMarginsF(20, 20, 20, 20);
+    min = QMarginsF(10, 10, 10, 10);
+    max = QMarginsF(585, 832, 585, 832);
+    QPageLayout fullPage = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, margins, QPageLayout::Point, min);
+    fullPage.setMode(QPageLayout::FullPageMode);
+    QCOMPARE(fullPage.isValid(), true);
+    QCOMPARE(fullPage.margins(), margins);
+    QCOMPARE(fullPage.minimumMargins(), min);
+    QCOMPARE(fullPage.maximumMargins(), max);
+
+    // Clamp margins within min/max ok
+    margins = QMarginsF(50, 50, 50, 50);
+    fullPage.setMargins(margins, QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(fullPage.margins(), margins);
+
+    // Clamp margins all below min, no clamping
+    margins = QMarginsF(0, 0, 0, 0);
+    fullPage.setMargins(margins, QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(fullPage.margins(), margins);
+
+    // Clamp margins all above max, no clamping
+    margins = QMarginsF(1000, 1000, 1000, 1000);
+    fullPage.setMargins(margins, QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(fullPage.margins(), margins);
+
+    // Only 1 wrong, no clamping
+    margins = QMarginsF(50, 50, 50, 0);
+    fullPage.setMargins(margins, QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(fullPage.margins(), margins);
+
+    // Set page size, sets min/max, clamps existing margins
+    margins = QMarginsF(20, 500, 20, 500);
+    fullPage.setMargins(margins, QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(fullPage.margins(), margins);
+    min = QMarginsF(30, 30, 30, 30);
+    max = QMarginsF(267, 390, 267, 390);
+    fullPage.setPageSize(QPageSize(QPageSize::A6));
+    fullPage.setMinimumMargins(min);
+    QCOMPARE(fullPage.margins(), margins);
+    QCOMPARE(fullPage.minimumMargins(), min);
+    QCOMPARE(fullPage.maximumMargins(), max);
+
+    // Test set* API calls
+    min = QMarginsF(1, 2, 3, 4);
+    max = QMarginsF(595 - min.right(), 842 - min.bottom(), 595 - min.left(), 842 - min.top());
+    change = QPageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, margins, QPageLayout::Point, min);
+    QCOMPARE(change.minimumMargins(), min);
+    QCOMPARE(change.maximumMargins(), max);
+
+    // Test setLeftMargin
+    change.setLeftMargin(0, QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().left(), min.left());
+    change.setLeftMargin(change.fullRectPoints().width(), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().left(), max.left());
+    change.setLeftMargin(min.left(), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().left(), min.left());
+    change.setLeftMargin(max.left(), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().left(), max.left());
+
+    // Test setTopMargin
+    change.setTopMargin(0, QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().top(), min.top());
+    change.setTopMargin(change.fullRectPoints().height(), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().top(), max.top());
+    change.setTopMargin(min.top(), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().top(), min.top());
+    change.setTopMargin(max.top(), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().top(), max.top());
+
+    // Test setRightMargin
+    change.setRightMargin(0, QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().right(), min.right());
+    change.setRightMargin(change.fullRectPoints().width(), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().right(), max.right());
+    change.setRightMargin(min.right(), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().right(), min.right());
+    change.setRightMargin(max.right(), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().right(), max.right());
+
+    // Test setBottomMargin
+    change.setBottomMargin(0, QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().bottom(), min.bottom());
+    change.setBottomMargin(change.fullRectPoints().height(), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().bottom(), max.bottom());
+    change.setBottomMargin(min.bottom(), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().bottom(), min.bottom());
+    change.setBottomMargin(max.bottom(), QPageLayout::OutOfBoundsPolicy::Clamp);
+    QCOMPARE(change.margins().bottom(), max.bottom());
 }
 
 void tst_QPageLayout::setUnits_data()

@@ -123,10 +123,10 @@ int QPageSetupDialog::exec()
             pageSize = QPageSize(unitSize, layout.units() == QPageLayout::Inch
                                                            ? QPageSize::Inch : QPageSize::Millimeter);
         }
-        layout.setPageSize(pageSize);
+        layout.setPageSize(pageSize, layout.minimumMargins());
 
         const QMarginsF margins(psd.rtMargin.left, psd.rtMargin.top, psd.rtMargin.right, psd.rtMargin.bottom);
-        layout.setMargins(margins / multiplier);
+        layout.setMargins(margins / multiplier, QPageLayout::OutOfBoundsPolicy::Clamp);
         d->printer->setPageLayout(layout);
 
         // copy from our temp DEVMODE struct
