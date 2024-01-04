@@ -174,7 +174,6 @@ struct RadialGradientValues
     qreal dr;
     qreal sqrfr;
     qreal a;
-    qreal inv2a;
     bool extended;
 };
 
@@ -402,11 +401,11 @@ const BlendType * QT_FASTCALL qt_fetch_radial_gradient_template(BlendType *buffe
     bool affine = !data->m13 && !data->m23;
 
     BlendType *end = buffer + length;
+    qreal inv_a = 1 / qreal(2 * op->radial.a);
+
     if (affine) {
         rx -= data->gradient.radial.focal.x;
         ry -= data->gradient.radial.focal.y;
-
-        qreal inv_a = 1 / qreal(2 * op->radial.a);
 
         const qreal delta_rx = data->m11;
         const qreal delta_ry = data->m12;
@@ -452,8 +451,8 @@ const BlendType * QT_FASTCALL qt_fetch_radial_gradient_template(BlendType *buffe
                 if (det >= 0) {
                     qreal detSqrt = qSqrt(det);
 
-                    qreal s0 = (-b - detSqrt) * op->radial.inv2a;
-                    qreal s1 = (-b + detSqrt) * op->radial.inv2a;
+                    qreal s0 = (-b - detSqrt) * inv_a;
+                    qreal s1 = (-b + detSqrt) * inv_a;
 
                     qreal s = qMax(s0, s1);
 

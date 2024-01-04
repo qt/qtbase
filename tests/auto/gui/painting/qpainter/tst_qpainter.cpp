@@ -169,6 +169,7 @@ private slots:
     void radialGradientRgb30();
 #endif
 
+    void radialGradient_QTBUG120332_ubsan();
     void fpe_pixmapTransform();
     void fpe_zeroLengthLines();
     void fpe_divByZero();
@@ -3894,6 +3895,21 @@ void tst_QPainter::gradientPixelFormat()
     pb.end();
 
     QCOMPARE(a, b.convertToFormat(QImage::Format_ARGB32_Premultiplied));
+}
+
+void tst_QPainter::radialGradient_QTBUG120332_ubsan()
+{
+    // Check if Radial Gradient will cause division by zero or not when
+    // the center point coincide with the focal point.
+    QImage image(8, 8, QImage::Format_ARGB32_Premultiplied);
+    QPainter painter(&image);
+
+    QPointF center(0.5, 0.5);
+    QPointF focal(0.5, 0.5);
+    QRadialGradient gradient(center, 0.5, focal, 0.5);
+    gradient.setColorAt(0, Qt::blue);
+    gradient.setColorAt(1, Qt::red);
+    painter.fillRect(image.rect(), QBrush(gradient));
 }
 
 void tst_QPainter::gradientInterpolation()
