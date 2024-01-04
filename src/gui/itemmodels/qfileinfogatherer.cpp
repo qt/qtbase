@@ -383,21 +383,23 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
 #ifdef QT_BUILD_INTERNAL
         fetchedRoot.storeRelaxed(true);
 #endif
-        QFileInfoList infoList;
-        if (files.isEmpty()) {
-            infoList = QDir::drives();
-        } else {
-            infoList.reserve(files.size());
-            for (const auto &file : files)
-                infoList << QFileInfo(file);
-        }
         QList<std::pair<QString, QFileInfo>> updatedFiles;
-        updatedFiles.reserve(infoList.size());
-        const auto rend = infoList.rend();
-        for (auto rit = infoList.rbegin(); rit != rend; ++rit) {
-            QFileInfo &driveInfo = *rit;
-            driveInfo.stat();
-            updatedFiles.emplace_back(std::pair{translateDriveName(driveInfo), std::move(driveInfo)});
+        auto addToUpdatedFiles = [&updatedFiles](QFileInfo &&fileInfo) {
+            fileInfo.stat();
+            updatedFiles.emplace_back(std::pair{translateDriveName(fileInfo), fileInfo});
+        };
+
+        if (files.isEmpty()) {
+            // QDir::drives() calls QFSFileEngine::drives() which creates the QFileInfoList on
+            // the stack and return it, so this list is not shared, so no detaching.
+            QFileInfoList infoList = QDir::drives();
+            updatedFiles.reserve(infoList.size());
+            for (auto rit = infoList.rbegin(), rend = infoList.rend(); rit != rend; ++rit)
+                addToUpdatedFiles(std::move(*rit));
+        } else {
+            updatedFiles.reserve(files.size());
+            for (auto rit = files.crbegin(), rend = files.crend(); rit != rend; ++rit)
+                addToUpdatedFiles(QFileInfo(*rit));
         }
         emit updates(path, updatedFiles);
         return;
