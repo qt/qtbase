@@ -347,7 +347,7 @@ endmacro()
 #
 #
 # `FEATURE_foo` stores the user provided feature value for the current configuration run.
-# It can be set directly by the user, or derived from INPUT_foo (also set by the user).
+# It can be set directly by the user.
 #
 # If a value is not provided on initial configuration, the value will be auto-computed based on the
 # various conditions of the feature.
@@ -883,18 +883,6 @@ function(qt_internal_detect_dirty_features)
                     "to ${FEATURE_${feature}}")
                 set(dirty_build TRUE)
                 set_property(GLOBAL APPEND PROPERTY _qt_dirty_features "${feature}")
-
-                # If the user changed the value of the feature directly (e.g by editing
-                # CMakeCache.txt), and not via its associated INPUT variable, unset the INPUT cache
-                # variable before it is used in feature evaluation, to ensure a stale value doesn't
-                # influence other feature values, especially when QT_INTERNAL_CALLED_FROM_CONFIGURE
-                # is TRUE and the INPUT_foo variable is not passed.
-                # e.g. first configure -no-gui, then manually toggle FEATURE_gui to ON in
-                # CMakeCache.txt, then reconfigure (with the configure script) without -no-gui.
-                # Without this unset(), we'd have switched FEATURE_gui to OFF again.
-                if(NOT FEATURE_${feature}_computed_from_input)
-                    unset("INPUT_${feature}" CACHE)
-                endif()
             endif()
             unset("QT_FEATURE_${feature}" CACHE)
         endforeach()
@@ -1079,7 +1067,7 @@ function(qt_config_compile_test name)
             set(CMAKE_REQUIRED_FLAGS ${arg_COMPILE_OPTIONS})
 
             # Pass -stdlib=libc++ on if necessary
-            if (INPUT_stdlib_libcpp OR QT_FEATURE_stdlib_libcpp)
+            if (QT_FEATURE_stdlib_libcpp)
                 list(APPEND CMAKE_REQUIRED_FLAGS "-stdlib=libc++")
             endif()
 
@@ -1149,7 +1137,7 @@ function(qt_get_platform_try_compile_vars out_var)
     list(APPEND flags "CMAKE_CXX_STANDARD_REQUIRED")
 
     # Pass -stdlib=libc++ on if necessary
-    if (INPUT_stdlib_libcpp OR QT_FEATURE_stdlib_libcpp)
+    if (QT_FEATURE_stdlib_libcpp)
         if(CMAKE_CXX_FLAGS)
             string(APPEND CMAKE_CXX_FLAGS " -stdlib=libc++")
         else()
