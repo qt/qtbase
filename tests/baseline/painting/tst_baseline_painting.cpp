@@ -419,7 +419,10 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format, co
         pdfFile.open();
         QPdfWriter writer(&pdfFile);
         writer.setPdfVersion(QPdfWriter::PdfVersion_1_6);
-        writer.setResolution(150);
+        QPageSize pageSize(QSize(800, 800), QStringLiteral("LancePage"), QPageSize::ExactMatch);
+        writer.setPageSize(pageSize);
+        writer.setPageMargins(QMarginsF());
+        writer.setResolution(72);
         paint(&writer, engine, format, script, QFileInfo(filePath).absoluteFilePath());
         pdfFile.close();
 
@@ -428,7 +431,7 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format, co
         pngFile.open(); // Just create the file name
         pngFile.close();
         QProcess proc;
-        const char *rawArgs = "-s format png --cropOffset 20 20 -c 800 800 -o";
+        const char *rawArgs = "-s format png -o";
         QStringList argList = QString::fromLatin1(rawArgs).split(QLatin1Char(' '));
         proc.start(QLatin1String("sips"), argList << pngFile.fileName() << pdfFile.fileName());
         proc.waitForFinished(2 * 60 * 1000); // May need some time
