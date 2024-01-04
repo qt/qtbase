@@ -378,11 +378,7 @@ endmacro()
 macro(qt_internal_setup_build_and_global_variables)
     qt_internal_validate_cmake_generator()
     qt_internal_set_qt_building_qt()
-    qt_internal_compute_features_from_possible_inputs()
-
-    # Depends on qt_internal_compute_features_from_possible_inputs
     qt_internal_set_cmake_build_type()
-
     qt_internal_set_message_log_level(CMAKE_MESSAGE_LOG_LEVEL)
     qt_internal_unset_extra_build_internals_vars()
     qt_internal_get_generator_is_multi_config()
@@ -392,23 +388,16 @@ macro(qt_internal_setup_build_and_global_variables)
 
     qt_internal_setup_position_independent_code()
     qt_internal_set_link_depends_no_shared()
-
-    # Depends on qt_internal_compute_features_from_possible_inputs
     qt_internal_setup_default_install_prefix()
-
     qt_internal_set_qt_source_tree_var()
     qt_internal_set_export_compile_commands()
     qt_internal_set_configure_from_ide()
 
-    # Depends on qt_internal_compute_features_from_possible_inputs
     # Depends on qt_internal_set_configure_from_ide
     qt_internal_set_sync_headers_at_configure_time()
 
-    # Depends on qt_internal_compute_features_from_possible_inputs
-
     qt_internal_setup_build_benchmarks()
 
-    # Depends on qt_internal_compute_features_from_possible_inputs
     # Depends on qt_internal_setup_build_benchmarks
     qt_internal_setup_build_tests()
 

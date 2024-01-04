@@ -414,8 +414,6 @@ function(qt_evaluate_feature feature)
         qt_evaluate_config_expression(emit_if ${arg_EMIT_IF})
     endif()
 
-    qt_internal_compute_feature_value_from_possible_input("${feature}")
-
     # Warn about a feature which is not emitted, but the user explicitly provided a value for it.
     if(NOT emit_if AND DEFINED FEATURE_${feature})
         set(msg "")
@@ -879,8 +877,6 @@ function(qt_internal_detect_dirty_features)
         message(STATUS "Checking for feature set changes")
         set_property(GLOBAL PROPERTY _qt_feature_clean TRUE)
         foreach(feature ${QT_KNOWN_FEATURES})
-            qt_internal_compute_feature_value_from_possible_input("${feature}")
-
             if(DEFINED "FEATURE_${feature}" AND
                 NOT "${QT_FEATURE_${feature}}" STREQUAL "${FEATURE_${feature}}")
                 message("    '${feature}' was changed from ${QT_FEATURE_${feature}} "
@@ -914,18 +910,6 @@ function(qt_internal_detect_dirty_features)
         endif()
     endif()
 endfunction()
-
-macro(qt_internal_compute_features_from_possible_inputs)
-    # Pre-calculate the developer_build feature if it's set by the user via the I
-    # NPUT_developer_build variable when using the configure script. When not using configure, don't
-    # take the INPUT variable into account, so that users can toggle the feature directly in the
-    # cache or via IDE.
-    qt_internal_compute_feature_value_from_possible_input(developer_build)
-
-    # Pre-calculate the no_prefix feature if it's set by configure via INPUT_no_prefix.
-    # This needs to be done before qtbase/configure.cmake is processed.
-    qt_internal_compute_feature_value_from_possible_input(no_prefix)
-endmacro()
 
 function(qt_config_compile_test name)
     if(DEFINED "TEST_${name}")
