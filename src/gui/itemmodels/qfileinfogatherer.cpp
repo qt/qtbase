@@ -263,11 +263,9 @@ void QFileInfoGatherer::setWatching(bool v)
 #if QT_CONFIG(filesystemwatcher)
     QMutexLocker locker(&mutex);
     if (v != m_watching) {
-        if (!v) {
-            delete m_watcher;
-            m_watcher = nullptr;
-        }
         m_watching = v;
+        if (!m_watching)
+            delete std::exchange(m_watcher, nullptr);
     }
 #else
     Q_UNUSED(v);
