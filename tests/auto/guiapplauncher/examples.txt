@@ -85,7 +85,6 @@
 "widgets/charactermap Example", "examples/widgets/widgets/charactermap", "charactermap", 10, -1
 "widgets/codeeditor Example", "examples/widgets/widgets/codeeditor", "codeeditor", 0, -1
 "widgets/digitalclock Example", "examples/widgets/widgets/digitalclock", "digitalclock", 10, -1
-"widgets/groupbox Example", "examples/widgets/widgets/groupbox", "groupbox", 10, -1
 "widgets/icons Example", "examples/widgets/widgets/icons", "icons", 10, -1
 "widgets/imageviewer Example", "examples/widgets/widgets/imageviewer", "imageviewer", 10, -1
 "widgets/lineedits Example", "examples/widgets/widgets/lineedits", "lineedits", 10, -1
