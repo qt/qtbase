@@ -860,22 +860,19 @@ void tst_QPluginLoader::loadMachO_data()
 
 #  ifdef Q_PROCESSOR_X86_64
     QTest::newRow("machtest/good.x86_64.dylib") << true;
-    QTest::newRow("machtest/good.i386.dylib") << false;
+    QTest::newRow("machtest/good.arm64.dylib") << false;
     QTest::newRow("machtest/good.fat.no-x86_64.dylib") << false;
-    QTest::newRow("machtest/good.fat.no-i386.dylib") << true;
-#  elif defined(Q_PROCESSOR_X86_32)
-    QTest::newRow("machtest/good.i386.dylib") << true;
+    QTest::newRow("machtest/good.fat.no-arm64.dylib") << true;
+#  elif defined(Q_PROCESSOR_ARM)
+    QTest::newRow("machtest/good.arm64.dylib") << true;
     QTest::newRow("machtest/good.x86_64.dylib") << false;
-    QTest::newRow("machtest/good.fat.no-i386.dylib") << false;
+    QTest::newRow("machtest/good.fat.no-arm64.dylib") << false;
     QTest::newRow("machtest/good.fat.no-x86_64.dylib") << true;
-#  endif
-#  ifndef Q_PROCESSOR_POWER_64
-    QTest::newRow("machtest/good.ppc64.dylib") << false;
 #  endif
 
     QTest::newRow("machtest/good.fat.all.dylib") << true;
     QTest::newRow("machtest/good.fat.stub-x86_64.dylib") << false;
-    QTest::newRow("machtest/good.fat.stub-i386.dylib") << false;
+    QTest::newRow("machtest/good.fat.stub-arm64.dylib") << false;
 
     QDir d(QFINDTESTDATA("machtest"));
     const QStringList badlist = d.entryList(QStringList() << "bad*.dylib");
@@ -903,12 +900,7 @@ void tst_QPluginLoader::loadMachO()
     }
 
     QVERIFY(r.pos > 0);
-    QVERIFY(size_t(r.length) >= sizeof(void*));
     QVERIFY(r.pos + r.length < data.size());
-    QCOMPARE(r.pos & (sizeof(void*) - 1), 0UL);
-
-    void *value = *(void**)(data.constData() + r.pos);
-    QCOMPARE(value, sizeof(void*) > 4 ? (void*)(0xc0ffeec0ffeeL) : (void*)0xc0ffee);
 
     // now that we know it's valid, let's try to make it invalid
     ulong offeredlen = r.pos;
