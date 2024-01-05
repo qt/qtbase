@@ -2375,9 +2375,11 @@ void QObject::removeEventFilter(QObject *obj)
 {
     Q_D(QObject);
     if (d->extraData) {
-        for (int i = 0; i < d->extraData->eventFilters.size(); ++i) {
-            if (d->extraData->eventFilters.at(i) == obj)
-                d->extraData->eventFilters[i] = nullptr;
+        for (auto &filter : d->extraData->eventFilters) {
+            if (filter == obj) {
+                filter = nullptr;
+                break;
+            }
         }
     }
 }
