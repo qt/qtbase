@@ -152,7 +152,6 @@ manifestmeta.ios.names              =  "QtCore/Contiguous Cache Example" \
                                        "QtWidgets/Border Layout Example" \
                                        "QtWidgets/Flow Layout Example" \
                                        "QtWidgets/Basic Drawing Example" \
-                                       "QtWidgets/Concentric Circles Example" \
                                        "QtWidgets/Font Sampler Example" \
                                        "QtWidgets/Gradients" \
                                        "QtWidgets/Image Composition Example" \

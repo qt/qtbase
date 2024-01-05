@@ -1418,7 +1418,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     This value was added in Qt 6.4.
 
     \sa renderHints(), setRenderHint(), {QPainter#Rendering
-    Quality}{Rendering Quality}, {Concentric Circles Example}
+    Quality}{Rendering Quality}
 
 */
 
