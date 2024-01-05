@@ -102,8 +102,8 @@ protected:
     virtual void detachFromResultSet();
     virtual void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy policy);
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
-    void enablePositionalBinding(bool enable);
-    bool positionalBindingEnabled() const;
+    void setPositionalBindingEnabled(bool enable);
+    bool isPositionalBindingEnabled() const;
     virtual bool nextResult();
     void resetBindCount(); // HACK
 

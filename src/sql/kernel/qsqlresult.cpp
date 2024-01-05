@@ -1016,7 +1016,7 @@ QSql::NumericalPrecisionPolicy QSqlResult::numericalPrecisionPolicy() const
 
 /*! \internal
  */
-void QSqlResult::enablePositionalBinding(bool enable)
+void QSqlResult::setPositionalBindingEnabled(bool enable)
 {
     Q_D(QSqlResult);
     d->positionalBindingEnabled = enable;
@@ -1024,7 +1024,7 @@ void QSqlResult::enablePositionalBinding(bool enable)
 
 /*! \internal
  */
-bool QSqlResult::positionalBindingEnabled() const
+bool QSqlResult::isPositionalBindingEnabled() const
 {
     Q_D(const QSqlResult);
     return d->positionalBindingEnabled;
