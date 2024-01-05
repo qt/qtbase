@@ -20,7 +20,6 @@ class Q_GUI_EXPORT QEventPoint
 {
     Q_GADGET
     Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted)
-    QDOC_PROPERTY(QPointingDevice *device READ device CONSTANT) // qdoc doesn't know const
     Q_PROPERTY(const QPointingDevice *device READ device CONSTANT)
     Q_PROPERTY(int id READ id CONSTANT)
     Q_PROPERTY(QPointingDeviceUniqueId uniqueId READ uniqueId CONSTANT)
