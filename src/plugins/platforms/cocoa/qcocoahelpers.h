@@ -78,6 +78,9 @@ Qt::MouseButtons currentlyPressedMouseButtons();
 // accelerators.
 QString qt_mac_removeAmpersandEscapes(QString s);
 
+// Similar to __NXKitString for localized AppKit strings
+NSString *qt_mac_AppKitString(NSString *table, NSString *key);
+
 enum {
     QtCocoaEventSubTypeWakeup       = SHRT_MAX,
     QtCocoaEventSubTypePostMessage  = SHRT_MAX-1

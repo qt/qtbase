@@ -204,8 +204,7 @@ void QCocoaMenuBar::syncMenu_helper(QPlatformMenu *menu, bool menubarUpdate)
         // and document that the user needs to ensure their application matches
         // this translation.
         if ([menuTitle isEqual:@"Edit"] || [menuTitle isEqual:tr("Edit").toNSString()]) {
-            static const NSBundle *appKit = [NSBundle bundleForClass:NSApplication.class];
-            menuItem.title = [appKit localizedStringForKey:@"Edit" value:menuTitle table:@"InputManager"];
+            menuItem.title = qt_mac_AppKitString(@"InputManager", @"Edit");
         } else {
             // The Edit menu is the only case we know of so far, but to be on
             // the safe side we always sync the menu title.
