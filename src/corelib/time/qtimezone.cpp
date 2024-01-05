@@ -456,8 +456,15 @@ QTimeZone::QTimeZone(const QByteArray &ianaId)
     if (!d->isValid()) {
         if (ianaId.isEmpty())
             d = newBackendTimeZone();
+#ifdef Q_OS_ANDROID
+        // on Android the isTimeZoneIdAvailable() implementation is vastly more
+        // expensive than just trying to create a timezone
+        else
+            d = newBackendTimeZone(ianaId);
+#else
         else if (global_tz->backend->isTimeZoneIdAvailable(ianaId))
             d = newBackendTimeZone(ianaId);
+#endif
         // else: No such ID, avoid creating a TZ cache entry for it.
     }
     // Can also handle UTC with arbitrary (valid) offset, but only do so as
