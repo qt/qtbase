@@ -250,10 +250,10 @@ public:
     QString type(const QModelIndex &index) const;
     QString time(const QModelIndex &index) const;
 
-    void _q_directoryChanged(const QString &directory, const QStringList &list);
-    void _q_performDelayedSort();
-    void _q_fileSystemChanged(const QString &path, const QList<std::pair<QString, QFileInfo>> &);
-    void _q_resolvedName(const QString &fileName, const QString &resolvedName);
+    void directoryChanged(const QString &directory, const QStringList &list);
+    void performDelayedSort();
+    void fileSystemChanged(const QString &path, const QList<std::pair<QString, QFileInfo>> &);
+    void resolvedName(const QString &fileName, const QString &resolvedName);
 
     QDir rootDir;
 #if QT_CONFIG(filesystemwatcher)

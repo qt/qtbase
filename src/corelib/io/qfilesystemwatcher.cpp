@@ -58,29 +58,29 @@ QFileSystemWatcherPrivate::QFileSystemWatcherPrivate()
 {
 }
 
+void QFileSystemWatcherPrivate::connectEngine(QFileSystemWatcherEngine *engine)
+{
+    QObjectPrivate::connect(engine, &QFileSystemWatcherEngine::fileChanged,
+                            this, &QFileSystemWatcherPrivate::fileChanged);
+    QObjectPrivate::connect(engine, &QFileSystemWatcherEngine::directoryChanged,
+                            this, &QFileSystemWatcherPrivate::directoryChanged);
+}
+
 void QFileSystemWatcherPrivate::init()
 {
     Q_Q(QFileSystemWatcher);
     native = createNativeEngine(q);
     if (native) {
-        QObject::connect(native,
-                         SIGNAL(fileChanged(QString,bool)),
-                         q,
-                         SLOT(_q_fileChanged(QString,bool)));
-        QObject::connect(native,
-                         SIGNAL(directoryChanged(QString,bool)),
-                         q,
-                         SLOT(_q_directoryChanged(QString,bool)));
+        connectEngine(native);
 #if defined(Q_OS_WIN)
-        QObject::connect(static_cast<QWindowsFileSystemWatcherEngine *>(native),
-                         &QWindowsFileSystemWatcherEngine::driveLockForRemoval,
-                         q, [this] (const QString &p) { _q_winDriveLockForRemoval(p); });
-        QObject::connect(static_cast<QWindowsFileSystemWatcherEngine *>(native),
-                         &QWindowsFileSystemWatcherEngine::driveLockForRemovalFailed,
-                         q, [this] (const QString &p) { _q_winDriveLockForRemovalFailed(p); });
-        QObject::connect(static_cast<QWindowsFileSystemWatcherEngine *>(native),
-                         &QWindowsFileSystemWatcherEngine::driveRemoved,
-                         q, [this] (const QString &p) { _q_winDriveRemoved(p); });
+        auto *windowsWatcher = static_cast<QWindowsFileSystemWatcherEngine *>(native);
+        using WinE = QWindowsFileSystemWatcherEngine;
+        QObjectPrivate::connect(windowsWatcher, &WinE::driveLockForRemoval,
+                                this, &QFileSystemWatcherPrivate::winDriveLockForRemoval);
+        QObjectPrivate::connect(windowsWatcher, &WinE::driveLockForRemovalFailed,
+                                this, &QFileSystemWatcherPrivate::winDriveLockForRemovalFailed);
+        QObjectPrivate::connect(windowsWatcher, &WinE::driveRemoved,
+                                this, &QFileSystemWatcherPrivate::winDriveRemoved);
 #endif  // Q_OS_WIN
     }
 }
@@ -92,17 +92,10 @@ void QFileSystemWatcherPrivate::initPollerEngine()
 
     Q_Q(QFileSystemWatcher);
     poller = new QPollingFileSystemWatcherEngine(q); // that was a mouthful
-    QObject::connect(poller,
-                     SIGNAL(fileChanged(QString,bool)),
-                     q,
-                     SLOT(_q_fileChanged(QString,bool)));
-    QObject::connect(poller,
-                     SIGNAL(directoryChanged(QString,bool)),
-                     q,
-                     SLOT(_q_directoryChanged(QString,bool)));
+    connectEngine(poller);
 }
 
-void QFileSystemWatcherPrivate::_q_fileChanged(const QString &path, bool removed)
+void QFileSystemWatcherPrivate::fileChanged(const QString &path, bool removed)
 {
     Q_Q(QFileSystemWatcher);
     qCDebug(lcWatcher) << "file changed" << path << "removed?" << removed << "watching?" << files.contains(path);
@@ -115,7 +108,7 @@ void QFileSystemWatcherPrivate::_q_fileChanged(const QString &path, bool removed
     emit q->fileChanged(path, QFileSystemWatcher::QPrivateSignal());
 }
 
-void QFileSystemWatcherPrivate::_q_directoryChanged(const QString &path, bool removed)
+void QFileSystemWatcherPrivate::directoryChanged(const QString &path, bool removed)
 {
     Q_Q(QFileSystemWatcher);
     qCDebug(lcWatcher) << "directory changed" << path << "removed?" << removed << "watching?" << directories.contains(path);
@@ -130,7 +123,7 @@ void QFileSystemWatcherPrivate::_q_directoryChanged(const QString &path, bool re
 
 #if defined(Q_OS_WIN)
 
-void QFileSystemWatcherPrivate::_q_winDriveLockForRemoval(const QString &path)
+void QFileSystemWatcherPrivate::winDriveLockForRemoval(const QString &path)
 {
     // Windows: Request to lock a (removable/USB) drive for removal, release
     // its paths under watch, temporarily storing them should the lock fail.
@@ -147,7 +140,7 @@ void QFileSystemWatcherPrivate::_q_winDriveLockForRemoval(const QString &path)
     }
 }
 
-void QFileSystemWatcherPrivate::_q_winDriveLockForRemovalFailed(const QString &path)
+void QFileSystemWatcherPrivate::winDriveLockForRemovalFailed(const QString &path)
 {
     // Windows: Request to lock a (removable/USB) drive failed (blocked by other
     // application), restore the watched paths.
@@ -161,7 +154,7 @@ void QFileSystemWatcherPrivate::_q_winDriveLockForRemovalFailed(const QString &p
     }
 }
 
-void  QFileSystemWatcherPrivate::_q_winDriveRemoved(const QString &path)
+void  QFileSystemWatcherPrivate::winDriveRemoved(const QString &path)
 {
     // Windows: Drive finally removed, clear out paths stored in lock request.
     if (!path.isEmpty())

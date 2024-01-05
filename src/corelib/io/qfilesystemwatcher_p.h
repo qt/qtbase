@@ -69,13 +69,15 @@ public:
     QStringList files, directories;
 
     // private slots
-    void _q_fileChanged(const QString &path, bool removed);
-    void _q_directoryChanged(const QString &path, bool removed);
+    void fileChanged(const QString &path, bool removed);
+    void directoryChanged(const QString &path, bool removed);
+
+    void connectEngine(QFileSystemWatcherEngine *e);
 
 #if defined(Q_OS_WIN)
-    void _q_winDriveLockForRemoval(const QString &);
-    void _q_winDriveLockForRemovalFailed(const QString &);
-    void _q_winDriveRemoved(const QString &);
+    void winDriveLockForRemoval(const QString &);
+    void winDriveLockForRemovalFailed(const QString &);
+    void winDriveRemoved(const QString &);
 
 private:
     QHash<QChar, QStringList> temporarilyRemovedPaths;

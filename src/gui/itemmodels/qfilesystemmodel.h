@@ -134,13 +134,6 @@ private:
     Q_DECLARE_PRIVATE(QFileSystemModel)
     Q_DISABLE_COPY(QFileSystemModel)
 
-    Q_PRIVATE_SLOT(d_func(), void _q_directoryChanged(const QString &directory, const QStringList &list))
-    Q_PRIVATE_SLOT(d_func(), void _q_performDelayedSort())
-    Q_PRIVATE_SLOT(d_func(),
-                   void _q_fileSystemChanged(const QString &path,
-                                             const QList<std::pair<QString, QFileInfo>> &))
-    Q_PRIVATE_SLOT(d_func(), void _q_resolvedName(const QString &fileName, const QString &resolvedName))
-
     friend class QFileDialogPrivate;
 };
 
