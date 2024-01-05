@@ -28,6 +28,8 @@ QIBusPlatformInputContext *QIbusPlatformInputContextPlugin::create(const QString
         qDBusRegisterMetaType<QIBusAttribute>();
         qDBusRegisterMetaType<QIBusAttributeList>();
         qDBusRegisterMetaType<QIBusText>();
+        qDBusRegisterMetaType<QIBusPropTypeClientCommitPreedit>();
+        qDBusRegisterMetaType<QIBusPropTypeContentType>();
         return new QIBusPlatformInputContext;
     }
 
