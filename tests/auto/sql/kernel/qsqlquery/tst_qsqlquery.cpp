@@ -5067,7 +5067,8 @@ void tst_QSqlQuery::positionalBindingEnabled()
     QVERIFY_SQL(qry, exec("CREATE TABLE " + tableName + " (integer_col integer)"));
     QVERIFY_SQL(qry, exec("INSERT INTO " + tableName + "(integer_col) VALUES(42)"));
 
-    qry.enablePositionalBinding(true);
+    qry.setPositionalBindingEnabled(true);
+    QCOMPARE(qry.isPositionalBindingEnabled(), true);
     QVERIFY_SQL(qry, prepare("SELECT integer_col FROM " + tableName + " WHERE integer_col = :integer_val"));
     qry.bindValue(":integer_val", 42);
     QVERIFY_SQL(qry, exec());
@@ -5079,7 +5080,8 @@ void tst_QSqlQuery::positionalBindingEnabled()
     QVERIFY_SQL(qry, next());
     QCOMPARE(qry.value(0).toInt(), 42);
 
-    qry.enablePositionalBinding(false);
+    qry.setPositionalBindingEnabled(false);
+    QCOMPARE(qry.isPositionalBindingEnabled(), false);
     QVERIFY_SQL(qry, prepare("SELECT integer_col FROM " + tableName + " WHERE integer_col = :integer_val"));
     qry.bindValue(":integer_val", 42);
     QVERIFY_SQL(qry, exec());
@@ -5109,7 +5111,7 @@ void tst_QSqlQuery::psqlJsonOperator()
     const QString &tableName = ts.tableName();
 
     QSqlQuery qry(db);
-    qry.enablePositionalBinding(false); // don't allow / handle '?' as placeholder
+    qry.setPositionalBindingEnabled(false); // don't allow / handle '?' as placeholder
     QVERIFY_SQL(qry, exec("CREATE TABLE " + tableName + " (integer_col integer, json_col jsonb)"));
     QVERIFY_SQL(qry, exec("INSERT INTO " + tableName + "(integer_col, json_col) VALUES(42, '{\"a\": [1, 2]}')"));
     QVERIFY_SQL(qry, exec("INSERT INTO " + tableName + "(integer_col, json_col) VALUES(43, '{\"b\": [3, 4]}')"));
