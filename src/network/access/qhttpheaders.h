@@ -8,8 +8,6 @@
 #include <QtCore/qshareddata.h>
 #include <QtCore/qcontainerfwd.h>
 
-#include <initializer_list>
-
 QT_BEGIN_NAMESPACE
 
 class QDebug;
