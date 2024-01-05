@@ -19,8 +19,7 @@ public:
 
     QNetworkReply *networkReply() const;
 
-    std::optional<QJsonObject> json();
-    std::optional<QJsonArray> jsonArray();
+    std::optional<QJsonDocument> json();
     QByteArray body();
     QString text();
 

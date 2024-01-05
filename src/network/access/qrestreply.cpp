@@ -153,8 +153,7 @@ void QRestReply::abort()
 }
 
 /*!
-    Returns the received data as a QJsonObject. Requires the reply to be
-    finished.
+    Returns the received data as a QJsonDocument.
 
     The returned value is wrapped in \c std::optional. If the conversion
     from the received data fails (empty data or JSON parsing error),
@@ -166,44 +165,24 @@ void QRestReply::abort()
     This function returns \c {std::nullopt} and will not consume
     any data if the reply is not finished.
 
-    \sa jsonArray(), body(), text(), finished(), isFinished()
+    \sa body(), text(), finished(), isFinished()
 */
-std::optional<QJsonObject> QRestReply::json()
+std::optional<QJsonDocument> QRestReply::json()
 {
     Q_D(QRestReply);
     if (!isFinished()) {
         qCWarning(lcQrest, "Attempt to read json() of an unfinished reply, ignoring.");
         return std::nullopt;
     }
-    const QJsonDocument json = d->replyDataToJson();
-    return json.isObject() ? std::optional{json.object()} : std::nullopt;
-}
-
-/*!
-    Returns the received data as a QJsonArray. Requires the reply to be
-    finished.
-
-    The returned value is wrapped in \c std::optional. If the conversion
-    from the received data fails (empty data or JSON parsing error),
-    \c std::nullopt is returned.
-
-    Calling this function consumes the received data, and any further calls
-    to get response data will return empty.
-
-    This function returns \c {std::nullopt} and will not consume
-    any data if the reply is not finished.
-
-    \sa json(), body(), text(), finished(), isFinished()
-*/
-std::optional<QJsonArray> QRestReply::jsonArray()
-{
-    Q_D(QRestReply);
-    if (!isFinished()) {
-        qCWarning(lcQrest, "Attempt to read jsonArray() of an unfinished reply, ignoring.");
+    QJsonParseError parseError;
+    const QByteArray data = d->networkReply->readAll();
+    const QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
+    if (parseError.error != QJsonParseError::NoError) {
+        qCDebug(lcQrest) << "Response data not JSON:" << parseError.errorString()
+                         << "at" << parseError.offset << data;
         return std::nullopt;
     }
-    const QJsonDocument json = d->replyDataToJson();
-    return json.isArray() ? std::optional{json.array()} : std::nullopt;
+    return doc;
 }
 
 /*!
@@ -470,19 +449,6 @@ bool QRestReplyPrivate::hasNonHttpError() const
         return networkReply->error() == QNetworkReply::RemoteHostClosedError;
     }
     return networkReply->error() != QNetworkReply::NoError;
-}
-
-QJsonDocument QRestReplyPrivate::replyDataToJson()
-{
-    QJsonParseError parseError;
-    const QByteArray data = networkReply->readAll();
-    const QJsonDocument json = QJsonDocument::fromJson(data, &parseError);
-
-    if (parseError.error != QJsonParseError::NoError) {
-        qCDebug(lcQrest) << "Response data not JSON:" << parseError.errorString()
-                         << "at" << parseError.offset << data;
-    }
-    return json;
 }
 
 QT_END_NAMESPACE
