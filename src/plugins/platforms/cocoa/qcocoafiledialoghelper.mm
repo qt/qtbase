@@ -232,15 +232,7 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
             return YES;
     }
 
-    const QString qtFileName = fileInfo.fileName();
-    // No filter means accept everything
-    bool nameMatches = m_selectedNameFilter.isEmpty();
-    // Check if the current file name filter accepts the file:
-    for (int i = 0; !nameMatches && i < m_selectedNameFilter.size(); ++i) {
-        if (QDir::match(m_selectedNameFilter.at(i), qtFileName))
-            nameMatches = true;
-    }
-    if (!nameMatches)
+    if (![self fileInfoMatchesCurrentNameFilter:fileInfo])
         return NO;
 
     QDir::Filters filter = m_options->filter();
@@ -266,6 +258,90 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     // effect, we don't need to filter on QDir::Hidden here.
 
     return YES;
+}
+
+- (BOOL)panel:(id)sender validateURL:(NSURL *)url error:(NSError * _Nullable *)outError
+{
+    Q_ASSERT(sender == m_panel);
+
+    if (!m_panel.allowedFileTypes && !m_selectedNameFilter.isEmpty()) {
+        // The save panel hasn't done filtering on our behalf,
+        // either because we couldn't represent the filter via
+        // allowedFileTypes, or we opted out due to a multi part
+        // extension, so do the filtering/validation ourselves.
+        QFileInfo fileInfo(QString::fromNSString(url.path).normalized(QString::NormalizationForm_C));
+
+        if ([self fileInfoMatchesCurrentNameFilter:fileInfo])
+            return YES;
+
+        if (fileInfo.suffix().isEmpty()) {
+            // The filter requires a file name with an extension.
+            // We're going to add a default file name in selectedFiles,
+            // to match the native behavior. Check now that we can
+            // overwrite the file, if is already exists.
+            fileInfo = [self applyDefaultSuffixFromCurrentNameFilter:fileInfo];
+
+            if (!fileInfo.exists() || m_options->testOption(QFileDialogOptions::DontConfirmOverwrite))
+                return YES;
+
+            QMacAutoReleasePool pool;
+            auto *alert = [[NSAlert new] autorelease];
+            alert.alertStyle = NSAlertStyleCritical;
+
+            alert.messageText = [NSString stringWithFormat:qt_mac_AppKitString(@"SavePanel",
+                @"\\U201c%@\\U201d already exists. Do you want to replace it?"),
+                    fileInfo.fileName().toNSString()];
+            alert.informativeText = [NSString stringWithFormat:qt_mac_AppKitString(@"SavePanel",
+                @"A file or folder with the same name already exists in the folder %@. "
+                "Replacing it will overwrite its current contents."),
+                        fileInfo.absoluteDir().dirName().toNSString()];
+
+            auto *replaceButton = [alert addButtonWithTitle:qt_mac_AppKitString(@"SavePanel", @"Replace")];
+            replaceButton.hasDestructiveAction = YES;
+            replaceButton.tag = 1337;
+            [alert addButtonWithTitle:qt_mac_AppKitString(@"Common", @"Cancel")];
+
+            [alert beginSheetModalForWindow:m_panel
+                completionHandler:^(NSModalResponse returnCode) {
+                    [NSApp stopModalWithCode:returnCode];
+                }];
+            return [NSApp runModalForWindow:alert.window] == replaceButton.tag;
+        } else {
+            QFileInfo firstFilter(m_selectedNameFilter.first());
+            auto *domain = qGuiApp->organizationDomain().toNSString();
+            *outError = [NSError errorWithDomain:domain code:0 userInfo:@{
+                NSLocalizedDescriptionKey:[NSString stringWithFormat:qt_mac_AppKitString(@"SavePanel",
+                    @"You cannot save this document with extension \\U201c.%1$@\\U201d at the end "
+                    "of the name. The required extension is \\U201c.%2$@\\U201d."),
+                fileInfo.completeSuffix().toNSString(), firstFilter.completeSuffix().toNSString()]
+            }];
+            return NO;
+        }
+    }
+
+    return YES;
+}
+
+- (QFileInfo)applyDefaultSuffixFromCurrentNameFilter:(const QFileInfo &)fileInfo
+{
+    QFileInfo filterInfo(m_selectedNameFilter.first());
+    return QFileInfo(fileInfo.absolutePath(),
+        fileInfo.baseName() + '.' + filterInfo.completeSuffix());
+}
+
+- (bool)fileInfoMatchesCurrentNameFilter:(const QFileInfo &)fileInfo
+{
+    // No filter means accept everything
+    if (m_selectedNameFilter.isEmpty())
+        return true;
+
+    // Check if the current file name filter accepts the file
+    for (const auto &filter : m_selectedNameFilter) {
+        if (QDir::match(filter, fileInfo.fileName()))
+            return true;
+    }
+
+    return false;
 }
 
 - (void)setNameFilters:(const QStringList &)filters hideDetails:(BOOL)hideDetails
@@ -312,18 +388,25 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
         }
         return result;
     } else {
-        QList<QUrl> result;
         QString filename = QString::fromNSString(m_panel.URL.path).normalized(QString::NormalizationForm_C);
-        const QString defaultSuffix = m_options->defaultSuffix();
-        const QFileInfo fileInfo(filename);
+        QFileInfo fileInfo(filename);
+
+        if (fileInfo.suffix().isEmpty() && ![self fileInfoMatchesCurrentNameFilter:fileInfo]) {
+            // We end up in this situation if we accept a file name without extension
+            // in panel:validateURL:error. If so, we match the behavior of the native
+            // save dialog and add the first of the accepted extension from the filter.
+            fileInfo = [self applyDefaultSuffixFromCurrentNameFilter:fileInfo];
+        }
 
         // If neither the user or the NSSavePanel have provided a suffix, use
         // the default suffix (if it exists).
-        if (fileInfo.suffix().isEmpty() && !defaultSuffix.isEmpty())
-            filename.append('.').append(defaultSuffix);
+        const QString defaultSuffix = m_options->defaultSuffix();
+        if (fileInfo.suffix().isEmpty() && !defaultSuffix.isEmpty()) {
+            fileInfo.setFile(fileInfo.absolutePath(),
+                fileInfo.baseName() + '.' + defaultSuffix);
+        }
 
-        result << QUrl::fromLocalFile(filename);
-        return result;
+        return { QUrl::fromLocalFile(fileInfo.filePath()) };
     }
 }
 
@@ -400,11 +483,9 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
     for the current name filter, and updates the save panel.
 
     If a filter do not conform to the format *.xyz or * or *.*,
-    all files types are allowed.
-
-    Extensions with more than one part (e.g. "tar.gz") are
-    reduced to their final part, as NSSavePanel does not deal
-    well with multi-part extensions.
+    or contains an extensions with more than one part (e.g. "tar.gz")
+    we treat that as allowing all file types, and do our own
+    validation in panel:validateURL:error.
 */
 - (NSArray<NSString*>*)computeAllowedFileTypes
 {
@@ -423,6 +504,9 @@ typedef QSharedPointer<QFileDialogOptions> SharedPointerFileDialogOptions;
             continue;
 
         auto extensions = filter.split('.', Qt::SkipEmptyParts);
+        if (extensions.count() > 2)
+            return nil;
+
         fileTypes += extensions.last();
     }
 
