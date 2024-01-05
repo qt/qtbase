@@ -2,6 +2,12 @@
 "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
   <interface name="org.freedesktop.IBus.InputContext">
+    <property name="ClientCommitPreedit" type="(b)" access="readwrite">
+        <annotation name="org.qtproject.QtDBus.QtTypeName" value="QIBusPropTypeClientCommitPreedit"/>
+    </property>
+    <property name='ContentType' type='(uu)' access='readwrite'>
+        <annotation name="org.qtproject.QtDBus.QtTypeName" value="QIBusPropTypeContentType"/>
+    </property>
     <method name="ProcessKeyEvent">
       <arg name="keyval" direction="in" type="u"/>
       <arg name="keycode" direction="in" type="u"/>
@@ -61,6 +67,12 @@
       <arg name="text" type="v"/>
       <arg name="cursor_pos" type="u"/>
       <arg name="visible" type="b"/>
+    </signal>
+    <signal name="UpdatePreeditTextWithMode">
+      <arg name="text" type="v"/>
+      <arg name="cursor_pos" type="u"/>
+      <arg name="visible" type="b"/>
+      <arg name="mode" type="u"/>
     </signal>
     <signal name="ShowPreeditText"/>
     <signal name="HidePreeditText"/>

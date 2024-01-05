@@ -133,6 +133,44 @@ inline QDBusArgument &operator<<(QDBusArgument &argument, const QIBusEngineDesc 
 inline const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusEngineDesc &desc)
 { desc.deserializeFrom(argument); return argument; }
 
+class QIBusPropTypeClientCommitPreedit
+{
+public:
+    QIBusPropTypeClientCommitPreedit() {};
+
+    QIBusPropTypeClientCommitPreedit(bool inClientCommitPreedit);
+
+    void serializeTo(QDBusArgument &argument) const;
+    void deserializeFrom(const QDBusArgument &argument);
+
+    bool clientCommitPreedit;
+};
+inline QDBusArgument &operator<<(QDBusArgument &argument, const QIBusPropTypeClientCommitPreedit &data)
+{ data.serializeTo(argument); return argument; }
+inline const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusPropTypeClientCommitPreedit &data)
+{ data.deserializeFrom(argument); return argument; }
+
+class QIBusPropTypeContentType
+{
+public:
+    QIBusPropTypeContentType() {};
+
+    QIBusPropTypeContentType(unsigned int inPurpose, unsigned int inHint);
+
+    void serializeTo(QDBusArgument &argument) const;
+    void deserializeFrom(const QDBusArgument &argument);
+
+    unsigned int purpose;
+    unsigned int hints;
+};
+inline QDBusArgument &operator<<(QDBusArgument &argument, const QIBusPropTypeContentType &data)
+{ data.serializeTo(argument); return argument; }
+inline const QDBusArgument &operator>>(const QDBusArgument &argument, QIBusPropTypeContentType &data)
+{ data.deserializeFrom(argument); return argument; }
+
+Q_DECLARE_TYPEINFO(QIBusPropTypeClientCommitPreedit, Q_RELOCATABLE_TYPE);
+Q_DECLARE_TYPEINFO(QIBusPropTypeContentType, Q_RELOCATABLE_TYPE);
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QIBusAttribute)
@@ -140,4 +178,6 @@ Q_DECLARE_METATYPE(QIBusAttributeList)
 Q_DECLARE_METATYPE(QIBusText)
 Q_DECLARE_METATYPE(QIBusEngineDesc)
 
+Q_DECLARE_METATYPE(QIBusPropTypeClientCommitPreedit)
+Q_DECLARE_METATYPE(QIBusPropTypeContentType)
 #endif

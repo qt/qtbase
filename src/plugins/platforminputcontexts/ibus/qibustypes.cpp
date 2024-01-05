@@ -322,4 +322,44 @@ newest:
     argument.endStructure();
 }
 
+QIBusPropTypeClientCommitPreedit::QIBusPropTypeClientCommitPreedit(bool inClientCommitPreedit)
+    : clientCommitPreedit(inClientCommitPreedit)
+{
+}
+
+void QIBusPropTypeClientCommitPreedit::serializeTo(QDBusArgument &argument) const
+{
+    argument.beginStructure();
+    argument << clientCommitPreedit;
+    argument.endStructure();
+}
+
+void QIBusPropTypeClientCommitPreedit::deserializeFrom(const QDBusArgument &argument)
+{
+    argument.beginStructure();
+    argument >> clientCommitPreedit;
+    argument.endStructure();
+}
+
+QIBusPropTypeContentType::QIBusPropTypeContentType(unsigned int inPurpose, unsigned int inHints)
+    : purpose(inPurpose)
+    , hints(inHints)
+{
+}
+
+void QIBusPropTypeContentType::serializeTo(QDBusArgument &argument) const
+{
+    argument.beginStructure();
+    argument << purpose << hints;
+    argument.endStructure();
+}
+
+void QIBusPropTypeContentType::deserializeFrom(const QDBusArgument &argument)
+{
+    argument.beginStructure();
+    argument >> purpose;
+    argument >> hints;
+    argument.endStructure();
+}
+
 QT_END_NAMESPACE
