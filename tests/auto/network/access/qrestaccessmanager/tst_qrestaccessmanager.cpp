@@ -738,8 +738,7 @@ void tst_QRestAccessManager::json()
     QTRY_VERIFY(server.isListening());
     QNetworkRequest request(server.url());
     QRestReply *replyFromServer = nullptr;
-    QJsonObject responseJsonObject;
-    QJsonArray responseJsonArray;
+    QJsonDocument responseJsonDocument;
 
     HttpData serverSideRequest;  // The request data the server received
     HttpData serverSideResponse; // The response data the server responds with
@@ -753,9 +752,12 @@ void tst_QRestAccessManager::json()
     serverSideResponse.body = "{\"key1\":\"value1\",""\"key2\":\"value2\"}\n"_ba;
     manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; });
     QTRY_VERIFY(replyFromServer);
-    responseJsonObject = *replyFromServer->json();
-    QCOMPARE(responseJsonObject["key1"], "value1");
-    QCOMPARE(responseJsonObject["key2"], "value2");
+    std::optional json = replyFromServer->json();
+    QVERIFY(json);
+    responseJsonDocument = *json;
+    QVERIFY(responseJsonDocument.isObject());
+    QCOMPARE(responseJsonDocument["key1"], "value1");
+    QCOMPARE(responseJsonDocument["key2"], "value2");
     replyFromServer->deleteLater();
     replyFromServer = nullptr;
 
@@ -771,10 +773,13 @@ void tst_QRestAccessManager::json()
     serverSideResponse.body = "[\"foo\", \"bar\"]\n"_ba;
     manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; });
     QTRY_VERIFY(replyFromServer);
-    responseJsonArray = *replyFromServer->jsonArray();
-    QCOMPARE(responseJsonArray.size(), 2);
-    QCOMPARE(responseJsonArray[0].toString(), "foo"_L1);
-    QCOMPARE(responseJsonArray[1].toString(), "bar"_L1);
+    json = replyFromServer->json();
+    QVERIFY(json);
+    responseJsonDocument = *json;
+    QVERIFY(responseJsonDocument.isArray());
+    QCOMPARE(responseJsonDocument.array().size(), 2);
+    QCOMPARE(responseJsonDocument[0].toString(), "foo"_L1);
+    QCOMPARE(responseJsonDocument[1].toString(), "bar"_L1);
     replyFromServer->deleteLater();
     replyFromServer = nullptr;
 
@@ -782,7 +787,7 @@ void tst_QRestAccessManager::json()
     serverSideResponse.body = "foobar"_ba;
     manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; });
     QTRY_VERIFY(replyFromServer);
-    QVERIFY(!replyFromServer->jsonArray().has_value()); // std::nullopt returned
+    QVERIFY(!replyFromServer->json().has_value()); // std::nullopt returned
     replyFromServer->deleteLater();
     replyFromServer = nullptr;
 }

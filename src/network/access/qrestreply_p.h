@@ -31,7 +31,6 @@ public:
 
     QByteArray contentCharset() const;
     bool hasNonHttpError() const;
-    QJsonDocument replyDataToJson();
 };
 
 QT_END_NAMESPACE
