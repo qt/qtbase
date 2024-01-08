@@ -1869,6 +1869,11 @@ function(__qt_propagate_generated_resource target resource_name generated_source
 
         set(resource_target "${target}_resources_${resource_count}")
         add_library("${resource_target}" OBJECT "${resource_init_file}")
+        set_target_properties(${resource_target} PROPERTIES
+            AUTOMOC FALSE
+            AUTOUIC FALSE
+            AUTORCC FALSE
+        )
         # Needed so that qtsymbolmacros.h and its dependent headers are already created / syncqt'ed.
         if(TARGET Core_sync_headers)
             set(headers_available_target "Core_sync_headers")
