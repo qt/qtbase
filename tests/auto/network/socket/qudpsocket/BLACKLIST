@@ -1,7 +1,5 @@
 [writeDatagramToNonExistingPeer]
 windows
-# QTBUG-85364
-windows-10 gcc cmake
 [readyReadForEmptyDatagram]
 opensuse-leap
 [multicast]
