@@ -3,7 +3,6 @@
 
 qt_internal_add_example(addressbook)
 qt_internal_add_example(basicsortfiltermodel)
-qt_internal_add_example(coloreditorfactory)
 qt_internal_add_example(combowidgetmapper)
 qt_internal_add_example(customsortfiltermodel)
 qt_internal_add_example(editabletreemodel)

@@ -1,7 +1,6 @@
 TEMPLATE      = subdirs
 SUBDIRS       = addressbook \
                 basicsortfiltermodel \
-                coloreditorfactory \
                 combowidgetmapper \
                 customsortfiltermodel \
                 editabletreemodel \

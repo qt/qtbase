@@ -23,7 +23,6 @@
 "itemviews/addressbook Example", "examples/widgets/itemviews/addressbook", "addressbook", 0, -1
 "itemviews/basicsortfiltermodel Example", "examples/widgets/itemviews/basicsortfiltermodel", "basicsortfiltermodel", 10, -1
 "itemviews/chart Example", "examples/widgets/itemviews/chart", "chart", 0, -1
-"itemviews/coloreditorfactory Example", "examples/widgets/itemviews/coloreditorfactory", "coloreditorfactory", 10, -1
 "itemviews/combowidgetmapper Example", "examples/widgets/itemviews/combowidgetmapper", "combowidgetmapper", 6, -1
 "itemviews/customsortfiltermodel Example", "examples/widgets/itemviews/customsortfiltermodel", "customsortfiltermodel", 6, -1
 "itemviews/dirview Example", "examples/widgets/itemviews/dirview", "dirview", 0, -1

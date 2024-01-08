@@ -257,15 +257,25 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
 
     When subclassing QItemDelegate to create a delegate that displays items
     using a custom renderer, it is important to ensure that the delegate can
-    render items suitably for all the required states; e.g. selected,
+    render items suitably for all the required states; such as selected,
     disabled, checked. The documentation for the paint() function contains
     some hints to show how this can be achieved.
 
-    You can provide custom editors by using a QItemEditorFactory. The
-    \l{Color Editor Factory Example} shows how a custom editor can be
-    made available to delegates with the default item editor
-    factory. This way, there is no need to subclass QItemDelegate.  An
-    alternative is to reimplement createEditor(), setEditorData(),
+    You can provide custom editors by using a QItemEditorFactory. The following
+    code shows how a custom editor can be made available to delegates with the
+    default item editor factory.
+
+    \snippet code/src_gui_itemviews_qitemeditorfactory.cpp setDefaultFactory
+
+    After the default factory has been set, all standard item delegates
+    will use it (also the delegates that were created before setting the
+    default factory).
+
+    This way, you can avoid subclassing QItemDelegate, and all values of the
+    specified type (for example QMetaType::QDateTime) will be edited using the
+    provided editor (like \c{MyFancyDateTimeEdit} in the above example).
+
+    An alternative is to reimplement createEditor(), setEditorData(),
     setModelData(), and updateEditorGeometry(). This process is described
     in the \l{A simple delegate}{Model/View Programming overview documentation}.
 
