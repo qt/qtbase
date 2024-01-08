@@ -469,6 +469,10 @@ void tst_QStringView::at() const
 
 void tst_QStringView::arg() const
 {
+    // nullness checks
+    QCOMPARE(QStringView().arg(QStringView()), "");
+    QCOMPARE(QStringView("%1").arg(QStringView()), "");
+
 #define CHECK1(pattern, arg1, expected) \
     do { \
         auto p = QStringView(u"" pattern); \

@@ -8405,7 +8405,8 @@ static QString replaceArgEscapes(QStringView s, const ArgEscapeData &d, qsizetyp
                 rc = std::fill_n(rc, pad_chars, fillChar);
             }
 
-            memcpy(rc, use.data(), use.size() * sizeof(QChar));
+            if (use.size())
+                memcpy(rc, use.data(), use.size() * sizeof(QChar));
             rc += use.size();
 
             if (field_width < 0) { // right padded
