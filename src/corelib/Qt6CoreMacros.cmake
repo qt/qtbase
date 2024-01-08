@@ -2008,6 +2008,11 @@ function(__qt_propagate_generated_resource target resource_name generated_source
 
         set(resource_target "${target}_resources_${resource_count}")
         add_library("${resource_target}" OBJECT "${generated_source_code}")
+        set_target_properties(${resource_target} PROPERTIES
+            AUTOMOC FALSE
+            AUTOUIC FALSE
+            AUTORCC FALSE
+        )
         target_compile_definitions("${resource_target}" PRIVATE
             "$<TARGET_PROPERTY:${QT_CMAKE_EXPORT_NAMESPACE}::Core,INTERFACE_COMPILE_DEFINITIONS>"
         )
