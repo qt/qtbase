@@ -14,11 +14,15 @@ QItemEditorFactory *factory = new QItemEditorFactory;
 //! [1]
 
 
+//! [setDefaultFactory]
 //! [2]
 QItemEditorFactory *editorFactory = new QItemEditorFactory;
 QItemEditorCreatorBase *creator = new QStandardItemEditorCreator<MyFancyDateTimeEdit>();
 editorFactory->registerEditor(QMetaType::QDateTime, creator);
 //! [2]
+
+QItemEditorFactory::setDefaultFactory(editorFactory);
+//! [setDefaultFactory]
 
 
 //! [3]
