@@ -162,11 +162,23 @@ function(qt_configure_print_summary)
 
     # Show Qt-specific configuration summary.
     if(__qt_configure_reports)
+        # The summary will only be printed for log level STATUS or above.
+        # Check whether the log level is sufficient for printing the summary.
+        set(log_level_sufficient_for_printed_summary TRUE)
+        if(CMAKE_VERSION GREATER_EQUAL "3.25")
+            cmake_language(GET_MESSAGE_LOG_LEVEL log_level)
+            set(sufficient_log_levels STATUS VERBOSE DEBUG TRACE)
+            if(NOT log_level IN_LIST sufficient_log_levels)
+                set(log_level_sufficient_for_printed_summary FALSE)
+            endif()
+        endif()
+
         # We want to show the configuration summary file and log level message only on
         # first configuration or when we detect a feature change, to keep most
         # reconfiguration output as quiet as possible.
         # Currently feature change detection is not entirely reliable.
-        if(NOT QT_INTERNAL_SUMMARY_INSTRUCTIONS_SHOWN OR features_possibly_changed)
+        if(log_level_sufficient_for_printed_summary
+                AND (NOT QT_INTERNAL_SUMMARY_INSTRUCTIONS_SHOWN OR features_possibly_changed))
             set(force_show_summary TRUE)
             message(
                 "\n"
