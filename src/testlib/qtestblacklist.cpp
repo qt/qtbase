@@ -28,8 +28,7 @@ using namespace Qt::StringLiterals;
   Each blacklist line is interpreted as a list of keywords in an AND-relationship.
   To blacklist a test for multiple platforms (OR-relationship), use separate lines.
 
-  The key "ci" applies only when run by COIN. The key "cmake" applies when Qt
-  is built using CMake. Other keys name platforms, operating systems,
+  The key "ci" applies only when run by COIN. Other keys name platforms, operating systems,
   distributions, tool-chains or architectures; a ! prefix reverses what it
   checks. A version, joined to a key (at present, only for distributions and
   for msvc) with a hyphen, limits the key to the specific version. A keyword
@@ -170,8 +169,6 @@ static QSet<QByteArray> keywords()
 #ifdef QT_BUILD_INTERNAL
             << "developer-build"
 #endif
-
-            << "cmake"
             ;
 
             QCoreApplication *app = QCoreApplication::instance();
