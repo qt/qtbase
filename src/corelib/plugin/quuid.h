@@ -221,12 +221,15 @@ Q_CORE_EXPORT size_t qHash(const QUuid &uuid, size_t seed = 0) noexcept;
 
 QUuid::QUuid(Id128Bytes uuid, QSysInfo::Endian order) noexcept
 {
+    char bytes[sizeof uuid];
     if (order == QSysInfo::LittleEndian)
-        uuid = qbswap(uuid);
-    data1 = qFromBigEndian<quint32>(&uuid.data[0]);
-    data2 = qFromBigEndian<quint16>(&uuid.data[4]);
-    data3 = qFromBigEndian<quint16>(&uuid.data[6]);
-    memcpy(data4, &uuid.data[8], sizeof(data4));
+        qbswap(uuid, bytes);
+    else
+        memcpy(bytes, &uuid, sizeof bytes);
+    data1 = qFromBigEndian<quint32>(&bytes[0]);
+    data2 = qFromBigEndian<quint16>(&bytes[4]);
+    data3 = qFromBigEndian<quint16>(&bytes[6]);
+    memcpy(data4, &bytes[8], sizeof(data4));
 }
 
 QUuid::Id128Bytes QUuid::toBytes(QSysInfo::Endian order) const noexcept
