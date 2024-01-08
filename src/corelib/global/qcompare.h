@@ -657,14 +657,7 @@ auto qCompareThreeWay(const LT &lhs, const RT &rhs)
         return compareThreeWay(lhs, rhs);
     } else {
         const auto retval = compareThreeWay(rhs, lhs);
-        // We can compare any ordering type with Qt::partial_ordering, but we
-        // always need to return the right type. Use Qt::strong_ordering for
-        // casting, as it can be cast to any ordering type.
-        if (retval == Qt::partial_ordering::less)
-            return static_cast<decltype(retval)>(Qt::strong_ordering::greater);
-        else if (retval == Qt::partial_ordering::greater)
-            return static_cast<decltype(retval)>(Qt::strong_ordering::less);
-        return retval;
+        return QtOrderingPrivate::reversed(retval);
     }
 }
 
