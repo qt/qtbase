@@ -60,8 +60,15 @@ public:
         quint16 data16[8];
         quint32 data32[4];
         quint64 data64[2];
-#ifdef QT_SUPPORTS_INT128
-        quint128 data128[1];
+#if defined(__SIZEOF_INT128__)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wpedantic")    // ISO C++ does not support ‘__int128’ for ‘data128’
+        unsigned __int128 data128[1];
+QT_WARNING_POP
+#elif defined(QT_SUPPORTS_INT128)
+#  error "struct QUuid::Id128Bytes should not depend on QT_SUPPORTS_INT128 for ABI reasons."
+#  error "Adjust the declaration of the `data128` member above so it is always defined if it's " \
+        "supported by the current compiler/architecture in any configuration."
 #endif
 
         constexpr explicit operator QByteArrayView() const noexcept
