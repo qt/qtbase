@@ -50,6 +50,7 @@ public:
     QScopedPointer<QImage> highDpiBackingstore;
     QRegion staticContents;
     QSize size;
+    QSize nativeSize;
     bool downscale = qEnvironmentVariableIntValue("QT_WIDGETS_HIGHDPI_DOWNSCALE") > 0;
 };
 
@@ -115,14 +116,13 @@ QWindow* QBackingStore::window() const
 
 void QBackingStore::beginPaint(const QRegion &region)
 {
-    const qreal dpr = d_ptr->backingStoreDevicePixelRatio();
+    const qreal toNativeFactor = d_ptr->deviceIndependentToNativeFactor();
 
-    if (d_ptr->highDpiBackingstore &&
-        d_ptr->highDpiBackingstore->devicePixelRatio() != dpr)
+    if (d_ptr->nativeSize != QHighDpi::scale(size(), toNativeFactor))
         resize(size());
 
     QPlatformBackingStore *platformBackingStore = handle();
-    platformBackingStore->beginPaint(QHighDpi::scale(region, d_ptr->deviceIndependentToNativeFactor()));
+    platformBackingStore->beginPaint(QHighDpi::scale(region, toNativeFactor));
 
     // When QtGui is applying a high-dpi scale factor the backing store
     // creates a "large" backing store image. This image needs to be
@@ -131,18 +131,20 @@ void QBackingStore::beginPaint(const QRegion &region)
     // the image data to avoid having the new devicePixelRatio be propagated
     // back to the platform plugin.
     QPaintDevice *device = platformBackingStore->paintDevice();
-    if (QHighDpiScaling::isActive() && device->devType() == QInternal::Image) {
+    if (!qFuzzyCompare(toNativeFactor, qreal(1)) && device->devType() == QInternal::Image) {
         QImage *source = static_cast<QImage *>(device);
         const bool needsNewImage = d_ptr->highDpiBackingstore.isNull()
-            || source->data_ptr() != d_ptr->highDpiBackingstore->data_ptr()
+            || source->constBits() != d_ptr->highDpiBackingstore->constBits()
             || source->size() != d_ptr->highDpiBackingstore->size()
-            || source->devicePixelRatio() != d_ptr->highDpiBackingstore->devicePixelRatio();
-        if (needsNewImage) {
+            || source->bytesPerLine() != d_ptr->highDpiBackingstore->bytesPerLine()
+            || source->format() != d_ptr->highDpiBackingstore->format();
+        if (needsNewImage)
             d_ptr->highDpiBackingstore.reset(
                 new QImage(source->bits(), source->width(), source->height(), source->bytesPerLine(), source->format()));
 
-            d_ptr->highDpiBackingstore->setDevicePixelRatio(dpr);
-        }
+        d_ptr->highDpiBackingstore->setDevicePixelRatio(d_ptr->backingStoreDevicePixelRatio());
+    } else {
+        d_ptr->highDpiBackingstore.reset();
     }
 }
 
@@ -156,7 +158,7 @@ QPaintDevice *QBackingStore::paintDevice()
 {
     QPaintDevice *device = handle()->paintDevice();
 
-    if (QHighDpiScaling::isActive() && device->devType() == QInternal::Image)
+    if (!qFuzzyCompare(d_ptr->deviceIndependentToNativeFactor(), qreal(1)) && device->devType() == QInternal::Image)
         return d_ptr->highDpiBackingstore.data();
 
     return device;
@@ -229,9 +231,10 @@ void QBackingStore::flush(const QRegion &region, QWindow *window, const QPoint &
 */
 void QBackingStore::resize(const QSize &size)
 {
-    d_ptr->size = size;
     const qreal factor = d_ptr->deviceIndependentToNativeFactor();
-    handle()->resize(QHighDpi::scale(size, factor), QHighDpi::scale(d_ptr->staticContents, factor));
+    d_ptr->size = size;
+    d_ptr->nativeSize = QHighDpi::scale(size, factor);
+    handle()->resize(d_ptr->nativeSize, QHighDpi::scale(d_ptr->staticContents, factor));
 }
 
 /*!
