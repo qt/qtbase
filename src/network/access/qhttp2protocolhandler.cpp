@@ -88,32 +88,6 @@ HPack::HttpHeader build_headers(const QHttpNetworkRequest &request, quint32 maxH
     return header;
 }
 
-std::vector<uchar> assemble_hpack_block(const std::vector<Http2::Frame> &frames)
-{
-    std::vector<uchar> hpackBlock;
-
-    quint32 total = 0;
-    for (const auto &frame : frames) {
-        if (qAddOverflow(total, frame.hpackBlockSize(), &total))
-            return hpackBlock;
-    }
-
-    if (!total)
-        return hpackBlock;
-
-    hpackBlock.resize(total);
-    auto dst = hpackBlock.begin();
-    for (const auto &frame : frames) {
-        if (const auto hpackBlockSize = frame.hpackBlockSize()) {
-            const uchar *src = frame.hpackBlockBegin();
-            std::copy(src, src + hpackBlockSize, dst);
-            dst += hpackBlockSize;
-        }
-    }
-
-    return hpackBlock;
-}
-
 QUrl urlkey_from_request(const QHttpNetworkRequest &request)
 {
     QUrl url;
@@ -962,7 +936,7 @@ void QHttp2ProtocolHandler::handleContinuedHEADERS()
         // has yet to see the reset.
     }
 
-    std::vector<uchar> hpackBlock(assemble_hpack_block(continuedFrames));
+    std::vector<uchar> hpackBlock(Http2::assemble_hpack_block(continuedFrames));
     const bool hasHeaderFields = !hpackBlock.empty();
     if (hasHeaderFields) {
         HPack::BitIStream inputStream{&hpackBlock[0], &hpackBlock[0] + hpackBlock.size()};
