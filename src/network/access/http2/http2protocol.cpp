@@ -197,6 +197,33 @@ bool is_protocol_upgraded(const QHttpNetworkReply &reply)
     return false;
 }
 
+std::vector<uchar> assemble_hpack_block(const std::vector<Frame> &frames)
+{
+    std::vector<uchar> hpackBlock;
+
+    quint32 total = 0;
+    for (const auto &frame : frames) {
+        if (qAddOverflow(total, frame.hpackBlockSize(), &total))
+            return hpackBlock;
+    }
+
+    if (!total)
+        return hpackBlock;
+
+    hpackBlock.resize(total);
+    auto dst = hpackBlock.begin();
+    for (const auto &frame : frames) {
+        if (const auto hpackBlockSize = frame.hpackBlockSize()) {
+            const uchar *src = frame.hpackBlockBegin();
+            std::copy(src, src + hpackBlockSize, dst);
+            dst += hpackBlockSize;
+        }
+    }
+
+    return hpackBlock;
+}
+
+
 } // namespace Http2
 
 QT_END_NAMESPACE

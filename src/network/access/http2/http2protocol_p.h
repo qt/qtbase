@@ -21,6 +21,8 @@
 #include <QtCore/private/qglobal_p.h>
 #include <QtCore/qmap.h>
 
+#include <vector>
+
 // Different HTTP/2 constants/values as defined by RFC 7540.
 
 QT_BEGIN_NAMESPACE
@@ -118,6 +120,7 @@ const qint32 qtDefaultStreamReceiveWindowSize = maxSessionReceiveWindowSize / 10
 struct Frame configurationToSettingsFrame(const QHttp2Configuration &configuration);
 QByteArray settingsFrameToBase64(const Frame &settingsFrame);
 void appendProtocolUpgradeHeaders(const QHttp2Configuration &configuration, QHttpNetworkRequest *request);
+std::vector<uchar> assemble_hpack_block(const std::vector<Frame> &frames);
 
 extern const Q_AUTOTEST_EXPORT char Http2clientPreface[clientPrefaceLength];
 
