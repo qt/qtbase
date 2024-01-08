@@ -6241,8 +6241,17 @@ void tst_QString::arg()
     QString s13(u"%1% %x%c%2 %d%2-%"_s);
     QString s14(u"%1%2%3"_s);
 
+    const QString null;
+    const QString empty(u""_s);
     const QString foo(u"foo"_s);
     const QString bar(u"bar"_s);
+
+    Q_ASSERT(null.isNull());
+    Q_ASSERT(!empty.isNull());
+    QCOMPARE(s4.arg(null), "[]"_L1);
+    QCOMPARE(s4.arg(empty), "[]"_L1);
+    QCOMPARE(s4.arg(QStringView()), "[]"_L1);
+    QCOMPARE(s4.arg(QStringView(u"")), "[]"_L1);
 
     QCOMPARE(s4.arg(foo), "[foo]"_L1);
     QCOMPARE( s5.arg(QLatin1String("foo")), QLatin1String("[foo]") );
@@ -6336,6 +6345,14 @@ void tst_QString::arg()
     QCOMPARE(QString(u"%%%"_s).arg(0), "%%%"_L1);
     QCOMPARE(QString(u"%%%1%%%2"_s).arg(foo).arg(bar), "%%foo%%bar"_L1);
 
+    QCOMPARE(u"%1"_s.arg(null, 3), "   "_L1);
+    QCOMPARE(u"%1"_s.arg(empty, 3), "   "_L1);
+    QCOMPARE(u"%1"_s.arg(QStringView(), 3), "   "_L1);
+    QCOMPARE(u"%1"_s.arg(QStringView(u""), 3), "   "_L1);
+    QCOMPARE(u"%1%1"_s.arg(null), ""_L1);
+    QCOMPARE(u"%2%1"_s.arg(empty), "%2"_L1);
+    QCOMPARE(u"%2%1"_s.arg(QStringView()), "%2"_L1);
+    QCOMPARE(u"%2%1"_s.arg(QStringView(u"")), "%2"_L1);
     QCOMPARE(u"%1"_s.arg(u"hello"_s, -10), "hello     "_L1);
     QCOMPARE(u"%1"_s.arg("hello"_L1, -5), "hello"_L1);
     QCOMPARE(u"%1"_s.arg(u"hello", -2), "hello"_L1);
@@ -6345,8 +6362,6 @@ void tst_QString::arg()
     QCOMPARE(u"%1"_s.arg(u"hello"_s, 10), "     hello"_L1);
     QCOMPARE(u"%1%1"_s.arg(u"hello"_s), "hellohello"_L1);
     QCOMPARE(u"%2%1"_s.arg(u"hello"_s), "%2hello"_L1);
-    QCOMPARE(u"%1%1"_s.arg(QString()), QLatin1String(""));
-    QCOMPARE(u"%2%1"_s.arg(u""_s), "%2"_L1);
 
     QCOMPARE( QString(u"%2 %L1"_s).arg(12345.6789).arg(12345.6789),
              QLatin1String("12345.7 12.345,7") );
