@@ -4662,7 +4662,7 @@ void QWindowsVistaStyle::polish(QWidget *widget)
             pal.setColor(QPalette::Base, pal.window().color());
             widget->setPalette(pal);
         }
-        else if (widget->inherits("QAbstractScrollArea")) {
+        else if (widget->inherits("QAbstractScrollArea")  && !widget->inherits("QMdiArea")) {
             if (auto scrollarea = qobject_cast<QAbstractScrollArea*>(widget)) {
                 QPalette pal = widget->palette();
                 pal.setColor(scrollarea->viewport()->backgroundRole(), Qt::transparent);

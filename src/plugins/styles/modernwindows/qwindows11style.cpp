@@ -34,6 +34,7 @@ enum WINUI3Color {
     controlTextSecondary,             //Color of text of sunken controls
     controlStrokeOnAccentSecondary,   //Color of frame around Buttons in accent color
     controlFillSolid,                 //Color for solid fill
+    surfaceStroke,                    //Color of MDI window frames
 };
 
 const static QColor WINUI3ColorsLight [] {
@@ -52,6 +53,7 @@ const static QColor WINUI3ColorsLight [] {
     QColor(0x00,0x00,0x00,0x7F), //controlTextSecondary
     QColor(0x00,0x00,0x00,0x66), //controlStrokeOnAccentSecondary
     QColor(0xFF,0xFF,0xFF,0xFF), //controlFillSolid
+    QColor(0x75,0x75,0x75,0x66), //surfaceStroke
 };
 
 const static QColor WINUI3ColorsDark[] {
@@ -70,12 +72,15 @@ const static QColor WINUI3ColorsDark[] {
     QColor(0xFF,0xFF,0xFF,0x87), //controlTextSecondary
     QColor(0xFF,0xFF,0xFF,0x14), //controlStrokeOnAccentSecondary
     QColor(0x45,0x45,0x45,0xFF), //controlFillSolid
+    QColor(0x75,0x75,0x75,0x66), //surfaceStroke
 };
 
 const static QColor* WINUI3Colors[] {
     WINUI3ColorsLight,
     WINUI3ColorsDark
 };
+
+const QColor shellCloseButtonColor(0xC4,0x2B,0x1C,0xFF); //Color of close Button in Titlebar
 
 #if QT_CONFIG(toolbutton)
 static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbutton,
@@ -496,6 +501,144 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             }
         }
         break;
+    case CC_TitleBar:
+        if (const auto* titlebar = qstyleoption_cast<const QStyleOptionTitleBar*>(option)) {
+            painter->setPen(Qt::NoPen);
+            painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][surfaceStroke]));
+            painter->setBrush(titlebar->palette.button());
+            painter->drawRect(titlebar->rect);
+
+            // draw title
+            QRect textRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarLabel, widget);
+            painter->setPen(titlebar->palette.text().color());
+            // Note workspace also does elliding but it does not use the correct font
+            QString title = painter->fontMetrics().elidedText(titlebar->text, Qt::ElideRight, textRect.width() - 14);
+            painter->drawText(textRect.adjusted(1, 1, 1, 1), title, QTextOption(Qt::AlignHCenter | Qt::AlignVCenter));
+
+            QFont buttonFont = QFont(assetFont);
+            buttonFont.setPointSize(8);
+            // min button
+            if ((titlebar->subControls & SC_TitleBarMinButton) && (titlebar->titleBarFlags & Qt::WindowMinimizeButtonHint) &&
+                !(titlebar->titleBarState& Qt::WindowMinimized)) {
+                const QRect minButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarMinButton, widget);
+                if (minButtonRect.isValid()) {
+                    bool hover = (titlebar->activeSubControls & SC_TitleBarMinButton) && (titlebar->state & State_MouseOver);
+                    if (hover)
+                        painter->fillRect(minButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
+                    const QString textToDraw("\uE921");
+                    painter->setPen(QPen(titlebar->palette.text().color()));
+                    painter->setFont(buttonFont);
+                    painter->drawText(minButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
+                }
+            }
+            // max button
+            if ((titlebar->subControls & SC_TitleBarMaxButton) && (titlebar->titleBarFlags & Qt::WindowMaximizeButtonHint) &&
+                !(titlebar->titleBarState & Qt::WindowMaximized)) {
+                const QRectF maxButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarMaxButton, widget);
+                if (maxButtonRect.isValid()) {
+                    bool hover = (titlebar->activeSubControls & SC_TitleBarMaxButton) && (titlebar->state & State_MouseOver);
+                    if (hover)
+                        painter->fillRect(maxButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
+                    const QString textToDraw("\uE922");
+                    painter->setPen(QPen(titlebar->palette.text().color()));
+                    painter->setFont(buttonFont);
+                    painter->drawText(maxButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
+                }
+            }
+
+            // close button
+            if ((titlebar->subControls & SC_TitleBarCloseButton) && (titlebar->titleBarFlags & Qt::WindowSystemMenuHint)) {
+                const QRect closeButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarCloseButton, widget);
+                if (closeButtonRect.isValid()) {
+                    bool hover = (titlebar->activeSubControls & SC_TitleBarCloseButton) && (titlebar->state & State_MouseOver);
+                    if (hover)
+                        painter->fillRect(closeButtonRect,shellCloseButtonColor);
+                    const QString textToDraw("\uE8BB");
+                    painter->setPen(QPen(hover ? titlebar->palette.highlightedText().color() : titlebar->palette.text().color()));
+                    painter->setFont(buttonFont);
+                    painter->drawText(closeButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
+                }
+            }
+
+            // normalize button
+            if ((titlebar->subControls & SC_TitleBarNormalButton) &&
+                (((titlebar->titleBarFlags & Qt::WindowMinimizeButtonHint) &&
+                  (titlebar->titleBarState & Qt::WindowMinimized)) ||
+                 ((titlebar->titleBarFlags & Qt::WindowMaximizeButtonHint) &&
+                  (titlebar->titleBarState & Qt::WindowMaximized)))) {
+                const QRect normalButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarNormalButton, widget);
+                if (normalButtonRect.isValid()) {
+                    bool hover = (titlebar->activeSubControls & SC_TitleBarNormalButton) && (titlebar->state & State_MouseOver);
+                    if (hover)
+                        painter->fillRect(normalButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
+                    const QString textToDraw("\uE923");
+                    painter->setPen(QPen(titlebar->palette.text().color()));
+                    painter->setFont(buttonFont);
+                    painter->drawText(normalButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
+                }
+            }
+
+            // context help button
+            if (titlebar->subControls & SC_TitleBarContextHelpButton
+                && (titlebar->titleBarFlags & Qt::WindowContextHelpButtonHint)) {
+                const QRect contextHelpButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarContextHelpButton, widget);
+                if (contextHelpButtonRect.isValid()) {
+                    bool hover = (titlebar->activeSubControls & SC_TitleBarCloseButton) && (titlebar->state & State_MouseOver);
+                    if (hover)
+                        painter->fillRect(contextHelpButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
+                    const QString textToDraw("\uE897");
+                    painter->setPen(QPen(titlebar->palette.text().color()));
+                    painter->setFont(buttonFont);
+                    painter->drawText(contextHelpButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
+                }
+            }
+
+            // shade button
+            if (titlebar->subControls & SC_TitleBarShadeButton && (titlebar->titleBarFlags & Qt::WindowShadeButtonHint)) {
+                const QRect shadeButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarShadeButton, widget);
+                if (shadeButtonRect.isValid()) {
+                    bool hover = (titlebar->activeSubControls & SC_TitleBarShadeButton) && (titlebar->state & State_MouseOver);
+                    if (hover)
+                        painter->fillRect(shadeButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
+                    const QString textToDraw("\uE010");
+                    painter->setPen(QPen(titlebar->palette.text().color()));
+                    painter->setFont(buttonFont);
+                    painter->drawText(shadeButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
+                }
+            }
+
+             // unshade button
+            if (titlebar->subControls & SC_TitleBarUnshadeButton && (titlebar->titleBarFlags & Qt::WindowShadeButtonHint)) {
+                const QRect unshadeButtonRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarUnshadeButton, widget);
+                if (unshadeButtonRect.isValid()) {
+                    bool hover = (titlebar->activeSubControls & SC_TitleBarUnshadeButton) && (titlebar->state & State_MouseOver);
+                    if (hover)
+                        painter->fillRect(unshadeButtonRect,WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
+                    const QString textToDraw("\uE011");
+                    painter->setPen(QPen(titlebar->palette.text().color()));
+                    painter->setFont(buttonFont);
+                    painter->drawText(unshadeButtonRect, Qt::AlignVCenter | Qt::AlignHCenter, textToDraw);
+                }
+            }
+
+            // window icon for system menu
+            if ((titlebar->subControls & SC_TitleBarSysMenu) && (titlebar->titleBarFlags & Qt::WindowSystemMenuHint)) {
+                const QRect iconRect = proxy()->subControlRect(CC_TitleBar, titlebar, SC_TitleBarSysMenu, widget);
+                if (iconRect.isValid()) {
+                    if (!titlebar->icon.isNull()) {
+                        titlebar->icon.paint(painter, iconRect);
+                    } else {
+                        QStyleOption tool = *titlebar;
+                        QPixmap pm = proxy()->standardIcon(SP_TitleBarMenuButton, &tool, widget).pixmap(16, 16);
+                        tool.rect = iconRect;
+                        painter->save();
+                        proxy()->drawItemPixmap(painter, iconRect, Qt::AlignCenter, pm);
+                        painter->restore();
+                    }
+                }
+            }
+        }
+        break;
     default:
         QWindowsVistaStyle::drawComplexControl(control, option, painter, widget);
     }
@@ -782,6 +925,64 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
 #endif
         break;
     }
+    case QStyle::PE_FrameWindow:
+        if (const auto *frm = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
+
+            QRectF rect= option->rect;
+            int fwidth = int((frm->lineWidth + frm->midLineWidth) / QWindowsStylePrivate::nativeMetricScaleFactor(widget));
+
+            QRectF bottomLeftCorner = QRectF(rect.left() + 1.0,
+                                             rect.bottom() - 1.0 - secondLevelRoundingRadius,
+                                             secondLevelRoundingRadius,
+                                             secondLevelRoundingRadius);
+            QRectF bottomRightCorner = QRectF(rect.right() - 1.0  - secondLevelRoundingRadius,
+                                              rect.bottom() - 1.0  - secondLevelRoundingRadius,
+                                              secondLevelRoundingRadius,
+                                              secondLevelRoundingRadius);
+
+            //Draw Mask
+            QBitmap mask(widget->width(), widget->height());
+            mask.clear();
+
+            QPainter maskPainter(&mask);
+            maskPainter.setRenderHint(QPainter::Antialiasing);
+            maskPainter.setBrush(Qt::color1);
+            maskPainter.setPen(Qt::NoPen);
+            maskPainter.drawRoundedRect(option->rect,secondLevelRoundingRadius,secondLevelRoundingRadius);
+            const_cast<QWidget*>(widget)->setMask(mask);
+
+            //Draw Window
+            painter->setPen(QPen(frm->palette.base(), fwidth));
+            painter->drawLine(QPointF(rect.left(), rect.top()),
+                              QPointF(rect.left(), rect.bottom() - fwidth));
+            painter->drawLine(QPointF(rect.left() + fwidth, rect.bottom()),
+                              QPointF(rect.right() - fwidth, rect.bottom()));
+            painter->drawLine(QPointF(rect.right(), rect.top()),
+                              QPointF(rect.right(), rect.bottom() - fwidth));
+
+            painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][surfaceStroke]));
+            painter->drawLine(QPointF(rect.left() + 0.5, rect.top() + 0.5),
+                              QPointF(rect.left() + 0.5, rect.bottom() - 0.5 - secondLevelRoundingRadius));
+            painter->drawLine(QPointF(rect.left() + 0.5 + secondLevelRoundingRadius, rect.bottom() - 0.5),
+                              QPointF(rect.right() - 0.5 - secondLevelRoundingRadius, rect.bottom() - 0.5));
+            painter->drawLine(QPointF(rect.right() - 0.5, rect.top() + 1.5),
+                              QPointF(rect.right() - 0.5, rect.bottom() - 0.5 - secondLevelRoundingRadius));
+
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(frm->palette.base());
+            painter->drawPie(bottomRightCorner.marginsAdded(QMargins(2.5,2.5,0.0,0.0)),
+                             270 * 16,90 * 16);
+            painter->drawPie(bottomLeftCorner.marginsAdded(QMargins(0.0,2.5,2.5,0.0)),
+                             -90 * 16,-90 * 16);
+
+            painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][surfaceStroke]));
+            painter->setBrush(Qt::NoBrush);
+            painter->drawArc(bottomRightCorner,
+                             0 * 16,-90 * 16);
+            painter->drawArc(bottomLeftCorner,
+                             -90 * 16,-90 * 16);
+        }
+        break;
     default:
         QWindowsVistaStyle::drawPrimitive(element, option, painter, widget);
     }
@@ -1464,6 +1665,94 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
             ret = visualRect(spinbox->direction, spinbox->rect, ret);
         }
         break;
+    case CC_TitleBar:
+        if (const QStyleOptionTitleBar *titlebar = qstyleoption_cast<const QStyleOptionTitleBar *>(option)) {
+            SubControl sc = subControl;
+            ret = QCommonStyle::subControlRect(control, option, subControl, widget);
+            static constexpr int indent = 3;
+            static constexpr int controlWidthMargin = 2;
+            const int controlHeight = titlebar->rect.height();
+            const int controlWidth = 46;
+            const int iconSize = proxy()->pixelMetric(QStyle::PM_TitleBarButtonIconSize, option, widget);
+            int offset = -(controlWidthMargin + indent);
+
+            bool isMinimized = titlebar->titleBarState & Qt::WindowMinimized;
+            bool isMaximized = titlebar->titleBarState & Qt::WindowMaximized;
+
+            switch (sc) {
+            case SC_TitleBarLabel:
+                if (titlebar->titleBarFlags & (Qt::WindowTitleHint | Qt::WindowSystemMenuHint)) {
+                    ret = titlebar->rect;
+                    if (titlebar->titleBarFlags & Qt::WindowSystemMenuHint)
+                        ret.adjust(iconSize + controlWidthMargin + indent, 0, -controlWidth, 0);
+                    if (titlebar->titleBarFlags & Qt::WindowMinimizeButtonHint)
+                        ret.adjust(0, 0, -controlWidth, 0);
+                    if (titlebar->titleBarFlags & Qt::WindowMaximizeButtonHint)
+                        ret.adjust(0, 0, -controlWidth, 0);
+                    if (titlebar->titleBarFlags & Qt::WindowShadeButtonHint)
+                        ret.adjust(0, 0, -controlWidth, 0);
+                    if (titlebar->titleBarFlags & Qt::WindowContextHelpButtonHint)
+                        ret.adjust(0, 0, -controlWidth, 0);
+                }
+                break;
+            case SC_TitleBarContextHelpButton:
+                if (titlebar->titleBarFlags & Qt::WindowContextHelpButtonHint)
+                    offset += controlWidth;
+                Q_FALLTHROUGH();
+            case SC_TitleBarMinButton:
+                if (!isMinimized && (titlebar->titleBarFlags & Qt::WindowMinimizeButtonHint))
+                    offset += controlWidth;
+                else if (sc == SC_TitleBarMinButton)
+                    break;
+                Q_FALLTHROUGH();
+            case SC_TitleBarNormalButton:
+                if (isMinimized && (titlebar->titleBarFlags & Qt::WindowMinimizeButtonHint))
+                    offset += controlWidth;
+                else if (isMaximized && (titlebar->titleBarFlags & Qt::WindowMaximizeButtonHint))
+                    offset += controlWidth;
+                else if (sc == SC_TitleBarNormalButton)
+                    break;
+                Q_FALLTHROUGH();
+            case SC_TitleBarMaxButton:
+                if (!isMaximized && (titlebar->titleBarFlags & Qt::WindowMaximizeButtonHint))
+                    offset += controlWidth;
+                else if (sc == SC_TitleBarMaxButton)
+                    break;
+                Q_FALLTHROUGH();
+            case SC_TitleBarShadeButton:
+                if (!isMinimized && (titlebar->titleBarFlags & Qt::WindowShadeButtonHint))
+                    offset += controlWidth;
+                else if (sc == SC_TitleBarShadeButton)
+                    break;
+                Q_FALLTHROUGH();
+            case SC_TitleBarUnshadeButton:
+                if (isMinimized && (titlebar->titleBarFlags & Qt::WindowShadeButtonHint))
+                    offset += controlWidth;
+                else if (sc == SC_TitleBarUnshadeButton)
+                    break;
+                Q_FALLTHROUGH();
+            case SC_TitleBarCloseButton:
+                if (titlebar->titleBarFlags & Qt::WindowSystemMenuHint)
+                    offset += controlWidth;
+                else if (sc == SC_TitleBarCloseButton)
+                    break;
+                ret.setRect(titlebar->rect.right() - offset, titlebar->rect.top(),
+                            controlWidth, controlHeight);
+                break;
+            case SC_TitleBarSysMenu:
+                if (titlebar->titleBarFlags & Qt::WindowSystemMenuHint) {
+                    ret.setRect(titlebar->rect.left() + controlWidthMargin + indent, titlebar->rect.top() + iconSize/2,
+                                iconSize, iconSize);
+                }
+                break;
+            default:
+                break;
+            }
+            if (widget && isMinimized && titlebar->rect.width() < offset)
+                const_cast<QWidget*>(widget)->resize(controlWidthMargin + indent + offset + iconSize + controlWidthMargin, controlWidth);
+            ret = visualRect(titlebar->direction, titlebar->rect, ret);
+        }
+        break;
 #endif // Qt_NO_SPINBOX
     default:
         ret = QWindowsVistaStyle::subControlRect(control, option, subControl, widget);
@@ -1517,7 +1806,10 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case QStyle::PM_SliderLength:
         res = int(QStyleHelper::dpiScaled(16, option));
         break;
-
+    case QStyle::PM_TitleBarButtonIconSize:
+        return 16;
+    case QStyle::PM_TitleBarButtonSize:
+        return 32;
     default:
         res = QWindowsVistaStyle::pixelMetric(metric, option, widget);
     }
@@ -1561,7 +1853,7 @@ void QWindows11Style::polish(QWidget* widget)
         pal.setColor(QPalette::Base, pal.window().color());
         widget->setPalette(pal);
     }
-    else if (widget->inherits("QAbstractScrollArea")) {
+    else if (widget->inherits("QAbstractScrollArea") && !widget->inherits("QMdiArea")) {
         if (auto scrollarea = qobject_cast<QAbstractScrollArea*>(widget)) {
             QPalette pal = widget->palette();
             pal.setColor(scrollarea->viewport()->backgroundRole(), Qt::transparent);

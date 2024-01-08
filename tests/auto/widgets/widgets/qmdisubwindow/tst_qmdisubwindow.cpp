@@ -954,6 +954,8 @@ void tst_QMdiSubWindow::mouseDoubleClick()
     if (!window->style()->styleHint(QStyle::SH_TitleBar_NoBorder, &options, window))
         height += window->isMinimized() ? 8 : 4;
     QPoint mousePosition(window->width() / 2, height - 1);
+    if (window->style()->inherits("QWindows11Style"))
+        mousePosition = QPoint(8, height - 1);
     sendMouseMove(window, mousePosition, Qt::NoButton);
 
     // Without Qt::WindowShadeButtonHint flag set
@@ -981,8 +983,10 @@ void tst_QMdiSubWindow::mouseDoubleClick()
 
     window->showMinimized();
     QVERIFY(window->isMinimized());
+    //Process QEvent::WindowStateChange
+    QCoreApplication::processEvents();
     sendMouseDoubleClick(window, mousePosition);
-    QVERIFY(!window->isMinimized());
+    QTRY_VERIFY(!window->isMinimized());
     QCOMPARE(window->geometry(), originalGeometry);
 }
 
