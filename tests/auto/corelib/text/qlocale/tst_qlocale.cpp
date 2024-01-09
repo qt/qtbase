@@ -392,9 +392,9 @@ void tst_QLocale::defaulted_ctor()
 
 #define TEST_CTOR(req_lang, req_country, exp_lang, exp_country) \
     do { \
-        QLocale l(QLocale::req_lang, QLocale::req_country); \
-        QCOMPARE((int)l.language(), (int)exp_lang); \
-        QCOMPARE((int)l.territory(), (int)exp_country); \
+        const QLocale l(QLocale::req_lang, QLocale::req_country); \
+        QCOMPARE(l.language(), exp_lang); \
+        QCOMPARE(l.territory(), exp_country); \
     } while (false)
 
     TEST_CTOR(AnyLanguage, AnyTerritory, default_lang, default_country);
@@ -478,15 +478,12 @@ void tst_QLocale::defaulted_ctor()
 #undef TEST_CTOR
 #define TEST_CTOR(req_lc, exp_lang, exp_country) \
     do { \
-        QLocale l(req_lc); \
-        QVERIFY2(l.language() == QLocale::exp_lang \
-                && l.territory() == QLocale::exp_country, \
-                QString("requested: \"" + QString(req_lc) + "\", got: " \
-                        + QLocale::languageToString(l.language())       \
-                        + QLatin1Char('/')                              \
-                        + QLocale::territoryToString(l.territory())).toUtf8().constData()); \
-        QCOMPARE(l, QLocale(QLocale::exp_lang, QLocale::exp_country)); \
-        QCOMPARE(qHash(l), qHash(QLocale(QLocale::exp_lang, QLocale::exp_country))); \
+        const QLocale l(req_lc); \
+        QCOMPARE(l.language(), QLocale::exp_lang); \
+        QCOMPARE(l.territory(), QLocale::exp_country); \
+        const QLocale m(QLocale::exp_lang, QLocale::exp_country); \
+        QCOMPARE(l, m); \
+        QCOMPARE(qHash(l), qHash(m)); \
     } while (false)
 
     QLocale::setDefault(QLocale(QLocale::C));
@@ -541,14 +538,10 @@ void tst_QLocale::defaulted_ctor()
 #undef TEST_CTOR
 #define TEST_CTOR(req_lc, exp_lang, exp_script, exp_country) \
     do { \
-    QLocale l(req_lc); \
-    QVERIFY2(l.language() == QLocale::exp_lang \
-        && l.script() == QLocale::exp_script \
-        && l.territory() == QLocale::exp_country, \
-        QString("requested: \"" + QString(req_lc) + "\", got: " \
-        + QLocale::languageToString(l.language()) \
-        + QLatin1Char('/') + QLocale::scriptToString(l.script()) \
-        + QLatin1Char('/') + QLocale::territoryToString(l.territory())).toUtf8().constData()); \
+        const QLocale l(req_lc); \
+        QCOMPARE(l.language(), QLocale::exp_lang); \
+        QCOMPARE(l.script(), QLocale::exp_script); \
+        QCOMPARE(l.territory(), QLocale::exp_country); \
     } while (false)
 
     TEST_CTOR("zh_CN", Chinese, SimplifiedHanScript, China);
@@ -731,13 +724,9 @@ void tst_QLocale::legacyNames()
 
 #define TEST_CTOR(req_lc, exp_lang, exp_country) \
     do { \
-        QLocale l(req_lc); \
-        QVERIFY2(l.language() == QLocale::exp_lang \
-                && l.territory() == QLocale::exp_country, \
-                QString("requested: \"" + QString(req_lc) + "\", got: " \
-                        + QLocale::languageToString(l.language())       \
-                        + QLatin1Char('/')                              \
-                        + QLocale::territoryToString(l.territory())).toUtf8().constData()); \
+        const QLocale l(req_lc); \
+        QCOMPARE(l.language(), QLocale::exp_lang); \
+        QCOMPARE(l.territory(), QLocale::exp_country); \
     } while (false)
 
     TEST_CTOR("mo_MD", Romanian, Moldova);
@@ -1055,7 +1044,7 @@ void tst_QLocale::stringToDouble()
         QCOMPARE(d, num);
         if (std::isfinite(num)) {
             double diff = d > num ? d - num : num - d;
-            QVERIFY(diff <= MY_DOUBLE_EPSILON);
+            QCOMPARE_LE(diff, MY_DOUBLE_EPSILON);
         }
     }
 
@@ -1066,7 +1055,7 @@ void tst_QLocale::stringToDouble()
         QCOMPARE(d, num);
         if (std::isfinite(num)) {
             double diff = d > num ? d - num : num - d;
-            QVERIFY(diff <= MY_DOUBLE_EPSILON);
+            QCOMPARE_LE(diff, MY_DOUBLE_EPSILON);
         }
     }
 #undef MY_DOUBLE_EPSILON
@@ -1163,7 +1152,7 @@ void tst_QLocale::stringToFloat()
         QCOMPARE(f, fnum);
         if (std::isfinite(fnum)) {
             float diff = f > fnum ? f - fnum : fnum - f;
-            QVERIFY(diff <= MY_FLOAT_EPSILON);
+            QCOMPARE_LE(diff, MY_FLOAT_EPSILON);
         }
     }
 
@@ -1174,7 +1163,7 @@ void tst_QLocale::stringToFloat()
         QCOMPARE(f, fnum);
         if (std::isfinite(fnum)) {
             float diff = f > fnum ? f - fnum : fnum - f;
-            QVERIFY(diff <= MY_FLOAT_EPSILON);
+            QCOMPARE_LE(diff, MY_FLOAT_EPSILON);
         }
     }
 #undef MY_FLOAT_EPSILON
@@ -2722,7 +2711,7 @@ void tst_QLocale::macDefaultLocale()
          || locale.groupSeparator() == QStringView(u"\xA0") // no-breaking space
          || locale.groupSeparator() == QStringView(u"'")
          || locale.groupSeparator().isEmpty());
-    QVERIFY(locale.decimalPoint() != locale.groupSeparator());
+    QCOMPARE_NE(locale.decimalPoint(), locale.groupSeparator());
 
     // make sure we are using the system to parse them
     QCOMPARE(locale.toString(1234.56), systemLocaleFormatNumber(QString("1,234.56")));
@@ -3099,7 +3088,7 @@ void tst_QLocale::testNames()
 
     if (language != QLocale::C) {
         const int idx = name.indexOf(QLatin1Char('_'));
-        QVERIFY(idx != -1);
+        QCOMPARE_NE(idx, -1);
         const QString lang = name.left(idx);
 
         QCOMPARE(QLocale(lang).language(), language);
@@ -3395,7 +3384,7 @@ void tst_QLocale::monthName()
     QCOMPARE(ru.monthName(1, QLocale::NarrowFormat), QString::fromUtf8("\320\257"));
     const auto sys = QLocale::system();
     if (sys.language() == QLocale::Russian) // QTBUG-92018
-        QVERIFY(sys.monthName(3) != sys.standaloneMonthName(3));
+        QCOMPARE_NE(sys.monthName(3), sys.standaloneMonthName(3));
 
     const QLocale ir("ga_IE");
     QCOMPARE(ir.monthName(1, QLocale::ShortFormat), QLatin1String("Ean"));
