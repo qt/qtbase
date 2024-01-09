@@ -333,6 +333,13 @@ void tst_QLocale::defaulted_ctor()
         QCOMPARE(l.territory(), QLocale::AnyTerritory);
     }
 
+#define CHECK_DEFAULT(lang, terr) \
+    do { \
+        const QLocale l; \
+        QCOMPARE(l.language(), lang); \
+        QCOMPARE(l.territory(), terr); \
+    } while (false)
+
 #define TEST_CTOR(req_lang, req_country, exp_lang, exp_country) \
     { \
         QLocale l(QLocale::req_lang, QLocale::req_country); \
@@ -356,12 +363,7 @@ void tst_QLocale::defaulted_ctor()
               QLocale::LatinAmerica)
 
     QLocale::setDefault(QLocale(QLocale::English, QLocale::France));
-
-    {
-        QLocale l;
-        QVERIFY(l.language() == QLocale::English);
-        QVERIFY(l.territory() == QLocale::UnitedStates);
-    }
+    CHECK_DEFAULT(QLocale::English, QLocale::UnitedStates);
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France)
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom)
@@ -372,12 +374,7 @@ void tst_QLocale::defaulted_ctor()
     TEST_CTOR(Aymara, AnyTerritory, QLocale::English, QLocale::UnitedStates)
 
     QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedKingdom));
-
-    {
-        QLocale l;
-        QVERIFY(l.language() == QLocale::English);
-        QVERIFY(l.territory() == QLocale::UnitedKingdom);
-    }
+    CHECK_DEFAULT(QLocale::English, QLocale::UnitedKingdom);
 
     TEST_CTOR(French, France, QLocale::French, QLocale::France)
     TEST_CTOR(English, UnitedKingdom, QLocale::English, QLocale::UnitedKingdom)
@@ -386,12 +383,7 @@ void tst_QLocale::defaulted_ctor()
     TEST_CTOR(C, France, QLocale::C, QLocale::AnyTerritory)
 
     QLocale::setDefault(QLocale(QLocale::Aymara, QLocale::France));
-
-    {
-        QLocale l;
-        QVERIFY(l.language() == QLocale::English);
-        QVERIFY(l.territory() == QLocale::UnitedKingdom);
-    }
+    CHECK_DEFAULT(QLocale::English, QLocale::UnitedKingdom);
 
     TEST_CTOR(Aymara, AnyTerritory, QLocale::English, QLocale::UnitedKingdom)
     TEST_CTOR(Aymara, France, QLocale::English, QLocale::UnitedKingdom)
@@ -406,12 +398,7 @@ void tst_QLocale::defaulted_ctor()
     TEST_CTOR(C, France, QLocale::C, QLocale::AnyTerritory)
 
     QLocale::setDefault(QLocale(QLocale::Aymara, QLocale::AnyTerritory));
-
-    {
-        QLocale l;
-        QVERIFY(l.language() == QLocale::English);
-        QVERIFY(l.territory() == QLocale::UnitedKingdom);
-    }
+    CHECK_DEFAULT(QLocale::English, QLocale::UnitedKingdom);
 
     TEST_CTOR(Aymara, AnyTerritory, QLocale::English, QLocale::UnitedKingdom)
     TEST_CTOR(Aymara, France, QLocale::English, QLocale::UnitedKingdom)
@@ -527,6 +514,7 @@ void tst_QLocale::defaulted_ctor()
     TEST_CTOR("ru_Cyrl", Russian, CyrillicScript, RussianFederation)
 
 #undef TEST_CTOR
+#undef CHECK_DEFAULT
 }
 
 #if QT_CONFIG(process)
