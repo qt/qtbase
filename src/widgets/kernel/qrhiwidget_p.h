@@ -45,7 +45,7 @@ public:
     QRhiWidget::TextureFormat widgetTextureFormat = QRhiWidget::TextureFormat::RGBA8;
     QRhiTexture::Format rhiTextureFormat = QRhiTexture::RGBA8;
     int samples = 1;
-    QSize explicitSize;
+    QSize fixedSize;
     bool autoRenderTarget = true;
     bool mirrorVertically = false;
     QBackingStoreRhiSupport offscreenRenderer;

@@ -24,8 +24,8 @@ int main(int argc, char **argv)
 
     ExampleRhiWidget *rhiWidget = new ExampleRhiWidget;
     QLabel *overlayLabel = new QLabel(rhiWidget);
-    overlayLabel->setText(QLatin1String("This is a\nsemi-transparent\n overlay widget\n"
-                                        "placed on top of\nthe QRhiWidget."));
+    overlayLabel->setText(QObject::tr("This is a\nsemi-transparent\n overlay widget\n"
+                                      "placed on top of\nthe QRhiWidget."));
     overlayLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     overlayLabel->setAutoFillBackground(true);
     QPalette semiTransparent(QColor(255, 0, 0, 64));
@@ -44,9 +44,9 @@ int main(int argc, char **argv)
         overlayLabel->setGeometry(rhiWidget->width() / 2 - w / 2, rhiWidget->height() / 2 - h / 2, w, h);
     });
 
-    QTextEdit *edit = new QTextEdit(QLatin1String("QRhiWidget!<br><br>"
-                                                  "The cube is textured with QPainter-generated content.<br><br>"
-                                                  "Regular, non-native widgets on top work just fine."));
+    QTextEdit *edit = new QTextEdit(QObject::tr("QRhiWidget!<br><br>"
+                                                "The cube is textured with QPainter-generated content.<br><br>"
+                                                "Regular, non-native widgets on top work just fine."));
     QObject::connect(edit, &QTextEdit::textChanged, edit, [edit, rhiWidget] {
         rhiWidget->setCubeTextureText(edit->toPlainText());
     });
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     });
 
     QHBoxLayout *sliderLayout = new QHBoxLayout;
-    sliderLayout->addWidget(new QLabel(QLatin1String("Cube rotation")));
+    sliderLayout->addWidget(new QLabel(QObject::tr("Cube rotation")));
     sliderLayout->addWidget(slider);
     layout->addLayout(sliderLayout);
 
@@ -70,25 +70,25 @@ int main(int argc, char **argv)
     QLabel *apiLabel = new QLabel;
     btnLayout->addWidget(apiLabel);
     QObject::connect(rhiWidget, &ExampleRhiWidget::rhiChanged, rhiWidget, [apiLabel](const QString &apiName) {
-        apiLabel->setText(QLatin1String("Using QRhi on ") + apiName);
+        apiLabel->setText(QObject::tr("Using QRhi on ") + apiName);
     });
 
-    QPushButton *btnMakeWindow = new QPushButton(QLatin1String("Make top-level window"));
+    QPushButton *btnMakeWindow = new QPushButton(QObject::tr("Make top-level window"));
     QObject::connect(btnMakeWindow, &QPushButton::clicked, btnMakeWindow, [rhiWidget, btnMakeWindow, layout] {
         if (rhiWidget->parentWidget()) {
             rhiWidget->setParent(nullptr);
             rhiWidget->setAttribute(Qt::WA_DeleteOnClose, true);
             rhiWidget->show();
-            btnMakeWindow->setText(QLatin1String("Make child widget"));
+            btnMakeWindow->setText(QObject::tr("Make child widget"));
         } else {
             rhiWidget->setAttribute(Qt::WA_DeleteOnClose, false);
             layout->addWidget(rhiWidget);
-            btnMakeWindow->setText(QLatin1String("Make top-level window"));
+            btnMakeWindow->setText(QObject::tr("Make top-level window"));
         }
     });
     btnLayout->addWidget(btnMakeWindow);
 
-    QPushButton *btn = new QPushButton(QLatin1String("Grab to image"));
+    QPushButton *btn = new QPushButton(QObject::tr("Grab to image"));
     QObject::connect(btn, &QPushButton::clicked, btn, [rhiWidget] {
         QImage image = rhiWidget->grabFramebuffer();
         qDebug() << "Got image" << image;
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
     });
     btnLayout->addWidget(btn);
 
-    QCheckBox *cbMsaa = new QCheckBox(QLatin1String("Use 4x MSAA"));
+    QCheckBox *cbMsaa = new QCheckBox(QObject::tr("Use 4x MSAA"));
     QObject::connect(cbMsaa, &QCheckBox::stateChanged, cbMsaa, [cbMsaa, rhiWidget] {
         if (cbMsaa->isChecked())
             rhiWidget->setSampleCount(4);
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
     });
     btnLayout->addWidget(cbMsaa);
 
-    QCheckBox *cbOvberlay = new QCheckBox(QLatin1String("Show overlay widget"));
+    QCheckBox *cbOvberlay = new QCheckBox(QObject::tr("Show overlay widget"));
     QObject::connect(cbOvberlay, &QCheckBox::stateChanged, cbOvberlay, [cbOvberlay, overlayLabel] {
         if (cbOvberlay->isChecked())
             overlayLabel->setVisible(true);
@@ -121,28 +121,28 @@ int main(int argc, char **argv)
     });
     btnLayout->addWidget(cbOvberlay);
 
-    QCheckBox *cbFlip = new QCheckBox(QLatin1String("Flip"));
+    QCheckBox *cbFlip = new QCheckBox(QObject::tr("Flip"));
     QObject::connect(cbFlip, &QCheckBox::stateChanged, cbOvberlay, [cbFlip, rhiWidget] {
         rhiWidget->setMirrorVertically(cbFlip->isChecked());
     });
     btnLayout->addWidget(cbFlip);
 
-    QCheckBox *cbExplicitSize = new QCheckBox(QLatin1String("Use explicit size"));
-    btnLayout->addWidget(cbExplicitSize);
-    QSlider *explicitSizeSlider = new QSlider(Qt::Horizontal);
-    explicitSizeSlider->setMinimum(16);
-    explicitSizeSlider->setMaximum(512);
-    btnLayout->addWidget(explicitSizeSlider);
+    QCheckBox *cbFixedSize = new QCheckBox(QObject::tr("Use fixed color buffer size"));
+    btnLayout->addWidget(cbFixedSize);
+    QSlider *fixedSizeSlider = new QSlider(Qt::Horizontal);
+    fixedSizeSlider->setMinimum(16);
+    fixedSizeSlider->setMaximum(512);
+    btnLayout->addWidget(fixedSizeSlider);
 
-    QObject::connect(cbExplicitSize, &QCheckBox::stateChanged, cbExplicitSize, [cbExplicitSize, explicitSizeSlider, rhiWidget] {
-        if (cbExplicitSize->isChecked())
-            rhiWidget->setExplicitSize(QSize(explicitSizeSlider->value(), explicitSizeSlider->value()));
+    QObject::connect(cbFixedSize, &QCheckBox::stateChanged, cbFixedSize, [cbFixedSize, fixedSizeSlider, rhiWidget] {
+        if (cbFixedSize->isChecked())
+            rhiWidget->setFixedColorBufferSize(QSize(fixedSizeSlider->value(), fixedSizeSlider->value()));
         else
-            rhiWidget->setExplicitSize(QSize());
+            rhiWidget->setFixedColorBufferSize(QSize());
     });
-    QObject::connect(explicitSizeSlider, &QSlider::valueChanged, explicitSizeSlider, [explicitSizeSlider, cbExplicitSize, rhiWidget] {
-        if (cbExplicitSize->isChecked())
-            rhiWidget->setExplicitSize(QSize(explicitSizeSlider->value(), explicitSizeSlider->value()));
+    QObject::connect(fixedSizeSlider, &QSlider::valueChanged, fixedSizeSlider, [fixedSizeSlider, cbFixedSize, rhiWidget] {
+        if (cbFixedSize->isChecked())
+            rhiWidget->setFixedColorBufferSize(QSize(fixedSizeSlider->value(), fixedSizeSlider->value()));
     });
 
     // Exit when the detached window is closed; there is not much we can do
