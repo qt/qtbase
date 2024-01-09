@@ -2808,15 +2808,16 @@ void QWindowsWindow::calculateFullFrameMargins()
     const auto systemMargins = testFlag(DisableNonClientScaling)
         ? QWindowsGeometryHint::frameOnPrimaryScreen(window(), m_data.hwnd)
         : frameMargins_sys();
+    const QMargins actualMargins = systemMargins + customMargins();
 
     const int yDiff = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top);
-    const bool typicalFrame = (systemMargins.left() == systemMargins.right())
-            && (systemMargins.right() == systemMargins.bottom());
+    const bool typicalFrame = (actualMargins.left() == actualMargins.right())
+            && (actualMargins.right() == actualMargins.bottom());
 
     const QMargins adjustedMargins = typicalFrame ?
-          QMargins(systemMargins.left(), (yDiff - systemMargins.bottom()),
-                   systemMargins.right(), systemMargins.bottom())
-            : systemMargins + customMargins();
+          QMargins(actualMargins.left(), (yDiff - actualMargins.bottom()),
+                   actualMargins.right(), actualMargins.bottom())
+            : actualMargins;
 
     setFullFrameMargins(adjustedMargins);
 }
