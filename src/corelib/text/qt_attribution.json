@@ -34,11 +34,9 @@
  world's languages, with the largest and most extensive standard repository of locale data
  available.",
     "Homepage": "https://cldr.unicode.org/",
-    "Version": "v43",
-    "Comment": { "License": "as specified in https://spdx.org/licenses/Unicode-DFS-2016.html" },
-    "License": "Unicode License Agreement - Data Files and Software (2016)",
-    "LicenseId": "Unicode-DFS-2016",
-    "LicenseFile": "UNICODE_LICENSE.txt",
-    "Copyright": "Copyright (C) 1991-2022 Unicode, Inc."
+    "Version": "v44.1",
+    "License": "Unicode License V3",
+    "LicenseId": "UNICODE-3.0",
+    "Copyright": "Copyright (C) 2004-2023 Unicode, Inc."
 }
 ]
