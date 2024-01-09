@@ -42,7 +42,7 @@ void tst_QTextImageHandler::loadAtNImages_data()
     QTest::addColumn<QString>("imageFile");
 
     QTest::addRow("file") << QFINDTESTDATA("data/image.png");
-    QTest::addRow("file_url") << QString("file:/") + QFINDTESTDATA("data/image.png");
+    QTest::addRow("file_url") << QUrl::fromLocalFile(QFINDTESTDATA("data/image.png")).toString();
     QTest::addRow("resource") << ":/data/image.png";
     QTest::addRow("qrc_url") << "qrc:/data/image.png";
 }
