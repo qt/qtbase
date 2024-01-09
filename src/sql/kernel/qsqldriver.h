@@ -9,6 +9,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
 
+// clazy:excludeall=qproperty-without-notify
 QT_BEGIN_NAMESPACE
 
 
@@ -53,6 +54,8 @@ public:
         DB2,
         MimerSQL,
     };
+
+    Q_PROPERTY(QSql::NumericalPrecisionPolicy numericalPrecisionPolicy READ numericalPrecisionPolicy WRITE setNumericalPrecisionPolicy)
 
     explicit QSqlDriver(QObject *parent = nullptr);
     ~QSqlDriver();

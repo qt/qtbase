@@ -728,16 +728,7 @@ QStringList QSqlDriver::subscribedToNotifications() const
 }
 
 /*!
-    \since 4.6
-
-    Sets the default numerical precision policy used by queries created
-    by this driver to \a precisionPolicy.
-
-    Note: Setting the default precision policy to \a precisionPolicy
-    doesn't affect any currently active queries.
-
-    \sa QSql::NumericalPrecisionPolicy, numericalPrecisionPolicy(),
-    QSqlQuery::setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy()
+    Sets \l numericalPrecisionPolicy to \a precisionPolicy.
 */
 void QSqlDriver::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy)
 {
@@ -746,12 +737,17 @@ void QSqlDriver::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy prec
 }
 
 /*!
-    \since 4.6
+    \property QSqlDriver::numericalPrecisionPolicy
+    \since 6.8
 
-    Returns the current default precision policy for the database connection.
+    This property holds the precision policy for the database connection.
+    \note Setting the precision policy doesn't affect any currently active queries.
 
-    \sa QSql::NumericalPrecisionPolicy, setNumericalPrecisionPolicy(),
+    \sa QSql::NumericalPrecisionPolicy,
     QSqlQuery::numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy()
+*/
+/*!
+    Returns the \l numericalPrecisionPolicy.
 */
 QSql::NumericalPrecisionPolicy QSqlDriver::numericalPrecisionPolicy() const
 {
