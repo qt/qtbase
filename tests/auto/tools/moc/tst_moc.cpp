@@ -4279,6 +4279,8 @@ void tst_Moc::mocJsonOutput()
             return "Error waiting for diff process to finish.";
         return diffProc.readAllStandardOutput();
 #else
+        Q_UNUSED(actual);
+        Q_UNUSED(expected);
         return "Cannot launch diff. Please check allmocs.json and allmocs_baseline.json on disk.";
 #endif
     };
