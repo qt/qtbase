@@ -32,8 +32,8 @@ QT_BEGIN_NAMESPACE
     reimplement the virtual functions initialize() and render().
 
     The size of the texture will by default adapt to the size of the widget. If
-    a fixed size is preferred, set an explicit size specified in pixels by
-    calling setExplicitSize().
+    a fixed size is preferred, set a fixed size specified in pixels by calling
+    setFixedColorBufferSize().
 
     In addition to the texture serving as the color buffer, a depth/stencil
     buffer and a render target binding these together is maintained implicitly
@@ -148,8 +148,8 @@ QT_BEGIN_NAMESPACE
     \value OpenGL
     \value Metal
     \value Vulkan
-    \value D3D11
-    \value D3D12
+    \value Direct3D11
+    \value Direct3D12
     \value Null
 
     \sa QRhi
@@ -528,7 +528,7 @@ void QRhiWidgetPrivate::ensureTexture(bool *changed)
 {
     Q_Q(QRhiWidget);
 
-    QSize newSize = explicitSize;
+    QSize newSize = fixedSize;
     if (newSize.isEmpty())
         newSize = q->size() * q->devicePixelRatio();
 
@@ -702,12 +702,13 @@ QRhiWidget::Api QRhiWidget::api() const
     case QPlatformBackingStoreRhiConfig::Vulkan:
         return Api::Vulkan;
     case QPlatformBackingStoreRhiConfig::D3D11:
-        return Api::D3D11;
+        return Api::Direct3D11;
     case QPlatformBackingStoreRhiConfig::D3D12:
-        return Api::D3D12;
-    default:
+        return Api::Direct3D12;
+    case QPlatformBackingStoreRhiConfig::Null:
         return Api::Null;
     }
+    Q_UNREACHABLE_RETURN(Api::Null);
 }
 
 /*!
@@ -726,7 +727,7 @@ QRhiWidget::Api QRhiWidget::api() const
     backend to render. Attempting to set another value, or to add another
     QRhiWidget with a different \a api will not function as expected.
 
-    \sa setTextureFormat(), setDebugLayer(), api()
+    \sa setColorBufferFormat(), setDebugLayer(), api()
  */
 void QRhiWidget::setApi(Api api)
 {
@@ -741,10 +742,10 @@ void QRhiWidget::setApi(Api api)
     case Api::Vulkan:
         d->config.setApi(QPlatformBackingStoreRhiConfig::Vulkan);
         break;
-    case Api::D3D11:
+    case Api::Direct3D11:
         d->config.setApi(QPlatformBackingStoreRhiConfig::D3D11);
         break;
-    case Api::D3D12:
+    case Api::Direct3D12:
         d->config.setApi(QPlatformBackingStoreRhiConfig::D3D12);
         break;
     case Api::Null:
@@ -787,13 +788,13 @@ void QRhiWidget::setDebugLayer(bool enable)
 }
 
 /*!
-    \property QRhiWidget::textureFormat
+    \property QRhiWidget::colorBufferFormat
 
-    This property controls the texture format for the texture used as the color
-    buffer. The default value is TextureFormat::RGBA8. QRhiWidget supports
-    rendering to a subset of the formats supported by \l QRhiTexture. Only
-    formats that are reported as supported from
-    \l QRhi::isTextureFormatSupported() should be specified, rendering will not be
+    This property controls the texture format of the texture (or renderbuffer)
+    used as the color buffer. The default value is TextureFormat::RGBA8.
+    QRhiWidget supports rendering to a subset of the formats supported by \l
+    QRhiTexture. Only formats that are reported as supported from \l
+    QRhi::isTextureFormatSupported() should be specified, rendering will not be
     functional otherwise.
 
     \note Setting a new format when the widget is already initialized and has
@@ -805,13 +806,13 @@ void QRhiWidget::setDebugLayer(bool enable)
     creating new ones.
  */
 
-QRhiWidget::TextureFormat QRhiWidget::textureFormat() const
+QRhiWidget::TextureFormat QRhiWidget::colorBufferFormat() const
 {
     Q_D(const QRhiWidget);
     return d->widgetTextureFormat;
 }
 
-void QRhiWidget::setTextureFormat(TextureFormat format)
+void QRhiWidget::setColorBufferFormat(TextureFormat format)
 {
     Q_D(QRhiWidget);
     if (d->widgetTextureFormat != format) {
@@ -830,7 +831,7 @@ void QRhiWidget::setTextureFormat(TextureFormat format)
             d->rhiTextureFormat = QRhiTexture::RGB10A2;
             break;
         }
-        emit textureFormatChanged(format);
+        emit colorBufferFormatChanged(format);
         update();
     }
 }
@@ -884,7 +885,7 @@ void QRhiWidget::setSampleCount(int samples)
 }
 
 /*!
-    \property QRhiWidget::explicitSize
+    \property QRhiWidget::fixedColorBufferSize
 
     The fixed size, in pixels, of the QRhiWidget's associated texture. Relevant
     when a fixed texture size is desired that does not depend on the widget's
@@ -902,18 +903,18 @@ void QRhiWidget::setSampleCount(int samples)
     size} * \c{device pixel ratio}).
  */
 
-QSize QRhiWidget::explicitSize() const
+QSize QRhiWidget::fixedColorBufferSize() const
 {
     Q_D(const QRhiWidget);
-    return d->explicitSize;
+    return d->fixedSize;
 }
 
-void QRhiWidget::setExplicitSize(const QSize &pixelSize)
+void QRhiWidget::setFixedColorBufferSize(QSize pixelSize)
 {
     Q_D(QRhiWidget);
-    if (d->explicitSize != pixelSize) {
-        d->explicitSize = pixelSize;
-        emit explicitSizeChanged(pixelSize);
+    if (d->fixedSize != pixelSize) {
+        d->fixedSize = pixelSize;
+        emit fixedColorBufferSizeChanged(pixelSize);
         update();
     }
 }
@@ -945,31 +946,38 @@ void QRhiWidget::setMirrorVertically(bool enabled)
 }
 
 /*!
-    \property QRhiWidget::autoRenderTarget
+    \return the current setting for automatic depth-stencil buffer and render
+    target maintenance.
 
-    This property controls if a depth-stencil QRhiRenderBuffer and a
-    QRhiTextureRenderTarget is created and maintained automatically by the
-    widget. The default value is \c true.
+    By default the value is \c true.
 
-    In automatic mode, the size and sample count of the depth-stencil buffer
-    follows the color buffer texture's settings. In non-automatic mode,
-    renderTarget() and depthStencilBuffer() always return \nullptr and it is
-    then up to the application's implementation of initialize() to take care of
-    setting up and managing these objects.
+    \sa setAutoRenderTarget()
  */
-
 bool QRhiWidget::isAutoRenderTargetEnabled() const
 {
     Q_D(const QRhiWidget);
     return d->autoRenderTarget;
 }
 
+/*!
+    Controls if a depth-stencil QRhiRenderBuffer and a QRhiTextureRenderTarget
+    is created and maintained automatically by the widget. The default value is
+    \c true.
+
+    In automatic mode, the size and sample count of the depth-stencil buffer
+    follows the color buffer texture's settings. In non-automatic mode,
+    renderTarget() and depthStencilBuffer() always return \nullptr and it is
+    then up to the application's implementation of initialize() to take care of
+    setting up and managing these objects.
+
+    Call this function with \a enabled set to \c false early on, for example in
+    the derived class' constructor, to disable the automatic mode.
+ */
 void QRhiWidget::setAutoRenderTarget(bool enabled)
 {
     Q_D(QRhiWidget);
     if (d->autoRenderTarget != enabled) {
         d->autoRenderTarget = enabled;
-        emit autoRenderTargetChanged(enabled);
         update();
     }
 }
@@ -982,7 +990,7 @@ void QRhiWidget::setAutoRenderTarget(bool enabled)
 
     The returned QImage will have a format of QImage::Format_RGBA8888,
     QImage::Format_RGBA16FPx4, QImage::Format_RGBA32FPx4, or
-    QImage::Format_BGR30 depending on textureFormat().
+    QImage::Format_BGR30, depending on colorBufferFormat().
 
     QRhiWidget does not know the renderer's approach to blending and
     composition, and therefore cannot know if the output has alpha
@@ -1004,7 +1012,7 @@ void QRhiWidget::setAutoRenderTarget(bool enabled)
     go through the rest of QWidget infrastructure but can right away trigger
     rendering a new frame and then do the readback.
 
-    \sa setTextureFormat()
+    \sa setColorBufferFormat()
  */
 QImage QRhiWidget::grabFramebuffer() const
 {

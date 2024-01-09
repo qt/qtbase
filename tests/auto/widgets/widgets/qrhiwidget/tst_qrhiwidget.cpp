@@ -31,8 +31,8 @@ private slots:
     void simple();
     void msaa_data();
     void msaa();
-    void explicitSize_data();
-    void explicitSize();
+    void fixedSize_data();
+    void fixedSize();
     void autoRt_data();
     void autoRt();
     void reparent_data();
@@ -91,12 +91,12 @@ void tst_QRhiWidget::testData()
 #endif
 
 #ifdef Q_OS_WIN
-    QTest::newRow("D3D11") << QRhiWidget::Api::D3D11;
+    QTest::newRow("D3D11") << QRhiWidget::Api::Direct3D11;
     // D3D12 needs to be probed too due to being disabled if the SDK headers
     // are too old (clang, mingw).
     QRhiD3D12InitParams d3d12InitParams;
     if (QRhi::probe(QRhi::D3D12, &d3d12InitParams))
-        QTest::newRow("D3D12") << QRhiWidget::Api::D3D12;
+        QTest::newRow("D3D12") << QRhiWidget::Api::Direct3D12;
 #endif
 }
 
@@ -225,6 +225,8 @@ public:
     std::unique_ptr<QRhiGraphicsPipeline> m_pipeline;
     QRhiTextureRenderTarget *m_rt = nullptr;   // used when autoRenderTarget is off
     QRhiRenderPassDescriptor *m_rp = nullptr;  // used when autoRenderTarget is off
+
+    friend class tst_QRhiWidget;
 };
 
 void SimpleRhiWidget::initialize(QRhiCommandBuffer *cb)
@@ -347,7 +349,7 @@ void tst_QRhiWidget::simple()
     QCOMPARE(errorSpy.count(), 0);
 
     QCOMPARE(rhiWidget->sampleCount(), 1);
-    QCOMPARE(rhiWidget->textureFormat(), QRhiWidget::TextureFormat::RGBA8);
+    QCOMPARE(rhiWidget->colorBufferFormat(), QRhiWidget::TextureFormat::RGBA8);
     QVERIFY(rhiWidget->isAutoRenderTargetEnabled());
 
     // Pull out the QRhiTexture (we know colorTexture() and rhi() and friends
@@ -372,10 +374,10 @@ void tst_QRhiWidget::simple()
     case QRhiWidget::Api::Vulkan:
         QCOMPARE(rhi->backend(), QRhi::Vulkan);
         break;
-    case QRhiWidget::Api::D3D11:
+    case QRhiWidget::Api::Direct3D11:
         QCOMPARE(rhi->backend(), QRhi::D3D11);
         break;
-    case QRhiWidget::Api::D3D12:
+    case QRhiWidget::Api::Direct3D12:
         QCOMPARE(rhi->backend(), QRhi::D3D12);
         break;
     case QRhiWidget::Api::Null:
@@ -462,7 +464,7 @@ void tst_QRhiWidget::msaa()
     QCOMPARE(errorSpy.count(), 0);
 
     QCOMPARE(rhiWidget->sampleCount(), 4);
-    QCOMPARE(rhiWidget->textureFormat(), QRhiWidget::TextureFormat::RGBA8);
+    QCOMPARE(rhiWidget->colorBufferFormat(), QRhiWidget::TextureFormat::RGBA8);
     QVERIFY(!rhiWidget->colorTexture());
     QVERIFY(rhiWidget->msaaColorBuffer());
     QVERIFY(rhiWidget->depthStencilBuffer());
@@ -515,12 +517,12 @@ void tst_QRhiWidget::msaa()
     QVERIFY(rhiWidget->msaaColorBuffer());
 }
 
-void tst_QRhiWidget::explicitSize_data()
+void tst_QRhiWidget::fixedSize_data()
 {
     testData();
 }
 
-void tst_QRhiWidget::explicitSize()
+void tst_QRhiWidget::fixedSize()
 {
     QFETCH(QRhiWidget::Api, api);
 
@@ -532,7 +534,7 @@ void tst_QRhiWidget::explicitSize()
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(rhiWidget);
 
-    rhiWidget->setExplicitSize(QSize(320, 200));
+    rhiWidget->setFixedColorBufferSize(QSize(320, 200));
 
     QWidget w;
     w.setLayout(layout);
@@ -552,7 +554,7 @@ void tst_QRhiWidget::explicitSize()
     QVERIFY(!rhiWidget->resolveTexture());
 
     frameSpy.clear();
-    rhiWidget->setExplicitSize(640, 480); // should also trigger update()
+    rhiWidget->setFixedColorBufferSize(640, 480); // should also trigger update()
     QTRY_VERIFY(frameSpy.count() > 0);
 
     QVERIFY(rhiWidget->colorTexture());
@@ -561,7 +563,7 @@ void tst_QRhiWidget::explicitSize()
     QCOMPARE(rhiWidget->depthStencilBuffer()->pixelSize(), QSize(640, 480));
 
     frameSpy.clear();
-    rhiWidget->setExplicitSize(QSize());
+    rhiWidget->setFixedColorBufferSize(QSize());
     QTRY_VERIFY(frameSpy.count() > 0);
 
     QVERIFY(rhiWidget->colorTexture());
@@ -611,7 +613,7 @@ void tst_QRhiWidget::autoRt()
 
     frameSpy.clear();
     // do something that triggers creating a new backing texture
-    rhiWidget->setExplicitSize(QSize(320, 200));
+    rhiWidget->setFixedColorBufferSize(QSize(320, 200));
     QTRY_VERIFY(frameSpy.count() > 0);
 
     QVERIFY(rhiWidget->colorTexture());
