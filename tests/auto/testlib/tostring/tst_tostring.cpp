@@ -129,7 +129,7 @@ void tst_toString::chrono_duration_data()
     using decades = duration<int, std::ratio_multiply<years::period, std::deca>>; // decayears
     using centuries = duration<int16_t, std::ratio_multiply<years::period, std::hecto>>; // hectoyears
     using millennia = duration<int16_t, std::ratio_multiply<years::period, std::kilo>>; // kiloyears
-    using gigayears = duration<int8_t, std::ratio_multiply<years::period, std::giga>>;
+    using gigayears [[maybe_unused]] = duration<int8_t, std::ratio_multiply<years::period, std::giga>>;
     using fortnights = duration<int, std::ratio_multiply<days::period, std::ratio<14>>>;
     using microfortnights = duration<int64_t, std::ratio_multiply<fortnights::period, std::micro>>;
     using meter_per_light = duration<int64_t, std::ratio<1, 299'792'458>>;
@@ -186,12 +186,12 @@ void tst_toString::chrono_duration_data()
 
     // real floting point
     // current (2023) best estimate is 13.813 ± 0.038 billion years (Plank Collaboration)
-    using universe = duration<double, std::ratio_multiply<std::ratio<13'813'000'000>, years::period>>;
+    using universe [[maybe_unused]] = duration<double, std::ratio_multiply<std::ratio<13'813'000'000>, years::period>>;
     using fpksec = duration<double, std::kilo>;
     using fpsec = duration<double>;
     using fpmsec = duration<double, std::milli>;
     using fpnsec = duration<double, std::nano>;
-    using fpGyr = duration<double, std::ratio_multiply<years::period, std::giga>>;
+    using fpGyr [[maybe_unused]] = duration<double, std::ratio_multiply<years::period, std::giga>>;
 
     ADD_ROW("1.0s", fpsec{1}, "1s");
     ADD_ROW("1.5s", fpsec{1.5}, "1.5s");
