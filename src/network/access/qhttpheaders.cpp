@@ -69,41 +69,6 @@ Q_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
     the values.
 */
 
-// A clarification on case-sensitivity:
-// - Header *names*  are case-insensitive; Content-Type and content-type are considered equal
-// - Header *values* are case-sensitive
-// (In addition, the HTTP/2 and HTTP/3 standards mandate that all headers must be lower-cased when
-// encoded into transmission)
-struct Header {
-    QByteArray name;
-    QByteArray value;
-
-private:
-    friend bool operator==(const Header &lhs, const Header &rhs) noexcept
-    {
-        return lhs.value == rhs.value && lhs.name == rhs.name;
-    }
-};
-
-class QHttpHeadersPrivate : public QSharedData
-{
-public:
-    QHttpHeadersPrivate() = default;
-
-    QList<Header> headers;
-};
-
-QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QHttpHeadersPrivate)
-template <> void QExplicitlySharedDataPointer<QHttpHeadersPrivate>::detach()
-{
-    if (!d) {
-        d = new QHttpHeadersPrivate();
-        d->ref.ref();
-    } else if (d->ref.loadRelaxed() != 1) {
-        detach_helper();
-    }
-}
-
 // This list is from IANA HTTP Field Name Registry
 // https://www.iana.org/assignments/http-fields
 // It contains entries that are either "permanent"
@@ -477,6 +442,41 @@ static constexpr auto headerNames = qOffsetStringArray(
     \value ProtocolInfo
     \value ProtocolQuery
 */
+
+// A clarification on case-sensitivity:
+// - Header *names*  are case-insensitive; Content-Type and content-type are considered equal
+// - Header *values* are case-sensitive
+// (In addition, the HTTP/2 and HTTP/3 standards mandate that all headers must be lower-cased when
+// encoded into transmission)
+struct Header {
+    QByteArray name;
+    QByteArray value;
+
+private:
+    friend bool operator==(const Header &lhs, const Header &rhs) noexcept
+    {
+        return lhs.value == rhs.value && lhs.name == rhs.name;
+    }
+};
+
+class QHttpHeadersPrivate : public QSharedData
+{
+public:
+    QHttpHeadersPrivate() = default;
+
+    QList<Header> headers;
+};
+
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QHttpHeadersPrivate)
+template <> void QExplicitlySharedDataPointer<QHttpHeadersPrivate>::detach()
+{
+    if (!d) {
+        d = new QHttpHeadersPrivate();
+        d->ref.ref();
+    } else if (d->ref.loadRelaxed() != 1) {
+        detach_helper();
+    }
+}
 
 /*!
     Creates a new QHttpHeaders object.
