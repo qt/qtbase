@@ -204,7 +204,10 @@ class LocaleScanner (object):
             for elt in self.__find(xpath):
                 try:
                     if draft is None or elt.draft <= draft:
-                        return elt.dom.firstChild.nodeValue
+                        value = elt.dom.firstChild.nodeValue
+                        # The github version of CLDR uses '↑↑↑' to indicate "inherit"
+                        if value != '↑↑↑':
+                            return value
                 except (AttributeError, KeyError):
                     pass
         except Error as e:
