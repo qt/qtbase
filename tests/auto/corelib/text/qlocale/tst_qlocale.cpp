@@ -483,7 +483,7 @@ void tst_QLocale::defaulted_ctor()
     TEST_CTOR("en-GB", English, UnitedKingdom)
     TEST_CTOR("en-GB@bla", English, UnitedKingdom)
     TEST_CTOR("eo", Esperanto, World)
-    TEST_CTOR("yi", Yiddish, World)
+    TEST_CTOR("yi", Yiddish, Ukraine)
 
     TEST_CTOR("no", NorwegianBokmal, Norway)
     TEST_CTOR("nb", NorwegianBokmal, Norway)
@@ -926,13 +926,13 @@ void tst_QLocale::toReal_data()
     QTest::newRow("se_NO 4x-3") // Only first character of exponent
         << u"se_NO"_s << u"4\u00b7\u2212" "03"_s << false << 0.0;
     QTest::newRow("ar_EG 4e-3") // Arabic, Egypt
-        << u"ar_EG"_s << u"\u0664\u0627\u0633\u061c-\u0660\u0663"_s << true << 4e-3;
+        << u"ar_EG"_s << u"\u0664\u0623\u0633\u061c-\u0660\u0663"_s << true << 4e-3;
     QTest::newRow("ar_EG 4e!3") // Only first character of sign:
-        << u"ar_EG"_s << u"\u0664\u0627\u0633\u061c\u0660\u0663"_s << false << 0.0;
+        << u"ar_EG"_s << u"\u0664\u0623\u0633\u061c\u0660\u0663"_s << false << 0.0;
     QTest::newRow("ar_EG 4x-3") // Only first character of exponent
-        << u"ar_EG"_s << u"\u0664\u0627\u061c-\u0660\u0663"_s << false << 0.0;
+        << u"ar_EG"_s << u"\u0664\u0623\u061c-\u0660\u0663"_s << false << 0.0;
     QTest::newRow("ar_EG 4x!3") // Only first character of exponent and sign
-        << u"ar_EG"_s << u"\u0664\u0627\u061c\u0660\u0663"_s << false << 0.0;
+        << u"ar_EG"_s << u"\u0664\u0623\u061c\u0660\u0663"_s << false << 0.0;
     QTest::newRow("fa_IR 4e-3") // Farsi, Iran
         << u"fa_IR"_s << u"\u06f4\u00d7\u06f1\u06f0^\u200e\u2212\u06f0\u06f3"_s << true << 4e-3;
     QTest::newRow("fa_IR 4e!3") // Only first character of sign:
@@ -1272,9 +1272,9 @@ void tst_QLocale::doubleToString_data()
     QTest::newRow("se 0.000003945 g 1") // Northern Sami
         << u"se"_s << u"4\u00b7" "10^\u2212" "06"_s << 0.000003945 << 'g' << 1;
     QTest::newRow("ar_EG 0.000003945 g 1") // Arabic, Egypt (among others)
-        << u"ar_EG"_s << u"\u0664\u0627\u0633\u061c-\u0660\u0666"_s << 0.000003945 << 'g' << 1;
+        << u"ar_EG"_s << u"\u0664\u0623\u0633\u061c-\u0660\u0666"_s << 0.000003945 << 'g' << 1;
     QTest::newRow("ar_EG 3945e3 g 1")
-        << u"ar_EG"_s << u"\u0664\u0627\u0633\u061c+\u0660\u0666"_s << 3945e3 << 'g' << 1;
+        << u"ar_EG"_s << u"\u0664\u0623\u0633\u061c+\u0660\u0666"_s << 3945e3 << 'g' << 1;
     QTest::newRow("fa_IR 0.000003945 g 1") // Farsi, Iran (same for Afghanistan)
         << u"fa_IR"_s << u"\u06f4\u00d7\u06f1\u06f0^\u200e\u2212\u06f0\u06f6"_s
         << 0.000003945 << 'g' << 1;
@@ -2598,7 +2598,7 @@ void tst_QLocale::doubleRoundTrip_data()
     QTest::newRow("se_NO 4e-06 g") // Northern Sami, Norway
         << u"se_NO"_s << u"4\u00b7" "10^\u2212" "06"_s << 'g';
     QTest::newRow("ar_EG 4e-06 g") // Arabic, Egypt
-        << u"ar_EG"_s << u"\u0664\u0627\u0633\u061c-\u0660\u0666"_s << 'g';
+        << u"ar_EG"_s << u"\u0664\u0623\u0633\u061c-\u0660\u0666"_s << 'g';
     QTest::newRow("fa_IR 4e-06 g") // Farsi, Iran
         << u"fa_IR"_s << u"\u06f4\u00d7\u06f1\u06f0^\u200e\u2212\u06f0\u06f6"_s << 'g';
 }
@@ -3230,7 +3230,8 @@ void tst_QLocale::ampm_data()
     QTest::newRow("tr_TR") << QString::fromUtf8("\303\226\303\226")
                            << QString::fromUtf8("\303\226\123");
     QTest::newRow("id_ID") << QStringLiteral("AM") << QStringLiteral("PM");
-    QTest::newRow("ta_LK") << QString::fromUtf8("முற்பகல்") << QString::fromUtf8("பிற்பகல்");
+    // CLDR v44 made Tamil's AM/PM inconsistent; AM was "முற்பகல்" before.
+    QTest::newRow("ta_LK") << QString::fromUtf8("AM") << QString::fromUtf8("பிற்பகல்");
 }
 
 void tst_QLocale::ampm()
