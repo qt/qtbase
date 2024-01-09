@@ -511,11 +511,11 @@ template <typename LeftType, typename RightType,
           Qt::if_floating_point<RightType> = true>
 void testOrderForTypes()
 {
-    LeftType lNeg{-1.0};
-    LeftType lPos{1.0};
+    constexpr auto lNeg = LeftType(-1);
+    constexpr auto lPos = LeftType( 1);
 
-    RightType rNeg{-1.0};
-    RightType rPos{1.0};
+    constexpr auto rNeg = RightType(-1);
+    constexpr auto rPos = RightType( 1);
 
     QCOMPARE_EQ(Qt::compareThreeWay(lNeg, rPos), Qt::partial_ordering::less);
     QCOMPARE_EQ(Qt::compareThreeWay(lPos, rNeg), Qt::partial_ordering::greater);
@@ -584,8 +584,8 @@ void testOrderForTypes()
     IntType l0{0};
     IntType l1{1};
 
-    FloatType r0{0.0};
-    FloatType r1{1.0};
+    constexpr FloatType r0{0};
+    constexpr FloatType r1{1};
     FloatType rNaN{std::numeric_limits<FloatType>::quiet_NaN()};
 
     QCOMPARE_EQ(Qt::compareThreeWay(l0, r1), Qt::partial_ordering::less);
@@ -676,8 +676,8 @@ void tst_QCompareHelpers::builtinOrder()
     {
         // Cannot use TEST_BUILTIN here, because std::numeric_limits are not defined
         // for QtPrivate::NativeFloat16Type.
-        const QtPrivate::NativeFloat16Type smaller{1.0};
-        const QtPrivate::NativeFloat16Type bigger{2.0};
+        constexpr auto smaller = QtPrivate::NativeFloat16Type(1);
+        constexpr auto bigger  = QtPrivate::NativeFloat16Type(2);
         // native vs native
         QCOMPARE_EQ(Qt::compareThreeWay(smaller, smaller), Qt::partial_ordering::equivalent);
         QCOMPARE_EQ(Qt::compareThreeWay(smaller, bigger), Qt::partial_ordering::less);
