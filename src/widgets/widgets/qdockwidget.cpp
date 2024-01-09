@@ -1843,17 +1843,16 @@ QDebug operator<<(QDebug dbg, const QDockWidget *dockWidget)
 {
     QDebugStateSaver saver(dbg);
     dbg.nospace();
-    return dockWidget ? dbg << *dockWidget : dbg << "QDockWidget(0x0)";
-}
 
-QDebug operator<<(QDebug dbg, const QDockWidget &dockWidget)
-{
-    QDebugStateSaver saver(dbg);
-    dbg.nospace();
-    dbg << "QDockWidget(" << static_cast<const void *>(&dockWidget);
-    dbg << "->(ObjectName=" << dockWidget.objectName();
-    dbg << "; floating=" << dockWidget.isFloating();
-    dbg << "; features=" << dockWidget.features();
+    if (!dockWidget) {
+        dbg << "QDockWidget(0x0)";
+        return dbg;
+    }
+
+    dbg << "QDockWidget(" << static_cast<const void *>(dockWidget);
+    dbg << "->(ObjectName=" << dockWidget->objectName();
+    dbg << "; floating=" << dockWidget->isFloating();
+    dbg << "; features=" << dockWidget->features();
     dbg << ";))";
     return dbg;
 }
