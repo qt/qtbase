@@ -55,6 +55,20 @@ HMENU qt_getWindowsSystemMenu(const QWidget *w)
 }
 #endif
 
+static_assert(qToUnderlying(QMessageBox::ButtonRole::NRoles) ==
+              qToUnderlying(QDialogButtonBox::ButtonRole::NRoles),
+              "QMessageBox::ButtonRole and QDialogButtonBox::ButtonRole out of sync!");
+
+static_assert(std::is_same_v<std::underlying_type_t<QMessageBox::ButtonRole>,
+                             std::underlying_type_t<QDialogButtonBox::ButtonRole>>);
+
+// StandardButton enums have different underlying types
+// => qToUnderlying and std::is_same_v won't work
+// ### Qt 7: make them have the same underlying type
+static_assert(static_cast<int>(QMessageBox::StandardButton::LastButton) ==
+              static_cast<int>(QDialogButtonBox::StandardButton::LastButton),
+              "QMessageBox::StandardButton and QDialogButtonBox::StandardButton out of sync!");
+
 enum Button { Old_Ok = 1, Old_Cancel = 2, Old_Yes = 3, Old_No = 4, Old_Abort = 5, Old_Retry = 6,
               Old_Ignore = 7, Old_YesAll = 8, Old_NoAll = 9, Old_ButtonMask = 0xFF,
               NewButtonMask = 0xFFFFFC00 };
