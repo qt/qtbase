@@ -1381,13 +1381,16 @@ const QRgba64 *QT_FASTCALL fetchRGBA64ToRGBA64PM_avx2(QRgba64 *buffer, const uch
         vslo = _mm256_srli_epi32(vslo, 16);
         vshi = _mm256_srli_epi32(vshi, 16);
         vs256 = _mm256_packus_epi32(vslo, vshi);
+        vs256 = _mm256_blend_epi16(vs256, va256, 0x88);
         _mm256_storeu_si256((__m256i *)(buffer + i), vs256);
     }
     for (; i < count; ++i) {
+        const auto a = s[i].alpha();
         __m128i vs = _mm_loadl_epi64((const __m128i *)(s + i));
         __m128i va = _mm_shufflelo_epi16(vs, _MM_SHUFFLE(3, 3, 3, 3));
         vs = multiplyAlpha65535(vs, va);
         _mm_storel_epi64((__m128i *)(buffer + i), vs);
+        buffer[i].setAlpha(a);
     }
     return buffer;
 }
