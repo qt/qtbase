@@ -1187,10 +1187,12 @@ static const QRgba64 *QT_FASTCALL fetchRGBA64ToRGBA64PM(QRgba64 *buffer, const u
     const QRgba64 *s = reinterpret_cast<const QRgba64 *>(src) + index;
 #ifdef __SSE2__
     for (int i = 0; i < count; ++i) {
+        const auto a = s[i].alpha();
         __m128i vs = _mm_loadl_epi64((const __m128i *)(s + i));
         __m128i va = _mm_shufflelo_epi16(vs, _MM_SHUFFLE(3, 3, 3, 3));
         vs = multiplyAlpha65535(vs, va);
         _mm_storel_epi64((__m128i *)(buffer + i), vs);
+        buffer[i].setAlpha(a);
     }
 #else
     for (int i = 0; i < count; ++i)
