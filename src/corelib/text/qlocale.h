@@ -380,6 +380,9 @@ public:
         Ligurian = 338,
         Rohingya = 339,
         Torwali = 340,
+        Anii = 341,
+        Kangri = 342,
+        Venetian = 343,
 
         Afan = Oromo,
         Bengali = Bangla,
@@ -401,7 +404,7 @@ public:
         Uigur = Uyghur,
         Walamo = Wolaytta,
 
-        LastLanguage = Torwali
+        LastLanguage = Venetian
     };
 
     enum Script : ushort {
