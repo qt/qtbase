@@ -2482,6 +2482,11 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowStates state)
             GetWindowPlacement(m_data.hwnd, &windowPlacement);
             const RECT geometry = RECTfromQRect(m_data.restoreGeometry);
             windowPlacement.rcNormalPosition = geometry;
+            // Even if the window is hidden, windowPlacement's showCmd is not SW_HIDE, so change it
+            // manually to avoid unhiding a hidden window with the subsequent call to
+            // SetWindowPlacement().
+            if (!isVisible())
+                windowPlacement.showCmd = SW_HIDE;
             SetWindowPlacement(m_data.hwnd, &windowPlacement);
         }
         // QTBUG-17548: We send expose events when receiving WM_Paint, but for
