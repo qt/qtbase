@@ -99,6 +99,9 @@ set(libs
     ${CMAKE_CURRENT_BINARY_DIR}/libA_armeabi-v7a.so
 )
 set_target_properties(MyApp PROPERTIES QT_ANDROID_EXTRA_LIBS ${libs})
+
+# When targeting precompiled libs
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC libA_${ANDROID_ABI})
 \endcode
 
 over:
