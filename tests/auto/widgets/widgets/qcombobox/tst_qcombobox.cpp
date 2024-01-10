@@ -1287,11 +1287,12 @@ void tst_QComboBox::insertItem_data()
     initialItems << "foo" << "bar";
     for(int e = 0 ; e<2 ; e++) {
         bool editable = (e==0);
-        QTest::newRow("Insert less then 0") << initialItems << -1 << "inserted" << 0 << editable;
-        QTest::newRow("Insert at 0") << initialItems << 0 << "inserted" << 0 << editable;
-        QTest::newRow("Insert beyond count") << initialItems << 3 << "inserted" << 2 << editable;
-        QTest::newRow("Insert at count") << initialItems << 2 << "inserted" << 2 << editable;
-        QTest::newRow("Insert in the middle") << initialItems << 1 << "inserted" << 1 << editable;
+        const auto txt = editable ? QByteArray("editable: ") : QByteArray("non-editable: ");
+        QTest::newRow(txt + "Insert less then 0") << initialItems << -1 << "inserted" << 0 << editable;
+        QTest::newRow(txt + "Insert at 0") << initialItems << 0 << "inserted" << 0 << editable;
+        QTest::newRow(txt + "Insert beyond count") << initialItems << 3 << "inserted" << 2 << editable;
+        QTest::newRow(txt + "Insert at count") << initialItems << 2 << "inserted" << 2 << editable;
+        QTest::newRow(txt + "Insert in the middle") << initialItems << 1 << "inserted" << 1 << editable;
     }
 }
 
@@ -2021,7 +2022,7 @@ void tst_QComboBox::flaggedItems_data()
             disableFlagList << 1;
             keyMovementList.clear();
             keyMovementList << Qt::Key_T << Qt::Key_Enter;
-            QTest::newRow(testCase.toLatin1() + "disabled") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 2;
+            QTest::newRow(testCase.toLatin1() + "disabled with key") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 2;
             QTest::newRow(testCase.toLatin1() + "broken autocompletion") << itemList << deselectFlagList << disableFlagList << keyMovementList << bool(editable) << 2;
         }
     }
