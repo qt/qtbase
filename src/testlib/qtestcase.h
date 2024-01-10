@@ -89,12 +89,9 @@ do { \
         QT_TRY { \
             __VA_ARGS__; \
             /* success */ \
-        } QT_CATCH (const std::exception &e) { \
-            QTest::qCaught(nullptr, e.what(), __FILE__, __LINE__); \
-            return; \
         } QT_CATCH (...) { \
-            QTest::qCaught(nullptr, nullptr, __FILE__, __LINE__); \
-            QT_RETHROW; \
+            QTest::qCaught(nullptr, __FILE__, __LINE__); \
+            return; \
         } \
     } while (false) \
     /* end */
@@ -112,20 +109,15 @@ inline void useVerifyThrowsException() {}
 #  define QVERIFY_THROWS_EXCEPTION(exceptiontype, ...) \
     do {\
         QT_TRY {\
-            QT_TRY {\
-                __VA_ARGS__;\
-                QTest::qFail("Expected exception of type " #exceptiontype " to be thrown" \
-                             " but no exception caught", __FILE__, __LINE__);\
-                return;\
-            } QT_CATCH (const exceptiontype &) {\
-                /* success */\
-            }\
-        } QT_CATCH (const std::exception &e) {\
-            QTest::qCaught(#exceptiontype, e.what(), __FILE__, __LINE__);\
-            return;\
+            __VA_ARGS__; \
+            QTest::qFail("Expected exception of type " #exceptiontype " to be thrown" \
+                         " but no exception caught", __FILE__, __LINE__); \
+            return; \
+        } QT_CATCH (const exceptiontype &) { \
+            /* success */ \
         } QT_CATCH (...) {\
-            QTest::qCaught(#exceptiontype, nullptr, __FILE__, __LINE__);\
-            QT_RETHROW;\
+            QTest::qCaught(#exceptiontype, __FILE__, __LINE__); \
+            return; \
         }\
     } while (false)
 
@@ -392,6 +384,8 @@ namespace QTest
                            const char *file, int line);
     Q_DECL_COLD_FUNCTION
     Q_TESTLIB_EXPORT void qCaught(const char *expected, const char *what, const char *file, int line);
+    Q_DECL_COLD_FUNCTION
+    Q_TESTLIB_EXPORT void qCaught(const char *expected, const char *file, int line);
 #if QT_DEPRECATED_SINCE(6, 3)
     QT_DEPRECATED_VERSION_X_6_3("Use qWarning() instead")
     Q_TESTLIB_EXPORT void qWarn(const char *message, const char *file = nullptr, int line = 0);

@@ -2614,6 +2614,39 @@ void QTest::qCaught(const char *expected, const char *what, const char *file, in
     qFail(message().toUtf8().constData(), file, line);
 }
 
+/*!
+    \internal
+
+    Contains the implementation of the catch(...) block of
+    QVERIFY_THROWS_EXCEPTION.
+
+    The function inspects std::current_exception() by rethrowing it using
+    std::rethrow_exception().
+
+    The function must be called from a catch handler.
+
+    If the exception inherits std::exception, its what() message is logged and
+    this function returns normally. The caller of this function must then
+    execute a \c{return} to exit from the test function.
+
+    Otherwise, a message saying an unknown exception was caught is logged and
+    this function rethrows the exception, skipping the \c{return} that follows
+    this function call in the caller.
+*/
+void QTest::qCaught(const char *expected, const char *file, int line)
+{
+    try {
+        // let's see what the cat brought us:
+        std::rethrow_exception(std::current_exception());
+    } catch (const std::exception &e) {
+        qCaught(expected, e.what(), file, line);
+    } catch (...) {
+        qCaught(expected, nullptr, file, line);
+        throw;
+    }
+    // caller shall invoke `return` if control reached here
+}
+
 
 #if QT_DEPRECATED_SINCE(6, 3)
 /*!
