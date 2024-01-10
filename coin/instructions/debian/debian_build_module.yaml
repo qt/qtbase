@@ -104,7 +104,7 @@ instructions:
   - type: ExecuteCommand
     command: ["sbuild",
       "--build-dep-resolver=apt",
-      "-sAd", "tqtc-focal",
+      "-sAd", "{{.Env.COIN_TARGET_DIST}}",
       "-c", "{{.Env.COIN_SBUILD_CHROOT}}",
       "--build-dir", "output/debian_packages",
       "--extra-repository={{.Env.COIN_EXTRA_DEBIAN_REPO}}",
