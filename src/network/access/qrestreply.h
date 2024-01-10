@@ -6,9 +6,15 @@
 
 #include <QtNetwork/qnetworkreply.h>
 
+#include <optional>
+
 QT_BEGIN_NAMESPACE
 
+class QByteArray;
 class QDebug;
+class QJsonDocument;
+class QString;
+
 class QRestReplyPrivate;
 class Q_NETWORK_EXPORT QRestReply : public QObject
 {
