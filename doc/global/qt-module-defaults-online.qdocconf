@@ -31,4 +31,4 @@ include(config.qdocconf)
 
 # single-directory output mode
 HTML.nosubdirs = "true"
-HTML.outputsubdir = "html"
+HTML.outputsubdir = "../html"
