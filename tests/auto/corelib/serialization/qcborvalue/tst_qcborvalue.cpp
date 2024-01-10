@@ -14,6 +14,10 @@
 #include <QtEndian>
 #include <QTimeZone>
 
+#ifndef QTEST_THROW_ON_FAIL
+# error This test requires QTEST_THROW_ON_FAIL being active.
+#endif
+
 Q_DECLARE_METATYPE(QCborKnownTags)
 Q_DECLARE_METATYPE(QCborValue)
 Q_DECLARE_METATYPE(QCborValue::EncodingOptions)
@@ -1348,8 +1352,6 @@ void tst_QCborValue::arrayValueRef()
     };
 
     iteratorCheck(a.begin());
-    if (QTest::currentTestFailed())
-        return;
     iteratorCheck(a.constBegin());
 }
 
@@ -1412,8 +1414,6 @@ void tst_QCborValue::mapValueRef()
     };
 
     iteratorCheck(m.begin());
-    if (QTest::currentTestFailed())
-        return;
     iteratorCheck(m.constBegin());
 }
 
@@ -2410,53 +2410,29 @@ void fromCbor_common(void (*doCheck)(const QCborValue &, const QByteArray &))
     QFETCH(QByteArray, result);
 
     doCheck(v, result);
-    if (QTest::currentTestFailed())
-        return;
 
     // in an array
     doCheck(QCborArray{v}, "\x81" + result);
-    if (QTest::currentTestFailed())
-        return;
-
     doCheck(QCborArray{v, v}, "\x82" + result + result);
-    if (QTest::currentTestFailed())
-        return;
 
     // in a map
     doCheck(QCborMap{{1, v}}, "\xa1\1" + result);
-    if (QTest::currentTestFailed())
-        return;
 
     // undefined-length arrays and maps
     doCheck(QCborArray{v}, "\x9f" + result + "\xff");
-    if (QTest::currentTestFailed())
-        return;
     doCheck(QCborArray{v, v}, "\x9f" + result + result + "\xff");
-    if (QTest::currentTestFailed())
-        return;
     doCheck(QCborMap{{1, v}}, "\xbf\1" + result + "\xff");
-    if (QTest::currentTestFailed())
-        return;
 
     // tagged
     QCborValue t(QCborKnownTags::Signature, v);
     doCheck(t, "\xd9\xd9\xf7" + result);
-    if (QTest::currentTestFailed())
-        return;
 
     // in an array
     doCheck(QCborArray{t}, "\x81\xd9\xd9\xf7" + result);
-    if (QTest::currentTestFailed())
-        return;
-
     doCheck(QCborArray{t, t}, "\x82\xd9\xd9\xf7" + result + "\xd9\xd9\xf7" + result);
-    if (QTest::currentTestFailed())
-        return;
 
     // in a map
     doCheck(QCborMap{{1, t}}, "\xa1\1\xd9\xd9\xf7" + result);
-    if (QTest::currentTestFailed())
-        return;
 }
 
 void tst_QCborValue::fromCbor()
@@ -3116,14 +3092,9 @@ void tst_QCborValue::cborValueRefMutatingMapIntKey()
     };
     // accessing a negative index causes it to become a map
     executeTest(-1);
-    if (QTest::currentTestFailed())
-        return;
 
     // if the index is bigger than 0x10000, the array becomes a map
     executeTest(0x10000);
-    if (QTest::currentTestFailed())
-        return;
-
     if (type != QCborValue::Array)
         executeTest(5);
 }

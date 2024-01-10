@@ -10,6 +10,7 @@ if(QT_FEATURE_cborstreamwriter)
     add_subdirectory(qcborstreamwriter)
     endif()
 endif()
+# also (but not only!) QTBUG-121822:
 if(NOT WASM)
     add_subdirectory(qcborvalue)
 endif()
