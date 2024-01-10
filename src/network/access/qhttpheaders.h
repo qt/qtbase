@@ -201,12 +201,6 @@ public:
     };
     Q_ENUM(WellKnownHeader)
 
-    enum class CompareOption {
-        OrderInsensitive = 0x01,
-        OrderSensitive = 0x02,
-    };
-    Q_DECLARE_FLAGS(CompareOptions, CompareOption)
-
     Q_NETWORK_EXPORT QHttpHeaders();
     Q_NETWORK_EXPORT ~QHttpHeaders();
 
@@ -248,9 +242,6 @@ public:
     Q_NETWORK_EXPORT void reserve(qsizetype size);
     bool isEmpty() const noexcept { return size() == 0; }
 
-    Q_NETWORK_EXPORT bool equals(const QHttpHeaders &other,
-                           CompareOptions options = CompareOption::OrderInsensitive) const noexcept;
-
     Q_NETWORK_EXPORT static QHttpHeaders
     fromListOfPairs(const QList<std::pair<QByteArray, QByteArray>> &headers);
     Q_NETWORK_EXPORT static QHttpHeaders
@@ -268,8 +259,6 @@ private:
 #endif
     QExplicitlySharedDataPointer<QHttpHeadersPrivate> d;
 };
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(QHttpHeaders::CompareOptions)
 
 Q_DECLARE_SHARED(QHttpHeaders)
 

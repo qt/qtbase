@@ -157,7 +157,6 @@ void tst_QNetworkRequestFactory::sslConfiguration()
     // Two initially equal factories
     QNetworkRequestFactory factory1{url1};
     QNetworkRequestFactory factory2{url1};
-    QCOMPARE(factory1, factory2);
 
     // Make two differing SSL configurations (for this test it's irrelevant how they differ)
     QSslConfiguration config1;
@@ -170,9 +169,6 @@ void tst_QNetworkRequestFactory::sslConfiguration()
     QCOMPARE(factory1.sslConfiguration(), config1);
     factory2.setSslConfiguration(config2);
     QCOMPARE(factory2.sslConfiguration(), config2);
-
-    // Verify that the factories differ (different SSL config)
-    QCOMPARE_NE(factory1, factory2);
 
     // Verify requests are set with appropriate SSL configs
     QNetworkRequest request1 = factory1.createRequest();
@@ -310,13 +306,9 @@ void tst_QNetworkRequestFactory::operators()
     QCOMPARE(factory1.baseUrl(), url2); // changed
     QCOMPARE(factory2.baseUrl(), url1); // remains
 
-    // Comparison
-    QVERIFY(factory2 == factory4); // factory4 was copied + moved, and originates from factory2
-    QVERIFY(factory1 != factory2); // factory1 url was changed
-
     // Move ctor
     QNetworkRequestFactory factory5{std::move(factory4)};
-    QVERIFY(factory5 == factory2); // the moved factory4 originates from factory2
+    QCOMPARE(factory5.baseUrl(), factory2.baseUrl()); // the moved factory4 originates from factory2
     QCOMPARE(factory5.baseUrl(), url1);
 }
 
