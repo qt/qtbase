@@ -75,10 +75,6 @@ public:
     Q_NETWORK_EXPORT void clearQueryParameters();
 
 private:
-    friend Q_NETWORK_EXPORT bool comparesEqual(const QNetworkRequestFactory &lhs,
-                                               const QNetworkRequestFactory &rhs) noexcept;
-    Q_DECLARE_EQUALITY_COMPARABLE(QNetworkRequestFactory)
-
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QNetworkRequestFactory &reply);
 #endif

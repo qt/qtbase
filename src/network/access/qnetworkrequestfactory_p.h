@@ -34,7 +34,6 @@ public:
     ~QNetworkRequestFactoryPrivate();
     QNetworkRequest newRequest(const QUrl &url) const;
     QUrl requestUrl(const QString *path = nullptr, const QUrlQuery *query = nullptr) const;
-    bool equals(const QNetworkRequestFactoryPrivate &other) const noexcept;
 
 #if QT_CONFIG(ssl)
     QSslConfiguration sslConfig;

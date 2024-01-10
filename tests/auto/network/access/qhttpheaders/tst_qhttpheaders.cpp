@@ -14,7 +14,6 @@ class tst_QHttpHeaders : public QObject
     Q_OBJECT
 
 private slots:
-    void comparison();
     void constructors();
     void accessors();
     void headerNameField();
@@ -36,71 +35,6 @@ private:
     static constexpr QAnyStringView V3{"VALUE3"};
 };
 
-void tst_QHttpHeaders::comparison()
-{
-    // Basic comparisons
-    QHttpHeaders h1;
-    QHttpHeaders h2;
-    QVERIFY(h1.equals(h2)); // empties
-    h1.append(n1, v1);
-    QVERIFY(h1.equals(h1)); // self
-    h2.append(n1, v1);
-    QVERIFY(h1.equals(h2));
-    h1.append(n2, v2);
-    QVERIFY(!h1.equals(h2));
-    h1.removeAll(n2);
-    QVERIFY(h1.equals(h2));
-
-    // 'name' case-insensitivity and 'value' case-sensitivity
-    h1.removeAll(n1);
-    QVERIFY(h1.isEmpty());
-    h1.append(N1, v1);
-    QVERIFY(h1.equals(h2));
-    h1.removeAll(n1);
-    QVERIFY(h1.isEmpty());
-    h1.append(n1, V1);
-    QVERIFY(!h1.equals(h2));
-
-    // Order-insensitivity
-    h1.clear();
-    h2.clear();
-    QVERIFY(h1.isEmpty() && h2.isEmpty());
-    // Same headers but in different order
-    h1.append(n1, v1);
-    h1.append(n2, v2);
-    h2.append(n2, v2);
-    h2.append(n1, v1);
-    QVERIFY(h1.equals(h2));
-    // Add header with different name casing
-    h1.insert(0, n1, v1);
-    h2.append(N1, v1);
-    QVERIFY(h1.equals(h2));
-    // Add header with different value casing
-    h1.insert(0, n1, v1);
-    h2.append(n1, V1);
-    QVERIFY(!h1.equals(h2));
-
-    // Order-sensitivity
-    h1.clear();
-    h2.clear();
-    QVERIFY(h1.equals(h2, QHttpHeaders::CompareOption::OrderSensitive));
-    // Same headers but in different order
-    h1.append(n1, v1);
-    h1.append(n2, v2);
-    h2.append(n2, v2);
-    h2.append(n1, v1);
-    QVERIFY(!h1.equals(h2, QHttpHeaders::CompareOption::OrderSensitive));
-
-    // Different number of headers
-    h1.clear();
-    h2.clear();
-    h1.append(n1, v1);
-    h2.append(n1, v1);
-    h2.append(n2, v2);
-    QVERIFY(!h1.equals(h2));
-    QVERIFY(!h1.equals(h2, QHttpHeaders::CompareOption::OrderSensitive));
-}
-
 void tst_QHttpHeaders::constructors()
 {
     // Default ctor
@@ -109,38 +43,44 @@ void tst_QHttpHeaders::constructors()
 
     // Copy ctor
     QHttpHeaders h2(h1);
-    QVERIFY(h2.equals(h1));
+    QCOMPARE(h2.toListOfPairs(), h1.toListOfPairs());
 
     // Copy assignment
     QHttpHeaders h3;
     h3 = h1;
-    QVERIFY(h3.equals(h1));
+    QCOMPARE(h3.toListOfPairs(), h1.toListOfPairs());
 
     // Move assignment
     QHttpHeaders h4;
     h4 = std::move(h2);
-    QVERIFY(h4.equals(h1));
+    QCOMPARE(h4.toListOfPairs(), h1.toListOfPairs());
 
     // Move ctor
     QHttpHeaders h5(std::move(h4));
-    QVERIFY(h5.equals(h1));
+    QCOMPARE(h5.toListOfPairs(), h1.toListOfPairs());
 
     // Constructors that are counterparts to 'toXXX()' conversion getters
     const QByteArray nb1{"name1"};
     const QByteArray nb2{"name2"};
     const QByteArray nv1{"value1"};
     const QByteArray nv2{"value2"};
-    // Initialize three QHttpHeaders with same content and verify they match
+    // Initialize three QHttpHeaders with similar content, and verify that they have
+    // similar header entries
+#define CONTAINS_HEADER(NAME, VALUE) \
+    QVERIFY(hlist.contains(NAME) && hmap.contains(NAME) && hhash.contains(NAME)); \
+    QCOMPARE(hlist.combinedValue(NAME), VALUE); \
+    QCOMPARE(hmap.combinedValue(NAME), VALUE);  \
+    QCOMPARE(hhash.combinedValue(NAME), VALUE); \
+
     QList<std::pair<QByteArray, QByteArray>> list{{nb1, nv1}, {nb2, nv2}, {nb2, nv2}};
     QMultiMap<QByteArray, QByteArray> map{{nb1, nv1}, {nb2, nv2}, {nb2, nv2}};
     QMultiHash<QByteArray, QByteArray> hash{{nb1, nv1}, {nb2, nv2}, {nb2, nv2}};
     QHttpHeaders hlist = QHttpHeaders::fromListOfPairs(list);
     QHttpHeaders hmap = QHttpHeaders::fromMultiMap(map);
     QHttpHeaders hhash = QHttpHeaders::fromMultiHash(hash);
-    QVERIFY(hlist.contains(nb1) && hmap.contains(nb1) && hhash.contains(nb1));
-    QVERIFY(!hlist.contains(n3) && !hmap.contains(n3) && !hhash.contains(n3));
-    QVERIFY(hlist.equals(hmap));
-    QVERIFY(hmap.equals(hhash));
+    CONTAINS_HEADER(nb1, v1);
+    CONTAINS_HEADER(nb2, nv2 + "," + nv2)
+#undef CONTAINS_HEADER
 }
 
 void tst_QHttpHeaders::accessors()

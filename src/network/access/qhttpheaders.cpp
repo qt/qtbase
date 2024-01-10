@@ -90,9 +90,6 @@ class QHttpHeadersPrivate : public QSharedData
 public:
     QHttpHeadersPrivate() = default;
 
-    bool equals(const QHttpHeadersPrivate &other,
-                QHttpHeaders::CompareOptions options) const noexcept;
-
     QList<Header> headers;
 
     Q_ALWAYS_INLINE void verify([[maybe_unused]] qsizetype pos = 0,
@@ -106,18 +103,6 @@ public:
 };
 
 QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QHttpHeadersPrivate)
-
-bool QHttpHeadersPrivate::equals(const QHttpHeadersPrivate &other,
-                                 QHttpHeaders::CompareOptions options) const noexcept
-{
-    if (headers.size() != other.headers.size())
-        return false;
-
-    if (options & QHttpHeaders::CompareOption::OrderSensitive)
-        return headers == other.headers;
-    else
-        return std::is_permutation(headers.begin(), headers.end(), other.headers.begin());
-}
 
 // This list is from IANA HTTP Field Name Registry
 // https://www.iana.org/assignments/http-fields
@@ -491,24 +476,6 @@ static constexpr auto headerNames = qOffsetStringArray(
     \value Pragma
     \value ProtocolInfo
     \value ProtocolQuery
-*/
-
-/*!
-    \enum QHttpHeaders::CompareOption
-
-    This enum type contains the options for comparing two
-    QHttpHeaders instances.
-
-    \value OrderInsensitive
-    Specifies that the order of headers is not significant in the comparison.
-    With this option, two QHttpHeaders instances will be considered equal
-    if they contain the same headers regardless of their order. This is
-    true with most HTTP headers and use cases.
-
-    \value OrderSensitive
-    Specifies that the order of headers is significant in the comparison.
-    With this option, two QHttpHeaders instances will be considered equal
-    only if they contain the same headers in the same exact order.
 */
 
 /*!
@@ -1072,19 +1039,6 @@ qsizetype QHttpHeaders::size() const noexcept
 void QHttpHeaders::reserve(qsizetype size)
 {
     d->headers.reserve(size);
-}
-
-/*!
-    Compares this instance with \a other and returns \c true if they
-    are considered equal in accordance with the provided \a options.
-
-    The header names are always compared as case-insensitive, and values
-    as case-sensitive. For example \e Accept and \e ACCEPT header names
-    are considered equal, while values \e something and \e SOMETHING are not.
-*/
-bool QHttpHeaders::equals(const QHttpHeaders &other, CompareOptions options) const noexcept
-{
-    return d == other.d || d->equals(*other.d, options);
 }
 
 /*!

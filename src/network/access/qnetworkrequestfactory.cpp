@@ -122,35 +122,6 @@ QNetworkRequestFactory &QNetworkRequestFactory::operator=(const QNetworkRequestF
  */
 
 /*!
-    \fn bool QNetworkRequestFactory::operator==(const QNetworkRequestFactory &lhs,
-                                              const QNetworkRequestFactory &rhs)
-
-    Returns \c true if \a lhs is considered equal with \a rhs, meaning
-    that all data in the factories match, otherwise returns \c false.
-
-    \note The headers comparison is order-insensitive.
-
-    \sa QNetworkRequestFactory::operator!=()
- */
-
-/*!
-    \fn bool QNetworkRequestFactory::operator!=(const QNetworkRequestFactory &lhs,
-                                              const QNetworkRequestFactory &rhs)
-
-    Returns \c true if \a lhs is not considered equal with \a rhs.
-
-    \sa QNetworkRequestFactory::operator==()
- */
-
-/*!
-    \internal
- */
-bool comparesEqual(const QNetworkRequestFactory &lhs, const QNetworkRequestFactory &rhs) noexcept
-{
-    return lhs.d == rhs.d || lhs.d->equals(*rhs.d);
-}
-
-/*!
     Returns the base URL used for the individual requests.
 
     The base URL may contain a path component. This path is used
@@ -592,22 +563,6 @@ QUrl QNetworkRequestFactoryPrivate::requestUrl(const QString *path,
 
     resultUrl.setPath(basePath.append(requestPath));
     return resultUrl;
-}
-
-bool QNetworkRequestFactoryPrivate::equals(
-        const QNetworkRequestFactoryPrivate &other) const noexcept
-{
-    return
-            transferTimeout == other.transferTimeout &&
-#if QT_CONFIG(ssl)
-            sslConfig == other.sslConfig &&
-#endif
-            baseUrl == other.baseUrl &&
-            bearerToken == other.bearerToken &&
-            userName == other.userName &&
-            password == other.password &&
-            headers.equals(other.headers) &&
-            queryParameters == other.queryParameters;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
