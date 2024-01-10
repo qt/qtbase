@@ -19,6 +19,9 @@ endif()
 foreach(test ${test_names})
     qt_internal_add_test(${test}
         NO_BATCH
+        DEFINES
+            QTEST_THROW_ON_FAIL
+            QTEST_THROW_ON_SKIP
         SOURCES
             tst_qeventdispatcher.cpp
     )
