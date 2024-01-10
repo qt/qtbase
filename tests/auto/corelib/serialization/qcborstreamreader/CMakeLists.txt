@@ -17,6 +17,10 @@ qt_internal_add_test(tst_qcborstreamreader
     INCLUDE_DIRECTORIES
         ../../../../../src/3rdparty/tinycbor/src
         ../../../../../src/3rdparty/tinycbor/tests
+    NO_BATCH # QTBUG-121815
+    DEFINES
+        QTEST_THROW_ON_FAIL
+        QTEST_THROW_ON_SKIP
     LIBRARIES
         Qt::CorePrivate
 )
