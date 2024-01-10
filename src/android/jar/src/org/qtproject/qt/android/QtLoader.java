@@ -37,7 +37,8 @@ abstract class QtLoader {
     protected final ContextWrapper m_context;
     protected ComponentInfo m_contextInfo;
 
-    protected String m_mainLib;
+    protected String m_mainLibPath;
+    protected String m_mainLibName;
     protected String m_applicationParameters = "";
     protected HashMap<String, String> m_environmentVariables = new HashMap<>();
 
@@ -155,8 +156,19 @@ abstract class QtLoader {
      * Returns the context's main library absolute path,
      * or null if the library hasn't been loaded yet.
      **/
-    public String getMainLibrary() {
-        return m_mainLib;
+    public String getMainLibraryPath() {
+        return m_mainLibPath;
+    }
+
+    /**
+     * Set the name of the main app library to libName, which is the name of the library,
+     * not including the path, target architecture or .so suffix. This matches the target name
+     * of the app target in CMakeLists.txt.
+     * This method can be used when the name is not provided by androiddeployqt, for example when
+     * embedding QML views to a native Android app.
+     **/
+    public void setMainLibraryName(String libName) {
+        m_mainLibName = libName;
     }
 
     /**
@@ -396,8 +408,10 @@ abstract class QtLoader {
             return;
         }
 
+        if (m_mainLibName == null)
+            m_mainLibName = getMetaData("android.app.lib_name");
         // Load main lib
-        if (!loadMainLibrary(getMetaData("android.app.lib_name") + "_" + m_preferredAbi)) {
+        if (!loadMainLibrary(m_mainLibName + "_" + m_preferredAbi)) {
             Log.e(QtTAG, "Loading main library failed");
             finish();
         }
@@ -456,8 +470,8 @@ abstract class QtLoader {
         String mainLibPath = getLibrariesFullPaths(oneEntryArray).get(0);
         final boolean[] success = {true};
         QtNative.getQtThread().run(() -> {
-            m_mainLib = loadLibraryHelper(mainLibPath);
-            if (m_mainLib == null)
+            m_mainLibPath = loadLibraryHelper(mainLibPath);
+            if (m_mainLibPath == null)
                 success[0] = false;
         });
 
