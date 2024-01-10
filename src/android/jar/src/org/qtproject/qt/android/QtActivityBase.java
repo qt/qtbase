@@ -104,7 +104,7 @@ public class QtActivityBase extends Activity
 
         loader.loadQtLibraries();
         m_delegate.startNativeApplication(loader.getApplicationParameters(),
-                loader.getMainLibrary());
+                loader.getMainLibraryPath());
     }
 
     @Override
