@@ -23,6 +23,7 @@
 #  include <QtGui/private/qguiapplication_p.h>
 #  include <QtGui/qwindowsmimeconverter.h>
 #  include <QtGui/qpa/qplatformintegration.h>
+#  include <QtCore/qt_windows.h>
 #endif
 
 class tst_QClipboard : public QObject
