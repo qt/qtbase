@@ -8,9 +8,19 @@
 
 #ifndef QT_NO_OPENGL
 
-// Windows always needs this to ensure that APIENTRY gets defined
+// On Windows we need to ensure that APIENTRY and WINGDIAPI are defined before
+// we can include gl.h. But we do not want to include <windows.h> in this public
+// Qt header, as it pollutes the global namespace with macros.
 #if defined(Q_OS_WIN)
-# include <QtCore/qt_windows.h>
+# ifndef APIENTRY
+#  define APIENTRY __stdcall
+#  define Q_UNDEF_APIENTRY
+# endif // APIENTRY
+# ifndef WINGDIAPI
+#  define WINGDIAPI __declspec(dllimport)
+#  define Q_UNDEF_WINGDIAPI
+# endif // WINGDIAPI
+# define QT_APIENTRY __stdcall
 #endif
 
 // Note: Apple is a "controlled platform" for OpenGL ABI so we
@@ -128,11 +138,11 @@ typedef char GLchar;
 
 // OS X 10.6 doesn't define these which are needed below
 // OS X 10.7 and later define them in gl3.h
-#ifndef APIENTRY
-#define APIENTRY
+#ifndef QT_APIENTRY
+#define QT_APIENTRY
 #endif
-#ifndef APIENTRYP
-#define APIENTRYP APIENTRY *
+#ifndef QT_APIENTRYP
+#define QT_APIENTRYP QT_APIENTRY *
 #endif
 #ifndef GLAPI
 #define GLAPI extern
@@ -231,15 +241,15 @@ struct _cl_event;
 #endif
 
 #ifndef GL_ARB_debug_output
-typedef void (APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const GLvoid *userParam);
+typedef void (QT_APIENTRY *GLDEBUGPROCARB)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const GLvoid *userParam);
 #endif
 
 #ifndef GL_AMD_debug_output
-typedef void (APIENTRY *GLDEBUGPROCAMD)(GLuint id,GLenum category,GLenum severity,GLsizei length,const GLchar *message,GLvoid *userParam);
+typedef void (QT_APIENTRY *GLDEBUGPROCAMD)(GLuint id,GLenum category,GLenum severity,GLsizei length,const GLchar *message,GLvoid *userParam);
 #endif
 
 #ifndef GL_KHR_debug
-typedef void (APIENTRY *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const GLvoid *userParam);
+typedef void (QT_APIENTRY *GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const GLvoid *userParam);
 #endif
 
 #ifndef GL_NV_vdpau_interop
@@ -256,8 +266,8 @@ typedef ptrdiff_t qopengl_GLintptr;
 typedef ptrdiff_t qopengl_GLsizeiptr;
 
 
-#if defined(APIENTRY) && !defined(QOPENGLF_APIENTRY)
-#   define QOPENGLF_APIENTRY APIENTRY
+#if defined(QT_APIENTRY) && !defined(QOPENGLF_APIENTRY)
+#   define QOPENGLF_APIENTRY QT_APIENTRY
 #endif
 
 # ifndef QOPENGLF_APIENTRYP
@@ -270,6 +280,15 @@ typedef ptrdiff_t qopengl_GLsizeiptr;
 # endif
 
 QT_END_NAMESPACE
+
+#ifdef Q_UNDEF_WINGDIAPI
+# undef WINGDIAPI
+# undef Q_UNDEF_WINGDIAPI
+#endif
+#ifdef Q_UNDEF_APIENTRY
+# undef APIENTRY
+# undef Q_UNDEF_APIENTRY
+#endif
 
 #endif // QT_NO_OPENGL
 

@@ -11,7 +11,7 @@
 #  include <UIKit/UIKit.h>
 #  define VIEW_BASE UIView
 #elif defined(Q_OS_WIN)
-#  include <winuser.h>
+#  include <QtCore/qt_windows.h>
 #elif QT_CONFIG(xcb)
 #  include <xcb/xcb.h>
 #elif defined(ANDROID)
