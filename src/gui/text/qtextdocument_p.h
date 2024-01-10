@@ -356,6 +356,7 @@ public:
     QString title;
     QString url;
     QString cssMedia;
+    QString frontMatter;
     qreal indentWidth;
     qreal documentMargin;
     QUrl baseUrl;

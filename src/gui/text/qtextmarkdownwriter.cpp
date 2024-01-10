@@ -10,6 +10,7 @@
 #include "qtexttable.h"
 #include "qtextcursor.h"
 #include "qtextimagehandler_p.h"
+#include "qtextmarkdownimporter_p.h"
 #include "qloggingcategory.h"
 #if QT_CONFIG(itemmodel)
 #include "qabstractitemmodel.h"
@@ -38,6 +39,7 @@ QTextMarkdownWriter::QTextMarkdownWriter(QTextStream &stream, QTextDocument::Mar
 
 bool QTextMarkdownWriter::writeAll(const QTextDocument *document)
 {
+    writeFrontMatter(document->metaInformation(QTextDocument::FrontMatter));
     writeFrame(document->rootFrame());
     return true;
 }
@@ -75,6 +77,17 @@ void QTextMarkdownWriter::writeTable(const QAbstractItemModel *table)
     m_listInfo.clear();
 }
 #endif
+
+void QTextMarkdownWriter::writeFrontMatter(const QString &fm)
+{
+    if (fm.isEmpty() || !m_features.testFlag(static_cast<QTextDocument::MarkdownFeature>(
+                QTextMarkdownImporter::FeatureFrontMatter)))
+        return;
+    m_stream << "---\n"_L1 << fm;
+    if (!fm.endsWith(qtmw_Newline))
+        m_stream << qtmw_Newline;
+    m_stream << "---\n"_L1;
+}
 
 void QTextMarkdownWriter::writeFrame(const QTextFrame *frame)
 {

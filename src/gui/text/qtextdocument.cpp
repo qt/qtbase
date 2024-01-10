@@ -1159,6 +1159,8 @@ QString QTextDocument::metaInformation(MetaInformation info) const
         return d->url;
     case CssMedia:
         return d->cssMedia;
+    case FrontMatter:
+        return d->frontMatter;
     }
     return QString();
 }
@@ -1181,6 +1183,9 @@ void QTextDocument::setMetaInformation(MetaInformation info, const QString &stri
         break;
     case CssMedia:
         d->cssMedia = string;
+        break;
+    case FrontMatter:
+        d->frontMatter = string;
         break;
     }
 }
@@ -1327,6 +1332,10 @@ void QTextDocument::setHtml(const QString &html)
     \value CssMedia         This value is used to select the corresponding '@media'
                             rule, if any, from a specified CSS stylesheet when setHtml()
                             is called. This enum value has been introduced in Qt 6.3.
+    \value FrontMatter      This value is used to select header material, if any was
+                            extracted during parsing of the source file (currently
+                            only from Markdown format). This enum value has been
+                            introduced in Qt 6.8.
 
     \sa metaInformation(), setMetaInformation(), setHtml()
 */

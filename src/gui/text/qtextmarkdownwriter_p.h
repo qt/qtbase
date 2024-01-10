@@ -36,6 +36,7 @@ public:
 
     int writeBlock(const QTextBlock &block, bool table, bool ignoreFormat, bool ignoreEmpty);
     void writeFrame(const QTextFrame *frame);
+    void writeFrontMatter(const QString &fm);
 
 private:
     struct ListInfo {

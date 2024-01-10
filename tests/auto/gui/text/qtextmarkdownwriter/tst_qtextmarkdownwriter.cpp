@@ -36,6 +36,7 @@ private slots:
     void testWriteNestedNumericLists();
     void testWriteNumericListWithStart();
     void testWriteTable();
+    void frontMatter();
     void rewriteDocument_data();
     void rewriteDocument();
     void fromHtml_data();
@@ -525,6 +526,16 @@ void tst_QTextMarkdownWriter::testWriteTable()
     QCOMPARE(md, expected);
 }
 
+void tst_QTextMarkdownWriter::frontMatter()
+{
+    QTextCursor cursor(document);
+    cursor.insertText("bar");
+    document->setMetaInformation(QTextDocument::FrontMatter, "foo");
+
+    const QString output = documentToUnixMarkdown();
+    QCOMPARE(output, "---\nfoo\n---\nbar\n\n");
+}
+
 void tst_QTextMarkdownWriter::rewriteDocument_data()
 {
     QTest::addColumn<QString>("inputFile");
@@ -535,6 +546,7 @@ void tst_QTextMarkdownWriter::rewriteDocument_data()
     QTest::newRow("word wrap") << "wordWrap.md";
     QTest::newRow("links") << "links.md";
     QTest::newRow("lists and code blocks") << "listsAndCodeBlocks.md";
+    QTest::newRow("front matter") << "yaml.md";
 }
 
 void tst_QTextMarkdownWriter::rewriteDocument()

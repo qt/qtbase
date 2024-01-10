@@ -46,7 +46,8 @@ static_assert(int(QTextMarkdownImporter::FeaturePermissiveAutoLinks) == MD_FLAG_
 static_assert(int(QTextMarkdownImporter::FeatureTasklists) == MD_FLAG_TASKLISTS);
 static_assert(int(QTextMarkdownImporter::FeatureNoHTML) == MD_FLAG_NOHTML);
 static_assert(int(QTextMarkdownImporter::DialectCommonMark) == MD_DIALECT_COMMONMARK);
-static_assert(int(QTextMarkdownImporter::DialectGitHub) == (MD_DIALECT_GITHUB | MD_FLAG_UNDERLINE));
+static_assert(int(QTextMarkdownImporter::DialectGitHub) ==
+              (MD_DIALECT_GITHUB | MD_FLAG_UNDERLINE | QTextMarkdownImporter::FeatureFrontMatter));
 
 // --------------------------------------------------------
 // MD4C callback function wrappers
@@ -139,6 +140,21 @@ void QTextMarkdownImporter::import(const QString &markdown)
         m_monoFont.setPixelSize(defaultFont.pixelSize());
     qCDebug(lcMD) << "default font" << defaultFont << "mono font" << m_monoFont;
     QByteArray md = markdown.toUtf8();
+    if (md.startsWith("---") && m_features.testFlag(QTextMarkdownImporter::FeatureFrontMatter)) {
+        qsizetype endMarkerPos = md.indexOf("---", 4);
+        if (endMarkerPos > 4) {
+            qsizetype firstLinePos = 4; // first line of yaml
+            while (md.at(firstLinePos) == '\n' || md.at(firstLinePos) == '\r')
+                ++firstLinePos;
+            QByteArray frontMatter = md.sliced(firstLinePos, endMarkerPos - firstLinePos);
+            firstLinePos = endMarkerPos + 4; // first line of markdown after yaml
+            while (md.at(firstLinePos) == '\n' || md.at(firstLinePos) == '\r')
+                ++firstLinePos;
+            md.remove(0, firstLinePos);
+            doc->setMetaInformation(QTextDocument::FrontMatter, QString::fromUtf8(frontMatter));
+            qCDebug(lcMD) << "extracted FrontMatter: size" << frontMatter.size();
+        }
+    }
     m_cursor.beginEditBlock();
     md_parse(md.constData(), MD_SIZE(md.size()), &callbacks, this);
     m_cursor.endEditBlock();

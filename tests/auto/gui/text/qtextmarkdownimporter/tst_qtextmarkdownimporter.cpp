@@ -43,6 +43,7 @@ private slots:
     void pathological();
     void fencedCodeBlocks_data();
     void fencedCodeBlocks();
+    void frontMatter();
 
 private:
     bool isMainFontFixed();
@@ -593,6 +594,28 @@ void tst_QTextMarkdownImporter::fencedCodeBlocks()
     if (doc.toMarkdown() != rewrite && isMainFontFixed())
         QEXPECT_FAIL("", "fixed-pitch main font (QTBUG-103484)", Continue);
     QCOMPARE(doc.toMarkdown(), rewrite);
+}
+
+void tst_QTextMarkdownImporter::frontMatter()
+{
+    QFile f(QFINDTESTDATA("data/yaml.md"));
+    QVERIFY(f.open(QFile::ReadOnly | QIODevice::Text));
+    QString md = QString::fromUtf8(f.readAll());
+    f.close();
+    const int yamlBegin = md.indexOf("name:");
+    const int yamlEnd = md.indexOf("---", yamlBegin);
+    const QString yaml = md.sliced(yamlBegin, yamlEnd - yamlBegin);
+
+    QTextDocument doc;
+    QTextMarkdownImporter(&doc, QTextMarkdownImporter::DialectGitHub).import(md);
+    int blockCount = 0;
+    for (QTextFrame::iterator iterator = doc.rootFrame()->begin(); !iterator.atEnd(); ++iterator) {
+        // Check whether the block is text or a horizontal rule
+        if (!iterator.currentBlock().text().isEmpty())
+            ++blockCount;
+    }
+    QCOMPARE(blockCount, 1); // yaml is not part of the markdown text
+    QCOMPARE(doc.metaInformation(QTextDocument::FrontMatter), yaml); // without fences
 }
 
 QTEST_MAIN(tst_QTextMarkdownImporter)
