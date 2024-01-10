@@ -907,7 +907,7 @@ bool QHttpHeaders::replace(qsizetype i, WellKnownHeader name, QAnyStringView new
 
     \sa has(QHttpHeaders::WellKnownHeader)
 */
-bool QHttpHeaders::has(QAnyStringView name) const
+bool QHttpHeaders::contains(QAnyStringView name) const
 {
     return std::any_of(d->headers.cbegin(), d->headers.cend(),
                        [&name](const Header &header) { return headerNameIs(header, name); });
@@ -916,9 +916,9 @@ bool QHttpHeaders::has(QAnyStringView name) const
 /*!
     \overload has(QAnyStringView)
 */
-bool QHttpHeaders::has(WellKnownHeader name) const
+bool QHttpHeaders::contains(WellKnownHeader name) const
 {
-    return has(headerNames[qToUnderlying(name)]);
+    return contains(headerNames[qToUnderlying(name)]);
 }
 
 /*!
@@ -943,7 +943,7 @@ QList<QByteArray> QHttpHeaders::names() const
 */
 void QHttpHeaders::removeAll(QAnyStringView name)
 {
-    if (has(name)) {
+    if (contains(name)) {
         d.detach();
         d->headers.removeIf([&name](const Header &header){
             return headerNameIs(header, name);
