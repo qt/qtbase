@@ -14,6 +14,10 @@ endif()
 qt_internal_add_test(tst_qanystringview
     SOURCES
         tst_qanystringview.cpp
+    NO_BATCH # QTBUG-121815
+    DEFINES
+        QTEST_THROW_ON_FAIL
+        QTEST_THROW_ON_SKIP
     LIBRARIES
         Qt::CorePrivate
         Qt::TestPrivate

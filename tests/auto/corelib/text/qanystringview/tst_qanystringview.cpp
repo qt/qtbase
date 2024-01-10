@@ -28,6 +28,10 @@
 #include <deque>
 #include <list>
 
+#ifndef QTEST_THROW_ON_FAIL
+# error This test requires QTEST_THROW_ON_FAIL being active.
+#endif
+
 #ifdef __cpp_char8_t
 #  define ONLY_IF_CHAR_8_T(expr) expr
 #else
@@ -363,8 +367,6 @@ private Q_SLOTS:
     void fromUShort() const { fromCharacter(ushort(0xE4), 1); }
     void fromChar32T() const {
         fromCharacter(U'ä', 1);
-        if (QTest::currentTestFailed())
-            return;
         fromCharacter(U'\x1F0A0', 2); // U+1F0A0: PLAYING CARD BACK
     }
     void fromWCharT() const {
@@ -374,8 +376,6 @@ private Q_SLOTS:
     void fromQLatin1Char() const { fromCharacter(QLatin1Char('\xE4'), 1); }
     void fromQCharSpecialCharacter() const {
         fromCharacter(QChar::ReplacementCharacter, 1);
-        if (QTest::currentTestFailed())
-            return;
         fromCharacter(QChar::LastValidCodePoint, 1);
     }
 
@@ -661,20 +661,10 @@ void tst_QAnyStringView::fromQStringOrByteArray() const
     QVERIFY(!QAnyStringView(empty).isNull());
 
     conversion_tests(QStringOrByteArray(Strings::oneChar));
-    if (QTest::currentTestFailed())
-        return;
     conversion_tests(QStringOrByteArray(Strings::twoChars));
-    if (QTest::currentTestFailed())
-        return;
     conversion_tests(QStringOrByteArray(Strings::threeChars));
-    if (QTest::currentTestFailed())
-        return;
     conversion_tests(QStringOrByteArray(Strings::regularString));
-    if (QTest::currentTestFailed())
-        return;
     conversion_tests(QStringOrByteArray(Strings::regularLongString));
-    if (QTest::currentTestFailed())
-        return;
     conversion_tests(QStringOrByteArray(Strings::stringWithNulls, Strings::stringWithNullsLength));
 }
 
@@ -760,18 +750,10 @@ void tst_QAnyStringView::fromRange() const
 
     doTest(reinterpret_cast<const Char *>(std::begin(Strings::regularString)),
            reinterpret_cast<const Char *>(std::end(Strings::regularString)));
-    if (QTest::currentTestFailed())
-        return;
-
     doTest(reinterpret_cast<const Char *>(std::begin(Strings::regularLongString)),
            reinterpret_cast<const Char *>(std::end(Strings::regularLongString)));
-    if (QTest::currentTestFailed())
-        return;
-
     doTest(reinterpret_cast<const Char *>(std::begin(Strings::stringWithNulls)),
            reinterpret_cast<const Char *>(std::end(Strings::stringWithNulls)));
-    if (QTest::currentTestFailed())
-        return;
 }
 
 template <typename Char, typename Container>
@@ -786,8 +768,6 @@ void tst_QAnyStringView::fromContainer() const
 
     std::copy(s.begin(), s.end(), std::back_inserter(c));
     conversion_tests(std::move(c));
-    if (QTest::currentTestFailed())
-        return;
 
     // repeat with nulls
     c = {};
