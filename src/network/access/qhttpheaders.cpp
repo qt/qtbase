@@ -870,7 +870,7 @@ bool QHttpHeaders::insert(qsizetype i, WellKnownHeader name, QAnyStringView valu
 }
 
 /*!
-    Replaces the header entry at index \a i, with \a name and \a value.
+    Replaces the header entry at index \a i, with \a name and \a newValue.
     The index must be valid (see \l size()). Returns whether the replace
     succeeded.
 
@@ -878,28 +878,28 @@ bool QHttpHeaders::insert(qsizetype i, WellKnownHeader name, QAnyStringView valu
       replace(qsizetype, QHttpHeaders::WellKnownHeader, QAnyStringView), size()
     \sa {Allowed field name and value characters}
 */
-bool QHttpHeaders::replace(qsizetype i, QAnyStringView name, QAnyStringView value)
+bool QHttpHeaders::replace(qsizetype i, QAnyStringView name, QAnyStringView newValue)
 {
     d->verify(i);
-    if (!isValidHttpHeaderNameField(name) || !isValidHttpHeaderValueField(value))
+    if (!isValidHttpHeaderNameField(name) || !isValidHttpHeaderValueField(newValue))
         return false;
 
     d.detach();
-    d->headers.replace(i, {normalizedName(name), normalizedValue(value)});
+    d->headers.replace(i, {normalizedName(name), normalizedValue(newValue)});
     return true;
 }
 
 /*!
     \overload replace(qsizetype, QAnyStringView, QAnyStringView)
 */
-bool QHttpHeaders::replace(qsizetype i, WellKnownHeader name, QAnyStringView value)
+bool QHttpHeaders::replace(qsizetype i, WellKnownHeader name, QAnyStringView newValue)
 {
     d->verify(i);
-    if (!isValidHttpHeaderValueField(value))
+    if (!isValidHttpHeaderValueField(newValue))
         return false;
 
     d.detach();
-    d->headers.replace(i, {headerNames[qToUnderlying(name)], normalizedValue(value)});
+    d->headers.replace(i, {headerNames[qToUnderlying(name)], normalizedValue(newValue)});
     return true;
 }
 

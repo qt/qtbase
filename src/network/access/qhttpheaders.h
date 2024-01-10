@@ -224,8 +224,8 @@ public:
     Q_NETWORK_EXPORT bool insert(qsizetype i, QAnyStringView name, QAnyStringView value);
     Q_NETWORK_EXPORT bool insert(qsizetype i, WellKnownHeader name, QAnyStringView value);
 
-    Q_NETWORK_EXPORT bool replace(qsizetype i, QAnyStringView name, QAnyStringView value);
-    Q_NETWORK_EXPORT bool replace(qsizetype i, WellKnownHeader name, QAnyStringView value);
+    Q_NETWORK_EXPORT bool replace(qsizetype i, QAnyStringView name, QAnyStringView newValue);
+    Q_NETWORK_EXPORT bool replace(qsizetype i, WellKnownHeader name, QAnyStringView newValue);
 
     Q_NETWORK_EXPORT bool has(QAnyStringView name) const;
     Q_NETWORK_EXPORT bool has(WellKnownHeader name) const;
