@@ -1,7 +1,9 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+if (NOT WASM) # QTBUG-121822
 add_subdirectory(qanystringview)
+endif()
 add_subdirectory(qbytearray)
 add_subdirectory(qbytearray_large)
 add_subdirectory(qbytearrayapisymmetry)
