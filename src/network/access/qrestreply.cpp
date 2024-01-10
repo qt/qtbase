@@ -157,31 +157,34 @@ void QRestReply::abort()
 
     The returned value is wrapped in \c std::optional. If the conversion
     from the received data fails (empty data or JSON parsing error),
-    \c std::nullopt is returned.
+    \c std::nullopt is returned, and \a error is filled with details.
 
     Calling this function consumes the received data, and any further calls
     to get response data will return empty.
 
     This function returns \c {std::nullopt} and will not consume
-    any data if the reply is not finished.
+    any data if the reply is not finished. If \a error is passed, it will be
+    set to QJsonParseError::NoError to distinguish this case from an actual
+    error.
 
     \sa body(), text(), finished(), isFinished()
 */
-std::optional<QJsonDocument> QRestReply::json()
+std::optional<QJsonDocument> QRestReply::json(QJsonParseError *error)
 {
     Q_D(QRestReply);
     if (!isFinished()) {
         qCWarning(lcQrest, "Attempt to read json() of an unfinished reply, ignoring.");
+        if (error)
+            *error = {0, QJsonParseError::ParseError::NoError};
         return std::nullopt;
     }
     QJsonParseError parseError;
     const QByteArray data = d->networkReply->readAll();
     const QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
-    if (parseError.error != QJsonParseError::NoError) {
-        qCDebug(lcQrest) << "Response data not JSON:" << parseError.errorString()
-                         << "at" << parseError.offset << data;
+    if (error)
+        *error = parseError;
+    if (parseError.error)
         return std::nullopt;
-    }
     return doc;
 }
 

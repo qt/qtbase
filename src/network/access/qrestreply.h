@@ -12,6 +12,7 @@ QT_BEGIN_NAMESPACE
 
 class QByteArray;
 class QDebug;
+struct QJsonParseError;
 class QJsonDocument;
 class QString;
 
@@ -25,7 +26,7 @@ public:
 
     QNetworkReply *networkReply() const;
 
-    std::optional<QJsonDocument> json();
+    std::optional<QJsonDocument> json(QJsonParseError *error = nullptr);
     QByteArray body();
     QString text();
 
