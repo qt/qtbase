@@ -5,6 +5,13 @@ enable_if:
   contains_value: DebianPackaging
 instructions:
   - type: EnvironmentVariable
+    variableName: COIN_TARGET_DIST
+    variableValue: "tqtc-focal"
+    enable_if:
+      condition: runtime
+      env_var:  COIN_TARGET_DIST
+      equals_value: null
+  - type: EnvironmentVariable
     variableName: COIN_SBUILD_CHROOT
     variableValue: "stable-arm64-sbuild"
     enable_if:
