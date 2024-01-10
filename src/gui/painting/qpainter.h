@@ -54,7 +54,8 @@ public:
         SmoothPixmapTransform = 0x04,
         VerticalSubpixelPositioning = 0x08,
         LosslessImageRendering = 0x40,
-        NonCosmeticBrushPatterns = 0x80
+        NonCosmeticBrushPatterns = 0x80,
+        FixedDraw = 0x4000  // Special Seequent hint for dashed line rendering
     };
     Q_ENUM(RenderHint)
 
