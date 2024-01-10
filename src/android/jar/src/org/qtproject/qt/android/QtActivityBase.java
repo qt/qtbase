@@ -318,7 +318,7 @@ public class QtActivityBase extends Activity
     }
 
     @UsedFromNativeCode
-    QtActivityDelegate getActivityDelegate()
+    QtActivityDelegateBase getActivityDelegate()
     {
         return m_delegate;
     }

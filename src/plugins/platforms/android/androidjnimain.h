@@ -26,7 +26,7 @@ class QWindow;
 class QAndroidPlatformWindow;
 class QBasicMutex;
 
-Q_DECLARE_JNI_CLASS(QtActivityDelegate, "org/qtproject/qt/android/QtActivityDelegate")
+Q_DECLARE_JNI_CLASS(QtActivityDelegateBase, "org/qtproject/qt/android/QtActivityDelegateBase")
 Q_DECLARE_JNI_CLASS(QtInputDelegate, "org/qtproject/qt/android/QtInputDelegate")
 
 namespace QtAndroid
@@ -48,7 +48,7 @@ namespace QtAndroid
     AAssetManager *assetManager();
     jclass applicationClass();
 
-    QtJniTypes::QtActivityDelegate qtActivityDelegate();
+    QtJniTypes::QtActivityDelegateBase qtActivityDelegate();
     QtJniTypes::QtInputDelegate qtInputDelegate();
 
     // Keep synchronized with flags in ActivityDelegate.java

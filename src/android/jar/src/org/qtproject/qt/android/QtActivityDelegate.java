@@ -33,48 +33,36 @@ import android.widget.PopupMenu;
 
 import java.util.HashMap;
 
-class QtActivityDelegate
+class QtActivityDelegate extends QtActivityDelegateBase
 {
-    private Activity m_activity;
+    private static final String QtTAG = "QtActivityDelegate";
 
     private QtRootLayout m_layout = null;
-    private HashMap<Integer, QtWindow> m_topLevelWindows;
     private ImageView m_splashScreen = null;
     private boolean m_splashScreenSticky = false;
 
     private View m_dummyView = null;
-    private QtAccessibilityDelegate m_accessibilityDelegate = null;
-    private QtDisplayManager m_displayManager = null;
 
-    private QtInputDelegate m_inputDelegate = null;
-    private boolean m_membersInitialized = false;
 
     QtActivityDelegate(Activity activity)
     {
-        m_activity = activity;
-        QtNative.setActivity(m_activity);
+        super(activity);
 
         setActionBarVisibility(false);
         setActivityBackgroundDrawable();
     }
 
-    QtDisplayManager displayManager() {
-        return m_displayManager;
-    }
 
     @UsedFromNativeCode
-    QtInputDelegate getInputDelegate() {
-        return m_inputDelegate;
-    }
-
-    @UsedFromNativeCode
+    @Override
     QtLayout getQtLayout()
     {
         return m_layout;
     }
 
     @UsedFromNativeCode
-    public void setSystemUiVisibility(int systemUiVisibility)
+    @Override
+    void setSystemUiVisibility(int systemUiVisibility)
     {
         QtNative.runAction(() -> {
             m_displayManager.setSystemUiVisibility(systemUiVisibility);
@@ -83,45 +71,24 @@ class QtActivityDelegate
         });
     }
 
-    void setContextMenuVisible(boolean contextMenuVisible)
-    {
-        m_contextMenuVisible = contextMenuVisible;
-    }
-
-    boolean isContextMenuVisible()
-    {
-        return m_contextMenuVisible;
-    }
-
+    @Override
     public boolean updateActivityAfterRestart(Activity activity) {
-        try {
-            // set new activity
-            m_activity = activity;
-            QtNative.setActivity(m_activity);
+        boolean updated = super.updateActivityAfterRestart(activity);
+        // TODO verify whether this is even needed, the last I checked the initMembers
+        // recreates the layout anyway
+        // update the new activity content view to old layout
+        ViewGroup layoutParent = (ViewGroup)m_layout.getParent();
+        if (layoutParent != null)
+            layoutParent.removeView(m_layout);
 
-            // update the new activity content view to old layout
-            ViewGroup layoutParent = (ViewGroup) m_layout.getParent();
-            if (layoutParent != null)
-                layoutParent.removeView(m_layout);
+        m_activity.setContentView(m_layout);
 
-            m_activity.setContentView(m_layout);
-
-            // force c++ native activity object to update
-            return QtNative.updateNativeActivity();
-        } catch (Exception e) {
-            Log.w(QtNative.QtTAG, "Failed to update the activity.");
-            e.printStackTrace();
-            return false;
-        }
+        return updated;
     }
 
-    public void startNativeApplication(String appParams, String mainLib)
+    @Override
+    void startNativeApplicationImpl(String appParams, String mainLib)
     {
-        if (m_membersInitialized)
-            return;
-
-        initMembers();
-
         m_layout.getViewTreeObserver().addOnGlobalLayoutListener(
                 new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
@@ -132,50 +99,13 @@ class QtActivityDelegate
                 });
     }
 
-    private void initMembers()
+    @Override
+    protected void setUpLayout()
     {
-        m_layout = new QtRootLayout(m_activity);
-        m_membersInitialized = true;
-        m_topLevelWindows = new HashMap<Integer, QtWindow>();
-
-        m_displayManager = new QtDisplayManager(m_activity);
-        m_displayManager.registerDisplayListener();
-
-        QtInputDelegate.KeyboardVisibilityListener keyboardVisibilityListener =
-                () -> m_displayManager.updateFullScreen();
-        m_inputDelegate = new QtInputDelegate(m_activity, keyboardVisibilityListener);
-
-        try {
-            PackageManager pm = m_activity.getPackageManager();
-            ActivityInfo activityInfo =  pm.getActivityInfo(m_activity.getComponentName(), 0);
-            m_inputDelegate.setSoftInputMode(activityInfo.softInputMode);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-
         int orientation = m_activity.getResources().getConfiguration().orientation;
+        m_layout = new QtRootLayout(m_activity);
 
-        try {
-            ActivityInfo info = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), PackageManager.GET_META_DATA);
-
-            String splashScreenKey = "android.app.splash_screen_drawable_"
-                + (orientation == Configuration.ORIENTATION_LANDSCAPE ? "landscape" : "portrait");
-            if (!info.metaData.containsKey(splashScreenKey))
-                splashScreenKey = "android.app.splash_screen_drawable";
-
-            if (info.metaData.containsKey(splashScreenKey)) {
-                m_splashScreenSticky = info.metaData.containsKey("android.app.splash_screen_sticky") && info.metaData.getBoolean("android.app.splash_screen_sticky");
-                int id = info.metaData.getInt(splashScreenKey);
-                m_splashScreen = new ImageView(m_activity);
-                m_splashScreen.setImageDrawable(m_activity.getResources().getDrawable(id, m_activity.getTheme()));
-                m_splashScreen.setScaleType(ImageView.ScaleType.FIT_XY);
-                m_splashScreen.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-                m_layout.addView(m_splashScreen);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        setUpSplashScreen(orientation);
         m_activity.registerForContextMenu(m_layout);
         m_activity.setContentView(m_layout,
                                   new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -211,12 +141,41 @@ class QtActivityDelegate
         m_inputDelegate.setEditPopupMenu(new EditPopupMenu(m_activity, m_layout));
     }
 
-    public void hideSplashScreen()
+    @Override
+    protected void setUpSplashScreen(int orientation)
     {
-        hideSplashScreen(0);
+        try {
+            ActivityInfo info = m_activity.getPackageManager().getActivityInfo(
+                                                                    m_activity.getComponentName(),
+                                                                    PackageManager.GET_META_DATA);
+
+            String splashScreenKey = "android.app.splash_screen_drawable_"
+                + (orientation == Configuration.ORIENTATION_LANDSCAPE ? "landscape" : "portrait");
+            if (!info.metaData.containsKey(splashScreenKey))
+                splashScreenKey = "android.app.splash_screen_drawable";
+
+            if (info.metaData.containsKey(splashScreenKey)) {
+                m_splashScreenSticky =
+                    info.metaData.containsKey("android.app.splash_screen_sticky") &&
+                    info.metaData.getBoolean("android.app.splash_screen_sticky");
+
+                int id = info.metaData.getInt(splashScreenKey);
+                m_splashScreen = new ImageView(m_activity);
+                m_splashScreen.setImageDrawable(m_activity.getResources().getDrawable(
+                                                                        id, m_activity.getTheme()));
+                m_splashScreen.setScaleType(ImageView.ScaleType.FIT_XY);
+                m_splashScreen.setLayoutParams(new ViewGroup.LayoutParams(
+                                                            ViewGroup.LayoutParams.MATCH_PARENT,
+                                                            ViewGroup.LayoutParams.MATCH_PARENT));
+                m_layout.addView(m_splashScreen);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public void hideSplashScreen(final int duration)
+    @Override
+    protected void hideSplashScreen(final int duration)
     {
         QtNative.runAction(() -> {
             if (m_splashScreen == null)
@@ -252,49 +211,15 @@ class QtActivityDelegate
     }
 
     @UsedFromNativeCode
-    public void notifyLocationChange(int viewId)
-    {
-        if (m_accessibilityDelegate == null)
-            return;
-        m_accessibilityDelegate.notifyLocationChange(viewId);
-    }
-
-    @UsedFromNativeCode
-    public void notifyObjectHide(int viewId, int parentId)
-    {
-        if (m_accessibilityDelegate == null)
-            return;
-        m_accessibilityDelegate.notifyObjectHide(viewId, parentId);
-    }
-
-    @UsedFromNativeCode
-    public void notifyObjectFocus(int viewId)
-    {
-        if (m_accessibilityDelegate == null)
-            return;
-        m_accessibilityDelegate.notifyObjectFocus(viewId);
-    }
-
-    @UsedFromNativeCode
-    public void notifyValueChanged(int viewId, String value)
-    {
-        if (m_accessibilityDelegate == null)
-            return;
-        m_accessibilityDelegate.notifyValueChanged(viewId, value);
-    }
-
-    @UsedFromNativeCode
-    public void notifyScrolledEvent(int viewId)
-    {
-        if (m_accessibilityDelegate == null)
-            return;
-        m_accessibilityDelegate.notifyScrolledEvent(viewId);
-    }
-
-    @UsedFromNativeCode
     public void initializeAccessibility()
     {
-        QtNative.runAction(() -> m_accessibilityDelegate = new QtAccessibilityDelegate(m_layout));
+        QtNative.runAction(() -> {
+            // FIXME make QtAccessibilityDelegate window based
+            if (m_layout != null)
+                m_accessibilityDelegate = new QtAccessibilityDelegate(m_layout);
+            else
+                Log.w(QtTAG, "Null layout, failed to initialize accessibility delegate.");
+        });
     }
 
     void handleUiModeChange(int uiMode)
@@ -345,6 +270,7 @@ class QtActivityDelegate
     }
 
     @UsedFromNativeCode
+    @Override
     public void openContextMenu(final int x, final int y, final int w, final int h)
     {
         m_layout.postDelayed(() -> {
@@ -365,6 +291,7 @@ class QtActivityDelegate
         QtNative.runAction(() -> m_activity.closeContextMenu());
     }
 
+    @Override
     void setActionBarVisibility(boolean visible)
     {
         if (m_activity.getActionBar() == null)
@@ -376,8 +303,12 @@ class QtActivityDelegate
     }
 
     @UsedFromNativeCode
+    @Override
     public void addTopLevelWindow(final QtWindow window)
     {
+        if (window == null)
+            return;
+
         QtNative.runAction(()-> {
             if (m_topLevelWindows.size() == 0) {
                 if (m_dummyView != null) {
@@ -398,7 +329,8 @@ class QtActivityDelegate
     }
 
     @UsedFromNativeCode
-    public void removeTopLevelWindow(final int id)
+    @Override
+    void removeTopLevelWindow(final int id)
     {
         QtNative.runAction(()-> {
             if (m_topLevelWindows.containsKey(id)) {
@@ -415,24 +347,35 @@ class QtActivityDelegate
     }
 
     @UsedFromNativeCode
-    public void bringChildToFront(final int id)
+    @Override
+    void bringChildToFront(final int id)
     {
         QtNative.runAction(() -> {
             QtWindow window = m_topLevelWindows.get(id);
-            if (window != null) {
+            if (window != null)
                 m_layout.moveChild(window.getLayout(), m_topLevelWindows.size() - 1);
-            }
         });
     }
 
     @UsedFromNativeCode
-    public void bringChildToBack(int id)
+    @Override
+    void bringChildToBack(int id)
     {
         QtNative.runAction(() -> {
             QtWindow window = m_topLevelWindows.get(id);
             if (window != null)
                 m_layout.moveChild(window.getLayout(), 0);
         });
+    }
+
+    @Override
+    QtAccessibilityDelegate createAccessibilityDelegate()
+    {
+        if (m_layout != null)
+            return new QtAccessibilityDelegate(m_layout);
+
+        Log.w(QtTAG, "Null layout, failed to initialize accessibility delegate.");
+        return null;
     }
 
     private void setActivityBackgroundDrawable()
