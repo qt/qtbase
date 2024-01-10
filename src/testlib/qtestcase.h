@@ -23,6 +23,26 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_EXCEPTIONS
+
+#ifdef QTEST_THROW_ON_FAILURE
+# define QTEST_FAIL_ACTION QTest::Internal::throwOnFail()
+#else
+# define QTEST_FAIL_ACTION do { QTest::Internal::maybeThrowOnFail(); return; } while (false)
+#endif
+
+#ifdef QTEST_THROW_ON_SKIP
+# define QTEST_SKIP_ACTION QTest::Internal::throwOnSkip()
+#else
+# define QTEST_SKIP_ACTION do { QTest::Internal::maybeThrowOnSkip(); return; } while (false)
+#endif
+
+#else
+# if defined(QTEST_THROW_ON_FAILURE) || defined(QTEST_THROW_ON_SKIP)
+#  error QTEST_THROW_ON_FAILURE/SKIP require exception support enabled.
+# endif
+#endif // QT_NO_EXCEPTIONS
+
 #ifndef QTEST_FAIL_ACTION
 # define QTEST_FAIL_ACTION return
 #endif
@@ -300,6 +320,11 @@ namespace QTest
 {
     namespace Internal {
 
+    [[noreturn]] Q_TESTLIB_EXPORT void throwOnFail();
+    [[noreturn]] Q_TESTLIB_EXPORT void throwOnSkip();
+    Q_TESTLIB_EXPORT void maybeThrowOnFail();
+    Q_TESTLIB_EXPORT void maybeThrowOnSkip();
+
     Q_TESTLIB_EXPORT QString formatTryTimeoutDebugMessage(q_no_char8_t::QUtf8StringView expr, int timeout, int actual);
 
     template<typename T> // Output registered enums
@@ -385,6 +410,36 @@ namespace QTest
 #endif  // QT_CONFIG(batch_test_support)
 
     Q_TESTLIB_EXPORT void setMainSourcePath(const char *file, const char *builddir = nullptr);
+    Q_TESTLIB_EXPORT void setThrowOnFail(bool enable) noexcept;
+    Q_TESTLIB_EXPORT void setThrowOnSkip(bool enable) noexcept;
+
+    class ThrowOnFailEnabler {
+        Q_DISABLE_COPY_MOVE(ThrowOnFailEnabler)
+    public:
+        ThrowOnFailEnabler() { setThrowOnFail(true); }
+        ~ThrowOnFailEnabler() { setThrowOnFail(false); }
+    };
+
+    class ThrowOnSkipEnabler {
+        Q_DISABLE_COPY_MOVE(ThrowOnSkipEnabler)
+    public:
+        ThrowOnSkipEnabler() { setThrowOnSkip(true); }
+        ~ThrowOnSkipEnabler() { setThrowOnSkip(false); }
+    };
+
+    class ThrowOnFailDisabler {
+        Q_DISABLE_COPY_MOVE(ThrowOnFailDisabler)
+    public:
+        ThrowOnFailDisabler() { setThrowOnFail(false); }
+        ~ThrowOnFailDisabler() { setThrowOnFail(true); }
+    };
+
+    class ThrowOnSkipDisabler {
+        Q_DISABLE_COPY_MOVE(ThrowOnSkipDisabler)
+    public:
+        ThrowOnSkipDisabler() { setThrowOnSkip(false); }
+        ~ThrowOnSkipDisabler() { setThrowOnSkip(true); }
+    };
 
     Q_TESTLIB_EXPORT bool qVerify(bool statement, const char *statementStr, const char *description,
                                  const char *file, int line);

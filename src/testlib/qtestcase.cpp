@@ -458,8 +458,192 @@ namespace QTestPrivate
     Q_TESTLIB_EXPORT Qt::MouseButtons qtestMouseButtons = Qt::NoButton;
 }
 
+namespace {
+
+class TestFailedException : public std::exception // clazy:exclude=copyable-polymorphic
+{
+public:
+    TestFailedException() = default;
+    ~TestFailedException() override = default;
+
+    const char *what() const noexcept override { return "QtTest: test failed"; }
+};
+
+class TestSkippedException : public std::exception // clazy:exclude=copyable-polymorphic
+{
+public:
+    TestSkippedException() = default;
+    ~TestSkippedException() override = default;
+
+    const char *what() const noexcept override { return "QtTest: test was skipped"; }
+};
+
+} // unnamed namespace
+
 namespace QTest
 {
+
+void Internal::throwOnFail() { throw TestFailedException(); }
+void Internal::throwOnSkip() { throw TestSkippedException(); }
+
+Q_CONSTINIT static QBasicAtomicInt g_throwOnFail = Q_BASIC_ATOMIC_INITIALIZER(0);
+Q_CONSTINIT static QBasicAtomicInt g_throwOnSkip = Q_BASIC_ATOMIC_INITIALIZER(0);
+
+void Internal::maybeThrowOnFail()
+{
+    if (g_throwOnFail.loadRelaxed() > 0)
+        Internal::throwOnFail();
+}
+
+void Internal::maybeThrowOnSkip()
+{
+    if (g_throwOnSkip.loadRelaxed() > 0)
+        Internal::throwOnSkip();
+}
+
+/*!
+    \since 6.8
+    \macro QTEST_THROW_ON_FAIL
+    \relates <QTest>
+
+    When defined, QCOMPARE()/QVERIFY() etc always throw on failure.
+    QTest::throwOnFail() then no longer has any effect.
+*/
+
+/*!
+    \since 6.8
+    \macro QTEST_THROW_ON_SKIP
+    \relates <QTest>
+
+    When defined, QSKIP() always throws. QTest::throwOnSkip() then no longer
+    has any effect.
+*/
+
+/*!
+    \since 6.8
+    \class QTest::ThrowOnFailEnabler
+    \inmodule QtTestLib
+
+    RAII class around setThrowOnFail().
+*/
+/*!
+    \fn QTest::ThrowOnFailEnabler::ThrowOnFailEnabler()
+
+    Constructor. Calls \c{setThrowOnFail(true)}.
+*/
+/*!
+    \fn QTest::ThrowOnFailEnabler::~ThrowOnFailEnabler()
+
+    Destructor. Calls \c{setThrowOnFail(false)}.
+*/
+
+/*!
+    \since 6.8
+    \class QTest::ThrowOnFailDisabler
+    \inmodule QtTestLib
+
+    RAII class around setThrowOnFail().
+*/
+/*!
+    \fn QTest::ThrowOnFailDisabler::ThrowOnFailDisabler()
+
+    Constructor. Calls \c{setThrowOnFail(false)}.
+*/
+/*!
+    \fn QTest::ThrowOnFailDisabler::~ThrowOnFailDisabler()
+
+    Destructor. Calls \c{setThrowOnFail(true)}.
+*/
+
+/*!
+    \since 6.8
+    \class QTest::ThrowOnSkipEnabler
+    \inmodule QtTestLib
+
+    RAII class around setThrowOnSkip().
+*/
+/*!
+    \fn QTest::ThrowOnSkipEnabler::ThrowOnSkipEnabler()
+
+    Constructor. Calls \c{setThrowOnSkip(true)}.
+*/
+/*!
+    \fn QTest::ThrowOnSkipEnabler::~ThrowOnSkipEnabler()
+
+    Destructor. Calls \c{setThrowOnSkip(false)}.
+*/
+
+/*!
+    \since 6.8
+    \class QTest::ThrowOnSkipDisabler
+    \inmodule QtTestLib
+
+    RAII class around setThrowOnSkip().
+*/
+/*!
+    \fn QTest::ThrowOnSkipDisabler::ThrowOnSkipDisabler()
+
+    Constructor. Calls \c{setThrowOnSkip(false)}.
+*/
+/*!
+    \fn QTest::ThrowOnSkipDisabler::~ThrowOnSkipDisabler()
+
+    Destructor. Calls \c{setThrowOnSkip(true)}.
+*/
+
+/*!
+    \since 6.8
+
+    Enables (\a enable = \c true) or disables (\ enable = \c false) throwing on
+    QCOMPARE()/QVERIFY() failures (as opposed to just returning from the
+    immediately-surrounding function context).
+
+    The feature is reference-counted: If you call this function \e{N} times
+    with \c{true}, you need to call it \e{N} times with \c{false} to get back
+    to where you started.
+
+    The default is \c{false}, unless the \l{Qt Test Environment Variables}
+    {QTEST_THROW_ON_FAIL environment variable} is set.
+
+    This call has no effect when the \l{QTEST_THROW_ON_FAIL} C++ macro is
+    defined.
+
+    \note You must compile your tests with exceptions enabled to use this
+    feature.
+
+    \sa setThrowOnSkip(), ThrowOnFailEnabler, ThrowOnFailDisabler, QTEST_THROW_ON_FAIL
+*/
+void setThrowOnFail(bool enable) noexcept
+{
+    g_throwOnFail.fetchAndAddRelaxed(enable ? 1 : -1);
+}
+
+/*!
+    \since 6.8
+
+    Enables (\a enable = \c true) or disables (\ enable = \c false) throwing on
+    QSKIP() (as opposed to just returning from the immediately-surrounding
+    function context).
+
+    The feature is reference-counted: If you call this function \e{N} times
+    with \c{true}, you need to call it \e{N} times with \c{false} to get back
+    to where you started.
+
+    The default is \c{false}, unless the \l{Qt Test Environment Variables}
+    {QTEST_THROW_ON_SKIP environment variable} is set.
+
+    This call has no effect when the \l{QTEST_THROW_ON_SKIP} C++ macro is
+    defined.
+
+    \note You must compile your tests with exceptions enabled to use this
+    feature.
+
+    \sa setThrowOnFail(), ThrowOnSkipEnabler, ThrowOnSkipDisabler, QTEST_THROW_ON_SKIP
+*/
+void setThrowOnSkip(bool enable) noexcept
+{
+    g_throwOnSkip.fetchAndAddRelaxed(enable ? 1 : -1);
+}
 
 QString Internal::formatTryTimeoutDebugMessage(q_no_char8_t::QUtf8StringView expr, int timeout, int actual)
 {
@@ -546,7 +730,14 @@ static bool skipBlacklisted = false;
 
 static bool invokeTestMethodIfValid(QMetaMethod m, QObject *obj = QTest::currentTestObject)
 {
-    return m.isValid() && m.invoke(obj, Qt::DirectConnection);
+    if (!m.isValid())
+        return false;
+    bool ok = true;
+    try { ok = m.invoke(obj, Qt ::DirectConnection); }
+    catch (const TestFailedException &) {}  // ignore (used for control flow)
+    catch (const TestSkippedException &) {} // ditto
+    // every other exception is someone else's problem
+    return ok;
 }
 
 static void invokeTestMethodIfExists(const char *methodName, QObject *obj = QTest::currentTestObject)
@@ -719,6 +910,11 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
 
     QTest::testFunctions.clear();
     QTest::testTags.clear();
+
+    if (qEnvironmentVariableIsSet("QTEST_THROW_ON_FAIL"))
+        QTest::setThrowOnFail(true);
+    if (qEnvironmentVariableIsSet("QTEST_THROW_ON_SKIP"))
+        QTest::setThrowOnSkip(true);
 
 #if defined(Q_OS_DARWIN) && defined(HAVE_XCTEST)
     if (QXcodeTestLogger::canLogTestProgress())

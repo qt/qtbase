@@ -7,6 +7,7 @@
 
 qt_internal_add_executable(printdatatagswithglobaltags
     NO_INSTALL
+    EXCEPTIONS
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES
         tst_printdatatagswithglobaltags.cpp

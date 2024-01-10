@@ -7,6 +7,7 @@
 
 qt_internal_add_executable(subtest
     NO_INSTALL
+    EXCEPTIONS
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES
         tst_subtest.cpp

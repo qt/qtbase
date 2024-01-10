@@ -7,6 +7,7 @@
 
 qt_internal_add_executable(sleep
     NO_INSTALL
+    EXCEPTIONS
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES
         tst_sleep.cpp

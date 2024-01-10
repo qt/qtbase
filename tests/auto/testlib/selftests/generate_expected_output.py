@@ -204,7 +204,7 @@ del re
 
 # Keep in sync with tst_selftests.cpp's testEnvironment():
 def baseEnv(platname=None,
-            keep=('PATH', 'QT_QPA_PLATFORM', 'ASAN_OPTIONS'),
+            keep=('PATH', 'QT_QPA_PLATFORM', 'QTEST_THROW_ON_FAIL', 'QTEST_THROW_ON_SKIP', 'ASAN_OPTIONS'),
             posix=('HOME', 'USER', 'QEMU_SET_ENV', 'QEMU_LD_PREFIX'),
             nonapple=('DISPLAY', 'XAUTHORITY', 'XAUTHLOCALHOSTNAME'), # and XDG_*
             # Don't actually know how to test for QNX, so this is ignored:
