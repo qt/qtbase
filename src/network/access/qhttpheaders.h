@@ -225,8 +225,8 @@ public:
     Q_NETWORK_EXPORT bool replace(qsizetype i, QAnyStringView name, QAnyStringView value);
     Q_NETWORK_EXPORT bool replace(qsizetype i, WellKnownHeader name, QAnyStringView value);
 
-    Q_NETWORK_EXPORT bool has(QAnyStringView name) const;
-    Q_NETWORK_EXPORT bool has(WellKnownHeader name) const;
+    Q_NETWORK_EXPORT bool contains(QAnyStringView name) const;
+    Q_NETWORK_EXPORT bool contains(WellKnownHeader name) const;
 
     Q_NETWORK_EXPORT QList<QByteArray> names() const;
 

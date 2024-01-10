@@ -194,13 +194,13 @@ void tst_QNetworkRequestFactory::headers()
     // Initial state when no headers are set
     QVERIFY(factory.headers().isEmpty());
     QVERIFY(factory.headers().values(name1).isEmpty());
-    QVERIFY(!factory.headers().has(name1));
+    QVERIFY(!factory.headers().contains(name1));
 
     // Set headers
     QHttpHeaders h1;
     h1.append(name1, value1);
     factory.setHeaders(h1);
-    QVERIFY(factory.headers().has(name1));
+    QVERIFY(factory.headers().contains(name1));
     QCOMPARE(factory.headers().combinedValue(name1), value1);
     QCOMPARE(factory.headers().size(), 1);
     QVERIFY(factory.headers().values("nonexistent").isEmpty());
@@ -209,7 +209,7 @@ void tst_QNetworkRequestFactory::headers()
     QCOMPARE(request.rawHeader(name1), value1);
 
     // Check that empty header does not match
-    QVERIFY(!factory.headers().has(""_ba));
+    QVERIFY(!factory.headers().contains(""_ba));
     QVERIFY(factory.headers().values(""_ba).isEmpty());
 
     // Clear headers
@@ -223,8 +223,8 @@ void tst_QNetworkRequestFactory::headers()
     h1.append(name1, value1);
     h1.append(name2, value2);
     factory.setHeaders(h1);
-    QVERIFY(factory.headers().has(name1));
-    QVERIFY(factory.headers().has(name2));
+    QVERIFY(factory.headers().contains(name1));
+    QVERIFY(factory.headers().contains(name2));
     QCOMPARE(factory.headers().combinedValue(name1), value1);
     QCOMPARE(factory.headers().combinedValue(name2), value2);
     QCOMPARE(factory.headers().size(), 2);
@@ -239,7 +239,7 @@ void tst_QNetworkRequestFactory::headers()
     h1.append(name1, value2);
     h1.append(name1, value3);
     factory.setHeaders(h1);
-    QVERIFY(factory.headers().has(name1));
+    QVERIFY(factory.headers().contains(name1));
     QCOMPARE(factory.headers().combinedValue(name1), value1 + ',' + value2 + ',' + value3);
     request = factory.request();
     QVERIFY(request.hasRawHeader(name1));

@@ -137,8 +137,8 @@ void tst_QHttpHeaders::constructors()
     QHttpHeaders hlist = QHttpHeaders::fromListOfPairs(list);
     QHttpHeaders hmap = QHttpHeaders::fromMultiMap(map);
     QHttpHeaders hhash = QHttpHeaders::fromMultiHash(hash);
-    QVERIFY(hlist.has(nb1) && hmap.has(nb1) && hhash.has(nb1));
-    QVERIFY(!hlist.has(n3) && !hmap.has(n3) && !hhash.has(n3));
+    QVERIFY(hlist.contains(nb1) && hmap.contains(nb1) && hhash.contains(nb1));
+    QVERIFY(!hlist.contains(n3) && !hmap.contains(n3) && !hhash.contains(n3));
     QVERIFY(hlist.equals(hmap));
     QVERIFY(hmap.equals(hhash));
 }
@@ -158,19 +158,19 @@ void tst_QHttpHeaders::accessors()
     h1.clear();
     QVERIFY(h1.isEmpty());
 
-    // has()
+    // contains()
     h1.append(n1, v1);
-    QVERIFY(h1.has(n1));
-    QVERIFY(h1.has(N1));
-    QVERIFY(!h1.has(n2));
-    QVERIFY(!h1.has(QHttpHeaders::WellKnownHeader::Allow));
+    QVERIFY(h1.contains(n1));
+    QVERIFY(h1.contains(N1));
+    QVERIFY(!h1.contains(n2));
+    QVERIFY(!h1.contains(QHttpHeaders::WellKnownHeader::Allow));
     h1.append(QHttpHeaders::WellKnownHeader::Accept, "nothing");
-    QVERIFY(h1.has(QHttpHeaders::WellKnownHeader::Accept));
-    QVERIFY(h1.has("accept"));
+    QVERIFY(h1.contains(QHttpHeaders::WellKnownHeader::Accept));
+    QVERIFY(h1.contains("accept"));
 
     // values()/value()
 #define EXISTS_NOT(H, N) do {                       \
-        QVERIFY(!H.has(N));                         \
+        QVERIFY(!H.contains(N));                    \
         QCOMPARE(H.value(N, "ENOENT"), "ENOENT");   \
         const auto values = H.values(N);            \
         QVERIFY(values.isEmpty());                  \
@@ -180,7 +180,7 @@ void tst_QHttpHeaders::accessors()
 #define EXISTS_N_TIMES(X, H, N, ...) do {                           \
         const std::array expected = { __VA_ARGS__ };                \
         static_assert(std::tuple_size_v<decltype(expected)> == X);  \
-        QVERIFY(H.has(N));                                          \
+        QVERIFY(H.contains(N));                                     \
         QCOMPARE(H.value(N, "ENOENT"), expected.front());           \
         const auto values = H.values(N);                            \
         QCOMPARE(values.size(), X);                                 \
@@ -251,11 +251,11 @@ void tst_QHttpHeaders::accessors()
     QVERIFY(h1.append(n1, v1));
     QCOMPARE(h1.size(), 3);
     h1.removeAll(n1);
-    QVERIFY(!h1.has(n1));
+    QVERIFY(!h1.contains(n1));
     QCOMPARE(h1.size(), 1);
-    QVERIFY(h1.has("accept"));
+    QVERIFY(h1.contains("accept"));
     h1.removeAll(QHttpHeaders::WellKnownHeader::Accept);
-    QVERIFY(!h1.has(QHttpHeaders::WellKnownHeader::Accept));
+    QVERIFY(!h1.contains(QHttpHeaders::WellKnownHeader::Accept));
 
     // removeAt()
     h1.clear();
@@ -264,15 +264,15 @@ void tst_QHttpHeaders::accessors()
     h1.append(n3, v3);
 
     // Valid removals
-    QVERIFY(h1.has(n3));
+    QVERIFY(h1.contains(n3));
     h1.removeAt(2);
-    QVERIFY(!h1.has(n3));
-    QVERIFY(h1.has(n1));
+    QVERIFY(!h1.contains(n3));
+    QVERIFY(h1.contains(n1));
     h1.removeAt(0);
-    QVERIFY(!h1.has(n1));
-    QVERIFY(h1.has(n2));
+    QVERIFY(!h1.contains(n1));
+    QVERIFY(h1.contains(n2));
     h1.removeAt(0);
-    QVERIFY(!h1.has(n2));
+    QVERIFY(!h1.contains(n2));
     QVERIFY(h1.isEmpty());
 
     // toListOfPairs()
@@ -424,17 +424,17 @@ void tst_QHttpHeaders::headerNameField()
 
     h1.append(nonNullLatin1, v1);
     QCOMPARE(h1.size(), 1);
-    QVERIFY(h1.has(nonNullLatin1));
+    QVERIFY(h1.contains(nonNullLatin1));
     QCOMPARE(h1.combinedValue(nonNullLatin1), v1);
 
     h1.append(nonNullUTF8, v2);
     QCOMPARE(h1.size(), 2);
-    QVERIFY(h1.has(nonNullUTF8));
+    QVERIFY(h1.contains(nonNullUTF8));
     QCOMPARE(h1.combinedValue(nonNullUTF8), v2);
 
     h1.append(nonNullUTF16, v3);
     QCOMPARE(h1.size(), 3);
-    QVERIFY(h1.has(nonNullUTF16));
+    QVERIFY(h1.contains(nonNullUTF16));
     QCOMPARE(h1.combinedValue(nonNullUTF16), v3);
 }
 
@@ -508,17 +508,17 @@ void tst_QHttpHeaders::headerValueField()
 
     h1.append(n1, nonNullLatin1);
     QCOMPARE(h1.size(), 1);
-    QVERIFY(h1.has(n1));
+    QVERIFY(h1.contains(n1));
     QCOMPARE(h1.combinedValue(n1), "abc");
 
     h1.append(n2, nonNullUTF8);
     QCOMPARE(h1.size(), 2);
-    QVERIFY(h1.has(n2));
+    QVERIFY(h1.contains(n2));
     QCOMPARE(h1.combinedValue(n2), "def");
 
     h1.append(n3, nonNullUTF16);
     QCOMPARE(h1.size(), 3);
-    QVERIFY(h1.has(n3));
+    QVERIFY(h1.contains(n3));
     QCOMPARE(h1.combinedValue(n3), "ghi");
 }
 
