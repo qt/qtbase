@@ -552,7 +552,7 @@ qt_feature("poll_select" PRIVATE
 qt_feature_definition("poll_select" "QT_NO_NATIVE_POLL")
 qt_feature("posix_sem" PRIVATE
     LABEL "POSIX semaphores"
-    CONDITION TEST_posix_sem
+    CONDITION TEST_posix_sem AND QT_FEATURE_systemsemaphore
 )
 qt_feature("posix_shm" PRIVATE
     LABEL "POSIX shared memory"
@@ -577,7 +577,7 @@ qt_feature("syslog" PRIVATE
 )
 qt_feature("sysv_sem" PRIVATE
     LABEL "System V / XSI semaphores"
-    CONDITION TEST_sysv_sem
+    CONDITION TEST_sysv_sem AND QT_FEATURE_systemsemaphore
 )
 qt_feature("sysv_shm" PRIVATE
     LABEL "System V / XSI shared memory"
