@@ -116,17 +116,20 @@ inline void useVerifyThrowsException() {}
 
 #  define QVERIFY_THROWS_EXCEPTION(exceptiontype, ...) \
     do {\
+        bool qverify_throws_exception_did_not_throw = false; \
         QT_TRY {\
             __VA_ARGS__; \
             QTest::qFail("Expected exception of type " #exceptiontype " to be thrown" \
                          " but no exception caught", __FILE__, __LINE__); \
-            QTEST_FAIL_ACTION; \
+            qverify_throws_exception_did_not_throw = true; \
         } QT_CATCH (const exceptiontype &) { \
             /* success */ \
         } QT_CATCH (...) {\
             QTest::qCaught(#exceptiontype, __FILE__, __LINE__); \
             QTEST_FAIL_ACTION; \
         }\
+        if (qverify_throws_exception_did_not_throw) \
+            QTEST_FAIL_ACTION; \
     } while (false)
 
 #else // QT_NO_EXCEPTIONS
