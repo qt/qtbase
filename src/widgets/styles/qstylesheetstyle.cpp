@@ -3687,8 +3687,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
             if (btn->features & QStyleOptionButton::HasMenu) {
                 QRenderRule subRule = renderRule(w, opt, PseudoElement_PushButtonMenuIndicator);
-                QRect ir = positionRect(w, rule, subRule, PseudoElement_PushButtonMenuIndicator,
-                                        baseStyle()->subElementRect(SE_PushButtonBevel, btn, w), opt->direction);
+                QRect ir = positionRect(w, rule, subRule, PseudoElement_PushButtonMenuIndicator, opt->rect, opt->direction);
                 if (subRule.hasDrawable()) {
                     subRule.drawRule(p, ir);
                 } else {
