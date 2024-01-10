@@ -849,13 +849,16 @@ QByteArray QWinTimeZonePrivate::systemTimeZoneId() const
 
 QList<QByteArray> QWinTimeZonePrivate::availableTimeZoneIds() const
 {
-    QList<QByteArray> result;
-    const auto winIds = availableWindowsIds();
-    for (const QByteArray &winId : winIds)
-        result += windowsIdToIanaIds(winId);
-    std::sort(result.begin(), result.end());
-    result.erase(std::unique(result.begin(), result.end()), result.end());
-    return result;
+    static const QList<QByteArray> cache = [] {
+        QList<QByteArray> result;
+        const auto winIds = availableWindowsIds();
+        for (const QByteArray &winId : winIds)
+            result += windowsIdToIanaIds(winId);
+        std::sort(result.begin(), result.end());
+        result.erase(std::unique(result.begin(), result.end()), result.end());
+        return result;
+    }();
+    return cache;
 }
 
 QTimeZonePrivate::Data QWinTimeZonePrivate::ruleToData(const QWinTransitionRule &rule,
