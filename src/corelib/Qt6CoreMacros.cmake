@@ -757,6 +757,20 @@ function(qt6_finalize_target target)
         _qt_internal_finalize_executable(${ARGV})
     endif()
 
+    if(APPLE)
+        # Tell CMake to generate run-scheme for the executable when generating
+        # Xcode projects. This avoids Xcode auto-generating default schemes for
+        # all targets, which includes internal and build-only targets.
+        get_target_property(generate_scheme "${target}" XCODE_GENERATE_SCHEME)
+        if(generate_scheme MATCHES "-NOTFOUND" AND (
+            target_type STREQUAL "EXECUTABLE" OR
+            target_type STREQUAL "SHARED_LIBRARY" OR
+            target_type STREQUAL "STATIC_LIBRARY" OR
+            target_type STREQUAL "MODULE_LIBRARY"))
+            set_property(TARGET "${target}" PROPERTY XCODE_GENERATE_SCHEME TRUE)
+        endif()
+    endif()
+
     set_target_properties(${target} PROPERTIES _qt_is_finalized TRUE)
 endfunction()
 
