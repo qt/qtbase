@@ -740,6 +740,7 @@ void tst_QRestAccessManager::json()
     QNetworkRequest request(server.url());
     QRestReply *replyFromServer = nullptr;
     QJsonDocument responseJsonDocument;
+    QJsonParseError parseError;
 
     HttpData serverSideRequest;  // The request data the server received
     HttpData serverSideResponse; // The response data the server responds with
@@ -751,10 +752,19 @@ void tst_QRestAccessManager::json()
 
     // Test receiving valid json object
     serverSideResponse.body = "{\"key1\":\"value1\",""\"key2\":\"value2\"}\n"_ba;
-    manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; });
-    QTRY_VERIFY(replyFromServer);
-    std::optional json = replyFromServer->json();
+    replyFromServer = manager.get(request);
+    // Read unfinished reply
+    QVERIFY(!replyFromServer->isFinished());
+    QTest::ignoreMessage(QtWarningMsg, "Attempt to read json() of an unfinished reply, ignoring.");
+    parseError.error = QJsonParseError::ParseError::DocumentTooLarge; // Reset to impossible value
+    QVERIFY(!replyFromServer->json(&parseError));
+    QCOMPARE(parseError.error, QJsonParseError::ParseError::NoError);
+    // Read finished reply
+    QTRY_VERIFY(replyFromServer->isFinished());
+    parseError.error = QJsonParseError::ParseError::DocumentTooLarge;
+    std::optional json = replyFromServer->json(&parseError);
     QVERIFY(json);
+    QCOMPARE(parseError.error, QJsonParseError::ParseError::NoError);
     responseJsonDocument = *json;
     QVERIFY(responseJsonDocument.isObject());
     QCOMPARE(responseJsonDocument["key1"], "value1");
@@ -766,7 +776,11 @@ void tst_QRestAccessManager::json()
     serverSideResponse.body = "foobar"_ba;
     manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; });
     QTRY_VERIFY(replyFromServer);
-    QVERIFY(!replyFromServer->json().has_value()); // std::nullopt returned
+    parseError.error = QJsonParseError::ParseError::DocumentTooLarge;
+    QVERIFY(!replyFromServer->json(&parseError).has_value()); // std::nullopt returned
+    QCOMPARE_NE(parseError.error, QJsonParseError::ParseError::NoError);
+    QCOMPARE_NE(parseError.error, QJsonParseError::ParseError::DocumentTooLarge);
+    QCOMPARE_GT(parseError.offset, 0);
     replyFromServer->deleteLater();
     replyFromServer = nullptr;
 
@@ -774,7 +788,9 @@ void tst_QRestAccessManager::json()
     serverSideResponse.body = "[\"foo\", \"bar\"]\n"_ba;
     manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; });
     QTRY_VERIFY(replyFromServer);
-    json = replyFromServer->json();
+    parseError.error = QJsonParseError::ParseError::DocumentTooLarge;
+    json = replyFromServer->json(&parseError);
+    QCOMPARE(parseError.error, QJsonParseError::ParseError::NoError);
     QVERIFY(json);
     responseJsonDocument = *json;
     QVERIFY(responseJsonDocument.isArray());
@@ -788,7 +804,11 @@ void tst_QRestAccessManager::json()
     serverSideResponse.body = "foobar"_ba;
     manager.get(request, this, [&](QRestReply *reply) { replyFromServer = reply; });
     QTRY_VERIFY(replyFromServer);
-    QVERIFY(!replyFromServer->json().has_value()); // std::nullopt returned
+    parseError.error = QJsonParseError::ParseError::DocumentTooLarge;
+    QVERIFY(!replyFromServer->json(&parseError).has_value()); // std::nullopt returned
+    QCOMPARE_NE(parseError.error, QJsonParseError::ParseError::NoError);
+    QCOMPARE_NE(parseError.error, QJsonParseError::ParseError::DocumentTooLarge);
+    QCOMPARE_GT(parseError.offset, 0);
     replyFromServer->deleteLater();
     replyFromServer = nullptr;
 }
