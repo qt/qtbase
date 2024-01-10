@@ -2661,6 +2661,7 @@ void QComboBox::showPopup()
     QPoint above = mapToGlobal(listRect.topLeft());
     int aboveHeight = above.y() - screen.y();
     bool boundToScreen = !window()->testAttribute(Qt::WA_DontShowOnScreen);
+    const auto listView = qobject_cast<QListView *>(d->viewContainer()->itemView());
 
     {
         int listHeight = 0;
@@ -2675,6 +2676,8 @@ void QComboBox::showPopup()
         while (!toCheck.isEmpty()) {
             QModelIndex parent = toCheck.pop();
             for (int i = 0, end = d->model->rowCount(parent); i < end; ++i) {
+                if (listView && listView->isRowHidden(i))
+                    continue;
                 QModelIndex idx = d->model->index(i, d->modelColumn, parent);
                 if (!idx.isValid())
                     continue;
