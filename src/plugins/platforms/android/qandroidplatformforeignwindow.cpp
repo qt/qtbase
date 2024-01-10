@@ -48,12 +48,16 @@ void QAndroidPlatformForeignWindow::setGeometry(const QRect &rect)
 
 void QAndroidPlatformForeignWindow::setVisible(bool visible)
 {
-    if (!m_view.isValid() || isEmbeddingContainer())
+    if (isEmbeddingContainer()) {
+        QAndroidPlatformWindow::setVisible(visible);
+        return;
+    }
+
+    if (!m_view.isValid())
         return;
 
     QtAndroid::setViewVisibility(m_view.object(), visible);
 
-    QAndroidPlatformWindow::setVisible(visible);
     if (!visible && m_nativeViewInserted) {
         m_nativeQtWindow.callMethod<void>("removeNativeView");
         m_nativeViewInserted = false;

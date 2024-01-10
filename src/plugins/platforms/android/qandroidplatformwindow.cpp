@@ -17,7 +17,8 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window")
 
 QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
-    : QPlatformWindow(window), m_nativeQtWindow(nullptr), m_nativeParentQtWindow(nullptr),
+    : QPlatformWindow(window), m_nativeQtWindow(nullptr),
+      m_surfaceContainerType(SurfaceContainer::TextureView), m_nativeParentQtWindow(nullptr),
       m_androidSurfaceObject(nullptr)
 {
     m_windowFlags = Qt::Widget;
@@ -48,8 +49,11 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
     if (isEmbeddingContainer())
         return;
 
-    if (parent())
-        m_nativeParentQtWindow = static_cast<QAndroidPlatformWindow*>(parent())->nativeWindow();
+    if (parent()) {
+        QAndroidPlatformWindow *androidParent = static_cast<QAndroidPlatformWindow*>(parent());
+        if (!androidParent->isEmbeddingContainer())
+            m_nativeParentQtWindow = androidParent->nativeWindow();
+    }
 
     m_nativeQtWindow = QJniObject::construct<QtJniTypes::QtWindow>(
         QNativeInterface::QAndroidApplication::context(),
@@ -62,9 +66,7 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
     // TODO should handle case where this changes at runtime -> need to change existing window
     // into TextureView (or perhaps not, if the parent window would be SurfaceView, as long as
     // onTop was false it would stay below the children)
-    if (platformScreen()->windows().size() > 1)
-        m_surfaceContainerType = SurfaceContainer::TextureView;
-    else
+    if (platformScreen()->windows().size() <= 1)
         m_surfaceContainerType = SurfaceContainer::SurfaceView;
 }
 
@@ -114,6 +116,8 @@ void QAndroidPlatformWindow::setGeometry(const QRect &rect)
 
 void QAndroidPlatformWindow::setVisible(bool visible)
 {
+    if (isEmbeddingContainer())
+        return;
     m_nativeQtWindow.callMethod<void>("setVisible", visible);
 
     if (visible) {
@@ -164,20 +168,22 @@ Qt::WindowFlags QAndroidPlatformWindow::windowFlags() const
 void QAndroidPlatformWindow::setParent(const QPlatformWindow *window)
 {
     using namespace QtJniTypes;
+
     if (window) {
+        auto androidWindow = static_cast<const QAndroidPlatformWindow*>(window);
+        if (androidWindow->isEmbeddingContainer())
+            return;
         // If we were a top level window, remove from screen
         if (!m_nativeParentQtWindow.isValid())
             platformScreen()->removeWindow(this);
 
-        const QAndroidPlatformWindow *androidWindow =
-                                                static_cast<const QAndroidPlatformWindow*>(window);
         const QtWindow parentWindow = androidWindow->nativeWindow();
         // If this was a child window of another window, the java method takes care of that
         m_nativeQtWindow.callMethod<void, QtWindow>("setParent", parentWindow.object());
         m_nativeParentQtWindow = parentWindow;
-    } else {
-        m_nativeQtWindow.callMethod<void, QtWindow>("setParent", nullptr);
+    } else if (QtAndroid::isQtApplication()) {
         platformScreen()->addWindow(this);
+        m_nativeQtWindow.callMethod<void, QtWindow>("setParent", nullptr);
         m_nativeParentQtWindow = QJniObject();
     }
 }
