@@ -20,6 +20,10 @@ static bool glibDisabled = []() {
 
 #include <chrono>
 
+#ifndef QTEST_THROW_ON_FAIL
+# error This test requires QTEST_THROW_ON_FAIL being active.
+#endif
+
 using namespace std::chrono_literals;
 
 static constexpr auto PreciseTimerInterval = 10ms;
@@ -230,8 +234,6 @@ void tst_QEventDispatcher::registerTimer()
 {
     TimerManager timers(eventDispatcher, this);
     timers.registerAll();
-    if (QTest::currentTestFailed())
-        return;
 
     // check that all 3 are present in the eventDispatcher's registeredTimer() list
     QCOMPARE(timers.registeredTimers().size(), 3);
@@ -267,8 +269,6 @@ void tst_QEventDispatcher::registerTimer()
     QCOMPARE(timerIdFromEvent, timers.preciseTimerId());
     // now unregister it and make sure it's gone
     timers.unregister(Qt::TimerId(timers.preciseTimerId()));
-    if (QTest::currentTestFailed())
-        return;
     QCOMPARE(timers.registeredTimers().size(), 2);
     QVERIFY(!timers.foundPrecise());
     QVERIFY(timers.foundCoarse());
@@ -291,8 +291,6 @@ void tst_QEventDispatcher::registerTimer()
     QCOMPARE(timerIdFromEvent, timers.coarseTimerId());
     // now unregister it and make sure it's gone
     timers.unregister(Qt::TimerId(timers.coarseTimerId()));
-    if (QTest::currentTestFailed())
-        return;
     QCOMPARE(timers.registeredTimers().size(), 1);
     QVERIFY(!timers.foundPrecise());
     QVERIFY(!timers.foundCoarse());
@@ -300,8 +298,6 @@ void tst_QEventDispatcher::registerTimer()
 
     // not going to wait for the VeryCoarseTimer, would take too long, just unregister it
     timers.unregisterAll();
-    if (QTest::currentTestFailed())
-        return;
     QVERIFY(timers.registeredTimers().isEmpty());
 }
 

@@ -21,6 +21,9 @@ foreach(test ${test_names})
         NO_BATCH
         SOURCES
             ../../../corelib/kernel/qeventdispatcher/tst_qeventdispatcher.cpp
+        DEFINES
+            QTEST_THROW_ON_FAIL
+            QTEST_THROW_ON_SKIP
         LIBRARIES
             Qt::Gui
     )
