@@ -23,36 +23,44 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QTEST_FAIL_ACTION
+# define QTEST_FAIL_ACTION return
+#endif
+
+#ifndef QTEST_SKIP_ACTION
+# define QTEST_SKIP_ACTION return
+#endif
+
 class qfloat16;
 class QRegularExpression;
 
 #define QVERIFY(statement) \
 do {\
     if (!QTest::qVerify(static_cast<bool>(statement), #statement, "", __FILE__, __LINE__))\
-        return;\
+        QTEST_FAIL_ACTION; \
 } while (false)
 
 #define QFAIL(message) \
 do {\
     QTest::qFail(static_cast<const char *>(message), __FILE__, __LINE__);\
-    return;\
+    QTEST_FAIL_ACTION; \
 } while (false)
 
 #define QVERIFY2(statement, description) \
 do {\
     if (statement) {\
         if (!QTest::qVerify(true, #statement, static_cast<const char *>(description), __FILE__, __LINE__))\
-            return;\
+            QTEST_FAIL_ACTION; \
     } else {\
         if (!QTest::qVerify(false, #statement, static_cast<const char *>(description), __FILE__, __LINE__))\
-            return;\
+            QTEST_FAIL_ACTION; \
     }\
 } while (false)
 
 #define QCOMPARE(actual, expected) \
 do {\
     if (!QTest::qCompare(actual, expected, #actual, #expected, __FILE__, __LINE__))\
-        return;\
+        QTEST_FAIL_ACTION; \
 } while (false)
 
 // A wrapper lambda is introduced to extend the lifetime of lhs and rhs in
@@ -71,7 +79,7 @@ do { \
                                    #lhs, #rhs, QTest::ComparisonOperation::opId, \
                                    __FILE__, __LINE__); \
     }(lhs, rhs)) { \
-        return; \
+        QTEST_FAIL_ACTION; \
     } \
 } while (false)
 
@@ -91,7 +99,7 @@ do { \
             /* success */ \
         } QT_CATCH (...) { \
             QTest::qCaught(nullptr, __FILE__, __LINE__); \
-            return; \
+            QTEST_FAIL_ACTION; \
         } \
     } while (false) \
     /* end */
@@ -112,12 +120,12 @@ inline void useVerifyThrowsException() {}
             __VA_ARGS__; \
             QTest::qFail("Expected exception of type " #exceptiontype " to be thrown" \
                          " but no exception caught", __FILE__, __LINE__); \
-            return; \
+            QTEST_FAIL_ACTION; \
         } QT_CATCH (const exceptiontype &) { \
             /* success */ \
         } QT_CATCH (...) {\
             QTest::qCaught(#exceptiontype, __FILE__, __LINE__); \
-            return; \
+            QTEST_FAIL_ACTION; \
         }\
     } while (false)
 
@@ -240,7 +248,7 @@ do { \
 #define QSKIP_INTERNAL(statement) \
 do {\
     QTest::qSkip(static_cast<const char *>(statement), __FILE__, __LINE__);\
-    return;\
+    QTEST_SKIP_ACTION; \
 } while (false)
 
 #define QSKIP(statement, ...) QSKIP_INTERNAL(statement)
@@ -248,7 +256,7 @@ do {\
 #define QEXPECT_FAIL(dataIndex, comment, mode)\
 do {\
     if (!QTest::qExpectFail(dataIndex, static_cast<const char *>(comment), QTest::mode, __FILE__, __LINE__))\
-        return;\
+        QTEST_FAIL_ACTION; \
 } while (false)
 
 #define QFETCH(Type, name)\
@@ -260,7 +268,7 @@ do {\
 #define QTEST(actual, testElement)\
 do {\
     if (!QTest::qTest(actual, testElement, #actual, #testElement, __FILE__, __LINE__))\
-        return;\
+        QTEST_FAIL_ACTION; \
 } while (false)
 
 #ifdef QT_TESTCASE_BUILDDIR

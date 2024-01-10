@@ -2627,11 +2627,11 @@ void QTest::qCaught(const char *expected, const char *what, const char *file, in
 
     If the exception inherits std::exception, its what() message is logged and
     this function returns normally. The caller of this function must then
-    execute a \c{return} to exit from the test function.
+    execute a \c{QTEST_FAIL_ACTION} to exit from the test function.
 
     Otherwise, a message saying an unknown exception was caught is logged and
-    this function rethrows the exception, skipping the \c{return} that follows
-    this function call in the caller.
+    this function rethrows the exception, skipping the \c{QTEST_FAIL_ACTION}
+    that follows this function call in the caller.
 */
 void QTest::qCaught(const char *expected, const char *file, int line)
 {
@@ -2644,7 +2644,7 @@ void QTest::qCaught(const char *expected, const char *file, int line)
         qCaught(expected, nullptr, file, line);
         throw;
     }
-    // caller shall invoke `return` if control reached here
+    // caller shall invoke `QTEST_FAIL_ACTION` if control reached here
 }
 
 
