@@ -1063,6 +1063,18 @@ qsizetype QHttpHeaders::size() const noexcept
 }
 
 /*!
+    Attempts to allocate memory for at least \a size header entries.
+
+    If you know in advance how how many header entries there will
+    be, you may call this function to prevent reallocations
+    and memory fragmentation.
+*/
+void QHttpHeaders::reserve(qsizetype size)
+{
+    d->headers.reserve(size);
+}
+
+/*!
     Compares this instance with \a other and returns \c true if they
     are considered equal in accordance with the provided \a options.
 

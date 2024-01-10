@@ -245,6 +245,7 @@ public:
     Q_NETWORK_EXPORT QByteArray combinedValue(WellKnownHeader name) const;
 
     Q_NETWORK_EXPORT qsizetype size() const noexcept;
+    Q_NETWORK_EXPORT void reserve(qsizetype size);
     bool isEmpty() const noexcept { return size() == 0; }
 
     Q_NETWORK_EXPORT bool equals(const QHttpHeaders &other,
