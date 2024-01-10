@@ -33,6 +33,8 @@ set(java_sources
     src/org/qtproject/qt/android/UsedFromNativeCode.java
     src/org/qtproject/qt/android/QtRootLayout.java
     src/org/qtproject/qt/android/QtWindow.java
+    src/org/qtproject/qt/android/QtActivityDelegateBase.java
+    src/org/qtproject/qt/android/QtEmbeddedDelegate.java
 )
 
 qt_internal_add_jar(Qt${QtBase_VERSION_MAJOR}Android

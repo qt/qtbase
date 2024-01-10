@@ -203,13 +203,13 @@ void tst_Android::testRunOnAndroidMainThread()
     }
 }
 
-Q_DECLARE_JNI_CLASS(QtActivityDelegate, "org/qtproject/qt/android/QtActivityDelegate")
+Q_DECLARE_JNI_CLASS(QtActivityDelegateBase, "org/qtproject/qt/android/QtActivityDelegateBase")
 
 void setSystemUiVisibility(int visibility)
 {
     QNativeInterface::QAndroidApplication::runOnAndroidMainThread([visibility] {
         auto context = QNativeInterface::QAndroidApplication::context();
-        auto activityDelegate = context.callMethod<QtJniTypes::QtActivityDelegate>("getActivityDelegate");
+        auto activityDelegate = context.callMethod<QtJniTypes::QtActivityDelegateBase>("getActivityDelegate");
         activityDelegate.callMethod<void>("setSystemUiVisibility", jint(visibility));
     }).waitForFinished();
 }
@@ -342,4 +342,3 @@ void tst_Android::orientationChange()
 
 QTEST_MAIN(tst_Android)
 #include "tst_android.moc"
-

@@ -53,7 +53,7 @@ static jobject m_resourcesObj = nullptr;
 static jclass m_qtActivityClass = nullptr;
 static jclass m_qtServiceClass = nullptr;
 
-static QtJniTypes::QtActivityDelegate m_activityDelegate = nullptr;
+static QtJniTypes::QtActivityDelegateBase m_activityDelegate = nullptr;
 static QtJniTypes::QtInputDelegate m_inputDelegate = nullptr;
 
 static int m_pendingApplicationState = -1;
@@ -185,11 +185,11 @@ namespace QtAndroid
     }
 
     // FIXME: avoid direct access to QtActivityDelegate
-    QtJniTypes::QtActivityDelegate qtActivityDelegate()
+    QtJniTypes::QtActivityDelegateBase qtActivityDelegate()
     {
         if (!m_activityDelegate.isValid()) {
             auto activity = QtAndroidPrivate::activity();
-            m_activityDelegate = activity.callMethod<QtJniTypes::QtActivityDelegate>(
+            m_activityDelegate = activity.callMethod<QtJniTypes::QtActivityDelegateBase>(
                     "getActivityDelegate");
         }
 
