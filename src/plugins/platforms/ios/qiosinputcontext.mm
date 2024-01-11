@@ -121,7 +121,7 @@ static QUIView *focusView()
 {
     [self keyboardWillOrDidChange:notification];
 
-    UIResponder *firstResponder = [UIResponder currentFirstResponder];
+    UIResponder *firstResponder = [UIResponder qt_currentFirstResponder];
     if (![firstResponder isKindOfClass:[QIOSTextInputResponder class]])
         return;
 
@@ -234,7 +234,7 @@ static QUIView *focusView()
 
     if (self.state == UIGestureRecognizerStateBegan) {
         qImDebug("hide keyboard gesture was triggered");
-        UIResponder *firstResponder = [UIResponder currentFirstResponder];
+        UIResponder *firstResponder = [UIResponder qt_currentFirstResponder];
         Q_ASSERT([firstResponder isKindOfClass:[QIOSTextInputResponder class]]);
         [firstResponder resignFirstResponder];
     }
