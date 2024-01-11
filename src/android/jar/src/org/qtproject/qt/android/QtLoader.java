@@ -5,9 +5,13 @@
 package org.qtproject.qt.android;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.ComponentInfo;
 import android.content.res.Resources;
 import android.os.Build;
@@ -59,23 +63,35 @@ abstract class QtLoader {
     }
 
     /**
-     * Initializes the context info instance which is used to retrieve
-     * the app metadata from the AndroidManifest.xml or other xml resources.
-     * Some values are dependent on the context being an Activity or Service.
-     **/
-    abstract protected void initContextInfo();
-
-    /**
      * Implements the logic for finish the extended context, mostly called
      * in error cases.
      **/
     abstract protected void finish();
 
     /**
-     * Context specific (Activity/Service) implementation for static classes.
-     * The Activity and Service loaders call different methods.
+     * Initializes the context info instance which is used to retrieve
+     * the app metadata from the AndroidManifest.xml or other xml resources.
+     * Some values are dependent on the context being an Activity or Service.
      **/
-    abstract protected void initStaticClassesImpl(Class<?> initClass, Object staticInitDataObject);
+    protected void initContextInfo() {
+        try {
+            Context context = m_context.getBaseContext();
+            if (context instanceof Activity) {
+                m_contextInfo = context.getPackageManager().getActivityInfo(
+                        ((Activity)context).getComponentName(), PackageManager.GET_META_DATA);
+            } else if (context instanceof Service) {
+                m_contextInfo = context.getPackageManager().getServiceInfo(
+                        new ComponentName(context, context.getClass()),
+                        PackageManager.GET_META_DATA);
+            } else {
+                Log.w(QtTAG, "Context is not an instance of Activity or Service, could not get " +
+                             "context info for it");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            finish();
+        }
+    }
 
     /**
      * Extract the common metadata in the base implementation. And the extended methods
@@ -123,18 +139,41 @@ abstract class QtLoader {
     }
 
     private void initStaticClasses() {
+        Context context = m_context.getBaseContext();
+        boolean isActivity = context instanceof Activity;
         for (String className : getStaticInitClasses()) {
             try {
                 Class<?> initClass = m_classLoader.loadClass(className);
                 Object staticInitDataObject = initClass.newInstance(); // create an instance
-                initStaticClassesImpl(initClass, staticInitDataObject);
 
-                // For modules that don't need/have setActivity/setService
-                Method m = initClass.getMethod("setContext", Context.class);
-                m.invoke(staticInitDataObject, m_context);
-            } catch (ClassNotFoundException | IllegalAccessException | InstantiationException |
-                     NoSuchMethodException | InvocationTargetException e) {
-                Log.d(QtTAG, "Class " + className + " does not implement setContext method");
+                if (isActivity) {
+                    try {
+                        Method m = initClass.getMethod("setActivity", Activity.class, Object.class);
+                        m.invoke(staticInitDataObject, (Activity) context, this);
+                    } catch (InvocationTargetException | NoSuchMethodException e) {
+                        Log.d(QtTAG, "Class " + initClass.getName() + " does not implement " +
+                                     "setActivity method");
+                    }
+                } else {
+                    try {
+                        Method m = initClass.getMethod("setService", Service.class, Object.class);
+                        m.invoke(staticInitDataObject, (Service) context, this);
+                    } catch (InvocationTargetException | NoSuchMethodException e) {
+                        Log.d(QtTAG, "Class " + initClass.getName() + " does not implement " +
+                                     "setService method");
+                    }
+                }
+
+                try {
+                    // For modules that don't need/have setActivity/setService
+                    Method m = initClass.getMethod("setContext", Context.class);
+                    m.invoke(staticInitDataObject, context);
+                } catch (InvocationTargetException | NoSuchMethodException e) {
+                    Log.d(QtTAG, "Class " + initClass.getName() + " does not implement " +
+                                 "setContext method");
+                }
+            } catch (IllegalAccessException | ClassNotFoundException | InstantiationException e) {
+                Log.d(QtTAG, "Could not instantiate class " + className + ", " + e);
             }
         }
     }
