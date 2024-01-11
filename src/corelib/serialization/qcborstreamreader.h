@@ -77,7 +77,7 @@ public:
     void clear();
     void reset();
 
-#if QT_CORE_REMOVED_SINCE(6, 6)
+#if QT_CORE_REMOVED_SINCE(6, 7)
     QCborError lastError();
 #endif
     QCborError lastError() const;
