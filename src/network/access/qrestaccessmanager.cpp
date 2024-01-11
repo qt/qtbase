@@ -129,17 +129,8 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li -
         \li X
     \row
-        \li QJsonObject *)
+        \li QJsonDocument *)
         \li X
-        \li X
-        \li X
-        \li -
-        \li X
-        \li -
-        \li -
-    \row
-        \li QJsonArray *)
-        \li -
         \li X
         \li X
         \li -
@@ -175,7 +166,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
         \li X
     \endtable
 
-    *) QJsonObject and QJsonArray are sent in \l QJsonDocument::Compact format,
+    *) QJsonDocument is sent in \l QJsonDocument::Compact format,
        and the \c Content-Type header is set to \c {application/json} if the
        \c Content-Type header was not set
 
@@ -226,7 +217,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 
 /*!
     \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QNetworkReply *QRestAccessManager::get(
-                    const QNetworkRequest &request, const QJsonObject &data,
+                    const QNetworkRequest &request, const QJsonDocument &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
 
@@ -244,7 +235,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 
 /*!
     \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QNetworkReply *QRestAccessManager::post(
-                    const QNetworkRequest &request, const QJsonObject &data,
+                    const QNetworkRequest &request, const QJsonDocument &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
 
@@ -263,8 +254,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
     data types are supported:
     \list
         \li QByteArray
-        \li QJsonObject *)
-        \li QJsonArray *)
+        \li QJsonDocument *)
         \li QVariantMap **)
         \li QHttpMultiPart*
         \li QIODevice*
@@ -279,15 +269,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 */
 
 /*!
-    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QNetworkReply *QRestAccessManager::post(
-                    const QNetworkRequest &request, const QJsonArray &data,
-                    const ContextTypeForFunctor<Functor> *context,
-                    Functor &&callback)
 
-    \overload
-*/
-
-/*!
     \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QNetworkReply *QRestAccessManager::post(
                     const QNetworkRequest &request, const QVariantMap &data,
                     const ContextTypeForFunctor<Functor> *context,
@@ -325,7 +307,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 
 /*!
     \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QNetworkReply *QRestAccessManager::put(
-                    const QNetworkRequest &request, const QJsonObject &data,
+                    const QNetworkRequest &request, const QJsonDocument &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
 
@@ -344,8 +326,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
     data types are supported:
     \list
         \li QByteArray
-        \li QJsonObject *)
-        \li QJsonArray *)
+        \li QJsonDocument *)
         \li QVariantMap **)
         \li QHttpMultiPart*
         \li QIODevice*
@@ -357,15 +338,6 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
     **) QVariantMap is converted to and treated as a QJsonObject
 
     \sa QRestReply
-*/
-
-/*!
-    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QNetworkReply *QRestAccessManager::put(
-                    const QNetworkRequest &request, const QJsonArray &data,
-                    const ContextTypeForFunctor<Functor> *context,
-                    Functor &&callback)
-
-    \overload
 */
 
 /*!
@@ -406,7 +378,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
 
 /*!
     \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QNetworkReply *QRestAccessManager::patch(
-                    const QNetworkRequest &request, const QJsonObject &data,
+                    const QNetworkRequest &request, const QJsonDocument &data,
                     const ContextTypeForFunctor<Functor> *context,
                     Functor &&callback)
 
@@ -425,8 +397,7 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
     data types are supported:
     \list
         \li QByteArray
-        \li QJsonObject *)
-        \li QJsonArray *)
+        \li QJsonDocument *)
         \li QVariantMap **)
         \li QIODevice*
     \endlist
@@ -437,15 +408,6 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
     **) QVariantMap is converted to and treated as a QJsonObject
 
     \sa QRestReply
-*/
-
-/*!
-    \fn template<typename Functor, QRestAccessManager::if_compatible_callback<Functor>> QNetworkReply *QRestAccessManager::patch(
-                    const QNetworkRequest &request, const QJsonArray &data,
-                    const ContextTypeForFunctor<Functor> *context,
-                    Functor &&callback)
-
-    \overload
 */
 
 /*!
@@ -595,16 +557,7 @@ QRestAccessManagerPrivate::~QRestAccessManagerPrivate()
 }
 
 QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
-                                                 const QJsonObject &data, const QObject *context,
-                                                 QtPrivate::QSlotObjectBase *slot)
-{
-    Q_D(QRestAccessManager);
-    return d->executeRequest([&](auto req, auto json) { return d->qnam->post(req, json); },
-                             data, request, context, slot);
-}
-
-QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
-                                                 const QJsonArray &data, const QObject *context,
+                                                 const QJsonDocument &data, const QObject *context,
                                                  QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
@@ -616,7 +569,7 @@ QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &reque
                                                  const QVariantMap &data, const QObject *context,
                                                  QtPrivate::QSlotObjectBase *slot)
 {
-    return postWithDataImpl(request, QJsonObject::fromVariantMap(data), context, slot);
+    return postWithDataImpl(request, QJsonDocument::fromVariant(data), context, slot);
 }
 
 QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
@@ -659,7 +612,7 @@ QNetworkReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &reques
 }
 
 QNetworkReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &request,
-                                                const QJsonObject &data, const QObject *context,
+                                                const QJsonDocument &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
@@ -690,16 +643,7 @@ QNetworkReply *QRestAccessManager::headNoDataImpl(const QNetworkRequest &request
 }
 
 QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
-                                                const QJsonObject &data, const QObject *context,
-                                                QtPrivate::QSlotObjectBase *slot)
-{
-    Q_D(QRestAccessManager);
-    return d->executeRequest([&](auto req, auto json) { return d->qnam->put(req, json); },
-                             data, request, context, slot);
-}
-
-QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
-                                                const QJsonArray &data, const QObject *context,
+                                                const QJsonDocument &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
@@ -711,7 +655,7 @@ QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &reques
                                                 const QVariantMap &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
-    return putWithDataImpl(request, QJsonObject::fromVariantMap(data), context, slot);
+    return putWithDataImpl(request, QJsonDocument::fromVariant(data), context, slot);
 }
 
 QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
@@ -740,17 +684,7 @@ QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &reques
 static const auto PATCH = "PATCH"_ba;
 
 QNetworkReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
-                                                const QJsonObject &data, const QObject *context,
-                                                QtPrivate::QSlotObjectBase *slot)
-{
-    Q_D(QRestAccessManager);
-    return d->executeRequest(
-            [&](auto req, auto json){ return d->qnam->sendCustomRequest(req, PATCH, json); },
-            data, request, context, slot);
-}
-
-QNetworkReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
-                                                const QJsonArray &data, const QObject *context,
+                                                const QJsonDocument &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
@@ -763,7 +697,7 @@ QNetworkReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &requ
                                                 const QVariantMap &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
-    return patchWithDataImpl(request, QJsonObject::fromVariantMap(data), context, slot);
+    return patchWithDataImpl(request, QJsonDocument::fromVariant(data), context, slot);
 }
 
 QNetworkReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
