@@ -401,10 +401,10 @@ void QSemaphore::release(int n)
         return;
     }
 
-    {
-        const auto locker = qt_scoped_lock(d->mutex);
-        d->avail += n;
-    }
+    // Keep mutex locked until after notify_all() lest another thread acquire()s
+    // the semaphore once d->avail == 0 and then destroys it, leaving `d` dangling.
+    const auto locker = qt_scoped_lock(d->mutex);
+    d->avail += n;
     d->cond.notify_all();
 }
 
