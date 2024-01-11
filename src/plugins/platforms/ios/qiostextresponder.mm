@@ -164,7 +164,7 @@
 {
     FirstResponderCandidate firstResponderCandidate(self);
 
-    qImDebug() << "self:" << self << "first:" << [UIResponder currentFirstResponder];
+    qImDebug() << "self:" << self << "first:" << [UIResponder qt_currentFirstResponder];
 
     if (![super becomeFirstResponder]) {
         qImDebug() << self << "was not allowed to become first responder";
@@ -178,7 +178,7 @@
 
 - (BOOL)resignFirstResponder
 {
-    qImDebug() << "self:" << self << "first:" << [UIResponder currentFirstResponder];
+    qImDebug() << "self:" << self << "first:" << [UIResponder qt_currentFirstResponder];
 
     // Don't allow activation events of the window that we're doing text on behalf on
     // to steal responder.
@@ -196,11 +196,11 @@
     // a regular responder transfer to another window. In the former case, iOS
     // will set the new first-responder to our next-responder, and in the latter
     // case we'll have an active responder candidate.
-    if (![UIResponder currentFirstResponder] && !FirstResponderCandidate::currentCandidate()) {
+    if (![UIResponder qt_currentFirstResponder] && !FirstResponderCandidate::currentCandidate()) {
         // No first responder set anymore, sync this with Qt by clearing the
         // focus object.
         m_inputContext->clearCurrentFocusObject();
-    } else if ([UIResponder currentFirstResponder] == [self nextResponder]) {
+    } else if ([UIResponder qt_currentFirstResponder] == [self nextResponder]) {
         // We have resigned the keyboard, and transferred first responder back to the parent view
         Q_ASSERT(!FirstResponderCandidate::currentCandidate());
         if ([self currentImeState:Qt::ImEnabled].toBool()) {

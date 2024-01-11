@@ -119,7 +119,7 @@ QT_END_NAMESPACE
 
 @implementation UIResponder (QtFirstResponder)
 
-+ (id)currentFirstResponder
++ (id)qt_currentFirstResponder
 {
     if (qt_apple_isApplicationExtension()) {
         qWarning() << "can't get first responder in application extensions!";
