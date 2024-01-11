@@ -6395,23 +6395,48 @@ void QWidget::setFocusProxy(QWidget * w)
         // the focus chain.
         const QWidget *parentOfW = w->parentWidget();
         Q_ASSERT(parentOfW); // can't be nullptr since we are an ancestor of w
-        QWidget *firstChild = nullptr;
-        const auto childList = children();
-        for (QObject *child : childList) {
-            if ((firstChild = qobject_cast<QWidget *>(child)))
-                break;
-        }
-        Q_ASSERT(firstChild); // can't be nullptr since w is a child
-        QWidget *oldNext = d->focus_next;
-        QWidget *oldPrev = d->focus_prev;
-        oldNext->d_func()->focus_prev = oldPrev;
-        oldPrev->d_func()->focus_next = oldNext;
 
-        oldPrev = firstChild->d_func()->focus_prev;
-        d->focus_next = firstChild;
-        d->focus_prev = oldPrev;
-        oldPrev->d_func()->focus_next = this;
-        firstChild->d_func()->focus_prev = this;
+        // Find a focus chain position to insert to
+        QWidget *firstChild = nullptr;
+        if (isAncestorOf(d->focus_prev)) {
+            // Case 1: somewhere in the middle of a chain with child widgets already - go back to find the first
+            for (auto *prevToThis = d->focus_prev; isAncestorOf(prevToThis); prevToThis = prevToThis->previousInFocusChain()){
+                if (prevToThis == this) {
+                    break;  // We have got back round to this, which means a focus chain loop
+                }
+
+                firstChild = prevToThis;
+            }
+        } else if (!isAncestorOf(d->focus_next)) {
+            // Case 2: not next to children in focus chain in either direction
+
+            // Find a child to start searching from, since we can't assume children are even in the same focus chain
+            const auto childList = children();
+            for (QObject *child : childList) {
+                if ((firstChild = qobject_cast<QWidget *>(child)))
+                    break;
+            }
+
+            // Now find the actual start of the focus chain involving our descendants
+            for (auto *prevToFirstChild = firstChild; isAncestorOf(prevToFirstChild); prevToFirstChild = prevToFirstChild->previousInFocusChain()){
+                firstChild = prevToFirstChild;
+            }
+        }
+
+        // N.B. Case 3: already at the start of a focus chain of our descendants - do nothing and leave firstChild alone
+
+        if (firstChild && firstChild != this && firstChild != d->focus_next) {
+            QWidget *oldNext = d->focus_next;
+            QWidget *oldPrev = d->focus_prev;
+            oldNext->d_func()->focus_prev = oldPrev;
+            oldPrev->d_func()->focus_next = oldNext;
+
+            oldPrev = firstChild->d_func()->focus_prev;
+            d->focus_next = firstChild;
+            d->focus_prev = oldPrev;
+            oldPrev->d_func()->focus_next = this;
+            firstChild->d_func()->focus_prev = this;
+        }
     } else if (w && w->isAncestorOf(this)) {
         // If the focus proxy is a parent, 'this' has to be inserted directly after its parent in the focus chain
         // remove it from the chain and insert this into the focus chain after its parent
