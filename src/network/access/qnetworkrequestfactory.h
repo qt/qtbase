@@ -46,10 +46,10 @@ public:
     Q_NETWORK_EXPORT void setSslConfiguration(const QSslConfiguration &configuration);
 #endif
 
-    Q_NETWORK_EXPORT QNetworkRequest request() const;
-    Q_NETWORK_EXPORT QNetworkRequest request(const QUrlQuery &query) const;
-    Q_NETWORK_EXPORT QNetworkRequest request(const QString &path) const;
-    Q_NETWORK_EXPORT QNetworkRequest request(const QString &path, const QUrlQuery &query) const;
+    Q_NETWORK_EXPORT QNetworkRequest createRequest() const;
+    Q_NETWORK_EXPORT QNetworkRequest createRequest(const QUrlQuery &query) const;
+    Q_NETWORK_EXPORT QNetworkRequest createRequest(const QString &path) const;
+    Q_NETWORK_EXPORT QNetworkRequest createRequest(const QString &path, const QUrlQuery &query) const;
 
     Q_NETWORK_EXPORT void setHeaders(const QHttpHeaders &headers);
     Q_NETWORK_EXPORT QHttpHeaders headers() const;

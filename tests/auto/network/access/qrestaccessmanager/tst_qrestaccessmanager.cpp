@@ -584,7 +584,7 @@ void tst_QRestAccessManager::userInfo()
         serverSideRequest = request; // store for checking later the 'Authorization' header value
     });
 
-    ReplyPtr reply(manager.get(factory.request()));
+    ReplyPtr reply(manager.get(factory.createRequest()));
     QTRY_VERIFY(reply.get()->isFinished());
     QVERIFY(reply.get()->isSuccess());
     QCOMPARE(reply.get()->httpStatus(), 200);

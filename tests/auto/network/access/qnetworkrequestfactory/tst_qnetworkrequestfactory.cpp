@@ -88,9 +88,9 @@ void tst_QNetworkRequestFactory::urlAndPath()
     QCOMPARE(factory2.baseUrl(), baseUrl);
 
     // Request path
-    QNetworkRequest request = factory1.request();
-    QCOMPARE(request.url(), baseUrl); // No path was provided for request(), expect baseUrl
-    request = factory1.request(requestPath);
+    QNetworkRequest request = factory1.createRequest();
+    QCOMPARE(request.url(), baseUrl); // No path was provided for createRequest(), expect baseUrl
+    request = factory1.createRequest(requestPath);
     QCOMPARE(request.url(), expectedRequestUrl);
 
     // Check the request path didn't change base url
@@ -103,9 +103,9 @@ void tst_QNetworkRequestFactory::queryParameters()
     const QUrlQuery query1{{"q1k", "q1v"}};
     const QUrlQuery query2{{"q2k", "q2v"}};
 
-    // Set query parameters in request() call
-    QCOMPARE(factory.request(query1).url(), QUrl{"http://example.com?q1k=q1v"});
-    QCOMPARE(factory.request(query2).url(), QUrl{"http://example.com?q2k=q2v"});
+    // Set query parameters in createRequest() call
+    QCOMPARE(factory.createRequest(query1).url(), QUrl{"http://example.com?q1k=q1v"});
+    QCOMPARE(factory.createRequest(query2).url(), QUrl{"http://example.com?q2k=q2v"});
 
     // Set query parameters into the factory
     factory.setQueryParameters(query1);
@@ -114,38 +114,38 @@ void tst_QNetworkRequestFactory::queryParameters()
         QVERIFY(resultQuery.hasQueryItem(item.first));
         QCOMPARE(resultQuery.queryItemValue(item.first), item.second);
     }
-    QCOMPARE(factory.request().url(), QUrl{"http://example.com?q1k=q1v"});
+    QCOMPARE(factory.createRequest().url(), QUrl{"http://example.com?q1k=q1v"});
 
-    // Set query parameters into both request() and factory
-    QCOMPARE(factory.request(query2).url(), QUrl{"http://example.com?q2k=q2v&q1k=q1v"});
+    // Set query parameters into both createRequest() and factory
+    QCOMPARE(factory.createRequest(query2).url(), QUrl{"http://example.com?q2k=q2v&q1k=q1v"});
 
     // Clear query parameters
     factory.clearQueryParameters();
     QVERIFY(factory.queryParameters().isEmpty());
-    QCOMPARE(factory.request().url(), QUrl{"http://example.com"});
+    QCOMPARE(factory.createRequest().url(), QUrl{"http://example.com"});
 
     const QString pathWithQuery{"content?raw=1"};
     // Set query parameters in per-request path
-    QCOMPARE(factory.request(pathWithQuery).url(),
+    QCOMPARE(factory.createRequest(pathWithQuery).url(),
              QUrl{"http://example.com/content?raw=1"});
     // Set query parameters in per-request path and the query parameter
-    QCOMPARE(factory.request(pathWithQuery, query1).url(),
+    QCOMPARE(factory.createRequest(pathWithQuery, query1).url(),
              QUrl{"http://example.com/content?q1k=q1v&raw=1"});
     // Set query parameter in per-request path and into the factory
     factory.setQueryParameters(query2);
-    QCOMPARE(factory.request(pathWithQuery).url(),
+    QCOMPARE(factory.createRequest(pathWithQuery).url(),
              QUrl{"http://example.com/content?raw=1&q2k=q2v"});
     // Set query parameters in per-request, as additional parameters, and into the factory
-    QCOMPARE(factory.request(pathWithQuery, query1).url(),
+    QCOMPARE(factory.createRequest(pathWithQuery, query1).url(),
              QUrl{"http://example.com/content?q1k=q1v&raw=1&q2k=q2v"});
 
     // Test that other than path and query items as part of path are ignored
     factory.setQueryParameters(query1);
     QRegularExpression re("The provided path*");
     QTest::ignoreMessage(QtMsgType::QtWarningMsg, re);
-    QCOMPARE(factory.request("https://example2.com").url(), QUrl{"http://example.com?q1k=q1v"});
+    QCOMPARE(factory.createRequest("https://example2.com").url(), QUrl{"http://example.com?q1k=q1v"});
     QTest::ignoreMessage(QtMsgType::QtWarningMsg, re);
-    QCOMPARE(factory.request("https://example2.com?q3k=q3v").url(),
+    QCOMPARE(factory.createRequest("https://example2.com?q3k=q3v").url(),
              QUrl{"http://example.com?q3k=q3v&q1k=q1v"});
 }
 
@@ -175,9 +175,9 @@ void tst_QNetworkRequestFactory::sslConfiguration()
     QCOMPARE_NE(factory1, factory2);
 
     // Verify requests are set with appropriate SSL configs
-    QNetworkRequest request1 = factory1.request();
+    QNetworkRequest request1 = factory1.createRequest();
     QCOMPARE(request1.sslConfiguration(), config1);
-    QNetworkRequest request2 = factory2.request();
+    QNetworkRequest request2 = factory2.createRequest();
     QCOMPARE(request2.sslConfiguration(), config2);
 #endif
 }
@@ -204,7 +204,7 @@ void tst_QNetworkRequestFactory::headers()
     QCOMPARE(factory.headers().combinedValue(name1), value1);
     QCOMPARE(factory.headers().size(), 1);
     QVERIFY(factory.headers().values("nonexistent").isEmpty());
-    QNetworkRequest request = factory.request();
+    QNetworkRequest request = factory.createRequest();
     QVERIFY(request.hasRawHeader(name1));
     QCOMPARE(request.rawHeader(name1), value1);
 
@@ -215,7 +215,7 @@ void tst_QNetworkRequestFactory::headers()
     // Clear headers
     factory.clearHeaders();
     QVERIFY(factory.headers().isEmpty());
-    request = factory.request();
+    request = factory.createRequest();
     QVERIFY(!request.hasRawHeader(name1));
 
     // Set headers with more entries
@@ -228,7 +228,7 @@ void tst_QNetworkRequestFactory::headers()
     QCOMPARE(factory.headers().combinedValue(name1), value1);
     QCOMPARE(factory.headers().combinedValue(name2), value2);
     QCOMPARE(factory.headers().size(), 2);
-    request = factory.request();
+    request = factory.createRequest();
     QVERIFY(request.hasRawHeader(name1));
     QVERIFY(request.hasRawHeader(name2));
     QCOMPARE(request.rawHeader(name1), value1);
@@ -241,7 +241,7 @@ void tst_QNetworkRequestFactory::headers()
     factory.setHeaders(h1);
     QVERIFY(factory.headers().has(name1));
     QCOMPARE(factory.headers().combinedValue(name1), value1 + ',' + value2 + ',' + value3);
-    request = factory.request();
+    request = factory.createRequest();
     QVERIFY(request.hasRawHeader(name1));
     QCOMPARE(request.rawHeader(name1), value1 + ',' + value2 + ',' + value3);
 }
@@ -254,7 +254,7 @@ void tst_QNetworkRequestFactory::bearerToken()
 
     factory.setBearerToken(bearerToken1);
     QCOMPARE(factory.bearerToken(), bearerToken1);
-    QNetworkRequest request = factory.request();
+    QNetworkRequest request = factory.createRequest();
     QVERIFY(request.hasRawHeader(authHeader));
     QCOMPARE(request.rawHeader(authHeader), "Bearer "_ba + bearerToken1);
 
@@ -267,7 +267,7 @@ void tst_QNetworkRequestFactory::bearerToken()
 
     factory.setBearerToken(bearerToken2);
     QCOMPARE(factory.bearerToken(), bearerToken2);
-    request = factory.request();
+    request = factory.createRequest();
     QVERIFY(request.hasRawHeader(authHeader));
     QCOMPARE(request.rawHeader(authHeader), "Bearer "_ba + bearerToken2);
 
@@ -276,13 +276,13 @@ void tst_QNetworkRequestFactory::bearerToken()
     QHttpHeaders h1;
     h1.append(authHeader, value);
     factory.setHeaders(h1);
-    request = factory.request();
+    request = factory.createRequest();
     QVERIFY(request.hasRawHeader(authHeader));
     // bearerToken has precedence over manually set header
     QCOMPARE(request.rawHeader(authHeader), "Bearer "_ba + bearerToken2);
     // clear bearer token, the manually set header is now used
     factory.clearBearerToken();
-    request = factory.request();
+    request = factory.createRequest();
     QVERIFY(request.hasRawHeader(authHeader));
     QCOMPARE(request.rawHeader(authHeader), value);
 }
@@ -326,12 +326,12 @@ void tst_QNetworkRequestFactory::timeout()
     constexpr auto timeout = 150ms;
 
     QNetworkRequestFactory factory;
-    QNetworkRequest request = factory.request();
+    QNetworkRequest request = factory.createRequest();
     QCOMPARE(factory.transferTimeout(), defaultTimeout);
     QCOMPARE(request.transferTimeoutAsDuration(), defaultTimeout);
 
     factory.setTransferTimeout(timeout);
-    request = factory.request();
+    request = factory.createRequest();
     QCOMPARE(factory.transferTimeout(), timeout);
     QCOMPARE(request.transferTimeoutAsDuration(), timeout);
 }

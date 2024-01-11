@@ -10,9 +10,9 @@ QNetworkRequestFactory api{{"https://example.com/v1"_L1}};
 api.setBearerToken("my_token");
 
 // Issue requests (reply handling omitted for brevity)
-manager.get(api.request("models"_L1)); // https://example.com/v1/models
+manager.get(api.createRequest("models"_L1)); // https://example.com/v1/models
 // The conventional leading '/' for the path can be used as well
-manager.get(api.request("/models"_L1)); // https://example.com/v1/models
+manager.get(api.createRequest("/models"_L1)); // https://example.com/v1/models
 //! [0]
 
 
@@ -20,8 +20,8 @@ manager.get(api.request("/models"_L1)); // https://example.com/v1/models
 // Here the API version v2 is used as the base path:
 QNetworkRequestFactory api{{"https://example.com/v2"_L1}};
 // ...
-manager.get(api.request("models"_L1)); // https://example.com/v2/models
+manager.get(api.createRequest("models"_L1)); // https://example.com/v2/models
 // Equivalent with a leading '/'
-manager.get(api.request("/models"_L1)); // https://example.com/v2/models
+manager.get(api.createRequest("/models"_L1)); // https://example.com/v2/models
 //! [1]
 
