@@ -2126,8 +2126,14 @@ void QFileSystemModelPrivate::init()
 */
 bool QFileSystemModelPrivate::filtersAcceptsNode(const QFileSystemNode *node) const
 {
+    // When the model is set to only show files, then a node representing a dir
+    // should be hidden regardless of bypassFilters.
+    // QTBUG-74471
+    const bool hideDirs = (filters & (QDir::Dirs | QDir::AllDirs)) == 0;
+    const bool shouldHideDirNode = hideDirs && node->isDir();
+
     // always accept drives
-    if (node->parent == &root || bypassFilters.contains(node))
+    if (node->parent == &root || (!shouldHideDirNode && bypassFilters.contains(node)))
         return true;
 
     // If we don't know anything yet don't accept it
@@ -2136,7 +2142,6 @@ bool QFileSystemModelPrivate::filtersAcceptsNode(const QFileSystemNode *node) co
 
     const bool filterPermissions = ((filters & QDir::PermissionMask)
                                    && (filters & QDir::PermissionMask) != QDir::PermissionMask);
-    const bool hideDirs          = !(filters & (QDir::Dirs | QDir::AllDirs));
     const bool hideFiles         = !(filters & QDir::Files);
     const bool hideReadable      = !(!filterPermissions || (filters & QDir::Readable));
     const bool hideWritable      = !(!filterPermissions || (filters & QDir::Writable));
