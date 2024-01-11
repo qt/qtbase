@@ -262,15 +262,15 @@ QNetworkRequest QNetworkRequestFactory::createRequest(const QString &path, const
 }
 
 /*!
-    Sets the headers to \a headers.
+    Sets \a headers that are common to all requests.
 
     These headers are added to individual requests' headers.
     This is a convenience mechanism for setting headers that
     repeat across requests.
 
-    \sa headers(), clearHeaders()
+    \sa headers(), clearHeaders(), createRequest()
  */
-void QNetworkRequestFactory::setHeaders(const QHttpHeaders &headers)
+void QNetworkRequestFactory::setCommonHeaders(const QHttpHeaders &headers)
 {
     d.detach();
     d->headers = headers;
@@ -281,7 +281,7 @@ void QNetworkRequestFactory::setHeaders(const QHttpHeaders &headers)
 
     \sa setHeaders(), clearHeaders()
  */
-QHttpHeaders QNetworkRequestFactory::headers() const
+QHttpHeaders QNetworkRequestFactory::commonHeaders() const
 {
     return d->headers;
 }
@@ -291,7 +291,7 @@ QHttpHeaders QNetworkRequestFactory::headers() const
 
     \sa headers(), setHeaders()
 */
-void QNetworkRequestFactory::clearHeaders()
+void QNetworkRequestFactory::clearCommonHeaders()
 {
     if (d->headers.isEmpty())
         return;
@@ -625,7 +625,7 @@ QDebug operator<<(QDebug debug, const QNetworkRequestFactory &factory)
     debug.resetFormat().nospace();
 
     debug << "QNetworkRequestFactory(baseUrl = " << factory.baseUrl()
-          << ", headers = " << factory.headers()
+          << ", headers = " << factory.commonHeaders()
           << ", queryParameters = " << factory.queryParameters().queryItems()
           << ", bearerToken = " << (factory.bearerToken().isEmpty() ? "(empty)" : "(is set)")
           << ", transferTimeout = " << factory.transferTimeout()

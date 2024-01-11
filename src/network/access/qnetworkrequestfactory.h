@@ -51,9 +51,9 @@ public:
     Q_NETWORK_EXPORT QNetworkRequest createRequest(const QString &path) const;
     Q_NETWORK_EXPORT QNetworkRequest createRequest(const QString &path, const QUrlQuery &query) const;
 
-    Q_NETWORK_EXPORT void setHeaders(const QHttpHeaders &headers);
-    Q_NETWORK_EXPORT QHttpHeaders headers() const;
-    Q_NETWORK_EXPORT void clearHeaders();
+    Q_NETWORK_EXPORT void setCommonHeaders(const QHttpHeaders &headers);
+    Q_NETWORK_EXPORT QHttpHeaders commonHeaders() const;
+    Q_NETWORK_EXPORT void clearCommonHeaders();
 
     Q_NETWORK_EXPORT QByteArray bearerToken() const;
     Q_NETWORK_EXPORT void setBearerToken(const QByteArray &token);
