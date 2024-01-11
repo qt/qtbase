@@ -49,8 +49,8 @@ public:
         return createActiveRequest(reply, context, slot);
     }
 
-    template<typename Functor, typename Json>
-    QNetworkReply *executeRequest(Functor requestOperation, Json jsonData,
+    template<typename Functor>
+    QNetworkReply *executeRequest(Functor requestOperation, const QJsonDocument &jsonDoc,
                                const QNetworkRequest &request,
                                const QObject *context, QtPrivate::QSlotObjectBase *slot)
     {
@@ -62,8 +62,7 @@ public:
             req.setHeader(QNetworkRequest::ContentTypeHeader,
                           QLatin1StringView{"application/json"});
         }
-        QJsonDocument json(jsonData);
-        QNetworkReply *reply = requestOperation(req, json.toJson(QJsonDocument::Compact));
+        QNetworkReply *reply = requestOperation(req, jsonDoc.toJson(QJsonDocument::Compact));
         return createActiveRequest(reply, context, slot);
     }
 

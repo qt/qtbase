@@ -25,7 +25,7 @@ manager->get(request, this, &MyClass::handleFinished);
 
 
 //! [2]
-QJsonObject myJson;
+QJsonDocument myJson;
 // ...
 manager->post(request, myJson, this, [this](QRestReply &reply) {
     if (!reply.isSuccess()) {

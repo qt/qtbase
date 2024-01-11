@@ -144,7 +144,7 @@ void tst_QRestAccessManager::requests()
     VERIFY_REPLY_OK(methodGET);
     QCOMPARE(serverSideRequest.body, byteArrayData);
 
-    manager.get(request, jsonObjectData, this, callback);
+    manager.get(request, QJsonDocument{jsonObjectData}, this, callback);
     VERIFY_REPLY_OK(methodGET);
     QCOMPARE(QJsonDocument::fromJson(serverSideRequest.body).object(), jsonObjectData);
 
@@ -173,11 +173,11 @@ void tst_QRestAccessManager::requests()
     VERIFY_REPLY_OK(methodPOST);
     QCOMPARE(serverSideRequest.body, byteArrayData);
 
-    manager.post(request, jsonObjectData, this, callback);
+    manager.post(request, QJsonDocument{jsonObjectData}, this, callback);
     VERIFY_REPLY_OK(methodPOST);
     QCOMPARE(QJsonDocument::fromJson(serverSideRequest.body).object(), jsonObjectData);
 
-    manager.post(request, jsonArrayData, this, callback);
+    manager.post(request, QJsonDocument{jsonArrayData}, this, callback);
     VERIFY_REPLY_OK(methodPOST);
     QCOMPARE(QJsonDocument::fromJson(serverSideRequest.body).array(), jsonArrayData);
 
@@ -201,11 +201,11 @@ void tst_QRestAccessManager::requests()
     VERIFY_REPLY_OK(methodPUT);
     QCOMPARE(serverSideRequest.body, byteArrayData);
 
-    manager.put(request, jsonObjectData, this, callback);
+    manager.put(request, QJsonDocument{jsonObjectData}, this, callback);
     VERIFY_REPLY_OK(methodPUT);
     QCOMPARE(QJsonDocument::fromJson(serverSideRequest.body).object(), jsonObjectData);
 
-    manager.put(request, jsonArrayData, this, callback);
+    manager.put(request, QJsonDocument{jsonArrayData}, this, callback);
     VERIFY_REPLY_OK(methodPUT);
     QCOMPARE(QJsonDocument::fromJson(serverSideRequest.body).array(), jsonArrayData);
 
@@ -229,11 +229,11 @@ void tst_QRestAccessManager::requests()
     VERIFY_REPLY_OK(methodPATCH);
     QCOMPARE(serverSideRequest.body, byteArrayData);
 
-    manager.patch(request, jsonObjectData, this, callback);
+    manager.patch(request, QJsonDocument{jsonObjectData}, this, callback);
     VERIFY_REPLY_OK(methodPATCH);
     QCOMPARE(QJsonDocument::fromJson(serverSideRequest.body).object(), jsonObjectData);
 
-    manager.patch(request, jsonArrayData, this, callback);
+    manager.patch(request, QJsonDocument{jsonArrayData}, this, callback);
     VERIFY_REPLY_OK(methodPATCH);
     QCOMPARE(QJsonDocument::fromJson(serverSideRequest.body).array(), jsonArrayData);
 
