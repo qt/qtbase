@@ -214,7 +214,7 @@ void QNetworkRequestFactory::setSslConfiguration(const QSslConfiguration &config
     \sa request(const QUrlQuery&), request(const QString&, const QUrlQuery&)
 */
 
-QNetworkRequest QNetworkRequestFactory::request() const
+QNetworkRequest QNetworkRequestFactory::createRequest() const
 {
     return d->newRequest(d->requestUrl());
 }
@@ -227,7 +227,7 @@ QNetworkRequest QNetworkRequestFactory::request() const
 
     \sa request(const QString &, const QUrlQuery &), request(), baseUrl()
 */
-QNetworkRequest QNetworkRequestFactory::request(const QString &path) const
+QNetworkRequest QNetworkRequestFactory::createRequest(const QString &path) const
 {
     return d->newRequest(d->requestUrl(&path));
 }
@@ -240,7 +240,7 @@ QNetworkRequest QNetworkRequestFactory::request(const QString &path) const
 
     \sa request(const QString &, const QUrlQuery &), request(), baseUrl()
 */
-QNetworkRequest QNetworkRequestFactory::request(const QUrlQuery &query) const
+QNetworkRequest QNetworkRequestFactory::createRequest(const QUrlQuery &query) const
 {
     return d->newRequest(d->requestUrl(nullptr, &query));
 }
@@ -256,7 +256,7 @@ QNetworkRequest QNetworkRequestFactory::request(const QUrlQuery &query) const
 
     \sa request(const QUrlQuery&), request(), baseUrl()
  */
-QNetworkRequest QNetworkRequestFactory::request(const QString &path, const QUrlQuery &query) const
+QNetworkRequest QNetworkRequestFactory::createRequest(const QString &path, const QUrlQuery &query) const
 {
     return d->newRequest(d->requestUrl(&path, &query));
 }
