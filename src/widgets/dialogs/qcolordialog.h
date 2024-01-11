@@ -27,7 +27,7 @@ public:
         ShowAlphaChannel    = 0x00000001,
         NoButtons           = 0x00000002,
         DontUseNativeDialog = 0x00000004,
-        NoEyeDropperButton  = 0x00000008
+        NoEyeDropperButton  = 0x00000008,
     };
     Q_ENUM(ColorDialogOption)
 
