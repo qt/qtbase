@@ -29,6 +29,7 @@
 #include <algorithm>
 
 using namespace Qt::StringLiterals;
+using namespace std::chrono;
 
 #define WAITTIME 1000
 
@@ -78,6 +79,8 @@ private slots:
 
     void filters_data();
     void filters();
+
+    void showFilesOnly();
 
     void nameFilters();
 
@@ -673,6 +676,37 @@ void tst_QFileSystemModel::filters()
         QVERIFY(QFile::setPermissions(fileName3, originalPermissions));
     }
 #endif
+}
+
+void tst_QFileSystemModel::showFilesOnly()
+{
+    QString tmp = flatDirTestPath;
+    QFileSystemModel model;
+    QAbstractItemModelTester tester(&model);
+    tester.setUseFetchMore(false);
+    QVERIFY(createFiles(&model, tmp, QStringList()));
+    const QStringList files{u"a"_s, u"b"_s, u"c"_s};
+    const auto subdir = u"sub_directory"_s;
+    QVERIFY(createFiles(&model, tmp, files, 0, {subdir}));
+
+    // QTBUG-74471
+    // WHAT: setting the root path of the model to a dir with some files and a subdir
+    QModelIndex root = model.setRootPath(tmp);
+    QTRY_COMPARE(model.rowCount(root), files.size() + 1);
+
+    // Change the model to only show files
+    model.setFilter(QDir::Files);
+    QTRY_COMPARE(model.rowCount(root), files.size());
+
+    // WHEN: setting the root path to a subdir
+    QModelIndex subIndex = model.setRootPath(tmp + u'/' + subdir);
+    QTRY_COMPARE(model.rowCount(subIndex), 0);
+
+    // THEN: setting the root path to the previous (parent) dir, the model should
+    // still only show files.
+    root = model.setRootPath(tmp);
+    // Doubling the default timeout (5s) as this test to fails on macos on the CI
+    QTRY_COMPARE_WITH_TIMEOUT(model.rowCount(root), files.size(), (10s).count());
 }
 
 void tst_QFileSystemModel::nameFilters()
