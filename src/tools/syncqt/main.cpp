@@ -866,12 +866,7 @@ public:
 
         bool headerFileExists = std::filesystem::exists(headerFile);
 
-        std::filesystem::path headerFileRootName =
-                std::filesystem::weakly_canonical(headerFile, ec).root_name();
-        std::string aliasedFilepath = !ec && headerFileRootName == m_outputRootName
-                ? std::filesystem::relative(headerFile, outputDir).generic_string()
-                : headerFile.generic_string();
-        ec.clear();
+        std::string aliasedFilepath = headerFile.generic_string();
 
         std::string aliasPath = outputDir + '/' + m_currentFilename;
 
