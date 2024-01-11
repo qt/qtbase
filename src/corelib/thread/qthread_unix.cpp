@@ -740,7 +740,8 @@ void QThread::terminate()
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
 
-    if (!d->data->threadId.loadRelaxed())
+    const auto id = d->data->threadId.loadRelaxed();
+    if (!id)
         return;
 
     if (d->terminated) // don't try again, avoids killing the wrong thread on threadId reuse (ABA)
@@ -748,8 +749,18 @@ void QThread::terminate()
 
     d->terminated = true;
 
-    int code = pthread_cancel(from_HANDLE<pthread_t>(d->data->threadId.loadRelaxed()));
-    if (code) {
+    const bool selfCancelling = d->data == currentThreadData;
+    if (selfCancelling) {
+        // Posix doesn't seem to specify whether the stack of cancelled threads
+        // is unwound, and there's nothing preventing a QThread from
+        // terminate()ing itself, so drop the mutex before calling
+        // pthread_cancel():
+        locker.unlock();
+    }
+
+    if (int code = pthread_cancel(from_HANDLE<pthread_t>(id))) {
+        if (selfCancelling)
+            locker.relock();
         d->terminated = false; // allow to try again
         qErrnoWarning(code, "QThread::start: Thread termination error");
     }
