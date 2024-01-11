@@ -188,29 +188,29 @@ void tst_QNetworkRequestFactory::headers()
 
     QNetworkRequestFactory factory{url1};
     // Initial state when no headers are set
-    QVERIFY(factory.headers().isEmpty());
-    QVERIFY(factory.headers().values(name1).isEmpty());
-    QVERIFY(!factory.headers().contains(name1));
+    QVERIFY(factory.commonHeaders().isEmpty());
+    QVERIFY(factory.commonHeaders().values(name1).isEmpty());
+    QVERIFY(!factory.commonHeaders().contains(name1));
 
     // Set headers
     QHttpHeaders h1;
     h1.append(name1, value1);
-    factory.setHeaders(h1);
-    QVERIFY(factory.headers().contains(name1));
-    QCOMPARE(factory.headers().combinedValue(name1), value1);
-    QCOMPARE(factory.headers().size(), 1);
-    QVERIFY(factory.headers().values("nonexistent").isEmpty());
+    factory.setCommonHeaders(h1);
+    QVERIFY(factory.commonHeaders().contains(name1));
+    QCOMPARE(factory.commonHeaders().combinedValue(name1), value1);
+    QCOMPARE(factory.commonHeaders().size(), 1);
+    QVERIFY(factory.commonHeaders().values("nonexistent").isEmpty());
     QNetworkRequest request = factory.createRequest();
     QVERIFY(request.hasRawHeader(name1));
     QCOMPARE(request.rawHeader(name1), value1);
 
     // Check that empty header does not match
-    QVERIFY(!factory.headers().contains(""_ba));
-    QVERIFY(factory.headers().values(""_ba).isEmpty());
+    QVERIFY(!factory.commonHeaders().contains(""_ba));
+    QVERIFY(factory.commonHeaders().values(""_ba).isEmpty());
 
     // Clear headers
-    factory.clearHeaders();
-    QVERIFY(factory.headers().isEmpty());
+    factory.clearCommonHeaders();
+    QVERIFY(factory.commonHeaders().isEmpty());
     request = factory.createRequest();
     QVERIFY(!request.hasRawHeader(name1));
 
@@ -218,12 +218,13 @@ void tst_QNetworkRequestFactory::headers()
     h1.clear();
     h1.append(name1, value1);
     h1.append(name2, value2);
-    factory.setHeaders(h1);
-    QVERIFY(factory.headers().contains(name1));
-    QVERIFY(factory.headers().contains(name2));
-    QCOMPARE(factory.headers().combinedValue(name1), value1);
-    QCOMPARE(factory.headers().combinedValue(name2), value2);
-    QCOMPARE(factory.headers().size(), 2);
+
+    factory.setCommonHeaders(h1);
+    QVERIFY(factory.commonHeaders().contains(name1));
+    QVERIFY(factory.commonHeaders().contains(name2));
+    QCOMPARE(factory.commonHeaders().combinedValue(name1), value1);
+    QCOMPARE(factory.commonHeaders().combinedValue(name2), value2);
+    QCOMPARE(factory.commonHeaders().size(), 2);
     request = factory.createRequest();
     QVERIFY(request.hasRawHeader(name1));
     QVERIFY(request.hasRawHeader(name2));
@@ -234,9 +235,9 @@ void tst_QNetworkRequestFactory::headers()
     h1.append(name1, value1);
     h1.append(name1, value2);
     h1.append(name1, value3);
-    factory.setHeaders(h1);
-    QVERIFY(factory.headers().contains(name1));
-    QCOMPARE(factory.headers().combinedValue(name1), value1 + ',' + value2 + ',' + value3);
+    factory.setCommonHeaders(h1);
+    QVERIFY(factory.commonHeaders().contains(name1));
+    QCOMPARE(factory.commonHeaders().combinedValue(name1), value1 + ',' + value2 + ',' + value3);
     request = factory.createRequest();
     QVERIFY(request.hasRawHeader(name1));
     QCOMPARE(request.rawHeader(name1), value1 + ',' + value2 + ',' + value3);
@@ -271,7 +272,7 @@ void tst_QNetworkRequestFactory::bearerToken()
     const auto value = "headervalue"_ba;
     QHttpHeaders h1;
     h1.append(authHeader, value);
-    factory.setHeaders(h1);
+    factory.setCommonHeaders(h1);
     request = factory.createRequest();
     QVERIFY(request.hasRawHeader(authHeader));
     // bearerToken has precedence over manually set header
