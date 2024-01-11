@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -26,21 +27,10 @@ class QtActivityLoader extends QtLoader {
 
     public QtActivityLoader(Activity activity)
     {
-        super(activity);
+        super(new ContextWrapper(activity));
         m_activity = activity;
 
         extractContextMetaData();
-    }
-
-    @Override
-    protected void initContextInfo() {
-        try {
-            m_contextInfo = m_context.getPackageManager().getActivityInfo(
-                    ((Activity)m_context).getComponentName(), PackageManager.GET_META_DATA);
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-            finish();
-        }
     }
 
     private void showErrorDialog() {
@@ -67,16 +57,6 @@ class QtActivityLoader extends QtLoader {
         }
         showErrorDialog();
         m_activity.finish();
-    }
-
-    @Override
-    protected void initStaticClassesImpl(Class<?> initClass, Object staticInitDataObject) {
-        try {
-            Method m = initClass.getMethod("setActivity", Activity.class, Object.class);
-            m.invoke(staticInitDataObject, m_activity, this);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            Log.d(QtTAG, "Class " + initClass.getName() + " does not implement setActivity method");
-        }
     }
 
     private String getDecodedUtfString(String str)
