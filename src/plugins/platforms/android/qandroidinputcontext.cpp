@@ -884,6 +884,9 @@ void QAndroidInputContext::showInputPanel()
     if (query.isNull())
         return;
 
+    if (!qGuiApp->focusWindow()->handle())
+        return; // not a real window, probably VR/XR
+
     disconnect(m_updateCursorPosConnection);
     m_updateCursorPosConnection = {};
 
