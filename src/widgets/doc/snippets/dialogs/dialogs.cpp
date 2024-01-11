@@ -236,6 +236,8 @@ void extension()
     QVBoxLayout *mainLayout;
 
 //! [extension]
+    mainLayout->setSizeConstraint(QLayout::SetFixedSize);
+
     findButton = new QPushButton(tr("&Find"));
     moreButton = new QPushButton(tr("&More..."));
     moreButton->setCheckable(true);
