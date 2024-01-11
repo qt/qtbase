@@ -324,6 +324,10 @@ QVariant QDialogPrivate::styleHint(QPlatformDialogHelper::StyleHint hint) const
 
     \snippet dialogs/dialogs.cpp extension
 
+    By setting the \l{QLayout::}{sizeConstraint} property of the dialog's
+    layout to \l{QLayout::}{SetFixedSize}, the dialog will not be resizable
+    by the user, and will automatically shrink when the extension gets hidden.
+
     \sa QDialogButtonBox, QTabWidget, QWidget, QProgressDialog,
         {Standard Dialogs Example}
 */
