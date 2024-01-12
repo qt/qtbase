@@ -48,7 +48,8 @@ int main(int argc, char *argv[])
     addConnectionsFromCommandline(app.arguments(), &browser);
     mainWin.show();
     if (QSqlDatabase::connectionNames().isEmpty())
-        QMetaObject::invokeMethod(&browser, "addConnection", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(&browser, &Browser::openNewConnectionDialog,
+                                  Qt::QueuedConnection);
 
     return app.exec();
 }
