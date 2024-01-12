@@ -117,7 +117,11 @@ public:
     QShader();
     QShader(const QShader &other);
     QShader &operator=(const QShader &other);
+    QShader(QShader &&other) noexcept : d(std::exchange(other.d, nullptr)) {}
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QShader)
     ~QShader();
+
+    void swap(QShader &other) noexcept { qt_ptr_swap(d, other.d); }
     void detach();
 
     bool isValid() const;

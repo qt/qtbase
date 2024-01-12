@@ -299,6 +299,28 @@ QShader &QShader::operator=(const QShader &other)
 }
 
 /*!
+    \fn QShader::QShader(QShader &&other) noexcept
+    \since 6.7
+
+    Move-constructs a new QShader from \a other.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+*/
+
+/*!
+    \fn QShader &QShader::operator=(QShader &&other)
+    \since 6.7
+
+    Move-assigns \a other to this QShader instance.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+*/
+
+/*!
     Destructor.
  */
 QShader::~QShader()
@@ -306,6 +328,14 @@ QShader::~QShader()
     if (d && !d->ref.deref())
         delete d;
 }
+
+/*!
+    \fn void QShader::swap(QShader &other)
+    \since 6.7
+
+    Swaps shader \a other with this shader. This operation is very fast and
+    never fails.
+*/
 
 /*!
     \return true if the QShader contains at least one shader version.
