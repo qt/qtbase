@@ -3255,6 +3255,7 @@ public:
     static Type null() { return 0; }
     static Type fetchSingle(const QGradientData& gradient, qreal v)
     {
+        Q_ASSERT(std::isfinite(v));
         return qt_gradient_pixel(&gradient, v);
     }
     static Type fetchSingle(const QGradientData& gradient, int v)
@@ -3275,6 +3276,7 @@ public:
     static Type null() { return QRgba64::fromRgba64(0); }
     static Type fetchSingle(const QGradientData& gradient, qreal v)
     {
+        Q_ASSERT(std::isfinite(v));
         return qt_gradient_pixel64(&gradient, v);
     }
     static Type fetchSingle(const QGradientData& gradient, int v)
@@ -3296,6 +3298,7 @@ public:
     static Type null() { return QRgbaFloat32::fromRgba64(0,0,0,0); }
     static Type fetchSingle(const QGradientData& gradient, qreal v)
     {
+        Q_ASSERT(std::isfinite(v));
         return qt_gradient_pixelFP(&gradient, v);
     }
     static Type fetchSingle(const QGradientData& gradient, int v)
@@ -3445,7 +3448,13 @@ public:
             }
         } else {
             while (buffer < end) {
-                *buffer++ = GradientBase::fetchSingle(data->gradient, qSqrt(det) - b);
+                BlendType result = GradientBase::null();
+                if (det >= 0) {
+                    qreal w = qSqrt(det) - b;
+                    result = GradientBase::fetchSingle(data->gradient, w);
+                }
+
+                *buffer++ = result;
 
                 det += delta_det;
                 delta_det += delta_delta_det;
