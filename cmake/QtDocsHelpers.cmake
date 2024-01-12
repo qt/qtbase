@@ -21,12 +21,37 @@ function(qt_internal_add_docs)
         # Function called from old generated CMakeLists.txt that was missing the target parameter
         return()
     endif()
-    if(NOT ${ARGC} EQUAL 2)
-        message(FATAL_ERROR "qt_add_docs called with the wrong number of arguments. Should be qt_add_docs(target path_to_project.qdocconf).")
+    set(error_msg "qt_add_docs called with wrong number of arguments. ")
+    list(APPEND error_msg
+        "Should be qt_add_docs\(target_name qdocconf "
+        "\[INDEX_DIRECTORIES EXTRA_INDEX_DIRS_LIST_TO_ENABLE_QDOC_RESOLVE_LINKS\]\)")
+    if(NOT ${ARGC} GREATER_EQUAL 2)
+        message(FATAL_ERROR ${error_msg})
         return()
     endif()
+
     set(target ${ARGV0})
     set(doc_project ${ARGV1})
+    set(qdoc_extra_args "")
+    # Check if there are more than 2 arguments and pass them
+    # as extra --indexdir arguments to qdoc in prepare and
+    # generate phases.
+    if (${ARGC} GREATER 2)
+        # The INDEX_DIRECTORIES key should enable passing a list of index
+        # directories as extra command-line arguments to qdoc.
+        set(qdocExtraArgs INDEX_DIRECTORIES)
+        cmake_parse_arguments(PARSE_ARGV 2 arg "" "" "${qdocExtraArgs}")
+        if(arg_UNPARSED_ARGUMENTS)
+            message(FATAL_ERROR ${error_msg})
+            return()
+        endif()
+        if(arg_INDEX_DIRECTORIES)
+            foreach(index_directory ${arg_INDEX_DIRECTORIES})
+                list(APPEND qdoc_extra_args "--indexdir" ${index_directory})
+            endforeach()
+        endif()
+    endif()
+
 
     # If a target is not built (which can happen for tools when crosscompiling), we shouldn't try
     # to generate docs.
@@ -114,6 +139,7 @@ function(qt_internal_add_docs)
     if(NOT QT_BUILD_ONLINE_DOCS)
         list(PREPEND prepare_qdoc_args
             -installdir "${QT_INSTALL_DIR}/${INSTALL_DOCDIR}"
+            ${qdoc_extra_args}
         )
     endif()
 
@@ -156,6 +182,7 @@ function(qt_internal_add_docs)
     if(NOT QT_BUILD_ONLINE_DOCS)
         list(PREPEND generate_qdoc_args
             -installdir "${QT_INSTALL_DIR}/${INSTALL_DOCDIR}"
+            ${qdoc_extra_args}
         )
     endif()
 
