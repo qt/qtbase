@@ -37,6 +37,10 @@ class QtEmbeddedLoader extends QtLoader {
     public QtEmbeddedLoader(Context context) {
         super(new ContextWrapper(context));
         // TODO Service context handling QTBUG-118874
+        int displayDensity = m_context.getResources().getDisplayMetrics().densityDpi;
+        setEnvironmentVariable("QT_ANDROID_THEME_DISPLAY_DPI", String.valueOf(displayDensity));
+        String stylePath = ExtractStyle.setup(m_context, "minimal", displayDensity);
+        setEnvironmentVariable("ANDROID_STYLE_PATH", stylePath);
     }
 
     @Override
