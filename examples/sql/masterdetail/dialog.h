@@ -4,17 +4,25 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include <QtWidgets>
-#include <QtSql>
-#include <QtXml>
+#include <QDialog>
+#include <QDomDocument>
+
+QT_FORWARD_DECLARE_CLASS(QDialogButtonBox)
+QT_FORWARD_DECLARE_CLASS(QFile)
+QT_FORWARD_DECLARE_CLASS(QGroupBox)
+QT_FORWARD_DECLARE_CLASS(QLineEdit)
+QT_FORWARD_DECLARE_CLASS(QModelIndex)
+QT_FORWARD_DECLARE_CLASS(QSpinBox)
+QT_FORWARD_DECLARE_CLASS(QSqlRelationalTableModel)
 
 class Dialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    Dialog(QSqlRelationalTableModel *albums, QDomDocument details,
+    Dialog(QSqlRelationalTableModel *albums, const QDomDocument &details,
            QFile *output, QWidget *parent = nullptr);
+    static void setInitialAlbumAndArtistId(int albumId, int artistId);
 
 private slots:
     void revert();
@@ -27,10 +35,8 @@ private:
     QDialogButtonBox *createButtons();
     QGroupBox *createInputWidgets();
     int findArtistId(const QString &artist);
-    static int generateAlbumId();
-    static int generateArtistId();
-    void increaseAlbumCount(QModelIndex artistIndex);
-    QModelIndex indexOfArtist(const QString &artist);
+    void increaseAlbumCount(const QModelIndex &artistIndex);
+    QModelIndex indexOfArtist(const QString &artist) const;
 
     QSqlRelationalTableModel *model;
     QDomDocument albumDetails;
@@ -40,6 +46,11 @@ private:
     QLineEdit *titleEditor;
     QSpinBox *yearEditor;
     QLineEdit *tracksEditor;
+
+    static int generateAlbumId();
+    static int generateArtistId();
+    static int s_artistId;
+    static int s_albumId;
 };
 
 #endif

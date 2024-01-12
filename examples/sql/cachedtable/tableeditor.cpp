@@ -1,10 +1,15 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QtWidgets>
-#include <QtSql>
-
 #include "tableeditor.h"
+
+#include <QDialogButtonBox>
+#include <QHBoxLayout>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QSqlError>
+#include <QSqlTableModel>
+#include <QTableView>
 
 //! [0]
 TableEditor::TableEditor(const QString &tableName, QWidget *parent)

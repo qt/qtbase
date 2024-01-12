@@ -6,11 +6,9 @@
 
 #include <QDialog>
 
-QT_BEGIN_NAMESPACE
-class QDialogButtonBox;
-class QPushButton;
-class QSqlTableModel;
-QT_END_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QDialogButtonBox)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QSqlTableModel)
 
 //! [0]
 class TableEditor : public QWidget

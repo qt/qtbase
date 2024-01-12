@@ -5,7 +5,6 @@
 #define BOOKDELEGATE_H
 
 #include <QModelIndex>
-#include <QPixmap>
 #include <QSize>
 #include <QSqlRelationalDelegate>
 
@@ -14,7 +13,7 @@ QT_FORWARD_DECLARE_CLASS(QPainter)
 class BookDelegate : public QSqlRelationalDelegate
 {
 public:
-    BookDelegate(QObject *parent);
+    using QSqlRelationalDelegate::QSqlRelationalDelegate;
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const override;

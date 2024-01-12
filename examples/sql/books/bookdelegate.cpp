@@ -3,14 +3,13 @@
 
 #include "bookdelegate.h"
 
-#include <QtWidgets>
+#include <QMouseEvent>
+#include <QPainter>
+#include <QSpinBox>
 
-BookDelegate::BookDelegate(QObject *parent)
-    : QSqlRelationalDelegate(parent)
-{}
-
-void BookDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
-                           const QModelIndex &index) const
+void BookDelegate::paint(QPainter *painter,
+                         const QStyleOptionViewItem &option,
+                         const QModelIndex &index) const
 {
     if (index.column() != 5) {
         QSqlRelationalDelegate::paint(painter, option, index);
@@ -38,18 +37,17 @@ void BookDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
         QIcon starFilledIcon(QStringLiteral(":images/star-filled.svg"));
 
         for (int i = 0; i < 5; ++i) {
-            if (i < rating) {
+            if (i < rating)
                 starFilledIcon.paint(painter, QRect(x, y, width, height));
-            } else {
+            else
                 starIcon.paint(painter, QRect(x, y, width, height));
-            }
             x += width;
         }
     }
 }
 
 QSize BookDelegate::sizeHint(const QStyleOptionViewItem &option,
-                                 const QModelIndex &index) const
+                             const QModelIndex &index) const
 {
     if (index.column() == 5)
         return QSize(5 * iconDimension, iconDimension) + QSize(cellPadding, cellPadding);
@@ -66,7 +64,7 @@ bool BookDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
 
     if (event->type() == QEvent::MouseButtonPress) {
         QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-        int stars = qBound(0, int(0.7 + qreal(mouseEvent->position().toPoint().x()
+        int stars = qBound(0, int(0.7 + qreal(mouseEvent->position().x()
             - option.rect.x()) / iconDimension), 5);
         model->setData(index, QVariant(stars));
         // So that the selection can change:

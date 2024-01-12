@@ -4,12 +4,20 @@
 #include "mainwindow.h"
 #include "dialog.h"
 
-#include <QtWidgets>
-#include <QtSql>
-#include <QtXml>
-
-extern int uniqueAlbumId;
-extern int uniqueArtistId;
+#include <QApplication>
+#include <QComboBox>
+#include <QHeaderView>
+#include <QFile>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QListWidget>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QSqlRecord>
+#include <QSqlRelationalTableModel>
+#include <QTableView>
 
 MainWindow::MainWindow(const QString &artistTable, const QString &albumTable,
                        QFile *albumDetails, QWidget *parent)
@@ -28,13 +36,12 @@ MainWindow::MainWindow(const QString &artistTable, const QString &albumTable,
     QGroupBox *details = createDetailsGroupBox();
 
     artistView->setCurrentIndex(0);
-    uniqueAlbumId = model->rowCount();
-    uniqueArtistId = artistView->count();
+    Dialog::setInitialAlbumAndArtistId(model->rowCount(), artistView->count());
 
     connect(model, &QSqlRelationalTableModel::rowsInserted,
-            this, &MainWindow::updateHeader);
+            this, &MainWindow::adjustHeader);
     connect(model, &QSqlRelationalTableModel::rowsRemoved,
-            this, &MainWindow::updateHeader);
+            this, &MainWindow::adjustHeader);
 
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(artists, 0, 0);
@@ -67,7 +74,7 @@ void MainWindow::changeArtist(int row)
     }
 }
 
-void MainWindow::showArtistProfile(QModelIndex index)
+void MainWindow::showArtistProfile(const QModelIndex &index)
 {
     QSqlRecord record = model->relationModel(2)->record(index.row());
 
@@ -84,7 +91,7 @@ void MainWindow::showArtistProfile(QModelIndex index)
     imageLabel->hide();
 }
 
-void MainWindow::showAlbumDetails(QModelIndex index)
+void MainWindow::showAlbumDetails(const QModelIndex &index)
 {
     QSqlRecord record = model->record(index.row());
 
@@ -113,14 +120,11 @@ void MainWindow::getTrackList(QDomNode album)
 {
     trackList->clear();
 
-    QDomNodeList tracks = album.childNodes();
-    QDomNode track;
-    QString trackNumber;
-
+    const QDomNodeList tracks = album.childNodes();
     for (int i = 0; i < tracks.count(); ++i) {
 
-        track = tracks.item(i);
-        trackNumber = track.toElement().attribute("number");
+        const QDomNode track = tracks.item(i);
+        const QString trackNumber = track.toElement().attribute("number");
 
         QListWidgetItem *item = new QListWidgetItem(trackList);
         item->setText(trackNumber + ": " + track.toElement().text());
@@ -132,7 +136,7 @@ void MainWindow::addAlbum()
     Dialog *dialog = new Dialog(model, albumData, file, this);
     int accepted = dialog->exec();
 
-    if (accepted == 1) {
+    if (accepted == QDialog::Accepted) {
         int lastRow = model->rowCount() - 1;
         albumView->selectRow(lastRow);
         albumView->scrollToBottom();
@@ -142,10 +146,10 @@ void MainWindow::addAlbum()
 
 void MainWindow::deleteAlbum()
 {
-    QModelIndexList selection = albumView->selectionModel()->selectedRows(0);
+    const QModelIndexList selection = albumView->selectionModel()->selectedRows(0);
 
     if (!selection.empty()) {
-        QModelIndex idIndex = selection.at(0);
+        const QModelIndex &idIndex = selection.at(0);
         int id = idIndex.data().toInt();
         QString title = idIndex.sibling(idIndex.row(), 1).data().toString();
         QString artist = idIndex.sibling(idIndex.row(), 2).data().toString();
@@ -172,9 +176,7 @@ void MainWindow::deleteAlbum()
 
 void MainWindow::removeAlbumFromFile(int id)
 {
-
     QDomNodeList albums = albumData.elementsByTagName("album");
-
     for (int i = 0; i < albums.count(); ++i) {
         QDomNode node = albums.item(i);
         if (node.toElement().attribute("id").toInt() == id) {
@@ -197,12 +199,12 @@ void MainWindow::removeAlbumFromFile(int id)
 */
 }
 
-void MainWindow::removeAlbumFromDatabase(QModelIndex index)
+void MainWindow::removeAlbumFromDatabase(const QModelIndex &index)
 {
     model->removeRow(index.row());
 }
 
-void MainWindow::decreaseAlbumCount(QModelIndex artistIndex)
+void MainWindow::decreaseAlbumCount(const QModelIndex &artistIndex)
 {
     int row = artistIndex.row();
     QModelIndex albumCountIndex = artistIndex.sibling(row, 2);
@@ -358,7 +360,7 @@ void MainWindow::showImageLabel()
     imageLabel->show();
 }
 
-QModelIndex MainWindow::indexOfArtist(const QString &artist)
+QModelIndex MainWindow::indexOfArtist(const QString &artist) const
 {
     QSqlTableModel *artistModel = model->relationModel(2);
 
@@ -368,11 +370,6 @@ QModelIndex MainWindow::indexOfArtist(const QString &artist)
             return artistModel->index(i, 1);
     }
     return QModelIndex();
-}
-
-void MainWindow::updateHeader(QModelIndex, int, int)
-{
-    adjustHeader();
 }
 
 void MainWindow::adjustHeader()

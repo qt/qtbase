@@ -8,8 +8,6 @@
 #include <QApplication>
 #include <QTableView>
 
-#include <stdlib.h>
-
 void initializeModel(QSqlQueryModel *model)
 {
     model->setQuery("select * from person");

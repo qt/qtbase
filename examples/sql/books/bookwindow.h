@@ -4,8 +4,15 @@
 #ifndef BOOKWINDOW_H
 #define BOOKWINDOW_H
 
-#include <QtWidgets>
-#include <QtSql>
+#include <QMainWindow>
+QT_FORWARD_DECLARE_CLASS(QComboBox)
+QT_FORWARD_DECLARE_CLASS(QGridLayout)
+QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QLineEdit)
+QT_FORWARD_DECLARE_CLASS(QSpinBox)
+QT_FORWARD_DECLARE_CLASS(QSqlError)
+QT_FORWARD_DECLARE_CLASS(QSqlRelationalTableModel)
+QT_FORWARD_DECLARE_CLASS(QTableView)
 
 class BookWindow: public QMainWindow
 {

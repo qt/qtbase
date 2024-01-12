@@ -1,10 +1,19 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QtWidgets>
-#include <QtSql>
-
 #include "window.h"
+
+#include <QComboBox>
+#include <QDataWidgetMapper>
+#include <QGridLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QSqlQuery>
+#include <QSqlRelationalDelegate>
+#include <QSqlTableModel>
+#include <QTextEdit>
 
 //! [Set up widgets]
 Window::Window(QWidget *parent)

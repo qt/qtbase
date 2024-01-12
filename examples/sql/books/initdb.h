@@ -4,7 +4,9 @@
 #ifndef INITDB_H
 #define INITDB_H
 
-#include <QtSql>
+#include <QDate>
+#include <QSqlError>
+#include <QSqlQuery>
 
 void addBook(QSqlQuery &q, const QString &title, int year, const QVariant &authorId,
              const QVariant &genreId, int rating)

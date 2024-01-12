@@ -1,9 +1,9 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QtSql>
-
 #include "editablesqlmodel.h"
+
+#include <QSqlQuery>
 
 EditableSqlModel::EditableSqlModel(QObject *parent)
     : QSqlQueryModel(parent)
@@ -11,8 +11,7 @@ EditableSqlModel::EditableSqlModel(QObject *parent)
 }
 
 //! [0]
-Qt::ItemFlags EditableSqlModel::flags(
-        const QModelIndex &index) const
+Qt::ItemFlags EditableSqlModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags flags = QSqlQueryModel::flags(index);
     if (index.column() == 1 || index.column() == 2)
@@ -33,11 +32,10 @@ bool EditableSqlModel::setData(const QModelIndex &index, const QVariant &value, 
     clear();
 
     bool ok;
-    if (index.column() == 1) {
+    if (index.column() == 1)
         ok = setFirstName(id, value.toString());
-    } else {
+    else
         ok = setLastName(id, value.toString());
-    }
     refresh();
     return ok;
 }

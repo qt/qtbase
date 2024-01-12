@@ -7,8 +7,6 @@
 #include <QApplication>
 #include <QFile>
 
-#include <stdlib.h>
-
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);

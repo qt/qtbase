@@ -5,16 +5,27 @@
 #include "bookdelegate.h"
 #include "initdb.h"
 
-#include <QtSql>
+#include <QApplication>
+#include <QComboBox>
+#include <QDataWidgetMapper>
+#include <QGridLayout>
+#include <QHeaderView>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QPainter>
+#include <QScrollBar>
+#include <QSpinBox>
+#include <QSqlDatabase>
+#include <QTableView>
 
 BookWindow::BookWindow()
 {
     if (!QSqlDatabase::drivers().contains("QSQLITE"))
-        QMessageBox::critical(
-                    this,
-                    "Unable to load database",
-                    "This demo needs the SQLITE driver"
-                    );
+        QMessageBox::critical(this, tr("Unable to load database"),
+                              tr("This demo needs the SQLITE driver"));
 
     // Initialize the database:
     QSqlError err = initDb();
@@ -50,8 +61,8 @@ BookWindow::BookWindow()
 
 void BookWindow::showError(const QSqlError &err)
 {
-    QMessageBox::critical(this, "Unable to initialize Database",
-                "Error initializing database: " + err.text());
+    QMessageBox::critical(this, tr("Unable to initialize Database"),
+                          tr("Error initializing database: %1").arg(err.text()));
 }
 
 void BookWindow::createLayout()

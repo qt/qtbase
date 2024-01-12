@@ -3,10 +3,23 @@
 
 #include "dialog.h"
 
-int uniqueAlbumId;
-int uniqueArtistId;
+#include <QDialogButtonBox>
+#include <QDate>
+#include <QDomDocument>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QSpinBox>
+#include <QSqlField>
+#include <QSqlRelationalTableModel>
+#include <QSqlRecord>
+#include <QVBoxLayout>
 
-Dialog::Dialog(QSqlRelationalTableModel *albums, QDomDocument details,
+int Dialog::s_artistId = 0;
+int Dialog::s_albumId = 0;
+Dialog::Dialog(QSqlRelationalTableModel *albums, const QDomDocument &details,
                QFile *output, QWidget *parent)
      : QDialog(parent)
 {
@@ -23,6 +36,12 @@ Dialog::Dialog(QSqlRelationalTableModel *albums, QDomDocument details,
     setLayout(layout);
 
     setWindowTitle(tr("Add Album"));
+}
+
+void Dialog::setInitialAlbumAndArtistId(int albumId, int artistId)
+{
+    s_albumId = albumId;
+    s_artistId = artistId;
 }
 
 void Dialog::submit()
@@ -145,7 +164,7 @@ void Dialog::addTracks(int albumId, const QStringList &tracks)
 */
 }
 
-void Dialog::increaseAlbumCount(QModelIndex artistIndex)
+void Dialog::increaseAlbumCount(const QModelIndex &artistIndex)
 {
     QSqlTableModel *artistModel = model->relationModel(2);
 
@@ -219,7 +238,7 @@ QDialogButtonBox *Dialog::createButtons()
     return buttonBox;
 }
 
-QModelIndex Dialog::indexOfArtist(const QString &artist)
+QModelIndex Dialog::indexOfArtist(const QString &artist) const
 {
     QSqlTableModel *artistModel = model->relationModel(2);
 
@@ -234,12 +253,12 @@ QModelIndex Dialog::indexOfArtist(const QString &artist)
 
 int Dialog::generateArtistId()
 {
-    uniqueArtistId += 1;
-    return uniqueArtistId;
+    s_artistId += 1;
+    return s_artistId;
 }
 
 int Dialog::generateAlbumId()
 {
-    uniqueAlbumId += 1;
-    return uniqueAlbumId;
+    s_albumId += 1;
+    return s_albumId;
 }

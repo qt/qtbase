@@ -6,8 +6,6 @@
 #include <QSqlTableModel>
 #include <QTableView>
 
-#include <stdlib.h>
-
 void initializeModel(QSqlTableModel *model)
 {
     model->setTable("person");

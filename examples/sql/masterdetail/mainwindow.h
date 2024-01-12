@@ -8,15 +8,13 @@
 #include <QMainWindow>
 #include <QModelIndex>
 
-QT_BEGIN_NAMESPACE
-class QComboBox;
-class QFile;
-class QGroupBox;
-class QLabel;
-class QListWidget;
-class QSqlRelationalTableModel;
-class QTableView;
-QT_END_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QComboBox)
+QT_FORWARD_DECLARE_CLASS(QFile)
+QT_FORWARD_DECLARE_CLASS(QGroupBox)
+QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QListWidget)
+QT_FORWARD_DECLARE_CLASS(QSqlRelationalTableModel)
+QT_FORWARD_DECLARE_CLASS(QTableView)
 
 class MainWindow : public QMainWindow
 {
@@ -31,21 +29,20 @@ private slots:
     void addAlbum();
     void changeArtist(int row);
     void deleteAlbum();
-    void showAlbumDetails(QModelIndex index);
-    void showArtistProfile(QModelIndex index);
-    void updateHeader(QModelIndex, int, int);
+    void showAlbumDetails(const QModelIndex &index);
+    void showArtistProfile(const QModelIndex &index);
+    void adjustHeader();
 
 private:
-    void adjustHeader();
     QGroupBox *createAlbumGroupBox();
     QGroupBox *createArtistGroupBox();
     QGroupBox *createDetailsGroupBox();
     void createMenuBar();
-    void decreaseAlbumCount(QModelIndex artistIndex);
+    void decreaseAlbumCount(const QModelIndex &artistIndex);
     void getTrackList(QDomNode album);
-    QModelIndex indexOfArtist(const QString &artist);
+    QModelIndex indexOfArtist(const QString &artist) const;
     void readAlbumData();
-    void removeAlbumFromDatabase(QModelIndex album);
+    void removeAlbumFromDatabase(const QModelIndex &album);
     void removeAlbumFromFile(int id);
     void showImageLabel();
 

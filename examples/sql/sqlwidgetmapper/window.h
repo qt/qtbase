@@ -6,18 +6,16 @@
 
 #include <QWidget>
 
-QT_BEGIN_NAMESPACE
-class QComboBox;
-class QDataWidgetMapper;
-class QItemSelectionModel;
-class QLabel;
-class QLineEdit;
-class QPushButton;
-class QSqlRelationalTableModel;
-class QStandardItemModel;
-class QStringListModel;
-class QTextEdit;
-QT_END_NAMESPACE
+QT_FORWARD_DECLARE_CLASS(QComboBox)
+QT_FORWARD_DECLARE_CLASS(QDataWidgetMapper)
+QT_FORWARD_DECLARE_CLASS(QItemSelectionModel)
+QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QLineEdit)
+QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QSqlRelationalTableModel)
+QT_FORWARD_DECLARE_CLASS(QStandardItemModel)
+QT_FORWARD_DECLARE_CLASS(QStringListModel)
+QT_FORWARD_DECLARE_CLASS(QTextEdit)
 
 //! [Window definition]
 class Window : public QWidget
