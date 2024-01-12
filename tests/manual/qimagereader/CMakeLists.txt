@@ -13,3 +13,12 @@ qt_internal_add_manual_test(qimagereader
         Qt::Gui
         Qt::Widgets
 )
+set(qimagereader_resource_files
+    "Qt_logostrap_CMYK.jpg"
+)
+qt_add_resources(qimagereader "qimagereader"
+    PREFIX
+        "/"
+    FILES
+        ${qimagereader_resource_files}
+)
