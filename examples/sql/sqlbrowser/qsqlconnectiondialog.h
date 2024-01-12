@@ -5,11 +5,15 @@
 #define QSQLCONNECTIONDIALOG_H
 
 #include <QDialog>
-#include <QMessageBox>
 
-#include "ui_qsqlconnectiondialog.h"
+QT_BEGIN_NAMESPACE
+namespace Ui
+{
+class QSqlConnectionDialogUi;
+}
+QT_END_NAMESPACE
 
-class QSqlConnectionDialog: public QDialog
+class QSqlConnectionDialog : public QDialog
 {
     Q_OBJECT
 public:
@@ -25,12 +29,11 @@ public:
     bool useInMemoryDatabase() const;
 
 private slots:
-    void on_okButton_clicked();
-    void on_cancelButton_clicked() { reject(); }
-    void on_dbCheckBox_clicked() { ui.connGroupBox->setEnabled(!ui.dbCheckBox->isChecked()); }
+    void onOkButton();
+    void onDbCheckBox();
 
 private:
-    Ui::QSqlConnectionDialogUi ui;
+    Ui::QSqlConnectionDialogUi *m_ui;
 };
 
 #endif

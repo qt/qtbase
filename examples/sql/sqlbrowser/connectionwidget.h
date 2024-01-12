@@ -9,14 +9,13 @@
 QT_FORWARD_DECLARE_CLASS(QTreeWidget)
 QT_FORWARD_DECLARE_CLASS(QTreeWidgetItem)
 QT_FORWARD_DECLARE_CLASS(QSqlDatabase)
-QT_FORWARD_DECLARE_CLASS(QMenu)
 
-class ConnectionWidget: public QWidget
+class ConnectionWidget : public QWidget
 {
     Q_OBJECT
 public:
     ConnectionWidget(QWidget *parent = nullptr);
-    virtual ~ConnectionWidget();
+    ~ConnectionWidget();
 
     QSqlDatabase currentDatabase() const;
 
@@ -27,8 +26,8 @@ signals:
 public slots:
     void refresh();
     void showMetaData();
-    void on_tree_itemActivated(QTreeWidgetItem *item, int column);
-    void on_tree_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+    void onItemActivated(QTreeWidgetItem *item);
+    void onCurrentItemChanged(QTreeWidgetItem *current);
 
 private:
     void setActive(QTreeWidgetItem *);

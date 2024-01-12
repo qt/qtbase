@@ -3,23 +3,49 @@
 
 #include "browser.h"
 #include "qsqlconnectiondialog.h"
+#include <ui_browserwidget.h>
 
-#include <QtWidgets>
-#include <QtSql>
+#include <QAction>
+#include <QMessageBox>
+#include <QStandardItemModel>
+#include <QSqlDriver>
+#include <QSqlError>
+#include <QSqlField>
+#include <QSqlQuery>
+#include <QSqlRecord>
+#include <QTextEdit>
+#include <QTimer>
 
 Browser::Browser(QWidget *parent)
     : QWidget(parent)
+    , m_ui(new Ui::Browser)
 {
-    setupUi(this);
+    m_ui->setupUi(this);
 
-    table->addAction(insertRowAction);
-    table->addAction(deleteRowAction);
-    table->addAction(fieldStrategyAction);
-    table->addAction(rowStrategyAction);
-    table->addAction(manualStrategyAction);
-    table->addAction(submitAction);
-    table->addAction(revertAction);
-    table->addAction(selectAction);
+    m_ui->table->addAction(m_ui->insertRowAction);
+    m_ui->table->addAction(m_ui->deleteRowAction);
+    m_ui->table->addAction(m_ui->fieldStrategyAction);
+    m_ui->table->addAction(m_ui->rowStrategyAction);
+    m_ui->table->addAction(m_ui->manualStrategyAction);
+    m_ui->table->addAction(m_ui->submitAction);
+    m_ui->table->addAction(m_ui->revertAction);
+    m_ui->table->addAction(m_ui->selectAction);
+
+    connect(m_ui->insertRowAction, &QAction::triggered, this, &Browser::insertRow);
+    connect(m_ui->deleteRowAction, &QAction::triggered, this, &Browser::deleteRow);
+    connect(m_ui->fieldStrategyAction, &QAction::triggered, this, &Browser::onFieldStrategyAction);
+    connect(m_ui->rowStrategyAction, &QAction::triggered, this, &Browser::onRowStrategyAction);
+    connect(m_ui->sqlEdit, &QTextEdit::textChanged, this, &Browser::updateActions);
+
+    connect(m_ui->connectionWidget, &ConnectionWidget::tableActivated,
+            this, &Browser::showTable);
+    connect(m_ui->connectionWidget, &ConnectionWidget::metaDataRequested,
+            this, &Browser::showMetaData);
+
+    connect(m_ui->submitButton, &QPushButton::clicked,
+            this, &Browser::onSubmitButton);
+    connect(m_ui->clearButton, &QPushButton::clicked,
+            this, &Browser::onClearButton);
 
     if (QSqlDatabase::drivers().isEmpty())
         QMessageBox::information(this, tr("No database drivers found"),
@@ -27,18 +53,22 @@ Browser::Browser(QWidget *parent)
                                     "Please check the documentation how to build the "
                                     "Qt SQL plugins."));
 
-    emit statusMessage(tr("Ready."));
+    QTimer::singleShot(0, this, [this]() {
+        updateActions();
+        emit statusMessage(tr("Ready."));
+    });
 }
 
 Browser::~Browser()
 {
+    delete m_ui;
 }
 
 void Browser::exec()
 {
-    QSqlQueryModel *model = new QSqlQueryModel(table);
-    model->setQuery(QSqlQuery(sqlEdit->toPlainText(), connectionWidget->currentDatabase()));
-    table->setModel(model);
+    QSqlQueryModel *model = new QSqlQueryModel(m_ui->table);
+    model->setQuery(QSqlQuery(m_ui->sqlEdit->toPlainText(), m_ui->connectionWidget->currentDatabase()));
+    m_ui->table->setModel(model);
 
     if (model->lastError().type() != QSqlError::NoError)
         emit statusMessage(model->lastError().text());
@@ -52,7 +82,7 @@ void Browser::exec()
 }
 
 QSqlError Browser::addConnection(const QString &driver, const QString &dbName, const QString &host,
-                            const QString &user, const QString &passwd, int port)
+                                 const QString &user, const QString &passwd, int port)
 {
     static int cCount = 0;
 
@@ -66,7 +96,7 @@ QSqlError Browser::addConnection(const QString &driver, const QString &dbName, c
         db = QSqlDatabase();
         QSqlDatabase::removeDatabase(QString("Browser%1").arg(cCount));
     }
-    connectionWidget->refresh();
+    m_ui->connectionWidget->refresh();
 
     return err;
 }
@@ -82,10 +112,14 @@ void Browser::openNewConnectionDialog()
         QSqlDatabase::removeDatabase("in_mem_db");
         QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "in_mem_db");
         db.setDatabaseName(":memory:");
-        if (!db.open())
-            QMessageBox::warning(this, tr("Unable to open database"), tr("An error occurred while "
-                                                                         "opening the connection: ") + db.lastError().text());
-        QSqlQuery q("", db);
+        if (!db.open()) {
+            QMessageBox::warning(this, tr("Unable to open database"),
+                                 tr("An error occurred while "
+                                    "opening the connection: %1") .arg(db.lastError().text()));
+            return;
+        }
+        db.transaction();
+        QSqlQuery q(db);
         q.exec("drop table Movies");
         q.exec("drop table Names");
         q.exec("create table Movies (id integer primary key, Title varchar, Director varchar, Rating number)");
@@ -100,37 +134,43 @@ void Browser::openNewConnectionDialog()
         q.exec("insert into Names values (2, 'Donald', 'Duck', 'Andeby')");
         q.exec("insert into Names values (3, 'Buck', 'Rogers', 'Paris')");
         q.exec("insert into Names values (4, 'Sherlock', 'Holmes', 'London')");
-        connectionWidget->refresh();
+        db.commit();
+        m_ui->connectionWidget->refresh();
     } else {
         QSqlError err = addConnection(dialog.driverName(), dialog.databaseName(), dialog.hostName(),
-                           dialog.userName(), dialog.password(), dialog.port());
+                                      dialog.userName(), dialog.password(), dialog.port());
         if (err.type() != QSqlError::NoError)
-            QMessageBox::warning(this, tr("Unable to open database"), tr("An error occurred while "
-                                       "opening the connection: ") + err.text());
+            QMessageBox::warning(this, tr("Unable to open database"),
+                                 tr("An error occurred while "
+                                    "opening the connection: %1").arg(err.text()));
     }
 }
 
 void Browser::showTable(const QString &t)
 {
-    QSqlTableModel *model = new CustomModel(table, connectionWidget->currentDatabase());
+    QSqlTableModel *model = new CustomModel(m_ui->table, m_ui->connectionWidget->currentDatabase());
     model->setEditStrategy(QSqlTableModel::OnRowChange);
-    model->setTable(connectionWidget->currentDatabase().driver()->escapeIdentifier(t, QSqlDriver::TableName));
+    model->setTable(m_ui->connectionWidget->currentDatabase().driver()->escapeIdentifier(t, QSqlDriver::TableName));
     model->select();
     if (model->lastError().type() != QSqlError::NoError)
         emit statusMessage(model->lastError().text());
 
-    table->setModel(model);
-    table->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed);
-    connect(table->selectionModel(), &QItemSelectionModel::currentRowChanged,
-            this, &Browser::currentChanged);
+    m_ui->table->setModel(model);
+    m_ui->table->setEditTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed);
+    connect(m_ui->table->selectionModel(), &QItemSelectionModel::currentRowChanged,
+            this, &Browser::updateActions);
+
+    connect(m_ui->submitAction, &QAction::triggered, model, &QSqlTableModel::submitAll);
+    connect(m_ui->revertAction, &QAction::triggered, model, &QSqlTableModel::revertAll);
+    connect(m_ui->selectAction, &QAction::triggered, model, &QSqlTableModel::select);
 
     updateActions();
 }
 
 void Browser::showMetaData(const QString &t)
 {
-    QSqlRecord rec = connectionWidget->currentDatabase().record(t);
-    QStandardItemModel *model = new QStandardItemModel(table);
+    QSqlRecord rec = m_ui->connectionWidget->currentDatabase().record(t);
+    QStandardItemModel *model = new QStandardItemModel(m_ui->table);
 
     model->insertRows(0, rec.count());
     model->insertColumns(0, 7);
@@ -157,37 +197,37 @@ void Browser::showMetaData(const QString &t)
         model->setData(model->index(i, 6), fld.defaultValue());
     }
 
-    table->setModel(model);
-    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_ui->table->setModel(model);
+    m_ui->table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     updateActions();
 }
 
 void Browser::insertRow()
 {
-    QSqlTableModel *model = qobject_cast<QSqlTableModel *>(table->model());
+    QSqlTableModel *model = qobject_cast<QSqlTableModel *>(m_ui->table->model());
     if (!model)
         return;
 
-    QModelIndex insertIndex = table->currentIndex();
+    QModelIndex insertIndex = m_ui->table->currentIndex();
     int row = insertIndex.row() == -1 ? 0 : insertIndex.row();
     model->insertRow(row);
     insertIndex = model->index(row, 0);
-    table->setCurrentIndex(insertIndex);
-    table->edit(insertIndex);
+    m_ui->table->setCurrentIndex(insertIndex);
+    m_ui->table->edit(insertIndex);
 }
 
 void Browser::deleteRow()
 {
-    QSqlTableModel *model = qobject_cast<QSqlTableModel *>(table->model());
+    QSqlTableModel *model = qobject_cast<QSqlTableModel *>(m_ui->table->model());
     if (!model)
         return;
 
-    QModelIndexList currentSelection = table->selectionModel()->selectedIndexes();
-    for (int i = 0; i < currentSelection.count(); ++i) {
-        if (currentSelection.at(i).column() != 0)
+    const QModelIndexList currentSelection = m_ui->table->selectionModel()->selectedIndexes();
+    for (const auto &idx : currentSelection) {
+        if (idx.column() != 0)
             continue;
-        model->removeRow(currentSelection.at(i).row());
+        model->removeRow(idx.row());
     }
 
     updateActions();
@@ -195,74 +235,70 @@ void Browser::deleteRow()
 
 void Browser::updateActions()
 {
-    QSqlTableModel * tm = qobject_cast<QSqlTableModel *>(table->model());
-    bool enableIns = tm;
-    bool enableDel = enableIns && table->currentIndex().isValid();
+    QSqlTableModel *tm = qobject_cast<QSqlTableModel *>(m_ui->table->model());
+    bool enableIns = tm != nullptr;
+    bool enableDel = enableIns && m_ui->table->currentIndex().isValid();
 
-    insertRowAction->setEnabled(enableIns);
-    deleteRowAction->setEnabled(enableDel);
+    m_ui->insertRowAction->setEnabled(enableIns);
+    m_ui->deleteRowAction->setEnabled(enableDel);
 
-    fieldStrategyAction->setEnabled(tm);
-    rowStrategyAction->setEnabled(tm);
-    manualStrategyAction->setEnabled(tm);
-    submitAction->setEnabled(tm);
-    revertAction->setEnabled(tm);
-    selectAction->setEnabled(tm);
+    m_ui->submitAction->setEnabled(tm);
+    m_ui->revertAction->setEnabled(tm);
+    m_ui->selectAction->setEnabled(tm);
+
+    const bool isEmpty = m_ui->sqlEdit->toPlainText().isEmpty();
+    m_ui->submitButton->setEnabled(m_ui->connectionWidget->currentDatabase().isOpen() && !isEmpty);
+    m_ui->clearButton->setEnabled(!isEmpty);
 
     if (tm) {
         QSqlTableModel::EditStrategy es = tm->editStrategy();
-        fieldStrategyAction->setChecked(es == QSqlTableModel::OnFieldChange);
-        rowStrategyAction->setChecked(es == QSqlTableModel::OnRowChange);
-        manualStrategyAction->setChecked(es == QSqlTableModel::OnManualSubmit);
+        m_ui->fieldStrategyAction->setChecked(es == QSqlTableModel::OnFieldChange);
+        m_ui->rowStrategyAction->setChecked(es == QSqlTableModel::OnRowChange);
+        m_ui->manualStrategyAction->setChecked(es == QSqlTableModel::OnManualSubmit);
+    } else {
+        m_ui->fieldStrategyAction->setEnabled(false);
+        m_ui->rowStrategyAction->setEnabled(false);
+        m_ui->manualStrategyAction->setEnabled(false);
     }
 }
 
 void Browser::about()
 {
-    QMessageBox::about(this, tr("About"), tr("The SQL Browser demonstration "
-        "shows how a data browser can be used to visualize the results of SQL"
-                                             "statements on a live database"));
+    QMessageBox::about(this, tr("About"),
+                       tr("The SQL Browser demonstration shows how a data browser "
+                          "can be used to visualize the results of SQL "
+                          "statements on a live database"));
 }
 
-void Browser::on_fieldStrategyAction_triggered()
+void Browser::onFieldStrategyAction()
 {
-    QSqlTableModel * tm = qobject_cast<QSqlTableModel *>(table->model());
+    QSqlTableModel *tm = qobject_cast<QSqlTableModel *>(m_ui->table->model());
     if (tm)
         tm->setEditStrategy(QSqlTableModel::OnFieldChange);
 }
 
-void Browser::on_rowStrategyAction_triggered()
+void Browser::onRowStrategyAction()
 {
-    QSqlTableModel * tm = qobject_cast<QSqlTableModel *>(table->model());
+    QSqlTableModel *tm = qobject_cast<QSqlTableModel *>(m_ui->table->model());
     if (tm)
         tm->setEditStrategy(QSqlTableModel::OnRowChange);
 }
 
-void Browser::on_manualStrategyAction_triggered()
+void Browser::onManualStrategyAction()
 {
-    QSqlTableModel * tm = qobject_cast<QSqlTableModel *>(table->model());
+    QSqlTableModel *tm = qobject_cast<QSqlTableModel *>(m_ui->table->model());
     if (tm)
         tm->setEditStrategy(QSqlTableModel::OnManualSubmit);
 }
 
-void Browser::on_submitAction_triggered()
+void Browser::onSubmitButton()
 {
-    QSqlTableModel * tm = qobject_cast<QSqlTableModel *>(table->model());
-    if (tm)
-        tm->submitAll();
+    exec();
+    m_ui->sqlEdit->setFocus();
 }
 
-void Browser::on_revertAction_triggered()
+void Browser::onClearButton()
 {
-    QSqlTableModel * tm = qobject_cast<QSqlTableModel *>(table->model());
-    if (tm)
-        tm->revertAll();
+    m_ui->sqlEdit->clear();
+    m_ui->sqlEdit->setFocus();
 }
-
-void Browser::on_selectAction_triggered()
-{
-    QSqlTableModel * tm = qobject_cast<QSqlTableModel *>(table->model());
-    if (tm)
-        tm->select();
-}
-
