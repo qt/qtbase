@@ -6,72 +6,58 @@
 
 #include <QWidget>
 #include <QSqlTableModel>
-#include "ui_browserwidget.h"
 
-class ConnectionWidget;
-QT_FORWARD_DECLARE_CLASS(QTableView)
-QT_FORWARD_DECLARE_CLASS(QPushButton)
-QT_FORWARD_DECLARE_CLASS(QTextEdit)
 QT_FORWARD_DECLARE_CLASS(QSqlError)
 
-class Browser: public QWidget, private Ui::Browser
+QT_BEGIN_NAMESPACE
+namespace Ui
+{
+class Browser;
+}
+QT_END_NAMESPACE
+
+class Browser : public QWidget
 {
     Q_OBJECT
 public:
     Browser(QWidget *parent = nullptr);
-    virtual ~Browser();
+    ~Browser();
 
     QSqlError addConnection(const QString &driver, const QString &dbName, const QString &host,
-                  const QString &user, const QString &passwd, int port = -1);
+                            const QString &user, const QString &passwd, int port);
 
+public slots:
+    void openNewConnectionDialog();
+    void about();
+
+protected:
     void insertRow();
     void deleteRow();
     void updateActions();
 
-public slots:
+protected slots:
     void exec();
     void showTable(const QString &table);
     void showMetaData(const QString &table);
-    void openNewConnectionDialog();
-    void currentChanged() { updateActions(); }
-    void about();
 
-    void on_insertRowAction_triggered()
-    { insertRow(); }
-    void on_deleteRowAction_triggered()
-    { deleteRow(); }
-    void on_fieldStrategyAction_triggered();
-    void on_rowStrategyAction_triggered();
-    void on_manualStrategyAction_triggered();
-    void on_submitAction_triggered();
-    void on_revertAction_triggered();
-    void on_selectAction_triggered();
-    void on_connectionWidget_tableActivated(const QString &table)
-    { showTable(table); }
-    void on_connectionWidget_metaDataRequested(const QString &table)
-    { showMetaData(table); }
-    void on_submitButton_clicked()
-    {
-        exec();
-        sqlEdit->setFocus();
-    }
-    void on_clearButton_clicked()
-    {
-        sqlEdit->clear();
-        sqlEdit->setFocus();
-    }
+    void onFieldStrategyAction();
+    void onRowStrategyAction();
+    void onManualStrategyAction();
+    void onSubmitButton();
+    void onClearButton();
 
 signals:
     void statusMessage(const QString &message);
+
+private:
+    Ui::Browser *m_ui;
 };
 
-class CustomModel: public QSqlTableModel
+class CustomModel : public QSqlTableModel
 {
     Q_OBJECT
 public:
-    explicit CustomModel(QObject *parent = nullptr, QSqlDatabase db = QSqlDatabase())
-        : QSqlTableModel(parent, db) {}
-
+    using QSqlTableModel::QSqlTableModel;
     QVariant data(const QModelIndex &idx, int role) const override
     {
         if (role == Qt::BackgroundRole && isDirty(idx))

@@ -3,16 +3,21 @@
 
 #include "browser.h"
 
-#include <QtCore>
-#include <QtWidgets>
-#include <QtSql>
+#include <QApplication>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMenuBar>
+#include <QSqlError>
+#include <QStatusBar>
+#include <QUrl>
 
 void addConnectionsFromCommandline(const QStringList &args, Browser *browser)
 {
-    for (int i = 1; i < args.count(); ++i) {
-        QUrl url(args.at(i), QUrl::TolerantMode);
+    for (qsizetype i = 1; i < args.count(); ++i) {
+        const auto &arg = args.at(i);
+        const QUrl url(arg, QUrl::TolerantMode);
         if (!url.isValid()) {
-            qWarning("Invalid URL: %s", qPrintable(args.at(i)));
+            qWarning("Invalid URL: %s", qPrintable(arg));
             continue;
         }
         QSqlError err = browser->addConnection(url.scheme(), url.path().mid(1), url.host(),
@@ -27,23 +32,26 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     QMainWindow mainWin;
-    mainWin.setWindowTitle(QObject::tr("Qt SQL Browser"));
+    mainWin.setWindowTitle(QApplication::translate("MainWindow", "Qt SQL Browser"));
 
     Browser browser(&mainWin);
     mainWin.setCentralWidget(&browser);
 
     QMenu *fileMenu = mainWin.menuBar()->addMenu(QObject::tr("&File"));
-    fileMenu->addAction(QObject::tr("Add &Connection..."), &browser,
-                        &Browser::openNewConnectionDialog);
+    fileMenu->addAction(QApplication::translate("MainWindow", "Add &Connection..."),
+                        &browser, &Browser::openNewConnectionDialog);
     fileMenu->addSeparator();
-    fileMenu->addAction(QObject::tr("&Quit"), qApp, &QApplication::quit);
+    fileMenu->addAction(QApplication::translate("MainWindow", "&Quit"),
+                        qApp, &QApplication::quit);
 
     QMenu *helpMenu = mainWin.menuBar()->addMenu(QObject::tr("&Help"));
-    helpMenu->addAction(QObject::tr("About"), &browser, &Browser::about);
-    helpMenu->addAction(QObject::tr("About Qt"), qApp, &QApplication::aboutQt);
+    helpMenu->addAction(QApplication::translate("MainWindow", "About"),
+                        &browser, &Browser::about);
+    helpMenu->addAction(QApplication::translate("MainWindow", "About Qt"),
+                        qApp, &QApplication::aboutQt);
 
-    QObject::connect(&browser, &Browser::statusMessage, &mainWin,
-                     [&mainWin](const QString &text) { mainWin.statusBar()->showMessage(text); });
+    QObject::connect(&browser, &Browser::statusMessage,
+                     &mainWin, [&mainWin](const QString &text) { mainWin.statusBar()->showMessage(text); });
 
     addConnectionsFromCommandline(app.arguments(), &browser);
     mainWin.show();
