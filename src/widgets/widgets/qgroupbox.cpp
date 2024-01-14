@@ -463,9 +463,9 @@ QSize QGroupBox::minimumSizeHint() const
     int baseWidth = metrics.horizontalAdvance(d->title) + metrics.horizontalAdvance(u' ');
     int baseHeight = metrics.height();
     if (d->checkable) {
-        baseWidth += style()->pixelMetric(QStyle::PM_IndicatorWidth, &option);
-        baseWidth += style()->pixelMetric(QStyle::PM_CheckBoxLabelSpacing, &option);
-        baseHeight = qMax(baseHeight, style()->pixelMetric(QStyle::PM_IndicatorHeight, &option));
+        baseWidth += style()->pixelMetric(QStyle::PM_IndicatorWidth, &option, this);
+        baseWidth += style()->pixelMetric(QStyle::PM_CheckBoxLabelSpacing, &option, this);
+        baseHeight = qMax(baseHeight, style()->pixelMetric(QStyle::PM_IndicatorHeight, &option, this));
     }
 
     QSize size = style()->sizeFromContents(QStyle::CT_GroupBox, &option, QSize(baseWidth, baseHeight), this);

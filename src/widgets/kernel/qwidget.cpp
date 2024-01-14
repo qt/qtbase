@@ -7609,7 +7609,7 @@ bool QWidget::restoreGeometry(const QByteArray &geometry)
     }
 
     const int frameHeight = QApplication::style()
-                          ? QApplication::style()->pixelMetric(QStyle::PM_TitleBarHeight)
+                          ? QApplication::style()->pixelMetric(QStyle::PM_TitleBarHeight, nullptr, this)
                           : 20;
 
     if (!restoredNormalGeometry.isValid())
