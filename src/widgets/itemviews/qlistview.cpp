@@ -1797,7 +1797,7 @@ void QListViewPrivate::prepareItemsLayout()
     if (q->style()->styleHint(QStyle::SH_ScrollView_FrameOnlyAroundContents)) {
         QStyleOption option;
         option.initFrom(q);
-        frameAroundContents = q->style()->pixelMetric(QStyle::PM_DefaultFrameWidth, &option) * 2;
+        frameAroundContents = q->style()->pixelMetric(QStyle::PM_DefaultFrameWidth, &option, q) * 2;
     }
 
     // maximumViewportSize() already takes scrollbar into account if policy is

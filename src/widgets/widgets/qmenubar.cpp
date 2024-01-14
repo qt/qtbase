@@ -914,7 +914,7 @@ void QMenuBar::paintEvent(QPaintEvent *e)
         frame.rect = rect();
         frame.palette = palette();
         frame.state = QStyle::State_None;
-        frame.lineWidth = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, &frame);
+        frame.lineWidth = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, &frame, this);
         frame.midLineWidth = 0;
         style()->drawPrimitive(QStyle::PE_PanelMenuBar, &frame, &p, this);
     }

@@ -49,7 +49,7 @@ QSize QToolBarExtension::sizeHint() const
 {
     QStyleOption opt;
     opt.initFrom(this);
-    const int ext = style()->pixelMetric(QStyle::PM_ToolBarExtensionExtent, &opt);
+    const int ext = style()->pixelMetric(QStyle::PM_ToolBarExtensionExtent, &opt, this);
     return QSize(ext, ext);
 }
 

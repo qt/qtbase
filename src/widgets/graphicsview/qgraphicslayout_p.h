@@ -51,8 +51,8 @@ public:
         Q_ASSERT(style);
         if (widget) //###
             m_styleOption.initFrom(widget);
-        m_defaultSpacing[0] = style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing, &m_styleOption);
-        m_defaultSpacing[1] = style->pixelMetric(QStyle::PM_LayoutVerticalSpacing, &m_styleOption);
+        m_defaultSpacing[0] = style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing, &m_styleOption, widget);
+        m_defaultSpacing[1] = style->pixelMetric(QStyle::PM_LayoutVerticalSpacing, &m_styleOption, widget);
     }
 
     inline void invalidate() { m_valid = false; m_style = nullptr; m_widget = nullptr; }
