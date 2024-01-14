@@ -2550,7 +2550,9 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
             html += u';';
             attributesEmitted = true;
         }
-    } else if (format.hasProperty(QTextFormat::FontPixelSize)) {
+    } else if (format.hasProperty(QTextFormat::FontPixelSize)
+               && format.property(QTextFormat::FontPixelSize)
+                       != defaultCharFormat.property(QTextFormat::FontPixelSize)) {
         html += " font-size:"_L1;
         html += QString::number(format.intProperty(QTextFormat::FontPixelSize));
         html += "px;"_L1;
