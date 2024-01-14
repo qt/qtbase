@@ -46,7 +46,7 @@ qreal QGraphicsLayoutStyleInfo::spacing(Qt::Orientation orientation) const
     Q_ASSERT(style());
     return style()->pixelMetric(orientation == Qt::Horizontal
         ? QStyle::PM_LayoutHorizontalSpacing : QStyle::PM_LayoutVerticalSpacing,
-        &m_styleOption);
+        &m_styleOption, widget());
 }
 
 qreal QGraphicsLayoutStyleInfo::windowMargin(Qt::Orientation orientation) const

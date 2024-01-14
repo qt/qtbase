@@ -352,7 +352,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
             // Shrinking the topMargin if Not checkable AND title is empty
             topMargin = groupBoxTopMargin;
         } else {
-            topMargin = qMax(pixelMetric(PM_ExclusiveIndicatorHeight), option->fontMetrics.height()) + groupBoxTopMargin;
+            topMargin = qMax(pixelMetric(PM_ExclusiveIndicatorHeight, option, widget), option->fontMetrics.height()) + groupBoxTopMargin;
         }
         QRect frame = option->rect.adjusted(0, topMargin, 0, 0);
         qDrawBorderPixmap(painter, frame, QMargins(6, 6, 6, 6), pixmap);
@@ -3032,7 +3032,7 @@ QSize QFusionStyle::sizeFromContents(ContentsType type, const QStyleOption *opti
         break;
     case CT_GroupBox:
         if (option) {
-            int topMargin = qMax(pixelMetric(PM_ExclusiveIndicatorHeight), option->fontMetrics.height()) + groupBoxTopMargin;
+            int topMargin = qMax(pixelMetric(PM_ExclusiveIndicatorHeight, option, widget), option->fontMetrics.height()) + groupBoxTopMargin;
             newSize += QSize(10, topMargin); // Add some space below the groupbox
         }
         break;
@@ -3216,8 +3216,8 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
             case SC_SliderHandle: {
                 const bool bothTicks = (slider->tickPosition & QSlider::TicksBothSides) == QSlider::TicksBothSides;
                 if (slider->orientation == Qt::Horizontal) {
-                    rect.setHeight(proxy()->pixelMetric(PM_SliderThickness, option));
-                    rect.setWidth(proxy()->pixelMetric(PM_SliderLength, option));
+                    rect.setHeight(proxy()->pixelMetric(PM_SliderThickness, option, widget));
+                    rect.setWidth(proxy()->pixelMetric(PM_SliderLength, option, widget));
                     int centerY = slider->rect.center().y() - rect.height() / 2;
                     if (!bothTicks) {
                         if (slider->tickPosition & QSlider::TicksAbove)
@@ -3227,8 +3227,8 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
                     }
                     rect.moveTop(centerY);
                 } else {
-                    rect.setWidth(proxy()->pixelMetric(PM_SliderThickness, option));
-                    rect.setHeight(proxy()->pixelMetric(PM_SliderLength, option));
+                    rect.setWidth(proxy()->pixelMetric(PM_SliderThickness, option, widget));
+                    rect.setHeight(proxy()->pixelMetric(PM_SliderLength, option, widget));
                     int centerX = slider->rect.center().x() - rect.width() / 2;
                     if (!bothTicks) {
                         if (slider->tickPosition & QSlider::TicksAbove)
@@ -3325,7 +3325,7 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
                 int margin = 3;
                 int leftMarginExtension = 0;
                 const int exclusiveIndicatorHeight = option->subControls.testFlag(SC_GroupBoxCheckBox) ?
-                                                        pixelMetric(PM_ExclusiveIndicatorHeight) : 0;
+                                                        pixelMetric(PM_ExclusiveIndicatorHeight, option, widget) : 0;
                 const int topMargin = qMax(exclusiveIndicatorHeight, fontMetricsHeight) +
                                         groupBoxTopMargin;
                 return frameRect.adjusted(leftMarginExtension + margin, margin + topMargin, -margin, -margin - groupBoxBottomMargin);

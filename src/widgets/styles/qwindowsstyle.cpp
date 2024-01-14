@@ -383,7 +383,7 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
 
     switch (pm) {
     case PM_MaximumDragDistance:
-        ret = QCommonStyle::pixelMetric(PM_MaximumDragDistance);
+        ret = QCommonStyle::pixelMetric(PM_MaximumDragDistance, opt, widget);
         if (ret == -1)
             ret = 60;
         break;

@@ -2856,7 +2856,7 @@ QLayoutItem *QMainWindowLayout::unplug(QWidget *widget, QDockWidgetPrivate::Drag
             const auto *layout = qobject_cast<QDockWidgetLayout *>(dw->layout());
             const bool verticalTitleBar = layout ? layout->verticalTitleBar : false;
             const int tbHeight = QApplication::style()
-                      ? QApplication::style()->pixelMetric(QStyle::PixelMetric::PM_TitleBarHeight)
+                      ? QApplication::style()->pixelMetric(QStyle::PixelMetric::PM_TitleBarHeight, nullptr, dw)
                       : 20;
             const int minHeight = verticalTitleBar ? 2 * tbHeight : tbHeight;
             const int minWidth = verticalTitleBar ? tbHeight : 2 * tbHeight;

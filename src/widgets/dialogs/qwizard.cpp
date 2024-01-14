@@ -863,7 +863,7 @@ QWizardLayoutInfo QWizardPrivate::layoutInfoForCurrentPage()
 
     QStyleOption option;
     option.initFrom(q);
-    const int layoutHorizontalSpacing = style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing, &option);
+    const int layoutHorizontalSpacing = style->pixelMetric(QStyle::PM_LayoutHorizontalSpacing, &option, q);
     info.topLevelMarginLeft = style->pixelMetric(QStyle::PM_LayoutLeftMargin, nullptr, q);
     info.topLevelMarginRight = style->pixelMetric(QStyle::PM_LayoutRightMargin, nullptr, q);
     info.topLevelMarginTop = style->pixelMetric(QStyle::PM_LayoutTopMargin, nullptr, q);
@@ -875,7 +875,7 @@ QWizardLayoutInfo QWizardPrivate::layoutInfoForCurrentPage()
     info.hspacing = (layoutHorizontalSpacing == -1)
         ? style->layoutSpacing(QSizePolicy::DefaultType, QSizePolicy::DefaultType, Qt::Horizontal)
         : layoutHorizontalSpacing;
-    info.vspacing = style->pixelMetric(QStyle::PM_LayoutVerticalSpacing, &option);
+    info.vspacing = style->pixelMetric(QStyle::PM_LayoutVerticalSpacing, &option, q);
     info.buttonSpacing = (layoutHorizontalSpacing == -1)
         ? style->layoutSpacing(QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Horizontal)
         : layoutHorizontalSpacing;
