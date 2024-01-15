@@ -1042,6 +1042,14 @@ void QHttpHeaders::reserve(qsizetype size)
 }
 
 /*!
+    Returns a header name corresponding to the provided \a name as a view.
+*/
+QByteArrayView QHttpHeaders::wellKnownHeaderName(WellKnownHeader name) noexcept
+{
+    return headerNames[qToUnderlying(name)];
+}
+
+/*!
     Returns the header entries as a list of (name, value) pairs.
     Header names are case-insensitive, and the returned names are lower-cased.
 */
