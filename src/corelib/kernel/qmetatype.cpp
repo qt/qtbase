@@ -907,13 +907,22 @@ bool QMetaType::isOrdered() const
 */
 void QMetaType::unregisterMetaType(QMetaType type)
 {
-    if (type.d_ptr && type.d_ptr->typeId.loadRelaxed() >= QMetaType::User) {
-        // this is a custom meta type (not read-only)
-        auto d = const_cast<QtPrivate::QMetaTypeInterface *>(type.d_ptr);
-        if (auto reg = customTypeRegistry())
-            reg->unregisterDynamicType(d->typeId.loadRelaxed());
-        d->typeId.storeRelease(0);
+    const QtPrivate::QMetaTypeInterface *d_ptr = type.d_ptr;
+    if (!d_ptr)
+        return;
+
+    const int typeId = d_ptr->typeId.loadRelaxed();
+    if (typeId < QMetaType::User)
+        return;
+
+    // this is a custom meta type (not read-only)
+
+    if (auto reg = customTypeRegistry()) {
+        Q_ASSERT(reg->getCustomType(typeId) == d_ptr);
+        reg->unregisterDynamicType(typeId);
     }
+
+    const_cast<QtPrivate::QMetaTypeInterface *>(d_ptr)->typeId.storeRelease(0);
 }
 
 /*!
