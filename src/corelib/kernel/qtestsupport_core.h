@@ -16,7 +16,7 @@ Q_CORE_EXPORT void qSleep(int ms);
 Q_CORE_EXPORT void qSleep(std::chrono::milliseconds msecs);
 
 template <typename Functor>
-[[nodiscard]] static bool
+[[nodiscard]] bool
 qWaitFor(Functor predicate, QDeadlineTimer deadline = QDeadlineTimer(std::chrono::seconds{5}))
 {
     // We should not spin the event loop in case the predicate is already true,
