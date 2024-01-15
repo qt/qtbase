@@ -765,6 +765,21 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             }
         }
         break;
+    case QStyle::PE_Widget: {
+#if QT_CONFIG(dialogbuttonbox)
+        const QDialogButtonBox *buttonBox = nullptr;
+        if (qobject_cast<const QMessageBox *> (widget))
+            buttonBox = widget->findChild<const QDialogButtonBox *>(QLatin1String("qt_msgbox_buttonbox"));
+#if QT_CONFIG(inputdialog)
+        else if (qobject_cast<const QInputDialog *> (widget))
+            buttonBox = widget->findChild<const QDialogButtonBox *>(QLatin1String("qt_inputdlg_buttonbox"));
+#endif // QT_CONFIG(inputdialog)
+        if (buttonBox) {
+            painter->fillRect(option->rect,option->palette.window());
+        }
+#endif
+        break;
+    }
     default:
         QWindowsVistaStyle::drawPrimitive(element, option, painter, widget);
     }
