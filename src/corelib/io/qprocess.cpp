@@ -1921,7 +1921,8 @@ QProcessEnvironment QProcess::processEnvironment() const
 
     Returns \c true if the process was started successfully; otherwise
     returns \c false (if the operation timed out or if an error
-    occurred).
+    occurred). If the process had already started successfully before this
+    function, it returns immediately.
 
     This function can operate without an event loop. It is
     useful when writing non-GUI applications and when performing
@@ -2100,18 +2101,22 @@ QByteArray QProcess::readAllStandardError()
 /*!
     Starts the given \a program in a new process, passing the command line
     arguments in \a arguments. See setProgram() for information about how
-    QProcess searches for the executable to be run.
+    QProcess searches for the executable to be run. The OpenMode is set to \a
+    mode. No further splitting of the arguments is performed.
 
     The QProcess object will immediately enter the Starting state. If the
     process starts successfully, QProcess will emit started(); otherwise,
-    errorOccurred() will be emitted.
+    errorOccurred() will be emitted. Do note that on platforms that are able to
+    start child processes synchronously (notably Windows), those signals will
+    be emitted before this function returns and this QProcess object will
+    transition to either QProcess::Running or QProcess::NotRunning state,
+    respectively. On others paltforms, the started() and errorOccurred()
+    signals will be delayed.
 
-    \note Processes are started asynchronously, which means the started()
-    and errorOccurred() signals may be delayed. Call waitForStarted() to make
-    sure the process has started (or has failed to start) and those signals
-    have been emitted.
-
-    \note No further splitting of the arguments is performed.
+    Call waitForStarted() to make sure the process has started (or has failed
+    to start) and those signals have been emitted. It is safe to call that
+    function even if the process starting state is already known, though the
+    signal will not be emitted again.
 
     \b{Windows:} The arguments are quoted and joined into a command line
     that is compatible with the \c CommandLineToArgvW() Windows function.
@@ -2119,8 +2124,6 @@ QByteArray QProcess::readAllStandardError()
     you need to use setNativeArguments(). One notable program that does
     not follow the \c CommandLineToArgvW() rules is cmd.exe and, by
     consequence, all batch scripts.
-
-    The OpenMode is set to \a mode.
 
     If the QProcess object is already running a process, a warning may be
     printed at the console, and the existing process will continue running
