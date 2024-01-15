@@ -78,7 +78,7 @@ HTML.footer += \
     "    <ul id=\"menu-footer-submenu\" class=\"right clearfix\"><li id=\"menu-item-1795\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-1795\"><a title=\"Sign into your account.\" href=\"https://account.qt.io/login\">Sign In</a></li>\n" \
     "      <li id=\"menu-item-10375\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-10375\"><a href=\"mailto:feedback@theqtcompany.com?Subject=Feedback%20about%20doc.qt.io%20site\">Feedback</a></li>\n" \
     "      <li id=\"menu-item-1494\" class=\"menu-item menu-item-type-post_type menu-item-object-page menu-item-1494\"><a href=\"http://qt.io/contact-us/\">Contact us</a></li>\n" \
-    "      <li id=\"menu-item-4472\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-4472\"><a href=\"http://qt.io/about-us/\">© 2023 The Qt Company</a></li>\n" \
+    "      <li id=\"menu-item-4472\" class=\"menu-item menu-item-type-custom menu-item-object-custom menu-item-4472\"><a href=\"http://qt.io/about-us/\">© 2024 The Qt Company</a></li>\n" \
     "    </ul>\n" \
     "</div>\n" \
     "</div>\n" \

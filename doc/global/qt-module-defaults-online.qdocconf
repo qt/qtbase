@@ -5,7 +5,7 @@
 HTML.footer = \
     "   </div>\n" \
     "   <p class=\"copy-notice\">\n" \
-    "   <acronym title=\"Copyright\">&copy;</acronym> 2023 The Qt Company Ltd.\n" \
+    "   <acronym title=\"Copyright\">&copy;</acronym> 2024 The Qt Company Ltd.\n" \
     "   Documentation contributions included herein are the copyrights of\n" \
     "   their respective owners. " \
     "   The documentation provided herein is licensed under the terms of the" \
