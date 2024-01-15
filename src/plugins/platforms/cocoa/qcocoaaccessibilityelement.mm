@@ -563,7 +563,7 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
             else if (QAccessibleTableCellInterface *cell = iface->tableCellInterface())
                 rowIndex = cell->rowIndex();
             Q_ASSERT(tableElement->rows);
-            if (rowIndex > int([tableElement->rows count]))
+            if (rowIndex > int([tableElement->rows count]) || rowIndex == -1)
                 return nil;
             QMacAccessibilityElement *rowElement = tableElement->rows[rowIndex];
             return NSAccessibilityUnignoredAncestor(rowElement);
