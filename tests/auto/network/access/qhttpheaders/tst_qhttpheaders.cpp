@@ -16,6 +16,7 @@ class tst_QHttpHeaders : public QObject
 private slots:
     void constructors();
     void accessors();
+    void wellKnownHeader();
     void headerNameField();
     void headerValueField();
     void valueEncoding();
@@ -301,6 +302,12 @@ void tst_QHttpHeaders::accessors()
     QTest::ignoreMessage(QtMsgType::QtWarningMsg, re);
     QVERIFY(!h1.replace(0, "a€", "b"));
 
+}
+
+void tst_QHttpHeaders::wellKnownHeader()
+{
+    QByteArrayView view = QHttpHeaders::wellKnownHeaderName(QHttpHeaders::WellKnownHeader::AIM);
+    QCOMPARE(view, "a-im");
 }
 
 #define TEST_ILLEGAL_HEADER_NAME_CHARACTER(NAME)       \

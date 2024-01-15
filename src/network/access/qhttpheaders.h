@@ -242,6 +242,8 @@ public:
     Q_NETWORK_EXPORT void reserve(qsizetype size);
     bool isEmpty() const noexcept { return size() == 0; }
 
+    Q_NETWORK_EXPORT static QByteArrayView wellKnownHeaderName(WellKnownHeader name) noexcept;
+
     Q_NETWORK_EXPORT static QHttpHeaders
     fromListOfPairs(const QList<std::pair<QByteArray, QByteArray>> &headers);
     Q_NETWORK_EXPORT static QHttpHeaders
