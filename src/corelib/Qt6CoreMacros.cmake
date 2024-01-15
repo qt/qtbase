@@ -750,6 +750,7 @@ function(qt6_finalize_target target)
     endif()
 
     _qt_internal_expose_deferred_files_to_ide(${target})
+    _qt_internal_finalize_source_groups(${target})
     get_target_property(target_type ${target} TYPE)
     get_target_property(is_android_executable "${target}" _qt_is_android_executable)
 
@@ -772,6 +773,55 @@ function(qt6_finalize_target target)
     endif()
 
     set_target_properties(${target} PROPERTIES _qt_is_finalized TRUE)
+endfunction()
+
+function(_qt_internal_finalize_source_groups target)
+    if(NOT ("${CMAKE_GENERATOR}" STREQUAL "Xcode"
+         OR "${CMAKE_GENERATOR}" MATCHES "^Visual Studio"))
+        return()
+    endif()
+
+    get_target_property(sources ${target} SOURCES)
+    if(NOT sources)
+        return()
+    endif()
+
+    get_target_property(source_dir ${target} SOURCE_DIR)
+    get_target_property(binary_dir ${target} BINARY_DIR)
+
+    get_property(generated_source_group GLOBAL PROPERTY AUTOGEN_SOURCE_GROUP)
+    if(NOT generated_source_group)
+        set(generated_source_group "Source Files/Generated")
+    endif()
+
+    foreach(source IN LISTS sources)
+        string(GENEX_STRIP "${source}" source)
+
+        if(IS_ABSOLUTE ${source})
+            set(source_file_path "${source}")
+        else()
+            # Resolve absolute path. Can't use LOCATION, as that
+            # will error out if the file doesn't exist :(
+            get_filename_component(source_file_path "${source}"
+                ABSOLUTE BASE_DIR "${source_dir}")
+            if(NOT EXISTS ${source_file_path})
+                # Likely generated file, will end up in build dir
+                get_filename_component(source_file_path "${source}"
+                    ABSOLUTE BASE_DIR "${binary_dir}")
+            endif()
+        endif()
+
+        # Include qml files in "Source Files". Can not be done via regex,
+        # due to https://gitlab.kitware.com/cmake/cmake/-/issues/25597
+        if(${source_file_path} MATCHES "\\.qml$")
+            source_group("Source Files" FILES ${source_file_path})
+        endif()
+
+        get_source_file_property(is_generated "${source_file_path}" GENERATED)
+        if(${is_generated})
+            source_group(${generated_source_group} FILES ${source_file_path})
+        endif()
+    endforeach()
 endfunction()
 
 function(_qt_internal_darwin_permission_finalizer target)
@@ -3167,6 +3217,18 @@ macro(qt6_standard_project_setup)
                 set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER ${__qt_qt_targets_folder})
             endif()
         endif()
+
+        # Hide generated files in dedicated folder. Unfortunately we can't use a
+        # top level "Generated Files" folder for this, as CMake will then put the
+        # folder first in the list of folders, whereas we want to keep Sources and
+        # Headers front and center. See also _qt_internal_finalize_source_groups
+        set_property(GLOBAL PROPERTY AUTOGEN_SOURCE_GROUP "Source Files/Generated")
+
+        # Treat metatypes JSON files as generated. We propagate these INTERFACE_SOURCES,
+        # due to CMake's lack of a generic mechanism for property inheritance (see
+        # https://gitlab.kitware.com/cmake/cmake/-/issues/20416), but we don't want
+        # them to clutter up the user's project.
+        source_group("Source Files/Generated" REGULAR_EXPRESSION "(_metatypes\\.json)$")
 
         # I18N support.
         if(DEFINED __qt_sps_arg_I18N_LANGUAGES AND NOT DEFINED QT_I18N_LANGUAGES)
