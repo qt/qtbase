@@ -398,12 +398,22 @@ int QDBusAbstractInterface::timeout() const
 }
 
 /*!
-    When passed \a enable = \c true it causes all consecutive DBus calls made via
-    this interface to have the InteractiveAuthorizationAllowed flag set. Passing
-    false disables this behavior.
+    Configures whether, for asynchronous calls, the caller
+    is prepared to wait for interactive authorization.
+
+    If \a enable is set to \c true, the D-Bus messages generated for
+    asynchronous calls via this interface will set the
+    \c ALLOW_INTERACTIVE_AUTHORIZATION flag.
+
+    This flag is only useful when unprivileged code calls a more privileged
+    method call, and an authorization framework is deployed that allows
+    possibly interactive authorization.
+
+    The default is \c false.
 
     \since 6.7
-    \sa QDBusMessage::setInteractiveAuthorizationAllowed()
+    \sa QDBusMessage::setInteractiveAuthorizationAllowed(),
+        interactiveAuthorizationAllowed()
 */
 void QDBusAbstractInterface::setInteractiveAuthorizationAllowed(bool enable)
 {
@@ -411,10 +421,14 @@ void QDBusAbstractInterface::setInteractiveAuthorizationAllowed(bool enable)
 }
 
 /*!
-    Returns the current value of the InteractiveAuthorizationAllowed flag.
+    Returns whether, for asynchronous calls, the caller
+    is prepared to wait for interactive authorization.
+
+    The default is \c false.
 
     \since 6.7
-    \sa QDBusMessage::setInteractiveAuthorizationAllowed()
+    \sa setInteractiveAuthorizationAllowed(),
+        QDBusMessage::setInteractiveAuthorizationAllowed()
 */
 bool QDBusAbstractInterface::isInteractiveAuthorizationAllowed() const
 {
