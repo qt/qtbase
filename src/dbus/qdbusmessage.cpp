@@ -694,20 +694,26 @@ bool QDBusMessage::autoStartService() const
 }
 
 /*!
-    Sets the interactive authorization flag to \a enable.
-    This flag only makes sense for method call messages, where it
-    tells the D-Bus server that the caller of the method is prepared
-    to wait for interactive authorization to take place (for instance
-    via Polkit) before the actual method is processed.
+    Enables or disables the \c ALLOW_INTERACTIVE_AUTHORIZATION flag
+    in a message.
 
-    By default this flag is false and the other end is expected to
-    make any authorization decisions non-interactively and promptly.
+    This flag only makes sense for method call messages
+    (\l QDBusMessage::MethodCallMessage). If \a enable
+    is set to \c true, the flag indicates to the callee that the
+    caller of the method is prepared to wait for interactive authorization
+    to take place (for instance via Polkit) before the actual method
+    is processed.
+
+    If \a enable is set to \c false, the flag is not
+    set, meaning that the other end is expected to make any authorization
+    decisions non-interactively and promptly. This is the default.
 
     The \c org.freedesktop.DBus.Error.InteractiveAuthorizationRequired
     error indicates that authorization failed, but could have succeeded
     if this flag had been set.
 
-    \sa isInteractiveAuthorizationAllowed()
+    \sa isInteractiveAuthorizationAllowed(),
+        QDBusAbstractInterface::setInteractiveAuthorizationAllowed()
 
     \since 5.12
 */
@@ -717,12 +723,11 @@ void QDBusMessage::setInteractiveAuthorizationAllowed(bool enable)
 }
 
 /*!
-    Returns the interactive authorization allowed flag, as set by
-    setInteractiveAuthorizationAllowed(). By default this flag
-    is false and the other end is expected to make any authorization
-    decisions non-interactively and promptly.
+    Returns whether the message has the
+    \c ALLOW_INTERACTIVE_AUTHORIZATION flag set.
 
-    \sa setInteractiveAuthorizationAllowed()
+    \sa setInteractiveAuthorizationAllowed(),
+        QDBusAbstractInterface::isInteractiveAuthorizationAllowed()
 
     \since 5.12
 */
