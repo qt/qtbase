@@ -994,9 +994,18 @@ if(cmake_file_api OR (developer_build AND NOT DEFINED cmake_file_api))
     endforeach()
 endif()
 
+# Translate unhandled input variables to either -DINPUT_foo=value or -DFEATURE_foo=ON/OFF. If the
+# input's name matches a feature name and the input's value is boolean then we assume it's
+# controlling a feature.
+set(valid_boolean_input_values yes no)
 foreach(input ${config_inputs})
     qt_feature_normalize_name("${input}" cmake_input)
-    push("-DINPUT_${cmake_input}=${INPUT_${input}}")
+    if(input IN_LIST commandline_known_features
+            AND "${INPUT_${input}}" IN_LIST valid_boolean_input_values)
+        translate_boolean_input("${input}" "FEATURE_${cmake_input}")
+    else()
+        push("-DINPUT_${cmake_input}=${INPUT_${input}}")
+    endif()
 endforeach()
 
 if(no_prefix_option AND DEFINED INPUT_prefix)
