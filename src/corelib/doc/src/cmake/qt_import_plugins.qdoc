@@ -8,7 +8,7 @@
 \title qt_import_plugins
 \keyword qt6_import_plugins
 
-\summary {Specifies a custom set of plugins to import for a static Qt build.}
+\summary {Specifies a custom set of plugins to import or exclude.}
 
 \include cmake-find-package-core.qdocinc
 
@@ -48,17 +48,35 @@ can be used more than once.
 Qt provides plugin types such as \c imageformats, \c platforms,
 and \c sqldrivers.
 
+\section2 Dynamic plugins
+
+If plugins are dynamic libraries, the function controls the plugin deployment.
+Using this function, you may exclude specific plugin types from
+being packaged into an Android APK, for example:
+
+\badcode
+qt_add_executable(MyApp ...)
+...
+qt_import_plugins(MyApp EXCLUDE_BY_TYPE imageformats)
+\endcode
+
+In the snippet above, all plugins that have the \c imageformats type will
+be excluded when deploying \c MyApp. The resulting Android APK will not
+contain any of the \c imageformats plugins.
+
+If the command isn't used, the target automatically deploys all plugins that
+belong to the Qt modules that the target is linked against.
+
+\section2 Static plugins
+
 If the command isn't used the target automatically links against
-a sane set of default plugins, for each Qt module that the target is linked
-against. For more information, see
+a sane set of default static plugins, for each Qt module that the target is
+linked against. For more information, see
 \l{CMake target_link_libraries Documentation}{target_link_libraries}.
 
 Each plugin comes with a C++ stub file that automatically
-initializes the plugin. Consequently, any target that links against a plugin
-has this C++ file added to its \c SOURCES.
-
-\note This command imports plugins from static Qt builds only.
-On shared builds, it does nothing.
+initializes the static plugin. Consequently, any target that links against
+a plugin has this C++ file added to its \c SOURCES.
 
 \section1 Examples
 
