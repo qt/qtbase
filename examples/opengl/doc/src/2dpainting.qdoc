@@ -5,7 +5,7 @@
     \example 2dpainting
     \title 2D Painting Example
     \ingroup examples-widgets-opengl
-    \examplecategory {Graphics & Multimedia}
+    \examplecategory {Graphics}
 
     \brief The 2D Painting example shows how QPainter and QOpenGLWidget can be
     used together to display accelerated 2D graphics on supported hardware.

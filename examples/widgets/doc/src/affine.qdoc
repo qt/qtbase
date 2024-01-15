@@ -4,7 +4,7 @@
 /*!
     \example painting/affine
     \title Affine Transformations
-    \examplecategory {Graphics & Multimedia}
+    \examplecategory {Graphics}
     \ingroup examples-painting
     \brief Demonstrates how affine transformations in QPainter work.
 

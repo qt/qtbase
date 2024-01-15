@@ -4,7 +4,7 @@
 /*!
     \example painting/composition
     \title Composition Modes
-    \examplecategory {Graphics & Multimedia}
+    \examplecategory {Graphics}
     \ingroup examples-painting
     \brief Demonstrates how Composition Modes work in QPainter.
 

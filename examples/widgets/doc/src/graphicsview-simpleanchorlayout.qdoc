@@ -4,7 +4,7 @@
 /*!
     \example graphicsview/simpleanchorlayout
     \title Simple Anchor Layout Example
-    \examplecategory {Graphics & Multimedia}
+    \examplecategory {Graphics}
     \ingroup examples-graphicsview-layout
     \brief Demonstrates anchor layout on a graphics view scene.
 
