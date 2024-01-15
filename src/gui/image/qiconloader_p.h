@@ -187,9 +187,11 @@ public:
     QIconEngine *iconEngine(const QString &iconName) const;
 
 private:
+    enum DashRule { FallBack, NoFallBack };
     QThemeIconInfo findIconHelper(const QString &themeName,
                                   const QString &iconName,
-                                  QStringList &visited) const;
+                                  QStringList &visited,
+                                  DashRule rule) const;
     QThemeIconInfo lookupFallbackIcon(const QString &iconName) const;
 
     uint m_themeKey;
@@ -202,6 +204,7 @@ private:
     mutable QStringList m_iconDirs;
     mutable QHash <QString, QIconTheme> themeList;
     mutable QStringList m_fallbackDirs;
+    mutable QString m_iconName;
 };
 
 QT_END_NAMESPACE
