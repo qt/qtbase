@@ -4,7 +4,7 @@
 /*!
     \example stereoqopenglwidget
     \title QOpenGLWidget Stereoscopic Rendering Example
-    \examplecategory {Graphics & Multimedia}
+    \examplecategory {Graphics}
     \ingroup examples-widgets-opengl
     \brief This example shows how to create a minimal QOpenGLWidget based
     application with stereoscopic rendering support.

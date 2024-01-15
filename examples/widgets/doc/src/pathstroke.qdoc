@@ -4,7 +4,7 @@
 /*!
     \example painting/pathstroke
     \title Path Stroking
-    \examplecategory {Graphics & Multimedia}
+    \examplecategory {Graphics}
     \ingroup examples-painting
     \brief The Path Stroking example shows various types of pens that
     can be used with QPainter.
