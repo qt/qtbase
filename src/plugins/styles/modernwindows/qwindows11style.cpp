@@ -1520,6 +1520,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     }
     case QStyle::CE_ItemViewItem: {
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
+            const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
             QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
             QRect iconRect = proxy()->subElementRect(SE_ItemViewItemDecoration, vopt, widget);
             QRect textRect = proxy()->subElementRect(SE_ItemViewItemText, vopt, widget);
@@ -1542,6 +1543,14 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
 
             if ((vopt->state & State_Selected || vopt->state & State_MouseOver) && !(isTreeView && vopt->state & State_MouseOver) && vopt->showDecorationSelected) {
                 painter->setBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
+                QWidget *editorWidget = view->indexWidget(view->currentIndex());
+                if (editorWidget) {
+                    QPalette pal = editorWidget->palette();
+                    QColor editorBgColor = vopt->backgroundBrush == Qt::NoBrush ? vopt->palette.color(widget->backgroundRole()) : vopt->backgroundBrush.color();
+                    editorBgColor.setAlpha(255);
+                    pal.setColor(editorWidget->backgroundRole(),editorBgColor);
+                    editorWidget->setPalette(pal);
+                }
             } else {
                 painter->setBrush(vopt->backgroundBrush);
             }
@@ -1587,7 +1596,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             vopt->icon.paint(painter, iconRect, vopt->decorationAlignment, mode, state);
 
             painter->setPen(QPen(option->palette.buttonText().color()));
-            const QAbstractItemView* view = qobject_cast<const QAbstractItemView*>(widget);
             if (!view->isPersistentEditorOpen(vopt->index))
                 d->viewItemDrawText(painter, vopt, textRect);
             if (vopt->state & State_Selected && (vopt->viewItemPosition == QStyleOptionViewItem::Beginning || vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid)) {
