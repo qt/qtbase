@@ -70,6 +70,7 @@ macro.QUL                 = "Qt Quick Ultralite"
 macro.QtAA                = "Qt for Android Automotive"
 macro.QOI                 = "Qt Online Installer"
 macro.QMT                 = "Qt Maintenance Tool"
+macro.QMLLS               = "QML Language Server"
 
 # The following macros are used for various Android docs. The purpose is to keep
 # it as simple as updating these instead of updating multiple lines in scattered locations.
