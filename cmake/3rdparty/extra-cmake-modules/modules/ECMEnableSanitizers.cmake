@@ -158,7 +158,15 @@ if (ECM_ENABLE_SANITIZERS)
             endif()
             set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${XSAN_COMPILE_FLAGS}" )
             if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-              link_libraries(${XSAN_LINKER_FLAGS})
+              string(JOIN "" linker_flags
+                "$<"
+                  "$<NOT:"
+                    "$<BOOL:$<TARGET_PROPERTY:SKIP_SANITIZER>>"
+                  ">:"
+                  "${XSAN_LINKER_FLAGS}"
+                ">"
+              )
+              link_libraries("${linker_flags}")
             endif()
             if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
                 string(REPLACE "-Wl,--no-undefined" "" CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS}")
