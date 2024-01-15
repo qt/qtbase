@@ -859,11 +859,6 @@ void QObject::moveToThread(QThread *targetThread)
 
 #include "qobjectdefs.h"
 
-int QMetaObject::indexOfEnumerator(const char *name) const
-{
-    return indexOfEnumerator(QByteArrayView(name));
-}
-
 bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type, void *ret)
 {
     return invokeMethodImpl(object, slot, type, 1, &ret, nullptr, nullptr);

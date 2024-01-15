@@ -1061,16 +1061,17 @@ static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, QB
     -1.
 
     \sa enumerator(), enumeratorCount(), enumeratorOffset()
-
-    \note Starting from Qt 6.7 this method takes a \c QByteArrayView, before
-    that it took a \c {const char *}. This change is source compatible i.e.
-    calling this method on a \c {const char *} should still work.
 */
-int QMetaObject::indexOfEnumerator(QByteArrayView name) const
+int QMetaObject::indexOfEnumerator(const char *name) const
+{
+    return QMetaObjectPrivate::indexOfEnumerator(this, name);
+}
+
+int QMetaObjectPrivate::indexOfEnumerator(const QMetaObject *m, QByteArrayView name)
 {
     using W = QMetaObjectPrivate::Which;
     for (auto which : { W::Name, W::Alias }) {
-        if (int index = QMetaObjectPrivate::indexOfEnumerator(this, name, which); index != -1)
+        if (int index = indexOfEnumerator(m, name, which); index != -1)
             return index;
     }
     return -1;
@@ -3661,7 +3662,7 @@ QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
     if (!(data.flags() & EnumOrFlag))
         return;
     QByteArrayView enum_name = typeNameFromTypeInfo(mobj, data.type());
-    menum = mobj->enumerator(mobj->indexOfEnumerator(enum_name));
+    menum = mobj->enumerator(QMetaObjectPrivate::indexOfEnumerator(mobj, enum_name));
     if (menum.isValid())
         return;
 
@@ -3681,7 +3682,7 @@ QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
         scope = QMetaObject_findMetaObject(mobj, QByteArrayView(scope_name));
 
     if (scope)
-        menum = scope->enumerator(scope->indexOfEnumerator(enum_name));
+        menum = scope->enumerator(QMetaObjectPrivate::indexOfEnumerator(scope, enum_name));
 }
 
 /*!
