@@ -215,6 +215,7 @@ struct QMetaObjectPrivate
 
     enum class Which { Name, Alias };
     static int indexOfEnumerator(const QMetaObject *m, QByteArrayView name, Which which);
+    static int indexOfEnumerator(const QMetaObject *m, QByteArrayView name);
 
     Q_CORE_EXPORT static QMetaMethod signal(const QMetaObject *m, int signal_index);
     static inline int signalOffset(const QMetaObject *m)
