@@ -2193,6 +2193,12 @@ QByteArray QProcess::readAllStandardError()
     printed at the console, and the existing process will continue running
     unaffected.
 
+    \note Success at starting the child process only implies the operating
+    system has successfully created the process and assigned the resources
+    every process has, such as its process ID. The child process may crash or
+    otherwise fail very early and thus not produce its expected output. On most
+    operating systems, this may include dynamic linking errors.
+
     \sa processId(), started(), waitForStarted(), setNativeArguments()
 */
 void QProcess::start(const QString &program, const QStringList &arguments, OpenMode mode)
