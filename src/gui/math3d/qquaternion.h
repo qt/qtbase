@@ -57,7 +57,7 @@ public:
     QT7_ONLY(Q_GUI_EXPORT) float lengthSquared() const;
 
     [[nodiscard]] QT7_ONLY(Q_GUI_EXPORT) QQuaternion normalized() const;
-   QT7_ONLY(Q_GUI_EXPORT)  void normalize();
+    QT7_ONLY(Q_GUI_EXPORT)  void normalize();
 
     constexpr QQuaternion inverted() const noexcept;
 
@@ -104,7 +104,8 @@ QT_WARNING_POP
     QT7_ONLY(Q_GUI_EXPORT) static QQuaternion fromAxisAndAngle(const QVector3D &axis, float angle);
 #endif
     QT7_ONLY(Q_GUI_EXPORT) void getAxisAndAngle(float *x, float *y, float *z, float *angle) const;
-    QT7_ONLY(Q_GUI_EXPORT) static QQuaternion fromAxisAndAngle(float x, float y, float z, float angle);
+    QT7_ONLY(Q_GUI_EXPORT) static QQuaternion fromAxisAndAngle(float x, float y, float z,
+                                                               float angle);
 
 #ifndef QT_NO_VECTOR3D
     inline QVector3D toEulerAngles() const;
@@ -118,16 +119,21 @@ QT_WARNING_POP
 
 #ifndef QT_NO_VECTOR3D
     QT7_ONLY(Q_GUI_EXPORT) void getAxes(QVector3D *xAxis, QVector3D *yAxis, QVector3D *zAxis) const;
-    QT7_ONLY(Q_GUI_EXPORT) static QQuaternion fromAxes(const QVector3D &xAxis, const QVector3D &yAxis,
+    QT7_ONLY(Q_GUI_EXPORT) static QQuaternion fromAxes(const QVector3D &xAxis,
+                                                       const QVector3D &yAxis,
                                                        const QVector3D &zAxis);
 
-    QT7_ONLY(Q_GUI_EXPORT) static QQuaternion fromDirection(const QVector3D &direction, const QVector3D &up);
+    QT7_ONLY(Q_GUI_EXPORT) static QQuaternion fromDirection(const QVector3D &direction,
+                                                            const QVector3D &up);
 
-    QT7_ONLY(Q_GUI_EXPORT) static QQuaternion rotationTo(const QVector3D &from, const QVector3D &to);
+    QT7_ONLY(Q_GUI_EXPORT) static QQuaternion rotationTo(const QVector3D &from,
+                                                         const QVector3D &to);
 #endif
 
-    QT7_ONLY(Q_GUI_EXPORT) static QQuaternion slerp(const QQuaternion &q1, const QQuaternion &q2, float t);
-    QT7_ONLY(Q_GUI_EXPORT) static QQuaternion nlerp(const QQuaternion &q1, const QQuaternion &q2, float t);
+    QT7_ONLY(Q_GUI_EXPORT) static QQuaternion slerp(const QQuaternion &q1, const QQuaternion &q2,
+                                                    float t);
+    QT7_ONLY(Q_GUI_EXPORT) static QQuaternion nlerp(const QQuaternion &q1, const QQuaternion &q2,
+                                                    float t);
 
 private:
     float wp, xp, yp, zp;
