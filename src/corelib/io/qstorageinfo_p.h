@@ -21,6 +21,10 @@
 #include <QtCore/private/qglobal_p.h>
 #include "qstorageinfo.h"
 
+#ifdef Q_OS_UNIX
+#include <sys/types.h> // dev_t
+#endif
+
 QT_BEGIN_NAMESPACE
 
 inline Q_LOGGING_CATEGORY(lcStorageInfo, "qt.core.qstorageinfo", QtWarningMsg)

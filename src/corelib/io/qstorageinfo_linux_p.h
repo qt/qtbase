@@ -24,7 +24,6 @@
 #include <QtCore/private/qlocale_tools_p.h>
 
 #include <sys/sysmacros.h> // makedev()
-#include <sys/types.h> // dev_t
 
 QT_BEGIN_NAMESPACE
 
