@@ -5516,6 +5516,7 @@ void QMetalSwapChain::destroy()
     }
 
     d->layer = nullptr;
+    m_proxyData = {};
 
     [d->curDrawable release];
     d->curDrawable = nil;
