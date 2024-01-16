@@ -620,7 +620,7 @@ private:
                               ExpectedArguments>::value,
                 "Incompatible arguments");
 
-        auto h = QtPrivate::invokeMethodHelper(ret, args...);
+        auto h = QtPrivate::invokeMethodHelper(ret, std::forward<Args>(args)...);
 
         // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks)
         auto callable = new QtPrivate::QCallableObject<std::decay_t<Func>, ActualArguments,
