@@ -1997,9 +1997,6 @@ QProcessEnvironment QProcess::processEnvironment() const
 
     If msecs is -1, this function will not time out.
 
-    \note On some UNIX operating systems, this function may return true but
-    the process may later report a QProcess::FailedToStart error.
-
     \sa started(), waitForReadyRead(), waitForBytesWritten(), waitForFinished()
 */
 bool QProcess::waitForStarted(int msecs)
