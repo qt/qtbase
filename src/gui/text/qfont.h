@@ -231,9 +231,8 @@ public:
                 char((m_value & 0xff000000) >> 24),
                 char((m_value & 0x00ff0000) >> 16),
                 char((m_value & 0x0000ff00) >> 8),
-                char((m_value & 0x000000ff)),
-                0 };
-            return QByteArray(data);
+                char((m_value & 0x000000ff)) };
+            return QByteArray(data, sizeof(data));
         }
 
         static constexpr std::optional<Tag> fromValue(quint32 value) noexcept
