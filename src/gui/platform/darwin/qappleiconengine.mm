@@ -24,20 +24,20 @@ namespace {
 auto *loadImage(const QString &iconName)
 {
     static constexpr std::pair<QLatin1StringView, NSString *> iconMap[] = {
-        {QIcon::ThemeIcon::AddressBookNew, @"folder.circle"},
-        {QIcon::ThemeIcon::ApplicationExit, @"xmark.circle"},
-        {QIcon::ThemeIcon::AppointmentNew, @"hourglass.badge.plus"},
-        {QIcon::ThemeIcon::CallStart, @"phone.arrow.up.right"},
-        {QIcon::ThemeIcon::CallStop, @"phone.arrow.down.left"},
-        {QIcon::ThemeIcon::EditClear, @"clear"},
-        {QIcon::ThemeIcon::EditCopy, @"doc.on.doc"},
-        {QIcon::ThemeIcon::EditCut, @"scissors"},
-        {QIcon::ThemeIcon::EditDelete, @"delete.left"},
-        {QIcon::ThemeIcon::EditFind, @"magnifyingglass"},
-        {QIcon::ThemeIcon::EditFindReplace, @"arrow.up.left.and.down.right.magnifyingglass"},
-        {QIcon::ThemeIcon::EditPaste, @"clipboard"},
-        {QIcon::ThemeIcon::EditRedo, @"arrowshape.turn.up.right"},
-        {QIcon::ThemeIcon::EditUndo, @"arrowshape.turn.up.left"},
+        {"address-book-new"_L1, @"folder.circle"},
+        {"application-exit"_L1, @"xmark.circle"},
+        {"appointment-new"_L1, @"hourglass.badge.plus"},
+        {"call-start"_L1, @"phone.arrow.up.right"},
+        {"call-stop"_L1, @"phone.arrow.down.left"},
+        {"edit-clear"_L1, @"clear"},
+        {"edit-copy"_L1, @"doc.on.doc"},
+        {"edit-cut"_L1, @"scissors"},
+        {"edit-delete"_L1, @"delete.left"},
+        {"edit-find"_L1, @"magnifyingglass"},
+        {"edit-find-replace"_L1, @"arrow.up.left.and.down.right.magnifyingglass"},
+        {"edit-paste"_L1, @"clipboard"},
+        {"edit-redo"_L1, @"arrowshape.turn.up.right"},
+        {"edit-undo"_L1, @"arrowshape.turn.up.left"},
     };
     const auto it = std::find_if(std::begin(iconMap), std::end(iconMap), [iconName](const auto &c){
         return c.first == iconName;

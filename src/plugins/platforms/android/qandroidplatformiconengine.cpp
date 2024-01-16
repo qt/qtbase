@@ -225,18 +225,18 @@ QString QAndroidPlatformIconEngine::glyphs() const
         return {};
 
     static constexpr std::pair<QLatin1StringView, QStringView> glyphMap[] = {
-        {QIcon::ThemeIcon::EditClear, u"\ue872"},
-        {QIcon::ThemeIcon::EditCopy, u"\ue14d"},
-        {QIcon::ThemeIcon::EditCut, u"\ue14e"},
-        {QIcon::ThemeIcon::EditDelete, u"\ue14a"},
-        {QIcon::ThemeIcon::EditFind, u"\ue8b6"},
-        {QIcon::ThemeIcon::EditFindReplace, u"\ue881"},
-        {QIcon::ThemeIcon::EditPaste, u"\ue14f"},
-        {QIcon::ThemeIcon::EditRedo, u"\ue15a"},
-        {QIcon::ThemeIcon::EditSelectAll, u"\ue162"},
-        {QIcon::ThemeIcon::EditUndo, u"\ue166"},
-        {QIcon::ThemeIcon::Printer, u"\ue8ad"},
-        {QLatin1StringView("banana"), u"🍌"},
+        {"edit-clear"_L1, u"\ue872"},
+        {"edit-copy"_L1, u"\ue14d"},
+        {"edit-cut"_L1, u"\ue14e"},
+        {"edit-delete"_L1, u"\ue14a"},
+        {"edit-find"_L1, u"\ue8b6"},
+        {"edit-find-replace"_L1, u"\ue881"},
+        {"edit-paste"_L1, u"\ue14f"},
+        {"edit-redo"_L1, u"\ue15a"},
+        {"edit-select-all"_L1, u"\ue162"},
+        {"edit-undo"_L1, u"\ue166"},
+        {"printer"_L1, u"\ue8ad"},
+        {"banana"_L1, u"🍌"},
     };
 
     const auto it = std::find_if(std::begin(glyphMap), std::end(glyphMap), [this](const auto &c){
