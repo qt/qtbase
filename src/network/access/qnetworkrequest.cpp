@@ -30,6 +30,8 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 using namespace std::chrono_literals;
 
+constexpr std::chrono::milliseconds QNetworkRequest::DefaultTransferTimeout;
+
 QT_IMPL_METATYPE_EXTERN(QNetworkRequest)
 QT_IMPL_METATYPE_EXTERN_TAGGED(QNetworkRequest::RedirectPolicy, QNetworkRequest__RedirectPolicy)
 
