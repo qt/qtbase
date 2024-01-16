@@ -2478,8 +2478,10 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                         painter->setBrush(midColor2);
                     else if (option->state & State_MouseOver && scrollBar->activeSubControls & SC_ScrollBarSlider)
                         painter->setBrush(highlightedGradient);
-                    else
+                    else if (!isDarkBg)
                         painter->setBrush(gradient);
+                    else
+                        painter->setBrush(midColor2);
 
                     painter->drawRect(pixmapRect.adjusted(horizontal ? -1 : 0, horizontal ? 0 : -1, horizontal ? 0 : -1, horizontal ? -1 : 0));
 
