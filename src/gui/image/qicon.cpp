@@ -25,6 +25,7 @@
 
 #include "private/qhexstring_p.h"
 #include "private/qguiapplication_p.h"
+#include "private/qoffsetstringarray_p.h"
 #include "qpa/qplatformtheme.h"
 
 #ifndef QT_NO_ICON
@@ -1397,6 +1398,571 @@ bool QIcon::hasThemeIcon(const QString &name)
     QIcon icon = fromTheme(name);
 
     return icon.name() == name;
+}
+
+static constexpr QLatin1StringView themeIconName(QIcon::ThemeIcon icon)
+{
+    constexpr auto mapping = qOffsetStringArray(
+        "address-book-new",
+        "application-exit",
+        "appointment-new",
+        "call-start",
+        "call-stop",
+        "contact-new",
+        "document-new",
+        "document-open",
+        "document-open-recent",
+        "document-page-setup",
+        "document-print",
+        "document-print-preview",
+        "document-properties",
+        "document-revert",
+        "document-save",
+        "document-save-as",
+        "document-send",
+        "edit-clear",
+        "edit-copy",
+        "edit-cut",
+        "edit-delete",
+        "edit-find",
+        "edit-find-replace",
+        "edit-paste",
+        "edit-redo",
+        "edit-select-all",
+        "edit-undo",
+        "folder-new",
+        "format-indent-less",
+        "format-indent-more",
+        "format-justify-center",
+        "format-justify-fill",
+        "format-justify-left",
+        "format-justify-right",
+        "format-text-direction-ltr",
+        "format-text-direction-rtl",
+        "format-text-bold",
+        "format-text-italic",
+        "format-text-underline",
+        "format-text-strikethrough",
+        "go-bottom",
+        "go-down",
+        "go-first",
+        "go-home",
+        "go-jump",
+        "go-last",
+        "go-next",
+        "go-previous",
+        "go-top",
+        "go-up",
+        "help-about",
+        "help-contents",
+        "help-faq",
+        "insert-image",
+        "insert-link",
+        "insert-object",
+        "insert-text",
+        "list-add",
+        "list-remove",
+        "mail-forward",
+        "mail-mark-important",
+        "mail-mark-junk",
+        "mail-mark-notjunk",
+        "mail-mark-read",
+        "mail-mark-unread",
+        "mail-message-new",
+        "mail-reply-all",
+        "mail-reply-sender",
+        "mail-send",
+        "mail-send-receive",
+        "media-eject",
+        "media-playback-pause",
+        "media-playback-start",
+        "media-playback-stop",
+        "media-record",
+        "media-seek-backward",
+        "media-seek-forward",
+        "media-skip-backward",
+        "media-skip-forward",
+        "object-flip-horizontal",
+        "object-flip-vertical",
+        "object-rotate-left",
+        "object-rotate-right",
+        "process-stop",
+        "system-lock-screen",
+        "system-log-out",
+        "system-run",
+        "system-search",
+        "system-reboot",
+        "system-shutdown",
+        "tools-check-spelling",
+        "view-fullscreen",
+        "view-refresh",
+        "view-restore",
+        "view-sort-ascending",
+        "view-sort-descending",
+        "window-close",
+        "window-new",
+        "zoom-fit-best",
+        "zoom-in",
+        "zoom-original",
+        "zoom-out",
+
+        "process-working",
+
+        "accessories-calculator",
+        "accessories-character-map",
+        "accessories-dictionary",
+        "accessories-text-editor",
+        "help-browser",
+        "multimedia-volume-control",
+        "preferences-desktop-accessibility",
+        "preferences-desktop-font",
+        "preferences-desktop-keyboard",
+        "preferences-desktop-locale",
+        "preferences-desktop-multimedia",
+        "preferences-desktop-screensaver",
+        "preferences-desktop-theme",
+        "preferences-desktop-wallpaper",
+        "system-file-manager",
+        "system-software-install",
+        "system-software-update",
+        "utilities-system-monitor",
+        "utilities-terminal",
+
+        "applications-accessories",
+        "applications-development",
+        "applications-engineering",
+        "applications-games",
+        "applications-graphics",
+        "applications-internet",
+        "applications-multimedia",
+        "applications-office",
+        "applications-other",
+        "applications-science",
+        "applications-system",
+        "applications-utilities",
+        "preferences-desktop",
+        "preferences-desktop-peripherals",
+        "preferences-desktop-personal",
+        "preferences-other",
+        "preferences-system",
+        "preferences-system-network",
+        "system-help",
+
+        "audio-card",
+        "audio-input-microphone",
+        "battery",
+        "camera-photo",
+        "camera-video",
+        "camera-web",
+        "computer",
+        "drive-harddisk",
+        "drive-optical",
+        "drive-removable-media",
+        "input-gaming",
+        "input-keyboard",
+        "input-mouse",
+        "input-tablet",
+        "media-flash",
+        "media-floppy",
+        "media-optical",
+        "media-tape",
+        "modem",
+        "multimedia-player",
+        "network-wired",
+        "network-wireless",
+        "pda",
+        "phone",
+        "printer",
+        "scanner",
+        "video-display",
+
+        "emblem-default",
+        "emblem-documents",
+        "emblem-downloads",
+        "emblem-favorite",
+        "emblem-important",
+        "emblem-mail",
+        "emblem-photos",
+        "emblem-readonly",
+        "emblem-shared",
+        "emblem-symbolic-link",
+        "emblem-synchronized",
+        "emblem-system",
+        "emblem-unreadable",
+
+        "appointment-missed",
+        "appointment-soon",
+        "audio-volume-high",
+        "audio-volume-low",
+        "audio-volume-medium",
+        "audio-volume-muted",
+        "battery-caution",
+        "battery-low",
+        "dialog-error",
+        "dialog-information",
+        "dialog-password",
+        "dialog-question",
+        "dialog-warning",
+        "folder-drag-accept",
+        "folder-open",
+        "folder-visiting",
+        "image-loading",
+        "image-missing",
+        "mail-attachment",
+        "mail-unread",
+        "mail-read",
+        "mail-replied",
+        "mail-signed",
+        "mail-signed-verified",
+        "media-playlist-repeat",
+        "media-playlist-shuffle",
+        "network-error",
+        "network-idle",
+        "network-offline",
+        "network-receive",
+        "network-transmit",
+        "network-transmit-receive",
+        "printer-error",
+        "printer-printing",
+        "security-high",
+        "security-medium",
+        "security-low",
+        "software-update-available",
+        "software-update-urgent",
+        "sync-error",
+        "sync-synchronizing",
+        "task-due",
+        "task-past-due",
+        "user-available",
+        "user-away",
+        "user-idle",
+        "user-offline",
+        "user-trash-full",
+        "weather-clear",
+        "weather-clear-night",
+        "weather-few-clouds",
+        "weather-few-clouds-night",
+        "weather-fog",
+        "weather-overcast",
+        "weather-severe-alert",
+        "weather-showers",
+        "weather-showers-scattered",
+        "weather-snow",
+        "weather-storm"
+    );
+    static_assert(QIcon::ThemeIcon::NThemeIcons == QIcon::ThemeIcon(mapping.count()));
+
+    using ThemeIconIndex = std::underlying_type_t<QIcon::ThemeIcon>;
+    const auto index = static_cast<ThemeIconIndex>(icon);
+    Q_ASSERT(index < mapping.count());
+    return QLatin1StringView(mapping.viewAt(index));
+}
+
+/*!
+    \enum QIcon::ThemeIcon
+
+    This enum provides access to icons that are provided by most
+    icon theme implementations.
+
+    \value AddressBookNew
+    \value ApplicationExit
+    \value AppointmentNew
+    \value CallStart
+    \value CallStop
+    \value ContactNew
+    \value DocumentNew
+    \value DocumentOpen
+    \value DocumentOpenRecent
+    \value DocumentPageSetup
+    \value DocumentPrint
+    \value DocumentPrintPreview
+    \value DocumentProperties
+    \value DocumentRevert
+    \value DocumentSave
+    \value DocumentSaveAs
+    \value DocumentSend
+    \value EditClear
+    \value EditCopy
+    \value EditCut
+    \value EditDelete
+    \value EditFind
+    \value EditFindReplace
+    \value EditPaste
+    \value EditRedo
+    \value EditSelectAll
+    \value EditUndo
+    \value FolderNew
+    \value FormatIndentLess
+    \value FormatIndentMore
+    \value FormatJustifyCenter
+    \value FormatJustifyFill
+    \value FormatJustifyLeft
+    \value FormatJustifyRight
+    \value FormatTextDirectionLtr
+    \value FormatTextDirectionRtl
+    \value FormatTextBold
+    \value FormatTextItalic
+    \value FormatTextUnderline
+    \value FormatTextStrikethrough
+    \value GoBottom
+    \value GoDown
+    \value GoFirst
+    \value GoHome
+    \value GoJump
+    \value GoLast
+    \value GoNext
+    \value GoPrevious
+    \value GoTop
+    \value GoUp
+    \value HelpAbout
+    \value HelpContents
+    \value HelpFaq
+    \value InsertImage
+    \value InsertLink
+    \value InsertObject
+    \value InsertText
+    \value ListAdd
+    \value ListRemove
+    \value MailForward
+    \value MailMarkImportant
+    \value MailMarkJunk
+    \value MailMarkNotjunk
+    \value MailMarkRead
+    \value MailMarkUnread
+    \value MailMessageNew
+    \value MailReplyAll
+    \value MailReplySender
+    \value MailSend
+    \value MailSendReceive
+    \value MediaEject
+    \value MediaPlaybackPause
+    \value MediaPlaybackStart
+    \value MediaPlaybackStop
+    \value MediaRecord
+    \value MediaSeekBackward
+    \value MediaSeekForward
+    \value MediaSkipBackward
+    \value MediaSkipForward
+    \value ObjectFlipHorizontal
+    \value ObjectFlipVertical
+    \value ObjectRotateLeft
+    \value ObjectRotateRight
+    \value ProcessStop
+    \value SystemLockScreen
+    \value SystemLogOut
+    \value SystemRun
+    \value SystemSearch
+    \value SystemReboot
+    \value SystemShutdown
+    \value ToolsCheckSpelling
+    \value ViewFullscreen
+    \value ViewRefresh
+    \value ViewRestore
+    \value ViewSortAscending
+    \value ViewSortDescending
+    \value WindowClose
+    \value WindowNew
+    \value ZoomFitBest
+    \value ZoomIn
+    \value ZoomOriginal
+    \value ZoomOut
+
+    \value ProcessWorking
+
+    \value AccessoriesCalculator
+    \value AccessoriesCharacterMap
+    \value AccessoriesDictionary
+    \value AccessoriesTextEditor
+    \value HelpBrowser
+    \value MultimediaVolumeControl
+    \value PreferencesDesktopAccessibility
+    \value PreferencesDesktopFont
+    \value PreferencesDesktopKeyboard
+    \value PreferencesDesktopLocale
+    \value PreferencesDesktopMultimedia
+    \value PreferencesDesktopScreensaver
+    \value PreferencesDesktopTheme
+    \value PreferencesDesktopWallpaper
+    \value SystemFileManager
+    \value SystemSoftwareInstall
+    \value SystemSoftwareUpdate
+    \value UtilitiesSystemMonitor
+    \value UtilitiesTerminal
+
+    \value ApplicationsAccessories
+    \value ApplicationsDevelopment
+    \value ApplicationsEngineering
+    \value ApplicationsGames
+    \value ApplicationsGraphics
+    \value ApplicationsInternet
+    \value ApplicationsMultimedia
+    \value ApplicationsOffice
+    \value ApplicationsOther
+    \value ApplicationsScience
+    \value ApplicationsSystem
+    \value ApplicationsUtilities
+    \value PreferencesDesktop
+    \value PreferencesDesktopPeripherals
+    \value PreferencesDesktopPersonal
+    \value PreferencesOther
+    \value PreferencesSystem
+    \value PreferencesSystemNetwork
+    \value SystemHelp
+
+    \value AudioCard
+    \value AudioInputMicrophone
+    \value Battery
+    \value CameraPhoto
+    \value CameraVideo
+    \value CameraWeb
+    \value Computer
+    \value DriveHarddisk
+    \value DriveOptical
+    \value DriveRemovableMedia
+    \value InputGaming
+    \value InputKeyboard
+    \value InputMouse
+    \value InputTablet
+    \value MediaFlash
+    \value MediaFloppy
+    \value MediaOptical
+    \value MediaTape
+    \value Modem
+    \value MultimediaPlayer
+    \value NetworkWired
+    \value NetworkWireless
+    \value Pda
+    \value Phone
+    \value Printer
+    \value Scanner
+    \value VideoDisplay
+
+    \value EmblemDefault
+    \value EmblemDocuments
+    \value EmblemDownloads
+    \value EmblemFavorite
+    \value EmblemImportant
+    \value EmblemMail
+    \value EmblemPhotos
+    \value EmblemReadonly
+    \value EmblemShared
+    \value EmblemSymbolicLink
+    \value EmblemSynchronized
+    \value EmblemSystem
+    \value EmblemUnreadable
+
+    \value AppointmentMissed
+    \value AppointmentSoon
+    \value AudioVolumeHigh
+    \value AudioVolumeLow
+    \value AudioVolumeMedium
+    \value AudioVolumeMuted
+    \value BatteryCaution
+    \value BatteryLow
+    \value DialogError
+    \value DialogInformation
+    \value DialogPassword
+    \value DialogQuestion
+    \value DialogWarning
+    \value FolderDragAccept
+    \value FolderOpen
+    \value FolderVisiting
+    \value ImageLoading
+    \value ImageMissing
+    \value MailAttachment
+    \value MailUnread
+    \value MailRead
+    \value MailReplied
+    \value MailSigned
+    \value MailSignedVerified
+    \value MediaPlaylistRepeat
+    \value MediaPlaylistShuffle
+    \value NetworkError
+    \value NetworkIdle
+    \value NetworkOffline
+    \value NetworkReceive
+    \value NetworkTransmit
+    \value NetworkTransmitReceive
+    \value PrinterError
+    \value PrinterPrinting
+    \value SecurityHigh
+    \value SecurityMedium
+    \value SecurityLow
+    \value SoftwareUpdateAvailable
+    \value SoftwareUpdateUrgent
+    \value SyncError
+    \value SyncSynchronizing
+    \value TaskDue
+    \value TaskPastDue
+    \value UserAvailable
+    \value UserAway
+    \value UserIdle
+    \value UserOffline
+    \value UserTrashFull
+    \value WeatherClear
+    \value WeatherClearNight
+    \value WeatherFewClouds
+    \value WeatherFewCloudsNight
+    \value WeatherFog
+    \value WeatherOvercast
+    \value WeatherSevereAlert
+    \value WeatherShowers
+    \value WeatherShowersScattered
+    \value WeatherSnow
+    \value WeatherStorm
+
+    \omitvalue NThemeIcons
+
+    \sa {QIcon#Creating an icon from a theme or icon library},
+        fromTheme()
+*/
+
+/*!
+    \since 6.7
+    \overload
+
+    Returns \c true if there is an icon available for \a icon in the
+    current icon theme or any of the fallbacks, as described by
+    fromTheme(), otherwise returns \c false.
+
+    \sa fromTheme()
+*/
+bool QIcon::hasThemeIcon(QIcon::ThemeIcon icon)
+{
+    return hasThemeIcon(themeIconName(icon));
+}
+
+/*!
+    \fn QIcon QIcon::fromTheme(QIcon::ThemeIcon icon)
+    \fn QIcon QIcon::fromTheme(QIcon::ThemeIcon icon, const QIcon &fallback)
+    \since 6.7
+    \overload
+
+    Returns the QIcon corresponding to \a icon in the
+    \l{themeName()}{current icon theme}.
+
+    If the current theme does not provide an icon for \a icon,
+    the \l{fallbackThemeName()}{fallback icon theme} is consulted,
+    before falling back to looking up standalone icon files in the
+    \l{QIcon::fallbackSearchPaths()}{fallback icon search path}.
+    Finally, the platform's native icon library is consulted.
+
+    If no icon is found and a \a fallback is provided, \a fallback is
+    returned. This is useful to provide a guaranteed fallback, regardless
+    of whether the current set of icon themes and fallbacks paths
+    support the requested icon.
+
+    If no icon is found and no \a fallback is provided, a default
+    constructed, empty QIcon is returned.
+*/
+QIcon QIcon::fromTheme(QIcon::ThemeIcon icon)
+{
+    return fromTheme(themeIconName(icon));
+}
+
+QIcon QIcon::fromTheme(QIcon::ThemeIcon icon, const QIcon &fallback)
+{
+    return fromTheme(themeIconName(icon), fallback);
 }
 
 /*!

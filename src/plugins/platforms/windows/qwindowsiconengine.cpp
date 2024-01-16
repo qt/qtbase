@@ -18,17 +18,17 @@ QString QWindowsIconEngine::glyphs() const
         return {};
 
     static constexpr std::pair<QLatin1StringView, QStringView> glyphMap[] = {
-        {QIcon::ThemeIcon::EditClear, u"\ue894"},
-        {QIcon::ThemeIcon::EditCopy, u"\ue8c8"},
-        {QIcon::ThemeIcon::EditCut, u"\ue8c6"},
-        {QIcon::ThemeIcon::EditDelete, u"\ue74d"},
-        {QIcon::ThemeIcon::EditFind, u"\ue721"},
-        {QIcon::ThemeIcon::EditPaste, u"\ue77f"},
-        {QIcon::ThemeIcon::EditRedo, u"\ue7a6"},
-        {QIcon::ThemeIcon::EditSelectAll, u"\ue8b3"},
-        {QIcon::ThemeIcon::EditUndo, u"\ue7a7"},
-        {QIcon::ThemeIcon::Printer, u"\ue749"},
-        {QLatin1StringView("banana"), u"🍌"},
+        {"edit-clear"_L1, u"\ue894"},
+        {"edit-copy"_L1, u"\ue8c8"},
+        {"edit-cut"_L1, u"\ue8c6"},
+        {"edit-delete"_L1, u"\ue74d"},
+        {"edit-find"_L1, u"\ue721"},
+        {"edit-paste"_L1, u"\ue77f"},
+        {"edit-redo"_L1, u"\ue7a6"},
+        {"edit-select-all"_L1, u"\ue8b3"},
+        {"edit-undo"_L1, u"\ue7a7"},
+        {"printer"_L1, u"\ue749"},
+        {"banana"_L1, u"🍌"},
     };
 
     const auto it = std::find_if(std::begin(glyphMap), std::end(glyphMap), [this](const auto &c){
