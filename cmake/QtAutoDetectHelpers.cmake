@@ -64,15 +64,6 @@ function(qt_auto_detect_wasm)
     endif()
 endfunction()
 
-function(qt_auto_detect_cmake_generator)
-    if(NOT CMAKE_GENERATOR MATCHES "Ninja" AND NOT QT_SILENCE_CMAKE_GENERATOR_WARNING)
-        message(WARNING
-               "The officially supported CMake generator for building Qt is Ninja. "
-               "You are using: '${CMAKE_GENERATOR}' instead. "
-               "Thus, you might encounter issues. Use at your own risk.")
-    endif()
-endfunction()
-
 function(qt_auto_detect_android)
     # We assume an Android build if any of the ANDROID_* cache variables are set.
     if(DEFINED ANDROID_SDK_ROOT
@@ -474,7 +465,6 @@ macro(qt_internal_setup_autodetect)
         list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/platforms")
     endif()
 
-    qt_auto_detect_cmake_generator()
     qt_auto_detect_cyclic_toolchain()
     qt_auto_detect_cmake_config()
     qt_auto_detect_darwin()
