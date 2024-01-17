@@ -1906,13 +1906,90 @@ void QWindows11Style::polish(QWidget* widget)
 }
 
 
+/*
+The colors for Windows 11 are taken from the official WinUI3 Figma style at
+https://www.figma.com/community/file/1159947337437047524
+*/
+static void populateLightSystemBasePalette(QPalette &result)
+{
+    static QString oldStyleSheet;
+    const bool styleSheetChanged = oldStyleSheet != qApp->styleSheet();
+
+    QPalette standardPalette = QApplication::palette();
+    const QColor textColor = QColor(0x00,0x00,0x00,0xE4);
+
+    const QColor btnFace = QColor(0xFF,0xFF,0xFF,0xB3);
+    const QColor btnHighlight = result.accent().color();
+    const QColor btnColor = result.button().color();
+
+    if (standardPalette.color(QPalette::Highlight) == result.color(QPalette::Highlight) || styleSheetChanged)
+        result.setColor(QPalette::Highlight, btnHighlight);
+    if (standardPalette.color(QPalette::WindowText) == result.color(QPalette::WindowText) || styleSheetChanged)
+        result.setColor(QPalette::WindowText, textColor);
+    if (standardPalette.color(QPalette::Button) == result.color(QPalette::Button) || styleSheetChanged)
+        result.setColor(QPalette::Button, btnFace);
+    if (standardPalette.color(QPalette::Light) == result.color(QPalette::Light) || styleSheetChanged)
+        result.setColor(QPalette::Light, btnColor.lighter(150));
+    if (standardPalette.color(QPalette::Dark) == result.color(QPalette::Dark) || styleSheetChanged)
+        result.setColor(QPalette::Dark, btnColor.darker(200));
+    if (standardPalette.color(QPalette::Mid) == result.color(QPalette::Mid) || styleSheetChanged)
+        result.setColor(QPalette::Mid, btnColor.darker(150));
+    if (standardPalette.color(QPalette::Text) == result.color(QPalette::Text) || styleSheetChanged)
+        result.setColor(QPalette::Text, textColor);
+    if (standardPalette.color(QPalette::BrightText) != result.color(QPalette::BrightText) || styleSheetChanged)
+        result.setColor(QPalette::BrightText, btnHighlight);
+    if (standardPalette.color(QPalette::Base) == result.color(QPalette::Base) || styleSheetChanged)
+        result.setColor(QPalette::Base, btnFace);
+    if (standardPalette.color(QPalette::Window) == result.color(QPalette::Window) || styleSheetChanged)
+        result.setColor(QPalette::Window, QColor(0xF3,0xF3,0xF3,0xFF));
+    if (standardPalette.color(QPalette::ButtonText) == result.color(QPalette::ButtonText) || styleSheetChanged)
+        result.setColor(QPalette::ButtonText, textColor);
+    if (standardPalette.color(QPalette::Midlight) == result.color(QPalette::Midlight) || styleSheetChanged)
+        result.setColor(QPalette::Midlight, btnColor.lighter(125));
+    if (standardPalette.color(QPalette::Shadow) == result.color(QPalette::Shadow) || styleSheetChanged)
+        result.setColor(QPalette::Shadow, Qt::black);
+    if (standardPalette.color(QPalette::ToolTipBase) == result.color(QPalette::ToolTipBase) || styleSheetChanged)
+        result.setColor(QPalette::ToolTipBase, result.window().color());
+    if (standardPalette.color(QPalette::ToolTipText) == result.color(QPalette::ToolTipText) || styleSheetChanged)
+        result.setColor(QPalette::ToolTipText, result.windowText().color());
+
+    if (result.midlight() == result.button())
+        result.setColor(QPalette::Midlight, btnColor.lighter(110));
+    oldStyleSheet = qApp->styleSheet();
+}
+
 /*!
  \internal
  */
-void QWindows11Style::polish(QPalette& /*pal*/)
+void QWindows11Style::polish(QPalette& pal)
 {
     highContrastTheme = QGuiApplicationPrivate::colorScheme() == Qt::ColorScheme::Unknown;
     colorSchemeIndex = QGuiApplicationPrivate::colorScheme() == Qt::ColorScheme::Light ? 0 : 1;
+
+    if (!highContrastTheme && colorSchemeIndex == 0)
+        populateLightSystemBasePalette(pal);
+
+    if (standardPalette().color(QPalette::Inactive, QPalette::Button) == pal.color(QPalette::Inactive, QPalette::Button))
+        pal.setColor(QPalette::Inactive, QPalette::Button, pal.button().color());
+    if (standardPalette().color(QPalette::Inactive, QPalette::Window) == pal.color(QPalette::Inactive, QPalette::Window))
+        pal.setColor(QPalette::Inactive, QPalette::Window, pal.window().color());
+    if (standardPalette().color(QPalette::Inactive, QPalette::Light) == pal.color(QPalette::Inactive, QPalette::Light))
+        pal.setColor(QPalette::Inactive, QPalette::Light, pal.light().color());
+    if (standardPalette().color(QPalette::Inactive, QPalette::Dark) == pal.color(QPalette::Inactive, QPalette::Dark))
+        pal.setColor(QPalette::Inactive, QPalette::Dark, pal.dark().color());
+    if (standardPalette().color(QPalette::Inactive, QPalette::Accent) == pal.color(QPalette::Inactive, QPalette::Accent))
+        pal.setColor(QPalette::Inactive, QPalette::Accent, pal.accent().color());
+    if (standardPalette().color(QPalette::Inactive, QPalette::Highlight) == pal.color(QPalette::Inactive, QPalette::Highlight))
+        pal.setColor(QPalette::Inactive, QPalette::Highlight, pal.highlight().color());
+    if (standardPalette().color(QPalette::Inactive, QPalette::HighlightedText) == pal.color(QPalette::Inactive, QPalette::HighlightedText))
+        pal.setColor(QPalette::Inactive, QPalette::HighlightedText, pal.highlightedText().color());
+    if (standardPalette().color(QPalette::Inactive, QPalette::Text) == pal.color(QPalette::Inactive, QPalette::Text))
+        pal.setColor(QPalette::Inactive, QPalette::Text, pal.text().color());
+    if (standardPalette().color(QPalette::Inactive, QPalette::WindowText) == pal.color(QPalette::Inactive, QPalette::WindowText))
+        pal.setColor(QPalette::Inactive, QPalette::WindowText, pal.windowText().color());
+
+    if (highContrastTheme)
+        pal.setColor(QPalette::Active, QPalette::HighlightedText, pal.windowText().color());
 }
 
 QT_END_NAMESPACE
