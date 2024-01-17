@@ -1661,7 +1661,7 @@ Qt::TextElideMode QAbstractItemView::textElideMode() const
 bool QAbstractItemView::focusNextPrevChild(bool next)
 {
     Q_D(QAbstractItemView);
-    if (d->tabKeyNavigation && isEnabled() && d->viewport->isEnabled()) {
+    if (d->tabKeyNavigation && isVisible() && isEnabled() && d->viewport->isEnabled()) {
         QKeyEvent event(QEvent::KeyPress, next ? Qt::Key_Tab : Qt::Key_Backtab, Qt::NoModifier);
         keyPressEvent(&event);
         if (event.isAccepted())
