@@ -151,6 +151,7 @@ private slots:
     void testSpinBoxAsEditor_data();
     void testSpinBoxAsEditor();
     void removeIndexWhileEditing();
+    void focusNextOnHide();
 
 private:
     static QAbstractItemView *viewFromString(const QByteArray &viewType, QWidget *parent = nullptr)
@@ -3546,6 +3547,33 @@ void tst_QAbstractItemView::removeIndexWhileEditing()
         QTRY_VERIFY(!lineEdit);
         QCOMPARE(view.state(), QAbstractItemView::NoState);
     }
+}
+
+void tst_QAbstractItemView::focusNextOnHide()
+{
+    QWidget widget;
+    QTableWidget table(10, 10);
+    table.setTabKeyNavigation(true);
+    QLineEdit lineEdit;
+
+    QHBoxLayout layout;
+    layout.addWidget(&table);
+    layout.addWidget(&lineEdit);
+    widget.setLayout(&layout);
+
+    widget.setTabOrder({&table, &lineEdit});
+
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    QVERIFY(table.hasFocus());
+    QCOMPARE(table.currentIndex(), table.model()->index(0, 0));
+    QTest::keyPress(&table, Qt::Key_Tab);
+    QCOMPARE(table.currentIndex(), table.model()->index(0, 1));
+
+    table.hide();
+    QCOMPARE(table.currentIndex(), table.model()->index(0, 1));
+    QVERIFY(lineEdit.hasFocus());
 }
 
 QTEST_MAIN(tst_QAbstractItemView)
