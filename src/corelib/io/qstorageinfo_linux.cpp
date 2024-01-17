@@ -136,11 +136,11 @@ static inline QString retrieveLabel(const QByteArray &device, quint64 deviceId)
 
 void QStorageInfoPrivate::doStat()
 {
+    retrieveVolumeInfo();
     quint64 deviceId = initRootPath();
     if (!deviceId)
         return;
 
-    retrieveVolumeInfo();
     name = retrieveLabel(device, deviceId);
 }
 
