@@ -442,14 +442,14 @@ void QT_FASTCALL comp_func_SourceOver_rgbafp_avx2(QRgbaFloat32 *dst, const QRgba
         _mm256_storeu_ps((float *)(dst + x), dstVector);
     }
     if (x < length) {
-        __m128 srcVector = _mm_load_ps((float *)(src + x));
-        __m128 dstVector = _mm_load_ps((const float *)(dst + x));
+        __m128 srcVector = _mm_loadu_ps((const float *)&src[x]);
+        __m128 dstVector = _mm_loadu_ps((const float *)&dst[x]);
         srcVector = _mm_mul_ps(srcVector, constAlphaVector);
         __m128 alphaChannel = _mm_permute_ps(srcVector, _MM_SHUFFLE(3, 3, 3, 3));
         alphaChannel = _mm_sub_ps(one, alphaChannel);
         dstVector = _mm_mul_ps(dstVector, alphaChannel);
         dstVector = _mm_add_ps(dstVector, srcVector);
-        _mm_store_ps((float *)(dst + x), dstVector);
+        _mm_storeu_ps((float *)(dst + x), dstVector);
     }
 }
 #endif
@@ -544,12 +544,12 @@ void QT_FASTCALL comp_func_Source_rgbafp_avx2(QRgbaFloat32 *dst, const QRgbaFloa
             _mm256_storeu_ps((float *)&dst[x], dstVector);
         }
         if (x < length) {
-            __m128 srcVector = _mm_load_ps((const float *)&src[x]);
-            __m128 dstVector = _mm_load_ps((const float *)&dst[x]);
+            __m128 srcVector = _mm_loadu_ps((const float *)&src[x]);
+            __m128 dstVector = _mm_loadu_ps((const float *)&dst[x]);
             srcVector = _mm_mul_ps(srcVector, constAlphaVector);
             dstVector = _mm_mul_ps(dstVector, oneMinusConstAlpha);
             dstVector = _mm_add_ps(dstVector, srcVector);
-            _mm_store_ps((float *)&dst[x], dstVector);
+            _mm_storeu_ps((float *)&dst[x], dstVector);
         }
     }
 }
@@ -630,7 +630,7 @@ void QT_FASTCALL comp_func_solid_Source_rgbafp_avx2(QRgbaFloat32 *dst, int lengt
         const float a = const_alpha / 255.0f;
         const __m128 alphaVector = _mm_set1_ps(a);
         const __m128 minusAlphaVector = _mm_set1_ps(1.0f - a);
-        __m128 colorVector = _mm_load_ps((const float *)&color);
+        __m128 colorVector = _mm_loadu_ps((const float *)&color);
         colorVector = _mm_mul_ps(colorVector, alphaVector);
         const __m256 colorVector256 = _mm256_insertf128_ps(_mm256_castps128_ps256(colorVector), colorVector, 1);
         const __m256 minusAlphaVector256 = _mm256_set1_ps(1.0f - a);
@@ -642,10 +642,10 @@ void QT_FASTCALL comp_func_solid_Source_rgbafp_avx2(QRgbaFloat32 *dst, int lengt
             _mm256_storeu_ps((float *)&dst[x], dstVector);
         }
         if (x < length) {
-            __m128 dstVector = _mm_load_ps((const float *)&dst[x]);
+            __m128 dstVector = _mm_loadu_ps((const float *)&dst[x]);
             dstVector = _mm_mul_ps(dstVector, minusAlphaVector);
             dstVector = _mm_add_ps(dstVector, colorVector);
-            _mm_store_ps((float *)&dst[x], dstVector);
+            _mm_storeu_ps((float *)&dst[x], dstVector);
         }
     }
 }
@@ -657,7 +657,7 @@ void QT_FASTCALL comp_func_solid_SourceOver_rgbafp_avx2(QRgbaFloat32 *dst, int l
         for (int i = 0; i < length; ++i)
             dst[i] = color;
     } else {
-        __m128 colorVector = _mm_load_ps((const float *)&color);
+        __m128 colorVector = _mm_loadu_ps((const float *)&color);
         if (const_alpha != 255)
             colorVector = _mm_mul_ps(colorVector, _mm_set1_ps(const_alpha / 255.f));
         __m128 minusAlphaOfColorVector =
@@ -673,10 +673,10 @@ void QT_FASTCALL comp_func_solid_SourceOver_rgbafp_avx2(QRgbaFloat32 *dst, int l
             _mm256_storeu_ps((float *)&dst[x], dstVector);
         }
         if (x < length) {
-            __m128 dstVector = _mm_load_ps((const float *)&dst[x]);
+            __m128 dstVector = _mm_loadu_ps((const float *)&dst[x]);
             dstVector = _mm_mul_ps(dstVector, minusAlphaOfColorVector);
             dstVector = _mm_add_ps(dstVector, colorVector);
-            _mm_store_ps((float *)&dst[x], dstVector);
+            _mm_storeu_ps((float *)&dst[x], dstVector);
         }
     }
 }
@@ -1557,7 +1557,7 @@ const QRgbaFloat32 *QT_FASTCALL fetchRGBA16FToRGBA32F_avx2(QRgbaFloat32 *buffer,
         __m128 vsa = _mm_permute_ps(vsf, _MM_SHUFFLE(3, 3, 3, 3));
         vsf = _mm_mul_ps(vsf, vsa);
         vsf = _mm_insert_ps(vsf, vsa, 0x30);
-        _mm_store_ps((float *)(buffer + i), vsf);
+        _mm_storeu_ps((float *)(buffer + i), vsf);
     }
     return buffer;
 }
@@ -1569,7 +1569,7 @@ void QT_FASTCALL storeRGBX16FFromRGBA32F_avx2(uchar *dest, const QRgbaFloat32 *s
     const __m128 *s = reinterpret_cast<const __m128 *>(src);
     const __m128 zero = _mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f);
     for (int i = 0; i < count; ++i) {
-        __m128 vsf = _mm_load_ps(reinterpret_cast<const float *>(s + i));
+        __m128 vsf = _mm_loadu_ps(reinterpret_cast<const float *>(s + i));
         const __m128 vsa = _mm_permute_ps(vsf, _MM_SHUFFLE(3, 3, 3, 3));
         const float a = _mm_cvtss_f32(vsa);
         if (a == 1.0f)
@@ -1593,7 +1593,7 @@ void QT_FASTCALL storeRGBA16FFromRGBA32F_avx2(uchar *dest, const QRgbaFloat32 *s
     const __m128 *s = reinterpret_cast<const __m128 *>(src);
     const __m128 zero = _mm_set1_ps(0.0f);
     for (int i = 0; i < count; ++i) {
-        __m128 vsf = _mm_load_ps(reinterpret_cast<const float *>(s + i));
+        __m128 vsf = _mm_loadu_ps(reinterpret_cast<const float *>(s + i));
         const __m128 vsa = _mm_permute_ps(vsf, _MM_SHUFFLE(3, 3, 3, 3));
         const float a = _mm_cvtss_f32(vsa);
         if (a == 1.0f)

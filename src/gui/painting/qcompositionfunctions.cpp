@@ -397,25 +397,25 @@ struct RgbaFPOperationsSSE2 : public RgbaFPOperationsBase
     typedef __m128 OptimalType;
     typedef __m128 OptimalScalar;
 
-    static OptimalType load(const Type *ptr)
+    static OptimalType Q_DECL_VECTORCALL load(const Type *ptr)
     {
-        return _mm_load_ps(reinterpret_cast<const float *>(ptr));
+        return _mm_loadu_ps(reinterpret_cast<const float *>(ptr));
     }
-    static OptimalType convert(const Type &value)
+    static OptimalType Q_DECL_VECTORCALL convert(const Type &value)
     {
         return load(&value);
     }
-    static void store(Type *ptr, OptimalType value)
+    static void Q_DECL_VECTORCALL store(Type *ptr, OptimalType value)
     {
-        _mm_store_ps(reinterpret_cast<float *>(ptr), value);
+        _mm_storeu_ps(reinterpret_cast<float *>(ptr), value);
     }
-    static OptimalType add(OptimalType a, OptimalType b)
+    static OptimalType Q_DECL_VECTORCALL add(OptimalType a, OptimalType b)
     {
         return _mm_add_ps(a, b);
     }
 //    same as above:
 //    static OptimalScalar add(OptimalScalar a, OptimalScalar b)
-    static OptimalType plus(OptimalType a, OptimalType b)
+    static OptimalType Q_DECL_VECTORCALL plus(OptimalType a, OptimalType b)
     {
         a = _mm_add_ps(a, b);
         __m128 aa = _mm_min_ps(a, _mm_set1_ps(1.0f));
@@ -425,37 +425,37 @@ struct RgbaFPOperationsSSE2 : public RgbaFPOperationsBase
         a = _mm_shuffle_ps(a, aa, _MM_SHUFFLE(0, 2, 1, 0));
         return a;
     }
-    static OptimalScalar alpha(OptimalType c)
+    static OptimalScalar Q_DECL_VECTORCALL alpha(OptimalType c)
     {
         return _mm_shuffle_ps(c, c, _MM_SHUFFLE(3, 3, 3, 3));
     }
-    static OptimalScalar invAlpha(Scalar c)
+    static OptimalScalar Q_DECL_VECTORCALL invAlpha(Scalar c)
     {
         return _mm_set1_ps(1.0f - float(c));
     }
-    static OptimalScalar invAlpha(OptimalType c)
+    static OptimalScalar Q_DECL_VECTORCALL invAlpha(OptimalType c)
     {
         return _mm_sub_ps(_mm_set1_ps(1.0f), alpha(c));
     }
-    static OptimalScalar scalar(Scalar n)
+    static OptimalScalar Q_DECL_VECTORCALL scalar(Scalar n)
     {
         return _mm_set1_ps(float(n));
     }
-    static OptimalType multiplyAlpha(OptimalType val, OptimalScalar a)
+    static OptimalType Q_DECL_VECTORCALL multiplyAlpha(OptimalType val, OptimalScalar a)
     {
         return _mm_mul_ps(val, a);
     }
-    static OptimalType interpolate(OptimalType x, OptimalScalar a1, OptimalType y, OptimalScalar a2)
+    static OptimalType Q_DECL_VECTORCALL interpolate(OptimalType x, OptimalScalar a1, OptimalType y, OptimalScalar a2)
     {
         return add(multiplyAlpha(x, a1), multiplyAlpha(y, a2));
     }
-    static OptimalType multiplyAlpha8bit(OptimalType val, uint8_t a)
+    static OptimalType Q_DECL_VECTORCALL multiplyAlpha8bit(OptimalType val, uint8_t a)
     {
         return multiplyAlpha(val, _mm_set1_ps(a  * (1.0f / 255.0f)));
     }
 //    same as above:
 //    static OptimalScalar multiplyAlpha8bit(OptimalScalar a, uint8_t a)
-    static OptimalType interpolate8bit(OptimalType x, uint8_t a1, OptimalType y, uint8_t a2)
+    static OptimalType Q_DECL_VECTORCALL interpolate8bit(OptimalType x, uint8_t a1, OptimalType y, uint8_t a2)
     {
         return add(multiplyAlpha8bit(x, a1), multiplyAlpha8bit(y, a2));
     }
