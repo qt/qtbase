@@ -35,9 +35,9 @@ class Q_CORE_EXPORT QLocale
     friend class QTextStream;
     friend class QTextStreamPrivate;
 
-    static constexpr int FirstTwoDigitYear = 1900; // sync with QDate
-
 public:
+    static constexpr int DefaultTwoDigitBaseYear = 1900;
+
 // see qlocale_data_p.h for more info on generated data
 // GENERATED PART STARTS HERE
     enum Language : ushort {
@@ -1030,22 +1030,22 @@ public:
     QDateTime toDateTime(const QString &string, const QString &format, QCalendar cal) const;
 #  endif
     QDate toDate(const QString &string, FormatType = LongFormat,
-                 int baseYear = FirstTwoDigitYear) const;
+                 int baseYear = DefaultTwoDigitBaseYear) const;
     QDate toDate(const QString &string, const QString &format,
-                 int baseYear = FirstTwoDigitYear) const;
+                 int baseYear = DefaultTwoDigitBaseYear) const;
     QDateTime toDateTime(const QString &string, FormatType format = LongFormat,
-                         int baseYear = FirstTwoDigitYear) const;
+                         int baseYear = DefaultTwoDigitBaseYear) const;
     QDateTime toDateTime(const QString &string, const QString &format,
-                         int baseYear = FirstTwoDigitYear) const;
+                         int baseYear = DefaultTwoDigitBaseYear) const;
     // Calendar-aware API
     QDate toDate(const QString &string, FormatType format, QCalendar cal,
-                 int baseYear = FirstTwoDigitYear) const;
+                 int baseYear = DefaultTwoDigitBaseYear) const;
     QDate toDate(const QString &string, const QString &format, QCalendar cal,
-                 int baseYear = FirstTwoDigitYear) const;
+                 int baseYear = DefaultTwoDigitBaseYear) const;
     QDateTime toDateTime(const QString &string, FormatType format, QCalendar cal,
-                         int baseYear = FirstTwoDigitYear) const;
+                         int baseYear = DefaultTwoDigitBaseYear) const;
     QDateTime toDateTime(const QString &string, const QString &format, QCalendar cal,
-                         int baseYear = FirstTwoDigitYear) const;
+                         int baseYear = DefaultTwoDigitBaseYear) const;
 #endif
 
     QString decimalPoint() const;

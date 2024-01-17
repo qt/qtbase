@@ -794,42 +794,42 @@ QString QLocale::bcp47Name() const
 
 QDate QLocale::toDate(const QString &string, FormatType format) const
 {
-    return toDate(string, dateFormat(format), FirstTwoDigitYear);
+    return toDate(string, dateFormat(format), DefaultTwoDigitBaseYear);
 }
 
 QDate QLocale::toDate(const QString &string, FormatType format, QCalendar cal) const
 {
-    return toDate(string, dateFormat(format), cal, FirstTwoDigitYear);
+    return toDate(string, dateFormat(format), cal, DefaultTwoDigitBaseYear);
 }
 
 QDateTime QLocale::toDateTime(const QString &string, FormatType format) const
 {
-    return toDateTime(string, dateTimeFormat(format), FirstTwoDigitYear);
+    return toDateTime(string, dateTimeFormat(format), DefaultTwoDigitBaseYear);
 }
 
 QDateTime QLocale::toDateTime(const QString &string, FormatType format, QCalendar cal) const
 {
-    return toDateTime(string, dateTimeFormat(format), cal, FirstTwoDigitYear);
+    return toDateTime(string, dateTimeFormat(format), cal, DefaultTwoDigitBaseYear);
 }
 
 QDate QLocale::toDate(const QString &string, const QString &format) const
 {
-    return toDate(string, format, QCalendar(), FirstTwoDigitYear);
+    return toDate(string, format, QCalendar(), DefaultTwoDigitBaseYear);
 }
 
 QDate QLocale::toDate(const QString &string, const QString &format, QCalendar cal) const
 {
-    return toDate(string, format, cal, FirstTwoDigitYear);
+    return toDate(string, format, cal, DefaultTwoDigitBaseYear);
 }
 
 QDateTime QLocale::toDateTime(const QString &string, const QString &format) const
 {
-    return toDateTime(string, format, QCalendar(), FirstTwoDigitYear);
+    return toDateTime(string, format, QCalendar(), DefaultTwoDigitBaseYear);
 }
 
 QDateTime QLocale::toDateTime(const QString &string, const QString &format, QCalendar cal) const
 {
-    return toDateTime(string, format, cal, FirstTwoDigitYear);
+    return toDateTime(string, format, cal, DefaultTwoDigitBaseYear);
 }
 
 #include "qobject.h"
