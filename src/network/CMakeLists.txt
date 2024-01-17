@@ -57,6 +57,7 @@ qt_internal_add_module(Network
         QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
+        QT_NO_CAST_FROM_ASCII
     INCLUDE_DIRECTORIES
         kernel
     LIBRARIES

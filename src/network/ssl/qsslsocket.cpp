@@ -2967,10 +2967,9 @@ QList<QByteArray> QSslSocketPrivate::unixRootCertDirectories()
     };
     QList<QByteArray> result = QList<QByteArray>::fromReadOnlyData(dirs);
     if constexpr (isVxworks) {
-        static QString vxworksCertsDir = qgetenv("VXWORKS_CERTS_DIR");
-        if (!vxworksCertsDir.isEmpty()) {
-            result.push_back(vxworksCertsDir.toLatin1());
-        }
+        static QByteArray vxworksCertsDir = qgetenv("VXWORKS_CERTS_DIR");
+        if (!vxworksCertsDir.isEmpty())
+            result.push_back(vxworksCertsDir);
     }
     return result;
 }
