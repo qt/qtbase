@@ -60,7 +60,6 @@ protected:
     void retrieveUrlProperties(bool initRootPath = false);
     void retrieveLabel();
 #elif defined(Q_OS_LINUX)
-    quint64 initRootPath();
     void retrieveVolumeInfo();
 
 public:
