@@ -14,10 +14,9 @@
 
 #include <q20algorithm.h>
 
-#ifdef Q_OS_WIN
-#   include <qt_windows.h>
-#   include <time.h>
-#endif
+// TODO QTBUG-121193: port away from the use of LCID to always use names.
+#include <qt_windows.h>
+#include <time.h>
 
 #if QT_CONFIG(cpp_winrt)
 #   include <QtCore/private/qt_winrtbase_p.h>
@@ -67,8 +66,6 @@ static auto getDefaultWinId()
 }
 
 static QByteArray getWinLocaleName(LCID id = LOCALE_USER_DEFAULT);
-static QString winIso639LangName(LCID id = LOCALE_USER_DEFAULT);
-static QString winIso3116CtryName(LCID id = LOCALE_USER_DEFAULT);
 
 #ifndef QT_NO_SYSTEMLOCALE
 
@@ -1174,6 +1171,7 @@ static QByteArray getWinLocaleName(LCID id)
     return std::move(resultusage).toLatin1();
 }
 
+// Helper for plugins/platforms/windows/
 Q_CORE_EXPORT QLocale qt_localeFromLCID(LCID id)
 {
     return QLocale(QString::fromLatin1(getWinLocaleName(id)));
