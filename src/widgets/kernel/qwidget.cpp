@@ -8439,10 +8439,16 @@ void QWidget::setHidden(bool hidden)
     setVisible(!hidden);
 }
 
+bool QWidgetPrivate::isExplicitlyHidden() const
+{
+    Q_Q(const QWidget);
+    return q->isHidden() && q->testAttribute(Qt::WA_WState_ExplicitShowHide);
+}
+
 void QWidgetPrivate::_q_showIfNotHidden()
 {
     Q_Q(QWidget);
-    if ( !(q->isHidden() && q->testAttribute(Qt::WA_WState_ExplicitShowHide)) )
+    if (!isExplicitlyHidden())
         q->setVisible(true);
 }
 
@@ -10903,7 +10909,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
             targetScreen = q->parentWidget()->window()->screen();
     }
 
-    bool explicitlyHidden = q->testAttribute(Qt::WA_WState_Hidden) && q->testAttribute(Qt::WA_WState_ExplicitShowHide);
+    bool explicitlyHidden = isExplicitlyHidden();
 
     // Reparenting toplevel to child
     if (wasCreated && !(f & Qt::Window) && (oldFlags & Qt::Window) && !q->testAttribute(Qt::WA_NativeWindow)) {

@@ -271,7 +271,7 @@ int QStatusBar::insertWidget(int index, QWidget *widget, int stretch)
         widget->hide();
 
     reformat();
-    if (!widget->isHidden() || !widget->testAttribute(Qt::WA_WState_ExplicitShowHide))
+    if (!QWidgetPrivate::get(widget)->isExplicitlyHidden())
         widget->show();
 
     return index;
@@ -332,7 +332,7 @@ int QStatusBar::insertPermanentWidget(int index, QWidget *widget, int stretch)
     d->items.insert(index, item);
 
     reformat();
-    if (!widget->isHidden() || !widget->testAttribute(Qt::WA_WState_ExplicitShowHide))
+    if (!QWidgetPrivate::get(widget)->isExplicitlyHidden())
         widget->show();
 
     return index;
