@@ -174,7 +174,7 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
 
     // Prepare the DNS query.
     QueryBuffer qbuffer;
-    int queryLength = prepareQueryBuffer(&state, qbuffer, requestName, ns_rcode(requestType));
+    int queryLength = prepareQueryBuffer(&state, qbuffer, requestName.constData(), ns_rcode(requestType));
     if (Q_UNLIKELY(queryLength < 0))
         return reply->makeResolverSystemError();
 

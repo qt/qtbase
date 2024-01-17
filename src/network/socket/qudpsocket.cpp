@@ -382,7 +382,7 @@ qint64 QUdpSocket::writeDatagram(const QNetworkDatagram &datagram)
     if (state() == UnconnectedState)
         bind();
 
-    qint64 sent = d->socketEngine->writeDatagram(datagram.d->data,
+    qint64 sent = d->socketEngine->writeDatagram(datagram.d->data.constData(),
                                                  datagram.d->data.size(),
                                                  datagram.d->header);
     d->cachedSocketDescriptor = d->socketEngine->socketDescriptor();

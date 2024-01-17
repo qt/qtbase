@@ -69,16 +69,16 @@ static auto &ifreq_index(Req &req, std::enable_if_t<sizeof(std::declval<Req>().i
 uint QNetworkInterfaceManager::interfaceIndexFromName(const QString &name)
 {
 #if QT_CONFIG(ipv6ifname)
-    return ::if_nametoindex(name.toLatin1());
+    return ::if_nametoindex(name.toLatin1().constData());
 #elif defined(SIOCGIFINDEX)
     struct ifreq req;
     int socket = qt_safe_socket(AF_INET, SOCK_STREAM, 0);
     if (socket < 0)
         return 0;
 
-    QByteArray name8bit = name.toLatin1();
+    const QByteArray name8bit = name.toLatin1();
     memset(&req, 0, sizeof(ifreq));
-    memcpy(req.ifr_name, name8bit, qMin<int>(name8bit.length() + 1, sizeof(req.ifr_name) - 1));
+    memcpy(req.ifr_name, name8bit.data(), qMin<int>(name8bit.length() + 1, sizeof(req.ifr_name) - 1));
 
     uint id = 0;
     if (qt_safe_ioctl(socket, SIOCGIFINDEX, &req) >= 0)
@@ -235,7 +235,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     for ( ; it != names.constEnd(); ++it) {
         ifreq req;
         memset(&req, 0, sizeof(ifreq));
-        memcpy(req.ifr_name, *it, qMin<int>(it->length() + 1, sizeof(req.ifr_name) - 1));
+        memcpy(req.ifr_name, it->constData(), qMin<int>(it->length() + 1, sizeof(req.ifr_name) - 1));
 
         QNetworkInterfacePrivate *iface = findInterface(socket, interfaces, req);
 
@@ -246,7 +246,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
             iface->name = QString::fromLatin1(req.ifr_name);
 
             // reset the name:
-            memcpy(req.ifr_name, oldName, qMin<int>(oldName.length() + 1, sizeof(req.ifr_name) - 1));
+            memcpy(req.ifr_name, oldName.constData(), qMin<int>(oldName.length() + 1, sizeof(req.ifr_name) - 1));
         } else
 #endif
         {

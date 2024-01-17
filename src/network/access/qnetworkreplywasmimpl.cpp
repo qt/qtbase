@@ -295,7 +295,7 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
     QByteArray destinationPath = dPath.toUtf8();
     attr.destinationPath = destinationPath.constData();
 
-    m_fetch = emscripten_fetch(&attr, request.url().toString().toUtf8());
+    m_fetch = emscripten_fetch(&attr, request.url().toString().toUtf8().constData());
     state = Working;
 }
 
