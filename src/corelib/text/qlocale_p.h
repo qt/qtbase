@@ -106,9 +106,6 @@ struct QLocaleData;
 class Q_CORE_EXPORT QSystemLocale
 {
     QSystemLocale *next = nullptr; // Maintains a stack.
-#ifdef Q_OS_WASM
-    std::unique_ptr<qstdweb::EventCallback> onLanguageChanged;
-#endif
 
 public:
     QSystemLocale();
