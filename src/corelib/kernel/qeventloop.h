@@ -65,8 +65,7 @@ public:
 
     Q_NODISCARD_CTOR QEventLoopLocker(QEventLoopLocker &&other) noexcept
         : p{std::exchange(other.p, 0)} {}
-    QEventLoopLocker &operator=(QEventLoopLocker &&other) noexcept
-    { auto moved = std::move(other); swap(moved); return *this; }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QEventLoopLocker)
 
     void swap(QEventLoopLocker &other) noexcept { std::swap(p, other.p); }
     friend void swap(QEventLoopLocker &lhs, QEventLoopLocker &rhs) noexcept { lhs.swap(rhs); }
