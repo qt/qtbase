@@ -198,6 +198,13 @@ class Supplement (XmlScanner):
 
 class LocaleScanner (object):
     def __init__(self, name, nodes, root):
+        """Set up to scan data for a specified locale.
+
+        First parameter is the name of the locale; it will be used in
+        error messages. Second is a tuple of DOM root-nodes of files
+        with locale data, later ones serving as fall-backs for data
+        missing in earlier ones. Third parameter is the root locale's
+        DOM node."""
         self.name, self.nodes, self.base = name, nodes, root
 
     def find(self, xpath, default = None, draft = None):
