@@ -88,8 +88,11 @@ private slots:
     void environmentIsSorted();
     void spaceInName();
     void setStandardInputFile();
+    void setStandardInputFileFailure();
     void setStandardOutputFile_data();
     void setStandardOutputFile();
+    void setStandardOutputFileFailure_data() { setStandardOutputFile_data(); }
+    void setStandardOutputFileFailure();
     void setStandardOutputFileNullDevice();
     void setStandardOutputFileAndWaitForBytesWritten();
     void setStandardOutputProcess_data();
@@ -168,6 +171,8 @@ protected slots:
     void waitForBytesWrittenInABytesWrittenSlotSlot();
 
 private:
+    QString nonExistentFileName = u"/this/file/cant/exist/hopefully"_s;
+
     qint64 bytesAvailable;
     QTemporaryDir m_temporaryDir;
     bool haveWorkingVFork = false;
@@ -2319,12 +2324,21 @@ void tst_QProcess::setStandardInputFile()
     QProcess process;
     QFile file(m_temporaryDir.path() + QLatin1String("/data-sif"));
 
+    QSignalSpy stateSpy(&process, &QProcess::stateChanged);
+    QSignalSpy errorOccurredSpy(&process, &QProcess::errorOccurred);
+
     QVERIFY(file.open(QIODevice::WriteOnly));
     file.write(data, sizeof data);
     file.close();
 
     process.setStandardInputFile(file.fileName());
     process.start("testProcessEcho/testProcessEcho");
+    QVERIFY(process.waitForStarted());
+    QCOMPARE(errorOccurredSpy.size(), 0);
+    QCOMPARE(stateSpy.size(), 2);
+    QCOMPARE(stateSpy[0][0].value<QProcess::ProcessState>(), QProcess::Starting);
+    QCOMPARE(stateSpy[1][0].value<QProcess::ProcessState>(), QProcess::Running);
+    stateSpy.clear();
 
     QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
@@ -2339,6 +2353,25 @@ void tst_QProcess::setStandardInputFile()
     QVERIFY(process2.waitForFinished());
     all = process2.readAll();
     QCOMPARE(all.size(), 0);
+}
+
+void tst_QProcess::setStandardInputFileFailure()
+{
+    QProcess process;
+    process.setStandardInputFile(nonExistentFileName);
+
+    QSignalSpy stateSpy(&process, &QProcess::stateChanged);
+    QSignalSpy errorOccurredSpy(&process, &QProcess::errorOccurred);
+
+    process.start("testProcessEcho/testProcessEcho");
+    QVERIFY(!process.waitForStarted());
+
+    QCOMPARE(errorOccurredSpy.size(), 1);
+    QCOMPARE(errorOccurredSpy[0][0].value<QProcess::ProcessError>(), QProcess::FailedToStart);
+
+    QCOMPARE(stateSpy.size(), 2);
+    QCOMPARE(stateSpy[0][0].value<QProcess::ProcessState>(), QProcess::Starting);
+    QCOMPARE(stateSpy[1][0].value<QProcess::ProcessState>(), QProcess::NotRunning);
 }
 
 void tst_QProcess::setStandardOutputFile_data()
@@ -2394,7 +2427,17 @@ void tst_QProcess::setStandardOutputFile()
     else
         process.setStandardErrorFile(file.fileName(), mode);
 
+    QSignalSpy stateSpy(&process, &QProcess::stateChanged);
+    QSignalSpy errorOccurredSpy(&process, &QProcess::errorOccurred);
+
     process.start("testProcessEcho2/testProcessEcho2");
+    QVERIFY(process.waitForStarted());
+    QCOMPARE(errorOccurredSpy.size(), 0);
+    QCOMPARE(stateSpy.size(), 2);
+    QCOMPARE(stateSpy[0][0].value<QProcess::ProcessState>(), QProcess::Starting);
+    QCOMPARE(stateSpy[1][0].value<QProcess::ProcessState>(), QProcess::Running);
+    stateSpy.clear();
+
     process.write(testdata, sizeof testdata);
     QVERIFY(process.waitForFinished());
     QCOMPARE(process.exitStatus(), QProcess::NormalExit);
@@ -2417,6 +2460,34 @@ void tst_QProcess::setStandardOutputFile()
     }
 
     QCOMPARE(all.size(), expectedsize);
+}
+
+void tst_QProcess::setStandardOutputFileFailure()
+{
+    QFETCH(QProcess::ProcessChannel, channelToTest);
+    QFETCH(QProcess::ProcessChannelMode, channelMode);
+    QFETCH(bool, append);
+
+    QIODevice::OpenMode mode = append ? QIODevice::Append : QIODevice::Truncate;
+
+    // run the process
+    QProcess process;
+    process.setProcessChannelMode(channelMode);
+    if (channelToTest == QProcess::StandardOutput)
+        process.setStandardOutputFile(nonExistentFileName, mode);
+    else
+        process.setStandardErrorFile(nonExistentFileName, mode);
+
+    QSignalSpy stateSpy(&process, &QProcess::stateChanged);
+    QSignalSpy errorOccurredSpy(&process, &QProcess::errorOccurred);
+
+    process.start("testProcessEcho2/testProcessEcho2");
+    QVERIFY(!process.waitForStarted());
+    QCOMPARE(errorOccurredSpy.size(), 1);
+    QCOMPARE(errorOccurredSpy[0][0].value<QProcess::ProcessError>(), QProcess::FailedToStart);
+    QCOMPARE(stateSpy.size(), 2);
+    QCOMPARE(stateSpy[0][0].value<QProcess::ProcessState>(), QProcess::Starting);
+    QCOMPARE(stateSpy[1][0].value<QProcess::ProcessState>(), QProcess::NotRunning);
 }
 
 void tst_QProcess::setStandardOutputFileNullDevice()
@@ -2694,13 +2765,21 @@ void tst_QProcess::setWorkingDirectory()
 void tst_QProcess::setNonExistentWorkingDirectory()
 {
     QProcess process;
-    process.setWorkingDirectory("this/directory/should/not/exist/for/sure");
+    process.setWorkingDirectory(nonExistentFileName);
+
+    QSignalSpy stateSpy(&process, &QProcess::stateChanged);
+    QSignalSpy errorOccurredSpy(&process, &QProcess::errorOccurred);
 
     // use absolute path because on Windows, the executable is relative to the parent's CWD
     // while on Unix with fork it's relative to the child's (with posix_spawn, it could be either).
     process.start(QFileInfo("testSetWorkingDirectory/testSetWorkingDirectory").absoluteFilePath());
+
     QVERIFY(!process.waitForFinished());
-    QCOMPARE(int(process.error()), int(QProcess::FailedToStart));
+    QCOMPARE(errorOccurredSpy.size(), 1);
+    QCOMPARE(process.error(), QProcess::FailedToStart);
+    QCOMPARE(stateSpy.size(), 2);
+    QCOMPARE(stateSpy[0][0].value<QProcess::ProcessState>(), QProcess::Starting);
+    QCOMPARE(stateSpy[1][0].value<QProcess::ProcessState>(), QProcess::NotRunning);
 
 #ifdef Q_OS_UNIX
     QVERIFY2(process.errorString().startsWith("chdir:"), process.errorString().toLocal8Bit());
@@ -2710,7 +2789,9 @@ void tst_QProcess::setNonExistentWorkingDirectory()
 void tst_QProcess::detachedSetNonExistentWorkingDirectory()
 {
     QProcess process;
-    process.setWorkingDirectory("this/directory/should/not/exist/for/sure");
+    process.setWorkingDirectory(nonExistentFileName);
+
+    QSignalSpy errorOccurredSpy(&process, &QProcess::errorOccurred);
 
     // use absolute path because on Windows, the executable is relative to the parent's CWD
     // while on Unix with fork it's relative to the child's (with posix_spawn, it could be either).
@@ -2721,6 +2802,9 @@ void tst_QProcess::detachedSetNonExistentWorkingDirectory()
     QCOMPARE(pid, -1);
     QCOMPARE(process.error(), QProcess::FailedToStart);
     QVERIFY(process.errorString() != "Unknown error");
+
+    QCOMPARE(errorOccurredSpy.size(), 1);
+    QCOMPARE(process.error(), QProcess::FailedToStart);
 
 #ifdef Q_OS_UNIX
     QVERIFY2(process.errorString().startsWith("chdir:"), process.errorString().toLocal8Bit());

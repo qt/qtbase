@@ -521,7 +521,6 @@ bool QProcessPrivate::openChannel(Channel &channel)
             setErrorAndEmit(QProcess::FailedToStart,
                             QProcess::tr("Could not open input redirection for reading"));
         }
-        cleanup();
         return false;
     } else {
         Q_ASSERT_X(channel.process, "QProcess::start", "Internal error");
@@ -673,6 +672,7 @@ Q_AUTOTEST_EXPORT bool _qprocessUsingVfork() noexcept
 void QProcessPrivate::startProcess()
 {
     Q_Q(QProcess);
+    q->setProcessState(QProcess::Starting);
 
 #if defined (QPROCESS_DEBUG)
     qDebug("QProcessPrivate::startProcess()");
@@ -681,6 +681,8 @@ void QProcessPrivate::startProcess()
     // Initialize pipes
     if (!openChannels()) {
         // openChannel sets the error string
+        Q_ASSERT(!errorString.isEmpty());
+        cleanup();
         return;
     }
     if (qt_create_pipe(childStartedPipe) != 0) {
@@ -707,7 +709,6 @@ void QProcessPrivate::startProcess()
     }
 
     // Start the child.
-    q->setProcessState(QProcess::Starting);
     forkfd = childProcess.startChild(&pid);
     int lastForkErrno = errno;
 
