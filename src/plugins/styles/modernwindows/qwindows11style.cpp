@@ -181,9 +181,10 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 if (option->styleObject->property("_q_end_radius").isNull())
                     option->styleObject->setProperty("_q_end_radius", outerRadius * 0.43);
 
-                bool doTransition = ((state & State_Sunken) != (oldState & State_Sunken)
+                bool doTransition = (((state & State_Sunken) != (oldState & State_Sunken)
                                      || ((oldIsInsideHandle) != (isInsideHandle))
-                                     || oldActiveControls != int(option->activeSubControls));
+                                     || oldActiveControls != int(option->activeSubControls))
+                                     && state & State_Enabled);
 
                 if (oldRect != option->rect) {
                     doTransition = false;
@@ -515,9 +516,10 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             int oldState = styleObject->property("_q_stylestate").toInt();
             styleObject->setProperty("_q_stylestate", int(option->state));
             styleObject->setProperty("_q_stylerect", option->rect);
-            bool doTransition = ((state & State_Sunken) != (oldState & State_Sunken)
+            bool doTransition = (((state & State_Sunken) != (oldState & State_Sunken)
                                  || ((state & State_MouseOver) != (oldState & State_MouseOver))
-                                 || (state & State_On) != (oldState & State_On));
+                                 || (state & State_On) != (oldState & State_On))
+                                 && state & State_Enabled);
             if (doTransition) {
                 if (element == PE_IndicatorRadioButton) {
                     QNumberStyleAnimation *t = new QNumberStyleAnimation(styleObject);
@@ -651,7 +653,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
 
             painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][frameColorStrong]));
             painter->setBrush(option->palette.accent());
-            if (option->state & State_MouseOver)
+            if (option->state & State_MouseOver && option->state & State_Enabled)
                 painter->setBrush(QBrush(option->palette.accent().color().lighter(107)));
             painter->drawEllipse(center, 7, 7);
 
@@ -660,7 +662,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
 
             painter->setPen(Qt::NoPen);
             painter->setBrush(QBrush(option->palette.window()));
-            if (option->state & State_MouseOver)
+            if (option->state & State_MouseOver && option->state & State_Enabled)
                 painter->setBrush(QBrush(option->palette.window().color().darker(107)));
             painter->drawEllipse(center,innerRadius, innerRadius);
         }
