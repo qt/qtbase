@@ -54,6 +54,8 @@ QT_WARNING_DISABLE_GCC("-Wfree-nonheap-object") // false positive tracking
 
 QT_BEGIN_NAMESPACE
 
+constexpr int QLocale::DefaultTwoDigitBaseYear;
+
 QT_IMPL_METATYPE_EXTERN_TAGGED(QList<Qt::DayOfWeek>, QList_Qt__DayOfWeek)
 #ifndef QT_NO_SYSTEMLOCALE
 QT_IMPL_METATYPE_EXTERN_TAGGED(QSystemLocale::CurrencyToStringArgument,
@@ -1001,6 +1003,21 @@ QLocale::QLocale(QLocalePrivate &dd)
     : d(&dd)
 {}
 
+/*!
+    \variable QLocale::DefaultTwoDigitBaseYear
+    \since 6.7
+
+    \brief The default start year of the century within which a format taking
+    a two-digit year will select. The value of the constant is \c {1900}.
+
+    Some locales use, particularly for ShortFormat, only the last two digits of
+    the year. Proir to 6.7 the year 1900 was always used as a base year for
+    such cases. Now various QLocale and QDate functions have the overloads that
+    allow callers to specify the base year, and this constant is used as its
+    default value.
+
+    \sa toDate(), toDateTime(), QDate::fromString(), QDateTime::fromString()
+*/
 
 /*!
     \since 6.3

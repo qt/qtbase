@@ -137,7 +137,7 @@ public:
     StateNode parse(const QString &input, int position,
                     const QDateTime &defaultValue, bool fixup) const;
     bool fromString(const QString &text, QDate *date, QTime *time,
-                    int baseYear = QDate::FirstTwoDigitYear) const;
+                    int baseYear = QLocale::DefaultTwoDigitBaseYear) const;
     bool fromString(const QString &text, QDateTime *datetime, int baseYear) const;
     bool parseFormat(QStringView format);
 
@@ -236,7 +236,7 @@ protected: // for the benefit of QDateTimeEditPrivate
     virtual QLocale locale() const { return defaultLocale; }
 
     mutable int currentSectionIndex = int(NoSectionIndex);
-    mutable int defaultCenturyStart = QDate::FirstTwoDigitYear;
+    mutable int defaultCenturyStart = QLocale::DefaultTwoDigitBaseYear;
     Sections display;
     /*
         This stores the most recently selected day.
