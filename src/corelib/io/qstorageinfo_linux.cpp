@@ -10,6 +10,8 @@
 #include <private/qcore_unix_p.h>
 #include <private/qtools_p.h>
 
+#include <q20memory.h>
+
 #include <linux/mount.h>
 #include <sys/statfs.h>
 
@@ -199,15 +201,31 @@ quint64 QStorageInfoPrivate::initRootPath()
     //   # mount | tail -2
     //   tmpfs on /tmp/foo/bar type tmpfs (rw,relatime,inode64)
     //   tmpfs on /tmp/foo type tmpfs (rw,relatime,inode64)
-    // But just in case there's a mount --move, we ensure the device ID does
-    // match.
+    //
+    // We try to match the device ID in case there's a mount --move.
+    // We can't *rely* on it because some filesystems like btrfs will assign
+    // device IDs to subvolumes that aren't listed in /proc/self/mountinfo.
+
     const QString oldRootPath = std::exchange(rootPath, QString());
     const dev_t rootPathDevId = deviceIdForPath(oldRootPath);
+    MountInfo *best = nullptr;
     for (auto it = infos.rbegin(); it != infos.rend(); ++it) {
-        if (rootPathDevId != it->stDev || !isParentOf(it->mountPoint, oldRootPath))
+        if (!isParentOf(it->mountPoint, oldRootPath))
             continue;
-        auto stDev = it->stDev;
-        setFromMountInfo(std::move(*it));
+        if (rootPathDevId == it->stDev) {
+            // device ID matches; this is definitely the best option
+            best = q20::to_address(it);
+            break;
+        }
+        if (!best) {
+            // if we can't find a device ID match, this parent path is probably
+            // the correct one
+            best = q20::to_address(it);
+        }
+    }
+    if (best) {
+        auto stDev = best->stDev;
+        setFromMountInfo(std::move(*best));
         return stDev;
     }
     return 0;
