@@ -134,16 +134,6 @@ static inline QString retrieveLabel(const QByteArray &device, quint64 deviceId)
     return QString();
 }
 
-void QStorageInfoPrivate::doStat()
-{
-    retrieveVolumeInfo();
-    quint64 deviceId = initRootPath();
-    if (!deviceId)
-        return;
-
-    name = retrieveLabel(device, deviceId);
-}
-
 void QStorageInfoPrivate::retrieveVolumeInfo()
 {
     struct statfs64 statfs_buf;
@@ -173,25 +163,20 @@ static std::vector<MountInfo> parseMountInfo(FilterMountInfo filter = FilterMoun
     return doParseMountInfo(mountinfo, filter);
 }
 
-quint64 QStorageInfoPrivate::initRootPath()
+void QStorageInfoPrivate::doStat()
 {
+    retrieveVolumeInfo();
+    if (!ready)
+        return;
+
     rootPath = QFileInfo(rootPath).canonicalFilePath();
     if (rootPath.isEmpty())
-        return 0;
+        return;
 
     std::vector<MountInfo> infos = parseMountInfo();
     if (infos.empty()) {
         rootPath = u'/';
-
-        // Need to return something non-zero here for this unlikely condition.
-        // Linux currently uses 20 bits for the minor portion[1] in a 32-bit
-        // integer; glibc, MUSL, and 64-bit Bionic use a 64-bit userspace
-        // dev_t, so this value will not match a real device from the kernel.
-        // 32-bit Bionic still has a 32-bit dev_t, but its makedev() macro[2]
-        // returns 64-bit content too.
-        // [1] https://codebrowser.dev/linux/linux/include/linux/kdev_t.h.html#_M/MINORBITS
-        // [2] https://android.googlesource.com/platform/bionic/+/ndk-r19/libc/include/sys/sysmacros.h#39
-        return makedev(0, -1);
+        return;
     }
 
     // We iterate over the /proc/self/mountinfo list backwards because then any
@@ -226,9 +211,8 @@ quint64 QStorageInfoPrivate::initRootPath()
     if (best) {
         auto stDev = best->stDev;
         setFromMountInfo(std::move(*best));
-        return stDev;
+        name = retrieveLabel(device, stDev);
     }
-    return 0;
 }
 
 QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
