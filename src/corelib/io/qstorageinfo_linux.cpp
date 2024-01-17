@@ -13,7 +13,16 @@
 #include <q20memory.h>
 
 #include <linux/mount.h>
+#include <sys/ioctl.h>
 #include <sys/statfs.h>
+
+// so we don't have to #include <linux/fs.h>, which is known to cause conflicts
+#ifndef FSLABEL_MAX
+#  define FSLABEL_MAX           256
+#endif
+#ifndef FS_IOC_GETFSLABEL
+#  define FS_IOC_GETFSLABEL     _IOR(0x94, 49, char[FSLABEL_MAX])
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -118,9 +127,29 @@ static inline auto retrieveLabels()
     return result;
 }
 
-static inline QString retrieveLabel(const QByteArray &device, quint64 deviceId)
+static std::optional<QString> retrieveLabelViaIoctl(const QString &path)
 {
-    deviceId = retrieveDeviceId(device, deviceId);
+    // FS_IOC_GETFSLABEL was introduced in v4.18; previously it was btrfs-specific.
+    int fd = qt_safe_open(QFile::encodeName(path).constData(), QT_OPEN_RDONLY);
+    if (fd < 0)
+        return std::nullopt;
+
+    // Note: it doesn't append the null terminator (despite what the man page
+    // says) and the return code on success (0) does not indicate the length.
+    char label[FSLABEL_MAX] = {};
+    int r = ioctl(fd, FS_IOC_GETFSLABEL, &label);
+    close(fd);
+    if (r < 0)
+        return std::nullopt;
+    return QString::fromUtf8(label);
+}
+
+static inline QString retrieveLabel(const QStorageInfoPrivate &d, quint64 deviceId)
+{
+    if (auto label = retrieveLabelViaIoctl(d.rootPath))
+        return *label;
+
+    deviceId = retrieveDeviceId(d.device, deviceId);
     if (!deviceId)
         return QString();
 
@@ -211,7 +240,7 @@ void QStorageInfoPrivate::doStat()
     if (best) {
         auto stDev = best->stDev;
         setFromMountInfo(std::move(*best));
-        name = retrieveLabel(device, stDev);
+        name = retrieveLabel(*this, stDev);
     }
 }
 
@@ -221,11 +250,21 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     if (infos.empty())
         return QList{root()};
 
-    auto labelForDevice = [labelMap = retrieveLabels()](const QByteArray &device, quint64 devid) {
-        devid = retrieveDeviceId(device, devid);
+    std::optional<decltype(retrieveLabels())> labelMap;
+    auto labelForDevice = [&labelMap](const QStorageInfoPrivate &d, quint64 devid) {
+        if (d.fileSystemType == "tmpfs")
+            return QString();
+
+        if (auto label = retrieveLabelViaIoctl(d.rootPath))
+            return *label;
+
+        devid = retrieveDeviceId(d.device, devid);
         if (!devid)
             return QString();
-        for (auto &[deviceLabel, deviceId] : labelMap) {
+
+        if (!labelMap)
+            labelMap = retrieveLabels();
+        for (auto &[deviceLabel, deviceId] : std::as_const(*labelMap)) {
             if (devid == deviceId)
                 return deviceLabel;
         }
@@ -240,7 +279,7 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
             continue;
         if (info.stDev != deviceIdForPath(d.rootPath))
             continue;       // probably something mounted over this mountpoint
-        d.name = labelForDevice(d.device, info.stDev);
+        d.name = labelForDevice(d, info.stDev);
         volumes.emplace_back(QStorageInfo(*new QStorageInfoPrivate(std::move(d))));
     }
     return volumes;
