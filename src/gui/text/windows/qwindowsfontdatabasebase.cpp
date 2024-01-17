@@ -710,6 +710,13 @@ QFont QWindowsFontDatabaseBase::systemDefaultFont()
     return systemFont;
 }
 
+void QWindowsFontDatabaseBase::invalidate()
+{
+#if QT_CONFIG(directwrite)
+    m_fontFileLoader.reset(nullptr);
+#endif
+}
+
 #if QT_CONFIG(directwrite) && QT_CONFIG(direct2d)
 IDWriteFontFace *QWindowsFontDatabaseBase::createDirectWriteFace(const QByteArray &fontData)
 {
@@ -717,11 +724,6 @@ IDWriteFontFace *QWindowsFontDatabaseBase::createDirectWriteFace(const QByteArra
     Q_ASSERT(faces.size() <= 1);
 
     return faces.isEmpty() ? nullptr : faces.first();
-}
-
-void QWindowsFontDatabaseBase::invalidate()
-{
-    m_fontFileLoader.reset(nullptr);
 }
 
 QList<IDWriteFontFace *> QWindowsFontDatabaseBase::createDirectWriteFaces(const QByteArray &fontData,
