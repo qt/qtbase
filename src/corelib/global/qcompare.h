@@ -38,7 +38,7 @@ enum class Uncomparable : CompareUnderlyingType
     Unordered =
         #if defined(_LIBCPP_VERSION) // libc++
                 -127
-        #elif defined(__GLIBCXX__)   // libstd++
+        #elif defined(__GLIBCXX__)   // libstdc++
                    2
         #else                        // assume MSSTL
                 -128
