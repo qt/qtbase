@@ -379,6 +379,7 @@ public:
     void show_sys();
     void hide_sys();
     void hide_helper();
+    bool isExplicitlyHidden() const;
     void _q_showIfNotHidden();
     void setVisible(bool);
 
