@@ -22,7 +22,8 @@ static const char usage2[] =" [KEYWORD] [ARGUMENTS]\n\n"
 "          cp  SOURCE TARGET     copy files using QFile::copy\n"
 "          rm  FILE              remove file using QFile::remove\n"
 "          rmr DIR               remove directory recursively\n"
-"                                using QDir::removeRecursively\n";
+"                                using QDir::removeRecursively\n"
+"          trash FILES           moves the file or directory to trash\n";
 
 std::ostream &operator<<(std::ostream &o, const QString &str)
 {
@@ -181,6 +182,17 @@ static int rmr(const char *dirName)
     return 0;
 }
 
+static int trash(const char *filename)
+{
+    QFile f(QString::fromLocal8Bit(filename));
+    if (!f.moveToTrash()) {
+        qWarning().nospace() << "Failed to trash " << f.fileName()
+                             << ": " << f.errorString();
+        return -1;
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
@@ -205,6 +217,9 @@ int main(int argc, char *argv[])
 
     if (argc == 3 && !qstrcmp(argv[1], "rmr"))
         return rmr(argv[2]);
+
+    if (argc == 3 && !qstrcmp(argv[1], "trash"))
+        return trash(argv[2]);
 
     std::cerr << usage1 << argv[0] << usage2;
     return 0;
