@@ -5429,24 +5429,29 @@ void tst_QWidget::closeAndShowWithNativeChild()
     QApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
 
     QWidget topLevel;
+    topLevel.setObjectName("TopLevel");
     QWidget *nativeChild = new QWidget;
+    nativeChild->setObjectName("NativeChild");
     nativeChild->setFixedSize(200, 200);
-    QWidget *nativeHiddenChild = new QWidget;
-    nativeHiddenChild->setFixedSize(200, 200);
     QWidget *normalChild = new QWidget;
+    normalChild->setObjectName("NormalChild");
     normalChild->setFixedSize(200, 200);
 
     QHBoxLayout *layout = new QHBoxLayout;
     layout->addWidget(nativeChild);
-    layout->addWidget(nativeHiddenChild);
     layout->addWidget(normalChild);
     topLevel.setLayout(layout);
 
-    nativeHiddenChild->hide();
+    nativeChild->setAttribute(Qt::WA_NativeWindow);
+
+    QCOMPARE(normalChild->testAttribute(Qt::WA_WState_Hidden), false);
+    QCOMPARE(normalChild->testAttribute(Qt::WA_WState_ExplicitShowHide), false);
+
+    QCOMPARE(nativeChild->testAttribute(Qt::WA_WState_Hidden), false);
+    QCOMPARE(nativeChild->testAttribute(Qt::WA_WState_ExplicitShowHide), false);
 
     topLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
-    nativeChild->winId();
     const QSize originalSize = topLevel.size();
     topLevel.close();
 
