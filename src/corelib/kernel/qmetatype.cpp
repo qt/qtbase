@@ -948,6 +948,12 @@ void QMetaType::unregisterMetaType(QMetaType type)
     than the QMetaType \a b, otherwise returns \c false.
 */
 
+/*! \internal */
+bool QMetaTypeModuleHelper::convert(const void *, int, void *, int) const
+{
+    return false;
+}
+
 #define QT_ADD_STATIC_METATYPE(MetaTypeName, MetaTypeId, RealName) \
     { #RealName, sizeof(#RealName) - 1, MetaTypeId },
 
