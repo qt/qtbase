@@ -40,15 +40,11 @@ class QH2Expected
 {
     static_assert(!std::is_same_v<T, Err>, "T and Err must be different types");
 public:
+    // Rule Of Zero applies
     QH2Expected(T &&value) : m_data(std::move(value)) { }
     QH2Expected(const T &value) : m_data(value) { }
     QH2Expected(Err &&error) : m_data(std::move(error)) { }
     QH2Expected(const Err &error) : m_data(error) { }
-    QH2Expected(const QH2Expected &) = default;
-    QH2Expected(QH2Expected &&) = default;
-    QH2Expected &operator=(const QH2Expected &) = default;
-    QH2Expected &operator=(QH2Expected &&) = default;
-    ~QH2Expected() = default;
 
     QH2Expected &operator=(T &&value)
     {
