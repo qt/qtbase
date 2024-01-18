@@ -856,7 +856,7 @@ void tst_QSet::setOperationsOnEmptySet()
 
         empty.unite(nonEmpty);
         QCOMPARE(empty, nonEmpty);
-        QVERIFY(empty.isDetached());
+        QVERIFY(!empty.isDetached());
     }
 }
 
