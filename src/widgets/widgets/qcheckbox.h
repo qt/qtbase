@@ -36,7 +36,10 @@ public:
     void setCheckState(Qt::CheckState state);
 
 Q_SIGNALS:
+#if QT_DEPRECATED_SINCE(6, 9)
+    QT_MOC_COMPAT QT_DEPRECATED_VERSION_X_6_9("Use checkStateChanged() instead")
     void stateChanged(int);
+#endif
     void checkStateChanged(Qt::CheckState);
 
 protected:
