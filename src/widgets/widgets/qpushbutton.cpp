@@ -581,7 +581,7 @@ void QPushButtonPrivate::_q_popupPressed()
     //menu visibility to avoid flicker on button release
     menuOpen = true;
     QObject::connect(menu, &QMenu::aboutToHide,
-                     q, [q]{ q->setDown(false); }, Qt::SingleShotConnection);
+                     q, [q, this]{ menuOpen = false; q->setDown(false); }, Qt::SingleShotConnection);
     menu->popup(menuPos);
 }
 
