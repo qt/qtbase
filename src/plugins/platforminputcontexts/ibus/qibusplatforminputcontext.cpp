@@ -125,7 +125,6 @@ QIBusPlatformInputContext::QIBusPlatformInputContext ()
         if (ok && enableSync == 1)
             m_eventFilterUseSynchronousMode = true;
     }
-    d->context->setClientCommitPreedit(QIBusPropTypeClientCommitPreedit(true));
 }
 
 QIBusPlatformInputContext::~QIBusPlatformInputContext (void)
@@ -718,6 +717,8 @@ void QIBusPlatformInputContextPrivate::createBusProxy()
         IBUS_CAP_SURROUNDING_TEXT   = 1 << 5
     };
     context->SetCapabilities(IBUS_CAP_PREEDIT_TEXT|IBUS_CAP_FOCUS|IBUS_CAP_SURROUNDING_TEXT);
+
+    context->setClientCommitPreedit(QIBusPropTypeClientCommitPreedit(true));
 
     if (debug)
         qDebug(">>>> bus connected!");
