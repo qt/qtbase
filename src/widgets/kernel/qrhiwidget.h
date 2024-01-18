@@ -25,16 +25,16 @@ class Q_WIDGETS_EXPORT QRhiWidget : public QWidget
     Q_PROPERTY(bool mirrorVertically READ isMirrorVerticallyEnabled WRITE setMirrorVertically NOTIFY mirrorVerticallyChanged)
 
 public:
-    QRhiWidget(QWidget *parent = nullptr, Qt::WindowFlags f = {});
-    ~QRhiWidget();
+    explicit QRhiWidget(QWidget *parent = nullptr, Qt::WindowFlags f = {});
+    ~QRhiWidget() override;
 
     enum class Api {
+        Null,
         OpenGL,
         Metal,
         Vulkan,
         Direct3D11,
         Direct3D12,
-        Null
     };
     Q_ENUM(Api)
 
@@ -42,7 +42,7 @@ public:
         RGBA8,
         RGBA16F,
         RGBA32F,
-        RGB10A2
+        RGB10A2,
     };
     Q_ENUM(TextureFormat)
 
@@ -50,7 +50,7 @@ public:
     void setApi(Api api);
 
     bool isDebugLayerEnabled() const;
-    void setDebugLayer(bool enable);
+    void setDebugLayerEnabled(bool enable);
 
     int sampleCount() const;
     void setSampleCount(int samples);
