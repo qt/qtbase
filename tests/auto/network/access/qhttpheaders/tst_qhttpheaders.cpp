@@ -5,6 +5,7 @@
 
 #include <QtTest/qtest.h>
 
+#include <QtCore/qmap.h>
 #include <QtCore/qset.h>
 
 using namespace Qt::StringLiterals;
