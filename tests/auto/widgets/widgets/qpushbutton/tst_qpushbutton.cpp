@@ -15,6 +15,7 @@
 #include <QGridLayout>
 #include <QStyleFactory>
 #include <QTabWidget>
+#include <QStyleOption>
 
 #include <private/qguiapplication_p.h>
 #include <qpa/qplatformtheme.h>
@@ -54,6 +55,7 @@ private slots:
     void hitButton();
     void iconOnlyStyleSheet();
     void mousePressAndMove();
+    void reactToMenuClosed();
 
 protected slots:
     void resetCounters();
@@ -758,6 +760,52 @@ void tst_QPushButton::mousePressAndMove()
     // should emit pressed signal when the mouse is dragged into of boundary
     QCOMPARE(pressSpy.size(), 2);
     QCOMPARE(releaseSpy.size(), 1);
+}
+
+/*
+    Test checking that a QPushButton with a QMenu has a sunken style only
+    when the menu is open
+    QTBUG-120976
+*/
+void tst_QPushButton::reactToMenuClosed()
+{
+    // create a subclass of QPushButton to expose the initStyleOption method
+    class PushButton : public QPushButton {
+    public:
+        virtual void initStyleOption(QStyleOptionButton *option) const override
+        {
+            QPushButton::initStyleOption(option);
+        }
+    };
+
+    PushButton button;
+    QStyleOptionButton opt;
+    QMenu menu;
+
+    // add a menu to the button
+    menu.addAction(tr("string"));
+    button.setMenu(&menu);
+
+    // give the button a size and show it
+    button.setGeometry(0, 0, 50, 50);
+    button.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&button));
+
+    // click the button to open the menu
+    QTest::mouseClick(&button, Qt::LeftButton);
+
+    // check the menu is visible and the button style is sunken
+    QTRY_VERIFY(menu.isVisible());
+    button.initStyleOption(&opt);
+    QVERIFY(opt.state.testFlag(QStyle::StateFlag::State_Sunken));
+
+    // close the menu
+    menu.close();
+
+    // check the menu isn't visible and the style isn't sunken
+    QTRY_VERIFY(!menu.isVisible());
+    button.initStyleOption(&opt);
+    QVERIFY(!opt.state.testFlag(QStyle::StateFlag::State_Sunken));
 }
 
 QTEST_MAIN(tst_QPushButton)
