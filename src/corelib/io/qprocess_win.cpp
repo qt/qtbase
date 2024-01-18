@@ -140,6 +140,7 @@ static bool qt_create_pipe(Q_PIPE *pipe, bool isInputPipe, BOOL defInheritFlag)
         DWORD dwError = GetLastError();
         if (dwError != ERROR_PIPE_BUSY || !--attempts) {
             qErrnoWarning(dwError, "QProcess: CreateNamedPipe failed.");
+            SetLastError(dwError);
             return false;
         }
     }
@@ -154,8 +155,10 @@ static bool qt_create_pipe(Q_PIPE *pipe, bool isInputPipe, BOOL defInheritFlag)
                                       FILE_FLAG_OVERLAPPED,
                                       NULL);
     if (hClient == INVALID_HANDLE_VALUE) {
+        DWORD dwError = GetLastError();
         qErrnoWarning("QProcess: CreateFile failed.");
         CloseHandle(hServer);
+        SetLastError(dwError);
         return false;
     }
 
@@ -172,10 +175,12 @@ static bool qt_create_pipe(Q_PIPE *pipe, bool isInputPipe, BOOL defInheritFlag)
             WaitForSingleObject(overlapped.hEvent, INFINITE);
             break;
         default:
+            dwError = GetLastError();
             qErrnoWarning(dwError, "QProcess: ConnectNamedPipe failed.");
             CloseHandle(overlapped.hEvent);
             CloseHandle(hClient);
             CloseHandle(hServer);
+            SetLastError(dwError);
             return false;
         }
     }
@@ -201,8 +206,13 @@ bool QProcessPrivate::openChannel(Channel &channel)
     switch (channel.type) {
     case Channel::Normal: {
         // we're piping this channel to our own process
-        if (&channel == &stdinChannel)
-            return qt_create_pipe(channel.pipe, true, FALSE);
+        if (&channel == &stdinChannel) {
+            if (!qt_create_pipe(channel.pipe, true, FALSE)) {
+                setErrorAndEmit(QProcess::FailedToStart, "pipe: "_L1 + qt_error_string(errno));
+                return false;
+            }
+            return true;
+        }
 
         if (&channel == &stdoutChannel) {
             if (!stdoutChannel.reader) {
@@ -215,8 +225,10 @@ bool QProcessPrivate::openChannel(Channel &channel)
                 q->connect(stderrChannel.reader, SIGNAL(readyRead()), SLOT(_q_canReadStandardError()));
             }
         }
-        if (!qt_create_pipe(channel.pipe, false, FALSE))
+        if (!qt_create_pipe(channel.pipe, false, FALSE)) {
+            setErrorAndEmit(QProcess::FailedToStart, "pipe: "_L1 + qt_error_string(errno));
             return false;
+        }
 
         channel.reader->setHandle(channel.pipe[0]);
         channel.reader->startAsyncRead();
@@ -282,8 +294,10 @@ bool QProcessPrivate::openChannel(Channel &channel)
         Q_ASSERT(source == &stdoutChannel);
         Q_ASSERT(sink->process == this && sink->type == Channel::PipeSink);
 
-        if (!qt_create_pipe(source->pipe, /* in = */ false, TRUE))  // source is stdout
+        if (!qt_create_pipe(source->pipe, /* in = */ false, TRUE)) { // source is stdout
+            setErrorAndEmit(QProcess::FailedToStart, "pipe: "_L1 + qt_error_string(errno));
             return false;
+        }
 
         sink->pipe[0] = source->pipe[0];
         source->pipe[0] = INVALID_Q_PIPE;
@@ -302,8 +316,10 @@ bool QProcessPrivate::openChannel(Channel &channel)
         Q_ASSERT(sink == &stdinChannel);
         Q_ASSERT(source->process == this && source->type == Channel::PipeSource);
 
-        if (!qt_create_pipe(sink->pipe, /* in = */ true, TRUE))  // sink is stdin
+        if (!qt_create_pipe(sink->pipe, /* in = */ true, TRUE)) { // sink is stdin
+            setErrorAndEmit(QProcess::FailedToStart, "pipe: "_L1 + qt_error_string(errno));
             return false;
+        }
 
         source->pipe[1] = sink->pipe[1];
         sink->pipe[1] = INVALID_Q_PIPE;

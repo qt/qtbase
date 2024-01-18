@@ -316,7 +316,8 @@ static int qt_create_pipe(int *pipe)
         qt_safe_close(pipe[1]);
     int pipe_ret = qt_safe_pipe(pipe);
     if (pipe_ret != 0) {
-        qErrnoWarning("QProcessPrivate::createPipe: Cannot create pipe %p", pipe);
+        QScopedValueRollback rollback(errno);
+        qErrnoWarning("QProcess: Cannot create pipe");
     }
     return pipe_ret;
 }
@@ -365,8 +366,10 @@ bool QProcessPrivate::openChannel(Channel &channel)
 
     if (channel.type == Channel::Normal) {
         // we're piping this channel to our own process
-        if (qt_create_pipe(channel.pipe) != 0)
+        if (qt_create_pipe(channel.pipe) != 0) {
+            setErrorAndEmit(QProcess::FailedToStart, "pipe: "_L1 + qt_error_string(errno));
             return false;
+        }
 
         // create the socket notifiers
         if (threadData.loadRelaxed()->hasEventDispatcher()) {
@@ -446,8 +449,10 @@ bool QProcessPrivate::openChannel(Channel &channel)
             Q_ASSERT(sink->pipe[0] == INVALID_Q_PIPE && sink->pipe[1] == INVALID_Q_PIPE);
 
             Q_PIPE pipe[2] = { -1, -1 };
-            if (qt_create_pipe(pipe) != 0)
+            if (qt_create_pipe(pipe) != 0) {
+                setErrorAndEmit(QProcess::FailedToStart, "pipe: "_L1 + qt_error_string(errno));
                 return false;
+            }
             sink->pipe[0] = pipe[0];
             source->pipe[1] = pipe[1];
 
