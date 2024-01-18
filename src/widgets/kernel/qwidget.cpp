@@ -82,6 +82,14 @@ using namespace QNativeInterface::Private;
 using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(lcWidgetPainting, "qt.widgets.painting", QtWarningMsg);
+Q_LOGGING_CATEGORY(lcWidgetShowHide, "qt.widgets.showhide", QtWarningMsg);
+
+#ifndef QT_NO_DEBUG_STREAM
+namespace {
+    struct WidgetAttributes { const QWidget *widget; };
+    QDebug operator<<(QDebug debug, const WidgetAttributes &attributes);
+}
+#endif
 
 static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
 {
@@ -8319,13 +8327,17 @@ void QWidgetPrivate::hide_sys()
 
 void QWidget::setVisible(bool visible)
 {
+    Q_D(QWidget);
+    qCDebug(lcWidgetShowHide) << "Setting visibility of" << this
+                              << "with attributes" << WidgetAttributes{this}
+                              << "to" << visible << "via QWidget";
+
     if (testAttribute(Qt::WA_WState_ExplicitShowHide) && testAttribute(Qt::WA_WState_Hidden) == !visible)
         return;
 
     // Remember that setVisible was called explicitly
     setAttribute(Qt::WA_WState_ExplicitShowHide);
 
-    Q_D(QWidget);
     d->setVisible(visible);
 }
 
@@ -8335,6 +8347,10 @@ void QWidget::setVisible(bool visible)
 void QWidgetPrivate::setVisible(bool visible)
 {
     Q_Q(QWidget);
+    qCDebug(lcWidgetShowHide) << "Setting visibility of" << q
+                              << "with attributes" << WidgetAttributes{q}
+                              << "to" << visible << "via QWidgetPrivate";
+
     if (visible) { // show
         // Designer uses a trick to make grabWidget work without showing
         if (!q->isWindow() && q->parentWidget() && q->parentWidget()->isVisible()
@@ -8454,14 +8470,20 @@ void QWidgetPrivate::_q_showIfNotHidden()
 
 void QWidgetPrivate::showChildren(bool spontaneous)
 {
+    Q_Q(QWidget);
+    qCDebug(lcWidgetShowHide) << "Showing children of" << q
+                              << "spontaneously" << spontaneous;
+
     QList<QObject*> childList = children;
     for (int i = 0; i < childList.size(); ++i) {
         QWidget *widget = qobject_cast<QWidget*>(childList.at(i));
-        if (widget && widget->windowHandle() && !widget->testAttribute(Qt::WA_WState_ExplicitShowHide))
+        if (!widget)
+            continue;
+        qCDebug(lcWidgetShowHide) << "Considering" << widget
+              << "with attributes" << WidgetAttributes{widget};
+        if (widget->windowHandle() && !widget->testAttribute(Qt::WA_WState_ExplicitShowHide))
             widget->setAttribute(Qt::WA_WState_Hidden, false);
-        if (!widget
-            || widget->isWindow()
-            || widget->testAttribute(Qt::WA_WState_Hidden))
+        if (widget->isWindow() || widget->testAttribute(Qt::WA_WState_Hidden))
             continue;
         if (spontaneous) {
             widget->setAttribute(Qt::WA_Mapped);
@@ -8480,10 +8502,17 @@ void QWidgetPrivate::showChildren(bool spontaneous)
 void QWidgetPrivate::hideChildren(bool spontaneous)
 {
     Q_Q(QWidget);
+    qCDebug(lcWidgetShowHide) << "Hiding children of" << q
+                              << "spontaneously" << spontaneous;
+
     QList<QObject*> childList = children;
     for (int i = 0; i < childList.size(); ++i) {
         QWidget *widget = qobject_cast<QWidget*>(childList.at(i));
-        if (!widget || widget->isWindow() || widget->testAttribute(Qt::WA_WState_Hidden))
+        if (!widget)
+            continue;
+        qCDebug(lcWidgetShowHide) << "Considering" << widget
+              << "with attributes" << WidgetAttributes{widget};
+        if (widget->isWindow() || widget->testAttribute(Qt::WA_WState_Hidden))
             continue;
 
         if (spontaneous)
@@ -8541,13 +8570,15 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
 */
 bool QWidgetPrivate::handleClose(CloseMode mode)
 {
+    Q_Q(QWidget);
+    qCDebug(lcWidgetShowHide) << "Handling close event for" << q;
+
     if (data.is_closing)
         return true;
 
     // We might not have initiated the close, so update the state now that we know
     data.is_closing = true;
 
-    Q_Q(QWidget);
     QPointer<QWidget> that = q;
 
     if (data.in_destructor)
@@ -10714,7 +10745,20 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
 
     if (wasCreated) {
         if (!testAttribute(Qt::WA_WState_Hidden)) {
+            // Hiding the widget will set WA_WState_Hidden as well, which would
+            // normally require the widget to be explicitly shown again to become
+            // visible, even as a child widget. But we refine this value later in
+            // setParent_sys(), applying WA_WState_Hidden based on whether the
+            // widget is a top level or not.
             hide();
+
+            // We reset WA_WState_ExplicitShowHide here, likely as a remnant of
+            // when we only had QWidget::setVisible(), which is treated as an
+            // explicit show/hide. Nowadays we have QWidgetPrivate::setVisible(),
+            // that allows us to hide a widget without affecting ExplicitShowHide.
+            // Though it can be argued that ExplicitShowHide should reflect the
+            // last update of the widget's state, so if we hide the widget as a
+            // side effect of changing parent, perhaps we _should_ reset it?
             setAttribute(Qt::WA_WState_ExplicitShowHide, false);
         }
         if (newParent) {
@@ -13165,11 +13209,15 @@ void QWidgetPrivate::setNetWmWindowTypes(bool skipIfMissing)
 
 #ifndef QT_NO_DEBUG_STREAM
 
-static inline void formatWidgetAttributes(QDebug debug, const QWidget *widget)
+namespace {
+QDebug operator<<(QDebug debug, const WidgetAttributes &attributes)
 {
+    const QDebugStateSaver saver(debug);
+    debug.nospace();
+    const QWidget *widget = attributes.widget;
     const QMetaObject *qtMo = qt_getEnumMetaObject(Qt::WA_AttributeCount);
     const QMetaEnum me = qtMo->enumerator(qtMo->indexOfEnumerator("WidgetAttribute"));
-    debug << ", attributes=[";
+    debug << '[';
     int count = 0;
     for (int a = 0; a < Qt::WA_AttributeCount; ++a) {
         if (widget->testAttribute(static_cast<Qt::WidgetAttribute>(a))) {
@@ -13179,6 +13227,8 @@ static inline void formatWidgetAttributes(QDebug debug, const QWidget *widget)
         }
     }
     debug << ']';
+    return debug;
+}
 }
 
 QDebug operator<<(QDebug debug, const QWidget *widget)
@@ -13198,7 +13248,7 @@ QDebug operator<<(QDebug debug, const QWidget *widget)
                 debug << ", disabled";
             debug << ", states=" << widget->windowState()
                 << ", type=" << widget->windowType() << ", flags=" <<  widget->windowFlags();
-            formatWidgetAttributes(debug, widget);
+            debug << ", attributes=" << WidgetAttributes{widget};
             if (widget->isWindow())
                 debug << ", window";
             debug << ", " << geometry.width() << 'x' << geometry.height()
