@@ -92,9 +92,7 @@ public:
 /*!
     \fn void QCheckBox::stateChanged(int state)
 
-    \obsolete
-
-    Use checkStateChanged(Qt::CheckState) instead.
+    \deprecated [6.9] Use checkStateChanged(Qt::CheckState) instead.
 */
 
 /*!
@@ -236,7 +234,11 @@ void QCheckBox::setCheckState(Qt::CheckState state)
     if (state != d->publishedState) {
         d->publishedState = state;
         emit checkStateChanged(state);
+#if QT_DEPRECATED_SINCE(6, 9)
+        QT_IGNORE_DEPRECATIONS(
         emit stateChanged(state);
+        )
+#endif
     }
 
 #if QT_CONFIG(accessibility)
@@ -332,7 +334,11 @@ void QCheckBox::checkStateSet()
     if (state != d->publishedState) {
         d->publishedState = state;
         emit checkStateChanged(state);
+#if QT_DEPRECATED_SINCE(6, 9)
+        QT_IGNORE_DEPRECATIONS(
         emit stateChanged(state);
+        )
+#endif
     }
 }
 
