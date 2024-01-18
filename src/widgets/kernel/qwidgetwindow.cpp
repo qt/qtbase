@@ -39,6 +39,8 @@ public:
     void setVisible(bool visible) override
     {
         Q_Q(QWidgetWindow);
+        qCDebug(lcWidgetShowHide) << "Setting visibility of" << q->widget()
+               << "to" << visible << "via QWidgetWindowPrivate";
         if (QWidget *widget = q->widget()) {
             // Check if the widget was already hidden, as this indicates it was done
             // explicitly and not because the parent window in this case made it hidden.
@@ -196,6 +198,9 @@ QObject *QWidgetWindow::focusObject() const
 void QWidgetWindow::setNativeWindowVisibility(bool visible)
 {
     Q_D(QWidgetWindow);
+    qCDebug(lcWidgetShowHide) << "Setting visibility of" << this
+        << "to" << visible << "via QWidgetWindow::setNativeWindowVisibility";
+
     // Call base class setVisible() implementation to run the QWindow
     // visibility logic. Don't call QWidgetWindowPrivate::setVisible()
     // since that will recurse back into QWidget code.

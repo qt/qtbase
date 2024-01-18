@@ -437,6 +437,8 @@ private slots:
     void showFullscreenAndroid();
 #endif
 
+    void explicitShowHide();
+
     void dragEnterLeaveSymmetry();
     void setVisibleDuringDestruction();
 
@@ -13434,6 +13436,118 @@ void tst_QWidget::showFullscreenAndroid()
     QCOMPARE(img, expectedImg);
 }
 #endif // Q_OS_ANDROID
+
+void tst_QWidget::explicitShowHide()
+{
+    {
+        QWidget parent;
+        parent.setObjectName("Parent");
+        QWidget child(&parent);
+        child.setObjectName("Child");
+
+        QCOMPARE(parent.testAttribute(Qt::WA_WState_ExplicitShowHide), false);
+        QCOMPARE(parent.testAttribute(Qt::WA_WState_Hidden), true);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_ExplicitShowHide), false);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_Hidden), false);
+
+        parent.show();
+        QCOMPARE(parent.testAttribute(Qt::WA_WState_ExplicitShowHide), true);
+        QCOMPARE(parent.testAttribute(Qt::WA_WState_Hidden), false);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_ExplicitShowHide), false);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_Hidden), false);
+
+        // Fix up earlier expected failure
+        child.setAttribute(Qt::WA_WState_ExplicitShowHide, false);
+
+        parent.hide();
+        QCOMPARE(parent.testAttribute(Qt::WA_WState_ExplicitShowHide), true);
+        QCOMPARE(parent.testAttribute(Qt::WA_WState_Hidden), true);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_ExplicitShowHide), false);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_Hidden), false);
+    }
+
+    {
+        // Test what happens when a child is reparented after showing it
+
+        QWidget parent;
+        parent.setObjectName("Parent");
+        QWidget child;
+        child.setObjectName("Child");
+
+        child.show();
+        QCOMPARE(child.isVisible(), true);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_ExplicitShowHide), true);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_Hidden), false);
+
+        child.setParent(&parent);
+        // As documented, a widget becomes invisible as part of changing
+        // its parent, even if it was previously visible. The user must call
+        // show() to make the widget visible again.
+        QCOMPARE(child.isVisible(), false);
+
+        // However, the widget does not end up with Qt::WA_WState_Hidden,
+        // as QWidget::setParent treats it as a child, which normally will
+        // not get Qt::WA_WState_Hidden out of the box.
+        QCOMPARE(child.testAttribute(Qt::WA_WState_Hidden), false);
+
+        // For some reason we reset WA_WState_ExplicitShowHide, and it's
+        // not clear whether this is correct or not See QWidget::setParent()
+        // for a comment with more details.
+        QEXPECT_FAIL("", "We reset WA_WState_ExplicitShowHide on widget re-parent", Continue);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_ExplicitShowHide), true);
+
+        // The fact that the child doesn't have Qt::WA_WState_Hidden means
+        // it's sufficient to show the parent widget. We don't need to
+        // explicitly show the child.
+        parent.show();
+        QCOMPARE(child.isVisible(), true);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_Hidden), false);
+    }
+
+    {
+        QWidget parent;
+        parent.setObjectName("Parent");
+        QWidget child(&parent);
+        child.setObjectName("Child");
+
+        parent.show();
+
+        // If a non-native child ends up being closed, we will hide the
+        // widget, but do so via QWidget::hide(), which marks the widget
+        // as explicitly hidden.
+
+        child.setAttribute(Qt::WA_WState_ExplicitShowHide, false);
+        QCOMPARE(child.close(), true);
+        QEXPECT_FAIL("", "Closing a non-native child is treated as an explicit hide", Continue);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_ExplicitShowHide), false);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_Hidden), true);
+
+        child.show();
+        child.setAttribute(Qt::WA_NativeWindow);
+        child.setAttribute(Qt::WA_WState_ExplicitShowHide, false);
+        QCOMPARE(child.close(), true);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_ExplicitShowHide), true);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_Hidden), true);
+
+        child.show();
+        child.setAttribute(Qt::WA_WState_ExplicitShowHide, false);
+        QCOMPARE(child.windowHandle()->close(), false); // Can't close non-top level QWindows
+        QCOMPARE(child.testAttribute(Qt::WA_WState_ExplicitShowHide), false);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_Hidden), false);
+
+        // If we end up in QWidgetPrivate::handleClose via QWidgetWindow::closeEvent,
+        // either through QWindow::close(), or via QWSI::handleCloseEvent, we'll still
+        // do the explicit hide.
+
+        child.show();
+        child.setAttribute(Qt::WA_WState_ExplicitShowHide, false);
+        QCOMPARE(QWindowSystemInterface::handleCloseEvent<QWindowSystemInterface::SynchronousDelivery>(
+            child.windowHandle()), true);
+        QEXPECT_FAIL("", "Closing a native child via QWSI is treated as an explicit hide", Continue);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_ExplicitShowHide), false);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_Hidden), true);
+    }
+}
 
 /*!
     Verify that we deliver DragEnter/Leave events symmetrically, even if the
