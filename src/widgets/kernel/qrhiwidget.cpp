@@ -145,12 +145,12 @@ QT_BEGIN_NAMESPACE
     \enum QRhiWidget::Api
     Specifies the 3D API and QRhi backend to use
 
+    \value Null
     \value OpenGL
     \value Metal
     \value Vulkan
     \value Direct3D11
     \value Direct3D12
-    \value Null
 
     \sa QRhi
  */
@@ -727,7 +727,7 @@ QRhiWidget::Api QRhiWidget::api() const
     backend to render. Attempting to set another value, or to add another
     QRhiWidget with a different \a api will not function as expected.
 
-    \sa setColorBufferFormat(), setDebugLayer(), api()
+    \sa setColorBufferFormat(), setDebugLayerEnabled(), api()
  */
 void QRhiWidget::setApi(Api api)
 {
@@ -758,7 +758,7 @@ void QRhiWidget::setApi(Api api)
     \return true if a debug or validation layer will be requested if applicable
     to the graphics API in use.
 
-    \sa setDebugLayer()
+    \sa setDebugLayerEnabled()
  */
 bool QRhiWidget::isDebugLayerEnabled() const
 {
@@ -781,7 +781,7 @@ bool QRhiWidget::isDebugLayerEnabled() const
 
     \sa setApi(), isDebugLayerEnabled()
  */
-void QRhiWidget::setDebugLayer(bool enable)
+void QRhiWidget::setDebugLayerEnabled(bool enable)
 {
     Q_D(QRhiWidget);
     d->config.setDebugLayer(enable);
