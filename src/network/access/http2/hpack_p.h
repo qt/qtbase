@@ -18,8 +18,10 @@
 #include "hpacktable_p.h"
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qurl.h>
 
 #include <vector>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -112,6 +114,7 @@ private:
     FieldLookupTable lookupTable;
 };
 
+std::optional<QUrl> makePromiseKeyUrl(const HttpHeader &requestHeader);
 }
 
 QT_END_NAMESPACE

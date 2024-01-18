@@ -21,49 +21,6 @@ Q_LOGGING_CATEGORY(qHttp2ConnectionLog, "qt.network.http2.connection", QtCritica
 using namespace Qt::StringLiterals;
 using namespace Http2;
 
-static std::optional<QUrl> makeUrl(const HPack::HttpHeader &requestHeader)
-{
-    constexpr QByteArrayView names[] = { ":authority", ":method", ":path", ":scheme" };
-    enum PseudoHeaderEnum
-    {
-        Authority,
-        Method,
-        Path,
-        Scheme
-    };
-    std::array<std::optional<QByteArrayView>, std::size(names)> pseudoHeaders{};
-    for (const auto &field : requestHeader) {
-        const auto *it = std::find(std::begin(names), std::end(names), QByteArrayView(field.name));
-        if (it != std::end(names)) {
-            const auto index = std::distance(std::begin(names), it);
-            if (field.value.isEmpty() || pseudoHeaders.at(index).has_value())
-                return {};
-            pseudoHeaders[index] = field.value;
-        }
-    }
-
-    auto optionalIsSet = [](const auto &x) { return x.has_value(); };
-    if (!std::all_of(pseudoHeaders.begin(), pseudoHeaders.end(), optionalIsSet)) {
-        // All four required, HTTP/2 8.1.2.3.
-        return {};
-    }
-
-    const QByteArrayView method = pseudoHeaders[Method].value();
-    if (method.compare("get", Qt::CaseInsensitive) != 0 &&
-        method.compare("head", Qt::CaseInsensitive) != 0) {
-        return {};
-    }
-
-    QUrl url;
-    url.setScheme(QLatin1StringView(pseudoHeaders[Scheme].value()));
-    url.setAuthority(QLatin1StringView(pseudoHeaders[Authority].value()));
-    url.setPath(QLatin1StringView(pseudoHeaders[Path].value()));
-
-    if (!url.isValid())
-        return {};
-    return url;
-}
-
 QHttp2Stream::QHttp2Stream(QHttp2Connection *connection, quint32 streamID) noexcept
     : QObject(connection), m_streamID(streamID)
 {
@@ -1297,7 +1254,7 @@ void QHttp2Connection::handleContinuedHEADERS()
         streamIt.value()->handleHEADERS(continuedFrames[0].flags(), decoder.decodedHeader());
         break;
     case FrameType::PUSH_PROMISE: {
-        std::optional<QUrl> promiseKey = makeUrl(decoder.decodedHeader());
+        std::optional<QUrl> promiseKey = HPack::makePromiseKeyUrl(decoder.decodedHeader());
         if (!promiseKey)
             return; // invalid URL/key !
         if (m_promisedStreams.contains(*promiseKey))

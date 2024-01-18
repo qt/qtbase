@@ -1468,54 +1468,12 @@ quint32 QHttp2ProtocolHandler::allocateStreamID()
     return streamID;
 }
 
-static std::optional<QUrl> makeUrl(const HPack::HttpHeader &requestHeader)
-{
-    constexpr QByteArrayView names[] = { ":authority", ":method", ":path", ":scheme" };
-    enum PseudoHeaderEnum
-    {
-        Authority,
-        Method,
-        Path,
-        Scheme
-    };
-    std::array<std::optional<QByteArrayView>, std::size(names)> pseudoHeaders{};
-    for (const auto &field : requestHeader) {
-        const auto it = std::find(std::begin(names), std::end(names), QByteArrayView(field.name));
-        if (it != std::end(names)) {
-            const auto index = std::distance(std::begin(names), it);
-            if (field.value.isEmpty() || pseudoHeaders.at(index).has_value())
-                return {};
-            pseudoHeaders[index] = field.value;
-        }
-    }
-
-    if (!std::all_of(pseudoHeaders.begin(), pseudoHeaders.end(), [](const auto &x) { return x.has_value();})) {
-        // All four required, HTTP/2 8.1.2.3.
-        return {};
-    }
-
-    const QByteArrayView method = pseudoHeaders[Method].value();
-    if (method.compare("get", Qt::CaseInsensitive) != 0 &&
-        method.compare("head", Qt::CaseInsensitive) != 0) {
-        return {};
-    }
-
-    QUrl url;
-    url.setScheme(QLatin1StringView(pseudoHeaders[Scheme].value()));
-    url.setAuthority(QLatin1StringView(pseudoHeaders[Authority].value()));
-    url.setPath(QLatin1StringView(pseudoHeaders[Path].value()));
-
-    if (!url.isValid())
-        return {};
-    return url;
-}
-
 bool QHttp2ProtocolHandler::tryReserveStream(const Http2::Frame &pushPromiseFrame,
                                              const HPack::HttpHeader &requestHeader)
 {
     Q_ASSERT(pushPromiseFrame.type() == FrameType::PUSH_PROMISE);
 
-    const auto url = makeUrl(requestHeader);
+    const auto url = HPack::makePromiseKeyUrl(requestHeader);
     if (!url.has_value())
         return false;
 
