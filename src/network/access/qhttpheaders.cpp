@@ -991,12 +991,26 @@ QList<QByteArray> QHttpHeaders::values(WellKnownHeader name) const
     Returns the header value at index \a i. The index \a i must be valid
     (see \l size()).
 
-    \sa size(), value(), values(), combinedValue()
+    \sa size(), value(), values(), combinedValue(), nameAt()
 */
 QByteArrayView QHttpHeaders::valueAt(qsizetype i) const noexcept
 {
     d->verify(i);
     return d->headers.at(i).value;
+}
+
+/*!
+    Returns the header name at index \a i. The index \a i must be valid
+    (see \l size()).
+
+    Header names are case-insensitive, and the returned names are lower-cased.
+
+    \sa size(), valueAt()
+*/
+QLatin1StringView QHttpHeaders::nameAt(qsizetype i) const noexcept
+{
+    d->verify(i);
+    return QLatin1StringView{d->headers.at(i).name};
 }
 
 /*!

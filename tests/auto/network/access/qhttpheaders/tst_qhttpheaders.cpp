@@ -195,6 +195,15 @@ void tst_QHttpHeaders::accessors()
     QCOMPARE(h1.valueAt(1), v2);
     QCOMPARE(h1.valueAt(2), v3);
 
+    // nameAt()
+    h1.clear();
+    h1.append(n1, v1);
+    h1.append(n2, v2);
+    h1.append(n3, v3);
+    QCOMPARE(h1.nameAt(0), n1);
+    QCOMPARE(h1.nameAt(1), n2);
+    QCOMPARE(h1.nameAt(2), n3);
+
     // removeAll()
     h1.clear();
     QVERIFY(h1.append(n1, v1));
