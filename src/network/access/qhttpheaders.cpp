@@ -988,6 +988,18 @@ QList<QByteArray> QHttpHeaders::values(WellKnownHeader name) const
 }
 
 /*!
+    Returns the header value at index \a i. The index \a i must be valid
+    (see \l size()).
+
+    \sa size(), value(), values(), combinedValue()
+*/
+QByteArrayView QHttpHeaders::valueAt(qsizetype i) const noexcept
+{
+    d->verify(i);
+    return d->headers.at(i).value;
+}
+
+/*!
     Returns the values of header \a name in a comma-combined string.
     Returns a \c null QByteArray if the header with \a name doesn't
     exist.
