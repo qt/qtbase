@@ -7957,15 +7957,12 @@ void tst_QWidget::renderTargetOffset()
     QCOMPARE(image.pixel(120, 120), QColor(Qt::blue).rgb());
 }
 
-// On Windows the active palette is used instead of the inactive palette even
-// though the widget is invisible. This is probably related to task 178507/168682,
-// but for the renderInvisible test it doesn't matter, we're mostly interested
-// in testing the geometry so just workaround the palette issue for now.
+// On some platforms the active palette is used instead of the inactive palette even
+// though the widget is invisible, but for the renderInvisible test it doesn't matter,
+// as we're mostly interested in testing the geometry, so just workaround the palette
+// issue for now.
 static void workaroundPaletteIssue(QWidget *widget)
 {
-#ifndef Q_OS_WIN
-    return;
-#endif
     if (!widget)
         return;
 
@@ -8009,7 +8006,7 @@ void tst_QWidget::renderInvisible()
 
     // Create normal reference image.
     const QSize calendarSize = calendar->size();
-    QImage referenceImage(calendarSize, QImage::Format_ARGB32);
+    QImage referenceImage(calendarSize, QImage::Format_ARGB32_Premultiplied);
     calendar->render(&referenceImage);
 #ifdef RENDER_DEBUG
     referenceImage.save("referenceImage.png");
@@ -8020,7 +8017,7 @@ void tst_QWidget::renderInvisible()
     const QSize calendarSizeResized = calendar->size() + QSize(50, 50);
     calendar->resize(calendarSizeResized);
     QTest::qWait(30);
-    QImage referenceImageResized(calendarSizeResized, QImage::Format_ARGB32);
+    QImage referenceImageResized(calendarSizeResized, QImage::Format_ARGB32_Premultiplied);
     calendar->render(&referenceImageResized);
 #ifdef RENDER_DEBUG
     referenceImageResized.save("referenceImageResized.png");
@@ -8033,7 +8030,7 @@ void tst_QWidget::renderInvisible()
     workaroundPaletteIssue(calendar.data());
 
     { // Make sure we get the same image when the calendar is explicitly hidden.
-    QImage testImage(calendarSizeResized, QImage::Format_ARGB32);
+    QImage testImage(calendarSizeResized, QImage::Format_ARGB32_Premultiplied);
     calendar->render(&testImage);
 #ifdef RENDER_DEBUG
     testImage.save("explicitlyHiddenCalendarResized.png");
@@ -8049,7 +8046,7 @@ void tst_QWidget::renderInvisible()
     workaroundPaletteIssue(calendar.data());
 
     { // Never been visible, created or laid out.
-    QImage testImage(calendarSize, QImage::Format_ARGB32);
+    QImage testImage(calendarSize, QImage::Format_ARGB32_Premultiplied);
     calendar->render(&testImage);
 #ifdef RENDER_DEBUG
     testImage.save("neverBeenVisibleCreatedOrLaidOut.png");
@@ -8061,7 +8058,7 @@ void tst_QWidget::renderInvisible()
     QTest::qWait(30);
 
     { // Calendar explicitly hidden.
-    QImage testImage(calendarSize, QImage::Format_ARGB32);
+    QImage testImage(calendarSize, QImage::Format_ARGB32_Premultiplied);
     calendar->render(&testImage);
 #ifdef RENDER_DEBUG
     testImage.save("explicitlyHiddenCalendar.png");
@@ -8075,7 +8072,7 @@ void tst_QWidget::renderInvisible()
     navigationBar->hide();
 
     { // Check that the navigation bar isn't drawn when rendering the entire calendar.
-    QImage testImage(calendarSize, QImage::Format_ARGB32);
+    QImage testImage(calendarSize, QImage::Format_ARGB32_Premultiplied);
     calendar->render(&testImage);
 #ifdef RENDER_DEBUG
     testImage.save("calendarWithoutNavigationBar.png");
@@ -8084,7 +8081,7 @@ void tst_QWidget::renderInvisible()
     }
 
     { // Make sure the navigation bar renders correctly even though it's hidden.
-    QImage testImage(navigationBar->size(), QImage::Format_ARGB32);
+    QImage testImage(navigationBar->size(), QImage::Format_ARGB32_Premultiplied);
     navigationBar->render(&testImage);
 #ifdef RENDER_DEBUG
     testImage.save("explicitlyHiddenNavigationBar.png");
@@ -8098,7 +8095,7 @@ void tst_QWidget::renderInvisible()
 
     { // Render next month button.
     // Fill test image with correct background color.
-    QImage testImage(nextMonthButton->size(), QImage::Format_ARGB32);
+    QImage testImage(nextMonthButton->size(), QImage::Format_ARGB32_Premultiplied);
     navigationBar->render(&testImage, QPoint(), QRegion(), QWidget::RenderFlags());
 #ifdef RENDER_DEBUG
     testImage.save("nextMonthButtonBackground.png");
@@ -8136,7 +8133,7 @@ void tst_QWidget::renderInvisible()
     QCoreApplication::processEvents();
 
     { // Make sure we get an image equal to the resized reference image.
-    QImage testImage(calendarSizeResized, QImage::Format_ARGB32);
+    QImage testImage(calendarSizeResized, QImage::Format_ARGB32_Premultiplied);
     calendar->render(&testImage);
 #ifdef RENDER_DEBUG
     testImage.save("calendarResized.png");
@@ -8148,7 +8145,7 @@ void tst_QWidget::renderInvisible()
     QCalendarWidget calendar;
     const QSize calendarSize = calendar.sizeHint();
 
-    QImage image(2 * calendarSize, QImage::Format_ARGB32);
+    QImage image(2 * calendarSize, QImage::Format_ARGB32_Premultiplied);
     image.fill(QColor(Qt::red).rgb());
     calendar.render(&image);
 
