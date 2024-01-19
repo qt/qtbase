@@ -1240,7 +1240,7 @@ qt_feature("undogroup" PUBLIC
 qt_feature("graphicsframecapture" PRIVATE
     SECTION "Utilities"
     LABEL "QGraphicsFrameCapture"
-    PURPOSE "Provides a way to capture a graphic's API calls for a rendered frame."
+    PURPOSE "Provides a way to capture 3D graphics API calls for a rendered frame."
     CONDITION TEST_renderdoc OR (MACOS OR IOS)
 )
 qt_feature_definition("undogroup" "QT_NO_UNDOGROUP" NEGATE VALUE "1")
@@ -1286,6 +1286,7 @@ qt_configure_add_summary_entry(ARGS "opengles31")
 qt_configure_add_summary_entry(ARGS "opengles32")
 qt_configure_end_summary_section() # end of "OpenGL" section
 qt_configure_add_summary_entry(ARGS "vulkan")
+qt_configure_add_summary_entry(ARGS "graphicsframecapture")
 qt_configure_add_summary_entry(ARGS "sessionmanager")
 qt_configure_end_summary_section() # end of "Qt Gui" section
 qt_configure_add_summary_section(NAME "Features used by QPA backends")
