@@ -53,6 +53,8 @@ private:
 
 void tst_QHash::initTestCase()
 {
+    QHashSeed::setDeterministicGlobalSeed();
+
     // small list of strings (that happen to look like file paths produced long
     // ago by cd ../.. && find . -print, but that's irrelevant).
     QFile smallPathsData(QFINDTESTDATA("paths_small_data.txt"));
