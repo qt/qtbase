@@ -52,7 +52,7 @@ class QSslContext;
 #endif // !QT_NO_SSL
 
 class QHttpNetworkConnectionPrivate;
-class Q_AUTOTEST_EXPORT QHttpNetworkConnection : public QObject
+class Q_NETWORK_EXPORT QHttpNetworkConnection : public QObject
 {
     Q_OBJECT
 public:

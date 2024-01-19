@@ -53,7 +53,7 @@ class QHttpNetworkConnectionChannel;
 class QHttpNetworkRequest;
 class QHttpNetworkConnectionPrivate;
 class QHttpNetworkReplyPrivate;
-class Q_AUTOTEST_EXPORT QHttpNetworkReply : public QObject, public QHttpNetworkHeader
+class Q_NETWORK_EXPORT QHttpNetworkReply : public QObject, public QHttpNetworkHeader
 {
     Q_OBJECT
 public:
