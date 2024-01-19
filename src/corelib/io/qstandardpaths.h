@@ -40,7 +40,7 @@ public:
         PublicShareLocation,
         TemplatesLocation,
         StateLocation,
-        GenericStateLocation
+        GenericStateLocation,
     };
     Q_ENUM(StandardLocation)
 
