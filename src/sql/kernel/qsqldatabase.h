@@ -5,8 +5,10 @@
 #define QSQLDATABASE_H
 
 #include <QtSql/qtsqlglobal.h>
+#include <QtCore/qmetaobject.h>
 #include <QtCore/qstring.h>
 
+// clazy:excludeall=qproperty-without-notify
 QT_BEGIN_NAMESPACE
 
 
@@ -33,7 +35,10 @@ public:
 
 class Q_SQL_EXPORT QSqlDatabase
 {
+    Q_GADGET
 public:
+    Q_PROPERTY(QSql::NumericalPrecisionPolicy numericalPrecisionPolicy READ numericalPrecisionPolicy WRITE setNumericalPrecisionPolicy)
+
     QSqlDatabase();
     QSqlDatabase(const QSqlDatabase &other);
     ~QSqlDatabase();

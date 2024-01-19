@@ -1292,8 +1292,11 @@ QString QSqlDatabase::connectionName() const
 }
 
 /*!
-    Sets the default numerical precision policy used by queries created
-    on this database connection to \a precisionPolicy.
+    \property QSqlDatabase::numericalPrecisionPolicy
+    \since 6.8
+
+    This property holds the default numerical precision policy used by
+    queries created on this database connection.
 
     Note: Drivers that don't support fetching numerical values with low
     precision will ignore the precision policy. You can use
@@ -1303,9 +1306,12 @@ QString QSqlDatabase::connectionName() const
     Note: Setting the default precision policy to \a precisionPolicy
     doesn't affect any currently active queries.
 
-    \sa QSql::NumericalPrecisionPolicy, numericalPrecisionPolicy(),
-        QSqlQuery::setNumericalPrecisionPolicy(), QSqlQuery::numericalPrecisionPolicy()
+    \sa QSql::NumericalPrecisionPolicy, QSqlQuery::numericalPrecisionPolicy,
+        QSqlDriver::numericalPrecisionPolicy
 */
+/*!
+    Sets \l numericalPrecisionPolicy to \a precisionPolicy.
+ */
 void QSqlDatabase::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy)
 {
     if (driver())
@@ -1314,10 +1320,7 @@ void QSqlDatabase::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy pr
 }
 
 /*!
-    Returns the current default precision policy for the database connection.
-
-    \sa QSql::NumericalPrecisionPolicy, setNumericalPrecisionPolicy(),
-        QSqlQuery::numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy()
+    Returns the \l numericalPrecisionPolicy.
 */
 QSql::NumericalPrecisionPolicy QSqlDatabase::numericalPrecisionPolicy() const
 {

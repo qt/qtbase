@@ -739,8 +739,8 @@ void QSqlDriver::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy prec
     This property holds the precision policy for the database connection.
     \note Setting the precision policy doesn't affect any currently active queries.
 
-    \sa QSql::NumericalPrecisionPolicy,
-    QSqlQuery::numericalPrecisionPolicy(), QSqlQuery::setNumericalPrecisionPolicy()
+    \sa QSql::NumericalPrecisionPolicy, QSqlQuery::numericalPrecisionPolicy,
+    QSqlDatabase::numericalPrecisionPolicy
 */
 /*!
     Returns the \l numericalPrecisionPolicy.
