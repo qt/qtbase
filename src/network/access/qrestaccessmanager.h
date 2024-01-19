@@ -6,8 +6,6 @@
 
 #include <QtNetwork/qnetworkaccessmanager.h>
 
-#include <chrono>
-
 QT_BEGIN_NAMESPACE
 
 class QDebug;
@@ -16,57 +14,57 @@ class QRestReply;
 #define QREST_METHOD_WITH_DATA(METHOD, DATA)                                                     \
 public:                                                                                          \
 template <typename Functor, if_compatible_callback<Functor> = true>                              \
-QRestReply *METHOD(const QNetworkRequest &request, DATA data,                                    \
+QNetworkReply *METHOD(const QNetworkRequest &request, DATA data,                                 \
        const ContextTypeForFunctor<Functor> *context,                                            \
        Functor &&callback)                                                                       \
 {                                                                                                \
     return METHOD##WithDataImpl(request, data, context,                                          \
            QtPrivate::makeCallableObject<CallbackPrototype>(std::forward<Functor>(callback)));   \
 }                                                                                                \
-QRestReply *METHOD(const QNetworkRequest &request, DATA data)                                    \
+QNetworkReply *METHOD(const QNetworkRequest &request, DATA data)                                 \
 {                                                                                                \
     return METHOD##WithDataImpl(request, data, nullptr, nullptr);                                \
 }                                                                                                \
 private:                                                                                         \
-QRestReply *METHOD##WithDataImpl(const QNetworkRequest &request, DATA data,                      \
+QNetworkReply *METHOD##WithDataImpl(const QNetworkRequest &request, DATA data,                   \
                                  const QObject *context, QtPrivate::QSlotObjectBase *slot);      \
 /* end */
 
 #define QREST_METHOD_NO_DATA(METHOD)                                                             \
 public:                                                                                          \
 template <typename Functor, if_compatible_callback<Functor> = true>                              \
-QRestReply *METHOD(const QNetworkRequest &request,                                               \
+QNetworkReply *METHOD(const QNetworkRequest &request,                                            \
        const ContextTypeForFunctor<Functor> *context,                                            \
        Functor &&callback)                                                                       \
 {                                                                                                \
     return METHOD##NoDataImpl(request, context,                                                  \
            QtPrivate::makeCallableObject<CallbackPrototype>(std::forward<Functor>(callback)));   \
 }                                                                                                \
-QRestReply *METHOD(const QNetworkRequest &request)                                               \
+QNetworkReply *METHOD(const QNetworkRequest &request)                                            \
 {                                                                                                \
     return METHOD##NoDataImpl(request, nullptr, nullptr);                                        \
 }                                                                                                \
 private:                                                                                         \
-QRestReply *METHOD##NoDataImpl(const QNetworkRequest &request,                                   \
+QNetworkReply *METHOD##NoDataImpl(const QNetworkRequest &request,                                \
                                const QObject *context, QtPrivate::QSlotObjectBase *slot);        \
 /* end */
 
 #define QREST_METHOD_CUSTOM_WITH_DATA(DATA)                                                      \
 public:                                                                                          \
 template <typename Functor, if_compatible_callback<Functor> = true>                              \
-QRestReply *sendCustomRequest(const QNetworkRequest& request, const QByteArray &method, DATA data, \
+QNetworkReply *sendCustomRequest(const QNetworkRequest& request, const QByteArray &method, DATA data, \
        const ContextTypeForFunctor<Functor> *context,                                            \
        Functor &&callback)                                                                       \
 {                                                                                                \
     return customWithDataImpl(request, method, data, context,                                    \
            QtPrivate::makeCallableObject<CallbackPrototype>(std::forward<Functor>(callback)));   \
 }                                                                                                \
-QRestReply *sendCustomRequest(const QNetworkRequest& request, const QByteArray &method, DATA data) \
+QNetworkReply *sendCustomRequest(const QNetworkRequest& request, const QByteArray &method, DATA data) \
 {                                                                                                \
     return customWithDataImpl(request, method, data, nullptr, nullptr);                          \
 }                                                                                                \
 private:                                                                                         \
-QRestReply *customWithDataImpl(const QNetworkRequest& request, const QByteArray &method,         \
+QNetworkReply *customWithDataImpl(const QNetworkRequest& request, const QByteArray &method,      \
                                DATA data, const QObject* context,                                \
                                QtPrivate::QSlotObjectBase *slot);                                \
 /* end */
@@ -75,26 +73,17 @@ class QRestAccessManagerPrivate;
 class Q_NETWORK_EXPORT QRestAccessManager : public QObject
 {
     Q_OBJECT
-
-    using CallbackPrototype = void(*)(QRestReply*);
+    using CallbackPrototype = void(*)(QRestReply&);
     template <typename Functor>
     using ContextTypeForFunctor = typename QtPrivate::ContextTypeForFunctor<Functor>::ContextType;
     template <typename Functor>
     using if_compatible_callback = std::enable_if_t<
                      QtPrivate::AreFunctionsCompatible<CallbackPrototype, Functor>::value, bool>;
 public:
-    explicit QRestAccessManager(QObject *parent = nullptr);
+    explicit QRestAccessManager(QNetworkAccessManager *manager, QObject *parent = nullptr);
     ~QRestAccessManager() override;
 
     QNetworkAccessManager *networkAccessManager() const;
-
-    bool deletesRepliesOnFinished() const;
-    void setDeletesRepliesOnFinished(bool autoDelete);
-
-    void setTransferTimeout(std::chrono::milliseconds timeout);
-    std::chrono::milliseconds transferTimeout() const;
-
-    void abortRequests();
 
     QREST_METHOD_NO_DATA(deleteResource)
     QREST_METHOD_NO_DATA(head)
@@ -123,17 +112,7 @@ public:
     QREST_METHOD_CUSTOM_WITH_DATA(QIODevice *)
     QREST_METHOD_CUSTOM_WITH_DATA(QHttpMultiPart *)
 
-Q_SIGNALS:
-#ifndef QT_NO_NETWORKPROXY
-    void proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator);
-#endif
-    void authenticationRequired(QRestReply *reply, QAuthenticator *authenticator);
-    void requestFinished(QRestReply *reply);
-
 private:
-#ifndef QT_NO_DEBUG_STREAM
-    friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QRestAccessManager &manager);
-#endif
     Q_DECLARE_PRIVATE(QRestAccessManager)
     Q_DISABLE_COPY(QRestAccessManager)
 };

@@ -35,121 +35,27 @@ Q_DECLARE_LOGGING_CATEGORY(lcQrest)
     \sa QRestAccessManager, QNetworkReply
 */
 
-/*!
-    \fn void QRestReply::readyRead(QRestReply *reply)
-
-    This signal is emitted when \a reply has received new data.
-
-    \sa body(), bytesAvailable(), isFinished()
-*/
-
-/*!
-    \fn void QRestReply::downloadProgress(qint64 bytesReceived,
-                                          qint64 bytesTotal,
-                                          QRestReply* reply)
-
-    This signal is emitted to indicate the progress of the download part of
-    this network \a reply.
-
-    The \a bytesReceived parameter indicates the number of bytes received,
-    while \a bytesTotal indicates the total number of bytes expected to be
-    downloaded. If the number of bytes to be downloaded is not known, for
-    instance due to a missing \c Content-Length header, \a bytesTotal
-    will be -1.
-
-    See \l QNetworkReply::downloadProgress() documentation for more details.
-
-    \sa bytesAvailable(), readyRead(), uploadProgress()
-*/
-
-/*!
-    \fn void QRestReply::uploadProgress(qint64 bytesSent, qint64 bytesTotal,
-                                        QRestReply* reply)
-
-    This signal is emitted to indicate the progress of the upload part of
-    \a reply.
-
-    The \a bytesSent parameter indicates the number of bytes already uploaded,
-    while \a bytesTotal indicates the total number of bytes still to upload.
-
-    If the number of bytes to upload is not known, \a bytesTotal will be -1.
-
-    See \l QNetworkReply::uploadProgress() documentation for more details.
-
-    \sa QNetworkReply::uploadProgress(), downloadProgress()
-*/
-
-/*!
-    \fn void QRestReply::finished(QRestReply *reply)
-
-    This signal is emitted when \a reply has finished processing. This
-    signal is emitted also in cases when the reply finished due to network
-    or protocol errors (the server did not reply with an HTTP status).
-
-    \sa isFinished(), httpStatus(), error()
-*/
-
-/*!
-    \fn void QRestReply::errorOccurred(QRestReply *reply)
-
-    This signal is emitted if, while processing \a reply, an error occurs that
-    is considered to be a network/protocol error. These errors are
-    disctinct from HTTP error responses such as \c {500 Internal Server Error}.
-    This signal is emitted together with the
-    finished() signal, and often connecting to that is sufficient.
-
-    \sa finished(), isFinished(), httpStatus(), error()
-*/
-
-QRestReply::QRestReply(QNetworkReply *reply, QObject *parent)
-    : QObject(*new QRestReplyPrivate, parent)
+QRestReply::QRestReply(QNetworkReply *reply)
+    : wrapped(reply)
 {
-    Q_D(QRestReply);
-    Q_ASSERT(reply);
-    d->networkReply = reply;
-    // Reparent so that destruction of QRestReply destroys QNetworkReply
-    reply->setParent(this);
-
-    QObject::connect(reply, &QNetworkReply::readyRead, this, [this] {
-        emit readyRead(this);
-    });
-    QObject::connect(reply, &QNetworkReply::downloadProgress, this,
-                     [this](qint64 bytesReceived, qint64 bytesTotal) {
-                         emit downloadProgress(bytesReceived, bytesTotal, this);
-                     });
-    QObject::connect(reply, &QNetworkReply::uploadProgress, this,
-                     [this] (qint64 bytesSent, qint64 bytesTotal) {
-                         emit uploadProgress(bytesSent, bytesTotal, this);
-                     });
+    if (!wrapped)
+        qCWarning(lcQrest, "QRestReply: QNetworkReply is nullptr");
 }
 
 /*!
     Destroys this QRestReply object.
-
-    \sa abort()
 */
 QRestReply::~QRestReply()
-    = default;
+{
+    delete d;
+}
 
 /*!
     Returns a pointer to the underlying QNetworkReply wrapped by this object.
 */
 QNetworkReply *QRestReply::networkReply() const
 {
-    Q_D(const QRestReply);
-    return d->networkReply;
-}
-
-/*!
-    Aborts the network operation immediately. The finished() signal
-    will be emitted.
-
-    \sa QRestAccessManager::abortRequests() QNetworkReply::abort()
-*/
-void QRestReply::abort()
-{
-    Q_D(QRestReply);
-    d->networkReply->abort();
+    return wrapped;
 }
 
 /*!
@@ -167,19 +73,24 @@ void QRestReply::abort()
     set to QJsonParseError::NoError to distinguish this case from an actual
     error.
 
-    \sa body(), text(), finished(), isFinished()
+    \sa body(), text()
 */
 std::optional<QJsonDocument> QRestReply::json(QJsonParseError *error)
 {
-    Q_D(QRestReply);
-    if (!isFinished()) {
+    if (!wrapped) {
+        if (error)
+            *error = {0, QJsonParseError::ParseError::NoError};
+        return std::nullopt;
+    }
+
+    if (!wrapped->isFinished()) {
         qCWarning(lcQrest, "Attempt to read json() of an unfinished reply, ignoring.");
         if (error)
             *error = {0, QJsonParseError::ParseError::NoError};
         return std::nullopt;
     }
     QJsonParseError parseError;
-    const QByteArray data = d->networkReply->readAll();
+    const QByteArray data = wrapped->readAll();
     const QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (error)
         *error = parseError;
@@ -199,8 +110,7 @@ std::optional<QJsonDocument> QRestReply::json(QJsonParseError *error)
 */
 QByteArray QRestReply::body()
 {
-    Q_D(QRestReply);
-    return d->networkReply->readAll();
+    return wrapped ? wrapped->readAll() : QByteArray{};
 }
 
 /*!
@@ -221,15 +131,21 @@ QByteArray QRestReply::body()
 */
 QString QRestReply::text()
 {
-    Q_D(QRestReply);
     QString result;
+    if (!wrapped)
+        return result;
 
-    QByteArray data = d->networkReply->readAll();
+    QByteArray data = wrapped->readAll();
     if (data.isEmpty())
         return result;
 
+    // Text decoding needs to persist decoding state across calls to this function,
+    // so allocate decoder if not yet allocated.
+    if (!d)
+        d = new QRestReplyPrivate;
+
     if (!d->decoder) {
-        const QByteArray charset = d->contentCharset();
+        const QByteArray charset = QRestReplyPrivate::contentCharset(wrapped);
         d->decoder = QStringDecoder(charset);
         if (!d->decoder->isValid()) { // the decoder may not support the mimetype's charset
             qCWarning(lcQrest, "text(): Charset \"%s\" is not supported", charset.constData());
@@ -259,8 +175,7 @@ QString QRestReply::text()
 */
 int QRestReply::httpStatus() const
 {
-    Q_D(const QRestReply);
-    return d->networkReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    return wrapped ? wrapped->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() : 0;
 }
 
 /*!
@@ -296,8 +211,16 @@ bool QRestReply::isHttpStatusSuccess() const
 */
 bool QRestReply::hasError() const
 {
-    Q_D(const QRestReply);
-    return d->hasNonHttpError();
+    if (!wrapped)
+        return false;
+
+    const int status = httpStatus();
+    if (status > 0) {
+        // The HTTP status is set upon receiving the response headers, but the
+        // connection might still fail later while receiving the body data.
+        return wrapped->error() == QNetworkReply::RemoteHostClosedError;
+    }
+    return wrapped->error() != QNetworkReply::NoError;
 }
 
 /*!
@@ -309,10 +232,9 @@ bool QRestReply::hasError() const
 */
 QNetworkReply::NetworkError QRestReply::error() const
 {
-    Q_D(const QRestReply);
     if (!hasError())
         return QNetworkReply::NetworkError::NoError;
-    return d->networkReply->error();
+    return wrapped->error();
 }
 
 /*!
@@ -322,30 +244,9 @@ QNetworkReply::NetworkError QRestReply::error() const
 */
 QString QRestReply::errorString() const
 {
-    Q_D(const QRestReply);
     if (hasError())
-        return d->networkReply->errorString();
+        return wrapped->errorString();
     return {};
-}
-
-/*!
-    Returns whether the network request has finished.
-*/
-bool QRestReply::isFinished() const
-{
-    Q_D(const QRestReply);
-    return d->networkReply->isFinished();
-}
-
-/*!
-    Returns the number of bytes available.
-
-    \sa body
-*/
-qint64 QRestReply::bytesAvailable() const
-{
-    Q_D(const QRestReply);
-    return d->networkReply->bytesAvailable();
 }
 
 QRestReplyPrivate::QRestReplyPrivate()
@@ -377,38 +278,37 @@ static QLatin1StringView operationName(QNetworkAccessManager::Operation operatio
 }
 
 /*!
-    \fn QDebug QRestReply::operator<<(QDebug debug, const QRestReply *reply)
+    \fn QDebug QRestReply::operator<<(QDebug debug, const QRestReply &reply)
 
     Writes the \a reply into the \a debug object for debugging purposes.
 
     \sa {Debugging Techniques}
 */
-QDebug operator<<(QDebug debug, const QRestReply *reply)
+QDebug operator<<(QDebug debug, const QRestReply &reply)
 {
     const QDebugStateSaver saver(debug);
     debug.resetFormat().nospace();
-    if (!reply) {
-        debug << "QRestReply(nullptr)";
+    if (!reply.networkReply()) {
+        debug << "QRestReply(no network reply)";
         return debug;
     }
-
-    debug << "QRestReply(isSuccess = " << reply->isSuccess()
-          << ", httpStatus = " << reply->httpStatus()
-          << ", isHttpStatusSuccess = " << reply->isHttpStatusSuccess()
-          << ", hasError = " << reply->hasError()
-          << ", errorString = " << reply->errorString()
-          << ", error = " << reply->error()
-          << ", isFinished = " << reply->isFinished()
-          << ", bytesAvailable = " << reply->bytesAvailable()
-          << ", url " << reply->networkReply()->url()
-          << ", operation = " << operationName(reply->networkReply()->operation())
-          << ", reply headers = " << reply->networkReply()->rawHeaderPairs()
+    debug << "QRestReply(isSuccess = " << reply.isSuccess()
+          << ", httpStatus = " << reply.httpStatus()
+          << ", isHttpStatusSuccess = " << reply.isHttpStatusSuccess()
+          << ", hasError = " << reply.hasError()
+          << ", errorString = " << reply.errorString()
+          << ", error = " << reply.error()
+          << ", isFinished = " << reply.networkReply()->isFinished()
+          << ", bytesAvailable = " << reply.networkReply()->bytesAvailable()
+          << ", url " << reply.networkReply()->url()
+          << ", operation = " << operationName(reply.networkReply()->operation())
+          << ", reply headers = " << reply.networkReply()->rawHeaderPairs()
           << ")";
     return debug;
 }
 #endif // QT_NO_DEBUG_STREAM
 
-QByteArray QRestReplyPrivate::contentCharset() const
+QByteArray QRestReplyPrivate::contentCharset(const QNetworkReply* reply)
 {
     // Content-type consists of mimetype and optional parameters, of which one may be 'charset'
     // Example values and their combinations below are all valid, see RFC 7231 section 3.1.1.5
@@ -418,10 +318,10 @@ QByteArray QRestReplyPrivate::contentCharset() const
     // text/plain; charset=utf-8;version=1.7
     // text/plain; charset = utf-8
     // text/plain; charset ="utf-8"
-    QByteArray contentTypeValue =
-               networkReply->header(QNetworkRequest::KnownHeaders::ContentTypeHeader).toByteArray();
     // Default to the most commonly used UTF-8.
     QByteArray charset{"UTF-8"};
+    const QByteArray contentTypeValue =
+            reply->header(QNetworkRequest::KnownHeaders::ContentTypeHeader).toByteArray();
 
     QList<QByteArray> parameters = contentTypeValue.split(';');
     if (parameters.size() >= 2) { // Need at least one parameter in addition to the mimetype itself
@@ -440,18 +340,6 @@ QByteArray QRestReplyPrivate::contentCharset() const
         }
     }
     return charset;
-}
-
-// Returns true if there's an error that isn't appropriately indicated by the HTTP status
-bool QRestReplyPrivate::hasNonHttpError() const
-{
-    const int status = networkReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    if (status > 0) {
-        // The HTTP status is set upon receiving the response headers, but the
-        // connection might still fail later while receiving the body data.
-        return networkReply->error() == QNetworkReply::RemoteHostClosedError;
-    }
-    return networkReply->error() != QNetworkReply::NoError;
 }
 
 QT_END_NAMESPACE

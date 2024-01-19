@@ -599,20 +599,13 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
     \overload
 */
 
-/*
-    Memory management/object ownership:
-    - QRestAM is parent of QNAM and QRestReplies
-    - QRestReplies are parents of QNetworkReplies
-*/
-
-/*!
-    Constructs a QRestAccessManager and sets \a parent as the parent object.
-*/
-QRestAccessManager::QRestAccessManager(QObject *parent)
+QRestAccessManager::QRestAccessManager(QNetworkAccessManager *manager, QObject *parent)
     : QObject(*new QRestAccessManagerPrivate, parent)
 {
     Q_D(QRestAccessManager);
-    d->ensureNetworkAccessManager();
+    d->qnam = manager;
+    if (!d->qnam)
+        qCWarning(lcQrest, "QRestAccessManager: QNetworkAccesManager is nullptr");
 }
 
 /*!
@@ -621,95 +614,6 @@ QRestAccessManager::QRestAccessManager(QObject *parent)
 */
 QRestAccessManager::~QRestAccessManager()
     = default;
-
-/*!
-    Returns whether QRestAccessManager is currently configured to automatically
-    delete replies once they have finished. By default this is \c true.
-
-    \sa setDeletesRepliesOnFinished()
-*/
-bool QRestAccessManager::deletesRepliesOnFinished() const
-{
-    Q_D(const QRestAccessManager);
-    return d->deletesRepliesOnFinished;
-}
-
-/*!
-    Enables or disables automatic deletion of QRestReply instances
-    once the request has finished, according to the provided
-    \a autoDelete parameter. The deletion is done with deleteLater()
-    so that using the replies in directly-connected slots or callbacks is safe.
-
-    \sa deletesRepliesOnFinished()
-*/
-void QRestAccessManager::setDeletesRepliesOnFinished(bool autoDelete)
-{
-    Q_D(QRestAccessManager);
-    d->deletesRepliesOnFinished = autoDelete;
-}
-
-/*!
-    Aborts all unfinished network requests. Calling this function is same
-    as calling QRestReply::abort() for all individual unfinished requests.
-
-    \sa QRestReply::abort(), QNetworkReply::abort()
-*/
-void QRestAccessManager::abortRequests()
-{
-    Q_D(QRestAccessManager);
-
-    // Make copy of the reply container, as it might get modified when
-    // aborting individual requests if they finish immediately
-    const auto requests = d->activeRequests;
-    for (const auto &[req, _] : requests.asKeyValueRange())
-        req->abort();
-}
-
-/*!
-    Sets \a timeout used for transfers.
-
-    \sa QNetworkAccessManager::setTransferTimeout(), transferTimeout(),
-    QNetworkRequestFactory::setTransferTimeout()
-*/
-void QRestAccessManager::setTransferTimeout(std::chrono::milliseconds timeout)
-{
-    Q_D(QRestAccessManager);
-    d->qnam->setTransferTimeout(timeout);
-}
-
-/*!
-    Returns the timeout used for transfers.
-
-    \sa setTransferTimeout(), QNetworkAccessManager::transferTimeoutAsDuration(),
-    QNetworkRequestFactory::transferTimeout()
-*/
-std::chrono::milliseconds QRestAccessManager::transferTimeout() const
-{
-    Q_D(const QRestAccessManager);
-    return d->qnam->transferTimeoutAsDuration();
-}
-
-#ifndef QT_NO_DEBUG_STREAM
-/*!
-    \fn QDebug QRestAccessManager::operator<<(QDebug debug,
-                                             const QRestAccessManager &manager)
-
-    Writes \a manager into \a debug stream.
-
-    \sa {Debugging Techniques}
-*/
-QDebug operator<<(QDebug debug, const QRestAccessManager &manager)
-{
-    const QDebugStateSaver saver(debug);
-    debug.resetFormat().nospace();
-
-    debug << "QRestAccessManager(deletesRepliesOnFinished = " << manager.deletesRepliesOnFinished()
-          << ", transferTimeout = " << manager.transferTimeout()
-          << ", active requests = " << manager.d_func()->activeRequests.size()
-          << ")";
-    return debug;
-}
-#endif // QT_NO_DEBUG_STREAM
 
 /*!
     Returns the underlying QNetworkAccessManager instance. The instance
@@ -734,7 +638,7 @@ QRestAccessManagerPrivate::~QRestAccessManagerPrivate()
     }
 }
 
-QRestReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
                                                  const QJsonObject &data, const QObject *context,
                                                  QtPrivate::QSlotObjectBase *slot)
 {
@@ -743,7 +647,7 @@ QRestReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
                              data, request, context, slot);
 }
 
-QRestReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
                                                  const QJsonArray &data, const QObject *context,
                                                  QtPrivate::QSlotObjectBase *slot)
 {
@@ -752,14 +656,14 @@ QRestReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
                              data, request, context, slot);
 }
 
-QRestReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
                                                  const QVariantMap &data, const QObject *context,
                                                  QtPrivate::QSlotObjectBase *slot)
 {
     return postWithDataImpl(request, QJsonObject::fromVariantMap(data), context, slot);
 }
 
-QRestReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
                                                  const QByteArray &data, const QObject *context,
                                                  QtPrivate::QSlotObjectBase *slot)
 {
@@ -767,7 +671,7 @@ QRestReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
     return d->executeRequest([&]() { return d->qnam->post(request, data); }, context, slot);
 }
 
-QRestReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
                                                  QHttpMultiPart *data, const QObject *context,
                                                  QtPrivate::QSlotObjectBase *slot)
 {
@@ -775,7 +679,7 @@ QRestReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
     return d->executeRequest([&]() { return d->qnam->post(request, data); }, context, slot);
 }
 
-QRestReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
                                                  QIODevice *data, const QObject *context,
                                                  QtPrivate::QSlotObjectBase *slot)
 {
@@ -783,14 +687,14 @@ QRestReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
     return d->executeRequest([&]() { return d->qnam->post(request, data); }, context, slot);
 }
 
-QRestReply *QRestAccessManager::getNoDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::getNoDataImpl(const QNetworkRequest &request,
                                      const QObject *context, QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
     return d->executeRequest([&]() { return d->qnam->get(request); }, context, slot);
 }
 
-QRestReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &request,
                                                 const QByteArray &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
@@ -798,7 +702,7 @@ QRestReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &request,
     return d->executeRequest([&]() { return d->qnam->get(request, data); }, context, slot);
 }
 
-QRestReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &request,
                                                 const QJsonObject &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
@@ -807,7 +711,7 @@ QRestReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &request,
                              data, request, context, slot);
 }
 
-QRestReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &request,
                                                 QIODevice *data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
@@ -815,21 +719,21 @@ QRestReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &request,
     return d->executeRequest([&]() { return d->qnam->get(request, data); }, context, slot);
 }
 
-QRestReply *QRestAccessManager::deleteResourceNoDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::deleteResourceNoDataImpl(const QNetworkRequest &request,
                                      const QObject *context, QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
     return d->executeRequest([&]() { return d->qnam->deleteResource(request); }, context, slot);
 }
 
-QRestReply *QRestAccessManager::headNoDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::headNoDataImpl(const QNetworkRequest &request,
                                      const QObject *context, QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
     return d->executeRequest([&]() { return d->qnam->head(request); }, context, slot);
 }
 
-QRestReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
                                                 const QJsonObject &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
@@ -838,7 +742,7 @@ QRestReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
                              data, request, context, slot);
 }
 
-QRestReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
                                                 const QJsonArray &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
@@ -847,14 +751,14 @@ QRestReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
                              data, request, context, slot);
 }
 
-QRestReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
                                                 const QVariantMap &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
     return putWithDataImpl(request, QJsonObject::fromVariantMap(data), context, slot);
 }
 
-QRestReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
                                                 const QByteArray &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
@@ -862,7 +766,7 @@ QRestReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
     return d->executeRequest([&]() { return d->qnam->put(request, data); }, context, slot);
 }
 
-QRestReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
                                                 QHttpMultiPart *data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
@@ -870,7 +774,7 @@ QRestReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
     return d->executeRequest([&]() { return d->qnam->put(request, data); }, context, slot);
 }
 
-QRestReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request, QIODevice *data,
+QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request, QIODevice *data,
                                      const QObject *context, QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
@@ -879,7 +783,7 @@ QRestReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request, 
 
 static const auto PATCH = "PATCH"_ba;
 
-QRestReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
                                                 const QJsonObject &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
@@ -889,7 +793,7 @@ QRestReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request
             data, request, context, slot);
 }
 
-QRestReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
                                                 const QJsonArray &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
@@ -899,14 +803,14 @@ QRestReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request
             data, request, context, slot);
 }
 
-QRestReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
                                                 const QVariantMap &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
     return patchWithDataImpl(request, QJsonObject::fromVariantMap(data), context, slot);
 }
 
-QRestReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
                                                 const QByteArray &data, const QObject *context,
                                                 QtPrivate::QSlotObjectBase *slot)
 {
@@ -915,7 +819,7 @@ QRestReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request
                              context, slot);
 }
 
-QRestReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request, QIODevice *data,
+QNetworkReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request, QIODevice *data,
                                            const QObject *context, QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
@@ -923,7 +827,7 @@ QRestReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request
                              context, slot);
 }
 
-QRestReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &request,
                                                    const QByteArray& method, const QByteArray &data,
                                                    const QObject *context,
                                                    QtPrivate::QSlotObjectBase *slot)
@@ -933,7 +837,7 @@ QRestReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &reques
                              context, slot);
 }
 
-QRestReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &request,
                                                    const QByteArray& method, QIODevice *data,
                                                    const QObject *context,
                                                    QtPrivate::QSlotObjectBase *slot)
@@ -943,7 +847,7 @@ QRestReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &reques
                              context, slot);
 }
 
-QRestReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &request,
+QNetworkReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &request,
                                                    const QByteArray& method, QHttpMultiPart *data,
                                                    const QObject *context,
                                                    QtPrivate::QSlotObjectBase *slot)
@@ -953,32 +857,31 @@ QRestReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &reques
                              context, slot);
 }
 
-QRestReply *QRestAccessManagerPrivate::createActiveRequest(QNetworkReply *networkReply,
-                                                           const QObject *contextObject,
-                                                           QtPrivate::QSlotObjectBase *slot)
+QNetworkReply *QRestAccessManagerPrivate::createActiveRequest(QNetworkReply *reply,
+                                                    const QObject *contextObject,
+                                                    QtPrivate::QSlotObjectBase *slot)
 {
     Q_Q(QRestAccessManager);
-    Q_ASSERT(networkReply);
-    auto restReply = new QRestReply(networkReply, q);
+    Q_ASSERT(reply);
     QtPrivate::SlotObjSharedPtr slotPtr(QtPrivate::SlotObjUniquePtr{slot}); // adopts
-    activeRequests.insert(restReply, CallerInfo{contextObject, slotPtr});
+    activeRequests.insert(reply, CallerInfo{contextObject, slotPtr});
+    // The signal connections below are made to 'q' to avoid stray signal
+    // handling upon its destruction while requests were still in progress
 
-    // If context object is provided, use it with connect => context object lifecycle is considered
-    const QObject *context = contextObject ? contextObject : q;
-    QObject::connect(networkReply, &QNetworkReply::finished, context, [restReply, this]() {
-        handleReplyFinished(restReply);
+    QObject::connect(reply, &QNetworkReply::finished, q, [reply, this]() {
+        handleReplyFinished(reply);
     });
     // Safe guard in case reply is destroyed before it's finished
-    QObject::connect(restReply, &QRestReply::destroyed, q, [restReply, this]() {
-        activeRequests.remove(restReply);
+    QObject::connect(reply, &QObject::destroyed, q, [reply, this]() {
+        activeRequests.remove(reply);
     });
     // If context object is destroyed, clean up any possible replies it had associated with it
     if (contextObject) {
-        QObject::connect(contextObject, &QObject::destroyed, q, [restReply, this]() {
-            activeRequests.remove(restReply);
+        QObject::connect(contextObject, &QObject::destroyed, q, [reply, this]() {
+            activeRequests.remove(reply);
         });
     }
-    return restReply;
+    return reply;
 }
 
 void QRestAccessManagerPrivate::verifyThreadAffinity(const QObject *contextObject)
@@ -994,27 +897,17 @@ void QRestAccessManagerPrivate::verifyThreadAffinity(const QObject *contextObjec
     }
 }
 
-void QRestAccessManagerPrivate::ensureNetworkAccessManager()
+QNetworkReply* QRestAccessManagerPrivate::warnNoAccessManager()
 {
-    Q_Q(QRestAccessManager);
-    if (!qnam) {
-        qnam = new QNetworkAccessManager(q);
-        connect(qnam, &QNetworkAccessManager::authenticationRequired, this,
-                &QRestAccessManagerPrivate::handleAuthenticationRequired);
-#ifndef QT_NO_NETWORKPROXY
-        QObject::connect(qnam, &QNetworkAccessManager::proxyAuthenticationRequired,
-                         q, &QRestAccessManager::proxyAuthenticationRequired);
-#endif
-    }
+    qCWarning(lcQrest, "QRestAccessManager: QNetworkAccessManager not set");
+    return nullptr;
 }
 
-void QRestAccessManagerPrivate::handleReplyFinished(QRestReply *restReply)
+void QRestAccessManagerPrivate::handleReplyFinished(QNetworkReply *reply)
 {
-    Q_Q(QRestAccessManager);
-
-    auto request = activeRequests.find(restReply);
+    auto request = activeRequests.find(reply);
     if (request == activeRequests.end()) {
-        qCWarning(lcQrest, "Unexpected reply received, ignoring");
+        qCDebug(lcQrest, "QRestAccessManager: Unexpected reply received, ignoring");
         return;
     }
 
@@ -1022,41 +915,14 @@ void QRestAccessManagerPrivate::handleReplyFinished(QRestReply *restReply)
     activeRequests.erase(request);
 
     if (caller.slot) {
-        // Callback was provided. If we have context object, use it.
-        // For clarity: being here with a context object means it has not been destroyed
-        // while the request has been in progress
+        // Callback was provided
+        QRestReply restReply(reply);
         void *argv[] = { nullptr, &restReply };
+        // If we have context object, use it
         QObject *context = caller.contextObject
-                ? const_cast<QObject*>(caller.contextObject) : nullptr;
+                ? const_cast<QObject*>(caller.contextObject.get()) : nullptr;
         caller.slot->call(context, argv);
     }
-    if (restReply->hasError())
-        emit restReply->errorOccurred(restReply);
-    emit restReply->finished(restReply);
-    emit q->requestFinished(restReply);
-
-    if (deletesRepliesOnFinished)
-        restReply->deleteLater();
-}
-
-void QRestAccessManagerPrivate::handleAuthenticationRequired(QNetworkReply *networkReply,
-                                                             QAuthenticator *authenticator)
-{
-    Q_Q(QRestAccessManager);
-    QRestReply *restReply = restReplyFromNetworkReply(networkReply);
-    if (restReply)
-        emit q->authenticationRequired(restReply, authenticator);
-    else
-        qCWarning(lcQrest, "No matching QRestReply for authentication, ignoring.");
-}
-
-QRestReply *QRestAccessManagerPrivate::restReplyFromNetworkReply(QNetworkReply *networkReply)
-{
-    for (const auto &[restReply,_] : activeRequests.asKeyValueRange()) {
-        if (restReply->networkReply() == networkReply)
-            return restReply;
-    }
-    return nullptr;
 }
 
 QT_END_NAMESPACE
