@@ -139,8 +139,6 @@ QSqlQueryModel::~QSqlQueryModel()
 }
 
 /*!
-    \since 4.1
-
     Fetches more rows from a database.
     This only affects databases that don't report back the size of a query
     (see QSqlDriver::hasFeature()).
@@ -162,8 +160,6 @@ void QSqlQueryModel::fetchMore(const QModelIndex &parent)
 }
 
 /*!
-    \since 4.1
-
     Returns \c true if it is possible to read more rows from the database.
     This only affects databases that don't report back the size of a query
     (see QSqlDriver::hasFeature()).
@@ -295,7 +291,6 @@ void QSqlQueryModel::endResetModel()
 }
 
 /*! \fn int QSqlQueryModel::rowCount(const QModelIndex &parent) const
-    \since 4.1
 
     If the database supports returning the size of a query
     (see QSqlDriver::hasFeature()), the number of rows of the current
@@ -388,8 +383,6 @@ void QSqlQueryModel::queryChange()
 /*!
     \deprecated [6.2] Use the \c{setQuery(QSqlQuery &&query)} overload instead.
     \overload
-    \since 4.5
-
 */
 void QSqlQueryModel::setQuery(const QSqlQuery &query)
 {

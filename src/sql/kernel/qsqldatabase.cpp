@@ -1281,8 +1281,6 @@ QSqlDatabase QSqlDatabase::cloneDatabase(const QString &other, const QString &co
 }
 
 /*!
-    \since 4.4
-
     Returns the connection name, which may be empty.  \note The
     connection name is not the \l{databaseName()} {database name}.
 

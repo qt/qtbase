@@ -404,7 +404,6 @@ bool QSqlDriver::isIdentifierEscaped(const QString &identifier, IdentifierType t
     Reimplement this function if you want to provide your own implementation in your
     QSqlDriver subclass,
 
-    \since 4.5
     \sa isIdentifierEscaped()
  */
 QString QSqlDriver::stripDelimiters(const QString &identifier, IdentifierType type) const
@@ -680,7 +679,6 @@ QVariant QSqlDriver::handle() const
     Reimplement this function if you want to provide event notification support in your
     own QSqlDriver subclass,
 
-    \since 4.4
     \sa unsubscribeFromNotification(), subscribedToNotifications(), QSqlDriver::hasFeature()
 */
 bool QSqlDriver::subscribeToNotification(const QString &name)
@@ -704,7 +702,6 @@ bool QSqlDriver::subscribeToNotification(const QString &name)
     Reimplement this function if you want to provide event notification support in your
     own QSqlDriver subclass,
 
-    \since 4.4
     \sa subscribeToNotification(), subscribedToNotifications()
 */
 bool QSqlDriver::unsubscribeFromNotification(const QString &name)
@@ -719,7 +716,6 @@ bool QSqlDriver::unsubscribeFromNotification(const QString &name)
     Reimplement this function if you want to provide event notification support in your
     own QSqlDriver subclass,
 
-    \since 4.4
     \sa subscribeToNotification(), unsubscribeFromNotification()
 */
 QStringList QSqlDriver::subscribedToNotifications() const

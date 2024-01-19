@@ -1043,8 +1043,6 @@ bool QSqlQuery::exec()
 */
 
 /*!
-    \since 4.2
-
   Executes a previously prepared SQL query in a batch. All the bound
   parameters have to be lists of variants. If the database doesn't
   support batch executions, the driver will simulate it using
@@ -1315,8 +1313,6 @@ bool QSqlQuery::isPositionalBindingEnabled() const
 
 
 /*!
-  \since 4.3.2
-
   Instruct the database driver that no more data will be fetched from
   this query until it is re-executed. There is normally no need to
   call this function, but it may be helpful in order to free resources
@@ -1338,8 +1334,6 @@ void QSqlQuery::finish()
 }
 
 /*!
-  \since 4.4
-
   Discards the current result set and navigates to the next if available.
 
   Some databases are capable of returning multiple result sets for
