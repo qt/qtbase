@@ -4,6 +4,10 @@
 
 #### Libraries
 
+# Look for Threads in the same scope as OpenSSL package, because OpenSSL sometimes depends on
+# Threads (for static OpenSSL builds) and we want to promote the target to global in the same
+# directory scope.
+qt_find_package(Threads PROVIDED_TARGETS Threads::Threads)
 qt_find_package(WrapZLIB 1.0.8 PROVIDED_TARGETS WrapZLIB::WrapZLIB MODULE_NAME global QMAKE_LIB zlib)
 # special case begin
 # Work around global target promotion failure when WrapZLIB is used on APPLE platforms.
