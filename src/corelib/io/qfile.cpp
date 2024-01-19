@@ -459,6 +459,24 @@ QFile::remove(const QString &fileName)
     and sets the fileName() to the path at which the file can be found within the trash;
     otherwise returns \c false.
 
+//! [move-to-trash-common]
+    The time for this function to run is independent of the size of the file
+    being trashed. If this function is called on a directory, it may be
+    proportional to the number of files being trashed.
+
+    This function uses the Windows and \macos APIs to perform the trashing on
+    those two operating systems. Elsewhere (Unix systems), this function
+    implements the \l{FreeDesktop.org Trash specification version 1.0}.
+
+    \note When using the FreeDesktop.org Trash implementation, this function
+    will fail if it is unable to move the files to the trash location by way of
+    file renames and hardlinks. This condition arises if the file being trashed
+    resides on a volume (mount point) on which the current user does not have
+    permission to create the \c{.Trash} directory, or with some unusual
+    filesystem types or configurations (such as sub-volumes that aren't
+    themselves mount points).
+//! [move-to-trash-common]
+
     \note On systems where the system API doesn't report the location of the file in the
     trash, fileName() will be set to the null string once the file has been moved. On
     systems that don't have a trash can, this function always returns false.
@@ -496,9 +514,12 @@ QFile::moveToTrash()
     and sets \a pathInTrash (if provided) to the path at which the file can be found within
     the trash; otherwise returns \c false.
 
+    \include qfile.cpp move-to-trash-common
+
     \note On systems where the system API doesn't report the path of the file in the
     trash, \a pathInTrash will be set to the null string once the file has been moved.
     On systems that don't have a trash can, this function always returns false.
+
 */
 bool
 QFile::moveToTrash(const QString &fileName, QString *pathInTrash)
