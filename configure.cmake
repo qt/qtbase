@@ -18,6 +18,10 @@ if(TARGET ZLIB::ZLIB)
     set_property(TARGET ZLIB::ZLIB PROPERTY IMPORTED_GLOBAL TRUE)
 endif()
 
+# Look for Threads in the same scope as OpenSSL package, because OpenSSL sometimes depends on
+# Threads (for static OpenSSL builds) and we want to promote the target to global in the same
+# directory scope.
+qt_find_package(Threads PROVIDED_TARGETS Threads::Threads)
 qt_find_package(WrapOpenSSLHeaders PROVIDED_TARGETS WrapOpenSSLHeaders::WrapOpenSSLHeaders MODULE_NAME core)
 # openssl_headers
 # OPENSSL_VERSION_MAJOR is not defined for OpenSSL 1.1.1

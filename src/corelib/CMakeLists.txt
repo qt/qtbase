@@ -1,7 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-qt_find_package(Threads PROVIDED_TARGETS Threads::Threads)
 qt_find_package(WrapPCRE2 PROVIDED_TARGETS WrapPCRE2::WrapPCRE2)
 qt_find_package(WrapZLIB PROVIDED_TARGETS WrapZLIB::WrapZLIB)
 
