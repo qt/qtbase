@@ -9,6 +9,7 @@
 #endif
 
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -497,7 +498,7 @@ QNetworkRequest QNetworkRequestFactoryPrivate::newRequest(const QUrl &url) const
     // may be multiple values per name. Note: this would not necessarily
     // produce right result for 'Set-Cookie' header if it has multiple values,
     // but since it is a purely server-side (response) header, not relevant here.
-    const auto headerNames = headers.names();
+    const auto headerNames = headers.toMultiMap().uniqueKeys(); // ### fixme: port QNR to QHH
     for (const auto &name : headerNames)
         request.setRawHeader(name, headers.combinedValue(name));
 

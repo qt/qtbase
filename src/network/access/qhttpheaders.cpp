@@ -889,21 +889,6 @@ bool QHttpHeaders::contains(WellKnownHeader name) const
 }
 
 /*!
-    Returns a list of unique header names.
-    Header names are case-insensitive, and the returned
-    names are lower-cased.
-*/
-QList<QByteArray> QHttpHeaders::names() const
-{
-    QList<QByteArray> names;
-    for (const Header &header: d->headers) {
-        if (!names.contains(header.name))
-            names.append(header.name);
-    }
-    return names;
-}
-
-/*!
     Removes the header \a name.
 
     \sa removeAt(), removeAll(QHttpHeaders::WellKnownHeader)

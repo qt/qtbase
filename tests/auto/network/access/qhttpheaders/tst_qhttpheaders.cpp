@@ -166,26 +166,6 @@ void tst_QHttpHeaders::accessors()
 #undef EXISTS_N_TIMES
 #undef EXISTS_NOT
 
-    // names()
-    h1.clear();
-    QVERIFY(h1.names().isEmpty());
-    h1.append(n1, v1);
-    QCOMPARE(h1.names().size(), 1);
-    QCOMPARE(h1.size(), 1);
-    QVERIFY(h1.names().contains(n1));
-    h1.append(n2, v2);
-    QCOMPARE(h1.names().size(), 2);
-    QCOMPARE(h1.size(), 2);
-    QVERIFY(h1.names().contains(n1));
-    QVERIFY(h1.names().contains(n2));
-    h1.append(n1, v1);
-    h1.append(n1, v1);
-    QCOMPARE(h1.size(), 4);
-    QCOMPARE(h1.names().size(), 2);
-    h1.append(N1, v1); // uppercase of n1
-    QCOMPARE(h1.size(), 5);
-    QCOMPARE(h1.names().size(), 2);
-
     // valueAt()
     h1.clear();
     h1.append(n1, v1);
@@ -353,7 +333,9 @@ void tst_QHttpHeaders::headerNameField()
     h1.append(u"abcdefghijklmnopqrstuvwyxzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%&'*+-.^_`|~"_s,
               v1);
     QCOMPARE(h1.size(), 4);
-    QCOMPARE(h1.names().size(), 1);
+    QCOMPARE(h1.nameAt(0), h1.nameAt(1));
+    QCOMPARE(h1.nameAt(1), h1.nameAt(2));
+    QCOMPARE(h1.nameAt(2), h1.nameAt(3));
     h1.clear();
 
     // Error cases

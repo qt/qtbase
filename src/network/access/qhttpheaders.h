@@ -222,8 +222,6 @@ public:
     Q_NETWORK_EXPORT bool contains(QAnyStringView name) const;
     Q_NETWORK_EXPORT bool contains(WellKnownHeader name) const;
 
-    Q_NETWORK_EXPORT QList<QByteArray> names() const;
-
     Q_NETWORK_EXPORT void clear();
     Q_NETWORK_EXPORT void removeAll(QAnyStringView name);
     Q_NETWORK_EXPORT void removeAll(WellKnownHeader name);
