@@ -540,6 +540,8 @@ QString QStandardPaths::findExecutable(const QString &executableName, const QStr
 }
 
 /*!
+    \fn QString QStandardPaths::displayName(StandardLocation type)
+
     \include standardpath/functiondocs.qdocinc displayName
 */
 
