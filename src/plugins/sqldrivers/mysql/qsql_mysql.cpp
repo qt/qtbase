@@ -919,9 +919,8 @@ bool QMYSQLResult::exec()
         return false;
     }
 
-    if (mysql_stmt_param_count(d->stmt) > 0 &&
-        mysql_stmt_param_count(d->stmt) == (uint)values.size()) {
-
+    const unsigned long paramCount = mysql_stmt_param_count(d->stmt);
+    if (paramCount > 0 && paramCount == static_cast<size_t>(values.size())) {
         nullVector.resize(values.size());
         for (qsizetype i = 0; i < values.size(); ++i) {
             const QVariant &val = boundValues().at(i);
@@ -1003,7 +1002,11 @@ bool QMYSQLResult::exec()
             }
         }
 
+#if defined(MARIADB_VERSION_ID) || MYSQL_VERSION_ID < 80300
         r = mysql_stmt_bind_param(d->stmt, d->outBinds);
+#else
+        r = mysql_stmt_bind_named_param(d->stmt, d->outBinds, paramCount, nullptr);
+#endif
         if (r != 0) {
             setLastError(qMakeStmtError(QCoreApplication::translate("QMYSQLResult",
                          "Unable to bind value"), QSqlError::StatementError, d->stmt));
@@ -1472,21 +1475,12 @@ QSqlIndex QMYSQLDriver::primaryIndex(const QString &tablename) const
 
 QSqlRecord QMYSQLDriver::record(const QString &tablename) const
 {
-    Q_D(const QMYSQLDriver);
-    const QString table = stripDelimiters(tablename, QSqlDriver::TableName);
-
-    QSqlRecord info;
     if (!isOpen())
-        return info;
-    MYSQL_RES *r = mysql_list_fields(d->mysql, table.toUtf8().constData(), nullptr);
-    if (!r)
-        return info;
-
-    MYSQL_FIELD *field;
-    while ((field = mysql_fetch_field(r)))
-        info.append(qToField(field));
-    mysql_free_result(r);
-    return info;
+        return {};
+    QSqlQuery i(createResult());
+    QString stmt("SELECT * FROM %1 LIMIT 0"_L1);
+    i.exec(stmt.arg(escapeIdentifier(tablename, QSqlDriver::TableName)));
+    return i.record();
 }
 
 QVariant QMYSQLDriver::handle() const
