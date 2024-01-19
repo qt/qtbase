@@ -864,10 +864,9 @@ bool QSqlQuery::isSelect() const
 }
 
 /*!
-  Returns \c true if you can only scroll forward through a result set;
-  otherwise returns \c false.
+  Returns \l forwardOnly.
 
-  \sa setForwardOnly(), next()
+  \sa forwardOnly, next(), seek()
 */
 bool QSqlQuery::isForwardOnly() const
 {
@@ -875,7 +874,10 @@ bool QSqlQuery::isForwardOnly() const
 }
 
 /*!
-  Sets forward only mode to \a forward. If \a forward is true, only
+  \property QSqlQuery::forwardOnly
+  \since 6.8
+
+  This property holds the forward only mode. If \a forward is true, only
   next() and seek() with positive values, are allowed for navigating
   the results.
 
@@ -904,7 +906,11 @@ bool QSqlQuery::isForwardOnly() const
   mode, do not execute any other SQL command on the same database
   connection. This will cause the query results to be lost.
 
-  \sa isForwardOnly(), next(), seek(), QSqlResult::setForwardOnly()
+  \sa next(), seek()
+*/
+/*!
+    Sets \l forwardOnly to \a forward.
+    \sa forwardOnly, next(), seek()
 */
 void QSqlQuery::setForwardOnly(bool forward)
 {
@@ -1246,6 +1252,8 @@ QVariant QSqlQuery::lastInsertId() const
 }
 
 /*!
+  \property QSqlQuery::numericalPrecisionPolicy
+  \since 6.8
 
   Instruct the database driver to return numerical values with a
   precision specified by \a precisionPolicy.
@@ -1264,17 +1272,19 @@ QVariant QSqlQuery::lastInsertId() const
   active query. Call \l{exec()}{exec(QString)} or prepare() in order
   to activate the policy.
 
-  \sa QSql::NumericalPrecisionPolicy, numericalPrecisionPolicy()
+  \sa QSql::NumericalPrecisionPolicy, QSqlDriver::numericalPrecisionPolicy,
+  QSqlDatabase::numericalPrecisionPolicy
 */
+/*!
+    Sets \l numericalPrecisionPolicy to \a precisionPolicy.
+ */
 void QSqlQuery::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy)
 {
     d->sqlResult->setNumericalPrecisionPolicy(precisionPolicy);
 }
 
 /*!
-  Returns the current precision policy.
-
-  \sa QSql::NumericalPrecisionPolicy, setNumericalPrecisionPolicy()
+    Returns the \l numericalPrecisionPolicy.
 */
 QSql::NumericalPrecisionPolicy QSqlQuery::numericalPrecisionPolicy() const
 {
@@ -1282,18 +1292,23 @@ QSql::NumericalPrecisionPolicy QSqlQuery::numericalPrecisionPolicy() const
 }
 
 /*!
-  Enables or disables the positional \l {Approaches to Binding Values}{binding}
+  \property QSqlQuery::positionalBindingEnabled
+  \since 6.8
+  This property enables or disables the positional \l {Approaches to Binding Values}{binding}
   for this query, depending on \a enable (default is \c true).
   Disabling positional bindings is useful if the query itself contains a '?'
   which must not be handled as a positional binding parameter but, for example,
   as a JSON operator for a PostgreSQL database.
 
-  This function will have no effect when the database has native
+  This property will have no effect when the database has native
   support for positional bindings with question marks (see also
   \l{QSqlDriver::PositionalPlaceholders}).
+*/
 
+/*!
+  Sets \l positionalBindingEnabled to \a enable.
   \since 6.7
-  \sa isPositionalBindingEnabled()
+  \sa positionalBindingEnabled
 */
 void QSqlQuery::setPositionalBindingEnabled(bool enable)
 {
@@ -1301,10 +1316,9 @@ void QSqlQuery::setPositionalBindingEnabled(bool enable)
 }
 
 /*!
-  Returns \c true if the positional binding is currently enabled.
-
+  Returns \l positionalBindingEnabled.
   \since 6.7
-  \sa setPositionalBindingEnabled()
+  \sa positionalBindingEnabled
 */
 bool QSqlQuery::isPositionalBindingEnabled() const
 {
@@ -1359,7 +1373,7 @@ void QSqlQuery::finish()
   databases may have restrictions on which statements are allowed to
   be used in a SQL batch.
 
-  \sa QSqlDriver::hasFeature(), setForwardOnly(), next(), isSelect(),
+  \sa QSqlDriver::hasFeature(), forwardOnly, next(), isSelect(),
       numRowsAffected(), isActive(), lastError()
 */
 bool QSqlQuery::nextResult()
