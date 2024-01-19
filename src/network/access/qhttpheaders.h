@@ -235,6 +235,8 @@ public:
     Q_NETWORK_EXPORT QList<QByteArray> values(QAnyStringView name) const;
     Q_NETWORK_EXPORT QList<QByteArray> values(WellKnownHeader name) const;
 
+    Q_NETWORK_EXPORT QByteArrayView valueAt(qsizetype i) const noexcept;
+
     Q_NETWORK_EXPORT QByteArray combinedValue(QAnyStringView name) const;
     Q_NETWORK_EXPORT QByteArray combinedValue(WellKnownHeader name) const;
 
