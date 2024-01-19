@@ -135,7 +135,9 @@ public:
 public slots:
     void initTestCase();
     void cleanup();
+
 private slots:
+    void nativeWindowAttribute();
     void addActionOverloads();
     void getSetCheck();
     void fontPropagation();
@@ -686,6 +688,24 @@ struct ImplicitlyConvertibleTo {
 
 void testFunction0() {}
 void testFunction1(bool) {}
+
+void tst_QWidget::nativeWindowAttribute()
+{
+    QWidget parent;
+    QWidget child(&parent);
+
+    QCOMPARE(parent.windowHandle(), nullptr);
+    QCOMPARE(child.windowHandle(), nullptr);
+
+    // Setting WA_NativeWindow should create window handle
+    parent.setAttribute(Qt::WA_NativeWindow);
+    QVERIFY(parent.windowHandle() != nullptr);
+    // But not its child's window handle
+    QCOMPARE(child.windowHandle(), nullptr);
+    // Until the child also gains WA_NativeWindow
+    child.setAttribute(Qt::WA_NativeWindow);
+    QVERIFY(child.windowHandle() != nullptr);
+}
 
 void tst_QWidget::addActionOverloads()
 {
