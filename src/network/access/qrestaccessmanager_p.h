@@ -34,30 +34,28 @@ public:
     QRestAccessManagerPrivate();
     ~QRestAccessManagerPrivate() override;
 
-    void ensureNetworkAccessManager();
-
-    QRestReply *createActiveRequest(QNetworkReply *networkReply, const QObject *contextObject,
-                                    QtPrivate::QSlotObjectBase *slot);
-
-    void removeActiveRequest(QRestReply *restReply);
-    void handleReplyFinished(QRestReply *restReply);
-    void handleAuthenticationRequired(QNetworkReply *networkReply, QAuthenticator *authenticator);
-    QRestReply *restReplyFromNetworkReply(QNetworkReply *networkReply);
+    QNetworkReply* createActiveRequest(QNetworkReply *reply, const QObject *contextObject,
+                                       QtPrivate::QSlotObjectBase *slot);
+    void handleReplyFinished(QNetworkReply *reply);
 
     template<typename Functor>
-    QRestReply *executeRequest(Functor requestOperation,
+    QNetworkReply *executeRequest(Functor requestOperation,
                                const QObject *context, QtPrivate::QSlotObjectBase *slot)
     {
+        if (!qnam)
+            return warnNoAccessManager();
         verifyThreadAffinity(context);
         QNetworkReply *reply = requestOperation();
         return createActiveRequest(reply, context, slot);
     }
 
     template<typename Functor, typename Json>
-    QRestReply *executeRequest(Functor requestOperation, Json jsonData,
+    QNetworkReply *executeRequest(Functor requestOperation, Json jsonData,
                                const QNetworkRequest &request,
                                const QObject *context, QtPrivate::QSlotObjectBase *slot)
     {
+        if (!qnam)
+            return warnNoAccessManager();
         verifyThreadAffinity(context);
         QNetworkRequest req(request);
         if (!request.header(QNetworkRequest::ContentTypeHeader).isValid()) {
@@ -70,12 +68,14 @@ public:
     }
 
     void verifyThreadAffinity(const QObject *contextObject);
+    Q_DECL_COLD_FUNCTION
+    QNetworkReply* warnNoAccessManager();
 
     struct CallerInfo {
-        const QObject *contextObject = nullptr;
+        QPointer<const QObject> contextObject = nullptr;
         QtPrivate::SlotObjSharedPtr slot;
     };
-    QHash<QRestReply*, CallerInfo> activeRequests;
+    QHash<QNetworkReply*, CallerInfo> activeRequests;
 
     QNetworkAccessManager *qnam = nullptr;
     bool deletesRepliesOnFinished = true;
