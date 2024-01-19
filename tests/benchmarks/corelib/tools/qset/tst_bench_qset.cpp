@@ -9,11 +9,17 @@ class tst_QSet : public QObject
     Q_OBJECT
 
 private slots:
+    void initTestCase();
     void intersect_int_data();
     void intersect_int();
     void intersect_complexType_data();
     void intersect_complexType();
 };
+
+void tst_QSet::initTestCase()
+{
+    QHashSeed::setDeterministicGlobalSeed();
+}
 
 void tst_QSet::intersect_int_data()
 {
