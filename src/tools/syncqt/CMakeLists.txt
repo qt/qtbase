@@ -18,6 +18,7 @@ if(NOT QT_INTERNAL_AVOID_OVERRIDING_SYNCQT_CONFIG)
     foreach(config IN LISTS configs)
         set(CMAKE_EXE_LINKER_FLAGS_${config} "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO}")
     endforeach()
+    qt_internal_skip_sanitizer()
 endif()
 
 set(compile_definitions
@@ -69,4 +70,11 @@ else()
             "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
         ${config_type}
     )
+endif()
+
+# Needs to be called at the end after all relevant target have created
+# when using qt_internal_add_tool.
+# Doesn't work if QT_SYNC_HEADERS_AT_CONFIGURE_TIME is TRUE.
+if(NOT QT_INTERNAL_AVOID_OVERRIDING_SYNCQT_CONFIG)
+    qt_internal_skip_linking_sanitizer()
 endif()
