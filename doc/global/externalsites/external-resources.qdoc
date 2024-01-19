@@ -566,3 +566,8 @@
     \externalpage https://www.qt.io/product/quality-assurance/test-center
     \title Test Center
 */
+
+/*!
+    \externalpage https://specifications.freedesktop.org/trash-spec/trashspec-1.0.html
+    \title FreeDesktop.org Trash specification version 1.0
+*/
