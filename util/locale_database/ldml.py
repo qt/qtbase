@@ -21,6 +21,10 @@ See individual classes for further detail.
 from localetools import Error
 from dateconverter import convert_date
 
+def _attrsFromDom(dom):
+    return { k: (v if isinstance(v, str) else v.nodeValue)
+             for k, v in dom.attributes.items() }
+
 class Node (object):
     """Wrapper for an arbitrary DOM node.
 
@@ -49,6 +53,9 @@ class Node (object):
             self.draft = draft
         else:
             self.draft = max(draft, self.draftScore(attr))
+
+    def attributes(self):
+        return _attrsFromDom(self.dom)
 
     def findAllChildren(self, tag, wanted = None, allDull = False):
         """All children that do have the given tag and attributes.
@@ -184,9 +191,7 @@ class Supplement (XmlScanner):
                                 if not any(a in e.dom.attributes
                                            for a in exclude)):
             if elt.attributes:
-                yield (elt.nodeName,
-                       dict((k, v if isinstance(v, str) else v.nodeValue)
-                            for k, v in elt.attributes.items()))
+                yield elt.nodeName, _attrsFromDom(elt)
 
 class LocaleScanner (object):
     def __init__(self, name, nodes, root):
