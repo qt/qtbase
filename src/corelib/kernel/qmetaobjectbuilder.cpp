@@ -1162,8 +1162,8 @@ static int buildMetaObject(QMetaObjectBuilderPrivate *d, char *buf,
     }
 
     // Populate the QMetaObjectPrivate structure.
-    QMetaObjectPrivate *pmeta
-        = reinterpret_cast<QMetaObjectPrivate *>(buf + size);
+    QMetaObjectPrivate *pmeta = buf ? reinterpret_cast<QMetaObjectPrivate *>(buf + size)
+                                    : nullptr;
     //int pmetaSize = size;
     dataIndex = MetaObjectPrivateFieldCount;
     int methodParametersDataSize =
