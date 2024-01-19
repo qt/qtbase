@@ -7,14 +7,20 @@
 #include <QtSql/qtsqlglobal.h>
 #include <QtSql/qsqlrecord.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qmetaobject.h>
 #include <QtCore/qstring.h>
 
+// clazy:excludeall=qproperty-without-notify
 QT_BEGIN_NAMESPACE
 
 
 class Q_SQL_EXPORT QSqlIndex : public QSqlRecord
 {
+    Q_GADGET
 public:
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QString cursorName READ cursorName WRITE setCursorName)
+
     explicit QSqlIndex(const QString &cursorName = QString(), const QString &name = QString());
     QSqlIndex(const QSqlIndex &other);
     QSqlIndex(QSqlIndex &&other) noexcept = default;
