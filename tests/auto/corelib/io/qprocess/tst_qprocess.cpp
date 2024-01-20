@@ -2343,29 +2343,29 @@ void tst_QProcess::setStandardInputFile()
 
 void tst_QProcess::setStandardOutputFile_data()
 {
-    QTest::addColumn<int>("channelToTest");
-    QTest::addColumn<int>("_channelMode");
+    QTest::addColumn<QProcess::ProcessChannel>("channelToTest");
+    QTest::addColumn<QProcess::ProcessChannelMode>("channelMode");
     QTest::addColumn<bool>("append");
 
-    QTest::newRow("stdout-truncate") << int(QProcess::StandardOutput)
-                                     << int(QProcess::SeparateChannels)
+    QTest::newRow("stdout-truncate") << QProcess::StandardOutput
+                                     << QProcess::SeparateChannels
                                      << false;
-    QTest::newRow("stdout-append") << int(QProcess::StandardOutput)
-                                   << int(QProcess::SeparateChannels)
+    QTest::newRow("stdout-append") << QProcess::StandardOutput
+                                   << QProcess::SeparateChannels
                                    << true;
 
-    QTest::newRow("stderr-truncate") << int(QProcess::StandardError)
-                                     << int(QProcess::SeparateChannels)
+    QTest::newRow("stderr-truncate") << QProcess::StandardError
+                                     << QProcess::SeparateChannels
                                      << false;
-    QTest::newRow("stderr-append") << int(QProcess::StandardError)
-                                   << int(QProcess::SeparateChannels)
+    QTest::newRow("stderr-append") << QProcess::StandardError
+                                   << QProcess::SeparateChannels
                                    << true;
 
-    QTest::newRow("merged-truncate") << int(QProcess::StandardOutput)
-                                     << int(QProcess::MergedChannels)
+    QTest::newRow("merged-truncate") << QProcess::StandardOutput
+                                     << QProcess::MergedChannels
                                      << false;
-    QTest::newRow("merged-append") << int(QProcess::StandardOutput)
-                                   << int(QProcess::MergedChannels)
+    QTest::newRow("merged-append") << QProcess::StandardOutput
+                                   << QProcess::MergedChannels
                                    << true;
 }
 
@@ -2374,11 +2374,10 @@ void tst_QProcess::setStandardOutputFile()
     static const char data[] = "Original data. ";
     static const char testdata[] = "Test data.";
 
-    QFETCH(int, channelToTest);
-    QFETCH(int, _channelMode);
+    QFETCH(QProcess::ProcessChannel, channelToTest);
+    QFETCH(QProcess::ProcessChannelMode, channelMode);
     QFETCH(bool, append);
 
-    QProcess::ProcessChannelMode channelMode = QProcess::ProcessChannelMode(_channelMode);
     QIODevice::OpenMode mode = append ? QIODevice::Append : QIODevice::Truncate;
 
     // create the destination file with data
@@ -2862,23 +2861,23 @@ void tst_QProcess::startStopStartStop()
 //-----------------------------------------------------------------------------
 void tst_QProcess::startStopStartStopBuffers_data()
 {
-    QTest::addColumn<int>("channelMode1");
-    QTest::addColumn<int>("channelMode2");
+    QTest::addColumn<QProcess::ProcessChannelMode>("channelMode1");
+    QTest::addColumn<QProcess::ProcessChannelMode>("channelMode2");
 
-    QTest::newRow("separate-separate") << int(QProcess::SeparateChannels) << int(QProcess::SeparateChannels);
-    QTest::newRow("separate-merged") << int(QProcess::SeparateChannels) << int(QProcess::MergedChannels);
-    QTest::newRow("merged-separate") << int(QProcess::MergedChannels) << int(QProcess::SeparateChannels);
-    QTest::newRow("merged-merged") << int(QProcess::MergedChannels) << int(QProcess::MergedChannels);
-    QTest::newRow("merged-forwarded") << int(QProcess::MergedChannels) << int(QProcess::ForwardedChannels);
+    QTest::newRow("separate-separate") << QProcess::SeparateChannels << QProcess::SeparateChannels;
+    QTest::newRow("separate-merged")   << QProcess::SeparateChannels << QProcess::MergedChannels;
+    QTest::newRow("merged-separate")   << QProcess::MergedChannels   << QProcess::SeparateChannels;
+    QTest::newRow("merged-merged")     << QProcess::MergedChannels   << QProcess::MergedChannels;
+    QTest::newRow("merged-forwarded")  << QProcess::MergedChannels   << QProcess::ForwardedChannels;
 }
 
 void tst_QProcess::startStopStartStopBuffers()
 {
-    QFETCH(int, channelMode1);
-    QFETCH(int, channelMode2);
+    QFETCH(QProcess::ProcessChannelMode, channelMode1);
+    QFETCH(QProcess::ProcessChannelMode, channelMode2);
 
     QProcess process;
-    process.setProcessChannelMode(QProcess::ProcessChannelMode(channelMode1));
+    process.setProcessChannelMode(channelMode1);
     process.start("testProcessHang/testProcessHang");
     QVERIFY2(process.waitForReadyRead(), process.errorString().toLocal8Bit());
     if (channelMode1 == QProcess::SeparateChannels || channelMode1 == QProcess::ForwardedOutputChannel) {
@@ -2919,7 +2918,7 @@ void tst_QProcess::startStopStartStopBuffers()
     }
 #endif
 
-    process.setProcessChannelMode(QProcess::ProcessChannelMode(channelMode2));
+    process.setProcessChannelMode(channelMode2);
     process.start("testProcessEcho2/testProcessEcho2", {}, QIODevice::ReadWrite | QIODevice::Text);
 
     // the buffers should now be empty
