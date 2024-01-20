@@ -135,7 +135,10 @@ public:
     bool blockSignals(bool b) noexcept;
 
     QThread *thread() const;
+#if QT_CORE_REMOVED_SINCE(6, 7)
     void moveToThread(QThread *thread);
+#endif
+    bool moveToThread(QThread *thread QT6_DECL_NEW_OVERLOAD_TAIL);
 
     int startTimer(int interval, Qt::TimerType timerType = Qt::CoarseTimer);
     int startTimer(std::chrono::milliseconds time, Qt::TimerType timerType = Qt::CoarseTimer);

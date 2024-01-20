@@ -1628,9 +1628,9 @@ QThread *QObject::thread() const
 }
 
 /*!
-    Changes the thread affinity for this object and its children. The
-    object cannot be moved if it has a parent. Event processing will
-    continue in the \a targetThread.
+    Changes the thread affinity for this object and its children and
+    returns \c true on success. The object cannot be moved if it has a
+    parent. Event processing will continue in the \a targetThread.
 
     To move an object to the main thread, use QApplication::instance()
     to retrieve a pointer to the current application, and then use
@@ -1667,26 +1667,26 @@ QThread *QObject::thread() const
 
     \sa thread()
  */
-void QObject::moveToThread(QThread *targetThread)
+bool QObject::moveToThread(QThread *targetThread QT6_IMPL_NEW_OVERLOAD_TAIL)
 {
     Q_D(QObject);
 
     if (d->threadData.loadRelaxed()->thread.loadAcquire() == targetThread) {
         // object is already in this thread
-        return;
+        return true;
     }
 
     if (d->parent != nullptr) {
         qWarning("QObject::moveToThread: Cannot move objects with a parent");
-        return;
+        return false;
     }
     if (d->isWidget) {
         qWarning("QObject::moveToThread: Widgets cannot be moved to a new thread");
-        return;
+        return false;
     }
     if (!d->bindingStorage.isEmpty()) {
         qWarning("QObject::moveToThread: Can not move objects that contain bindings or are used in bindings to a new thread.");
-        return;
+        return false;
     }
 
     QThreadData *currentData = QThreadData::current();
@@ -1706,7 +1706,7 @@ void QObject::moveToThread(QThread *targetThread)
                  "DYLD_PRINT_LIBRARIES=1 and check that only one set of binaries are being loaded.");
 #endif
 
-        return;
+        return false;
     }
 
     // prepare to move
@@ -1740,6 +1740,7 @@ void QObject::moveToThread(QThread *targetThread)
 
     // now currentData can commit suicide if it wants to
     currentData->deref();
+    return true;
 }
 
 void QObjectPrivate::moveToThread_helper()

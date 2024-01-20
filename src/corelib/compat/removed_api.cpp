@@ -852,6 +852,11 @@ QObject *qt_qFindChild_helper(const QObject *parent, const QString &name, const 
     return qt_qFindChild_helper(parent, QAnyStringView{name}, mo, options);
 }
 
+void QObject::moveToThread(QThread *targetThread)
+{
+    moveToThread(targetThread, QT6_CALL_NEW_OVERLOAD);
+}
+
 #include "qobjectdefs.h"
 
 int QMetaObject::indexOfEnumerator(const char *name) const
