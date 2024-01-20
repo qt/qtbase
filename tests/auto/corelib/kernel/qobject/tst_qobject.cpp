@@ -1870,13 +1870,15 @@ void tst_QObject::moveToThread()
         QObject *child = new QObject(object);
         QCOMPARE(object->thread(), currentThread);
         QCOMPARE(child->thread(), currentThread);
-        object->moveToThread(0);
+        QVERIFY(object->moveToThread(nullptr));
         QCOMPARE(object->thread(), (QThread *)0);
         QCOMPARE(child->thread(), (QThread *)0);
-        object->moveToThread(currentThread);
+        QVERIFY(object->moveToThread(currentThread));
         QCOMPARE(object->thread(), currentThread);
         QCOMPARE(child->thread(), currentThread);
-        object->moveToThread(0);
+        QTest::ignoreMessage(QtWarningMsg, "QObject::moveToThread: Cannot move objects with a parent");
+        QVERIFY(!child->moveToThread(nullptr));
+        QVERIFY(object->moveToThread(nullptr));
         QCOMPARE(object->thread(), (QThread *)0);
         QCOMPARE(child->thread(), (QThread *)0);
         // can delete an object with no thread anywhere
