@@ -2266,7 +2266,7 @@ int QMessageBox::information(QWidget *parent, const QString &title, const QStrin
 }
 
 /*!
-    \deprecated since 6.2. Use the overload taking StandardButtons instead.
+    \deprecated [6.2] Use the overload taking StandardButtons instead.
     \overload
 
     Displays an information message box with the given \a title and
@@ -2565,7 +2565,7 @@ int QMessageBox::critical(QWidget *parent, const QString &title, const QString& 
 
 
 /*!
-    \deprecated
+    \deprecated [6.2]
 
     Returns the text of the message box button \a button, or
     an empty string if the message box does not contain the button.
@@ -2586,7 +2586,7 @@ QString QMessageBox::buttonText(int button) const
 }
 
 /*!
-    \deprecated
+    \deprecated [6.2]
 
     Sets the text of the message box button \a button to \a text.
     Setting the text of a button that is not in the message box is
@@ -2924,7 +2924,7 @@ void qRequireVersion(int argc, char *argv[], QAnyStringView req)
 
 #if QT_DEPRECATED_SINCE(6,2)
 /*!
-    \deprecated
+    \deprecated [6.2]
 
     Returns the pixmap used for a standard icon. This allows the
     pixmaps to be used in more complex message boxes. \a icon
