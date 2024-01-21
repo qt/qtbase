@@ -799,23 +799,32 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
 void QODBCDriverPrivate::splitTableQualifier(const QString &qualifier, QString &catalog,
                                              QString &schema, QString &table) const
 {
+    Q_Q(const QODBCDriver);
+    const auto adjustName = [&](const QString &name) {
+        if (q->isIdentifierEscaped(name, QSqlDriver::TableName))
+            return q->stripDelimiters(name, QSqlDriver::TableName);
+        return adjustCase(name);
+    };
+    catalog.clear();
+    schema.clear();
+    table.clear();
     if (!useSchema) {
-        table = qualifier;
+        table = adjustName(qualifier);
         return;
     }
     const QList<QStringView> l = QStringView(qualifier).split(u'.');
     switch (l.count()) {
         case 1:
-            table = qualifier;
+            table = adjustName(qualifier);
             break;
         case 2:
-            schema = l.at(0).toString();
-            table = l.at(1).toString();
+            schema = adjustName(l.at(0).toString());
+            table = adjustName(l.at(1).toString());
             break;
         case 3:
-            catalog = l.at(0).toString();
-            schema = l.at(1).toString();
-            table = l.at(2).toString();
+            catalog = adjustName(l.at(0).toString());
+            schema = adjustName(l.at(1).toString());
+            table = adjustName(l.at(2).toString());
             break;
         default:
             qSqlWarning(QString::fromLatin1("QODBCDriver::splitTableQualifier: Unable to split table qualifier '%1'")
@@ -2394,21 +2403,6 @@ QSqlIndex QODBCDriver::primaryIndex(const QString& tablename) const
     QString catalog, schema, table;
     d->splitTableQualifier(tablename, catalog, schema, table);
 
-    if (isIdentifierEscaped(catalog, QSqlDriver::TableName))
-        catalog = stripDelimiters(catalog, QSqlDriver::TableName);
-    else
-        catalog = d->adjustCase(catalog);
-
-    if (isIdentifierEscaped(schema, QSqlDriver::TableName))
-        schema = stripDelimiters(schema, QSqlDriver::TableName);
-    else
-        schema = d->adjustCase(schema);
-
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
-    else
-        table = d->adjustCase(table);
-
     r = SQLSetStmtAttr(hStmt,
                         SQL_ATTR_CURSOR_TYPE,
                         (SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,
@@ -2488,24 +2482,6 @@ QSqlRecord QODBCDriver::record(const QString& tablename) const
         return fil;
 
     SQLHANDLE hStmt;
-    QString catalog, schema, table;
-    d->splitTableQualifier(tablename, catalog, schema, table);
-
-    if (isIdentifierEscaped(catalog, QSqlDriver::TableName))
-        catalog = stripDelimiters(catalog, QSqlDriver::TableName);
-    else
-        catalog = d->adjustCase(catalog);
-
-    if (isIdentifierEscaped(schema, QSqlDriver::TableName))
-        schema = stripDelimiters(schema, QSqlDriver::TableName);
-    else
-        schema = d->adjustCase(schema);
-
-    if (isIdentifierEscaped(table, QSqlDriver::TableName))
-        table = stripDelimiters(table, QSqlDriver::TableName);
-    else
-        table = d->adjustCase(table);
-
     SQLRETURN r = SQLAllocHandle(SQL_HANDLE_STMT,
                                   d->hDbc,
                                   &hStmt);
@@ -2517,6 +2493,10 @@ QSqlRecord QODBCDriver::record(const QString& tablename) const
                         SQL_ATTR_CURSOR_TYPE,
                         (SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,
                         SQL_IS_UINTEGER);
+
+    QString catalog, schema, table;
+    d->splitTableQualifier(tablename, catalog, schema, table);
+
     {
         auto c = toSQLTCHAR(catalog);
         auto s = toSQLTCHAR(schema);
