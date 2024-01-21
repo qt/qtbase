@@ -115,6 +115,7 @@ public:
     DefaultCase defaultCase() const;
     QString adjustCase(const QString&) const;
     QChar quoteChar();
+    SQLRETURN sqlFetchNext(SQLHANDLE hStmt) const;
 private:
     bool isQuoteInitialized = false;
     QChar quote = u'"';
@@ -674,6 +675,13 @@ QChar QODBCDriverPrivate::quoteChar()
         isQuoteInitialized = true;
     }
     return quote;
+}
+
+SQLRETURN QODBCDriverPrivate::sqlFetchNext(SQLHANDLE hStmt) const
+{
+    if (hasSQLFetchScroll)
+        return SQLFetchScroll(hStmt, SQL_FETCH_NEXT, 0);
+    return SQLFetch(hStmt);
 }
 
 static SQLRETURN qt_string_SQLSetConnectAttr(SQLHDBC handle, SQLINTEGER attr, const QString &val)
@@ -2340,13 +2348,7 @@ QStringList QODBCDriver::tables(QSql::TableType type) const
     if (r != SQL_SUCCESS)
         qSqlWarning("QODBCDriver::tables Unable to execute table list"_L1, d);
 
-    if (d->hasSQLFetchScroll)
-        r = SQLFetchScroll(hStmt,
-                           SQL_FETCH_NEXT,
-                           0);
-    else
-        r = SQLFetch(hStmt);
-
+    r = d->sqlFetchNext(hStmt);
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO && r != SQL_NO_DATA) {
         qSqlWarning("QODBCDriver::tables failed to retrieve table/view list: ("_L1
                             + QString::number(r) + u':',
@@ -2356,13 +2358,7 @@ QStringList QODBCDriver::tables(QSql::TableType type) const
 
     while (r == SQL_SUCCESS) {
         tl.append(qGetStringData(hStmt, 2, -1, d->unicode).toString());
-
-        if (d->hasSQLFetchScroll)
-            r = SQLFetchScroll(hStmt,
-                               SQL_FETCH_NEXT,
-                               0);
-        else
-            r = SQLFetch(hStmt);
+        r = d->sqlFetchNext(hStmt);
     }
 
     r = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
@@ -2427,12 +2423,7 @@ QSqlIndex QODBCDriver::primaryIndex(const QString& tablename) const
             }
     }
 
-    if (d->hasSQLFetchScroll)
-        r = SQLFetchScroll(hStmt,
-                           SQL_FETCH_NEXT,
-                           0);
-    else
-        r = SQLFetch(hStmt);
+    r = d->sqlFetchNext(hStmt);
 
     int fakeId = 0;
     QString cName, idxName;
@@ -2448,13 +2439,7 @@ QSqlIndex QODBCDriver::primaryIndex(const QString& tablename) const
         index.append(rec.field(cName));
         index.setName(idxName);
 
-        if (d->hasSQLFetchScroll)
-            r = SQLFetchScroll(hStmt,
-                               SQL_FETCH_NEXT,
-                               0);
-        else
-            r = SQLFetch(hStmt);
-
+        r = d->sqlFetchNext(hStmt);
     }
     r = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
     if (r!= SQL_SUCCESS)
@@ -2499,24 +2484,12 @@ QSqlRecord QODBCDriver::record(const QString& tablename) const
     if (r != SQL_SUCCESS)
         qSqlWarning("QODBCDriver::record: Unable to execute column list"_L1, d);
 
-    if (d->hasSQLFetchScroll)
-        r = SQLFetchScroll(hStmt,
-                           SQL_FETCH_NEXT,
-                           0);
-    else
-        r = SQLFetch(hStmt);
-
+    r = d->sqlFetchNext(hStmt);
     // Store all fields in a StringList because some drivers can't detail fields in this FETCH loop
     while (r == SQL_SUCCESS) {
 
         fil.append(qMakeFieldInfo(hStmt, d));
-
-        if (d->hasSQLFetchScroll)
-            r = SQLFetchScroll(hStmt,
-                               SQL_FETCH_NEXT,
-                               0);
-        else
-            r = SQLFetch(hStmt);
+        r = d->sqlFetchNext(hStmt);
     }
 
     r = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
