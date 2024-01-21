@@ -565,8 +565,6 @@ static bool isAutoValue(const SQLHANDLE hStmt, int column)
     return nNumericAttribute != SQL_FALSE;
 }
 
-static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMessage);
-
 // creates a QSqlField from a valid hStmt generated
 // by SQLColumns. The hStmt has to point to a valid position.
 static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, const QODBCDriverPrivate* p)
@@ -589,16 +587,7 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, const QODBCDriverPrivate*
     return f;
 }
 
-static QSqlField qMakeFieldInfo(const QODBCResultPrivate* p, int i )
-{
-    QString errorMessage;
-    const QSqlField result = qMakeFieldInfo(p->hStmt, i, &errorMessage);
-    if (!errorMessage.isEmpty())
-        qSqlWarning(errorMessage, p);
-    return result;
-}
-
-static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMessage)
+static QSqlField qMakeFieldInfo(const QODBCResultPrivate *p, int i)
 {
     SQLSMALLINT colNameLen;
     SQLSMALLINT colType;
@@ -607,8 +596,7 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMess
     SQLSMALLINT nullable;
     SQLRETURN r = SQL_ERROR;
     QVarLengthArray<SQLTCHAR, COLNAMESIZE> colName(COLNAMESIZE);
-    errorMessage->clear();
-    r = SQLDescribeCol(hStmt,
+    r = SQLDescribeCol(p->hStmt,
                         i+1,
                         colName.data(), SQLSMALLINT(colName.size()),
                         &colNameLen,
@@ -618,12 +606,12 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMess
                         &nullable);
 
     if (r != SQL_SUCCESS) {
-        *errorMessage = QStringLiteral("qMakeField: Unable to describe column ") + QString::number(i);
+        qSqlWarning(QStringLiteral("qMakeField: Unable to describe column ") + QString::number(i), p);
         return QSqlField();
     }
 
     SQLLEN unsignedFlag = SQL_FALSE;
-    r = SQLColAttribute (hStmt,
+    r = SQLColAttribute (p->hStmt,
                          i + 1,
                          SQL_DESC_UNSIGNED,
                          0,
@@ -632,7 +620,7 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMess
                          &unsignedFlag);
     if (r != SQL_SUCCESS) {
         qSqlWarning(QStringLiteral("qMakeField: Unable to get column attributes for column ")
-                    + QString::number(i), hStmt);
+                    + QString::number(i), p);
     }
 
     const QString qColName(fromSQLTCHAR(colName, colNameLen));
@@ -647,10 +635,10 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt, int i, QString *errorMess
     else if (nullable == SQL_NULLABLE)
         f.setRequired(false);
     // else we don't know
-    f.setAutoValue(isAutoValue(hStmt, i));
+    f.setAutoValue(isAutoValue(p->hStmt, i));
     QVarLengthArray<SQLTCHAR, TABLENAMESIZE> tableName(TABLENAMESIZE);
     SQLSMALLINT tableNameLen;
-    r = SQLColAttribute(hStmt,
+    r = SQLColAttribute(p->hStmt,
                         i + 1,
                         SQL_DESC_BASE_TABLE_NAME,
                         tableName.data(),
