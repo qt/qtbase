@@ -2529,9 +2529,10 @@ QString QODBCDriver::formatValue(const QSqlField &field,
         r = "NULL"_L1;
     } else if (field.metaType().id() == QMetaType::QDateTime) {
         // Use an escape sequence for the datetime fields
-        if (field.value().toDateTime().isValid()){
-            QDate dt = field.value().toDateTime().date();
-            QTime tm = field.value().toDateTime().time();
+        const QDateTime dateTime = field.value().toDateTime();
+        if (dateTime.isValid()) {
+            const QDate dt = dateTime.date();
+            const QTime tm = dateTime.time();
             // Dateformat has to be "yyyy-MM-dd hh:mm:ss", with leading zeroes if month or day < 10
             r = "{ ts '"_L1 +
                 QString::number(dt.year()) + u'-' +
