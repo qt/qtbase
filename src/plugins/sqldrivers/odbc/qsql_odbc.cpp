@@ -41,6 +41,29 @@ static constexpr SQLSMALLINT TABLENAMESIZE = 128;
 //Map Qt parameter types to ODBC types
 static constexpr SQLSMALLINT qParamType[4] = { SQL_PARAM_INPUT, SQL_PARAM_INPUT, SQL_PARAM_OUTPUT, SQL_PARAM_INPUT_OUTPUT };
 
+class SqlStmtHandle
+{
+public:
+    SqlStmtHandle(SQLHANDLE hDbc = SQL_NULL_HSTMT)
+    {
+        SQLAllocHandle(SQL_HANDLE_STMT, hDbc, &stmtHandle);
+    }
+    ~SqlStmtHandle()
+    {
+        if (stmtHandle != SQL_NULL_HSTMT)
+            SQLFreeHandle(SQL_HANDLE_STMT, stmtHandle);
+    }
+    SQLHANDLE handle() const
+    {
+        return stmtHandle;
+    }
+    bool isValid() const
+    {
+        return stmtHandle != SQL_NULL_HSTMT;
+    }
+    SQLHANDLE stmtHandle = SQL_NULL_HSTMT;
+};
+
 template<typename C, int SIZE = sizeof(SQLTCHAR)>
 inline static QString fromSQLTCHAR(const C &input, qsizetype size = -1)
 {
@@ -115,6 +138,7 @@ public:
     DefaultCase defaultCase() const;
     QString adjustCase(const QString&) const;
     QChar quoteChar();
+    SQLRETURN sqlFetchNext(const SqlStmtHandle &hStmt) const;
     SQLRETURN sqlFetchNext(SQLHANDLE hStmt) const;
 private:
     bool isQuoteInitialized = false;
@@ -677,6 +701,11 @@ QChar QODBCDriverPrivate::quoteChar()
         isQuoteInitialized = true;
     }
     return quote;
+}
+
+SQLRETURN QODBCDriverPrivate::sqlFetchNext(const SqlStmtHandle &hStmt) const
+{
+    return sqlFetchNext(hStmt.handle());
 }
 
 SQLRETURN QODBCDriverPrivate::sqlFetchNext(SQLHANDLE hStmt) const
@@ -2051,11 +2080,8 @@ void QODBCDriverPrivate::checkUnicode()
         unicode = true;
         return;
     }
-    SQLHANDLE hStmt;
-    r = SQLAllocHandle(SQL_HANDLE_STMT,
-                                  hDbc,
-                                  &hStmt);
 
+    SqlStmtHandle hStmt(hDbc);
     // for databases which do not return something useful in SQLGetInfo and are picky about a
     // 'SELECT' statement without 'FROM' but support VALUE(foo) statement like e.g. DB2 or Oracle
     const auto statements = {
@@ -2065,21 +2091,21 @@ void QODBCDriverPrivate::checkUnicode()
     };
     for (const auto &statement : statements) {
         auto encoded = toSQLTCHAR(statement);
-        r = SQLExecDirect(hStmt, encoded.data(), SQLINTEGER(encoded.size()));
+        r = SQLExecDirect(hStmt.handle(), encoded.data(), SQLINTEGER(encoded.size()));
         if (r == SQL_SUCCESS)
             break;
     }
     if (r == SQL_SUCCESS) {
-        r = SQLFetch(hStmt);
+        r = SQLFetch(hStmt.handle());
         if (r == SQL_SUCCESS) {
             QVarLengthArray<SQLWCHAR, 10> buffer(10);
-            r = SQLGetData(hStmt, 1, SQL_C_WCHAR, buffer.data(), buffer.size() * sizeof(SQLWCHAR), NULL);
+            r = SQLGetData(hStmt.handle(), 1, SQL_C_WCHAR, buffer.data(),
+                           buffer.size() * sizeof(SQLWCHAR), NULL);
             if (r == SQL_SUCCESS && fromSQLTCHAR(buffer) == "test"_L1) {
                 unicode = true;
             }
         }
     }
-    r = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 }
 
 bool QODBCDriverPrivate::checkDriver() const
@@ -2212,24 +2238,19 @@ void QODBCDriverPrivate::checkHasMultiResults()
 void QODBCDriverPrivate::checkDateTimePrecision()
 {
     SQLINTEGER columnSize;
-    SQLHANDLE hStmt;
+    SqlStmtHandle hStmt(hDbc);
 
-    SQLRETURN r = SQLAllocHandle(SQL_HANDLE_STMT, hDbc, &hStmt);
-    if (r != SQL_SUCCESS) {
+    if (!hStmt.isValid())
         return;
-    }
 
-    r = SQLGetTypeInfo(hStmt, SQL_TIMESTAMP);
+    SQLRETURN r = SQLGetTypeInfo(hStmt.handle(), SQL_TIMESTAMP);
     if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
-        r = SQLFetch(hStmt);
-        if ( r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO )
-        {
-            if (SQLGetData(hStmt, 3, SQL_INTEGER, &columnSize, sizeof(columnSize), 0) == SQL_SUCCESS) {
+        r = SQLFetch(hStmt.handle());
+        if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
+            if (SQLGetData(hStmt.handle(), 3, SQL_INTEGER, &columnSize, sizeof(columnSize), 0) == SQL_SUCCESS)
                 datetimePrecision = (int)columnSize;
-            }
         }
     }
-    SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
 }
 
 QSqlResult *QODBCDriver::createResult() const
@@ -2314,19 +2335,16 @@ QStringList QODBCDriver::tables(QSql::TableType type) const
     QStringList tl;
     if (!isOpen())
         return tl;
-    SQLHANDLE hStmt;
 
-    SQLRETURN r = SQLAllocHandle(SQL_HANDLE_STMT,
-                                  d->hDbc,
-                                  &hStmt);
-    if (r != SQL_SUCCESS) {
+    SqlStmtHandle hStmt(d->hDbc);
+    if (!hStmt.isValid()) {
         qSqlWarning("QODBCDriver::tables: Unable to allocate handle"_L1, d);
         return tl;
     }
-    r = SQLSetStmtAttr(hStmt,
-                        SQL_ATTR_CURSOR_TYPE,
-                        (SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,
-                        SQL_IS_UINTEGER);
+    SQLRETURN r = SQLSetStmtAttr(hStmt.handle(),
+                                 SQL_ATTR_CURSOR_TYPE,
+                                 (SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,
+                                 SQL_IS_UINTEGER);
     QStringList tableType;
     if (type & QSql::Tables)
         tableType += "TABLE"_L1;
@@ -2340,7 +2358,7 @@ QStringList QODBCDriver::tables(QSql::TableType type) const
     {
         auto joinedTableTypeString = toSQLTCHAR(tableType.join(u','));
 
-        r = SQLTables(hStmt,
+        r = SQLTables(hStmt.handle(),
                       nullptr, 0,
                       nullptr, 0,
                       nullptr, 0,
@@ -2354,18 +2372,15 @@ QStringList QODBCDriver::tables(QSql::TableType type) const
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO && r != SQL_NO_DATA) {
         qSqlWarning("QODBCDriver::tables failed to retrieve table/view list: ("_L1
                             + QString::number(r) + u':',
-                    hStmt);
+                    hStmt.handle());
         return QStringList();
     }
 
     while (r == SQL_SUCCESS) {
-        tl.append(qGetStringData(hStmt, 2, -1, d->unicode).toString());
+        tl.append(qGetStringData(hStmt.handle(), 2, -1, d->unicode).toString());
         r = d->sqlFetchNext(hStmt);
     }
 
-    r = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-    if (r!= SQL_SUCCESS)
-        qSqlWarning("QODBCDriver: Unable to free statement handle"_L1 + QString::number(r), d);
     return tl;
 }
 
@@ -2378,26 +2393,23 @@ QSqlIndex QODBCDriver::primaryIndex(const QString& tablename) const
     bool usingSpecialColumns = false;
     QSqlRecord rec = record(tablename);
 
-    SQLHANDLE hStmt;
-    SQLRETURN r = SQLAllocHandle(SQL_HANDLE_STMT,
-                                  d->hDbc,
-                                  &hStmt);
-    if (r != SQL_SUCCESS) {
+    SqlStmtHandle hStmt(d->hDbc);
+    if (!hStmt.isValid()) {
         qSqlWarning("QODBCDriver::primaryIndex: Unable to list primary key"_L1, d);
         return index;
     }
     QString catalog, schema, table;
     d->splitTableQualifier(tablename, catalog, schema, table);
 
-    r = SQLSetStmtAttr(hStmt,
-                        SQL_ATTR_CURSOR_TYPE,
-                        (SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,
-                        SQL_IS_UINTEGER);
+    SQLRETURN r = SQLSetStmtAttr(hStmt.handle(),
+                                 SQL_ATTR_CURSOR_TYPE,
+                                 (SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,
+                                 SQL_IS_UINTEGER);
     {
         auto c = toSQLTCHAR(catalog);
         auto s = toSQLTCHAR(schema);
         auto t = toSQLTCHAR(table);
-        r = SQLPrimaryKeys(hStmt,
+        r = SQLPrimaryKeys(hStmt.handle(),
                            catalog.isEmpty() ? nullptr : c.data(), c.size(),
                            schema.isEmpty()  ? nullptr : s.data(), s.size(),
                            t.data(), t.size());
@@ -2410,7 +2422,7 @@ QSqlIndex QODBCDriver::primaryIndex(const QString& tablename) const
         auto c = toSQLTCHAR(catalog);
         auto s = toSQLTCHAR(schema);
         auto t = toSQLTCHAR(table);
-        r = SQLSpecialColumns(hStmt,
+        r = SQLSpecialColumns(hStmt.handle(),
                               SQL_BEST_ROWID,
                               catalog.isEmpty() ? nullptr : c.data(), c.size(),
                               schema.isEmpty()  ? nullptr : s.data(), s.size(),
@@ -2432,20 +2444,17 @@ QSqlIndex QODBCDriver::primaryIndex(const QString& tablename) const
     // Store all fields in a StringList because some drivers can't detail fields in this FETCH loop
     while (r == SQL_SUCCESS) {
         if (usingSpecialColumns) {
-            cName = qGetStringData(hStmt, 1, -1, d->unicode).toString(); // column name
+            cName = qGetStringData(hStmt.handle(), 1, -1, d->unicode).toString(); // column name
             idxName = QString::number(fakeId++); // invent a fake index name
         } else {
-            cName = qGetStringData(hStmt, 3, -1, d->unicode).toString(); // column name
-            idxName = qGetStringData(hStmt, 5, -1, d->unicode).toString(); // pk index name
+            cName = qGetStringData(hStmt.handle(), 3, -1, d->unicode).toString(); // column name
+            idxName = qGetStringData(hStmt.handle(), 5, -1, d->unicode).toString(); // pk index name
         }
         index.append(rec.field(cName));
         index.setName(idxName);
 
         r = d->sqlFetchNext(hStmt);
     }
-    r = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-    if (r!= SQL_SUCCESS)
-        qSqlWarning("QODBCDriver: Unable to free statement handle"_L1 + QString::number(r), d);
     return index;
 }
 
@@ -2456,27 +2465,24 @@ QSqlRecord QODBCDriver::record(const QString& tablename) const
     if (!isOpen())
         return fil;
 
-    SQLHANDLE hStmt;
-    SQLRETURN r = SQLAllocHandle(SQL_HANDLE_STMT,
-                                  d->hDbc,
-                                  &hStmt);
-    if (r != SQL_SUCCESS) {
+    SqlStmtHandle hStmt;
+    if (!hStmt.isValid()) {
         qSqlWarning("QODBCDriver::record: Unable to allocate handle"_L1, d);
         return fil;
     }
-    r = SQLSetStmtAttr(hStmt,
-                        SQL_ATTR_CURSOR_TYPE,
-                        (SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,
-                        SQL_IS_UINTEGER);
 
     QString catalog, schema, table;
     d->splitTableQualifier(tablename, catalog, schema, table);
 
+    SQLRETURN r = SQLSetStmtAttr(hStmt.handle(),
+                                 SQL_ATTR_CURSOR_TYPE,
+                                 (SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,
+                                 SQL_IS_UINTEGER);
     {
         auto c = toSQLTCHAR(catalog);
         auto s = toSQLTCHAR(schema);
         auto t = toSQLTCHAR(table);
-        r =  SQLColumns(hStmt,
+        r =  SQLColumns(hStmt.handle(),
                         catalog.isEmpty() ? nullptr : c.data(), c.size(),
                         schema.isEmpty()  ? nullptr : s.data(), s.size(),
                         t.data(), t.size(),
@@ -2489,15 +2495,9 @@ QSqlRecord QODBCDriver::record(const QString& tablename) const
     r = d->sqlFetchNext(hStmt);
     // Store all fields in a StringList because some drivers can't detail fields in this FETCH loop
     while (r == SQL_SUCCESS) {
-
-        fil.append(qMakeFieldInfo(hStmt, d));
+        fil.append(qMakeFieldInfo(hStmt.handle(), d));
         r = d->sqlFetchNext(hStmt);
     }
-
-    r = SQLFreeHandle(SQL_HANDLE_STMT, hStmt);
-    if (r!= SQL_SUCCESS)
-        qSqlWarning("QODBCDriver: Unable to free statement handle "_L1 + QString::number(r), d);
-
     return fil;
 }
 
