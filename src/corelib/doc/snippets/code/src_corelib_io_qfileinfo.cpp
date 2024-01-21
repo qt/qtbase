@@ -1,11 +1,21 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#include <QDir>
+#include <QFileInfo>
 
-//![newstuff]
-    QFileInfo fi("c:/temp/foo"); => fi.absoluteFilePath() => "C:/temp/foo"
-//![newstuff]
+using namespace Qt::StringLiterals;
 
+[[maybe_unused]] static void func()
+{
+{
+//![newstuff]
+    QFileInfo fi("c:/temp/foo");
+    qDebug() << fi.absoluteFilePath(); // "C:/temp/foo"
+//![newstuff]
+}
+
+{
 //! [0]
 #ifdef Q_OS_UNIX
 
@@ -22,7 +32,7 @@ info2.size();               // returns 56201
 
 #endif
 //! [0]
-
+}
 
 //! [1]
 #ifdef Q_OS_WIN
@@ -41,7 +51,7 @@ info2.size();               // returns 63942
 #endif
 //! [1]
 
-
+{
 //! [2]
 QFileInfo info("/usr/bin/env");
 
@@ -53,50 +63,60 @@ info.setFile("/etc/hosts");
 path = info.absolutePath(); // path = /etc
 base = info.baseName(); // base = hosts
 //! [2]
+}
 
+{
 //! [3]
 QFileInfo fi("/tmp/archive.tar.gz");
 QString name = fi.fileName();                // name = "archive.tar.gz"
 //! [3]
+}
 
-
+{
 //! [4]
 QFileInfo fi("/Applications/Safari.app");
 QString bundle = fi.bundleName();                // name = "Safari"
 //! [4]
+}
 
-
+{
 //! [5]
 QFileInfo fi("/tmp/archive.tar.gz");
 QString base = fi.baseName();  // base = "archive"
 //! [5]
+}
 
-
+{
 //! [6]
 QFileInfo fi("/tmp/archive.tar.gz");
 QString base = fi.completeBaseName();  // base = "archive.tar"
 //! [6]
+}
 
-
+{
 //! [7]
 QFileInfo fi("/tmp/archive.tar.gz");
 QString ext = fi.completeSuffix();  // ext = "tar.gz"
 //! [7]
+}
 
-
+{
 //! [8]
 QFileInfo fi("/tmp/archive.tar.gz");
 QString ext = fi.suffix();  // ext = "gz"
 //! [8]
+}
 
-
+{
+QString fileName = "foo";
 //! [9]
 QFileInfo info(fileName);
 if (info.isSymLink())
     fileName = info.symLinkTarget();
 //! [9]
+}
 
-
+{
 //! [10]
 QFileInfo fi("/tmp/archive.tar.gz");
 if (fi.permission(QFile::WriteUser | QFile::ReadGroup))
@@ -104,3 +124,6 @@ if (fi.permission(QFile::WriteUser | QFile::ReadGroup))
 if (fi.permission(QFile::WriteGroup | QFile::WriteOther))
     qWarning("The group or others can change the file");
 //! [10]
+}
+
+}
