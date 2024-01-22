@@ -31,7 +31,7 @@ struct QJniArrayIterator
     using pointer = T *;
     using reference = T; // difference to container requirements
     using const_reference = reference;
-    using iterator_category = std::forward_iterator_tag;
+    using iterator_category = std::bidirectional_iterator_tag;
 
     friend bool operator==(const QJniArrayIterator &lhs, const QJniArrayIterator &rhs) noexcept
     {
@@ -56,7 +56,17 @@ struct QJniArrayIterator
         ++that;
         return copy;
     }
-
+    friend QJniArrayIterator &operator--(QJniArrayIterator &that) noexcept
+    {
+        --that.m_index;
+        return that;
+    }
+    friend QJniArrayIterator operator--(QJniArrayIterator &that, int) noexcept
+    {
+        auto copy = that;
+        --that;
+        return copy;
+    }
     void swap(QJniArrayIterator &other) noexcept
     {
         std::swap(m_index, other.m_index);
@@ -190,6 +200,7 @@ public:
 
     // read-only container, so no iterator typedef
     using const_iterator = QJniArrayIterator<const T>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     QJniArray() = default;
     explicit QJniArray(jarray array) : QJniArrayBase(array) {}
@@ -238,12 +249,17 @@ public:
             return object<jarray>();
     }
 
-    const_iterator begin() const { return {0, this}; }
-    const_iterator constBegin() const { return begin(); }
-    const_iterator cbegin() const { return begin(); }
-    const_iterator end() const { return {size(), this}; }
-    const_iterator constEnd() const { return {end()}; }
-    const_iterator cend() const { return {end()}; }
+    const_iterator begin() const noexcept { return {0, this}; }
+    const_iterator constBegin() const noexcept { return begin(); }
+    const_iterator cbegin() const noexcept { return begin(); }
+    const_iterator end() const noexcept { return {size(), this}; }
+    const_iterator constEnd() const noexcept { return {end()}; }
+    const_iterator cend() const noexcept { return {end()}; }
+
+    const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end()); }
+    const_reverse_iterator crend() const noexcept { return const_reverse_iterator(begin()); }
 
     const_reference operator[](size_type i) const { return at(i); }
     const_reference at(size_type i) const

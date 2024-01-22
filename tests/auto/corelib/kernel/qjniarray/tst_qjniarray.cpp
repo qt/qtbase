@@ -104,6 +104,17 @@ void tst_QJniArray::operators()
         QCOMPARE(++it, array.end());
     }
     {
+        auto it = array.rbegin();
+        QCOMPARE(*it, 'e');
+        QCOMPARE(*++it, 'd');
+        QCOMPARE(*it++, 'd');
+        QCOMPARE(*it, 'c');
+        ++it;
+        it++;
+        QCOMPARE(*it, 'a');
+        QCOMPARE(++it, array.rend());
+    }
+    {
         QJniArray<jbyte>::const_iterator it = {};
         QCOMPARE(it, QJniArray<jbyte>::const_iterator{});
         QCOMPARE_NE(array.begin(), array.end());
