@@ -26,6 +26,13 @@ struct QJniArrayIterator
     constexpr QJniArrayIterator &operator=(const QJniArrayIterator &other) noexcept = default;
     constexpr QJniArrayIterator &operator=(QJniArrayIterator &&other) noexcept = default;
 
+    using difference_type = jsize;
+    using value_type = T;
+    using pointer = T *;
+    using reference = T; // difference to container requirements
+    using const_reference = reference;
+    using iterator_category = std::forward_iterator_tag;
+
     friend bool operator==(const QJniArrayIterator &lhs, const QJniArrayIterator &rhs) noexcept
     {
         return lhs.m_array == rhs.m_array && lhs.m_index == rhs.m_index;
@@ -34,7 +41,7 @@ struct QJniArrayIterator
     {
         return !(lhs == rhs);
     }
-    T operator*() const
+    const_reference operator*() const
     {
         return m_array->at(m_index);
     }
@@ -73,8 +80,10 @@ class QJniArrayBase : public QJniObject
                            > : std::true_type {};
 
 public:
+    using size_type = jsize;
+    using difference_type = size_type;
 
-    qsizetype size() const
+    size_type size() const
     {
         if (jarray array = object<jarray>())
             return jniEnv()->GetArrayLength(array);
@@ -156,6 +165,12 @@ class QJniArray : public QJniArrayBase
     friend struct QJniArrayIterator<T>;
 public:
     using Type = T;
+
+    using value_type = T;
+    using reference = T;
+    using const_reference = const reference;
+
+    // read-only container, so no iterator typedef
     using const_iterator = QJniArrayIterator<const T>;
 
     QJniArray() = default;
@@ -212,8 +227,8 @@ public:
     const_iterator constEnd() const { return {end()}; }
     const_iterator cend() const { return {end()}; }
 
-    T operator[](qsizetype i) const { return at(i); }
-    T at(qsizetype i) const
+    const_reference operator[](size_type i) const { return at(i); }
+    const_reference at(size_type i) const
     {
         JNIEnv *env = jniEnv();
         if constexpr (std::is_convertible_v<jobject, T>) {
@@ -295,7 +310,7 @@ public:
 template <typename ElementType, typename List, typename NewFn, typename SetFn>
 auto QJniArrayBase::makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion)
 {
-    const int length = int(list.size());
+    const size_type length = size_type(list.size());
     JNIEnv *env = QJniEnvironment::getJniEnv();
     auto localArray = (env->*newArray)(length);
     if (QJniEnvironment::checkAndClearExceptions(env))
@@ -317,7 +332,7 @@ auto QJniArrayBase::makeObjectArray(List &&list)
         return QJniArray<jobject>();
 
     JNIEnv *env = QJniEnvironment::getJniEnv();
-    const int length = int(list.size());
+    const size_type length = size_type(list.size());
 
     // this assumes that all objects in the list have the same class
     jclass elementClass = nullptr;
@@ -328,7 +343,7 @@ auto QJniArrayBase::makeObjectArray(List &&list)
     auto localArray = env->NewObjectArray(length, elementClass, nullptr);
     if (QJniEnvironment::checkAndClearExceptions(env))
         return QJniArray<jobject>();
-    for (int i = 0; i < length; ++i) {
+    for (size_type i = 0; i < length; ++i) {
         jobject object;
         if constexpr (std::is_same_v<ElementType, QJniObject>)
             object = list.at(i).object();

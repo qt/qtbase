@@ -100,6 +100,14 @@ void tst_QJniArray::operators()
         it = array.begin();
         QCOMPARE(it, array.begin());
     }
+
+    QCOMPARE(std::distance(array.begin(), array.end()), array.size());
+
+    qsizetype index = 0;
+    for (const auto &value : array) {
+        QCOMPARE(value, bytes.at(index));
+        ++index;
+    }
 }
 
 QTEST_MAIN(tst_QJniArray)
