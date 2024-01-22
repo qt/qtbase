@@ -14,6 +14,9 @@ class tst_QJniArray : public QObject
 
 public:
     tst_QJniArray() = default;
+
+private slots:
+    void size();
 };
 
 using namespace QtJniTypes;
@@ -69,6 +72,18 @@ VERIFY_RETURN_FOR_TYPE(QList<jdouble>, QList<jdouble>);
 VERIFY_RETURN_FOR_TYPE(QList<double>, QList<double>);
 
 VERIFY_RETURN_FOR_TYPE(QString, QString);
+
+void tst_QJniArray::size()
+{
+    QJniArray<jint> array;
+    QVERIFY(!array.isValid());
+    QCOMPARE(array.size(), 0);
+
+    QList<int> intList;
+    intList.resize(10);
+    auto intArray = QJniArrayBase::fromContainer(intList);
+    QCOMPARE(intArray.size(), 10);
+}
 
 QTEST_MAIN(tst_QJniArray)
 

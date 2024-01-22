@@ -11,6 +11,7 @@
 #include <QtCore/qjniobject.h>
 
 #include <utility>
+#include <type_traits>
 
 QT_BEGIN_NAMESPACE
 
@@ -87,7 +88,7 @@ public:
     >
     static auto fromContainer(Container &&container)
     {
-        using ElementType = typename Container::value_type;
+        using ElementType = typename std::remove_reference_t<Container>::value_type;
         if constexpr (std::disjunction_v<std::is_same<ElementType, jobject>,
                                          std::is_same<ElementType, QJniObject>>) {
             return makeObjectArray(std::forward<Container>(container));
