@@ -5051,7 +5051,7 @@ bool QD3D11SwapChain::createOrResize()
     if (m_flags.testFlag(SurfaceHasPreMulAlpha) || m_flags.testFlag(SurfaceHasNonPreMulAlpha)) {
         if (!rhiD->useLegacySwapchainModel && rhiD->ensureDirectCompositionDevice()) {
             if (!dcompTarget) {
-                hr = rhiD->dcompDevice->CreateTargetForHwnd(hwnd, true, &dcompTarget);
+                hr = rhiD->dcompDevice->CreateTargetForHwnd(hwnd, false, &dcompTarget);
                 if (FAILED(hr)) {
                     qWarning("Failed to create Direct Compsition target for the window: %s",
                              qPrintable(QSystemError::windowsComString(hr)));
