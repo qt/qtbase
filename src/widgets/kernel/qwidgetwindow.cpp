@@ -145,6 +145,21 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
 
 QWidgetWindow::~QWidgetWindow()
 {
+    if (!m_widget)
+        return;
+
+    QTLWExtra *topData = QWidgetPrivate::get(m_widget)->topData();
+    Q_ASSERT(topData);
+
+    // The QPlaformBackingStore may hold a reference to the window,
+    // so the backingstore needs to be deleted first.
+    topData->repaintManager.reset(nullptr);
+    delete topData->backingStore;
+    topData->backingStore = nullptr;
+    topData->widgetTextures.clear();
+
+    // Too late to do anything beyond this point
+    topData->window = nullptr;
 }
 
 #if QT_CONFIG(accessibility)
