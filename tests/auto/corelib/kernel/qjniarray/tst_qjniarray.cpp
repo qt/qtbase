@@ -93,6 +93,17 @@ void tst_QJniArray::operators()
     QVERIFY(array.isValid());
 
     {
+        auto it = array.begin();
+        QCOMPARE(*it, 'a');
+        QCOMPARE(*++it, 'b');
+        QCOMPARE(*it++, 'b');
+        QCOMPARE(*it, 'c');
+        ++it;
+        it++;
+        QCOMPARE(*it, 'e');
+        QCOMPARE(++it, array.end());
+    }
+    {
         QJniArray<jbyte>::const_iterator it = {};
         QCOMPARE(it, QJniArray<jbyte>::const_iterator{});
         QCOMPARE_NE(array.begin(), array.end());
