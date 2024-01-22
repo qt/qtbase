@@ -24,11 +24,11 @@ struct QJniArrayIterator
     constexpr QJniArrayIterator &operator=(const QJniArrayIterator &other) noexcept = default;
     constexpr QJniArrayIterator &operator=(QJniArrayIterator &&other) noexcept = default;
 
-    friend bool operator==(const QJniArrayIterator<T> &lhs, const QJniArrayIterator<T> &rhs) noexcept
+    friend bool operator==(const QJniArrayIterator &lhs, const QJniArrayIterator &rhs) noexcept
     {
         return lhs.m_array == rhs.m_array && lhs.m_index == rhs.m_index;
     }
-    friend bool operator!=(const QJniArrayIterator<T> &lhs, const QJniArrayIterator<T> &rhs) noexcept
+    friend bool operator!=(const QJniArrayIterator &lhs, const QJniArrayIterator &rhs) noexcept
     {
         return !(lhs == rhs);
     }
@@ -36,16 +36,16 @@ struct QJniArrayIterator
     {
         return m_array->at(m_index);
     }
-    friend QJniArrayIterator<T> &operator++(QJniArrayIterator<T> &that) noexcept
+    friend QJniArrayIterator &operator++(QJniArrayIterator &that) noexcept
     {
         ++that.m_index;
         return that;
     }
 
-    void swap(QJniArrayIterator<T> &other) noexcept
+    void swap(QJniArrayIterator &other) noexcept
     {
         std::swap(m_index, other.m_index);
-        std::swap(m_array, other.m_array);
+        qt_ptr_swap(m_array, other.m_array);
     }
 
 private:
