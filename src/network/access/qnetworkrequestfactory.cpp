@@ -183,7 +183,7 @@ void QNetworkRequestFactory::setSslConfiguration(const QSslConfiguration &config
     The returned request is filled with the data that this factory
     has been configured with.
 
-    \sa request(const QUrlQuery&), request(const QString&, const QUrlQuery&)
+    \sa createRequest(const QUrlQuery&), createRequest(const QString&, const QUrlQuery&)
 */
 
 QNetworkRequest QNetworkRequestFactory::createRequest() const
@@ -197,7 +197,7 @@ QNetworkRequest QNetworkRequestFactory::createRequest() const
     The returned request's URL is formed by appending the provided \a path
     to the baseUrl (which may itself have a path component).
 
-    \sa request(const QString &, const QUrlQuery &), request(), baseUrl()
+    \sa createRequest(const QString &, const QUrlQuery &), createRequest(), baseUrl()
 */
 QNetworkRequest QNetworkRequestFactory::createRequest(const QString &path) const
 {
@@ -210,7 +210,7 @@ QNetworkRequest QNetworkRequestFactory::createRequest(const QString &path) const
     The returned request's URL is formed by appending the provided \a query
     to the baseUrl.
 
-    \sa request(const QString &, const QUrlQuery &), request(), baseUrl()
+    \sa createRequest(const QString &, const QUrlQuery &), createRequest(), baseUrl()
 */
 QNetworkRequest QNetworkRequestFactory::createRequest(const QUrlQuery &query) const
 {
@@ -226,7 +226,7 @@ QNetworkRequest QNetworkRequestFactory::createRequest(const QUrlQuery &query) co
     If the provided \a path contains query items, they will be combined
     with the items in \a query.
 
-    \sa request(const QUrlQuery&), request(), baseUrl()
+    \sa createRequest(const QUrlQuery&), createRequest(), baseUrl()
  */
 QNetworkRequest QNetworkRequestFactory::createRequest(const QString &path, const QUrlQuery &query) const
 {
@@ -240,7 +240,7 @@ QNetworkRequest QNetworkRequestFactory::createRequest(const QString &path, const
     This is a convenience mechanism for setting headers that
     repeat across requests.
 
-    \sa headers(), clearHeaders(), createRequest()
+    \sa commonHeaders(), clearCommonHeaders(), createRequest()
  */
 void QNetworkRequestFactory::setCommonHeaders(const QHttpHeaders &headers)
 {
@@ -251,7 +251,7 @@ void QNetworkRequestFactory::setCommonHeaders(const QHttpHeaders &headers)
 /*!
     Returns the currently set headers.
 
-    \sa setHeaders(), clearHeaders()
+    \sa setCommonHeaders(), clearCommonHeaders()
  */
 QHttpHeaders QNetworkRequestFactory::commonHeaders() const
 {
@@ -261,7 +261,7 @@ QHttpHeaders QNetworkRequestFactory::commonHeaders() const
 /*!
     Clears current headers.
 
-    \sa headers(), setHeaders()
+    \sa commonHeaders(), setCommonHeaders()
 */
 void QNetworkRequestFactory::clearCommonHeaders()
 {
@@ -284,11 +284,11 @@ void QNetworkRequestFactory::clearCommonHeaders()
     By always re-setting the new token ensures that subsequent requests will
     always have the latest, valid, token.
 
-    The presence of the bearer token does not impact the \l headers()
-    listing. If the \l headers() also lists \c Authorization header, it
+    The presence of the bearer token does not impact the \l commonHeaders()
+    listing. If the \l commonHeaders() also lists \c Authorization header, it
     will be overwritten.
 
-    \sa setBearerToken(), headers()
+    \sa setBearerToken(), commonHeaders()
  */
 QByteArray QNetworkRequestFactory::bearerToken() const
 {
@@ -336,7 +336,7 @@ QString QNetworkRequestFactory::userName() const
 /*!
     Sets the username of this factory to \a userName.
 
-    The username is set in the request URL when \l request() is called.
+    The username is set in the request URL when \l createRequest() is called.
     The QRestAccessManager / QNetworkAccessManager will attempt to use
     these credentials when the server indicates that authentication
     is required.
@@ -375,7 +375,7 @@ QString QNetworkRequestFactory::password() const
 /*!
     Sets the password of this factory to \a password.
 
-    The password is set in the request URL when \l request() is called.
+    The password is set in the request URL when \l createRequest() is called.
     The QRestAccessManager / QNetworkAccessManager will attempt to use
     these credentials when the server indicates that authentication
     is required.
@@ -432,14 +432,14 @@ std::chrono::milliseconds QNetworkRequestFactory::transferTimeout() const
 /*!
     Returns query parameters that are added to individual requests' query
     parameters. The query parameters are added to any potential query
-    parameters provided with the individual \l request() calls.
+    parameters provided with the individual \l createRequest() calls.
 
     Use cases for using repeating query parameters are server dependent,
     but typical examples include language setting \c {?lang=en}, format
     specification \c {?format=json}, API version specification
     \c {?version=1.0} and API key authentication.
 
-    \sa setQueryParameters(), clearQueryParameters(), request()
+    \sa setQueryParameters(), clearQueryParameters(), createRequest()
 */
 QUrlQuery QNetworkRequestFactory::queryParameters() const
 {
