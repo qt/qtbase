@@ -226,6 +226,8 @@ QAbstractFileEngine *QFilePrivate::engine() const
     function mostly useless for NTFS volumes. It may still be of use for USB
     sticks that use VFAT file systems. POSIX ACLs are not manipulated, either.
 
+    \include android-content-uri-limitations.qdocinc
+
     \sa QTextStream, QDataStream, QFileInfo, QDir, {The Qt Resource System}
 */
 
@@ -759,6 +761,9 @@ QFile::link(const QString &fileName, const QString &linkName)
 
     \include qfile-copy.qdocinc
 
+    \note On Android, this operation is not yet supported for \c content
+    scheme URIs.
+
     \sa setFileName()
 */
 
@@ -867,6 +872,9 @@ QFile::copy(const QString &newName)
 
     \include qfile-copy.qdocinc
 
+    \note On Android, this operation is not yet supported for \c content
+    scheme URIs.
+
     \sa rename()
 */
 
@@ -887,6 +895,9 @@ QFile::copy(const QString &fileName, const QString &newName)
     \note In \l{QIODevice::}{WriteOnly} or \l{QIODevice::}{ReadWrite}
     mode, if the relevant file does not already exist, this function
     will try to create a new file before opening it.
+    On Android, it's expected to have access permission to the parent
+    of the file name, otherwise, it won't be possible to create this
+    non-existing file.
 
     \sa QIODevice::OpenMode, setFileName()
 */

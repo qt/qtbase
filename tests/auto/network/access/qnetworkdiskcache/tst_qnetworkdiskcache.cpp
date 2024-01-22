@@ -37,7 +37,7 @@
 #define EXAMPLE_URL "http://user:pass@localhost:4/#foo"
 #define EXAMPLE_URL2 "http://user:pass@localhost:4/bar"
 //cached objects are organized into these many subdirs
-#define NUM_SUBDIRECTORIES 16
+#define NUM_SUBDIRECTORIES 15
 
 class tst_QNetworkDiskCache : public QObject
 {

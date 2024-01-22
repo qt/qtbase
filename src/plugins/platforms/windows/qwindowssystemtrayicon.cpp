@@ -210,6 +210,7 @@ void QWindowsSystemTrayIcon::updateIcon(const QIcon &icon)
     qCDebug(lcQpaTrayIcon) << __FUNCTION__ << '(' << icon << ')' << this;
     if (icon.cacheKey() == m_icon.cacheKey())
         return;
+    m_icon = icon;
     const HICON hIconToDestroy = createIcon(icon);
     if (ensureInstalled())
         sendTrayMessage(NIM_MODIFY);
@@ -448,8 +449,15 @@ bool QWindowsSystemTrayIcon::winEvent(const MSG &message, long *result)
         QWindowsPopupMenu::notifyTriggered(LOWORD(message.wParam));
         break;
     default:
-        if (message.message == MYWM_TASKBARCREATED) // self-registered message id (tray crashed)
+        if (message.message == MYWM_TASKBARCREATED) {
+            // self-registered message id to handle that
+            // - screen resolution/DPR changed
+            const QIcon oldIcon = m_icon;
+            m_icon = QIcon(); // updateIcon is a no-op if the icon doesn't change
+            updateIcon(oldIcon);
+            // - or tray crashed
             sendTrayMessage(NIM_ADD);
+        }
         break;
     }
     return false;

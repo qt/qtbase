@@ -1434,7 +1434,8 @@ QTextStream::RealNumberNotation QTextStream::realNumberNotation() const
 /*!
     Sets the precision of real numbers to \a precision. This value
     describes the number of fraction digits QTextStream should
-    write when generating real numbers.
+    write when generating real numbers (FixedNotation, ScientificNotation), or
+    the maximum number of significant digits (SmartNotation).
 
     The precision cannot be a negative value. The default value is 6.
 
@@ -1453,7 +1454,9 @@ void QTextStream::setRealNumberPrecision(int precision)
 
 /*!
     Returns the current real number precision, or the number of fraction
-    digits QTextStream will write when generating real numbers.
+    digits QTextStream will write when generating real numbers
+    (FixedNotation, ScientificNotation), or the maximum number of significant
+    digits (SmartNotation).
 
     \sa setRealNumberNotation(), realNumberNotation(), numberFlags(), integerBase()
 */

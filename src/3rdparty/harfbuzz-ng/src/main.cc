@@ -42,7 +42,7 @@
 #define hb_blob_create_from_file_or_fail(x)  hb_blob_get_empty ()
 #endif
 
-#if !defined(HB_NO_COLOR) && !defined(HB_NO_DRAW) && defined(HB_EXPERIMENTAL_API)
+#if !defined(HB_NO_COLOR) && !defined(HB_NO_DRAW)
 static void
 svg_dump (hb_face_t *face, unsigned face_index)
 {
@@ -58,7 +58,8 @@ svg_dump (hb_face_t *face, unsigned face_index)
     const char *data = hb_blob_get_data (blob, &length);
 
     char output_path[255];
-    sprintf (output_path, "out/svg-%u-%u.svg%s",
+    snprintf (output_path, sizeof output_path,
+	     "out/svg-%u-%u.svg%s",
 	     glyph_id,
 	     face_index,
 	     // append "z" if the content is gzipped, https://stackoverflow.com/a/6059405
@@ -112,7 +113,7 @@ png_dump (hb_face_t *face, unsigned face_index)
 	const char *data = hb_blob_get_data (blob, &length);
 
 	char output_path[255];
-	sprintf (output_path, "out/png-%u-%u-%u.png", glyph_id, strike, face_index);
+	snprintf (output_path, sizeof output_path, "out/png-%u-%u-%u.png", glyph_id, strike, face_index);
 
 	FILE *f = fopen (output_path, "wb");
 	fwrite (data, 1, length, f);
@@ -129,48 +130,60 @@ png_dump (hb_face_t *face, unsigned face_index)
   hb_font_destroy (font);
 }
 
-struct user_data_t
+struct draw_data_t
 {
   FILE *f;
   hb_position_t ascender;
 };
 
 static void
-move_to (hb_position_t to_x, hb_position_t to_y, user_data_t &user_data)
+move_to (hb_draw_funcs_t *, draw_data_t *draw_data,
+	 hb_draw_state_t *,
+	 float to_x, float to_y,
+	 void *)
 {
-  fprintf (user_data.f, "M%d,%d", to_x, user_data.ascender - to_y);
+  fprintf (draw_data->f, "M%g,%g", to_x, draw_data->ascender - to_y);
 }
 
 static void
-line_to (hb_position_t to_x, hb_position_t to_y, user_data_t &user_data)
+line_to (hb_draw_funcs_t *, draw_data_t *draw_data,
+	 hb_draw_state_t *,
+	 float to_x, float to_y,
+	 void *)
 {
-  fprintf (user_data.f, "L%d,%d", to_x, user_data.ascender - to_y);
+  fprintf (draw_data->f, "L%g,%g", to_x, draw_data->ascender - to_y);
 }
 
 static void
-quadratic_to (hb_position_t control_x, hb_position_t control_y,
-	      hb_position_t to_x, hb_position_t to_y,
-	      user_data_t &user_data)
+quadratic_to (hb_draw_funcs_t *, draw_data_t *draw_data,
+	      hb_draw_state_t *,
+	      float control_x, float control_y,
+	      float to_x, float to_y,
+	      void *)
 {
-  fprintf (user_data.f, "Q%d,%d %d,%d", control_x, user_data.ascender - control_y,
-					to_x, user_data.ascender - to_y);
+  fprintf (draw_data->f, "Q%g,%g %g,%g", control_x, draw_data->ascender - control_y,
+					to_x, draw_data->ascender - to_y);
 }
 
 static void
-cubic_to (hb_position_t control1_x, hb_position_t control1_y,
-	  hb_position_t control2_x, hb_position_t control2_y,
-	  hb_position_t to_x, hb_position_t to_y,
-	  user_data_t &user_data)
+cubic_to (hb_draw_funcs_t *, draw_data_t *draw_data,
+	  hb_draw_state_t *,
+	  float control1_x, float control1_y,
+	  float control2_x, float control2_y,
+	  float to_x, float to_y,
+	  void *)
 {
-  fprintf (user_data.f, "C%d,%d %d,%d %d,%d", control1_x, user_data.ascender - control1_y,
-					       control2_x, user_data.ascender - control2_y,
-					       to_x, user_data.ascender - to_y);
+  fprintf (draw_data->f, "C%g,%g %g,%g %g,%g", control1_x, draw_data->ascender - control1_y,
+					       control2_x, draw_data->ascender - control2_y,
+					       to_x, draw_data->ascender - to_y);
 }
 
 static void
-close_path (user_data_t &user_data)
+close_path (hb_draw_funcs_t *, draw_data_t *draw_data,
+	    hb_draw_state_t *,
+	    void *)
 {
-  fprintf (user_data.f, "Z");
+  fprintf (draw_data->f, "Z");
 }
 
 static void
@@ -207,20 +220,20 @@ layered_glyph_dump (hb_font_t *font, hb_draw_funcs_t *funcs, unsigned face_index
 	hb_glyph_extents_t extents = {0};
 	if (!hb_font_get_glyph_extents (font, gid, &extents))
 	{
-	  printf ("Skip gid: %d\n", gid);
+	  printf ("Skip gid: %u\n", gid);
 	  continue;
 	}
 
 	char output_path[255];
-	sprintf (output_path, "out/colr-%u-%u-%u.svg", gid, palette, face_index);
+	snprintf (output_path, sizeof output_path, "out/colr-%u-%u-%u.svg", gid, palette, face_index);
 	FILE *f = fopen (output_path, "wb");
 	fprintf (f, "<svg xmlns=\"http://www.w3.org/2000/svg\""
 		    " viewBox=\"%d %d %d %d\">\n",
 		    extents.x_bearing, 0,
 		    extents.x_bearing + extents.width, -extents.height);
-	user_data_t user_data;
-	user_data.ascender = extents.y_bearing;
-	user_data.f = f;
+	draw_data_t draw_data;
+	draw_data.ascender = extents.y_bearing;
+	draw_data.f = f;
 
 	for (unsigned layer = 0; layer < num_layers; ++layer)
 	{
@@ -232,8 +245,7 @@ layered_glyph_dump (hb_font_t *font, hb_draw_funcs_t *funcs, unsigned face_index
 	  if (hb_color_get_alpha (color) != 255)
 	    fprintf (f, "fill-opacity=\"%.3f\"", (double) hb_color_get_alpha (color) / 255.);
 	  fprintf (f, "d=\"");
-	  if (!hb_font_draw_glyph (font, layers[layer].glyph, funcs, &user_data))
-	    printf ("Failed to decompose layer %d while %d\n", layers[layer].glyph, gid);
+	  hb_font_get_glyph_shape (font, layers[layer].glyph, funcs, &draw_data);
 	  fprintf (f, "\"/>\n");
 	}
 
@@ -258,22 +270,21 @@ dump_glyphs (hb_font_t *font, hb_draw_funcs_t *funcs, unsigned face_index)
     hb_glyph_extents_t extents = {0};
     if (!hb_font_get_glyph_extents (font, gid, &extents))
     {
-      printf ("Skip gid: %d\n", gid);
+      printf ("Skip gid: %u\n", gid);
       continue;
     }
 
     char output_path[255];
-    sprintf (output_path, "out/%u-%u.svg", face_index, gid);
+    snprintf (output_path, sizeof output_path, "out/%u-%u.svg", face_index, gid);
     FILE *f = fopen (output_path, "wb");
     fprintf (f, "<svg xmlns=\"http://www.w3.org/2000/svg\""
 		" viewBox=\"%d %d %d %d\"><path d=\"",
 		extents.x_bearing, 0,
 		extents.x_bearing + extents.width, font_extents.ascender - font_extents.descender);
-    user_data_t user_data;
-    user_data.ascender = font_extents.ascender;
-    user_data.f = f;
-    if (!hb_font_draw_glyph (font, gid, funcs, &user_data))
-      printf ("Failed to decompose gid: %d\n", gid);
+    draw_data_t draw_data;
+    draw_data.ascender = font_extents.ascender;
+    draw_data.f = f;
+    hb_font_get_glyph_shape (font, gid, funcs, &draw_data);
     fprintf (f, "\"/></svg>");
     fclose (f);
   }
@@ -300,11 +311,11 @@ dump_glyphs (hb_blob_t *blob, const char *font_name)
   fclose (font_name_file);
 
   hb_draw_funcs_t *funcs = hb_draw_funcs_create ();
-  hb_draw_funcs_set_move_to_func (funcs, (hb_draw_move_to_func_t) move_to);
-  hb_draw_funcs_set_line_to_func (funcs, (hb_draw_line_to_func_t) line_to);
-  hb_draw_funcs_set_quadratic_to_func (funcs, (hb_draw_quadratic_to_func_t) quadratic_to);
-  hb_draw_funcs_set_cubic_to_func (funcs, (hb_draw_cubic_to_func_t) cubic_to);
-  hb_draw_funcs_set_close_path_func (funcs, (hb_draw_close_path_func_t) close_path);
+  hb_draw_funcs_set_move_to_func (funcs, (hb_draw_move_to_func_t) move_to, nullptr, nullptr);
+  hb_draw_funcs_set_line_to_func (funcs, (hb_draw_line_to_func_t) line_to, nullptr, nullptr);
+  hb_draw_funcs_set_quadratic_to_func (funcs, (hb_draw_quadratic_to_func_t) quadratic_to, nullptr, nullptr);
+  hb_draw_funcs_set_cubic_to_func (funcs, (hb_draw_cubic_to_func_t) cubic_to, nullptr, nullptr);
+  hb_draw_funcs_set_close_path_func (funcs, (hb_draw_close_path_func_t) close_path, nullptr, nullptr);
 
   unsigned num_faces = hb_face_count (blob);
   for (unsigned face_index = 0; face_index < num_faces; ++face_index)
@@ -382,18 +393,18 @@ print_layout_info_using_private_api (hb_blob_t *blob)
   }
 
   unsigned num_faces = hb_face_count (blob);
-  printf ("%d font(s) found in file\n", num_faces);
+  printf ("%u font(s) found in file\n", num_faces);
   for (unsigned n_font = 0; n_font < num_faces; ++n_font)
   {
     const OpenTypeFontFace &font = ot.get_face (n_font);
-    printf ("Font %d of %d:\n", n_font, num_faces);
+    printf ("Font %u of %u:\n", n_font, num_faces);
 
     unsigned num_tables = font.get_table_count ();
-    printf ("  %d table(s) found in font\n", num_tables);
+    printf ("  %u table(s) found in font\n", num_tables);
     for (unsigned n_table = 0; n_table < num_tables; ++n_table)
     {
       const OpenTypeTable &table = font.get_table (n_table);
-      printf ("  Table %2d of %2d: %.4s (0x%08x+0x%08x)\n", n_table, num_tables,
+      printf ("  Table %2u of %2u: %.4s (0x%08x+0x%08x)\n", n_table, num_tables,
 	      (const char *) table.tag,
 	      (unsigned) table.offset,
 	      (unsigned) table.length);
@@ -408,11 +419,11 @@ print_layout_info_using_private_api (hb_blob_t *blob)
 	const GSUBGPOS &g = *reinterpret_cast<const GSUBGPOS *> (font_data + table.offset);
 
 	unsigned num_scripts = g.get_script_count ();
-	printf ("    %d script(s) found in table\n", num_scripts);
+	printf ("    %u script(s) found in table\n", num_scripts);
 	for (unsigned n_script = 0; n_script < num_scripts; ++n_script)
 	{
 	  const Script &script = g.get_script (n_script);
-	  printf ("    Script %2d of %2d: %.4s\n", n_script, num_scripts,
+	  printf ("    Script %2u of %2u: %.4s\n", n_script, num_scripts,
 		  (const char *) g.get_script_tag (n_script));
 
 	  if (!script.has_default_lang_sys ())
@@ -432,41 +443,41 @@ print_layout_info_using_private_api (hb_blob_t *blob)
 	    if (!langsys.has_required_feature ())
 	      printf ("        No required feature\n");
 	    else
-	      printf ("        Required feature index: %d\n",
+	      printf ("        Required feature index: %u\n",
 		      langsys.get_required_feature_index ());
 
 	    unsigned num_features = langsys.get_feature_count ();
-	    printf ("        %d feature(s) found in language system\n", num_features);
+	    printf ("        %u feature(s) found in language system\n", num_features);
 	    for (unsigned n_feature = 0; n_feature < num_features; ++n_feature)
 	    {
-	      printf ("        Feature index %2d of %2d: %d\n", n_feature, num_features,
+	      printf ("        Feature index %2u of %2u: %u\n", n_feature, num_features,
 		      langsys.get_feature_index (n_feature));
 	    }
 	  }
 	}
 
 	unsigned num_features = g.get_feature_count ();
-	printf ("    %d feature(s) found in table\n", num_features);
+	printf ("    %u feature(s) found in table\n", num_features);
 	for (unsigned n_feature = 0; n_feature < num_features; ++n_feature)
 	{
 	  const Feature &feature = g.get_feature (n_feature);
 	  unsigned num_lookups = feature.get_lookup_count ();
-	  printf ("    Feature %2d of %2d: %c%c%c%c\n", n_feature, num_features,
+	  printf ("    Feature %2u of %2u: %c%c%c%c\n", n_feature, num_features,
 		  HB_UNTAG (g.get_feature_tag (n_feature)));
 
-	  printf ("        %d lookup(s) found in feature\n", num_lookups);
+	  printf ("        %u lookup(s) found in feature\n", num_lookups);
 	  for (unsigned n_lookup = 0; n_lookup < num_lookups; ++n_lookup) {
-	    printf ("        Lookup index %2d of %2d: %d\n", n_lookup, num_lookups,
+	    printf ("        Lookup index %2u of %2u: %u\n", n_lookup, num_lookups,
 		    feature.get_lookup_index (n_lookup));
 	  }
 	}
 
 	unsigned num_lookups = g.get_lookup_count ();
-	printf ("    %d lookup(s) found in table\n", num_lookups);
+	printf ("    %u lookup(s) found in table\n", num_lookups);
 	for (unsigned n_lookup = 0; n_lookup < num_lookups; ++n_lookup)
 	{
 	  const Lookup &lookup = g.get_lookup (n_lookup);
-	  printf ("    Lookup %2d of %2d: type %d, props 0x%04X\n", n_lookup, num_lookups,
+	  printf ("    Lookup %2u of %2u: type %u, props 0x%04X\n", n_lookup, num_lookups,
 		  lookup.get_type (), lookup.get_props ());
 	}
 
@@ -482,12 +493,12 @@ print_layout_info_using_private_api (hb_blob_t *blob)
 		  gdef.has_glyph_classes () ? "" : "no ");
 	printf ("    Has %smark attachment types\n",
 		  gdef.has_mark_attachment_types () ? "" : "no ");
-	printf ("    Has %sattach points\n",
-		  gdef.has_attach_points () ? "" : "no ");
+	printf ("    Has %sattach list\n",
+		  gdef.has_attach_list () ? "" : "no ");
 	printf ("    Has %slig carets\n",
 		  gdef.has_lig_carets () ? "" : "no ");
-	printf ("    Has %smark sets\n",
-		  gdef.has_mark_sets () ? "" : "no ");
+	printf ("    Has %smark glyph sets\n",
+		  gdef.has_mark_glyph_sets () ? "" : "no ");
 	break;
 	}
       }
@@ -508,11 +519,11 @@ main (int argc, char **argv)
 
   hb_blob_t *blob = hb_blob_create_from_file_or_fail (argv[1]);
   assert (blob);
-  printf ("Opened font file %s: %d bytes long\n", argv[1], hb_blob_get_length (blob));
+  printf ("Opened font file %s: %u bytes long\n", argv[1], hb_blob_get_length (blob));
 #ifndef MAIN_CC_NO_PRIVATE_API
   print_layout_info_using_private_api (blob);
 #endif
-#if !defined(HB_NO_COLOR) && !defined(HB_NO_DRAW) && defined(HB_EXPERIMENTAL_API)
+#if !defined(HB_NO_COLOR) && !defined(HB_NO_DRAW)
   dump_glyphs (blob, argv[1]);
 #endif
   hb_blob_destroy (blob);

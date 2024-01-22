@@ -29,9 +29,12 @@
 #include <QByteArray>
 #include <QCryptographicHash>
 #include <QFile>
+#include <QMetaEnum>
 #include <QRandomGenerator>
 #include <QString>
 #include <QTest>
+
+#include <functional>
 
 #include <time.h>
 
@@ -39,6 +42,8 @@ class tst_bench_QCryptographicHash : public QObject
 {
     Q_OBJECT
     QByteArray blockOfData;
+
+    using Algorithm = QCryptographicHash::Algorithm;
 
 public:
     tst_bench_QCryptographicHash();
@@ -52,61 +57,15 @@ private Q_SLOTS:
     void addDataChunked();
 };
 
-const int MaxCryptoAlgorithm = QCryptographicHash::Sha3_512;
 const int MaxBlockSize = 65536;
 
-const char *algoname(int i)
+static void for_each_algorithm(std::function<void(QCryptographicHash::Algorithm, const char*)> f)
 {
-    switch (QCryptographicHash::Algorithm(i)) {
-    case QCryptographicHash::Md4:
-        return "md4-";
-    case QCryptographicHash::Md5:
-        return "md5-";
-    case QCryptographicHash::Sha1:
-        return "sha1-";
-    case QCryptographicHash::Sha224:
-        return "sha2_224-";
-    case QCryptographicHash::Sha256:
-        return "sha2_256-";
-    case QCryptographicHash::Sha384:
-        return "sha2_384-";
-    case QCryptographicHash::Sha512:
-        return "sha2_512-";
-    case QCryptographicHash::Sha3_224:
-        return "sha3_224-";
-    case QCryptographicHash::Sha3_256:
-        return "sha3_256-";
-    case QCryptographicHash::Sha3_384:
-        return "sha3_384-";
-    case QCryptographicHash::Sha3_512:
-        return "sha3_512-";
-    case QCryptographicHash::Keccak_224:
-        return "keccak_224-";
-    case QCryptographicHash::Keccak_256:
-        return "keccak_256-";
-    case QCryptographicHash::Keccak_384:
-        return "keccak_384-";
-    case QCryptographicHash::Keccak_512:
-        return "keccak_512-";
-    case QCryptographicHash::Blake2b_160:
-        return "blake2b_160-";
-    case QCryptographicHash::Blake2b_256:
-        return "blake2b_256-";
-    case QCryptographicHash::Blake2b_384:
-        return "blake2b_384-";
-    case QCryptographicHash::Blake2b_512:
-        return "blake2b_512-";
-    case QCryptographicHash::Blake2s_128:
-        return "blake2s_128-";
-    case QCryptographicHash::Blake2s_160:
-        return "blake2s_160-";
-    case QCryptographicHash::Blake2s_224:
-        return "blake2s_224-";
-    case QCryptographicHash::Blake2s_256:
-        return "blake2s_256-";
-    }
-    Q_UNREACHABLE();
-    return nullptr;
+    Q_ASSERT(f);
+    using A = QCryptographicHash::Algorithm;
+    static const auto metaEnum = QMetaEnum::fromType<A>();
+    for (int i = 0, value = metaEnum.value(i); value != -1; value = metaEnum.value(++i))
+        f(A(value), metaEnum.key(i));
 }
 
 tst_bench_QCryptographicHash::tst_bench_QCryptographicHash()
@@ -126,7 +85,7 @@ tst_bench_QCryptographicHash::tst_bench_QCryptographicHash()
 
 void tst_bench_QCryptographicHash::hash_data()
 {
-    QTest::addColumn<int>("algorithm");
+    QTest::addColumn<Algorithm>("algo");
     QTest::addColumn<QByteArray>("data");
 
     static const int datasizes[] = { 0, 1, 64, 65, 512, 4095, 4096, 4097, 65536 };
@@ -134,42 +93,42 @@ void tst_bench_QCryptographicHash::hash_data()
         Q_ASSERT(datasizes[i] < MaxBlockSize);
         QByteArray data = QByteArray::fromRawData(blockOfData.constData(), datasizes[i]);
 
-        for (int algo = QCryptographicHash::Md4; algo <= MaxCryptoAlgorithm; ++algo)
-            QTest::newRow(algoname(algo) + QByteArray::number(datasizes[i])) << algo << data;
+        for_each_algorithm([&] (Algorithm algo, const char *name) {
+            QTest::addRow("%s-%d", name, datasizes[i]) << algo << data;
+        });
     }
 }
 
 void tst_bench_QCryptographicHash::hash()
 {
-    QFETCH(int, algorithm);
+    QFETCH(const Algorithm, algo);
     QFETCH(QByteArray, data);
 
-    QCryptographicHash::Algorithm algo = QCryptographicHash::Algorithm(algorithm);
     QBENCHMARK {
-        QCryptographicHash::hash(data, algo);
+        [[maybe_unused]]
+        auto r = QCryptographicHash::hash(data, algo);
     }
 }
 
 void tst_bench_QCryptographicHash::addData()
 {
-    QFETCH(int, algorithm);
+    QFETCH(const Algorithm, algo);
     QFETCH(QByteArray, data);
 
-    QCryptographicHash::Algorithm algo = QCryptographicHash::Algorithm(algorithm);
     QCryptographicHash hash(algo);
     QBENCHMARK {
         hash.reset();
         hash.addData(data);
-        hash.result();
+        [[maybe_unused]]
+        auto r = hash.result();
     }
 }
 
 void tst_bench_QCryptographicHash::addDataChunked()
 {
-    QFETCH(int, algorithm);
+    QFETCH(const Algorithm, algo);
     QFETCH(QByteArray, data);
 
-    QCryptographicHash::Algorithm algo = QCryptographicHash::Algorithm(algorithm);
     QCryptographicHash hash(algo);
     QBENCHMARK {
         hash.reset();
@@ -179,7 +138,8 @@ void tst_bench_QCryptographicHash::addDataChunked()
             hash.addData(data.constData() + 64 * i, 64);
         hash.addData(data.constData() + data.size() / 64 * 64, data.size() % 64);
 
-        hash.result();
+        [[maybe_unused]]
+        auto r = hash.result();
     }
 }
 

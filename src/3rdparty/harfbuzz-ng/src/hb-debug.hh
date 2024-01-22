@@ -67,12 +67,12 @@ hb_options ()
 #endif
   /* Make a local copy, so we can access bitfield threadsafely. */
   hb_options_union_t u;
-  u.i = _hb_options.get_relaxed ();
+  u.i = _hb_options;
 
   if (unlikely (!u.i))
   {
     _hb_options_init ();
-    u.i = _hb_options.get_relaxed ();
+    u.i = _hb_options;
   }
 
   return u.opts;
@@ -113,7 +113,7 @@ _hb_print_func (const char *func)
     const char *paren = strchr (func, '(');
     if (paren)
       func_len = paren - func;
-    fprintf (stderr, "%.*s", func_len, func);
+    fprintf (stderr, "%.*s", (int) func_len, func);
   }
 }
 
@@ -142,9 +142,9 @@ _hb_debug_msg_va (const char *what,
   fprintf (stderr, "%-10s", what ? what : "");
 
   if (obj)
-    fprintf (stderr, "(%*p) ", (unsigned int) (2 * sizeof (void *)), obj);
+    fprintf (stderr, "(%*p) ", (int) (2 * sizeof (void *)), obj);
   else
-    fprintf (stderr, " %*s  ", (unsigned int) (2 * sizeof (void *)), "");
+    fprintf (stderr, " %*s  ", (int) (2 * sizeof (void *)), "");
 
   if (indented) {
 #define VBAR	"\342\224\202"	/* U+2502 BOX DRAWINGS LIGHT VERTICAL */
@@ -302,16 +302,16 @@ struct hb_auto_trace_t
   {
     if (unlikely (returned)) {
       fprintf (stderr, "OUCH, double calls to return_trace().  This is a bug, please report.\n");
-      return hb_forward<T> (v);
+      return std::forward<T> (v);
     }
 
     _hb_debug_msg<max_level> (what, obj, func, true, plevel ? *plevel : 1, -1,
-			      "return %s (line %d)",
+			      "return %s (line %u)",
 			      hb_printer_t<hb_decay<decltype (v)>>().print (v), line);
     if (plevel) --*plevel;
     plevel = nullptr;
     returned = true;
-    return hb_forward<T> (v);
+    return std::forward<T> (v);
   }
 
   private:
@@ -333,7 +333,7 @@ struct hb_auto_trace_t<0, ret_t>
   template <typename T>
   T ret (T&& v,
 	 const char *func HB_UNUSED = nullptr,
-	 unsigned int line HB_UNUSED = 0) { return hb_forward<T> (v); }
+	 unsigned int line HB_UNUSED = 0) { return std::forward<T> (v); }
 };
 
 /* For disabled tracing; optimize out everything.
@@ -343,7 +343,7 @@ struct hb_no_trace_t {
   template <typename T>
   T ret (T&& v,
 	 const char *func HB_UNUSED = nullptr,
-	 unsigned int line HB_UNUSED = 0) { return hb_forward<T> (v); }
+	 unsigned int line HB_UNUSED = 0) { return std::forward<T> (v); }
 };
 
 #define return_trace(RET) return trace.ret (RET, HB_FUNC, __LINE__)
@@ -396,7 +396,7 @@ struct hb_no_trace_t {
 #define TRACE_APPLY(this) \
 	hb_auto_trace_t<HB_DEBUG_APPLY, bool> trace \
 	(&c->debug_depth, c->get_name (), this, HB_FUNC, \
-	 "idx %d gid %u lookup %d", \
+	 "idx %u gid %u lookup %d", \
 	 c->buffer->idx, c->buffer->cur().codepoint, (int) c->lookup_index)
 #else
 #define TRACE_APPLY(this) hb_no_trace_t<bool> trace
@@ -454,9 +454,14 @@ struct hb_no_trace_t {
 #define TRACE_DISPATCH(this, format) \
 	hb_auto_trace_t<context_t::max_debug_depth, typename context_t::return_t> trace \
 	(&c->debug_depth, c->get_name (), this, HB_FUNC, \
-	 "format %d", (int) format)
+	 "format %u", (unsigned) format)
 #else
 #define TRACE_DISPATCH(this, format) hb_no_trace_t<typename context_t::return_t> trace
+#endif
+
+
+#ifndef HB_BUFFER_MESSAGE_MORE
+#define HB_BUFFER_MESSAGE_MORE (HB_DEBUG+1)
 #endif
 
 

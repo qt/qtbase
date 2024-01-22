@@ -67,12 +67,6 @@ public Q_SLOTS:
     void onAppFocusWindowChanged(QWindow *window);
 
 private:
-    /*
-        Function to return the default background pixmap.
-        Needed by QWizard in the Qt widget module.
-    */
-    Q_INVOKABLE QPixmap defaultBackgroundPixmapForQWizard();
-
     Q_INVOKABLE void clearCurrentThreadCocoaEventDispatcherInterruptFlag();
 
     static void registerDraggedTypes(const QStringList &types);

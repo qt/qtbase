@@ -236,6 +236,28 @@ public:
 
         constexpr void reset() noexcept { *this = QLastCursorPosition{}; }
 
+        // QGuiApplicationPrivate::lastCursorPosition is used for mouse-move detection
+        // but even QPointF's qFuzzCompare on doubles is too precise, and causes move-noise
+        // e.g. on macOS (see QTBUG-111170). So we specialize the equality operators here
+        // to use single-point precision.
+        friend constexpr bool operator==(const QLastCursorPosition &p1, const QPointF &p2) noexcept
+        {
+            return qFuzzyCompare(float(p1.x()), float(p2.x()))
+                && qFuzzyCompare(float(p1.y()), float(p2.y()));
+        }
+        friend constexpr bool operator!=(const QLastCursorPosition &p1, const QPointF &p2) noexcept
+        {
+            return !(p1 == p2);
+        }
+        friend constexpr bool operator==(const QPointF &p1, const QLastCursorPosition &p2) noexcept
+        {
+            return p2 == p1;
+        }
+        friend constexpr bool operator!=(const QPointF &p1, const QLastCursorPosition &p2) noexcept
+        {
+            return !(p2 == p1);
+        }
+
     private:
         QPointF thePoint;
     } lastCursorPosition;

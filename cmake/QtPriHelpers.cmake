@@ -532,12 +532,15 @@ QT.${config_module_name}_private.disabled_features = ${disabled_private_features
                     "-DIMPLICIT_LINK_DIRECTORIES=${implicit_link_directories}"
                     -P "${QT_CMAKE_DIR}/QtGenerateLibPri.cmake"
             VERBATIM)
-        add_custom_target(${target}_lib_pri DEPENDS "${private_pri_file_path}")
+        # add_dependencies has no effect when adding interface libraries. So need to add the
+        # '_lib_pri' targets to ALL to make sure that the related rules executed.
+        unset(add_pri_target_to_all)
         if(arg_HEADER_MODULE)
-            add_dependencies(${target}_timestamp ${target}_lib_pri)
-        else()
-            add_dependencies(${target} ${target}_lib_pri)
+            set(add_pri_target_to_all ALL)
         endif()
+        add_custom_target(${target}_lib_pri ${add_pri_target_to_all}
+            DEPENDS "${private_pri_file_path}")
+        add_dependencies(${target} ${target}_lib_pri)
     endif()
 
     qt_install(FILES "${pri_files}" DESTINATION ${INSTALL_MKSPECSDIR}/modules)

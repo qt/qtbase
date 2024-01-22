@@ -515,6 +515,14 @@ void qt_apple_check_os_version()
     const NSOperatingSystemVersion required = (NSOperatingSystemVersion){
         version / 10000, version / 100 % 100, version % 100};
     const NSOperatingSystemVersion current = NSProcessInfo.processInfo.operatingSystemVersion;
+
+#if defined(Q_OS_MACOS)
+    // Check for compatibility version, in which case we can't do a
+    // comparison to the deployment target, which might be e.g. 11.0
+    if (current.majorVersion == 10 && current.minorVersion >= 16)
+        return; // FIXME: Find a way to detect the real OS version
+#endif
+
     if (![NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:required]) {
         NSDictionary *plist = NSBundle.mainBundle.infoDictionary;
         NSString *applicationName = plist[@"CFBundleDisplayName"];

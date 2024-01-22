@@ -29,7 +29,6 @@
 #ifndef HB_HH
 #define HB_HH
 
-
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC
 #ifdef _MSC_VER
 #pragma warning( disable: 4068 ) /* Unknown pragma */
@@ -62,8 +61,10 @@
 
 /* Error.  Should never happen. */
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_ERROR
+#pragma GCC diagnostic error   "-Wbitwise-instead-of-logical"
 #pragma GCC diagnostic error   "-Wcast-align"
 #pragma GCC diagnostic error   "-Wcast-function-type"
+#pragma GCC diagnostic error   "-Wcomma"
 #pragma GCC diagnostic error   "-Wdelete-non-virtual-dtor"
 #pragma GCC diagnostic error   "-Wembedded-directive"
 #pragma GCC diagnostic error   "-Wextra-semi-stmt"
@@ -102,20 +103,20 @@
 #pragma GCC diagnostic warning "-Wdisabled-optimization"
 #pragma GCC diagnostic warning "-Wdouble-promotion"
 #pragma GCC diagnostic warning "-Wformat=2"
+#pragma GCC diagnostic warning "-Wformat-signedness"
 #pragma GCC diagnostic warning "-Wignored-pragma-optimize"
 #pragma GCC diagnostic warning "-Wlogical-op"
 #pragma GCC diagnostic warning "-Wmaybe-uninitialized"
 #pragma GCC diagnostic warning "-Wmissing-format-attribute"
 #pragma GCC diagnostic warning "-Wundef"
+#pragma GCC diagnostic warning "-Wunsafe-loop-optimizations"
 #pragma GCC diagnostic warning "-Wunused-but-set-variable"
 #endif
 
 /* Ignored currently, but should be fixed at some point. */
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
 #pragma GCC diagnostic ignored "-Wconversion"			// TODO fix
-#pragma GCC diagnostic ignored "-Wformat-signedness"		// TODO fix
 #pragma GCC diagnostic ignored "-Wshadow"			// TODO fix
-#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"	// TODO fix
 #pragma GCC diagnostic ignored "-Wunused-parameter"		// TODO fix
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic ignored "-Wunused-result"		// TODO fix
@@ -125,6 +126,8 @@
 /* Ignored intentionally. */
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
 #pragma GCC diagnostic ignored "-Wclass-memaccess"
+#pragma GCC diagnostic ignored "-Wcast-function-type-strict" // https://github.com/harfbuzz/harfbuzz/pull/3859#issuecomment-1295409126
+#pragma GCC diagnostic ignored "-Wdangling-reference" // https://github.com/harfbuzz/harfbuzz/issues/4043
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -140,6 +143,7 @@
 
 
 #include "hb-config.hh"
+#include "hb-limits.hh"
 
 
 /*
@@ -182,6 +186,9 @@
 #include <cassert>
 #include <cfloat>
 #include <climits>
+#if defined(_MSC_VER) && !defined(_USE_MATH_DEFINES)
+# define _USE_MATH_DEFINES
+#endif
 #include <cmath>
 #include <cstdarg>
 #include <cstddef>
@@ -405,6 +412,9 @@ static int HB_UNUSED _hb_errno = 0;
 #  define errno _hb_errno
 #endif
 
+#define HB_STMT_START do
+#define HB_STMT_END   while (0)
+
 #if defined(HAVE_ATEXIT) && !defined(HB_USE_ATEXIT)
 /* atexit() is only safe to be called from shared libraries on certain
  * platforms.  Whitelist.
@@ -433,16 +443,56 @@ static int HB_UNUSED _hb_errno = 0;
  */
 #    define HB_USE_ATEXIT 1
 #  endif
-#endif
+#endif /* defined(HAVE_ATEXIT) && !defined(HB_USE_ATEXIT) */
 #ifdef HB_NO_ATEXIT
 #  undef HB_USE_ATEXIT
 #endif
 #ifndef HB_USE_ATEXIT
 #  define HB_USE_ATEXIT 0
 #endif
+#ifndef hb_atexit
+#if !HB_USE_ATEXIT
+#  define hb_atexit(_) HB_STMT_START { if (0) (_) (); } HB_STMT_END
+#else /* HB_USE_ATEXIT */
+#  ifdef HAVE_ATEXIT
+#    define hb_atexit atexit
+#  else
+     template <void (*function) (void)> struct hb_atexit_t { ~hb_atexit_t () { function (); } };
+#    define hb_atexit(f) static hb_atexit_t<f> _hb_atexit_##__LINE__;
+#  endif
+#endif
+#endif
 
-#define HB_STMT_START do
-#define HB_STMT_END   while (0)
+
+// Locale business
+
+#if !defined(HB_NO_SETLOCALE) && (!defined(HAVE_NEWLOCALE) || !defined(HAVE_USELOCALE))
+#define HB_NO_SETLOCALE 1
+#endif
+
+#ifndef HB_NO_SETLOCALE
+
+#include <locale.h>
+#ifdef HAVE_XLOCALE_H
+#include <xlocale.h> // Needed on BSD/OS X for uselocale
+#endif
+
+#ifdef WIN32
+#define hb_locale_t _locale_t
+#else
+#define hb_locale_t locale_t
+#endif
+#define hb_setlocale setlocale
+#define hb_uselocale uselocale
+
+#else
+
+#define hb_locale_t void *
+#define hb_setlocale(Category, Locale) "C"
+#define hb_uselocale(Locale) ((hb_locale_t) 0)
+
+#endif
+
 
 /* Lets assert int types.  Saves trouble down the road. */
 static_assert ((sizeof (hb_codepoint_t) == 4), "");
@@ -454,6 +504,7 @@ static_assert ((sizeof (hb_var_int_t) == 4), "");
 /* Headers we include for everyone.  Keep topologically sorted by dependency.
  * They express dependency amongst themselves, but no other file should include
  * them directly.*/
+#include "hb-cplusplus.hh"
 #include "hb-meta.hh"
 #include "hb-mutex.hh"
 #include "hb-number.hh"

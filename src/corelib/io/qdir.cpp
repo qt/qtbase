@@ -536,6 +536,10 @@ inline void QDirPrivate::initFileEngine()
 
     \snippet qdir-listfiles/main.cpp 0
 
+    \section1 Platform Specific Issues
+
+    \include android-content-uri-limitations.qdocinc
+
     \sa QFileInfo, QFile, QFileDialog, QCoreApplication::applicationDirPath(), {Find Files Example}
 */
 
@@ -655,8 +659,12 @@ QString QDir::path() const
 QString QDir::absolutePath() const
 {
     const QDirPrivate* d = d_ptr.constData();
-    d->resolveAbsoluteEntry();
-    return d->absoluteDirEntry.filePath();
+    if (!d->fileEngine) {
+        d->resolveAbsoluteEntry();
+        return d->absoluteDirEntry.filePath();
+    }
+
+    return d->fileEngine->fileName(QAbstractFileEngine::AbsoluteName);
 }
 
 /*!
@@ -699,7 +707,9 @@ QString QDir::canonicalPath() const
 QString QDir::dirName() const
 {
     const QDirPrivate* d = d_ptr.constData();
-    return d->dirEntry.fileName();
+    if (!d_ptr->fileEngine)
+        return d->dirEntry.fileName();
+    return d->fileEngine->fileName(QAbstractFileEngine::BaseName);
 }
 
 
@@ -1015,6 +1025,9 @@ bool QDir::cd(const QString &dirName)
     Returns \c true if the new directory exists;
     otherwise returns \c false. Note that the logical cdUp() operation is
     not performed if the new directory does not exist.
+
+    \note On Android, this is not supported for content URIs. For more information,
+    see \l {Android: DocumentFile.getParentFile()}{DocumentFile.getParentFile()}.
 
     \sa cd(), isReadable(), exists(), path()
 */

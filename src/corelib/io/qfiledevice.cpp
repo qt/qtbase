@@ -145,6 +145,11 @@ void QFileDevicePrivate::setError(QFileDevice::FileError err, int errNum)
     decrementing \c qt_ntfs_permission_lookup by 1.
 
     \snippet ntfsp.cpp 1
+
+    \note Since this is a non-atomic global variable, it is only safe
+    to increment or decrement \c qt_ntfs_permission_lookup before any
+    threads other than the main thread have started or after every thread
+    other than the main thread has ended.
 */
 
 //************* QFileDevice

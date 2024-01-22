@@ -217,6 +217,7 @@ qtc-qmldbg/
 
 # Generic files
 .#*
+._*
 .com.apple.timemachine.supported
 .DS_Store
 callgrind.out.*

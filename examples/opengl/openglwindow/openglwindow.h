@@ -48,6 +48,9 @@
 **
 ****************************************************************************/
 
+#ifndef OPENGLWINDOW_H
+#define OPENGLWINDOW_H
+
 #include <QWindow>
 #include <QOpenGLFunctions>
 
@@ -89,3 +92,4 @@ private:
 };
 //! [1]
 
+#endif // OPENGLWINDOW_H

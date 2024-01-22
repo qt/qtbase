@@ -287,11 +287,6 @@ void QXcbWindow::create()
         return;
     }
 
-    QPlatformWindow::setGeometry(rect);
-
-    if (platformScreen != currentScreen)
-        QWindowSystemInterface::handleWindowScreenChanged(window(), platformScreen->QPlatformScreen::screen());
-
     const QSize minimumSize = windowMinimumSize();
     if (rect.width() > 0 || rect.height() > 0) {
         rect.setWidth(qBound(1, rect.width(), XCOORD_MAX));
@@ -302,6 +297,11 @@ void QXcbWindow::create()
         rect.setWidth(QHighDpi::toNativePixels(int(defaultWindowWidth), platformScreen->QPlatformScreen::screen()));
         rect.setHeight(QHighDpi::toNativePixels(int(defaultWindowHeight), platformScreen->QPlatformScreen::screen()));
     }
+
+    QPlatformWindow::setGeometry(rect);
+
+    if (platformScreen != currentScreen)
+        QWindowSystemInterface::handleWindowScreenChanged(window(), platformScreen->QPlatformScreen::screen());
 
     xcb_window_t xcb_parent_id = platformScreen->root();
     if (parent()) {
@@ -1329,9 +1329,10 @@ void QXcbWindow::setWindowIcon(const QIcon &icon)
 
     if (!icon_data.isEmpty()) {
         // Ignore icon exceeding maximum xcb request length
-        if (icon_data.size() > xcb_get_maximum_request_length(xcb_connection())) {
-            qWarning("Ignoring window icon: Size %llu exceeds maximum xcb request length %u.",
-                     icon_data.size(), xcb_get_maximum_request_length(xcb_connection()));
+        if (quint64(icon_data.size()) > quint64(xcb_get_maximum_request_length(xcb_connection()))) {
+            qWarning() << "Ignoring window icon" << icon_data.size()
+                       << "exceeds maximum xcb request length"
+                       << xcb_get_maximum_request_length(xcb_connection());
             return;
         }
         xcb_change_property(xcb_connection(),

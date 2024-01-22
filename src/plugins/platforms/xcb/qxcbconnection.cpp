@@ -837,8 +837,8 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
 {
     // send a dummy event to myself to get the timestamp from X server.
     xcb_window_t window = rootWindow();
-    xcb_atom_t dummyAtom = atom(QXcbAtom::CLIP_TEMPORARY);
-    xcb_change_property(xcb_connection(), XCB_PROP_MODE_APPEND, window, dummyAtom,
+    xcb_atom_t dummyAtom = atom(QXcbAtom::_QT_GET_TIMESTAMP);
+    xcb_change_property(xcb_connection(), XCB_PROP_MODE_REPLACE, window, dummyAtom,
                         XCB_ATOM_INTEGER, 32, 0, nullptr);
 
     connection()->flush();
@@ -869,8 +869,6 @@ xcb_timestamp_t QXcbConnection::getTimestamp()
     xcb_property_notify_event_t *pn = reinterpret_cast<xcb_property_notify_event_t *>(event);
     xcb_timestamp_t timestamp = pn->time;
     free(event);
-
-    xcb_delete_property(xcb_connection(), window, dummyAtom);
 
     return timestamp;
 }

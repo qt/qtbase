@@ -85,7 +85,6 @@
 #include <cmath>
 #include <numeric>
 #include <algorithm>
-#include <condition_variable>
 #include <mutex>
 #include <chrono>
 #include <memory>
@@ -1025,16 +1024,30 @@ void TestMethods::invokeTestOnData(int index) const
 
 class WatchDog : public QThread
 {
-    enum Expectation {
+    enum Expectation : std::size_t {
+        // bits 0..1: state
         ThreadStart,
         TestFunctionStart,
         TestFunctionEnd,
         ThreadEnd,
-    };
 
-    bool waitFor(std::unique_lock<QtPrivate::mutex> &m, Expectation e) {
+        // bits 2..: generation
+    };
+    static constexpr auto ExpectationMask = Expectation{ThreadStart | TestFunctionStart | TestFunctionEnd | ThreadEnd};
+    static_assert(size_t(ExpectationMask) == 0x3);
+    static constexpr size_t GenerationShift = 2;
+
+    static constexpr Expectation state(Expectation e) noexcept
+    { return Expectation{e & ExpectationMask}; }
+    static constexpr size_t generation(Expectation e) noexcept
+    { return e >> GenerationShift; }
+    static constexpr Expectation combine(Expectation e, size_t gen) noexcept
+    { return Expectation{e | (gen << GenerationShift)}; }
+
+    bool waitFor(std::unique_lock<QtPrivate::mutex> &m, Expectation e)
+    {
         auto expectationChanged = [this, e] { return expecting.load(std::memory_order_relaxed) != e; };
-        switch (e) {
+        switch (state(e)) {
         case TestFunctionEnd:
             return waitCondition.wait_for(m, defaultTimeout(), expectationChanged);
         case ThreadStart:
@@ -1047,6 +1060,19 @@ class WatchDog : public QThread
         return false;
     }
 
+    void setExpectation(Expectation e)
+    {
+        Q_ASSERT(generation(e) == 0); // no embedded generation allowed
+        const auto locker = qt_scoped_lock(mutex);
+        auto cur = expecting.load(std::memory_order_relaxed);
+        auto gen = generation(cur);
+        if (e == TestFunctionStart)
+            ++gen;
+        e = combine(e, gen);
+        expecting.store(e, std::memory_order_relaxed);
+        waitCondition.notify_all();
+    }
+
 public:
     WatchDog()
     {
@@ -1056,34 +1082,31 @@ public:
         start();
         waitFor(locker, ThreadStart);
     }
-    ~WatchDog() {
-        {
-            const auto locker = qt_scoped_lock(mutex);
-            expecting.store(ThreadEnd, std::memory_order_relaxed);
-            waitCondition.notify_all();
-        }
+
+    ~WatchDog()
+    {
+        setExpectation(ThreadEnd);
         wait();
     }
 
-    void beginTest() {
-        const auto locker = qt_scoped_lock(mutex);
-        expecting.store(TestFunctionEnd, std::memory_order_relaxed);
-        waitCondition.notify_all();
+    void beginTest()
+    {
+        setExpectation(TestFunctionEnd);
     }
 
-    void testFinished() {
-        const auto locker = qt_scoped_lock(mutex);
-        expecting.store(TestFunctionStart, std::memory_order_relaxed);
-        waitCondition.notify_all();
+    void testFinished()
+    {
+        setExpectation(TestFunctionStart);
     }
 
-    void run() override {
+    void run() override
+    {
         auto locker = qt_unique_lock(mutex);
         expecting.store(TestFunctionStart, std::memory_order_release);
         waitCondition.notify_all();
         while (true) {
             Expectation e = expecting.load(std::memory_order_acquire);
-            switch (e) {
+            switch (state(e)) {
             case ThreadEnd:
                 return;
             case ThreadStart:

@@ -7,38 +7,41 @@
 
         "Description": "FreeType is a freely available software library to render fonts.",
         "Homepage": "http://www.freetype.org",
-        "Version": "2.12.1",
+        "Version": "2.13.0",
 
         "License": "Freetype Project License or GNU General Public License v2.0 only",
         "LicenseId": "FTL OR GPL-2.0",
         "LicenseFile": "LICENSE.txt",
         "Copyright": "Copyright (c) 2007-2014 Adobe Systems Incorporated
-Copyright (c) 2004-2022 Albert Chin-A-Young
-Copyright (c) 2018-2022 Armin Hasitzka, David Turner, Robert Wilhelm, and Werner Lemberg
+Copyright (c) 2004-2023 Albert Chin-A-Young
+Copyright (c) 2018-2023 Armin Hasitzka, David Turner, Robert Wilhelm, and Werner Lemberg
 Copyright (c) 2000 Computing Research Labs, New Mexico State University
-Copyright (c) 2018-2022 David Turner, Robert Wilhelm, Dominik Rottsches, and Werner Lemberg
-Copyright (c) 2004-2022 David Turner, Robert Wilhelm, Werner Lemberg and George Williams
-Copyright (c) 2022 David Turner, Robert Wilhelm, Werner Lemberg, and Moazin Khatti
-Copyright (c) 2008-2022 David Turner, Robert Wilhelm, Werner Lemberg, and suzuki toshiya
-Copyright (c) 2003-2022 David Turner, Robert Wilhelm, and Werner Lemberg
-Copyright (c) 2005-2022 David Turner
-Copyright (c) 2007-2022 Derek Clegg and Michael Toftdal
-Copyright (c) 2007 Dmitry Timoshkov
+Copyright (c) 1996-2023 David Turner, Robert Wilhelm, Dominik Röttsches, and Werner Lemberg
+Copyright (c) 2004-2023 David Turner, Robert Wilhelm, Werner Lemberg and George Williams
+Copyright (c) 2022-2023 David Turner, Robert Wilhelm, Werner Lemberg, and Moazin Khatti
+Copyright (c) 2008-2023 David Turner, Robert Wilhelm, Werner Lemberg, and suzuki toshiya
+Copyright (c) 2003-2023 David Turner, Robert Wilhelm, and Werner Lemberg
+Copyright (c) 2005-2023 David Turner
+Copyright (c) 2007-2023 Derek Clegg and Michael Toftdal
+Copyright (c) 2007 Dmitry Timoshkov for Codeweavers
 Copyright (c) 2001-2015 Francesco Zappa Nardelli
 Copyright (c) 2005, 2007, 2008, 2013 George Williams
-Copyright (c) 2013 Google, Inc. Google Author(s) Behdad Esfahbod
+Copyright (c) 2013-2023 Google, Inc. Google Author(s) Behdad Esfahbod and Stuart Gill
 Copyright (c) 2013-2022 Google, Inc.
 Copyright (c) 2003 Huw D M Davies for Codeweavers
-Copyright (c) 2010-2022 Joel Klinghed
-Copyright (c) 1996-2022 Just van Rossum, David Turner, Robert Wilhelm, and Werner Lemberg
-Copyright (c) 2003-2022 Masatake YAMATO and Redhat K.K.
-Copyright (c) 2004-2022 Masatake YAMATO, Redhat K.K, David Turner, Robert Wilhelm, and Werner Lemberg
-Copyright (c) 2019-2022 Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg
-Copyright (c) 2009-2022 Oran Agra and Mickey Gabel
-Copyright (c) 2007-2022 Rahul Bhalerao <rahul.bhalerao@redhat.com>
-Copyright (c) 2002-2022 Roberto Alameda
+Copyright (c) 2010-2023 Joel Klinghed
+Copyright (c) 1996-2023 Just van Rossum, David Turner, Robert Wilhelm, and Werner Lemberg
+Copyright (c) 2003-2023 Masatake YAMATO and Redhat K.K.
+Copyright (c) 2004-2023 Masatake YAMATO, Redhat K.K, David Turner, Robert Wilhelm, and Werner Lemberg
+Copyright (c) 2019-2023 Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg
+Copyright (c) 2009-2023 Oran Agra and Mickey Gabel
+Copyright (c) 2007-2023 Rahul Bhalerao <rahul.bhalerao@redhat.com>
+Copyright (c) 2002-2023 Roberto Alameda
 Copyright (c) 2015-2022 Werner Lemberg
-Copyright (c) 2004-2022 suzuki toshiya, Masatake YAMATO, Red Hat K.K., David Turner, Robert Wilhelm, and Werner Lemberg"
+Copyright (c) 2004-2023 suzuki toshiya, Masatake YAMATO, Red Hat K.K., David Turner, Robert Wilhelm, and Werner Lemberg
+Copyright (c) 2019 nyorain
+Copyright (c) 2022-2023 David Turner, Robert Wilhelm, Werner Lemberg, George Williams, and Dominik Röttsches
+Copyright (C) 2009, 2023  Red Hat, Inc."
     },
     {
         "Id": "freetype-zlib",

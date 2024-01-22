@@ -100,9 +100,9 @@ void snippet_QPromise::multithreadExample()
     QFuture<int> future = sharedPromise->future();
 
     // ...
-//! [multithread_init]
 
     sharedPromise->start();
+//! [multithread_init]
 
 //! [multithread_main]
     // here, QPromise is shared between threads via a smart pointer
@@ -135,7 +135,9 @@ void snippet_QPromise::multithreadExample()
 
     for (auto& t : threads)
         t->wait();
+//! [multithread_cleanup]
     sharedPromise->finish();
+//! [multithread_cleanup]
 #endif
 }
 

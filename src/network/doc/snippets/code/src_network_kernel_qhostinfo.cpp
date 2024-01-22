@@ -50,12 +50,10 @@
 
 //! [0]
 // To find the IP address of qt-project.org
-QHostInfo::lookupHost("qt-project.org",
-                      this, SLOT(printResults(QHostInfo)));
+QHostInfo::lookupHost("qt-project.org", this, &MyWidget::printResults);
 
 // To find the host name for 4.2.2.1
-QHostInfo::lookupHost("4.2.2.1",
-                      this, SLOT(printResults(QHostInfo)));
+QHostInfo::lookupHost("4.2.2.1", this, &MyWidget::printResults);
 //! [0]
 
 
@@ -65,8 +63,7 @@ QHostInfo info = QHostInfo::fromName("qt-project.org");
 
 
 //! [2]
-QHostInfo::lookupHost("www.kde.org",
-                      this, SLOT(lookedUp(QHostInfo)));
+QHostInfo::lookupHost("www.kde.org", this, &MyWidget::lookedUp);
 //! [2]
 
 
@@ -86,8 +83,7 @@ void MyWidget::lookedUp(const QHostInfo &host)
 
 
 //! [4]
-QHostInfo::lookupHost("4.2.2.1",
-                      this, SLOT(lookedUp(QHostInfo)));
+QHostInfo::lookupHost("4.2.2.1", this, &MyWidget::lookedUp);
 //! [4]
 
 

@@ -135,6 +135,7 @@ private slots:
     void tearOffMenuNotDisplayed();
     void QTBUG_61039_menu_shortcuts();
     void screenOrientationChangedCloseMenu();
+    void deleteWhenTriggered();
 
 protected slots:
     void onActivated(QAction*);
@@ -1975,6 +1976,23 @@ void tst_QMenu::screenOrientationChangedCloseMenu()
      QCoreApplication::sendEvent(QCoreApplication::instance(), &event);
 
      QTRY_COMPARE(menu.isVisible(),false);
+}
+
+/*
+    Verify that deleting the menu in a slot connected to an
+    action's triggered signal doesn't crash.
+    QTBUG-106718
+*/
+void tst_QMenu::deleteWhenTriggered()
+{
+    QPointer<QMenu> menu = new QMenu;
+    QAction *action = menu->addAction("Action", [&menu]{
+        delete menu;
+    });
+    menu->popup(QGuiApplication::primaryScreen()->availableGeometry().center());
+    menu->setActiveAction(action);
+    QTest::keyClick(menu, Qt::Key_Return);
+    QTRY_VERIFY(!menu);
 }
 
 QTEST_MAIN(tst_QMenu)

@@ -932,6 +932,12 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
             // Don't know how to parse this function name
             return info;
         }
+        if (info.indexOf('>', pos) != -1
+                || info.indexOf(':', pos) != -1) {
+            // that wasn't the function argument list.
+            pos = info.size();
+            break;
+        }
 
         // find the beginning of the argument list
         --pos;
@@ -1251,11 +1257,8 @@ void QMessagePattern::setPattern(const QString &pattern)
                         .arg(lexeme);
             }
         } else {
-            char *literal = new char[lexeme.size() + 1];
-            strncpy(literal, lexeme.toLatin1().constData(), lexeme.size());
-            literal[lexeme.size()] = '\0';
-            literalsVar.emplace_back(literal);
-            tokens[i] = literal;
+            using UP = std::unique_ptr<char[]>;
+            tokens[i] = literalsVar.emplace_back(UP(qstrdup(lexeme.toLatin1().constData()))).get();
         }
     }
     if (nestedIfError)

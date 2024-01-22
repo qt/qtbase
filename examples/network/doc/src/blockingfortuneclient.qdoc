@@ -147,7 +147,7 @@
     The final part of our loop is that we acquire the mutex so that we can
     safely read from our member data. We then let the thread go to sleep by
     calling QWaitCondition::wait(). At this point, we can go back to
-    requestNewFortune() and look closed at the call to wakeOne():
+    requestNewFortune() and look closely at the call to wakeOne():
 
     \snippet blockingfortuneclient/fortunethread.cpp 1
     \dots

@@ -21,7 +21,11 @@ instructions:
         - condition: runtime
           env_var: COIN_CMAKE_ARGS
           contains_value: "QT_BUILD_EXAMPLES=ON"
-        # covers all cases for UseConfigure configs
+        # host case
         - condition: runtime
-          env_var: COIN_CONFIGURE_ARGS
+          env_var: CONFIGURE_ARGS
+          contains_value: "-make examples"
+        # target case
+        - condition: runtime
+          env_var: TARGET_CONFIGURE_ARGS
           contains_value: "-make examples"

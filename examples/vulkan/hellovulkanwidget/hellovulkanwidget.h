@@ -48,6 +48,9 @@
 **
 ****************************************************************************/
 
+#ifndef HELLOVULKANWIDGET_H
+#define HELLOVULKANWIDGET_H
+
 #include "../shared/trianglerenderer.h"
 #include <QWidget>
 
@@ -98,3 +101,5 @@ signals:
     void vulkanInfoReceived(const QString &text);
     void frameQueued(int colorValue);
 };
+
+#endif // HELLOVULKANWIDGET_H

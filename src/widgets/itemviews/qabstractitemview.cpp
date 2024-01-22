@@ -1963,7 +1963,9 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     }
 
     bool click = (index == d->pressedIndex && index.isValid() && !releaseFromDoubleClick);
-    bool selectedClicked = click && (event->button() == Qt::LeftButton) && d->pressedAlreadySelected;
+    bool selectedClicked = click && d->pressedAlreadySelected
+                        && (event->button() == Qt::LeftButton)
+                        && (event->modifiers() == Qt::NoModifier);
     EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
     const bool edited = click && !d->pressClosedEditor ? edit(index, trigger, event) : false;
 
@@ -1971,7 +1973,7 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
 
     if (d->selectionModel && d->noSelectionOnMousePress) {
         d->noSelectionOnMousePress = false;
-        if (!edited && !d->pressClosedEditor)
+        if (!d->pressClosedEditor)
             d->selectionModel->select(index, selectionCommand(index, event));
     }
 
@@ -2389,11 +2391,12 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
 
 #if !defined(QT_NO_CLIPBOARD) && !defined(QT_NO_SHORTCUT)
     if (event == QKeySequence::Copy) {
-        QVariant variant;
-        if (d->model)
-            variant = d->model->data(currentIndex(), Qt::DisplayRole);
-        if (variant.canConvert<QString>())
-            QGuiApplication::clipboard()->setText(variant.toString());
+        const QModelIndex index = currentIndex();
+        if (index.isValid() && d->model) {
+            const QVariant variant = d->model->data(index, Qt::DisplayRole);
+            if (variant.canConvert<QString>())
+                QGuiApplication::clipboard()->setText(variant.toString());
+        }
         event->accept();
     }
 #endif
@@ -4086,8 +4089,12 @@ QItemSelectionModel::SelectionFlags QAbstractItemView::selectionCommand(const QM
                     if (d->pressedAlreadySelected)
                         return QItemSelectionModel::NoUpdate;
                     break;
-                case QEvent::KeyPress:
                 case QEvent::MouseButtonRelease:
+                    // clicking into area with no items does nothing
+                    if (!index.isValid())
+                        return QItemSelectionModel::NoUpdate;
+                    Q_FALLTHROUGH();
+                case QEvent::KeyPress:
                     // ctrl-release on selected item deselects
                     if ((keyModifiers & Qt::ControlModifier) && d->selectionModel->isSelected(index))
                         return QItemSelectionModel::Deselect | d->selectionBehaviorFlags();

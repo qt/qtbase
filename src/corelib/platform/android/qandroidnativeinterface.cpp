@@ -43,8 +43,10 @@
 #include <QtCore/private/qjnihelpers_p.h>
 #include <QtCore/qjniobject.h>
 #if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)
-#include <QtConcurrent/QtConcurrent>
+#include <QtCore/qfuture.h>
+#include <QtCore/qfuturewatcher.h>
 #include <QtCore/qpromise.h>
+#include <QtCore/qthreadpool.h>
 #include <deque>
 #endif
 
@@ -53,8 +55,12 @@ QT_BEGIN_NAMESPACE
 #if QT_CONFIG(future) && !defined(QT_NO_QOBJECT)
 static const char qtNativeClassName[] = "org/qtproject/qt/android/QtNative";
 
-typedef std::pair<std::function<QVariant()>, QSharedPointer<QPromise<QVariant>>> RunnablePair;
-typedef std::deque<RunnablePair> PendingRunnables;
+struct PendingRunnable {
+    std::function<QVariant()> function;
+    QSharedPointer<QPromise<QVariant>> promise;
+};
+
+using PendingRunnables = std::deque<PendingRunnable>;
 Q_GLOBAL_STATIC(PendingRunnables, g_pendingRunnables);
 static QBasicMutex g_pendingRunnablesMutex;
 #endif
@@ -195,8 +201,8 @@ QFuture<QVariant> QNativeInterface::QAndroidApplication::runOnAndroidMainThread(
     QFuture<QVariant> future = promise->future();
     promise->start();
 
-    (void) QtConcurrent::run([=, &future]() {
-        if (!timeout.isForever()) {
+    if (!timeout.isForever()) {
+        QThreadPool::globalInstance()->start([=]() mutable {
             QEventLoop loop;
             QTimer::singleShot(timeout.remainingTime(), &loop, [&]() {
                 future.cancel();
@@ -212,12 +218,24 @@ QFuture<QVariant> QNativeInterface::QAndroidApplication::runOnAndroidMainThread(
                 loop.quit();
             });
             watcher.setFuture(future);
+
+            // we're going to sleep, make sure we don't block
+            // QThreadPool::globalInstance():
+
+            QThreadPool::globalInstance()->releaseThread();
+            const auto sg = qScopeGuard([] {
+               QThreadPool::globalInstance()->reserveThread();
+            });
             loop.exec();
-        }
-    });
+        });
+    }
 
     QMutexLocker locker(&g_pendingRunnablesMutex);
-    g_pendingRunnables->push_back(std::pair(runnable, promise));
+#ifdef __cpp_aggregate_paren_init
+    g_pendingRunnables->emplace_back(runnable, std::move(promise));
+#else
+    g_pendingRunnables->push_back({runnable, std::move(promise)});
+#endif
     locker.unlock();
 
     QJniObject::callStaticMethod<void>(qtNativeClassName,
@@ -235,15 +253,14 @@ static void runPendingCppRunnables(JNIEnv */*env*/, jobject /*obj*/)
         if (g_pendingRunnables->empty())
             break;
 
-        std::pair pair = std::move(g_pendingRunnables->front());
+        PendingRunnable r = std::move(g_pendingRunnables->front());
         g_pendingRunnables->pop_front();
         locker.unlock();
 
         // run the runnable outside the sync block!
-        auto promise = pair.second;
-        if (!promise->isCanceled())
-            promise->addResult(pair.first());
-        promise->finish();
+        if (!r.promise->isCanceled())
+            r.promise->addResult(r.function());
+        r.promise->finish();
     }
 }
 #endif

@@ -2700,7 +2700,8 @@
     together. This variable is normally empty and therefore nothing is
     executed.
 
-    \note This variable takes no effect on Xcode projects.
+    \warning This variable is not supported when using the Xcode
+    generator and the new Xcode build system.
 
     \section1 QMAKE_PROJECT_NAME
 

@@ -83,6 +83,7 @@
 #include <QtCore/quuid.h>
 #include <QtCore/private/qsystemlibrary_p.h>
 #include <QtCore/private/qwinregistry_p.h>
+#include <QtCore/private/qfactorycacheregistration_p.h>
 
 #include <QtGui/private/qwindowsguieventdispatcher_p.h>
 
@@ -327,8 +328,12 @@ QWindowsContext::~QWindowsContext()
         DestroyWindow(d->m_powerDummyWindow);
 
     unregisterWindowClasses();
-    if (d->m_oleInitializeResult == S_OK || d->m_oleInitializeResult == S_FALSE)
+    if (d->m_oleInitializeResult == S_OK || d->m_oleInitializeResult == S_FALSE) {
+#ifdef QT_USE_FACTORY_CACHE_REGISTRATION
+        detail::QWinRTFactoryCacheRegistration::clearAllCaches();
+#endif
         OleUninitialize();
+    }
 
     d->m_screenManager.clearScreens(); // Order: Potentially calls back to the windows.
     if (d->m_displayContext)
@@ -1338,12 +1343,16 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::ExposeEvent:
         return platformWindow->handleWmPaint(hwnd, message, wParam, lParam, result);
     case QtWindows::NonClientMouseEvent:
-        if ((d->m_systemInfo & QWindowsContext::SI_SupportsPointer) && platformWindow->frameStrutEventsEnabled())
+        if (!platformWindow->frameStrutEventsEnabled())
+            break;
+        if ((d->m_systemInfo & QWindowsContext::SI_SupportsPointer))
             return sessionManagerInteractionBlocked() || d->m_pointerHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
         else
             return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
     case QtWindows::NonClientPointerEvent:
-        if ((d->m_systemInfo & QWindowsContext::SI_SupportsPointer) && platformWindow->frameStrutEventsEnabled())
+        if (!platformWindow->frameStrutEventsEnabled())
+            break;
+        if ((d->m_systemInfo & QWindowsContext::SI_SupportsPointer))
             return sessionManagerInteractionBlocked() || d->m_pointerHandler.translatePointerEvent(platformWindow->window(), hwnd, et, msg, result);
         break;
     case QtWindows::EnterSizeMoveEvent:
@@ -1587,9 +1596,13 @@ void QWindowsContext::handleExitSizeMove(QWindow *window)
         ? QEvent::MouseButtonRelease : QEvent::NonClientAreaMouseButtonRelease;
     for (Qt::MouseButton button : {Qt::LeftButton, Qt::RightButton, Qt::MiddleButton}) {
         if (appButtons.testFlag(button) && !currentButtons.testFlag(button)) {
-            QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos,
-                                                     currentButtons, button, type,
-                                                     keyboardModifiers);
+            if (type == QEvent::NonClientAreaMouseButtonRelease) {
+                QWindowSystemInterface::handleFrameStrutMouseEvent(window, localPos, globalPos,
+                    currentButtons, button, type, keyboardModifiers);
+            } else {
+                QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos,
+                    currentButtons, button, type, keyboardModifiers);
+            }
         }
     }
     if (d->m_systemInfo & QWindowsContext::SI_SupportsPointer)

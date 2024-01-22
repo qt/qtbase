@@ -420,7 +420,7 @@ void tst_QWizard::setPixmap()
     QVERIFY(wizard.pixmap(QWizard::BannerPixmap).isNull());
     QVERIFY(wizard.pixmap(QWizard::LogoPixmap).isNull());
     QVERIFY(wizard.pixmap(QWizard::WatermarkPixmap).isNull());
-    if (QOperatingSystemVersion::current() <= QOperatingSystemVersion::MacOSHighSierra)
+    if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS)
         QVERIFY(!wizard.pixmap(QWizard::BackgroundPixmap).isNull());
     else
         QVERIFY(wizard.pixmap(QWizard::BackgroundPixmap).isNull());
@@ -428,7 +428,7 @@ void tst_QWizard::setPixmap()
     QVERIFY(page->pixmap(QWizard::BannerPixmap).isNull());
     QVERIFY(page->pixmap(QWizard::LogoPixmap).isNull());
     QVERIFY(page->pixmap(QWizard::WatermarkPixmap).isNull());
-    if (QOperatingSystemVersion::current() <= QOperatingSystemVersion::MacOSHighSierra)
+    if (QOperatingSystemVersion::currentType() == QOperatingSystemVersion::MacOS)
         QVERIFY(!wizard.pixmap(QWizard::BackgroundPixmap).isNull());
     else
         QVERIFY(page->pixmap(QWizard::BackgroundPixmap).isNull());

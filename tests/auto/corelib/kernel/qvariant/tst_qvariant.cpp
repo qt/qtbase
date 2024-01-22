@@ -5196,7 +5196,7 @@ void tst_QVariant::constructFromIncompatibleMetaType()
 void tst_QVariant::copyNonDefaultConstructible()
 {
     NonDefaultConstructible ndc(42);
-    QVariant var(QMetaType::fromType<NonDefaultConstructible>(), &ndc);
+    QVariant var = QVariant::fromValue(ndc);
     QVERIFY(var.isDetached());
     QCOMPARE(var.metaType(), QMetaType::fromType<NonDefaultConstructible>());
     QVERIFY(var.constData() != &ndc);

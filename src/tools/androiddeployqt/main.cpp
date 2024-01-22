@@ -1422,15 +1422,9 @@ bool updateLibsXml(Options *options)
         if (localLibs.isEmpty()) {
             QString plugin;
             for (const QtDependency &qtDependency : options->qtDependencies[it.key()]) {
-                if (qtDependency.relativePath.endsWith(QLatin1String("libqtforandroid.so"))
-                        || qtDependency.relativePath.endsWith(QLatin1String("libqtforandroidGL.so"))) {
-                    if (!plugin.isEmpty() && plugin != qtDependency.relativePath) {
-                        fprintf(stderr, "Both platform plugins libqtforandroid.so and libqtforandroidGL.so included in package. Please include only one.\n");
-                        return false;
-                    }
-
+                if (qtDependency.relativePath.endsWith(QLatin1String("libqtforandroid.so")))
                     plugin = qtDependency.relativePath;
-                }
+
                 if (qtDependency.relativePath.contains(
                             QString::asprintf("libQt%dOpenGL", QT_VERSION_MAJOR))
                     || qtDependency.relativePath.contains(
@@ -1442,7 +1436,8 @@ bool updateLibsXml(Options *options)
 
             if (plugin.isEmpty()) {
                 fflush(stdout);
-                fprintf(stderr, "No platform plugin, neither libqtforandroid.so or libqtforandroidGL.so, included in package. Please include one.\n");
+                fprintf(stderr, "No platform plugin (libqtforandroid.so) included in "
+                                "the deployment. Make sure the app links to Qt Gui library.\n");
                 fflush(stderr);
                 return false;
             }
@@ -2014,15 +2009,12 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
                 continue;
             }
 
+            const QUrl url(object.value(QLatin1String("name")).toString());
+            const QString moduleUrlPath = QLatin1String("/") + url.toString().replace(QLatin1Char('.'), QLatin1Char('/'));
             QString importPathOfThisImport;
             for (const QString &importPath : qAsConst(importPaths)) {
-#if defined(Q_OS_WIN32)
-                Qt::CaseSensitivity caseSensitivity = Qt::CaseInsensitive;
-#else
-                Qt::CaseSensitivity caseSensitivity = Qt::CaseSensitive;
-#endif
                 QString cleanImportPath = QDir::cleanPath(importPath);
-                if (info.absoluteFilePath().startsWith(cleanImportPath, caseSensitivity)) {
+                if (QFile::exists(cleanImportPath + moduleUrlPath)) {
                     importPathOfThisImport = importPath;
                     break;
                 }

@@ -37,6 +37,8 @@ class tst_QMessageAuthenticationCode : public QObject
 {
     Q_OBJECT
 private slots:
+    void repeated_setKey_data();
+    void repeated_setKey();
     void result_data();
     void result();
     void result_incremental_data();
@@ -46,6 +48,47 @@ private slots:
 };
 
 Q_DECLARE_METATYPE(QCryptographicHash::Algorithm)
+
+void tst_QMessageAuthenticationCode::repeated_setKey_data()
+{
+    using A = QCryptographicHash::Algorithm;
+    QTest::addColumn<A>("algo");
+
+    const auto me = QMetaEnum::fromType<A>();
+    for (int i = 0, value; (value = me.value(i)) != -1; ++i)
+        QTest::addRow("%s", me.key(i)) << A(value);
+}
+
+void tst_QMessageAuthenticationCode::repeated_setKey()
+{
+    QFETCH(const QCryptographicHash::Algorithm, algo);
+
+    // GIVEN: two long keys, so we're sure the key needs to be hashed in order
+    //        to fit into the hash algorithm's block
+
+    static const QByteArray key1(1024, 'a');
+    static const QByteArray key2(2048, 'b');
+
+    // WHEN: processing the same message
+
+    QMessageAuthenticationCode macX(algo);
+    QMessageAuthenticationCode mac1(algo, key1);
+    QMessageAuthenticationCode mac2(algo, key2);
+
+    const auto check = [](QMessageAuthenticationCode &mac) {
+        mac.addData("This is nonsense, ignore it, please.");
+        return mac.result();
+    };
+
+    macX.setKey(key1);
+    QCOMPARE(check(macX), check(mac1));
+
+    // THEN: the result does not depend on whether a new QMAC instance was used
+    //       or an old one re-used (iow: setKey() reset()s)
+
+    macX.setKey(key2);
+    QCOMPARE(check(macX), check(mac2));
+}
 
 void tst_QMessageAuthenticationCode::result_data()
 {

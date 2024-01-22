@@ -51,17 +51,17 @@
 #ifndef LEVEL_H
 #define LEVEL_H
 
+#include "character.h"
+
 #include <QJsonObject>
 #include <QList>
-
-#include "character.h"
 
 //! [0]
 class Level
 {
 public:
     Level() = default;
-    Level(const QString &name);
+    explicit Level(const QString &name);
 
     QString name() const;
 

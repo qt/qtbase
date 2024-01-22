@@ -69,6 +69,7 @@ public:
 
     bool isValid() const { return m_framebufferObject->isValid(); }
     GLuint handle() const { return m_framebufferObject->handle(); }
+    GLuint texture();
     GLuint takeTexture();
     QImage toImage() const;
 
@@ -83,6 +84,7 @@ public:
 
 private:
     QOpenGLFramebufferObject *m_framebufferObject;
+    QOpenGLFramebufferObject *m_resolvedFbo;
     QSurface *m_surface;
 };
 

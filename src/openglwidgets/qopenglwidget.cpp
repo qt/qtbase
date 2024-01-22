@@ -211,6 +211,13 @@ QT_BEGIN_NAMESPACE
 
   \snippet code/doc_gui_widgets_qopenglwidget.cpp 2
 
+  \note It is up to the application to ensure depth and stencil buffers are
+  requested from the underlying windowing system interface. Without requesting
+  a non-zero depth buffer size there is no guarantee that a depth buffer will
+  be available, and as a result depth testing related OpenGL operations may
+  fail to function as expected. Commonly used depth and stencil buffer size
+  requests are 24 and 8, respectively.
+
   With OpenGL 3.0+ contexts, when portability is not important, the versioned
   QOpenGLFunctions variants give easy access to all the modern OpenGL functions
   available in a given version:

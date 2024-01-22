@@ -48,6 +48,9 @@
 **
 ****************************************************************************/
 
+#ifndef PAINTEDWINDOW_H
+#define PAINTEDWINDOW_H
+
 #include <QWindow>
 
 #include <QtGui/qopengl.h>
@@ -102,3 +105,5 @@ private:
     QPropertyAnimation *m_animation;
     QTimer *m_paintTimer;
 };
+
+#endif // PAINTEDWINDOW_H

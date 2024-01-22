@@ -32,16 +32,104 @@
 #include <qstringconverter.h>
 #include <qthreadpool.h>
 
+#include <array>
+
+enum CodecLimitation {
+    AsciiOnly,
+    Latin1Only,
+    FullUnicode
+};
+
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+static bool localeIsUtf8()
+{
+    return GetACP() == CP_UTF8;
+}
+#else
+static constexpr bool localeIsUtf8()
+{
+    return true;
+}
+#endif
+
+struct Codec
+{
+    const char name[12];
+    QStringConverter::Encoding code;
+    CodecLimitation limitation = FullUnicode;
+};
+static const std::array codes = {
+    Codec{ "UTF-8", QStringConverter::Utf8 },
+    Codec{ "UTF-16", QStringConverter::Utf16 },
+    Codec{ "UTF-16-le", QStringConverter::Utf16LE },
+    Codec{ "UTF-16-be", QStringConverter::Utf16BE },
+    Codec{ "UTF-32", QStringConverter::Utf32 },
+    Codec{ "UTF-32-le", QStringConverter::Utf32LE },
+    Codec{ "UTF-32-be", QStringConverter::Utf32BE },
+    Codec{ "Latin-1", QStringConverter::Latin1, Latin1Only },
+    Codec{ "System", QStringConverter::System, localeIsUtf8() ? FullUnicode : AsciiOnly }
+};
+
+struct TestString
+{
+    const char *description;
+    QUtf8StringView utf8;
+    QStringView utf16;
+    CodecLimitation limitation = FullUnicode;
+};
+static const std::array testStrings = {
+    TestString{ "empty", "", u"", AsciiOnly },
+    TestString{ "null-character", QUtf8StringView("", 1), QStringView(u"", 1), AsciiOnly },
+    TestString{ "ascii-text",
+                "This is a standard US-ASCII message",
+                "This is a standard US-ASCII message" u"",
+                AsciiOnly
+    },
+    TestString{ "ascii-with-control",
+                "\1This\2is\3an\4US-ASCII\020 message interspersed with control chars",
+                "\1This\2is\3an\4US-ASCII\020 message interspersed with control chars" u"",
+                AsciiOnly
+    },
+
+    TestString{ "nbsp", "\u00a0", u"\u00a0", Latin1Only },
+    TestString{ "latin1-text",
+                "Hyvää päivää, käyhän että tuon kannettavani saunaan?",
+                "Hyvää päivää, käyhän että tuon kannettavani saunaan?" u"",
+                Latin1Only
+    },
+
+#define ROW(name, string)       TestString{ name, u8"" string, u"" string }
+    ROW("euro", "€"),
+    //ROW("bom", "\ufeff"),     // Can't test this because QString::fromUtf8 consumes it
+    ROW("replacement", "\ufffd"),
+    ROW("supplementary-plane", "\U00010203"),
+    ROW("mahjong", "\U0001f000\U0001f001\U0001f002\U0001f003\U0001f004\U0001f005"
+        "\U0001f006\U0001f007\U0001f008\U0001f009\U0001f00a\U0001f00b\U0001f00c"
+        "\U0001f00d\U0001f00e\U0001f00f"),
+    ROW("emojis", "😂, 😃, 🧘🏻‍♂️, 🌍, 🌦️, 🍞, 🚗, 📞, 🎉, ❤️, 🏁"),  // https://en.wikipedia.org/wiki/Emoji
+    ROW("last-valid", "\U0010fffd"),    // U+10FFFF is the strict last, but it's a non-character
+    ROW("mixed-bmp-only", "abc\u00a0\u00e1\u00e9\u01fd \u20acdef"),
+    ROW("mixed-full", "abc\u00a0\u00e1\u00e9\u01fd \U0010FFFD \u20acdef"),
+    ROW("xml", "<doc>\U00010000\U0010FFFD</doc>\r\n")
+#undef ROW
+};
+
 class tst_QStringConverter : public QObject
 {
     Q_OBJECT
 
 private slots:
+    void initTestCase();
+
     void threadSafety();
 
     void constructByName();
 
+    void convertUtf8_data();
     void convertUtf8();
+    void convertUtf8CharByChar_data() { convertUtf8_data(); }
+    void convertUtf8CharByChar();
     void roundtrip_data();
     void roundtrip();
 
@@ -100,107 +188,155 @@ void tst_QStringConverter::constructByName()
     QVERIFY(!strcmp(decoder.name(), "UTF-16"));
 }
 
+void tst_QStringConverter::convertUtf8_data()
+{
+    QTest::addColumn<QStringConverter::Encoding>("encoding");
+    QTest::addColumn<QUtf8StringView>("utf8");
+    QTest::addColumn<QStringView>("utf16");
+    auto addRow = [](const TestString &s) {
+        QTest::addRow("Utf8:%s", s.description) << QStringDecoder::Utf8 << s.utf8 << s.utf16;
+        if (localeIsUtf8())
+            QTest::addRow("System:%s", s.description) << QStringDecoder::System << s.utf8 << s.utf16;
+    };
+
+    for (const TestString &s : testStrings)
+        addRow(s);
+}
+
 void tst_QStringConverter::convertUtf8()
 {
-    QFile file(QFINDTESTDATA("utf8.txt"));
+    QFETCH(QStringConverter::Encoding, encoding);
+    QFETCH(QUtf8StringView, utf8);
+    QFETCH(QStringView, utf16);
 
-    if (!file.open(QIODevice::ReadOnly))
-        QFAIL(qPrintable("File could not be opened: " + file.errorString()));
+    QByteArray ba = QByteArray::fromRawData(utf8.data(), utf8.size());
 
-    QByteArray ba = file.readAll();
-    QVERIFY(!ba.isEmpty());
+    QStringDecoder decoder(encoding);
+    QVERIFY(decoder.isValid());
+    QString uniString = decoder(ba);
+    QCOMPARE(uniString, utf16);
+    QCOMPARE(uniString, QString::fromUtf8(ba));
+    QCOMPARE(ba, uniString.toUtf8());
 
-    {
-        QStringDecoder decoder(QStringDecoder::Utf8);
-        QVERIFY(decoder.isValid());
-        QString uniString = decoder(ba);
-        QCOMPARE(uniString, QString::fromUtf8(ba));
-        QCOMPARE(ba, uniString.toUtf8());
-        uniString = decoder.decode(ba);
-        QCOMPARE(uniString, QString::fromUtf8(ba));
-        QCOMPARE(ba, uniString.toUtf8());
+    // do it again (using .decode())
+    uniString = decoder.decode(ba);
+    QCOMPARE(uniString, utf16);
+    QCOMPARE(uniString, QString::fromUtf8(ba));
+    QCOMPARE(ba, uniString.toUtf8());
 
-        QStringEncoder encoder(QStringEncoder::Utf8);
-        QCOMPARE(ba, encoder(uniString));
-        QCOMPARE(ba, encoder.encode(uniString));
+    QStringEncoder encoder(encoding);
+    QByteArray reencoded = encoder(utf16);
+    QCOMPARE(reencoded, utf8);
+    QCOMPARE(reencoded, uniString.toUtf8());
+
+    // do it again (using .encode())
+    reencoded = encoder.encode(utf16);
+    QCOMPARE(reencoded, utf8);
+    QCOMPARE(reencoded, uniString.toUtf8());
+
+    if (utf16.isEmpty())
+        return;
+
+    // repeat, with a longer string
+    constexpr qsizetype MinSize = 128;
+    uniString = utf16.toString();
+    while (uniString.size() < MinSize && ba.size() < MinSize) {
+        uniString += uniString;
+        ba += ba;
     }
+    QCOMPARE(decoder(ba), uniString);
+    QCOMPARE(encoder(uniString), ba);
+}
 
-    {
-        // once again converting char by char
-        QStringDecoder decoder(QStringDecoder::Utf8);
-        QVERIFY(decoder.isValid());
-        QString uniString;
-        for (int i = 0; i < ba.size(); ++i)
-            uniString += decoder(QByteArrayView(ba).sliced(i, 1));
-        QCOMPARE(uniString, QString::fromUtf8(ba));
-        uniString.clear();
-        for (int i = 0; i < ba.size(); ++i)
-            uniString += decoder.decode(QByteArrayView(ba).sliced(i, 1));
-        QCOMPARE(uniString, QString::fromUtf8(ba));
+void tst_QStringConverter::convertUtf8CharByChar()
+{
+    QFETCH(QStringConverter::Encoding, encoding);
+    QFETCH(QUtf8StringView, utf8);
+    QFETCH(QStringView, utf16);
 
-        QStringEncoder encoder(QStringEncoder::Utf8);
-        QByteArray reencoded;
-        for (int i = 0; i < uniString.size(); ++i)
-            reencoded += encoder(QStringView(uniString).sliced(i, 1));
-        QCOMPARE(ba, encoder(uniString));
-        reencoded.clear();
-        for (int i = 0; i < uniString.size(); ++i)
-            reencoded += encoder.encode(QStringView(uniString).sliced(i, 1));
-        QCOMPARE(ba, encoder(uniString));
-    }
+    QByteArray ba = QByteArray::fromRawData(utf8.data(), utf8.size());
+
+    QStringDecoder decoder(encoding);
+    QVERIFY(decoder.isValid());
+    QString uniString;
+    for (int i = 0; i < ba.size(); ++i)
+        uniString += decoder(QByteArrayView(ba).sliced(i, 1));
+    QCOMPARE(uniString, utf16);
+    QCOMPARE(uniString, QString::fromUtf8(ba));
+    uniString.clear();
+
+    // do it again (using .decode())
+    for (int i = 0; i < ba.size(); ++i)
+        uniString += decoder.decode(QByteArrayView(ba).sliced(i, 1));
+    QCOMPARE(uniString, utf16);
+    QCOMPARE(uniString, QString::fromUtf8(ba));
+
+    QStringEncoder encoder(encoding);
+    QByteArray reencoded;
+    for (int i = 0; i < utf16.size(); ++i)
+        reencoded += encoder(utf16.sliced(i, 1));
+    QCOMPARE(reencoded, ba);
+    reencoded.clear();
+
+    // do it again (using .encode())
+    for (int i = 0; i < utf16.size(); ++i)
+        reencoded += encoder.encode(utf16.sliced(i, 1));
+    QCOMPARE(reencoded, ba);
 }
 
 void tst_QStringConverter::roundtrip_data()
 {
-    QTest::addColumn<QString>("utf16");
+    QTest::addColumn<QStringView>("utf16");
     QTest::addColumn<QStringConverter::Encoding>("code");
 
-    const struct {
-        QStringConverter::Encoding code;
-        const char *name;
-    } codes[] = {
-        { QStringConverter::Utf8, "UTF-8" },
-        { QStringConverter::Utf16, "UTF-16" },
-        { QStringConverter::Utf16LE, "UTF-16-le" },
-        { QStringConverter::Utf16BE, "UTF-16-be" },
-        { QStringConverter::Utf32, "UTF-32" },
-        { QStringConverter::Utf32LE, "UTF-32-le" },
-        { QStringConverter::Utf32BE, "UTF-32-be" },
-        // Latin1, System: not guaranteed to be able to represent arbitrary Unicode.
-    };
     // TODO: include flag variations, too.
 
     for (const auto code : codes) {
-        QTest::addRow("empty-%s", code.name) << u""_qs << code.code;
-        {
+        for (const TestString &s : testStrings) {
+            // rules:
+            // 1) don't pass the null character to the System codec
+            // 2) only pass operate on a string that will properly convert
+            if (code.code == QStringConverter::System && s.utf16.contains(QChar(0)))
+                continue;
+            if (code.limitation < s.limitation)
+                continue;
+            QTest::addRow("%s:%s", code.name, s.description) << s.utf16 << code.code;
+        }
+
+        if (code.limitation == FullUnicode) {
             const char32_t zeroVal = 0x11136; // Unicode's representation of Chakma zero
-            const QChar data[] = {
-                QChar::highSurrogate(zeroVal), QChar::lowSurrogate(zeroVal),
-                QChar::highSurrogate(zeroVal + 1), QChar::lowSurrogate(zeroVal + 1),
-                QChar::highSurrogate(zeroVal + 2), QChar::lowSurrogate(zeroVal + 2),
-                QChar::highSurrogate(zeroVal + 3), QChar::lowSurrogate(zeroVal + 3),
-                QChar::highSurrogate(zeroVal + 4), QChar::lowSurrogate(zeroVal + 4),
-                QChar::highSurrogate(zeroVal + 5), QChar::lowSurrogate(zeroVal + 5),
-                QChar::highSurrogate(zeroVal + 6), QChar::lowSurrogate(zeroVal + 6),
-                QChar::highSurrogate(zeroVal + 7), QChar::lowSurrogate(zeroVal + 7),
-                QChar::highSurrogate(zeroVal + 8), QChar::lowSurrogate(zeroVal + 8),
-                QChar::highSurrogate(zeroVal + 9), QChar::lowSurrogate(zeroVal + 9)
-            };
-            QTest::addRow("Chakma-digits-%s", code.name)
-                << QString(data, std::size(data)) << code.code;
+            for (int i = 0; i < 10; ++i) {
+                QChar data[] = {
+                    QChar::highSurrogate(zeroVal + i), QChar::lowSurrogate(zeroVal + i),
+                };
+                QTest::addRow("%s:Chakma-digit-%d", code.name, i) << QStringView(data) << code.code;
+            }
         }
     }
 }
 
 void tst_QStringConverter::roundtrip()
 {
-    QFETCH(QString, utf16);
+    QFETCH(QStringView, utf16);
     QFETCH(QStringConverter::Encoding, code);
     QStringEncoder out(code);
-    const QByteArray encoded = out.encode(utf16);
+    QByteArray encoded = out.encode(utf16);
     QStringDecoder back(code);
     const QString decoded = back.decode(encoded);
     QCOMPARE(decoded, utf16);
+
+    if (utf16.isEmpty())
+        return;
+
+    // repeat, with a longer string
+    constexpr qsizetype MinSize = 128;
+    QString uniString = utf16.toString();
+    while (uniString.size() < MinSize && encoded.size() < MinSize) {
+        uniString += uniString;
+        encoded += encoded;
+    }
+    QCOMPARE(out.encode(uniString), encoded);
+    QCOMPARE(back.decode(encoded), uniString);
 }
 
 void tst_QStringConverter::nonFlaggedCodepointFFFF() const
@@ -1892,6 +2028,14 @@ public:
         }
     }
 };
+
+void tst_QStringConverter::initTestCase()
+{
+    if (localeIsUtf8())
+        qInfo("System locale is UTF-8");
+    else
+        qInfo("System locale is not UTF-8");
+}
 
 void tst_QStringConverter::threadSafety()
 {

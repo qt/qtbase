@@ -64,6 +64,11 @@ Q_DECLARE_METATYPE(MYSQL_RES*)
 Q_DECLARE_METATYPE(MYSQL*)
 Q_DECLARE_METATYPE(MYSQL_STMT*)
 
+// MYSQL_TYPE_JSON was introduced with MySQL 5.7.9
+#if defined(MYSQL_VERSION_ID) && MYSQL_VERSION_ID < 50709
+#define MYSQL_TYPE_JSON  245
+#endif
+
 // MySQL above version 8 removed my_bool typedef while MariaDB kept it,
 // by redefining it we can regain source compatibility.
 using my_bool = decltype(mysql_stmt_bind_result(nullptr, nullptr));
@@ -262,6 +267,7 @@ static QMetaType qDecodeMYSQLType(int mysqltype, uint flags)
     case FIELD_TYPE_MEDIUM_BLOB :
     case FIELD_TYPE_LONG_BLOB :
     case FIELD_TYPE_GEOMETRY :
+    case MYSQL_TYPE_JSON :
         type = (flags & BINARY_FLAG) ? QMetaType::QByteArray : QMetaType::QString;
         break;
     default:
@@ -300,7 +306,8 @@ static bool qIsBlob(int t)
     return t == MYSQL_TYPE_TINY_BLOB
            || t == MYSQL_TYPE_BLOB
            || t == MYSQL_TYPE_MEDIUM_BLOB
-           || t == MYSQL_TYPE_LONG_BLOB;
+           || t == MYSQL_TYPE_LONG_BLOB
+           || t == MYSQL_TYPE_JSON;
 }
 
 static bool qIsInteger(int t)

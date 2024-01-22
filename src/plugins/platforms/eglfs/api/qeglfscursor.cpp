@@ -44,6 +44,7 @@
 
 #include <qpa/qwindowsysteminterface.h>
 #include <QtGui/QOpenGLContext>
+#include <QtGui/QOpenGLFunctions>
 #include <QtCore/QFile>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonArray>
@@ -151,16 +152,18 @@ void QEglFSCursor::createShaderPrograms()
 
 void QEglFSCursor::createCursorTexture(uint *texture, const QImage &image)
 {
+    Q_ASSERT(QOpenGLContext::currentContext());
+    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
     if (!*texture)
-        glGenTextures(1, texture);
-    glBindTexture(GL_TEXTURE_2D, *texture);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        f->glGenTextures(1, texture);
+    f->glBindTexture(GL_TEXTURE_2D, *texture);
+    f->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    f->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    f->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    f->glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0 /* level */, GL_RGBA, image.width(), image.height(), 0 /* border */,
-                 GL_RGBA, GL_UNSIGNED_BYTE, image.constBits());
+    f->glTexImage2D(GL_TEXTURE_2D, 0 /* level */, GL_RGBA, image.width(), image.height(), 0 /* border */,
+                    GL_RGBA, GL_UNSIGNED_BYTE, image.constBits());
 }
 
 void QEglFSCursor::initCursorAtlas()
@@ -372,8 +375,8 @@ void QEglFSCursor::paintOnScreen()
 // to deal with the changes we make.
 struct StateSaver
 {
-    StateSaver() {
-        f = QOpenGLContext::currentContext()->functions();
+    StateSaver(QOpenGLFunctions* func) {
+        f = func;
         vaoHelper = QOpenGLVertexArrayObjectHelper::vertexArrayObjectHelperForContext(QOpenGLContext::currentContext());
 
         static bool windowsChecked = false;
@@ -464,11 +467,9 @@ struct StateSaver
 
 void QEglFSCursor::draw(const QRectF &r)
 {
-    StateSaver stateSaver;
-
-    // one time initialization
-    if (!QOpenGLFunctions::d_ptr)
-        initializeOpenGLFunctions();
+    Q_ASSERT(QOpenGLContext::currentContext());
+    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+    StateSaver stateSaver(f);
 
     QEglFSCursorData &gfx = static_cast<QEglFSContext*>(QOpenGLContext::currentContext()->handle())->cursorData;
     if (!gfx.program) {
@@ -517,13 +518,13 @@ void QEglFSCursor::draw(const QRectF &r)
         s2, t1
     };
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, cursorTexture);
+    f->glActiveTexture(GL_TEXTURE0);
+    f->glBindTexture(GL_TEXTURE_2D, cursorTexture);
 
     if (stateSaver.vaoHelper->isValid())
         stateSaver.vaoHelper->glBindVertexArray(0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    f->glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     gfx.program->enableAttributeArray(0);
     gfx.program->enableAttributeArray(1);
@@ -533,13 +534,13 @@ void QEglFSCursor::draw(const QRectF &r)
     gfx.program->setUniformValue(gfx.textureEntry, 0);
     gfx.program->setUniformValue(gfx.matEntry, m_rotationMatrix);
 
-    glDisable(GL_CULL_FACE);
-    glFrontFace(GL_CCW);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    glDisable(GL_DEPTH_TEST); // disable depth testing to make sure cursor is always on top
+    f->glDisable(GL_CULL_FACE);
+    f->glFrontFace(GL_CCW);
+    f->glEnable(GL_BLEND);
+    f->glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    f->glDisable(GL_DEPTH_TEST); // disable depth testing to make sure cursor is always on top
 
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    f->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     gfx.program->disableAttributeArray(0);
     gfx.program->disableAttributeArray(1);

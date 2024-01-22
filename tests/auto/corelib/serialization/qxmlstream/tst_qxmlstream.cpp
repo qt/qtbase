@@ -1684,20 +1684,21 @@ static bool isValidSingleTextChar(const ushort c)
 
 void tst_QXmlStream::readBack() const
 {
-    for (ushort c = 0; c < std::numeric_limits<ushort>::max(); ++c) {
-        QBuffer buffer;
+    QBuffer buffer;
 
-        QVERIFY(buffer.open(QIODevice::WriteOnly));
+    for (ushort c = 0; c < std::numeric_limits<ushort>::max(); ++c) {
+
+        QVERIFY(buffer.open(QIODevice::WriteOnly|QIODevice::Truncate));
         QXmlStreamWriter writer(&buffer);
         writer.writeStartDocument();
         writer.writeTextElement("a", QString(QChar(c)));
         writer.writeEndDocument();
         buffer.close();
 
-        if (writer.hasError()) {
-            QVERIFY2(!isValidSingleTextChar(c), QByteArray::number(c));
+        if (!isValidSingleTextChar(c)) {
+            QVERIFY2(writer.hasError(), QByteArray::number(c));
         } else {
-            QVERIFY2(isValidSingleTextChar(c), QByteArray::number(c));
+            QVERIFY2(!writer.hasError(), QByteArray::number(c));
             QVERIFY(buffer.open(QIODevice::ReadOnly));
             QXmlStreamReader reader(&buffer);
             do {

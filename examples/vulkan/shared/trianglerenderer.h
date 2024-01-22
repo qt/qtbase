@@ -48,6 +48,9 @@
 **
 ****************************************************************************/
 
+#ifndef TRIANGLERENDERER_H
+#define TRIANGLERENDERER_H
+
 #include <QVulkanWindow>
 
 class TriangleRenderer : public QVulkanWindowRenderer
@@ -83,3 +86,5 @@ protected:
     QMatrix4x4 m_proj;
     float m_rotation = 0.0f;
 };
+
+#endif // TRIANGLERENDERER_H

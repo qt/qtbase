@@ -232,7 +232,7 @@ function(qt_set_target_info_properties target)
         set(arg_TARGET_COMPANY "The Qt Company Ltd.")
     endif()
     if("${arg_TARGET_COPYRIGHT}" STREQUAL "")
-        set(arg_TARGET_COPYRIGHT "Copyright (C) 2022 The Qt Company Ltd.")
+        set(arg_TARGET_COPYRIGHT "Copyright (C) 2023 The Qt Company Ltd.")
     endif()
     set_target_properties(${target} PROPERTIES
         QT_TARGET_VERSION "${arg_TARGET_VERSION}"

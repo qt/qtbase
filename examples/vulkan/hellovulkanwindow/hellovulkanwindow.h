@@ -48,6 +48,9 @@
 **
 ****************************************************************************/
 
+#ifndef HELLOVULKANWINDOW_H
+#define HELLOVULKANWINDOW_H
+
 #include <QVulkanWindow>
 
 //! [0]
@@ -75,3 +78,5 @@ public:
     QVulkanWindowRenderer *createRenderer() override;
 };
 //! [0]
+
+#endif // HELLOVULKANWINDOW_H

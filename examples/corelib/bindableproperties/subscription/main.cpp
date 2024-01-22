@@ -87,15 +87,15 @@ int main(int argc, char *argv[])
     // Initialize user data
     QPushButton *germany = w.findChild<QPushButton *>("btnGermany");
     QObject::connect(germany, &QPushButton::clicked, &user, [&] {
-        user.setCountry(User::Germany);
+        user.setCountry(User::Country::Germany);
     });
     QPushButton *finland = w.findChild<QPushButton *>("btnFinland");
     QObject::connect(finland, &QPushButton::clicked, &user, [&] {
-        user.setCountry(User::Finland);
+        user.setCountry(User::Country::Finland);
     });
     QPushButton *norway = w.findChild<QPushButton *>("btnNorway");
     QObject::connect(norway, &QPushButton::clicked, &user, [&] {
-        user.setCountry(User::Norway);
+        user.setCountry(User::Country::Norway);
     });
 
     QSpinBox *ageSpinBox = w.findChild<QSpinBox *>("ageSpinBox");
@@ -112,7 +112,8 @@ int main(int argc, char *argv[])
 
 //! [connect-price-changed]
     QObject::connect(&subscription, &Subscription::priceChanged, [&] {
-        priceDisplay->setText(QString::number(subscription.price()));
+        QLocale lc{QLocale::AnyLanguage, user.country()};
+        priceDisplay->setText(lc.toCurrencyString(subscription.price() / subscription.duration()));
     });
 //! [connect-price-changed]
 

@@ -138,7 +138,7 @@ class tst_QStringApiSymmetry : public QObject
     void compare_impl() const;
 
 private Q_SLOTS:
-    // test all combinations of {QChar, char16_t, QString, QStringView, QLatin1String, QByteArray, const char*}
+    // test all combinations of {QChar, char16_t, QString, QStringView, QLatin1String, QByteArray/View, const char*}
     void compare_QChar_QChar_data() { compare_data(false); }
     void compare_QChar_QChar() { compare_impl<QChar, QChar>(); }
     void compare_QChar_char16_t_data() { compare_data(false); }
@@ -153,6 +153,8 @@ private Q_SLOTS:
     void compare_QChar_QLatin1String() { compare_impl<QChar, QLatin1String>(); }
     void compare_QChar_QByteArray_data() { compare_data(false); }
     void compare_QChar_QByteArray() { compare_impl<QChar, QByteArray>(); }
+    void compare_QChar_QByteArrayView_data() { compare_data(false); }
+    void compare_QChar_QByteArrayView() { compare_impl<QChar, QByteArrayView>(); }
     void compare_QChar_const_char_star_data() { compare_data(false); }
     void compare_QChar_const_char_star() { compare_impl<QChar, const char *>(); }
 
@@ -170,6 +172,8 @@ private Q_SLOTS:
     void compare_char16_t_QLatin1String() { compare_impl<char16_t, QLatin1String>(); }
     void compare_char16_t_QByteArray_data() { compare_data(false); }
     void compare_char16_t_QByteArray() { compare_impl<char16_t, QByteArray>(); }
+    void compare_char16_t_QByteArrayView_data() { compare_data(false); }
+    void compare_char16_t_QByteArrayView() { compare_impl<char16_t, QByteArrayView>(); }
     //void compare_char16_t_const_char_star_data() { compare_data(false); }
     //void compare_char16_t_const_char_star() { compare_impl<char16_t, const char *>(); }
 
@@ -187,6 +191,8 @@ private Q_SLOTS:
     void compare_QString_QLatin1String() { compare_impl<QString, QLatin1String>(); }
     void compare_QString_QByteArray_data() { compare_data(); }
     void compare_QString_QByteArray() { compare_impl<QString, QByteArray>(); }
+    void compare_QString_QByteArrayView_data() { compare_data(); }
+    void compare_QString_QByteArrayView() { compare_impl<QString, QByteArrayView>(); }
     void compare_QString_const_char_star_data() { compare_data(); }
     void compare_QString_const_char_star() { compare_impl<QString, const char *>(); }
 
@@ -198,13 +204,17 @@ private Q_SLOTS:
     void compare_QStringView_QString() { compare_impl<QStringView, QString>(); }
     void compare_QStringView_QStringView_data() { compare_data(); }
     void compare_QStringView_QStringView() { compare_impl<QStringView, QStringView>(); }
+#ifdef NOT_YET_IMPLEMENTED
     void compare_QStringView_QUtf8StringView_data() { compare_data(); }
-    void compare_QStringView_QUtf8StringView() { compare_impl<QStringView, QStringView>(); }
+    void compare_QStringView_QUtf8StringView() { compare_impl<QStringView, QUtf8StringView>(); }
+#endif
     void compare_QStringView_QLatin1String_data() { compare_data(); }
     void compare_QStringView_QLatin1String() { compare_impl<QStringView, QLatin1String>(); }
 #ifdef NOT_YET_IMPLMENTED
     void compare_QStringView_QByteArray_data() { compare_data(); }
     void compare_QStringView_QByteArray() { compare_impl<QStringView, QByteArray>(); }
+    void compare_QStringView_QByteArrayView_data() { compare_data(); }
+    void compare_QStringView_QByteArrayView() { compare_impl<QStringView, QByteArrayView>(); }
     void compare_QStringView_const_char_star_data() { compare_data(); }
     void compare_QStringView_const_char_star() { compare_impl<QStringView, const char *>(); }
 #endif
@@ -224,6 +234,8 @@ private Q_SLOTS:
 #ifdef NOT_YET_IMPLMENTED
     void compare_QUtf8StringView_QByteArray_data() { compare_data(); }
     void compare_QUtf8StringView_QByteArray() { compare_impl<QUtf8StringView, QByteArray>(); }
+    void compare_QUtf8StringView_QByteArrayView_data() { compare_data(); }
+    void compare_QUtf8StringView_QByteArrayView() { compare_impl<QUtf8StringView, QByteArrayView>(); }
     void compare_QUtf8StringView_const_char_star_data() { compare_data(); }
     void compare_QUtf8StringView_const_char_star() { compare_impl<QUtf8StringView, const char *>(); }
 #endif
@@ -242,6 +254,10 @@ private Q_SLOTS:
     void compare_QLatin1String_QLatin1String() { compare_impl<QLatin1String, QLatin1String>(); }
     void compare_QLatin1String_QByteArray_data() { compare_data(); }
     void compare_QLatin1String_QByteArray() { compare_impl<QLatin1String, QByteArray>(); }
+#ifdef AMBIGUOUS_CALL
+    void compare_QLatin1String_QByteArrayView_data() { compare_data(); }
+    void compare_QLatin1String_QByteArrayView() { compare_impl<QLatin1String, QByteArrayView>(); }
+#endif
     void compare_QLatin1String_const_char_star_data() { compare_data(); }
     void compare_QLatin1String_const_char_star() { compare_impl<QLatin1String, const char *>(); }
 
@@ -261,8 +277,37 @@ private Q_SLOTS:
     void compare_QByteArray_QLatin1String() { compare_impl<QByteArray, QLatin1String>(); }
     void compare_QByteArray_QByteArray_data() { compare_data(); }
     void compare_QByteArray_QByteArray() { compare_impl<QByteArray, QByteArray>(); }
+#ifdef AMBIGUOUS_CALL
+    void compare_QByteArray_QByteArrayView_data() { compare_data(); }
+    void compare_QByteArray_QByteArrayView() { compare_impl<QByteArray, QByteArrayView>(); }
+#endif
     void compare_QByteArray_const_char_star_data() { compare_data(); }
     void compare_QByteArray_const_char_star() { compare_impl<QByteArray, const char *>(); }
+
+    void compare_QByteArrayView_QChar_data() { compare_data(false); }
+    void compare_QByteArrayView_QChar() { compare_impl<QByteArrayView, QChar>(); }
+    void compare_QByteArrayView_char16_t_data() { compare_data(false); }
+    void compare_QByteArrayView_char16_t() { compare_impl<QByteArrayView, char16_t>(); }
+    void compare_QByteArrayView_QString_data() { compare_data(); }
+    void compare_QByteArrayView_QString() { compare_impl<QByteArrayView, QString>(); }
+#ifdef NOT_YET_IMPLEMENTED
+    void compare_QByteArrayView_QStringView_data() { compare_data(); }
+    void compare_QByteArrayView_QStringView() { compare_impl<QByteArrayView, QStringView>(); }
+#endif
+#ifdef AMBIGUOUS_CALL
+    void compare_QByteArrayView_QUtf8StringView_data() { compare_data(); }
+    void compare_QByteArrayView_QUtf8StringView() { compare_impl<QByteArrayView, QUtf8StringView>(); }
+    void compare_QByteArrayView_QLatin1String_data() { compare_data(); }
+    void compare_QByteArrayView_QLatin1String() { compare_impl<QByteArrayView, QLatin1String>(); }
+    void compare_QByteArrayView_QByteArray_data() { compare_data(); }
+    void compare_QByteArrayView_QByteArray() { compare_impl<QByteArrayView, QByteArray>(); }
+#endif
+    void compare_QByteArrayView_QByteArrayView_data() { compare_data(); }
+    void compare_QByteArrayView_QByteArrayView() { compare_impl<QByteArrayView, QByteArrayView>(); }
+#ifdef AMBIGUOUS_CALL
+    void compare_QByteArrayView_const_char_star_data() { compare_data(); }
+    void compare_QByteArrayView_const_char_star() { compare_impl<QByteArrayView, const char *>(); }
+#endif
 
     void compare_const_char_star_QChar_data() { compare_data(false); }
     void compare_const_char_star_QChar() { compare_impl<const char *, QChar>(); }
@@ -276,6 +321,10 @@ private Q_SLOTS:
     void compare_const_char_star_QLatin1String() { compare_impl<const char *, QLatin1String>(); }
     void compare_const_char_star_QByteArray_data() { compare_data(); }
     void compare_const_char_star_QByteArray() { compare_impl<const char *, QByteArray>(); }
+#ifdef AMBIGUOUS_CALL
+    void compare_const_char_star_QByteArrayView_data() { compare_data(); }
+    void compare_const_char_star_QByteArrayView() { compare_impl<const char *, QByteArrayView>(); }
+#endif
     //void compare_const_char_star_const_char_star_data() { compare_data(); }
     //void compare_const_char_star_const_char_star() { compare_impl<const char *, const char *>(); }
 
@@ -299,6 +348,8 @@ private Q_SLOTS:
     void member_compare_QChar_QLatin1String() { member_compare_impl<QChar, QLatin1String>(); }
     void member_compare_QChar_QByteArray_data() { member_compare_data(false); }
     void member_compare_QChar_QByteArray() { member_compare_impl<QChar, QByteArray>(); }
+    void member_compare_QChar_QByteArrayView_data() { member_compare_data(false); }
+    void member_compare_QChar_QByteArrayView() { member_compare_impl<QChar, QByteArrayView>(); }
     void member_compare_QChar_const_char_star_data() { member_compare_data(false); }
     void member_compare_QChar_const_char_star() { member_compare_impl<QChar, const char *>(); }
 #endif
@@ -317,6 +368,10 @@ private Q_SLOTS:
     void member_compare_QString_QLatin1String() { member_compare_impl<QString, QLatin1String>(); }
     void member_compare_QString_QByteArray_data() { member_compare_data(); }
     void member_compare_QString_QByteArray() { member_compare_impl<QString, QByteArray>(); }
+#ifdef NOT_YET_IMPLEMENTED
+    void member_compare_QString_QByteArrayView_data() { member_compare_data(); }
+    void member_compare_QString_QByteArrayView() { member_compare_impl<QString, QByteArrayView>(); }
+#endif
     void member_compare_QString_const_char_star_data() { member_compare_data(); }
     void member_compare_QString_const_char_star() { member_compare_impl<QString, const char *>(); }
 
@@ -333,6 +388,8 @@ private Q_SLOTS:
 #ifdef NOT_YET_IMPLEMENTED
     void member_compare_QStringView_QByteArray_data() { member_compare_data(); }
     void member_compare_QStringView_QByteArray() { member_compare_impl<QStringView, QByteArray>(); }
+    void member_compare_QStringView_QByteArrayView_data() { member_compare_data(); }
+    void member_compare_QStringView_QByteArrayView() { member_compare_impl<QStringView, QByteArrayView>(); }
     void member_compare_QStringView_const_char_star_data() { member_compare_data(); }
     void member_compare_QStringView_const_char_star() { member_compare_impl<QStringView, const char *>(); }
 #endif
@@ -350,9 +407,13 @@ private Q_SLOTS:
 #ifdef NOT_YET_IMPLEMENTED
     void member_compare_QLatin1String_QByteArray_data() { member_compare_data(); }
     void member_compare_QLatin1String_QByteArray() { member_compare_impl<QLatin1String, QByteArray>(); }
+    void member_compare_QLatin1String_QByteArrayView_data() { member_compare_data(); }
+    void member_compare_QLatin1String_QByteArrayView() { member_compare_impl<QLatin1String, QByteArrayView>(); }
     void member_compare_QLatin1String_const_char_star_data() { member_compare_data(); }
     void member_compare_QLatin1String_const_char_star() { member_compare_impl<QLatin1String, const char *>(); }
+#endif
 
+#ifdef NOT_YET_IMPLEMENTED
     void member_compare_QByteArray_QChar_data() { member_compare_data(false); }
     void member_compare_QByteArray_QChar() { member_compare_impl<QByteArray, QChar>(); }
     void member_compare_QByteArray_char16_t_data() { member_compare_data(false); }
@@ -364,8 +425,27 @@ private Q_SLOTS:
 #endif
     void member_compare_QByteArray_QByteArray_data() { member_compare_data(); }
     void member_compare_QByteArray_QByteArray() { member_compare_impl<QByteArray, QByteArray>(); }
+    void member_compare_QByteArray_QByteArrayView_data() { member_compare_data(); }
+    void member_compare_QByteArray_QByteArrayView() { member_compare_impl<QByteArray, QByteArrayView>(); }
     void member_compare_QByteArray_const_char_star_data() { member_compare_data(); }
     void member_compare_QByteArray_const_char_star() { member_compare_impl<QByteArray, const char *>(); }
+
+#ifdef NOT_YET_IMPLEMENTED
+    void member_compare_QByteArrayView_QChar_data() { member_compare_data(false); }
+    void member_compare_QByteArrayView_QChar() { member_compare_impl<QByteArrayView, QChar>(); }
+    void member_compare_QByteArrayView_char16_t_data() { member_compare_data(false); }
+    void member_compare_QByteArrayView_char16_t() { member_compare_impl<QByteArrayView, char16_t>(); }
+    void member_compare_QByteArrayView_QString_data() { member_compare_data(); }
+    void member_compare_QByteArrayView_QString() { member_compare_impl<QByteArrayView, QString>(); }
+    void member_compare_QByteArrayView_QLatin1String_data() { member_compare_data(); }
+    void member_compare_QByteArrayView_QLatin1String() { member_compare_impl<QByteArrayView, QLatin1String>(); }
+#endif
+    void member_compare_QByteArrayView_QByteArray_data() { member_compare_data(); }
+    void member_compare_QByteArrayView_QByteArray() { member_compare_impl<QByteArrayView, QByteArray>(); }
+    void member_compare_QByteArrayView_QByteArrayView_data() { member_compare_data(); }
+    void member_compare_QByteArrayView_QByteArrayView() { member_compare_impl<QByteArrayView, QByteArrayView>(); }
+    void member_compare_QByteArrayView_const_char_star_data() { member_compare_data(); }
+    void member_compare_QByteArrayView_const_char_star() { member_compare_impl<QByteArrayView, const char *>(); }
 
 private:
     void localeAwareCompare_data();
@@ -633,6 +713,8 @@ private Q_SLOTS:
     void sliced_QUtf8StringView() { sliced_impl<QUtf8StringView>(); }
     void sliced_QByteArray_data() { sliced_data(); }
     void sliced_QByteArray() { sliced_impl<QByteArray>(); }
+    void sliced_QByteArrayView_data() { sliced_data(); }
+    void sliced_QByteArrayView() { sliced_impl<QByteArrayView>(); }
 
     void first_truncate_QString_data() { first_data(); }
     void first_truncate_QString() { first_impl<QString>(); }
@@ -644,6 +726,8 @@ private Q_SLOTS:
     void first_truncate_QUtf8StringView() { first_impl<QUtf8StringView>(); }
     void first_truncate_QByteArray_data() { first_data(); }
     void first_truncate_QByteArray() { first_impl<QByteArray>(); }
+    void first_truncate_QByteArrayView_data() { first_data(); }
+    void first_truncate_QByteArrayView() { first_impl<QByteArrayView>(); }
 
     void last_QString_data() { last_data(); }
     void last_QString() { last_impl<QString>(); }
@@ -655,6 +739,8 @@ private Q_SLOTS:
     void last_QUtf8StringView() { last_impl<QUtf8StringView>(); }
     void last_QByteArray_data() { last_data(); }
     void last_QByteArray() { last_impl<QByteArray>(); }
+    void last_QByteArrayView_data() { last_data(); }
+    void last_QByteArrayView() { last_impl<QByteArrayView>(); }
 
     void chop_QString_data() { chop_data(); }
     void chop_QString() { chop_impl<QString>(); }
@@ -666,6 +752,8 @@ private Q_SLOTS:
     void chop_QLatin1String() { chop_impl<QLatin1String>(); }
     void chop_QByteArray_data() { chop_data(); }
     void chop_QByteArray() { chop_impl<QByteArray>(); }
+    void chop_QByteArrayView_data() { chop_data(); }
+    void chop_QByteArrayView() { chop_impl<QByteArrayView>(); }
 
 private:
     void trimmed_data();
@@ -945,6 +1033,7 @@ MAKE(QString)                { return sv.toString(); }
 MAKE(QStringView)            { return sv; }
 MAKE(QLatin1String)          { return l1; }
 MAKE(QByteArray)             { return u8; }
+MAKE(QByteArrayView)         { return u8; }
 MAKE(const char *)           { return u8.data(); }
 MAKE(const char16_t *)       { return sv.utf16(); } // assumes `sv` doesn't represent a substring
 MAKE(std::u16string)         { return sv.toString().toStdU16String(); }
@@ -957,6 +1046,7 @@ MAKE(QAnyStringViewUsingU16) { return {QAnyStringView{sv}}; }
 template <typename> struct is_utf8_encoded              : std::false_type {};
 template <>         struct is_utf8_encoded<const char*> : std::true_type {};
 template <>         struct is_utf8_encoded<QByteArray>  : std::true_type {};
+template <>         struct is_utf8_encoded<QByteArrayView>  : std::true_type {};
 template <>         struct is_utf8_encoded<QUtf8StringView> : std::true_type {};
 
 template <typename> struct is_latin1_encoded                : std::false_type {};

@@ -368,8 +368,31 @@ struct Q_CORE_EXPORT QLocal8Bit
     static QByteArray convertFromUnicode(QStringView in, QStringConverter::State *state)
     { return QUtf8::convertFromUnicode(in, state); }
 #else
-    static QString convertToUnicode(QByteArrayView, QStringConverter::State *);
-    static QByteArray convertFromUnicode(QStringView, QStringConverter::State *);
+    static int checkUtf8();
+    static bool isUtf8()
+    {
+        static QBasicAtomicInteger<qint8> result = { 0 };
+        int r = result.loadRelaxed();
+        if (r == 0) {
+            r = checkUtf8();
+            result.storeRelaxed(r);
+        }
+        return r > 0;
+    }
+    static QString convertToUnicode_sys(QByteArrayView, QStringConverter::State *);
+    static QString convertToUnicode(QByteArrayView in, QStringConverter::State *state)
+    {
+        if (isUtf8())
+            return QUtf8::convertToUnicode(in, state);
+        return convertToUnicode_sys(in, state);
+    }
+    static QByteArray convertFromUnicode_sys(QStringView, QStringConverter::State *);
+    static QByteArray convertFromUnicode(QStringView in, QStringConverter::State *state)
+    {
+        if (isUtf8())
+            return QUtf8::convertFromUnicode(in, state);
+        return convertFromUnicode_sys(in, state);
+    }
 #endif
 };
 

@@ -51,6 +51,7 @@
 #ifndef BINDABLEUSER_H
 #define BINDABLEUSER_H
 
+#include <QLocale>
 #include <QProperty>
 
 //! [bindable-user-class]
@@ -58,13 +59,9 @@
 class BindableUser
 {
 public:
-    enum Country {
-        None,
-        Finland,
-        Germany,
-        Norway,
-    };
+    using Country = QLocale::Territory;
 
+public:
     BindableUser() = default;
     BindableUser(const BindableUser &) = delete;
 
@@ -77,7 +74,7 @@ public:
     QBindable<int> bindableAge() { return &m_age; }
 
 private:
-    QProperty<Country> m_country { None };
+    QProperty<Country> m_country { QLocale::AnyTerritory };
     QProperty<int> m_age { 0 };
 };
 

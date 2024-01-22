@@ -1413,9 +1413,18 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
 void QMenuPrivate::activateCausedStack(const QList<QPointer<QWidget>> &causedStack, QAction *action,
                                        QAction::ActionEvent action_e, bool self)
 {
-    QBoolBlocker guard(activationRecursionGuard);
+    Q_Q(QMenu);
+    // can't use QBoolBlocker here
+    const bool activationRecursionGuardReset = activationRecursionGuard;
+    activationRecursionGuard = true;
+    QPointer<QMenu> guard(q);
     if (self)
         action->activate(action_e);
+    if (!guard)
+        return;
+    auto boolBlocker = qScopeGuard([this, activationRecursionGuardReset]{
+        activationRecursionGuard = activationRecursionGuardReset;
+    });
 
     for(int i = 0; i < causedStack.size(); ++i) {
         QPointer<QWidget> widget = causedStack.at(i);
@@ -1491,9 +1500,10 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
 #endif
     }
 
-
+    QPointer<QMenu> thisGuard(q);
     activateCausedStack(causedStack, action, action_e, self);
-
+    if (!thisGuard)
+        return;
 
     if (action_e == QAction::Hover) {
 #ifndef QT_NO_ACCESSIBILITY

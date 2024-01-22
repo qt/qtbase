@@ -22,6 +22,11 @@ qt_internal_add_test(tst_qsslkey
     TESTDATA ${test_data}
 )
 
+qt_internal_extend_target(tst_qsslkey CONDITION QT_FEATURE_private_tests AND QT_FEATURE_openssl_linked
+    LIBRARIES
+        WrapOpenSSL::WrapOpenSSL
+)
+
 ## Scopes:
 #####################################################################
 

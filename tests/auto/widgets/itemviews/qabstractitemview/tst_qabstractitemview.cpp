@@ -165,6 +165,7 @@ private slots:
     void selectionCommand();
     void mouseSelection_data();
     void mouseSelection();
+    void keepSingleSelectionOnEmptyAreaClick();
     void scrollerSmoothScroll();
     void inputMethodOpensEditor_data();
     void inputMethodOpensEditor();
@@ -776,22 +777,6 @@ void tst_QAbstractItemView::pressClosesReleaseDoesntOpenEditor()
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, inChildOutsideEditor); // should not reopen editor
     QTest::qWait(QApplication::doubleClickInterval() * 2);
     QCOMPARE(view.state(), QAbstractItemView::NoState);
-
-    // with multiple items selected, clicking from the currently edited item into another
-    // selected item closes the current and reopens a new editor
-    view.setSelectionMode(QAbstractItemView::ExtendedSelection);
-    const QRect child2Rect = view.visualRect(model.indexFromItem(parent->child(1)));
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ControlModifier, child2Rect.center()); // select
-    QVERIFY(view.selectionModel()->selectedIndexes().contains(model.indexFromItem(parent->child(0))));
-    QVERIFY(view.selectionModel()->selectedIndexes().contains(model.indexFromItem(parent->child(1))));
-    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::NoModifier, child2Rect.center()); // edit
-    QTRY_COMPARE(view.state(), QAbstractItemView::EditingState);
-    QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::NoModifier, inChildOutsideEditor); // editor closes
-    QCOMPARE(view.state(), QAbstractItemView::NoState);
-    QTest::qWait(10); // process some events, let the internal timer time out
-    QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, inChildOutsideEditor); // should open editor
-    QTest::qWait(QApplication::doubleClickInterval() * 2);
-    QCOMPARE(view.state(), QAbstractItemView::EditingState);
 }
 
 
@@ -2866,32 +2851,40 @@ void tst_QAbstractItemView::mouseSelection_data()
 {
     QTest::addColumn<QAbstractItemView::SelectionMode>("selectionMode");
     QTest::addColumn<bool>("dragEnabled");
+    QTest::addColumn<QAbstractItemView::EditTrigger>("editTrigger");
     QTest::addColumn<QList<SelectionEvent>>("selectionEvents");
     QTest::addColumn<QList<int>>("selectedRows");
 
     // single selection mode - always one row selected, modifiers ignored
     QTest::addRow("Single:Press") << QAbstractItemView::SingleSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 1)}
         << QList{1};
     QTest::addRow("Single:Click") << QAbstractItemView::SingleSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent{SelectionEvent::Click, 1}}
         << QList{1};
     QTest::addRow("Single:Press+Drag") << QAbstractItemView::SingleSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 1),
                  SelectionEvent{SelectionEvent::Move, 2},
                  SelectionEvent{SelectionEvent::Release}}
         << QList{2};
     QTest::addRow("Single:Shift+Click") << QAbstractItemView::SingleSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent{SelectionEvent::Click, Qt::ShiftModifier, 2}}
         << QList{2};
     QTest::addRow("Single:Press;Ctrl+Press") << QAbstractItemView::SingleSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent{SelectionEvent::Press, 3},
                  SelectionEvent{SelectionEvent::Press, Qt::ControlModifier, 3}}
         << QList{3};
     QTest::addRow("Single:Ctrl+Click") << QAbstractItemView::SingleSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent{SelectionEvent::Click, Qt::ControlModifier, 3}}
         << QList{3};
     QTest::addRow("Single:Click;Ctrl+Click") << QAbstractItemView::SingleSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent{SelectionEvent::Click, 3},
                  SelectionEvent{SelectionEvent::Click, Qt::ControlModifier, 3}}
         << QList<int>{};
@@ -2899,30 +2892,37 @@ void tst_QAbstractItemView::mouseSelection_data()
     // multi selection mode - selection toggles on press, selection can be drag-extended
     // modifiers ignored
     QTest::addRow("Multi:Press") << QAbstractItemView::MultiSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 1)}
         << QList{1};
     QTest::addRow("Multi:Press twice") << QAbstractItemView::MultiSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 1),
                  SelectionEvent(SelectionEvent::Press, 1)}
         << QList<int>{};
     QTest::addRow("Multi:Press twice with drag enabled") << QAbstractItemView::MultiSelection << true
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Click, 1),
                  SelectionEvent(SelectionEvent::Press, 1)}
         << QList{1};
     QTest::addRow("Multi:Press and click with drag enabled") << QAbstractItemView::MultiSelection << true
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 1),
                  SelectionEvent(SelectionEvent::Click, 1)}
         << QList<int>{};
     QTest::addRow("Multi:Press,Press") << QAbstractItemView::MultiSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 2),
                  SelectionEvent(SelectionEvent::Press, 3)}
         << QList{2, 3};
     QTest::addRow("Multi:Press,Drag") << QAbstractItemView::MultiSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 1),
                  SelectionEvent(SelectionEvent::Move, 5),
                  SelectionEvent(SelectionEvent::Release)}
         << QList{1, 2, 3, 4, 5};
     QTest::addRow("Multi:Press,Drag,Deselect") << QAbstractItemView::MultiSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 1),
                  SelectionEvent(SelectionEvent::Move, 5),
                  SelectionEvent(SelectionEvent::Release),
@@ -2930,6 +2930,7 @@ void tst_QAbstractItemView::mouseSelection_data()
         << QList{1, 2, 4, 5};
     // drag-select a few indices; then drag-select a larger area that includes the first
     QTest::addRow("Multi:Press,Drag;Surround") << QAbstractItemView::MultiSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 3),
                  SelectionEvent(SelectionEvent::Move, 5),
                  SelectionEvent(SelectionEvent::Release),
@@ -2939,6 +2940,7 @@ void tst_QAbstractItemView::mouseSelection_data()
         << QList{1, 2, 3, 4, 5, 6, 7, 8};
     // drag-select a few indices; then try to select more starting with the last -> not working
     QTest::addRow("Multi:Press,Drag;Expand") << QAbstractItemView::MultiSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 3),
                  SelectionEvent(SelectionEvent::Move, 5),
                  SelectionEvent(SelectionEvent::Release),
@@ -2949,6 +2951,7 @@ void tst_QAbstractItemView::mouseSelection_data()
     // Multi: Press-dragging a selection should not deselect #QTBUG-59888
     QTest::addRow("Multi:Press-Drag selection") << QAbstractItemView::MultiSelection << true
         // with drag'n'drop enabled, we cannot drag a selection
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Click, 2),
                  SelectionEvent(SelectionEvent::Click, 3),
                  SelectionEvent(SelectionEvent::Click, 4),
@@ -2961,42 +2964,51 @@ void tst_QAbstractItemView::mouseSelection_data()
 
     // Extended selection: Press selects a single item
     QTest::addRow("Extended:Press") << QAbstractItemView::ExtendedSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 3)}
         << QList{3};
     QTest::addRow("Extended:Press twice") << QAbstractItemView::ExtendedSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 3),
                  SelectionEvent(SelectionEvent::Press, 3)}
         << QList{3};
     QTest::addRow("Extended:Press,Press") << QAbstractItemView::ExtendedSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 2),
                  SelectionEvent(SelectionEvent::Press, 3)}
         << QList{3};
     // Extended selection: press with Ctrl toggles item
     QTest::addRow("Extended:Press,Toggle") << QAbstractItemView::ExtendedSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 3),
                  SelectionEvent(SelectionEvent::Click, Qt::ControlModifier, 3)}
         << QList<int>{};
     QTest::addRow("Extended:Press,Add") << QAbstractItemView::ExtendedSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 1),
                  SelectionEvent(SelectionEvent::Click, Qt::ControlModifier, 3)}
         << QList{1, 3};
     // Extended selection: Shift creates a range between first and last pressed
     QTest::addRow("Extended:Press,Range") << QAbstractItemView::ExtendedSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 1),
                  SelectionEvent(SelectionEvent::Press, Qt::ShiftModifier, 5)}
         << QList{1, 2, 3, 4, 5};
     QTest::addRow("Extended:Press,Range,Fix Range") << QAbstractItemView::ExtendedSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 1),
                  SelectionEvent(SelectionEvent::Press, Qt::ShiftModifier, 5),
                  SelectionEvent(SelectionEvent::Press, Qt::ShiftModifier, 3)}
         << QList{1, 2, 3};
     // Extended: dragging extends the selection
     QTest::addRow("Extended:Press,Drag") << QAbstractItemView::ExtendedSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 2),
                  SelectionEvent(SelectionEvent::Move, 5)}
         << QList{2, 3, 4, 5};
     // Extended: Ctrl+Press-dragging extends the selection
     QTest::addRow("Extended:Press,Drag;Ctrl-Press,Drag") << QAbstractItemView::ExtendedSelection << false
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Press, 2),
                  SelectionEvent(SelectionEvent::Move, 5),
                  SelectionEvent(SelectionEvent::Release),
@@ -3006,6 +3018,7 @@ void tst_QAbstractItemView::mouseSelection_data()
         << QList{2, 3, 4, 5, 6, 7, 8};
     // Extended: Ctrl+Press-dragging in a selection should not deselect #QTBUG-59888
     QTest::addRow("Extended:Ctrl-Drag selection") << QAbstractItemView::ExtendedSelection << true
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Click, 2),
                  SelectionEvent(SelectionEvent::Click, Qt::ShiftModifier, 5),
                  SelectionEvent(SelectionEvent::Press, Qt::ControlModifier, 3),
@@ -3015,6 +3028,7 @@ void tst_QAbstractItemView::mouseSelection_data()
         << QList{2, 3, 4, 5};
     // Extended: Ctrl+Press-dragging with a selection extends, then drags #QTBUG-59888
     QTest::addRow("Extended:Ctrl-Drag selection") << QAbstractItemView::ExtendedSelection << true
+        << QAbstractItemView::NoEditTriggers
         << QList{SelectionEvent(SelectionEvent::Click, 2),
                  SelectionEvent(SelectionEvent::Click, Qt::ShiftModifier, 5),
                  SelectionEvent(SelectionEvent::Press, Qt::ControlModifier, 6),
@@ -3022,12 +3036,37 @@ void tst_QAbstractItemView::mouseSelection_data()
                  // two moves needed because of distance and state logic in 7QAbstractItemView
                  SelectionEvent(SelectionEvent::Move, Qt::ControlModifier, 8)}
         << QList{2, 3, 4, 5, 6};
+    // Extended: when drag is enabled, click with Ctrl toggles item instead of editing # QTBUG-111131
+    QTest::addRow("Extended:Click,Toggle,editable") << QAbstractItemView::ExtendedSelection << false
+        << QAbstractItemView::SelectedClicked
+        << QList{SelectionEvent(SelectionEvent::Click, 3),
+                 SelectionEvent(SelectionEvent::Click, Qt::ControlModifier, 3)}
+        << QList<int>{};
+    QTest::addRow("Extended:Click,Toggle,dragable,editable") << QAbstractItemView::ExtendedSelection << true
+        << QAbstractItemView::SelectedClicked
+        << QList{SelectionEvent(SelectionEvent::Click, 3),
+                 SelectionEvent(SelectionEvent::Click, Qt::ControlModifier, 3)}
+        << QList<int>{};
+    // Extended: when drag is enabled, click on selected without Ctrl clears before editing
+    QTest::addRow("Extended:Range,Click,editable") << QAbstractItemView::ExtendedSelection << false
+        << QAbstractItemView::SelectedClicked
+        << QList{SelectionEvent(SelectionEvent::Click, 1),
+                 SelectionEvent(SelectionEvent::Click, Qt::ShiftModifier, 3),
+                 SelectionEvent(SelectionEvent::Click, 2)}
+        << QList<int>{2};
+    QTest::addRow("Extended:Range,Click,dragable,editable") << QAbstractItemView::ExtendedSelection << true
+        << QAbstractItemView::SelectedClicked
+        << QList{SelectionEvent(SelectionEvent::Click, 1),
+                 SelectionEvent(SelectionEvent::Click, Qt::ShiftModifier, 3),
+                 SelectionEvent(SelectionEvent::Click, 2)}
+        << QList<int>{2};
 }
 
 void tst_QAbstractItemView::mouseSelection()
 {
     QFETCH(QAbstractItemView::SelectionMode, selectionMode);
     QFETCH(bool, dragEnabled);
+    QFETCH(QAbstractItemView::EditTrigger, editTrigger);
     QFETCH(QList<SelectionEvent>, selectionEvents);
     QFETCH(QList<int>, selectedRows);
 
@@ -3036,7 +3075,7 @@ void tst_QAbstractItemView::mouseSelection()
     for (int i = 0; i < 10; ++i) {
         QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
         item->setDragEnabled(dragEnabled);
-        item->setEditable(false);
+        item->setEditable(editTrigger != QAbstractItemView::NoEditTriggers);
         parentItem->appendRow(item);
     }
 
@@ -3046,6 +3085,7 @@ void tst_QAbstractItemView::mouseSelection()
     view->setModel(&model);
     view->setDragEnabled(dragEnabled);
     view->setSelectionMode(selectionMode);
+    view->setEditTriggers(editTrigger);
     view->show();
     QVERIFY(QTest::qWaitForWindowActive(view));
 
@@ -3093,6 +3133,37 @@ void tst_QAbstractItemView::mouseSelection()
         actualSelected << index.row();
 
     QCOMPARE(actualSelected, selectedRows);
+}
+
+/*!
+    Make sure that when clicking on empty space in the view, we don't
+    unselect the current row.
+    QTBUG-105870
+*/
+void tst_QAbstractItemView::keepSingleSelectionOnEmptyAreaClick()
+{
+    QListWidget view;
+    view.setSelectionMode(QAbstractItemView::SingleSelection);
+    QListWidgetItem *lastItem;
+    for (int i = 0; i < 5; i++)
+        lastItem = new QListWidgetItem("item " + QString::number(i), &view);
+
+    // Make widget large enough so that there is empty area below the last item
+    view.setFixedSize(300, 500);
+    view.show();
+    QVERIFY(QTest::qWaitForWindowActive(&view));
+
+    // Select third row
+    view.setCurrentRow(2);
+
+    // Click below the last row
+    QPoint targetPoint = view.visualItemRect(lastItem).bottomLeft();
+    targetPoint += QPoint(10, 10);
+
+    QTest::mouseClick(view.viewport(), Qt::MouseButton::LeftButton, Qt::NoModifier, targetPoint);
+
+    QCOMPARE(view.currentRow(), 2);
+    QVERIFY(view.currentItem()->isSelected());
 }
 
 /*!

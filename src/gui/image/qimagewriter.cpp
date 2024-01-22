@@ -45,7 +45,6 @@
     \inmodule QtGui
     \reentrant
     \ingroup painting
-    \ingroup io
 
     QImageWriter supports setting format specific options, such as
     compression level and quality, prior to storing the
@@ -349,9 +348,9 @@ QImageWriter::QImageWriter(const QString &fileName, const QByteArray &format)
 */
 QImageWriter::~QImageWriter()
 {
+    delete d->handler;
     if (d->deleteDevice)
         delete d->device;
-    delete d->handler;
     delete d;
 }
 
@@ -396,13 +395,13 @@ QByteArray QImageWriter::format() const
 */
 void QImageWriter::setDevice(QIODevice *device)
 {
+    delete d->handler;
+    d->handler = nullptr;
     if (d->device && d->deleteDevice)
         delete d->device;
 
     d->device = device;
     d->deleteDevice = false;
-    delete d->handler;
-    d->handler = nullptr;
 }
 
 /*!

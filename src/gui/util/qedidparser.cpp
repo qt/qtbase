@@ -269,16 +269,22 @@ QString QEdidParser::parseEdidString(const quint8 *data)
 {
     QByteArray buffer(reinterpret_cast<const char *>(data), 13);
 
-    // Erase carriage return and line feed
-    buffer = buffer.replace('\r', '\0').replace('\n', '\0');
+    for (int i = 0; i < buffer.size(); ++i) {
+        // If there are less than 13 characters in the string, the string
+        // is terminated with the ASCII code ‘0Ah’ (line feed) and padded
+        // with ASCII code ‘20h’ (space). See EDID 1.4, sections 3.10.3.1,
+        // 3.10.3.2, and 3.10.3.4.
+        if (buffer[i] == '\n') {
+            buffer.truncate(i);
+            break;
+        }
 
-    // Replace non-printable characters with dash
-    for (int i = 0; i < buffer.count(); ++i) {
+        // Replace non-printable characters with dash
         if (buffer[i] < '\040' || buffer[i] > '\176')
             buffer[i] = '-';
     }
 
-    return QString::fromLatin1(buffer.trimmed());
+    return QString::fromLatin1(buffer);
 }
 
 QT_END_NAMESPACE

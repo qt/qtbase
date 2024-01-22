@@ -1657,7 +1657,6 @@ void QPainter::restore()
         // replay the list of clip states,
         for (const QPainterClipInfo &info : qAsConst(d->state->clipInfo)) {
             tmp->matrix = info.matrix;
-            tmp->matrix *= d->state->redirectionMatrix;
             tmp->clipOperation = info.operation;
             if (info.clipType == QPainterClipInfo::RectClip) {
                 tmp->dirtyFlags = QPaintEngine::DirtyClipRegion | QPaintEngine::DirtyTransform;
@@ -5500,8 +5499,11 @@ void QPainter::drawStaticText(const QPointF &topLeftPosition, const QStaticText 
     QStaticTextPrivate *staticText_d =
             const_cast<QStaticTextPrivate *>(QStaticTextPrivate::get(&staticText));
 
-    if (font() != staticText_d->font) {
+    QFontPrivate *stfp = QFontPrivate::get(staticText_d->font);
+    if (font() != staticText_d->font || stfp == nullptr) {
         staticText_d->font = font();
+        staticText_d->needsRelayout = true;
+    } else if (stfp->engineData == nullptr || stfp->engineData->fontCacheId != QFontCache::instance()->id()) {
         staticText_d->needsRelayout = true;
     }
 

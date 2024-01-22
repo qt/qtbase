@@ -53,8 +53,7 @@ void MyObject::lookupServers()
 {
     // Create a DNS lookup.
     dns = new QDnsLookup(this);
-    connect(dns, SIGNAL(finished()),
-            this, SLOT(handleServers()));
+    connect(dns, &QDnsLookup::finished, this, &MyObject::handleServers);
 
     // Find the XMPP servers for gmail.com
     dns->setType(QDnsLookup::SRV);

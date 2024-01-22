@@ -282,7 +282,9 @@ private:
 void QWindowsDialogThread::run()
 {
     qCDebug(lcQpaDialogs) << '>' << __FUNCTION__;
+    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     m_dialog->exec(m_owner);
+    CoUninitialize();
     qCDebug(lcQpaDialogs) << '<' << __FUNCTION__;
 }
 

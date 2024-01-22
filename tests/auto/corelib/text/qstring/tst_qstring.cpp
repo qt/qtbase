@@ -76,7 +76,7 @@ class ArgBase
 protected:
     QString pinned;
     explicit ArgBase(const char *str)
-        : pinned(QString::fromLatin1(str)) {}
+        : pinned(QString::fromUtf8(str)) {}
 };
 
 template <>
@@ -296,6 +296,13 @@ static void do_apply1(MemFun mf)
 class tst_QString : public QObject
 {
     Q_OBJECT
+public:
+    enum DataOption {
+        EmptyIsNoop = 0x1,
+        Latin1Encoded = 0x2
+    };
+    Q_DECLARE_FLAGS(DataOptions, DataOption)
+private:
 
 #if QT_CONFIG(regularexpression)
     template<typename List, class RegExp>
@@ -308,22 +315,22 @@ class tst_QString : public QObject
     void append_impl() const { do_apply0<ArgType>(MemFun(&QString::append)); }
     template <typename ArgType>
     void append_impl() const { append_impl<ArgType, QString &(QString::*)(const ArgType&)>(); }
-    void append_data(bool emptyIsNoop = false);
+    void append_data(DataOptions options = {});
     template <typename ArgType, typename MemFun>
     void operator_pluseq_impl() const { do_apply0<ArgType>(MemFun(&QString::operator+=)); }
     template <typename ArgType>
     void operator_pluseq_impl() const { operator_pluseq_impl<ArgType, QString &(QString::*)(const ArgType&)>(); }
-    void operator_pluseq_data(bool emptyIsNoop = false);
+    void operator_pluseq_data(DataOptions options = {});
     template <typename ArgType, typename MemFun>
     void prepend_impl() const { do_apply0<ArgType>(MemFun(&QString::prepend)); }
     template <typename ArgType>
     void prepend_impl() const { prepend_impl<ArgType, QString &(QString::*)(const ArgType&)>(); }
-    void prepend_data(bool emptyIsNoop = false);
+    void prepend_data(DataOptions options = {});
     template <typename ArgType, typename MemFun>
     void insert_impl() const { do_apply1<ArgType, int>(MemFun(&QString::insert)); }
     template <typename ArgType>
     void insert_impl() const { insert_impl<ArgType, QString &(QString::*)(qsizetype, const ArgType&)>(); }
-    void insert_data(bool emptyIsNoop = false);
+    void insert_data(DataOptions options = {});
 
     class TransientDefaultLocale
     {
@@ -389,38 +396,38 @@ private slots:
     void swap();
 
     void prepend_qstring()            { prepend_impl<QString>(); }
-    void prepend_qstring_data()       { prepend_data(true); }
+    void prepend_qstring_data()       { prepend_data(EmptyIsNoop); }
     void prepend_qstringview()        { prepend_impl<QStringView, QString &(QString::*)(QStringView)>(); }
-    void prepend_qstringview_data()   { prepend_data(true); }
+    void prepend_qstringview_data()   { prepend_data(EmptyIsNoop); }
     void prepend_qlatin1string()      { prepend_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
-    void prepend_qlatin1string_data() { prepend_data(true); }
+    void prepend_qlatin1string_data() { prepend_data({EmptyIsNoop, Latin1Encoded}); }
     void prepend_qcharstar_int()      { prepend_impl<QPair<const QChar *, int>, QString &(QString::*)(const QChar *, qsizetype)>(); }
-    void prepend_qcharstar_int_data() { prepend_data(true); }
+    void prepend_qcharstar_int_data() { prepend_data(EmptyIsNoop); }
     void prepend_qchar()              { prepend_impl<Reversed<QChar>, QString &(QString::*)(QChar)>(); }
-    void prepend_qchar_data()         { prepend_data(true); }
+    void prepend_qchar_data()         { prepend_data(EmptyIsNoop); }
     void prepend_qbytearray()         { prepend_impl<QByteArray>(); }
-    void prepend_qbytearray_data()    { prepend_data(true); }
+    void prepend_qbytearray_data()    { prepend_data(EmptyIsNoop); }
     void prepend_char()               { prepend_impl<Reversed<char>, QString &(QString::*)(QChar)>(); }
-    void prepend_char_data()          { prepend_data(true); }
+    void prepend_char_data()          { prepend_data({EmptyIsNoop, Latin1Encoded}); }
     void prepend_charstar()           { prepend_impl<const char *, QString &(QString::*)(const char *)>(); }
-    void prepend_charstar_data()      { prepend_data(true); }
+    void prepend_charstar_data()      { prepend_data(EmptyIsNoop); }
     void prepend_bytearray_special_cases_data();
     void prepend_bytearray_special_cases();
 
     void append_qstring()            { append_impl<QString>(); }
     void append_qstring_data()       { append_data(); }
     void append_qstringview()        { append_impl<QStringView,  QString &(QString::*)(QStringView)>(); }
-    void append_qstringview_data()   { append_data(true); }
+    void append_qstringview_data()   { append_data(EmptyIsNoop); }
     void append_qlatin1string()      { append_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
-    void append_qlatin1string_data() { append_data(); }
+    void append_qlatin1string_data() { append_data(Latin1Encoded); }
     void append_qcharstar_int()      { append_impl<QPair<const QChar *, int>, QString&(QString::*)(const QChar *, qsizetype)>(); }
-    void append_qcharstar_int_data() { append_data(true); }
+    void append_qcharstar_int_data() { append_data(EmptyIsNoop); }
     void append_qchar()              { append_impl<QChar, QString &(QString::*)(QChar)>(); }
-    void append_qchar_data()         { append_data(true); }
+    void append_qchar_data()         { append_data(EmptyIsNoop); }
     void append_qbytearray()         { append_impl<QByteArray>(); }
     void append_qbytearray_data()    { append_data(); }
     void append_char()               { append_impl<char, QString &(QString::*)(QChar)>(); }
-    void append_char_data()          { append_data(true); }
+    void append_char_data()          { append_data({EmptyIsNoop, Latin1Encoded}); }
     void append_charstar()           { append_impl<const char *, QString &(QString::*)(const char *)>(); }
     void append_charstar_data()      { append_data(); }
     void append_special_cases();
@@ -430,11 +437,11 @@ private slots:
     void operator_pluseq_qstring()            { operator_pluseq_impl<QString>(); }
     void operator_pluseq_qstring_data()       { operator_pluseq_data(); }
     void operator_pluseq_qstringview()        { operator_pluseq_impl<QStringView, QString &(QString::*)(QStringView)>(); }
-    void operator_pluseq_qstringview_data()   { operator_pluseq_data(true); }
+    void operator_pluseq_qstringview_data()   { operator_pluseq_data(EmptyIsNoop); }
     void operator_pluseq_qlatin1string()      { operator_pluseq_impl<QLatin1String, QString &(QString::*)(QLatin1String)>(); }
-    void operator_pluseq_qlatin1string_data() { operator_pluseq_data(); }
+    void operator_pluseq_qlatin1string_data() { operator_pluseq_data(Latin1Encoded); }
     void operator_pluseq_qchar()              { operator_pluseq_impl<QChar, QString &(QString::*)(QChar)>(); }
-    void operator_pluseq_qchar_data()         { operator_pluseq_data(true); }
+    void operator_pluseq_qchar_data()         { operator_pluseq_data(EmptyIsNoop); }
     void operator_pluseq_qbytearray()         { operator_pluseq_impl<QByteArray>(); }
     void operator_pluseq_qbytearray_data()    { operator_pluseq_data(); }
     void operator_pluseq_charstar()           { operator_pluseq_impl<const char *, QString &(QString::*)(const char *)>(); }
@@ -449,21 +456,21 @@ private slots:
     void operator_smaller();
 
     void insert_qstring()            { insert_impl<QString>(); }
-    void insert_qstring_data()       { insert_data(true); }
+    void insert_qstring_data()       { insert_data(EmptyIsNoop); }
     void insert_qstringview()        { insert_impl<QStringView, QString &(QString::*)(qsizetype, QStringView)>(); }
-    void insert_qstringview_data()   { insert_data(true); }
+    void insert_qstringview_data()   { insert_data(EmptyIsNoop); }
     void insert_qlatin1string()      { insert_impl<QLatin1String, QString &(QString::*)(qsizetype, QLatin1String)>(); }
-    void insert_qlatin1string_data() { insert_data(true); }
+    void insert_qlatin1string_data() { insert_data({EmptyIsNoop, Latin1Encoded}); }
     void insert_qcharstar_int()      { insert_impl<QPair<const QChar *, int>, QString &(QString::*)(qsizetype, const QChar*, qsizetype) >(); }
-    void insert_qcharstar_int_data() { insert_data(true); }
+    void insert_qcharstar_int_data() { insert_data(EmptyIsNoop); }
     void insert_qchar()              { insert_impl<Reversed<QChar>, QString &(QString::*)(qsizetype, QChar)>(); }
-    void insert_qchar_data()         { insert_data(true); }
+    void insert_qchar_data()         { insert_data(EmptyIsNoop); }
     void insert_qbytearray()         { insert_impl<QByteArray>(); }
-    void insert_qbytearray_data()    { insert_data(true); }
+    void insert_qbytearray_data()    { insert_data(EmptyIsNoop); }
     void insert_char()               { insert_impl<Reversed<char>, QString &(QString::*)(qsizetype, QChar)>(); }
-    void insert_char_data()          { insert_data(true); }
+    void insert_char_data()          { insert_data({EmptyIsNoop, Latin1Encoded}); }
     void insert_charstar()           { insert_impl<const char *, QString &(QString::*)(qsizetype, const char*) >(); }
-    void insert_charstar_data()      { insert_data(true); }
+    void insert_charstar_data()      { insert_data(EmptyIsNoop); }
     void insert_special_cases();
 
     void simplified_data();
@@ -603,6 +610,8 @@ private slots:
     void chopped();
     void removeIf();
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(tst_QString::DataOptions)
+
 
 template <class T> const T &verifyZeroTermination(const T &t) { return t; }
 
@@ -616,7 +625,7 @@ QString verifyZeroTermination(const QString &str)
     if (!strDataPtr->isMutable())
         return str;
 
-    int strSize = str.size();
+    qsizetype strSize = str.size();
     QChar strTerminator = str.constData()[strSize];
     if (QChar('\0') != strTerminator)
         return QString::fromLatin1(
@@ -870,6 +879,9 @@ void tst_QString::replace_regexp_data()
     remove_regexp_data(); // Sets up the columns, adds rows with empty replacement text.
     // Columns (all QString): string, regexp, after, result; string.replace(regexp, after) == result
     // Test-cases with empty after (replacement text, third column) go in remove_regexp_data()
+
+    QTest::newRow("empty-in-null") << QString() << "" << "after" << "after";
+    QTest::newRow("empty-in-empty") << "" << "" << "after" << "after";
 
     QTest::newRow( "rep00" ) << QString("A <i>bon mot</i>.") << QString("<i>([^<]*)</i>") << QString("\\emph{\\1}") << QString("A \\emph{bon mot}.");
     QTest::newRow( "rep01" ) << QString("banana") << QString("^.a()") << QString("\\1") << QString("nana");
@@ -2584,12 +2596,14 @@ void tst_QString::simplified()
     QCOMPARE(std::move(full).simplified(), simple);
 }
 
-void tst_QString::insert_data(bool emptyIsNoop)
+void tst_QString::insert_data(DataOptions options)
 {
     QTest::addColumn<QString>("s");
     QTest::addColumn<CharStarContainer>("arg");
     QTest::addColumn<int>("a1");
     QTest::addColumn<QString>("expected");
+
+    const bool emptyIsNoop = options.testFlag(EmptyIsNoop);
 
     const CharStarContainer nullC;
     const CharStarContainer emptyC("");
@@ -2597,6 +2611,7 @@ void tst_QString::insert_data(bool emptyIsNoop)
     const CharStarContainer bC("b");
     //const CharStarContainer abC("ab");
     const CharStarContainer baC("ba");
+    const CharStarContainer yumlautC(options.testFlag(Latin1Encoded) ? "\xff" : "\xc3\xbf");
 
     const QString null;
     const QString empty("");
@@ -2604,6 +2619,10 @@ void tst_QString::insert_data(bool emptyIsNoop)
     const QString b("b");
     const QString ab("ab");
     const QString ba("ba");
+
+    const QString yumlaut = QStringLiteral("\u00ff");           // LATIN LETTER SMALL Y WITH UMLAUT
+    const QString yumlautA = QStringLiteral("\u00ffa");
+    const QString aYumlaut = QStringLiteral("a\u00ff");
 
     QTest::newRow("null.insert(0, null)") << null << nullC << 0 << null;
     QTest::newRow("null.insert(0, empty)") << null << emptyC << 0 << (emptyIsNoop ? null : empty);
@@ -2621,6 +2640,79 @@ void tst_QString::insert_data(bool emptyIsNoop)
     QTest::newRow("a.insert(1, ba)") << a << baC << 1 << (a + ba);
     QTest::newRow("ba.insert(1, a)") << ba << aC << 1 << (ba + a);
     QTest::newRow("ba.insert(2, b)") << ba << bC << 2 << (ba + b);
+
+    QTest::newRow("null-insert-0-yumlaut") << null << yumlautC << 0 << yumlaut;
+    QTest::newRow("empty-insert-0-yumlaut") << empty << yumlautC << 0 << yumlaut;
+    QTest::newRow("yumlaut-insert-0-null") << yumlaut << nullC << 0 << yumlaut;
+    QTest::newRow("yumlaut-insert-0-empty") << yumlaut << emptyC << 0 << yumlaut;
+    QTest::newRow("a-insert-0-yumlaut") << a << yumlautC << 0 << yumlautA;
+    QTest::newRow("a-insert-1-yumlaut") << a << yumlautC << 1 << aYumlaut;
+
+    if (!options.testFlag(Latin1Encoded)) {
+        const auto smallTheta = QStringLiteral("\u03b8");      // GREEK LETTER SMALL THETA
+        const auto ssa = QStringLiteral("\u0937");             // DEVANAGARI LETTER SSA
+        const auto chakmaZero = QStringLiteral("\U00011136");  // CHAKMA DIGIT ZERO
+
+        const auto aSmallTheta = QStringLiteral("a\u03b8");
+        const auto aSsa = QStringLiteral("a\u0937");
+        const auto aChakmaZero = QStringLiteral("a\U00011136");
+
+        const auto smallThetaA = QStringLiteral("\u03b8a");
+        const auto ssaA = QStringLiteral("\u0937a");
+        const auto chakmaZeroA = QStringLiteral("\U00011136a");
+
+        const auto umlautTheta = QStringLiteral("\u00ff\u03b8");
+        const auto thetaUmlaut = QStringLiteral("\u03b8\u00ff");
+        const auto ssaChakma = QStringLiteral("\u0937\U00011136");
+        const auto chakmaSsa = QStringLiteral("\U00011136\u0937");
+
+        const CharStarContainer smallThetaC("\xce\xb8");           // non-Latin1
+        const CharStarContainer ssaC("\xe0\xa4\xb7");              // Higher BMP
+        const CharStarContainer chakmaZeroC("\xf0\x91\x84\xb6");   // Non-BMP
+
+        QTest::newRow("null-insert-0-theta") << null << smallThetaC << 0 << smallTheta;
+        QTest::newRow("null-insert-0-ssa") << null << ssaC << 0 << ssa;
+        QTest::newRow("null-insert-0-chakma") << null << chakmaZeroC << 0 << chakmaZero;
+
+        QTest::newRow("empty-insert-0-theta") << empty << smallThetaC << 0 << smallTheta;
+        QTest::newRow("empty-insert-0-ssa") << empty << ssaC << 0 << ssa;
+        QTest::newRow("empty-insert-0-chakma") << empty << chakmaZeroC << 0 << chakmaZero;
+
+        QTest::newRow("theta-insert-0-null") << smallTheta << nullC << 0 << smallTheta;
+        QTest::newRow("ssa-insert-0-null") << ssa << nullC << 0 << ssa;
+        QTest::newRow("chakma-insert-0-null") << chakmaZero << nullC << 0 << chakmaZero;
+
+        QTest::newRow("theta-insert-0-empty") << smallTheta << emptyC << 0 << smallTheta;
+        QTest::newRow("ssa-insert-0-empty") << ssa << emptyC << 0 << ssa;
+        QTest::newRow("chakma-insert-0-empty") << chakmaZero << emptyC << 0 << chakmaZero;
+
+        QTest::newRow("a-insert-0-theta") << a << smallThetaC << 0 << smallThetaA;
+        QTest::newRow("a-insert-0-ssa") << a << ssaC << 0 << ssaA;
+        QTest::newRow("a-insert-0-chakma") << a << chakmaZeroC << 0 << chakmaZeroA;
+        QTest::newRow("yumlaut-insert-0-theta") << yumlaut << smallThetaC << 0 << thetaUmlaut;
+        QTest::newRow("theta-insert-0-yumlaut") << smallTheta << yumlautC << 0 << umlautTheta;
+        QTest::newRow("ssa-insert-0-chakma") << ssa << chakmaZeroC << 0 << chakmaSsa;
+        QTest::newRow("chakma-insert-0-ssa") << chakmaZero << ssaC << 0 << ssaChakma;
+
+        QTest::newRow("theta-insert-1-null") << smallTheta << nullC << 1 << smallTheta;
+        QTest::newRow("ssa-insert-1-null") << ssa << nullC << 1 << ssa;
+        QTest::newRow("chakma-insert-1-null") << chakmaZero << nullC << 1 << chakmaZero;
+
+        QTest::newRow("theta-insert-1-empty") << smallTheta << emptyC << 1 << smallTheta;
+        QTest::newRow("ssa-insert-1-empty") << ssa << emptyC << 1 << ssa;
+        QTest::newRow("chakma-insert-1-empty") << chakmaZero << emptyC << 1 << chakmaZero;
+
+        QTest::newRow("a-insert-1-theta") << a << smallThetaC << 1 << aSmallTheta;
+        QTest::newRow("a-insert-1-ssa") << a << ssaC << 1 << aSsa;
+        QTest::newRow("a-insert-1-chakma") << a << chakmaZeroC << 1 << aChakmaZero;
+        QTest::newRow("yumlaut-insert-1-theta") << yumlaut << smallThetaC << 1 << umlautTheta;
+        QTest::newRow("theta-insert-1-yumlaut") << smallTheta << yumlautC << 1 << thetaUmlaut;
+        QTest::newRow("ssa-insert-1-chakma") << ssa << chakmaZeroC << 1 << ssaChakma;
+        // Beware, this will insert ssa right into the middle of the chakma:
+        // Actual   (s)       : "\uD804\u0937\uDD36"
+        // Expected (expected): "\uD804\uDD36\u0937"
+        // QTest::newRow("chakma.insert(1, ssa)") << chakmaZero << ssaC << 1 << chakmaSsa;
+    }
 }
 
 void tst_QString::insert_special_cases()
@@ -2695,23 +2787,29 @@ void tst_QString::insert_special_cases()
     }
 }
 
-void tst_QString::append_data(bool emptyIsNoop)
+void tst_QString::append_data(DataOptions options)
 {
     QTest::addColumn<QString>("s");
     QTest::addColumn<CharStarContainer>("arg");
     QTest::addColumn<QString>("expected");
+
+    const bool emptyIsNoop = options.testFlag(EmptyIsNoop);
 
     const CharStarContainer nullC;
     const CharStarContainer emptyC("");
     const CharStarContainer aC("a");
     const CharStarContainer bC("b");
     //const CharStarContainer abC("ab");
+    const CharStarContainer yumlautC(options.testFlag(Latin1Encoded) ? "\xff" : "\xc3\xbf");
 
     const QString null;
     const QString empty("");
     const QString a("a");
     //const QString b("b");
     const QString ab("ab");
+
+    const QString yumlaut = QStringLiteral("\u00ff");           // LATIN LETTER SMALL Y WITH UMLAUT
+    const QString aYumlaut = QStringLiteral("a\u00ff");
 
     QTest::newRow("null + null") << null << nullC << null;
     QTest::newRow("null + empty") << null << emptyC << (emptyIsNoop ? null : empty);
@@ -2722,6 +2820,64 @@ void tst_QString::append_data(bool emptyIsNoop)
     QTest::newRow("a + null") << a << nullC << a;
     QTest::newRow("a + empty") << a << emptyC << a;
     QTest::newRow("a + b") << a << bC << ab;
+
+    QTest::newRow("null+yumlaut") << null << yumlautC << yumlaut;
+    QTest::newRow("empty+yumlaut") << empty << yumlautC << yumlaut;
+    QTest::newRow("a+yumlaut") << a << yumlautC << aYumlaut;
+
+    if (!options.testFlag(Latin1Encoded)) {
+        const auto smallTheta = QStringLiteral("\u03b8");        // GREEK LETTER SMALL THETA
+        const auto ssa = QStringLiteral("\u0937");               // DEVANAGARI LETTER SSA
+        const auto chakmaZero = QStringLiteral("\U00011136");    // CHAKMA DIGIT ZERO
+
+        const auto aSmallTheta = QStringLiteral("a\u03b8");
+        const auto aSsa = QStringLiteral("a\u0937");
+        const auto aChakmaZero = QStringLiteral("a\U00011136");
+
+        const auto thetaChakma = QStringLiteral("\u03b8\U00011136");
+        const auto chakmaTheta = QStringLiteral("\U00011136\u03b8");
+        const auto ssaTheta = QStringLiteral("\u0937\u03b8");
+        const auto thetaSsa = QStringLiteral("\u03b8\u0937");
+        const auto ssaChakma = QStringLiteral("\u0937\U00011136");
+        const auto chakmaSsa = QStringLiteral("\U00011136\u0937");
+        const auto thetaUmlaut = QStringLiteral("\u03b8\u00ff");
+        const auto umlautTheta = QStringLiteral("\u00ff\u03b8");
+        const auto ssaUmlaut = QStringLiteral("\u0937\u00ff");
+        const auto umlautSsa = QStringLiteral("\u00ff\u0937");
+        const auto chakmaUmlaut = QStringLiteral("\U00011136\u00ff");
+        const auto umlautChakma = QStringLiteral("\u00ff\U00011136");
+
+        const CharStarContainer smallThetaC("\xce\xb8");           // non-Latin1
+        const CharStarContainer ssaC("\xe0\xa4\xb7");              // Higher BMP
+        const CharStarContainer chakmaZeroC("\xf0\x91\x84\xb6");   // Non-BMP
+
+        QTest::newRow("null+smallTheta") << null << smallThetaC << smallTheta;
+        QTest::newRow("empty+smallTheta") << empty << smallThetaC << smallTheta;
+        QTest::newRow("a+smallTheta") << a << smallThetaC << aSmallTheta;
+
+        QTest::newRow("null+ssa") << null << ssaC << ssa;
+        QTest::newRow("empty+ssa") << empty << ssaC << ssa;
+        QTest::newRow("a+ssa") << a << ssaC << aSsa;
+
+        QTest::newRow("null+chakma") << null << chakmaZeroC << chakmaZero;
+        QTest::newRow("empty+chakma") << empty << chakmaZeroC << chakmaZero;
+        QTest::newRow("a+chakma") << a << chakmaZeroC << aChakmaZero;
+
+        QTest::newRow("smallTheta+chakma") << smallTheta << chakmaZeroC << thetaChakma;
+        QTest::newRow("chakma+smallTheta") << chakmaZero << smallThetaC << chakmaTheta;
+        QTest::newRow("smallTheta+ssa") << smallTheta << ssaC << thetaSsa;
+
+        QTest::newRow("ssa+smallTheta") << ssa << smallThetaC << ssaTheta;
+        QTest::newRow("ssa+chakma") << ssa << chakmaZeroC << ssaChakma;
+        QTest::newRow("chakma+ssa") << chakmaZero << ssaC << chakmaSsa;
+
+        QTest::newRow("smallTheta+yumlaut") << smallTheta << yumlautC << thetaUmlaut;
+        QTest::newRow("yumlaut+smallTheta") << yumlaut << smallThetaC << umlautTheta;
+        QTest::newRow("ssa+yumlaut") << ssa << yumlautC << ssaUmlaut;
+        QTest::newRow("yumlaut+ssa") << yumlaut << ssaC << umlautSsa;
+        QTest::newRow("chakma+yumlaut") << chakmaZero << yumlautC << chakmaUmlaut;
+        QTest::newRow("yumlaut+chakma") << yumlaut << chakmaZeroC << umlautChakma;
+    }
 }
 
 void tst_QString::append_special_cases()
@@ -2870,9 +3026,9 @@ void tst_QString::operator_pluseq_special_cases()
     }
 }
 
-void tst_QString::operator_pluseq_data(bool emptyIsNoop)
+void tst_QString::operator_pluseq_data(DataOptions options)
 {
-    append_data(emptyIsNoop);
+    append_data(options);
 }
 
 void tst_QString::operator_pluseq_bytearray_special_cases_data()
@@ -2937,23 +3093,29 @@ void tst_QString::swap()
     QCOMPARE(s2,QLatin1String("s1"));
 }
 
-void tst_QString::prepend_data(bool emptyIsNoop)
+void tst_QString::prepend_data(DataOptions options)
 {
     QTest::addColumn<QString>("s");
     QTest::addColumn<CharStarContainer>("arg");
     QTest::addColumn<QString>("expected");
+
+    const bool emptyIsNoop = options.testFlag(EmptyIsNoop);
 
     const CharStarContainer nullC;
     const CharStarContainer emptyC("");
     const CharStarContainer aC("a");
     const CharStarContainer bC("b");
     const CharStarContainer baC("ba");
+    const CharStarContainer yumlautC(options.testFlag(Latin1Encoded) ? "\xff" : "\xc3\xbf");
 
     const QString null;
     const QString empty("");
     const QString a("a");
     //const QString b("b");
     const QString ba("ba");
+
+    const QString yumlaut = QStringLiteral("\u00ff");           // LATIN LETTER SMALL Y WITH UMLAUT
+    const QString yumlautA = QStringLiteral("\u00ffa");
 
     QTest::newRow("null.prepend(null)") << null << nullC << null;
     QTest::newRow("null.prepend(empty)") << null << emptyC << (emptyIsNoop ? null : empty);
@@ -2965,6 +3127,62 @@ void tst_QString::prepend_data(bool emptyIsNoop)
     QTest::newRow("a.prepend(empty)") << a << emptyC << a;
     QTest::newRow("a.prepend(b)") << a << bC << ba;
     QTest::newRow("a.prepend(ba)") << a << baC << (ba + a);
+
+    QTest::newRow("null-prepend-yumlaut") << null << yumlautC << yumlaut;
+    QTest::newRow("empty-prepend-yumlaut") << empty << yumlautC << yumlaut;
+    QTest::newRow("a-prepend-yumlaut") << a << yumlautC << yumlautA;
+
+    if (!options.testFlag(Latin1Encoded)) {
+        const auto smallTheta = QStringLiteral("\u03b8");      // GREEK LETTER SMALL THETA
+        const auto ssa = QStringLiteral("\u0937");             // DEVANAGARI LETTER SSA
+        const auto chakmaZero = QStringLiteral("\U00011136");  // CHAKMA DIGIT ZERO
+
+        const auto smallThetaA = QStringLiteral("\u03b8a");
+        const auto ssaA = QStringLiteral("\u0937a");
+        const auto chakmaZeroA = QStringLiteral("\U00011136a");
+
+        const auto thetaChakma = QStringLiteral("\u03b8\U00011136");
+        const auto chakmaTheta = QStringLiteral("\U00011136\u03b8");
+        const auto ssaTheta = QStringLiteral("\u0937\u03b8");
+        const auto thetaSsa = QStringLiteral("\u03b8\u0937");
+        const auto ssaChakma = QStringLiteral("\u0937\U00011136");
+        const auto chakmaSsa = QStringLiteral("\U00011136\u0937");
+        const auto thetaUmlaut = QStringLiteral("\u03b8\u00ff");
+        const auto umlautTheta = QStringLiteral("\u00ff\u03b8");
+        const auto ssaUmlaut = QStringLiteral("\u0937\u00ff");
+        const auto umlautSsa = QStringLiteral("\u00ff\u0937");
+        const auto chakmaUmlaut = QStringLiteral("\U00011136\u00ff");
+        const auto umlautChakma = QStringLiteral("\u00ff\U00011136");
+
+        const CharStarContainer smallThetaC("\xce\xb8");           // non-Latin1
+        const CharStarContainer ssaC("\xe0\xa4\xb7");              // Higher BMP
+        const CharStarContainer chakmaZeroC("\xf0\x91\x84\xb6");   // Non-BMP
+
+        QTest::newRow("null-prepend-smallTheta") << null << smallThetaC << smallTheta;
+        QTest::newRow("empty-prepend-smallTheta") << empty << smallThetaC << smallTheta;
+        QTest::newRow("a-prepend-smallTheta") << a << smallThetaC << smallThetaA;
+
+        QTest::newRow("null-prepend-ssa") << null << ssaC << ssa;
+        QTest::newRow("empty-prepend-ssa") << empty << ssaC << ssa;
+        QTest::newRow("a-prepend-ssa") << a << ssaC << ssaA;
+
+        QTest::newRow("null-prepend-chakma") << null << chakmaZeroC << chakmaZero;
+        QTest::newRow("empty-prepend-chakma") << empty << chakmaZeroC << chakmaZero;
+        QTest::newRow("a-prepend-chakma") << a << chakmaZeroC << chakmaZeroA;
+
+        QTest::newRow("smallTheta-prepend-chakma") << smallTheta << chakmaZeroC << chakmaTheta;
+        QTest::newRow("chakma-prepend-smallTheta") << chakmaZero << smallThetaC << thetaChakma;
+        QTest::newRow("smallTheta-prepend-ssa") << smallTheta << ssaC << ssaTheta;
+        QTest::newRow("ssa-prepend-smallTheta") << ssa << smallThetaC << thetaSsa;
+        QTest::newRow("ssa-prepend-chakma") << ssa << chakmaZeroC << chakmaSsa;
+        QTest::newRow("chakma-prepend-ssa") << chakmaZero << ssaC << ssaChakma;
+        QTest::newRow("smallTheta-prepend-yumlaut") << smallTheta << yumlautC << umlautTheta;
+        QTest::newRow("yumlaut-prepend-smallTheta") << yumlaut << smallThetaC << thetaUmlaut;
+        QTest::newRow("ssa-prepend-yumlaut") << ssa << yumlautC << umlautSsa;
+        QTest::newRow("yumlaut-prepend-ssa") << yumlaut << ssaC << ssaUmlaut;
+        QTest::newRow("chakma-prepend-yumlaut") << chakmaZero << yumlautC << umlautChakma;
+        QTest::newRow("yumlaut-prepend-chakma") << yumlaut << chakmaZeroC << chakmaUmlaut;
+    }
 }
 
 void tst_QString::prepend_bytearray_special_cases_data()

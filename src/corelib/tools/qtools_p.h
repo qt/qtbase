@@ -89,6 +89,12 @@ constexpr inline char toAsciiLower(char ch) noexcept
 {
     return (ch >= 'A' && ch <= 'Z') ? ch - 'A' + 'a' : ch;
 }
+
+constexpr inline char toAsciiUpper(char ch) noexcept
+{
+    return (ch >= 'a' && ch <= 'z') ? ch - 'a' + 'A' : ch;
+}
+
 }
 
 // We typically need an extra bit for qNextPowerOfTwo when determining the next allocation size.

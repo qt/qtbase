@@ -1058,7 +1058,8 @@ qreal QFont::pointSizeF() const
 }
 
 /*!
-    Sets the font size to \a pixelSize pixels.
+    Sets the font size to \a pixelSize pixels, with a maxiumum size
+    of an unsigned 16-bit integer.
 
     Using this function makes the font device dependent. Use
     setPointSize() or setPointSizeF() to set the size of the font

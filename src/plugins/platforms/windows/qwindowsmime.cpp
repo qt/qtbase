@@ -480,7 +480,7 @@ public:
 bool QWindowsMimeText::canConvertFromMime(const FORMATETC &formatetc, const QMimeData *mimeData) const
 {
     int cf = getCf(formatetc);
-    return (cf == CF_UNICODETEXT || cf == CF_TEXT) && mimeData->hasText();
+    return (cf == CF_UNICODETEXT || (cf == CF_TEXT && GetACP() != CP_UTF8)) && mimeData->hasText();
 }
 
 /*
@@ -581,7 +581,8 @@ QList<FORMATETC> QWindowsMimeText::formatsForMime(const QString &mimeType, const
     QList<FORMATETC> formatics;
     if (mimeType.startsWith(u"text/plain") && mimeData->hasText()) {
         formatics += setCf(CF_UNICODETEXT);
-        formatics += setCf(CF_TEXT);
+        if (GetACP() != CP_UTF8)
+            formatics += setCf(CF_TEXT);
     }
     return formatics;
 }

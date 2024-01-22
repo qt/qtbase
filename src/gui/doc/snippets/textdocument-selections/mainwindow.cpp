@@ -55,31 +55,31 @@ MainWindow::MainWindow()
 {
     QMenu *fileMenu = new QMenu(tr("&File"));
 
-    fileMenu->addAction(tr("&Open..."), this, SLOT(openFile()),
+    fileMenu->addAction(tr("&Open..."), this, &MainWindow::openFile,
                         QKeySequence(tr("Ctrl+O", "File|Open")));
 
-    QAction *quitAction = fileMenu->addAction(tr("E&xit"), this, SLOT(close()));
+    QAction *quitAction = fileMenu->addAction(tr("E&xit"), this, &MainWindow::close);
     quitAction->setShortcut(tr("Ctrl+Q"));
 
     QMenu *editMenu = new QMenu(tr("&Edit"));
 
-    cutAction = editMenu->addAction(tr("Cu&t"), this, SLOT(cutSelection()));
+    cutAction = editMenu->addAction(tr("Cu&t"), this, &MainWindow::cutSelection);
     cutAction->setShortcut(tr("Ctrl+X"));
     cutAction->setEnabled(false);
 
-    copyAction = editMenu->addAction(tr("&Copy"), this, SLOT(copySelection()));
+    copyAction = editMenu->addAction(tr("&Copy"), this, &MainWindow::copySelection);
     copyAction->setShortcut(tr("Ctrl+C"));
     copyAction->setEnabled(false);
 
-    pasteAction = editMenu->addAction(tr("&Paste"), this, SLOT(pasteSelection()));
+    pasteAction = editMenu->addAction(tr("&Paste"), this, &MainWindow::pasteSelection);
     pasteAction->setShortcut(tr("Ctrl+V"));
     pasteAction->setEnabled(false);
 
     QMenu *selectMenu = new QMenu(tr("&Select"));
-    selectMenu->addAction(tr("&Word"), this, SLOT(selectWord()));
-    selectMenu->addAction(tr("&Line"), this, SLOT(selectLine()));
-    selectMenu->addAction(tr("&Block"), this, SLOT(selectBlock()));
-    selectMenu->addAction(tr("&Frame"), this, SLOT(selectFrame()));
+    selectMenu->addAction(tr("&Word"), this, &MainWindow::selectWord);
+    selectMenu->addAction(tr("&Line"), this, &MainWindow::selectLine);
+    selectMenu->addAction(tr("&Block"), this, &MainWindow::selectBlock);
+    selectMenu->addAction(tr("&Frame"), this, &MainWindow::selectFrame);
 
     menuBar()->addMenu(fileMenu);
     menuBar()->addMenu(editMenu);

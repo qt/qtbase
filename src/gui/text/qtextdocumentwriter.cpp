@@ -77,7 +77,6 @@ public:
     \inmodule QtGui
 
     \ingroup richtext-processing
-    \ingroup io
 
     To write a document, construct a QTextDocumentWriter object with either a
     file name or a device object, and specify the document format to be

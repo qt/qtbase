@@ -48,6 +48,9 @@
 **
 ****************************************************************************/
 
+#ifndef HELLOVULKANTEXTURE_H
+#define HELLOVULKANTEXTURE_H
+
 #include <QVulkanWindow>
 #include <QImage>
 
@@ -106,3 +109,5 @@ class VulkanWindow : public QVulkanWindow
 public:
     QVulkanWindowRenderer *createRenderer() override;
 };
+
+#endif // HELLOVULKANTEXTURE_H

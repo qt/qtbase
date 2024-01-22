@@ -1531,15 +1531,13 @@ QRhi::FrameOpResult QRhiMetal::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi:
     Q_UNUSED(flags);
 
     currentFrameSlot = (currentFrameSlot + 1) % QMTL_FRAMES_IN_FLIGHT;
-    if (swapchains.count() > 1) {
-        for (QMetalSwapChain *sc : qAsConst(swapchains)) {
-            // wait+signal is the general pattern to ensure the commands for a
-            // given frame slot have completed (if sem is 1, we go 0 then 1; if
-            // sem is 0 we go -1, block, completion increments to 0, then us to 1)
-            dispatch_semaphore_t sem = sc->d->sem[currentFrameSlot];
-            dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-            dispatch_semaphore_signal(sem);
-        }
+    for (QMetalSwapChain *sc : qAsConst(swapchains)) {
+        // wait+signal is the general pattern to ensure the commands for a
+        // given frame slot have completed (if sem is 1, we go 0 then 1; if
+        // sem is 0 we go -1, block, completion increments to 0, then us to 1)
+        dispatch_semaphore_t sem = sc->d->sem[currentFrameSlot];
+        dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+        dispatch_semaphore_signal(sem);
     }
 
     d->ofr.active = true;
@@ -3542,10 +3540,7 @@ id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Var
 
 id<MTLFunction> QRhiMetalData::createMSLShaderFunction(id<MTLLibrary> lib, const QByteArray &entryPoint)
 {
-    NSString *name = [NSString stringWithUTF8String: entryPoint.constData()];
-    id<MTLFunction> f = [lib newFunctionWithName: name];
-    [name release];
-    return f;
+    return [lib newFunctionWithName:[NSString stringWithUTF8String:entryPoint.constData()]];
 }
 
 bool QMetalGraphicsPipeline::create()

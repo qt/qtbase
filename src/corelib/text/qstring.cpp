@@ -7546,14 +7546,15 @@ QStringList QString::split(QChar sep, Qt::SplitBehavior behavior, Qt::CaseSensit
     \fn QList<QStringView> QStringView::split(QStringView sep, Qt::SplitBehavior behavior, Qt::CaseSensitivity cs) const
 
 
-    Splits the string into substring views wherever \a sep occurs, and
+    Splits the view into substring views wherever \a sep occurs, and
     returns the list of those string views.
 
     See QString::split() for how \a sep, \a behavior and \a cs interact to form
     the result.
 
-    \note All views are valid as long as this string is. Destroying this
-    string will cause all views to be dangling pointers.
+    \note All the returned views are valid as long as the data referenced by
+    this string view is valid. Destroying the data will cause all views to
+    become dangling.
 
     \since 6.0
 */

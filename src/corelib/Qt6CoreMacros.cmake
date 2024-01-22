@@ -2295,6 +2295,10 @@ function(qt6_add_plugin target)
 
     cmake_parse_arguments(PARSE_ARGV 1 arg "${opt_args}" "${single_args}" "${multi_args}")
 
+    if (arg_UNPARSED_ARGUMENTS)
+        message(AUTHOR_WARNING "Unexpected arguments: ${arg_UNPARSED_ARGUMENTS}. If these are source files, consider using target_sources() instead.")
+    endif()
+
     # Handle the inconsistent CLASSNAME/CLASS_NAME keyword naming between commands
     if(arg_CLASSNAME)
         if(arg_CLASS_NAME AND NOT arg_CLASSNAME STREQUAL arg_CLASS_NAME)
@@ -2575,30 +2579,6 @@ function(_qt_internal_apply_strict_cpp target)
                 OBJCXX_EXTENSIONS OFF)
         endif()
     endif()
-endfunction()
-
-# Wraps a tool command with a script that contains the necessary environment for the tool to run
-# correctly.
-# _qt_internal_wrap_tool_command(var <SET|APPEND> <command> [args...])
-# Arguments:
-#    APPEND Selects the 'append' mode for the out_variable argument.
-#    SET Selects the 'set' mode for the out_variable argument.
-function(_qt_internal_wrap_tool_command out_variable action)
-    set(append FALSE)
-    if(action STREQUAL "APPEND")
-        set(append TRUE)
-    elseif(NOT action STREQUAL "SET")
-        message(FATAL_ERROR "Invalid action specified ${action}. Supported actions: SET, APPEND")
-    endif()
-
-    set(cmd COMMAND ${QT_TOOL_COMMAND_WRAPPER_PATH} ${ARGN})
-
-    if(append)
-        list(APPEND ${out_variable} ${cmd})
-    else()
-        set(${out_variable} ${cmd})
-    endif()
-    set(${out_variable} "${${out_variable}}" PARENT_SCOPE)
 endfunction()
 
 # Copies properties of the dependency to the target.

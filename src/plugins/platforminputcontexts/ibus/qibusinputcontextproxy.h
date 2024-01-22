@@ -114,6 +114,13 @@ public Q_SLOTS: // METHODS
         return asyncCallWithArgumentList(QLatin1String("SetCursorLocation"), argumentList);
     }
 
+    inline QDBusPendingReply<> SetCursorLocationRelative(int x, int y, int w, int h)
+    {
+        QList<QVariant> argumentList;
+        argumentList << QVariant::fromValue(x) << QVariant::fromValue(y) << QVariant::fromValue(w) << QVariant::fromValue(h);
+        return asyncCallWithArgumentList(QLatin1String("SetCursorLocationRelative"), argumentList);
+    }
+
     inline QDBusPendingReply<> SetEngine(const QString &name)
     {
         QList<QVariant> argumentList;

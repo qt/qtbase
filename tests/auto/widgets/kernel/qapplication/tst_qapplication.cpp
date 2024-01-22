@@ -153,6 +153,7 @@ private slots:
     void wheelEventPropagation();
 
     void qtbug_12673();
+    void qtbug_103611();
     void noQuitOnHide();
 
     void globalStaticObjectDestruction(); // run this last
@@ -2536,6 +2537,20 @@ void tst_QApplication::qtbug_12673()
 #else
     QSKIP( "No QProcess support", SkipAll);
 #endif
+}
+
+void tst_QApplication::qtbug_103611()
+{
+    {
+        int argc = 0;
+        QApplication app(argc, nullptr);
+        auto ll = QLocale().uiLanguages();
+    }
+    {
+        int argc = 0;
+        QApplication app(argc, nullptr);
+        auto ll = QLocale().uiLanguages();
+    }
 }
 
 class NoQuitOnHideWidget : public QWidget

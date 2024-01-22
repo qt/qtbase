@@ -228,6 +228,8 @@ private slots:
 
     void createReadyFutures();
     void continuationsDontLeak();
+    void cancelAfterFinishWithContinuations();
+
 private:
     using size_type = std::vector<int>::size_type;
 
@@ -3104,6 +3106,15 @@ void tst_QFuture::cancelContinuations()
         QVERIFY(watcher2.isFinished());
         QVERIFY(watcher2.isCanceled());
     }
+
+    // Cancel continuations with context (QTBUG-108790)
+    {
+        // This test should pass with ASan
+        auto future = QtConcurrent::run([] {});
+        future.then(this, [] {});
+        future.waitForFinished();
+        future.cancel();
+    }
 }
 
 void tst_QFuture::continuationsWithContext()
@@ -4100,6 +4111,31 @@ void tst_QFuture::continuationsDontLeak()
         QVERIFY(continuationIsRun);
     }
     QCOMPARE(InstanceCounter::count, 0);
+}
+
+// This test checks that we do not get use-after-free
+void tst_QFuture::cancelAfterFinishWithContinuations()
+{
+    QFuture<void> future;
+    bool continuationIsRun = false;
+    bool cancelCalled = false;
+    {
+        QPromise<void> promise;
+        future = promise.future();
+
+        future.then([&continuationIsRun]() {
+            continuationIsRun = true;
+        }).onCanceled([&cancelCalled]() {
+            cancelCalled = true;
+        });
+
+        promise.start();
+        promise.finish();
+    }
+
+    QVERIFY(continuationIsRun);
+    future.cancel();
+    QVERIFY(!cancelCalled);
 }
 
 QTEST_MAIN(tst_QFuture)

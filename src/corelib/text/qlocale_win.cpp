@@ -53,6 +53,7 @@
 
 #if QT_CONFIG(cpp_winrt) && !defined(Q_CC_CLANG)
 #   include <winrt/base.h>
+#   include <QtCore/private/qfactorycacheregistration_p.h>
 // Workaround for Windows SDK bug.
 // See https://github.com/microsoft/Windows.UI.Composition-Win32-Samples/issues/47
 namespace winrt::impl
@@ -456,15 +457,17 @@ QVariant QSystemLocalePrivate::toString(QTime time, QLocale::FormatType type)
 
     DWORD flags = 0;
     // keep the same conditional as timeFormat() above
-    if (type == QLocale::ShortFormat)
-        flags = TIME_NOSECONDS;
+    const QString format = type == QLocale::ShortFormat
+        ? getLocaleInfo(LOCALE_SSHORTTIME).toString()
+        : QString();
+    auto formatStr = reinterpret_cast<const wchar_t *>(format.isEmpty() ? nullptr : format.utf16());
 
     wchar_t buf[255];
-    if (getTimeFormat(flags, &st, NULL, buf, 255)) {
-        QString format = QString::fromWCharArray(buf);
+    if (getTimeFormat(flags, &st, formatStr, buf, int(std::size(buf)))) {
+        QString text = QString::fromWCharArray(buf);
         if (substitution() == SAlways)
-            format = substituteDigits(std::move(format));
-        return format;
+            text = substituteDigits(std::move(text));
+        return text;
     }
     return {};
 }
@@ -1010,6 +1013,8 @@ static const char *winLangCodeToIsoName(int code)
 
 LCID qt_inIsoNametoLCID(const char *name)
 {
+    if (!name)
+        return LOCALE_USER_DEFAULT;
     // handle norwegian manually, the list above will fail
     if (!strncmp(name, "nb", 2))
         return 0x0414;

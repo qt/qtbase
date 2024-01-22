@@ -18,22 +18,30 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-blob.cc src/hb-blob.h
         src/hb-buffer.cc src/hb-buffer.h src/hb-buffer.hh
         src/hb-buffer-deserialize-json.hh
-        src/hb-buffer-deserialize-text.hh
+        src/hb-buffer-deserialize-text-glyphs.hh
+        src/hb-buffer-deserialize-text-unicode.hh
         src/hb-buffer-serialize.cc
+        src/hb-buffer-verify.cc
         src/hb-cache.hh
         src/hb-common.h
         src/hb-debug.hh
         src/hb-deprecated.h
         src/hb-draw.cc src/hb-draw.h src/hb-draw.hh
         src/hb-face.cc src/hb-face.h src/hb-face.hh
+        src/hb-face-builder.cc
         src/hb-fallback-shape.cc
         src/hb-font.cc src/hb-font.h src/hb-font.hh
+        src/hb-ft-colr.hh
+        src/hb-limits.hh
         src/hb-map.cc
         src/hb-mutex.hh
         src/hb-number.cc
         src/hb-object.hh
         src/hb-open-file.hh
         src/hb-open-type.hh
+        src/hb-outline.cc src/hb-outline.hh
+        src/hb-paint.cc src/hb-paint.h src/hb-paint.hh
+        src/hb-paint-extents.cc src/hb-paint-extents.hh
         src/hb-priority-queue.hh
         src/hb-repacker.hh
         src/hb-set.cc src/hb-set.h src/hb-set.hh
@@ -50,7 +58,9 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-subset-cff1.cc
         src/hb-subset-cff2.cc
         src/hb-subset-input.cc
+        src/hb-subset-instancer-solver.cc
         src/hb-subset-plan.cc
+        src/hb-subset-repacker.cc src/hb-subset-repacker.h
         src/hb-unicode.cc src/hb-unicode.h src/hb-unicode.hh
         src/hb-utf.hh
         src/hb-version.h
@@ -106,8 +116,6 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE # special case
         src/hb-ot-cff2-table.cc
         src/hb-ot-cmap-table.hh
         src/hb-ot-color.cc
-        src/hb-ot-color-cbdt-table.hh
-        src/hb-ot-color-colrv1-closure.hh
         src/hb-ot-face.cc
         src/hb-ot-font.cc src/hb-ot-font.h
         src/hb-ot-glyf-table.hh
@@ -133,33 +141,47 @@ qt_internal_extend_target(BundledHarfbuzz CONDITION TRUE # special case
         src/hb-ot-post-table.hh
         src/hb-ot-post-table-v2subset.hh
         src/hb-ot-shape.cc src/hb-ot-shape.h src/hb-ot-shape.hh
-        src/hb-ot-shape-complex-arabic.cc src/hb-ot-shape-complex-arabic.hh
-        src/hb-ot-shape-complex-arabic-fallback.hh
-        src/hb-ot-shape-complex-arabic-joining-list.hh
-        src/hb-ot-shape-complex-arabic-table.hh
-        src/hb-ot-shape-complex-default.cc
-        src/hb-ot-shape-complex-hangul.cc
-        src/hb-ot-shape-complex-hebrew.cc
-        src/hb-ot-shape-complex-indic.cc src/hb-ot-shape-complex-indic.hh
-        src/hb-ot-shape-complex-indic-machine.hh
-        src/hb-ot-shape-complex-indic-table.cc
-        src/hb-ot-shape-complex-khmer.cc
-        src/hb-ot-shape-complex-myanmar.cc
-        src/hb-ot-shape-complex-myanmar-machine.hh
-        src/hb-ot-shape-complex-syllabic.cc src/hb-ot-shape-complex-syllabic.hh
-        src/hb-ot-shape-complex-thai.cc
-        src/hb-ot-shape-complex-use.cc
-        src/hb-ot-shape-complex-use-machine.hh
-        src/hb-ot-shape-complex-use-table.hh
-        src/hb-ot-shape-complex-vowel-constraints.cc
         src/hb-ot-shape-fallback.cc src/hb-ot-shape-fallback.hh
         src/hb-ot-shape-normalize.cc src/hb-ot-shape-normalize.hh
+        src/hb-ot-shaper-arabic-fallback.hh
+        src/hb-ot-shaper-arabic-joining-list.hh
+        src/hb-ot-shaper-arabic-pua.hh
+        src/hb-ot-shaper-arabic-table.hh
+        src/hb-ot-shaper-arabic.cc src/hb-ot-shaper-arabic.hh
+        src/hb-ot-shaper-default.cc
+        src/hb-ot-shaper-hangul.cc
+        src/hb-ot-shaper-hebrew.cc
+        src/hb-ot-shaper-indic-machine.hh
+        src/hb-ot-shaper-indic-table.cc
+        src/hb-ot-shaper-indic.cc src/hb-ot-shaper-indic.hh
+        src/hb-ot-shaper-khmer-machine.hh
+        src/hb-ot-shaper-khmer.cc
+        src/hb-ot-shaper-myanmar-machine.hh
+        src/hb-ot-shaper-myanmar.cc
+        src/hb-ot-shaper-syllabic.cc src/hb-ot-shaper-syllabic.hh
+        src/hb-ot-shaper-thai.cc
+        src/hb-ot-shaper-use-machine.hh
+        src/hb-ot-shaper-use-table.hh
+        src/hb-ot-shaper-use.cc
+        src/hb-ot-shaper-vowel-constraints.cc
+        src/hb-ot-shaper-vowel-constraints.hh
+        src/hb-ot-shaper.hh
+        src/hb-subset-accelerator.hh
         src/hb-ot-tag.cc
         src/hb-ot-var.cc src/hb-ot-var.h
+        src/hb-ot-var-common.hh
         src/hb-ot-var-avar-table.hh
         src/hb-ot-var-fvar-table.hh
         src/hb-ot-var-hvar-table.hh
         src/hb-ot-var-mvar-table.hh
+        src/OT/Color/CBDT/CBDT.hh
+        src/OT/Color/COLR/COLR.hh
+        src/OT/Color/COLR/colrv1-closure.hh
+        src/OT/Color/CPAL/CPAL.hh
+        src/OT/Color/sbix/sbix.hh
+        src/OT/Color/svg/svg.hh
+        src/OT/Layout/GDEF/GDEF.hh
+        src/OT/name/name.hh
     DEFINES
         HAVE_OT
 )

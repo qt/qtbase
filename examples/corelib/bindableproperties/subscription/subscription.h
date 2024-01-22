@@ -62,7 +62,7 @@ class Subscription : public QObject
 {
     Q_OBJECT
 public:
-    enum Duration { Monthly = 1, Quarterly = 4, Yearly = 12 };
+    enum Duration { Monthly = 1, Quarterly = 3, Yearly = 12 };
 
     Subscription(User *user);
 

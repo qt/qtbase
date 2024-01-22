@@ -154,7 +154,7 @@ struct QPropertyDelayedNotifications
         Change notifications are sent later with notify (following the logic of separating
         binding updates and notifications used in non-deferred updates).
      */
-    void evaluateBindings(int index, QBindingStatus *status) {
+    void evaluateBindings(qsizetype index, QBindingStatus *status) {
         auto *delayed = delayedProperties + index;
         auto *bindingData = delayed->originalBindingData;
         if (!bindingData)
@@ -182,7 +182,7 @@ struct QPropertyDelayedNotifications
             \li sends any pending notifications.
         \endlist
      */
-    void notify(int index) {
+    void notify(qsizetype index) {
         auto *delayed = delayedProperties + index;
         auto *bindingData = delayed->originalBindingData;
         if (!bindingData)
@@ -252,14 +252,14 @@ void Qt::endPropertyUpdateGroup()
     // update all delayed properties
     auto start = data;
     while (data) {
-        for (int i = 0; i < data->used; ++i)
+        for (qsizetype i = 0; i < data->used; ++i)
             data->evaluateBindings(i, status);
         data = data->next;
     }
     // notify all delayed properties
     data = start;
     while (data) {
-        for (int i = 0; i < data->used; ++i)
+        for (qsizetype i = 0; i < data->used; ++i)
             data->notify(i);
         auto *next = data->next;
         delete data;

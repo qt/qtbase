@@ -1204,6 +1204,11 @@ QChar *QUtf32::convertToUnicode(QChar *out, QByteArrayView in, QStringConverter:
 }
 
 #if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
+int QLocal8Bit::checkUtf8()
+{
+    return GetACP() == CP_UTF8 ? 1 : -1;
+}
+
 static QString convertToUnicodeCharByChar(QByteArrayView in, QStringConverter::State *state)
 {
     qsizetype length = in.size();
@@ -1257,7 +1262,7 @@ static QString convertToUnicodeCharByChar(QByteArrayView in, QStringConverter::S
 }
 
 
-QString QLocal8Bit::convertToUnicode(QByteArrayView in, QStringConverter::State *state)
+QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, QStringConverter::State *state)
 {
     qsizetype length = in.size();
 
@@ -1345,7 +1350,7 @@ QString QLocal8Bit::convertToUnicode(QByteArrayView in, QStringConverter::State 
     return s;
 }
 
-QByteArray QLocal8Bit::convertFromUnicode(QStringView in, QStringConverter::State *state)
+QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, QStringConverter::State *state)
 {
     const QChar *ch = in.data();
     qsizetype uclen = in.size();

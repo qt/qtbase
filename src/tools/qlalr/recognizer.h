@@ -26,6 +26,9 @@
 **
 ****************************************************************************/
 
+#ifndef RECOGNIZER_H
+#define RECOGNIZER_H
+
 #include "grammar_p.h"
 
 #include "lalr.h"
@@ -97,3 +100,5 @@ protected:
   QString _M_current_value;
   bool _M_no_lines;
 };
+
+#endif // RECOGNIZER_H

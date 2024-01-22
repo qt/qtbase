@@ -723,7 +723,7 @@ qt_feature("xmlstream" PUBLIC
     LABEL "XML Streaming APIs"
     PURPOSE "Provides a simple streaming API for XML."
 )
-qt_feature("cpp-winrt" PRIVATE
+qt_feature("cpp-winrt" PRIVATE PUBLIC
     LABEL "cpp/winrt base"
     PURPOSE "basic cpp/winrt language projection support"
     CONDITION WIN32 AND TEST_cpp_winrt

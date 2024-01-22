@@ -49,6 +49,7 @@
 #include "QtCore/qshareddata.h"
 #include "QtCore/qlocale.h"
 #include "QtCore/qdatetime.h"
+#include "QtCore/private/qtools_p.h"
 
 #include <ctype.h>
 #if QT_CONFIG(datestring)
@@ -1108,48 +1109,52 @@ static int parseHeaderName(const QByteArray &headerName)
     if (headerName.isEmpty())
         return -1;
 
-    switch (tolower(headerName.at(0))) {
+    auto is = [&](const char *what) {
+        return qstrnicmp(headerName.data(), headerName.size(), what) == 0;
+    };
+
+    switch (QtMiscUtils::toAsciiLower(headerName.front())) {
     case 'c':
-        if (headerName.compare("content-type", Qt::CaseInsensitive) == 0)
+        if (is("content-type"))
             return QNetworkRequest::ContentTypeHeader;
-        else if (headerName.compare("content-length", Qt::CaseInsensitive) == 0)
+        else if (is("content-length"))
             return QNetworkRequest::ContentLengthHeader;
-        else if (headerName.compare("cookie", Qt::CaseInsensitive) == 0)
+        else if (is("cookie"))
             return QNetworkRequest::CookieHeader;
-        else if (qstricmp(headerName.constData(), "content-disposition") == 0)
+        else if (is("content-disposition"))
             return QNetworkRequest::ContentDispositionHeader;
         break;
 
     case 'e':
-        if (qstricmp(headerName.constData(), "etag") == 0)
+        if (is("etag"))
             return QNetworkRequest::ETagHeader;
         break;
 
     case 'i':
-        if (qstricmp(headerName.constData(), "if-modified-since") == 0)
+        if (is("if-modified-since"))
             return QNetworkRequest::IfModifiedSinceHeader;
-        if (qstricmp(headerName.constData(), "if-match") == 0)
+        if (is("if-match"))
             return QNetworkRequest::IfMatchHeader;
-        if (qstricmp(headerName.constData(), "if-none-match") == 0)
+        if (is("if-none-match"))
             return QNetworkRequest::IfNoneMatchHeader;
         break;
 
     case 'l':
-        if (headerName.compare("location", Qt::CaseInsensitive) == 0)
+        if (is("location"))
             return QNetworkRequest::LocationHeader;
-        else if (headerName.compare("last-modified", Qt::CaseInsensitive) == 0)
+        else if (is("last-modified"))
             return QNetworkRequest::LastModifiedHeader;
         break;
 
     case 's':
-        if (headerName.compare("set-cookie", Qt::CaseInsensitive) == 0)
+        if (is("set-cookie"))
             return QNetworkRequest::SetCookieHeader;
-        else if (headerName.compare("server", Qt::CaseInsensitive) == 0)
+        else if (is("server"))
             return QNetworkRequest::ServerHeader;
         break;
 
     case 'u':
-        if (headerName.compare("user-agent", Qt::CaseInsensitive) == 0)
+        if (is("user-agent"))
             return QNetworkRequest::UserAgentHeader;
         break;
     }

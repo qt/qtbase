@@ -48,6 +48,9 @@
 **
 ****************************************************************************/
 
+#ifndef VALIDATORWIDGET_H
+#define VALIDATORWIDGET_H
+
 #include <QWidget>
 
 #include "ui_validators.h"
@@ -62,3 +65,5 @@ private slots:
     void updateValidator();
     void updateDoubleValidator();
 };
+
+#endif // VALIDATORWIDGET_H

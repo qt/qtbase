@@ -64,7 +64,13 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.ossl");
+#if defined(Q_OS_WIN) || defined(Q_OS_MACOS)
+constexpr auto DefaultWarningLevel = QtCriticalMsg;
+#else
+constexpr auto DefaultWarningLevel = QtDebugMsg;
+#endif
+
+Q_LOGGING_CATEGORY(lcTlsBackend, "qt.tlsbackend.ossl", DefaultWarningLevel);
 
 Q_GLOBAL_STATIC(QRecursiveMutex, qt_opensslInitMutex)
 

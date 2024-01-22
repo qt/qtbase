@@ -183,7 +183,12 @@ public:
     }
     inline bool isEmpty() const { return (s == 0); }
     inline void resize(qsizetype size);
-    inline void clear() { resize(0); }
+    void clear()
+    {
+        if constexpr (QTypeInfo<T>::isComplex)
+            std::destroy_n(data(), size());
+        s = 0;
+    }
     inline void squeeze();
 
     inline qsizetype capacity() const { return a; }
@@ -367,6 +372,20 @@ public:
 
 private:
     void reallocate(qsizetype size, qsizetype alloc);
+
+    void resize_impl(qsizetype newSize, const T &t)
+    {
+        const auto increment = newSize - size();
+        if (increment > 0 && QtPrivate::q_points_into_range(&t, cbegin(), cend())) {
+            resize_impl(newSize, T(t));
+            return;
+        }
+        reallocate(qMin(size(), newSize), qMax(newSize, capacity()));
+
+        if (increment > 0)
+            std::uninitialized_fill_n(end(), increment, t);
+        s = newSize;
+    }
 
     qsizetype a;      // capacity
     qsizetype s;      // size
@@ -625,29 +644,12 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     Q_ASSERT(s <= a);
     Q_ASSERT(a > 0);
 
-    qsizetype offset = qsizetype(before - ptr);
-    if (s == a)
-        reserve(s * 2);
-    if (!QTypeInfo<T>::isRelocatable) {
-        T *b = ptr + offset;
-        T *i = ptr + s;
-        T *j = i + 1;
-        // The new end-element needs to be constructed, the rest must be move assigned
-        if (i != b) {
-            new (--j) T(std::move(*--i));
-            while (i != b)
-                *--j = std::move(*--i);
-            *b = std::move(t);
-        } else {
-            new (b) T(std::move(t));
-        }
-    } else {
-        T *b = ptr + offset;
-        memmove(static_cast<void *>(b + 1), static_cast<const void *>(b), (s - offset) * sizeof(T));
-        new (b) T(std::move(t));
-    }
-    s += 1;
-    return ptr + offset;
+    const qsizetype offset = qsizetype(before - ptr);
+    append(std::move(t));
+    const auto b = begin() + offset;
+    const auto e = end();
+    QtPrivate::q_rotate(b, e - 1, e);
+    return b;
 }
 
 template <class T, qsizetype Prealloc>
@@ -655,28 +657,12 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
 {
     Q_ASSERT_X(isValidIterator(before), "QVarLengthArray::insert", "The specified const_iterator argument 'before' is invalid");
 
-    qsizetype offset = qsizetype(before - ptr);
-    if (n != 0) {
-        const T copy(t); // `t` could alias an element in [begin(), end()[
-        resize(s + n);
-        if (!QTypeInfo<T>::isRelocatable) {
-            T *b = ptr + offset;
-            T *j = ptr + s;
-            T *i = j - n;
-            while (i != b)
-                *--j = *--i;
-            i = b + n;
-            while (i != b)
-                *--i = copy;
-        } else {
-            T *b = ptr + offset;
-            T *i = b + n;
-            memmove(static_cast<void *>(i), static_cast<const void *>(b), (s - offset - n) * sizeof(T));
-            while (i != b)
-                new (--i) T(copy);
-        }
-    }
-    return ptr + offset;
+    const qsizetype offset = qsizetype(before - cbegin());
+    resize_impl(size() + n, t);
+    const auto b = begin() + offset;
+    const auto e = end();
+    QtPrivate::q_rotate(b, e - n, e);
+    return b;
 }
 
 template <class T, qsizetype Prealloc>
