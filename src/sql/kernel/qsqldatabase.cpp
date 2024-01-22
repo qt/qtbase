@@ -1292,8 +1292,6 @@ QString QSqlDatabase::connectionName() const
 }
 
 /*!
-    \since 4.6
-
     Sets the default numerical precision policy used by queries created
     on this database connection to \a precisionPolicy.
 
@@ -1316,8 +1314,6 @@ void QSqlDatabase::setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy pr
 }
 
 /*!
-    \since 4.6
-
     Returns the current default precision policy for the database connection.
 
     \sa QSql::NumericalPrecisionPolicy, setNumericalPrecisionPolicy(),
