@@ -5,8 +5,8 @@ cmake_minimum_required(VERSION 3.16)
 if (NOT CMAKE_PROJECT_NAME STREQUAL "QtBase" AND NOT CMAKE_PROJECT_NAME STREQUAL "Qt")
     include(.cmake.conf)
     # Store initial build type (if any is specified) to be read by
-    # qt_internal_set_default_build_type().
-    # See qt_internal_set_default_build_type() for details.
+    # qt_internal_set_cmake_build_type().
+    # See qt_internal_set_cmake_build_type() for details.
     if(DEFINED CACHE{CMAKE_BUILD_TYPE})
         set(__qt_internal_standalone_project_cmake_build_type_before_project_call
             "${CMAKE_BUILD_TYPE}")
