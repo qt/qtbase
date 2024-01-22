@@ -105,6 +105,9 @@ public:
     >
     static auto fromContainer(Container &&container)
     {
+        Q_ASSERT_X(size_t(container.size()) <= size_t((std::numeric_limits<size_type>::max)()),
+                   "QJniArray::fromContainer", "Container is too large for a Java array");
+
         using ElementType = typename std::remove_reference_t<Container>::value_type;
         if constexpr (std::disjunction_v<std::is_same<ElementType, jobject>,
                                          std::is_same<ElementType, QJniObject>>) {
