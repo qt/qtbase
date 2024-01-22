@@ -872,7 +872,7 @@ bool QHttpHeaders::replace(qsizetype i, WellKnownHeader name, QAnyStringView new
 /*!
     Returns whether the headers contain header with \a name.
 
-    \sa has(QHttpHeaders::WellKnownHeader)
+    \sa contains(QHttpHeaders::WellKnownHeader)
 */
 bool QHttpHeaders::contains(QAnyStringView name) const
 {
