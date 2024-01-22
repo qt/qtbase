@@ -102,7 +102,7 @@ static QString fetchFont(const QString &query)
         HashSet innerSet;
         Q_ASSERT(outerList.isValid() && innerSet.isValid());
 
-        for (QJniObject signature : signatures) {
+        for (const auto &signature : signatures) {
             const QJniArray<jbyte> byteArray = signature.callMethod<jbyte[]>("toByteArray");
 
             // add takes an Object, not an Array

@@ -85,7 +85,7 @@ private:
     {}
 };
 
-class QJniArrayBase : public QJniObject
+class QJniArrayBase
 {
     // for SFINAE'ing out the fromContainer named constructor
     template <typename Container, typename = void> struct CanConvertHelper : std::false_type {};
@@ -99,9 +99,15 @@ public:
     using size_type = jsize;
     using difference_type = size_type;
 
+    operator QJniObject() const { return m_object; }
+
+    template <typename T = jobject>
+    T object() const { return m_object.object<T>(); }
+    bool isValid() const { return m_object.isValid(); }
+
     size_type size() const
     {
-        if (jarray array = object<jarray>())
+        if (jarray array = m_object.object<jarray>())
             return jniEnv()->GetArrayLength(array);
         return 0;
     }
@@ -160,22 +166,25 @@ protected:
     ~QJniArrayBase() = default;
 
     explicit QJniArrayBase(jarray array)
-        : QJniObject(static_cast<jobject>(array))
+        : m_object(static_cast<jobject>(array))
     {
-        static_assert(sizeof(QJniArrayBase) == sizeof(QJniObject),
-                      "QJniArrayBase must have the same size as QJniObject!");
     }
     explicit QJniArrayBase(const QJniObject &object)
-        : QJniObject(object)
+        : m_object(object)
     {}
     explicit QJniArrayBase(QJniObject &&object) noexcept
-        : QJniObject(std::move(object))
+        : m_object(std::move(object))
     {}
+
+    JNIEnv *jniEnv() const noexcept { return QJniEnvironment::getJniEnv(); }
 
     template <typename ElementType, typename List, typename NewFn, typename SetFn>
     static auto makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion);
     template <typename List>
     static auto makeObjectArray(List &&list);
+
+private:
+    QJniObject m_object;
 };
 
 template <typename T>
