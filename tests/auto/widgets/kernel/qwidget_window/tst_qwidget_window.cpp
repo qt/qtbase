@@ -113,6 +113,8 @@ private slots:
 
     void resetFocusObjectOnDestruction();
 
+    void cleanupOnDestruction();
+
 private:
     QSize m_testWidgetSize;
     const int m_fuzz;
@@ -1670,6 +1672,31 @@ void tst_QWidget_window::resetFocusObjectOnDestruction()
     // we might get more than one signal emission
     QVERIFY(focusObjectChangedSpy.size() > activeCount);
     QCOMPARE(focusObjectChangedSpy.last().last().value<QObject*>(), nullptr);
+}
+
+class CreateDestroyWidget : public QWidget
+{
+public:
+    using QWidget::create;
+    using QWidget::destroy;
+};
+
+void tst_QWidget_window::cleanupOnDestruction()
+{
+    CreateDestroyWidget widget;
+    QWidget child(&widget);
+
+    QWidget grandChild(&child);
+    // Ensure there's not a 1:1 native window hierarhcy that we could
+    // recurse during QWidget::destroy(), triggering the issue that
+    // we were failing to clean up when not destroyed via QWidget.
+    grandChild.setAttribute(Qt::WA_DontCreateNativeAncestors);
+    grandChild.winId();
+
+    widget.destroy();
+    widget.create();
+
+    widget.show();
 }
 
 QTEST_MAIN(tst_QWidget_window)
