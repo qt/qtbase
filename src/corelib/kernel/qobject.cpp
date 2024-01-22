@@ -4472,15 +4472,23 @@ void QObject::dumpObjectInfo() const
 
 
 #ifndef QT_NO_DEBUG_STREAM
+void QObjectPrivate::writeToDebugStream(QDebug &dbg) const
+{
+    Q_Q(const QObject);
+    dbg.nospace() << q->metaObject()->className() << '(' << (const void *)q;
+    if (!q->objectName().isEmpty())
+        dbg << ", name = " << q->objectName();
+    dbg << ')';
+}
+
 QDebug operator<<(QDebug dbg, const QObject *o)
 {
     QDebugStateSaver saver(dbg);
     if (!o)
         return dbg << "QObject(0x0)";
-    dbg.nospace() << o->metaObject()->className() << '(' << (const void *)o;
-    if (!o->objectName().isEmpty())
-        dbg << ", name = " << o->objectName();
-    dbg << ')';
+
+    const QObjectPrivate *d = QObjectPrivate::get(o);
+    d->writeToDebugStream(dbg);
     return dbg;
 }
 #endif

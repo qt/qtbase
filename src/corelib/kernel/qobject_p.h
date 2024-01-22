@@ -188,6 +188,10 @@ public:
 
     virtual std::string flagsForDumping() const;
 
+#ifndef QT_NO_DEBUG_STREAM
+    virtual void writeToDebugStream(QDebug &) const;
+#endif
+
     QtPrivate::QPropertyAdaptorSlotObject *
     getPropertyAdaptorSlotObject(const QMetaProperty &property);
 
