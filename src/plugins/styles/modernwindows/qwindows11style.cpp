@@ -1365,21 +1365,27 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
         break;
     case CE_MenuBarItem:
         if (const auto *mbi = qstyleoption_cast<const QStyleOptionMenuItem *>(option))  {
+            constexpr int hPadding = 11;
+            constexpr int topPadding = 4;
+            constexpr int bottomPadding = 6;
             bool active = mbi->state & State_Selected;
             bool hasFocus = mbi->state & State_HasFocus;
             bool down = mbi->state & State_Sunken;
             bool enabled = mbi->state & State_Enabled;
             QStyleOptionMenuItem newMbi = *mbi;
+            newMbi.font.setPointSize(10);
             if (enabled && (active || hasFocus)) {
                 if (active && down)
                     painter->setBrushOrigin(painter->brushOrigin() + QPoint(1, 1));
                 if (active && hasFocus) {
                     painter->setBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
                     painter->setPen(Qt::NoPen);
-                    QRect rect = mbi->rect.marginsRemoved(QMargins(2,2,2,2));
+                    QRect rect = mbi->rect.marginsRemoved(QMargins(5,0,5,0));
                     painter->drawRoundedRect(rect,secondLevelRoundingRadius,secondLevelRoundingRadius,Qt::AbsoluteSize);
                 }
             }
+            newMbi.rect.adjust(hPadding,topPadding,-hPadding,-bottomPadding);
+            painter->setFont(newMbi.font);
             QCommonStyle::drawControl(element, &newMbi, painter, widget);
         }
         break;
@@ -1867,8 +1873,13 @@ QSize QWindows11Style::sizeFromContents(ContentsType type, const QStyleOption *o
 
 #if QT_CONFIG(menubar)
     case CT_MenuBarItem:
-        if (!contentSize.isEmpty())
-            contentSize += QSize(QWindowsVistaStylePrivate::windowsItemHMargin * 5 + 1 + 16, 5 + 16);
+        if (!contentSize.isEmpty()) {
+            constexpr int hMargin = 2 * 6;
+            constexpr int hPadding = 2 * 11;
+            constexpr int itemHeight = 32;
+            contentSize.setWidth(contentSize.width() + hMargin + hPadding);
+            contentSize.setHeight(itemHeight);
+        }
         break;
 #endif
 
