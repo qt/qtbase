@@ -802,6 +802,10 @@ void tst_qmessagehandler::qMessagePattern_data()
 #ifdef __GLIBC__
 #  if QT_CONFIG(static)
     // These test cases don't work with static Qt builds
+#  elif !defined(Q_PROCESSOR_X86)
+    // On most RISC platforms, call frames do not have to be stored to the
+    // stack (the return pointer may be saved in any callee-saved register), so
+    // this test isn't reliable.
 #  elif defined(QT_ASAN_ENABLED)
     // These tests produce far more call frames under ASan
 #  else
@@ -812,10 +816,9 @@ void tst_qmessagehandler::qMessagePattern_data()
         "[MyClass::myFunction|MyClass::mySlot1|?" BACKTRACE_HELPER_NAME "?|",
 
         // QMetaObject::invokeMethodImpl calls internal function
-        // (QMetaMethodPrivate::invokeImpl, at the tims of this writing), which
+        // (QMetaMethodPrivate::invokeImpl, at the time of this writing), which
         // will usually show only as ?libQt6Core.so? or equivalent, so we skip
 
-        // end of backtrace, actual message
         "|" QT_NAMESPACE_STR "QMetaObject::invokeMethodImpl] from_a_function 34"
     };
     QTest::newRow("backtrace") << "[%{backtrace}] %{message}" << true << expectedBacktrace;
