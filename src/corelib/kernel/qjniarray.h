@@ -19,6 +19,8 @@ template <typename T> class QJniArray;
 template <typename T>
 struct QJniArrayIterator
 {
+    QJniArrayIterator() = default;
+
     constexpr QJniArrayIterator(const QJniArrayIterator &other) noexcept = default;
     constexpr QJniArrayIterator(QJniArrayIterator &&other) noexcept = default;
     constexpr QJniArrayIterator &operator=(const QJniArrayIterator &other) noexcept = default;
@@ -49,13 +51,13 @@ struct QJniArrayIterator
     }
 
 private:
-    friend class QJniArray<T>;
+    using VT = std::remove_const_t<T>;
+    friend class QJniArray<VT>;
 
     qsizetype m_index = 0;
-    const QJniArray<T> *m_array = nullptr;
+    const QJniArray<VT> *m_array = nullptr;
 
-    QJniArrayIterator() = delete;
-    QJniArrayIterator(qsizetype index, const QJniArray<T> *array)
+    QJniArrayIterator(qsizetype index, const QJniArray<VT> *array)
         : m_index(index), m_array(array)
     {}
 };
@@ -154,7 +156,7 @@ class QJniArray : public QJniArrayBase
     friend struct QJniArrayIterator<T>;
 public:
     using Type = T;
-    using const_iterator = const QJniArrayIterator<T>;
+    using const_iterator = QJniArrayIterator<const T>;
 
     QJniArray() = default;
     explicit QJniArray(jarray array) : QJniArrayBase(array) {}

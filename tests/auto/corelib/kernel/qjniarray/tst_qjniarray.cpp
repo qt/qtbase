@@ -17,6 +17,7 @@ public:
 
 private slots:
     void size();
+    void operators();
 };
 
 using namespace QtJniTypes;
@@ -83,6 +84,22 @@ void tst_QJniArray::size()
     intList.resize(10);
     auto intArray = QJniArrayBase::fromContainer(intList);
     QCOMPARE(intArray.size(), 10);
+}
+
+void tst_QJniArray::operators()
+{
+    QByteArray bytes("abcde");
+    QJniArray<jbyte> array(bytes);
+    QVERIFY(array.isValid());
+
+    {
+        QJniArray<jbyte>::const_iterator it = {};
+        QCOMPARE(it, QJniArray<jbyte>::const_iterator{});
+        QCOMPARE_NE(array.begin(), array.end());
+
+        it = array.begin();
+        QCOMPARE(it, array.begin());
+    }
 }
 
 QTEST_MAIN(tst_QJniArray)
