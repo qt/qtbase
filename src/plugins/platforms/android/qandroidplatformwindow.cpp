@@ -182,9 +182,9 @@ void QAndroidPlatformWindow::setParent(const QPlatformWindow *window)
         m_nativeQtWindow.callMethod<void, QtWindow>("setParent", parentWindow.object());
         m_nativeParentQtWindow = parentWindow;
     } else if (QtAndroid::isQtApplication()) {
-        platformScreen()->addWindow(this);
         m_nativeQtWindow.callMethod<void, QtWindow>("setParent", nullptr);
         m_nativeParentQtWindow = QJniObject();
+        platformScreen()->addWindow(this);
     }
 }
 
