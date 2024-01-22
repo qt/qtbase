@@ -1,14 +1,6 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-// Don't define it while compiling this module, or USERS of Qt will
-// not be able to link.
-#ifdef QT_NO_CAST_FROM_ASCII
-#  undef QT_NO_CAST_FROM_ASCII
-#endif
-#ifdef QT_NO_CAST_TO_ASCII
-#  undef QT_NO_CAST_TO_ASCII
-#endif
 #include "qchar.h"
 
 #include "qdatastream.h"

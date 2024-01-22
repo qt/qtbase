@@ -34,6 +34,14 @@
 
 #include <algorithm>
 
+#ifdef Q_OS_WIN
+#  if !defined(QT_BOOTSTRAPPED) && (defined(QT_NO_CAST_FROM_ASCII) || defined(QT_NO_CAST_FROM_BYTEARRAY))
+// MSVC requires this, but let's apply it to MinGW compilers too, just in case
+#    error "This file cannot be compiled with QT_NO_CAST_{TO,FROM}_ASCII, " \
+           "otherwise some QByteArray functions will not get exported."
+#  endif
+#endif
+
 QT_BEGIN_NAMESPACE
 
 Q_CONSTINIT const char QByteArray::_empty = '\0';

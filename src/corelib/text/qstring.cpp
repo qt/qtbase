@@ -51,6 +51,11 @@
 
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
+#  if !defined(QT_BOOTSTRAPPED) && (defined(QT_NO_CAST_FROM_ASCII) || defined(QT_NO_CAST_TO_ASCII))
+// MSVC requires this, but let's apply it to MinGW compilers too, just in case
+#    error "This file cannot be compiled with QT_NO_CAST_{TO,FROM}_ASCII, " \
+           "otherwise some QString functions will not get exported."
+#  endif
 #endif
 
 #ifdef truncate
