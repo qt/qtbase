@@ -10,9 +10,11 @@ macro(qt_internal_set_default_build_type)
     # Try to detect if an explicit CMAKE_BUILD_TYPE was set by the user.
     # CMake sets CMAKE_BUILD_TYPE_INIT to Debug on most Windows platforms and doesn't set
     # anything for UNIXes. CMake assigns CMAKE_BUILD_TYPE_INIT to CMAKE_BUILD_TYPE during
-    # first project() if CMAKE_BUILD_TYPE has no previous value.
+    # the first project() call, if CMAKE_BUILD_TYPE had no previous value.
     # We use extra information about the state of CMAKE_BUILD_TYPE before the first
-    # project() call that's set in QtAutodetect.
+    # project() call that's set in QtAutoDetect.cmake or manually in a project via the
+    # __qt_internal_standalone_project_cmake_build_type_before_project_call variable (as done
+    # for the qtbase sqldrivers project).
     # STREQUAL check needs to have expanded variables because an undefined var is not equal
     # to an empty defined var.
     # See also qt_internal_force_set_cmake_build_type_conditionally which is used
@@ -20,6 +22,7 @@ macro(qt_internal_set_default_build_type)
     if("${CMAKE_BUILD_TYPE}" STREQUAL "${CMAKE_BUILD_TYPE_INIT}"
         AND NOT __qt_auto_detect_cmake_build_type_before_project_call
         AND NOT __qt_build_internals_cmake_build_type
+        AND NOT __qt_internal_standalone_project_cmake_build_type_before_project_call
         AND NOT CMAKE_CONFIGURATION_TYPES)
       message(STATUS "Setting build type to '${_default_build_type}' as none was specified.")
       set(CMAKE_BUILD_TYPE "${_default_build_type}" CACHE STRING "Choose the type of build." FORCE)
