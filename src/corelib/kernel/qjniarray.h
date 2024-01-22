@@ -50,6 +50,12 @@ struct QJniArrayIterator
         ++that.m_index;
         return that;
     }
+    friend QJniArrayIterator operator++(QJniArrayIterator &that, int) noexcept
+    {
+        auto copy = that;
+        ++that;
+        return copy;
+    }
 
     void swap(QJniArrayIterator &other) noexcept
     {
