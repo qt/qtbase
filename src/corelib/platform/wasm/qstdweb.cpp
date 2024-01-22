@@ -448,7 +448,7 @@ ArrayBuffer Blob::arrayBuffer_sync() const
 {
     QEventLoop loop;
     emscripten::val buffer;
-    qstdweb::Promise::make(m_blob, "arrayBuffer", {
+    qstdweb::Promise::make(m_blob, QStringLiteral("arrayBuffer"), {
         .thenFunc = [&loop, &buffer](emscripten::val arrayBuffer) {
             buffer = arrayBuffer;
             loop.quit();
@@ -715,47 +715,45 @@ emscripten::val Uint8Array::constructor_()
     return emscripten::val::global("Uint8Array");
 }
 
+class EventListener {
+public:
+    EventListener(uintptr_t handler)
+        :m_handler(handler)
+    {
+
+    }
+
+    // Special function - addEventListender() allows adding an object with a
+    // handleEvent() function which eceives the event.
+    void handleEvent(emscripten::val event) {
+        auto handlerPtr = reinterpret_cast<std::function<void(emscripten::val)> *>(m_handler);
+        (*handlerPtr)(event);
+    }
+
+    uintptr_t m_handler;
+};
+
 // Registers a callback function for a named event on the given element. The event
 // name must be the name as returned by the Event.type property: e.g. "load", "error".
 EventCallback::~EventCallback()
 {
-    // Clean up if this instance's callback is still installed on the element
-    if (m_element[contextPropertyName(m_eventName).c_str()].as<intptr_t>() == intptr_t(this)) {
-        m_element.set(contextPropertyName(m_eventName).c_str(), emscripten::val::undefined());
-        m_element.set((std::string("on") + m_eventName).c_str(), emscripten::val::undefined());
-    }
+    m_element.call<void>("removeEventListener", m_eventName, m_eventListener);
 }
 
-EventCallback::EventCallback(emscripten::val element, const std::string &name, const std::function<void(emscripten::val)> &fn)
+EventCallback::EventCallback(emscripten::val element, const std::string &name, const std::function<void(emscripten::val)> &handler)
     :m_element(element)
     ,m_eventName(name)
-    ,m_fn(fn)
+    ,m_handler(std::make_unique<std::function<void(emscripten::val)>>(handler))
 {
-    Q_ASSERT_X(m_element[contextPropertyName(m_eventName)].isUndefined(), Q_FUNC_INFO,
-               "Only one event callback of type currently supported with EventCallback");
-    m_element.set(contextPropertyName(m_eventName).c_str(), emscripten::val(intptr_t(this)));
-    m_element.set((std::string("on") + m_eventName).c_str(), emscripten::val::module_property("qtStdWebEventCallbackActivate"));
-}
-
-void EventCallback::activate(emscripten::val event)
-{
-    emscripten::val target = event["currentTarget"];
-    std::string eventName = event["type"].as<std::string>();
-    emscripten::val property = target[contextPropertyName(eventName)];
-    // This might happen when the event bubbles
-    if (property.isUndefined())
-        return;
-    EventCallback *that = reinterpret_cast<EventCallback *>(property.as<intptr_t>());
-    that->m_fn(event);
-}
-
-std::string EventCallback::contextPropertyName(const std::string &eventName)
-{
-    return std::string("data-qtEventCallbackContext") + eventName;
+    uintptr_t handlerUint = reinterpret_cast<uintptr_t>(m_handler.get()); // FIXME: pass pointer directly instead
+    m_eventListener = emscripten::val::module_property("QtEventListener").new_(handlerUint);
+    m_element.call<void>("addEventListener", m_eventName, m_eventListener);
 }
 
 EMSCRIPTEN_BINDINGS(qtStdwebCalback) {
-    emscripten::function("qtStdWebEventCallbackActivate", &EventCallback::activate);
+    emscripten::class_<EventListener>("QtEventListener")
+        .constructor<uintptr_t>()
+        .function("handleEvent", &EventListener::handleEvent);
 }
 
 namespace Promise {

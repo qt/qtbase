@@ -199,13 +199,12 @@ namespace qstdweb {
         EventCallback& operator=(EventCallback const&) = delete;
         EventCallback(emscripten::val element, const std::string &name,
                       const std::function<void(emscripten::val)> &fn);
-        static void activate(emscripten::val event);
 
     private:
-        static std::string contextPropertyName(const std::string &eventName);
         emscripten::val m_element = emscripten::val::undefined();
         std::string m_eventName;
-        std::function<void(emscripten::val)> m_fn;
+        std::unique_ptr<std::function<void(emscripten::val)>> m_handler;
+        emscripten::val m_eventListener = emscripten::val::undefined();
     };
 
     struct PromiseCallbacks
