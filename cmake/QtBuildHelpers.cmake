@@ -381,13 +381,13 @@ macro(qt_internal_setup_build_and_global_variables)
     qt_internal_compute_features_from_possible_inputs()
 
     # Depends on qt_internal_compute_features_from_possible_inputs
-    qt_internal_set_default_build_type()
+    qt_internal_set_cmake_build_type()
 
     qt_internal_set_message_log_level(CMAKE_MESSAGE_LOG_LEVEL)
     qt_internal_unset_extra_build_internals_vars()
     qt_internal_get_generator_is_multi_config()
 
-    # Depends on qt_internal_set_default_build_type
+    # Depends on qt_internal_set_cmake_build_type
     qt_internal_setup_cmake_config_postfix()
 
     qt_internal_setup_position_independent_code()
