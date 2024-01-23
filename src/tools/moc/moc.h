@@ -10,7 +10,7 @@
 #include <qjsondocument.h>
 #include <qjsonarray.h>
 #include <qjsonobject.h>
-#include <qversionnumber.h>
+#include <qtyperevision.h>
 #include <stdio.h>
 
 #include <private/qtools_p.h>

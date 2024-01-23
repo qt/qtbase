@@ -307,6 +307,7 @@ qt_internal_add_module(Core
         tools/qstack.h
         tools/qtaggedpointer.h
         tools/qtools_p.h
+        tools/qtyperevision.cpp tools/qtyperevision.h
         tools/quniquehandle_p.h
         tools/qvarlengtharray.h
         tools/qvector.h
