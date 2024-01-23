@@ -17,6 +17,7 @@ public:
 private slots:
     void tst_render_data();
     void tst_render();
+    void tst_differentScriptsBackgrounds();
 
 private:
     QDir htmlDir;
@@ -79,6 +80,26 @@ void tst_Text::tst_render()
     }
 
     QBASELINE_TEST(image);
+}
+
+void tst_Text::tst_differentScriptsBackgrounds()
+{
+    QTextDocument textDocument;
+    textDocument.setPageSize(QSizeF(800, 600));
+    textDocument.setHtml(QString::fromUtf8("<i><font style=\"font-size:72px\"><font style=\"background:#FFFF00\">イ雨ｴ</font></font></i>"));
+
+    QImage image(800, 600, QImage::Format_ARGB32);
+    image.fill(Qt::white);
+
+    {
+        QPainter painter(&image);
+
+        QAbstractTextDocumentLayout::PaintContext context;
+        context.palette.setColor(QPalette::Text, Qt::black);
+        textDocument.documentLayout()->draw(&painter, context);
+    }
+
+    QBASELINE_CHECK(image, "tst_differentScriptsBackgrounds");
 }
 
 
