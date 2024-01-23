@@ -10,7 +10,7 @@
 #endif
 
 #include <QtNetwork/qtnetworkglobal.h>
-#include <QtCore/qmetaobject.h>
+#include <QtCore/qobjectdefs.h>
 #include <QtCore/QFlags>
 
 QT_BEGIN_NAMESPACE
