@@ -221,9 +221,12 @@ static int nextId()
     \note There is no guarantee on the order the signals will be emitted
     if you start multiple requests with lookupHost().
 
+    \note In Qt versions prior to 6.7, this function took \a receiver as
+    (non-const) \c{QObject*}.
+
     \sa abortHostLookup(), addresses(), error(), fromName()
 */
-int QHostInfo::lookupHost(const QString &name, QT7_ONLY(const) QObject *receiver, const char *member)
+int QHostInfo::lookupHost(const QString &name, const QObject *receiver, const char *member)
 {
     if (!receiver || !member) {
         qWarning("QHostInfo::lookupHost: both the receiver and the member to invoke must be non-null");
