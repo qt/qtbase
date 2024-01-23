@@ -3604,7 +3604,7 @@ QRhi *QRhiResource::rhi() const
         QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
         for (int i = 0; i < N; ++i) {
             batch->updateDynamicBuffer(ubuf, i * ONE_UBUF_SIZE, 64, matrix.constData());
-            updates->updateDynamicBuffer(ubuf, i * ONE_UBUF_SIZE + 64, 4, &opacity);
+            batch->updateDynamicBuffer(ubuf, i * ONE_UBUF_SIZE + 64, 4, &opacity);
         }
         // ...
         // beginPass(), set pipeline, etc., and then:
