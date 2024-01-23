@@ -3993,7 +3993,7 @@ bool QTextFormatCollection::hasFormatCached(const QTextFormat &format) const
 
 int QTextFormatCollection::objectFormatIndex(int objectIndex) const
 {
-    if (objectIndex == -1)
+    if (objectIndex == -1 || objectIndex >= objFormats.size())
         return -1;
     return objFormats.at(objectIndex);
 }
