@@ -21,6 +21,9 @@ See individual classes for further detail.
 from localetools import Error
 from dateconverter import convert_date
 
+# The github version of CLDR uses '↑↑↑' to indicate "inherit"
+INHERIT = '↑↑↑'
+
 def _attrsFromDom(dom):
     return { k: (v if isinstance(v, str) else v.nodeValue)
              for k, v in dom.attributes.items() }
@@ -210,8 +213,7 @@ class LocaleScanner (object):
                 try:
                     if draft is None or elt.draft <= draft:
                         value = elt.dom.firstChild.nodeValue
-                        # The github version of CLDR uses '↑↑↑' to indicate "inherit"
-                        if value != '↑↑↑':
+                        if value != INHERIT:
                             return value
                 except (AttributeError, KeyError):
                     pass
