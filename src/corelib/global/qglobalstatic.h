@@ -40,9 +40,10 @@ template <typename QGS> union Holder
 
     ~Holder()
     {
+        // import changes to *pointer() by other threads before running ~PlainType():
+        std::atomic_thread_fence(std::memory_order_acquire);
         pointer()->~PlainType();
-        std::atomic_thread_fence(std::memory_order_acquire); // avoid mixing stores to guard and *pointer()
-        guard.storeRelaxed(QtGlobalStatic::Destroyed);
+        guard.storeRelease(QtGlobalStatic::Destroyed);
     }
 
     PlainType *pointer() noexcept
