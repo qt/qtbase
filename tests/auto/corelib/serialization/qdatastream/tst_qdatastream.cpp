@@ -2904,10 +2904,10 @@ void tst_QDataStream::status_QString_data()
     QTest::newRow("32 bit size MAX string no content") << QByteArray("\xff\xff\xff\xfc", 4) << (int) QDataStream::ReadPastEnd << QString();
 #else
     // too big for 32 bit platforms
-    QTest::newRow("32 bit size MAX string no content") << QByteArray("\xff\xff\xff\xfc", 4) << (int) QDataStream::ReadCorruptData << QString();
+    QTest::newRow("32 bit size MAX string no content") << QByteArray("\xff\xff\xff\xfc", 4) << (int) QDataStream::SizeLimitExceeded << QString();
 #endif
     // too big on both 32 and 64 bit platforms because qsizetype is signed
-    QTest::newRow("64 bit size MAX string no content") << QByteArray("\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff\xfe", 12) << (int) QDataStream::ReadCorruptData << QString();
+    QTest::newRow("64 bit size MAX string no content") << QByteArray("\xff\xff\xff\xfe\xff\xff\xff\xff\xff\xff\xff\xfe", 12) << (int) QDataStream::SizeLimitExceeded << QString();
 
     // corrupt data because QChar is 16 bit => even size required
     QTest::newRow("corrupt1") << QByteArray("yyyy") << (int) QDataStream::ReadCorruptData << QString();

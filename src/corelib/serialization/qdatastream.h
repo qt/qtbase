@@ -101,7 +101,8 @@ public:
         Ok,
         ReadPastEnd,
         ReadCorruptData,
-        WriteFailed
+        WriteFailed,
+        SizeLimitExceeded,
     };
 
     enum FloatingPointPrecision {
@@ -267,7 +268,7 @@ QDataStream &readArrayBasedContainer(QDataStream &s, Container &c)
     qint64 size = QDataStream::readQSizeType(s);
     qsizetype n = size;
     if (size != n || size < 0) {
-        s.setStatus(QDataStream::ReadCorruptData);
+        s.setStatus(QDataStream::SizeLimitExceeded);
         return s;
     }
     c.reserve(n);
@@ -293,7 +294,7 @@ QDataStream &readListBasedContainer(QDataStream &s, Container &c)
     qint64 size = QDataStream::readQSizeType(s);
     qsizetype n = size;
     if (size != n || size < 0) {
-        s.setStatus(QDataStream::ReadCorruptData);
+        s.setStatus(QDataStream::SizeLimitExceeded);
         return s;
     }
     for (qsizetype i = 0; i < n; ++i) {
@@ -318,7 +319,7 @@ QDataStream &readAssociativeContainer(QDataStream &s, Container &c)
     qint64 size = QDataStream::readQSizeType(s);
     qsizetype n = size;
     if (size != n || size < 0) {
-        s.setStatus(QDataStream::ReadCorruptData);
+        s.setStatus(QDataStream::SizeLimitExceeded);
         return s;
     }
     for (qsizetype i = 0; i < n; ++i) {

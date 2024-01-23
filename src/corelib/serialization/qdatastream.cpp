@@ -222,6 +222,11 @@ QT_BEGIN_NAMESPACE
                             data in the underlying device.
     \value ReadCorruptData  The data stream has read corrupt data.
     \value WriteFailed      The data stream cannot write to the underlying device.
+    \value [since 6.7] SizeLimitExceeded The data stream cannot read or write
+                            the data because its size is larger than supported
+                            by the current platform. This can happen, for
+                            example, when trying to read more that 2 GiB of
+                            data on a 32-bit platform.
 */
 
 /*****************************************************************************
@@ -1064,7 +1069,7 @@ QDataStream &QDataStream::readBytes(char *&s, qsizetype &l)
 
     qsizetype len = qsizetype(length);
     if (length != len || length < 0) {
-        setStatus(ReadCorruptData); // Cannot store len in l
+        setStatus(SizeLimitExceeded); // Cannot store len in l
         return *this;
     }
 
