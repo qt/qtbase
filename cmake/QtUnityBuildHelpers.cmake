@@ -11,7 +11,14 @@ function(_qt_internal_validate_no_unity_build prefix)
 endfunction()
 
 function(qt_update_ignore_unity_build_sources target sources)
-    if (sources)
-        set_source_files_properties(${sources} PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+    if(sources)
+        # We need to add the TARGET_DIRECTORY scope for targets that have qt_internal_extend_target
+        # calls in different subdirectories, like in qtgraphs.
+        set(scope_args)
+        if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+            set(scope_args TARGET_DIRECTORY ${target})
+        endif()
+        set_source_files_properties(${sources} ${scope_args}
+            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
     endif()
 endfunction()
