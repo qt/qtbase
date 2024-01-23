@@ -410,6 +410,92 @@ class LocaleScanner (object):
                    ';'.join(self.find(f'{stem}{prop}[{day}]')
                             for day in days))
 
+    def timeZoneNames(self, alias):
+        """Names of zones and metazones for this locale.
+
+        Single argument, alias, should be the first return from
+        CldrAccess.bcp47Aliases(), used to map CLDR zone IDs to IANA
+        zone IDs.
+
+        Reads the dates/timeZoneNames/ element to extract data on how
+        this locale names time zones and metazones. Yields name-value
+        pairs for attributes of a locale. Most have text values but
+        three are structured:
+
+          * 'regionZoneFormats' maps to a triple, (generic, standard,
+            daylight-saving) of formats, with a %0 in each for the
+            exemplar city or territory of a zone.
+          * 'zoneNaming' maps to a mapping from IANA IDs to a dicts
+            with keys 'exemplarCity', 'long' and 'short'.
+          * 'metaZoneNaming' maps to a mapping from metazone names to
+             dicts with keys 'long' and 'short'.
+
+        In both of the latter, 'long' and 'short' map to triples
+        (generic, standard, daylight-saving) of locale-appropriate
+        names, for the zone or metazone, as appropriate. The value for
+        'exemplarCity' is the locale-appropriate name of a city by
+        which to identify the timezone.
+
+        See CldrAccess.readMetaZoneMap() for the locale-independent
+        data that stitches these pieces together."""
+        stem, formats = 'dates/timeZoneNames', {}
+        # '+HH:mm;-HH:mm'
+        # Sometimes has single-digit hours
+        hours = self.find(f'{stem}/hourFormat').split(';')
+        assert all('H' in f and 'm' in f for f in hours), (hours, self.name)
+        yield 'positiveOffsetFormat', hours[0]
+        yield 'negativeOffsetFormat', hours[1]
+
+        get = lambda n, s=stem: self.find(f'{s}/{n}').replace('{0}', '%0')
+        # 'GMT{0}' with offset as {0}
+        yield 'gmtOffsetFormat', get('gmtFormat')
+        # '{0} (Winter|Summer)? Time' with exemplar city or territory as {0}
+        yield 'regionZoneFormats', (get('regionFormat'),
+                                    get('regionFormat[standard]'),
+                                    get('regionFormat[daylight]'))
+        # '{1} ({0})' with {1} as meta-zone name (long or short), city
+        # or territory as {0}.
+        yield 'fallbackZoneFormat', get('fallbackFormat').replace('{1}', '%1')
+
+        zones = {}
+        for elt in self.__find(f'{stem}/zone', allDull=True):
+            iana = elt.attributes()['type']
+            if iana == 'Etc/Unknown': # CLDR special, of no interest to us
+                continue
+            # Map CLDR-canonical ID to IANA ID:
+            iana = alias.get(iana, iana)
+            data = zones.setdefault(iana, {})
+
+            for child in elt.dom.childNodes:
+                if child.nodeType != child.ELEMENT_NODE:
+                    continue
+                tag = child.nodeName
+                # We don't want fall-backs from parent locales to
+                # override what a more specific locale has said:
+                if tag == 'exemplarCity':
+                    # Localized name of city to identify this zone with:
+                    if tag not in data:
+                        value = child.firstChild.nodeValue
+                        if value != INHERIT:
+                            data[tag] = value
+                elif tag in ('long', 'short'):
+                    data[tag] = self.__zoneNames(child, data.get(tag, {}))
+                # Ignore any other child nodes.
+        yield 'zoneNaming', {k: self.__cleanZone(v) for k, v in zones.items() if v}
+
+        metazones = {}
+        for elt in self.__find(f'{stem}/metazone', allDull=True, mustFind=False):
+            meta = elt.attributes()['type']
+            data = metazones.setdefault(meta, {})
+            for child in elt.dom.childNodes:
+                if child.nodeType != child.ELEMENT_NODE:
+                    continue
+                tag = child.nodeName
+                if tag in ('long', 'short'):
+                    data[tag] = self.__zoneNames(child, data.get(tag, {}))
+                # Ignore any other child nodes.
+        yield 'metaZoneNaming', {k: self.__cleanZone(v) for k, v in metazones.items() if v}
+
     # Implementation details
     __nameForms = (
         ('standaloneLong', 'stand-alone', 'wide'),
@@ -420,20 +506,22 @@ class LocaleScanner (object):
         ('narrow', 'format', 'narrow'),
     ) # Used for month and day names
 
-    def __find(self, xpath):
-        retries, foundNone = [ xpath.split('/') ], True
+    def __find(self, xpath, allDull = False, mustFind = True):
+        retries = [ xpath.split('/') ]
         while retries:
             tags, elts, roots = retries.pop(), self.nodes, (self.base.root,)
             for selector in tags:
                 tag, attrs = _parseXPath(selector)
-                elts = tuple(_iterateEach(e.findAllChildren(tag, attrs) for e in elts))
+                elts = tuple(_iterateEach(e.findAllChildren(tag, attrs,
+                                                            allDull=allDull)
+                                          for e in elts))
                 if not elts:
                     break
 
             else: # Found matching elements
                 elts = tuple(self.__skipInheritors(elts))
                 if elts:
-                    foundNone = False
+                    mustFind = False
                 # Possibly filter elts to prefer the least drafty ?
                 for elt in elts:
                     yield elt
@@ -449,11 +537,13 @@ class LocaleScanner (object):
                         replace = alias.dom.attributes['path'].nodeValue.split('/')
                         retries.append(self.__xpathJoin(tags[:i], replace, tags[i:]))
 
-                roots = tuple(_iterateEach(r.findAllChildren(tag, attrs) for r in roots))
+                roots = tuple(_iterateEach(r.findAllChildren(tag, attrs,
+                                                             allDull=allDull)
+                                           for r in roots))
                 if not roots:
                     if retries: # Let outer loop fall back on an alias path:
                         break
-                    if foundNone:
+                    if mustFind:
                         sought = '/'.join(tags)
                         if sought != xpath:
                             sought += f' (for {xpath})'
@@ -462,11 +552,11 @@ class LocaleScanner (object):
             else: # Found matching elements
                 roots = tuple(self.__skipInheritors(roots))
                 if roots:
-                    foundNone = False
+                    mustFind = False
                 for elt in roots:
                     yield elt
 
-        if foundNone:
+        if mustFind:
             sought = '/'.join(tags)
             if sought != xpath:
                 sought += f' (for {xpath})'
@@ -492,6 +582,30 @@ class LocaleScanner (object):
             except Error:
                 pass
         return ''
+
+    @staticmethod
+    def __zoneNames(dom, data):
+        for child in dom.childNodes:
+            if child.nodeType != child.ELEMENT_NODE:
+                continue
+            tag = child.nodeName
+            if tag in data:
+                continue
+            if tag in ('generic', 'standard', 'daylight'):
+                value = child.firstChild.nodeValue
+                if value != INHERIT:
+                    data[tag] = value
+
+        return data
+
+    @staticmethod
+    def __cleanZone(data, keys = ('generic', 'standard', 'daylight')):
+        if 'long' in data:
+            data['long'] = tuple(data['long'].get(k) for k in keys)
+        if 'short' in data:
+            data['short'] = tuple(data['short'].get(k) for k in keys)
+        # Leave any other keys alone.
+        return data
 
     def __findUnit(self, keySuffix, quantify, fallback=''):
         # The displayName for a quantified unit in en.xml is kByte

@@ -620,7 +620,11 @@ enumdata.py (keeping the old name as an alias):
         bounding time of None indicates no bound at its end;
         otherwise, each bound is a "yyyy-MM-dd hh:mm" datetime
         string. Earlier time intervals are sorted before later;
-        successive intervals usually abut."""
+        successive intervals usually abut.
+
+        This is the locale-independent data that we need to glue
+        together the ldml.LocaleScanner.timeZoneNames() data per
+        locale."""
         metaZones = self.supplement('metaZones.xml') # Doesn't appear to use draft attribute
         # Map CLDR name to IANA name (or use CLDR name if unknown to alias):
         zoneName = lambda n, g=alias.get: g(n, n)
