@@ -40,7 +40,7 @@ class Q_CORE_EXPORT QJniObject
             return static_cast<T>(jniEnv()->NewLocalRef(object));
         }
         template <typename T>
-        auto newLocalRef(QJniObject &&object)
+        auto newLocalRef(const QJniObject &object)
         {
             return newLocalRef<T>(object.template object<T>());
         }
