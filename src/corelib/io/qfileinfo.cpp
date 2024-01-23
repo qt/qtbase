@@ -215,8 +215,10 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     path. You can call the function makeAbsolute() to convert a
     relative QFileInfo's path to an absolute path.
 
+//! [qresource-virtual-fs-colon]
     \note Paths starting with a colon (\e{:}) are always considered
     absolute, as they denote a QResource.
+//! [qresource-virtual-fs-colon]
 
     The file that the QFileInfo works on is set in the constructor or
     later with setFile(). Use exists() to see if the file exists and
@@ -644,8 +646,7 @@ QString QFileInfo::path() const
     Returns \c true if the file path is absolute, otherwise returns \c false (i.e.
     the path is relative).
 
-    \note Paths starting with a colon (\e{:}) are always considered absolute, as
-    they denote a QResource.
+    \include qfileinfo.cpp qresource-virtual-fs-colon
 
     \sa isRelative()
 */
@@ -655,8 +656,7 @@ QString QFileInfo::path() const
     false (i.e. the path is absolute). (E.g. under Unix a path is absolute
     if it begins with a "/").
 
-    \note Paths starting with a colon (\e{:}) are always considered absolute,
-    as they denote a QResource.
+    \include qfileinfo.cpp qresource-virtual-fs-colon
 
     \sa isAbsolute()
 */
