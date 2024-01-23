@@ -296,8 +296,10 @@ QImage QGtk3Interface::qt_convert_gdk_pixbuf(GdkPixbuf *buf) const
     const int width = gdk_pixbuf_get_width(buf);
     const int height = gdk_pixbuf_get_height(buf);
     const int bpl = gdk_pixbuf_get_rowstride(buf);
-    QImage converted(data, width, height, bpl, QImage::Format_ARGB32);
-    return converted.copy(); // detatch to survive lifetime of buf
+    QImage converted(data, width, height, bpl, QImage::Format_RGBA8888);
+
+    // convert to more optimal format and detach to survive lifetime of buf
+    return converted.convertToFormat(QImage::Format_ARGB32_Premultiplied);
 }
 
 /*!
@@ -666,7 +668,7 @@ QIcon QGtk3Interface::fileIcon(const QFileInfo &fileInfo) const
     if (!file)
         return QIcon();
 
-    GFileInfo *info = g_file_query_info (file, G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
+    GFileInfo *info = g_file_query_info (file, G_FILE_ATTRIBUTE_STANDARD_ICON,
                                          G_FILE_QUERY_INFO_NONE, nullptr, nullptr);
     if (!info) {
         g_object_unref(file);
@@ -681,12 +683,11 @@ QIcon QGtk3Interface::fileIcon(const QFileInfo &fileInfo) const
     }
 
     GtkIconTheme *theme = gtk_icon_theme_get_default();
-    GtkIconInfo *iconInfo = gtk_icon_theme_lookup_by_gicon(theme, icon, GTK_ICON_SIZE_BUTTON,
+    GtkIconInfo *iconInfo = gtk_icon_theme_lookup_by_gicon(theme, icon, 16,
                                                                   GTK_ICON_LOOKUP_FORCE_SIZE);
     if (!iconInfo) {
         g_object_unref(file);
         g_object_unref(info);
-        g_object_unref(icon);
         return QIcon();
     }
 
@@ -694,7 +695,6 @@ QIcon QGtk3Interface::fileIcon(const QFileInfo &fileInfo) const
     QImage image = qt_convert_gdk_pixbuf(buf);
     g_object_unref(file);
     g_object_unref(info);
-    g_object_unref(icon);
     g_object_unref(buf);
     return QIcon(QPixmap::fromImage(image));
 }
