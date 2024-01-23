@@ -5,6 +5,7 @@
 #define QITERATOR_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qcontainertools_impl.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -253,26 +254,10 @@ public:
         return std::pair<Key, T>(i.key(), i.value());
     }
 
-    struct pointer
-    {
-        pointer(value_type &&r_) : r(std::move(r_)) { }
-
-        pointer() = default;
-        pointer(const pointer &other) = default;
-        pointer(pointer &&other) = default;
-        pointer &operator=(const pointer &other) = default;
-        pointer &operator=(pointer &&other) = default;
-
-        value_type &operator*() const { return r; }
-
-        value_type r;
-        const value_type *operator->() const {
-            return &r;
-        }
-    };
+    using pointer = QtPrivate::ArrowProxy<value_type>;
 
     pointer operator->() const {
-        return pointer(std::pair<Key, T>(i.key(), i.value()));
+        return pointer{std::pair<Key, T>(i.key(), i.value())};
     }
 
     friend bool operator==(QKeyValueIterator lhs, QKeyValueIterator rhs) noexcept { return lhs.i == rhs.i; }
