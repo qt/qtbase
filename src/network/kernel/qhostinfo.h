@@ -48,7 +48,10 @@ public:
     void setLookupId(int id);
     int lookupId() const;
 
-    static int lookupHost(const QString &name, QT7_ONLY(const) QObject *receiver, const char *member);
+#if QT_NETWORK_REMOVED_SINCE(6, 7)
+    static int lookupHost(const QString &name, QObject *receiver, const char *member);
+#endif
+    static int lookupHost(const QString &name, const QObject *receiver, const char *member);
     static void abortHostLookup(int lookupId);
 
     static QHostInfo fromName(const QString &name);

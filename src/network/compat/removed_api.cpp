@@ -9,6 +9,16 @@ QT_USE_NAMESPACE
 
 #if QT_NETWORK_REMOVED_SINCE(6, 7)
 
+#include "qhostinfo.h"
+
+// static
+int QHostInfo::lookupHost(const QString &name, QObject *receiver, const char *member)
+{
+    const auto *r = receiver;
+    return lookupHost(name, r, member);
+}
+
+
 #include "qnetworkreply.h"
 
 QByteArray QNetworkReply::rawHeader(const QByteArray &headerName) const
