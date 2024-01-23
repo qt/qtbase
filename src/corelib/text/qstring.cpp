@@ -9366,7 +9366,7 @@ QDataStream &operator>>(QDataStream &in, QString &str)
         qsizetype bytes = size;
         if (size != bytes || size < -1) {
             str.clear();
-            in.setStatus(QDataStream::ReadCorruptData);
+            in.setStatus(QDataStream::SizeLimitExceeded);
             return in;
         }
         if (bytes == -1) { // null string

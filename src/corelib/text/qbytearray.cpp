@@ -3303,7 +3303,7 @@ QDataStream &operator>>(QDataStream &in, QByteArray &ba)
     qsizetype len = size;
     if (size != len || size < -1) {
         ba.clear();
-        in.setStatus(QDataStream::ReadCorruptData);
+        in.setStatus(QDataStream::SizeLimitExceeded);
         return in;
     }
     if (len == -1) { // null byte-array
