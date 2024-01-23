@@ -244,20 +244,29 @@ QLoggingRegistry::QLoggingRegistry()
 
 static bool qtLoggingDebug()
 {
-    static const bool debugEnv = qEnvironmentVariableIsSet("QT_LOGGING_DEBUG");
+    static const bool debugEnv = [] {
+        bool debug = qEnvironmentVariableIsSet("QT_LOGGING_DEBUG");
+        if (debug)
+            debugMsg("QT_LOGGING_DEBUG environment variable is set.");
+        return debug;
+    }();
     return debugEnv;
 }
 
 static QList<QLoggingRule> loadRulesFromFile(const QString &filePath)
 {
+    if (qtLoggingDebug()) {
+        debugMsg("Checking \"%s\" for rules",
+                 QDir::toNativeSeparators(filePath).toUtf8().constData());
+    }
+
     QFile file(filePath);
     if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        if (qtLoggingDebug())
-            debugMsg("Loading \"%s\" ...",
-                     QDir::toNativeSeparators(file.fileName()).toUtf8().constData());
         QTextStream stream(&file);
         QLoggingSettingsParser parser;
         parser.setContent(stream);
+        if (qtLoggingDebug())
+            debugMsg("Loaded %td rules", static_cast<ptrdiff_t>(parser.rules().size()));
         return parser.rules();
     }
     return QList<QLoggingRule>();
@@ -270,19 +279,30 @@ static QList<QLoggingRule> loadRulesFromFile(const QString &filePath)
  */
 void QLoggingRegistry::initializeRules()
 {
+    if (qtLoggingDebug()) {
+        debugMsg("Initializing the rules database ...");
+        debugMsg("Checking %s environment variable", "QTLOGGING_CONF");
+    }
     QList<QLoggingRule> er, qr, cr;
     // get rules from environment
     const QByteArray rulesFilePath = qgetenv("QT_LOGGING_CONF");
     if (!rulesFilePath.isEmpty())
         er = loadRulesFromFile(QFile::decodeName(rulesFilePath));
 
+    if (qtLoggingDebug())
+        debugMsg("Checking %s environment variable", "QT_LOGGING_RULES");
+
     const QByteArray rulesSrc = qgetenv("QT_LOGGING_RULES").replace(';', '\n');
     if (!rulesSrc.isEmpty()) {
-         QTextStream stream(rulesSrc);
-         QLoggingSettingsParser parser;
-         parser.setImplicitRulesSection(true);
-         parser.setContent(stream);
-         er += parser.rules();
+        QTextStream stream(rulesSrc);
+        QLoggingSettingsParser parser;
+        parser.setImplicitRulesSection(true);
+        parser.setContent(stream);
+
+        if (qtLoggingDebug())
+            debugMsg("Loaded %td rules", static_cast<ptrdiff_t>(parser.rules().size()));
+
+        er += parser.rules();
     }
 
     const QString configFileName = QStringLiteral("qtlogging.ini");
