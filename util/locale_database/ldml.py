@@ -410,7 +410,7 @@ class LocaleScanner (object):
         ) # Used for month and day names
 
     def __find(self, xpath):
-        retries = [ xpath.split('/') ]
+        retries, foundNone = [ xpath.split('/') ], True
         while retries:
             tags, elts, roots = retries.pop(), self.nodes, (self.base.root,)
             for selector in tags:
@@ -420,6 +420,8 @@ class LocaleScanner (object):
                     break
 
             else: # Found matching elements
+                if elts:
+                    foundNone = False
                 # Possibly filter elts to prefer the least drafty ?
                 for elt in elts:
                     yield elt
@@ -439,19 +441,23 @@ class LocaleScanner (object):
                 if not roots:
                     if retries: # Let outer loop fall back on an alias path:
                         break
-                    sought = '/'.join(tags)
-                    if sought != xpath:
-                        sought += f' (for {xpath})'
-                    raise Error(f'All lack child {selector} for {sought} in {self.name}')
+                    if foundNone:
+                        sought = '/'.join(tags)
+                        if sought != xpath:
+                            sought += f' (for {xpath})'
+                        raise Error(f'All lack child {selector} for {sought} in {self.name}')
 
             else: # Found matching elements
+                if roots:
+                    foundNone = False
                 for elt in roots:
                     yield elt
 
-        sought = '/'.join(tags)
-        if sought != xpath:
-            sought += f' (for {xpath})'
-        raise Error(f'No {sought} in {self.name}')
+        if foundNone:
+            sought = '/'.join(tags)
+            if sought != xpath:
+                sought += f' (for {xpath})'
+            raise Error(f'No {sought} in {self.name}')
 
     def __currencyDisplayName(self, stem):
         try:
