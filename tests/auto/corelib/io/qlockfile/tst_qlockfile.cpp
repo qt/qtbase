@@ -520,7 +520,7 @@ void tst_QLockFile::corruptedLockFile()
 
 void tst_QLockFile::corruptedLockFileInTheFuture()
 {
-#if !defined(Q_OS_UNIX)
+#if !defined(Q_OS_UNIX) || defined(Q_OS_VXWORKS)
     QSKIP("This test needs utimensat");
 #else
     // This test is the same as the previous one, but the corruption was so there is a corrupted
