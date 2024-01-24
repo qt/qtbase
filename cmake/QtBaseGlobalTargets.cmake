@@ -159,9 +159,10 @@ qt_install(EXPORT ${__export_name}
            DESTINATION "${__GlobalConfig_install_dir}")
 
 qt_internal_export_modern_cmake_config_targets_file(TARGETS ${__export_targets}
-                                                    EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}
-                                                    CONFIG_INSTALL_DIR
-                                                    ${__GlobalConfig_install_dir})
+    EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}
+    CONFIG_BUILD_DIR "${__GlobalConfig_build_dir}"
+    CONFIG_INSTALL_DIR "${__GlobalConfig_install_dir}"
+)
 
 # Save minimum required CMake version to use Qt.
 qt_internal_get_supported_min_cmake_version_for_using_qt(supported_min_version_for_using_qt)

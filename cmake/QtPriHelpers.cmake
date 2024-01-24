@@ -153,6 +153,12 @@ function(qt_get_direct_module_dependencies target out_var)
             list(PREPEND libs ${ifacelibs})
             continue()
         endif()
+        get_target_property(aliased_target ${lib} ALIASED_TARGET)
+        if(TARGET "${aliased_target}")
+            # If versionless target is alias, use what the alias points to.
+            list(PREPEND libs "${aliased_target}")
+            continue()
+        endif()
         if(lib_type STREQUAL "OBJECT_LIBRARY")
             # Skip object libraries, because they're already part of ${target}.
             continue()

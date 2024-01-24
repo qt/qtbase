@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION @min_new_policy_version@...@max_new_policy_versio
 
 include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@ConfigExtras.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicCMakeVersionHelpers.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/QtPublicCMakeHelpers.cmake")
 __qt_internal_require_suitable_cmake_version_for_using_qt()
 
 get_filename_component(_qt_cmake_dir "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
@@ -15,7 +16,11 @@ set(_qt_@PROJECT_VERSION_MAJOR@_config_cmake_dir "${CMAKE_CURRENT_LIST_DIR}")
 if (NOT QT_NO_CREATE_TARGETS)
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Targets.cmake")
     if(NOT QT_NO_CREATE_VERSIONLESS_TARGETS)
-        include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@VersionlessTargets.cmake")
+        if(CMAKE_VERSION VERSION_LESS 3.18 OR QT_USE_OLD_VERSION_LESS_TARGETS)
+            include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@VersionlessTargets.cmake")
+        else()
+            include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@VersionlessAliasTargets.cmake")
+        endif()
     endif()
 else()
     # For examples using `find_package(...)` inside their CMakeLists.txt files:

@@ -253,6 +253,8 @@ function(qt_internal_get_qt_build_private_files_to_install out_var)
         QtSeparateDebugInfo.Info.plist.in
         QtSetup.cmake
         QtStandaloneTestsConfig.cmake.in
+        QtVersionlessAliasTargets.cmake.in
+        QtVersionlessTargets.cmake.in
         QtWriteArgsFile.cmake
         modulecppexports.h.in
         qbatchedtestrunner.in.cpp

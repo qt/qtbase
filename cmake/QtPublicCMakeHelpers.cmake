@@ -266,3 +266,152 @@ function(_qt_internal_add_phony_target_deferred target)
         cmake_language(CALL ${creation_hook} ${target})
     endif()
 endfunction()
+
+# The helper function that checks if module was included multiple times, and has the inconsistent
+# set of targets that belong to the module. It's expected that either all 'targets' or none of them
+# will be written to the 'targets_not_defined' variable, if the module was not or was
+# searched before accordingly.
+function(_qt_internal_check_multiple_inclusion targets_not_defined targets)
+    set(targets_defined "")
+    set(${targets_not_defined} "")
+    set(expected_targets "")
+    foreach(expected_target ${targets})
+        list(APPEND expected_targets ${expected_target})
+        if(NOT TARGET Qt::${expected_target})
+            list(APPEND ${targets_not_defined} ${expected_target})
+        endif()
+        if(TARGET Qt::${expected_target})
+            list(APPEND targets_defined ${expected_target})
+        endif()
+    endforeach()
+    if("${targets_defined}" STREQUAL "${expected_targets}")
+        set(${targets_not_defined} "" PARENT_SCOPE)
+        return()
+    endif()
+    if(NOT "${targets_defined}" STREQUAL "")
+        message(FATAL_ERROR "Some (but not all) targets in this export set were already defined."
+            "\nTargets Defined: ${targets_defined}\nTargets not yet defined: "
+            "${${targets_not_defined}}\n"
+        )
+    endif()
+    set(${targets_not_defined} "${${targets_not_defined}}" PARENT_SCOPE)
+endfunction()
+
+# The function is used when creating version less targets using ALIASes.
+function(_qt_internal_create_versionless_alias_targets targets install_namespace)
+    foreach(target IN LISTS targets)
+        add_library(Qt::${target} ALIAS ${install_namespace}::${target})
+    endforeach()
+endfunction()
+
+# The function is used when creating version less targets from scratch but not using ALIASes.
+# It assigns the known properties from the versioned targets to the versionless created in this
+# function. This allows versionless targets mimic the versioned.
+function(_qt_internal_create_versionless_targets targets install_namespace)
+    set(known_interface_properties
+        QT_MAJOR_VERSION
+        AUTOMOC_MACRO_NAMES
+        AUTOUIC_OPTIONS
+        COMPILE_DEFINITIONS
+        COMPILE_FEATURES
+        COMPILE_OPTIONS
+        CXX_MODULE_SETS
+        HEADER_SETS
+        HEADER_SETS_TO_VERIFY
+        INCLUDE_DIRECTORIES
+        LINK_DEPENDS
+        LINK_DIRECTORIES
+        LINK_LIBRARIES
+        LINK_LIBRARIES_DIRECT
+        LINK_LIBRARIES_DIRECT_EXCLUDE
+        LINK_OPTIONS
+        POSITION_INDEPENDENT_CODE
+        PRECOMPILE_HEADERS
+        SOURCES
+        SYSTEM_INCLUDE_DIRECTORIES
+    )
+
+    set(known_qt_exported_properties
+        MODULE_PLUGIN_TYPES
+        QT_DISABLED_PRIVATE_FEATURES
+        QT_DISABLED_PUBLIC_FEATURES
+        QT_ENABLED_PRIVATE_FEATURES
+        QT_ENABLED_PUBLIC_FEATURES
+        QT_QMAKE_PRIVATE_CONFIG
+        QT_QMAKE_PUBLIC_CONFIG
+        QT_QMAKE_PUBLIC_QT_CONFIG
+        _qt_config_module_name
+        _qt_is_public_module
+        _qt_module_has_headers
+        _qt_module_has_private_headers
+        _qt_module_has_public_headers
+        _qt_module_has_qpa_headers
+        _qt_module_has_rhi_headers
+        _qt_module_include_name
+        _qt_module_interface_name
+        _qt_package_name
+        _qt_package_version
+        _qt_private_module_target_name
+    )
+
+    set(supported_target_types STATIC_LIBRARY MODULE_LIBRARY SHARED_LIBRARY OBJECT_LIBRARY
+        INTERFACE_LIBRARY)
+
+    foreach(target IN LISTS targets)
+        if(NOT TARGET ${install_namespace}::${target})
+            message(FATAL_ERROR "${install_namespace}::${target} is not a target, can not extend"
+                " an alias target")
+        endif()
+
+        get_target_property(type ${install_namespace}::${target} TYPE)
+        if(NOT type)
+            message(FATAL_ERROR "Cannot get the ${install_namespace}::${target} target type.")
+        endif()
+
+        if(NOT "${type}" IN_LIST supported_target_types)
+            message(AUTHOR_WARNING "${install_namespace}::${target} requires the versionless"
+                " target creation, but it has incompatible type ${type}.")
+            continue()
+        endif()
+
+        string(REPLACE "_LIBRARY" "" creation_type "${type}")
+        add_library(Qt::${target} ${creation_type} IMPORTED)
+
+        if(NOT "${type}" STREQUAL "INTERFACE_LIBRARY")
+            foreach(config "" _RELEASE _DEBUG _RELWITHDEBINFO _MINSIZEREL)
+                get_target_property(target_imported_location
+                        ${install_namespace}::${target} IMPORTED_LOCATION${config})
+                if(NOT target_imported_location)
+                    if("${config}" STREQUAL "")
+                        message(FATAL_ERROR "Cannot create versionless target for"
+                            " ${install_namespace}::${target}. IMPORTED_LOCATION property is "
+                            "missing."
+                        )
+                    else()
+                        continue()
+                    endif()
+                endif()
+                set_property(TARGET Qt::${target} PROPERTY
+                    IMPORTED_LOCATION${config} "${target_imported_location}")
+            endforeach()
+
+            foreach(property IN LISTS known_qt_exported_properties)
+                get_target_property(exported_property_value
+                    ${install_namespace}::${target} ${property})
+                if(exported_property_value)
+                    set_property(TARGET Qt::${target} APPEND PROPERTY
+                        ${property} "${exported_property_value}")
+                endif()
+            endforeach()
+        endif()
+
+        foreach(property IN LISTS known_interface_properties)
+            get_target_property(interface_property_value
+                ${install_namespace}::${target} INTERFACE_${property})
+            if(interface_property_value)
+                set_property(TARGET Qt::${target} APPEND PROPERTY
+                    INTERFACE_${property} "${interface_property_value}")
+            endif()
+        endforeach()
+    endforeach()
+endfunction()

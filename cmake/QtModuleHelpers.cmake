@@ -834,7 +834,9 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
     qt_internal_export_modern_cmake_config_targets_file(
         TARGETS ${exported_targets}
         EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
-        CONFIG_INSTALL_DIR "${config_install_dir}")
+        CONFIG_BUILD_DIR "${config_build_dir}"
+        CONFIG_INSTALL_DIR "${config_install_dir}"
+    )
 
     qt_internal_export_genex_properties(TARGETS ${target}
         EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}

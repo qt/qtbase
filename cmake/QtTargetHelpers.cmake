@@ -1004,25 +1004,51 @@ unset(_qt_imported_configs)")
 endfunction()
 
 function(qt_internal_export_modern_cmake_config_targets_file)
-    cmake_parse_arguments(__arg "" "EXPORT_NAME_PREFIX;CONFIG_INSTALL_DIR" "TARGETS" ${ARGN})
+    cmake_parse_arguments(arg
+        ""
+        "EXPORT_NAME_PREFIX;CONFIG_BUILD_DIR;CONFIG_INSTALL_DIR"
+        "TARGETS"
+        ${ARGN}
+    )
 
-    set(export_name "${__arg_EXPORT_NAME_PREFIX}VersionlessTargets")
-    foreach(target ${__arg_TARGETS})
-        if (TARGET "${target}Versionless")
-            continue()
-        endif()
+    if("${arg_TARGETS}" STREQUAL "")
+        message(FATAL_ERROR "Target list is empty")
+    endif()
 
-        add_library("${target}Versionless" INTERFACE)
-        target_link_libraries("${target}Versionless" INTERFACE "${target}")
-        set_target_properties("${target}Versionless" PROPERTIES
-            EXPORT_NAME "${target}"
-            _qt_is_versionless_target "TRUE")
-        set_property(TARGET "${target}Versionless"
-                     APPEND PROPERTY EXPORT_PROPERTIES _qt_is_versionless_target)
+    if("${arg_CONFIG_BUILD_DIR}" STREQUAL "")
+        message(FATAL_ERROR "CONFIG_BUILD_DIR is not specified")
+    endif()
 
-        qt_install(TARGETS "${target}Versionless" EXPORT ${export_name})
-    endforeach()
-    qt_install(EXPORT ${export_name} NAMESPACE Qt:: DESTINATION "${__arg_CONFIG_INSTALL_DIR}")
+    if("${arg_CONFIG_INSTALL_DIR}" STREQUAL "")
+        message(FATAL_ERROR "CONFIG_INSTALL_DIR is not specified")
+    endif()
+
+    if("${arg_EXPORT_NAME_PREFIX}" STREQUAL "")
+        message(FATAL_ERROR "EXPORT_NAME_PREFIX is not specified")
+    endif()
+
+    set(versionless_targets ${arg_TARGETS})
+
+    # CMake versions < 3.18 compatibility code. Creates the mimics of the versioned libraries.
+    set(versionless_targets_export "${arg_CONFIG_BUILD_DIR}/${arg_EXPORT_NAME_PREFIX}VersionlessTargets.cmake")
+    configure_file("${QT_CMAKE_DIR}/QtVersionlessTargets.cmake.in"
+        "${versionless_targets_export}"
+        @ONLY
+    )
+
+    # CMake versions >= 3.18 code. Create the versionless ALIAS targets.
+    set(alias_export "${arg_CONFIG_BUILD_DIR}/${arg_EXPORT_NAME_PREFIX}VersionlessAliasTargets.cmake")
+    configure_file("${QT_CMAKE_DIR}/QtVersionlessAliasTargets.cmake.in"
+        "${alias_export}"
+        @ONLY
+    )
+
+    qt_install(FILES
+        "${alias_export}"
+        "${versionless_targets_export}"
+        DESTINATION "${arg_CONFIG_INSTALL_DIR}"
+        COMPONENT Devel
+    )
 endfunction()
 
 function(qt_internal_create_tracepoints name tracepoints_file)
