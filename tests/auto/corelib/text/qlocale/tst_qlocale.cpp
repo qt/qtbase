@@ -302,6 +302,8 @@ void tst_QLocale::ctor_data()
     LANDFILL("und_CN", Chinese, SimplifiedHanScript, China);
     LANDFILL("und_TW", Chinese, TraditionalHanScript, Taiwan);
     LANDFILL("und_CA", English, LatinScript, Canada);
+    LANDFILL("und_US", English, LatinScript, UnitedStates);
+    LANDFILL("und_GB", English, LatinScript, UnitedKingdom);
 #undef LANDFILL
 }
 
@@ -313,6 +315,8 @@ void tst_QLocale::ctor()
 
     {
         const QLocale l(reqLang, reqText, reqLand);
+        QEXPECT_FAIL("und_US", "QTBUG-121485: und_* likely-subtag rules broken", Abort);
+        QEXPECT_FAIL("und_GB", "QTBUG-121485: und_* likely-subtag rules broken", Abort);
         QTEST(l.language(), "expLang");
         QTEST(l.script(), "expText");
         QTEST(l.territory(), "expLand");
