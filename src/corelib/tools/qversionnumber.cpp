@@ -81,10 +81,13 @@ QT_IMPL_METATYPE_EXTERN(QVersionNumber)
 */
 
 /*!
-    \fn template <qsizetype N> QVersionNumber::QVersionNumber(const QVarLengthArray<int, N> &seg)
-    \since 6.4
+    \fn QVersionNumber::QVersionNumber(QSpan<const int> args)
+    \since 6.8
 
-    Constructs a version number from the list of numbers contained in \a seg.
+    Constructs a version number from the span specified by \a args.
+
+    \note In Qt versions prior to 6.8, QVersionNumber could only be constructed
+    from QList, QVarLenthArray or std::initializer_list.
 */
 
 /*!

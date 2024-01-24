@@ -10,6 +10,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qspan.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qtypeinfo.h>
 #if !defined(QT_LEAN_HEADERS) || QT_LEAN_HEADERS < 2
@@ -113,7 +114,7 @@ class QVersionNumber
 
         Q_CORE_EXPORT void setListData(QList<int> &&seg);
 
-        explicit SegmentStorage(std::initializer_list<int> args)
+        explicit SegmentStorage(QSpan<const int> args)
             : SegmentStorage(args.begin(), args.end()) {}
 
         explicit SegmentStorage(const int *first, const int *last)
@@ -256,19 +257,20 @@ public:
     inline QVersionNumber() noexcept
         : m_segments()
     {}
+    Q_WEAK_OVERLOAD
     inline explicit QVersionNumber(const QList<int> &seg) : m_segments(seg) { }
 
     // compiler-generated copy/move ctor/assignment operators and the destructor are ok
 
+    Q_WEAK_OVERLOAD
     explicit QVersionNumber(QList<int> &&seg) : m_segments(std::move(seg)) { }
 
     inline QVersionNumber(std::initializer_list<int> args)
-        : m_segments(args)
+        : m_segments(QSpan{args})
     {}
 
-    template <qsizetype N>
-    explicit QVersionNumber(const QVarLengthArray<int, N> &sec)
-        : m_segments(sec.begin(), sec.end())
+    explicit QVersionNumber(QSpan<const int> args)
+        : m_segments(args)
     {}
 
     inline explicit QVersionNumber(int maj)
