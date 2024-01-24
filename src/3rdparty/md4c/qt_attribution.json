@@ -9,7 +9,7 @@
     "License": "MIT License",
     "LicenseId": "MIT",
     "LicenseFile": "LICENSE.md",
-    "Version": "0.4.8",
-    "DownloadLocation": "https://github.com/mity/md4c/releases/tag/release-0.4.8",
-    "Copyright": "Copyright © 2016-2020 Martin Mitáš"
+    "Version": "0.5.2",
+    "DownloadLocation": "https://github.com/mity/md4c/releases/tag/release-0.5.2",
+    "Copyright": "Copyright © 2016-2024 Martin Mitáš"
 }

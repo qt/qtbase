@@ -2,7 +2,7 @@
  * MD4C: Markdown parser for C
  * (http://github.com/mity/md4c)
  *
- * Copyright (c) 2016-2020 Martin Mitas
+ * Copyright (c) 2016-2024 Martin Mitáš
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -91,7 +91,8 @@ typedef enum MD_BLOCKTYPE {
     MD_BLOCK_P,
 
     /* <table>...</table> and its contents.
-     * Detail: Structure MD_BLOCK_TD_DETAIL (used with MD_BLOCK_TH and MD_BLOCK_TD)
+     * Detail: Structure MD_BLOCK_TABLE_DETAIL (for MD_BLOCK_TABLE),
+     *         structure MD_BLOCK_TD_DETAIL (for MD_BLOCK_TH and MD_BLOCK_TD)
      * Note all of these are used only if extension MD_FLAG_TABLES is enabled. */
     MD_BLOCK_TABLE,
     MD_BLOCK_THEAD,
@@ -267,6 +268,13 @@ typedef struct MD_BLOCK_CODE_DETAIL {
     MD_CHAR fence_char;     /* The character used for fenced code block; or zero for indented code block. */
 } MD_BLOCK_CODE_DETAIL;
 
+/* Detailed info for MD_BLOCK_TABLE. */
+typedef struct MD_BLOCK_TABLE_DETAIL {
+    unsigned col_count;         /* Count of columns in the table. */
+    unsigned head_row_count;    /* Count of rows in the table header (currently always 1) */
+    unsigned body_row_count;    /* Count of rows in the table body */
+} MD_BLOCK_TABLE_DETAIL;
+
 /* Detailed info for MD_BLOCK_TH and MD_BLOCK_TD. */
 typedef struct MD_BLOCK_TD_DETAIL {
     MD_ALIGN align;
@@ -276,6 +284,7 @@ typedef struct MD_BLOCK_TD_DETAIL {
 typedef struct MD_SPAN_A_DETAIL {
     MD_ATTRIBUTE href;
     MD_ATTRIBUTE title;
+    int is_autolink;            /* nonzero if this is an autolink */
 } MD_SPAN_A_DETAIL;
 
 /* Detailed info for MD_SPAN_IMG. */
@@ -308,6 +317,7 @@ typedef struct MD_SPAN_WIKILINK {
 #define MD_FLAG_LATEXMATHSPANS              0x1000  /* Enable $ and $$ containing LaTeX equations. */
 #define MD_FLAG_WIKILINKS                   0x2000  /* Enable wiki links extension. */
 #define MD_FLAG_UNDERLINE                   0x4000  /* Enable underline extension (and disables '_' for normal emphasis). */
+#define MD_FLAG_HARD_SOFT_BREAKS            0x8000  /* Force all soft breaks to act as hard breaks. */
 
 #define MD_FLAG_PERMISSIVEAUTOLINKS         (MD_FLAG_PERMISSIVEEMAILAUTOLINKS | MD_FLAG_PERMISSIVEURLAUTOLINKS | MD_FLAG_PERMISSIVEWWWAUTOLINKS)
 #define MD_FLAG_NOHTML                      (MD_FLAG_NOHTMLBLOCKS | MD_FLAG_NOHTMLSPANS)
