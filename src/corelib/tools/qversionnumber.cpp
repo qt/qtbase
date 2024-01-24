@@ -76,7 +76,7 @@ QT_IMPL_METATYPE_EXTERN(QVersionNumber)
 /*!
     \fn QVersionNumber::QVersionNumber(std::initializer_list<int> args)
 
-    Construct a version number from the std::initializer_list specified by
+    Constructs a version number from the std::initializer_list specified by
     \a args.
 */
 
