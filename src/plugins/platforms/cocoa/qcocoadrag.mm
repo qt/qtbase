@@ -97,8 +97,6 @@ Qt::DropAction QCocoaDrag::drag(QDrag *o)
 {
     m_drag = o;
     m_executed_drop_action = Qt::IgnoreAction;
-    if (o->mimeData()->formats().isEmpty())
-        return m_executed_drop_action;
 
     QMacPasteboard dragBoard(CFStringRef(NSPasteboardNameDrag), QUtiMimeConverter::HandlerScopeFlag::DnD);
     m_drag->mimeData()->setData("application/x-qt-mime-type-name"_L1, QByteArray("dummy"));
