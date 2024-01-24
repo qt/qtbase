@@ -1628,7 +1628,8 @@ void tst_QItemDelegate::reuseEditor()
         using QItemDelegate::QItemDelegate;
         ~ReusingDelegate()
         {
-            cached->deleteLater();
+            if (cached)
+                cached->deleteLater();
         }
 
         QWidget* createEditor(QWidget* parent,
