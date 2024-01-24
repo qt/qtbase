@@ -134,6 +134,7 @@ private slots:
     void stream_atEnd();
 
     void stream_writeError();
+    void stream_writeSizeLimitExceeded();
 
     void stream_QByteArray2();
 
@@ -2188,6 +2189,19 @@ void tst_QDataStream::stream_writeError()
     TEST_WRITE_ERROR(<< (float)1.0)
     TEST_WRITE_ERROR(<< (double)1.0)
     TEST_WRITE_ERROR(.writeRawData("test", 4))
+}
+
+void tst_QDataStream::stream_writeSizeLimitExceeded()
+{
+    QByteArray ba;
+    QDataStream ds(&ba, QDataStream::ReadWrite);
+    // Set the version that supports only 32-bit data size
+    ds.setVersion(QDataStream::Qt_6_6);
+    QCOMPARE(ds.status(), QDataStream::Ok);
+    const qint64 size = qint64(std::numeric_limits<quint32>::max()) + 1;
+    ds.writeBytes("", size);
+    QCOMPARE(ds.status(), QDataStream::SizeLimitExceeded);
+    QVERIFY(ba.isEmpty());
 }
 
 void tst_QDataStream::stream_QByteArray2()

@@ -1397,8 +1397,8 @@ QDataStream &QDataStream::writeBytes(const char *s, qint64 len)
         return *this;
     }
     CHECK_STREAM_WRITE_PRECOND(*this)
-    writeQSizeType(*this, len); // write length specifier
-    if (len > 0)
+    // Write length then, if any, content
+    if (writeQSizeType(*this, len) && len > 0)
         writeRawData(s, len);
     return *this;
 }

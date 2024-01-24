@@ -28,6 +28,7 @@ public slots:
 
 private slots:
     void stream_bigQString();
+    void stream_bigQByteArray();
     void stream_bigQList();
     void stream_bigQSet();
     void stream_bigQMap();
@@ -37,6 +38,10 @@ private slots:
 void tst_QDataStream::initTestCase()
 {
     qputenv("QTEST_FUNCTION_TIMEOUT", "9000000");
+
+    QTest::addColumn<QDataStream::Version>("streamVersion");
+    QTest::addRow("current") << QDataStream::Qt_DefaultCompiledVersion;
+    QTest::addRow("Qt_6_6") << QDataStream::Qt_6_6;
 }
 
 template <class T>
@@ -110,11 +115,13 @@ template <class T>
 void tst_QDataStream::stream_big()
 {
 #if QT_POINTER_SIZE > 4
+    QFETCH_GLOBAL(const QDataStream::Version, streamVersion);
     QElapsedTimer timer;
     T input;
     fill(input);
     QByteArray ba;
     QDataStream inputstream(&ba, QIODevice::WriteOnly);
+    inputstream.setVersion(streamVersion);
     timer.start();
     try {
         inputstream << input;
@@ -122,17 +129,23 @@ void tst_QDataStream::stream_big()
         QSKIP("Not enough memory to copy into QDataStream.");
     }
     qDebug("Streamed into QDataStream in %lld ms", timer.elapsed());
-    T output;
-    QDataStream outputstream(ba);
-    timer.start();
-    try {
-        outputstream >> output;
-    } catch (const std::bad_alloc &) {
-        QSKIP("Not enough memory to copy out of QDataStream.");
+    if (streamVersion < QDataStream::Qt_6_7) {
+        // old versions do not support data size more than 4 GiB
+        QCOMPARE(inputstream.status(), QDataStream::SizeLimitExceeded);
+        QVERIFY(ba.isEmpty());
+    } else {
+        T output;
+        QDataStream outputstream(ba);
+        timer.start();
+        try {
+            outputstream >> output;
+        } catch (const std::bad_alloc &) {
+            QSKIP("Not enough memory to copy out of QDataStream.");
+        }
+        qDebug("Streamed out of QDataStream in %lld ms", timer.elapsed());
+        QCOMPARE(input.size(), output.size());
+        QCOMPARE(input, output);
     }
-    qDebug("Streamed out of QDataStream in %lld ms", timer.elapsed());
-    QCOMPARE(input.size(), output.size());
-    QCOMPARE(input, output);
 #else
     QSKIP("This test is 64-bit only.");
 #endif
@@ -141,6 +154,11 @@ void tst_QDataStream::stream_big()
 void tst_QDataStream::stream_bigQString()
 {
     stream_big<QString>();
+}
+
+void tst_QDataStream::stream_bigQByteArray()
+{
+    stream_big<QByteArray>();
 }
 void tst_QDataStream::stream_bigQList()
 {

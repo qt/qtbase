@@ -212,7 +212,7 @@ private:
 #endif
     qint64 readBlock(char *data, qint64 len);
     static inline qint64 readQSizeType(QDataStream &s);
-    static inline void writeQSizeType(QDataStream &s, qint64 value);
+    static inline bool writeQSizeType(QDataStream &s, qint64 value);
     enum class QDataStreamSizes : quint32 { NullCode = 0xffffffffu, ExtendedSize = 0xfffffffeu };
 
     friend class QtPrivate::StreamStateSaver;
@@ -339,7 +339,8 @@ QDataStream &readAssociativeContainer(QDataStream &s, Container &c)
 template <typename Container>
 QDataStream &writeSequentialContainer(QDataStream &s, const Container &c)
 {
-    QDataStream::writeQSizeType(s, c.size());
+    if (!QDataStream::writeQSizeType(s, c.size()))
+        return s;
     for (const typename Container::value_type &t : c)
         s << t;
 
@@ -349,7 +350,8 @@ QDataStream &writeSequentialContainer(QDataStream &s, const Container &c)
 template <typename Container>
 QDataStream &writeAssociativeContainer(QDataStream &s, const Container &c)
 {
-    QDataStream::writeQSizeType(s, c.size());
+    if (!QDataStream::writeQSizeType(s, c.size()))
+        return s;
     auto it = c.constBegin();
     auto end = c.constEnd();
     while (it != end) {
@@ -363,7 +365,8 @@ QDataStream &writeAssociativeContainer(QDataStream &s, const Container &c)
 template <typename Container>
 QDataStream &writeAssociativeMultiContainer(QDataStream &s, const Container &c)
 {
-    QDataStream::writeQSizeType(s, c.size());
+    if (!QDataStream::writeQSizeType(s, c.size()))
+        return s;
     auto it = c.constBegin();
     auto end = c.constEnd();
     while (it != end) {
@@ -425,16 +428,19 @@ qint64 QDataStream::readQSizeType(QDataStream &s)
     return extendedLen;
 }
 
-void QDataStream::writeQSizeType(QDataStream &s, qint64 value)
+bool QDataStream::writeQSizeType(QDataStream &s, qint64 value)
 {
-    if (value < qint64(QDataStreamSizes::ExtendedSize))
+    if (value < qint64(QDataStreamSizes::ExtendedSize)) {
         s << quint32(value);
-    else if (s.version() >= QDataStream::Qt_6_7)
+    } else if (s.version() >= QDataStream::Qt_6_7) {
         s << quint32(QDataStreamSizes::ExtendedSize) << value;
-    else if (value == qint64(QDataStreamSizes::ExtendedSize))
+    } else if (value == qint64(QDataStreamSizes::ExtendedSize)) {
         s << quint32(QDataStreamSizes::ExtendedSize);
-    else
-        s.setStatus(QDataStream::WriteFailed); // value is too big for old format
+    } else {
+        s.setStatus(QDataStream::SizeLimitExceeded); // value is too big for old format
+        return false;
+    }
+    return true;
 }
 
 inline QDataStream &QDataStream::operator>>(char &i)
