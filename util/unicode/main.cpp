@@ -14,8 +14,8 @@
 #include <private/qunicodetables_p.h>
 #endif
 
-#define DATA_VERSION_S "14.0"
-#define DATA_VERSION_STR "QChar::Unicode_14_0"
+#define DATA_VERSION_S "15.0"
+#define DATA_VERSION_STR "QChar::Unicode_15_0"
 
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
