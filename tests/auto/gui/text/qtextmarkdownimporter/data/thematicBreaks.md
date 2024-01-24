@@ -11,6 +11,7 @@ stars
 stars with tabs between
 ***  	   
 stars with whitespace after
+
 ---   	   
 hyphens with whitespace after
 _____	   
