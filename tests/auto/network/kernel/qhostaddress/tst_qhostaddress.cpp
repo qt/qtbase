@@ -15,7 +15,7 @@
 #  include <qt_windows.h>
 #endif
 
-#if defined(Q_OS_ANDROID) || defined(Q_OS_WASM)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WASM) || defined(Q_OS_VXWORKS)
 #  include <netinet/in.h>
 #endif
 
