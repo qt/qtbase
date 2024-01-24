@@ -214,7 +214,7 @@ public:
 
     static void getOpenFileContent(const QString &nameFilter,
                                    const std::function<void(const QString &, const QByteArray &)> &fileContentsReady,
-                                   QWidget *parent);
+                                   QWidget *parent= nullptr);
 
     static void saveFileContent(const QByteArray &fileContent,
                                 const QString &fileNameHint,
