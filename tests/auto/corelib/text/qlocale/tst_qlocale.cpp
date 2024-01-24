@@ -3082,6 +3082,18 @@ void tst_QLocale::dayName_data()
         << QString("ru_RU") << QString::fromUtf8("\320\262\321\201") << 7 << QLocale::ShortFormat;
     QTest::newRow("ru_RU narrow")
         << QString("ru_RU") << u"\u0412"_s << 7 << QLocale::NarrowFormat;
+
+    QTest::newRow("ga_IE/Mon") << QString("ga_IE") << QString("Luan") << 1 << QLocale::ShortFormat;
+    QTest::newRow("ga_IE/Sun") << QString("ga_IE") << QString("Domh") << 7 << QLocale::ShortFormat;
+    QTest::newRow("el_GR/Tue")
+        << QString("el_GR") << QString::fromUtf8("\316\244\317\201\316\257")
+        << 2 << QLocale::ShortFormat;
+    QTest::newRow("el_GR/Thu")
+        << QString("el_GR") << QString::fromUtf8("\316\240\316\255\316\274")
+        << 4 << QLocale::ShortFormat;
+    QTest::newRow("el_GR/Sat")
+        << QString("el_GR") << QString::fromUtf8("\316\243\316\254\316\262")
+        << 6 << QLocale::ShortFormat;
 }
 
 void tst_QLocale::dayName()
@@ -3093,15 +3105,6 @@ void tst_QLocale::dayName()
 
     QLocale l(locale_name);
     QCOMPARE(l.dayName(day, format), dayName);
-
-    QLocale ir("ga_IE");
-    QCOMPARE(ir.dayName(1, QLocale::ShortFormat), QLatin1String("Luan"));
-    QCOMPARE(ir.dayName(7, QLocale::ShortFormat), QLatin1String("Domh"));
-
-    QLocale gr("el_GR");
-    QCOMPARE(gr.dayName(2, QLocale::ShortFormat), QString::fromUtf8("\316\244\317\201\316\257"));
-    QCOMPARE(gr.dayName(4, QLocale::ShortFormat), QString::fromUtf8("\316\240\316\255\316\274"));
-    QCOMPARE(gr.dayName(6, QLocale::ShortFormat), QString::fromUtf8("\316\243\316\254\316\262"));
 }
 
 void tst_QLocale::standaloneDayName_data()
