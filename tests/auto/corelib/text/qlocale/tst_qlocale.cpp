@@ -47,11 +47,14 @@ private slots:
     void macDefaultLocale();
 #endif
 
+    void ctor_data();
     void ctor();
+    void ctor_match_land();
     void systemLocale_data();
     void systemLocale();
     void consistentC();
     void matchingLocales();
+
     void stringToDouble_data();
     void stringToDouble();
     void stringToFloat_data();
@@ -217,79 +220,114 @@ void tst_QLocale::initTestCase()
 #endif // QT_CONFIG(process)
 }
 
+void tst_QLocale::ctor_data()
+{
+    QTest::addColumn<QLocale::Language>("reqLang");
+    QTest::addColumn<QLocale::Script>("reqText");
+    QTest::addColumn<QLocale::Territory>("reqLand");
+    QTest::addColumn<QLocale::Language>("expLang");
+    QTest::addColumn<QLocale::Script>("expText");
+    QTest::addColumn<QLocale::Territory>("expLand");
+
+    // Exact match
+#define ECHO(name, lang, text, land) \
+    QTest::newRow(name) \
+        << QLocale::lang << QLocale::text << QLocale::land \
+        << QLocale::lang << QLocale::text << QLocale::land
+
+    ECHO("zh_Hans_CN", Chinese, SimplifiedHanScript, China);
+    ECHO("zh_Hant_TW", Chinese, TraditionalHanScript, Taiwan);
+    ECHO("zh_Hant_HK", Chinese, TraditionalHanScript, HongKong);
+#undef ECHO
+
+    // Determine territory from language and script:
+#define WHATLAND(name, lang, text, land)         \
+    QTest::newRow(name) \
+        << QLocale::lang << QLocale::text << QLocale::AnyTerritory \
+        << QLocale::lang << QLocale::text << QLocale::land
+
+    WHATLAND("zh_Hans", Chinese, SimplifiedHanScript, China);
+    WHATLAND("zh_Hant", Chinese, TraditionalHanScript, Taiwan);
+#undef WHATLAND
+
+    // Determine script from language and territory:
+#define WHATTEXT(name, lang, text, land) \
+    QTest::newRow(name) \
+        << QLocale::lang << QLocale::AnyScript << QLocale::land \
+        << QLocale::lang << QLocale::text << QLocale::land
+
+    WHATTEXT("zh_CN", Chinese, SimplifiedHanScript, China);
+    WHATTEXT("zh_TW", Chinese, TraditionalHanScript, Taiwan);
+    WHATTEXT("zh_HK", Chinese, TraditionalHanScript, HongKong);
+#undef WHATTEXT
+
+    // No exact match, fix by change of territory:
+#define FIXLAND(name, lang, text, land, fixed) \
+    QTest::newRow(name) \
+        << QLocale::lang << QLocale::text << QLocale::land \
+        << QLocale::lang << QLocale::text << QLocale::fixed
+
+    FIXLAND("zh_Hans_TW", Chinese, SimplifiedHanScript, Taiwan, China);
+    FIXLAND("zh_Hans_US", Chinese, SimplifiedHanScript, UnitedStates, China);
+    FIXLAND("zh_Hant_CN", Chinese, TraditionalHanScript, China, Taiwan);
+    FIXLAND("zh_Hant_US", Chinese, TraditionalHanScript, UnitedStates, Taiwan);
+#undef FIXLAND
+
+    // No exact match, fix by change of script:
+#define FIXTEXT(name, lang, text, land, fixed) \
+    QTest::newRow(name) \
+        << QLocale::lang << QLocale::text << QLocale::land \
+        << QLocale::lang << QLocale::fixed << QLocale::land
+
+    FIXTEXT("zh_Latn_CN", Chinese, LatinScript, China, SimplifiedHanScript);
+    FIXTEXT("zh_Latn_TW", Chinese, LatinScript, Taiwan, TraditionalHanScript);
+#undef FIXTEXT
+
+    // No exact match, preserve language:
+#define KEEPLANG(name, lang, text, land, fixtext, fixland)  \
+    QTest::newRow(name) \
+        << QLocale::lang << QLocale::text << QLocale::land \
+        << QLocale::lang << QLocale::fixtext << QLocale::fixland
+
+    KEEPLANG("zh_US", Chinese, AnyScript, UnitedStates, SimplifiedHanScript, China);
+    KEEPLANG("zh_Latn_US", Chinese, LatinScript, UnitedStates, SimplifiedHanScript, China);
+#undef KEEPLANG
+
+    // Only territory - likely subtags imply language and script:
+#define LANDFILL(name, lang, text, land) \
+    QTest::newRow(name) \
+        << QLocale::AnyLanguage << QLocale::AnyScript << QLocale::land \
+        << QLocale::lang << QLocale::text << QLocale::land
+
+    LANDFILL("und_CN", Chinese, SimplifiedHanScript, China);
+    LANDFILL("und_TW", Chinese, TraditionalHanScript, Taiwan);
+    LANDFILL("und_CA", English, LatinScript, Canada);
+#undef LANDFILL
+}
+
 void tst_QLocale::ctor()
 {
-    QLocale default_locale = QLocale::system();
-    QLocale::Language default_lang = default_locale.language();
-    QLocale::Territory default_country = default_locale.territory();
-
-    qDebug("Default: %s/%s", QLocale::languageToString(default_lang).toUtf8().constData(),
-            QLocale::territoryToString(default_country).toUtf8().constData());
+    QFETCH(const QLocale::Language, reqLang);
+    QFETCH(const QLocale::Script, reqText);
+    QFETCH(const QLocale::Territory, reqLand);
 
     {
-        QLocale l;
-        QCOMPARE(l.language(), default_lang);
-        QCOMPARE(l.territory(), default_country);
+        const QLocale l(reqLang, reqText, reqLand);
+        QTEST(l.language(), "expLang");
+        QTEST(l.script(), "expText");
+        QTEST(l.territory(), "expLand");
     }
+    const QLatin1String request(QTest::currentDataTag());
+    if (!request.startsWith(u"und_")) {
+        const QLocale l(request);
+        QTEST(l.language(), "expLang");
+        QTEST(l.script(), "expText");
+        QTEST(l.territory(), "expLand");
+    }
+}
 
-#define TEST_CTOR(req_lang, req_script, req_country, exp_lang, exp_script, exp_country) \
-    do { \
-        QLocale l(QLocale::req_lang, QLocale::req_script, QLocale::req_country); \
-        QCOMPARE(l.language(), QLocale::exp_lang); \
-        QCOMPARE(l.script(), QLocale::exp_script); \
-        QCOMPARE(l.territory(), QLocale::exp_country); \
-    } while (false)
-
-    // Exact matches
-    TEST_CTOR(Chinese, SimplifiedHanScript, China,
-              Chinese, SimplifiedHanScript, China);
-    TEST_CTOR(Chinese, TraditionalHanScript, Taiwan,
-              Chinese, TraditionalHanScript, Taiwan);
-    TEST_CTOR(Chinese, TraditionalHanScript, HongKong,
-              Chinese, TraditionalHanScript, HongKong);
-
-    // Best match for AnyTerritory
-    TEST_CTOR(Chinese, SimplifiedHanScript, AnyTerritory,
-              Chinese, SimplifiedHanScript, China);
-    TEST_CTOR(Chinese, TraditionalHanScript, AnyTerritory,
-              Chinese, TraditionalHanScript, Taiwan);
-
-    // Best match for AnyScript (and change country to supported one, if necessary)
-    TEST_CTOR(Chinese, AnyScript, China,
-              Chinese, SimplifiedHanScript, China);
-    TEST_CTOR(Chinese, AnyScript, Taiwan,
-              Chinese, TraditionalHanScript, Taiwan);
-    TEST_CTOR(Chinese, AnyScript, HongKong,
-              Chinese, TraditionalHanScript, HongKong);
-    TEST_CTOR(Chinese, AnyScript, UnitedStates,
-              Chinese, SimplifiedHanScript, China);
-
-    // Fully-specified not found; find best alternate country
-    TEST_CTOR(Chinese, SimplifiedHanScript, Taiwan,
-              Chinese, SimplifiedHanScript, China);
-    TEST_CTOR(Chinese, SimplifiedHanScript, UnitedStates,
-              Chinese, SimplifiedHanScript, China);
-    TEST_CTOR(Chinese, TraditionalHanScript, China,
-              Chinese, TraditionalHanScript, Taiwan);
-    TEST_CTOR(Chinese, TraditionalHanScript, UnitedStates,
-              Chinese, TraditionalHanScript, Taiwan);
-
-    // Fully-specified not found; find best alternate script
-    TEST_CTOR(Chinese, LatinScript, China,
-              Chinese, SimplifiedHanScript, China);
-    TEST_CTOR(Chinese, LatinScript, Taiwan,
-              Chinese, TraditionalHanScript, Taiwan);
-
-    // Fully-specified not found; find best alternate country and script
-    TEST_CTOR(Chinese, LatinScript, UnitedStates,
-              Chinese, SimplifiedHanScript, China);
-
-    // Incompletely specified; find what likely subtags imply:
-    TEST_CTOR(AnyLanguage, AnyScript, Canada,
-              English, LatinScript, Canada);
-
-#undef TEST_CTOR
-
+void tst_QLocale::ctor_match_land()
+{
     // QTBUG-64940: QLocale(Any, Any, land).territory() should normally be land:
     constexpr QLocale::Territory exceptions[] = {
         // There are, however, some exceptions:
@@ -330,6 +368,12 @@ void tst_QLocale::defaulted_ctor()
 
     qDebug("Default: %s/%s", QLocale::languageToString(default_lang).toUtf8().constData(),
             QLocale::territoryToString(default_country).toUtf8().constData());
+
+    {
+        QLocale l;
+        QCOMPARE(l.language(), default_lang);
+        QCOMPARE(l.territory(), default_country);
+    }
 
     {
         QLocale l(QLocale::C, QLocale::AnyTerritory);
