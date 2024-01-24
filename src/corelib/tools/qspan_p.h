@@ -88,14 +88,25 @@ using is_qualification_conversion =
 template <typename From, typename To>
 constexpr inline bool is_qualification_conversion_v = is_qualification_conversion<From, To>::value;
 
+namespace AdlTester {
+#define MAKE_ADL_TEST(what) \
+    using std:: what; /* bring into scope */ \
+    template <typename T> using what ## _result = decltype( what (std::declval<T&&>())); \
+    /* end */
+MAKE_ADL_TEST(begin)
+MAKE_ADL_TEST(data)
+MAKE_ADL_TEST(size)
+#undef MAKE_ADL_TEST
+}
+
 // Replacements for std::ranges::XXX(), but only bringing in ADL XXX()s,
 // not doing the extra work C++20 requires
 template <typename Range>
-decltype(auto) adl_begin(Range &&r) { using std::begin; return begin(r); }
+AdlTester::begin_result<Range> adl_begin(Range &&r) { using std::begin; return begin(r); }
 template <typename Range>
-decltype(auto) adl_data(Range &&r)  { using std::data; return data(r); }
+AdlTester::data_result<Range>  adl_data(Range &&r)  { using std::data; return data(r); }
 template <typename Range>
-decltype(auto) adl_size(Range &&r)  { using std::size; return size(r); }
+AdlTester::size_result<Range>  adl_size(Range &&r)  { using std::size; return size(r); }
 
 // Replacement for std::ranges::iterator_t (which depends on C++20 std::ranges::begin)
 // This one uses adl_begin() instead.

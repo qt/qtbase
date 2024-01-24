@@ -96,6 +96,9 @@ static_assert(!std::is_convertible_v<QSpan<const int, 42>, std::span<int, 42>>);
 static_assert(!std::is_convertible_v<QSpan<const int, 0>, std::span<int, 0>>);
 #endif // __cpp_lib_span
 
+// Spans don't convert from nonsense:
+static_assert(!std::is_constructible_v<QSpan<const int>, int&&>);
+
 class tst_QSpan : public QObject
 {
     Q_OBJECT
