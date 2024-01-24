@@ -80,21 +80,20 @@ def extract_preload_files_from_imports(imports):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python make_qt_symlinks.py <qt-host-path> <qt-wasm-path>")
+    if len(sys.argv) != 4:
+        print("Usage: python preload_qml_imports.py <qml-source-path> <qt-host-path> <qt-wasm-path>")
         sys.exit(1)
 
-    qt_host_path = sys.argv[1]
-    qt_wasm_path = sys.argv[2]
+    qml_source_path = sys.argv[1]
+    qt_host_path = sys.argv[2]
+    qt_wasm_path = sys.argv[3]
 
     qml_import_path = os.path.join(qt_wasm_path, "qml")
     qmlimportsscanner_path = os.path.join(qt_host_path, "libexec/qmlimportscanner")
 
     eprint("runing qmlimportsscanner")
-    result = subprocess.run(
-        [qmlimportsscanner_path, "-rootPath", ".", "-importPath", qml_import_path],
-        stdout=subprocess.PIPE,
-    )
+    command = [qmlimportsscanner_path, "-rootPath", qml_source_path, "-importPath", qml_import_path]
+    result = subprocess.run(command, stdout=subprocess.PIPE)
     imports = json.loads(result.stdout)
 
     preload_files = []
