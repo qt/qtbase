@@ -3103,12 +3103,11 @@ void tst_QLocale::dayName_data()
 void tst_QLocale::dayName()
 {
     QFETCH(QString, locale_name);
-    QFETCH(QString, dayName);
     QFETCH(int, day);
     QFETCH(QLocale::FormatType, format);
 
     QLocale l(locale_name);
-    QCOMPARE(l.dayName(day, format), dayName);
+    QTEST(l.dayName(day, format), "dayName");
 }
 
 void tst_QLocale::standaloneDayName_data()
@@ -3147,12 +3146,11 @@ void tst_QLocale::standaloneDayName_data()
 void tst_QLocale::standaloneDayName()
 {
     QFETCH(QString, locale_name);
-    QFETCH(QString, dayName);
     QFETCH(int, day);
     QFETCH(QLocale::FormatType, format);
 
     QLocale l(locale_name);
-    QCOMPARE(l.standaloneDayName(day, format), dayName);
+    QTEST(l.standaloneDayName(day, format), "dayName");
 }
 
 void tst_QLocale::underflowOverflow()
@@ -3205,10 +3203,9 @@ void tst_QLocale::defaultNumberingSystem_data()
 
 void tst_QLocale::defaultNumberingSystem()
 {
-    QFETCH(QString, expect);
     QLatin1String name(QTest::currentDataTag());
     QLocale locale(name);
-    QCOMPARE(locale.toString(123), expect);
+    QTEST(locale.toString(123), "expect");
 }
 
 void tst_QLocale::ampm_data()
@@ -3230,12 +3227,10 @@ void tst_QLocale::ampm_data()
 
 void tst_QLocale::ampm()
 {
-    QFETCH(QString, morn);
-    QFETCH(QString, even);
     QLatin1String name(QTest::currentDataTag());
     QLocale locale(name == QLatin1String("C") ? QLocale(QLocale::C) : QLocale(name));
-    QCOMPARE(locale.amText(), morn);
-    QCOMPARE(locale.pmText(), even);
+    QTEST(locale.amText(), "morn");
+    QTEST(locale.pmText(), "even");
 }
 
 void tst_QLocale::dateFormat()
@@ -3419,9 +3414,7 @@ void tst_QLocale::languageToString_data()
 void tst_QLocale::languageToString()
 {
     QFETCH(const QLocale::Language, language);
-    QFETCH(const QString, name);
-
-    QCOMPARE(QLocale::languageToString(language), name);
+    QTEST(QLocale::languageToString(language), "name");
 }
 
 void tst_QLocale::scriptToString_data()
@@ -3444,9 +3437,7 @@ void tst_QLocale::scriptToString_data()
 void tst_QLocale::scriptToString()
 {
     QFETCH(const QLocale::Script, script);
-    QFETCH(const QString, name);
-
-    QCOMPARE(QLocale::scriptToString(script), name);
+    QTEST(QLocale::scriptToString(script), "name");
 }
 
 void tst_QLocale::territoryToString_data()
@@ -3498,9 +3489,7 @@ void tst_QLocale::territoryToString_data()
 void tst_QLocale::territoryToString()
 {
     QFETCH(const QLocale::Territory, territory);
-    QFETCH(const QString, name);
-
-    QCOMPARE(QLocale::territoryToString(territory), name);
+    QTEST(QLocale::territoryToString(territory), "name");
 }
 
 void tst_QLocale::endonym_data()
@@ -3755,8 +3744,7 @@ void tst_QLocale::measurementSystems_data()
 void tst_QLocale::measurementSystems()
 {
     QFETCH(QLocale, locale);
-    QFETCH(QLocale::MeasurementSystem, system);
-    QCOMPARE(locale.measurementSystem(), system);
+    QTEST(locale.measurementSystem(), "system");
 }
 
 void tst_QLocale::QTBUG_26035_positivesign()
@@ -3834,10 +3822,9 @@ void tst_QLocale::textDirection()
 {
     QFETCH(int, language);
     QFETCH(int, script);
-    QFETCH(bool, rightToLeft);
 
     QLocale locale(QLocale::Language(language), QLocale::Script(script), QLocale::AnyTerritory);
-    QCOMPARE(locale.textDirection() == Qt::RightToLeft, rightToLeft);
+    QTEST(locale.textDirection() == Qt::RightToLeft, "rightToLeft");
 }
 
 void tst_QLocale::formattedDataSize_data()
@@ -3942,8 +3929,8 @@ void tst_QLocale::formattedDataSize()
     QFETCH(int, decimalPlaces);
     QFETCH(QLocale::DataSizeFormats, units);
     QFETCH(int, bytes);
-    QFETCH(QString, output);
-    QCOMPARE(QLocale(language).formattedDataSize(bytes, decimalPlaces, units), output);
+
+    QTEST(QLocale(language).formattedDataSize(bytes, decimalPlaces, units), "output");
 }
 
 void tst_QLocale::bcp47Name_data()
@@ -4250,10 +4237,6 @@ void tst_QLocale::systemLocaleDayAndMonthNames()
     QFETCH(QByteArray, locale);
     QFETCH(QDate, date);
     QFETCH(QLocale::FormatType, format);
-    QFETCH(QString, month);
-    QFETCH(QString, standaloneMonth);
-    QFETCH(QString, day);
-    QFETCH(QString, standaloneDay);
     locale += ".UTF-8"; // So we don't have to repeat it on every data row !
 
     const TransientLocale tested(LC_ALL, locale.constData());
@@ -4267,12 +4250,12 @@ void tst_QLocale::systemLocaleDayAndMonthNames()
 #endif
 
     const int m = date.month();
-    QCOMPARE(sys.monthName(m, format), month);
-    QCOMPARE(sys.standaloneMonthName(m, format), standaloneMonth);
+    QTEST(sys.monthName(m, format), "month");
+    QTEST(sys.standaloneMonthName(m, format), "standaloneMonth");
 
     const int d = date.dayOfWeek();
-    QCOMPARE(sys.dayName(d, format), day);
-    QCOMPARE(sys.standaloneDayName(d, format), standaloneDay);
+    QTEST(sys.dayName(d, format), "day");
+    QTEST(sys.standaloneDayName(d, format), "standaloneDay");
 }
 
 #endif // QT_NO_SYSTEMLOCALE
