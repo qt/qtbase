@@ -67,6 +67,7 @@ private slots:
     void fpExceptions();
     void negativeZero_data();
     void negativeZero();
+
     void dayOfWeek();
     void dayOfWeek_data();
     void formatDate();
@@ -82,6 +83,7 @@ private slots:
     void toDate();
     void toTime_data();
     void toTime();
+
     void doubleRoundTrip_data();
     void doubleRoundTrip();
     void integerRoundTrip_data();
@@ -106,6 +108,8 @@ private slots:
     void scriptToString();
     void territoryToString_data();
     void territoryToString();
+    void endonym_data();
+    void endonym();
 
     void defaultNumberingSystem_data();
     void defaultNumberingSystem();
@@ -3497,6 +3501,37 @@ void tst_QLocale::territoryToString()
     QFETCH(const QString, name);
 
     QCOMPARE(QLocale::territoryToString(territory), name);
+}
+
+void tst_QLocale::endonym_data()
+{
+    QTest::addColumn<QLocale>("locale");
+    QTest::addColumn<QString>("language");
+    QTest::addColumn<QString>("territory");
+
+    QTest::newRow("en")
+        << QLocale(QLocale::English, QLocale::UnitedStates)
+        << u"American English"_s << u"United States"_s;
+    QTest::newRow("en_GB")
+        << QLocale(QLocale::English, QLocale::UnitedKingdom)
+        << u"British English"_s << u"United Kingdom"_s; // So inaccurate
+}
+
+void tst_QLocale::endonym()
+{
+    QFETCH(const QLocale, locale);
+
+    auto report = qScopeGuard([locale]() {
+        qDebug()
+            << "Failed for" << locale.name()
+            << "with language" << QLocale::languageToString(locale.language())
+            << "for territory" << QLocale::territoryToString(locale.territory())
+            << "in script" << QLocale::scriptToString(locale.script());
+    });
+
+    QTEST(locale.nativeLanguageName(), "language");
+    QTEST(locale.nativeTerritoryName(), "territory");
+    report.dismiss();
 }
 
 void tst_QLocale::currency()
