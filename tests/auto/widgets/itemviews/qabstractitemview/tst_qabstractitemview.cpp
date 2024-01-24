@@ -3497,6 +3497,7 @@ void tst_QAbstractItemView::removeIndexWhileEditing()
         QVERIFY(filteredIndex.isValid());
         view.edit(filteredIndex);
         QCOMPARE(view.state(), QAbstractItemView::EditingState);
+        QTRY_VERIFY(QApplication::focusWidget());
         QPointer<QLineEdit> lineEdit = qobject_cast<QLineEdit *>(QApplication::focusWidget());
         QVERIFY(lineEdit);
         lineEdit->setText("c");
@@ -3512,6 +3513,7 @@ void tst_QAbstractItemView::removeIndexWhileEditing()
         QVERIFY(filteredIndex.isValid());
         view.edit(filteredIndex);
         QCOMPARE(view.state(), QAbstractItemView::EditingState);
+        QTRY_VERIFY(QApplication::focusWidget());
         QPointer<QLineEdit> lineEdit = qobject_cast<QLineEdit *>(QApplication::focusWidget());
         QVERIFY(lineEdit);
         filterModel.setFilterFixedString("c");
