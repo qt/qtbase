@@ -17,9 +17,5 @@
 
 #include <QtCore/private/qglobal_p.h>
 
-#if defined(Q_OS_VXWORKS)
-#  include "QtCore/qfunctions_vxworks.h"
-#endif
-
 #endif
 

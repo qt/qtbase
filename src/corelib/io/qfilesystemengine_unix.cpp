@@ -798,7 +798,7 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
     QVarLengthArray<char, 1024> buf(size_max);
 #endif
 
-#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_WASM)
+#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_WASM) && !defined(Q_OS_VXWORKS) 
     struct group *gr = nullptr;
 #if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_VXWORKS) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID) && (__ANDROID_API__ >= 24))
     size_max = sysconf(_SC_GETGR_R_SIZE_MAX);
@@ -821,7 +821,7 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
 #endif
     if (gr)
         return QFile::decodeName(QByteArray(gr->gr_name));
-#else // Integrity || WASM
+#else // Integrity || WASM || VxWorks
     Q_UNUSED(groupId);
 #endif
     return QString();

@@ -1166,8 +1166,6 @@ qt_internal_extend_target(Core CONDITION VXWORKS
     SOURCES
         io/qstandardpaths_unix.cpp
         io/qstorageinfo_stub.cpp
-        kernel/qfunctions_vxworks.cpp
-        kernel/qfunctions_vxworks.h
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_cborstreamreader

@@ -7983,8 +7983,6 @@
  qeventloop.cpp
  qeventloop.h
  qfunctions_p.h
- qfunctions_vxworks.cpp
- qfunctions_vxworks.h
  qfunctions_wince.cpp
  qfunctions_wince.h
  qguard_p.h
