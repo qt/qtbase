@@ -909,13 +909,6 @@ void qDrawPlainRect(QPainter *p, const QRect &r, const QColor &c,
     \sa qDrawShadeRect(), QStyle
 */
 
-void qDrawPlainRoundedRect(QPainter *p, const QRect &r, qreal rx, qreal ry,
-                    const QColor &c, int lineWidth, const QBrush *fill)
-{
-    qDrawPlainRoundedRect(p, r.x(), r.y(), r.width(), r.height(), rx, ry, c,
-                   lineWidth, fill);
-}
-
 /*!
     \class QTileRules
     \since 4.6
