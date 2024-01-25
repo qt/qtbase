@@ -1,0 +1,7 @@
+# QTBUG-121529: Tests need to be updated to Unicode 15.1
+[lineBoundariesDefault]
+*
+
+# QTBUG-121529: Tests need to be updated to Unicode 15.1
+[graphemeBoundariesDefault]
+*

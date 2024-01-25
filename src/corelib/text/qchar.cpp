@@ -157,6 +157,7 @@ QT_BEGIN_NAMESPACE
     \value [since 5.15] Unicode_13_0 Version 13.0
     \value [since 6.3] Unicode_14_0 Version 14.0
     \value [since 6.5] Unicode_15_0 Version 15.0
+    \value [since 6.8] Unicode_15_1 Version 15.1
     \value Unicode_Unassigned  The value is not assigned to any character
                                in version 8.0 of Unicode.
 
