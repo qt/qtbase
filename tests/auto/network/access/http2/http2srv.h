@@ -90,6 +90,8 @@ public:
     void setContentEncoding(const QByteArray &contentEncoding);
     // No authentication data is generated for the method, the full header value must be set
     void setAuthenticationHeader(const QByteArray &authentication);
+    // Authentication always required, no challenge provided
+    void setAuthenticationRequired(bool enable);
     // Set the redirect URL and count. The server will return a redirect response with the url
     // 'count' amount of times
     void setRedirect(const QByteArray &redirectUrl, int count);
@@ -227,6 +229,7 @@ private:
 
     QByteArray contentEncoding;
     QByteArray authenticationHeader;
+    bool authenticationRequired = false;
 
     QByteArray redirectUrl;
     int redirectCount = 0;
