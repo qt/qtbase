@@ -19,8 +19,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcQrest)
 /*!
     \class QRestReply
     \since 6.7
-    \brief QRestReply is the class for following up the requests sent with
-    QRestAccessManager.
+    \brief QRestReply is a convenience wrapper for QNetworkReply.
 
     \reentrant
     \ingroup network
@@ -28,13 +27,23 @@ Q_DECLARE_LOGGING_CATEGORY(lcQrest)
 
     \preliminary
 
-    QRestReply is a convenience class for typical RESTful client
-    applications. It wraps the more detailed QNetworkReply and provides
-    convenience methods for data and status handling.
+    QRestReply wraps a QNetworkReply and provides convenience methods for data
+    and status handling. The methods provide convenience for typical RESTful
+    client applications.
 
-    \sa QRestAccessManager, QNetworkReply
+    QRestReply doesn't take ownership of the wrapped QNetworkReply, and the
+    lifetime and ownership of the reply is as defined by QNetworkAccessManager
+    documentation.
+
+    QRestReply object is not copyable, but is movable.
+
+    \sa QRestAccessManager, QNetworkReply, QNetworkAccessManager,
+        QNetworkAccessManager::setAutoDeleteReplies()
 */
 
+/*!
+    Creates a QRestReply and initializes the wrapped QNetworkReply to \a reply.
+*/
 QRestReply::QRestReply(QNetworkReply *reply)
     : wrapped(reply)
 {
@@ -49,6 +58,26 @@ QRestReply::~QRestReply()
 {
     delete d;
 }
+
+/*!
+    \fn QRestReply::QRestReply(QRestReply &&other) noexcept
+
+    Move-constructs the reply from \a other.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+*/
+
+/*!
+    \fn QRestReply &QRestReply::operator=(QRestReply &&other) noexcept
+
+    Move-assigns \a other and returns a reference to this reply.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+*/
 
 /*!
     Returns a pointer to the underlying QNetworkReply wrapped by this object.
@@ -106,7 +135,8 @@ std::optional<QJsonDocument> QRestReply::json(QJsonParseError *error)
     calls to get response data will return empty until further data has been
     received.
 
-    \sa json(), text(), bytesAvailable(), readyRead()
+    \sa json(), text(), QNetworkReply::bytesAvailable(),
+        QNetworkReply::readyRead()
 */
 QByteArray QRestReply::body()
 {
@@ -127,7 +157,7 @@ QByteArray QRestReply::body()
     decoding is not supported by \l QStringConverter, or if the decoding
     has errors (for example invalid characters).
 
-    \sa json(), body(), isFinished(), finished()
+    \sa json(), body(), QNetworkReply::readyRead()
 */
 QString QRestReply::text()
 {
