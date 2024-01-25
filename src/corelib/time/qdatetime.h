@@ -144,15 +144,20 @@ public:
     // Overriding base year is likely more common than overriding calendar (and
     // likely to get more so, as the legacy base drops ever further behind us).
     static QDate fromString(QStringView string, QStringView format,
-                            int baseYear = QLocale::DefaultTwoDigitBaseYear,
-                            QCalendar cal = QCalendar())
+                            int baseYear = QLocale::DefaultTwoDigitBaseYear)
+    { return fromString(string.toString(), format, baseYear); }
+    static QDate fromString(QStringView string, QStringView format,
+                            int baseYear, QCalendar cal)
     { return fromString(string.toString(), format, baseYear, cal); }
     static QDate fromString(const QString &string, QStringView format,
-                            int baseYear = QLocale::DefaultTwoDigitBaseYear,
-                            QCalendar cal = QCalendar());
+                            int baseYear = QLocale::DefaultTwoDigitBaseYear);
+    static QDate fromString(const QString &string, QStringView format,
+                            int baseYear, QCalendar cal);
     static QDate fromString(const QString &string, const QString &format,
-                            int baseYear = QLocale::DefaultTwoDigitBaseYear,
-                            QCalendar cal = QCalendar())
+                            int baseYear = QLocale::DefaultTwoDigitBaseYear)
+    { return fromString(string, qToStringViewIgnoringNull(format), baseYear); }
+    static QDate fromString(const QString &string, const QString &format,
+                            int baseYear, QCalendar cal)
     { return fromString(string, qToStringViewIgnoringNull(format), baseYear, cal); }
 #endif
     static bool isValid(int y, int m, int d);
@@ -451,15 +456,20 @@ public:
     // Overriding base year is likely more common than overriding calendar (and
     // likely to get more so, as the legacy base drops ever further behind us).
     static QDateTime fromString(QStringView string, QStringView format,
-                                int baseYear = QLocale::DefaultTwoDigitBaseYear,
-                                QCalendar cal = QCalendar())
+                                int baseYear = QLocale::DefaultTwoDigitBaseYear)
+    { return fromString(string.toString(), format, baseYear); }
+    static QDateTime fromString(QStringView string, QStringView format,
+                                int baseYear, QCalendar cal)
     { return fromString(string.toString(), format, baseYear, cal); }
     static QDateTime fromString(const QString &string, QStringView format,
-                                int baseYear = QLocale::DefaultTwoDigitBaseYear,
-                                QCalendar cal = QCalendar());
+                                int baseYear = QLocale::DefaultTwoDigitBaseYear);
+    static QDateTime fromString(const QString &string, QStringView format,
+                                int baseYear, QCalendar cal);
     static QDateTime fromString(const QString &string, const QString &format,
-                                int baseYear = QLocale::DefaultTwoDigitBaseYear,
-                                QCalendar cal = QCalendar())
+                                int baseYear = QLocale::DefaultTwoDigitBaseYear)
+    { return fromString(string, qToStringViewIgnoringNull(format), baseYear); }
+    static QDateTime fromString(const QString &string, const QString &format,
+                                int baseYear, QCalendar cal)
     { return fromString(string, qToStringViewIgnoringNull(format), baseYear, cal); }
 #endif
 

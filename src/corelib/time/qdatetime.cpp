@@ -1844,6 +1844,33 @@ QDate QDate::fromString(const QString &string, QStringView format, int baseYear,
     \overload
     \since 6.7
 */
+
+/*!
+    \fn QDate QDate::fromString(QStringView string, QStringView format, int baseYear)
+    \overload
+    \since 6.7
+
+    Uses a default-constructed QCalendar.
+*/
+
+/*!
+    \overload
+    \since 6.7
+
+    Uses a default-constructed QCalendar.
+*/
+QDate QDate::fromString(const QString &string, QStringView format, int baseYear)
+{
+    return fromString(string, format, baseYear, QCalendar());
+}
+
+/*!
+    \fn QDate QDate::fromString(const QString &string, const QString &format, int baseYear)
+    \overload
+    \since 6.7
+
+    Uses a default-constructed QCalendar.
+*/
 #endif // datestring
 
 /*!
@@ -5847,6 +5874,33 @@ QDateTime QDateTime::fromString(const QString &string, QStringView format, int b
     \fn QDateTime QDateTime::fromString(QStringView string, QStringView format, int baseYear, QCalendar cal)
     \overload
     \since 6.7
+*/
+
+/*!
+    \fn QDateTime QDateTime::fromString(QStringView string, QStringView format, int baseYear)
+    \overload
+    \since 6.7
+
+    Uses a default-constructed QCalendar.
+*/
+
+/*!
+    \overload
+    \since 6.7
+
+    Uses a default-constructed QCalendar.
+*/
+QDateTime QDateTime::fromString(const QString &string, QStringView format, int baseYear)
+{
+    return fromString(string, format, baseYear, QCalendar());
+}
+
+/*!
+    \fn QDateTime QDateTime::fromString(const QString &string, const QString &format, int baseYear)
+    \overload
+    \since 6.7
+
+    Uses a default-constructed QCalendar.
 */
 #endif // datestring
 
