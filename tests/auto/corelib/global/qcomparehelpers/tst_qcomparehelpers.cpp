@@ -4,6 +4,8 @@
 #include "tst_qcomparehelpers.h"
 #include "wrappertypes.h"
 
+#include <QtCore/qscopeguard.h>
+
 #if defined(__STDCPP_FLOAT16_T__) && __has_include(<stdfloat>)
 #include <stdfloat>
 #endif
@@ -109,32 +111,12 @@ void tst_QCompareHelpers::compareStringData()
 void tst_QCompareHelpers::comparisonCompiles()
 {
     QTestPrivate::testAllComparisonOperatorsCompile<IntWrapper>();
-    if (QTest::currentTestFailed())
-        return;
-
     QTestPrivate::testAllComparisonOperatorsCompile<IntWrapper, int>();
-    if (QTest::currentTestFailed())
-        return;
-
     QTestPrivate::testAllComparisonOperatorsCompile<DoubleWrapper>();
-    if (QTest::currentTestFailed())
-        return;
-
     QTestPrivate::testAllComparisonOperatorsCompile<DoubleWrapper, double>();
-    if (QTest::currentTestFailed())
-        return;
-
     QTestPrivate::testAllComparisonOperatorsCompile<DoubleWrapper, IntWrapper>();
-    if (QTest::currentTestFailed())
-        return;
-
     QTestPrivate::testAllComparisonOperatorsCompile<StringWrapper<QString>>();
-    if (QTest::currentTestFailed())
-        return;
-
     QTestPrivate::testAllComparisonOperatorsCompile<StringWrapper<QString>, QAnyStringView>();
-    if (QTest::currentTestFailed())
-        return;
 }
 
 void tst_QCompareHelpers::compare_IntWrapper_data()
@@ -498,11 +480,14 @@ enum class TestEnum : quint8 {
 void tst_QCompareHelpers::builtinOrder()
 {
 #define TEST_BUILTIN(Left, Right) \
-    testOrderForTypes<Left, Right>(); \
-    if (QTest::currentTestFailed()) { \
-        qDebug("Failed Qt::compareThreeWay() test for builtin types " #Left " and " #Right); \
-        return; \
-    }
+    do { \
+        auto printOnFailure = qScopeGuard([] { \
+                qDebug("Failed Qt::compareThreeWay() test for builtin types %s and %s", \
+                       #Left, #Right); \
+            }); \
+        testOrderForTypes<Left, Right>(); \
+        printOnFailure.dismiss(); \
+    } while (false);
 
     // some combinations
     TEST_BUILTIN(char, char)
