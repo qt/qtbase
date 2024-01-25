@@ -594,18 +594,10 @@ static bool addFontToDatabase(QString familyName,
             writingSystems.setSupported(ws);
     }
 
-    // We came here from populating a different font family, so we have
-    // to ensure the entire typographic family is populated before we
-    // mark it as such inside registerFont()
-    if (!subFamilyName.isEmpty()
-            && familyName != subFamilyName
-            && sfp->populatedFontFamily != familyName
-            && !QPlatformFontDatabase::isFamilyPopulated(familyName)) {
-        sfp->windowsFontDatabase->populateFamily(familyName);
-    }
-
+    const bool wasPopulated = QPlatformFontDatabase::isFamilyPopulated(familyName);
     QPlatformFontDatabase::registerFont(familyName, styleName, foundryName, weight,
                                         style, stretch, antialias, scalable, size, fixed, writingSystems, createFontFile(faceName));
+
 
     // add fonts windows can generate for us:
     if (weight <= QFont::DemiBold && styleName.isEmpty())
@@ -617,6 +609,16 @@ static bool addFontToDatabase(QString familyName,
     if (weight <= QFont::DemiBold && style != QFont::StyleItalic && styleName.isEmpty())
         QPlatformFontDatabase::registerFont(familyName, QString(), foundryName, QFont::Bold,
                                             QFont::StyleItalic, stretch, antialias, scalable, size, fixed, writingSystems, createFontFile(faceName));
+
+    // We came here from populating a different font family, so we have
+    // to ensure the entire typographic family is populated before we
+    // mark it as such inside registerFont()
+    if (!subFamilyName.isEmpty()
+            && familyName != subFamilyName
+            && sfp->populatedFontFamily != familyName
+            && !wasPopulated) {
+        sfp->windowsFontDatabase->populateFamily(familyName);
+    }
 
     if (!subFamilyName.isEmpty() && familyName != subFamilyName) {
         QPlatformFontDatabase::registerFont(subFamilyName, subFamilyStyle, foundryName, weight,
