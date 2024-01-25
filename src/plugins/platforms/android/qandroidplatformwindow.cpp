@@ -342,10 +342,28 @@ void QAndroidPlatformWindow::setSurface(JNIEnv *env, jobject object, jint window
     }
 }
 
+void QAndroidPlatformWindow::windowFocusChanged(JNIEnv *env, jobject object,
+                                          jboolean focus, jint windowId)
+{
+    Q_UNUSED(env)
+    Q_UNUSED(object)
+    QWindow* window = QtAndroid::windowFromId(windowId);
+    Q_ASSERT_X(window, "QAndroidPlatformWindow", "windowFocusChanged event window should exist");
+    if (focus) {
+        QWindowSystemInterface::handleFocusWindowChanged(window);
+    } else if (!focus && window == qGuiApp->focusWindow()) {
+        // Clear focus if current window has lost focus
+        QWindowSystemInterface::handleFocusWindowChanged(nullptr);
+    }
+}
+
 bool QAndroidPlatformWindow::registerNatives(QJniEnvironment &env)
 {
     if (!env.registerNativeMethods(QtJniTypes::Traits<QtJniTypes::QtWindow>::className(),
-                                  {Q_JNI_NATIVE_SCOPED_METHOD(setSurface, QAndroidPlatformWindow)})) {
+                                {
+                                    Q_JNI_NATIVE_SCOPED_METHOD(setSurface, QAndroidPlatformWindow),
+                                    Q_JNI_NATIVE_SCOPED_METHOD(windowFocusChanged, QAndroidPlatformWindow)
+                                })) {
         qCCritical(lcQpaWindow) << "RegisterNatives failed for"
                                 << QtJniTypes::Traits<QtJniTypes::QtWindow>::className();
         return false;
