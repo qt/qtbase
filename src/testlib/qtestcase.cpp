@@ -972,6 +972,10 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
          "                       repeated forever. This is intended as a developer tool, and\n"
          "                       is only supported with the plain text logger.\n"
          " -skipblacklisted    : Skip blacklisted tests. Useful for measuring test coverage.\n"
+         " -[no]throwonfail    : Enables/disables throwing on QCOMPARE()/QVERIFY()/etc.\n"
+         "                       Default: off,  unless QTEST_THROW_ON_FAIL is set."
+         " -[no]throwonskip    : Enables/disables throwing on QSKIP().\n"
+         "                       Default: off,  unless QTEST_THROW_ON_SKIP is set."
          "\n"
          " Benchmarking options:\n"
 #if QT_CONFIG(valgrind)
@@ -1133,6 +1137,14 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
             QTest::noCrashHandler = true;
         } else if (strcmp(argv[i], "-skipblacklisted") == 0) {
             QTest::skipBlacklisted = true;
+        } else if (strcmp(argv[i], "-throwonfail") == 0) {
+            QTest::setThrowOnFail(true);
+        } else if (strcmp(argv[i], "-nothrowonfail") == 0) {
+            QTest::setThrowOnFail(false);
+        } else if (strcmp(argv[i], "-throwonskip") == 0) {
+            QTest::setThrowOnSkip(true);
+        } else if (strcmp(argv[i], "-nothrowonskip") == 0) {
+            QTest::setThrowOnSkip(false);
 #if QT_CONFIG(valgrind)
         } else if (strcmp(argv[i], "-callgrind") == 0) {
             if (!QBenchmarkValgrindUtils::haveValgrind()) {

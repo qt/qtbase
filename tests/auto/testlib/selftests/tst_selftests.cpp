@@ -1014,10 +1014,12 @@ TestProcessResult runTestProcess(const QString &test, const QStringList &argumen
     return { process.exitCode(), standardOutput, standardError };
 }
 
+enum class Throw { OnFail = 1 };
+
 /*
     Runs a single test and verifies the output against the expected results.
 */
-void runTest(const QString &test, const TestLoggers &requestedLoggers)
+void runTest(const QString &test, const TestLoggers &requestedLoggers, Throw throwing = {})
 {
     TestLoggers loggers;
     for (auto logger : requestedLoggers) {
@@ -1031,6 +1033,10 @@ void runTest(const QString &test, const TestLoggers &requestedLoggers)
     QStringList arguments;
     for (auto logger : loggers)
         arguments += logger.arguments(test);
+    if (throwing == Throw::OnFail) // don't distinguish between throwonfail/throwonskip
+        arguments += {"-throwonfail", "-throwonskip"};
+    else
+        arguments += {"-nothrowonfail", "-nothrowonskip"};
 
     CAPTURE(test);
     CAPTURE(arguments);
@@ -1057,9 +1063,9 @@ void runTest(const QString &test, const TestLoggers &requestedLoggers)
 /*
     Runs a single test and verifies the output against the expected result.
 */
-void runTest(const QString &test, const TestLogger &logger)
+void runTest(const QString &test, const TestLogger &logger, Throw t = {})
 {
-    runTest(test, TestLoggers{logger});
+    runTest(test, TestLoggers{logger}, t);
 }
 
 // ----------------------- Catch helpers -----------------------
@@ -1202,7 +1208,12 @@ SCENARIO("Test output of the loggers is as expected")
     GIVEN("The " << logger << " logger") {
         for (QString test : tests) {
             AND_GIVEN("The " << test << " subtest") {
-                runTest(test, TestLogger(logger, StdoutOutput));
+                WHEN("Throwing on failure or skip") {
+                    runTest(test, TestLogger(logger, StdoutOutput), Throw::OnFail);
+                }
+                WHEN("Returning on failure or skip") {
+                    runTest(test, TestLogger(logger, StdoutOutput));
+                }
             }
         }
     }
