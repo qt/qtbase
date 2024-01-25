@@ -16,11 +16,11 @@ private Q_SLOTS:
     void idnaTestV2();
 
 private:
-    // All error codes:
-    //      A3, A4_1, A4_2,
+    // All error codes in UTR #46 revision 31 (Unicode 15.1):
+    //      A4_1, A4_2,
     //      B1, B2, B3, B4, B5, B6,
     //      C1, C2,
-    //      P1, P4,
+    //      P4,
     //      V1, V2, V3, V5, V6,
     //      X4_2
     //
@@ -28,7 +28,9 @@ private:
     static const QSet<QByteArray> fatalErrors;
 };
 
-const QSet<QByteArray> tst_QUrlUts46::fatalErrors = { "A3", "A4_2", "P1", "X4_2" };
+const QSet<QByteArray> tst_QUrlUts46::fatalErrors = {
+        "A4_2", // Empty ASCII label
+};
 
 /**
  * Replace \uXXXX escapes in test case fields.
@@ -124,22 +126,19 @@ void tst_QUrlUts46::idnaTestV2()
     QFETCH(QString, toAsciiT);
     QFETCH(bool, toAsciiTOk);
 
-    auto dashesOk = [](const QString &domain) {
-        const auto labels = domain.split(u'.');
-        return std::all_of(labels.begin(), labels.end(), [](const QString &label) {
-            return label.isEmpty() || !(label.startsWith(u'-') || label.endsWith(u'-'));
-        });
-    };
-
     QString toAceN = QUrl::toAce(source);
-    if (toAsciiNOk && dashesOk(toAsciiN))
+    if (toUnicodeOk && toAsciiNOk)
         QCOMPARE(toAceN, toAsciiN);
+    else if (toAsciiNOk)
+        QVERIFY(toAceN.isEmpty() || toAceN == toAsciiN);
     else
         QCOMPARE(toAceN, QString());
 
     QString toAceT = QUrl::toAce(source, QUrl::AceTransitionalProcessing);
-    if (toAsciiTOk && dashesOk(toAsciiT))
+    if (toUnicodeOk && toAsciiTOk)
         QCOMPARE(toAceT, toAsciiT);
+    else if (toAsciiTOk)
+        QVERIFY(toAceT.isEmpty() || toAceT == toAsciiT);
     else
         QCOMPARE(toAceT, QString());
 
