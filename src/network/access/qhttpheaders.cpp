@@ -91,15 +91,6 @@ public:
     QHttpHeadersPrivate() = default;
 
     QList<Header> headers;
-
-    Q_ALWAYS_INLINE void verify([[maybe_unused]] qsizetype pos = 0,
-                                [[maybe_unused]] qsizetype n = 1) const
-    {
-        Q_ASSERT(pos >= 0);
-        Q_ASSERT(pos <= headers.size());
-        Q_ASSERT(n >= 0);
-        Q_ASSERT(n <= headers.size() - pos);
-    }
 };
 
 QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QHttpHeadersPrivate)
@@ -812,7 +803,7 @@ bool QHttpHeaders::append(WellKnownHeader name, QAnyStringView value)
 */
 bool QHttpHeaders::insert(qsizetype i, QAnyStringView name, QAnyStringView value)
 {
-    d->verify(i, 0);
+    verify(i, 0);
     if (!isValidHttpHeaderNameField(name) || !isValidHttpHeaderValueField(value))
         return false;
 
@@ -826,7 +817,7 @@ bool QHttpHeaders::insert(qsizetype i, QAnyStringView name, QAnyStringView value
 */
 bool QHttpHeaders::insert(qsizetype i, WellKnownHeader name, QAnyStringView value)
 {
-    d->verify(i, 0);
+    verify(i, 0);
     if (!isValidHttpHeaderValueField(value))
         return false;
 
@@ -846,7 +837,7 @@ bool QHttpHeaders::insert(qsizetype i, WellKnownHeader name, QAnyStringView valu
 */
 bool QHttpHeaders::replace(qsizetype i, QAnyStringView name, QAnyStringView newValue)
 {
-    d->verify(i);
+    verify(i);
     if (!isValidHttpHeaderNameField(name) || !isValidHttpHeaderValueField(newValue))
         return false;
 
@@ -860,7 +851,7 @@ bool QHttpHeaders::replace(qsizetype i, QAnyStringView name, QAnyStringView newV
 */
 bool QHttpHeaders::replace(qsizetype i, WellKnownHeader name, QAnyStringView newValue)
 {
-    d->verify(i);
+    verify(i);
     if (!isValidHttpHeaderValueField(newValue))
         return false;
 
@@ -920,7 +911,7 @@ void QHttpHeaders::removeAll(WellKnownHeader name)
 */
 void QHttpHeaders::removeAt(qsizetype i)
 {
-    d->verify(i);
+    verify(i);
     d.detach();
     d->headers.removeAt(i);
 }
@@ -980,7 +971,7 @@ QList<QByteArray> QHttpHeaders::values(WellKnownHeader name) const
 */
 QByteArrayView QHttpHeaders::valueAt(qsizetype i) const noexcept
 {
-    d->verify(i);
+    verify(i);
     return d->headers.at(i).value;
 }
 
@@ -994,7 +985,7 @@ QByteArrayView QHttpHeaders::valueAt(qsizetype i) const noexcept
 */
 QLatin1StringView QHttpHeaders::nameAt(qsizetype i) const noexcept
 {
-    d->verify(i);
+    verify(i);
     return QLatin1StringView{d->headers.at(i).name};
 }
 
