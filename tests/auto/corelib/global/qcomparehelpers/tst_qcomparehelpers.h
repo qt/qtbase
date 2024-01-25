@@ -9,6 +9,10 @@
 #include <QtTest/qtest.h>
 #include <QtTest/private/qcomparisontesthelper_p.h>
 
+#ifndef QTEST_THROW_ON_FAIL
+# error This test requires QTEST_THROW_ON_FAIL being active.
+#endif
+
 class tst_QCompareHelpers : public QObject
 {
     Q_OBJECT

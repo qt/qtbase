@@ -4,7 +4,9 @@
 if(NOT INTEGRITY)
     add_subdirectory(qcompare)
 endif()
+if(NOT WASM) # QTBUG-121822
 add_subdirectory(qcomparehelpers)
+endif()
 add_subdirectory(qflags)
 add_subdirectory(q_func_info)
 add_subdirectory(qgetputenv)
