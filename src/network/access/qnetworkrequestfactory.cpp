@@ -407,7 +407,7 @@ void QNetworkRequestFactory::clearPassword()
     Sets \a timeout used for transfers.
 
     \sa transferTimeout(), QNetworkRequest::setTransferTimeout(),
-        QRestAccessManager::setTransferTimeout()
+        QNetworkAccessManager::setTransferTimeout()
 */
 void QNetworkRequestFactory::setTransferTimeout(std::chrono::milliseconds timeout)
 {
@@ -422,7 +422,7 @@ void QNetworkRequestFactory::setTransferTimeout(std::chrono::milliseconds timeou
     Returns the timeout used for transfers.
 
     \sa setTransferTimeout(), QNetworkRequest::transferTimeout(),
-        QRestAccessManager::transferTimeout()
+        QNetworkAccessManager::transferTimeout()
 */
 std::chrono::milliseconds QNetworkRequestFactory::transferTimeout() const
 {
