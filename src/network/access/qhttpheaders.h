@@ -260,6 +260,14 @@ private:
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QHttpHeaders &headers);
 #endif
+    Q_ALWAYS_INLINE void verify([[maybe_unused]] qsizetype pos = 0,
+                                [[maybe_unused]] qsizetype n = 1) const
+    {
+        Q_ASSERT(pos >= 0);
+        Q_ASSERT(pos <= size());
+        Q_ASSERT(n >= 0);
+        Q_ASSERT(n <= size() - pos);
+    }
     QExplicitlySharedDataPointer<QHttpHeadersPrivate> d;
 };
 
