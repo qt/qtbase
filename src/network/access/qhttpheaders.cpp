@@ -1040,6 +1040,7 @@ qsizetype QHttpHeaders::size() const noexcept
 */
 void QHttpHeaders::reserve(qsizetype size)
 {
+    d.detach();
     d->headers.reserve(size);
 }
 
