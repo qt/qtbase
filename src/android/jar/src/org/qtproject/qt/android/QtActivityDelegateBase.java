@@ -133,6 +133,26 @@ abstract class QtActivityDelegateBase
         setUpLayout();
     }
 
+    protected void registerGlobalFocusChangeListener(final View view) {
+        view.getViewTreeObserver().addOnGlobalFocusChangeListener(this::onGlobalFocusChanged);
+    }
+
+    private void onGlobalFocusChanged(View oldFocus, View newFocus) {
+        if (newFocus instanceof QtEditText) {
+            final QtWindow newWindow = (QtWindow) newFocus.getParent();
+            QtWindow.windowFocusChanged(true, newWindow.getId());
+            m_inputDelegate.setFocusedView((QtEditText) newFocus);
+        } else {
+            int id = -1;
+            if (oldFocus instanceof QtEditText) {
+                final QtWindow oldWindow = (QtWindow) oldFocus.getParent();
+                id = oldWindow.getId();
+            }
+            QtWindow.windowFocusChanged(false, id);
+            m_inputDelegate.setFocusedView(null);
+        }
+    }
+
     public void hideSplashScreen()
     {
         hideSplashScreen(0);

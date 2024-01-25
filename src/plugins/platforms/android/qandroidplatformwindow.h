@@ -93,6 +93,8 @@ protected:
 private:
     static void setSurface(JNIEnv *env, jobject obj, jint windowId, QtJniTypes::Surface surface);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(setSurface)
+    static void windowFocusChanged(JNIEnv *env, jobject object, jboolean focus, jint windowId);
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(windowFocusChanged)
 };
 
 QT_END_NAMESPACE

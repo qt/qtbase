@@ -24,6 +24,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     private final QtEditText m_editText;
 
     private static native void setSurface(int windowId, Surface surface);
+    static native void windowFocusChanged(boolean hasFocus, int id);
 
     public QtWindow(Context context, QtWindow parentWindow)
     {
@@ -31,6 +32,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         setId(View.generateViewId());
         m_editText = new QtEditText(context);
         setParent(parentWindow);
+        setFocusableInTouchMode(true);
 
         QtNative.runAction(() -> {
             m_gestureDetector =
