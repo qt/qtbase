@@ -15,7 +15,7 @@ class QWidget;
 namespace QTest {
 
 [[nodiscard]] Q_WIDGETS_EXPORT bool qWaitForWindowActive(QWidget *widget, int timeout = 5000);
-[[nodiscard]] Q_WIDGETS_EXPORT bool qWaitForWindowFocused(QWidget *widget, int timeout = 5000);
+[[nodiscard]] Q_WIDGETS_EXPORT bool qWaitForWindowFocused(QWidget *widget, QDeadlineTimer timeout = std::chrono::seconds{5});
 [[nodiscard]] Q_WIDGETS_EXPORT bool qWaitForWindowExposed(QWidget *widget, int timeout = 5000);
 
 class Q_WIDGETS_EXPORT QTouchEventWidgetSequence : public QTouchEventSequence
