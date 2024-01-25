@@ -201,7 +201,7 @@ public:
     };
     Q_ENUM(WellKnownHeader)
 
-    Q_NETWORK_EXPORT QHttpHeaders();
+    Q_NETWORK_EXPORT QHttpHeaders() noexcept;
     Q_NETWORK_EXPORT ~QHttpHeaders();
 
     Q_NETWORK_EXPORT QHttpHeaders(const QHttpHeaders &other);

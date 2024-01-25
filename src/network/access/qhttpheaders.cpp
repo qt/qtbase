@@ -94,6 +94,15 @@ public:
 };
 
 QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QHttpHeadersPrivate)
+template <> void QExplicitlySharedDataPointer<QHttpHeadersPrivate>::detach()
+{
+    if (!d) {
+        d = new QHttpHeadersPrivate();
+        d->ref.ref();
+    } else if (d->ref.loadRelaxed() != 1) {
+        detach_helper();
+    }
+}
 
 // This list is from IANA HTTP Field Name Registry
 // https://www.iana.org/assignments/http-fields
@@ -472,7 +481,7 @@ static constexpr auto headerNames = qOffsetStringArray(
 /*!
     Creates a new QHttpHeaders object.
 */
-QHttpHeaders::QHttpHeaders() : d(new QHttpHeadersPrivate)
+QHttpHeaders::QHttpHeaders() noexcept : d()
 {
 }
 
@@ -542,11 +551,8 @@ QHttpHeaders &QHttpHeaders::operator=(const QHttpHeaders &other)
 /*!
     \fn QHttpHeaders::QHttpHeaders(QHttpHeaders &&other) noexcept
 
-    Move-constructs the object from \a other.
-
-    \note The moved-from object \a other is placed in a
-    partially-formed state, in which the only valid operations are
-    destruction and assignment of a new value.
+    Move-constructs the object from \a other, which will be left
+    \l{isEmpty()}{empty}.
 */
 
 /*!
@@ -554,9 +560,7 @@ QHttpHeaders &QHttpHeaders::operator=(const QHttpHeaders &other)
 
     Move-assigns \a other and returns a reference to this object.
 
-    \note The moved-from object \a other is placed in a
-    partially-formed state, in which the only valid operations are
-    destruction and assignment of a new value.
+    \a other will be left \l{isEmpty()}{empty}.
 */
 
 /*!
@@ -578,11 +582,14 @@ QDebug operator<<(QDebug debug, const QHttpHeaders &headers)
     const QDebugStateSaver saver(debug);
     debug.resetFormat().nospace();
 
-    debug << "QHttpHeaders(headers = ";
-    const char *separator = "";
-    for (const auto &h : headers.d->headers) {
-        debug << separator << h.name << ':' << h.value;
-        separator = " | ";
+    debug << "QHttpHeaders(";
+    if (headers.d) {
+        debug << "headers = ";
+        const char *separator = "";
+        for (const auto &h : headers.d->headers) {
+            debug << separator << h.name << ':' << h.value;
+            separator = " | ";
+        }
     }
     debug << ")";
     return debug;
@@ -867,6 +874,8 @@ bool QHttpHeaders::replace(qsizetype i, WellKnownHeader name, QAnyStringView new
 */
 bool QHttpHeaders::contains(QAnyStringView name) const
 {
+    if (!d)
+        return false;
     return std::any_of(d->headers.cbegin(), d->headers.cend(),
                        [&name](const Header &header) { return headerNameIs(header, name); });
 }
@@ -924,6 +933,8 @@ void QHttpHeaders::removeAt(qsizetype i)
 */
 QByteArrayView QHttpHeaders::value(QAnyStringView name, QByteArrayView defaultValue) const noexcept
 {
+    if (!d)
+        return defaultValue;
     for (const auto &h : std::as_const(d->headers)) {
         if (headerNameIs(h, name))
             return h.value;
@@ -948,6 +959,8 @@ QByteArrayView QHttpHeaders::value(WellKnownHeader name, QByteArrayView defaultV
 QList<QByteArray> QHttpHeaders::values(QAnyStringView name) const
 {
     QList<QByteArray> values;
+    if (!d)
+        return values;
     for (const auto &h : std::as_const(d->headers)) {
         if (headerNameIs(h, name))
             values.append(h.value);
@@ -1028,6 +1041,8 @@ QByteArray QHttpHeaders::combinedValue(WellKnownHeader name) const
 */
 qsizetype QHttpHeaders::size() const noexcept
 {
+    if (!d)
+        return 0;
     return d->headers.size();
 }
 
@@ -1059,6 +1074,8 @@ QByteArrayView QHttpHeaders::wellKnownHeaderName(WellKnownHeader name) noexcept
 QList<std::pair<QByteArray, QByteArray>> QHttpHeaders::toListOfPairs() const
 {
     QList<std::pair<QByteArray, QByteArray>> list;
+    if (!d)
+        return list;
     list.reserve(size());
     for (const auto & h : std::as_const(d->headers))
         list.append({h.name, h.value});
@@ -1072,6 +1089,8 @@ QList<std::pair<QByteArray, QByteArray>> QHttpHeaders::toListOfPairs() const
 QMultiMap<QByteArray, QByteArray> QHttpHeaders::toMultiMap() const
 {
     QMultiMap<QByteArray, QByteArray> map;
+    if (!d)
+        return map;
     for (const auto &h : std::as_const(d->headers))
         map.insert(h.name, h.value);
     return map;
@@ -1084,6 +1103,8 @@ QMultiMap<QByteArray, QByteArray> QHttpHeaders::toMultiMap() const
 QMultiHash<QByteArray, QByteArray> QHttpHeaders::toMultiHash() const
 {
     QMultiHash<QByteArray, QByteArray> hash;
+    if (!d)
+        return hash;
     hash.reserve(size());
     for (const auto &h : std::as_const(d->headers))
         hash.insert(h.name, h.value);
