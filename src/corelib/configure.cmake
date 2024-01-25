@@ -439,7 +439,7 @@ qt_feature("system-doubleconversion" PRIVATE
 )
 qt_feature("cxx11_future" PUBLIC
     LABEL "C++11 <future>"
-    CONDITION ON
+    CONDITION NOT VXWORKS
 )
 qt_feature("cxx17_filesystem" PUBLIC
     LABEL "C++17 <filesystem>"
