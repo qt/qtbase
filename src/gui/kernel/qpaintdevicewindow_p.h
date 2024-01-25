@@ -31,6 +31,8 @@ public:
     QPaintDeviceWindowPrivate();
     ~QPaintDeviceWindowPrivate() override;
 
+    virtual void handleResizeEvent() {}
+
     virtual void beginPaint(const QRegion &region)
     {
         Q_UNUSED(region);
