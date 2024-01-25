@@ -47,7 +47,7 @@ Q_GUI_EXPORT bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
 /*!
     \since 6.7
 
-    Returns \c true, if \a window is the focus window within \a timeout milliseconds. Otherwise returns \c false.
+    Returns \c true, if \a window is the focus window within \a timeout. Otherwise returns \c false.
 
     The method is useful in tests that call QWindow::show() and rely on the window
     having focus (for receiving keyboard events e.g.) before proceeding.
@@ -60,7 +60,7 @@ Q_GUI_EXPORT bool QTest::qWaitForWindowActive(QWindow *window, int timeout)
 
     \sa qWaitForWindowExposed(), qWaitForWindowActive(), QGuiApplication::focusWindow()
 */
-Q_GUI_EXPORT bool QTest::qWaitForWindowFocused(QWindow *window, int timeout)
+Q_GUI_EXPORT bool QTest::qWaitForWindowFocused(QWindow *window, QDeadlineTimer timeout)
 {
     return QTest::qWaitFor([&]() { return qGuiApp->focusWindow() == window; }, timeout);
 }
