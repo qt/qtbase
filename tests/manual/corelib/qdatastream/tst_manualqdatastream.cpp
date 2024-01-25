@@ -15,11 +15,9 @@ class tst_QDataStream : public QObject
 
     template <class T>
     void fill(T &input);
-    template <>
+
     void fill(QSet<qsizetype> &input);
-    template <>
     void fill(QMap<qsizetype, qsizetype> &input);
-    template <>
     void fill(QHash<qsizetype, qsizetype> &input);
 
     template <class T>
@@ -58,7 +56,6 @@ void tst_QDataStream::fill(T &input)
     qDebug("Created dataset in %lld ms", timer.elapsed());
 }
 
-template <>
 void tst_QDataStream::fill(QSet<qsizetype> &input)
 {
     constexpr qsizetype GiB = 1024 * 1024 * 1024;
@@ -76,7 +73,6 @@ void tst_QDataStream::fill(QSet<qsizetype> &input)
     qDebug("Created dataset in %lld ms", timer.elapsed());
 }
 
-template <>
 void tst_QDataStream::fill(QMap<qsizetype, qsizetype> &input)
 {
     constexpr qsizetype GiB = 1024 * 1024 * 1024;
@@ -93,7 +89,6 @@ void tst_QDataStream::fill(QMap<qsizetype, qsizetype> &input)
     qDebug("Created dataset in %lld ms", timer.elapsed());
 }
 
-template <>
 void tst_QDataStream::fill(QHash<qsizetype, qsizetype> &input)
 {
     constexpr qsizetype GiB = 1024 * 1024 * 1024;
