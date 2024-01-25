@@ -418,7 +418,7 @@ set_source_files_properties(
 # Find ELF interpreter and define a macro for that:
 if ((LINUX OR HURD) AND NOT CMAKE_CROSSCOMPILING AND BUILD_SHARED_LIBS)
     if (NOT DEFINED ELF_INTERPRETER)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E env LC_ALL=C readelf -l /bin/ls
+        execute_process(COMMAND ${CMAKE_COMMAND} -E env LC_ALL=C readelf -l /bin/sh
                         RESULT_VARIABLE readelf_ok
                         OUTPUT_VARIABLE readelf_output
                        )
