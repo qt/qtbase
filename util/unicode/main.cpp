@@ -14,8 +14,8 @@
 #include <private/qunicodetables_p.h>
 #endif
 
-#define DATA_VERSION_S "15.0"
-#define DATA_VERSION_STR "QChar::Unicode_15_0"
+#define DATA_VERSION_S "15.1"
+#define DATA_VERSION_STR "QChar::Unicode_15_1"
 
 
 static QHash<QByteArray, QChar::UnicodeVersion> age_map;
@@ -51,6 +51,7 @@ static void initAgeMap()
         { QChar::Unicode_13_0,   "13.0" }, // UCD Revision 26
         { QChar::Unicode_14_0,   "14.0" }, // UCD Revision 28
         { QChar::Unicode_15_0,   "15.0" }, // UCD Revision 30
+        { QChar::Unicode_15_1,   "15.1" }, // UCD Revision 32
         { QChar::Unicode_Unassigned, 0 }
     };
     AgeMap *d = ageMap;
@@ -528,7 +529,8 @@ static void initSentenceBreak()
 
 static const char *line_break_class_string =
     "// see http://www.unicode.org/reports/tr14/tr14-30.html\n"
-    "// we don't use the XX and AI classes and map them to AL instead.\n"
+    "// we don't use the XX, AK, AP, AS and AI classes and map them to AL instead.\n"
+    "// VI and VF classes are mapped to CM.\n"
     "enum LineBreakClass {\n"
     "    LineBreak_OP, LineBreak_CL, LineBreak_CP, LineBreak_QU, LineBreak_GL,\n"
     "    LineBreak_NS, LineBreak_EX, LineBreak_SY, LineBreak_IS, LineBreak_PR,\n"
@@ -612,6 +614,11 @@ static void initLineBreak()
         { LineBreak_EB, "EB" },
         { LineBreak_EM, "EM" },
         { LineBreak_ZWJ, "ZWJ" },
+        { LineBreak_AL, "AK" },
+        { LineBreak_AL, "AP" },
+        { LineBreak_AL, "AS" },
+        { LineBreak_CM, "VI" },
+        { LineBreak_CM, "VF" },
         { LineBreak_Unassigned, 0 }
     };
     LineBreakList *d = breaks;

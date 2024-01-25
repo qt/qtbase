@@ -431,6 +431,7 @@ public:
         Unicode_13_0,
         Unicode_14_0,
         Unicode_15_0,
+        Unicode_15_1,
     };
 
     inline Category category() const noexcept { return QChar::category(ucs); }
