@@ -1216,6 +1216,17 @@ void QHttp2ProtocolHandler::handleAuthorization(Stream &stream)
                 // closed, so we don't need to call sendRequest ourselves.
                 return true;
             } // else: Authentication failed or was cancelled
+        } else {
+            // No authentication header, but we got a 401/407 so we cannot
+            // succeed. We need to emit signals for headers and data, and then
+            // finishWithError.
+            emit httpReply->headerChanged();
+            emit httpReply->readyRead();
+            QNetworkReply::NetworkError error = httpReply->statusCode() == 401
+                    ? QNetworkReply::AuthenticationRequiredError
+                    : QNetworkReply::ProxyAuthenticationRequiredError;
+            finishStreamWithError(stream, QNetworkReply::AuthenticationRequiredError,
+                                  m_connection->d_func()->errorDetail(error, m_socket));
         }
         return false;
     };
