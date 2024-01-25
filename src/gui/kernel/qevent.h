@@ -1024,7 +1024,7 @@ class Q_GUI_EXPORT QChildWindowEvent : public QEvent
 {
     Q_DECL_EVENT_COMMON(QChildWindowEvent)
 public:
-    QChildWindowEvent(Type type, QWindow *childWindow);
+    explicit QChildWindowEvent(Type type, QWindow *childWindow);
     QWindow *child() const { return c; }
 
 private:
