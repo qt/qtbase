@@ -563,6 +563,15 @@ function(qt_internal_find_tool out_var target_name tools_target)
                             " (QT_WILL_BUILD_TOOLS is ${QT_WILL_BUILD_TOOLS}).")
     endif()
 
+    if(NOT CMAKE_CROSSCOMPILING)
+        if(QT_INTERNAL_FORCE_FIND_HOST_TOOLS_MODULE_LIST AND
+            NOT "${tools_target}" IN_LIST QT_INTERNAL_FORCE_FIND_HOST_TOOLS_MODULE_LIST)
+            message(STATUS "Tool '${full_name}' will be built from source.")
+            set(${out_var} "TRUE" PARENT_SCOPE)
+            return()
+        endif()
+    endif()
+
     if(QT_WILL_RENAME_TOOL_TARGETS AND (name STREQUAL target_name))
         message(FATAL_ERROR
             "qt_internal_add_tool must be passed a target obtained from qt_get_tool_target_name.")
