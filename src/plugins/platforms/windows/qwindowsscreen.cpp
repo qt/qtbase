@@ -277,7 +277,9 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
         setMonitorDataFromSetupApi(*data, pathGroup);
     }
     if (data->name.isEmpty())
-        data->name = data->deviceName;
+        data->name.append(u"Internal Display");
+    data->name.prepend(u": ");
+    data->name.prepend(data->deviceName);
     if (data->deviceName == u"WinDisc") {
         data->flags |= QWindowsScreenData::LockScreen;
     } else {
