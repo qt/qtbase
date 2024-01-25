@@ -13156,6 +13156,24 @@ void QWidgetPrivate::setNetWmWindowTypes(bool skipIfMissing)
 #endif
 }
 
+/*!
+   \internal
+   \return \c true, if a child with \param policy exists and isn't a child of \param excludeChildrenOf.
+   Return false otherwise.
+ */
+bool QWidgetPrivate::hasChildWithFocusPolicy(Qt::FocusPolicy policy, const QWidget *excludeChildrenOf) const
+{
+    Q_Q(const QWidget);
+    const QWidgetList &children = q->findChildren<QWidget *>(Qt::FindChildrenRecursively);
+    for (const auto *child : children) {
+        if (child->focusPolicy() == policy && child->isEnabled()
+            && (!excludeChildrenOf || !excludeChildrenOf->isAncestorOf(child))) {
+            return true;
+        }
+    }
+    return false;
+}
+
 #ifndef QT_NO_DEBUG_STREAM
 
 static inline void formatWidgetAttributes(QDebug debug, const QWidget *widget)
