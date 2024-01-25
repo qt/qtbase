@@ -900,12 +900,12 @@ QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot,
     if (normalized.isEmpty())
         return {};
 
-    bool needsCoversionToUnicode;
+    bool needsConversionToUnicode;
     const QString aceResult = mappedToAscii ? normalized : convertToAscii(normalized, dot);
-    if (aceResult.isEmpty() || !checkAsciiDomainName(aceResult, dot, &needsCoversionToUnicode))
+    if (aceResult.isEmpty() || !checkAsciiDomainName(aceResult, dot, &needsConversionToUnicode))
         return {};
 
-    if (op == ToAceOnly || !needsCoversionToUnicode
+    if (op == ToAceOnly || !needsConversionToUnicode
         || (!options.testFlag(QUrl::IgnoreIDNWhitelist) && !qt_is_idn_enabled(aceResult))) {
         return aceResult;
     }
