@@ -206,6 +206,13 @@ void QWasmIntegration::removeBackingStore(QWindow* window)
     m_backingStores.remove(window);
 }
 
+void QWasmIntegration::releaseRequesetUpdateHold()
+{
+    for (const auto &elementAndScreen : m_screens) {
+        elementAndScreen.wasmScreen->compositor()->releaseRequesetUpdateHold();
+    }
+}
+
 #ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QWasmIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {

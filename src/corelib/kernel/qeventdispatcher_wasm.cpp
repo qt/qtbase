@@ -218,9 +218,12 @@ QEventDispatcherWasm::QEventDispatcherWasm()
 #if QT_CONFIG(thread)
         g_mainThread = pthread_self();
 #endif
+
         // Call the "onLoaded" JavaScript callback, unless startup tasks
-        // have been registered which should complete first.
-        checkCallQtLoaded();
+        // have been registered which should complete first. Run async
+        // to make sure event dispatcher construction (in particular any
+        // subclass construction) has completed first.
+        runAsync(callOnLoadedIfRequired);
     } else {
 #if QT_CONFIG(thread)
         std::lock_guard<std::mutex> lock(g_staticDataMutex);
@@ -916,10 +919,10 @@ void QEventDispatcherWasm::registerStartupTask()
 void QEventDispatcherWasm::completeStarupTask()
 {
     --g_startupTasks;
-    checkCallQtLoaded();
+    callOnLoadedIfRequired();
 }
 
-void QEventDispatcherWasm::checkCallQtLoaded()
+void QEventDispatcherWasm::callOnLoadedIfRequired()
 {
     if (g_startupTasks > 0)
         return;
@@ -929,12 +932,16 @@ void QEventDispatcherWasm::checkCallQtLoaded()
         return;
     qtLoadedCalled = true;
 
-    QTimer::singleShot(0, [](){
-        emscripten::val qt = emscripten::val::module_property("qt");
-        if (qt.isUndefined())
-            return;
-        qt.call<void>("onLoaded");
-    });
+    Q_ASSERT(g_mainThreadEventDispatcher);
+    g_mainThreadEventDispatcher->onLoaded();
+}
+
+void QEventDispatcherWasm::onLoaded()
+{
+    emscripten::val qt = emscripten::val::module_property("qt");
+    if (qt.isUndefined())
+        return;
+    qt.call<void>("onLoaded");
 }
 
 namespace {

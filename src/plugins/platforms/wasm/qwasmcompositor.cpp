@@ -4,6 +4,8 @@
 #include "qwasmcompositor.h"
 #include "qwasmwindow.h"
 
+#include <private/qeventdispatcher_wasm_p.h>
+
 #include <qpa/qwindowsysteminterface.h>
 
 #include <emscripten/html5.h>
@@ -41,6 +43,17 @@ void QWasmCompositor::setEnabled(bool enabled)
     m_isEnabled = enabled;
 }
 
+// requestUpdate delivery is initially disabled at startup, while Qt completes
+// startup tasks such as font loading. This function enables requestUpdate delivery
+// again.
+void QWasmCompositor::releaseRequesetUpdateHold()
+{
+    if (!m_requestUpdateHoldEnabled)
+        return;
+    m_requestUpdateHoldEnabled = false;
+    requestUpdate();
+}
+
 void QWasmCompositor::requestUpdateWindow(QWasmWindow *window, UpdateRequestDeliveryType updateType)
 {
     auto it = m_requestUpdateWindows.find(window);
@@ -60,6 +73,9 @@ void QWasmCompositor::requestUpdateWindow(QWasmWindow *window, UpdateRequestDeli
 void QWasmCompositor::requestUpdate()
 {
     if (m_requestAnimationFrameId != -1)
+        return;
+
+    if (m_requestUpdateHoldEnabled)
         return;
 
     static auto frame = [](double frameTime, void *context) -> int {

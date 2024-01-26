@@ -59,7 +59,8 @@ public:
 
     static void registerStartupTask();
     static void completeStarupTask();
-    static void checkCallQtLoaded();
+    static void callOnLoadedIfRequired();
+    virtual void onLoaded();
 
 protected:
     virtual bool processPostedEvents();
