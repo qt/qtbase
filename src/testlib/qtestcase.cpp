@@ -534,17 +534,17 @@ static int timeout = -1;
 #endif
 static bool noCrashHandler = false;
 
-/*! \internal
-    Invoke a method of the object without generating warning if the method does not exist
-*/
-static void invokeMethod(QObject *obj, const char *methodName)
+static bool invokeTestMethodIfValid(QMetaMethod m, QObject *obj = QTest::currentTestObject)
+{
+    return m.isValid() && m.invoke(obj, Qt::DirectConnection);
+}
+
+static void invokeTestMethodIfExists(const char *methodName, QObject *obj = QTest::currentTestObject)
 {
     const QMetaObject *metaObject = obj->metaObject();
     int funcIndex = metaObject->indexOfMethod(methodName);
-    if (funcIndex >= 0) {
-        QMetaMethod method = metaObject->method(funcIndex);
-        method.invoke(obj, Qt::DirectConnection);
-    }
+    // doesn't generate a warning if it doesn't exist:
+    invokeTestMethodIfValid(metaObject->method(funcIndex), obj);
 }
 
 int defaultEventDelay()
@@ -628,7 +628,7 @@ static void qPrintDataTags(FILE *stream)
 
     // Get global data tags:
     QTestTable::globalTestTable();
-    invokeMethod(QTest::currentTestObject, "initTestCase_data()");
+    invokeTestMethodIfExists("initTestCase_data()");
     const QTestTable *gTable = QTestTable::globalTestTable();
 
     const QMetaObject *currTestMetaObj = QTest::currentTestObject->metaObject();
@@ -647,7 +647,7 @@ static void qPrintDataTags(FILE *stream)
             QByteArray member;
             member.resize(qstrlen(slot) + qstrlen("_data()") + 1);
             qsnprintf(member.data(), member.size(), "%s_data()", slot);
-            invokeMethod(QTest::currentTestObject, member.constData());
+            invokeTestMethodIfExists(member.constData());
             const int dataCount = table.dataCount();
             localTags.reserve(dataCount);
             for (int j = 0; j < dataCount; ++j)
@@ -1118,8 +1118,7 @@ void TestMethods::invokeTestOnData(int index) const
         bool invokeOk;
         do {
             QTest::inTestFunction = true;
-            if (m_initMethod.isValid())
-                m_initMethod.invoke(QTest::currentTestObject, Qt::DirectConnection);
+            invokeTestMethodIfValid(m_initMethod);
 
             const bool initQuit =
                 QTestResult::skipCurrentTest() || QTestResult::currentTestFailed();
@@ -1131,7 +1130,7 @@ void TestMethods::invokeTestOnData(int index) const
                 QBenchmarkGlobalData::current->context.tag = QLatin1StringView(
                     QTestResult::currentDataTag() ? QTestResult::currentDataTag() : "");
 
-                invokeOk = m_methods[index].invoke(QTest::currentTestObject, Qt::DirectConnection);
+                invokeOk = invokeTestMethodIfValid(m_methods[index]);
                 if (!invokeOk)
                     QTestResult::addFailure("Unable to execute slot", __FILE__, __LINE__);
 
@@ -1144,8 +1143,7 @@ void TestMethods::invokeTestOnData(int index) const
             QTestResult::finishedCurrentTestData();
 
             if (!initQuit) {
-                if (m_cleanupMethod.isValid())
-                    m_cleanupMethod.invoke(QTest::currentTestObject, Qt::DirectConnection);
+                invokeTestMethodIfValid(m_cleanupMethod);
 
                 // Process any deleteLater(), used by event-loop-based apps.
                 // Fixes memleak reports.
@@ -1396,7 +1394,7 @@ bool TestMethods::invokeTest(int index, QLatin1StringView tag, WatchDog *watchDo
 
         if (curGlobalDataIndex == 0) {
             qsnprintf(member, 512, "%s_data()", name.constData());
-            invokeMethod(QTest::currentTestObject, member);
+            invokeTestMethodIfExists(member);
             if (QTestResult::skipCurrentTest())
                 break;
         }
@@ -1732,8 +1730,7 @@ void TestMethods::invokeTests(QObject *testObject) const
     const QMetaObject *metaObject = testObject->metaObject();
     QTEST_ASSERT(metaObject);
     QTestResult::setCurrentTestFunction("initTestCase");
-    if (m_initTestCaseDataMethod.isValid())
-        m_initTestCaseDataMethod.invoke(testObject, Qt::DirectConnection);
+    invokeTestMethodIfValid(m_initTestCaseDataMethod, testObject);
 
     QScopedPointer<WatchDog> watchDog;
     if (!alreadyDebugging()
@@ -1747,8 +1744,7 @@ void TestMethods::invokeTests(QObject *testObject) const
     QSignalDumper::startDump();
 
     if (!QTestResult::skipCurrentTest() && !QTestResult::currentTestFailed()) {
-        if (m_initTestCaseMethod.isValid())
-            m_initTestCaseMethod.invoke(testObject, Qt::DirectConnection);
+        invokeTestMethodIfValid(m_initTestCaseMethod, testObject);
 
         // finishedCurrentTestDataCleanup() resets QTestResult::currentTestFailed(), so use a local copy.
         const bool previousFailed = QTestResult::currentTestFailed();
@@ -1772,8 +1768,7 @@ void TestMethods::invokeTests(QObject *testObject) const
         QTestResult::setSkipCurrentTest(false);
         QTestResult::setBlacklistCurrentTest(false);
         QTestResult::setCurrentTestFunction("cleanupTestCase");
-        if (m_cleanupTestCaseMethod.isValid())
-            m_cleanupTestCaseMethod.invoke(testObject, Qt::DirectConnection);
+        invokeTestMethodIfValid(m_cleanupTestCaseMethod, testObject);
         QTestResult::finishedCurrentTestData();
         // Restore skip state as it affects decision on whether we passed:
         QTestResult::setSkipCurrentTest(wasSkipped || QTestResult::skipCurrentTest());
