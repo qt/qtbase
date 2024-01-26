@@ -31,7 +31,7 @@ manager->post(request, myJson, this, [this](QRestReply &reply) {
     if (!reply.isSuccess()) {
         // ...
     }
-    if (std::optional json = reply.json()) {
+    if (std::optional json = reply.readJson()) {
         // use *json
     }
 });
@@ -42,7 +42,7 @@ manager->post(request, myJson, this, [this](QRestReply &reply) {
 manager->get(request, this, [this](QRestReply &reply) {
     if (!reply.isSuccess())
         // handle error
-    if (std::optional json = reply.json())
+    if (std::optional json = reply.readJson())
         // use *json
 });
 //! [3]

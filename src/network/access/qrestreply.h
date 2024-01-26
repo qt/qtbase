@@ -40,9 +40,9 @@ public:
 
     Q_NETWORK_EXPORT QNetworkReply *networkReply() const;
 
-    Q_NETWORK_EXPORT std::optional<QJsonDocument> json(QJsonParseError *error = nullptr);
-    Q_NETWORK_EXPORT QByteArray body();
-    Q_NETWORK_EXPORT QString text();
+    Q_NETWORK_EXPORT std::optional<QJsonDocument> readJson(QJsonParseError *error = nullptr);
+    Q_NETWORK_EXPORT QByteArray readBody();
+    Q_NETWORK_EXPORT QString readText();
 
     bool isSuccess() const
     {
