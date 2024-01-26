@@ -102,9 +102,9 @@ QNetworkReply *QRestReply::networkReply() const
     set to QJsonParseError::NoError to distinguish this case from an actual
     error.
 
-    \sa body(), text()
+    \sa readBody(), readText()
 */
-std::optional<QJsonDocument> QRestReply::json(QJsonParseError *error)
+std::optional<QJsonDocument> QRestReply::readJson(QJsonParseError *error)
 {
     if (!wrapped) {
         if (error)
@@ -113,7 +113,7 @@ std::optional<QJsonDocument> QRestReply::json(QJsonParseError *error)
     }
 
     if (!wrapped->isFinished()) {
-        qCWarning(lcQrest, "Attempt to read json() of an unfinished reply, ignoring.");
+        qCWarning(lcQrest, "readJson() called on an unfinished reply, ignoring");
         if (error)
             *error = {0, QJsonParseError::ParseError::NoError};
         return std::nullopt;
@@ -135,10 +135,10 @@ std::optional<QJsonDocument> QRestReply::json(QJsonParseError *error)
     calls to get response data will return empty until further data has been
     received.
 
-    \sa json(), text(), QNetworkReply::bytesAvailable(),
+    \sa readJson(), readText(), QNetworkReply::bytesAvailable(),
         QNetworkReply::readyRead()
 */
-QByteArray QRestReply::body()
+QByteArray QRestReply::readBody()
 {
     return wrapped ? wrapped->readAll() : QByteArray{};
 }
@@ -157,9 +157,9 @@ QByteArray QRestReply::body()
     decoding is not supported by \l QStringConverter, or if the decoding
     has errors (for example invalid characters).
 
-    \sa json(), body(), QNetworkReply::readyRead()
+    \sa readJson(), readBody(), QNetworkReply::readyRead()
 */
-QString QRestReply::text()
+QString QRestReply::readText()
 {
     QString result;
     if (!wrapped)
@@ -178,13 +178,13 @@ QString QRestReply::text()
         const QByteArray charset = QRestReplyPrivate::contentCharset(wrapped);
         d->decoder = QStringDecoder(charset);
         if (!d->decoder->isValid()) { // the decoder may not support the mimetype's charset
-            qCWarning(lcQrest, "text(): Charset \"%s\" is not supported", charset.constData());
+            qCWarning(lcQrest, "readText(): Charset \"%s\" is not supported", charset.constData());
             return result;
         }
     }
     // Check if the decoder already had an error, or has errors after decoding current data chunk
     if (d->decoder->hasError() || (result = (*d->decoder)(data), d->decoder->hasError())) {
-        qCWarning(lcQrest, "text() Decoding error occurred");
+        qCWarning(lcQrest, "readText(): Decoding error occurred");
         return {};
     }
     return result;

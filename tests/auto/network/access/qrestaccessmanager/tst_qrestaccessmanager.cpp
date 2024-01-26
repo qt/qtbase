@@ -552,7 +552,7 @@ void tst_QRestAccessManager::body()
         manager.get(request, this, [&](QRestReply &reply) { networkReply = reply.networkReply(); });
         QTRY_VERIFY(networkReply);
         QRestReply restReply(networkReply);
-        QCOMPARE(restReply.body(), serverSideResponse.body);
+        QCOMPARE(restReply.readBody(), serverSideResponse.body);
         QCOMPARE(restReply.httpStatus(), serverSideResponse.status);
         QVERIFY(!restReply.hasError());
         QVERIFY(restReply.isSuccess());
@@ -566,7 +566,7 @@ void tst_QRestAccessManager::body()
         manager.get(request, this, [&](QRestReply &reply) { networkReply = reply.networkReply(); });
         QTRY_VERIFY(networkReply);
         QRestReply restReply(networkReply);
-        QCOMPARE(restReply.body(), serverSideResponse.body);
+        QCOMPARE(restReply.readBody(), serverSideResponse.body);
         networkReply->deleteLater();
         networkReply = nullptr;
     }
@@ -577,7 +577,7 @@ void tst_QRestAccessManager::body()
         manager.get(request, this, [&](QRestReply &reply) { networkReply = reply.networkReply(); });
         QTRY_VERIFY(networkReply);
         QRestReply restReply(networkReply);
-        QCOMPARE(restReply.body(), serverSideResponse.body);
+        QCOMPARE(restReply.readBody(), serverSideResponse.body);
         QCOMPARE(restReply.httpStatus(), serverSideResponse.status);
         QVERIFY(!restReply.hasError());
         QVERIFY(!restReply.isSuccess());
@@ -588,7 +588,7 @@ void tst_QRestAccessManager::body()
 
 void tst_QRestAccessManager::json()
 {
-    // Test using QRestReply::json() and jsonArray() data accessors
+    // Tests using QRestReply::readJson()
     QNetworkAccessManager qnam;
     QRestAccessManager manager(&qnam);
     HttpTestServer server;
@@ -613,15 +613,15 @@ void tst_QRestAccessManager::json()
         networkReply = manager.get(request);
         // Read unfinished reply
         QVERIFY(!networkReply->isFinished());
-        QTest::ignoreMessage(QtWarningMsg, "Attempt to read json() of an unfinished reply, ignoring.");
+        QTest::ignoreMessage(QtWarningMsg, "readJson() called on an unfinished reply, ignoring");
         parseError.error = QJsonParseError::ParseError::DocumentTooLarge; // Reset to impossible value
         QRestReply restReply(networkReply);
-        QVERIFY(!restReply.json(&parseError));
+        QVERIFY(!restReply.readJson(&parseError));
         QCOMPARE(parseError.error, QJsonParseError::ParseError::NoError);
         // Read finished reply
         QTRY_VERIFY(networkReply->isFinished());
         parseError.error = QJsonParseError::ParseError::DocumentTooLarge;
-        json = restReply.json(&parseError);
+        json = restReply.readJson(&parseError);
         QVERIFY(json);
         QCOMPARE(parseError.error, QJsonParseError::ParseError::NoError);
         responseJsonDocument = *json;
@@ -639,7 +639,7 @@ void tst_QRestAccessManager::json()
         QTRY_VERIFY(networkReply);
         QRestReply restReply(networkReply);
         parseError.error = QJsonParseError::ParseError::DocumentTooLarge;
-        QVERIFY(!restReply.json(&parseError).has_value()); // std::nullopt returned
+        QVERIFY(!restReply.readJson(&parseError).has_value()); // std::nullopt returned
         QCOMPARE_NE(parseError.error, QJsonParseError::ParseError::NoError);
         QCOMPARE_NE(parseError.error, QJsonParseError::ParseError::DocumentTooLarge);
         QCOMPARE_GT(parseError.offset, 0);
@@ -654,7 +654,7 @@ void tst_QRestAccessManager::json()
         QTRY_VERIFY(networkReply);
         QRestReply restReply(networkReply);
         parseError.error = QJsonParseError::ParseError::DocumentTooLarge;
-        json = restReply.json(&parseError);
+        json = restReply.readJson(&parseError);
         QCOMPARE(parseError.error, QJsonParseError::ParseError::NoError);
         QVERIFY(json);
         responseJsonDocument = *json;
@@ -672,7 +672,7 @@ void tst_QRestAccessManager::json()
     manager.get(request, this, [&](QRestReply &reply) { networkReply = reply.networkReply(); }); \
     QTRY_VERIFY(networkReply); \
     QRestReply restReply(networkReply); \
-    responseString = restReply.text(); \
+    responseString = restReply.readText(); \
     QCOMPARE(responseString, sourceString); \
     networkReply->deleteLater(); \
     networkReply = nullptr; \
@@ -684,7 +684,7 @@ void tst_QRestAccessManager::json()
     QTRY_VERIFY(networkReply); \
     QTest::ignoreMessage(QtWarningMsg, WARNING_MESSAGE); \
     QRestReply restReply(networkReply); \
-    responseString = restReply.text(); \
+    responseString = restReply.readText(); \
     QVERIFY(responseString.isEmpty()); \
     networkReply->deleteLater(); \
     networkReply = nullptr; \
@@ -761,7 +761,7 @@ void tst_QRestAccessManager::text()
         manager.get(request, this, [&](QRestReply &reply) { networkReply = reply.networkReply(); });
         QTRY_VERIFY(networkReply);
         QRestReply restReply(networkReply);
-        responseString = restReply.text();
+        responseString = restReply.readText();
         QCOMPARE_NE(responseString, sourceString);
         networkReply->deleteLater();
         networkReply = nullptr;
@@ -771,13 +771,13 @@ void tst_QRestAccessManager::text()
     serverSideResponse.headers.removeAll(Header::ContentType);
     serverSideResponse.headers.append(Header::ContentType, "text/plain; charset=foo"_ba);
     serverSideResponse.body = encUTF8(sourceString);
-    VERIFY_TEXT_REPLY_ERROR("text(): Charset \"foo\" is not supported")
+    VERIFY_TEXT_REPLY_ERROR("readText(): Charset \"foo\" is not supported")
 
     // Broken UTF-8
     serverSideResponse.headers.removeAll(Header::ContentType);
     serverSideResponse.headers.append(Header::ContentType, "text/plain; charset=UTF-8"_ba);
     serverSideResponse.body = "\xF0\x28\x8C\x28\xA0\xB0\xC0\xD0"; // invalid characters
-    VERIFY_TEXT_REPLY_ERROR("text() Decoding error occurred");
+    VERIFY_TEXT_REPLY_ERROR("readText(): Decoding error occurred");
 }
 
 void tst_QRestAccessManager::textStreaming()
@@ -810,7 +810,7 @@ void tst_QRestAccessManager::textStreaming()
     {
         QRestReply restReply(manager.get(request));
         QObject::connect(restReply.networkReply(), &QNetworkReply::readyRead, this, [&]() {
-            cumulativeReceivedText += restReply.text();
+            cumulativeReceivedText += restReply.readText();
             // Tell testserver that test is ready for next chunk
             responseControl->readyForNextChunk = true;
         });
@@ -828,9 +828,9 @@ void tst_QRestAccessManager::textStreaming()
         QObject::connect(restReply.networkReply(), &QNetworkReply::readyRead, this, [&]() {
             static bool firstTime = true;
             if (!firstTime) // First text part is without warnings
-                QTest::ignoreMessage(QtWarningMsg, "text() Decoding error occurred");
+                QTest::ignoreMessage(QtWarningMsg, "readText(): Decoding error occurred");
             firstTime = false;
-            cumulativeReceivedText += restReply.text();
+            cumulativeReceivedText += restReply.readText();
             // Tell testserver that test is ready for next chunk
             responseControl->readyForNextChunk = true;
         });
