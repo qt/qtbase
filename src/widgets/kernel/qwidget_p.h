@@ -41,6 +41,7 @@
 #include <private/qgesture_p.h>
 #include <qpa/qplatformbackingstore.h>
 #include <QtGui/private/qbackingstorerhisupport_p.h>
+#include <private/qapplication_p.h>
 
 #include <QtCore/qpointer.h>
 
@@ -732,6 +733,40 @@ public:
     uint usesRhiFlush : 1;
     uint childrenHiddenByWState : 1;
     uint childrenShownByExpose : 1;
+
+    // *************************** Focus abstraction ************************************
+    enum class FocusDirection {
+        Previous,
+        Next,
+    };
+
+    enum class FocusChainRemovalRule {
+        EnsureFocusOut = 0x01,
+        AssertConsistency = 0x02,
+    };
+    Q_DECLARE_FLAGS(FocusChainRemovalRules, FocusChainRemovalRule)
+
+    // Getters
+    QWidget *nextPrevElementInFocusChain(FocusDirection direction) const;
+
+    // manipulators
+    bool removeFromFocusChain(FocusChainRemovalRules rules = FocusChainRemovalRules(),
+                              FocusDirection direction = FocusDirection::Next);
+    bool insertIntoFocusChain(FocusDirection direction, QWidget *position);
+    static bool insertIntoFocusChain(const QWidgetList &toBeInserted, FocusDirection direction, QWidget *position);
+    bool insertIntoFocusChainBefore(QWidget *position)
+    { return insertIntoFocusChain(FocusDirection::Previous, position); }
+    bool insertIntoFocusChainAfter(QWidget *position)
+    { return insertIntoFocusChain(FocusDirection::Next, position); }
+    static QWidgetList takeFromFocusChain(QWidget *from, QWidget *to,
+                                          FocusDirection direction = FocusDirection::Next);
+    void reparentFocusChildren(FocusDirection direction);
+    QWidget *determineLastFocusChild(QWidget *noFurtherThan);
+
+    // Initialization and tests
+    void initFocusChain();
+    bool isInFocusChain() const;
+    bool isFocusChainConsistent() const;
 
     // *************************** Platform specific ************************************
 #if defined(Q_OS_WIN)

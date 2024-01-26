@@ -191,6 +191,7 @@ private slots:
     void mapFromAndTo();
     void focusChainOnHide();
     void focusChainOnReparent();
+    void focusAbstraction();
     void defaultTabOrder();
     void reverseTabOrder();
     void tabOrderWithProxy();
@@ -2014,6 +2015,92 @@ static QList<QWidget *> getFocusChain(QWidget *start, bool bForward)
     } while (cur != start);
     loopGuard.dismiss();
     return ret;
+}
+
+void tst_QWidget::focusAbstraction()
+{
+    QWidget *widget1 = new QWidget;
+    widget1->setObjectName("Widget 1");
+    QWidget *widget2 = new QWidget;
+    widget2->setObjectName("Widget 2");
+    QWidget *widget3 = new QWidget;
+    widget3->setObjectName("Widget 3");
+    QWidgetPrivate *priv1 = QWidgetPrivate::get(widget1);
+    QWidgetPrivate *priv2 = QWidgetPrivate::get(widget2);
+    QWidgetPrivate *priv3 = QWidgetPrivate::get(widget3);
+
+    // Verify initialization
+    QVERIFY(!priv1->isInFocusChain());
+    QVERIFY(!priv2->isInFocusChain());
+    QVERIFY(!priv3->isInFocusChain());
+
+    // Verify, that parenting builds a focus chain.
+    QWidget parent;
+    parent.setObjectName("Parent");
+    widget1->setParent(&parent);
+    widget2->setParent(&parent);
+    widget3->setParent(&parent);
+    QVERIFY(priv1->isInFocusChain());
+    QVERIFY(priv2->isInFocusChain());
+    QVERIFY(priv3->isInFocusChain());
+    QWidgetList expected{widget1, widget2, widget3, &parent};
+    QCOMPARE(getFocusChain(widget1, true), expected);
+
+    // Verify, that reparented focus children end up behind parent.
+    widget1->setParent(widget2);
+    priv2->insertIntoFocusChainAfter(widget3);
+    priv2->reparentFocusChildren(QWidgetPrivate::FocusDirection::Next);
+    expected = {widget1, &parent, widget3, widget2};
+    QCOMPARE(getFocusChain(widget1, true), expected);
+    QVERIFY(priv1->isInFocusChain());
+    QVERIFY(priv2->isInFocusChain());
+    QVERIFY(priv3->isInFocusChain());
+
+    // Check removal
+    priv3->removeFromFocusChain(QWidgetPrivate::FocusChainRemovalRule::AssertConsistency);
+    expected.removeOne(widget3);
+    QCOMPARE(getFocusChain(widget1, true), expected);
+    QVERIFY(priv1->isInFocusChain());
+    QVERIFY(priv2->isInFocusChain());
+    QVERIFY(!priv3->isInFocusChain());
+
+    // Check insert
+    priv3->insertIntoFocusChain(QWidgetPrivate::FocusDirection::Previous, widget1);
+    expected = {widget3, widget1, &parent, widget2};
+    QCOMPARE(getFocusChain(widget3, true), expected);
+
+    // Verify, that take doesn't break
+    const QWidgetList taken = QWidgetPrivate::takeFromFocusChain(widget1, widget2);
+    QVERIFY(priv1->isFocusChainConsistent());
+    expected = {widget1, &parent, widget2};
+    QCOMPARE(taken, expected);
+    QVERIFY(priv1->isInFocusChain());
+    QVERIFY(priv2->isInFocusChain());
+    QVERIFY(!priv3->isInFocusChain());
+
+    // Verify insertion of multiple widgets
+    QWidgetPrivate::insertIntoFocusChain(taken, QWidgetPrivate::FocusDirection::Next, widget3);
+    expected = {widget3, widget1, &parent, widget2};
+    QCOMPARE(getFocusChain(widget3, true), expected);
+    QVERIFY(priv1->isInFocusChain());
+    QVERIFY(priv2->isInFocusChain());
+    QVERIFY(priv2->isInFocusChain());
+
+    // Verify broken chain identification
+    // d'tor asserts chain consistency => repair before going out of scope
+    auto guard = qScopeGuard([priv2, widget3]{ priv2->focus_next = widget3; });
+
+    // Nullptr is not allowed
+    priv2->focus_next = nullptr;
+    QVERIFY(!priv1->isFocusChainConsistent());
+
+    // Chain looping back in the middle
+    priv2->focus_next = widget1;
+    QVERIFY(!priv1->isFocusChainConsistent());
+
+    // "last" element pointing to itself
+    priv2->focus_next = widget2;
+    QVERIFY(!priv1->isFocusChainConsistent());
 }
 
 void tst_QWidget::defaultTabOrder()
