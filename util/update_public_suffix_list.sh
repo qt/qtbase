@@ -115,6 +115,10 @@ run_or_die git commit -m "Update public suffix list
 
 Version $GITSHA1, fetched on
 $TODAY.
+
+
+[ChangeLog][Third-Party Code] Updated the public suffix list to upstream
+SHA $GITSHA1.
 " --edit
 
 msg "Please use topic:publicsuffix-list-$GITSHA1 when pushing."
