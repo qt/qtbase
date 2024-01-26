@@ -9,10 +9,6 @@
 #include <QtNetwork/qnetworkaccessmanager.h>
 #include <QtNetwork/qnetworkreply.h>
 
-#if QT_CONFIG(ssl)
-#include <QtNetwork/qsslsocket.h>
-#endif
-
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qloggingcategory.h>
