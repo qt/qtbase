@@ -6528,7 +6528,6 @@ void tst_QNetworkReply::httpConnectionCount()
     }
 
     QVERIFY(server->listen());
-    QCoreApplication::instance()->processEvents();
 
     QUrl url("http://127.0.0.1:" + QString::number(server->serverPort()) + QLatin1Char('/'));
     if (encrypted)
@@ -6539,7 +6538,7 @@ void tst_QNetworkReply::httpConnectionCount()
         QUrl urlCopy = url;
         urlCopy.setPath(u'/' + QString::number(i)); // Differentiate the requests a bit
         QNetworkRequest request(urlCopy);
-        request.setAttribute(QNetworkRequest::Http2AllowedAttribute, http2Enabled);
+        request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, http2Enabled);
         QNetworkReply* reply = manager.get(request);
         reply->setParent(server.data());
         if (encrypted)
@@ -6547,26 +6546,40 @@ void tst_QNetworkReply::httpConnectionCount()
     }
 
     int pendingConnectionCount = 0;
-    QElapsedTimer timer;
-    timer.start();
 
-    while(pendingConnectionCount <= 20) {
-        QTestEventLoop::instance().enterLoop(1);
+    using namespace std::chrono_literals;
+    const auto newPendingConnection = [&server]() { return server->hasPendingConnections(); };
+    // If we have http2 enabled then the second connection will take a little
+    // longer to be established because we will wait for the first one to finish
+    // to see if we should upgrade:
+    const int rampDown = http2Enabled ? 2 : 1;
+    while (pendingConnectionCount <= 6) {
+        if (!QTest::qWaitFor(newPendingConnection, pendingConnectionCount >= rampDown ? 1s : 5s))
+            break;
         QTcpSocket *socket = server->nextPendingConnection();
-        while (socket != 0) {
-            if (pendingConnectionCount == 0) {
-                // respond to the first connection so we know to transition to HTTP/1.1 when using
-                // HTTP/2
-                socket->write(httpEmpty200Response);
+        while (socket) {
+            if (pendingConnectionCount == 0 && http2Enabled) {
+                // Respond to the first connection so we know to transition to HTTP/1.1 when using
+                // HTTP/2.
+                // Because of some internal state machinery we need to wait until the request has
+                // actually been written to the server before we can reply.
+                auto connection = std::make_shared<QMetaObject::Connection>();
+                auto replyOnRequest = [=, buffer = QByteArray()]() mutable {
+                    buffer += socket->readAll();
+                    if (!buffer.contains("\r\n\r\n"))
+                        return;
+                    socket->write(httpEmpty200Response);
+                    QObject::disconnect(*connection);
+                };
+                *connection = QObject::connect(socket, &QTcpSocket::readyRead, socket,
+                                               std::move(replyOnRequest));
+                if (socket->bytesAvailable()) // If we already have data, check it now
+                    emit socket->readyRead();
             }
             pendingConnectionCount++;
             socket->setParent(server.data());
             socket = server->nextPendingConnection();
         }
-
-        // at max. wait 10 sec
-        if (timer.elapsed() > 10000)
-            break;
     }
 
     QCOMPARE(pendingConnectionCount, 6);
