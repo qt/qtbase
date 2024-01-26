@@ -10,7 +10,7 @@
 
 #include <qsqlrecord.h>
 
-#define NUM_FIELDS 4
+#define NUM_FIELDS 5
 
 class tst_QSqlRecord : public QObject
 {
@@ -67,6 +67,7 @@ void tst_QSqlRecord::createTestRecord()
     fields[1] = std::make_unique<QSqlField>(QStringLiteral("int"), QMetaType(QMetaType::Int), QStringLiteral("inttable"));
     fields[2] = std::make_unique<QSqlField>(QStringLiteral("double"), QMetaType(QMetaType::Double), QStringLiteral("doubletable"));
     fields[3] = std::make_unique<QSqlField>(QStringLiteral("bool"), QMetaType(QMetaType::Bool));
+    fields[4] = std::make_unique<QSqlField>(QStringLiteral("öäü@€"), QMetaType(QMetaType::Int));
     for (const auto &field : fields)
         rec->append(*field);
 }
@@ -173,9 +174,22 @@ void tst_QSqlRecord::clearValues()
 void tst_QSqlRecord::contains()
 {
     createTestRecord();
-    for (const auto &field : fields)
-        QVERIFY(rec->contains(field->name()));
-    QVERIFY( !rec->contains( "__Harry__" ) );
+    QStringList fieldNames;
+    for (const auto &field : fields) {
+        fieldNames.append(field->name());
+        if (!field->tableName().isEmpty())
+            fieldNames.append(field->tableName() + u'.' + field->name());
+    }
+    for (const auto &name : std::as_const(fieldNames)) {
+        QVERIFY(rec->contains(name));
+        const QByteArray nameBa = name.toUtf8();
+        QVERIFY(rec->contains(nameBa));
+        const char *nameStr = nameBa.constData();
+        QVERIFY(rec->contains(nameStr));
+        QVERIFY(!rec->contains(name.left(name.size() - 1)));
+        QVERIFY(!rec->contains(name + u'.' + name));
+    }
+    QVERIFY(!rec->contains("__Harry__"));
 }
 
 void tst_QSqlRecord::count()
