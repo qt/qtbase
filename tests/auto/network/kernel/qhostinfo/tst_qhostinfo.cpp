@@ -12,31 +12,27 @@
 # include <ws2tcpip.h>
 #endif
 
-#include <QTest>
-#include <QTestEventLoop>
-#include <QProcess>
-#include <QCoreApplication>
-#include <QDebug>
-#include <QTcpSocket>
-#include <QTcpServer>
-
-#include <private/qthread_p.h>
-
-#include <time.h>
-#if defined(Q_OS_WIN)
-#include <qt_windows.h>
-#else
-#include <unistd.h>
-#include <signal.h>
-#endif
-
 #include <qhostinfo.h>
 #include "private/qhostinfo_p.h"
 
+#include <QCoreApplication>
+#include <QDebug>
+#include <QProcess>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QTest>
+#include <QTestEventLoop>
+
+#include <private/qthread_p.h>
+
 #include <sys/types.h>
-#if defined(Q_OS_UNIX)
-#  include <sys/socket.h>
+
+#if defined(Q_OS_WIN)
+#  include <qt_windows.h>
+#else
 #  include <netdb.h>
+#  include <sys/socket.h>
+#  include <unistd.h>
 #endif
 
 #include "../../../network-settings.h"
