@@ -330,21 +330,13 @@ bool QSqlQuery::isNull(int field) const
 
 /*!
     \overload
-*/
-bool QSqlQuery::isNull(const QString &name) const
-{
-    return isNull(QStringView(name));
-}
-
-/*!
-    \overload
 
     Returns \c true if there is no field with this \a name; otherwise
     returns isNull(int index) for the corresponding field index.
 
     This overload is less efficient than \l{QSqlQuery::}{isNull()}
 */
-bool QSqlQuery::isNull(QStringView name) const
+bool QSqlQuery::isNull(QAnyStringView name) const
 {
     qsizetype index = d->sqlResult->record().indexOf(name);
     if (index > -1)
@@ -449,21 +441,13 @@ QVariant QSqlQuery::value(int index) const
 
 /*!
     \overload
-*/
-QVariant QSqlQuery::value(const QString &name) const
-{
-    return value(QStringView(name));
-}
-
-/*!
-    \overload
 
     Returns the value of the field called \a name in the current record.
     If field \a name does not exist an invalid variant is returned.
 
     This overload is less efficient than \l{QSqlQuery::}{value()}
 */
-QVariant QSqlQuery::value(QStringView name) const
+QVariant QSqlQuery::value(QAnyStringView name) const
 {
     qsizetype index = d->sqlResult->record().indexOf(name);
     if (index > -1)

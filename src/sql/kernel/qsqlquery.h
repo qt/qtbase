@@ -55,8 +55,10 @@ public:
     bool isValid() const;
     bool isActive() const;
     bool isNull(int field) const;
+#if QT_SQL_REMOVED_SINCE(6, 8)
     bool isNull(const QString &name) const;
-    bool isNull(QStringView name) const;
+#endif
+    bool isNull(QAnyStringView name) const;
     int at() const;
     QString lastQuery() const;
     int numRowsAffected() const;
@@ -71,8 +73,10 @@ public:
     void setForwardOnly(bool forward);
     bool exec(const QString& query);
     QVariant value(int i) const;
+#if QT_SQL_REMOVED_SINCE(6, 8)
     QVariant value(const QString &name) const;
-    QVariant value(QStringView name) const;
+#endif
+    QVariant value(QAnyStringView name) const;
 
     void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy);
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;

@@ -19,10 +19,11 @@ public:
       return index >= 0 && index < fields.size();
     }
 
-    qsizetype indexOfImpl(QStringView name)
+    template <typename T>
+    qsizetype indexOfImpl(T name)
     {
-        QStringView tableName;
-        QStringView fieldName;
+        T tableName;
+        T fieldName;
         const auto it = std::find(name.begin(), name.end(), u'.');
         const auto idx = (it == name.end()) ? -1 : it - name.begin();
         if (idx != -1) {
@@ -188,21 +189,13 @@ QVariant QSqlRecord::value(int index) const
 
 /*!
     \overload
-*/
-QVariant QSqlRecord::value(const QString &name) const
-{
-    return value(QStringView(name));
-}
-
-/*!
-    \overload
 
     Returns the value of the field called \a name in the record. If
     field \a name does not exist an invalid variant is returned.
 
     \sa indexOf(), isNull()
 */
-QVariant QSqlRecord::value(QStringView name) const
+QVariant QSqlRecord::value(QAnyStringView name) const
 {
     return value(indexOf(name));
 }
@@ -220,14 +213,6 @@ QString QSqlRecord::fieldName(int index) const
 }
 
 /*!
-    \overload
-*/
-int QSqlRecord::indexOf(const QString &name) const
-{
-    return indexOf(QStringView(name));
-}
-
-/*!
     Returns the position of the field called \a name within the
     record, or -1 if it cannot be found. Field names are not
     case-sensitive. If more than one field matches, the first one is
@@ -235,9 +220,12 @@ int QSqlRecord::indexOf(const QString &name) const
 
     \sa fieldName()
  */
-int QSqlRecord::indexOf(QStringView name) const
+int QSqlRecord::indexOf(QAnyStringView name) const
 {
-    return d->indexOfImpl(name);
+    return name.visit([&](auto v)
+    {
+        return d->indexOfImpl(v);
+    });
 }
 
 /*!
@@ -252,20 +240,12 @@ QSqlField QSqlRecord::field(int index) const
 
 /*!
     \overload
- */
-QSqlField QSqlRecord::field(const QString &name) const
-{
-    return field(QStringView(name));
-}
-
-/*!
-    \overload
 
     Returns the field called \a name. If the field called
     \a name is not found, function returns
     a \l{default-constructed value}.
  */
-QSqlField QSqlRecord::field(QStringView name) const
+QSqlField QSqlRecord::field(QAnyStringView name) const
 {
     return field(indexOf(name));
 }
@@ -350,20 +330,11 @@ bool QSqlRecord::isEmpty() const
     return d->fields.isEmpty();
 }
 
-
-/*!
-    \overload
-*/
-bool QSqlRecord::contains(const QString &name) const
-{
-    return contains(QStringView(name));
-}
-
 /*!
     Returns \c true if there is a field in the record called \a name;
     otherwise returns \c false.
 */
-bool QSqlRecord::contains(QStringView name) const
+bool QSqlRecord::contains(QAnyStringView name) const
 {
     return indexOf(name) >= 0;
 }
@@ -383,13 +354,6 @@ void QSqlRecord::clearValues()
 }
 
 /*!
-    \overload
-*/
-void QSqlRecord::setGenerated(const QString &name, bool generated)
-{
-    setGenerated(QStringView(name), generated);
-}
-/*!
     Sets the generated flag for the field called \a name to \a
     generated. If the field does not exist, nothing happens. Only
     fields that have \a generated set to true are included in the SQL
@@ -397,7 +361,7 @@ void QSqlRecord::setGenerated(const QString &name, bool generated)
 
     \sa isGenerated()
 */
-void QSqlRecord::setGenerated(QStringView name, bool generated)
+void QSqlRecord::setGenerated(QAnyStringView name, bool generated)
 {
     setGenerated(indexOf(name), generated);
 }
@@ -429,21 +393,13 @@ bool QSqlRecord::isNull(int index) const
 
 /*!
     \overload
-*/
-bool QSqlRecord::isNull(const QString &name) const
-{
-    return isNull(QStringView(name));
-}
-
-/*!
-    \overload
 
     Returns \c true if the field called \a name is null or if there is no
     field called \a name; otherwise returns \c false.
 
     \sa setNull()
 */
-bool QSqlRecord::isNull(QStringView name) const
+bool QSqlRecord::isNull(QAnyStringView name) const
 {
     return isNull(indexOf(name));
 }
@@ -464,29 +420,13 @@ void QSqlRecord::setNull(int index)
 
 /*!
     \overload
-*/
-void QSqlRecord::setNull(const QString &name)
-{
-    setNull(QStringView(name));
-}
-
-/*!
-    \overload
 
     Sets the value of the field called \a name to null. If the field
     does not exist, nothing happens.
 */
-void QSqlRecord::setNull(QStringView name)
+void QSqlRecord::setNull(QAnyStringView name)
 {
     setNull(indexOf(name));
-}
-
-/*!
-    \overload
-*/
-bool QSqlRecord::isGenerated(const QString &name) const
-{
-    return isGenerated(QStringView(name));
 }
 
 /*!
@@ -497,7 +437,7 @@ bool QSqlRecord::isGenerated(const QString &name) const
 
     \sa setGenerated()
 */
-bool QSqlRecord::isGenerated(QStringView name) const
+bool QSqlRecord::isGenerated(QAnyStringView name) const
 {
     return isGenerated(indexOf(name));
 }
@@ -541,20 +481,13 @@ void QSqlRecord::setValue(int index, const QVariant &val)
 
 /*!
     \overload
-*/
-void QSqlRecord::setValue(const QString &name, const QVariant &val)
-{
-    setValue(QStringView(name), val);
-}
-/*!
-    \overload
 
     Sets the value of the field called \a name to \a val. If the field
     does not exist, nothing happens.
 
     \sa setNull()
 */
-void QSqlRecord::setValue(QStringView name, const QVariant &val)
+void QSqlRecord::setValue(QAnyStringView name, const QVariant &val)
 {
     setValue(indexOf(name), val);
 }
