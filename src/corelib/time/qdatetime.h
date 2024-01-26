@@ -102,9 +102,11 @@ public:
 
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat format = Qt::TextDate) const;
-    QString toString(const QString &format, QCalendar cal = QCalendar()) const
+    QString toString(const QString &format) const;
+    QString toString(const QString &format, QCalendar cal) const
     { return toString(qToStringViewIgnoringNull(format), cal); }
-    QString toString(QStringView format, QCalendar cal = QCalendar()) const;
+    QString toString(QStringView format) const;
+    QString toString(QStringView format, QCalendar cal) const;
 #endif
     bool setDate(int year, int month, int day); // Gregorian-optimized
     bool setDate(int year, int month, int day, QCalendar cal);
@@ -409,9 +411,11 @@ public:
 
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat format = Qt::TextDate) const;
-    QString toString(const QString &format, QCalendar cal = QCalendar()) const
+    QString toString(const QString &format) const;
+    QString toString(const QString &format, QCalendar cal) const
     { return toString(qToStringViewIgnoringNull(format), cal); }
-    QString toString(QStringView format, QCalendar cal = QCalendar()) const;
+    QString toString(QStringView format) const;
+    QString toString(QStringView format, QCalendar cal) const;
 #endif
     [[nodiscard]] QDateTime addDays(qint64 days) const;
     [[nodiscard]] QDateTime addMonths(int months) const;
