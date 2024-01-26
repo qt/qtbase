@@ -1012,7 +1012,7 @@ qt_feature("system-textmarkdownreader" PUBLIC
 qt_feature("textmarkdownwriter" PUBLIC
     SECTION "Kernel"
     LABEL "MarkdownWriter"
-    PURPOSE "Provides a Markdown (CommonMark) writer"
+    PURPOSE "Provides a Markdown (CommonMark and GitHub) writer"
 )
 qt_feature("textodfwriter" PUBLIC
     SECTION "Kernel"
