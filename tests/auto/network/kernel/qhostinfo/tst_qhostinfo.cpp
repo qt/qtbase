@@ -14,10 +14,10 @@
 
 #include <qhostinfo.h>
 #include "private/qhostinfo_p.h"
+#include "private/qnativesocketengine_p.h"
 
 #include <QCoreApplication>
 #include <QDebug>
-#include <QProcess>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTest>
@@ -29,10 +29,17 @@
 
 #if defined(Q_OS_WIN)
 #  include <qt_windows.h>
+#  ifdef gai_strerror
+#    undef gai_strerror
+#    define gai_strerror gai_strerrorA
+#  endif
 #else
 #  include <netdb.h>
 #  include <sys/socket.h>
 #  include <unistd.h>
+#endif
+#ifndef NI_MAXHOST
+#  define NI_MAXHOST        1025
 #endif
 
 #include "../../../network-settings.h"
@@ -356,62 +363,29 @@ void tst_QHostInfo::lookupConnectToLambda()
 static QStringList reverseLookupHelper(const QString &ip)
 {
     QStringList results;
+    union qt_sockaddr {
+        sockaddr a;
+        sockaddr_in a4;
+        sockaddr_in6 a6;
+    } sa = {};
 
-    const QString pythonCode =
-        "import socket;"
-        "import sys;"
-        "print (socket.getnameinfo((sys.argv[1], 0), 0)[0]);";
-
-    QList<QByteArray> lines;
-    QProcess python;
-    python.setProcessChannelMode(QProcess::ForwardedErrorChannel);
-    python.start("python3", QStringList() << QString("-c") << pythonCode << ip);
-    if (python.waitForFinished()) {
-        if (python.exitStatus() == QProcess::NormalExit && python.exitCode() == 0)
-            lines = python.readAllStandardOutput().split('\n');
-        for (QByteArray line : lines) {
-            if (!line.isEmpty())
-                results << line.trimmed();
-        }
-        if (!results.isEmpty())
-            return results;
-    }
-
-    qDebug() << "Python failed, falling back to nslookup";
-    QProcess lookup;
-    lookup.setProcessChannelMode(QProcess::ForwardedErrorChannel);
-    lookup.start("nslookup", QStringList(ip));
-    if (!lookup.waitForFinished()) {
-        results << "nslookup failure";
-        qDebug() << "nslookup failure";
+    QHostAddress addr(ip);
+    if (addr.isNull()) {
+        qWarning("Could not parse IP address: %ls", qUtf16Printable(ip));
         return results;
     }
-    lines = lookup.readAllStandardOutput().split('\n');
 
-    QByteArray name;
+    // from qnativesocketengine_p.h:
+    QT_SOCKLEN_T len = setSockaddr(&sa.a, addr, /*port = */ 0);
 
-    const QByteArray nameMarkerNix("name =");
-    const QByteArray nameMarkerWin("Name:");
-    const QByteArray addressMarkerWin("Address:");
-
-    for (QByteArray line : lines) {
-        int index = -1;
-        if ((index = line.indexOf(nameMarkerNix)) != -1) { // Linux and macOS
-            name = line.mid(index + nameMarkerNix.size()).chopped(1).trimmed();
-            results << name;
-        } else if (line.startsWith(nameMarkerWin)) { // Windows formatting
-            name = line.mid(line.lastIndexOf(" ")).trimmed();
-        } else if (line.startsWith(addressMarkerWin)) {
-            QByteArray address = line.mid(addressMarkerWin.size()).trimmed();
-            if (address == ip.toUtf8()) {
-                results << name;
-            }
-        }
+    QByteArray name(NI_MAXHOST, Qt::Uninitialized);
+    int ni_flags = NI_NAMEREQD | NI_NUMERICSERV;
+    if (int r = getnameinfo(&sa.a, len, name.data(), name.size(), nullptr, 0, ni_flags)) {
+        qWarning("Failed to reverse look up '%ls': %s", qUtf16Printable(ip), gai_strerror(r));
+    } else {
+        results << QString::fromLatin1(name, qstrnlen(name, name.size()));
     }
 
-    if (results.isEmpty()) {
-        qDebug() << "Failure to parse nslookup output: " << lines;
-    }
     return results;
 }
 
