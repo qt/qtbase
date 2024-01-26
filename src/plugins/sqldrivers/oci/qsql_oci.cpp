@@ -2684,7 +2684,7 @@ QSqlIndex QOCIDriver::primaryIndex(const QString& tablename) const
 
 QString QOCIDriver::formatValue(const QSqlField &field, bool trimStrings) const
 {
-    switch (field.typeID()) {
+    switch (field.metaType().id()) {
     case QMetaType::QDateTime: {
         QDateTime datetime = field.value().toDateTime();
         QString datestring;
