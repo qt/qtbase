@@ -23,8 +23,9 @@ QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
 
 QCFType<CGColorSpaceRef> QCocoaBackingStore::colorSpace() const
 {
-    NSView *view = static_cast<QCocoaWindow *>(window()->handle())->view();
-    return QCFType<CGColorSpaceRef>::constructFromGet(view.window.colorSpace.CGColorSpace);
+    const auto *platformWindow = static_cast<QCocoaWindow *>(window()->handle());
+    const QNSView *view = qnsview_cast(platformWindow->view());
+    return QCFType<CGColorSpaceRef>::constructFromGet(view.colorSpace.CGColorSpace);
 }
 
 // ----------------------------------------------------------------------------
@@ -188,8 +189,9 @@ bool QCALayerBackingStore::recreateBackBufferIfNeeded()
         }
 #endif
 
-        qCInfo(lcQpaBackingStore) << "Creating surface of" << requestedBufferSize
-            << "based on requested" << m_requestedSize << "and dpr =" << devicePixelRatio;
+        qCInfo(lcQpaBackingStore)<< "Creating surface of" << requestedBufferSize
+            << "for" << window() << "based on requested" << m_requestedSize
+            << "dpr =" << devicePixelRatio << "and color space" << colorSpace();
 
         static auto pixelFormat = QImage::toPixelFormat(QImage::Format_ARGB32_Premultiplied);
         auto *newBackBuffer = new GraphicsBuffer(requestedBufferSize, devicePixelRatio, pixelFormat, colorSpace());
@@ -477,10 +479,11 @@ void QCALayerBackingStore::backingPropertiesChanged()
 
     qCDebug(lcQpaBackingStore) << "Backing properties for" << window() << "did change";
 
-    qCDebug(lcQpaBackingStore) << "Updating color space of existing buffers";
+    const auto newColorSpace = colorSpace();
+    qCDebug(lcQpaBackingStore) << "Updating color space of existing buffers to" << newColorSpace;
     for (auto &buffer : m_buffers) {
         if (buffer)
-            buffer->setColorSpace(colorSpace());
+            buffer->setColorSpace(newColorSpace);
     }
 }
 
