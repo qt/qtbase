@@ -223,6 +223,7 @@ void QSqlField::setDefaultValue(const QVariant &value)
 
 /*!
     \internal
+    \deprecated [6.8] This internal value is no longer used.
 */
 void QSqlField::setSqlType(int type)
 {
@@ -471,6 +472,7 @@ QVariant QSqlField::defaultValue() const
 
 /*!
     \internal
+    \deprecated [6.8] This internal value is no longer used.
 
     Returns the type ID for the field.
 
@@ -523,8 +525,6 @@ QDebug operator<<(QDebug dbg, const QSqlField &f)
         dbg << ", required: "
             << (f.requiredStatus() == QSqlField::Required ? "yes" : "no");
     dbg  << ", generated: " << (f.isGenerated() ? "yes" : "no");
-    if (f.typeID() >= 0)
-        dbg << ", typeID: " << f.typeID();
     if (!f.defaultValue().isNull())
         dbg << ", defaultValue: \"" << f.defaultValue() << '\"';
     dbg << ", autoValue: " << f.isAutoValue()

@@ -738,7 +738,6 @@ static QSqlField qFromOraInf(const OraFieldInfo &ofi)
         f.setLength(ofi.oraPrecision == 0 ? 38 : int(ofi.oraPrecision));
 
     f.setPrecision(ofi.oraScale);
-    f.setSqlType(int(ofi.oraType));
     return f;
 }
 

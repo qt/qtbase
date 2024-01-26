@@ -1458,7 +1458,6 @@ QSqlRecord QIBaseResult::record() const
                 f.setRequiredStatus(q.value(3).toBool() ? QSqlField::Required : QSqlField::Optional);
             }
         }
-        f.setSqlType(v.sqltype);
         rec.append(f);
     }
     return rec;
@@ -1728,7 +1727,6 @@ QSqlRecord QIBaseDriver::record(const QString& tablename) const
             f.setPrecision(0);
         }
         f.setRequired(q.value(5).toInt() > 0);
-        f.setSqlType(type);
 
         rec.append(f);
     }

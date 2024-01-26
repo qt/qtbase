@@ -305,7 +305,6 @@ static QSqlField qMakeFieldInfo(const QDB2ResultPrivate* d, int i)
     // else required is unknown
     f.setLength(colSize == 0 ? -1 : int(colSize));
     f.setPrecision(colScale == 0 ? -1 : int(colScale));
-    f.setSqlType(int(colType));
     SQLTCHAR tableName[TABLENAMESIZE];
     SQLSMALLINT tableNameLen;
     r = SQLColAttribute(d->hStmt, i + 1, SQL_DESC_BASE_TABLE_NAME, tableName,
@@ -505,7 +504,6 @@ static QSqlField qMakeFieldInfo(const SQLHANDLE hStmt)
     // else we don't know.
     f.setLength(qGetIntData(hStmt, 6, isNull)); // column size
     f.setPrecision(qGetIntData(hStmt, 8, isNull)); // precision
-    f.setSqlType(type);
     return f;
 }
 

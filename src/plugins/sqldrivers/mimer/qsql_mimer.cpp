@@ -916,7 +916,6 @@ QSqlRecord QMimerSQLResult::record() const
         field.setName(QString::fromWCharArray(colName_w));
         const int32_t mType = MimerColumnType(d->statementhandle, static_cast<std::int16_t>(i) + 1);
         const QMetaType::Type type = qDecodeMSQLType(mType);
-        field.setSqlType(mType);
         field.setMetaType(QMetaType(type));
         field.setValue(QVariant(field.metaType()));
         // field.setPrecision(); Should be implemented once the Mimer API can give this

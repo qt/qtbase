@@ -798,7 +798,6 @@ QSqlRecord QPSQLResult::record() const
 
         f.setLength(len);
         f.setPrecision(precision);
-        f.setSqlType(ptype);
         info.append(f);
     }
     return info;
@@ -1414,7 +1413,6 @@ QSqlRecord QPSQLDriver::record(const QString &tablename) const
         f.setLength(len);
         f.setPrecision(precision);
         f.setDefaultValue(defVal);
-        f.setSqlType(query.value(1).toInt());
         info.append(f);
     }
 

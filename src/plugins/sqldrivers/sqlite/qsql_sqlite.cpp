@@ -247,7 +247,6 @@ void QSQLiteResultPrivate::initColumns(bool emptyResultset)
         }
 
         QSqlField fld(colName, QMetaType(fieldType), tableName);
-        fld.setSqlType(stp);
         rInf.append(fld);
     }
 }
