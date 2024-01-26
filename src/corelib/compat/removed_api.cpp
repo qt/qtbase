@@ -708,9 +708,9 @@ bool QDateTime::precedes(const QDateTime &other) const
 
 QDataStream &QDataStream::readBytes(char *&s, uint &l)
 {
-    qsizetype length = 0;
+    qint64 length = 0;
     (void)readBytes(s, length);
-    if (length != qsizetype(uint(length))) {
+    if (length != qint64(uint(length))) {
         setStatus(ReadCorruptData); // Cannot store length in l
         delete[] s;
         l = 0;
@@ -722,12 +722,7 @@ QDataStream &QDataStream::readBytes(char *&s, uint &l)
 
 QDataStream &QDataStream::writeBytes(const char *s, uint len)
 {
-    qsizetype length = qsizetype(len);
-    if (length < 0) {
-        setStatus(WriteFailed);
-        return *this;
-    }
-    return writeBytes(s, length);
+    return writeBytes(s, qint64(len));
 }
 
 int QDataStream::skipRawData(int len)
@@ -735,24 +730,20 @@ int QDataStream::skipRawData(int len)
     return int(skipRawData(qint64(len)));
 }
 
-#if QT_POINTER_SIZE != 4
-
 int QDataStream::readBlock(char *data, int len)
 {
-    return int(readBlock(data, qsizetype(len)));
+    return int(readBlock(data, qint64(len)));
 }
 
 int QDataStream::readRawData(char *s, int len)
 {
-    return int(readRawData(s, qsizetype(len)));
+    return int(readRawData(s, qint64(len)));
 }
 
 int QDataStream::writeRawData(const char *s, int len)
 {
-    return writeRawData(s, qsizetype(len));
+    return writeRawData(s, qint64(len));
 }
-
-#endif // QT_POINTER_SIZE != 4
 
 #if defined(Q_OS_ANDROID)
 

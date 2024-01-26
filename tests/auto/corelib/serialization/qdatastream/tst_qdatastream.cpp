@@ -2818,10 +2818,10 @@ void tst_QDataStream::status_charptr_QByteArray()
     {
         QDataStream stream(&data, QIODevice::ReadOnly);
         char *buf;
-        qsizetype len;
+        qint64 len;
         stream.readBytes(buf, len);
 
-        QCOMPARE(len, expectedString.size());
+        QCOMPARE(len, qint64(expectedString.size()));
         QCOMPARE(QByteArray(buf, len), expectedString);
         QCOMPARE(int(stream.status()), expectedStatus);
         delete [] buf;

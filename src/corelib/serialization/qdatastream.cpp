@@ -757,13 +757,13 @@ bool QDataStream::isDeviceTransactionStarted() const
     \internal
 */
 
-qsizetype QDataStream::readBlock(char *data, qsizetype len)
+qint64 QDataStream::readBlock(char *data, qint64 len)
 {
     // Disable reads on failure in transacted stream
     if (q_status != Ok && dev->isTransactionStarted())
         return -1;
 
-    const qsizetype readResult = dev->read(data, len);
+    const qint64 readResult = dev->read(data, len);
     if (readResult != len)
         setStatus(ReadPastEnd);
     return readResult;
@@ -1002,7 +1002,7 @@ QDataStream &QDataStream::operator>>(double &f)
 
 QDataStream &QDataStream::operator>>(char *&s)
 {
-    qsizetype len = 0;
+    qint64 len = 0;
     return readBytes(s, len);
 }
 
@@ -1057,7 +1057,7 @@ QDataStream &QDataStream::operator>>(char32_t &c)
     \sa readRawData(), writeBytes()
 */
 
-QDataStream &QDataStream::readBytes(char *&s, qsizetype &l)
+QDataStream &QDataStream::readBytes(char *&s, qint64 &l)
 {
     s = nullptr;
     l = 0;
@@ -1069,7 +1069,7 @@ QDataStream &QDataStream::readBytes(char *&s, qsizetype &l)
 
     qsizetype len = qsizetype(length);
     if (length != len || length < 0) {
-        setStatus(SizeLimitExceeded); // Cannot store len in l
+        setStatus(SizeLimitExceeded); // Cannot store len
         return *this;
     }
 
@@ -1108,7 +1108,7 @@ QDataStream &QDataStream::readBytes(char *&s, qsizetype &l)
     \sa readBytes(), QIODevice::read(), writeRawData()
 */
 
-qsizetype QDataStream::readRawData(char *s, qsizetype len)
+qint64 QDataStream::readRawData(char *s, qint64 len)
 {
     CHECK_STREAM_PRECOND(-1)
     return readBlock(s, len);
@@ -1389,7 +1389,7 @@ QDataStream &QDataStream::operator<<(char32_t c)
     \sa writeRawData(), readBytes()
 */
 
-QDataStream &QDataStream::writeBytes(const char *s, qsizetype len)
+QDataStream &QDataStream::writeBytes(const char *s, qint64 len)
 {
     if (len < 0) {
         q_status = WriteFailed;
@@ -1410,10 +1410,10 @@ QDataStream &QDataStream::writeBytes(const char *s, qsizetype len)
     \sa writeBytes(), QIODevice::write(), readRawData()
 */
 
-qsizetype QDataStream::writeRawData(const char *s, qsizetype len)
+qint64 QDataStream::writeRawData(const char *s, qint64 len)
 {
     CHECK_STREAM_WRITE_PRECOND(-1)
-    qsizetype ret = dev->write(s, len);
+    qint64 ret = dev->write(s, len);
     if (ret != len)
         q_status = WriteFailed;
     return ret;
