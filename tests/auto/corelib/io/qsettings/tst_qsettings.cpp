@@ -3,6 +3,10 @@
 
 #include <QTest>
 
+#ifndef QTEST_THROW_ON_FAIL
+# error This test requires QTEST_THROW_ON_FAIL being active.
+#endif
+
 #include <QtCore/QSettings>
 #include <private/qsettings_p.h>
 
@@ -1360,7 +1364,7 @@ void tst_QSettings::testVariantTypes()
         QCOMPARE(settings.value("empty"), QVariant());
     }
 
-    auto checker = [format](const char *key, auto value, QMetaType::Type expected) {
+    auto check = [format](const char *key, auto value, QMetaType::Type expected) {
         {
             QSettings settings(format, QSettings::UserScope, "software.org", "KillerAPP");
             settings.setValue(key, QVariant::fromValue(value));
@@ -1373,11 +1377,6 @@ void tst_QSettings::testVariantTypes()
             QCOMPARE(qvariant_cast<decltype(value)>(actual), value);
         }
     };
-#define testValue(key, supplied, expected) do { \
-        checker(key, supplied, QMetaType::expected); \
-        if (QTest::currentTestFailed()) \
-            return; \
-    } while (0)
 
     typedef QMap<QString, QVariant> TestVariantMap;
 
@@ -1385,48 +1384,46 @@ void tst_QSettings::testVariantTypes()
     m2.insert("ene", "due");
     m2.insert("rike", "fake");
     m2.insert("borba", "dorba");
-    testValue("customMap", m2, QVariantMap);
+    check("customMap", m2, QMetaType::QVariantMap);
 
     QStringList l2 { "ene", "due", "@Point(1 2)", "@fake" };
-    testValue("stringsAt", l2, QStringList);
+    check("stringsAt", l2, QMetaType::QStringList);
 
     l2 = { "ene", "due", "rike", "fake" };
-    testValue("strings", l2, QStringList);
+    check("strings", l2, QMetaType::QStringList);
 
     QDate date = QDate::currentDate();
     QTime time = QTime::currentTime();
     QList<QVariant> l3 { QString("ene"), 10, QVariant::fromValue(QColor(1, 2, 3)),
             QVariant(QRect(1, 2, 3, 4)), QVariant(QSize(4, 56)), QVariant(QPoint(4, 2)),
             true, false, date, time };
-    testValue("mixedList", l3, QVariantList);
+    check("mixedList", l3, QMetaType::QVariantList);
 
-    testValue("string", QString("hello"), QString);
-    testValue("color", QColor(1, 2, 3), QColor);
-    testValue("rect", QRect(1, 2, 3, 4), QRect);
-    testValue("size", QSize(4, 56), QSize);
-    testValue("point", QPoint(4, 2), QPoint);
-    testValue("date", date, QDate);
-    testValue("time", time, QTime);
-    testValue("byteArray", QByteArray("foo bar"), QByteArray);
+    check("string", QString("hello"), QMetaType::QString);
+    check("color", QColor(1, 2, 3), QMetaType::QColor);
+    check("rect", QRect(1, 2, 3, 4), QMetaType::QRect);
+    check("size", QSize(4, 56), QMetaType::QSize);
+    check("point", QPoint(4, 2), QMetaType::QPoint);
+    check("date", date, QMetaType::QDate);
+    check("time", time, QMetaType::QTime);
+    check("byteArray", QByteArray("foo bar"), QMetaType::QByteArray);
 
     QList<QVariant> l4 { QVariant(m2), QVariant(l2), QVariant(l3) };
-    testValue("collectList", l4, QVariantList);
+    check("collectList", l4, QMetaType::QVariantList);
 
     QDateTime dt = QDateTime::currentDateTime();
     dt.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(3600));
-    testValue("dateTime", dt, QDateTime);
+    check("dateTime", dt, QMetaType::QDateTime);
 
 #if QT_CONFIG(shortcut)
     // We store key sequences as strings instead of binary variant blob, for improved
     // readability in the resulting format.
     QKeySequence seq(Qt::ControlModifier | Qt::Key_F1);
     if (format >= QSettings::InvalidFormat)
-        testValue("keySequence", seq, QKeySequence);
+        check("keySequence", seq, QMetaType::QKeySequence);
     else
-        testValue("keySequence", seq.toString(QKeySequence::NativeText), QString);
+        check("keySequence", seq.toString(QKeySequence::NativeText), QMetaType::QString);
 #endif // QT_CONFIG(shortcut)
-
-#undef testValue
 }
 #endif
 
