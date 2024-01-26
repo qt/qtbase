@@ -64,6 +64,7 @@
 #include <memory>
 #include <mutex>
 #include <numeric>
+#include <optional>
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -493,7 +494,7 @@ public:
     static QMetaMethod findMethod(const QObject *obj, const char *signature);
 
 private:
-    bool invokeTest(int index, QLatin1StringView tag, WatchDog *watchDog) const;
+    bool invokeTest(int index, QLatin1StringView tag, std::optional<WatchDog> &watchDog) const;
     void invokeTestOnData(int index) const;
 
     QMetaMethod m_initTestCaseMethod; // might not exist, check isValid().
@@ -1387,7 +1388,7 @@ static void printUnknownDataTagError(QLatin1StringView name, QLatin1StringView t
     If the function was successfully called, true is returned, otherwise
     false.
 */
-bool TestMethods::invokeTest(int index, QLatin1StringView tag, WatchDog *watchDog) const
+bool TestMethods::invokeTest(int index, QLatin1StringView tag, std::optional<WatchDog> &watchDog) const
 {
     QBenchmarkTestMethodData benchmarkData;
     QBenchmarkTestMethodData::current = &benchmarkData;
@@ -1776,13 +1777,13 @@ void TestMethods::invokeTests(QObject *testObject) const
     QTestResult::setCurrentTestFunction("initTestCase");
     invokeTestMethodIfValid(m_initTestCaseDataMethod, testObject);
 
-    QScopedPointer<WatchDog> watchDog;
+    std::optional<WatchDog> watchDog = std::nullopt;
     if (!alreadyDebugging()
 #if QT_CONFIG(valgrind)
         && QBenchmarkGlobalData::current->mode() != QBenchmarkGlobalData::CallgrindChildProcess
 #endif
        ) {
-        watchDog.reset(new WatchDog);
+        watchDog.emplace();
     }
 
     QSignalDumper::startDump();
@@ -1801,7 +1802,7 @@ void TestMethods::invokeTests(QObject *testObject) const
                 const char *data = nullptr;
                 if (i < QTest::testTags.size() && !QTest::testTags.at(i).isEmpty())
                     data = qstrdup(QTest::testTags.at(i).toLatin1().constData());
-                const bool ok = invokeTest(i, QLatin1StringView(data), watchDog.data());
+                const bool ok = invokeTest(i, QLatin1StringView(data), watchDog);
                 delete [] data;
                 if (!ok)
                     break;
