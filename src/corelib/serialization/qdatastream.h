@@ -181,15 +181,13 @@ public:
     QDataStream &readBytes(char *&, uint &len);
     QDataStream &writeBytes(const char *, uint len);
     int skipRawData(int len);
-#endif
-#if QT_CORE_REMOVED_SINCE(6, 7) && QT_POINTER_SIZE != 4
     int readRawData(char *, int len);
     int writeRawData(const char *, int len);
 #endif
-    QDataStream &readBytes(char *&, qsizetype &len);
-    qsizetype readRawData(char *, qsizetype len);
-    QDataStream &writeBytes(const char *, qsizetype len);
-    qsizetype writeRawData(const char *, qsizetype len);
+    QDataStream &readBytes(char *&, qint64 &len);
+    qint64 readRawData(char *, qint64 len);
+    QDataStream &writeBytes(const char *, qint64 len);
+    qint64 writeRawData(const char *, qint64 len);
     qint64 skipRawData(qint64 len);
 
     void startTransaction();
@@ -209,10 +207,10 @@ private:
     ByteOrder byteorder;
     int ver;
     Status q_status;
-#if QT_CORE_REMOVED_SINCE(6, 7) && QT_POINTER_SIZE != 4
+#if QT_CORE_REMOVED_SINCE(6, 7)
     int readBlock(char *data, int len);
 #endif
-    qsizetype readBlock(char *data, qsizetype len);
+    qint64 readBlock(char *data, qint64 len);
     static inline qint64 readQSizeType(QDataStream &s);
     static inline void writeQSizeType(QDataStream &s, qint64 value);
     enum class QDataStreamSizes : quint32 { NullCode = 0xffffffffu, ExtendedSize = 0xfffffffeu };
