@@ -1297,6 +1297,25 @@ QString QDate::toString(QStringView format, QCalendar cal) const
 {
     return QLocale::c().toString(*this, format, cal);
 }
+
+// Out-of-line no-calendar overloads, since QCalendar is a non-trivial type
+/*!
+    \overload
+    \since 5.10
+*/
+QString QDate::toString(QStringView format) const
+{
+    return QLocale::c().toString(*this, format, QCalendar());
+}
+
+/*!
+    \overload
+    \since 4.6
+*/
+QString QDate::toString(const QString &format) const
+{
+    return QLocale::c().toString(*this, qToStringViewIgnoringNull(format), QCalendar());
+}
 #endif // datestring
 
 /*!
@@ -4688,6 +4707,25 @@ QString QDateTime::toString(Qt::DateFormat format) const
 QString QDateTime::toString(QStringView format, QCalendar cal) const
 {
     return QLocale::c().toString(*this, format, cal);
+}
+
+// Out-of-line no-calendar overloads, since QCalendar is a non-trivial type
+/*!
+    \overload
+    \since 5.10
+*/
+QString QDateTime::toString(QStringView format) const
+{
+    return QLocale::c().toString(*this, format, QCalendar());
+}
+
+/*!
+    \overload
+    \since 4.6
+*/
+QString QDateTime::toString(const QString &format) const
+{
+    return QLocale::c().toString(*this, qToStringViewIgnoringNull(format), QCalendar());
 }
 #endif // datestring
 
