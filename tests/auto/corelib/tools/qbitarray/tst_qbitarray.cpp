@@ -79,8 +79,9 @@ void tst_QBitArray::canHandleIntMaxBits()
     });
 
     try {
-        constexpr int Size1 = INT_MAX - 2;
-        constexpr int Size2 = Size1 + 2;
+        constexpr qsizetype Size1 = sizeof(void*) > sizeof(int) ? qsizetype(INT_MAX) + 2 :
+                                                                  INT_MAX - 2;
+        constexpr qsizetype Size2 = Size1 + 2;
 
         QBitArray ba(Size1, true);
         QCOMPARE(ba.size(), Size1);
@@ -93,6 +94,13 @@ void tst_QBitArray::canHandleIntMaxBits()
         QCOMPARE(ba.at(Size2 - 1), false);
 
         QByteArray serialized;
+        if constexpr (sizeof(void*) > sizeof(int)) {
+            QDataStream ds(&serialized, QIODevice::WriteOnly);
+            ds.setVersion(QDataStream::Qt_5_15);
+            ds << ba;
+            QCOMPARE(ds.status(), QDataStream::Status::WriteFailed); // ### SizeLimitExceeded
+            serialized.clear();
+        }
         {
             QDataStream ds(&serialized, QIODevice::WriteOnly);
             ds << ba;
