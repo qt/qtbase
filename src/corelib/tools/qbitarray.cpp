@@ -896,6 +896,10 @@ QDataStream &operator<<(QDataStream &out, const QBitArray &ba)
 {
     const qsizetype len = ba.size();
     if (out.version() < QDataStream::Qt_6_0) {
+        if (Q_UNLIKELY(len > qsizetype{(std::numeric_limits<qint32>::max)()})) {
+            out.setStatus(QDataStream::WriteFailed); // ### SizeLimitExceeded
+            return out;
+        }
         out << quint32(len);
     } else {
         out << quint64(len);
