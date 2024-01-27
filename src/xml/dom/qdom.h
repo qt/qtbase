@@ -339,8 +339,8 @@ public:
     ParseResult setContent(QXmlStreamReader *reader, ParseOptions options = ParseOption::Default);
 
     // Qt extensions
-    QString toString(int = 1) const;
-    QByteArray toByteArray(int = 1) const;
+    QString toString(int indent = 1) const;
+    QByteArray toByteArray(int indent = 1) const;
 
 private:
     ParseResult setContentImpl(const QByteArray &data, ParseOptions options);
