@@ -81,6 +81,8 @@ private slots:
 
     void intersectionEquality();
     void intersectionPointOnEdge();
+
+    void boundsAtStartPoint();
 };
 
 void tst_QPainterPath::cleanupTestCase()
@@ -1440,6 +1442,32 @@ void tst_QPainterPath::intersectionPointOnEdge()
     QVERIFY(!p.intersected(rp).isEmpty());
     QVERIFY(p.intersects(rp));
     QVERIFY(p.intersects(r));
+}
+
+void tst_QPainterPath::boundsAtStartPoint()
+{
+    const QPointF startPoint(10, 10);
+    const QPainterPath constructedPath(startPoint);
+    {
+        const auto boundingRect = constructedPath.boundingRect();
+        const auto topLeft = boundingRect.topLeft();
+        QCOMPARE(topLeft, startPoint);
+        QCOMPARE(topLeft, constructedPath.elementAt(0));
+        QCOMPARE(boundingRect, constructedPath.controlPointRect());
+    }
+
+    QPainterPath defaultPath;
+    defaultPath.moveTo(startPoint);
+    {
+        const auto boundingRect = defaultPath.boundingRect();
+        const auto topLeft = boundingRect.topLeft();
+        QCOMPARE(topLeft, startPoint);
+        QCOMPARE(topLeft, defaultPath.elementAt(0));
+        QCOMPARE(boundingRect, defaultPath.controlPointRect());
+    }
+
+    QCOMPARE(constructedPath.boundingRect(), defaultPath.boundingRect());
+    QCOMPARE(constructedPath.controlPointRect(), defaultPath.controlPointRect());
 }
 
 QTEST_APPLESS_MAIN(tst_QPainterPath)
