@@ -28,6 +28,7 @@ QComHelper::QComHelper(COINIT concurrencyModel)
 
 QComHelper::~QComHelper()
 {
+    Q_ASSERT(m_threadId == GetCurrentThreadId());
     if (SUCCEEDED(m_initResult))
         CoUninitialize();
 }
