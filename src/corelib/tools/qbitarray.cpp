@@ -898,19 +898,15 @@ QBitArray operator^(const QBitArray &a1, const QBitArray &a2)
 
 QDataStream &operator<<(QDataStream &out, const QBitArray &ba)
 {
+    const qsizetype len = ba.size();
     if (out.version() < QDataStream::Qt_6_0) {
-        quint32 len = ba.size();
-        out << len;
-        if (len > 0)
-            out.writeRawData(ba.d.constData() + 1, ba.d.size() - 1);
-        return out;
+        out << quint32(len);
     } else {
-        quint64 len = ba.size();
-        out << len;
-        if (len > 0)
-            out.writeRawData(ba.d.constData() + 1, ba.d.size() - 1);
-        return out;
+        out << quint64(len);
     }
+    if (len > 0)
+        out.writeRawData(ba.d.data() + 1, ba.d.size() - 1);
+    return out;
 }
 
 /*!
