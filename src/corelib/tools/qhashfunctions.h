@@ -104,7 +104,22 @@ Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(quint64 key, size_t seed = 0
     return QHashPrivate::hash(size_t(key), seed);
 }
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(qint64 key, size_t seed = 0) noexcept
-{ return qHash(quint64(key), seed); }
+{
+    if constexpr (sizeof(qint64) > sizeof(size_t)) {
+        // Avoid QTBUG-116080: we XOR the top half with its own sign bit:
+        // - if the qint64 is in range of qint32, then signmask ^ high == 0
+        //   (for Qt 7 only)
+        // - if the qint64 is in range of quint32, then signmask == 0 and we
+        //   do the same as the quint64 overload above
+        quint32 high = quint32(quint64(key) >> 32);
+        quint32 low = quint32(quint64(key));
+        quint32 signmask = qint32(high) >> 31;  // all zeroes or all ones
+        signmask = QT_VERSION_MAJOR > 6 ? signmask : 0;
+        low ^= signmask ^ high;
+        return qHash(low, seed);
+    }
+    return qHash(quint64(key), seed);
+}
 #if QT_SUPPORTS_INT128
 constexpr size_t qHash(quint128 key, size_t seed = 0) noexcept
 {
@@ -112,10 +127,8 @@ constexpr size_t qHash(quint128 key, size_t seed = 0) noexcept
 }
 constexpr size_t qHash(qint128 key, size_t seed = 0) noexcept
 {
-    // Avoid QTBUG-116080: we XOR the top half with its own sign bit:
-    // - if the qint128 is in range of qint64, then signmask ^ high == 0
-    // - if the qint128 is in range of quint64, then signmask == 0 and we
-    //   do the same as the quint128 overload above
+    // Avoid QTBUG-116080: same as above, but with double the sizes and without
+    // the need for compatibility
     quint64 high = quint64(quint128(key) >> 64);
     quint64 low = quint64(quint128(key));
     quint64 signmask = qint64(high) >> 63; // all zeroes or all ones

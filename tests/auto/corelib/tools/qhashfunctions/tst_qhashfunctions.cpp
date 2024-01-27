@@ -195,7 +195,7 @@ void tst_QHashFunctions::signedIntegerConsistency()
     if (v32 == value) {
         // because of QTBUG-116080, this may not match, but we can't guarantee
         // it mismatches 100% of the time either
-        if constexpr (sizeof(size_t) > sizeof(int))
+        if constexpr (sizeof(size_t) > sizeof(int) || QT_VERSION_MAJOR > 6)
             QCOMPARE(hs64, hs32);
     }
 
