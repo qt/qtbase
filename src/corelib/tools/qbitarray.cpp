@@ -7,6 +7,9 @@
 #include <qdatastream.h>
 #include <qdebug.h>
 #include <qendian.h>
+
+#include <limits>
+
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
@@ -774,10 +777,18 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
     if (in.version() < QDataStream::Qt_6_0) {
         quint32 tmp;
         in >> tmp;
+        if (Q_UNLIKELY(tmp > quint32((std::numeric_limits<qint32>::max)()))) {
+            in.setStatus(QDataStream::ReadCorruptData);
+            return in;
+        }
         len = tmp;
     } else {
         quint64 tmp;
         in >> tmp;
+        if (Q_UNLIKELY(tmp > quint64((std::numeric_limits<qsizetype>::max)()))) {
+            in.setStatus(QDataStream::ReadCorruptData); // ### SizeLimitExeeded
+            return in;
+        }
         len = tmp;
     }
     if (len == 0) {
