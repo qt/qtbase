@@ -1076,9 +1076,7 @@ QDebug operator<<(QDebug dbg, const QJsonArray &a)
 #ifndef QT_NO_DATASTREAM
 QDataStream &operator<<(QDataStream &stream, const QJsonArray &array)
 {
-    QJsonDocument doc{array};
-    stream << doc.toJson(QJsonDocument::Compact);
-    return stream;
+    return stream << QJsonDocument{array};
 }
 
 QDataStream &operator>>(QDataStream &stream, QJsonArray &array)
