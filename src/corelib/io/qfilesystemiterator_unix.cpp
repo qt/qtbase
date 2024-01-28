@@ -27,13 +27,10 @@ static bool checkNameDecodable(const char *d_name, qsizetype len)
     Native filesystem iterator, which uses ::opendir()/readdir()/dirent from the system
     libraries to iterate over the directory represented by \a entry.
 */
-QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters,
-                                         const QStringList &nameFilters, QDirIterator::IteratorFlags flags)
+QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters)
     : nativePath(entry.nativeFilePath())
 {
     Q_UNUSED(filters);
-    Q_UNUSED(nameFilters);
-    Q_UNUSED(flags);
 
     dir.reset(QT_OPENDIR(entry.nativeFilePath().constData()));
     if (!dir) {

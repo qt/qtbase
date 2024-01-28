@@ -171,7 +171,7 @@ void QDirIteratorPrivate::pushDirectory(const QFileInfo &fileInfo)
     } else {
 #ifndef QT_NO_FILESYSTEMITERATOR
         nativeIterators.emplace(std::make_unique<QFileSystemIterator>(
-            fileInfo.d_ptr->fileEntry, filters, nameFilters, iteratorFlags));
+            fileInfo.d_ptr->fileEntry, filters));
 #else
         qWarning("Qt was built with -no-feature-filesystemiterator: no files/plugins will be found!");
 #endif

@@ -22,8 +22,7 @@ QFSFileEngineIterator::~QFSFileEngineIterator()
 bool QFSFileEngineIterator::hasNext() const
 {
     if (!done && !nativeIterator) {
-        nativeIterator.reset(new QFileSystemIterator(QFileSystemEntry(path()),
-                    filters(), nameFilters()));
+        nativeIterator.reset(new QFileSystemIterator(QFileSystemEntry(path()), filters()));
         advance();
     }
 

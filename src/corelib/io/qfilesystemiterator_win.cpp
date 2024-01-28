@@ -14,8 +14,7 @@ using namespace Qt::StringLiterals;
 
 bool done = true;
 
-QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters,
-                                         const QStringList &nameFilters, QDirIterator::IteratorFlags flags)
+QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters)
     : nativePath(entry.nativeFilePath())
     , dirPath(entry.filePath())
     , findFileHandle(INVALID_HANDLE_VALUE)
@@ -23,8 +22,6 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
     , uncShareIndex(0)
     , onlyDirs(false)
 {
-    Q_UNUSED(nameFilters);
-    Q_UNUSED(flags);
     if (nativePath.endsWith(u".lnk"_s) && !QFileSystemEngine::isDirPath(dirPath, nullptr)) {
         QFileSystemMetaData metaData;
         QFileSystemEntry link = QFileSystemEngine::getLinkTarget(entry, metaData);
