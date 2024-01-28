@@ -46,16 +46,10 @@ private: // convenience functions
         return false;
     }
 
-    enum Cleanup { DoDelete, DontDelete };
-    bool createFile(const QString &fileName, Cleanup cleanup = DoDelete)
+    bool createFile(const QString &fileName)
     {
         QFile file(fileName);
-        if (file.open(QIODevice::WriteOnly)) {
-            if (cleanup == DoDelete)
-                createdFiles << fileName;
-            return true;
-        }
-        return false;
+        return file.open(QIODevice::WriteOnly);
     }
 
     bool createLink(const QString &destination, const QString &linkName)
@@ -69,7 +63,6 @@ private: // convenience functions
 
 private slots:
     void initTestCase();
-    void cleanupTestCase();
     void iterateRelativeDirectory_data();
     void iterateRelativeDirectory();
     void iterateResource_data();
@@ -90,10 +83,9 @@ private slots:
 #ifndef Q_OS_WIN
     void hiddenDirs_hiddenFiles();
 #endif
-#ifdef BUILTIN_TESTDATA
+
 private:
-    QSharedPointer<QTemporaryDir> m_dataDir;
-#endif
+    QTemporaryDir m_dataDir;
 };
 
 void tst_QDirIterator::initTestCase()
@@ -126,25 +118,19 @@ void tst_QDirIterator::initTestCase()
 #else
 
     // chdir into testdata directory, then find testdata by relative paths.
-    QString testdata_dir = QFileInfo(QFINDTESTDATA("entrylist")).absolutePath();
+    QString testdata_dir = m_dataDir.path();
 #endif
 
+    QVERIFY(!testdata_dir.isEmpty());
+    // Must call QDir::setCurrent() here because all the tests that use relative
+    // paths depend on that.
     QVERIFY2(QDir::setCurrent(testdata_dir), qPrintable("Could not chdir to " + testdata_dir));
-
-    QFile::remove("entrylist/entrylist1.lnk");
-    QFile::remove("entrylist/entrylist2.lnk");
-    QFile::remove("entrylist/entrylist3.lnk");
-    QFile::remove("entrylist/entrylist4.lnk");
-    QFile::remove("entrylist/directory/entrylist1.lnk");
-    QFile::remove("entrylist/directory/entrylist2.lnk");
-    QFile::remove("entrylist/directory/entrylist3.lnk");
-    QFile::remove("entrylist/directory/entrylist4.lnk");
 
     createDirectory("entrylist");
     createDirectory("entrylist/directory");
-    createFile("entrylist/file", DontDelete);
+    createFile("entrylist/file");
     createFile("entrylist/writable");
-    createFile("entrylist/directory/dummy", DontDelete);
+    createFile("entrylist/directory/dummy");
 
     createDirectory("recursiveDirs");
     createDirectory("recursiveDirs/dir1");
@@ -190,15 +176,6 @@ void tst_QDirIterator::initTestCase()
     createDirectory("hiddenDirs_hiddenFiles/.hiddenDirectory/normalDirectory");
     createDirectory("hiddenDirs_hiddenFiles/.hiddenDirectory/.hiddenDirectory");
 #endif
-}
-
-void tst_QDirIterator::cleanupTestCase()
-{
-    for (const QString &fileName : std::as_const(createdFiles))
-        QFile::remove(fileName);
-
-    for (const QString &dirName : std::as_const(createdDirectories))
-        currentDir.rmdir(dirName);
 }
 
 void tst_QDirIterator::iterateRelativeDirectory_data()
