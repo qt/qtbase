@@ -11719,7 +11719,6 @@ void tst_QWidget::imEnabledNotImplemented()
     topLevel.show();
 
     QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
-    QApplicationPrivate::setActiveWindow(&topLevel);
     QVERIFY(QTest::qWaitForWindowActive(&topLevel));
 
     // A plain widget should return false for ImEnabled
