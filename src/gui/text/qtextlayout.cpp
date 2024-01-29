@@ -1656,7 +1656,7 @@ void QTextLine::setNumColumns(int numColumns)
 void QTextLine::setNumColumns(int numColumns, qreal alignmentWidth)
 {
     QScriptLine &line = eng->lines[index];
-    line.width = QFixed::fromReal(alignmentWidth);
+    line.width = QFixed::fromReal(qBound(0.0, alignmentWidth, qreal(QFIXED_MAX)));
     line.length = 0;
     line.textWidth = 0;
     layout_helper(numColumns);
