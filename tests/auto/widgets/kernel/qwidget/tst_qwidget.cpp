@@ -2849,7 +2849,6 @@ void tst_QWidget::explicitTabOrderWithComplexWidget()
     QWidget::setTabOrder(lineEditOne, lineEditTwo);
     lineEditOne->setFocus();
     window.show();
-    QApplicationPrivate::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
     QTRY_COMPARE(QApplication::focusWidget(), lineEditOne);
 
