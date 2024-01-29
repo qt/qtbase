@@ -194,7 +194,9 @@ class Q_CORE_EXPORT QVariant
 #endif
 
     QVariant(const QByteArray &bytearray);
+#ifndef QT_BOOTSTRAPPED
     QVariant(const QBitArray &bitarray);
+#endif
     QVariant(const QString &string);
     QVariant(QLatin1String string);
     QVariant(const QStringList &stringlist);
@@ -281,7 +283,9 @@ class Q_CORE_EXPORT QVariant
     float toFloat(bool *ok = nullptr) const;
     qreal toReal(bool *ok = nullptr) const;
     QByteArray toByteArray() const;
+#ifndef QT_BOOTSTRAPPED
     QBitArray toBitArray() const;
+#endif
     QString toString() const;
     QStringList toStringList() const;
     QChar toChar() const;

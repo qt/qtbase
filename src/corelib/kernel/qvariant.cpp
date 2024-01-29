@@ -848,9 +848,11 @@ QVariant::QVariant(float val)
 QVariant::QVariant(const QByteArray &val)
     : d(QMetaType::fromType<QByteArray>())
 { v_construct<QByteArray>(&d, val); }
+#ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QBitArray &val)
     : d(QMetaType::fromType<QBitArray>())
 { v_construct<QBitArray>(&d, val);  }
+#endif
 QVariant::QVariant(const QString &val)
     : d(QMetaType::fromType<QString>())
 { v_construct<QString>(&d, val);  }
@@ -1792,6 +1794,7 @@ QChar QVariant::toChar() const
     return qvariant_cast<QChar>(*this);
 }
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     Returns the variant as a QBitArray if the variant has userType()
     \l QMetaType::QBitArray; otherwise returns an empty bit array.
@@ -1802,6 +1805,7 @@ QBitArray QVariant::toBitArray() const
 {
     return qvariant_cast<QBitArray>(*this);
 }
+#endif // QT_BOOTSTRAPPED
 
 template <typename T>
 inline T qNumVariantToHelper(const QVariant::Private &d, bool *ok, const T& val)
