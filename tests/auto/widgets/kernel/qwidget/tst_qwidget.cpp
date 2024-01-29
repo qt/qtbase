@@ -2529,7 +2529,6 @@ void tst_QWidget::tabOrderWithProxyOutOfOrder()
 
     container.show();
     container.activateWindow();
-    QApplicationPrivate::setActiveWindow(&container);
     if (!QTest::qWaitForWindowActive(&container))
         QSKIP("Window failed to activate, skipping test");
 
