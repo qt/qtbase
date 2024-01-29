@@ -2958,7 +2958,6 @@ void tst_QWidget::explicitTabOrderWithSpinBox_QTBUG81097()
     QWidget::setTabOrder(spinBoxTwo, lineEdit);
     spinBoxOne->setFocus();
     window.show();
-    QApplicationPrivate::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
     QTRY_COMPARE(QApplication::focusWidget(), spinBoxOne);
 
