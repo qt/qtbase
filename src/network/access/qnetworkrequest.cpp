@@ -631,7 +631,7 @@ void QNetworkRequest::setHeader(KnownHeaders header, const QVariant &value)
     \sa rawHeader(), setRawHeader()
     \note In Qt versions prior to 6.7, this function took QByteArray only.
 */
-bool QNetworkRequest::hasRawHeader(QByteArrayView headerName) const
+bool QNetworkRequest::hasRawHeader(QAnyStringView headerName) const
 {
     return d->findRawHeader(headerName) != d->rawHeaders.constEnd();
 }
@@ -647,7 +647,7 @@ bool QNetworkRequest::hasRawHeader(QByteArrayView headerName) const
     \sa header(), setRawHeader()
     \note In Qt versions prior to 6.7, this function took QByteArray only.
 */
-QByteArray QNetworkRequest::rawHeader(QByteArrayView headerName) const
+QByteArray QNetworkRequest::rawHeader(QAnyStringView headerName) const
 {
     if (const auto it = d->findRawHeader(headerName); it != d->rawHeaders.constEnd())
         return it->second;
@@ -1329,11 +1329,12 @@ static QVariant parseHeaderValue(QNetworkRequest::KnownHeaders header, const QBy
 }
 
 QNetworkHeadersPrivate::RawHeadersList::ConstIterator
-QNetworkHeadersPrivate::findRawHeader(QByteArrayView key) const
+QNetworkHeadersPrivate::findRawHeader(QAnyStringView key) const
 {
     auto isKeyEqual = [key](const auto &headerPair)
     {
-        return headerPair.first.compare(key, Qt::CaseInsensitive) == 0;
+        QLatin1StringView name{headerPair.first};
+        return QAnyStringView::compare(name, key, Qt::CaseInsensitive) == 0;
     };
     return std::find_if(rawHeaders.begin(), rawHeaders.end(), isKeyEqual);
 }

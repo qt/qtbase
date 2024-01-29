@@ -614,7 +614,7 @@ QVariant QNetworkReply::header(QNetworkRequest::KnownHeaders header) const
     \sa rawHeader()
     \note In Qt versions prior to 6.7, this function took QByteArray only.
 */
-bool QNetworkReply::hasRawHeader(QByteArrayView headerName) const
+bool QNetworkReply::hasRawHeader(QAnyStringView headerName) const
 {
     Q_D(const QNetworkReply);
     return d->findRawHeader(headerName) != d->rawHeaders.constEnd();
@@ -630,7 +630,7 @@ bool QNetworkReply::hasRawHeader(QByteArrayView headerName) const
     \sa setRawHeader(), hasRawHeader(), header()
     \note In Qt versions prior to 6.7, this function took QByteArray only.
 */
-QByteArray QNetworkReply::rawHeader(QByteArrayView headerName) const
+QByteArray QNetworkReply::rawHeader(QAnyStringView headerName) const
 {
     Q_D(const QNetworkReply);
     if (const auto it = d->findRawHeader(headerName); it != d->rawHeaders.constEnd())

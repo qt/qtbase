@@ -127,12 +127,12 @@ public:
 #if QT_NETWORK_REMOVED_SINCE(6, 7)
     bool hasRawHeader(const QByteArray &headerName) const;
 #endif
-    bool hasRawHeader(QByteArrayView headerName) const;
+    bool hasRawHeader(QAnyStringView headerName) const;
     QList<QByteArray> rawHeaderList() const;
 #if QT_NETWORK_REMOVED_SINCE(6, 7)
     QByteArray rawHeader(const QByteArray &headerName) const;
 #endif
-    QByteArray rawHeader(QByteArrayView headerName) const;
+    QByteArray rawHeader(QAnyStringView headerName) const;
     void setRawHeader(const QByteArray &headerName, const QByteArray &value);
 
     // attributes
