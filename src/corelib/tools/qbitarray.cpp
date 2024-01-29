@@ -104,12 +104,23 @@ QT_BEGIN_NAMESPACE
  *    inline qsizetype size() const { return (d.size() << 3) - *d.constData(); }
  */
 
+static constexpr qsizetype storage_size(qsizetype size)
+{
+    // avoid overflow when adding 7, by doing the arithmetic in unsigned space:
+    return qsizetype((size_t(size) + 7) / 8);
+}
+
+static constexpr qsizetype allocation_size(qsizetype size)
+{
+    return size <= 0 ? 0 : storage_size(size) + 1;
+}
+
 /*!
     Constructs a bit array containing \a size bits. The bits are
     initialized with \a value, which defaults to false (0).
 */
 QBitArray::QBitArray(qsizetype size, bool value)
-    : d(size <= 0 ? 0 : 1 + (size + 7) / 8, Qt::Uninitialized)
+    : d(allocation_size(size), Qt::Uninitialized)
 {
     Q_ASSERT_X(size >= 0, "QBitArray::QBitArray", "Size must be greater than or equal to 0.");
     if (size <= 0)
@@ -187,7 +198,7 @@ void QBitArray::resize(qsizetype size)
         d.resize(0);
     } else {
         qsizetype s = d.size();
-        d.resize(1 + (size + 7) / 8);
+        d.resize(allocation_size(size));
         uchar *c = reinterpret_cast<uchar *>(d.data());
         if (size > (s << 3))
             memset(c + s, 0, d.size() - s);
@@ -292,7 +303,7 @@ QBitArray QBitArray::fromBits(const char *data, qsizetype size)
     QBitArray result;
     if (size == 0)
         return result;
-    qsizetype nbytes = (size + 7) / 8;
+    qsizetype nbytes = storage_size(size);
 
     result.d = QByteArray(nbytes + 1, Qt::Uninitialized);
     char *bits = result.d.data();
@@ -922,7 +933,7 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
     }
 
     const qsizetype Step = 8 * 1024 * 1024;
-    qsizetype totalBytes = (len + 7) / 8;
+    const qsizetype totalBytes = storage_size(len);
     qsizetype allocated = 0;
 
     while (allocated < totalBytes) {
