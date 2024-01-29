@@ -12135,7 +12135,6 @@ void tst_QWidget::grabKeyboard()
     layout->addWidget(nonGrabber);
     centerOnScreen(&w);
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
     nonGrabber->setFocus();
     grabber->grabKeyboard();
