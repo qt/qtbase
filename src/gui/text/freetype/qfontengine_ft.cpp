@@ -190,10 +190,15 @@ int QFreetypeFace::getPointInOutline(glyph_t glyph, int flags, quint32 point, QF
     return Err_Ok;
 }
 
+bool QFreetypeFace::isScalable() const
+{
+    return FT_IS_SCALABLE(face);
+}
+
 bool QFreetypeFace::isScalableBitmap() const
 {
 #ifdef FT_HAS_COLOR
-    return !FT_IS_SCALABLE(face) && FT_HAS_COLOR(face);
+    return !isScalable() && FT_HAS_COLOR(face);
 #else
     return false;
 #endif
@@ -1592,7 +1597,7 @@ void QFontEngineFT::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_me
 
 bool QFontEngineFT::supportsTransformation(const QTransform &transform) const
 {
-    return transform.type() <= QTransform::TxRotate;
+    return transform.type() <= QTransform::TxRotate && (freetype->isScalable() || freetype->isScalableBitmap());
 }
 
 void QFontEngineFT::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags)
