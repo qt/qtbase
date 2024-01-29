@@ -895,7 +895,7 @@ QDataStream &operator<<(QDataStream &out, const QBitArray &ba)
     const qsizetype len = ba.size();
     if (out.version() < QDataStream::Qt_6_0) {
         if (Q_UNLIKELY(len > qsizetype{(std::numeric_limits<qint32>::max)()})) {
-            out.setStatus(QDataStream::WriteFailed); // ### SizeLimitExceeded
+            out.setStatus(QDataStream::Status::SizeLimitExceeded);
             return out;
         }
         out << quint32(len);
@@ -931,7 +931,7 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
         quint64 tmp;
         in >> tmp;
         if (Q_UNLIKELY(tmp > quint64((std::numeric_limits<qsizetype>::max)()))) {
-            in.setStatus(QDataStream::ReadCorruptData); // ### SizeLimitExeeded
+            in.setStatus(QDataStream::Status::SizeLimitExceeded);
             return in;
         }
         len = tmp;
