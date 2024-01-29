@@ -236,10 +236,6 @@ function(qt6_android_generate_deployment_settings target)
     _qt_internal_add_android_deployment_property(file_contents "android-no-deploy-qt-libs"
         ${target} "QT_ANDROID_NO_DEPLOY_QT_LIBS")
 
-    __qt_internal_collect_plugin_targets_from_dependencies("${target}" plugin_targets)
-    __qt_internal_collect_plugin_library_files("${target}" "${plugin_targets}" plugin_targets)
-    string(APPEND file_contents "   \"android-deploy-plugins\":\"${plugin_targets}\",\n")
-
     # App binary
     string(APPEND file_contents
         "   \"application-binary\": \"${target_output_name}\",\n")
@@ -307,7 +303,7 @@ function(qt6_android_generate_deployment_settings target)
     # content end
     string(APPEND file_contents "}\n")
 
-    file(GENERATE OUTPUT ${deploy_file} CONTENT "${file_contents}")
+    file(GENERATE OUTPUT ${deploy_file} CONTENT ${file_contents})
 
     set_target_properties(${target}
         PROPERTIES
