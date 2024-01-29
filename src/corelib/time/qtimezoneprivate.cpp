@@ -37,32 +37,63 @@ static bool earlierWinData(const QWindowsData &less, const QWindowsData &more) n
         || less.windowsId().compare(more.windowsId(), Qt::CaseInsensitive) < 0;
 }
 
-/*
-    Static utilities for looking up Windows ID tables
-*/
+// For use with std::lower_bound():
+constexpr bool atLowerUtcOffset(const QUtcData &entry, qint32 offsetSeconds) noexcept
+{
+    return entry.offsetFromUtc < offsetSeconds;
+}
 
+constexpr bool atLowerWindowsKey(const QWindowsData &entry, qint16 winIdKey) noexcept
+{
+    return entry.windowsIdKey < winIdKey;
+}
+
+static bool earlierWindowsId(const QWindowsData &entry, QByteArrayView winId) noexcept
+{
+    return entry.windowsId().compare(winId, Qt::CaseInsensitive) < 0;
+}
+
+constexpr bool zoneAtLowerWindowsKey(const QZoneData &entry, qint16 winIdKey) noexcept
+{
+    return entry.windowsIdKey < winIdKey;
+}
+
+// Static table-lookup helpers
 static quint16 toWindowsIdKey(const QByteArray &winId)
 {
-    for (const QWindowsData &data : windowsDataTable) {
-        if (data.windowsId() == winId)
-            return data.windowsIdKey;
-    }
+    // Key and winId are monotonic, table is sorted on them.
+    const auto data = std::lower_bound(std::begin(windowsDataTable), std::end(windowsDataTable),
+                                       winId, earlierWindowsId);
+    if (data != std::end(windowsDataTable) && data->windowsId() == winId)
+        return data->windowsIdKey;
     return 0;
 }
 
 static QByteArray toWindowsIdLiteral(quint16 windowsIdKey)
 {
-    for (const QWindowsData &data : windowsDataTable) {
-        if (data.windowsIdKey == windowsIdKey)
+    // Caller should be passing a valid (in range) key; and table is sorted in
+    // increasing order, with no gaps in numbering, starting with key = 1 at
+    // index [0]. So this should normally work:
+    if (Q_LIKELY(windowsIdKey > 0 && windowsIdKey <= std::size(windowsDataTable))) {
+        const auto &data = windowsDataTable[windowsIdKey - 1];
+        if (Q_LIKELY(data.windowsIdKey == windowsIdKey))
             return data.windowsId().toByteArray();
     }
+    // Fall back on binary chop - key and winId are monotonic, table is sorted on them:
+    const auto data = std::lower_bound(std::begin(windowsDataTable), std::end(windowsDataTable),
+                                       windowsIdKey, atLowerWindowsKey);
+    if (data != std::end(windowsDataTable) && data->windowsIdKey == windowsIdKey)
+        return data->windowsId().toByteArray();
+
     return QByteArray();
 }
 
-// For use with std::lower_bound():
-static bool atLowerUtcOffset(const QUtcData &entry, qint32 offsetSeconds)
+static auto zoneStartForWindowsId(quint16 windowsIdKey) noexcept
 {
-    return entry.offsetFromUtc < offsetSeconds;
+    // Caller must check the resulting iterator isn't std::end(zoneDataTable)
+    // and does match windowsIdKey, since this is just the lower bound.
+    return std::lower_bound(std::begin(zoneDataTable), std::end(zoneDataTable),
+                            windowsIdKey, zoneAtLowerWindowsKey);
 }
 
 /*
@@ -530,11 +561,11 @@ QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) cons
     // First get all Zones in the table using the Offset
     for (const QWindowsData &winData : windowsDataTable) {
         if (winData.offsetFromUtc == offsetFromUtc) {
-            for (const QZoneData &data : zoneDataTable) {
-                if (data.windowsIdKey == winData.windowsIdKey) {
-                    for (auto l1 : data.ids())
-                        offsets << QByteArray(l1.data(), l1.size());
-                }
+            for (auto data = zoneStartForWindowsId(winData.windowsIdKey);
+                 data != std::end(zoneDataTable) && data->windowsIdKey == winData.windowsIdKey;
+                 ++data) {
+                for (auto l1 : data->ids())
+                    offsets << QByteArray(l1.data(), l1.size());
             }
         }
     }
@@ -708,13 +739,13 @@ QByteArray QTimeZonePrivate::ianaIdToWindowsId(const QByteArray &id)
 
 QByteArray QTimeZonePrivate::windowsIdToDefaultIanaId(const QByteArray &windowsId)
 {
-    for (const QWindowsData &data : windowsDataTable) {
-        if (data.windowsId() == windowsId) {
-            QByteArrayView id = data.ianaId();
-            if (qsizetype cut = id.indexOf(' '); cut >= 0)
-                id = id.first(cut);
-            return id.toByteArray();
-        }
+    const auto data = std::lower_bound(std::begin(windowsDataTable), std::end(windowsDataTable),
+                                       windowsId, earlierWindowsId);
+    if (data != std::end(windowsDataTable) && data->windowsId() == windowsId) {
+        QByteArrayView id = data->ianaId();
+        if (qsizetype cut = id.indexOf(' '); cut >= 0)
+            id = id.first(cut);
+        return id.toByteArray();
     }
     return QByteArray();
 }
@@ -731,11 +762,11 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windows
     const quint16 windowsIdKey = toWindowsIdKey(windowsId);
     QList<QByteArray> list;
 
-    for (const QZoneData &data : zoneDataTable) {
-        if (data.windowsIdKey == windowsIdKey) {
-            for (auto l1 : data.ids())
-                list << QByteArray(l1.data(), l1.size());
-        }
+    for (auto data = zoneStartForWindowsId(windowsIdKey);
+         data != std::end(zoneDataTable) && data->windowsIdKey == windowsIdKey;
+         ++data) {
+        for (auto l1 : data->ids())
+            list << QByteArray(l1.data(), l1.size());
     }
 
     // Return the full list in alpha order
@@ -749,10 +780,12 @@ QList<QByteArray> QTimeZonePrivate::windowsIdToIanaIds(const QByteArray &windows
     QList<QByteArray> list;
     const quint16 windowsIdKey = toWindowsIdKey(windowsId);
     const qint16 land = static_cast<quint16>(territory);
-    for (const QZoneData &data : zoneDataTable) {
+    for (auto data = zoneStartForWindowsId(windowsIdKey);
+         data != std::end(zoneDataTable) && data->windowsIdKey == windowsIdKey;
+         ++data) {
         // Return the region matches in preference order
-        if (data.windowsIdKey == windowsIdKey && data.territory == land) {
-            for (auto l1 : data.ids())
+        if (data->territory == land) {
+            for (auto l1 : data->ids())
                 list << QByteArray(l1.data(), l1.size());
             break;
         }
