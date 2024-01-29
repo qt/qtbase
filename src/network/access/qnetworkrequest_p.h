@@ -40,7 +40,7 @@ public:
     AttributesMap attributes;
     QPointer<QObject> originatingObject;
 
-    RawHeadersList::ConstIterator findRawHeader(QByteArrayView key) const;
+    RawHeadersList::ConstIterator findRawHeader(QAnyStringView key) const;
     RawHeadersList allRawHeaders() const;
     QList<QByteArray> rawHeadersKeys() const;
     void setRawHeader(const QByteArray &key, const QByteArray &value);
