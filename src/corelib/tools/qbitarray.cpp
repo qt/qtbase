@@ -77,6 +77,7 @@ QT_BEGIN_NAMESPACE
     \sa QByteArray, QList
 */
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 /*!
     \fn QBitArray::QBitArray(QBitArray &&other)
 
@@ -85,6 +86,7 @@ QT_BEGIN_NAMESPACE
 
     \since 5.2
 */
+#endif
 
 /*! \fn QBitArray::QBitArray()
 
@@ -467,6 +469,7 @@ quint32 QBitArray::toUInt32(QSysInfo::Endian endianness, bool *ok) const noexcep
     \overload
 */
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 /*! \fn QBitArray::QBitArray(const QBitArray &other) noexcept
 
     Constructs a copy of \a other.
@@ -491,6 +494,7 @@ quint32 QBitArray::toUInt32(QSysInfo::Endian endianness, bool *ok) const noexcep
     Moves \a other to this bit array and returns a reference to
     this bit array.
 */
+#endif // Qt 6
 
 /*! \fn void QBitArray::swap(QBitArray &other)
     \since 4.8

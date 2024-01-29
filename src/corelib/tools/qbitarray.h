@@ -63,10 +63,13 @@ class Q_CORE_EXPORT QBitArray
 public:
     inline QBitArray() noexcept {}
     explicit QBitArray(qsizetype size, bool val = false);
+    // Rule Of Zero applies
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     QBitArray(const QBitArray &other) noexcept : d(other.d) {}
     inline QBitArray &operator=(const QBitArray &other) noexcept { d = other.d; return *this; }
     inline QBitArray(QBitArray &&other) noexcept : d(std::move(other.d)) {}
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QBitArray)
+#endif // Qt 6
 
     void swap(QBitArray &other) noexcept { d.swap(other.d); }
 
