@@ -1709,7 +1709,7 @@ void tst_QLocalSocket::verifySocketOptions()
 
 void tst_QLocalSocket::verifyListenWithDescriptor()
 {
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
     QFETCH(QString, path);
     QFETCH(bool, abstract);
     QFETCH(bool, bound);
