@@ -6813,7 +6813,6 @@ void tst_QWidget::showAndMoveChild()
     parent.setGeometry(desktopDimensions);
     parent.setPalette(Qt::red);
     parent.show();
-    QApplicationPrivate::setActiveWindow(&parent);
     QVERIFY(QTest::qWaitForWindowActive(&parent));
 
     QWidget child(&parent);
