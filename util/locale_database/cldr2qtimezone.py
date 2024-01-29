@@ -60,10 +60,10 @@ windowsIdList = (
     ('Central Europe Standard Time',      3600),
     ('Central European Standard Time',    3600),
     ('Central Pacific Standard Time',    39600),
-    ('Central Standard Time (Mexico)',  -21600),
     ('Central Standard Time',           -21600),
-    ('China Standard Time',              28800),
+    ('Central Standard Time (Mexico)',  -21600),
     ('Chatham Islands Standard Time',    45900),
+    ('China Standard Time',              28800),
     ('Cuba Standard Time',              -18000),
     ('Dateline Standard Time',          -43200),
     ('E. Africa Standard Time',          10800),
@@ -100,8 +100,8 @@ windowsIdList = (
     ('Middle East Standard Time',         7200),
     ('Montevideo Standard Time',        -10800),
     ('Morocco Standard Time',                0),
-    ('Mountain Standard Time (Mexico)', -25200),
     ('Mountain Standard Time',          -25200),
+    ('Mountain Standard Time (Mexico)', -25200),
     ('Myanmar Standard Time',            23400),
     ('N. Central Asia Standard Time',    21600),
     ('Namibia Standard Time',             3600),
@@ -120,9 +120,9 @@ windowsIdList = (
     ('Paraguay Standard Time',          -14400),
     ('Qyzylorda Standard Time',          18000), # a.k.a. Kyzylorda, in Kazakhstan
     ('Romance Standard Time',             3600),
-    ('Russia Time Zone 3',               14400),
     ('Russia Time Zone 10',              39600),
     ('Russia Time Zone 11',              43200),
+    ('Russia Time Zone 3',               14400),
     ('Russian Standard Time',            10800),
     ('SA Eastern Standard Time',        -10800),
     ('SA Pacific Standard Time',        -18000),
@@ -151,13 +151,14 @@ windowsIdList = (
     ('Ulaanbaatar Standard Time',        28800),
     ('US Eastern Standard Time',        -18000),
     ('US Mountain Standard Time',       -25200),
-    ('UTC-11',                          -39600),
-    ('UTC-09',                          -32400),
-    ('UTC-08',                          -28800),
-    ('UTC-02',                           -7200),
     ('UTC',                                  0),
+    # Lexical order: '+' < '-'
     ('UTC+12',                           43200),
     ('UTC+13',                           46800),
+    ('UTC-02',                           -7200),
+    ('UTC-08',                          -28800),
+    ('UTC-09',                          -32400),
+    ('UTC-11',                          -39600),
     ('Venezuela Standard Time',         -16200),
     ('Vladivostok Standard Time',        36000),
     ('Volgograd Standard Time',          14400),
@@ -284,6 +285,7 @@ class ZoneIdWriter (SourceFileEditor):
         # Write Windows/IANA table
         out('// Windows ID Key, Territory Enum, IANA ID Index\n')
         out('static constexpr QZoneData zoneDataTable[] = {\n')
+        # Sorted by (Windows ID Key, territory enum)
         for index, data in sorted(windowsIds.items()):
             out('    {{ {:6d},{:6d},{:6d} }}, // {} / {}\n'.format(
                     data['windowsKey'], data['territoryId'],
@@ -294,6 +296,11 @@ class ZoneIdWriter (SourceFileEditor):
         # Write Windows ID key table
         out('// Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset\n')
         out('static constexpr QWindowsData windowsDataTable[] = {\n')
+        # Sorted by Windows ID key; sorting case-insensitively by
+        # Windows ID must give the same order.
+        winIdNames = [x.lower() for x, y in windowsIdList]
+        assert all(x == y for x, y in zip(winIdNames, sorted(winIdNames))), \
+            [(x, y) for x, y in zip(winIdNames, sorted(winIdNames)) if x != y]
         for index, pair in enumerate(windowsIdList, 1):
             out('    {{ {:6d},{:6d},{:6d},{:6d} }}, // {}\n'.format(
                     index,

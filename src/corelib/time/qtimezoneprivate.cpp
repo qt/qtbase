@@ -20,6 +20,23 @@ QT_BEGIN_NAMESPACE
 
 using namespace QtMiscUtils;
 
+// For use with std::is_sorted() in assertions:
+[[maybe_unused]]
+constexpr bool earlierZoneData(const QZoneData &less, const QZoneData &more) noexcept
+{
+    return less.windowsIdKey < more.windowsIdKey
+        || (less.windowsIdKey == more.windowsIdKey && less.territory < more.territory);
+}
+
+[[maybe_unused]]
+static bool earlierWinData(const QWindowsData &less, const QWindowsData &more) noexcept
+{
+    // Actually only tested in the negative, to check more < less never happens,
+    // so should be true if more < less in either part; hence || not && combines.
+    return less.windowsIdKey < more.windowsIdKey
+        || less.windowsId().compare(more.windowsId(), Qt::CaseInsensitive) < 0;
+}
+
 /*
     Static utilities for looking up Windows ID tables
 */
@@ -54,6 +71,12 @@ static bool atLowerUtcOffset(const QUtcData &entry, qint32 offsetSeconds)
 
 QTimeZonePrivate::QTimeZonePrivate()
 {
+    // If std::is_sorted() were constexpr, the first could be a static_assert().
+    // From C++20, we should be able to rework it in terms of std::all_of().
+    Q_ASSERT(std::is_sorted(std::begin(zoneDataTable), std::end(zoneDataTable),
+                            earlierZoneData));
+    Q_ASSERT(std::is_sorted(std::begin(windowsDataTable), std::end(windowsDataTable),
+                            earlierWinData));
 }
 
 QTimeZonePrivate::QTimeZonePrivate(const QTimeZonePrivate &other)
