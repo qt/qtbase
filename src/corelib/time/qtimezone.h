@@ -13,7 +13,7 @@
 
 #include <chrono>
 
-#if QT_CONFIG(timezone) && (defined(Q_OS_DARWIN) || defined(Q_QDOC)) && !defined(QT_NO_SYSTEMLOCALE)
+#if QT_CONFIG(timezone) && (defined(Q_OS_DARWIN) || defined(Q_QDOC))
 Q_FORWARD_DECLARE_CF_TYPE(CFTimeZone);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSTimeZone);
 #endif
@@ -214,7 +214,7 @@ public:
     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId,
                                                 QLocale::Territory territory);
 
-#  if (defined(Q_OS_DARWIN) || defined(Q_QDOC)) && !defined(QT_NO_SYSTEMLOCALE)
+#  if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     static QTimeZone fromCFTimeZone(CFTimeZoneRef timeZone);
     CFTimeZoneRef toCFTimeZone() const Q_DECL_CF_RETURNS_RETAINED;
     static QTimeZone fromNSTimeZone(const NSTimeZone *timeZone);

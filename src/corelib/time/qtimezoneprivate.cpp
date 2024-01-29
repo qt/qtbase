@@ -756,8 +756,11 @@ static bool isEntryInIanaList(QByteArrayView id, QByteArrayView ianaIds)
 }
 
 /*
-    UTC Offset implementation, used when QT_NO_SYSTEMLOCALE set and ICU is not being used,
-    or for QDateTimes with a Qt:Spec of Qt::OffsetFromUtc.
+    UTC Offset backend.
+
+    Always present, based on UTC-offset zones.
+    Complements platform-specific backends.
+    Equivalent to Qt::OffsetFromUtc lightweight time representations.
 */
 
 // Create default UTC time zone

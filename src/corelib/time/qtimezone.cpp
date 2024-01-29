@@ -22,13 +22,6 @@ using namespace Qt::StringLiterals;
 // Create default time zone using appropriate backend
 static QTimeZonePrivate *newBackendTimeZone()
 {
-#ifdef QT_NO_SYSTEMLOCALE
-#if QT_CONFIG(icu)
-    return new QIcuTimeZonePrivate();
-#else
-    return new QUtcTimeZonePrivate();
-#endif
-#else
 #if defined(Q_OS_DARWIN)
     return new QMacTimeZonePrivate();
 #elif defined(Q_OS_ANDROID)
@@ -41,21 +34,13 @@ static QTimeZonePrivate *newBackendTimeZone()
     return new QWinTimeZonePrivate();
 #else
     return new QUtcTimeZonePrivate();
-#endif // System Locales
-#endif // QT_NO_SYSTEMLOCALE
+#endif // Backend selection
 }
 
 // Create named time zone using appropriate backend
 static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
 {
     Q_ASSERT(!ianaId.isEmpty());
-#ifdef QT_NO_SYSTEMLOCALE
-#if QT_CONFIG(icu)
-    return new QIcuTimeZonePrivate(ianaId);
-#else
-    return new QUtcTimeZonePrivate(ianaId);
-#endif
-#else
 #if defined(Q_OS_DARWIN)
     return new QMacTimeZonePrivate(ianaId);
 #elif defined(Q_OS_ANDROID)
@@ -68,8 +53,7 @@ static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
     return new QWinTimeZonePrivate(ianaId);
 #else
     return new QUtcTimeZonePrivate(ianaId);
-#endif // System Locales
-#endif // QT_NO_SYSTEMLOCALE
+#endif // Backend selection
 }
 
 class QTimeZoneSingleton
@@ -77,10 +61,11 @@ class QTimeZoneSingleton
 public:
     QTimeZoneSingleton() : backend(newBackendTimeZone()) {}
 
-    // The global_tz is the tz to use in static methods such as availableTimeZoneIds() and
-    // isTimeZoneIdAvailable() and to create named IANA time zones.  This is usually the host
-    // system, but may be different if the host resources are insufficient or if
-    // QT_NO_SYSTEMLOCALE is set.  A simple UTC backend is used if no alternative is available.
+    // The global_tz is the tz to use in static methods such as
+    // availableTimeZoneIds() and isTimeZoneIdAvailable() and to create named
+    // IANA time zones. This is usually the host system, but may be different if
+    // the host resources are insufficient. A simple UTC backend is used if no
+    // alternative is available.
     QExplicitlySharedDataPointer<QTimeZonePrivate> backend;
 };
 
