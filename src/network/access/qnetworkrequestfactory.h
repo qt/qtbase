@@ -74,6 +74,9 @@ public:
     Q_NETWORK_EXPORT void setQueryParameters(const QUrlQuery &query);
     Q_NETWORK_EXPORT void clearQueryParameters();
 
+    Q_NETWORK_EXPORT void setPriority(QNetworkRequest::Priority priority);
+    Q_NETWORK_EXPORT QNetworkRequest::Priority priority() const;
+
 private:
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QNetworkRequestFactory &reply);

@@ -475,6 +475,37 @@ void QNetworkRequestFactory::clearQueryParameters()
     d->queryParameters.clear();
 }
 
+/*!
+    \since 6.8
+
+    Sets the priority for any future requests created by this factory to
+    \a priority.
+
+    The default priority is \l QNetworkRequest::NormalPriority.
+
+    \sa priority(), QNetworkRequest::setPriority()
+*/
+void QNetworkRequestFactory::setPriority(QNetworkRequest::Priority priority)
+{
+    if (d->priority == priority)
+        return;
+    d.detach();
+    d->priority = priority;
+}
+
+/*!
+    \since 6.8
+
+    Returns the priority assigned to any future requests created by this
+    factory.
+
+    \sa setPriority(), QNetworkRequest::priority()
+*/
+QNetworkRequest::Priority QNetworkRequestFactory::priority() const
+{
+    return d->priority;
+}
+
 QNetworkRequestFactoryPrivate::QNetworkRequestFactoryPrivate()
     = default;
 
@@ -507,6 +538,7 @@ QNetworkRequest QNetworkRequestFactoryPrivate::newRequest(const QUrl &url) const
         request.setRawHeader("Authorization"_ba, Bearer + bearerToken);
 
     request.setTransferTimeout(transferTimeout);
+    request.setPriority(priority);
     return request;
 }
 

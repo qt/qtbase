@@ -44,6 +44,7 @@ public:
     QString userName;
     QString password;
     QUrlQuery queryParameters;
+    QNetworkRequest::Priority priority = QNetworkRequest::NormalPriority;
     std::chrono::milliseconds transferTimeout{0};
 };
 

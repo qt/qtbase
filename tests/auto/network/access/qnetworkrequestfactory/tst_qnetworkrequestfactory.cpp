@@ -26,6 +26,7 @@ private Q_SLOTS:
     void operators();
     void timeout();
     void userInfo();
+    void priority();
 
 private:
     const QUrl url1{u"http://foo.io"_s};
@@ -352,6 +353,19 @@ void tst_QNetworkRequestFactory::userInfo()
     factory.clearPassword();
     QVERIFY(factory.userName().isEmpty());
     QVERIFY(factory.password().isEmpty());
+}
+
+void tst_QNetworkRequestFactory::priority()
+{
+    QNetworkRequestFactory factory(u"http://example.com"_s);
+    QCOMPARE(factory.priority(), QNetworkRequest::NormalPriority);
+    auto request = factory.createRequest("/index.html");
+    QCOMPARE(request.priority(), QNetworkRequest::NormalPriority);
+
+    factory.setPriority(QNetworkRequest::HighPriority);
+    QCOMPARE(factory.priority(), QNetworkRequest::HighPriority);
+    request = factory.createRequest("/index.html");
+    QCOMPARE(request.priority(), QNetworkRequest::HighPriority);
 }
 
 QTEST_MAIN(tst_QNetworkRequestFactory)
