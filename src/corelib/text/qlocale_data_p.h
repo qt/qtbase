@@ -23,9 +23,11 @@
 
 QT_BEGIN_NAMESPACE
 
-/* This part of the file isn't generated, but written by hand since
- * Unicode CLDR doesn't contain measurement system information.
- */
+/* This part of the file isn't generated, but written by hand. Unicode CLDR's
+   information about measurement systems doesn't say which to use by default in
+   each locale. Even if it did, adding another entry in every locale's row of
+   locale_data[] would take up much more memory than the small table below.
+*/
 struct TerritoryLanguage
 {
     quint16 languageId;
