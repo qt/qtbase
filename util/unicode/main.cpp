@@ -532,7 +532,8 @@ static const char *line_break_class_string =
     "// we don't use the XX, AK, AP, AS and AI classes and map them to AL instead.\n"
     "// VI and VF classes are mapped to CM.\n"
     "enum LineBreakClass {\n"
-    "    LineBreak_OP, LineBreak_CL, LineBreak_CP, LineBreak_QU, LineBreak_GL,\n"
+    "    LineBreak_OP, LineBreak_CL, LineBreak_CP,\n"
+    "    LineBreak_QU, LineBreak_QU_Pi, LineBreak_QU_Pf, LineBreak_GL,\n"
     "    LineBreak_NS, LineBreak_EX, LineBreak_SY, LineBreak_IS, LineBreak_PR,\n"
     "    LineBreak_PO, LineBreak_NU, LineBreak_AL, LineBreak_HL, LineBreak_ID,\n"
     "    LineBreak_IN, LineBreak_HY, LineBreak_BA, LineBreak_BB, LineBreak_B2,\n"
@@ -546,7 +547,8 @@ static const char *line_break_class_string =
     "};\n\n";
 
 enum LineBreakClass {
-    LineBreak_OP, LineBreak_CL, LineBreak_CP, LineBreak_QU, LineBreak_GL,
+    LineBreak_OP, LineBreak_CL, LineBreak_CP,
+    LineBreak_QU, LineBreak_QU_Pi, LineBreak_QU_Pf, LineBreak_GL,
     LineBreak_NS, LineBreak_EX, LineBreak_SY, LineBreak_IS, LineBreak_PR,
     LineBreak_PO, LineBreak_NU, LineBreak_AL, LineBreak_HL, LineBreak_ID,
     LineBreak_IN, LineBreak_HY, LineBreak_BA, LineBreak_BB, LineBreak_B2,
