@@ -1074,7 +1074,7 @@ QDataStream &QDataStream::readBytes(char *&s, qint64 &l)
         return *this;
     }
 
-    qsizetype step = 1024 * 1024;
+    qsizetype step = (dev->bytesAvailable() >= len) ? len : 1024 * 1024;
     qsizetype allocated = 0;
     char *prevBuf = nullptr;
     char *curBuf = nullptr;
