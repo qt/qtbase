@@ -1937,8 +1937,6 @@ void tst_QWidget::focusChainOnHide()
     QWidget::setTabOrder(child, parent.data());
 
     parent->show();
-    QApplicationPrivate::setActiveWindow(parent->window());
-    child->activateWindow();
     child->setFocus();
 
     QTRY_VERIFY(child->hasFocus());
