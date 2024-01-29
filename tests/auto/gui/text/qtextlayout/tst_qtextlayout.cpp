@@ -2736,13 +2736,25 @@ void tst_QTextLayout::min_maximumWidth()
 
 void tst_QTextLayout::negativeLineWidth()
 {
-    QTextLayout layout;
-    layout.setText("Foo bar");
-    layout.beginLayout();
-    QTextLine line = layout.createLine();
-    line.setLineWidth(-1);
-    QVERIFY(line.textLength() > 0);
-    layout.endLayout();
+    {
+        QTextLayout layout;
+        layout.setText("Foo bar");
+        layout.beginLayout();
+        QTextLine line = layout.createLine();
+        line.setLineWidth(-1);
+        QVERIFY(line.textLength() > 0);
+        layout.endLayout();
+    }
+
+    {
+        QTextLayout layout;
+        layout.setText("Foo bar");
+        layout.beginLayout();
+        QTextLine line = layout.createLine();
+        line.setNumColumns(2, -1);
+        QVERIFY(line.textLength() > 0);
+        layout.endLayout();
+    }
 }
 
 QTEST_MAIN(tst_QTextLayout)
