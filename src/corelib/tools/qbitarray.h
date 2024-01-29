@@ -100,7 +100,7 @@ public:
     }
 
     bool at(qsizetype i) const { return testBit(i); }
-    QBitRef operator[](qsizetype i);
+    inline QBitRef operator[](qsizetype i);
     bool operator[](qsizetype i) const { return testBit(i); }
 
     QBitArray &operator&=(QBitArray &&);
@@ -148,7 +148,7 @@ public:
     QBitRef &operator=(bool val) { a.setBit(i, val); return *this; }
 };
 
-inline QBitRef QBitArray::operator[](qsizetype i)
+QBitRef QBitArray::operator[](qsizetype i)
 { Q_ASSERT(i >= 0); return QBitRef(*this, i); }
 
 #ifndef QT_NO_DATASTREAM
