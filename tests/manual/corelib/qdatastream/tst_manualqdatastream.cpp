@@ -5,6 +5,7 @@
 #include <QHash>
 #include <QList>
 #include <QMap>
+#include <QScopeGuard>
 #include <QSet>
 #include <QTest>
 
@@ -32,6 +33,7 @@ private slots:
     void stream_bigQSet();
     void stream_bigQMap();
     void stream_bigQHash();
+    void stream_bigCString();
 };
 
 void tst_QDataStream::initTestCase()
@@ -159,6 +161,54 @@ void tst_QDataStream::stream_bigQMap()
 void tst_QDataStream::stream_bigQHash()
 {
     stream_big<QHash<qsizetype, qsizetype>>();
+}
+
+void tst_QDataStream::stream_bigCString()
+{
+    if constexpr (sizeof(void*) == sizeof(int))
+        QSKIP("This test is 64-bit only.");
+
+    QFETCH_GLOBAL(const QDataStream::Version, streamVersion);
+    constexpr qint64 GiB = 1024 * 1024 * 1024;
+    constexpr qint64 BaseSize = 4 * GiB + 1;
+    std::string input;
+    qDebug("Creating an array with %lld entries", BaseSize);
+    QElapsedTimer timer;
+    timer.start();
+    try {
+        input.resize(BaseSize, 'a');
+    } catch (const std::bad_alloc &) {
+        QSKIP("Could not allocate 4 Gi + 2 entries.");
+    }
+    qDebug("Created dataset in %lld ms", timer.elapsed());
+    QByteArray ba;
+    QDataStream inputstream(&ba, QIODevice::WriteOnly);
+    inputstream.setVersion(streamVersion);
+    timer.start();
+    try {
+        inputstream << input.data();
+    } catch (const std::bad_alloc &) {
+        QSKIP("Not enough memory to copy into QDataStream.");
+    }
+    qDebug("Streamed into QDataStream in %lld ms", timer.elapsed());
+    if (streamVersion < QDataStream::Qt_6_7) {
+        // old versions do not support data size more than 4 GiB
+        QCOMPARE(inputstream.status(), QDataStream::SizeLimitExceeded);
+        QVERIFY(ba.isEmpty());
+    } else {
+        char *output = nullptr;
+        auto cleanup = qScopeGuard([&output] { delete [] output; });
+        QDataStream outputstream(ba);
+        timer.start();
+        try {
+            outputstream >> output;
+        } catch (const std::bad_alloc &) {
+            QSKIP("Not enough memory to copy out of QDataStream.");
+        }
+        qDebug("Streamed out of QDataStream in %lld ms", timer.elapsed());
+        QCOMPARE(qstrlen(output), input.size());
+        QVERIFY(memcmp(input.data(), output, BaseSize + 1) == 0);
+    }
 }
 
 QTEST_MAIN(tst_QDataStream)
