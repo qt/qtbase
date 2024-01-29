@@ -9820,7 +9820,6 @@ void tst_QWidget::dumpObjectTree()
     }
 
     QTestPrivate::androidCompatibleShow(&w);
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     {
