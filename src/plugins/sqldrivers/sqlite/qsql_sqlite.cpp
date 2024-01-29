@@ -754,6 +754,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     bool useExtendedResultCodes = true;
     bool useQtVfs = false;
     bool useQtCaseFolding = false;
+    bool openNoFollow = false;
 #if QT_CONFIG(regularexpression)
     static const auto regexpConnectOption = "QSQLITE_ENABLE_REGEXP"_L1;
     bool defineRegexp = false;
@@ -783,6 +784,8 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
             useExtendedResultCodes = false;
         } else if (option == "QSQLITE_ENABLE_NON_ASCII_CASE_FOLDING"_L1) {
             useQtCaseFolding = true;
+        } else if (option == "QSQLITE_OPEN_NOFOLLOW"_L1) {
+            openNoFollow = true;
         }
 #if QT_CONFIG(regularexpression)
         else if (option.startsWith(regexpConnectOption)) {
@@ -800,12 +803,21 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
             }
         }
 #endif
+        else
+            qWarning("Unsupported option '%ls'", qUtf16Printable(option.toString()));
     }
 
     int openMode = (openReadOnlyOption ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE));
     openMode |= (sharedCache ? SQLITE_OPEN_SHAREDCACHE : SQLITE_OPEN_PRIVATECACHE);
     if (openUriOption)
         openMode |= SQLITE_OPEN_URI;
+    if (openNoFollow) {
+#if defined(SQLITE_OPEN_NOFOLLOW)
+        openMode |= SQLITE_OPEN_NOFOLLOW;
+#else
+        qWarning("SQLITE_OPEN_NOFOLLOW not supported with the SQLite version %s", sqlite3_libversion());
+#endif
+    }
 
     openMode |= SQLITE_OPEN_NOMUTEX;
 
