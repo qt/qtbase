@@ -1346,13 +1346,9 @@ QDataStream &QDataStream::operator<<(double f)
 
 QDataStream &QDataStream::operator<<(const char *s)
 {
-    if (!s) {
-        *this << (quint32)0;
-        return *this;
-    }
-    int len = int(qstrlen(s)) + 1;                        // also write null terminator
-    *this << (quint32)len;                        // write length specifier
-    writeRawData(s, len);
+    // Include null terminator, unless s itself is null
+    const qint64 len = s ? qint64(qstrlen(s)) + 1 : 0;
+    writeBytes(s, len);
     return *this;
 }
 
