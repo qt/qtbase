@@ -113,7 +113,7 @@ void tst_QBitArray::canHandleIntMaxBits()
             QDataStream ds(&serialized, QIODevice::WriteOnly);
             ds.setVersion(QDataStream::Qt_5_15);
             ds << ba;
-            QCOMPARE(ds.status(), QDataStream::Status::WriteFailed); // ### SizeLimitExceeded
+            QCOMPARE(ds.status(), QDataStream::Status::SizeLimitExceeded);
             serialized.clear();
         }
         {
