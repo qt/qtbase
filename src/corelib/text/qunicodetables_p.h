@@ -145,7 +145,8 @@ enum SentenceBreakClass {
 // we don't use the XX, AK, AP, AS and AI classes and map them to AL instead.
 // VI and VF classes are mapped to CM.
 enum LineBreakClass {
-    LineBreak_OP, LineBreak_CL, LineBreak_CP, LineBreak_QU, LineBreak_GL,
+    LineBreak_OP, LineBreak_CL, LineBreak_CP,
+    LineBreak_QU, LineBreak_QU_Pi, LineBreak_QU_Pf, LineBreak_GL,
     LineBreak_NS, LineBreak_EX, LineBreak_SY, LineBreak_IS, LineBreak_PR,
     LineBreak_PO, LineBreak_NU, LineBreak_AL, LineBreak_HL, LineBreak_ID,
     LineBreak_IN, LineBreak_HY, LineBreak_BA, LineBreak_BB, LineBreak_B2,
