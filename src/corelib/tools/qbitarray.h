@@ -69,9 +69,9 @@ public:
         return cl;
     }
 
-    bool at(qsizetype i) const;
-    QBitRef operator[](qsizetype i);
-    bool operator[](qsizetype i) const;
+    inline bool at(qsizetype i) const;
+    inline QBitRef operator[](qsizetype i);
+    inline bool operator[](qsizetype i) const;
 
     QBitArray &operator&=(const QBitArray &);
     QBitArray &operator|=(const QBitArray &);
@@ -96,15 +96,15 @@ public:
     inline DataPtr &data_ptr() { return d.data_ptr(); }
 };
 
-inline bool QBitArray::fill(bool aval, qsizetype asize)
+bool QBitArray::fill(bool aval, qsizetype asize)
 { *this = QBitArray((asize < 0 ? this->size() : asize), aval); return true; }
 
 Q_CORE_EXPORT QBitArray operator&(const QBitArray &, const QBitArray &);
 Q_CORE_EXPORT QBitArray operator|(const QBitArray &, const QBitArray &);
 Q_CORE_EXPORT QBitArray operator^(const QBitArray &, const QBitArray &);
 
-inline bool QBitArray::operator[](qsizetype i) const { return testBit(i); }
-inline bool QBitArray::at(qsizetype i) const { return testBit(i); }
+bool QBitArray::operator[](qsizetype i) const { return testBit(i); }
+bool QBitArray::at(qsizetype i) const { return testBit(i); }
 
 class Q_CORE_EXPORT QBitRef
 {
@@ -121,7 +121,7 @@ public:
     QBitRef &operator=(bool val) { a.setBit(i, val); return *this; }
 };
 
-inline QBitRef QBitArray::operator[](qsizetype i)
+QBitRef QBitArray::operator[](qsizetype i)
 { Q_ASSERT(i >= 0); return QBitRef(*this, i); }
 
 #ifndef QT_NO_DATASTREAM
