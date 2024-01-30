@@ -95,6 +95,33 @@ struct JNITypeForArgImpl<QString>
     }
 };
 
+template <typename T>
+struct JNITypeForArgImpl<QJniArray<T>>
+{
+    using Type = jobject;
+
+    static QJniArray<T> fromVarArg(Type t)
+    {
+        return QJniArray<T>(t);
+    }
+};
+
+template <typename T>
+struct JNITypeForArgImpl<QList<T>>
+{
+private:
+    using ArrayType = decltype(QJniArrayBase::fromContainer(std::declval<QList<T>>()));
+    using ArrayObjectType = decltype(std::declval<ArrayType>().arrayObject());
+    using ElementType = typename ArrayType::value_type;
+public:
+    using Type = ArrayObjectType;
+
+    static QList<T> fromVarArg(Type t)
+    {
+        return QJniArray<ElementType>(t).toContainer();
+    }
+};
+
 template <typename Arg>
 using JNITypeForArg = typename JNITypeForArgImpl<std::decay_t<Arg>>::Type;
 template <typename Arg, typename Type>

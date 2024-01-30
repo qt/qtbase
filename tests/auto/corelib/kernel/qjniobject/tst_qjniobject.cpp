@@ -1871,7 +1871,9 @@ enum class CallbackParameterType
     Byte,
     Boolean,
     Int,
-    Double
+    Double,
+    JniArray,
+    QList,
 };
 
 static std::optional<TestClass> calledWithObject;
@@ -1928,6 +1930,22 @@ static int callbackWithDouble(JNIEnv *, jobject, double value)
 }
 Q_DECLARE_JNI_NATIVE_METHOD(callbackWithDouble)
 
+static std::optional<QJniArray<jdouble>> calledWithJniArray;
+static int callbackWithJniArray(JNIEnv *, jobject, const QJniArray<jdouble> &value)
+{
+    calledWithJniArray.emplace(value);
+    return int(CallbackParameterType::JniArray);
+}
+Q_DECLARE_JNI_NATIVE_METHOD(callbackWithJniArray)
+
+static std::optional<QList<double>> calledWithQList;
+static int callbackWithQList(JNIEnv *, jobject, const QList<double> &value)
+{
+    calledWithQList.emplace(value);
+    return int(CallbackParameterType::QList);
+}
+Q_DECLARE_JNI_NATIVE_METHOD(callbackWithQList)
+
 void tst_QJniObject::callback_data()
 {
     QTest::addColumn<CallbackParameterType>("parameterType");
@@ -1939,6 +1957,8 @@ void tst_QJniObject::callback_data()
     QTest::addRow("Boolean")    << CallbackParameterType::Boolean;
     QTest::addRow("Int")        << CallbackParameterType::Int;
     QTest::addRow("Double")     << CallbackParameterType::Double;
+    QTest::addRow("JniArray")   << CallbackParameterType::JniArray;
+    QTest::addRow("QList")      << CallbackParameterType::QList;
 }
 
 void tst_QJniObject::callback()
@@ -2005,6 +2025,26 @@ void tst_QJniObject::callback()
         QVERIFY(calledWithDouble);
         QCOMPARE(calledWithDouble.value(), 1.2345);
         break;
+    case CallbackParameterType::JniArray: {
+        QVERIFY(TestClass::registerNativeMethods({
+            Q_JNI_NATIVE_METHOD(callbackWithJniArray)
+        }));
+        const QJniArray<double> doubles = QJniArrayBase::fromContainer(QList<double>{ 1.2, 3.4, 5.6 });
+        result = testObject.callMethod<int>("callMeBackWithJniArray", doubles);
+        QVERIFY(calledWithJniArray);
+        QCOMPARE(calledWithJniArray, doubles);
+        break;
+    }
+    case CallbackParameterType::QList: {
+        QVERIFY(TestClass::registerNativeMethods({
+            Q_JNI_NATIVE_METHOD(callbackWithQList)
+        }));
+        const QList<double> doubles = { 1.2, 3.4, 5.6 };
+        result = testObject.callMethod<int>("callMeBackWithQList", doubles);
+        QVERIFY(calledWithQList);
+        QCOMPARE(calledWithQList.value(), doubles);
+        break;
+    }
     }
     QCOMPARE(result, int(parameterType));
 }
