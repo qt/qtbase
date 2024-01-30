@@ -706,20 +706,6 @@ bool QDateTime::precedes(const QDateTime &other) const
 
 #include "qdatastream.h"
 
-QDataStream &QDataStream::readBytes(char *&s, uint &l)
-{
-    qint64 length = 0;
-    (void)readBytes(s, length);
-    if (length != qint64(uint(length))) {
-        setStatus(ReadCorruptData); // Cannot store length in l
-        delete[] s;
-        l = 0;
-        return *this;
-    }
-    l = uint(length);
-    return *this;
-}
-
 QDataStream &QDataStream::writeBytes(const char *s, uint len)
 {
     return writeBytes(s, qint64(len));

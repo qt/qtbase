@@ -2840,6 +2840,24 @@ void tst_QDataStream::status_charptr_QByteArray()
         QCOMPARE(int(stream.status()), expectedStatus);
         delete [] buf;
     }
+#if QT_DEPRECATED_SINCE(6, 11)
+QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
+    {
+        // check that old overload still works as expected
+        QDataStream stream(&data, QIODevice::ReadOnly);
+        char *buf;
+        auto cleanup = qScopeGuard([&buf] {
+            delete [] buf;
+        });
+        uint len;
+        stream.readBytes(buf, len);
+
+        QCOMPARE(len, expectedString.size());
+        QCOMPARE(QByteArray(buf, len), expectedString);
+        QCOMPARE(int(stream.status()), expectedStatus);
+    }
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 11)
     {
         QDataStream stream(&data, QIODevice::ReadOnly);
         QByteArray buf;

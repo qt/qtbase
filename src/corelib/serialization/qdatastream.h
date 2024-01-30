@@ -177,8 +177,11 @@ public:
     QDataStream &operator<<(char32_t c);
     QDataStream &operator<<(const volatile void *) = delete;
 
-#if QT_CORE_REMOVED_SINCE(6, 7)
+#if QT_DEPRECATED_SINCE(6, 11)
+    QT_DEPRECATED_VERSION_X_6_11("Use an overload that takes qint64 length.")
     QDataStream &readBytes(char *&, uint &len);
+#endif
+#if QT_CORE_REMOVED_SINCE(6, 7)
     QDataStream &writeBytes(const char *, uint len);
     int skipRawData(int len);
     int readRawData(char *, int len);

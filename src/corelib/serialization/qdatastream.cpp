@@ -1037,7 +1037,29 @@ QDataStream &QDataStream::operator>>(char32_t &c)
     return *this;
 }
 
+#if QT_DEPRECATED_SINCE(6, 11)
+
+/*
+    \deprecated [6.11] Use an overload that takes qint64 length instead.
+*/
+QDataStream &QDataStream::readBytes(char *&s, uint &l)
+{
+    qint64 length = 0;
+    (void)readBytes(s, length);
+    if (length != qint64(uint(length))) {
+        setStatus(SizeLimitExceeded); // Cannot store length in l
+        delete[] s;
+        l = 0;
+        return *this;
+    }
+    l = uint(length);
+    return *this;
+}
+
+#endif // QT_DEPRECATED_SINCE(6, 11)
+
 /*!
+    \since 6.7
     Reads the buffer \a s from the stream and returns a reference to
     the stream.
 
