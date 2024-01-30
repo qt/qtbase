@@ -206,11 +206,7 @@ void QBitArray::resize(qsizetype size)
     if (!size) {
         d.resize(0);
     } else {
-        qsizetype s = d.size();
-        d.resize(allocation_size(size));
-        uchar *c = reinterpret_cast<uchar *>(d.data());
-        if (d.size() > s)
-            memset(c + s, 0, d.size() - s);
+        d.resize(allocation_size(size), 0x00);
         adjust_head_and_tail(d.data(), d.size(), size);
     }
 }
