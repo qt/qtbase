@@ -3823,7 +3823,6 @@ void tst_QGraphicsScene::inputMethod()
     view.resize(m_testSize);
     view.show();
     view.setWindowTitle(QTest::currentTestFunction());
-    QApplicationPrivate::setActiveWindow(&view);
     view.setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), &view);
