@@ -2153,7 +2153,6 @@ void tst_QGraphicsView::sendEvent()
 
     QGraphicsView view(&scene);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
