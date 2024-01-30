@@ -1388,7 +1388,6 @@ void tst_QGraphicsWidget::setTabOrder()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QGraphicsWidget *lastItem = nullptr;
