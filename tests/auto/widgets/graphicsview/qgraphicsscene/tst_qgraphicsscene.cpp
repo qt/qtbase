@@ -1601,7 +1601,6 @@ void tst_QGraphicsScene::hoverEvents_siblings()
     view.rotate(10);
     view.scale(1.7, 1.7);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     view.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
