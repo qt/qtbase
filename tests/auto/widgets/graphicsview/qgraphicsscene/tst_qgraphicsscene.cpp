@@ -1670,7 +1670,6 @@ void tst_QGraphicsScene::hoverEvents_parentChild()
     view.rotate(10);
     view.scale(1.7, 1.7);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QGraphicsSceneMouseEvent mouseEvent(QEvent::GraphicsSceneMouseMove);
