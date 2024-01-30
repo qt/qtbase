@@ -1679,7 +1679,6 @@ void tst_QGraphicsWidget::verifyFocusChain()
         w1_2->setFocusPolicy(Qt::StrongFocus);
         scene.addItem(w1_2);
         window->show();
-        QApplicationPrivate::setActiveWindow(window.data());
         QVERIFY(QTest::qWaitForWindowActive(window.data()));
 
         lineEdit->setFocus();
