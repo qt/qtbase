@@ -10927,7 +10927,6 @@ void tst_QGraphicsItem::focusHandling()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QApplicationPrivate::setActiveWindow(&view);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
     QVERIFY(itemWithFocus->hasFocus());
 
