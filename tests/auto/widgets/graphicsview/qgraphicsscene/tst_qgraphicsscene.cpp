@@ -1294,7 +1294,6 @@ void tst_QGraphicsScene::removeItem()
     view.setWindowTitle(QTest::currentTestFunction());
     view.setFixedSize(150, 150);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTest::mouseMove(view.windowHandle(), view.mapFromScene(hoverItem->scenePos() + QPointF(20, 20)));
     QTRY_VERIFY(!hoverItem->isHovered);
