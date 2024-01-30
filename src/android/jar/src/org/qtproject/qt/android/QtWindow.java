@@ -29,9 +29,9 @@ public class QtWindow implements QtSurfaceInterface, QtLayout.QtTouchListener {
     public QtWindow(Context context, QtWindow parentWindow)
     {
         m_id = View.generateViewId();
+        m_layout = new QtLayout(context, this);
+        setParent(parentWindow);
         QtNative.runAction(() -> {
-            m_layout = new QtLayout(context, this);
-            setParent(parentWindow);
             m_gestureDetector =
                 new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
                     public void onLongPress(MotionEvent event) {
