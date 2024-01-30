@@ -1084,12 +1084,14 @@ QString QDate::toString(Qt::DateFormat format) const
 /*!
     \fn QString QDate::toString(const QString &format, QCalendar cal) const
     \fn QString QDate::toString(QStringView format, QCalendar cal) const
+    \since 5.14
 
     Returns the date as a string. The \a format parameter determines the format
     of the result string. If \a cal is supplied, it determines the calendar used
-    to represent the date; it defaults to Gregorian.
+    to represent the date; it defaults to Gregorian. Prior to Qt 5.14, there was
+    no \a cal parameter and the Gregorian calendar was always used.
 
-    These expressions may be used:
+    These expressions may be used in the \a format parameter:
 
     \table
     \header \li Expression \li Output
@@ -1134,7 +1136,6 @@ QString QDate::toString(Qt::DateFormat format) const
     QLocale::system().toString().
 
     \sa fromString(), QDateTime::toString(), QTime::toString(), QLocale::toString()
-
 */
 QString QDate::toString(QStringView format, QCalendar cal) const
 {
@@ -4190,12 +4191,14 @@ QString QDateTime::toString(Qt::DateFormat format) const
 /*!
     \fn QString QDateTime::toString(const QString &format, QCalendar cal) const
     \fn QString QDateTime::toString(QStringView format, QCalendar cal) const
+    \since 5.14
 
     Returns the datetime as a string. The \a format parameter determines the
-    format of the result string. If \a cal is supplied, it determines the calendar
-    used to represent the date; it defaults to Gregorian. See QTime::toString()
-    and QDate::toString() for the supported specifiers for time and date,
-    respectively.
+    format of the result string. If \a cal is supplied, it determines the
+    calendar used to represent the date; it defaults to Gregorian. Prior to Qt
+    5.14, there was no \a cal parameter and the Gregorian calendar was always
+    used. See QTime::toString() and QDate::toString() for the supported
+    specifiers for time and date, respectively, in the \a format parameter.
 
     Any sequence of characters enclosed in single quotes will be included
     verbatim in the output string (stripped of the quotes), even if it contains
