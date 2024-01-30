@@ -1588,7 +1588,6 @@ void tst_QGraphicsWidget::verifyFocusChain()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     {
