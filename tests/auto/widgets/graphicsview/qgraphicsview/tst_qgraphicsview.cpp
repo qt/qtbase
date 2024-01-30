@@ -3332,7 +3332,6 @@ void tst_QGraphicsView::task207546_focusCrash()
     widget.layout()->addWidget(gr2);
     widget.show();
     widget.activateWindow();
-    QApplicationPrivate::setActiveWindow(&widget);
     QVERIFY(QTest::qWaitForWindowActive(&widget));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&widget));
     widget.focusNextPrevChild(true);
