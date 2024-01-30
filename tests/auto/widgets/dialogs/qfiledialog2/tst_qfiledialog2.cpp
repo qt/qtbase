@@ -1308,7 +1308,6 @@ void tst_QFileDialog2::QTBUG4842_selectFilterWithHideNameFilterDetails()
     fd.selectNameFilter(chosenFilterString);
     fd.show();
 
-    QApplicationPrivate::setActiveWindow(&fd);
     QVERIFY(QTest::qWaitForWindowActive(&fd));
     QCOMPARE(fd.isVisible(), true);
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
@@ -1324,7 +1323,6 @@ void tst_QFileDialog2::QTBUG4842_selectFilterWithHideNameFilterDetails()
     fd2.selectNameFilter(chosenFilterString);
     fd2.show();
 
-    QApplicationPrivate::setActiveWindow(&fd2);
     QVERIFY(QTest::qWaitForWindowActive(&fd2));
     QCOMPARE(fd2.isVisible(), true);
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd2));
