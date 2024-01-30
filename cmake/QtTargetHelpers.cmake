@@ -1582,3 +1582,32 @@ function(qt_internal_export_genex_properties)
         COMPONENT Devel
     )
 endfunction()
+
+# The macro promotes the Qt platform targets and their dependencies to global. The macro shouldn't
+# be called explicitly in regular cases. It's called right after the first find_package(Qt ...)
+# call in the qt_internal_project_setup macro.
+# This allows using the qt_find_package(Wrap<3rdparty> PROVIDED_TARGETS ...) function,
+# without the risk of having duplicated global promotion of Qt internals. This is especially
+# sensitive for the bundled 3rdparty libraries.
+macro(qt_internal_promote_platform_targets_to_global)
+    if(TARGET Qt6::Platform)
+        get_target_property(is_imported Qt6::Platform IMPORTED)
+        if(is_imported)
+            set(known_platform_targets
+                Platform
+                PlatformCommonInternal
+                PlatformModuleInternal
+                PlatformPluginInternal
+                PlatformAppInternal
+                PlatformToolInternal
+            )
+            set(versionless_platform_targets ${known_platform_targets})
+
+            list(TRANSFORM known_platform_targets PREPEND Qt6::)
+            list(TRANSFORM versionless_platform_targets PREPEND Qt::)
+            qt_find_package(Qt6 PROVIDED_TARGETS
+                ${known_platform_targets}
+                ${versionless_platform_targets})
+        endif()
+    endif()
+endmacro()
