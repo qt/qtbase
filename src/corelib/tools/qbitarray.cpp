@@ -120,6 +120,16 @@ static constexpr qsizetype allocation_size(qsizetype size)
     return size <= 0 ? 0 : storage_size(size) + 1;
 }
 
+static void adjust_head_and_tail(char *data, qsizetype storageSize, qsizetype logicalSize)
+{
+    quint8 *c = reinterpret_cast<quint8 *>(data);
+    // store the difference between storage and logical size in d[0]:
+    *c = quint8(size_t(storageSize) * 8 - logicalSize);
+    // reset unallocated bits to 0:
+    if (logicalSize & 7)
+        *(c + 1 + logicalSize / 8) &= (1 << (logicalSize & 7)) - 1;
+}
+
 /*!
     Constructs a bit array containing \a size bits. The bits are
     initialized with \a value, which defaults to false (0).
@@ -133,9 +143,7 @@ QBitArray::QBitArray(qsizetype size, bool value)
 
     uchar *c = reinterpret_cast<uchar *>(d.data());
     memset(c + 1, value ? 0xff : 0, d.size() - 1);
-    *c = d.size() * 8 - size;
-    if (value && size && size & 7)
-        *(c + 1 + size / 8) &= (1 << (size & 7)) - 1;
+    adjust_head_and_tail(d.data(), d.size(), size);
 }
 
 /*! \fn qsizetype QBitArray::size() const
@@ -205,11 +213,9 @@ void QBitArray::resize(qsizetype size)
         qsizetype s = d.size();
         d.resize(allocation_size(size));
         uchar *c = reinterpret_cast<uchar *>(d.data());
-        if (size > (s << 3))
+        if (d.size() > s)
             memset(c + s, 0, d.size() - s);
-        else if (size & 7)
-            *(c + 1 + size / 8) &= (1 << (size & 7)) - 1;
-        *c = d.size() * 8 - size;
+        adjust_head_and_tail(d.data(), d.size(), size);
     }
 }
 
@@ -308,17 +314,11 @@ QBitArray QBitArray::fromBits(const char *data, qsizetype size)
     QBitArray result;
     if (size == 0)
         return result;
-    qsizetype nbytes = storage_size(size);
 
-    result.d = QByteArray(nbytes + 1, Qt::Uninitialized);
-    char *bits = result.d.data();
-    memcpy(bits + 1, data, nbytes);
-
-    // clear any unused bits from the last byte
-    if (size & 7)
-        bits[nbytes] &= 0xffU >> (8 - (size & 7));
-
-    *bits = result.d.size() * 8 - size;
+    auto &d = result.d;
+    d.resize(allocation_size(size));
+    memcpy(d.data() + 1, data, d.size() - 1);
+    adjust_head_and_tail(d.data(), d.size(), size);
     return result;
 }
 
@@ -962,14 +962,13 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
         allocated += blockSize;
     }
 
-    qsizetype paddingMask = ~((0x1 << (len & 0x7)) - 1);
-    if (paddingMask != ~0x0 && (ba.d.constData()[ba.d.size() - 1] & paddingMask)) {
+    const auto fromStream = ba.d.back();
+    adjust_head_and_tail(ba.d.data(), ba.d.size(), len);
+    if (ba.d.back() != fromStream) {
         ba.clear();
         in.setStatus(QDataStream::ReadCorruptData);
         return in;
     }
-
-    *ba.d.data() = ba.d.size() * 8 - len;
     return in;
 }
 #endif // QT_NO_DATASTREAM
