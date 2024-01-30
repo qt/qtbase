@@ -4242,7 +4242,6 @@ void tst_QGraphicsScene::isActive()
 
 
         toplevel3.show();
-        QApplicationPrivate::setActiveWindow(&toplevel3);
         QVERIFY(QTest::qWaitForWindowActive(&toplevel3));
         QCOMPARE(QApplication::activeWindow(), &toplevel3);
 
