@@ -134,8 +134,9 @@ in a customized way.
 For Windows desktop applications, the required runtime files for the compiler
 are also installed by default. To prevent this, specify \c{NO_COMPILER_RUNTIME}.
 
-You can use \c{DEPLOY_TOOL_OPTIONS} to pass additional options to the underlying
-deployment tool.
+Since Qt 6.7, you can use \c{DEPLOY_TOOL_OPTIONS} to pass additional options to
+the underlying deployment tool. This only has an effect if the underlying
+deployment tool is either macdeployqt or windeployqt.
 
 On Linux, deploying runtime dependencies is based on CMake's
 \c{file(GET_RUNTIME_DEPENDENCIES)} command. The options \c{PRE_INCLUDE_REGEXES},
@@ -157,5 +158,13 @@ The default value of \c{POST_EXCLUDE_REGEXES} is constructed from the value of
 
 \section1 Example
 
+The following example shows how to deploy an application \c{MyApp}.
+
 \include cmake-deploy-runtime-dependencies.qdocinc
+
+The following example shows how to use the \c{DEPLOY_TOOL_OPTIONS} parameter to
+pass different options to macdeployqt and windeployqt.
+
+\include cmake-deploy-runtime-dependencies-deploy-tool-options.qdocinc
+
 */
