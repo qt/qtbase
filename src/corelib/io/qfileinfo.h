@@ -22,6 +22,7 @@ class QFileInfoPrivate;
 class Q_CORE_EXPORT QFileInfo
 {
     friend class QDirIteratorPrivate;
+    friend class QDirListingPrivate;
 public:
     explicit QFileInfo(QFileInfoPrivate *d);
 

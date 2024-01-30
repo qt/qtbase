@@ -5,7 +5,7 @@
 
 #include <qcoreapplication.h>
 #include <qdebug.h>
-#include <qdiriterator.h>
+#include <qdirlisting.h>
 #include <qfileinfo.h>
 #include <qstringlist.h>
 #include <QSet>
@@ -25,10 +25,12 @@
 
 using namespace Qt::StringLiterals;
 
-Q_DECLARE_METATYPE(QDirIterator::IteratorFlags)
+Q_DECLARE_METATYPE(QDirListing::IteratorFlags)
 Q_DECLARE_METATYPE(QDir::Filters)
 
-class tst_QDirIterator : public QObject
+using ItFlag = QDirListing::IteratorFlag;
+
+class tst_QDirListing : public QObject
 {
     Q_OBJECT
 
@@ -90,23 +92,21 @@ private:
     QTemporaryDir m_dataDir;
 };
 
-void tst_QDirIterator::initTestCase()
+void tst_QDirListing::initTestCase()
 {
 #ifdef Q_OS_ANDROID
     QString testdata_dir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     QString resourceSourcePath = QStringLiteral(":/testdata");
-    QDirIterator it(resourceSourcePath, QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        QFileInfo fileInfo = it.nextFileInfo();
-
-        if (!fileInfo.isDir()) {
+    for (const auto &dirEntry : QDirListing(resourceSourcePath, ItFlag::Recursive)) {
+        if (!dirEntry.isDir()) {
+            const QString &filePath = dirEntry.filePath();
             QString destination = testdata_dir + QLatin1Char('/')
-                                  + fileInfo.filePath().mid(resourceSourcePath.length());
+                                  + filePath.sliced(resourceSourcePath.length());
             QFileInfo destinationFileInfo(destination);
             if (!destinationFileInfo.exists()) {
                 QDir().mkpath(destinationFileInfo.path());
-                if (!QFile::copy(fileInfo.filePath(), destination))
-                    qWarning("Failed to copy %s", qPrintable(fileInfo.filePath()));
+                if (!QFile::copy(filePath, destination))
+                    qWarning("Failed to copy %s", qPrintable(filePath));
             }
         }
 
@@ -180,16 +180,16 @@ void tst_QDirIterator::initTestCase()
 #endif
 }
 
-void tst_QDirIterator::iterateRelativeDirectory_data()
+void tst_QDirListing::iterateRelativeDirectory_data()
 {
     QTest::addColumn<QString>("dirName"); // relative from current path or abs
-    QTest::addColumn<QDirIterator::IteratorFlags>("flags");
+    QTest::addColumn<QDirListing::IteratorFlags>("flags");
     QTest::addColumn<QDir::Filters>("filters");
     QTest::addColumn<QStringList>("nameFilters");
     QTest::addColumn<QStringList>("entries");
 
     QTest::newRow("no flags")
-        << QString("entrylist") << QDirIterator::IteratorFlags{}
+        << QString("entrylist") << QDirListing::IteratorFlags{}
         << QDir::Filters(QDir::NoFilter) << QStringList("*")
         << QString(
                   "entrylist/.,"
@@ -205,7 +205,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/writable").split(',');
 
     QTest::newRow("NoDot")
-        << QString("entrylist") << QDirIterator::IteratorFlags{}
+        << QString("entrylist") << QDirListing::IteratorFlags{}
         << QDir::Filters(QDir::AllEntries | QDir::NoDot) << QStringList("*")
         << QString(
                    "entrylist/..,"
@@ -220,7 +220,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/writable").split(',');
 
     QTest::newRow("NoDotDot")
-        << QString("entrylist") << QDirIterator::IteratorFlags{}
+        << QString("entrylist") << QDirListing::IteratorFlags{}
         << QDir::Filters(QDir::AllEntries | QDir::NoDotDot) << QStringList("*")
         << QString(
                   "entrylist/.,"
@@ -235,7 +235,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/writable").split(',');
 
     QTest::newRow("NoDotAndDotDot")
-        << QString("entrylist") << QDirIterator::IteratorFlags{}
+        << QString("entrylist") << QDirListing::IteratorFlags{}
         << QDir::Filters(QDir::AllEntries | QDir::NoDotAndDotDot) << QStringList("*")
         << QString(
                    "entrylist/file,"
@@ -249,7 +249,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/writable").split(',');
 
     QTest::newRow("QDir::Subdirectories | QDir::FollowSymlinks")
-        << QString("entrylist") << QDirIterator::IteratorFlags(QDirIterator::Subdirectories | QDirIterator::FollowSymlinks)
+        << QString("entrylist") << QDirListing::IteratorFlags(ItFlag::Recursive | ItFlag::FollowSymlinks)
         << QDir::Filters(QDir::NoFilter) << QStringList("*")
         << QString(
                    "entrylist/.,"
@@ -268,7 +268,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/writable").split(',');
 
     QTest::newRow("QDir::Subdirectories / QDir::Files")
-        << QString("entrylist") << QDirIterator::IteratorFlags(QDirIterator::Subdirectories)
+        << QString("entrylist") << QDirListing::IteratorFlags(ItFlag::Recursive)
         << QDir::Filters(QDir::Files) << QStringList("*")
         << QString("entrylist/directory/dummy,"
                    "entrylist/file,"
@@ -278,7 +278,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/writable").split(',');
 
     QTest::newRow("QDir::Subdirectories | QDir::FollowSymlinks / QDir::Files")
-        << QString("entrylist") << QDirIterator::IteratorFlags(QDirIterator::Subdirectories | QDirIterator::FollowSymlinks)
+        << QString("entrylist") << QDirListing::IteratorFlags(ItFlag::Recursive | QDirListing::IteratorFlag::FollowSymlinks)
         << QDir::Filters(QDir::Files) << QStringList("*")
         << QString("entrylist/file,"
 #ifndef Q_NO_SYMLINKS
@@ -288,47 +288,31 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/writable").split(',');
 
     QTest::newRow("empty, default")
-        << QString("empty") << QDirIterator::IteratorFlags{}
+        << QString("empty") << QDirListing::IteratorFlags{}
         << QDir::Filters(QDir::NoFilter) << QStringList("*")
         << QString("empty/.,empty/..").split(',');
 
         QTest::newRow("empty, QDir::NoDotAndDotDot")
-            << QString("empty") << QDirIterator::IteratorFlags{}
+            << QString("empty") << QDirListing::IteratorFlags{}
             << QDir::Filters(QDir::NoDotAndDotDot) << QStringList("*")
             << QStringList();
 }
 
-void tst_QDirIterator::iterateRelativeDirectory()
+void tst_QDirListing::iterateRelativeDirectory()
 {
     QFETCH(QString, dirName);
-    QFETCH(QDirIterator::IteratorFlags, flags);
+    QFETCH(QDirListing::IteratorFlags, flags);
     QFETCH(QDir::Filters, filters);
     QFETCH(QStringList, nameFilters);
     QFETCH(const QStringList, entries);
 
-    QDirIterator it(dirName, nameFilters, filters, flags);
     QStringList list;
-    while (it.hasNext()) {
-        QString next = it.next();
-
-        QString fileName = it.fileName();
-        QString filePath = it.filePath();
-        QString path = it.path();
-
-        QFileInfo info = it.fileInfo();
-
-        QCOMPARE(path, dirName);
-        QCOMPARE(next, filePath);
-
-        QCOMPARE(info, QFileInfo(next));
-        QCOMPARE(fileName, info.fileName());
-        QCOMPARE(filePath, info.filePath());
-
+    for (const auto &dirEntry : QDirListing(dirName, nameFilters, filters, flags)) {
         // Using canonical file paths for final comparison
-        list << info.canonicalFilePath();
+        list << dirEntry.fileInfo().canonicalFilePath();
     }
 
-    // The order of items returned by QDirIterator is not guaranteed.
+    // The order of items returned by QDirListing is not guaranteed.
     list.sort();
 
     QStringList sortedEntries;
@@ -344,43 +328,42 @@ void tst_QDirIterator::iterateRelativeDirectory()
     QCOMPARE(list, sortedEntries);
 }
 
-void tst_QDirIterator::iterateResource_data()
+void tst_QDirListing::iterateResource_data()
 {
     QTest::addColumn<QString>("dirName"); // relative from current path or abs
-    QTest::addColumn<QDirIterator::IteratorFlags>("flags");
+    QTest::addColumn<QDirListing::IteratorFlags>("flags");
     QTest::addColumn<QDir::Filters>("filters");
     QTest::addColumn<QStringList>("nameFilters");
     QTest::addColumn<QStringList>("entries");
 
-    QTest::newRow("invalid") << QString::fromLatin1(":/testdata/burpaburpa") << QDirIterator::IteratorFlags{}
+    QTest::newRow("invalid") << QString::fromLatin1(":/testdata/burpaburpa") << QDirListing::IteratorFlags{}
                              << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
                              << QStringList();
-    QTest::newRow("qrc:/testdata") << u":/testdata/"_s << QDirIterator::IteratorFlags{}
+    QTest::newRow("qrc:/testdata") << u":/testdata/"_s << QDirListing::IteratorFlags{}
                                << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
                                << QString::fromLatin1(":/testdata/entrylist").split(QLatin1String(","));
-    QTest::newRow("qrc:/testdata/entrylist") << u":/testdata/entrylist"_s << QDirIterator::IteratorFlags{}
+    QTest::newRow("qrc:/testdata/entrylist") << u":/testdata/entrylist"_s << QDirListing::IteratorFlags{}
                                << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
                                << QString::fromLatin1(":/testdata/entrylist/directory,:/testdata/entrylist/file").split(QLatin1String(","));
     QTest::newRow("qrc:/testdata recursive") << u":/testdata"_s
-                                         << QDirIterator::IteratorFlags(QDirIterator::Subdirectories)
+                                         << QDirListing::IteratorFlags(ItFlag::Recursive)
                                          << QDir::Filters(QDir::NoFilter) << QStringList(QLatin1String("*"))
                                          << QString::fromLatin1(":/testdata/entrylist,:/testdata/entrylist/directory,:/testdata/entrylist/directory/dummy,:/testdata/entrylist/file").split(QLatin1String(","));
 }
 
-void tst_QDirIterator::iterateResource()
+void tst_QDirListing::iterateResource()
 {
     QFETCH(QString, dirName);
-    QFETCH(QDirIterator::IteratorFlags, flags);
+    QFETCH(QDirListing::IteratorFlags, flags);
     QFETCH(QDir::Filters, filters);
     QFETCH(QStringList, nameFilters);
     QFETCH(QStringList, entries);
 
-    QDirIterator it(dirName, nameFilters, filters, flags);
     QStringList list;
-    while (it.hasNext()) {
-        const QString dir = it.next();
+    for (const auto &dirEntry : QDirListing(dirName, nameFilters, filters, flags)) {
+        QString dir = dirEntry.fileInfo().filePath();
         if (!dir.startsWith(":/qt-project.org"))
-            list << dir;
+            list.emplace_back(std::move(dir));
     }
 
     list.sort();
@@ -395,7 +378,7 @@ void tst_QDirIterator::iterateResource()
     QCOMPARE(list, sortedEntries);
 }
 
-void tst_QDirIterator::stopLinkLoop()
+void tst_QDirListing::stopLinkLoop()
 {
 #ifdef Q_OS_WIN
     // ### Sadly, this is a platform difference right now.
@@ -418,12 +401,14 @@ void tst_QDirIterator::stopLinkLoop()
     createLink("..", "entrylist/directory/entrylist4.lnk");
 #endif
 
-    QDirIterator it(QLatin1String("entrylist"), QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
+    constexpr auto flags = ItFlag::Recursive | ItFlag::FollowSymlinks;
+    QDirListing dirIter(u"entrylist"_s, flags);
     QStringList list;
     int max = 200;
-    while (--max && it.hasNext())
-        it.nextFileInfo();
-    QVERIFY(max);
+    auto it = dirIter.begin();
+    while (--max && it != dirIter.end())
+        ++it;
+    QCOMPARE_GT(max, 0);
 
     // The goal of this test is only to ensure that the test above don't malfunction
 }
@@ -451,7 +436,7 @@ public:
 #endif
 
 #ifdef QT_BUILD_INTERNAL
-void tst_QDirIterator::engineWithNoIterator()
+void tst_QDirListing::engineWithNoIterator()
 {
     EngineWithNoIteratorHandler handler;
 
@@ -464,113 +449,98 @@ class CustomEngineHandler : public QAbstractFileEngineHandler
 public:
     QAbstractFileEngine *create(const QString &fileName) const override
     {
-        // We want to test QFSFileEngine specifically, so force QDirIterator to use it
+        // We want to test QFSFileEngine specifically, so force QDirListing to use it
         // over the default QFileSystemEngine
         return new QFSFileEngine(fileName);
     }
 };
 
-void tst_QDirIterator::testQFsFileEngineIterator()
+void tst_QDirListing::testQFsFileEngineIterator()
 {
     QFETCH(QString, dirName);
     QFETCH(QStringList, nameFilters);
     QFETCH(QDir::Filters, filters);
-    QFETCH(QDirIterator::IteratorFlags, flags);
+    QFETCH(QDirListing::IteratorFlags, flags);
 
     if (dirName == u"empty")
         return; // This row isn't useful in this test
 
     CustomEngineHandler handler;
     bool isEmpty = true;
-    QDirIterator iter(dirName, nameFilters, filters, flags);
-    while (iter.hasNext()) {
-        const QFileInfo &fi = iter.nextFileInfo();
-        if (fi.filePath().contains(u"entrylist"))
+    for (const auto &dirEntry : QDirListing(u"entrylist"_s, nameFilters, filters, flags)) {
+        if (dirEntry.filePath().contains(u"entrylist"))
             isEmpty = false;  // At least one entry in `entrylist` dir
     }
-    QVERIFY(!isEmpty);
+    QVERIFY(!isEmpty); // At least one entry
 }
 #endif
 
-void tst_QDirIterator::absoluteFilePathsFromRelativeIteratorPath()
+void tst_QDirListing::absoluteFilePathsFromRelativeIteratorPath()
 {
-    QDirIterator it("entrylist/", QDir::NoDotAndDotDot);
-    while (it.hasNext())
-        QVERIFY(it.nextFileInfo().absoluteFilePath().contains("entrylist"));
+    for (const auto &dirEntry : QDirListing(u"entrylist/"_s, QDir::NoDotAndDotDot))
+        QVERIFY(dirEntry.absoluteFilePath().contains("entrylist"));
 }
 
-void tst_QDirIterator::recurseWithFilters() const
+void tst_QDirListing::recurseWithFilters() const
 {
-    QStringList nameFilters;
-    nameFilters.append("*.txt");
-
-    QDirIterator it("recursiveDirs/", nameFilters, QDir::Files,
-                    QDirIterator::Subdirectories);
-
     QSet<QString> actualEntries;
     QSet<QString> expectedEntries;
     expectedEntries.insert(QString::fromLatin1("recursiveDirs/dir1/textFileB.txt"));
     expectedEntries.insert(QString::fromLatin1("recursiveDirs/textFileA.txt"));
 
-    QVERIFY(it.hasNext());
-    actualEntries.insert(it.next());
-    QVERIFY(it.hasNext());
-    actualEntries.insert(it.next());
-    QCOMPARE(actualEntries, expectedEntries);
+    for (const auto &dirEntry : QDirListing(u"recursiveDirs/"_s, QStringList{u"*.txt"_s},
+                                            QDir::Files, ItFlag::Recursive)) {
+        actualEntries.insert(dirEntry.filePath());
+    }
 
-    QVERIFY(!it.hasNext());
+    QCOMPARE(actualEntries, expectedEntries);
 }
 
-void tst_QDirIterator::longPath()
+void tst_QDirListing::longPath()
 {
     QDir dir;
     dir.mkdir("longpaths");
     dir.cd("longpaths");
 
     QString dirName = "x";
-    int n = 0;
+    qsizetype n = 0;
     while (dir.exists(dirName) || dir.mkdir(dirName)) {
         ++n;
         dirName.append('x');
     }
 
-    QDirIterator it(dir.absolutePath(), QDir::NoDotAndDotDot|QDir::Dirs, QDirIterator::Subdirectories);
-    int m = 0;
-    while (it.hasNext()) {
+    QDirListing dirList(dir.absolutePath(), QDir::NoDotAndDotDot|QDir::Dirs, ItFlag::Recursive);
+    qsizetype m = 0;
+    for (auto it = dirList.begin(); it != dirList.end(); ++it)
         ++m;
-        it.nextFileInfo();
-    }
 
     QCOMPARE(n, m);
 
     dirName.chop(1);
-    while (dirName.size() > 0 && dir.exists(dirName) && dir.rmdir(dirName)) {
+    while (dirName.size() > 0 && dir.exists(dirName) && dir.rmdir(dirName))
         dirName.chop(1);
-    }
+
     dir.cdUp();
     dir.rmdir("longpaths");
 }
 
-void tst_QDirIterator::dirorder()
+void tst_QDirListing::dirorder()
 {
-    QDirIterator iterator("foo", QDirIterator::Subdirectories);
-    while (iterator.hasNext() && iterator.next() != "foo/bar")
-    { }
+    QStringList entries;
+    for (const auto &dirEntry : QDirListing(u"foo"_s, ItFlag::Recursive))
+        entries.append(dirEntry.filePath());
 
-    QCOMPARE(iterator.filePath(), QString("foo/bar"));
-    QCOMPARE(iterator.fileInfo().filePath(), QString("foo/bar"));
+    QCOMPARE_GT(entries.indexOf(u"foo/bar"_s), entries.indexOf(u"foo"_s));
 }
 
-void tst_QDirIterator::relativePaths()
+void tst_QDirListing::relativePaths()
 {
-    QDirIterator iterator("*", QDirIterator::Subdirectories);
-    while(iterator.hasNext()) {
-        QCOMPARE(iterator.filePath(), QDir::cleanPath(iterator.filePath()));
-    }
+    for (const auto &dirEntry : QDirListing(u"*"_s, ItFlag::Recursive))
+        QCOMPARE(dirEntry.filePath(), QDir::cleanPath(dirEntry.filePath()));
 }
 
 #if defined(Q_OS_WIN)
-void tst_QDirIterator::uncPaths_data()
+void tst_QDirListing::uncPaths_data()
 {
     QTest::addColumn<QString>("dirName");
     QTest::newRow("uncserver")
@@ -580,13 +550,13 @@ void tst_QDirIterator::uncPaths_data()
     QTest::newRow("uncserver/testshare/tmp")
             <<QString("//" + QTest::uncServerName() + "/testshare/tmp");
 }
-void tst_QDirIterator::uncPaths()
+void tst_QDirListing::uncPaths()
 {
     QFETCH(QString, dirName);
-    QDirIterator iterator(dirName, QDir::AllEntries|QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-    while(iterator.hasNext()) {
-        iterator.next();
-        QCOMPARE(iterator.filePath(), QDir::cleanPath(iterator.filePath()));
+    constexpr auto dirFilters = QDir::AllEntries | QDir::NoDotAndDotDot;
+    for (const auto &dirEntry : QDirListing(dirName, dirFilters, ItFlag::Recursive)) {
+        const QString &filePath = dirEntry.filePath();
+        QCOMPARE(filePath, QDir::cleanPath(filePath));
     }
 }
 #endif
@@ -596,16 +566,17 @@ void tst_QDirIterator::uncPaths()
 // a special call since hidden files need to be "marked" while in Unix
 // anything starting by a '.' is a hidden file.
 // For that reason this test is not run in Windows.
-void tst_QDirIterator::hiddenDirs_hiddenFiles()
+void tst_QDirListing::hiddenDirs_hiddenFiles()
 {
     // Only files
     {
         int matches = 0;
         int failures = 0;
-        QDirIterator di("hiddenDirs_hiddenFiles", QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-        while (di.hasNext()) {
+        constexpr auto filters = QDir::Files | QDir::Hidden | QDir::NoDotAndDotDot;
+        for (const auto &dirEntry : QDirListing(u"hiddenDirs_hiddenFiles"_s, filters,
+                                                ItFlag::Recursive)) {
             ++matches;
-            if (di.nextFileInfo().isDir())
+            if (dirEntry.isDir())
                 ++failures;    // search was only supposed to find files
         }
         QCOMPARE(matches, 6);
@@ -615,10 +586,11 @@ void tst_QDirIterator::hiddenDirs_hiddenFiles()
     {
         int matches = 0;
         int failures = 0;
-        QDirIterator di("hiddenDirs_hiddenFiles", QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-        while (di.hasNext()) {
+        constexpr auto filters = QDir::Dirs | QDir::Hidden | QDir::NoDotAndDotDot;
+        for (const auto &dirEntry : QDirListing(u"hiddenDirs_hiddenFiles"_s, filters,
+                                                ItFlag::Recursive)) {
             ++matches;
-            if (!di.nextFileInfo().isDir())
+            if (!dirEntry.isDir())
                 ++failures;    // search was only supposed to find files
         }
         QCOMPARE(matches, 6);
@@ -627,7 +599,7 @@ void tst_QDirIterator::hiddenDirs_hiddenFiles()
 }
 #endif // Q_OS_WIN
 
-QTEST_MAIN(tst_QDirIterator)
+QTEST_MAIN(tst_QDirListing)
 
-#include "tst_qdiriterator.moc"
+#include "tst_qdirlisting.moc"
 

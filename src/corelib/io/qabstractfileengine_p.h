@@ -218,6 +218,7 @@ private:
     Q_DISABLE_COPY_MOVE(QAbstractFileEngineIterator)
     friend class QDirIterator;
     friend class QDirIteratorPrivate;
+    friend class QDirListingPrivate;
     void setPath(const QString &path);
     QScopedPointer<QAbstractFileEngineIteratorPrivate> d;
 };

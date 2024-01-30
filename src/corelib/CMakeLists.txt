@@ -116,6 +116,7 @@ qt_internal_add_module(Core
         io/qdataurl.cpp io/qdataurl_p.h
         io/qdebug.cpp io/qdebug.h io/qdebug_p.h
         io/qdir.cpp io/qdir.h io/qdir_p.h
+        io/qdirlisting.cpp io/qdirlisting.h io/qdirentryinfo_p.h
         io/qdiriterator.cpp io/qdiriterator.h
         io/qfile.cpp io/qfile.h io/qfile_p.h
         io/qfiledevice.cpp io/qfiledevice.h io/qfiledevice_p.h
