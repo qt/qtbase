@@ -40,8 +40,8 @@ public:
 
     void swap(QBitArray &other) noexcept { d.swap(other.d); }
 
-    inline qsizetype size() const { return (d.size() << 3) - *d.constData(); }
-    inline qsizetype count() const { return (d.size() << 3) - *d.constData(); }
+    qsizetype size() const { return qsizetype((size_t(d.size()) << 3) - *d.constData()); }
+    qsizetype count() const { return size(); }
     qsizetype count(bool on) const;
 
     inline bool isEmpty() const { return d.isEmpty(); }
