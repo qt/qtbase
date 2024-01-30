@@ -4952,7 +4952,6 @@ void tst_QGraphicsScene::taskQTBUG_42915_focusNextPrevChild()
     widget2->setFocusPolicy(Qt::NoFocus);
 
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QTest::keyEvent(QTest::Click, &view, Qt::Key_Tab);
