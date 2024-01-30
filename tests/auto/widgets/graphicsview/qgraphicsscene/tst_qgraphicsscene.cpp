@@ -4911,7 +4911,6 @@ void tst_QGraphicsScene::taskQTBUG_16401_focusItem()
     rect->setFlag(QGraphicsItem::ItemIsFocusable);
 
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QVERIFY(!scene.focusItem());
