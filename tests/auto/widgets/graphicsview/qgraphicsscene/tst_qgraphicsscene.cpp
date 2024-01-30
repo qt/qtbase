@@ -3044,7 +3044,6 @@ void tst_QGraphicsScene::tabFocus_emptyScene()
     widget.setLayout(layout);
     widget.setWindowTitle(QTest::currentTestFunction());
     widget.show();
-    QApplicationPrivate::setActiveWindow(&widget);
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
 
