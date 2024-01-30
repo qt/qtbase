@@ -4493,7 +4493,6 @@ void tst_QGraphicsView::inputContextReset()
     QVERIFY(view.testAttribute(Qt::WA_InputMethodEnabled));
 
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
