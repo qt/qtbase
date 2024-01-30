@@ -1342,7 +1342,6 @@ void tst_QFileDialog2::dontShowCompleterOnRoot()
     fd.setAcceptMode(QFileDialog::AcceptSave);
     fd.show();
 
-    QApplicationPrivate::setActiveWindow(&fd);
     QVERIFY(QTest::qWaitForWindowActive(&fd));
     QCOMPARE(fd.isVisible(), true);
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
