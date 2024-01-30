@@ -5564,7 +5564,6 @@ void tst_QGraphicsItem::itemClipsChildrenToShape4()
     scene.addEllipse( 100, 100, 100, 50 );   // <-- this is important to trigger the right codepath*
     //now the label is shown
     outerWidget->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false );
-    QApplicationPrivate::setActiveWindow(&view);
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view.show();
     QTRY_COMPARE(QApplication::activeWindow(), &view);
