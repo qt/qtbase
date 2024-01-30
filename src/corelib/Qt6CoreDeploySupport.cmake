@@ -464,6 +464,13 @@ function(qt6_deploy_runtime_dependencies)
     if(__QT_DEPLOY_TOOL STREQUAL "GRD")
         message(STATUS "Running generic Qt deploy tool on ${arg_EXECUTABLE}")
 
+        if(NOT "${arg_DEPLOY_TOOL_OPTIONS}" STREQUAL "")
+            message(WARNING
+                "DEPLOY_TOOL_OPTIONS was specified but has no effect when using the generic "
+                "deployment tool."
+            )
+        endif()
+
         # Construct the EXECUTABLES, LIBRARIES and MODULES arguments.
         list(APPEND tool_options EXECUTABLES ${arg_EXECUTABLE})
         if(NOT "${arg_ADDITIONAL_EXECUTABLES}" STREQUAL "")
