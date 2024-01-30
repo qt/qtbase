@@ -3423,7 +3423,6 @@ void tst_QGraphicsView::task239729_noViewUpdate()
     QCOMPARE(spy.count(), 0);
 
     view->show();
-    QApplicationPrivate::setActiveWindow(view);
     QVERIFY(QTest::qWaitForWindowActive(view));
 
     QTRY_VERIFY(spy.count() >= 1);
