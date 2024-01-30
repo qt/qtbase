@@ -4811,7 +4811,6 @@ void tst_QGraphicsScene::focusOnTouch()
     rect->setFlag(QGraphicsItem::ItemIsFocusable, true);
 
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QVERIFY(!rect->hasFocus());
