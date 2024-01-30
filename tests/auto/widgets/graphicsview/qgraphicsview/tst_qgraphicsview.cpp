@@ -4127,7 +4127,6 @@ void tst_QGraphicsView::update()
     QVERIFY(QTest::qWaitForWindowExposed(&toplevel));
 
 
-    QApplicationPrivate::setActiveWindow(&toplevel);
     QApplication::processEvents();
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&toplevel));
 
