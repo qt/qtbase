@@ -300,6 +300,7 @@ static constexpr const auto KeyTbl = qMakeArray(
         Xkb2Qt<XKB_KEY_XF86Book,                Qt::Key_Book>,
         Xkb2Qt<XKB_KEY_XF86CD,                  Qt::Key_CD>,
         Xkb2Qt<XKB_KEY_XF86Calculater,          Qt::Key_Calculator>,
+        Xkb2Qt<XKB_KEY_XF86Calculator,          Qt::Key_Calculator>,
         Xkb2Qt<XKB_KEY_XF86Clear,               Qt::Key_Clear>,
         Xkb2Qt<XKB_KEY_XF86ClearGrab,           Qt::Key_ClearGrab>,
         Xkb2Qt<XKB_KEY_XF86Close,               Qt::Key_Close>,
