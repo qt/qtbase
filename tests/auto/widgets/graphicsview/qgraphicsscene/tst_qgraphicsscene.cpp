@@ -2851,7 +2851,6 @@ void tst_QGraphicsScene::update2()
     view.resize(m_testSize);
     view.setScene(&scene);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QTRY_VERIFY(view.repaints >= 1);
     view.repaints = 0;
