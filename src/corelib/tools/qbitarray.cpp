@@ -135,14 +135,12 @@ static void adjust_head_and_tail(char *data, qsizetype storageSize, qsizetype lo
     initialized with \a value, which defaults to false (0).
 */
 QBitArray::QBitArray(qsizetype size, bool value)
-    : d(allocation_size(size), Qt::Uninitialized)
+    : d(allocation_size(size), value ? 0xFF : 0x00)
 {
     Q_ASSERT_X(size >= 0, "QBitArray::QBitArray", "Size must be greater than or equal to 0.");
     if (size <= 0)
         return;
 
-    uchar *c = reinterpret_cast<uchar *>(d.data());
-    memset(c + 1, value ? 0xff : 0, d.size() - 1);
     adjust_head_and_tail(d.data(), d.size(), size);
 }
 
