@@ -4962,7 +4962,6 @@ void tst_QGraphicsView::QTBUG_70255_scrollTo()
     view.centerOn(0, 0);
 
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     if (!QTest::qWaitForWindowExposed(&view) || !QTest::qWaitForWindowActive(&view))
         QSKIP("Failed to show and activate window");
 
