@@ -291,7 +291,6 @@ void tst_QGraphicsSceneIndex::removeItems()
     QGraphicsView view(&scene);
     view.resize(600, 600);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     scene.removeItem(widgetChild1);
