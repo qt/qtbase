@@ -1117,7 +1117,6 @@ void tst_QFiledialog::focus()
     QFileDialog fd;
     fd.setDirectory(QDir::currentPath());
     fd.show();
-    QApplicationPrivate::setActiveWindow(&fd);
     QVERIFY(QTest::qWaitForWindowActive(&fd));
     QCOMPARE(fd.isVisible(), true);
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
