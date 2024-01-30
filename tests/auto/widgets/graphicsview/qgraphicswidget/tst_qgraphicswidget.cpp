@@ -2694,7 +2694,6 @@ void tst_QGraphicsWidget::task250119_shortcutContext()
     QGraphicsView view;
     view.setScene(&scene);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QTRY_COMPARE(QApplication::activeWindow(), (QWidget*)&view);
 
 
