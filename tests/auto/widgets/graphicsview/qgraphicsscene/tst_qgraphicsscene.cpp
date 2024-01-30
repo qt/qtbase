@@ -4354,7 +4354,6 @@ void tst_QGraphicsScene::removeFullyTransparentItem()
     view.resize(m_testSize);
     view.setScene(&scene);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCoreApplication::processEvents(); // Process all queued paint events
 
