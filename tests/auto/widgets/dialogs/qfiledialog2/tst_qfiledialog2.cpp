@@ -1265,7 +1265,6 @@ void tst_QFileDialog2::QTBUG6558_showDirsOnly()
     fd.setOption(QFileDialog::ShowDirsOnly, true);
     fd.show();
 
-    QApplicationPrivate::setActiveWindow(&fd);
     QVERIFY(QTest::qWaitForWindowActive(&fd));
     QCOMPARE(fd.isVisible(), true);
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
