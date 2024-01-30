@@ -993,7 +993,6 @@ void tst_QGraphicsItem::inputMethodHints()
     scene.addItem(item);
     scene.addItem(item2);
     QGraphicsView view(&scene);
-    QApplicationPrivate::setActiveWindow(&view);
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
