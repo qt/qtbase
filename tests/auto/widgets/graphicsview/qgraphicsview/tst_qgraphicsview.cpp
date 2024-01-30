@@ -2538,7 +2538,6 @@ void tst_QGraphicsView::viewportUpdateMode2()
     const QMargins margins = view.contentsMargins();
     view.resize(200 + margins.left() + margins.right(), 200 + margins.top() + margins.bottom());
     toplevel.show();
-    QApplicationPrivate::setActiveWindow(&toplevel);
     QVERIFY(QTest::qWaitForWindowExposed(&toplevel));
     QVERIFY(QTest::qWaitForWindowActive(&toplevel));
     QTRY_VERIFY(view.painted);
