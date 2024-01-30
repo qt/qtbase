@@ -538,6 +538,8 @@ QString QWindowsContext::classNamePrefix()
 #  define xstr(s) str(s)
 #  define str(s) #s
         str << xstr(QT_NAMESPACE);
+#  undef str
+#  undef xstr
 #endif
     }
     return result;
