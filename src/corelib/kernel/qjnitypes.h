@@ -96,20 +96,18 @@ struct JNITypeForArgImpl<QString>
 };
 
 template <typename Arg>
-using JNITypeForArg = typename JNITypeForArgImpl<q20::remove_cvref_t<Arg>>::Type;
+using JNITypeForArg = typename JNITypeForArgImpl<std::decay_t<Arg>>::Type;
 template <typename Arg, typename Type>
 static inline auto methodArgFromVarArg(Type &&t)
 {
-    return JNITypeForArgImpl<q20::remove_cvref_t<Arg>>::fromVarArg(std::move(t));
+    return JNITypeForArgImpl<std::decay_t<Arg>>::fromVarArg(std::move(t));
 }
 
 // Turn a va_list into a tuple of typed arguments
 template <typename ...Args>
 static constexpr auto makeTupleFromArgsHelper(va_list args)
 {
-    return std::tuple<q20::remove_cvref_t<Args>...>{
-        methodArgFromVarArg<q20::remove_cvref_t<Args>>(va_arg(args, JNITypeForArg<Args>))...
-    };
+    return std::tuple(methodArgFromVarArg<Args>(va_arg(args, JNITypeForArg<Args>))...);
 }
 
 template <typename Ret, typename ...Args>
