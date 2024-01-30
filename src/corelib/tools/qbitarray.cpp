@@ -203,7 +203,8 @@ qsizetype QBitArray::count(bool on) const
 */
 void QBitArray::resize(qsizetype size)
 {
-    if (!size) {
+    Q_ASSERT_X(size >= 0, "QBitArray::resize", "Size must be greater than or equal to 0.");
+    if (size <= 0) {
         d.resize(0);
     } else {
         d.resize(allocation_size(size), 0x00);
@@ -303,8 +304,9 @@ void QBitArray::fill(bool value, qsizetype begin, qsizetype end)
  */
 QBitArray QBitArray::fromBits(const char *data, qsizetype size)
 {
+    Q_ASSERT_X(size >= 0, "QBitArray::fromBits", "Size must be greater than or equal to 0.");
     QBitArray result;
-    if (size == 0)
+    if (size <= 0)
         return result;
 
     auto &d = result.d;
