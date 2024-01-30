@@ -584,7 +584,7 @@ struct Data
         numBuckets = GrowthPolicy::bucketsForCapacity(qMax(size, reserved));
         spans = allocateSpans(numBuckets).spans;
         size_t otherNSpans = other.numBuckets >> SpanConstants::SpanShift;
-        reallocationHelper(other, otherNSpans, true);
+        reallocationHelper(other, otherNSpans, numBuckets != other.numBuckets);
     }
 
     static Data *detached(Data *d)
