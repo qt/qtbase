@@ -771,9 +771,9 @@ void tst_Cmptest::tryCompare()
     }
     {
         DeferredFlag c;
-        QTRY_COMPARE_WITH_TIMEOUT(c, DeferredFlag(), 300);
+        QTRY_COMPARE_WITH_TIMEOUT(c, DeferredFlag(), 300ms);
         QVERIFY(!c); // Instantly equal, so succeeded without delay.
-        QTRY_COMPARE_WITH_TIMEOUT(c, trueAlready, 200);
+        QTRY_COMPARE_WITH_TIMEOUT(c, trueAlready, 1s);
         qInfo("Should now time out and fail");
         QTRY_COMPARE_WITH_TIMEOUT(c, DeferredFlag(), 200);
     }
@@ -788,7 +788,7 @@ void tst_Cmptest::tryVerify()
     }
     {
         DeferredFlag c;
-        QTRY_VERIFY_WITH_TIMEOUT(!c, 300);
+        QTRY_VERIFY_WITH_TIMEOUT(!c, 300ms);
         QTRY_VERIFY_WITH_TIMEOUT(c, 200);
         qInfo("Should now time out and fail");
         QTRY_VERIFY_WITH_TIMEOUT(!c, 200);
@@ -804,7 +804,7 @@ void tst_Cmptest::tryVerify2()
     }
     {
         DeferredFlag c;
-        QTRY_VERIFY2_WITH_TIMEOUT(!c, "Failed to check before looping", 300);
+        QTRY_VERIFY2_WITH_TIMEOUT(!c, "Failed to check before looping", 300ms);
         QTRY_VERIFY2_WITH_TIMEOUT(c, "Failed to trigger single-shot", 200);
         QTRY_VERIFY2_WITH_TIMEOUT(!c, "Should time out and fail", 200);
     }

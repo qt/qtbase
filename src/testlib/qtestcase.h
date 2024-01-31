@@ -198,9 +198,14 @@ inline void useVerifyThrowsException() {}
         } \
     }
 
-#define QTRY_IMPL(expr, timeout)\
-    const int qt_test_step = timeout < 350 ? timeout / 7 + 1 : 50; \
-    const int qt_test_timeoutValue = timeout; \
+#define QTRY_IMPL(expr, timeoutAsGiven)\
+    const auto timeout = [&] { \
+            /* make 5s work w/o user action: */ \
+            using namespace std::chrono_literals; \
+            return std::chrono::milliseconds{timeoutAsGiven}; \
+        }(); \
+    const int qt_test_step = timeout.count() < 350 ? timeout.count() / 7 + 1 : 50; \
+    const int qt_test_timeoutValue = timeout.count(); \
     { QTRY_LOOP_IMPL(expr, qt_test_timeoutValue, qt_test_step) } \
     QTRY_TIMEOUT_DEBUG_IMPL(expr, qt_test_timeoutValue, qt_test_step)
 // Ends with an if-block, so doesn't want a following semicolon.
@@ -212,7 +217,7 @@ do { \
     QVERIFY(expr); \
 } while (false)
 
-#define QTRY_VERIFY(expr) QTRY_VERIFY_WITH_TIMEOUT(expr, 5000)
+#define QTRY_VERIFY(expr) QTRY_VERIFY_WITH_TIMEOUT(expr, 5s)
 
 // Will try to wait for the expression to become true while allowing event processing
 #define QTRY_VERIFY2_WITH_TIMEOUT(expr, messageExpression, timeout) \
@@ -221,7 +226,7 @@ do { \
     QVERIFY2(expr, messageExpression); \
 } while (false)
 
-#define QTRY_VERIFY2(expr, messageExpression) QTRY_VERIFY2_WITH_TIMEOUT(expr, messageExpression, 5000)
+#define QTRY_VERIFY2(expr, messageExpression) QTRY_VERIFY2_WITH_TIMEOUT(expr, messageExpression, 5s)
 
 // Will try to wait for the comparison to become successful while allowing event processing
 #define QTRY_COMPARE_WITH_TIMEOUT(expr, expected, timeout) \
@@ -230,7 +235,7 @@ do { \
     QCOMPARE(expr, expected); \
 } while (false)
 
-#define QTRY_COMPARE(expr, expected) QTRY_COMPARE_WITH_TIMEOUT(expr, expected, 5000)
+#define QTRY_COMPARE(expr, expected) QTRY_COMPARE_WITH_TIMEOUT(expr, expected, 5s)
 
 #define QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, op, opId, timeout) \
 do { \
@@ -241,32 +246,32 @@ do { \
 #define QTRY_COMPARE_EQ_WITH_TIMEOUT(computed, baseline, timeout) \
     QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, ==, Equal, timeout)
 
-#define QTRY_COMPARE_EQ(computed, baseline) QTRY_COMPARE_EQ_WITH_TIMEOUT(computed, baseline, 5000)
+#define QTRY_COMPARE_EQ(computed, baseline) QTRY_COMPARE_EQ_WITH_TIMEOUT(computed, baseline, 5s)
 
 #define QTRY_COMPARE_NE_WITH_TIMEOUT(computed, baseline, timeout) \
     QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, !=, NotEqual, timeout)
 
-#define QTRY_COMPARE_NE(computed, baseline) QTRY_COMPARE_NE_WITH_TIMEOUT(computed, baseline, 5000)
+#define QTRY_COMPARE_NE(computed, baseline) QTRY_COMPARE_NE_WITH_TIMEOUT(computed, baseline, 5s)
 
 #define QTRY_COMPARE_LT_WITH_TIMEOUT(computed, baseline, timeout) \
     QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, <, LessThan, timeout)
 
-#define QTRY_COMPARE_LT(computed, baseline) QTRY_COMPARE_LT_WITH_TIMEOUT(computed, baseline, 5000)
+#define QTRY_COMPARE_LT(computed, baseline) QTRY_COMPARE_LT_WITH_TIMEOUT(computed, baseline, 5s)
 
 #define QTRY_COMPARE_LE_WITH_TIMEOUT(computed, baseline, timeout) \
     QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, <=, LessThanOrEqual, timeout)
 
-#define QTRY_COMPARE_LE(computed, baseline) QTRY_COMPARE_LE_WITH_TIMEOUT(computed, baseline, 5000)
+#define QTRY_COMPARE_LE(computed, baseline) QTRY_COMPARE_LE_WITH_TIMEOUT(computed, baseline, 5s)
 
 #define QTRY_COMPARE_GT_WITH_TIMEOUT(computed, baseline, timeout) \
     QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, >, GreaterThan, timeout)
 
-#define QTRY_COMPARE_GT(computed, baseline) QTRY_COMPARE_GT_WITH_TIMEOUT(computed, baseline, 5000)
+#define QTRY_COMPARE_GT(computed, baseline) QTRY_COMPARE_GT_WITH_TIMEOUT(computed, baseline, 5s)
 
 #define QTRY_COMPARE_GE_WITH_TIMEOUT(computed, baseline, timeout) \
     QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, >=, GreaterThanOrEqual, timeout)
 
-#define QTRY_COMPARE_GE(computed, baseline) QTRY_COMPARE_GE_WITH_TIMEOUT(computed, baseline, 5000)
+#define QTRY_COMPARE_GE(computed, baseline) QTRY_COMPARE_GE_WITH_TIMEOUT(computed, baseline, 5s)
 
 #define QSKIP_INTERNAL(statement) \
 do {\
