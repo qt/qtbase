@@ -133,7 +133,6 @@ abstract class QtActivityDelegateBase
         setUpLayout();
     }
 
-
     public void hideSplashScreen()
     {
         hideSplashScreen(0);

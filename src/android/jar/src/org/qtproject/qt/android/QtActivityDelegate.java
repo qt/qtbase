@@ -274,8 +274,13 @@ class QtActivityDelegate extends QtActivityDelegateBase
     public void openContextMenu(final int x, final int y, final int w, final int h)
     {
         m_layout.postDelayed(() -> {
-            m_layout.setLayoutParams(m_inputDelegate.getQtEditText(), new QtLayout.LayoutParams(w, h, x, y), false);
-            PopupMenu popup = new PopupMenu(m_activity, m_inputDelegate.getQtEditText());
+            final QtEditText focusedEditText = m_inputDelegate.getCurrentQtEditText();
+            if (focusedEditText == null) {
+                Log.w(QtTAG, "No focused view when trying to open context menu");
+                return;
+            }
+            m_layout.setLayoutParams(focusedEditText, new QtLayout.LayoutParams(w, h, x, y), false);
+            PopupMenu popup = new PopupMenu(m_activity, focusedEditText);
             QtActivityDelegate.this.onCreatePopupMenu(popup.getMenu());
             popup.setOnMenuItemClickListener(menuItem ->
                     m_activity.onContextItemSelected(menuItem));
@@ -325,6 +330,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
             m_topLevelWindows.put(window.getId(), window);
             if (!m_splashScreenSticky)
                 hideSplashScreen();
+            m_inputDelegate.setFocusedView(window.getQtEditText());
         });
     }
 
