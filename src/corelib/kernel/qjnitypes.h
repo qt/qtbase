@@ -78,7 +78,7 @@ struct JNITypeForArgImpl
     using Type = std::conditional_t<std::disjunction_v<std::is_base_of<QJniObject, Arg>,
                                                        std::is_base_of<QtJniTypes::JObjectBase, Arg>>,
                                     jobject, typename PromotedType<Arg>::Type>;
-    static Arg fromVarArg(Type &&t)
+    static Arg fromVarArg(Type t)
     {
         return static_cast<Arg>(t);
     }
@@ -89,7 +89,7 @@ struct JNITypeForArgImpl<QString>
 {
     using Type = jstring;
 
-    static QString fromVarArg(Type &&t)
+    static QString fromVarArg(Type t)
     {
         return QJniObject(t).toString();
     }
@@ -98,9 +98,9 @@ struct JNITypeForArgImpl<QString>
 template <typename Arg>
 using JNITypeForArg = typename JNITypeForArgImpl<std::decay_t<Arg>>::Type;
 template <typename Arg, typename Type>
-static inline auto methodArgFromVarArg(Type &&t)
+static inline auto methodArgFromVarArg(Type t) // Type comes from a va_arg, so is always POD
 {
-    return JNITypeForArgImpl<std::decay_t<Arg>>::fromVarArg(std::move(t));
+    return JNITypeForArgImpl<std::decay_t<Arg>>::fromVarArg(t);
 }
 
 // Turn a va_list into a tuple of typed arguments
