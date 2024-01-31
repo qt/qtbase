@@ -361,7 +361,7 @@ auto QJniArrayBase::makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion)
 template <typename List>
 auto QJniArrayBase::makeObjectArray(List &&list)
 {
-    using ElementType = typename List::value_type;
+    using ElementType = typename q20::remove_cvref_t<List>::value_type;
     if (list.isEmpty())
         return QJniArray<jobject>();
 
