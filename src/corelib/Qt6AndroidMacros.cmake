@@ -938,26 +938,34 @@ function(_qt_internal_android_format_deployment_paths target)
                 break()
             endif()
         endforeach()
-        if(NOT has_android_paths)
-            return()
+        if(has_android_paths)
+            __qt_internal_setup_policy(QTP0002 "6.6.0"
+                "Target properties that specify android-specific paths may contain generator\
+                expressions but they must evaluate to valid JSON strings.\
+                Check https://doc.qt.io/qt-6/qt-cmake-policy-qtp0002.html for policy details."
+            )
+            qt6_policy(GET QTP0002 android_deployment_paths_policy)
         endif()
-
-        __qt_internal_setup_policy(QTP0002 "6.6.0"
-            "Target properties that specify android-specific paths may contain generator\
-            expressions but they must evaluate to valid JSON strings.\
-            Check https://doc.qt.io/qt-6/qt-cmake-policy-qtp0002.html for policy details."
-        )
-        qt6_policy(GET QTP0002 android_deployment_paths_policy)
     endif()
     if(android_deployment_paths_policy STREQUAL "NEW")
         # When building standalone tests or Qt itself we obligate developers to not use
         # windows paths when setting QT_* properties below, so their values are used as is when
         # generating deployment settings.
+        string(JOIN "" qml_root_path_genex
+            "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},QT_QML_ROOT_PATH>>"
+            "$<"
+                "$<AND:"
+                    "$<BOOL:$<GENEX_EVAL:$<TARGET_PROPERTY:${target},QT_QML_ROOT_PATH>>>,"
+                    "$<BOOL:$<GENEX_EVAL:$<TARGET_PROPERTY:${target},_qt_internal_qml_root_path>>>"
+                ">:;"
+            ">"
+            "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},_qt_internal_qml_root_path>>"
+        )
         set_target_properties(${target} PROPERTIES
             _qt_native_qml_import_paths
                 "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},QT_QML_IMPORT_PATH>>"
             _qt_android_native_qml_root_paths
-                "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},QT_QML_ROOT_PATH>>"
+                "${qml_root_path_genex}"
             _qt_android_native_package_source_dir
                 "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},QT_ANDROID_PACKAGE_SOURCE_DIR>>"
             _qt_android_native_extra_plugins
@@ -975,6 +983,9 @@ function(_qt_internal_android_format_deployment_paths target)
             QT_QML_ROOT_PATH _qt_android_native_qml_root_paths)
 
         _qt_internal_android_format_deployment_path_property(${target}
+            _qt_internal_qml_root_path _qt_android_native_qml_root_paths APPEND)
+
+        _qt_internal_android_format_deployment_path_property(${target}
             QT_ANDROID_PACKAGE_SOURCE_DIR _qt_android_native_package_source_dir)
 
         _qt_internal_android_format_deployment_path_property(${target}
@@ -988,7 +999,20 @@ endfunction()
 # The function converts the value of target property to JSON compatible path and writes the
 # result to out_property. Property might be either single value, semicolon separated list or system
 # path spec.
+# The APPEND argument controls the property is set. The argument should be added after all
+# the required arguments.
 function(_qt_internal_android_format_deployment_path_property target property out_property)
+    set(should_append "")
+    if(ARGC EQUAL 4)
+        if("${ARGV3}" STREQUAL "APPEND")
+            set(should_append APPEND)
+        else()
+            message(FATAL_ERROR "Unexpected argument ${ARGV3}")
+        endif()
+    elseif(ARGC GREATER 4)
+        message(FATAL_ERROR "Unexpected arguments ${ARGN}")
+    endif()
+
     get_target_property(_paths ${target} ${property})
     if(_paths)
         set(native_paths "")
@@ -996,7 +1020,7 @@ function(_qt_internal_android_format_deployment_path_property target property ou
             file(TO_CMAKE_PATH "${_path}" _path)
             list(APPEND native_paths "${_path}")
         endforeach()
-        set_target_properties(${target} PROPERTIES
+        set_property(TARGET ${target} ${should_append} PROPERTY
             ${out_property} "${native_paths}")
     endif()
 endfunction()
