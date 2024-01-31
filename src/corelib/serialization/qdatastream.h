@@ -194,6 +194,7 @@ namespace QtPrivate {
 
 class StreamStateSaver
 {
+    Q_DISABLE_COPY_MOVE(StreamStateSaver)
 public:
     inline StreamStateSaver(QDataStream *s) : stream(s), oldStatus(s->status())
     {
