@@ -247,7 +247,7 @@
 
    Example:
    \code
-   QTRY_VERIFY2_WITH_TIMEOUT(list.size() > 2, QByteArray::number(list.size()).constData());
+   QTRY_VERIFY2(list.size() > 2, QByteArray::number(list.size()).constData());
    \endcode
 
    \note This macro can only be used in a test function that is invoked
