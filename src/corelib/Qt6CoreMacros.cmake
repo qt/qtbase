@@ -1371,7 +1371,7 @@ function(qt6_extract_metatypes target)
         VERBATIM
     )
 
-    if(NOT CMAKE_GENERATOR MATCHES "^Ninja")
+    if(CMAKE_GENERATOR MATCHES " Makefiles")
         # Work around https://gitlab.kitware.com/cmake/cmake/-/issues/19005 to trigger the command
         # that generates ${metatypes_file}.
         add_custom_command(
