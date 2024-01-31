@@ -249,6 +249,7 @@ void modifyImage(QImage *img)
 
 bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, bool *error)
 {
+    *error = false;
     ImageItem item = baseline;
     if (simfail) {
         // Simulate test failure by forcing image mismatch; for testing purposes
@@ -259,6 +260,7 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
     } else {
         item.image = img;
     }
+    bool isNewItem = false;
     item.imageChecksums.clear();
     item.imageChecksums.prepend(ImageItem::computeChecksum(item.image));
     QByteArray srvMsg;
@@ -270,9 +272,11 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
         return true;
         break;
     case ImageItem::BaselineNotFound:
-        if (!customInfo.overrides().isEmpty() || baselinePolicy == UploadNone) {
-            qWarning() << "Cannot compare to baseline: No such baseline found on server.";
+        if (!customInfo.overrides().isEmpty())
             return true;
+        if (baselinePolicy == UploadNone) {
+            isNewItem = true;
+            break;
         }
         if (proto.submitNewBaseline(item, &srvMsg))
             qDebug() << msg->constData() << "Baseline not found on server. New baseline uploaded.";
@@ -285,7 +289,6 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
         return true;
         break;
     }
-    *error = false;
     // The actual comparison of the given image with the baseline:
     if (baseline.imageChecksums.contains(item.imageChecksums.at(0))) {
         if (!proto.submitMatch(item, &srvMsg))
@@ -306,7 +309,11 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
         qInfo() << "Baseline server reports:" << srvMsg;
         return true;            // The server decides: a fuzzy match means no mismatch
     }
-    *msg += "Mismatch. See report:\n   " + srvMsg;
+    if (isNewItem)
+        *msg += "No baseline on server, so cannot compare.";
+    else
+        *msg += "Mismatch.";
+    *msg += " See report:\n   " + srvMsg;
     if (dryRunMode) {
         qDebug() << "Dryrun, so ignoring" << *msg;
         return true;
