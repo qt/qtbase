@@ -41,32 +41,36 @@ public:
         Q_Q(QWidgetWindow);
         qCDebug(lcWidgetShowHide) << "Setting visibility of" << q->widget()
                << "to" << visible << "via QWidgetWindowPrivate";
-        if (QWidget *widget = q->widget()) {
-            // Check if the widget was already hidden, as this indicates it was done
-            // explicitly and not because the parent window in this case made it hidden.
-            // In which case do not automatically show the widget when the parent
-            // window is shown.
-            const bool wasExplicitShowHide = widget->testAttribute(Qt::WA_WState_ExplicitShowHide);
-            const bool wasHidden = widget->testAttribute(Qt::WA_WState_Hidden);
-            QWidgetPrivate::get(widget)->setVisible(visible);
-            if (wasExplicitShowHide) {
-                widget->setAttribute(Qt::WA_WState_ExplicitShowHide, wasExplicitShowHide);
-                widget->setAttribute(Qt::WA_WState_Hidden, wasHidden);
-            }
 
-            // The call to QWidgetPrivate::setVisible() above will normally
-            // recurse back into QWidgetWindow::setNativeWindowVisibility()
-            // to update the QWindow state, but during QWidget::destroy()
-            // this is not the case, as Qt::WA_WState_Created has been
-            // unset by the time we check if we should call hide_helper().
-            // We don't want to change the QWidget logic, as that has
-            // other side effects, so as a targeted fix we sync up the
-            // visibility here if needed.
-            if (q->isVisible() != visible)
-                QWindowPrivate::setVisible(visible);
-        } else {
-            QWindowPrivate::setVisible(visible);
+        if (QWidget *widget = q->widget()) {
+            // If the widget's visible state is already matching the new QWindow
+            // visible state we assume the widget has already synced up.
+            if (visible != widget->isVisible()) {
+                // Check if the widget was already hidden, as this indicates it was done
+                // explicitly and not because the parent window in this case made it hidden.
+                // In which case do not automatically show the widget when the parent
+                // window is shown.
+                const bool wasExplicitShowHide = widget->testAttribute(Qt::WA_WState_ExplicitShowHide);
+                const bool wasHidden = widget->testAttribute(Qt::WA_WState_Hidden);
+
+                QWidgetPrivate::get(widget)->setVisible(visible);
+
+                if (wasExplicitShowHide) {
+                    widget->setAttribute(Qt::WA_WState_ExplicitShowHide, wasExplicitShowHide);
+                    widget->setAttribute(Qt::WA_WState_Hidden, wasHidden);
+                }
+            }
         }
+
+        // If we end up calling QWidgetPrivate::setVisible() above, we will
+        // in most cases recurse back into setNativeWindowVisibility() to
+        // update the QWindow state. But during QWidget::destroy() this is
+        // not the case, as Qt::WA_WState_Created has been unset by the time
+        // we check if we should call hide_helper(). We handle this case, as
+        // well as the cases where we don't call QWidgetPrivate::setVisible(),
+        // by syncing up the QWindow state here if needed.
+        if (q->isVisible() != visible)
+            QWindowPrivate::setVisible(visible);
     }
 
     QWindow *eventReceiver() override {

@@ -13550,8 +13550,7 @@ void tst_QWidget::explicitShowHide()
 
         child.setAttribute(Qt::WA_WState_ExplicitShowHide, false);
         QCOMPARE(child.close(), true);
-        QEXPECT_FAIL("", "Closing a non-native child is treated as an explicit hide", Continue);
-        QCOMPARE(child.testAttribute(Qt::WA_WState_ExplicitShowHide), false);
+        QCOMPARE(child.testAttribute(Qt::WA_WState_ExplicitShowHide), true);
         QCOMPARE(child.testAttribute(Qt::WA_WState_Hidden), true);
 
         child.show();
