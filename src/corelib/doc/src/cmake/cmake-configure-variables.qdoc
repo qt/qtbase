@@ -340,7 +340,7 @@ The mentioned variables are used internally by \l{androiddeployqt}.
 */
 
 /*!
-\page cmake-variable-qt-android-deployment-type.html
+\page cmake-variable-qt-use-target-android-build-dir.html
 \ingroup cmake-variables-qtcore
 
 \title QT_USE_TARGET_ANDROID_BUILD_DIR
