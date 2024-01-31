@@ -8494,7 +8494,7 @@ void QWidgetPrivate::showChildren(bool spontaneous)
             if (widget->testAttribute(Qt::WA_WState_ExplicitShowHide))
                 widget->d_func()->show_recursive();
             else
-                widget->show();
+                widget->d_func()->setVisible(true);
         }
     }
 }
