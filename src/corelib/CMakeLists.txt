@@ -357,6 +357,7 @@ qt_internal_add_module(Core
         ${corelib_extra_cmake_files}
     POLICIES
         QTP0002
+        QTP0003
 )
 _qt_internal_setup_deploy_support()
 

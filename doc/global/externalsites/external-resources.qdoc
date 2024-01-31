@@ -117,6 +117,11 @@
 */
 
 /*!
+    \externalpage https://cmake.org/cmake/help/latest/variable/BUILD_SHARED_LIBS.html
+    \title CMake BUILD_SHARED_LIBS Documentation
+*/
+
+/*!
     \externalpage https://conan.io/
     \title Conan
 */
