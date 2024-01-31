@@ -81,28 +81,6 @@ is written out as part of the deployment settings for a target.
 */
 
 /*!
-\page cmake-variable-qt-android-deploy-release.html
-\ingroup cmake-variables-qtcore
-\ingroup cmake-android-build-properties
-
-\title QT_ANDROID_DEPLOY_RELEASE
-\target cmake-variable-QT_ANDROID_DEPLOY_RELEASE
-
-\summary {Forces release package signing regardless of the build type.}
-
-\cmakevariablesince 6.5.2
-\preliminarycmakevariable
-\cmakevariableandroidonly
-
-When set to \c TRUE, the \c --release flag is passed to the \c androiddeployqt
-tool, even when the application build mode is Debug. In Release and
-RelWithDebInfo builds this is the default. For more control over this, prefer
-using \l QT_ANDROID_DEPLOYMENT_TYPE instead.
-
-\sa {androiddeployqt}
-*/
-
-/*!
 \page cmake-variable-qt-android-deployment-type.html
 \ingroup cmake-variables-qtcore
 \ingroup cmake-android-build-properties

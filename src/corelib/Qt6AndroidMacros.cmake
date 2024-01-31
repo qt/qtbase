@@ -469,8 +469,9 @@ function(qt6_android_add_apk_target target)
         list(APPEND extra_args "--verbose")
     endif()
 
-    if(QT_ANDROID_DEPLOY_RELEASE) # legacy opt-in variable
-        set(QT_ANDROID_DEPLOYMENT_TYPE "RELEASE")
+    if(QT_ANDROID_DEPLOY_RELEASE)
+        message(WARNING "QT_ANDROID_DEPLOY_RELEASE is not a valid Qt variable."
+            " Please set QT_ANDROID_DEPLOYMENT_TYPE to RELEASE instead.")
     endif()
     # Setting QT_ANDROID_DEPLOYMENT_TYPE to a value other than Release disables
     # release package signing regardless of the build type.
