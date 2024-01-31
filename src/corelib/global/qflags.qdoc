@@ -174,7 +174,7 @@
 /*!
     \fn template <typename Enum> QFlags &QFlags<Enum>::operator=(const QFlags &other)
 
-    Assigns \e other to this object and returns a reference to this
+    Assigns \a other to this object and returns a reference to this
     object.
 */
 
