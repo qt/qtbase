@@ -45,9 +45,10 @@ library type created depends on how Qt was built. If Qt was built statically,
 a static library will be created. Otherwise, a shared library will
 be created. Note that this is different to how CMake's \c{add_library()}
 command works, where the \c BUILD_SHARED_LIBS variable controls the type of
-library created. The \c{qt_add_library()} command considers
-\c BUILD_SHARED_LIBS when deciding the library type only if the variable is set
-explicitly.
+library created.
+Since 6.7, the \c{qt_add_library()} command considers \c BUILD_SHARED_LIBS
+when deciding the library type only if the variable is set explicitly and
+\l {QTP0003} is set to \c NEW.
 
 Any \c{sources} provided will be passed through to the internal call to
 \c{add_library()}.
@@ -74,6 +75,6 @@ time. In general, \c MANUAL_FINALIZATION should not be needed unless the
 project has to support CMake 3.18 or earlier.
 
 \sa {qt6_finalize_target}{qt_finalize_target()},
-    {qt6_add_executable}{qt_add_executable()}
+    {qt6_add_executable}{qt_add_executable()}, QTP0003
 
 */

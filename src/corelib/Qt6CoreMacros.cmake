@@ -2612,10 +2612,31 @@ function(_qt_internal_add_library target)
     # This in contrast to CMake which defaults to STATIC.
     if(NOT arg_STATIC AND NOT arg_SHARED AND NOT arg_MODULE AND NOT arg_INTERFACE
             AND NOT arg_OBJECT)
-        if(BUILD_SHARED_LIBS OR (NOT DEFINED BUILD_SHARED_LIBS AND QT6_IS_SHARED_LIBS_BUILD))
-            set(type_to_create SHARED)
+        if(DEFINED BUILD_SHARED_LIBS AND NOT QT_BUILDING_QT AND NOT QT_BUILD_STANDALONE_TESTS)
+            __qt_internal_setup_policy(QTP0003 "6.7.0"
+                "BUILD_SHARED_LIBS is set to ${BUILD_SHARED_LIBS} but it has no effect on\
+                default library type created by Qt CMake API commands. The default library type\
+                is set to the Qt build type.\
+                This behavior can be changed by setting QTP0003 to NEW.\
+                Check https://doc.qt.io/qt-6/qt-cmake-policy-qtp0003.html for policy details."
+            )
+            qt6_policy(GET QTP0003 build_shared_libs_policy)
         else()
-            set(type_to_create STATIC)
+            set(build_shared_libs_policy "")
+        endif()
+
+        if(build_shared_libs_policy STREQUAL "NEW" OR QT_BUILDING_QT OR QT_BUILD_STANDALONE_TESTS)
+            if(BUILD_SHARED_LIBS OR (NOT DEFINED BUILD_SHARED_LIBS AND QT6_IS_SHARED_LIBS_BUILD))
+                set(type_to_create SHARED)
+            else()
+                set(type_to_create STATIC)
+            endif()
+        else()
+            if(QT6_IS_SHARED_LIBS_BUILD)
+                set(type_to_create SHARED)
+            else()
+                set(type_to_create STATIC)
+            endif()
         endif()
     endif()
 

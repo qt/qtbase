@@ -391,3 +391,4 @@ else()
 endif()
 
 _qt_internal_test_expect_pass(test_config_expressions)
+_qt_internal_test_expect_pass(test_QTP0003)
