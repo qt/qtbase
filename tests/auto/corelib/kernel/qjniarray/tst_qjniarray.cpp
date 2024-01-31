@@ -16,6 +16,7 @@ public:
     tst_QJniArray() = default;
 
 private slots:
+    void construct();
     void size();
     void operators();
 };
@@ -73,6 +74,17 @@ VERIFY_RETURN_FOR_TYPE(QList<jdouble>, QList<jdouble>);
 VERIFY_RETURN_FOR_TYPE(QList<double>, QList<double>);
 
 VERIFY_RETURN_FOR_TYPE(QString, QString);
+
+void tst_QJniArray::construct()
+{
+    {
+        QStringList strings;
+        for (int i = 0; i < 10000; ++i)
+            strings << QString::number(i);
+        QJniArray<QString> list(strings);
+        QCOMPARE(list.size(), 10000);
+    }
+}
 
 void tst_QJniArray::size()
 {

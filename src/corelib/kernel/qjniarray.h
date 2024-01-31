@@ -127,6 +127,7 @@ public:
         using ElementType = typename std::remove_reference_t<Container>::value_type;
         if constexpr (std::disjunction_v<std::is_same<ElementType, jobject>,
                                          std::is_same<ElementType, QJniObject>,
+                                         std::is_same<ElementType, QString>,
                                          std::is_base_of<QtJniTypes::JObjectBase, ElementType>
                                         >) {
             return makeObjectArray(std::forward<Container>(container));
@@ -275,6 +276,9 @@ public:
                 return T::fromLocalRef(element);
             else
                 return T{element};
+        } else if constexpr (std::is_base_of_v<std::remove_pointer_t<jobject>, std::remove_pointer_t<T>>) {
+            // jstring, jclass etc
+            return static_cast<T>(env->GetObjectArrayElement(object<jobjectArray>(), i));
         } else {
             T res = {};
             if constexpr (std::is_same_v<T, jbyte>)
@@ -304,6 +308,12 @@ public:
             res.reserve(size());
             for (auto element : *this)
                 res.append(element);
+            return res;
+        } else if constexpr (std::is_same_v<T, jstring>) {
+            QStringList res;
+            res.reserve(size());
+            for (auto element : *this)
+                res.append(QJniObject(element).toString());
             return res;
         } else if constexpr (std::is_same_v<T, jbyte>) {
             const qsizetype bytecount = size();
@@ -364,8 +374,12 @@ template <typename List>
 auto QJniArrayBase::makeObjectArray(List &&list)
 {
     using ElementType = typename q20::remove_cvref_t<List>::value_type;
+    using ResultType = QJniArray<decltype(std::declval<QJniObject::LocalFrame<>>().convertToJni(
+                                    std::declval<ElementType>()))
+                                >;
+
     if (list.isEmpty())
-        return QJniArray<jobject>();
+        return ResultType();
 
     JNIEnv *env = QJniEnvironment::getJniEnv();
     const size_type length = size_type(list.size());
@@ -375,21 +389,33 @@ auto QJniArrayBase::makeObjectArray(List &&list)
     if constexpr (std::disjunction_v<std::is_same<ElementType, QJniObject>,
                                      std::is_base_of<QtJniTypes::JObjectBase, ElementType>>) {
         elementClass = list.first().objectClass();
+    } else if constexpr (std::is_same_v<ElementType, QString>) {
+        elementClass = env->FindClass("java/lang/String");
     } else {
         elementClass = env->GetObjectClass(list.first());
     }
     auto localArray = env->NewObjectArray(length, elementClass, nullptr);
     if (QJniEnvironment::checkAndClearExceptions(env))
-        return QJniArray<jobject>();
-    for (size_type i = 0; i < length; ++i) {
-        jobject object;
-        if constexpr (std::is_same_v<ElementType, QJniObject>)
-            object = list.at(i).object();
-        else
-            object = list.at(i);
+        return ResultType();
+
+    // explicitly manage the frame for local references in chunks of 100
+    QJniObject::LocalFrame frame(env);
+    constexpr jint frameCapacity = 100;
+    qsizetype i = 0;
+    for (const auto &element : std::as_const(list)) {
+        if (i % frameCapacity == 0) {
+            if (i)
+                env->PopLocalFrame(nullptr);
+            if (env->PushLocalFrame(frameCapacity) != 0)
+                return ResultType{};
+        }
+        jobject object = frame.convertToJni(element);
         env->SetObjectArrayElement(localArray, i, object);
+        ++i;
     }
-    return QJniArray<jobject>(localArray);
+    if (i)
+        env->PopLocalFrame(nullptr);
+    return ResultType(localArray);
 }
 
 

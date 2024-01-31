@@ -16,6 +16,8 @@ class QJniObjectPrivate;
 
 class Q_CORE_EXPORT QJniObject
 {
+    friend class QJniArrayBase;
+
     template <typename ...Args>
     struct LocalFrame {
         mutable JNIEnv *env;

@@ -1874,6 +1874,7 @@ enum class CallbackParameterType
     Double,
     JniArray,
     QList,
+    QStringList,
 };
 
 static std::optional<TestClass> calledWithObject;
@@ -1946,6 +1947,14 @@ static int callbackWithQList(JNIEnv *, jobject, const QList<double> &value)
 }
 Q_DECLARE_JNI_NATIVE_METHOD(callbackWithQList)
 
+static std::optional<QStringList> calledWithStringList;
+static int callbackWithStringList(JNIEnv *, jobject, const QStringList &value)
+{
+    calledWithStringList.emplace(value);
+    return int(CallbackParameterType::QStringList);
+}
+Q_DECLARE_JNI_NATIVE_METHOD(callbackWithStringList)
+
 void tst_QJniObject::callback_data()
 {
     QTest::addColumn<CallbackParameterType>("parameterType");
@@ -1959,6 +1968,7 @@ void tst_QJniObject::callback_data()
     QTest::addRow("Double")     << CallbackParameterType::Double;
     QTest::addRow("JniArray")   << CallbackParameterType::JniArray;
     QTest::addRow("QList")      << CallbackParameterType::QList;
+    QTest::addRow("QStringList") << CallbackParameterType::QStringList;
 }
 
 void tst_QJniObject::callback()
@@ -2043,6 +2053,16 @@ void tst_QJniObject::callback()
         result = testObject.callMethod<int>("callMeBackWithQList", doubles);
         QVERIFY(calledWithQList);
         QCOMPARE(calledWithQList.value(), doubles);
+        break;
+    }
+    case CallbackParameterType::QStringList: {
+        QVERIFY(TestClass::registerNativeMethods({
+            Q_JNI_NATIVE_METHOD(callbackWithStringList)
+        }));
+        const QStringList strings = { "one", "two" };
+        result = testObject.callMethod<int>("callMeBackWithStringList", strings);
+        QVERIFY(calledWithStringList);
+        QCOMPARE(calledWithStringList.value(), strings);
         break;
     }
     }
