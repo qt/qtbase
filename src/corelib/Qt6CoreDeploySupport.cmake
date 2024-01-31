@@ -569,7 +569,7 @@ function(qt6_deploy_translations)
     if(arg_CATALOGS)
         set(catalogs ${arg_CATALOGS})
     else()
-        set(catalogs qt qtbase)
+        set(catalogs qtbase)
 
         # Find the translations that belong to the Qt modules that are used by the project.
         # "Used by the project" means just all modules that are pulled in via find_package for now.
