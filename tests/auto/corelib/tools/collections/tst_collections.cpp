@@ -530,7 +530,7 @@ void tst_Collections::list()
             list << "one" << "two" << "one" << "two";
             QVERIFY(!list.removeOne("three"));
             QVERIFY(list.removeOne("two"));
-            QCOMPARE(list, QList<QString>() << "one" << "one" << "two");;
+            QCOMPARE(list, QList<QString>() << "one" << "one" << "two");
             QVERIFY(list.removeOne("two"));
             QCOMPARE(list, QList<QString>() << "one" << "one");
             QVERIFY(!list.removeOne("two"));

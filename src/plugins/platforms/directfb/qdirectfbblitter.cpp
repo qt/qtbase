@@ -424,7 +424,7 @@ void QDirectFbBlitter::drawDebugRect(const QRect &rect, const QColor &color)
 
 void QDirectFbTextureGlyphCache::resizeTextureData(int width, int height)
 {
-    m_surface.reset();;
+    m_surface.reset();
     QImageTextureGlyphCache::resizeTextureData(width, height);
 }
 

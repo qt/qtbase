@@ -71,7 +71,7 @@ void SslClient::socketEncrypted()
     const QSslCipher cipher = socket->sessionCipher();
     const QString cipherInfo = QString("%1, %2 (%3/%4)").arg(cipher.authenticationMethod())
                                        .arg(cipher.name()).arg(cipher.usedBits())
-                                       .arg(cipher.supportedBits());;
+                                       .arg(cipher.supportedBits());
     form->cipherLabel->setText(cipherInfo);
     padLock->show();
 }

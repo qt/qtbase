@@ -619,7 +619,7 @@ void tst_QListView::moveCursor4()
 
 void tst_QListView::moveCursor5()
 {
-    PublicListView listView;;
+    PublicListView listView;
     QStandardItemModel model;
     QIcon icon(QPixmap(300,300));
     model.appendRow(new QStandardItem(icon,"11"));

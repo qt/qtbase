@@ -1325,7 +1325,7 @@ static void convert_ARGB32_to_RGBA64(QImageData *dest, const QImageData *src, Qt
 
     for (int i = 0; i < src->height; ++i) {
         fetch(reinterpret_cast<QRgba64 *>(dest_data), src_data, 0, src->width, nullptr, nullptr);
-        src_data += src->bytes_per_line;;
+        src_data += src->bytes_per_line;
         dest_data += dest->bytes_per_line;
     }
 }

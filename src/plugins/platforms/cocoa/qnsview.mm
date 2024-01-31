@@ -408,7 +408,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMenuHelper);
 
 - (QCocoaWindow*)platformWindow
 {
-    return m_platformWindow.data();;
+    return m_platformWindow.data();
 }
 
 @end

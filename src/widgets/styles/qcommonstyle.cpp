@@ -5597,7 +5597,7 @@ QIcon QCommonStylePrivate::iconFromWindowsTheme(QCommonStyle::StandardPixmap sta
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
-    QIcon icon;;
+    QIcon icon;
 #ifdef Q_OS_WIN
     switch (standardIcon) {
     case QStyle::SP_DriveCDIcon:

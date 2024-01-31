@@ -1427,7 +1427,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             }
             painter->setPen(act ? menuitem->palette.highlightedText().color() : menuitem->palette.buttonText().color());
 
-            QColor discol = menuitem->palette.text().color();;
+            QColor discol = menuitem->palette.text().color();
             if (dis) {
                 discol = menuitem->palette.color(QPalette::Disabled, QPalette::WindowText);
                 painter->setPen(discol);

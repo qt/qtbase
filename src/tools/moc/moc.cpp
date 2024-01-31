@@ -436,7 +436,7 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
     // note that testFunctionAttribute is handled further below,
     // and revisions and attributes must come first
     while (testForFunctionModifiers(def)) {}
-    Type tempType = parseType();;
+    Type tempType = parseType();
     while (!tempType.name.isEmpty() && lookup() != LPAREN) {
         if (testFunctionAttribute(def->type.firstToken, def))
             ; // fine
@@ -554,7 +554,7 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
         // but otherwise we end up with misparses
         if (def->isSlot || def->isSignal || def->isInvokable)
             while (testForFunctionModifiers(def)) {}
-        Type tempType = parseType();;
+        Type tempType = parseType();
         while (!tempType.name.isEmpty() && lookup() != LPAREN) {
             if (testFunctionAttribute(def->type.firstToken, def))
                 ; // fine

@@ -869,7 +869,7 @@ QSizeF QPageSizePrivate::size(QPageSize::Unit units) const
 
 QSize QPageSizePrivate::sizePixels(int resolution) const
 {
-    return qt_convertPointsToPixels(m_pointSize, resolution);;
+    return qt_convertPointsToPixels(m_pointSize, resolution);
 }
 
 

@@ -541,7 +541,7 @@ void tst_QSettings::ctor()
 #if defined(Q_OS_DARWIN)
         if (format == QSettings::NativeFormat) {
             // more details in QMacSettingsPrivate::QMacSettingsPrivate(), organization was comify()-ed
-            caseSensitive = settings5.fileName().contains("SoftWare.ORG");;
+            caseSensitive = settings5.fileName().contains("SoftWare.ORG");
         } else {
             caseSensitive = pathconf(settings5.fileName().toLatin1().constData(), _PC_CASE_SENSITIVE);
         }

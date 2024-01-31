@@ -2577,7 +2577,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
         }
         painter->restore();
-        break;;
+        break;
 #endif // QT_CONFIG(slider)
     case CC_ComboBox:
         painter->save();

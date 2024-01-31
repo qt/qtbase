@@ -623,7 +623,7 @@ void createWindow()
     static QColor colors[] = { Qt::red, Qt::green, Qt::blue, Qt::yellow, Qt::cyan, Qt::gray };
     const int n = windows.count();
     Window *w = new Window(QString::asprintf("Window+Thread #%d (%s)", n, qPrintable(graphicsApiName())), graphicsApi);
-    Renderer *renderer = new Renderer(w, colors[n % 6], n % 3);;
+    Renderer *renderer = new Renderer(w, colors[n % 6], n % 3);
     QObject::connect(w, &Window::initRequested, w, [renderer] {
         renderer->sendInit();
     });

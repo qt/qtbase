@@ -26,9 +26,9 @@ int main(int argc, char **argv)
 
     QToolBar *toolBar = new QToolBar();
 
-    toolBar->addWidget(new StaticWidget())->setVisible(true);;
+    toolBar->addWidget(new StaticWidget())->setVisible(true);
 
-    toolBar->addWidget(new QSpinBox())->setVisible(true);;
+    toolBar->addWidget(new QSpinBox())->setVisible(true);
     mainWindow.addToolBar(toolBar);
 
     mainWindow.resize(600, 400);

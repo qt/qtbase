@@ -1977,7 +1977,7 @@ static QString quotedStringLiteral(const QString &value)
 
     // Escape
     for (int i = 0; i < len; ++i) {
-        QChar character = value.at(i);;
+        QChar character = value.at(i);
         ushort code = character.unicode();
         switch (code) {
         case '\\':

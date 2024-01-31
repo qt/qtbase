@@ -192,7 +192,7 @@ void tst_QIcon::isNull() {
     // test string constructor with empty string
     QIcon iconEmptyString = QIcon(QString());
     QVERIFY(iconEmptyString.isNull());
-    QVERIFY(!iconEmptyString.actualSize(QSize(32, 32)).isValid());;
+    QVERIFY(!iconEmptyString.actualSize(QSize(32, 32)).isValid());
 
     // test string constructor with non-existing file
     QIcon iconNoFile = QIcon("imagedoesnotexist");

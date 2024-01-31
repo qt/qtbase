@@ -1377,7 +1377,7 @@ void tst_QMdiSubWindow::setWindowTitle()
     // other widgets which are not real top-level widgets).
     QCOMPARE(window->windowTitle(), expectedWindowTitle);
 
-    textEdit->setWindowModified(true);;
+    textEdit->setWindowModified(true);
     expectedWindowTitle = QLatin1String("Override child title");
     window->setWindowTitle(expectedWindowTitle);
     QVERIFY(window->isWindowModified());

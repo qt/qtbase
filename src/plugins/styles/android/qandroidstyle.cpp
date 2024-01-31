@@ -1209,7 +1209,7 @@ const QAndroidStyle::AndroidDrawable * QAndroidStyle::AndroidStateDrawable::best
 
 int QAndroidStyle::AndroidStateDrawable::extractState(const QVariantMap &value)
 {
-    QStyle::State state = QStyle::State_Enabled | QStyle::State_Active;;
+    QStyle::State state = QStyle::State_Enabled | QStyle::State_Active;
     for (auto it = value.cbegin(), end = value.cend(); it != end; ++it) {
         const QString &key = it.key();
         bool val = it.value().toString() == QLatin1String("true");

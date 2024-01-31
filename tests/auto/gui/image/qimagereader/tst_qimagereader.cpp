@@ -662,7 +662,7 @@ void tst_QImageReader::supportsAnimation_data()
     QTest::newRow("BMP: colorful") << QString("colorful.bmp") << false;
     QTest::newRow("BMP: font") << QString("font.bmp") << false;
     QTest::newRow("BMP: signed char") << QString("crash-signed-char.bmp") << false;
-    QTest::newRow("BMP: test32bfv4") << QString("test32bfv4.bmp") << false;;
+    QTest::newRow("BMP: test32bfv4") << QString("test32bfv4.bmp") << false;
     QTest::newRow("BMP: test32v5") << QString("test32v5.bmp") << false;
     QTest::newRow("XPM: marble") << QString("marble.xpm") << false;
     QTest::newRow("PNG: kollada") << QString("kollada.png") << false;

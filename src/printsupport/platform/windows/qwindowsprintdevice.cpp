@@ -328,7 +328,7 @@ void QWindowsPrintDevice::loadInputSlots() const
 
 QPrint::InputSlot QWindowsPrintDevice::defaultInputSlot() const
 {
-    QPrint::InputSlot inputSlot = QPlatformPrintDevice::defaultInputSlot();;
+    QPrint::InputSlot inputSlot = QPlatformPrintDevice::defaultInputSlot();
 
     if (LPDEVMODE pDevMode = getDevmode(m_hPrinter, m_id)) {
         // Get the default input slot

@@ -131,7 +131,7 @@ public:
     }
     static QTimeZone fromSecondsAheadOfUtc(int offset)
     {
-        return fromDurationAheadOfUtc(std::chrono::seconds{offset});;
+        return fromDurationAheadOfUtc(std::chrono::seconds{offset});
     }
     constexpr Qt::TimeSpec timeSpec() const noexcept { return d.s.spec(); }
     constexpr int fixedSecondsAheadOfUtc() const noexcept

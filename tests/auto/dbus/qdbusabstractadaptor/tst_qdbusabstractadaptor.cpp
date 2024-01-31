@@ -1254,7 +1254,7 @@ void tst_QDBusAbstractAdaptor::sameObjectDifferentPathsPeer()
 
 void tst_QDBusAbstractAdaptor::scriptableSignalOrNotPeer()
 {
-    QDBusConnection con("peer");;
+    QDBusConnection con("peer");
     QVERIFY(con.isConnected());
 
     {

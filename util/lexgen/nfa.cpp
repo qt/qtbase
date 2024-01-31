@@ -457,7 +457,7 @@ DFA DFA::minimize() const
             }
 
     /*
-    qDebug() << "states to eliminiate:" << statesToEliminate.count();;
+    qDebug() << "states to eliminiate:" << statesToEliminate.count();
     qDebug() << "merging" << statesToEliminate;
     debug();
     */

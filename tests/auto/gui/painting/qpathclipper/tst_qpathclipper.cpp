@@ -776,7 +776,7 @@ void tst_QPathClipper::testIntersections7()
 void tst_QPathClipper::testIntersections8()
 {
     QPainterPath path1 = Paths::node() * QTransform().translate(100, 50);
-    QPainterPath path2 = Paths::node() * QTransform().translate(150, 50);;
+    QPainterPath path2 = Paths::node() * QTransform().translate(150, 50);
 
     QVERIFY(path1.intersects(path2));
     QVERIFY(path2.intersects(path1));
@@ -824,7 +824,7 @@ void tst_QPathClipper::testIntersections9()
     QVERIFY(path1.intersects(path2));
     QVERIFY(path2.intersects(path1));
 
-    path1 = QPainterPath();;
+    path1 = QPainterPath();
     path2 = QPainterPath();
 
     path1.addRect(QRectF(-1,191, 136, 106));
@@ -832,7 +832,7 @@ void tst_QPathClipper::testIntersections9()
     QVERIFY(path1.intersects(path2));
     QVERIFY(path2.intersects(path1));
 
-    path1 = QPainterPath();;
+    path1 = QPainterPath();
     path2 = QPainterPath();
 
     path1.moveTo(-1 ,  143);

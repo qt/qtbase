@@ -898,7 +898,7 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
     }
 
     // Now for each transition time calculate and store our rule:
-    const int tranCount = tranList.size();;
+    const int tranCount = tranList.size();
     ret.m_tranTimes.reserve(tranCount);
     // The DST offset when in effect: usually stable, usually an hour:
     int lastDstOff = 3600;

@@ -184,7 +184,7 @@ void QNetworkAccessDebugPipeBackend::possiblyFinish()
 
 void QNetworkAccessDebugPipeBackend::close()
 {
-    qWarning("QNetworkAccessDebugPipeBackend::closeDownstreamChannel() %d",operation());;
+    qWarning("QNetworkAccessDebugPipeBackend::closeDownstreamChannel() %d",operation());
     //if (operation() == QNetworkAccessManager::GetOperation)
     //    socket.disconnectFromHost();
 }

@@ -5553,7 +5553,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             const auto cw = QMacStylePrivate::CocoaControl(ct, cs);
             auto *cc = static_cast<NSControl *>(d->cocoaControl(cw));
             cc.enabled = isEnabled;
-            QRectF frameRect = cw.adjustedControlFrame(combo->rect);;
+            QRectF frameRect = cw.adjustedControlFrame(combo->rect);
             if (cw.type == QMacStylePrivate::Button_PopupButton) {
                 // Non-editable QComboBox
                 auto *pb = static_cast<NSPopUpButton *>(cc);
@@ -5982,7 +5982,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 qreal controlsSpacing = lastButtonRect.right() + titleBarButtonSpacing;
                 if (!titlebar->icon.isNull()) {
                     const auto iconSize = proxy()->pixelMetric(PM_SmallIconSize);
-                    const auto actualIconSize = titlebar->icon.actualSize(QSize(iconSize, iconSize)).width();;
+                    const auto actualIconSize = titlebar->icon.actualSize(QSize(iconSize, iconSize)).width();
                     controlsSpacing += actualIconSize + titleBarIconTitleSpacing;
                 }
 

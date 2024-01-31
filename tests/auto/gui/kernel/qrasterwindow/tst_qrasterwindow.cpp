@@ -45,7 +45,7 @@ void tst_QRasterWindow::basic()
     w.reset();
     w.resize(400, 400);
     w.show();
-    QVERIFY(QTest::qWaitForWindowExposed(&w));;
+    QVERIFY(QTest::qWaitForWindowExposed(&w));
 
     QVERIFY(w.paintCount >= 1);
 

@@ -204,7 +204,7 @@ QPlatformPixmap *QXcbIntegration::createPlatformPixmap(QPlatformPixmap::PixelTyp
 QPlatformWindow *QXcbIntegration::createPlatformWindow(QWindow *window) const
 {
     QXcbGlIntegration *glIntegration = nullptr;
-    const bool isTrayIconWindow = QXcbWindow::isTrayIconWindow(window);;
+    const bool isTrayIconWindow = QXcbWindow::isTrayIconWindow(window);
     if (window->type() != Qt::Desktop && !isTrayIconWindow) {
         if (window->supportsOpenGL()) {
             glIntegration = connection()->glIntegration();

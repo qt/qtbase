@@ -699,7 +699,7 @@ static QLibraryScanResult scanSections(QByteArrayView data, const ErrorMaker &er
         // sections aren't allowed to extend past the end of the file, unless
         // they are NOBITS sections
         if (shdr->sh_type == SHT_NOBITS)
-            continue;;
+            continue;
         if (T::Off end; qAddOverflow(shdr->sh_offset, shdr->sh_size, &end)
                 || end > size_t(data.size())) {
             return error(QLibrary::tr("section contents extend past the end of the file"));

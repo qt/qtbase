@@ -226,7 +226,7 @@ void tst_QtConcurrentMap::map()
 #if 0
     // not allowed: map() on a const list, where functors try to modify the items in the list
     {
-        const QList<int> list = QList<int>() << 1 << 2 << 3;;
+        const QList<int> list = QList<int>() << 1 << 2 << 3;
 
         QtConcurrent::map(list, MultiplyBy2InPlace());
         QtConcurrent::map(list, multiplyBy2InPlace);
@@ -363,7 +363,7 @@ void tst_QtConcurrentMap::blockingMap()
 #if 0
     // not allowed: map() on a const list, where functors try to modify the items in the list
     {
-        const QList<int> list = QList<int>() << 1 << 2 << 3;;
+        const QList<int> list = QList<int>() << 1 << 2 << 3;
 
         QtConcurrent::blockingMap(list, MultiplyBy2InPlace());
         QtConcurrent::blockingMap(list, multiplyBy2InPlace);

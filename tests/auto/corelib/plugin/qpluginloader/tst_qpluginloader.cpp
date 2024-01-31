@@ -474,7 +474,7 @@ static void loadCorruptElfCommonRows()
         memcpy(h, &o, sizeof(o));
     });
     newRow("invalid-word-size", "file is for a different word size", [](H h) {
-        h->e_ident[EI_CLASS] = ELFCLASSNONE;;
+        h->e_ident[EI_CLASS] = ELFCLASSNONE;
     });
     newRow("unknown-word-size", "file is for a different word size", [](H h) {
         h->e_ident[EI_CLASS] |= 0x40;

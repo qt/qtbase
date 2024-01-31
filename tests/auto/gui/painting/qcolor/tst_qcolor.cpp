@@ -73,7 +73,7 @@ private slots:
     void toCmykNonDestructive();
 
     void toHsl_data();
-    void toHsl();;
+    void toHsl();
     void toHslNonDestructive();
 
     void convertTo();

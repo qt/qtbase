@@ -1504,7 +1504,7 @@ void tst_QTreeWidget::keyboardNavigation()
             if (testWidget->currentItem() != item) {
                 QCOMPARE(testWidget->currentItem(), item->parent());
                 item = testWidget->currentItem();
-                row = item->parent() ? item->parent()->indexOfChild(item) : testWidget->indexOfTopLevelItem(item);;
+                row = item->parent() ? item->parent()->indexOfChild(item) : testWidget->indexOfTopLevelItem(item);
             }
             break;
         case Qt::Key_Right:

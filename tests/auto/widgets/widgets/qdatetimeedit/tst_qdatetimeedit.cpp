@@ -3801,7 +3801,7 @@ void tst_QDateTimeEdit::deleteCalendarWidget()
         QVERIFY(!edit.calendarWidget());
         edit.setCalendarPopup(true);
         QVERIFY(edit.calendarWidget());
-        edit.calendarWidget()->setObjectName("cw1");;
+        edit.calendarWidget()->setObjectName("cw1");
 
         // delete
         delete edit.calendarWidget();

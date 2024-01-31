@@ -956,7 +956,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
                         m_text.insert(offset, QString(missingZeroes, u'0'));
                         ++(const_cast<QDateTimeParser*>(this)->sectionNodes[sectionIndex].zeroesAdded);
                     } else {
-                        result = ParsedSection(Intermediate, lastVal, used);;
+                        result = ParsedSection(Intermediate, lastVal, used);
                     }
                 } else {
                     result = ParsedSection(Acceptable, lastVal, used);

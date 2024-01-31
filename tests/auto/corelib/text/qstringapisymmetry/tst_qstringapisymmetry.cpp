@@ -3206,7 +3206,7 @@ void tst_QStringApiSymmetry::contains_data(bool rhsHasVariableLength)
         QTest::addRow("haystack: null, needle: empty") << null << QLatin1String()
                                      << empty << QLatin1String("") << true << true;
         QTest::addRow("haystack: a, needle: empty") << a << QLatin1String("a")
-                                     << empty << QLatin1String("") << true << true;;
+                                     << empty << QLatin1String("") << true << true;
         QTest::addRow("haystack: empty, needle: empty") << empty << QLatin1String("")
                                      << empty << QLatin1String("") << true << true;
     }

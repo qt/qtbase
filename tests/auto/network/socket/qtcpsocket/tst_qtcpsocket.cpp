@@ -2583,7 +2583,7 @@ void tst_QTcpSocket::moveToThread0()
 
     {
         // Case 1: Moved after connecting, before waiting for connection.
-        QTcpSocket *socket = newSocket();;
+        QTcpSocket *socket = newSocket();
         socket->connectToHost(QtNetworkSettings::imapServerName(), 143);
         socket->moveToThread(0);
         QVERIFY(socket->waitForConnected(5000));

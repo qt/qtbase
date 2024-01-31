@@ -3376,7 +3376,7 @@ void tst_QGraphicsItem::childrenBoundingRect()
     childChild->setPos(500, 500);
     child->setTransform(QTransform().rotate(90), true);
 
-    scene.addPolygon(parent->mapToScene(parent->boundingRect() | parent->childrenBoundingRect()))->setPen(QPen(Qt::red));;
+    scene.addPolygon(parent->mapToScene(parent->boundingRect() | parent->childrenBoundingRect()))->setPen(QPen(Qt::red));
 
     QGraphicsView view(&scene);
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));

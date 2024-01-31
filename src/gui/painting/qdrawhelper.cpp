@@ -3656,7 +3656,7 @@ static inline Operator getOperator(const QSpanData *data, const QT_FT_Span *span
         solidSource = !data->texture.hasAlpha;
         op.srcFetch = getSourceFetch(getBlendType(data), data->texture.format);
 #if QT_CONFIG(raster_64bit)
-        op.srcFetch64 = getSourceFetch64(getBlendType(data), data->texture.format);;
+        op.srcFetch64 = getSourceFetch64(getBlendType(data), data->texture.format);
 #endif
 #if QT_CONFIG(raster_fp)
         op.srcFetchFP = getSourceFetchFP(getBlendType(data), data->texture.format);

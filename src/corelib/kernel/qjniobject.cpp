@@ -1357,7 +1357,7 @@ bool QJniObject::isClassAvailable(const char *className)
     if (!env.jniEnv())
         return false;
 
-    return loadClass(className, env.jniEnv());;
+    return loadClass(className, env.jniEnv());
 }
 
 /*!

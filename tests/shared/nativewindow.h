@@ -35,7 +35,7 @@ public:
 #elif QT_CONFIG(xcb)
     using Handle = xcb_window_t;
 #elif defined(ANDROID)
-    using Handle = QtJniTypes::View;;
+    using Handle = QtJniTypes::View;
 #endif
 
     NativeWindow();

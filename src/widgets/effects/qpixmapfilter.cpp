@@ -363,7 +363,7 @@ static void convolute(
                         (((cr*(255-a) >> 8)+r) << 16)+
                         (((cg*(255-a) >> 8)+g) << 8)+
                         (((cb*(255-a) >> 8)+b));
-                *output++ = color;;
+                *output++ = color;
             }
             xk++;
         }

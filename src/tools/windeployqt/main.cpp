@@ -1462,7 +1462,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
                     if (optVerboseLevel > 1)
                         std::wcout << "Adding ICU version " << icuVersion << '\n';
                     QString icuLib = QStringLiteral("icudt") + icuVersion
-                            + QLatin1StringView(windowsSharedLibrarySuffix);;
+                            + QLatin1StringView(windowsSharedLibrarySuffix);
                     // Some packages contain debug dlls of ICU libraries even though it's a C
                     // library and the official packages do not differentiate (QTBUG-87677)
                     if (result.isDebug) {
