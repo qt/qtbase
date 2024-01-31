@@ -689,14 +689,17 @@ void tst_QFileSystemModel::showFilesOnly()
     const auto subdir = u"sub_directory"_s;
     QVERIFY(createFiles(&model, tmp, files, 0, {subdir}));
 
+    // The model changes asynchronously when we run the event loop in the QTRY_...
+    // macros, so the root index returned by an earlier call to setRootPath might
+    // become invalid. Make sure we use a fresh one for each iteration.
+
     // QTBUG-74471
     // WHAT: setting the root path of the model to a dir with some files and a subdir
-    QModelIndex root = model.setRootPath(tmp);
-    QTRY_COMPARE(model.rowCount(root), files.size() + 1);
+    QTRY_COMPARE(model.rowCount(model.setRootPath(tmp)), files.size() + 1);
 
     // Change the model to only show files
     model.setFilter(QDir::Files);
-    QTRY_COMPARE(model.rowCount(root), files.size());
+    QTRY_COMPARE(model.rowCount(model.setRootPath(tmp)), files.size());
 
     // WHEN: setting the root path to a subdir
     QModelIndex subIndex = model.setRootPath(tmp + u'/' + subdir);
@@ -704,9 +707,9 @@ void tst_QFileSystemModel::showFilesOnly()
 
     // THEN: setting the root path to the previous (parent) dir, the model should
     // still only show files.
-    root = model.setRootPath(tmp);
     // Doubling the default timeout (5s) as this test to fails on macos on the CI
-    QTRY_COMPARE_WITH_TIMEOUT(model.rowCount(root), files.size(), (10s).count());
+    QTRY_COMPARE_WITH_TIMEOUT(model.rowCount(model.setRootPath(tmp)), files.size(),
+                              (10000ms).count());
 }
 
 void tst_QFileSystemModel::nameFilters()
