@@ -39,7 +39,7 @@ class QtInputDelegate {
     public static native void handleLocationChanged(int id, int x, int y);
     // handle methods
 
-    private final QtEditText m_editText;
+    private QtEditText m_currentEditText = null;
     private final InputMethodManager m_imm;
 
     private boolean m_keyboardIsVisible = false;
@@ -108,13 +108,13 @@ class QtInputDelegate {
     }
 
     private final KeyboardVisibilityListener m_keyboardVisibilityListener;
+    private final QtInputConnectionListener m_inputConnectionListener;
 
     QtInputDelegate(Activity activity, KeyboardVisibilityListener listener)
     {
         this.m_keyboardVisibilityListener = listener;
-        m_editText = new QtEditText(activity);
         m_imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-        QtInputConnectionListener inputConnectionListener = new QtInputConnectionListener() {
+        m_inputConnectionListener = new QtInputConnectionListener() {
             @Override
             public void onSetClosing(boolean closing) {
                 if (!closing)
@@ -131,7 +131,6 @@ class QtInputDelegate {
                 hideSoftwareKeyboard();
             }
         };
-        m_editText.setQtInputConnectionListener(inputConnectionListener);
     }
 
     public boolean isKeyboardVisible()
@@ -151,9 +150,9 @@ class QtInputDelegate {
         m_softInputMode = inputMode;
     }
 
-    QtEditText getQtEditText()
+    QtEditText getCurrentQtEditText()
     {
-        return m_editText;
+        return m_currentEditText;
     }
 
     void setEditPopupMenu(EditPopupMenu editPopupMenu)
@@ -187,12 +186,20 @@ class QtInputDelegate {
     @UsedFromNativeCode
     public void resetSoftwareKeyboard()
     {
-        if (m_imm == null)
+        if (m_imm == null || m_currentEditText == null)
             return;
-        m_editText.postDelayed(() -> {
-            m_imm.restartInput(m_editText);
-            m_editText.m_optionsChanged = false;
+        m_currentEditText.postDelayed(() -> {
+            m_imm.restartInput(m_currentEditText);
+            m_currentEditText.m_optionsChanged = false;
         }, 5);
+    }
+
+    void setFocusedView(QtEditText currentEditText)
+    {
+        m_currentEditText = currentEditText;
+        // TODO rather set the listener when creating the edit text
+        if (m_currentEditText != null)
+            m_currentEditText.setQtInputConnectionListener(m_inputConnectionListener);
     }
 
     public void showSoftwareKeyboard(Activity activity, QtLayout layout,
@@ -200,21 +207,17 @@ class QtInputDelegate {
                                      final int inputHints, final int enterKeyType)
     {
         QtNative.runAction(() -> {
-            if (m_imm == null)
+            if (m_imm == null || m_currentEditText == null)
                 return;
 
             if (updateSoftInputMode(activity, height))
                 return;
 
             setEditTextOptions(enterKeyType, inputHints);
+            m_currentEditText.requestFocus();
 
-            // TODO: The editText is added to the QtLayout, but is it ever removed?
-            QtLayout.LayoutParams layoutParams = new QtLayout.LayoutParams(width, height, x, y);
-            layout.setLayoutParams(m_editText, layoutParams, false);
-            m_editText.requestFocus();
-
-            m_editText.postDelayed(() -> {
-                m_imm.showSoftInput(m_editText, 0, new ResultReceiver(new Handler()) {
+            m_currentEditText.postDelayed(() -> {
+                m_imm.showSoftInput(m_currentEditText, 0, new ResultReceiver(new Handler()) {
                     @Override
                     protected void onReceiveResult(int resultCode, Bundle resultData) {
                         switch (resultCode) {
@@ -235,9 +238,9 @@ class QtInputDelegate {
                         }
                     }
                 });
-                if (m_editText.m_optionsChanged) {
-                    m_imm.restartInput(m_editText);
-                    m_editText.m_optionsChanged = false;
+                if (m_currentEditText.m_optionsChanged) {
+                    m_imm.restartInput(m_currentEditText);
+                    m_currentEditText.m_optionsChanged = false;
                 }
             }, 15);
         });
@@ -304,9 +307,9 @@ class QtInputDelegate {
         if (enterKeyType == 0 && (inputHints & ImhMultiLine) != 0)
             imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION;
 
-        m_editText.setInitialCapsMode(initialCapsMode);
-        m_editText.setImeOptions(imeOptions);
-        m_editText.setInputType(inputType);
+        m_currentEditText.setInitialCapsMode(initialCapsMode);
+        m_currentEditText.setImeOptions(imeOptions);
+        m_currentEditText.setInputType(inputType);
     }
 
     private boolean isDisablePredictiveTextWorkaround(int inputHints)
@@ -418,10 +421,10 @@ class QtInputDelegate {
     {
         m_isKeyboardHidingAnimationOngoing = true;
         QtNative.runAction(() -> {
-            if (m_imm == null)
+            if (m_imm == null || m_currentEditText == null)
                 return;
 
-            m_imm.hideSoftInputFromWindow(m_editText.getWindowToken(), 0,
+            m_imm.hideSoftInputFromWindow(m_currentEditText.getWindowToken(), 0,
                     new ResultReceiver(new Handler()) {
                 @Override
                 protected void onReceiveResult(int resultCode, Bundle resultData) {
@@ -448,7 +451,7 @@ class QtInputDelegate {
             if (m_imm == null)
                 return;
 
-            m_imm.updateSelection(m_editText, selStart, selEnd, candidatesStart, candidatesEnd);
+            m_imm.updateSelection(m_currentEditText, selStart, selEnd, candidatesStart, candidatesEnd);
         });
     }
 

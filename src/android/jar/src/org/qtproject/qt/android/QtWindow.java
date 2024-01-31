@@ -21,6 +21,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     private HashMap<Integer, QtWindow> m_childWindows = new HashMap<Integer, QtWindow>();
     private QtWindow m_parentWindow;
     private GestureDetector m_gestureDetector;
+    private final QtEditText m_editText;
 
     private static native void setSurface(int windowId, Surface surface);
 
@@ -28,6 +29,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     {
         super(context);
         setId(View.generateViewId());
+        m_editText = new QtEditText(context);
         setParent(parentWindow);
 
         QtNative.runAction(() -> {
@@ -39,6 +41,13 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
                 });
             m_gestureDetector.setIsLongpressEnabled(true);
         });
+    }
+
+    // TODO this is a temporary workaround to be able to set the input delegate current edit text,
+    // the next two patches make this redundant
+    QtEditText getQtEditText()
+    {
+        return m_editText;
     }
 
     void setVisible(boolean visible) {
@@ -106,6 +115,8 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
             // The surface container of this window will be added as the first of the stack.
             // All other views are stacked based on the order they are created.
             addView(m_surfaceContainer, 0);
+            addView(m_editText, new QtLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                          ViewGroup.LayoutParams.MATCH_PARENT));
         });
     }
 
