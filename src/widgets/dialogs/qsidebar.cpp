@@ -364,9 +364,11 @@ void QSidebar::setModelAndUrls(QFileSystemModel *model, const QList<QUrl> &newUr
 #if QT_CONFIG(draganddrop)
     setDragDropMode(QAbstractItemView::DragDrop);
 #endif
+#if QT_CONFIG(menu)
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, &QSidebar::customContextMenuRequested,
             this, &QSidebar::showContextMenu);
+#endif
     urlModel->setUrls(newUrls);
     setCurrentIndex(this->model()->index(0,0));
 }
