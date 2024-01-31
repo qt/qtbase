@@ -2,6 +2,8 @@
 cmake_minimum_required(VERSION 3.16...3.22)
 project(MyThings)
 
+# The following CMAKE_INSTALL_*DIR variables are used to initialize their
+# QT_DEPLOY_*_DIR counterparts.
 set(CMAKE_INSTALL_BINDIR "mybindir")
 set(CMAKE_INSTALL_LIBDIR "mylibdir")
 set(CMAKE_INSTALL_LIBEXECDIR "mylibexecdir")
