@@ -1977,7 +1977,7 @@ void tst_QJniObject::callback()
         QVERIFY(TestClass::registerNativeMethods({
             Q_JNI_NATIVE_METHOD(callbackWithByte)
         }));
-        result = testObject.callMethod<int>("callbackWithByte", jbyte(123));
+        result = testObject.callMethod<int>("callMeBackWithByte", jbyte(123));
         QVERIFY(calledWithByte);
         QCOMPARE(calledWithByte.value(), 123);
         break;
@@ -1985,7 +1985,7 @@ void tst_QJniObject::callback()
         QVERIFY(TestClass::registerNativeMethods({
             Q_JNI_NATIVE_METHOD(callbackWithBoolean)
         }));
-        result = testObject.callMethod<int>("callbackWithBoolean", true);
+        result = testObject.callMethod<int>("callMeBackWithBoolean", true);
         QVERIFY(calledWithBoolean);
         QCOMPARE(calledWithBoolean.value(), true);
         break;
@@ -1993,7 +1993,7 @@ void tst_QJniObject::callback()
         QVERIFY(TestClass::registerNativeMethods({
             Q_JNI_NATIVE_METHOD(callbackWithInt)
         }));
-        result = testObject.callMethod<int>("callbackWithInt", 12345);
+        result = testObject.callMethod<int>("callMeBackWithInt", 12345);
         QVERIFY(calledWithInt);
         QCOMPARE(calledWithInt.value(), 12345);
         break;
@@ -2001,7 +2001,7 @@ void tst_QJniObject::callback()
         QVERIFY(TestClass::registerNativeMethods({
             Q_JNI_NATIVE_METHOD(callbackWithDouble)
         }));
-        result = testObject.callMethod<int>("callbackWithDouble", 1.2345);
+        result = testObject.callMethod<int>("callMeBackWithDouble", 1.2345);
         QVERIFY(calledWithDouble);
         QCOMPARE(calledWithDouble.value(), 1.2345);
         break;
