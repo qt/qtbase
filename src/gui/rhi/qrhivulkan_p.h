@@ -840,8 +840,11 @@ public:
     QVulkanDeviceFunctions *df = nullptr;
     QRhi::Flags rhiFlags;
     VkPhysicalDeviceFeatures physDevFeatures;
+#ifdef VK_VERSION_1_1
+    VkPhysicalDeviceMultiviewFeatures multiviewFeaturesIfApi11;
+#endif
 #ifdef VK_VERSION_1_2
-    VkPhysicalDeviceVulkan11Features physDevFeatures11;
+    VkPhysicalDeviceVulkan11Features physDevFeatures11IfApi12OrNewer;
     VkPhysicalDeviceVulkan12Features physDevFeatures12;
 #endif
 #ifdef VK_VERSION_1_3

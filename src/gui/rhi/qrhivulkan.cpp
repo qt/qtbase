@@ -529,30 +529,64 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     driverInfoStruct.vendorId = physDevProperties.vendorID;
     driverInfoStruct.deviceType = toRhiDeviceType(physDevProperties.deviceType);
 
-#ifdef VK_VERSION_1_2 // Vulkan11Features is only in Vulkan 1.2
+    bool featuresQueried = false;
+#ifdef VK_VERSION_1_1
     VkPhysicalDeviceFeatures2 physDevFeaturesChainable = {};
     physDevFeaturesChainable.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-    physDevFeatures11 = {};
-    physDevFeatures11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
-    physDevFeatures12 = {};
-    physDevFeatures12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
-#ifdef VK_VERSION_1_3
-    physDevFeatures13 = {};
-    physDevFeatures13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
 #endif
-    if (caps.apiVersion >= QVersionNumber(1, 2)) {
-        physDevFeaturesChainable.pNext = &physDevFeatures11;
-        physDevFeatures11.pNext = &physDevFeatures12;
+
+    // Vulkan >=1.2 headers at build time, >=1.2 implementation at run time
+#ifdef VK_VERSION_1_2
+    if (!featuresQueried) {
+        // Vulkan11Features, Vulkan12Features, etc. are only in Vulkan 1.2 and newer.
+        if (caps.apiVersion >= QVersionNumber(1, 2)) {
+            physDevFeatures11IfApi12OrNewer = {};
+            physDevFeatures11IfApi12OrNewer.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+            physDevFeatures12 = {};
+            physDevFeatures12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
 #ifdef VK_VERSION_1_3
-        if (caps.apiVersion >= QVersionNumber(1, 3))
-            physDevFeatures12.pNext = &physDevFeatures13;
+            physDevFeatures13 = {};
+            physDevFeatures13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
 #endif
-        f->vkGetPhysicalDeviceFeatures2(physDev, &physDevFeaturesChainable);
-        memcpy(&physDevFeatures, &physDevFeaturesChainable.features, sizeof(VkPhysicalDeviceFeatures));
-    } else
+            physDevFeaturesChainable.pNext = &physDevFeatures11IfApi12OrNewer;
+            physDevFeatures11IfApi12OrNewer.pNext = &physDevFeatures12;
+#ifdef VK_VERSION_1_3
+            if (caps.apiVersion >= QVersionNumber(1, 3))
+                physDevFeatures12.pNext = &physDevFeatures13;
+#endif
+            f->vkGetPhysicalDeviceFeatures2(physDev, &physDevFeaturesChainable);
+            memcpy(&physDevFeatures, &physDevFeaturesChainable.features, sizeof(VkPhysicalDeviceFeatures));
+            featuresQueried = true;
+        }
+    }
 #endif // VK_VERSION_1_2
-    {
+
+    // Vulkan >=1.1 headers at build time, 1.1 implementation at run time
+#ifdef VK_VERSION_1_1
+    if (!featuresQueried) {
+        // Vulkan versioning nightmares: if the runtime API version is 1.1,
+        // there is no Vulkan11Features (introduced in 1.2+, the headers might
+        // have the types and structs, but the Vulkan implementation version at
+        // run time is what matters). But there are individual feature structs.
+        // For multiview, it is important to get this right since at the time of
+        // writing Quest 3 Android is a Vulkan 1.1 implementation at run time on
+        // the headset.
+        if (caps.apiVersion == QVersionNumber(1, 1)) {
+            multiviewFeaturesIfApi11 = {};
+            multiviewFeaturesIfApi11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+            physDevFeaturesChainable.pNext = &multiviewFeaturesIfApi11;
+            f->vkGetPhysicalDeviceFeatures2(physDev, &physDevFeaturesChainable);
+            memcpy(&physDevFeatures, &physDevFeaturesChainable.features, sizeof(VkPhysicalDeviceFeatures));
+            featuresQueried = true;
+        }
+    }
+#endif
+
+    if (!featuresQueried) {
+        // If the API version at run time is 1.0 (or we are building with
+        // ancient 1.0 headers), then do the Vulkan 1.0 query.
         f->vkGetPhysicalDeviceFeatures(physDev, &physDevFeatures);
+        featuresQueried = true;
     }
 
     // Choose queue and create device, unless the device was specified in importParams.
@@ -686,15 +720,24 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         // tessellationShader, geometryShader
         // textureCompressionETC2, textureCompressionASTC_LDR, textureCompressionBC
 
-#ifdef VK_VERSION_1_2
-        if (caps.apiVersion >= QVersionNumber(1, 2)) {
-            physDevFeaturesChainable.features.robustBufferAccess = VK_FALSE;
-#ifdef VK_VERSION_1_3
-            physDevFeatures13.robustImageAccess = VK_FALSE;
+#ifdef VK_VERSION_1_1
+        physDevFeaturesChainable.features.robustBufferAccess = VK_FALSE;
 #endif
+#ifdef VK_VERSION_1_3
+        physDevFeatures13.robustImageAccess = VK_FALSE;
+#endif
+
+#ifdef VK_VERSION_1_1
+        if (caps.apiVersion >= QVersionNumber(1, 1)) {
+            // For a >=1.2 implementation at run time, this will enable all
+            // (1.0-1.3) features reported as supported, except the ones we turn
+            // off explicitly above. For a 1.1 implementation at run time, this
+            // only enables the 1.0 and multiview features reported as
+            // supported. We will not be bothering with the Vulkan 1.1
+            // individual feature struct nonsense.
             devInfo.pNext = &physDevFeaturesChainable;
         } else
-#endif // VK_VERSION_1_2
+#endif
         {
             physDevFeatures.robustBufferAccess = VK_FALSE;
             devInfo.pEnabledFeatures = &physDevFeatures;
@@ -755,7 +798,13 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     caps.nonFillPolygonMode = physDevFeatures.fillModeNonSolid;
 
 #ifdef VK_VERSION_1_2
-    caps.multiView = caps.apiVersion >= QVersionNumber(1, 1) && physDevFeatures11.multiview;
+    if (caps.apiVersion >= QVersionNumber(1, 2))
+        caps.multiView = physDevFeatures11IfApi12OrNewer.multiview;
+#endif
+
+#ifdef VK_VERSION_1_1
+    if (caps.apiVersion == QVersionNumber(1, 1))
+        caps.multiView = multiviewFeaturesIfApi11.multiview;
 #endif
 
     if (!importedAllocator) {
