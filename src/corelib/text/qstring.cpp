@@ -2680,6 +2680,24 @@ void QString::resize(qsizetype newSize, QChar fillChar)
         std::fill_n(d.data() + oldSize, difference, fillChar.unicode());
 }
 
+
+/*!
+    \since 6.8
+
+    Sets the size of the string to \a size characters. If the size of
+    the string grows, the new characters are uninitialized.
+
+    The behavior is identical to \c{resize(size)}.
+
+    \sa resize()
+*/
+
+void QString::resizeForOverwrite(qsizetype size)
+{
+    resize(size);
+}
+
+
 /*! \fn qsizetype QString::capacity() const
 
     Returns the maximum number of characters that can be stored in

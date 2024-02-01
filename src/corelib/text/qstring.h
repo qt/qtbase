@@ -190,6 +190,7 @@ public:
     inline bool isEmpty() const noexcept { return d.size == 0; }
     void resize(qsizetype size);
     void resize(qsizetype size, QChar fillChar);
+    void resizeForOverwrite(qsizetype size);
 
     QString &fill(QChar c, qsizetype size = -1);
     void truncate(qsizetype pos);

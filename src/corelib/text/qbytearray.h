@@ -105,6 +105,7 @@ public:
     bool isEmpty() const noexcept { return size() == 0; }
     void resize(qsizetype size);
     void resize(qsizetype size, char c);
+    void resizeForOverwrite(qsizetype size);
 
     QByteArray &fill(char c, qsizetype size = -1);
 

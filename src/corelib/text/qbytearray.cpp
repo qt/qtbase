@@ -1897,6 +1897,21 @@ void QByteArray::resize(qsizetype newSize, char c)
 }
 
 /*!
+    \since 6.8
+
+    Resizes the byte array to \a size bytes. If the size of the
+    byte array grows, the new bytes are uninitialized.
+
+    The behavior is identical to \c{resize(size)}.
+
+    \sa resize()
+*/
+void QByteArray::resizeForOverwrite(qsizetype size)
+{
+    resize(size);
+}
+
+/*!
     Sets every byte in the byte array to \a ch. If \a size is different from -1
     (the default), the byte array is resized to size \a size beforehand.
 
