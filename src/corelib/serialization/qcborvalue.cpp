@@ -922,14 +922,24 @@ QCborContainerPrivate::~QCborContainerPrivate()
     }
 }
 
-void QCborContainerPrivate::compact(qsizetype reserved)
+void QCborContainerPrivate::compact()
 {
     if (usedData > data.size() / 2)
         return;
 
     // 50% savings if we recreate the byte data
-    // ### TBD
-    Q_UNUSED(reserved);
+    QByteArray newData;
+    QByteArray::size_type newUsedData = 0;
+    // Compact only elements that have byte data.
+    // Nested containers will be compacted when their data changes.
+    for (auto &e : elements) {
+        if (e.flags & Element::HasByteData) {
+            if (const ByteData *b = byteData(e))
+                e.value = addByteDataImpl(newData, newUsedData, b->byte(), b->len);
+        }
+    }
+    data = newData;
+    usedData = newUsedData;
 }
 
 QCborContainerPrivate *QCborContainerPrivate::clone(QCborContainerPrivate *d, qsizetype reserved)
@@ -941,7 +951,7 @@ QCborContainerPrivate *QCborContainerPrivate::clone(QCborContainerPrivate *d, qs
         QExplicitlySharedDataPointer u(new QCborContainerPrivate(*d));
         if (reserved >= 0) {
             u->elements.reserve(reserved);
-            u->compact(reserved);
+            u->compact();
         }
 
         d = u.take();
@@ -1013,10 +1023,23 @@ void QCborContainerPrivate::replaceAt_complex(Element &e, const QCborValue &valu
 
         // Copy string data, if any
         if (const ByteData *b = value.container->byteData(value.n)) {
-            if (this == value.container)
-                e.value = addByteData(b->toByteArray(), b->len);
-            else
+            const auto flags = e.flags;
+            // The element e has an invalid e.value, because it is copied from
+            // value. It means that calling compact() will trigger an assertion
+            // or just silently corrupt the data.
+            // Temporarily unset the Element::HasByteData flag in order to skip
+            // the element e in the call to compact().
+            e.flags = e.flags & ~Element::HasByteData;
+            if (this == value.container) {
+                const QByteArray valueData = b->toByteArray();
+                compact();
+                e.value = addByteData(valueData, valueData.size());
+            } else {
+                compact();
                 e.value = addByteData(b->byte(), b->len);
+            }
+            // restore the flags
+            e.flags = flags;
         }
 
         if (disp == MoveContainer)
@@ -1053,7 +1076,7 @@ QCborValue QCborContainerPrivate::extractAt_complex(Element e)
         // make a shallow copy of the byte data
         container->appendByteData(b->byte(), b->len, e.type, e.flags);
         usedData -= b->len + qsizetype(sizeof(*b));
-        compact(elements.size());
+        compact();
     } else {
         // just share with the original byte data
         container->data = data;

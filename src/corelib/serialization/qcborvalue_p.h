@@ -103,18 +103,19 @@ public:
     QList<QtCbor::Element> elements;
 
     void deref() { if (!ref.deref()) delete this; }
-    void compact(qsizetype reserved);
+    void compact();
     static QCborContainerPrivate *clone(QCborContainerPrivate *d, qsizetype reserved = -1);
     static QCborContainerPrivate *detach(QCborContainerPrivate *d, qsizetype reserved);
     static QCborContainerPrivate *grow(QCborContainerPrivate *d, qsizetype index);
 
-    qptrdiff addByteData(const char *block, qsizetype len)
+    static qptrdiff addByteDataImpl(QByteArray &target, QByteArray::size_type &targetUsed,
+                                    const char *block, qsizetype len)
     {
         // This function does not do overflow checking, since the len parameter
         // is expected to be trusted. There's another version of this function
         // in decodeStringFromCbor(), which checks.
 
-        qptrdiff offset = data.size();
+        qptrdiff offset = target.size();
 
         // align offset
         offset += alignof(QtCbor::ByteData) - 1;
@@ -122,16 +123,21 @@ public:
 
         qptrdiff increment = qptrdiff(sizeof(QtCbor::ByteData)) + len;
 
-        usedData += increment;
-        data.resize(offset + increment);
+        targetUsed += increment;
+        target.resize(offset + increment);
 
-        char *ptr = data.begin() + offset;
+        char *ptr = target.begin() + offset;
         auto b = new (ptr) QtCbor::ByteData;
         b->len = len;
         if (block)
             memcpy(b->byte(), block, len);
 
         return offset;
+    }
+
+    qptrdiff addByteData(const char *block, qsizetype len)
+    {
+        return addByteDataImpl(data, usedData, block, len);
     }
 
     const QtCbor::ByteData *byteData(QtCbor::Element e) const
