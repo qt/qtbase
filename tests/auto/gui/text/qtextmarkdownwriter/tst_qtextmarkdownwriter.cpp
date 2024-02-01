@@ -533,7 +533,10 @@ void tst_QTextMarkdownWriter::frontMatter()
     document->setMetaInformation(QTextDocument::FrontMatter, "foo");
 
     const QString output = documentToUnixMarkdown();
-    QCOMPARE(output, "---\nfoo\n---\nbar\n\n");
+    const QString expectedOutput("---\nfoo\n---\nbar\n\n");
+    if (output != expectedOutput && isMainFontFixed())
+        QEXPECT_FAIL("", "fixed-pitch main font (QTBUG-103484)", Continue);
+    QCOMPARE(output, expectedOutput);
 }
 
 void tst_QTextMarkdownWriter::rewriteDocument_data()
