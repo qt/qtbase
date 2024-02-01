@@ -45,7 +45,7 @@ public:
         DontUseWMPointer = 0x400,
         DetectAltGrModifier = 0x800,
         RtlEnabled = 0x1000,
-        FontDatabaseDirectWrite = 0x2000
+        FontDatabaseGDI = 0x2000
     };
 
     explicit QWindowsIntegration(const QStringList &paramList);

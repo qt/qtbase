@@ -587,13 +587,10 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
             \c none disables them.
 
         \li \c {fontengine=freetype}, uses the FreeType font engine.
-        \li \c {fontengine=directwrite}, uses the experimental DirectWrite
-               font database and defaults to using the DirectWrite font
+        \li \c {fontengine=gdi}, uses the legacy GDI-based
+               font database and defaults to using the GDI font
                engine (which is otherwise only used for some font types
-               or font properties.) This affects font selection and aims
-               to provide font naming more consistent with other platforms,
-               but does not support all font formats, such as Postscript
-               Type-1 or Microsoft FNT fonts.
+               or font properties.) (Since Qt 6.8).
         \li \c {menus=[native|none]}, controls the use of native menus.
 
                Native menus are implemented using Win32 API and are simpler than
@@ -607,7 +604,8 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
         \li \c {nocolorfonts} Turn off DirectWrite Color fonts
                (since Qt 5.8).
 
-        \li \c {nodirectwrite} Turn off DirectWrite fonts (since Qt 5.8).
+        \li \c {nodirectwrite} Turn off DirectWrite fonts (since Qt 5.8). This implicitly
+               also selects the GDI font engine.
 
         \li \c {nomousefromtouch} Ignores mouse events synthesized
                from touch events by the operating system.
