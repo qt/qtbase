@@ -78,6 +78,7 @@ JPEG_SOURCES = \
     $$PWD/src/jerror.c \
     $$PWD/src/jfdctflt.c \
     $$PWD/src/jmemmgr.c \
-    $$PWD/src/jmemnobs.c
+    $$PWD/src/jmemnobs.c \
+    $$PWD/src/jpeg_nbits.c
 
 TR_EXCLUDE += $$PWD/*
