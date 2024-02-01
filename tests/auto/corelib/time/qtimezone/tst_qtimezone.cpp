@@ -753,9 +753,6 @@ void tst_QTimeZone::aliasMatches()
     QVERIFY(zone.aliasMatches(iana));
     QVERIFY(peer.aliasMatches(peer.id()));
     QVERIFY(peer.aliasMatches(alias));
-    QEXPECT_FAIL("Currie=Hobart", "Needs update to CLDR v44.1", Abort);
-    QEXPECT_FAIL("Uzhgorod=Kyiv", "Needs update to CLDR v44.1", Abort);
-    QEXPECT_FAIL("Zaporozhye=Kyiv", "Needs update to CLDR v44.1", Abort);
     QVERIFY(zone.aliasMatches(peer.id()));
     QVERIFY(zone.aliasMatches(alias));
     QVERIFY(peer.aliasMatches(zone.id()));
@@ -1035,7 +1032,7 @@ void tst_QTimeZone::windowsId()
     Current Windows zones for "Central Standard Time":
     Region      IANA Id(s)
     Default     "America/Chicago"
-    Canada      "America/Winnipeg America/Rainy_River America/Rankin_Inlet America/Resolute"
+    Canada      "America/Winnipeg America/Rankin_Inlet America/Resolute"
     Mexico      "America/Matamoros"
     USA         "America/Chicago America/Indiana/Knox America/Indiana/Tell_City America/Menominee"
                 "America/North_Dakota/Beulah America/North_Dakota/Center"
@@ -1067,8 +1064,8 @@ void tst_QTimeZone::windowsId()
             "America/Chicago", "America/Indiana/Knox", "America/Indiana/Tell_City",
             "America/Matamoros", "America/Menominee", "America/North_Dakota/Beulah",
             "America/North_Dakota/Center", "America/North_Dakota/New_Salem",
-            "America/Ojinaga", "America/Rainy_River", "America/Rankin_Inlet",
-            "America/Resolute", "America/Winnipeg", "CST6CDT"
+            "America/Ojinaga", "America/Rankin_Inlet", "America/Resolute",
+            "America/Winnipeg", "CST6CDT"
         };
         QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time"), list);
     }
@@ -1081,7 +1078,7 @@ void tst_QTimeZone::windowsId()
     {
         // Check valid country returns list in preference order
         const QList<QByteArray> list = {
-            "America/Winnipeg", "America/Rainy_River", "America/Rankin_Inlet", "America/Resolute"
+            "America/Winnipeg", "America/Rankin_Inlet", "America/Resolute"
         };
         QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::Canada), list);
     }
