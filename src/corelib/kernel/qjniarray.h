@@ -10,8 +10,9 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qjniobject.h>
 
+#include <iterator>
 #include <utility>
-#include <type_traits>
+#include <QtCore/q20type_traits.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -90,8 +91,9 @@ class QJniArrayBase
     // for SFINAE'ing out the fromContainer named constructor
     template <typename Container, typename = void> struct CanConvertHelper : std::false_type {};
     template <typename Container>
-    struct CanConvertHelper<Container, std::void_t<decltype(std::declval<Container>().data()),
-                                                   decltype(std::declval<Container>().size())
+    struct CanConvertHelper<Container, std::void_t<decltype(std::data(std::declval<Container>())),
+                                                   decltype(std::size(std::declval<Container>())),
+                                                   typename Container::value_type
                                               >
                            > : std::true_type {};
 
@@ -113,7 +115,7 @@ public:
     }
 
     template <typename Container>
-    static constexpr bool canConvert = CanConvertHelper<Container>::value;
+    static constexpr bool canConvert = CanConvertHelper<q20::remove_cvref_t<Container>>::value;
     template <typename Container>
     using IfCanConvert = std::enable_if_t<canConvert<Container>, bool>;
     template <typename Container
@@ -121,7 +123,7 @@ public:
     >
     static auto fromContainer(Container &&container)
     {
-        Q_ASSERT_X(size_t(container.size()) <= size_t((std::numeric_limits<size_type>::max)()),
+        Q_ASSERT_X(size_t(std::size(container)) <= size_t((std::numeric_limits<size_type>::max)()),
                    "QJniArray::fromContainer", "Container is too large for a Java array");
 
         using ElementType = typename std::remove_reference_t<Container>::value_type;
@@ -356,7 +358,7 @@ public:
 template <typename ElementType, typename List, typename NewFn, typename SetFn>
 auto QJniArrayBase::makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion)
 {
-    const size_type length = size_type(list.size());
+    const size_type length = size_type(std::size(list));
     JNIEnv *env = QJniEnvironment::getJniEnv();
     auto localArray = (env->*newArray)(length);
     if (QJniEnvironment::checkAndClearExceptions(env))
@@ -365,7 +367,7 @@ auto QJniArrayBase::makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion)
     // can't use static_cast here because we have signed/unsigned mismatches
     if (length) {
         (env->*setRegion)(localArray, 0, length,
-                          reinterpret_cast<const ElementType *>(std::as_const(list).data()));
+                          reinterpret_cast<const ElementType *>(std::data(std::as_const(list))));
     }
     return QJniArray<ElementType>(localArray);
 };
@@ -378,21 +380,21 @@ auto QJniArrayBase::makeObjectArray(List &&list)
                                     std::declval<ElementType>()))
                                 >;
 
-    if (list.isEmpty())
+    if (std::size(list) == 0)
         return ResultType();
 
     JNIEnv *env = QJniEnvironment::getJniEnv();
-    const size_type length = size_type(list.size());
+    const size_type length = size_type(std::size(list));
 
     // this assumes that all objects in the list have the same class
     jclass elementClass = nullptr;
     if constexpr (std::disjunction_v<std::is_same<ElementType, QJniObject>,
                                      std::is_base_of<QtJniTypes::JObjectBase, ElementType>>) {
-        elementClass = list.first().objectClass();
+        elementClass = std::begin(list)->objectClass();
     } else if constexpr (std::is_same_v<ElementType, QString>) {
         elementClass = env->FindClass("java/lang/String");
     } else {
-        elementClass = env->GetObjectClass(list.first());
+        elementClass = env->GetObjectClass(*std::begin(list));
     }
     auto localArray = env->NewObjectArray(length, elementClass, nullptr);
     if (QJniEnvironment::checkAndClearExceptions(env))
