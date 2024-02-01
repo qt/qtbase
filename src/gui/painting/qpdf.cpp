@@ -1658,7 +1658,6 @@ void QPdfEnginePrivate::writeColor(ColorDomain domain, const QColor &color)
 
     switch (actualColorModel) {
     case QPdfEngine::ColorModel::RGB:
-    case QPdfEngine::ColorModel::Grayscale:
         switch (domain) {
         case ColorDomain::Stroking:
             *currentPage << "/CSp CS\n"; break;
@@ -1666,6 +1665,16 @@ void QPdfEnginePrivate::writeColor(ColorDomain domain, const QColor &color)
             *currentPage << "/CSp cs\n"; break;
         case ColorDomain::NonStrokingPattern:
             *currentPage << "/PCSp cs\n"; break;
+        }
+        break;
+    case QPdfEngine::ColorModel::Grayscale:
+        switch (domain) {
+        case ColorDomain::Stroking:
+            *currentPage << "/CSpg CS\n"; break;
+        case ColorDomain::NonStroking:
+            *currentPage << "/CSpg cs\n"; break;
+        case ColorDomain::NonStrokingPattern:
+            *currentPage << "/PCSpg cs\n"; break;
         }
         break;
     case QPdfEngine::ColorModel::CMYK:
@@ -1694,7 +1703,7 @@ void QPdfEnginePrivate::writeColor(ColorDomain domain, const QColor &color)
         break;
     case QPdfEngine::ColorModel::Grayscale: {
         const qreal gray = qGray(color.rgba()) / 255.;
-        *currentPage << gray << gray << gray;
+        *currentPage << gray;
         break;
     }
     case QPdfEngine::ColorModel::CMYK:
@@ -2480,8 +2489,9 @@ void QPdfEnginePrivate::ShadingFunctionResult::writeColorSpace(QPdf::ByteStream 
     *stream << "/ColorSpace ";
     switch (colorModel) {
     case QPdfEngine::ColorModel::RGB:
-    case QPdfEngine::ColorModel::Grayscale:
         *stream << "/DeviceRGB\n"; break;
+    case QPdfEngine::ColorModel::Grayscale:
+        *stream << "/DeviceGray\n"; break;
     case QPdfEngine::ColorModel::CMYK:
         *stream << "/DeviceCMYK\n"; break;
     case QPdfEngine::ColorModel::Auto:
@@ -2548,12 +2558,13 @@ QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from, in
         } else {
             switch (result.colorModel) {
             case QPdfEngine::ColorModel::RGB:
-            case QPdfEngine::ColorModel::Grayscale:
-                // For backwards compatibility, Grayscale emits RGB colors
                 s << "/C0 [" << stops.at(i).second.redF() << stops.at(i).second.greenF() <<  stops.at(i).second.blueF() << "]\n"
                      "/C1 [" << stops.at(i + 1).second.redF() << stops.at(i + 1).second.greenF() <<  stops.at(i + 1).second.blueF() << "]\n";
                 break;
-
+            case QPdfEngine::ColorModel::Grayscale:
+                s << "/C0 [" << (qGray(stops.at(i).second.rgba()) / 255.) << "]\n"
+                     "/C1 [" << (qGray(stops.at(i + 1).second.rgba()) / 255.) << "]\n";
+                break;
             case QPdfEngine::ColorModel::CMYK:
                 s << "/C0 [" << stops.at(i).second.cyanF()
                              << stops.at(i).second.magentaF()
