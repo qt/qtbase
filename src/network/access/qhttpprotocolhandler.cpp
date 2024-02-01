@@ -93,7 +93,8 @@ void QHttpProtocolHandler::_q_receiveReply()
                 } else {
                     replyPrivate->autoDecompress = false;
                 }
-                if (m_reply->statusCode() == 100) {
+                const int statusCode = m_reply->statusCode();
+                if (statusCode == 100 || (102 <= statusCode && statusCode <= 199)) {
                     replyPrivate->clearHttpLayerInformation();
                     replyPrivate->state = QHttpNetworkReplyPrivate::ReadingStatusState;
                     break; // ignore

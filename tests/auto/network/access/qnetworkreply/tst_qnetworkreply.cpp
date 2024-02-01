@@ -322,8 +322,8 @@ private Q_SLOTS:
 #endif
     void ioGetFromHttpBrokenServer_data();
     void ioGetFromHttpBrokenServer();
-    void ioGetFromHttpStatus100_data();
-    void ioGetFromHttpStatus100();
+    void ioGetFromHttpStatusInformational_data();
+    void ioGetFromHttpStatusInformational();
     void ioGetFromHttpNoHeaders_data();
     void ioGetFromHttpNoHeaders();
     void ioGetFromHttpWithCache_data();
@@ -4280,7 +4280,7 @@ void tst_QNetworkReply::ioGetFromHttpBrokenServer()
     QVERIFY(reply->error() != QNetworkReply::NoError);
 }
 
-void tst_QNetworkReply::ioGetFromHttpStatus100_data()
+void tst_QNetworkReply::ioGetFromHttpStatusInformational_data()
 {
     QTest::addColumn<QByteArray>("dataToSend");
     QTest::addColumn<int>("statusCode");
@@ -4291,9 +4291,25 @@ void tst_QNetworkReply::ioGetFromHttpStatus100_data()
     QTest::newRow("minimal+404") << QByteArray("HTTP/1.1 100 Continue\n\nHTTP/1.0 204 No Content\r\n\r\n") << 204;
     QTest::newRow("with_headers") << QByteArray("HTTP/1.1 100 Continue\r\nBla: x\r\n\r\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n") << 200;
     QTest::newRow("with_headers2") << QByteArray("HTTP/1.1 100 Continue\nBla: x\n\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n") << 200;
+
+    QTest::newRow("normal-custom") << QByteArray("HTTP/1.1 133 Custom\r\n\r\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n") << 200;
+    QTest::newRow("minimal-custom") << QByteArray("HTTP/1.1 133 Custom\n\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n") << 200;
+    QTest::newRow("minimal2-custom") << QByteArray("HTTP/1.1 133 Custom\n\nHTTP/1.0 200 OK\r\n\r\n") << 200;
+    QTest::newRow("minimal3-custom") << QByteArray("HTTP/1.1 133 Custom\n\nHTTP/1.0 200 OK\n\n") << 200;
+    QTest::newRow("minimal+404-custom") << QByteArray("HTTP/1.1 133 Custom\n\nHTTP/1.0 204 No Content\r\n\r\n") << 204;
+    QTest::newRow("with_headers-custom") << QByteArray("HTTP/1.1 133 Custom\r\nBla: x\r\n\r\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n") << 200;
+    QTest::newRow("with_headers2-custom") << QByteArray("HTTP/1.1 133 Custom\nBla: x\n\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n") << 200;
+
+    QTest::newRow("normal-custom2") << QByteArray("HTTP/1.1 179 Custom2\r\n\r\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n") << 200;
+    QTest::newRow("minimal-custom2") << QByteArray("HTTP/1.1 179 Custom2\n\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n") << 200;
+    QTest::newRow("minimal2-custom2") << QByteArray("HTTP/1.1 179 Custom2\n\nHTTP/1.0 200 OK\r\n\r\n") << 200;
+    QTest::newRow("minimal3-custom2") << QByteArray("HTTP/1.1 179 Custom2\n\nHTTP/1.0 200 OK\n\n") << 200;
+    QTest::newRow("minimal+404-custom2") << QByteArray("HTTP/1.1 179 Custom2\n\nHTTP/1.0 204 No Content\r\n\r\n") << 204;
+    QTest::newRow("with_headers-custom2") << QByteArray("HTTP/1.1 179 Custom2\r\nBla: x\r\n\r\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n") << 200;
+    QTest::newRow("with_headers2-custom2") << QByteArray("HTTP/1.1 179 Custom2\nBla: x\n\nHTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n") << 200;
 }
 
-void tst_QNetworkReply::ioGetFromHttpStatus100()
+void tst_QNetworkReply::ioGetFromHttpStatusInformational()
 {
     QFETCH(QByteArray, dataToSend);
     QFETCH(int, statusCode);
