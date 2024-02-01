@@ -1073,13 +1073,13 @@ QDataStream &QDataStream::readBytes(char *&s, qint64 &l)
         return *this;
     }
 
-    constexpr qsizetype Step = 1024 * 1024;
+    qsizetype step = 1024 * 1024;
     qsizetype allocated = 0;
     char *prevBuf = nullptr;
     char *curBuf = nullptr;
 
     do {
-        qsizetype blockSize = qMin(Step, len - allocated);
+        qsizetype blockSize = qMin(step, len - allocated);
         prevBuf = curBuf;
         curBuf = new char[allocated + blockSize + 1];
         if (prevBuf) {
@@ -1091,6 +1091,7 @@ QDataStream &QDataStream::readBytes(char *&s, qint64 &l)
             return *this;
         }
         allocated += blockSize;
+        step *= 2;
     } while (allocated < len);
 
     s = curBuf;
