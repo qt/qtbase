@@ -226,6 +226,14 @@ public:
     {
     }
 
+    template <typename E = T
+        , IfCanConvert<std::initializer_list<E>> = true
+    >
+    Q_IMPLICIT inline QJniArray(std::initializer_list<T> list)
+        : QJniArrayBase(QJniArrayBase::fromContainer(list))
+    {
+    }
+
     template <typename Other, std::enable_if_t<std::is_convertible_v<Other, Type>, bool> = true>
     QJniArray(QJniArray<Other> &&other)
         : QJniArrayBase(std::forward<QJniArray<Other>>(other))

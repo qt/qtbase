@@ -1624,7 +1624,7 @@ void tst_QJniObject::templateApiCheck()
         QCOMPARE(array.size(), 3);
         QCOMPARE(array.toContainer(), (QList<jchar>{u'a', u'b', u'c'}));
 
-        QJniArray<jchar> newArray(QList<jchar>{u'c', u'b', u'a'});
+        QJniArray<jchar> newArray = {u'c', u'b', u'a'};
         QVERIFY(newArray.isValid());
         const auto reverse = TestClass::callStaticMethod<jchar[]>("staticReverseCharArray", newArray);
         QVERIFY(reverse.isValid());
@@ -1644,7 +1644,7 @@ void tst_QJniObject::templateApiCheck()
         QCOMPARE(array.size(), 3);
         QCOMPARE(array.toContainer(), (QList<jchar>{u'a', u'b', u'c'}));
 
-        QJniArray<jchar> newArray = QJniArrayBase::fromContainer(QList<jchar>{u'c', u'b', u'a'});
+        QJniArray<jchar> newArray = {u'c', u'b', u'a'};
         QVERIFY(newArray.isValid());
         const auto reverse = testClass.callMethod<jchar[]>("reverseCharArray", newArray);
         QVERIFY(reverse.isValid());
@@ -1662,7 +1662,7 @@ void tst_QJniObject::templateApiCheck()
         QCOMPARE(array.size(), 3);
         QCOMPARE(array.toContainer(), (QList<jshort>{3, 2, 1}));
 
-        QJniArray<jshort> newArray(QList<jshort>{3, 2, 1});
+        QJniArray<jshort> newArray = {3, 2, 1};
         QVERIFY(newArray.isValid());
         const auto reverse = TestClass::callStaticMethod<jshort[]>("staticReverseShortArray", newArray);
         QVERIFY(reverse.isValid());
@@ -1682,7 +1682,7 @@ void tst_QJniObject::templateApiCheck()
         QCOMPARE(array.size(), 3);
         QCOMPARE(array.toContainer(), (QList<jshort>{3, 2, 1}));
 
-        QJniArray<jshort> newArray = QJniArrayBase::fromContainer(QList<jshort>{3, 2, 1});
+        QJniArray<jshort> newArray = {3, 2, 1};
         static_assert(std::is_same_v<decltype(newArray)::Type, jshort>);
         QVERIFY(newArray.isValid());
         const auto reverse = testClass.callMethod<jshort[]>("reverseShortArray", newArray);
@@ -1701,7 +1701,7 @@ void tst_QJniObject::templateApiCheck()
         QCOMPARE(array.size(), 3);
         QCOMPARE(array.toContainer(), (QList<jint>{3, 2, 1}));
 
-        QJniArray<jint> newArray(QList<jint>{3, 2, 1});
+        QJniArray<jint> newArray = {3, 2, 1};
         QVERIFY(newArray.isValid());
         const auto reverse = TestClass::callStaticMethod<jint[]>("staticReverseIntArray", newArray);
         QVERIFY(reverse.isValid());
@@ -1717,7 +1717,7 @@ void tst_QJniObject::templateApiCheck()
         QCOMPARE(array.size(), 3);
         QCOMPARE(array.toContainer(), (QList<jint>{3, 2, 1}));
 
-        QJniArray<jint> newArray = QJniArrayBase::fromContainer(QList<jint>{3, 2, 1});
+        QJniArray<jint> newArray = {3, 2, 1};
         QVERIFY(newArray.isValid());
         const auto reverse = testClass.callMethod<jint[]>("reverseIntArray", newArray);
         QVERIFY(reverse.isValid());
@@ -1735,7 +1735,7 @@ void tst_QJniObject::templateApiCheck()
         QCOMPARE(array.size(), 3);
         QCOMPARE(array.toContainer(), (QList<jlong>{3, 2, 1}));
 
-        QJniArray<jlong> newArray(QList<jlong>{3, 2, 1});
+        QJniArray<jlong> newArray = {3, 2, 1};
         QVERIFY(newArray.isValid());
         const auto reverse = TestClass::callStaticMethod<jlong[]>("staticReverseLongArray", newArray);
         QVERIFY(reverse.isValid());
@@ -1751,7 +1751,7 @@ void tst_QJniObject::templateApiCheck()
         QCOMPARE(array.size(), 3);
         QCOMPARE(array.toContainer(), (QList<jlong>{3, 2, 1}));
 
-        QJniArray<jlong> newArray = QJniArrayBase::fromContainer(QList<jlong>{3, 2, 1});
+        QJniArray<jlong> newArray = {3, 2, 1};
         QVERIFY(newArray.isValid());
         const auto reverse = testClass.callMethod<jlong[]>("reverseLongArray", newArray);
         QVERIFY(reverse.isValid());
@@ -1769,7 +1769,7 @@ void tst_QJniObject::templateApiCheck()
         QCOMPARE(array.size(), 3);
         QCOMPARE(array.toContainer(), (QList<jfloat>{1.0f, 2.0f, 3.0f}));
 
-        QJniArray<jfloat> newArray(QList<jfloat>{3.0f, 2.0f, 1.0f});
+        QJniArray<jfloat> newArray = {3.0f, 2.0f, 1.0f};
         QVERIFY(newArray.isValid());
         const auto reverse = TestClass::callStaticMethod<jfloat[]>("staticReverseFloatArray", newArray);
         QVERIFY(reverse.isValid());
@@ -1785,7 +1785,7 @@ void tst_QJniObject::templateApiCheck()
         QCOMPARE(array.size(), 3);
         QCOMPARE(array.toContainer(), (QList<jfloat>{1.0f, 2.0f, 3.0f}));
 
-        QJniArray<jfloat> newArray = QJniArrayBase::fromContainer(QList<jfloat>{3.0f, 2.0f, 1.0f});
+        QJniArray<jfloat> newArray = {3.0f, 2.0f, 1.0f};
         QVERIFY(newArray.isValid());
         const auto reverse = testClass.callMethod<jfloat[]>("reverseFloatArray", newArray);
         QVERIFY(reverse.isValid());
@@ -1803,7 +1803,7 @@ void tst_QJniObject::templateApiCheck()
         QCOMPARE(array.size(), 3);
         QCOMPARE(array.toContainer(), (QList<jdouble>{3.0, 2.0, 1.0}));
 
-        QJniArray<jdouble> newArray(QList<jdouble>{3.0, 2.0, 1.0});
+        QJniArray<jdouble> newArray = {3.0, 2.0, 1.0};
         QVERIFY(newArray.isValid());
         const auto reverse = TestClass::callStaticMethod<jdouble[]>("staticReverseDoubleArray", newArray);
         QVERIFY(reverse.isValid());
@@ -1819,7 +1819,7 @@ void tst_QJniObject::templateApiCheck()
         QCOMPARE(array.size(), 3);
         QCOMPARE(array.toContainer(), (QList<jdouble>{3.0, 2.0, 1.0}));
 
-        QJniArray<jdouble> newArray = QJniArrayBase::fromContainer(QList<jdouble>{3.0, 2.0, 1.0});
+        QJniArray<jdouble> newArray = {3.0, 2.0, 1.0};
         QVERIFY(newArray.isValid());
         const auto reverse = testClass.callMethod<jdouble[]>("reverseDoubleArray", newArray);
         QVERIFY(reverse.isValid());
@@ -2039,7 +2039,7 @@ void tst_QJniObject::callback()
         QVERIFY(TestClass::registerNativeMethods({
             Q_JNI_NATIVE_METHOD(callbackWithJniArray)
         }));
-        const QJniArray<double> doubles = QJniArrayBase::fromContainer(QList<double>{ 1.2, 3.4, 5.6 });
+        const QJniArray<double> doubles = { 1.2, 3.4, 5.6 };
         result = testObject.callMethod<int>("callMeBackWithJniArray", doubles);
         QVERIFY(calledWithJniArray);
         QCOMPARE(calledWithJniArray, doubles);

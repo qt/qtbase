@@ -837,7 +837,7 @@ auto QJniObject::LocalFrame<Args...>::convertFromJni(QJniObject &&object)
     if constexpr (std::is_same_v<Type, QString>) {
         return object.toString();
     } else if constexpr (QtJniTypes::IsJniArray<Type>::value) {
-        return T{object};
+        return T(std::move(object));
     } else if constexpr (QJniArrayBase::canConvert<Type>) {
         // if we were to create a QJniArray from Type...
         using QJniArrayType = decltype(QJniArrayBase::fromContainer(std::declval<Type>()));
@@ -847,7 +847,7 @@ auto QJniObject::LocalFrame<Args...>::convertFromJni(QJniObject &&object)
         return QJniArray<ElementType>(object.template object<jarray>()).toContainer();
     } else if constexpr (std::is_array_v<Type>) {
         using ElementType = std::remove_extent_t<Type>;
-        return QJniArray<ElementType>{object};
+        return QJniArray<ElementType>(std::move(object));
     } else if constexpr (std::is_base_of_v<QJniObject, Type>
                         && !std::is_same_v<QJniObject, Type>) {
         return T{std::move(object)};

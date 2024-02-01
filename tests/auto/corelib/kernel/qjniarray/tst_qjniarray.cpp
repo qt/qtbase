@@ -75,6 +75,10 @@ VERIFY_RETURN_FOR_TYPE(QList<double>, QList<double>);
 
 VERIFY_RETURN_FOR_TYPE(QString, QString);
 
+VERIFY_RETURN_FOR_TYPE(List, List);
+VERIFY_RETURN_FOR_TYPE(List[], QJniArray<List>);
+VERIFY_RETURN_FOR_TYPE(QJniArray<List>, QJniArray<List>);
+
 void tst_QJniArray::construct()
 {
     {
@@ -83,6 +87,18 @@ void tst_QJniArray::construct()
             strings << QString::number(i);
         QJniArray<QString> list(strings);
         QCOMPARE(list.size(), 10000);
+    }
+    {
+        QJniArray<jint> list{1, 2, 3};
+        QCOMPARE(list.size(), 3);
+    }
+    {
+        QJniArray<jint> list(QList<int>{1, 2, 3});
+        QCOMPARE(list.size(), 3);
+    }
+    {
+        QJniArray<jint> list{QList<int>{1, 2, 3}};
+        QCOMPARE(list.size(), 3);
     }
 }
 
