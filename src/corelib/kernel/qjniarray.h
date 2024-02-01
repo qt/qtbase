@@ -126,7 +126,9 @@ public:
 
         using ElementType = typename std::remove_reference_t<Container>::value_type;
         if constexpr (std::disjunction_v<std::is_same<ElementType, jobject>,
-                                         std::is_same<ElementType, QJniObject>>) {
+                                         std::is_same<ElementType, QJniObject>,
+                                         std::is_base_of<QtJniTypes::JObjectBase, ElementType>
+                                        >) {
             return makeObjectArray(std::forward<Container>(container));
         } else if constexpr (std::is_same_v<ElementType, jfloat>) {
             return makeArray<jfloat>(std::forward<Container>(container), &JNIEnv::NewFloatArray,
@@ -370,10 +372,12 @@ auto QJniArrayBase::makeObjectArray(List &&list)
 
     // this assumes that all objects in the list have the same class
     jclass elementClass = nullptr;
-    if constexpr (std::is_same_v<ElementType, QJniObject>)
+    if constexpr (std::disjunction_v<std::is_same<ElementType, QJniObject>,
+                                     std::is_base_of<QtJniTypes::JObjectBase, ElementType>>) {
         elementClass = list.first().objectClass();
-    else
+    } else {
         elementClass = env->GetObjectClass(list.first());
+    }
     auto localArray = env->NewObjectArray(length, elementClass, nullptr);
     if (QJniEnvironment::checkAndClearExceptions(env))
         return QJniArray<jobject>();
