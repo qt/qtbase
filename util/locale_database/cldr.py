@@ -458,29 +458,40 @@ enumdata.py (keeping the old name as an alias):
 
         return alias, naming
 
-    def readWindowsTimeZones(self, lookup): # For use by cldr2qtimezone.py
+    def readWindowsTimeZones(self, lookup, alias): # For use by cldr2qtimezone.py
         """Digest CLDR's MS-Win time-zone name mapping.
 
-        MS-Win have their own eccentric names for time-zones.  CLDR
-        helpfully provides a translation to more orthodox names.
+        MS-Win have their own eccentric names for time-zones. CLDR
+        helpfully provides a translation to more orthodox names,
+        albeit these are CLDR IDs - see bcp47Aliases() - rather than
+        (up to date) IANA IDs. The windowsZones.xml supplement has
+        supplementalData/windowsZones/mapTimezones/mapZone nodes with
+        attributes
 
-        Single argument, lookup, is a mapping from known MS-Win names
-        for locales to a unique integer index (starting at 1).
+          territory -- using 001 (World) for 'default'
+          type -- space-joined sequence of CLDR IDs of zones
+          other -- Windows name of these zones in the given territory
 
-        The XML structure we read has the form:
+        First argument, lookup, is a mapping from known MS-Win names
+        for timezones to a unique integer index (starting at 1). Second
+        argument, alias, should be the first part of the pair returned
+        by a call to bcp47Aliases(); it shall be used to transform
+        CLDR IDs into IANA IDs.
 
- <supplementalData>
-     <windowsZones>
-         <mapTimezones otherVersion="..." typeVersion="...">
-             <!-- (UTC-08:00) Pacific Time (US & Canada) -->
-             <mapZone other="Pacific Standard Time" territory="001" type="America/Los_Angeles"/>
-             <mapZone other="Pacific Standard Time" territory="CA" type="America/Vancouver America/Dawson America/Whitehorse"/>
-             <mapZone other="Pacific Standard Time" territory="US" type="America/Los_Angeles America/Metlakatla"/>
-             <mapZone other="Pacific Standard Time" territory="ZZ" type="PST8PDT"/>
-         </mapTimezones>
-     </windowsZones>
- </supplementalData>
-"""
+        For each mapZone node, its territory is mapped to a
+        QLocale::Territory enum with numeric value code e, its other
+        is mapped through lookup to obtain an MS-Win name index k and
+        its type is split on spacing and cleaned up as follows. Each
+        entry in type is mapped, via alias (if present in it) to get a
+        list of IANA IDs, omitting any later duplicates from earlier
+        entries; the result list of IANA IDs is joined with spaces
+        between to give a string s.
+
+        Returns a triple (version, defaults, windows) in which version
+        is the version of CLDR in use, defaults is a mapping {k: s}
+        and windows is a mapping {(k, e): b} in which b maps
+        'windowsId' to the Windows name of the zone (the node's other
+        attribute), 'territoryCode' to e and 'ianaList' to s."""
         zones = self.supplement('windowsZones.xml')
         enum = self.__enumMap('territory')
         badZones, unLands, defaults, windows = set(), set(), {}, {}
@@ -490,9 +501,17 @@ enumdata.py (keeping the old name as an alias):
                 continue
 
             wid, code = attrs['other'], attrs['territory']
+            cldrs, ianas = attrs['type'].split(), []
+            for cldr in cldrs:
+                if cldr in alias:
+                    iana = alias[cldr]
+                    if iana not in ianas:
+                        ianas.append(iana)
+                else:
+                    ianas.append(cldr)
             data = dict(windowsId = wid,
                         territoryCode = code,
-                        ianaList = ' '.join(attrs['type'].split()))
+                        ianaList = ' '.join(ianas))
 
             try:
                 key = lookup[wid]
@@ -505,12 +524,12 @@ enumdata.py (keeping the old name as an alias):
                 defaults[key] = data['ianaList']
             else:
                 try:
-                    cid, name = enum[code]
+                    land, name = enum[code]
                 except KeyError:
                     unLands.append(code)
                     continue
-                data.update(territoryId = cid, territory = name)
-                windows[key, cid] = data
+                data.update(territoryId = land, territory = name)
+                windows[key, land] = data
 
         if unLands:
             raise Error('Unknown territory codes, please add to enumdata.py: '

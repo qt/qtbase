@@ -173,7 +173,8 @@ def main(out, err):
 
     try:
         version, defaults, winIds = access.readWindowsTimeZones(
-            {name: ind for ind, name in enumerate((x[0] for x in windowsIdList), 1)})
+            {name: ind for ind, name in enumerate((k for k, v in windowsIdList), 1)},
+            alias)
     except IOError as e:
         parser.error(
             f'Failed to open common/supplemental/windowsZones.xml: {e}')
