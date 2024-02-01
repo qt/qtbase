@@ -46,11 +46,6 @@
 #define QT_NO_READDIR64
 #endif
 #include "../posix/qplatformdefs.h"
-#if defined(__EXT_QNX__READDIR64_R)
-#define QT_EXT_QNX_READDIR_R    ::_readdir64_r
-#elif defined(__EXT_QNX__READDIR_R)
-#define QT_EXT_QNX_READDIR_R    ::_readdir_r
-#endif
 
 #define QT_SNPRINTF ::snprintf
 #define QT_VSNPRINTF ::vsnprintf

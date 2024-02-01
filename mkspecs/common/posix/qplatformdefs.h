@@ -108,11 +108,9 @@
         && !defined(QT_NO_READDIR64)
 #define QT_DIRENT               struct dirent64
 #define QT_READDIR              ::readdir64
-#define QT_READDIR_R            ::readdir64_r
 #else
 #define QT_DIRENT               struct dirent
 #define QT_READDIR              ::readdir
-#define QT_READDIR_R            ::readdir_r
 #endif
 
 #define QT_SOCKLEN_T            socklen_t
