@@ -300,7 +300,7 @@ public:
         if constexpr (std::is_same_v<T, jobject>) {
             QList<jobject> res;
             res.reserve(size());
-            for (auto &&element : *this)
+            for (auto element : *this)
                 res.append(element);
             return res;
         } else if constexpr (std::is_same_v<T, jbyte>) {
