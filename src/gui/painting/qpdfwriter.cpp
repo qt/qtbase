@@ -304,7 +304,7 @@ bool QPdfWriter::newPage()
   QPen and QBrush).
 
   \value RGB All colors are converted to RGB and saved as such in the
-  PDF. This is the default.
+  PDF.
 
   \value Grayscale All colors are converted to grayscale. For backwards
   compatibility, they are emitted in the PDF output as RGB colors, with
@@ -314,6 +314,7 @@ bool QPdfWriter::newPage()
 
   \value Auto RGB colors are emitted as RGB; CMYK colors are emitted as
   CMYK. Colors of any other color spec are converted to RGB.
+  This is the default since Qt 6.8.
 
   \sa QColor, QGradient
 */

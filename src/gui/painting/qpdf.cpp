@@ -1436,7 +1436,7 @@ int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
 QPdfEnginePrivate::QPdfEnginePrivate()
     : clipEnabled(false), allClipped(false), hasPen(true), hasBrush(false), simplePen(false),
       needsTransform(false), pdfVersion(QPdfEngine::Version_1_4),
-      colorModel(QPdfEngine::ColorModel::RGB),
+      colorModel(QPdfEngine::ColorModel::Auto),
       outDevice(nullptr), ownsDevice(false),
       embedFonts(true),
       m_pageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(10, 10, 10, 10))
