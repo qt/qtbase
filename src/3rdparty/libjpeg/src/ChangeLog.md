@@ -1,3 +1,38 @@
+3.0.2
+=====
+
+### Significant changes relative to 3.0.1:
+
+1. Fixed a signed integer overflow in the `tj3CompressFromYUV8()`,
+`tj3DecodeYUV8()`, `tj3DecompressToYUV8()`, and `tj3EncodeYUV8()` functions,
+detected by the Clang and GCC undefined behavior sanitizers, that could be
+triggered by setting the `align` parameter to an unreasonably large value.
+This issue did not pose a security threat, but removing the warning made it
+easier to detect actual security issues, should they arise in the future.
+
+2. Introduced a new parameter (`TJPARAM_MAXMEMORY` in the TurboJPEG C API and
+`TJ.PARAM_MAXMEMORY` in the TurboJPEG Java API) and a corresponding TJBench
+option (`-maxmemory`) for specifying the maximum amount of memory (in
+megabytes) that will be allocated for intermediate buffers, which are used with
+progressive JPEG compression and decompression, optimized baseline entropy
+coding, lossless JPEG compression, and lossless transformation.  The new
+parameter and option serve the same purpose as the `max_memory_to_use` field in
+the `jpeg_memory_mgr` struct in the libjpeg API, the `JPEGMEM` environment
+variable, and the cjpeg/djpeg/jpegtran `-maxmemory` option.
+
+3. Introduced a new parameter (`TJPARAM_MAXPIXELS` in the TurboJPEG C API and
+`TJ.PARAM_MAXPIXELS` in the TurboJPEG Java API) and a corresponding TJBench
+option (`-maxpixels`) for specifying the maximum number of pixels that the
+decompression, lossless transformation, and packed-pixel image loading
+functions/methods will process.
+
+4. Fixed an error ("Unsupported color conversion request") that occurred when
+attempting to decompress a 3-component lossless JPEG image without an Adobe
+APP14 marker.  The decompressor now assumes that a 3-component lossless JPEG
+image without an Adobe APP14 marker uses the RGB colorspace if its component
+IDs are 1, 2, and 3.
+
+
 3.0.1
 =====
 
@@ -2146,7 +2181,7 @@ and unit tests now work on those architectures.
 0.0.93
 ======
 
-### Significant changes since 0.0.91:
+### Significant changes relative to 0.0.91:
 
 1. 2982659: Fixed x86-64 build on FreeBSD systems
 

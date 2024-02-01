@@ -4,11 +4,13 @@
 
 #define BUILD ""
 
+#define HIDDEN
+
 #define INLINE inline
 
 #define PACKAGE_NAME "libjpeg-turbo"
 
-#define VERSION "3.0.0"
+#define VERSION "3.0.2"
 
 #if SIZE_MAX == 0xffffffff
 #define SIZEOF_SIZE_T 4
@@ -46,3 +48,4 @@
 /* #undef WITH_SIMD */
 
 #endif
+
