@@ -998,46 +998,54 @@ void tst_QTimeZone::windowsId()
              QByteArray("CST6CDT"));
     QCOMPARE(QTimeZone::windowsIdToDefaultIanaId(QByteArray()), QByteArray());
 
-    // No country is sorted list of all zones
-    QList<QByteArray> list;
-    list << "America/Chicago" << "America/Indiana/Knox" << "America/Indiana/Tell_City"
-         << "America/Matamoros" << "America/Menominee" << "America/North_Dakota/Beulah"
-         << "America/North_Dakota/Center" << "America/North_Dakota/New_Salem"
-         << "America/Ojinaga" << "America/Rainy_River" << "America/Rankin_Inlet"
-         << "America/Resolute" << "America/Winnipeg" << "CST6CDT";
-    QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time"), list);
-
-    // Check country with no match returns empty list
-    list.clear();
-    QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::NewZealand),
-             list);
-
-    // Check valid country returns list in preference order
-    list.clear();
-    list << "America/Winnipeg" << "America/Rainy_River" << "America/Rankin_Inlet"
-         << "America/Resolute";
-    QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::Canada), list);
-
-    list.clear();
-    list << "America/Matamoros" << "America/Ojinaga";
-    QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::Mexico), list);
-
-    list.clear();
-    list << "America/Chicago" << "America/Indiana/Knox" << "America/Indiana/Tell_City"
-         << "America/Menominee" << "America/North_Dakota/Beulah" << "America/North_Dakota/Center"
-         << "America/North_Dakota/New_Salem";
-    QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::UnitedStates),
-             list);
-
-    list.clear();
-    list << "CST6CDT";
-    QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::AnyTerritory),
-             list);
-
-    // Check no windowsId return empty
-    list.clear();
-    QCOMPARE(QTimeZone::windowsIdToIanaIds(QByteArray()), list);
-    QCOMPARE(QTimeZone::windowsIdToIanaIds(QByteArray(), QLocale::AnyTerritory), list);
+    {
+        // With no country, expect sorted list of all zones for ID
+        const QList<QByteArray> list = {
+            "America/Chicago", "America/Indiana/Knox", "America/Indiana/Tell_City",
+            "America/Matamoros", "America/Menominee", "America/North_Dakota/Beulah",
+            "America/North_Dakota/Center", "America/North_Dakota/New_Salem",
+            "America/Ojinaga", "America/Rainy_River", "America/Rankin_Inlet",
+            "America/Resolute", "America/Winnipeg", "CST6CDT"
+        };
+        QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time"), list);
+    }
+    {
+        // Check country with no match returns empty list
+        const QList<QByteArray> empty;
+        QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::NewZealand),
+                 empty);
+    }
+    {
+        // Check valid country returns list in preference order
+        const QList<QByteArray> list = {
+            "America/Winnipeg", "America/Rainy_River", "America/Rankin_Inlet", "America/Resolute"
+        };
+        QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::Canada), list);
+    }
+    {
+        const QList<QByteArray> list = { "America/Matamoros", "America/Ojinaga" };
+        QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::Mexico), list);
+    }
+    {
+        const QList<QByteArray> list = {
+            "America/Chicago", "America/Indiana/Knox", "America/Indiana/Tell_City",
+            "America/Menominee", "America/North_Dakota/Beulah", "America/North_Dakota/Center",
+            "America/North_Dakota/New_Salem"
+        };
+        QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::UnitedStates),
+                 list);
+    }
+    {
+        const QList<QByteArray> list = { "CST6CDT" };
+        QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::AnyTerritory),
+                 list);
+    }
+    {
+        // Check empty if given no windowsId:
+        const QList<QByteArray> empty;
+        QCOMPARE(QTimeZone::windowsIdToIanaIds(QByteArray()), empty);
+        QCOMPARE(QTimeZone::windowsIdToIanaIds(QByteArray(), QLocale::AnyTerritory), empty);
+    }
 }
 
 void tst_QTimeZone::isValidId_data()
