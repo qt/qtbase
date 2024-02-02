@@ -1816,7 +1816,6 @@ void tst_QAbstractItemView::testFocusPolicy()
     moveCursorAway(&window);
 
     window.show();
-    QApplicationPrivate::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
 
     // itemview accepts focus => editor is closed => return focus to the itemview
