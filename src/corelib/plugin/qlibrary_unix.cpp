@@ -262,6 +262,7 @@ bool QLibraryPrivate::load_sys()
 
 bool QLibraryPrivate::unload_sys()
 {
+#if !defined(Q_OS_VXWORKS)            // Unloading on VxWorks causes crashes in QtDeclarative autotests
     if (dlclose(pHnd.loadAcquire())) {
 #if defined (Q_OS_QNX)                // Workaround until fixed in QNX; fixes crash in
         char *error = dlerror();      // QtDeclarative auto test "qqmlenginecleanup" for instance
@@ -275,6 +276,7 @@ bool QLibraryPrivate::unload_sys()
         return false;
     }
     errorString.clear();
+#endif
     return true;
 }
 
