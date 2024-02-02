@@ -323,7 +323,7 @@ bool QPdfWriter::newPage()
   \since 6.8
 
   Returns the color model used by this PDF writer.
-  The default is QPdfWriter::ColorModel::RGB.
+  The default is QPdfWriter::ColorModel::Auto.
 */
 QPdfWriter::ColorModel QPdfWriter::colorModel() const
 {
