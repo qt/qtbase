@@ -1,5 +1,5 @@
 // Copyright (C) 2016 Sune Vuorela <sune@kde.org>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include <QCoreApplication>
 #include <QCommandLineParser>
