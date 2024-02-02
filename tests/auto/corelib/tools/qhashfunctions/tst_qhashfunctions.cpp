@@ -256,9 +256,7 @@ void tst_QHashFunctions::qhash_of_zero_floating_points()
 {
     QCOMPARE(qHash(-0.0f, seed), qHash(0.0f, seed));
     QCOMPARE(qHash(-0.0 , seed), qHash(0.0 , seed));
-#ifndef Q_OS_DARWIN
     QCOMPARE(qHash(-0.0L, seed), qHash(0.0L, seed));
-#endif
 }
 
 void tst_QHashFunctions::qthash_data()
