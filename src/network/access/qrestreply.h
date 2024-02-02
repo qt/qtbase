@@ -20,7 +20,7 @@ class QJsonDocument;
 class QString;
 
 class QRestReplyPrivate;
-class QRestReply
+class QT_TECH_PREVIEW_API QRestReply
 {
 public:
     Q_NETWORK_EXPORT explicit QRestReply(QNetworkReply *reply);
