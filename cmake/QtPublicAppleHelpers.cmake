@@ -692,7 +692,11 @@ function(_qt_internal_export_apple_sdk_and_xcode_version_requirements out_var)
     set(assignments "")
     foreach(var IN LISTS vars_to_assign)
         set(value "${${var}}")
-        list(APPEND assignments "set(${var} \"${value}\")")
+        list(APPEND assignments
+            "
+if(NOT ${var})
+    set(${var} \"${value}\")
+endif()")
     endforeach()
 
     list(JOIN assignments "\n" assignments)
