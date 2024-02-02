@@ -1704,7 +1704,6 @@ void tst_QAbstractItemView::testChangeEditorState()
     centerOnScreen(&view);
     moveCursorAway(&view);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(&view, QApplication::activeWindow());
 
