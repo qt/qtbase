@@ -339,6 +339,12 @@ if(is_qt_build_platform)
     set_tests_properties(test_import_plugins PROPERTIES FIXTURES_REQUIRED build_mockplugins)
 endif()
 
+if(NOT NO_GUI)
+    _qt_internal_test_expect_pass(test_standalone_test
+                                  BINARY "${CMAKE_CTEST_COMMAND}"
+                                  BINARY_ARGS "-V")
+endif()
+
 _qt_internal_test_expect_pass(test_versionless_targets)
 
 if(NOT NO_GUI)
