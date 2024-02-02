@@ -727,6 +727,19 @@ set(QT_COPYRIGHT_YEAR \"${QT_COPYRIGHT_YEAR}\" CACHE STRING \"\")
 set(QT_COPYRIGHT \"${QT_COPYRIGHT}\" CACHE STRING \"\")
 ")
 
+        # Add the apple version requirements to the BuildInternals extra code, so the info is
+        # available when configuring a standalone test.
+        # Otherwise when QtSetup is included after a
+        #   find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
+        # call, Qt6ConfigExtras.cmake is not included yet, the requirements are not available and
+        # _qt_internal_check_apple_sdk_and_xcode_versions() would fail.
+        _qt_internal_export_apple_sdk_and_xcode_version_requirements(apple_requirements)
+        if(apple_requirements)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "
+${apple_requirements}
+")
+        endif()
+
         qt_compute_relative_path_from_cmake_config_dir_to_prefix()
         configure_file(
             "${CMAKE_CURRENT_LIST_DIR}/QtBuildInternalsExtra.cmake.in"
