@@ -1724,7 +1724,6 @@ void tst_QAbstractItemView::deselectInSingleSelection()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     view.setSelectionMode(QAbstractItemView::SingleSelection);
     view.setEditTriggers(QAbstractItemView::NoEditTriggers);
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     // mouse
     QModelIndex index22 = s.index(2, 2);
