@@ -62,6 +62,8 @@
 
 #include "qmlmacro.h"
 
+#include "tech-preview.h"
+
 using namespace Qt::StringLiterals;
 
 #ifdef Q_MOC_RUN
