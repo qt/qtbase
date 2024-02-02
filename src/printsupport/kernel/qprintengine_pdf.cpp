@@ -109,7 +109,7 @@ void QPdfPrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &va
             d->colorModel = QPdfEngine::ColorModel::Grayscale;
             break;
         case QPrinter::Color:
-            d->colorModel = QPdfEngine::ColorModel::RGB;
+            d->colorModel = QPdfEngine::ColorModel::Auto;
             break;
         }
         break;
