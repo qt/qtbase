@@ -1438,7 +1438,6 @@ size_t qHash(double key, size_t seed) noexcept
     }
 }
 
-#if !defined(Q_OS_DARWIN) || defined(Q_QDOC)
 /*! \relates QHash
     \since 5.3
 
@@ -1456,7 +1455,6 @@ size_t qHash(long double key, size_t seed) noexcept
         return murmurhash(&key, sizeof(key), seed);
     }
 }
-#endif
 
 /*! \fn size_t qHash(const QChar key, size_t seed = 0)
     \relates QHash
