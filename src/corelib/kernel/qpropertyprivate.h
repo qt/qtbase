@@ -124,15 +124,12 @@ struct QPropertyObserverPointer;
 
 class QUntypedPropertyData
 {
-public:
-#if QT_DEPRECATED_SINCE(6, 8)
-    // sentinel to check whether a class inherits QUntypedPropertyData
-    struct QT_DEPRECATED_VERSION_X_6_8("Use std::is_base_of instead.")
-            InheritsQUntypedPropertyData
-    {
-    };
-#endif
 };
+
+namespace QtPrivate {
+template <typename T>
+using IsUntypedPropertyData = std::enable_if_t<std::is_base_of_v<QUntypedPropertyData, T>, bool>;
+}
 
 template <typename T>
 class QPropertyData;
