@@ -4384,7 +4384,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
                     if (verticalAlignment & Qt::AlignVCenter)
                         topMargin = topHeight / 2;
                     else if (verticalAlignment & Qt::AlignTop)
-                        topMargin = topHeight;
+                        topMargin = topHeight + proxy()->pixelMetric(PM_FocusFrameVMargin, groupBox, widget);
                 }
 
                 QRect frameRect = groupBox->rect;

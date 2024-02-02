@@ -346,16 +346,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     case PE_FrameGroupBox:
     {
         QPixmap pixmap(":/qt-project.org/styles/commonstyle/images/fusion_groupbox.png"_L1);
-        int topMargin = 0;
-        auto control = qobject_cast<const QGroupBox *>(widget);
-        if (control && !control->isCheckable() && control->title().isEmpty()) {
-            // Shrinking the topMargin if Not checkable AND title is empty
-            topMargin = groupBoxTopMargin;
-        } else {
-            topMargin = qMax(pixelMetric(PM_IndicatorHeight, option, widget), option->fontMetrics.height()) + groupBoxTopMargin;
-        }
-        QRect frame = option->rect.adjusted(0, topMargin, 0, 0);
-        qDrawBorderPixmap(painter, frame, QMargins(6, 6, 6, 6), pixmap);
+        qDrawBorderPixmap(painter, option->rect, QMargins(6, 6, 6, 6), pixmap);
         break;
     }
 #endif // QT_CONFIG(groupbox)
@@ -3333,12 +3324,8 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
             const bool hasVerticalAlignment = (groupBoxTextAlignment & Qt::AlignVertical_Mask) == Qt::AlignVCenter;
             const int fontMetricsHeight = groupBox->text.isEmpty() ? 0 : groupBox->fontMetrics.height();
 
-            rect = option->rect;
             if (subControl == SC_GroupBoxFrame)
-                if (hasVerticalAlignment)
-                    return rect.adjusted(0, -(fontMetricsHeight + 4) / 2, 0, 0);
-                else
-                    return rect;
+                return rect;
             else if (subControl == SC_GroupBoxContents) {
                 QRect frameRect = option->rect.adjusted(0, 0, 0, -groupBoxBottomMargin);
                 int margin = 3;
@@ -3622,6 +3609,17 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
             mask->region -= QRect(option->rect.right() , option->rect.top() + 3, 1, 2);
             return 1;
         }
+        break;
+    case SH_GroupBox_TextLabelVerticalAlignment: {
+        if (const auto *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
+            if (groupBox) {
+                const auto vAlign = groupBox->textAlignment & Qt::AlignVertical_Mask;
+                // default fusion style is AlignTop
+                return vAlign == 0 ? Qt::AlignTop : vAlign;
+            }
+        }
+        break;
+    }
     default:
         break;
     }
