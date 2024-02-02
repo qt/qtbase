@@ -1,5 +1,5 @@
 // Copyright (C) 2018 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 // This test is to check that the menus in a menubar are displayed correctly in both the top and
 // bottom cases. Especially when using multiple screens. If possible relayout the screens in order

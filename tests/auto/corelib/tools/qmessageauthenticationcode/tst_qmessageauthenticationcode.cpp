@@ -1,5 +1,5 @@
 // Copyright (C) 2013 Ruslan Nigmatullin <euroelessar@yandex.ru>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QtCore/QCoreApplication>
