@@ -3328,11 +3328,12 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
             const int groupBoxTextAlignment = groupBox->textAlignment;
+            const bool hasVerticalAlignment = (groupBoxTextAlignment & Qt::AlignVertical_Mask) == Qt::AlignVCenter;
             const int fontMetricsHeight = groupBox->text.isEmpty() ? 0 : groupBox->fontMetrics.height();
 
             rect = option->rect;
             if (subControl == SC_GroupBoxFrame)
-                if ((groupBoxTextAlignment & Qt::AlignVertical_Mask) == Qt::AlignVCenter)
+                if (hasVerticalAlignment)
                     return rect.adjusted(0, -(fontMetricsHeight + 4) / 2, 0, 0);
                 else
                     return rect;
@@ -3362,10 +3363,11 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
                     rect.moveLeft((option->rect.width() - width) / 2);
                     break;
                 case Qt::AlignRight:
-                    rect.moveLeft(option->rect.width() - width);
+                    rect.moveLeft(option->rect.width() - width
+                                  - (hasVerticalAlignment ? proxy()->pixelMetric(PM_LayoutRightMargin, groupBox, widget) : 0));
                     break;
                 case Qt::AlignLeft:
-                    if ((groupBoxTextAlignment & Qt::AlignVertical_Mask) == Qt::AlignVCenter)
+                    if (hasVerticalAlignment)
                         rect.moveLeft(proxy()->pixelMetric(PM_LayoutLeftMargin, option, widget));
                     break;
                 }
