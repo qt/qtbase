@@ -1770,7 +1770,6 @@ void tst_QAbstractItemView::testNoActivateOnDisabledItem()
     moveCursorAway(&treeView);
     treeView.show();
 
-    QApplicationPrivate::setActiveWindow(&treeView);
     QVERIFY(QTest::qWaitForWindowActive(&treeView));
 
     QSignalSpy activatedSpy(&treeView, &QAbstractItemView::activated);
