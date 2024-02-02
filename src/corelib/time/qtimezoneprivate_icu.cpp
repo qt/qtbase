@@ -301,16 +301,22 @@ QString QIcuTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
                                          QTimeZone::NameType nameType,
                                          const QLocale &locale) const
 {
-    // Return standard offset format name as ICU C api doesn't support it yet
+    // Base class has handled OffsetName if we came via the other overload.
     if (nameType == QTimeZone::OffsetName) {
-        const Data nowData = data(QDateTime::currentMSecsSinceEpoch());
-        // We can't use transitions reliably to find out right dst offset
-        // Instead use dst offset api to try get it if needed
+        int offset = standardTimeOffset(QDateTime::currentMSecsSinceEpoch());
+        // We can't use transitions reliably to find out right DST offset.
+        // Instead use DST offset API to try to get it, when needed:
         if (timeType == QTimeZone::DaylightTime)
-            return isoOffsetFormat(nowData.standardTimeOffset + ucalDaylightOffset(m_id));
-        else
-            return isoOffsetFormat(nowData.standardTimeOffset);
+            offset += ucalDaylightOffset(m_id);
+        // This is only valid for times since the most recent standard offset
+        // change; for earlier times, caller must use the other overload.
+
+        // Use our own formating for offset names (ICU C API doesn't support it
+        // and we may as well be self-consistent anyway).
+        return isoOffsetFormat(offset);
     }
+    // Technically this may be suspect, if locale isn't QLocale(), since that's
+    // what we used when constructing m_ucal; does ICU cope with inconsistency ?
     return ucalTimeZoneDisplayName(m_ucal, timeType, nameType, locale.name());
 }
 
