@@ -2457,15 +2457,11 @@ void tst_QAbstractItemView::inputMethodEnabled()
 
     // Check focus by switching the activation of the window to force a focus in
     view->setCurrentIndex(model->index(1, 0));
-    QApplicationPrivate::setActiveWindow(nullptr);
-    QApplicationPrivate::setActiveWindow(view.data());
     QVERIFY(QTest::qWaitForWindowActive(view.data()));
     QCOMPARE(view->testAttribute(Qt::WA_InputMethodEnabled), result);
 
     view->setCurrentIndex(QModelIndex());
     QVERIFY(!view->testAttribute(Qt::WA_InputMethodEnabled));
-    QApplicationPrivate::setActiveWindow(nullptr);
-    QApplicationPrivate::setActiveWindow(view.data());
     QVERIFY(QTest::qWaitForWindowActive(view.data()));
     QModelIndex index = model->index(1, 0);
     QPoint p = view->visualRect(index).center();
@@ -2475,8 +2471,6 @@ void tst_QAbstractItemView::inputMethodEnabled()
     QCOMPARE(view->testAttribute(Qt::WA_InputMethodEnabled), result);
 
     index = model->index(0, 0);
-    QApplicationPrivate::setActiveWindow(nullptr);
-    QApplicationPrivate::setActiveWindow(view.data());
     QVERIFY(QTest::qWaitForWindowActive(view.data()));
     p = view->visualRect(index).center();
     QTest::mouseClick(view->viewport(), Qt::LeftButton, Qt::NoModifier, p);
