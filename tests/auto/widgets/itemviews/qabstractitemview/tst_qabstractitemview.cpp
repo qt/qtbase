@@ -1654,7 +1654,6 @@ void tst_QAbstractItemView::testClickedSignal()
     centerOnScreen(&view);
     moveCursorAway(&view);
     view.showNormal();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(&view, QApplication::activeWindow());
 
