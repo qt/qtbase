@@ -190,8 +190,7 @@ QString QTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
 
 QString QTimeZonePrivate::abbreviation(qint64 atMSecsSinceEpoch) const
 {
-    Q_UNUSED(atMSecsSinceEpoch);
-    return QString();
+    return displayName(atMSecsSinceEpoch, QTimeZone::ShortName, QLocale::c());
 }
 
 int QTimeZonePrivate::offsetFromUtc(qint64 atMSecsSinceEpoch) const

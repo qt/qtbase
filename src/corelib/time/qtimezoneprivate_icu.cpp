@@ -314,15 +314,6 @@ QString QIcuTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
     return ucalTimeZoneDisplayName(m_ucal, timeType, nameType, locale.name());
 }
 
-QString QIcuTimeZonePrivate::abbreviation(qint64 atMSecsSinceEpoch) const
-{
-    // TODO No ICU API, use short name instead
-    if (isDaylightTime(atMSecsSinceEpoch))
-        return displayName(QTimeZone::DaylightTime, QTimeZone::ShortName, QLocale());
-    else
-        return displayName(QTimeZone::StandardTime, QTimeZone::ShortName, QLocale());
-}
-
 int QIcuTimeZonePrivate::offsetFromUtc(qint64 atMSecsSinceEpoch) const
 {
     int stdOffset = 0;
