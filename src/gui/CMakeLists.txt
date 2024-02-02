@@ -178,6 +178,7 @@ qt_internal_add_module(Gui
         painting/qfixed_p.h
         painting/qgrayraster.c painting/qgrayraster_p.h
         painting/qicc.cpp painting/qicc_p.h
+        painting/qimageeffects.cpp
         painting/qimagescale.cpp painting/qimagescale_p.h
         painting/qmath_p.h
         painting/qmemrotate.cpp painting/qmemrotate_p.h
