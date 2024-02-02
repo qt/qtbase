@@ -509,8 +509,10 @@ void QRhiD3D12::destroy()
     cbvSrvUavPool.destroy();
 
     for (int i = 0; i < QD3D12_FRAMES_IN_FLIGHT; ++i) {
-        cmdAllocators[i]->Release();
-        cmdAllocators[i] = nullptr;
+        if (cmdAllocators[i]) {
+            cmdAllocators[i]->Release();
+            cmdAllocators[i] = nullptr;
+        }
     }
 
     if (fullFenceEvent) {
