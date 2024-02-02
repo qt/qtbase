@@ -898,12 +898,9 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_timezone AND UNIX AND NOT AN
         time/qtimezoneprivate_tz.cpp
 )
 
-qt_internal_extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_timezone AND UNIX AND NOT ANDROID AND NOT APPLE
-    SOURCES
-        time/qtimezoneprivate_icu.cpp
-)
-
-qt_internal_extend_target(Core CONDITION QT_FEATURE_icu AND QT_FEATURE_timezone AND WIN32 AND NOT ANDROID AND NOT APPLE
+qt_internal_extend_target(Core
+    CONDITION
+        QT_FEATURE_icu AND QT_FEATURE_timezone AND NOT ANDROID AND NOT APPLE
     SOURCES
         time/qtimezoneprivate_icu.cpp
 )
