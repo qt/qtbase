@@ -130,8 +130,8 @@
     newlineEvent.key = isEnter ? Qt::Key_Enter : Qt::Key_Return;
     newlineEvent.text = isEnter ? QLatin1Char(kEnterCharCode)
                                 : QLatin1Char(kReturnCharCode);
-    newlineEvent.nativeVirtualKey = isEnter ? kVK_ANSI_KeypadEnter
-                                            : kVK_Return;
+    newlineEvent.nativeVirtualKey = isEnter ? quint32(kVK_ANSI_KeypadEnter)
+                                            : quint32(kVK_Return);
 
     qCDebug(lcQpaKeys) << "Inserting newline via" << newlineEvent;
     newlineEvent.sendWindowSystemEvent(m_platformWindow->window());
