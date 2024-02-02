@@ -1,5 +1,5 @@
 // Copyright (C) 2015 Robin Burchell <robin.burchell@viroteck.net>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QStack>
 #include <QDebug>

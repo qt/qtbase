@@ -1,6 +1,6 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // Copyright (C) 2014 BlackBerry Limited. All rights reserved.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 // This file contains benchmarks for QNetworkReply functions.
 
 #include <QDebug>

@@ -1,6 +1,6 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // Copyright (C) 2013 Laszlo Papp <lpapp@kde.org>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <qmath.h>
