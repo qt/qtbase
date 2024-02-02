@@ -1259,7 +1259,6 @@ void tst_QAbstractItemView::task221955_selectedEditor()
     tree.show();
     tree.setFocus();
     tree.setCurrentIndex(tree.model()->index(1,0));
-    QApplicationPrivate::setActiveWindow(&tree);
     QVERIFY(QTest::qWaitForWindowActive(&tree));
 
     QVERIFY(! tree.selectionModel()->selectedIndexes().contains(tree.model()->index(3,0)));
