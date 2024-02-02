@@ -13214,16 +13214,17 @@ QDebug operator<<(QDebug debug, const WidgetAttributes &attributes)
 {
     const QDebugStateSaver saver(debug);
     debug.nospace();
-    const QWidget *widget = attributes.widget;
-    const QMetaObject *qtMo = qt_getEnumMetaObject(Qt::WA_AttributeCount);
-    const QMetaEnum me = qtMo->enumerator(qtMo->indexOfEnumerator("WidgetAttribute"));
     debug << '[';
-    int count = 0;
-    for (int a = 0; a < Qt::WA_AttributeCount; ++a) {
-        if (widget->testAttribute(static_cast<Qt::WidgetAttribute>(a))) {
-            if (count++)
-                debug << ',';
-            debug << me.valueToKey(a);
+    if (const QWidget *widget = attributes.widget) {
+        const QMetaObject *qtMo = qt_getEnumMetaObject(Qt::WA_AttributeCount);
+        const QMetaEnum me = qtMo->enumerator(qtMo->indexOfEnumerator("WidgetAttribute"));
+        int count = 0;
+        for (int a = 0; a < Qt::WA_AttributeCount; ++a) {
+            if (widget->testAttribute(static_cast<Qt::WidgetAttribute>(a))) {
+                if (count++)
+                    debug << ',';
+                debug << me.valueToKey(a);
+            }
         }
     }
     debug << ']';
