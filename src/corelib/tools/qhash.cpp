@@ -281,17 +281,11 @@ static inline uint64_t murmurhash(const void *key, uint64_t len, uint64_t seed) 
 
 #endif
 
-#if QT_POINTER_SIZE == 8
+namespace {
 // This is an inlined version of the SipHash implementation that is
 // trying to avoid some memcpy's from uint64 to uint8[] and back.
-//
 
-// Use SipHash-1-2, which has similar performance characteristics as
-// stablehash() above, instead of the SipHash-2-4 default
-#define cROUNDS 1
-#define dROUNDS 2
-
-#define ROTL(x, b) (uint64_t)(((x) << (b)) | ((x) >> (64 - (b))))
+#define ROTL(x, b) (((x) << (b)) | ((x) >> (sizeof(x) * 8 - (b))))
 
 #define SIPROUND                                                               \
   do {                                                                         \
@@ -311,8 +305,7 @@ static inline uint64_t murmurhash(const void *key, uint64_t len, uint64_t seed) 
     v2 = ROTL(v2, 32);                                                         \
   } while (0)
 
-Q_NEVER_INLINE Q_DECL_HOT_FUNCTION
-static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64_t seed2)
+template <int cROUNDS = 2, int dROUNDS = 4> struct SipHash64
 {
     /* "somepseudorandomlygeneratedbytes" */
     uint64_t v0 = 0x736f6d6570736575ULL;
@@ -320,17 +313,32 @@ static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64
     uint64_t v2 = 0x6c7967656e657261ULL;
     uint64_t v3 = 0x7465646279746573ULL;
     uint64_t b;
-    uint64_t k0 = seed;
-    uint64_t k1 = seed2;
-    int i;
-    const uint8_t *end = in + (inlen & ~7ULL);
-    const int left = inlen & 7;
+    uint64_t k0;
+    uint64_t k1;
+
+    inline SipHash64(size_t fulllen, uint64_t seed, uint64_t seed2);
+    inline void addBlock(const uint8_t *in, size_t inlen);
+    inline uint64_t finalize(const uint8_t *in, size_t left);
+};
+
+template <int cROUNDS, int dROUNDS>
+SipHash64<cROUNDS, dROUNDS>::SipHash64(size_t inlen, uint64_t seed, uint64_t seed2)
+{
     b = inlen << 56;
+    k0 = seed;
+    k1 = seed2;
     v3 ^= k1;
     v2 ^= k0;
     v1 ^= k1;
     v0 ^= k0;
+}
 
+template <int cROUNDS, int dROUNDS> Q_DECL_HOT_FUNCTION void
+SipHash64<cROUNDS, dROUNDS>::addBlock(const uint8_t *in, size_t inlen)
+{
+    Q_ASSERT((inlen & 7ULL) == 0);
+    int i;
+    const uint8_t *end = in + inlen;
     for (; in != end; in += 8) {
         uint64_t m = qFromUnaligned<uint64_t>(in);
         v3 ^= m;
@@ -340,24 +348,31 @@ static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64
 
         v0 ^= m;
     }
+}
 
-
-#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 700
-    QT_WARNING_DISABLE_GCC("-Wimplicit-fallthrough")
-#endif
+template <int cROUNDS, int dROUNDS> Q_DECL_HOT_FUNCTION uint64_t
+SipHash64<cROUNDS, dROUNDS>::finalize(const uint8_t *in, size_t left)
+{
+    int i;
     switch (left) {
     case 7:
         b |= ((uint64_t)in[6]) << 48;
+        Q_FALLTHROUGH();
     case 6:
         b |= ((uint64_t)in[5]) << 40;
+        Q_FALLTHROUGH();
     case 5:
         b |= ((uint64_t)in[4]) << 32;
+        Q_FALLTHROUGH();
     case 4:
         b |= ((uint64_t)in[3]) << 24;
+        Q_FALLTHROUGH();
     case 3:
         b |= ((uint64_t)in[2]) << 16;
+        Q_FALLTHROUGH();
     case 2:
         b |= ((uint64_t)in[1]) << 8;
+        Q_FALLTHROUGH();
     case 1:
         b |= ((uint64_t)in[0]);
         break;
@@ -380,7 +395,8 @@ static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64
     b = v0 ^ v1 ^ v2 ^ v3;
     return b;
 }
-#else
+#undef SIPROUND
+
 // This is a "SipHash" implementation adopted for 32bit platforms. It performs
 // basically the same operations as the 64bit version using 4 byte at a time
 // instead of 8.
@@ -391,12 +407,6 @@ static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64
 //
 // For the v0-v4 constants, simply use the first four bytes of the 64 bit versions.
 //
-// Use SipHash-1-2, which has similar performance characteristics as
-// stablehash() above, instead of the SipHash-2-4 default
-#define cROUNDS 1
-#define dROUNDS 2
-
-#define ROTL(x, b) (uint32_t)(((x) << (b)) | ((x) >> (32 - (b))))
 
 #define SIPROUND                                                               \
   do {                                                                         \
@@ -416,8 +426,7 @@ static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64
     v2 = ROTL(v2, 16);                                                         \
   } while (0)
 
-Q_NEVER_INLINE Q_DECL_HOT_FUNCTION
-static uint siphash(const uint8_t *in, uint inlen, uint seed, uint seed2)
+template <int cROUNDS = 2, int dROUNDS = 4> struct SipHash32
 {
     /* "somepseudorandomlygeneratedbytes" */
     uint v0 = 0x736f6d65U;
@@ -425,17 +434,32 @@ static uint siphash(const uint8_t *in, uint inlen, uint seed, uint seed2)
     uint v2 = 0x6c796765U;
     uint v3 = 0x74656462U;
     uint b;
+    uint k0;
+    uint k1;
+
+    inline SipHash32(size_t fulllen, uint seed, uint seed2);
+    inline void addBlock(const uint8_t *in, size_t inlen);
+    inline uint finalize(const uint8_t *in, size_t left);
+};
+
+template <int cROUNDS, int dROUNDS> inline
+SipHash32<cROUNDS, dROUNDS>::SipHash32(size_t inlen, uint seed, uint seed2)
+{
     uint k0 = seed;
     uint k1 = seed2;
-    int i;
-    const uint8_t *end = in + (inlen & ~3ULL);
-    const int left = inlen & 3;
     b = inlen << 24;
     v3 ^= k1;
     v2 ^= k0;
     v1 ^= k1;
     v0 ^= k0;
+}
 
+template <int cROUNDS, int dROUNDS> inline Q_DECL_HOT_FUNCTION void
+SipHash32<cROUNDS, dROUNDS>::addBlock(const uint8_t *in, size_t inlen)
+{
+    Q_ASSERT((inlen & 3ULL) == 0);
+    int i;
+    const uint8_t *end = in + inlen;
     for (; in != end; in += 4) {
         uint m = qFromUnaligned<uint>(in);
         v3 ^= m;
@@ -445,15 +469,19 @@ static uint siphash(const uint8_t *in, uint inlen, uint seed, uint seed2)
 
         v0 ^= m;
     }
+}
 
-#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 700
-    QT_WARNING_DISABLE_GCC("-Wimplicit-fallthrough")
-#endif
+template <int cROUNDS, int dROUNDS> inline Q_DECL_HOT_FUNCTION uint
+SipHash32<cROUNDS, dROUNDS>::finalize(const uint8_t *in, size_t left)
+{
+    int i;
     switch (left) {
     case 3:
         b |= ((uint)in[2]) << 16;
+        Q_FALLTHROUGH();
     case 2:
         b |= ((uint)in[1]) << 8;
+        Q_FALLTHROUGH();
     case 1:
         b |= ((uint)in[0]);
         break;
@@ -476,7 +504,24 @@ static uint siphash(const uint8_t *in, uint inlen, uint seed, uint seed2)
     b = v0 ^ v1 ^ v2 ^ v3;
     return b;
 }
-#endif
+#undef SIPROUND
+#undef ROTL
+
+// Use SipHash-1-2, which has similar performance characteristics as
+// stablehash() above, instead of the SipHash-2-4 default
+template <int cROUNDS = 1, int dROUNDS = 2>
+using SipHash = std::conditional_t<sizeof(void *) == 8,
+        SipHash64<cROUNDS, dROUNDS>, SipHash32<cROUNDS, dROUNDS>>;
+} // unnamed namespace
+
+Q_NEVER_INLINE Q_DECL_HOT_FUNCTION
+static size_t siphash(const uint8_t *in, size_t inlen, size_t seed, size_t seed2)
+{
+    constexpr size_t TailSizeMask = sizeof(void *) - 1;
+    SipHash<> hasher(inlen, seed, seed2);
+    hasher.addBlock(in, inlen & ~TailSizeMask);
+    return hasher.finalize(in + (inlen & ~TailSizeMask), inlen & TailSizeMask);
+}
 
 #if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)  // GCC
 #  define QHASH_AES_SANITIZER_BUILD
