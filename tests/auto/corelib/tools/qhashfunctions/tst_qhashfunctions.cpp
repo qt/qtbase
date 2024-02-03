@@ -289,10 +289,12 @@ void tst_QHashFunctions::stringConsistency_data()
     QTest::newRow("null") << QString();
     QTest::newRow("empty") << "";
     QTest::newRow("withnull") << QStringLiteral("A\0z");
-    QTest::newRow("short-ascii") << "Hello";
+    QTest::newRow("short-ascii") << "Hello";            // 10 bytes
+    QTest::newRow("medium-ascii") << "Hello, World";    // 24 bytes
     QTest::newRow("long-ascii") << QStringLiteral("abcdefghijklmnopqrstuvxyz").repeated(16);
 
     QTest::newRow("short-latin1") << "Bokmål";
+    QTest::newRow("medium-latin1") << "Det går bra!";   // 24 bytes
     QTest::newRow("long-latin1")
             << R"(Alle mennesker er født frie og med samme menneskeverd og menneskerettigheter.
  De er utstyrt med fornuft og samvittighet og bør handle mot hverandre i brorskapets ånd.)";
@@ -327,8 +329,6 @@ void tst_QHashFunctions::stringConsistency()
         QLatin1StringView l1sv(l1ba.data(), l1ba.size());
 #ifdef Q_PROCESSOR_ARM
         // zero-extending aeshash not implemented on ARM
-#elif defined(Q_PROCESSOR_X86)
-        // zero-extending aeshash not implemented on x86
 #else
         if (value == l1sv)
             QCOMPARE(qHash(l1sv, seed), qHash(value, seed));

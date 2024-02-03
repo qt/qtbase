@@ -616,7 +616,38 @@ namespace {
     // the scrambling round (step 3 in [1]) because it's just very good at
     // spreading the bits around.
     //
+    // Note on Latin-1 hashing (ZX == ByteToWord): for simplicity of the
+    // algorithm, we pass sizes equivalent to the UTF-16 content (ZX == None).
+    // That means we must multiply by 2 on entry, divide by 2 on pointer
+    // advancing, and load half as much data from memory (though we produce
+    // exactly as much data in registers). The compilers appear to optimize
+    // this out.
+    //
     // [1] https://en.wikipedia.org/wiki/Advanced_Encryption_Standard#High-level_description_of_the_algorithm
+
+    template <ZeroExtension ZX, typename T> static const T *advance(const T *ptr, ptrdiff_t n)
+    {
+        if constexpr (ZX == None)
+            return ptr + n;
+
+        // see note above on ZX == ByteToWord hashing
+        auto p = reinterpret_cast<const uchar *>(ptr);
+        n *= sizeof(T);
+        return reinterpret_cast<const T *>(p + n/2);
+    }
+
+    template <ZeroExtension> static __m128i loadu128(const void *ptr);
+    template <> Q_ALWAYS_INLINE QT_FUNCTION_TARGET(AES) __m128i loadu128<None>(const void *ptr)
+    {
+        return _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+    }
+    template <> Q_ALWAYS_INLINE QT_FUNCTION_TARGET(AES) __m128i loadu128<ByteToWord>(const void *ptr)
+    {
+        // use a MOVQ followed by PMOVZXBW
+        // the compiler usually combines them as a single, loading PMOVZXBW
+        __m128i data = _mm_loadl_epi64(static_cast<const __m128i *>(ptr));
+        return _mm_cvtepu8_epi16(data);
+    }
 
     // hash 16 bytes, running 3 scramble rounds of AES on itself (like label "final1")
     static void Q_ALWAYS_INLINE QT_FUNCTION_TARGET(AES) QT_VECTORCALL
@@ -629,11 +660,12 @@ namespace {
     }
 
     // hash twice 16 bytes, running 2 scramble rounds of AES on itself
+    template <ZeroExtension ZX>
     static void QT_FUNCTION_TARGET(AES) QT_VECTORCALL
     hash2x16bytes(__m128i &state0, __m128i &state1, const __m128i *src0, const __m128i *src1)
     {
-        __m128i data0 = _mm_loadu_si128(src0);
-        __m128i data1 = _mm_loadu_si128(src1);
+        __m128i data0 = loadu128<ZX>(src0);
+        __m128i data1 = loadu128<ZX>(src1);
         state0 = _mm_xor_si128(data0, state0);
         state1 = _mm_xor_si128(data1, state1);
         state0 = _mm_aesenc_si128(state0, state0);
@@ -680,16 +712,18 @@ Q_ALWAYS_INLINE __m128i AESHashSeed::state1() const
     }
 }
 
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(AES) QT_VECTORCALL
 aeshash128_16to32(__m128i state0, __m128i state1, const __m128i *src, const __m128i *srcend)
 {
     {
-        if (src + 1 < srcend) {
+        const __m128i *src2 = advance<ZX>(srcend, -1);
+        if (advance<ZX>(src, 1) < srcend) {
             // epilogue: between 16 and 31 bytes
-            hash2x16bytes(state0, state1, src, srcend - 1);
+            hash2x16bytes<ZX>(state0, state1, src, src2);
         } else if (src != srcend) {
             // epilogue: between 1 and 16 bytes, overlap with the end
-            __m128i data = _mm_loadu_si128(srcend - 1);
+            __m128i data = loadu128<ZX>(src2);
             hash16bytes(state0, data);
         }
 
@@ -700,8 +734,21 @@ aeshash128_16to32(__m128i state0, __m128i state1, const __m128i *src, const __m1
     return mm_cvtsi128_sz(state0);
 }
 
+// load all 16 bytes and mask off the bytes past the end of the source
+static const qint8 maskarray[] = {
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+};
+
+// load 16 bytes ending at the data end, then shuffle them to the beginning
+static const qint8 shufflecontrol[] = {
+    1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(AES) QT_VECTORCALL
-aeshash128_lt16(__m128i state0, const uchar *p, size_t len)
+aeshash128_lt16(__m128i state0, const __m128i *src, const __m128i *srcend, size_t len)
 {
     if (len) {
         // We're going to load 16 bytes and mask zero the part we don't care
@@ -712,25 +759,15 @@ aeshash128_lt16(__m128i state0, const uchar *p, size_t len)
         constexpr quintptr PageSize = 4096;
         __m128i data;
 
-        if ((quintptr(p) & (PageSize / 2)) == 0) {
+        if ((quintptr(src) & (PageSize / 2)) == 0) {
             // lower half of the page:
-            // load all 16 bytes and mask off the bytes past the end of the source
-            static const qint8 maskarray[] = {
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-            };
             __m128i mask = _mm_loadu_si128(reinterpret_cast<const __m128i *>(maskarray + 15 - len));
-            data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(p));
+            data = loadu128<ZX>(src);
             data = _mm_and_si128(data, mask);
         } else {
             // upper half of the page:
-            // load 16 bytes ending at the data end, then shuffle them to the beginning
-            static const qint8 shufflecontrol[] = {
-                1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-            };
             __m128i control = _mm_loadu_si128(reinterpret_cast<const __m128i *>(shufflecontrol + 15 - len));
-            data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(p + len) - 1);
+            data = loadu128<ZX>(advance<ZX>(srcend, -1));
             data = _mm_shuffle_epi8(data, control);
         }
 
@@ -739,24 +776,45 @@ aeshash128_lt16(__m128i state0, const uchar *p, size_t len)
     return mm_cvtsi128_sz(state0);
 }
 
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(AES) QT_VECTORCALL
 aeshash128_ge32(__m128i state0, __m128i state1, const __m128i *src, const __m128i *srcend)
 {
     // main loop: scramble two 16-byte blocks
-    for ( ; src + 2 < srcend; src += 2)
-        hash2x16bytes(state0, state1, src, src + 1);
+    for ( ; advance<ZX>(src, 2) < srcend; src = advance<ZX>(src, 2))
+        hash2x16bytes<ZX>(state0, state1, src, advance<ZX>(src, 1));
 
-    return aeshash128_16to32(state0, state1, src, srcend);
+    return aeshash128_16to32<ZX>(state0, state1, src, srcend);
 }
 
 #  if QT_COMPILER_SUPPORTS_HERE(VAES)
+template <ZeroExtension> static __m256i loadu256(const void *ptr);
+template <> Q_ALWAYS_INLINE QT_FUNCTION_TARGET(VAES) __m256i loadu256<None>(const void *ptr)
+{
+    return _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
+}
+template <> Q_ALWAYS_INLINE QT_FUNCTION_TARGET(VAES) __m256i loadu256<ByteToWord>(const void *ptr)
+{
+    // VPMOVZXBW xmm, ymm
+    __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+    return _mm256_cvtepu8_epi16(data);
+}
+
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(VAES_AVX512) QT_VECTORCALL
 aeshash256_lt32_avx256(__m256i state0, const uchar *p, size_t len)
 {
     __m128i state0_128 = _mm256_castsi256_si128(state0);
     if (len) {
-        __mmask32 mask = _bzhi_u32(-1, unsigned(len));
-        __m256i data = _mm256_maskz_loadu_epi8(mask, p);
+        __m256i data;
+        if constexpr (ZX == None) {
+            __mmask32 mask = _bzhi_u32(-1, unsigned(len));
+            data = _mm256_maskz_loadu_epi8(mask, p);
+        } else {
+            __mmask16 mask = _bzhi_u32(-1, unsigned(len) / 2);
+            __m128i data0 = _mm_maskz_loadu_epi8(mask, p);
+            data = _mm256_cvtepu8_epi16(data0);
+        }
         __m128i data0 = _mm256_castsi256_si128(data);
         if (len >= sizeof(__m128i)) {
             state0 = _mm256_xor_si256(state0, data);
@@ -776,8 +834,9 @@ aeshash256_lt32_avx256(__m256i state0, const uchar *p, size_t len)
     return mm_cvtsi128_sz(state0_128);
 }
 
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(VAES) QT_VECTORCALL
-aeshash256_ge32(__m256i state0, const uchar *p, size_t len)
+aeshash256_ge32(__m256i state0, const __m128i *s, const __m128i *end, size_t len)
 {
     static const auto hash32bytes = [](__m256i &state0, __m256i data) QT_FUNCTION_TARGET(VAES) {
         state0 = _mm256_xor_si256(state0, data);
@@ -787,10 +846,10 @@ aeshash256_ge32(__m256i state0, const uchar *p, size_t len)
     };
 
     // hash twice 32 bytes, running 2 scramble rounds of AES on itself
-    const auto hash2x32bytes = [](__m256i &state0, __m256i &state1, const __m256i *src0,
-            const __m256i *src1) QT_FUNCTION_TARGET(VAES) {
-        __m256i data0 = _mm256_loadu_si256(src0);
-        __m256i data1 = _mm256_loadu_si256(src1);
+    const auto hash2x32bytes = [](__m256i &state0, __m256i &state1, const void *src0,
+            const void *src1) QT_FUNCTION_TARGET(VAES) {
+        __m256i data0 = loadu256<ZX>(src0);
+        __m256i data1 = loadu256<ZX>(src1);
         state0 = _mm256_xor_si256(data0, state0);
         state1 = _mm256_xor_si256(data1, state1);
         state0 = _mm256_aesenc_epi128(state0, state0);
@@ -799,21 +858,22 @@ aeshash256_ge32(__m256i state0, const uchar *p, size_t len)
         state1 = _mm256_aesenc_epi128(state1, state1);
     };
 
-    const __m256i *src = reinterpret_cast<const __m256i *>(p);
-    const __m256i *srcend = reinterpret_cast<const __m256i *>(p + len);
+    const __m256i *src = reinterpret_cast<const __m256i *>(s);
+    const __m256i *srcend = reinterpret_cast<const __m256i *>(end);
 
     __m256i state1 = _mm256_aesenc_epi128(state0, mm256_set1_epz(len));
 
     // main loop: scramble two 32-byte blocks
-    for ( ; src + 2 < srcend; src += 2)
-        hash2x32bytes(state0, state1, src, src + 1);
+    for ( ; advance<ZX>(src, 2) < srcend; src = advance<ZX>(src, 2))
+        hash2x32bytes(state0, state1, src, advance<ZX>(src, 1));
 
-    if (src + 1 < srcend) {
+    const __m256i *src2 = advance<ZX>(srcend, -1);
+    if (advance<ZX>(src, 1) < srcend) {
         // epilogue: between 32 and 31 bytes
-        hash2x32bytes(state0, state1, src, srcend - 1);
+        hash2x32bytes(state0, state1, src, src2);
     } else if (src != srcend) {
         // epilogue: between 1 and 32 bytes, overlap with the end
-        __m256i data = _mm256_loadu_si256(srcend - 1);
+        __m256i data = loadu256<ZX>(src2);
         hash32bytes(state0, data);
     }
 
@@ -826,59 +886,69 @@ aeshash256_ge32(__m256i state0, const uchar *p, size_t len)
     return mm_cvtsi128_sz(_mm_xor_si128(low, high));
 }
 
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(VAES)
 aeshash256(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
 {
     AESHashSeed state(seed, seed2);
     auto src = reinterpret_cast<const __m128i *>(p);
-    const auto srcend = reinterpret_cast<const __m128i *>(p + len);
+    const auto srcend = reinterpret_cast<const __m128i *>(advance<ZX>(p, len));
 
     if (len < sizeof(__m128i))
-        return aeshash128_lt16(state.state0, p, len);
+        return aeshash128_lt16<ZX>(state.state0, src, srcend, len);
 
     if (len <= sizeof(__m256i))
-        return aeshash128_16to32(state.state0, state.state1(), src, srcend);
+        return aeshash128_16to32<ZX>(state.state0, state.state1(), src, srcend);
 
-    return aeshash256_ge32(state.state0_256(), p, len);
+    return aeshash256_ge32<ZX>(state.state0_256(), src, srcend, len);
 }
 
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(VAES_AVX512)
 aeshash256_avx256(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
 {
     AESHashSeed state(seed, seed2);
-    if (len <= sizeof(__m256i))
-        return aeshash256_lt32_avx256(state.state0_256(), p, len);
+    auto src = reinterpret_cast<const __m128i *>(p);
+    const auto srcend = reinterpret_cast<const __m128i *>(advance<ZX>(p, len));
 
-    return aeshash256_ge32(state.state0_256(), p, len);
+    if (len <= sizeof(__m256i))
+        return aeshash256_lt32_avx256<ZX>(state.state0_256(), p, len);
+
+    return aeshash256_ge32<ZX>(state.state0_256(), src, srcend, len);
 }
 #  endif // VAES
 
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(AES)
 aeshash128(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
 {
     AESHashSeed state(seed, seed2);
     auto src = reinterpret_cast<const __m128i *>(p);
-    const auto srcend = reinterpret_cast<const __m128i *>(p + len);
+    const auto srcend = reinterpret_cast<const __m128i *>(advance<ZX>(p, len));
 
     if (len < sizeof(__m128i))
-        return aeshash128_lt16(state.state0, p, len);
+        return aeshash128_lt16<ZX>(state.state0, src, srcend, len);
 
     if (len <= sizeof(__m256i))
-        return aeshash128_16to32(state.state0, state.state1(), src, srcend);
+        return aeshash128_16to32<ZX>(state.state0, state.state1(), src, srcend);
 
-    return aeshash128_ge32(state.state0, state.state1(), src, srcend);
+    return aeshash128_ge32<ZX>(state.state0, state.state1(), src, srcend);
 }
 
+template <ZeroExtension ZX = None>
 static size_t aeshash(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
 {
+    if constexpr (ZX == ByteToWord)
+        len *= 2;           // see note above on ZX == ByteToWord hashing
+
 #  if QT_COMPILER_SUPPORTS_HERE(VAES)
     if (qCpuHasFeature(VAES)) {
         if (qCpuHasFeature(AVX512VL))
-            return aeshash256_avx256(p, len, seed, seed2);
-        return aeshash256(p, len, seed, seed2);
+            return aeshash256_avx256<ZX>(p, len, seed, seed2);
+        return aeshash256<ZX>(p, len, seed, seed2);
     }
 #  endif
-    return aeshash128(p, len, seed, seed2);
+    return aeshash128<ZX>(p, len, seed, seed2);
 }
 #endif // x86 AESNI
 
@@ -1090,6 +1160,10 @@ size_t qHash(QLatin1StringView key, size_t seed) noexcept
     if (seed)
         seed2 = qt_qhash_seed.currentSeed(1);
 
+#if defined(AESHASH)
+    if (seed && qCpuHasFeature(AES) && qCpuHasFeature(SSE4_2))
+        return aeshash<ByteToWord>(data, size, seed, seed2);
+#endif
     return qHashBits_fallback<ByteToWord>(data, size, seed, seed2);
 }
 

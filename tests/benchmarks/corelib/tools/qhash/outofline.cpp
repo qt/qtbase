@@ -5,7 +5,7 @@
 
 QT_BEGIN_NAMESPACE
 
-size_t qHash(const Qt4String &str)
+size_t qHash(const Qt4String &str, size_t /* never used */)
 {
     qsizetype n = str.size();
     const QChar *p = str.unicode();
@@ -40,7 +40,7 @@ size_t qHash(const Qt50String &key, size_t seed)
 // Still, we can avoid writing the multiplication as "(h << 5) - h"
 // -- the compiler will turn it into a shift and an addition anyway
 // (for instance, gcc 4.4 does that even at -O0).
-size_t qHash(const JavaString &str)
+size_t qHash(const JavaString &str, size_t /* never used */)
 {
     const auto *p = reinterpret_cast<const char16_t *>(str.constData());
     const qsizetype len = str.size();
