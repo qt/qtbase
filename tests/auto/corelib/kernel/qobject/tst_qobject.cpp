@@ -3086,6 +3086,8 @@ void tst_QObject::blockingQueuedConnection()
     }
 }
 
+static int s_eventSpyCounter = -1;
+
 class EventSpy : public QObject
 {
     Q_OBJECT
@@ -3105,16 +3107,17 @@ public:
     void clear()
     {
         events.clear();
+        thisCounter = -1;
     }
 
     bool eventFilter(QObject *object, QEvent *event) override
     {
         events.append(qMakePair(object, event->type()));
-        timeStamp = std::chrono::steady_clock::now();
+        thisCounter = ++s_eventSpyCounter;
         return false;
     }
 
-    std::chrono::steady_clock::time_point timeStamp;
+    int thisCounter = -1;
 private:
     EventList events;
 };
@@ -3244,76 +3247,68 @@ void tst_QObject::installEventFilter()
     QVERIFY(spy.eventList().isEmpty());
 }
 
+#define CHECK_FAIL(message) \
+do {\
+    if (QTest::currentTestFailed())\
+        QFAIL("failed one line above on " message);\
+} while (false)
+
 void tst_QObject::installEventFilterOrder()
 {
     // installEventFilter() adds new objects to d_func()->extraData->eventFilters, which
     // affects the order of calling each object's eventFilter() when processing the events.
 
     QObject object;
-    EventSpy spy1;
-    object.installEventFilter(&spy1);
-    EventSpy spy2;
-    object.installEventFilter(&spy2);
-    EventSpy spy3;
-    object.installEventFilter(&spy3);
-
-    const EventSpy::EventList expected = { {&object, QEvent::Type(QEvent::User + 1)} };
-    auto checkExpected = [&] {
-        QCOMPARE(spy1.eventList(), expected);
-        QCOMPARE(spy2.eventList(), expected);
-        QCOMPARE(spy3.eventList(), expected);
-    };
+    EventSpy spy1, spy2, spy3;
 
     auto clearSignalSpies = [&] {
         for (auto *s : {&spy1, &spy2, &spy3})
             s->clear();
+        s_eventSpyCounter = -1;
     };
 
-    auto checkCallOrder = [](EventSpy &a, EventSpy &b, EventSpy &c) {
-        QVERIFY(a.timeStamp > b.timeStamp);
-        QVERIFY(b.timeStamp > c.timeStamp);
+    const EventSpy::EventList expected = { { &object, QEvent::Type(QEvent::User + 1) } };
+
+    // Call Order: from first to last
+    auto checkCallOrder = [&expected](const QList<EventSpy *> &spies) {
+        for (int i = 0; i < spies.size(); ++i) {
+            EventSpy *spy = spies.at(i);
+            QVERIFY2(spy->eventList() == expected,
+                     QString("The spy %1 wasn't triggered exactly once.").arg(i).toLatin1());
+            QCOMPARE(spy->thisCounter, i);
+        }
     };
 
+    // Install event filters and check the order of invocations:
+    // The last installed = the first called.
+    object.installEventFilter(&spy1);
+    object.installEventFilter(&spy2);
+    object.installEventFilter(&spy3);
+    clearSignalSpies();
     QCoreApplication::postEvent(&object, new QEvent(QEvent::Type(QEvent::User + 1)));
     QCoreApplication::processEvents();
-
-    checkExpected();
-    if (QTest::currentTestFailed())
-        return;
-
-    checkCallOrder(spy1, spy2, spy3);
-    if (QTest::currentTestFailed())
-        return;
-
-    clearSignalSpies();
+    checkCallOrder({ &spy3, &spy2, &spy1 });
+    CHECK_FAIL("checkCallOrder() - 1st round");
 
     // Install event filter for `spy1` again, which reorders spy1 in `eventFilters`
     // (the list doesn't have duplicates).
     object.installEventFilter(&spy1);
-
-    QCoreApplication::postEvent(&object, new QEvent(QEvent::Type(QEvent::User + 1)));
-    QCoreApplication::processEvents();
-
-    checkExpected();
-    if (QTest::currentTestFailed())
-        return;
-
-    checkCallOrder(spy2, spy3, spy1);
-    if (QTest::currentTestFailed())
-        return;
-
     clearSignalSpies();
-
-    object.removeEventFilter(&spy3);
-
     QCoreApplication::postEvent(&object, new QEvent(QEvent::Type(QEvent::User + 1)));
     QCoreApplication::processEvents();
+    checkCallOrder({ &spy1, &spy3, &spy2 });
+    CHECK_FAIL("checkCallOrder() - 2nd round");
 
+    // Remove event filter for `spy3`, ensure it's not called anymore and the
+    // existing filters order is preserved.
+    object.removeEventFilter(&spy3);
+    clearSignalSpies();
+    QCoreApplication::postEvent(&object, new QEvent(QEvent::Type(QEvent::User + 1)));
+    QCoreApplication::processEvents();
+    checkCallOrder({ &spy1, &spy2 });
+    CHECK_FAIL("checkCallOrder() - 3rd round");
     QVERIFY(spy3.eventList().isEmpty());
-    QCOMPARE(spy1.eventList(), expected);
-    QCOMPARE(spy2.eventList(), expected);
-
-    QVERIFY(spy2.timeStamp > spy1.timeStamp);
+    QCOMPARE(spy3.thisCounter, -1);
 }
 
 class EmitThread : public QThread
