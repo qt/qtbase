@@ -42,6 +42,7 @@ private slots:
     void heterogeneousSearchConstKey();
     void heterogeneousSearchByteArray();
     void heterogeneousSearchString();
+    void heterogeneousSearchLatin1String();
 
     void rehash_isnt_quadratic();
     void dont_need_default_constructor();
@@ -54,6 +55,7 @@ private slots:
     void qmultihashHeterogeneousSearchConstKey();
     void qmultihashHeterogeneousSearchByteArray();
     void qmultihashHeterogeneousSearchString();
+    void qmultihashHeterogeneousSearchLatin1String();
 
     void compare();
     void compare2();
@@ -1221,15 +1223,17 @@ template <> struct HeterogeneousSearchTestHelper<HeterogeneousHashingType>
 using HeterogeneousHashingType = QString;
 #endif
 
-template <template <typename, typename> class Hash, typename String, typename View>
-static void heterogeneousSearchTest(const QList<std::remove_const_t<String>> &keys)
+template <template <typename, typename> class Hash, typename String, typename View, typename Converter>
+static void heterogeneousSearchTest(const QList<std::remove_const_t<String>> &keys, Converter conv)
 {
 #ifdef __cpp_concepts
     using Helper = HeterogeneousSearchTestHelper<View>;
     String key = keys.last();
     String otherKey = keys.first();
-    View keyView(key);
-    View otherKeyView(otherKey);
+    auto keyHolder = conv(key);
+    auto otherKeyHolder = conv(otherKey);
+    View keyView(keyHolder);
+    View otherKeyView(otherKeyHolder);
 
     Hash<String, qsizetype> hash;
     static constexpr bool IsMultiHash = !std::is_same_v<decltype(hash.remove(String())), bool>;
@@ -1332,8 +1336,27 @@ static void heterogeneousSearchTest(const QList<std::remove_const_t<String>> &ke
     Helper::checkCounter();
 #else
     Q_UNUSED(keys);
+    Q_UNUSED(conv);
     QSKIP("This feature requires C++20 (concepts)");
 #endif
+}
+
+template <template <typename, typename> class Hash, typename String, typename View>
+static void heterogeneousSearchTest(const QList<std::remove_const_t<String>> &keys)
+{
+    heterogeneousSearchTest<Hash, String, View>(keys, [](const String &s) { return View(s); });
+}
+
+template <template <typename, typename> class Hash, typename T>
+static void heterogeneousSearchLatin1String(T)
+{
+    if constexpr (!T::value) {
+        QSKIP("QLatin1StringView and QString do not have the same hash on this platform");
+    } else {
+        // similar to the above
+        auto toLatin1 = [](const QString &s) { return s.toLatin1(); };
+        heterogeneousSearchTest<Hash, QString, QLatin1StringView>({ "Hello", {}, "World" }, toLatin1);
+    }
 }
 
 void tst_QHash::heterogeneousSearch()
@@ -1355,6 +1378,11 @@ void tst_QHash::heterogeneousSearchByteArray()
 void tst_QHash::heterogeneousSearchString()
 {
     heterogeneousSearchTest<QHash, QString, QStringView>({ "Hello", {}, "World" });
+}
+
+void tst_QHash::heterogeneousSearchLatin1String()
+{
+    ::heterogeneousSearchLatin1String<QHash>(QHashHeterogeneousSearch<QString, QLatin1StringView>{});
 }
 
 void tst_QHash::compare()
@@ -2344,6 +2372,11 @@ void tst_QHash::qmultihashHeterogeneousSearchByteArray()
 void tst_QHash::qmultihashHeterogeneousSearchString()
 {
     heterogeneousSearchTest<QMultiHash, QString, QStringView>({ "Hello", {}, "World" });
+}
+
+void tst_QHash::qmultihashHeterogeneousSearchLatin1String()
+{
+    ::heterogeneousSearchLatin1String<QMultiHash>(QHashHeterogeneousSearch<QString, QLatin1StringView>{});
 }
 
 void tst_QHash::keys_values_uniqueKeys()

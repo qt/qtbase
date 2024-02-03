@@ -321,6 +321,19 @@ void tst_QHashFunctions::stringConsistency()
 
     QCOMPARE(qHash(sv, seed), qHash(value, seed));
     QCOMPARE(qHash(u8bav, seed), qHash(u8ba, seed));
+
+    if (seed || QT_VERSION_MAJOR > 6) {
+        QByteArray l1ba = value.toLatin1();
+        QLatin1StringView l1sv(l1ba.data(), l1ba.size());
+#ifdef Q_PROCESSOR_ARM
+        // zero-extending aeshash not implemented on ARM
+#elif defined(Q_PROCESSOR_X86)
+        // zero-extending aeshash not implemented on x86
+#else
+        if (value == l1sv)
+            QCOMPARE(qHash(l1sv, seed), qHash(value, seed));
+#endif
+    }
 }
 
 void tst_QHashFunctions::qhash()

@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+void qt_from_latin1(char16_t *dst, const char *str, size_t size) noexcept;  // qstring.cpp
+
 // We assume that pointers and size_t have the same size. If that assumption should fail
 // on a platform the code selecting the different methods below needs to be fixed.
 static_assert(sizeof(size_t) == QT_POINTER_SIZE, "size_t and pointers have different size.");
@@ -523,6 +525,52 @@ static size_t siphash(const uint8_t *in, size_t inlen, size_t seed, size_t seed2
     return hasher.finalize(in + (inlen & ~TailSizeMask), inlen & TailSizeMask);
 }
 
+enum ZeroExtension {
+    None = 0,
+    ByteToWord = 1,
+};
+
+template <ZeroExtension = None> static size_t
+qHashBits_fallback(const uchar *p, size_t size, size_t seed, size_t seed2) noexcept;
+template <> size_t qHashBits_fallback<None>(const uchar *p, size_t size, size_t seed, size_t seed2) noexcept
+{
+    if (size <= QT_POINTER_SIZE)
+        return murmurhash(p, size, seed);
+
+    return siphash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
+}
+
+template <> size_t qHashBits_fallback<ByteToWord>(const uchar *data, size_t size, size_t seed, size_t seed2) noexcept
+{
+    auto quick_from_latin1 = [](char16_t *dest, const uchar *data, size_t size) {
+        // Quick, "inlined" version for very short blocks
+        std::copy_n(data, size, dest);
+    };
+    if (size <= QT_POINTER_SIZE / 2) {
+        std::array<char16_t, QT_POINTER_SIZE / 2> buf;
+        quick_from_latin1(buf.data(), data, size);
+        return murmurhash(buf.data(), size * 2, seed);
+    }
+
+    constexpr size_t TailSizeMask = sizeof(void *) / 2 - 1;
+    std::array<char16_t, 256> buf;
+    SipHash<> siphash(size * 2, seed, seed2);
+    ptrdiff_t offset = 0;
+    for ( ; offset + buf.size() < size; offset += buf.size()) {
+        qt_from_latin1(buf.data(), reinterpret_cast<const char *>(data) + offset, buf.size());
+        siphash.addBlock(reinterpret_cast<uint8_t *>(buf.data()), sizeof(buf));
+    }
+    if (size_t n = size - offset; n > TailSizeMask) {
+        n &= ~TailSizeMask;
+        qt_from_latin1(buf.data(), reinterpret_cast<const char *>(data) + offset, n);
+        siphash.addBlock(reinterpret_cast<uint8_t *>(buf.data()), n * 2);
+        offset += n;
+    }
+
+    quick_from_latin1(buf.data(), data + offset, size - offset);
+    return siphash.finalize(reinterpret_cast<uint8_t *>(buf.data()), (size - offset) * 2);
+}
+
 #if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)  // GCC
 #  define QHASH_AES_SANITIZER_BUILD
 #elif __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)  // Clang
@@ -978,18 +1026,17 @@ size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
     size_t seed2 = size;
     if (seed)
         seed2 = qt_qhash_seed.currentSeed(1);
+
+    auto data = reinterpret_cast<const uchar *>(p);
 #ifdef AESHASH
     if (seed && qCpuHasFeature(AES) && qCpuHasFeature(SSE4_2))
-        return aeshash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
+        return aeshash(data, size, seed, seed2);
 #elif defined(Q_PROCESSOR_ARM) && QT_COMPILER_SUPPORTS_HERE(AES) && !defined(QHASH_AES_SANITIZER_BUILD) && !defined(QT_BOOTSTRAPPED)
     if (seed && qCpuHasFeature(AES))
-        return aeshash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
+        return aeshash(data, size, seed, seed2);
 #endif
 
-    if (size <= QT_POINTER_SIZE)
-        return murmurhash(p, size, seed);
-
-    return siphash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
+    return qHashBits_fallback<>(data, size, seed, seed2);
 }
 
 size_t qHash(QByteArrayView key, size_t seed) noexcept
@@ -1019,7 +1066,31 @@ size_t qHash(const QBitArray &bitArray, size_t seed) noexcept
 
 size_t qHash(QLatin1StringView key, size_t seed) noexcept
 {
-    return qHashBits(reinterpret_cast<const uchar *>(key.data()), size_t(key.size()), seed);
+#ifdef QT_BOOTSTRAPPED
+    // the seed is always 0 in bootstrapped mode (no seed generation code),
+    // so help the compiler do dead code elimination
+    seed = 0;
+    constexpr bool Qt6DeterministicHash = true;
+#else
+    constexpr bool Qt6DeterministicHash = QT_VERSION_MAJOR == 6;
+#endif
+
+    auto data = reinterpret_cast<const uchar *>(key.data());
+    size_t size = key.size();
+
+    if (seed == 0 && Qt6DeterministicHash) {
+        // fall back to what we used to use prior to Qt 6.8
+        return qHashBits(data, size, seed);
+    }
+
+    // mix in the length as a secondary seed. For seed == 0, seed2 must be
+    // size, to match what we used to do prior to Qt 6.2.
+    // Multiplied by 2 to match the byte size of the equiavlent UTF-16 string.
+    size_t seed2 = size * 2;
+    if (seed)
+        seed2 = qt_qhash_seed.currentSeed(1);
+
+    return qHashBits_fallback<ByteToWord>(data, size, seed, seed2);
 }
 
 /*!
