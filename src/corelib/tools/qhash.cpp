@@ -756,16 +756,16 @@ aeshash128_lt16(__m128i state0, const __m128i *src, const __m128i *srcend, size_
         // including NULLs at the end because the length is in the key)
         // WARNING: this may produce valgrind warnings, but it's safe
 
-        constexpr quintptr PageSize = 4096;
+        constexpr quintptr CachelineSize = 64;
         __m128i data;
 
-        if ((quintptr(src) & (PageSize / 2)) == 0) {
-            // lower half of the page:
+        if ((quintptr(src) & (CachelineSize / 2)) == 0) {
+            // lower half of the cacheline:
             __m128i mask = _mm_loadu_si128(reinterpret_cast<const __m128i *>(maskarray + 15 - len));
             data = loadu128<ZX>(src);
             data = _mm_and_si128(data, mask);
         } else {
-            // upper half of the page:
+            // upper half of the cacheline:
             __m128i control = _mm_loadu_si128(reinterpret_cast<const __m128i *>(shufflecontrol + 15 - len));
             data = loadu128<ZX>(advance<ZX>(srcend, -1));
             data = _mm_shuffle_epi8(data, control);
