@@ -1134,7 +1134,11 @@ void QGraphicsProxyWidget::dropEvent(QGraphicsSceneDragDropEvent *event)
         QPoint widgetPos = d->mapToReceiver(event->pos(), d->dragDropWidget).toPoint();
         QDropEvent dropEvent(widgetPos, event->possibleActions(), event->mimeData(), event->buttons(), event->modifiers());
         QCoreApplication::sendEvent(d->dragDropWidget, &dropEvent);
-        event->setAccepted(dropEvent.isAccepted());
+        const bool accepted = dropEvent.isAccepted();
+        event->setAccepted(accepted);
+        if(accepted){
+            event->setDropAction(dropEvent.dropAction());
+        }
         d->dragDropWidget = nullptr;
     }
 #endif
