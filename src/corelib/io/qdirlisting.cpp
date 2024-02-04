@@ -133,11 +133,10 @@ void QDirListingPrivate::init(bool resolveEngine = true)
 
 #if QT_CONFIG(regularexpression)
     nameRegExps.reserve(nameFilters.size());
-    for (const auto &filter : nameFilters) {
-        auto re = QRegularExpression::fromWildcard(filter, (filters & QDir::CaseSensitive ?
-                                                            Qt::CaseSensitive : Qt::CaseInsensitive));
-        nameRegExps.append(re);
-    }
+    const auto cs = filters.testAnyFlags(QDir::CaseSensitive) ? Qt::CaseSensitive
+                                                              : Qt::CaseInsensitive;
+    for (const auto &filter : nameFilters)
+        nameRegExps.emplace_back(QRegularExpression::fromWildcard(filter, cs));
 #endif
 
     if (resolveEngine)
@@ -149,12 +148,14 @@ void QDirListingPrivate::init(bool resolveEngine = true)
 
 void QDirListingPrivate::pushDirectory(QDirEntryInfo &entryInfo)
 {
-    QString path = entryInfo.filePath();
-
+    const QString path = [&entryInfo] {
 #ifdef Q_OS_WIN
-    if (entryInfo.isSymLink())
-        path = entryInfo.canonicalFilePath();
+        if (entryInfo.isSymLink())
+            return entryInfo.canonicalFilePath();
 #endif
+        return entryInfo.filePath();
+    }();
+
 
     if (iteratorFlags.testAnyFlags(QDirListing::IteratorFlag::FollowSymlinks)) {
         // Stop link loops
@@ -300,16 +301,12 @@ bool QDirListingPrivate::matchesFilters(QDirEntryInfo &entryInfo) const
 
     // name filter
 #if QT_CONFIG(regularexpression)
-    // Pass all entries through name filters, except dirs if the AllDirs
-    if (!nameFilters.isEmpty() && !(filters.testAnyFlags(QDir::AllDirs) && entryInfo.isDir())) {
-        bool matched = false;
-        for (const auto &re : nameRegExps) {
-            if (re.match(fileName).hasMatch()) {
-                matched = true;
-                break;
-            }
-        }
-        if (!matched)
+    // Pass all entries through name filters, except dirs if AllDirs is set
+    if (!nameRegExps.isEmpty() && !(filters.testAnyFlags(QDir::AllDirs) && entryInfo.isDir())) {
+        auto regexMatchesName = [&fileName](const auto &re) {
+            return re.match(fileName).hasMatch();
+        };
+        if (std::none_of(nameRegExps.cbegin(), nameRegExps.cend(), regexMatchesName))
             return false;
     }
 #endif
@@ -328,9 +325,12 @@ bool QDirListingPrivate::matchesFilters(QDirEntryInfo &entryInfo) const
         return false;
 
     // filter system files
-    if (!includeSystem && (!(entryInfo.isFile() || entryInfo.isDir() || entryInfo.isSymLink())
-                    || (!entryInfo.exists() && entryInfo.isSymLink())))
-        return false;
+    if (!includeSystem) {
+        if (!entryInfo.isFile() && !entryInfo.isDir() && !entryInfo.isSymLink())
+            return false;
+        if (entryInfo.isSymLink() && !entryInfo.exists())
+            return false;
+    }
 
     // skip directories
     const bool skipDirs = !(filters & (QDir::Dirs | QDir::AllDirs));
@@ -344,16 +344,17 @@ bool QDirListingPrivate::matchesFilters(QDirEntryInfo &entryInfo) const
         return false;
 
     // filter permissions
-    const bool filterPermissions = ((filters & QDir::PermissionMask)
-                                    && (filters & QDir::PermissionMask) != QDir::PermissionMask);
-    const bool doWritable = !filterPermissions || (filters & QDir::Writable);
-    const bool doExecutable = !filterPermissions || (filters & QDir::Executable);
-    const bool doReadable = !filterPermissions || (filters & QDir::Readable);
-    if (filterPermissions
-        && ((doReadable && !entryInfo.isReadable())
+    const auto perms = filters & QDir::PermissionMask;
+    const bool filterPermissions = perms != 0 && perms != QDir::PermissionMask;
+    if (filterPermissions) {
+        const bool doWritable = filters.testAnyFlags(QDir::Writable);
+        const bool doExecutable = filters.testAnyFlags(QDir::Executable);
+        const bool doReadable = filters.testAnyFlags(QDir::Readable);
+        if ((doReadable && !entryInfo.isReadable())
             || (doWritable && !entryInfo.isWritable())
-            || (doExecutable && !entryInfo.isExecutable()))) {
-        return false;
+            || (doExecutable && !entryInfo.isExecutable())) {
+            return false;
+        }
     }
 
     return true;
