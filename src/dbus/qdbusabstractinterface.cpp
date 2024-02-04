@@ -677,6 +677,7 @@ void QDBusAbstractInterface::internalPropSet(const char *propname, const QVarian
     This example illustrates function calling with 0, 1 and 2 parameters and illustrates different
     parameter types passed in each (the first call to \c "ProcessWorkUnicode" will contain one
     Unicode string, the second call to \c "ProcessWork" will contain one string and one byte array).
+    See asyncCall() for the same example in non-blocking (asynchronous) calls.
 
     \note Before Qt 5.14, this function accepted a maximum of just eight (8) arguments.
 
@@ -734,6 +735,7 @@ void QDBusAbstractInterface::internalPropSet(const char *propname, const QVarian
     This example illustrates function calling with 0, 1 and 2 parameters and illustrates different
     parameter types passed in each (the first call to \c "ProcessWorkUnicode" will contain one
     Unicode string, the second call to \c "ProcessWork" will contain one string and one byte array).
+    See call() for the same example in blocking (synchronous) calls.
 
     \note Before Qt 5.14, this function accepted a maximum of just eight (8) arguments.
 
