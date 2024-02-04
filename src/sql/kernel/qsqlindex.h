@@ -47,7 +47,6 @@ public:
     void setDescending(int i, bool desc);
 
 private:
-    QString createField(int i, const QString& prefix, bool verbose) const;
     // ### Qt7: move to d-ptr
     QString cursor;
     QString nm;
