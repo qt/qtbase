@@ -147,24 +147,6 @@ void QSqlIndex::setDescending(int i, bool desc)
         sorts[i] = desc;
 }
 
-/*! \internal
-
-  Creates a string representing the field number \a i using prefix \a
-  prefix. If \a verbose is true, ASC or DESC is included in the field
-  description if the field is sorted in ASCending or DESCending order.
-*/
-
-QString QSqlIndex::createField(int i, const QString& prefix, bool verbose) const
-{
-    QString f;
-    if (!prefix.isEmpty())
-        f += prefix + u'.';
-    f += field(i).name();
-    if (verbose)
-        f += u' ' + QString((isDescending(i) ? "DESC"_L1 : "ASC"_L1));
-    return f;
-}
-
 /*!
     \fn QString QSqlIndex::cursorName() const
 
