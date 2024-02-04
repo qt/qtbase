@@ -969,7 +969,7 @@ bool QFileInfo::isReadable() const
     Q_D(const QFileInfo);
     return d->checkAttribute<bool>(
                 QFileSystemMetaData::UserReadPermission,
-                [d]() { return (d->metaData.permissions() & QFile::ReadUser) != 0; },
+                [d]() { return d->metaData.isReadable(); },
                 [d]() { return d->getFileFlags(QAbstractFileEngine::ReadUserPerm); });
 }
 
@@ -989,7 +989,7 @@ bool QFileInfo::isWritable() const
     Q_D(const QFileInfo);
     return d->checkAttribute<bool>(
                 QFileSystemMetaData::UserWritePermission,
-                [d]() { return (d->metaData.permissions() & QFile::WriteUser) != 0; },
+                [d]() { return d->metaData.isWritable(); },
                 [d]() { return d->getFileFlags(QAbstractFileEngine::WriteUserPerm); });
 }
 
@@ -1009,7 +1009,7 @@ bool QFileInfo::isExecutable() const
     Q_D(const QFileInfo);
     return d->checkAttribute<bool>(
                 QFileSystemMetaData::UserExecutePermission,
-                [d]() { return (d->metaData.permissions() & QFile::ExeUser) != 0; },
+                [d]() { return d->metaData.isExecutable(); },
                 [d]() { return d->getFileFlags(QAbstractFileEngine::ExeUserPerm); });
 }
 

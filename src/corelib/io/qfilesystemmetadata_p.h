@@ -191,6 +191,10 @@ public:
     uint groupId() const;
     uint ownerId(QAbstractFileEngine::FileOwner owner) const;
 
+    bool isReadable() const   { return permissions().testAnyFlags(QFile::ReadUser); }
+    bool isWritable() const   { return permissions().testAnyFlags(QFile::WriteUser); }
+    bool isExecutable() const { return permissions().testAnyFlags(QFile::ExeUser); }
+
 #ifdef Q_OS_UNIX
     void fillFromStatxBuf(const struct statx &statBuffer);
     void fillFromStatBuf(const QT_STATBUF &statBuffer);
