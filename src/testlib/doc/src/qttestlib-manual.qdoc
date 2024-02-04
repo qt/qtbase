@@ -420,7 +420,7 @@
     etc to throw on failure (as opposed to just returning from the
     immediately-surrounding function scope).
     \li \c QTEST_THROW_ON_SKIP (since 6.8) \br
-    Same as \c QTEST_THROW_ON_SKIP, except affecting QSKIP().
+    Same as \c QTEST_THROW_ON_FAIL, except affecting QSKIP().
     \endlist
 
     \section1 Creating a Benchmark
