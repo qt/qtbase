@@ -94,8 +94,8 @@
     Input-only slots are normal slots that take parameters passed by value or
     by constant reference. However, unlike asynchronous slots, the caller is
     usually waiting for completion of the callee before resuming operation.
-    Therefore, non-asynchronous slots should not block or should state it its
-    documentation that they may do so.
+    Therefore, non-asynchronous slots should not block or should explicitly
+    state it will block in its documentation that they may do so.
 
     Input-only slots have no special marking in their signature, except that
     they take only parameters passed by value or by constant reference.
