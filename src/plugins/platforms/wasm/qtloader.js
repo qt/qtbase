@@ -80,16 +80,6 @@ async function qtLoad(config)
             throw new Error('ENV must be exported if environment variables are passed');
     };
 
-    const throwIfFsUsedButNotExported = (instance, config) =>
-    {
-        const environment = config.environment;
-        if (!environment || Object.keys(environment).length === 0)
-            return;
-        const isFsExported = typeof instance.FS === 'object';
-        if (!isFsExported)
-            throw new Error('FS must be exported if preload is used');
-    };
-
     if (typeof config !== 'object')
         throw new Error('config is required, expected an object');
     if (typeof config.qt !== 'object')
@@ -155,7 +145,11 @@ async function qtLoad(config)
                 }
             }
         }
-        throwIfFsUsedButNotExported(instance, config);
+
+        const isFsExported = typeof instance.FS === 'object';
+        if (!isFsExported)
+            throw new Error('FS must be exported if preload is used');
+
         for ({destination, data} of self.preloadData) {
             makeDirs(instance.FS, destination);
             instance.FS.writeFile(destination, new Uint8Array(data));
