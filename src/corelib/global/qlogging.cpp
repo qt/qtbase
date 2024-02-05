@@ -1861,7 +1861,7 @@ static bool win_message_handler(QtMsgType, const QMessageLogContext &,
     if (shouldLogToStderr())
         return false; // Leave logging up to stderr handler
 
-    win_outputDebugString_helper(formattedMessage);
+    win_outputDebugString_helper(formattedMessage + u'\n');
 
     return true; // Prevent further output to stderr
 }
