@@ -2600,7 +2600,7 @@ void QPlainTextEdit::insertFromMimeData(const QMimeData *source)
 bool QPlainTextEdit::isReadOnly() const
 {
     Q_D(const QPlainTextEdit);
-    return !(d->control->textInteractionFlags() & Qt::TextEditable);
+    return !d->control || !(d->control->textInteractionFlags() & Qt::TextEditable);
 }
 
 void QPlainTextEdit::setReadOnly(bool ro)
