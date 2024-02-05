@@ -6134,7 +6134,7 @@ Version 1.6.41 [January 24, 2024]
     (Contributed by GuXiWei, JinBo and ZhangLixia)
   Fixed the run-time discovery of MIPS MSA hardware.
     (Contributed by Sui Jingfeng)
-  Fixed an off-by-one error in the function `png_do_check_palette_indexes`,
+  Fixed an off-by-one error in the function png_do_check_palette_indexes(),
     which failed to recognize errors that might have existed in the first
     column of a broken palette-encoded image. This was a benign regression
     accidentally introduced in libpng-1.6.33. No pixel was harmed.
@@ -6160,6 +6160,11 @@ Version 1.6.41 [January 24, 2024]
   Relicensed the CI scripts to the MIT License.
   Improved the test coverage.
     (Contributed by John Bowler)
+
+Version 1.6.42 [January 29, 2024]
+  Fixed the implementation of the macro function png_check_sig().
+    This was an API regression, introduced in libpng-1.6.41.
+    (Reported by Matthieu Darbois)
 
 Send comments/corrections/commendations to png-mng-implement at lists.sf.net.
 Subscription is required; visit
