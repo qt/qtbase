@@ -1140,21 +1140,12 @@ size_t qHash(QLatin1StringView key, size_t seed) noexcept
     // the seed is always 0 in bootstrapped mode (no seed generation code),
     // so help the compiler do dead code elimination
     seed = 0;
-    constexpr bool Qt6DeterministicHash = true;
-#else
-    constexpr bool Qt6DeterministicHash = QT_VERSION_MAJOR == 6;
 #endif
 
     auto data = reinterpret_cast<const uchar *>(key.data());
     size_t size = key.size();
 
-    if (seed == 0 && Qt6DeterministicHash) {
-        // fall back to what we used to use prior to Qt 6.8
-        return qHashBits(data, size, seed);
-    }
-
-    // mix in the length as a secondary seed. For seed == 0, seed2 must be
-    // size, to match what we used to do prior to Qt 6.2.
+    // Mix in the length as a secondary seed.
     // Multiplied by 2 to match the byte size of the equiavlent UTF-16 string.
     size_t seed2 = size * 2;
     if (seed)

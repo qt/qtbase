@@ -58,6 +58,12 @@ template <> struct QHashHeterogeneousSearch<QString, QStringView> : std::true_ty
 template <> struct QHashHeterogeneousSearch<QStringView, QString> : std::true_type {};
 template <> struct QHashHeterogeneousSearch<QByteArray, QByteArrayView> : std::true_type {};
 template <> struct QHashHeterogeneousSearch<QByteArrayView, QByteArray> : std::true_type {};
+#ifndef Q_PROCESSOR_ARM
+template <> struct QHashHeterogeneousSearch<QString, QLatin1StringView> : std::true_type {};
+template <> struct QHashHeterogeneousSearch<QStringView, QLatin1StringView> : std::true_type {};
+template <> struct QHashHeterogeneousSearch<QLatin1StringView, QString> : std::true_type {};
+template <> struct QHashHeterogeneousSearch<QLatin1StringView, QStringView> : std::true_type {};
+#endif
 
 namespace QHashPrivate {
 
