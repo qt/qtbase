@@ -458,6 +458,11 @@ bool QIOSWindow::isForeignWindow() const
     return ![m_view isKindOfClass:QUIView.class];
 }
 
+UIView *QIOSWindow::view() const
+{
+    return m_view;
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qioswindow.cpp"
