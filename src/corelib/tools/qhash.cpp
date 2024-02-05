@@ -937,13 +937,7 @@ size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
     if (seed && qCpuHasFeature(AES) && qCpuHasFeature(SSE4_2))
         return aeshash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
 #elif defined(Q_PROCESSOR_ARM) && QT_COMPILER_SUPPORTS_HERE(AES) && !defined(QHASH_AES_SANITIZER_BUILD) && !defined(QT_BOOTSTRAPPED)
-# if defined(Q_OS_LINUX)
-    // Do specific runtime-only check as Yocto hard enables Crypto extension for
-    // all armv8 configs
-    if (seed && (qCpuFeatures() & CpuFeatureAES))
-# else
     if (seed && qCpuHasFeature(AES))
-# endif
         return aeshash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
 #endif
 
