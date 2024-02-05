@@ -263,6 +263,9 @@ inline ulong getTimeStamp(UIEvent *event)
     Q_UNUSED(layer);
     Q_ASSERT(layer == self.layer);
 
+    if (!self.platformWindow)
+        return;
+
     [self sendUpdatedExposeEvent];
 }
 
