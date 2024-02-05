@@ -392,3 +392,6 @@ endif()
 
 _qt_internal_test_expect_pass(test_config_expressions)
 _qt_internal_test_expect_pass(test_QTP0003)
+if(NOT NO_GUI)
+    _qt_internal_test_expect_pass(test_collecting_plugins)
+endif()
