@@ -205,6 +205,7 @@ private slots:
     void toLocal8Bit_data();
     void toLocal8Bit();
     void toLocal8Bit_special_cases();
+    void toLocal8Bit_2GiB();
 #endif
 };
 
@@ -2750,6 +2751,39 @@ void tst_QStringConverter::toLocal8Bit_special_cases()
     result = QLocal8Bit::convertFromUnicode_sys(codeUnits.sliced(1), UTF8, &state);
     QCOMPARE(result.first(4), "\xf0\xac\xbd\xa6"_ba);
     QCOMPARE(state.remainingChars, 0);
+}
+
+void tst_QStringConverter::toLocal8Bit_2GiB()
+{
+#if QT_POINTER_SIZE == 4
+    QSKIP("This test is only relevant for 64-bit builds");
+#else
+    constexpr qsizetype TwoGiB = qsizetype(std::numeric_limits<int>::max());
+    QString input;
+    QT_TRY {
+        input.reserve(TwoGiB + 1);
+    } QT_CATCH (const std::bad_alloc &) {
+        QSKIP("Out of memory");
+    }
+    // Fill with a single code unit character
+    input.fill(u'.', TwoGiB - 1);
+    // Then append a 2 code unit character, so that the input straddles the 2 GiB
+    // boundary
+    input += u"🙂";
+    QCOMPARE(input.size(), input.capacity());
+    constexpr uint UTF8 = 65001u;
+    QStringConverter::State state;
+    QByteArray result;
+    QT_TRY {
+        result = QLocal8Bit::convertFromUnicode_sys(input, UTF8, &state);
+    } QT_CATCH (const std::bad_alloc &) {
+        QSKIP("Out of memory");
+    }
+    QUtf8StringView rView = result;
+    QCOMPARE(rView.size(), TwoGiB + 3); // The 2 code unit smiley is 4 code units in UTF-8
+    QCOMPARE(rView.last(7), u8"...🙂"); // Check we correctly decoded it
+    QCOMPARE(state.remainingChars, 0); // and there is nothing left in the state
+#endif
 }
 #endif // Q_OS_WIN
 
