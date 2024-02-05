@@ -14,7 +14,7 @@
 @property (readonly) QAccessible::Id axid;
 
 - (instancetype)initWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view;
-+ (instancetype)elementWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view;
++ (instancetype)elementWithId:(QAccessible::Id)anId;
 
 @end
 

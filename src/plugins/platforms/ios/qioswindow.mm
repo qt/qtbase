@@ -384,6 +384,11 @@ QDebug operator<<(QDebug debug, const QIOSWindow *window)
 }
 #endif // !QT_NO_DEBUG_STREAM
 
+UIView *QIOSWindow::view() const
+{
+    return m_view;
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qioswindow.cpp"

@@ -60,6 +60,8 @@ public:
     CAEAGLLayer *eaglLayer() const;
 #endif
 
+    UIView *view() const;
+
 private:
     void applicationStateChanged(Qt::ApplicationState state);
     void applyGeometry(const QRect &rect);
