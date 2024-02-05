@@ -13630,6 +13630,25 @@ void tst_QWidget::explicitShowHide()
         QCOMPARE(child.testAttribute(Qt::WA_WState_ExplicitShowHide), false);
         QCOMPARE(child.testAttribute(Qt::WA_WState_Hidden), true);
     }
+
+    {
+        QWidget widget;
+        widget.show();
+        widget.hide();
+
+        QCOMPARE(widget.testAttribute(Qt::WA_WState_Visible), false);
+        QCOMPARE(widget.testAttribute(Qt::WA_WState_ExplicitShowHide), true);
+        QCOMPARE(widget.testAttribute(Qt::WA_WState_Hidden), true);
+
+        // The widget is now explicitly hidden. Showing it again, via QWindow,
+        // should make the widget visible, and it should not stay hidden, as
+        // that's an invalid state for a widget.
+
+        widget.windowHandle()->setVisible(true);
+        QCOMPARE(widget.testAttribute(Qt::WA_WState_Visible), true);
+        QCOMPARE(widget.testAttribute(Qt::WA_WState_ExplicitShowHide), true);
+        QCOMPARE(widget.testAttribute(Qt::WA_WState_Hidden), false);
+    }
 }
 
 /*!

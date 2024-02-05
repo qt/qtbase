@@ -45,21 +45,8 @@ public:
         if (QWidget *widget = q->widget()) {
             // If the widget's visible state is already matching the new QWindow
             // visible state we assume the widget has already synced up.
-            if (visible != widget->isVisible()) {
-                // Check if the widget was already hidden, as this indicates it was done
-                // explicitly and not because the parent window in this case made it hidden.
-                // In which case do not automatically show the widget when the parent
-                // window is shown.
-                const bool wasExplicitShowHide = widget->testAttribute(Qt::WA_WState_ExplicitShowHide);
-                const bool wasHidden = widget->testAttribute(Qt::WA_WState_Hidden);
-
+            if (visible != widget->isVisible())
                 QWidgetPrivate::get(widget)->setVisible(visible);
-
-                if (wasExplicitShowHide) {
-                    widget->setAttribute(Qt::WA_WState_ExplicitShowHide, wasExplicitShowHide);
-                    widget->setAttribute(Qt::WA_WState_Hidden, wasHidden);
-                }
-            }
         }
 
         // If we end up calling QWidgetPrivate::setVisible() above, we will
