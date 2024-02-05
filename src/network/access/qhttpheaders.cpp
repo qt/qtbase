@@ -1060,6 +1060,14 @@ void QHttpHeaders::reserve(qsizetype size)
 }
 
 /*!
+    \fn bool QHttpHeaders::isEmpty() const noexcept
+
+    Returns \c true if the headers have size 0; otherwise returns \c false.
+
+    \sa size()
+*/
+
+/*!
     Returns a header name corresponding to the provided \a name as a view.
 */
 QByteArrayView QHttpHeaders::wellKnownHeaderName(WellKnownHeader name) noexcept
