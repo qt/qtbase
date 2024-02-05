@@ -8,6 +8,7 @@
 #include "private/qaccessiblecache_p.h"
 #include "private/qcore_mac_p.h"
 #include "uistrings_p.h"
+#include "qioswindow.h"
 
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 
@@ -23,7 +24,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
     return self;
 }
 
-+ (instancetype)elementWithId:(QAccessible::Id)anId withAccessibilityContainer:(id)view
++ (instancetype)elementWithId:(QAccessible::Id)anId
 {
     Q_ASSERT(anId);
     if (!anId)
@@ -33,9 +34,17 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 
     QMacAccessibilityElement *element = cache->elementForId(anId);
     if (!element) {
-        Q_ASSERT(QAccessible::accessibleInterface(anId));
-        element = [[self alloc] initWithId:anId withAccessibilityContainer:view];
-        cache->insertElement(anId, element);
+        auto *a11yInterface = QAccessible::accessibleInterface(anId);
+        Q_ASSERT(a11yInterface);
+        auto *window = a11yInterface->window();
+        if (window && window->handle()) {
+            auto *platformWindow = static_cast<QIOSWindow*>(window->handle());
+            element = [[self alloc] initWithId:anId withAccessibilityContainer:platformWindow->view()];
+            cache->insertElement(anId, element);
+        } else {
+            qWarning() << "Could not create a11y element for" << window
+                << "with platform window" << (window ? window->handle() : nullptr);
+        }
     }
     return element;
 }
