@@ -970,9 +970,9 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
 
             painter->setPen(Qt::NoPen);
             painter->setBrush(frm->palette.base());
-            painter->drawPie(bottomRightCorner.marginsAdded(QMargins(2.5,2.5,0.0,0.0)),
+            painter->drawPie(bottomRightCorner.marginsAdded(QMarginsF(2.5,2.5,0.0,0.0)),
                              270 * 16,90 * 16);
-            painter->drawPie(bottomLeftCorner.marginsAdded(QMargins(0.0,2.5,2.5,0.0)),
+            painter->drawPie(bottomLeftCorner.marginsAdded(QMarginsF(0.0,2.5,2.5,0.0)),
                              -90 * 16,-90 * 16);
 
             painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][surfaceStroke]));
