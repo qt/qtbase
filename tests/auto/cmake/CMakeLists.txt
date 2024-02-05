@@ -388,3 +388,7 @@ if(WIN32 OR (APPLE AND NOT IOS) OR is_desktop_linux)
 else()
     _qt_internal_test_expect_fail(${deploy_args})
 endif()
+
+if(NOT NO_GUI)
+    _qt_internal_test_expect_pass(test_collecting_plugins)
+endif()

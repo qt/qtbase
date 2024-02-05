@@ -211,6 +211,13 @@ function(qt_internal_add_plugin target)
             # This QT_PLUGINS assignment is only used by QtPostProcessHelpers to decide if a
             # QtModulePlugins.cmake file should be generated.
             set_property(TARGET "${qt_module_target}" APPEND PROPERTY QT_PLUGINS "${target}")
+        else()
+            # The _qt_plugins property is considered when collecting the plugins in
+            # deployment process. The usecase is following:
+            # QtModuleX is built separately and installed, so it's imported.
+            # The plugin is built in some application build tree and its PLUGIN_TYPE is associated
+            # with QtModuleX.
+            set_property(TARGET "${qt_module_target}" APPEND PROPERTY _qt_plugins "${target}")
         endif()
 
         set(plugin_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${target}")
