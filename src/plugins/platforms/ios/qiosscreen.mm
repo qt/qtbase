@@ -184,6 +184,9 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 {
     [super traitCollectionDidChange:previousTraitCollection];
 
+    if (!qGuiApp)
+        return;
+
     Qt::ColorScheme colorScheme = self.traitCollection.userInterfaceStyle
                               == UIUserInterfaceStyleDark
                               ? Qt::ColorScheme::Dark
