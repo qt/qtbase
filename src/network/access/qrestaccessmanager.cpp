@@ -519,6 +519,14 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
     \overload
 */
 
+/*!
+    Constructs a QRestAccessManager object and sets \a parent as the parent
+    object, and \a manager as the underlying QNetworkAccessManager which
+    is used for communication.
+
+    \sa networkAccessManager()
+*/
+
 QRestAccessManager::QRestAccessManager(QNetworkAccessManager *manager, QObject *parent)
     : QObject(*new QRestAccessManagerPrivate, parent)
 {
