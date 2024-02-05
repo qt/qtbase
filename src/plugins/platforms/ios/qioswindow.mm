@@ -90,11 +90,12 @@ QIOSWindow::~QIOSWindow()
 
     clearAccessibleCache();
 
-    quiview_cast(m_view).platformWindow = 0;
+    quiview_cast(m_view).platformWindow = nullptr;
 
-    // Remove from superview only if we have a Qt window parent,
-    // as we don't want to affect window container foreign windows.
-    if (QPlatformWindow::parent())
+    // Remove from superview, unless we're a foreign window without a
+    // Qt window parent, in which case the foreign window is used as
+    // a window container for a Qt UI hierarchy inside a native UI.
+    if (!(isForeignWindow() && !QPlatformWindow::parent()))
         [m_view removeFromSuperview];
 
     [m_view release];
