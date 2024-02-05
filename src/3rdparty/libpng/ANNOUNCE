@@ -1,4 +1,4 @@
-libpng 1.6.41 - January 24, 2024
+libpng 1.6.42 - January 29, 2024
 ================================
 
 This is a public release of libpng, intended for use in production code.
@@ -9,13 +9,13 @@ Files available for download
 
 Source files with LF line endings (for Unix/Linux):
 
- * libpng-1.6.41.tar.xz (LZMA-compressed, recommended)
- * libpng-1.6.41.tar.gz (deflate-compressed)
+ * libpng-1.6.42.tar.xz (LZMA-compressed, recommended)
+ * libpng-1.6.42.tar.gz (deflate-compressed)
 
 Source files with CRLF line endings (for Windows):
 
- * lpng1641.7z (LZMA-compressed, recommended)
- * lpng1641.zip (deflate-compressed)
+ * lpng1642.7z (LZMA-compressed, recommended)
+ * lpng1642.zip (deflate-compressed)
 
 Other information:
 
@@ -23,6 +23,14 @@ Other information:
  * LICENSE.md
  * AUTHORS.md
  * TRADEMARK.md
+
+
+Changes from version 1.6.41 to version 1.6.42
+---------------------------------------------
+
+ * Fixed the implementation of the macro function `png_check_sig`.
+   This was an API regression, introduced in libpng-1.6.41.
+   (Reported by Matthieu Darbois)
 
 
 Changes from version 1.6.40 to version 1.6.41
