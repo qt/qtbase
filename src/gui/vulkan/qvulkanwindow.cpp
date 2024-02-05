@@ -1691,10 +1691,10 @@ void QVulkanWindow::setEnabledFeaturesModifier(const EnabledFeaturesModifier &mo
     \since 6.7
     \sa EnabledFeatures2Modifier
 */
-void QVulkanWindow::setEnabledFeatures2Modifier(const EnabledFeatures2Modifier &modifier)
+void QVulkanWindow::setEnabledFeatures2Modifier(EnabledFeatures2Modifier modifier)
 {
     Q_D(QVulkanWindow);
-    d->enabledFeatures2Modifier = modifier;
+    d->enabledFeatures2Modifier = std::move(modifier);
 }
 
 /*!
