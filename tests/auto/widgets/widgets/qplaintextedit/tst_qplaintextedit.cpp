@@ -133,6 +133,7 @@ private slots:
     void placeholderVisibility_data();
     void placeholderVisibility();
     void scrollBarSignals();
+    void dontCrashWithCss();
 
 private:
     void createSelection();
@@ -1943,6 +1944,15 @@ void tst_QPlainTextEdit::scrollBarSignals()
     QTest::keyClick(vbar, Qt::Key_PageUp);
     QTRY_COMPARE(spy.count(), 5);
 }
+
+void tst_QPlainTextEdit::dontCrashWithCss()
+{
+    qApp->setStyleSheet("QWidget { font: 10pt; }");
+    QPlainTextEdit edit;
+    edit.show();
+    qApp->setStyleSheet(QString());
+}
+
 
 QTEST_MAIN(tst_QPlainTextEdit)
 #include "tst_qplaintextedit.moc"
