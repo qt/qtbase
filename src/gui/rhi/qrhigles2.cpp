@@ -2222,17 +2222,15 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
     const GLenum effectiveTarget = faceTargetBase + (isCubeMap ? uint(layer) : 0u);
     const QPoint dp = subresDesc.destinationTopLeft();
     const QByteArray rawData = subresDesc.data();
-    if (!subresDesc.image().isNull()) {
-        QImage img = subresDesc.image();
-        QSize size = img.size();
+
+    auto setCmdByNotCompressedData = [&](const void* data, QSize size, quint32 dataStride)
+    {
+        quint32 bytesPerLine = 0;
+        quint32 bytesPerPixel = 0;
+        textureFormatInfo(texD->m_format, size, &bytesPerLine, nullptr, &bytesPerPixel);
+
         QGles2CommandBuffer::Command &cmd(cbD->commands.get());
         cmd.cmd = QGles2CommandBuffer::Command::SubImage;
-        if (!subresDesc.sourceSize().isEmpty() || !subresDesc.sourceTopLeft().isNull()) {
-            const QPoint sp = subresDesc.sourceTopLeft();
-            if (!subresDesc.sourceSize().isEmpty())
-                size = subresDesc.sourceSize();
-            img = img.copy(sp.x(), sp.y(), size.width(), size.height());
-        }
         cmd.args.subImage.target = texD->target;
         cmd.args.subImage.texture = texD->texture;
         cmd.args.subImage.faceTarget = effectiveTarget;
@@ -2244,9 +2242,27 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
         cmd.args.subImage.h = size.height();
         cmd.args.subImage.glformat = texD->glformat;
         cmd.args.subImage.gltype = texD->gltype;
-        cmd.args.subImage.rowStartAlign = 4;
-        cmd.args.subImage.rowLength = 0;
-        cmd.args.subImage.data = cbD->retainImage(img);
+
+        if (dataStride == 0)
+            dataStride = bytesPerLine;
+
+        cmd.args.subImage.rowStartAlign = (dataStride & 3) ? 1 : 4;
+        cmd.args.subImage.rowLength = bytesPerPixel ? dataStride / bytesPerPixel : 0;
+
+        cmd.args.subImage.data = data;
+    };
+
+    if (!subresDesc.image().isNull()) {
+        QImage img = subresDesc.image();
+        QSize size = img.size();
+        if (!subresDesc.sourceSize().isEmpty() || !subresDesc.sourceTopLeft().isNull()) {
+            const QPoint sp = subresDesc.sourceTopLeft();
+            if (!subresDesc.sourceSize().isEmpty())
+                size = subresDesc.sourceSize();
+            img = img.copy(sp.x(), sp.y(), size.width(), size.height());
+        }
+
+        setCmdByNotCompressedData(cbD->retainImage(img), size, img.bytesPerLine());
     } else if (!rawData.isEmpty() && isCompressed) {
         const int depth = qMax(1, texD->m_depth);
         const int arraySize = qMax(0, texD->m_arraySize);
@@ -2314,31 +2330,8 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
     } else if (!rawData.isEmpty()) {
         const QSize size = subresDesc.sourceSize().isEmpty() ? q->sizeForMipLevel(level, texD->m_pixelSize)
                                                              : subresDesc.sourceSize();
-        quint32 bytesPerLine = 0;
-        quint32 bytesPerPixel = 0;
-        textureFormatInfo(texD->m_format, size, &bytesPerLine, nullptr, &bytesPerPixel);
-        QGles2CommandBuffer::Command &cmd(cbD->commands.get());
-        cmd.cmd = QGles2CommandBuffer::Command::SubImage;
-        cmd.args.subImage.target = texD->target;
-        cmd.args.subImage.texture = texD->texture;
-        cmd.args.subImage.faceTarget = effectiveTarget;
-        cmd.args.subImage.level = level;
-        cmd.args.subImage.dx = dp.x();
-        cmd.args.subImage.dy = is1D && isArray ? layer : dp.y();
-        cmd.args.subImage.dz = is3D || isArray ? layer : 0;
-        cmd.args.subImage.w = size.width();
-        cmd.args.subImage.h = size.height();
-        cmd.args.subImage.glformat = texD->glformat;
-        cmd.args.subImage.gltype = texD->gltype;
-        // Default unpack alignment (row start alignment
-        // requirement) is 4. QImage guarantees 4 byte aligned
-        // row starts, but our raw data here does not.
-        cmd.args.subImage.rowStartAlign = (bytesPerLine & 3) ? 1 : 4;
-        if (subresDesc.dataStride() && bytesPerPixel)
-            cmd.args.subImage.rowLength = subresDesc.dataStride() / bytesPerPixel;
-        else
-            cmd.args.subImage.rowLength = 0;
-        cmd.args.subImage.data = cbD->retainData(rawData);
+
+        setCmdByNotCompressedData(cbD->retainData(rawData), size, subresDesc.dataStride());
     } else {
         qWarning("Invalid texture upload for %p layer=%d mip=%d", texD, layer, level);
     }
