@@ -8,8 +8,11 @@
 #include <qfile.h>
 #include <qdebug.h>
 #include <qlist.h>
+#include <qset.h>
 
 #include <algorithm>
+
+using namespace Qt::Literals::StringLiterals;
 
 class tst_QTextBoundaryFinder : public QObject
 {
@@ -71,7 +74,7 @@ inline char *toString(const QList<int> &list)
 QT_END_NAMESPACE
 
 #ifdef QT_BUILD_INTERNAL
-static void generateDataFromFile(const QString &fname)
+static void generateDataFromFile(const QString &fname, const QSet<QString> &skipSet = {})
 {
     QTest::addColumn<QString>("testString");
     QTest::addColumn<QList<int> >("expectedBreakPositions");
@@ -123,6 +126,8 @@ static void generateDataFromFile(const QString &fname)
         QVERIFY(!testString.isEmpty());
         QVERIFY(!expectedBreakPositions.isEmpty());
 
+        bool skip = false;
+
         if (!comments.isEmpty()) {
             const QStringList lst = comments.simplified().split(QLatin1Char(' '), Qt::SkipEmptyParts);
             comments.clear();
@@ -134,13 +139,19 @@ static void generateDataFromFile(const QString &fname)
                         comments += QLatin1Char('x');
                     continue;
                 }
-                if (part.startsWith(QLatin1Char('(')) && part.endsWith(QLatin1Char(')')))
+                if (part.startsWith(QLatin1Char('(')) && part.endsWith(QLatin1Char(')'))) {
+                    skip |= skipSet.contains(part.sliced(1, part.length() - 2));
                     comments += part;
+                }
             }
         }
 
         const QByteArray nm = "line #" + QByteArray::number(linenum) + ": " + comments.toLatin1();
-        QTest::newRow(nm.constData()) << testString << expectedBreakPositions;
+
+        if (skip)
+            qDebug() << "Skipping" << nm;
+        else
+            QTest::newRow(nm.constData()) << testString << expectedBreakPositions;
     }
 }
 #endif
@@ -200,7 +211,10 @@ QT_END_NAMESPACE
 
 void tst_QTextBoundaryFinder::graphemeBoundariesDefault_data()
 {
-    generateDataFromFile("data/GraphemeBreakTest.txt");
+
+    // QTBUG-121907: We are not using Unicode grapheme segmentation for Indic scripts.
+    QSet<QString> skipSet = {u"ConjunctLinkingScripts_LinkingConsonant"_s};
+    generateDataFromFile("data/GraphemeBreakTest.txt", skipSet);
 }
 
 void tst_QTextBoundaryFinder::graphemeBoundariesDefault()
@@ -248,7 +262,10 @@ void tst_QTextBoundaryFinder::sentenceBoundariesDefault()
 
 void tst_QTextBoundaryFinder::lineBoundariesDefault_data()
 {
-    generateDataFromFile("data/LineBreakTest.txt");
+    // QTBUG-121907: Indic line breaking is not supported
+    QSet<QString> skipSet = {u"AK"_s, u"AP"_s, u"AS"_s, u"VI"_s, u"VF"_s};
+
+    generateDataFromFile("data/LineBreakTest.txt", skipSet);
 }
 
 void tst_QTextBoundaryFinder::lineBoundariesDefault()
