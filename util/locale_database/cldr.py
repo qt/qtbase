@@ -352,7 +352,11 @@ class CldrAccess (object):
                 parts.append(text)
         if len(parts) > 1:
             parts[-1] = 'and ' + parts[-1]
-        assert parts
+        else:
+            assert parts
+            if parts[0].startswith('variant'):
+                raise Error(f'No support for {parts[0]}',
+                            language, script, territory, variant)
         raise Error('Unknown ' + ', '.join(parts),
                     language, script, territory, variant)
 
