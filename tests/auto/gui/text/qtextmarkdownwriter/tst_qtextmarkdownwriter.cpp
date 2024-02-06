@@ -39,6 +39,8 @@ private slots:
     void frontMatter();
     void charFormatWrapping_data();
     void charFormatWrapping();
+    void charFormat_data();
+    void charFormat();
     void rewriteDocument_data();
     void rewriteDocument();
     void fromHtml_data();
@@ -51,6 +53,8 @@ private:
 
 private:
     QTextDocument *document;
+    QFont m_monoFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    QFont m_defaultFont;
 };
 
 void tst_QTextMarkdownWriter::init()
@@ -619,6 +623,124 @@ void tst_QTextMarkdownWriter::charFormatWrapping() // QTBUG-116927
         if (startingIndicatorIdx < nlIdx)
             QCOMPARE_NE(nextChars, expectedIndicator);
     }
+}
+
+void tst_QTextMarkdownWriter::charFormat_data()
+{
+    QTest::addColumn<QTextFormat::Property>("property");
+    QTest::addColumn<QVariant>("propertyValue");
+    QTest::addColumn<QFont>("explicitFont");
+    QTest::addColumn<QString>("expectedOutput");
+
+    const QTextFormat::Property NoProperty = QTextFormat::ObjectIndex;
+
+    QTest::newRow("FontFixedPitch")
+            << QTextFormat::FontFixedPitch << QVariant(true) << m_defaultFont
+            << "before `formatted` after";
+    if (!isFixedFontProportional()) {
+        // QTBUG-54623 QTBUG-75649 QTBUG-79900 QTBUG-103484 etc.
+        QTest::newRow("mono font") << NoProperty << QVariant() << m_monoFont
+                                        << "before `formatted` after";
+    }
+
+    {
+        QFont font;
+        font.setItalic(true);
+        QTest::newRow("italic font")
+                << NoProperty << QVariant() << font
+                << "before *formatted* after";
+    }
+    QTest::newRow("FontItalic")
+            << QTextFormat::FontItalic << QVariant(true) << m_defaultFont
+            << "before *formatted* after";
+
+    {
+        QFont font;
+        font.setUnderline(true);
+        QTest::newRow("underline font")
+                << NoProperty << QVariant() << font
+                << "before _formatted_ after";
+    }
+    QTest::newRow("FontUnderline")
+            << QTextFormat::FontUnderline << QVariant(true) << m_defaultFont
+            << "before _formatted_ after";
+
+    {
+        QFont font;
+        font.setStrikeOut(true);
+        QTest::newRow("strikeout font")
+                << NoProperty << QVariant() << font
+                << "before ~~formatted~~ after";
+    }
+    QTest::newRow("FontStrikeOut")
+            << QTextFormat::FontStrikeOut << QVariant(true) << m_defaultFont
+            << "before ~~formatted~~ after";
+
+    {
+        QFont font;
+        font.setBold(true);
+        QTest::newRow("bold font")
+                << NoProperty << QVariant() << font
+                << "before **formatted** after";
+    }
+    {
+        QFont font;
+        font.setWeight(QFont::Black);
+        QTest::newRow("black font")
+                << NoProperty << QVariant() << font
+                << "before **formatted** after";
+    }
+    QTest::newRow("FontWeight")
+            << QTextFormat::FontWeight << QVariant(700) << m_defaultFont
+            << "before **formatted** after";
+
+    QTest::newRow("AnchorHref")
+            << QTextFormat::AnchorHref << QVariant("linky linky") << m_defaultFont
+            << "before [formatted](linky linky) after";
+
+    QTest::newRow("TextToolTip") // no effect without AnchorHref
+            << QTextFormat::TextToolTip << QVariant("such a tool") << m_defaultFont
+            << "before formatted after";
+}
+
+void tst_QTextMarkdownWriter::charFormat()
+{
+    if (isMainFontFixed())
+        QSKIP("QTextMarkdownWriter would generate bogus backticks");
+
+    QFETCH(QTextFormat::Property, property);
+    QFETCH(QVariant, propertyValue);
+    QFETCH(QFont, explicitFont);
+    QFETCH(QString, expectedOutput);
+
+    QTextCursor cursor(document);
+    cursor.insertText("before ");
+
+    QTextCharFormat fmt;
+    if (explicitFont != m_defaultFont)
+        fmt.setFont(explicitFont);
+    if (property != QTextFormat::ObjectIndex) // != 0
+        fmt.setProperty(property, propertyValue);
+    if (explicitFont == m_monoFont) {
+        QFontInfo fontInfo(fmt.font());
+        qCDebug(lcTests) << "mono font" << explicitFont << "fontInfo fixedPitch" << fontInfo.fixedPitch() << "fmt fixedPitch" << fmt.fontFixedPitch();
+    }
+    cursor.setCharFormat(fmt);
+    cursor.insertText("formatted");
+
+    cursor.setCharFormat({});
+    cursor.insertText(" after");
+
+    const QString output = documentToUnixMarkdown();
+#ifdef DEBUG_WRITE_OUTPUT
+    {
+        QFile out(QDir::temp().filePath(QLatin1String(QTest::currentDataTag()) + ".md"));
+        out.open(QFile::WriteOnly);
+        out.write(output.toUtf8());
+        out.close();
+    }
+#endif
+    QCOMPARE(output.trimmed(), expectedOutput);
 }
 
 void tst_QTextMarkdownWriter::rewriteDocument_data()
