@@ -1974,7 +1974,6 @@ void tst_QStyleSheetStyle::task232085_spinBoxLineEditBg()
 
     centerOnScreen(&frame);
     frame.show();
-    QApplicationPrivate::setActiveWindow(&frame);
     spinbox->setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&frame));
 
