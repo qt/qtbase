@@ -2794,7 +2794,6 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
 
     combo.move(200, 200);
     combo.showNormal();
-    QApplicationPrivate::setActiveWindow(&combo);
     QVERIFY(QTest::qWaitForWindowActive(&combo));
 
     QCOMPARE(combo.currentText(), QLatin1String("0"));
