@@ -1155,7 +1155,6 @@ void tst_QShortcut::duplicatedShortcutOverride()
     w.resize(200, 200);
     w.move(QGuiApplication::primaryScreen()->availableGeometry().center() - QPoint(100, 100));
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
     QTest::keyPress(w.windowHandle(), Qt::Key_A);
     QCoreApplication::processEvents();
