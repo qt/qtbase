@@ -28,6 +28,7 @@ qt_add_executable(androidnotifier
 )
 
 target_link_libraries(androidnotifier PRIVATE
+    Qt6::CorePrivate
     Qt6::Widgets
 )
 
