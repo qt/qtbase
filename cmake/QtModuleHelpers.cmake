@@ -687,6 +687,11 @@ function(qt_internal_add_module target)
     if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake.in")
         if(target STREQUAL Core)
             if(NOT "${QT_NAMESPACE}" STREQUAL "")
+                string(MAKE_C_IDENTIFIER "${QT_NAMESPACE}" qt_namespace_sanity)
+                if(NOT "${QT_NAMESPACE}" STREQUAL "${qt_namespace_sanity}")
+                    message(FATAL_ERROR "QT_NAMESPACE is not a valid C++ identifier: "
+                        "${QT_NAMESPACE}.")
+                endif()
                 string(JOIN "" qtcore_namespace_definition
                     "set_property(TARGET \${__qt_core_target} "
                     "APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS QT_NAMESPACE=${QT_NAMESPACE})"
