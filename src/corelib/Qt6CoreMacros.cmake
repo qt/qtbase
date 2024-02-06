@@ -639,6 +639,18 @@ function(qt6_add_executable target)
     endif()
 endfunction()
 
+# Just like for qt_add_resources, we should disable zstd compression when cross-compiling to a
+# target that doesn't support zstd decompression, even if the host tool supports it.
+# Allow an opt out via a QT_NO_AUTORCC_ZSTD variable.
+function(_qt_internal_disable_autorcc_zstd_when_not_supported target)
+    if(TARGET "${target}"
+            AND DEFINED QT_FEATURE_zstd
+            AND NOT QT_FEATURE_zstd
+            AND NOT QT_NO_AUTORCC_ZSTD)
+        set_property(TARGET "${target}" APPEND PROPERTY AUTORCC_OPTIONS "--no-zstd")
+    endif()
+endfunction()
+
 function(_qt_internal_create_executable target)
     if(ANDROID)
         list(REMOVE_ITEM ARGN "WIN32" "MACOSX_BUNDLE")
@@ -659,6 +671,7 @@ function(_qt_internal_create_executable target)
         add_executable("${target}" ${ARGN})
     endif()
 
+    _qt_internal_disable_autorcc_zstd_when_not_supported("${target}")
     _qt_internal_set_up_static_runtime_library("${target}")
 endfunction()
 
@@ -2695,6 +2708,7 @@ function(_qt_internal_add_library target)
     endif()
 
     add_library(${target} ${type_to_create} ${arg_UNPARSED_ARGUMENTS})
+    _qt_internal_disable_autorcc_zstd_when_not_supported("${target}")
     _qt_internal_set_up_static_runtime_library(${target})
 
     if(NOT type_to_create STREQUAL "INTERFACE" AND NOT type_to_create STREQUAL "OBJECT")
