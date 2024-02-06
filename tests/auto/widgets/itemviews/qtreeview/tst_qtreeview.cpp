@@ -4764,7 +4764,6 @@ void tst_QTreeView::statusTip()
     mw.setGeometry(QRect(QPoint(QGuiApplication::primaryScreen()->geometry().center() - QPoint(250, 250)),
                                 QSize(500, 500)));
     mw.show();
-    QApplicationPrivate::setActiveWindow(&mw);
     QVERIFY(QTest::qWaitForWindowActive(&mw));
     // Ensure it is moved away first and then moved to the relevant section
     QTest::mouseMove(mw.windowHandle(), view->mapTo(&mw, view->rect().bottomLeft() + QPoint(20, 20)));
