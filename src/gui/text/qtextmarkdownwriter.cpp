@@ -575,9 +575,9 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
                             endingMarkers = true;
                     }
                     if (fontInfo.underline() != underline) {
-                        // Markdown doesn't support underline, but the parser will treat a single underline
-                        // the same as a single asterisk, and the marked fragment will be rendered in italics.
-                        // That will have to do.
+                        // CommonMark specifies underline as another way to get emphasis (italics):
+                        // https://spec.commonmark.org/0.31.2/#example-148
+                        // but md4c allows us to distinguish them; so we support underlining (in GitHub dialect).
                         markers += u'_';
                         underline = fontInfo.underline();
                         if (!underline)
