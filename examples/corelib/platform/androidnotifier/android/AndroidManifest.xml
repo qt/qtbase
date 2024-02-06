@@ -41,10 +41,6 @@
             <meta-data
                 android:name="android.app.background_running"
                 android:value="false"/>
-
-            <meta-data
-                android:name="android.app.extract_android_style"
-                android:value="none" />
         </activity>
     </application>
 </manifest>

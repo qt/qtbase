@@ -154,6 +154,9 @@ class ExtractStyle {
         String dataDir = context.getApplicationInfo().dataDir;
         m_stylePath = dataDir + "/qt-reserved-files/android-style/" + dpi + "/";
 
+        if (extractOption.equals("none"))
+            return m_stylePath;
+
         if (extractOption.isEmpty())
             extractOption = "minimal";
 
