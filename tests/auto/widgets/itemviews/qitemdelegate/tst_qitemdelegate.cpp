@@ -1469,7 +1469,6 @@ void tst_QItemDelegate::testLineEditValidation()
     view.setItemDelegate(&delegate);
     view.show();
     view.setFocus();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QPointer<QLineEdit> editor;
