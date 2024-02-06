@@ -62,16 +62,6 @@
 #  undef truncate
 #endif
 
-#ifndef LLONG_MAX
-#define LLONG_MAX qint64_C(9223372036854775807)
-#endif
-#ifndef LLONG_MIN
-#define LLONG_MIN (-LLONG_MAX - qint64_C(1))
-#endif
-#ifndef ULLONG_MAX
-#define ULLONG_MAX quint64_C(18446744073709551615)
-#endif
-
 #define REHASH(a) \
     if (sl_minus_1 < sizeof(std::size_t) * CHAR_BIT)  \
         hashHaystack -= std::size_t(a) << sl_minus_1; \
