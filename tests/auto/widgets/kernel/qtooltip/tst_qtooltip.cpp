@@ -192,7 +192,6 @@ void tst_QToolTip::qtbug64550_stylesheet()
     Widget widget;
     widget.setStyleSheet(QStringLiteral("* { font-size: 48pt; }\n"));
     widget.show();
-    QApplicationPrivate::setActiveWindow(&widget);
     QVERIFY(QTest::qWaitForWindowActive(&widget));
 
     widget.showDelayedToolTip(100);
