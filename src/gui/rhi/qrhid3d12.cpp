@@ -292,13 +292,19 @@ bool QRhiD3D12::create(QRhi::Flags flags)
         for (int adapterIndex = 0; dxgiFactory->EnumAdapters1(UINT(adapterIndex), &adapter) != DXGI_ERROR_NOT_FOUND; ++adapterIndex) {
             DXGI_ADAPTER_DESC1 desc;
             adapter->GetDesc1(&desc);
-            adapter->Release();
             if (desc.AdapterLuid.LowPart == adapterLuid.LowPart
                     && desc.AdapterLuid.HighPart == adapterLuid.HighPart)
             {
+                activeAdapter = adapter;
                 QRhiD3D::fillDriverInfo(&driverInfoStruct, desc);
                 break;
+            } else {
+                adapter->Release();
             }
+        }
+        if (!activeAdapter) {
+            qWarning("No adapter");
+            return false;
         }
         qCDebug(QRHI_LOG_INFO, "Using imported device %p", dev);
     }
