@@ -258,6 +258,7 @@ class ByteArrayData:
         out('\n};\n')
 
 class ZoneIdWriter (SourceFileEditor):
+    # All the output goes into namespace QtTimeZoneCldr.
     def write(self, version, defaults, windowsIds):
         self.__writeWarning(version)
         windows, iana = self.__writeTables(self.writer.write, defaults, windowsIds)
@@ -284,7 +285,7 @@ class ZoneIdWriter (SourceFileEditor):
 
         # Write Windows/IANA table
         out('// Windows ID Key, Territory Enum, IANA ID Index\n')
-        out('static constexpr QZoneData zoneDataTable[] = {\n')
+        out('static constexpr ZoneData zoneDataTable[] = {\n')
         # Sorted by (Windows ID Key, territory enum)
         for index, data in sorted(windowsIds.items()):
             out('    {{ {:6d},{:6d},{:6d} }}, // {} / {}\n'.format(
@@ -295,7 +296,7 @@ class ZoneIdWriter (SourceFileEditor):
 
         # Write Windows ID key table
         out('// Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset\n')
-        out('static constexpr QWindowsData windowsDataTable[] = {\n')
+        out('static constexpr WindowsData windowsDataTable[] = {\n')
         # Sorted by Windows ID key; sorting case-insensitively by
         # Windows ID must give the same order.
         winIdNames = [x.lower() for x, y in windowsIdList]
@@ -314,7 +315,7 @@ class ZoneIdWriter (SourceFileEditor):
             offsetMap[pair[1]] = offsetMap.get(pair[1], ()) + (pair[0],)
         # Write UTC ID key table
         out('// IANA ID Index, UTC Offset\n')
-        out('static constexpr QUtcData utcDataTable[] = {\n')
+        out('static constexpr UtcData utcDataTable[] = {\n')
         for offset in sorted(offsetMap.keys()): # Sort so C++ can binary-chop.
             names = offsetMap[offset];
             out('    {{ {:6d},{:6d} }}, // {}\n'.format(

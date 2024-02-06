@@ -23,6 +23,7 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtTimeZoneCldr {
 /*
     Recognized UTC-offset zones and CLDR-derived data on Windows IDs.
 
@@ -43,7 +44,7 @@ QT_BEGIN_NAMESPACE
     of its last update and how to update it.
 */
 
-struct QZoneData
+struct ZoneData
 {
     // Keys (table is sorted in Windows ID, then on territory enum value):
     quint16 windowsIdKey;      // Windows ID sequence number
@@ -54,7 +55,7 @@ struct QZoneData
     constexpr auto ids() const { return id().tokenize(u' '); } // Iterate IANA IDs
 };
 
-struct QWindowsData
+struct WindowsData
 {
     // Table is sorted on key and this puts the windowsId()s in ascending order.
     quint16 windowsIdKey;      // Windows ID sequence number
@@ -66,7 +67,7 @@ struct QWindowsData
     constexpr QByteArrayView ianaId() const; // Space-joined list of IANA IDs
 };
 
-struct QUtcData
+struct UtcData
 {
     quint16 ianaIdIndex;       // Index in ianaIdData of space-joined IANA IDs
     qint32 offsetFromUtc;      // Offset form UTC in seconds
@@ -107,7 +108,7 @@ struct QUtcData
 */
 
 // Windows ID Key, Territory Enum, IANA ID Index
-static constexpr QZoneData zoneDataTable[] = {
+static constexpr ZoneData zoneDataTable[] = {
     {      1,     1,     0 }, // Afghanistan Standard Time / Afghanistan
     {      2,   248,    11 }, // Alaskan Standard Time / United States
     {      3,   248,   106 }, // Aleutian Standard Time / United States
@@ -478,7 +479,7 @@ static constexpr QZoneData zoneDataTable[] = {
 };
 
 // Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset
-static constexpr QWindowsData windowsDataTable[] = {
+static constexpr WindowsData windowsDataTable[] = {
     {      1,     0,     0, 16200 }, // Afghanistan Standard Time
     {      2,    26,  7325,-32400 }, // Alaskan Standard Time
     {      3,    48,   106,-36000 }, // Aleutian Standard Time
@@ -621,7 +622,7 @@ static constexpr QWindowsData windowsDataTable[] = {
 };
 
 // IANA ID Index, UTC Offset
-static constexpr QUtcData utcDataTable[] = {
+static constexpr UtcData utcDataTable[] = {
     {   7788,-50400 }, // UTC-14:00
     {   7798,-46800 }, // UTC-13:00
     {   7808,-43200 }, // UTC-12:00
@@ -1383,12 +1384,14 @@ static constexpr char ianaIdData[] = {
 };
 // GENERATED PART ENDS HERE
 
-constexpr QByteArrayView QWindowsData::windowsId() const { return windowsIdData + windowsIdIndex; }
+constexpr QByteArrayView WindowsData::windowsId() const { return windowsIdData + windowsIdIndex; }
 // Each of the following returns a space-joined sequence of IANA IDs:
-constexpr QByteArrayView QWindowsData::ianaId() const { return ianaIdData + ianaIdIndex; }
-constexpr QByteArrayView QUtcData::id() const { return ianaIdData + ianaIdIndex; }
-constexpr QLatin1StringView QZoneData::id() const
+constexpr QByteArrayView WindowsData::ianaId() const { return ianaIdData + ianaIdIndex; }
+constexpr QByteArrayView UtcData::id() const { return ianaIdData + ianaIdIndex; }
+constexpr QLatin1StringView ZoneData::id() const
 { return QLatin1StringView(ianaIdData + ianaIdIndex); }
+
+} // namespace QtTimeZoneCldr
 
 QT_END_NAMESPACE
 
