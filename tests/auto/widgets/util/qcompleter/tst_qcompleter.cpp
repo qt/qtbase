@@ -1662,7 +1662,6 @@ void tst_QCompleter::QTBUG_14292_filesystem()
 
     edit.move(200, 200);
     edit.show();
-    QApplicationPrivate::setActiveWindow(&edit);
     QVERIFY(QTest::qWaitForWindowActive(&edit));
     QCOMPARE(QApplication::activeWindow(), &edit);
     edit.setFocus();
