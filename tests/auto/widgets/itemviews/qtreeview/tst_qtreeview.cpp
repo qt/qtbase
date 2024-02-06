@@ -4078,7 +4078,6 @@ void tst_QTreeView::doubleClickedWithSpans()
     view.setModel(&model);
     view.setFirstColumnSpanned(0, QModelIndex(), true);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QVERIFY(view.isActiveWindow());
 
