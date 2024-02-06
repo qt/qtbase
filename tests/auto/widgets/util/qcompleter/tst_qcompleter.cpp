@@ -1060,7 +1060,6 @@ void tst_QCompleter::multipleWidgets()
     window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     window.move(200, 200);
     window.show();
-    QApplicationPrivate::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
 
     QFocusEvent focusIn(QEvent::FocusIn);
@@ -1072,7 +1071,6 @@ void tst_QCompleter::multipleWidgets()
     comboBox->setFocus();
     comboBox->show();
     window.activateWindow();
-    QApplicationPrivate::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
     QCOMPARE(QApplication::focusWidget(), comboBox);
     comboBox->lineEdit()->setText("it");
