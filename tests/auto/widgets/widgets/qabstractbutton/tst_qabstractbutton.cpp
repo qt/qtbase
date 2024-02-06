@@ -480,7 +480,6 @@ void tst_QAbstractButton::setShortcut()
 
     QKeySequence seq( Qt::Key_A );
     testWidget->setShortcut( seq );
-    QApplicationPrivate::setActiveWindow(testWidget);
     testWidget->activateWindow();
     // must be active to get shortcuts
     QVERIFY(QTest::qWaitForWindowActive(testWidget));
