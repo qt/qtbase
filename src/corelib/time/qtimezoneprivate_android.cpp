@@ -205,6 +205,12 @@ QByteArray QAndroidTimeZonePrivate::systemTimeZoneId() const
     return id.toString().toUtf8();
 }
 
+bool QAndroidTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) const
+{
+    QAndroidTimeZonePrivate probe(ianaId);
+    return probe.isValid();
+}
+
 QList<QByteArray> QAndroidTimeZonePrivate::availableTimeZoneIds() const
 {
     QList<QByteArray> availableTimeZoneIdList;
