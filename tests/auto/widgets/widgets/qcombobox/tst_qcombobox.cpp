@@ -2484,7 +2484,6 @@ void tst_QComboBox::task247863_keyBoardSelection()
   combo.addItem( QLatin1String("111"));
   combo.addItem( QLatin1String("222"));
   combo.show();
-  QApplicationPrivate::setActiveWindow(&combo);
   QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
 
   QSignalSpy spy(&combo, &QComboBox::activated);
