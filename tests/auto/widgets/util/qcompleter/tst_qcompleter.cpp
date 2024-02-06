@@ -1278,7 +1278,6 @@ void tst_QCompleter::task246056_setCompletionPrefix()
     comboBox.addItem("a2");
     comboBox.move(200, 200);
     comboBox.show();
-    QApplicationPrivate::setActiveWindow(&comboBox);
     QVERIFY(QTest::qWaitForWindowActive(&comboBox));
     QSignalSpy spy(comboBox.completer(), QOverload<const QModelIndex &>::of(&QCompleter::activated));
     QTest::keyPress(&comboBox, 'a');
