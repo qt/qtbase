@@ -4179,7 +4179,6 @@ void tst_QTreeView::keyboardNavigationWithDisabled()
 
     view.resize(200, view.visualRect(model.index(0,0)).height()*10);
     topLevel.show();
-    QApplicationPrivate::setActiveWindow(&topLevel);
     QVERIFY(QTest::qWaitForWindowActive(&topLevel));
     QVERIFY(topLevel.isActiveWindow());
 
