@@ -1707,7 +1707,6 @@ void tst_QListView::keyboardSearch()
     QListView view;
     view.setModel(&model);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QTest::keyClick(&view, Qt::Key_K);
