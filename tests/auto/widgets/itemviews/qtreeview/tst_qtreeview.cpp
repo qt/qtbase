@@ -1925,7 +1925,6 @@ void tst_QTreeView::moveCursor()
     view.setColumnHidden(0, true);
     QVERIFY(view.isColumnHidden(0));
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     //here the first visible index should be selected
