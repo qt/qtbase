@@ -1105,7 +1105,6 @@ void tst_QCompleter::focusIn()
     window.move(200, 200);
     window.show();
     window.activateWindow();
-    QApplicationPrivate::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
 
     auto comboBox = new QComboBox(&window);
