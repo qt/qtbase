@@ -433,7 +433,6 @@ void tst_QButtonGroup::task106609()
     qRegisterMetaType<QAbstractButton*>("QAbstractButton*");
     QSignalSpy spy1(buttons, SIGNAL(buttonClicked(QAbstractButton*)));
 
-    QApplicationPrivate::setActiveWindow(&dlg);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&dlg));
 
     radio1->setFocus();
