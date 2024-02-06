@@ -29,6 +29,7 @@
 #include <QtCore/qbuffer.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qpointer.h>
+#include <QtCore/private/qcomobject_p.h>
 
 #include <shlobj.h>
 
@@ -168,7 +169,7 @@ static Qt::MouseButtons lastButtons = Qt::NoButton;
     \internal
 */
 
-class QWindowsOleDropSource : public QWindowsComBase<IDropSource>
+class QWindowsOleDropSource : public QComObject<IDropSource>
 {
 public:
     enum Mode {

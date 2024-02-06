@@ -12,8 +12,7 @@
 QT_BEGIN_NAMESPACE
 
 // Implements the Toggle control pattern provider. Used for checkboxes.
-class QWindowsUiaToggleProvider : public QWindowsUiaBaseProvider,
-                                  public QWindowsComBase<IToggleProvider>
+class QWindowsUiaToggleProvider : public QWindowsUiaBaseProvider, public QComObject<IToggleProvider>
 {
     Q_DISABLE_COPY_MOVE(QWindowsUiaToggleProvider)
 public:

@@ -13,7 +13,7 @@ QT_BEGIN_NAMESPACE
 
 // Implements the Expand/Collapse control pattern provider. Used for menu items with submenus.
 class QWindowsUiaExpandCollapseProvider : public QWindowsUiaBaseProvider,
-                                          public QWindowsComBase<IExpandCollapseProvider>
+                                          public QComObject<IExpandCollapseProvider>
 {
     Q_DISABLE_COPY_MOVE(QWindowsUiaExpandCollapseProvider)
 public:

@@ -13,7 +13,7 @@ QT_BEGIN_NAMESPACE
 
 // Implements the Selection Item control pattern provider. Used for List items and radio buttons.
 class QWindowsUiaSelectionItemProvider : public QWindowsUiaBaseProvider,
-                                         public QWindowsComBase<ISelectionItemProvider>
+                                         public QComObject<ISelectionItemProvider>
 {
     Q_DISABLE_COPY_MOVE(QWindowsUiaSelectionItemProvider)
 public:

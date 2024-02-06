@@ -12,17 +12,26 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate {
+
+template <>
+struct QComObjectTraits<ITextProvider2>
+{
+    static constexpr bool isGuidOf(REFIID riid) noexcept
+    {
+        return QComObjectTraits<ITextProvider2, ITextProvider>::isGuidOf(riid);
+    }
+};
+
+} // namespace QtPrivate
+
 // Implements the Text control pattern provider. Used for text controls.
-class QWindowsUiaTextProvider : public QWindowsUiaBaseProvider,
-                                public QWindowsComBase<ITextProvider2>
+class QWindowsUiaTextProvider : public QWindowsUiaBaseProvider, public QComObject<ITextProvider2>
 {
     Q_DISABLE_COPY_MOVE(QWindowsUiaTextProvider)
 public:
     explicit QWindowsUiaTextProvider(QAccessible::Id id);
     ~QWindowsUiaTextProvider();
-
-    // IUnknown overrides
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface) override;
 
     // ITextProvider
     HRESULT STDMETHODCALLTYPE GetSelection(SAFEARRAY **pRetVal) override;
