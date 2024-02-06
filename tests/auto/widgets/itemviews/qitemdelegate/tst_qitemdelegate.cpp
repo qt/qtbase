@@ -747,7 +747,6 @@ void tst_QItemDelegate::dateTimeEditor()
     widget.setItem(0, 2, item3);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
-    QApplicationPrivate::setActiveWindow(&widget);
 
     widget.editItem(item1);
 
@@ -763,7 +762,6 @@ void tst_QItemDelegate::dateTimeEditor()
     timeEditor->setTime(time.addSecs(60));
 
     widget.clearFocus();
-    QApplicationPrivate::setActiveWindow(&widget);
     widget.setFocus();
     widget.editItem(item2);
 
