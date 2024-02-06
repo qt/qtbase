@@ -2109,7 +2109,6 @@ void tst_QStyleSheetStyle::QTBUG36933_brokenPseudoClassLookup()
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
     widget.activateWindow();
-    QApplicationPrivate::setActiveWindow(&widget);
     QVERIFY(QTest::qWaitForWindowActive(&widget));
 
     QHeaderView *verticalHeader = widget.verticalHeader();
