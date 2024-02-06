@@ -1549,7 +1549,6 @@ void tst_QCompleter::task247560_keyboardNavigation()
     edit.move(200, 200);
     edit.show();
     edit.setFocus();
-    QApplicationPrivate::setActiveWindow(&edit);
     QVERIFY(QTest::qWaitForWindowActive(&edit));
 
     QTest::keyClick(&edit, 'r');
