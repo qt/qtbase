@@ -1808,7 +1808,6 @@ void tst_QListView::shiftSelectionWithItemAlignment()
     view.resize(300, view.sizeHintForRow(0) * items.size() / 2 + view.horizontalScrollBar()->height());
 
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(static_cast<QWidget *>(&view), QApplication::activeWindow());
 
