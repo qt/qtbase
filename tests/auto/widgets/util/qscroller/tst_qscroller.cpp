@@ -324,7 +324,6 @@ void tst_QScroller::scrollTo()
 {
     QScopedPointer<tst_QScrollerWidget> sw(new tst_QScrollerWidget);
     sw->show();
-    QApplicationPrivate::setActiveWindow(sw.data());
     if (!QTest::qWaitForWindowExposed(sw.data()) || !QTest::qWaitForWindowActive(sw.data()))
         QSKIP("Failed to show and activate window");
 
