@@ -1343,7 +1343,6 @@ void tst_QCompleter::task250064_lostFocus()
     task250064_Widget widget;
     widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     widget.show();
-    QApplicationPrivate::setActiveWindow(&widget);
     QVERIFY(QTest::qWaitForWindowActive(&widget));
     QTest::keyPress(widget.textEdit(), 'a');
     Qt::FocusPolicy origPolicy = widget.textEdit()->focusPolicy();
