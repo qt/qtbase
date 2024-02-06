@@ -203,7 +203,6 @@ void tst_QButtonGroup::keyNavigationPushButtons()
     buttonGroup->addButton(pb3);
 
     dlg.show();
-    QApplicationPrivate::setActiveWindow(&dlg);
     if (!QTest::qWaitForWindowActive(&dlg))
         QSKIP("Window activation failed, skipping test");
 
