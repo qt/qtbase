@@ -12,8 +12,7 @@
 QT_BEGIN_NAMESPACE
 
 // Implements the Grid control pattern provider. Used by tables/trees.
-class QWindowsUiaGridProvider : public QWindowsUiaBaseProvider,
-                                public QWindowsComBase<IGridProvider>
+class QWindowsUiaGridProvider : public QWindowsUiaBaseProvider, public QComObject<IGridProvider>
 {
     Q_DISABLE_COPY_MOVE(QWindowsUiaGridProvider)
 public:

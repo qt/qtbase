@@ -4,12 +4,12 @@
 #ifndef QWINDOWSOLE_H
 #define QWINDOWSOLE_H
 
-#include "qwindowscombase.h"
 #include <QtCore/qt_windows.h>
 
 #include <QtCore/qlist.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qpointer.h>
+#include <QtCore/private/qcomobject_p.h>
 
 #include <objidl.h>
 
@@ -18,7 +18,7 @@ QT_BEGIN_NAMESPACE
 class QMimeData;
 class QWindow;
 
-class QWindowsOleDataObject : public QWindowsComBase<IDataObject>
+class QWindowsOleDataObject : public QComObject<IDataObject>
 {
 public:
     explicit QWindowsOleDataObject(QMimeData *mimeData);
@@ -47,7 +47,7 @@ private:
     DWORD performedEffect = DROPEFFECT_NONE;
 };
 
-class QWindowsOleEnumFmtEtc : public QWindowsComBase<IEnumFORMATETC>
+class QWindowsOleEnumFmtEtc : public QComObject<IEnumFORMATETC>
 {
 public:
     explicit QWindowsOleEnumFmtEtc(const QList<FORMATETC> &fmtetcs);

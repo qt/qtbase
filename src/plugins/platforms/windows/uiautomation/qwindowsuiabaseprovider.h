@@ -10,8 +10,8 @@
 #include <QtGui/qaccessible.h>
 #include <QtCore/qpointer.h>
 
-#include <qwindowscombase.h>
 #include <QtGui/private/qwindowsuiawrapper_p.h>
+#include <QtCore/private/qcomobject_p.h>
 
 QT_BEGIN_NAMESPACE
 

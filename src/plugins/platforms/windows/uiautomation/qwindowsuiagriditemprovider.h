@@ -13,7 +13,7 @@ QT_BEGIN_NAMESPACE
 
 // Implements the Grid Item control pattern provider. Used by items within a table/tree.
 class QWindowsUiaGridItemProvider : public QWindowsUiaBaseProvider,
-                                    public QWindowsComBase<IGridItemProvider>
+                                    public QComObject<IGridItemProvider>
 {
     Q_DISABLE_COPY_MOVE(QWindowsUiaGridItemProvider)
 public:
