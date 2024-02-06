@@ -1240,7 +1240,6 @@ void tst_QTreeView::keyboardSearchMultiColumn()
 
     view.setModel(&model);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     view.setCurrentIndex(model.index(0, 1));
