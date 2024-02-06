@@ -1338,7 +1338,6 @@ void tst_QItemDelegate::task257859_finalizeEdit()
     QListView view;
     view.setModel(&model);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     view.setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
