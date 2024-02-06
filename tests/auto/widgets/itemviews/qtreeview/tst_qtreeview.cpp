@@ -3703,7 +3703,6 @@ void tst_QTreeView::task224091_appendColumns()
     treeView->setModel(model);
     topLevel->show();
     treeView->resize(50, 50);
-    QApplicationPrivate::setActiveWindow(topLevel);
     QVERIFY(QTest::qWaitForWindowActive(topLevel));
 
     QVERIFY(!treeView->verticalScrollBar()->isVisible());
