@@ -683,8 +683,16 @@ function(qt_internal_add_module target)
         list(APPEND extra_cmake_files "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Macros.cmake")
         list(APPEND extra_cmake_includes "${INSTALL_CMAKE_NAMESPACE}${target}Macros.cmake")
     endif()
+
     if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake.in")
         if(target STREQUAL Core)
+            if(NOT "${QT_NAMESPACE}" STREQUAL "")
+                string(JOIN "" qtcore_namespace_definition
+                    "set_property(TARGET \${__qt_core_target} "
+                    "APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS QT_NAMESPACE=${QT_NAMESPACE})"
+                )
+            endif()
+
             set(extra_cmake_code "")
             # Add some variables for compatibility with Qt5 config files.
             if(QT_FEATURE_reduce_exports)
