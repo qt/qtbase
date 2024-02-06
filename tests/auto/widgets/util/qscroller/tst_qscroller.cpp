@@ -534,7 +534,6 @@ void tst_QScroller::mouseEventTimestamp()
     QScroller::grabGesture(sw.data(), QScroller::LeftMouseButtonGesture);
     sw->setGeometry(100, 100, 400, 300);
     sw->show();
-    QApplicationPrivate::setActiveWindow(sw.data());
     if (!QTest::qWaitForWindowExposed(sw.data()) || !QTest::qWaitForWindowActive(sw.data()))
         QSKIP("Failed to show and activate window");
 
