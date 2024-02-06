@@ -1195,7 +1195,6 @@ void tst_QCompleter::task178797_activatedOnReturn()
     QCOMPARE(spy.size(), 0);
     ledit.move(200, 200);
     ledit.show();
-    QApplicationPrivate::setActiveWindow(&ledit);
     QVERIFY(QTest::qWaitForWindowActive(&ledit));
     QTest::keyClick(&ledit, Qt::Key_F);
     QCoreApplication::processEvents();
