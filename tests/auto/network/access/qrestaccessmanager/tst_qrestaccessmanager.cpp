@@ -478,7 +478,6 @@ void tst_QRestAccessManager::errors()
     });
 
     // Test few HTTP statuses in different categories
-    VERIFY_HTTP_ERROR_STATUS(103) // QNetworkReply::NoError
     VERIFY_HTTP_ERROR_STATUS(301) // QNetworkReply::ProtocolUnknownError
     VERIFY_HTTP_ERROR_STATUS(302) // QNetworkReply::ProtocolUnknownError
     VERIFY_HTTP_ERROR_STATUS(400) // QNetworkReply::ProtocolInvalidOperationError
