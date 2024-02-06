@@ -1025,7 +1025,6 @@ void tst_QItemDelegate::decoration()
     TestItemDelegate delegate;
     table.setItemDelegate(&delegate);
     table.show();
-    QApplicationPrivate::setActiveWindow(&table);
     QVERIFY(QTest::qWaitForWindowActive(&table));
 
     QVariant value;
