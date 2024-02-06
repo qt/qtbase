@@ -29,7 +29,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 /*!
     \class QRhi
     \ingroup painting-3D
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
 
     \brief Accelerated 2D/3D graphics API abstraction.
