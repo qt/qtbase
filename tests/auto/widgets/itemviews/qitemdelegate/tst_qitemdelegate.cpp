@@ -1279,7 +1279,6 @@ void tst_QItemDelegate::enterKey()
     QListView view;
     view.setModel(&model);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     view.setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
