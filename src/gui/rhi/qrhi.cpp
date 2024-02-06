@@ -2750,6 +2750,7 @@ QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription
     \fn void QRhiTextureSubresourceUploadDescription::setImage(const QImage &image)
 
     Sets \a image.
+    Upon textures loading, the image data will be read as is, with no formats conversions.
 
     \note image() and data() cannot be both set at the same time.
  */
