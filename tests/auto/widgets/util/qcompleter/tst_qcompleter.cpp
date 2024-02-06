@@ -1786,7 +1786,6 @@ void tst_QCompleter::QTBUG_51889_activatedSentTwice()
     const auto pos = w.screen()->availableGeometry().topLeft() + QPoint(200,200);
     w.move(pos);
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     QSignalSpy activatedSpy(&cbox, &QComboBox::activated);
