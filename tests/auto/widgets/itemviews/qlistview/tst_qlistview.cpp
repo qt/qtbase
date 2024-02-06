@@ -2811,7 +2811,6 @@ void tst_QListView::moveLastRow()
     view.setViewMode(QListView::IconMode);
     view.show();
 
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QModelIndex sourceParent = model.index(0, 0);
