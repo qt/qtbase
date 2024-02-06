@@ -610,7 +610,6 @@ void tst_QTableView::keyboardNavigation()
     view.setCurrentIndex(index);
 
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     int row = rowCount - 1;
