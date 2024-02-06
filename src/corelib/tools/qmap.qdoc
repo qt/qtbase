@@ -1389,3 +1389,12 @@
 
     Returns the number of elements removed, if any.
 */
+
+/*!
+    \fn template <class Key, class T> QMap<Key, T>::qHash(const QMap &key, size_t seed)
+    \since 6.8
+
+    Returns the hash value for \a key, using \a seed to seed the calculation.
+
+    Types \c Key and \c T must be supported by qHash().
+*/
