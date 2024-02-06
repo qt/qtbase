@@ -1718,7 +1718,6 @@ void tst_QStyleSheetStyle::toolTip()
 
     centerOnScreen(&w);
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     QColor normalToolTipBgColor = QToolTip::palette().color(QPalette::Inactive, QPalette::ToolTipBase);
