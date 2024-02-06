@@ -122,7 +122,6 @@ void tst_QButtonGroup::arrowKeyNavigation()
     layout.addWidget(&g2);
 
     dlg.show();
-    QApplicationPrivate::setActiveWindow(&dlg);
     QVERIFY(QTest::qWaitForWindowActive(&dlg));
 
     bt1.setFocus();
