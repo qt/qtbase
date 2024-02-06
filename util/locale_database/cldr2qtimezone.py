@@ -48,17 +48,18 @@ class ByteArrayData:
 
 class ZoneIdWriter (SourceFileEditor):
     # All the output goes into namespace QtTimeZoneCldr.
-    def write(self, version, defaults, windowsIds):
+    def write(self, version, alias, defaults, windowsIds):
         self.__writeWarning(version)
-        windows, iana = self.__writeTables(self.writer.write, defaults, windowsIds)
+        windows, iana, aliased = self.__writeTables(self.writer.write, alias, defaults, windowsIds)
         windows.write(self.writer.write, 'windowsIdData')
         iana.write(self.writer.write, 'ianaIdData')
+        aliased.write(self.writer.write, 'aliasIdData')
 
     def __writeWarning(self, version):
         self.writer.write(f"""
 /*
     This part of the file was generated on {datetime.date.today()} from the
-    Common Locale Data Repository v{version} file supplemental/windowsZones.xml
+    Common Locale Data Repository v{version}
 
     http://www.unicode.org/cldr/
 
@@ -69,8 +70,19 @@ class ZoneIdWriter (SourceFileEditor):
 """)
 
     @staticmethod
-    def __writeTables(out, defaults, windowsIds):
-        windowsIdData, ianaIdData = ByteArrayData(), ByteArrayData()
+    def __writeTables(out, alias, defaults, windowsIds):
+        aliasIdData = ByteArrayData()
+        ianaIdData, windowsIdData = ByteArrayData(), ByteArrayData()
+
+        # Write IANA alias table
+        out('// Alias ID Index, Alias ID Index\n')
+        out('static constexpr AliasData aliasMappingTable[] = {\n')
+        for name, iana in sorted(alias.items()):
+            if name != iana:
+                out('    {{ {:6d},{:6d} }}, // {} -> {}\n'.format(
+                    aliasIdData.append(name),
+                    aliasIdData.append(iana), name, iana))
+        out('};\n\n')
 
         # Write Windows/IANA table
         out('// Windows ID Key, Territory Enum, IANA ID Index\n')
@@ -111,7 +123,7 @@ class ZoneIdWriter (SourceFileEditor):
                     ianaIdData.append(' '.join(names)), offset, names[0]))
         out('};\n')
 
-        return windowsIdData, ianaIdData
+        return windowsIdData, ianaIdData, aliasIdData
 
 
 def main(out, err):
@@ -145,9 +157,23 @@ def main(out, err):
     if not dataFilePath.is_file():
         parser.error(f'No such file: {dataFilePath}')
 
+    access = CldrAccess(cldrPath)
     try:
-        version, defaults, winIds = CldrAccess(cldrPath).readWindowsTimeZones(
-            dict((name, ind) for ind, name in enumerate((x[0] for x in windowsIdList), 1)))
+        alias, ignored = access.bcp47Aliases()
+        # TODO: ignored maps IANA IDs to an extra-long name of the zone
+    except IOError as e:
+        parser.error(
+            f'Failed to open common/bcp47/timezone.xml: {e}')
+        return 1
+    except Error as e:
+        err.write('\n'.join(textwrap.wrap(
+                    f'Failed to read bcp47/timezone.xml: {e}',
+                    subsequent_indent=' ', width=80)) + '\n')
+        return 1
+
+    try:
+        version, defaults, winIds = access.readWindowsTimeZones(
+            {name: ind for ind, name in enumerate((x[0] for x in windowsIdList), 1)})
     except IOError as e:
         parser.error(
             f'Failed to open common/supplemental/windowsZones.xml: {e}')
@@ -158,11 +184,11 @@ def main(out, err):
                     subsequent_indent=' ', width=80)) + '\n')
         return 1
 
-    out.write('Input file parsed, now writing data\n')
+    out.write('Input files parsed, now writing data\n')
 
     try:
         with ZoneIdWriter(dataFilePath, qtPath) as writer:
-            writer.write(version, defaults, winIds)
+            writer.write(version, alias, defaults, winIds)
     except Exception as e:
         err.write(f'\nError while updating timezone data: {e}\n')
         return 1

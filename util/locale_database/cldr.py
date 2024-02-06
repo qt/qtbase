@@ -405,6 +405,59 @@ enumdata.py (keeping the old name as an alias):
                         + '\n')
             grumble('\n')
 
+    def bcp47Aliases(self):
+        """Reads the mapping from CLDR IDs to IANA IDs
+
+        CLDR identifies timezones in various ways but its standard
+        'name' for them, here described as a CLDR ID, has the form of
+        an IANA ID. CLDR IDs are stable across time, where IANA IDs
+        may be revised over time, for example Asia/Calcutta became
+        Asia/Kolkata. When a new zone is added to CLDR, it gets the
+        then-current IANA ID as its CLDR ID; if it is later
+        superseded, CLDR continues using the old ID, so we need a
+        mapping from that to current IANA IDs. Helpfully, CLDR
+        provides information about aliasing among time-zone IDs.
+
+        The file common/bcp47/timezone.xml has keyword/key/type
+        elements with attributes:
+
+          name -- zone code (ignore)
+          description -- long name for exemplar location, including
+                         territory
+
+        and some of:
+
+          deprecated -- ignore entry if present (has no alias)
+          preferred -- only present if deprecated
+          since -- version at which this entry was added (ignore)
+          alias -- space-joined sequence of IANA-form IDs; first is CLDR ID
+          iana -- if present, repeats the alias entry that's the modern IANA ID
+
+        This returns a pair (alias, naming) wherein: alias is a
+        mapping from IANA-format IDs to actual IANA IDs, that maps
+        each alias to the contemporary ID used by IANA; and naming is
+        a mapping from IANA ID to the description it and its aliases
+        shared in their keyword/key/type entry."""
+        # File has the same form as supplements:
+        root = Supplement(Node(self.__xml('common/bcp47/timezone.xml')))
+
+        # If we ever need a mapping back to CLDR ID, we can make
+        # (description, space-joined-list) the naming values.
+        alias, naming = {}, {} # { alias: iana }, { iana: description }
+        for item, attrs in root.find('keyword/key/type', exclude=('deprecated',)):
+            assert 'description' in attrs, item
+            assert 'alias' in attrs, item
+            names = attrs['alias'].split()
+            assert not any(name in alias for name in names), item
+            # CLDR ID is names[0]; if IANA now uses another name for
+            # it, this is given as the iana attribute.
+            ianaid, fullName = attrs.get('iana', names[0]), attrs['description']
+            alias.update({name: ianaid for name in names})
+            assert not ianaid in naming
+            naming[ianaid] = fullName
+
+        return alias, naming
+
     def readWindowsTimeZones(self, lookup): # For use by cldr2qtimezone.py
         """Digest CLDR's MS-Win time-zone name mapping.
 

@@ -455,10 +455,17 @@ QTimeZone::QTimeZone(const QByteArray &ianaId)
     d = new QUtcTimeZonePrivate(ianaId);
     // If not recognized, try creating it with the system backend.
     if (!d->isValid()) {
-        if (ianaId.isEmpty())
+        if (ianaId.isEmpty()) {
             d = newBackendTimeZone();
-        else // Constructor MUST produce invalid for unsupported ID.
+        } else { // Constructor MUST produce invalid for unsupported ID.
             d = newBackendTimeZone(ianaId);
+            if (!d->isValid()) {
+                // We may have a legacy alias for a supported IANA ID:
+                const QByteArray name = QTimeZonePrivate::aliasToIana(ianaId);
+                if (!name.isEmpty() && name != ianaId)
+                    d = newBackendTimeZone(name);
+            }
+        }
     }
     // Can also handle UTC with arbitrary (valid) offset, but only do so as
     // fall-back, since either of the above may handle it more informatively.

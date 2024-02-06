@@ -54,6 +54,11 @@ constexpr bool atLowerWindowsKey(const WindowsData &entry, qint16 winIdKey) noex
     return entry.windowsIdKey < winIdKey;
 }
 
+static bool earlierAliasId(const AliasData &entry, QByteArrayView aliasId) noexcept
+{
+    return entry.aliasId().compare(aliasId, Qt::CaseInsensitive) < 0;
+}
+
 static bool earlierWindowsId(const WindowsData &entry, QByteArrayView winId) noexcept
 {
     return entry.windowsId().compare(winId, Qt::CaseInsensitive) < 0;
@@ -767,6 +772,15 @@ QString QTimeZonePrivate::isoOffsetFormat(int offsetFromUtc, QTimeZone::NameType
     if (mode == QTimeZone::LongName || secs)
         result += QString::asprintf(":%02d", secs);
     return result;
+}
+
+QByteArray QTimeZonePrivate::aliasToIana(QByteArrayView alias)
+{
+    const auto data = std::lower_bound(std::begin(aliasMappingTable), std::end(aliasMappingTable),
+                                       alias, earlierAliasId);
+    if (data != std::end(aliasMappingTable) && data->aliasId() == alias)
+        return data->ianaId().toByteArray();
+    return {};
 }
 
 QByteArray QTimeZonePrivate::ianaIdToWindowsId(const QByteArray &id)
