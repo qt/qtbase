@@ -8430,8 +8430,7 @@ void QWidgetPrivate::setVisible(bool visible)
 
         if (!q->testAttribute(Qt::WA_WState_Hidden)) {
             q->setAttribute(Qt::WA_WState_Hidden);
-            if (q->testAttribute(Qt::WA_WState_Created))
-                hide_helper();
+            hide_helper();
         }
 
         // invalidate layout similar to updateGeometry()
@@ -10899,10 +10898,12 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
             }
             if (recreate) {
                 const auto windowStateBeforeDestroy = newtlw->windowState();
+                const auto visibilityBeforeDestroy = newtlw->isVisible();
                 newtlw->destroy();
                 newtlw->create();
                 Q_ASSERT(newtlw->windowHandle());
                 newtlw->windowHandle()->setWindowStates(windowStateBeforeDestroy);
+                QWidgetPrivate::get(newtlw)->setVisible(visibilityBeforeDestroy);
             }
         }
     }
