@@ -980,7 +980,6 @@ void tst_QStyleSheetStyle::focusColors()
     centerOnScreen(&frame);
     frame.show();
 
-    QApplicationPrivate::setActiveWindow(&frame);
     QVERIFY(QTest::qWaitForWindowActive(&frame));
 
     for (QWidget *widget : frame.widgets()) {
