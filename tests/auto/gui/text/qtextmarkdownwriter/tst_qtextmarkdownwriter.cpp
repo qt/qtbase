@@ -36,6 +36,8 @@ private slots:
     void testWriteNestedNumericLists();
     void testWriteNumericListWithStart();
     void testWriteTable();
+    void charFormatWrapping_data();
+    void charFormatWrapping();
     void rewriteDocument_data();
     void rewriteDocument();
     void fromHtml_data();
@@ -525,6 +527,86 @@ void tst_QTextMarkdownWriter::testWriteTable()
     QCOMPARE(md, expected);
 }
 
+void tst_QTextMarkdownWriter::charFormatWrapping_data()
+{
+    QTest::addColumn<QTextFormat::Property>("property");
+    QTest::addColumn<QVariant>("propertyValue");
+    QTest::addColumn<QString>("followingText");
+    QTest::addColumn<QString>("expectedIndicator");
+
+    const QString spaced = " after";
+    const QString unspaced = ", and some more after";
+
+    QTest::newRow("FontFixedPitch-spaced")
+            << QTextFormat::FontFixedPitch << QVariant(true) << spaced << "`";
+    QTest::newRow("FontFixedPitch-unspaced")
+            << QTextFormat::FontFixedPitch << QVariant(true) << unspaced << "`";
+    QTest::newRow("FontItalic")
+            << QTextFormat::FontItalic << QVariant(true) << spaced << "*";
+    QTest::newRow("FontUnderline")
+            << QTextFormat::FontUnderline << QVariant(true) << spaced << "_";
+    QTest::newRow("FontStrikeOut")
+            << QTextFormat::FontStrikeOut << QVariant(true) << spaced << "~~";
+    QTest::newRow("FontWeight-spaced")
+            << QTextFormat::FontWeight << QVariant(700) << spaced << "**";
+    QTest::newRow("FontWeight-unspaced")
+            << QTextFormat::FontWeight << QVariant(700) << unspaced << "**";
+}
+
+void tst_QTextMarkdownWriter::charFormatWrapping() // QTBUG-116927
+{
+    QFETCH(QTextFormat::Property, property);
+    QFETCH(QVariant, propertyValue);
+    QFETCH(QString, expectedIndicator);
+    QFETCH(QString, followingText);
+
+    const QString newLine("\n");
+    QTextCursor cursor(document);
+    cursor.insertText("around sixty-four characters to go before some formatted words ");
+    QTextCharFormat fmt;
+    fmt.setProperty(property, propertyValue);
+    cursor.setCharFormat(fmt);
+    cursor.insertText("formatted text");
+
+    cursor.setCharFormat({});
+    cursor.insertText(followingText);
+    qsizetype lastNewLineIndex = 100;
+
+    for (int push = 0; push < 10; ++push) {
+        if (push > 0) {
+            cursor.movePosition(QTextCursor::StartOfBlock);
+            cursor.insertText("a");
+        }
+
+        const QString output = documentToUnixMarkdown().trimmed(); // get rid of trailing newlines
+        const auto nlIdx = output.indexOf(newLine);
+        qCDebug(lcTests) << "push" << push << ":" << output << "newline @" << nlIdx;
+        // we're always wrapping in this test: expect to find a newline
+        QCOMPARE_GT(nlIdx, 70);
+        // don't expect the newline to be more than one character to the right of where we found it last time
+        // i.e. if we already started breaking in the middle: "`formatted\ntext`",
+        // then we would not expect that prepending one more character would make it go
+        // back to breaking afterwards: "`formatted text`\n" (because then the line becomes longer than necessary)
+        QCOMPARE_LE(nlIdx, lastNewLineIndex + 1);
+        lastNewLineIndex = nlIdx;
+        const QString nextChars = output.sliced(nlIdx + newLine.size(), expectedIndicator.size());
+        const auto startingIndicatorIdx = output.indexOf(expectedIndicator);
+        // the starting indicator always exists, except in case of font problems on some CI platforms
+        if (startingIndicatorIdx <= 0)
+            QSKIP("starting indicator not found, probably due to platform font problems (QTBUG-103484 etc.)");
+        const auto endingIndicatorIdx = output.indexOf(expectedIndicator, startingIndicatorIdx + 5);
+        qCDebug(lcTests) << "next chars past newline" << nextChars
+                         << "indicators @" << startingIndicatorIdx << endingIndicatorIdx;
+        // the closing indicator must exist
+        QCOMPARE_GT(endingIndicatorIdx, startingIndicatorIdx);
+        // don't start a new line with an ending indicator:
+        // we can have "**formatted\ntext**" or "**formatted text**\n" or "\n**formatted text**"
+        // but not "**formatted text\n**"
+        if (startingIndicatorIdx < nlIdx)
+            QCOMPARE_NE(nextChars, expectedIndicator);
+    }
+}
+
 void tst_QTextMarkdownWriter::rewriteDocument_data()
 {
     QTest::addColumn<QString>("inputFile");
@@ -567,7 +649,7 @@ void tst_QTextMarkdownWriter::fromHtml_data()
 
     QTest::newRow("long URL") <<
         "<span style=\"font-style:italic;\">https://www.example.com/dir/subdir/subsubdir/subsubsubdir/subsubsubsubdir/subsubsubsubsubdir/</span>" <<
-        "*https://www.example.com/dir/subdir/subsubdir/subsubsubdir/subsubsubsubdir/subsubsubsubsubdir/*\n\n";
+        "\n*https://www.example.com/dir/subdir/subsubdir/subsubsubdir/subsubsubsubdir/subsubsubsubsubdir/*\n\n";
     QTest::newRow("non-emphasis inline asterisk") << "3 * 4" << "3 * 4\n\n";
     QTest::newRow("arithmetic") << "(2 * a * x + b)^2 = b^2 - 4 * a * c" << "(2 * a * x + b)^2 = b^2 - 4 * a * c\n\n";
     QTest::newRow("escaped asterisk after newline") <<
