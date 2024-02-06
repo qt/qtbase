@@ -1387,7 +1387,6 @@ void tst_QCompleter::task253125_lineEditCompletion()
     edit.move(200, 200);
     edit.show();
     edit.setFocus();
-    QApplicationPrivate::setActiveWindow(&edit);
     QVERIFY(QTest::qWaitForWindowActive(&edit));
 
     QTest::keyClick(&edit, 'i');
