@@ -1706,7 +1706,6 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     QWidget w;
     w.move(400, 200);
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
     QVERIFY(!edit.hasFocus() && !comp.popup()->hasFocus());
 
