@@ -481,8 +481,10 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             m_linePrefixWritten = true;
         }
     }
-    if (blockFmt.headingLevel())
+    if (blockFmt.headingLevel()) {
         m_stream << QByteArray(blockFmt.headingLevel(), '#') << ' ';
+        wrap = false;
+    }
 
     QString wrapIndentString = m_linePrefix + QString(m_wrappedLineIndent, qtmw_Space);
     // It would be convenient if QTextStream had a lineCharPos() accessor,

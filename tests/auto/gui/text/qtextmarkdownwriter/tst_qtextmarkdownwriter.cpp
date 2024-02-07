@@ -634,6 +634,7 @@ void tst_QTextMarkdownWriter::rewriteDocument_data()
     QTest::newRow("links") << "links.md";
     QTest::newRow("lists and code blocks") << "listsAndCodeBlocks.md";
     QTest::newRow("front matter") << "yaml.md";
+    QTest::newRow("long headings") << "longHeadings.md";
 }
 
 void tst_QTextMarkdownWriter::rewriteDocument()
