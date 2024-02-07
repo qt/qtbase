@@ -19,7 +19,7 @@
 #   EXTRA_LINKER_SCRIPT_EXPORTS
 #     Extra content that should be added to export section of the linker script.
 #   NO_PCH_SOURCES
-#     Skip the specified source files by PRECOMPILE_HEADERS feature.
+#     Exclude the specified source files from PRECOMPILE_HEADERS and UNITY_BUILD builds.
 function(qt_internal_extend_target target)
     if(NOT TARGET "${target}")
         message(FATAL_ERROR "${target} is not a target.")
