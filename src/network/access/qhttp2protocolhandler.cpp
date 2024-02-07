@@ -325,11 +325,11 @@ bool QHttp2ProtocolHandler::sendRequest()
         initReplyFromPushPromise(message, key);
     }
 
-    const auto streamsToUse = std::min<quint32>(maxConcurrentStreams > quint32(activeStreams.size())
-                                                ? maxConcurrentStreams - quint32(activeStreams.size()) : 0,
-                                                requests.size());
+    Q_ASSERT(qint64(maxConcurrentStreams) >= activeStreams.size());
+    const size_t streamsToUse = std::min(maxConcurrentStreams - size_t(activeStreams.size()),
+                                         size_t(requests.size()));
     auto it = requests.begin();
-    for (quint32 i = 0; i < streamsToUse; ++i) {
+    for (size_t i = 0; i < streamsToUse; ++i) {
         const qint32 newStreamID = createNewStream(*it);
         if (!newStreamID) {
             // TODO: actually we have to open a new connection.
