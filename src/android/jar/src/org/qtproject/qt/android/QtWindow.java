@@ -13,24 +13,23 @@ import android.view.ViewGroup;
 
 import java.util.HashMap;
 
-public class QtWindow implements QtSurfaceInterface, QtLayout.QtTouchListener {
+public class QtWindow extends QtLayout implements QtSurfaceInterface {
     private final static String TAG = "QtWindow";
 
     private View m_surfaceContainer;
-    private QtLayout m_layout;
     private View m_nativeView;
     private HashMap<Integer, QtWindow> m_childWindows = new HashMap<Integer, QtWindow>();
     private QtWindow m_parentWindow;
-    private int m_id;
     private GestureDetector m_gestureDetector;
 
     private static native void setSurface(int windowId, Surface surface);
 
     public QtWindow(Context context, QtWindow parentWindow)
     {
-        m_id = View.generateViewId();
-        m_layout = new QtLayout(context, this);
+        super(context);
+        setId(View.generateViewId());
         setParent(parentWindow);
+
         QtNative.runAction(() -> {
             m_gestureDetector =
                 new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
@@ -45,20 +44,10 @@ public class QtWindow implements QtSurfaceInterface, QtLayout.QtTouchListener {
     void setVisible(boolean visible) {
         QtNative.runAction(() -> {
             if (visible)
-                m_layout.setVisibility(View.VISIBLE);
+                setVisibility(View.VISIBLE);
             else
-                m_layout.setVisibility(View.INVISIBLE);
+                setVisibility(View.INVISIBLE);
         });
-    }
-
-    public int getId()
-    {
-        return m_id;
-    }
-
-    public QtLayout getLayout()
-    {
-        return m_layout;
     }
 
     @Override
@@ -103,21 +92,21 @@ public class QtWindow implements QtSurfaceInterface, QtLayout.QtTouchListener {
             @Override
             public void run() {
                 if (m_surfaceContainer != null)
-                    m_layout.removeView(m_surfaceContainer);
+                    removeView(m_surfaceContainer);
 
-                m_layout.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
                 if (surfaceContainerType == 0) {
-                    m_surfaceContainer = new QtSurface(m_layout.getContext(), QtWindow.this,
+                    m_surfaceContainer = new QtSurface(getContext(), QtWindow.this,
                                                        onTop, imageDepth);
                 } else {
-                    m_surfaceContainer = new QtTextureView(m_layout.getContext(), QtWindow.this, isOpaque);
+                    m_surfaceContainer = new QtTextureView(getContext(), QtWindow.this, isOpaque);
                 }
                  m_surfaceContainer.setLayoutParams(new QtLayout.LayoutParams(
                                                             ViewGroup.LayoutParams.MATCH_PARENT,
                                                             ViewGroup.LayoutParams.MATCH_PARENT));
                 // The surface container of this window will be added as the first of the stack.
                 // All other views are stacked based on the order they are created.
-                m_layout.addView(m_surfaceContainer, 0);
+                addView(m_surfaceContainer, 0);
             }
         });
     }
@@ -128,7 +117,7 @@ public class QtWindow implements QtSurfaceInterface, QtLayout.QtTouchListener {
             @Override
             public void run() {
                 if (m_surfaceContainer != null) {
-                    m_layout.removeView(m_surfaceContainer);
+                    removeView(m_surfaceContainer);
                     m_surfaceContainer = null;
                 }
             }
@@ -140,8 +129,8 @@ public class QtWindow implements QtSurfaceInterface, QtLayout.QtTouchListener {
         QtNative.runAction(new Runnable() {
             @Override
             public void run() {
-                if (m_layout.getContext() instanceof QtActivityBase)
-                    m_layout.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                if (getContext() instanceof QtActivityBase)
+                    setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
             }
         });
     }
@@ -152,7 +141,7 @@ public class QtWindow implements QtSurfaceInterface, QtLayout.QtTouchListener {
             @Override
             public void run() {
                 m_childWindows.put(window.getId(), window);
-                m_layout.addView(window.getLayout(), m_layout.getChildCount());
+                addView(window, getChildCount());
             }
         });
     }
@@ -163,7 +152,7 @@ public class QtWindow implements QtSurfaceInterface, QtLayout.QtTouchListener {
             @Override
             public void run() {
                 if (m_childWindows.containsKey(id))
-                    m_layout.removeView(m_childWindows.remove(id).getLayout());
+                    removeView(m_childWindows.remove(id));
             }
         });
     }
@@ -175,35 +164,33 @@ public class QtWindow implements QtSurfaceInterface, QtLayout.QtTouchListener {
             @Override
             public void run() {
                 if (m_nativeView != null)
-                    m_layout.removeView(m_nativeView);
+                    removeView(m_nativeView);
 
                 m_nativeView = view;
-                m_layout.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+                QtWindow.this.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
                 m_nativeView.setLayoutParams(new QtLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                                                        ViewGroup.LayoutParams.MATCH_PARENT));
-                m_layout.addView(m_nativeView);
+                addView(m_nativeView);
             }
         });
     }
 
     public void bringChildToFront(int id)
     {
-        QtNative.runAction(()-> {
-            QtWindow window = m_childWindows.get(id);
-            if (window != null) {
-                if (m_layout.getChildCount() > 0)
-                    m_layout.moveChild(window.getLayout(), m_layout.getChildCount() - 1);
-            }
-        });
+        View view = m_childWindows.get(id);
+        if (view != null) {
+            if (getChildCount() > 0)
+                moveChild(view, getChildCount() - 1);
+        }
     }
 
     public void bringChildToBack(int id) {
         QtNative.runAction(new Runnable() {
             @Override
             public void run() {
-                QtWindow window = m_childWindows.get(id);
-                if (window != null) {
-                    m_layout.moveChild(window.getLayout(), 0);
+                View view = m_childWindows.get(id);
+                if (view != null) {
+                    moveChild(view, 0);
                 }
             }
         });
@@ -215,7 +202,7 @@ public class QtWindow implements QtSurfaceInterface, QtLayout.QtTouchListener {
             @Override
             public void run() {
                 if (m_nativeView != null) {
-                    m_layout.removeView(m_nativeView);
+                    removeView(m_nativeView);
                     m_nativeView = null;
                 }
             }
