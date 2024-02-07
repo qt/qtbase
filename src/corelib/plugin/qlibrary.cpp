@@ -395,6 +395,15 @@ QLibraryStore *QLibraryStore::instance()
 inline QLibraryPrivate *QLibraryStore::findOrCreate(const QString &fileName, const QString &version,
                                                     QLibrary::LoadHints loadHints)
 {
+    auto lazyNewLib = [&] {
+        auto result = new QLibraryPrivate(fileName, version, loadHints);
+        result->libraryRefCount.ref();
+        return result;
+    };
+
+    if (fileName.isEmpty())   // request for empty d-pointer in QLibrary::setLoadHints();
+        return lazyNewLib();  // must return an independent (new) object
+
     QMutexLocker locker(&qt_library_mutex);
     QLibraryStore *data = instance();
 
@@ -404,17 +413,18 @@ inline QLibraryPrivate *QLibraryStore::findOrCreate(const QString &fileName, con
     QLibraryPrivate *lib = nullptr;
     if (Q_LIKELY(data)) {
         lib = data->libraryMap.value(mapName);
-        if (lib)
+        if (lib) {
+            lib->libraryRefCount.ref();
             lib->mergeLoadHints(loadHints);
+        }
     }
     if (!lib)
-        lib = new QLibraryPrivate(fileName, version, loadHints);
+        lib = lazyNewLib();
 
     // track this library
-    if (Q_LIKELY(data) && !fileName.isEmpty())
+    if (Q_LIKELY(data))
         data->libraryMap.insert(mapName, lib);
 
-    lib->libraryRefCount.ref();
     return lib;
 }
 
