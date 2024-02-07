@@ -227,7 +227,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \li Quit             \li                                      \li Ctrl+Q                   \li Ctrl+Q       \li Ctrl+Q
     \row    \li SaveAs           \li Ctrl+Shift+S                         \li Ctrl+Shift+S             \li Ctrl+Shift+S \li Ctrl+Shift+S
     \row    \li New              \li Ctrl+N                               \li Ctrl+N                   \li Ctrl+N       \li Ctrl+N
-    \row    \li Delete           \li Del                                  \li Del, Meta+D              \li Del, Ctrl+D  \li Del, Ctrl+D
+    \row    \li Delete           \li Del                                  \li Forward Delete, Meta+D   \li Del, Ctrl+D  \li Del, Ctrl+D
     \row    \li Cut              \li Ctrl+X, Shift+Del                    \li Ctrl+X, Meta+K           \li Ctrl+X, F20, Shift+Del \li Ctrl+X, F20, Shift+Del
     \row    \li Copy             \li Ctrl+C, Ctrl+Ins                     \li Ctrl+C                   \li Ctrl+C, F16, Ctrl+Ins  \li Ctrl+C, F16, Ctrl+Ins
     \row    \li Paste            \li Ctrl+V, Shift+Ins                    \li Ctrl+V, Meta+Y           \li Ctrl+V, F18, Shift+Ins \li Ctrl+V, F18, Shift+Ins
@@ -287,7 +287,7 @@ void Q_GUI_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mnemoni
     \row    \li DeleteCompleteLine   \li (none)                           \li (none)                 \li Ctrl+U         \li Ctrl+U
     \row    \li InsertParagraphSeparator     \li Enter                    \li Enter                  \li Enter          \li Enter
     \row    \li InsertLineSeparator          \li Shift+Enter              \li Meta+Enter, Meta+O     \li Shift+Enter    \li Shift+Enter
-    \row    \li Backspace             \li (none)                          \li Meta+H                 \li (none)         \li (none)
+    \row    \li Backspace             \li (none)                          \li Delete, Meta+H         \li (none)         \li (none)
     \row    \li Cancel                \li Escape                          \li Escape, Ctrl+.         \li Escape         \li Escape
     \endtable
 
