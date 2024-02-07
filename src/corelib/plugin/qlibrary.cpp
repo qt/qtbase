@@ -414,17 +414,14 @@ inline QLibraryPrivate *QLibraryStore::findOrCreate(const QString &fileName, con
 
     QString mapName = version.isEmpty() ? fileName : fileName + u'\0' + version;
 
-    // check if this library is already loaded
-    QLibraryPrivate *lib = data->libraryMap.value(mapName);
+    QLibraryPrivate *&lib = data->libraryMap[std::move(mapName)];
     if (lib) {
+        // already loaded
         lib->libraryRefCount.ref();
         lib->mergeLoadHints(loadHints);
     } else {
         lib = lazyNewLib();
     }
-
-    // track this library
-    data->libraryMap.insert(mapName, lib);
 
     return lib;
 }
