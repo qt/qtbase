@@ -29,6 +29,7 @@ static CborError qt_cbor_decoder_transfer_string(void *token, const void **userp
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_MSVC(4334) // '<<': result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
+QT_WARNING_DISABLE_GCC("-Wimplicit-fallthrough")
 
 #include <cborparser.c>
 
