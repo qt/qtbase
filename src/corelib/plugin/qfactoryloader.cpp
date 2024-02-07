@@ -18,7 +18,6 @@
 #include "qjsonarray.h"
 #include "qjsondocument.h"
 #include "qjsonobject.h"
-#include "qmap.h"
 #include "qmutex.h"
 #include "qplugin.h"
 #include "qplugin_p.h"
@@ -30,6 +29,7 @@
 
 #include <qtcore_tracepoints_p.h>
 
+#include <map>
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -261,7 +261,7 @@ public:
     mutable QMutex mutex;
     QDuplicateTracker<QString> loadedPaths;
     std::vector<QLibraryPrivate::UniquePtr> libraries;
-    QMap<QString,QLibraryPrivate*> keyMap;
+    std::map<QString, QLibraryPrivate*> keyMap;
     QString suffix;
     QString extraSearchPath;
     Qt::CaseSensitivity cs;
@@ -368,13 +368,13 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
             // whereas the new one has a Qt version that fits
             // better
             constexpr int QtVersionNoPatch = QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, 0);
-            QLibraryPrivate *previous = keyMap.value(key);
+            QLibraryPrivate *&previous = keyMap[key];
             int prev_qt_version = 0;
             if (previous)
                 prev_qt_version = int(previous->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
             int qt_version = int(library->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
             if (!previous || (prev_qt_version > QtVersionNoPatch && qt_version <= QtVersionNoPatch)) {
-                keyMap[key] = library.get();    // we WILL .release()
+                previous = library.get();    // we WILL .release()
                 ++keyUsageCount;
             }
         }
@@ -422,7 +422,10 @@ QFactoryLoader::~QFactoryLoader()
 QLibraryPrivate *QFactoryLoader::library(const QString &key) const
 {
     Q_D(const QFactoryLoader);
-    return d->keyMap.value(d->cs ? key : key.toLower());
+    const auto it = d->keyMap.find(d->cs ? key : key.toLower());
+    if (it == d->keyMap.cend())
+        return nullptr;
+    return it->second;
 }
 #endif
 
