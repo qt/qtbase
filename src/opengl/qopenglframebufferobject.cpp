@@ -553,11 +553,13 @@ void QOpenGLFramebufferObjectPrivate::initTexture(int idx)
     bool isOpaque = false;
     switch (color.internalFormat) {
     case GL_RGB8:
-    case GL_RGB10:
     case GL_RGB16:
     case GL_RGB16F:
     case GL_RGB32F:
         isOpaque = true;
+        break;
+    case GL_RGB10:
+        // opaque but the pixel type (INT_2_10_10_10) has alpha and so requires RGBA texture format
         break;
     }
     const GLuint textureFormat = isOpaque ? GL_RGB : GL_RGBA;
