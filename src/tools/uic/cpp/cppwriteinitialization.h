@@ -209,6 +209,8 @@ private:
 private:
     QString writeFontProperties(const DomFont *f);
     QString writeIconProperties(const DomResourceIcon *i);
+    void writeThemeIconCheckAssignment(const QString &themeValue, const QString &iconName,
+                                       const DomResourceIcon *i);
     void writePixmapFunctionIcon(QTextStream &output, const QString &iconName,
                                  const QString &indent, const DomResourceIcon *i) const;
     QString writeSizePolicy(const DomSizePolicy *sp);
