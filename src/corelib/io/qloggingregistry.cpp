@@ -350,7 +350,7 @@ void QLoggingRegistry::unregisterCategory(QLoggingCategory *cat)
 void QLoggingRegistry::registerEnvironmentOverrideForCategory(const char *categoryName,
                                                               const char *environment)
 {
-    qtCategoryEnvironmentOverrides.insert(categoryName, environment);
+    qtCategoryEnvironmentOverrides.insert_or_assign(categoryName, environment);
 }
 
 /*!
@@ -442,7 +442,7 @@ void QLoggingRegistry::defaultCategoryFilter(QLoggingCategory *cat)
             if (it == reg->qtCategoryEnvironmentOverrides.end())
                 debug = false;
             else
-                debug = qEnvironmentVariableIntValue(it.value());
+                debug = qEnvironmentVariableIntValue(it->second);
         }
     }
 
