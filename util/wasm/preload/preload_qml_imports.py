@@ -44,25 +44,27 @@ def find_dependencies(filepath):
 
 def extract_preload_files_from_imports(imports):
     libraries = []
-    files = []
     for qml_import in imports:
         try:
             relative_path = qml_import["relativePath"]
             plugin = qml_import["plugin"]
 
             # plugin .so
+            plugin_filename = "lib" + plugin + ".so"
             so_plugin_source_path = os.path.join(
-                qt_qml_path, relative_path, "lib" + plugin + ".so"
+                qt_qml_path, relative_path, plugin_filename
             )
             so_plugin_destination_path = os.path.join(
-                qt_deploy_qml_path, relative_path, "lib" + plugin + ".so"
+                qt_deploy_qml_path, relative_path, plugin_filename
             )
 
             preload_file(so_plugin_source_path, so_plugin_destination_path)
             so_plugin_qt_install_path = os.path.join(
-                qt_wasm_path, "qml", relative_path, "lib" + plugin + ".so"
+                qt_wasm_path, "qml", relative_path, plugin_filename
             )
             deps = find_dependencies(so_plugin_qt_install_path)
+            if plugin_filename in deps: # sometimes plugin file itself is found as its dependency
+                deps.remove(plugin_filename)
             libraries.extend(deps)
 
             # qmldir file
@@ -74,7 +76,7 @@ def extract_preload_files_from_imports(imports):
         except Exception as e:
             eprint(e)
             continue
-    return files, libraries
+    return libraries
 
 
 if __name__ == "__main__":
@@ -96,8 +98,7 @@ if __name__ == "__main__":
     imports = json.loads(result.stdout)
 
     preload_files = []
-    libraries = []
-    files, libraries = extract_preload_files_from_imports(imports)
+    libraries = extract_preload_files_from_imports(imports)
 
     # Deploy plugin dependencies, that is, shared libraries used by the plugins.
     # Skip some of the obvious libraries which will be
