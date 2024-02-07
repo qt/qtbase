@@ -437,10 +437,12 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
             m_indentedCodeBlock = true;
         }
     }
-    if (blockFmt.headingLevel())
+    if (blockFmt.headingLevel()) {
         m_stream << QByteArray(blockFmt.headingLevel(), '#') << ' ';
-    else
+        wrap = false;
+    } else {
         m_stream << m_linePrefix;
+    }
 
     QString wrapIndentString = m_linePrefix + QString(m_wrappedLineIndent, qtmw_Space);
     // It would be convenient if QTextStream had a lineCharPos() accessor,
