@@ -20,6 +20,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/qxpfunctional.h>
 #include <QtNetwork/qhttp2configuration.h>
 #include <QtNetwork/qtcpsocket.h>
 
@@ -253,7 +254,9 @@ private:
                          const char *message); // Connection failed to be established?
     void setH2Configuration(QHttp2Configuration config);
     void closeSession();
-    qsizetype numActiveStreams() const noexcept;
+    qsizetype numActiveStreamsImpl(quint32 mask) const noexcept;
+    qsizetype numActiveRemoteStreams() const noexcept;
+    qsizetype numActiveLocalStreams() const noexcept;
 
     bool sendClientPreface();
     bool sendSETTINGS();
