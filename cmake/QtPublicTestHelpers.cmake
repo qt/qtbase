@@ -64,7 +64,7 @@ is not specified")
     #Escaping environment variables before expand them by file GENERATE
     string(REPLACE "\\" "\\\\" environment_extras "${environment_extras}")
 
-    if(WIN32)
+    if(CMAKE_HOST_WIN32)
         # It's necessary to call actual test inside 'cmd.exe', because 'execute_process' uses
         # SW_HIDE to avoid showing a console window, it affects other GUI as well.
         # See https://gitlab.kitware.com/cmake/cmake/-/issues/17690 for details.
@@ -97,7 +97,7 @@ execute_process(COMMAND ${extra_runner} ${arg_COMMAND}
 )
 ${post_run}
 if(NOT result EQUAL 0)
-    string(JOIN \" \" full_command ${arg_COMMAND})
+    string(JOIN \" \" full_command ${extra_runner} ${arg_COMMAND})
     message(FATAL_ERROR \"\${full_command} execution failed with exit code \${result}.\")
 endif()"
     )
