@@ -1364,7 +1364,10 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QHttpHeaders &hm,
     const bool autoDecompress = request.rawHeader("accept-encoding").isEmpty();
     const bool shouldDecompress = isCompressed && autoDecompress;
     // reconstruct the HTTP header
-    for (const auto &[key, originValue] : hm.toListOfPairs()) {
+    for (qsizetype i = 0; i < hm.size(); ++i) {
+        const auto key = hm.nameAt(i);
+        const auto originValue = hm.valueAt(i);
+
         QByteArray value = q->rawHeader(key);
 
         // Reset any previous "location" header set in the reply. In case of
@@ -1398,7 +1401,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QHttpHeaders &hm,
                 value += ", ";
         }
         value += originValue;
-        q->setRawHeader(key, value);
+        q->setRawHeader({key.data(), key.size()}, value);
     }
 
     q->setAttribute(QNetworkRequest::HttpStatusCodeAttribute, statusCode);

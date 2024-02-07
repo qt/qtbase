@@ -60,9 +60,11 @@ HPack::HttpHeader build_headers(const QHttpNetworkRequest &request, quint32 maxH
     if (size.second > maxHeaderListSize)
         return HttpHeader(); // Bad, we cannot send this request ...
 
-    const auto requestHeader = request.header().toListOfPairs();
-    for (const auto &field : requestHeader) {
-        const HeaderSize delta = entry_size(field.first, field.second);
+    const QHttpHeaders requestHeader = request.header();
+    for (qsizetype i = 0; i < requestHeader.size(); ++i) {
+        const auto name = requestHeader.nameAt(i);
+        const auto value = requestHeader.valueAt(i);
+        const HeaderSize delta = entry_size(name, value);
         if (!delta.first) // Overflow???
             break;
         if (std::numeric_limits<quint32>::max() - delta.second < size.second)
@@ -71,18 +73,19 @@ HPack::HttpHeader build_headers(const QHttpNetworkRequest &request, quint32 maxH
         if (size.second > maxHeaderListSize)
             break;
 
-        if (field.first.compare("connection", Qt::CaseInsensitive) == 0 ||
-                field.first.compare("host", Qt::CaseInsensitive) == 0 ||
-                field.first.compare("keep-alive", Qt::CaseInsensitive) == 0 ||
-                field.first.compare("proxy-connection", Qt::CaseInsensitive) == 0 ||
-                field.first.compare("transfer-encoding", Qt::CaseInsensitive) == 0)
+        if (name.compare("connection", Qt::CaseInsensitive) == 0 ||
+                name.compare("host", Qt::CaseInsensitive) == 0 ||
+                name.compare("keep-alive", Qt::CaseInsensitive) == 0 ||
+                name.compare("proxy-connection", Qt::CaseInsensitive) == 0 ||
+                name.compare("transfer-encoding", Qt::CaseInsensitive) == 0)
             continue; // Those headers are not valid (section 3.2.1) - from QSpdyProtocolHandler
         // TODO: verify with specs, which fields are valid to send ....
-        // toLower - 8.1.2 .... "header field names MUST be converted to lowercase prior
-        // to their encoding in HTTP/2.
-        // A request or response containing uppercase header field names
-        // MUST be treated as malformed (Section 8.1.2.6)".
-        header.emplace_back(field.first.toLower(), field.second);
+        //
+        // Note: RFC 7450 8.1.2 (HTTP/2) states that header field names must be lower-cased
+        // prior to their encoding in HTTP/2; header name fields in QHttpHeaders are already
+        // lower-cased
+        header.emplace_back(QByteArray{name.data(), name.size()},
+                            QByteArray{value.data(), value.size()});
     }
 
     return header;
