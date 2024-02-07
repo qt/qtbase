@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 
 import java.util.HashMap;
 
-public class QtWindow extends QtLayout implements QtSurfaceInterface {
+class QtWindow extends QtLayout implements QtSurfaceInterface {
     private final static String TAG = "QtWindow";
 
     private View m_surfaceContainer;
