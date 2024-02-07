@@ -317,11 +317,11 @@ class QtActivityDelegate extends QtActivityDelegateBase
                 }
             }
 
-            window.getLayout().setLayoutParams(new ViewGroup.LayoutParams(
+            window.setLayoutParams(new ViewGroup.LayoutParams(
                                             ViewGroup.LayoutParams.MATCH_PARENT,
                                             ViewGroup.LayoutParams.MATCH_PARENT));
 
-            m_layout.addView(window.getLayout(), m_topLevelWindows.size());
+            m_layout.addView(window, m_topLevelWindows.size());
             m_topLevelWindows.put(window.getId(), window);
             if (!m_splashScreenSticky)
                 hideSplashScreen();
@@ -338,9 +338,9 @@ class QtActivityDelegate extends QtActivityDelegateBase
                 if (m_topLevelWindows.isEmpty()) {
                    // Keep last frame in stack until it is replaced to get correct
                    // shutdown transition
-                   m_dummyView = window.getLayout();
+                   m_dummyView = window;
                } else {
-                   m_layout.removeView(window.getLayout());
+                   m_layout.removeView(window);
                }
             }
         });
@@ -353,7 +353,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
         QtNative.runAction(() -> {
             QtWindow window = m_topLevelWindows.get(id);
             if (window != null)
-                m_layout.moveChild(window.getLayout(), m_topLevelWindows.size() - 1);
+                m_layout.moveChild(window, m_topLevelWindows.size() - 1);
         });
     }
 
@@ -364,7 +364,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
         QtNative.runAction(() -> {
             QtWindow window = m_topLevelWindows.get(id);
             if (window != null)
-                m_layout.moveChild(window.getLayout(), 0);
+                m_layout.moveChild(window, 0);
         });
     }
 

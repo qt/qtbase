@@ -109,10 +109,10 @@ abstract class QtView extends QtLayout {
             @Override
             public void run() {
                 m_window = window;
-                m_window.getLayout().setLayoutParams(new QtLayout.LayoutParams(
-                                                            ViewGroup.LayoutParams.MATCH_PARENT,
-                                                            ViewGroup.LayoutParams.MATCH_PARENT));
-                addView(m_window.getLayout(), 0);
+                m_window.setLayoutParams(new QtLayout.LayoutParams(
+                                            ViewGroup.LayoutParams.MATCH_PARENT,
+                                            ViewGroup.LayoutParams.MATCH_PARENT));
+                addView(m_window, 0);
                 // Call show window + parent
                 setWindowVisible(true);
                 if (m_windowListener != null)
