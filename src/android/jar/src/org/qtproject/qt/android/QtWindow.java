@@ -177,11 +177,13 @@ public class QtWindow extends QtLayout implements QtSurfaceInterface {
 
     public void bringChildToFront(int id)
     {
-        View view = m_childWindows.get(id);
-        if (view != null) {
-            if (getChildCount() > 0)
-                moveChild(view, getChildCount() - 1);
-        }
+        QtNative.runAction(()-> {
+            View view = m_childWindows.get(id);
+            if (view != null) {
+                if (getChildCount() > 0)
+                    moveChild(view, getChildCount() - 1);
+            }
+        });
     }
 
     public void bringChildToBack(int id) {
