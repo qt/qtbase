@@ -326,7 +326,10 @@ bool QHttp2ProtocolHandler::sendRequest()
         initReplyFromPushPromise(message, key);
     }
 
-    const qint64 streamsToUse = qBound(0, qint64(maxConcurrentStreams) - activeStreams.size(),
+    const auto isClientSide = [](const auto &pair) -> bool { return (pair.first & 1) == 1; };
+    const auto activeClientSideStreams = std::count_if(
+            activeStreams.constKeyValueBegin(), activeStreams.constKeyValueEnd(), isClientSide);
+    const qint64 streamsToUse = qBound(0, qint64(maxConcurrentStreams) - activeClientSideStreams,
                                        requests.size());
     auto it = requests.begin();
     for (qint64 i = 0; i < streamsToUse; ++i) {

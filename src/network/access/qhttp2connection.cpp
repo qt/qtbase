@@ -805,7 +805,7 @@ QHttp2Connection::createStreamInternal()
     if (m_goingAway)
         return { QHttp2Connection::CreateStreamError::ReceivedGOAWAY };
     const quint32 streamID = m_nextStreamID;
-    if (size_t(m_maxConcurrentStreams) <= size_t(numActiveStreams()))
+    if (size_t(m_maxConcurrentStreams) <= size_t(numActiveLocalStreams()))
         return { QHttp2Connection::CreateStreamError::MaxConcurrentStreamsReached };
     m_nextStreamID += 2;
     return { createStreamInternal_impl(streamID) };
@@ -823,12 +823,32 @@ QHttp2Stream *QHttp2Connection::createStreamInternal_impl(quint32 streamID)
     return stream;
 }
 
-qsizetype QHttp2Connection::numActiveStreams() const noexcept
+qsizetype QHttp2Connection::numActiveStreamsImpl(quint32 mask) const noexcept
 {
-    return std::count_if(m_streams.cbegin(), m_streams.cend(),
-                         [](const QPointer<QHttp2Stream> &stream) {
-                             return stream && stream->state() == QHttp2Stream::State::Open;
-                         });
+    const auto shouldCount = [mask](const QPointer<QHttp2Stream> &stream) -> bool {
+        return stream && (stream->streamID() & 1) == mask;
+    };
+    return std::count_if(m_streams.cbegin(), m_streams.cend(), shouldCount);
+}
+
+/*!
+    \internal
+    The number of streams the remote peer has started that are still active.
+*/
+qsizetype QHttp2Connection::numActiveRemoteStreams() const noexcept
+{
+    const quint32 RemoteMask = m_connectionType == Type::Client ? 0 : 1;
+    return numActiveStreamsImpl(RemoteMask);
+}
+
+/*!
+    \internal
+    The number of streams we have started that are still active.
+*/
+qsizetype QHttp2Connection::numActiveLocalStreams() const noexcept
+{
+    const quint32 LocalMask = m_connectionType == Type::Client ? 1 : 0;
+    return numActiveStreamsImpl(LocalMask);
 }
 
 /*!
