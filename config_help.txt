@@ -196,6 +196,12 @@ Component selection:
   -skip <repo>[,<repo>]  Exclude one or more entire repositories from the
                          build. The list should be separated with commas.
                          e.g. -skip qtimageformats,qtsvg
+  -skip-tests <repo>[,<repo>] ... Skip building tests for one or more
+                         repositories. The list should be separated with commas.
+                         e.g. -skip-tests qtimageformats,qtsvg
+  -skip-examples <repo>[,<repo>] ... Skip building examples for one or more
+                         repositories. The list should be separated with commas.
+                         e.g. -skip-examples qtimageformats,qtsvg
   -make <part> ......... Add <part> to the list of parts to be built.
                          Specifying this option clears the default list first.
                          (allowed values: libs, tools, examples, tests,
