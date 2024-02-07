@@ -59,6 +59,7 @@ public class QtWindow extends QtLayout implements QtSurfaceInterface {
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
+        event.setLocation(event.getX() + getX(), event.getY() + getY());
         QtInputDelegate.sendTouchEvent(event, getId());
         m_gestureDetector.onTouchEvent(event);
         return true;
