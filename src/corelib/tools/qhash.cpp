@@ -526,7 +526,7 @@ namespace {
     // [1] https://en.wikipedia.org/wiki/Advanced_Encryption_Standard#High-level_description_of_the_algorithm
 
     // hash 16 bytes, running 3 scramble rounds of AES on itself (like label "final1")
-    static void QT_FUNCTION_TARGET(AES) QT_VECTORCALL
+    static void Q_ALWAYS_INLINE QT_FUNCTION_TARGET(AES) QT_VECTORCALL
     hash16bytes(__m128i &state0, __m128i data)
     {
         state0 = _mm_xor_si128(state0, data);
@@ -657,7 +657,7 @@ aeshash128_ge32(__m128i state0, __m128i state1, const __m128i *src, const __m128
 }
 
 #  if QT_COMPILER_SUPPORTS_HERE(VAES)
-static size_t QT_FUNCTION_TARGET(ARCH_ICL) QT_VECTORCALL
+static size_t QT_FUNCTION_TARGET(VAES_AVX512) QT_VECTORCALL
 aeshash256_lt32_avx256(__m256i state0, const uchar *p, size_t len)
 {
     __m128i state0_128 = _mm256_castsi256_si128(state0);
