@@ -99,6 +99,7 @@ qt_internal_add_module(Core
         global/q20chrono.h
         global/q20functional.h
         global/q20iterator.h
+        global/q20map.h
         global/q20memory.h
         global/q20type_traits.h
         global/q20vector.h
