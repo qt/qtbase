@@ -203,15 +203,8 @@ endif()
 
 qt_build_repo_post_process()
 
-if(QT_BUILD_TESTS)
-    add_subdirectory(tests)
-    if(NOT QT_BUILD_TESTS_BY_DEFAULT)
-        set_property(DIRECTORY tests PROPERTY EXCLUDE_FROM_ALL TRUE)
-    endif()
-endif()
+qt_build_repo_impl_tests()
 
 qt_build_repo_end()
 
-if(NOT QT_BUILD_STANDALONE_TESTS AND QT_BUILD_EXAMPLES)
-    add_subdirectory(examples)
-endif()
+qt_build_repo_impl_examples()
