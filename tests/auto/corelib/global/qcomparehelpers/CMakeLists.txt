@@ -3,7 +3,8 @@
 
 qt_internal_add_test(tst_qcomparehelpers
     SOURCES
-        tst_qcomparehelpers.cpp
+        tst_qcomparehelpers.h tst_qcomparehelpers.cpp
+        wrappertypes.h
     LIBRARIES
         Qt::TestPrivate
 )
@@ -13,7 +14,8 @@ qt_internal_add_test(tst_qcomparehelpers
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.20" AND NOT MACOS AND NOT VXWORKS)
     qt_internal_add_test(tst_qcomparehelpers_cpp23
         SOURCES
-            tst_qcomparehelpers.cpp
+            tst_qcomparehelpers.h tst_qcomparehelpers.cpp
+            wrappertypes.h
         DEFINES
             tst_QCompareHelpers=tst_QCompareHelpersCpp23
         LIBRARIES
