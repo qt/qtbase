@@ -192,8 +192,11 @@ void QTimer::start()
     Q_D(QTimer);
     if (d->id != QTimerPrivate::INV_TIMER) // stop running timer
         stop();
-    d->id = QObject::startTimer(std::chrono::milliseconds{d->inter}, d->type);
-    d->isActiveData.notify();
+    const int id = QObject::startTimer(std::chrono::milliseconds{d->inter}, d->type);
+    if (id > 0) {
+        d->id = id;
+        d->isActiveData.notify();
+    }
 }
 
 /*!
@@ -554,9 +557,16 @@ void QTimer::setInterval(int msec)
     d->inter.setValueBypassingBindings(msec);
     if (d->id != QTimerPrivate::INV_TIMER) { // create new timer
         QObject::killTimer(d->id);                        // restart timer
-        d->id = QObject::startTimer(std::chrono::milliseconds{msec}, d->type);
-        // No need to call markDirty() for d->isActiveData here,
-        // as timer state actually does not change
+        const int id = QObject::startTimer(std::chrono::milliseconds{msec}, d->type);
+        if (id > 0) {
+            // Restarted successfully. No need to update the active state.
+            d->id = id;
+        } else {
+            // Failed to start the timer.
+            // Need to notify about active state change.
+            d->id = QTimerPrivate::INV_TIMER;
+            d->isActiveData.notify();
+        }
     }
     if (intervalChanged)
         d->inter.notify();

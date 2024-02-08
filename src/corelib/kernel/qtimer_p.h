@@ -25,7 +25,7 @@ public:
     static constexpr int INV_TIMER = -1; // invalid timer id
 
     void setInterval(int msec) { q_func()->setInterval(msec); }
-    bool isActiveActualCalculation() const { return id >= 0; }
+    bool isActiveActualCalculation() const { return id > 0; }
 
     int id = INV_TIMER;
     Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimerPrivate, int, inter, &QTimerPrivate::setInterval, 0)
