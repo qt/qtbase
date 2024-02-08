@@ -38,7 +38,7 @@ build_environment_axivion: &build_environment_axivion
       maxTimeBetweenOutput: 100
       userMessageOnFailure: "Create mount point for results failed"
     - type: ExecuteCommand
-      command: ["sudo", "mount", "-o", "rw", "10.212.0.93:/data/axivion", "/data/axivion"]
+      command: ["sudo", "mount", "-t", "nfs", "-o", "rw,nfsvers=3", "10.212.0.93:/data/axivion", "/data/axivion"]
       maxTimeInSeconds: 100
       maxTimeBetweenOutput: 100
       userMessageOnFailure: "Mount failed"
