@@ -491,19 +491,21 @@ void QRhiWidgetPrivate::ensureRhi()
     }
 
     // NB the rhi member may be an invalid object, the pointer can be used, but no deref
-    if (currentRhi && rhi && rhi != currentRhi) {
-        // if previously we created our own but now get a QRhi from the
-        // top-level, then drop what we have and start using the top-level's
-        if (rhi == offscreenRenderer.rhi()) {
-            q->releaseResources(); // notify the user code about the early-release
-            releaseResources();
-            offscreenRenderer.reset();
-        } else {
-            // rhi resources created by us all belong to the old rhi, drop them;
-            // due to nulling out colorTexture this is also what ensures that
-            // initialize() is going to be called again eventually
-            resetRenderTargetObjects();
-            resetColorBufferObjects();
+    if (currentRhi && rhi != currentRhi) {
+        if (rhi) {
+            // if previously we created our own but now get a QRhi from the
+            // top-level, then drop what we have and start using the top-level's
+            if (rhi == offscreenRenderer.rhi()) {
+                q->releaseResources(); // notify the user code about the early-release
+                releaseResources();
+                offscreenRenderer.reset();
+            } else {
+                // rhi resources created by us all belong to the old rhi, drop them;
+                // due to nulling out colorTexture this is also what ensures that
+                // initialize() is going to be called again eventually
+                resetRenderTargetObjects();
+                resetColorBufferObjects();
+            }
         }
 
         // Normally the widget gets destroyed before the QRhi (which is managed by
