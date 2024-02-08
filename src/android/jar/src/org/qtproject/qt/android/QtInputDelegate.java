@@ -21,7 +21,7 @@ import android.view.inputmethod.InputMethodManager;
 import org.qtproject.qt.android.QtInputConnection.QtInputConnectionListener;
 
 /** @noinspection FieldCanBeLocal*/
-class QtInputDelegate {
+class QtInputDelegate implements QtInputConnection.QtInputConnectionListener {
 
     // keyboard methods
     public static native void keyDown(int key, int unicode, int modifier, boolean autoRepeat);
@@ -83,30 +83,30 @@ class QtInputDelegate {
     }
 
     private final KeyboardVisibilityListener m_keyboardVisibilityListener;
-    private final QtInputConnectionListener m_inputConnectionListener;
 
     QtInputDelegate(Activity activity, KeyboardVisibilityListener listener)
     {
         this.m_keyboardVisibilityListener = listener;
         m_imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-        m_inputConnectionListener = new QtInputConnectionListener() {
-            @Override
-            public void onSetClosing(boolean closing) {
-                if (!closing)
-                    setKeyboardVisibility(true, System.nanoTime());
-            }
-
-            @Override
-            public void onHideKeyboardRunnableDone(boolean visibility, long hideTimeStamp) {
-                setKeyboardVisibility(visibility, hideTimeStamp);
-            }
-
-            @Override
-            public void onSendKeyEventDefaultCase() {
-                hideSoftwareKeyboard();
-            }
-        };
     }
+
+    // QtInputConnectionListener methods
+    @Override
+    public void onSetClosing(boolean closing) {
+        if (!closing)
+            setKeyboardVisibility(true, System.nanoTime());
+    }
+
+    @Override
+    public void onHideKeyboardRunnableDone(boolean visibility, long hideTimeStamp) {
+        setKeyboardVisibility(visibility, hideTimeStamp);
+    }
+
+    @Override
+    public void onSendKeyEventDefaultCase() {
+        hideSoftwareKeyboard();
+    }
+    // QtInputConnectionListener methods
 
     public boolean isKeyboardVisible()
     {
@@ -172,9 +172,6 @@ class QtInputDelegate {
     void setFocusedView(QtEditText currentEditText)
     {
         m_currentEditText = currentEditText;
-        // TODO rather set the listener when creating the edit text
-        if (m_currentEditText != null)
-            m_currentEditText.setQtInputConnectionListener(m_inputConnectionListener);
     }
 
     public void showSoftwareKeyboard(Activity activity, QtLayout layout,

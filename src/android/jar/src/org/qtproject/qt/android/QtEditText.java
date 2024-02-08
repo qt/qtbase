@@ -47,17 +47,13 @@ class QtEditText extends View
     private final int ImhUrlCharactersOnly = 0x400000;
     private final int ImhLatinOnly = 0x800000;
 
-    private QtInputConnectionListener m_qtInputConnectionListener;
+    private final QtInputConnectionListener m_qtInputConnectionListener;
 
-    public QtEditText(Context context)
+    public QtEditText(Context context, QtInputConnectionListener listener)
     {
         super(context);
         setFocusable(true);
         setFocusableInTouchMode(true);
-    }
-
-    public void setQtInputConnectionListener(QtInputConnectionListener listener)
-    {
         m_qtInputConnectionListener = listener;
     }
 
