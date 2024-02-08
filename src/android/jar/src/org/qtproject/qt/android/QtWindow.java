@@ -45,13 +45,6 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         });
     }
 
-    // TODO this is a temporary workaround to be able to set the input delegate current edit text,
-    // the next two patches make this redundant
-    QtEditText getQtEditText()
-    {
-        return m_editText;
-    }
-
     void setVisible(boolean visible) {
         QtNative.runAction(() -> {
             if (visible)
@@ -70,6 +63,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
+        m_editText.requestFocus();
         event.setLocation(event.getX() + getX(), event.getY() + getY());
         QtInputDelegate.sendTouchEvent(event, getId());
         m_gestureDetector.onTouchEvent(event);
