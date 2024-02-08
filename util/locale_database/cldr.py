@@ -636,15 +636,15 @@ enumdata.py (keeping the old name as an alias):
     def __enumMap(self, key, cache = {}):
         if not cache:
             cache['variant'] = {'': (0, 'This should never be seen outside ldml.py')}
-            # They're not actually lists: mappings from numeric value
-            # to pairs of full name and short code. What we want, in
-            # each case, is a mapping from code to the other two.
+            # They're mappings from numeric value to pairs of full
+            # name and short code. What we want, in each case, is a
+            # mapping from code to the other two.
             from enumdata import language_map, script_map, territory_map
             for form, book, empty in (('language', language_map, 'AnyLanguage'),
                                       ('script', script_map, 'AnyScript'),
                                       ('territory', territory_map, 'AnyTerritory')):
-                cache[form] = dict((pair[1], (num, pair[0]))
-                                   for num, pair in book.items() if pair[0] != 'C')
+                cache[form] = {pair[1]: (num, pair[0])
+                               for num, pair in book.items() if pair[0] != 'C'}
                 # (Have to filter out the C locale, as we give it the
                 # same (all space) code as AnyLanguage, whose code
                 # should probably be 'und' instead.)
