@@ -126,8 +126,6 @@ QAndroidBinder QAndroidParcelPrivate::readBinder() const
     \l {https://developer.android.com/reference/android/os/Parcel.html}{Android Parcel}
     methods.
 
-    \include qtcore.qdoc qtcoreprivate-usage
-
     \since 6.2
 */
 
@@ -244,8 +242,6 @@ QJniObject QAndroidParcel::handle() const
     The QAndroidBinder is a convenience class that wraps the most important
     \l {https://developer.android.com/reference/android/os/Binder.html}{Android Binder}
     methods.
-
-    \include qtcore.qdoc qtcoreprivate-usage
 
     \since 6.2
 */
@@ -387,8 +383,6 @@ QJniObject QAndroidBinder::handle() const
 
     It is useful when you perform a QtAndroidPrivate::bindService operation.
 
-    \include qtcore.qdoc qtcoreprivate-usage
-
     \since 6.2
 */
 
@@ -514,7 +508,6 @@ public:
   Create a subclass of this class to be notified of the results when using the
   \c QtAndroidPrivate::startActivity() and \c QtAndroidPrivate::startIntentSender() APIs.
 
-  \include qtcore.qdoc qtcoreprivate-usage
  */
 
 /*!
@@ -611,8 +604,6 @@ public:
     The QAndroidService is a convenience class that wraps the most important
     \l {https://developer.android.com/reference/android/app/Service.html}{Android Service}
     methods.
-
-    \include qtcore.qdoc qtcoreprivate-usage
 
     \since 6.2
 */
@@ -722,8 +713,6 @@ bool QtAndroidPrivate::registerExtrasNatives(QJniEnvironment &env)
     The QAndroidIntent is a convenience class that wraps the most important
     \l {https://developer.android.com/reference/android/content/Intent.html}{Android Intent}
     methods.
-
-    \include qtcore.qdoc qtcoreprivate-usage
 
     \since 6.2
 */
@@ -850,8 +839,6 @@ QJniObject QAndroidIntent::handle() const
     \brief The QtAndroidPrivate namespace provides miscellaneous functions
            to aid Android development.
     \inheaderfile QtCore/private/qandroidextras_p.h
-
-    \include qtcore.qdoc qtcoreprivate-usage
 */
 
 /*!
