@@ -116,8 +116,7 @@ public:
     public:
         using difference_type = qsizetype;
         using value_type = T;
-        // libstdc++ shipped with gcc < 11 does not have a fix for defect LWG 3346
-#if __cplusplus >= 202002L && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 11)
+#ifdef QT_COMPILER_HAS_LWG3346
         using iterator_concept = std::contiguous_iterator_tag;
         using element_type = value_type;
 #endif
@@ -187,8 +186,7 @@ public:
     public:
         using difference_type = qsizetype;
         using value_type = T;
-        // libstdc++ shipped with gcc < 11 does not have a fix for defect LWG 3346
-#if __cplusplus >= 202002L && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 11)
+#ifdef QT_COMPILER_HAS_LWG3346
         using iterator_concept = std::contiguous_iterator_tag;
         using element_type = const value_type;
 #endif
