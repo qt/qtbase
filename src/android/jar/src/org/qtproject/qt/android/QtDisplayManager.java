@@ -284,20 +284,23 @@ class QtDisplayManager {
 
         final DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
 
-        double xdpi = displayMetrics.xdpi;
-        double ydpi = displayMetrics.ydpi;
-
-        /* Fix buggy dpi report */
-        if (xdpi < android.util.DisplayMetrics.DENSITY_LOW)
-            xdpi = android.util.DisplayMetrics.DENSITY_LOW;
-        if (ydpi < android.util.DisplayMetrics.DENSITY_LOW)
-            ydpi = android.util.DisplayMetrics.DENSITY_LOW;
-
         double density = displayMetrics.density;
         double scaledDensity = displayMetrics.scaledDensity;
 
         setDisplayMetrics(maxWidth, maxHeight, insetLeft, insetTop,
-                width, height, xdpi, ydpi,
+                width, height, getXDpi(displayMetrics), getYDpi(displayMetrics),
                 scaledDensity, density, getRefreshRate(display));
+    }
+
+    public static float getXDpi(final DisplayMetrics metrics) {
+        if (metrics.xdpi < android.util.DisplayMetrics.DENSITY_LOW)
+            return android.util.DisplayMetrics.DENSITY_LOW;
+        return metrics.xdpi;
+    }
+
+    public static float getYDpi(final DisplayMetrics metrics) {
+        if (metrics.ydpi < android.util.DisplayMetrics.DENSITY_LOW)
+            return android.util.DisplayMetrics.DENSITY_LOW;
+        return metrics.ydpi;
     }
 }
