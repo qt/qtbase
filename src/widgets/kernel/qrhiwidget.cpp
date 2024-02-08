@@ -277,7 +277,7 @@ bool QRhiWidget::event(QEvent *e)
 {
     Q_D(QRhiWidget);
     switch (e->type()) {
-    case QEvent::WindowChangeInternal:
+    case QEvent::WindowAboutToChangeInternal:
         // The QRhi will almost certainly change, prevent texture() from
         // returning the existing QRhiTexture in the meantime.
         d->textureInvalid = true;
