@@ -5,6 +5,7 @@
 #include "qwidget_p.h"
 #include "qwidgetwindow_p.h"
 #include <QtGui/qwindow.h>
+#include <QtGui/private/qwindow_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
 #include <QDebug>
@@ -317,8 +318,17 @@ bool QWindowContainer::event(QEvent *e)
         break;
     case QEvent::FocusIn:
         if (d->window->parent()) {
-            if (QGuiApplication::focusWindow() != d->window)
+            if (QGuiApplication::focusWindow() != d->window) {
+                QFocusEvent *event = static_cast<QFocusEvent *>(e);
+                const auto reason = event->reason();
+                QWindowPrivate::FocusTarget target = QWindowPrivate::FocusTarget::Current;
+                if (reason == Qt::TabFocusReason)
+                    target = QWindowPrivate::FocusTarget::First;
+                else if (reason == Qt::BacktabFocusReason)
+                    target = QWindowPrivate::FocusTarget::Last;
+                qt_window_private(d->window)->setFocusToTarget(target);
                 d->window->requestActivate();
+            }
         }
         break;
 #if QT_CONFIG(draganddrop)

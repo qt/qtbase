@@ -76,6 +76,16 @@ public:
     void setTransientParent(QWindow *parent);
 
     virtual void clearFocusObject();
+
+    enum class FocusTarget {
+        First,
+        Last,
+        Current,
+        Next,
+        Prev
+    };
+    virtual void setFocusToTarget(QWindowPrivate::FocusTarget) {}
+
     virtual QRectF closestAcceptableGeometry(const QRectF &rect) const;
 
     void setMinOrMaxSize(QSize *oldSizeMember, const QSize &size,

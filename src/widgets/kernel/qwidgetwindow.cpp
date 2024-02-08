@@ -77,6 +77,39 @@ public:
             widget->focusWidget()->clearFocus();
     }
 
+    void setFocusToTarget(QWindowPrivate::FocusTarget target) override
+    {
+        Q_Q(QWidgetWindow);
+        QWidget *widget = q->widget();
+        if (!widget)
+            return;
+        QWidget *newFocusWidget = nullptr;
+
+        switch (target) {
+        case FocusTarget::First:
+            newFocusWidget = q->getFocusWidget(QWidgetWindow::FirstFocusWidget);
+            break;
+        case FocusTarget::Last:
+            newFocusWidget = q->getFocusWidget(QWidgetWindow::LastFocusWidget);
+            break;
+        case FocusTarget::Next: {
+            QWidget *focusWidget = widget->focusWidget() ? widget->focusWidget() : widget;
+            newFocusWidget = focusWidget->nextInFocusChain() ? focusWidget->nextInFocusChain() : focusWidget;
+            break;
+        }
+        case FocusTarget::Prev: {
+            QWidget *focusWidget = widget->focusWidget() ? widget->focusWidget() : widget;
+            newFocusWidget = focusWidget->previousInFocusChain() ? focusWidget->previousInFocusChain() : focusWidget;
+            break;
+        }
+        default:
+            break;
+        }
+
+        if (newFocusWidget)
+            newFocusWidget->setFocus();
+    }
+
     QRectF closestAcceptableGeometry(const QRectF &rect) const override;
 
     void processSafeAreaMarginsChanged() override
