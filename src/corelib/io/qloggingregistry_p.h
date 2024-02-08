@@ -85,6 +85,7 @@ private:
 
 class Q_AUTOTEST_EXPORT QLoggingRegistry
 {
+    Q_DISABLE_COPY_MOVE(QLoggingRegistry)
 public:
     QLoggingRegistry();
 
