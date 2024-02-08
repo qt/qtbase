@@ -1373,12 +1373,10 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QHttpHeaders &hm,
         // Reset any previous "location" header set in the reply. In case of
         // redirects, we don't want to 'append' multiple location header values,
         // rather we keep only the latest one
-        if (key.compare(locationHeader(), Qt::CaseInsensitive) == 0)
+        if (key == locationHeader())
             value.clear();
 
-        if (shouldDecompress && !decompressHelper.isValid()
-            && key.compare("content-encoding", Qt::CaseInsensitive) == 0) {
-
+        if (shouldDecompress && !decompressHelper.isValid() && key == "content-encoding"_L1) {
             if (!synchronous) // with synchronous all the data is expected to be handled at once
                 decompressHelper.setCountingBytesEnabled(true);
 
@@ -1395,7 +1393,7 @@ void QNetworkReplyHttpImplPrivate::replyDownloadMetaData(const QHttpHeaders &hm,
         if (!value.isEmpty()) {
             // Why are we appending values for headers which are already
             // present?
-            if (key.compare("set-cookie", Qt::CaseInsensitive) == 0)
+            if (key == "set-cookie"_L1)
                 value += '\n';
             else
                 value += ", ";

@@ -73,12 +73,10 @@ HPack::HttpHeader build_headers(const QHttpNetworkRequest &request, quint32 maxH
         if (size.second > maxHeaderListSize)
             break;
 
-        if (name.compare("connection", Qt::CaseInsensitive) == 0 ||
-                name.compare("host", Qt::CaseInsensitive) == 0 ||
-                name.compare("keep-alive", Qt::CaseInsensitive) == 0 ||
-                name.compare("proxy-connection", Qt::CaseInsensitive) == 0 ||
-                name.compare("transfer-encoding", Qt::CaseInsensitive) == 0)
+        if (name == "connection"_L1 || name == "host"_L1 || name == "keep-alive"_L1
+            || name == "proxy-connection"_L1 || name == "transfer-encoding"_L1) {
             continue; // Those headers are not valid (section 3.2.1) - from QSpdyProtocolHandler
+        }
         // TODO: verify with specs, which fields are valid to send ....
         //
         // Note: RFC 7450 8.1.2 (HTTP/2) states that header field names must be lower-cased
