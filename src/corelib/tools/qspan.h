@@ -316,14 +316,17 @@ class QSpan
     static constexpr bool subspan_always_succeeds_v = N <= E && E != q20::dynamic_extent;
 public:
     // constants and types
+    using value_type = std::remove_cv_t<T>;
+#ifdef QT_COMPILER_HAS_LWG3346
+    using iterator_concept = std::contiguous_iterator_tag;
     using element_type = T;
-    using value_type = std::remove_cv_t<element_type>;
+#endif
     using size_type = qsizetype;               // difference to std::span
     using difference_type = qptrdiff;          // difference to std::span
-    using pointer = element_type*;
-    using const_pointer = const element_type*;
-    using reference = element_type&;
-    using const_reference = const element_type&;
+    using pointer = T*;
+    using const_pointer = const T*;
+    using reference = T&;
+    using const_reference = const T&;
     using iterator = pointer;                  // implementation-defined choice
     using const_iterator = const_pointer;      // implementation-defined choice
     using reverse_iterator = std::reverse_iterator<iterator>;
