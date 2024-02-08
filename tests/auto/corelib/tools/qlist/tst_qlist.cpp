@@ -9,7 +9,7 @@
 #include <qlist.h>
 
 
-#if __cplusplus >= 202002L && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 11)
+#ifdef QT_COMPILER_HAS_LWG3346
 #  if __has_include(<concepts>)
 #    include <concepts>
 #    if defined(__cpp_lib_concepts) && __cpp_lib_concepts >= 202002L
