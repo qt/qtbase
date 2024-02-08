@@ -49,41 +49,41 @@ class QtEditText extends View
 
     private QtInputConnectionListener m_qtInputConnectionListener;
 
-    public void setQtInputConnectionListener(QtInputConnectionListener listener)
-    {
-        m_qtInputConnectionListener = listener;
-    }
-
-    private void setImeOptions(int m_imeOptions)
-    {
-        if (m_imeOptions == this.m_imeOptions)
-            return;
-        this.m_imeOptions = m_imeOptions;
-        m_optionsChanged = true;
-    }
-
-    private void setInitialCapsMode(int m_initialCapsMode)
-    {
-        if (m_initialCapsMode == this.m_initialCapsMode)
-            return;
-        this.m_initialCapsMode = m_initialCapsMode;
-        m_optionsChanged = true;
-    }
-
-
-    private void setInputType(int m_inputType)
-    {
-        if (m_inputType == this.m_inputType)
-            return;
-        this.m_inputType = m_inputType;
-        m_optionsChanged = true;
-    }
-
     public QtEditText(Context context)
     {
         super(context);
         setFocusable(true);
         setFocusableInTouchMode(true);
+    }
+
+    public void setQtInputConnectionListener(QtInputConnectionListener listener)
+    {
+        m_qtInputConnectionListener = listener;
+    }
+
+    private void setImeOptions(int imeOptions)
+    {
+        if (m_imeOptions == imeOptions)
+            return;
+        m_imeOptions = m_imeOptions;
+        m_optionsChanged = true;
+    }
+
+    private void setInitialCapsMode(int initialCapsMode)
+    {
+        if (m_initialCapsMode == initialCapsMode)
+            return;
+        m_initialCapsMode = initialCapsMode;
+        m_optionsChanged = true;
+    }
+
+
+    private void setInputType(int inputType)
+    {
+        if (m_inputType == inputType)
+            return;
+        m_inputType = m_inputType;
+        m_optionsChanged = true;
     }
 
     @Override
