@@ -268,6 +268,8 @@ static DiagRecord combineRecords(const QList<DiagRecord> &records)
                           a.sqlState + u';' + b.sqlState,
                           a.errorCode + u';' + b.errorCode};
     };
+    if (records.isEmpty())
+        return {};
     return std::accumulate(std::next(records.begin()), records.end(), records.front(), add);
 }
 
