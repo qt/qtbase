@@ -22,6 +22,8 @@
 #include <unistd.h>
 #endif
 
+using namespace std::chrono_literals;
+
 class tst_QTimer : public QObject
 {
     Q_OBJECT
@@ -77,6 +79,8 @@ private slots:
     void bindToTimer();
     void bindTimer();
     void automatedBindingTests();
+
+    void negativeInterval();
 };
 
 void tst_QTimer::zeroTimer()
@@ -149,7 +153,6 @@ void tst_QTimer::singleShotNormalizes_data()
 
 void tst_QTimer::singleShotNormalizes()
 {
-    using namespace std::chrono_literals;
     static constexpr auto TestTimeout = 250ms;
     QFETCH(QByteArray, slotName);
     QEventLoop loop;
@@ -1270,6 +1273,16 @@ void tst_QTimer::bindToTimer()
 
     timer.stop();
     QVERIFY(!active);
+
+    // also test that using negative interval updates the binding correctly
+    timer.start(100);
+    QVERIFY(active);
+    timer.setInterval(-100);
+    QVERIFY(!active);
+    timer.start(100);
+    QVERIFY(active);
+    timer.start(-100);
+    QVERIFY(!active);
 }
 
 void tst_QTimer::bindTimer()
@@ -1348,6 +1361,29 @@ void tst_QTimer::automatedBindingTests()
         qDebug("Failed property test for QTimer::active");
         return;
     }
+}
+
+void tst_QTimer::negativeInterval()
+{
+    QTimer timer;
+
+    // Starting with a negative interval does not change active state.
+    timer.start(-100ms);
+    QVERIFY(!timer.isActive());
+
+    // Updating the interval to a negative value stops the timer and changes
+    // the active state.
+    timer.start(100ms);
+    QVERIFY(timer.isActive());
+    timer.setInterval(-100);
+    QVERIFY(!timer.isActive());
+
+    // Starting with a negative interval when already started leads to stop
+    // and inactive state.
+    timer.start(100);
+    QVERIFY(timer.isActive());
+    timer.start(-100ms);
+    QVERIFY(!timer.isActive());
 }
 
 class OrderHelper : public QObject
