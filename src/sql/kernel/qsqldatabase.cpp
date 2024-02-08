@@ -1350,3 +1350,5 @@ QDebug operator<<(QDebug dbg, const QSqlDatabase &d)
 #endif
 
 QT_END_NAMESPACE
+
+#include "moc_qsqldatabase.cpp"

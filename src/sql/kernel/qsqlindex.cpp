@@ -186,3 +186,5 @@ void QSqlIndex::setCursorName(const QString& cursorName)
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsqlindex.cpp"

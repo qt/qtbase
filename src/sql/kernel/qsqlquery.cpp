@@ -1384,3 +1384,5 @@ bool QSqlQuery::nextResult()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qsqlquery.cpp"
