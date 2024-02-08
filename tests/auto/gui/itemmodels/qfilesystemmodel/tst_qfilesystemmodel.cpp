@@ -722,8 +722,7 @@ void tst_QFileSystemModel::showFilesOnly()
     // THEN: setting the root path to the previous (parent) dir, the model should
     // still only show files.
     // Doubling the default timeout (5s) as this test to fails on macos on the CI
-    QTRY_COMPARE_WITH_TIMEOUT(model.rowCount(model.setRootPath(tmp)), files.size(),
-                              (10000ms).count());
+    QTRY_COMPARE_WITH_TIMEOUT(model.rowCount(model.setRootPath(tmp)), files.size(), 10s);
 }
 
 void tst_QFileSystemModel::nameFilters()
