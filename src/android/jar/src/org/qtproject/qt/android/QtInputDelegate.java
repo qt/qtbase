@@ -214,7 +214,6 @@ class QtInputDelegate {
                 return;
 
             setEditTextOptions(enterKeyType, inputHints);
-            m_currentEditText.requestFocus();
 
             m_currentEditText.postDelayed(() -> {
                 m_imm.showSoftInput(m_currentEditText, 0, new ResultReceiver(new Handler()) {

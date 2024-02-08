@@ -331,7 +331,6 @@ class QtActivityDelegate extends QtActivityDelegateBase
             m_topLevelWindows.put(window.getId(), window);
             if (!m_splashScreenSticky)
                 hideSplashScreen();
-            m_inputDelegate.setFocusedView(window.getQtEditText());
         });
     }
 
