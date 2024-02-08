@@ -1303,7 +1303,7 @@ void QNetworkReplyHttpImplPrivate::followRedirect()
             q, [this]() { postRequest(redirectRequest); }, Qt::QueuedConnection);
 }
 
-static constexpr QByteArrayView locationHeader() noexcept { return "location"; }
+static constexpr QLatin1StringView locationHeader() noexcept { return "location"_L1; }
 
 void QNetworkReplyHttpImplPrivate::checkForRedirect(const int statusCode)
 {
