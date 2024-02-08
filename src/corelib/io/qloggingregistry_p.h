@@ -97,7 +97,7 @@ public:
 #ifndef QT_BUILD_INTERNAL
     Q_CORE_EXPORT   // always export from QtCore
 #endif
-    void registerEnvironmentOverrideForCategory(QByteArrayView categoryName, QByteArrayView environment);
+    void registerEnvironmentOverrideForCategory(const char *categoryName, const char *environment);
 
     void setApiRules(const QString &content);
 
@@ -127,7 +127,7 @@ private:
     QList<QLoggingRule> ruleSets[NumRuleSets];
     QHash<QLoggingCategory *, QtMsgType> categories;
     QLoggingCategory::CategoryFilter categoryFilter;
-    QMap<QByteArrayView, QByteArrayView> qtCategoryEnvironmentOverrides;
+    QMap<QByteArrayView, const char *> qtCategoryEnvironmentOverrides;
 
     friend class ::tst_QLoggingRegistry;
 };
@@ -140,12 +140,12 @@ public:
     {}
 
 private:
-    static const char *registerOverride(QByteArrayView categoryName, QByteArrayView environment)
+    static const char *registerOverride(const char *categoryName, const char *environment)
     {
         QLoggingRegistry *c = QLoggingRegistry::instance();
         if (c)
             c->registerEnvironmentOverrideForCategory(categoryName, environment);
-        return categoryName.data();
+        return categoryName;
     }
 };
 
