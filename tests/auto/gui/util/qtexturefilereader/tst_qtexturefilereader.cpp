@@ -36,6 +36,7 @@ class tst_qtexturefilereader : public QObject
 private slots:
     void checkHandlers_data();
     void checkHandlers();
+    void checkInvalid();
     void checkMetadata();
 };
 
@@ -163,6 +164,18 @@ void tst_qtexturefilereader::checkMetadata()
     QCOMPARE(kvs.value("test A"), QByteArrayLiteral("1\x0000"));
     QCOMPARE(kvs.value("test B"), QByteArrayLiteral("2\x0000"));
     QCOMPARE(kvs.value("test C"), QByteArrayLiteral("3\x0000"));
+}
+
+void tst_qtexturefilereader::checkInvalid()
+{
+    QFile f(":/texturefiles/invalid.ktx");
+    QVERIFY(f.open(QIODevice::ReadOnly));
+    QTextureFileReader r(&f);
+    QTextureFileData d = r.read();
+    auto kvs = d.keyValueMetadata();
+
+    // Basically just checking that we don't crash on and invalid file
+    QVERIFY(kvs.empty());
 }
 
 QTEST_MAIN(tst_qtexturefilereader)
