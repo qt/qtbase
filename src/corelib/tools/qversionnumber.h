@@ -211,7 +211,9 @@ class QVersionNumber
 
         using iterator_category = std::random_access_iterator_tag;
         using value_type = int;
+#ifdef QT_COMPILER_HAS_LWG3346
         using element_type = const int;
+#endif
         using difference_type = qptrdiff; // difference to container requirements
         using size_type = qsizetype;      // difference to container requirements
         using reference = value_type;     // difference to container requirements
