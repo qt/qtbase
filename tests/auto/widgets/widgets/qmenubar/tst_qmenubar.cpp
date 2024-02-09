@@ -907,7 +907,6 @@ void tst_QMenuBar::check_altClosePress()
 
     w.show();
     w.move(QGuiApplication::primaryScreen()->availableGeometry().center());
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     QTest::keyClick(&w, Qt::Key_F, Qt::AltModifier);
