@@ -25,6 +25,7 @@ qt_internal_add_test(tst_qdir
         tst_qdir.cpp
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
     TESTDATA ${test_data}
 )
 

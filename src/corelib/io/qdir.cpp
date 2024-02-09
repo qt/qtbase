@@ -1806,7 +1806,9 @@ bool QDir::makeAbsolute()
 }
 
 /*!
-    Returns \c true if directory \a dir and this directory have the same
+   \fn bool QDir::operator==(const QDir &lhs, const QDir &rhs)
+
+    Returns \c true if directory \a lhs and directory \a rhs have the same
     path and their sort and filter settings are the same; otherwise
     returns \c false.
 
@@ -1814,10 +1816,10 @@ bool QDir::makeAbsolute()
 
     \snippet code/src_corelib_io_qdir.cpp 10
 */
-bool QDir::operator==(const QDir &dir) const
+bool comparesEqual(const QDir &lhs, const QDir &rhs)
 {
-    Q_D(const QDir);
-    const QDirPrivate *other = dir.d_ptr.constData();
+    const QDirPrivate *d = lhs.d_ptr.constData();
+    const QDirPrivate *other = rhs.d_ptr.constData();
 
     if (d == other)
         return true;
@@ -1841,13 +1843,13 @@ bool QDir::operator==(const QDir &dir) const
         if (d->dirEntry.filePath() == other->dirEntry.filePath())
             return true;
 
-        if (exists()) {
-            if (!dir.exists())
+        if (lhs.exists()) {
+            if (!rhs.exists())
                 return false; //can't be equal if only one exists
             // Both exist, fallback to expensive canonical path computation
-            return canonicalPath().compare(dir.canonicalPath(), sensitive) == 0;
+            return lhs.canonicalPath().compare(rhs.canonicalPath(), sensitive) == 0;
         } else {
-            if (dir.exists())
+            if (rhs.exists())
                 return false; //can't be equal if only one exists
             // Neither exists, compare absolute paths rather than canonical (which would be empty strings)
             QString thisFilePath = d->resolveAbsoluteEntry();
@@ -1877,11 +1879,10 @@ QDir &QDir::operator=(const QDir &dir)
 */
 
 /*!
-    \fn bool QDir::operator!=(const QDir &dir) const
+    \fn bool QDir::operator!=(const QDir &lhs, const QDir &rhs)
 
-    Returns \c true if directory \a dir and this directory have different
-    paths or different sort or filter settings; otherwise returns
-    false.
+    Returns \c true if directory \a lhs and directory \a rhs have different
+    paths or different sort or filter settings; otherwise returns \c false.
 
     Example:
 

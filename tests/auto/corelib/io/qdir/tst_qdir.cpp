@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QTemporaryFile>
 #if QT_CONFIG(process)
 #include <QProcess>
@@ -126,6 +127,7 @@ private slots:
     void normalizePathSegments();
 #endif
 
+    void compareCompiles();
     void compare();
     void QDir_default();
 
@@ -701,18 +703,24 @@ void tst_QDir::QDir_default()
     QCOMPARE(dir.absolutePath(), QDir::currentPath());
 }
 
+void tst_QDir::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QDir>();
+}
+
 void tst_QDir::compare()
 {
-    // operator==
-
-    // Not using QCOMPARE to test result of QDir::operator==
-
     QDir dir;
     dir.makeAbsolute();
-    QVERIFY(dir == QDir::currentPath());
+    QTestPrivate::testEqualityOperators(dir, QDir::currentPath(), true);
+    if (QTest::currentTestFailed())
+        return;
 
     QCOMPARE(QDir(), QDir(QDir::currentPath()));
-    QVERIFY(QDir("../") == QDir(QDir::currentPath() + "/.."));
+
+    QTestPrivate::testEqualityOperators(QDir("../"), QDir(QDir::currentPath() + "/.."), true);
+    if (QTest::currentTestFailed())
+        return;
 }
 
 static QStringList filterLinks(QStringList &&list)

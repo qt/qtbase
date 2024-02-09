@@ -915,10 +915,16 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
 
 #endif // QT_CORE_REMOVED_SINCE(6, 7)
 
-
 #if QT_CORE_REMOVED_SINCE(6, 8)
 
 #include "qdatastream.h" // inlined API
+
+#include "qdir.h" // inlined API
+
+bool QDir::operator==(const QDir &dir) const
+{
+    return comparesEqual(*this, dir);
+}
 
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
