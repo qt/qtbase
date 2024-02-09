@@ -420,7 +420,6 @@ void tst_QDataWidgetMapper::textEditDoesntChangeFocusOnTab_qtbug3305()
 
     container.show();
 
-    QApplicationPrivate::setActiveWindow(&container);
     QVERIFY(QTest::qWaitForWindowActive(&container));
 
     int closeEditorSpyCount = 0;
