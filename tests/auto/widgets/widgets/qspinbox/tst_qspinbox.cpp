@@ -1209,7 +1209,6 @@ void tst_QSpinBox::taskQTBUG_5008_textFromValueAndValidate()
     spinbox.show();
     spinbox.activateWindow();
     spinbox.setFocus();
-    QApplicationPrivate::setActiveWindow(&spinbox);
     QVERIFY(QTest::qWaitForWindowActive(&spinbox));
     QVERIFY(spinbox.hasFocus());
     QTRY_COMPARE(static_cast<QWidget *>(&spinbox), QApplication::activeWindow());
