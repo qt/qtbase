@@ -1041,11 +1041,9 @@ void tst_QMdiArea::currentSubWindow()
     QCOMPARE(mdiArea.activeSubWindow(), active);
     QCOMPARE(mdiArea.currentSubWindow(), active);
 
-    QApplicationPrivate::setActiveWindow(&dummyTopLevel);
     QVERIFY(mdiArea.activeSubWindow());
     QCOMPARE(mdiArea.currentSubWindow(), active);
 
-    QApplicationPrivate::setActiveWindow(&mdiArea);
     active->show();
     QCOMPARE(mdiArea.activeSubWindow(), active);
 
