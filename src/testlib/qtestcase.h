@@ -199,13 +199,13 @@ inline void useVerifyThrowsException() {}
     }
 
 #define QTRY_IMPL(expr, timeoutAsGiven)\
-    const auto timeout = [&] { \
+    const auto qt_test_timeoutAsMs = [&] { \
             /* make 5s work w/o user action: */ \
             using namespace std::chrono_literals; \
             return std::chrono::milliseconds{timeoutAsGiven}; \
         }(); \
-    const int qt_test_step = timeout.count() < 350 ? timeout.count() / 7 + 1 : 50; \
-    const int qt_test_timeoutValue = timeout.count(); \
+    const int qt_test_step = qt_test_timeoutAsMs.count() < 350 ? qt_test_timeoutAsMs.count() / 7 + 1 : 50; \
+    const int qt_test_timeoutValue = qt_test_timeoutAsMs.count(); \
     { QTRY_LOOP_IMPL(expr, qt_test_timeoutValue, qt_test_step) } \
     QTRY_TIMEOUT_DEBUG_IMPL(expr, qt_test_timeoutValue, qt_test_step)
 // Ends with an if-block, so doesn't want a following semicolon.
