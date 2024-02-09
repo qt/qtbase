@@ -384,7 +384,6 @@ void tst_QMdiSubWindow::mainWindowSupport()
     mainWindow.setCentralWidget(workspace);
     mainWindow.show();
     mainWindow.menuBar()->setVisible(true);
-    QApplicationPrivate::setActiveWindow(&mainWindow);
     bool nativeMenuBar = mainWindow.menuBar()->isNativeMenuBar();
 
     // QMainWindow's window title is empty, so on a platform which does NOT have a native menubar,
