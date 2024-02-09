@@ -3722,7 +3722,6 @@ void tst_QLineEdit::task174640_editingFinished()
     layout->addWidget(le2);
 
     mw.show();
-    QApplicationPrivate::setActiveWindow(&mw);
     mw.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&mw));
     QCOMPARE(&mw, QApplication::activeWindow());
