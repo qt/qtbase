@@ -19,7 +19,6 @@ class TestBrowser : public QTextBrowser
 public:
     inline TestBrowser() {
         show();
-        QApplicationPrivate::setActiveWindow(this);
         activateWindow();
         setFocus();
         QVERIFY(QTest::qWaitForWindowActive(this));
