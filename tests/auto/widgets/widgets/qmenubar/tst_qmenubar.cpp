@@ -1374,7 +1374,6 @@ void tst_QMenuBar::taskQTBUG53205_crashReparentNested()
     mainWindow.resize(300, 200);
     centerOnScreen(&mainWindow);
     const TestMenu testMenus = initWindowWithComplexMenuBar(mainWindow);
-    QApplicationPrivate::setActiveWindow(&mainWindow);
 
     // they can't be windows
     QWidget hiddenParent(&mainWindow, {});
