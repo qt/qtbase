@@ -2615,6 +2615,21 @@ void tst_QStringConverter::fromLocal8Bit_special_cases()
     QCOMPARE(result, u"你");
     QCOMPARE(state.remainingChars, 0);
 
+    // Test QTBUG-118834, which is failing
+    result.clear();
+    state.clear();
+    result = QLocal8Bit::convertToUnicode_sys("\xe4\xe4\xbd", UTF8, &state);
+    QCOMPARE(result, QString());
+    QVERIFY(result.isNull());
+    // Remaining octet:
+    result += QLocal8Bit::convertToUnicode_sys("\xa0", UTF8, &state);
+    QEXPECT_FAIL("", "QTBUG-118834: We don't output anything because it's "
+                     "within the size of our internal state, and we cannot "
+                     "signal that it needs to be drained.", Continue);
+    QCOMPARE(result, QChar::ReplacementCharacter + u"你"_s);
+    QEXPECT_FAIL("", "QTBUG-118834: As above", Continue);
+    QCOMPARE(state.remainingChars, 0);
+
     // Now try a 4-octet GB 18030 sequence:
     result.clear();
     state.clear();
