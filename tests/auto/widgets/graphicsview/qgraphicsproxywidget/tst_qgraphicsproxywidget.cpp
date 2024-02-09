@@ -933,7 +933,6 @@ void tst_QGraphicsProxyWidget::hoverEnterLeaveEvent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
