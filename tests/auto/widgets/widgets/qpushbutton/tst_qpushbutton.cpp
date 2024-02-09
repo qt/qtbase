@@ -339,7 +339,6 @@ void tst_QPushButton::setAccel()
 
     // The shortcut will not be activated unless the button is in a active
     // window and has focus
-    QApplicationPrivate::setActiveWindow(testWidget);
     testWidget->setFocus();
     QVERIFY(QTest::qWaitForWindowActive(testWidget));
     QTest::keyClick(testWidget, 'A', Qt::AltModifier);
