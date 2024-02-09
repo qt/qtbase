@@ -927,7 +927,6 @@ void tst_QSpinBox::editingFinished()
     layout->addWidget(box2);
 
     testFocusWidget.show();
-    QApplicationPrivate::setActiveWindow(&testFocusWidget);
     QVERIFY(QTest::qWaitForWindowActive(&testFocusWidget));
     box->activateWindow();
     box->setFocus();
