@@ -1423,7 +1423,6 @@ void tst_QMenuBar::QTBUG_65488_hiddenActionTriggered()
     // resize to action's size to make Action1 hidden
     win.resize(actRect.width() - 10, win.size().height());
     win.show();
-    QApplicationPrivate::setActiveWindow(&win);
     QVERIFY(QTest::qWaitForWindowExposed(&win));
     // click center of the blank area on the menubar where Action1 resided
     QTest::mouseClick(win.windowHandle(), Qt::LeftButton, Qt::NoModifier, win.menuBar()->geometry().center());
