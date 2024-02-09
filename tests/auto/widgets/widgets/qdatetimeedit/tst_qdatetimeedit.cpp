@@ -1354,7 +1354,6 @@ void tst_QDateTimeEdit::editingRanged()
     });
 
     edit->show();
-    QApplicationPrivate::setActiveWindow(edit.get());
     if (!QTest::qWaitForWindowActive(edit.get()))
         QSKIP("Failed to make window active, aborting");
     edit->setFocus();
