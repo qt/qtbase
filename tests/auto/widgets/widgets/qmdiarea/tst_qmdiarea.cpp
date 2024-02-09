@@ -1249,7 +1249,6 @@ void tst_QMdiArea::closeWindows()
 {
     QMdiArea workspace;
     workspace.show();
-    QApplicationPrivate::setActiveWindow(&workspace);
 
     // Close widget
     QWidget *widget = new QWidget;
