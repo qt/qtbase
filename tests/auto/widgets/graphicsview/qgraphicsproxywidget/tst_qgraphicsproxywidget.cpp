@@ -2992,7 +2992,6 @@ void tst_QGraphicsProxyWidget::actionsContextMenu()
     view.resize(200, 200);
     view.move(QGuiApplication::primaryScreen()->geometry().center() - QPoint(100, 100));
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     view.setFocus();
     QTRY_VERIFY(view.hasFocus());
