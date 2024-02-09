@@ -3530,7 +3530,6 @@ void tst_QGraphicsProxyWidget::mapToGlobal() // QTBUG-41135
     childWidget->resize(embeddedWidget->size() / 2);
     childWidget->move(embeddedWidget->width() / 4, embeddedWidget->height() / 4); // center in embeddedWidget
     scene.addWidget(embeddedWidget);
-    QApplicationPrivate::setActiveWindow(&view);
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     const QPoint embeddedCenter = embeddedWidget->rect().center();
