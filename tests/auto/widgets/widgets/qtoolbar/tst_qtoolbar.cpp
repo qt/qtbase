@@ -1022,7 +1022,6 @@ void tst_QToolBar::accel()
     QSignalSpy spy(action, SIGNAL(triggered(bool)));
 
     mw.show();
-    QApplicationPrivate::setActiveWindow(&mw);
     QVERIFY(QTest::qWaitForWindowActive(&mw));
 
     QTest::keyClick(&mw, Qt::Key_T, Qt::AltModifier);
