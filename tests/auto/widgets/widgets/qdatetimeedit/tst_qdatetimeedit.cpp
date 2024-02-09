@@ -929,7 +929,6 @@ void tst_QDateTimeEdit::selectAndScrollWithKeys()
 
 void tst_QDateTimeEdit::backspaceKey()
 {
-    QApplicationPrivate::setActiveWindow(testWidget);
     testWidget->setDate(QDate(2004, 05, 11));
     testWidget->setDisplayFormat("d/MM/yyyy");
     testWidget->show();
