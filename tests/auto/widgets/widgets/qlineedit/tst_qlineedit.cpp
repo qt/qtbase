@@ -4576,7 +4576,6 @@ void tst_QLineEdit::clearButton()
     l->addWidget(listView);
     testWidget.move(300, 300);
     testWidget.show();
-    QApplicationPrivate::setActiveWindow(&testWidget);
     QVERIFY(QTest::qWaitForWindowActive(&testWidget));
     // Flip the clear button on,off, trying to detect crashes.
     filterLineEdit->setClearButtonEnabled(true);
