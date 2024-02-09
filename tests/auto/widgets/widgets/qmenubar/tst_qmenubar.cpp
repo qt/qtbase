@@ -1530,7 +1530,6 @@ void tst_QMenuBar::taskQTBUG46812_doNotLeaveMenubarHighlighted()
     initWindowWithSimpleMenuBar(mainWindow);
 
     mainWindow.show();
-    QApplicationPrivate::setActiveWindow(&mainWindow);
     QVERIFY(QTest::qWaitForWindowActive(&mainWindow));
 
     QVERIFY(!mainWindow.menuBar()->hasFocus());
