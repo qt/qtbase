@@ -182,7 +182,6 @@ void tst_QToolButton::task176137_autoRepeatOfAction()
     label->move(0, 50);
 
     mainWidget.show();
-    QApplicationPrivate::setActiveWindow(&mainWidget);
     QVERIFY(QTest::qWaitForWindowActive(&mainWidget));
 
     QSignalSpy spy(&action,SIGNAL(triggered()));
