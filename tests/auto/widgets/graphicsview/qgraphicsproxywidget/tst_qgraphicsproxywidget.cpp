@@ -3342,7 +3342,6 @@ void tst_QGraphicsProxyWidget::clickFocus()
         view.setFrameStyle(0);
         view.resize(300, 300);
         view.show();
-        QApplicationPrivate::setActiveWindow(&view);
         QVERIFY(QTest::qWaitForWindowActive(&view));
 
         QVERIFY(!proxy->hasFocus());
