@@ -1300,7 +1300,6 @@ void tst_QMdiArea::activateNextAndPreviousWindow()
 {
     QMdiArea workspace;
     workspace.show();
-    QApplicationPrivate::setActiveWindow(&workspace);
 
     const int windowCount = 10;
     QMdiSubWindow *windows[windowCount];
