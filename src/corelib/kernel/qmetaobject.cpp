@@ -127,7 +127,7 @@ static inline const char *rawStringData(const QMetaObject *mo, int index)
     return reinterpret_cast<const char *>(mo->d.stringdata) + offset;
 }
 
-static inline QLatin1StringView stringDataView(const QMetaObject *mo, int index)
+static inline QByteArrayView stringDataView(const QMetaObject *mo, int index)
 {
     Q_ASSERT(priv(mo->d.data)->revision >= 7);
     uint offset = mo->d.stringdata[2*index];
@@ -1081,7 +1081,7 @@ int QMetaObjectPrivate::indexOfEnumerator(const QMetaObject *m, QByteArrayView n
         for (int i = 0; i < d->enumeratorCount; ++i) {
             const QMetaEnum e(m, i);
             const quint32 id = which == Which::Name ? e.data.name() : e.data.alias();
-            QLatin1StringView prop = stringDataView(m, id);
+            QByteArrayView prop = stringDataView(m, id);
             if (name == prop) {
                 i += m->enumeratorOffset();
                 return i;
@@ -1392,7 +1392,7 @@ QByteArray QMetaObject::normalizedSignature(const char *method)
 }
 
 Q_DECL_COLD_FUNCTION static inline bool
-printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsizetype paramCount,
+printMethodNotFoundWarning(const QMetaObject *meta, QByteArrayView name, qsizetype paramCount,
                            const char *const *names,
                            const QtPrivate::QMetaTypeInterface * const *metaTypes)
 {
@@ -1400,7 +1400,7 @@ printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsiz
     QByteArray candidateMessage;
     for (int i = 0; i < meta->methodCount(); ++i) {
         const QMetaMethod method = meta->method(i);
-        if (method.name() == QByteArrayView(name))
+        if (method.name() == name)
             candidateMessage += "    " + method.methodSignature() + '\n';
     }
     if (!candidateMessage.isEmpty()) {
@@ -1586,7 +1586,7 @@ bool QMetaObject::invokeMethodImpl(QObject *obj, const char *member, Qt::Connect
     Q_ASSERT(typeNames);
 
     // find the method
-    QLatin1StringView name(member);
+    QByteArrayView name(member);
     if (name.isEmpty())
         return false;
 
@@ -2635,7 +2635,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
     // 0 is the return type, 1 is the first formal parameter
     auto checkTypesAreCompatible = [=](int idx) {
         uint typeInfo = priv->parameterTypeInfo(idx - 1);
-        QLatin1StringView userTypeName(typeNames[idx] ? typeNames[idx] : metaTypes[idx]->name);
+        QByteArrayView userTypeName(typeNames[idx] ? typeNames[idx] : metaTypes[idx]->name);
 
         if ((typeInfo & IsUnresolvedType) == 0) {
             // this is a built-in type
@@ -2644,7 +2644,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
             return int(typeInfo) == metaTypes[idx]->typeId;
         }
 
-        QLatin1StringView methodTypeName = stringDataView(priv->mobj, typeInfo & TypeNameIndexMask);
+        QByteArrayView methodTypeName = stringDataView(priv->mobj, typeInfo & TypeNameIndexMask);
         if ((MetaTypesAreOptional && !metaTypes) || !metaTypes[idx]) {
             // compatibility call, compare strings
             if (methodTypeName == userTypeName)
@@ -2652,7 +2652,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
 
             // maybe the user type needs normalization
             QByteArray normalized = normalizeTypeInternal(userTypeName.begin(), userTypeName.end());
-            return methodTypeName == QLatin1StringView(normalized);
+            return methodTypeName == normalized;
         }
 
         QMetaType userType(metaTypes[idx]);
@@ -3387,7 +3387,7 @@ QByteArray QMetaEnum::valueToKeys(int value) const
     QByteArray keys;
     if (!mobj)
         return keys;
-    QVarLengthArray<QLatin1StringView, sizeof(int) * CHAR_BIT> parts;
+    QVarLengthArray<QByteArrayView, sizeof(int) * CHAR_BIT> parts;
     int v = value;
     // reverse iterate to ensure values like Qt::Dialog=0x2|Qt::Window are processed first.
     for (int i = data.keyCount() - 1; i >= 0; --i) {
