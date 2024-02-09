@@ -627,7 +627,6 @@ void tst_QMenuBar::check_cursorKeys1()
     QMainWindow w;
     initWindowWithComplexMenuBar(w);
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     // start with a ALT + 1 that activates the first popupmenu
