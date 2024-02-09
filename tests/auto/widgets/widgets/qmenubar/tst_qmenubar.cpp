@@ -745,7 +745,6 @@ void tst_QMenuBar::taskQTBUG56860_focus()
 
     w.setCentralWidget(e);
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     QTRY_COMPARE(QApplication::focusWidget(), e);
