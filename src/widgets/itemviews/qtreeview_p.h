@@ -258,6 +258,12 @@ public:
     // tree position
     int treePosition;
 
+    // pending accessibility update
+#if QT_CONFIG(accessibility)
+    bool pendingAccessibilityUpdate = false;
+#endif
+    void updateAccessibility();
+
     QMetaObject::Connection animationConnection;
     QMetaObject::Connection selectionmodelConnection;
     std::array<QMetaObject::Connection, 2> modelConnections;
