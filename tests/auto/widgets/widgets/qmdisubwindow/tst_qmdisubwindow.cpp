@@ -1953,7 +1953,6 @@ void tst_QMdiSubWindow::task_182852()
     mainWindow.setCentralWidget(workspace);
     mainWindow.show();
     mainWindow.menuBar()->setVisible(true);
-    QApplicationPrivate::setActiveWindow(&mainWindow);
     if (mainWindow.menuBar()->isNativeMenuBar())
         return; // The main window's title is not overwritten if we have a native menubar (macOS, Unity etc.)
 
