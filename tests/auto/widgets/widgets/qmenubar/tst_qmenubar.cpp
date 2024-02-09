@@ -878,7 +878,6 @@ void tst_QMenuBar::check_altPress()
     initWindowWithSimpleMenuBar(w);
     w.show();
     w.setFocus();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     QTest::keyClick( &w, Qt::Key_Alt );
