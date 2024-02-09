@@ -704,7 +704,6 @@ void tst_QMenuBar::check_cursorKeys3()
     QMainWindow w;
     initWindowWithComplexMenuBar(w);
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     // select Popupmenu 2
