@@ -329,7 +329,6 @@ void tst_QMenuBar::accel()
     QMainWindow w;
     const TestMenu menu = initWindowWithSimpleMenuBar(w);
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
     // shortcuts won't work unless the window is active
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_A, Qt::ControlModifier );
