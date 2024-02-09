@@ -1230,7 +1230,6 @@ void tst_QMdiSubWindow::restoreFocusOverCreation()
     subWidget1->m_lineEdit2->setFocus();
     subWindow1->show();
     mdiArea.show();
-    QApplicationPrivate::setActiveWindow(&mdiArea);
     QVERIFY(QTest::qWaitForWindowActive(&mdiArea));
     QCOMPARE(QApplication::focusWidget(), subWidget1->m_lineEdit2);
 
