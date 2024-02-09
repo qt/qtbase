@@ -713,7 +713,7 @@ struct Data
         bool initialized;
     };
 
-    InsertionResult findOrInsert(const Key &key) noexcept
+    template <typename K> InsertionResult findOrInsert(const K &key) noexcept
     {
         Bucket it(static_cast<Span *>(nullptr), 0);
         if (numBuckets > 0) {
@@ -1063,15 +1063,21 @@ public:
 
     T &operator[](const Key &key)
     {
+        return operatorIndexImpl(key);
+    }
+private:
+    template <typename K> T &operatorIndexImpl(const K &key)
+    {
         const auto copy = isDetached() ? QHash() : *this; // keep 'key' alive across the detach
         detach();
         auto result = d->findOrInsert(key);
         Q_ASSERT(!result.it.atEnd());
         if (!result.initialized)
-            Node::createInPlace(result.it.node(), key, T());
+            Node::createInPlace(result.it.node(), Key(key), T());
         return result.it.node()->value;
     }
 
+public:
     const T operator[](const Key &key) const noexcept
     {
         return value(key);
@@ -1379,6 +1385,10 @@ public:
     T value(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key, const T &defaultValue) const noexcept
     {
         return valueImpl(key, [&] { return defaultValue; });
+    }
+    T &operator[](const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    {
+        return operatorIndexImpl(key);
     }
     const T operator[](const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
     {
@@ -1701,17 +1711,23 @@ public:
 
     T &operator[](const Key &key)
     {
+        return operatorIndexImpl(key);
+    }
+private:
+    template <typename K> T &operatorIndexImpl(const K &key)
+    {
         const auto copy = isDetached() ? QMultiHash() : *this; // keep 'key' alive across the detach
         detach();
         auto result = d->findOrInsert(key);
         Q_ASSERT(!result.it.atEnd());
         if (!result.initialized) {
-            Node::createInPlace(result.it.node(), key, T());
+            Node::createInPlace(result.it.node(), Key(key), T());
             ++m_size;
         }
         return result.it.node()->value->value;
     }
 
+public:
     const T operator[](const Key &key) const noexcept
     {
         return value(key);
@@ -2340,6 +2356,10 @@ public:
     T value(const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key, const T &defaultValue) const noexcept
     {
         return valueImpl(key, [&] { return defaultValue; });
+    }
+    T &operator[](const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key)
+    {
+        return operatorIndexImpl(key);
     }
     const T operator[](const QHashPrivate::HeterogeneouslySearchableWith<Key> auto &key) const noexcept
     {

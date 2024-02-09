@@ -1262,6 +1262,15 @@ static void heterogeneousSearchTest(const QList<std::remove_const_t<String>> &ke
                 std::make_pair(hash.constEnd(), hash.constEnd()));
     Helper::checkCounter();
 
+    // non-const versions
+    QCOMPARE_EQ(hash[keyView], keys.size());    // already there
+    Helper::checkCounter();
+
+    QCOMPARE_EQ(hash[otherKeyView], 0);         // inserts
+    Helper::resetCounter();
+    hash[otherKeyView] = INT_MAX;
+    Helper::checkCounter();
+
     if constexpr (IsMultiHash) {
         hash.insert(key, keys.size());
         QCOMPARE_EQ(hash.count(keyView), 2);
@@ -1303,7 +1312,7 @@ static void heterogeneousSearchTest(const QList<std::remove_const_t<String>> &ke
         QCOMPARE_EQ(hash.remove(keyView), true);
     }
 
-    QCOMPARE_EQ(hash.take(otherKeyView), 0);
+    QCOMPARE_EQ(hash.take(otherKeyView), INT_MAX);
     QVERIFY(hash.isEmpty());
     Helper::checkCounter();
 
