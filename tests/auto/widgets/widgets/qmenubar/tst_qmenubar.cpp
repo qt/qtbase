@@ -927,7 +927,6 @@ void tst_QMenuBar::check_shortcutPress()
     const TestMenu menu = initWindowWithComplexMenuBar(w);
     w.show();
     w.setFocus();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     QCOMPARE(m_complexTriggerCount[3], 0);
