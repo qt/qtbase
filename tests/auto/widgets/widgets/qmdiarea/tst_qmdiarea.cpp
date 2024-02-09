@@ -964,7 +964,6 @@ void tst_QMdiArea::activeSubWindow()
     mainWindow.addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
 
     mainWindow.show();
-    QApplicationPrivate::setActiveWindow(&mainWindow);
     QVERIFY(QTest::qWaitForWindowActive(&mainWindow));
     QCOMPARE(mdiArea->activeSubWindow(), subWindow);
     QCOMPARE(qApp->focusWidget(), (QWidget *)subWindowLineEdit);
@@ -987,10 +986,8 @@ void tst_QMdiArea::activeSubWindow()
     dummyTopLevel.show();
     QVERIFY(QTest::qWaitForWindowExposed(&dummyTopLevel));
 
-    QApplicationPrivate::setActiveWindow(&dummyTopLevel);
     QCOMPARE(mdiArea->activeSubWindow(), subWindow);
 
-    QApplicationPrivate::setActiveWindow(&mainWindow);
     QCOMPARE(mdiArea->activeSubWindow(), subWindow);
 
     //task 202657
