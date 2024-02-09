@@ -289,7 +289,6 @@ void tst_QStackedLayout::keepFocusAfterSetCurrent()
     stackLayout->setCurrentIndex(0);
 
     testWidget->show();
-    QApplicationPrivate::setActiveWindow(testWidget);
     QVERIFY(QTest::qWaitForWindowActive(testWidget));
 
     edit1->setFocus();
