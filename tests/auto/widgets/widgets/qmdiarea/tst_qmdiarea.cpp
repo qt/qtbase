@@ -1872,7 +1872,6 @@ void tst_QMdiArea::dontMaximizeSubWindowOnActivation()
     QMdiArea mdiArea;
     mdiArea.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
-    QApplicationPrivate::setActiveWindow(&mdiArea);
 
     // Add one maximized window.
     mdiArea.addSubWindow(new QWidget)->showMaximized();
