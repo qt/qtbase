@@ -1494,7 +1494,6 @@ void tst_QMenuBar::QTBUG_25669_menubarActionDoubleTriggered()
     QSignalSpy spy(win.menuBar(), &QMenuBar::triggered);
 
     win.show();
-    QApplicationPrivate::setActiveWindow(&win);
     QVERIFY(QTest::qWaitForWindowExposed(&win));
 
     QPoint posAct1 = menuBarActionWindowPos(win.menuBar(), act1);
