@@ -2545,7 +2545,6 @@ void tst_QTextEdit::inputMethodEvent()
 
     // test that input method gets chance to commit preedit when removing focus
     ed->setText("");
-    QApplicationPrivate::setActiveWindow(ed);
     QTRY_VERIFY(QApplication::focusWindow());
     QCOMPARE(qApp->focusObject(), ed);
 
