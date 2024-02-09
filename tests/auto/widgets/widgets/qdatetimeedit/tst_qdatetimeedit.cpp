@@ -827,7 +827,6 @@ void tst_QDateTimeEdit::selectAndScrollWithKeys()
     return;
 #endif
 
-    QApplicationPrivate::setActiveWindow(testWidget);
     testWidget->setDate(QDate(2004, 05, 11));
     testWidget->setDisplayFormat("dd/MM/yyyy");
     testWidget->show();
