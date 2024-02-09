@@ -569,7 +569,7 @@ QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &reque
                                                  QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&](auto req, auto json) { return d->qnam->post(req, json); },
+    return d->executeRequest([](auto qnam, auto req, auto data) { return qnam->post(req, data); },
                              data, request, context, slot);
 }
 
@@ -585,7 +585,7 @@ QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &reque
                                                  QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->post(request, data); }, context, slot);
+    return d->executeRequest([&](auto qnam) { return qnam->post(request, data); }, context, slot);
 }
 
 QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
@@ -593,7 +593,7 @@ QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &reque
                                                  QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->post(request, data); }, context, slot);
+    return d->executeRequest([&](auto qnam) { return qnam->post(request, data); }, context, slot);
 }
 
 QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &request,
@@ -601,14 +601,14 @@ QNetworkReply *QRestAccessManager::postWithDataImpl(const QNetworkRequest &reque
                                                  QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->post(request, data); }, context, slot);
+    return d->executeRequest([&](auto qnam) { return qnam->post(request, data); }, context, slot);
 }
 
 QNetworkReply *QRestAccessManager::getNoDataImpl(const QNetworkRequest &request,
                                      const QObject *context, QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->get(request); }, context, slot);
+    return d->executeRequest([&](auto qnam) { return qnam->get(request); }, context, slot);
 }
 
 QNetworkReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &request,
@@ -616,7 +616,7 @@ QNetworkReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &reques
                                                 QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->get(request, data); }, context, slot);
+    return d->executeRequest([&](auto qnam) { return qnam->get(request, data); }, context, slot);
 }
 
 QNetworkReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &request,
@@ -624,7 +624,7 @@ QNetworkReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &reques
                                                 QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&](auto req, auto json) { return d->qnam->get(req, json); },
+    return d->executeRequest([](auto qnam, auto req, auto data) { return qnam->get(req, data); },
                              data, request, context, slot);
 }
 
@@ -633,21 +633,21 @@ QNetworkReply *QRestAccessManager::getWithDataImpl(const QNetworkRequest &reques
                                                 QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->get(request, data); }, context, slot);
+    return d->executeRequest([&](auto qnam) { return qnam->get(request, data); }, context, slot);
 }
 
 QNetworkReply *QRestAccessManager::deleteResourceNoDataImpl(const QNetworkRequest &request,
                                      const QObject *context, QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->deleteResource(request); }, context, slot);
+    return d->executeRequest([&](auto qnam) { return qnam->deleteResource(request); }, context, slot);
 }
 
 QNetworkReply *QRestAccessManager::headNoDataImpl(const QNetworkRequest &request,
                                      const QObject *context, QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->head(request); }, context, slot);
+    return d->executeRequest([&](auto qnam) { return qnam->head(request); }, context, slot);
 }
 
 QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
@@ -655,7 +655,7 @@ QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &reques
                                                 QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&](auto req, auto json) { return d->qnam->put(req, json); },
+    return d->executeRequest([](auto qnam, auto req, auto data) { return qnam->put(req, data); },
                              data, request, context, slot);
 }
 
@@ -671,7 +671,7 @@ QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &reques
                                                 QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->put(request, data); }, context, slot);
+    return d->executeRequest([&](auto qnam) { return qnam->put(request, data); }, context, slot);
 }
 
 QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request,
@@ -679,14 +679,14 @@ QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &reques
                                                 QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->put(request, data); }, context, slot);
+    return d->executeRequest([&](auto qnam) { return qnam->put(request, data); }, context, slot);
 }
 
 QNetworkReply *QRestAccessManager::putWithDataImpl(const QNetworkRequest &request, QIODevice *data,
                                      const QObject *context, QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->put(request, data); }, context, slot);
+    return d->executeRequest([&](auto qnam) { return qnam->put(request, data); }, context, slot);
 }
 
 static const auto PATCH = "PATCH"_ba;
@@ -697,8 +697,8 @@ QNetworkReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &requ
 {
     Q_D(QRestAccessManager);
     return d->executeRequest(
-            [&](auto req, auto json){ return d->qnam->sendCustomRequest(req, PATCH, json); },
-            data, request, context, slot);
+           [](auto qnam, auto req, auto data) { return qnam->sendCustomRequest(req, PATCH, data); },
+           data, request, context, slot);
 }
 
 QNetworkReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &request,
@@ -713,7 +713,7 @@ QNetworkReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &requ
                                                 QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->sendCustomRequest(request, PATCH, data); },
+    return d->executeRequest([&](auto qnam) { return qnam->sendCustomRequest(request, PATCH, data); },
                              context, slot);
 }
 
@@ -721,7 +721,7 @@ QNetworkReply *QRestAccessManager::patchWithDataImpl(const QNetworkRequest &requ
                                            const QObject *context, QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->sendCustomRequest(request, PATCH, data); },
+    return d->executeRequest([&](auto qnam) { return qnam->sendCustomRequest(request, PATCH, data); },
                              context, slot);
 }
 
@@ -731,7 +731,7 @@ QNetworkReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &req
                                                    QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->sendCustomRequest(request, method, data); },
+    return d->executeRequest([&](auto qnam) { return qnam->sendCustomRequest(request, method, data); },
                              context, slot);
 }
 
@@ -741,7 +741,7 @@ QNetworkReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &req
                                                    QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->sendCustomRequest(request, method, data); },
+    return d->executeRequest([&](auto qnam) { return qnam->sendCustomRequest(request, method, data); },
                              context, slot);
 }
 
@@ -751,7 +751,7 @@ QNetworkReply *QRestAccessManager::customWithDataImpl(const QNetworkRequest &req
                                                    QtPrivate::QSlotObjectBase *slot)
 {
     Q_D(QRestAccessManager);
-    return d->executeRequest([&]() { return d->qnam->sendCustomRequest(request, method, data); },
+    return d->executeRequest([&](auto qnam) { return qnam->sendCustomRequest(request, method, data); },
                              context, slot);
 }
 

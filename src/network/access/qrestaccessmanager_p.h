@@ -24,6 +24,7 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qjsonobject.h>
+#include <QtCore/qxpfunctional.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -38,19 +39,21 @@ public:
                                        QtPrivate::QSlotObjectBase *slot);
     void handleReplyFinished(QNetworkReply *reply);
 
-    template<typename Functor>
-    QNetworkReply *executeRequest(Functor requestOperation,
+    using ReqOpRef = qxp::function_ref<QNetworkReply*(QNetworkAccessManager*) const>;
+    QNetworkReply *executeRequest(ReqOpRef requestOperation,
                                const QObject *context, QtPrivate::QSlotObjectBase *slot)
     {
         if (!qnam)
             return warnNoAccessManager();
         verifyThreadAffinity(context);
-        QNetworkReply *reply = requestOperation();
+        QNetworkReply *reply = requestOperation(qnam);
         return createActiveRequest(reply, context, slot);
     }
 
-    template<typename Functor>
-    QNetworkReply *executeRequest(Functor requestOperation, const QJsonDocument &jsonDoc,
+    using ReqOpRefJson = qxp::function_ref<QNetworkReply*(QNetworkAccessManager*,
+                                                          const QNetworkRequest &,
+                                                          const QByteArray &) const>;
+    QNetworkReply *executeRequest(ReqOpRefJson requestOperation, const QJsonDocument &jsonDoc,
                                const QNetworkRequest &request,
                                const QObject *context, QtPrivate::QSlotObjectBase *slot)
     {
@@ -62,7 +65,7 @@ public:
             req.setHeader(QNetworkRequest::ContentTypeHeader,
                           QLatin1StringView{"application/json"});
         }
-        QNetworkReply *reply = requestOperation(req, jsonDoc.toJson(QJsonDocument::Compact));
+        QNetworkReply *reply = requestOperation(qnam, req, jsonDoc.toJson(QJsonDocument::Compact));
         return createActiveRequest(reply, context, slot);
     }
 
