@@ -46,6 +46,8 @@ public:
         // This means that files are limited to 2 GB − 1 bytes.
         // Limit max size to 256MB
         maxSizeBits = 28; // 256 MiB
+    #elif defined (Q_OS_WASM)
+        maxSizeBits = 28; // 256 MiB
     #elif defined(QT_LARGEFILE_SUPPORT)
         maxSizeBits = 36; // 64 GiB
     #else
@@ -491,19 +493,22 @@ void tst_LargeFile::mapFile()
 //Linux: memory-mapping beyond EOF usually succeeds, but depends on the filesystem
 //  32-bit: limited to 44-bit offsets (when sizeof(off_t) == 8)
 //Windows: memory-mapping beyond EOF is not allowed
+//wasm: as for linux
 void tst_LargeFile::mapOffsetOverflow()
 {
     enum {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN)
         Succeeds = false,
         MaxOffset = 63
+#elif defined(Q_OS_WASM)
+        Succeeds = true,
+        MaxOffset = sizeof(QT_OFF_T) > 4 ? 43 : 30
+#elif (defined(Q_OS_LINUX) || defined(Q_OS_ANDROID)) && (Q_PROCESSOR_WORDSIZE == 4)
+        Succeeds = true,
+        MaxOffset = sizeof(QT_OFF_T) > 4 ? 43 : 30
 #else
         Succeeds = true,
-#  if (defined(Q_OS_LINUX) || defined(Q_OS_ANDROID)) && Q_PROCESSOR_WORDSIZE == 4
-        MaxOffset = sizeof(QT_OFF_T) > 4 ? 43 : 30
-#  else
         MaxOffset = 8 * sizeof(QT_OFF_T) - 1
-#  endif
 #endif
     };
 
