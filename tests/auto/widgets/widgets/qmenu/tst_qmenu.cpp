@@ -1612,7 +1612,6 @@ void tst_QMenu::transientParent()
     QWindow *topLevel = window.windowHandle();
     QVERIFY(topLevel);
 
-    QApplicationPrivate::setActiveWindow(&window);
     window.setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&window));
     QVERIFY(window.hasFocus());
