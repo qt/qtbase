@@ -1753,7 +1753,6 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
     window.setLayout(layout);
 
     window.show();
-    QApplicationPrivate::setActiveWindow(&window);
     window.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&window));
 
