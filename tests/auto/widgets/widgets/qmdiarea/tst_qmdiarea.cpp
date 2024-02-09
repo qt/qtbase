@@ -659,7 +659,6 @@ void tst_QMdiArea::changeWindowTitle()
 #endif
 
     mw->show();
-    QApplicationPrivate::setActiveWindow(mw);
 
 #ifdef USE_SHOW
     mw->showFullScreen();
