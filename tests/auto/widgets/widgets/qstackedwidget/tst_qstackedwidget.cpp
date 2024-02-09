@@ -159,7 +159,6 @@ void tst_QStackedWidget::dynamicPages()
     le11->setFocus();   // set focus to second widget in the page
     sw->resize(200, 200);
     sw->show();
-    QApplicationPrivate::setActiveWindow(sw);
     QVERIFY(QTest::qWaitForWindowActive(sw));
     QTRY_COMPARE(QApplication::focusWidget(), le11);
 
