@@ -1101,7 +1101,6 @@ void tst_QMenuBar::task256322_highlight()
 
     centerOnScreen(&win);
     win.show();
-    QApplicationPrivate::setActiveWindow(&win);
     QVERIFY(QTest::qWaitForWindowActive(&win));
 
     const QPoint filePos = menuBarActionWindowPos(win.menuBar(), file);
