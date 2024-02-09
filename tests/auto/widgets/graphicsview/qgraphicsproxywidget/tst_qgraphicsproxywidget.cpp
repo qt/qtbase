@@ -1621,7 +1621,6 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
     window.setLayout(layout);
 
     window.show();
-    QApplicationPrivate::setActiveWindow(&window);
     window.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&window));
 
