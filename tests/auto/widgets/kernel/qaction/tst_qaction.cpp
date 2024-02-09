@@ -350,7 +350,6 @@ void tst_QAction::disableShortcutsWithBlockedWidgets()
     dialog.show();
     QVERIFY(QTest::qWaitForWindowExposed(&dialog));
 
-    QApplicationPrivate::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
 
     QSignalSpy spy(&action, &QAction::triggered);
