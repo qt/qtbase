@@ -113,7 +113,6 @@ void tst_QAction::actionEvent()
     // add action
     MyWidget testWidget(this);
     testWidget.show();
-    QApplicationPrivate::setActiveWindow(&testWidget);
     testWidget.addAction(&a);
     qApp->processEvents();
 
