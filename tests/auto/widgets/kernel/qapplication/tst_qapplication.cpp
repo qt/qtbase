@@ -1622,7 +1622,6 @@ void tst_QApplication::focusWidget()
         QTextEdit te;
         te.show();
 
-        QApplicationPrivate::setActiveWindow(&te);
         QVERIFY(QTest::qWaitForWindowActive(&te));
 
         const auto focusWidget = QApplication::focusWidget();
