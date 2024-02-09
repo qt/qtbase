@@ -1240,7 +1240,6 @@ void tst_QMenuBar::taskQTBUG11823_crashwithInvisibleActions()
 
     centerOnScreen(&menubar);
     menubar.show();
-    QApplicationPrivate::setActiveWindow(&menubar);
     QVERIFY(QTest::qWaitForWindowActive(&menubar));
     menubar.setActiveAction(m);
     QCOMPARE(menubar.activeAction(), m);
