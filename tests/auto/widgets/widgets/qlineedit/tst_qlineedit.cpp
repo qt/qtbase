@@ -3829,7 +3829,6 @@ void tst_QLineEdit::task210502_caseInsensitiveInlineCompletion()
     completer.setCompletionMode(QCompleter::InlineCompletion);
     lineEdit.setCompleter(&completer);
     lineEdit.show();
-    QApplicationPrivate::setActiveWindow(&lineEdit);
     QVERIFY(QTest::qWaitForWindowActive(&lineEdit));
     lineEdit.setFocus();
     QTRY_VERIFY(lineEdit.hasFocus());
