@@ -1020,7 +1020,6 @@ void tst_QMdiArea::currentSubWindow()
 
     // Move focus to another top-level and check that we still
     // have an active window.
-    QApplicationPrivate::setActiveWindow(&dummyTopLevel);
     QCOMPARE(qApp->activeWindow(), (QWidget *)&dummyTopLevel);
     QVERIFY(mdiArea.activeSubWindow());
 
