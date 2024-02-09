@@ -509,7 +509,6 @@ void tst_QMdiSubWindow::emittingOfSignals()
     workspace.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     workspace.show();
     QCoreApplication::processEvents();
-    QApplicationPrivate::setActiveWindow(&workspace);
     QMdiSubWindow *window = qobject_cast<QMdiSubWindow *>(workspace.addSubWindow(new QWidget));
     QCoreApplication::processEvents();
     window->show();
