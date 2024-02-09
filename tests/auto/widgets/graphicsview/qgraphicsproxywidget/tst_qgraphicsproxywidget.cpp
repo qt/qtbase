@@ -750,7 +750,6 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     scene.addItem(proxy);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     view.activateWindow();
     view.setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&view));
