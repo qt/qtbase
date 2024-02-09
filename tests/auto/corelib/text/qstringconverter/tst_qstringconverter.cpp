@@ -2615,6 +2615,18 @@ void tst_QStringConverter::fromLocal8Bit_special_cases()
     QCOMPARE(result, u"你");
     QCOMPARE(state.remainingChars, 0);
 
+    // Now the same, but there is an incomplete sequence at the start
+    result.clear();
+    state.clear();
+    result = QLocal8Bit::convertToUnicode_sys("\xe4\xe4\xbd", UTF8, &state);
+    QCOMPARE(result, QString());
+    QVERIFY(result.isNull());
+    // Remaining octet (and a '.' to force it to discard something from the
+    // internal state which is currently limited to 4 octets):
+    result += QLocal8Bit::convertToUnicode_sys("\xa0.", UTF8, &state);
+    QCOMPARE(result, QChar::ReplacementCharacter + u"你."_s);
+    QCOMPARE(state.remainingChars, 0);
+
     // Test QTBUG-118834, which is failing
     result.clear();
     state.clear();

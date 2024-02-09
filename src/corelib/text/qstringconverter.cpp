@@ -1283,62 +1283,16 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
     if (!mb || !mblen)
         return QString();
 
+    // Use a local stack-buffer at first to allow us a decently large container
+    // to avoid a lot of resizing, without also returning an overallocated
+    // QString to the user for small strings.
+    // Then we can be fast for small strings and take the hit of extra resizes
+    // and measuring how much storage is needed for large strings.
     std::array<wchar_t, 4096> buf;
     wchar_t *out = buf.data();
     qsizetype outlen = buf.size();
 
-    int len = 0;
     QString sp;
-
-    //convert the pending character (if available)
-    if (state && state->remainingChars) {
-        // Use at most 6 characters as a guess for the longest encoded character
-        // in any multibyte encoding.
-        // Even with a total of 2 bytes of overhead that would leave around
-        // 2^(4 * 8) possible characters
-        std::array<char, 6> prev = {0};
-        Q_ASSERT(state->remainingChars <= q20::ssize(state->state_data));
-        int remainingChars = state->remainingChars;
-        for (int i = 0; i < remainingChars; ++i)
-            prev[i] = state->state_data[i];
-        do {
-            prev[remainingChars] = *mb;
-            ++mb;
-            --mblen;
-            ++remainingChars;
-            len = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, prev.data(),
-                                      remainingChars, out, int(outlen));
-        } while (!len && mblen && remainingChars < int(prev.size()));
-        if (len) {
-            state->remainingChars = 0;
-            if (mblen == 0)
-                return QStringView(out, len).toString();
-            out += len;
-            outlen -= len;
-        } else if (mblen == 0 && remainingChars <= q20::ssize(state->state_data)) {
-            // Update the state, maybe we're lucky next time
-            for (int i = state->remainingChars; i < remainingChars; ++i)
-                state->state_data[i] = prev[i];
-            state->remainingChars = remainingChars;
-            return QString();
-        } else {
-            // Reset the pointer and length, since we used none of it.
-            mb = in.data();
-            mblen = in.length();
-
-            // We couldn't decode any of the characters in the saved state,
-            // so output replacement characters
-            for (int i = 0; i < state->remainingChars; ++i)
-                out[i] = replacementCharacter;
-            invalidChars += state->remainingChars;
-            out += state->remainingChars;
-            outlen -= state->remainingChars;
-            state->remainingChars = 0;
-        }
-    }
-
-    Q_ASSERT(mblen > 0);
-    Q_ASSERT(!state || state->remainingChars == 0);
 
     // Return a pointer to storage where we have enough space for `size`
     const auto growOut = [&](qsizetype size) -> std::tuple<wchar_t *, qsizetype> {
@@ -1361,6 +1315,57 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
         return {it, size};
     };
 
+    // Convert the pending characters (if available)
+    while (state && state->remainingChars && mblen) {
+        QStringConverter::State localState;
+        localState.flags = state->flags;
+        // Use at most 6 characters as a guess for the longest encoded character
+        // in any multibyte encoding.
+        // Even with a total of 2 bytes of overhead that would leave around
+        // 2^(4 * 8) possible characters
+        std::array<char, 6> prev = {0};
+        Q_ASSERT(state->remainingChars <= q20::ssize(state->state_data));
+        qsizetype index = 0;
+        for (; index < state->remainingChars; ++index)
+            prev[index] = state->state_data[index];
+        const qsizetype toCopy = std::min(q20::ssize(prev) - index, mblen);
+        for (qsizetype i = 0; i < toCopy; ++i, ++index)
+            prev[index] = mb[i];
+        mb += toCopy;
+        mblen -= toCopy;
+
+        // Recursing:
+        // Since we are using a clean local state it will try to decode what was
+        // stored in our state + some extra octets from input (`prev`). If some
+        // part fails we will have those characters stored in the local state's
+        // storage, and we can extract those. It may also output some
+        // replacement characters, which we'll count in the invalidChars.
+        // In the best case we only do this once, but we will loop until we have
+        // resolved all the remaining characters or we have run out of new input
+        // in which case we may still have remaining characters.
+        const QString tmp = convertToUnicode_sys(QByteArrayView(prev.data(), index), codePage,
+                                                    &localState);
+        std::tie(out, outlen) = growOut(tmp.size());
+        if (!out)
+            return {};
+        out = std::copy_n(reinterpret_cast<const wchar_t *>(tmp.constData()), tmp.size(), out);
+        outlen -= tmp.size();
+        const qsizetype tail = toCopy - localState.remainingChars;
+        if (tail >= 0) {
+            // Everything left to process comes from `in`, so we can stop
+            // looping. Adjust the window for `in` and unset remainingChars to
+            // signal that we're done.
+            mb -= localState.remainingChars;
+            mblen += localState.remainingChars;
+            localState.remainingChars = 0;
+        }
+        state->remainingChars = localState.remainingChars;
+        state->invalidChars += localState.invalidChars;
+        std::copy_n(localState.state_data, state->remainingChars, state->state_data);
+    }
+
+    Q_ASSERT(!state || state->remainingChars == 0 || mblen == 0);
+
     // Need it in this scope, since we try to decrease our window size if we
     // encounter an error
     int nextIn = qt_saturate<int>(mblen);
@@ -1369,7 +1374,7 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
         if (!out)
             return {};
         const int nextOut = qt_saturate<int>(outlen);
-        len = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, mb, nextIn, out, nextOut);
+        int len = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, mb, nextIn, out, nextOut);
         if (len) {
             mb += nextIn;
             mblen -= nextIn;
@@ -1482,6 +1487,11 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
     if (uclen == 0)
         return QByteArray("");
 
+    // Use a local stack-buffer at first to allow us a decently large container
+    // to avoid a lot of resizing, without also returning an overallocated
+    // QByteArray to the user for small strings.
+    // Then we can be fast for small strings and take the hit of extra resizes
+    // and measuring how much storage is needed for large strings.
     std::array<char, 4096> buf;
     char *out = buf.data();
     qsizetype outlen = buf.size();
