@@ -4082,7 +4082,6 @@ void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
     le.setPalette(p);
 
     le.show();
-    QApplicationPrivate::setActiveWindow(&le);
     QVERIFY(QTest::qWaitForWindowActive(&le));
     le.setFocus();
     QTRY_VERIFY(le.hasFocus());
