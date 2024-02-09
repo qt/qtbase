@@ -995,7 +995,6 @@ void tst_QDateTimeEdit::backspaceKey()
 
 void tst_QDateTimeEdit::deleteKey()
 {
-    QApplicationPrivate::setActiveWindow(testWidget);
     testWidget->setDate(QDate(2004, 05, 11));
     testWidget->setDisplayFormat("d/MM/yyyy");
 #ifdef Q_OS_MAC
