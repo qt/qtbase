@@ -4061,7 +4061,6 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
 
     le.show();
     QVERIFY(QTest::qWaitForWindowExposed(&le));
-    QApplicationPrivate::setActiveWindow(&le);
     QVERIFY(QTest::qWaitForWindowActive(&le));
     le.setFocus();
     QTRY_VERIFY(le.hasFocus());
