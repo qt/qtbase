@@ -1132,6 +1132,29 @@ CHECK(strong, equivalent);
 */
 
 /*!
+    \internal
+    \macro Q_DECLARE_EQUALITY_COMPARABLE(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_PARTIALLY_ORDERED(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_WEAKLY_ORDERED(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_WEAKLY_ORDERED_LITERAL_TYPE(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_STRONGLY_ORDERED(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(LeftType, RightType, Attributes)
+    \since 6.8
+    \relates <QtCompare>
+
+    These macros behave like their two-argument versions, but allow
+    specification of C++ attributes to add before every generated relational
+    operator.
+
+    As an example, the \c Attributes parameter can be used in Qt to pass
+    the \c QT_ASCII_CAST_WARN marco (whose expansion can mark the function as
+    deprecated) when implementing comparison of encoding-aware string types
+    with C-style strings or byte arrays.
+*/
+
+/*!
     \fn template <typename LeftInt, typename RightInt, Qt::if_integral<LeftInt> = true, Qt::if_integral<RightInt> = true> auto Qt::compareThreeWay(LeftInt lhs, RightInt rhs)
     \since 6.7
     \relates <QtCompare>
