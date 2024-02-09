@@ -311,10 +311,8 @@ void tst_QApplication::alert()
     QApplication::alert(&widget, -1);
     QApplication::alert(&widget, 250);
     widget2.activateWindow();
-    QApplicationPrivate::setActiveWindow(&widget2);
     QApplication::alert(&widget, 0);
     widget.activateWindow();
-    QApplicationPrivate::setActiveWindow(&widget);
     QApplication::alert(&widget, 200);
 }
 
