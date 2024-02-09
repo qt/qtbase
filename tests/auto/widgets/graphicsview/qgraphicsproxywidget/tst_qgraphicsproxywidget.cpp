@@ -3075,7 +3075,6 @@ void tst_QGraphicsProxyWidget::bypassGraphicsProxyWidget()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QGraphicsProxyWidget *proxy = scene.addWidget(widgetGuard.release());
