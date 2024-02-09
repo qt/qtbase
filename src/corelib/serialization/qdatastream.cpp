@@ -442,15 +442,12 @@ void QDataStream::setFloatingPointPrecision(QDataStream::FloatingPointPrecision 
 }
 
 /*!
+    \fn QDataStream::status() const
+
     Returns the status of the data stream.
 
     \sa Status, setStatus(), resetStatus()
 */
-
-QDataStream::Status QDataStream::status() const
-{
-    return q_status;
-}
 
 /*!
     Resets the status of the data stream.

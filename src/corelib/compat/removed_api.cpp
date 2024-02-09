@@ -914,3 +914,14 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
 // order sections alphabetically to reduce chances of merge conflicts
 
 #endif // QT_CORE_REMOVED_SINCE(6, 7)
+
+
+#if QT_CORE_REMOVED_SINCE(6, 8)
+
+#include "qdatastream.h" // inlined API
+
+// #include "qotherheader.h"
+// // implement removed functions from qotherheader.h
+// order sections alphabetically to reduce chances of merge conflicts
+
+#endif // QT_CORE_REMOVED_SINCE(6, 8)

@@ -122,6 +122,7 @@ public:
 
     bool atEnd() const;
 
+    QT_CORE_INLINE_SINCE(6, 8)
     Status status() const;
     void setStatus(Status status);
     void resetStatus();
@@ -408,6 +409,13 @@ using QDataStreamIfHasIStreamOperatorsContainer =
 
 inline QIODevice *QDataStream::device() const
 { return dev; }
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 8)
+QDataStream::Status QDataStream::status() const
+{
+    return q_status;
+}
+#endif // INLINE_SINCE 6.8
 
 inline QDataStream::ByteOrder QDataStream::byteOrder() const
 { return byteorder; }
