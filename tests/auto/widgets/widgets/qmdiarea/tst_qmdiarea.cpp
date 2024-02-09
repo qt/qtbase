@@ -515,7 +515,6 @@ void tst_QMdiArea::subWindowActivatedWithMinimize()
     QSignalSpy spy(workspace, SIGNAL(subWindowActivated(QMdiSubWindow*)));
     connect( workspace, SIGNAL(subWindowActivated(QMdiSubWindow*)), this, SLOT(activeChanged(QMdiSubWindow*)) );
     mw.show();
-    QApplicationPrivate::setActiveWindow(&mw);
     QWidget *widget = new QWidget(workspace);
     widget->setAttribute(Qt::WA_DeleteOnClose);
     QMdiSubWindow *window1 = workspace->addSubWindow(widget);
