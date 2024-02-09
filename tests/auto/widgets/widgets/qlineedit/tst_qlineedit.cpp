@@ -3979,7 +3979,6 @@ void tst_QLineEdit::taskQTBUG_4401_enterKeyClearsPassword()
     testWidget->selectAll();
     centerOnScreen(testWidget);
     testWidget->show();
-    QApplicationPrivate::setActiveWindow(testWidget);
     QVERIFY(QTest::qWaitForWindowActive(testWidget));
 
     QTest::keyPress(testWidget, Qt::Key_Enter);
