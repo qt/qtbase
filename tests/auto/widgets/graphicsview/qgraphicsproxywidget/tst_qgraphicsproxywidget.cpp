@@ -3486,7 +3486,6 @@ void tst_QGraphicsProxyWidget::QTBUG_6986_sendMouseEventToAlienWidget()
 
     QGraphicsView view(&scene);
     view.resize(600, 600);
-    QApplicationPrivate::setActiveWindow(&view);
     view.show();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
