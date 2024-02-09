@@ -783,7 +783,7 @@ public:
     QTzTimeZoneCacheEntry fetchEntry(const QByteArray &ianaId);
 
 private:
-    QTzTimeZoneCacheEntry findEntry(const QByteArray &ianaId);
+    static QTzTimeZoneCacheEntry findEntry(const QByteArray &ianaId);
     QCache<QByteArray, QTzTimeZoneCacheEntry> m_cache;
     QMutex m_mutex;
 };
