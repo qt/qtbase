@@ -983,7 +983,6 @@ void tst_QMenuBar::check_menuPosition()
     QAction *menu_action = w.menuBar()->addMenu(&menu);
     centerOnScreen(&w);
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     //the menu should be below the menubar item
