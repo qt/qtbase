@@ -988,6 +988,8 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::fetchEntry(const QByteArray &ianaId)
 // Create a named time zone
 QTzTimeZonePrivate::QTzTimeZonePrivate(const QByteArray &ianaId)
 {
+    if (!isTimeZoneIdAvailable(ianaId)) // Avoid pointlessly creating cache entries
+        return;
     static QTzTimeZoneCache tzCache;
     auto entry = tzCache.fetchEntry(ianaId);
     if (entry.m_tranTimes.isEmpty() && entry.m_posixRule.isEmpty())
