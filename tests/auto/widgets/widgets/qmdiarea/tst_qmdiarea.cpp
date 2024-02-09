@@ -2256,7 +2256,6 @@ void tst_QMdiArea::tabBetweenSubWindows()
     mdiArea.show();
     QVERIFY(QTest::qWaitForWindowExposed(&mdiArea));
 
-    QApplicationPrivate::setActiveWindow(&mdiArea);
     QWidget *focusWidget = subWindows.back()->widget();
     QCOMPARE(qApp->focusWidget(), focusWidget);
 
