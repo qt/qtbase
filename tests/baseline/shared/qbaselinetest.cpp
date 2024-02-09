@@ -372,22 +372,21 @@ QTestData &newRow(const char *dataTag, quint16 checksum)
     return QTest::newRow(dataTag);
 }
 
-
-bool testImage(const QImage& img, QByteArray *msg, bool *error)
+const ImageItem *findCurrentItem(QByteArray *msg, bool *error)
 {
     if (!connected && !connect(msg, error))
-        return true;
+        return nullptr;
 
     if (QTest::currentTestFunction() != curFunction || itemList.isEmpty()) {
-        qWarning() << "Usage error: QBASELINE_TEST used without corresponding QBaselineTest::newRow()";
-        return true;
+        qWarning() << "Usage error: QBASELINE_ macro used without corresponding QBaselineTest::newRow()";
+        return nullptr;
     }
 
     if (!gotBaselines) {
         if (!proto.requestBaselineChecksums(QString::fromLatin1(QTest::currentTestFunction()), &itemList) || itemList.isEmpty()) {
             *msg = "Communication with baseline server failed: " + proto.errorMessage().toLatin1();
             *error = true;
-            return true;
+            return nullptr;
         }
         gotBaselines = true;
     }
@@ -397,10 +396,24 @@ bool testImage(const QImage& img, QByteArray *msg, bool *error)
     while (it != itemList.constEnd() && it->itemName != curTag)
         ++it;
     if (it == itemList.constEnd()) {
-        qWarning() << "Usage error: QBASELINE_TEST used without corresponding QBaselineTest::newRow() for row" << curTag;
-        return true;
+        qWarning() << "Usage error: QBASELINE_ macro used without corresponding QBaselineTest::newRow() for row" << curTag;
+        return nullptr;
     }
-    return compareItem(*it, img, msg, error);
+    return &(*it);
+}
+
+bool testImage(const QImage &img, QByteArray *msg, bool *error)
+{
+    const ImageItem *item = findCurrentItem(msg, error);
+    return item ? compareItem(*item, img, msg, error) : true;
+}
+
+bool isCurrentItemBlacklisted()
+{
+    QByteArray msg;
+    bool error = false;
+    const ImageItem *item = findCurrentItem(&msg, &error);
+    return item ? (item->status == ImageItem::IgnoreItem) : false;
 }
 
 }
