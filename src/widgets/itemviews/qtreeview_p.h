@@ -254,6 +254,12 @@ public:
 
     // tree position
     int treePosition;
+
+    // pending accessibility update
+#if QT_CONFIG(accessibility)
+    bool pendingAccessibilityUpdate = false;
+#endif
+    void updateAccessibility();
 };
 
 QT_END_NAMESPACE
