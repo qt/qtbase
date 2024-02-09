@@ -350,7 +350,6 @@ void tst_QMenuBar::activatedCount()
     QFETCH( bool, forceNonNative );
     initWindowWithSimpleMenuBar(w, forceNonNative);
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     QTest::keyClick(static_cast<QWidget *>(0), Qt::Key_A, Qt::ControlModifier );
