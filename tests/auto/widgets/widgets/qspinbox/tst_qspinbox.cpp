@@ -1106,7 +1106,6 @@ void tst_QSpinBox::specialValue()
     spin.setValue(50);
     topWidget.show();
     //make sure we have the focus (even if editingFinished fails)
-    QApplicationPrivate::setActiveWindow(&topWidget);
     topWidget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&topWidget));
     spin.setFocus();
