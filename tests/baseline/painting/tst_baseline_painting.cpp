@@ -77,7 +77,7 @@ private:
 
 private slots:
     void initTestCase();
-    void cleanupTestCase() {}
+    void init();
 
     void testRasterARGB32PM_data();
     void testRasterARGB32PM();
@@ -156,6 +156,11 @@ void tst_Lancelot::initTestCase()
 #endif
 }
 
+void tst_Lancelot::init()
+{
+    // This gets called for every row. QSKIP if current item is blacklisted on the baseline server:
+    QBASELINE_SKIP_IF_BLACKLISTED;
+}
 
 void tst_Lancelot::testRasterARGB32PM_data()
 {
