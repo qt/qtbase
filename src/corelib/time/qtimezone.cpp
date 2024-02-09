@@ -459,7 +459,6 @@ QTimeZone::QTimeZone(const QByteArray &ianaId)
             d = newBackendTimeZone();
         else // Constructor MUST produce invalid for unsupported ID.
             d = newBackendTimeZone(ianaId);
-        // else: No such ID, avoid creating a TZ cache entry for it.
     }
     // Can also handle UTC with arbitrary (valid) offset, but only do so as
     // fall-back, since either of the above may handle it more informatively.
