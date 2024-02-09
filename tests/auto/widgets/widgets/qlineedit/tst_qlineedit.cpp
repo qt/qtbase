@@ -3929,7 +3929,6 @@ void tst_QLineEdit::task241436_passwordEchoOnEditRestoreEchoMode()
     testWidget->setFocus();
     centerOnScreen(testWidget);
     testWidget->show();
-    QApplicationPrivate::setActiveWindow(testWidget);
     QVERIFY(QTest::qWaitForWindowActive(testWidget));
     QVERIFY(testWidget->hasFocus());
 
