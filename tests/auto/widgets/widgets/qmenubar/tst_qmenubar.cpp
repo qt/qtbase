@@ -1641,7 +1641,6 @@ void tst_QMenuBar::taskQTBUG55966_subMenuRemoved()
     delete subMenu;
 
     window.show();
-    QApplicationPrivate::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
     QTest::qWait(500);
 }
