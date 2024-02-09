@@ -2455,7 +2455,6 @@ void tst_QGraphicsProxyWidget::tooltip_basic()
     QGraphicsView view(&scene);
     view.setFixedSize(200, 200);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     {
         QHelpEvent helpEvent(QEvent::ToolTip, view.viewport()->rect().topLeft(),
