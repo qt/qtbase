@@ -1874,12 +1874,14 @@ void tst_QRegularExpression::captureNamesNul()
     QString captureName("name");
     QCOMPARE(m.captured(captureName), "456");
     QCOMPARE(m.captured(QStringView(captureName)), "456");
+    QCOMPARE(m.captured(QAnyStringView(captureName)), "456");
     QCOMPARE(m.captured(qToStringViewIgnoringNull(captureName)), "456");
     QCOMPARE(m.captured(u"name"), "456");
 
     captureName = "anotherName";
     QCOMPARE(m.captured(captureName), "789");
     QCOMPARE(m.captured(QStringView(captureName)), "789");
+    QCOMPARE(m.captured(QAnyStringView(captureName)), "789");
     QCOMPARE(m.captured(qToStringViewIgnoringNull(captureName)), "789");
     QCOMPARE(m.captured(u"anotherName"), "789");
 }

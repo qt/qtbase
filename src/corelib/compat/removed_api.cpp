@@ -1030,6 +1030,40 @@ bool QProcessEnvironment::operator==(const QProcessEnvironment &other) const
 }
 #endif // QT_CONFIG(processenvironment)
 
+#if QT_CONFIG(regularexpression)
+#include "qregularexpression.h"
+
+bool QRegularExpressionMatch::hasCaptured(QStringView name) const
+{
+    return hasCaptured(QAnyStringView(name));
+}
+
+QString QRegularExpressionMatch::captured(QStringView name) const
+{
+    return captured(QAnyStringView(name));
+}
+
+QStringView QRegularExpressionMatch::capturedView(QStringView name) const
+{
+    return capturedView(QAnyStringView(name));
+}
+
+qsizetype QRegularExpressionMatch::capturedStart(QStringView name) const
+{
+    return capturedStart(QAnyStringView(name));
+}
+
+qsizetype QRegularExpressionMatch::capturedLength(QStringView name) const
+{
+    return capturedLength(QAnyStringView(name));
+}
+
+qsizetype QRegularExpressionMatch::capturedEnd(QStringView name) const
+{
+    return capturedEnd(QAnyStringView(name));
+}
+#endif // QT_CONFIG(regularexpression)
+
 #include "qurl.h"
 
 bool QUrl::operator<(const QUrl &url) const

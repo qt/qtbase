@@ -213,18 +213,26 @@ public:
 
     int lastCapturedIndex() const;
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool hasCaptured(const QString &name) const
-    { return hasCaptured(QStringView(name)); }
+    { return hasCaptured(qToAnyStringViewIgnoringNull(name)); }
     bool hasCaptured(QStringView name) const;
+#endif
+    bool hasCaptured(QAnyStringView name) const;
     bool hasCaptured(int nth) const;
 
     QString captured(int nth = 0) const;
     QStringView capturedView(int nth = 0) const;
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     QString captured(const QString &name) const
-    { return captured(QStringView(name)); }
+    { return captured(qToAnyStringViewIgnoringNull(name)); }
+
     QString captured(QStringView name) const;
     QStringView capturedView(QStringView name) const;
+#endif
+    QString captured(QAnyStringView name) const;
+    QStringView capturedView(QAnyStringView name) const;
 
     QStringList capturedTexts() const;
 
@@ -232,16 +240,21 @@ public:
     qsizetype capturedLength(int nth = 0) const;
     qsizetype capturedEnd(int nth = 0) const;
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     qsizetype capturedStart(const QString &name) const
-    { return capturedStart(QStringView(name)); }
+    { return capturedStart(qToAnyStringViewIgnoringNull(name)); }
     qsizetype capturedLength(const QString &name) const
-    { return capturedLength(QStringView(name)); }
+    { return capturedLength(qToAnyStringViewIgnoringNull(name)); }
     qsizetype capturedEnd(const QString &name) const
-    { return capturedEnd(QStringView(name)); }
+    { return capturedEnd(qToAnyStringViewIgnoringNull(name)); }
 
     qsizetype capturedStart(QStringView name) const;
     qsizetype capturedLength(QStringView name) const;
     qsizetype capturedEnd(QStringView name) const;
+#endif
+    qsizetype capturedStart(QAnyStringView name) const;
+    qsizetype capturedLength(QAnyStringView name) const;
+    qsizetype capturedEnd(QAnyStringView name) const;
 
 private:
     friend class QRegularExpression;

@@ -721,7 +721,7 @@ struct QRegularExpressionPrivate : QSharedData
                  CheckSubjectStringOption checkSubjectStringOption = CheckSubjectString,
                  const QRegularExpressionMatchPrivate *previous = nullptr) const;
 
-    int captureIndexForName(QStringView name) const;
+    int captureIndexForName(QAnyStringView name) const;
 
     // sizeof(QSharedData) == 4, so start our members with an enum
     QRegularExpression::PatternOptions patternOptions;
@@ -1013,7 +1013,7 @@ void QRegularExpressionPrivate::optimizePattern()
     Returns the capturing group number for the given name. Duplicated names for
     capturing groups are not supported.
 */
-int QRegularExpressionPrivate::captureIndexForName(QStringView name) const
+int QRegularExpressionPrivate::captureIndexForName(QAnyStringView name) const
 {
     Q_ASSERT(!name.isEmpty());
 
@@ -2217,8 +2217,7 @@ int QRegularExpressionMatch::lastCapturedIndex() const
 }
 
 /*!
-    \fn bool QRegularExpressionMatch::hasCaptured(const QString &name) const
-    \fn bool QRegularExpressionMatch::hasCaptured(QStringView name) const
+    \fn bool QRegularExpressionMatch::hasCaptured(QAnyStringView name) const
     \since 6.3
 
     Returns true if the capturing group named \a name captured something
@@ -2235,9 +2234,12 @@ int QRegularExpressionMatch::lastCapturedIndex() const
     Similarly, a capturing group may capture a substring of length 0;
     this function will return \c{true} for such a capturing group.
 
+    \note In Qt versions prior to 6.8, this function took QString or
+    QStringView, not QAnyStringView.
+
     \sa captured(), hasMatch()
 */
-bool QRegularExpressionMatch::hasCaptured(QStringView name) const
+bool QRegularExpressionMatch::hasCaptured(QAnyStringView name) const
 {
     const int nth = d->regularExpression.d->captureIndexForName(name);
     return hasCaptured(nth);
@@ -2317,17 +2319,6 @@ QStringView QRegularExpressionMatch::capturedView(int nth) const
     return d->subject.mid(start, capturedLength(nth));
 }
 
-/*! \fn QString QRegularExpressionMatch::captured(const QString &name) const
-
-    Returns the substring captured by the capturing group named \a name.
-
-    If the named capturing group \a name did not capture a string, or if
-    there is no capturing group named \a name, returns a null QString.
-
-    \sa capturedView(), capturedStart(), capturedEnd(), capturedLength(),
-    QString::isNull()
-*/
-
 /*!
     \since 5.10
 
@@ -2336,10 +2327,13 @@ QStringView QRegularExpressionMatch::capturedView(int nth) const
     If the named capturing group \a name did not capture a string, or if
     there is no capturing group named \a name, returns a null QString.
 
+    \note In Qt versions prior to 6.8, this function took QString or
+    QStringView, not QAnyStringView.
+
     \sa capturedView(), capturedStart(), capturedEnd(), capturedLength(),
     QString::isNull()
 */
-QString QRegularExpressionMatch::captured(QStringView name) const
+QString QRegularExpressionMatch::captured(QAnyStringView name) const
 {
     if (name.isEmpty()) {
         qWarning("QRegularExpressionMatch::captured: empty capturing group name passed");
@@ -2358,10 +2352,13 @@ QString QRegularExpressionMatch::captured(QStringView name) const
     If the named capturing group \a name did not capture a string, or if
     there is no capturing group named \a name, returns a null QStringView.
 
+    \note In Qt versions prior to 6.8, this function took QString or
+    QStringView, not QAnyStringView.
+
     \sa captured(), capturedStart(), capturedEnd(), capturedLength(),
     QStringView::isNull()
 */
-QStringView QRegularExpressionMatch::capturedView(QStringView name) const
+QStringView QRegularExpressionMatch::capturedView(QAnyStringView name) const
 {
     if (name.isEmpty()) {
         qWarning("QRegularExpressionMatch::capturedView: empty capturing group name passed");
@@ -2433,37 +2430,6 @@ qsizetype QRegularExpressionMatch::capturedEnd(int nth) const
     return d->capturedOffsets.at(nth * 2 + 1);
 }
 
-/*! \fn qsizetype QRegularExpressionMatch::capturedStart(const QString &name) const
-
-    Returns the offset inside the subject string corresponding to the starting
-    position of the substring captured by the capturing group named \a name.
-    If the capturing group named \a name did not capture a string or doesn't
-    exist, returns -1.
-
-    \sa capturedEnd(), capturedLength(), captured()
-*/
-
-/*! \fn qsizetype QRegularExpressionMatch::capturedLength(const QString &name) const
-
-    Returns the length of the substring captured by the capturing group named
-    \a name.
-
-    \note This function returns 0 if the capturing group named \a name did not
-    capture a string or doesn't exist.
-
-    \sa capturedStart(), capturedEnd(), captured()
-*/
-
-/*! \fn qsizetype QRegularExpressionMatch::capturedEnd(const QString &name) const
-
-    Returns the offset inside the subject string immediately after the ending
-    position of the substring captured by the capturing group named \a name. If
-    the capturing group named \a name did not capture a string or doesn't
-    exist, returns -1.
-
-    \sa capturedStart(), capturedLength(), captured()
-*/
-
 /*!
     \since 5.10
 
@@ -2472,9 +2438,12 @@ qsizetype QRegularExpressionMatch::capturedEnd(int nth) const
     If the capturing group named \a name did not capture a string or doesn't
     exist, returns -1.
 
+    \note In Qt versions prior to 6.8, this function took QString or
+    QStringView, not QAnyStringView.
+
     \sa capturedEnd(), capturedLength(), captured()
 */
-qsizetype QRegularExpressionMatch::capturedStart(QStringView name) const
+qsizetype QRegularExpressionMatch::capturedStart(QAnyStringView name) const
 {
     if (name.isEmpty()) {
         qWarning("QRegularExpressionMatch::capturedStart: empty capturing group name passed");
@@ -2495,9 +2464,12 @@ qsizetype QRegularExpressionMatch::capturedStart(QStringView name) const
     \note This function returns 0 if the capturing group named \a name did not
     capture a string or doesn't exist.
 
+    \note In Qt versions prior to 6.8, this function took QString or
+    QStringView, not QAnyStringView.
+
     \sa capturedStart(), capturedEnd(), captured()
 */
-qsizetype QRegularExpressionMatch::capturedLength(QStringView name) const
+qsizetype QRegularExpressionMatch::capturedLength(QAnyStringView name) const
 {
     if (name.isEmpty()) {
         qWarning("QRegularExpressionMatch::capturedLength: empty capturing group name passed");
@@ -2517,9 +2489,12 @@ qsizetype QRegularExpressionMatch::capturedLength(QStringView name) const
     the capturing group named \a name did not capture a string or doesn't
     exist, returns -1.
 
+    \note In Qt versions prior to 6.8, this function took QString or
+    QStringView, not QAnyStringView.
+
     \sa capturedStart(), capturedLength(), captured()
 */
-qsizetype QRegularExpressionMatch::capturedEnd(QStringView name) const
+qsizetype QRegularExpressionMatch::capturedEnd(QAnyStringView name) const
 {
     if (name.isEmpty()) {
         qWarning("QRegularExpressionMatch::capturedEnd: empty capturing group name passed");
