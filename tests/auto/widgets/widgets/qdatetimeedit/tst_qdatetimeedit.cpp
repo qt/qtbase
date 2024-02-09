@@ -1064,7 +1064,6 @@ void tst_QDateTimeEdit::tabKeyNavigationWithSuffix()
 
 void tst_QDateTimeEdit::enterKey()
 {
-    QApplicationPrivate::setActiveWindow(testWidget);
     testWidget->setDate(QDate(2004, 5, 11));
     testWidget->setDisplayFormat("prefix d/MM/yyyy 'suffix'");
     testWidget->lineEdit()->setFocus();
