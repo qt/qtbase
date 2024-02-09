@@ -272,7 +272,6 @@ void tst_QAction::repeat()
 
     MyWidget testWidget(this);
     testWidget.show();
-    QApplicationPrivate::setActiveWindow(&testWidget);
     QVERIFY(QTest::qWaitForWindowActive(&testWidget));
 
     QAction act(&testWidget);
