@@ -549,7 +549,6 @@ void tst_QMenuBar::check_accelKeys()
     QMainWindow w;
     initWindowWithComplexMenuBar(w);
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     // start with a bogus key that shouldn't trigger anything
