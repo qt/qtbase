@@ -221,7 +221,9 @@ private:
     bool noswap = QSysInfo::ByteOrder == QSysInfo::BigEndian;
     quint8 fpPrecision = QDataStream::DoublePrecision;
     quint8 q_status = Ok;
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
     ByteOrder byteorder = BigEndian;
+#endif
     int ver = Qt_DefaultCompiledVersion;
     quint16 transactionDepth = 0;
 
@@ -438,7 +440,11 @@ QDataStream::FloatingPointPrecision QDataStream::floatingPointPrecision() const
 #endif // INLINE_SINCE 6.8
 
 inline QDataStream::ByteOrder QDataStream::byteOrder() const
-{ return byteorder; }
+{
+    if constexpr (QSysInfo::ByteOrder == QSysInfo::BigEndian)
+        return noswap ? BigEndian : LittleEndian;
+    return noswap ? LittleEndian : BigEndian;
+}
 
 inline int QDataStream::version() const
 { return ver; }

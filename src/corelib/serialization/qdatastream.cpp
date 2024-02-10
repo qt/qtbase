@@ -476,11 +476,14 @@ void QDataStream::setStatus(Status status)
 
 void QDataStream::setByteOrder(ByteOrder bo)
 {
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
+    // accessed by inline byteOrder() prior to Qt 6.8
     byteorder = bo;
+#endif
     if (QSysInfo::ByteOrder == QSysInfo::BigEndian)
-        noswap = (byteorder == BigEndian);
+        noswap = (bo == BigEndian);
     else
-        noswap = (byteorder == LittleEndian);
+        noswap = (bo == LittleEndian);
 }
 
 
