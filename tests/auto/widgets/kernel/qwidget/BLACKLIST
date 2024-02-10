@@ -1,7 +1,5 @@
 [raise]
 opensuse-leap
-[optimizedResizeMove]
-osx
 [optimizedResize_topLevel]
 osx
 [render_windowOpacity]
