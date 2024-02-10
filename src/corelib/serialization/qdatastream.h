@@ -127,6 +127,7 @@ public:
     void setStatus(Status status);
     void resetStatus();
 
+    QT_CORE_INLINE_SINCE(6, 8)
     FloatingPointPrecision floatingPointPrecision() const;
     void setFloatingPointPrecision(FloatingPointPrecision precision);
 
@@ -218,6 +219,7 @@ private:
     QIODevice *dev;
     bool owndev;
     bool noswap;
+    quint8 fpPrecision = QDataStream::DoublePrecision;
     ByteOrder byteorder;
     int ver;
     Status q_status;
@@ -425,6 +427,11 @@ inline QIODevice *QDataStream::device() const
 QDataStream::Status QDataStream::status() const
 {
     return q_status;
+}
+
+QDataStream::FloatingPointPrecision QDataStream::floatingPointPrecision() const
+{
+    return FloatingPointPrecision(fpPrecision);
 }
 #endif // INLINE_SINCE 6.8
 

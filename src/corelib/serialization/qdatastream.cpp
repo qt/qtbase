@@ -406,16 +406,14 @@ bool QDataStream::atEnd() const
 }
 
 /*!
+    \fn QDataStream::FloatingPointPrecision QDataStream::floatingPointPrecision() const
+
     Returns the floating point precision of the data stream.
 
     \since 4.6
 
     \sa FloatingPointPrecision, setFloatingPointPrecision()
 */
-QDataStream::FloatingPointPrecision QDataStream::floatingPointPrecision() const
-{
-    return d ? d->floatingPointPrecision : QDataStream::DoublePrecision;
-}
 
 /*!
     Sets the floating point precision of the data stream to \a precision. If the floating point precision is
@@ -439,9 +437,7 @@ QDataStream::FloatingPointPrecision QDataStream::floatingPointPrecision() const
 */
 void QDataStream::setFloatingPointPrecision(QDataStream::FloatingPointPrecision precision)
 {
-    if (!d)
-        d.reset(new QDataStreamPrivate());
-    d->floatingPointPrecision = precision;
+    fpPrecision = precision;
 }
 
 /*!
