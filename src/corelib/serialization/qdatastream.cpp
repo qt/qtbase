@@ -258,7 +258,7 @@ constexpr quint32 QDataStream::ExtendedSize;
         return retVal;
 
 #define CHECK_STREAM_TRANSACTION_PRECOND(retVal) \
-    if (!d || d->transactionDepth == 0) { \
+    if (transactionDepth == 0) { \
         qWarning("QDataStream: No transaction in progress"); \
         return retVal; \
     }
@@ -623,10 +623,7 @@ void QDataStream::startTransaction()
 {
     CHECK_STREAM_PRECOND(Q_VOID)
 
-    if (!d)
-        d.reset(new QDataStreamPrivate());
-
-    if (++d->transactionDepth == 1) {
+    if (++transactionDepth == 1) {
         dev->startTransaction();
         resetStatus();
     }
@@ -655,7 +652,7 @@ void QDataStream::startTransaction()
 bool QDataStream::commitTransaction()
 {
     CHECK_STREAM_TRANSACTION_PRECOND(false)
-    if (--d->transactionDepth == 0) {
+    if (--transactionDepth == 0) {
         CHECK_STREAM_PRECOND(false)
 
         if (q_status == ReadPastEnd) {
@@ -695,7 +692,7 @@ void QDataStream::rollbackTransaction()
     setStatus(ReadPastEnd);
 
     CHECK_STREAM_TRANSACTION_PRECOND(Q_VOID)
-    if (--d->transactionDepth != 0)
+    if (--transactionDepth != 0)
         return;
 
     CHECK_STREAM_PRECOND(Q_VOID)
@@ -731,7 +728,7 @@ void QDataStream::abortTransaction()
     q_status = ReadCorruptData;
 
     CHECK_STREAM_TRANSACTION_PRECOND(Q_VOID)
-    if (--d->transactionDepth != 0)
+    if (--transactionDepth != 0)
         return;
 
     CHECK_STREAM_PRECOND(Q_VOID)

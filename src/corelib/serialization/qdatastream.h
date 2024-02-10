@@ -220,9 +220,11 @@ private:
     bool owndev;
     bool noswap;
     quint8 fpPrecision = QDataStream::DoublePrecision;
+    quint8 q_status;
     ByteOrder byteorder;
     int ver;
-    Status q_status;
+    quint16 transactionDepth = 0;
+
 #if QT_CORE_REMOVED_SINCE(6, 7)
     int readBlock(char *data, int len);
 #endif
@@ -426,7 +428,7 @@ inline QIODevice *QDataStream::device() const
 #if QT_CORE_INLINE_IMPL_SINCE(6, 8)
 QDataStream::Status QDataStream::status() const
 {
-    return q_status;
+    return Status(q_status);
 }
 
 QDataStream::FloatingPointPrecision QDataStream::floatingPointPrecision() const

@@ -24,7 +24,6 @@ QT_BEGIN_NAMESPACE
 class QDataStreamPrivate
 {
 public:
-    int transactionDepth = 0;
 };
 #endif
 
