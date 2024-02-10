@@ -17,7 +17,7 @@ class AndroidAssetsFileEngineHandler: public QAbstractFileEngineHandler
 {
 public:
     AndroidAssetsFileEngineHandler();
-    QAbstractFileEngine *create(const QString &fileName) const override;
+    std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const override;
 
 private:
     AAssetManager *m_assetManager;

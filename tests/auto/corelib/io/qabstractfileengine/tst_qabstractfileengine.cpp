@@ -17,6 +17,8 @@
 #include <QtCore/QDebug>
 #include "../../../../shared/filesystem.h"
 
+using namespace Qt::StringLiterals;
+
 class tst_QAbstractFileEngine
     : public QObject
 {
@@ -488,17 +490,23 @@ QHash<QString, QSharedPointer<ReferenceFileEngine::File> > ReferenceFileEngine::
 class FileEngineHandler
     : QAbstractFileEngineHandler
 {
-    QAbstractFileEngine *create(const QString &fileName) const override
+    std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const override
     {
         if (fileName.endsWith(".tar") || fileName.contains(".tar/"))
-            return new MountingFileEngine(fileName);
-        if (fileName.startsWith("QFSFileEngine:"))
-            return new QFSFileEngine(fileName.mid(14));
-        if (fileName.startsWith("reference-file-engine:"))
-            return new ReferenceFileEngine(fileName.mid(22));
-        if (fileName.startsWith("resource:"))
-            return QAbstractFileEngine::create(QLatin1String(":/tst_qabstractfileengine/resources/") + fileName.mid(9));
-        return 0;
+            return std::make_unique<MountingFileEngine>(fileName);
+
+        if (auto l1 = "QFSFileEngine:"_L1; fileName.startsWith(l1))
+            return std::make_unique<QFSFileEngine>(fileName.sliced(l1.size()));
+
+        if (auto l1 = "reference-file-engine:"_L1; fileName.startsWith(l1))
+            return std::make_unique<ReferenceFileEngine>(fileName.sliced(l1.size()));
+
+        if (auto l1 = "resource:"_L1; fileName.startsWith(l1)) {
+            const auto p = ":/tst_qabstractfileengine/resources/"_L1 + fileName.sliced(l1.size());
+            return QAbstractFileEngine::create(p);
+        }
+
+        return nullptr;
     }
 };
 
@@ -530,9 +538,9 @@ void tst_QAbstractFileEngine::cleanupTestCase()
 
 void tst_QAbstractFileEngine::customHandler()
 {
-    QScopedPointer<QAbstractFileEngine> file;
+    std::unique_ptr<QAbstractFileEngine> file;
     {
-        file.reset(QAbstractFileEngine::create("resource:file.txt"));
+        file = QAbstractFileEngine::create(u"resource:file.txt"_s);
 
         QVERIFY(file);
     }

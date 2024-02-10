@@ -13,18 +13,18 @@ QT_BEGIN_NAMESPACE
 class QIOSFileEngineFactory : public QAbstractFileEngineHandler
 {
 public:
-    QAbstractFileEngine* create(const QString &fileName) const
+    std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const
     {
         Q_CONSTINIT static QLatin1StringView assetsScheme("assets-library:");
 
 #ifndef Q_OS_TVOS
         if (fileName.toLower().startsWith(assetsScheme))
-            return new QIOSFileEngineAssetsLibrary(fileName);
+            return std::make_unique<QIOSFileEngineAssetsLibrary>(fileName);
 #else
         Q_UNUSED(fileName);
 #endif
 
-        return 0;
+        return {};
     }
 };
 

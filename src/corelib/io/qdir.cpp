@@ -362,8 +362,7 @@ inline void QDirPrivate::clearCache(MetaDataClearing mode)
     fileCache.fileListsInitialized = false;
     fileCache.files.clear();
     fileCache.fileInfos.clear();
-    fileEngine.reset(
-            QFileSystemEngine::resolveEntryAndCreateLegacyEngine(dirEntry, fileCache.metaData));
+    fileEngine = QFileSystemEngine::createLegacyEngine(dirEntry, fileCache.metaData);
 }
 
 /*!

@@ -55,7 +55,7 @@ public:
         : QSharedData(copy),
         fileEntry(copy.fileEntry),
         metaData(copy.metaData),
-        fileEngine(QFileSystemEngine::resolveEntryAndCreateLegacyEngine(fileEntry, metaData)),
+        fileEngine(QFileSystemEngine::createLegacyEngine(fileEntry, metaData)),
         cachedFlags(0),
 #ifndef QT_NO_FSFILEENGINE
         isDefaultConstructed(false),
@@ -66,7 +66,7 @@ public:
     {}
     inline QFileInfoPrivate(const QString &file)
         : fileEntry(file),
-        fileEngine(QFileSystemEngine::resolveEntryAndCreateLegacyEngine(fileEntry, metaData)),
+        fileEngine(QFileSystemEngine::createLegacyEngine(fileEntry, metaData)),
         cachedFlags(0),
 #ifndef QT_NO_FSFILEENGINE
         isDefaultConstructed(file.isEmpty()),
@@ -81,7 +81,7 @@ public:
         : QSharedData(),
         fileEntry(file),
         metaData(data),
-        fileEngine(QFileSystemEngine::resolveEntryAndCreateLegacyEngine(fileEntry, metaData)),
+        fileEngine(QFileSystemEngine::createLegacyEngine(fileEntry, metaData)),
         cachedFlags(0),
         isDefaultConstructed(false),
         cache_enabled(true), fileFlags(0), fileSize(0)

@@ -76,7 +76,7 @@ QFilePrivate::openExternalFile(QIODevice::OpenMode flags, FILE *fh, QFile::FileH
 QAbstractFileEngine *QFilePrivate::engine() const
 {
     if (!fileEngine)
-        fileEngine.reset(QAbstractFileEngine::create(fileName));
+        fileEngine = QAbstractFileEngine::create(fileName);
     return fileEngine.get();
 }
 

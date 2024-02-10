@@ -258,12 +258,14 @@ AndroidContentFileEngine::beginEntryList(const QString &path, QDir::Filters filt
 AndroidContentFileEngineHandler::AndroidContentFileEngineHandler() = default;
 AndroidContentFileEngineHandler::~AndroidContentFileEngineHandler() = default;
 
-QAbstractFileEngine* AndroidContentFileEngineHandler::create(const QString &fileName) const
+std::unique_ptr<QAbstractFileEngine>
+AndroidContentFileEngineHandler::create(const QString &fileName) const
 {
-    if (!fileName.startsWith("content"_L1))
-        return nullptr;
+    if (fileName.startsWith("content"_L1))
+        return std::make_unique<AndroidContentFileEngine>(fileName);
 
-    return new AndroidContentFileEngine(fileName);
+    return {};
+
 }
 
 AndroidContentFileEngineIterator::AndroidContentFileEngineIterator(

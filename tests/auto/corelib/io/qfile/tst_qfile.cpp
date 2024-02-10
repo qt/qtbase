@@ -2321,18 +2321,18 @@ private:
 class MyHandler : public QAbstractFileEngineHandler
 {
 public:
-    inline QAbstractFileEngine *create(const QString &) const override
+    std::unique_ptr<QAbstractFileEngine> create(const QString &) const override
     {
-        return new MyEngine(1);
+        return std::make_unique<MyEngine>(1);
     }
 };
 
 class MyHandler2 : public QAbstractFileEngineHandler
 {
 public:
-    inline QAbstractFileEngine *create(const QString &) const override
+    std::unique_ptr<QAbstractFileEngine> create(const QString &) const override
     {
-        return new MyEngine(2);
+        return std::make_unique<MyEngine>(2);
     }
 };
 #endif
@@ -2361,7 +2361,7 @@ void tst_QFile::fileEngineHandler()
 class MyRecursiveHandler : public QAbstractFileEngineHandler
 {
 public:
-    inline QAbstractFileEngine *create(const QString &fileName) const override
+    std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const override
     {
         if (fileName.startsWith(":!")) {
             QDir dir;
@@ -2372,9 +2372,9 @@ public:
             const QString realFile = m_dataDir->filePath(fileName.mid(2));
 #endif
             if (dir.exists(realFile))
-                return new QFSFileEngine(realFile);
+                return std::make_unique<QFSFileEngine>(realFile);
         }
-        return 0;
+        return nullptr;
     }
 
 #ifdef BUILTIN_TESTDATA

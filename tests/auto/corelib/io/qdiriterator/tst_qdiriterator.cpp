@@ -444,9 +444,9 @@ public:
 class EngineWithNoIteratorHandler : public QAbstractFileEngineHandler
 {
 public:
-    QAbstractFileEngine *create(const QString &fileName) const override
+    std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const override
     {
-        return new EngineWithNoIterator(fileName);
+        return std::make_unique<EngineWithNoIterator>(fileName);
     }
 };
 #endif
@@ -463,11 +463,11 @@ void tst_QDirIterator::engineWithNoIterator()
 class CustomEngineHandler : public QAbstractFileEngineHandler
 {
 public:
-    QAbstractFileEngine *create(const QString &fileName) const override
+    std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const override
     {
         // We want to test QFSFileEngine specifically, so force QDirIterator to use it
         // over the default QFileSystemEngine
-        return new QFSFileEngine(fileName);
+        return std::make_unique<QFSFileEngine>(fileName);
     }
 };
 

@@ -1,17 +1,21 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+using namespace Qt::StringLiterals;
+
 //! [0]
 class ZipEngineHandler : public QAbstractFileEngineHandler
 {
 public:
-    QAbstractFileEngine *create(const QString &fileName) const override;
+    std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const override;
 };
 
-QAbstractFileEngine *ZipEngineHandler::create(const QString &fileName) const
+std::unique_ptr<QAbstractFileEngine> ZipEngineHandler::create(const QString &fileName) const
 {
     // ZipEngineHandler returns a ZipEngine for all .zip files
-    return fileName.toLower().endsWith(".zip") ? new ZipEngine(fileName) : 0;
+    if (fileName.toLower().endsWith(".zip"_L1))
+        return std::make_unique<ZipEngine>(fileName);
+    return {};
 }
 
 int main(int argc, char **argv)
@@ -27,12 +31,14 @@ int main(int argc, char **argv)
 }
 //! [0]
 
-
 //! [1]
-QAbstractSocketEngine *ZipEngineHandler::create(const QString &fileName) const
+std::unique_ptr<QAbstractFileEngine> ZipEngineHandler::create(const QString &fileName) const
 {
     // ZipEngineHandler returns a ZipEngine for all .zip files
-    return fileName.toLower().endsWith(".zip") ? new ZipEngine(fileName) : 0;
+    if (fileName.toLower().endsWith(".zip"_L1))
+        return std::make_unique<ZipEngine>(fileName);
+    else
+        return {};
 }
 //! [1]
 

@@ -171,7 +171,7 @@ public:
     virtual bool supportsExtension(Extension extension) const;
 
     // Factory
-    static QAbstractFileEngine *create(const QString &fileName);
+    static std::unique_ptr<QAbstractFileEngine> create(const QString &fileName);
 
 protected:
     void setError(QFile::FileError error, const QString &str);
@@ -192,7 +192,7 @@ class Q_CORE_EXPORT QAbstractFileEngineHandler
 public:
     QAbstractFileEngineHandler();
     virtual ~QAbstractFileEngineHandler();
-    virtual QAbstractFileEngine *create(const QString &fileName) const = 0;
+    virtual std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const = 0;
 };
 
 class Q_CORE_EXPORT QAbstractFileEngineIterator
@@ -242,7 +242,7 @@ public:
     Q_DECLARE_PUBLIC(QAbstractFileEngine)
 };
 
-QAbstractFileEngine *qt_custom_file_engine_handler_create(const QString &path);
+std::unique_ptr<QAbstractFileEngine> qt_custom_file_engine_handler_create(const QString &path);
 
 QT_END_NAMESPACE
 

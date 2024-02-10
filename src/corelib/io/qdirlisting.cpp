@@ -139,9 +139,10 @@ void QDirListingPrivate::init(bool resolveEngine = true)
         nameRegExps.emplace_back(QRegularExpression::fromWildcard(filter, cs));
 #endif
 
-    if (resolveEngine)
-        engine.reset(QFileSystemEngine::resolveEntryAndCreateLegacyEngine(
-            initialEntryInfo.entry, initialEntryInfo.metaData));
+    if (resolveEngine) {
+        engine = QFileSystemEngine::createLegacyEngine(initialEntryInfo.entry,
+                                                       initialEntryInfo.metaData);
+    }
 
     pushDirectory(initialEntryInfo);
 }

@@ -46,7 +46,7 @@ class AndroidContentFileEngineHandler : public QAbstractFileEngineHandler
 public:
     AndroidContentFileEngineHandler();
     ~AndroidContentFileEngineHandler();
-    QAbstractFileEngine *create(const QString &fileName) const override;
+    std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const override;
 };
 
 class AndroidContentFileEngineIterator : public QAbstractFileEngineIterator

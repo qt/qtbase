@@ -128,14 +128,14 @@ QAbstractFileEngineHandler::~QAbstractFileEngineHandler()
 
    Handles calls to custom file engine handlers.
 */
-QAbstractFileEngine *qt_custom_file_engine_handler_create(const QString &path)
+std::unique_ptr<QAbstractFileEngine> qt_custom_file_engine_handler_create(const QString &path)
 {
     if (qt_file_engine_handlers_in_use.loadRelaxed()) {
         QReadLocker locker(fileEngineHandlerMutex());
 
         // check for registered handlers that can load the file
         for (QAbstractFileEngineHandler *handler : std::as_const(*fileEngineHandlers())) {
-            if (QAbstractFileEngine *engine = handler->create(path))
+            if (auto engine = handler->create(path))
                 return engine;
         }
     }
@@ -144,10 +144,11 @@ QAbstractFileEngine *qt_custom_file_engine_handler_create(const QString &path)
 }
 
 /*!
-    \fn QAbstractFileEngine *QAbstractFileEngineHandler::create(const QString &fileName) const
+    \fn std::unique_ptr<QAbstractFileEngine> QAbstractFileEngineHandler::create(const QString &fileName) const
 
-    Creates a file engine for file \a fileName. Returns 0 if this
-    file handler cannot handle \a fileName.
+    If this file handler can handle \a fileName, this method creates a file
+    engine and returns it wrapped in a std::unique_ptr; otherwise returns
+    nullptr.
 
     Example:
 
@@ -169,16 +170,15 @@ QAbstractFileEngine *qt_custom_file_engine_handler_create(const QString &path)
 
     \sa QAbstractFileEngineHandler
 */
-QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
+std::unique_ptr<QAbstractFileEngine> QAbstractFileEngine::create(const QString &fileName)
 {
     QFileSystemEntry entry(fileName);
     QFileSystemMetaData metaData;
-    QAbstractFileEngine *engine = QFileSystemEngine::resolveEntryAndCreateLegacyEngine(entry, metaData);
+    auto engine = QFileSystemEngine::createLegacyEngine(entry, metaData);
 
 #ifndef QT_NO_FSFILEENGINE
-    if (!engine)
-        // fall back to regular file engine
-        return new QFSFileEngine(entry.filePath());
+    if (!engine) // fall back to regular file engine
+        engine = std::make_unique<QFSFileEngine>(entry.filePath());
 #endif
 
     return engine;

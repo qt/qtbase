@@ -200,7 +200,7 @@ bool QSaveFile::open(OpenMode mode)
     }
 
     auto openDirectly = [&]() {
-        d->fileEngine.reset(QAbstractFileEngine::create(d->finalFileName));
+        d->fileEngine = QAbstractFileEngine::create(d->finalFileName);
         if (d->fileEngine->open(mode | QIODevice::Unbuffered)) {
             d->useTemporaryFile = false;
             QFileDevice::open(mode);

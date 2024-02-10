@@ -20,6 +20,7 @@
 #include "qfilesystemmetadata_p.h"
 #include <QtCore/private/qsystemerror_p.h>
 
+#include <memory>
 #include <optional>
 
 QT_BEGIN_NAMESPACE
@@ -141,8 +142,9 @@ public:
     static bool setCurrentPath(const QFileSystemEntry &entry);
     static QFileSystemEntry currentPath();
 
-    static QAbstractFileEngine *resolveEntryAndCreateLegacyEngine(QFileSystemEntry &entry,
-                                                                  QFileSystemMetaData &data);
+    static std::unique_ptr<QAbstractFileEngine>
+    createLegacyEngine(QFileSystemEntry &entry, QFileSystemMetaData &data);
+
 private:
     static QString slowCanonicalized(const QString &path);
 #if defined(Q_OS_WIN)

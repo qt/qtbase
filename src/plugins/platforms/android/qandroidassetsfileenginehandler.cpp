@@ -379,13 +379,14 @@ AndroidAssetsFileEngineHandler::AndroidAssetsFileEngineHandler()
     m_assetManager = QtAndroid::assetManager();
 }
 
-QAbstractFileEngine * AndroidAssetsFileEngineHandler::create(const QString &fileName) const
+std::unique_ptr<QAbstractFileEngine>
+AndroidAssetsFileEngineHandler::create(const QString &fileName) const
 {
     if (fileName.isEmpty())
-        return nullptr;
+        return {};
 
     if (!fileName.startsWith(assetsPrefix))
-        return nullptr;
+        return {};
 
     QString path = fileName.mid(prefixSize);
     path.replace("//"_L1, "/"_L1);
@@ -393,7 +394,7 @@ QAbstractFileEngine * AndroidAssetsFileEngineHandler::create(const QString &file
         path.remove(0, 1);
     if (path.endsWith(u'/'))
         path.chop(1);
-    return new AndroidAbstractFileEngine(m_assetManager, path);
+    return std::make_unique<AndroidAbstractFileEngine>(m_assetManager, path);
 }
 
 QT_END_NAMESPACE
