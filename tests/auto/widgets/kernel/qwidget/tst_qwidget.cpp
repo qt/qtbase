@@ -4894,7 +4894,7 @@ private:
 
 /*
     Test that widget resizes and moves can be done with minimal repaints when WA_StaticContents
-    and WA_OpaquePaintEvent is set. Test is mac-only for now.
+    and WA_OpaquePaintEvent is set.
 */
 void tst_QWidget::optimizedResizeMove()
 {
