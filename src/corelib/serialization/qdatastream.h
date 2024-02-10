@@ -45,7 +45,7 @@ QDataStream &writeAssociativeMultiContainer(QDataStream &s, const Container &c);
 class Q_CORE_EXPORT QDataStream : public QIODeviceBase
 {
 public:
-    enum Version {
+    enum Version QT7_ONLY(: quint8) {
         Qt_1_0 = 1,
         Qt_2_0 = 2,
         Qt_2_1 = 3,
@@ -98,7 +98,7 @@ public:
         LittleEndian = QSysInfo::LittleEndian
     };
 
-    enum Status {
+    enum Status QT7_ONLY(: quint8) {
         Ok,
         ReadPastEnd,
         ReadCorruptData,
@@ -106,7 +106,7 @@ public:
         SizeLimitExceeded,
     };
 
-    enum FloatingPointPrecision {
+    enum FloatingPointPrecision QT7_ONLY(: quint8) {
         SinglePrecision,
         DoublePrecision
     };
@@ -223,8 +223,10 @@ private:
     quint8 q_status = Ok;
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
     ByteOrder byteorder = BigEndian;
-#endif
     int ver = Qt_DefaultCompiledVersion;
+#else
+    Version ver = Qt_DefaultCompiledVersion;
+#endif
     quint16 transactionDepth = 0;
 
 #if QT_CORE_REMOVED_SINCE(6, 7)
@@ -450,7 +452,7 @@ inline int QDataStream::version() const
 { return ver; }
 
 inline void QDataStream::setVersion(int v)
-{ ver = v; }
+{ ver = Version(v); }
 
 qint64 QDataStream::readQSizeType(QDataStream &s)
 {
