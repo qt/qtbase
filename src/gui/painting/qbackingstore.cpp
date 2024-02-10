@@ -249,7 +249,8 @@ void QBackingStore::flush(const QRegion &region, QWindow *window, const QPoint &
 void QBackingStore::resize(const QSize &size)
 {
     d_ptr->size = size;
-    handle()->resize(QHighDpi::toNativePixels(size, d_ptr->window), d_ptr->staticContents);
+    handle()->resize(QHighDpi::toNativePixels(size, d_ptr->window),
+                     QHighDpi::toNativePixels(d_ptr->staticContents, d_ptr->window));
 }
 
 /*!
