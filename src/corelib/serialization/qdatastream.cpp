@@ -271,12 +271,6 @@ constexpr quint32 QDataStream::ExtendedSize;
 
 QDataStream::QDataStream()
 {
-    dev = nullptr;
-    owndev = false;
-    byteorder = BigEndian;
-    ver = Qt_DefaultCompiledVersion;
-    noswap = QSysInfo::ByteOrder == QSysInfo::BigEndian;
-    q_status = Ok;
 }
 
 /*!
@@ -288,11 +282,6 @@ QDataStream::QDataStream()
 QDataStream::QDataStream(QIODevice *d)
 {
     dev = d;                                // set device
-    owndev = false;
-    byteorder = BigEndian;                        // default byte order
-    ver = Qt_DefaultCompiledVersion;
-    noswap = QSysInfo::ByteOrder == QSysInfo::BigEndian;
-    q_status = Ok;
 }
 
 /*!
@@ -317,10 +306,6 @@ QDataStream::QDataStream(QByteArray *a, OpenMode flags)
     buf->open(flags);
     dev = buf;
     owndev = true;
-    byteorder = BigEndian;
-    ver = Qt_DefaultCompiledVersion;
-    noswap = QSysInfo::ByteOrder == QSysInfo::BigEndian;
-    q_status = Ok;
 }
 
 /*!
@@ -341,10 +326,6 @@ QDataStream::QDataStream(const QByteArray &a)
     buf->open(QIODevice::ReadOnly);
     dev = buf;
     owndev = true;
-    byteorder = BigEndian;
-    ver = Qt_DefaultCompiledVersion;
-    noswap = QSysInfo::ByteOrder == QSysInfo::BigEndian;
-    q_status = Ok;
 }
 
 /*!

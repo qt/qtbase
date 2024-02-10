@@ -216,13 +216,13 @@ private:
 
     QScopedPointer<QDataStreamPrivate> d;
 
-    QIODevice *dev;
-    bool owndev;
-    bool noswap;
+    QIODevice *dev = nullptr;
+    bool owndev = false;
+    bool noswap = QSysInfo::ByteOrder == QSysInfo::BigEndian;
     quint8 fpPrecision = QDataStream::DoublePrecision;
-    quint8 q_status;
-    ByteOrder byteorder;
-    int ver;
+    quint8 q_status = Ok;
+    ByteOrder byteorder = BigEndian;
+    int ver = Qt_DefaultCompiledVersion;
     quint16 transactionDepth = 0;
 
 #if QT_CORE_REMOVED_SINCE(6, 7)
