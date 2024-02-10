@@ -319,7 +319,11 @@ static QString errorStringFromDiagRecords(const QList<DiagRecord>& records)
 template<class T>
 static void qSqlWarning(const QString &message, T &&val)
 {
-    qWarning() << message << "\tError:" << errorStringFromDiagRecords(qODBCWarn(val));
+    const auto addMsg = errorStringFromDiagRecords(qODBCWarn(val));
+    if (addMsg.isEmpty())
+        qWarning() << message;
+    else
+        qWarning() << message << "\tError:" << addMsg;
 }
 
 static QSqlError qMakeError(const QString &err,
@@ -443,7 +447,7 @@ static QVariant getStringDataImpl(SQLHANDLE hStmt, SQLUSMALLINT column, qsizetyp
         } else if (r == SQL_NO_DATA) {
             break;
         } else {
-            qSqlWarning("qGetStringData: Error while fetching data:"_L1, hStmt);
+            qSqlWarning("QODBC::getStringData: Error while fetching data"_L1, hStmt);
             return {};
         }
     }
@@ -485,7 +489,8 @@ static QVariant qGetBinaryData(SQLHANDLE hStmt, int column)
                        &colScale,
                        &nullable);
     if (r != SQL_SUCCESS)
-        qWarning() << "qGetBinaryData: Unable to describe column" << column;
+        qSqlWarning(("QODBC::qGetBinaryData: Unable to describe column %1"_L1)
+                    .arg(QString::number(column)), hStmt);
     // SQLDescribeCol may return 0 if size cannot be determined
     if (!colSize)
         colSize = 255;
@@ -586,8 +591,8 @@ static bool isAutoValue(const SQLHANDLE hStmt, int column)
     const SQLRETURN r = ::SQLColAttribute(hStmt, column + 1, SQL_DESC_AUTO_UNIQUE_VALUE,
                                           0, 0, 0, &nNumericAttribute);
     if (!SQL_SUCCEEDED(r)) {
-        qSqlWarning(QStringLiteral("qMakeField: Unable to get autovalue attribute for column ")
-                    + QString::number(column), hStmt);
+        qSqlWarning(("QODBC::isAutoValue: Unable to get autovalue attribute for column %1"_L1)
+                    .arg(QString::number(column)), hStmt);
         return false;
     }
     return nNumericAttribute != SQL_FALSE;
@@ -634,7 +639,8 @@ static QSqlField qMakeFieldInfo(const QODBCResultPrivate *p, int i)
                         &nullable);
 
     if (r != SQL_SUCCESS) {
-        qSqlWarning(QStringLiteral("qMakeField: Unable to describe column ") + QString::number(i), p);
+        qSqlWarning(("QODBC::qMakeFieldInfo: Unable to describe column %1"_L1)
+                    .arg(QString::number(i)), p);
         return QSqlField();
     }
 
@@ -647,8 +653,8 @@ static QSqlField qMakeFieldInfo(const QODBCResultPrivate *p, int i)
                          0,
                          &unsignedFlag);
     if (r != SQL_SUCCESS) {
-        qSqlWarning(QStringLiteral("qMakeField: Unable to get column attributes for column ")
-                    + QString::number(i), p);
+        qSqlWarning(("QODBC::qMakeFieldInfo: Unable to get column attributes for column %1"_L1)
+                    .arg(QString::number(i)), p);
     }
 
     const QString qColName(fromSQLTCHAR(colName, colNameLen));
@@ -734,7 +740,8 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
         const QString tmp(opts.at(i));
         int idx;
         if ((idx = tmp.indexOf(u'=')) == -1) {
-            qWarning() << "QODBCDriver::open: Illegal connect option value '" << tmp << '\'';
+            qSqlWarning(("QODBCDriver::open: Illegal connect option value '%1'"_L1)
+                        .arg(tmp), this);
             continue;
         }
         const QString opt(tmp.left(idx));
@@ -748,7 +755,8 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
             } else if (val.toUpper() == "SQL_MODE_READ_WRITE"_L1) {
                 v = SQL_MODE_READ_WRITE;
             } else {
-                qWarning() << "QODBCDriver::open: Unknown option value '" << val << '\'';
+                qSqlWarning(("QODBCDriver::open: Unknown option value '%1'"_L1)
+                            .arg(val), this);
                 continue;
             }
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_ACCESS_MODE, (SQLPOINTER) size_t(v), 0);
@@ -766,7 +774,8 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
             } else if (val.toUpper() == "SQL_FALSE"_L1) {
                 v = SQL_FALSE;
             } else {
-                qWarning() << "QODBCDriver::open: Unknown option value '" << val << '\'';
+                qSqlWarning(("QODBCDriver::open: Unknown option value '%1'"_L1)
+                            .arg(val), this);
                 continue;
             }
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_METADATA_ID, (SQLPOINTER) size_t(v), 0);
@@ -781,7 +790,8 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
             } else if (val.toUpper() == "SQL_OPT_TRACE_ON"_L1) {
                 v = SQL_OPT_TRACE_ON;
             } else {
-                qWarning() << "QODBCDriver::open: Unknown option value '" << val << '\'';
+                qSqlWarning(("QODBCDriver::open: Unknown option value '%1'"_L1)
+                            .arg(val), this);
                 continue;
             }
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_TRACE, (SQLPOINTER) size_t(v), 0);
@@ -795,7 +805,8 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
             else if (val.toUpper() == "SQL_CP_DEFAULT"_L1)
                 v = SQL_CP_DEFAULT;
             else {
-                qWarning() << "QODBCDriver::open: Unknown option value '" << val << '\'';
+                qSqlWarning(("QODBCDriver::open: Unknown option value '%1'"_L1)
+                            .arg(val), this);
                 continue;
             }
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_CONNECTION_POOLING, (SQLPOINTER) size_t(v), 0);
@@ -807,7 +818,8 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
             else if (val.toUpper() == "SQL_CP_MATCH_DEFAULT"_L1)
                 v = SQL_CP_MATCH_DEFAULT;
             else {
-                qWarning() << "QODBCDriver::open: Unknown option value '" << val << '\'';
+                qSqlWarning(("QODBCDriver::open: Unknown option value '%1'"_L1)
+                            .arg(val), this);
                 continue;
             }
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_CP_MATCH, (SQLPOINTER) size_t(v), 0);
@@ -815,11 +827,12 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
             // Already handled in QODBCDriver::open()
             continue;
         } else {
-                qWarning() << "QODBCDriver::open: Unknown connection attribute '" << opt << '\'';
+            qSqlWarning(("QODBCDriver::open: Unknown connection attribute '%1'"_L1)
+                        .arg(opt), this);
         }
         if (!SQL_SUCCEEDED(r))
-            qSqlWarning(QString::fromLatin1("QODBCDriver::open: Unable to set connection attribute'%1'").arg(
-                        opt), this);
+            qSqlWarning(("QODBCDriver::open: Unable to set connection attribute '%1'"_L1)
+                        .arg(opt), this);
     }
     return true;
 }
@@ -855,7 +868,7 @@ void QODBCDriverPrivate::splitTableQualifier(const QString &qualifier, QString &
             table = adjustName(l.at(2).toString());
             break;
         default:
-            qSqlWarning(QString::fromLatin1("QODBCDriver::splitTableQualifier: Unable to split table qualifier '%1'")
+            qSqlWarning(("QODBCDriver::splitTableQualifier: Unable to split table qualifier '%1'"_L1)
                         .arg(qualifier), this);
             break;
     }
@@ -919,8 +932,7 @@ QODBCResult::~QODBCResult()
     if (d->hStmt && d->isStmtHandleValid() && driver() && driver()->isOpen()) {
         SQLRETURN r = SQLFreeHandle(SQL_HANDLE_STMT, d->hStmt);
         if (r != SQL_SUCCESS)
-            qSqlWarning("QODBCDriver: Unable to free statement handle "_L1
-                         + QString::number(r), d);
+            qSqlWarning(("QODBCResult: Unable to free statement handle "_L1), d);
     }
 }
 
@@ -1151,7 +1163,8 @@ QVariant QODBCResult::data(int field)
 {
     Q_D(QODBCResult);
     if (field >= d->rInf.count() || field < 0) {
-        qWarning() << "QODBCResult::data: column" << field << "out of range";
+        qSqlWarning(("QODBCResult::data: column %1 out of range"_L1)
+                    .arg(QString::number(field)), d);
         return QVariant();
     }
     if (field < d->fieldCacheIdx)
@@ -1277,8 +1290,7 @@ int QODBCResult::numRowsAffected()
     SQLRETURN r = SQLRowCount(d->hStmt, &affectedRowCount);
     if (r == SQL_SUCCESS)
         return affectedRowCount;
-    else
-        qSqlWarning("QODBCResult::numRowsAffected: Unable to count affected rows"_L1, d);
+    qSqlWarning("QODBCResult::numRowsAffected: Unable to count affected rows"_L1, d);
     return -1;
 }
 
@@ -1791,8 +1803,7 @@ bool QODBCResult::nextResult()
     SQLRETURN r = SQLMoreResults(d->hStmt);
     if (r != SQL_SUCCESS) {
         if (r == SQL_SUCCESS_WITH_INFO) {
-            QString message = errorStringFromDiagRecords(qODBCWarn(d));
-            qWarning() << "QODBCResult::nextResult():" << message;
+            qSqlWarning("QODBCResult::nextResult:"_L1, d);
         } else {
             if (r != SQL_NO_DATA)
                 setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
@@ -2141,9 +2152,10 @@ bool QODBCDriverPrivate::checkDriver() const
             return false;
         }
         if (sup == SQL_FALSE) {
-            qWarning () << "QODBCDriver::open: Warning - Driver doesn't support all needed functionality ("
-                        << func
-                        << ").\nPlease look at the Qt SQL Module Driver documentation for more information.";
+            qSqlWarning(("QODBCDriver::checkDriver: Driver doesn't support all needed "
+                         "functionality (func id %1).\nPlease look at the Qt SQL Module "
+                         "Driver documentation for more information."_L1)
+                        .arg(QString::number(func)), this);
             return false;
         }
     }
@@ -2158,8 +2170,9 @@ bool QODBCDriverPrivate::checkDriver() const
             return false;
         }
         if (sup == SQL_FALSE) {
-            qWarning() << "QODBCDriver::checkDriver: Warning - Driver doesn't support some non-critical functions ("
-                       << func << ')';
+            qSqlWarning(("QODBCDriver::checkDriver: Driver doesn't support some "
+                         "non-critical functions (func id %1)."_L1)
+                        .arg(QString::number(func)), this);
             return true;
         }
     }
@@ -2224,7 +2237,8 @@ void QODBCDriverPrivate::checkHasSQLFetchScroll()
     SQLRETURN r = SQLGetFunctions(hDbc, SQL_API_SQLFETCHSCROLL, &sup);
     if ((!SQL_SUCCEEDED(r)) || sup != SQL_TRUE) {
         hasSQLFetchScroll = false;
-        qWarning("QODBCDriver::checkHasSQLFetchScroll: Warning - Driver doesn't support scrollable result sets, use forward only mode for queries");
+        qSqlWarning("QODBCDriver::checkHasSQLFetchScroll: Driver doesn't support "
+                    "scrollable result sets, use forward only mode for queries"_L1, this);
     }
 }
 
@@ -2268,7 +2282,7 @@ bool QODBCDriver::beginTransaction()
 {
     Q_D(QODBCDriver);
     if (!isOpen()) {
-        qWarning("QODBCDriver::beginTransaction: Database not open");
+        qSqlWarning("QODBCDriver::beginTransaction: Database not open"_L1, d);
         return false;
     }
     SQLUINTEGER ac(SQL_AUTOCOMMIT_OFF);
@@ -2288,7 +2302,7 @@ bool QODBCDriver::commitTransaction()
 {
     Q_D(QODBCDriver);
     if (!isOpen()) {
-        qWarning("QODBCDriver::commitTransaction: Database not open");
+        qSqlWarning("QODBCDriver::commitTransaction: Database not open"_L1, d);
         return false;
     }
     SQLRETURN r = SQLEndTran(SQL_HANDLE_DBC,
@@ -2306,7 +2320,7 @@ bool QODBCDriver::rollbackTransaction()
 {
     Q_D(QODBCDriver);
     if (!isOpen()) {
-        qWarning("QODBCDriver::rollbackTransaction: Database not open");
+        qSqlWarning("QODBCDriver::rollbackTransaction: Database not open"_L1, d);
         return false;
     }
     SQLRETURN r = SQLEndTran(SQL_HANDLE_DBC,
@@ -2372,12 +2386,12 @@ QStringList QODBCDriver::tables(QSql::TableType type) const
     }
 
     if (r != SQL_SUCCESS)
-        qSqlWarning("QODBCDriver::tables Unable to execute table list"_L1, d);
+        qSqlWarning("QODBCDriver::tables Unable to execute table list"_L1,
+                    hStmt.handle());
 
     r = d->sqlFetchNext(hStmt);
     if (!SQL_SUCCEEDED(r) && r != SQL_NO_DATA) {
-        qSqlWarning("QODBCDriver::tables failed to retrieve table/view list: ("_L1
-                            + QString::number(r) + u':',
+        qSqlWarning("QODBCDriver::tables failed to retrieve table/view list"_L1,
                     hStmt.handle());
         return QStringList();
     }
@@ -2401,7 +2415,7 @@ QSqlIndex QODBCDriver::primaryIndex(const QString& tablename) const
 
     SqlStmtHandle hStmt(d->hDbc);
     if (!hStmt.isValid()) {
-        qSqlWarning("QODBCDriver::primaryIndex: Unable to list primary key"_L1, d);
+        qSqlWarning("QODBCDriver::primaryIndex: Unable to allocate handle"_L1, d);
         return index;
     }
     QString catalog, schema, table;
@@ -2437,7 +2451,8 @@ QSqlIndex QODBCDriver::primaryIndex(const QString& tablename) const
                               SQL_NULLABLE);
 
             if (r != SQL_SUCCESS) {
-                qSqlWarning("QODBCDriver::primaryIndex: Unable to execute primary key list"_L1, d);
+                qSqlWarning("QODBCDriver::primaryIndex: Unable to execute primary key list"_L1,
+                            hStmt.handle());
             } else {
                 usingSpecialColumns = true;
             }
@@ -2496,7 +2511,7 @@ QSqlRecord QODBCDriver::record(const QString& tablename) const
                         0);
     }
     if (r != SQL_SUCCESS)
-        qSqlWarning("QODBCDriver::record: Unable to execute column list"_L1, d);
+        qSqlWarning("QODBCDriver::record: Unable to execute column list"_L1, hStmt.handle());
 
     r = d->sqlFetchNext(hStmt);
     // Store all fields in a StringList because some drivers can't detail fields in this FETCH loop
