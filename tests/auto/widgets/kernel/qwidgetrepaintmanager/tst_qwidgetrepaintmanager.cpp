@@ -11,7 +11,9 @@
 #include <private/qhighdpiscaling_p.h>
 #include <private/qwidget_p.h>
 #include <private/qwidgetrepaintmanager_p.h>
+#include <qpa/qplatformintegration.h>
 #include <qpa/qplatformbackingstore.h>
+#include <private/qguiapplication_p.h>
 
 //#define MANUAL_DEBUG
 
@@ -429,6 +431,10 @@ void tst_QWidgetRepaintManager::opaqueChildren()
 */
 void tst_QWidgetRepaintManager::staticContents()
 {
+    const auto *integration = QGuiApplicationPrivate::platformIntegration();
+    if (!integration->hasCapability(QPlatformIntegration::BackingStoreStaticContents))
+        QSKIP("Platform does not support static backingstore content");
+
     TestWidget widget;
     widget.setAttribute(Qt::WA_StaticContents);
     widget.initialShow();

@@ -706,7 +706,9 @@ void QWidgetRepaintManager::paintAndFlush()
 
     const QRect tlwRect = tlw->data->crect;
     if (!updatesDisabled && store->size() != tlwRect.size()) {
-        if (hasStaticContents() && !store->size().isEmpty() ) {
+        QPlatformIntegration *integration = QGuiApplicationPrivate::platformIntegration();
+        if (hasStaticContents() && !store->size().isEmpty()
+            && integration->hasCapability(QPlatformIntegration::BackingStoreStaticContents)) {
             // Repaint existing dirty area and newly visible area.
             const QRect clipRect(QPoint(0, 0), store->size());
             const QRegion staticRegion(staticContents(nullptr, clipRect));
@@ -1140,11 +1142,7 @@ void QWidgetRepaintManager::removeStaticWidget(QWidget *widget)
 
 bool QWidgetRepaintManager::hasStaticContents() const
 {
-#if defined(Q_OS_WIN)
     return !staticWidgets.isEmpty();
-#else
-    return !staticWidgets.isEmpty() && false;
-#endif
 }
 
 /*!

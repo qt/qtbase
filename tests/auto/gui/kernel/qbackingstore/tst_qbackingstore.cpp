@@ -4,6 +4,8 @@
 #include <qwindow.h>
 #include <qbackingstore.h>
 #include <qpa/qplatformbackingstore.h>
+#include <qpa/qplatformintegration.h>
+#include <private/qguiapplication_p.h>
 #include <qpainter.h>
 
 #include <QTest>
@@ -271,9 +273,9 @@ void tst_QBackingStore::flush()
 
 void tst_QBackingStore::staticContents()
 {
-#if !defined(Q_OS_WIN)
-    QSKIP("Platform does not support static backingstore content");
-#endif
+    const auto *integration = QGuiApplicationPrivate::platformIntegration();
+    if (!integration->hasCapability(QPlatformIntegration::BackingStoreStaticContents))
+        QSKIP("Platform does not support static backingstore content");
 
     QWindow window;
     window.create();

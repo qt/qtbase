@@ -267,6 +267,13 @@ bool QBackingStore::scroll(const QRegion &area, int dx, int dy)
 */
 void QBackingStore::setStaticContents(const QRegion &region)
 {
+    [[maybe_unused]] static const bool didCheckPlatformSupport = []{
+        const auto *integration = QGuiApplicationPrivate::platformIntegration();
+        if (!integration->hasCapability(QPlatformIntegration::BackingStoreStaticContents))
+            qWarning("QBackingStore::setStaticContents(): Platform does not support static contents");
+        return true;
+    }();
+
     d_ptr->staticContents = region;
 }
 

@@ -286,6 +286,8 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
         return true;
     case SwitchableWidgetComposition:
         return false; // QTBUG-68329 QTBUG-53515 QTBUG-54734
+    case BackingStoreStaticContents:
+        return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }
