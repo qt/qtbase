@@ -499,6 +499,8 @@ void tst_QWidgetRepaintManager::scrollWithOverlap()
             : QWidget(parent, Qt::WindowStaysOnTopHint)
         {
             m_scrollArea = new QScrollArea(this);
+            m_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+            m_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
             QWidget *w = new QWidget;
             w->setPalette(QPalette(Qt::gray));
             w->setAutoFillBackground(true);
