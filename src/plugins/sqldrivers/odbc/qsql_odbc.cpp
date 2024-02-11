@@ -111,7 +111,7 @@ class QODBCDriverPrivate : public QSqlDriverPrivate
     Q_DECLARE_PUBLIC(QODBCDriver)
 
 public:
-    enum DefaultCase {Lower, Mixed, Upper, Sensitive};
+    enum class DefaultCase {Lower, Mixed, Upper, Sensitive};
     using QSqlDriverPrivate::QSqlDriverPrivate;
 
     SQLHANDLE hEnv = nullptr;
@@ -132,10 +132,10 @@ public:
     void checkHasMultiResults();
     void checkSchemaUsage();
     void checkDateTimePrecision();
+    void checkDefaultCase();
     bool setConnectionOptions(const QString& connOpts);
     void splitTableQualifier(const QString &qualifier, QString &catalog,
                              QString &schema, QString &table) const;
-    DefaultCase defaultCase() const;
     QString adjustCase(const QString&) const;
     QChar quoteChar();
     SQLRETURN sqlFetchNext(const SqlStmtHandle &hStmt) const;
@@ -143,6 +143,7 @@ public:
 private:
     bool isQuoteInitialized = false;
     QChar quote = u'"';
+    DefaultCase m_defaultCase = DefaultCase::Mixed;
 };
 
 class QODBCResultPrivate;
@@ -860,35 +861,31 @@ void QODBCDriverPrivate::splitTableQualifier(const QString &qualifier, QString &
     }
 }
 
-QODBCDriverPrivate::DefaultCase QODBCDriverPrivate::defaultCase() const
+void QODBCDriverPrivate::checkDefaultCase()
 {
-    DefaultCase ret;
+    m_defaultCase = DefaultCase::Mixed; //arbitrary case if driver cannot be queried
     SQLUSMALLINT casing;
-    int r = SQLGetInfo(hDbc,
-            SQL_IDENTIFIER_CASE,
-            &casing,
-            sizeof(casing),
-            NULL);
-    if ( r != SQL_SUCCESS)
-        ret = Mixed;//arbitrary case if driver cannot be queried
-    else {
+    SQLRETURN r = SQLGetInfo(hDbc,
+                             SQL_IDENTIFIER_CASE,
+                             &casing,
+                             sizeof(casing),
+                             NULL);
+    if (r == SQL_SUCCESS) {
         switch (casing) {
-            case (SQL_IC_UPPER):
-                ret = Upper;
-                break;
-            case (SQL_IC_LOWER):
-                ret = Lower;
-                break;
-            case (SQL_IC_SENSITIVE):
-                ret = Sensitive;
-                break;
-            case (SQL_IC_MIXED):
-            default:
-                ret = Mixed;
-                break;
+        case SQL_IC_UPPER:
+            m_defaultCase = DefaultCase::Upper;
+            break;
+        case SQL_IC_LOWER:
+            m_defaultCase = DefaultCase::Lower;
+            break;
+        case SQL_IC_SENSITIVE:
+            m_defaultCase = DefaultCase::Sensitive;
+            break;
+        case SQL_IC_MIXED:
+            m_defaultCase = DefaultCase::Mixed;
+            break;
         }
     }
-    return ret;
 }
 
 /*
@@ -897,20 +894,16 @@ QODBCDriverPrivate::DefaultCase QODBCDriverPrivate::defaultCase() const
 */
 QString QODBCDriverPrivate::adjustCase(const QString &identifier) const
 {
-    QString ret = identifier;
-    switch(defaultCase()) {
-        case (Lower):
-            ret = identifier.toLower();
-            break;
-        case (Upper):
-            ret = identifier.toUpper();
-            break;
-        case(Mixed):
-        case(Sensitive):
-        default:
-            ret = identifier;
+    switch (m_defaultCase) {
+    case DefaultCase::Lower:
+        return identifier.toLower();
+    case DefaultCase::Upper:
+        return identifier.toUpper();
+    case DefaultCase::Mixed:
+    case DefaultCase::Sensitive:
+        break;
     }
-    return ret;
+    return identifier;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -2010,6 +2003,7 @@ bool QODBCDriver::open(const QString & db,
     d->checkHasSQLFetchScroll();
     d->checkHasMultiResults();
     d->checkDateTimePrecision();
+    d->checkDefaultCase();
     setOpen(true);
     setOpenError(false);
     if (d->dbmsType == MSSqlServer) {
