@@ -157,7 +157,7 @@ uint QFileInfoPrivate::getFileFlags(QAbstractFileEngine::FileFlags request) cons
     return fileFlags & request.toInt();
 }
 
-QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) const
+QDateTime &QFileInfoPrivate::getFileTime(QFile::FileTime request) const
 {
     Q_ASSERT(fileEngine); // should never be called when using the native FS
     if (!cache_enabled)
@@ -165,16 +165,16 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
 
     uint cf = 0;
     switch (request) {
-    case QAbstractFileEngine::AccessTime:
+    case QFile::FileAccessTime:
         cf = CachedATime;
         break;
-    case QAbstractFileEngine::BirthTime:
+    case QFile::FileBirthTime:
         cf = CachedBTime;
         break;
-    case QAbstractFileEngine::MetadataChangeTime:
+    case QFile::FileMetadataChangeTime:
         cf = CachedMCTime;
         break;
-    case QAbstractFileEngine::ModificationTime:
+    case QFile::FileModificationTime:
         cf = CachedMTime;
         break;
     }
@@ -1665,13 +1665,7 @@ QDateTime QFileInfo::fileTime(QFile::FileTime time) const {
 */
 QDateTime QFileInfo::fileTime(QFile::FileTime time, const QTimeZone &tz) const
 {
-    static_assert(int(QFile::FileAccessTime) == int(QAbstractFileEngine::AccessTime));
-    static_assert(int(QFile::FileBirthTime) == int(QAbstractFileEngine::BirthTime));
-    static_assert(int(QFile::FileMetadataChangeTime) == int(QAbstractFileEngine::MetadataChangeTime));
-    static_assert(int(QFile::FileModificationTime) == int(QAbstractFileEngine::ModificationTime));
-
     Q_D(const QFileInfo);
-    auto fetime = QAbstractFileEngine::FileTime(time);
     QFileSystemMetaData::MetaDataFlags flag;
     switch (time) {
     case QFile::FileAccessTime:
@@ -1688,8 +1682,8 @@ QDateTime QFileInfo::fileTime(QFile::FileTime time, const QTimeZone &tz) const
         break;
     }
 
-    auto fsLambda = [d, fetime]() { return d->metaData.fileTime(fetime); };
-    auto engineLambda = [d, fetime]() { return d->getFileTime(fetime); };
+    auto fsLambda = [d, time]() { return d->metaData.fileTime(time); };
+    auto engineLambda = [d, time]() { return d->getFileTime(time); };
     const QDateTime dt = d->checkAttribute<QDateTime>(flag, fsLambda, engineLambda);
     return dt.toTimeZone(tz);
 }

@@ -734,15 +734,6 @@ bool QFileDevice::unmap(uchar *address)
     \sa setFileTime(), fileTime(), QFileInfo::fileTime()
 */
 
-static inline QAbstractFileEngine::FileTime FileDeviceTimeToAbstractFileEngineTime(QFileDevice::FileTime time)
-{
-    static_assert(int(QFileDevice::FileAccessTime) == int(QAbstractFileEngine::AccessTime));
-    static_assert(int(QFileDevice::FileBirthTime) == int(QAbstractFileEngine::BirthTime));
-    static_assert(int(QFileDevice::FileMetadataChangeTime) == int(QAbstractFileEngine::MetadataChangeTime));
-    static_assert(int(QFileDevice::FileModificationTime) == int(QAbstractFileEngine::ModificationTime));
-    return QAbstractFileEngine::FileTime(time);
-}
-
 /*!
     \since 5.10
     Returns the file time specified by \a time.
@@ -756,7 +747,7 @@ QDateTime QFileDevice::fileTime(QFileDevice::FileTime time) const
     Q_D(const QFileDevice);
 
     if (d->engine())
-        return d->engine()->fileTime(FileDeviceTimeToAbstractFileEngineTime(time));
+        return d->engine()->fileTime(time);
 
     return QDateTime();
 }
@@ -779,7 +770,7 @@ bool QFileDevice::setFileTime(const QDateTime &newDate, QFileDevice::FileTime fi
         return false;
     }
 
-    if (!d->fileEngine->setFileTime(newDate, FileDeviceTimeToAbstractFileEngineTime(fileTime))) {
+    if (!d->fileEngine->setFileTime(newDate, fileTime)) {
         d->setError(d->fileEngine->error(), d->fileEngine->errorString());
         return false;
     }

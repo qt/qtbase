@@ -27,7 +27,7 @@ public:
     bool rmdir(const QString &dirName, bool recurseParentDirectories) const override;
     QByteArray id() const override;
     bool caseSensitive() const override { return true; }
-    QDateTime fileTime(FileTime time) const override;
+    QDateTime fileTime(QFile::FileTime time) const override;
     FileFlags fileFlags(FileFlags type = FileInfoAll) const override;
     QString fileName(FileName file = DefaultName) const override;
     IteratorUniquePtr beginEntryList(const QString &path, QDir::Filters filters,

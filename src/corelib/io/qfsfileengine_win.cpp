@@ -706,7 +706,7 @@ bool QFSFileEngine::setSize(qint64 size)
     return false;
 }
 
-bool QFSFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
+bool QFSFileEngine::setFileTime(const QDateTime &newDate, QFile::FileTime time)
 {
     Q_D(QFSFileEngine);
 
@@ -715,7 +715,7 @@ bool QFSFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
         return false;
     }
 
-    if (!newDate.isValid() || time == QAbstractFileEngine::MetadataChangeTime) {
+    if (!newDate.isValid() || time == QFile::FileMetadataChangeTime) {
         setError(QFile::UnspecifiedError, qt_error_string(ERROR_INVALID_PARAMETER));
         return false;
     }

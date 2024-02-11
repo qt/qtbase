@@ -1069,7 +1069,7 @@ QByteArray QFileSystemEngine::id(HANDLE fHandle)
 
 //static
 bool QFileSystemEngine::setFileTime(HANDLE fHandle, const QDateTime &newDate,
-                                    QAbstractFileEngine::FileTime time, QSystemError &error)
+                                    QFile::FileTime time, QSystemError &error)
 {
     FILETIME fTime;
     FILETIME *pLastWrite = nullptr;
@@ -1077,15 +1077,15 @@ bool QFileSystemEngine::setFileTime(HANDLE fHandle, const QDateTime &newDate,
     FILETIME *pCreationTime = nullptr;
 
     switch (time) {
-    case QAbstractFileEngine::ModificationTime:
+    case QFile::FileModificationTime:
         pLastWrite = &fTime;
         break;
 
-    case QAbstractFileEngine::AccessTime:
+    case QFile::FileAccessTime:
         pLastAccess = &fTime;
         break;
 
-    case QAbstractFileEngine::BirthTime:
+    case QFile::FileBirthTime:
         pCreationTime = &fTime;
         break;
 
