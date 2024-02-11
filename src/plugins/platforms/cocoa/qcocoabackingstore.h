@@ -54,6 +54,7 @@ private:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
     QSize m_requestedSize;
+    QRegion m_staticContents;
 
     class GraphicsBuffer : public QIOSurfaceGraphicsBuffer
     {
@@ -78,7 +79,8 @@ private:
     bool recreateBackBufferIfNeeded();
     void finalizeBackBuffer();
 
-    void preserveFromFrontBuffer(const QRegion &region, const QPoint &offset = QPoint());
+    void blitBuffer(GraphicsBuffer *sourceBuffer, const QRegion &sourceRegion,
+                    GraphicsBuffer *destinationBuffer, const QPoint &destinationOffset = QPoint());
 
     void backingPropertiesChanged();
     QMacNotificationObserver m_backingPropertiesObserver;

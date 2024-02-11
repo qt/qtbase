@@ -93,6 +93,11 @@ void tst_QBackingStore::paint()
     QRect rect(0, 0, 100, 100);
     backingStore.resize(rect.size());
 
+    // Partial fill of a fresh backingstore should not crash
+    backingStore.beginPaint(QRect(0, 0, 50, 50));
+    backingStore.endPaint();
+    backingStore.flush(rect);
+
     // Two rounds, with flush in between
     for (int i = 0; i < 2; ++i) {
         backingStore.beginPaint(rect);
