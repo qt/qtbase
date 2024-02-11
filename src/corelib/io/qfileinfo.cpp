@@ -1685,7 +1685,8 @@ QDateTime QFileInfo::fileTime(QFile::FileTime time, const QTimeZone &tz) const
 
     auto fsLambda = [d, time]() { return d->metaData.fileTime(time); };
     auto engineLambda = [d, time]() { return d->getFileTime(time); };
-    const QDateTime dt = d->checkAttribute<QDateTime>(flag, fsLambda, engineLambda);
+    const auto dt =
+        d->checkAttribute<QDateTime>(flag, std::move(fsLambda), std::move(engineLambda));
     return dt.toTimeZone(tz);
 }
 
