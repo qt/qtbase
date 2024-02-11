@@ -232,6 +232,7 @@ bool QCocoaIntegration::hasCapability(QPlatformIntegration::Capability cap) cons
     case RasterGLSurface:
     case ApplicationState:
     case ApplicationIcon:
+    case BackingStoreStaticContents:
         return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
