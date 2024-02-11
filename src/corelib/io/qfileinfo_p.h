@@ -146,8 +146,8 @@ public:
     { if (cache_enabled) cachedFlags |= c; }
 
     template <typename Ret, typename FSLambda, typename EngineLambda>
-    Ret checkAttribute(Ret defaultValue, QFileSystemMetaData::MetaDataFlags fsFlags, const FSLambda &fsLambda,
-                       const EngineLambda &engineLambda) const
+    Ret checkAttribute(Ret defaultValue, QFileSystemMetaData::MetaDataFlags fsFlags,
+                       FSLambda fsLambda, EngineLambda engineLambda) const
     {
         if (isDefaultConstructed)
             return defaultValue;
@@ -161,10 +161,10 @@ public:
     }
 
     template <typename Ret, typename FSLambda, typename EngineLambda>
-    Ret checkAttribute(QFileSystemMetaData::MetaDataFlags fsFlags, const FSLambda &fsLambda,
-                       const EngineLambda &engineLambda) const
+    Ret checkAttribute(QFileSystemMetaData::MetaDataFlags fsFlags, FSLambda fsLambda,
+                       EngineLambda engineLambda) const
     {
-        return checkAttribute(Ret(), fsFlags, fsLambda, engineLambda);
+        return checkAttribute(Ret(), std::move(fsFlags), std::move(fsLambda), engineLambda);
     }
 };
 
