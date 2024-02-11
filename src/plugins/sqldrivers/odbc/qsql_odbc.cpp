@@ -99,7 +99,7 @@ QStringConverter::Encoding encodingForSqlTChar()
                       "Don't know how to handle sizeof(SQLTCHAR) != 1/2/4");
 }
 
-inline static QVarLengthArray<SQLTCHAR> toSQLTCHAR(const QString &input)
+inline static QVarLengthArray<SQLTCHAR> toSQLTCHAR(QStringView input)
 {
     QVarLengthArray<SQLTCHAR> result;
     QStringEncoder enc(encodingForSqlTChar());
@@ -723,7 +723,7 @@ SQLRETURN QODBCDriverPrivate::sqlFetchNext(SQLHANDLE hStmt) const
     return SQLFetch(hStmt);
 }
 
-static SQLRETURN qt_string_SQLSetConnectAttr(SQLHDBC handle, SQLINTEGER attr, const QString &val)
+static SQLRETURN qt_string_SQLSetConnectAttr(SQLHDBC handle, SQLINTEGER attr, QStringView val)
 {
     auto encoded = toSQLTCHAR(val);
     return SQLSetConnectAttr(handle, attr,
@@ -732,28 +732,26 @@ static SQLRETURN qt_string_SQLSetConnectAttr(SQLHDBC handle, SQLINTEGER attr, co
 }
 
 
-bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
+bool QODBCDriverPrivate::setConnectionOptions(const QString &connOpts)
 {
     // Set any connection attributes
-    const QStringList opts(connOpts.split(u';', Qt::SkipEmptyParts));
     SQLRETURN r = SQL_SUCCESS;
-    for (int i = 0; i < opts.count(); ++i) {
-        const QString tmp(opts.at(i));
+    for (const auto connOpt : QStringTokenizer{connOpts, u';'}) {
         int idx;
-        if ((idx = tmp.indexOf(u'=')) == -1) {
+        if ((idx = connOpt.indexOf(u'=')) == -1) {
             qSqlWarning(("QODBCDriver::open: Illegal connect option value '%1'"_L1)
-                        .arg(tmp), this);
+                        .arg(connOpt), this);
             continue;
         }
-        const QString opt(tmp.left(idx));
-        const QString val(tmp.mid(idx + 1).simplified());
+        const auto opt(connOpt.left(idx));
+        const auto val(connOpt.mid(idx + 1).trimmed());
         SQLUINTEGER v = 0;
 
         r = SQL_SUCCESS;
-        if (opt.toUpper() == "SQL_ATTR_ACCESS_MODE"_L1) {
-            if (val.toUpper() == "SQL_MODE_READ_ONLY"_L1) {
+        if (opt == "SQL_ATTR_ACCESS_MODE"_L1) {
+            if (val == "SQL_MODE_READ_ONLY"_L1) {
                 v = SQL_MODE_READ_ONLY;
-            } else if (val.toUpper() == "SQL_MODE_READ_WRITE"_L1) {
+            } else if (val == "SQL_MODE_READ_WRITE"_L1) {
                 v = SQL_MODE_READ_WRITE;
             } else {
                 qSqlWarning(("QODBCDriver::open: Unknown option value '%1'"_L1)
@@ -761,18 +759,18 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
                 continue;
             }
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_ACCESS_MODE, (SQLPOINTER) size_t(v), 0);
-        } else if (opt.toUpper() == "SQL_ATTR_CONNECTION_TIMEOUT"_L1) {
+        } else if (opt == "SQL_ATTR_CONNECTION_TIMEOUT"_L1) {
             v = val.toUInt();
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_CONNECTION_TIMEOUT, (SQLPOINTER) size_t(v), 0);
-        } else if (opt.toUpper() == "SQL_ATTR_LOGIN_TIMEOUT"_L1) {
+        } else if (opt == "SQL_ATTR_LOGIN_TIMEOUT"_L1) {
             v = val.toUInt();
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_LOGIN_TIMEOUT, (SQLPOINTER) size_t(v), 0);
-        } else if (opt.toUpper() == "SQL_ATTR_CURRENT_CATALOG"_L1) {
+        } else if (opt == "SQL_ATTR_CURRENT_CATALOG"_L1) {
             r = qt_string_SQLSetConnectAttr(hDbc, SQL_ATTR_CURRENT_CATALOG, val);
-        } else if (opt.toUpper() == "SQL_ATTR_METADATA_ID"_L1) {
-            if (val.toUpper() == "SQL_TRUE"_L1) {
+        } else if (opt == "SQL_ATTR_METADATA_ID"_L1) {
+            if (val == "SQL_TRUE"_L1) {
                 v = SQL_TRUE;
-            } else if (val.toUpper() == "SQL_FALSE"_L1) {
+            } else if (val == "SQL_FALSE"_L1) {
                 v = SQL_FALSE;
             } else {
                 qSqlWarning(("QODBCDriver::open: Unknown option value '%1'"_L1)
@@ -780,15 +778,15 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
                 continue;
             }
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_METADATA_ID, (SQLPOINTER) size_t(v), 0);
-        } else if (opt.toUpper() == "SQL_ATTR_PACKET_SIZE"_L1) {
+        } else if (opt == "SQL_ATTR_PACKET_SIZE"_L1) {
             v = val.toUInt();
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_PACKET_SIZE, (SQLPOINTER) size_t(v), 0);
-        } else if (opt.toUpper() == "SQL_ATTR_TRACEFILE"_L1) {
+        } else if (opt == "SQL_ATTR_TRACEFILE"_L1) {
             r = qt_string_SQLSetConnectAttr(hDbc, SQL_ATTR_TRACEFILE, val);
-        } else if (opt.toUpper() == "SQL_ATTR_TRACE"_L1) {
-            if (val.toUpper() == "SQL_OPT_TRACE_OFF"_L1) {
+        } else if (opt == "SQL_ATTR_TRACE"_L1) {
+            if (val == "SQL_OPT_TRACE_OFF"_L1) {
                 v = SQL_OPT_TRACE_OFF;
-            } else if (val.toUpper() == "SQL_OPT_TRACE_ON"_L1) {
+            } else if (val == "SQL_OPT_TRACE_ON"_L1) {
                 v = SQL_OPT_TRACE_ON;
             } else {
                 qSqlWarning(("QODBCDriver::open: Unknown option value '%1'"_L1)
@@ -796,14 +794,14 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
                 continue;
             }
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_TRACE, (SQLPOINTER) size_t(v), 0);
-        } else if (opt.toUpper() == "SQL_ATTR_CONNECTION_POOLING"_L1) {
+        } else if (opt == "SQL_ATTR_CONNECTION_POOLING"_L1) {
             if (val == "SQL_CP_OFF"_L1)
                 v = SQL_CP_OFF;
-            else if (val.toUpper() == "SQL_CP_ONE_PER_DRIVER"_L1)
+            else if (val == "SQL_CP_ONE_PER_DRIVER"_L1)
                 v = SQL_CP_ONE_PER_DRIVER;
-            else if (val.toUpper() == "SQL_CP_ONE_PER_HENV"_L1)
+            else if (val == "SQL_CP_ONE_PER_HENV"_L1)
                 v = SQL_CP_ONE_PER_HENV;
-            else if (val.toUpper() == "SQL_CP_DEFAULT"_L1)
+            else if (val == "SQL_CP_DEFAULT"_L1)
                 v = SQL_CP_DEFAULT;
             else {
                 qSqlWarning(("QODBCDriver::open: Unknown option value '%1'"_L1)
@@ -811,12 +809,12 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
                 continue;
             }
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_CONNECTION_POOLING, (SQLPOINTER) size_t(v), 0);
-        } else if (opt.toUpper() == "SQL_ATTR_CP_MATCH"_L1) {
-            if (val.toUpper() == "SQL_CP_STRICT_MATCH"_L1)
+        } else if (opt == "SQL_ATTR_CP_MATCH"_L1) {
+            if (val == "SQL_CP_STRICT_MATCH"_L1)
                 v = SQL_CP_STRICT_MATCH;
-            else if (val.toUpper() == "SQL_CP_RELAXED_MATCH"_L1)
+            else if (val == "SQL_CP_RELAXED_MATCH"_L1)
                 v = SQL_CP_RELAXED_MATCH;
-            else if (val.toUpper() == "SQL_CP_MATCH_DEFAULT"_L1)
+            else if (val == "SQL_CP_MATCH_DEFAULT"_L1)
                 v = SQL_CP_MATCH_DEFAULT;
             else {
                 qSqlWarning(("QODBCDriver::open: Unknown option value '%1'"_L1)
@@ -824,7 +822,7 @@ bool QODBCDriverPrivate::setConnectionOptions(const QString& connOpts)
                 continue;
             }
             r = SQLSetConnectAttr(hDbc, SQL_ATTR_CP_MATCH, (SQLPOINTER) size_t(v), 0);
-        } else if (opt.toUpper() == "SQL_ATTR_ODBC_VERSION"_L1) {
+        } else if (opt == "SQL_ATTR_ODBC_VERSION"_L1) {
             // Already handled in QODBCDriver::open()
             continue;
         } else {
@@ -2102,10 +2100,10 @@ void QODBCDriverPrivate::checkUnicode()
     SqlStmtHandle hStmt(hDbc);
     // for databases which do not return something useful in SQLGetInfo and are picky about a
     // 'SELECT' statement without 'FROM' but support VALUE(foo) statement like e.g. DB2 or Oracle
-    const auto statements = {
-        "select 'test'"_L1,
-        "values('test')"_L1,
-        "select 'test' from dual"_L1,
+    const std::array<QStringView, 3> statements = {
+        u"select 'test'",
+        u"values('test')",
+        u"select 'test' from dual",
     };
     for (const auto &statement : statements) {
         auto encoded = toSQLTCHAR(statement);
