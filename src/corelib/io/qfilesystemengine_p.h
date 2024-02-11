@@ -94,7 +94,7 @@ public:
     static bool fillMetaData(int fd, QFileSystemMetaData &data); // what = PosixStatFlags
     static QByteArray id(int fd);
     static bool setFileTime(int fd, const QDateTime &newDate,
-                            QAbstractFileEngine::FileTime whatTime, QSystemError &error);
+                            QFile::FileTime whatTime, QSystemError &error);
     static bool setPermissions(int fd, QFile::Permissions permissions, QSystemError &error,
                                QFileSystemMetaData *data = nullptr);
 #endif
@@ -109,7 +109,7 @@ public:
                                 QFileSystemMetaData::MetaDataFlags what);
     static QByteArray id(HANDLE fHandle);
     static bool setFileTime(HANDLE fHandle, const QDateTime &newDate,
-                            QAbstractFileEngine::FileTime whatTime, QSystemError &error);
+                            QFile::FileTime whatTime, QSystemError &error);
     static QString owner(const QFileSystemEntry &entry, QAbstractFileEngine::FileOwner own);
     static QString nativeAbsoluteFilePath(const QString &path);
     static bool isDirPath(const QString &path, bool *existed);
@@ -136,7 +136,7 @@ public:
 
     // unused, therefore not implemented
     static bool setFileTime(const QFileSystemEntry &entry, const QDateTime &newDate,
-                            QAbstractFileEngine::FileTime whatTime, QSystemError &error);
+                            QFile::FileTime whatTime, QSystemError &error);
 
     static bool setCurrentPath(const QFileSystemEntry &entry);
     static QFileSystemEntry currentPath();

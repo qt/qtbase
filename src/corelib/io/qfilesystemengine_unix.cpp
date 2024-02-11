@@ -1688,10 +1688,10 @@ bool QFileSystemEngine::setPermissions(int fd, QFile::Permissions permissions, Q
 }
 
 //static
-bool QFileSystemEngine::setFileTime(int fd, const QDateTime &newDate, QAbstractFileEngine::FileTime time, QSystemError &error)
+bool QFileSystemEngine::setFileTime(int fd, const QDateTime &newDate, QFile::FileTime time, QSystemError &error)
 {
-    if (!newDate.isValid() || time == QAbstractFileEngine::BirthTime ||
-            time == QAbstractFileEngine::MetadataChangeTime) {
+    if (!newDate.isValid()
+        || time == QFile::FileBirthTime || time == QFile::FileMetadataChangeTime) {
         error = QSystemError(EINVAL, QSystemError::StandardLibraryError);
         return false;
     }
@@ -1700,8 +1700,8 @@ bool QFileSystemEngine::setFileTime(int fd, const QDateTime &newDate, QAbstractF
     // UTIME_OMIT: leave file timestamp unchanged
     struct timespec ts[2] = {{0, UTIME_OMIT}, {0, UTIME_OMIT}};
 
-    if (time == QAbstractFileEngine::AccessTime || time == QAbstractFileEngine::ModificationTime) {
-        const int idx = time == QAbstractFileEngine::AccessTime ? 0 : 1;
+    if (time == QFile::FileAccessTime || time == QFile::FileModificationTime) {
+        const int idx = time == QFile::FileAccessTime ? 0 : 1;
         const std::chrono::milliseconds msecs{newDate.toMSecsSinceEpoch()};
         ts[idx] = durationToTimespec(msecs);
     }

@@ -1523,10 +1523,10 @@ uint QResourceFileEngine::ownerId(FileOwner) const
     return nobodyID;
 }
 
-QDateTime QResourceFileEngine::fileTime(FileTime time) const
+QDateTime QResourceFileEngine::fileTime(QFile::FileTime time) const
 {
     Q_D(const QResourceFileEngine);
-    if (time == ModificationTime)
+    if (time == QFile::FileModificationTime)
         return d->resource.lastModified();
     return QDateTime();
 }

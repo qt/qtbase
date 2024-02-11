@@ -525,7 +525,7 @@ bool QFSFileEngine::setSize(qint64 size)
     return ret;
 }
 
-bool QFSFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
+bool QFSFileEngine::setFileTime(const QDateTime &newDate, QFile::FileTime time)
 {
     Q_D(QFSFileEngine);
 

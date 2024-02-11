@@ -122,7 +122,7 @@ public:
     }
 
     uint getFileFlags(QAbstractFileEngine::FileFlags) const;
-    QDateTime &getFileTime(QAbstractFileEngine::FileTime) const;
+    QDateTime &getFileTime(QFile::FileTime) const;
     QString getFileName(QAbstractFileEngine::FileName) const;
     QString getFileOwner(QAbstractFileEngine::FileOwner own) const;
 
@@ -133,7 +133,7 @@ public:
 
     mutable QString fileNames[QAbstractFileEngine::NFileNames];
     mutable QString fileOwners[2];  // QAbstractFileEngine::FileOwner: OwnerUser and OwnerGroup
-    mutable QDateTime fileTimes[4]; // QAbstractFileEngine::FileTime: BirthTime, MetadataChangeTime, ModificationTime, AccessTime
+    mutable QDateTime fileTimes[4]; // QFile::FileTime: FileBirthTime, FileMetadataChangeTime, FileModificationTime, FileAccessTime
 
     mutable uint cachedFlags : 30;
     bool const isDefaultConstructed : 1; // QFileInfo is a default constructed instance

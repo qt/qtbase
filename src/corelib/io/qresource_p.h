@@ -47,7 +47,7 @@ public:
 
     uint ownerId(FileOwner) const override;
 
-    QDateTime fileTime(FileTime time) const override;
+    QDateTime fileTime(QFile::FileTime time) const override;
 
     Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override;
     Iterator *endEntryList() override;

@@ -194,10 +194,10 @@ QByteArray AndroidContentFileEngine::id() const
     return m_documentFile->id().toUtf8();
 }
 
-QDateTime AndroidContentFileEngine::fileTime(FileTime time) const
+QDateTime AndroidContentFileEngine::fileTime(QFile::FileTime time) const
 {
     switch (time) {
-    case FileTime::ModificationTime:
+    case QFile::FileModificationTime:
         return m_documentFile->lastModified();
         break;
     default:

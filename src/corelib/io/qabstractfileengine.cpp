@@ -289,20 +289,6 @@ QAbstractFileEngine *QAbstractFileEngine::create(const QString &fileName)
 */
 
 /*!
-    \enum QAbstractFileEngine::FileTime
-
-    These are used by the fileTime() function.
-
-    \value BirthTime When the file was born (created).
-    \value MetadataChangeTime When the file's metadata was last changed.
-    \value ModificationTime When the file was most recently modified.
-    \value AccessTime When the file was most recently accessed (e.g.
-    read or written to).
-
-    \sa setFileName()
-*/
-
-/*!
     \enum QAbstractFileEngine::FileOwner
 
     \value OwnerUser The user who owns the file.
@@ -695,7 +681,7 @@ QString QAbstractFileEngine::owner(FileOwner owner) const
 
     \sa fileTime()
 */
-bool QAbstractFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
+bool QAbstractFileEngine::setFileTime(const QDateTime &newDate, QFile::FileTime time)
 {
     Q_UNUSED(newDate);
     Q_UNUSED(time);
@@ -712,7 +698,7 @@ bool QAbstractFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
 
     \sa setFileName(), QDateTime, QDateTime::isValid(), FileTime
  */
-QDateTime QAbstractFileEngine::fileTime(FileTime time) const
+QDateTime QAbstractFileEngine::fileTime(QFile::FileTime time) const
 {
     Q_UNUSED(time);
     return QDateTime();

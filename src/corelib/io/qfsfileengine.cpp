@@ -521,11 +521,11 @@ bool QFSFileEngine::seek(qint64 pos)
 /*!
     \reimp
 */
-QDateTime QFSFileEngine::fileTime(FileTime time) const
+QDateTime QFSFileEngine::fileTime(QFile::FileTime time) const
 {
     Q_D(const QFSFileEngine);
 
-    if (time == AccessTime) {
+    if (time == QFile::FileAccessTime) {
         // always refresh for the access time
         d->metaData.clearFlags(QFileSystemMetaData::AccessTime);
     }
@@ -906,7 +906,7 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   \reimp
 */
 
-/*! \fn bool QFSFileEngine::setFileTime(const QDateTime &newDate, QAbstractFileEngine::FileTime time)
+/*! \fn bool QFSFileEngine::setFileTime(const QDateTime &newDate, QFile::FileTime time)
   \reimp
 */
 

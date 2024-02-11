@@ -285,19 +285,19 @@ public:
         return QString();
     }
 
-    QDateTime fileTime(FileTime time) const override
+    QDateTime fileTime(QFile::FileTime time) const override
     {
         QSharedPointer<File> file = resolveFile(false);
         if (file) {
             QMutexLocker lock(&file->mutex);
             switch (time) {
-                case BirthTime:
+                case QFile::FileBirthTime:
                     return file->birth;
-                case MetadataChangeTime:
+                case QFile::FileMetadataChangeTime:
                     return file->change;
-                case ModificationTime:
+                case QFile::FileModificationTime:
                     return file->modification;
-                case AccessTime:
+                case QFile::FileAccessTime:
                     return file->access;
             }
         }
