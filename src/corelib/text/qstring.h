@@ -1125,7 +1125,7 @@ int QBasicUtf8StringView<UseChar8T>::compare(QStringView other, Qt::CaseSensitiv
 
 
 //
-// QUtf8StringView inline members that require QString:
+// QUtf8StringView inline members that require QString, QL1SV or QBA:
 //
 
 template <bool UseChar8T>
@@ -1141,10 +1141,27 @@ template<bool UseChar8T>
     return QtPrivate::compareStrings(*this, other, cs);
 }
 
+template<bool UseChar8T>
+[[nodiscard]] int QBasicUtf8StringView<UseChar8T>::compare(const QByteArray &other,
+                                                           Qt::CaseSensitivity cs) const noexcept
+{
+    return QtPrivate::compareStrings(*this,
+                                     QBasicUtf8StringView<UseChar8T>(other.data(), other.size()),
+                                     cs);
+}
+
 template <bool UseChar8T>
 [[nodiscard]] bool QBasicUtf8StringView<UseChar8T>::equal(QLatin1StringView other) const noexcept
 {
     return QtPrivate::equalStrings(*this, other);
+}
+
+template <bool UseChar8T>
+[[nodiscard]] bool QBasicUtf8StringView<UseChar8T>::equal(const QByteArray &other) const noexcept
+{
+    return size() == other.size()
+            && QtPrivate::equalStrings(*this, QBasicUtf8StringView<UseChar8T>(other.data(),
+                                                                              other.size()));
 }
 
 //

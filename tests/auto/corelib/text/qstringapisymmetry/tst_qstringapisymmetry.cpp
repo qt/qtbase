@@ -72,8 +72,6 @@ MAKE_ALL(QChar, const char*)
 MAKE_ALL(QChar, QUtf8StringView)
 
 MAKE_ALL(QString, QUtf8StringView)
-MAKE_ALL(QByteArray, QUtf8StringView)
-MAKE_ALL(const char*, QUtf8StringView)
 
 MAKE_ALL(QUtf8StringView, QChar)
 MAKE_ALL(QUtf8StringView, char16_t)
@@ -257,14 +255,12 @@ private Q_SLOTS:
     void compare_QUtf8StringView_QUtf8StringView() { compare_impl<QUtf8StringView, QUtf8StringView>(); }
     void compare_QUtf8StringView_QLatin1String_data() { compare_data(); }
     void compare_QUtf8StringView_QLatin1String() { compare_impl<QUtf8StringView, QLatin1String>(); }
-#ifdef NOT_YET_IMPLMENTED
     void compare_QUtf8StringView_QByteArray_data() { compare_data(); }
     void compare_QUtf8StringView_QByteArray() { compare_impl<QUtf8StringView, QByteArray>(); }
     void compare_QUtf8StringView_QByteArrayView_data() { compare_data(); }
     void compare_QUtf8StringView_QByteArrayView() { compare_impl<QUtf8StringView, QByteArrayView>(); }
     void compare_QUtf8StringView_const_char_star_data() { compare_data(); }
     void compare_QUtf8StringView_const_char_star() { compare_impl<QUtf8StringView, const char *>(); }
-#endif
 
     void compare_QLatin1String_QChar_data() { compare_data(false); }
     void compare_QLatin1String_QChar() { compare_impl<QLatin1String, QChar>(); }
@@ -318,10 +314,8 @@ private Q_SLOTS:
     void compare_QByteArrayView_QStringView_data() { compare_data(); }
     void compare_QByteArrayView_QStringView() { compare_impl<QByteArrayView, QStringView>(); }
 #endif
-#ifdef AMBIGUOUS_CALL
     void compare_QByteArrayView_QUtf8StringView_data() { compare_data(); }
     void compare_QByteArrayView_QUtf8StringView() { compare_impl<QByteArrayView, QUtf8StringView>(); }
-#endif
     void compare_QByteArrayView_QLatin1String_data() { compare_data(); }
     void compare_QByteArrayView_QLatin1String() { compare_impl<QByteArrayView, QLatin1String>(); }
 #ifdef AMBIGUOUS_CALL

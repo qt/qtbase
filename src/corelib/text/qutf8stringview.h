@@ -297,8 +297,11 @@ public:
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
     [[nodiscard]] int compare(QLatin1StringView other,
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
+    [[nodiscard]] int compare(const QByteArray &other,
+                              Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 
     [[nodiscard]] bool equal(QLatin1StringView other) const noexcept;
+    [[nodiscard]] bool equal(const QByteArray &other) const noexcept;
 
 private:
     [[nodiscard]] static inline int compare(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
@@ -342,6 +345,44 @@ private:
         return Qt::compareThreeWay(res, 0);
     }
     Q_DECLARE_STRONGLY_ORDERED(QBasicUtf8StringView, QLatin1StringView)
+
+#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
+    friend bool
+    comparesEqual(const QBasicUtf8StringView &lhs, const QByteArrayView &rhs) noexcept
+    {
+        return lhs.size() == rhs.size()
+                && QtPrivate::equalStrings(QBasicUtf8StringView<false>(lhs.data(), lhs.size()),
+                                           QBasicUtf8StringView<false>(rhs.data(), rhs.size()));
+    }
+    friend Qt::strong_ordering
+    compareThreeWay(const QBasicUtf8StringView &lhs, const QByteArrayView &rhs) noexcept
+    {
+        const int res = QtPrivate::compareStrings(QBasicUtf8StringView<false>(lhs.data(), lhs.size()),
+                                                  QBasicUtf8StringView<false>(rhs.data(), rhs.size()));
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QBasicUtf8StringView, QByteArrayView, QT_ASCII_CAST_WARN)
+
+    friend bool
+    comparesEqual(const QBasicUtf8StringView &lhs, const QByteArray &rhs) noexcept
+    {
+        return lhs.equal(rhs);
+    }
+    friend Qt::strong_ordering
+    compareThreeWay(const QBasicUtf8StringView &lhs, const QByteArray &rhs) noexcept
+    {
+        const int res = lhs.compare(rhs);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QBasicUtf8StringView, QByteArray, QT_ASCII_CAST_WARN)
+
+    friend bool comparesEqual(const QBasicUtf8StringView &lhs, const char *rhs) noexcept
+    { return comparesEqual(lhs, QByteArrayView(rhs)); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QBasicUtf8StringView &lhs, const char *rhs) noexcept
+    { return compareThreeWay(lhs, QByteArrayView(rhs)); }
+    Q_DECLARE_STRONGLY_ORDERED(QBasicUtf8StringView, const char *, QT_ASCII_CAST_WARN)
+#endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
     Q_ALWAYS_INLINE constexpr void verify([[maybe_unused]] qsizetype pos = 0,
                                           [[maybe_unused]] qsizetype n = 1) const
