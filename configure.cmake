@@ -563,7 +563,7 @@ qt_feature("headersclean"
 qt_feature_config("headersclean" QMAKE_PRIVATE_CONFIG)
 qt_feature("framework" PUBLIC
     LABEL "Build Apple Frameworks"
-    CONDITION APPLE AND BUILD_SHARED_LIBS AND NOT CMAKE_BUILD_TYPE STREQUAL Debug
+    CONDITION APPLE AND BUILD_SHARED_LIBS
 )
 qt_feature_definition("framework" "QT_MAC_FRAMEWORK_BUILD")
 qt_feature_config("framework" QMAKE_PUBLIC_QT_CONFIG
@@ -1230,11 +1230,6 @@ qt_configure_add_report_entry(
     TYPE WARNING
     MESSAGE "-debug-and-release is only supported on Darwin and Windows platforms.  Qt can be built in release mode with separate debug information, so -debug-and-release is no longer necessary."
     CONDITION INPUT_debug_and_release STREQUAL 'yes' AND NOT APPLE AND NOT WIN32
-)
-qt_configure_add_report_entry(
-    TYPE ERROR
-    MESSAGE "debug-only framework builds are not supported. Configure with -no-framework if you want a pure debug build."
-    CONDITION QT_FEATURE_framework AND QT_FEATURE_debug AND NOT QT_FEATURE_debug_and_release
 )
 qt_configure_add_report_entry(
     TYPE ERROR
