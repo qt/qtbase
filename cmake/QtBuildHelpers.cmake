@@ -131,6 +131,10 @@ macro(qt_internal_set_apple_archiver_flags)
     endif()
 endmacro()
 
+macro(qt_internal_set_apple_privacy_manifest target manifest_file)
+    set_target_properties(${target} PROPERTIES _qt_privacy_manifest "${manifest_file}")
+endmacro()
+
 macro(qt_internal_set_debug_extend_target)
     option(QT_CMAKE_DEBUG_EXTEND_TARGET "Debug extend_target calls in Qt's build system" OFF)
 endmacro()

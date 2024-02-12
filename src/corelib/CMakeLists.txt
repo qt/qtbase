@@ -1442,6 +1442,11 @@ if(APPLE AND QT_FEATURE_framework AND QT_FEATURE_separate_debug_info)
     )
 endif()
 
+if(IOS)
+    qt_internal_set_apple_privacy_manifest(Core
+        "${CMAKE_CURRENT_SOURCE_DIR}/platform/ios/PrivacyInfo.xcprivacy")
+endif()
+
 set(linker_script_contents "")
 if (QT_NAMESPACE STREQUAL "")
     set(tag_symbol "qt_version_tag")

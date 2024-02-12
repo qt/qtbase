@@ -911,6 +911,11 @@ qt_internal_add_docs(Widgets
     doc/qtwidgets.qdocconf
 )
 
+if(IOS)
+    qt_internal_set_apple_privacy_manifest(Widgets
+        "${CMAKE_CURRENT_SOURCE_DIR}/platform/ios/PrivacyInfo.xcprivacy")
+endif()
+
 # include the snippet projects for developer-builds
 if(QT_FEATURE_private_tests)
     add_subdirectory(doc/snippets/customviewstyle)

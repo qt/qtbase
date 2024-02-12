@@ -911,6 +911,22 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
     qt_add_list_file_finalizer(qt_finalize_module ${target} ${arg_INTERNAL_MODULE} ${arg_NO_PRIVATE_MODULE})
 endfunction()
 
+function(qt_internal_apply_apple_privacy_manifest target)
+    if(APPLE)
+        # Privacy manifest
+        get_target_property(is_framework ${target} FRAMEWORK)
+        if(is_framework)
+            get_target_property(privacy_manifest ${target} _qt_privacy_manifest)
+            if(NOT privacy_manifest)
+                 set(privacy_manifest
+                    "${__qt_internal_cmake_apple_support_files_path}/PrivacyInfo.xcprivacy")
+            endif()
+            target_sources("${target}" PRIVATE "${privacy_manifest}")
+            set_property(TARGET "${target}" APPEND PROPERTY RESOURCE "${privacy_manifest}")
+        endif()
+    endif()
+endfunction()
+
 function(qt_finalize_module target)
     qt_internal_collect_module_headers(module_headers ${target})
 
@@ -934,6 +950,7 @@ function(qt_finalize_module target)
     qt_generate_prl_file(${target} "${INSTALL_LIBDIR}")
     qt_generate_module_pri_file("${target}" ${ARGN})
     qt_internal_generate_pkg_config_file(${target})
+    qt_internal_apply_apple_privacy_manifest(${target})
 endfunction()
 
 # Get a set of Qt module related values based on the target.

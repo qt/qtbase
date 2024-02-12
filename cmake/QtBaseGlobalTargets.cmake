@@ -329,11 +329,21 @@ if(APPLE)
         set(platform_shortname "ios")
     endif()
 
+    # Info.plist
     qt_copy_or_install(FILES "cmake/${platform_shortname}/Info.plist.app.in"
         DESTINATION "${__GlobalConfig_install_dir}/${platform_shortname}"
     )
     # For examples built as part of prefix build before install
     file(COPY "cmake/${platform_shortname}/Info.plist.app.in"
+        DESTINATION "${__GlobalConfig_build_dir}/${platform_shortname}"
+    )
+
+    # Privacy manifest
+    qt_copy_or_install(FILES "cmake/${platform_shortname}/PrivacyInfo.xcprivacy"
+        DESTINATION "${__GlobalConfig_install_dir}/${platform_shortname}"
+    )
+    # For examples built as part of prefix build before install
+    file(COPY "cmake/${platform_shortname}/PrivacyInfo.xcprivacy"
         DESTINATION "${__GlobalConfig_build_dir}/${platform_shortname}"
     )
 
