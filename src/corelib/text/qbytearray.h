@@ -9,6 +9,7 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qarraydata.h>
 #include <QtCore/qarraydatapointer.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qbytearrayalgorithms.h>
 #include <QtCore/qbytearrayview.h>
@@ -539,6 +540,16 @@ public:
     explicit inline QByteArray(DataPointer &&dd) : d(std::move(dd)) {}
 
 private:
+    friend bool comparesEqual(const QByteArray &lhs, const QByteArrayView &rhs) noexcept
+    { return QByteArrayView(lhs) == rhs; }
+    friend Qt::strong_ordering
+    compareThreeWay(const QByteArray &lhs, const QByteArrayView &rhs) noexcept
+    {
+        const int res = QtPrivate::compareMemory(QByteArrayView(lhs), rhs);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QByteArray, QByteArrayView)
+
     void reallocData(qsizetype alloc, QArrayData::AllocationOption option);
     void reallocGrowData(qsizetype n);
     void expand(qsizetype i);
