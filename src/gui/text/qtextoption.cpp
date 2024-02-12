@@ -329,7 +329,7 @@ QList<QTextOption::Tab> QTextOption::tabs() const
 */
 
 /*!
-    \variable Tab::position
+    \variable QTextOption::Tab::position
     Distance from the start of the paragraph.
     The position of a tab is from the start of the paragraph which implies that when
     the alignment of the paragraph is set to centered, the tab is interpreted to be
