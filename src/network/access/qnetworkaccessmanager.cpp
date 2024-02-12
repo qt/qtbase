@@ -1425,18 +1425,16 @@ void QNetworkAccessManager::setAutoDeleteReplies(bool shouldAutoDelete)
 }
 
 /*!
+    \fn int QNetworkAccessManager::transferTimeout() const
     \since 5.15
 
     Returns the timeout used for transfers, in milliseconds.
 
     \sa setTransferTimeout()
 */
-int QNetworkAccessManager::transferTimeout() const
-{
-    return int(d_func()->transferTimeout.count());
-}
 
 /*!
+    \fn void QNetworkAccessManager::setTransferTimeout(int timeout)
     \since 5.15
 
     Sets \a timeout as the transfer timeout in milliseconds.
@@ -1444,10 +1442,6 @@ int QNetworkAccessManager::transferTimeout() const
     \sa setTransferTimeout(std::chrono::milliseconds),
         transferTimeout(), transferTimeoutAsDuration()
 */
-void QNetworkAccessManager::setTransferTimeout(int timeout)
-{
-    setTransferTimeout(std::chrono::milliseconds(timeout));
-}
 
 /*!
     \since 6.7
