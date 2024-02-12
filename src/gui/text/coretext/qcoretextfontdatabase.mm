@@ -572,7 +572,7 @@ CFArrayRef fallbacksForDescriptor(CTFontDescriptorRef descriptor)
     }
 
     CFArrayRef cascadeList = CFArrayRef(CTFontCopyDefaultCascadeListForLanguages(font,
-        (CFArrayRef)[NSUserDefaults.standardUserDefaults stringArrayForKey:@"AppleLanguages"]));
+        (CFArrayRef)NSLocale.preferredLanguages));
 
     if (!cascadeList) {
         qCWarning(lcQpaFonts) << "Failed to create fallback cascade list for" << descriptor;
