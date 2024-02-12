@@ -1141,6 +1141,12 @@ template<bool UseChar8T>
     return QtPrivate::compareStrings(*this, other, cs);
 }
 
+template <bool UseChar8T>
+[[nodiscard]] bool QBasicUtf8StringView<UseChar8T>::equal(QLatin1StringView other) const noexcept
+{
+    return QtPrivate::equalStrings(*this, other);
+}
+
 //
 // QAnyStringView inline members that require QString:
 //

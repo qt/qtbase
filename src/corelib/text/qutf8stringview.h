@@ -11,6 +11,7 @@
 #include <QtCore/qstringfwd.h>
 #include <QtCore/qarraydata.h> // for QContainerImplHelper
 #include <QtCore/qbytearrayview.h>
+#include <QtCore/qcompare.h>
 
 #include <string>
 #include <string_view>
@@ -297,6 +298,8 @@ public:
     [[nodiscard]] int compare(QLatin1StringView other,
                               Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept;
 
+    [[nodiscard]] bool equal(QLatin1StringView other) const noexcept;
+
 private:
     [[nodiscard]] static inline int compare(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
     {
@@ -326,6 +329,19 @@ private:
     [[nodiscard]] friend inline bool operator>(QBasicUtf8StringView lhs, QBasicUtf8StringView rhs) noexcept
     { return QBasicUtf8StringView::compare(lhs, rhs) > 0; }
 #endif
+
+    friend bool
+    comparesEqual(const QBasicUtf8StringView &lhs, const QLatin1StringView &rhs) noexcept
+    {
+        return lhs.equal(rhs);
+    }
+    friend Qt::strong_ordering
+    compareThreeWay(const QBasicUtf8StringView &lhs, const QLatin1StringView &rhs) noexcept
+    {
+        const int res = lhs.compare(rhs);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QBasicUtf8StringView, QLatin1StringView)
 
     Q_ALWAYS_INLINE constexpr void verify([[maybe_unused]] qsizetype pos = 0,
                                           [[maybe_unused]] qsizetype n = 1) const

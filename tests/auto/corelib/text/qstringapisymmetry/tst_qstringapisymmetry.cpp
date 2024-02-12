@@ -78,7 +78,6 @@ MAKE_ALL(const char*, QUtf8StringView)
 MAKE_ALL(QUtf8StringView, QChar)
 MAKE_ALL(QUtf8StringView, char16_t)
 MAKE_ALL(QUtf8StringView, QStringView)
-MAKE_ALL(QUtf8StringView, QLatin1String)
 
 #undef MAKE_ALL
 #undef MAKE_RELOP
