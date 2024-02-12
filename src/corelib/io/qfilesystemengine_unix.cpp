@@ -39,6 +39,11 @@
 #if defined(Q_OS_DARWIN)
 # include <QtCore/private/qcore_mac_p.h>
 # include <CoreFoundation/CFBundle.h>
+# include <UniformTypeIdentifiers/UTType.h>
+# include <UniformTypeIdentifiers/UTCoreTypes.h>
+# include <Foundation/Foundation.h>
+# include <sys/clonefile.h>
+# include <copyfile.h>
 #endif
 
 #ifdef Q_OS_MACOS
@@ -47,15 +52,6 @@
 
 #if defined(QT_PLATFORM_UIKIT)
 #include <MobileCoreServices/MobileCoreServices.h>
-#endif
-
-#if defined(Q_OS_DARWIN)
-# include <sys/clonefile.h>
-# include <copyfile.h>
-// We cannot include <Foundation/Foundation.h> (it's an Objective-C header), but
-// we need these declarations:
-Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
-extern "C" NSString *NSTemporaryDirectory();
 #endif
 
 #if defined(Q_OS_LINUX)
@@ -127,10 +123,9 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
     QString suffix = info.suffix();
 
     if (suffix.length() > 0) {
-        // First step: is the extension known ?
-        QCFType<CFStringRef> extensionRef = suffix.toCFString();
-        QCFType<CFStringRef> uniformTypeIdentifier = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, extensionRef, NULL);
-        if (UTTypeConformsTo(uniformTypeIdentifier, kUTTypeBundle))
+        // First step: is it a bundle?
+        const auto *utType = [UTType typeWithFilenameExtension:suffix.toNSString()];
+        if ([utType conformsToType:UTTypeBundle])
             return true;
 
         // Second step: check if an application knows the package type

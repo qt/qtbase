@@ -674,6 +674,12 @@ qt_internal_extend_target(Core CONDITION UNIX
         kernel/qtimerinfo_unix.cpp kernel/qtimerinfo_unix_p.h
         thread/qthread_unix.cpp
 )
+if(APPLE)
+    set_source_files_properties(io/qfilesystemengine_unix.cpp PROPERTIES LANGUAGE OBJCXX)
+    qt_internal_extend_target(Core CONDITION
+        PUBLIC_LIBRARIES ${FWUniformTypeIdentifiers}
+    )
+endif()
 
 qt_internal_extend_target(Core CONDITION UNIX AND NOT WASM
     SOURCES
