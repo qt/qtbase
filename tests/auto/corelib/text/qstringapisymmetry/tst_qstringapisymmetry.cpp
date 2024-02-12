@@ -280,10 +280,8 @@ private Q_SLOTS:
     void compare_QLatin1String_QLatin1String() { compare_impl<QLatin1String, QLatin1String>(); }
     void compare_QLatin1String_QByteArray_data() { compare_data(); }
     void compare_QLatin1String_QByteArray() { compare_impl<QLatin1String, QByteArray>(); }
-#ifdef AMBIGUOUS_CALL
     void compare_QLatin1String_QByteArrayView_data() { compare_data(); }
     void compare_QLatin1String_QByteArrayView() { compare_impl<QLatin1String, QByteArrayView>(); }
-#endif
     void compare_QLatin1String_const_char_star_data() { compare_data(); }
     void compare_QLatin1String_const_char_star() { compare_impl<QLatin1String, const char *>(); }
 
@@ -323,8 +321,10 @@ private Q_SLOTS:
 #ifdef AMBIGUOUS_CALL
     void compare_QByteArrayView_QUtf8StringView_data() { compare_data(); }
     void compare_QByteArrayView_QUtf8StringView() { compare_impl<QByteArrayView, QUtf8StringView>(); }
+#endif
     void compare_QByteArrayView_QLatin1String_data() { compare_data(); }
     void compare_QByteArrayView_QLatin1String() { compare_impl<QByteArrayView, QLatin1String>(); }
+#ifdef AMBIGUOUS_CALL
     void compare_QByteArrayView_QByteArray_data() { compare_data(); }
     void compare_QByteArrayView_QByteArray() { compare_impl<QByteArrayView, QByteArray>(); }
 #endif

@@ -8,6 +8,7 @@
 #define QLATIN1STRINGVIEW_H
 
 #include <QtCore/qchar.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qtversionchecks.h>
 #include <QtCore/qstringview.h>
@@ -299,6 +300,17 @@ public:
     friend bool operator>=(QLatin1StringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >= 0; }
 
 
+private:
+    friend bool comparesEqual(const QLatin1StringView &lhs, const QByteArrayView &rhs) noexcept
+    { return equal_helper(lhs, rhs.data(), rhs.size()); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QLatin1StringView &lhs, const QByteArrayView &rhs) noexcept
+    {
+        const int res = compare_helper(lhs, rhs.data(), rhs.size());
+        return Qt::compareThreeWay(res, 0);
+    }
+
+public:
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     QT_ASCII_CAST_WARN inline bool operator==(const char *s) const;
     QT_ASCII_CAST_WARN inline bool operator!=(const char *s) const;
@@ -313,6 +325,8 @@ public:
     QT_ASCII_CAST_WARN inline bool operator>(const QByteArray &s) const;
     QT_ASCII_CAST_WARN inline bool operator<=(const QByteArray &s) const;
     QT_ASCII_CAST_WARN inline bool operator>=(const QByteArray &s) const;
+
+    Q_DECLARE_STRONGLY_ORDERED(QLatin1StringView, QByteArrayView, QT_ASCII_CAST_WARN)
 
     QT_ASCII_CAST_WARN friend bool operator==(const char *s1, QLatin1StringView s2) { return compare_helper(s2, s1) == 0; }
     QT_ASCII_CAST_WARN friend bool operator!=(const char *s1, QLatin1StringView s2) { return compare_helper(s2, s1) != 0; }
@@ -333,6 +347,7 @@ private:
     }
     static int compare_helper(const QLatin1StringView &s1, const char *s2) noexcept
     { return compare_helper(s1, s2, qstrlen(s2)); }
+    Q_CORE_EXPORT static bool equal_helper(QLatin1StringView s1, const char *s2, qsizetype len) noexcept;
     Q_CORE_EXPORT static int compare_helper(const QLatin1StringView &s1, const char *s2, qsizetype len) noexcept;
     Q_CORE_EXPORT static int compare_helper(const QChar *data1, qsizetype length1,
                                             QLatin1StringView s2,
