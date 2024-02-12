@@ -433,12 +433,18 @@ void tst_QWidgetRepaintManager::staticContents()
     widget.setAttribute(Qt::WA_StaticContents);
     widget.initialShow();
 
-    const QSize oldSize = widget.size();
-
-    widget.resize(widget.width() + 10, widget.height());
-
+    // Trigger resize via QWindow (similar to QWSI code path)
+    QVERIFY(widget.windowHandle());
+    QSize oldSize = widget.size();
+    widget.windowHandle()->resize(widget.width(), widget.height() + 10);
     QVERIFY(widget.waitForPainted());
-    QEXPECT_FAIL("", "This should just repaint the newly exposed region", Continue);
+    QCOMPARE(widget.takePaintedRegions(), QRegion(0, oldSize.width(), widget.width(), 10));
+
+    // Trigger resize via QWidget
+    oldSize = widget.size();
+    widget.resize(widget.width() + 10, widget.height());
+    QVERIFY(widget.waitForPainted());
+    QEXPECT_FAIL("", "QWidgetPrivate::setGeometry_sys wrongly triggers full update", Continue);
     QCOMPARE(widget.takePaintedRegions(), QRegion(oldSize.width(), 0, 10, widget.height()));
 }
 
