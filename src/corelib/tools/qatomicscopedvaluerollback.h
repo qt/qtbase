@@ -4,8 +4,11 @@
 #ifndef QATOMICSCOPEDVALUEROLLBACK_H
 #define QATOMICSCOPEDVALUEROLLBACK_H
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qassert.h>
 #include <QtCore/qatomic.h>
+#include <QtCore/qcompilerdetection.h>
+#include <QtCore/qtclasshelpermacros.h>
+#include <QtCore/qtconfigmacros.h>
 
 #include <atomic>
 
