@@ -563,7 +563,8 @@ qt_feature("headersclean"
 qt_feature_config("headersclean" QMAKE_PRIVATE_CONFIG)
 qt_feature("framework" PUBLIC
     LABEL "Build Apple Frameworks"
-    CONDITION APPLE AND BUILD_SHARED_LIBS
+    AUTODETECT BUILD_SHARED_LIBS
+    CONDITION APPLE
 )
 qt_feature_definition("framework" "QT_MAC_FRAMEWORK_BUILD")
 qt_feature_config("framework" QMAKE_PUBLIC_QT_CONFIG
