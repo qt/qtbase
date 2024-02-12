@@ -105,7 +105,7 @@ QTextureFileData QKtxHandler::read()
         return QTextureFileData();
 
     const QByteArray buf = device()->readAll();
-    if (buf.size() > std::numeric_limits<quint32>::max()) {
+    if (static_cast<size_t>(buf.size()) > std::numeric_limits<quint32>::max()) {
         qWarning(lcQtGuiTextureIO, "Too big KTX file %s", logName().constData());
         return QTextureFileData();
     }
