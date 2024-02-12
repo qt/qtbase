@@ -132,6 +132,7 @@ target_include_directories(GlobalConfigPrivate INTERFACE
     $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore/${PROJECT_VERSION}/QtCore>
 )
 add_library(Qt::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
+add_library(${QT_CMAKE_EXPORT_NAMESPACE}::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
 
 qt_internal_setup_public_platform_target()
 
