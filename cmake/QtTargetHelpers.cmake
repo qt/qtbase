@@ -134,6 +134,9 @@ function(qt_internal_extend_target target)
             endif()
         endforeach()
 
+        list(TRANSFORM arg_PUBLIC_LIBRARIES REPLACE "^Qt::" "${QT_CMAKE_EXPORT_NAMESPACE}::")
+        list(TRANSFORM arg_LIBRARIES REPLACE "^Qt::" "${QT_CMAKE_EXPORT_NAMESPACE}::")
+
         # Set-up the target
 
         # CMake versions less than 3.19 don't support adding the source files to the PRIVATE scope
