@@ -730,37 +730,37 @@ void QZipWriterPrivate::addEntry(EntryType type, const QString &fileName, const 
 */
 
 /*!
-    \variable FileInfo::filePath
+    \variable QZipReader::FileInfo::filePath
     The full filepath inside the archive.
 */
 
 /*!
-    \variable FileInfo::isDir
+    \variable QZipReader::FileInfo::isDir
     A boolean type indicating if the entry is a directory.
 */
 
 /*!
-    \variable FileInfo::isFile
+    \variable QZipReader::FileInfo::isFile
     A boolean type, if it is one this entry is a file.
 */
 
 /*!
-    \variable FileInfo::isSymLink
+    \variable QZipReader::FileInfo::isSymLink
     A boolean type, if it is one this entry is symbolic link.
 */
 
 /*!
-    \variable FileInfo::permissions
+    \variable QZipReader::FileInfo::permissions
     A list of flags for the permissions of this entry.
 */
 
 /*!
-    \variable FileInfo::crc
+    \variable QZipReader::FileInfo::crc
     The calculated checksum as a crc type.
 */
 
 /*!
-    \variable FileInfo::size
+    \variable QZipReader::FileInfo::size
     The total size of the unpacked content.
 */
 
