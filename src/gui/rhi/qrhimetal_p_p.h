@@ -453,7 +453,7 @@ public:
                                        const QRhiCommandBuffer::DynamicOffset *dynamicOffsets,
                                        bool offsetOnlyChange,
                                        const QShader::NativeResourceBindingMap *nativeResourceBindingMaps[SUPPORTED_STAGES]);
-    int effectiveSampleCount(int sampleCount) const;
+
     struct TessDrawArgs {
         QMetalCommandBuffer *cbD;
         enum {

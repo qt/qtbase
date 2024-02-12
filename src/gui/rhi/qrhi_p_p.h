@@ -229,6 +229,8 @@ public:
     QRhiVertexInputAttribute::Format shaderDescVariableFormatToVertexInputFormat(QShaderDescription::VariableType type) const;
     quint32 byteSizePerVertexForVertexInputFormat(QRhiVertexInputAttribute::Format format) const;
 
+    int effectiveSampleCount(int sampleCount) const;
+
     QRhi *q;
 
     static const int MAX_SHADER_CACHE_ENTRIES = 128;
