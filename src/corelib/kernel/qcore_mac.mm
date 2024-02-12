@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 // --------------------------------------------------------------------------
 
+#if defined(Q_OS_MACOS)
 static void initializeStandardUserDefaults()
 {
     // The standard user defaults are initialized from an ordered list of domains,
@@ -64,6 +65,7 @@ static void initializeStandardUserDefaults()
     Q_UNUSED(NSUserDefaults.standardUserDefaults);
 }
 Q_CONSTRUCTOR_FUNCTION(initializeStandardUserDefaults);
+#endif
 
 // --------------------------------------------------------------------------
 
