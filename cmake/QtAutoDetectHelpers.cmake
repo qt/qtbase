@@ -286,7 +286,7 @@ function(qt_auto_detect_darwin)
                 # macOS
                 set(version "12.0")
             elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
-                set(version "14.0")
+                set(version "16.0")
             endif()
             if(version)
                 set(CMAKE_OSX_DEPLOYMENT_TARGET "${version}" CACHE STRING "${description}")
