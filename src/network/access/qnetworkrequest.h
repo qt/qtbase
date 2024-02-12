@@ -168,8 +168,11 @@ public:
 #endif // QT_CONFIG(http)
 
 #if QT_CONFIG(http) || defined (Q_OS_WASM)
+    QT_NETWORK_INLINE_SINCE(6, 8)
     int transferTimeout() const;
+    QT_NETWORK_INLINE_SINCE(6, 8)
     void setTransferTimeout(int timeout);
+
     std::chrono::milliseconds transferTimeoutAsDuration() const;
     void setTransferTimeout(std::chrono::milliseconds duration = DefaultTransferTimeout);
 #endif // QT_CONFIG(http) || defined (Q_OS_WASM)
@@ -179,6 +182,20 @@ private:
 };
 
 Q_DECLARE_SHARED(QNetworkRequest)
+
+#if QT_NETWORK_INLINE_IMPL_SINCE(6, 8)
+#if QT_CONFIG(http) || defined (Q_OS_WASM)
+int QNetworkRequest::transferTimeout() const
+{
+    return int(transferTimeoutAsDuration().count());
+}
+
+void QNetworkRequest::setTransferTimeout(int timeout)
+{
+    setTransferTimeout(std::chrono::milliseconds(timeout));
+}
+#endif // QT_CONFIG(http) || defined (Q_OS_WASM)
+#endif // INLINE_SINCE 6.8
 
 QT_END_NAMESPACE
 

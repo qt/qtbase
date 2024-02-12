@@ -985,18 +985,16 @@ void QNetworkRequest::setDecompressedSafetyCheckThreshold(qint64 threshold)
 
 #if QT_CONFIG(http) || defined (Q_OS_WASM)
 /*!
+    \fn int QNetworkRequest::transferTimeout() const
     \since 5.15
 
     Returns the timeout used for transfers, in milliseconds.
 
     \sa setTransferTimeout()
 */
-int QNetworkRequest::transferTimeout() const
-{
-    return int(d->transferTimeout.count());
-}
 
 /*!
+    \fn void QNetworkRequest::setTransferTimeout(int timeout)
     \since 5.15
 
     Sets \a timeout as the transfer timeout in milliseconds.
@@ -1004,10 +1002,6 @@ int QNetworkRequest::transferTimeout() const
     \sa setTransferTimeout(std::chrono::milliseconds),
         transferTimeout(), transferTimeoutAsDuration()
 */
-void QNetworkRequest::setTransferTimeout(int timeout)
-{
-    d->transferTimeout = std::chrono::milliseconds(timeout);
-}
 
 /*!
     \since 6.7
