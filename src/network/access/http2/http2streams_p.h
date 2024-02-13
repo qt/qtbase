@@ -21,7 +21,6 @@
 #include <private/qhttpnetworkconnectionchannel_p.h>
 #include <private/qhttpnetworkrequest_p.h>
 
-#include <QtCore/qglobal.h>
 #include <QtCore/qstring.h>
 
 #include <vector>

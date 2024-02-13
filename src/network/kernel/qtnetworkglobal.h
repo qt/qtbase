@@ -4,7 +4,7 @@
 #ifndef QTNETWORKGLOBAL_H
 #define QTNETWORKGLOBAL_H
 
-#include <QtCore/qglobal.h>
+#include <QtCore/qtcoreglobal.h>
 #include <QtNetwork/qtnetwork-config.h>
 #include <QtNetwork/qtnetworkexports.h>
 

@@ -16,7 +16,6 @@
 //
 
 #include <QtCore/qbytearray.h>
-#include <QtCore/private/qglobal_p.h>
 #include <QtCore/qpair.h>
 
 #include <vector>

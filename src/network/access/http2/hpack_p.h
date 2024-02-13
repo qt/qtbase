@@ -17,7 +17,6 @@
 
 #include "hpacktable_p.h"
 
-#include <QtCore/qglobal.h>
 #include <QtCore/qurl.h>
 
 #include <vector>

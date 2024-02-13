@@ -18,7 +18,6 @@
 #include <QtNetwork/qnetworkreply.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qmetatype.h>
-#include <QtCore/private/qglobal_p.h>
 #include <QtCore/qmap.h>
 
 #include <vector>

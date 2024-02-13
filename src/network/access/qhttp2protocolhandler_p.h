@@ -29,7 +29,6 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qbytearray.h>
-#include <QtCore/qglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qflags.h>
 #include <QtCore/qhash.h>

@@ -6,6 +6,10 @@
 
 #include <QtNetwork/qtnetworkglobal.h>
 
+#include <QtCore/qtclasshelpermacros.h>
+#include <QtCore/qtypes.h>
+#include <QtCore/qtypeinfo.h>
+
 #include <utility>
 #include <cstdint>
 

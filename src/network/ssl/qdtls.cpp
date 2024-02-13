@@ -9,8 +9,6 @@
 #include "qssl_p.h"
 #include "qdtls.h"
 
-#include "qglobal.h"
-
 /*!
     \class QDtlsClientVerifier
     \brief This class implements server-side DTLS cookie generation and verification.

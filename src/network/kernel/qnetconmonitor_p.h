@@ -8,7 +8,6 @@
 
 #include <QtCore/qloggingcategory.h>
 #include <QtNetwork/qhostaddress.h>
-#include <QtCore/qglobal.h>
 #include <QtCore/qobject.h>
 
 //

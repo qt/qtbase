@@ -19,8 +19,6 @@
 #include "hpack_p.h"
 
 #include <QtCore/qendian.h>
-#include <QtCore/qglobal.h>
-
 #include <algorithm>
 #include <vector>
 
