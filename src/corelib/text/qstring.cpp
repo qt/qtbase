@@ -1348,10 +1348,8 @@ static int ucstrncmp(const char16_t *a, const char *b, size_t l)
 
 // Unicode case-sensitive equality
 template <typename Char2>
-static bool ucstreq(const char16_t *a, size_t alen, const Char2 *b, size_t blen)
+static bool ucstreq(const char16_t *a, size_t alen, const Char2 *b)
 {
-    if (alen != blen)
-        return false;
     if constexpr (std::is_same_v<decltype(a), decltype(b)>) {
         if (a == b)
             return true;
@@ -1394,12 +1392,14 @@ static int latin1nicmp(const char *lhsChar, qsizetype lSize, const char *rhsChar
 
 bool QtPrivate::equalStrings(QStringView lhs, QStringView rhs) noexcept
 {
-    return ucstreq(lhs.utf16(), lhs.size(), rhs.utf16(), rhs.size());
+    Q_ASSERT(lhs.size() == rhs.size());
+    return ucstreq(lhs.utf16(), lhs.size(), rhs.utf16());
 }
 
 bool QtPrivate::equalStrings(QStringView lhs, QLatin1StringView rhs) noexcept
 {
-    return ucstreq(lhs.utf16(), lhs.size(), rhs.latin1(), rhs.size());
+    Q_ASSERT(lhs.size() == rhs.size());
+    return ucstreq(lhs.utf16(), lhs.size(), rhs.latin1());
 }
 
 bool QtPrivate::equalStrings(QLatin1StringView lhs, QStringView rhs) noexcept
@@ -1409,7 +1409,8 @@ bool QtPrivate::equalStrings(QLatin1StringView lhs, QStringView rhs) noexcept
 
 bool QtPrivate::equalStrings(QLatin1StringView lhs, QLatin1StringView rhs) noexcept
 {
-    return QByteArrayView(lhs) == QByteArrayView(rhs);
+    Q_ASSERT(lhs.size() == rhs.size());
+    return (!lhs.size() || memcmp(lhs.data(), rhs.data(), lhs.size()) == 0);
 }
 
 bool QtPrivate::equalStrings(QBasicUtf8StringView<false> lhs, QStringView rhs) noexcept
@@ -1434,7 +1435,14 @@ bool QtPrivate::equalStrings(QBasicUtf8StringView<false> lhs, QLatin1StringView 
 
 bool QtPrivate::equalStrings(QBasicUtf8StringView<false> lhs, QBasicUtf8StringView<false> rhs) noexcept
 {
-    return lhs.size() == rhs.size() && (!lhs.size() || memcmp(lhs.data(), rhs.data(), lhs.size()) == 0);
+#if QT_VERSION >= QT_VERSION_CHECK(7, 0, 0) || defined(QT_BOOTSTRAPPED) || defined(QT_STATIC)
+    Q_ASSERT(lhs.size() == rhs.size());
+#else
+    // operator== didn't enforce size prior to Qt 6.2
+    if (lhs.size() != rhs.size())
+        return false;
+#endif
+    return (!lhs.size() || memcmp(lhs.data(), rhs.data(), lhs.size()) == 0);
 }
 
 bool QAnyStringView::equal(QAnyStringView lhs, QAnyStringView rhs) noexcept
