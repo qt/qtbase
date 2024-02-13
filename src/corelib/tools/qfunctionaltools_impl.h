@@ -42,6 +42,7 @@ struct StorageByValue
 template <typename Object, typename Tag = void>
 struct StorageEmptyBaseClassOptimization : Object
 {
+    StorageEmptyBaseClassOptimization() = default;
     StorageEmptyBaseClassOptimization(Object &&o)
         : Object(std::move(o))
     {}
