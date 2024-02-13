@@ -473,7 +473,7 @@ QFontEngine::FaceId QWindowsFontEngineDirectWrite::faceId() const
     return m_faceId;
 }
 
-void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags) const
+void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags shaperFlags) const
 {
     QVarLengthArray<UINT16> glyphIndices(glyphs->numGlyphs);
 
@@ -485,11 +485,13 @@ void QWindowsFontEngineDirectWrite::recalcAdvances(QGlyphLayout *glyphs, QFontEn
 
     HRESULT hr;
     DWRITE_RENDERING_MODE renderMode = hintingPreferenceToRenderingMode(fontDef);
-    if (renderMode == DWRITE_RENDERING_MODE_GDI_CLASSIC || renderMode == DWRITE_RENDERING_MODE_GDI_NATURAL) {
+    bool needsDesignMetrics = shaperFlags & QFontEngine::DesignMetrics;
+    if (!needsDesignMetrics && (renderMode == DWRITE_RENDERING_MODE_GDI_CLASSIC
+                             || renderMode == DWRITE_RENDERING_MODE_GDI_NATURAL)) {
         hr = m_directWriteFontFace->GetGdiCompatibleGlyphMetrics(float(fontDef.pixelSize),
                                                                  1.0f,
                                                                  NULL,
-                                                                 TRUE,
+                                                                 renderMode == DWRITE_RENDERING_MODE_GDI_NATURAL,
                                                                  glyphIndices.data(),
                                                                  glyphIndices.size(),
                                                                  glyphMetrics.data());
