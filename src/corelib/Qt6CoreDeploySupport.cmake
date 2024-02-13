@@ -429,6 +429,7 @@ function(qt6_deploy_runtime_dependencies)
             --libdir    "${arg_BIN_DIR}"     # NOTE: Deliberately not arg_LIB_DIR
             --plugindir "${arg_PLUGINS_DIR}"
             --qml-deploy-dir "${arg_QML_DIR}"
+            --translationdir "${QT_DEPLOY_TRANSLATIONS_DIR}"
         )
         if(NOT arg_NO_OVERWRITE)
             list(APPEND tool_options --force)
