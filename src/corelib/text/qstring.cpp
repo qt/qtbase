@@ -1350,10 +1350,6 @@ static int ucstrncmp(const char16_t *a, const char *b, size_t l)
 template <typename Char2>
 static bool ucstreq(const char16_t *a, size_t alen, const Char2 *b)
 {
-    if constexpr (std::is_same_v<decltype(a), decltype(b)>) {
-        if (a == b)
-            return true;
-    }
     return ucstrncmp<CompareStringsForEquality>(a, b, alen) == 0;
 }
 
@@ -1361,10 +1357,6 @@ static bool ucstreq(const char16_t *a, size_t alen, const Char2 *b)
 template <typename Char2>
 static int ucstrcmp(const char16_t *a, size_t alen, const Char2 *b, size_t blen)
 {
-    if constexpr (std::is_same_v<decltype(a), decltype(b)>) {
-        if (a == b && alen == blen)
-            return 0;
-    }
     const size_t l = qMin(alen, blen);
     int cmp = ucstrncmp<CompareStringsForOrdering>(a, b, l);
     return cmp ? cmp : qt_lencmp(alen, blen);
