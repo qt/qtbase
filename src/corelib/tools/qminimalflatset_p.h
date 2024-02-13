@@ -29,6 +29,7 @@
 #endif
 
 #include <algorithm> // for std::lower_bound
+#include <functional> // for std::less
 
 QT_BEGIN_NAMESPACE
 
@@ -120,8 +121,10 @@ private:
             bool exists;
         };
 
-        const auto it = std::lower_bound(c.cbegin(), c.cend(), v);
-        return R{it, it != c.cend() && !(v < *it)};
+        auto cmp = std::less<value_type>{};
+
+        const auto it = std::lower_bound(c.cbegin(), c.cend(), v, cmp);
+        return R{it, it != c.cend() && !cmp(v, *it)};
     }
 
 #ifdef QMINIMAL_FLAT_SET_DEBUG
