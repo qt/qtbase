@@ -926,6 +926,13 @@ bool QDir::operator==(const QDir &dir) const
     return comparesEqual(*this, dir);
 }
 
+#include "qfileinfo.h" // inlined API
+
+bool QFileInfo::operator==(const QFileInfo &fileinfo) const
+{
+    return comparesEqual(*this, fileinfo);
+}
+
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically to reduce chances of merge conflicts

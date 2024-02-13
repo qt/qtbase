@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QStandardPaths>
 #include <QScopeGuard>
 
@@ -172,6 +173,7 @@ private slots:
 
     void systemFiles();
 
+    void compareCompiles();
     void compare_data();
     void compare();
 
@@ -993,6 +995,11 @@ void tst_QFileInfo::systemFiles()
     QVERIFY(fi.birthTime() <= fi.lastModified());
 }
 
+void tst_QFileInfo::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QFileInfo>();
+}
+
 void tst_QFileInfo::compare_data()
 {
     QTest::addColumn<QString>("file1");
@@ -1037,7 +1044,7 @@ void tst_QFileInfo::compare()
     QFETCH(QString, file2);
     QFETCH(bool, same);
     QFileInfo fi1(file1), fi2(file2);
-    QCOMPARE(fi1 == fi2, same);
+    QT_TEST_EQUALITY_OPS(fi1, fi2, same);
 }
 
 void tst_QFileInfo::consistent_data()
