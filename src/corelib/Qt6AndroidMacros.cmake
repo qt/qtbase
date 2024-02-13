@@ -426,6 +426,10 @@ function(qt6_android_add_apk_target target)
 
     set(extra_deps "")
 
+    if(QT_ENABLE_VERBOSE_DEPLOYMENT)
+       set(uses_terminal USES_TERMINAL)
+    endif()
+
     # Plugins still might be added after creating the deployment targets.
     if(NOT TARGET qt_internal_plugins)
         add_custom_target(qt_internal_plugins)
@@ -445,6 +449,7 @@ function(qt6_android_add_apk_target target)
         DEPENDS ${target} ${extra_deps}
         COMMAND ${copy_command}
         COMMENT "Copying ${target} binary to apk folder"
+        ${uses_terminal}
     )
 
     set(sign_apk "")
@@ -515,6 +520,7 @@ function(qt6_android_add_apk_target target)
             DEPENDS "${target}" "${deployment_file}" ${extra_deps}
             DEPFILE "${dep_file_path}"
             VERBATIM
+            ${uses_terminal}
         )
         cmake_policy(POP)
 
@@ -531,6 +537,7 @@ function(qt6_android_add_apk_target target)
                 ${sign_apk}
             COMMENT "Creating APK for ${target}"
             VERBATIM
+            ${uses_terminal}
         )
     endif()
 
@@ -547,6 +554,7 @@ function(qt6_android_add_apk_target target)
             ${sign_aab}
             ${extra_args}
         COMMENT "Creating AAB for ${target}"
+        ${uses_terminal}
     )
 
     if(QT_IS_ANDROID_MULTI_ABI_EXTERNAL_PROJECT)
@@ -586,6 +594,7 @@ function(qt6_android_add_apk_target target)
                 COMMENT "Resolving ${CMAKE_ANDROID_ARCH_ABI} dependencies for the ${target} APK"
                 DEPFILE "${dep_file}"
                 VERBATIM
+                ${uses_terminal}
             )
             add_custom_target(qt_internal_${target}_copy_apk_dependencies
                 DEPENDS "${timestamp_file}")
@@ -599,6 +608,7 @@ function(qt6_android_add_apk_target target)
                     --copy-dependencies-only
                     ${extra_args}
                 COMMENT "Resolving ${CMAKE_ANDROID_ARCH_ABI} dependencies for the ${target} APK"
+                ${uses_terminal}
             )
         endif()
     endif()
