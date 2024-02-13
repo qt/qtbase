@@ -16,6 +16,7 @@
 //
 
 #include <QtCore/qcontainerfwd.h>
+#include <QtCore/qfunctionaltools_impl.h> // CompactStorage
 #include <QtCore/private/qglobal_p.h>
 
 //#define QMINIMAL_FLAT_SET_DEBUG
@@ -29,7 +30,7 @@
 #endif
 
 #include <algorithm> // for std::lower_bound
-#include <functional> // for std::less
+#include <functional> // for std::less, std::ref
 
 QT_BEGIN_NAMESPACE
 
@@ -43,20 +44,26 @@ QT_BEGIN_NAMESPACE
     bit, we can consider moving it as QFlatSet alongside QFlatMap.
 */
 
-template <typename T, typename Container = QList<T>>
-class QMinimalFlatSet
+template <typename T, typename Container = QList<T>, typename Compare = std::less<T>>
+class QMinimalFlatSet : QtPrivate::CompactStorage<Compare>
 {
     Container c;
+    using CompareStorage = QtPrivate::CompactStorage<Compare>;
 public:
-    // compiler-generated default ctor is ok!
-    // compiler-generated copy/move ctor/assignment operators are ok!
-    // compiler-generated dtor is ok!
+    QMinimalFlatSet() = default;
+    explicit QMinimalFlatSet(const Compare &cmp) : CompareStorage{cmp} {}
+    // Rule Of Zero applies
 
     using const_iterator = typename Container::const_iterator;
     using iterator = const_iterator;
     using const_reverse_iterator = typename Container::const_reverse_iterator;
     using reverse_iterator = const_reverse_iterator;
     using value_type = T;
+    using key_compare = Compare;
+    using value_compare = Compare;
+
+    key_compare key_comp() const { return this->object(); }
+    value_compare value_comp() const { return key_comp(); }
 
     iterator begin() const { return c.cbegin(); }
     iterator end() const { return c.cend(); }
@@ -121,7 +128,7 @@ private:
             bool exists;
         };
 
-        auto cmp = std::less<value_type>{};
+        auto cmp = std::ref(this->object()); // don't let std::lower_bound copy it
 
         const auto it = std::lower_bound(c.cbegin(), c.cend(), v, cmp);
         return R{it, it != c.cend() && !cmp(v, *it)};
