@@ -290,6 +290,7 @@ qt_internal_add_module(Core
         tools/qmap.h
         tools/qmargins.cpp tools/qmargins.h
         tools/qmessageauthenticationcode.h
+        tools/qminimalflatset_p.h
         tools/qoffsetstringarray_p.h
         tools/qpair.h
         tools/qpoint.cpp tools/qpoint.h
