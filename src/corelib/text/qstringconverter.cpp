@@ -1365,10 +1365,10 @@ QString QLocal8Bit::convertToUnicode_sys(QByteArrayView in, quint32 codePage,
     // encounter an error
     int nextIn = qt_saturate<int>(mblen);
     while (mblen > 0) {
-        const int nextOut = qt_saturate<int>(outlen);
         std::tie(out, outlen) = growOut(1); // Need space for at least one character
         if (!out)
             return {};
+        const int nextOut = qt_saturate<int>(outlen);
         len = MultiByteToWideChar(codePage, MB_ERR_INVALID_CHARS, mb, nextIn, out, nextOut);
         if (len) {
             mb += nextIn;
