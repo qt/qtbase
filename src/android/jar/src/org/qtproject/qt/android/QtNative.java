@@ -272,8 +272,10 @@ class QtNative
         synchronized (m_mainActivityMutex) {
             final Looper mainLooper = Looper.getMainLooper();
             final Handler handler = new Handler(mainLooper);
-            final boolean isStateActive = m_stateDetails.state == ApplicationState.ApplicationActive;
-            final boolean active = (isActivityValid() && isStateActive) || isServiceValid();
+            final boolean isStateVisible =
+                    (m_stateDetails.state != ApplicationState.ApplicationSuspended)
+                    && (m_stateDetails.state != ApplicationState.ApplicationHidden);
+            final boolean active = (isActivityValid() && isStateVisible) || isServiceValid();
             if (!active || !handler.post(action))
                 m_lostActions.add(action);
         }
