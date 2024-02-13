@@ -617,6 +617,14 @@ void QWindowsKeyMapper::changeKeyboard()
         && (LCIDFontSig[7] & wchar_t(0x0800)))
         bidi = true;
 
+    WCHAR buffer[KL_NAMELENGTH];
+    if (GetKeyboardLayoutName(buffer)) {
+        // https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/windows-language-pack-default-values
+        QString newKLID = QString::fromStdWString(buffer);
+        m_isHebrewLayout = newKLID.endsWith(QLatin1String("40D"), Qt::CaseInsensitive);
+    } else
+        m_isHebrewLayout = false;
+
     keyboardInputDirection = bidi ? Qt::RightToLeft : Qt::LeftToRight;
     m_seenAltGr = false;
 }
@@ -701,8 +709,9 @@ void QWindowsKeyMapper::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
     quint32 fallbackKey = winceKeyBend(vk_key);
     if (!fallbackKey || fallbackKey == Qt::Key_unknown) {
         fallbackKey = 0;
-        if (vk_key != keyLayout[vk_key].qtKey[0] && vk_key != keyLayout[vk_key].qtKey[1]
-            && vk_key < 0x5B && vk_key > 0x2F)
+        if (vk_key != keyLayout[vk_key].qtKey[0]
+            && (vk_key != keyLayout[vk_key].qtKey[1] || m_isHebrewLayout)
+            && (vk_key < 0x5B && vk_key > 0x2F))
             fallbackKey = vk_key;
     }
     keyLayout[vk_key].qtKey[8] = fallbackKey;
