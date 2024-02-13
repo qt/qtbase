@@ -78,7 +78,7 @@ private:
     KeyboardLayoutItem keyLayout[NumKeyboardLayoutItems];
     bool m_detectAltGrModifier =  false;
     bool m_seenAltGr = false;
-
+    bool m_isHebrewLayout = false;
 };
 
 enum WindowsNativeModifiers {
