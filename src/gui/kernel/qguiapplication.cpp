@@ -25,6 +25,7 @@
 #include <QtCore/QVariant>
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
+#include <QtCore/private/qminimalflatset_p.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/private/qlocking_p.h>
@@ -2931,17 +2932,16 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         // Send the TouchCancel to all windows with active touches and clean up.
         QTouchEvent touchEvent(QEvent::TouchCancel, device, e->modifiers);
         touchEvent.setTimestamp(e->timestamp);
-        QSet<QWindow *> windowsNeedingCancel;
+        QMinimalVarLengthFlatSet<QWindow *, 16> windowsNeedingCancel;
 
         for (auto &epd : devPriv->activePoints.values()) {
             if (QWindow *w = QMutableEventPoint::window(epd.eventPoint))
                 windowsNeedingCancel.insert(w);
         }
 
-        for (QSet<QWindow *>::const_iterator winIt = windowsNeedingCancel.constBegin(),
-            winItEnd = windowsNeedingCancel.constEnd(); winIt != winItEnd; ++winIt) {
-            QGuiApplication::sendSpontaneousEvent(*winIt, &touchEvent);
-        }
+        for (QWindow *w : windowsNeedingCancel)
+            QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
+
         if (!self->synthesizedMousePoints.isEmpty() && !e->synthetic()) {
             for (QHash<QWindow *, SynthesizedMouseData>::const_iterator synthIt = self->synthesizedMousePoints.constBegin(),
                  synthItEnd = self->synthesizedMousePoints.constEnd(); synthIt != synthItEnd; ++synthIt) {
