@@ -71,7 +71,7 @@ if(ANDROID)
     )
 endif()
 
-qt_add_resources(editabletreemodel_tester "editabletreemodel"
+qt_add_resources(editabletreemodel_tester "editabletreemodel_tester"
     PREFIX
         "/"
     FILES
