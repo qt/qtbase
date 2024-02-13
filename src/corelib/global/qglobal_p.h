@@ -20,8 +20,7 @@
 #include "qglobal_p.h"      // include self to avoid syncqt warning - no-op
 
 #ifndef QT_BOOTSTRAPPED
-#include <QtCore/private/qconfig_p.h>
-#include <QtCore/private/qtcore-config_p.h>
+#include <QtCore/private/qtcoreglobal_p.h>
 #endif
 
 #if defined(Q_CC_MSVC)

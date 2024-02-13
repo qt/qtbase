@@ -74,6 +74,7 @@ qt_internal_add_module(Core
         global/qtclasshelpermacros.h
         global/qtconfiginclude.h
         global/qtconfigmacros.h
+        global/qtcoreglobal.h global/qtcoreglobal_p.h
         global/qtdeprecationmarkers.h
         global/qtenvironmentvariables.cpp global/qtenvironmentvariables.h
         global/qtenvironmentvariables_p.h

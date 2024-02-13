@@ -21,9 +21,7 @@
 #  include <stddef.h>
 #endif
 
-#include <QtCore/qtversionchecks.h>
-#include <QtCore/qtconfigmacros.h>
-#include <QtCore/qtcoreexports.h>
+#include <QtCore/qtcoreglobal.h>
 
 #include <QtCore/qtpreprocessorsupport.h>
 
