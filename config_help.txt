@@ -202,6 +202,15 @@ Component selection:
   -skip-examples <repo>[,<repo>] ... Skip building examples for one or more
                          repositories. The list should be separated with commas.
                          e.g. -skip-examples qtimageformats,qtsvg
+  -init-submodules ..... When configure is called from the qt git super module,
+                         it will automatically clone and initialize the
+                         repositories specified by the -submodules option. When
+                         no -submodules are specified, and no existing
+                         submodules are cloned, a default set of submodules
+                         will be initialized. To adjust other aspects of the
+                         cloning process, check the init-repository --help
+                         output for additional options that can be passed
+                         to configure.
   -make <part> ......... Add <part> to the list of parts to be built.
                          Specifying this option clears the default list first.
                          (allowed values: libs, tools, examples, tests,
