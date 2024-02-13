@@ -938,6 +938,15 @@ bool QFileInfo::operator==(const QFileInfo &fileinfo) const
     return comparesEqual(*this, fileinfo);
 }
 
+#if QT_CONFIG(processenvironment)
+#include "qprocess.h" // inlined API
+
+bool QProcessEnvironment::operator==(const QProcessEnvironment &other) const
+{
+    return comparesEqual(*this, other);
+}
+#endif // QT_CONFIG(processenvironment)
+
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically to reduce chances of merge conflicts

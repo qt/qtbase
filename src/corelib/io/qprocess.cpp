@@ -35,6 +35,8 @@ QT_BEGIN_NAMESPACE
     \reentrant
     \since 4.6
 
+    \compares equality
+
     A process's environment is composed of a set of key=value pairs known as
     environment variables. The QProcessEnvironment class wraps that concept
     and allows easy manipulation of those variables. It's meant to be used
@@ -184,15 +186,17 @@ QProcessEnvironment &QProcessEnvironment::operator=(const QProcessEnvironment &o
 */
 
 /*!
-    \fn bool QProcessEnvironment::operator !=(const QProcessEnvironment &other) const
+    \fn bool QProcessEnvironment::operator!=(const QProcessEnvironment &lhs, const QProcessEnvironment &rhs)
 
-    Returns \c true if this and the \a other QProcessEnvironment objects are different.
+    Returns \c true if the process environment objects \a lhs and \a rhs are different.
 
     \sa operator==()
 */
 
 /*!
-    Returns \c true if this and the \a other QProcessEnvironment objects are equal.
+   \fn bool QProcessEnvironment::operator==(const QProcessEnvironment &lhs, const QProcessEnvironment &rhs)
+
+    Returns \c true if the process environment objects \a lhs and \a rhs are equal.
 
     Two QProcessEnvironment objects are considered equal if they have the same
     set of key=value pairs. The comparison of keys is done case-sensitive on
@@ -200,12 +204,12 @@ QProcessEnvironment &QProcessEnvironment::operator=(const QProcessEnvironment &o
 
     \sa operator!=(), contains()
 */
-bool QProcessEnvironment::operator==(const QProcessEnvironment &other) const
+bool comparesEqual(const QProcessEnvironment &lhs, const QProcessEnvironment &rhs)
 {
-    if (d == other.d)
+    if (lhs.d == rhs.d)
         return true;
 
-    return d && other.d && d->vars == other.d->vars;
+    return lhs.d && rhs.d && lhs.d->vars == rhs.d->vars;
 }
 
 /*!

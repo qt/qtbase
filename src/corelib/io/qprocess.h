@@ -5,6 +5,7 @@
 #ifndef QPROCESS_H
 #define QPROCESS_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qiodevice.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qshareddata.h>
@@ -41,9 +42,11 @@ public:
 
     void swap(QProcessEnvironment &other) noexcept { d.swap(other.d); }
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QProcessEnvironment &other) const;
     inline bool operator!=(const QProcessEnvironment &other) const
-    { return !(*this == other); }
+    { return !operator==(other); }
+#endif
 
     bool isEmpty() const;
     [[nodiscard]] bool inheritsFromParent() const;
@@ -63,6 +66,9 @@ public:
     static QProcessEnvironment systemEnvironment();
 
 private:
+    friend Q_CORE_EXPORT bool comparesEqual(const QProcessEnvironment &lhs,
+                                            const QProcessEnvironment &rhs);
+    Q_DECLARE_EQUALITY_COMPARABLE(QProcessEnvironment)
     friend class QProcessPrivate;
     friend class QProcessEnvironmentPrivate;
     QSharedDataPointer<QProcessEnvironmentPrivate> d;

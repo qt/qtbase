@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QObject>
 #include <QProcessEnvironment>
 
@@ -9,6 +10,7 @@ class tst_QProcessEnvironment: public QObject
 {
     Q_OBJECT
 private slots:
+    void compareCompiles();
     void operator_eq();
     void clearAndIsEmpty();
     void clearAndInheritsFromParent();
@@ -23,6 +25,11 @@ private slots:
     void putenv();
 };
 
+void tst_QProcessEnvironment::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QProcessEnvironment>();
+}
+
 void tst_QProcessEnvironment::operator_eq()
 {
     QProcessEnvironment e1;
@@ -35,8 +42,7 @@ void tst_QProcessEnvironment::operator_eq()
     QCOMPARE(e1, e2);
 
     auto parentEnv = QProcessEnvironment(QProcessEnvironment::InheritFromParent);
-    QVERIFY(parentEnv != e2);
-    QVERIFY(e2 != parentEnv);
+    QT_TEST_EQUALITY_OPS(parentEnv, e2, false);
 
     e1.clear();
     QCOMPARE(e1, e2);
@@ -45,16 +51,15 @@ void tst_QProcessEnvironment::operator_eq()
     QCOMPARE(e1, e2);
 
     e1.insert("FOO", "bar");
-    QVERIFY(e1 != e2);
+    QT_TEST_EQUALITY_OPS(e1, e2, false);
 
     e2.insert("FOO", "bar");
     QCOMPARE(e1, e2);
 
     e2.insert("FOO", "baz");
-    QVERIFY(e1 != e2);
+    QT_TEST_EQUALITY_OPS(e1, e2, false);
 
-    QVERIFY(e2 != parentEnv);
-    QVERIFY(parentEnv != e2);
+    QT_TEST_EQUALITY_OPS(e2, parentEnv, false);
 }
 
 void tst_QProcessEnvironment::clearAndIsEmpty()
