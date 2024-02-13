@@ -8808,6 +8808,8 @@ void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, quint32 offset
 }
 
 /*!
+    \overload
+
     Enqueues updating the entire QRhiBuffer \a buf created with the type
     QRhiBuffer::Immutable or QRhiBuffer::Static.
  */

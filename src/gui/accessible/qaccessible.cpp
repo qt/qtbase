@@ -1655,8 +1655,8 @@ QAccessibleTextRemoveEvent::~QAccessibleTextRemoveEvent()
 /*!
      \fn QAccessibleTextInsertEvent::QAccessibleTextInsertEvent(QAccessibleInterface *iface, int position, const QString &text)
 
-     Constructs a new QAccessibleTextInsertEvent event for \a iface. The text has been inserted at
-     \a position.
+     Constructs a new QAccessibleTextInsertEvent event for \a iface. The \a text has been inserted
+     at \a position.
 */
 
 /*!

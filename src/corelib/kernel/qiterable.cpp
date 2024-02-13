@@ -240,6 +240,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn template<class Container> qsizetype QIterator<Container>::operator-(const QIterator<Container> &j) const
+    \overload
 
     Returns the distance between the two iterators.
 
@@ -376,6 +377,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \fn template <class Container> qsizetype QConstIterator<Container>::operator-(const QConstIterator<Container> &j) const
+
+    \overload
 
     Returns the distance between the two iterators.
 

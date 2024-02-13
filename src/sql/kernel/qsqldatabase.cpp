@@ -1127,6 +1127,7 @@ bool QSqlDatabase::isDriverAvailable(const QString& name)
 }
 
 /*! \fn QSqlDatabase QSqlDatabase::addDatabase(QSqlDriver* driver, const QString& connectionName)
+    \overload
 
     This overload is useful when you want to create a database
     connection with a \l{QSqlDriver} {driver} you instantiated

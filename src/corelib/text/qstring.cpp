@@ -8084,6 +8084,7 @@ QStringList QString::split(const QRegularExpression &re, Qt::SplitBehavior behav
 }
 
 /*!
+    \overload
     \since 6.0
 
     Splits the string into substring views wherever the regular expression \a re
@@ -9179,6 +9180,7 @@ QString::iterator QString::erase(QString::const_iterator first, QString::const_i
 /*!
     \fn QString::iterator QString::erase(QString::const_iterator it)
 
+    \overload
     \since 6.5
 
     Removes the character denoted by \c it from the string.

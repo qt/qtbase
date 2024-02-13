@@ -1282,6 +1282,7 @@ QByteArray::iterator QByteArray::erase(QByteArray::const_iterator first, QByteAr
 /*!
     \fn QByteArray::iterator QByteArray::erase(QByteArray::const_iterator it)
 
+    \overload
     \since 6.5
 
     Removes the character denoted by \c it from the byte array.
