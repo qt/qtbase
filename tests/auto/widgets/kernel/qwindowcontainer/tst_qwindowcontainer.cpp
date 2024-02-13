@@ -13,6 +13,7 @@
 #include <qscreen.h>
 #include <qscopedpointer.h>
 #include <qevent.h>
+#include <qboxlayout.h>
 
 
 class Window : public QWindow
@@ -46,6 +47,7 @@ public:
 private slots:
     void testShow();
     void testPositionAndSize();
+    void testSizeHints();
     void testExposeObscure();
     void testOwnership();
     void testBehindTheScenesDeletion();
@@ -109,7 +111,29 @@ void tst_QWindowContainer::testPositionAndSize()
     QCOMPARE(window->height(), container->height());
 }
 
+void tst_QWindowContainer::testSizeHints()
+{
+    QScopedPointer<QWidget> tlw(new QWidget);
+    QWindow *window = new QWindow();
+    window->setMinimumSize(QSize(200, 200));
+    window->setGeometry(m_availableGeometry.x() + 300, m_availableGeometry.y() + 400, 500, 600);
 
+    QScopedPointer<QWidget> container(QWidget::createWindowContainer(window));
+    container->setWindowTitle(QTest::currentTestFunction());
+
+    QVBoxLayout *vbox = new QVBoxLayout(tlw.data());
+    vbox->addWidget(container.data());
+    vbox->setContentsMargins(0, 0, 0, 0);
+
+    // Size hints should work regardless of visibility
+    QCOMPARE(container->minimumSizeHint(), window->minimumSize());
+    QCOMPARE(vbox->minimumSize(), window->minimumSize());
+
+    // Respect dynamic updates
+    window->setMinimumSize(QSize(210, 210));
+    QCOMPARE(container->minimumSizeHint(), window->minimumSize());
+    QCOMPARE(vbox->minimumSize(), window->minimumSize());
+}
 
 void tst_QWindowContainer::testExposeObscure()
 {

@@ -221,6 +221,9 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
 
     connect(qGuiApp, &QGuiApplication::focusWindowChanged,
             this, &QWindowContainer::focusWindowChanged);
+
+    connect(containedWindow(), &QWindow::minimumHeightChanged, this, &QWindowContainer::updateGeometry);
+    connect(containedWindow(), &QWindow::minimumWidthChanged, this, &QWindowContainer::updateGeometry);
 }
 
 QWindow *QWindowContainer::containedWindow() const
@@ -371,6 +374,11 @@ bool QWindowContainer::event(QEvent *e)
     }
 
     return QWidget::event(e);
+}
+
+QSize QWindowContainer::minimumSizeHint() const
+{
+    return containedWindow() ? containedWindow()->minimumSize() : QSize(0, 0);
 }
 
 typedef void (*qwindowcontainer_traverse_callback)(QWidget *parent);
