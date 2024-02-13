@@ -4,6 +4,7 @@
 /*!
     \example tools/contiguouscache
     \title Contiguous Cache Example
+    \examplecategory {Data Processing & I/O}
 
     \brief The Contiguous Cache example shows how to use QContiguousCache to manage memory usage for
     very large models.  In some environments memory is limited and, even when it
