@@ -30,7 +30,8 @@ template <typename T> class QQueue;
 template <typename T> class QSet;
 template <typename T, std::size_t E = std::size_t(-1) /* = std::dynamic_extent*/> class QSpan;
 template <typename T> class QStack;
-template <typename T, qsizetype Prealloc = 256> class QVarLengthArray;
+constexpr qsizetype QVarLengthArrayDefaultPrealloc = 256;
+template <typename T, qsizetype Prealloc = QVarLengthArrayDefaultPrealloc> class QVarLengthArray;
 template <typename T> class QList;
 class QString;
 #ifndef Q_QDOC

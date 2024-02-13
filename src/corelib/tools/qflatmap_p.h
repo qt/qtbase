@@ -1099,7 +1099,9 @@ private:
     containers c;
 };
 
-template<class Key, class T, qsizetype N = 256, class Compare = std::less<Key>>
+template <class Key, class T,
+          qsizetype N = QVarLengthArrayDefaultPrealloc,
+          class Compare = std::less<Key>>
 using QVarLengthFlatMap = QFlatMap<Key, T, Compare, QVarLengthArray<Key, N>, QVarLengthArray<T, N>>;
 
 QT_END_NAMESPACE
