@@ -948,12 +948,12 @@ void QRhiWidget::setMirrorVertically(bool enabled)
 }
 
 /*!
-    \return the current setting for automatic depth-stencil buffer and render
+    \property QRhiWidget::autoRenderTarget
+
+    The current setting for automatic depth-stencil buffer and render
     target maintenance.
 
     By default the value is \c true.
-
-    \sa setAutoRenderTarget()
  */
 bool QRhiWidget::isAutoRenderTargetEnabled() const
 {
