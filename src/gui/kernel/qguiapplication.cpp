@@ -2934,7 +2934,8 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         // Send the TouchCancel to all windows with active touches and clean up.
         QTouchEvent touchEvent(QEvent::TouchCancel, device, e->modifiers);
         touchEvent.setTimestamp(e->timestamp);
-        QMinimalVarLengthFlatSet<QWindow *, 16> windowsNeedingCancel;
+        constexpr qsizetype Prealloc = decltype(devPriv->activePoints)::mapped_container_type::PreallocatedSize;
+        QMinimalVarLengthFlatSet<QWindow *, Prealloc> windowsNeedingCancel;
 
         for (auto &epd : devPriv->activePoints.values()) {
             if (QWindow *w = QMutableEventPoint::window(epd.eventPoint))
