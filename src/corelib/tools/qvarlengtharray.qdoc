@@ -462,6 +462,15 @@
     \a defaultValue.
 */
 
+/*
+    \var QVarLengthArray::PreallocatedSize
+    \since 6.8
+
+    The same value as the \c{Prealloc} template argument. Provided for easier
+    access compared to manually extracting the value from the template
+    argument.
+*/
+
 /*!
     \typedef QVarLengthArray::size_type
     \since 4.7

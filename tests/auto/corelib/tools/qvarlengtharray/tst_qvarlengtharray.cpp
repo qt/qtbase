@@ -66,6 +66,7 @@ private slots:
     void sizeConstructor_QString() { sizeConstructor<QString>(); }
     void sizeConstructor_NonCopyable() { sizeConstructor<NonCopyable>(); }
     void append();
+    void preallocatedSize();
 #if QT_DEPRECATED_SINCE(6, 3)
     void prepend();
 #endif
@@ -192,6 +193,15 @@ void tst_QVarLengthArray::append()
 
     QVarLengthArray<int> v2; // rocket!
     v2.append(5);
+}
+
+void tst_QVarLengthArray::preallocatedSize()
+{
+    // The default is 256:
+    static_assert(QVarLengthArray<int>::PreallocatedSize == 256);
+    // Otherwise, whatever was given as template argument:
+    static_assert(QVarLengthArray<int, 42>::PreallocatedSize == 42);
+    static_assert(QVarLengthArray<int, 1'000'000>::PreallocatedSize == 1'000'000);
 }
 
 #if QT_DEPRECATED_SINCE(6, 3)

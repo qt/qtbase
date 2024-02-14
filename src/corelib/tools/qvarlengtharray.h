@@ -278,6 +278,8 @@ class QVarLengthArray
     template <typename InputIterator>
     using if_input_iterator = QtPrivate::IfIsInputIterator<InputIterator>;
 public:
+    static constexpr qsizetype PreallocatedSize = Prealloc;
+
     using size_type = typename Base::size_type;
     using value_type = typename Base::value_type;
     using pointer = typename Base::pointer;
