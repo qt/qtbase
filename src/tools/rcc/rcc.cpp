@@ -1098,6 +1098,10 @@ bool RCCResourceLibrary::writeHeader()
         writeString("\n**\n");
         writeString("** WARNING! All changes made in this file will be lost!\n");
         writeString( "*****************************************************************************/\n\n");
+        writeString("#ifdef _MSC_VER\n"
+                    "// disable informational message \"function ... selected for automatic inline expansion\"\n"
+                    "#pragma warning (disable: 4711)\n"
+                    "#endif\n\n");
         break;
     case Python_Code:
         writeString("# Resource object code (Python 3)\n");
