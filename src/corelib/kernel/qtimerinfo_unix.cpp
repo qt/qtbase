@@ -286,8 +286,19 @@ void QTimerInfoList::registerTimer(int timerId, qint64 interval, Qt::TimerType t
 void QTimerInfoList::registerTimer(int timerId, milliseconds interval,
                                    Qt::TimerType timerType, QObject *object)
 {
-    QTimerInfo *t = new QTimerInfo(timerId, interval, timerType, object);
+    // correct the timer type first
+    if (timerType == Qt::CoarseTimer) {
+        // this timer has up to 5% coarseness
+        // so our boundaries are 20 ms and 20 s
+        // below 20 ms, 5% inaccuracy is below 1 ms, so we convert to high precision
+        // above 20 s, 5% inaccuracy is above 1 s, so we convert to VeryCoarseTimer
+        if (interval >= 20s)
+            timerType = Qt::VeryCoarseTimer;
+        else if (interval <= 20ms)
+            timerType = Qt::PreciseTimer;
+    }
 
+    QTimerInfo *t = new QTimerInfo(timerId, interval, timerType, object);
     steady_clock::time_point expected = updateCurrentTime() + interval;
 
     switch (timerType) {
@@ -298,23 +309,10 @@ void QTimerInfoList::registerTimer(int timerId, milliseconds interval,
         break;
 
     case Qt::CoarseTimer:
-        // this timer has up to 5% coarseness
-        // so our boundaries are 20 ms and 20 s
-        // below 20 ms, 5% inaccuracy is below 1 ms, so we convert to high precision
-        // above 20 s, 5% inaccuracy is above 1 s, so we convert to VeryCoarseTimer
-        if (interval >= 20s) {
-            t->timerType = Qt::VeryCoarseTimer;
-        } else {
-            t->timeout = expected;
-            if (interval <= 20ms) {
-                t->timerType = Qt::PreciseTimer;
-                // no adjustment is necessary
-            } else if (interval <= 20s) {
-                calculateCoarseTimerTimeout(t, currentTime);
-            }
-            break;
-        }
-        Q_FALLTHROUGH();
+        t->timeout = expected;
+        calculateCoarseTimerTimeout(t, currentTime);
+        break;
+
     case Qt::VeryCoarseTimer:
         t->interval = roundToSecs(t->interval);
         const auto currentTimeInSecs = floor<seconds>(currentTime);
