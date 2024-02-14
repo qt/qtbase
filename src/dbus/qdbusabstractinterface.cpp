@@ -412,8 +412,7 @@ int QDBusAbstractInterface::timeout() const
     The default is \c false.
 
     \since 6.7
-    \sa QDBusMessage::setInteractiveAuthorizationAllowed(),
-        interactiveAuthorizationAllowed()
+    \sa QDBusMessage::setInteractiveAuthorizationAllowed()
 */
 void QDBusAbstractInterface::setInteractiveAuthorizationAllowed(bool enable)
 {

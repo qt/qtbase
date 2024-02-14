@@ -39,7 +39,8 @@ depends += \
     qtlinguist \
     qthelp \
     qtopengl \
-    qtshadertools
+    qtshadertools \
+    qttestlib
 
 headerdirs  += ..
 
