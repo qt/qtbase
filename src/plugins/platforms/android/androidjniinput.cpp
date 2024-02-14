@@ -287,10 +287,10 @@ namespace QtAndroidInput
         touchPoint.rotation = qRadiansToDegrees(rotation);
         touchPoint.normalPosition = QPointF(double(x / dw), double(y / dh));
         touchPoint.state = state;
-        touchPoint.area = QRectF(x - double(minor),
-                                 y - double(major),
-                                 double(minor * 2),
-                                 double(major * 2));
+        touchPoint.area = QRectF(x - double(minor * 0.5f),
+                                 y - double(major * 0.5f),
+                                 double(minor),
+                                 double(major));
         m_touchPoints.push_back(touchPoint);
         if (state == QEventPoint::State::Pressed) {
             QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
