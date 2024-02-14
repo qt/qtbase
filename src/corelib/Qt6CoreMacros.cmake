@@ -647,7 +647,10 @@ function(_qt_internal_disable_autorcc_zstd_when_not_supported target)
             AND DEFINED QT_FEATURE_zstd
             AND NOT QT_FEATURE_zstd
             AND NOT QT_NO_AUTORCC_ZSTD)
-        set_property(TARGET "${target}" APPEND PROPERTY AUTORCC_OPTIONS "--no-zstd")
+        get_target_property(target_type ${target} TYPE)
+        if(NOT target_type STREQUAL "INTERFACE_LIBRARY")
+            set_property(TARGET "${target}" APPEND PROPERTY AUTORCC_OPTIONS "--no-zstd")
+        endif()
     endif()
 endfunction()
 
