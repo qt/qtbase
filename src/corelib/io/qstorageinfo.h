@@ -5,6 +5,7 @@
 #define QSTORAGEINFO_H
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qmetatype.h>
@@ -58,17 +59,8 @@ public:
 private:
     explicit QStorageInfo(QStorageInfoPrivate &dd);
     friend class QStorageInfoPrivate;
-    friend inline bool operator==(const QStorageInfo &first, const QStorageInfo &second)
-    {
-        if (first.d == second.d)
-            return true;
-        return first.device() == second.device() && first.rootPath() == second.rootPath();
-    }
-
-    friend inline bool operator!=(const QStorageInfo &first, const QStorageInfo &second)
-    {
-        return !(first == second);
-    }
+    friend Q_CORE_EXPORT bool comparesEqual(const QStorageInfo &lhs, const QStorageInfo &rhs);
+    Q_DECLARE_EQUALITY_COMPARABLE(QStorageInfo)
 
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QStorageInfo &);
     QExplicitlySharedDataPointer<QStorageInfoPrivate> d;
