@@ -185,18 +185,19 @@ QPixmap QAppleIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIco
         }
         const auto *image = configuredImage(m_image, color);
 
-        // the size we want is typically square, but the icon might not be. So
-        // ask for a pixmap with the same aspect ratio as the icon, and then
-        // center that within a pixmap of the requested size.
+        // The size we want might have a different aspect ratio than the icon we have.
+        // So ask for a pixmap with the same aspect ratio as the icon, constrained to the
+        // size we want, and then center that within a pixmap of the requested size.
         QSizeF renderSize = size * scale;
-        const bool aspectRatioAdjusted = image.size.width != image.size.height;
+        const double inputAspectRatio = image.size.width / image.size.height;
+        const double outputAspectRatio = size.width() / size.height();
+        const bool aspectRatioAdjusted = !qFuzzyCompare(inputAspectRatio, outputAspectRatio);
         if (aspectRatioAdjusted) {
-            double aspectRatio = image.size.width / image.size.height;
             // don't grow
-            if (aspectRatio < 1)
-                renderSize.rwidth() = renderSize.height() * aspectRatio;
+            if (outputAspectRatio > inputAspectRatio)
+                renderSize.rwidth() = renderSize.height() * inputAspectRatio;
             else
-                renderSize.rheight() = renderSize.width() / aspectRatio;
+                renderSize.rheight() = renderSize.width() / inputAspectRatio;
         }
 
         QPixmap iconPixmap = imageToPixmap(image, renderSize);
