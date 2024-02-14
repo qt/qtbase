@@ -1274,13 +1274,20 @@ void tst_QTimer::bindToTimer()
     timer.stop();
     QVERIFY(!active);
 
+    auto ignoreMsg = [] {
+        QTest::ignoreMessage(QtWarningMsg,
+                             "QObject::startTimer: Timers cannot have negative intervals");
+    };
+
     // also test that using negative interval updates the binding correctly
     timer.start(100);
     QVERIFY(active);
+    ignoreMsg();
     timer.setInterval(-100);
     QVERIFY(!active);
     timer.start(100);
     QVERIFY(active);
+    ignoreMsg();
     timer.start(-100);
     QVERIFY(!active);
 }
@@ -1365,9 +1372,15 @@ void tst_QTimer::automatedBindingTests()
 
 void tst_QTimer::negativeInterval()
 {
+    auto ignoreMsg = [] {
+        QTest::ignoreMessage(QtWarningMsg,
+                             "QObject::startTimer: Timers cannot have negative intervals");
+    };
+
     QTimer timer;
 
     // Starting with a negative interval does not change active state.
+    ignoreMsg();
     timer.start(-100ms);
     QVERIFY(!timer.isActive());
 
@@ -1375,6 +1388,7 @@ void tst_QTimer::negativeInterval()
     // the active state.
     timer.start(100ms);
     QVERIFY(timer.isActive());
+    ignoreMsg();
     timer.setInterval(-100);
     QVERIFY(!timer.isActive());
 
@@ -1382,6 +1396,7 @@ void tst_QTimer::negativeInterval()
     // and inactive state.
     timer.start(100);
     QVERIFY(timer.isActive());
+    ignoreMsg();
     timer.start(-100ms);
     QVERIFY(!timer.isActive());
 }
