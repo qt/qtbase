@@ -712,15 +712,11 @@ void tst_QDir::compare()
 {
     QDir dir;
     dir.makeAbsolute();
-    QTestPrivate::testEqualityOperators(dir, QDir::currentPath(), true);
-    if (QTest::currentTestFailed())
-        return;
+    QT_TEST_EQUALITY_OPS(dir, QDir::currentPath(), true);
 
     QCOMPARE(QDir(), QDir(QDir::currentPath()));
 
-    QTestPrivate::testEqualityOperators(QDir("../"), QDir(QDir::currentPath() + "/.."), true);
-    if (QTest::currentTestFailed())
-        return;
+    QT_TEST_EQUALITY_OPS(QDir("../"), QDir(QDir::currentPath() + "/.."), true);
 }
 
 static QStringList filterLinks(QStringList &&list)
