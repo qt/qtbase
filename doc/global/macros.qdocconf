@@ -136,7 +136,8 @@ macro.youtube.HTML = "<div class=\"video\">\n" \
                      "</div>\n"
 macro.youtube.DocBook = "<db:mediaobject>\n" \
                         "<db:videoobject>\n" \
-                        "<db:videodata fileref=\"\1\">\n" \
+                        "<?db video="iframe"?>\n" \
+                        "<db:videodata format="youtube" fileref=\"https://www.youtube.com/watch/?v=\1\">\n" \
                         "</db:videodata>\n" \
                         "</db:videoobject>\n" \
                         "<db:imageobject>\n" \
