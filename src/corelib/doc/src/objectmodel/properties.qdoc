@@ -93,7 +93,7 @@
 
     \li The \c DESIGNABLE attribute indicates whether the property
     should be visible in the property editor of GUI design tool (e.g.,
-    \l {Qt Designer Manual}{Qt Designer}). Most properties are \c DESIGNABLE
+    \l {Qt Widgets Designer Manual}{\QD}). Most properties are \c DESIGNABLE
     (default true). Valid values are true and false.
 
     \li The \c SCRIPTABLE attribute indicates whether this property

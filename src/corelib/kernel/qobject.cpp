@@ -906,7 +906,7 @@ QMetaCallEvent* QMetaCallEvent::create_impl(QtPrivate::SlotObjUniquePtr slotObj,
     and setProperty() to write them.
 
     Dynamic properties are supported by
-    \l{Qt Designer's Widget Editing Mode#The Property Editor}{Qt Designer},
+    \l{Qt Widgets Designer's Widget Editing Mode#The Property Editor}{\QD},
     and both standard Qt widgets and user-created forms can be given dynamic
     properties.
 

@@ -317,8 +317,8 @@
             \li About
             \li Here
         \row
-            \li Using Qt Designer
-            \li \l{Qt Designer Manual}
+            \li Using \QD
+            \li \l{Qt Widgets Designer Manual}
         \row
             \li Layouts
             \li \l{Layout Management},

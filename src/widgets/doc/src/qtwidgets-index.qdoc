@@ -67,7 +67,7 @@ interfaces
     \li \image qformlayout-with-6-children.png
     \endtable
 
-    \l {Qt Designer} is a powerful tool for interactively creating and
+    \l {Qt Widgets Designer} is a powerful tool for interactively creating and
     arranging widgets in layouts.
 
 
