@@ -3497,6 +3497,40 @@ if(NOT QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
     endmacro()
 endif()
 
+# Store in ${out_var} the i18n catalogs that belong to the passed Qt modules.
+# The catalog "qtbase" is always added to the result.
+#
+# Example:
+#     _qt_internal_get_i18n_catalogs_for_modules(catalogs Quick Help)
+#     catalogs -> qtbase;qtdeclarative;qt_help
+function(_qt_internal_get_i18n_catalogs_for_modules out_var)
+    set(result "qtbase")
+    set(modules "${ARGN}")
+    set(module_catalog_mapping
+        "Bluetooth|Nfc" qtconnectivity
+        "Help" qt_help
+        "Multimedia(Widgets|QuickPrivate)?" qtmultimedia
+        "Qml|Quick" qtdeclarative
+        "SerialPort" qtserialport
+        "WebEngine" qtwebengine
+        "WebSockets" qtwebsockets
+    )
+    list(LENGTH module_catalog_mapping max_i)
+    math(EXPR max_i "${max_i} - 1")
+    foreach(module IN LISTS modules)
+        foreach(i RANGE 0 ${max_i} 2)
+            list(GET module_catalog_mapping ${i} module_rex)
+            if(NOT module MATCHES "^(${module_rex})")
+                continue()
+            endif()
+            math(EXPR k "${i} + 1")
+            list(GET module_catalog_mapping ${k} catalog)
+            list(APPEND result ${catalog})
+        endforeach()
+    endforeach()
+    set("${out_var}" "${result}" PARENT_SCOPE)
+endfunction()
+
 function(qt6_generate_deploy_script)
     set(no_value_options "")
     set(single_value_options
@@ -3586,9 +3620,10 @@ function(qt6_generate_deploy_script)
     string(APPEND deploy_script "${config_infix}.cmake")
     set(${arg_OUTPUT_SCRIPT} "${deploy_script}" PARENT_SCOPE)
 
+    _qt_internal_get_i18n_catalogs_for_modules(catalogs ${QT_ALL_MODULES_FOUND_VIA_FIND_PACKAGE})
     set(boiler_plate "include(${QT_DEPLOY_SUPPORT})
 include(\"\${CMAKE_CURRENT_LIST_DIR}/${arg_TARGET}-plugins${config_infix}.cmake\" OPTIONAL)
-set(__QT_DEPLOY_ALL_MODULES_FOUND_VIA_FIND_PACKAGE \"${QT_ALL_MODULES_FOUND_VIA_FIND_PACKAGE}\")
+set(__QT_DEPLOY_I18N_CATALOGS \"${catalogs}\")
 ")
     list(TRANSFORM arg_CONTENT REPLACE "\\$" "\$")
     file(GENERATE OUTPUT ${deploy_script} CONTENT "${boiler_plate}${arg_CONTENT}")
