@@ -11,14 +11,14 @@
 \summary {Consider the BUILD_SHARED_LIBS value when creating Qt libraries.}
 
 This policy was introduced in Qt 6.7. The policy affects the default type of the
-libraries created using \l {Qt CMake API}{CMake Commands in Qt6 Core}, like
+libraries created using \l {CMake Commands in Qt6 Core}{Qt CMake API}, like
 \l {qt_add_library}, \l{qt_add_plugin}, \l{qt_add_qml_module}.
 
 If the policy is set to \c OLD, the default library type that is selected is
 aligned with the Qt build type, either \c shared or \c static.
 
 If the policy is set to \c NEW, the library type is selected according to the
-\l {BUILD_SHARED_LIBS}{CMake BUILD_SHARED_LIBS Documentation} value if it's set.
+\l {CMake BUILD_SHARED_LIBS Documentation}{BUILD_SHARED_LIBS} value if it's set.
 If \c BUILD_SHARED_LIBS is not set, the default library type falls back to the
 Qt build type.
 
