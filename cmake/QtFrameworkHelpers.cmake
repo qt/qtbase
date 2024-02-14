@@ -131,17 +131,19 @@ function(qt_copy_framework_headers target)
             COMMAND ${copy_fw_sync_headers_command})
     endif()
 
-    add_custom_command(
-        OUTPUT ${out_files}
-        DEPENDS ${target}_copy_fw_sync_headers ${in_files}
-        COMMAND
-            ${CMAKE_COMMAND} -E make_directory ${out_dirs}
-        ${copy_commands}
-        VERBATIM
-        COMMENT "Copy the ${target} header files to the framework directory"
-    )
-    set_property(TARGET ${target} APPEND PROPERTY
-        QT_COPIED_FRAMEWORK_HEADERS "${out_files}")
+    if(out_files)
+        add_custom_command(
+            OUTPUT ${out_files}
+            DEPENDS ${target}_copy_fw_sync_headers ${in_files}
+            COMMAND
+                ${CMAKE_COMMAND} -E make_directory ${out_dirs}
+            ${copy_commands}
+            VERBATIM
+            COMMENT "Copy the ${target} header files to the framework directory"
+        )
+        set_property(TARGET ${target} APPEND PROPERTY
+            QT_COPIED_FRAMEWORK_HEADERS "${out_files}")
+    endif()
 endfunction()
 
 function(qt_internal_generate_fake_framework_header target)
