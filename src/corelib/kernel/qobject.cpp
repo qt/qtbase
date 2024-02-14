@@ -1850,7 +1850,6 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
 /*!
     \since 5.9
     \overload
-    \fn int QObject::startTimer(std::chrono::milliseconds interval, Qt::TimerType timerType)
 
     Starts a timer and returns a timer identifier, or returns zero if
     it could not start a timer.
@@ -1884,14 +1883,19 @@ int QObject::startTimer(int interval, Qt::TimerType timerType)
     less clumsy than using timer IDs directly.
 
     \sa timerEvent(), killTimer(), QTimer::singleShot()
+
+    \note Starting from Qt 6.8 the type of \a interval
+    is \c std::chrono::nanoseconds, prior to that it was \c
+    std::chrono::milliseconds. This change is backwards compatible with
+    older releases of Qt.
 */
-int QObject::startTimer(std::chrono::milliseconds interval, Qt::TimerType timerType)
+int QObject::startTimer(std::chrono::nanoseconds interval, Qt::TimerType timerType)
 {
     Q_D(QObject);
 
     using namespace std::chrono_literals;
 
-    if (Q_UNLIKELY(interval < 0ms)) {
+    if (Q_UNLIKELY(interval < 0ns)) {
         qWarning("QObject::startTimer: Timers cannot have negative intervals");
         return 0;
     }
@@ -1907,7 +1911,8 @@ int QObject::startTimer(std::chrono::milliseconds interval, Qt::TimerType timerT
     }
 
     auto dispatcher = thisThreadData->eventDispatcher.loadRelaxed();
-    int timerId = dispatcher->registerTimer(interval.count(), timerType, this);
+    const auto msecs = std::chrono::ceil<std::chrono::milliseconds>(interval);
+    int timerId = dispatcher->registerTimer(msecs.count(), timerType, this);
     d->ensureExtraData();
     d->extraData->runningTimers.append(timerId);
     return timerId;

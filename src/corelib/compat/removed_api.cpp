@@ -4,6 +4,7 @@
 #define QT_CORE_BUILD_REMOVED_API
 
 #include "qglobal.h"
+#include "qnumeric.h"
 
 QT_USE_NAMESPACE
 
@@ -953,6 +954,20 @@ bool QUrlQuery::operator==(const QUrlQuery &other) const
 {
     return comparesEqual(*this, other);
 }
+
+#include "qobject.h"
+
+int QObject::startTimer(std::chrono::milliseconds time, Qt::TimerType timerType)
+{
+    using namespace std::chrono;
+    using ratio = std::ratio_divide<std::milli, std::nano>;
+    if (nanoseconds::rep r; qMulOverflow<ratio::num>(time.count(), &r)) {
+        qWarning("QObject::startTimer(std::chrono::milliseconds time ...): "
+                 "'time' arg will overflow when converted to nanoseconds.");
+    }
+    return startTimer(nanoseconds{time}, timerType);
+}
+
 
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h

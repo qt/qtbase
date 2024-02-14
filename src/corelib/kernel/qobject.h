@@ -19,6 +19,7 @@
 
 #include <QtCore/qobject_impl.h>
 #include <QtCore/qbindingstorage.h>
+#include <QtCore/qtcoreexports.h>
 
 #include <chrono>
 
@@ -141,7 +142,12 @@ public:
     bool moveToThread(QThread *thread QT6_DECL_NEW_OVERLOAD_TAIL);
 
     int startTimer(int interval, Qt::TimerType timerType = Qt::CoarseTimer);
+
+#if QT_CORE_REMOVED_SINCE(6, 8)
     int startTimer(std::chrono::milliseconds time, Qt::TimerType timerType = Qt::CoarseTimer);
+#endif
+    int startTimer(std::chrono::nanoseconds time, Qt::TimerType timerType = Qt::CoarseTimer);
+
     void killTimer(int id);
 
     template<typename T>

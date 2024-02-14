@@ -31,12 +31,12 @@ class QSingleShotTimer : public QObject
 
 public:
     inline ~QSingleShotTimer();
-    inline QSingleShotTimer(std::chrono::milliseconds msec, Qt::TimerType timerType, const QObject *r,
-                            const char *member);
-    inline QSingleShotTimer(std::chrono::milliseconds msec, Qt::TimerType timerType, const QObject *r,
-                            QtPrivate::QSlotObjectBase *slotObj);
+    inline QSingleShotTimer(std::chrono::nanoseconds interval, Qt::TimerType timerType,
+                            const QObject *r, const char *member);
+    inline QSingleShotTimer(std::chrono::nanoseconds interval, Qt::TimerType timerType,
+                            const QObject *r, QtPrivate::QSlotObjectBase *slotObj);
 
-    inline void startTimerForReceiver(std::chrono::milliseconds msec, Qt::TimerType timerType,
+    inline void startTimerForReceiver(std::chrono::nanoseconds interval, Qt::TimerType timerType,
                                       const QObject *receiver);
 
 Q_SIGNALS:
@@ -46,15 +46,15 @@ private:
     inline void timerEvent(QTimerEvent *) override;
 };
 
-QSingleShotTimer::QSingleShotTimer(std::chrono::milliseconds msec, Qt::TimerType timerType,
+QSingleShotTimer::QSingleShotTimer(std::chrono::nanoseconds interval, Qt::TimerType timerType,
                                    const QObject *r, const char *member)
     : QObject(QAbstractEventDispatcher::instance())
 {
     connect(this, SIGNAL(timeout()), r, member);
-    startTimerForReceiver(msec, timerType, r);
+    startTimerForReceiver(interval, timerType, r);
 }
 
-QSingleShotTimer::QSingleShotTimer(std::chrono::milliseconds msec, Qt::TimerType timerType,
+QSingleShotTimer::QSingleShotTimer(std::chrono::nanoseconds interval, Qt::TimerType timerType,
                                    const QObject *r, QtPrivate::QSlotObjectBase *slotObj)
     : QObject(QAbstractEventDispatcher::instance())
 {
@@ -63,7 +63,7 @@ QSingleShotTimer::QSingleShotTimer(std::chrono::milliseconds msec, Qt::TimerType
     QObjectPrivate::connectImpl(this, signal_index, r ? r : this, nullptr, slotObj,
                                 Qt::AutoConnection, nullptr, &staticMetaObject);
 
-    startTimerForReceiver(msec, timerType, r);
+    startTimerForReceiver(interval, timerType, r);
 }
 
 QSingleShotTimer::~QSingleShotTimer()
@@ -77,7 +77,7 @@ QSingleShotTimer::~QSingleShotTimer()
     the same thread as where it will be handled, so that it fires reliably even
     if the thread that set up the timer is busy.
 */
-void QSingleShotTimer::startTimerForReceiver(std::chrono::milliseconds msec,
+void QSingleShotTimer::startTimerForReceiver(std::chrono::nanoseconds interval,
                                              Qt::TimerType timerType, const QObject *receiver)
 {
     if (receiver && receiver->thread() != thread()) {
@@ -88,20 +88,18 @@ void QSingleShotTimer::startTimerForReceiver(std::chrono::milliseconds msec,
         setParent(nullptr);
         moveToThread(receiver->thread());
 
-        QDeadlineTimer deadline(msec, timerType);
+        QDeadlineTimer deadline(interval, timerType);
         auto invokable = [this, deadline, timerType] {
             if (deadline.hasExpired()) {
                 Q_EMIT timeout();
             } else {
                 auto nsecs = deadline.remainingTimeAsDuration();
-                // Use std::chrono::ceil<milliseconds> to match what
-                // QDeadlineTimer::remainingTime() did
-                timerId = startTimer(std::chrono::ceil<std::chrono::milliseconds>(nsecs), timerType);
+                timerId = startTimer(nsecs, timerType);
             }
         };
         QMetaObject::invokeMethod(this, invokable, Qt::QueuedConnection);
     } else {
-        timerId = startTimer(msec, timerType);
+        timerId = startTimer(interval, timerType);
     }
 }
 
