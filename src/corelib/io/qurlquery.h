@@ -5,6 +5,7 @@
 #ifndef QURLQUERY_H
 #define QURLQUERY_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qurl.h>
 
@@ -34,9 +35,11 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QUrlQuery)
     ~QUrlQuery();
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QUrlQuery &other) const;
     bool operator!=(const QUrlQuery &other) const
-    { return !(*this == other); }
+    { return !operator==(other); }
+#endif
 
     void swap(QUrlQuery &other) noexcept { d.swap(other.d); }
 
@@ -67,6 +70,8 @@ public:
     static constexpr char16_t defaultQueryPairDelimiter() noexcept { return u'&'; }
 
 private:
+    friend Q_CORE_EXPORT bool comparesEqual(const QUrlQuery &lhs, const QUrlQuery &rhs);
+    Q_DECLARE_EQUALITY_COMPARABLE(QUrlQuery)
     friend class QUrl;
     friend Q_CORE_EXPORT size_t qHash(const QUrlQuery &key, size_t seed) noexcept;
     QSharedDataPointer<QUrlQueryPrivate> d;

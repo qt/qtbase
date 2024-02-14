@@ -947,6 +947,13 @@ bool QProcessEnvironment::operator==(const QProcessEnvironment &other) const
 }
 #endif // QT_CONFIG(processenvironment)
 
+#include "qurlquery.h"
+
+bool QUrlQuery::operator==(const QUrlQuery &other) const
+{
+    return comparesEqual(*this, other);
+}
+
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically to reduce chances of merge conflicts
