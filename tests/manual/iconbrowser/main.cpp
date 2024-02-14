@@ -448,7 +448,8 @@ struct IconView : public QListView
 
     IconView(QAbstractItemModel *model)
     {
-        setViewMode(QListView::IconMode);
+        setViewMode(QListView::ListMode);
+        setIconSize(QSize(64, 64));
         setUniformItemSizes(true);
         proxyModel.setSourceModel(model);
         setModel(&proxyModel);
