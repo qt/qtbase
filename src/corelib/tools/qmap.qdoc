@@ -1391,7 +1391,7 @@
 */
 
 /*!
-    \fn template <class Key, class T> QMap<Key, T>::qHash(const QMap &key, size_t seed)
+    \fn template <class Key, class T> size_t QMap<Key, T>::qHash(const QMap &key, size_t seed) noexcept
     \since 6.8
 
     Returns the hash value for \a key, using \a seed to seed the calculation.
