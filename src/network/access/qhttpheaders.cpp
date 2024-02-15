@@ -5,6 +5,7 @@
 
 #include <private/qoffsetstringarray_p.h>
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qmap.h>
@@ -13,6 +14,7 @@
 
 #include <q20algorithm.h>
 #include <string_view>
+#include <variant>
 
 QT_BEGIN_NAMESPACE
 
@@ -683,13 +685,86 @@ static QByteArray normalizedName(QAnyStringView name)
     return name.visit([](auto name){ return fieldToByteArray(name); }).toLower();
 }
 
+struct HeaderName
+{
+    explicit HeaderName(QHttpHeaders::WellKnownHeader name) : data(name)
+    {
+    }
+
+    explicit HeaderName(QAnyStringView name)
+    {
+        const auto nname = normalizedName(name);
+        if (auto h = HeaderName::toWellKnownHeader(nname))
+            data = *h;
+        else
+            data = std::move(nname);
+    }
+
+    // Returns an enum corresponding with the 'name' if possible. Uses binary search (O(logN)).
+    // The function doesn't normalize the data; needs to be done by the caller if needed
+    static std::optional<QHttpHeaders::WellKnownHeader> toWellKnownHeader(QByteArrayView name) noexcept
+    {
+        auto indexesBegin = std::cbegin(orderedHeaderNameIndexes);
+        auto indexesEnd = std::cend(orderedHeaderNameIndexes);
+
+        auto result = std::lower_bound(indexesBegin, indexesEnd, name, ByIndirectHeaderName{});
+
+        if (result != indexesEnd && name == headerNames[*result])
+            return static_cast<QHttpHeaders::WellKnownHeader>(*result);
+        return std::nullopt;
+    }
+
+    QByteArrayView asView() const noexcept
+    {
+        return std::visit([](const auto &arg) -> QByteArrayView {
+            using T = decltype(arg);
+            if constexpr (std::is_same_v<T, const QByteArray &>)
+                return arg;
+            else if constexpr (std::is_same_v<T, const QHttpHeaders::WellKnownHeader &>)
+                return headerNames.viewAt(qToUnderlying(arg));
+            else
+                static_assert(QtPrivate::type_dependent_false<T>());
+        }, data);
+    }
+
+    QByteArray asByteArray() const noexcept
+    {
+        return std::visit([](const auto &arg) -> QByteArray {
+            using T = decltype(arg);
+            if constexpr (std::is_same_v<T, const QByteArray &>) {
+                return arg;
+            } else if constexpr (std::is_same_v<T, const QHttpHeaders::WellKnownHeader &>) {
+                const auto view = headerNames.viewAt(qToUnderlying(arg));
+                return QByteArray::fromRawData(view.constData(), view.size());
+            } else {
+                static_assert(QtPrivate::type_dependent_false<T>());
+            }
+        }, data);
+    }
+
+private:
+    // Store the data as 'enum' whenever possible; more performant, and comparison relies on that
+    std::variant<QHttpHeaders::WellKnownHeader, QByteArray> data;
+
+    friend bool comparesEqual(const HeaderName &lhs, const HeaderName &rhs) noexcept
+    {
+        // Here we compare two std::variants, which will return false if the types don't match.
+        // That is beneficial here because we avoid unnecessary comparisons; but it also means
+        // we must always store the data as WellKnownHeader when possible (in other words, if
+        // we get a string that is mappable to a WellKnownHeader). To guard against accidental
+        // misuse, the 'data' is private and the constructors must be used.
+        return lhs.data == rhs.data;
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(HeaderName)
+};
+
 // A clarification on case-sensitivity:
 // - Header *names*  are case-insensitive; Content-Type and content-type are considered equal
 // - Header *values* are case-sensitive
 // (In addition, the HTTP/2 and HTTP/3 standards mandate that all headers must be lower-cased when
 // encoded into transmission)
 struct Header {
-    QByteArray name;
+    HeaderName name;
     QByteArray value;
 
 private:
@@ -699,10 +774,20 @@ private:
     }
 };
 
+auto headerNameMatches(const HeaderName &name)
+{
+    return [&name](const Header &header) { return header.name == name; };
+}
+
 class QHttpHeadersPrivate : public QSharedData
 {
 public:
     QHttpHeadersPrivate() = default;
+
+    // The 'Self' is supplied as parameter to static functions so that
+    // we can define common methods which 'detach()' the private itself.
+    using Self = QExplicitlySharedDataPointer<QHttpHeadersPrivate>;
+    static void removeAll(Self &d, const HeaderName &name);
 
     QList<Header> headers;
 };
@@ -715,6 +800,21 @@ template <> void QExplicitlySharedDataPointer<QHttpHeadersPrivate>::detach()
         d->ref.ref();
     } else if (d->ref.loadRelaxed() != 1) {
         detach_helper();
+    }
+}
+
+void QHttpHeadersPrivate::removeAll(Self &d, const HeaderName &name)
+{
+    const auto it = std::find_if(d->headers.cbegin(), d->headers.cend(), headerNameMatches(name));
+
+    if (it != d->headers.cend()) {
+        // Found something to remove, calculate offset so we can proceed from the match-location
+        const auto matchOffset = it - d->headers.cbegin();
+        d.detach();
+        // Rearrange all matches to the end and erase them
+        d->headers.erase(std::remove_if(d->headers.begin() + matchOffset, d->headers.end(),
+                                        headerNameMatches(name)),
+                         d->headers.end());
     }
 }
 
@@ -827,7 +927,7 @@ QDebug operator<<(QDebug debug, const QHttpHeaders &headers)
         debug << "headers = ";
         const char *separator = "";
         for (const auto &h : headers.d->headers) {
-            debug << separator << h.name << ':' << h.value;
+            debug << separator << h.name.asView() << ':' << h.value;
             separator = " | ";
         }
     }
@@ -985,11 +1085,6 @@ static QByteArray normalizedValue(QAnyStringView value)
     return value.visit([](auto value){ return fieldToByteArray(value); }).trimmed();
 }
 
-static bool headerNameIs(const Header &header, QAnyStringView name)
-{
-    return header.name == normalizedName(name);
-}
-
 /*!
     Appends a header entry with \a name and \a value and returns \c true
     if successful.
@@ -1003,7 +1098,7 @@ bool QHttpHeaders::append(QAnyStringView name, QAnyStringView value)
         return false;
 
     d.detach();
-    d->headers.push_back({normalizedName(name), normalizedValue(value)});
+    d->headers.push_back({HeaderName{name}, normalizedValue(value)});
     return true;
 }
 
@@ -1016,7 +1111,7 @@ bool QHttpHeaders::append(WellKnownHeader name, QAnyStringView value)
         return false;
 
     d.detach();
-    d->headers.push_back({headerNames[qToUnderlying(name)], normalizedValue(value)});
+    d->headers.push_back({HeaderName{name}, normalizedValue(value)});
     return true;
 }
 
@@ -1035,7 +1130,7 @@ bool QHttpHeaders::insert(qsizetype i, QAnyStringView name, QAnyStringView value
         return false;
 
     d.detach();
-    d->headers.insert(i, {normalizedName(name), normalizedValue(value)});
+    d->headers.insert(i, {HeaderName{name}, normalizedValue(value)});
     return true;
 }
 
@@ -1049,7 +1144,7 @@ bool QHttpHeaders::insert(qsizetype i, WellKnownHeader name, QAnyStringView valu
         return false;
 
     d.detach();
-    d->headers.insert(i, {headerNames[qToUnderlying(name)], normalizedValue(value)});
+    d->headers.insert(i, {HeaderName{name}, normalizedValue(value)});
     return true;
 }
 
@@ -1069,7 +1164,7 @@ bool QHttpHeaders::replace(qsizetype i, QAnyStringView name, QAnyStringView newV
         return false;
 
     d.detach();
-    d->headers.replace(i, {normalizedName(name), normalizedValue(newValue)});
+    d->headers.replace(i, {HeaderName{name}, normalizedValue(newValue)});
     return true;
 }
 
@@ -1083,7 +1178,7 @@ bool QHttpHeaders::replace(qsizetype i, WellKnownHeader name, QAnyStringView new
         return false;
 
     d.detach();
-    d->headers.replace(i, {headerNames[qToUnderlying(name)], normalizedValue(newValue)});
+    d->headers.replace(i, {HeaderName{name}, normalizedValue(newValue)});
     return true;
 }
 
@@ -1094,10 +1189,10 @@ bool QHttpHeaders::replace(qsizetype i, WellKnownHeader name, QAnyStringView new
 */
 bool QHttpHeaders::contains(QAnyStringView name) const
 {
-    if (!d)
+    if (isEmpty())
         return false;
-    return std::any_of(d->headers.cbegin(), d->headers.cend(),
-                       [&name](const Header &header) { return headerNameIs(header, name); });
+
+    return std::any_of(d->headers.cbegin(), d->headers.cend(), headerNameMatches(HeaderName{name}));
 }
 
 /*!
@@ -1105,7 +1200,10 @@ bool QHttpHeaders::contains(QAnyStringView name) const
 */
 bool QHttpHeaders::contains(WellKnownHeader name) const
 {
-    return contains(headerNames[qToUnderlying(name)]);
+    if (isEmpty())
+        return false;
+
+    return std::any_of(d->headers.cbegin(), d->headers.cend(), headerNameMatches(HeaderName{name}));
 }
 
 /*!
@@ -1115,12 +1213,10 @@ bool QHttpHeaders::contains(WellKnownHeader name) const
 */
 void QHttpHeaders::removeAll(QAnyStringView name)
 {
-    if (contains(name)) {
-        d.detach();
-        d->headers.removeIf([&name](const Header &header){
-            return headerNameIs(header, name);
-        });
-    }
+    if (isEmpty())
+        return;
+
+    return QHttpHeadersPrivate::removeAll(d, HeaderName(name));
 }
 
 /*!
@@ -1128,7 +1224,10 @@ void QHttpHeaders::removeAll(QAnyStringView name)
 */
 void QHttpHeaders::removeAll(WellKnownHeader name)
 {
-    removeAll(headerNames[qToUnderlying(name)]);
+    if (isEmpty())
+        return;
+
+    return QHttpHeadersPrivate::removeAll(d, HeaderName(name));
 }
 
 /*!
@@ -1153,10 +1252,13 @@ void QHttpHeaders::removeAt(qsizetype i)
 */
 QByteArrayView QHttpHeaders::value(QAnyStringView name, QByteArrayView defaultValue) const noexcept
 {
-    if (!d)
+    if (isEmpty())
         return defaultValue;
+
+    const HeaderName hname(name);
+
     for (const auto &h : std::as_const(d->headers)) {
-        if (headerNameIs(h, name))
+        if (h.name == hname)
             return h.value;
     }
     return defaultValue;
@@ -1167,7 +1269,16 @@ QByteArrayView QHttpHeaders::value(QAnyStringView name, QByteArrayView defaultVa
 */
 QByteArrayView QHttpHeaders::value(WellKnownHeader name, QByteArrayView defaultValue) const noexcept
 {
-    return value(headerNames[qToUnderlying(name)], defaultValue);
+    if (isEmpty())
+        return defaultValue;
+
+    const HeaderName hname(name);
+
+    for (const auto &h : std::as_const(d->headers)) {
+        if (h.name == hname)
+            return h.value;
+    }
+    return defaultValue;
 }
 
 /*!
@@ -1178,14 +1289,17 @@ QByteArrayView QHttpHeaders::value(WellKnownHeader name, QByteArrayView defaultV
 */
 QList<QByteArray> QHttpHeaders::values(QAnyStringView name) const
 {
-    QList<QByteArray> values;
-    if (!d)
-        return values;
+    QList<QByteArray> result;
+    if (isEmpty())
+        return result;
+
+    const HeaderName hname(name);
+
     for (const auto &h : std::as_const(d->headers)) {
-        if (headerNameIs(h, name))
-            values.append(h.value);
+        if (h.name == hname)
+            result.append(h.value);
     }
-    return values;
+    return result;
 }
 
 /*!
@@ -1193,7 +1307,17 @@ QList<QByteArray> QHttpHeaders::values(QAnyStringView name) const
 */
 QList<QByteArray> QHttpHeaders::values(WellKnownHeader name) const
 {
-    return values(headerNames[qToUnderlying(name)]);
+    QList<QByteArray> values;
+    if (isEmpty())
+        return values;
+
+    const HeaderName hname(name);
+
+    for (const auto &h : std::as_const(d->headers)) {
+        if (h.name == hname)
+            values.append(h.value);
+    }
+    return values;
 }
 
 /*!
@@ -1219,7 +1343,7 @@ QByteArrayView QHttpHeaders::valueAt(qsizetype i) const noexcept
 QLatin1StringView QHttpHeaders::nameAt(qsizetype i) const noexcept
 {
     verify(i);
-    return QLatin1StringView{d->headers.at(i).name};
+    return QLatin1StringView{d->headers.at(i).name.asView()};
 }
 
 /*!
@@ -1237,13 +1361,17 @@ QLatin1StringView QHttpHeaders::nameAt(qsizetype i) const noexcept
 QByteArray QHttpHeaders::combinedValue(QAnyStringView name) const
 {
     QByteArray result;
+    if (isEmpty())
+        return result;
 
+    const HeaderName hname(name);
     const char* separator = "";
-    auto valueList = values(name);
-    for (const auto &v : valueList) {
-        result.append(separator);
-        result.append(v);
-        separator = ", ";
+    for (const auto &h : std::as_const(d->headers)) {
+        if (h.name == hname) {
+            result.append(separator);
+            result.append(h.value);
+            separator = ", ";
+        }
     }
     return result;
 }
@@ -1253,7 +1381,20 @@ QByteArray QHttpHeaders::combinedValue(QAnyStringView name) const
 */
 QByteArray QHttpHeaders::combinedValue(WellKnownHeader name) const
 {
-    return combinedValue(headerNames[qToUnderlying(name)]);
+    QByteArray result;
+    if (isEmpty())
+        return result;
+
+    const HeaderName hname(name);
+    const char* separator = "";
+    for (const auto &h : std::as_const(d->headers)) {
+        if (h.name == hname) {
+            result.append(separator);
+            result.append(h.value);
+            separator = ", ";
+        }
+    }
+    return result;
 }
 
 /*!
@@ -1302,11 +1443,11 @@ QByteArrayView QHttpHeaders::wellKnownHeaderName(WellKnownHeader name) noexcept
 QList<std::pair<QByteArray, QByteArray>> QHttpHeaders::toListOfPairs() const
 {
     QList<std::pair<QByteArray, QByteArray>> list;
-    if (!d)
+    if (isEmpty())
         return list;
     list.reserve(size());
     for (const auto & h : std::as_const(d->headers))
-        list.append({h.name, h.value});
+        list.append({h.name.asByteArray(), h.value});
     return list;
 }
 
@@ -1317,10 +1458,10 @@ QList<std::pair<QByteArray, QByteArray>> QHttpHeaders::toListOfPairs() const
 QMultiMap<QByteArray, QByteArray> QHttpHeaders::toMultiMap() const
 {
     QMultiMap<QByteArray, QByteArray> map;
-    if (!d)
+    if (isEmpty())
         return map;
     for (const auto &h : std::as_const(d->headers))
-        map.insert(h.name, h.value);
+        map.insert(h.name.asByteArray(), h.value);
     return map;
 }
 
@@ -1331,11 +1472,11 @@ QMultiMap<QByteArray, QByteArray> QHttpHeaders::toMultiMap() const
 QMultiHash<QByteArray, QByteArray> QHttpHeaders::toMultiHash() const
 {
     QMultiHash<QByteArray, QByteArray> hash;
-    if (!d)
+    if (isEmpty())
         return hash;
     hash.reserve(size());
     for (const auto &h : std::as_const(d->headers))
-        hash.insert(h.name, h.value);
+        hash.insert(h.name.asByteArray(), h.value);
     return hash;
 }
 
