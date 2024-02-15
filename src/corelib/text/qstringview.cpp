@@ -766,12 +766,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QStringView::operator==(QStringView lhs, QStringView rhs)
-    \fn QStringView::operator!=(QStringView lhs, QStringView rhs)
-    \fn QStringView::operator< (QStringView lhs, QStringView rhs)
-    \fn QStringView::operator<=(QStringView lhs, QStringView rhs)
-    \fn QStringView::operator> (QStringView lhs, QStringView rhs)
-    \fn QStringView::operator>=(QStringView lhs, QStringView rhs)
+    \fn QStringView::operator==(const QStringView &lhs, const QStringView &rhs)
+    \fn QStringView::operator!=(const QStringView &lhs, const QStringView &rhs)
+    \fn QStringView::operator< (const QStringView &lhs, const QStringView &rhs)
+    \fn QStringView::operator<=(const QStringView &lhs, const QStringView &rhs)
+    \fn QStringView::operator> (const QStringView &lhs, const QStringView &rhs)
+    \fn QStringView::operator>=(const QStringView &lhs, const QStringView &rhs)
 
     Operators for comparing \a lhs to \a rhs.
 

@@ -360,27 +360,22 @@ public:
 #endif
 
     // QStringView <> QStringView
-    friend bool operator==(QStringView lhs, QStringView rhs) noexcept { return lhs.size() == rhs.size() && QtPrivate::equalStrings(lhs, rhs); }
-    friend bool operator!=(QStringView lhs, QStringView rhs) noexcept { return !(lhs == rhs); }
-    friend bool operator< (QStringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) <  0; }
-    friend bool operator<=(QStringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) <= 0; }
-    friend bool operator> (QStringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >  0; }
-    friend bool operator>=(QStringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >= 0; }
+    friend bool comparesEqual(const QStringView &lhs, const QStringView &rhs) noexcept
+    { return lhs.size() == rhs.size() && QtPrivate::equalStrings(lhs, rhs); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QStringView &lhs, const QStringView &rhs) noexcept
+    {
+        const int res = QtPrivate::compareStrings(lhs, rhs);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QStringView)
 
     // QStringView <> QChar
-    friend bool operator==(QStringView lhs, QChar rhs) noexcept { return lhs == QStringView(&rhs, 1); }
-    friend bool operator!=(QStringView lhs, QChar rhs) noexcept { return lhs != QStringView(&rhs, 1); }
-    friend bool operator< (QStringView lhs, QChar rhs) noexcept { return lhs <  QStringView(&rhs, 1); }
-    friend bool operator<=(QStringView lhs, QChar rhs) noexcept { return lhs <= QStringView(&rhs, 1); }
-    friend bool operator> (QStringView lhs, QChar rhs) noexcept { return lhs >  QStringView(&rhs, 1); }
-    friend bool operator>=(QStringView lhs, QChar rhs) noexcept { return lhs >= QStringView(&rhs, 1); }
-
-    friend bool operator==(QChar lhs, QStringView rhs) noexcept { return QStringView(&lhs, 1) == rhs; }
-    friend bool operator!=(QChar lhs, QStringView rhs) noexcept { return QStringView(&lhs, 1) != rhs; }
-    friend bool operator< (QChar lhs, QStringView rhs) noexcept { return QStringView(&lhs, 1) <  rhs; }
-    friend bool operator<=(QChar lhs, QStringView rhs) noexcept { return QStringView(&lhs, 1) <= rhs; }
-    friend bool operator> (QChar lhs, QStringView rhs) noexcept { return QStringView(&lhs, 1) >  rhs; }
-    friend bool operator>=(QChar lhs, QStringView rhs) noexcept { return QStringView(&lhs, 1) >= rhs; }
+    friend bool comparesEqual(const QStringView &lhs, QChar rhs) noexcept
+    { return lhs.size() == 1 && lhs[0] == rhs; }
+    friend Qt::strong_ordering compareThreeWay(const QStringView &lhs, QChar rhs) noexcept
+    { return compareThreeWay(lhs, QStringView(&rhs, 1)); }
+    Q_DECLARE_STRONGLY_ORDERED(QStringView, QChar)
 
     //
     // STL compatibility API:
