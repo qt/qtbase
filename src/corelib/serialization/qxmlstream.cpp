@@ -2963,54 +2963,80 @@ void QXmlStreamWriterPrivate::write(QAnyStringView s)
 
 void QXmlStreamWriterPrivate::writeEscaped(QAnyStringView s, bool escapeWhitespace)
 {
+    struct NextLatin1 {
+        char32_t operator()(const char *&it, const char *) const
+        { return uchar(*it++); }
+    };
+    struct NextUtf8 {
+        char32_t operator()(const char *&it, const char *end) const
+        {
+            uchar uc = *it++;
+            char32_t utf32 = 0;
+            char32_t *output = &utf32;
+            qsizetype n = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(uc, output, it, end);
+            return n < 0 ? 0 : utf32;
+        }
+    };
+    struct NextUtf16 {
+        char32_t operator()(const QChar *&it, const QChar *) const
+        {
+            return (it++)->unicode();
+        }
+    };
+
     QString escaped;
     escaped.reserve(s.size());
     s.visit([&] (auto s) {
         using View = decltype(s);
+        using Decoder = std::conditional_t<std::is_same_v<View, QLatin1StringView>, NextLatin1,
+                            std::conditional_t<std::is_same_v<View, QUtf8StringView>, NextUtf8, NextUtf16>>;
 
         auto it = s.begin();
         const auto end = s.end();
+        Decoder decoder;
 
         while (it != end) {
             QLatin1StringView replacement;
             auto mark = it;
 
             while (it != end) {
-                if (*it == u'<') {
+                auto next_it = it;
+                char32_t uc = decoder(next_it, end);
+                if (uc == u'<') {
                     replacement = "&lt;"_L1;
                     break;
-                } else if (*it == u'>') {
+                } else if (uc == u'>') {
                     replacement = "&gt;"_L1;
                     break;
-                } else if (*it == u'&') {
+                } else if (uc == u'&') {
                     replacement = "&amp;"_L1;
                     break;
-                } else if (*it == u'\"') {
+                } else if (uc == u'\"') {
                     replacement = "&quot;"_L1;
                     break;
-                } else if (*it == u'\t') {
+                } else if (uc == u'\t') {
                     if (escapeWhitespace) {
                         replacement = "&#9;"_L1;
                         break;
                     }
-                } else if (*it == u'\n') {
+                } else if (uc == u'\n') {
                     if (escapeWhitespace) {
                         replacement = "&#10;"_L1;
                         break;
                     }
-                } else if (*it == u'\v' || *it == u'\f') {
+                } else if (uc == u'\v' || uc == u'\f') {
                     hasEncodingError = true;
                     break;
-                } else if (*it == u'\r') {
+                } else if (uc == u'\r') {
                     if (escapeWhitespace) {
                         replacement = "&#13;"_L1;
                         break;
                     }
-                } else if (*it <= u'\x1F' || *it >= u'\uFFFE') {
+                } else if (uc <= u'\x1F' || uc == u'\uFFFE' || uc == u'\uFFFF') {
                     hasEncodingError = true;
                     break;
                 }
-                ++it;
+                it = next_it;
             }
 
             escaped.append(View{mark, it});

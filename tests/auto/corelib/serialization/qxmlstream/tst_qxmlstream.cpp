@@ -572,6 +572,12 @@ private slots:
     void hasAttribute() const;
     void writeWithUtf8Codec() const;
     void writeWithStandalone() const;
+    void writeCharacters_data() const;
+    void writeCharacters() const;
+    void writeAttribute_data() const;
+    void writeAttribute() const;
+    void writeBadCharactersUtf8_data() const;
+    void writeBadCharactersUtf8() const;
     void entitiesAndWhitespace_1() const;
     void entitiesAndWhitespace_2() const;
     void testFalsePrematureError() const;
@@ -1405,6 +1411,125 @@ void tst_QXmlStream::writeWithStandalone() const
         const char *ref = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n";
         QCOMPARE(outarray.constData(), ref);
     }
+}
+
+static void writeCharacters_data_common()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("output");
+
+    QTest::newRow("empty") << QString() << QString();
+
+    // invalid content
+    QTest::newRow("null-character") << u"\0"_s << QString();
+    QTest::newRow("vertical-tab") << "\v" << QString();
+    QTest::newRow("form-feed") << "\f" << QString();
+    QTest::newRow("esc") << "\x1f" << QString();
+    QTest::newRow("U+FFFE") << u"\xfffe"_s << QString();
+    QTest::newRow("U+FFFF") << u"\xffff"_s << QString();
+
+    // simple strings
+    QTest::newRow("us-ascii") << "Hello, world" << "Hello, world";
+    QTest::newRow("latin1") << "Bokmål" << "Bokmål";
+    QTest::newRow("nonlatin1") << "Ελληνικά" << "Ελληνικά";
+    QTest::newRow("nonbmp") << u"\U00010000"_s << u"\U00010000"_s;
+
+    // escaped content
+    QTest::newRow("less-than") << "<" << "&lt;";
+    QTest::newRow("greater-than") << ">" << "&gt;";
+    QTest::newRow("ampersand") << "&" << "&amp;";
+    QTest::newRow("quote") << "\"" << "&quot;";
+}
+
+template <typename Execute, typename Transform>
+static void writeCharacters_common(Execute &&exec, Transform &&transform)
+{
+    QFETCH(QString, input);
+    QFETCH(QString, output);
+    QStringView utf16 = input;
+    QByteArray utf8ba = input.toUtf8();
+    QUtf8StringView utf8(utf8ba);
+
+    // may be invalid if input is not Latin1
+    QByteArray l1ba = input.toLatin1();
+    QLatin1StringView l1(l1ba);
+    if (l1 != input)
+        l1 = {};
+
+    auto write = [&](auto input) -> std::optional<QString> {
+        QString result;
+        QXmlStreamWriter writer(&result);
+        writer.writeStartElement("a");
+        exec(writer, input);
+        writer.writeEndElement();
+        if (writer.hasError())
+            return std::nullopt;
+        return result;
+    };
+
+    if (input.isNull() != output.isNull()) {
+        // error
+        QCOMPARE(write(utf16), std::nullopt);
+        QCOMPARE(write(utf8), std::nullopt);
+        if (!l1.isEmpty())
+            QCOMPARE(write(l1), std::nullopt);
+    } else {
+        output = transform(output);
+        QCOMPARE(write(utf16), output);
+        QCOMPARE(write(utf8), output);
+        if (!l1.isEmpty())
+            QCOMPARE(write(l1), output);
+    }
+}
+
+void tst_QXmlStream::writeCharacters_data() const
+{
+    writeCharacters_data_common();
+    QTest::newRow("tab") << "\t" << "\t";
+    QTest::newRow("newline") << "\n" << "\n";
+    QTest::newRow("carriage-return") << "\r" << "\r";
+}
+
+void tst_QXmlStream::writeCharacters() const
+{
+    auto exec = [](QXmlStreamWriter &writer, auto input) {
+        writer.writeCharacters(input);
+    };
+    auto transform = [](auto output) { return "<a>" + output + "</a>"; };
+    writeCharacters_common(exec, transform);
+}
+
+void tst_QXmlStream::writeAttribute_data() const
+{
+    writeCharacters_data_common();
+    QTest::newRow("tab") << "\t" << "&#9;";
+    QTest::newRow("newline") << "\n" << "&#10;";
+    QTest::newRow("carriage-return") << "\r" << "&#13;";
+}
+
+void tst_QXmlStream::writeAttribute() const
+{
+    auto exec = [](QXmlStreamWriter &writer, auto input) {
+        writer.writeAttribute("b", input);
+    };
+    auto transform = [](auto output) { return "<a b=\"" + output + "\"/>"; };
+    writeCharacters_common(exec, transform);
+}
+
+#include "../../io/qurlinternal/utf8data.cpp"
+void tst_QXmlStream::writeBadCharactersUtf8_data() const
+{
+    QTest::addColumn<QByteArray>("input");
+    loadInvalidUtf8Rows();
+}
+
+void tst_QXmlStream::writeBadCharactersUtf8() const
+{
+    QFETCH(QByteArray, input);
+    QString target;
+    QXmlStreamWriter writer(&target);
+    writer.writeTextElement("a", QUtf8StringView(input));
+    QVERIFY(writer.hasError());
 }
 
 void tst_QXmlStream::entitiesAndWhitespace_1() const
