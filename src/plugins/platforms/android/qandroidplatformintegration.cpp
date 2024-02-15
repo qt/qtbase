@@ -72,6 +72,12 @@ QAndroidPlatformScreen* createScreenForDisplayId(int displayId)
     return new QAndroidPlatformScreen(display);
 }
 
+static bool isValidAndroidContextForRendering()
+{
+    return QtAndroid::isQtApplication() ? QtAndroidPrivate::activity().isValid()
+                                        : QtAndroidPrivate::context().isValid();
+}
+
 } // anonymous namespace
 
 void *QAndroidPlatformNativeInterface::nativeResourceForIntegration(const QByteArray &resource)
@@ -317,9 +323,12 @@ bool QAndroidPlatformIntegration::hasCapability(Capability cap) const
         case ApplicationState: return true;
         case ThreadedPixmaps: return true;
         case NativeWidgets: return QtAndroidPrivate::activity().isValid();
-        case OpenGL: return QtAndroidPrivate::activity().isValid();
-        case ForeignWindows: return QtAndroidPrivate::activity().isValid();
-        case ThreadedOpenGL: return !needsBasicRenderloopWorkaround() && QtAndroidPrivate::activity().isValid();
+        case OpenGL:
+            return isValidAndroidContextForRendering();
+        case ForeignWindows:
+            return isValidAndroidContextForRendering();
+        case ThreadedOpenGL:
+            return !needsBasicRenderloopWorkaround() && isValidAndroidContextForRendering();
         case RasterGLSurface: return QtAndroidPrivate::activity().isValid();
         case TopStackedNativeChildWindows: return false;
         case MaximizeUsingFullscreenGeometry: return true;
@@ -341,7 +350,7 @@ QPlatformBackingStore *QAndroidPlatformIntegration::createPlatformBackingStore(Q
 
 QPlatformOpenGLContext *QAndroidPlatformIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
-    if (!QtAndroidPrivate::activity().isValid())
+    if (!isValidAndroidContextForRendering())
         return nullptr;
     QSurfaceFormat format(context->format());
     format.setAlphaBufferSize(8);
@@ -384,7 +393,7 @@ QOffscreenSurface *QAndroidPlatformIntegration::createOffscreenSurface(ANativeWi
 
 QPlatformWindow *QAndroidPlatformIntegration::createPlatformWindow(QWindow *window) const
 {
-    if (!QtAndroidPrivate::activity().isValid())
+    if (!isValidAndroidContextForRendering())
         return nullptr;
 
 #if QT_CONFIG(vulkan)
