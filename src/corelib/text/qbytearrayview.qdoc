@@ -332,12 +332,12 @@
 */
 
 /*! //! friend
-    \fn int QByteArrayView::operator==(QByteArrayView lhs, QByteArrayView rhs)
-    \fn int QByteArrayView::operator!=(QByteArrayView lhs, QByteArrayView rhs)
-    \fn int QByteArrayView::operator< (QByteArrayView lhs, QByteArrayView rhs)
-    \fn int QByteArrayView::operator<=(QByteArrayView lhs, QByteArrayView rhs)
-    \fn int QByteArrayView::operator> (QByteArrayView lhs, QByteArrayView rhs)
-    \fn int QByteArrayView::operator>=(QByteArrayView lhs, QByteArrayView rhs)
+    \fn int QByteArrayView::operator==(const QByteArrayView &lhs, const QByteArrayView &rhs)
+    \fn int QByteArrayView::operator!=(const QByteArrayView &lhs, const QByteArrayView &rhs)
+    \fn int QByteArrayView::operator< (const QByteArrayView &lhs, const QByteArrayView &rhs)
+    \fn int QByteArrayView::operator<=(const QByteArrayView &lhs, const QByteArrayView &rhs)
+    \fn int QByteArrayView::operator> (const QByteArrayView &lhs, const QByteArrayView &rhs)
+    \fn int QByteArrayView::operator>=(const QByteArrayView &lhs, const QByteArrayView &rhs)
 
     Comparison operators for QByteArrayView.
 */

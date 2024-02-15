@@ -4,6 +4,7 @@
 #define QBYTEARRAYVIEW_H
 
 #include <QtCore/qbytearrayalgorithms.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qstringfwd.h>
 #include <QtCore/qarraydata.h>
 
@@ -315,19 +316,6 @@ public:
     [[nodiscard]] constexpr char first() const { return front(); }
     [[nodiscard]] constexpr char last()  const { return back(); }
 
-    friend inline bool operator==(QByteArrayView lhs, QByteArrayView rhs) noexcept
-    { return lhs.size() == rhs.size() && (!lhs.size() || memcmp(lhs.data(), rhs.data(), lhs.size()) == 0); }
-    friend inline bool operator!=(QByteArrayView lhs, QByteArrayView rhs) noexcept
-    { return !(lhs == rhs); }
-    friend inline bool operator< (QByteArrayView lhs, QByteArrayView rhs) noexcept
-    { return QtPrivate::compareMemory(lhs, rhs) <  0; }
-    friend inline bool operator<=(QByteArrayView lhs, QByteArrayView rhs) noexcept
-    { return QtPrivate::compareMemory(lhs, rhs) <= 0; }
-    friend inline bool operator> (QByteArrayView lhs, QByteArrayView rhs) noexcept
-    { return !(lhs <= rhs); }
-    friend inline bool operator>=(QByteArrayView lhs, QByteArrayView rhs) noexcept
-    { return !(lhs < rhs); }
-
 private:
     Q_ALWAYS_INLINE constexpr void verify([[maybe_unused]] qsizetype pos = 0,
                                           [[maybe_unused]] qsizetype n = 1) const
@@ -337,6 +325,27 @@ private:
         Q_ASSERT(n >= 0);
         Q_ASSERT(n <= size() - pos);
     }
+
+    static inline bool
+    comparesEqual(const QByteArrayView &lhs, const QByteArrayView &rhs) noexcept
+    {
+        return lhs.size() == rhs.size()
+                && (!lhs.size() || memcmp(lhs.data(), rhs.data(), lhs.size()) == 0);
+    }
+    static inline Qt::strong_ordering
+    compareThreeWay(const QByteArrayView &lhs, const QByteArrayView &rhs) noexcept
+    {
+        const int res = QtPrivate::compareMemory(lhs, rhs);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QByteArrayView)
+
+    static inline bool comparesEqual(const QByteArrayView &lhs, const char *rhs) noexcept
+    { return comparesEqual(lhs, QByteArrayView(rhs)); }
+    static inline Qt::strong_ordering
+    compareThreeWay(const QByteArrayView &lhs, const char *rhs) noexcept
+    { return compareThreeWay(lhs, QByteArrayView(rhs)); }
+    Q_DECLARE_STRONGLY_ORDERED(QByteArrayView, const char *)
 
     qsizetype m_size;
     const storage_type *m_data;

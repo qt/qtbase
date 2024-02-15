@@ -320,10 +320,8 @@ private Q_SLOTS:
     void compare_QByteArrayView_QByteArray() { compare_impl<QByteArrayView, QByteArray>(); }
     void compare_QByteArrayView_QByteArrayView_data() { compare_data(); }
     void compare_QByteArrayView_QByteArrayView() { compare_impl<QByteArrayView, QByteArrayView>(); }
-#ifdef AMBIGUOUS_CALL
     void compare_QByteArrayView_const_char_star_data() { compare_data(); }
     void compare_QByteArrayView_const_char_star() { compare_impl<QByteArrayView, const char *>(); }
-#endif
 
     void compare_const_char_star_QChar_data() { compare_data(false); }
     void compare_const_char_star_QChar() { compare_impl<const char *, QChar>(); }
@@ -337,10 +335,8 @@ private Q_SLOTS:
     void compare_const_char_star_QLatin1String() { compare_impl<const char *, QLatin1String>(); }
     void compare_const_char_star_QByteArray_data() { compare_data(); }
     void compare_const_char_star_QByteArray() { compare_impl<const char *, QByteArray>(); }
-#ifdef AMBIGUOUS_CALL
     void compare_const_char_star_QByteArrayView_data() { compare_data(); }
     void compare_const_char_star_QByteArrayView() { compare_impl<const char *, QByteArrayView>(); }
-#endif
     //void compare_const_char_star_const_char_star_data() { compare_data(); }
     //void compare_const_char_star_const_char_star() { compare_impl<const char *, const char *>(); }
 
