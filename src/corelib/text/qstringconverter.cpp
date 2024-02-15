@@ -1555,9 +1555,11 @@ QByteArray QLocal8Bit::convertFromUnicode_sys(QStringView in, quint32 codePage,
                     // incomplete sequence, probably a Windows bug. We try to avoid that from
                     // happening by reducing the window size in that case. But let's keep this
                     // branch just in case of other bugs.
+#ifndef QT_NO_DEBUG
                     r = GetLastError();
                     fprintf(stderr,
                             "WideCharToMultiByte: Cannot convert multibyte text (error %d)\n", r);
+#endif // !QT_NO_DEBUG
                     break;
                 }
                 std::tie(out, outlen) = growOut(neededLength);
