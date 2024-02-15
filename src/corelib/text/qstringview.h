@@ -5,6 +5,7 @@
 #define QSTRINGVIEW_H
 
 #include <QtCore/qchar.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstringliteral.h>
 #include <QtCore/qstringalgorithms.h>
@@ -431,6 +432,23 @@ private:
 
     constexpr int compare_single_char_helper(int diff) const noexcept
     { return diff ? diff : size() > 1 ? 1 : 0; }
+
+    Q_CORE_EXPORT static bool equal_helper(QStringView sv, const char *data, qsizetype len);
+    Q_CORE_EXPORT static int compare_helper(QStringView sv, const char *data, qsizetype len);
+
+#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
+    friend bool comparesEqual(const QStringView &lhs, const QByteArrayView &rhs) noexcept
+    { return equal_helper(lhs, rhs.data(), rhs.size()); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QStringView &lhs, const QByteArrayView &rhs) noexcept
+    {
+        const int res = compare_helper(lhs, rhs.data(), rhs.size());
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QStringView, QByteArrayView, QT_ASCII_CAST_WARN)
+    Q_DECLARE_STRONGLY_ORDERED(QStringView, QByteArray, QT_ASCII_CAST_WARN)
+    Q_DECLARE_STRONGLY_ORDERED(QStringView, const char *, QT_ASCII_CAST_WARN)
+#endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 };
 Q_DECLARE_TYPEINFO(QStringView, Q_PRIMITIVE_TYPE);
 

@@ -6588,6 +6588,28 @@ int QString::compare_helper(const QChar *data1, qsizetype length1, const char *d
     \internal
     \since 6.8
 */
+bool QStringView::equal_helper(QStringView sv, const char *data, qsizetype len)
+{
+    Q_ASSERT(len >= 0);
+    Q_ASSERT(data || len == 0);
+    return QtPrivate::equalStrings(sv, QUtf8StringView(data, len));
+}
+
+/*!
+    \internal
+    \since 6.8
+*/
+int QStringView::compare_helper(QStringView sv, const char *data, qsizetype len)
+{
+    Q_ASSERT(len >= 0);
+    Q_ASSERT(data || len == 0);
+    return QtPrivate::compareStrings(sv, QUtf8StringView(data, len));
+}
+
+/*!
+    \internal
+    \since 6.8
+*/
 bool QLatin1StringView::equal_helper(QLatin1StringView s1, const char *s2, qsizetype len) noexcept
 {
     // because qlatin1stringview.h can't include qutf8stringview.h
