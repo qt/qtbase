@@ -576,6 +576,8 @@ private slots:
     void writeAttribute() const;
     void writeBadCharactersUtf8_data() const;
     void writeBadCharactersUtf8() const;
+    void writeBadCharactersUtf16_data() const;
+    void writeBadCharactersUtf16() const;
     void entitiesAndWhitespace_1() const;
     void entitiesAndWhitespace_2() const;
     void testFalsePrematureError() const;
@@ -1502,6 +1504,24 @@ void tst_QXmlStream::writeBadCharactersUtf8() const
     QString target;
     QXmlStreamWriter writer(&target);
     writer.writeTextElement("a", QUtf8StringView(input));
+    QVERIFY(writer.hasError());
+}
+
+void tst_QXmlStream::writeBadCharactersUtf16_data() const
+{
+    QTest::addColumn<QString>("input");
+    QTest::addRow("low-surrogate") << u"\xdc00"_s;
+    QTest::addRow("high-surrogate") << u"\xd800"_s;
+    QTest::addRow("inverted-surrogate-pair") << u"\xdc00\xd800"_s;
+    QTest::addRow("high-surrogate+non-surrogate") << u"\xd800z"_s;
+}
+
+void tst_QXmlStream::writeBadCharactersUtf16() const
+{
+    QFETCH(QString, input);
+    QString target;
+    QXmlStreamWriter writer(&target);
+    writer.writeTextElement("a", input);
     QVERIFY(writer.hasError());
 }
 

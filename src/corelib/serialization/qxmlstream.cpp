@@ -22,6 +22,7 @@
 #include "qxmlstream_p.h"
 #include "qxmlstreamparser_p.h"
 #include <private/qstringconverter_p.h>
+#include <private/qstringiterator_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -2971,9 +2972,12 @@ void QXmlStreamWriterPrivate::writeEscaped(QAnyStringView s, bool escapeWhitespa
         }
     };
     struct NextUtf16 {
-        char32_t operator()(const QChar *&it, const QChar *) const
+        char32_t operator()(const QChar *&it, const QChar *end) const
         {
-            return (it++)->unicode();
+            QStringIterator decoder(it, end);
+            char32_t result = decoder.next(u'\0');
+            it = decoder.position();
+            return result;
         }
     };
 
