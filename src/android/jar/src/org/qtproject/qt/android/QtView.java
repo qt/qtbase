@@ -31,7 +31,7 @@ abstract class QtView extends ViewGroup {
     protected long m_windowReference;
     protected long m_parentWindowReference;
     protected QtWindowListener m_windowListener;
-    protected QtEmbeddedDelegate m_delegate;
+    protected QtEmbeddedViewInterface m_viewInterface;
     // Implement in subclass to handle the creation of the QWindow and its parent container.
     // TODO could we take care of the parent window creation and parenting outside of the
     // window creation method to simplify things if user would extend this? Preferably without
@@ -60,7 +60,7 @@ abstract class QtView extends ViewGroup {
         }
 
         QtEmbeddedLoader loader = new QtEmbeddedLoader(context);
-        m_delegate = QtEmbeddedDelegateFactory.create((Activity)context);
+        m_viewInterface = QtEmbeddedDelegateFactory.create((Activity)context);
         loader.setMainLibraryName(appLibName);
         addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
@@ -80,22 +80,22 @@ abstract class QtView extends ViewGroup {
         });
         loader.loadQtLibraries();
         // Start Native Qt application
-        m_delegate.startNativeApplication(loader.getApplicationParameters(),
-                                          loader.getMainLibraryPath());
+        m_viewInterface.startQtApplication(loader.getApplicationParameters(),
+                                           loader.getMainLibraryPath());
     }
 
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        m_delegate.setView(this);
-        m_delegate.queueLoadWindow();
+        m_viewInterface.setView(this);
+        m_viewInterface.queueLoadWindow();
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         destroyWindow();
-        m_delegate.setView(null);
+        m_viewInterface.setView(null);
     }
 
     @Override

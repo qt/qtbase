@@ -21,7 +21,9 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppStateDetailsListener {
+class QtEmbeddedDelegate extends QtActivityDelegateBase
+        implements QtNative.AppStateDetailsListener, QtEmbeddedViewInterface
+{
     // TODO simplistic implementation with one QtView, expand to support multiple views QTBUG-117649
     private QtView m_view;
     private QtNative.ApplicationStateDetails m_stateDetails;
@@ -126,6 +128,14 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
         return m_view.getQtWindow();
     }
 
+    // QtEmbeddedViewInterface implementation begin
+    @Override
+    public void startQtApplication(String appParams, String mainLib)
+    {
+        super.startNativeApplication(appParams, mainLib);
+    }
+
+    @Override
     public void queueLoadWindow()
     {
         synchronized (this) {
@@ -134,12 +144,15 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
         }
     }
 
-    void setView(QtView view) {
+    @Override
+    public void setView(QtView view)
+    {
         m_view = view;
         updateInputDelegate();
         if (m_view != null)
             registerGlobalFocusChangeListener(m_view);
     }
+    // QtEmbeddedViewInterface implementation end
 
     private void updateInputDelegate() {
         if (m_view == null) {
