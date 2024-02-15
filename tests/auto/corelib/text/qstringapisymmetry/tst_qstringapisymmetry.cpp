@@ -61,7 +61,6 @@ constexpr bool is_fake_comparator_v = false;
     /*end*/
 
 MAKE_ALL(QByteArray, QChar)
-MAKE_ALL(QByteArray, QLatin1String)
 MAKE_ALL(QByteArray, char16_t)
 MAKE_ALL(char16_t, QByteArray)
 

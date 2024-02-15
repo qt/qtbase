@@ -1336,35 +1336,6 @@ bool QString::operator<=(const char *s) const
 bool QString::operator>=(const char *s) const
 { return QString::compare_helper(constData(), size(), s, -1) >= 0; }
 
-//
-// QLatin1StringView inline members that require QString:
-//
-QT_ASCII_CAST_WARN bool QLatin1StringView::operator==(const char *s) const
-{ return QString::fromUtf8(s) == *this; }
-QT_ASCII_CAST_WARN bool QLatin1StringView::operator!=(const char *s) const
-{ return QString::fromUtf8(s) != *this; }
-QT_ASCII_CAST_WARN bool QLatin1StringView::operator<(const char *s) const
-{ return QString::fromUtf8(s) > *this; }
-QT_ASCII_CAST_WARN bool QLatin1StringView::operator>(const char *s) const
-{ return QString::fromUtf8(s) < *this; }
-QT_ASCII_CAST_WARN bool QLatin1StringView::operator<=(const char *s) const
-{ return QString::fromUtf8(s) >= *this; }
-QT_ASCII_CAST_WARN bool QLatin1StringView::operator>=(const char *s) const
-{ return QString::fromUtf8(s) <= *this; }
-
-QT_ASCII_CAST_WARN bool QLatin1StringView::operator==(const QByteArray &s) const
-{ return QString::fromUtf8(s) == *this; }
-QT_ASCII_CAST_WARN bool QLatin1StringView::operator!=(const QByteArray &s) const
-{ return QString::fromUtf8(s) != *this; }
-QT_ASCII_CAST_WARN bool QLatin1StringView::operator<(const QByteArray &s) const
-{ return QString::fromUtf8(s) > *this; }
-QT_ASCII_CAST_WARN bool QLatin1StringView::operator>(const QByteArray &s) const
-{ return QString::fromUtf8(s) < *this; }
-QT_ASCII_CAST_WARN bool QLatin1StringView::operator<=(const QByteArray &s) const
-{ return QString::fromUtf8(s) >= *this; }
-QT_ASCII_CAST_WARN bool QLatin1StringView::operator>=(const QByteArray &s) const
-{ return QString::fromUtf8(s) <= *this; }
-
 QT_ASCII_CAST_WARN bool QString::operator==(const QByteArray &s) const
 { return QString::compare_helper(constData(), size(), s.constData(), s.size()) == 0; }
 QT_ASCII_CAST_WARN bool QString::operator!=(const QByteArray &s) const

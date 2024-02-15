@@ -840,14 +840,13 @@
 */
 
 /*!
-    \fn bool QLatin1StringView::operator==(const char *other) const
+    \fn bool QLatin1StringView::operator==(const QLatin1StringView &lhs, const char * const &rhs)
     \since 4.3
 
-    Returns \c true if the string is equal to const char pointer \a other;
+    Returns \c true if the string \a lhs is equal to const char pointer \a rhs;
     otherwise returns \c false.
 
-    The \a other const char pointer is converted to a QString using
-    the QString::fromUtf8() function.
+    The \a rhs const char pointer is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -858,12 +857,11 @@
 */
 
 /*!
-    \fn bool QLatin1StringView::operator==(const QByteArray &other) const
+    \fn bool QLatin1StringView::operator==(const QLatin1StringView &lhs, const QByteArray &rhs)
     \since 5.0
     \overload
 
-    The \a other byte array is converted to a QString using
-    the QString::fromUtf8() function.
+    The \a rhs byte array is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -872,14 +870,13 @@
 */
 
 /*!
-    \fn bool QLatin1StringView::operator!=(const char *other) const
+    \fn bool QLatin1StringView::operator!=(const QLatin1StringView &lhs, const char * const &rhs)
     \since 4.3
 
-    Returns \c true if this string is not equal to const char pointer \a other;
+    Returns \c true if the string \a lhs is not equal to const char pointer \a rhs;
     otherwise returns \c false.
 
-    The \a other const char pointer is converted to a QString using
-    the QString::fromUtf8() function.
+    The \a rhs const char pointer is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -890,12 +887,11 @@
 */
 
 /*!
-    \fn bool QLatin1StringView::operator!=(const QByteArray &other) const
+    \fn bool QLatin1StringView::operator!=(const QLatin1StringView &lhs, const QByteArray &rhs)
     \since 5.0
     \overload operator!=()
 
-    The \a other byte array is converted to a QString using
-    the QString::fromUtf8() function.
+    The \a rhs byte array is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -904,14 +900,13 @@
 */
 
 /*!
-    \fn bool QLatin1StringView::operator>(const char *other) const
+    \fn bool QLatin1StringView::operator>(const QLatin1StringView &lhs, const char * const &rhs)
     \since 4.3
 
-    Returns \c true if this string is lexically greater than const char pointer
-    \a other; otherwise returns \c false.
+    Returns \c true if the string \a lhs is lexically greater than const char pointer
+    \a rhs; otherwise returns \c false.
 
-    The \a other const char pointer is converted to a QString using
-    the QString::fromUtf8() function.
+    The \a rhs const char pointer is converted to a QUtf8StringView.
 
     You can disable this operator by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
@@ -922,12 +917,11 @@
 */
 
 /*!
-    \fn bool QLatin1StringView::operator>(const QByteArray &other) const
+    \fn bool QLatin1StringView::operator>(const QLatin1StringView &lhs, const QByteArray &rhs)
     \since 5.0
     \overload
 
-    The \a other byte array is converted to a QString using
-    the QString::fromUtf8() function.
+    The \a rhs byte array is converted to a QUtf8StringView.
 
     You can disable this operator by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
@@ -936,14 +930,13 @@
 */
 
 /*!
-    \fn bool QLatin1StringView::operator<(const char *other) const
+    \fn bool QLatin1StringView::operator<(const QLatin1StringView &lhs, const char * const &rhs)
     \since 4.3
 
-    Returns \c true if this string is lexically less than const char pointer
-    \a other; otherwise returns \c false.
+    Returns \c true if the string \a lhs is lexically less than const char pointer
+    \a rhs; otherwise returns \c false.
 
-    The \a other const char pointer is converted to a QString using
-    the QString::fromUtf8() function.
+    The \a rhs const char pointer is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -954,12 +947,11 @@
 */
 
 /*!
-    \fn bool QLatin1StringView::operator<(const QByteArray &other) const
+    \fn bool QLatin1StringView::operator<(const QLatin1StringView &lhs, const QByteArray &rhs)
     \since 5.0
     \overload
 
-    The \a other byte array is converted to a QString using
-    the QString::fromUtf8() function.
+    The \a rhs byte array is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -968,14 +960,13 @@
 */
 
 /*!
-    \fn bool QLatin1StringView::operator>=(const char *other) const
+    \fn bool QLatin1StringView::operator>=(const QLatin1StringView &lhs, const char * const &rhs)
     \since 4.3
 
-    Returns \c true if this string is lexically greater than or equal to
-    const char pointer \a other; otherwise returns \c false.
+    Returns \c true if the string \a lhs is lexically greater than or equal to
+    const char pointer \a rhs; otherwise returns \c false.
 
-    The \a other const char pointer is converted to a QString using
-    the QString::fromUtf8() function.
+    The \a rhs const char pointer is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -986,12 +977,11 @@
 */
 
 /*!
-    \fn bool QLatin1StringView::operator>=(const QByteArray &other) const
+    \fn bool QLatin1StringView::operator>=(const QLatin1StringView &lhs, const QByteArray &rhs)
     \since 5.0
     \overload
 
-    The \a other byte array is converted to a QString using
-    the QString::fromUtf8() function.
+    The \a rhs byte array is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -1000,14 +990,13 @@
 */
 
 /*!
-    \fn bool QLatin1StringView::operator<=(const char *other) const
+    \fn bool QLatin1StringView::operator<=(const QLatin1StringView &lhs, const char * const &rhs)
     \since 4.3
 
-    Returns \c true if this string is lexically less than or equal to
-    const char pointer \a other; otherwise returns \c false.
+    Returns \c true if the string \a lhs is lexically less than or equal to
+    const char pointer \a rhs; otherwise returns \c false.
 
-    The \a other const char pointer is converted to a QString using
-    the QString::fromUtf8() function.
+    The \a rhs const char pointer is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -1018,12 +1007,11 @@
 */
 
 /*!
-    \fn bool QLatin1StringView::operator<=(const QByteArray &other) const
+    \fn bool QLatin1StringView::operator<=(const QLatin1StringView &lhs, const QByteArray &rhs)
     \since 5.0
     \overload
 
-    The \a other byte array is converted to a QString using
-    the QString::fromUtf8() function.
+    The \a rhs byte array is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -1185,35 +1173,35 @@
     string view \a s2; otherwise returns \c false.
 */
 
-/*! \fn bool QLatin1StringView::operator==(const char *s1, QLatin1StringView s2)
+/*! \fn bool QLatin1StringView::operator==(const char * const &lhs, const QLatin1StringView &rhs)
 
-    Returns \c true if const char pointer \a s1 is lexically equal to
-    string \a s2; otherwise returns \c false.
+    Returns \c true if const char pointer \a lhs is lexically equal to
+    string \a rhs; otherwise returns \c false.
 */
-/*! \fn bool QLatin1StringView::operator<(const char *s1, QLatin1StringView s2)
+/*! \fn bool QLatin1StringView::operator<(const char * const &lhs, const QLatin1StringView &rhs)
 
-    Returns \c true if const char pointer \a s1 is lexically less than
-    string \a s2; otherwise returns \c false.
+    Returns \c true if const char pointer \a lhs is lexically less than
+    string \a rhs; otherwise returns \c false.
 */
-/*! \fn bool QLatin1StringView::operator>(const char *s1, QLatin1StringView s2)
+/*! \fn bool QLatin1StringView::operator>(const char * const &lhs, const QLatin1StringView &rhs)
 
-    Returns \c true if const char pointer \a s1 is lexically greater than
-    string \a s2; otherwise returns \c false.
+    Returns \c true if const char pointer \a lhs is lexically greater than
+    string \a rhs; otherwise returns \c false.
 */
-/*! \fn bool QLatin1StringView::operator!=(const char *s1, QLatin1StringView s2)
+/*! \fn bool QLatin1StringView::operator!=(const char * const &lhs, const QLatin1StringView &rhs)
 
-    Returns \c true if const char pointer \a s1 is lexically not equal to
-    string \a s2; otherwise returns \c false.
+    Returns \c true if const char pointer \a lhs is lexically not equal to
+    string \a rhs; otherwise returns \c false.
 */
-/*! \fn bool QLatin1StringView::operator<=(const char *s1, QLatin1StringView s2)
+/*! \fn bool QLatin1StringView::operator<=(const char * const &lhs, const QLatin1StringView &rhs)
 
-    Returns \c true if const char pointer \a s1 is lexically less than or
-    equal to string \a s2; otherwise returns \c false.
+    Returns \c true if const char pointer \a lhs is lexically less than or
+    equal to string \a rhs; otherwise returns \c false.
 */
-/*! \fn bool QLatin1StringView::operator>=(const char *s1, QLatin1StringView s2)
+/*! \fn bool QLatin1StringView::operator>=(const char * const &lhs, const QLatin1StringView &rhs)
 
-    Returns \c true if const char pointer \a s1 is lexically greater than or
-    equal to string \a s2; otherwise returns \c false.
+    Returns \c true if const char pointer \a lhs is lexically greater than or
+    equal to string \a rhs; otherwise returns \c false.
 */
 
 /*!

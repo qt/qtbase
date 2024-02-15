@@ -312,28 +312,9 @@ private:
 
 public:
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
-    QT_ASCII_CAST_WARN inline bool operator==(const char *s) const;
-    QT_ASCII_CAST_WARN inline bool operator!=(const char *s) const;
-    QT_ASCII_CAST_WARN inline bool operator<(const char *s) const;
-    QT_ASCII_CAST_WARN inline bool operator>(const char *s) const;
-    QT_ASCII_CAST_WARN inline bool operator<=(const char *s) const;
-    QT_ASCII_CAST_WARN inline bool operator>=(const char *s) const;
-
-    QT_ASCII_CAST_WARN inline bool operator==(const QByteArray &s) const;
-    QT_ASCII_CAST_WARN inline bool operator!=(const QByteArray &s) const;
-    QT_ASCII_CAST_WARN inline bool operator<(const QByteArray &s) const;
-    QT_ASCII_CAST_WARN inline bool operator>(const QByteArray &s) const;
-    QT_ASCII_CAST_WARN inline bool operator<=(const QByteArray &s) const;
-    QT_ASCII_CAST_WARN inline bool operator>=(const QByteArray &s) const;
-
     Q_DECLARE_STRONGLY_ORDERED(QLatin1StringView, QByteArrayView, QT_ASCII_CAST_WARN)
-
-    QT_ASCII_CAST_WARN friend bool operator==(const char *s1, QLatin1StringView s2) { return compare_helper(s2, s1) == 0; }
-    QT_ASCII_CAST_WARN friend bool operator!=(const char *s1, QLatin1StringView s2) { return compare_helper(s2, s1) != 0; }
-    QT_ASCII_CAST_WARN friend bool operator< (const char *s1, QLatin1StringView s2) { return compare_helper(s2, s1) >  0; }
-    QT_ASCII_CAST_WARN friend bool operator> (const char *s1, QLatin1StringView s2) { return compare_helper(s2, s1) <  0; }
-    QT_ASCII_CAST_WARN friend bool operator<=(const char *s1, QLatin1StringView s2) { return compare_helper(s2, s1) >= 0; }
-    QT_ASCII_CAST_WARN friend bool operator>=(const char *s1, QLatin1StringView s2) { return compare_helper(s2, s1) <= 0; }
+    Q_DECLARE_STRONGLY_ORDERED(QLatin1StringView, QByteArray, QT_ASCII_CAST_WARN)
+    Q_DECLARE_STRONGLY_ORDERED(QLatin1StringView, const char *, QT_ASCII_CAST_WARN)
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
 private:
