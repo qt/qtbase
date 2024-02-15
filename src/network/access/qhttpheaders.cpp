@@ -11,6 +11,9 @@
 #include <QtCore/qset.h>
 #include <QtCore/qttypetraits.h>
 
+#include <q20algorithm.h>
+#include <string_view>
+
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
@@ -254,7 +257,226 @@ static constexpr auto headerNames = qOffsetStringArray(
     "pragma",
     "protocol-info",
     "protocol-query"
+    // If you append here, regenerate the index table
 );
+
+namespace {
+struct ByIndirectHeaderName
+{
+    constexpr bool operator()(quint8 lhs, quint8 rhs) const noexcept
+    {
+        return (*this)(map(lhs), map(rhs));
+    }
+    constexpr bool operator()(quint8 lhs, QByteArrayView rhs) const noexcept
+    {
+        return (*this)(map(lhs), rhs);
+    }
+    constexpr bool operator()(QByteArrayView lhs, quint8 rhs) const noexcept
+    {
+        return (*this)(lhs, map(rhs));
+    }
+    constexpr bool operator()(QByteArrayView lhs, QByteArrayView rhs) const noexcept
+    {
+        // ### just `lhs < rhs` when QByteArrayView relational operators are constexpr
+        return std::string_view(lhs) < std::string_view(rhs);
+    }
+private:
+    static constexpr QByteArrayView map(quint8 i) noexcept
+    {
+        return headerNames.viewAt(i);
+    }
+};
+} // unnamed namespace
+
+// This index table contains the indexes of 'headerNames' entries (above) in alphabetical order.
+// This allows a more efficient binary search for the names [O(logN)]. The 'headerNames' itself
+// cannot be guaranteed to be in alphabetical order, as it must keep the same order as the
+// WellKnownHeader enum, which may get appended over time.
+//
+// Note: when appending new enums, this must be regenerated
+static constexpr quint8 orderedHeaderNameIndexes[] = {
+    0, // a-im
+    1, // accept
+    2, // accept-additions
+    3, // accept-ch
+    172, // accept-charset
+    4, // accept-datetime
+    5, // accept-encoding
+    6, // accept-features
+    7, // accept-language
+    8, // accept-patch
+    9, // accept-post
+    10, // accept-ranges
+    11, // accept-signature
+    12, // access-control-allow-credentials
+    13, // access-control-allow-headers
+    14, // access-control-allow-methods
+    15, // access-control-allow-origin
+    16, // access-control-expose-headers
+    17, // access-control-max-age
+    18, // access-control-request-headers
+    19, // access-control-request-method
+    20, // age
+    21, // allow
+    22, // alpn
+    23, // alt-svc
+    24, // alt-used
+    25, // alternates
+    26, // apply-to-redirect-ref
+    27, // authentication-control
+    28, // authentication-info
+    29, // authorization
+    173, // c-pep-info
+    30, // cache-control
+    31, // cache-status
+    32, // cal-managed-id
+    33, // caldav-timezones
+    34, // capsule-protocol
+    35, // cdn-cache-control
+    36, // cdn-loop
+    37, // cert-not-after
+    38, // cert-not-before
+    39, // clear-site-data
+    40, // client-cert
+    41, // client-cert-chain
+    42, // close
+    43, // connection
+    44, // content-digest
+    45, // content-disposition
+    46, // content-encoding
+    47, // content-id
+    48, // content-language
+    49, // content-length
+    50, // content-location
+    51, // content-range
+    52, // content-security-policy
+    53, // content-security-policy-report-only
+    54, // content-type
+    55, // cookie
+    56, // cross-origin-embedder-policy
+    57, // cross-origin-embedder-policy-report-only
+    58, // cross-origin-opener-policy
+    59, // cross-origin-opener-policy-report-only
+    60, // cross-origin-resource-policy
+    61, // dasl
+    62, // date
+    63, // dav
+    64, // delta-base
+    65, // depth
+    66, // destination
+    67, // differential-id
+    68, // dpop
+    69, // dpop-nonce
+    70, // early-data
+    71, // etag
+    72, // expect
+    73, // expect-ct
+    74, // expires
+    75, // forwarded
+    76, // from
+    77, // hobareg
+    78, // host
+    79, // if
+    80, // if-match
+    81, // if-modified-since
+    82, // if-none-match
+    83, // if-range
+    84, // if-schedule-tag-match
+    85, // if-unmodified-since
+    86, // im
+    87, // include-referred-token-binding-id
+    88, // keep-alive
+    89, // label
+    90, // last-event-id
+    91, // last-modified
+    92, // link
+    93, // location
+    94, // lock-token
+    95, // max-forwards
+    96, // memento-datetime
+    97, // meter
+    98, // mime-version
+    99, // negotiate
+    100, // nel
+    101, // odata-entityid
+    102, // odata-isolation
+    103, // odata-maxversion
+    104, // odata-version
+    105, // optional-www-authenticate
+    106, // ordering-type
+    107, // origin
+    108, // origin-agent-cluster
+    109, // oscore
+    110, // oslc-core-version
+    111, // overwrite
+    112, // ping-from
+    113, // ping-to
+    114, // position
+    174, // pragma
+    115, // prefer
+    116, // preference-applied
+    117, // priority
+    175, // protocol-info
+    176, // protocol-query
+    118, // proxy-authenticate
+    119, // proxy-authentication-info
+    120, // proxy-authorization
+    121, // proxy-status
+    122, // public-key-pins
+    123, // public-key-pins-report-only
+    124, // range
+    125, // redirect-ref
+    126, // referer
+    127, // refresh
+    128, // replay-nonce
+    129, // repr-digest
+    130, // retry-after
+    131, // schedule-reply
+    132, // schedule-tag
+    133, // sec-purpose
+    134, // sec-token-binding
+    135, // sec-websocket-accept
+    136, // sec-websocket-extensions
+    137, // sec-websocket-key
+    138, // sec-websocket-protocol
+    139, // sec-websocket-version
+    140, // server
+    141, // server-timing
+    142, // set-cookie
+    143, // signature
+    144, // signature-input
+    145, // slug
+    146, // soapaction
+    147, // status-uri
+    148, // strict-transport-security
+    149, // sunset
+    150, // surrogate-capability
+    151, // surrogate-control
+    152, // tcn
+    153, // te
+    154, // timeout
+    155, // topic
+    156, // traceparent
+    157, // tracestate
+    158, // trailer
+    159, // transfer-encoding
+    160, // ttl
+    161, // upgrade
+    162, // urgency
+    163, // user-agent
+    164, // variant-vary
+    165, // vary
+    166, // via
+    167, // want-content-digest
+    168, // want-repr-digest
+    169, // www-authenticate
+    170, // x-content-type-options
+    171, // x-frame-options
+};
+static_assert(std::size(orderedHeaderNameIndexes) == size_t(headerNames.count()));
+static_assert(q20::is_sorted(std::begin(orderedHeaderNameIndexes),
+                             std::end(orderedHeaderNameIndexes),
+                             ByIndirectHeaderName{}));
 
 /*!
     \enum QHttpHeaders::WellKnownHeader
