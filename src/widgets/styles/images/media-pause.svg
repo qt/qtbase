@@ -21,7 +21,7 @@
    inkscape:export-ydpi="768"><metadata
    id="metadata15"><rdf:RDF><cc:Work
        rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
-         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title /></cc:Work></rdf:RDF></metadata><defs
    id="defs13" /><sodipodi:namedview
    pagecolor="#ffffff"
    bordercolor="#666666"
@@ -51,16 +51,7 @@
 	.st0{fill:none;}
 </style>
 
-<rect
-   id="rect19-6"
-   width="2.0723705"
-   height="9.2413378"
-   x="-1.0361853"
-   y="6.6930394"
-   style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.101217;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-   transform="rotate(-45)"
-   inkscape:label="rect1"
-   sodipodi:insensitive="true" /><g
+<g
    id="g1774"><rect
      style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.0575"
      id="rect1755"
