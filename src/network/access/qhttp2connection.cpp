@@ -559,8 +559,9 @@ QHttp2Connection::createStreamInternal()
 
 QHttp2Stream *QHttp2Connection::createStreamInternal_impl(quint32 streamID)
 {
+    qsizetype numStreams = m_streams.size();
     QPointer<QHttp2Stream> &stream = m_streams[streamID];
-    if (stream)
+    if (numStreams == m_streams.size()) // stream already existed
         return nullptr;
     stream = new QHttp2Stream(this, streamID);
     stream->m_recvWindow = streamInitialReceiveWindowSize;
