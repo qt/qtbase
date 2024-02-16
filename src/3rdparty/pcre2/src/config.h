@@ -14,13 +14,15 @@
 #define MAX_NAME_SIZE 32
 #define NEWLINE_DEFAULT 2
 #define PARENS_NEST_LIMIT 250
+#define MAX_VARLOOKBEHIND 255
 
 #define SUPPORT_UNICODE
+#define PCRE2_EXPORT
 
 /*
     man 3 pcre2jit for a list of supported platforms;
-    as PCRE2 10.22, stable JIT support is available for:
-    - ARM 32-bit (v5, v7, and Thumb2)
+    as PCRE2 10.43, stable JIT support is available for:
+    - ARM 32-bit (v7 and Thumb2)
     - ARM 64-bit
     - Intel x86 32-bit and 64-bit
     - MIPS 32-bit and 64-bit
@@ -32,7 +34,7 @@
 #if !defined(PCRE2_DISABLE_JIT) && (\
     /* ARM */ \
     (defined(__GNUC__) \
-        && (defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM) || defined(__aarch64__))) \
+        && (defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__aarch64__))) \
     /* x86 32/64 */ \
     || defined(__i386) || defined(__i386__) || defined(_M_IX86) \
     || defined(__x86_64) || defined(__x86_64__) || defined(__amd64) || defined(_M_X64) \
