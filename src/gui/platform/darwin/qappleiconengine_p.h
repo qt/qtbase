@@ -40,7 +40,7 @@ public:
     QPixmap scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale) override;
     void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state) override;
 
-    static QList<QSize> availableIconSizes();
+    static QList<QSize> availableIconSizes(double aspectRatio = 1.0);
 
 private:
     static constexpr quint64 calculateCacheKey(QIcon::Mode mode, QIcon::State state)

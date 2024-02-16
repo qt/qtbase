@@ -319,27 +319,35 @@ bool QAppleIconEngine::isNull()
     return m_image == nullptr;
 }
 
-QList<QSize> QAppleIconEngine::availableIconSizes()
+QList<QSize> QAppleIconEngine::availableIconSizes(double aspectRatio)
 {
     const qreal devicePixelRatio = qGuiApp->devicePixelRatio();
     const QList<QSize> sizes = {
-        {qRound(16 * devicePixelRatio), qRound(16 * devicePixelRatio)},
-        {qRound(32 * devicePixelRatio), qRound(32 * devicePixelRatio)},
-        {qRound(64 * devicePixelRatio), qRound(64 * devicePixelRatio)},
-        {qRound(128 * devicePixelRatio), qRound(128 * devicePixelRatio)},
-        {qRound(256 * devicePixelRatio), qRound(256 * devicePixelRatio)},
+        {qRound(16 * devicePixelRatio), qRound(16. * devicePixelRatio / aspectRatio)},
+        {qRound(32 * devicePixelRatio), qRound(32. * devicePixelRatio / aspectRatio)},
+        {qRound(64 * devicePixelRatio), qRound(64. * devicePixelRatio / aspectRatio)},
+        {qRound(128 * devicePixelRatio), qRound(128. * devicePixelRatio / aspectRatio)},
+        {qRound(256 * devicePixelRatio), qRound(256. * devicePixelRatio / aspectRatio)},
     };
     return sizes;
 }
 
 QList<QSize> QAppleIconEngine::availableSizes(QIcon::Mode, QIcon::State)
 {
-    return availableIconSizes();
+    const double aspectRatio = isNull() ? 1.0 : m_image.size.width / m_image.size.height;
+    return availableIconSizes(aspectRatio);
 }
 
-QSize QAppleIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state)
+QSize QAppleIconEngine::actualSize(const QSize &size, QIcon::Mode /*mode*/, QIcon::State /*state*/)
 {
-    return QIconEngine::actualSize(size, mode, state);
+    const double inputAspectRatio = isNull() ? 1.0 : m_image.size.width / m_image.size.height;
+    const double outputAspectRatio = size.width() / size.height();
+    QSize result = size;
+    if (outputAspectRatio > inputAspectRatio)
+        result.rwidth() = result.height() * inputAspectRatio;
+    else
+        result.rheight() = result.width() / inputAspectRatio;
+    return result;
 }
 
 QPixmap QAppleIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
@@ -423,23 +431,13 @@ QPixmap QAppleIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIco
         // The size we want might have a different aspect ratio than the icon we have.
         // So ask for a pixmap with the same aspect ratio as the icon, constrained to the
         // size we want, and then center that within a pixmap of the requested size.
-        QSizeF renderSize = size * scale;
-        const double inputAspectRatio = image.size.width / image.size.height;
-        const double outputAspectRatio = size.width() / size.height();
-        const bool aspectRatioAdjusted = !qFuzzyCompare(inputAspectRatio, outputAspectRatio);
-        if (aspectRatioAdjusted) {
-            // don't grow
-            if (outputAspectRatio > inputAspectRatio)
-                renderSize.rwidth() = renderSize.height() * inputAspectRatio;
-            else
-                renderSize.rheight() = renderSize.width() / inputAspectRatio;
-        }
-
+        const QSize requestedSize = size * scale;
+        const QSizeF renderSize = actualSize(requestedSize, mode, state);
         QPixmap iconPixmap = imageToPixmap(image, renderSize);
         iconPixmap.setDevicePixelRatio(scale);
 
-        if (aspectRatioAdjusted) {
-            m_pixmap = QPixmap(size * scale);
+        if (renderSize != requestedSize) {
+            m_pixmap = QPixmap(requestedSize);
             m_pixmap.fill(Qt::transparent);
             m_pixmap.setDevicePixelRatio(scale);
 
