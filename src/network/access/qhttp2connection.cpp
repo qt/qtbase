@@ -892,12 +892,16 @@ void QHttp2Connection::handleHEADERS()
     if (streamID == connectionStreamID)
         return connectionError(PROTOCOL_ERROR, "HEADERS on 0x0 stream");
 
-    if (QPointer<QHttp2Stream> stream = m_streams.value(streamID); !stream) {
+    if (streamID > m_lastIncomingStreamID) {
         QHttp2Stream *newStream = createStreamInternal_impl(streamID);
         m_lastIncomingStreamID = streamID;
         qCDebug(qHttp2ConnectionLog, "[%p] Created new incoming stream %d", this, streamID);
         emit newIncomingStream(newStream);
-    } else if (streamWasReset(streamID)) {
+    } else if (auto it = m_streams.constFind(streamID); it == m_streams.cend()) {
+        qCDebug(qHttp2ConnectionLog, "[%p] Received HEADERS on non-existent stream %d", this,
+                streamID);
+        return connectionError(PROTOCOL_ERROR, "HEADERS on invalid stream");
+    } else if (!*it || (*it)->wasReset()) {
         qCDebug(qHttp2ConnectionLog, "[%p] Received HEADERS on reset stream %d", this, streamID);
         return connectionError(ENHANCE_YOUR_CALM, "HEADERS on invalid stream");
     }
@@ -1048,13 +1052,13 @@ void QHttp2Connection::handlePUSH_PROMISE()
         return connectionError(ENHANCE_YOUR_CALM, "PUSH_PROMISE with invalid associated stream");
 
     const auto reservedID = qFromBigEndian<quint32>(inboundFrame.dataBegin());
-    if ((reservedID & 1) || reservedID <= lastPromisedID || reservedID > lastValidStreamID)
+    if ((reservedID & 1) || reservedID <= m_lastIncomingStreamID || reservedID > lastValidStreamID)
         return connectionError(PROTOCOL_ERROR, "PUSH_PROMISE with invalid promised stream ID");
 
     auto *stream = createStreamInternal_impl(reservedID);
     if (!stream)
         return connectionError(PROTOCOL_ERROR, "PUSH_PROMISE with already active stream ID");
-    lastPromisedID = reservedID;
+    m_lastIncomingStreamID = reservedID;
     stream->setState(QHttp2Stream::State::ReservedRemote);
 
     if (!pushPromiseEnabled) {
