@@ -346,7 +346,6 @@ private:
     bool m_upgradedConnection = false;
     bool m_goingAway = false;
     bool pushPromiseEnabled = false;
-    quint32 lastPromisedID = Http2::connectionStreamID;
     quint32 m_lastIncomingStreamID = Http2::connectionStreamID;
 
     // Server-side only:
