@@ -167,7 +167,18 @@ public:
     QDataStream &operator<<(qint64 i);
     QDataStream &operator<<(quint64 i);
     QDataStream &operator<<(std::nullptr_t) { return *this; }
+#if QT_CORE_REMOVED_SINCE(6, 8) || defined(Q_QDOC)
     QDataStream &operator<<(bool i);
+#endif
+#if !defined(Q_QDOC)
+    // Disable implicit conversions to bool (e.g. for pointers)
+    template <typename T,
+             std::enable_if_t<std::is_same_v<std::remove_cv_t<T>, bool>, bool> = true>
+    QDataStream &operator<<(T i)
+    {
+        return (*this << qint8(i));
+    }
+#endif
 #if QT_CORE_REMOVED_SINCE(6, 3)
     QDataStream &operator<<(qfloat16 f);
 #endif
@@ -176,9 +187,6 @@ public:
     QDataStream &operator<<(const char *str);
     QDataStream &operator<<(char16_t c);
     QDataStream &operator<<(char32_t c);
-    QDataStream &operator<<(const volatile void *) = delete;
-    template <typename T, typename C>
-    QDataStream &operator<<(T C::*) = delete;
 
 #if QT_DEPRECATED_SINCE(6, 11)
     QT_DEPRECATED_VERSION_X_6_11("Use an overload that takes qint64 length.")

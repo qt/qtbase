@@ -919,6 +919,11 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
 
 #include "qdatastream.h" // inlined API
 
+QDataStream &QDataStream::operator<<(bool i)
+{
+    return (*this << qint8(i));
+}
+
 #include "qdir.h" // inlined API
 
 bool QDir::operator==(const QDir &dir) const

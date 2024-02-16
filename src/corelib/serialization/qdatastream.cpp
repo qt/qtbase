@@ -1267,17 +1267,12 @@ QDataStream &QDataStream::operator<<(qint64 i)
 */
 
 /*!
+    \fn QDataStream &QDataStream::operator<<(bool i)
+    \overload
+
     Writes a boolean value, \a i, to the stream. Returns a reference
     to the stream.
 */
-
-QDataStream &QDataStream::operator<<(bool i)
-{
-    CHECK_STREAM_WRITE_PRECOND(*this)
-    if (!dev->putChar(qint8(i)))
-        q_status = WriteFailed;
-    return *this;
-}
 
 /*!
     \overload
