@@ -663,6 +663,26 @@ static_assert(q20::is_sorted(std::begin(orderedHeaderNameIndexes),
     \value ProtocolQuery
 */
 
+static QByteArray fieldToByteArray(QLatin1StringView s) noexcept
+{
+    return QByteArray(s.data(), s.size());
+}
+
+static QByteArray fieldToByteArray(QUtf8StringView s) noexcept
+{
+    return QByteArray(s.data(), s.size());
+}
+
+static QByteArray fieldToByteArray(QStringView s)
+{
+    return s.toLatin1();
+}
+
+static QByteArray normalizedName(QAnyStringView name)
+{
+    return name.visit([](auto name){ return fieldToByteArray(name); }).toLower();
+}
+
 // A clarification on case-sensitivity:
 // - Header *names*  are case-insensitive; Content-Type and content-type are considered equal
 // - Header *values* are case-sensitive
@@ -952,26 +972,6 @@ static bool isValidHttpHeaderValueField(QAnyStringView value) noexcept
     if (!valid)
         qCWarning(lcQHttpHeaders, "HTTP header value contained illegal character(s)");
     return valid;
-}
-
-static QByteArray fieldToByteArray(QLatin1StringView s) noexcept
-{
-    return QByteArray(s.data(), s.size());
-}
-
-static QByteArray fieldToByteArray(QUtf8StringView s) noexcept
-{
-    return QByteArray(s.data(), s.size());
-}
-
-static QByteArray fieldToByteArray(QStringView s)
-{
-    return s.toLatin1();
-}
-
-static QByteArray normalizedName(QAnyStringView name)
-{
-    return name.visit([](auto name){ return fieldToByteArray(name); }).toLower();
 }
 
 static QByteArray normalizedValue(QAnyStringView value)
