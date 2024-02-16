@@ -173,6 +173,7 @@ qt_internal_extend_target(Bootstrap CONDITION CMAKE_CROSSCOMPILING OR NOT QT_FEA
         ../../3rdparty/pcre2/src/pcre2.h
         ../../3rdparty/pcre2/src/pcre2_auto_possess.c
         ../../3rdparty/pcre2/src/pcre2_chartables.c
+        ../../3rdparty/pcre2/src/pcre2_chkdint.c
         ../../3rdparty/pcre2/src/pcre2_compile.c
         ../../3rdparty/pcre2/src/pcre2_config.c
         ../../3rdparty/pcre2/src/pcre2_context.c
