@@ -18,5 +18,18 @@ extern "C" int LLVMFuzzerTestOneInput(const char *data, size_t size) {
     static char *argv[] = {arg1, arg2, arg3, nullptr};
     static QGuiApplication qga(argc, argv);
     QColorSpace cs = QColorSpace::fromIccProfile(QByteArray::fromRawData(data, size));
+    if (cs.isValid()) {
+        cs.description();
+        QColorTransform trans1 = cs.transformationToColorSpace(QColorSpace::SRgb);
+        trans1.isIdentity();
+        QColorSpace cs2 = cs;
+        cs2.setDescription("Hello");
+        bool b = (cs == cs2);
+        QRgb color = 0xfaf8fa00;
+        color = trans1.map(color);
+        QColorTransform trans2 = QColorSpace(QColorSpace::SRgb).transformationToColorSpace(cs);
+        bool a = (trans1 == trans2);
+        color = trans2.map(color);
+    }
     return 0;
 }

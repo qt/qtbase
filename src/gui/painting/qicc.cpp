@@ -1,4 +1,4 @@
-// Copyright (C) 2020 The Qt Company Ltd.
+// Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qicc_p.h"
@@ -12,6 +12,8 @@
 #include <qloggingcategory.h>
 #include <qstring.h>
 
+#include "qcolorclut_p.h"
+#include "qcolormatrix_p.h"
 #include "qcolorspace_p.h"
 #include "qcolortrc_p.h"
 
@@ -60,18 +62,23 @@ constexpr quint32 IccTag(uchar a, uchar b, uchar c, uchar d)
 enum class ColorSpaceType : quint32 {
     Rgb       = IccTag('R', 'G', 'B', ' '),
     Gray      = IccTag('G', 'R', 'A', 'Y'),
+    Cmyk      = IccTag('C', 'M', 'Y', 'K'),
 };
 
 enum class ProfileClass : quint32 {
     Input       = IccTag('s', 'c', 'n', 'r'),
     Display     = IccTag('m', 'n', 't', 'r'),
-    // Not supported:
     Output      = IccTag('p', 'r', 't', 'r'),
     ColorSpace  = IccTag('s', 'p', 'a', 'c'),
+    // Not supported:
+    DeviceLink  = IccTag('l', 'i', 'n', 'k'),
+    Abstract    = IccTag('a', 'b', 's', 't'),
+    NamedColor  = IccTag('n', 'm', 'c', 'l'),
 };
 
 enum class Tag : quint32 {
     acsp = IccTag('a', 'c', 's', 'p'),
+    Lab_ = IccTag('L', 'a', 'b', ' '),
     RGB_ = IccTag('R', 'G', 'B', ' '),
     XYZ_ = IccTag('X', 'Y', 'Z', ' '),
     rXYZ = IccTag('r', 'X', 'Y', 'Z'),
@@ -83,8 +90,18 @@ enum class Tag : quint32 {
     kTRC = IccTag('k', 'T', 'R', 'C'),
     A2B0 = IccTag('A', '2', 'B', '0'),
     A2B1 = IccTag('A', '2', 'B', '1'),
+    A2B2 = IccTag('A', '2', 'B', '2'),
     B2A0 = IccTag('B', '2', 'A', '0'),
     B2A1 = IccTag('B', '2', 'A', '1'),
+    B2A2 = IccTag('B', '2', 'A', '2'),
+    B2D0 = IccTag('B', '2', 'D', '0'),
+    B2D1 = IccTag('B', '2', 'D', '1'),
+    B2D2 = IccTag('B', '2', 'D', '2'),
+    B2D3 = IccTag('B', '2', 'D', '3'),
+    D2B0 = IccTag('D', '2', 'B', '0'),
+    D2B1 = IccTag('D', '2', 'B', '1'),
+    D2B2 = IccTag('D', '2', 'B', '2'),
+    D2B3 = IccTag('D', '2', 'B', '3'),
     desc = IccTag('d', 'e', 's', 'c'),
     text = IccTag('t', 'e', 'x', 't'),
     cprt = IccTag('c', 'p', 'r', 't'),
@@ -95,9 +112,11 @@ enum class Tag : quint32 {
     mft1 = IccTag('m', 'f', 't', '1'),
     mft2 = IccTag('m', 'f', 't', '2'),
     mluc = IccTag('m', 'l', 'u', 'c'),
+    mpet = IccTag('m', 'p', 'e', 't'),
     mAB_ = IccTag('m', 'A', 'B', ' '),
     mBA_ = IccTag('m', 'B', 'A', ' '),
     chad = IccTag('c', 'h', 'a', 'd'),
+    gamt = IccTag('g', 'a', 'm', 't'),
     sf32 = IccTag('s', 'f', '3', '2'),
 
     // Apple extensions for ICCv2:
@@ -163,6 +182,46 @@ struct MlucTagData : GenericTagData {
     MlucTagRecord records[1];
 };
 
+struct Lut8TagData : GenericTagData {
+    quint8 inputChannels;
+    quint8 outputChannels;
+    quint8 clutGridPoints;
+    quint8 padding;
+    qint32_be e1;
+    qint32_be e2;
+    qint32_be e3;
+    qint32_be e4;
+    qint32_be e5;
+    qint32_be e6;
+    qint32_be e7;
+    qint32_be e8;
+    qint32_be e9;
+    // followed by parameter values: quint8[inputChannels * 256];
+    // followed by parameter values: quint8[outputChannels * clutGridPoints^inputChannels];
+    // followed by parameter values: quint8[outputChannels * 256];
+};
+
+struct Lut16TagData : GenericTagData {
+    quint8 inputChannels;
+    quint8 outputChannels;
+    quint8 clutGridPoints;
+    quint8 padding;
+    qint32_be e1;
+    qint32_be e2;
+    qint32_be e3;
+    qint32_be e4;
+    qint32_be e5;
+    qint32_be e6;
+    qint32_be e7;
+    qint32_be e8;
+    qint32_be e9;
+    quint16_be inputTableEntries;
+    quint16_be outputTableEntries;
+    // followed by parameter values: quint16_be[inputChannels * inputTableEntries];
+    // followed by parameter values: quint16_be[outputChannels * clutGridPoints^inputChannels];
+    // followed by parameter values: quint16_be[outputChannels * outputTableEntries];
+};
+
 // For both mAB and mBA
 struct mABTagData : GenericTagData {
     quint8 inputChannels;
@@ -173,10 +232,34 @@ struct mABTagData : GenericTagData {
     quint32_be mCurvesOffset;
     quint32_be clutOffset;
     quint32_be aCurvesOffset;
+    // followed by embedded data for the offsets above
+};
+
+struct mpetTagData : GenericTagData {
+    quint16_be inputChannels;
+    quint16_be outputChannels;
+    quint32_be processingElements;
+    // element offset table
+    // element data
 };
 
 struct Sf32TagData : GenericTagData {
     quint32_be value[1];
+};
+
+struct MatrixElement {
+    qint32_be e0;
+    qint32_be e1;
+    qint32_be e2;
+    qint32_be e3;
+    qint32_be e4;
+    qint32_be e5;
+    qint32_be e6;
+    qint32_be e7;
+    qint32_be e8;
+    qint32_be e9;
+    qint32_be e10;
+    qint32_be e11;
 };
 
 static int toFixedS1516(float x)
@@ -208,8 +291,8 @@ static bool isValidIccProfile(const ICCProfileHeader &header)
 
     if (header.profileClass != uint(ProfileClass::Input)
         && header.profileClass != uint(ProfileClass::Display)
-        && (header.profileClass != uint(ProfileClass::Output)
-            || header.inputColorSpace != uint(ColorSpaceType::Gray)))  {
+        && header.profileClass != uint(ProfileClass::Output)
+        && header.profileClass != uint(ProfileClass::ColorSpace))  {
         qCInfo(lcIcc, "Unsupported ICC profile class 0x%x", quint32(header.profileClass));
         return false;
     }
@@ -218,8 +301,7 @@ static bool isValidIccProfile(const ICCProfileHeader &header)
         qCInfo(lcIcc, "Unsupported ICC input color space 0x%x", quint32(header.inputColorSpace));
         return false;
     }
-    if (header.pcs != 0x58595a20 /* 'XYZ '*/) {
-        // ### support PCSLAB
+    if (header.pcs != uint(Tag::XYZ_) && header.pcs != uint(Tag::Lab_)) {
         qCInfo(lcIcc, "Unsupported ICC profile connection space 0x%x", quint32(header.pcs));
         return false;
     }
@@ -278,6 +360,10 @@ static int writeColorTrc(QDataStream &stream, const QColorTrc &trc)
             stream << ushort(trc.m_table.m_table8[i] * 257U);
         }
     }
+    if (trc.m_table.m_tableSize & 1) {
+        stream << ushort(0);
+        return 12 + 2 * trc.m_table.m_tableSize + 2;
+    }
     return 12 + 2 * trc.m_table.m_tableSize;
 }
 
@@ -287,6 +373,10 @@ QByteArray toIccProfile(const QColorSpace &space)
         return QByteArray();
 
     const QColorSpacePrivate *spaceDPtr = QColorSpacePrivate::get(space);
+    // This should catch anything not three component matrix based as we can only get that from parsed ICC
+    if (!spaceDPtr->iccProfile.isEmpty())
+        return spaceDPtr->iccProfile;
+    Q_ASSERT(spaceDPtr->isThreeComponentMatrix());
 
     constexpr int tagCount = 9;
     constexpr uint profileDataOffset = 128 + 4 + 12 * tagCount;
@@ -306,7 +396,7 @@ QByteArray toIccProfile(const QColorSpace &space)
     stream << uint(0x02400000); // Version 2.4 (note we use 'para' from version 4)
     stream << uint(ProfileClass::Display);
     stream << uint(Tag::RGB_);
-    stream << uint(Tag::XYZ_);
+    stream << (spaceDPtr->isPcsLab ? uint(Tag::Lab_) : uint(Tag::XYZ_));
     stream << uint(0) << uint(0) << uint(0);
     stream << uint(Tag::acsp);
     stream << uint(0) << uint(0) << uint(0);
@@ -435,23 +525,22 @@ static bool parseXyzData(const QByteArray &data, const TagEntry &tagEntry, QColo
     return true;
 }
 
-static bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma)
+static quint32 parseTRC(const QByteArrayView &tagData, QColorTrc &gamma, QColorTransferTable::Type type = QColorTransferTable::TwoWay)
 {
-    const GenericTagData trcData = qFromUnaligned<GenericTagData>(data.constData()
-                                                                  + tagEntry.offset);
+    const GenericTagData trcData = qFromUnaligned<GenericTagData>(tagData.constData());
     if (trcData.type == quint32(Tag::curv)) {
         Q_STATIC_ASSERT(sizeof(CurvTagData) == 12);
-        const CurvTagData curv = qFromUnaligned<CurvTagData>(data.constData() + tagEntry.offset);
+        const CurvTagData curv = qFromUnaligned<CurvTagData>(tagData.constData());
         if (curv.valueCount > (1 << 16))
-            return false;
-        if (tagEntry.size - 12 < 2 * curv.valueCount)
-            return false;
-        const auto valueOffset = tagEntry.offset + sizeof(CurvTagData);
+            return 0;
+        if (tagData.size() < qsizetype(12 + 2 * curv.valueCount))
+            return 0;
+        const auto valueOffset = sizeof(CurvTagData);
         if (curv.valueCount == 0) {
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(); // Linear
         } else if (curv.valueCount == 1) {
-            const quint16 v = qFromBigEndian<quint16>(data.constData() + valueOffset);
+            const quint16 v = qFromBigEndian<quint16>(tagData.constData() + valueOffset);
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction::fromGamma(v * (1.0f / 256.0f));
         } else {
@@ -459,12 +548,12 @@ static bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc
             tabl.resize(curv.valueCount);
             static_assert(sizeof(GenericTagData) == 2 * sizeof(quint32_be),
                           "GenericTagData has padding. The following code is a subject to UB.");
-            qFromBigEndian<quint16>(data.constData() + valueOffset, curv.valueCount, tabl.data());
-            QColorTransferTable table = QColorTransferTable(curv.valueCount, std::move(tabl));
+            qFromBigEndian<quint16>(tagData.constData() + valueOffset, curv.valueCount, tabl.data());
+            QColorTransferTable table = QColorTransferTable(curv.valueCount, std::move(tabl), type);
             QColorTransferFunction curve;
             if (!table.checkValidity()) {
                 qCWarning(lcIcc) << "Invalid curv table";
-                return false;
+                return 0;
             } else if (!table.asColorTransferFunction(&curve)) {
                 gamma.m_type = QColorTrc::Type::Table;
                 gamma.m_table = table;
@@ -474,43 +563,43 @@ static bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc
                 gamma.m_fun = curve;
             }
         }
-        return true;
+        return 12 + 2 * curv.valueCount;
     }
     if (trcData.type == quint32(Tag::para)) {
         Q_STATIC_ASSERT(sizeof(ParaTagData) == 12);
-        const ParaTagData para = qFromUnaligned<ParaTagData>(data.constData() + tagEntry.offset);
-        const auto parametersOffset = tagEntry.offset + sizeof(ParaTagData);
+        const ParaTagData para = qFromUnaligned<ParaTagData>(tagData.constData());
+        const auto parametersOffset = sizeof(ParaTagData);
         quint32 parameters[7];
         switch (para.curveType) {
         case 0: {
-            if (tagEntry.size < sizeof(ParaTagData) + 1 * 4)
-                return false;
-            qFromBigEndian<quint32>(data.constData() + parametersOffset, 1, parameters);
+            if (tagData.size() < 12 + 1 * 4)
+                return 0;
+            qFromBigEndian<quint32>(tagData.constData() + parametersOffset, 1, parameters);
             float g = fromFixedS1516(parameters[0]);
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction::fromGamma(g);
-            break;
+            return 12 + 1 * 4;
         }
         case 1: {
-            if (tagEntry.size < sizeof(ParaTagData) + 3 * 4)
-                return false;
-            qFromBigEndian<quint32>(data.constData() + parametersOffset, 3, parameters);
+            if (tagData.size() < 12 + 3 * 4)
+                return 0;
+            qFromBigEndian<quint32>(tagData.constData() + parametersOffset, 3, parameters);
             if (parameters[1] == 0)
-                return false;
+                return 0;
             float g = fromFixedS1516(parameters[0]);
             float a = fromFixedS1516(parameters[1]);
             float b = fromFixedS1516(parameters[2]);
             float d = -b / a;
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(a, b, 0.0f, d, 0.0f, 0.0f, g);
-            break;
+            return 12 + 3 * 4;
         }
         case 2: {
-            if (tagEntry.size < sizeof(ParaTagData) + 4 * 4)
-                return false;
-            qFromBigEndian<quint32>(data.constData() + parametersOffset, 4, parameters);
+            if (tagData.size() < 12 + 4 * 4)
+                return 0;
+            qFromBigEndian<quint32>(tagData.constData() + parametersOffset, 4, parameters);
             if (parameters[1] == 0)
-                return false;
+                return 0;
             float g = fromFixedS1516(parameters[0]);
             float a = fromFixedS1516(parameters[1]);
             float b = fromFixedS1516(parameters[2]);
@@ -518,12 +607,12 @@ static bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc
             float d = -b / a;
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(a, b, 0.0f, d, c, c, g);
-            break;
+            return 12 + 4 * 4;
         }
         case 3: {
-            if (tagEntry.size < sizeof(ParaTagData) + 5 * 4)
-                return false;
-            qFromBigEndian<quint32>(data.constData() + parametersOffset, 5, parameters);
+            if (tagData.size() < 12 + 5 * 4)
+                return 0;
+            qFromBigEndian<quint32>(tagData.constData() + parametersOffset, 5, parameters);
             float g = fromFixedS1516(parameters[0]);
             float a = fromFixedS1516(parameters[1]);
             float b = fromFixedS1516(parameters[2]);
@@ -531,12 +620,12 @@ static bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc
             float d = fromFixedS1516(parameters[4]);
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(a, b, c, d, 0.0f, 0.0f, g);
-            break;
+            return 12 + 5 * 4;
         }
         case 4: {
-            if (tagEntry.size < sizeof(ParaTagData) + 7 * 4)
-                return false;
-            qFromBigEndian<quint32>(data.constData() + parametersOffset, 7, parameters);
+            if (tagData.size() < 12 + 7 * 4)
+                return 0;
+            qFromBigEndian<quint32>(tagData.constData() + parametersOffset, 7, parameters);
             float g = fromFixedS1516(parameters[0]);
             float a = fromFixedS1516(parameters[1]);
             float b = fromFixedS1516(parameters[2]);
@@ -546,15 +635,365 @@ static bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc
             float f = fromFixedS1516(parameters[6]);
             gamma.m_type = QColorTrc::Type::Function;
             gamma.m_fun = QColorTransferFunction(a, b, c, d, e, f, g);
-            break;
+            return 12 + 7 * 4;
         }
         default:
             qCWarning(lcIcc)  << "Unknown para type" << uint(para.curveType);
-            return false;
+            return 0;
         }
         return true;
     }
-    qCWarning(lcIcc) << "Invalid TRC data type";
+    qCWarning(lcIcc) << "Invalid TRC data type" << Qt::hex << trcData.type;
+    return 0;
+}
+
+template<typename T>
+static void parseCLUT(const T *tableData, const float f, QColorCLUT *clut)
+{
+    for (qsizetype index = 0; index < clut->table.size(); ++index) {
+        QColorVector v(tableData[index * 3 + 0] * f,
+                       tableData[index * 3 + 1] * f,
+                       tableData[index * 3 + 2] * f);
+        clut->table[index] = v;
+    }
+}
+
+// very simple version for small values (<=4) of exp.
+static constexpr qsizetype intPow(qsizetype x, qsizetype exp)
+{
+    return (exp <= 1) ? x : x * intPow(x, exp - 1);
+}
+
+// Parses lut8 and lut16 type elements
+template<typename T>
+static bool parseLutData(const QByteArray &data, const TagEntry &tagEntry, QColorSpacePrivate *colorSpacePrivate, bool isAb)
+{
+    if (tagEntry.size < sizeof(T)) {
+        qCWarning(lcIcc) << "Undersized lut8/lut16 tag";
+        return false;
+    }
+    using S = std::conditional_t<std::is_same_v<T, Lut8TagData>, uint8_t, uint16_t>;
+    const T lut = qFromUnaligned<T>(data.constData() + tagEntry.offset);
+    int inputTableEntries, outputTableEntries, precision;
+    if constexpr (std::is_same_v<T, Lut8TagData>) {
+        Q_ASSERT(lut.type == quint32(Tag::mft1));
+        if (!colorSpacePrivate->isPcsLab && isAb) {
+            qCWarning(lcIcc) << "Lut8 can not output XYZ values";
+            return false;
+        }
+        inputTableEntries = 256;
+        outputTableEntries = 256;
+        precision = 1;
+    } else {
+        Q_ASSERT(lut.type == quint32(Tag::mft2));
+        inputTableEntries = lut.inputTableEntries;
+        outputTableEntries = lut.outputTableEntries;
+        precision = 2;
+    }
+
+    bool inTableIsLinear = true, outTableIsLinear = true;
+    QColorSpacePrivate::TransferElement inTableElement;
+    QColorSpacePrivate::TransferElement outTableElement;
+    QColorCLUT clutElement;
+    QColorMatrix matrixElement;
+
+    matrixElement.r.x = fromFixedS1516(lut.e1);
+    matrixElement.g.x = fromFixedS1516(lut.e2);
+    matrixElement.b.x = fromFixedS1516(lut.e3);
+    matrixElement.r.y = fromFixedS1516(lut.e4);
+    matrixElement.g.y = fromFixedS1516(lut.e5);
+    matrixElement.b.y = fromFixedS1516(lut.e6);
+    matrixElement.r.z = fromFixedS1516(lut.e7);
+    matrixElement.g.z = fromFixedS1516(lut.e8);
+    matrixElement.b.z = fromFixedS1516(lut.e9);
+    if (!colorSpacePrivate->isPcsLab && !isAb && !matrixElement.isValid()) {
+        qCWarning(lcIcc) << "Invalid matrix values in lut8/lut16";
+        return false;
+    }
+
+    if (lut.inputChannels != 3) {
+        qCWarning(lcIcc) << "Unsupported lut8/lut16 input channel count" << lut.inputChannels;
+        return false;
+    }
+
+    if (lut.outputChannels != 3) {
+        qCWarning(lcIcc) << "Unsupported lut8/lut16 output channel count" << lut.outputChannels;
+        return false;
+    }
+
+    const qsizetype clutTableSize = intPow(lut.clutGridPoints, lut.inputChannels);
+    if (tagEntry.size < (sizeof(T) + precision * lut.inputChannels * inputTableEntries
+                                   + precision * lut.outputChannels * outputTableEntries
+                                   + precision * lut.outputChannels * clutTableSize)) {
+        qCWarning(lcIcc) << "Undersized lut8/lut16 tag, no room for tables";
+        return false;
+    }
+
+    const uint8_t *tableData = reinterpret_cast<const uint8_t *>(data.constData() + tagEntry.offset + sizeof(T));
+
+    for (int j = 0; j < lut.inputChannels; ++j) {
+        QList<S> input(inputTableEntries);
+        qFromBigEndian<S>(tableData, inputTableEntries, input.data());
+        QColorTransferTable table(inputTableEntries, input, QColorTransferTable::OneWay);
+        if (!table.checkValidity()) {
+            qCWarning(lcIcc) << "Bad input table in lut8/lut16";
+            return false;
+        }
+        if (!table.isIdentity())
+            inTableIsLinear = false;
+        inTableElement.trc[j] = std::move(table);
+        tableData += inputTableEntries * precision;
+    }
+
+    clutElement.table.resize(clutTableSize);
+    clutElement.gridPointsX = clutElement.gridPointsY = clutElement.gridPointsZ = lut.clutGridPoints;
+    if constexpr (std::is_same_v<T, Lut8TagData>) {
+        parseCLUT(tableData, 1.f / 255.f, &clutElement);
+    } else {
+        float f = 1.0f / 65535.f;
+        if (colorSpacePrivate->isPcsLab && isAb) // Legacy lut16 conversion to Lab
+            f = 1.0f / 65280.f;
+        QList<S> clutTable(clutTableSize * lut.outputChannels);
+        qFromBigEndian<S>(tableData, clutTable.size(), clutTable.data());
+        parseCLUT(clutTable.constData(), f, &clutElement);
+    }
+    tableData += clutTableSize * lut.outputChannels * precision;
+
+    for (int j = 0; j < lut.outputChannels; ++j) {
+        QList<S> output(outputTableEntries);
+        qFromBigEndian<S>(tableData, outputTableEntries, output.data());
+        QColorTransferTable table(outputTableEntries, output, QColorTransferTable::OneWay);
+        if (!table.checkValidity()) {
+            qCWarning(lcIcc) << "Bad output table in lut8/lut16";
+            return false;
+        }
+        if (!table.isIdentity())
+            outTableIsLinear = false;
+        outTableElement.trc[j] = std::move(table);
+        tableData += outputTableEntries * precision;
+    }
+
+    if (isAb) {
+        if (!inTableIsLinear)
+            colorSpacePrivate->mAB.append(inTableElement);
+        if (!clutElement.isEmpty())
+            colorSpacePrivate->mAB.append(clutElement);
+        if (!outTableIsLinear)
+            colorSpacePrivate->mAB.append(outTableElement);
+    } else {
+        // The matrix is only to be applied if the input color-space is XYZ
+        if (!colorSpacePrivate->isPcsLab && !matrixElement.isIdentity())
+            colorSpacePrivate->mBA.append(matrixElement);
+        if (!inTableIsLinear)
+            colorSpacePrivate->mBA.append(inTableElement);
+        if (!clutElement.isEmpty())
+            colorSpacePrivate->mBA.append(clutElement);
+        if (!outTableIsLinear)
+            colorSpacePrivate->mBA.append(outTableElement);
+    }
+    return true;
+}
+
+// Parses mAB and mBA type elements
+static bool parseMabData(const QByteArray &data, const TagEntry &tagEntry, QColorSpacePrivate *colorSpacePrivate, bool isAb)
+{
+    if (tagEntry.size < sizeof(mABTagData)) {
+        qCWarning(lcIcc) << "Undersized mAB/mBA tag";
+        return false;
+    }
+    if (qsizetype(tagEntry.size) > data.size()) {
+        qCWarning(lcIcc) << "Truncated mAB/mBA tag";
+        return false;
+    }
+    const mABTagData mab = qFromUnaligned<mABTagData>(data.constData() + tagEntry.offset);
+    if ((mab.type != quint32(Tag::mAB_) && isAb) || (mab.type != quint32(Tag::mBA_) && !isAb)){
+        qCWarning(lcIcc) << "Bad mAB/mBA content type";
+        return false;
+    }
+
+    if (mab.inputChannels != 3) {
+        qCWarning(lcIcc) << "Unsupported mAB/mBA input channel count" << mab.inputChannels;
+        return false;
+    }
+
+    if (mab.outputChannels != 3) {
+        qCWarning(lcIcc) << "Unsupported mAB/mBA output channel count" << mab.outputChannels;
+        return false;
+    }
+
+    // These combinations are legal: B, M + Matrix + B, A + Clut + B,  A + Clut + M + Matrix + B
+    if (!mab.bCurvesOffset) {
+        qCWarning(lcIcc) << "Illegal mAB/mBA without B table";
+        return false;
+    }
+    if (((bool)mab.matrixOffset != (bool)mab.mCurvesOffset) ||
+        ((bool)mab.aCurvesOffset != (bool)mab.clutOffset)) {
+        qCWarning(lcIcc) << "Illegal mAB/mBA element combination";
+        return false;
+    }
+
+    if (mab.aCurvesOffset > (tagEntry.size - 3 * sizeof(GenericTagData)) ||
+        mab.bCurvesOffset > (tagEntry.size - 3 * sizeof(GenericTagData)) ||
+        mab.mCurvesOffset > (tagEntry.size - 3 * sizeof(GenericTagData)) ||
+        mab.matrixOffset > (tagEntry.size - 4 * 12) ||
+        mab.clutOffset > (tagEntry.size - 20)) {
+        qCWarning(lcIcc) << "Illegal mAB/mBA element offset";
+        return false;
+    }
+
+    QColorSpacePrivate::TransferElement bTableElement;
+    QColorSpacePrivate::TransferElement aTableElement;
+    QColorCLUT clutElement;
+    QColorSpacePrivate::TransferElement mTableElement;
+    QColorMatrix matrixElement;
+    QColorVector offsetElement;
+
+    auto parseCurves = [&data, &tagEntry] (uint curvesOffset, QColorTrc *table, int channels) {
+        for (int i = 0; i < channels; ++i) {
+            if (qsizetype(tagEntry.offset + curvesOffset + 12) > data.size() || curvesOffset + 12 > tagEntry.size) {
+                qCWarning(lcIcc) << "Space missing for channel curves in mAB/mBA";
+                return false;
+            }
+            auto size = parseTRC(QByteArrayView(data).sliced(tagEntry.offset + curvesOffset, tagEntry.size - curvesOffset), table[i], QColorTransferTable::OneWay);
+            if (!size)
+                return false;
+            if (size & 2) size += 2; // possible padding
+            curvesOffset += size;
+        }
+        return true;
+    };
+
+    bool bCurvesAreLinear = true, aCurvesAreLinear = true, mCurvesAreLinear = true;
+
+    // B Curves
+    if (!parseCurves(mab.bCurvesOffset, bTableElement.trc, 3)) {
+        qCWarning(lcIcc) << "Invalid B curves";
+        return false;
+    } else {
+        bCurvesAreLinear = bTableElement.trc[0].isIdentity() && bTableElement.trc[1].isIdentity() && bTableElement.trc[2].isIdentity();
+    }
+
+    // A Curves
+    if (mab.aCurvesOffset) {
+        if (!parseCurves(mab.aCurvesOffset, aTableElement.trc, 3)) {
+            qCWarning(lcIcc) << "Invalid A curves";
+            return false;
+        } else {
+            aCurvesAreLinear = aTableElement.trc[0].isIdentity() && aTableElement.trc[1].isIdentity() && aTableElement.trc[2].isIdentity();
+        }
+    }
+
+    // M Curves
+    if (mab.mCurvesOffset) {
+        if (!parseCurves(mab.mCurvesOffset, mTableElement.trc, 3)) {
+            qCWarning(lcIcc) << "Invalid M curves";
+            return false;
+        } else {
+            mCurvesAreLinear = mTableElement.trc[0].isIdentity() && mTableElement.trc[1].isIdentity() && mTableElement.trc[2].isIdentity();
+        }
+    }
+
+    // Matrix
+    if (mab.matrixOffset) {
+        const MatrixElement matrix = qFromUnaligned<MatrixElement>(data.constData() + tagEntry.offset + mab.matrixOffset);
+        matrixElement.r.x = fromFixedS1516(matrix.e0);
+        matrixElement.g.x = fromFixedS1516(matrix.e1);
+        matrixElement.b.x = fromFixedS1516(matrix.e2);
+        matrixElement.r.y = fromFixedS1516(matrix.e3);
+        matrixElement.g.y = fromFixedS1516(matrix.e4);
+        matrixElement.b.y = fromFixedS1516(matrix.e5);
+        matrixElement.r.z = fromFixedS1516(matrix.e6);
+        matrixElement.g.z = fromFixedS1516(matrix.e7);
+        matrixElement.b.z = fromFixedS1516(matrix.e8);
+        offsetElement.x = fromFixedS1516(matrix.e9);
+        offsetElement.y = fromFixedS1516(matrix.e10);
+        offsetElement.z = fromFixedS1516(matrix.e11);
+        if (!matrixElement.isValid() || !offsetElement.isValid()) {
+            qCWarning(lcIcc) << "Invalid matrix values in mAB/mBA element";
+            return false;
+        }
+    }
+
+    // CLUT
+    if (mab.clutOffset) {
+        clutElement.gridPointsX = data[tagEntry.offset + mab.clutOffset];
+        clutElement.gridPointsY = data[tagEntry.offset + mab.clutOffset + 1];
+        clutElement.gridPointsZ = data[tagEntry.offset + mab.clutOffset + 2];
+        const uchar precision = data[tagEntry.offset + mab.clutOffset + 16];
+        if (precision > 2 || precision < 1) {
+            qCWarning(lcIcc) << "Invalid mAB/mBA element CLUT precision";
+            return false;
+        }
+        if (clutElement.gridPointsX < 2 ||  clutElement.gridPointsY < 2 || clutElement.gridPointsZ < 2) {
+            qCWarning(lcIcc) << "Empty CLUT";
+            return false;
+        }
+        const qsizetype clutTableSize = clutElement.gridPointsX * clutElement.gridPointsY * clutElement.gridPointsZ;
+        if ((mab.clutOffset + 20 + clutTableSize * mab.outputChannels * precision) > tagEntry.size) {
+            qCWarning(lcIcc) << "CLUT oversized for tag";
+            return false;
+        }
+
+        clutElement.table.resize(clutTableSize);
+        if (precision == 2)  {
+            QList<uint16_t> clutTable(clutTableSize * mab.outputChannels);
+            qFromBigEndian<uint16_t>(data.constData() + tagEntry.offset + mab.clutOffset + 20, clutTable.size(), clutTable.data());
+            parseCLUT(clutTable.constData(), (1.f/65535.f), &clutElement);
+        } else {
+            parseCLUT(data.constData() + tagEntry.offset + mab.clutOffset + 20, (1.f/255.f), &clutElement);
+        }
+    }
+
+    if (isAb) {
+        if (mab.aCurvesOffset) {
+            if (!aCurvesAreLinear)
+                colorSpacePrivate->mAB.append(std::move(aTableElement));
+            if (!clutElement.isEmpty())
+                colorSpacePrivate->mAB.append(std::move(clutElement));
+        }
+        if (mab.mCurvesOffset) {
+            if (!mCurvesAreLinear)
+                colorSpacePrivate->mAB.append(std::move(mTableElement));
+            if (!matrixElement.isIdentity())
+                colorSpacePrivate->mAB.append(std::move(matrixElement));
+            if (!offsetElement.isNull())
+                colorSpacePrivate->mAB.append(std::move(offsetElement));
+        }
+        if (!bCurvesAreLinear)
+            colorSpacePrivate->mAB.append(std::move(bTableElement));
+    } else {
+        if (!bCurvesAreLinear)
+            colorSpacePrivate->mBA.append(std::move(bTableElement));
+        if (mab.mCurvesOffset) {
+            if (!matrixElement.isIdentity())
+                colorSpacePrivate->mBA.append(std::move(matrixElement));
+            if (!offsetElement.isNull())
+                colorSpacePrivate->mBA.append(std::move(offsetElement));
+            if (!mCurvesAreLinear)
+                colorSpacePrivate->mBA.append(std::move(mTableElement));
+        }
+        if (mab.aCurvesOffset) {
+            if (!clutElement.isEmpty())
+                colorSpacePrivate->mBA.append(std::move(clutElement));
+            if (!aCurvesAreLinear)
+                colorSpacePrivate->mBA.append(std::move(aTableElement));
+        }
+    }
+
+    return true;
+}
+
+static bool parseA2B(const QByteArray &data, const TagEntry &tagEntry, QColorSpacePrivate *privat, bool isAb)
+{
+    const GenericTagData a2bData = qFromUnaligned<GenericTagData>(data.constData() + tagEntry.offset);
+    if (a2bData.type == quint32(Tag::mft1))
+        return parseLutData<Lut8TagData>(data, tagEntry, privat, isAb);
+    else if (a2bData.type == quint32(Tag::mft2))
+        return parseLutData<Lut16TagData>(data, tagEntry, privat, isAb);
+    else if (a2bData.type == quint32(Tag::mAB_) || a2bData.type == quint32(Tag::mBA_))
+        return parseMabData(data, tagEntry, privat, isAb);
+
+    qCWarning(lcIcc) << "fromIccProfile: Unknown A2B/B2A data type";
     return false;
 }
 
@@ -616,6 +1055,10 @@ static bool parseRgbMatrix(const QByteArray &data, const QHash<Tag, TagEntry> &t
         return false;
     if (!parseXyzData(data, tagIndex[Tag::wtpt], colorspaceDPtr->whitePoint))
         return false;
+    if (!colorspaceDPtr->toXyz.isValid() || !colorspaceDPtr->whitePoint.isValid() || colorspaceDPtr->whitePoint.isNull()) {
+        qCWarning(lcIcc) << "Invalid XYZ values in RGB matrix";
+        return false;
+    }
 
     colorspaceDPtr->primaries = QColorSpace::Primaries::Custom;
     if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromSRgb()) {
@@ -642,7 +1085,7 @@ static bool parseGrayMatrix(const QByteArray &data, const QHash<Tag, TagEntry> &
     QColorVector whitePoint;
     if (!parseXyzData(data, tagIndex[Tag::wtpt], whitePoint))
         return false;
-    if (!qFuzzyCompare(whitePoint.y, 1.0f) || (1.0f + whitePoint.z + whitePoint.x) == 0.0f) {
+    if (!whitePoint.isValid() || !qFuzzyCompare(whitePoint.y, 1.0f) || (1.0f + whitePoint.z + whitePoint.x) == 0.0f) {
         qCWarning(lcIcc) << "fromIccProfile: Invalid ICC profile - gray white-point not normalized";
         return false;
     }
@@ -660,6 +1103,10 @@ static bool parseGrayMatrix(const QByteArray &data, const QHash<Tag, TagEntry> &
             return false;
         }
         colorspaceDPtr->toXyz = primaries.toXyzMatrix();
+        if (!colorspaceDPtr->toXyz.isValid()) {
+            qCWarning(lcIcc, "fromIccProfile: Invalid ICC profile - invalid white-point(%f, %f)", x, y);
+            return false;
+        }
     }
     return true;
 }
@@ -686,15 +1133,15 @@ static bool parseTRCs(const QByteArray &data, const QHash<Tag, TagEntry> &tagInd
     QColorTrc rCurve;
     QColorTrc gCurve;
     QColorTrc bCurve;
-    if (!parseTRC(data, rTrc, rCurve)) {
+    if (!parseTRC(QByteArrayView(data).sliced(rTrc.offset, rTrc.size), rCurve, QColorTransferTable::TwoWay)) {
         qCWarning(lcIcc) << "fromIccProfile: Invalid rTRC";
         return false;
     }
-    if (!parseTRC(data, gTrc, gCurve)) {
+    if (!parseTRC(QByteArrayView(data).sliced(gTrc.offset, gTrc.size), gCurve, QColorTransferTable::TwoWay)) {
         qCWarning(lcIcc) << "fromIccProfile: Invalid gTRC";
         return false;
     }
-    if (!parseTRC(data, bTrc, bCurve)) {
+    if (!parseTRC(QByteArrayView(data).sliced(bTrc.offset, bTrc.size), bCurve, QColorTransferTable::TwoWay)) {
         qCWarning(lcIcc) << "fromIccProfile: Invalid bTRC";
         return false;
     }
@@ -704,20 +1151,15 @@ static bool parseTRCs(const QByteArray &data, const QHash<Tag, TagEntry> &tagInd
             colorspaceDPtr->trc[0] = QColorTransferFunction();
             colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Linear;
             colorspaceDPtr->gamma = 1.0f;
-        } else if (rCurve.m_type == QColorTrc::Type::Function) {
-            if (rCurve.m_fun.isGamma()) {
-                qCDebug(lcIcc) << "fromIccProfile: Simple gamma detected";
-                colorspaceDPtr->trc[0] = QColorTransferFunction::fromGamma(rCurve.m_fun.m_g);
-                colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Gamma;
-                colorspaceDPtr->gamma = rCurve.m_fun.m_g;
-            } else if (rCurve.m_fun.isSRgb()) {
-                qCDebug(lcIcc) << "fromIccProfile: sRGB gamma detected";
-                colorspaceDPtr->trc[0] = QColorTransferFunction::fromSRgb();
-                colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::SRgb;
-            } else {
-                colorspaceDPtr->trc[0] = rCurve;
-                colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Custom;
-            }
+        } else if (rCurve.m_type == QColorTrc::Type::Function && rCurve.m_fun.isGamma()) {
+            qCDebug(lcIcc) << "fromIccProfile: Simple gamma detected";
+            colorspaceDPtr->trc[0] = QColorTransferFunction::fromGamma(rCurve.m_fun.m_g);
+            colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Gamma;
+            colorspaceDPtr->gamma = rCurve.m_fun.m_g;
+        } else if (rCurve.m_type == QColorTrc::Type::Function && rCurve.m_fun.isSRgb()) {
+            qCDebug(lcIcc) << "fromIccProfile: sRGB gamma detected";
+            colorspaceDPtr->trc[0] = QColorTransferFunction::fromSRgb();
+            colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::SRgb;
         } else {
             colorspaceDPtr->trc[0] = rCurve;
             colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Custom;
@@ -789,39 +1231,69 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         tagIndex.insert(Tag(quint32(tagTable.signature)), { tagTable.offset, tagTable.size });
     }
 
-    // Check the profile is three-component matrix based (what we currently support):
+    bool threeComponentMatrix = true;
+
     if (header.inputColorSpace == uint(ColorSpaceType::Rgb)) {
+        // Check the profile is three-component matrix based:
         if (!tagIndex.contains(Tag::rXYZ) || !tagIndex.contains(Tag::gXYZ) || !tagIndex.contains(Tag::bXYZ) ||
             !tagIndex.contains(Tag::rTRC) || !tagIndex.contains(Tag::gTRC) || !tagIndex.contains(Tag::bTRC) ||
             !tagIndex.contains(Tag::wtpt)) {
-            qCInfo(lcIcc) << "fromIccProfile: Unsupported ICC profile - not three component matrix based";
-            return false;
+            threeComponentMatrix = false;
+            // Check if the profile is valid n-LUT based:
+            if (!tagIndex.contains(Tag::A2B0)) {
+                qCWarning(lcIcc) << "fromIccProfile: Invalid ICC profile - neither valid three component nor LUT";
+                return false;
+            }
         }
-    } else {
-        Q_ASSERT(header.inputColorSpace == uint(ColorSpaceType::Gray));
+    } else if (header.inputColorSpace == uint(ColorSpaceType::Gray)) {
         if (!tagIndex.contains(Tag::kTRC) || !tagIndex.contains(Tag::wtpt)) {
             qCWarning(lcIcc) << "fromIccProfile: Invalid ICC profile - not valid gray scale based";
             return false;
         }
+    } else {
+        Q_UNREACHABLE();
     }
 
     colorSpace->detach();
     QColorSpacePrivate *colorspaceDPtr = QColorSpacePrivate::get(*colorSpace);
 
-    if (header.inputColorSpace == uint(ColorSpaceType::Rgb)) {
-        if (!parseRgbMatrix(data, tagIndex, colorspaceDPtr))
+    if (threeComponentMatrix) {
+        colorspaceDPtr->isPcsLab = false;
+        colorspaceDPtr->transformModel = QColorSpace::TransformModel::ThreeComponentMatrix;
+
+        if (header.inputColorSpace == uint(ColorSpaceType::Rgb)) {
+            if (!parseRgbMatrix(data, tagIndex, colorspaceDPtr))
+                return false;
+        } else if (header.inputColorSpace == uint(ColorSpaceType::Gray)) {
+            if (!parseGrayMatrix(data, tagIndex, colorspaceDPtr))
+                return false;
+        } else {
+            Q_UNREACHABLE();
+        }
+
+        // Reset the matrix to our canonical values:
+        if (colorspaceDPtr->primaries != QColorSpace::Primaries::Custom)
+            colorspaceDPtr->setToXyzMatrix();
+
+        if (!parseTRCs(data, tagIndex, colorspaceDPtr, header.inputColorSpace == uint(ColorSpaceType::Gray)))
             return false;
     } else {
-        if (!parseGrayMatrix(data, tagIndex, colorspaceDPtr))
+        colorspaceDPtr->isPcsLab = (header.pcs == uint(Tag::Lab_));
+        colorspaceDPtr->transformModel = QColorSpace::TransformModel::ElementListProcessing;
+
+        // Only parse the default perceptual transform for now
+        if (!parseA2B(data, tagIndex[Tag::A2B0], colorspaceDPtr, true))
             return false;
+        if (tagIndex.contains(Tag::B2A0)) {
+            if (!parseA2B(data, tagIndex[Tag::B2A0], colorspaceDPtr, false))
+                return false;
+        }
+
+        if (tagIndex.contains(Tag::wtpt)) {
+            if (!parseXyzData(data, tagIndex[Tag::wtpt], colorspaceDPtr->whitePoint))
+                return false;
+        }
     }
-
-    // Reset the matrix to our canonical values:
-    if (colorspaceDPtr->primaries != QColorSpace::Primaries::Custom)
-        colorspaceDPtr->setToXyzMatrix();
-
-    if (!parseTRCs(data, tagIndex, colorspaceDPtr, header.inputColorSpace == uint(ColorSpaceType::Gray)))
-        return false;
 
     if (tagIndex.contains(Tag::desc)) {
         if (!parseDesc(data, tagIndex[Tag::desc], colorspaceDPtr->description))

@@ -21,8 +21,7 @@
 
 QT_BEGIN_NAMESPACE
 
-
-// Defines an ICC TRC (Tone Reproduction Curve)
+// Defines a TRC (Tone Reproduction Curve)
 class Q_GUI_EXPORT QColorTrc
 {
 public:
@@ -41,9 +40,8 @@ public:
 
     bool isIdentity() const
     {
-        return m_type == Type::Uninitialized
-           || (m_type == Type::Function && m_fun.isIdentity())
-           || (m_type == Type::Table && m_table.isIdentity());
+        return (m_type == Type::Function && m_fun.isIdentity())
+            || (m_type == Type::Table && m_table.isIdentity());
     }
     bool isValid() const
     {

@@ -53,8 +53,13 @@ public:
     {
         if (x < m_d)
             return m_c * x + m_f;
+        float t = std::pow(m_a * x + m_b, m_g);
+        if (std::isfinite(t))
+            return t + m_e;
+        if (t > 0.f)
+            return 1.f;
         else
-            return std::pow(m_a * x + m_b, m_g) + m_e;
+            return 0.f;
     }
 
     QColorTransferFunction inverted() const
@@ -63,7 +68,7 @@ public:
 
         d = m_c * m_d + m_f;
 
-        if (!qFuzzyIsNull(m_c)) {
+        if (std::isnormal(m_c)) {
             c = 1.0f / m_c;
             f = -m_f / m_c;
         } else {
@@ -71,8 +76,12 @@ public:
             f = 0.0f;
         }
 
-        if (!qFuzzyIsNull(m_a) && !qFuzzyIsNull(m_g)) {
+        bool valid_abeg = std::isnormal(m_a) && std::isnormal(m_g);
+        if (valid_abeg)
             a = std::pow(1.0f / m_a, m_g);
+        if (valid_abeg && !std::isfinite(a))
+            valid_abeg = false;
+        if (valid_abeg) {
             b = -a * m_e;
             e = -m_b / m_a;
             g = 1.0f / m_g;

@@ -1,4 +1,4 @@
-// Copyright (C) 2020 The Qt Company Ltd.
+// Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef QCOLORMATRIX_H
@@ -31,21 +31,23 @@ public:
     explicit constexpr QColorVector(const QPointF &chr) // from XY chromaticity
             : x(chr.x() / chr.y())
             , y(1.0f)
-            , z((1.0 - chr.x() - chr.y()) / chr.y())
+            , z((1.0f - chr.x() - chr.y()) / chr.y())
     { }
-    float x = 0.0f; // X, x or red
-    float y = 0.0f; // Y, y or green
-    float z = 0.0f; // Z, Y or blue
+    float x = 0.0f; // X, x, L, or red
+    float y = 0.0f; // Y, y, a, or green
+    float z = 0.0f; // Z, Y, b, or blue
     float _unused = 0.0f;
 
-    friend inline bool operator==(const QColorVector &v1, const QColorVector &v2);
-    friend inline bool operator!=(const QColorVector &v1, const QColorVector &v2);
-    bool isNull() const
+    constexpr bool isNull() const noexcept
     {
         return !x && !y && !z;
     }
+    bool isValid() const noexcept
+    {
+        return std::isfinite(x) && std::isfinite(y) && std::isfinite(z);
+    }
 
-    static bool isValidChromaticity(const QPointF &chr)
+    static constexpr bool isValidChromaticity(const QPointF &chr)
     {
         if (chr.x() < qreal(0.0) || chr.x() > qreal(1.0))
             return false;
@@ -56,25 +58,91 @@ public:
         return true;
     }
 
+    constexpr QColorVector operator*(float f) const { return QColorVector(x * f, y * f, z * f); }
+    constexpr QColorVector operator+(const QColorVector &v) const { return QColorVector(x + v.x, y + v.y, z + v.z); }
+    constexpr QColorVector operator-(const QColorVector &v) const { return QColorVector(x - v.x, y - v.y, z - v.z); }
+    void operator+=(const QColorVector &v) { x += v.x; y += v.y; z += v.z; }
+
     // Common whitepoints:
     static constexpr QPointF D50Chromaticity() { return QPointF(0.34567, 0.35850); }
     static constexpr QPointF D65Chromaticity() { return QPointF(0.31271, 0.32902); }
     static constexpr QColorVector D50() { return QColorVector(D50Chromaticity()); }
     static constexpr QColorVector D65() { return QColorVector(D65Chromaticity()); }
+
+    QColorVector xyzToLab() const
+    {
+        constexpr QColorVector ref = D50();
+        constexpr float eps = 0.008856f;
+        constexpr float kap = 903.3f;
+        float xr = x / ref.x;
+        float yr = y / ref.y;
+        float zr = z / ref.z;
+
+        float fx, fy, fz;
+        if (xr > eps)
+            fx = std::cbrt(xr);
+        else
+            fx = (kap * xr + 16.f) / 116.f;
+        if (yr > eps)
+            fy = std::cbrt(yr);
+        else
+            fy = (kap * yr + 16.f) / 116.f;
+        if (zr > eps)
+            fz = std::cbrt(zr);
+        else
+            fz = (kap * zr + 16.f) / 116.f;
+
+        const float L = 116.f * fy - 16.f;
+        const float a = 500.f * (fx - fy);
+        const float b = 200.f * (fy - fz);
+        // We output Lab values that has been scaled to 0.0->1.0 values, see also labToXyz.
+        return QColorVector(L / 100.f, (a + 128.f) / 255.f, (b + 128.f) / 255.f);
+    }
+
+    QColorVector labToXyz() const
+    {
+        constexpr QColorVector ref = D50();
+        constexpr float eps = 0.008856f;
+        constexpr float kap = 903.3f;
+        // This transform has been guessed from the ICC spec, but it is not stated
+        // anywhere to be the one to use to map to and from 0.0->1.0 values:
+        const float L = x * 100.f;
+        const float a = (y * 255.f) - 128.f;
+        const float b = (z * 255.f) - 128.f;
+        // From here is official Lab->XYZ conversion:
+        float fy = (L + 16.f) / 116.f;
+        float fx = fy + (a / 500.f);
+        float fz = fy - (b / 200.f);
+
+        float xr, yr, zr;
+        if (fx * fx * fx > eps)
+            xr = fx * fx * fx;
+        else
+            xr = (116.f * fx - 16) / kap;
+        if (L > (kap * eps))
+            yr = fy * fy * fy;
+        else
+            yr = L / kap;
+        if (fz * fz * fz > eps)
+            zr = fz * fz * fz;
+        else
+            zr = (116.f * fz - 16) / kap;
+
+        xr = xr * ref.x;
+        yr = yr * ref.y;
+        zr = zr * ref.z;
+        return QColorVector(xr, yr, zr);
+    }
+    friend inline bool comparesEqual(const QColorVector &lhs, const QColorVector &rhs);
+    Q_DECLARE_EQUALITY_COMPARABLE(QColorVector);
 };
 
-inline bool operator==(const QColorVector &v1, const QColorVector &v2)
+inline bool comparesEqual(const QColorVector &v1, const QColorVector &v2)
 {
     return (std::abs(v1.x - v2.x) < (1.0f / 2048.0f))
         && (std::abs(v1.y - v2.y) < (1.0f / 2048.0f))
         && (std::abs(v1.z - v2.z) < (1.0f / 2048.0f));
 }
-
-inline bool operator!=(const QColorVector &v1, const QColorVector &v2)
-{
-    return !(v1 == v2);
-}
-
 
 // A matrix mapping 3 value colors.
 // Not using QTransform because only floats are needed and performance is critical.
@@ -86,20 +154,20 @@ public:
     QColorVector g;
     QColorVector b;
 
-    friend inline bool operator==(const QColorMatrix &m1, const QColorMatrix &m2);
-    friend inline bool operator!=(const QColorMatrix &m1, const QColorMatrix &m2);
-
-    bool isNull() const
+    constexpr bool isNull() const
     {
         return r.isNull() && g.isNull() && b.isNull();
+    }
+    constexpr float determinant() const
+    {
+        return r.x * (b.z * g.y - g.z * b.y) -
+               r.y * (b.z * g.x - g.z * b.x) +
+               r.z * (b.y * g.x - g.y * b.x);
     }
     bool isValid() const
     {
         // A color matrix must be invertible
-        float det = r.x * (b.z * g.y - g.z * b.y) -
-                    r.y * (b.z * g.x - g.z * b.x) +
-                    r.z * (b.y * g.x - g.y * b.x);
-        return !qFuzzyIsNull(det);
+        return std::isnormal(determinant());
     }
     bool isIdentity() const noexcept
     {
@@ -108,9 +176,7 @@ public:
 
     QColorMatrix inverted() const
     {
-        float det = r.x * (b.z * g.y - g.z * b.y) -
-                    r.y * (b.z * g.x - g.z * b.x) +
-                    r.z * (b.y * g.x - g.y * b.x);
+        float det = determinant();
         det = 1.0f / det;
         QColorMatrix inv;
         inv.r.x = (g.y * b.z - b.y * g.z) * det;
@@ -124,20 +190,20 @@ public:
         inv.b.z = (r.x * g.y - g.x * r.y) * det;
         return inv;
     }
-    QColorMatrix operator*(const QColorMatrix &o) const
+    friend inline constexpr QColorMatrix operator*(const QColorMatrix &a, const QColorMatrix &o)
     {
         QColorMatrix comb;
-        comb.r.x = r.x * o.r.x + g.x * o.r.y + b.x * o.r.z;
-        comb.g.x = r.x * o.g.x + g.x * o.g.y + b.x * o.g.z;
-        comb.b.x = r.x * o.b.x + g.x * o.b.y + b.x * o.b.z;
+        comb.r.x = a.r.x * o.r.x + a.g.x * o.r.y + a.b.x * o.r.z;
+        comb.g.x = a.r.x * o.g.x + a.g.x * o.g.y + a.b.x * o.g.z;
+        comb.b.x = a.r.x * o.b.x + a.g.x * o.b.y + a.b.x * o.b.z;
 
-        comb.r.y = r.y * o.r.x + g.y * o.r.y + b.y * o.r.z;
-        comb.g.y = r.y * o.g.x + g.y * o.g.y + b.y * o.g.z;
-        comb.b.y = r.y * o.b.x + g.y * o.b.y + b.y * o.b.z;
+        comb.r.y = a.r.y * o.r.x + a.g.y * o.r.y + a.b.y * o.r.z;
+        comb.g.y = a.r.y * o.g.x + a.g.y * o.g.y + a.b.y * o.g.z;
+        comb.b.y = a.r.y * o.b.x + a.g.y * o.b.y + a.b.y * o.b.z;
 
-        comb.r.z = r.z * o.r.x + g.z * o.r.y + b.z * o.r.z;
-        comb.g.z = r.z * o.g.x + g.z * o.g.y + b.z * o.g.z;
-        comb.b.z = r.z * o.b.x + g.z * o.b.y + b.z * o.b.z;
+        comb.r.z = a.r.z * o.r.x + a.g.z * o.r.y + a.b.z * o.r.z;
+        comb.g.z = a.r.z * o.g.x + a.g.z * o.g.y + a.b.z * o.g.z;
+        comb.b.z = a.r.z * o.b.x + a.g.z * o.b.y + a.b.z * o.b.z;
         return comb;
 
     }
@@ -189,16 +255,13 @@ public:
                               { 0.1351922452f, 0.7118769884f, 0.0000000000f },
                               { 0.0313525312f, 0.0000856627f, 0.8251883388f } };
     }
+    friend inline bool comparesEqual(const QColorMatrix &lhs, const QColorMatrix &rhs);
+    Q_DECLARE_EQUALITY_COMPARABLE(QColorMatrix);
 };
 
-inline bool operator==(const QColorMatrix &m1, const QColorMatrix &m2)
+inline bool comparesEqual(const QColorMatrix &m1, const QColorMatrix &m2)
 {
     return (m1.r == m2.r) && (m1.g == m2.g) && (m1.b == m2.b);
-}
-
-inline bool operator!=(const QColorMatrix &m1, const QColorMatrix &m2)
-{
-    return !(m1 == m2);
 }
 
 QT_END_NAMESPACE

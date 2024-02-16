@@ -5,6 +5,7 @@
 #include "qcolorspace_p.h"
 
 #include "qcolortransform.h"
+#include "qcolorclut_p.h"
 #include "qcolormatrix_p.h"
 #include "qcolortransferfunction_p.h"
 #include "qcolortransform_p.h"
@@ -418,7 +419,12 @@ QColorTransform QColorSpacePrivate::transformationToColorSpace(const QColorSpace
     combined.d = ptr;
     ptr->colorSpaceIn = this;
     ptr->colorSpaceOut = out;
-    ptr->colorMatrix = out->toXyz.inverted() * toXyz;
+    if (isThreeComponentMatrix())
+        ptr->colorMatrix = toXyz;
+    else
+        ptr->colorMatrix = QColorMatrix::identity();
+    if (out->isThreeComponentMatrix())
+        ptr->colorMatrix = out->toXyz.inverted() * ptr->colorMatrix;
     if (ptr->isIdentity())
         return QColorTransform();
     return combined;
@@ -431,8 +437,28 @@ QColorTransform QColorSpacePrivate::transformationToXYZ() const
     transform.d = ptr;
     ptr->colorSpaceIn = this;
     ptr->colorSpaceOut = this;
-    ptr->colorMatrix = toXyz;
+    if (isThreeComponentMatrix())
+        ptr->colorMatrix = toXyz;
+    else
+        ptr->colorMatrix = QColorMatrix::identity();
     return transform;
+}
+
+bool QColorSpacePrivate::isThreeComponentMatrix() const
+{
+    return transformModel == QColorSpace::TransformModel::ThreeComponentMatrix;
+}
+
+void QColorSpacePrivate::clearElementListProcessingForEdit()
+{
+    Q_ASSERT(transformModel == QColorSpace::TransformModel::ElementListProcessing);
+    Q_ASSERT(primaries == QColorSpace::Primaries::Custom);
+    Q_ASSERT(transferFunction == QColorSpace::TransferFunction::Custom);
+
+    transformModel = QColorSpace::TransformModel::ThreeComponentMatrix;
+    isPcsLab = false;
+    mAB.clear();
+    mBA.clear();
 }
 
 /*!
@@ -510,6 +536,20 @@ QColorTransform QColorSpacePrivate::transformationToXYZ() const
     \value Gamma A transfer function that is a real gamma curve based on the value of gamma()
     \value SRgb The sRGB transfer function, composed of linear and gamma parts
     \value ProPhotoRgb The ProPhoto RGB transfer function, composed of linear and gamma parts
+*/
+
+/*!
+    \enum QColorSpace::TransformModel
+    \since 6.8
+
+    Defines the processing model used for color space transforms.
+
+    \value ThreeComponentMatrix The transform consist of a matrix calculated from primaries and set of transfer functions for each color channel.
+    This is very fast and used by all predefined color spaces.
+    \value ElementListProcessing The transforms are two lists of processing elements that can do many things,
+    each list only process either to the connection color space or from it. This is very flexible, but rather
+    slow, and can only be set by reading ICC profiles (See  \l fromIccProfile()). When changing either primaries
+     or transfer function on a color space on this type it will reset to a ThreeComponentMatrix form.
 */
 
 /*!
@@ -689,7 +729,10 @@ void QColorSpace::setTransferFunction(QColorSpace::TransferFunction transferFunc
     if (d_ptr->transferFunction == transferFunction && d_ptr->gamma == gamma)
         return;
     detach();
-    d_ptr->description.clear();
+    if (d_ptr->transformModel == TransformModel::ElementListProcessing)
+        d_ptr->clearElementListProcessingForEdit();
+    d_ptr->iccProfile = {};
+    d_ptr->description = QString();
     d_ptr->transferFunction = transferFunction;
     d_ptr->gamma = gamma;
     d_ptr->identifyColorSpace();
@@ -710,7 +753,10 @@ void QColorSpace::setTransferFunction(const QList<uint16_t> &transferFunctionTab
         return;
     }
     detach();
-    d_ptr->description.clear();
+    if (d_ptr->transformModel == TransformModel::ElementListProcessing)
+        d_ptr->clearElementListProcessingForEdit();
+    d_ptr->iccProfile = {};
+    d_ptr->description = QString();
     d_ptr->setTransferFunctionTable(transferFunctionTable);
     d_ptr->gamma = 0;
     d_ptr->identifyColorSpace();
@@ -737,7 +783,10 @@ void QColorSpace::setTransferFunctions(const QList<uint16_t> &redTransferFunctio
         return;
     }
     detach();
-    d_ptr->description.clear();
+    if (d_ptr->transformModel == TransformModel::ElementListProcessing)
+        d_ptr->clearElementListProcessingForEdit();
+    d_ptr->iccProfile = {};
+    d_ptr->description = QString();
     d_ptr->setTransferFunctionTables(redTransferFunctionTable,
                                      greenTransferFunctionTable,
                                      blueTransferFunctionTable);
@@ -753,7 +802,7 @@ void QColorSpace::setTransferFunctions(const QList<uint16_t> &redTransferFunctio
 */
 QColorSpace QColorSpace::withTransferFunction(QColorSpace::TransferFunction transferFunction, float gamma) const
 {
-    if (!isValid() || transferFunction == QColorSpace::TransferFunction::Custom)
+    if (!isValid() || transferFunction == TransferFunction::Custom)
         return *this;
     if (d_ptr->transferFunction == transferFunction && d_ptr->gamma == gamma)
         return *this;
@@ -813,7 +862,10 @@ void QColorSpace::setPrimaries(QColorSpace::Primaries primariesId)
     if (d_ptr->primaries == primariesId)
         return;
     detach();
-    d_ptr->description.clear();
+    if (d_ptr->transformModel == TransformModel::ElementListProcessing)
+        d_ptr->clearElementListProcessingForEdit();
+    d_ptr->iccProfile = {};
+    d_ptr->description = QString();
     d_ptr->primaries = primariesId;
     d_ptr->identifyColorSpace();
     d_ptr->setToXyzMatrix();
@@ -839,11 +891,25 @@ void QColorSpace::setPrimaries(const QPointF &whitePoint, const QPointF &redPoin
     if (QColorVector(primaries.whitePoint) == d_ptr->whitePoint && toXyz == d_ptr->toXyz)
         return;
     detach();
-    d_ptr->description.clear();
+    if (d_ptr->transformModel == TransformModel::ElementListProcessing)
+        d_ptr->clearElementListProcessingForEdit();
+    d_ptr->iccProfile = {};
+    d_ptr->description = QString();
     d_ptr->primaries = QColorSpace::Primaries::Custom;
     d_ptr->toXyz = toXyz;
     d_ptr->whitePoint = QColorVector(primaries.whitePoint);
     d_ptr->identifyColorSpace();
+}
+
+/*!
+    \since 6.8
+    Returns the transfrom processing model used for this color space.
+*/
+QColorSpace::TransformModel QColorSpace::transformModel() const noexcept
+{
+    if (Q_UNLIKELY(!d_ptr))
+        return QColorSpace::TransformModel::ThreeComponentMatrix;
+    return d_ptr->transformModel;
 }
 
 /*!
@@ -884,7 +950,7 @@ QByteArray QColorSpace::iccProfile() const
     Creates a QColorSpace from ICC profile \a iccProfile.
 
     \note Not all ICC profiles are supported. QColorSpace only supports
-    RGB-XYZ ICC profiles that are three-component matrix-based.
+    RGB or Gray ICC profiles.
 
     If the ICC profile is not supported an invalid QColorSpace is returned
     where you can still read the original ICC profile using iccProfile().
@@ -906,9 +972,23 @@ QColorSpace QColorSpace::fromIccProfile(const QByteArray &iccProfile)
 */
 bool QColorSpace::isValid() const noexcept
 {
-    return d_ptr
-        && d_ptr->toXyz.isValid()
-        && d_ptr->trc[0].isValid() && d_ptr->trc[1].isValid() && d_ptr->trc[2].isValid();
+    if (!d_ptr)
+        return false;
+    return d_ptr->isValid();
+}
+
+/*!
+    \internal
+*/
+bool QColorSpacePrivate::isValid() const noexcept
+{
+    if (!isThreeComponentMatrix())
+        return !mAB.isEmpty();
+    if (!toXyz.isValid())
+        return false;
+    if (!trc[0].isValid() || !trc[1].isValid() || !trc[2].isValid())
+        return false;
+    return true;
 }
 
 /*!
@@ -925,6 +1005,50 @@ bool QColorSpace::isValid() const noexcept
     otherwise returns \c false
 */
 
+static bool compareElement(const QColorSpacePrivate::TransferElement &element,
+                           const QColorSpacePrivate::TransferElement &other)
+{
+    return element.trc[0] == other.trc[0]
+        && element.trc[1] == other.trc[1]
+        && element.trc[2] == other.trc[2];
+}
+
+static bool compareElement(const QColorMatrix &element,
+                           const QColorMatrix &other)
+{
+    return element == other;
+}
+
+static bool compareElement(const QColorVector &element,
+                           const QColorVector &other)
+{
+    return element == other;
+}
+
+static bool compareElement(const QColorCLUT &element,
+                           const QColorCLUT &other)
+{
+    if (element.gridPointsX != other.gridPointsX)
+        return false;
+    if (element.gridPointsY != other.gridPointsY)
+        return false;
+    if (element.gridPointsZ != other.gridPointsZ)
+        return false;
+    if (element.table.size() != other.table.size())
+        return false;
+    for (qsizetype i = 0; i < element.table.size(); ++i) {
+        if (element.table[i] != other.table[i])
+            return false;
+    }
+    return true;
+}
+
+template<typename T>
+static bool compareElements(const T &element, const QColorSpacePrivate::Element &other)
+{
+    return compareElement(element, std::get<T>(other));
+}
+
 /*!
     \internal
 */
@@ -932,43 +1056,87 @@ bool QColorSpace::equals(const QColorSpace &other) const
 {
     if (d_ptr == other.d_ptr)
         return true;
-    if (!d_ptr || !other.d_ptr)
+    if (!d_ptr)
+        return false;
+    return d_ptr->equals(other.d_ptr.constData());
+}
+
+/*!
+    \internal
+*/
+bool QColorSpacePrivate::equals(const QColorSpacePrivate *other) const
+{
+    if (!other)
         return false;
 
-    if (d_ptr->namedColorSpace && other.d_ptr->namedColorSpace)
-        return d_ptr->namedColorSpace == other.d_ptr->namedColorSpace;
+    if (namedColorSpace && other->namedColorSpace)
+        return namedColorSpace == other->namedColorSpace;
 
     const bool valid1 = isValid();
-    const bool valid2 = other.isValid();
+    const bool valid2 = other->isValid();
     if (valid1 != valid2)
         return false;
     if (!valid1 && !valid2) {
-        if (!d_ptr->iccProfile.isEmpty() || !other.d_ptr->iccProfile.isEmpty())
-            return d_ptr->iccProfile == other.d_ptr->iccProfile;
+        if (!iccProfile.isEmpty() || !other->iccProfile.isEmpty())
+            return iccProfile == other->iccProfile;
+        return false;
     }
 
     // At this point one or both color spaces are unknown, and must be compared in detail instead
 
-    if (primaries() != QColorSpace::Primaries::Custom && other.primaries() != QColorSpace::Primaries::Custom) {
-        if (primaries() != other.primaries())
-            return false;
-    } else {
-        if (d_ptr->toXyz != other.d_ptr->toXyz)
-            return false;
-    }
+    if (transformModel != other->transformModel)
+        return false;
 
-    if (transferFunction() != QColorSpace::TransferFunction::Custom &&
-            other.transferFunction() != QColorSpace::TransferFunction::Custom) {
-        if (transferFunction() != other.transferFunction())
+    if (!isThreeComponentMatrix()) {
+        if (isPcsLab != other->isPcsLab)
             return false;
-        if (transferFunction() == QColorSpace::TransferFunction::Gamma)
-            return (qAbs(gamma() - other.gamma()) <= (1.0f / 512.0f));
+        if (mAB.count() != other->mAB.count())
+            return false;
+        if (mBA.count() != other->mBA.count())
+            return false;
+
+        // Compare element types
+        for (qsizetype i = 0; i < mAB.count(); ++i) {
+            if (mAB[i].index() != other->mAB[i].index())
+                return false;
+        }
+        for (qsizetype i = 0; i < mBA.count(); ++i) {
+            if (mBA[i].index() != other->mBA[i].index())
+                return false;
+        }
+
+        // Compare element contents
+        for (qsizetype i = 0; i < mAB.count(); ++i) {
+            if (!std::visit([&](auto &&elm) { return compareElements(elm, other->mAB[i]); }, mAB[i]))
+                return false;
+        }
+        for (qsizetype i = 0; i < mBA.count(); ++i) {
+            if (!std::visit([&](auto &&elm) { return compareElements(elm, other->mBA[i]); }, mBA[i]))
+                return false;
+        }
+
         return true;
     }
 
-    if (d_ptr->trc[0] != other.d_ptr->trc[0] ||
-        d_ptr->trc[1] != other.d_ptr->trc[1] ||
-        d_ptr->trc[2] != other.d_ptr->trc[2])
+    if (primaries != QColorSpace::Primaries::Custom && other->primaries != QColorSpace::Primaries::Custom) {
+        if (primaries != other->primaries)
+            return false;
+    } else {
+        if (toXyz != other->toXyz)
+            return false;
+    }
+
+    if (transferFunction != QColorSpace::TransferFunction::Custom && other->transferFunction != QColorSpace::TransferFunction::Custom) {
+        if (transferFunction != other->transferFunction)
+            return false;
+        if (transferFunction == QColorSpace::TransferFunction::Gamma)
+            return (qAbs(gamma - other->gamma) <= (1.0f / 512.0f));
+        return true;
+    }
+
+    if (trc[0] != other->trc[0] ||
+        trc[1] != other->trc[1] ||
+        trc[2] != other->trc[2])
         return false;
 
     return true;
@@ -985,6 +1153,10 @@ QColorTransform QColorSpace::transformationToColorSpace(const QColorSpace &color
 
     if (*this == colorspace)
         return QColorTransform();
+    if (colorspace.transformModel() == TransformModel::ElementListProcessing && colorspace.d_ptr->mBA.isEmpty()) {
+        qWarning() << "Attempted transform to from-only colorspace";
+        return QColorTransform();
+    }
 
     return d_ptr->transformationToColorSpace(colorspace.d_ptr.get());
 }
@@ -1024,6 +1196,7 @@ QString QColorSpace::description() const noexcept
 void QColorSpace::setDescription(const QString &description)
 {
     detach();
+    d_ptr->iccProfile = {};
     d_ptr->userDescription = description;
 }
 
@@ -1066,6 +1239,28 @@ QDataStream &operator>>(QDataStream &s, QColorSpace &colorSpace)
 #endif // QT_NO_DATASTREAM
 
 #ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QColorSpacePrivate::TransferElement &)
+{
+    return dbg << ":Transfer";
+}
+QDebug operator<<(QDebug dbg, const QColorMatrix &)
+{
+    return dbg << ":Matrix";
+}
+QDebug operator<<(QDebug dbg, const QColorVector &)
+{
+    return dbg << ":Offset";
+}
+QDebug operator<<(QDebug dbg, const QColorCLUT &)
+{
+    return dbg << ":CLUT";
+}
+QDebug operator<<(QDebug dbg, const QList<QColorSpacePrivate::Element> &elements)
+{
+    for (auto &&element : elements)
+        std::visit([&](auto &&elm) { dbg << elm; }, element);
+    return dbg;
+}
 QDebug operator<<(QDebug dbg, const QColorSpace &colorSpace)
 {
     QDebugStateSaver saver(dbg);
@@ -1074,8 +1269,22 @@ QDebug operator<<(QDebug dbg, const QColorSpace &colorSpace)
     if (colorSpace.d_ptr) {
         if (colorSpace.d_ptr->namedColorSpace)
             dbg << colorSpace.d_ptr->namedColorSpace << ", ";
-        dbg << colorSpace.primaries() << ", " << colorSpace.transferFunction();
-        dbg << ", gamma=" << colorSpace.gamma();
+        if (!colorSpace.isValid()) {
+            dbg << "Invalid";
+            if (!colorSpace.d_ptr->iccProfile.isEmpty())
+                dbg << " with profile data";
+        } else if (colorSpace.d_ptr->isThreeComponentMatrix()) {
+            dbg << colorSpace.primaries() << ", " << colorSpace.transferFunction();
+            dbg << ", gamma=" << colorSpace.gamma();
+        } else {
+            if (colorSpace.d_ptr->isPcsLab)
+                dbg << "PCSLab, ";
+            else
+                dbg << "PCSXYZ, ";
+            dbg << "A2B" << colorSpace.d_ptr->mAB;
+            if (!colorSpace.d_ptr->mBA.isEmpty())
+                dbg << ", B2A" << colorSpace.d_ptr->mBA;
+        }
     }
     dbg << ')';
     return dbg;

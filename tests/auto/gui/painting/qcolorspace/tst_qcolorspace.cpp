@@ -42,6 +42,8 @@ private slots:
     void imageConversionOverLargerGamut();
     void imageConversionOverLargerGamut2_data();
     void imageConversionOverLargerGamut2();
+    void imageConversionOverNonThreeComponentMatrix_data();
+    void imageConversionOverNonThreeComponentMatrix();
 
     void loadImage();
 
@@ -187,6 +189,12 @@ void tst_QColorSpace::fromIccProfile_data()
     // My monitor's profile:
     QTest::newRow("HP ZR30w (ICCv4)") << prefix + "HP_ZR30w.icc" << QColorSpace::NamedColorSpace(0)
                                       << QColorSpace::TransferFunction::Gamma << QString("HP Z30i");
+    // A profile to HD TV
+    QTest::newRow("VideoHD") << prefix + "VideoHD.icc" << QColorSpace::NamedColorSpace(0)
+                                      << QColorSpace::TransferFunction::Custom << QString("HDTV (Rec. 709)");
+    // sRGB on PCSLab format
+    QTest::newRow("sRGB ICCv4 Appearance") << prefix + "sRGB_ICC_v4_Appearance.icc" << QColorSpace::NamedColorSpace(0)
+                                           << QColorSpace::TransferFunction::Custom << QString("sRGB_ICC_v4_Appearance.icc");
 }
 
 void tst_QColorSpace::fromIccProfile()
@@ -207,6 +215,11 @@ void tst_QColorSpace::fromIccProfile()
 
     QCOMPARE(fileColorSpace.transferFunction(), transferFunction);
     QCOMPARE(fileColorSpace.description(), description);
+
+    QByteArray iccProfile2 = fileColorSpace.iccProfile();
+    QCOMPARE(iccProfile, iccProfile2);
+    QColorSpace fileColorSpace2 = QColorSpace::fromIccProfile(iccProfile2);
+    QCOMPARE(fileColorSpace2, fileColorSpace);
 }
 
 void tst_QColorSpace::imageConversion_data()
@@ -517,6 +530,63 @@ void tst_QColorSpace::imageConversionOverLargerGamut2()
     QVERIFY(resultImage.pixelColor(0, 255).greenF() > 1.0f);
 }
 
+void tst_QColorSpace::imageConversionOverNonThreeComponentMatrix_data()
+{
+    QTest::addColumn<QColorSpace>("fromColorSpace");
+    QTest::addColumn<QColorSpace>("toColorSpace");
+
+    QString prefix = QFINDTESTDATA("resources/");
+    QFile file1(prefix + "VideoHD.icc");
+    QFile file2(prefix + "sRGB_ICC_v4_Appearance.icc");
+    file1.open(QFile::ReadOnly);
+    file2.open(QFile::ReadOnly);
+    QByteArray iccProfile1 = file1.readAll();
+    QByteArray iccProfile2 = file2.readAll();
+    QColorSpace hdtvColorSpace = QColorSpace::fromIccProfile(iccProfile1);
+    QColorSpace srgbPcsColorSpace = QColorSpace::fromIccProfile(iccProfile2);
+
+    QTest::newRow("sRGB PCSLab -> sRGB") << srgbPcsColorSpace << QColorSpace(QColorSpace::SRgb);
+    QTest::newRow("sRGB -> sRGB PCSLab") << QColorSpace(QColorSpace::SRgb) << srgbPcsColorSpace;
+    QTest::newRow("HDTV -> sRGB") << hdtvColorSpace << QColorSpace(QColorSpace::SRgb);
+    QTest::newRow("sRGB -> HDTV") << QColorSpace(QColorSpace::SRgb) << hdtvColorSpace;
+    QTest::newRow("sRGB PCSLab -> HDTV") << srgbPcsColorSpace << hdtvColorSpace;
+    QTest::newRow("HDTV -> sRGB PCSLab") << hdtvColorSpace << srgbPcsColorSpace;
+}
+
+void tst_QColorSpace::imageConversionOverNonThreeComponentMatrix()
+{
+    QFETCH(QColorSpace, fromColorSpace);
+    QFETCH(QColorSpace, toColorSpace);
+    QVERIFY(fromColorSpace.isValid());
+    QVERIFY(toColorSpace.isValid());
+
+    QVERIFY(!fromColorSpace.transformationToColorSpace(toColorSpace).isIdentity());
+
+    QImage testImage(256, 256, QImage::Format_RGBX64);
+    testImage.setColorSpace(fromColorSpace);
+    for (int y = 0; y < 256; ++y)
+        for (int x = 0; x < 256; ++x)
+            testImage.setPixel(x, y, qRgb(x, y, 0));
+
+    QImage resultImage = testImage.convertedToColorSpace(toColorSpace);
+    for (int y = 0; y < 256; ++y) {
+        int lastRed = 0;
+        for (int x = 0; x < 256; ++x) {
+            QRgb p = resultImage.pixel(x, y);
+            QVERIFY(qRed(p) >= lastRed);
+            lastRed = qRed(p);
+        }
+    }
+    for (int x = 0; x < 256; ++x) {
+        int lastGreen = 0;
+        for (int y = 0; y < 256; ++y) {
+            QRgb p = resultImage.pixel(x, y);
+            QVERIFY(qGreen(p) >= lastGreen);
+            lastGreen = qGreen(p);
+        }
+    }
+}
+
 void tst_QColorSpace::loadImage()
 {
     QString prefix = QFINDTESTDATA("resources/");
@@ -694,10 +764,28 @@ void tst_QColorSpace::changePrimaries()
     cs.setPrimaries(QColorSpace::Primaries::DciP3D65);
     QVERIFY(cs.isValid());
     QCOMPARE(cs, QColorSpace(QColorSpace::DisplayP3));
+    QCOMPARE(cs.transformModel(), QColorSpace::TransformModel::ThreeComponentMatrix);
     cs.setTransferFunction(QColorSpace::TransferFunction::Linear);
     cs.setPrimaries(QPointF(0.3127, 0.3290), QPointF(0.640, 0.330),
                     QPointF(0.3000, 0.6000), QPointF(0.150, 0.060));
     QCOMPARE(cs, QColorSpace(QColorSpace::SRgbLinear));
+
+
+    QFile iccFile(QFINDTESTDATA("resources/") + "VideoHD.icc");
+    iccFile.open(QFile::ReadOnly);
+    QByteArray iccData = iccFile.readAll();
+    QColorSpace hdtvColorSpace = QColorSpace::fromIccProfile(iccData);
+    QVERIFY(hdtvColorSpace.isValid());
+    QCOMPARE(hdtvColorSpace.transformModel(), QColorSpace::TransformModel::ElementListProcessing);
+    QCOMPARE(hdtvColorSpace.primaries(), QColorSpace::Primaries::Custom);
+    QCOMPARE(hdtvColorSpace.transferFunction(), QColorSpace::TransferFunction::Custom);
+    // Unsets both primaries and transferfunction because they were inseparable in element list processing
+    hdtvColorSpace.setPrimaries(QColorSpace::Primaries::SRgb);
+    QVERIFY(!hdtvColorSpace.isValid());
+    hdtvColorSpace.setTransferFunction(QColorSpace::TransferFunction::SRgb);
+    QVERIFY(hdtvColorSpace.isValid());
+    QCOMPARE(hdtvColorSpace.transformModel(), QColorSpace::TransformModel::ThreeComponentMatrix);
+    QCOMPARE(hdtvColorSpace, QColorSpace(QColorSpace::SRgb));
 }
 
 void tst_QColorSpace::transferFunctionTable()

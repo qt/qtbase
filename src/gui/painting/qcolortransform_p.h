@@ -36,6 +36,7 @@ public:
     void updateLutsIn() const;
     void updateLutsOut() const;
     bool isIdentity() const;
+    bool isThreeComponentMatrix() const;
 
     Q_GUI_EXPORT void prepare();
     enum TransformFlag {
@@ -47,6 +48,9 @@ public:
     };
     Q_DECLARE_FLAGS(TransformFlags, TransformFlag)
 
+    QColorVector map(QColorVector color) const;
+    QColorVector mapExtended(QColorVector color) const;
+
     void apply(QRgb *dst, const QRgb *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
     void apply(QRgba64 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
     void apply(QRgbaFloat32 *dst, const QRgbaFloat32 *src, qsizetype count,
@@ -54,6 +58,15 @@ public:
 
     template<typename T>
     void apply(T *dst, const T *src, qsizetype count, TransformFlags flags) const;
+
+    template<typename T>
+    void applyConvertIn(const T *src, QColorVector *buffer, qsizetype len, TransformFlags flags) const;
+    template<typename T>
+    void applyConvertOut(T *dst, const T *src, QColorVector *buffer, qsizetype len, TransformFlags flags) const;
+    template<typename T>
+    void applyElementListTransform(T *dst, const T *src, qsizetype count, TransformFlags flags) const;
+    template<typename T>
+    void applyThreeComponentMatrix(T *dst, const T *src, qsizetype count, TransformFlags flags) const;
 
     template<typename D, typename S>
     void applyReturnGray(D *dst, const S *src, qsizetype count, TransformFlags flags) const;

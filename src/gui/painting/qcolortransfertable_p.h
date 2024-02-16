@@ -29,16 +29,18 @@ QT_BEGIN_NAMESPACE
 class Q_GUI_EXPORT QColorTransferTable
 {
 public:
-    QColorTransferTable() noexcept
-            : m_tableSize(0)
-    { }
-    QColorTransferTable(uint32_t size, const QList<uint8_t> &table) noexcept
-        : m_tableSize(size), m_table8(table)
+    enum Type : uint8_t {
+        TwoWay = 0,
+        OneWay,
+    };
+    QColorTransferTable() noexcept = default;
+    QColorTransferTable(uint32_t size, const QList<uint8_t> &table, Type type = TwoWay) noexcept
+        : m_type(type), m_tableSize(size), m_table8(table)
     {
         Q_ASSERT(qsizetype(size) <= table.size());
     }
-    QColorTransferTable(uint32_t size, const QList<uint16_t> &table) noexcept
-        : m_tableSize(size), m_table16(table)
+    QColorTransferTable(uint32_t size, const QList<uint16_t> &table, Type type = TwoWay) noexcept
+        : m_type(type), m_tableSize(size), m_table16(table)
     {
         Q_ASSERT(qsizetype(size) <= table.size());
     }
@@ -69,7 +71,11 @@ public:
         // At least 2 elements
         if (m_tableSize < 2)
             return false;
-        // The table must describe an injective curve:
+        return (m_type == OneWay) || checkInvertibility();
+    }
+    bool checkInvertibility() const
+    {
+        // The two-way tables must describe an injective curve:
         if (!m_table8.isEmpty()) {
             uint8_t val = 0;
             for (uint i = 0; i < m_tableSize; ++i) {
@@ -97,9 +103,9 @@ public:
         const uint32_t hi = std::min(lo + 1, m_tableSize - 1);
         const float frac = x - lo;
         if (!m_table16.isEmpty())
-            return (m_table16[lo] * (1.0f - frac) + m_table16[hi] * frac) * (1.0f/65535.0f);
+            return (m_table16[lo] + (m_table16[hi] - m_table16[lo]) * frac) * (1.0f/65535.0f);
         if (!m_table8.isEmpty())
-            return (m_table8[lo] * (1.0f - frac) + m_table8[hi] * frac) * (1.0f/255.0f);
+            return (m_table8[lo] + (m_table8[hi] - m_table8[lo]) * frac) * (1.0f/255.0f);
         return x;
     }
 
@@ -107,6 +113,7 @@ public:
     float applyInverse(float x, float resultLargerThan = 0.0f) const
     {
         Q_ASSERT(resultLargerThan >= 0.0f && resultLargerThan <= 1.0f);
+        Q_ASSERT(m_type == TwoWay);
         if (x <= 0.0f)
             return 0.0f;
         if (x >= 1.0f)
@@ -125,7 +132,6 @@ public:
             Q_ASSERT(v >= y1 && v <= y2);
             const float fr = (v - y1) / (y2 - y1);
             return (i + fr) * (1.0f / (m_tableSize - 1));
-
         }
         if (!m_table8.isEmpty()) {
             const float v = x * 255.0f;
@@ -201,7 +207,8 @@ public:
     friend inline bool operator!=(const QColorTransferTable &t1, const QColorTransferTable &t2);
     friend inline bool operator==(const QColorTransferTable &t1, const QColorTransferTable &t2);
 
-    uint32_t m_tableSize;
+    Type m_type = TwoWay;
+    uint32_t m_tableSize = 0;
     QList<uint8_t> m_table8;
     QList<uint16_t> m_table16;
 };
@@ -209,6 +216,8 @@ public:
 inline bool operator!=(const QColorTransferTable &t1, const QColorTransferTable &t2)
 {
     if (t1.m_tableSize != t2.m_tableSize)
+        return true;
+    if (t1.m_type != t2.m_type)
         return true;
     if (t1.m_table8.isEmpty() != t2.m_table8.isEmpty())
         return true;

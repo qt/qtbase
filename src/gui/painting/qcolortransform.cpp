@@ -1,9 +1,10 @@
-// Copyright (C) 2022 The Qt Company Ltd.
+// Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qcolortransform.h"
 #include "qcolortransform_p.h"
 
+#include "qcolorclut_p.h"
 #include "qcolormatrix_p.h"
 #include "qcolorspace_p.h"
 #include "qcolortrc_p.h"
@@ -139,11 +140,31 @@ bool QColorTransform::compare(const QColorTransform &other) const
         return false;
     if (bool(d->colorSpaceOut) != bool(other.d->colorSpaceOut))
         return false;
-    for (int i = 0; i < 3; ++i) {
-        if (d->colorSpaceIn && d->colorSpaceIn->trc[i] != other.d->colorSpaceIn->trc[i])
+    if (d->colorSpaceIn) {
+        if (d->colorSpaceIn->transformModel != other.d->colorSpaceIn->transformModel)
             return false;
-        if (d->colorSpaceOut && d->colorSpaceOut->trc[i] != other.d->colorSpaceOut->trc[i])
+        if (d->colorSpaceIn->isThreeComponentMatrix()) {
+            for (int i = 0; i < 3; ++i) {
+                if (d->colorSpaceIn && d->colorSpaceIn->trc[i] != other.d->colorSpaceIn->trc[i])
+                    return false;
+            }
+        } else {
+            if (!d->colorSpaceIn->equals(other.d->colorSpaceIn.constData()))
+                return false;
+        }
+    }
+    if (d->colorSpaceOut) {
+        if (d->colorSpaceOut->transformModel != other.d->colorSpaceOut->transformModel)
             return false;
+        if (d->colorSpaceOut->isThreeComponentMatrix()) {
+            for (int i = 0; i < 3; ++i) {
+                if (d->colorSpaceOut && d->colorSpaceOut->trc[i] != other.d->colorSpaceOut->trc[i])
+                    return false;
+            }
+        } else {
+            if (!d->colorSpaceOut->equals(other.d->colorSpaceOut.constData()))
+                return false;
+        }
     }
     return true;
 }
@@ -159,29 +180,7 @@ QRgb QColorTransform::map(QRgb argb) const
         return argb;
     constexpr float f = 1.0f / 255.0f;
     QColorVector c = { qRed(argb) * f, qGreen(argb) * f, qBlue(argb) * f };
-    if (d->colorSpaceIn->lut.generated.loadAcquire()) {
-        c.x = d->colorSpaceIn->lut[0]->toLinear(c.x);
-        c.y = d->colorSpaceIn->lut[1]->toLinear(c.y);
-        c.z = d->colorSpaceIn->lut[2]->toLinear(c.z);
-    } else {
-        c.x = d->colorSpaceIn->trc[0].apply(c.x);
-        c.y = d->colorSpaceIn->trc[1].apply(c.y);
-        c.z = d->colorSpaceIn->trc[2].apply(c.z);
-    }
-    c = d->colorMatrix.map(c);
-    c.x = std::max(0.0f, std::min(1.0f, c.x));
-    c.y = std::max(0.0f, std::min(1.0f, c.y));
-    c.z = std::max(0.0f, std::min(1.0f, c.z));
-    if (d->colorSpaceOut->lut.generated.loadAcquire()) {
-        c.x = d->colorSpaceOut->lut[0]->fromLinear(c.x);
-        c.y = d->colorSpaceOut->lut[1]->fromLinear(c.y);
-        c.z = d->colorSpaceOut->lut[2]->fromLinear(c.z);
-    } else {
-        c.x = d->colorSpaceOut->trc[0].applyInverse(c.x);
-        c.y = d->colorSpaceOut->trc[1].applyInverse(c.y);
-        c.z = d->colorSpaceOut->trc[2].applyInverse(c.z);
-    }
-
+    c = d->map(c);
     return qRgba(c.x * 255 + 0.5f, c.y * 255 + 0.5f, c.z * 255 + 0.5f, qAlpha(argb));
 }
 
@@ -196,29 +195,7 @@ QRgba64 QColorTransform::map(QRgba64 rgba64) const
         return rgba64;
     constexpr float f = 1.0f / 65535.0f;
     QColorVector c = { rgba64.red() * f, rgba64.green() * f, rgba64.blue() * f };
-    if (d->colorSpaceIn->lut.generated.loadAcquire()) {
-        c.x = d->colorSpaceIn->lut[0]->toLinear(c.x);
-        c.y = d->colorSpaceIn->lut[1]->toLinear(c.y);
-        c.z = d->colorSpaceIn->lut[2]->toLinear(c.z);
-    } else {
-        c.x = d->colorSpaceIn->trc[0].apply(c.x);
-        c.y = d->colorSpaceIn->trc[1].apply(c.y);
-        c.z = d->colorSpaceIn->trc[2].apply(c.z);
-    }
-    c = d->colorMatrix.map(c);
-    c.x = std::max(0.0f, std::min(1.0f, c.x));
-    c.y = std::max(0.0f, std::min(1.0f, c.y));
-    c.z = std::max(0.0f, std::min(1.0f, c.z));
-    if (d->colorSpaceOut->lut.generated.loadAcquire()) {
-        c.x = d->colorSpaceOut->lut[0]->fromLinear(c.x);
-        c.y = d->colorSpaceOut->lut[1]->fromLinear(c.y);
-        c.z = d->colorSpaceOut->lut[2]->fromLinear(c.z);
-    } else {
-        c.x = d->colorSpaceOut->trc[0].applyInverse(c.x);
-        c.y = d->colorSpaceOut->trc[1].applyInverse(c.y);
-        c.z = d->colorSpaceOut->trc[2].applyInverse(c.z);
-    }
-
+    c = d->map(c);
     return QRgba64::fromRgba64(c.x * 65535.f + 0.5f, c.y * 65535.f + 0.5f, c.z * 65535.f + 0.5f, rgba64.alpha());
 }
 
@@ -232,14 +209,11 @@ QRgbaFloat16 QColorTransform::map(QRgbaFloat16 rgbafp16) const
 {
     if (!d)
         return rgbafp16;
-    QColorVector c;
-    c.x = d->colorSpaceIn->trc[0].applyExtended(rgbafp16.r);
-    c.y = d->colorSpaceIn->trc[1].applyExtended(rgbafp16.g);
-    c.z = d->colorSpaceIn->trc[2].applyExtended(rgbafp16.b);
-    c = d->colorMatrix.map(c);
-    rgbafp16.r = qfloat16(d->colorSpaceOut->trc[0].applyInverseExtended(c.x));
-    rgbafp16.g = qfloat16(d->colorSpaceOut->trc[1].applyInverseExtended(c.y));
-    rgbafp16.b = qfloat16(d->colorSpaceOut->trc[2].applyInverseExtended(c.z));
+    QColorVector c(rgbafp16.r, rgbafp16.g, rgbafp16.b);
+    c = d->mapExtended(c);
+    rgbafp16.r = qfloat16(c.x);
+    rgbafp16.g = qfloat16(c.y);
+    rgbafp16.b = qfloat16(c.z);
     return rgbafp16;
 }
 
@@ -253,14 +227,11 @@ QRgbaFloat32 QColorTransform::map(QRgbaFloat32 rgbafp32) const
 {
     if (!d)
         return rgbafp32;
-    QColorVector c;
-    c.x = d->colorSpaceIn->trc[0].applyExtended(rgbafp32.r);
-    c.y = d->colorSpaceIn->trc[1].applyExtended(rgbafp32.g);
-    c.z = d->colorSpaceIn->trc[2].applyExtended(rgbafp32.b);
-    c = d->colorMatrix.map(c);
-    rgbafp32.r = d->colorSpaceOut->trc[0].applyInverseExtended(c.x);
-    rgbafp32.g = d->colorSpaceOut->trc[1].applyInverseExtended(c.y);
-    rgbafp32.b = d->colorSpaceOut->trc[2].applyInverseExtended(c.z);
+    QColorVector c(rgbafp32.r, rgbafp32.g, rgbafp32.b);
+    c = d->mapExtended(c);
+    rgbafp32.r = c.x;
+    rgbafp32.g = c.y;
+    rgbafp32.b = c.z;
     return rgbafp32;
 }
 
@@ -310,7 +281,12 @@ QColor QColorTransform::map(const QColor &color) const
 
 // Optimized sub-routines for fast block based conversion:
 
-template<bool DoClamp = true>
+enum ApplyMatrixForm {
+    DoNotClamp = 0,
+    DoClamp = 1
+};
+
+template<ApplyMatrixForm doClamp = DoClamp>
 static void applyMatrix(QColorVector *buffer, const qsizetype len, const QColorMatrix &colorMatrix)
 {
 #if defined(__SSE2__)
@@ -330,7 +306,7 @@ static void applyMatrix(QColorVector *buffer, const qsizetype len, const QColorM
         cx = _mm_add_ps(cx, cy);
         cx = _mm_add_ps(cx, cz);
         // Clamp:
-        if (DoClamp) {
+        if (doClamp) {
             cx = _mm_min_ps(cx, maxV);
             cx = _mm_max_ps(cx, minV);
         }
@@ -350,19 +326,19 @@ static void applyMatrix(QColorVector *buffer, const qsizetype len, const QColorM
         cx = vaddq_f32(cx, cy);
         cx = vaddq_f32(cx, cz);
         // Clamp:
-        if (DoClamp) {
+        if (doClamp) {
             cx = vminq_f32(cx, maxV);
             cx = vmaxq_f32(cx, minV);
         }
         vst1q_f32(&buffer[j].x, cx);
     }
 #else
-    for (int j = 0; j < len; ++j) {
+    for (qsizetype j = 0; j < len; ++j) {
         const QColorVector cv = colorMatrix.map(buffer[j]);
-        if (DoClamp) {
-            buffer[j].x = std::max(0.0f, std::min(1.0f, cv.x));
-            buffer[j].y = std::max(0.0f, std::min(1.0f, cv.y));
-            buffer[j].z = std::max(0.0f, std::min(1.0f, cv.z));
+        if (doClamp) {
+            buffer[j].x = std::clamp(cv.x, 0.f, 1.f);
+            buffer[j].y = std::clamp(cv.y, 0.f, 1.f);
+            buffer[j].z = std::clamp(cv.z, 0.f, 1.f);
         } else {
             buffer[j] = cv;
         }
@@ -1218,9 +1194,343 @@ private:
     alignas(T) char data[sizeof(T) * Count];
 };
 
-template<typename T>
-void QColorTransformPrivate::apply(T *dst, const T *src, qsizetype count, TransformFlags flags) const
+void loadUnpremultipliedLUT(QColorVector *buffer, const QRgb *src, const qsizetype len)
 {
+    const float f = 1.0f / 255.f;
+    for (qsizetype i = 0; i < len; ++i) {
+        const uint p = src[i];
+        buffer[i].x = qRed(p) * f;
+        buffer[i].y = qGreen(p) * f;
+        buffer[i].z = qBlue(p) * f;
+    }
+}
+
+void loadUnpremultipliedLUT(QColorVector *buffer, const QRgba64 *src, const qsizetype len)
+{
+    const float f = 1.0f / 65535.f;
+    for (qsizetype i = 0; i < len; ++i) {
+        buffer[i].x = src[i].red() * f;
+        buffer[i].y = src[i].green() * f;
+        buffer[i].z = src[i].blue() * f;
+    }
+}
+
+void loadUnpremultipliedLUT(QColorVector *buffer, const QRgbaFloat32 *src, const qsizetype len)
+{
+    for (qsizetype i = 0; i < len; ++i) {
+        buffer[i].x = src[i].r;
+        buffer[i].y = src[i].g;
+        buffer[i].z = src[i].b;
+    }
+}
+
+void loadPremultipliedLUT(QColorVector *buffer, const QRgb *src, const qsizetype len)
+{
+    for (qsizetype i = 0; i < len; ++i) {
+        const uint p = src[i];
+        const float f = 1.0f / qAlpha(p);
+        buffer[i].x = (qRed(p) * f);
+        buffer[i].y = (qGreen(p) * f);
+        buffer[i].z = (qBlue(p) * f);
+    }
+}
+
+void loadPremultipliedLUT(QColorVector *buffer, const QRgba64 *src, const qsizetype len)
+{
+    for (qsizetype i = 0; i < len; ++i) {
+        const float f = 1.0f / src[i].alpha();
+        buffer[i].x = (src[i].red() * f);
+        buffer[i].y = (src[i].green() * f);
+        buffer[i].z = (src[i].blue() * f);
+    }
+}
+
+void loadPremultipliedLUT(QColorVector *buffer, const QRgbaFloat32 *src, const qsizetype len)
+{
+    for (qsizetype i = 0; i < len; ++i) {
+        const float f = 1.0f / src[i].a;
+        buffer[i].x = src[i].r * f;
+        buffer[i].y = src[i].g * f;
+        buffer[i].z = src[i].b * f;
+    }
+}
+
+static void storeUnpremultipliedLUT(QRgb *dst, const QRgb *src, const QColorVector *buffer, const qsizetype len)
+{
+    for (qsizetype i = 0; i < len; ++i) {
+        const int r = buffer[i].x * 255.f;
+        const int g = buffer[i].y * 255.f;
+        const int b = buffer[i].z * 255.f;
+        dst[i] = (src[i] & 0xff000000) | (r << 16) | (g << 8) | (b << 0);
+    }
+}
+
+static void storeUnpremultipliedLUT(QRgba64 *dst, const QRgba64 *src,
+                                    const QColorVector *buffer, const qsizetype len)
+{
+    for (qsizetype i = 0; i < len; ++i) {
+        const int r = buffer[i].x * 65535.f;
+        const int g = buffer[i].y * 65535.f;
+        const int b = buffer[i].z * 65535.f;
+        dst[i] = qRgba64(r, g, b, src[i].alpha());
+    }
+}
+
+static void storeUnpremultipliedLUT(QRgbaFloat32 *dst, const QRgbaFloat32 *src,
+                                    const QColorVector *buffer, const qsizetype len)
+{
+    for (qsizetype i = 0; i < len; ++i) {
+        const float r = buffer[i].x;
+        const float g = buffer[i].y;
+        const float b = buffer[i].z;
+        dst[i] = QRgbaFloat32{r, g, b, src[i].a};
+    }
+}
+
+static void storePremultipliedLUT(QRgb *dst, const QRgb *src, const QColorVector *buffer, const qsizetype len)
+{
+    for (qsizetype i = 0; i < len; ++i) {
+        const int a = qAlpha(src[i]);
+        const int r = buffer[i].x * a;
+        const int g = buffer[i].y * a;
+        const int b = buffer[i].z * a;
+        dst[i] = (src[i] & 0xff000000) | (r << 16) | (g << 8) | (b << 0);
+    }
+}
+
+static void storePremultipliedLUT(QRgba64 *dst, const QRgba64 *src,
+                                  const QColorVector *buffer, const qsizetype len)
+{
+    for (qsizetype i = 0; i < len; ++i) {
+        const int a = src[i].alpha();
+        const int r = buffer[i].x * a;
+        const int g = buffer[i].y * a;
+        const int b = buffer[i].z * a;
+        dst[i] = qRgba64(r, g, b, a);
+    }
+}
+
+static void storePremultipliedLUT(QRgbaFloat32 *dst, const QRgbaFloat32 *src,
+                                  const QColorVector *buffer, const qsizetype len)
+{
+    for (qsizetype i = 0; i < len; ++i) {
+        const float a = src[i].a;
+        const float r = buffer[i].x * a;
+        const float g = buffer[i].y * a;
+        const float b = buffer[i].z * a;
+        dst[i] = QRgbaFloat32{r, g, b, a};
+    }
+}
+
+static void visitElement(const QColorSpacePrivate::TransferElement &element, QColorVector *buffer, const qsizetype len)
+{
+    for (qsizetype i = 0; i < len; ++i) {
+        buffer[i].x = element.trc[0].apply(buffer[i].x);
+        buffer[i].y = element.trc[1].apply(buffer[i].y);
+        buffer[i].z = element.trc[2].apply(buffer[i].z);
+    }
+}
+
+static void visitElement(const QColorMatrix &element, QColorVector *buffer, const qsizetype len)
+{
+    for (qsizetype i = 0; i < len; ++i)
+        buffer[i] = element.map(buffer[i]);
+}
+
+static void visitElement(const QColorVector &offset, QColorVector *buffer, const qsizetype len)
+{
+    for (qsizetype i = 0; i < len; ++i)
+        buffer[i] += offset;
+}
+
+static void visitElement(const QColorCLUT &element, QColorVector *buffer, const qsizetype len)
+{
+    if (element.isEmpty())
+        return;
+    for (qsizetype i = 0; i < len; ++i)
+        buffer[i] = element.apply(buffer[i]);
+}
+
+/*!
+    \internal
+*/
+QColorVector QColorTransformPrivate::map(QColorVector c) const
+{
+    if (colorSpaceIn->isThreeComponentMatrix()) {
+        if (colorSpaceIn->lut.generated.loadAcquire()) {
+            c.x = colorSpaceIn->lut[0]->toLinear(c.x);
+            c.y = colorSpaceIn->lut[1]->toLinear(c.y);
+            c.z = colorSpaceIn->lut[2]->toLinear(c.z);
+        } else {
+            c.x = colorSpaceIn->trc[0].apply(c.x);
+            c.y = colorSpaceIn->trc[1].apply(c.y);
+            c.z = colorSpaceIn->trc[2].apply(c.z);
+        }
+        c = colorMatrix.map(c);
+    } else {
+        // Do element based conversion
+        for (auto &&element : colorSpaceIn->mAB)
+            std::visit([&c](auto &&elm) { visitElement(elm, &c, 1); }, element);
+    }
+
+    // Match Profile Connection Spaces (PCS):
+    if (colorSpaceOut->isPcsLab && !colorSpaceIn->isPcsLab)
+        c = c.xyzToLab();
+    else if (colorSpaceIn->isPcsLab && !colorSpaceOut->isPcsLab)
+        c = c.labToXyz();
+
+    if (colorSpaceOut->isThreeComponentMatrix()) {
+        if (!colorSpaceIn->isThreeComponentMatrix())
+            c = colorMatrix.map(c);
+        c.x = std::clamp(c.x, 0.0f, 1.0f);
+        c.y = std::clamp(c.y, 0.0f, 1.0f);
+        c.z = std::clamp(c.z, 0.0f, 1.0f);
+        if (colorSpaceOut->lut.generated.loadAcquire()) {
+            c.x = colorSpaceOut->lut[0]->fromLinear(c.x);
+            c.y = colorSpaceOut->lut[1]->fromLinear(c.y);
+            c.z = colorSpaceOut->lut[2]->fromLinear(c.z);
+        } else {
+            c.x = colorSpaceOut->trc[0].applyInverse(c.x);
+            c.y = colorSpaceOut->trc[1].applyInverse(c.y);
+            c.z = colorSpaceOut->trc[2].applyInverse(c.z);
+        }
+    } else {
+        // Do element based conversion
+        for (auto &&element : colorSpaceOut->mBA)
+            std::visit([&c](auto &&elm) { visitElement(elm, &c, 1); }, element);
+    }
+    return c;
+}
+
+/*!
+    \internal
+*/
+QColorVector QColorTransformPrivate::mapExtended(QColorVector c) const
+{
+    if (colorSpaceIn->isThreeComponentMatrix()) {
+        c.x = colorSpaceIn->trc[0].applyExtended(c.x);
+        c.y = colorSpaceIn->trc[1].applyExtended(c.y);
+        c.z = colorSpaceIn->trc[2].applyExtended(c.z);
+        c = colorMatrix.map(c);
+    } else {
+        // Do element based conversion
+        for (auto &&element : colorSpaceIn->mAB)
+            std::visit([&c](auto &&elm) { visitElement(elm, &c, 1); }, element);
+    }
+
+    // Match Profile Connection Spaces (PCS):
+    if (colorSpaceOut->isPcsLab && !colorSpaceIn->isPcsLab)
+        c = c.xyzToLab();
+    else if (colorSpaceIn->isPcsLab && !colorSpaceOut->isPcsLab)
+        c = c.labToXyz();
+
+    if (colorSpaceOut->isThreeComponentMatrix()) {
+        if (!colorSpaceIn->isThreeComponentMatrix())
+            c = colorMatrix.map(c);
+        c.x = colorSpaceOut->trc[0].applyInverseExtended(c.x);
+        c.y = colorSpaceOut->trc[1].applyInverseExtended(c.y);
+        c.z = colorSpaceOut->trc[2].applyInverseExtended(c.z);
+    } else {
+        // Do element based conversion
+        for (auto &&element : colorSpaceOut->mBA)
+            std::visit([&c](auto &&elm) { visitElement(elm, &c, 1); }, element);
+    }
+    return c;
+}
+
+template<typename T>
+void QColorTransformPrivate::applyConvertIn(const T *src, QColorVector *buffer, qsizetype len, TransformFlags flags) const
+{
+    if (colorSpaceIn->isThreeComponentMatrix()) {
+        if (flags & InputPremultiplied)
+            loadPremultiplied(buffer, src, len, this);
+        else
+            loadUnpremultiplied(buffer, src, len, this);
+
+        if (!colorSpaceOut->isThreeComponentMatrix())
+            applyMatrix<DoClamp>(buffer, len, colorMatrix); // colorMatrix should have the first half only.
+    } else {
+        if (flags & InputPremultiplied)
+            loadPremultipliedLUT(buffer, src, len);
+        else
+            loadUnpremultipliedLUT(buffer, src, len);
+
+        // Do element based conversion
+        for (auto &&element : colorSpaceIn->mAB)
+            std::visit([&buffer, len](auto &&elm) { visitElement(elm, buffer, len); }, element);
+    }
+}
+
+template<typename T>
+void QColorTransformPrivate::applyConvertOut(T *dst, const T *src, QColorVector *buffer, qsizetype len, TransformFlags flags) const
+{
+    if (colorSpaceOut->isThreeComponentMatrix()) {
+        applyMatrix<DoClamp>(buffer, len, colorMatrix); // colorMatrix should have the latter half only.
+
+        if (flags & InputOpaque)
+            storeOpaque(dst, src, buffer, len, this);
+        else if (flags & OutputPremultiplied)
+            storePremultiplied(dst, src, buffer, len, this);
+        else
+            storeUnpremultiplied(dst, src, buffer, len, this);
+    } else {
+        // Do element based conversion
+        for (auto &&element : colorSpaceOut->mBA)
+            std::visit([&buffer, len](auto &&elm) { visitElement(elm, buffer, len); }, element);
+
+        for (qsizetype j = 0; j < len; ++j) {
+            buffer[j].x = std::clamp(buffer[j].x, 0.f, 1.f);
+            buffer[j].y = std::clamp(buffer[j].y, 0.f, 1.f);
+            buffer[j].z = std::clamp(buffer[j].z, 0.f, 1.f);
+        }
+
+        if (flags & OutputPremultiplied)
+            storePremultipliedLUT(dst, src, buffer, len);
+        else
+            storeUnpremultipliedLUT(dst, src, buffer, len);
+    }
+}
+
+template<typename T>
+void QColorTransformPrivate::applyElementListTransform(T *dst, const T *src, qsizetype count, TransformFlags flags) const
+{
+    Q_ASSERT(!colorSpaceIn->isThreeComponentMatrix() || !colorSpaceOut->isThreeComponentMatrix());
+
+    if (!colorMatrix.isValid())
+        return;
+
+    if (colorSpaceIn->isThreeComponentMatrix())
+        updateLutsIn();
+    if (colorSpaceOut->isThreeComponentMatrix())
+        updateLutsOut();
+
+    QUninitialized<QColorVector, WorkBlockSize> buffer;
+    qsizetype i = 0;
+    while (i < count) {
+        const qsizetype len = qMin(count - i, WorkBlockSize);
+
+        applyConvertIn(src + i, buffer, len, flags);
+
+        // Match Profile Connection Spaces (PCS):
+        if (colorSpaceOut->isPcsLab && !colorSpaceIn->isPcsLab) {
+            for (qsizetype j = 0; j < len; ++j)
+                buffer[j] = buffer[j].xyzToLab();
+        } else if (colorSpaceIn->isPcsLab && !colorSpaceOut->isPcsLab) {
+            for (qsizetype j = 0; j < len; ++j)
+                buffer[j] = buffer[j].labToXyz();
+        }
+
+        applyConvertOut(dst + i, src + i, buffer, len, flags);
+
+        i += len;
+    }
+}
+
+template<typename T>
+void QColorTransformPrivate::applyThreeComponentMatrix(T *dst, const T *src, qsizetype count, TransformFlags flags) const
+{
+    Q_ASSERT(colorSpaceIn->isThreeComponentMatrix() && colorSpaceOut->isThreeComponentMatrix());
+
     if (!colorMatrix.isValid())
         return;
 
@@ -1228,10 +1538,9 @@ void QColorTransformPrivate::apply(T *dst, const T *src, qsizetype count, Transf
     updateLutsOut();
 
     bool doApplyMatrix = !colorMatrix.isIdentity();
-    constexpr bool DoClip = !std::is_same_v<T, QRgbaFloat16> && !std::is_same_v<T, QRgbaFloat32>;
+    constexpr ApplyMatrixForm doClamp = (std::is_same_v<T, QRgbaFloat16> || std::is_same_v<T, QRgbaFloat32>) ? DoNotClamp : DoClamp;
 
     QUninitialized<QColorVector, WorkBlockSize> buffer;
-
     qsizetype i = 0;
     while (i < count) {
         const qsizetype len = qMin(count - i, WorkBlockSize);
@@ -1241,7 +1550,7 @@ void QColorTransformPrivate::apply(T *dst, const T *src, qsizetype count, Transf
             loadUnpremultiplied(buffer, src + i, len, this);
 
         if (doApplyMatrix)
-            applyMatrix<DoClip>(buffer, len, colorMatrix);
+            applyMatrix<doClamp>(buffer, len, colorMatrix);
 
         if (flags & InputOpaque)
             storeOpaque(dst + i, src + i, buffer, len, this);
@@ -1254,6 +1563,15 @@ void QColorTransformPrivate::apply(T *dst, const T *src, qsizetype count, Transf
     }
 }
 
+template<typename T>
+void QColorTransformPrivate::apply(T *dst, const T *src, qsizetype count, TransformFlags flags) const
+{
+    if (colorSpaceIn->isThreeComponentMatrix() && colorSpaceOut->isThreeComponentMatrix())
+        applyThreeComponentMatrix<T>(dst, src, count, flags);
+    else
+        applyElementListTransform<T>(dst, src, count, flags);
+}
+
 /*!
     \internal
     Is to be called on a color-transform to XYZ, returns only luminance values.
@@ -1262,6 +1580,28 @@ void QColorTransformPrivate::apply(T *dst, const T *src, qsizetype count, Transf
 template<typename D, typename S>
 void QColorTransformPrivate::applyReturnGray(D *dst, const S *src, qsizetype count, TransformFlags flags) const
 {
+    if (!colorSpaceIn->isThreeComponentMatrix()) {
+        QUninitialized<QColorVector, WorkBlockSize> buffer;
+
+        qsizetype i = 0;
+        while (i < count) {
+            const qsizetype len = qMin(count - i, WorkBlockSize);
+            if (flags & InputPremultiplied)
+                loadPremultipliedLUT(buffer, src + i, len);
+            else
+                loadUnpremultipliedLUT(buffer, src + i, len);
+
+            // Do element based conversion
+            for (auto &&element : colorSpaceIn->mAB)
+                std::visit([&](auto &&elm) { visitElement(elm, buffer, len); }, element);
+
+            storeGray(dst + i, src + i, buffer, len, this);
+
+            i += len;
+        }
+        return;
+    }
+
     if (!colorMatrix.isValid())
         return;
 
@@ -1278,7 +1618,7 @@ void QColorTransformPrivate::applyReturnGray(D *dst, const S *src, qsizetype cou
         else
             loadUnpremultiplied(buffer, src + i, len, this);
 
-        applyMatrix(buffer, len, colorMatrix);
+        applyMatrix<DoClamp>(buffer, len, colorMatrix);
 
         storeGray(dst + i, src + i, buffer, len, this);
 
@@ -1367,14 +1707,29 @@ void QColorTransformPrivate::apply(QRgbaFloat32 *dst, const QRgbaFloat32 *src, q
 template void QColorTransformPrivate::applyReturnGray<quint8, QRgb>(quint8 *dst, const QRgb *src, qsizetype count, TransformFlags flags) const;
 template void QColorTransformPrivate::applyReturnGray<quint16, QRgba64>(quint16 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags) const;
 
+bool QColorTransformPrivate::isThreeComponentMatrix() const
+{
+    if (colorSpaceIn && !colorSpaceIn->isThreeComponentMatrix())
+        return false;
+    if (colorSpaceOut && !colorSpaceOut->isThreeComponentMatrix())
+        return false;
+    return true;
+}
+
 /*!
     \internal
 */
 bool QColorTransformPrivate::isIdentity() const
 {
+    if (colorSpaceIn == colorSpaceOut)
+        return true;
     if (!colorMatrix.isIdentity())
         return false;
     if (colorSpaceIn && colorSpaceOut) {
+        if (colorSpaceIn->equals(colorSpaceOut.constData()))
+            return true;
+        if (!isThreeComponentMatrix())
+            return false;
         if (colorSpaceIn->transferFunction != colorSpaceOut->transferFunction)
             return false;
         if (colorSpaceIn->transferFunction == QColorSpace::TransferFunction::Custom) {
@@ -1383,6 +1738,8 @@ bool QColorTransformPrivate::isIdentity() const
                 && colorSpaceIn->trc[2] == colorSpaceOut->trc[2];
         }
     } else {
+        if (!isThreeComponentMatrix())
+            return false;
         if (colorSpaceIn && colorSpaceIn->transferFunction != QColorSpace::TransferFunction::Linear)
             return false;
         if (colorSpaceOut && colorSpaceOut->transferFunction != QColorSpace::TransferFunction::Linear)

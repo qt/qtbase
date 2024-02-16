@@ -45,6 +45,11 @@ public:
         ProPhotoRgb
     };
     Q_ENUM(TransferFunction)
+    enum class TransformModel : uint8_t {
+        ThreeComponentMatrix = 0,
+        ElementListProcessing,
+    };
+    Q_ENUM(TransformModel)
 
     QColorSpace() noexcept = default;
     QColorSpace(NamedColorSpace namedColorSpace);
@@ -100,6 +105,7 @@ public:
     void setPrimaries(const QPointF &whitePoint, const QPointF &redPoint,
                       const QPointF &greenPoint, const QPointF &bluePoint);
 
+    TransformModel transformModel() const noexcept;
     void detach();
     bool isValid() const noexcept;
 
