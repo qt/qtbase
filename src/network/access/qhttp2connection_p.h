@@ -134,11 +134,11 @@ public Q_SLOTS:
     void sendDATA(QIODevice *device, bool endStream);
     void sendDATA(QNonContiguousByteDevice *device, bool endStream);
     void sendWINDOW_UPDATE(quint32 delta);
-    void uploadDeviceDestroyed();
 
 private Q_SLOTS:
     void maybeResumeUpload();
     void uploadDeviceReadChannelFinished();
+    void uploadDeviceDestroyed();
 
 private:
     friend class QHttp2Connection;

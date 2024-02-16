@@ -21,6 +21,17 @@ Q_LOGGING_CATEGORY(qHttp2ConnectionLog, "qt.network.http2.connection", QtCritica
 using namespace Qt::StringLiterals;
 using namespace Http2;
 
+/*!
+    \class QHttp2Stream
+    \inmodule QtNetwork
+    \internal
+
+    The QHttp2Stream class represents a single HTTP/2 stream.
+    Must be created by QHttp2Connection.
+
+    \sa QHttp2Connection
+*/
+
 QHttp2Stream::QHttp2Stream(QHttp2Connection *connection, quint32 streamID) noexcept
     : QObject(connection), m_streamID(streamID)
 {
@@ -30,6 +41,159 @@ QHttp2Stream::QHttp2Stream(QHttp2Connection *connection, quint32 streamID) noexc
 }
 
 QHttp2Stream::~QHttp2Stream() noexcept = default;
+
+/*!
+    \fn quint32 QHttp2Stream::streamID() const noexcept
+
+    Returns the stream ID of this stream.
+*/
+
+/*!
+    \fn void QHttp2Stream::headersReceived(const HPack::HttpHeader &headers, bool endStream)
+
+    This signal is emitted when the remote peer has sent a HEADERS frame, and
+    potentially some CONTINUATION frames, ending with the END_HEADERS flag
+    to this stream.
+
+    The headers are internally combined and decompressed, and are accessible
+    through the \a headers parameter. If the END_STREAM flag was set, the
+    \a endStream parameter will be \c true, indicating that the peer does not
+    intend to send any more frames on this stream.
+
+    \sa receivedHeaders()
+*/
+
+/*!
+    \fn void QHttp2Stream::headersUpdated()
+
+    This signal may be emitted if a new HEADERS frame was received after
+    already processing a previous HEADERS frame.
+
+    \sa headersReceived(), receivedHeaders()
+*/
+
+/*!
+    \fn void QHttp2Stream::errorOccurred(quint32 errorCode, const QString &errorString)
+
+    This signal is emitted when the stream has encountered an error. The
+    \a errorCode parameter is the HTTP/2 error code, and the \a errorString
+    parameter is a human-readable description of the error.
+
+    \sa https://www.rfc-editor.org/rfc/rfc7540#section-7
+*/
+
+/*!
+    \fn void QHttp2Stream::stateChanged(State newState)
+
+    This signal is emitted when the state of the stream changes. The \a newState
+    parameter is the new state of the stream.
+
+    Examples of this is sending or receiving a frame with the END_STREAM flag.
+    This will transition the stream to the HalfClosedLocal or HalfClosedRemote
+    state, respectively.
+
+    \sa state()
+*/
+
+
+/*!
+    \fn void QHttp2Stream::promisedStreamReceived(quint32 newStreamID)
+
+    This signal is emitted when the remote peer has promised a new stream with
+    the given \a newStreamID.
+
+    \sa QHttp2Connection::promisedStream()
+*/
+
+/*!
+    \fn void QHttp2Stream::uploadBlocked()
+
+    This signal is emitted when the stream is unable to send more data because
+    the remote peer's receive window is full.
+
+    This is mostly intended for diagnostics as there is no expectation that the
+    user can do anything to react to this.
+*/
+
+/*!
+    \fn void QHttp2Stream::dataReceived(const QByteArray &data, bool endStream)
+
+    This signal is emitted when the stream has received a DATA frame from the
+    remote peer. The \a data parameter contains the payload of the frame, and
+    the \a endStream parameter is \c true if the END_STREAM flag was set.
+
+    \sa downloadBuffer()
+*/
+
+/*!
+    \fn void QHttp2Stream::bytesWritten(qint64 bytesWritten)
+
+    This signal is emitted when the stream has written \a bytesWritten bytes to
+    the network.
+*/
+
+/*!
+    \fn void QHttp2Stream::uploadDeviceError(const QString &errorString)
+
+    This signal is emitted if the upload device encounters an error while
+    sending data. The \a errorString parameter is a human-readable description
+    of the error.
+*/
+
+/*!
+    \fn void QHttp2Stream::uploadFinished()
+
+    This signal is emitted when the stream has finished sending all the data
+    from the upload device.
+
+    If the END_STREAM flag was set for sendData() then the stream will be
+    closed for further writes before this signal is emitted.
+*/
+
+/*!
+    \fn bool QHttp2Stream::isUploadingDATA() const noexcept
+
+    Returns \c true if the stream is currently sending DATA frames.
+*/
+
+/*!
+    \fn State QHttp2Stream::state() const noexcept
+
+    Returns the current state of the stream.
+
+    \sa stateChanged()
+*/
+/*!
+    \fn bool QHttp2Stream::isActive() const noexcept
+
+    Returns \c true if the stream has been opened and is not yet closed.
+*/
+/*!
+    \fn bool QHttp2Stream::isPromisedStream() const noexcept
+
+    Returns \c true if the stream was promised by the remote peer.
+*/
+/*!
+    \fn bool QHttp2Stream::wasReset() const noexcept
+
+    Returns \c true if the stream was reset by the remote peer.
+*/
+/*!
+    \fn quint32 QHttp2Stream::RST_STREAM_code() const noexcept
+
+    Returns the HTTP/2 error code if the stream was reset by the remote peer.
+    If the stream was not reset, this function returns 0.
+*/
+/*!
+    \fn HPack::HttpHeader QHttp2Stream::receivedHeaders() const noexcept
+
+    Returns the headers received from the remote peer, if any.
+*/
+/*!
+    \fn QByteDataBuffer QHttp2Stream::downloadBuffer() const noexcept
+
+    Returns the buffer containing the data received from the remote peer.
+*/
 
 void QHttp2Stream::finishWithError(quint32 errorCode, const QString &message)
 {
@@ -48,7 +212,6 @@ void QHttp2Stream::finishWithError(quint32 errorCode)
 }
 
 /*!
-    \internal
     Sends a RST_STREAM frame with the given \a errorCode.
     This closes the stream for both sides, any further frames will be dropped.
 
@@ -71,7 +234,6 @@ bool QHttp2Stream::sendRST_STREAM(quint32 errorCode)
 }
 
 /*!
-    \internal
     Sends a DATA frame with the bytes obtained from \a device.
 
     This function will send as many DATA frames as needed to send all the data
@@ -99,7 +261,6 @@ void QHttp2Stream::sendDATA(QIODevice *device, bool endStream)
 }
 
 /*!
-    \internal
     Sends a DATA frame with the bytes obtained from \a device.
 
     This function will send as many DATA frames as needed to send all the data
@@ -256,6 +417,10 @@ void QHttp2Stream::maybeResumeUpload()
         internalSendDATA();
 }
 
+/*!
+    Returns \c true if the stream is currently unable to send more data because
+    the remote peer's receive window is full.
+*/
 bool QHttp2Stream::isUploadBlocked() const noexcept
 {
     constexpr auto MinFrameSize = Http2::frameHeaderSize + 1; // 1 byte payload
@@ -269,6 +434,13 @@ void QHttp2Stream::uploadDeviceReadChannelFinished()
     maybeResumeUpload();
 }
 
+/*!
+    Sends a HEADERS frame with the given \a headers and \a priority.
+    If \a endStream is \c true, the END_STREAM flag will be set, and the stream
+    will be closed for future writes.
+    If the headers are too large, or the stream is not in the correct state,
+    this function will return \c false. Otherwise, it will return \c true.
+*/
 bool QHttp2Stream::sendHEADERS(const HPack::HttpHeader &headers, bool endStream, quint8 priority)
 {
     using namespace HPack;
@@ -313,6 +485,11 @@ bool QHttp2Stream::sendHEADERS(const HPack::HttpHeader &headers, bool endStream,
     return result;
 }
 
+/*!
+    Sends a WINDOW_UPDATE frame with the given \a delta.
+    This increases our receive window size for this stream, allowing the remote
+    peer to send more data.
+*/
 void QHttp2Stream::sendWINDOW_UPDATE(quint32 delta)
 {
     QHttp2Connection *connection = getConnection();
@@ -469,6 +646,73 @@ void QHttp2Stream::handleWINDOW_UPDATE(const Frame &inboundFrame)
 }
 
 /*!
+    \class QHttp2Connection
+    \inmodule QtNetwork
+    \internal
+
+    The QHttp2Connection class represents a HTTP/2 connection.
+    It can only be created through the static functions
+    createDirectConnection(), createUpgradedConnection(),
+    and createDirectServerConnection().
+
+    createDirectServerConnection() is used for server-side connections, and has
+    certain limitations that a client does not.
+
+    As a client you can create a QHttp2Stream with createStream().
+
+    \sa QHttp2Stream
+*/
+
+/*!
+    \fn void QHttp2Connection::newIncomingStream(QHttp2Stream *stream)
+
+    This signal is emitted when a new \a stream is received from the remote
+    peer.
+*/
+
+/*!
+    \fn void QHttp2Connection::newPromisedStream(QHttp2Stream *stream)
+
+    This signal is emitted when the remote peer has promised a new \a stream.
+*/
+
+/*!
+    \fn void QHttp2Connection::errorReceived()
+
+    This signal is emitted when the connection has received an error.
+*/
+
+/*!
+    \fn void QHttp2Connection::connectionClosed()
+
+    This signal is emitted when the connection has been closed.
+*/
+
+/*!
+    \fn void QHttp2Connection::settingsFrameReceived()
+
+    This signal is emitted when the connection has received a SETTINGS frame.
+*/
+
+/*!
+    \fn void QHttp2Connection::errorOccurred(Http2::Http2Error errorCode, const QString &errorString)
+
+    This signal is emitted when the connection has encountered an error. The
+    \a errorCode parameter is the HTTP/2 error code, and the \a errorString
+    parameter is a human-readable description of the error.
+*/
+
+/*!
+    \fn void QHttp2Connection::receivedGOAWAY(quint32 errorCode, quint32 lastStreamID)
+
+    This signal is emitted when the connection has received a GOAWAY frame. The
+    \a errorCode parameter is the HTTP/2 error code, and the \a lastStreamID
+    parameter is the last stream ID that the remote peer will process.
+
+    Any streams of a higher stream ID created by us will be ignored or reset.
+*/
+
+/*!
     Create a new HTTP2 connection given a \a config and a \a socket.
     This function assumes that the Upgrade headers etc. in http/1 have already
     been sent and that the connection is already upgraded to http/2.
@@ -538,6 +782,14 @@ QHttp2Connection *QHttp2Connection::createDirectServerConnection(QIODevice *sock
     return connection.release();
 }
 
+/*!
+    Creates a stream on this connection.
+
+    Automatically picks the next available stream ID and returns a pointer to
+    the new stream, if possible. Otherwise returns an error.
+
+    \sa QHttp2Connection::CreateStreamError, QHttp2Stream
+*/
 QH2Expected<QHttp2Stream *, QHttp2Connection::CreateStreamError> QHttp2Connection::createStream()
 {
     Q_ASSERT(m_nextStreamID <= lastValidStreamID);
@@ -577,10 +829,57 @@ qsizetype QHttp2Connection::numActiveStreams() const noexcept
                          });
 }
 
+/*!
+    Return a pointer to a stream with the given \a streamID, or null if no such
+    stream exists or it was deleted.
+*/
 QHttp2Stream *QHttp2Connection::getStream(quint32 streamID) const
 {
     return m_streams.value(streamID, nullptr).get();
 }
+
+
+/*!
+    \fn QHttp2Stream *QHttp2Connection::promisedStream(const QUrl &streamKey) const
+
+    Returns a pointer to the stream that was promised with the given
+    \a streamKey, if any. Otherwise, returns null.
+*/
+
+/*!
+    \fn void QHttp2Connection::close()
+
+    This sends a GOAWAY frame on the connection stream, gracefully closing the
+    connection.
+*/
+
+/*!
+    \fn bool QHttp2Connection::isGoingAway() const noexcept
+
+    Returns \c true if the connection is in the process of being closed, or
+    \c false otherwise.
+*/
+
+/*!
+    \fn quint32 QHttp2Connection::maxConcurrentStreams() const noexcept
+
+    Returns the maximum number of concurrent streams we are allowed to have
+    active at any given time. This is a directional setting, and the remote
+    peer may have a different value.
+*/
+
+/*!
+    \fn quint32 QHttp2Connection::maxHeaderListSize() const noexcept
+
+    Returns the maximum size of the header which the peer is willing to accept.
+*/
+
+/*!
+    \fn bool QHttp2Connection::isUpgradedConnection() const noexcept
+
+    Returns \c true if this connection was created as a result of an HTTP/1
+    upgrade to HTTP/2, or \c false otherwise.
+*/
 
 QHttp2Connection::QHttp2Connection(QIODevice *socket) : QObject(socket)
 {
@@ -623,6 +922,11 @@ bool QHttp2Connection::serverCheckClientPreface()
     return true;
 }
 
+/*!
+    This function must be called when you have received a readyRead signal
+    (or equivalent) from the QIODevice. It will read and process any incoming
+    HTTP/2 frames and emit signals as appropriate.
+*/
 void QHttp2Connection::handleReadyRead()
 {
     /* event loop */
@@ -716,6 +1020,10 @@ bool QHttp2Connection::readClientPreface()
     return memcmp(buffer, Http2::Http2clientPreface, Http2::clientPrefaceLength) == 0;
 }
 
+/*!
+    This function must be called when the socket has been disconnected, and will
+    end all remaining streams with an error.
+*/
 void QHttp2Connection::handleConnectionClosure()
 {
     const auto errorString = QCoreApplication::translate("QHttp", "Connection closed");
