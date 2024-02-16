@@ -152,12 +152,19 @@ private:
     inline void killTimer(int){}
 
     static constexpr Qt::TimerType defaultTypeFor(int msecs) noexcept
-    { return msecs >= 2000 ? Qt::CoarseTimer : Qt::PreciseTimer; }
+    { return defaultTypeFor(std::chrono::milliseconds{msecs}); }
+
+    static constexpr Qt::TimerType defaultTypeFor(std::chrono::milliseconds interval) noexcept
+    {
+        // coarse timers are worst in their first firing
+        // so we prefer a high precision timer for something that happens only once
+        // unless the timeout is too big, in which case we go for coarse anyway
+        using namespace std::chrono_literals;
+        return interval >= 2s ? Qt::CoarseTimer : Qt::PreciseTimer;
+    }
+
     static void singleShotImpl(int msec, Qt::TimerType timerType,
                                const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj);
-
-    static Qt::TimerType defaultTypeFor(std::chrono::milliseconds interval)
-    { return defaultTypeFor(int(interval.count())); }
 
     static void singleShotImpl(std::chrono::milliseconds interval, Qt::TimerType timerType,
                                const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj)
