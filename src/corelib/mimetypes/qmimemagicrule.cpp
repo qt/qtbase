@@ -8,7 +8,6 @@
 
 #include "qmimetypeparser_p.h"
 #include <QtCore/QList>
-#include <QtCore/QMap>
 #include <QtCore/QDebug>
 #include <qendian.h>
 
