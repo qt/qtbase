@@ -10,6 +10,7 @@
 #endif
 
 #include <private/qglobal_p.h> // for the icu feature test
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QTest>
 #include <QString>
 #include <QStringBuilder>
@@ -668,8 +669,11 @@ private slots:
     void isNan_data();
     void isNan();
     void nanAndInf();
+    void comparisonCompiles();
     void compare_data();
     void compare();
+    void comparisonMacros_data();
+    void comparisonMacros();
     void resize();
     void resizeAfterFromRawData();
     void resizeAfterReserve();
@@ -8030,6 +8034,15 @@ void tst_QString::arg_fillChar()
     QCOMPARE(actual, expected);
 }
 
+void tst_QString::comparisonCompiles()
+{
+    QTestPrivate::testAllComparisonOperatorsCompile<QString>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QString, std::nullptr_t>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QString, QChar>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QString, QLatin1StringView>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QString, const char16_t *>();
+}
+
 void tst_QString::compare_data()
 {
     QTest::addColumn<QString>("s1");
@@ -8216,6 +8229,44 @@ void tst_QString::compare()
         QCOMPARE(l1s1 == l1s2, csr == 0);
         QCOMPARE(l1s1 < l1s2, csr < 0);
         QCOMPARE(l1s1 > l1s2, csr > 0);
+    }
+}
+
+void tst_QString::comparisonMacros_data()
+{
+    compare_data();
+}
+
+void tst_QString::comparisonMacros()
+{
+    QFETCH(const QString, s1);
+    QFETCH(const QString, s2);
+    QFETCH(int, csr);
+
+    const Qt::strong_ordering expectedOrdering = [&csr] {
+        if (csr > 0)
+            return Qt::strong_ordering::greater;
+        else if (csr < 0)
+            return Qt::strong_ordering::less;
+        return Qt::strong_ordering::equal;
+    }();
+
+    QT_TEST_ALL_COMPARISON_OPS(s1, s2, expectedOrdering);
+
+    if (!s2.contains(QChar(u'\0'))) {
+        const char16_t *utfData = reinterpret_cast<const char16_t*>(s2.constData());
+        QT_TEST_ALL_COMPARISON_OPS(s1, utfData, expectedOrdering);
+    }
+
+    if (s2.size() == 1) {
+        const QChar ch = s2.front();
+        QT_TEST_ALL_COMPARISON_OPS(s1, ch, expectedOrdering);
+    }
+
+    if (isLatin(s2)) {
+        QByteArray ba = s2.toLatin1();
+        const QLatin1StringView l1s2{ba};
+        QT_TEST_ALL_COMPARISON_OPS(s1, l1s2, expectedOrdering);
     }
 }
 

@@ -12,6 +12,7 @@
 #endif
 
 #include <QtCore/qchar.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qbytearrayview.h>
 #include <QtCore/qarraydata.h>
@@ -760,78 +761,44 @@ public:
     static QString number(qulonglong, int base=10);
     static QString number(double, char format='g', int precision=6);
 
-    friend bool operator==(const QString &s1, const QString &s2) noexcept
-    { return (s1.size() == s2.size()) && QtPrivate::equalStrings(s1, s2); }
-    friend bool operator< (const QString &s1, const QString &s2) noexcept
-    { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) < 0; }
-    friend bool operator> (const QString &s1, const QString &s2) noexcept { return s2 < s1; }
-    friend bool operator!=(const QString &s1, const QString &s2) noexcept { return !(s1 == s2); }
-    friend bool operator<=(const QString &s1, const QString &s2) noexcept { return !(s1 > s2); }
-    friend bool operator>=(const QString &s1, const QString &s2) noexcept { return !(s1 < s2); }
+    friend bool comparesEqual(const QString &s1, const QString &s2) noexcept
+    { return comparesEqual(QStringView(s1), QStringView(s2)); }
+    friend Qt::strong_ordering compareThreeWay(const QString &s1, const QString &s2) noexcept
+    { return compareThreeWay(QStringView(s1), QStringView(s2)); }
+    Q_DECLARE_STRONGLY_ORDERED(QString)
 
-    friend bool operator==(const QString &s1, QLatin1StringView s2) noexcept
+    friend bool comparesEqual(const QString &s1, QLatin1StringView s2) noexcept
     { return (s1.size() == s2.size()) && QtPrivate::equalStrings(s1, s2); }
-    friend bool operator< (const QString &s1, QLatin1StringView s2) noexcept
-    { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) < 0; }
-    friend bool operator> (const QString &s1, QLatin1StringView s2) noexcept
-    { return QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive) > 0; }
-    friend bool operator!=(const QString &s1, QLatin1StringView s2) noexcept { return !(s1 == s2); }
-    friend bool operator<=(const QString &s1, QLatin1StringView s2) noexcept { return !(s1 > s2); }
-    friend bool operator>=(const QString &s1, QLatin1StringView s2) noexcept { return !(s1 < s2); }
-
-    friend bool operator==(QLatin1StringView s1, const QString &s2) noexcept { return s2 == s1; }
-    friend bool operator< (QLatin1StringView s1, const QString &s2) noexcept { return s2 > s1; }
-    friend bool operator> (QLatin1StringView s1, const QString &s2) noexcept { return s2 < s1; }
-    friend bool operator!=(QLatin1StringView s1, const QString &s2) noexcept { return s2 != s1; }
-    friend bool operator<=(QLatin1StringView s1, const QString &s2) noexcept { return s2 >= s1; }
-    friend bool operator>=(QLatin1StringView s1, const QString &s2) noexcept { return s2 <= s1; }
+    friend Qt::strong_ordering
+    compareThreeWay(const QString &s1, QLatin1StringView s2) noexcept
+    {
+        const int res = QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QString, QLatin1StringView)
 
     // Check isEmpty() instead of isNull() for backwards compatibility.
-    friend bool operator==(const QString &s1, std::nullptr_t) noexcept { return s1.isEmpty(); }
-    friend bool operator!=(const QString &s1, std::nullptr_t) noexcept { return !s1.isEmpty(); }
-    friend bool operator< (const QString &  , std::nullptr_t) noexcept { return false; }
-    friend bool operator> (const QString &s1, std::nullptr_t) noexcept { return !s1.isEmpty(); }
-    friend bool operator<=(const QString &s1, std::nullptr_t) noexcept { return s1.isEmpty(); }
-    friend bool operator>=(const QString &  , std::nullptr_t) noexcept { return true; }
-    friend bool operator==(std::nullptr_t, const QString &s2) noexcept { return s2 == nullptr; }
-    friend bool operator!=(std::nullptr_t, const QString &s2) noexcept { return s2 != nullptr; }
-    friend bool operator< (std::nullptr_t, const QString &s2) noexcept { return s2 >  nullptr; }
-    friend bool operator> (std::nullptr_t, const QString &s2) noexcept { return s2 <  nullptr; }
-    friend bool operator<=(std::nullptr_t, const QString &s2) noexcept { return s2 >= nullptr; }
-    friend bool operator>=(std::nullptr_t, const QString &s2) noexcept { return s2 <= nullptr; }
+    friend bool comparesEqual(const QString &s1, std::nullptr_t) noexcept
+    { return s1.isEmpty(); }
+    friend Qt::strong_ordering compareThreeWay(const QString &s1, std::nullptr_t) noexcept
+    { return s1.isEmpty() ? Qt::strong_ordering::equivalent : Qt::strong_ordering::greater; }
+    Q_DECLARE_STRONGLY_ORDERED(QString, std::nullptr_t)
 
-    friend bool operator==(const QString &s1, const char16_t *s2) noexcept { return s1 == QStringView(s2); }
-    friend bool operator!=(const QString &s1, const char16_t *s2) noexcept { return s1 != QStringView(s2); }
-    friend bool operator< (const QString &s1, const char16_t *s2) noexcept { return s1 <  QStringView(s2); }
-    friend bool operator> (const QString &s1, const char16_t *s2) noexcept { return s1 >  QStringView(s2); }
-    friend bool operator<=(const QString &s1, const char16_t *s2) noexcept { return s1 <= QStringView(s2); }
-    friend bool operator>=(const QString &s1, const char16_t *s2) noexcept { return s1 >= QStringView(s2); }
-
-    friend bool operator==(const char16_t *s1, const QString &s2) noexcept { return s2 == s1; }
-    friend bool operator!=(const char16_t *s1, const QString &s2) noexcept { return s2 != s1; }
-    friend bool operator< (const char16_t *s1, const QString &s2) noexcept { return s2 >  s1; }
-    friend bool operator> (const char16_t *s1, const QString &s2) noexcept { return s2 <  s1; }
-    friend bool operator<=(const char16_t *s1, const QString &s2) noexcept { return s2 >= s1; }
-    friend bool operator>=(const char16_t *s1, const QString &s2) noexcept { return s2 <= s1; }
+    friend bool comparesEqual(const QString &s1, const char16_t *s2) noexcept
+    { return comparesEqual(s1, QStringView(s2)); }
+    friend Qt::strong_ordering compareThreeWay(const QString &s1, const char16_t *s2) noexcept
+    { return compareThreeWay(s1, QStringView(s2)); }
+    Q_DECLARE_STRONGLY_ORDERED(QString, const char16_t *)
 
     // QChar <> QString
-    friend inline bool operator==(QChar lhs, const QString &rhs) noexcept
-    { return rhs.size() == 1 && lhs == rhs.front(); }
-    friend inline bool operator< (QChar lhs, const QString &rhs) noexcept
-    { return compare_helper(&lhs, 1, rhs.data(), rhs.size()) < 0; }
-    friend inline bool operator> (QChar lhs, const QString &rhs) noexcept
-    { return compare_helper(&lhs, 1, rhs.data(), rhs.size()) > 0; }
-
-    friend inline bool operator!=(QChar lhs, const QString &rhs) noexcept { return !(lhs == rhs); }
-    friend inline bool operator<=(QChar lhs, const QString &rhs) noexcept { return !(lhs >  rhs); }
-    friend inline bool operator>=(QChar lhs, const QString &rhs) noexcept { return !(lhs <  rhs); }
-
-    friend inline bool operator==(const QString &lhs, QChar rhs) noexcept { return   rhs == lhs; }
-    friend inline bool operator!=(const QString &lhs, QChar rhs) noexcept { return !(rhs == lhs); }
-    friend inline bool operator< (const QString &lhs, QChar rhs) noexcept { return   rhs >  lhs; }
-    friend inline bool operator> (const QString &lhs, QChar rhs) noexcept { return   rhs <  lhs; }
-    friend inline bool operator<=(const QString &lhs, QChar rhs) noexcept { return !(rhs <  lhs); }
-    friend inline bool operator>=(const QString &lhs, QChar rhs) noexcept { return !(rhs >  lhs); }
+    friend bool comparesEqual(const QString &lhs, QChar rhs) noexcept
+    { return lhs.size() == 1 && rhs == lhs.front(); }
+    friend Qt::strong_ordering compareThreeWay(const QString &lhs, QChar rhs) noexcept
+    {
+        const int res = compare_helper(lhs.data(), lhs.size(), &rhs, 1);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QString, QChar)
 
     // ASCII compatibility
 #if defined(QT_RESTRICTED_CAST_FROM_ASCII)

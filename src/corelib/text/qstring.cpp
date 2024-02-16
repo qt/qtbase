@@ -1702,6 +1702,10 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     \ingroup shared
     \ingroup string-processing
 
+    \compares strong
+    \compareswith strong QChar QLatin1StringView {const char16_t *}
+    \endcompareswith
+
     QString stores a string of 16-bit \l{QChar}s, where each QChar
     corresponds to one UTF-16 code unit. (Unicode characters
     with code values above 65535 are stored using surrogate pairs,
@@ -4052,10 +4056,10 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
 }
 
 /*!
-    \fn bool QString::operator==(const QString &s1, const QString &s2)
+    \fn bool QString::operator==(const QString &lhs, const QString &rhs)
     \overload operator==()
 
-    Returns \c true if string \a s1 is equal to string \a s2; otherwise
+    Returns \c true if string \a lhs is equal to string \a rhs; otherwise
     returns \c false.
 
     \include qstring.cpp compare-isNull-vs-isEmpty
@@ -4064,20 +4068,20 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
 */
 
 /*!
-    \fn bool QString::operator==(const QString &s1, QLatin1StringView s2)
+    \fn bool QString::operator==(const QString &lhs, const QLatin1StringView &rhs)
 
     \overload operator==()
 
-    Returns \c true if \a s1 is equal to \a s2; otherwise
+    Returns \c true if \a lhs is equal to \a rhs; otherwise
     returns \c false.
 */
 
 /*!
-    \fn bool QString::operator==(QLatin1StringView s1, const QString &s2)
+    \fn bool QString::operator==(const QLatin1StringView &lhs, const QString &rhs)
 
     \overload operator==()
 
-    Returns \c true if \a s1 is equal to \a s2; otherwise
+    Returns \c true if \a lhs is equal to \a rhs; otherwise
     returns \c false.
 */
 
@@ -4111,31 +4115,31 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
 */
 
 /*!
-    \fn bool QString::operator<(const QString &s1, const QString &s2)
+    \fn bool QString::operator<(const QString &lhs, const QString &rhs)
 
     \overload operator<()
 
-    Returns \c true if string \a s1 is lexically less than string
-    \a s2; otherwise returns \c false.
+    Returns \c true if string \a lhs is lexically less than string
+    \a rhs; otherwise returns \c false.
 
     \sa {Comparing Strings}
 */
 
 /*!
-    \fn bool QString::operator<(const QString &s1, QLatin1StringView s2)
+    \fn bool QString::operator<(const QString &lhs, const QLatin1StringView &rhs)
 
     \overload operator<()
 
-    Returns \c true if \a s1 is lexically less than \a s2;
+    Returns \c true if \a lhs is lexically less than \a rhs;
     otherwise returns \c false.
 */
 
 /*!
-    \fn bool QString::operator<(QLatin1StringView s1, const QString &s2)
+    \fn bool QString::operator<(const QLatin1StringView &lhs, const QString &rhs)
 
     \overload operator<()
 
-    Returns \c true if \a s1 is lexically less than \a s2;
+    Returns \c true if \a lhs is lexically less than \a rhs;
     otherwise returns \c false.
 */
 
@@ -4169,29 +4173,29 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     go through QObject::tr(), for example.
 */
 
-/*! \fn bool QString::operator<=(const QString &s1, const QString &s2)
+/*! \fn bool QString::operator<=(const QString &lhs, const QString &rhs)
 
-    Returns \c true if string \a s1 is lexically less than or equal to
-    string \a s2; otherwise returns \c false.
+    Returns \c true if string \a lhs is lexically less than or equal to
+    string \a rhs; otherwise returns \c false.
 
     \sa {Comparing Strings}
 */
 
 /*!
-    \fn bool QString::operator<=(const QString &s1, QLatin1StringView s2)
+    \fn bool QString::operator<=(const QString &lhs, const QLatin1StringView &rhs)
 
     \overload operator<=()
 
-    Returns \c true if \a s1 is lexically less than or equal to \a s2;
+    Returns \c true if \a lhs is lexically less than or equal to \a rhs;
     otherwise returns \c false.
 */
 
 /*!
-    \fn bool QString::operator<=(QLatin1StringView s1, const QString &s2)
+    \fn bool QString::operator<=(const QLatin1StringView &lhs, const QString &rhs)
 
     \overload operator<=()
 
-    Returns \c true if \a s1 is lexically less than or equal to \a s2;
+    Returns \c true if \a lhs is lexically less than or equal to \a rhs;
     otherwise returns \c false.
 */
 
@@ -4222,29 +4226,29 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     go through QObject::tr(), for example.
 */
 
-/*! \fn bool QString::operator>(const QString &s1, const QString &s2)
+/*! \fn bool QString::operator>(const QString &lhs, const QString &rhs)
 
-    Returns \c true if string \a s1 is lexically greater than string \a s2;
+    Returns \c true if string \a lhs is lexically greater than string \a rhs;
     otherwise returns \c false.
 
     \sa {Comparing Strings}
 */
 
 /*!
-    \fn bool QString::operator>(const QString &s1, QLatin1StringView s2)
+    \fn bool QString::operator>(const QString &lhs, const QLatin1StringView &rhs)
 
     \overload operator>()
 
-    Returns \c true if \a s1 is lexically greater than \a s2;
+    Returns \c true if \a lhs is lexically greater than \a rhs;
     otherwise returns \c false.
 */
 
 /*!
-    \fn bool QString::operator>(QLatin1StringView s1, const QString &s2)
+    \fn bool QString::operator>(const QLatin1StringView &lhs, const QString &rhs)
 
     \overload operator>()
 
-    Returns \c true if \a s1 is lexically greater than \a s2;
+    Returns \c true if \a lhs is lexically greater than \a rhs;
     otherwise returns \c false.
 */
 
@@ -4275,29 +4279,29 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     for example.
 */
 
-/*! \fn bool QString::operator>=(const QString &s1, const QString &s2)
+/*! \fn bool QString::operator>=(const QString &lhs, const QString &rhs)
 
-    Returns \c true if string \a s1 is lexically greater than or equal to
-    string \a s2; otherwise returns \c false.
+    Returns \c true if string \a lhs is lexically greater than or equal to
+    string \a rhs; otherwise returns \c false.
 
     \sa {Comparing Strings}
 */
 
 /*!
-    \fn bool QString::operator>=(const QString &s1, QLatin1StringView s2)
+    \fn bool QString::operator>=(const QString &lhs, const QLatin1StringView &rhs)
 
     \overload operator>=()
 
-    Returns \c true if \a s1 is lexically greater than or equal to \a s2;
+    Returns \c true if \a lhs is lexically greater than or equal to \a rhs;
     otherwise returns \c false.
 */
 
 /*!
-    \fn bool QString::operator>=(QLatin1StringView s1, const QString &s2)
+    \fn bool QString::operator>=(const QLatin1StringView &lhs, const QString &rhs)
 
     \overload operator>=()
 
-    Returns \c true if \a s1 is lexically greater than or equal to \a s2;
+    Returns \c true if \a lhs is lexically greater than or equal to \a rhs;
     otherwise returns \c false.
 */
 
@@ -4328,17 +4332,17 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     for example.
 */
 
-/*! \fn bool QString::operator!=(const QString &s1, const QString &s2)
+/*! \fn bool QString::operator!=(const QString &lhs, const QString &rhs)
 
-    Returns \c true if string \a s1 is not equal to string \a s2;
+    Returns \c true if string \a lhs is not equal to string \a rhs;
     otherwise returns \c false.
 
     \sa {Comparing Strings}
 */
 
-/*! \fn bool QString::operator!=(const QString &s1, QLatin1StringView s2)
+/*! \fn bool QString::operator!=(const QString &lhs, const QLatin1StringView &rhs)
 
-    Returns \c true if string \a s1 is not equal to string \a s2.
+    Returns \c true if string \a lhs is not equal to string \a rhs.
     Otherwise returns \c false.
 
     \overload operator!=()
