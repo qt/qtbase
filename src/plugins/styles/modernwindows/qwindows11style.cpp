@@ -941,15 +941,17 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                                               secondLevelRoundingRadius);
 
             //Draw Mask
-            QBitmap mask(widget->width(), widget->height());
-            mask.clear();
+            if (widget != nullptr) {
+                QBitmap mask(widget->width(), widget->height());
+                mask.clear();
 
-            QPainter maskPainter(&mask);
-            maskPainter.setRenderHint(QPainter::Antialiasing);
-            maskPainter.setBrush(Qt::color1);
-            maskPainter.setPen(Qt::NoPen);
-            maskPainter.drawRoundedRect(option->rect,secondLevelRoundingRadius,secondLevelRoundingRadius);
-            const_cast<QWidget*>(widget)->setMask(mask);
+                QPainter maskPainter(&mask);
+                maskPainter.setRenderHint(QPainter::Antialiasing);
+                maskPainter.setBrush(Qt::color1);
+                maskPainter.setPen(Qt::NoPen);
+                maskPainter.drawRoundedRect(option->rect,secondLevelRoundingRadius,secondLevelRoundingRadius);
+                const_cast<QWidget*>(widget)->setMask(mask);
+            }
 
             //Draw Window
             painter->setPen(QPen(frm->palette.base(), fwidth));
