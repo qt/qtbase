@@ -46,7 +46,10 @@ public:
     bool isSingleShot() const;
     QBindable<bool> bindableSingleShot();
 
+    QT_CORE_INLINE_SINCE(6, 8)
     static void singleShot(int msec, const QObject *receiver, const char *member);
+
+    QT_CORE_INLINE_SINCE(6, 8)
     static void singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, const char *member);
 
     // singleShot with context
@@ -111,10 +114,7 @@ Q_SIGNALS:
     void timeout(QPrivateSignal);
 
 public:
-    void setInterval(std::chrono::milliseconds value)
-    {
-        setInterval(int(value.count()));
-    }
+    void setInterval(std::chrono::milliseconds value);
 
     std::chrono::milliseconds intervalAsDuration() const
     {
@@ -128,18 +128,12 @@ public:
 
     static void singleShot(std::chrono::milliseconds value, const QObject *receiver, const char *member)
     {
-        singleShot(int(value.count()), receiver, member);
+        singleShot(value, defaultTypeFor(value), receiver, member);
     }
+    static void singleShot(std::chrono::milliseconds interval, Qt::TimerType timerType,
+                           const QObject *receiver, const char *member);
 
-    static void singleShot(std::chrono::milliseconds value, Qt::TimerType timerType, const QObject *receiver, const char *member)
-    {
-        singleShot(int(value.count()), timerType, receiver, member);
-    }
-
-    void start(std::chrono::milliseconds value)
-    {
-        start(int(value.count()));
-    }
+    void start(std::chrono::milliseconds value);
 
 protected:
     void timerEvent(QTimerEvent *) override;
@@ -163,16 +157,28 @@ private:
         return interval >= 2s ? Qt::CoarseTimer : Qt::PreciseTimer;
     }
 
+    QT_CORE_INLINE_SINCE(6, 8)
     static void singleShotImpl(int msec, Qt::TimerType timerType,
                                const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj);
 
     static void singleShotImpl(std::chrono::milliseconds interval, Qt::TimerType timerType,
-                               const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj)
-    {
-        singleShotImpl(int(interval.count()),
-                       timerType, receiver, slotObj);
-    }
+                               const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj);
 };
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 8)
+void QTimer::singleShot(int msec, const QObject *receiver, const char *member)
+{ singleShot(std::chrono::milliseconds{msec}, receiver, member); }
+
+void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiver,
+                        const char *member)
+{ singleShot(std::chrono::milliseconds{msec}, timerType, receiver, member); }
+
+void QTimer::singleShotImpl(int msec, Qt::TimerType timerType,
+                            const QObject *receiver, QtPrivate::QSlotObjectBase *slotObj)
+{
+    singleShotImpl(std::chrono::milliseconds{msec}, timerType, receiver, slotObj);
+}
+#endif
 
 QT_END_NAMESPACE
 

@@ -219,7 +219,15 @@ void QTimer::start()
 */
 void QTimer::start(int msec)
 {
+    start(msec * 1ms);
+}
+
+void QTimer::start(std::chrono::milliseconds interval)
+{
     Q_D(QTimer);
+    // This could be narrowing as the interval is stored in an `int` QProperty,
+    // and the type can't be changed in Qt6.
+    const int msec = interval.count();
     const bool intervalChanged = msec != d->inter;
     d->inter.setValue(msec);
     start();
@@ -268,14 +276,13 @@ void QTimer::timerEvent(QTimerEvent *e)
     \a timerType is the timer type
     \a receiver is the receiver object, can be null. In such a case, it will be the same
                 as the final sender class.
-    \a slot a pointer only used when using Qt::UniqueConnection
     \a slotObj the slot object
- */
-void QTimer::singleShotImpl(int msec, Qt::TimerType timerType,
+*/
+void QTimer::singleShotImpl(std::chrono::milliseconds msec, Qt::TimerType timerType,
                             const QObject *receiver,
                             QtPrivate::QSlotObjectBase *slotObj)
 {
-    if (msec == 0) {
+    if (msec == 0ms) {
         bool deleteReceiver = false;
         // Optimize: set a receiver context when none is given, such that we can use
         // QMetaObject::invokeMethod which is more efficient than going through a timer.
@@ -304,11 +311,13 @@ void QTimer::singleShotImpl(int msec, Qt::TimerType timerType,
         return;
     }
 
-    new QSingleShotTimer(msec * 1ms, timerType, receiver, slotObj);
+    new QSingleShotTimer(msec, timerType, receiver, slotObj);
 }
 
 /*!
+    \fn void QTimer::singleShot(int msec, const QObject *receiver, const char *member)
     \reentrant
+    \deprecated [6.8] Use the chrono overloads.
     This static function calls a slot after a given time interval.
 
     It is very convenient to use this function because you do not need
@@ -327,13 +336,11 @@ void QTimer::singleShotImpl(int msec, Qt::TimerType timerType,
     \sa start()
 */
 
-void QTimer::singleShot(int msec, const QObject *receiver, const char *member)
-{
-    singleShot(msec, defaultTypeFor(msec), receiver, member);
-}
-
-/*! \overload
+/*!
+    \fn void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, const char *member)
+    \overload
     \reentrant
+    \deprecated [6.8] Use the chrono overloads.
     This static function calls a slot after a given time interval.
 
     It is very convenient to use this function because you do not need
@@ -346,14 +353,16 @@ void QTimer::singleShot(int msec, const QObject *receiver, const char *member)
 
     \sa start()
 */
-void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiver, const char *member)
+
+void QTimer::singleShot(std::chrono::milliseconds msec, Qt::TimerType timerType,
+                        const QObject *receiver, const char *member)
 {
-    if (Q_UNLIKELY(msec < 0)) {
+    if (Q_UNLIKELY(msec < 0ms)) {
         qWarning("QTimer::singleShot: Timers cannot have negative timeouts");
         return;
     }
     if (receiver && member) {
-        if (msec == 0) {
+        if (msec == 0ms) {
             // special code shortpath for 0-timers
             const char* bracketPosition = strchr(member, '(');
             if (!bracketPosition || !(member[0] >= '0' && member[0] <= '2')) {
@@ -366,7 +375,7 @@ void QTimer::singleShot(int msec, Qt::TimerType timerType, const QObject *receiv
                                       Qt::QueuedConnection);
             return;
         }
-        (void) new QSingleShotTimer(msec * 1ms, timerType, receiver, member);
+        (void) new QSingleShotTimer(msec, timerType, receiver, member);
     }
 }
 
@@ -548,7 +557,15 @@ QBindable<bool> QTimer::bindableSingleShot()
 */
 void QTimer::setInterval(int msec)
 {
+    setInterval(std::chrono::milliseconds{msec});
+}
+
+void QTimer::setInterval(std::chrono::milliseconds interval)
+{
     Q_D(QTimer);
+    // This could be narrowing as the interval is stored in an `int` QProperty,
+    // and the type can't be changed in Qt6.
+    const int msec = interval.count();
     d->inter.removeBindingUnlessInWrapper();
     const bool intervalChanged = msec != d->inter.valueBypassingBindings();
     d->inter.setValueBypassingBindings(msec);

@@ -919,6 +919,8 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
     return QUrl::fromEncoded(QByteArrayView(input), mode);
 }
 
+#include "qtimer.h" // inlined API
+
 
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
