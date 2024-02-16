@@ -4521,15 +4521,6 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_MenuBarHMargin:
         ret = 0;
         break;
-    case PM_DialogButtonsSeparator:
-        ret = int(QStyleHelper::dpiScaled(5, opt));
-        break;
-    case PM_DialogButtonsButtonWidth:
-        ret = int(QStyleHelper::dpiScaled(70, opt));
-        break;
-    case PM_DialogButtonsButtonHeight:
-        ret = int(QStyleHelper::dpiScaled(30, opt));
-        break;
     case PM_TitleBarHeight:
     {
         if (const QStyleOptionTitleBar *tb = qstyleoption_cast<const QStyleOptionTitleBar *>(opt)) {

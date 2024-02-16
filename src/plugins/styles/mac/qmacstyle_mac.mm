@@ -2156,25 +2156,6 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
     case PM_FocusFrameHMargin:
         ret = qt_mac_aqua_get_metric(FocusRectOutset);
         break;
-    case PM_DialogButtonsSeparator:
-        ret = -5;
-        break;
-    case PM_DialogButtonsButtonHeight: {
-        QSize sz;
-        ret = d->aquaSizeConstrain(opt, 0, QStyle::CT_PushButton, QSize(-1, -1), &sz);
-        if (sz == QSize(-1, -1))
-            ret = 32;
-        else
-            ret = sz.height();
-        break; }
-    case PM_DialogButtonsButtonWidth: {
-        QSize sz;
-        ret = d->aquaSizeConstrain(opt, 0, QStyle::CT_PushButton, QSize(-1, -1), &sz);
-        if (sz == QSize(-1, -1))
-            ret = 70;
-        else
-            ret = sz.width();
-        break; }
 
     case PM_MenuBarHMargin:
         ret = 8;

@@ -464,11 +464,13 @@ public:
         PM_ExclusiveIndicatorWidth,
         PM_ExclusiveIndicatorHeight,
 
-        PM_DialogButtonsSeparator,
-        PM_DialogButtonsButtonWidth,
-        PM_DialogButtonsButtonHeight,
+#if QT_DEPRECATED_SINCE(6, 8)
+        PM_DialogButtonsSeparator Q_DECL_ENUMERATOR_DEPRECATED_X("Not used and no effect since Qt 4"),
+        PM_DialogButtonsButtonWidth Q_DECL_ENUMERATOR_DEPRECATED_X("Not used and no effect since Qt 4"),
+        PM_DialogButtonsButtonHeight Q_DECL_ENUMERATOR_DEPRECATED_X("Not used and no effect since Qt 4"),
+#endif
 
-        PM_MdiSubWindowFrameWidth,
+        PM_MdiSubWindowFrameWidth = 44,
         PM_MdiSubWindowMinimizedWidth,
 
         PM_HeaderMargin,
