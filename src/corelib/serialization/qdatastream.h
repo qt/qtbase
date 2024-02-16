@@ -177,6 +177,8 @@ public:
     QDataStream &operator<<(char16_t c);
     QDataStream &operator<<(char32_t c);
     QDataStream &operator<<(const volatile void *) = delete;
+    template <typename T, typename C>
+    QDataStream &operator<<(T C::*) = delete;
 
 #if QT_DEPRECATED_SINCE(6, 11)
     QT_DEPRECATED_VERSION_X_6_11("Use an overload that takes qint64 length.")
