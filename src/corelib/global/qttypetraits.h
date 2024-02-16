@@ -24,7 +24,7 @@ constexpr std::underlying_type_t<Enum> qToUnderlying(Enum e) noexcept
     return static_cast<std::underlying_type_t<Enum>>(e);
 }
 
-#ifndef QT_NO_AS_CONST
+#ifndef QT_NO_QASCONST
 #if QT_DEPRECATED_SINCE(6, 6)
 
 // this adds const to non-const objects (like std::as_const)
@@ -36,7 +36,7 @@ template <typename T>
 void qAsConst(const T &&) = delete;
 
 #endif // QT_DEPRECATED_SINCE(6, 6)
-#endif // QT_NO_AS_CONST
+#endif // QT_NO_QASCONST
 
 #ifndef QT_NO_QEXCHANGE
 

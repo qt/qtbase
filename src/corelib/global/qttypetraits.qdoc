@@ -54,6 +54,20 @@
 
     To prevent this construct from compiling (and failing at runtime), qAsConst() has
     a second, deleted, overload which binds to rvalues.
+
+    \note You can make the qAsConst() function unavailable by defining
+    the \l{QT_NO_QASCONST} macro.
+*/
+
+/*!
+    \macro QT_NO_QASCONST
+    \since 6.8
+    \relates <QtTypeTraits>
+
+    Defining this macro removes the availability of the qAsConst()
+    function.
+
+    \sa qAsConst
 */
 
 /*!
