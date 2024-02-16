@@ -51,24 +51,7 @@
 	.st0{fill:none;}
 </style>
 
-<rect
-   id="rect19"
-   width="2.0723703"
-   height="9.2413387"
-   x="-12.349894"
-   y="-4.6206694"
-   style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.101216;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-   transform="rotate(-135)"
-   inkscape:label="rect2" /><rect
-   id="rect19-6"
-   width="2.0723705"
-   height="9.2413378"
-   x="-1.0361853"
-   y="6.6930394"
-   style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.101217;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-   transform="rotate(-45)"
-   inkscape:label="rect1"
-   sodipodi:insensitive="true" /><g
+<g
    id="g1560"
    transform="rotate(180,8,7.9999997)"><path
      id="rect873"
