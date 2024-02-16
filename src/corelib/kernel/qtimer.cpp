@@ -329,10 +329,7 @@ void QTimer::singleShotImpl(int msec, Qt::TimerType timerType,
 
 void QTimer::singleShot(int msec, const QObject *receiver, const char *member)
 {
-    // coarse timers are worst in their first firing
-    // so we prefer a high precision timer for something that happens only once
-    // unless the timeout is too big, in which case we go for coarse anyway
-    singleShot(msec, msec >= 2000 ? Qt::CoarseTimer : Qt::PreciseTimer, receiver, member);
+    singleShot(msec, defaultTypeFor(msec), receiver, member);
 }
 
 /*! \overload
