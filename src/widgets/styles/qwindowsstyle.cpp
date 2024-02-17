@@ -88,11 +88,6 @@ enum QSliderDirection { SlUp, SlDown, SlLeft, SlRight };
 
 QWindowsStylePrivate::QWindowsStylePrivate() = default;
 
-qreal QWindowsStylePrivate::appDevicePixelRatio()
-{
-    return qApp->devicePixelRatio();
-}
-
 // Returns \c true if the toplevel parent of \a widget has seen the Alt-key
 bool QWindowsStylePrivate::hasSeenAlt(const QWidget *widget) const
 {
