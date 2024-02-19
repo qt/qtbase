@@ -31,13 +31,16 @@ class QSingleShotTimer : public QObject
     Qt::TimerId timerId = Qt::TimerId::Invalid;
 
 public:
+    // use the same duration type
+    using Duration = QAbstractEventDispatcher::Duration;
+
     inline ~QSingleShotTimer();
-    inline QSingleShotTimer(std::chrono::nanoseconds interval, Qt::TimerType timerType,
+    inline QSingleShotTimer(Duration interval, Qt::TimerType timerType,
                             const QObject *r, const char *member);
-    inline QSingleShotTimer(std::chrono::nanoseconds interval, Qt::TimerType timerType,
+    inline QSingleShotTimer(Duration interval, Qt::TimerType timerType,
                             const QObject *r, QtPrivate::QSlotObjectBase *slotObj);
 
-    inline void startTimerForReceiver(std::chrono::nanoseconds interval, Qt::TimerType timerType,
+    inline void startTimerForReceiver(Duration interval, Qt::TimerType timerType,
                                       const QObject *receiver);
 
 Q_SIGNALS:
@@ -47,7 +50,7 @@ private:
     inline void timerEvent(QTimerEvent *) override;
 };
 
-QSingleShotTimer::QSingleShotTimer(std::chrono::nanoseconds interval, Qt::TimerType timerType,
+QSingleShotTimer::QSingleShotTimer(Duration interval, Qt::TimerType timerType,
                                    const QObject *r, const char *member)
     : QObject(QAbstractEventDispatcher::instance())
 {
@@ -55,7 +58,7 @@ QSingleShotTimer::QSingleShotTimer(std::chrono::nanoseconds interval, Qt::TimerT
     startTimerForReceiver(interval, timerType, r);
 }
 
-QSingleShotTimer::QSingleShotTimer(std::chrono::nanoseconds interval, Qt::TimerType timerType,
+QSingleShotTimer::QSingleShotTimer(Duration interval, Qt::TimerType timerType,
                                    const QObject *r, QtPrivate::QSlotObjectBase *slotObj)
     : QObject(QAbstractEventDispatcher::instance())
 {
@@ -78,8 +81,8 @@ QSingleShotTimer::~QSingleShotTimer()
     the same thread as where it will be handled, so that it fires reliably even
     if the thread that set up the timer is busy.
 */
-void QSingleShotTimer::startTimerForReceiver(std::chrono::nanoseconds interval,
-                                             Qt::TimerType timerType, const QObject *receiver)
+void QSingleShotTimer::startTimerForReceiver(Duration interval, Qt::TimerType timerType,
+                                             const QObject *receiver)
 {
     if (receiver && receiver->thread() != thread()) {
         // Avoid leaking the QSingleShotTimer instance in case the application exits before the
