@@ -773,12 +773,6 @@ private:
 struct Header {
     HeaderName name;
     QByteArray value;
-
-private:
-    friend bool operator==(const Header &lhs, const Header &rhs) noexcept
-    {
-        return lhs.value == rhs.value && lhs.name == rhs.name;
-    }
 };
 
 auto headerNameMatches(const HeaderName &name)
