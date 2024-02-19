@@ -187,6 +187,15 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         });
     }
 
+    public void notifyObjectShow(int parentId)
+    {
+        QtNative.runAction(() -> {
+            // When the object is shown, we need to notify its parent about
+            // content change, not the shown object itself
+            invalidateVirtualViewId(parentId);
+        });
+    }
+
     public void notifyObjectFocus(int viewId)
     {
         QtNative.runAction(() -> {
