@@ -3386,6 +3386,14 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                         result->data.resize(w * h * 8);
                         f->glReadPixels(0, 0, w, h, GL_RGBA, GL_HALF_FLOAT, result->data.data());
                         break;
+                    case QRhiTexture::R16F:
+                        result->data.resize(w * h * 2);
+                        f->glReadPixels(0, 0, w, h, GL_RED, GL_HALF_FLOAT, result->data.data());
+                        break;
+                    case QRhiTexture::R32F:
+                        result->data.resize(w * h * 4);
+                        f->glReadPixels(0, 0, w, h, GL_RED, GL_FLOAT, result->data.data());
+                        break;
                     case QRhiTexture::RGBA32F:
                         result->data.resize(w * h * 16);
                         f->glReadPixels(0, 0, w, h, GL_RGBA, GL_FLOAT, result->data.data());
