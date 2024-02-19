@@ -69,6 +69,13 @@ static inline QAbstractEventDispatcherV2 *v2(QAbstractEventDispatcher *self)
         return static_cast<QAbstractEventDispatcherV2 *>(self);
     return nullptr;
 }
+
+static inline const QAbstractEventDispatcherV2 *v2(const QAbstractEventDispatcher *self)
+{
+    if (QAbstractEventDispatcherPrivate::get(self)->isV2)
+        return static_cast<const QAbstractEventDispatcherV2 *>(self);
+    return nullptr;
+}
 #endif // Qt 7
 
 QAbstractEventDispatcherPrivate::QAbstractEventDispatcherPrivate()
@@ -578,6 +585,43 @@ bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, vo
 */
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+void QAbstractEventDispatcher::registerTimer(Qt::TimerId timerId, Duration interval,
+                                             Qt::TimerType timerType, QObject *object)
+{
+    if (QAbstractEventDispatcherV2 *self = v2(this))
+        self->registerTimer(timerId, interval, timerType, object);
+    else
+        registerTimer(int(timerId), fromDuration<qint64>(interval), timerType, object);
+}
+
+bool QAbstractEventDispatcher::unregisterTimer(Qt::TimerId timerId)
+{
+    if (QAbstractEventDispatcherV2 *self = v2(this))
+        return self->unregisterTimer(timerId);
+    return unregisterTimer(int(timerId));
+}
+
+QList<QAbstractEventDispatcher::TimerInfoV2>
+QAbstractEventDispatcher::timersForObject(QObject *object) const
+{
+    if (const QAbstractEventDispatcherV2 *self = v2(this))
+        return self->timersForObject(object);
+    QList<TimerInfo> timers = registeredTimers(object);
+    QList<TimerInfoV2> result;
+    result.reserve(timers.size());
+    for (const TimerInfo &t : timers)
+        result.emplaceBack(TimerInfoV2{ t.interval * 1ms, Qt::TimerId(t.timerId), t.timerType });
+    return result;
+}
+
+QAbstractEventDispatcher::Duration
+QAbstractEventDispatcher::remainingTime(Qt::TimerId timerId) const
+{
+    if (const QAbstractEventDispatcherV2 *self = v2(this))
+        return self->remainingTime(timerId);
+    return const_cast<QAbstractEventDispatcher *>(this)->remainingTime(int(timerId)) * 1ms;
+}
+
 /*!
     \class QAbstractEventDispatcherV2
     \inmodule QtCore

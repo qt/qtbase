@@ -56,6 +56,11 @@ public:
     virtual bool unregisterTimer(int timerId) = 0;
     virtual QList<TimerInfo> registeredTimers(QObject *object) const = 0;
     virtual int remainingTime(int timerId) = 0;
+
+    void registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType, QObject *object);
+    bool unregisterTimer(Qt::TimerId timerId);
+    QList<TimerInfoV2> timersForObject(QObject *object) const;
+    Duration remainingTime(Qt::TimerId timerId) const;
 #else
     virtual void registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType, QObject *object) = 0;
     virtual bool unregisterTimer(Qt::TimerId timerId) = 0;
