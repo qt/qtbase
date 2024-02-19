@@ -95,4 +95,6 @@ written in. See \l QT_I18N_SOURCE_LANGUAGE for details.
 \section1 Example
 
 \include cmake-generate-deploy-app-script.qdocinc
+
+\sa {Automatic Determination of .ts File Paths}{qt_add_translations()}
 */
