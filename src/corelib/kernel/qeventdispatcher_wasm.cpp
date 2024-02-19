@@ -194,7 +194,6 @@ std::multimap<int, QSocketNotifier *> QEventDispatcherWasm::g_socketNotifiers;
 std::map<int, QEventDispatcherWasm::SocketReadyState> QEventDispatcherWasm::g_socketState;
 
 QEventDispatcherWasm::QEventDispatcherWasm()
-    : QAbstractEventDispatcher()
 {
     // QEventDispatcherWasm operates in two main modes:
     // - On the main thread:
@@ -356,10 +355,10 @@ void QEventDispatcherWasm::unregisterSocketNotifier(QSocketNotifier *notifier)
         runOnMainThread([] { clearEmscriptenSocketCallbacks(); });
 }
 
-void QEventDispatcherWasm::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object)
+void QEventDispatcherWasm::registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType, QObject *object)
 {
 #ifndef QT_NO_DEBUG
-    if (timerId < 1 || interval < 0 || !object) {
+    if (qToUnderlying(timerId) < 1 || interval < 0ns || !object) {
         qWarning("QEventDispatcherWasm::registerTimer: invalid arguments");
         return;
     } else if (object->thread() != thread() || thread() != QThread::currentThread()) {
@@ -368,16 +367,16 @@ void QEventDispatcherWasm::registerTimer(int timerId, qint64 interval, Qt::Timer
         return;
     }
 #endif
-    qCDebug(lcEventDispatcherTimers) << "registerTimer" << timerId << interval << timerType << object;
+    qCDebug(lcEventDispatcherTimers) << "registerTimer" << int(timerId) << interval << timerType << object;
 
     m_timerInfo->registerTimer(timerId, interval, timerType, object);
     updateNativeTimer();
 }
 
-bool QEventDispatcherWasm::unregisterTimer(int timerId)
+bool QEventDispatcherWasm::unregisterTimer(Qt::TimerId timerId)
 {
 #ifndef QT_NO_DEBUG
-    if (timerId < 1) {
+    if (qToUnderlying(timerId) < 1) {
         qWarning("QEventDispatcherWasm::unregisterTimer: invalid argument");
         return false;
     } else if (thread() != QThread::currentThread()) {
@@ -387,7 +386,7 @@ bool QEventDispatcherWasm::unregisterTimer(int timerId)
     }
 #endif
 
-    qCDebug(lcEventDispatcherTimers) << "unregisterTimer" << timerId;
+    qCDebug(lcEventDispatcherTimers) << "unregisterTimer" << int(timerId);
 
     bool ans = m_timerInfo->unregisterTimer(timerId);
     updateNativeTimer();
@@ -414,22 +413,22 @@ bool QEventDispatcherWasm::unregisterTimers(QObject *object)
     return ans;
 }
 
-QList<QAbstractEventDispatcher::TimerInfo>
-QEventDispatcherWasm::registeredTimers(QObject *object) const
+QList<QAbstractEventDispatcher::TimerInfoV2>
+QEventDispatcherWasm::timersForObject(QObject *object) const
 {
 #ifndef QT_NO_DEBUG
     if (!object) {
         qWarning("QEventDispatcherWasm:registeredTimers: invalid argument");
-        return QList<TimerInfo>();
+        return {};
     }
 #endif
 
     return m_timerInfo->registeredTimers(object);
 }
 
-int QEventDispatcherWasm::remainingTime(int timerId)
+QEventDispatcherWasm::Duration QEventDispatcherWasm::remainingTime(Qt::TimerId timerId) const
 {
-    return m_timerInfo->timerRemainingTime(timerId);
+    return m_timerInfo->remainingDuration(timerId);
 }
 
 void QEventDispatcherWasm::interrupt()

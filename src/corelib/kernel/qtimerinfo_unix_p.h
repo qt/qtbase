@@ -29,14 +29,14 @@ struct QTimerInfo
 {
     using Duration = QAbstractEventDispatcher::Duration;
     using TimePoint = std::chrono::time_point<std::chrono::steady_clock, Duration>;
-    QTimerInfo(int timerId, Duration interval, Qt::TimerType type, QObject *obj)
+    QTimerInfo(Qt::TimerId timerId, Duration interval, Qt::TimerType type, QObject *obj)
         : interval(interval), id(timerId), timerType(type), obj(obj)
     {
     }
 
     TimePoint timeout = {};                     // - when to actually fire
     Duration interval = Duration{-1};           // - timer interval
-    int id = -1; // - timer identifier
+    Qt::TimerId id = Qt::TimerId::Invalid;      // - timer identifier
     Qt::TimerType timerType; // - timer type
     QObject *obj = nullptr; // - object to receive event
     QTimerInfo **activateRef = nullptr; // - ref from activateTimers
@@ -46,22 +46,21 @@ class Q_CORE_EXPORT QTimerInfoList
 {
 public:
     using Duration = QAbstractEventDispatcher::Duration;
+    using TimerInfo = QAbstractEventDispatcher::TimerInfoV2;
     QTimerInfoList();
 
-    std::chrono::steady_clock::time_point currentTime;
+    mutable std::chrono::steady_clock::time_point currentTime;
 
     std::optional<Duration> timerWait();
     void timerInsert(QTimerInfo *);
 
-    qint64 timerRemainingTime(int timerId);
-    Duration remainingDuration(int timerId);
+    Duration remainingDuration(Qt::TimerId timerId) const;
 
-    void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object);
-    void registerTimer(int timerId, Duration interval, Qt::TimerType timerType,
-                       QObject *object);
-    bool unregisterTimer(int timerId);
+    void registerTimer(Qt::TimerId timerId, Duration interval,
+                       Qt::TimerType timerType, QObject *object);
+    bool unregisterTimer(Qt::TimerId timerId);
     bool unregisterTimers(QObject *object);
-    QList<QAbstractEventDispatcher::TimerInfo> registeredTimers(QObject *object) const;
+    QList<TimerInfo> registeredTimers(QObject *object) const;
 
     int activateTimers();
     bool hasPendingTimers();
@@ -76,14 +75,14 @@ public:
 
     qsizetype size() const { return timers.size(); }
 
-    auto findTimerById(int timerId)
+    auto findTimerById(Qt::TimerId timerId) const
     {
         auto matchesId = [timerId](const auto &t) { return t->id == timerId; };
         return std::find_if(timers.cbegin(), timers.cend(), matchesId);
     }
 
 private:
-    std::chrono::steady_clock::time_point updateCurrentTime();
+    std::chrono::steady_clock::time_point updateCurrentTime() const;
 
     // state variables used by activateTimers()
     QTimerInfo *firstTimerInfo = nullptr;

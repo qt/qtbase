@@ -168,7 +168,7 @@ private:
     CFRunLoopObserverRef m_observer;
 };
 
-class Q_CORE_EXPORT QEventDispatcherCoreFoundation : public QAbstractEventDispatcher
+class Q_CORE_EXPORT QEventDispatcherCoreFoundation : public QAbstractEventDispatcherV2
 {
     Q_OBJECT
 
@@ -182,12 +182,12 @@ public:
     void registerSocketNotifier(QSocketNotifier *notifier) override;
     void unregisterSocketNotifier(QSocketNotifier *notifier) override;
 
-    void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object) override;
-    bool unregisterTimer(int timerId) override;
-    bool unregisterTimers(QObject *object) override;
-    QList<QAbstractEventDispatcher::TimerInfo> registeredTimers(QObject *object) const override;
-
-    int remainingTime(int timerId) override;
+    void registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType,
+                       QObject *object) override final;
+    bool unregisterTimer(Qt::TimerId timerId) override final;
+    bool unregisterTimers(QObject *object) override final;
+    QList<TimerInfoV2> timersForObject(QObject *object) const override final;
+    Duration remainingTime(Qt::TimerId timerId) const override final;
 
     void wakeUp() override;
     void interrupt() override;

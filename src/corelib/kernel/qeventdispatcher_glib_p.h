@@ -24,7 +24,7 @@ QT_BEGIN_NAMESPACE
 
 class QEventDispatcherGlibPrivate;
 
-class Q_CORE_EXPORT QEventDispatcherGlib : public QAbstractEventDispatcher
+class Q_CORE_EXPORT QEventDispatcherGlib : public QAbstractEventDispatcherV2
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QEventDispatcherGlib)
@@ -39,12 +39,12 @@ public:
     void registerSocketNotifier(QSocketNotifier *socketNotifier) final;
     void unregisterSocketNotifier(QSocketNotifier *socketNotifier) final;
 
-    void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object) final;
-    bool unregisterTimer(int timerId) final;
-    bool unregisterTimers(QObject *object) final;
-    QList<TimerInfo> registeredTimers(QObject *object) const final;
-
-    int remainingTime(int timerId) final;
+    void registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType,
+                       QObject *object) override final;
+    bool unregisterTimer(Qt::TimerId timerId) override final;
+    bool unregisterTimers(QObject *object) override final;
+    QList<TimerInfoV2> timersForObject(QObject *object) const override final;
+    Duration remainingTime(Qt::TimerId timerId) const override final;
 
     void wakeUp() final;
     void interrupt() final;

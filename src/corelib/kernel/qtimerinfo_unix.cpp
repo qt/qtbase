@@ -27,7 +27,7 @@ Q_CORE_EXPORT bool qt_disable_lowpriority_timers=false;
 
 QTimerInfoList::QTimerInfoList() = default;
 
-steady_clock::time_point QTimerInfoList::updateCurrentTime()
+steady_clock::time_point QTimerInfoList::updateCurrentTime() const
 {
     currentTime = steady_clock::now();
     return currentTime;
@@ -245,7 +245,7 @@ std::optional<QTimerInfoList::Duration> QTimerInfoList::timerWait()
     if (it == timers.cend())
         return std::nullopt;
 
-    nanoseconds timeToWait = (*it)->timeout - now;
+    Duration timeToWait = (*it)->timeout - now;
     if (timeToWait > 0ns)
         return roundToMillisecond(timeToWait);
     return 0ms;
@@ -253,24 +253,19 @@ std::optional<QTimerInfoList::Duration> QTimerInfoList::timerWait()
 
 /*
   Returns the timer's remaining time in milliseconds with the given timerId.
-  If the timer id is not found in the list, the returned value will be -1.
+  If the timer id is not found in the list, the returned value will be \c{Duration::min()}.
   If the timer is overdue, the returned value will be 0.
 */
-qint64 QTimerInfoList::timerRemainingTime(int timerId)
-{
-    return roundToMillisecond(remainingDuration(timerId)).count();
-}
-
-QTimerInfoList::Duration QTimerInfoList::remainingDuration(int timerId)
+QTimerInfoList::Duration QTimerInfoList::remainingDuration(Qt::TimerId timerId) const
 {
     const steady_clock::time_point now = updateCurrentTime();
 
     auto it = findTimerById(timerId);
     if (it == timers.cend()) {
 #ifndef QT_NO_DEBUG
-        qWarning("QTimerInfoList::timerRemainingTime: timer id %i not found", timerId);
+        qWarning("QTimerInfoList::timerRemainingTime: timer id %i not found", int(timerId));
 #endif
-        return -1ms;
+        return Duration::min();
     }
 
     const QTimerInfo *t = *it;
@@ -279,12 +274,7 @@ QTimerInfoList::Duration QTimerInfoList::remainingDuration(int timerId)
     return 0ms;
 }
 
-void QTimerInfoList::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object)
-{
-    registerTimer(timerId, milliseconds{interval}, timerType, object);
-}
-
-void QTimerInfoList::registerTimer(int timerId, Duration interval,
+void QTimerInfoList::registerTimer(Qt::TimerId timerId, QTimerInfoList::Duration interval,
                                    Qt::TimerType timerType, QObject *object)
 {
     // correct the timer type first
@@ -327,7 +317,7 @@ void QTimerInfoList::registerTimer(int timerId, Duration interval,
     timerInsert(t);
 }
 
-bool QTimerInfoList::unregisterTimer(int timerId)
+bool QTimerInfoList::unregisterTimer(Qt::TimerId timerId)
 {
     auto it = findTimerById(timerId);
     if (it == timers.cend())
@@ -367,12 +357,12 @@ bool QTimerInfoList::unregisterTimers(QObject *object)
     return count > 0;
 }
 
-QList<QAbstractEventDispatcher::TimerInfo> QTimerInfoList::registeredTimers(QObject *object) const
+auto QTimerInfoList::registeredTimers(QObject *object) const -> QList<TimerInfo>
 {
-    QList<QAbstractEventDispatcher::TimerInfo> list;
+    QList<TimerInfo> list;
     for (const auto &t : timers) {
         if (t->obj == object)
-            list.emplaceBack(t->id, t->interval.count(), t->timerType);
+            list.emplaceBack(TimerInfo{t->interval, t->id, t->timerType});
     }
     return list;
 }
@@ -432,7 +422,7 @@ int QTimerInfoList::activateTimers()
         if (!currentTimerInfo->activateRef) {
             currentTimerInfo->activateRef = &currentTimerInfo;
 
-            QTimerEvent e(currentTimerInfo->id);
+            QTimerEvent e(qToUnderlying(currentTimerInfo->id));
             QCoreApplication::sendEvent(currentTimerInfo->obj, &e);
 
             // Storing currentTimerInfo's address in its activateRef allows the
