@@ -2,3 +2,6 @@
 windows-10 msvc-2017
 sles-15.4 # QTBUG-104241
 
+# QTQAINFRA-6145
+[clearAndGrab]
+windows-7sp1
