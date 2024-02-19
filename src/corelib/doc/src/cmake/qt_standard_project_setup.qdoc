@@ -90,7 +90,8 @@ internationalization with the \c I18N_TRANSLATED_LANGUAGES argument. See \l
 QT_I18N_TRANSLATED_LANGUAGES for details.
 
 Use I18N_SOURCE_LANGUAGE to specify the language that translatable strings are
-written in. See \l QT_I18N_SOURCE_LANGUAGE for details.
+written in. By default, \c en is used. See \l QT_I18N_SOURCE_LANGUAGE for
+details.
 
 \section1 Example
 

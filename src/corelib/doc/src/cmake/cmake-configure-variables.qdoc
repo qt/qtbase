@@ -537,6 +537,8 @@ The languages in \c QT_I18N_TRANSLATED_LANGUAGES are used to:
 This variable can be conveniently set with the
 \l {qt6_standard_project_setup}{qt_standard_project_setup()} command.
 
+By default, translatable strings are considered to be written in \c{en}.
+
 \sa {qt6_standard_project_setup}{qt_standard_project_setup()}
 \sa {qt6_add_translations}{qt_add_translations()}
 */
