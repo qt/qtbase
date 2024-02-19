@@ -8041,6 +8041,11 @@ void tst_QString::comparisonCompiles()
     QTestPrivate::testAllComparisonOperatorsCompile<QString, QChar>();
     QTestPrivate::testAllComparisonOperatorsCompile<QString, QLatin1StringView>();
     QTestPrivate::testAllComparisonOperatorsCompile<QString, const char16_t *>();
+#if !defined(QT_RESTRICTED_CAST_FROM_ASCII) && !defined(QT_NO_CAST_FROM_ASCII)
+    QTestPrivate::testAllComparisonOperatorsCompile<QString, QByteArrayView>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QString, QByteArray>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QString, const char *>();
+#endif
 }
 
 void tst_QString::compare_data()
@@ -8268,6 +8273,17 @@ void tst_QString::comparisonMacros()
         const QLatin1StringView l1s2{ba};
         QT_TEST_ALL_COMPARISON_OPS(s1, l1s2, expectedOrdering);
     }
+
+    const QByteArray u8s2 = s2.toUtf8();
+#if !defined(QT_RESTRICTED_CAST_FROM_ASCII) && !defined(QT_NO_CAST_FROM_ASCII)
+    QT_TEST_ALL_COMPARISON_OPS(s1, u8s2, expectedOrdering);
+    const QByteArrayView u8s2view{u8s2.begin(), u8s2.size()};
+    QT_TEST_ALL_COMPARISON_OPS(s1, u8s2view, expectedOrdering);
+    if (!s2.contains(QChar(u'\0'))) {
+        const char *u8data = u8s2.constData();
+        QT_TEST_ALL_COMPARISON_OPS(s1, u8data, expectedOrdering);
+    }
+#endif // !defined(QT_RESTRICTED_CAST_FROM_ASCII) && !defined(QT_NO_CAST_FROM_ASCII)
 }
 
 void tst_QString::resize()

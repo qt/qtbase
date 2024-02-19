@@ -928,6 +928,8 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
 
 #if QT_CORE_REMOVED_SINCE(6, 8)
 
+#include "qbytearray.h" // inlined API
+
 #include "qdatastream.h" // inlined API
 
 QDataStream &QDataStream::operator<<(bool i)
@@ -978,6 +980,7 @@ int QObject::startTimer(std::chrono::milliseconds time, Qt::TimerType timerType)
     return startTimer(nanoseconds{time}, timerType);
 }
 
+#include "qstring.h" // inlined API
 
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h

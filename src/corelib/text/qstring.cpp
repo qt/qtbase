@@ -1705,6 +1705,9 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     \compares strong
     \compareswith strong QChar QLatin1StringView {const char16_t *}
     \endcompareswith
+    \compareswith strong QByteArray QByteArrayView {const char *}
+    When comparing with byte arrays, their content is interpreted as utf-8.
+    \endcompareswith
 
     QString stores a string of 16-bit \l{QChar}s, where each QChar
     corresponds to one UTF-16 code unit. (Unicode characters
@@ -4085,28 +4088,26 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     returns \c false.
 */
 
-/*! \fn bool QString::operator==(const QByteArray &other) const
+/*! \fn bool QString::operator==(const QString &lhs, const QByteArray &rhs)
 
     \overload operator==()
 
-    The \a other byte array is converted to a QString using the
-    fromUtf8() function.
+    The \a rhs byte array is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
 
-    Returns \c true if this string is lexically equal to the parameter
-    string \a other. Otherwise returns \c false.
+    Returns \c true if string \a lhs is lexically equal to \a rhs.
+    Otherwise returns \c false.
 */
 
-/*! \fn bool QString::operator==(const char *other) const
+/*! \fn bool QString::operator==(const QString &lhs, const char * const &rhs)
 
     \overload operator==()
 
-    The \a other const char pointer is converted to a QString using
-    the fromUtf8() function.
+    The \a rhs const char pointer is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -4143,13 +4144,13 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     otherwise returns \c false.
 */
 
-/*! \fn bool QString::operator<(const QByteArray &other) const
+/*! \fn bool QString::operator<(const QString &lhs, const QByteArray &rhs)
 
     \overload operator<()
 
-    The \a other byte array is converted to a QString using the
-    fromUtf8() function. If any NUL characters ('\\0') are embedded
-    in the byte array, they will be included in the transformation.
+    The \a rhs byte array is converted to a QUtf8StringView.
+    If any NUL characters ('\\0') are embedded in the byte array, they will be
+    included in the transformation.
 
     You can disable this operator
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -4157,15 +4158,14 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     go through QObject::tr(), for example.
 */
 
-/*! \fn bool QString::operator<(const char *other) const
+/*! \fn bool QString::operator<(const QString &lhs, const char * const &rhs)
 
-    Returns \c true if this string is lexically less than string \a other.
+    Returns \c true if string \a lhs is lexically less than string \a rhs.
     Otherwise returns \c false.
 
     \overload operator<()
 
-    The \a other const char pointer is converted to a QString using
-    the fromUtf8() function.
+    The \a rhs const char pointer is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -4199,13 +4199,13 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     otherwise returns \c false.
 */
 
-/*! \fn bool QString::operator<=(const QByteArray &other) const
+/*! \fn bool QString::operator<=(const QString &lhs, const QByteArray &rhs)
 
     \overload operator<=()
 
-    The \a other byte array is converted to a QString using the
-    fromUtf8() function. If any NUL characters ('\\0') are embedded
-    in the byte array, they will be included in the transformation.
+    The \a rhs byte array is converted to a QUtf8StringView.
+    If any NUL characters ('\\0') are embedded in the byte array, they will be
+    included in the transformation.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -4213,12 +4213,11 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     go through QObject::tr(), for example.
 */
 
-/*! \fn bool QString::operator<=(const char *other) const
+/*! \fn bool QString::operator<=(const QString &lhs, const char * const &rhs)
 
     \overload operator<=()
 
-    The \a other const char pointer is converted to a QString using
-    the fromUtf8() function.
+    The \a rhs const char pointer is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -4252,13 +4251,13 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     otherwise returns \c false.
 */
 
-/*! \fn bool QString::operator>(const QByteArray &other) const
+/*! \fn bool QString::operator>(const QString &lhs, const QByteArray &rhs)
 
     \overload operator>()
 
-    The \a other byte array is converted to a QString using the
-    fromUtf8() function. If any NUL characters ('\\0') are embedded
-    in the byte array, they will be included in the transformation.
+    The \a rhs byte array is converted to a QUtf8StringView.
+    If any NUL characters ('\\0') are embedded in the byte array, they will be
+    included in the transformation.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
@@ -4266,12 +4265,11 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     go through QObject::tr(), for example.
 */
 
-/*! \fn bool QString::operator>(const char *other) const
+/*! \fn bool QString::operator>(const QString &lhs, const char * const &rhs)
 
     \overload operator>()
 
-    The \a other const char pointer is converted to a QString using
-    the fromUtf8() function.
+    The \a rhs const char pointer is converted to a QUtf8StringView.
 
     You can disable this operator by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
@@ -4305,13 +4303,13 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     otherwise returns \c false.
 */
 
-/*! \fn bool QString::operator>=(const QByteArray &other) const
+/*! \fn bool QString::operator>=(const QString &lhs, const QByteArray &rhs)
 
     \overload operator>=()
 
-    The \a other byte array is converted to a QString using the
-    fromUtf8() function. If any NUL characters ('\\0') are embedded in
-    the byte array, they will be included in the transformation.
+    The \a rhs byte array is converted to a QUtf8StringView.
+    If any NUL characters ('\\0') are embedded in the byte array, they will be
+    included in the transformation.
 
     You can disable this operator by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
@@ -4319,12 +4317,11 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     for example.
 */
 
-/*! \fn bool QString::operator>=(const char *other) const
+/*! \fn bool QString::operator>=(const QString &lhs, const char * const &rhs)
 
     \overload operator>=()
 
-    The \a other const char pointer is converted to a QString using
-    the fromUtf8() function.
+    The \a rhs const char pointer is converted to a QUtf8StringView.
 
     You can disable this operator by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
@@ -4348,13 +4345,13 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     \overload operator!=()
 */
 
-/*! \fn bool QString::operator!=(const QByteArray &other) const
+/*! \fn bool QString::operator!=(const QString &lhs, const QByteArray &rhs)
 
     \overload operator!=()
 
-    The \a other byte array is converted to a QString using the
-    fromUtf8() function. If any NUL characters ('\\0') are embedded
-    in the byte array, they will be included in the transformation.
+    The \a rhs byte array is converted to a QUtf8StringView.
+    If any NUL characters ('\\0') are embedded in the byte array, they will be
+    included in the transformation.
 
     You can disable this operator by defining \l QT_NO_CAST_FROM_ASCII
     when you compile your applications. This can be useful if you want
@@ -4362,17 +4359,100 @@ QString &QString::replace(QChar c, QLatin1StringView after, Qt::CaseSensitivity 
     for example.
 */
 
-/*! \fn bool QString::operator!=(const char *other) const
+/*! \fn bool QString::operator!=(const QString &lhs, const char * const &rhs)
 
     \overload operator!=()
 
-    The \a other const char pointer is converted to a QString using
-    the fromUtf8() function.
+    The \a rhs const char pointer is converted to a QUtf8StringView.
 
     You can disable this operator by defining
     \l QT_NO_CAST_FROM_ASCII when you compile your applications. This
     can be useful if you want to ensure that all user-visible strings
     go through QObject::tr(), for example.
+*/
+
+/*! \fn bool QString::operator==(const QByteArray &lhs, const QString &rhs)
+
+    Returns \c true if byte array \a lhs is equal to the UTF-8 encoding of
+    \a rhs; otherwise returns \c false.
+
+    The comparison is case sensitive.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. You
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
+*/
+
+/*! \fn bool QString::operator!=(const QByteArray &lhs, const QString &rhs)
+
+    Returns \c true if byte array \a lhs is not equal to the UTF-8 encoding of
+    \a rhs; otherwise returns \c false.
+
+    The comparison is case sensitive.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. You
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
+*/
+
+/*! \fn bool QString::operator<(const QByteArray &lhs, const QString &rhs)
+
+    Returns \c true if byte array \a lhs is lexically less than the UTF-8 encoding
+    of \a rhs; otherwise returns \c false.
+
+    The comparison is case sensitive.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. You
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
+*/
+
+/*! \fn bool QString::operator>(const QByteArray &lhs, const QString &rhs)
+
+    Returns \c true if byte array \a lhs is lexically greater than the UTF-8
+    encoding of \a rhs; otherwise returns \c false.
+
+    The comparison is case sensitive.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. You
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
+*/
+
+/*! \fn bool QString::operator<=(const QByteArray &lhs, const QString &rhs)
+
+    Returns \c true if byte array \a lhs is lexically less than or equal to the
+    UTF-8 encoding of \a rhs; otherwise returns \c false.
+
+    The comparison is case sensitive.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. You
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
+*/
+
+/*! \fn bool QString::operator>=(const QByteArray &lhs, const QString &rhs)
+
+    Returns \c true if byte array \a lhs is greater than or equal to the UTF-8
+    encoding of \a rhs; otherwise returns \c false.
+
+    The comparison is case sensitive.
+
+    You can disable this operator by defining \c
+    QT_NO_CAST_FROM_ASCII when you compile your applications. You
+    then need to call QString::fromUtf8(), QString::fromLatin1(),
+    or QString::fromLocal8Bit() explicitly if you want to convert the byte
+    array to a QString before doing the comparison.
 */
 
 /*!
@@ -6405,61 +6485,61 @@ QString& QString::fill(QChar ch, qsizetype size)
 */
 
 /*!
-    \fn bool QString::operator==(const char *s1, const QString &s2)
+    \fn bool QString::operator==(const char * const &lhs, const QString &rhs)
 
     \overload operator==()
 
-    Returns \c true if \a s1 is equal to \a s2; otherwise returns \c false.
-    Note that no string is equal to \a s1 being 0.
+    Returns \c true if \a lhs is equal to \a rhs; otherwise returns \c false.
+    Note that no string is equal to \a lhs being 0.
 
-    Equivalent to \c {s1 != 0 && compare(s1, s2) == 0}.
+    Equivalent to \c {lhs != 0 && compare(lhs, rhs) == 0}.
 */
 
 /*!
-    \fn bool QString::operator!=(const char *s1, const QString &s2)
+    \fn bool QString::operator!=(const char * const &lhs, const QString &rhs)
 
-    Returns \c true if \a s1 is not equal to \a s2; otherwise returns
+    Returns \c true if \a lhs is not equal to \a rhs; otherwise returns
     \c false.
 
-    For \a s1 != 0, this is equivalent to \c {compare(} \a s1, \a s2
-    \c {) != 0}. Note that no string is equal to \a s1 being 0.
+    For \a lhs != 0, this is equivalent to \c {compare(} \a lhs, \a rhs
+    \c {) != 0}. Note that no string is equal to \a lhs being 0.
 */
 
 /*!
-    \fn bool QString::operator<(const char *s1, const QString &s2)
+    \fn bool QString::operator<(const char * const &lhs, const QString &rhs)
 
-    Returns \c true if \a s1 is lexically less than \a s2; otherwise
-    returns \c false.  For \a s1 != 0, this is equivalent to \c
-    {compare(s1, s2) < 0}.
+    Returns \c true if \a lhs is lexically less than \a rhs; otherwise
+    returns \c false.  For \a lhs != 0, this is equivalent to \c
+    {compare(lhs, rhs) < 0}.
 
     \sa {Comparing Strings}
 */
 
 /*!
-    \fn bool QString::operator<=(const char *s1, const QString &s2)
+    \fn bool QString::operator<=(const char * const &lhs, const QString &rhs)
 
-    Returns \c true if \a s1 is lexically less than or equal to \a s2;
-    otherwise returns \c false.  For \a s1 != 0, this is equivalent to \c
-    {compare(s1, s2) <= 0}.
-
-    \sa {Comparing Strings}
-*/
-
-/*!
-    \fn bool QString::operator>(const char *s1, const QString &s2)
-
-    Returns \c true if \a s1 is lexically greater than \a s2; otherwise
-    returns \c false.  Equivalent to \c {compare(s1, s2) > 0}.
+    Returns \c true if \a lhs is lexically less than or equal to \a rhs;
+    otherwise returns \c false.  For \a lhs != 0, this is equivalent to \c
+    {compare(lhs, rhs) <= 0}.
 
     \sa {Comparing Strings}
 */
 
 /*!
-    \fn bool QString::operator>=(const char *s1, const QString &s2)
+    \fn bool QString::operator>(const char * const &lhs, const QString &rhs)
 
-    Returns \c true if \a s1 is lexically greater than or equal to \a s2;
-    otherwise returns \c false.  For \a s1 != 0, this is equivalent to \c
-    {compare(s1, s2) >= 0}.
+    Returns \c true if \a lhs is lexically greater than \a rhs; otherwise
+    returns \c false.  Equivalent to \c {compare(lhs, rhs) > 0}.
+
+    \sa {Comparing Strings}
+*/
+
+/*!
+    \fn bool QString::operator>=(const char * const &lhs, const QString &rhs)
+
+    Returns \c true if \a lhs is lexically greater than or equal to \a rhs;
+    otherwise returns \c false.  For \a lhs != 0, this is equivalent to \c
+    {compare(lhs, rhs) >= 0}.
 
     \sa {Comparing Strings}
 */

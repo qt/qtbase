@@ -359,13 +359,15 @@ public:
     [[nodiscard]] QByteArray repeated(qsizetype times) const;
 
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
+#if QT_CORE_REMOVED_SINCE(6, 8)
     QT_ASCII_CAST_WARN inline bool operator==(const QString &s2) const;
     QT_ASCII_CAST_WARN inline bool operator!=(const QString &s2) const;
     QT_ASCII_CAST_WARN inline bool operator<(const QString &s2) const;
     QT_ASCII_CAST_WARN inline bool operator>(const QString &s2) const;
     QT_ASCII_CAST_WARN inline bool operator<=(const QString &s2) const;
     QT_ASCII_CAST_WARN inline bool operator>=(const QString &s2) const;
-#endif
+#endif // QT_CORE_REMOVED_SINCE(6, 8)
+#endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     friend inline bool operator==(const QByteArray &a1, const QByteArray &a2) noexcept
     { return QByteArrayView(a1) == QByteArrayView(a2); }
     friend inline bool operator==(const QByteArray &a1, const char *a2) noexcept

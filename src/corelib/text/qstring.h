@@ -855,6 +855,7 @@ public:
     QT_ASCII_CAST_WARN inline QString &operator+=(const QByteArray &s)
     { return append(QUtf8StringView(s)); }
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     QT_ASCII_CAST_WARN inline bool operator==(const char *s) const;
     QT_ASCII_CAST_WARN inline bool operator!=(const char *s) const;
     QT_ASCII_CAST_WARN inline bool operator<(const char *s) const;
@@ -868,20 +869,41 @@ public:
     QT_ASCII_CAST_WARN inline bool operator>(const QByteArray &s) const;
     QT_ASCII_CAST_WARN inline bool operator<=(const QByteArray &s) const;
     QT_ASCII_CAST_WARN inline bool operator>=(const QByteArray &s) const;
+#else
+    friend bool comparesEqual(const QString &lhs, QByteArrayView rhs) noexcept
+    {
+        return QString::compare_helper(lhs.constData(), lhs.size(),
+                                       rhs.constData(), rhs.size()) == 0;
+    }
+    friend Qt::strong_ordering
+    compareThreeWay(const QString &lhs, QByteArrayView rhs) noexcept
+    {
+        const int res = QString::compare_helper(lhs.constData(), lhs.size(),
+                                                rhs.constData(), rhs.size());
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QString, QByteArrayView, QT_ASCII_CAST_WARN)
 
-    QT_ASCII_CAST_WARN friend bool operator==(const char *s1, const QString &s2)
-    { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) == 0; }
-    QT_ASCII_CAST_WARN friend bool operator!=(const char *s1, const QString &s2)
-    { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) != 0; }
-    QT_ASCII_CAST_WARN friend bool operator< (const char *s1, const QString &s2)
-    { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) > 0; }
-    QT_ASCII_CAST_WARN friend bool operator> (const char *s1, const QString &s2)
-    { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) < 0; }
-    QT_ASCII_CAST_WARN friend bool operator<=(const char *s1, const QString &s2)
-    { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) >= 0; }
-    QT_ASCII_CAST_WARN friend bool operator>=(const char *s1, const QString &s2)
-    { return QString::compare_helper(s2.constData(), s2.size(), s1, -1) <= 0; }
-#endif
+    friend bool comparesEqual(const QString &lhs, const QByteArray &rhs) noexcept
+    { return comparesEqual(lhs, QByteArrayView(rhs)); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QString &lhs, const QByteArray &rhs) noexcept
+    {
+        return compareThreeWay(lhs, QByteArrayView(rhs));
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QString, QByteArray, QT_ASCII_CAST_WARN)
+
+    friend bool comparesEqual(const QString &lhs, const char *rhs) noexcept
+    { return comparesEqual(lhs, QByteArrayView(rhs)); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QString &lhs, const char *rhs) noexcept
+    {
+        return compareThreeWay(lhs, QByteArrayView(rhs));
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QString, const char *, QT_ASCII_CAST_WARN)
+#endif // QT_CORE_REMOVED_SINCE(6, 8)
+
+#endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
     typedef QChar *iterator;
     typedef const QChar *const_iterator;
@@ -1306,6 +1328,7 @@ bool QString::contains(QStringView s, Qt::CaseSensitivity cs) const noexcept
 { return indexOf(s, 0, cs) != -1; }
 
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
+#if QT_CORE_REMOVED_SINCE(6, 8)
 bool QString::operator==(const char *s) const
 { return QString::compare_helper(constData(), size(), s, -1) == 0; }
 bool QString::operator!=(const char *s) const
@@ -1344,6 +1367,7 @@ bool QByteArray::operator<=(const QString &s) const
 { return QString::compare_helper(s.constData(), s.size(), constData(), size()) >= 0; }
 bool QByteArray::operator>=(const QString &s) const
 { return QString::compare_helper(s.constData(), s.size(), constData(), size()) <= 0; }
+#endif // QT_CORE_REMOVED_SINCE(6, 8)
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
 #if !defined(QT_USE_FAST_OPERATOR_PLUS) && !defined(QT_USE_QSTRINGBUILDER)
