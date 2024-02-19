@@ -632,7 +632,9 @@ int QTimer::remainingTime() const
 {
     Q_D(const QTimer);
     if (d->isActive()) {
-        return QAbstractEventDispatcher::instance()->remainingTime(qToUnderlying(d->id));
+        using namespace std::chrono;
+        auto remaining = QAbstractEventDispatcher::instance()->remainingTime(d->id);
+        return ceil<milliseconds>(remaining).count();
     }
 
     return -1;

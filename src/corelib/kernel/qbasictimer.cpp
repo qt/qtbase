@@ -165,7 +165,7 @@ void QBasicTimer::start(std::chrono::milliseconds duration, Qt::TimerType timerT
     }
     stop();
     if (obj)
-        id = eventDispatcher->registerTimer(duration.count(), timerType, obj);
+        id = int(eventDispatcher->registerTimer(duration, timerType, obj));
 }
 
 /*!
@@ -177,7 +177,7 @@ void QBasicTimer::stop()
 {
     if (id) {
         QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
-        if (eventDispatcher && !eventDispatcher->unregisterTimer(id)) {
+        if (eventDispatcher && !eventDispatcher->unregisterTimer(Qt::TimerId(id))) {
             qWarning("QBasicTimer::stop: Failed. Possibly trying to stop from a different thread");
             return;
         }

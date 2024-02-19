@@ -1453,7 +1453,7 @@ bool QObject::event(QEvent *e)
         QThreadData *threadData = d->threadData.loadRelaxed();
         QAbstractEventDispatcher *eventDispatcher = threadData->eventDispatcher.loadRelaxed();
         if (eventDispatcher) {
-            QList<QAbstractEventDispatcher::TimerInfo> timers = eventDispatcher->registeredTimers(this);
+            QList<QAbstractEventDispatcher::TimerInfoV2> timers = eventDispatcher->timersForObject(this);
             if (!timers.isEmpty()) {
                 const bool res = eventDispatcher->unregisterTimers(this);
                 // do not to release our timer ids back to the pool (since the timer ids are moving to a new thread).
@@ -1920,11 +1920,10 @@ int QObject::startTimer(std::chrono::nanoseconds interval, Qt::TimerType timerTy
     }
 
     auto dispatcher = thisThreadData->eventDispatcher.loadRelaxed();
-    const auto msecs = std::chrono::ceil<std::chrono::milliseconds>(interval);
-    int timerId = dispatcher->registerTimer(msecs.count(), timerType, this);
+    Qt::TimerId timerId = dispatcher->registerTimer(interval, timerType, this);
     d->ensureExtraData();
-    d->extraData->runningTimers.append(Qt::TimerId{timerId});
-    return timerId;
+    d->extraData->runningTimers.append(timerId);
+    return int(timerId);
 }
 
 /*!
@@ -1966,7 +1965,7 @@ void QObject::killTimer(Qt::TimerId id)
 
         auto thisThreadData = d->threadData.loadRelaxed();
         if (thisThreadData->hasEventDispatcher())
-            thisThreadData->eventDispatcher.loadRelaxed()->unregisterTimer(qToUnderlying(id));
+            thisThreadData->eventDispatcher.loadRelaxed()->unregisterTimer(id);
 
         d->extraData->runningTimers.remove(at);
         QAbstractEventDispatcherPrivate::releaseTimerId(id);

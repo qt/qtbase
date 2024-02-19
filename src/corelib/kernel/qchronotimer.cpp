@@ -330,7 +330,7 @@ QBindable<std::chrono::nanoseconds> QChronoTimer::bindableInterval()
 std::chrono::nanoseconds QChronoTimer::remainingTime() const
 {
     if (isActive())
-        return 1ms * QAbstractEventDispatcher::instance()->remainingTime(qToUnderlying(d_func()->id));
+        return QAbstractEventDispatcher::instance()->remainingTime(d_func()->id);
     return std::chrono::nanoseconds::min();
 }
 
