@@ -18,6 +18,7 @@ namespace QtAndroidAccessibility
     bool registerNatives(QJniEnvironment &env);
     void notifyLocationChange(uint accessibilityObjectId);
     void notifyObjectHide(uint accessibilityObjectId);
+    void notifyObjectShow(uint accessibilityObjectId);
     void notifyObjectFocus(uint accessibilityObjectId);
     void notifyValueChanged(uint accessibilityObjectId);
     void notifyScrolledEvent(uint accessibilityObjectId);

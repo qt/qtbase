@@ -245,6 +245,12 @@ namespace QtAndroid
                                               accessibilityObjectId, parentObjectId);
     }
 
+    void notifyObjectShow(uint parentObjectId)
+    {
+        qtActivityDelegate().callMethod<void>("notifyObjectShow",
+                                              parentObjectId);
+    }
+
     void notifyObjectFocus(uint accessibilityObjectId)
     {
         qtActivityDelegate().callMethod<void>("notifyObjectFocus", accessibilityObjectId);
