@@ -1126,6 +1126,11 @@ public class QtActivity extends Activity
         QtNative.activityDelegate().notifyObjectHide(viewId, parentId);
     }
 
+    public void notifyObjectShow(int parentId)
+    {
+        QtNative.activityDelegate().notifyObjectShow(parentId);
+    }
+
     public void notifyObjectFocus(int viewId)
     {
         QtNative.activityDelegate().notifyObjectFocus(viewId);

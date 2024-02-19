@@ -946,6 +946,13 @@ public class QtActivityDelegate
         m_accessibilityDelegate.notifyObjectHide(viewId, parentId);
     }
 
+    public void notifyObjectShow(int parentId)
+    {
+        if (m_accessibilityDelegate == null)
+           return;
+        m_accessibilityDelegate.notifyObjectShow(parentId);
+    }
+
     public void notifyObjectFocus(int viewId)
     {
         if (m_accessibilityDelegate == null)
