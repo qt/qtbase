@@ -14,6 +14,7 @@
 // std headers can unfortunately not be forward declared
 #include <cstddef> // std::size_t
 #include <utility>
+#include <limits>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,6 +52,12 @@ using QVariantList = QList<QVariant>;
 using QVariantMap = QMap<QString, QVariant>;
 using QVariantHash = QHash<QString, QVariant>;
 using QVariantPair = std::pair<QVariant, QVariant>;
+
+namespace QtPrivate
+{
+[[maybe_unused]]
+constexpr qsizetype MaxAllocSize = (std::numeric_limits<qsizetype>::max)();
+}
 
 QT_END_NAMESPACE
 

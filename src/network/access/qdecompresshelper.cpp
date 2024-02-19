@@ -3,7 +3,6 @@
 
 #include "qdecompresshelper_p.h"
 
-#include <QtCore/private/qbytearray_p.h>
 #include <QtCore/qiodevice.h>
 #include <QtCore/qcoreapplication.h>
 

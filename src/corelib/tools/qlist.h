@@ -689,6 +689,10 @@ public:
     inline reference back() { return last(); }
     inline const_reference back() const noexcept { return last(); }
     void shrink_to_fit() { squeeze(); }
+    static qsizetype max_size() noexcept
+    {
+        return Data::max_size();
+    }
 
     // comfort
     QList<T> &operator+=(const QList<T> &l) { append(l); return *this; }

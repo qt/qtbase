@@ -519,6 +519,11 @@ public:
     void shrink_to_fit() { squeeze(); }
     iterator erase(const_iterator first, const_iterator last);
     inline iterator erase(const_iterator it) { return erase(it, it + 1); }
+    static constexpr qsizetype max_size() noexcept
+    {
+        // -1 to deal with the NUL terminator
+        return Data::max_size() - 1;
+    }
 
     static QByteArray fromStdString(const std::string &s);
     std::string toStdString() const;

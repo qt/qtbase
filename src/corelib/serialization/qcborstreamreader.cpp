@@ -6,7 +6,6 @@
 #define CBOR_NO_ENCODER_API
 #include <private/qcborcommon_p.h>
 
-#include <private/qbytearray_p.h>
 #include <private/qnumeric_p.h>
 #include <private/qstringconverter_p.h>
 #include <qiodevice.h>
@@ -1752,7 +1751,7 @@ QCborStreamReaderPrivate::readStringChunk_byte(ReadStringChunk params, qsizetype
             // the distinction between DataTooLarge and OOM is mostly for
             // compatibility with Qt 5; in Qt 6, we could consider everything
             // to be OOM.
-            handleError(newSize > MaxByteArraySize ? CborErrorDataTooLarge: CborErrorOutOfMemory);
+            handleError(newSize > QByteArray::max_size() ? CborErrorDataTooLarge: CborErrorOutOfMemory);
             return -1;
         }
 
@@ -1791,7 +1790,7 @@ QCborStreamReaderPrivate::readStringChunk_unicode(ReadStringChunk params, qsizet
     // conversion uses the same number of words or less.
     qsizetype currentSize = params.string->size();
     size_t newSize = size_t(utf8len) + size_t(currentSize); // can't overflow
-    if (utf8len > MaxStringSize || qsizetype(newSize) < 0) {
+    if (utf8len > QString::max_size() || qsizetype(newSize) < 0) {
         handleError(CborErrorDataTooLarge);
         return -1;
     }

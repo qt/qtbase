@@ -6261,6 +6261,16 @@ QString& QString::fill(QChar ch, qsizetype size)
     \sa isEmpty(), resize()
 */
 
+/*!
+    \fn qsizetype QString::max_size()
+    \since 6.8
+
+    This function is provided for STL compatibility.
+    It returns the maximum number of elements that the string can
+    theoretically hold. In practice, the number can be much smaller,
+    limited by the amount of memory available to the system.
+*/
+
 /*! \fn bool QString::isNull() const
 
     Returns \c true if this string is null; otherwise returns \c false.

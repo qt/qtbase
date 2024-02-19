@@ -1329,6 +1329,15 @@
     returns \c false.
 */
 
+/*! \fn template <typename T> qsizetype QList<T>::max_size()
+    \since 6.8
+
+    This function is provided for STL compatibility.
+    It returns the maximum number of elements that the list can
+    theoretically hold. In practice, the number can be much smaller,
+    limited by the amount of memory available to the system.
+*/
+
 /*! \fn template <typename T> QList<T> &QList<T>::operator+=(const QList<T> &other)
 
     Appends the items of the \a other list to this list and

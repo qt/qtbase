@@ -8,6 +8,7 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qatomic.h>
 #include <QtCore/qflags.h>
+#include <QtCore/qcontainerfwd.h>
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
@@ -168,6 +169,12 @@ struct QTypedArrayData
         void *start =  reinterpret_cast<void *>(
             (quintptr(data) + sizeof(QArrayData) + alignment - 1) & ~(alignment - 1));
         return static_cast<T *>(start);
+    }
+
+    constexpr static qsizetype max_size() noexcept
+    {
+        // -1 to deal with the pointer one-past-the-end
+        return (QtPrivate::MaxAllocSize - sizeof(QtPrivate::AlignedQArrayData) - 1) / sizeof(T);
     }
 };
 

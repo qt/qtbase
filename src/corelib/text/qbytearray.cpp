@@ -14,7 +14,6 @@
 #include "private/qsimd_p.h"
 #include "qstringalgorithms_p.h"
 #include "qscopedpointer.h"
-#include "qbytearray_p.h"
 #include "qstringconverter_p.h"
 #include <qdatastream.h>
 #include <qmath.h>
@@ -780,7 +779,7 @@ QByteArray qUncompress(const uchar* data, qsizetype nbytes)
         return QByteArray();
     }
 
-    constexpr auto MaxDecompressedSize = size_t(MaxByteArraySize);
+    constexpr auto MaxDecompressedSize = size_t(QByteArray::max_size());
     if constexpr (MaxDecompressedSize < std::numeric_limits<CompressSizeHint_t>::max()) {
         if (expectedSize > MaxDecompressedSize)
             return tooMuchData(ZLibOp::Decompression);
@@ -1387,6 +1386,15 @@ QByteArray &QByteArray::operator=(const char *str)
     \snippet code/src_corelib_text_qbytearray.cpp 6
 
     \sa isEmpty(), resize()
+*/
+
+/*! \fn qsizetype QByteArray::max_size()
+    \since 6.8
+
+    This function is provided for STL compatibility.
+    It returns the maximum number of elements that the byte array can
+    theoretically hold. In practice, the number can be much smaller,
+    limited by the amount of memory available to the system.
 */
 
 /*! \fn bool QByteArray::isEmpty() const

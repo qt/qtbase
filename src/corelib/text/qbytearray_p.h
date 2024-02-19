@@ -16,13 +16,12 @@
 //
 
 #include <QtCore/qbytearray.h>
-#include "private/qtools_p.h"
 
 QT_BEGIN_NAMESPACE
 
 // -1 because of the terminating NUL
-constexpr qsizetype MaxByteArraySize = MaxAllocSize - sizeof(std::remove_pointer<QByteArray::DataPointer>::type) - 1;
-constexpr qsizetype MaxStringSize = (MaxAllocSize - sizeof(std::remove_pointer<QByteArray::DataPointer>::type)) / 2 - 1;
+constexpr qsizetype MaxByteArraySize = QtPrivate::MaxAllocSize - sizeof(std::remove_pointer<QByteArray::DataPointer>::type) - 1;
+constexpr qsizetype MaxStringSize = (QtPrivate::MaxAllocSize - sizeof(std::remove_pointer<QByteArray::DataPointer>::type)) / 2 - 1;
 
 QT_END_NAMESPACE
 

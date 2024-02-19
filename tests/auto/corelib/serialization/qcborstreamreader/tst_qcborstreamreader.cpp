@@ -5,8 +5,6 @@
 #include <QTest>
 #include <QBuffer>
 
-#include <QtCore/private/qbytearray_p.h>
-
 class tst_QCborStreamReader : public QObject
 {
     Q_OBJECT
@@ -920,7 +918,7 @@ void tst_QCborStreamReader::validation_data()
     // Add QCborStreamReader-specific limitations due to use of QByteArray and
     // QString, which are allocated by QArrayData::allocate().
     const qsizetype MaxInvalid = std::numeric_limits<QByteArray::size_type>::max();
-    const qsizetype MinInvalid = MaxByteArraySize + 1;
+    const qsizetype MinInvalid = QByteArray::max_size() + 1;
 
     addValidationColumns();
     addValidationData(MinInvalid);
@@ -997,7 +995,7 @@ void tst_QCborStreamReader::validation()
 
 void tst_QCborStreamReader::hugeDeviceValidation_data()
 {
-    addValidationHugeDevice(MaxByteArraySize + 1, MaxStringSize + 1);
+    addValidationHugeDevice(QByteArray::max_size() + 1, QString::max_size() + 1);
 }
 
 void tst_QCborStreamReader::hugeDeviceValidation()

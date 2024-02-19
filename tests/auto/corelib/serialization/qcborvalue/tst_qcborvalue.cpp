@@ -11,8 +11,6 @@
 #include <QtEndian>
 #include <QTimeZone>
 
-#include <QtCore/private/qbytearray_p.h>
-
 Q_DECLARE_METATYPE(QCborKnownTags)
 Q_DECLARE_METATYPE(QCborValue)
 Q_DECLARE_METATYPE(QCborValue::EncodingOptions)
@@ -2221,7 +2219,7 @@ void tst_QCborValue::validation_data()
     // Add QCborStreamReader-specific limitations due to use of QByteArray and
     // QString, which are allocated by QArrayData::allocate().
     const qsizetype MaxInvalid = std::numeric_limits<QByteArray::size_type>::max();
-    const qsizetype MinInvalid = MaxByteArraySize + 1 - sizeof(QByteArray::size_type);
+    const qsizetype MinInvalid = QByteArray::max_size() + 1 - sizeof(QByteArray::size_type);
     addValidationColumns();
     addValidationData(MinInvalid);
     addValidationLargeData(MinInvalid, MaxInvalid);
@@ -2394,7 +2392,7 @@ void tst_QCborValue::hugeDeviceValidation_data()
 {
     // because QCborValue will attempt to retain the original string in UTF-8,
     // the size which it can't store is actually the byte array size
-    addValidationHugeDevice(MaxByteArraySize + 1, MaxByteArraySize + 1);
+    addValidationHugeDevice(QByteArray::max_size() + 1, QByteArray::max_size() + 1);
 }
 
 void tst_QCborValue::hugeDeviceValidation()

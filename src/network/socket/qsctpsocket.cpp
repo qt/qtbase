@@ -83,7 +83,6 @@
 #include "qsctpsocket_p.h"
 
 #include "qabstractsocketengine_p.h"
-#include "private/qbytearray_p.h"
 
 #ifdef QSCTPSOCKET_DEBUG
 #include <qdebug.h>
@@ -133,7 +132,7 @@ bool QSctpSocketPrivate::canReadNotification()
                 bytesToRead = 4096;
             }
 
-            Q_ASSERT((datagramSize + qsizetype(bytesToRead)) < MaxByteArraySize);
+            Q_ASSERT((datagramSize + qsizetype(bytesToRead)) < QByteArray::max_size());
             incomingDatagram.resize(datagramSize + int(bytesToRead));
 
 #if defined (QSCTPSOCKET_DEBUG)
