@@ -1229,9 +1229,10 @@ void tst_QThread::isRunningInFinished()
     }
 }
 
-class DummyEventDispatcher : public QAbstractEventDispatcher {
+class DummyEventDispatcher : public QAbstractEventDispatcherV2
+{
+    Q_OBJECT
 public:
-    DummyEventDispatcher() : QAbstractEventDispatcher() {}
     bool processEvents(QEventLoop::ProcessEventsFlags) override {
         visited.storeRelaxed(true);
         emit awake();
@@ -1240,11 +1241,11 @@ public:
     }
     void registerSocketNotifier(QSocketNotifier *) override {}
     void unregisterSocketNotifier(QSocketNotifier *) override {}
-    void registerTimer(int, qint64, Qt::TimerType, QObject *) override {}
-    bool unregisterTimer(int) override { return false; }
+    void registerTimer(Qt::TimerId, Duration, Qt::TimerType, QObject *) override {}
+    bool unregisterTimer(Qt::TimerId) override { return false; }
     bool unregisterTimers(QObject *) override { return false; }
-    QList<TimerInfo> registeredTimers(QObject *) const override { return QList<TimerInfo>(); }
-    int remainingTime(int) override { return 0; }
+    QList<TimerInfoV2> timersForObject(QObject *) const override { return {}; }
+    Duration remainingTime(Qt::TimerId) const override { return 0s; }
     void wakeUp() override {}
     void interrupt() override {}
 

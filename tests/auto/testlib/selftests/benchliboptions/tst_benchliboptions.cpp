@@ -10,23 +10,20 @@
 #include <QAbstractEventDispatcher>
 
 /* Custom event dispatcher to ensure we don't receive any spontaneous events */
-class TestEventDispatcher : public QAbstractEventDispatcher
+class TestEventDispatcher : public QAbstractEventDispatcherV2
 {
     Q_OBJECT
 
 public:
-    TestEventDispatcher(QObject* parent =0)
-        : QAbstractEventDispatcher(parent)
-    {}
     void interrupt() override {}
     bool processEvents(QEventLoop::ProcessEventsFlags) override { return false; }
     void registerSocketNotifier(QSocketNotifier*) override {}
-    void registerTimer(int,qint64,Qt::TimerType,QObject*) override {}
-    QList<TimerInfo> registeredTimers(QObject*) const override { return QList<TimerInfo>(); }
+    void registerTimer(Qt::TimerId,Duration,Qt::TimerType,QObject*) override {}
+    QList<TimerInfoV2> timersForObject(QObject*) const override { return {}; }
     void unregisterSocketNotifier(QSocketNotifier*) override {}
-    bool unregisterTimer(int) override { return false; }
+    bool unregisterTimer(Qt::TimerId) override { return false; }
     bool unregisterTimers(QObject*) override { return false; }
-    int remainingTime(int) override { return 0; }
+    Duration remainingTime(Qt::TimerId) const override { return {}; }
     void wakeUp() override {}
 
 #ifdef Q_OS_WIN
