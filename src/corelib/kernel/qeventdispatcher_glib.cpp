@@ -14,6 +14,7 @@
 
 #include <glib.h>
 
+using namespace std::chrono;
 using namespace std::chrono_literals;
 
 QT_BEGIN_NAMESPACE
@@ -102,8 +103,8 @@ static gboolean timerSourcePrepareHelper(GTimerSource *src, gint *timeout)
         return true;
     }
 
-    auto msecs = src->timerList.timerWait().value_or(-1ms);
-    *timeout = qt_saturate<gint>(msecs.count());
+    auto remaining = src->timerList.timerWait().value_or(-1ms);
+    *timeout = qt_saturate<gint>(ceil<milliseconds>(remaining).count());
 
     return (*timeout == 0);
 }

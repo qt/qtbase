@@ -14,6 +14,7 @@
 #include <emscripten/threading.h>
 #include <emscripten/val.h>
 
+using namespace std::chrono;
 using namespace std::chrono_literals;
 
 QT_BEGIN_NAMESPACE
@@ -619,8 +620,8 @@ void QEventDispatcherWasm::updateNativeTimer()
     // access to m_timerInfo), and then call native API to set the new
     // wakeup time on the main thread.
 
-    const std::optional<std::chrono::milliseconds> wait = m_timerInfo->timerWait();
-    const auto toWaitDuration = wait.value_or(0ms);
+    const std::optional<std::chrono::nanoseconds> wait = m_timerInfo->timerWait();
+    const auto toWaitDuration = duration_cast<milliseconds>(wait.value_or(0ms));
     const auto newTargetTimePoint = m_timerInfo->currentTime + toWaitDuration;
     auto epochNsecs = newTargetTimePoint.time_since_epoch();
     auto newTargetTime = std::chrono::duration_cast<std::chrono::milliseconds>(epochNsecs);

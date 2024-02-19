@@ -29,6 +29,7 @@ static constexpr bool UsingEventfd = false;
 #  include <pipeDrv.h>
 #endif
 
+using namespace std::chrono;
 using namespace std::chrono_literals;
 
 QT_BEGIN_NAMESPACE
@@ -431,8 +432,8 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     QDeadlineTimer deadline;
     if (canWait) {
         if (include_timers) {
-            std::optional<std::chrono::milliseconds> msecs = d->timerList.timerWait();
-            deadline = msecs ? QDeadlineTimer{*msecs}
+            std::optional<nanoseconds> remaining = d->timerList.timerWait();
+            deadline = remaining ? QDeadlineTimer{*remaining}
                              : QDeadlineTimer(QDeadlineTimer::Forever);
         } else {
             deadline = QDeadlineTimer(QDeadlineTimer::Forever);
