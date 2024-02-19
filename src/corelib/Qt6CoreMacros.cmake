@@ -3197,10 +3197,10 @@ macro(qt6_standard_project_setup)
         set(__qt_sps_args_single
             REQUIRES
             SUPPORTS_UP_TO
-            I18N_NATIVE_LANGUAGE
+            I18N_SOURCE_LANGUAGE
         )
         set(__qt_sps_args_multi
-            I18N_LANGUAGES
+            I18N_TRANSLATED_LANGUAGES
         )
         cmake_parse_arguments(__qt_sps_arg
             "${__qt_sps_args_option}"
@@ -3314,11 +3314,12 @@ macro(qt6_standard_project_setup)
         source_group("Source Files/Generated" REGULAR_EXPRESSION "(_metatypes\\.json)$")
 
         # I18N support.
-        if(DEFINED __qt_sps_arg_I18N_LANGUAGES AND NOT DEFINED QT_I18N_LANGUAGES)
-            set(QT_I18N_LANGUAGES ${__qt_sps_arg_I18N_LANGUAGES})
+        if(DEFINED __qt_sps_arg_I18N_TRANSLATED_LANGUAGES
+                AND NOT DEFINED QT_I18N_TRANSLATED_LANGUAGES)
+            set(QT_I18N_TRANSLATED_LANGUAGES ${__qt_sps_arg_I18N_TRANSLATED_LANGUAGES})
         endif()
-        if(DEFINED __qt_sps_arg_I18N_NATIVE_LANGUAGE AND NOT DEFINED QT_I18N_NATIVE_LANGUAGE)
-            set(QT_I18N_NATIVE_LANGUAGE ${__qt_sps_arg_I18N_NATIVE_LANGUAGE})
+        if(DEFINED __qt_sps_arg_I18N_SOURCE_LANGUAGE AND NOT DEFINED QT_I18N_SOURCE_LANGUAGE)
+            set(QT_I18N_SOURCE_LANGUAGE ${__qt_sps_arg_I18N_SOURCE_LANGUAGE})
         endif()
     endif()
 endmacro()
