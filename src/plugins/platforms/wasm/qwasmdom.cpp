@@ -3,6 +3,8 @@
 
 #include "qwasmdom.h"
 
+#include <QtCore/qdir.h>
+#include <QtCore/qfile.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qimage.h>
