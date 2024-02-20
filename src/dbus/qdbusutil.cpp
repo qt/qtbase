@@ -310,13 +310,6 @@ namespace QDBusUtil
     }
 
     /*!
-        \internal
-        \fn bool isValidPartOfObjectPath(const QString &part)
-
-        \overload
-    */
-
-    /*!
         \fn bool isValidInterfaceName(const QString &ifaceName)
         Returns \c true if this is \a ifaceName is a valid interface name.
 
@@ -374,12 +367,6 @@ namespace QDBusUtil
 
         return true;
     }
-
-    /*!
-        \fn bool isValidUniqueConnectionName(const QString &connName)
-
-        \overload
-    */
 
     /*!
         \fn bool isValidBusName(const QString &busName)
@@ -442,12 +429,6 @@ namespace QDBusUtil
                 return false;
         return true;
     }
-
-    /*!
-        \fn bool isValidMemberName(const QString &memberName)
-
-        \overload
-    */
 
     /*!
         \fn bool isValidErrorName(const QString &errorName)
