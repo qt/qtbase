@@ -198,6 +198,8 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     \ingroup io
     \ingroup shared
 
+    \compares equality
+
     QFileInfo provides information about a file system entry, such as its
     name, path, access rights and whether it is a regular file, directory or
     symbolic link. The entry's size and last modified/read times are also

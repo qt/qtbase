@@ -376,6 +376,7 @@ inline void QDirPrivate::clearCache(MetaDataClearing mode)
     \ingroup shared
     \reentrant
 
+    \compares equality
 
     A QDir is used to manipulate path names, access information
     regarding paths and files, and manipulate the underlying file
