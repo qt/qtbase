@@ -8,6 +8,8 @@ import subprocess
 import json
 import re
 
+from wasm_binary_tools import WasmBinary
+
 # Paths to shared libraries and qml imports on the Qt installation on the web server.
 # "$QTDIR" is replaced by qtloader.js at load time (defaults to "qt"), and makes
 # possible to relocate the application build relative to the Qt build on the web server.
@@ -29,17 +31,8 @@ def preload_file(source, destination):
 
 
 def find_dependencies(filepath):
-    # Very basic dependency finder which scans for ".so" strings in the file
-    try:
-        with open(filepath, "rb") as file:
-            content = file.read()
-            return [
-                m.group(0).decode("utf-8")
-                for m in re.finditer(rb"[\w\-.]+\.so", content)
-            ]
-    except IOError as e:
-        eprint(f"Error: {e}")
-        return []
+    binary = WasmBinary(filepath)
+    return binary.get_dependencies()
 
 
 def extract_preload_files_from_imports(imports):
