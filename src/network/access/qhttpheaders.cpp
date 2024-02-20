@@ -70,6 +70,13 @@ Q_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
     \l {https://datatracker.ietf.org/doc/html/rfc9110#name-field-order}
     {Set-Cookie}. Due to this and the possibility of custom use cases,
     QHttpHeaders does not automatically combine the values.
+
+    \section1 Performance
+
+    Most QHttpHeaders functions provide both
+    \l QHttpHeaders::WellKnownHeader and \l QAnyStringView overloads.
+    From a memory-usage and computation point of view it is recommended
+    to use the \l QHttpHeaders::WellKnownHeader overloads.
 */
 
 // This list is from IANA HTTP Field Name Registry
