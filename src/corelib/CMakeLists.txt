@@ -212,7 +212,7 @@ qt_internal_add_module(Core
         serialization/qtextstream.cpp serialization/qtextstream.h serialization/qtextstream_p.h
         serialization/qxmlutils.cpp serialization/qxmlutils_p.h
         text/qanystringview.cpp text/qanystringview.h
-        text/qbytearray.cpp text/qbytearray.h text/qbytearray_p.h
+        text/qbytearray.cpp text/qbytearray.h
         text/qbytearrayalgorithms.h
         text/qbytearraylist.cpp text/qbytearraylist.h
         text/qbytearraymatcher.cpp text/qbytearraymatcher.h
