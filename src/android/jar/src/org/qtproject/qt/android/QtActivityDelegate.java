@@ -42,6 +42,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
     private boolean m_splashScreenSticky = false;
 
     private View m_dummyView = null;
+    private HashMap<Integer, View> m_nativeViews = new HashMap<Integer, View>();
 
 
     QtActivityDelegate(Activity activity)
@@ -399,5 +400,45 @@ class QtActivityDelegate extends QtActivityDelegateBase
         }
 
         m_activity.getWindow().setBackgroundDrawable(backgroundDrawable);
+    }
+
+    // TODO: QTBUG-122761 To be removed after QtAndroidAutomotive does not depend on it.
+    @UsedFromNativeCode
+    public void insertNativeView(int id, View view, int x, int y, int w, int h)
+    {
+        QtNative.runAction(()-> {
+            if (m_dummyView != null) {
+                m_layout.removeView(m_dummyView);
+                m_dummyView = null;
+            }
+
+            if (m_nativeViews.containsKey(id))
+                m_layout.removeView(m_nativeViews.remove(id));
+
+            if (w < 0 || h < 0) {
+                view.setLayoutParams(new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            } else {
+                view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+            }
+
+            view.setId(id);
+            m_layout.addView(view);
+            m_nativeViews.put(id, view);
+        });
+    }
+
+    // TODO: QTBUG-122761 To be removed after QtAndroidAutomotive does not depend on it.
+    @UsedFromNativeCode
+    public void setNativeViewGeometry(int id, int x, int y, int w, int h)
+    {
+        QtNative.runAction(() -> {
+            if (m_nativeViews.containsKey(id)) {
+                View view = m_nativeViews.get(id);
+                view.setLayoutParams(new QtLayout.LayoutParams(w, h, x, y));
+            } else {
+                Log.e(QtTAG, "View " + id + " not found!");
+            }
+        });
     }
 }
