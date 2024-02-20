@@ -445,9 +445,8 @@ namespace QDBusUtil
         \list
           \li start with the slash character ("/")
           \li do not end in a slash, unless the path is just the initial slash
-          \li do not contain any two slashes in sequence
-          \li contain slash-separated parts, each of which is composed of ASCII letters, digits and
-             underscores ("_")
+          \li contain slash-separated parts, each of which is not empty, and composed
+              only of ASCII letters, digits and underscores ("_").
         \endlist
     */
     bool isValidObjectPath(const QString &path)
