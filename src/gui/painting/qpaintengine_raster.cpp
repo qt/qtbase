@@ -3399,16 +3399,18 @@ void QRasterPaintEngine::drawBitmap(const QPointF &pos, const QImage &image, QSp
     // Boundaries
     int w = image.width();
     int h = image.height();
-    int ymax = qMin(qRound(pos.y() + h), d->rasterBuffer->height());
-    int ymin = qMax(qRound(pos.y()), 0);
-    int xmax = qMin(qRound(pos.x() + w), d->rasterBuffer->width());
-    int xmin = qMax(qRound(pos.x()), 0);
+    int px = qRound(pos.x());
+    int py = qRound(pos.y());
+    int ymax = qMin(py + h, d->rasterBuffer->height());
+    int ymin = qMax(py, 0);
+    int xmax = qMin(px + w, d->rasterBuffer->width());
+    int xmin = qMax(px, 0);
 
-    int x_offset = xmin - qRound(pos.x());
+    int x_offset = xmin - px;
 
     QImage::Format format = image.format();
     for (int y = ymin; y < ymax; ++y) {
-        const uchar *src = image.scanLine(y - qRound(pos.y()));
+        const uchar *src = image.scanLine(y - py);
         if (format == QImage::Format_MonoLSB) {
             for (int x = 0; x < xmax - xmin; ++x) {
                 int src_x = x + x_offset;
