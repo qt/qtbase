@@ -1,3 +1,6 @@
+# Copyright (C) 2024 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 # Propagate common variables via BuildInternals package.
 set(QT_BUILD_SHARED_LIBS @BUILD_SHARED_LIBS@)
 option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" @BUILD_SHARED_LIBS@)
