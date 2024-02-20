@@ -962,6 +962,23 @@ bool QProcessEnvironment::operator==(const QProcessEnvironment &other) const
 }
 #endif // QT_CONFIG(processenvironment)
 
+#include "qurl.h"
+
+bool QUrl::operator<(const QUrl &url) const
+{
+    return is_lt(compareThreeWay(*this, url));
+}
+
+bool QUrl::operator==(const QUrl &url) const
+{
+    return comparesEqual(*this, url);
+}
+
+bool QUrl::operator!=(const QUrl &url) const
+{
+    return !comparesEqual(*this, url);
+}
+
 #include "qurlquery.h"
 
 bool QUrlQuery::operator==(const QUrlQuery &other) const

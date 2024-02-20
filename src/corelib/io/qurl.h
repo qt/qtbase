@@ -6,6 +6,7 @@
 #define QURL_H
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qobjectdefs.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
@@ -230,9 +231,11 @@ public:
     void detach();
     bool isDetached() const;
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator <(const QUrl &url) const;
     bool operator ==(const QUrl &url) const;
     bool operator !=(const QUrl &url) const;
+#endif
 
     bool matches(const QUrl &url, FormattingOptions options) const;
 
@@ -268,6 +271,11 @@ public:
     friend Q_CORE_EXPORT size_t qHash(const QUrl &url, size_t seed) noexcept;
 
 private:
+    friend Q_CORE_EXPORT bool comparesEqual(const QUrl &lhs, const QUrl &rhs);
+    friend Q_CORE_EXPORT Qt::weak_ordering
+    compareThreeWay(const QUrl &lhs, const QUrl &rhs);
+    Q_DECLARE_WEAKLY_ORDERED(QUrl)
+
     QUrlPrivate *d;
     friend class QUrlQuery;
 

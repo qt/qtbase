@@ -6,6 +6,7 @@
 #include <QtCore/QDebug>
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QDirIterator>
 
 #include <qcoreapplication.h>
@@ -31,6 +32,7 @@ private slots:
     void hashInPath();
     void unc();
     void assignment();
+    void orderingCompiles();
     void comparison();
     void comparison2_data();
     void comparison2();
@@ -289,6 +291,11 @@ void tst_QUrl::assignment()
     QCOMPARE(url, copy);
 }
 
+void tst_QUrl::orderingCompiles()
+{
+    QTestPrivate::testAllComparisonOperatorsCompile<QUrl>();
+}
+
 void tst_QUrl::comparison()
 {
     QUrl url1("http://qt-project.org/");
@@ -437,17 +444,18 @@ void tst_QUrl::comparison2()
     QFETCH(QUrl, url2);
     QFETCH(int, ordering);
 
+    const Qt::weak_ordering expectedOrdering = [&ordering] {
+        if (ordering > 0)
+            return Qt::weak_ordering::greater;
+        else if (ordering < 0)
+            return Qt::weak_ordering::less;
+        return Qt::weak_ordering::equivalent;
+    }();
+
     QCOMPARE(url1.toString() == url2.toString(), ordering == 0);
-    QCOMPARE(url1 == url2, ordering == 0);
-    QCOMPARE(url1 != url2, ordering != 0);
+    QT_TEST_ALL_COMPARISON_OPS(url1, url2, expectedOrdering);
     if (ordering == 0)
         QCOMPARE(qHash(url1), qHash(url2));
-
-    QCOMPARE(url1 < url2, ordering < 0);
-    QCOMPARE(!(url1 < url2), ordering >= 0);
-
-    QCOMPARE(url2 < url1, ordering > 0);
-    QCOMPARE(!(url2 < url1), ordering <= 0);
 
     // redundant checks (the above should catch these)
     QCOMPARE(url1 < url2 || url2 < url1, ordering != 0);
