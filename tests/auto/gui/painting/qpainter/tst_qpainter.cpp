@@ -62,6 +62,7 @@ private slots:
 #endif
     void drawPixmapFragments();
     void drawPixmapNegativeScale();
+    void drawPixmapRounding();
 
     void drawLine_data();
     void drawLine();
@@ -745,6 +746,16 @@ void tst_QPainter::drawPixmapNegativeScale()
     QImage resultImage = resultPixmap.toImage().convertToFormat(QImage::Format_ARGB32);
     QVERIFY(resultImage.pixel(4, 8) == qRgba(255, 255, 255, 255)); // left strip is now white
     QVERIFY(resultImage.pixel(12, 8) == qRgba(0, 0, 0, 255)); // and right strip is now black
+}
+
+void tst_QPainter::drawPixmapRounding()
+{
+    // Just test that we don't assert
+    QBitmap bm(8, 8);
+    QImage out(64, 64, QImage::Format_RGB32);
+    QPainter p(&out);
+    qreal y = 26.499999999999996;
+    p.drawPixmap(QPointF(0, y), bm);
 }
 
 void tst_QPainter::drawLine_data()
