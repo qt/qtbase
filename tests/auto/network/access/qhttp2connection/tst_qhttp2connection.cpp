@@ -20,6 +20,7 @@ private slots:
     void construct();
     void constructStream();
     void testSETTINGSFrame();
+    void testPING();
     void connectToServer();
     void WINDOW_UPDATE();
 
@@ -255,6 +256,35 @@ void tst_QHttp2Connection::testSETTINGSFrame()
                                          QString::number(expectedSetting.value),
                                          QString::number(i))));
     }
+}
+
+void tst_QHttp2Connection::testPING()
+{
+    auto [client, server] = makeFakeConnectedSockets();
+    auto connection = makeHttp2Connection(client.get(), {}, Client);
+    auto serverConnection = makeHttp2Connection(server.get(), {}, Server);
+
+    QVERIFY(waitForSettingsExchange(connection, serverConnection));
+
+    QSignalSpy serverPingSpy{ serverConnection, &QHttp2Connection::pingFrameRecived };
+    QSignalSpy clientPingSpy{ connection, &QHttp2Connection::pingFrameRecived };
+
+    QByteArray data{"pingpong"};
+    connection->sendPing(data);
+
+    QVERIFY(serverPingSpy.wait());
+    QVERIFY(clientPingSpy.wait());
+
+    QCOMPARE(serverPingSpy.last().at(0).toInt(), int(QHttp2Connection::PingState::Ping));
+    QCOMPARE(clientPingSpy.last().at(0).toInt(), int(QHttp2Connection::PingState::PongSignatureIdentical));
+
+    serverConnection->sendPing();
+
+    QVERIFY(clientPingSpy.wait());
+    QVERIFY(serverPingSpy.wait());
+
+    QCOMPARE(clientPingSpy.last().at(0).toInt(), int(QHttp2Connection::PingState::Ping));
+    QCOMPARE(serverPingSpy.last().at(0).toInt(), int(QHttp2Connection::PingState::PongSignatureIdentical));
 }
 
 void tst_QHttp2Connection::connectToServer()

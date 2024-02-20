@@ -9,6 +9,7 @@
 #include <QtCore/private/qiodevice_p.h>
 #include <QtCore/private/qnoncontiguousbytedevice_p.h>
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/QRandomGenerator>
 #include <QtCore/qloggingcategory.h>
 
 #include <algorithm>
@@ -922,6 +923,32 @@ bool QHttp2Connection::serverCheckClientPreface()
     return true;
 }
 
+bool QHttp2Connection::sendPing()
+{
+    std::array<char, 8> data;
+
+    QRandomGenerator gen;
+    gen.generate(data.begin(), data.end());
+    return sendPing(data);
+}
+
+bool QHttp2Connection::sendPing(QByteArrayView data)
+{
+    frameWriter.start(FrameType::PING, FrameFlag::EMPTY, connectionStreamID);
+
+    Q_ASSERT(data.length() == 8);
+    if (!m_lastPingSignature) {
+        m_lastPingSignature = data.toByteArray();
+    } else {
+        qCWarning(qHttp2ConnectionLog, "[%p] No PING is sent while waiting for the previous PING.", this);
+        return false;
+    }
+
+    frameWriter.append((uchar*)data.data(), (uchar*)data.end());
+    frameWriter.write(*getSocket());
+    return true;
+}
+
 /*!
     This function must be called when you have received a readyRead signal
     (or equivalent) from the QIODevice. It will read and process any incoming
@@ -1389,18 +1416,30 @@ void QHttp2Connection::handlePUSH_PROMISE()
 
 void QHttp2Connection::handlePING()
 {
-    // @future[server]
-    // Since we're implementing a client and not
-    // a server, we only reply to a PING, ACKing it.
     Q_ASSERT(inboundFrame.type() == FrameType::PING);
+    Q_ASSERT(inboundFrame.dataSize() == 8);
 
     if (inboundFrame.streamID() != connectionStreamID)
         return connectionError(PROTOCOL_ERROR, "PING on invalid stream");
 
-    if (inboundFrame.flags() & FrameFlag::ACK)
-        return connectionError(PROTOCOL_ERROR, "unexpected PING ACK");
+    if (inboundFrame.flags() & FrameFlag::ACK) {
+        QByteArrayView pingSignature(reinterpret_cast<const char *>(inboundFrame.dataBegin()), 8);
+        if (!m_lastPingSignature.has_value()) {
+            emit pingFrameRecived(PingState::PongNoPingSent);
+            qCWarning(qHttp2ConnectionLog, "[%p] PING with ACK received but no PING was sent.", this);
+        } else if (pingSignature != m_lastPingSignature) {
+            emit pingFrameRecived(PingState::PongSignatureChanged);
+            qCWarning(qHttp2ConnectionLog, "[%p] PING signature does not match the last PING.", this);
+        } else {
+            emit pingFrameRecived(PingState::PongSignatureIdentical);
+        }
+        m_lastPingSignature.reset();
+        return;
+    } else {
+        emit pingFrameRecived(PingState::Ping);
 
-    Q_ASSERT(inboundFrame.dataSize() == 8);
+    }
+
 
     frameWriter.start(FrameType::PING, FrameFlag::ACK, connectionStreamID);
     frameWriter.append(inboundFrame.dataBegin(), inboundFrame.dataBegin() + 8);

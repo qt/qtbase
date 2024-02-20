@@ -197,6 +197,13 @@ public:
     };
     Q_ENUM(CreateStreamError)
 
+    enum class PingState {
+        Ping,
+        PongSignatureIdentical,
+        PongSignatureChanged,
+        PongNoPingSent, // We got an ACKed ping but had not sent any
+    };
+
     // For a pre-established connection:
     [[nodiscard]] static QHttp2Connection *
     createUpgradedConnection(QIODevice *socket, const QHttp2Configuration &config);
@@ -232,9 +239,12 @@ Q_SIGNALS:
     void errorReceived(/*@future: add as needed?*/); // Connection errors only, no stream-specific errors
     void connectionClosed();
     void settingsFrameReceived();
+    void pingFrameRecived(PingState state);
     void errorOccurred(Http2::Http2Error errorCode, const QString &errorString);
     void receivedGOAWAY(quint32 errorCode, quint32 lastStreamID);
 public Q_SLOTS:
+    bool sendPing();
+    bool sendPing(QByteArrayView data);
     void handleReadyRead();
     void handleConnectionClosure();
 
@@ -295,6 +305,7 @@ private:
     QHash<quint32, QPointer<QHttp2Stream>> m_streams;
     QHash<QUrl, quint32> m_promisedStreams;
     QVarLengthArray<quint32> m_resetStreamIDs;
+    std::optional<QByteArray> m_lastPingSignature = std::nullopt;
     quint32 m_nextStreamID = 1;
 
     // Peer's max frame size (this min is the default value
