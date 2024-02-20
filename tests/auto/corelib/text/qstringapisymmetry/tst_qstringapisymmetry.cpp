@@ -60,13 +60,9 @@ constexpr bool is_fake_comparator_v = false;
     MAKE_RELOP(>=, A1, A2) \
     /*end*/
 
-MAKE_ALL(QByteArray, QChar)
-MAKE_ALL(QByteArray, char16_t)
-MAKE_ALL(char16_t, QByteArray)
 
 MAKE_ALL(const char*, QChar)
 
-MAKE_ALL(QChar, QByteArray)
 MAKE_ALL(QChar, const char*)
 
 #undef MAKE_ALL

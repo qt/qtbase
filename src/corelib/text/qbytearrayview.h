@@ -347,6 +347,18 @@ private:
     { return compareThreeWay(lhs, QByteArrayView(rhs)); }
     Q_DECLARE_STRONGLY_ORDERED(QByteArrayView, const char *)
 
+    // defined in qstring.cpp
+    static bool
+    comparesEqual(const QByteArrayView &lhs, const QChar &rhs) noexcept;
+    static Qt::strong_ordering
+    compareThreeWay(const QByteArrayView &lhs, const QChar &rhs) noexcept;
+    static bool comparesEqual(const QByteArrayView &lhs, char16_t rhs) noexcept;
+    static Qt::strong_ordering compareThreeWay(const QByteArrayView &lhs, char16_t rhs) noexcept;
+#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
+    Q_DECLARE_STRONGLY_ORDERED(QByteArrayView, QChar, QT_ASCII_CAST_WARN)
+    Q_DECLARE_STRONGLY_ORDERED(QByteArrayView, char16_t, QT_ASCII_CAST_WARN)
+#endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
+
     qsizetype m_size;
     const storage_type *m_data;
 };

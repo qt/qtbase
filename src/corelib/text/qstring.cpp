@@ -6707,6 +6707,30 @@ int QString::compare_helper(const QChar *data1, qsizetype length1, const char *d
   \overload compare()
 */
 
+bool QByteArrayView::comparesEqual(const QByteArrayView &lhs, const QChar &rhs) noexcept
+{
+    return QtPrivate::equalStrings(QUtf8StringView(lhs), QStringView(&rhs, 1));
+}
+
+Qt::strong_ordering QByteArrayView::compareThreeWay(const QByteArrayView &lhs,
+                                                    const QChar &rhs) noexcept
+{
+    const int res = QtPrivate::compareStrings(QUtf8StringView(lhs), QStringView(&rhs, 1));
+    return Qt::compareThreeWay(res, 0);
+}
+
+bool QByteArrayView::comparesEqual(const QByteArrayView &lhs, char16_t rhs) noexcept
+{
+    return QtPrivate::equalStrings(QUtf8StringView(lhs), QStringView(&rhs, 1));
+}
+
+Qt::strong_ordering QByteArrayView::compareThreeWay(const QByteArrayView &lhs,
+                                                    char16_t rhs) noexcept
+{
+    const int res = QtPrivate::compareStrings(QUtf8StringView(lhs), QStringView(&rhs, 1));
+    return Qt::compareThreeWay(res, 0);
+}
+
 /*!
     \internal
     \since 6.8
