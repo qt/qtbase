@@ -1142,11 +1142,28 @@ ushort QStringView::toUShort(bool *ok, int base) const
 //
 
 template <bool UseChar8T>
+int QBasicUtf8StringView<UseChar8T>::compare(QChar other, Qt::CaseSensitivity cs) const noexcept
+{
+    return QtPrivate::compareStrings(*this, QStringView(&other, 1), cs);
+}
+
+template <bool UseChar8T>
 int QBasicUtf8StringView<UseChar8T>::compare(QStringView other, Qt::CaseSensitivity cs) const noexcept
 {
     return QtPrivate::compareStrings(*this, other, cs);
 }
 
+template <bool UseChar8T>
+[[nodiscard]] bool QBasicUtf8StringView<UseChar8T>::equal(QChar other) const noexcept
+{
+    return QtPrivate::equalStrings(*this, QStringView(&other, 1));
+}
+
+template <bool UseChar8T>
+[[nodiscard]] bool QBasicUtf8StringView<UseChar8T>::equal(QStringView other) const noexcept
+{
+    return QtPrivate::equalStrings(*this, other);
+}
 
 //
 // QUtf8StringView inline members that require QString, QL1SV or QBA:

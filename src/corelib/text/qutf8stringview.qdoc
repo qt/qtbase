@@ -11,6 +11,14 @@
     \ingroup tools
     \ingroup string-processing
 
+    \compares strong
+    \compareswith strong char16_t QChar {const char16_t *} QString QStringView \
+                  QLatin1StringView
+    \endcompareswith
+    \compareswith strong {const char *} QByteArray QByteArrayView
+    The contents of byte arrays is interpreted as utf-8.
+    \endcompareswith
+
     A QUtf8StringView references a contiguous portion of a UTF-8
     string it does not own. It acts as an interface type to all kinds
     of UTF-8 string, without the need to construct a QString or

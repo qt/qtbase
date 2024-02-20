@@ -68,10 +68,6 @@ MAKE_ALL(const char*, QChar)
 
 MAKE_ALL(QChar, QByteArray)
 MAKE_ALL(QChar, const char*)
-MAKE_ALL(QChar, QUtf8StringView)
-
-MAKE_ALL(QUtf8StringView, QChar)
-MAKE_ALL(QUtf8StringView, char16_t)
 
 #undef MAKE_ALL
 #undef MAKE_RELOP
@@ -224,10 +220,8 @@ private Q_SLOTS:
     void compare_QStringView_QString() { compare_impl<QStringView, QString>(); }
     void compare_QStringView_QStringView_data() { compare_data(); }
     void compare_QStringView_QStringView() { compare_impl<QStringView, QStringView>(); }
-#ifdef NOT_YET_IMPLEMENTED
     void compare_QStringView_QUtf8StringView_data() { compare_data(); }
     void compare_QStringView_QUtf8StringView() { compare_impl<QStringView, QUtf8StringView>(); }
-#endif
     void compare_QStringView_QLatin1String_data() { compare_data(); }
     void compare_QStringView_QLatin1String() { compare_impl<QStringView, QLatin1String>(); }
     void compare_QStringView_QByteArray_data() { compare_data(); }
