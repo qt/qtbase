@@ -5,7 +5,7 @@
     \example cube
     \ingroup examples-widgets-opengl
     \title Cube OpenGL ES 2.0 example
-    \examplecategory {Data Visualization & 3D}
+    \examplecategory {3D}
 
     \brief Shows how to manually rotate a textured 3D cube with user input.
 
