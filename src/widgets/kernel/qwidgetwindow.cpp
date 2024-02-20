@@ -160,8 +160,8 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
     updateObjectName();
     if (!QCoreApplication::testAttribute(Qt::AA_ForceRasterWidgets)) {
         QSurface::SurfaceType type = QSurface::RasterSurface;
-        q_evaluateRhiConfig(m_widget, nullptr, &type);
-        setSurfaceType(type);
+        if (q_evaluateRhiConfig(m_widget, nullptr, &type))
+            setSurfaceType(type);
     }
 
     connect(widget, &QObject::objectNameChanged, this, &QWidgetWindow::updateObjectName);

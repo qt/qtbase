@@ -10,6 +10,8 @@
 
 #include <QtCore/private/qobject_p.h>
 
+#include <unordered_map>
+
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaBackingStore, "qt.qpa.backingstore", QtWarningMsg);
@@ -26,11 +28,14 @@ public:
     QWindow *window;
     QBackingStore *backingStore;
 
-    // The order matters. if it needs to be rearranged in the future, call
-    // reset() explicitly from the dtor in the correct order.
-    // (first the compositor, then the rhiSupport)
-    QBackingStoreRhiSupport rhiSupport;
-    QBackingStoreDefaultCompositor compositor;
+    struct SurfaceSupport {
+        // The order matters. if it needs to be rearranged in the future, call
+        // reset() explicitly from the dtor in the correct order.
+        // (first the compositor, then the rhiSupport)
+        QBackingStoreRhiSupport rhiSupport;
+        QBackingStoreDefaultCompositor compositor;
+    };
+    std::unordered_map<QSurface::SurfaceType, SurfaceSupport> surfaceSupport;
 };
 
 struct QBackingstoreTextureInfo
@@ -210,8 +215,12 @@ QPlatformBackingStore::FlushResult QPlatformBackingStore::rhiFlush(QWindow *wind
                                                                    QPlatformTextureList *textures,
                                                                    bool translucentBackground)
 {
-    return d_ptr->compositor.flush(this, d_ptr->rhiSupport.rhi(), d_ptr->rhiSupport.swapChainForWindow(window),
-                                   window, sourceDevicePixelRatio, region, offset, textures, translucentBackground);
+    auto &surfaceSupport = d_ptr->surfaceSupport[window->surfaceType()];
+    return surfaceSupport.compositor.flush(this,
+        surfaceSupport.rhiSupport.rhi(),
+        surfaceSupport.rhiSupport.swapChainForWindow(window),
+        window, sourceDevicePixelRatio, region, offset, textures,
+        translucentBackground);
 }
 
 /*!
@@ -261,7 +270,10 @@ QRhiTexture *QPlatformBackingStore::toTexture(QRhiResourceUpdateBatch *resourceU
                                               const QRegion &dirtyRegion,
                                               TextureFlags *flags) const
 {
-    return d_ptr->compositor.toTexture(this, d_ptr->rhiSupport.rhi(), resourceUpdates, dirtyRegion, flags);
+    auto &surfaceSupport = d_ptr->surfaceSupport[window()->surfaceType()];
+    return surfaceSupport.compositor.toTexture(this,
+        surfaceSupport.rhiSupport.rhi(), resourceUpdates,
+        dirtyRegion, flags);
 }
 
 /*!
@@ -356,33 +368,44 @@ bool QPlatformBackingStore::scroll(const QRegion &area, int dx, int dy)
     return false;
 }
 
-void QPlatformBackingStore::setRhiConfig(const QPlatformBackingStoreRhiConfig &config)
+void QPlatformBackingStore::createRhi(QWindow *window, QPlatformBackingStoreRhiConfig config)
 {
     if (!config.isEnabled())
         return;
 
-    d_ptr->rhiSupport.setConfig(config);
-    d_ptr->rhiSupport.setWindow(d_ptr->window);
-    d_ptr->rhiSupport.setFormat(d_ptr->window->format());
-    d_ptr->rhiSupport.create();
+    qCDebug(lcQpaBackingStore) << "Setting up RHI support in" << this
+        << "for" << window << "with" << window->surfaceType()
+        << "and requested API" << config.api();
+
+    auto &support = d_ptr->surfaceSupport[window->surfaceType()];
+    if (!support.rhiSupport.rhi()) {
+        support.rhiSupport.setConfig(config);
+        support.rhiSupport.setWindow(window);
+        support.rhiSupport.setFormat(window->format());
+        support.rhiSupport.create();
+    } else {
+        qCDebug(lcQpaBackingStore) << "Window already has RHI support"
+            << "with backend" << support.rhiSupport.rhi()->backendName();
+    }
 }
 
-QRhi *QPlatformBackingStore::rhi() const
+QRhi *QPlatformBackingStore::rhi(QWindow *window) const
 {
     // Returning null is valid, and means this is not a QRhi-capable backingstore.
-    return d_ptr->rhiSupport.rhi();
+    return d_ptr->surfaceSupport[window->surfaceType()].rhiSupport.rhi();
 }
 
-void QPlatformBackingStore::graphicsDeviceReportedLost()
+void QPlatformBackingStore::graphicsDeviceReportedLost(QWindow *window)
 {
-    if (!d_ptr->rhiSupport.rhi())
+    auto &surfaceSupport = d_ptr->surfaceSupport[window->surfaceType()];
+    if (!surfaceSupport.rhiSupport.rhi())
         return;
 
     qWarning("Rhi backingstore: graphics device lost, attempting to reinitialize");
-    d_ptr->compositor.reset();
-    d_ptr->rhiSupport.reset();
-    d_ptr->rhiSupport.create();
-    if (!d_ptr->rhiSupport.rhi())
+    surfaceSupport.compositor.reset();
+    surfaceSupport.rhiSupport.reset();
+    surfaceSupport.rhiSupport.create();
+    if (!surfaceSupport.rhiSupport.rhi())
         qWarning("Rhi backingstore: failed to reinitialize after losing the device");
 }
 

@@ -203,7 +203,7 @@ void tst_QOpenGLWidget::deviceLoss()
     w->resize(640, 480);
     w->show();
 
-    auto rhi = w->backingStore()->handle()->rhi();
+    auto rhi = w->backingStore()->handle()->rhi(w->windowHandle());
     QNativeInterface::QEGLContext *rhiContext = nullptr;
     if (rhi->backend() == QRhi::OpenGLES2) {
         auto rhiHandles = static_cast<const QRhiGles2NativeHandles *>(rhi->nativeHandles());

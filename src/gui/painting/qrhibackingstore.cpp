@@ -20,30 +20,27 @@ void QRhiBackingStore::flush(QWindow *flushedWindow, const QRegion &region, cons
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
-    if (flushedWindow->surfaceType() != window()->surfaceType()) {
-        qWarning() << "Cannot flush child window" << flushedWindow
-            << "with surface type" << flushedWindow->surfaceType() << ";"
-            << "Must match" << window()->surfaceType() << "of" << window();
-
-        // FIXME: Support different surface types by not tying the
-        // RHI config to the backing store itself (per window config).
-        return;
-    }
-
-    if (!rhi()) {
+    if (!rhi(flushedWindow)) {
         QPlatformBackingStoreRhiConfig rhiConfig;
-        switch (window()->surfaceType()) {
+        switch (flushedWindow->surfaceType()) {
         case QSurface::OpenGLSurface:
             rhiConfig.setApi(QPlatformBackingStoreRhiConfig::OpenGL);
             break;
         case QSurface::MetalSurface:
             rhiConfig.setApi(QPlatformBackingStoreRhiConfig::Metal);
             break;
+        case QSurface::Direct3DSurface:
+            rhiConfig.setApi(QPlatformBackingStoreRhiConfig::D3D11);
+            break;
+        case QSurface::VulkanSurface:
+            rhiConfig.setApi(QPlatformBackingStoreRhiConfig::Vulkan);
+            break;
         default:
             Q_UNREACHABLE();
         }
+
         rhiConfig.setEnabled(true);
-        setRhiConfig(rhiConfig);
+        createRhi(flushedWindow, rhiConfig);
     }
 
     static QPlatformTextureList emptyTextureList;

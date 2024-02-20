@@ -1016,11 +1016,13 @@ void QWidgetRepaintManager::flush(QWidget *widget, const QRegion &region, QPlatf
     if (tlw->testAttribute(Qt::WA_DontShowOnScreen) || widget->testAttribute(Qt::WA_DontShowOnScreen))
         return;
 
+    QWindow *window = widget->windowHandle();
+    // We should only be flushing to native widgets
+    Q_ASSERT(window);
+
     // Foreign Windows do not have backing store content and must not be flushed
-    if (QWindow *widgetWindow = widget->windowHandle()) {
-        if (widgetWindow->type() == Qt::ForeignWindow)
-            return;
-    }
+    if (window->type() == Qt::ForeignWindow)
+        return;
 
     static bool fpsDebug = qEnvironmentVariableIntValue("QT_DEBUG_FPS");
     if (fpsDebug) {
@@ -1037,69 +1039,51 @@ void QWidgetRepaintManager::flush(QWidget *widget, const QRegion &region, QPlatf
     if (widget != tlw)
         offset += widget->mapTo(tlw, QPoint());
 
-    // Use a condition that tries to keep both QTBUG-108344 and QTBUG-113557
-    // happy, i.e. support both (A) "native rhi-based child in a rhi-based
-    // toplevel" and (B) "native raster child in a rhi-based toplevel".
-    //
-    // If the tlw and the backingstore are RHI-based, then there are two cases
-    // to consider:
-    //
-    // (1) widget is not a native child, i.e. the QWindow for widget and tlw are
-    // the same,
-    //
-    // (2) widget is a native child which we now attempt to flush with tlw's
-    // backingstore to widget's native window. This is the interesting one.
-    //
-    // Using the condition tlw->usesRhiFlush on its own is insufficient since
-    // it fails to capture the case of a raster-based native child widget
-    // within tlw. (which must hit the non-rhi flush path)
-    //
-    // Extending the condition with tlw->windowHandle() == widget->windowHandle()
-    // would be logical but wrong, when it comes to (A) since flushing a
-    // RHI-based native child with a given 3D API using a RHI-based
-    // tlw/backingstore with the same 3D API needs to be supported still. (this
-    // happens when e.g. someone calls winId() on a QOpenGLWidget)
-    //
-    // Different 3D APIs do not need to be supported since we do not allow to
-    // do things like having a QQuickWidget with Vulkan and a QOpenGLWidget in
-    // the same toplevel, regardless of the widgets being native children or
-    // not. Hence comparing the surfaceType() instead. This satisfies both (A)
-    // and (B) given that an RHI-based toplevel cannot be RasterSurface.
-    //
-    if (tlw->d_func()->usesRhiFlush && tlw->windowHandle()->surfaceType() == widget->windowHandle()->surfaceType()) {
-        QRhi *rhi = store->handle()->rhi();
-        qCDebug(lcWidgetPainting) << "Flushing" << region << "of" << widget
-                                  << "with QRhi" << rhi
-                                  << "to window" << widget->windowHandle();
+    // A widget uses RHI flush if itself, or one of its non-native children
+    // uses RHI for its drawing. If so, we composite the backing store raster
+    // data along with textures produced by the RHI widgets.
+    const bool flushWithRhi = widget->d_func()->usesRhiFlush;
+
+    qCDebug(lcWidgetPainting) << "Flushing" << region << "of" << widget
+        << "to" << window << (flushWithRhi ? "using RHI" : "");
+
+    // A widget uses RHI flush if itself, or one of its non-native children
+    // uses RHI for its drawing. If so, we composite the backing store raster
+    // data along with textures produced by the RHI widgets.
+    if (flushWithRhi) {
         if (!widgetTextures)
             widgetTextures = qt_dummy_platformTextureList;
 
-        QWidgetPrivate *widgetWindowPrivate = widget->window()->d_func();
-        widgetWindowPrivate->sendComposeStatus(widget->window(), false);
+        // We only need to let the widget sub-hierarchy that
+        // we are flushing know that we're compositing.
+        auto *widgetPrivate = QWidgetPrivate::get(widget);
+        widgetPrivate->sendComposeStatus(widget, false);
+
         // A window may have alpha even when the app did not request
         // WA_TranslucentBackground. Therefore the compositor needs to know whether the app intends
         // to rely on translucency, in order to decide if it should clear to transparent or opaque.
         const bool translucentBackground = widget->testAttribute(Qt::WA_TranslucentBackground);
 
         QPlatformBackingStore::FlushResult flushResult;
-        flushResult = store->handle()->rhiFlush(widget->windowHandle(),
+        flushResult = store->handle()->rhiFlush(window,
                                                 widget->devicePixelRatio(),
                                                 region,
                                                 offset,
                                                 widgetTextures,
                                                 translucentBackground);
-        widgetWindowPrivate->sendComposeStatus(widget->window(), true);
+
+        widgetPrivate->sendComposeStatus(widget, true);
+
         if (flushResult == QPlatformBackingStore::FlushFailedDueToLostDevice) {
             qSendWindowChangeToTextureChildrenRecursively(widget->window(),
                                                           QEvent::WindowAboutToChangeInternal);
-            store->handle()->graphicsDeviceReportedLost();
+            store->handle()->graphicsDeviceReportedLost(window);
             qSendWindowChangeToTextureChildrenRecursively(widget->window(),
                                                           QEvent::WindowChangeInternal);
             widget->update();
         }
     } else {
-        qCInfo(lcWidgetPainting) << "Flushing" << region << "of" << widget;
-        store->flush(region, widget->windowHandle(), offset);
+        store->flush(region, window, offset);
     }
 }
 
@@ -1306,11 +1290,6 @@ void QWidgetPrivate::invalidateBackingStore_resizeHelper(const QPoint &oldPos, c
         parentExpose -= data.crect;
         q->parentWidget()->d_func()->invalidateBackingStore(parentExpose);
     }
-}
-
-QRhi *QWidgetRepaintManager::rhi() const
-{
-    return store->handle()->rhi();
 }
 
 QT_END_NAMESPACE
