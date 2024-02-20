@@ -84,6 +84,12 @@ Http2Server::~Http2Server()
 {
 }
 
+void Http2Server::setInformationalStatusCode(int code)
+{
+    if (code == 100 || (102 <= code && code <= 199))
+        informationalStatusCode = code;
+}
+
 void Http2Server::enablePushPromise(bool pushEnabled, const QByteArray &path)
 {
     pushPromiseEnabled = pushEnabled;
@@ -835,6 +841,25 @@ void Http2Server::sendResponse(quint32 streamID, bool emptyBody)
         sendResponse(lastPromisedStream, false);
         pushPromiseEnabled = true;
         // Now we'll continue with _normal_ response.
+    }
+
+    // Create a header with an informational status code and some random header
+    // fields. The setter ensures that the value is 100 or is between 102 and 199
+    // (inclusive) if set - otherwise it is 0
+
+    if (informationalStatusCode > 0) {
+        writer.start(FrameType::HEADERS, FrameFlag::END_HEADERS, streamID);
+
+        HttpHeader informationalHeader;
+        informationalHeader.push_back({":status", QByteArray::number(informationalStatusCode)});
+        informationalHeader.push_back(HeaderField("a_random_header_field", "it_will_be_dropped"));
+        informationalHeader.push_back(HeaderField("another_random_header_field", "drop_this_too"));
+
+        HPack::BitOStream ostream(writer.outboundFrame().buffer);
+        const bool result = encoder.encodeResponse(ostream, informationalHeader);
+        Q_ASSERT(result);
+
+        writer.writeHEADERS(*socket, maxFrameSize);
     }
 
     writer.start(FrameType::HEADERS, FrameFlag::END_HEADERS, streamID);

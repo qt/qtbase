@@ -58,6 +58,8 @@ public:
     ~Http2Server();
 
 
+    // To send responses with status code 1xx
+    void setInformationalStatusCode(int code);
     // To be called before server started:
     void enablePushPromise(bool enabled, const QByteArray &path = QByteArray());
     void setResponseBody(const QByteArray &body);
@@ -210,6 +212,7 @@ private:
     int redirectCount = 0;
 
     bool sendTrailingHEADERS = false;
+    int informationalStatusCode = 0;
 protected slots:
     void ignoreErrorSlot();
 };

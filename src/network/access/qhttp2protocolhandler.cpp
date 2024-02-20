@@ -1101,6 +1101,13 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
         }
     }
 
+    // Discard all informational (1xx) replies with the exception of 101.
+    // Also see RFC 9110 (Chapter 15.2)
+    if (statusCode == 100 || (102 <= statusCode && statusCode <= 199)) {
+        httpReplyPrivate->clearHttpLayerInformation();
+        return;
+    }
+
     if (QHttpNetworkReply::isHttpRedirect(statusCode) && httpRequest.isFollowRedirects()) {
         QHttpNetworkConnectionPrivate::ParseRedirectResult result =
                 m_connection->d_func()->parseRedirectResponse(httpReply);

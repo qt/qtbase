@@ -72,6 +72,8 @@ private slots:
     void defaultQnamHttp2Configuration();
     void singleRequest_data();
     void singleRequest();
+    void informationalRequest_data();
+    void informationalRequest();
     void multipleRequests();
     void flowControlClientSide();
     void flowControlServerSide();
@@ -298,6 +300,70 @@ void tst_Http2::singleRequest()
     if (connectionType == H2Type::h2Alpn || connectionType == H2Type::h2Direct)
         QCOMPARE(encSpy.size(), 1);
 #endif // QT_CONFIG(ssl)
+}
+
+void tst_Http2::informationalRequest_data()
+{
+    QTest::addColumn<int>("statusCode");
+
+    // 'Clear text' that should always work, either via the protocol upgrade
+    // or as direct.
+    QTest::addRow("statusCode-100") << 100;
+    QTest::addRow("statusCode-125") << 125;
+    QTest::addRow("statusCode-150") << 150;
+    QTest::addRow("statusCode-175") << 175;
+}
+
+void tst_Http2::informationalRequest()
+{
+    clearHTTP2State();
+
+    serverPort = 0;
+    nRequests = 1;
+
+    ServerPtr srv(newServer(defaultServerSettings, defaultConnectionType()));
+
+    QFETCH(const int, statusCode);
+    srv->setInformationalStatusCode(statusCode);
+
+    QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    auto url = requestUrl(defaultConnectionType());
+    url.setPath("/index.html");
+
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
+
+    auto reply = manager->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+    // Since we're using self-signed certificates,
+    // ignore SSL errors:
+    reply->ignoreSslErrors();
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    QCOMPARE(nRequests, 0);
+    QVERIFY(prefaceOK);
+    QVERIFY(serverGotSettingsACK);
+
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QVERIFY(reply->isFinished());
+
+    const QVariant code(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute));
+
+    // We are discarding informational headers if the status code is in the range of
+    // 102-199 or if it is 100. As these header fields were part of  the informational
+    // header used for this test case, we should not see them at this point and the
+    // status code should be 200.
+
+    QCOMPARE(code.value<int>(), 200);
+    QVERIFY(!reply->hasRawHeader("a_random_header_field"));
+    QVERIFY(!reply->hasRawHeader("another_random_header_field"));
 }
 
 void tst_Http2::multipleRequests()
