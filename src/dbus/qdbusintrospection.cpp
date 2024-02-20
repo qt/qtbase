@@ -21,6 +21,9 @@ QT_BEGIN_NAMESPACE
     But they may prove useful if the XML data was obtained through other means (like parsing a file).
 */
 
+QDBusIntrospection::DiagnosticsReporter::~DiagnosticsReporter()
+    = default;
+
 /*!
     \class QDBusIntrospection::Argument
     \inmodule QtDBus
