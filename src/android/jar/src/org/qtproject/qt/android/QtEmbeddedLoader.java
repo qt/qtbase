@@ -48,6 +48,6 @@ class QtEmbeddedLoader extends QtLoader {
     protected void finish() {
         // Called when loading fails - clear the delegate to make sure we don't hold reference
         // to the embedding Context
-        QtEmbeddedDelegateFactory.remove((Activity)m_context.getBaseContext());
+        QtEmbeddedViewInterfaceFactory.remove((Activity)m_context.getBaseContext());
     }
 }

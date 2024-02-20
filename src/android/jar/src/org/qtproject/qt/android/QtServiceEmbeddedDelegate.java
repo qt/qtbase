@@ -102,6 +102,7 @@ class QtServiceEmbeddedDelegate implements QtEmbeddedViewInterface, QtNative.App
     {
         QtNative.setApplicationState(ApplicationSuspended);
         QtNative.unregisterAppStateListener(QtServiceEmbeddedDelegate.this);
+        QtEmbeddedViewInterfaceFactory.remove(m_service);
 
         QtNative.terminateQt();
         QtNative.setService(null);

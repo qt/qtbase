@@ -81,7 +81,7 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
                 if (m_activity == activity && m_stateDetails.isStarted) {
                     m_activity.getApplication().unregisterActivityLifecycleCallbacks(this);
                     QtNative.unregisterAppStateListener(QtEmbeddedDelegate.this);
-                    QtEmbeddedDelegateFactory.remove(m_activity);
+                    QtEmbeddedViewInterfaceFactory.remove(m_activity);
                     QtNative.terminateQt();
                     QtNative.setActivity(null);
                     QtNative.getQtThread().exit();

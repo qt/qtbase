@@ -35,7 +35,7 @@ set(java_sources
     src/org/qtproject/qt/android/QtWindow.java
     src/org/qtproject/qt/android/QtActivityDelegateBase.java
     src/org/qtproject/qt/android/QtEmbeddedDelegate.java
-    src/org/qtproject/qt/android/QtEmbeddedDelegateFactory.java
+    src/org/qtproject/qt/android/QtEmbeddedViewInterfaceFactory.java
     src/org/qtproject/qt/android/QtEmbeddedLoader.java
     src/org/qtproject/qt/android/QtView.java
     src/org/qtproject/qt/android/QtEmbeddedViewInterface.java

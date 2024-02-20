@@ -60,7 +60,7 @@ abstract class QtView extends ViewGroup {
         }
 
         QtEmbeddedLoader loader = new QtEmbeddedLoader(context);
-        m_viewInterface = QtEmbeddedDelegateFactory.create((Activity)context);
+        m_viewInterface = QtEmbeddedViewInterfaceFactory.create(context);
         loader.setMainLibraryName(appLibName);
         addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
