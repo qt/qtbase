@@ -58,9 +58,12 @@ public:
         qint64 columnNumber = 0;
     };
 
-    class DiagnosticsReporter
+    class Q_DBUS_EXPORT DiagnosticsReporter
     {
+        Q_DISABLE_COPY_MOVE(DiagnosticsReporter)
     public:
+        DiagnosticsReporter() = default;
+        virtual ~DiagnosticsReporter();
         virtual void warning(const SourceLocation &location, const char *msg, ...)
                 Q_ATTRIBUTE_FORMAT_PRINTF(3, 4) = 0;
         virtual void error(const SourceLocation &location, const char *msg, ...)
