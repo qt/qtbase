@@ -250,55 +250,38 @@ public:
             -> decltype(qTokenize(*this, std::forward<Needle>(needle), flags...))
     { return qTokenize(*this, std::forward<Needle>(needle), flags...); }
 
-    friend bool operator==(QLatin1StringView s1, QLatin1StringView s2) noexcept
-    { return QByteArrayView(s1) == QByteArrayView(s2); }
-    friend bool operator!=(QLatin1StringView s1, QLatin1StringView s2) noexcept
-    { return !(s1 == s2); }
-    friend bool operator<(QLatin1StringView s1, QLatin1StringView s2) noexcept
+    friend bool comparesEqual(const QLatin1StringView &s1, const QLatin1StringView &s2) noexcept
+    { return s1.size() == s2.size() && QtPrivate::equalStrings(s1, s2); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QLatin1StringView &s1, const QLatin1StringView &s2) noexcept
     {
-        const qsizetype len = qMin(s1.size(), s2.size());
-        const int r = len ? memcmp(s1.latin1(), s2.latin1(), len) : 0;
-        return r < 0 || (r == 0 && s1.size() < s2.size());
+        const int res = QtPrivate::compareStrings(s1, s2);
+        return Qt::compareThreeWay(res, 0);
     }
-    friend bool operator>(QLatin1StringView s1, QLatin1StringView s2) noexcept
-    { return s2 < s1; }
-    friend bool operator<=(QLatin1StringView s1, QLatin1StringView s2) noexcept
-    { return !(s1 > s2); }
-    friend bool operator>=(QLatin1StringView s1, QLatin1StringView s2) noexcept
-    { return !(s1 < s2); }
+    Q_DECLARE_STRONGLY_ORDERED(QLatin1StringView)
 
     // QChar <> QLatin1StringView
-    friend bool operator==(QChar lhs, QLatin1StringView rhs) noexcept { return rhs.size() == 1 && lhs == rhs.front(); }
-    friend bool operator< (QChar lhs, QLatin1StringView rhs) noexcept { return compare_helper(&lhs, 1, rhs) < 0; }
-    friend bool operator> (QChar lhs, QLatin1StringView rhs) noexcept { return compare_helper(&lhs, 1, rhs) > 0; }
-    friend bool operator!=(QChar lhs, QLatin1StringView rhs) noexcept { return !(lhs == rhs); }
-    friend bool operator<=(QChar lhs, QLatin1StringView rhs) noexcept { return !(lhs >  rhs); }
-    friend bool operator>=(QChar lhs, QLatin1StringView rhs) noexcept { return !(lhs <  rhs); }
-
-    friend bool operator==(QLatin1StringView lhs, QChar rhs) noexcept { return   rhs == lhs; }
-    friend bool operator!=(QLatin1StringView lhs, QChar rhs) noexcept { return !(rhs == lhs); }
-    friend bool operator< (QLatin1StringView lhs, QChar rhs) noexcept { return   rhs >  lhs; }
-    friend bool operator> (QLatin1StringView lhs, QChar rhs) noexcept { return   rhs <  lhs; }
-    friend bool operator<=(QLatin1StringView lhs, QChar rhs) noexcept { return !(rhs <  lhs); }
-    friend bool operator>=(QLatin1StringView lhs, QChar rhs) noexcept { return !(rhs >  lhs); }
+    friend bool comparesEqual(const QLatin1StringView &lhs, QChar rhs) noexcept
+    { return lhs.size() == 1 && rhs == lhs.front(); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QLatin1StringView &lhs, QChar rhs) noexcept
+    {
+        // negate, as the helper function expects QChar as lhs
+        const int res = -compare_helper(&rhs, 1, lhs);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QLatin1StringView, QChar)
 
     // QStringView <> QLatin1StringView
-    friend bool operator==(QStringView lhs, QLatin1StringView rhs) noexcept
+    friend bool comparesEqual(const QLatin1StringView &lhs, const QStringView &rhs) noexcept
     { return lhs.size() == rhs.size() && QtPrivate::equalStrings(lhs, rhs); }
-    friend bool operator!=(QStringView lhs, QLatin1StringView rhs) noexcept { return !(lhs == rhs); }
-    friend bool operator< (QStringView lhs, QLatin1StringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) <  0; }
-    friend bool operator<=(QStringView lhs, QLatin1StringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) <= 0; }
-    friend bool operator> (QStringView lhs, QLatin1StringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >  0; }
-    friend bool operator>=(QStringView lhs, QLatin1StringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >= 0; }
-
-    friend bool operator==(QLatin1StringView lhs, QStringView rhs) noexcept
-    { return lhs.size() == rhs.size() && QtPrivate::equalStrings(lhs, rhs); }
-    friend bool operator!=(QLatin1StringView lhs, QStringView rhs) noexcept { return !(lhs == rhs); }
-    friend bool operator< (QLatin1StringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) <  0; }
-    friend bool operator<=(QLatin1StringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) <= 0; }
-    friend bool operator> (QLatin1StringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >  0; }
-    friend bool operator>=(QLatin1StringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >= 0; }
-
+    friend Qt::strong_ordering
+    compareThreeWay(const QLatin1StringView &lhs, const QStringView &rhs) noexcept
+    {
+        const int res = QtPrivate::compareStrings(lhs, rhs);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QLatin1StringView, QStringView)
 
 private:
     friend bool comparesEqual(const QLatin1StringView &lhs, const QByteArrayView &rhs) noexcept
