@@ -67,6 +67,18 @@ public:
                 Q_ATTRIBUTE_FORMAT_PRINTF(3, 4) = 0;
     };
 
+    struct Annotation
+    {
+        SourceLocation location;
+        QString name;
+        QString value;
+
+        inline bool operator==(const Annotation &other) const
+        {
+            return name == other.name && value == other.value;
+        }
+    };
+
     struct Argument
     {
         SourceLocation location;
@@ -114,18 +126,6 @@ public:
         inline bool operator==(const Property& other) const
         { return access == other.access && name == other.name &&
                 annotations == other.annotations && type == other.type; }
-    };
-
-    struct Annotation
-    {
-        SourceLocation location;
-        QString name;
-        QString value;
-
-        inline bool operator==(const Annotation &other) const
-        {
-            return name == other.name && value == other.value;
-        }
     };
 
     struct Interface: public QSharedData
