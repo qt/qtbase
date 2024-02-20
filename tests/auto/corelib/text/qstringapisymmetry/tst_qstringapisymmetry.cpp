@@ -70,8 +70,6 @@ MAKE_ALL(QChar, QByteArray)
 MAKE_ALL(QChar, const char*)
 MAKE_ALL(QChar, QUtf8StringView)
 
-MAKE_ALL(QString, QUtf8StringView)
-
 MAKE_ALL(QUtf8StringView, QChar)
 MAKE_ALL(QUtf8StringView, char16_t)
 

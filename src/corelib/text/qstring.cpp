@@ -1703,7 +1703,8 @@ void qtWarnAboutInvalidRegularExpression(const QString &pattern, const char *whe
     \ingroup string-processing
 
     \compares strong
-    \compareswith strong QChar QLatin1StringView {const char16_t *}
+    \compareswith strong QChar QLatin1StringView {const char16_t *} \
+                  QStringView QUtf8StringView
     \endcompareswith
     \compareswith strong QByteArray QByteArrayView {const char *}
     When comparing with byte arrays, their content is interpreted as utf-8.

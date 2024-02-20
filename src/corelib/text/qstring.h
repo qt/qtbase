@@ -767,6 +767,25 @@ public:
     { return compareThreeWay(QStringView(s1), QStringView(s2)); }
     Q_DECLARE_STRONGLY_ORDERED(QString)
 
+    Q_WEAK_OVERLOAD
+    friend bool comparesEqual(const QString &s1, QUtf8StringView s2) noexcept
+    { return QtPrivate::equalStrings(s1, s2); }
+    Q_WEAK_OVERLOAD
+    friend Qt::strong_ordering compareThreeWay(const QString &s1, QUtf8StringView s2) noexcept
+    {
+        const int res = QtPrivate::compareStrings(s1, s2, Qt::CaseSensitive);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QString, QUtf8StringView, Q_WEAK_OVERLOAD)
+
+#ifdef __cpp_char8_t
+    friend bool comparesEqual(const QString &s1, const char8_t *s2) noexcept
+    { return comparesEqual(s1, QUtf8StringView(s2)); }
+    friend Qt::strong_ordering compareThreeWay(const QString &s1, const char8_t *s2) noexcept
+    { return compareThreeWay(s1, QUtf8StringView(s2)); }
+    Q_DECLARE_STRONGLY_ORDERED(QString, const char8_t *)
+#endif // __cpp_char8_t
+
     friend bool comparesEqual(const QString &s1, QLatin1StringView s2) noexcept
     { return (s1.size() == s2.size()) && QtPrivate::equalStrings(s1, s2); }
     friend Qt::strong_ordering
