@@ -15,6 +15,9 @@
 
 QT_BEGIN_NAMESPACE
 
+constexpr quint32 QDataStream::NullCode;
+constexpr quint32 QDataStream::ExtendedSize;
+
 /*!
     \class QDataStream
     \inmodule QtCore

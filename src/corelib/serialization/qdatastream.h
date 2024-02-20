@@ -215,7 +215,8 @@ private:
     qint64 readBlock(char *data, qint64 len);
     static inline qint64 readQSizeType(QDataStream &s);
     static inline bool writeQSizeType(QDataStream &s, qint64 value);
-    enum class QDataStreamSizes : quint32 { NullCode = 0xffffffffu, ExtendedSize = 0xfffffffeu };
+    static constexpr quint32 NullCode = 0xffffffffu;
+    static constexpr quint32 ExtendedSize = 0xfffffffeu;
 
     friend class QtPrivate::StreamStateSaver;
     Q_CORE_EXPORT friend QDataStream &operator<<(QDataStream &out, const QString &str);
@@ -421,9 +422,9 @@ qint64 QDataStream::readQSizeType(QDataStream &s)
 {
     quint32 first;
     s >> first;
-    if (first == quint32(QDataStreamSizes::NullCode))
+    if (first == NullCode)
         return -1;
-    if (first < quint32(QDataStreamSizes::ExtendedSize) || s.version() < QDataStream::Qt_6_7)
+    if (first < ExtendedSize || s.version() < QDataStream::Qt_6_7)
         return qint64(first);
     qint64 extendedLen;
     s >> extendedLen;
@@ -432,12 +433,12 @@ qint64 QDataStream::readQSizeType(QDataStream &s)
 
 bool QDataStream::writeQSizeType(QDataStream &s, qint64 value)
 {
-    if (value < qint64(QDataStreamSizes::ExtendedSize)) {
+    if (value < qint64(ExtendedSize)) {
         s << quint32(value);
     } else if (s.version() >= QDataStream::Qt_6_7) {
-        s << quint32(QDataStreamSizes::ExtendedSize) << value;
-    } else if (value == qint64(QDataStreamSizes::ExtendedSize)) {
-        s << quint32(QDataStreamSizes::ExtendedSize);
+        s << ExtendedSize << value;
+    } else if (value == qint64(ExtendedSize)) {
+        s << ExtendedSize;
     } else {
         s.setStatus(QDataStream::SizeLimitExceeded); // value is too big for old format
         return false;
