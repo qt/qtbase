@@ -2172,13 +2172,14 @@ QWidgetList expectedFocusChain(const QList<QComboBox *> &boxes, const QList<int>
 
 QWidgetList realFocusChain(const QList<QComboBox *> &boxes, const QList<int> &sequence)
 {
-    QWidgetList widgets = getFocusChain(boxes.at(sequence.at(0)), true);
+    const QWidgetList all = getFocusChain(boxes.at(sequence.at(0)), true);
+    QWidgetList chain;
     // Filter everything with NoFocus
-    for (auto *widget : widgets) {
-        if (widget->focusPolicy() == Qt::NoFocus)
-            widgets.removeOne(widget);
+    for (auto *widget : all) {
+        if (widget->focusPolicy() != Qt::NoFocus)
+            chain << widget;
     }
-    return widgets;
+    return chain;
 }
 
 void setTabOrder(const QList<QComboBox *> &boxes, const QList<int> &sequence)
