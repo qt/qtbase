@@ -16,6 +16,8 @@
 
 #include <string.h>         // for memchr
 
+#include <QtCore/q20type_traits.h>      // q20::is_constant_evaluated
+
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
@@ -169,7 +171,7 @@ lengthHelperContainer(const Char (&str)[N])
         return str[0] == Char(0) ? 0 : 1;
     } else if constexpr (N > RuntimeThreshold) {
 #ifdef QT_SUPPORTS_IS_CONSTANT_EVALUATED
-        if (!qIsConstantEvaluated())
+        if (!q20::is_constant_evaluated())
             return QtPrivate::qustrnlen(reinterpret_cast<const char16_t *>(str), N);
 #endif
     }
@@ -181,7 +183,7 @@ template <typename Char, size_t N> [[nodiscard]] constexpr inline
 std::enable_if_t<sizeof(Char) == 1, qsizetype> lengthHelperContainer(const Char (&str)[N])
 {
 #ifdef QT_SUPPORTS_IS_CONSTANT_EVALUATED
-    if (!qIsConstantEvaluated())
+    if (!q20::is_constant_evaluated())
         return qstrnlen(reinterpret_cast<const char *>(str), N);
 #endif
 

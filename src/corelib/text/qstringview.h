@@ -104,10 +104,8 @@ private:
     template <typename Char>
     static constexpr qsizetype lengthHelperPointer(const Char *str) noexcept
     {
-#if defined(QT_SUPPORTS_IS_CONSTANT_EVALUATED)
-        if (qIsConstantEvaluated())
+        if (q20::is_constant_evaluated())
             return std::char_traits<Char>::length(str);
-#endif
         return QtPrivate::qustrlen(reinterpret_cast<const char16_t *>(str));
     }
     static qsizetype lengthHelperPointer(const QChar *str) noexcept
