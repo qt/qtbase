@@ -38,6 +38,14 @@ QFileSystemIterator::~QFileSystemIterator() = default;
 
 bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData)
 {
+    auto asFileEntry = [this](QStringView name) {
+#ifdef Q_OS_DARWIN
+        // must match QFile::decodeName
+        QString normalized = name.toString().normalized(QString::NormalizationForm_C);
+        name = normalized;
+#endif
+        return QFileSystemEntry(dirPath + name, QFileSystemEntry::FromInternalPath());
+    };
     if (!dir)
         return false;
 
@@ -62,7 +70,7 @@ bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaDa
             auto *end = toUtf16.appendToBuffer(buffer.data(), name);
             buffer.resize(end - buffer.constData());
             if (!toUtf16.hasError()) {
-                fileEntry = {dirPath + QStringView(buffer), QFileSystemEntry::FromInternalPath()};
+                fileEntry = asFileEntry(buffer);
                 metaData.fillFromDirEnt(*dirEntry);
                 return true;
             } else {
