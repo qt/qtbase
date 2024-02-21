@@ -927,6 +927,11 @@ macro(qt_internal_compute_features_from_possible_inputs)
     qt_internal_compute_feature_value_from_possible_input(no_prefix)
 endmacro()
 
+# Builds either a string of source code or a whole project to determine whether the build is
+# successful.
+#
+# Sets a TEST_${name}_OUTPUT variable with the build output, to the scope of the calling function.
+# Sets a TEST_${name} cache variable to either TRUE or FALSE if the build is successful or not.
 function(qt_config_compile_test name)
     if(DEFINED "TEST_${name}")
         return()
@@ -1049,8 +1054,11 @@ function(qt_config_compile_test name)
             get_filename_component(arg_PROJECT_PATH "${arg_PROJECT_PATH}" REALPATH)
         endif()
 
-        try_compile(HAVE_${name} "${CMAKE_BINARY_DIR}/config.tests/${name}" "${arg_PROJECT_PATH}"
-                    "${name}" CMAKE_FLAGS ${flags} ${arg_CMAKE_FLAGS})
+        try_compile(
+            HAVE_${name} "${CMAKE_BINARY_DIR}/config.tests/${name}" "${arg_PROJECT_PATH}" "${name}"
+            CMAKE_FLAGS ${flags} ${arg_CMAKE_FLAGS}
+            OUTPUT_VARIABLE try_compile_output
+        )
 
         if(${HAVE_${name}})
             set(status_label "Success")
@@ -1116,7 +1124,19 @@ function(qt_config_compile_test name)
 
             set(_save_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}")
             set(CMAKE_REQUIRED_LIBRARIES "${arg_LIBRARIES}")
-            check_cxx_source_compiles("${arg_UNPARSED_ARGUMENTS} ${arg_CODE}" HAVE_${name})
+
+            # OUTPUT_VARIABLE is an internal undocumented variable of check_cxx_source_compiles
+            # since 3.23. Allow an opt out in case this breaks in the future.
+            set(try_compile_output "")
+            set(output_var "")
+            if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.23"
+                    AND NOT QT_INTERNAL_NO_TRY_COMPILE_OUTPUT_VARIABLE)
+                set(output_var OUTPUT_VARIABLE try_compile_output)
+            endif()
+
+            check_cxx_source_compiles(
+                "${arg_UNPARSED_ARGUMENTS} ${arg_CODE}" HAVE_${name} ${output_var}
+            )
             set(CMAKE_REQUIRED_LIBRARIES "${_save_CMAKE_REQUIRED_LIBRARIES}")
 
             set(CMAKE_C_STANDARD "${_save_CMAKE_C_STANDARD}")
@@ -1128,6 +1148,7 @@ function(qt_config_compile_test name)
         endif()
     endif()
 
+    set(TEST_${name}_OUTPUT "${try_compile_output}" PARENT_SCOPE)
     set(TEST_${name} "${HAVE_${name}}" CACHE INTERNAL "${arg_LABEL}")
 endfunction()
 
