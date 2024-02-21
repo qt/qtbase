@@ -111,6 +111,8 @@ class QOperatingSystemVersionUnexported : public QOperatingSystemVersionBase
 {
 public:
     using QOperatingSystemVersionBase::QOperatingSystemVersionBase;
+    constexpr QOperatingSystemVersionUnexported(QOperatingSystemVersionBase other) noexcept
+        : QOperatingSystemVersionBase(other) {}
 #else
 class QOperatingSystemVersion : public QOperatingSystemVersionBase
 {
@@ -224,7 +226,7 @@ public:
     static constexpr QOperatingSystemVersionBase MacOSVentura { QOperatingSystemVersionBase::MacOS, 13, 0 };
 
     constexpr QOperatingSystemVersion(const QOperatingSystemVersionBase &osversion)
-        : QOperatingSystemVersionUnexported(static_cast<const QOperatingSystemVersionUnexported &>(osversion)) {}
+        : QOperatingSystemVersionUnexported(osversion) {}
 
     constexpr QOperatingSystemVersion(OSType osType, int vmajor, int vminor = -1, int vmicro = -1)
         : QOperatingSystemVersionUnexported(QOperatingSystemVersionBase::OSType(osType), vmajor, vminor,
