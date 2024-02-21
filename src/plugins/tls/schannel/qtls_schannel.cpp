@@ -720,8 +720,10 @@ bool TlsCryptographSchannel::sendToken(void *token, unsigned long tokenLength, b
     Q_ASSERT(d);
     auto *plainSocket = d->plainTcpSocket();
     Q_ASSERT(plainSocket);
-    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid())
+    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid()
+        || !plainSocket->isOpen()) {
         return false;
+    }
 
     const qint64 written = plainSocket->write(static_cast<const char *>(token), tokenLength);
     if (written != qint64(tokenLength)) {
@@ -1078,7 +1080,8 @@ bool TlsCryptographSchannel::performHandshake()
     auto *plainSocket = d->plainTcpSocket();
     Q_ASSERT(plainSocket);
 
-    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid()) {
+    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid()
+        || !plainSocket->isOpen()) {
         setErrorAndEmit(d, QAbstractSocket::RemoteHostClosedError,
                         QSslSocket::tr("The TLS/SSL connection has been closed"));
         return false;
@@ -1448,8 +1451,10 @@ void TlsCryptographSchannel::transmit()
         return; // This function should not have been called
 
     // Can happen if called through QSslSocket::abort->QSslSocket::close->QSslSocket::flush->here
-    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid())
+    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid()
+        || !plainSocket->isOpen()) {
         return;
+    }
 
     if (schannelState != SchannelState::Done) {
         continueHandshake();
