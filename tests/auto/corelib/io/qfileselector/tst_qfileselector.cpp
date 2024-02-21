@@ -60,7 +60,7 @@ void tst_QFileSelector::basicTest_data()
     QString expectedPlatform1File(":/platforms");
     QString expectedPlatform2File(""); //Only the last selector
     QString expectedPlatform3File; // Only the first selector (the family)
-#if defined(Q_OS_UNIX) && !defined(Q_OS_ANDROID) && \
+#if defined(Q_OS_UNIX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_WASM) && \
     !defined(Q_OS_DARWIN) && !defined(Q_OS_LINUX) && !defined(Q_OS_HAIKU) && !defined(Q_OS_QNX)
     /* We are only aware of specific unixes, and do not have test files for any of the others.
        However those unixes can get a selector added from the result of a uname call, so this will
