@@ -800,7 +800,6 @@ void QWidgetRepaintManager::paintAndFlush()
     QTLWExtra *tlwExtra = tlw->d_func()->topData();
     tlwExtra->widgetTextures.clear();
     findAllTextureWidgetsRecursively(tlw, tlw);
-    qt_window_private(tlw->windowHandle())->compositing = false; // will get updated in flush()
 
     if (toClean.isEmpty()) {
         // Nothing to repaint. However renderToTexture widgets are handled
@@ -1070,7 +1069,6 @@ void QWidgetRepaintManager::flush(QWidget *widget, const QRegion &region, QPlatf
         if (!widgetTextures)
             widgetTextures = qt_dummy_platformTextureList;
 
-        qt_window_private(tlw->windowHandle())->compositing = true;
         QWidgetPrivate *widgetWindowPrivate = widget->window()->d_func();
         widgetWindowPrivate->sendComposeStatus(widget->window(), false);
         // A window may have alpha even when the app did not request
