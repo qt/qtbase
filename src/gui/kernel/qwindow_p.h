@@ -145,7 +145,6 @@ public:
     bool hasCursor = false;
 #endif
 
-    bool compositing = false;
     QElapsedTimer lastComposeTime;
 
 #if QT_CONFIG(vulkan)
