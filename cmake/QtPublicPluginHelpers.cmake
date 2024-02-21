@@ -187,7 +187,7 @@ function(__qt_internal_get_plugin_import_macro plugin_target out_var)
         set(class_name "${class_name_prefixed}")
     endif()
 
-    set(${out_var} "Q_IMPORT_PLUGIN(${class_name})" PARENT_SCOPE)
+    set(${out_var} "Q_IMPORT_PLUGIN(${class_name})\n" PARENT_SCOPE)
 endfunction()
 
 function(__qt_internal_get_plugin_include_prelude out_var)
