@@ -339,9 +339,9 @@ void QWidgetRepaintManager::sendUpdateRequest(QWidget *widget, UpdateTime update
     // compositing and waiting for vsync each and every time. Change to
     // UpdateLater, except for approx. once per frame to prevent starvation in
     // case the control does not get back to the event loop.
-    QWidget *w = widget->window();
-    if (updateTime == UpdateNow && w && w->windowHandle() && QWindowPrivate::get(w->windowHandle())->compositing) {
+    if (updateTime == UpdateNow && QWidgetPrivate::get(widget)->textureChildSeen) {
         int refresh = 60;
+        QWidget *w = widget->window();
         QScreen *ws = w->windowHandle()->screen();
         if (ws)
             refresh = ws->refreshRate();
@@ -350,7 +350,7 @@ void QWidgetRepaintManager::sendUpdateRequest(QWidget *widget, UpdateTime update
             const qint64 elapsed = wd->lastComposeTime.elapsed();
             if (elapsed <= qint64(1000.0f / refresh))
                 updateTime = UpdateLater;
-       }
+        }
     }
 
     switch (updateTime) {
