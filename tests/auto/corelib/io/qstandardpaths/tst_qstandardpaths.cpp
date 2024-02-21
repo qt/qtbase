@@ -430,7 +430,7 @@ void tst_qstandardpaths::testAppConfigLocation()
 #endif
 }
 
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN) && !defined(Q_OS_WASM)
 // Find "sh" on Unix.
 // It may exist twice, in /bin/sh and /usr/bin/sh, in that case use the PATH order.
 static inline QFileInfo findSh()
@@ -484,6 +484,7 @@ void tst_qstandardpaths::testFindExecutable_data()
             << QString() << logo << logoPath;
     }
 #else
+# ifndef Q_OS_WASM
     const QFileInfo shFi = findSh();
     Q_ASSERT(shFi.exists());
     const QString shPath = shFi.absoluteFilePath();
@@ -493,6 +494,7 @@ void tst_qstandardpaths::testFindExecutable_data()
         << QString() << shPath << shPath;
     QTest::newRow("unix-sh-relativepath")
         << QString(shFi.absolutePath()) << QString::fromLatin1("./sh") << shPath;
+#endif /* !WASM */
 #endif
     QTest::newRow("idontexist")
         << QString() << QString::fromLatin1("idontexist") << QString();
@@ -524,6 +526,9 @@ void tst_qstandardpaths::testFindExecutable()
 
 void tst_qstandardpaths::testFindExecutableLinkToDirectory()
 {
+#ifdef Q_OS_WASM
+    QSKIP("No applicationdir on wasm");
+#else
     // link to directory
     const QString target = QDir::tempPath() + QDir::separator() + QLatin1String("link.lnk");
     QFile::remove(target);
@@ -531,6 +536,7 @@ void tst_qstandardpaths::testFindExecutableLinkToDirectory()
     QVERIFY(appFile.link(target));
     QVERIFY(QStandardPaths::findExecutable(target).isEmpty());
     QFile::remove(target);
+#endif
 }
 
 using RuntimeDirSetup = std::optional<QString> (*)(QDir &);
