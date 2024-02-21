@@ -2574,8 +2574,20 @@ public:
     explicit ShowCloseShowWidget(bool showAgain, QWidget *parent = nullptr)
         : QWidget(parent), showAgain(showAgain)
     {
-        QTimer::singleShot(0, this, &ShowCloseShowWidget::doClose);
         QTimer::singleShot(500, this, [] () { QCoreApplication::exit(1); });
+    }
+
+    bool shown = false;
+
+protected:
+    void showEvent(QShowEvent *) override
+    {
+        QTimer::singleShot(0, this, &ShowCloseShowWidget::doClose);
+        shown = true;
+    }
+    void hideEvent(QHideEvent *) override
+    {
+        shown = false;
     }
 
 private slots:
@@ -2596,11 +2608,13 @@ void tst_QApplication::abortQuitOnShow()
     ShowCloseShowWidget window1(false);
     window1.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     window1.show();
+    QVERIFY(QTest::qWaitFor([&window1](){ return window1.shown; }));
     QCOMPARE(QCoreApplication::exec(), 0);
 
     ShowCloseShowWidget window2(true);
     window2.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     window2.show();
+    QVERIFY(QTest::qWaitFor([&window2](){ return window2.shown; }));
     QCOMPARE(QCoreApplication::exec(), 1);
 }
 
