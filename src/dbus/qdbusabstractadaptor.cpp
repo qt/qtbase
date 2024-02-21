@@ -8,7 +8,6 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qset.h>
-#include <QtCore/qtimer.h>
 #include <QtCore/qthread.h>
 
 #include "qdbusconnection.h"

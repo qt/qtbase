@@ -16,7 +16,6 @@
 //
 
 #include <qpa/qplatformscreen.h>
-#include <QtCore/QTimer>
 #include <QtCore/QSize>
 #include "qfbcursor_p.h"
 

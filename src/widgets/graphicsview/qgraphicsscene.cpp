@@ -186,7 +186,6 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qset.h>
 #include <QtCore/qstack.h>
-#include <QtCore/qtimer.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/QMetaMethod>
 #include <QtWidgets/qapplication.h>

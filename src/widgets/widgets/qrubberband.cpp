@@ -5,7 +5,6 @@
 #include "qevent.h"
 #include "qstylepainter.h"
 #include "qrubberband.h"
-#include "qtimer.h"
 
 #include "qstyle.h"
 #include "qstyleoption.h"

@@ -4,7 +4,6 @@
 #include <qinputmethod.h>
 #include <private/qinputmethod_p.h>
 #include <qguiapplication.h>
-#include <qtimer.h>
 #include <qpa/qplatforminputcontext_p.h>
 
 #include <QDebug>

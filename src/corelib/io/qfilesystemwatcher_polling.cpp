@@ -5,7 +5,6 @@
 
 #include <QtCore/qlatin1stringview.h>
 #include <QtCore/qscopeguard.h>
-#include <QtCore/qtimer.h>
 
 #include <chrono>
 

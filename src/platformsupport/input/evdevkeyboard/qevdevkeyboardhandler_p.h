@@ -16,7 +16,6 @@
 //
 
 #include <qobject.h>
-#include <QTimer>
 #include <QDataStream>
 #include <private/qglobal_p.h>
 

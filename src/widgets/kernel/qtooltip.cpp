@@ -9,7 +9,6 @@
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qstylepainter.h>
-#include <qtimer.h>
 #if QT_CONFIG(effects)
 #include <private/qeffects_p.h>
 #endif
@@ -23,6 +22,8 @@
 #include <QtWidgets/private/qlabel_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
 #include <qtooltip.h>
+
+#include <QtCore/qbasictimer.h>
 
 QT_BEGIN_NAMESPACE
 

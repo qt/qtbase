@@ -37,7 +37,6 @@
 #include <qvarlengtharray.h>
 #include <qstack.h>
 #include <qmap.h>
-#include <qtimer.h>
 #include <qpointer.h>
 
 #ifndef QT_NO_DEBUG_STREAM

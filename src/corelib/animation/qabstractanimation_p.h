@@ -17,7 +17,6 @@
 
 #include <QtCore/qbasictimer.h>
 #include <QtCore/qdatetime.h>
-#include <QtCore/qtimer.h>
 #include <QtCore/qelapsedtimer.h>
 #include <private/qobject_p.h>
 #include <private/qproperty_p.h>

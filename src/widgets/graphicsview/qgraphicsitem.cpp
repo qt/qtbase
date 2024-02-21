@@ -764,7 +764,6 @@
 #include <QtCore/qbitarray.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qstack.h>
-#include <QtCore/qtimer.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qnumeric.h>

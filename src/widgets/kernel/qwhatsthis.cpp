@@ -10,7 +10,6 @@
 #include "qpixmap.h"
 #include "qscreen.h"
 #include "qpainter.h"
-#include "qtimer.h"
 #if QT_CONFIG(action)
 #include "qaction.h"
 #endif // QT_CONFIG(action)

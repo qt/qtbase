@@ -7,6 +7,7 @@
 #include <QAnimationGroup>
 #include <QSequentialAnimationGroup>
 #include <QtCore/qpropertyanimation.h>
+#include <QtCore/qtimer.h>
 #include <QtCore/qvariantanimation.h>
 #include <private/qabstractanimation_p.h>
 #include <QtGui/qpointingdevice.h>

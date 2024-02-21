@@ -14,7 +14,6 @@
 #if QT_CONFIG(menu)
 #include "qmenu.h"
 #endif
-#include "qtimer.h"
 #include "qsystemtrayicon_p.h"
 #include "qpaintengine.h"
 #include <qwindow.h>

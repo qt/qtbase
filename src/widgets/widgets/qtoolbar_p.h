@@ -26,7 +26,6 @@ QT_REQUIRE_CONFIG(toolbar);
 QT_BEGIN_NAMESPACE
 
 class QToolBarLayout;
-class QTimer;
 
 class QToolBarPrivate : public QWidgetPrivate
 {

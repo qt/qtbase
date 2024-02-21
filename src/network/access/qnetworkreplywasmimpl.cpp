@@ -4,7 +4,6 @@
 #include "qnetworkreplywasmimpl_p.h"
 #include "qnetworkrequest.h"
 
-#include <QtCore/qtimer.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qfileinfo.h>

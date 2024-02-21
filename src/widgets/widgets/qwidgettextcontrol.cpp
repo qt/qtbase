@@ -15,7 +15,6 @@
 #endif
 #include <qclipboard.h>
 #include <qstyle.h>
-#include <qtimer.h>
 #include "private/qapplication_p.h"
 #include "private/qtextdocumentlayout_p.h"
 #include "private/qabstracttextdocumentlayout_p.h"

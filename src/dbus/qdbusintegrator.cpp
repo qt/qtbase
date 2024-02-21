@@ -11,7 +11,6 @@
 #include <qobject.h>
 #include <qsocketnotifier.h>
 #include <qstringlist.h>
-#include <qtimer.h>
 #include <qthread.h>
 #include <private/qlocking_p.h>
 #include <QtCore/qset.h>

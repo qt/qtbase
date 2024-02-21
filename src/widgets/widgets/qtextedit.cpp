@@ -21,7 +21,6 @@
 #include <qmenu.h>
 #endif
 #include <qstyle.h>
-#include <qtimer.h>
 #if QT_CONFIG(accessibility)
 #include <qaccessible.h>
 #endif

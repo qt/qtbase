@@ -25,7 +25,6 @@
 #include <qstyleoption.h>
 #include <qtoolbutton.h>
 #include <qwidgetaction.h>
-#include <qtimer.h>
 #include <private/qwidgetaction_p.h>
 #include <private/qmainwindowlayout_p.h>
 #include <private/qhighdpiscaling_p.h>

@@ -19,7 +19,6 @@
 #include "qvarlengtharray.h"
 #include "private/qlayoutengine_p.h"
 #include "private/qsplitter_p.h"
-#include "qtimer.h"
 #include "qdebug.h"
 
 #include <ctype.h>

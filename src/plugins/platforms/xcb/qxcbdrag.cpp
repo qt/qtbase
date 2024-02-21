@@ -17,7 +17,6 @@
 #include <qguiapplication.h>
 #include <qrect.h>
 #include <qpainter.h>
-#include <qtimer.h>
 
 #include <qpa/qwindowsysteminterface.h>
 

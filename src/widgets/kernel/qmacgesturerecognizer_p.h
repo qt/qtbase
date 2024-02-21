@@ -16,9 +16,10 @@
 //
 
 #include <QtWidgets/private/qtwidgetsglobal_p.h>
-#include "qtimer.h"
 #include "qpoint.h"
 #include "qgesturerecognizer.h"
+#include <QtCore/qbasictimer.h>
+#include <QtCore/qobject.h>
 #include <QtCore/qpointer.h>
 
 #ifndef QT_NO_GESTURES
@@ -47,6 +48,7 @@ public:
 
 class QMacPanGestureRecognizer : public QObject, public QGestureRecognizer
 {
+    Q_OBJECT
 public:
     QMacPanGestureRecognizer();
 

@@ -33,7 +33,6 @@
 #include <QtGui/private/qcoregraphics_p.h>
 #elif QT_CONFIG(style_windowsvista)
 #include "qwizard_win_p.h"
-#include "qtimer.h"
 #endif
 
 #include "private/qdialog_p.h"

@@ -14,7 +14,6 @@
 #include <qbytearray.h>
 #include <qdeadlinetimer.h>
 #include <qcoreapplication.h>
-#include <qtimer.h>
 
 #if __has_include(<paths.h>)
 #include <paths.h>
