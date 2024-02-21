@@ -1445,7 +1445,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
         attDesc.storeOp = storeOp;
         attDesc.stencilLoadOp = loadOp;
         attDesc.stencilStoreOp = storeOp;
-        attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attDesc.initialLayout = preserveDs ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED;
         attDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         rpD->attDescs.append(attDesc);
     }
