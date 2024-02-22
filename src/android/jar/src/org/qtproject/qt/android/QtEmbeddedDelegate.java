@@ -28,6 +28,7 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
     private QtView m_view;
     private long m_rootWindowRef = 0L;
     private QtNative.ApplicationStateDetails m_stateDetails;
+    private boolean m_windowLoaded = false;
 
     private static native void createRootWindow(View rootView);
     static native void deleteWindow(long windowReference);
@@ -91,16 +92,18 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
 
     @Override
     public void onAppStateDetailsChanged(QtNative.ApplicationStateDetails details) {
-        m_stateDetails = details;
-        if (m_stateDetails.nativePluginIntegrationReady) {
-            QtNative.runAction(() -> {
-                DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
-                QtDisplayManager.setApplicationDisplayMetrics(m_activity,
-                                                              metrics.widthPixels,
-                                                              metrics.heightPixels);
-              if (m_view != null)
-                  createRootWindow(m_view);
-            });
+        synchronized (this) {
+            m_stateDetails = details;
+            if (m_stateDetails.nativePluginIntegrationReady) {
+                QtNative.runAction(() -> {
+                    DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+                    QtDisplayManager.setApplicationDisplayMetrics(m_activity,
+                                                                  metrics.widthPixels,
+                                                                  metrics.heightPixels);
+
+                });
+                createRootWindow();
+            }
         }
     }
 
@@ -130,8 +133,9 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
 
     public void queueLoadWindow()
     {
-        if (m_stateDetails.nativePluginIntegrationReady)  {
-            createRootWindow(m_view);
+        synchronized (this) {
+            if (m_stateDetails.nativePluginIntegrationReady)
+                createRootWindow();
         }
     }
 
@@ -149,5 +153,12 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
         if (m_rootWindowRef != 0L)
             deleteWindow(m_rootWindowRef);
         m_rootWindowRef = 0L;
+    }
+
+    private void createRootWindow() {
+        if (m_view != null && !m_windowLoaded) {
+            createRootWindow(m_view);
+            m_windowLoaded = true;
+        }
     }
 }
