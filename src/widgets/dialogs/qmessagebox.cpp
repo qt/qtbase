@@ -1463,6 +1463,8 @@ void QMessageBox::setTextFormat(Qt::TextFormat format)
     d->label->setTextFormat(format);
     d->label->setWordWrap(format == Qt::RichText
                     || (format == Qt::AutoText && Qt::mightBeRichText(d->label->text())));
+    if (d->informativeLabel)
+        d->informativeLabel->setTextFormat(format);
     d->updateSize();
 }
 
@@ -2668,9 +2670,14 @@ void QMessageBox::setDetailedText(const QString &text)
   information to the user, for example describing the consequences of
   the situation, or suggestion alternative solutions.
 
+  The text will be interpreted either as a plain text or as rich text,
+  depending on the text format setting (\l QMessageBox::textFormat).
+  The default setting is Qt::AutoText, i.e., the message box will try
+  to auto-detect the format of the text.
+
   By default, this property contains an empty string.
 
-  \sa QMessageBox::text, QMessageBox::detailedText
+  \sa textFormat, QMessageBox::text, QMessageBox::detailedText
 */
 QString QMessageBox::informativeText() const
 {
@@ -2694,12 +2701,12 @@ void QMessageBox::setInformativeText(const QString &text)
             label->setTextInteractionFlags(Qt::TextInteractionFlags(style()->styleHint(QStyle::SH_MessageBox_TextInteractionFlags, nullptr, this)));
             label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
             label->setOpenExternalLinks(true);
-            label->setWordWrap(true);
 #ifdef Q_OS_MAC
             // apply a smaller font the information label on the mac
             label->setFont(qt_app_fonts_hash()->value("QTipLabel"));
 #endif
             label->setWordWrap(true);
+            label->setTextFormat(d->label->textFormat());
             d->informativeLabel = label;
         }
         d->informativeLabel->setText(text);
