@@ -34,6 +34,8 @@
 #include <type_traits>
 #include <limits>
 
+class tst_QHttp2Connection;
+
 QT_BEGIN_NAMESPACE
 
 template <typename T, typename Err>
@@ -108,8 +110,11 @@ public:
     State state() const noexcept { return m_state; }
     bool isActive() const noexcept { return m_state != State::Closed && m_state != State::Idle; }
     bool isPromisedStream() const noexcept { return m_isReserved; }
-    bool wasReset() const noexcept { return m_RST_STREAM_code.has_value(); }
-    quint32 RST_STREAM_code() const noexcept { return m_RST_STREAM_code.value_or(0); }
+    bool wasReset() const noexcept { return m_RST_STREAM_received.has_value() ||
+                                     m_RST_STREAM_sent.has_value(); }
+    bool wasResetbyPeer() const noexcept { return m_RST_STREAM_received.has_value(); }
+    quint32 RST_STREAMCodeReceived() const noexcept { return m_RST_STREAM_received.value_or(0); }
+    quint32 RST_STREAMCodeSent() const noexcept { return m_RST_STREAM_sent.value_or(0); }
     // Just the list of headers, as received, may contain duplicates:
     HPack::HttpHeader receivedHeaders() const noexcept { return m_headers; }
 
@@ -125,6 +130,7 @@ Q_SIGNALS:
     void promisedStreamReceived(quint32 newStreamID);
     void uploadBlocked();
     void dataReceived(const QByteArray &data, bool endStream);
+    void rstFrameRecived(quint32 errorCode);
 
     void bytesWritten(qint64 bytesWritten);
     void uploadDeviceError(const QString &errorString);
@@ -173,12 +179,16 @@ private:
     void finishWithError(Http2::Http2Error errorCode, const QString &message);
     void finishWithError(Http2::Http2Error errorCode);
 
+    void streamError(Http2::Http2Error errorCode,
+                     QLatin1StringView message);
+
     // Keep it const since it never changes after creation
     const quint32 m_streamID = 0;
     qint32 m_recvWindow = 0;
     qint32 m_sendWindow = 0;
     bool m_endStreamAfterDATA = false;
-    std::optional<quint32> m_RST_STREAM_code;
+    std::optional<quint32> m_RST_STREAM_received;
+    std::optional<quint32> m_RST_STREAM_sent;
 
     QIODevice *m_uploadDevice = nullptr;
     QNonContiguousByteDevice *m_uploadByteDevice = nullptr;
@@ -187,6 +197,8 @@ private:
     State m_state = State::Idle;
     HPack::HttpHeader m_headers;
     bool m_isReserved = false;
+
+    friend tst_QHttp2Connection;
 };
 
 class Q_NETWORK_EXPORT QHttp2Connection : public QObject
@@ -247,6 +259,7 @@ Q_SIGNALS:
     void pingFrameRecived(QHttp2Connection::PingState state);
     void errorOccurred(Http2::Http2Error errorCode, const QString &errorString);
     void receivedGOAWAY(Http2::Http2Error errorCode, quint32 lastStreamID);
+    void receivedEND_STREAM(quint32 streamID);
 public Q_SLOTS:
     bool sendPing();
     bool sendPing(QByteArrayView data);
@@ -261,12 +274,13 @@ private:
     QHttp2Stream *createStreamInternal_impl(quint32 streamID);
 
     bool isInvalidStream(quint32 streamID) noexcept;
-    bool streamWasReset(quint32 streamID) noexcept;
+    bool streamWasResetLocally(quint32 streamID) noexcept;
 
     void connectionError(Http2::Http2Error errorCode,
                          const char *message); // Connection failed to be established?
     void setH2Configuration(QHttp2Configuration config);
     void closeSession();
+    void registerStreamAsResetLocally(quint32 streamID);
     qsizetype numActiveStreamsImpl(quint32 mask) const noexcept;
     qsizetype numActiveRemoteStreams() const noexcept;
     qsizetype numActiveLocalStreams() const noexcept;
@@ -311,7 +325,8 @@ private:
     QHttp2Configuration m_config;
     QHash<quint32, QPointer<QHttp2Stream>> m_streams;
     QHash<QUrl, quint32> m_promisedStreams;
-    QVarLengthArray<quint32> m_resetStreamIDs;
+    QList<quint32> m_resetStreamIDs;
+
     std::optional<QByteArray> m_lastPingSignature = std::nullopt;
     quint32 m_nextStreamID = 1;
 
@@ -368,6 +383,8 @@ private:
 
     // Server-side only:
     bool m_waitingForClientPreface = false;
+
+    friend tst_QHttp2Connection;
 };
 
 QT_END_NAMESPACE

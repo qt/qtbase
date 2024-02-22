@@ -21,6 +21,13 @@ private slots:
     void constructStream();
     void testSETTINGSFrame();
     void testPING();
+    void testRSTServerSide();
+    void testRSTClientSide();
+    void testRSTReplyOnDATAEND();
+    void testBadFrameSize_data();
+    void testBadFrameSize();
+    void testDataFrameAfterRSTIncoming();
+    void testDataFrameAfterRSTOutgoing();
     void connectToServer();
     void WINDOW_UPDATE();
     void testCONTINUATIONFrame();
@@ -180,7 +187,7 @@ void tst_QHttp2Connection::constructStream()
     QVERIFY(stream);
     QCOMPARE(stream->isPromisedStream(), false);
     QCOMPARE(stream->isActive(), false);
-    QCOMPARE(stream->RST_STREAM_code(), 0u);
+    QCOMPARE(stream->RST_STREAMCodeReceived(), 0u);
     QCOMPARE(stream->streamID(), 1u);
     QCOMPARE(stream->receivedHeaders(), {});
     QCOMPARE(stream->state(), QHttp2Stream::State::Idle);
@@ -286,6 +293,290 @@ void tst_QHttp2Connection::testPING()
 
     QCOMPARE(clientPingSpy.last().at(0).toInt(), int(QHttp2Connection::PingState::Ping));
     QCOMPARE(serverPingSpy.last().at(0).toInt(), int(QHttp2Connection::PingState::PongSignatureIdentical));
+}
+
+
+void tst_QHttp2Connection::testRSTServerSide()
+{
+    auto [client, server] = makeFakeConnectedSockets();
+    auto connection = makeHttp2Connection(client.get(), {}, Client);
+    auto serverConnection = makeHttp2Connection(server.get(), {}, Server);
+
+    QVERIFY(waitForSettingsExchange(connection, serverConnection));
+
+    QSignalSpy newIncomingStreamSpy{ serverConnection, &QHttp2Connection::newIncomingStream };
+
+    QHttp2Stream *clientStream = connection->createStream().unwrap();
+    QSignalSpy clientHeaderReceivedSpy{ clientStream, &QHttp2Stream::headersReceived };
+    QVERIFY(clientStream);
+    HPack::HttpHeader headers = getRequiredHeaders();
+    clientStream->sendHEADERS(headers, false);
+
+    QVERIFY(newIncomingStreamSpy.wait());
+    auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
+    QCOMPARE(clientStream->streamID(), serverStream->streamID());
+
+    QSignalSpy rstClientSpy{ clientStream, &QHttp2Stream::rstFrameRecived };
+    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameRecived };
+
+    QCOMPARE(clientStream->state(), QHttp2Stream::State::Open);
+    QCOMPARE(serverStream->state(), QHttp2Stream::State::Open);
+
+    serverStream->sendRST_STREAM(Http2::INTERNAL_ERROR);
+    QCOMPARE(serverStream->state(), QHttp2Stream::State::Closed);
+    QVERIFY(rstClientSpy.wait());
+    QCOMPARE(rstServerSpy.count(), 0);
+    QCOMPARE(clientStream->state(), QHttp2Stream::State::Closed);
+}
+
+void tst_QHttp2Connection::testRSTClientSide()
+{
+    auto [client, server] = makeFakeConnectedSockets();
+    auto connection = makeHttp2Connection(client.get(), {}, Client);
+    auto serverConnection = makeHttp2Connection(server.get(), {}, Server);
+
+    QVERIFY(waitForSettingsExchange(connection, serverConnection));
+
+    QSignalSpy newIncomingStreamSpy{ serverConnection, &QHttp2Connection::newIncomingStream };
+
+    QHttp2Stream *clientStream = connection->createStream().unwrap();
+    QSignalSpy clientHeaderReceivedSpy{ clientStream, &QHttp2Stream::headersReceived };
+    QVERIFY(clientStream);
+    HPack::HttpHeader headers = getRequiredHeaders();
+    clientStream->sendHEADERS(headers, false);
+
+    QVERIFY(newIncomingStreamSpy.wait());
+    auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
+    QCOMPARE(clientStream->streamID(), serverStream->streamID());
+
+    QSignalSpy rstClientSpy{ clientStream, &QHttp2Stream::rstFrameRecived };
+    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameRecived };
+
+    QCOMPARE(clientStream->state(), QHttp2Stream::State::Open);
+    QCOMPARE(serverStream->state(), QHttp2Stream::State::Open);
+
+    clientStream->sendRST_STREAM(Http2::INTERNAL_ERROR);
+    QCOMPARE(clientStream->state(), QHttp2Stream::State::Closed);
+    QVERIFY(rstServerSpy.wait());
+    QCOMPARE(rstClientSpy.count(), 0);
+    QCOMPARE(serverStream->state(), QHttp2Stream::State::Closed);
+}
+
+void tst_QHttp2Connection::testRSTReplyOnDATAEND()
+{
+    auto [client, server] = makeFakeConnectedSockets();
+    auto connection = makeHttp2Connection(client.get(), {}, Client);
+    auto serverConnection = makeHttp2Connection(server.get(), {}, Server);
+
+    QVERIFY(waitForSettingsExchange(connection, serverConnection));
+
+    QSignalSpy newIncomingStreamSpy{ serverConnection, &QHttp2Connection::newIncomingStream };
+
+    QHttp2Stream *clientStream = connection->createStream().unwrap();
+    QSignalSpy clientHeaderReceivedSpy{ clientStream, &QHttp2Stream::headersReceived };
+    QVERIFY(clientStream);
+    HPack::HttpHeader headers = getRequiredHeaders();
+    clientStream->sendHEADERS(headers, false);
+
+    QVERIFY(newIncomingStreamSpy.wait());
+    auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
+    QCOMPARE(clientStream->streamID(), serverStream->streamID());
+
+    QSignalSpy rstClientSpy{ clientStream, &QHttp2Stream::rstFrameRecived };
+    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameRecived };
+    QSignalSpy endServerSpy{ serverConnection, &QHttp2Connection::receivedEND_STREAM };
+    QSignalSpy errrorServerSpy{ serverStream, &QHttp2Stream::errorOccurred };
+
+    QCOMPARE(clientStream->state(), QHttp2Stream::State::Open);
+    QCOMPARE(serverStream->state(), QHttp2Stream::State::Open);
+
+    // Send data with END_STREAM = true
+
+    QBuffer *buffer = new QBuffer(clientStream);
+    QByteArray uploadedData = "Hello World"_ba.repeated(10);
+    buffer->setData(uploadedData);
+    buffer->open(QIODevice::ReadWrite);
+    // send data with endstream true
+    clientStream->sendDATA(buffer, true);
+
+    QVERIFY(endServerSpy.wait());
+
+    QCOMPARE(clientStream->state(), QHttp2Stream::State::HalfClosedLocal);
+    QCOMPARE(serverStream->state(), QHttp2Stream::State::HalfClosedRemote);
+
+    clientStream->setState(QHttp2Stream::State::Open);
+    buffer = new QBuffer(clientStream);
+    buffer->setData(uploadedData);
+    buffer->open(QIODevice::ReadWrite);
+    // send data on closed stream
+    clientStream->sendDATA(buffer, true);
+
+    QVERIFY(rstClientSpy.wait());
+    QCOMPARE(rstServerSpy.count(), 0);
+    QCOMPARE(errrorServerSpy.count(), 1);
+}
+
+void tst_QHttp2Connection::testBadFrameSize_data()
+{
+    QTest::addColumn<uchar>("frametype");
+    QTest::addColumn<int>("loadsize");
+    QTest::addColumn<bool>("rst_received");
+    QTest::addColumn<int>("goaway_received");
+
+    QTest::newRow("priority_correct") << uchar(Http2::FrameType::PRIORITY) << 5 << false << 0;
+    QTest::newRow("priority_bad") << uchar(Http2::FrameType::PRIORITY) << 6 << true << 0;
+    QTest::newRow("ping_correct") << uchar(Http2::FrameType::PING) << 8 << false << 0;
+    QTest::newRow("ping_bad") << uchar(Http2::FrameType::PING) << 13 << false << 1;
+}
+
+void tst_QHttp2Connection::testBadFrameSize()
+{
+    QFETCH(uchar, frametype);
+    QFETCH(int, loadsize);
+    QFETCH(bool, rst_received);
+    QFETCH(int, goaway_received);
+
+    auto [client, server] = makeFakeConnectedSockets();
+    auto connection = makeHttp2Connection(client.get(), {}, Client);
+    auto serverConnection = makeHttp2Connection(server.get(), {}, Server);
+
+    QVERIFY(waitForSettingsExchange(connection, serverConnection));
+
+    QSignalSpy newIncomingStreamSpy{ serverConnection, &QHttp2Connection::newIncomingStream };
+
+    QHttp2Stream *clientStream = connection->createStream().unwrap();
+    QSignalSpy clientHeaderReceivedSpy{ clientStream, &QHttp2Stream::headersReceived };
+    QVERIFY(clientStream);
+    HPack::HttpHeader headers = getRequiredHeaders();
+    clientStream->sendHEADERS(headers, false);
+
+    QVERIFY(newIncomingStreamSpy.wait());
+    auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
+    QCOMPARE(clientStream->streamID(), serverStream->streamID());
+
+    QSignalSpy rstClientSpy{ clientStream, &QHttp2Stream::rstFrameRecived };
+    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameRecived };
+    QSignalSpy goawayClientSpy{ connection, &QHttp2Connection::receivedGOAWAY };
+    QSignalSpy goawayServerSpy{ serverConnection, &QHttp2Connection::receivedGOAWAY };
+
+    QCOMPARE(clientStream->state(), QHttp2Stream::State::Open);
+    QCOMPARE(serverStream->state(), QHttp2Stream::State::Open);
+
+    {
+        auto type = frametype;
+        auto flags = uchar(Http2::FrameFlag::EMPTY);
+        quint32 streamID = clientStream->streamID();
+
+        std::vector<uchar> buffer;
+
+        buffer.resize(Http2::frameHeaderSize);
+        //012 Length (24) = 0x05 (set below),
+        //3   Type (8) = 0x02,
+        //4   Unused Flags (8),
+        //    Reserved (1),
+        //5   Stream Identifier (31),
+        buffer[3] = type;
+        buffer[4] = flags;
+        qToBigEndian(type == uchar(Http2::FrameType::PING) ? 0 : streamID, &buffer[5]);
+
+        buffer.resize(buffer.size() + loadsize);
+        // RFC9113 4.1: The 9 octets of the frame header are not included in this value.
+        quint32 size = quint32(buffer.size() - Http2::frameHeaderSize);
+        buffer[0] = size >> 16;
+        buffer[1] = size >> 8;
+        buffer[2] = size;
+
+        auto writtenN = connection->getSocket()->write(reinterpret_cast<const char *>(&buffer[0]), buffer.size());
+        QCOMPARE(writtenN, buffer.size());
+    }
+
+    QCOMPARE(rstClientSpy.wait(), rst_received);
+    QCOMPARE(rstServerSpy.count(), 0);
+    QCOMPARE(goawayClientSpy.count(), goaway_received);
+}
+
+void tst_QHttp2Connection::testDataFrameAfterRSTIncoming()
+{
+    auto [client, server] = makeFakeConnectedSockets();
+    auto connection = makeHttp2Connection(client.get(), {}, Client);
+    auto serverConnection = makeHttp2Connection(server.get(), {}, Server);
+
+    QVERIFY(waitForSettingsExchange(connection, serverConnection));
+
+    QSignalSpy newIncomingStreamSpy{ serverConnection, &QHttp2Connection::newIncomingStream };
+
+    QHttp2Stream *clientStream = connection->createStream().unwrap();
+    QSignalSpy clientHeaderReceivedSpy{ clientStream, &QHttp2Stream::headersReceived };
+    QVERIFY(clientStream);
+    HPack::HttpHeader headers = getRequiredHeaders();
+    clientStream->sendHEADERS(headers, false);
+
+    QVERIFY(newIncomingStreamSpy.wait());
+    auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
+    QCOMPARE(clientStream->streamID(), serverStream->streamID());
+
+    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameRecived };
+
+    QCOMPARE(clientStream->state(), QHttp2Stream::State::Open);
+    QCOMPARE(serverStream->state(), QHttp2Stream::State::Open);
+
+    // Reset the stream and wait until it the RST_STREAM frame is received
+    clientStream->sendRST_STREAM(Http2::Http2Error::STREAM_CLOSED);
+    QVERIFY(rstServerSpy.wait());
+
+    QSignalSpy closedClientSpy{ connection, &QHttp2Connection::connectionClosed };
+    // Send data as if we didn't receive the RST_STREAM
+    // It should not trigger an error since we could have not received the RST_STREAM frame yet
+    serverStream->setState(QHttp2Stream::State::Open);
+    QBuffer *buffer = new QBuffer(clientStream);
+    QByteArray uploadedData = "Hello World"_ba.repeated(10);
+    buffer->setData(uploadedData);
+    buffer->open(QIODevice::ReadWrite);
+    serverStream->sendDATA(buffer, false);
+
+    QVERIFY(!closedClientSpy.wait(std::chrono::seconds(1)));
+}
+
+void tst_QHttp2Connection::testDataFrameAfterRSTOutgoing()
+{
+    auto [client, server] = makeFakeConnectedSockets();
+    auto connection = makeHttp2Connection(client.get(), {}, Client);
+    auto serverConnection = makeHttp2Connection(server.get(), {}, Server);
+
+    QVERIFY(waitForSettingsExchange(connection, serverConnection));
+
+    QSignalSpy newIncomingStreamSpy{ serverConnection, &QHttp2Connection::newIncomingStream };
+
+    QHttp2Stream *clientStream = connection->createStream().unwrap();
+    QSignalSpy clientHeaderReceivedSpy{ clientStream, &QHttp2Stream::headersReceived };
+    QVERIFY(clientStream);
+    HPack::HttpHeader headers = getRequiredHeaders();
+    clientStream->sendHEADERS(headers, false);
+
+    QVERIFY(newIncomingStreamSpy.wait());
+    auto *serverStream = newIncomingStreamSpy.front().front().value<QHttp2Stream *>();
+    QCOMPARE(clientStream->streamID(), serverStream->streamID());
+
+    QSignalSpy rstServerSpy{ serverStream, &QHttp2Stream::rstFrameRecived };
+
+    QCOMPARE(clientStream->state(), QHttp2Stream::State::Open);
+    QCOMPARE(serverStream->state(), QHttp2Stream::State::Open);
+
+    // Reset the stream and wait until it the RST_STREAM frame is received
+    clientStream->sendRST_STREAM(Http2::Http2Error::STREAM_CLOSED);
+    QVERIFY(rstServerSpy.wait());
+
+    QSignalSpy closedServerSpy{ serverConnection, &QHttp2Connection::connectionClosed };
+    // Send data as if we didn't send the RST_STREAM
+    // It should trigger an error since we send the RST_STREAM frame ourself
+    clientStream->setState(QHttp2Stream::State::Open);
+    QBuffer *buffer = new QBuffer(serverStream);
+    QByteArray uploadedData = "Hello World"_ba.repeated(10);
+    buffer->setData(uploadedData);
+    buffer->open(QIODevice::ReadWrite);
+    clientStream->sendDATA(buffer, false);
+
+    QVERIFY(closedServerSpy.wait());
 }
 
 void tst_QHttp2Connection::connectToServer()
