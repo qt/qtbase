@@ -5,7 +5,7 @@
 
 #include <QtCore/qtsymbolmacros.h>
 
-QT_DECLARE_EXTERN_RESOURCE(@RESOURCE_NAME@);
+QT_DECLARE_EXTERN_RESOURCE(@RESOURCE_NAME@)
 
 namespace {
     struct resourceReferenceKeeper {
