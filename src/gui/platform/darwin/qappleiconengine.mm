@@ -41,7 +41,7 @@ auto *loadImage(const QString &iconName)
         {"document-save"_L1, @"square.and.arrow.down"},
         //{"document-save-as"_L1, @""},
         {"document-send"_L1, @"paperplane"},
-        {"edit-clear"_L1, @"clear"},
+        {"edit-clear"_L1, @"xmark.circle"},
         {"edit-copy"_L1, @"doc.on.doc"},
         {"edit-cut"_L1, @"scissors"},
         {"edit-delete"_L1, @"delete.left"},
