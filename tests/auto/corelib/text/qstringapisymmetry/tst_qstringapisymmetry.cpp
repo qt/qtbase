@@ -32,7 +32,6 @@ struct QAnyStringViewUsingU16 : QAnyStringView {};  // QAnyStringView with Utf-1
 template <typename T>
 QString toQString(const T &t) { return QString(t); }
 QString toQString(QStringView view) { return view.toString(); }
-QString toQString(QUtf8StringView view) { return view.toString(); }
 
 template <typename Iterable>
 QStringList toQStringList(const Iterable &i) {
@@ -44,29 +43,6 @@ QStringList toQStringList(const Iterable &i) {
 
 template <typename LHS, typename RHS>
 constexpr bool is_fake_comparator_v = false;
-
-// FIXME: these are missing at the time of writing, add them, then remove the dummies here:
-#define MAKE_RELOP(op, A1, A2) \
-    static bool operator op (A1 lhs, A2 rhs) \
-    { return toQString(lhs) op toQString(rhs); } \
-    /*end*/
-#define MAKE_ALL(A1, A2) \
-    template <> constexpr bool is_fake_comparator_v<A1, A2> = true; \
-    MAKE_RELOP(==, A1, A2) \
-    MAKE_RELOP(!=, A1, A2) \
-    MAKE_RELOP(<,  A1, A2) \
-    MAKE_RELOP(>,  A1, A2) \
-    MAKE_RELOP(<=, A1, A2) \
-    MAKE_RELOP(>=, A1, A2) \
-    /*end*/
-
-
-MAKE_ALL(char16_t, QByteArray)
-MAKE_ALL(QByteArray, char16_t)
-
-#undef MAKE_ALL
-#undef MAKE_RELOP
-// END FIXME
 
 } // namespace
 

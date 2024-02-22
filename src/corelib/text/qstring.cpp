@@ -6731,6 +6731,28 @@ Qt::strong_ordering QByteArrayView::compareThreeWay(const QByteArrayView &lhs,
     return Qt::compareThreeWay(res, 0);
 }
 
+bool comparesEqual(const QByteArray &lhs, const QChar &rhs) noexcept
+{
+    return QtPrivate::equalStrings(QUtf8StringView(lhs), QStringView(&rhs, 1));
+}
+
+Qt::strong_ordering compareThreeWay(const QByteArray &lhs, const QChar &rhs) noexcept
+{
+    const int res = QtPrivate::compareStrings(QUtf8StringView(lhs), QStringView(&rhs, 1));
+    return Qt::compareThreeWay(res, 0);
+}
+
+bool comparesEqual(const QByteArray &lhs, char16_t rhs) noexcept
+{
+    return QtPrivate::equalStrings(QUtf8StringView(lhs), QStringView(&rhs, 1));
+}
+
+Qt::strong_ordering compareThreeWay(const QByteArray &lhs, char16_t rhs) noexcept
+{
+    const int res = QtPrivate::compareStrings(QUtf8StringView(lhs), QStringView(&rhs, 1));
+    return Qt::compareThreeWay(res, 0);
+}
+
 /*!
     \internal
     \since 6.8

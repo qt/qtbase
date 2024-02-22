@@ -368,57 +368,6 @@ public:
     QT_ASCII_CAST_WARN inline bool operator>=(const QString &s2) const;
 #endif // QT_CORE_REMOVED_SINCE(6, 8)
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
-    friend inline bool operator==(const QByteArray &a1, const QByteArray &a2) noexcept
-    { return QByteArrayView(a1) == QByteArrayView(a2); }
-    friend inline bool operator==(const QByteArray &a1, const char *a2) noexcept
-    { return QByteArrayView(a1) == QByteArrayView(a2); }
-    friend inline bool operator==(const char *a1, const QByteArray &a2) noexcept
-    { return QByteArrayView(a1) == QByteArrayView(a2); }
-    friend inline bool operator!=(const QByteArray &a1, const QByteArray &a2) noexcept
-    { return !(a1==a2); }
-    friend inline bool operator!=(const QByteArray &a1, const char *a2) noexcept
-    { return QByteArrayView(a1) != QByteArrayView(a2); }
-    friend inline bool operator!=(const char *a1, const QByteArray &a2) noexcept
-    { return QByteArrayView(a1) != QByteArrayView(a2); }
-    friend inline bool operator<(const QByteArray &a1, const QByteArray &a2) noexcept
-    { return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) < 0; }
-    friend inline bool operator<(const QByteArray &a1, const char *a2) noexcept
-    { return QtPrivate::compareMemory(a1, a2) < 0; }
-    friend inline bool operator<(const char *a1, const QByteArray &a2) noexcept
-    { return QtPrivate::compareMemory(a1, a2) < 0; }
-    friend inline bool operator<=(const QByteArray &a1, const QByteArray &a2) noexcept
-    { return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) <= 0; }
-    friend inline bool operator<=(const QByteArray &a1, const char *a2) noexcept
-    { return QtPrivate::compareMemory(a1, a2) <= 0; }
-    friend inline bool operator<=(const char *a1, const QByteArray &a2) noexcept
-    { return QtPrivate::compareMemory(a1, a2) <= 0; }
-    friend inline bool operator>(const QByteArray &a1, const QByteArray &a2) noexcept
-    { return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) > 0; }
-    friend inline bool operator>(const QByteArray &a1, const char *a2) noexcept
-    { return QtPrivate::compareMemory(a1, a2) > 0; }
-    friend inline bool operator>(const char *a1, const QByteArray &a2) noexcept
-    { return QtPrivate::compareMemory(a1, a2) > 0; }
-    friend inline bool operator>=(const QByteArray &a1, const QByteArray &a2) noexcept
-    { return QtPrivate::compareMemory(QByteArrayView(a1), QByteArrayView(a2)) >= 0; }
-    friend inline bool operator>=(const QByteArray &a1, const char *a2) noexcept
-    { return QtPrivate::compareMemory(a1, a2) >= 0; }
-    friend inline bool operator>=(const char *a1, const QByteArray &a2) noexcept
-    { return QtPrivate::compareMemory(a1, a2) >= 0; }
-
-    // Check isEmpty() instead of isNull() for backwards compatibility.
-    friend inline bool operator==(const QByteArray &a1, std::nullptr_t) noexcept { return a1.isEmpty(); }
-    friend inline bool operator!=(const QByteArray &a1, std::nullptr_t) noexcept { return !a1.isEmpty(); }
-    friend inline bool operator< (const QByteArray &  , std::nullptr_t) noexcept { return false; }
-    friend inline bool operator> (const QByteArray &a1, std::nullptr_t) noexcept { return !a1.isEmpty(); }
-    friend inline bool operator<=(const QByteArray &a1, std::nullptr_t) noexcept { return a1.isEmpty(); }
-    friend inline bool operator>=(const QByteArray &  , std::nullptr_t) noexcept { return true; }
-
-    friend inline bool operator==(std::nullptr_t, const QByteArray &a2) noexcept { return a2 == nullptr; }
-    friend inline bool operator!=(std::nullptr_t, const QByteArray &a2) noexcept { return a2 != nullptr; }
-    friend inline bool operator< (std::nullptr_t, const QByteArray &a2) noexcept { return a2 >  nullptr; }
-    friend inline bool operator> (std::nullptr_t, const QByteArray &a2) noexcept { return a2 <  nullptr; }
-    friend inline bool operator<=(std::nullptr_t, const QByteArray &a2) noexcept { return a2 >= nullptr; }
-    friend inline bool operator>=(std::nullptr_t, const QByteArray &a2) noexcept { return a2 <= nullptr; }
 
     short toShort(bool *ok = nullptr, int base = 10) const;
     ushort toUShort(bool *ok = nullptr, int base = 10) const;
@@ -566,7 +515,43 @@ private:
         const int res = QtPrivate::compareMemory(QByteArrayView(lhs), rhs);
         return Qt::compareThreeWay(res, 0);
     }
+    Q_DECLARE_STRONGLY_ORDERED(QByteArray)
     Q_DECLARE_STRONGLY_ORDERED(QByteArray, QByteArrayView)
+    Q_DECLARE_STRONGLY_ORDERED(QByteArray, const char *)
+#if defined(__GLIBCXX__) && defined(__cpp_lib_three_way_comparison)
+    // libstdc++ has a bug [0] when `operator const void *()` is preferred over
+    // `operator<=>()` when calling std::less<> and other similar methods.
+    // Fix it by explicitly providing relational operators in such case.
+    // [0]: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114153
+    friend bool operator<(const QByteArray &lhs, const QByteArray &rhs) noexcept
+    { return is_lt(compareThreeWay(lhs, rhs)); }
+    friend bool operator<=(const QByteArray &lhs, const QByteArray &rhs) noexcept
+    { return is_lteq(compareThreeWay(lhs, rhs)); }
+    friend bool operator>(const QByteArray &lhs, const QByteArray &rhs) noexcept
+    { return is_gt(compareThreeWay(lhs, rhs)); }
+    friend bool operator>=(const QByteArray &lhs, const QByteArray &rhs) noexcept
+    { return is_gteq(compareThreeWay(lhs, rhs)); }
+#endif // defined(__GLIBCXX__) && defined(__cpp_lib_three_way_comparison)
+
+    // Check isEmpty() instead of isNull() for backwards compatibility.
+    friend bool comparesEqual(const QByteArray &lhs, std::nullptr_t) noexcept
+    { return lhs.isEmpty(); }
+    friend Qt::strong_ordering compareThreeWay(const QByteArray &lhs, std::nullptr_t) noexcept
+    { return lhs.isEmpty() ? Qt::strong_ordering::equivalent : Qt::strong_ordering::greater; }
+    Q_DECLARE_STRONGLY_ORDERED(QByteArray, std::nullptr_t)
+
+    // defined in qstring.cpp
+    friend Q_CORE_EXPORT bool comparesEqual(const QByteArray &lhs, const QChar &rhs) noexcept;
+    friend Q_CORE_EXPORT Qt::strong_ordering
+    compareThreeWay(const QByteArray &lhs, const QChar &rhs) noexcept;
+    friend Q_CORE_EXPORT bool comparesEqual(const QByteArray &lhs, char16_t rhs) noexcept;
+    friend Q_CORE_EXPORT Qt::strong_ordering
+    compareThreeWay(const QByteArray &lhs, char16_t rhs) noexcept;
+#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
+    Q_DECLARE_STRONGLY_ORDERED(QByteArray, QChar, QT_ASCII_CAST_WARN)
+    Q_DECLARE_STRONGLY_ORDERED(QByteArray, char16_t, QT_ASCII_CAST_WARN)
+#endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
+
 
     void reallocData(qsizetype alloc, QArrayData::AllocationOption option);
     void reallocGrowData(qsizetype n);
