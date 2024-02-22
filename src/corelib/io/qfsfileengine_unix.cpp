@@ -565,11 +565,11 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
     }
 
     if (offset < 0 || offset > maxFileOffset
-            || size < 0 || quint64(size) > quint64(size_t(-1))) {
+        || size <= 0
+        || quint64(size) > quint64(size_t(-1))) {
         q->setError(QFile::UnspecifiedError, qt_error_string(EINVAL));
         return nullptr;
     }
-
     // If we know the mapping will extend beyond EOF, fail early to avoid
     // undefined behavior. Otherwise, let mmap have its say.
     if (doStat(QFileSystemMetaData::SizeAttribute)
