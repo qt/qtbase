@@ -6735,6 +6735,20 @@ Qt::strong_ordering QByteArrayView::compareThreeWay(const QByteArrayView &lhs,
     \internal
     \since 6.8
 */
+bool QT_FASTCALL QChar::equal_helper(QChar lhs, const char *rhs) noexcept
+{
+    return QtPrivate::equalStrings(QStringView(&lhs, 1), QUtf8StringView(rhs));
+}
+
+int QT_FASTCALL QChar::compare_helper(QChar lhs, const char *rhs) noexcept
+{
+    return QtPrivate::compareStrings(QStringView(&lhs, 1), QUtf8StringView(rhs));
+}
+
+/*!
+    \internal
+    \since 6.8
+*/
 bool QStringView::equal_helper(QStringView sv, const char *data, qsizetype len)
 {
     Q_ASSERT(len >= 0);

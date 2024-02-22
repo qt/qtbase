@@ -55,6 +55,13 @@ QT_BEGIN_NAMESPACE
     \ingroup string-processing
     \reentrant
 
+    \compares strong
+    \compareswith strong char16_t QString QStringView QLatin1StringView QUtf8StringView
+    \endcompareswith
+    \compareswith strong {const char *} QByteArray QByteArrayView
+    The contents of the byte array is interpreted as utf-8.
+    \endcompareswith
+
     In Qt, Unicode characters are 16-bit entities without any markup
     or structure. This class represents such an entity. It is
     lightweight, so it can be used everywhere. Most compilers treat
@@ -1740,42 +1747,42 @@ QDataStream &operator>>(QDataStream &in, QChar &chr)
  *****************************************************************************/
 
 /*!
-    \fn bool QChar::operator==(QChar c1, QChar c2)
+    \fn bool QChar::operator==(const QChar &c1, const QChar &c2)
 
     Returns \c true if \a c1 and \a c2 are the same Unicode character;
     otherwise returns \c false.
 */
 
 /*!
-    \fn int QChar::operator!=(QChar c1, QChar c2)
+    \fn bool QChar::operator!=(const QChar &c1, const QChar &c2)
 
     Returns \c true if \a c1 and \a c2 are not the same Unicode
     character; otherwise returns \c false.
 */
 
 /*!
-    \fn int QChar::operator<=(QChar c1, QChar c2)
+    \fn bool QChar::operator<=(const QChar &c1, const QChar &c2)
 
     Returns \c true if the numeric Unicode value of \a c1 is less than
     or equal to that of \a c2; otherwise returns \c false.
 */
 
 /*!
-    \fn int QChar::operator>=(QChar c1, QChar c2)
+    \fn bool QChar::operator>=(const QChar &c1, const QChar &c2)
 
     Returns \c true if the numeric Unicode value of \a c1 is greater than
     or equal to that of \a c2; otherwise returns \c false.
 */
 
 /*!
-    \fn int QChar::operator<(QChar c1, QChar c2)
+    \fn bool QChar::operator<(const QChar &c1, const QChar &c2)
 
     Returns \c true if the numeric Unicode value of \a c1 is less than
     that of \a c2; otherwise returns \c false.
 */
 
 /*!
-    \fn int QChar::operator>(QChar c1, QChar c2)
+    \fn bool QChar::operator>(const QChar &c1, const QChar &c2)
 
     Returns \c true if the numeric Unicode value of \a c1 is greater than
     that of \a c2; otherwise returns \c false.

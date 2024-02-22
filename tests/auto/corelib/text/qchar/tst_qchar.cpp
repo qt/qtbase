@@ -17,6 +17,8 @@ private slots:
     void operator_eqeq_null();
     void operators_data();
     void operators();
+    void qchar_qlatin1char_operators_symmetry_data();
+    void qchar_qlatin1char_operators_symmetry();
     void toUpper();
     void toLower();
     void toTitle();
@@ -165,6 +167,36 @@ void tst_QChar::operators()
     QFETCH(QChar, rhs);
 
 #define CHECK(op) QCOMPARE((lhs op rhs), (lhs.unicode() op rhs.unicode()))
+    CHECK(==);
+    CHECK(!=);
+    CHECK(< );
+    CHECK(> );
+    CHECK(<=);
+    CHECK(>=);
+#undef CHECK
+}
+
+void tst_QChar::qchar_qlatin1char_operators_symmetry_data()
+{
+    QTest::addColumn<char>("lhs");
+    QTest::addColumn<char>("rhs");
+
+    const uchar values[] = {0x00, 0x3a, 0x7f, 0x80, 0xab, 0xff};
+
+    for (uchar i : values) {
+        for (uchar j : values)
+            QTest::addRow("'\\x%02x'_op_'\\x%02x'", i, j) << char(i) << char(j);
+    }
+}
+
+void tst_QChar::qchar_qlatin1char_operators_symmetry()
+{
+    QFETCH(char, lhs);
+    QFETCH(char, rhs);
+
+    const QLatin1Char l1lhs(lhs);
+    const QLatin1Char l1rhs(rhs);
+#define CHECK(op) QCOMPARE((l1lhs op l1rhs), (QChar(l1lhs) op QChar(l1rhs)))
     CHECK(==);
     CHECK(!=);
     CHECK(< );
