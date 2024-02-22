@@ -1083,7 +1083,6 @@ bool QTextEdit::event(QEvent *e)
 #ifndef QT_NO_CONTEXTMENU
     if (e->type() == QEvent::ContextMenu
         && static_cast<QContextMenuEvent *>(e)->reason() == QContextMenuEvent::Keyboard) {
-        Q_D(QTextEdit);
         ensureCursorVisible();
         const QPoint cursorPos = cursorRect().center();
         QContextMenuEvent ce(QContextMenuEvent::Keyboard, cursorPos, d->viewport->mapToGlobal(cursorPos));
@@ -1091,19 +1090,18 @@ bool QTextEdit::event(QEvent *e)
         const bool result = QAbstractScrollArea::event(&ce);
         e->setAccepted(ce.isAccepted());
         return result;
-    } else if (e->type() == QEvent::ShortcutOverride
-               || e->type() == QEvent::ToolTip) {
+    } else if (e->type() == QEvent::ShortcutOverride || e->type() == QEvent::ToolTip) {
         d->sendControlEvent(e);
-    }
-#else
-    Q_UNUSED(d);
+    } else
 #endif // QT_NO_CONTEXTMENU
 #ifdef QT_KEYPAD_NAVIGATION
     if (e->type() == QEvent::EnterEditFocus || e->type() == QEvent::LeaveEditFocus) {
         if (QApplicationPrivate::keypadNavigationEnabled())
             d->sendControlEvent(e);
-    }
+    } else
 #endif
+    if (e->type() == QEvent::WindowActivate || e->type() == QEvent::WindowDeactivate)
+        d->control->setPalette(palette());
     return QAbstractScrollArea::event(e);
 }
 
@@ -1906,7 +1904,6 @@ void QTextEdit::changeEvent(QEvent *e)
         || e->type() == QEvent::FontChange) {
         d->control->document()->setDefaultFont(font());
     }  else if (e->type() == QEvent::ActivationChange) {
-        d->control->setPalette(palette());
         if (!isActiveWindow())
             d->autoScrollTimer.stop();
     } else if (e->type() == QEvent::EnabledChange) {
