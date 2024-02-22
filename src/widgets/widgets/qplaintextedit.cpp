@@ -1558,6 +1558,10 @@ bool QPlainTextEdit::event(QEvent *e)
         }
         return true;
 #endif // QT_NO_GESTURES
+    case QEvent::WindowActivate:
+    case QEvent::WindowDeactivate:
+        d->control->setPalette(palette());
+        break;
     default:
         break;
     }
