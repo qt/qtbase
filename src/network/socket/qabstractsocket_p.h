@@ -110,6 +110,7 @@ public:
     qint64 readBufferMaxSize = 0;
     bool isBuffered = false;
     bool hasPendingData = false;
+    bool hasPendingDatagram = false;
 
     QTimer *connectTimer = nullptr;
 
