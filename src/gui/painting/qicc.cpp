@@ -416,7 +416,7 @@ struct TagEntry {
     quint32 size;
 };
 
-bool parseXyzData(const QByteArray &data, const TagEntry &tagEntry, QColorVector &colorVector)
+static bool parseXyzData(const QByteArray &data, const TagEntry &tagEntry, QColorVector &colorVector)
 {
     if (tagEntry.size < sizeof(XYZTagData)) {
         qCWarning(lcIcc) << "Undersized XYZ tag";
@@ -435,7 +435,7 @@ bool parseXyzData(const QByteArray &data, const TagEntry &tagEntry, QColorVector
     return true;
 }
 
-bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma)
+static bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma)
 {
     const GenericTagData trcData = qFromUnaligned<GenericTagData>(data.constData()
                                                                   + tagEntry.offset);
@@ -558,7 +558,7 @@ bool parseTRC(const QByteArray &data, const TagEntry &tagEntry, QColorTrc &gamma
     return false;
 }
 
-bool parseDesc(const QByteArray &data, const TagEntry &tagEntry, QString &descName)
+static bool parseDesc(const QByteArray &data, const TagEntry &tagEntry, QString &descName)
 {
     const GenericTagData tag = qFromUnaligned<GenericTagData>(data.constData() + tagEntry.offset);
 
@@ -602,6 +602,130 @@ bool parseDesc(const QByteArray &data, const TagEntry &tagEntry, QString &descNa
     if (stringLen > 1 && utf16hostendian[stringLen - 1] == 0)
         --stringLen;
     descName = QString::fromUtf16(utf16hostendian.data(), stringLen);
+    return true;
+}
+
+static bool parseRgbMatrix(const QByteArray &data, const QHash<Tag, TagEntry> &tagIndex, QColorSpacePrivate *colorspaceDPtr)
+{
+    // Parse XYZ tags
+    if (!parseXyzData(data, tagIndex[Tag::rXYZ], colorspaceDPtr->toXyz.r))
+        return false;
+    if (!parseXyzData(data, tagIndex[Tag::gXYZ], colorspaceDPtr->toXyz.g))
+        return false;
+    if (!parseXyzData(data, tagIndex[Tag::bXYZ], colorspaceDPtr->toXyz.b))
+        return false;
+    if (!parseXyzData(data, tagIndex[Tag::wtpt], colorspaceDPtr->whitePoint))
+        return false;
+
+    colorspaceDPtr->primaries = QColorSpace::Primaries::Custom;
+    if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromSRgb()) {
+        qCDebug(lcIcc) << "fromIccProfile: sRGB primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::SRgb;
+    } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromAdobeRgb()) {
+        qCDebug(lcIcc) << "fromIccProfile: Adobe RGB primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::AdobeRgb;
+    } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromDciP3D65()) {
+        qCDebug(lcIcc) << "fromIccProfile: DCI-P3 D65 primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::DciP3D65;
+    }
+    if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromProPhotoRgb()) {
+        qCDebug(lcIcc) << "fromIccProfile: ProPhoto RGB primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::ProPhotoRgb;
+    }
+    return true;
+}
+
+static bool parseGrayMatrix(const QByteArray &data, const QHash<Tag, TagEntry> &tagIndex, QColorSpacePrivate *colorspaceDPtr)
+{
+    // We will use sRGB primaries and fit to match the given white-point if
+    // it doesn't match sRGB's.
+    QColorVector whitePoint;
+    if (!parseXyzData(data, tagIndex[Tag::wtpt], whitePoint))
+        return false;
+    if (!qFuzzyCompare(whitePoint.y, 1.0f) || (1.0f + whitePoint.z + whitePoint.x) == 0.0f) {
+        qCWarning(lcIcc) << "fromIccProfile: Invalid ICC profile - gray white-point not normalized";
+        return false;
+    }
+    if (whitePoint == QColorVector::D65()) {
+        colorspaceDPtr->primaries = QColorSpace::Primaries::SRgb;
+    } else {
+        colorspaceDPtr->primaries = QColorSpace::Primaries::Custom;
+        // Calculate chromaticity from xyz (assuming y == 1.0f).
+        float y = 1.0f / (1.0f + whitePoint.z + whitePoint.x);
+        float x = whitePoint.x * y;
+        QColorSpacePrimaries primaries(QColorSpace::Primaries::SRgb);
+        primaries.whitePoint = QPointF(x,y);
+        if (!primaries.areValid()) {
+            qCWarning(lcIcc, "fromIccProfile: Invalid ICC profile - invalid white-point(%f, %f)", x, y);
+            return false;
+        }
+        colorspaceDPtr->toXyz = primaries.toXyzMatrix();
+    }
+    return true;
+}
+static bool parseTRCs(const QByteArray &data, const QHash<Tag, TagEntry> &tagIndex, QColorSpacePrivate *colorspaceDPtr, bool isColorSpaceTypeGray)
+{
+    TagEntry rTrc;
+    TagEntry gTrc;
+    TagEntry bTrc;
+    if (isColorSpaceTypeGray) {
+        rTrc = tagIndex[Tag::kTRC];
+        gTrc = tagIndex[Tag::kTRC];
+        bTrc = tagIndex[Tag::kTRC];
+    } else if (tagIndex.contains(Tag::aarg) && tagIndex.contains(Tag::aagg) && tagIndex.contains(Tag::aabg)) {
+        // Apple extension for parametric version of TRCs in ICCv2:
+        rTrc = tagIndex[Tag::aarg];
+        gTrc = tagIndex[Tag::aagg];
+        bTrc = tagIndex[Tag::aabg];
+    } else {
+        rTrc = tagIndex[Tag::rTRC];
+        gTrc = tagIndex[Tag::gTRC];
+        bTrc = tagIndex[Tag::bTRC];
+    }
+
+    QColorTrc rCurve;
+    QColorTrc gCurve;
+    QColorTrc bCurve;
+    if (!parseTRC(data, rTrc, rCurve)) {
+        qCWarning(lcIcc) << "fromIccProfile: Invalid rTRC";
+        return false;
+    }
+    if (!parseTRC(data, gTrc, gCurve)) {
+        qCWarning(lcIcc) << "fromIccProfile: Invalid gTRC";
+        return false;
+    }
+    if (!parseTRC(data, bTrc, bCurve)) {
+        qCWarning(lcIcc) << "fromIccProfile: Invalid bTRC";
+        return false;
+    }
+    if (rCurve == gCurve && gCurve == bCurve && rCurve.m_type == QColorTrc::Type::Function) {
+        if (rCurve.m_fun.isLinear()) {
+            qCDebug(lcIcc) << "fromIccProfile: Linear gamma detected";
+            colorspaceDPtr->trc[0] = QColorTransferFunction();
+            colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Linear;
+            colorspaceDPtr->gamma = 1.0f;
+        } else if (rCurve.m_fun.isGamma()) {
+            qCDebug(lcIcc) << "fromIccProfile: Simple gamma detected";
+            colorspaceDPtr->trc[0] = QColorTransferFunction::fromGamma(rCurve.m_fun.m_g);
+            colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Gamma;
+            colorspaceDPtr->gamma = rCurve.m_fun.m_g;
+        } else if (rCurve.m_fun.isSRgb()) {
+            qCDebug(lcIcc) << "fromIccProfile: sRGB gamma detected";
+            colorspaceDPtr->trc[0] = QColorTransferFunction::fromSRgb();
+            colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::SRgb;
+        } else {
+            colorspaceDPtr->trc[0] = rCurve;
+            colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Custom;
+        }
+
+        colorspaceDPtr->trc[1] = colorspaceDPtr->trc[0];
+        colorspaceDPtr->trc[2] = colorspaceDPtr->trc[0];
+    } else {
+        colorspaceDPtr->trc[0] = rCurve;
+        colorspaceDPtr->trc[1] = gCurve;
+        colorspaceDPtr->trc[2] = bCurve;
+        colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Custom;
+    }
     return true;
 }
 
@@ -681,123 +805,19 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
     QColorSpacePrivate *colorspaceDPtr = QColorSpacePrivate::get(*colorSpace);
 
     if (header.inputColorSpace == uint(ColorSpaceType::Rgb)) {
-        // Parse XYZ tags
-        if (!parseXyzData(data, tagIndex[Tag::rXYZ], colorspaceDPtr->toXyz.r))
+        if (!parseRgbMatrix(data, tagIndex, colorspaceDPtr))
             return false;
-        if (!parseXyzData(data, tagIndex[Tag::gXYZ], colorspaceDPtr->toXyz.g))
-            return false;
-        if (!parseXyzData(data, tagIndex[Tag::bXYZ], colorspaceDPtr->toXyz.b))
-            return false;
-        if (!parseXyzData(data, tagIndex[Tag::wtpt], colorspaceDPtr->whitePoint))
-            return false;
-
-        colorspaceDPtr->primaries = QColorSpace::Primaries::Custom;
-        if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromSRgb()) {
-            qCDebug(lcIcc) << "fromIccProfile: sRGB primaries detected";
-            colorspaceDPtr->primaries = QColorSpace::Primaries::SRgb;
-        } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromAdobeRgb()) {
-            qCDebug(lcIcc) << "fromIccProfile: Adobe RGB primaries detected";
-            colorspaceDPtr->primaries = QColorSpace::Primaries::AdobeRgb;
-        } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromDciP3D65()) {
-            qCDebug(lcIcc) << "fromIccProfile: DCI-P3 D65 primaries detected";
-            colorspaceDPtr->primaries = QColorSpace::Primaries::DciP3D65;
-        }
-        if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromProPhotoRgb()) {
-            qCDebug(lcIcc) << "fromIccProfile: ProPhoto RGB primaries detected";
-            colorspaceDPtr->primaries = QColorSpace::Primaries::ProPhotoRgb;
-        }
     } else {
-        // We will use sRGB primaries and fit to match the given white-point if
-        // it doesn't match sRGB's.
-        QColorVector whitePoint;
-        if (!parseXyzData(data, tagIndex[Tag::wtpt], whitePoint))
+        if (!parseGrayMatrix(data, tagIndex, colorspaceDPtr))
             return false;
-        if (!qFuzzyCompare(whitePoint.y, 1.0f) || (1.0f + whitePoint.z + whitePoint.x) == 0.0f) {
-            qCWarning(lcIcc) << "fromIccProfile: Invalid ICC profile - gray white-point not normalized";
-            return false;
-        }
-        if (whitePoint == QColorVector::D65()) {
-            colorspaceDPtr->primaries = QColorSpace::Primaries::SRgb;
-        } else {
-            colorspaceDPtr->primaries = QColorSpace::Primaries::Custom;
-            // Calculate chromaticity from xyz (assuming y == 1.0f).
-            float y = 1.0f / (1.0f + whitePoint.z + whitePoint.x);
-            float x = whitePoint.x * y;
-            QColorSpacePrimaries primaries(QColorSpace::Primaries::SRgb);
-            primaries.whitePoint = QPointF(x,y);
-            if (!primaries.areValid()) {
-                qCWarning(lcIcc, "fromIccProfile: Invalid ICC profile - invalid white-point(%f, %f)", x, y);
-                return false;
-            }
-            colorspaceDPtr->toXyz = primaries.toXyzMatrix();
-        }
     }
+
     // Reset the matrix to our canonical values:
     if (colorspaceDPtr->primaries != QColorSpace::Primaries::Custom)
         colorspaceDPtr->setToXyzMatrix();
 
-    // Parse TRC tags
-    TagEntry rTrc;
-    TagEntry gTrc;
-    TagEntry bTrc;
-    if (header.inputColorSpace == uint(ColorSpaceType::Gray)) {
-        rTrc = tagIndex[Tag::kTRC];
-        gTrc = tagIndex[Tag::kTRC];
-        bTrc = tagIndex[Tag::kTRC];
-    } else if (tagIndex.contains(Tag::aarg) && tagIndex.contains(Tag::aagg) && tagIndex.contains(Tag::aabg)) {
-        // Apple extension for parametric version of TRCs in ICCv2:
-        rTrc = tagIndex[Tag::aarg];
-        gTrc = tagIndex[Tag::aagg];
-        bTrc = tagIndex[Tag::aabg];
-    } else {
-        rTrc = tagIndex[Tag::rTRC];
-        gTrc = tagIndex[Tag::gTRC];
-        bTrc = tagIndex[Tag::bTRC];
-    }
-
-    QColorTrc rCurve;
-    QColorTrc gCurve;
-    QColorTrc bCurve;
-    if (!parseTRC(data, rTrc, rCurve)) {
-        qCWarning(lcIcc) << "fromIccProfile: Invalid rTRC";
+    if (!parseTRCs(data, tagIndex, colorspaceDPtr, header.inputColorSpace == uint(ColorSpaceType::Gray)))
         return false;
-    }
-    if (!parseTRC(data, gTrc, gCurve)) {
-        qCWarning(lcIcc) << "fromIccProfile: Invalid gTRC";
-        return false;
-    }
-    if (!parseTRC(data, bTrc, bCurve)) {
-        qCWarning(lcIcc) << "fromIccProfile: Invalid bTRC";
-        return false;
-    }
-    if (rCurve == gCurve && gCurve == bCurve && rCurve.m_type == QColorTrc::Type::Function) {
-        if (rCurve.m_fun.isLinear()) {
-            qCDebug(lcIcc) << "fromIccProfile: Linear gamma detected";
-            colorspaceDPtr->trc[0] = QColorTransferFunction();
-            colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Linear;
-            colorspaceDPtr->gamma = 1.0f;
-        } else if (rCurve.m_fun.isGamma()) {
-            qCDebug(lcIcc) << "fromIccProfile: Simple gamma detected";
-            colorspaceDPtr->trc[0] = QColorTransferFunction::fromGamma(rCurve.m_fun.m_g);
-            colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Gamma;
-            colorspaceDPtr->gamma = rCurve.m_fun.m_g;
-        } else if (rCurve.m_fun.isSRgb()) {
-            qCDebug(lcIcc) << "fromIccProfile: sRGB gamma detected";
-            colorspaceDPtr->trc[0] = QColorTransferFunction::fromSRgb();
-            colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::SRgb;
-        } else {
-            colorspaceDPtr->trc[0] = rCurve;
-            colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Custom;
-        }
-
-        colorspaceDPtr->trc[1] = colorspaceDPtr->trc[0];
-        colorspaceDPtr->trc[2] = colorspaceDPtr->trc[0];
-    } else {
-        colorspaceDPtr->trc[0] = rCurve;
-        colorspaceDPtr->trc[1] = gCurve;
-        colorspaceDPtr->trc[2] = bCurve;
-        colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Custom;
-    }
 
     if (tagIndex.contains(Tag::desc)) {
         if (!parseDesc(data, tagIndex[Tag::desc], colorspaceDPtr->description))
