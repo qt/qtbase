@@ -1462,9 +1462,10 @@
 
     \section1 FORMS
 
-    Specifies the UI files (see \l{Qt Designer Manual}) to be processed by \c uic
-    before compiling.  All dependencies, headers and source files required
-    to build these UI files will automatically be added to the project.
+    Specifies the UI files (see \l{Qt Widgets Designer Manual}) to be processed
+    by \c uic before compiling.  All dependencies, headers and source files
+    required to build these UI files will automatically be added to the
+    project.
 
     For example:
 
@@ -5611,7 +5612,8 @@
     QT          += widgets designer
     \endcode
 
-    See the \l{Qt Designer Examples} for more examples of plugin-based projects.
+    See the \l{Qt Widgets Designer Examples} for more examples of plugin-based
+    projects.
 
     \section1 Building and Installing in Debug and Release Modes
 
