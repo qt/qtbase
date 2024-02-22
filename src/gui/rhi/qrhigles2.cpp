@@ -5728,7 +5728,7 @@ bool QGles2TextureRenderTarget::create()
             }
             if (attIndex == 0) {
                 d.pixelSize = rhiD->q->sizeForMipLevel(colorAtt.level(), texD->pixelSize());
-                d.sampleCount = 1;
+                d.sampleCount = texD->sampleCount();
             }
         } else if (renderBuffer) {
             QGles2RenderBuffer *rbD = QRHI_RES(QGles2RenderBuffer, renderBuffer);
@@ -5780,7 +5780,7 @@ bool QGles2TextureRenderTarget::create()
             }
             if (d.colorAttCount == 0) {
                 d.pixelSize = depthTexD->pixelSize();
-                d.sampleCount = 1;
+                d.sampleCount = depthTexD->sampleCount();
             }
         }
         d.dsAttCount = 1;
