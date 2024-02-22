@@ -212,13 +212,16 @@ public:
     {
     }
 
+#if QT_CORE_REMOVED_SINCE(6, 3) || defined(Q_QDOC)
     static QOperatingSystemVersion current();
+#endif
 
     static constexpr OSType currentType()
     {
         return OSType(QOperatingSystemVersionBase::currentType());
     }
 
+#if QT_CORE_REMOVED_SINCE(6, 3) || defined(Q_QDOC)
     QVersionNumber version() const { return QOperatingSystemVersionBase::version(); }
 
     constexpr int majorVersion() const { return QOperatingSystemVersionBase::majorVersion(); }
@@ -227,10 +230,13 @@ public:
 
     constexpr int segmentCount() const
     { return QOperatingSystemVersionBase::segmentCount(); }
+#endif // QT_CORE_REMOVED_SINCE(6, 3)
 
     constexpr OSType type() const { return OSType(QOperatingSystemVersionBase::type()); }
     bool isAnyOfType(std::initializer_list<OSType> types) const;
+#if QT_CORE_REMOVED_SINCE(6, 3) || defined(Q_QDOC)
     QString name() const;
+#endif
 
 private:
     QOperatingSystemVersion() = default;
