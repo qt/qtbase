@@ -81,7 +81,7 @@ void tst_QHttpHeaders::constructors()
     QHttpHeaders hmap = QHttpHeaders::fromMultiMap(map);
     QHttpHeaders hhash = QHttpHeaders::fromMultiHash(hash);
     CONTAINS_HEADER(nb1, v1);
-    CONTAINS_HEADER(nb2, nv2 + "," + nv2)
+    CONTAINS_HEADER(nb2, nv2 + ", " + nv2)
 #undef CONTAINS_HEADER
 }
 
@@ -129,7 +129,7 @@ void tst_QHttpHeaders::accessors()
         QCOMPARE(values.front(), expected.front());                 \
         /* ignore in-between */                                     \
         QCOMPARE(values.back(), expected.back());                   \
-        QCOMPARE(H.combinedValue(N), values.join(','));             \
+        QCOMPARE(H.combinedValue(N), values.join(", "));            \
     } while (false)
 
 #define EXISTS_ONCE(H, N, V) EXISTS_N_TIMES(1, H, N, V)
@@ -428,7 +428,7 @@ void tst_QHttpHeaders::headerValueField()
     h1.append(n1, " foo ");
     QCOMPARE(h1.combinedValue(n1), "foo");
     h1.append(n1, "\tbar\t");
-    QCOMPARE(h1.combinedValue(n1), "foo,bar");
+    QCOMPARE(h1.combinedValue(n1), "foo, bar");
     QCOMPARE(h1.size(), 2);
 
     h1.clear();
