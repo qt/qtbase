@@ -608,11 +608,11 @@ For more information, see \l{https://github.com/emscripten-core/emscripten/blob/
 \preliminarycmakeproperty
 \cmakepropertywebassemblyonly
 
-Specifies the maximum amount of memory the applicataion can use. Translates into
-the Emscripten compiler setting of MAXIMUM_MEMORY. The default value
+Specifies the maximum amount of memory the application can use. Translates into
+the Emscripten compiler setting of \c MAXIMUM_MEMORY. The default value
 is 4GB, which is the maximum for 32-bit WebAssembly.
 
-For more information, see \l{https://github.com/emscripten-core/emscripten/blob/main/src/settings.js}{Emscripten compiler settings}.
+For more information, see the \l{https://github.com/emscripten-core/emscripten/blob/3319a313d3b589624d342b650884caaf8cd9ef30/src/settings.js#L187}{Emscripten compiler settings}.
 */
 
 
