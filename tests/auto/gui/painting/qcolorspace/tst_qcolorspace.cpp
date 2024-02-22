@@ -188,21 +188,41 @@ void tst_QColorSpace::fromIccProfile_data()
     QTest::addColumn<QString>("testProfile");
     QTest::addColumn<QColorSpace::NamedColorSpace>("namedColorSpace");
     QTest::addColumn<QColorSpace::TransferFunction>("transferFunction");
+    QTest::addColumn<QColorSpace::TransformModel>("transformModel");
+    QTest::addColumn<QColorSpace::ColorModel>("colorModel");
     QTest::addColumn<QString>("description");
 
     QString prefix = QFINDTESTDATA("resources/");
     // Read the official sRGB ICCv2 profile:
     QTest::newRow("sRGB2014 (ICCv2)") << prefix + "sRGB2014.icc" << QColorSpace::SRgb
-                                           << QColorSpace::TransferFunction::SRgb << QString("sRGB2014");
+                                      << QColorSpace::TransferFunction::SRgb
+                                      << QColorSpace::TransformModel::ThreeComponentMatrix
+                                      << QColorSpace::ColorModel::Rgb << QString("sRGB2014");
     // My monitor's profile:
     QTest::newRow("HP ZR30w (ICCv4)") << prefix + "HP_ZR30w.icc" << QColorSpace::NamedColorSpace(0)
-                                      << QColorSpace::TransferFunction::Gamma << QString("HP Z30i");
+                                      << QColorSpace::TransferFunction::Gamma
+                                      << QColorSpace::TransformModel::ThreeComponentMatrix
+                                      << QColorSpace::ColorModel::Rgb << QString("HP Z30i");
     // A profile to HD TV
     QTest::newRow("VideoHD") << prefix + "VideoHD.icc" << QColorSpace::NamedColorSpace(0)
-                                      << QColorSpace::TransferFunction::Custom << QString("HDTV (Rec. 709)");
+                             << QColorSpace::TransferFunction::Custom
+                             << QColorSpace::TransformModel::ElementListProcessing
+                             << QColorSpace::ColorModel::Rgb << QString("HDTV (Rec. 709)");
     // sRGB on PCSLab format
     QTest::newRow("sRGB ICCv4 Appearance") << prefix + "sRGB_ICC_v4_Appearance.icc" << QColorSpace::NamedColorSpace(0)
-                                           << QColorSpace::TransferFunction::Custom << QString("sRGB_ICC_v4_Appearance.icc");
+                                           << QColorSpace::TransferFunction::Custom
+                                           << QColorSpace::TransformModel::ElementListProcessing
+                                           << QColorSpace::ColorModel::Rgb << QString("sRGB_ICC_v4_Appearance.icc");
+    // Grayscale profile
+    QTest::newRow("sGrey-v4") << prefix + "sGrey-v4.icc" << QColorSpace::NamedColorSpace(0)
+                                << QColorSpace::TransferFunction::SRgb
+                                << QColorSpace::TransformModel::ThreeComponentMatrix
+                                << QColorSpace::ColorModel::Gray << QString("sGry");
+    // CMYK profile
+    QTest::newRow("CGATS compat") << prefix + "CGATS001Compat-v2-micro.icc" << QColorSpace::NamedColorSpace(0)
+                                  << QColorSpace::TransferFunction::Custom
+                                  << QColorSpace::TransformModel::ElementListProcessing
+                                  << QColorSpace::ColorModel::Cmyk << QString("uCMY");
 }
 
 void tst_QColorSpace::fromIccProfile()
@@ -210,6 +230,8 @@ void tst_QColorSpace::fromIccProfile()
     QFETCH(QString, testProfile);
     QFETCH(QColorSpace::NamedColorSpace, namedColorSpace);
     QFETCH(QColorSpace::TransferFunction, transferFunction);
+    QFETCH(QColorSpace::TransformModel, transformModel);
+    QFETCH(QColorSpace::ColorModel, colorModel);
     QFETCH(QString, description);
 
     QFile file(testProfile);
@@ -222,6 +244,8 @@ void tst_QColorSpace::fromIccProfile()
         QCOMPARE(fileColorSpace, namedColorSpace);
 
     QCOMPARE(fileColorSpace.transferFunction(), transferFunction);
+    QCOMPARE(fileColorSpace.transformModel(), transformModel);
+    QCOMPARE(fileColorSpace.colorModel(), colorModel);
     QCOMPARE(fileColorSpace.description(), description);
 
     QByteArray iccProfile2 = fileColorSpace.iccProfile();

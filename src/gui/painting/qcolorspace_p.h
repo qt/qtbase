@@ -114,7 +114,7 @@ public:
 
     // Element list processing data:
     struct TransferElement {
-        QColorTrc trc[3];
+        QColorTrc trc[4];
     };
     using Element = std::variant<TransferElement, QColorMatrix, QColorVector, QColorCLUT>;
     bool isPcsLab = false;

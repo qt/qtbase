@@ -448,6 +448,8 @@ inline QColorSpace::ColorModel qt_csColorData(QPixelFormat::ColorModel format)
         return QColorSpace::ColorModel::Undefined; // No valid colors
     case QPixelFormat::ColorModel::Grayscale:
         return QColorSpace::ColorModel::Gray;
+    case QPixelFormat::ColorModel::CMYK:
+        return QColorSpace::ColorModel::Cmyk;
     default:
         break;
     }
@@ -467,9 +469,8 @@ inline bool qt_compatibleColorModel(QPixelFormat::ColorModel data, QColorSpace::
     if (dataCs == cs)
         return true; // Matching color models
 
-    if (cs == QColorSpace::ColorModel::Rgb)
-        // Can apply RGB CS to Gray data
-        return dataCs == QColorSpace::ColorModel::Gray;
+    if (dataCs == QColorSpace::ColorModel::Gray)
+        return true; // Can apply any CS with white point to Gray data
 
     return false;
 }

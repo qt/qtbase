@@ -468,6 +468,7 @@ void QColorSpacePrivate::clearElementListProcessingForEdit()
     Q_ASSERT(transferFunction == QColorSpace::TransferFunction::Custom);
 
     transformModel = QColorSpace::TransformModel::ThreeComponentMatrix;
+    colorModel = QColorSpace::ColorModel::Rgb;
     isPcsLab = false;
     mAB.clear();
     mBA.clear();
@@ -576,6 +577,8 @@ void QColorSpacePrivate::clearElementListProcessingForEdit()
     \value Undefined No color model
     \value Rgb An RGB color model with red, green, and blue colors. Can apply to RGB and grayscale data.
     \value Gray A gray scale color model. Can only apply to grayscale data.
+    \value Cmyk Can only represent color data defined with cyan, magenta, yellow, and black colors.
+    In effect only QImage::Format_CMYK32. Note Cmyk color spaces will be TransformModel::ElementListProcessing.
 */
 
 /*!
@@ -1151,7 +1154,8 @@ static bool compareElement(const QColorSpacePrivate::TransferElement &element,
 {
     return element.trc[0] == other.trc[0]
         && element.trc[1] == other.trc[1]
-        && element.trc[2] == other.trc[2];
+        && element.trc[2] == other.trc[2]
+        && element.trc[3] == other.trc[3];
 }
 
 static bool compareElement(const QColorMatrix &element,
@@ -1174,6 +1178,8 @@ static bool compareElement(const QColorCLUT &element,
     if (element.gridPointsY != other.gridPointsY)
         return false;
     if (element.gridPointsZ != other.gridPointsZ)
+        return false;
+    if (element.gridPointsW != other.gridPointsW)
         return false;
     if (element.table.size() != other.table.size())
         return false;
@@ -1230,6 +1236,8 @@ bool QColorSpacePrivate::equals(const QColorSpacePrivate *other) const
 
     if (!isThreeComponentMatrix()) {
         if (isPcsLab != other->isPcsLab)
+            return false;
+        if (colorModel != other->colorModel)
             return false;
         if (mAB.count() != other->mAB.count())
             return false;

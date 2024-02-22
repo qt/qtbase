@@ -171,6 +171,8 @@ private slots:
 
     void colorSpaceRgbConversion_data();
     void colorSpaceRgbConversion();
+    void colorSpaceCmykConversion_data();
+    void colorSpaceCmykConversion();
 
     void deepCopyWhenPaintingActive();
     void scaled_QTBUG19157();
@@ -3321,6 +3323,69 @@ void tst_QImage::colorSpaceRgbConversion()
     }
 }
 
+
+void tst_QImage::colorSpaceCmykConversion_data()
+{
+    QTest::addColumn<QImage::Format>("toFormat");
+
+    QImage::Format formats[] = {
+        QImage::Format_RGB32,
+        QImage::Format_ARGB32,
+        QImage::Format_ARGB32_Premultiplied,
+        QImage::Format_RGBX64,
+        QImage::Format_RGBA64,
+        QImage::Format_RGBA64_Premultiplied,
+        QImage::Format_RGBX32FPx4,
+        QImage::Format_RGBA32FPx4,
+        QImage::Format_RGBA32FPx4_Premultiplied,
+        QImage::Format_Grayscale8,
+        QImage::Format_Grayscale16,
+    };
+
+    for (auto toFormat : formats)
+        QTest::addRow("CMYK8888 -> %s", formatToString(toFormat).data()) << toFormat;
+}
+
+void tst_QImage::colorSpaceCmykConversion()
+{
+    QFETCH(QImage::Format, toFormat);
+
+    bool dstGrayscale = toFormat == QImage::Format_Grayscale8 || toFormat == QImage::Format_Grayscale16;
+
+    QImage image(16, 16, QImage::Format_CMYK8888);
+    QFile iccProfile(m_prefix +"CGATS001Compat-v2-micro.icc");
+    iccProfile.open(QIODevice::ReadOnly);
+    image.setColorSpace(QColorSpace::fromIccProfile(iccProfile.readAll()));
+    QVERIFY(image.colorSpace().isValid());
+
+    for (int i = 0; i < image.height(); ++i) {
+        for (int j = 0; j < image.width(); ++j) {
+            if (dstGrayscale)
+                image.setPixel(j, i, qRgb((i + j) * 8, (i + j) * 8, (i + j) * 8));
+            else
+                image.setPixel(j, i, qRgb(j * 16, i * 16, (i + j) * 8));
+        }
+    }
+
+    QImage imageConverted = image.convertedToColorSpace(QColorSpace::SRgb, toFormat);
+    QCOMPARE(imageConverted.format(), toFormat);
+    QCOMPARE(imageConverted.size(), image.size());
+    if (dstGrayscale) {
+        int gray = 0;
+        for (int x = 0; x < image.width(); ++x) {
+            int newGray = qGray(imageConverted.pixel(x, 6));
+            QCOMPARE_GE(newGray, gray);
+            gray = newGray;
+        }
+    } else {
+        int red = 0;
+        for (int x = 0; x < image.width(); ++x) {
+            int newRed = qRed(imageConverted.pixel(x, 5));
+            QCOMPARE_GE(newRed, red);
+            red = newRed;
+        }
+    }
+}
 
 void tst_QImage::deepCopyWhenPaintingActive()
 {

@@ -54,6 +54,7 @@ public:
         Undefined = 0,
         Rgb = 1,
         Gray = 2,
+        Cmyk = 3,
     };
     Q_ENUM(ColorModel)
 

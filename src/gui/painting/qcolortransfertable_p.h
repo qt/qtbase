@@ -45,7 +45,7 @@ public:
         Q_ASSERT(qsizetype(size) <= table.size());
     }
 
-    bool isEmpty() const
+    bool isEmpty() const noexcept
     {
         return m_tableSize == 0;
     }

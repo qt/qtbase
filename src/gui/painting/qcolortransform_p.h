@@ -22,6 +22,7 @@
 #include <QtGui/qrgbafloat.h>
 
 QT_BEGIN_NAMESPACE
+class QCmyk32;
 
 class QColorTransformPrivate : public QSharedData
 {

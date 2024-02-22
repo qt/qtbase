@@ -28,20 +28,20 @@ class QColorVector
 {
 public:
     QColorVector() = default;
-    constexpr QColorVector(float x, float y, float z) : x(x), y(y), z(z) { }
+    constexpr QColorVector(float x, float y, float z, float w = 0.0f) noexcept : x(x), y(y), z(z), w(w) { }
     explicit constexpr QColorVector(const QPointF &chr) // from XY chromaticity
             : x(chr.x() / chr.y())
             , y(1.0f)
             , z((1.0f - chr.x() - chr.y()) / chr.y())
     { }
-    float x = 0.0f; // X, x, L, or red
-    float y = 0.0f; // Y, y, a, or green
-    float z = 0.0f; // Z, Y, b, or blue
-    float _unused = 0.0f;
+    float x = 0.0f; // X, x, L, or red/cyan
+    float y = 0.0f; // Y, y, a, or green/magenta
+    float z = 0.0f; // Z, Y, b, or blue/yellow
+    float w = 0.0f; // unused, or black
 
     constexpr bool isNull() const noexcept
     {
-        return !x && !y && !z;
+        return !x && !y && !z && !w;
     }
     bool isValid() const noexcept
     {
@@ -59,10 +59,10 @@ public:
         return true;
     }
 
-    constexpr QColorVector operator*(float f) const { return QColorVector(x * f, y * f, z * f); }
-    constexpr QColorVector operator+(const QColorVector &v) const { return QColorVector(x + v.x, y + v.y, z + v.z); }
-    constexpr QColorVector operator-(const QColorVector &v) const { return QColorVector(x - v.x, y - v.y, z - v.z); }
-    void operator+=(const QColorVector &v) { x += v.x; y += v.y; z += v.z; }
+    constexpr QColorVector operator*(float f) const { return QColorVector(x * f, y * f, z * f, w * f); }
+    constexpr QColorVector operator+(const QColorVector &v) const { return QColorVector(x + v.x, y + v.y, z + v.z, w + v.w); }
+    constexpr QColorVector operator-(const QColorVector &v) const { return QColorVector(x - v.x, y - v.y, z - v.z, w - v.w); }
+    void operator+=(const QColorVector &v) { x += v.x; y += v.y; z += v.z; w += v.w; }
 
     QPointF toChromaticity() const
     {
@@ -198,7 +198,8 @@ inline bool comparesEqual(const QColorVector &v1, const QColorVector &v2)
 {
     return (std::abs(v1.x - v2.x) < (1.0f / 2048.0f))
         && (std::abs(v1.y - v2.y) < (1.0f / 2048.0f))
-        && (std::abs(v1.z - v2.z) < (1.0f / 2048.0f));
+        && (std::abs(v1.z - v2.z) < (1.0f / 2048.0f))
+        && (std::abs(v1.w - v2.w) < (1.0f / 2048.0f));
 }
 
 // A matrix mapping 3 value colors.

@@ -4,8 +4,24 @@
 #include <cstdlib>
 
 #include <QGuiApplication>
+#include <QColor>
 #include <QColorSpace>
 #include <QImage>
+
+static QImage::Format toFormat(QColorSpace::ColorModel model)
+{
+    switch (model) {
+    case QColorSpace::ColorModel::Rgb:
+        return QImage::Format_RGB32;
+    case QColorSpace::ColorModel::Gray:
+        return QImage::Format_Grayscale16;
+    case QColorSpace::ColorModel::Cmyk:
+        return QImage::Format_CMYK8888;
+    case QColorSpace::ColorModel::Undefined:
+        break;
+    }
+    return QImage::Format_Invalid;
+}
 
 extern "C" int LLVMFuzzerTestOneInput(const char *data, size_t size) {
     // to reduce noise and increase speed
@@ -27,9 +43,9 @@ extern "C" int LLVMFuzzerTestOneInput(const char *data, size_t size) {
         cs2.setDescription("Hello");
         bool b = (cs == cs2);
         Q_UNUSED(b);
-        QRgb color = 0xfaf8fa00;
+        QColor color(0xfaf8fa00);
         color = trans1.map(color);
-        QImage img(16, 2, cs.colorModel() == QColorSpace::ColorModel::Rgb ? QImage::Format_RGB32 : QImage::Format_Grayscale8);
+        QImage img(16, 2, toFormat(cs.colorModel()));
         img.setColorSpace(cs);
         QImage img2 = img.convertedToColorSpace(QColorSpace::SRgb);
         if (cs.isValidTarget()) {

@@ -20,7 +20,7 @@
 
 QT_BEGIN_NAMESPACE
 
-// A 3-dimensional lookup table compatible with ICC lut8, lut16, mAB, and mBA formats.
+// A 3/4-dimensional lookup table compatible with ICC lut8, lut16, mAB, and mBA formats.
 class QColorCLUT
 {
     inline static QColorVector interpolate(const QColorVector &a, const QColorVector &b, float t)
@@ -32,45 +32,92 @@ class QColorCLUT
         a += (b - a) * t;
     }
 public:
-    qsizetype gridPointsX = 0;
-    qsizetype gridPointsY = 0;
-    qsizetype gridPointsZ = 0;
+    uint32_t gridPointsX = 0;
+    uint32_t gridPointsY = 0;
+    uint32_t gridPointsZ = 0;
+    uint32_t gridPointsW = 1;
     QList<QColorVector> table;
 
     bool isEmpty() const { return table.isEmpty(); }
 
     QColorVector apply(const QColorVector &v) const
     {
-        Q_ASSERT(table.size() == gridPointsX * gridPointsY * gridPointsZ);
+        Q_ASSERT(table.size() == gridPointsX * gridPointsY * gridPointsZ * gridPointsW);
+        QColorVector frac;
         const float x = std::clamp(v.x, 0.0f, 1.0f) * (gridPointsX - 1);
         const float y = std::clamp(v.y, 0.0f, 1.0f) * (gridPointsY - 1);
         const float z = std::clamp(v.z, 0.0f, 1.0f) * (gridPointsZ - 1);
-        // Variables for trilinear interpolation
-        const qsizetype lox = static_cast<qsizetype>(std::floor(x));
-        const qsizetype hix = std::min(lox + 1, gridPointsX - 1);
-        const qsizetype loy = static_cast<qsizetype>(std::floor(y));
-        const qsizetype hiy = std::min(loy + 1, gridPointsY - 1);
-        const qsizetype loz = static_cast<qsizetype>(std::floor(z));
-        const qsizetype hiz = std::min(loz + 1, gridPointsZ - 1);
-        const float fracx = x - static_cast<float>(lox);
-        const float fracy = y - static_cast<float>(loy);
-        const float fracz = z - static_cast<float>(loz);
-        QColorVector tmp[4];
-        auto index = [&](qsizetype x, qsizetype y, qsizetype z) { return x * gridPointsZ * gridPointsY + y * gridPointsZ + z; };
+        const float w = std::clamp(v.w, 0.0f, 1.0f) * (gridPointsW - 1);
+        const uint32_t lox = static_cast<uint32_t>(std::floor(x));
+        const uint32_t hix = std::min(lox + 1, gridPointsX - 1);
+        const uint32_t loy = static_cast<uint32_t>(std::floor(y));
+        const uint32_t hiy = std::min(loy + 1, gridPointsY - 1);
+        const uint32_t loz = static_cast<uint32_t>(std::floor(z));
+        const uint32_t hiz = std::min(loz + 1, gridPointsZ - 1);
+        const uint32_t low = static_cast<uint32_t>(std::floor(w));
+        const uint32_t hiw = std::min(low + 1, gridPointsW - 1);
+        frac.x = x - static_cast<float>(lox);
+        frac.y = y - static_cast<float>(loy);
+        frac.z = z - static_cast<float>(loz);
+        frac.w = w - static_cast<float>(low);
+        if (gridPointsW > 1) {
+            auto index = [&](qsizetype x, qsizetype y, qsizetype z, qsizetype w) -> qsizetype {
+                return x * gridPointsW * gridPointsZ * gridPointsY
+                     + y * gridPointsW * gridPointsZ
+                     + z * gridPointsW
+                     + w;
+            };
+            QColorVector tmp[8];
+            // interpolate over w
+            tmp[0] = interpolate(table[index(lox, loy, loz, low)],
+                                 table[index(lox, loy, loz, hiw)], frac.w);
+            tmp[1] = interpolate(table[index(lox, loy, hiz, low)],
+                                 table[index(lox, loy, hiz, hiw)], frac.w);
+            tmp[2] = interpolate(table[index(lox, hiy, loz, low)],
+                                 table[index(lox, hiy, loz, hiw)], frac.w);
+            tmp[3] = interpolate(table[index(lox, hiy, hiz, low)],
+                                 table[index(lox, hiy, hiz, hiw)], frac.w);
+            tmp[4] = interpolate(table[index(hix, loy, loz, low)],
+                                 table[index(hix, loy, loz, hiw)], frac.w);
+            tmp[5] = interpolate(table[index(hix, loy, hiz, low)],
+                                 table[index(hix, loy, hiz, hiw)], frac.w);
+            tmp[6] = interpolate(table[index(hix, hiy, loz, low)],
+                                 table[index(hix, hiy, loz, hiw)], frac.w);
+            tmp[7] = interpolate(table[index(hix, hiy, hiz, low)],
+                                 table[index(hix, hiy, hiz, hiw)], frac.w);
+            // interpolate over z
+            for (int i = 0; i < 4; ++i)
+                interpolateIn(tmp[i * 2], tmp[i * 2 + 1], frac.z);
+            // interpolate over y
+            for (int i = 0; i < 2; ++i)
+                interpolateIn(tmp[i * 4], tmp[i * 4 + 2], frac.y);
+            // interpolate over x
+            interpolateIn(tmp[0], tmp[4], frac.x);
+            return tmp[0];
+        }
+        auto index = [&](qsizetype x, qsizetype y, qsizetype z) -> qsizetype {
+            return x * gridPointsZ * gridPointsY
+                 + y * gridPointsZ
+                 + z;
+        };
+        QColorVector tmp[8] = {
+                table[index(lox, loy, loz)],
+                table[index(lox, loy, hiz)],
+                table[index(lox, hiy, loz)],
+                table[index(lox, hiy, hiz)],
+                table[index(hix, loy, loz)],
+                table[index(hix, loy, hiz)],
+                table[index(hix, hiy, loz)],
+                table[index(hix, hiy, hiz)]
+        };
         // interpolate over z
-        tmp[0] = interpolate(table[index(lox, loy, loz)],
-                             table[index(lox, loy, hiz)], fracz);
-        tmp[1] = interpolate(table[index(lox, hiy, loz)],
-                             table[index(lox, hiy, hiz)], fracz);
-        tmp[2] = interpolate(table[index(hix, loy, loz)],
-                             table[index(hix, loy, hiz)], fracz);
-        tmp[3] = interpolate(table[index(hix, hiy, loz)],
-                             table[index(hix, hiy, hiz)], fracz);
+        for (int i = 0; i < 4; ++i)
+            interpolateIn(tmp[i * 2], tmp[i * 2 + 1], frac.z);
         // interpolate over y
-        interpolateIn(tmp[0], tmp[1], fracy);
-        interpolateIn(tmp[2], tmp[3], fracy);
+        for (int i = 0; i < 2; ++i)
+            interpolateIn(tmp[i * 4], tmp[i * 4 + 2], frac.y);
         // interpolate over x
-        interpolateIn(tmp[0], tmp[2], fracx);
+        interpolateIn(tmp[0], tmp[4], frac.x);
         return tmp[0];
     }
 };
