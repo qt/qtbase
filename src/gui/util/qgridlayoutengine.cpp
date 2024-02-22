@@ -720,7 +720,7 @@ void QGridLayoutItem::dump(int indent) const
     if (q_alignment != 0)
         qDebug("%*s Alignment: %x", indent, "", uint(q_alignment));
     qDebug("%*s Horizontal size policy: %x Vertical size policy: %x",
-        indent, "", sizePolicy(Qt::Horizontal), sizePolicy(Qt::Vertical));
+        indent, "", (unsigned int)sizePolicy(Qt::Horizontal), (unsigned int)sizePolicy(Qt::Vertical));
 }
 #endif
 
@@ -1182,7 +1182,7 @@ void QGridLayoutEngine::dump(int indent) const
 {
     qDebug("%*sEngine", indent, "");
 
-    qDebug("%*s Items (%d)", indent, "", q_items.count());
+    qDebug("%*s Items (%lld)", indent, "", q_items.count());
     int i;
     for (i = 0; i < q_items.count(); ++i)
         q_items.at(i)->dump(indent + 2);
