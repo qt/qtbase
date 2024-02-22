@@ -1557,6 +1557,10 @@ bool QPlainTextEdit::event(QEvent *e)
         }
         return true;
 #endif // QT_NO_GESTURES
+    case QEvent::WindowActivate:
+    case QEvent::WindowDeactivate:
+        d->control->setPalette(palette());
+        break;
     default:
         break;
     }
@@ -2298,7 +2302,6 @@ void QPlainTextEdit::changeEvent(QEvent *e)
         d->control->document()->setDefaultFont(font());
         break;
     case QEvent::ActivationChange:
-        d->control->setPalette(palette());
         if (!isActiveWindow())
             d->autoScrollTimer.stop();
         break;
