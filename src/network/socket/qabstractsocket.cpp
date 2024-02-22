@@ -636,11 +636,15 @@ bool QAbstractSocketPrivate::canReadNotification()
             return !q->isReadable();
         }
     } else {
-        if (hasPendingData) {
+        const bool isUdpSocket = (socketType == QAbstractSocket::UdpSocket);
+        if (hasPendingData && (!isUdpSocket || hasPendingDatagram)) {
             socketEngine->setReadNotificationEnabled(false);
             return true;
         }
-        hasPendingData = true;
+        if (!isUdpSocket || socketEngine->hasPendingDatagrams()) {
+            hasPendingData = true;
+            hasPendingDatagram = isUdpSocket;
+        }
     }
 
     emitReadyRead();
