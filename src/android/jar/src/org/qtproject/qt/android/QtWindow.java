@@ -33,6 +33,8 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         m_editText = new QtEditText(context, delegate);
         setParent(parentWindow);
         setFocusableInTouchMode(true);
+        addView(m_editText, new QtLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                      ViewGroup.LayoutParams.MATCH_PARENT));
 
         QtNative.runAction(() -> {
             m_gestureDetector =
@@ -111,8 +113,6 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
             // The surface container of this window will be added as the first of the stack.
             // All other views are stacked based on the order they are created.
             addView(m_surfaceContainer, 0);
-            addView(m_editText, new QtLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                          ViewGroup.LayoutParams.MATCH_PARENT));
         });
     }
 
