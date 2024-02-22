@@ -237,10 +237,10 @@ void tst_QNetworkRequestFactory::headers()
     h1.append(name1, value3);
     factory.setCommonHeaders(h1);
     QVERIFY(factory.commonHeaders().contains(name1));
-    QCOMPARE(factory.commonHeaders().combinedValue(name1), value1 + ',' + value2 + ',' + value3);
+    QCOMPARE(factory.commonHeaders().combinedValue(name1), value1 + ", " + value2 + ", " + value3);
     request = factory.createRequest();
     QVERIFY(request.hasRawHeader(name1));
-    QCOMPARE(request.rawHeader(name1), value1 + ',' + value2 + ',' + value3);
+    QCOMPARE(request.rawHeader(name1), value1 + ", " + value2 + ", " + value3);
 }
 
 void tst_QNetworkRequestFactory::bearerToken()

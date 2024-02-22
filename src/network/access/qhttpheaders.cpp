@@ -50,15 +50,15 @@ Q_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
 
     \section1 Combining values
 
-    Most HTTP header values can be combined with a single comma \c {','},
-    and the semantic meaning is preserved. As an example, these two should be
-    semantically similar:
+    Most HTTP header values can be combined with a single comma \c {','}
+    plus an optional whitespace, and the semantic meaning is preserved.
+    As an example, these two should be semantically similar:
     \badcode
         // Values as separate header entries
         myheadername: myheadervalue1
         myheadername: myheadervalue2
         // Combined value
-        myheadername: myheadervalue1,myheadervalue2
+        myheadername: myheadervalue1, myheadervalue2
     \endcode
 
     However, there is a notable exception to this rule:
@@ -1021,7 +1021,7 @@ QByteArray QHttpHeaders::combinedValue(QAnyStringView name) const
     for (const auto &v : valueList) {
         result.append(separator);
         result.append(v);
-        separator = ",";
+        separator = ", ";
     }
     return result;
 }
