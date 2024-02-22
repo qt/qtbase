@@ -256,3 +256,5 @@ Q_LOGGING_CATEGORY(lcSsl, "qt.network.ssl");
 */
 
 QT_END_NAMESPACE
+
+#include "moc_qssl.cpp"

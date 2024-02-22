@@ -178,3 +178,4 @@ void QNetworkManagerNetworkInformationBackend::onMeteredChanged(
 QT_END_NAMESPACE
 
 #include "qnetworkmanagernetworkinformationbackend.moc"
+#include "moc_qnetworkmanagernetworkinformationbackend.cpp"
