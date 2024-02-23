@@ -333,6 +333,136 @@ function(qt_auto_detect_cyclic_toolchain)
     endif()
 endfunction()
 
+# Gets output of running 'uname -m', finding uname in path, and caching its location in QT_UNAME.
+# Usually returns an architecture string like 'arch64' or 'x86_64'.
+# Returns an empty string in case of an error.
+# Does not pierce Rosetta, so will not always return the actual physical architecture.
+# Usually that is based on the architecture of the parent process that invokes cmake.
+function(qt_internal_get_uname_m_output out_var)
+    # This caches by default.
+    find_program(QT_UNAME NAMES uname PATHS /bin /usr/bin /usr/local/bin)
+
+    execute_process(COMMAND ${QT_UNAME} -m
+        OUTPUT_VARIABLE output
+        RESULT_VARIABLE result
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET)
+    if(result EQUAL 0)
+        set(value "${output}")
+    else()
+        set(value "")
+    endif()
+
+    set(${out_var} "${value}" PARENT_SCOPE)
+endfunction()
+
+# Sets out_var to TRUE if running on a host machine with an Apple silicon arm64 CPU.
+# This is TRUE even when running under Rosetta, aka it pierces Rosetta, unlike the result of
+# 'uname -m'.
+# Same as the logic in Modules/Platform/Darwin-Initialize.cmake
+# Or https://github.com/Homebrew/brew/pull/7995/files
+function(qt_internal_is_apple_physical_cpu_arm64 out_var)
+    execute_process(
+        COMMAND sysctl -q hw.optional.arm64
+        OUTPUT_VARIABLE sysctl_stdout
+        ERROR_VARIABLE sysctl_stderr
+        RESULT_VARIABLE sysctl_result)
+
+    if(sysctl_result EQUAL 0 AND sysctl_stdout MATCHES "hw.optional.arm64: 1")
+        set(value TRUE)
+    else()
+        set(value FALSE)
+    endif()
+
+    set(${out_var} "${value}" PARENT_SCOPE)
+endfunction()
+
+# Mirror CMake's logic of detecting the CMAKE_HOST_SYSTEM_PROCESSOR, including handling of Apple
+# silicon, before project() is actually called.
+# Honors whatever architecture Rosetta reports.
+# Similar to the code in Modules/CMakeDetermineSystem.cmake
+# and thus allows override via CMAKE_APPLE_SILICON_PROCESSOR.
+function(qt_internal_get_early_apple_host_system_arch out_var_processor)
+    # If we are running on Apple Silicon, honor CMAKE_APPLE_SILICON_PROCESSOR.
+    if(DEFINED CMAKE_APPLE_SILICON_PROCESSOR)
+        set(processor "${CMAKE_APPLE_SILICON_PROCESSOR}")
+    elseif(DEFINED ENV{CMAKE_APPLE_SILICON_PROCESSOR})
+        set(processor "$ENV{CMAKE_APPLE_SILICON_PROCESSOR}")
+    else()
+        set(processor "")
+    endif()
+
+    if(processor)
+        # Handle case when CMAKE_APPLE_SILICON_PROCESSOR is passed on an Intel x86_64 machine, in
+        # that case we unset the given value, instead relying on the output of 'uname -m'.
+        if(";${processor};" MATCHES "^;(arm64|x86_64);$")
+            qt_internal_is_apple_physical_cpu_arm64(is_arm64)
+            if(NOT is_arm64)
+                set(processor "")
+            endif()
+        endif()
+    endif()
+
+    if(processor)
+        set(output "${processor}")
+    else()
+        qt_internal_get_uname_m_output(output)
+    endif()
+
+    set(${out_var_processor} "${output}" PARENT_SCOPE)
+endfunction()
+
+# Detect whether the user intends to cross-compile to arm64 on an x86_64 macOS host, or vice versa,
+# based on the passed-in CMAKE_OSX_ARCHITECTURES and the real physical host architecture.
+#
+# CMake doesn't handle this properly by default, unless one explicitly passes
+# -DCMAKE_SYSTEM_NAME=Darwin, which people don't really know about and is somewhat unintuitive.
+#
+# If a cross-compilation is detected, a host Qt will be required for tools.
+function(qt_auto_detect_macos_single_arch_cross_compilation)
+    # Skip on non-Apple platforms.
+    if(NOT APPLE
+
+        # If CMAKE_SYSTEM_NAME is explicitly specified, it means CMake will implicitly
+        # do `set(CMAKE_CROSSCOMPILING TRUE)`, so we don't need to do anything extra.
+        OR CMAKE_SYSTEM_NAME OR CMAKE_CROSSCOMPILING
+
+        # Opt out just in case this breaks something
+        OR QT_NO_HANDLE_APPLE_SINGLE_ARCH_CROSS_COMPILING
+
+        # Exit early if check was previously done, so we don't need to do extra process calls.
+        OR QT_INTERNAL_MACOS_SINGLE_ARCH_CROSS_COMPILING_DETECTION_DONE)
+        return()
+    endif()
+
+    list(LENGTH CMAKE_OSX_ARCHITECTURES arch_count)
+
+    # We only consider cross-compilation the case where arch count is exactly 1.
+    if(NOT arch_count EQUAL 1)
+        return()
+    else()
+        set(target_arch "${CMAKE_OSX_ARCHITECTURES}")
+    endif()
+
+    qt_internal_get_early_apple_host_system_arch(host_arch)
+    if(NOT "${host_arch}" STREQUAL "${target_arch}")
+        message(
+            STATUS "Detected implicit macOS cross-compilation. "
+            "Host arch: ${host_arch} Target arch: ${target_arch}. "
+            "Setting CMAKE_CROSSCOMPILING to TRUE."
+        )
+
+        # Setting these tells CMake we are cross-compiling. This gets set in the correct scope
+        # for top-level builds as well, because it is included via
+        # qt_internal_top_level_setup_autodetect -> include() -> qt_internal_setup_autodetect()
+        # all of which are macros that don't create a new scope.
+        set(CMAKE_SYSTEM_NAME "Darwin" PARENT_SCOPE)
+        set(CMAKE_CROSSCOMPILING "TRUE" PARENT_SCOPE)
+    endif()
+
+    set(QT_INTERNAL_MACOS_SINGLE_ARCH_CROSS_COMPILING_DETECTION_DONE TRUE CACHE BOOL "")
+endfunction()
+
 function(qt_auto_detect_pch)
     set(default_value "ON")
 
@@ -476,6 +606,7 @@ macro(qt_internal_setup_autodetect)
     qt_auto_detect_cyclic_toolchain()
     qt_auto_detect_cmake_config()
     qt_auto_detect_apple()
+    qt_auto_detect_macos_single_arch_cross_compilation()
     qt_auto_detect_android()
     qt_auto_detect_pch()
     qt_auto_detect_wasm()

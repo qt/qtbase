@@ -195,13 +195,27 @@ endif()")
         list(APPEND init_platform "endif()")
         list(APPEND init_platform "")
 
-        # For macOS user projects, default to not specifying any architecture. This means CMake will
-        # not pass an -arch flag to the compiler and the compiler will choose the default
-        # architecture to build for.
+        # For macOS user projects, the common case is to default to not specifying any architecture.
+        # This means CMake will not pass an -arch flag to the compiler and the compiler will
+        # choose the default architecture to build for.
         # On Apple Silicon, CMake will introspect whether it's running under Rosetta and will
         # pass the detected architecture (x86_64 under Rosetta or arm64 natively) to the compiler.
         # This is line with default CMake behavior for user projects.
-        #
+        # If Qt was cross-compiled to arm64 from an x86_64 host machine, or vice versa, we need
+        # to continue using the same architecture for the user project, otherwise the CMake default
+        # might be incorrect depending on which host arch the user project is built on.
+        if(NOT UIKIT)
+            list(LENGTH CMAKE_OSX_ARCHITECTURES arch_count)
+            if(arch_count EQUAL 1 AND CMAKE_CROSSCOMPILING AND CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+                list(APPEND init_platform
+"if(NOT __qt_toolchain_building_qt_repo AND NOT QT_NO_SET_OSX_ARCHITECTURES)"
+"    set(CMAKE_OSX_ARCHITECTURES \"${CMAKE_OSX_ARCHITECTURES}\" CACHE STRING \"\")"
+"    set(CMAKE_SYSTEM_NAME \"${CMAKE_SYSTEM_NAME}\" CACHE STRING \"\")"
+"endif()"
+                )
+            endif()
+        endif()
+
         # For iOS, we provide a bit more convenience.
         # When the user project is built using the Xcode generator, we only specify the architecture
         # if this is a single architecture Qt for iOS build. If we wouldn't, invoking just
