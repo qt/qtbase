@@ -629,7 +629,7 @@ static void QT_FASTCALL destStoreGray8(QRasterBuffer *rasterBuffer, int x, int y
         QColorTransform tf = QColorSpacePrivate::get(fromCS)->transformationToXYZ();
         QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
 
-        tfd->apply(data, buffer, length, QColorTransformPrivate::InputPremultiplied);
+        tfd->applyReturnGray(data, buffer, length, QColorTransformPrivate::InputPremultiplied);
     }
 }
 
@@ -653,7 +653,7 @@ static void QT_FASTCALL destStoreGray16(QRasterBuffer *rasterBuffer, int x, int 
         QRgba64 tmp_line[BufferSize];
         for (int k = 0; k < length; ++k)
             tmp_line[k] = QRgba64::fromArgb32(buffer[k]);
-        tfd->apply(data, tmp_line, length, QColorTransformPrivate::InputPremultiplied);
+        tfd->applyReturnGray(data, tmp_line, length, QColorTransformPrivate::InputPremultiplied);
     }
 }
 
@@ -731,7 +731,7 @@ static void QT_FASTCALL destStore64Gray8(QRasterBuffer *rasterBuffer, int x, int
         QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
 
         quint16 gray_line[BufferSize];
-        tfd->apply(gray_line, buffer, length, QColorTransformPrivate::InputPremultiplied);
+        tfd->applyReturnGray(gray_line, buffer, length, QColorTransformPrivate::InputPremultiplied);
         for (int k = 0; k < length; ++k)
             data[k] = qt_div_257(gray_line[k]);
     }
@@ -753,7 +753,7 @@ static void QT_FASTCALL destStore64Gray16(QRasterBuffer *rasterBuffer, int x, in
         QColorSpace fromCS = rasterBuffer->colorSpace.isValid() ? rasterBuffer->colorSpace : QColorSpace::SRgb;
         QColorTransform tf = QColorSpacePrivate::get(fromCS)->transformationToXYZ();
         QColorTransformPrivate *tfd = QColorTransformPrivate::get(tf);
-        tfd->apply(data, buffer, length, QColorTransformPrivate::InputPremultiplied);
+        tfd->applyReturnGray(data, buffer, length, QColorTransformPrivate::InputPremultiplied);
     }
 }
 

@@ -1254,6 +1254,11 @@ void QColorTransformPrivate::apply(T *dst, const T *src, qsizetype count, Transf
     }
 }
 
+/*!
+    \internal
+    Is to be called on a color-transform to XYZ, returns only luminance values.
+
+ */
 template<typename D, typename S>
 void QColorTransformPrivate::applyReturnGray(D *dst, const S *src, qsizetype count, TransformFlags flags) const
 {
@@ -1358,26 +1363,9 @@ void QColorTransformPrivate::apply(QRgbaFloat32 *dst, const QRgbaFloat32 *src, q
     apply<QRgbaFloat32>(dst, src, count, flags);
 }
 
-/*!
-    \internal
-    Is to be called on a color-transform to XYZ, returns only luminance values.
 
-*/
-void QColorTransformPrivate::apply(quint8 *dst, const QRgb *src, qsizetype count, TransformFlags flags) const
-{
-    applyReturnGray<quint8, QRgb>(dst, src, count, flags);
-}
-
-/*!
-    \internal
-    Is to be called on a color-transform to XYZ, returns only luminance values.
-
-*/
-void QColorTransformPrivate::apply(quint16 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags) const
-{
-    applyReturnGray<quint16, QRgba64>(dst, src, count, flags);
-}
-
+template void QColorTransformPrivate::applyReturnGray<quint8, QRgb>(quint8 *dst, const QRgb *src, qsizetype count, TransformFlags flags) const;
+template void QColorTransformPrivate::applyReturnGray<quint16, QRgba64>(quint16 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags) const;
 
 /*!
     \internal

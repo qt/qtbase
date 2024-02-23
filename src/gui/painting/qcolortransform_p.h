@@ -51,8 +51,6 @@ public:
     void apply(QRgba64 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
     void apply(QRgbaFloat32 *dst, const QRgbaFloat32 *src, qsizetype count,
                TransformFlags flags = Unpremultiplied) const;
-    void apply(quint8 *dst, const QRgb *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
-    void apply(quint16 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
 
     template<typename T>
     void apply(T *dst, const T *src, qsizetype count, TransformFlags flags) const;
