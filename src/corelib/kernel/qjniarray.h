@@ -221,7 +221,10 @@ public:
     template <typename Container
         , IfCanConvert<Container> = true
     >
-    explicit QJniArray(Container &&container);
+    explicit QJniArray(Container &&container)
+        : QJniArrayBase(QJniArrayBase::fromContainer(std::forward<Container>(container)))
+    {
+    }
 
     template <typename Other, std::enable_if_t<std::is_convertible_v<Other, Type>, bool> = true>
     QJniArray(QJniArray<Other> &&other)
@@ -418,16 +421,6 @@ auto QJniArrayBase::makeObjectArray(List &&list)
     if (i)
         env->PopLocalFrame(nullptr);
     return ResultType(localArray);
-}
-
-
-template <typename T>
-template <typename Container
-    , QJniArrayBase::IfCanConvert<Container>
->
-QJniArray<T>::QJniArray(Container &&container)
-    : QJniArrayBase(QJniArrayBase::fromContainer(std::forward<Container>(container)))
-{
 }
 
 namespace QtJniTypes
