@@ -1,3 +1,7 @@
 [touchEventPropagation]
 # QTBUG-66745
 opensuse-leap
+
+[abortQuitOnShow]
+# QTBUG-122693
+android
