@@ -40,6 +40,7 @@ abstract class QtView extends QtLayout {
     abstract protected void createWindow(long parentWindowRef);
 
     private static native void setWindowVisible(long windowReference, boolean visible);
+    private static native void resizeWindow(long windowReference, int width, int height);
 
     /**
      * Create QtView for embedding a QWindow. Instantiating a QtView will load the Qt libraries
@@ -59,6 +60,20 @@ abstract class QtView extends QtLayout {
         QtEmbeddedLoader loader = new QtEmbeddedLoader(context);
         m_delegate = QtEmbeddedDelegateFactory.create((Activity)context);
         loader.setMainLibraryName(appLibName);
+        addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                                       int oldLeft, int oldTop, int oldRight, int oldBottom)  {
+                if (m_windowReference != 0L) {
+                    final int oldWidth = oldRight - oldLeft;
+                    final int oldHeight = oldBottom - oldTop;
+                    final int newWidth = right - left;
+                    final int newHeight = bottom - top;
+                    if (oldWidth != newWidth || oldHeight != newHeight)
+                        resizeWindow(m_windowReference, right - left, bottom - top);
+                }
+            }
+        });
         loader.loadQtLibraries();
         // Start Native Qt application
         m_delegate.startNativeApplication(loader.getApplicationParameters(),

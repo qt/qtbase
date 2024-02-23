@@ -45,6 +45,13 @@ namespace QtAndroidWindowEmbedding {
         });
     }
 
+    void resizeWindow(JNIEnv *, jclass, jlong windowRef, jint width, jint height)
+    {
+        QWindow *window = reinterpret_cast<QWindow*>(windowRef);
+        window->setWidth(width);
+        window->setHeight(height);
+    }
+
     bool registerNatives(QJniEnvironment& env) {
         using namespace QtJniTypes;
         bool success = env.registerNativeMethods(Traits<QtEmbeddedDelegate>::className(),
@@ -52,7 +59,8 @@ namespace QtAndroidWindowEmbedding {
                              Q_JNI_NATIVE_SCOPED_METHOD(deleteWindow, QtAndroidWindowEmbedding)});
 
         success &= env.registerNativeMethods(Traits<QtView>::className(),
-                            {Q_JNI_NATIVE_SCOPED_METHOD(setWindowVisible, QtAndroidWindowEmbedding)});
+                            {Q_JNI_NATIVE_SCOPED_METHOD(setWindowVisible, QtAndroidWindowEmbedding),
+                             Q_JNI_NATIVE_SCOPED_METHOD(resizeWindow, QtAndroidWindowEmbedding)});
         return success;
 
     }
