@@ -1004,6 +1004,24 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     as well. Multiview rendering is not supported in combination with
     tessellation or geometry shaders. See QRhiColorAttachment::setMultiViewCount()
     for further details on multiview rendering. This enum value has been introduced in Qt 6.7.
+
+    \value TextureViewFormat Indicates that setting a
+    \l{QRhiTexture::setWriteViewFormat()}{view format} on a QRhiTexture is
+    effective. When reported as supported, setting the read (sampling) or write
+    (render target / image load-store) view mode changes the texture's viewing
+    format. When unsupported, setting a view format has no effect. Note that Qt
+    has no knowledge or control over format compatibility or resource view rules
+    in the underlying 3D API and its implementation. Passing in unsuitable,
+    incompatible formats may lead to errors and unspecified behavior. This is
+    provided mainly to allow "casting" rendering into a texture created with an
+    sRGB format to non-sRGB to avoid the unwanted linear->sRGB conversion on
+    shader writes. Other types of casting may or may not be functional,
+    depending on the underlying API. Currently implemented for Vulkan and Direct
+    3D 12. With D3D12 the feature is available only if
+    \c CastingFullyTypedFormatSupported is supported, see
+    \l{https://microsoft.github.io/DirectX-Specs/d3d/RelaxedCasting.html} (and
+    note that QRhi always uses fully typed formats for textures.) This enum
+    value has been introduced in Qt 6.8.
  */
 
 /*!
@@ -4534,6 +4552,87 @@ void QRhiTexture::setNativeLayout(int layout)
 /*!
     \fn void QRhiTexture::setSampleCount(int s)
     Sets the sample count to \a s.
+ */
+
+/*!
+    \struct QRhiTexture::ViewFormat
+    \inmodule QtGui
+    \since 6.8
+    \brief Specifies the view format for reading or writing from or to the texture.
+
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
+ */
+
+/*!
+    \variable QRhiTexture::ViewFormat::format
+ */
+
+/*!
+    \variable QRhiTexture::ViewFormat::srgb
+ */
+
+/*!
+    \fn QRhiTexture::ViewFormat QRhiTexture::readViewFormat() const
+    \since 6.8
+    \return the view format used when sampling the texture. When not called, the view
+    format is assumed to be the same as format().
+ */
+
+/*!
+    \fn void QRhiTexture::setReadViewFormat(const ViewFormat &fmt)
+    \since 6.8
+
+    Sets the shader resource view format (or the format of the view used for
+    sampling the texture) to \a fmt. By default the same format (and sRGB-ness)
+    is used as the texture itself, and in most cases this function does not need
+    to be called.
+
+    This setting is only taken into account when the \l TextureViewFormat
+    feature is reported as supported.
+
+    \note This functionality is provided to allow "casting" between
+    non-sRGB and sRGB in order to get the shader reads perform, or not perform,
+    the implicit sRGB conversions. Other types of casting may or may not be
+    functional.
+ */
+
+/*!
+    \fn QRhiTexture::ViewFormat QRhiTexture::writeViewFormat() const
+    \since 6.8
+    \return the view format used when writing to the texture and when using it
+    with image load/store. When not called, the view format is assumed to be the
+    same as format().
+ */
+
+/*!
+    \fn void QRhiTexture::setWriteViewFormat(const ViewFormat &fmt)
+    \since 6.8
+
+    Sets the render target view format to \a fmt. By default the same format
+    (and sRGB-ness) is used as the texture itself, and in most cases this
+    function does not need to be called.
+
+    One common use case for providing a write view format is working with
+    externally provided textures that, outside of our control, use an sRGB
+    format with 3D APIs such as Vulkan or Direct 3D, but the rendering engine is
+    already prepared to handle linearization and conversion to sRGB at the end
+    of its shading pipeline. In this case what is wanted when rendering into
+    such a texture is a render target view (e.g. VkImageView) that has the same,
+    but non-sRGB format. (if e.g. from an OpenXR implementation one gets a
+    VK_FORMAT_R8G8B8A8_SRGB texture, it is likely that rendering into it should
+    be done using a VK_FORMAT_R8G8B8A8_UNORM view, if that is what the rendering
+    engine's pipeline requires; in this example one would call this function
+    with a ViewFormat that has a format of QRhiTexture::RGBA8 and \c srgb set to
+    \c false).
+
+    This setting is only taken into account when the \l TextureViewFormat
+    feature is reported as supported.
+
+    \note This functionality is provided to allow "casting" between
+    non-sRGB and sRGB in order to get the shader write not perform, or perform,
+    the implicit sRGB conversions. Other types of casting may or may not be
+    functional.
  */
 
 /*!

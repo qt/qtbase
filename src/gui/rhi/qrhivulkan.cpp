@@ -1449,7 +1449,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
         QVkTexture *texD = QRHI_RES(QVkTexture, it->texture());
         QVkRenderBuffer *rbD = QRHI_RES(QVkRenderBuffer, it->renderBuffer());
         Q_ASSERT(texD || rbD);
-        const VkFormat vkformat = texD ? texD->vkformat : rbD->vkformat;
+        const VkFormat vkformat = texD ? texD->viewFormat : rbD->vkformat;
         const VkSampleCountFlagBits samples = texD ? texD->samples : rbD->samples;
 
         VkAttachmentDescription attDesc = {};
@@ -1481,7 +1481,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
 
     rpD->hasDepthStencil = depthStencilBuffer || depthTexture;
     if (rpD->hasDepthStencil) {
-        const VkFormat dsFormat = depthTexture ? QRHI_RES(QVkTexture, depthTexture)->vkformat
+        const VkFormat dsFormat = depthTexture ? QRHI_RES(QVkTexture, depthTexture)->viewFormat
                                                : QRHI_RES(QVkRenderBuffer, depthStencilBuffer)->vkformat;
         const VkSampleCountFlagBits samples = depthTexture ? QRHI_RES(QVkTexture, depthTexture)->samples
                                                            : QRHI_RES(QVkRenderBuffer, depthStencilBuffer)->samples;
@@ -1519,7 +1519,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
             }
 
             VkAttachmentDescription attDesc = {};
-            attDesc.format = dstFormat;
+            attDesc.format = rtexD->viewFormat;
             attDesc.samples = VK_SAMPLE_COUNT_1_BIT;
             attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // ignored
             attDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -3020,7 +3020,7 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
             case QRhiShaderResourceBinding::ImageLoadStore:
             {
                 QVkTexture *texD = QRHI_RES(QVkTexture, b->u.simage.tex);
-                VkImageView view = texD->imageViewForLevel(b->u.simage.level);
+                VkImageView view = texD->perLevelImageViewForLoadStore(b->u.simage.level);
                 if (view) {
                     writeInfo.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                     bd.simage.id = texD->m_id;
@@ -3929,6 +3929,7 @@ void QRhiVulkan::executeDeferredReleases(bool forced)
                     df->vkDestroyImageView(dev, e.textureRenderTarget.rtv[att], nullptr);
                     df->vkDestroyImageView(dev, e.textureRenderTarget.resrtv[att], nullptr);
                 }
+                df->vkDestroyImageView(dev, e.textureRenderTarget.dsv, nullptr);
                 break;
             case QRhiVulkan::DeferredReleaseEntry::RenderPass:
                 df->vkDestroyRenderPass(dev, e.renderPass.rp, nullptr);
@@ -4588,6 +4589,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::MultiView:
         return caps.multiView;
+    case QRhi::TextureViewFormat:
+        return true;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -6228,6 +6231,15 @@ bool QVkTexture::prepareCreate(QSize *adjustedSize)
 
     QRHI_RES_RHI(QRhiVulkan);
     vkformat = toVkTextureFormat(m_format, m_flags);
+    if (m_writeViewFormat.format != UnknownFormat)
+        viewFormat = toVkTextureFormat(m_writeViewFormat.format, m_writeViewFormat.srgb ? sRGB : Flags());
+    else
+        viewFormat = vkformat;
+    if (m_readViewFormat.format != UnknownFormat)
+        viewFormatForSampling = toVkTextureFormat(m_readViewFormat.format, m_readViewFormat.srgb ? sRGB : Flags());
+    else
+        viewFormatForSampling = vkformat;
+
     VkFormatProperties props;
     rhiD->f->vkGetPhysicalDeviceFormatProperties(rhiD->physDev, vkformat, &props);
     const bool canSampleOptimal = (props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
@@ -6323,7 +6335,7 @@ bool QVkTexture::finishCreate()
             : (is3D ? VK_IMAGE_VIEW_TYPE_3D
                     : (is1D ? (isArray ? VK_IMAGE_VIEW_TYPE_1D_ARRAY : VK_IMAGE_VIEW_TYPE_1D)
                             : (isArray ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D)));
-    viewInfo.format = vkformat;
+    viewInfo.format = viewFormatForSampling;
     viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
     viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
     viewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
@@ -6469,7 +6481,7 @@ void QVkTexture::setNativeLayout(int layout)
     usageState.layout = VkImageLayout(layout);
 }
 
-VkImageView QVkTexture::imageViewForLevel(int level)
+VkImageView QVkTexture::perLevelImageViewForLoadStore(int level)
 {
     Q_ASSERT(level >= 0 && level < int(mipLevelCount));
     if (perLevelImageViews[level] != VK_NULL_HANDLE)
@@ -6489,7 +6501,7 @@ VkImageView QVkTexture::imageViewForLevel(int level)
             : (is3D ? VK_IMAGE_VIEW_TYPE_3D
                     : (is1D ? (isArray ? VK_IMAGE_VIEW_TYPE_1D_ARRAY : VK_IMAGE_VIEW_TYPE_1D)
                             : (isArray ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D)));
-    viewInfo.format = vkformat;
+    viewInfo.format = viewFormat; // this is writeViewFormat, regardless of Load, Store, or LoadStore; intentional
     viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
     viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
     viewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
@@ -6826,6 +6838,9 @@ void QVkTextureRenderTarget::destroy()
         resrtv[att] = VK_NULL_HANDLE;
     }
 
+    e.textureRenderTarget.dsv = dsv;
+    dsv = VK_NULL_HANDLE;
+
     QRHI_RES_RHI(QRhiVulkan);
     if (rhiD) {
         rhiD->releaseQueue.append(e);
@@ -6889,7 +6904,7 @@ bool QVkTextureRenderTarget::create()
             viewInfo.viewType = is1D ? VK_IMAGE_VIEW_TYPE_1D
                                      : (isMultiView ? VK_IMAGE_VIEW_TYPE_2D_ARRAY
                                                     : VK_IMAGE_VIEW_TYPE_2D);
-            viewInfo.format = texD->vkformat;
+            viewInfo.format = texD->viewFormat;
             viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
             viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
             viewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
@@ -6923,7 +6938,25 @@ bool QVkTextureRenderTarget::create()
     if (hasDepthStencil) {
         if (m_desc.depthTexture()) {
             QVkTexture *depthTexD = QRHI_RES(QVkTexture, m_desc.depthTexture());
-            views.append(depthTexD->imageView);
+            // need a dedicated view just because viewFormat may differ from vkformat
+            VkImageViewCreateInfo viewInfo = {};
+            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            viewInfo.image = depthTexD->image;
+            viewInfo.viewType = d.multiViewCount > 1 ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.format = depthTexD->viewFormat;
+            viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
+            viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
+            viewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
+            viewInfo.components.a = VK_COMPONENT_SWIZZLE_A;
+            viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+            viewInfo.subresourceRange.levelCount = 1;
+            viewInfo.subresourceRange.layerCount = qMax<uint32_t>(1, d.multiViewCount);
+            VkResult err = rhiD->df->vkCreateImageView(rhiD->dev, &viewInfo, nullptr, &dsv);
+            if (err != VK_SUCCESS) {
+                qWarning("Failed to create depth-stencil image view for rt: %d", err);
+                return false;
+            }
+            views.append(dsv);
             if (d.colorAttCount == 0) {
                 d.pixelSize = depthTexD->pixelSize();
                 d.sampleCount = depthTexD->samples;
@@ -6955,7 +6988,7 @@ bool QVkTextureRenderTarget::create()
             viewInfo.image = resTexD->image;
             viewInfo.viewType = d.multiViewCount ? VK_IMAGE_VIEW_TYPE_2D_ARRAY
                                                  : VK_IMAGE_VIEW_TYPE_2D;
-            viewInfo.format = resTexD->vkformat;
+            viewInfo.format = resTexD->viewFormat;
             viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
             viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
             viewInfo.components.b = VK_COMPONENT_SWIZZLE_B;

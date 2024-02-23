@@ -991,6 +991,15 @@ public:
     int sampleCount() const { return m_sampleCount; }
     void setSampleCount(int s) { m_sampleCount = s; }
 
+    struct ViewFormat {
+        QRhiTexture::Format format;
+        bool srgb;
+    };
+    ViewFormat readViewFormat() const { return m_readViewFormat; }
+    void setReadViewFormat(const ViewFormat &fmt) { m_readViewFormat = fmt; }
+    ViewFormat writeViewFormat() const { return m_writeViewFormat; }
+    void setWriteViewFormat(const ViewFormat &fmt) { m_writeViewFormat = fmt; }
+
     virtual bool create() = 0;
     virtual NativeTexture nativeTexture();
     virtual bool createFrom(NativeTexture src);
@@ -1007,6 +1016,8 @@ protected:
     Flags m_flags;
     int m_arrayRangeStart = -1;
     int m_arrayRangeLength = -1;
+    ViewFormat m_readViewFormat = { UnknownFormat, false };
+    ViewFormat m_writeViewFormat = { UnknownFormat, false };
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiTexture::Flags)
@@ -1853,7 +1864,8 @@ public:
         HalfAttributes,
         RenderToOneDimensionalTexture,
         ThreeDimensionalTextureMipmaps,
-        MultiView
+        MultiView,
+        TextureViewFormat
     };
 
     enum BeginFrameFlag {

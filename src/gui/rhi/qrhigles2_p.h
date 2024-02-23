@@ -981,7 +981,7 @@ public:
               depthTexture(false),
               packedDepthStencil(false),
               needsDepthStencilCombinedAttach(false),
-              srgbCapableDefaultFramebuffer(false),
+              srgbWriteControl(false),
               coreProfile(false),
               uniformBuffers(false),
               elementIndexUint(false),
@@ -1037,7 +1037,7 @@ public:
         uint depthTexture : 1;
         uint packedDepthStencil : 1;
         uint needsDepthStencilCombinedAttach : 1;
-        uint srgbCapableDefaultFramebuffer : 1;
+        uint srgbWriteControl : 1;
         uint coreProfile : 1;
         uint uniformBuffers : 1;
         uint elementIndexUint : 1;

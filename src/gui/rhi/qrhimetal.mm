@@ -850,6 +850,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::MultiView:
         return caps.multiView;
+    case QRhi::TextureViewFormat:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;

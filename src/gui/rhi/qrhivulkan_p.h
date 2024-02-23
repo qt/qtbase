@@ -103,7 +103,7 @@ struct QVkTexture : public QRhiTexture
 
     bool prepareCreate(QSize *adjustedSize = nullptr);
     bool finishCreate();
-    VkImageView imageViewForLevel(int level);
+    VkImageView perLevelImageViewForLoadStore(int level);
 
     VkImage image = VK_NULL_HANDLE;
     VkImageView imageView = VK_NULL_HANDLE;
@@ -124,6 +124,8 @@ struct QVkTexture : public QRhiTexture
     VkFormat vkformat;
     uint mipLevelCount = 0;
     VkSampleCountFlagBits samples;
+    VkFormat viewFormat;
+    VkFormat viewFormatForSampling;
     int lastActiveFrameSlot = -1;
     uint generation = 0;
     friend class QRhiVulkan;
@@ -212,6 +214,7 @@ struct QVkTextureRenderTarget : public QRhiTextureRenderTarget
 
     QVkRenderTargetData d;
     VkImageView rtv[QVkRenderTargetData::MAX_COLOR_ATTACHMENTS];
+    VkImageView dsv = VK_NULL_HANDLE;
     VkImageView resrtv[QVkRenderTargetData::MAX_COLOR_ATTACHMENTS];
     int lastActiveFrameSlot = -1;
     friend class QRhiVulkan;
@@ -996,6 +999,7 @@ public:
                 VkFramebuffer fb;
                 VkImageView rtv[QVkRenderTargetData::MAX_COLOR_ATTACHMENTS];
                 VkImageView resrtv[QVkRenderTargetData::MAX_COLOR_ATTACHMENTS];
+                VkImageView dsv;
             } textureRenderTarget;
             struct {
                 VkRenderPass rp;

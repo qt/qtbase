@@ -598,6 +598,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::MultiView:
         return false;
+    case QRhi::TextureViewFormat:
+        return false; // because we use fully typed formats for textures and relaxed casting is a D3D12 thing
     default:
         Q_UNREACHABLE();
         return false;

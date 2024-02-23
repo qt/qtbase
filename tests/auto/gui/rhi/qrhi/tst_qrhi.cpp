@@ -424,7 +424,8 @@ void tst_QRhi::create()
             QRhi::HalfAttributes,
             QRhi::RenderToOneDimensionalTexture,
             QRhi::ThreeDimensionalTextureMipmaps,
-            QRhi::MultiView
+            QRhi::MultiView,
+            QRhi::TextureViewFormat
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);

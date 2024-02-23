@@ -245,7 +245,7 @@ QT_BEGIN_NAMESPACE
 #endif
 
 #ifndef GL_FRAMEBUFFER_SRGB
-#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#define GL_FRAMEBUFFER_SRGB               0x8DB9
 #endif
 
 #ifndef GL_READ_FRAMEBUFFER
@@ -892,7 +892,13 @@ bool QRhiGles2::create(QRhi::Flags flags)
 #else
     caps.needsDepthStencilCombinedAttach = false;
 #endif
-    caps.srgbCapableDefaultFramebuffer = f->hasOpenGLExtension(QOpenGLExtensions::SRGBFrameBuffer);
+
+    // QOpenGLExtensions::SRGBFrameBuffer is not useful here. We need to know if
+    // controlling the sRGB-on-shader-write state is supported, not that if the
+    // default framebuffer is sRGB-capable. And there are two different
+    // extensions for desktop and ES.
+    caps.srgbWriteControl = ctx->hasExtension("GL_EXT_framebuffer_sRGB") || ctx->hasExtension("GL_EXT_sRGB_write_control");
+
     caps.coreProfile = actualFormat.profile() == QSurfaceFormat::CoreProfile;
 
     if (caps.gles)
@@ -1426,6 +1432,8 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return caps.texture3D;
     case QRhi::MultiView:
         return caps.multiView && caps.maxTextureArraySize > 0;
+    case QRhi::TextureViewFormat:
+        return false;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -3281,7 +3289,7 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             }
             if (caps.hasDrawBuffersFunc)
                 f->glDrawBuffers(bufs.count(), bufs.constData());
-            if (caps.srgbCapableDefaultFramebuffer) {
+            if (caps.srgbWriteControl) {
                 if (cmd.args.bindFramebuffer.srgb)
                     f->glEnable(GL_FRAMEBUFFER_SRGB);
                 else
