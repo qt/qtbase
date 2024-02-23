@@ -6,9 +6,6 @@ import os
 import sys
 import subprocess
 import json
-import re
-
-from wasm_binary_tools import WasmBinary
 
 # Paths to shared libraries and qml imports on the Qt installation on the web server.
 # "$QTDIR" is replaced by qtloader.js at load time (defaults to "qt"), and makes
@@ -28,11 +25,6 @@ def eprint(*args, **kwargs):
 
 def preload_file(source, destination):
     preload_files.append({"source": source, "destination": destination})
-
-
-def find_dependencies(filepath):
-    binary = WasmBinary(filepath)
-    return binary.get_dependencies()
 
 
 def extract_preload_files_from_imports(imports):
@@ -55,10 +47,6 @@ def extract_preload_files_from_imports(imports):
             so_plugin_qt_install_path = os.path.join(
                 qt_wasm_path, "qml", relative_path, plugin_filename
             )
-            deps = find_dependencies(so_plugin_qt_install_path)
-            if plugin_filename in deps: # sometimes plugin file itself is found as its dependency
-                deps.remove(plugin_filename)
-            libraries.extend(deps)
 
             # qmldir file
             qmldir_source_path = os.path.join(qt_qml_path, relative_path, "qmldir")

@@ -120,14 +120,15 @@ async function qtLoad(config)
             }
         }
     }
-
+    const fetchJsonHelper = async path => (await fetch(path)).json();
+    const filesToPreload = (await Promise.all(config.qt.preload.map(fetchJsonHelper))).flat();
     const qtPreRun = (instance) => {
         // Copy qt.environment to instance.ENV
         throwIfEnvUsedButNotExported(instance, config);
         for (const [name, value] of Object.entries(config.qt.environment ?? {}))
             instance.ENV[name] = value;
 
-        // Copy self.preloadData to MEMFS
+        // Preload files from qt.preload
         const makeDirs = (FS, filePath) => {
             const parts = filePath.split("/");
             let path = "/";
@@ -146,14 +147,25 @@ async function qtLoad(config)
             }
         }
 
+        const extractFilenameAndDir = (path) => {
+            const parts = path.split('/');
+            const filename = parts.pop();
+            const dir = parts.join('/');
+            return {
+                filename: filename,
+                dir: dir
+            };
+        }
+        const preloadFile = (file) => {
+            makeDirs(instance.FS, file.destination);
+            const source = file.source.replace('$QTDIR', config.qt.qtdir);
+            const filenameAndDir = extractFilenameAndDir(file.destination);
+            instance.FS.createPreloadedFile(filenameAndDir.dir, filenameAndDir.filename, source, true, true);
+        }
         const isFsExported = typeof instance.FS === 'object';
         if (!isFsExported)
             throw new Error('FS must be exported if preload is used');
-
-        for ({destination, data} of self.preloadData) {
-            makeDirs(instance.FS, destination);
-            instance.FS.writeFile(destination, new Uint8Array(data));
-        }
+        filesToPreload.forEach(preloadFile);
     }
 
     if (!config.preRun)
@@ -196,22 +208,6 @@ async function qtLoad(config)
             });
         }
     };
-
-    const fetchPreloadFiles = async () => {
-        const fetchJson = async path => (await fetch(path)).json();
-        const fetchArrayBuffer = async path => (await fetch(path)).arrayBuffer();
-        const loadFiles = async (paths) => {
-            const source = paths['source'].replace('$QTDIR', config.qt.qtdir);
-            return {
-                destination: paths['destination'],
-                data: await fetchArrayBuffer(source)
-            };
-        }
-        const fileList = (await Promise.all(config.qt.preload.map(fetchJson))).flat();
-        self.preloadData = (await Promise.all(fileList.map(loadFiles))).flat();
-    }
-
-    await fetchPreloadFiles();
 
     // Call app/emscripten module entry function. It may either come from the emscripten
     // runtime script or be customized as needed.
