@@ -173,7 +173,7 @@ public:
 #if !defined(Q_QDOC)
     // Disable implicit conversions to bool (e.g. for pointers)
     template <typename T,
-             std::enable_if_t<std::is_same_v<std::remove_cv_t<T>, bool>, bool> = true>
+             std::enable_if_t<std::is_same_v<T, bool>, bool> = true>
     QDataStream &operator<<(T i)
     {
         return (*this << qint8(i));
