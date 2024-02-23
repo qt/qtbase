@@ -2860,7 +2860,7 @@ QT_WARNING_POP
 #endif // QT_DEPRECATED_SINCE(6, 11)
     {
         QDataStream stream(&data, QIODevice::ReadOnly);
-        QByteArray buf;
+        QByteArray buf = "Content to be overwritten";
         stream >> buf;
 
         if (data.startsWith("\xff\xff\xff\xff")) {
@@ -2952,7 +2952,7 @@ void tst_QDataStream::status_QString()
     QFETCH(QString, expectedString);
 
     QDataStream stream(&data, QIODevice::ReadOnly);
-    QString str;
+    QString str = "Content to be overwritten";
     stream >> str;
 
     QCOMPARE(str.size(), expectedString.size());
@@ -3047,7 +3047,7 @@ void tst_QDataStream::status_QBitArray()
 
     QDataStream stream(&data, QIODevice::ReadOnly);
     stream.setVersion(version);
-    QBitArray str;
+    QBitArray str(255, true);
     stream >> str;
 
     if (sizeof(qsizetype) == sizeof(int))
@@ -3114,7 +3114,9 @@ void tst_QDataStream::status_QHash_QMap()
     hash2.insert("L", "MN");
 
     // ok
+    hash = hash2;
     MAP_TEST(QByteArray("\x00\x00\x00\x00", 4), QDataStream::Ok, QDataStream::Ok, StringHash());
+    hash = hash2;
     MAP_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00", 12), QDataStream::Ok, QDataStream::Ok, hash1);
     MAP_TEST(QByteArray("\x00\x00\x00\x02\x00\x00\x00\x02\x00J\x00\x00\x00\x02\x00K"
                         "\x00\x00\x00\x02\x00L\x00\x00\x00\x04\x00M\x00N", 30), QDataStream::Ok, QDataStream::Ok, hash2);
@@ -3195,7 +3197,9 @@ void tst_QDataStream::status_QList_QVector()
         someList.append("J");
         someList.append("MN");
 
+        list = someList;
         LIST_TEST(QByteArray("\x00\x00\x00\x00", 4), QDataStream::Ok, QDataStream::Ok, List());
+        list = someList;
         LIST_TEST(QByteArray("\x00\x00\x00\x01\x00\x00\x00\x00", 8), QDataStream::Ok, QDataStream::Ok, listWithEmptyString);
         LIST_TEST(QByteArray("\x00\x00\x00\x02\x00\x00\x00\x02\x00J"
                              "\x00\x00\x00\x04\x00M\x00N", 18), QDataStream::Ok, QDataStream::Ok, someList);
@@ -3263,6 +3267,13 @@ void tst_QDataStream::streamRealDataTypes()
     path.arcTo(4, 5, 6, 7, 8, 9);
     path.quadTo(1, 2, 3, 4);
 
+    QPainterPath otherPath;
+    otherPath.arcTo(10, 4, 5, 6, 7, 8);
+    otherPath.lineTo(9, 0);
+    otherPath.cubicTo(0, 0, 10, 10, 20, 20);
+    otherPath.quadTo(2, 4, 5, 6);
+    QCOMPARE(otherPath.elementCount(), 12);
+
     QColor color(64, 64, 64);
     color.setAlphaF(0.5);
     QRadialGradient radialGradient(5, 6, 7, 8, 9);
@@ -3294,17 +3305,17 @@ void tst_QDataStream::streamRealDataTypes()
             file.close();
         }
 
-        QPointF point;
-        QRectF rect;
-        QPolygonF polygon;
+        QPointF point(1, 2);
+        QRectF rect(1, 2, 5, 6);
+        QPolygonF polygon {{3, 4}, {5, 6}};
         QTransform transform;
-        QPainterPath p;
+        QPainterPath p = otherPath;
         QPicture pict;
-        QTextLength textLength;
-        QColor col;
-        QBrush rGrad;
-        QBrush cGrad;
-        QPen pen;
+        QTextLength textLength(QTextLength::FixedLength, 2.5);
+        QColor col(128, 128, 127);
+        QBrush rGrad(Qt::CrossPattern);
+        QBrush cGrad(Qt::CrossPattern);
+        QPen pen(conicalBrush, 10);
 
         QVERIFY(file.open(QIODevice::ReadOnly));
         QDataStream stream(&file);
