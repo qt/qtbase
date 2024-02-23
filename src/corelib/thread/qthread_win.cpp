@@ -18,6 +18,7 @@
 #  define _MT
 #endif // _MT
 #include <process.h>
+#include <processthreadsapi.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -212,39 +213,6 @@ DWORD WINAPI qt_adopted_thread_watcher_function(LPVOID)
     return 0;
 }
 
-#if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC)
-
-#ifndef Q_OS_WIN64
-#  define ULONG_PTR DWORD
-#endif
-
-typedef struct tagTHREADNAME_INFO
-{
-    DWORD dwType;      // must be 0x1000
-    LPCSTR szName;     // pointer to name (in user addr space)
-    HANDLE dwThreadID; // thread ID (-1=caller thread)
-    DWORD dwFlags;     // reserved for future use, must be zero
-} THREADNAME_INFO;
-
-void qt_set_thread_name(HANDLE threadId, LPCSTR threadName)
-{
-    THREADNAME_INFO info;
-    info.dwType = 0x1000;
-    info.szName = threadName;
-    info.dwThreadID = threadId;
-    info.dwFlags = 0;
-
-    __try
-    {
-        RaiseException(0x406D1388, 0, sizeof(info)/sizeof(DWORD),
-                       reinterpret_cast<const ULONG_PTR*>(&info));
-    }
-    __except (EXCEPTION_CONTINUE_EXECUTION)
-    {
-    }
-}
-#endif // !QT_NO_DEBUG && Q_CC_MSVC
-
 /**************************************************************************
  ** QThreadPrivate
  *************************************************************************/
@@ -280,9 +248,10 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
 
 #if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC)
     // sets the name of the current thread.
-    qt_set_thread_name(HANDLE(-1), thr->d_func()->objectName.isEmpty()
-                        ? thr->metaObject()->className()
-                        : std::exchange(thr->d_func()->objectName, {}).toLocal8Bit().constData());
+    QString threadName = std::exchange(thr->d_func()->objectName, {});
+    if (Q_LIKELY(threadName.isEmpty()))
+        threadName = QString::fromUtf8(thr->metaObject()->className());
+    SetThreadDescription(GetCurrentThread(), reinterpret_cast<const wchar_t *>(threadName.utf16()));
 #endif
 
     emit thr->started(QThread::QPrivateSignal());
