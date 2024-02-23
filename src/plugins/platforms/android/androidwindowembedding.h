@@ -31,6 +31,8 @@ namespace QtAndroidWindowEmbedding
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(deleteWindow)
     void setWindowVisible(JNIEnv *, jclass, jlong window, jboolean visible);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(setWindowVisible)
+    void resizeWindow(JNIEnv *, jclass, jlong windowRef, jint width, jint height);
+    Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(resizeWindow)
 };
 
 QT_END_NAMESPACE
