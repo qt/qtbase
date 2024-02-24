@@ -411,6 +411,25 @@ int main(void)
 }
 ")
 
+# <stacktrace>
+qt_config_compile_test(cxx23_stacktrace
+    LABEL "C++23 <stacktrace> support"
+    CODE
+"#include <stacktrace>
+#if !defined(__cpp_lib_stacktrace)
+#error
+#endif
+
+int main(void)
+{
+    /* BEGIN TEST: */
+const auto backtrace = std::stacktrace::current();
+    /* END TEST: */
+}
+"
+    CXX_STANDARD 23
+)
+
 #### Features
 
 qt_feature("clock-gettime" PRIVATE
@@ -599,6 +618,10 @@ qt_feature_definition("regularexpression" "QT_NO_REGULAREXPRESSION" NEGATE VALUE
 qt_feature("backtrace" PRIVATE
     LABEL "backtrace"
     CONDITION UNIX AND QT_FEATURE_regularexpression AND WrapBacktrace_FOUND
+)
+qt_feature("cxx23_stacktrace" PRIVATE
+    LABEL "C++23 <stacktrace>"
+    CONDITION TEST_cxx23_stacktrace AND QT_FEATURE_cxx2b
 )
 qt_feature("sharedmemory" PUBLIC
     SECTION "Kernel"
@@ -876,6 +899,7 @@ qt_feature("openssl-hash" PRIVATE
 
 qt_configure_add_summary_section(NAME "Qt Core")
 qt_configure_add_summary_entry(ARGS "backtrace")
+qt_configure_add_summary_entry(ARGS "cxx23_stacktrace")
 qt_configure_add_summary_entry(ARGS "doubleconversion")
 qt_configure_add_summary_entry(ARGS "system-doubleconversion")
 qt_configure_add_summary_entry(ARGS "forkfd_pidfd" CONDITION LINUX)

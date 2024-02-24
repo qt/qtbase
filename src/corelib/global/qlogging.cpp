@@ -69,17 +69,19 @@
 extern char *__progname;
 #endif
 
-#ifndef QT_BOOTSTRAPPED
-#if __has_include(<cxxabi.h>) && QT_CONFIG(backtrace) && QT_CONFIG(regularexpression)
+#ifdef QLOGGING_HAVE_BACKTRACE
 #  include <qregularexpression.h>
+#endif
+
+#ifdef QLOGGING_USE_EXECINFO_BACKTRACE
 #  if QT_CONFIG(dladdr)
 #    include <dlfcn.h>
 #  endif
 #  include BACKTRACE_HEADER
 #  include <cxxabi.h>
-#  define QLOGGING_HAVE_BACKTRACE
-#endif
+#endif // QLOGGING_USE_EXECINFO_BACKTRACE
 
+#ifndef QT_BOOTSTRAPPED
 #if defined(Q_OS_LINUX) && (defined(__GLIBC__) || __has_include(<sys/syscall.h>))
 #  include <sys/syscall.h>
 
@@ -1343,6 +1345,52 @@ void QMessagePattern::setPattern(const QString &pattern)
   Unfortunately, we can't know for sure if it has been.
 */
 static constexpr int TypicalBacktraceFrameCount = 3;
+static constexpr const char *QtCoreLibraryName = "Qt" QT_STRINGIFY(QT_VERSION_MAJOR) "Core";
+
+#if defined(QLOGGING_USE_STD_BACKTRACE)
+Q_NEVER_INLINE void QInternalMessageLogContext::populateBacktrace(int frameCount)
+{
+    assert(frameCount >= 0);
+    backtrace = std::stacktrace::current(0, TypicalBacktraceFrameCount + frameCount);
+}
+
+static QStringList
+backtraceFramesForLogMessage(int frameCount,
+                             const QInternalMessageLogContext::BacktraceStorage &buffer)
+{
+    QStringList result;
+    result.reserve(buffer.size());
+
+    const auto shouldSkipFrame = [](QByteArrayView description)
+    {
+#if defined(_MSVC_STL_VERSION)
+        const auto libraryNameEnd = description.indexOf('!');
+        if (libraryNameEnd != -1) {
+            const auto libraryName = description.first(libraryNameEnd);
+            if (!libraryName.contains(QtCoreLibraryName))
+                return false;
+        }
+#endif
+        if (description.contains("populateBacktrace"))
+            return true;
+        if (description.contains("QInternalMessageLogContext"))
+            return true;
+        if (description.contains("~QDebug"))
+            return true;
+        return false;
+    };
+
+    for (const auto &entry : buffer) {
+        const std::string description = entry.description();
+        if (result.isEmpty() && shouldSkipFrame(description))
+            continue;
+        result.append(QString::fromStdString(description));
+    }
+
+    return result;
+}
+
+#elif defined(QLOGGING_USE_EXECINFO_BACKTRACE)
 
 Q_NEVER_INLINE void QInternalMessageLogContext::populateBacktrace(int frameCount)
 {
@@ -1369,7 +1417,7 @@ backtraceFramesForLogMessage(int frameCount,
         return result;
 
     auto shouldSkipFrame = [&result](const auto &library, const auto &function) {
-        if (!result.isEmpty() || !library.contains("Qt6Core"_L1))
+        if (!result.isEmpty() || !library.contains(QLatin1StringView(QtCoreLibraryName)))
             return false;
         if (function.isEmpty())
             return true;
@@ -1476,6 +1524,9 @@ backtraceFramesForLogMessage(int frameCount,
     }
     return result;
 }
+#else
+#error "Internal error: backtrace enabled, but no way to gather backtraces available"
+#endif // QLOGGING_USE_..._BACKTRACE
 
 static QString formatBacktraceForLogMessage(const QMessagePattern::BacktraceParams backtraceParams,
                                             const QMessageLogContext &ctx)
@@ -2213,8 +2264,18 @@ void qErrnoWarning(int code, const char *msg, ...)
         specified by the optional \c depth parameter (defaults to 5), and separated by the optional
         \c separator parameter (defaults to "|").
 
-        This expansion is available only on some platforms (currently only platfoms using glibc).
-        Names are only known for exported functions. If you want to see the name of every function
+        This expansion is available only on some platforms:
+
+        \list
+        \li platforms using glibc;
+        \li platforms shipping C++23's \c{<stacktrace>} header (requires compiling Qt in C++23 mode).
+        \endlist
+
+        Depending on the platform, there are some restrictions on the function
+        names printed by this expansion.
+
+        On some platforms,
+        names are only known for exported functions. If you want to see the name of every function
         in your application, make sure your application is compiled and linked with \c{-rdynamic},
         or an equivalent of it.
 
