@@ -1426,7 +1426,7 @@ bool QTimeZone::isTimeZoneIdAvailable(const QByteArray &ianaId)
 #if defined(Q_OS_UNIX) && !(defined(Q_OS_ANDROID) || defined(Q_OS_DARWIN))
     // Keep #if-ery consistent with selection of QTzTimeZonePrivate in
     // newBackendTimeZone(). Skip the pre-check, as the TZ backend accepts POSIX
-    // zone IDs, which need not be valid IANA IDs.
+    // zone IDs, which need not be valid IANA IDs. See also QTBUG-112006.
 #else
     // isValidId is not strictly required, but faster to weed out invalid
     // IDs as availableTimeZoneIds() may be slow
