@@ -1045,59 +1045,20 @@ QString QTzTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
         if (m_icu->isValid())
             return m_icu->displayName(timeType, nameType, locale);
     }
-#else
-    Q_UNUSED(timeType);
-    Q_UNUSED(nameType);
-    Q_UNUSED(locale);
 #endif
-    // If ICU is unavailable, fall back to abbreviations.
-    // Abbreviations don't have GenericTime
-    if (timeType == QTimeZone::GenericTime)
-        timeType = QTimeZone::StandardTime;
-
-    // Get current tran, if valid and is what we want, then use it
-    const qint64 currentMSecs = QDateTime::currentMSecsSinceEpoch();
-    QTimeZonePrivate::Data tran = data(currentMSecs);
-    if (tran.atMSecsSinceEpoch != invalidMSecs()
-        && ((timeType == QTimeZone::DaylightTime && tran.daylightTimeOffset != 0)
-        || (timeType == QTimeZone::StandardTime && tran.daylightTimeOffset == 0))) {
-        return tran.abbreviation;
+    // TZ only provides C-locale abbreviations and offset:
+    if (nameType != QTimeZone::LongName && isDataLocale(locale)) {
+        QTimeZonePrivate::Data tran = data(timeType);
+        if (tran.atMSecsSinceEpoch != invalidMSecs()) {
+            if (nameType == QTimeZone::ShortName)
+                return tran.abbreviation;
+            // Save base class repeating the data(timeType) query:
+            if (locale.language() == QLocale::C)
+                return isoOffsetFormat(tran.offsetFromUtc);
+        }
     }
-
-    // Otherwise get next tran and if valid and is what we want, then use it
-    tran = nextTransition(currentMSecs);
-    if (tran.atMSecsSinceEpoch != invalidMSecs()
-        && ((timeType == QTimeZone::DaylightTime && tran.daylightTimeOffset != 0)
-        || (timeType == QTimeZone::StandardTime && tran.daylightTimeOffset == 0))) {
-        return tran.abbreviation;
-    }
-
-    // Otherwise get prev tran and if valid and is what we want, then use it
-    tran = previousTransition(currentMSecs);
-    if (tran.atMSecsSinceEpoch != invalidMSecs())
-        tran = previousTransition(tran.atMSecsSinceEpoch);
-    if (tran.atMSecsSinceEpoch != invalidMSecs()
-        && ((timeType == QTimeZone::DaylightTime && tran.daylightTimeOffset != 0)
-        || (timeType == QTimeZone::StandardTime && tran.daylightTimeOffset == 0))) {
-        return tran.abbreviation;
-    }
-
-    // Otherwise is strange sequence, so work backwards through trans looking for first match, if any
-    auto it = std::partition_point(tranCache().cbegin(), tranCache().cend(),
-                                   [currentMSecs](const QTzTransitionTime &at) {
-                                       return at.atMSecsSinceEpoch <= currentMSecs;
-                                   });
-
-    while (it != tranCache().cbegin()) {
-        --it;
-        tran = dataForTzTransition(*it);
-        int offset = tran.daylightTimeOffset;
-        if ((timeType == QTimeZone::DaylightTime) != (offset == 0))
-            return tran.abbreviation;
-    }
-
-    // Otherwise if no match use current data
-    return data(currentMSecs).abbreviation;
+    // Otherwise, fall back to base class:
+    return QTimeZonePrivate::displayName(timeType, nameType, locale);
 }
 
 QString QTzTimeZonePrivate::abbreviation(qint64 atMSecsSinceEpoch) const
@@ -1182,6 +1143,64 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 
     --last;
     return dataFromRule(cached_data.m_tranRules.at(last->ruleIndex), forMSecsSinceEpoch);
+}
+
+// Overridden because the final iteration over transitions only needs to look
+// forward and backwards one transition within the POSIX rule (when there is
+// one, as is common) to settle the whole period it covers, so we can then skip
+// all other transitions of the POSIX rule and iterate tranCache() backwards
+// from its most recent transition.
+QTimeZonePrivate::Data QTzTimeZonePrivate::data(QTimeZone::TimeType timeType) const
+{
+    // True if tran is valid and has the DST-ness to match timeType:
+    const auto validMatch = [timeType](const QTimeZonePrivate::Data &tran) {
+        return tran.atMSecsSinceEpoch != invalidMSecs()
+            && ((timeType == QTimeZone::DaylightTime) != (tran.daylightTimeOffset == 0));
+    };
+
+    // Get current tran, use if suitable:
+    const qint64 currentMSecs = QDateTime::currentMSecsSinceEpoch();
+    QTimeZonePrivate::Data tran = data(currentMSecs);
+    if (validMatch(tran))
+        return tran;
+
+    // Otherwise, next tran probably flips DST-ness:
+    tran = nextTransition(currentMSecs);
+    if (validMatch(tran))
+        return tran;
+
+    // Failing that, prev (or present, if current MSecs is eactly a transition
+    // moment) tran defines what data() got us and the one before that probably
+    // flips DST-ness:
+    tran = previousTransition(currentMSecs + 1);
+    if (tran.atMSecsSinceEpoch != invalidMSecs())
+        tran = previousTransition(tran.atMSecsSinceEpoch);
+    if (validMatch(tran))
+        return tran;
+
+    // Otherwise, we can look backwards through transitions for a match; if we
+    // have a POSIX rule, it clearly doesn't do DST (or we'd have hit it by
+    // now), so we only need to look in the tranCache() up to now.
+    const auto untilNow = [currentMSecs](const QTzTransitionTime &at) {
+        return at.atMSecsSinceEpoch <= currentMSecs;
+    };
+    auto it = std::partition_point(tranCache().cbegin(), tranCache().cend(), untilNow);
+    // That's the end or first future transition; we don't want to look at it,
+    // but at all those before it.
+    while (it != tranCache().cbegin()) {
+        --it;
+        tran = dataForTzTransition(*it);
+        if ((timeType == QTimeZone::DaylightTime) != (tran.daylightTimeOffset == 0))
+            return tran;
+    }
+
+    return {};
+}
+
+bool QTzTimeZonePrivate::isDataLocale(const QLocale &locale) const
+{
+    // TZ data uses English / C locale names:
+    return locale.language() == QLocale::C || locale.language() == QLocale::English;
 }
 
 bool QTzTimeZonePrivate::hasTransitions() const

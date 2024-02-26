@@ -172,22 +172,29 @@ QString QTimeZonePrivate::displayName(qint64 atMSecsSinceEpoch,
                                       QTimeZone::NameType nameType,
                                       const QLocale &locale) const
 {
-    if (nameType == QTimeZone::OffsetName)
-        return isoOffsetFormat(offsetFromUtc(atMSecsSinceEpoch));
+    const Data tran = data(atMSecsSinceEpoch);
+    if (tran.atMSecsSinceEpoch != invalidMSecs()) {
+        if (nameType == QTimeZone::OffsetName && locale.language() == QLocale::C)
+            return isoOffsetFormat(tran.offsetFromUtc);
+        if (nameType == QTimeZone::ShortName && isDataLocale(locale))
+            return tran.abbreviation;
 
-    if (isDaylightTime(atMSecsSinceEpoch))
-        return displayName(QTimeZone::DaylightTime, nameType, locale);
-    else
-        return displayName(QTimeZone::StandardTime, nameType, locale);
+        QTimeZone::TimeType timeType
+            = tran.daylightTimeOffset != 0 ? QTimeZone::DaylightTime : QTimeZone::StandardTime;
+        return displayName(timeType, nameType, locale);
+    }
+    return QString();
 }
 
 QString QTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
                                       QTimeZone::NameType nameType,
                                       const QLocale &locale) const
 {
-    Q_UNUSED(timeType);
-    Q_UNUSED(nameType);
-    Q_UNUSED(locale);
+    if (nameType == QTimeZone::OffsetName && isDataLocale(locale)) {
+        const Data tran = data(timeType);
+        if (tran.atMSecsSinceEpoch != invalidMSecs())
+            return isoOffsetFormat(tran.offsetFromUtc);
+    }
     return QString();
 }
 
@@ -225,6 +232,56 @@ bool QTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
 {
     Q_UNUSED(atMSecsSinceEpoch);
     return false;
+}
+
+QTimeZonePrivate::Data QTimeZonePrivate::data(QTimeZone::TimeType timeType) const
+{
+    // True if tran is valid and has the DST-ness to match timeType:
+    const auto validMatch = [timeType](const QTimeZonePrivate::Data &tran) {
+        return tran.atMSecsSinceEpoch != invalidMSecs()
+            && ((timeType == QTimeZone::DaylightTime) != (tran.daylightTimeOffset == 0));
+    };
+
+    // Get current tran, use if suitable:
+    const qint64 currentMSecs = QDateTime::currentMSecsSinceEpoch();
+    QTimeZonePrivate::Data tran = data(currentMSecs);
+    if (validMatch(tran))
+        return tran;
+
+    if (hasTransitions()) {
+        // Otherwise, next tran probably flips DST-ness:
+        tran = nextTransition(currentMSecs);
+        if (validMatch(tran))
+            return tran;
+
+        // Failing that, prev (or present, if current MSecs is exactly a
+        // transition moment) tran defines what data() got us and the one before
+        // that probably flips DST-ness; failing that, keep marching backwards
+        // in search of a DST interval:
+        tran = previousTransition(currentMSecs + 1);
+        while (tran.atMSecsSinceEpoch != invalidMSecs()) {
+            tran = previousTransition(tran.atMSecsSinceEpoch);
+            if (validMatch(tran))
+                return tran;
+        }
+    }
+    return {};
+}
+
+/*!
+    \internal
+
+    Returns true if the abbreviation given in data()'s returns is appropriate
+    for use in the given \a locale.
+
+    Base implementation assumes data() corresponds to the system locale; derived
+    classes should override if their data() is something else (such as
+    C/English).
+*/
+bool QTimeZonePrivate::isDataLocale(const QLocale &locale) const
+{
+    // Guess data is for the system locale unless backend overrides that.
+    return locale == QLocale::system();
 }
 
 QTimeZonePrivate::Data QTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
@@ -906,6 +963,19 @@ QTimeZonePrivate::Data QUtcTimeZonePrivate::data(qint64 forMSecsSinceEpoch) cons
     return d;
 }
 
+// Override to shortcut past base's complications:
+QTimeZonePrivate::Data QUtcTimeZonePrivate::data(QTimeZone::TimeType timeType) const
+{
+    Q_UNUSED(timeType);
+    return data(QDateTime::currentMSecsSinceEpoch());
+}
+
+bool QUtcTimeZonePrivate::isDataLocale(const QLocale &locale) const
+{
+    // Officially only supports C locale names; these are surely also viable for English.
+    return locale.language() == QLocale::C || locale.language() == QLocale::English;
+}
+
 void QUtcTimeZonePrivate::init(const QByteArray &zoneId)
 {
     m_id = zoneId;
@@ -931,6 +1001,15 @@ QLocale::Territory QUtcTimeZonePrivate::territory() const
 QString QUtcTimeZonePrivate::comment() const
 {
     return m_comment;
+}
+
+// Override to bypass complications in base-class:
+QString QUtcTimeZonePrivate::displayName(qint64 atMSecsSinceEpoch,
+                                         QTimeZone::NameType nameType,
+                                         const QLocale &locale) const
+{
+    Q_UNUSED(atMSecsSinceEpoch);
+    return displayName(QTimeZone::StandardTime, nameType, locale);
 }
 
 QString QUtcTimeZonePrivate::displayName(QTimeZone::TimeType timeType,

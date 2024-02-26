@@ -99,6 +99,8 @@ public:
     virtual bool isDaylightTime(qint64 atMSecsSinceEpoch) const;
 
     virtual Data data(qint64 forMSecsSinceEpoch) const;
+    virtual Data data(QTimeZone::TimeType timeType) const;
+    virtual bool isDataLocale(const QLocale &locale) const;
     QDateTimePrivate::ZoneState stateAtZoneTime(qint64 forLocalMSecs,
                                                 QDateTimePrivate::TransitionOptions resolve) const;
 
@@ -179,11 +181,15 @@ public:
     QUtcTimeZonePrivate *clone() const override;
 
     Data data(qint64 forMSecsSinceEpoch) const override;
+    Data data(QTimeZone::TimeType timeType) const override;
+    bool isDataLocale(const QLocale &locale) const override;
 
     QLocale::Territory territory() const override;
     QString comment() const override;
 
-    using QTimeZonePrivate::displayName;
+    QString displayName(qint64 atMSecsSinceEpoch,
+                        QTimeZone::NameType nameType,
+                        const QLocale &locale) const override;
     QString displayName(QTimeZone::TimeType timeType,
                         QTimeZone::NameType nameType,
                         const QLocale &locale) const override;
@@ -241,6 +247,7 @@ public:
     bool hasDaylightTime() const override;
     bool isDaylightTime(qint64 atMSecsSinceEpoch) const override;
 
+    using QTimeZonePrivate::data;
     Data data(qint64 forMSecsSinceEpoch) const override;
 
     bool hasTransitions() const override;
@@ -321,6 +328,8 @@ public:
     bool isDaylightTime(qint64 atMSecsSinceEpoch) const override;
 
     Data data(qint64 forMSecsSinceEpoch) const override;
+    Data data(QTimeZone::TimeType timeType) const override;
+    bool isDataLocale(const QLocale &locale) const override;
 
     bool hasTransitions() const override;
     Data nextTransition(qint64 afterMSecsSinceEpoch) const override;
@@ -378,6 +387,7 @@ public:
     bool hasDaylightTime() const override;
     bool isDaylightTime(qint64 atMSecsSinceEpoch) const override;
 
+    using QTimeZonePrivate::data;
     Data data(qint64 forMSecsSinceEpoch) const override;
 
     bool hasTransitions() const override;
@@ -432,6 +442,7 @@ public:
     bool hasDaylightTime() const override;
     bool isDaylightTime(qint64 atMSecsSinceEpoch) const override;
 
+    using QTimeZonePrivate::data;
     Data data(qint64 forMSecsSinceEpoch) const override;
 
     bool hasTransitions() const override;
@@ -481,6 +492,7 @@ public:
     bool hasDaylightTime() const override;
     bool isDaylightTime(qint64 atMSecsSinceEpoch) const override;
 
+    using QTimeZonePrivate::data;
     Data data(qint64 forMSecsSinceEpoch) const override;
 
     QByteArray systemTimeZoneId() const override;
