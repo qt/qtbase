@@ -89,11 +89,17 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
     public void onAppStateDetailsChanged(QtNative.ApplicationStateDetails details) {
         synchronized (this) {
             m_stateDetails = details;
-            if (m_stateDetails.nativePluginIntegrationReady) {
+        }
+    }
+
+    @Override
+    public void onNativePluginIntegrationReadyChanged(boolean ready)
+    {
+        synchronized (this) {
+            if (ready) {
                 QtNative.runAction(() -> {
                     DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
-                    QtDisplayManager.setApplicationDisplayMetrics(m_activity,
-                                                                  metrics.widthPixels,
+                    QtDisplayManager.setApplicationDisplayMetrics(m_activity, metrics.widthPixels,
                                                                   metrics.heightPixels);
 
                 });

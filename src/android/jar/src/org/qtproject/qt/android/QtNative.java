@@ -196,7 +196,8 @@ class QtNative
     }
 
     interface AppStateDetailsListener {
-        void onAppStateDetailsChanged(ApplicationStateDetails details);
+        default void onAppStateDetailsChanged(ApplicationStateDetails details) {}
+        default void onNativePluginIntegrationReadyChanged(boolean ready) {}
     }
 
     // Keep in sync with src/corelib/global/qnamespace.h
@@ -228,6 +229,7 @@ class QtNative
     public static void notifyNativePluginIntegrationReady(boolean ready)
     {
         m_stateDetails.nativePluginIntegrationReady = ready;
+        notifyNativePluginIntegrationReadyChanged(ready);
         notifyAppStateDetailsChanged(m_stateDetails);
     }
 
@@ -255,6 +257,13 @@ class QtNative
     static void unregisterAppStateListener(AppStateDetailsListener listener) {
         synchronized (m_appStateListenersLock) {
             m_appStateListeners.remove(listener);
+        }
+    }
+
+    static void notifyNativePluginIntegrationReadyChanged(boolean ready) {
+        synchronized (m_appStateListenersLock) {
+            for (final AppStateDetailsListener listener : m_appStateListeners)
+                listener.onNativePluginIntegrationReadyChanged(ready);
         }
     }
 

@@ -38,10 +38,10 @@ class QtServiceEmbeddedDelegate implements QtEmbeddedViewInterface, QtNative.App
     }
 
     @Override
-    public void onAppStateDetailsChanged(QtNative.ApplicationStateDetails details)
+    public void onNativePluginIntegrationReadyChanged(boolean ready)
     {
         synchronized (this) {
-            if (details.nativePluginIntegrationReady) {
+            if (ready) {
                 QtNative.runAction(() -> {
                     if (m_view == null)
                         return;
