@@ -5166,8 +5166,11 @@ bool QD3D11SwapChain::createOrResize()
             }
         }
         if (FAILED(hr)) {
-            qWarning("Failed to create D3D11 swapchain: %s",
-                qPrintable(QSystemError::windowsComString(hr)));
+            qWarning("Failed to create D3D11 swapchain: %s"
+                     " (Width=%u Height=%u Format=%u SampleCount=%u BufferCount=%u Scaling=%u SwapEffect=%u Stereo=%u)",
+                     qPrintable(QSystemError::windowsComString(hr)),
+                     desc.Width, desc.Height, UINT(desc.Format), desc.SampleDesc.Count,
+                     desc.BufferCount, UINT(desc.Scaling), UINT(desc.SwapEffect), UINT(desc.Stereo));
             return false;
         }
     } else {

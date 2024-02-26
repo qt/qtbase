@@ -1491,6 +1491,10 @@ QRhi::FrameOpResult QRhiD3D12::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
         {
             presentFlags |= DXGI_PRESENT_ALLOW_TEARING;
         }
+        if (!swapChainD->swapChain) {
+            qWarning("Failed to present, no swapchain");
+            return QRhi::FrameOpError;
+        }
         HRESULT hr = swapChainD->swapChain->Present(swapChainD->swapInterval, presentFlags);
         if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) {
             qWarning("Device loss detected in Present()");
@@ -5945,7 +5949,7 @@ bool QD3D12SwapChain::createOrResize()
             if (!dcompTarget) {
                 hr = rhiD->dcompDevice->CreateTargetForHwnd(hwnd, true, &dcompTarget);
                 if (FAILED(hr)) {
-                    qWarning("Failed to create Direct Compsition target for the window: %s",
+                    qWarning("Failed to create Direct Composition target for the window: %s",
                              qPrintable(QSystemError::windowsComString(hr)));
                 }
             }
@@ -6041,7 +6045,11 @@ bool QD3D12SwapChain::createOrResize()
             }
         }
         if (FAILED(hr)) {
-            qWarning("Failed to create D3D12 swapchain: %s", qPrintable(QSystemError::windowsComString(hr)));
+            qWarning("Failed to create D3D12 swapchain: %s"
+                     " (Width=%u Height=%u Format=%u SampleCount=%u BufferCount=%u Scaling=%u SwapEffect=%u Stereo=%u)",
+                     qPrintable(QSystemError::windowsComString(hr)),
+                     desc.Width, desc.Height, UINT(desc.Format), desc.SampleDesc.Count,
+                     desc.BufferCount, UINT(desc.Scaling), UINT(desc.SwapEffect), UINT(desc.Stereo));
             return false;
         }
 
