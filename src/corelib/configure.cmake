@@ -805,6 +805,12 @@ qt_feature("timezone" PUBLIC
     PURPOSE "Provides support for time-zone handling."
     CONDITION NOT WASM AND NOT VXWORKS
 )
+qt_feature("timezone_locale" PRIVATE
+    SECTION "Utilities"
+    LABEL "QTimeZone"
+    PURPOSE "Provides support for localized time-zone display names."
+    DISABLE ON # Implementation is currently incomplete, so leave turned off
+)
 qt_feature("datetimeparser" PRIVATE
     SECTION "Utilities"
     LABEL "QDateTimeParser"

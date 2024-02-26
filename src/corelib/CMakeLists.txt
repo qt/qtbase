@@ -922,6 +922,18 @@ qt_internal_extend_target(Core
         time/qtimezoneprivate_win.cpp
 )
 
+qt_internal_extend_target(Core
+    CONDITION QT_FEATURE_timezone_locale
+    SOURCES
+        time/qtimezonelocale.cpp time/qtimezonelocale_p.h
+)
+
+qt_internal_extend_target(Core
+    CONDITION QT_FEATURE_timezone_locale AND NOT QT_FEATURE_icu
+    SOURCES
+        time/qtimezonelocale_data_p.h
+)
+
 qt_internal_extend_target(Core CONDITION QT_FEATURE_datetimeparser
     SOURCES
         time/qdatetimeparser.cpp time/qdatetimeparser_p.h
