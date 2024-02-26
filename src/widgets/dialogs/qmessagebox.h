@@ -100,7 +100,7 @@ public:
         FlagMask           = 0x00000300,        // obsolete
         ButtonMask         = ~FlagMask          // obsolete
     };
-    Q_ENUM(StandardButton);
+    Q_ENUM(StandardButton)
 
 #if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
     typedef StandardButton Button;
