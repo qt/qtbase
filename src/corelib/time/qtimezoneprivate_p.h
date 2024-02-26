@@ -183,6 +183,7 @@ public:
     QLocale::Territory territory() const override;
     QString comment() const override;
 
+    using QTimeZonePrivate::displayName;
     QString displayName(QTimeZone::TimeType timeType,
                         QTimeZone::NameType nameType,
                         const QLocale &locale) const override;
@@ -213,6 +214,9 @@ private:
     int m_offsetFromUtc;
 };
 
+// TODO: shuffle (almost reverse) order of and rework #if-ery here to use #elif
+// and match the #if-ery in each of QTZ's newBackendTimeZone() cascades for
+// backend selection.
 #if QT_CONFIG(icu)
 class Q_AUTOTEST_EXPORT QIcuTimeZonePrivate final : public QTimeZonePrivate
 {
@@ -255,7 +259,7 @@ private:
 
     UCalendar *m_ucal;
 };
-#endif
+#endif // ICU
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID)
 struct QTzTransitionTime
@@ -303,6 +307,7 @@ public:
     QLocale::Territory territory() const override;
     QString comment() const override;
 
+    using QTimeZonePrivate::displayName;
     QString displayName(QTimeZone::TimeType timeType,
                         QTimeZone::NameType nameType,
                         const QLocale &locale) const override;
@@ -361,6 +366,7 @@ public:
 
     QString comment() const override;
 
+    using QTimeZonePrivate::displayName;
     QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
                         const QLocale &locale) const override;
     QString abbreviation(qint64 atMSecsSinceEpoch) const override;
@@ -414,6 +420,7 @@ public:
 
     QString comment() const override;
 
+    using QTimeZonePrivate::displayName;
     QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
                         const QLocale &locale) const override;
     QString abbreviation(qint64 atMSecsSinceEpoch) const override;
@@ -462,6 +469,7 @@ public:
 
     QAndroidTimeZonePrivate *clone() const override;
 
+    using QTimeZonePrivate::displayName;
     QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType,
                         const QLocale &locale) const override;
     QString abbreviation(qint64 atMSecsSinceEpoch) const override;

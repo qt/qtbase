@@ -908,7 +908,7 @@ QString QTimeZone::displayName(const QDateTime &atDateTime, NameType nameType,
             return systemTimeZone().displayName(atDateTime, nameType, locale);
         case Qt::UTC:
         case Qt::OffsetFromUTC:
-            return QUtcTimeZonePrivate(d.s.offset).QTimeZonePrivate::displayName(
+            return QUtcTimeZonePrivate(d.s.offset).displayName(
                 atDateTime.toMSecsSinceEpoch(), nameType, locale);
         case Qt::TimeZone:
             Q_UNREACHABLE();
