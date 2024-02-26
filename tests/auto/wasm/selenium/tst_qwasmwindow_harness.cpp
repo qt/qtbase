@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtCore/QEvent>
+#include <QtWidgets/qwidget.h>
 
 #include <QtGui/qevent.h>
 #include <QtCore/qobject.h>
@@ -11,6 +12,10 @@
 #include <QtGui/qscreen.h>
 #include <QtGui/qwindow.h>
 #include <QtGui/qguiapplication.h>
+#include <QtWidgets/qlineedit.h>
+#include <QApplication>
+#include <QDialog>
+#include <QSysInfo>
 
 #include <emscripten.h>
 #include <emscripten/bind.h>
@@ -19,6 +24,12 @@
 #include <memory>
 #include <sstream>
 #include <vector>
+
+class TestWidget : public QDialog
+{
+    Q_OBJECT
+};
+
 
 class TestWindow : public QRasterWindow
 {
@@ -76,6 +87,71 @@ TestWindow *findWindowByTitle(const std::string &title)
     });
     return window_it == windows.end() ? nullptr : static_cast<TestWindow *>(*window_it);
 }
+
+class WidgetStorage
+{
+private:
+    ~WidgetStorage()
+    {
+    }
+public:
+    static WidgetStorage *getInstance()
+    {
+        if (!s_instance)
+        {
+            s_instance = new WidgetStorage();
+        }
+        return s_instance;
+    }
+    static void clearInstance()
+    {
+        delete s_instance;
+        s_instance = nullptr;
+    }
+
+    TestWidget *findWidget(const std::string &name)
+    {
+        auto it = m_widgets.find(name);
+        if (it != m_widgets.end())
+            return it->second.get();
+        return nullptr;
+    }
+
+    QLineEdit *findEdit(const std::string &name)
+    {
+        auto it = m_lineEdits.find(name);
+        if (it != m_lineEdits.end())
+            return it->second;
+        return nullptr;
+    }
+
+    void make(const std::string &name)
+    {
+        auto widget = std::make_shared<TestWidget>();
+        auto *lineEdit = new QLineEdit(widget.get());
+
+        widget->setMinimumSize(200, 200);
+        widget->setMaximumSize(200, 200);
+        widget->setGeometry(0, m_widgetY, 200, 200);
+        m_widgetY += 200;
+
+        lineEdit->setText("Hello world");
+
+        m_widgets[name] = widget;
+        m_lineEdits[name] = lineEdit;
+    }
+
+private:
+    using TestWidgetPtr = std::shared_ptr<TestWidget>;
+
+    static WidgetStorage               * s_instance;
+    std::map<std::string, TestWidgetPtr> m_widgets;
+    std::map<std::string, QLineEdit  *>  m_lineEdits;
+    int                                  m_widgetY = 0;
+};
+
+WidgetStorage *WidgetStorage::s_instance = nullptr;
+
 } // namespace
 
 using namespace emscripten;
@@ -161,8 +237,50 @@ void screenInformation()
                                                  emscripten::val(toJSArray(screensAsJsObjects)));
 }
 
-void createWindow(int x, int y, int w, int h, std::string parentType, std::string parentId,
-                  std::string title)
+void createWidget(const std::string &name)
+{
+    WidgetStorage::getInstance()->make(name);
+}
+
+void setWidgetNoFocusShow(const std::string &name)
+{
+    auto w = WidgetStorage::getInstance()->findWidget(name);
+    if (w)
+        w->setAttribute(Qt::WA_ShowWithoutActivating);
+}
+
+void showWidget(const std::string &name)
+{
+    auto w = WidgetStorage::getInstance()->findWidget(name);
+    if (w)
+        w->show();
+}
+
+void hasWidgetFocus(const std::string &name)
+{
+    bool focus = false;
+    auto le = WidgetStorage::getInstance()->findEdit(name);
+    if (le)
+        focus = le->hasFocus();
+
+    emscripten::val::global("window").call<void>("hasWidgetFocusCallback",
+                                                 emscripten::val(focus));
+}
+
+void activateWidget(const std::string &name)
+{
+    auto w = WidgetStorage::getInstance()->findWidget(name);
+    if (w)
+        w->activateWindow();
+}
+
+void clearWidgets()
+{
+    WidgetStorage::clearInstance();
+}
+
+void createWindow(int x, int y, int w, int h, const std::string &parentType, const std::string &parentId,
+                  const std::string &title)
 {
     QScreen *parentScreen = nullptr;
     QWindow *parentWindow = nullptr;
@@ -202,7 +320,7 @@ void createWindow(int x, int y, int w, int h, std::string parentType, std::strin
     window->setParent(parentWindow);
 }
 
-void setWindowBackgroundColor(std::string title, int r, int g, int b)
+void setWindowBackgroundColor(const std::string &title, int r, int g, int b)
 {
     auto *window = findWindowByTitle(title);
     if (!window) {
@@ -225,7 +343,7 @@ void setWindowVisible(int windowId, bool visible) {
     (*window_it)->setVisible(visible);
 }
 
-void setWindowParent(std::string windowTitle, std::string parentTitle)
+void setWindowParent(const std::string &windowTitle, const std::string &parentTitle)
 {
     QWindow *window = findWindowByTitle(windowTitle);
     if (!window) {
@@ -242,7 +360,7 @@ void setWindowParent(std::string windowTitle, std::string parentTitle)
     window->setParent(parent);
 }
 
-bool closeWindow(std::string title)
+bool closeWindow(const std::string &title)
 {
     QWindow *window = findWindowByTitle(title);
     return window ? window->close() : false;
@@ -252,16 +370,24 @@ EMSCRIPTEN_BINDINGS(qwasmwindow)
 {
     emscripten::function("screenInformation", &screenInformation);
     emscripten::function("windowInformation", &windowInformation);
+
     emscripten::function("createWindow", &createWindow);
     emscripten::function("setWindowVisible", &setWindowVisible);
     emscripten::function("setWindowParent", &setWindowParent);
     emscripten::function("closeWindow", &closeWindow);
     emscripten::function("setWindowBackgroundColor", &setWindowBackgroundColor);
+
+    emscripten::function("createWidget", &createWidget);
+    emscripten::function("setWidgetNoFocusShow", &setWidgetNoFocusShow);
+    emscripten::function("showWidget", &showWidget);
+    emscripten::function("activateWidget", &activateWidget);
+    emscripten::function("hasWidgetFocus", &hasWidgetFocus);
+    emscripten::function("clearWidgets", &clearWidgets);
 }
 
 int main(int argc, char **argv)
 {
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     app.exec();
     return 0;

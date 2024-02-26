@@ -27,9 +27,45 @@ class WidgetTestCase(unittest.TestCase):
         self.addTypeEqualityFunc(Color, assert_colors_equal)
         self.addTypeEqualityFunc(Rect, assert_rects_equal)
 
+    def test_hasFocus_returnsFalse_whenSetNoFocusShowWasCalled(self):
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                   x=0, y=0, width=600, height=1200)
+
+        w0 = Widget(self._driver, "w0")
+        w0.show()
+        self.assertEqual(w0.hasFocus(), True)
+
+        w1 = Widget(self._driver, "w1")
+        w1.setNoFocusShow()
+        w1.show()
+        self.assertEqual(w0.hasFocus(), True)
+        self.assertEqual(w1.hasFocus(), False)
+
+        w2 = Widget(self._driver, "w2")
+        w2.show()
+        self.assertEqual(w0.hasFocus(), False)
+        self.assertEqual(w1.hasFocus(), False)
+        self.assertEqual(w2.hasFocus(), True)
+
+        w3 = Widget(self._driver,  "w3")
+        w3.setNoFocusShow()
+        w3.show()
+        self.assertEqual(w0.hasFocus(), False)
+        self.assertEqual(w1.hasFocus(), False)
+        self.assertEqual(w2.hasFocus(), True)
+        self.assertEqual(w3.hasFocus(), False)
+        w3.activate();
+        self.assertEqual(w0.hasFocus(), False)
+        self.assertEqual(w1.hasFocus(), False)
+        self.assertEqual(w2.hasFocus(), False)
+        self.assertEqual(w3.hasFocus(), True)
+
+        clearWidgets(self._driver)
+
     def test_window_resizing(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                        x=0, y=0, width=600, height=600)
+
         window = Window(parent=screen, rect=Rect(x=100, y=100, width=200, height=200))
         self.assertEqual(window.rect, Rect(x=100, y=100, width=200, height=200))
 
@@ -527,6 +563,48 @@ class Screen:
         shadow_container = self.element.find_element(By.CSS_SELECTOR, f'#qt-shadow-container')
         return shadow_container.shadow_root.find_element(method, query)
 
+def clearWidgets(driver):
+    driver.execute_script(
+            f'''
+                instance.clearWidgets();
+            '''
+        )
+
+class Widget:
+    def __init__(self, driver, name):
+        self.name=name
+        self.driver=driver
+
+        self.driver.execute_script(
+            f'''
+                instance.createWidget('{self.name}');
+            '''
+        )
+
+    def setNoFocusShow(self):
+        self.driver.execute_script(
+            f'''
+                instance.setWidgetNoFocusShow('{self.name}');
+            '''
+        )
+
+    def show(self):
+        self.driver.execute_script(
+            f'''
+                instance.showWidget('{self.name}');
+            '''
+        )
+    def hasFocus(self):
+        focus = call_instance_function_arg(self.driver, 'hasWidgetFocus', self.name)
+        return focus
+
+    def activate(self):
+        self.driver.execute_script(
+            f'''
+                instance.activateWidget('{self.name}');
+            '''
+        )
+
 
 class Window:
     def __init__(self, parent=None, rect=None, title=None, element=None, visible=True):
@@ -813,6 +891,13 @@ def call_instance_function(driver, name):
         f'''let result;
             window.{name}Callback = data => result = data;
             instance.{name}();
+            return eval(result);''')
+
+def call_instance_function_arg(driver, name, arg):
+    return driver.execute_script(
+        f'''let result;
+            window.{name}Callback = data => result = data;
+            instance.{name}('{arg}');
             return eval(result);''')
 
 def wait_for_animation_frame(driver):

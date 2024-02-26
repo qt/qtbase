@@ -12,6 +12,7 @@ qt_internal_add_test(tst_qwasmwindow_harness
     LIBRARIES
         Qt::Core
         Qt::Gui
+        Qt::Widgets
 )
 
 if(CMAKE_HOST_WIN32)
