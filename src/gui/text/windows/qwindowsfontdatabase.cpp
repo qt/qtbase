@@ -1256,9 +1256,6 @@ QFontEngine *QWindowsFontDatabase::createEngine(const QFontDef &request, const Q
 
                     QFontDef fontDef = request;
                     fontDef.families = QStringList(QString::fromWCharArray(n));
-
-                    if (isColorFont)
-                        fedw->glyphFormat = QFontEngine::Format_ARGB;
                     fedw->initFontInfo(fontDef, dpi);
                     fe = fedw;
                 }
