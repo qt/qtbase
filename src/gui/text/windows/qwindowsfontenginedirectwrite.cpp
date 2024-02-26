@@ -1033,6 +1033,10 @@ void QWindowsFontEngineDirectWrite::initFontInfo(const QFontDef &request,
             names->Release();
         }
 
+        // Color font
+        if (face3->GetPaletteEntryCount() > 0)
+            glyphFormat = QFontEngine::Format_ARGB;
+
         face3->Release();
     }
 #endif
