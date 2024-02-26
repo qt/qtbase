@@ -765,7 +765,7 @@ Q_GLOBAL_STATIC(QSurfaceFormat, qt_default_surface_format)
     question's own setFormat() function. However, it is often more convenient to
     set the format for all windows once at the start of the application. It also
     guarantees proper behavior in cases where shared contexts are required,
-    because settings the format via this function guarantees that all contexts
+    because setting the format via this function guarantees that all contexts
     and surfaces, even the ones created internally by Qt, will use the same
     format.
 
