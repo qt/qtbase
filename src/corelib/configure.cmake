@@ -860,7 +860,8 @@ qt_feature("timezone_locale" PRIVATE
     SECTION "Utilities"
     LABEL "QTimeZone"
     PURPOSE "Provides support for localized time-zone display names."
-    DISABLE ON # Implementation is currently incomplete, so leave turned off
+    CONDITION
+        QT_FEATURE_timezone AND ( ( UNIX AND NOT APPLE AND NOT ANDROID ) OR QT_FEATURE_icu )
 )
 qt_feature("datetimeparser" PRIVATE
     SECTION "Utilities"

@@ -5,6 +5,9 @@
 
 #include "qtimezone.h"
 #include "qtimezoneprivate_p.h"
+#if QT_CONFIG(timezone_locale)
+#  include "qtimezonelocale_p.h"
+#endif
 #include "qtimezoneprivate_data_p.h"
 
 #include <qdatastream.h>
@@ -181,7 +184,11 @@ QString QTimeZonePrivate::displayName(qint64 atMSecsSinceEpoch,
 
         QTimeZone::TimeType timeType
             = tran.daylightTimeOffset != 0 ? QTimeZone::DaylightTime : QTimeZone::StandardTime;
+#if QT_CONFIG(timezone_locale)
+        return localeName(atMSecsSinceEpoch, tran.offsetFromUtc, timeType, nameType, locale);
+#else
         return displayName(timeType, nameType, locale);
+#endif
     }
     return QString();
 }
@@ -190,10 +197,14 @@ QString QTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
                                       QTimeZone::NameType nameType,
                                       const QLocale &locale) const
 {
-    if (nameType == QTimeZone::OffsetName && isDataLocale(locale)) {
-        const Data tran = data(timeType);
-        if (tran.atMSecsSinceEpoch != invalidMSecs())
+    const Data tran = data(timeType);
+    if (tran.atMSecsSinceEpoch != invalidMSecs()) {
+        if (nameType == QTimeZone::OffsetName && isDataLocale(locale))
             return isoOffsetFormat(tran.offsetFromUtc);
+
+#if QT_CONFIG(timezone_locale)
+        return localeName(tran.atMSecsSinceEpoch, tran.offsetFromUtc, timeType, nameType, locale);
+#endif
     }
     return QString();
 }

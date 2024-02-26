@@ -33,10 +33,6 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-#if QT_CONFIG(icu)
-Q_CONSTINIT static QBasicMutex s_icu_mutex;
-#endif
-
 /*
     Private
 
@@ -771,9 +767,6 @@ QTzTimeZonePrivate::~QTzTimeZonePrivate()
 
 QTzTimeZonePrivate *QTzTimeZonePrivate::clone() const
 {
-#if QT_CONFIG(icu)
-    const auto lock = qt_scoped_lock(s_icu_mutex);
-#endif
     return new QTzTimeZonePrivate(*this);
 }
 
@@ -1007,15 +1000,7 @@ QTzTimeZonePrivate::QTzTimeZonePrivate(const QByteArray &ianaId)
     if (m_id.isEmpty()) {
         // This can only happen for the system zone, when we've read the
         // contents of /etc/localtime because it wasn't a symlink.
-#if QT_CONFIG(icu)
-        // Use ICU's system zone, if only to avoid using the abbreviation as ID
-        // (ICU might mis-recognize it) in displayName().
-        m_icu = new QIcuTimeZonePrivate();
-        // Use its ID, as an alternate source of data:
-        m_id = m_icu->id();
-        if (!m_id.isEmpty())
-            return;
-#endif
+        // TODO: use CLDR generic abbreviation for the zone.
         m_id = abbreviation(QDateTime::currentMSecsSinceEpoch()).toUtf8();
     }
 }
@@ -1034,18 +1019,6 @@ QString QTzTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
                                         QTimeZone::NameType nameType,
                                         const QLocale &locale) const
 {
-    // TZ DB lacks localized names (it only has IANA IDs), so delegate to ICU
-    // for those, when available.
-#if QT_CONFIG(icu)
-    {
-        auto lock = qt_scoped_lock(s_icu_mutex);
-        // TODO Some valid TZ names are not valid ICU names, use translation table?
-        if (!m_icu)
-            m_icu = new QIcuTimeZonePrivate(m_id);
-        if (m_icu->isValid())
-            return m_icu->displayName(timeType, nameType, locale);
-    }
-#endif
     // TZ only provides C-locale abbreviations and offset:
     if (nameType != QTimeZone::LongName && isDataLocale(locale)) {
         QTimeZonePrivate::Data tran = data(timeType);
@@ -1057,7 +1030,7 @@ QString QTzTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
                 return isoOffsetFormat(tran.offsetFromUtc);
         }
     }
-    // Otherwise, fall back to base class:
+    // Otherwise, fall back to base class (and qtimezonelocale.cpp):
     return QTimeZonePrivate::displayName(timeType, nameType, locale);
 }
 

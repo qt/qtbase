@@ -14,18 +14,31 @@
 //
 // We mean it.
 //
+#include <private/qglobal_p.h>
 
+#include <QtCore/qstring.h>
 #include <QtCore/qtimezone.h>
+
+#if QT_CONFIG(icu)
+#include <unicode/ucal.h>
+#endif
 
 QT_REQUIRE_CONFIG(timezone);
 QT_REQUIRE_CONFIG(timezone_locale);
 
+QT_BEGIN_NAMESPACE
+
 namespace QtTimeZoneLocale {
 #if QT_CONFIG(icu)
+QString ucalTimeZoneDisplayName(UCalendar *ucal, QTimeZone::TimeType timeType,
+                                QTimeZone::NameType nameType,
+                                const QString &localeCode);
 #else
 // Define data types for QTZL_data_p.h
 
 #endif
 }
+
+QT_END_NAMESPACE
 
 #endif // QTIMEZONELOCALE_P_H

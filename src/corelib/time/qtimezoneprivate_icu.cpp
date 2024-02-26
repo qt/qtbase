@@ -4,6 +4,7 @@
 
 #include "qtimezone.h"
 #include "qtimezoneprivate_p.h"
+#include "qtimezonelocale_p.h"
 
 #include <unicode/ucal.h>
 
@@ -21,27 +22,6 @@ QT_BEGIN_NAMESPACE
 */
 
 // ICU utilities
-
-// Convert TimeType and NameType into ICU UCalendarDisplayNameType
-static UCalendarDisplayNameType ucalDisplayNameType(QTimeZone::TimeType timeType, QTimeZone::NameType nameType)
-{
-    // TODO ICU C UCalendarDisplayNameType does not support full set of C++ TimeZone::EDisplayType
-    switch (nameType) {
-    case QTimeZone::ShortName :
-    case QTimeZone::OffsetName :
-        if (timeType == QTimeZone::DaylightTime)
-            return UCAL_SHORT_DST;
-        // Includes GenericTime
-        return UCAL_SHORT_STANDARD;
-    case QTimeZone::DefaultName :
-    case QTimeZone::LongName :
-        if (timeType == QTimeZone::DaylightTime)
-            return UCAL_DST;
-        // Includes GenericTime
-        return UCAL_STANDARD;
-    }
-    return UCAL_STANDARD;
-}
 
 // Qt wrapper around ucal_getDefaultTimeZone()
 static QByteArray ucalDefaultTimeZoneId()
@@ -67,44 +47,6 @@ static QByteArray ucalDefaultTimeZoneId()
     }
 
     return QByteArray();
-}
-
-// Qt wrapper around ucal_getTimeZoneDisplayName()
-static QString ucalTimeZoneDisplayName(UCalendar *ucal, QTimeZone::TimeType timeType,
-                                       QTimeZone::NameType nameType,
-                                       const QString &localeCode)
-{
-    int32_t size = 50;
-    QString result(size, Qt::Uninitialized);
-    UErrorCode status = U_ZERO_ERROR;
-
-    // size = ucal_getTimeZoneDisplayName(cal, type, locale, result, resultLength, status)
-    size = ucal_getTimeZoneDisplayName(ucal,
-                                       ucalDisplayNameType(timeType, nameType),
-                                       localeCode.toUtf8(),
-                                       reinterpret_cast<UChar *>(result.data()),
-                                       size,
-                                       &status);
-
-    // If overflow, then resize and retry
-    if (status == U_BUFFER_OVERFLOW_ERROR) {
-        result.resize(size);
-        status = U_ZERO_ERROR;
-        size = ucal_getTimeZoneDisplayName(ucal,
-                                           ucalDisplayNameType(timeType, nameType),
-                                           localeCode.toUtf8(),
-                                           reinterpret_cast<UChar *>(result.data()),
-                                           size,
-                                           &status);
-    }
-
-    // If successful on first or second go, resize and return
-    if (U_SUCCESS(status)) {
-        result.resize(size);
-        return result;
-    }
-
-    return QString();
 }
 
 // Qt wrapper around ucal_get() for offsets
@@ -203,13 +145,11 @@ static QTimeZonePrivate::Data ucalTimeZoneTransition(UCalendar *m_ucal,
     tran.offsetFromUtc = utc + dst;
     tran.standardTimeOffset = utc;
     tran.daylightTimeOffset = dst;
-    // TODO No ICU API, use short name instead
-    if (dst == 0)
-        tran.abbreviation = ucalTimeZoneDisplayName(m_ucal, QTimeZone::StandardTime,
-                                                    QTimeZone::ShortName, QLocale().name());
-    else
-        tran.abbreviation = ucalTimeZoneDisplayName(m_ucal, QTimeZone::DaylightTime,
-                                                    QTimeZone::ShortName, QLocale().name());
+    // TODO No ICU API, use short name as abbreviation.
+    QTimeZone::TimeType timeType = dst == 0 ? QTimeZone::StandardTime : QTimeZone::DaylightTime;
+    using namespace QtTimeZoneLocale;
+    tran.abbreviation = ucalTimeZoneDisplayName(m_ucal, timeType,
+                                                QTimeZone::ShortName, QLocale().name());
     return tran;
 }
 #endif // U_ICU_VERSION_SHORT
@@ -317,6 +257,7 @@ QString QIcuTimeZonePrivate::displayName(QTimeZone::TimeType timeType,
     }
     // Technically this may be suspect, if locale isn't QLocale(), since that's
     // what we used when constructing m_ucal; does ICU cope with inconsistency ?
+    using namespace QtTimeZoneLocale;
     return ucalTimeZoneDisplayName(m_ucal, timeType, nameType, locale.name());
 }
 

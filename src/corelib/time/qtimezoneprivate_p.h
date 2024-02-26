@@ -152,6 +152,15 @@ public:
         return QByteArrayLiteral("UTC");
     }
 
+#if QT_CONFIG(timezone_locale)
+private:
+    // Defined in qtimezonelocale.cpp
+    QString localeName(qint64 atMSecsSinceEpoch, int offsetFromUtc,
+                       QTimeZone::TimeType timeType,
+                       QTimeZone::NameType nameType,
+                       const QLocale &locale) const;
+#endif // L10n helpers.
+
 protected:
     QByteArray m_id;
 };
@@ -223,7 +232,7 @@ private:
 // TODO: shuffle (almost reverse) order of and rework #if-ery here to use #elif
 // and match the #if-ery in each of QTZ's newBackendTimeZone() cascades for
 // backend selection.
-#if QT_CONFIG(icu)
+#if QT_CONFIG(icu) && !defined(Q_OS_UNIX)
 class Q_AUTOTEST_EXPORT QIcuTimeZonePrivate final : public QTimeZonePrivate
 {
 public:
@@ -266,7 +275,7 @@ private:
 
     UCalendar *m_ucal;
 };
-#endif // ICU
+#endif // ICU not on Unix.
 
 #if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN) && !defined(Q_OS_ANDROID)
 struct QTzTransitionTime
@@ -347,14 +356,6 @@ private:
 
     Data dataForTzTransition(QTzTransitionTime tran) const;
     Data dataFromRule(QTzTransitionRule rule, qint64 msecsSinceEpoch) const;
-#if QT_CONFIG(icu)
-# ifdef __cpp_lib_is_final
-    static_assert(std::is_final<QIcuTimeZonePrivate>::value,
-                  "if QIcuTimeZonePrivate isn't final, we may need to specialize "
-                  "QExplicitlySharedDataPointer::clone() to call QTimeZonePrivate::clone()");
-# endif
-    mutable QExplicitlySharedDataPointer<const QIcuTimeZonePrivate> m_icu;
-#endif
     QTzTimeZoneCacheEntry cached_data;
     const QList<QTzTransitionTime> &tranCache() const { return cached_data.m_tranTimes; }
 };

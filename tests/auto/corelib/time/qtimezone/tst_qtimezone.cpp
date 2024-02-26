@@ -1280,7 +1280,7 @@ void tst_QTimeZone::utcTest()
 
 void tst_QTimeZone::icuTest()
 {
-#if defined(QT_BUILD_INTERNAL) && QT_CONFIG(icu)
+#if defined(QT_BUILD_INTERNAL) && QT_CONFIG(icu) && !defined(Q_OS_UNIX)
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0), QTimeZone::UTC).toMSecsSinceEpoch();
     qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0), QTimeZone::UTC).toMSecsSinceEpoch();
@@ -1323,7 +1323,7 @@ void tst_QTimeZone::icuTest()
     if (QTest::currentTestFailed())
         return;
     testEpochTranPrivate(QIcuTimeZonePrivate("America/Toronto"));
-#endif // icu
+#endif // ICU not on Unix
 }
 
 void tst_QTimeZone::tzTest()
@@ -1527,7 +1527,7 @@ void tst_QTimeZone::tzTest()
         QDateTime dt(QDate(2016, 3, 28), QTime(0, 0), UTC);
         QCOMPARE(tzBarnaul.data(dt.toMSecsSinceEpoch()).abbreviation, QString("+07"));
     }
-#endif // QT_BUILD_INTERNAL && Q_OS_UNIX && !Q_OS_DARWIN
+#endif // QT_BUILD_INTERNAL && Q_OS_UNIX && !Q_OS_DARWIN && !Q_OS_ANDROID
 }
 
 void tst_QTimeZone::macTest()
