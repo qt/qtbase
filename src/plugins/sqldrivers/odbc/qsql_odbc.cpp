@@ -1918,6 +1918,18 @@ bool QODBCDriver::open(const QString & db,
                         int,
                         const QString& connOpts)
 {
+    const auto ensureEscaped = [](QString arg) -> QString {
+        QChar quoteChar;
+        if (arg.startsWith(u'"'))
+            quoteChar = u'\'';
+        else if (arg.startsWith(u'\''))
+            quoteChar = u'"';
+        else if (arg.contains(u';'))
+            quoteChar = u'"';
+        else
+            return arg;
+        return quoteChar + arg + quoteChar;
+    };
     Q_D(QODBCDriver);
     if (isOpen())
       close();
@@ -1953,17 +1965,17 @@ bool QODBCDriver::open(const QString & db,
     QString connQStr;
     // support the "DRIVER={SQL SERVER};SERVER=blah" syntax
     if (db.contains(".dsn"_L1, Qt::CaseInsensitive))
-        connQStr = "FILEDSN="_L1 + db;
+        connQStr = "FILEDSN="_L1 + ensureEscaped(db);
     else if (db.contains("DRIVER="_L1, Qt::CaseInsensitive)
             || db.contains("SERVER="_L1, Qt::CaseInsensitive))
-        connQStr = db;
+        connQStr = ensureEscaped(db);
     else
-        connQStr = "DSN="_L1 + db;
+        connQStr = "DSN="_L1 + ensureEscaped(db);
 
     if (!user.isEmpty())
-        connQStr += ";UID="_L1 + user;
+        connQStr += ";UID="_L1 + ensureEscaped(user);
     if (!password.isEmpty())
-        connQStr += ";PWD="_L1 + password;
+        connQStr += ";PWD="_L1 + ensureEscaped(password);
 
     SQLSMALLINT cb;
     QVarLengthArray<SQLTCHAR, 1024> connOut(1024);
