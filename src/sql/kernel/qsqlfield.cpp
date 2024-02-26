@@ -208,6 +208,8 @@ void QSqlField::setPrecision(int precision)
     \since 6.8
 
     This property holds the default value for this field.
+    Only some database drivers supports this property. Currently
+    those are SQLite, PostgreSQL, Oracle and MySQL/MariaDB.
 */
 
 /*!

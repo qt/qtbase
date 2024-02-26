@@ -1475,12 +1475,39 @@ QSqlIndex QMYSQLDriver::primaryIndex(const QString &tablename) const
 
 QSqlRecord QMYSQLDriver::record(const QString &tablename) const
 {
+    Q_D(const QMYSQLDriver);
     if (!isOpen())
         return {};
     QSqlQuery i(createResult());
     QString stmt("SELECT * FROM %1 LIMIT 0"_L1);
     i.exec(stmt.arg(escapeIdentifier(tablename, QSqlDriver::TableName)));
-    return i.record();
+    auto r = i.record();
+    if (r.isEmpty())
+        return r;
+    // no binding of WHERE possible with MySQL
+    // escaping on WHERE clause does not work, so use mysql_real_escape_string()
+    stmt = "SELECT column_name, column_default FROM information_schema.columns WHERE table_name = '%1'"_L1;
+    const auto baTableName = tablename.toUtf8();
+    QVarLengthArray<char> tableNameQuoted(baTableName.size() * 2 + 1);
+#if defined(MARIADB_VERSION_ID)
+    const auto len = mysql_real_escape_string(d->mysql, tableNameQuoted.data(),
+                                              baTableName.data(), baTableName.size());
+#else
+    const auto len = mysql_real_escape_string_quote(d->mysql, tableNameQuoted.data(),
+                                                    baTableName.data(), baTableName.size(), '\'');
+#endif
+    if (i.exec(stmt.arg(QString::fromUtf8(tableNameQuoted.data(), len)))) {
+        while (i.next()) {
+            const auto colName = i.value(0).toString();
+            const auto recordIdx = r.indexOf(colName);
+            if (recordIdx >= 0) {
+                auto field = r.field(recordIdx);
+                field.setDefaultValue(i.value(1));
+                r.replace(recordIdx, field);
+            }
+        }
+    }
+    return r;
 }
 
 QVariant QMYSQLDriver::handle() const

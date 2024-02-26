@@ -35,6 +35,7 @@ static bool driverSupportsDefaultValues(QSqlDriver::DbmsType dbType)
     case QSqlDriver::SQLite:
     case QSqlDriver::PostgreSQL:
     case QSqlDriver::Oracle:
+    case QSqlDriver::MySqlServer:
         return true;
     default:
         break;
@@ -132,8 +133,14 @@ void tst_QSqlDriver::record()
     for (int i = 0; i < fields.size(); ++i)
         QCOMPARE(rec.fieldName(i), fields[i]);
 
-    if (driverSupportsDefaultValues(dbType))
-        QCOMPARE(rec.field(QStringLiteral("name")).defaultValue().toString(), QStringLiteral("defaultVal"));
+    if (driverSupportsDefaultValues(dbType)) {
+        auto defVal = rec.field(QStringLiteral("name")).defaultValue().toString();
+        if (dbType == QSqlDriver::MySqlServer && defVal.startsWith('\'') && defVal.endsWith('\'')) {
+            qDebug() << "MariaDB 10.6 default string value is escaped:" << defVal;
+            defVal = defVal.mid(1, defVal.size() - 2);
+        }
+        QCOMPARE(defVal, QStringLiteral("defaultVal"));
+    }
 
     if (dbType == QSqlDriver::Oracle || dbType == QSqlDriver::DB2)
         tablename = tablename.toUpper();
