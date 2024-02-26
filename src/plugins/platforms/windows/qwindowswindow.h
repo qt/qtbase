@@ -324,7 +324,6 @@ public:
 
     void *surface(void *nativeConfig, int *err);
     void invalidateSurface() override;
-    void aboutToMakeCurrent();
 
     void setAlertState(bool enabled) override;
     bool isAlertState() const override { return testFlag(AlertState); }
