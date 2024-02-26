@@ -34,8 +34,6 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     if (QT_FEATURE_wasm_exceptions)
         target_compile_options("${wasmTarget}" INTERFACE -fwasm-exceptions)
         target_link_options("${wasmTarget}" INTERFACE -fwasm-exceptions)
-    else()
-        target_link_options("${wasmTarget}" INTERFACE "SHELL:-s DISABLE_EXCEPTION_CATCHING=1")
     endif()
 
     if (QT_FEATURE_thread)
