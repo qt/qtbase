@@ -110,6 +110,7 @@ public:
     // Three component matrix data:
     QColorTrc trc[3];
     QColorMatrix toXyz;
+    QColorMatrix chad;
 
     // Element list processing data:
     struct TransferElement {

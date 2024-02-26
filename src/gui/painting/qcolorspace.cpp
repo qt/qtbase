@@ -94,9 +94,6 @@ QColorMatrix QColorSpacePrimaries::toXyzMatrix() const
     // Now we have scaled conversion to XYZ relative to the given whitepoint
     toXyz = toXyz * QColorMatrix::fromScale(whiteScale);
 
-    // But we want a conversion to XYZ relative to D50
-    toXyz = QColorMatrix::chromaticAdaptation(wXyz) * toXyz;
-
     return toXyz;
 }
 
@@ -162,6 +159,9 @@ QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries,
 {
     Q_ASSERT(primaries.areValid());
     toXyz = primaries.toXyzMatrix();
+    chad = QColorMatrix::chromaticAdaptation(whitePoint);
+    toXyz = chad * toXyz;
+
     identifyColorSpace();
     setTransferFunction();
 }
@@ -175,7 +175,8 @@ QColorSpacePrivate::QColorSpacePrivate(const QPointF &whitePoint,
         , gamma(gamma)
         , whitePoint(whitePoint)
 {
-    toXyz = QColorMatrix::chromaticAdaptation(this->whitePoint);
+    chad = QColorMatrix::chromaticAdaptation(this->whitePoint);
+    toXyz = chad;
     setTransferFunction();
 }
 
@@ -186,7 +187,8 @@ QColorSpacePrivate::QColorSpacePrivate(const QPointF &whitePoint, const QList<ui
       , gamma(0)
       , whitePoint(whitePoint)
 {
-    toXyz = QColorMatrix::chromaticAdaptation(this->whitePoint);
+    chad = QColorMatrix::chromaticAdaptation(this->whitePoint);
+    toXyz = chad;
     setTransferFunctionTable(transferFunctionTable);
     setTransferFunction();
 }
@@ -211,6 +213,8 @@ QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries, co
 {
     Q_ASSERT(primaries.areValid());
     toXyz = primaries.toXyzMatrix();
+    chad = QColorMatrix::chromaticAdaptation(whitePoint);
+    toXyz = chad * toXyz;
     setTransferFunctionTable(transferFunctionTable);
     identifyColorSpace();
     initialize();
@@ -228,11 +232,12 @@ QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries,
     Q_ASSERT(primaries.areValid());
     toXyz = primaries.toXyzMatrix();
     whitePoint = QColorVector(primaries.whitePoint);
+    chad = QColorMatrix::chromaticAdaptation(whitePoint);
+    toXyz = chad * toXyz;
     setTransferFunctionTables(redTransferFunctionTable,
                               greenTransferFunctionTable,
                               blueTransferFunctionTable);
     identifyColorSpace();
-    setToXyzMatrix();
 }
 
 void QColorSpacePrivate::identifyColorSpace()
@@ -310,6 +315,8 @@ void QColorSpacePrivate::setToXyzMatrix()
     QColorSpacePrimaries colorSpacePrimaries(primaries);
     toXyz = colorSpacePrimaries.toXyzMatrix();
     whitePoint = QColorVector(colorSpacePrimaries.whitePoint);
+    chad = QColorMatrix::chromaticAdaptation(whitePoint);
+    toXyz = chad * toXyz;
 }
 
 void QColorSpacePrivate::setTransferFunctionTable(const QList<uint16_t> &transferFunctionTable)
@@ -930,7 +937,9 @@ void QColorSpace::setPrimaries(const QPointF &whitePoint, const QPointF &redPoin
         return;
     }
     QColorMatrix toXyz = primaries.toXyzMatrix();
-    if (QColorVector(primaries.whitePoint) == d_ptr->whitePoint && toXyz == d_ptr->toXyz)
+    QColorMatrix chad = QColorMatrix::chromaticAdaptation(QColorVector(whitePoint));
+    toXyz = chad * toXyz;
+    if (QColorVector(primaries.whitePoint) == d_ptr->whitePoint && toXyz == d_ptr->toXyz && chad == d_ptr->chad)
         return;
     detach();
     if (d_ptr->transformModel == TransformModel::ElementListProcessing)
@@ -940,6 +949,7 @@ void QColorSpace::setPrimaries(const QPointF &whitePoint, const QPointF &redPoin
     d_ptr->primaries = QColorSpace::Primaries::Custom;
     d_ptr->colorModel = QColorSpace::ColorModel::Rgb;
     d_ptr->toXyz = toXyz;
+    d_ptr->chad = chad;
     d_ptr->whitePoint = QColorVector(primaries.whitePoint);
     d_ptr->identifyColorSpace();
 }
@@ -982,13 +992,13 @@ void QColorSpace::setWhitePoint(const QPointF &whitePoint)
     if (d_ptr->transformModel == QColorSpace::TransformModel::ThreeComponentMatrix) {
         if (d_ptr->colorModel == QColorSpace::ColorModel::Rgb) {
             // Rescale toXyz to new whitepoint
-            QColorMatrix chad = QColorMatrix::chromaticAdaptation(d_ptr->whitePoint);
-            QColorMatrix rawToXyz = chad.inverted() * d_ptr->toXyz;
+            QColorMatrix rawToXyz = d_ptr->chad.inverted() * d_ptr->toXyz;
             QColorVector whiteScale = rawToXyz.inverted().map(wXyz);
             rawToXyz = rawToXyz * QColorMatrix::fromScale(whiteScale);
-            d_ptr->toXyz = QColorMatrix::chromaticAdaptation(wXyz) * rawToXyz;
+            d_ptr->chad = QColorMatrix::chromaticAdaptation(wXyz);
+            d_ptr->toXyz = d_ptr->chad * rawToXyz;
         } else if (d_ptr->colorModel == QColorSpace::ColorModel::Gray) {
-            d_ptr->toXyz = QColorMatrix::chromaticAdaptation(wXyz);
+            d_ptr->chad = d_ptr->toXyz = QColorMatrix::chromaticAdaptation(wXyz);
         }
     }
     d_ptr->whitePoint = wXyz;

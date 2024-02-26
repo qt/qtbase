@@ -244,7 +244,7 @@ struct mpetTagData : GenericTagData {
 };
 
 struct Sf32TagData : GenericTagData {
-    quint32_be value[1];
+    quint32_be value[9];
 };
 
 struct MatrixElement {
@@ -378,9 +378,16 @@ QByteArray toIccProfile(const QColorSpace &space)
         return spaceDPtr->iccProfile;
     Q_ASSERT(spaceDPtr->isThreeComponentMatrix());
 
-    constexpr int tagCount = 9;
-    constexpr uint profileDataOffset = 128 + 4 + 12 * tagCount;
-    constexpr uint variableTagTableOffsets = 128 + 4 + 12 * 5;
+    int fixedLengthTagCount = 5;
+    bool writeChad = false;
+    if (!spaceDPtr->whitePoint.isNull() && spaceDPtr->whitePoint != QColorVector::D50()) {
+        writeChad = true;
+        fixedLengthTagCount++;
+    }
+
+    const int tagCount = fixedLengthTagCount + 4;
+    const uint profileDataOffset = 128 + 4 + 12 * tagCount;
+    const uint variableTagTableOffsets = 128 + 4 + 12 * fixedLengthTagCount;
     uint currentOffset = 0;
     uint rTrcOffset, gTrcOffset, bTrcOffset;
     uint rTrcSize, gTrcSize, bTrcSize;
@@ -410,19 +417,23 @@ QByteArray toIccProfile(const QColorSpace &space)
     stream << uint(0) << uint(0) << uint(0) << uint(0) << uint(0) << uint(0) << uint(0);
 
     // Tag table:
+    currentOffset = profileDataOffset;
     stream << uint(tagCount);
     stream << uint(Tag::rXYZ) << uint(profileDataOffset + 00) << uint(20);
     stream << uint(Tag::gXYZ) << uint(profileDataOffset + 20) << uint(20);
     stream << uint(Tag::bXYZ) << uint(profileDataOffset + 40) << uint(20);
     stream << uint(Tag::wtpt) << uint(profileDataOffset + 60) << uint(20);
     stream << uint(Tag::cprt) << uint(profileDataOffset + 80) << uint(12);
+    currentOffset += 92;
+    if (writeChad) {
+        stream << uint(Tag::chad) << uint(currentOffset) << uint(44);
+        currentOffset += 44;
+    }
     // From here the offset and size will be updated later:
     stream << uint(Tag::rTRC) << uint(0) << uint(0);
     stream << uint(Tag::gTRC) << uint(0) << uint(0);
     stream << uint(Tag::bTRC) << uint(0) << uint(0);
     stream << uint(Tag::desc) << uint(0) << uint(0);
-    // TODO: consider adding 'chad' tag (required in ICC >=4 when we have non-D50 whitepoint)
-    currentOffset = profileDataOffset;
 
     // Tag data:
     stream << uint(Tag::XYZ_) << uint(0);
@@ -443,7 +454,19 @@ QByteArray toIccProfile(const QColorSpace &space)
     stream << toFixedS1516(spaceDPtr->whitePoint.z);
     stream << uint(Tag::text) << uint(0);
     stream << uint(IccTag('N', '/', 'A', '\0'));
-    currentOffset += 92;
+    if (writeChad) {
+        QColorMatrix chad = QColorMatrix::chromaticAdaptation(spaceDPtr->whitePoint);
+        stream << uint(Tag::sf32) << uint(0);
+        stream << toFixedS1516(chad.r.x);
+        stream << toFixedS1516(chad.g.x);
+        stream << toFixedS1516(chad.b.x);
+        stream << toFixedS1516(chad.r.y);
+        stream << toFixedS1516(chad.g.y);
+        stream << toFixedS1516(chad.b.y);
+        stream << toFixedS1516(chad.r.z);
+        stream << toFixedS1516(chad.g.z);
+        stream << toFixedS1516(chad.b.z);
+    }
 
     // From now on the data is variable sized:
     rTrcOffset = currentOffset;
@@ -1117,6 +1140,35 @@ static bool parseGrayMatrix(const QByteArray &data, const QHash<Tag, TagEntry> &
     }
     return true;
 }
+
+static bool parseChad(const QByteArray &data, const TagEntry &tagEntry, QColorSpacePrivate *colorspaceDPtr)
+{
+    if (tagEntry.size < sizeof(Sf32TagData) || qsizetype(tagEntry.size) > data.size())
+        return false;
+    const Sf32TagData chadtag = qFromUnaligned<Sf32TagData>(data.constData() + tagEntry.offset);
+    if (chadtag.type != uint32_t(Tag::sf32)) {
+        qCWarning(lcIcc, "fromIccProfile: bad chad data type");
+        return false;
+    }
+    QColorMatrix chad;
+    chad.r.x = fromFixedS1516(chadtag.value[0]);
+    chad.g.x = fromFixedS1516(chadtag.value[1]);
+    chad.b.x = fromFixedS1516(chadtag.value[2]);
+    chad.r.y = fromFixedS1516(chadtag.value[3]);
+    chad.g.y = fromFixedS1516(chadtag.value[4]);
+    chad.b.y = fromFixedS1516(chadtag.value[5]);
+    chad.r.z = fromFixedS1516(chadtag.value[6]);
+    chad.g.z = fromFixedS1516(chadtag.value[7]);
+    chad.b.z = fromFixedS1516(chadtag.value[8]);
+
+    if (!chad.isValid()) {
+        qCWarning(lcIcc, "fromIccProfile: invalid chad matrix");
+        return false;
+    }
+    colorspaceDPtr->chad = chad;
+    return true;
+}
+
 static bool parseTRCs(const QByteArray &data, const QHash<Tag, TagEntry> &tagIndex, QColorSpacePrivate *colorspaceDPtr, bool isColorSpaceTypeGray)
 {
     TagEntry rTrc;
@@ -1278,6 +1330,12 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
             colorspaceDPtr->colorModel = QColorSpace::ColorModel::Gray;
         } else {
             Q_UNREACHABLE();
+        }
+        if (tagIndex.contains(Tag::chad)) {
+            if (!parseChad(data, tagIndex[Tag::chad], colorspaceDPtr))
+                return false;
+        } else {
+            colorspaceDPtr->chad = QColorMatrix::chromaticAdaptation(colorspaceDPtr->whitePoint);
         }
 
         // Reset the matrix to our canonical values:
