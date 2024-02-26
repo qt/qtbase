@@ -273,6 +273,12 @@
            Currently supported on the Windows platform only.
            This value was added in 5.15
 
+    \value AA_DontUseNativeMenuWindows Menu popup windows (e.g. context menus,
+           combo box menus, and non-native menubar menus) created while this
+           attribute is set to true will not be represented as native top
+           level windows, unless required by the implementation.
+           This value was added in Qt 6.8.
+
     \omitvalue AA_AttributeCount
     \omitvalue AA_EnableHighDpiScaling
     \omitvalue AA_UseHighDpiPixmaps

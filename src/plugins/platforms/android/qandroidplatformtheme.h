@@ -9,12 +9,14 @@
 #include <QtGui/qpalette.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qbytearray.h>
-
+#include <QtCore/qloggingcategory.h>
 #include <QJsonObject>
 
 #include <memory>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaMenus)
 
 struct AndroidStyle
 {

@@ -23,6 +23,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaMenus, "qt.qpa.menus")
+
 using namespace Qt::StringLiterals;
 
 namespace {
@@ -394,21 +396,28 @@ void QAndroidPlatformTheme::updateStyle()
 
 QPlatformMenuBar *QAndroidPlatformTheme::createPlatformMenuBar() const
 {
-    return new QAndroidPlatformMenuBar;
+    auto *menuBar = new QAndroidPlatformMenuBar;
+    qCDebug(lcQpaMenus) << "Created" << menuBar;
+    return menuBar;
 }
 
 QPlatformMenu *QAndroidPlatformTheme::createPlatformMenu() const
 {
-    return new QAndroidPlatformMenu;
+    auto *menu = new QAndroidPlatformMenu;
+    qCDebug(lcQpaMenus) << "Created" << menu;
+    return menu;
 }
 
 QPlatformMenuItem *QAndroidPlatformTheme::createPlatformMenuItem() const
 {
-    return new QAndroidPlatformMenuItem;
+    auto *menuItem = new QAndroidPlatformMenuItem;
+    qCDebug(lcQpaMenus) << "Created" << menuItem;
+    return menuItem;
 }
 
 void QAndroidPlatformTheme::showPlatformMenuBar()
 {
+    qCDebug(lcQpaMenus) << "Showing platform menu bar";
     QtAndroidMenu::openOptionsMenu();
 }
 

@@ -505,12 +505,16 @@ QKeySequence QCocoaTheme::standardButtonShortcut(int button) const
 
 QPlatformMenuItem *QCocoaTheme::createPlatformMenuItem() const
 {
-    return new QCocoaMenuItem();
+    auto *menuItem = new QCocoaMenuItem();
+    qCDebug(lcQpaMenus) << "Created" << menuItem;
+    return menuItem;
 }
 
 QPlatformMenu *QCocoaTheme::createPlatformMenu() const
 {
-    return new QCocoaMenu();
+    auto *menu = new QCocoaMenu();
+    qCDebug(lcQpaMenus) << "Created" << menu;
+    return menu;
 }
 
 QPlatformMenuBar *QCocoaTheme::createPlatformMenuBar() const
@@ -523,7 +527,9 @@ QPlatformMenuBar *QCocoaTheme::createPlatformMenuBar() const
                 SLOT(onAppFocusWindowChanged(QWindow*)));
     }
 
-    return new QCocoaMenuBar();
+    auto *menuBar = new QCocoaMenuBar();
+    qCDebug(lcQpaMenus) << "Created" << menuBar;
+    return menuBar;
 }
 
 #ifndef QT_NO_SHORTCUT
