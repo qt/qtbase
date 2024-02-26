@@ -146,12 +146,7 @@ function(qt_internal_add_executable name)
         MACOSX_BUNDLE "${arg_GUI}"
     )
 
-    if(WASM)
-        # WASM unconditionally sets DISABLE_EXCEPTION_CATCHING=1
-        qt_internal_set_exceptions_flags("${name}" FALSE)
-    else()
-        qt_internal_set_exceptions_flags("${name}" ${arg_EXCEPTIONS})
-    endif()
+    qt_internal_set_exceptions_flags("${name}" ${arg_EXCEPTIONS})
 
     if(WASM)
         qt_internal_wasm_add_finalizers("${name}")
