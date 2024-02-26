@@ -34,6 +34,9 @@ QString ucalTimeZoneDisplayName(UCalendar *ucal, QTimeZone::TimeType timeType,
                                 QTimeZone::NameType nameType,
                                 const QString &localeCode);
 #else
+
+QList<QByteArrayView> ianaIdsForTerritory(QLocale::Territory territory);
+
 // Define data types for QTZL_data_p.h
 
 #endif

@@ -628,10 +628,12 @@ static QList<QByteArray> selectAvailable(QList<QByteArrayView> &&desired,
 
 QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(QLocale::Territory territory) const
 {
-    // Default fall-back mode, use the zoneTable to find Region of know Zones
+    // Default fall-back mode: use the CLDR data to find zones for this territory.
     QList<QByteArrayView> regions;
-
-    // First get all Zones in the Zones table belonging to the Region
+#if QT_CONFIG(timezone_locale) && !QT_CONFIG(icu)
+    regions = QtTimeZoneLocale::ianaIdsForTerritory(territory);
+#endif
+    // Get all Zones in the table associated with this territory:
     for (const ZoneData &data : zoneDataTable) {
         if (data.territory == territory) {
             for (auto l1 : data.ids())

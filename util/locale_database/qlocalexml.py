@@ -127,6 +127,34 @@ class QLocaleXmlReader (object):
             land = elt.attributes['territory'].nodeValue
             yield kid(elt, 'msid'), land, kid(elt, 'ianaids')
 
+    def territoryZone(self):
+        kid = self.__firstChildText
+        for elt in self.__eachEltInGroup(self.root, 'landZones', 'landZone'):
+            iana, land = self.__textThenAttrs(elt, 'territory')
+            yield land, iana
+
+    def metaLandZone(self):
+        kid = self.__firstChildText
+        for elt in self.__eachEltInGroup(self.root, 'metaZones', 'metaZone'):
+            meta, mkey = kid(elt, 'metaname'), int(elt.attributes['metakey'].nodeValue)
+            node = self.__firstChildElt(elt, 'landZone')
+            while node:
+                if self.__isNodeNamed(node, 'landZone'):
+                    iana, land = self.__textThenAttrs(node, 'territory')
+                    yield meta, mkey, land, iana
+                node = node.nextSibling
+
+    def zoneMetaStory(self):
+        kid = lambda n, k: int(n.attributes[k].nodeValue)
+        for elt in self.__eachEltInGroup(self.root, 'zoneStories', 'zoneStory'):
+            iana = elt.attributes['iana'].nodeValue
+            node = self.__firstChildElt(elt, 'metaInterval')
+            while node:
+                if self.__isNodeNamed(node, 'metaInterval'):
+                    meta = kid(node, 'metakey')
+                    yield iana, kid(node, 'start'), kid(node, 'stop'), meta
+                node = node.nextSibling
+
     def languageIndices(self, locales):
         index = 0
         for key, value in self.languages.items():
@@ -416,7 +444,8 @@ class QLocaleXmlWriter (object):
             self.__closeTag('likelySubtag')
         self.__closeTag('likelySubtags')
 
-    def zoneData(self, alias, defaults, windowsIds):
+    def zoneData(self, alias, defaults, windowsIds,
+                 metamap, zones, territorial):
         self.__openTag('zoneAliases')
         # iana is a single IANA ID
         # name has the same form, but has been made redundant
@@ -439,6 +468,32 @@ class QLocaleXmlWriter (object):
             self.inTag('msid', winid)
             self.__closeTag('msZoneIana')
         self.__closeTag('windowsZone')
+
+        self.__openTag('landZones')
+        for code, iana in territorial.items():
+            self.inTag('landZone', iana, territory = code)
+        self.__closeTag('landZones')
+
+        metaKey = {m: i for i, m in enumerate(sorted(
+            metamap, key = lambda m: m.lower()), 1)}
+
+        self.__openTag('metaZones')
+        for meta, bok in metamap.items():
+            self.__openTag('metaZone', metakey = metaKey[meta])
+            self.inTag('metaname', meta)
+            for code, iana in bok.items():
+                self.inTag('landZone', iana, territory = code)
+            self.__closeTag('metaZone')
+        self.__closeTag('metaZones')
+
+        self.__openTag('zoneStories')
+        for iana, story in sorted(zones.items()):
+            self.__openTag('zoneStory', iana = iana)
+            for start, stop, meta in story:
+                self.asTag('metaInterval', start = start,
+                           stop = stop, metakey = metaKey[meta])
+            self.__closeTag('zoneStory')
+        self.__closeTag('zoneStories')
 
     def locales(self, locales, calendars, en_US):
         """Write the data for each locale.

@@ -19,6 +19,9 @@ start = element localeDatabase {
   element likelySubtags { LikelySubtag+ },
   element zoneAliases { ZoneAlias+ },
   element windowsZone { MsLandZones+, MsZoneIana+ },
+  element landZones { LandZone+ },
+  element metaZones { MetaZone+ },
+  element zoneStories { ZoneStory+ },
   element localeList { Locale+ }
 }
 
@@ -54,6 +57,28 @@ MsLandZones = element msLandZones {
 MsZoneIana = element msZoneIana {
   attribute iana { text },
   element msid { text }
+}
+
+LandZone = element landZone {
+  attribute territory { text },
+  text
+}
+
+MetaZone = element metaZone {
+  attribute metakey { xsd:positiveInteger },
+  element metaname { text },
+  LandZone+
+}
+
+ZoneStory = element zoneStory {
+  attribute iana { text },
+  MetaInterval+
+}
+
+MetaInterval = element metaInterval {
+  attribute start { xsd:nonNegativeInteger },
+  attribute stop { xsd:nonNegativeInteger },
+  attribute metakey { xsd:positiveInteger }
 }
 
 WeekDay = ("sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat")

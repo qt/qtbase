@@ -78,7 +78,9 @@ class CldrReader (object):
     def zoneData(self):
         """Locale-independent timezone data.
 
-        Returns a triple (alias, defaults, winIds) in which:
+        Returns a tuple (alias, defaults, winIds, metamap, zones,
+        territorial) in which:
+
           * alias is a mapping from aliases for IANA zone IDs, that
             have the form of IANA IDs, to actual current IANA IDs; in
             particular, this maps each CLDR zone ID to its
@@ -91,6 +93,13 @@ class CldrReader (object):
             name and territory code to the space-joined list of IANA
             IDs associated with the Windows name in the given
             territory.
+          * metamap maps each metazone name to a mapping territory code to
+            (single) IANA ID.
+          * zones maps each IANA ID to its history of metazone association, in
+            th form of a tuple of triples (from, to, meta), where each of from
+            and to is a quint32 epoch minute and meta is a metazone name.
+          * territorial maps territory codes to IANA IDs (only a very small
+            minority of territories are represented).
 
         and reports on any territories found in CLDR timezone data
         that are not mentioned in enumdata.territory_map, on any
@@ -98,6 +107,7 @@ class CldrReader (object):
         covered by the CLDR data."""
         alias, ignored = self.root.bcp47Aliases()
         defaults, winIds = self.root.readWindowsTimeZones(alias)
+        metamap, zones, territorial = self.root.readMetaZoneMap(alias)
 
         from zonedata import windowsIdList
         winUnused = set(n for n, o in windowsIdList).difference(
@@ -113,11 +123,7 @@ class CldrReader (object):
         winDup = {}
         for triple in sorted(winIds):
             if triple[:2] == last[:2]:
-                try:
-                    seq = winDup[triple[:2]]
-                except KeyError:
-                    seq = winDup[triple[:2]] = []
-                seq.append(triple[-1])
+                winDup.setdefault(triple[:2], []).append(triple[-1])
         if winDup:
             joined = '\n\t'.join(f'{t}, {w}: ", ".join(ids)'
                                  for (w, t), ids in winDup.items())
@@ -133,8 +139,10 @@ class CldrReader (object):
                 winIds.append((w, t, ' '.join(ianaList)))
 
         from enumdata import territory_map
-        unLand = set(t for w, t, ids in winIds).difference(
-            v[1] for k, v in territory_map.items())
+        unLand = set(t for w, t, ids in winIds).union(territorial)
+        for bok in metamap.values():
+            unLand = unLand.union(bok)
+        unLand = unLand.difference(v[1] for k, v in territory_map.items())
         if unLand:
             self.grumble.write(
                 'Unknown territory codes in timezone data: '
@@ -144,7 +152,8 @@ class CldrReader (object):
 
         # Convert list of triples to mapping:
         winIds = {(w, t): ids for w, t, ids in winIds}
-        return alias, defaults, winIds
+
+        return alias, defaults, winIds, metamap, zones, territorial
 
     def readLocales(self, calendars = ('gregorian',)):
         return {(k.language_id, k.script_id, k.territory_id, k.variant_id): k

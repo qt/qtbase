@@ -186,10 +186,15 @@ class TimeZoneDataWriter (LocaleSourceEditor):
         self.__ianaTable = ByteArrayData() # Single IANA IDs
         self.__ianaListTable = ByteArrayData() # Space-joined lists of IDs
         self.__windowsTable = ByteArrayData() # Windows names for zones
+        self.__metaIdData = ByteArrayData() # Metazone names
+
         self.__windowsList = sorted(windowsIdList,
                                     key=lambda p: p[0].lower())
         self.windowsKey = {name: (key, off) for key, (name, off)
                            in enumerate(self.__windowsList, 1)}
+
+        from enumdata import territory_map
+        self.__landKey = {code: (i, name) for i, (name, code) in territory_map.items()}
 
     def utcTable(self):
         offsetMap, out = {}, self.writer.write
@@ -198,7 +203,7 @@ class TimeZoneDataWriter (LocaleSourceEditor):
             offsetMap[offset] = offsetMap.get(offset, ()) + (name,)
 
         # Write UTC ID key table
-        out('// IANA List Index, UTC Offset\n')
+        out('\n// IANA List Index, UTC Offset\n')
         out('static constexpr UtcData utcDataTable[] = {\n')
         for offset in sorted(offsetMap.keys()): # Sort so C++ can binary-chop.
             names = offsetMap[offset];
@@ -217,26 +222,78 @@ class TimeZoneDataWriter (LocaleSourceEditor):
                 f' // {name} -> {iana}\n')
         out('};\n\n')
 
+    def territoryZone(self, pairs):
+        self.__beginNonIcuFeatureTZL()
+
+        out, store = self.writer.write, self.__ianaTable.append
+        landKey = self.__landKey
+        seq = sorted((landKey[code][0], iana, landKey[code][1])
+                     for code, iana in pairs)
+        # Write territory-to-zone table
+        out('\n// QLocale::Territory value, IANA ID Index\n')
+        out('static constexpr TerritoryZone territoryZoneMap[] = {\n')
+        # Sorted by QLocale::Territory value:
+        for land, iana, terra in seq:
+            out(f'    {{ {land:6d},{store(iana):6d} }}, // {terra} -> {iana}\n')
+        out('};\n')
+
+        # self.__endNonIcuFeatureTZL()
+
+    def metaLandZone(self, quads):
+        # self.__beginNonIcuFeatureTZL()
+        out, metaStore = self.writer.write, self.__metaIdData.append
+        ianaStore = self.__ianaTable.append
+        landKey = self.__landKey
+        seq = sorted((metaKey, landKey[land][0], meta, landKey[land][1], iana)
+                     for meta, metaKey, land, iana in quads)
+
+        # Write (metazone, territory, zone) table
+        out('\n// MetaZone Key, MetaZone Name Index, '
+            'QLocale::Territory value, IANA ID Index\n')
+        out('static constexpr MetaZoneData metaZoneTable[] = {\n')
+        # Sorted by metaKey, then by QLocale::Territory within each metazone:
+        for mkey, land, meta, terra, iana in seq:
+            out(f'    {{ {mkey:6d},{metaStore(meta):6d},{land:6d},{ianaStore(iana):6d} }},'
+                f' // {meta}/{terra} -> {iana}\n')
+        out('};\n')
+
+        # self.__endNonIcuFeatureTZL()
+
+    def zoneMetaStory(self, quads):
+        # self.__beginNonIcuFeatureTZL()
+
+        out, store = self.writer.write, self.__ianaTable.append
+
+        # Write (zone, metazone key, begin, end) table:
+        out('\n// IANA ID Index, MetaZone Key, interval start, end\n')
+        out('static constexpr ZoneMetaHistory zoneHistoryTable[] = {\n')
+        # Sorted by IANA ID; each story comes pre-sorted on (start, stop)
+        for iana, start, stop, mkey in quads:
+            out(f'    {{ {store(iana):6d},{mkey:6d},{start:10d},{stop:10d} }},\n')
+        out('};\n')
+
+        self.__endNonIcuFeatureTZL()
+
     def msToIana(self, pairs):
         out, winStore = self.writer.write, self.__windowsTable.append
         ianaStore = self.__ianaTable.append
         alias = dict(pairs) # {MS name: IANA ID}
         assert all(not any(x.isspace() for x in iana) for iana in alias.values())
 
-        out('// Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset\n')
+        out('\n// Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset\n')
         out('static constexpr WindowsData windowsDataTable[] = {\n')
         # Sorted by Windows ID key:
 
         for index, (name, offset) in enumerate(self.__windowsList, 1):
             out(f'    {{ {index:6d},{winStore(name):6d},'
                 f'{ianaStore(alias[name]):6d},{offset:6d} }}, // {name}\n')
-        out('};\n\n')
+        out('};\n')
 
     def msLandIanas(self, triples): # (MS name, territory code, IANA list)
         out, store = self.writer.write, self.__ianaListTable.append
-        from enumdata import territory_map
-        landKey = {code: (i, name) for i, (name, code) in territory_map.items()}
-        seq = sorted((self.windowsKey[name][0], landKey[land][0], name, landKey[land][1], ianas)
+        landKey = self.__landKey
+        seq = sorted((self.windowsKey[name][0], landKey[land][0],
+                      name, landKey[land][1], ianas)
                      for name, land, ianas in triples)
 
         out('// Windows ID Key, Territory Enum, IANA List Index\n')
@@ -245,14 +302,23 @@ class TimeZoneDataWriter (LocaleSourceEditor):
         for winId, landId, name, land, ianas in seq:
             out(f'    {{ {winId:6d},{landId:6d},{store(ianas):6d} }},'
                 f' // {name} / {land}\n')
-        out('};\n\n')
+        out('};\n')
 
     def writeTables(self):
         self.__windowsTable.write(self.writer.write, 'windowsIdData')
         self.__ianaListTable.write(self.writer.write, 'ianaListData')
         self.__ianaTable.write(self.writer.write, 'ianaIdData')
+        self.__beginNonIcuFeatureTZL()
+        self.__metaIdData.write(self.writer.write, 'metaIdData')
+        self.__endNonIcuFeatureTZL()
+        self.writer.write('\n')
 
     # Implementation details:
+    def __beginNonIcuFeatureTZL(self):
+        self.writer.write('\n#if QT_CONFIG(timezone_locale) && !QT_CONFIG(icu)\n')
+    def __endNonIcuFeatureTZL(self):
+        self.writer.write('\n#endif // timezone_locale but not ICU\n')
+
     @staticmethod
     def __offsetOf(utcName):
         "Maps a UTC±HH:mm name to its offset in seconds"
@@ -760,6 +826,9 @@ def main(argv, out, err):
             writer.msLandIanas(reader.msLandIanas())
             writer.msToIana(reader.msToIana())
             writer.utcTable()
+            writer.territoryZone(reader.territoryZone())
+            writer.metaLandZone(reader.metaLandZone())
+            writer.zoneMetaStory(reader.zoneMetaStory())
             writer.writeTables()
     except Exception as e:
         err.write(f'\nError updating qtimezoneprivate_data_p.h: {e}\n')
