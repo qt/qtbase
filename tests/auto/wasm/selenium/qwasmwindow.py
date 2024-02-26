@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_actions import PointerActions
 from selenium.webdriver.common.actions.interaction import POINTER_TOUCH
@@ -9,16 +11,14 @@ from selenium.webdriver.common.actions.pointer_input import PointerInput
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.action_chains import ActionChains
+from webdriver_manager.chrome import ChromeDriverManager
 
 import unittest
 from enum import Enum, auto
 
-import time
-
 class WidgetTestCase(unittest.TestCase):
     def setUp(self):
-        self._driver = Chrome()
+        self._driver = Chrome(service=ChromeService(ChromeDriverManager().install()))
         self._driver.get(
             'http://localhost:8001/tst_qwasmwindow_harness.html')
         self._test_sandbox_element = WebDriverWait(self._driver, 30).until(
