@@ -913,7 +913,10 @@ qt_internal_extend_target(Core
         time/qtimezoneprivate_icu.cpp
 )
 
-qt_internal_extend_target(Core CONDITION QT_FEATURE_timezone AND WIN32 AND NOT QT_FEATURE_icu AND NOT ANDROID AND NOT APPLE
+# Even MS says we should prefer ICU over its APIs for TZ data:
+qt_internal_extend_target(Core
+    CONDITION
+        QT_FEATURE_timezone AND WIN32 AND NOT QT_FEATURE_icu
     SOURCES
         time/qtimezoneprivate_win.cpp
 )
