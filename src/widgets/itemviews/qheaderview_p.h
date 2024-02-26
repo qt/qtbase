@@ -148,7 +148,7 @@ public:
 
     inline void setDefaultValues(Qt::Orientation o) {
         orientation = o;
-        defaultSectionSize = getDefaultSectionSizeFromStyle();
+        updateDefaultSectionSizeFromStyle();
         defaultAlignment = (o == Qt::Horizontal
                             ? Qt::Alignment(Qt::AlignCenter)
                             : Qt::AlignLeft|Qt::AlignVCenter);
@@ -323,7 +323,7 @@ public:
     void removeSectionsFromSectionItems(int start, int end);
     void resizeSectionItem(int visualIndex, int oldSize, int newSize);
     void setDefaultSectionSize(int size);
-    int getDefaultSectionSizeFromStyle() const;
+    void updateDefaultSectionSizeFromStyle();
     void recalcSectionStartPos() const; // not really const
 
     inline int headerLength() const { // for debugging
