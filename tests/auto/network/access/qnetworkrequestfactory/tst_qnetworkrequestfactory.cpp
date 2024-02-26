@@ -27,6 +27,7 @@ private Q_SLOTS:
     void timeout();
     void userInfo();
     void priority();
+    void attributes();
 
 private:
     const QUrl url1{u"http://foo.io"_s};
@@ -366,6 +367,56 @@ void tst_QNetworkRequestFactory::priority()
     QCOMPARE(factory.priority(), QNetworkRequest::HighPriority);
     request = factory.createRequest("/index.html");
     QCOMPARE(request.priority(), QNetworkRequest::HighPriority);
+}
+
+void tst_QNetworkRequestFactory::attributes()
+{
+    const auto attribute1 = QNetworkRequest::Attribute::BackgroundRequestAttribute;
+    const auto attribute2 = QNetworkRequest::User;
+    QNetworkRequestFactory factory;
+    QNetworkRequest request;
+
+    // Empty factory
+    QVERIFY(!factory.attribute(attribute1).isValid());
+    request = factory.createRequest();
+    QVERIFY(!request.attribute(attribute1).isValid());
+
+    // (Re-)set and clear individual attribute
+    factory.setAttribute(attribute1, true);
+    QVERIFY(factory.attribute(attribute1).isValid());
+    QCOMPARE(factory.attribute(attribute1).toBool(), true);
+    request = factory.createRequest();
+    QVERIFY(request.attribute(attribute1).isValid());
+    QCOMPARE(request.attribute(attribute1).toBool(), true);
+    // Replace previous value
+    factory.setAttribute(attribute1, false);
+    QVERIFY(factory.attribute(attribute1).isValid());
+    QCOMPARE(factory.attribute(attribute1).toBool(), false);
+    request = factory.createRequest();
+    QVERIFY(request.attribute(attribute1).isValid());
+    QCOMPARE(request.attribute(attribute1).toBool(), false);
+    // Clear individual attribute
+    factory.clearAttribute(attribute1);
+    QVERIFY(!factory.attribute(attribute1).isValid());
+
+    // Getter default value
+    QCOMPARE(factory.attribute(attribute2, 111).toInt(), 111); // default value returned
+    factory.setAttribute(attribute2, 222);
+    QCOMPARE(factory.attribute(attribute2, 111).toInt(), 222); // actual value returned
+    factory.clearAttribute(attribute2);
+    QCOMPARE(factory.attribute(attribute2, 111).toInt(), 111); // default value returned
+
+    // Clear attributes
+    factory.setAttribute(attribute1, true);
+    factory.setAttribute(attribute2, 333);
+    QVERIFY(factory.attribute(attribute1).isValid());
+    QVERIFY(factory.attribute(attribute2).isValid());
+    factory.clearAttributes();
+    QVERIFY(!factory.attribute(attribute1).isValid());
+    QVERIFY(!factory.attribute(attribute2).isValid());
+    request = factory.createRequest();
+    QVERIFY(!request.attribute(attribute1).isValid());
+    QVERIFY(!request.attribute(attribute2).isValid());
 }
 
 QTEST_MAIN(tst_QNetworkRequestFactory)

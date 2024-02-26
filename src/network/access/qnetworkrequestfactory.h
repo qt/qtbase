@@ -11,6 +11,7 @@
 #include <QtCore/qshareddata.h>
 #include <QtCore/qurlquery.h>
 #include <QtCore/qurl.h>
+#include <QtCore/qvariant.h>
 
 #include <chrono>
 
@@ -76,6 +77,13 @@ public:
 
     Q_NETWORK_EXPORT void setPriority(QNetworkRequest::Priority priority);
     Q_NETWORK_EXPORT QNetworkRequest::Priority priority() const;
+
+    Q_NETWORK_EXPORT QVariant attribute(QNetworkRequest::Attribute attribute) const;
+    Q_NETWORK_EXPORT QVariant attribute(QNetworkRequest::Attribute attribute,
+                                        const QVariant &defaultValue) const;
+    Q_NETWORK_EXPORT void setAttribute(QNetworkRequest::Attribute attribute, const QVariant &value);
+    Q_NETWORK_EXPORT void clearAttribute(QNetworkRequest::Attribute attribute);
+    Q_NETWORK_EXPORT void clearAttributes();
 
 private:
 #ifndef QT_NO_DEBUG_STREAM

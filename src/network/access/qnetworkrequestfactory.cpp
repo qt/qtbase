@@ -506,6 +506,96 @@ QNetworkRequest::Priority QNetworkRequestFactory::priority() const
     return d->priority;
 }
 
+/*!
+    \since 6.8
+
+    Sets the value associated with \a attribute to \a value.
+    If the attribute is already set, the previous value is
+    replaced. The attributes are set to any future requests
+    created by this factory.
+
+    \sa attribute(), clearAttribute(), clearAttributes(),
+        QNetworkRequest::Attribute
+*/
+void QNetworkRequestFactory::setAttribute(QNetworkRequest::Attribute attribute,
+                                          const QVariant &value)
+{
+    if (attribute == QNetworkRequest::HttpStatusCodeAttribute
+        || attribute == QNetworkRequest::HttpReasonPhraseAttribute
+        || attribute == QNetworkRequest::RedirectionTargetAttribute
+        || attribute == QNetworkRequest::ConnectionEncryptedAttribute
+        || attribute == QNetworkRequest::SourceIsFromCacheAttribute
+        || attribute == QNetworkRequest::HttpPipeliningWasUsedAttribute
+        || attribute == QNetworkRequest::Http2WasUsedAttribute
+        || attribute == QNetworkRequest::OriginalContentLengthAttribute)
+    {
+        qCWarning(lcQrequestfactory, "%i is a reply-only attribute, ignoring.", attribute);
+        return;
+    }
+    d.detach();
+    d->attributes.insert(attribute, value);
+}
+
+/*!
+    \since 6.8
+
+    Returns the value associated with \a attribute. If the
+    attribute has not been set, returns a default-constructed \l QVariant.
+
+    \sa attribute(QNetworkRequest::Attribute, const QVariant &),
+        setAttribute(), clearAttributes(), QNetworkRequest::Attribute
+
+*/
+QVariant QNetworkRequestFactory::attribute(QNetworkRequest::Attribute attribute) const
+{
+    return d->attributes.value(attribute);
+}
+
+/*!
+    \since 6.8
+
+    Returns the value associated with \a attribute. If the
+    attribute has not been set, returns \a defaultValue.
+
+     \sa attribute(), setAttribute(), clearAttributes(),
+         QNetworkRequest::Attribute
+*/
+QVariant QNetworkRequestFactory::attribute(QNetworkRequest::Attribute attribute,
+                                           const QVariant &defaultValue) const
+{
+    return d->attributes.value(attribute, defaultValue);
+}
+
+/*!
+    \since 6.8
+
+    Clears \a attribute set to this factory.
+
+    \sa attribute(), setAttribute()
+*/
+void QNetworkRequestFactory::clearAttribute(QNetworkRequest::Attribute attribute)
+{
+    if (!d->attributes.contains(attribute))
+        return;
+    d.detach();
+    d->attributes.remove(attribute);
+}
+
+/*!
+    \since 6.8
+
+    Clears any attributes set to this factory.
+
+    \sa attribute(), setAttribute()
+*/
+void QNetworkRequestFactory::clearAttributes()
+{
+    if (d->attributes.isEmpty())
+        return;
+    d.detach();
+    d->attributes.clear();
+}
+
 QNetworkRequestFactoryPrivate::QNetworkRequestFactoryPrivate()
     = default;
 
@@ -539,6 +629,10 @@ QNetworkRequest QNetworkRequestFactoryPrivate::newRequest(const QUrl &url) const
 
     request.setTransferTimeout(transferTimeout);
     request.setPriority(priority);
+
+    for (const auto &[attribute, value] : attributes.asKeyValueRange())
+        request.setAttribute(attribute, value);
+
     return request;
 }
 

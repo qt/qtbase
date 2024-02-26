@@ -20,9 +20,11 @@
 #if QT_CONFIG(ssl)
 #include <QtNetwork/qsslconfiguration.h>
 #endif
+#include <QtCore/qhash.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qurlquery.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -46,6 +48,7 @@ public:
     QUrlQuery queryParameters;
     QNetworkRequest::Priority priority = QNetworkRequest::NormalPriority;
     std::chrono::milliseconds transferTimeout{0};
+    QHash<QNetworkRequest::Attribute, QVariant> attributes;
 };
 
 QT_END_NAMESPACE
