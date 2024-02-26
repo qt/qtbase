@@ -25,12 +25,6 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-static QString qdlerror()
-{
-    const char *err = dlerror();
-    return err ? u'(' + QString::fromLocal8Bit(err) + u')' : QString();
-}
-
 QStringList QLibraryPrivate::suffixes_sys(const QString &fullVersion)
 {
     QStringList suffixes;
@@ -250,7 +244,7 @@ bool QLibraryPrivate::load_sys()
 
     locker.relock();
     if (!hnd) {
-        errorString = QLibrary::tr("Cannot load library %1: %2").arg(fileName, qdlerror());
+        errorString = QLibrary::tr("Cannot load library %1: %2").arg(fileName, dlerror());
     }
     if (hnd) {
         qualifiedFileName = attempt;
@@ -264,15 +258,15 @@ bool QLibraryPrivate::unload_sys()
 {
 #if !defined(Q_OS_VXWORKS)            // Unloading on VxWorks causes crashes in QtDeclarative autotests
     if (dlclose(pHnd.loadAcquire())) {
-#if defined (Q_OS_QNX)                // Workaround until fixed in QNX; fixes crash in
-        char *error = dlerror();      // QtDeclarative auto test "qqmlenginecleanup" for instance
+        const char *error = dlerror();
+#if defined (Q_OS_QNX)
+        // Workaround until fixed in QNX; fixes crash in
+        // QtDeclarative auto test "qqmlenginecleanup" for instance
         if (!qstrcmp(error, "Shared objects still referenced")) // On QNX that's only "informative"
             return true;
+#endif
         errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName,
                                                                        QLatin1StringView(error));
-#else
-        errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName, qdlerror());
-#endif
         return false;
     }
     errorString.clear();
