@@ -84,10 +84,18 @@
     QCoreApplication::testAttribute().
 
 
-    \value [since 6.7] AA_QtQuickDontUseDefaultSizePolicy Qt Quick Layouts won't use the built-in
-           size policy of \l Item. This restores previous behavior where all items were fixed size
-           by default. Size policy can be customized by explicitly setting
-           \l{Layout::fillWidth}{Layout.fillWidth} or \l{Layout::fillHeight}{Layout.fillHeight}.
+    \value [since 6.7] AA_QtQuickUseDefaultSizePolicy Qt Quick Layouts use the built-in size
+           policy of \l Item. For example, when this is set, \l Button fills the available
+           width, but has a fixed height. When this is not set, it will use the default
+           sizing behavior of the layout it's in, which is to use its implicit size as the
+           preferred size. This is explained in detail in \l {Specifying preferred size} and
+           \l {Size constraints}. When this is set, the default size policy of the item
+           with the layout can be overridden by explicitly setting
+           \l{Layout::fillWidth}{Layout.fillWidth} or
+           \l{Layout::fillHeight}{Layout.fillHeight}.
+           \b Note: This API is considered tech preview and may change or be removed in future
+           versions of Qt.
+
 
     \value AA_DontShowIconsInMenus Actions with the Icon property won't be
            shown in any menus unless specifically set by the
