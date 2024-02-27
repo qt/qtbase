@@ -3089,6 +3089,38 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
                         type = GL_HALF_FLOAT;
                         size = 1;
                         break;
+                    case QRhiVertexInputAttribute::UShort4:
+                        type = GL_UNSIGNED_SHORT;
+                        size = 4;
+                        break;
+                    case QRhiVertexInputAttribute::UShort3:
+                        type = GL_UNSIGNED_SHORT;
+                        size = 3;
+                        break;
+                    case QRhiVertexInputAttribute::UShort2:
+                        type = GL_UNSIGNED_SHORT;
+                        size = 2;
+                        break;
+                    case QRhiVertexInputAttribute::UShort:
+                        type = GL_UNSIGNED_SHORT;
+                        size = 1;
+                        break;
+                    case QRhiVertexInputAttribute::SShort4:
+                        type = GL_SHORT;
+                        size = 4;
+                        break;
+                    case QRhiVertexInputAttribute::SShort3:
+                        type = GL_SHORT;
+                        size = 3;
+                        break;
+                    case QRhiVertexInputAttribute::SShort2:
+                        type = GL_SHORT;
+                        size = 2;
+                        break;
+                    case QRhiVertexInputAttribute::SShort:
+                        type = GL_SHORT;
+                        size = 1;
+                        break;
                     default:
                         break;
                     }

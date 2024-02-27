@@ -5616,6 +5616,22 @@ static inline VkFormat toVkAttributeFormat(QRhiVertexInputAttribute::Format form
         return VK_FORMAT_R16G16_SFLOAT;
     case QRhiVertexInputAttribute::Half:
         return VK_FORMAT_R16_SFLOAT;
+    case QRhiVertexInputAttribute::UShort4:
+        return VK_FORMAT_R16G16B16A16_UINT;
+    case QRhiVertexInputAttribute::UShort3:
+        return VK_FORMAT_R16G16B16_UINT;
+    case QRhiVertexInputAttribute::UShort2:
+        return VK_FORMAT_R16G16_UINT;
+    case QRhiVertexInputAttribute::UShort:
+        return VK_FORMAT_R16_UINT;
+    case QRhiVertexInputAttribute::SShort4:
+        return VK_FORMAT_R16G16B16A16_SINT;
+    case QRhiVertexInputAttribute::SShort3:
+        return VK_FORMAT_R16G16B16_SINT;
+    case QRhiVertexInputAttribute::SShort2:
+        return VK_FORMAT_R16G16_SINT;
+    case QRhiVertexInputAttribute::SShort:
+        return VK_FORMAT_R16_SINT;
     default:
         Q_UNREACHABLE_RETURN(VK_FORMAT_R32G32B32A32_SFLOAT);
     }

@@ -4430,6 +4430,22 @@ static inline MTLVertexFormat toMetalAttributeFormat(QRhiVertexInputAttribute::F
         return MTLVertexFormatHalf2;
     case QRhiVertexInputAttribute::Half:
         return MTLVertexFormatHalf;
+    case QRhiVertexInputAttribute::UShort4:
+        return MTLVertexFormatUShort4;
+    case QRhiVertexInputAttribute::UShort3:
+        return MTLVertexFormatUShort3;
+    case QRhiVertexInputAttribute::UShort2:
+        return MTLVertexFormatUShort2;
+    case QRhiVertexInputAttribute::UShort:
+        return MTLVertexFormatUShort;
+    case QRhiVertexInputAttribute::SShort4:
+        return MTLVertexFormatShort4;
+    case QRhiVertexInputAttribute::SShort3:
+        return MTLVertexFormatShort3;
+    case QRhiVertexInputAttribute::SShort2:
+        return MTLVertexFormatShort2;
+    case QRhiVertexInputAttribute::SShort:
+        return MTLVertexFormatShort;
     default:
         Q_UNREACHABLE();
         return MTLVertexFormatFloat4;

@@ -250,7 +250,15 @@ public:
         Half4,
         Half3,
         Half2,
-        Half
+        Half,
+        UShort4,
+        UShort3,
+        UShort2,
+        UShort,
+        SShort4,
+        SShort3,
+        SShort2,
+        SShort,
     };
 
     QRhiVertexInputAttribute() = default;

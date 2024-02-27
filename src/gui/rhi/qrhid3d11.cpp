@@ -4214,6 +4214,22 @@ static inline DXGI_FORMAT toD3DAttributeFormat(QRhiVertexInputAttribute::Format 
         return DXGI_FORMAT_R16G16_FLOAT;
     case QRhiVertexInputAttribute::Half:
          return DXGI_FORMAT_R16_FLOAT;
+    case QRhiVertexInputAttribute::UShort4:
+    // Note: D3D does not support UShort3.  Pass through UShort3 as UShort4.
+    case QRhiVertexInputAttribute::UShort3:
+        return DXGI_FORMAT_R16G16B16A16_UINT;
+    case QRhiVertexInputAttribute::UShort2:
+        return DXGI_FORMAT_R16G16_UINT;
+    case QRhiVertexInputAttribute::UShort:
+        return DXGI_FORMAT_R16_UINT;
+    case QRhiVertexInputAttribute::SShort4:
+    // Note: D3D does not support SShort3.  Pass through SShort3 as SShort4.
+    case QRhiVertexInputAttribute::SShort3:
+        return DXGI_FORMAT_R16G16B16A16_SINT;
+    case QRhiVertexInputAttribute::SShort2:
+        return DXGI_FORMAT_R16G16_SINT;
+    case QRhiVertexInputAttribute::SShort:
+        return DXGI_FORMAT_R16_SINT;
     default:
         Q_UNREACHABLE();
         return DXGI_FORMAT_R32G32B32A32_FLOAT;

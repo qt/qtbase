@@ -1672,12 +1672,22 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputBinding &b)
     \value Half3 Three component half precision (16 bit) float vector
     \value Half2 Two component half precision (16 bit) float vector
     \value Half Half precision (16 bit) float
+    \value UShort4 Four component unsigned short (16 bit) integer vector
+    \value UShort3 Three component unsigned short (16 bit) integer vector
+    \value UShort2 Two component unsigned short (16 bit) integer vector
+    \value UShort Unsigned short (16 bit) integer
+    \value SShort4 Four component signed short (16 bit) integer vector
+    \value SShort3 Three component signed short (16 bit) integer vector
+    \value SShort2 Two component signed short (16 bit) integer vector
+    \value SShort Signed short (16 bit) integer
 
     \note Support for half precision floating point attributes is indicated at
-    run time by the QRhi::Feature::HalfAttributes feature flag. Note that
-    Direct3D 11/12 supports half input attributes, but does not support the
-    Half3 type. The D3D backends pass through Half3 as Half4. To ensure cross
-    platform compatibility, Half3 inputs should be padded to 8 bytes.
+    run time by the QRhi::Feature::HalfAttributes feature flag.
+
+    \note Direct3D 11/12 supports 16 bit input attributes, but does not support
+    the Half3, UShort3 or SShort3 types. The D3D backends pass through Half3 as
+    Half4, UShort3 as UShort4, and SShort3 as SShort4. To ensure cross platform
+    compatibility, 16 bit inputs should be padded to 8 bytes.
  */
 
 /*!
@@ -1888,6 +1898,24 @@ quint32 QRhiImplementation::byteSizePerVertexForVertexInputFormat(QRhiVertexInpu
         return 2 * sizeof(qfloat16);
     case QRhiVertexInputAttribute::Half:
         return sizeof(qfloat16);
+
+    case QRhiVertexInputAttribute::UShort4:
+        return 4 * sizeof(quint16);
+    case QRhiVertexInputAttribute::UShort3:
+        return 4 * sizeof(quint16); // ivec3 still takes 8 bytes
+    case QRhiVertexInputAttribute::UShort2:
+        return 2 * sizeof(quint16);
+    case QRhiVertexInputAttribute::UShort:
+        return sizeof(quint16);
+
+    case QRhiVertexInputAttribute::SShort4:
+        return 4 * sizeof(qint16);
+    case QRhiVertexInputAttribute::SShort3:
+        return 4 * sizeof(qint16); // uvec3 still takes 8 bytes
+    case QRhiVertexInputAttribute::SShort2:
+        return 2 * sizeof(qint16);
+    case QRhiVertexInputAttribute::SShort:
+        return sizeof(qint16);
 
     default:
         Q_UNREACHABLE_RETURN(1);
