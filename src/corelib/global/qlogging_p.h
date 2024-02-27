@@ -16,6 +16,8 @@
 //
 
 #include <QtCore/private/qglobal_p.h>
+#include "qlogging.h"
+#include "qloggingcategory.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -24,6 +26,22 @@ namespace QtPrivate {
 Q_CORE_EXPORT bool shouldLogToStderr();
 
 }
+
+class QInternalMessageLogContext : public QMessageLogContext
+{
+public:
+    QInternalMessageLogContext(const QMessageLogContext &logContext)
+    {
+        copyContextFrom(logContext);
+    }
+    QInternalMessageLogContext(const QMessageLogContext &logContext,
+                               const QLoggingCategory &categoryOverride)
+        : QInternalMessageLogContext(logContext)
+    {
+        category = categoryOverride.categoryName();
+    }
+
+};
 
 QT_END_NAMESPACE
 

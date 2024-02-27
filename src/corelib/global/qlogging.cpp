@@ -382,9 +382,10 @@ static void qt_message(QtMsgType msgType, const QMessageLogContext &context, con
 */
 void QMessageLogger::debug(const char *msg, ...) const
 {
+    QInternalMessageLogContext ctxt(context);
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    qt_message(QtDebugMsg, context, msg, ap);
+    qt_message(QtDebugMsg, ctxt, msg, ap);
     va_end(ap);
 }
 
@@ -397,9 +398,10 @@ void QMessageLogger::debug(const char *msg, ...) const
 */
 void QMessageLogger::info(const char *msg, ...) const
 {
+    QInternalMessageLogContext ctxt(context);
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    qt_message(QtInfoMsg, context, msg, ap);
+    qt_message(QtInfoMsg, ctxt, msg, ap);
     va_end(ap);
 }
 
@@ -429,9 +431,7 @@ void QMessageLogger::debug(const QLoggingCategory &cat, const char *msg, ...) co
     if (!cat.isDebugEnabled())
         return;
 
-    QMessageLogContext ctxt;
-    ctxt.copyContextFrom(context);
-    ctxt.category = cat.categoryName();
+    QInternalMessageLogContext ctxt(context, cat());
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
@@ -453,9 +453,7 @@ void QMessageLogger::debug(QMessageLogger::CategoryFunction catFunc,
     if (!cat.isDebugEnabled())
         return;
 
-    QMessageLogContext ctxt;
-    ctxt.copyContextFrom(context);
-    ctxt.category = cat.categoryName();
+    QInternalMessageLogContext ctxt(context, cat());
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
@@ -534,9 +532,7 @@ void QMessageLogger::info(const QLoggingCategory &cat, const char *msg, ...) con
     if (!cat.isInfoEnabled())
         return;
 
-    QMessageLogContext ctxt;
-    ctxt.copyContextFrom(context);
-    ctxt.category = cat.categoryName();
+    QInternalMessageLogContext ctxt(context, cat());
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
@@ -558,9 +554,7 @@ void QMessageLogger::info(QMessageLogger::CategoryFunction catFunc,
     if (!cat.isInfoEnabled())
         return;
 
-    QMessageLogContext ctxt;
-    ctxt.copyContextFrom(context);
-    ctxt.category = cat.categoryName();
+    QInternalMessageLogContext ctxt(context, cat());
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
@@ -624,9 +618,10 @@ QDebug QMessageLogger::info(QMessageLogger::CategoryFunction catFunc) const
 */
 void QMessageLogger::warning(const char *msg, ...) const
 {
+    QInternalMessageLogContext ctxt(context);
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    qt_message(QtWarningMsg, context, msg, ap);
+    qt_message(QtWarningMsg, ctxt, msg, ap);
     va_end(ap);
 }
 
@@ -642,9 +637,7 @@ void QMessageLogger::warning(const QLoggingCategory &cat, const char *msg, ...) 
     if (!cat.isWarningEnabled())
         return;
 
-    QMessageLogContext ctxt;
-    ctxt.copyContextFrom(context);
-    ctxt.category = cat.categoryName();
+    QInternalMessageLogContext ctxt(context, cat());
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
@@ -666,9 +659,7 @@ void QMessageLogger::warning(QMessageLogger::CategoryFunction catFunc,
     if (!cat.isWarningEnabled())
         return;
 
-    QMessageLogContext ctxt;
-    ctxt.copyContextFrom(context);
-    ctxt.category = cat.categoryName();
+    QInternalMessageLogContext ctxt(context, cat());
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
@@ -729,9 +720,10 @@ QDebug QMessageLogger::warning(QMessageLogger::CategoryFunction catFunc) const
 */
 void QMessageLogger::critical(const char *msg, ...) const
 {
+    QInternalMessageLogContext ctxt(context);
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    qt_message(QtCriticalMsg, context, msg, ap);
+    qt_message(QtCriticalMsg, ctxt, msg, ap);
     va_end(ap);
 }
 
@@ -747,9 +739,7 @@ void QMessageLogger::critical(const QLoggingCategory &cat, const char *msg, ...)
     if (!cat.isCriticalEnabled())
         return;
 
-    QMessageLogContext ctxt;
-    ctxt.copyContextFrom(context);
-    ctxt.category = cat.categoryName();
+    QInternalMessageLogContext ctxt(context, cat());
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
@@ -771,9 +761,7 @@ void QMessageLogger::critical(QMessageLogger::CategoryFunction catFunc,
     if (!cat.isCriticalEnabled())
         return;
 
-    QMessageLogContext ctxt;
-    ctxt.copyContextFrom(context);
-    ctxt.category = cat.categoryName();
+    QInternalMessageLogContext ctxt(context, cat());
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
@@ -836,9 +824,7 @@ QDebug QMessageLogger::critical(QMessageLogger::CategoryFunction catFunc) const
 */
 void QMessageLogger::fatal(const QLoggingCategory &cat, const char *msg, ...) const noexcept
 {
-    QMessageLogContext ctxt;
-    ctxt.copyContextFrom(context);
-    ctxt.category = cat.categoryName();
+    QInternalMessageLogContext ctxt(context, cat());
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
@@ -862,9 +848,7 @@ void QMessageLogger::fatal(QMessageLogger::CategoryFunction catFunc,
 {
     const QLoggingCategory &cat = (*catFunc)();
 
-    QMessageLogContext ctxt;
-    ctxt.copyContextFrom(context);
-    ctxt.category = cat.categoryName();
+    QInternalMessageLogContext ctxt(context, cat());
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
@@ -884,9 +868,10 @@ void QMessageLogger::fatal(QMessageLogger::CategoryFunction catFunc,
 */
 void QMessageLogger::fatal(const char *msg, ...) const noexcept
 {
+    QInternalMessageLogContext ctxt(context);
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    QT_TERMINATE_ON_EXCEPTION(qt_message(QtFatalMsg, context, msg, ap));
+    QT_TERMINATE_ON_EXCEPTION(qt_message(QtFatalMsg, ctxt, msg, ap));
     va_end(ap);
 
 #ifndef Q_CC_MSVC_ONLY
@@ -2057,9 +2042,10 @@ static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, Strin
 */
 void qt_message_output(QtMsgType msgType, const QMessageLogContext &context, const QString &message)
 {
-    qt_message_print(msgType, context, message);
+    QInternalMessageLogContext ctx(context);
+    qt_message_print(msgType, ctx, message);
     if (isFatal(msgType))
-        qt_message_fatal(msgType, context, message);
+        qt_message_fatal(msgType, ctx, message);
 }
 
 void qErrnoWarning(const char *msg, ...)
@@ -2074,7 +2060,7 @@ void qErrnoWarning(const char *msg, ...)
     va_end(ap);
 
     buf += " ("_L1 + error_string + u')';
-    QMessageLogContext context;
+    QInternalMessageLogContext context{QMessageLogContext()};
     qt_message_output(QtWarningMsg, context, buf);
 }
 
@@ -2088,7 +2074,7 @@ void qErrnoWarning(int code, const char *msg, ...)
     va_end(ap);
 
     buf += " ("_L1 + qt_error_string(code) + u')';
-    QMessageLogContext context;
+    QInternalMessageLogContext context{QMessageLogContext()};
     qt_message_output(QtWarningMsg, context, buf);
 }
 

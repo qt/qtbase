@@ -5,6 +5,7 @@
 #include "qdebug.h"
 #include "private/qdebug_p.h"
 #include "qmetaobject.h"
+#include <private/qlogging_p.h>
 #include <private/qtextstream_p.h>
 #include <private/qtools_p.h>
 
@@ -150,15 +151,15 @@ QByteArray QtDebugUtils::toPrintable(const char *data, qint64 len, qsizetype max
 
     Flushes any pending data to be written and destroys the debug stream.
 */
-// Has been defined in the header / inlined before Qt 5.4
 QDebug::~QDebug()
 {
     if (stream && !--stream->ref) {
         if (stream->space && stream->buffer.endsWith(u' '))
             stream->buffer.chop(1);
         if (stream->message_output) {
+            QInternalMessageLogContext ctxt(stream->context);
             qt_message_output(stream->type,
-                              stream->context,
+                              ctxt,
                               stream->buffer);
         }
         delete stream;
