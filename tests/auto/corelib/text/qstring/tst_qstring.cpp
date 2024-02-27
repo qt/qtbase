@@ -1289,7 +1289,7 @@ void tst_QString::constructor()
 {
     // String literal with explicit \0 character
     static constexpr char16_t utf16[] = u"String DX\u0000";
-    const int size_minus_null_terminator = std::size(utf16) - 1;
+    const size_t size_minus_null_terminator = std::size(utf16) - 1;
     const auto *qchar = reinterpret_cast<const QChar *>(utf16);
 
     // Up to but not including the explicit \0 in utf16[]
@@ -3481,7 +3481,7 @@ void tst_QString::append_special_cases()
 {
     {
         static constexpr char16_t utf16[] = u"Hello, World!";
-        constexpr int len = std::char_traits<char16_t>::length(utf16);
+        constexpr size_t len = std::char_traits<char16_t>::length(utf16);
         const auto *unicode = reinterpret_cast<const QChar *>(utf16);
         QString a;
         a.append(unicode, len);
@@ -5951,7 +5951,7 @@ void tst_QString::toStdString()
     // For now, most QString constructors are also broken with respect
     // to embedded null characters, had to find one that works...
     const char16_t utf16[] = u"Embedded\0null\0character!";
-    const int size = std::size(utf16) - 1; // - 1, null terminator of the string literal
+    const size_t size = std::size(utf16) - 1; // - 1, null terminator of the string literal
     QString qtnull(reinterpret_cast<const QChar *>(utf16), size);
 
     std::string stdnull = qtnull.toStdString();
