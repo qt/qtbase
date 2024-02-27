@@ -549,7 +549,7 @@ struct CountedObject
         const size_t previousLiveCount;
     };
 
-    int id = 0;
+    size_t id = 0;
     static size_t liveCount;
 };
 
