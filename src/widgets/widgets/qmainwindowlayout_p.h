@@ -448,6 +448,7 @@ public:
     bool restoreState(QDataStream &stream, const QMainWindowLayoutState &oldState);
 };
 
+class QMainWindowTabBar;
 class Q_AUTOTEST_EXPORT QMainWindowLayout
     : public QLayout,
       public QMainWindowLayoutSeparatorHelper<QMainWindowLayout>
@@ -575,7 +576,11 @@ public:
 #if QT_CONFIG(dockwidget)
     QPointer<QDockWidgetGroupWindow> currentHoveredFloat; // set when dragging over a floating dock widget
     void setCurrentHoveredFloat(QDockWidgetGroupWindow *w);
+#if QT_CONFIG(tabbar)
     bool isDockWidgetTabbed(const QDockWidget *dockWidget) const;
+    QList<QDockWidget *> tabifiedDockWidgets(const QDockWidget *dockWidget) const;
+    QMainWindowTabBar *findTabBar(const QDockWidget *dockWidget) const;
+#endif
 #endif
     bool isInApplyState = false;
 
