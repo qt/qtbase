@@ -275,6 +275,14 @@ public:
     [[nodiscard]] Q_CORE_EXPORT static int compare(QAnyStringView lhs, QAnyStringView rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
     [[nodiscard]] Q_CORE_EXPORT static bool equal(QAnyStringView lhs, QAnyStringView rhs) noexcept;
 
+    static constexpr inline bool detects_US_ASCII_at_compile_time =
+#ifdef QT_SUPPORTS_IS_CONSTANT_EVALUATED
+            true
+#else
+            false
+#endif
+            ;
+
     //
     // STL compatibility API:
     //
