@@ -908,7 +908,7 @@ if (QT_FEATURE_vulkan)
     list(APPEND vulkan_fun_command_content
         COMMAND "${qvkgen}"
             "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vk.xml"
-            "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/generated_header.txt"
+            "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/licenseheader.h.in"
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/qvulkanfunctions"
         DEPENDS vulkan/vk.xml ${qvkgen}
         COMMENT "Generating vulkan data"
