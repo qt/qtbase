@@ -569,7 +569,7 @@ namespace QtAndroidAccessibility
 
     bool registerNatives(QJniEnvironment &env)
     {
-        if (!env.registerNativeMethods("org/qtproject/qt/android/QtNativeAccessibility",
+        if (!env.registerNativeMethods("org/qtproject/qt/android/accessibility/QtNativeAccessibility",
                                       methods, sizeof(methods) / sizeof(methods[0]))) {
             __android_log_print(ANDROID_LOG_FATAL,"Qt A11y", "RegisterNatives failed");
             return false;

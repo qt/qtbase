@@ -6,7 +6,7 @@ package org.qtproject.qt.android;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
-class QtThread {
+public class QtThread {
     private final ArrayList<Runnable> m_pendingRunnables = new ArrayList<>();
     private boolean m_exit = false;
     private final Thread m_qtThread = new Thread(new Runnable() {

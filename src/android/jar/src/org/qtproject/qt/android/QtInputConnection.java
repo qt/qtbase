@@ -54,7 +54,7 @@ class QtNativeInputConnection
     static native boolean fullscreenMode();
 }
 
-class QtInputConnection extends BaseInputConnection
+public class QtInputConnection extends BaseInputConnection
 {
     private static final int ID_SELECT_ALL = android.R.id.selectAll;
     private static final int ID_CUT = android.R.id.cut;

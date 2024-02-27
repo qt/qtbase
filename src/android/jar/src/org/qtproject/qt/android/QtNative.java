@@ -30,7 +30,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-class QtNative
+public class QtNative
 {
     private static WeakReference<Activity> m_activity = null;
     private static WeakReference<Service> m_service = null;

@@ -17,7 +17,7 @@ import android.widget.TextView;
 import java.util.HashMap;
 
 @SuppressLint("ViewConstructor")
-class EditContextView extends LinearLayout implements View.OnClickListener
+public class EditContextView extends LinearLayout implements View.OnClickListener
 {
     public static final int CUT_BUTTON   = 1;
     public static final int COPY_BUTTON  = 1 << 1;

@@ -22,7 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 
-class QtActivityLoader extends QtLoader {
+public class QtActivityLoader extends QtLoader {
     private final Activity m_activity;
 
     public QtActivityLoader(Activity activity)

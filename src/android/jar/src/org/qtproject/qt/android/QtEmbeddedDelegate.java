@@ -21,6 +21,8 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.qtproject.qt.android.accessibility.QtAccessibilityDelegate;
+
 class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppStateDetailsListener {
     // TODO simplistic implementation with one QtView, expand to support multiple views QTBUG-117649
     private QtView m_view;

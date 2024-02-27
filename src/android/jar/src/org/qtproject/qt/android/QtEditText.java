@@ -14,7 +14,7 @@ import android.view.KeyEvent;
 
 import org.qtproject.qt.android.QtInputConnection.QtInputConnectionListener;
 
-class QtEditText extends View
+public class QtEditText extends View
 {
     int m_initialCapsMode = 0;
     int m_imeOptions = 0;

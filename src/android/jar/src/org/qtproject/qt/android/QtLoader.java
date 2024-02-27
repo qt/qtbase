@@ -28,7 +28,7 @@ import java.util.Objects;
 
 import dalvik.system.DexClassLoader;
 
-abstract class QtLoader {
+public abstract class QtLoader {
 
     protected static final String QtTAG = "QtLoader";
 

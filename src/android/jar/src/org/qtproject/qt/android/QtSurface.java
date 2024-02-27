@@ -12,7 +12,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 @SuppressLint("ViewConstructor")
-class QtSurface extends SurfaceView implements SurfaceHolder.Callback
+public class QtSurface extends SurfaceView implements SurfaceHolder.Callback
 {
     private QtSurfaceInterface m_surfaceCallback;
 

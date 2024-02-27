@@ -13,7 +13,7 @@ import android.view.ViewTreeObserver;
 import android.widget.PopupWindow;
 
 // Helper class that manages a cursor or selection handle
-class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.OnLayoutChangeListener,
+public class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.OnLayoutChangeListener,
         EditContextView.OnClickListener
 {
     private final View m_layout;

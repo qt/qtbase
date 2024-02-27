@@ -21,8 +21,7 @@ import android.view.inputmethod.InputMethodManager;
 import org.qtproject.qt.android.QtInputConnection.QtInputConnectionListener;
 
 /** @noinspection FieldCanBeLocal*/
-class QtInputDelegate implements QtInputConnection.QtInputConnectionListener {
-
+public class QtInputDelegate implements QtInputConnection.QtInputConnectionListener {
     // keyboard methods
     public static native void keyDown(int key, int unicode, int modifier, boolean autoRepeat);
     public static native void keyUp(int key, int unicode, int modifier, boolean autoRepeat);

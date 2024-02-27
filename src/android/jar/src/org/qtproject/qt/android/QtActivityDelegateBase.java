@@ -33,6 +33,8 @@ import android.widget.PopupMenu;
 
 import java.util.HashMap;
 
+import org.qtproject.qt.android.accessibility.QtAccessibilityDelegate;
+
 abstract class QtActivityDelegateBase
 {
     protected Activity m_activity;

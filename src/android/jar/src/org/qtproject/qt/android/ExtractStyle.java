@@ -61,7 +61,7 @@ import java.util.Map;
 import java.util.Objects;
 
 
-class ExtractStyle {
+public class ExtractStyle {
 
     // This used to be retrieved from android.R.styleable.ViewDrawableStates field via reflection,
     // but since the access to that is restricted, we need to have hard-coded here.

@@ -14,8 +14,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-class QtLayout extends ViewGroup {
-
+public class QtLayout extends ViewGroup
+{
     public QtLayout(Context context)
     {
         super(context);

@@ -49,7 +49,7 @@ class ButtonStruct implements View.OnClickListener
     }
 }
 
-class QtMessageDialogHelper
+public class QtMessageDialogHelper
 {
 
     public QtMessageDialogHelper(Activity activity)

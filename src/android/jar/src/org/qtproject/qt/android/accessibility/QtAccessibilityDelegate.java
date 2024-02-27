@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 
-package org.qtproject.qt.android;
+package org.qtproject.qt.android.accessibility;
 
 import android.app.Activity;
 import android.content.Context;
@@ -22,7 +22,11 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.CollectionInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
 
-class QtAccessibilityDelegate extends View.AccessibilityDelegate
+import org.qtproject.qt.android.QtActivityDelegate;
+import org.qtproject.qt.android.QtNative;
+import org.qtproject.qt.android.QtLayout;
+
+public class QtAccessibilityDelegate extends View.AccessibilityDelegate
 {
     private static final String TAG = "Qt A11Y";
 

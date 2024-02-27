@@ -8,7 +8,7 @@ import android.app.Service;
 import android.content.ContextWrapper;
 import android.util.Log;
 
-class QtServiceLoader extends QtLoader {
+public class QtServiceLoader extends QtLoader {
     private final Service m_service;
 
     public QtServiceLoader(Service service) {

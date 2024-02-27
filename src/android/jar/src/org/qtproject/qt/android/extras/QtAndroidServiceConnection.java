@@ -9,7 +9,7 @@ import android.os.IBinder;
 
 import org.qtproject.qt.android.UsedFromNativeCode;
 
-class QtAndroidServiceConnection implements ServiceConnection
+public class QtAndroidServiceConnection implements ServiceConnection
 {
     @UsedFromNativeCode
     public QtAndroidServiceConnection(long id)

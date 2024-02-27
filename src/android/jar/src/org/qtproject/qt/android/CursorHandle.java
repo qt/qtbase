@@ -66,7 +66,7 @@ class CursorView extends ImageView
 }
 
 // Helper class that manages a cursor or selection handle
-class CursorHandle implements ViewTreeObserver.OnPreDrawListener
+public class CursorHandle implements ViewTreeObserver.OnPreDrawListener
 {
     private static final String QtTag = "QtCursorHandle";
     private final View m_layout;

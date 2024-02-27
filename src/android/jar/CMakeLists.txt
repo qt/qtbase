@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 set(java_sources
-    src/org/qtproject/qt/android/QtAccessibilityDelegate.java
-    src/org/qtproject/qt/android/QtNativeAccessibility.java
+    src/org/qtproject/qt/android/accessibility/QtAccessibilityDelegate.java
+    src/org/qtproject/qt/android/accessibility/QtNativeAccessibility.java
     src/org/qtproject/qt/android/CursorHandle.java
     src/org/qtproject/qt/android/EditContextView.java
     src/org/qtproject/qt/android/EditPopupMenu.java
