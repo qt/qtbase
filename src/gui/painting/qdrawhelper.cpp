@@ -4973,16 +4973,11 @@ void qBlendTexture(int count, const QT_FT_Span *spans, void *userData)
     proc(count, spans, userData);
 }
 
-static void blend_vertical_gradient_argb(int count, const QT_FT_Span *spans, void *userData)
+static inline bool calculate_fixed_gradient_factors(int count, const QT_FT_Span *spans,
+                                                    const QSpanData *data,
+                                                    const LinearGradientValues &linear,
+                                                    int *pyinc, int *poff)
 {
-    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
-
-    LinearGradientValues linear;
-    getLinearGradientValues(&linear, data);
-
-    CompositionFunctionSolid funcSolid =
-        functionForModeSolid[data->rasterBuffer->compositionMode];
-
     /*
         The logic for vertical gradient calculations is a mathematically
         reduced copy of that in fetchLinearGradient() - which is basically:
@@ -4997,8 +4992,32 @@ static void blend_vertical_gradient_argb(int count, const QT_FT_Span *spans, voi
         This has then been converted to fixed point to improve performance.
      */
     const int gss = GRADIENT_STOPTABLE_SIZE - 1;
-    int yinc = int((linear.dy * data->m22 * gss) * FIXPT_SIZE);
-    int off = int((((linear.dy * (data->m22 * qreal(0.5) + data->dy) + linear.off) * gss) * FIXPT_SIZE));
+    qreal ryinc = linear.dy * data->m22 * gss * FIXPT_SIZE;
+    qreal roff = (linear.dy * (data->m22 * qreal(0.5) + data->dy) + linear.off) * gss * FIXPT_SIZE;
+    const int limit = std::numeric_limits<int>::max() - FIXPT_SIZE;
+    if (count && (std::fabs(ryinc) < limit) && (std::fabs(roff) < limit)
+        && (std::fabs(ryinc * spans->y + roff) < limit)
+        && (std::fabs(ryinc * (spans + count - 1)->y + roff) < limit)) {
+        *pyinc = int(ryinc);
+        *poff = int(roff);
+        return true;
+    }
+    return false;
+}
+
+static bool blend_vertical_gradient_argb(int count, const QT_FT_Span *spans, void *userData)
+{
+    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
+
+    LinearGradientValues linear;
+    getLinearGradientValues(&linear, data);
+
+    CompositionFunctionSolid funcSolid =
+        functionForModeSolid[data->rasterBuffer->compositionMode];
+
+    int yinc(0), off(0);
+    if (!calculate_fixed_gradient_factors(count, spans, data, linear, &yinc, &off))
+        return false;
 
     while (count--) {
         int y = spans->y;
@@ -5011,21 +5030,20 @@ static void blend_vertical_gradient_argb(int count, const QT_FT_Span *spans, voi
         funcSolid(dst, spans->len, color, spans->coverage);
         ++spans;
     }
+    return true;
 }
 
 template<ProcessSpans blend_color>
-static void blend_vertical_gradient(int count, const QT_FT_Span *spans, void *userData)
+static bool blend_vertical_gradient(int count, const QT_FT_Span *spans, void *userData)
 {
     QSpanData *data = reinterpret_cast<QSpanData *>(userData);
 
     LinearGradientValues linear;
     getLinearGradientValues(&linear, data);
 
-    // Based on the same logic as blend_vertical_gradient_argb.
-
-    const int gss = GRADIENT_STOPTABLE_SIZE - 1;
-    int yinc = int((linear.dy * data->m22 * gss) * FIXPT_SIZE);
-    int off = int((((linear.dy * (data->m22 * qreal(0.5) + data->dy) + linear.off) * gss) * FIXPT_SIZE));
+    int yinc(0), off(0);
+    if (!calculate_fixed_gradient_factors(count, spans, data, linear, &yinc, &off))
+        return false;
 
     while (count--) {
         int y = spans->y;
@@ -5038,6 +5056,7 @@ static void blend_vertical_gradient(int count, const QT_FT_Span *spans, void *us
         blend_color(1, spans, userData);
         ++spans;
     }
+    return true;
 }
 
 void qBlendGradient(int count, const QT_FT_Span *spans, void *userData)
@@ -5052,8 +5071,8 @@ void qBlendGradient(int count, const QT_FT_Span *spans, void *userData)
         break;
     case QImage::Format_RGB32:
     case QImage::Format_ARGB32_Premultiplied:
-        if (isVerticalGradient)
-            return blend_vertical_gradient_argb(count, spans, userData);
+        if (isVerticalGradient && blend_vertical_gradient_argb(count, spans, userData))
+            return;
         return blend_src_generic(count, spans, userData);
 #if defined(__SSE2__) || defined(__ARM_NEON__) || (Q_PROCESSOR_WORDSIZE == 8)
     case QImage::Format_ARGB32:
@@ -5075,8 +5094,8 @@ void qBlendGradient(int count, const QT_FT_Span *spans, void *userData)
     case QImage::Format_RGBA32FPx4_Premultiplied:
 #endif
 #if QT_CONFIG(raster_64bit)
-        if (isVerticalGradient)
-            return blend_vertical_gradient<blend_color_generic_rgb64>(count, spans, userData);
+        if (isVerticalGradient && blend_vertical_gradient<blend_color_generic_rgb64>(count, spans, userData))
+            return;
         return blend_src_generic_rgb64(count, spans, userData);
 #endif // QT_CONFIG(raster_64bit)
 #if QT_CONFIG(raster_fp)
@@ -5086,13 +5105,13 @@ void qBlendGradient(int count, const QT_FT_Span *spans, void *userData)
     case QImage::Format_RGBX32FPx4:
     case QImage::Format_RGBA32FPx4:
     case QImage::Format_RGBA32FPx4_Premultiplied:
-        if (isVerticalGradient)
-            return blend_vertical_gradient<blend_color_generic_fp>(count, spans, userData);
+        if (isVerticalGradient && blend_vertical_gradient<blend_color_generic_fp>(count, spans, userData))
+            return;
         return blend_src_generic_fp(count, spans, userData);
 #endif
     default:
-        if (isVerticalGradient)
-            return blend_vertical_gradient<blend_color_generic>(count, spans, userData);
+        if (isVerticalGradient && blend_vertical_gradient<blend_color_generic>(count, spans, userData))
+            return;
         return blend_src_generic(count, spans, userData);
     }
     Q_UNREACHABLE();
