@@ -32,7 +32,7 @@ public:
 #if QT_CONFIG(settings)
     static QSettings *configuration();
     static void reload();
-    static const QString *qtconfManualPath;
+    static void setQtconfManualPath(const QString *qtconfManualPath);
 #endif
 
     struct LocationInfo
