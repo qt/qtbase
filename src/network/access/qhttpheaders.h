@@ -219,6 +219,9 @@ public:
     Q_NETWORK_EXPORT bool replace(qsizetype i, QAnyStringView name, QAnyStringView newValue);
     Q_NETWORK_EXPORT bool replace(qsizetype i, WellKnownHeader name, QAnyStringView newValue);
 
+    Q_NETWORK_EXPORT bool replaceOrAppend(QAnyStringView name, QAnyStringView newValue);
+    Q_NETWORK_EXPORT bool replaceOrAppend(WellKnownHeader name, QAnyStringView newValue);
+
     Q_NETWORK_EXPORT bool contains(QAnyStringView name) const;
     Q_NETWORK_EXPORT bool contains(WellKnownHeader name) const;
 

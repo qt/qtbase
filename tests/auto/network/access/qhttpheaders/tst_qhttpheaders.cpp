@@ -21,6 +21,7 @@ private slots:
     void headerNameField();
     void headerValueField();
     void valueEncoding();
+    void replaceOrAppend();
 
 private:
     static constexpr QAnyStringView n1{"name1"};
@@ -486,6 +487,65 @@ void tst_QHttpHeaders::valueEncoding()
     QCOMPARE(h1.values(n1).at(0), "Zm9v4oKs");
     h1.replace(0, n1, "foo€"_ba.toPercentEncoding());
     QCOMPARE(h1.values(n1).at(0), "foo%E2%82%AC");
+}
+
+void tst_QHttpHeaders::replaceOrAppend()
+{
+    QHttpHeaders h1;
+
+#define REPLACE_OR_APPEND(NAME, VALUE, INDEX, TOTALSIZE) \
+    do {                                                 \
+        QVERIFY(h1.replaceOrAppend(NAME, VALUE));        \
+        QCOMPARE(h1.size(), TOTALSIZE);                  \
+        QCOMPARE(h1.nameAt(INDEX), NAME);                \
+        QCOMPARE(h1.valueAt(INDEX), VALUE);              \
+    } while (false)
+
+    // Append to empty container and replace it
+    REPLACE_OR_APPEND(n1, v1, 0, 1); // Appends
+    REPLACE_OR_APPEND(n1, v2, 0, 1); // Replaces
+
+    // Replace at beginning, middle, and end
+    h1.clear();
+    REPLACE_OR_APPEND(n1, v1, 0, 1); // Appends
+    REPLACE_OR_APPEND(n2, v2, 1, 2); // Appends
+    REPLACE_OR_APPEND(n3, v3, 2, 3); // Appends
+    REPLACE_OR_APPEND(n1, V1, 0, 3); // Replaces at beginning
+    REPLACE_OR_APPEND(n2, V2, 1, 3); // Replaces at middle
+    REPLACE_OR_APPEND(n3, V3, 2, 3); // Replaces at end
+
+    // Pre-existing multiple values (n2) are removed
+    h1.clear();
+    h1.append(n1, v1);
+    h1.append(n2, v2); // First n2 is at index 1
+    h1.append(n2, v2);
+    h1.append(n3, v3);
+    h1.append(n2, v2);
+    QCOMPARE(h1.size(), 5);
+    QCOMPARE(h1.combinedValue(n2), "value2, value2, value2");
+    REPLACE_OR_APPEND(n2, V2, 1, 3); // Replaces value at index 1, and removes the rest
+    QCOMPARE(h1.combinedValue(n2), "VALUE2");
+#undef REPLACE_OR_APPEND
+
+    // Implicit sharing / detaching
+    h1.clear();
+    h1.append(n1, v1);
+    QHttpHeaders h2 = h1;
+    QCOMPARE(h1.size(), h2.size());
+    QCOMPARE(h1.valueAt(0), h2.valueAt(0)); // Iniially values are equal
+    h1.replaceOrAppend(n1, v2);  // Change value in h1 => detaches h1
+    QCOMPARE_NE(h1.valueAt(0), h2.valueAt(0)); // Values are no more equal
+    QCOMPARE(h1.valueAt(0), v2); // Value in h1 changed
+    QCOMPARE(h2.valueAt(0), v1); // Value in h2 remained
+
+    // Failed attempts
+    h1.clear();
+    h1.append(n1, v1);
+    QRegularExpression re("HTTP header*");
+    QTest::ignoreMessage(QtMsgType::QtWarningMsg, re);
+    QVERIFY(!h1.replaceOrAppend("", V1));
+    QTest::ignoreMessage(QtMsgType::QtWarningMsg, re);
+    QVERIFY(!h1.replaceOrAppend(v1, "foo\x08"));
 }
 
 QTEST_MAIN(tst_QHttpHeaders)

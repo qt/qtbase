@@ -789,6 +789,7 @@ public:
     // we can define common methods which 'detach()' the private itself.
     using Self = QExplicitlySharedDataPointer<QHttpHeadersPrivate>;
     static void removeAll(Self &d, const HeaderName &name);
+    static void replaceOrAppend(Self &d, const HeaderName &name, const QByteArray &value);
 
     void combinedValue(const HeaderName &name, QByteArray &result) const;
     void values(const HeaderName &name, QList<QByteArray> &result) const;
@@ -850,6 +851,23 @@ QByteArrayView QHttpHeadersPrivate::value(const HeaderName &name, QByteArrayView
             return h.value;
     }
     return defaultValue;
+}
+
+void QHttpHeadersPrivate::replaceOrAppend(Self &d, const HeaderName &name, const QByteArray &value)
+{
+    d.detach();
+    auto it = std::find_if(d->headers.begin(), d->headers.end(), headerNameMatches(name));
+    if (it != d->headers.end()) {
+        // Found something to replace => replace, and then rearrange any remaining
+        // matches to the end and erase them
+        it->value = value;
+        d->headers.erase(
+                std::remove_if(it + 1, d->headers.end(), headerNameMatches(name)),
+                d->headers.end());
+    } else {
+        // Found nothing to replace => append
+        d->headers.append(Header{name, value});
+    }
 }
 
 /*!
@@ -1213,6 +1231,47 @@ bool QHttpHeaders::replace(qsizetype i, WellKnownHeader name, QAnyStringView new
 
     d.detach();
     d->headers.replace(i, {HeaderName{name}, normalizedValue(newValue)});
+    return true;
+}
+
+/*!
+    \since 6.8
+
+    If QHttpHeaders already contains \a name, replaces its value with
+    \a newValue and removes possible additional \a name entries.
+    If \a name didn't exist, appends a new entry. Returns \c true
+    if successful.
+
+    This function is a convenience method for setting a unique
+    \a name : \a newValue header. For most headers the relative order does not
+    matter, which allows reusing an existing entry if one exists.
+
+    \sa replaceOrAppend(QAnyStringView, QAnyStringView)
+*/
+bool QHttpHeaders::replaceOrAppend(WellKnownHeader name, QAnyStringView newValue)
+{
+    if (isEmpty())
+        return append(name, newValue);
+
+    if (!isValidHttpHeaderValueField(newValue))
+        return false;
+
+    QHttpHeadersPrivate::replaceOrAppend(d, HeaderName{name}, normalizedValue(newValue));
+    return true;
+}
+
+/*!
+    \overload replaceOrAppend(WellKnownHeader, QAnyStringView)
+*/
+bool QHttpHeaders::replaceOrAppend(QAnyStringView name, QAnyStringView newValue)
+{
+    if (isEmpty())
+        return append(name, newValue);
+
+    if (!isValidHttpHeaderNameField(name) || !isValidHttpHeaderValueField(newValue))
+        return false;
+
+    QHttpHeadersPrivate::replaceOrAppend(d, HeaderName{name}, normalizedValue(newValue));
     return true;
 }
 
