@@ -150,21 +150,21 @@ public:
     {
         QString dst;
         if (!appendToString(dst))
-            dst.clear();
+            dst = QString{};
         return dst;
     }
     QByteArray toUtf8String()
     {
         QByteArray dst;
         if (!appendToUtf8String(dst))
-            dst.clear();
+            dst = QByteArray{};
         return dst;
     }
     QByteArray toByteArray()
     {
         QByteArray dst;
         if (!appendToByteArray(dst))
-            dst.clear();
+            dst = QByteArray{};
         return dst;
     }
 
