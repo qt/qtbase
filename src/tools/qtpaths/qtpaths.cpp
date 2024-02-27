@@ -224,7 +224,7 @@ int main(int argc, char **argv)
 #if QT_CONFIG(settings)
     if (parser.isSet(qtconf)) {
         qtconfManualPath = parser.value(qtconf);
-        QLibraryInfoPrivate::qtconfManualPath = &qtconfManualPath;
+        QLibraryInfoPrivate::setQtconfManualPath(&qtconfManualPath);
     }
 #endif
 

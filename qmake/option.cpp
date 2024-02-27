@@ -188,7 +188,7 @@ Option::parseCommandLine(QStringList &args, QMakeCmdLineParserState &state)
                 return Option::QMAKE_CMDLINE_SHOW_USAGE | Option::QMAKE_CMDLINE_ERROR;
             }
             if (!globals->qtconf.isEmpty())
-                QLibraryInfoPrivate::qtconfManualPath = &globals->qtconf;
+                QLibraryInfoPrivate::setQtconfManualPath(&globals->qtconf);
             if (cmdRet == QMakeGlobals::ArgumentsOk)
                 break;
             Q_ASSERT(cmdRet == QMakeGlobals::ArgumentUnknown);
