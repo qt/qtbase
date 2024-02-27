@@ -948,6 +948,7 @@ public:
                                                               GLint, GLsizei) = nullptr;
     void (QOPENGLF_APIENTRYP glQueryCounter)(GLuint, GLenum) = nullptr;
     void (QOPENGLF_APIENTRYP glGetQueryObjectui64v)(GLuint, GLenum, quint64 *) = nullptr;
+    void (QOPENGLF_APIENTRYP glObjectLabel)(GLenum, GLuint, GLsizei, const GLchar *) = nullptr;
 
     uint vao = 0;
     struct Caps {
@@ -1003,7 +1004,8 @@ public:
               hasDrawBuffersFunc(false),
               halfAttributes(false),
               multiView(false),
-              timestamps(false)
+              timestamps(false),
+              objectLabel(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -1059,6 +1061,7 @@ public:
         uint halfAttributes : 1;
         uint multiView : 1;
         uint timestamps : 1;
+        uint objectLabel : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;

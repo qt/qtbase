@@ -520,6 +520,14 @@ QT_BEGIN_NAMESPACE
 #define GL_QUERY_RESULT_AVAILABLE         0x8867
 #endif
 
+#ifndef GL_BUFFER
+#define GL_BUFFER                         0x82E0
+#endif
+
+#ifndef GL_PROGRAM
+#define GL_PROGRAM                        0x82E2
+#endif
+
 /*!
     Constructs a new QRhiGles2InitParams.
 
@@ -1048,6 +1056,16 @@ bool QRhiGles2::create(QRhi::Flags flags)
             ctx->getProcAddress(QByteArrayLiteral("glGetQueryObjectui64v")));
         if (!glQueryCounter || !glGetQueryObjectui64v)
             caps.timestamps = false;
+    }
+
+    // glObjectLabel is available on OpenGL ES 3.2+ and OpenGL 4.3+
+    if (caps.gles)
+        caps.objectLabel = caps.ctxMajor > 3 || (caps.ctxMajor == 3 && caps.ctxMinor >= 2);
+    else
+        caps.objectLabel = caps.ctxMajor > 4 || (caps.ctxMajor == 4 && caps.ctxMinor >= 3);
+    if (caps.objectLabel) {
+        glObjectLabel = reinterpret_cast<void(QOPENGLF_APIENTRYP)(GLenum, GLuint, GLsizei, const GLchar *)>(
+                            ctx->getProcAddress(QByteArrayLiteral("glObjectLabel")));
     }
 
     nativeHandlesStruct.context = ctx;
@@ -5126,6 +5144,9 @@ bool QGles2Buffer::create()
     rhiD->f->glBindBuffer(targetForDataOps, buffer);
     rhiD->f->glBufferData(targetForDataOps, nonZeroSize, nullptr, m_type == Dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 
+    if (rhiD->glObjectLabel)
+        rhiD->glObjectLabel(GL_BUFFER, buffer, -1, m_objectName.constData());
+
     usageState.access = AccessNone;
 
     rhiD->registerResource(this);
@@ -5279,6 +5300,9 @@ bool QGles2RenderBuffer::create()
         Q_UNREACHABLE();
         break;
     }
+
+    if (rhiD->glObjectLabel)
+        rhiD->glObjectLabel(GL_RENDERBUFFER, renderbuffer, -1, m_objectName.constData());
 
     owns = true;
     generation += 1;
@@ -5536,6 +5560,9 @@ bool QGles2Texture::create()
         // not an issue.
         specified = false;
     }
+
+    if (rhiD->glObjectLabel)
+        rhiD->glObjectLabel(GL_TEXTURE, texture, -1, m_objectName.constData());
 
     owns = true;
 
@@ -5840,6 +5867,9 @@ bool QGles2TextureRenderTarget::create()
         return false;
     }
 
+    if (rhiD->glObjectLabel)
+        rhiD->glObjectLabel(GL_FRAMEBUFFER, framebuffer, -1, m_objectName.constData());
+
     QRhiRenderTargetAttachmentTracker::updateResIdList<QGles2Texture, QGles2RenderBuffer>(m_desc, &d.currentResIdList);
 
     rhiD->registerResource(this);
@@ -6085,6 +6115,9 @@ bool QGles2GraphicsPipeline::create()
 
     currentSrb = nullptr;
     currentSrbGeneration = 0;
+
+    if (rhiD->glObjectLabel)
+        rhiD->glObjectLabel(GL_PROGRAM, program, -1, m_objectName.constData());
 
     rhiD->pipelineCreationEnd();
     generation += 1;
