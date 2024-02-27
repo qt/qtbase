@@ -633,13 +633,9 @@ qt_feature_config("c++2a" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("c++2b" PUBLIC
     LABEL "C++2b"
     AUTODETECT OFF
-)
-qt_feature_config("c++2b" QMAKE_PUBLIC_QT_CONFIG)
-qt_feature("c++2b" PUBLIC
-    LABEL "C++2b"
-    AUTODETECT FALSE
     CONDITION QT_FEATURE_cxx20 AND (CMAKE_VERSION VERSION_GREATER_EQUAL "3.20") AND TEST_cxx2b
 )
+qt_feature_config("c++2b" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("precompile_header"
     LABEL "Using precompiled headers"
     CONDITION BUILD_WITH_PCH AND TEST_precompile_header
