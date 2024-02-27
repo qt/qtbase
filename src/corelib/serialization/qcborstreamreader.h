@@ -120,9 +120,9 @@ public:
     bool enterContainer()               { Q_ASSERT(isContainer()); return _enterContainer_helper(); }
     bool leaveContainer();
 
-    bool toString(QString &dst)             { Q_ASSERT(isString()); return _toString_helper(dst); }
-    bool toUtf8String(QByteArray &dst)      { Q_ASSERT(isString()); return _toUtf8String_helper(dst); }
-    bool toByteArray(QByteArray &dst)       { Q_ASSERT(isByteArray()); return _toByteArray_helper(dst); }
+    bool appendToString(QString &dst)       { Q_ASSERT(isString()); return _appendToString_helper(dst); }
+    bool appendToUtf8String(QByteArray &dst){ Q_ASSERT(isString()); return _appendToUtf8String_helper(dst); }
+    bool appendToByteArray(QByteArray &dst) { Q_ASSERT(isByteArray()); return _appendToByteArray_helper(dst); }
     StringResult<QString> readString()      { Q_ASSERT(isString()); return _readString_helper(); }
     StringResult<QByteArray> readUtf8String() { Q_ASSERT(isString()); return _readUtf8String_helper(); }
     StringResult<QByteArray> readByteArray(){ Q_ASSERT(isByteArray()); return _readByteArray_helper(); }
@@ -149,21 +149,21 @@ public:
     QString toString()
     {
         QString dst;
-        if (!toString(dst))
+        if (!appendToString(dst))
             dst.clear();
         return dst;
     }
     QByteArray toUtf8String()
     {
         QByteArray dst;
-        if (!toUtf8String(dst))
+        if (!appendToUtf8String(dst))
             dst.clear();
         return dst;
     }
     QByteArray toByteArray()
     {
         QByteArray dst;
-        if (!toByteArray(dst))
+        if (!appendToByteArray(dst))
             dst.clear();
         return dst;
     }
@@ -175,9 +175,9 @@ private:
     StringResult<QByteArray> _readUtf8String_helper();
     StringResult<QByteArray> _readByteArray_helper();
     qsizetype _currentStringChunkSize() const;
-    bool _toString_helper(QString &);
-    bool _toUtf8String_helper(QByteArray &);
-    bool _toByteArray_helper(QByteArray &);
+    bool _appendToString_helper(QString &);
+    bool _appendToUtf8String_helper(QByteArray &);
+    bool _appendToByteArray_helper(QByteArray &);
 
     template <typename FP> FP _toFloatingPoint() const noexcept
     {
