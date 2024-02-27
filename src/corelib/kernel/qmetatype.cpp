@@ -22,13 +22,14 @@
 #endif
 #include "quuid.h"
 #include "qvariant.h"
-#include "qdatastream.h"
 
 #if QT_CONFIG(regularexpression)
 #  include "qregularexpression.h"
 #endif
 
 #ifndef QT_BOOTSTRAPPED
+#  include "qdatastream.h"
+
 #  include "qbitarray.h"
 #  include "qurl.h"
 #  include "qvariant.h"

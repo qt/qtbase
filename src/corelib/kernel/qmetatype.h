@@ -2369,18 +2369,20 @@ struct QDebugStreamOperatorForType <T, false>
 template<typename T, bool = QTypeTraits::has_stream_operator_v<QDataStream, T>>
 struct QDataStreamOperatorForType
 {
+    static constexpr QMetaTypeInterface::DataStreamOutFn dataStreamOut = nullptr;
+    static constexpr QMetaTypeInterface::DataStreamInFn dataStreamIn = nullptr;
+};
+
+#ifndef QT_NO_DATASTREAM
+template<typename T>
+struct QDataStreamOperatorForType <T, true>
+{
     static void dataStreamOut(const QMetaTypeInterface *, QDataStream &ds, const void *a)
     { ds << *reinterpret_cast<const T *>(a); }
     static void dataStreamIn(const QMetaTypeInterface *, QDataStream &ds, void *a)
     { ds >> *reinterpret_cast<T *>(a); }
 };
-
-template<typename T>
-struct QDataStreamOperatorForType <T, false>
-{
-    static constexpr QMetaTypeInterface::DataStreamOutFn dataStreamOut = nullptr;
-    static constexpr QMetaTypeInterface::DataStreamInFn dataStreamIn = nullptr;
-};
+#endif
 
 // Performance optimization:
 //

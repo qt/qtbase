@@ -25,7 +25,7 @@ class QDataStream;
 class QIODevice;
 class QString;
 
-#if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
+#if !defined(QT_NO_DATASTREAM)
 class QDataStreamPrivate;
 namespace QtPrivate {
 class StreamStateSaver;

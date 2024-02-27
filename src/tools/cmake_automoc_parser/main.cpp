@@ -185,11 +185,8 @@ static bool writeJsonFiles(const QList<QString> &fileList, const QString &fileLi
     }
 
     qint64 timestamp = std::numeric_limits<qint64>::min();
-    QByteArray timestampBuffer = timestampFile.readAll();
-    if (timestampBuffer.size() == sizeof(timestamp)) {
-        QDataStream istream(&timestampBuffer, QIODevice::ReadOnly);
-        istream >> timestamp;
-    }
+    if (timestampFile.size() == sizeof(timestamp))
+        timestampFile.read(reinterpret_cast<char *>(&timestamp), sizeof(timestamp));
 
     // Check if any of the metatype json files produced by automoc is newer than the last file
     // processed by cmake_automoc parser
@@ -215,11 +212,8 @@ static bool writeJsonFiles(const QList<QString> &fileList, const QString &fileLi
         textStream.flush();
 
         // Update the timestamp according the newest json file timestamp.
-        timestampBuffer.clear();
-        QDataStream ostream(&timestampBuffer, QIODevice::WriteOnly);
-        ostream << timestamp;
         timestampFile.resize(0);
-        timestampFile.write(timestampBuffer);
+        timestampFile.write(reinterpret_cast<char *>(&timestamp), sizeof(timestamp));
     }
     return true;
 }

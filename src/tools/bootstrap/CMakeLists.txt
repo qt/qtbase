@@ -51,7 +51,6 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/serialization/qcborcommon.cpp
         ../../corelib/serialization/qcborstreamwriter.cpp
         ../../corelib/serialization/qcborvalue.cpp
-        ../../corelib/serialization/qdatastream.cpp
         ../../corelib/serialization/qjsonarray.cpp
         ../../corelib/serialization/qjsoncbor.cpp
         ../../corelib/serialization/qjsondocument.cpp
