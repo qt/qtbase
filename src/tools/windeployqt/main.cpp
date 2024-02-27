@@ -88,13 +88,15 @@ static inline QString webProcessBinary(const char *binaryName, Platform p)
     return (p & WindowsBased) ? webProcess + QStringLiteral(".exe") : webProcess;
 }
 
-static QString moduleNameToOptionName(const QString &moduleName)
+static QString moduleNameToOptionName(const QString &moduleName, bool internal)
 {
     QString result = moduleName
             .mid(3)                    // strip the "Qt6" prefix
             .toLower();
     if (result == u"help"_s)
         result.prepend("qt"_L1);
+    if (internal)
+        result.append("Internal"_L1);
     return result;
 }
 
@@ -106,10 +108,8 @@ static QByteArray formatQtModules(const ModuleBitset &mask, bool option = false)
             if (!result.isEmpty())
                 result.append(' ');
             result.append(option
-                          ? moduleNameToOptionName(qtModule.name).toUtf8()
+                          ? moduleNameToOptionName(qtModule.name, qtModule.internal).toUtf8()
                           : qtModule.name.toUtf8());
-            if (qtModule.internal)
-                result.append("Internal");
         }
     }
     return result;
@@ -527,7 +527,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     enabledModuleOptions.reserve(qtModulesCount);
     disabledModuleOptions.reserve(qtModulesCount);
     for (const QtModule &module : qtModuleEntries) {
-        const QString option = moduleNameToOptionName(module.name);
+        const QString option = moduleNameToOptionName(module.name, module.internal);
         const QString name = module.name;
         if (name == u"InsightTracker") {
             parser->addOption(deployInsightTrackerOption);
@@ -769,7 +769,7 @@ static inline QString helpText(const QCommandLineParser &p, const PluginInformat
     if (qtModuleEntries.size() == 0)
         return result;
     const QtModule &firstModule = qtModuleEntries.moduleById(0);
-    const QString firstModuleOption = moduleNameToOptionName(firstModule.name);
+    const QString firstModuleOption = moduleNameToOptionName(firstModule.name, firstModule.internal);
     const qsizetype moduleStart = result.indexOf("\n  --"_L1 + firstModuleOption);
     const qsizetype argumentsStart = result.lastIndexOf("\nArguments:"_L1);
     if (moduleStart >= argumentsStart)
