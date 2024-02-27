@@ -729,6 +729,9 @@ void tst_QDockWidget::updateTabBarOnVisibilityChanged()
     mw.tabifyDockWidget(dw1, dw2);
     mw.tabifyDockWidget(dw2, dw3);
 
+    const auto list1 = QList<QDockWidget *>{dw1, dw2, dw3};
+    QCOMPARE(mw.tabifiedDockWidgets(dw0), list1);
+
     QTabBar *tabBar = mw.findChild<QTabBar *>();
     QVERIFY(tabBar);
     tabBar->setCurrentIndex(2);
@@ -742,6 +745,8 @@ void tst_QDockWidget::updateTabBarOnVisibilityChanged()
     dw1->hide();
     QTRY_COMPARE(tabBar->count(), 2);
     QCOMPARE(tabBar->currentIndex(), 0);
+
+    QCOMPARE(mw.tabifiedDockWidgets(dw2), {dw3});
 }
 
 Q_DECLARE_METATYPE(Qt::DockWidgetArea)
@@ -1468,6 +1473,9 @@ void tst_QDockWidget::floatingTabs()
     QList<int> path2;
     qCreateFloatingTabs(mainWindow, cent, d1, d2, path1, path2);
 
+    QCOMPARE(mainWindow->tabifiedDockWidgets(d1), {d2});
+    QCOMPARE(mainWindow->tabifiedDockWidgets(d2), {d1});
+
     /*
      * unplug both dockwidgets, resize them and plug them into a joint floating tab
      * expected behavior: QDOckWidgetGroupWindow with both widgets is created
@@ -1549,6 +1557,9 @@ void tst_QDockWidget::floatingTabs()
     // Paths must be identical
     QTRY_COMPARE(layout->layoutState.indexOf(d1), path1);
     QTRY_COMPARE(layout->layoutState.indexOf(d2), path2);
+
+    QCOMPARE(mainWindow->tabifiedDockWidgets(d1), {});
+    QCOMPARE(mainWindow->tabifiedDockWidgets(d2), {});
 #else
     QSKIP("test requires -developer-build option");
 #endif // QT_BUILD_INTERNAL
