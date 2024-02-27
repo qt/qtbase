@@ -2576,7 +2576,13 @@ public:
         : QWidget(parent), showAgain(showAgain)
     {
         QTimer::singleShot(0, this, &ShowCloseShowWidget::doClose);
-        QTimer::singleShot(500, this, [] () { QCoreApplication::exit(1); });
+        int timeout = 500;
+#ifdef Q_OS_ANDROID
+        // On Android, CI Android emulator is not running HW accelerated graphics and can be slow,
+        // use a longer timeout to avoid flaky failures
+        timeout = 1000;
+#endif
+        QTimer::singleShot(timeout, this, [] () { QCoreApplication::exit(1); });
     }
 
 private slots:
