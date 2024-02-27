@@ -2230,7 +2230,9 @@ void QMainWindowLayout::applyRestoredState()
 
 void QMainWindowLayout::setGeometry(const QRect &_r)
 {
-    if (savedState.isValid())
+    // Check if the state is valid, and avoid replacing it again if it is currently used
+    // in applyState
+    if (savedState.isValid() || (restoredState && isInApplyState))
         return;
 
     QRect r = _r;
