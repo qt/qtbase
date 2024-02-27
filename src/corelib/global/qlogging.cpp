@@ -1143,6 +1143,7 @@ struct QMessagePattern
         int backtraceDepth;
     };
     QList<BacktraceParams> backtraceArgs; // backtrace arguments in sequence of %{backtrace
+    int maxBacktraceDepth = 0;
 #endif
 
     bool fromEnvironment;
@@ -1176,6 +1177,7 @@ void QMessagePattern::setPattern(const QString &pattern)
     timeArgs.clear();
 #ifdef QLOGGING_HAVE_BACKTRACE
     backtraceArgs.clear();
+    maxBacktraceDepth = 0;
 #endif
 
     // scanner
@@ -1270,6 +1272,7 @@ void QMessagePattern::setPattern(const QString &pattern)
                 backtraceParams.backtraceDepth = backtraceDepth;
                 backtraceParams.backtraceSeparator = backtraceSeparator;
                 backtraceArgs.append(backtraceParams);
+                maxBacktraceDepth = qMax(maxBacktraceDepth, backtraceDepth);
 #else
                 error += "QT_MESSAGE_PATTERN: %{backtrace} is not supported by this Qt build\n"_L1;
                 tokens[i] = "";
@@ -1326,23 +1329,31 @@ void QMessagePattern::setPattern(const QString &pattern)
 // make sure the function has "Message" in the name so the function is removed
 /*
   A typical backtrace in debug mode looks like:
-    #0  backtraceFramesForLogMessage (frameCount=0) at qlogging.cpp:1398
-    #1  formatBacktraceForLogMessage (backtraceParams=..., function=0x5555555580b0 "virtual void MyClass::myFunction(int)") at qlogging.cpp:1525
-    #2  formatLogMessage (type=QtDebugMsg, context=..., str=...) at qlogging.cpp:1642
-    #3  qDefaultMessageHandler (type=QtDebugMsg, context=..., message=...) at qlogging.cpp:1997
-    #4  qt_message_print (msgType=QtDebugMsg, context=..., message=...) at qlogging.cpp:2043
-    #5  qt_message_output (msgType=QtDebugMsg, context=..., message=...) at qlogging.cpp:2082
-    #6  QDebug::~QDebug (this=0x7fffffffd9b8, __in_chrg=<optimized out>) at qdebug.cpp:166
+    #0  QInternalMessageLogContext::populateBacktrace (this=0x7fffffffd660, frameCount=5) at qlogging.cpp:1342
+    #1  QInternalMessageLogContext::QInternalMessageLogContext (logContext=..., this=<optimized out>) at qlogging_p.h:42
+    #2  QDebug::~QDebug (this=0x7fffffffdac8, __in_chrg=<optimized out>) at qdebug.cpp:160
+
+  In release mode, the QInternalMessageLogContext constructor will be usually
+  inlined. Empirical testing with GCC 13 and Clang 17 suggest they do obey the
+  Q_ALWAYS_INLINE in that constructor even in debug mode and do inline it.
+  Unfortunately, we can't know for sure if it has been.
 */
-static constexpr int TypicalBacktraceFrameCount = 7;
+static constexpr int TypicalBacktraceFrameCount = 3;
 
-#  if defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
-// force skipping the frame pointer, to save the backtrace() function some work
-#    pragma GCC push_options
-#    pragma GCC optimize ("omit-frame-pointer")
-#  endif
+Q_NEVER_INLINE void QInternalMessageLogContext::populateBacktrace(int frameCount)
+{
+    assert(frameCount >= 0);
+    BacktraceStorage &result = backtrace.emplace(TypicalBacktraceFrameCount + frameCount);
+    int n = ::backtrace(result.data(), result.size());
+    if (n <= 0)
+        result.clear();
+    else
+        result.resize(n);
+}
 
-static QStringList backtraceFramesForLogMessage(int frameCount)
+static QStringList
+backtraceFramesForLogMessage(int frameCount,
+                             const QInternalMessageLogContext::BacktraceStorage &buffer)
 {
     struct DecodedFrame {
         QString library;
@@ -1353,12 +1364,6 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
     if (frameCount == 0)
         return result;
 
-    QVarLengthArray<void *, 32> buffer(TypicalBacktraceFrameCount + frameCount);
-    int n = backtrace(buffer.data(), buffer.size());
-    if (n <= 0)
-        return result;
-    buffer.resize(n);
-
     auto shouldSkipFrame = [&result](const auto &library, const auto &function) {
         if (!result.isEmpty() || !library.contains("Qt6Core"_L1))
             return false;
@@ -1366,7 +1371,9 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
             return true;
         if (function.contains("6QDebug"_L1))
             return true;
-        if (function.contains("Message"_L1) || function.contains("_message"_L1))
+        if (function.contains("14QMessageLogger"_L1))
+            return true;
+        if (function.contains("17qt_message_output"_L1))
             return true;
         return false;
     };
@@ -1445,7 +1452,7 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
     };
 #  endif
 
-    for (void *&addr : buffer) {
+    for (void *const &addr : buffer) {
         DecodedFrame frame = decodeFrame(addr);
         if (!frame.library.isEmpty()) {
             if (frame.function.isEmpty())
@@ -1465,25 +1472,29 @@ static QStringList backtraceFramesForLogMessage(int frameCount)
 }
 
 static QString formatBacktraceForLogMessage(const QMessagePattern::BacktraceParams backtraceParams,
-                                            const char *function)
+                                            const QMessageLogContext &ctx)
 {
+    // do we have a backtrace stored?
+    if (ctx.version <= QMessageLogContext::CurrentVersion)
+        return QString();
+
+    auto &fullctx = static_cast<const QInternalMessageLogContext &>(ctx);
+    if (!fullctx.backtrace.has_value())
+        return QString();
+
     QString backtraceSeparator = backtraceParams.backtraceSeparator;
     int backtraceDepth = backtraceParams.backtraceDepth;
 
-    QStringList frames = backtraceFramesForLogMessage(backtraceDepth);
+    QStringList frames = backtraceFramesForLogMessage(backtraceDepth, *fullctx.backtrace);
     if (frames.isEmpty())
         return QString();
 
     // if the first frame is unknown, replace it with the context function
-    if (function && frames.at(0).startsWith(u'?'))
-        frames[0] = QString::fromUtf8(qCleanupFuncinfo(function));
+    if (ctx.function && frames.at(0).startsWith(u'?'))
+        frames[0] = QString::fromUtf8(qCleanupFuncinfo(ctx.function));
 
     return frames.join(backtraceSeparator);
 }
-
-#  if defined(Q_CC_GNU) && !defined(Q_CC_CLANG)
-#    pragma GCC pop_options
-#  endif
 #endif // QLOGGING_HAVE_BACKTRACE && !QT_BOOTSTRAPPED
 
 Q_GLOBAL_STATIC(QMessagePattern, qMessagePattern)
@@ -1585,7 +1596,7 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
         } else if (token == backtraceTokenC) {
             QMessagePattern::BacktraceParams backtraceParams = pattern->backtraceArgs.at(backtraceArgsIdx);
             backtraceArgsIdx++;
-            message.append(formatBacktraceForLogMessage(backtraceParams, context.function));
+            message.append(formatBacktraceForLogMessage(backtraceParams, context));
 #endif
         } else if (token == timeTokenC) {
             QString timeFormat = pattern->timeArgs.at(timeArgsIdx);
@@ -1629,6 +1640,12 @@ static QString formatLogMessage(QtMsgType type, const QMessageLogContext &contex
     Q_UNUSED(type);
     Q_UNUSED(context);
     return str;
+}
+#endif
+#ifndef QLOGGING_HAVE_BACKTRACE
+void QInternalMessageLogContext::populateBacktrace(int)
+{
+    Q_UNREACHABLE();
 }
 #endif
 
@@ -2246,6 +2263,37 @@ void qSetMessagePattern(const QString &pattern)
 }
 #endif
 
+static void copyInternalContext(QInternalMessageLogContext *self,
+                                const QMessageLogContext &logContext) noexcept
+{
+    if (logContext.version == self->version) {
+        auto other = static_cast<const QInternalMessageLogContext *>(&logContext);
+        self->backtrace = other->backtrace;
+    }
+}
+
+/*!
+    \internal
+    Copies context information from \a logContext into this QMessageLogContext.
+    Returns the number of backtrace frames that are desired.
+*/
+int QInternalMessageLogContext::initFrom(const QMessageLogContext &logContext)
+{
+    version = CurrentVersion + 1;
+    copyContextFrom(logContext);
+
+#ifdef QLOGGING_HAVE_BACKTRACE
+    if (backtrace.has_value())
+        return 0;       // we have a stored backtrace, no need to get it again
+
+    // initializes the message pattern, if needed
+    if (auto pattern = qMessagePattern())
+        return pattern->maxBacktraceDepth;
+#endif
+
+    return 0;
+}
+
 /*!
     Copies context information from \a logContext into this QMessageLogContext.
     Returns a reference to this object.
@@ -2260,6 +2308,8 @@ QMessageLogContext &QMessageLogContext::copyContextFrom(const QMessageLogContext
     this->file = logContext.file;
     this->line = logContext.line;
     this->function = logContext.function;
+    if (Q_UNLIKELY(version == CurrentVersion + 1))
+        copyInternalContext(static_cast<QInternalMessageLogContext *>(this), logContext);
     return *this;
 }
 

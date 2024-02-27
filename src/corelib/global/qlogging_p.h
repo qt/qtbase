@@ -18,6 +18,7 @@
 #include <QtCore/private/qglobal_p.h>
 #include "qlogging.h"
 #include "qloggingcategory.h"
+#include "qvarlengtharray.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -30,9 +31,15 @@ Q_CORE_EXPORT bool shouldLogToStderr();
 class QInternalMessageLogContext : public QMessageLogContext
 {
 public:
-    QInternalMessageLogContext(const QMessageLogContext &logContext)
+    static constexpr int DefaultBacktraceDepth = 32;
+    using BacktraceStorage = QVarLengthArray<void *, DefaultBacktraceDepth>;
+    std::optional<BacktraceStorage> backtrace;
+
+    Q_ALWAYS_INLINE QInternalMessageLogContext(const QMessageLogContext &logContext)
     {
-        copyContextFrom(logContext);
+        int backtraceFrames = initFrom(logContext);
+        if (backtraceFrames)
+            populateBacktrace(backtraceFrames);
     }
     QInternalMessageLogContext(const QMessageLogContext &logContext,
                                const QLoggingCategory &categoryOverride)
@@ -41,6 +48,8 @@ public:
         category = categoryOverride.categoryName();
     }
 
+    int initFrom(const QMessageLogContext &logContext);
+    void populateBacktrace(int frameCount);
 };
 
 QT_END_NAMESPACE
