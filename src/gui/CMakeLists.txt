@@ -286,26 +286,27 @@ qt_internal_add_module(Gui
 )
 
 # Resources:
-set_source_files_properties("../3rdparty/icc/sRGB2014.icc"
-    PROPERTIES QT_RESOURCE_ALIAS "sRGB2014.icc"
-)
-set(qpdf_resource_files
-    "../3rdparty/icc/sRGB2014.icc"
-    "painting/qpdfa_metadata.xml"
-)
+if(QT_FEATURE_pdf)
+    set_source_files_properties("../3rdparty/icc/sRGB2014.icc"
+        PROPERTIES QT_RESOURCE_ALIAS "sRGB2014.icc"
+    )
+    set(qpdf_resource_files
+        "../3rdparty/icc/sRGB2014.icc"
+        "painting/qpdfa_metadata.xml"
+    )
+    qt_internal_add_resource(Gui "qpdf"
+       PREFIX
+           "/qpdf/"
+       BASE
+           "painting"
+       FILES
+           ${qpdf_resource_files}
+    )
+endif()
 
 if(WIN32 OR (UNIX AND NOT APPLE))
     set_target_properties(Gui PROPERTIES UNITY_BUILD OFF) # X11 define clashes/Windows oddities.
 endif()
-
-qt_internal_add_resource(Gui "qpdf"
-    PREFIX
-        "/qpdf/"
-    BASE
-        "painting"
-    FILES
-        ${qpdf_resource_files}
-)
 
 qt_internal_add_resource(Gui "gui_shaders"
     PREFIX
