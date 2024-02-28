@@ -2782,9 +2782,14 @@ void QMessageBoxPrivate::initHelper(QPlatformDialogHelper *h)
     auto *messageDialogHelper = static_cast<QPlatformMessageDialogHelper *>(h);
     QObjectPrivate::connect(messageDialogHelper, &QPlatformMessageDialogHelper::clicked,
                             this, &QMessageBoxPrivate::helperClicked);
+    // Forward state via lambda, so that we can handle addition and removal
+    // of checkbox via setCheckBox() after initializing helper.
     QObject::connect(messageDialogHelper, &QPlatformMessageDialogHelper::checkBoxStateChanged,
-                     checkbox, &QCheckBox::setCheckState);
-
+        q_ptr, [this](Qt::CheckState state) {
+            if (checkbox)
+                checkbox->setCheckState(state);
+        }
+    );
     messageDialogHelper->setOptions(options);
 }
 
