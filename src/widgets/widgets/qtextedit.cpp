@@ -1807,7 +1807,7 @@ QVariant QTextEdit::inputMethodQuery(Qt::InputMethodQuery query, QVariant argume
     Q_D(const QTextEdit);
     switch (query) {
     case Qt::ImEnabled:
-        return isEnabled();
+        return isEnabled() && !isReadOnly();
     case Qt::ImHints:
     case Qt::ImInputItemClipRectangle:
         return QWidget::inputMethodQuery(query);
