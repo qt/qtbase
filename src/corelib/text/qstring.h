@@ -1307,8 +1307,11 @@ QT_WARNING_POP
 
 QString QString::fromWCharArray(const wchar_t *string, qsizetype size)
 {
-    return sizeof(wchar_t) == sizeof(QChar) ? fromUtf16(reinterpret_cast<const char16_t *>(string), size)
-                                            : fromUcs4(reinterpret_cast<const char32_t *>(string), size);
+    if constexpr (sizeof(wchar_t) == sizeof(QChar)) {
+        return QString(reinterpret_cast<const QChar *>(string), size);
+    } else {
+        return fromUcs4(reinterpret_cast<const char32_t *>(string), size);
+    }
 }
 
 constexpr QString::QString() noexcept {}

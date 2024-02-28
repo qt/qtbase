@@ -1508,7 +1508,7 @@ QStringList QRegularExpression::namedCaptureGroups() const
                 reinterpret_cast<const char16_t *>(namedCapturingTable) + namedCapturingTableEntrySize * i;
 
         const int index = *currentNamedCapturingTableRow;
-        result[index] = QString::fromUtf16(currentNamedCapturingTableRow + 1);
+        result[index] = QStringView(currentNamedCapturingTableRow + 1).toString();
     }
 
     return result;

@@ -2353,7 +2353,7 @@ QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormaliza
     // If path was not modified return the original value
     if (used == 0)
         return name;
-    return QString::fromUtf16(out + used, len - used);
+    return QStringView(out + used, len - used).toString();
 }
 
 static QString qt_cleanPath(const QString &path, bool *ok)
