@@ -14,3 +14,7 @@ qt_internal_add_test(tst_qudpsocket
         Qt::TestPrivate
     QT_TEST_SERVER_LIST "danted" "echo"
 )
+
+if(QT_FEATURE_process)
+    add_dependencies(tst_qudpsocket clientserver)
+endif()
