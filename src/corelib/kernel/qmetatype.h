@@ -92,6 +92,12 @@ inline constexpr int qMetaTypeId();
 #else
 #  define QT_FOR_EACH_STATIC_REGULAR_EXPRESSION(F)
 #endif
+#ifndef QT_NO_VARIANT
+#  define QT_FOR_EACH_STATIC_QVARIANT(F) \
+    F(QVariant, 41, QVariant)
+#else
+#  define QT_FOR_EACH_STATIC_QVARIANT(F)
+#endif
 
 #define QT_FOR_EACH_STATIC_CORE_CLASS(F)\
     F(QChar, 7, QChar) \
@@ -113,7 +119,7 @@ inline constexpr int qMetaTypeId();
     F(QPointF, 26, QPointF) \
     QT_FOR_EACH_STATIC_EASINGCURVE(F) \
     F(QUuid, 30, QUuid) \
-    F(QVariant, 41, QVariant) \
+    QT_FOR_EACH_STATIC_QVARIANT(F) \
     QT_FOR_EACH_STATIC_REGULAR_EXPRESSION(F) \
     F(QJsonValue, 45, QJsonValue) \
     F(QJsonObject, 46, QJsonObject) \
@@ -128,13 +134,20 @@ inline constexpr int qMetaTypeId();
 #define QT_FOR_EACH_STATIC_CORE_POINTER(F)\
     F(QObjectStar, 39, QObject*)
 
-#define QT_FOR_EACH_STATIC_CORE_TEMPLATE(F)\
+#ifndef QT_NO_VARIANT
+#  define QT_FOR_EACH_STATIC_CORE_TEMPLATE(F)\
     F(QVariantMap, 8, QVariantMap) \
     F(QVariantList, 9, QVariantList) \
     F(QVariantHash, 28, QVariantHash) \
     F(QVariantPair, 58, QVariantPair) \
     F(QByteArrayList, 49, QByteArrayList) \
     F(QStringList, 11, QStringList) \
+    /**/
+#else
+#  define QT_FOR_EACH_STATIC_CORE_TEMPLATE(F)\
+    F(QByteArrayList, 49, QByteArrayList) \
+    F(QStringList, 11, QStringList)
+#endif
 
 #if QT_CONFIG(shortcut)
 #define QT_FOR_EACH_STATIC_KEYSEQUENCE_CLASS(F)\
@@ -188,12 +201,20 @@ inline constexpr int qMetaTypeId();
     F(UInt, -1, uint, "quint32") \
     F(LongLong, -1, qlonglong, "qint64") \
     F(ULongLong, -1, qulonglong, "quint64") \
+    F(QByteArrayList, -1, QByteArrayList, "QList<QByteArray>") \
+    F(QStringList, -1, QStringList, "QList<QString>") \
+    QT_FOR_EACH_STATIC_VARIANT_ALIAS_TYPE(F)
+
+#ifndef QT_NO_VARIANT
+#define QT_FOR_EACH_STATIC_VARIANT_ALIAS_TYPE(F) \
     F(QVariantList, -1, QVariantList, "QList<QVariant>") \
     F(QVariantMap, -1, QVariantMap, "QMap<QString,QVariant>") \
     F(QVariantHash, -1, QVariantHash, "QHash<QString,QVariant>") \
     F(QVariantPair, -1, QVariantPair, "QPair<QVariant,QVariant>") \
-    F(QByteArrayList, -1, QByteArrayList, "QList<QByteArray>") \
-    F(QStringList, -1, QStringList, "QList<QString>") \
+    /**/
+#else
+#define QT_FOR_EACH_STATIC_VARIANT_ALIAS_TYPE(F)
+#endif
 
 #define QT_FOR_EACH_STATIC_TYPE(F)\
     QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(F)\

@@ -156,7 +156,7 @@ QJsonObject &QJsonObject::operator =(const QJsonObject &other) noexcept = defaul
     Swaps the object \a other with this. This operation is very fast and never fails.
 */
 
-
+#ifndef QT_NO_VARIANT
 /*!
     Converts the variant map \a map to a QJsonObject.
 
@@ -219,6 +219,7 @@ QVariantHash QJsonObject::toVariantHash() const
 {
     return QCborMap::fromJsonObject(*this).toVariantHash();
 }
+#endif // !QT_NO_VARIANT
 
 /*!
     Returns a list of all keys in this object.

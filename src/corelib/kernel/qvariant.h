@@ -796,14 +796,16 @@ template<typename T> inline T qvariant_cast(QVariant &&v)
     return t;
 }
 
+#  ifndef QT_NO_VARIANT
 template<> inline QVariant qvariant_cast<QVariant>(const QVariant &v)
 {
     if (v.metaType().id() == QMetaType::QVariant)
         return *reinterpret_cast<const QVariant *>(v.constData());
     return v;
 }
+#  endif
 
-#endif
+#endif // QT_MOC
 
 #ifndef QT_NO_DEBUG_STREAM
 #if QT_DEPRECATED_SINCE(6, 0)

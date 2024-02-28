@@ -211,6 +211,7 @@ QJsonArray QJsonArray::fromStringList(const QStringList &list)
     return array;
 }
 
+#ifndef QT_NO_VARIANT
 /*!
     Converts the variant list \a list to a QJsonArray.
 
@@ -235,6 +236,7 @@ QVariantList QJsonArray::toVariantList() const
 {
     return QCborArray::fromJsonArray(*this).toVariantList();
 }
+#endif // !QT_NO_VARIANT
 
 
 /*!

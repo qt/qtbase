@@ -46,7 +46,6 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/kernel/qmetacontainer.cpp
         ../../corelib/kernel/qmetatype.cpp
         ../../corelib/kernel/qsystemerror.cpp
-        ../../corelib/kernel/qvariant.cpp
         ../../corelib/plugin/quuid.cpp
         ../../corelib/serialization/qcborcommon.cpp
         ../../corelib/serialization/qcborstreamwriter.cpp

@@ -181,6 +181,7 @@ QJsonDocument &QJsonDocument::operator =(const QJsonDocument &other)
     Swaps the document \a other with this. This operation is very fast and never fails.
 */
 
+#ifndef QT_NO_VARIANT
 /*!
  Creates a QJsonDocument from the QVariant \a variant.
 
@@ -231,6 +232,7 @@ QVariant QJsonDocument::toVariant() const
         return QJsonArray(container).toVariantList();
     return QJsonObject(container).toVariantMap();
 }
+#endif // !QT_NO_VARIANT
 
 /*!
     \enum QJsonDocument::JsonFormat

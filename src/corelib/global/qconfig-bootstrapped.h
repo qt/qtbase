@@ -92,6 +92,7 @@
 #define QT_FEATURE_topleveldomain -1
 #define QT_NO_TRANSLATION
 #define QT_FEATURE_translation -1
+#define QT_NO_VARIANT -1
 
 #define QT_NO_COMPRESS
 

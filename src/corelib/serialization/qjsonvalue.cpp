@@ -345,6 +345,7 @@ void QJsonValue::swap(QJsonValue &other) noexcept
     error cases as e.g. accessing a non existing key in a QJsonObject.
  */
 
+#ifndef QT_NO_VARIANT
 /*!
     Converts \a variant to a QJsonValue and returns it.
 
@@ -587,6 +588,7 @@ QVariant QJsonValue::toVariant() const
                     error condition, when trying to read an out of bounds value
                     in an array or a non existent key in an object.
 */
+#endif // !QT_NO_VARIANT
 
 /*!
     Returns the type of the value.
@@ -936,10 +938,12 @@ QJsonValueRef &QJsonValueRef::operator =(const QJsonValueRef &ref)
     return assignToRef(*this, d->valueAt(index), is_object);
 }
 
+#ifndef QT_NO_VARIANT
 QVariant QJsonValueConstRef::toVariant() const
 {
     return concrete(*this).toVariant();
 }
+#endif // !QT_NO_VARIANT
 
 QJsonArray QJsonValueConstRef::toArray() const
 {

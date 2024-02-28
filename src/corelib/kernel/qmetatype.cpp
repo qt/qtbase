@@ -21,7 +21,6 @@
 #include "qeasingcurve.h"
 #endif
 #include "quuid.h"
-#include "qvariant.h"
 
 #if QT_CONFIG(regularexpression)
 #  include "qregularexpression.h"
@@ -1271,8 +1270,11 @@ static constexpr struct : QMetaTypeModuleHelper
         QMETATYPE_CONVERTER_ASSIGN(QRectF, QRect);
         QMETATYPE_CONVERTER(QPoint, QPointF, result = source.toPoint(); return true;);
         QMETATYPE_CONVERTER_ASSIGN(QPointF, QPoint);
- #endif
+#endif
 
+        QMETATYPE_CONVERTER(QStringList, QString, result = QStringList() << source; return true;);
+
+#ifndef QT_NO_VARIANT
         QMETATYPE_CONVERTER(QByteArrayList, QVariantList,
             result.reserve(source.size());
             for (const auto &v: source)
@@ -1298,7 +1300,6 @@ static constexpr struct : QMetaTypeModuleHelper
                 result.append(QVariant(v));
             return true;
         );
-        QMETATYPE_CONVERTER(QStringList, QString, result = QStringList() << source; return true;);
 
         QMETATYPE_CONVERTER(QVariantHash, QVariantMap,
             for (auto it = source.begin(); it != source.end(); ++it)
@@ -1310,7 +1311,7 @@ static constexpr struct : QMetaTypeModuleHelper
                 result.insert(it.key(), it.value());
             return true;
         );
-
+#endif // !QT_NO_VARIANT
 #ifndef QT_BOOTSTRAPPED
         QMETATYPE_CONVERTER_ASSIGN(QCborValue, QString);
         QMETATYPE_CONVERTER(QString, QCborValue,
@@ -2092,7 +2093,6 @@ static bool convertIterableToVariantHash(QMetaType fromType, const void *from, v
         h.insert(it.key().toString(), it.value());
     return true;
 }
-#endif
 
 static bool convertIterableToVariantPair(QMetaType fromType, const void *from, void *to)
 {
@@ -2124,7 +2124,6 @@ static bool convertIterableToVariantPair(QMetaType fromType, const void *from, v
     return true;
 }
 
-#ifndef QT_BOOTSTRAPPED
 static bool convertToSequentialIterable(QMetaType fromType, const void *from, void *to)
 {
     using namespace QtMetaTypePrivate;
@@ -2335,7 +2334,7 @@ static bool convertMetaObject(QMetaType fromType, const void *from, QMetaType to
     }
     return false;
 }
-#endif
+#endif // !QT_BOOTSTRAPPED
 
 /*!
     \fn bool QMetaType::convert(const void *from, int fromTypeId, void *to, int toTypeId)
@@ -2392,10 +2391,11 @@ bool QMetaType::convert(QMetaType fromType, const void *from, QMetaType toType, 
         }
     }
 
+#ifndef QT_BOOTSTRAPPED
+# ifndef QT_NO_VARIANT
     if (toTypeId == QVariantPair && convertIterableToVariantPair(fromType, from, to))
         return true;
 
-#ifndef QT_BOOTSTRAPPED
     // handle iterables
     if (toTypeId == QVariantList && convertIterableToVariantList(fromType, from, to))
         return true;
@@ -2405,6 +2405,7 @@ bool QMetaType::convert(QMetaType fromType, const void *from, QMetaType toType, 
 
     if (toTypeId == QVariantHash && convertIterableToVariantHash(fromType, from, to))
         return true;
+#  endif
 
     if (toTypeId == qMetaTypeId<QSequentialIterable>())
         return convertToSequentialIterable(fromType, from, to);
@@ -2588,7 +2589,8 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
 
     if (toTypeId == qMetaTypeId<QAssociativeIterable>())
         return canConvertToAssociativeIterable(fromType);
-
+#endif
+#ifndef QT_NO_VARIANT
     if (toTypeId == QVariantList
             && canConvert(fromType, QMetaType::fromType<QSequentialIterable>())) {
         return true;
@@ -2598,11 +2600,11 @@ bool QMetaType::canConvert(QMetaType fromType, QMetaType toType)
             && canConvert(fromType, QMetaType::fromType<QAssociativeIterable>())) {
         return true;
     }
-#endif
 
     if (toTypeId == QVariantPair && hasRegisteredConverterFunction(
                     fromType, QMetaType::fromType<QtMetaTypePrivate::QPairVariantInterfaceImpl>()))
         return true;
+#endif
 
     if (fromType.flags() & IsEnumeration) {
         if (toTypeId == QString || toTypeId == QByteArray)
