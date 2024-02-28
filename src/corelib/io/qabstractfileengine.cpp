@@ -19,6 +19,13 @@
 
 QT_BEGIN_NAMESPACE
 
+static QString appendSlashIfNeeded(const QString &path)
+{
+    if (!path.isEmpty() && !path.endsWith(u'/'))
+        return QString{path + u'/'};
+    return path;
+}
+
 /*!
     \class QAbstractFileEngineHandler
     \inmodule QtCore
@@ -919,7 +926,7 @@ QString QAbstractFileEngineIterator::path() const
 */
 void QAbstractFileEngineIterator::setPath(const QString &path)
 {
-    m_path = path;
+    m_path = appendSlashIfNeeded(path);
 }
 
 /*!
@@ -960,15 +967,10 @@ QDir::Filters QAbstractFileEngineIterator::filters() const
 QString QAbstractFileEngineIterator::currentFilePath() const
 {
     QString name = currentFileName();
-    if (!name.isNull()) {
-        QString tmp = path();
-        if (!tmp.isEmpty()) {
-            if (!tmp.endsWith(u'/'))
-                tmp.append(u'/');
-            name.prepend(tmp);
-        }
-    }
-    return name;
+    if (name.isNull())
+        return name;
+
+    return path() + name;
 }
 
 /*!
