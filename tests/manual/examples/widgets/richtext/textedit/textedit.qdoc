@@ -9,8 +9,8 @@
   \brief This example displays a text editor with the user interface written
   in pure C++.
 
-  A similar example which uses Qt Designer to produce the user
-  interface is in the \l {Qt Designer Manual}.
+  A similar example which uses \QD to produce the user
+  interface is in the \l {Qt Widgets Designer Manual}.
 
 
   See \c{$QTDIR/examples/textedit} for the source code.
