@@ -14,7 +14,7 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifndef QT_NO_TEMPORARYFILE
+#if QT_CONFIG(temporaryfile)
 
 class QTemporaryFilePrivate;
 class QLockFilePrivate;
@@ -94,7 +94,7 @@ private:
     Q_DISABLE_COPY(QTemporaryFile)
 };
 
-#endif // QT_NO_TEMPORARYFILE
+#endif // QT_CONFIG(temporaryfile)
 
 QT_END_NAMESPACE
 

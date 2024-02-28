@@ -3,7 +3,7 @@
 
 #include "qsavefile.h"
 
-#ifndef QT_NO_TEMPORARYFILE
+#if QT_CONFIG(temporaryfile)
 
 #include "qplatformdefs.h"
 #include "private/qsavefile_p.h"
@@ -412,4 +412,4 @@ QT_END_NAMESPACE
 #include "moc_qsavefile.cpp"
 #endif
 
-#endif // QT_NO_TEMPORARYFILE
+#endif // QT_CONFIG(temporaryfile)

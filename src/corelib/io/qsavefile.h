@@ -6,7 +6,7 @@
 
 #include <QtCore/qglobal.h>
 
-#ifndef QT_NO_TEMPORARYFILE
+#if QT_CONFIG(temporaryfile)
 
 #include <QtCore/qfiledevice.h>
 #include <QtCore/qstring.h>
@@ -62,6 +62,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_TEMPORARYFILE
+#endif // QT_CONFIG(temporaryfile)
 
 #endif // QSAVEFILE_H

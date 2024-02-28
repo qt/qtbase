@@ -84,7 +84,7 @@
 #define QT_FEATURE_slog2 -1
 #define QT_FEATURE_syslog -1
 #define QT_NO_SYSTEMLOCALE
-#define QT_FEATURE_temporaryfile 1
+#define QT_FEATURE_temporaryfile -1
 #define QT_FEATURE_textdate 1
 #undef QT_FEATURE_thread
 #define QT_FEATURE_thread -1

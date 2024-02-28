@@ -4,7 +4,7 @@
 
 #include "qtemporarydir.h"
 
-#ifndef QT_NO_TEMPORARYFILE
+#if QT_CONFIG(temporaryfile)
 
 #include "qdebug.h"
 #include "qplatformdefs.h"
@@ -324,4 +324,4 @@ bool QTemporaryDir::remove()
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_TEMPORARYFILE
+#endif // QT_CONFIG(temporaryfile)

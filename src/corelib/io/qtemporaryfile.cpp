@@ -156,7 +156,7 @@ QFileSystemEntry::NativePath QTemporaryFileName::generateNext()
     return path;
 }
 
-#ifndef QT_NO_TEMPORARYFILE
+#if QT_CONFIG(temporaryfile)
 
 /*!
     \internal
@@ -969,7 +969,7 @@ bool QTemporaryFile::open(OpenMode flags)
     return false;
 }
 
-#endif // QT_NO_TEMPORARYFILE
+#endif // QT_CONFIG(temporaryfile)
 
 QT_END_NAMESPACE
 

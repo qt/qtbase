@@ -584,7 +584,7 @@ QFile::rename(const QString &newName)
             return false;
         }
 
-#ifdef Q_OS_LINUX
+#if defined(Q_OS_LINUX) && QT_CONFIG(temporaryfile)
         // rename() on Linux simply does nothing when renaming "foo" to "Foo" on a case-insensitive
         // FS, such as FAT32. Move the file away and rename in 2 steps to work around.
         QTemporaryFileName tfn(d->fileName);
@@ -789,7 +789,7 @@ QFile::copy(const QString &newName)
                 d->setError(QFile::CopyError, tr("Cannot open %1 for input").arg(d->fileName));
             } else {
                 const auto fileTemplate = "%1/qt_temp.XXXXXX"_L1;
-#ifdef QT_NO_TEMPORARYFILE
+#if !QT_CONFIG(temporaryfile)
                 QFile out(fileTemplate.arg(QFileInfo(newName).path()));
                 if (!out.open(QIODevice::ReadWrite))
                     error = true;
@@ -841,7 +841,7 @@ QFile::copy(const QString &newName)
                                         .arg(newName, out.errorString()));
                         }
                     }
-#ifdef QT_NO_TEMPORARYFILE
+#if !QT_CONFIG(temporaryfile)
                     if (error)
                         out.remove();
 #else
