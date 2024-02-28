@@ -1423,13 +1423,16 @@ QDebug operator<<(QDebug dbg, const QColorSpace &colorSpace)
     if (colorSpace.d_ptr) {
         if (colorSpace.d_ptr->namedColorSpace)
             dbg << colorSpace.d_ptr->namedColorSpace << ", ";
+        else
+            dbg << colorSpace.colorModel() << ", ";
         if (!colorSpace.isValid()) {
             dbg << "Invalid";
             if (!colorSpace.d_ptr->iccProfile.isEmpty())
                 dbg << " with profile data";
         } else if (colorSpace.d_ptr->isThreeComponentMatrix()) {
             dbg << colorSpace.primaries() << ", " << colorSpace.transferFunction();
-            dbg << ", gamma=" << colorSpace.gamma();
+            if (colorSpace.transferFunction() == QColorSpace::TransferFunction::Gamma)
+                dbg  << "=" << colorSpace.gamma();
         } else {
             if (colorSpace.d_ptr->isPcsLab)
                 dbg << "PCSLab, ";

@@ -41,8 +41,10 @@ extern "C" int LLVMFuzzerTestOneInput(const char *data, size_t size) {
         trans1.isIdentity();
         QColorSpace cs2 = cs;
         cs2.setDescription("Hello");
-        bool b = (cs == cs2);
-        Q_UNUSED(b);
+        Q_ASSERT(cs == cs2);
+        QByteArray profileData = cs2.iccProfile();
+        QColorSpace cs3 = QColorSpace::fromIccProfile(profileData);
+        Q_ASSERT(cs == cs3);
         QColor color(0xfaf8fa00);
         color = trans1.map(color);
         QImage img(16, 2, toFormat(cs.colorModel()));

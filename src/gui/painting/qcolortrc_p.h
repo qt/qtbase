@@ -86,6 +86,8 @@ public:
     friend inline bool operator!=(const QColorTrc &o1, const QColorTrc &o2);
     friend inline bool operator==(const QColorTrc &o1, const QColorTrc &o2);
 
+    const QColorTransferTable &table() const { return m_table; }
+
     Type m_type;
     QColorTransferFunction m_fun;
     QColorTransferTable m_table;

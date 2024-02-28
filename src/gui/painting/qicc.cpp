@@ -264,7 +264,11 @@ struct MatrixElement {
 
 static int toFixedS1516(float x)
 {
-    return int(x * 65536.0f + 0.5f);
+    if (x < float(SHRT_MIN))
+        return INT_MIN;
+    if (x > float(SHRT_MAX))
+        return INT_MAX;
+    return qRound(x * 65536.0f);
 }
 
 static float fromFixedS1516(int x)
@@ -368,31 +372,431 @@ static int writeColorTrc(QDataStream &stream, const QColorTrc &trc)
     return 12 + 2 * trc.m_table.m_tableSize;
 }
 
+// very simple version for small values (<=4) of exp.
+static constexpr qsizetype intPow(qsizetype x, qsizetype exp)
+{
+    return (exp <= 1) ? x : x * intPow(x, exp - 1);
+}
+
+struct ElementCombo
+{
+    const QColorMatrix *inMatrix = nullptr;
+    const QColorSpacePrivate::TransferElement *inTable = nullptr;
+    const QColorCLUT *clut = nullptr;
+    const QColorSpacePrivate::TransferElement *midTable = nullptr;
+    const QColorMatrix *midMatrix = nullptr;
+    const QColorVector *midOffset = nullptr;
+    const QColorSpacePrivate::TransferElement *outTable = nullptr;
+};
+
+static void visitElement(ElementCombo &combo, const QColorSpacePrivate::TransferElement &element, int number,
+                         const QList<QColorSpacePrivate::Element> &list)
+{
+    if (number == 0)
+        combo.inTable = &element;
+    else if (number == list.size() - 1)
+        combo.outTable = &element;
+    else if (number == 1 && combo.inMatrix)
+        combo.inTable = &element;
+    else
+        combo.midTable = &element;
+}
+
+static void visitElement(ElementCombo &combo, const QColorMatrix &element, int number,
+                         const QList<QColorSpacePrivate::Element> &)
+{
+    if (number == 0)
+        combo.inMatrix = &element;
+    else
+        combo.midMatrix = &element;
+}
+
+static void visitElement(ElementCombo &combo, const QColorVector &element, int,
+                         const QList<QColorSpacePrivate::Element> &)
+{
+    combo.midOffset = &element;
+}
+
+static void visitElement(ElementCombo &combo, const QColorCLUT &element, int,
+                         const QList<QColorSpacePrivate::Element> &)
+{
+    combo.clut = &element;
+}
+
+static bool isTableTrc(const QColorSpacePrivate::TransferElement *transfer)
+{
+    int i = 0;
+    while (i < 4 && transfer->trc[i].isValid()) {
+        if (transfer->trc[i].m_type != QColorTrc::Type::Table)
+            return false;
+        i++;
+    }
+    return i > 0;
+}
+
+static bool isTableTrcSingleSize(const QColorSpacePrivate::TransferElement *transfer)
+{
+    Q_ASSERT(transfer->trc[0].m_type == QColorTrc::Type::Table);
+    int i = 1;
+    const uint32_t size = transfer->trc[0].table().m_tableSize;
+    while (i < 4 && transfer->trc[i].isValid()) {
+        if (transfer->trc[i].table().m_tableSize != size)
+            return false;
+        i++;
+    }
+    return true;
+}
+
+static int writeMab(QDataStream &stream, const QList<QColorSpacePrivate::Element> &abList, bool isAb, bool pcsLab, bool isCmyk)
+{
+    int number = 0;
+    ElementCombo combo;
+    for (auto &&element : abList)
+        std::visit([&](auto &&elm) { visitElement(combo, elm, number++, abList); }, element);
+
+    Q_ASSERT(!(combo.inMatrix && combo.midMatrix));
+
+    // qWarning() << Q_FUNC_INFO << bool(combo.inMatrix) << bool(combo.inTable) << bool(combo.clut) << bool(combo.midTable) << bool(combo.midMatrix) << bool(combo.midOffset) << bool(combo.outTable);
+    bool lut16 = true;
+    if (combo.midMatrix || combo.midTable || combo.midOffset)
+        lut16 = false;
+    if (combo.clut && (combo.clut->gridPointsX != combo.clut->gridPointsY ||
+                       combo.clut->gridPointsX != combo.clut->gridPointsZ ||
+                       (combo.clut->gridPointsW > 1 && combo.clut->gridPointsX != combo.clut->gridPointsW)))
+        lut16 = false;
+    if (lut16 && combo.inTable)
+        lut16 = isTableTrc(combo.inTable) && isTableTrcSingleSize(combo.inTable);
+    if (lut16 && combo.outTable)
+        lut16 = isTableTrc(combo.outTable) && isTableTrcSingleSize(combo.outTable);
+
+    if (!lut16) {
+        if (combo.inMatrix)
+            qSwap(combo.inMatrix, combo.midMatrix);
+        if (isAb)
+            stream << uint(Tag::mAB_) << uint(0);
+        else
+            stream << uint(Tag::mBA_) << uint(0);
+    } else {
+        stream << uint(Tag::mft2) << uint(0);
+    }
+
+    const int inChannels = (isCmyk && isAb) ? 4 : 3;
+    const int outChannels =  (isCmyk && !isAb) ? 4 : 3;
+    stream << uchar(inChannels) << uchar(outChannels);
+    qsizetype gridPointsLut16 = 0;
+    if (lut16 && combo.clut)
+        gridPointsLut16 = combo.clut->gridPointsX;
+    if (lut16)
+        stream << uchar(gridPointsLut16) << uchar(0);
+    else
+        stream << quint16(0);
+    if (lut16) {
+        if (combo.inMatrix) {
+            stream << toFixedS1516(combo.inMatrix->r.x);
+            stream << toFixedS1516(combo.inMatrix->g.x);
+            stream << toFixedS1516(combo.inMatrix->b.x);
+            stream << toFixedS1516(combo.inMatrix->r.y);
+            stream << toFixedS1516(combo.inMatrix->g.y);
+            stream << toFixedS1516(combo.inMatrix->b.y);
+            stream << toFixedS1516(combo.inMatrix->r.z);
+            stream << toFixedS1516(combo.inMatrix->g.z);
+            stream << toFixedS1516(combo.inMatrix->b.z);
+        } else {
+            stream << toFixedS1516(1.0f);
+            stream << toFixedS1516(0.0f);
+            stream << toFixedS1516(0.0f);
+            stream << toFixedS1516(0.0f);
+            stream << toFixedS1516(1.0f);
+            stream << toFixedS1516(0.0f);
+            stream << toFixedS1516(0.0f);
+            stream << toFixedS1516(0.0f);
+            stream << toFixedS1516(1.0f);
+        }
+        int inputEntries = 0, outputEntries = 0;
+        if (combo.inTable)
+            inputEntries = combo.inTable->trc[0].table().m_tableSize;
+        else
+            inputEntries = 2;
+        if (combo.outTable)
+            outputEntries = combo.outTable->trc[0].table().m_tableSize;
+        else
+            outputEntries = 2;
+        stream << quint16(inputEntries);
+        stream << quint16(outputEntries);
+        auto writeTable = [&](const QColorSpacePrivate::TransferElement *table, int entries, int channels) {
+            if (table) {
+                for (int j = 0; j < channels; ++j) {
+                    if (!table->trc[j].table().m_table16.isEmpty()) {
+                        for (int i = 0; i < entries; ++i)
+                            stream << table->trc[j].table().m_table16[i];
+                    } else {
+                        for (int i = 0; i < entries; ++i)
+                            stream << quint16(table->trc[j].table().m_table8[i] * 257);
+                    }
+                }
+            } else {
+                for (int j = 0; j < channels; ++j)
+                    stream << quint16(0) << quint16(65535);
+            }
+        };
+
+        writeTable(combo.inTable, inputEntries, inChannels);
+
+        if (combo.clut) {
+            if (isAb && pcsLab) {
+                for (const QColorVector &v : combo.clut->table) {
+                    stream << quint16(v.x * 65280.0f + 0.5f);
+                    stream << quint16(v.y * 65280.0f + 0.5f);
+                    stream << quint16(v.z * 65280.0f + 0.5f);
+                }
+            } else {
+                if (outChannels == 4) {
+                    for (const QColorVector &v : combo.clut->table) {
+                        stream << quint16(v.x * 65535.0f + 0.5f);
+                        stream << quint16(v.y * 65535.0f + 0.5f);
+                        stream << quint16(v.z * 65535.0f + 0.5f);
+                        stream << quint16(v.w * 65535.0f + 0.5f);
+                    }
+                } else {
+                    for (const QColorVector &v : combo.clut->table) {
+                        stream << quint16(v.x * 65535.0f + 0.5f);
+                        stream << quint16(v.y * 65535.0f + 0.5f);
+                        stream << quint16(v.z * 65535.0f + 0.5f);
+                    }
+                }
+            }
+        }
+
+        writeTable(combo.outTable, outputEntries, outChannels);
+
+        qsizetype offset = sizeof(Lut16TagData) + 2 * inChannels * inputEntries
+                                                + 2 * outChannels * outputEntries
+                                                + 2 * outChannels * intPow(gridPointsLut16, inChannels);
+        if (offset & 0x2) {
+            stream << quint16(0);
+            offset += 2;
+        }
+        return offset;
+    } else {
+        // mAB/mBA tag:
+        if (isAb) {
+            if (!combo.clut && combo.inTable && combo.midMatrix && !combo.midTable)
+                std::swap(combo.inTable, combo.midTable);
+        } else {
+            if (!combo.clut && combo.outTable && combo.midMatrix && !combo.midTable)
+                std::swap(combo.outTable, combo.midTable);
+        }
+        quint32 offset = sizeof(mABTagData);
+        QBuffer buffer2;
+        buffer2.open(QIODevice::WriteOnly);
+        QDataStream stream2(&buffer2);
+        quint32 bOffset = offset;
+        quint32 matrixOffset = 0;
+        quint32 mOffset = 0;
+        quint32 clutOffset = 0;
+        quint32 aOffset = 0;
+        // Tags must start on 4 byte offsets, but sampled curves might have sizes 2-byte aligned
+        auto alignTag = [&]() {
+            if (offset & 0x2) {
+                stream2 << quint16(0);
+                offset += 2;
+            }
+        };
+
+        const QColorSpacePrivate::TransferElement *aCurve, *bCurve;
+        int aChannels;
+        if (isAb) {
+            aCurve = combo.inTable;
+            aChannels = inChannels;
+            bCurve = combo.outTable;
+            Q_ASSERT(outChannels == 3);
+        } else {
+            aCurve = combo.outTable;
+            aChannels = outChannels;
+            bCurve = combo.inTable;
+            Q_ASSERT(inChannels == 3);
+        }
+        if (bCurve) {
+            offset += writeColorTrc(stream2, bCurve->trc[0]);
+            alignTag();
+            offset += writeColorTrc(stream2, bCurve->trc[1]);
+            alignTag();
+            offset += writeColorTrc(stream2, bCurve->trc[2]);
+            alignTag();
+        } else {
+            stream2 << uint(Tag::curv) << uint(0) << uint(0);
+            stream2 << uint(Tag::curv) << uint(0) << uint(0);
+            stream2 << uint(Tag::curv) << uint(0) << uint(0);
+            offset += 12 * 3;
+        }
+        if (combo.midMatrix || combo.midOffset || combo.midTable) {
+            matrixOffset = offset;
+            if (combo.midMatrix) {
+                stream2 << toFixedS1516(combo.midMatrix->r.x);
+                stream2 << toFixedS1516(combo.midMatrix->g.x);
+                stream2 << toFixedS1516(combo.midMatrix->b.x);
+                stream2 << toFixedS1516(combo.midMatrix->r.y);
+                stream2 << toFixedS1516(combo.midMatrix->g.y);
+                stream2 << toFixedS1516(combo.midMatrix->b.y);
+                stream2 << toFixedS1516(combo.midMatrix->r.z);
+                stream2 << toFixedS1516(combo.midMatrix->g.z);
+                stream2 << toFixedS1516(combo.midMatrix->b.z);
+            } else {
+                stream2 << toFixedS1516(1.0f);
+                stream2 << toFixedS1516(0.0f);
+                stream2 << toFixedS1516(0.0f);
+                stream2 << toFixedS1516(0.0f);
+                stream2 << toFixedS1516(1.0f);
+                stream2 << toFixedS1516(0.0f);
+                stream2 << toFixedS1516(0.0f);
+                stream2 << toFixedS1516(0.0f);
+                stream2 << toFixedS1516(1.0f);
+            }
+            if (combo.midOffset) {
+                stream2 << toFixedS1516(combo.midOffset->x);
+                stream2 << toFixedS1516(combo.midOffset->y);
+                stream2 << toFixedS1516(combo.midOffset->z);
+            } else {
+                stream2 << toFixedS1516(0.0f);
+                stream2 << toFixedS1516(0.0f);
+                stream2 << toFixedS1516(0.0f);
+            }
+            offset += 12 * 4;
+            mOffset = offset;
+            if (combo.midTable) {
+                offset += writeColorTrc(stream2, combo.midTable->trc[0]);
+                alignTag();
+                offset += writeColorTrc(stream2, combo.midTable->trc[1]);
+                alignTag();
+                offset += writeColorTrc(stream2, combo.midTable->trc[2]);
+                alignTag();
+            } else {
+                stream2 << uint(Tag::curv) << uint(0) << uint(0);
+                stream2 << uint(Tag::curv) << uint(0) << uint(0);
+                stream2 << uint(Tag::curv) << uint(0) << uint(0);
+                offset += 12 * 3;
+            }
+        }
+        if (combo.clut || aCurve) {
+            clutOffset = offset;
+            if (combo.clut) {
+                stream2 << uchar(combo.clut->gridPointsX);
+                stream2 << uchar(combo.clut->gridPointsY);
+                stream2 << uchar(combo.clut->gridPointsZ);
+                if (inChannels == 4)
+                    stream2 << uchar(combo.clut->gridPointsW);
+                else
+                    stream2 << uchar(0);
+                for (int i = 0; i < 12; ++i)
+                    stream2 << uchar(0);
+                stream2 << uchar(2) << uchar(0) << uchar(0) << uchar(0);
+                offset += 20;
+                if (outChannels == 4) {
+                    for (const QColorVector &v : combo.clut->table) {
+                        stream2 << quint16(v.x * 65535.0f + 0.5f);
+                        stream2 << quint16(v.y * 65535.0f + 0.5f);
+                        stream2 << quint16(v.z * 65535.0f + 0.5f);
+                        stream2 << quint16(v.w * 65535.0f + 0.5f);
+                    }
+                } else {
+                    for (const QColorVector &v : combo.clut->table) {
+                        stream2 << quint16(v.x * 65535.0f + 0.5f);
+                        stream2 << quint16(v.y * 65535.0f + 0.5f);
+                        stream2 << quint16(v.z * 65535.0f + 0.5f);
+                    }
+                }
+                offset += 2 * outChannels * combo.clut->table.size();
+                alignTag();
+            } else {
+                for (int i = 0; i < 16; ++i)
+                    stream2 << uchar(0);
+                stream2 << uchar(1) << uchar(0) << uchar(0) << uchar(0);
+                offset += 20;
+            }
+            aOffset = offset;
+            if (aCurve) {
+                offset += writeColorTrc(stream2, aCurve->trc[0]);
+                alignTag();
+                offset += writeColorTrc(stream2, aCurve->trc[1]);
+                alignTag();
+                offset += writeColorTrc(stream2, aCurve->trc[2]);
+                alignTag();
+                if (aChannels == 4) {
+                    offset += writeColorTrc(stream2, aCurve->trc[3]);
+                    alignTag();
+                }
+            } else {
+                stream2 << uint(Tag::curv) << uint(0) << uint(0);
+                stream2 << uint(Tag::curv) << uint(0) << uint(0);
+                stream2 << uint(Tag::curv) << uint(0) << uint(0);
+                if (aChannels == 4)
+                    stream2 << uint(Tag::curv) << uint(0) << uint(0);
+                offset += 12 * aChannels;
+            }
+        }
+        buffer2.close();
+        QByteArray tagData = buffer2.buffer();
+        stream << quint32(bOffset);
+        stream << quint32(matrixOffset);
+        stream << quint32(mOffset);
+        stream << quint32(clutOffset);
+        stream << quint32(aOffset);
+        stream.writeRawData(tagData.data(), tagData.size());
+
+        return int(sizeof(mABTagData) + tagData.size());
+    }
+}
+
 QByteArray toIccProfile(const QColorSpace &space)
 {
     if (!space.isValid())
         return QByteArray();
 
     const QColorSpacePrivate *spaceDPtr = QColorSpacePrivate::get(space);
-    // This should catch anything not three component matrix based as we can only get that from parsed ICC
     if (!spaceDPtr->iccProfile.isEmpty())
         return spaceDPtr->iccProfile;
-    Q_ASSERT(spaceDPtr->isThreeComponentMatrix());
 
     int fixedLengthTagCount = 5;
+    if (!spaceDPtr->isThreeComponentMatrix())
+        fixedLengthTagCount = 2;
+    else if (spaceDPtr->colorModel == QColorSpace::ColorModel::Gray)
+        fixedLengthTagCount = 2;
     bool writeChad = false;
-    if (!spaceDPtr->whitePoint.isNull() && spaceDPtr->whitePoint != QColorVector::D50()) {
+    bool writeB2a = true;
+    if (spaceDPtr->isThreeComponentMatrix() && !spaceDPtr->chad.isIdentity()) {
         writeChad = true;
         fixedLengthTagCount++;
     }
+    int varLengthTagCount = 4;
+    if (!spaceDPtr->isThreeComponentMatrix())
+        varLengthTagCount = 3;
+    else if (spaceDPtr->colorModel == QColorSpace::ColorModel::Gray)
+        varLengthTagCount = 2;
 
-    const int tagCount = fixedLengthTagCount + 4;
+    if (!space.isValidTarget()) {
+        writeB2a = false;
+        Q_ASSERT(!spaceDPtr->isThreeComponentMatrix());
+        varLengthTagCount--;
+    }
+
+    const int tagCount = fixedLengthTagCount + varLengthTagCount;
     const uint profileDataOffset = 128 + 4 + 12 * tagCount;
-    const uint variableTagTableOffsets = 128 + 4 + 12 * fixedLengthTagCount;
+    uint variableTagTableOffsets = 128 + 4 + 12 * fixedLengthTagCount;
     uint currentOffset = 0;
-    uint rTrcOffset, gTrcOffset, bTrcOffset;
-    uint rTrcSize, gTrcSize, bTrcSize;
-    uint descOffset, descSize;
+    uint rTrcOffset = 0;
+    uint gTrcOffset = 0;
+    uint bTrcOffset = 0;
+    uint kTrcOffset = 0;
+    uint rTrcSize = 0;
+    uint gTrcSize = 0;
+    uint bTrcSize = 0;
+    uint kTrcSize = 0;
+    uint descOffset = 0;
+    uint descSize = 0;
+    uint mA2bOffset = 0;
+    uint mB2aOffset = 0;
+    uint mA2bSize = 0;
+    uint mB2aSize = 0;
 
     QBuffer buffer;
     buffer.open(QIODevice::WriteOnly);
@@ -403,13 +807,25 @@ QByteArray toIccProfile(const QColorSpace &space)
     stream << uint(0);
     stream << uint(0x04400000); // Version 4.4
     stream << uint(ProfileClass::Display);
-    stream << uint(Tag::RGB_);
+    switch (spaceDPtr->colorModel) {
+    case QColorSpace::ColorModel::Rgb:
+        stream << uint(ColorSpaceType::Rgb);
+        break;
+    case QColorSpace::ColorModel::Gray:
+        stream << uint(ColorSpaceType::Gray);
+        break;
+    case QColorSpace::ColorModel::Cmyk:
+        stream << uint(ColorSpaceType::Cmyk);
+        break;
+    case QColorSpace::ColorModel::Undefined:
+        Q_UNREACHABLE();
+    }
     stream << (spaceDPtr->isPcsLab ? uint(Tag::Lab_) : uint(Tag::XYZ_));
     stream << uint(0) << uint(0) << uint(0);
     stream << uint(Tag::acsp);
     stream << uint(0) << uint(0) << uint(0);
     stream << uint(0) << uint(0) << uint(0);
-    stream << uint(1); // Rendering intent
+    stream << uint(0); // Rendering intent
     stream << uint(0x0000f6d6); // D50 X
     stream << uint(0x00010000); // D50 Y
     stream << uint(0x0000d32d); // D50 Z
@@ -417,81 +833,132 @@ QByteArray toIccProfile(const QColorSpace &space)
     stream << uint(0) << uint(0) << uint(0) << uint(0);
     stream << uint(0) << uint(0) << uint(0) << uint(0) << uint(0) << uint(0) << uint(0);
 
-    // Tag table:
     currentOffset = profileDataOffset;
-    stream << uint(tagCount);
-    stream << uint(Tag::rXYZ) << uint(profileDataOffset + 00) << uint(20);
-    stream << uint(Tag::gXYZ) << uint(profileDataOffset + 20) << uint(20);
-    stream << uint(Tag::bXYZ) << uint(profileDataOffset + 40) << uint(20);
-    stream << uint(Tag::wtpt) << uint(profileDataOffset + 60) << uint(20);
-    stream << uint(Tag::cprt) << uint(profileDataOffset + 80) << uint(34);
-    currentOffset += 20 + 20 + 20 + 20 + 34 + 2;
-    if (writeChad) {
-        stream << uint(Tag::chad) << uint(currentOffset) << uint(44);
-        currentOffset += 44;
-    }
-    // From here the offset and size will be updated later:
-    stream << uint(Tag::rTRC) << uint(0) << uint(0);
-    stream << uint(Tag::gTRC) << uint(0) << uint(0);
-    stream << uint(Tag::bTRC) << uint(0) << uint(0);
-    stream << uint(Tag::desc) << uint(0) << uint(0);
+    if (spaceDPtr->isThreeComponentMatrix()) {
+        // Tag table:
+        stream << uint(tagCount);
+        if (spaceDPtr->colorModel == QColorSpace::ColorModel::Rgb) {
+            stream << uint(Tag::rXYZ) << uint(currentOffset + 00) << uint(20);
+            stream << uint(Tag::gXYZ) << uint(currentOffset + 20) << uint(20);
+            stream << uint(Tag::bXYZ) << uint(currentOffset + 40) << uint(20);
+            currentOffset += 20 + 20 + 20;
+        }
+        stream << uint(Tag::wtpt) << uint(currentOffset + 00) << uint(20);
+        stream << uint(Tag::cprt) << uint(currentOffset + 20) << uint(34);
+        currentOffset += 20 + 34 + 2;
+        if (writeChad) {
+            stream << uint(Tag::chad) << uint(currentOffset) << uint(44);
+            currentOffset += 44;
+        }
+        // From here the offset and size will be updated later:
+        if (spaceDPtr->colorModel == QColorSpace::ColorModel::Rgb) {
+            stream << uint(Tag::rTRC) << uint(0) << uint(0);
+            stream << uint(Tag::gTRC) << uint(0) << uint(0);
+            stream << uint(Tag::bTRC) << uint(0) << uint(0);
+        } else {
+            stream << uint(Tag::kTRC) << uint(0) << uint(0);
+        }
+        stream << uint(Tag::desc) << uint(0) << uint(0);
 
-    // Tag data:
-    stream << uint(Tag::XYZ_) << uint(0);
-    stream << toFixedS1516(spaceDPtr->toXyz.r.x);
-    stream << toFixedS1516(spaceDPtr->toXyz.r.y);
-    stream << toFixedS1516(spaceDPtr->toXyz.r.z);
-    stream << uint(Tag::XYZ_) << uint(0);
-    stream << toFixedS1516(spaceDPtr->toXyz.g.x);
-    stream << toFixedS1516(spaceDPtr->toXyz.g.y);
-    stream << toFixedS1516(spaceDPtr->toXyz.g.z);
-    stream << uint(Tag::XYZ_) << uint(0);
-    stream << toFixedS1516(spaceDPtr->toXyz.b.x);
-    stream << toFixedS1516(spaceDPtr->toXyz.b.y);
-    stream << toFixedS1516(spaceDPtr->toXyz.b.z);
-    stream << uint(Tag::XYZ_) << uint(0);
-    stream << toFixedS1516(spaceDPtr->whitePoint.x);
-    stream << toFixedS1516(spaceDPtr->whitePoint.y);
-    stream << toFixedS1516(spaceDPtr->whitePoint.z);
-    stream << uint(Tag::mluc) << uint(0);
-    stream << uint(1) << uint(12);
-    stream << uchar('e') << uchar('n') << uchar('U') << uchar('S');
-    stream << uint(6) << uint(28);
-    stream << ushort('N') << ushort('/') << ushort('A');
-    stream << ushort(0); // 4-byte alignment
-    if (writeChad) {
-        QColorMatrix chad = QColorMatrix::chromaticAdaptation(spaceDPtr->whitePoint);
-        stream << uint(Tag::sf32) << uint(0);
-        stream << toFixedS1516(chad.r.x);
-        stream << toFixedS1516(chad.g.x);
-        stream << toFixedS1516(chad.b.x);
-        stream << toFixedS1516(chad.r.y);
-        stream << toFixedS1516(chad.g.y);
-        stream << toFixedS1516(chad.b.y);
-        stream << toFixedS1516(chad.r.z);
-        stream << toFixedS1516(chad.g.z);
-        stream << toFixedS1516(chad.b.z);
-    }
+        // Tag data:
+        if (spaceDPtr->colorModel == QColorSpace::ColorModel::Rgb) {
+            stream << uint(Tag::XYZ_) << uint(0);
+            stream << toFixedS1516(spaceDPtr->toXyz.r.x);
+            stream << toFixedS1516(spaceDPtr->toXyz.r.y);
+            stream << toFixedS1516(spaceDPtr->toXyz.r.z);
+            stream << uint(Tag::XYZ_) << uint(0);
+            stream << toFixedS1516(spaceDPtr->toXyz.g.x);
+            stream << toFixedS1516(spaceDPtr->toXyz.g.y);
+            stream << toFixedS1516(spaceDPtr->toXyz.g.z);
+            stream << uint(Tag::XYZ_) << uint(0);
+            stream << toFixedS1516(spaceDPtr->toXyz.b.x);
+            stream << toFixedS1516(spaceDPtr->toXyz.b.y);
+            stream << toFixedS1516(spaceDPtr->toXyz.b.z);
+        }
+        stream << uint(Tag::XYZ_) << uint(0);
+        stream << toFixedS1516(spaceDPtr->whitePoint.x);
+        stream << toFixedS1516(spaceDPtr->whitePoint.y);
+        stream << toFixedS1516(spaceDPtr->whitePoint.z);
+        stream << uint(Tag::mluc) << uint(0);
+        stream << uint(1) << uint(12);
+        stream << uchar('e') << uchar('n') << uchar('U') << uchar('S');
+        stream << uint(6) << uint(28);
+        stream << ushort('N') << ushort('/') << ushort('A');
+        stream << ushort(0); // 4-byte alignment
+        if (writeChad) {
+            const QColorMatrix &chad = spaceDPtr->chad;
+            stream << uint(Tag::sf32) << uint(0);
+            stream << toFixedS1516(chad.r.x);
+            stream << toFixedS1516(chad.g.x);
+            stream << toFixedS1516(chad.b.x);
+            stream << toFixedS1516(chad.r.y);
+            stream << toFixedS1516(chad.g.y);
+            stream << toFixedS1516(chad.b.y);
+            stream << toFixedS1516(chad.r.z);
+            stream << toFixedS1516(chad.g.z);
+            stream << toFixedS1516(chad.b.z);
+        }
 
-    // From now on the data is variable sized:
-    rTrcOffset = currentOffset;
-    rTrcSize = writeColorTrc(stream, spaceDPtr->trc[0]);
-    currentOffset += rTrcSize;
-    if (spaceDPtr->trc[0] == spaceDPtr->trc[1]) {
-        gTrcOffset = rTrcOffset;
-        gTrcSize = rTrcSize;
+        // From now on the data is variable sized:
+        if (spaceDPtr->colorModel == QColorSpace::ColorModel::Rgb) {
+            rTrcOffset = currentOffset;
+            rTrcSize = writeColorTrc(stream, spaceDPtr->trc[0]);
+            currentOffset += rTrcSize;
+            if (spaceDPtr->trc[0] == spaceDPtr->trc[1]) {
+                gTrcOffset = rTrcOffset;
+                gTrcSize = rTrcSize;
+            } else {
+                gTrcOffset = currentOffset;
+                gTrcSize = writeColorTrc(stream, spaceDPtr->trc[1]);
+                currentOffset += gTrcSize;
+            }
+            if (spaceDPtr->trc[0] == spaceDPtr->trc[2]) {
+                bTrcOffset = rTrcOffset;
+                bTrcSize = rTrcSize;
+            } else {
+                bTrcOffset = currentOffset;
+                bTrcSize = writeColorTrc(stream, spaceDPtr->trc[2]);
+                currentOffset += bTrcSize;
+            }
+        } else {
+            Q_ASSERT(spaceDPtr->colorModel == QColorSpace::ColorModel::Gray);
+            kTrcOffset = currentOffset;
+            kTrcSize = writeColorTrc(stream, spaceDPtr->trc[0]);
+            currentOffset += kTrcSize;
+        }
     } else {
-        gTrcOffset = currentOffset;
-        gTrcSize = writeColorTrc(stream, spaceDPtr->trc[1]);
-        currentOffset += gTrcSize;
-    }
-    if (spaceDPtr->trc[0] == spaceDPtr->trc[2]) {
-        bTrcOffset = rTrcOffset;
-        bTrcSize = rTrcSize;
-    } else {
-        bTrcOffset = currentOffset;
-        bTrcSize = writeColorTrc(stream, spaceDPtr->trc[2]);
-        currentOffset += bTrcSize;
+        // Tag table:
+        stream << uint(tagCount);
+        stream << uint(Tag::wtpt) << uint(profileDataOffset + 00) << uint(20);
+        stream << uint(Tag::cprt) << uint(profileDataOffset + 20) << uint(34);
+        currentOffset += 20 + 34 + 2;
+        // From here the offset and size will be updated later:
+        stream << uint(Tag::A2B0) << uint(0) << uint(0);
+        if (writeB2a)
+            stream << uint(Tag::B2A0) << uint(0) << uint(0);
+        stream << uint(Tag::desc) << uint(0) << uint(0);
+
+        // Fixed tag data
+        stream << uint(Tag::XYZ_) << uint(0);
+        stream << toFixedS1516(spaceDPtr->whitePoint.x);
+        stream << toFixedS1516(spaceDPtr->whitePoint.y);
+        stream << toFixedS1516(spaceDPtr->whitePoint.z);
+        stream << uint(Tag::mluc) << uint(0);
+        stream << uint(1) << uint(12);
+        stream << uchar('e') << uchar('n') << uchar('U') << uchar('S');
+        stream << uint(6) << uint(28);
+        stream << ushort('N') << ushort('/') << ushort('A');
+        stream << ushort(0); // 4-byte alignment
+
+        // From now on the data is variable sized:
+        mA2bOffset = currentOffset;
+        mA2bSize = writeMab(stream, spaceDPtr->mAB, true, spaceDPtr->isPcsLab, spaceDPtr->colorModel == QColorSpace::ColorModel::Cmyk);
+        currentOffset += mA2bSize;
+        if (writeB2a) {
+            mB2aOffset = currentOffset;
+            mB2aSize = writeMab(stream, spaceDPtr->mBA, false, spaceDPtr->isPcsLab, spaceDPtr->colorModel == QColorSpace::ColorModel::Cmyk);
+            currentOffset += mB2aSize;
+        }
     }
 
     // Writing description
@@ -515,14 +982,34 @@ QByteArray toIccProfile(const QColorSpace &space)
     // Now write final size
     *(quint32_be *)iccProfile.data() = iccProfile.size();
     // And the final indices and sizes of variable size tags:
-    *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 4) = rTrcOffset;
-    *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 8) = rTrcSize;
-    *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 12 + 4) = gTrcOffset;
-    *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 12 + 8) = gTrcSize;
-    *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 2 * 12 + 4) = bTrcOffset;
-    *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 2 * 12 + 8) = bTrcSize;
-    *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 3 * 12 + 4) = descOffset;
-    *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 3 * 12 + 8) = descSize;
+    if (spaceDPtr->isThreeComponentMatrix()) {
+        if (spaceDPtr->colorModel == QColorSpace::ColorModel::Rgb) {
+            *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 4) = rTrcOffset;
+            *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 8) = rTrcSize;
+            *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 12 + 4) = gTrcOffset;
+            *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 12 + 8) = gTrcSize;
+            *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 2 * 12 + 4) = bTrcOffset;
+            *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 2 * 12 + 8) = bTrcSize;
+            *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 3 * 12 + 4) = descOffset;
+            *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 3 * 12 + 8) = descSize;
+        } else {
+            *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 4) = kTrcOffset;
+            *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 8) = kTrcSize;
+            *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 12 + 4) = descOffset;
+            *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 12 + 8) = descSize;
+        }
+    } else {
+        *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 4) = mA2bOffset;
+        *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 8) = mA2bSize;
+        variableTagTableOffsets += 12;
+        if (writeB2a) {
+            *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 4) = mB2aOffset;
+            *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 8) = mB2aSize;
+            variableTagTableOffsets += 12;
+        }
+        *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 4) = descOffset;
+        *(quint32_be *)(iccProfile.data() + variableTagTableOffsets + 8) = descSize;
+    }
 
 #if !defined(QT_NO_DEBUG) || defined(QT_FORCE_ASSERTS)
     const ICCProfileHeader *iccHeader = (const ICCProfileHeader *)iccProfile.constData();
@@ -565,10 +1052,14 @@ static quint32 parseTRC(const QByteArrayView &tagData, QColorTrc &gamma, QColorT
     if (trcData.type == quint32(Tag::curv)) {
         Q_STATIC_ASSERT(sizeof(CurvTagData) == 12);
         const CurvTagData curv = qFromUnaligned<CurvTagData>(tagData.constData());
-        if (curv.valueCount > (1 << 16))
+        if (curv.valueCount > (1 << 16)) {
+            qCWarning(lcIcc) << "Invalid count in curv table";
             return 0;
-        if (tagData.size() < qsizetype(12 + 2 * curv.valueCount))
+        }
+        if (tagData.size() < qsizetype(12 + 2 * curv.valueCount)) {
+            qCWarning(lcIcc) << "Truncated curv table";
             return 0;
+        }
         const auto valueOffset = sizeof(CurvTagData);
         if (curv.valueCount == 0) {
             gamma.m_type = QColorTrc::Type::Function;
@@ -702,12 +1193,6 @@ static void parseCLUT(const T *tableData, const float f, QColorCLUT *clut, uchar
     }
 }
 
-// very simple version for small values (<=4) of exp.
-static constexpr qsizetype intPow(qsizetype x, qsizetype exp)
-{
-    return (exp <= 1) ? x : x * intPow(x, exp - 1);
-}
-
 // Parses lut8 and lut16 type elements
 template<typename T>
 static bool parseLutData(const QByteArray &data, const TagEntry &tagEntry, QColorSpacePrivate *colorSpacePrivate, bool isAb)
@@ -763,20 +1248,23 @@ static bool parseLutData(const QByteArray &data, const TagEntry &tagEntry, QColo
         return false;
     }
 
-    if (lut.inputChannels != 3 && !(isAb && colorSpacePrivate->colorModel == QColorSpace::ColorModel::Cmyk && lut.inputChannels == 4)) {
+    const int inputChannels = (isAb && colorSpacePrivate->colorModel == QColorSpace::ColorModel::Cmyk) ? 4 : 3;
+    const int outputChannels = (!isAb && colorSpacePrivate->colorModel == QColorSpace::ColorModel::Cmyk) ? 4 : 3;
+
+    if (lut.inputChannels != inputChannels) {
         qCWarning(lcIcc) << "Unsupported lut8/lut16 input channel count" << lut.inputChannels;
         return false;
     }
 
-    if (lut.outputChannels != 3 && !(!isAb && colorSpacePrivate->colorModel == QColorSpace::ColorModel::Cmyk && lut.outputChannels == 4)) {
+    if (lut.outputChannels != outputChannels) {
         qCWarning(lcIcc) << "Unsupported lut8/lut16 output channel count" << lut.outputChannels;
         return false;
     }
 
-    const qsizetype clutTableSize = intPow(lut.clutGridPoints, lut.inputChannels);
-    if (tagEntry.size < (sizeof(T) + precision * lut.inputChannels * inputTableEntries
-                                   + precision * lut.outputChannels * outputTableEntries
-                                   + precision * lut.outputChannels * clutTableSize)) {
+    const qsizetype clutTableSize = intPow(lut.clutGridPoints, inputChannels);
+    if (tagEntry.size < (sizeof(T) + precision * inputChannels * inputTableEntries
+                                   + precision * outputChannels * outputTableEntries
+                                   + precision * outputChannels * clutTableSize)) {
         qCWarning(lcIcc) << "Undersized lut8/lut16 tag, no room for tables";
         return false;
     }
@@ -787,7 +1275,7 @@ static bool parseLutData(const QByteArray &data, const TagEntry &tagEntry, QColo
 
     const uint8_t *tableData = reinterpret_cast<const uint8_t *>(data.constData() + tagEntry.offset + sizeof(T));
 
-    for (int j = 0; j < lut.inputChannels; ++j) {
+    for (int j = 0; j < inputChannels; ++j) {
         QList<S> input(inputTableEntries);
         qFromBigEndian<S>(tableData, inputTableEntries, input.data());
         QColorTransferTable table(inputTableEntries, input, QColorTransferTable::OneWay);
@@ -803,22 +1291,22 @@ static bool parseLutData(const QByteArray &data, const TagEntry &tagEntry, QColo
 
     clutElement.table.resize(clutTableSize);
     clutElement.gridPointsX = clutElement.gridPointsY = clutElement.gridPointsZ = lut.clutGridPoints;
-    if (lut.inputChannels == 4)
+    if (inputChannels == 4)
         clutElement.gridPointsW = lut.clutGridPoints;
 
     if constexpr (std::is_same_v<T, Lut8TagData>) {
-        parseCLUT(tableData, 1.f / 255.f, &clutElement, lut.outputChannels);
+        parseCLUT(tableData, 1.f / 255.f, &clutElement, outputChannels);
     } else {
         float f = 1.0f / 65535.f;
         if (colorSpacePrivate->isPcsLab && isAb) // Legacy lut16 conversion to Lab
             f = 1.0f / 65280.f;
-        QList<S> clutTable(clutTableSize * lut.outputChannels);
+        QList<S> clutTable(clutTableSize * outputChannels);
         qFromBigEndian<S>(tableData, clutTable.size(), clutTable.data());
-        parseCLUT(clutTable.constData(), f, &clutElement, lut.outputChannels);
+        parseCLUT(clutTable.constData(), f, &clutElement, outputChannels);
     }
-    tableData += clutTableSize * lut.outputChannels * precision;
+    tableData += clutTableSize * outputChannels * precision;
 
-    for (int j = 0; j < lut.outputChannels; ++j) {
+    for (int j = 0; j < outputChannels; ++j) {
         QList<S> output(outputTableEntries);
         qFromBigEndian<S>(tableData, outputTableEntries, output.data());
         QColorTransferTable table(outputTableEntries, output, QColorTransferTable::OneWay);
@@ -870,12 +1358,15 @@ static bool parseMabData(const QByteArray &data, const TagEntry &tagEntry, QColo
         return false;
     }
 
-    if (mab.inputChannels != 3 && !(isAb && colorSpacePrivate->colorModel == QColorSpace::ColorModel::Cmyk && mab.inputChannels == 4)) {
+    const int inputChannels = (isAb && colorSpacePrivate->colorModel == QColorSpace::ColorModel::Cmyk) ? 4 : 3;
+    const int outputChannels = (!isAb && colorSpacePrivate->colorModel == QColorSpace::ColorModel::Cmyk) ? 4 : 3;
+
+    if (mab.inputChannels != inputChannels) {
         qCWarning(lcIcc) << "Unsupported mAB/mBA input channel count" << mab.inputChannels;
         return false;
     }
 
-    if (mab.outputChannels != 3 && !(!isAb && colorSpacePrivate->colorModel == QColorSpace::ColorModel::Cmyk && mab.outputChannels == 4)) {
+    if (mab.outputChannels != outputChannels) {
         qCWarning(lcIcc) << "Unsupported mAB/mBA output channel count" << mab.outputChannels;
         return false;
     }
@@ -925,7 +1416,7 @@ static bool parseMabData(const QByteArray &data, const TagEntry &tagEntry, QColo
     bool bCurvesAreLinear = true, aCurvesAreLinear = true, mCurvesAreLinear = true;
 
     // B Curves
-    if (!parseCurves(mab.bCurvesOffset, bTableElement.trc, isAb ? mab.outputChannels : mab.inputChannels)) {
+    if (!parseCurves(mab.bCurvesOffset, bTableElement.trc, isAb ? outputChannels : inputChannels)) {
         qCWarning(lcIcc) << "Invalid B curves";
         return false;
     } else {
@@ -934,7 +1425,7 @@ static bool parseMabData(const QByteArray &data, const TagEntry &tagEntry, QColo
 
     // A Curves
     if (mab.aCurvesOffset) {
-        if (!parseCurves(mab.aCurvesOffset, aTableElement.trc, isAb ? mab.inputChannels : mab.outputChannels)) {
+        if (!parseCurves(mab.aCurvesOffset, aTableElement.trc, isAb ? inputChannels : outputChannels)) {
             qCWarning(lcIcc) << "Invalid A curves";
             return false;
         } else {
@@ -989,19 +1480,19 @@ static bool parseMabData(const QByteArray &data, const TagEntry &tagEntry, QColo
             return false;
         }
         const qsizetype clutTableSize = clutElement.gridPointsX * clutElement.gridPointsY * clutElement.gridPointsZ * clutElement.gridPointsW;
-        if ((mab.clutOffset + 20 + clutTableSize * mab.outputChannels * precision) > tagEntry.size) {
+        if ((mab.clutOffset + 20 + clutTableSize * outputChannels * precision) > tagEntry.size) {
             qCWarning(lcIcc) << "CLUT oversized for tag";
             return false;
         }
 
         clutElement.table.resize(clutTableSize);
         if (precision == 2)  {
-            QList<uint16_t> clutTable(clutTableSize * mab.outputChannels);
+            QList<uint16_t> clutTable(clutTableSize * outputChannels);
             qFromBigEndian<uint16_t>(data.constData() + tagEntry.offset + mab.clutOffset + 20, clutTable.size(), clutTable.data());
-            parseCLUT(clutTable.constData(), (1.f/65535.f), &clutElement, mab.outputChannels);
+            parseCLUT(clutTable.constData(), (1.f/65535.f), &clutElement, outputChannels);
         } else {
             const uint8_t *clutTable = reinterpret_cast<const uint8_t *>(data.constData() + tagEntry.offset + mab.clutOffset + 20);
-            parseCLUT(clutTable, (1.f/255.f), &clutElement, mab.outputChannels);
+            parseCLUT(clutTable, (1.f/255.f), &clutElement, outputChannels);
         }
     } else if (colorSpacePrivate->colorModel == QColorSpace::ColorModel::Cmyk) {
         qCWarning(lcIcc) << "Cmyk conversion must have a CLUT";
@@ -1015,7 +1506,7 @@ static bool parseMabData(const QByteArray &data, const TagEntry &tagEntry, QColo
             if (!clutElement.isEmpty())
                 colorSpacePrivate->mAB.append(std::move(clutElement));
         }
-        if (mab.mCurvesOffset && mab.outputChannels == 3) {
+        if (mab.mCurvesOffset && outputChannels == 3) {
             if (!mCurvesAreLinear)
                 colorSpacePrivate->mAB.append(std::move(mTableElement));
             if (!matrixElement.isIdentity())
@@ -1028,7 +1519,7 @@ static bool parseMabData(const QByteArray &data, const TagEntry &tagEntry, QColo
     } else {
         if (!bCurvesAreLinear)
             colorSpacePrivate->mBA.append(std::move(bTableElement));
-        if (mab.mCurvesOffset && mab.inputChannels == 3) {
+        if (mab.mCurvesOffset && inputChannels == 3) {
             if (!matrixElement.isIdentity())
                 colorSpacePrivate->mBA.append(std::move(matrixElement));
             if (!offsetElement.isNull())

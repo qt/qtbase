@@ -254,6 +254,15 @@ void tst_QColorSpace::fromIccProfile()
     QCOMPARE(iccProfile, iccProfile2);
     QColorSpace fileColorSpace2 = QColorSpace::fromIccProfile(iccProfile2);
     QCOMPARE(fileColorSpace2, fileColorSpace);
+
+    // Change description to force generation of new icc profile data.
+    fileColorSpace2.setDescription("Hello my QTest description");
+    iccProfile2 = fileColorSpace2.iccProfile();
+    QCOMPARE_NE(iccProfile, iccProfile2);
+    fileColorSpace2 = QColorSpace::fromIccProfile(iccProfile2);
+    QVERIFY(fileColorSpace2.isValid());
+    // Note, we do not currently compare description in color space equality
+    QCOMPARE(fileColorSpace2, fileColorSpace);
 }
 
 void tst_QColorSpace::imageConversion_data()
