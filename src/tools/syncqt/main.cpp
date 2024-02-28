@@ -1177,6 +1177,11 @@ public:
         std::size_t linesProcessed = 0;
         int faults = NoChecks;
 
+        const auto error = [&] () -> decltype(auto) {
+            return std::cerr << ErrorMessagePreamble << m_currentFileString
+                             << ":" << m_currentFileLineNumber << " ";
+        };
+
         // Read file line by line
         while (std::getline(input, tmpLine)) {
             ++m_currentFileLineNumber;
@@ -1301,9 +1306,7 @@ public:
                                                        .filename()
                                                        .generic_string())) {
                             faults |= PrivateHeaderChecks;
-                            std::cerr << ErrorMessagePreamble << m_currentFileString
-                                      << ":" << m_currentFileLineNumber
-                                      << " includes private header " << includedHeader << std::endl;
+                            error() << "includes private header " << includedHeader << std::endl;
                         }
                         for (const auto &module : m_commandLineArgs->knownModules()) {
                             std::string suggestedHeader = "Qt" + module + '/' + includedHeader;
