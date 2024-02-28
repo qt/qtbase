@@ -29,6 +29,7 @@ class tst_QTextMarkdownImporter : public QObject
     Q_OBJECT
 
 private slots:
+    void paragraphs();
     void headingBulletsContinuations();
     void thematicBreaks();
     void lists_data();
@@ -75,6 +76,43 @@ bool tst_QTextMarkdownImporter::isMainFontFixed()
                            << "general" << QFontDatabase::systemFont(QFontDatabase::GeneralFont);
     }
     return ret;
+}
+
+void tst_QTextMarkdownImporter::paragraphs()
+{
+    QFile f(QFINDTESTDATA("data/paragraphs.md"));
+    QVERIFY(f.open(QFile::ReadOnly | QIODevice::Text));
+    QString md = QString::fromUtf8(f.readAll());
+    f.close();
+
+    int lineSeparatorCount = 0;
+    QTextDocument doc;
+    QTextMarkdownImporter(&doc, QTextMarkdownImporter::DialectGitHub).import(md);
+    QTextFrame::iterator iterator = doc.rootFrame()->begin();
+    int i = 0;
+    while (!iterator.atEnd()) {
+        QTextBlock block = iterator.currentBlock();
+        int lineSeparatorPos = block.text().indexOf(QChar::LineSeparator);
+        qCDebug(lcTests) << i << block.text();
+        while (lineSeparatorPos > 0) {
+            ++lineSeparatorCount;
+            qCDebug(lcTests) << "    LineSeparator @" << lineSeparatorPos;
+            lineSeparatorPos = block.text().indexOf(QChar::LineSeparator, lineSeparatorPos + 1);
+        }
+        ++iterator;
+        ++i;
+    }
+    QCOMPARE(doc.blockCount(), 3);
+    QCOMPARE(lineSeparatorCount, 2);
+
+#ifdef DEBUG_WRITE_HTML
+    {
+        QFile out("/tmp/paragraphs.html");
+        out.open(QFile::WriteOnly);
+        out.write(doc.toHtml().toLatin1());
+        out.close();
+    }
+#endif
 }
 
 void tst_QTextMarkdownImporter::headingBulletsContinuations()
