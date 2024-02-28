@@ -474,7 +474,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 
                 painter->setBrush(Qt::NoBrush);
                 painter->setPen(WINUI3Colors[colorSchemeIndex][frameColorLight]);
-                painter->drawRoundedRect(rect, topLevelRoundingRadius + 0.5, topLevelRoundingRadius + 0.5);
+                painter->drawRoundedRect(rect.marginsRemoved(QMarginsF(0.5,0.5,0.5,0.5)), topLevelRoundingRadius + 0.5, topLevelRoundingRadius + 0.5);
             }
             if (sub & SC_ScrollBarSlider) {
                 QRectF rect = proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarSlider, widget);
@@ -487,9 +487,9 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
                 }
                 else {
                     if (scrollbar->orientation == Qt::Vertical)
-                        rect.setWidth(rect.width()/4);
+                        rect.setWidth(1);
                     else
-                        rect.setHeight(rect.height()/4);
+                        rect.setHeight(1);
 
                 }
                 rect.moveCenter(center);
@@ -500,7 +500,7 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
             if (sub & SC_ScrollBarAddLine) {
                 QRectF rect = proxy()->subControlRect(CC_ScrollBar, option, SC_ScrollBarAddLine, widget);
                 if (flags & State_MouseOver) {
-                    painter->setFont(QFont("Segoe Fluent Icons"));
+                    painter->setFont(QFont("Segoe Fluent Icons",6));
                     painter->setPen(Qt::gray);
                     if (scrollbar->orientation == Qt::Vertical)
                         painter->drawText(rect,"\uEDDC", Qt::AlignVCenter | Qt::AlignHCenter);
@@ -1855,6 +1855,34 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
         }
         break;
 #endif // Qt_NO_SPINBOX
+    case CC_ScrollBar:
+    {
+        ret = QCommonStyle::subControlRect(control, option, subControl, widget);
+
+        switch (subControl) {
+        case QStyle::SC_ScrollBarAddLine:
+            if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
+                if (scrollbar->orientation == Qt::Vertical) {
+                    ret = ret.adjusted(2,2,-2,-3);
+                } else {
+                    ret = ret.adjusted(3,2,-2,-2);
+                }
+            }
+            break;
+        case QStyle::SC_ScrollBarSubLine:
+            if (const QStyleOptionSlider *scrollbar = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
+                if (scrollbar->orientation == Qt::Vertical) {
+                    ret = ret.adjusted(2,2,-2,-3);
+                } else {
+                    ret = ret.adjusted(3,2,-2,-2);
+                }
+            }
+            break;
+        default:
+            break;
+        }
+        break;
+    }
     default:
         ret = QWindowsVistaStyle::subControlRect(control, option, subControl, widget);
     }
@@ -1908,14 +1936,20 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case QStyle::PM_IndicatorHeight:
     case QStyle::PM_ExclusiveIndicatorWidth:
     case QStyle::PM_ExclusiveIndicatorHeight:
-        return 16;
+        res = 16;
+        break;
     case QStyle::PM_SliderLength:
         res = int(QStyleHelper::dpiScaled(16, option));
         break;
     case QStyle::PM_TitleBarButtonIconSize:
-        return 16;
+        res = 16;
+        break;
     case QStyle::PM_TitleBarButtonSize:
-        return 32;
+        res = 32;
+        break;
+    case QStyle::PM_ScrollBarExtent:
+        res = 12;
+        break;
     default:
         res = QWindowsVistaStyle::pixelMetric(metric, option, widget);
     }
