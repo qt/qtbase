@@ -77,8 +77,11 @@ public:
         const auto type = event->type();
         if (type == QEvent::WindowActivate || type == QEvent::WindowDeactivate)
             return true;
+        if (type == QEvent::UpdateRequest)
+            ++updateRequests;
         return QWidget::event(event);
     }
+    int updateRequests = 0;
 
 protected:
     void paintEvent(QPaintEvent *event) override
@@ -256,6 +259,8 @@ private slots:
     void opaqueChildren();
     void staticContents();
     void scroll();
+    void paintOnScreenUpdates();
+
 #if defined(QT_BUILD_INTERNAL)
     void scrollWithOverlap();
     void overlappedRegion();
@@ -491,6 +496,90 @@ void tst_QWidgetRepaintManager::scroll()
     QCOMPARE(widget.takePaintedRegions(), QRegion());
 }
 
+class PaintOnScreenWidget : public TestWidget
+{
+public:
+    using TestWidget::TestWidget;
+
+    // Explicit override to prevent noPaintOnScreen on Windows
+    QPaintEngine *paintEngine() const override
+    {
+        return nullptr;
+    }
+};
+
+void tst_QWidgetRepaintManager::paintOnScreenUpdates()
+{
+    {
+        TestWidget topLevel;
+        topLevel.setObjectName("TopLevel");
+        topLevel.resize(500, 500);
+        TestWidget renderToTextureWidget(&topLevel);
+        renderToTextureWidget.setObjectName("RenderToTexture");
+        renderToTextureWidget.setGeometry(0, 0, 200, 200);
+        QWidgetPrivate::get(&renderToTextureWidget)->setRenderToTexture();
+
+        PaintOnScreenWidget paintOnScreenWidget(&topLevel);
+        paintOnScreenWidget.setObjectName("PaintOnScreen");
+        paintOnScreenWidget.setGeometry(200, 200, 300, 300);
+
+        topLevel.initialShow();
+
+        // Updating before toggling WA_PaintOnScreen should work fine
+        paintOnScreenWidget.update();
+        paintOnScreenWidget.waitForPainted();
+        QVERIFY(paintOnScreenWidget.waitForPainted());
+
+#ifdef Q_OS_ANDROID
+        QEXPECT_FAIL("", "This test fails on Android", Abort);
+#endif
+        QCOMPARE(paintOnScreenWidget.takePaintedRegions(), paintOnScreenWidget.rect());
+
+        renderToTextureWidget.update();
+        QVERIFY(renderToTextureWidget.waitForPainted());
+        QCOMPARE(renderToTextureWidget.takePaintedRegions(), renderToTextureWidget.rect());
+
+        // Then toggle WA_PaintOnScreen
+        paintOnScreenWidget.setAttribute(Qt::WA_PaintOnScreen);
+
+        // The render-to-texture widget updates fine
+        renderToTextureWidget.update();
+        QVERIFY(renderToTextureWidget.waitForPainted());
+        QCOMPARE(renderToTextureWidget.takePaintedRegions(), renderToTextureWidget.rect());
+
+        // Updating the paint-on-screen texture widget will not result
+        // in a paint event, but should result in an update request.
+        paintOnScreenWidget.updateRequests = 0;
+        paintOnScreenWidget.update();
+        QVERIFY(QTest::qWaitFor([&]{ return paintOnScreenWidget.updateRequests > 0; }));
+
+        // And should not prevent the render-to-texture widget from receiving updates
+        renderToTextureWidget.update();
+        QVERIFY(renderToTextureWidget.waitForPainted());
+        QCOMPARE(renderToTextureWidget.takePaintedRegions(), renderToTextureWidget.rect());
+    }
+
+    {
+        TestWidget paintOnScreenTopLevel;
+        paintOnScreenTopLevel.setObjectName("PaintOnScreenTopLevel");
+        paintOnScreenTopLevel.setAttribute(Qt::WA_PaintOnScreen);
+
+        paintOnScreenTopLevel.initialShow();
+
+        paintOnScreenTopLevel.updateRequests = 0;
+        paintOnScreenTopLevel.update();
+        QVERIFY(QTest::qWaitFor([&]{ return paintOnScreenTopLevel.updateRequests > 0; }));
+
+        // Turn off paint on screen and make it a render-to-texture widget.
+        // This will lead us into a QWidgetRepaintManager::markDirty() code
+        // path that checks updateRequestSent, which is still set from the
+        // update above since paint-on-screen handling doesn't reset it.
+        paintOnScreenTopLevel.setAttribute(Qt::WA_PaintOnScreen, false);
+        QWidgetPrivate::get(&paintOnScreenTopLevel)->setRenderToTexture();
+        paintOnScreenTopLevel.update();
+        QVERIFY(QTest::qWaitFor([&]{ return paintOnScreenTopLevel.updateRequests > 1; }));
+    }
+}
 
 #if defined(QT_BUILD_INTERNAL)
 
