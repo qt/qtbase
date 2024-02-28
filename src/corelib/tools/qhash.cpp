@@ -85,6 +85,7 @@ struct HashSeedStorage
 
     void resetSeed()
     {
+#ifndef QT_BOOTSTRAPPED
         if (state().state < AlreadyInitialized)
             return;
 
@@ -92,6 +93,7 @@ struct HashSeedStorage
         QRandomGenerator *generator = QRandomGenerator::system();
         seeds[0].storeRelaxed(sizeof(size_t) > sizeof(quint32)
                               ? generator->generate64() : generator->generate());
+#endif
     }
 
     void clearSeed()

@@ -992,7 +992,7 @@ QUuid QUuid::createUuid()
     return result;
 }
 
-#else // Q_OS_WIN
+#elif !defined(QT_BOOTSTRAPPED)
 
 QUuid QUuid::createUuid()
 {
@@ -1006,7 +1006,7 @@ QUuid QUuid::createUuid()
 
     return result;
 }
-#endif // !Q_OS_WIN
+#endif // !Q_OS_WIN && !QT_BOOTSTRAPPED
 
 /*!
     \fn bool QUuid::operator==(const GUID &guid) const
