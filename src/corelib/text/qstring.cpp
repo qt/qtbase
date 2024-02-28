@@ -1607,7 +1607,7 @@ int QAnyStringView::compare(QAnyStringView lhs, QAnyStringView rhs, Qt::CaseSens
 
 // ### Qt 7: do not allow anything but ASCII digits
 // in arg()'s replacements.
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
 static bool supportUnicodeDigitValuesInArg()
 {
     static const bool result = []() {
@@ -1630,7 +1630,7 @@ static bool supportUnicodeDigitValuesInArg()
 
 static int qArgDigitValue(QChar ch) noexcept
 {
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
     if (supportUnicodeDigitValuesInArg())
         return ch.digitValue();
 #endif
@@ -8479,7 +8479,7 @@ QString QString::normalized(QString::NormalizationForm mode, QChar::UnicodeVersi
     return copy;
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
 static void checkArgEscape(QStringView s)
 {
     // If we're in here, it means that qArgDigitValue has accepted the
@@ -8553,7 +8553,7 @@ static ArgEscapeData findArgEscapes(QStringView s)
 
         // ### Qt 7: do not allow anything but ASCII digits
         // in arg()'s replacements.
-#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
         const QChar *escapeBegin = c;
         const QChar *escapeEnd = escapeBegin + 1;
 #endif
@@ -8565,13 +8565,13 @@ static ArgEscapeData findArgEscapes(QStringView s)
             if (next_escape != -1) {
                 escape = (10 * escape) + next_escape;
                 ++c;
-#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
                 ++escapeEnd;
 #endif
             }
         }
 
-#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0)
+#if QT_VERSION <= QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
         checkArgEscape(QStringView(escapeBegin, escapeEnd));
 #endif
 
