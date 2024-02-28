@@ -238,7 +238,7 @@ static bool isValidIccProfile(const ICCProfileHeader &header)
 
 static int writeColorTrc(QDataStream &stream, const QColorTrc &trc)
 {
-    if (trc.isLinear()) {
+    if (trc.isIdentity()) {
         stream << uint(Tag::curv) << uint(0);
         stream << uint(0);
         return 12;
@@ -698,26 +698,30 @@ static bool parseTRCs(const QByteArray &data, const QHash<Tag, TagEntry> &tagInd
         qCWarning(lcIcc) << "fromIccProfile: Invalid bTRC";
         return false;
     }
-    if (rCurve == gCurve && gCurve == bCurve && rCurve.m_type == QColorTrc::Type::Function) {
-        if (rCurve.m_fun.isLinear()) {
+    if (rCurve == gCurve && gCurve == bCurve)  {
+        if (rCurve.isIdentity()) {
             qCDebug(lcIcc) << "fromIccProfile: Linear gamma detected";
             colorspaceDPtr->trc[0] = QColorTransferFunction();
             colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Linear;
             colorspaceDPtr->gamma = 1.0f;
-        } else if (rCurve.m_fun.isGamma()) {
-            qCDebug(lcIcc) << "fromIccProfile: Simple gamma detected";
-            colorspaceDPtr->trc[0] = QColorTransferFunction::fromGamma(rCurve.m_fun.m_g);
-            colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Gamma;
-            colorspaceDPtr->gamma = rCurve.m_fun.m_g;
-        } else if (rCurve.m_fun.isSRgb()) {
-            qCDebug(lcIcc) << "fromIccProfile: sRGB gamma detected";
-            colorspaceDPtr->trc[0] = QColorTransferFunction::fromSRgb();
-            colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::SRgb;
+        } else if (rCurve.m_type == QColorTrc::Type::Function) {
+            if (rCurve.m_fun.isGamma()) {
+                qCDebug(lcIcc) << "fromIccProfile: Simple gamma detected";
+                colorspaceDPtr->trc[0] = QColorTransferFunction::fromGamma(rCurve.m_fun.m_g);
+                colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Gamma;
+                colorspaceDPtr->gamma = rCurve.m_fun.m_g;
+            } else if (rCurve.m_fun.isSRgb()) {
+                qCDebug(lcIcc) << "fromIccProfile: sRGB gamma detected";
+                colorspaceDPtr->trc[0] = QColorTransferFunction::fromSRgb();
+                colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::SRgb;
+            } else {
+                colorspaceDPtr->trc[0] = rCurve;
+                colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Custom;
+            }
         } else {
             colorspaceDPtr->trc[0] = rCurve;
             colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Custom;
         }
-
         colorspaceDPtr->trc[1] = colorspaceDPtr->trc[0];
         colorspaceDPtr->trc[2] = colorspaceDPtr->trc[0];
     } else {

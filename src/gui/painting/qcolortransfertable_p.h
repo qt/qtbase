@@ -48,6 +48,17 @@ public:
         return m_tableSize == 0;
     }
 
+    bool isIdentity() const
+    {
+        if (isEmpty())
+            return true;
+        if (m_tableSize != 2)
+            return false;
+        if (!m_table8.isEmpty())
+            return m_table8[0] == 0 && m_table8[1] == 255;
+        return m_table16[0] == 0 && m_table16[1] == 65535;
+    }
+
     bool checkValidity() const
     {
         if (isEmpty())
@@ -137,6 +148,10 @@ public:
     bool asColorTransferFunction(QColorTransferFunction *transferFn)
     {
         Q_ASSERT(transferFn);
+        if (isEmpty()) {
+            *transferFn = QColorTransferFunction();
+            return true;
+        }
         if (m_tableSize < 2)
             return false;
         if (!m_table8.isEmpty() && (m_table8[0] != 0 || m_table8[m_tableSize - 1] != 255))

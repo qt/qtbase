@@ -26,7 +26,8 @@ class Q_GUI_EXPORT QColorTransferFunction
 {
 public:
     QColorTransferFunction() noexcept
-            : m_a(1.0f), m_b(0.0f), m_c(1.0f), m_d(0.0f), m_e(0.0f), m_f(0.0f), m_g(1.0f), m_flags(0)
+            : m_a(1.0f), m_b(0.0f), m_c(1.0f), m_d(0.0f), m_e(0.0f), m_f(0.0f), m_g(1.0f)
+            , m_flags(quint32(Hints::Calculated) | quint32(Hints::IsGamma) | quint32(Hints::IsIdentity))
     { }
     QColorTransferFunction(float a, float b, float c, float d, float e, float f, float g) noexcept
             : m_a(a), m_b(b), m_c(c), m_d(d), m_e(e), m_f(f), m_g(g), m_flags(0)
@@ -37,10 +38,10 @@ public:
         updateHints();
         return m_flags & quint32(Hints::IsGamma);
     }
-    bool isLinear() const
+    bool isIdentity() const
     {
         updateHints();
-        return m_flags & quint32(Hints::IsLinear);
+        return m_flags & quint32(Hints::IsIdentity);
     }
     bool isSRgb() const
     {
@@ -88,15 +89,19 @@ public:
     // A few predefined curves:
     static QColorTransferFunction fromGamma(float gamma)
     {
-        return QColorTransferFunction(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, gamma);
+        return QColorTransferFunction(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, gamma,
+                                      quint32(Hints::Calculated) | quint32(Hints::IsGamma) |
+                                      (paramCompare(gamma, 1.0f) ? quint32(Hints::IsIdentity) : 0));
     }
     static QColorTransferFunction fromSRgb()
     {
-        return QColorTransferFunction(1.0f / 1.055f, 0.055f / 1.055f, 1.0f / 12.92f, 0.04045f, 0.0f, 0.0f, 2.4f);
+        return QColorTransferFunction(1.0f / 1.055f, 0.055f / 1.055f, 1.0f / 12.92f, 0.04045f, 0.0f, 0.0f, 2.4f,
+                                      quint32(Hints::Calculated) | quint32(Hints::IsSRgb));
     }
     static QColorTransferFunction fromProPhotoRgb()
     {
-        return QColorTransferFunction(1.0f, 0.0f, 1.0f / 16.0f, 16.0f / 512.0f, 0.0f, 0.0f, 1.8f);
+        return QColorTransferFunction(1.0f, 0.0f, 1.0f / 16.0f, 16.0f / 512.0f, 0.0f, 0.0f, 1.8f,
+                                      quint32(Hints::Calculated));
     }
     bool matches(const QColorTransferFunction &o) const
     {
@@ -117,6 +122,9 @@ public:
     float m_g;
 
 private:
+    QColorTransferFunction(float a, float b, float c, float d, float e, float f, float g, quint32 flags) noexcept
+        : m_a(a), m_b(b), m_c(c), m_d(d), m_e(e), m_f(f), m_g(g), m_flags(flags)
+    { }
     static inline bool paramCompare(float p1, float p2)
     {
         // Much fuzzier than fuzzy compare.
@@ -137,7 +145,7 @@ private:
         if (simple) {
             m_flags |= quint32(Hints::IsGamma);
             if (qFuzzyCompare(m_g, 1.0f))
-                m_flags |= quint32(Hints::IsLinear);
+                m_flags |= quint32(Hints::IsIdentity);
         } else {
             if (*this == fromSRgb())
                 m_flags |= quint32(Hints::IsSRgb);
@@ -147,7 +155,7 @@ private:
     enum class Hints : quint32 {
         Calculated = 1,
         IsGamma = 2,
-        IsLinear = 4,
+        IsIdentity = 4,
         IsSRgb = 8
     };
     mutable quint32 m_flags;

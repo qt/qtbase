@@ -39,9 +39,11 @@ public:
         Table
     };
 
-    bool isLinear() const
+    bool isIdentity() const
     {
-        return m_type == Type::Uninitialized || (m_type == Type::Function && m_fun.isLinear());
+        return m_type == Type::Uninitialized
+           || (m_type == Type::Function && m_fun.isIdentity())
+           || (m_type == Type::Table && m_table.isIdentity());
     }
     bool isValid() const
     {

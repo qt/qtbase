@@ -319,7 +319,7 @@ void QColorSpacePrivate::setTransferFunctionTable(const QList<uint16_t> &transfe
     QColorTransferFunction curve;
     if (table.asColorTransferFunction(&curve)) {
         // Table recognized as a specific curve
-        if (curve.isLinear()) {
+        if (curve.isIdentity()) {
             transferFunction = QColorSpace::TransferFunction::Linear;
             gamma = 1.0f;
         } else if (curve.isSRgb()) {
