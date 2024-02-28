@@ -43,9 +43,10 @@ enum HeaderChecks {
     PrivateHeaderChecks = 2, /* Checks if the public header includes a private header */
     IncludeChecks = 4, /* Checks if the real header file but not an alias is included */
     WeMeantItChecks = 8, /* Checks if private header files contains 'We meant it' disclaimer */
-    CriticalChecks = PrivateHeaderChecks, /* Checks that lead to the fatal error of the sync
-                                             process */
-    AllChecks = NamespaceChecks | PrivateHeaderChecks | IncludeChecks | WeMeantItChecks,
+    PragmaOnceChecks = 16,
+    /* Checks that lead to the fatal error of the sync process: */
+    CriticalChecks = PrivateHeaderChecks | PragmaOnceChecks,
+    AllChecks = NamespaceChecks | CriticalChecks | IncludeChecks | WeMeantItChecks,
 };
 
 constexpr int LinkerScriptCommentAlignment = 55;
@@ -1061,6 +1062,9 @@ public:
         static const std::regex MacroRegex("^\\s*#.*");
 
         // The regex's bellow check line for known pragmas:
+        //
+        //    - 'once' is not allowed in installed headers, so error out.
+        //
         //    - 'qt_sync_skip_header_check' avoid any header checks.
         //
         //    - 'qt_sync_stop_processing' stops the header proccesing from a moment when pragma is
@@ -1088,6 +1092,7 @@ public:
         //
         //    - 'qt_no_master_include' indicates that syncqt should avoid including this header
         //      files into the module master header file.
+        static const std::regex OnceRegex(R"(^#\s*pragma\s+once$)");
         static const std::regex SkipHeaderCheckRegex("^#\\s*pragma qt_sync_skip_header_check$");
         static const std::regex StopProcessingRegex("^#\\s*pragma qt_sync_stop_processing$");
         static const std::regex SuspendProcessingRegex("^#\\s*pragma qt_sync_suspend_processing$");
@@ -1274,6 +1279,13 @@ public:
                 } else if (std::regex_match(buffer, match, DeprecatesPragmaRegex)) {
                     m_deprecatedHeaders[match[1].str()] =
                             m_commandLineArgs->moduleName() + '/' + m_currentFilename;
+                } else if (std::regex_match(buffer, OnceRegex)) {
+                    if (!(skipChecks & PragmaOnceChecks)) {
+                        faults |= PragmaOnceChecks;
+                        error() << "\"#pragma once\" is not allowed in installed header files: "
+                                   "https://lists.qt-project.org/pipermail/development/2022-October/043121.html"
+                                << std::endl;
+                    }
                 } else if (std::regex_match(buffer, match, IncludeRegex) && !isSuspended) {
                     if (!(skipChecks & IncludeChecks)) {
                         std::string includedHeader = match[1].str();
