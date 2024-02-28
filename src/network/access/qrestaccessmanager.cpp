@@ -42,8 +42,8 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
     take ownership of the wrapped QNetworkAccessManager.
 
     QRestAccessManager and related QRestReply classes can only be used in the
-    thread they live in. For further information see
-    \l {QObject#Thread Affinity}{QObject thread affinity} documentation.
+    thread they live in. See \l {QObject#Thread Affinity}{QObject thread affinity}
+    for more information.
 
     \section1 Issuing Network Requests and Handling Replies
 

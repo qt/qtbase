@@ -220,8 +220,8 @@ QNetworkRequest QNetworkRequestFactory::createRequest(const QUrlQuery &query) co
 /*!
     Returns a QNetworkRequest.
 
-    The returned request's URL is formed by appending the provided \a path
-    and \a query to the baseUrl (which may itself have a path component).
+    The returned requests URL is formed by appending the provided \a path
+    and \a query to the baseUrl (which may have a path component).
 
     If the provided \a path contains query items, they will be combined
     with the items in \a query.
@@ -276,13 +276,13 @@ void QNetworkRequestFactory::clearCommonHeaders()
 
     The bearer token, if present, is used to set the
     \c {Authorization: Bearer my_token} header for requests. This is a common
-    authorization convention and provided as an additional convenience.
+    authorization convention and is provided as an additional convenience.
 
-    Means to acquire the bearer token varies. Common methods include \c OAuth2
-    and the service provider's website/dashboard. It's common that the bearer
-    token changes over time, for example when updated with a refresh token.
-    By always re-setting the new token ensures that subsequent requests will
-    always have the latest, valid, token.
+    The means to acquire the bearer token vary. Standard methods include \c OAuth2
+    and the service provider's website/dashboard. It is expected that the bearer
+    token changes over time. For example, when updated with a refresh token,
+    always setting the new token again ensures that subsequent requests have
+    the latest, valid token.
 
     The presence of the bearer token does not impact the \l commonHeaders()
     listing. If the \l commonHeaders() also lists \c Authorization header, it
