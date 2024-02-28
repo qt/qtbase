@@ -1,0 +1,24 @@
+# Builds tests in test workitem.
+# This avoids upload of tests which can be too large to upload to coin.
+
+type: Group
+instructions:
+  - !include "{{qt/qtbase}}/prepare_building_env.yaml"
+  - type: Group
+    instructions:
+      - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts_host.yaml"
+    disable_if:
+      condition: property
+      property: target.osVersion
+      in_values: [Android_ANY, QEMU, IOS_ANY, QNX_710, WebAssembly, INTEGRITY, VxWorks]
+  - type: Group
+    instructions:
+      - !include "{{qt/qtbase}}/cmake_build_and_upload_test_artifacts_target.yaml"
+    enable_if:
+      condition: property
+      property: target.osVersion
+      in_values: [Android_ANY, QEMU, IOS_ANY, QNX_710, WebAssembly, INTEGRITY, VxWorks]
+enable_if:
+  condition: property
+  property: features
+  contains_value: BuildTestsInTest

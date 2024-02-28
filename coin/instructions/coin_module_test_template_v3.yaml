@@ -9,6 +9,7 @@ instructions:
       contains_value: LicenseCheckV2
   - type: Group
     instructions:
+      - !include "{{qt/qtbase}}/cmake_build_tests_in_test_stage.yaml"
       - !include "{{qt/qtbase}}/coin_module_test_template_common.yaml"
       - type: Group
         instructions:

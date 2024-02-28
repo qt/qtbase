@@ -79,3 +79,6 @@ instructions:
         - condition: property
           property: features
           contains_value: DoNotUploadTests
+        - condition: property
+          property: features
+          contains_value: BuildTestsInTest

@@ -9,6 +9,10 @@ instructions:
     maxTimeBetweenOutput: 1200
     userMessageOnFailure: >
       Failed to install tests archive.
+    enable_if:
+      condition: property
+      property: features
+      not_contains_value: "BuildTestsInTest"
   - type: ChangeDirectory
     directory: "{{.SourceDir}}_standalone_tests"
 
