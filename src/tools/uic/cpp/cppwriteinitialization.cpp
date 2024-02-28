@@ -2155,7 +2155,7 @@ QString WriteInitialization::pixCall(const DomProperty *p) const
         s = p->elementPixmap()->text();
         break;
     default:
-        qWarning("%s: Warning: Unknown icon format encountered. The ui-file was generated with a too-recent version of Designer.",
+        qWarning("%s: Warning: Unknown icon format encountered. The ui-file was generated with a too-recent version of Qt Widgets Designer.",
                  qPrintable(m_option.messagePrefix()));
         return "QIcon()"_L1;
         break;

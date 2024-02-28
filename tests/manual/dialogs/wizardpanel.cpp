@@ -229,7 +229,7 @@ Wizard::Wizard(QWidget *parent, Qt::WindowFlags flags)
     addPage(new WizardPage(tr("Page 3"), this));
 }
 
-// A dialog using a Wizard as child widget (emulating Qt Designer).
+// A dialog using a Wizard as child widget (emulating Qt Widgets Designer).
 class WizardEmbeddingDialog : public QDialog {
 public:
     explicit WizardEmbeddingDialog(QWidget *parent = nullptr);

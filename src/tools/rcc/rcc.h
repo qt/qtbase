@@ -2,7 +2,7 @@
 // Copyright (C) 2018 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-// Note: A copy of this file is used in Qt Designer (qttools/src/designer/src/lib/shared/rcc_p.h)
+// Note: A copy of this file is used in Qt Widgets Designer (qttools/src/designer/src/lib/shared/rcc_p.h)
 
 #ifndef RCC_H
 #define RCC_H

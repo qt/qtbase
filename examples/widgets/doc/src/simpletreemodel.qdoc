@@ -295,14 +295,14 @@
     We begin with a text file in the following format:
 
     \code
-    Getting Started                         How to familiarize yourself with Qt Designer
-        Launching Designer                  Running the Qt Designer application
-        The User Interface                  How to interact with Qt Designer
+    Getting Started                         How to familiarize yourself with Qt Widgets Designer
+        Launching Designer                  Running the Qt Widgets Designer application
+        The User Interface                  How to interact with Qt Widgets Designer
     \endcode
     \dots
     \code
     Connection Editing Mode                 Connecting widgets together with signals and slots
-        Connecting Objects                  Making connections in Qt Designer
+        Connecting Objects                  Making connections in Qt Widgets Designer
         Editing Connections                 Changing existing connections
     \endcode
 

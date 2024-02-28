@@ -514,7 +514,7 @@ NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
         auto *nsWindow = transientCocoaWindow->nativeWindow();
 
         // We only upgrade the window level for "special" windows, to work
-        // around Qt Designer parenting the designer windows to the widget
+        // around Qt Widgets Designer parenting the designer windows to the widget
         // palette window (QTBUG-31779). This should be fixed in designer.
         if (type != Qt::Window)
             windowLevel = qMax(windowLevel, nsWindow.level);

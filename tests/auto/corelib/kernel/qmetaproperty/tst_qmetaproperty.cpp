@@ -335,7 +335,7 @@ void tst_QMetaProperty::conversion()
 void tst_QMetaProperty::enumsFlags()
 {
     // QTBUG-83689, verify that enumerations and flags can be assigned from int,
-    // which is important for Qt Designer.
+    // which is important for Qt Widgets Designer.
     EnumFlagsTester t;
 
     auto mo = t.metaObject();
