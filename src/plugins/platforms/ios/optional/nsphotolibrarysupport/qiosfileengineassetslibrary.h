@@ -29,7 +29,7 @@ public:
     void setFileName(const QString &file) override;
 
 #ifndef QT_NO_FILESYSTEMITERATOR
-    IteratorUniquePtr beginEntryList(QDir::Filters filters,
+    IteratorUniquePtr beginEntryList(const QString &path, QDir::Filters filters,
                                      const QStringList &filterNames) override;
 #endif
 

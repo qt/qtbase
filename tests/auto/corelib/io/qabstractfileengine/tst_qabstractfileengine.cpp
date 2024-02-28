@@ -430,8 +430,8 @@ public:
     class Iterator : public QAbstractFileEngineIterator
     {
     public:
-        Iterator(QDir::Filters filters, const QStringList &filterNames)
-            : QAbstractFileEngineIterator(filters, filterNames)
+        Iterator(const QString &path, QDir::Filters filters, const QStringList &filterNames)
+            : QAbstractFileEngineIterator(path, filters, filterNames)
         {
             names.append("foo");
             names.append("bar");
@@ -461,9 +461,9 @@ public:
     }
 
     IteratorUniquePtr
-    beginEntryList(QDir::Filters filters, const QStringList &filterNames) override
+    beginEntryList(const QString &path, QDir::Filters filters, const QStringList &filterNames) override
     {
-        return std::make_unique<Iterator>(filters, filterNames);
+        return std::make_unique<Iterator>(path, filters, filterNames);
     }
     FileFlags fileFlags(FileFlags type) const override
     {

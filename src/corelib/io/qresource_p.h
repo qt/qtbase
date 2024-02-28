@@ -49,7 +49,7 @@ public:
 
     QDateTime fileTime(FileTime time) const override;
 
-    IteratorUniquePtr beginEntryList(QDir::Filters filters,
+    IteratorUniquePtr beginEntryList(const QString &path, QDir::Filters filters,
                                      const QStringList &filterNames) override;
 
     bool extension(Extension extension, const ExtensionOption *option = nullptr, ExtensionReturn *output = nullptr) override;

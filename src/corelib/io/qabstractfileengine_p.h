@@ -130,7 +130,7 @@ public:
     using IteratorUniquePtr = std::unique_ptr<Iterator>;
 
     virtual IteratorUniquePtr
-    beginEntryList(QDir::Filters filters, const QStringList &filterNames);
+    beginEntryList(const QString &path, QDir::Filters filters, const QStringList &filterNames);
     virtual IteratorUniquePtr endEntryList() { return {}; }
 
     virtual qint64 read(char *data, qint64 maxlen);
@@ -198,13 +198,13 @@ public:
 class Q_CORE_EXPORT QAbstractFileEngineIterator
 {
 public:
-    QAbstractFileEngineIterator(QDir::Filters filters, const QStringList &nameFilters);
+    QAbstractFileEngineIterator(const QString &path, QDir::Filters filters,
+                                const QStringList &nameFilters);
     virtual ~QAbstractFileEngineIterator();
 
     virtual QString next() = 0;
     virtual bool hasNext() const = 0;
 
-    void setPath(const QString &path);
     QString path() const;
     QStringList nameFilters() const;
     QDir::Filters filters() const;

@@ -171,7 +171,7 @@ public:
     AndroidAbstractFileEngineIterator(QDir::Filters filters,
                                       const QStringList &nameFilters,
                                       const QString &path)
-        : QAbstractFileEngineIterator(filters, nameFilters)
+        : QAbstractFileEngineIterator(path, filters, nameFilters)
     {
         m_currentIterator = FolderIterator::fromCache(cleanedAssetPath(path), true);
     }
@@ -368,8 +368,9 @@ public:
     }
 
     IteratorUniquePtr
-    beginEntryList(QDir::Filters filters, const QStringList &filterNames) override
+    beginEntryList(const QString &, QDir::Filters filters, const QStringList &filterNames) override
     {
+        // AndroidAbstractFileEngineIterator use `m_fileName` as the path
         if (m_assetInfo && m_assetInfo->type == AssetItem::Type::Folder)
             return std::make_unique<AndroidAbstractFileEngineIterator>(filters, filterNames, m_fileName);
         return nullptr;

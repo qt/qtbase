@@ -26,7 +26,7 @@ QT_BEGIN_NAMESPACE
 class QFSFileEngineIterator : public QAbstractFileEngineIterator
 {
 public:
-    QFSFileEngineIterator(QDir::Filters filters, const QStringList &filterNames);
+    QFSFileEngineIterator(const QString &path, QDir::Filters filters, const QStringList &filterNames);
     ~QFSFileEngineIterator();
 
     QString next() override;

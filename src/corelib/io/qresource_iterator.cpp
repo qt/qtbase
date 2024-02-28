@@ -8,9 +8,10 @@
 
 QT_BEGIN_NAMESPACE
 
-QResourceFileEngineIterator::QResourceFileEngineIterator(QDir::Filters filters,
+QResourceFileEngineIterator::QResourceFileEngineIterator(const QString &path, QDir::Filters filters,
                                                          const QStringList &filterNames)
-    : QAbstractFileEngineIterator(filters, filterNames), index(-1)
+    : QAbstractFileEngineIterator(path, filters, filterNames),
+      index(-1)
 {
 }
 

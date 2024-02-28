@@ -421,7 +421,7 @@ public:
         : QFSFileEngine(fileName)
     { }
 
-    IteratorUniquePtr beginEntryList(QDir::Filters, const QStringList &) override
+    IteratorUniquePtr beginEntryList(const QString &, QDir::Filters, const QStringList &) override
     { return nullptr; }
 };
 

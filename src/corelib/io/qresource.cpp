@@ -1535,9 +1535,10 @@ QDateTime QResourceFileEngine::fileTime(FileTime time) const
     \internal
 */
 QAbstractFileEngine::IteratorUniquePtr
-QResourceFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
+QResourceFileEngine::beginEntryList(const QString &path, QDir::Filters filters,
+                                    const QStringList &filterNames)
 {
-    return std::make_unique<QResourceFileEngineIterator>(filters, filterNames);
+    return std::make_unique<QResourceFileEngineIterator>(path, filters, filterNames);
 }
 
 bool QResourceFileEngine::extension(Extension extension, const ExtensionOption *option, ExtensionReturn *output)

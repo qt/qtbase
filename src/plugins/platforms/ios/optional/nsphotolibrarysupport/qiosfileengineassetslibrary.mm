@@ -258,8 +258,8 @@ public:
     QIOSAssetEnumerator *m_enumerator;
 
     QIOSFileEngineIteratorAssetsLibrary(
-            QDir::Filters filters, const QStringList &nameFilters)
-        : QAbstractFileEngineIterator(filters, nameFilters)
+            const QString &path, QDir::Filters filters, const QStringList &nameFilters)
+        : QAbstractFileEngineIterator(path, filters, nameFilters)
         , m_enumerator(new QIOSAssetEnumerator([[[ALAssetsLibrary alloc] init] autorelease], ALAssetsGroupAll))
     {
     }
@@ -441,9 +441,10 @@ void QIOSFileEngineAssetsLibrary::setFileName(const QString &file)
 #ifndef QT_NO_FILESYSTEMITERATOR
 
 QAbstractFileEngine::IteratorUniquePtr
-QIOSFileEngineAssetsLibrary::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
+QIOSFileEngineAssetsLibrary::beginEntryList(
+    const QString &path, QDir::Filters filters, const QStringList &filterNames)
 {
-    return std::make_unique<QIOSFileEngineIteratorAssetsLibrary>(filters, filterNames);
+    return std::make_unique<QIOSFileEngineIteratorAssetsLibrary>(path, filters, filterNames);
 }
 
 QT_END_NAMESPACE

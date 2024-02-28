@@ -24,7 +24,8 @@ class QResourceFileEngineIteratorPrivate;
 class QResourceFileEngineIterator : public QAbstractFileEngineIterator
 {
 public:
-    QResourceFileEngineIterator(QDir::Filters filters, const QStringList &filterNames);
+    QResourceFileEngineIterator(const QString &path, QDir::Filters filters,
+                                const QStringList &filterNames);
     ~QResourceFileEngineIterator();
 
     QString next() override;

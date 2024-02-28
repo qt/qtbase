@@ -902,10 +902,11 @@ bool QAbstractFileEngine::cloneTo(QAbstractFileEngine *target)
     Constructs a QAbstractFileEngineIterator, using the entry filters \a
     filters, and wildcard name filters \a nameFilters.
 */
-QAbstractFileEngineIterator::QAbstractFileEngineIterator(QDir::Filters filters,
+QAbstractFileEngineIterator::QAbstractFileEngineIterator(const QString &path, QDir::Filters filters,
                                                          const QStringList &nameFilters)
     : m_filters(filters),
-      m_nameFilters(nameFilters)
+      m_nameFilters(nameFilters),
+      m_path(appendSlashIfNeeded(path))
 {
 }
 
@@ -920,27 +921,14 @@ QAbstractFileEngineIterator::~QAbstractFileEngineIterator()
 
 /*!
 
-    Returns the path for this iterator. It can be set using setPath().
-    Typically the path is passed to beginEntryList(), which sets the path.
-
-    \note The path should't be changed once iteration begins.
+    Returns the path for this iterator. The path is set by beginEntryList().
+    The path should't be changed once iteration begins.
 
     \sa nameFilters(), filters()
 */
 QString QAbstractFileEngineIterator::path() const
 {
     return m_path;
-}
-
-/*!
-    \internal
-
-    Sets the iterator path to \a path. This function is called from within
-    QDirListing.
-*/
-void QAbstractFileEngineIterator::setPath(const QString &path)
-{
-    m_path = appendSlashIfNeeded(path);
 }
 
 /*!
@@ -1027,16 +1015,18 @@ QFileInfo QAbstractFileEngineIterator::currentFileInfo() const
 */
 
 /*!
-    Returns a QAbstractFileEngine::IteratorUniquePtr, that uses \a filters
-    for entry filtering and \a filterNames for name filtering. This function
-    is called by QDirListing to initiate directory iteration.
+    Returns a QAbstractFileEngine::IteratorUniquePtr, that can be used
+    to iterate over the entries in \a path, using \a filters for entry
+    filtering and \a filterNames for name filtering. This function is called
+    by QDirListing to initiate directory iteration.
 
     \sa QDirListing
 */
 QAbstractFileEngine::IteratorUniquePtr
-QAbstractFileEngine::beginEntryList(QDir::Filters filters,
+QAbstractFileEngine::beginEntryList(const QString &path, QDir::Filters filters,
                                     const QStringList &filterNames)
 {
+    Q_UNUSED(path);
     Q_UNUSED(filters);
     Q_UNUSED(filterNames);
     return {};

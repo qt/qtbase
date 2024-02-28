@@ -39,9 +39,10 @@ QAbstractSocketEngine *ZipEngineHandler::create(const QString &fileName) const
 
 //! [2]
 QAbstractFileEngine::IteratorUniquePtr
-CustomFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
+CustomFileEngine::beginEntryList(const QString &path, QDir::Filters filters,
+                                 const QStringList &filterNames)
 {
-    return std::make_unique<CustomFileEngineIterator>(filters, filterNames);
+    return std::make_unique<CustomFileEngineIterator>(path, filters, filterNames);
 }
 //! [2]
 
@@ -50,8 +51,8 @@ CustomFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filte
 class CustomIterator : public QAbstractFileEngineIterator
 {
 public:
-    CustomIterator(const QStringList &nameFilters, QDir::Filters filters)
-        : QAbstractFileEngineIterator(nameFilters, filters), index(0)
+    CustomIterator(const QString &path, const QStringList &nameFilters, QDir::Filters filters)
+        : QAbstractFileEngineIterator(path, nameFilters, filters), index(0)
     {
         // In a real iterator, these entries are fetched from the
         // file system based on the value of path().

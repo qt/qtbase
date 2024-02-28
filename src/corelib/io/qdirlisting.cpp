@@ -165,8 +165,7 @@ void QDirListingPrivate::pushDirectory(QDirEntryInfo &entryInfo)
 
     if (engine) {
         engine->setFileName(path);
-        if (auto it = engine->beginEntryList(filters, nameFilters)) {
-            it->setPath(path);
+        if (auto it = engine->beginEntryList(path, filters, nameFilters)) {
             fileEngineIterators.emplace(std::move(it));
         } else {
             // No iterator; no entry list.
