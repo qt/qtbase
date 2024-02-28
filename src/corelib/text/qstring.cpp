@@ -3419,6 +3419,7 @@ QString &QString::assign(QAnyStringView s)
     return *this;
 }
 
+#ifndef QT_BOOTSTRAPPED
 QString &QString::assign_helper(const char32_t *data, qsizetype len)
 {
     // worst case: each char32_t requires a surrogate pair, so
@@ -3438,6 +3439,7 @@ QString &QString::assign_helper(const char32_t *data, qsizetype len)
     }
     return *this;
 }
+#endif
 
 /*!
   \fn QString &QString::remove(qsizetype position, qsizetype n)
@@ -6022,6 +6024,7 @@ QString QString::fromUtf8(QByteArrayView ba)
     return QUtf8::convertToUnicode(ba);
 }
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     \since 5.3
     Returns a QString initialized with the first \a size characters
@@ -6083,7 +6086,7 @@ QString QString::fromUcs4(const char32_t *unicode, qsizetype size)
     QStringDecoder toUtf16(QStringDecoder::Utf32, QStringDecoder::Flag::Stateless);
     return toUtf16(QByteArrayView(reinterpret_cast<const char *>(unicode), size * 4));
 }
-
+#endif // !QT_BOOTSTRAPPED
 
 /*!
     Resizes the string to \a size characters and copies \a unicode

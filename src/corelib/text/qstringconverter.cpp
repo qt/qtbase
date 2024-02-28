@@ -942,6 +942,7 @@ int QUtf8::compareUtf8(QByteArrayView lhs, QByteArrayView rhs, Qt::CaseSensitivi
     return (end1 > src1) - (end2 > src2);
 }
 
+#ifndef QT_BOOTSTRAPPED
 QByteArray QUtf16::convertFromUnicode(QStringView in, QStringConverter::State *state, DataEndianness endian)
 {
     bool writeBom = !(state->internalState & HeaderDone) && state->flags & QStringConverter::Flag::WriteBom;
@@ -1251,6 +1252,7 @@ QChar *QUtf32::convertToUnicode(QChar *out, QByteArrayView in, QStringConverter:
 
     return out;
 }
+#endif // !QT_BOOTSTRAPPED
 
 #if defined(Q_OS_WIN) && !defined(QT_BOOTSTRAPPED)
 int QLocal8Bit::checkUtf8()
@@ -1647,6 +1649,7 @@ void QStringConverter::State::reset() noexcept
     }
 }
 
+#ifndef QT_BOOTSTRAPPED
 static QChar *fromUtf16(QChar *out, QByteArrayView in, QStringConverter::State *state)
 {
     return QUtf16::convertToUnicode(out, in, state, DetectEndianness);
@@ -1706,6 +1709,7 @@ static char *toUtf32LE(char *out, QStringView in, QStringConverter::State *state
 {
     return QUtf32::convertFromUnicode(out, in, state, LittleEndianness);
 }
+#endif // !QT_BOOTSTRAPPED
 
 char *QLatin1::convertFromUnicode(char *out, QStringView in, QStringConverter::State *state) noexcept
 {
@@ -1747,11 +1751,13 @@ static char *toLocal8Bit(char *out, QStringView in, QStringConverter::State *sta
 static qsizetype fromUtf8Len(qsizetype l) { return l + 1; }
 static qsizetype toUtf8Len(qsizetype l) { return 3*(l + 1); }
 
+#ifndef QT_BOOTSTRAPPED
 static qsizetype fromUtf16Len(qsizetype l) { return l/2 + 2; }
 static qsizetype toUtf16Len(qsizetype l) { return 2*(l + 1); }
 
 static qsizetype fromUtf32Len(qsizetype l) { return l/2 + 2; }
 static qsizetype toUtf32Len(qsizetype l) { return 4*(l + 1); }
+#endif
 
 static qsizetype fromLatin1Len(qsizetype l) { return l + 1; }
 static qsizetype toLatin1Len(qsizetype l) { return l + 1; }
@@ -1887,12 +1893,14 @@ static qsizetype toLatin1Len(qsizetype l) { return l + 1; }
 const QStringConverter::Interface QStringConverter::encodingInterfaces[QStringConverter::LastEncoding + 1] =
 {
     { "UTF-8", QUtf8::convertToUnicode, fromUtf8Len, QUtf8::convertFromUnicode, toUtf8Len },
+#ifndef QT_BOOTSTRAPPED
     { "UTF-16", fromUtf16, fromUtf16Len, toUtf16, toUtf16Len },
     { "UTF-16LE", fromUtf16LE, fromUtf16Len, toUtf16LE, toUtf16Len },
     { "UTF-16BE", fromUtf16BE, fromUtf16Len, toUtf16BE, toUtf16Len },
     { "UTF-32", fromUtf32, fromUtf32Len, toUtf32, toUtf32Len },
     { "UTF-32LE", fromUtf32LE, fromUtf32Len, toUtf32LE, toUtf32Len },
     { "UTF-32BE", fromUtf32BE, fromUtf32Len, toUtf32BE, toUtf32Len },
+#endif
     { "ISO-8859-1", QLatin1::convertToUnicode, fromLatin1Len, QLatin1::convertFromUnicode, toLatin1Len },
     { "Locale", fromLocal8Bit, fromUtf8Len, toLocal8Bit, toUtf8Len }
 };
@@ -2240,6 +2248,7 @@ std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(cons
     return std::nullopt;
 }
 
+#ifndef QT_BOOTSTRAPPED
 /*!
    Returns the encoding for the content of \a data if it can be determined.
    \a expectedFirstCharacter can be passed as an additional hint to help determine
@@ -2401,7 +2410,6 @@ QStringList QStringConverter::availableCodecs()
     return result;
 }
 
-
 /*!
     Tries to determine the encoding of the HTML in \a data by looking at leading byte
     order marks or a charset specifier in the HTML meta tag and returns a QStringDecoder
@@ -2425,7 +2433,7 @@ QStringDecoder QStringDecoder::decoderForHtml(QByteArrayView data)
 
     return QStringDecoder(Utf8);
 }
-
+#endif // !QT_BOOTSTRAPPED
 
 /*!
     Returns the canonical name for encoding \a e.

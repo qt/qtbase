@@ -1311,7 +1311,11 @@ QString QString::fromWCharArray(const wchar_t *string, qsizetype size)
     if constexpr (sizeof(wchar_t) == sizeof(QChar)) {
         return QString(reinterpret_cast<const QChar *>(string), size);
     } else {
+#ifdef QT_BOOTSTRAPPED
+        Q_UNREACHABLE_RETURN(QString());
+#else
         return fromUcs4(reinterpret_cast<const char32_t *>(string), size);
+#endif
     }
 }
 

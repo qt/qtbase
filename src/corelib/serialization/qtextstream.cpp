@@ -360,6 +360,7 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
     if (bytesRead <= 0)
         return false;
 
+#ifndef QT_BOOTSTRAPPED
     if (autoDetectUnicode) {
         autoDetectUnicode = false;
 
@@ -373,6 +374,7 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
     }
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStreamPrivate::fillReadBuffer(), using %s encoding", QStringConverter::nameForEncoding(encoding));
+#endif
 #endif
 
 #if defined (QTEXTSTREAM_DEBUG)
