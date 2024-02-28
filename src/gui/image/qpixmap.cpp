@@ -1280,8 +1280,9 @@ QPixmap QPixmap::transformed(const QTransform &transform,
     QPixmap using the fromImage(). If this is too expensive an
     operation, you can use QBitmap::fromImage() instead.
 
-    To convert a QPixmap to and from HICON you can use the QtWinExtras
-    functions QtWin::toHICON() and QtWin::fromHICON() respectively.
+    To convert a QPixmap to and from HICON you can use the
+    QImage::toHICON() and QImage::fromHICON() functions respectively
+    (after converting the QPixmap to a QImage, as explained above).
 
     \section1 Pixmap Transformations
 
