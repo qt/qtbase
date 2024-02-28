@@ -83,7 +83,6 @@ public:
 
 #ifndef QT_NO_FILESYSTEMITERATOR
     Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override;
-    Iterator *endEntryList() override;
 #endif
 
     qint64 read(char *data, qint64 maxlen) override;

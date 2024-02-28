@@ -796,13 +796,6 @@ QAbstractFileEngine::Iterator *QFSFileEngine::beginEntryList(QDir::Filters filte
     return new QFSFileEngineIterator(filters, filterNames);
 }
 
-/*!
-    \internal
-*/
-QAbstractFileEngine::Iterator *QFSFileEngine::endEntryList()
-{
-    return nullptr;
-}
 #endif // QT_NO_FILESYSTEMITERATOR
 
 /*!

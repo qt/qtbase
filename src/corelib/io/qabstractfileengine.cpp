@@ -1030,14 +1030,6 @@ QAbstractFileEngine::Iterator *QAbstractFileEngine::beginEntryList(QDir::Filters
 }
 
 /*!
-    \internal
-*/
-QAbstractFileEngine::Iterator *QAbstractFileEngine::endEntryList()
-{
-    return nullptr;
-}
-
-/*!
     Reads a number of characters from the file into \a data. At most
     \a maxlen characters will be read.
 

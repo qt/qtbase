@@ -127,7 +127,7 @@ public:
 
     typedef QAbstractFileEngineIterator Iterator;
     virtual Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames);
-    virtual Iterator *endEntryList();
+    virtual Iterator* endEntryList() { return nullptr; }
 
     virtual qint64 read(char *data, qint64 maxlen);
     virtual qint64 readLine(char *data, qint64 maxlen);

@@ -1538,14 +1538,7 @@ QAbstractFileEngine::Iterator *QResourceFileEngine::beginEntryList(QDir::Filters
                                                                    const QStringList &filterNames)
 {
     return new QResourceFileEngineIterator(filters, filterNames);
-}
 
-/*!
-    \internal
-*/
-QAbstractFileEngine::Iterator *QResourceFileEngine::endEntryList()
-{
-    return nullptr;
 }
 
 bool QResourceFileEngine::extension(Extension extension, const ExtensionOption *option, ExtensionReturn *output)

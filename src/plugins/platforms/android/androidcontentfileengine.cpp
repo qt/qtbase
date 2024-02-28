@@ -254,11 +254,6 @@ QAbstractFileEngine::Iterator *AndroidContentFileEngine::beginEntryList(QDir::Fi
     return new AndroidContentFileEngineIterator(filters, filterNames);
 }
 
-QAbstractFileEngine::Iterator *AndroidContentFileEngine::endEntryList()
-{
-    return nullptr;
-}
-
 AndroidContentFileEngineHandler::AndroidContentFileEngineHandler() = default;
 AndroidContentFileEngineHandler::~AndroidContentFileEngineHandler() = default;
 

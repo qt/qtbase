@@ -30,7 +30,6 @@ public:
 
 #ifndef QT_NO_FILESYSTEMITERATOR
     Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override;
-    Iterator *endEntryList() override;
 #endif
 
     void setError(QFile::FileError error, const QString &str) { QAbstractFileEngine::setError(error, str); }

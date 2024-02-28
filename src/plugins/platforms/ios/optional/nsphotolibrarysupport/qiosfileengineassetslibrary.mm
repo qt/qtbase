@@ -446,11 +446,6 @@ QAbstractFileEngine::Iterator *QIOSFileEngineAssetsLibrary::beginEntryList(
     return new QIOSFileEngineIteratorAssetsLibrary(filters, filterNames);
 }
 
-QAbstractFileEngine::Iterator *QIOSFileEngineAssetsLibrary::endEntryList()
-{
-    return 0;
-}
-
 QT_END_NAMESPACE
 
 #endif
