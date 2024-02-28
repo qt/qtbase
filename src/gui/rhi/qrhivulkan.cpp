@@ -7577,7 +7577,9 @@ static inline bool hdrFormatMatchesVkSurfaceFormat(QRhiSwapChain::Format f, cons
                 && s.colorSpace == VK_COLOR_SPACE_HDR10_ST2084_EXT;
     case QRhiSwapChain::HDRExtendedDisplayP3Linear:
         return s.format == VK_FORMAT_R16G16B16A16_SFLOAT
-               && s.colorSpace == VK_COLOR_SPACE_DISPLAY_P3_LINEAR_EXT;
+//                && s.colorSpace == VK_COLOR_SPACE_DISPLAY_P3_LINEAR_EXT;
+// EL7 only has Vulkan 1.1 - VK_COLOR_SPACE_DISPLAY_P3_LINEAR_EXT is a new label for DCI
+                && s.colorSpace == VK_COLOR_SPACE_DCI_P3_LINEAR_EXT;
     default:
         break;
     }
