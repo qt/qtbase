@@ -1194,7 +1194,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     case QStyle::CE_ProgressBarGroove:{
         if (const QStyleOptionProgressBar* progbaropt = qstyleoption_cast<const QStyleOptionProgressBar*>(option)) {
             const QProgressBar* bar = qobject_cast<const QProgressBar*>(widget);
-            QRectF rect = subElementRect(SE_ProgressBarContents, progbaropt, widget);
+            QRect rect = subElementRect(SE_ProgressBarContents, progbaropt, widget);
             QPointF center = rect.center();
             if (bar->orientation() & Qt::Horizontal) {
                 rect.setHeight(1);
@@ -1205,29 +1205,33 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             }
             painter->setPen(Qt::NoPen);
             painter->setBrush(Qt::gray);
-            painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+            painter->drawRect(rect);
         }
         break;
     }
     case QStyle::CE_ProgressBarContents:
         if (const QStyleOptionProgressBar* progbaropt = qstyleoption_cast<const QStyleOptionProgressBar*>(option)) {
             const QProgressBar* bar = qobject_cast<const QProgressBar*>(widget);
+            const qreal progressBarThickness = 3;
+            const qreal progressBarHalfThickness = progressBarThickness / 2.0;
             QRectF rect = subElementRect(SE_ProgressBarContents, progbaropt, widget);
             QRectF originalRect = rect;
             QPointF center = rect.center();
             bool isIndeterminate = progbaropt->maximum == 0 && progbaropt->minimum == 0;
             float fillPercentage = 0;
+            const qreal offset = (bar->orientation() == Qt::Horizontal && int(rect.height()) % 2 == 0)
+                              || (bar->orientation() == Qt::Vertical && int(rect.width()) % 2 == 0) ? 0.5 : 0.0;
 
             if (!isIndeterminate) {
                 fillPercentage = ((float(progbaropt->progress) - float(progbaropt->minimum)) / (float(progbaropt->maximum) - float(progbaropt->minimum)));
                 if (bar->orientation() == Qt::Horizontal) {
-                    rect.setHeight(4);
-                    rect.moveTop(center.y() - 1.5);
+                    rect.setHeight(progressBarThickness);
+                    rect.moveTop(center.y() - progressBarHalfThickness - offset);
                     rect.setWidth(rect.width() * fillPercentage);
                 } else {
                     float oldHeight = rect.height();
-                    rect.setWidth(4);
-                    rect.moveLeft(center.x() - 1.5);
+                    rect.setWidth(progressBarThickness);
+                    rect.moveLeft(center.x() - progressBarHalfThickness - offset);
                     rect.moveTop(oldHeight * (1.0f - fillPercentage));
                     rect.setHeight(oldHeight * fillPercentage);
                 }
@@ -1238,14 +1242,14 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                     float barBegin = qMin(qMax(fillPercentage-0.25,0.0) * rect.width(), float(rect.width()));
                     float barEnd = qMin(fillPercentage * rect.width(), float(rect.width()));
                     rect = QRect(QPoint(rect.left() + barBegin, rect.top()), QPoint(rect.left() + barEnd, rect.bottom()));
-                    rect.setHeight(4);
-                    rect.moveTop(center.y() - 1.5);
+                    rect.setHeight(progressBarThickness);
+                    rect.moveTop(center.y() - progressBarHalfThickness - offset);
                 } else {
                     float barBegin = qMin(qMax(fillPercentage-0.25,0.0) * rect.height(), float(rect.height()));
                     float barEnd = qMin(fillPercentage * rect.height(), float(rect.height()));
                     rect = QRect(QPoint(rect.left(), rect.bottom() - barEnd), QPoint(rect.right(), rect.bottom() - barBegin));
-                    rect.setWidth(4);
-                    rect.moveLeft(center.x() - 1.5);
+                    rect.setWidth(progressBarThickness);
+                    rect.moveLeft(center.x() - progressBarHalfThickness - offset);
                 }
                 const_cast<QWidget*>(widget)->update();
             }
