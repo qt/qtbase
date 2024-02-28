@@ -2920,7 +2920,6 @@ void QHeaderView::initStyleOptionForIndex(QStyleOptionHeader *option, int logica
                         ? QtPrivate::legacyFlagValueFromModelData<Qt::Alignment>(textAlignment)
                         : d->defaultAlignment;
 
-    opt.iconAlignment = Qt::AlignVCenter;
     opt.text = d->model->headerData(logicalIndex, d->orientation,
                                     Qt::DisplayRole).toString();
 
@@ -2934,8 +2933,6 @@ void QHeaderView::initStyleOptionForIndex(QStyleOptionHeader *option, int logica
                                         Qt::FontRole);
     if (var.isValid() && var.canConvert<QFont>())
         opt.fontMetrics = QFontMetrics(qvariant_cast<QFont>(var));
-    if (optV2)
-        optV2->textElideMode = d->textElideMode;
 
     QVariant foregroundBrush = d->model->headerData(logicalIndex, d->orientation,
                                                     Qt::ForegroundRole);
@@ -3444,10 +3441,14 @@ void QHeaderView::initStyleOption(QStyleOptionHeader *option) const
     option->initFrom(this);
     option->state = QStyle::State_None | QStyle::State_Raised;
     option->orientation = d->orientation;
+    option->iconAlignment = Qt::AlignVCenter;
     if (d->orientation == Qt::Horizontal)
         option->state |= QStyle::State_Horizontal;
     if (isEnabled())
         option->state |= QStyle::State_Enabled;
+    if (QStyleOptionHeaderV2 *optV2 = qstyleoption_cast<QStyleOptionHeaderV2 *>(option))
+        optV2->textElideMode = d->textElideMode;
+
     option->section = 0;
 }
 

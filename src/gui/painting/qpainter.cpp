@@ -2618,6 +2618,113 @@ QPainterPath QPainter::clipPath() const
     }
 }
 
+
+static QPainterPath pathClipReplaceClip(const QTransform &matrix, const QPainterClipInfo &info)
+{
+    return info.path * matrix;
+}
+
+static QPainterPath rectClipReplaceClip(const QTransform &matrix, const QPainterClipInfo &info)
+{
+    QPainterPath tempPath;
+    tempPath.addRect(info.rect);
+    tempPath = tempPath * matrix;
+    return tempPath;
+}
+
+static QPainterPath rectFClipReplaceClip(const QTransform &matrix, const QPainterClipInfo &info)
+{
+    QPainterPath tempPath;
+    tempPath.addRect(info.rectf);
+    tempPath = tempPath * matrix;
+    return tempPath;
+}
+
+static QPainterPath regionClipReplaceClip(const QTransform &matrix, const QPainterClipInfo &info)
+{
+    QPainterPath tempPath;
+    tempPath.addRegion(info.region * matrix);
+    return tempPath;
+}
+
+typedef QPainterPath (*PainterFunc)(const QTransform &matrix, const QPainterClipInfo &info);
+
+PainterFunc clipped_path[] = {
+     regionClipReplaceClip,
+     pathClipReplaceClip,
+     rectClipReplaceClip,
+     rectFClipReplaceClip 
+};
+
+/*!
+    Returns the current clip path in logical coordinates, unrounded.
+
+    The main purpose for this function is inside QSvgGenerator,
+    where we do not want any points to be rounded during the
+    creation of the file.
+
+    \warning QPainter does not store the combined clip explicitly as
+    this is handled by the underlying QPaintEngine, so the path is
+    recreated on demandand transformed to the current logical
+    coordinate system.This is potentially an expensive operation.
+
+    \sa setClipPath(), clipRegion(), setClipping()
+*/
+QPainterPath QPainter::clipPathF() const
+{
+    Q_D(const QPainter);
+
+    if (!d->engine) {
+        qWarning("QPainter::clipPath: Painter not active");
+        return QPainterPath();
+    }
+
+    // No clip, return empty
+    if (d->state->clipInfo.isEmpty()) {
+        return QPainterPath();
+    }
+
+    // Update inverse matrix, used below.
+    if (!d->txinv)
+        const_cast<QPainter *>(this)->d_ptr->updateInvMatrix();
+
+    /*
+    * Modified version of "clipRegion" that is used in ::clipPath
+    * as "return qt_regionToPath(clipRegion());" that prevents rounding of values,
+    * placing them directly into a QPainterPath.
+    */
+    QPainterPath path;
+    bool initializing = true;
+
+    for (QPainterClipInfo &info : d->state->clipInfo) {
+        QTransform matrix = (info.matrix * d->invMatrix);
+
+        if (initializing) {
+            path = clipped_path[info.clipType](matrix, info);
+            initializing = false;
+            continue;
+        }
+            
+        switch (info.operation) {
+            case Qt::NoClip: {
+                initializing = true;
+                path = QPainterPath();
+                break;
+            }
+            case Qt::IntersectClip: {
+                path &= clipped_path[info.clipType](matrix, info);
+                break;
+            }
+            case Qt::ReplaceClip: {
+                path = clipped_path[info.clipType](matrix, info);
+                break;
+            }
+        }
+    }
+
+    return path;
+}
+
 /*!
     Returns the bounding rectangle of the current clip if there is a clip;
     otherwise returns an empty rectangle. Note that the clip region is
