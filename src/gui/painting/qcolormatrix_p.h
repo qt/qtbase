@@ -80,15 +80,15 @@ public:
 
         float fx, fy, fz;
         if (xr > eps)
-            fx = std::cbrt(xr);
+            fx = fastCbrt(xr);
         else
             fx = (kap * xr + 16.f) / 116.f;
         if (yr > eps)
-            fy = std::cbrt(yr);
+            fy = fastCbrt(yr);
         else
             fy = (kap * yr + 16.f) / 116.f;
         if (zr > eps)
-            fz = std::cbrt(zr);
+            fz = fastCbrt(zr);
         else
             fz = (kap * zr + 16.f) / 116.f;
 
@@ -135,6 +135,19 @@ public:
     }
     friend inline bool comparesEqual(const QColorVector &lhs, const QColorVector &rhs);
     Q_DECLARE_EQUALITY_COMPARABLE(QColorVector);
+
+private:
+    static float fastCbrt(float x)
+    {
+        // This gives us cube root within the precision we need.
+        float est = 0.25f + (x * 0.75f); // guessing a cube-root of numbers between 0.01 and 1.
+        est -= ((est * est * est) - x) / (3.f * (est * est));
+        est -= ((est * est * est) - x) / (3.f * (est * est));
+        est -= ((est * est * est) - x) / (3.f * (est * est));
+        est -= ((est * est * est) - x) / (3.f * (est * est));
+        // Q_ASSERT(qAbs(est - std::cbrt(x)) < 0.0001f);
+        return est;
+    }
 };
 
 inline bool comparesEqual(const QColorVector &v1, const QColorVector &v2)
