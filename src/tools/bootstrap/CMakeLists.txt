@@ -18,7 +18,6 @@ qt_internal_extend_target(Bootstrap
         ../../corelib/global/qfloat16.cpp
         ../../corelib/global/qlogging.cpp
         ../../corelib/global/qmalloc.cpp
-        ../../corelib/global/qnumeric.cpp
         ../../corelib/global/qoperatingsystemversion.cpp
         ../../corelib/global/qtenvironmentvariables.cpp
         ../../corelib/io/qabstractfileengine.cpp

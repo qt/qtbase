@@ -108,7 +108,7 @@ static void valueToJson(const QCborValue &v, QByteArray &json, int indent, bool 
         break;
     case QCborValue::Double: {
         const double d = v.toDouble();
-        if (qIsFinite(d))
+        if (qt_is_finite(d))
             json += QByteArray::number(d, 'g', QLocale::FloatingPointShortest);
         else
             json += "null"; // +INF || -INF || NaN (see RFC4627#section2.4)

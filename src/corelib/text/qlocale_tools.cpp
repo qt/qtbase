@@ -310,8 +310,8 @@ QSimpleParsedNumber<double> qt_asciiToDouble(const char *num, qsizetype numLen,
         d = conv.StringToDouble(num, int(numLen), &processed);
     }
 
-    if (!qIsFinite(d)) {
-        if (qIsNaN(d)) {
+    if (!qt_is_finite(d)) {
+        if (qt_is_nan(d)) {
             // Garbage found. We don't accept it and return 0.
             return {};
         } else {
@@ -329,12 +329,12 @@ QSimpleParsedNumber<double> qt_asciiToDouble(const char *num, qsizetype numLen,
     if (qDoubleSscanf(num, QT_CLOCALE, fmt, &d, &processed) < 1)
         processed = 0;
 
-    if ((strayCharMode == TrailingJunkProhibited && processed != numLen) || qIsNaN(d)) {
+    if ((strayCharMode == TrailingJunkProhibited && processed != numLen) || qt_is_nan(d)) {
         // Implementation defined nan symbol or garbage found. We don't accept it.
         return {};
     }
 
-    if (!qIsFinite(d)) {
+    if (!qt_is_finite(d)) {
         // Overflow. Check for implementation-defined infinity symbols and reject them.
         // We assume that any infinity symbol has to contain a character that cannot be part of a
         // "normal" number (that is 0-9, ., -, +, e).
@@ -651,7 +651,7 @@ static T dtoString(double d, QLocaleData::DoubleForm form, int precision, bool u
     int bufSize = 1;
     if (precision == QLocale::FloatingPointShortest)
         bufSize += D::max_digits10;
-    else if (form == QLocaleData::DFDecimal && qIsFinite(d))
+    else if (form == QLocaleData::DFDecimal && qt_is_finite(d))
         bufSize += wholePartSpace(qAbs(d)) + precision;
     else // Add extra digit due to different interpretations of precision.
         bufSize += qMax(2, precision) + 1; // Must also be big enough for "nan" or "inf"
@@ -666,7 +666,7 @@ static T dtoString(double d, QLocaleData::DoubleForm form, int precision, bool u
     QLatin1StringView view(buffer.data(), length);
     const bool succinct = form == QLocaleData::DFSignificantDigits;
     qsizetype total = (negative ? 1 : 0) + length;
-    if (qIsFinite(d)) {
+    if (qt_is_finite(d)) {
         if (succinct)
             form = resolveFormat(precision, decpt, view.size());
 
@@ -708,7 +708,7 @@ static T dtoString(double d, QLocaleData::DoubleForm form, int precision, bool u
 
     if (negative && !isZero(d)) // We don't return "-0"
         result.append(Char('-'));
-    if (!qIsFinite(d)) {
+    if (!qt_is_finite(d)) {
         result.append(view);
         if (uppercase)
             result = std::move(result).toUpper();

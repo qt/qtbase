@@ -196,6 +196,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 #include "qnumeric.h"
 #include "qvarlengtharray.h"
 #include <private/qdebug_p.h>
+#include <private/qnumeric_p.h>
 #include <private/qtools_p.h>
 
 #include <locale.h>
@@ -1911,13 +1912,13 @@ bool QTextStreamPrivate::getReal(double *f)
     // nan/+inf/-inf, so here we also check for uppercase and mixed
     // case versions.
     if (!qstricmp(buf, "nan") || !qstricmp(buf, "+nan") || !qstricmp(buf, "-nan")) {
-        *f = qQNaN();
+        *f = qt_qnan();
         return true;
     } else if (!qstricmp(buf, "+inf") || !qstricmp(buf, "inf")) {
-        *f = qInf();
+        *f = qt_inf();
         return true;
     } else if (!qstricmp(buf, "-inf")) {
-        *f = -qInf();
+        *f = -qt_inf();
         return true;
     }
     bool ok;
