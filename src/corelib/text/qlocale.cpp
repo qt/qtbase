@@ -3018,6 +3018,14 @@ QString QLocale::standaloneDayName(int day, FormatType type) const
 
 // Calendar look-up of month and day names:
 
+// Only used in assertions
+[[maybe_unused]] static bool sameLocale(const QLocaleData *locale, const QCalendarLocale &calendar)
+{
+    return locale->m_language_id == calendar.m_language_id
+        && locale->m_script_id == calendar.m_script_id
+        && locale->m_territory_id == calendar.m_territory_id;
+}
+
 /*!
   \internal
  */
@@ -3126,8 +3134,9 @@ QString QCalendarBackend::monthName(const QLocale &locale, int month, int,
                                     QLocale::FormatType format) const
 {
     Q_ASSERT(month >= 1 && month <= maximumMonthsInYear());
-    return rawMonthName(localeMonthIndexData()[locale.d->m_index],
-                        localeMonthData(), month, format);
+    const QCalendarLocale &monthly = localeMonthIndexData()[locale.d->m_index];
+    Q_ASSERT(sameLocale(locale.d->m_data, monthly));
+    return rawMonthName(monthly, localeMonthData(), month, format);
 }
 
 QString QRomanCalendar::monthName(const QLocale &locale, int month, int year,
@@ -3161,8 +3170,9 @@ QString QCalendarBackend::standaloneMonthName(const QLocale &locale, int month, 
                                               QLocale::FormatType format) const
 {
     Q_ASSERT(month >= 1 && month <= maximumMonthsInYear());
-    return rawStandaloneMonthName(localeMonthIndexData()[locale.d->m_index],
-                                  localeMonthData(), month, format);
+    const QCalendarLocale &monthly = localeMonthIndexData()[locale.d->m_index];
+    Q_ASSERT(sameLocale(locale.d->m_data, monthly));
+    return rawStandaloneMonthName(monthly, localeMonthData(), month, format);
 }
 
 QString QRomanCalendar::standaloneMonthName(const QLocale &locale, int month, int year,
