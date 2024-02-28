@@ -35,7 +35,7 @@ Q_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
     \l {https://datatracker.ietf.org/doc/html/rfc9110#name-field-values}
     {RFC 9110 Chapters 5.1 and 5.5}.
 
-    Broadly speaking, this means:
+    In all, this means:
     \list
         \li \c name must consist of visible ASCII characters, and must not be
             empty
@@ -44,10 +44,9 @@ Q_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
             may be empty
     \endlist
 
-    Furthermore, \e value may have historically contained leading or
-    trailing whitespace, which has to be ignored while processing such
-    values. The setters of this class automatically remove any such
-    whitespace.
+    The setters of this class automatically remove any leading or trailing
+    whitespaces from \e value, as they must be ignored during the
+    \e value processing.
 
     \section1 Combining values
 
@@ -62,11 +61,10 @@ Q_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
         myheadername: myheadervalue1,myheadervalue2
     \endcode
 
-    However there is a notable exception to this rule:
+    However, there is a notable exception to this rule:
     \l {https://datatracker.ietf.org/doc/html/rfc9110#name-field-order}
-    {Set-Cookie}. Due to this, as well as due to the possibility
-    of custom use cases, QHttpHeaders does not automatically combine
-    the values.
+    {Set-Cookie}. Due to this and the possibility of custom use cases,
+    QHttpHeaders does not automatically combine the values.
 */
 
 // This list is from IANA HTTP Field Name Registry

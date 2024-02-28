@@ -146,11 +146,10 @@ QByteArray QRestReply::readBody()
 /*!
     Returns the received data as a QString.
 
-    The received data is decoded into a QString (UTF-16). The decoding
+    The received data is decoded into a QString (UTF-16). If available, the decoding
     uses the \e Content-Type header's \e charset parameter to determine the
-    source encoding, if available. If the encoding information is not
-    available or not supported by \l QStringConverter, UTF-8 is used as a
-    default.
+    source encoding. If the encoding information is not available or not supported
+    by \l QStringConverter, UTF-8 is used by default.
 
     Calling this function consumes the data received so far. Returns
     a default constructed value if no new data is available, or if the
@@ -196,8 +195,8 @@ QString QRestReply::readText()
     yet).
 
     \note The HTTP status is reported as indicated by the received HTTP
-    response. It is possible that an error() occurs after receiving the status,
-    for instance due to network disconnection while receiving a long response.
+    response. An error() may occur after receiving the status, for instance
+    due to network disconnection while receiving a long response.
     These potential subsequent errors are not represented by the reported
     HTTP status.
 
@@ -212,7 +211,7 @@ int QRestReply::httpStatus() const
     \fn bool QRestReply::isSuccess() const
 
     Returns whether the HTTP status is between 200..299 and no
-    further errors have occurred while receiving the response (for example
+    further errors have occurred while receiving the response (for example,
     abrupt disconnection while receiving the body data). This function
     is a convenient way to check whether the response is considered successful.
 
