@@ -355,7 +355,11 @@ void QWidgetRepaintManager::sendUpdateRequest(QWidget *widget, UpdateTime update
 
     switch (updateTime) {
     case UpdateLater:
-        updateRequestSent = true;
+        // Prevent redundant update request events, unless it's a
+        // paint on screen widget, as these don't go through the
+        // normal backingstore sync machinery.
+        if (!widget->d_func()->shouldPaintOnScreen())
+            updateRequestSent = true;
         QCoreApplication::postEvent(widget, new QEvent(QEvent::UpdateRequest), Qt::LowEventPriority);
         break;
     case UpdateNow: {
