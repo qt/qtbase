@@ -447,20 +447,34 @@ static int oldButton(int button)
 
 int QMessageBoxPrivate::execReturnCode(QAbstractButton *button)
 {
-    int ret = buttonBox->standardButton(button);
-    if (ret == QMessageBox::NoButton) {
-        ret = customButtonList.indexOf(button); // if button == 0, correctly sets ret = -1
-    } else if (compatMode) {
-        ret = oldButton(ret);
+    if (int standardButton = buttonBox->standardButton(button)) {
+        // When using a QMessageBox with standard buttons, the return
+        // code is a StandardButton value indicating the standard button
+        // that was clicked.
+        if (compatMode)
+            return oldButton(standardButton);
+        else
+            return standardButton;
+    } else {
+        // When using QMessageBox with custom buttons, the return code
+        // is an opaque value, and the user is expected to use clickedButton()
+        // to determine which button was clicked. We make sure to keep the opaque
+        // value out of the QDialog::DialogCode range, so we can distinguish them.
+        auto customButtonIndex = customButtonList.indexOf(button);
+        if (customButtonIndex >= 0)
+            return QDialog::DialogCode::Accepted + customButtonIndex + 1;
+        else
+            return customButtonIndex; // Not found, return -1
     }
-    return ret;
 }
 
 int QMessageBoxPrivate::dialogCode() const
 {
     Q_Q(const QMessageBox);
 
-    if (clickedButton) {
+    if (rescode <= QDialog::Accepted) {
+        return rescode;
+    } else if (clickedButton) {
         switch (q->buttonRole(clickedButton)) {
         case QMessageBox::AcceptRole:
         case QMessageBox::YesRole:
