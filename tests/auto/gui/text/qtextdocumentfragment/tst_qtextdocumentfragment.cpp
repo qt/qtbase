@@ -16,6 +16,8 @@
 
 #include <qtextcursor.h>
 
+using namespace Qt::StringLiterals;
+
 QT_FORWARD_DECLARE_CLASS(QTextDocument)
 
 class tst_QTextDocumentFragment : public QObject
@@ -245,6 +247,7 @@ private slots:
     void html_fromFirefox();
     void html_emptyInlineInsideBlock();
     void css_fontAndWordSpacing();
+    void html_brWithWhitespaceAfterList();
 
 private:
     inline void setHtml(const QString &html)
@@ -4318,6 +4321,25 @@ void tst_QTextDocumentFragment::css_fontAndWordSpacing()
         QCOMPARE(cursor.charFormat().property(QTextFormat::FontLetterSpacingType).toUInt(),
                  (uint)(QFont::PercentageSpacing));
     }
+}
+
+void tst_QTextDocumentFragment::html_brWithWhitespaceAfterList() // QTBUG-81662
+{
+    setHtml(QString::fromLatin1("<ul><li>one</li><li>two</li></ul>\n <br/>\nhello"));
+
+    QCOMPARE(doc->blockCount(), 3);
+
+    QTextBlock block = doc->begin();
+    QVERIFY(block.textList());
+
+    block = block.next();
+    QVERIFY(block.textList());
+
+    block = block.next();
+    QCOMPARE(block.text(), u"\u2028hello"_s);
+
+    block = block.next();
+    QVERIFY(block.text().isEmpty());
 }
 
 QTEST_MAIN(tst_QTextDocumentFragment)

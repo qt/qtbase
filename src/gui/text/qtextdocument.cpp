@@ -1301,6 +1301,8 @@ void QTextDocument::setHtml(const QString &html)
     d->enableUndoRedo(false);
     d->beginEditBlock();
     d->clear();
+    // ctor calls parse() to build up QTextHtmlParser::nodes list
+    // then import() populates the QTextDocument from those
     QTextHtmlImporter(this, html, QTextHtmlImporter::ImportToDocument).import();
     d->endEditBlock();
     d->enableUndoRedo(previousState);
