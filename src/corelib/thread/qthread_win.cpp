@@ -246,7 +246,7 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
     data->ensureEventDispatcher();
     data->eventDispatcher.loadRelaxed()->startingUp();
 
-#if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC)
+#if defined(Q_CC_MSVC)
     // sets the name of the current thread.
     QString threadName = std::exchange(thr->d_func()->objectName, {});
     if (Q_LIKELY(threadName.isEmpty()))
