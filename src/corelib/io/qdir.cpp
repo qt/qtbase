@@ -1294,6 +1294,7 @@ QDir::SortFlags QDir::sorting() const
     after the directories, again in reverse order.
 */
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     Sets the sort order used by entryList() and entryInfoList().
 
@@ -1478,6 +1479,7 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
     d->sortFileList(sort, l, nullptr, &ret);
     return ret;
 }
+#endif // !QT_BOOTSTRAPPED
 
 /*!
     Creates a sub-directory called \a dirName.
@@ -1614,6 +1616,7 @@ bool QDir::rmpath(const QString &dirPath) const
     return d->fileEngine->rmdir(fn, true);
 }
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     \since 5.0
     Removes the directory, including all its contents.
@@ -1666,6 +1669,7 @@ bool QDir::removeRecursively()
 
     return success;
 }
+#endif // !QT_BOOTSTRAPPED
 
 /*!
     Returns \c true if the directory is readable \e and we can open files
@@ -1948,6 +1952,7 @@ bool QDir::exists(const QString &name) const
     return QFileInfo::exists(filePath(name));
 }
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     Returns whether the directory is empty.
 
@@ -1967,6 +1972,7 @@ bool QDir::isEmpty(Filters filters) const
     QDirListing dirList(d->dirEntry.filePath(), d->nameFilters, filters);
     return dirList.cbegin() == dirList.cend();
 }
+#endif // !QT_BOOTSTRAPPED
 
 /*!
     Returns a list of the root directories on this system.

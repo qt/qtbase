@@ -597,9 +597,15 @@ bool QAbstractFileEngine::isRelativePath() const
 QStringList QAbstractFileEngine::entryList(QDir::Filters filters, const QStringList &filterNames) const
 {
     QStringList ret;
+#ifdef QT_BOOTSTRAPPED
+    Q_UNUSED(filters);
+    Q_UNUSED(filterNames);
+    Q_UNREACHABLE_RETURN(ret);
+#else
     for (const auto &dirEntry : QDirListing(fileName(), filterNames, filters))
         ret.emplace_back(dirEntry.fileName());
     return ret;
+#endif
 }
 
 /*!
