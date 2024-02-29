@@ -81,6 +81,22 @@ function(__qt_internal_collect_additional_prefix_paths out_var prefixes_var)
     set("${out_var}" "${additional_packages_prefix_paths}" PARENT_SCOPE)
 endfunction()
 
+# Collects CMAKE_MODULE_PATH from QT_ADDITIONAL_PACKAGES_PREFIX_PATH
+function(__qt_internal_collect_additional_module_paths)
+    if(__qt_additional_module_paths_set)
+        return()
+    endif()
+    foreach(prefix_path IN LISTS QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
+        list(APPEND CMAKE_MODULE_PATH "${prefix_path}/${QT_CMAKE_EXPORT_NAMESPACE}")
+        # TODO: Need to consider the INSTALL_LIBDIR value when collecting CMAKE_MODULE_PATH.
+        # See QTBUG-123039.
+        list(APPEND CMAKE_MODULE_PATH "${prefix_path}/lib/cmake/${QT_CMAKE_EXPORT_NAMESPACE}")
+    endforeach()
+    list(REMOVE_DUPLICATES CMAKE_MODULE_PATH)
+    set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE)
+    set(__qt_additional_module_paths_set TRUE PARENT_SCOPE)
+endfunction()
+
 # Take a list of prefix paths ending with "/lib/cmake", and return a list of absolute paths with
 # "/lib/cmake" removed.
 function(__qt_internal_prefix_paths_to_roots out_var prefix_paths)
