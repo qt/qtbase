@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QXCBCONNECTION_H
-#define QXCBCONNECTION_H
+#pragma once
 
 #include <xcb/xcb.h>
 #include <xcb/randr.h>
@@ -376,5 +375,3 @@ template <typename T>
 struct alignas(32) q_padded_xcb_event : T { };
 
 QT_END_NAMESPACE
-
-#endif

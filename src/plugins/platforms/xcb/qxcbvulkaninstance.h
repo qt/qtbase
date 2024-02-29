@@ -1,8 +1,7 @@
 // Copyright (C) 2017 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QXCBVULKANINSTANCE_H
-#define QXCBVULKANINSTANCE_H
+#pragma once
 
 #if defined(VULKAN_H_) && !defined(VK_USE_PLATFORM_XCB_KHR)
 #error "vulkan.h included without xcb WSI"
@@ -36,5 +35,3 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QXCBVULKANINSTANCE_H
