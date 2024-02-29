@@ -1,8 +1,7 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QXCBCURSOR_H
-#define QXCBCURSOR_H
+#pragma once
 
 #include <qpa/qplatformcursor.h>
 #include "qxcbscreen.h"
@@ -93,5 +92,3 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif

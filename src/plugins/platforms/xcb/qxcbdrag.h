@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QXCBDRAG_H
-#define QXCBDRAG_H
+#pragma once
 
 #include <qpa/qplatformdrag.h>
 #include <private/qsimpledrag_p.h>
@@ -157,5 +156,3 @@ private:
 Q_DECLARE_TYPEINFO(QXcbDrag::Transaction, Q_RELOCATABLE_TYPE);
 
 QT_END_NAMESPACE
-
-#endif

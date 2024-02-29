@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QXCBIMAGE_H
-#define QXCBIMAGE_H
+#pragma once
 
 #include "qxcbscreen.h"
 #include <QtGui/QImage>
@@ -21,5 +20,3 @@ xcb_cursor_t qt_xcb_createCursorXRender(QXcbScreen *screen, const QImage &image,
                                         const QPoint &spot);
 
 QT_END_NAMESPACE
-
-#endif
