@@ -792,6 +792,7 @@ public:
 
     void combinedValue(const HeaderName &name, QByteArray &result) const;
     void values(const HeaderName &name, QList<QByteArray> &result) const;
+    QByteArrayView value(const HeaderName &name, QByteArrayView defaultValue) const noexcept;
 
     QList<Header> headers;
 };
@@ -840,6 +841,15 @@ void QHttpHeadersPrivate::values(const HeaderName &name, QList<QByteArray> &resu
         if (h.name == name)
             result.append(h.value);
     }
+}
+
+QByteArrayView QHttpHeadersPrivate::value(const HeaderName &name, QByteArrayView defaultValue) const noexcept
+{
+    for (const auto &h : std::as_const(headers)) {
+        if (h.name == name)
+            return h.value;
+    }
+    return defaultValue;
 }
 
 /*!
@@ -1279,13 +1289,7 @@ QByteArrayView QHttpHeaders::value(QAnyStringView name, QByteArrayView defaultVa
     if (isEmpty())
         return defaultValue;
 
-    const HeaderName hname(name);
-
-    for (const auto &h : std::as_const(d->headers)) {
-        if (h.name == hname)
-            return h.value;
-    }
-    return defaultValue;
+    return d->value(HeaderName{name}, defaultValue);
 }
 
 /*!
@@ -1296,13 +1300,7 @@ QByteArrayView QHttpHeaders::value(WellKnownHeader name, QByteArrayView defaultV
     if (isEmpty())
         return defaultValue;
 
-    const HeaderName hname(name);
-
-    for (const auto &h : std::as_const(d->headers)) {
-        if (h.name == hname)
-            return h.value;
-    }
-    return defaultValue;
+    return d->value(HeaderName{name}, defaultValue);
 }
 
 /*!
