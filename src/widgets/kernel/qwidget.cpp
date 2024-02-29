@@ -1026,6 +1026,23 @@ void QWidgetPrivate::createRecursively()
     }
 }
 
+/*!
+    \internal
+    Returns the closest parent widget that has a QWindow window handle
+
+    \note This behavior is different from nativeParentWidget(), which
+    returns the closest parent that has a QWindow window handle with
+    a created QPlatformWindow, and hence native window (winId).
+*/
+QWidget *QWidgetPrivate::closestParentWidgetWithWindowHandle() const
+{
+    Q_Q(const QWidget);
+    QWidget *parent = q->parentWidget();
+    while (parent && !parent->windowHandle())
+        parent = parent->parentWidget();
+    return parent;
+}
+
 QWindow *QWidgetPrivate::windowHandle(WindowHandleMode mode) const
 {
     if (mode == WindowHandleMode::Direct || mode == WindowHandleMode::Closest) {
@@ -1035,6 +1052,7 @@ QWindow *QWidgetPrivate::windowHandle(WindowHandleMode mode) const
         }
     }
     if (mode == WindowHandleMode::Closest) {
+        // FIXME: Use closestParentWidgetWithWindowHandle instead
         if (auto nativeParent = q_func()->nativeParentWidget()) {
             if (auto window = nativeParent->windowHandle())
                 return window;
