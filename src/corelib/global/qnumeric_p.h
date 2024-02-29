@@ -51,6 +51,8 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
+class qfloat16;
+
 namespace qnumeric_std_wrapper {
 #if defined(QT_MATH_H_DEFINES_MACROS)
 #  undef QT_MATH_H_DEFINES_MACROS
@@ -145,15 +147,16 @@ namespace {
     it's out of range. If the conversion is successful, the converted value is
     stored in \a value; if it was not successful, \a value will contain the
     minimum or maximum of T, depending on the sign of \a d. If \c T is
-    unsigned, then \a value contains the absolute value of \a v.
+    unsigned, then \a value contains the absolute value of \a v. If \c T is \c
+    float, an underflow is also signalled by returning false and setting \a
+    value to zero.
 
     This function works for v containing infinities, but not NaN. It's the
     caller's responsibility to exclude that possibility before calling it.
 */
-template<typename T>
-static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgrade = true)
+template <typename T> static inline std::enable_if_t<std::is_integral_v<T>, bool>
+convertDoubleTo(double v, T *value, bool allow_precision_upgrade = true)
 {
-    static_assert(std::numeric_limits<T>::is_integer);
     static_assert(std::is_integral_v<T>);
     constexpr bool TypeIsLarger = std::numeric_limits<T>::digits > std::numeric_limits<double>::digits;
 
@@ -276,6 +279,40 @@ QT_WARNING_DISABLE_FLOAT_COMPARE
     return *value == v;
 
 QT_WARNING_POP
+}
+
+template <typename T> static inline
+std::enable_if_t<std::is_floating_point_v<T> || std::is_same_v<T, qfloat16>, bool>
+convertDoubleTo(double v, T *value, bool allow_precision_upgrade = true)
+{
+    Q_UNUSED(allow_precision_upgrade);
+    constexpr T Huge = std::numeric_limits<T>::infinity();
+
+    if constexpr (std::numeric_limits<double>::max_exponent <=
+            std::numeric_limits<T>::max_exponent) {
+        // no UB can happen
+        *value = T(v);
+        return true;
+    }
+    if (!qt_is_finite(v) && std::numeric_limits<T>::has_infinity) {
+        // infinity (or NaN)
+        *value = T(v);
+        return true;
+    }
+
+    // Check for in-range value to ensure the conversion is not UB (see the
+    // comment above for Standard language).
+    if (std::fabs(v) > (std::numeric_limits<T>::max)()) {
+        *value = v < 0 ? -Huge : Huge;
+        return false;
+    }
+
+    *value = T(v);
+    if (v != 0 && *value == 0) {
+        // Underflow through loss of precision
+        return false;
+    }
+    return true;
 }
 
 template <typename T> inline bool add_overflow(T v1, T v2, T *r) { return qAddOverflow(v1, v2, r); }
