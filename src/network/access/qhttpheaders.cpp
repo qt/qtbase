@@ -791,6 +791,7 @@ public:
     static void removeAll(Self &d, const HeaderName &name);
 
     void combinedValue(const HeaderName &name, QByteArray &result) const;
+    void values(const HeaderName &name, QList<QByteArray> &result) const;
 
     QList<Header> headers;
 };
@@ -830,6 +831,14 @@ void QHttpHeadersPrivate::combinedValue(const HeaderName &name, QByteArray &resu
             result.append(h.value);
             separator = ", ";
         }
+    }
+}
+
+void QHttpHeadersPrivate::values(const HeaderName &name, QList<QByteArray> &result) const
+{
+    for (const auto &h : std::as_const(headers)) {
+        if (h.name == name)
+            result.append(h.value);
     }
 }
 
@@ -1308,12 +1317,7 @@ QList<QByteArray> QHttpHeaders::values(QAnyStringView name) const
     if (isEmpty())
         return result;
 
-    const HeaderName hname(name);
-
-    for (const auto &h : std::as_const(d->headers)) {
-        if (h.name == hname)
-            result.append(h.value);
-    }
+    d->values(HeaderName{name}, result);
     return result;
 }
 
@@ -1322,17 +1326,12 @@ QList<QByteArray> QHttpHeaders::values(QAnyStringView name) const
 */
 QList<QByteArray> QHttpHeaders::values(WellKnownHeader name) const
 {
-    QList<QByteArray> values;
+    QList<QByteArray> result;
     if (isEmpty())
-        return values;
+        return result;
 
-    const HeaderName hname(name);
-
-    for (const auto &h : std::as_const(d->headers)) {
-        if (h.name == hname)
-            values.append(h.value);
-    }
-    return values;
+    d->values(HeaderName{name}, result);
+    return result;
 }
 
 /*!
