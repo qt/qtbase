@@ -1222,11 +1222,11 @@
 #endif
 #endif
 #ifndef Q_FALLTHROUGH
-#  if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 700
+#  ifdef Q_CC_GNU
 #    define Q_FALLTHROUGH() __attribute__((fallthrough))
 #  else
 #    define Q_FALLTHROUGH() (void)0
-#endif
+#  endif
 #endif
 
 
