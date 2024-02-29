@@ -4,6 +4,7 @@
 #ifndef QANYSTRINGVIEW_H
 #define QANYSTRINGVIEW_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qlatin1stringview.h>
 #include <QtCore/qstringview.h>
 #include <QtCore/qutf8stringview.h>
@@ -301,24 +302,15 @@ public:
     { return size(); }
 
 private:
-    [[nodiscard]] friend inline bool operator==(QAnyStringView lhs, QAnyStringView rhs) noexcept
+    friend bool comparesEqual(const QAnyStringView &lhs, const QAnyStringView &rhs) noexcept
     { return QAnyStringView::equal(lhs, rhs); }
-    [[nodiscard]] friend inline bool operator!=(QAnyStringView lhs, QAnyStringView rhs) noexcept
-    { return !QAnyStringView::equal(lhs, rhs); }
-
-#if defined(__cpp_impl_three_way_comparison) && !defined(Q_QDOC)
-    [[nodiscard]] friend inline auto operator<=>(QAnyStringView lhs, QAnyStringView rhs) noexcept
-    { return QAnyStringView::compare(lhs, rhs) <=> 0; }
-#else
-    [[nodiscard]] friend inline bool operator<=(QAnyStringView lhs, QAnyStringView rhs) noexcept
-    { return QAnyStringView::compare(lhs, rhs) <= 0; }
-    [[nodiscard]] friend inline bool operator>=(QAnyStringView lhs, QAnyStringView rhs) noexcept
-    { return QAnyStringView::compare(lhs, rhs) >= 0; }
-    [[nodiscard]] friend inline bool operator<(QAnyStringView lhs, QAnyStringView rhs) noexcept
-    { return QAnyStringView::compare(lhs, rhs) < 0; }
-    [[nodiscard]] friend inline bool operator>(QAnyStringView lhs, QAnyStringView rhs) noexcept
-    { return QAnyStringView::compare(lhs, rhs) > 0; }
-#endif
+    friend Qt::strong_ordering
+    compareThreeWay(const QAnyStringView &lhs, const QAnyStringView &rhs) noexcept
+    {
+        const int res = QAnyStringView::compare(lhs, rhs);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QAnyStringView)
 
 #ifndef QT_NO_DEBUG_STREAM
     Q_CORE_EXPORT friend QDebug operator<<(QDebug d, QAnyStringView s);

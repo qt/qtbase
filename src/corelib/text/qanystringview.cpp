@@ -17,6 +17,12 @@ QT_BEGIN_NAMESPACE
     \ingroup tools
     \ingroup string-processing
 
+    \compares strong
+    \compareswith strong char16_t QChar {const char16_t *} {const char *} \
+                  QByteArray QByteArrayView QString QStringView QUtf8StringView \
+                  QLatin1StringView
+    \endcompareswith
+
     A QAnyStringView references a contiguous portion of a string it does
     not own. It acts as an interface type to all kinds of strings,
     without the need to construct a QString first.
@@ -582,12 +588,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QAnyStringView::operator==(QAnyStringView lhs, QAnyStringView rhs)
-    \fn bool QAnyStringView::operator!=(QAnyStringView lhs, QAnyStringView rhs)
-    \fn bool QAnyStringView::operator<=(QAnyStringView lhs, QAnyStringView rhs)
-    \fn bool QAnyStringView::operator>=(QAnyStringView lhs, QAnyStringView rhs)
-    \fn bool QAnyStringView::operator<(QAnyStringView lhs, QAnyStringView rhs)
-    \fn bool QAnyStringView::operator>(QAnyStringView lhs, QAnyStringView rhs)
+    \fn bool QAnyStringView::operator==(const QAnyStringView &lhs, const QAnyStringView & rhs)
+    \fn bool QAnyStringView::operator!=(const QAnyStringView & lhs, const QAnyStringView & rhs)
+    \fn bool QAnyStringView::operator<=(const QAnyStringView & lhs, const QAnyStringView & rhs)
+    \fn bool QAnyStringView::operator>=(const QAnyStringView & lhs, const QAnyStringView & rhs)
+    \fn bool QAnyStringView::operator<(const QAnyStringView & lhs, const QAnyStringView & rhs)
+    \fn bool QAnyStringView::operator>(const QAnyStringView & lhs, const QAnyStringView & rhs)
 
     Operators that compare \a lhs to \a rhs.
 
