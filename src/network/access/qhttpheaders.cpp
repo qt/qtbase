@@ -790,6 +790,8 @@ public:
     using Self = QExplicitlySharedDataPointer<QHttpHeadersPrivate>;
     static void removeAll(Self &d, const HeaderName &name);
 
+    void combinedValue(const HeaderName &name, QByteArray &result) const;
+
     QList<Header> headers;
 };
 
@@ -816,6 +818,18 @@ void QHttpHeadersPrivate::removeAll(Self &d, const HeaderName &name)
         d->headers.erase(std::remove_if(d->headers.begin() + matchOffset, d->headers.end(),
                                         headerNameMatches(name)),
                          d->headers.end());
+    }
+}
+
+void QHttpHeadersPrivate::combinedValue(const HeaderName &name, QByteArray &result) const
+{
+    const char* separator = "";
+    for (const auto &h : std::as_const(headers)) {
+        if (h.name == name) {
+            result.append(separator);
+            result.append(h.value);
+            separator = ", ";
+        }
     }
 }
 
@@ -1365,15 +1379,7 @@ QByteArray QHttpHeaders::combinedValue(QAnyStringView name) const
     if (isEmpty())
         return result;
 
-    const HeaderName hname(name);
-    const char* separator = "";
-    for (const auto &h : std::as_const(d->headers)) {
-        if (h.name == hname) {
-            result.append(separator);
-            result.append(h.value);
-            separator = ", ";
-        }
-    }
+    d->combinedValue(HeaderName{name}, result);
     return result;
 }
 
@@ -1386,15 +1392,7 @@ QByteArray QHttpHeaders::combinedValue(WellKnownHeader name) const
     if (isEmpty())
         return result;
 
-    const HeaderName hname(name);
-    const char* separator = "";
-    for (const auto &h : std::as_const(d->headers)) {
-        if (h.name == hname) {
-            result.append(separator);
-            result.append(h.value);
-            separator = ", ";
-        }
-    }
+    d->combinedValue(HeaderName{name}, result);
     return result;
 }
 
