@@ -1080,28 +1080,38 @@ void QTextEdit::selectAll()
 bool QTextEdit::event(QEvent *e)
 {
     Q_D(QTextEdit);
-#ifndef QT_NO_CONTEXTMENU
-    if (e->type() == QEvent::ContextMenu
-        && static_cast<QContextMenuEvent *>(e)->reason() == QContextMenuEvent::Keyboard) {
-        ensureCursorVisible();
-        const QPoint cursorPos = cursorRect().center();
-        QContextMenuEvent ce(QContextMenuEvent::Keyboard, cursorPos, d->viewport->mapToGlobal(cursorPos));
-        ce.setAccepted(e->isAccepted());
-        const bool result = QAbstractScrollArea::event(&ce);
-        e->setAccepted(ce.isAccepted());
-        return result;
-    } else if (e->type() == QEvent::ShortcutOverride || e->type() == QEvent::ToolTip) {
+    switch (e->type()) {
+    case QEvent::ShortcutOverride:
+    case QEvent::ToolTip:
         d->sendControlEvent(e);
-    } else
+        break;
+    case QEvent::WindowActivate:
+    case QEvent::WindowDeactivate:
+        d->control->setPalette(palette());
+        break;
+#ifndef QT_NO_CONTEXTMENU
+    case QEvent::ContextMenu:
+        if (static_cast<QContextMenuEvent *>(e)->reason() == QContextMenuEvent::Keyboard) {
+            ensureCursorVisible();
+            const QPoint cursorPos = cursorRect().center();
+            QContextMenuEvent ce(QContextMenuEvent::Keyboard, cursorPos, d->viewport->mapToGlobal(cursorPos));
+            ce.setAccepted(e->isAccepted());
+            const bool result = QAbstractScrollArea::event(&ce);
+            e->setAccepted(ce.isAccepted());
+            return result;
+        }
+        break;
 #endif // QT_NO_CONTEXTMENU
 #ifdef QT_KEYPAD_NAVIGATION
-    if (e->type() == QEvent::EnterEditFocus || e->type() == QEvent::LeaveEditFocus) {
+    case QEvent::EnterEditFocus:
+    case QEvent::LeaveEditFocus:
         if (QApplicationPrivate::keypadNavigationEnabled())
             d->sendControlEvent(e);
-    } else
+        break;
 #endif
-    if (e->type() == QEvent::WindowActivate || e->type() == QEvent::WindowDeactivate)
-        d->control->setPalette(palette());
+    default:
+        break;
+    }
     return QAbstractScrollArea::event(e);
 }
 
