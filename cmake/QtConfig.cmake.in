@@ -62,6 +62,8 @@ if(NOT DEFINED QT_CMAKE_EXPORT_NAMESPACE)
     set(QT_CMAKE_EXPORT_NAMESPACE @QT_CMAKE_EXPORT_NAMESPACE@)
 endif()
 
+__qt_internal_collect_additional_module_paths()
+
 # Propagate sanitizer flags to both internal Qt builds and user projects.
 # Allow opt-out in case if downstream projects handle it in a different way.
 set(QT_CONFIGURED_SANITIZER_OPTIONS "@ECM_ENABLE_SANITIZERS@")
