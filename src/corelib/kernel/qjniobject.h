@@ -69,12 +69,17 @@ public:
 #endif
         >
     explicit QJniObject(const char *className, Args &&...args)
-        : QJniObject(Qt::Uninitialized)
+        : QJniObject(LocalFrame<Args...>{}, className, std::forward<Args>(args)...)
     {
-        LocalFrame<Args...> localFrame;
-        *this = QJniObject(className, QtJniTypes::constructorSignature<Args...>().data(),
-                           localFrame.convertToJni(std::forward<Args>(args))...);
     }
+private:
+    template<typename ...Args>
+    explicit QJniObject(LocalFrame<Args...> localFrame, const char *className, Args &&...args)
+        : QJniObject(className, QtJniTypes::constructorSignature<Args...>().data(),
+                     localFrame.convertToJni(std::forward<Args>(args))...)
+    {
+    }
+public:
     explicit QJniObject(jclass clazz);
     explicit QJniObject(jclass clazz, const char *signature, ...);
     template<typename ...Args
