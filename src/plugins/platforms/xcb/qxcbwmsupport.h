@@ -1,7 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
-#ifndef QXCBWMSUPPORT_H
-#define QXCBWMSUPPORT_H
+
+#pragma once
 
 #include "qxcbobject.h"
 #include "qxcbconnection.h"
@@ -28,5 +28,3 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif

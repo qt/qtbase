@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBGLXNATIVEINTERFACEHANDLER_H
-#define QXCBGLXNATIVEINTERFACEHANDLER_H
+#pragma once
 
 #include "qxcbnativeinterfacehandler.h"
 
@@ -25,5 +24,3 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif //QXCBGLXNATIVEINTERFACEHANDLER_H

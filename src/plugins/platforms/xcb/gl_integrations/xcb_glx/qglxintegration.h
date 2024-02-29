@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QGLXINTEGRATION_H
-#define QGLXINTEGRATION_H
+#pragma once
 
 #include "qxcbwindow.h"
 #include "qxcbscreen.h"
@@ -76,5 +75,3 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif

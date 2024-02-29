@@ -1,8 +1,7 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBSCROLLINGDEVICE_P_H
-#define QXCBSCROLLINGDEVICE_P_H
+#pragma once
 
 #include <QtGui/private/qpointingdevice_p.h>
 
@@ -52,5 +51,3 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QXCBSCROLLINGDEVICE_P_H

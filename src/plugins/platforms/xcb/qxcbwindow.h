@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBWINDOW_H
-#define QXCBWINDOW_H
+#pragma once
 
 #include <qpa/qplatformwindow.h>
 #include <qpa/qplatformwindow_p.h>
@@ -281,5 +280,3 @@ QList<xcb_rectangle_t> qRegionToXcbRectangleList(const QRegion &region);
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QXcbWindow*)
-
-#endif

@@ -1,8 +1,7 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QBACKINGSTORE_X11_H
-#define QBACKINGSTORE_X11_H
+#pragma once
 
 #include <qpa/qplatformbackingstore.h>
 
@@ -36,5 +35,3 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QBACKINGSTORE_X11_H

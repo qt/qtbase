@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBGLINTEGRATIONFACTORY_H
-#define QXCBGLINTEGRATIONFACTORY_H
+#pragma once
 
 #include <QtCore/qstringlist.h>
 
@@ -17,6 +16,3 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif //QXCBGLINTEGRATIONFACTORY_H
-

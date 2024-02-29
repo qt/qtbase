@@ -1,7 +1,7 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
-#ifndef QXCBBASICCONNECTION_H
-#define QXCBBASICCONNECTION_H
+
+#pragma once
 
 #include "qxcbatom.h"
 #include "qxcbexport.h"
@@ -138,5 +138,3 @@ struct QStdFreeDeleter {
     )
 
 QT_END_NAMESPACE
-
-#endif // QXCBBASICCONNECTION_H

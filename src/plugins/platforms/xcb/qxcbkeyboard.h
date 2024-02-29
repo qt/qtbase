@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBKEYBOARD_H
-#define QXCBKEYBOARD_H
+#pragma once
 
 #include "qxcbobject.h"
 
@@ -101,5 +100,3 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif

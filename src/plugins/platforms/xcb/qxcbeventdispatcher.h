@@ -1,7 +1,7 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
-#ifndef QXCBEVENTDISPATCHER_H
-#define QXCBEVENTDISPATCHER_H
+
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QEventLoop>
@@ -68,5 +68,3 @@ public:
 };
 
 QT_END_NAMESPACE
-
-#endif // QXCBEVENTDISPATCHER_H

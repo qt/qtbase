@@ -1,8 +1,7 @@
 // Copyright (C) 2017 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBVULKANWINDOW_H
-#define QXCBVULKANWINDOW_H
+#pragma once
 
 #include "qxcbwindow.h"
 #include "qxcbvulkaninstance.h"
@@ -25,5 +24,3 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QXCBVULKANWINDOW_H

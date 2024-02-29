@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBSCREEN_H
-#define QXCBSCREEN_H
+#pragma once
 
 #include <qpa/qplatformscreen.h>
 #include <qpa/qplatformscreen_p.h>
@@ -228,5 +227,3 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QXcbScreen *);
 #endif
 
 QT_END_NAMESPACE
-
-#endif

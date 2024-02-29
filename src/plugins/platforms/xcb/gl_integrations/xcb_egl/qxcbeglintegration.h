@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBEGLINTEGRATION_H
-#define QXCBEGLINTEGRATION_H
+#pragma once
 
 #include "qxcbglintegration.h"
 
@@ -48,4 +47,3 @@ private:
 };
 
 QT_END_NAMESPACE
-#endif //QXCBEGLINTEGRATION_H

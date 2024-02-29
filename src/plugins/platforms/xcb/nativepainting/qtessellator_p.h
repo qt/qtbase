@@ -1,8 +1,7 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QTESSELATOR_P_H
-#define QTESSELATOR_P_H
+#pragma once
 
 #include <QPoint>
 #include <QRect>
@@ -49,5 +48,3 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif

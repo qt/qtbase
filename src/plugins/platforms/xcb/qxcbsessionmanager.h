@@ -2,8 +2,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBSESSIONMANAGER_H
-#define QXCBSESSIONMANAGER_H
+#pragma once
 
 //
 //  W A R N I N G
@@ -54,5 +53,3 @@ private:
 QT_END_NAMESPACE
 
 #endif //QT_NO_SESSIONMANAGER
-
-#endif //QXCBSESSIONMANAGER_H

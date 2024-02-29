@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBINCLUDE_H
-#define QXCBINCLUDE_H
+#pragma once
 
 #include <QtGui/QPalette>
 #include <QtCore/QTextStream>
@@ -14,5 +13,3 @@
 QT_BEGIN_NAMESPACE
 
 QT_END_NAMESPACE
-
-#endif //QXCBINCLUDE_H

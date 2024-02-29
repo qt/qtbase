@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBEGLCONTEXT_H
-#define QXCBEGLCONTEXT_H
+#pragma once
 
 #include "qxcbeglwindow.h"
 #include <QtGui/private/qeglplatformcontext_p.h>
@@ -52,5 +51,3 @@ public:
 };
 
 QT_END_NAMESPACE
-#endif //QXCBEGLCONTEXT_H
-

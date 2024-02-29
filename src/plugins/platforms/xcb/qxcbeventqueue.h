@@ -1,7 +1,7 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
-#ifndef QXCBEVENTQUEUE_H
-#define QXCBEVENTQUEUE_H
+
+#pragma once
 
 #include <QtCore/QThread>
 #include <QtCore/QHash>
@@ -147,5 +147,3 @@ xcb_generic_event_t *QXcbEventQueue::peek(PeekOption option, Peeker &&peeker)
 }
 
 QT_END_NAMESPACE
-
-#endif

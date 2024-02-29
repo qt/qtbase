@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBSYSTEMTRAYTRACKER_H
-#define QXCBSYSTEMTRAYTRACKER_H
+#pragma once
 
 #include "qxcbconnection.h"
 
@@ -45,5 +44,3 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif // QXCBSYSTEMTRAYTRACKER_H

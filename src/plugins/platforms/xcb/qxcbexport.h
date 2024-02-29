@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBEXPORT_H
-#define QXCBEXPORT_H
+#pragma once
 
 #include <QtCore/qglobal.h>
 
@@ -15,5 +14,3 @@ QT_BEGIN_NAMESPACE
 #  endif
 
 QT_END_NAMESPACE
-#endif //QXCBEXPORT_H
-

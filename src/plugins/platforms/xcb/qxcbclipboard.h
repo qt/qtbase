@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBCLIPBOARD_H
-#define QXCBCLIPBOARD_H
+#pragma once
 
 #include <qpa/qplatformclipboard.h>
 #include <qxcbobject.h>
@@ -109,5 +108,3 @@ private:
 #endif // QT_NO_CLIPBOARD
 
 QT_END_NAMESPACE
-
-#endif // QXCBCLIPBOARD_H

@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBEGLWINDOW_H
-#define QXCBEGLWINDOW_H
+#pragma once
 
 #include "qxcbwindow.h"
 
@@ -34,4 +33,3 @@ private:
 };
 
 QT_END_NAMESPACE
-#endif //QXCBEGLWINDOW_H

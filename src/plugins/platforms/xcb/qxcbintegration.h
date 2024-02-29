@@ -1,8 +1,7 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
 
-#ifndef QXCBINTEGRATION_H
-#define QXCBINTEGRATION_H
+#pragma once
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include <qpa/qplatformintegration.h>
@@ -127,5 +126,3 @@ private:
 };
 
 QT_END_NAMESPACE
-
-#endif
