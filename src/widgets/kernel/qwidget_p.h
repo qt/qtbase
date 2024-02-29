@@ -221,6 +221,8 @@ public:
     void setSharedPainter(QPainter *painter);
     QWidgetRepaintManager *maybeRepaintManager() const;
 
+    QRhi *rhi() const;
+
     enum class WindowHandleMode {
         Direct,
         Closest,
