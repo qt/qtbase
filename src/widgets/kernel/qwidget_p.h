@@ -635,6 +635,8 @@ public:
 
     std::string flagsForDumping() const override;
 
+    QWidget *closestParentWidgetWithWindowHandle() const;
+
     // Variables.
     // Regular pointers (keep them together to avoid gaps on 64 bit architectures).
     std::unique_ptr<QWExtra> extra;
