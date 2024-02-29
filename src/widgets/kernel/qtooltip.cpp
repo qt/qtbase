@@ -329,6 +329,7 @@ bool QTipLabel::eventFilter(QObject *o, QEvent *e)
     case QEvent::MouseMove:
         if (o == widget && !rect.isNull() && !rect.contains(static_cast<QMouseEvent*>(e)->position().toPoint()))
             hideTip();
+        break;
     default:
         break;
     }

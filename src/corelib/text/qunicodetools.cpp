@@ -1355,6 +1355,7 @@ static qsizetype indic_nextSyllableBoundary(QChar::Script script, const char16_t
                 // ### needs proper testing for correct two/three part matras
                 break;
             }
+            Q_FALLTHROUGH();
         case IndependentVowel:
         case Invalid:
         case Other:

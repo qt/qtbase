@@ -3099,6 +3099,7 @@ bool QCalendarWidget::event(QEvent *event)
         case QEvent::StyleChange:
             d->cachedSizeHint = QSize();
             d->m_view->updateGeometry();
+            break;
         default:
             break;
     }

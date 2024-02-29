@@ -436,6 +436,7 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
         case EFAULT:
         case ENOTSOCK:
             socketState = QAbstractSocket::UnconnectedState;
+            break;
         default:
             break;
         }

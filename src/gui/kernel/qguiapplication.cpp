@@ -2027,6 +2027,7 @@ bool QGuiApplication::event(QEvent *e)
                 return true;
             }
         }
+        break;
     default:
         break;
     }

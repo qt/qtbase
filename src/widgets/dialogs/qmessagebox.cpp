@@ -2768,6 +2768,7 @@ QPixmap QMessageBoxPrivate::standardIcon(QMessageBox::Icon icon, QMessageBox *mb
         break;
     case QMessageBox::Question:
         tmpIcon = style->standardIcon(QStyle::SP_MessageBoxQuestion, nullptr, mb);
+        break;
     default:
         break;
     }

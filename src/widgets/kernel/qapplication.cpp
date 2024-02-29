@@ -2645,6 +2645,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         Q_FALLTHROUGH();
     case QEvent::Leave:
         d->toolTipWakeUp.stop();
+        break;
     default:
         break;
     }
@@ -2669,6 +2670,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     || key == Qt::Key_Up
                     || key == Qt::Key_Right
                     || key == Qt::Key_Down);
+        break;
     }
     default:
         break;

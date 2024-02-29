@@ -1084,6 +1084,7 @@ bool QToolBar::event(QEvent *event)
             d->layout->setExpanded(false);
             break;
         }
+        break;
     default:
         break;
     }

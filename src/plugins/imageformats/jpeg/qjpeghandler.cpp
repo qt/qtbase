@@ -1146,6 +1146,7 @@ void QJpegHandler::setOption(ImageOption option, const QVariant &value)
         int transformation = value.toInt();
         if (transformation > 0 && transformation < 8)
             d->transformation = QImageIOHandler::Transformations(transformation);
+        break;
     }
     default:
         break;

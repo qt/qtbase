@@ -3253,6 +3253,7 @@ bool QGraphicsScene::event(QEvent *event)
         // ### this should only be cleared if we received a new mouse move event,
         // which relies on us fixing the replay mechanism in QGraphicsView.
         d->cachedItemsUnderMouse.clear();
+        break;
     default:
         break;
     }

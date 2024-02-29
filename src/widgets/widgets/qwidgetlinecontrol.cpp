@@ -1638,6 +1638,7 @@ void QWidgetLineControl::processKeyEvent(QKeyEvent* event)
                     setText(m_completer->currentCompletion());
                     inlineCompletionAccepted = true;
                 }
+                break;
             default:
                 break; // normal key processing
             }

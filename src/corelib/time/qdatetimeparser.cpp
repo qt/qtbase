@@ -709,6 +709,7 @@ int QDateTimeParser::sectionMaxSize(Section s, int count) const
     case DaySectionMask:
         qWarning("QDateTimeParser::sectionMaxSize: Invalid section %s",
                  SectionNode::name(s).toLatin1().constData());
+        break;
 
     case NoSectionIndex:
     case FirstSectionIndex:

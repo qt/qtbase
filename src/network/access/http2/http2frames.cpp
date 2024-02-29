@@ -135,6 +135,7 @@ FrameStatus Frame::validateHeader() const
         // 6.6 PUSH_PROMISE
         if (framePayloadSize < 4)
             return FrameStatus::sizeError;
+        break;
     default:
         // DATA/HEADERS/CONTINUATION will be verified
         // when we have payload.
