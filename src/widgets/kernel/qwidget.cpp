@@ -1026,6 +1026,14 @@ void QWidgetPrivate::createRecursively()
     }
 }
 
+QRhi *QWidgetPrivate::rhi() const
+{
+    if (QWidgetRepaintManager *repaintManager = maybeRepaintManager())
+        return repaintManager->rhi();
+    else
+        return nullptr;
+}
+
 /*!
     \internal
     Returns the closest parent widget that has a QWindow window handle
