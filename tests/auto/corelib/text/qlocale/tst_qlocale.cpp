@@ -2090,10 +2090,6 @@ void tst_QLocale::formatDateTime()
     QFETCH(QString, format);
     QFETCH(QString, result);
 
-#if defined(Q_OS_WASM)
-    QEXPECT_FAIL("dd MMMM yyyy, hh:mm:ss", "Year 0001 doesn't get properly formatted on WASM C locale", Abort);
-#endif // Q_OS_WASM
-
     QLocale l(localeName);
     QCOMPARE(l.toString(dateTime, format), result);
     QCOMPARE(l.toString(dateTime, QStringView(format)), result);
@@ -2118,6 +2114,7 @@ void tst_QLocale::formatTimeZone()
         const QStringList knownCETus = {
             u"GMT+1"_s, // ICU
             u"Central Europe Standard Time"_s, // MS (lacks abbreviations)
+            u"Central European Standard Time"_s,
             u"CET"_s // Standard abbreviation
         };
         const QString cet = enUS.toString(QDate(2013, 1, 1).startOfDay(), u"t");
@@ -2127,6 +2124,7 @@ void tst_QLocale::formatTimeZone()
         const QStringList knownCESTus = {
             u"GMT+2"_s, // ICU
             u"Central Europe Summer Time"_s, // MS (lacks abbreviations)
+            u"Central European Summer Time"_s,
             u"CEST"_s // Standard abbreviation
         };
         const QString cest = enUS.toString(QDate(2013, 6, 1).startOfDay(), u"t");
