@@ -352,6 +352,7 @@ bool QAccessibleTable::unselectRow(int row)
             //the ones which are down the current row will be deselected
             selection = QItemSelection(index, theModel->index(rowCount() - 1, 0, rootIndex));
         }
+        break;
     default:
         break;
     }
@@ -392,6 +393,7 @@ bool QAccessibleTable::unselectColumn(int column)
             //of the current rown, the ones which are at the right will be deselected
             selection = QItemSelection(index, theModel->index(0, columnCount() - 1, rootIndex));
         }
+        break;
     default:
         break;
     }

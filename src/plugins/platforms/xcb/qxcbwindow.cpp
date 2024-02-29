@@ -135,6 +135,7 @@ void QXcbWindow::setImageFormatForVisual(const xcb_visualtype_t *visual)
     case 16:
         qWarning("Using RGB16 fallback, if this works your X11 server is reporting a bad screen format.");
         m_imageFormat = QImage::Format_RGB16;
+        break;
     default:
         break;
     }

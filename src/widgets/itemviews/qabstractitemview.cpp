@@ -4301,6 +4301,7 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionC
             default:
                 break;
             }
+            break;
         }
         default:
             break;

@@ -268,6 +268,7 @@ void qDrawEdge(QPainter *p, qreal x1, qreal y1, qreal x2, qreal y2, qreal dw1, q
         default:
             break;
         }
+        break;
     }
     default:
         break;

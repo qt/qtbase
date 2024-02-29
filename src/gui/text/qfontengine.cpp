@@ -1234,6 +1234,7 @@ const uchar *QFontEngine::getCMap(const uchar *table, uint tableSize, bool *isSy
             default:
                 break;
             }
+            break;
         default:
             break;
         }

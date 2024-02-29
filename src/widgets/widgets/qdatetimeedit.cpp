@@ -1331,6 +1331,7 @@ void QDateTimeEdit::focusInEvent(QFocusEvent *event)
     case Qt::ActiveWindowFocusReason:
         if (oldHasHadFocus)
             return;
+        break;
     case Qt::ShortcutFocusReason:
     case Qt::TabFocusReason:
     default:

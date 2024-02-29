@@ -4224,6 +4224,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
                 break;
             case SC_SpinBoxFrame:
                 ret = spinbox->rect;
+                break;
             default:
                 break;
             }

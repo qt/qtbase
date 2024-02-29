@@ -338,6 +338,7 @@ bool QDockWidgetGroupWindow::event(QEvent *e)
     case QEvent::Resize:
         updateCurrentGapRect();
         emit resized();
+        break;
     default:
         break;
     }

@@ -4871,6 +4871,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
             w = w->parentWidget(); //match on the QTabBar instead of the CloseButton
         }
         pseudoElement = PseudoElement_TabBarTabCloseButton;
+        break;
 #endif
 
     default:
