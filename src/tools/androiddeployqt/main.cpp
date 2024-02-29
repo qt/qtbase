@@ -2519,8 +2519,9 @@ void checkAndWarnGradleLongPaths(const QString &outputDirectory)
     QDirIterator it(outputDirectory, QStringList(QStringLiteral("*.java")), QDir::Files,
                     QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        if (it.next().size() >= MAX_PATH)
-            longFileNames.append(it.next());
+        const QString &filePath = it.next();
+        if (filePath.size() >= MAX_PATH)
+            longFileNames.append(filePath);
     }
 
     if (!longFileNames.isEmpty()) {
