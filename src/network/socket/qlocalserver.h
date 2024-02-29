@@ -68,6 +68,7 @@ public:
 
 protected:
     virtual void incomingConnection(quintptr socketDescriptor);
+    void addPendingConnection(QLocalSocket *socket);
 
 private:
     Q_DISABLE_COPY(QLocalServer)
