@@ -576,7 +576,7 @@ function(qt6_android_add_apk_target target)
             "$<TARGET_FILE:${target}>"
             "${androiddeployqt_output_path}/${target_file_copy_relative_path}"
         )
-        if(has_depfile_support)
+        if(has_depfile_support AND FALSE) # TODO: It breaks multi-abi builds. See QTBUG-122838
             set(deploy_android_deps_dir "${apk_final_dir}/${target}_deploy_android")
             set(timestamp_file "${deploy_android_deps_dir}/timestamp")
             set(dep_file "${deploy_android_deps_dir}/${target}.d")
