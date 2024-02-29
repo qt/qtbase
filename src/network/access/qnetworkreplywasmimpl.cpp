@@ -297,7 +297,7 @@ void QNetworkReplyWasmImplPrivate::doSendRequest()
     attr.destinationPath = destinationPath.constData();
 
     auto url = request.url().toString().toUtf8();
-    QEventDispatcherWasm::runOnMainThreadAsync([attr, url]() mutable {
+    QEventDispatcherWasm::runOnMainThread([attr, url]() mutable {
         emscripten_fetch(&attr, url);
     });
     state = Working;
