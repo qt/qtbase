@@ -1,8 +1,7 @@
 // Copyright (C) 2018 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QWAYLANDFULLSCREENSHELLV1INTEGRATION_H
-#define QWAYLANDFULLSCREENSHELLV1INTEGRATION_H
+#pragma once
 
 #include <wayland-client.h>
 #include <QtWaylandClient/private/qwayland-wayland.h>
@@ -27,5 +26,3 @@ public:
 } // namespace QtWaylandClient
 
 QT_END_NAMESPACE
-
-#endif // QWAYLANDFULLSCREENSHELLV1INTEGRATION_H

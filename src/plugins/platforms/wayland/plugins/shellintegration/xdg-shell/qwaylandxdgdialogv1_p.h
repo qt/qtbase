@@ -1,8 +1,7 @@
 // Copyright (C) 2022 David Reondo <kde@david-redondo.de>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QWAYLANDDIALOGV1_P_H
-#define QWAYLANDDIALOGV1_P_H
+#pragma once
 
 #include <qwayland-xdg-dialog-v1.h>
 
@@ -28,5 +27,3 @@ public:
 } // namespace QtWaylandClient
 
 QT_END_NAMESPACE
-
-#endif

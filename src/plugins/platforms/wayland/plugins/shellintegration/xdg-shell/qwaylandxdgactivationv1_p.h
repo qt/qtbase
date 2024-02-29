@@ -1,19 +1,7 @@
 // Copyright (C) 2020 Aleix Pol Gonzalez <aleixpol@kde.org>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QWAYLANDXDGACTIVATIONV1_P_H
-#define QWAYLANDXDGACTIVATIONV1_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#pragma once
 
 #include <QObject>
 #include "qwayland-xdg-activation-v1.h"
@@ -55,4 +43,3 @@ public:
 } // namespace QtWaylandClient
 
 QT_END_NAMESPACE
-#endif // QWAYLANDXDGACTIVATIONV1_P_H

@@ -1,19 +1,7 @@
 // Copyright (C) 2022 David Reondo <kde@david-redondo.de>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef QWAYLANDXDGEXPORTERV2_H
-#define QWAYLANDXDGEXPORTERV2_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#pragma once
 
 #include <qwayland-xdg-foreign-unstable-v2.h>
 
@@ -45,5 +33,3 @@ public:
 }
 
 QT_END_NAMESPACE
-
-#endif // QWAYLANDXDGEXPORTERV2_H
