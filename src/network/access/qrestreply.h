@@ -35,7 +35,7 @@ public:
     void swap(QRestReply &other) noexcept
     {
         wrapped.swap(other.wrapped);
-        std::swap(d, other.d);
+        qt_ptr_swap(d, other.d);
     }
 
     Q_NETWORK_EXPORT QNetworkReply *networkReply() const;
