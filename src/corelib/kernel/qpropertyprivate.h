@@ -36,9 +36,13 @@ namespace QtPrivate {
 // QPropertyBindingPrivatePtr operates on a RefCountingMixin solely so that we can inline
 // the constructor and copy constructor
 struct RefCounted {
+
+    int refCount() const { return ref; }
+    void addRef() { ++ref; }
+    bool deref() { return --ref != 0; }
+
+private:
     int ref = 0;
-    void addRef() {++ref;}
-    bool deref() {--ref; return ref;}
 };
 }
 
@@ -61,7 +65,7 @@ public:
     QPropertyBindingPrivatePtr() noexcept : d(nullptr) { }
     ~QPropertyBindingPrivatePtr()
     {
-        if (d && (--d->ref == 0))
+        if (d && !d->deref())
             destroyAndFreeMemory();
     }
     Q_CORE_EXPORT void destroyAndFreeMemory();

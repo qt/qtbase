@@ -27,9 +27,9 @@ void QPropertyBindingPrivatePtr::reset(QtPrivate::RefCounted *ptr) noexcept
 {
     if (ptr != d) {
         if (ptr)
-            ptr->ref++;
+            ptr->addRef();
         auto *old = std::exchange(d, ptr);
-        if (old && (--old->ref == 0))
+        if (old && !old->deref())
             QPropertyBindingPrivate::destroyAndFreeMemory(static_cast<QPropertyBindingPrivate *>(d));
     }
 }
@@ -310,7 +310,7 @@ void QPropertyBindingPrivate::unlinkAndDeref()
 {
     clearDependencyObservers();
     propertyDataPtr = nullptr;
-    if (--ref == 0)
+    if (!deref())
         destroyAndFreeMemory(this);
 }
 
