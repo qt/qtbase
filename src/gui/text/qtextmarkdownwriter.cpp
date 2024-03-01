@@ -316,25 +316,20 @@ static void maybeEscapeFirstChar(QString &s)
 }
 
 /*! \internal
-    Escape unescaped backslashes. Then escape any special character that stands
+    Escape all backslashes. Then escape any special character that stands
     alone or prefixes a "word", including the \c < that starts an HTML tag.
     https://spec.commonmark.org/0.31.2/#backslash-escapes
 */
 static void escapeSpecialCharacters(QString &s)
 {
-    static const QRegularExpression backslashRe(uR"([^\\]\\)"_s);
     static const QRegularExpression spaceRe(uR"(\s+)"_s);
     static const QRegularExpression specialRe(uR"([<!*[`&]+[/\w])"_s);
 
+    s.replace("\\"_L1, "\\\\"_L1);
+
     int i = 0;
     while (i >= 0) {
-        if (int j = s.indexOf(backslashRe, i); j >= 0) {
-            ++j; // we found some char before the backslash that needs escaping
-            if (s.size() == j + 1 || s.at(j + 1) != qtmw_Backslash)
-                s.insert(j, qtmw_Backslash);
-            i = j + 3;
-        }
-        if (int j = s.indexOf(specialRe, i); j >= 0 && (j == 0 || s.at(j - 1) != u'\\')) {
+        if (int j = s.indexOf(specialRe, i); j >= 0) {
             s.insert(j, qtmw_Backslash);
             i = j + 3;
         }
