@@ -7,6 +7,8 @@
 #include <QtXml/qtxmlglobal.h>
 #include <QtCore/qstring.h>
 
+class tst_QDom;
+
 QT_BEGIN_NAMESPACE
 
 
@@ -201,6 +203,7 @@ protected:
     QDomNode(QDomNodePrivate*);
 
 private:
+    friend class ::tst_QDom;
     friend class QDomDocument;
     friend class QDomDocumentType;
     friend class QDomNodeList;
