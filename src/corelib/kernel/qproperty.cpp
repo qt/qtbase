@@ -753,13 +753,6 @@ void QPropertyObserverPointer::setChangeHandler(QPropertyObserver::ChangeHandler
     ptr->next.setTag(QPropertyObserver::ObserverNotifiesChangeHandler);
 }
 
-void QPropertyObserverPointer::setBindingToNotify(QPropertyBindingPrivate *binding)
-{
-    Q_ASSERT(ptr->next.tag() != QPropertyObserver::ObserverIsPlaceholder);
-    ptr->binding = binding;
-    ptr->next.setTag(QPropertyObserver::ObserverNotifiesBinding);
-}
-
 /*!
     \internal
     The same as setBindingToNotify, but assumes that the tag is already correct.

@@ -107,6 +107,8 @@ private slots:
 
     void propertyAdaptorBinding();
     void propertyUpdateViaSignaledProperty();
+
+    void derefFromObserver();
 };
 
 void tst_QProperty::functorBinding()
@@ -261,6 +263,7 @@ void tst_QProperty::bindingAfterUse()
 
 void tst_QProperty::bindingFunctionDtorCalled()
 {
+    DtorCounter::counter = 0;
     DtorCounter dc;
     {
         QProperty<int> prop;
@@ -2475,6 +2478,47 @@ void tst_QProperty::propertyUpdateViaSignaledProperty()
     rootTrigger.setValue(4);
     QCOMPARE(o.bindable1(), 4);
     QCOMPARE(o.bindable2(), 36);
+}
+
+void tst_QProperty::derefFromObserver()
+{
+    int triggered = 0;
+    QProperty<int> source(11);
+
+    DtorCounter::counter = 0;
+    DtorCounter dc;
+
+    QProperty<int> target([&triggered, &source, dc]() mutable {
+        dc.shouldIncrement = true;
+        return ++triggered + source.value();
+    });
+    QCOMPARE(triggered, 1);
+
+    {
+        auto propObserver = std::make_unique<QPropertyObserver>();
+        QPropertyObserverPointer propObserverPtr { propObserver.get() };
+        propObserverPtr.setBindingToNotify(QPropertyBindingPrivate::get(target.binding()));
+
+        QBindingObserverPtr bindingPtr(propObserver.get());
+
+        QCOMPARE(triggered, 1);
+        source = 25;
+        QCOMPARE(triggered, 2);
+        QCOMPARE(target, 27);
+
+        target.setBinding([]() { return 8; });
+        QCOMPARE(target, 8);
+
+        // The QBindingObserverPtr still holds on to the binding.
+        QCOMPARE(dc.counter, 0);
+    }
+
+    // The binding is actually gone now.
+    QCOMPARE(dc.counter, 1);
+
+    source = 26;
+    QCOMPARE(triggered, 2);
+    QCOMPARE(target, 8);
 }
 
 QTEST_MAIN(tst_QProperty);
