@@ -214,7 +214,7 @@ void tst_QTextMarkdownImporter::lists_data()
     QTest::newRow("hyphen space newline") << "- \n" << 0 << 1 << 1 << true << "- \n";
     QTest::newRow("hyphen space letter newline") << "- a\n" << 0 << 1 << 1 << false << "- a\n";
     QTest::newRow("hyphen nbsp newline") <<
-        QString::fromUtf8("-\u00A0\n") << 0 << 1 << 0 << true << "-\u00A0\n\n";
+        QString::fromUtf8("-\u00A0\n") << 0 << 1 << 0 << true << "\\-\u00A0\n\n";
     QTest::newRow("nested empty lists") << "*\n  *\n  *\n" << 0 << 1 << 1 << true << "  * \n";
     QTest::newRow("list nested in empty list") << "-\n  * a\n" << 0 << 1 << 2 << false << "- \n  * a\n";
     QTest::newRow("lists nested in empty lists")

@@ -11,6 +11,7 @@
 #include "qtextcursor.h"
 #include "qtextimagehandler_p.h"
 #include "qloggingcategory.h"
+#include <QtCore/QRegularExpression>
 #if QT_CONFIG(itemmodel)
 #include "qabstractitemmodel.h"
 #endif
@@ -273,15 +274,58 @@ static int adjacentBackticksCount(const QString &s)
     return ret;
 }
 
+/*! \internal
+    Escape anything at the beginning of a line of markdown that would be
+    misinterpreted by a markdown parser, including any period that follows a
+    number (to avoid misinterpretation as a numbered list item).
+    https://spec.commonmark.org/0.31.2/#backslash-escapes
+*/
 static void maybeEscapeFirstChar(QString &s)
 {
+    static const QRegularExpression numericListRe(uR"(\d+([\.)])\s)"_s);
+    static const QLatin1StringView specialFirstCharacters("#*+-");
+
     QString sTrimmed = s.trimmed();
     if (sTrimmed.isEmpty())
         return;
-    char firstChar = sTrimmed.at(0).toLatin1();
-    if (firstChar == '*' || firstChar == '+' || firstChar == '-') {
-        int i = s.indexOf(QLatin1Char(firstChar));
+    QChar firstChar = sTrimmed.at(0);
+    if (specialFirstCharacters.contains(firstChar)) {
+        int i = s.indexOf(firstChar); // == 0 unless s got trimmed
         s.insert(i, u'\\');
+    } else {
+        auto match = numericListRe.match(s, 0, QRegularExpression::NormalMatch,
+                                         QRegularExpression::AnchorAtOffsetMatchOption);
+        if (match.hasMatch())
+            s.insert(match.capturedStart(1), qtmw_Backslash);
+    }
+}
+
+/*! \internal
+    Escape unescaped backslashes. Then escape any special character that stands
+    alone or prefixes a "word", including the \c < that starts an HTML tag.
+    https://spec.commonmark.org/0.31.2/#backslash-escapes
+*/
+static void escapeSpecialCharacters(QString &s)
+{
+    static const QRegularExpression backslashRe(uR"([^\\]\\)"_s);
+    static const QRegularExpression spaceRe(uR"(\s+)"_s);
+    static const QRegularExpression specialRe(uR"([<!*[`&]+[/\w])"_s);
+
+    int i = 0;
+    while (i >= 0) {
+        if (int j = s.indexOf(backslashRe, i); j >= 0) {
+            ++j; // we found some char before the backslash that needs escaping
+            if (s.size() == j + 1 || s.at(j + 1) != qtmw_Backslash)
+                s.insert(j, qtmw_Backslash);
+            i = j + 3;
+        }
+        if (int j = s.indexOf(specialRe, i); j >= 0 && (j == 0 || s.at(j - 1) != u'\\')) {
+            s.insert(j, qtmw_Backslash);
+            i = j + 3;
+        }
+        i = s.indexOf(spaceRe, i);
+        if (i >= 0)
+            ++i; // past the whitespace, if found
     }
 }
 
@@ -491,6 +535,10 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
         QString fragmentText = frag.fragment().text();
         while (fragmentText.endsWith(qtmw_Newline))
             fragmentText.chop(1);
+        if (!(m_fencedCodeBlock || m_indentedCodeBlock)) {
+            escapeSpecialCharacters(fragmentText);
+            maybeEscapeFirstChar(fragmentText);
+        }
         if (block.textList()) { // <li>first line</br>continuation</li>
             QString newlineIndent =
                     QString(qtmw_Newline) + QString(m_wrappedLineIndent, qtmw_Space);
