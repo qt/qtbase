@@ -3037,7 +3037,7 @@ function(_qt_internal_setup_deploy_support)
     else()
         set(qt_paths_ext "")
     endif()
-    set(target_qtpaths_path "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_BINS}/qtpaths${qt_paths_ext}")
+    set(target_qtpaths_path "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_BINS}/qtpaths-qt6${qt_paths_ext}")
 
     file(GENERATE OUTPUT "${QT_DEPLOY_SUPPORT}" CONTENT
 "cmake_minimum_required(VERSION 3.16...3.21)
