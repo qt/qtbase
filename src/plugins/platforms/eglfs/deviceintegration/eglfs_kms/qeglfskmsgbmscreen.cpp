@@ -176,10 +176,14 @@ gbm_surface *QEglFSKmsGbmScreen::createSurface(EGLConfig eglConfig)
 
 void QEglFSKmsGbmScreen::resetSurface()
 {
-    m_flipPending = false;
+    m_flipPending = false; // not necessarily true but enough to keep bo_next
     m_gbm_bo_current = nullptr;
-    m_gbm_bo_next = nullptr;
     m_gbm_surface = nullptr;
+
+    // Leave m_gbm_bo_next untouched. waitForFlip() should
+    // still do its work, when called. Otherwise we end up
+    // in device-is-busy errors if there is a new QWindow
+    // created afterwards. (QTBUG-122663)
 }
 
 void QEglFSKmsGbmScreen::initCloning(QPlatformScreen *screenThisScreenClones,
