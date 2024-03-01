@@ -143,7 +143,13 @@ struct QPropertyObserverPointer
         unlink_common();
     }
 
-    void setBindingToNotify(QPropertyBindingPrivate *binding);
+    void setBindingToNotify(QPropertyBindingPrivate *binding)
+    {
+        Q_ASSERT(ptr->next.tag() != QPropertyObserver::ObserverIsPlaceholder);
+        ptr->binding = binding;
+        ptr->next.setTag(QPropertyObserver::ObserverNotifiesBinding);
+    }
+
     void setBindingToNotify_unsafe(QPropertyBindingPrivate *binding);
     void setChangeHandler(QPropertyObserver::ChangeHandler changeHandler);
 
@@ -941,7 +947,15 @@ QBindingObserverPtr::QBindingObserverPtr(QPropertyObserver *observer) noexcept :
     QPropertyObserverPointer{d}.binding()->addRef();
 }
 
-QBindingObserverPtr::~QBindingObserverPtr() { if (d)  QPropertyObserverPointer{d}.binding()->deref(); }
+QBindingObserverPtr::~QBindingObserverPtr()
+{
+    if (!d)
+        return;
+
+    QPropertyBindingPrivate *bindingPrivate = binding();
+    if (!bindingPrivate->deref())
+        QPropertyBindingPrivate::destroyAndFreeMemory(bindingPrivate);
+}
 
 QPropertyBindingPrivate *QBindingObserverPtr::binding() const noexcept { return QPropertyObserverPointer{d}.binding(); }
 
