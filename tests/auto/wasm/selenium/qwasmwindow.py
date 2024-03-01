@@ -372,8 +372,6 @@ class WidgetTestCase(unittest.TestCase):
 
         self.assertFalse(w4 in screen.query_windows())
 
-    #TODO FIX
-    @unittest.skip('Does not work currently')
     def test_window_painting(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                         x=0, y=0, width=800, height=800)
@@ -389,13 +387,15 @@ class WidgetTestCase(unittest.TestCase):
 
         self.assertEqual(w1.color_at(0, 0), Color(r=0, g=255, b=0))
 
-        w1_w1 = Window(parent=w1, rect=Rect(x=100, y=100, width=400, height=400), title='w1_w1')
+        w1_w1 = Window(parent=screen, rect=Rect(x=100, y=100, width=400, height=400), title='w1_w1')
+        w1_w1.set_parent(w1)
         w1_w1.set_background_color(Color(r=0, g=0, b=255))
         wait_for_animation_frame(self._driver)
 
         self.assertEqual(w1_w1.color_at(0, 0), Color(r=0, g=0, b=255))
 
-        w1_w1_w1 = Window(parent=w1_w1, rect=Rect(x=100, y=100, width=200, height=200), title='w1_w1_w1')
+        w1_w1_w1 = Window(parent=screen, rect=Rect(x=100, y=100, width=200, height=200), title='w1_w1_w1')
+        w1_w1_w1.set_parent(w1_w1)
         w1_w1_w1.set_background_color(Color(r=255, g=255, b=0))
         wait_for_animation_frame(self._driver)
 

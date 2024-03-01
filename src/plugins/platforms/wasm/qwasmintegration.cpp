@@ -208,8 +208,11 @@ void QWasmIntegration::removeBackingStore(QWindow* window)
 
 void QWasmIntegration::releaseRequesetUpdateHold()
 {
-    for (const auto &elementAndScreen : m_screens) {
-        elementAndScreen.wasmScreen->compositor()->releaseRequesetUpdateHold();
+    if (QWasmCompositor::releaseRequestUpdateHold())
+    {
+        for (const auto &elementAndScreen : m_screens) {
+            elementAndScreen.wasmScreen->compositor()->requestUpdate();
+        }
     }
 }
 

@@ -31,7 +31,9 @@ public:
     QWasmScreen *screen();
     void setEnabled(bool enabled);
 
-    void releaseRequesetUpdateHold();
+    static bool releaseRequestUpdateHold();
+
+    void requestUpdate();
     enum UpdateRequestDeliveryType { ExposeEventDelivery, UpdateRequestDelivery };
     void requestUpdateWindow(QWasmWindow *window, UpdateRequestDeliveryType updateType = ExposeEventDelivery);
 
@@ -43,15 +45,14 @@ private:
 
     void deregisterEventHandlers();
 
-    void requestUpdate();
     void deliverUpdateRequests();
     void deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType);
 
     bool m_isEnabled = true;
     QMap<QWasmWindow *, UpdateRequestDeliveryType> m_requestUpdateWindows;
     int m_requestAnimationFrameId = -1;
-    bool m_requestUpdateHoldEnabled = true;
     bool m_inDeliverUpdateRequest = false;
+    static bool m_requestUpdateHoldEnabled;
 };
 
 QT_END_NAMESPACE
