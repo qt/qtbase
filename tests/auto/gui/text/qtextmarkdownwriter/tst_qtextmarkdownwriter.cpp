@@ -44,6 +44,8 @@ private slots:
     void rewriteDocument();
     void fromHtml_data();
     void fromHtml();
+    void fromPlainTextAndBack_data();
+    void fromPlainTextAndBack();
     void escapeSpecialCharacters_data();
     void escapeSpecialCharacters();
 
@@ -824,6 +826,27 @@ void tst_QTextMarkdownWriter::fromHtml_data()
     QTest::newRow("table with backslash in cell") << // QTBUG-96051
             "<table><tr><td>1011011 [</td><td>1011100 backslash \\</td></tr></table>" <<
             "|1011011 [|1011100 backslash \\\\|";
+    // https://spec.commonmark.org/0.31.2/#example-12
+    // escaping punctuation is ok, but QTextMarkdownWriter currently doesn't do that (which is also ok)
+    QTest::newRow("punctuation") <<
+            R"(<p>!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?@[\]^_`{|}~</p>)" <<
+            R"(!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~)";
+    // https://spec.commonmark.org/0.31.2/#example-14
+    QTest::newRow("backslash asterisk no emphasis") << //  QTBUG-122083
+            R"(\*no emphasis*)" <<
+            R"(\\\*no emphasis*)";
+    // https://spec.commonmark.org/0.31.2/#example-15
+    QTest::newRow("backslash before emphasis") <<
+            R"(\<em>emphasis</em>)" <<
+            R"(\\*emphasis*)";
+    // https://spec.commonmark.org/0.31.2/#example-20
+    QTest::newRow("backslash-asterisk in autolink") <<
+            R"(<p><a href="https://example.com?find=\\*">https://example.com?find=\*</a></p>)" <<
+            R"(<https://example.com?find=\\*>)";
+    // https://spec.commonmark.org/0.31.2/#example-24
+    QTest::newRow("plus in fenced code lang") <<
+            "<pre class=\"language-foo+bar\">foo</pre>" <<
+            "```foo+bar\nfoo\n```";
 }
 
 void tst_QTextMarkdownWriter::fromHtml()
@@ -850,12 +873,90 @@ void tst_QTextMarkdownWriter::fromHtml()
     QCOMPARE(output, expectedOutput);
 }
 
+void tst_QTextMarkdownWriter::fromPlainTextAndBack_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("expectedMarkdown");
+
+    // tests to verify that fixing QTBUG-122083 is safe
+    QTest::newRow("single backslashes") <<
+            R"(\ again: \ not esc: \* \-\-\ \*abc*)" <<
+            R"(\\ again: \\ not esc: \\* \\-\\-\\ \\\*abc*)";
+    // https://spec.commonmark.org/0.31.2/#example-12
+    QTest::newRow("punctuation") <<
+            R"(!"#$%&'()*+,-./:;<=>?@[\]^_`{|}~)" <<
+            R"(!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~)";
+    // https://spec.commonmark.org/0.31.2/#example-13
+    QTest::newRow("literal backslashes") <<
+            QString::fromUtf16(uR"(\→\A\a\ \3\φ\«)") <<
+            "\\\\\u2192\\\\A\\\\a\\\\ \\\\3\\\\\u03C6\\\\\u00AB";
+    // https://spec.commonmark.org/0.31.2/#example-14
+    QTest::newRow("escape to avoid em") <<
+            R"(*not emphasized*)" <<
+            R"(\*not emphasized*)";
+    QTest::newRow("escape to avoid html") <<
+            R"(<br/> not a tag)" <<
+            R"(\<br/> not a tag)";
+    QTest::newRow("escape to avoid link") <<
+            R"([not a link](/foo))" <<
+            R"(\[not a link](/foo))";
+    QTest::newRow("escape to avoid mono") <<
+            R"(`not code`)" <<
+            R"(\`not code`)";
+    QTest::newRow("escape to avoid num list") <<
+            R"(1. not a list)" <<
+            R"(1\. not a list)";
+    QTest::newRow("escape to avoid list") <<
+            R"(* not a list)" <<
+            R"(\* not a list)";
+    QTest::newRow("escape to avoid heading") <<
+            R"(# not a heading)" <<
+            R"(\# not a heading)";
+    QTest::newRow("escape to avoid reflink") <<
+            R"([foo]: /url "not a reference")" <<
+            R"(\[foo]: /url "not a reference")";
+    QTest::newRow("escape to avoid entity") <<
+            R"(&ouml; not a character entity)" <<
+            R"(\&ouml; not a character entity)";
+    // end of tests to verify that fixing QTBUG-122083 is safe
+    // (it's ok to add unrelated plain-to-markdown-to-plaintext cases later)
+}
+
+void tst_QTextMarkdownWriter::fromPlainTextAndBack()
+{
+    QFETCH(QString, input);
+    QFETCH(QString, expectedMarkdown);
+
+    document->setPlainText(input);
+    QString output = documentToUnixMarkdown();
+
+#ifdef DEBUG_WRITE_OUTPUT
+    {
+        QFile out("/tmp/" + QLatin1String(QTest::currentDataTag()) + ".md");
+        out.open(QFile::WriteOnly);
+        out.write(output.toUtf8());
+        out.close();
+    }
+#endif
+
+    output = output.trimmed();
+    expectedMarkdown = expectedMarkdown.trimmed();
+    if (output != expectedMarkdown && (isMainFontFixed() || isFixedFontProportional()))
+        QSKIP("", "fixed main font or proportional fixed font (QTBUG-103484)");
+    QCOMPARE(output, expectedMarkdown);
+    QCOMPARE(document->toPlainText(), input);
+    document->setMarkdown(output);
+    QCOMPARE(document->toPlainText(), input);
+    if (document->blockCount() == 1)
+        QCOMPARE(document->firstBlock().text(), input);
+}
+
 void tst_QTextMarkdownWriter::escapeSpecialCharacters_data()
 {
     QTest::addColumn<QString>("input");
     QTest::addColumn<QString>("expectedOutput");
 
-    QTest::newRow("backslash") << "foo \\ bar \\\\ baz \\" << "foo \\\\ bar \\\\ baz \\\\";
+    QTest::newRow("backslash") << "foo \\ bar \\\\ baz \\" << "foo \\\\ bar \\\\\\\\ baz \\\\";
     QTest::newRow("not emphasized") << "*normal* **normal too**" << "\\*normal* \\**normal too**";
     QTest::newRow("not code") << "`normal` `normal too`" << "\\`normal` \\`normal too`";
     QTest::newRow("code fence") << "```not a fence; ``` no risk here; ```not a fence" // TODO slightly inconsistent
