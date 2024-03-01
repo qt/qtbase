@@ -368,17 +368,6 @@ static bool read_jpeg_image(QImage *outImage,
                     } else {
                         memcpy(out, in, clip.width() * 4);
                     }
-#if 0
-                    // Convert CMYK->RGB.
-                    uchar *in = rows[0] + clip.x() * 4;
-                    QRgb *out = (QRgb*)outImage->scanLine(y);
-                    for (int i = 0; i < clip.width(); ++i) {
-                        int k = in[3];
-                        *out++ = qRgb(k * in[0] / 255, k * in[1] / 255,
-                                      k * in[2] / 255);
-                        in += 4;
-                    }
-#endif
                 } else if (info->output_components == 1) {
                     // Grayscale.
                     memcpy(outImage->scanLine(y),
