@@ -468,7 +468,7 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     parser->addOption(suppressSoftwareRasterizerOption);
 
     QCommandLineOption noFFmpegOption(QStringLiteral("no-ffmpeg"),
-                                      QStringLiteral("Do not deploy the ffmpeg libraries."));
+                                      QStringLiteral("Do not deploy the FFmpeg libraries."));
     parser->addOption(noFFmpegOption);
 
 
@@ -1596,7 +1596,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
         }
     } // Windows
 
-    // Add ffmpeg if we deploy the ffmpeg backend
+    // Add FFmpeg if we deploy the FFmpeg backend
     if (options.ffmpeg
         && !plugins.filter(QStringLiteral("ffmpegmediaplugin"), Qt::CaseInsensitive).empty()) {
         deployedQtLibraries.append(findFFmpegLibs(qtBinDir, options.platform));
