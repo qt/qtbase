@@ -5,6 +5,8 @@
 #include <QTest>
 #include <QtCore/qtyperevision.h>
 
+using namespace Qt::StringLiterals;
+
 class tst_QTypeRevision : public QObject
 {
     Q_OBJECT
@@ -13,6 +15,7 @@ private slots:
     void qTypeRevision_data();
     void qTypeRevision();
     void qTypeRevisionTypes();
+    void qTypeRevisionComparison_data();
     void qTypeRevisionComparison();
 };
 
@@ -128,8 +131,21 @@ void tst_QTypeRevision::qTypeRevisionTypes()
     QVERIFY(maxRevision.hasMinorVersion());
 }
 
-void tst_QTypeRevision::qTypeRevisionComparison()
+void tst_QTypeRevision::qTypeRevisionComparison_data()
 {
+    QTest::addColumn<QTypeRevision>("lhs");
+    QTest::addColumn<QTypeRevision>("rhs");
+    QTest::addColumn<int>("expectedResult");
+
+    static auto versionStr = [](QTypeRevision r) {
+        QByteArray res = r.hasMajorVersion() ? QByteArray::number(r.majorVersion())
+                                             : "x"_ba;
+        res.append('.');
+        res.append(r.hasMinorVersion() ? QByteArray::number(r.minorVersion())
+                                       : "x"_ba);
+        return res;
+    };
+
     const QTypeRevision revisions[] = {
         QTypeRevision::zero(),
         QTypeRevision::fromMajorVersion(0),
@@ -150,17 +166,32 @@ void tst_QTypeRevision::qTypeRevisionComparison()
     };
 
     const int length = sizeof(revisions) / sizeof(QTypeRevision);
-
     for (int i = 0; i < length; ++i) {
         for (int j = 0; j < length; ++j) {
-            QCOMPARE(revisions[i] == revisions[j], i == j);
-            QCOMPARE(revisions[i] != revisions[j], i != j);
-            QCOMPARE(revisions[i] < revisions[j], i < j);
-            QCOMPARE(revisions[i] > revisions[j], i > j);
-            QCOMPARE(revisions[i] <= revisions[j], i <= j);
-            QCOMPARE(revisions[i] >= revisions[j], i >= j);
+            const int expectedRes = (i == j)
+                    ? 0
+                    : (i < j) ? -1 : 1;
+
+            const auto lhs = revisions[i];
+            const auto rhs = revisions[j];
+            QTest::addRow("%s_vs_%s", versionStr(lhs).constData(), versionStr(rhs).constData())
+                    << lhs << rhs << expectedRes;
         }
     }
+}
+
+void tst_QTypeRevision::qTypeRevisionComparison()
+{
+    QFETCH(const QTypeRevision, lhs);
+    QFETCH(const QTypeRevision, rhs);
+    QFETCH(const int, expectedResult);
+
+    QCOMPARE(lhs == rhs, expectedResult == 0);
+    QCOMPARE(lhs != rhs, expectedResult != 0);
+    QCOMPARE(lhs < rhs, expectedResult < 0);
+    QCOMPARE(lhs > rhs, expectedResult > 0);
+    QCOMPARE(lhs <= rhs, expectedResult <= 0);
+    QCOMPARE(lhs >= rhs, expectedResult >= 0);
 }
 
 QTEST_APPLESS_MAIN(tst_QTypeRevision)
