@@ -282,9 +282,12 @@ function(qt_commandline_option name)
 
     set(commandline_known_options "${commandline_known_options};${name}" PARENT_SCOPE)
     set(commandline_option_${name} "${arg_TYPE}" PARENT_SCOPE)
+    set(input_name ${name})
     if(NOT "${arg_NAME}" STREQUAL "")
+        set(input_name ${arg_NAME})
         set(commandline_option_${name}_variable "${arg_NAME}" PARENT_SCOPE)
     endif()
+    set(commandline_input_${input_name}_type "${arg_TYPE}" PARENT_SCOPE)
     if(NOT "${arg_VALUE}" STREQUAL "")
         set(commandline_option_${name}_value "${arg_VALUE}" PARENT_SCOPE)
     endif()
@@ -1009,13 +1012,12 @@ if(cmake_file_api OR (developer_build AND NOT DEFINED cmake_file_api))
 endif()
 
 # Translate unhandled input variables to either -DINPUT_foo=value or -DFEATURE_foo=ON/OFF. If the
-# input's name matches a feature name and the input's value is boolean then we assume it's
-# controlling a feature.
-set(valid_boolean_input_values yes no)
+# input's name matches a feature name and the corresponding command-line option's type is boolean
+# then we assume it's controlling a feature.
 foreach(input ${config_inputs})
     qt_feature_normalize_name("${input}" cmake_input)
-    if(input IN_LIST commandline_known_features
-            AND "${INPUT_${input}}" IN_LIST valid_boolean_input_values)
+    if("${commandline_input_${input}_type}" STREQUAL "boolean"
+        AND input IN_LIST commandline_known_features)
         translate_boolean_input("${input}" "FEATURE_${cmake_input}")
     else()
         push("-DINPUT_${cmake_input}=${INPUT_${input}}")
