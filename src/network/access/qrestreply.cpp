@@ -4,9 +4,7 @@
 #include "qrestreply.h"
 #include "qrestreply_p.h"
 
-#include <QtCore/qjsonarray.h>
 #include <QtCore/qjsondocument.h>
-#include <QtCore/qjsonobject.h>
 #include <QtCore/qlatin1stringmatcher.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstringconverter.h>
