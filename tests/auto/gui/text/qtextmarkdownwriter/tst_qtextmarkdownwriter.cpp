@@ -45,6 +45,8 @@ private slots:
     void rewriteDocument();
     void fromHtml_data();
     void fromHtml();
+    void escapeSpecialCharacters_data();
+    void escapeSpecialCharacters();
 
 private:
     bool isMainFontFixed();
@@ -822,16 +824,21 @@ void tst_QTextMarkdownWriter::fromHtml_data()
     QTest::newRow("code") <<
         "<pre class=\"language-pseudocode\">\n#include \"foo.h\"\n\nblock {\n    statement();\n}\n\n</pre>" <<
         "```pseudocode\n#include \"foo.h\"\n\nblock {\n    statement();\n}\n\n```\n\n";
-    // TODO
-//    QTest::newRow("escaped number and paren after double newline") <<
-//        "<p>(The first sentence of this paragraph is a line, the next paragraph has a number</p>13) but that's not part of an ordered list" <<
-//        "(The first sentence of this paragraph is a line, the next paragraph has a number\n\n13\\) but that's not part of an ordered list\n\n";
+    QTest::newRow("escaped number and paren after single newline") <<
+        "<p>(The first sentence of this paragraph is a line, next paragraph has a number 13) but that's not part of an ordered list</p>" <<
+        "(The first sentence of this paragraph is a line, next paragraph has a number\n13\\) but that's not part of an ordered list\n\n";
+    QTest::newRow("escaped number and paren after double newline") <<
+        "<p>(The first sentence of this paragraph is a line, the next paragraph has a number</p>13) but that's not part of an ordered list" <<
+        "(The first sentence of this paragraph is a line, the next paragraph has a number\n\n13\\) but that's not part of an ordered list\n\n";
     QTest::newRow("preformats with embedded backticks") <<
         "<pre>none `one` ``two``</pre>plain<pre>```three``` ````four````</pre>plain" <<
         "```\nnone `one` ``two``\n\n```\nplain\n\n```\n```three``` ````four````\n\n```\nplain\n\n";
     QTest::newRow("list items with and without checkboxes") <<
         "<ul><li>bullet</li><li class=\"unchecked\">unchecked item</li><li class=\"checked\">checked item</li></ul>" <<
         "- bullet\n- [ ] unchecked item\n- [x] checked item\n";
+    QTest::newRow("table with backslash in cell") << // QTBUG-96051
+            "<table><tr><td>1011011 [</td><td>1011100 backslash \\</td></tr></table>" <<
+            "|1011011 [|1011100 backslash \\\\|";
 }
 
 void tst_QTextMarkdownWriter::fromHtml()
@@ -853,6 +860,57 @@ void tst_QTextMarkdownWriter::fromHtml()
 
     output = output.trimmed();
     expectedOutput = expectedOutput.trimmed();
+    if (output != expectedOutput && (isMainFontFixed() || isFixedFontProportional()))
+        QEXPECT_FAIL("", "fixed main font or proportional fixed font (QTBUG-103484)", Continue);
+    QCOMPARE(output, expectedOutput);
+}
+
+void tst_QTextMarkdownWriter::escapeSpecialCharacters_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("expectedOutput");
+
+    QTest::newRow("backslash") << "foo \\ bar \\\\ baz \\" << "foo \\\\ bar \\\\ baz \\\\";
+    QTest::newRow("not emphasized") << "*normal* **normal too**" << "\\*normal* \\**normal too**";
+    QTest::newRow("not code") << "`normal` `normal too`" << "\\`normal` \\`normal too`";
+    QTest::newRow("code fence") << "```not a fence; ``` no risk here; ```not a fence" // TODO slightly inconsistent
+                                << "\\```not a fence; ``` no risk here; \\```not a fence";
+    QTest::newRow("not html") << "<p>not a tag: <br/> nope</p>" << "\\<p>not a tag: \\<br/> nope\\</p>";
+    QTest::newRow("not a link") << "text [not a link](/foo)" << "text \\[not a link](/foo)";
+    QTest::newRow("not a circle") << "* polaris" << "\\* polaris";
+    QTest::newRow("not a square") << "+ groovy" << "\\+ groovy";
+    QTest::newRow("not a bullet") << "- stayin alive" << "\\- stayin alive";
+    QTest::newRow("arithmetic") << "1 + 2 - 3 * 4" << "1 + 2 - 3 * 4";
+    QTest::newRow("not a list") << "1. not a list" << "1\\. not a list";
+    QTest::newRow("not a list either") << "Jupiter and 10." << "Jupiter and 10.";
+    QTest::newRow("not a heading") << "# not a heading" << "\\# not a heading";
+    QTest::newRow("a non-entity") << "&ouml; not a character entity" << "\\&ouml; not a character entity";
+}
+
+/*! \internal
+    If the user types into a Qt-based editor plain text that the
+    markdown parser would misinterpret, escape it when we save to markdown
+    to clarify that it's plain text.
+    https://spec.commonmark.org/0.31.2/#backslash-escapes
+*/
+void tst_QTextMarkdownWriter::escapeSpecialCharacters() // QTBUG-96051, QTBUG-122083
+{
+    QFETCH(QString, input);
+    QFETCH(QString, expectedOutput);
+
+    document->setPlainText(input);
+    QString output = documentToUnixMarkdown();
+
+#ifdef DEBUG_WRITE_OUTPUT
+    {
+        QFile out("/tmp/" + QLatin1String(QTest::currentDataTag()) + ".md");
+        out.open(QFile::WriteOnly);
+        out.write(output.toUtf8());
+        out.close();
+    }
+#endif
+
+    output = output.trimmed();
     if (output != expectedOutput && (isMainFontFixed() || isFixedFontProportional()))
         QEXPECT_FAIL("", "fixed main font or proportional fixed font (QTBUG-103484)", Continue);
     QCOMPARE(output, expectedOutput);
