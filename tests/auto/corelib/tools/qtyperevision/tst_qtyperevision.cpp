@@ -4,6 +4,7 @@
 
 #include <QTest>
 #include <QtCore/qtyperevision.h>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 
 using namespace Qt::StringLiterals;
 
@@ -15,6 +16,7 @@ private slots:
     void qTypeRevision_data();
     void qTypeRevision();
     void qTypeRevisionTypes();
+    void qTypeRevisionComparisonCompiles();
     void qTypeRevisionComparison_data();
     void qTypeRevisionComparison();
 };
@@ -131,11 +133,16 @@ void tst_QTypeRevision::qTypeRevisionTypes()
     QVERIFY(maxRevision.hasMinorVersion());
 }
 
+void tst_QTypeRevision::qTypeRevisionComparisonCompiles()
+{
+    QTestPrivate::testAllComparisonOperatorsCompile<QTypeRevision>();
+}
+
 void tst_QTypeRevision::qTypeRevisionComparison_data()
 {
     QTest::addColumn<QTypeRevision>("lhs");
     QTest::addColumn<QTypeRevision>("rhs");
-    QTest::addColumn<int>("expectedResult");
+    QTest::addColumn<Qt::strong_ordering>("expectedResult");
 
     static auto versionStr = [](QTypeRevision r) {
         QByteArray res = r.hasMajorVersion() ? QByteArray::number(r.majorVersion())
@@ -167,10 +174,11 @@ void tst_QTypeRevision::qTypeRevisionComparison_data()
 
     const int length = sizeof(revisions) / sizeof(QTypeRevision);
     for (int i = 0; i < length; ++i) {
-        for (int j = 0; j < length; ++j) {
-            const int expectedRes = (i == j)
-                    ? 0
-                    : (i < j) ? -1 : 1;
+        for (int j = i; j < length; ++j) {
+            const Qt::strong_ordering expectedRes = (i == j)
+                    ? Qt::strong_ordering::equal
+                    : (i < j) ? Qt::strong_ordering::less
+                              : Qt::strong_ordering::greater;
 
             const auto lhs = revisions[i];
             const auto rhs = revisions[j];
@@ -184,14 +192,9 @@ void tst_QTypeRevision::qTypeRevisionComparison()
 {
     QFETCH(const QTypeRevision, lhs);
     QFETCH(const QTypeRevision, rhs);
-    QFETCH(const int, expectedResult);
+    QFETCH(const Qt::strong_ordering, expectedResult);
 
-    QCOMPARE(lhs == rhs, expectedResult == 0);
-    QCOMPARE(lhs != rhs, expectedResult != 0);
-    QCOMPARE(lhs < rhs, expectedResult < 0);
-    QCOMPARE(lhs > rhs, expectedResult > 0);
-    QCOMPARE(lhs <= rhs, expectedResult <= 0);
-    QCOMPARE(lhs >= rhs, expectedResult >= 0);
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, expectedResult);
 }
 
 QTEST_APPLESS_MAIN(tst_QTypeRevision)

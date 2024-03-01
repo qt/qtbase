@@ -7,6 +7,7 @@
 #define QTYPEREVISION_H
 
 #include <QtCore/qassert.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qcontainertools_impl.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qtypeinfo.h>
@@ -98,53 +99,38 @@ public:
         return Integer(m_majorVersion << 8) | Integer(m_minorVersion);
     }
 
-    [[nodiscard]] friend constexpr bool operator==(QTypeRevision lhs, QTypeRevision rhs)
-    {
-        return lhs.toEncodedVersion<quint16>() == rhs.toEncodedVersion<quint16>();
-    }
-
-    [[nodiscard]] friend constexpr bool operator!=(QTypeRevision lhs, QTypeRevision rhs)
-    {
-        return lhs.toEncodedVersion<quint16>() != rhs.toEncodedVersion<quint16>();
-    }
-
-    [[nodiscard]] friend constexpr bool operator<(QTypeRevision lhs, QTypeRevision rhs)
-    {
-        return (!lhs.hasMajorVersion() && rhs.hasMajorVersion())
-                // non-0 major > unspecified major > major 0
-                ? rhs.majorVersion() != 0
-                : ((lhs.hasMajorVersion() && !rhs.hasMajorVersion())
-                // major 0 < unspecified major < non-0 major
-                ? lhs.majorVersion() == 0
-                : (lhs.majorVersion() != rhs.majorVersion()
-                    // both majors specified and non-0
-                    ? lhs.majorVersion() < rhs.majorVersion()
-                    : ((!lhs.hasMinorVersion() && rhs.hasMinorVersion())
-                        // non-0 minor > unspecified minor > minor 0
-                        ? rhs.minorVersion() != 0
-                        : ((lhs.hasMinorVersion() && !rhs.hasMinorVersion())
-                            // minor 0 < unspecified minor < non-0 minor
-                            ? lhs.minorVersion() == 0
-                            // both minors specified and non-0
-                            : lhs.minorVersion() < rhs.minorVersion()))));
-    }
-
-    [[nodiscard]] friend constexpr bool operator>(QTypeRevision lhs, QTypeRevision rhs)
-    {
-        return lhs != rhs && !(lhs < rhs);
-    }
-
-    [[nodiscard]] friend constexpr bool operator<=(QTypeRevision lhs, QTypeRevision rhs)
-    {
-        return lhs == rhs || lhs < rhs;
-    }
-
-    [[nodiscard]] friend constexpr bool operator>=(QTypeRevision lhs, QTypeRevision rhs)
-    {
-        return lhs == rhs || !(lhs < rhs);
-    }
-
 private:
+    friend constexpr bool
+    comparesEqual(const QTypeRevision &lhs, const QTypeRevision &rhs) noexcept
+    { return lhs.toEncodedVersion<quint16>() == rhs.toEncodedVersion<quint16>(); }
+    friend constexpr Qt::strong_ordering
+    compareThreeWay(const QTypeRevision &lhs, const QTypeRevision &rhs) noexcept
+    {
+        // For both major and minor the following rule applies:
+        // non-0 ver > unspecified ver > 0 ver
+        auto cmpUnspecified = [](quint8 leftVer, quint8 rightVer) {
+            Q_ASSERT(leftVer != rightVer
+                     && (leftVer == QTypeRevision::SegmentUnknown
+                         || rightVer == QTypeRevision::SegmentUnknown));
+            if (leftVer != QTypeRevision::SegmentUnknown)
+                return leftVer > 0 ? Qt::strong_ordering::greater : Qt::strong_ordering::less;
+            return rightVer > 0 ? Qt::strong_ordering::less : Qt::strong_ordering::greater;
+        };
+
+        if (lhs.hasMajorVersion() != rhs.hasMajorVersion()) {
+            return cmpUnspecified(lhs.majorVersion(), rhs.majorVersion());
+        } else {
+            const auto majorRes = Qt::compareThreeWay(lhs.majorVersion(), rhs.majorVersion());
+            if (is_eq(majorRes)) {
+                if (lhs.hasMinorVersion() != rhs.hasMinorVersion())
+                    return cmpUnspecified(lhs.minorVersion(), rhs.minorVersion());
+                return Qt::compareThreeWay(lhs.minorVersion(), rhs.minorVersion());
+            }
+            return majorRes;
+        }
+    }
+    Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QTypeRevision)
+
     enum { SegmentUnknown = 0xff };
 
 #if Q_BYTE_ORDER == Q_LITTLE_ENDIAN

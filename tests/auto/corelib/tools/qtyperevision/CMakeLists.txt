@@ -10,4 +10,6 @@ endif()
 qt_internal_add_test(tst_qtyperevision
     SOURCES
         tst_qtyperevision.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )
