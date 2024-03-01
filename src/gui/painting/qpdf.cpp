@@ -3056,7 +3056,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
         format = QImage::Format_Mono;
     } else {
         *bitmap = false;
-        if (format != QImage::Format_RGB32 && format != QImage::Format_ARGB32 && format != QImage::Format_CMYK32) {
+        if (format != QImage::Format_RGB32 && format != QImage::Format_ARGB32 && format != QImage::Format_CMYK8888) {
             image = image.convertToFormat(QImage::Format_ARGB32);
             format = QImage::Format_ARGB32;
         }
@@ -3086,14 +3086,14 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
             QBuffer buffer(&imageData);
             QImageWriter writer(&buffer, "jpeg");
             writer.setQuality(94);
-            if (format == QImage::Format_CMYK32) {
+            if (format == QImage::Format_CMYK8888) {
                 // PDFs require CMYK colors not to be inverted in the JPEG encoding
                 writer.setSubType("CMYK");
             }
             writer.write(image);
             dct = true;
 
-            if (format != QImage::Format_RGB32 && format != QImage::Format_CMYK32) {
+            if (format != QImage::Format_RGB32 && format != QImage::Format_CMYK8888) {
                 softMaskData.resize(w * h);
                 uchar *sdata = (uchar *)softMaskData.data();
                 for (int y = 0; y < h; ++y) {
@@ -3108,7 +3108,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
                 }
             }
         } else {
-            if (format == QImage::Format_CMYK32) {
+            if (format == QImage::Format_CMYK8888) {
                 imageData.resize(grayscale ? w * h : w * h * 4);
                 uchar *data = (uchar *)imageData.data();
                 const qsizetype bytesPerLine = image.bytesPerLine();
@@ -3154,7 +3154,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
                     }
                 }
             }
-            if (format == QImage::Format_RGB32 || format == QImage::Format_CMYK32)
+            if (format == QImage::Format_RGB32 || format == QImage::Format_CMYK8888)
                 hasAlpha = hasMask = false;
         }
         int maskObject = 0;
@@ -3182,7 +3182,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
         const WriteImageOption option = [&]() {
             if (grayscale)
                 return WriteImageOption::Grayscale;
-            if (format == QImage::Format_CMYK32)
+            if (format == QImage::Format_CMYK8888)
                 return WriteImageOption::CMYK;
             return WriteImageOption::RGB;
         }();

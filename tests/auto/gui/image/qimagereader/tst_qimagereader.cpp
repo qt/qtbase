@@ -309,7 +309,7 @@ void tst_QImageReader::jpegRgbCmyk()
     QCOMPARE(image1.height(), image2.height());
     QCOMPARE(image1.width(), image2.width());
 
-    QCOMPARE(image1.format(), QImage::Format_CMYK32);
+    QCOMPARE(image1.format(), QImage::Format_CMYK8888);
     QCOMPARE(image2.format(), QImage::Format_RGB32);
 
     // compare all the pixels with a slack of 3. This ignores rounding errors
@@ -616,7 +616,7 @@ void tst_QImageReader::imageFormat_data()
     QTest::newRow("ppm-4") << QString("test.ppm") << QByteArray("ppm") << QImage::Format_RGB32;
 
     QTest::newRow("jpeg-1") << QString("beavis.jpg") << QByteArray("jpeg") << QImage::Format_Grayscale8;
-    QTest::newRow("jpeg-2") << QString("YCbCr_cmyk.jpg") << QByteArray("jpeg") << QImage::Format_CMYK32;
+    QTest::newRow("jpeg-2") << QString("YCbCr_cmyk.jpg") << QByteArray("jpeg") << QImage::Format_CMYK8888;
     QTest::newRow("jpeg-3") << QString("YCbCr_rgb.jpg") << QByteArray("jpeg") << QImage::Format_RGB32;
 
     QTest::newRow("gif-1") << QString("earth.gif") << QByteArray("gif") << QImage::Format_Invalid;

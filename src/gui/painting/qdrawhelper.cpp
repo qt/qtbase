@@ -397,7 +397,7 @@ static DestFetchProc destFetchProc[] =
     destFetch,          // Format_RGBX32FPx4
     destFetch,          // Format_RGBA32FPx4
     destFetch,          // Format_RGBA32FPx4_Premultiplied
-    destFetch,          // Format_CMYK32
+    destFetch,          // Format_CMYK8888
 };
 
 static_assert(std::size(destFetchProc) == QImage::NImageFormats);
@@ -457,7 +457,7 @@ static DestFetchProc64 destFetchProc64[] =
     destFetch64,        // Format_RGBX32FPx4
     destFetch64,        // Format_RGBA32FPx4
     destFetch64,        // Format_RGBA32FPx4_Premultiplied
-    destFetch64,        // Format_CMYK32
+    destFetch64,        // Format_CMYK8888
 };
 
 static_assert(std::size(destFetchProc64) == QImage::NImageFormats);
@@ -516,7 +516,7 @@ static DestFetchProcFP destFetchProcFP[] =
     destFetchRGBFP,     // Format_RGBX32FPx4
     destFetchFP,        // Format_RGBA32FPx4
     destFetchRGBFP,     // Format_RGBA32FPx4_Premultiplied
-    destFetchFP,        // Format_CMYK32
+    destFetchFP,        // Format_CMYK8888
 };
 
 static_assert(std::size(destFetchProcFP) == QImage::NImageFormats);
@@ -710,7 +710,7 @@ static DestStoreProc destStoreProc[] =
     destStore,          // Format_RGBX32FPx4
     destStore,          // Format_RGBA32FPx4
     destStore,          // Format_RGBA32FPx4_Premultiplied
-    destStore,          // Format_CMYK32
+    destStore,          // Format_CMYK8888
 };
 
 static_assert(std::size(destStoreProc) == QImage::NImageFormats);
@@ -813,7 +813,7 @@ static DestStoreProc64 destStoreProc64[] =
     destStore64,        // Format_RGBX32FPx4
     destStore64,        // Format_RGBA32FPx4
     destStore64,        // Format_RGBA32FPx4_Premultiplied
-    destStore64,        // Format_CMYK32
+    destStore64,        // Format_CMYK8888
 };
 
 static_assert(std::size(destStoreProc64) == QImage::NImageFormats);
@@ -3128,7 +3128,7 @@ static SourceFetchProc sourceFetchUntransformed[] = {
     fetchUntransformed,         // RGBX32Px4
     fetchUntransformed,         // RGBA32FPx4
     fetchUntransformed,         // RGBA32FPx4_Premultiplied
-    fetchUntransformed,         // CMYK32
+    fetchUntransformed,         // CMYK8888
 };
 
 static_assert(std::size(sourceFetchUntransformed) == QImage::NImageFormats);

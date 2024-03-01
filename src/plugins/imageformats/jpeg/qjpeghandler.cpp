@@ -176,7 +176,7 @@ inline static bool read_jpeg_format(QImage::Format &format, j_decompress_ptr cin
         break;
     case 4:
         if (cinfo->out_color_space == JCS_CMYK)
-            format = QImage::Format_CMYK32;
+            format = QImage::Format_CMYK8888;
         else
             format = QImage::Format_RGB32;
         break;
@@ -201,7 +201,7 @@ static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
         break;
     case 4:
         if (info->out_color_space == JCS_CMYK)
-            format = QImage::Format_CMYK32;
+            format = QImage::Format_CMYK8888;
         else
             format = QImage::Format_RGB32;
         break;
@@ -550,7 +550,7 @@ static bool do_write_jpeg_image(struct jpeg_compress_struct &cinfo,
             cinfo.input_components = 1;
             cinfo.in_color_space = JCS_GRAYSCALE;
             break;
-        case QImage::Format_CMYK32:
+        case QImage::Format_CMYK8888:
             cinfo.input_components = 4;
             cinfo.in_color_space = JCS_CMYK;
             break;
@@ -670,7 +670,7 @@ static bool do_write_jpeg_image(struct jpeg_compress_struct &cinfo,
                     }
                 }
                 break;
-            case QImage::Format_CMYK32: {
+            case QImage::Format_CMYK8888: {
                 auto *cmykIn = reinterpret_cast<const quint32 *>(image.constScanLine(cinfo.next_scanline));
                 auto *cmykOut = reinterpret_cast<quint32 *>(row);
                 if (invertCMYK) {

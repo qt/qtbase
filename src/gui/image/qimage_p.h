@@ -195,7 +195,7 @@ inline int qt_depthForFormat(QImage::Format format)
     case QImage::Format_RGBA32FPx4_Premultiplied:
         depth = 128;
         break;
-    case QImage::Format_CMYK32:
+    case QImage::Format_CMYK8888:
         depth = 32;
         break;
     }
@@ -251,7 +251,7 @@ inline QImage::Format qt_opaqueVersion(QImage::Format format)
     case QImage::Format_RGBX32FPx4:
     case QImage::Format_Grayscale8:
     case QImage::Format_Grayscale16:
-    case QImage::Format_CMYK32:
+    case QImage::Format_CMYK8888:
         return format;
     case QImage::Format_Mono:
     case QImage::Format_MonoLSB:
@@ -315,7 +315,7 @@ inline QImage::Format qt_alphaVersion(QImage::Format format)
     case QImage::Format_Alpha8:
     case QImage::Format_Grayscale8:
     case QImage::Format_Invalid:
-    case QImage::Format_CMYK32:
+    case QImage::Format_CMYK8888:
     case QImage::NImageFormats:
         break;
     }

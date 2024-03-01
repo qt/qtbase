@@ -1766,7 +1766,7 @@ bool QPainter::begin(QPaintDevice *pd)
                 qt_cleanup_painter_state(d);
                 return false;
             } else if (img->format() == QImage::Format_Indexed8 ||
-                       img->format() == QImage::Format_CMYK32) {
+                       img->format() == QImage::Format_CMYK8888) {
                 // Painting on these formats is not supported.
                 qWarning() << "QPainter::begin: Cannot paint on an image with the"
                            << img->format()

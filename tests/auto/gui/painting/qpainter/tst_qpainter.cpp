@@ -2784,7 +2784,7 @@ void tst_QPainter::monoImages()
     for (int i = 1; i < QImage::NImageFormats; ++i) {
         for (int j = 0; j < numColorPairs; ++j) {
             const QImage::Format format = QImage::Format(i);
-            if (format == QImage::Format_Indexed8 || format == QImage::Format_CMYK32)
+            if (format == QImage::Format_Indexed8 || format == QImage::Format_CMYK8888)
                 continue;
 
             QImage img(2, 2, format);
@@ -3554,9 +3554,9 @@ void tst_QPainter::drawImage_data()
 
     for (int srcFormat = QImage::Format_Mono; srcFormat < QImage::NImageFormats; ++srcFormat) {
         for (int dstFormat = QImage::Format_Mono; dstFormat < QImage::NImageFormats; ++dstFormat) {
-            // Indexed8 and CMYK32 can't be painted to, and Alpha8 can't hold a color.
+            // Indexed8 and CMYK8888 can't be painted to, and Alpha8 can't hold a color.
             if (dstFormat == QImage::Format_Indexed8 ||
-                dstFormat == QImage::Format_CMYK32 ||
+                dstFormat == QImage::Format_CMYK8888 ||
                 dstFormat == QImage::Format_Alpha8) {
                 continue;
             }

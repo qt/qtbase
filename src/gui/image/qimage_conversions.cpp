@@ -2456,12 +2456,12 @@ static bool convert_Grayscale8_to_Indexed8_inplace(QImageData *data, Qt::ImageCo
 }
 
 template <bool SourceIsPremultiplied>
-static void convert_ARGB32_to_CMYK32(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+static void convert_ARGB32_to_CMYK8888(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
 {
     Q_ASSERT(src->format == QImage::Format_RGB32 ||
              src->format == QImage::Format_ARGB32 ||
              src->format == QImage::Format_ARGB32_Premultiplied);
-    Q_ASSERT(dest->format == QImage::Format_CMYK32);
+    Q_ASSERT(dest->format == QImage::Format_CMYK8888);
     Q_ASSERT(src->width == dest->width);
     Q_ASSERT(src->height == dest->height);
 
@@ -2619,10 +2619,10 @@ static void qInitImageConversions()
     qimage_converter_map[QImage::Format_RGBX32FPx4][QImage::Format_RGBA32FPx4] = convert_passthrough;
     qimage_converter_map[QImage::Format_RGBX32FPx4][QImage::Format_RGBA32FPx4_Premultiplied] = convert_passthrough;
 
-    qimage_converter_map[QImage::Format_CMYK32][QImage::Format_CMYK32] = convert_passthrough;
-    qimage_converter_map[QImage::Format_RGB32][QImage::Format_CMYK32] = convert_ARGB32_to_CMYK32<false>;
-    qimage_converter_map[QImage::Format_ARGB32][QImage::Format_CMYK32] = convert_ARGB32_to_CMYK32<false>;
-    qimage_converter_map[QImage::Format_ARGB32_Premultiplied][QImage::Format_CMYK32] = convert_ARGB32_to_CMYK32<true>;
+    qimage_converter_map[QImage::Format_CMYK8888][QImage::Format_CMYK8888] = convert_passthrough;
+    qimage_converter_map[QImage::Format_RGB32][QImage::Format_CMYK8888] = convert_ARGB32_to_CMYK8888<false>;
+    qimage_converter_map[QImage::Format_ARGB32][QImage::Format_CMYK8888] = convert_ARGB32_to_CMYK8888<false>;
+    qimage_converter_map[QImage::Format_ARGB32_Premultiplied][QImage::Format_CMYK8888] = convert_ARGB32_to_CMYK8888<true>;
 
     // Inline converters:
     qimage_inplace_converter_map[QImage::Format_Indexed8][QImage::Format_Grayscale8] =
