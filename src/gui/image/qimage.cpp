@@ -744,7 +744,6 @@ bool QImageData::checkForAlphaPixels() const
     \value Format_RGBA32FPx4_Premultiplied    The image is stored using a premultiplied 4 32-bit floating point
                              RGBA format (32FP-32FP-32FP-32FP). (added in Qt 6.2)
     \value Format_CMYK8888   The image is stored using a 32-bit byte-ordered CMYK format. (added in Qt 6.8)
-    \omitvalue Format_CMYK32
 
     \note Drawing into a QImage with format QImage::Format_Indexed8 or QImage::Format_CMYK8888 is not
     supported.

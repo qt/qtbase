@@ -364,7 +364,7 @@ inline QImage::Format qt_maybeDataCompatibleOpaqueVersion(QImage::Format format)
     case QImage::Format_RGBX32FPx4:
     case QImage::Format_Grayscale8:
     case QImage::Format_Grayscale16:
-    case QImage::Format_CMYK32:
+    case QImage::Format_CMYK8888:
         return format; // Already opaque
     case QImage::Format_Mono:
     case QImage::Format_MonoLSB:
@@ -485,7 +485,7 @@ inline QImage::Format qt_maybeDataCompatibleAlphaVersion(QImage::Format format)
     case QImage::Format_BGR888:
     case QImage::Format_Grayscale8:
     case QImage::Format_Grayscale16:
-    case QImage::Format_CMYK32:
+    case QImage::Format_CMYK8888:
     case QImage::Format_Invalid:
     case QImage::NImageFormats:
         break;
