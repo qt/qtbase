@@ -93,6 +93,20 @@ public:
     qfloat16 copySign(qfloat16 sign) const noexcept
     { return qfloat16(Wrap((sign.b16 & 0x8000) | (b16 & 0x7fff))); }
     // Support for std::numeric_limits<qfloat16>
+
+#ifdef __STDCPP_FLOAT16_T__
+private:
+    using Bounds = std::numeric_limits<NativeType>;
+public:
+    static constexpr qfloat16 _limit_epsilon()    noexcept { return Bounds::epsilon(); }
+    static constexpr qfloat16 _limit_min()        noexcept { return Bounds::min(); }
+    static constexpr qfloat16 _limit_denorm_min() noexcept { return Bounds::denorm_min(); }
+    static constexpr qfloat16 _limit_max()        noexcept { return Bounds::max(); }
+    static constexpr qfloat16 _limit_lowest()     noexcept { return Bounds::lowest(); }
+    static constexpr qfloat16 _limit_infinity()   noexcept { return Bounds::infinity(); }
+    static constexpr qfloat16 _limit_quiet_NaN()  noexcept { return Bounds::quiet_NaN(); }
+    static constexpr qfloat16 _limit_signaling_NaN() noexcept { return Bounds::signaling_NaN(); }
+#else
     static constexpr qfloat16 _limit_epsilon()    noexcept { return qfloat16(Wrap(0x1400)); }
     static constexpr qfloat16 _limit_min()        noexcept { return qfloat16(Wrap(0x400)); }
     static constexpr qfloat16 _limit_denorm_min() noexcept { return qfloat16(Wrap(1)); }
@@ -102,6 +116,7 @@ public:
     static constexpr qfloat16 _limit_quiet_NaN()  noexcept { return qfloat16(Wrap(0x7e00)); }
 #if QT_CONFIG(signaling_nan)
     static constexpr qfloat16 _limit_signaling_NaN() noexcept { return qfloat16(Wrap(0x7d00)); }
+#endif
 #endif
     inline constexpr bool isNormal() const noexcept
     { return (b16 & 0x7c00) && (b16 & 0x7c00) != 0x7c00; }
