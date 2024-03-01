@@ -42,8 +42,6 @@ android
 android
 [optimizedResize_topLevel]
 android
-[render]
-wayland
 [hoverPosition]
 macos-14 x86
 
