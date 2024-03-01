@@ -118,7 +118,13 @@ private:
         NativeType nf;
 #endif
     };
-    constexpr inline explicit qfloat16(Wrap nibble) noexcept : b16(nibble.b16) {}
+    constexpr inline explicit qfloat16(Wrap nibble) noexcept :
+#if QFLOAT16_IS_NATIVE && defined(__cpp_lib_bit_cast)
+        nf(std::bit_cast<NativeType>(nibble.b16))
+#else
+        b16(nibble.b16)
+#endif
+    {}
 
     Q_CORE_EXPORT static const quint32 mantissatable[];
     Q_CORE_EXPORT static const quint32 exponenttable[];
