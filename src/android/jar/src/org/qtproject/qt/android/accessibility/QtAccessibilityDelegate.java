@@ -357,7 +357,7 @@ public class QtAccessibilityDelegate extends View.AccessibilityDelegate
         // Spit out the entire hierarchy for debugging purposes
         // dumpNodes(-1);
 
-        if (m_layout.getChildCount() == 0) {
+        if (m_layout.getChildCount() != 0) {
             int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(-1);
             for (int id : ids)
                 result.addChild(m_view, id);
