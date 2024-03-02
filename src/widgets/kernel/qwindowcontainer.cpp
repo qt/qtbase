@@ -245,6 +245,9 @@ QWindowContainer::~QWindowContainer()
         d->window->destroy();
 
     delete d->window;
+
+    disconnect(qGuiApp, &QGuiApplication::focusWindowChanged,
+               this, &QWindowContainer::focusWindowChanged);
 }
 
 
