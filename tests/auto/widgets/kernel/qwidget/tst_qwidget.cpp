@@ -471,6 +471,9 @@ private slots:
     void dragEnterLeaveSymmetry();
     void setVisibleDuringDestruction();
 
+    void reparentWindowHandles_data();
+    void reparentWindowHandles();
+
 private:
     const QString m_platform;
     QSize m_testWidgetSize;
@@ -13769,6 +13772,155 @@ void tst_QWidget::setVisibleDuringDestruction()
     widget.destroy();
     QTRY_COMPARE(hideEventSpy.count(), 2);
     QTRY_COMPARE(signalSpy.count(), 4);
+}
+
+void tst_QWidget::reparentWindowHandles_data()
+{
+    QTest::addColumn<int>("stage");
+    QTest::addRow("reparent child") << 1;
+    QTest::addRow("top level to child") << 2;
+    QTest::addRow("transient parent") << 3;
+    QTest::addRow("window container") << 4;
+}
+
+void tst_QWidget::reparentWindowHandles()
+{
+    const bool nativeSiblingsOriginal = qApp->testAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
+    qApp->setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
+    auto nativeSiblingGuard = qScopeGuard([&]{
+        qApp->setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, nativeSiblingsOriginal);
+    });
+
+    QFETCH(int, stage);
+
+    switch (stage) {
+    case 1: {
+        // Reparent child widget
+
+        QWidget topLevel;
+        topLevel.setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(topLevel.windowHandle());
+        QPointer<QWidget> child = new QWidget(&topLevel);
+        child->setAttribute(Qt::WA_DontCreateNativeAncestors);
+        child->setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(child->windowHandle());
+
+        QWidget anotherTopLevel;
+        anotherTopLevel.setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(anotherTopLevel.windowHandle());
+        QPointer<QWidget> intermediate = new QWidget(&anotherTopLevel);
+        QPointer<QWidget> leaf = new QWidget(intermediate);
+        leaf->setAttribute(Qt::WA_DontCreateNativeAncestors);
+        leaf->setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(leaf->windowHandle());
+        QVERIFY(!intermediate->windowHandle());
+
+        // Reparenting a native widget should reparent the QWindow
+        child->setParent(leaf);
+        QCOMPARE(child->windowHandle()->parent(), leaf->windowHandle());
+        QCOMPARE(child->windowHandle()->transientParent(), nullptr);
+        QVERIFY(!intermediate->windowHandle());
+
+        // So should reparenting a non-native widget with native children
+        intermediate->setParent(&topLevel);
+        QVERIFY(!intermediate->windowHandle());
+        QCOMPARE(leaf->windowHandle()->parent(), topLevel.windowHandle());
+        QCOMPARE(leaf->windowHandle()->transientParent(), nullptr);
+        QCOMPARE(child->windowHandle()->parent(), leaf->windowHandle());
+        QCOMPARE(child->windowHandle()->transientParent(), nullptr);
+    }
+        break;
+    case 2: {
+        // Top level to child
+
+        QWidget topLevel;
+        topLevel.setAttribute(Qt::WA_NativeWindow);
+
+        // A regular top level loses its nativeness
+        QPointer<QWidget> regularToplevel = new QWidget;
+        regularToplevel->show();
+        QVERIFY(QTest::qWaitForWindowExposed(regularToplevel));
+        QVERIFY(regularToplevel->windowHandle());
+        regularToplevel->setParent(&topLevel);
+        QVERIFY(!regularToplevel->windowHandle());
+
+         // A regular top level loses its nativeness
+        QPointer<QWidget> regularToplevelWithNativeChildren = new QWidget;
+        QPointer<QWidget> nativeChild = new QWidget(regularToplevelWithNativeChildren);
+        nativeChild->setAttribute(Qt::WA_DontCreateNativeAncestors);
+        nativeChild->setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(nativeChild->windowHandle());
+        regularToplevelWithNativeChildren->show();
+        QVERIFY(QTest::qWaitForWindowExposed(regularToplevelWithNativeChildren));
+        QVERIFY(regularToplevelWithNativeChildren->windowHandle());
+        regularToplevelWithNativeChildren->setParent(&topLevel);
+        QVERIFY(!regularToplevelWithNativeChildren->windowHandle());
+        // But the native child does not
+        QVERIFY(nativeChild->windowHandle());
+        QCOMPARE(nativeChild->windowHandle()->parent(), topLevel.windowHandle());
+
+        // An explicitly native top level keeps its nativeness, and the window handle moves
+        QPointer<QWidget> nativeTopLevel = new QWidget;
+        nativeTopLevel->setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(nativeTopLevel->windowHandle());
+        nativeTopLevel->setParent(&topLevel);
+        QVERIFY(nativeTopLevel->windowHandle());
+        QCOMPARE(nativeTopLevel->windowHandle()->parent(), topLevel.windowHandle());
+    }
+        break;
+    case 3: {
+        // Transient parent
+
+        QWidget topLevel;
+        topLevel.setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(topLevel.windowHandle());
+        QPointer<QWidget> child = new QWidget(&topLevel);
+        child->setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(child->windowHandle());
+
+        QWidget anotherTopLevel;
+        anotherTopLevel.setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(anotherTopLevel.windowHandle());
+
+        // Make transient child of top level
+        anotherTopLevel.setParent(&topLevel, Qt::Window);
+        QCOMPARE(anotherTopLevel.windowHandle()->parent(), nullptr);
+        QCOMPARE(anotherTopLevel.windowHandle()->transientParent(), topLevel.windowHandle());
+
+        // Make transient child of child
+        anotherTopLevel.setParent(child, Qt::Window);
+        QCOMPARE(anotherTopLevel.windowHandle()->parent(), nullptr);
+        QCOMPARE(anotherTopLevel.windowHandle()->transientParent(), topLevel.windowHandle());
+    }
+        break;
+    case 4: {
+        // Window container
+
+        QWidget topLevel;
+        topLevel.setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(topLevel.windowHandle());
+
+        QPointer<QWidget> child = new QWidget(&topLevel);
+        QVERIFY(!child->windowHandle());
+
+        QWindow *window = new QWindow;
+        QWidget *container = QWidget::createWindowContainer(window);
+        container->setParent(child);
+        topLevel.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+        QCOMPARE(window->parent(), topLevel.windowHandle());
+
+        QWidget anotherTopLevel;
+        anotherTopLevel.setAttribute(Qt::WA_NativeWindow);
+        QVERIFY(anotherTopLevel.windowHandle());
+
+        child->setParent(&anotherTopLevel);
+        QCOMPARE(window->parent(), anotherTopLevel.windowHandle());
+    }
+        break;
+    default:
+        Q_UNREACHABLE();
+    }
 }
 
 QTEST_MAIN(tst_QWidget)
