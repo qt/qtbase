@@ -837,6 +837,10 @@ void QKdeThemePrivate::refresh()
     const QVariant singleClickValue = readKdeSetting(KdeSetting::SingleClick);
     if (singleClickValue.isValid())
         singleClick = singleClickValue.toBool();
+    else if (kdeVersion >= 6) // Plasma 6 defaults to double-click
+        singleClick = false;
+    else // earlier version to single-click
+        singleClick = true;
 
     const QVariant showIconsOnPushButtonsValue = readKdeSetting(KdeSetting::ShowIconsOnPushButtons);
     if (showIconsOnPushButtonsValue.isValid())
