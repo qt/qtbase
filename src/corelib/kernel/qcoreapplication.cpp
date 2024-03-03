@@ -2488,7 +2488,7 @@ QString QCoreApplication::applicationFilePath()
 
     if (d->argc) {
         static QByteArray procName = QByteArray(d->argv[0]);
-        if (procName != d->argv[0]) {
+        if (procName != QByteArrayView(d->argv[0])) {
             // clear the cache if the procname changes, so we reprocess it.
             QCoreApplicationPrivate::clearApplicationFilePath();
             procName.assign(d->argv[0]);
