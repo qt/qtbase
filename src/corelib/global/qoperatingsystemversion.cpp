@@ -199,13 +199,13 @@ QOperatingSystemVersionBase QOperatingSystemVersionBase::current_impl()
 }
 #endif
 
-static inline int compareVersionComponents(int lhs, int rhs)
+static inline int compareVersionComponents(int lhs, int rhs) noexcept
 {
     return lhs >= 0 && rhs >= 0 ? lhs - rhs : 0;
 }
 
 int QOperatingSystemVersionBase::compare(QOperatingSystemVersionBase v1,
-                                         QOperatingSystemVersionBase v2)
+                                         QOperatingSystemVersionBase v2) noexcept
 {
     if (v1.m_major == v2.m_major) {
         if (v1.m_minor == v2.m_minor) {
