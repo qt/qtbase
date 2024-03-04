@@ -414,6 +414,10 @@ private:
     qsizetype m_size;
 };
 
+constexpr QByteArrayView::QByteArrayView(QUtf8StringView v) noexcept
+    : QByteArrayView(v.data(), v.size())
+{}
+
 #ifdef Q_QDOC
 #undef QBasicUtf8StringView
 #else

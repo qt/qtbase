@@ -168,6 +168,9 @@ public:
     constexpr QByteArrayView(const char (&data)[Size]) noexcept
         : QByteArrayView(data, lengthHelperCharArray(data, Size)) {}
 
+    constexpr QByteArrayView(QLatin1StringView v) noexcept; // defined in qlatin1stringview.h
+    constexpr QByteArrayView(QUtf8StringView v) noexcept; // defined in qutf8stringview.h
+
 #ifdef Q_QDOC
     template <typename Byte, size_t Size>
 #else
@@ -326,13 +329,13 @@ private:
         Q_ASSERT(n <= size() - pos);
     }
 
-    static inline bool
+    friend bool
     comparesEqual(const QByteArrayView &lhs, const QByteArrayView &rhs) noexcept
     {
         return lhs.size() == rhs.size()
                 && (!lhs.size() || memcmp(lhs.data(), rhs.data(), lhs.size()) == 0);
     }
-    static inline Qt::strong_ordering
+    friend Qt::strong_ordering
     compareThreeWay(const QByteArrayView &lhs, const QByteArrayView &rhs) noexcept
     {
         const int res = QtPrivate::compareMemory(lhs, rhs);
@@ -340,20 +343,22 @@ private:
     }
     Q_DECLARE_STRONGLY_ORDERED(QByteArrayView)
 
-    static inline bool comparesEqual(const QByteArrayView &lhs, const char *rhs) noexcept
+    friend bool comparesEqual(const QByteArrayView &lhs, const char *rhs) noexcept
     { return comparesEqual(lhs, QByteArrayView(rhs)); }
-    static inline Qt::strong_ordering
+    friend Qt::strong_ordering
     compareThreeWay(const QByteArrayView &lhs, const char *rhs) noexcept
     { return compareThreeWay(lhs, QByteArrayView(rhs)); }
     Q_DECLARE_STRONGLY_ORDERED(QByteArrayView, const char *)
 
     // defined in qstring.cpp
-    static bool
+    friend Q_CORE_EXPORT bool
     comparesEqual(const QByteArrayView &lhs, const QChar &rhs) noexcept;
-    static Qt::strong_ordering
+    friend Q_CORE_EXPORT Qt::strong_ordering
     compareThreeWay(const QByteArrayView &lhs, const QChar &rhs) noexcept;
-    static bool comparesEqual(const QByteArrayView &lhs, char16_t rhs) noexcept;
-    static Qt::strong_ordering compareThreeWay(const QByteArrayView &lhs, char16_t rhs) noexcept;
+    friend Q_CORE_EXPORT bool
+    comparesEqual(const QByteArrayView &lhs, char16_t rhs) noexcept;
+    friend Q_CORE_EXPORT Qt::strong_ordering
+    compareThreeWay(const QByteArrayView &lhs, char16_t rhs) noexcept;
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     Q_DECLARE_STRONGLY_ORDERED(QByteArrayView, QChar, QT_ASCII_CAST_WARN)
     Q_DECLARE_STRONGLY_ORDERED(QByteArrayView, char16_t, QT_ASCII_CAST_WARN)
