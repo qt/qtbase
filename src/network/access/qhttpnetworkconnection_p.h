@@ -177,7 +177,7 @@ public:
     QHttpNetworkRequest predictNextRequest() const;
     QHttpNetworkReply* predictNextRequestsReply() const;
 
-    void fillPipeline(QAbstractSocket *socket);
+    void fillPipeline(QIODevice *socket);
     bool fillPipeline(QList<HttpMessagePair> &queue, QHttpNetworkConnectionChannel &channel);
 
     // read more HTTP body after the next event loop spin
@@ -197,7 +197,7 @@ public:
 
     void createAuthorization(QIODevice *socket, QHttpNetworkRequest &request);
 
-    QString errorDetail(QNetworkReply::NetworkError errorCode, QAbstractSocket *socket,
+    QString errorDetail(QNetworkReply::NetworkError errorCode, QIODevice *socket,
                         const QString &extraDetail = QString());
 
     void removeReply(QHttpNetworkReply *reply);
@@ -219,15 +219,15 @@ public:
     qint64 uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const;
 
 
-    void emitReplyError(QAbstractSocket *socket, QHttpNetworkReply *reply, QNetworkReply::NetworkError errorCode);
-    bool handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);
+    void emitReplyError(QIODevice *socket, QHttpNetworkReply *reply, QNetworkReply::NetworkError errorCode);
+    bool handleAuthenticateChallenge(QIODevice *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);
     struct ParseRedirectResult {
         QUrl redirectUrl;
         QNetworkReply::NetworkError errorCode;
     };
     static ParseRedirectResult parseRedirectResponse(QHttpNetworkReply *reply);
     // Used by the HTTP1 code-path
-    QUrl parseRedirectResponse(QAbstractSocket *socket, QHttpNetworkReply *reply);
+    QUrl parseRedirectResponse(QIODevice *socket, QHttpNetworkReply *reply);
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy networkProxy;

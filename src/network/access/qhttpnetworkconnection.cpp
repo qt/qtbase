@@ -13,6 +13,7 @@
 #include <qauthenticator.h>
 #include <qcoreapplication.h>
 #include <private/qdecompresshelper_p.h>
+#include <private/qsocketabstraction_p.h>
 
 #include <qbuffer.h>
 #include <qpair.h>
@@ -319,7 +320,7 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
 
 
 
-void QHttpNetworkConnectionPrivate::emitReplyError(QAbstractSocket *socket,
+void QHttpNetworkConnectionPrivate::emitReplyError(QIODevice *socket,
                                                    QHttpNetworkReply *reply,
                                                    QNetworkReply::NetworkError errorCode)
 {
@@ -384,7 +385,7 @@ void QHttpNetworkConnectionPrivate::copyCredentials(int fromChannel, QAuthentica
 
 
 // handles the authentication for one channel and eventually re-starts the other channels
-bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply,
+bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QIODevice *socket, QHttpNetworkReply *reply,
                                                                 bool isProxy, bool &resend)
 {
     Q_ASSERT(socket);
@@ -486,7 +487,7 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
 }
 
 // Used by the HTTP1 code-path
-QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socket,
+QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QIODevice *socket,
                                                           QHttpNetworkReply *reply)
 {
     ParseRedirectResult result = parseRedirectResponse(reply);
@@ -740,7 +741,7 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::predictNextRequestsReply() con
 }
 
 // this is called from _q_startNextRequest and when a request has been sent down a socket from the channel
-void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
+void QHttpNetworkConnectionPrivate::fillPipeline(QIODevice *socket)
 {
     // return fast if there is nothing to pipeline
     if (highPriorityQueue.isEmpty() && lowPriorityQueue.isEmpty())
@@ -768,7 +769,7 @@ void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
         return;
 
     // check if socket is connected
-    if (socket->state() != QAbstractSocket::ConnectedState)
+    if (QSocketAbstraction::socketState(socket) != QAbstractSocket::ConnectedState)
         return;
 
     // check for resendCurrent
@@ -862,16 +863,15 @@ bool QHttpNetworkConnectionPrivate::fillPipeline(QList<HttpMessagePair> &queue, 
 }
 
 
-QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError errorCode, QAbstractSocket *socket, const QString &extraDetail)
+QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError errorCode, QIODevice *socket, const QString &extraDetail)
 {
     QString errorString;
     switch (errorCode) {
-    case QNetworkReply::HostNotFoundError:
-        if (socket)
-            errorString = QCoreApplication::translate("QHttp", "Host %1 not found").arg(socket->peerName());
-        else
-            errorString = QCoreApplication::translate("QHttp", "Host %1 not found").arg(hostName);
+    case QNetworkReply::HostNotFoundError: {
+        const QString peerName = socket ? QSocketAbstraction::socketPeerName(socket) : hostName;
+        errorString = QCoreApplication::translate("QHttp", "Host %1 not found").arg(peerName);
         break;
+    }
     case QNetworkReply::ConnectionRefusedError:
         errorString = QCoreApplication::translate("QHttp", "Connection refused");
         break;
