@@ -148,7 +148,7 @@ void QTextMarkdownImporter::import(const QString &markdown)
                 ++firstLinePos;
             QByteArray frontMatter = md.sliced(firstLinePos, endMarkerPos - firstLinePos);
             firstLinePos = endMarkerPos + 4; // first line of markdown after yaml
-            while (md.at(firstLinePos) == '\n' || md.at(firstLinePos) == '\r')
+            while (md.size() > firstLinePos && (md.at(firstLinePos) == '\n' || md.at(firstLinePos) == '\r'))
                 ++firstLinePos;
             md.remove(0, firstLinePos);
             doc->setMetaInformation(QTextDocument::FrontMatter, QString::fromUtf8(frontMatter));

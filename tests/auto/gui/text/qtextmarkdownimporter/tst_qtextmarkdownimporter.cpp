@@ -44,6 +44,7 @@ private slots:
     void pathological();
     void fencedCodeBlocks_data();
     void fencedCodeBlocks();
+    void frontMatter_data();
     void frontMatter();
 
 private:
@@ -634,9 +635,21 @@ void tst_QTextMarkdownImporter::fencedCodeBlocks()
     QCOMPARE(doc.toMarkdown(), rewrite);
 }
 
+void tst_QTextMarkdownImporter::frontMatter_data()
+{
+    QTest::addColumn<QString>("inputFile");
+    QTest::addColumn<int>("expectedBlockCount");
+
+    QTest::newRow("yaml + markdown") << QFINDTESTDATA("data/yaml.md") << 1;
+    QTest::newRow("yaml only") << QFINDTESTDATA("data/yaml-only.md") << 0;
+}
+
 void tst_QTextMarkdownImporter::frontMatter()
 {
-    QFile f(QFINDTESTDATA("data/yaml.md"));
+    QFETCH(QString, inputFile);
+    QFETCH(int, expectedBlockCount);
+
+    QFile f(inputFile);
     QVERIFY(f.open(QFile::ReadOnly | QIODevice::Text));
     QString md = QString::fromUtf8(f.readAll());
     f.close();
@@ -652,7 +665,7 @@ void tst_QTextMarkdownImporter::frontMatter()
         if (!iterator.currentBlock().text().isEmpty())
             ++blockCount;
     }
-    QCOMPARE(blockCount, 1); // yaml is not part of the markdown text
+    QCOMPARE(blockCount, expectedBlockCount); // yaml is not part of the markdown text
     QCOMPARE(doc.metaInformation(QTextDocument::FrontMatter), yaml); // without fences
 }
 
