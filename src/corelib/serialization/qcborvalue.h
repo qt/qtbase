@@ -5,8 +5,9 @@
 #define QCBORVALUE_H
 
 #include <QtCore/qbytearray.h>
-#include <QtCore/qdatetime.h>
 #include <QtCore/qcborcommon.h>
+#include <QtCore/qcompare.h>
+#include <QtCore/qdatetime.h>
 #if QT_CONFIG(regularexpression)
 #  include <QtCore/qregularexpression.h>
 #endif
@@ -20,10 +21,6 @@
 #if defined(False) && defined(True)
 #  undef True
 #  undef False
-#endif
-
-#if 0 && __has_include(<compare>)
-#  include <compare>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -222,15 +219,7 @@ public:
     QCborValueRef operator[](const QString & key);
 
     int compare(const QCborValue &other) const;
-#if 0 && __has_include(<compare>)
-    std::strong_ordering operator<=>(const QCborValue &other) const
-    {
-        int c = compare(other);
-        if (c > 0) return std::partial_ordering::greater;
-        if (c == 0) return std::partial_ordering::equivalent;
-        return std::partial_ordering::less;
-    }
-#else
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QCborValue &other) const noexcept
     { return compare(other) == 0; }
     bool operator!=(const QCborValue &other) const noexcept
@@ -260,6 +249,16 @@ public:
     QString toDiagnosticNotation(DiagnosticNotationOptions opts = Compact) const;
 
 private:
+    friend Q_CORE_EXPORT bool comparesEqual(const QCborValue &lhs,
+                                            const QCborValue &rhs) noexcept;
+    friend Qt::strong_ordering compareThreeWay(const QCborValue &lhs,
+                                               const QCborValue &rhs) noexcept
+    {
+        int c = lhs.compare(rhs);
+        return Qt::compareThreeWay(c, 0);
+    }
+
+    Q_DECLARE_STRONGLY_ORDERED(QCborValue)
     friend class QCborValueRef;
     friend class QCborContainerPrivate;
     friend class QJsonPrivate::Value;

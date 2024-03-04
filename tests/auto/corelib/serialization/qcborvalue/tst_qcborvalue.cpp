@@ -3,6 +3,7 @@
 
 #include <QtCore/qcborvalue.h>
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 
 #include <QBuffer>
 #include <QCborStreamReader>
@@ -26,6 +27,7 @@ private slots:
     void tagged();
     void extendedTypes_data();
     void extendedTypes();
+    void compareCompiles() { QTestPrivate::testAllComparisonOperatorsCompile<QCborValue>(); }
     void copyCompare_data() { basics_data(); }
     void copyCompare();
 
@@ -477,6 +479,7 @@ QT_WARNING_DISABLE_GCC("-Wself-move")
     // self-moving
     v = std::move(v);
     QCOMPARE(v, other); // make sure it's still valid
+    QT_TEST_ALL_COMPARISON_OPS(v, other, Qt::strong_ordering::equal);
 QT_WARNING_POP
 
     // moving
@@ -488,24 +491,15 @@ QT_WARNING_POP
     other = v;
     v = other;
 
-
     QCOMPARE(v.compare(other), 0);
-    QCOMPARE(v, other);
-    QVERIFY(!(v != other));
-    QVERIFY(!(v < other));
-#if 0 && __has_include(<compare>)
-    QVERIFY(v <= other);
-    QVERIFY(v >= other);
-    QVERIFY(!(v > other));
-#endif
+    QT_TEST_ALL_COMPARISON_OPS(v, other, Qt::strong_ordering::equal);
 
     if (v.isUndefined())
         other = nullptr;
     else
         other = {};
     QVERIFY(v.type() != other.type());
-    QVERIFY(!(v == other));
-    QVERIFY(v != other);
+    QT_TEST_EQUALITY_OPS(v, other, false);
 
     // they're different types, so they can't compare equal
     QVERIFY(v.compare(other) != 0);
@@ -1815,64 +1809,59 @@ void tst_QCborValue::sorting()
     QCborValue vdouble1(1.5), vdouble2(qInf());
     QCborValue vndouble1(-1.5), vndouble2(-qInf());
 
-#define CHECK_ORDER(v1, v2) \
-    QVERIFY(v1 < v2); \
-    QVERIFY(!(v2 < v2))
-
     // intra-type comparisons
-    CHECK_ORDER(vfalse, vtrue);
-    CHECK_ORDER(vsimple1, vsimple32);
-    CHECK_ORDER(vsimple32, vsimple255);
-    CHECK_ORDER(vint1, vint2);
-    CHECK_ORDER(vdouble1, vdouble2);
-    CHECK_ORDER(vndouble1, vndouble2);
+    QT_TEST_ALL_COMPARISON_OPS(vfalse, vtrue, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vsimple1, vsimple32, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vsimple32, vsimple255, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vint1, vint2, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vdouble1, vdouble2, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vndouble1, vndouble2, Qt::strong_ordering::less);
     // note: shorter length sorts first
-    CHECK_ORDER(vba1, vba2);
-    CHECK_ORDER(vba2, vba3);
-    CHECK_ORDER(vs1, vs2);
-    CHECK_ORDER(vs2, vs3);
-    CHECK_ORDER(va1, va2);
-    CHECK_ORDER(va2, va3);
-    CHECK_ORDER(vm1, vm2);
-    CHECK_ORDER(vm2, vm3);
-    CHECK_ORDER(vdt1, vdt2);
-    CHECK_ORDER(vtagged1, vtagged2);
-    CHECK_ORDER(vtagged2, vtagged3);
-    CHECK_ORDER(vtagged3, vtagged4);
-    CHECK_ORDER(vtagged4, vtagged5);
-    CHECK_ORDER(vurl1, vurl2);
-    CHECK_ORDER(vuuid1, vuuid2);
+    QT_TEST_ALL_COMPARISON_OPS(vba1, vba2, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vba2, vba3, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vs1, vs2, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vs2, vs3, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(va1, va2, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(va2, va3, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vm1, vm2, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vm2, vm3, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vdt1, vdt2, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vtagged1, vtagged2, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vtagged2, vtagged3, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vtagged3, vtagged4, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vtagged4, vtagged5, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vurl1, vurl2, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vuuid1, vuuid2, Qt::strong_ordering::less);
 
     // surprise 1: CBOR sorts integrals by absolute value
-    CHECK_ORDER(vneg1, vneg2);
+    QT_TEST_ALL_COMPARISON_OPS(vneg1, vneg2, Qt::strong_ordering::less);
 
     // surprise 2: CBOR sorts negatives after positives (sign+magnitude)
-    CHECK_ORDER(vint2, vneg1);
+    QT_TEST_ALL_COMPARISON_OPS(vint2, vneg1, Qt::strong_ordering::less);
     QVERIFY(vint2.toInteger() > vneg1.toInteger());
-    CHECK_ORDER(vdouble2, vndouble1);
+    QT_TEST_ALL_COMPARISON_OPS(vdouble2, vndouble1, Qt::strong_ordering::less);
     QVERIFY(vdouble2.toDouble() > vndouble1.toDouble());
 
     // inter-type comparisons
-    CHECK_ORDER(vneg2, vba1);
-    CHECK_ORDER(vba3, vs1);
-    CHECK_ORDER(vs3, va1);
-    CHECK_ORDER(va2, vm1);
-    CHECK_ORDER(vm2, vdt1);
-    CHECK_ORDER(vdt2, vtagged1);
-    CHECK_ORDER(vtagged2, vurl1);
-    CHECK_ORDER(vurl1, vuuid1);
-    CHECK_ORDER(vuuid2, vtagged3);
-    CHECK_ORDER(vtagged4, vsimple1);
-    CHECK_ORDER(vsimple1, vfalse);
-    CHECK_ORDER(vtrue, vnull);
-    CHECK_ORDER(vnull, vundef);
-    CHECK_ORDER(vundef, vsimple32);
-    CHECK_ORDER(vsimple255, vdouble1);
+    QT_TEST_ALL_COMPARISON_OPS(vneg2, vba1, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vba3, vs1, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vs3, va1, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(va2, vm1, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vm2, vdt1, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vdt2, vtagged1, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vtagged2, vurl1, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vurl1, vuuid1, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vuuid2, vtagged3, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vtagged4, vsimple1, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vsimple1, vfalse, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vtrue, vnull, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vnull, vundef, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vundef, vsimple32, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(vsimple255, vdouble1, Qt::strong_ordering::less);
 
     // which shows all doubles sorted after integrals
-    CHECK_ORDER(vint2, vdouble1);
+    QT_TEST_ALL_COMPARISON_OPS(vint2, vdouble1, Qt::strong_ordering::less);
     QVERIFY(vint2.toInteger() > vdouble1.toDouble());
-#undef CHECK_ORDER
 }
 
 static void addCommonCborData()

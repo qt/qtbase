@@ -51,6 +51,8 @@ Q_DECL_UNUSED static constexpr quint64 MaximumPreallocatedElementCount =
 
     \brief The QCborValue class encapsulates a value in CBOR.
 
+    \compares strong
+
     This class can be used to hold one of the many types available in CBOR.
     CBOR is the Concise Binary Object Representation, a very compact form of
     binary data encoding that is a superset of JSON. It was created by the IETF
@@ -1239,9 +1241,9 @@ inline int QCborContainerPrivate::compareElement_helper(const QCborContainerPriv
 }
 
 /*!
-    \fn bool QCborValue::operator==(const QCborValue &other) const
+    \fn bool QCborValue::operator==(const QCborValue &lhs, const QCborValue &rhs)
 
-    Compares this value and \a other, and returns true if they hold the same
+    Compares \a lhs and \a rhs, and returns true if they hold the same
     contents, false otherwise. If each QCborValue contains an array or map, the
     comparison is recursive to elements contained in them.
 
@@ -1252,9 +1254,9 @@ inline int QCborContainerPrivate::compareElement_helper(const QCborContainerPriv
  */
 
 /*!
-    \fn bool QCborValue::operator!=(const QCborValue &other) const
+    \fn bool QCborValue::operator!=(const QCborValue &lhs, const QCborValue &rhs)
 
-    Compares this value and \a other, and returns true if contents differ,
+    Compares \a lhs and \a rhs, and returns true if contents differ,
     false otherwise. If each QCborValue contains an array or map, the comparison
     is recursive to elements contained in them.
 
@@ -1263,12 +1265,17 @@ inline int QCborContainerPrivate::compareElement_helper(const QCborContainerPriv
     \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
         operator==(), operator<()
  */
+bool comparesEqual(const QCborValue &lhs,
+                   const QCborValue &rhs) noexcept
+{
+    return lhs.compare(rhs) == 0;
+}
 
 /*!
-    \fn bool QCborValue::operator<(const QCborValue &other) const
+    \fn bool QCborValue::operator<(const QCborValue &lhs, const QCborValue &rhs)
 
-    Compares this value and \a other, and returns true if this value should be
-    sorted before \a other, false otherwise. If each QCborValue contains an
+    Compares \a lhs and \a rhs, and returns true if \a lhs should be
+    sorted before \a rhs, false otherwise. If each QCborValue contains an
     array or map, the comparison is recursive to elements contained in them.
 
     For more information on CBOR sorting order, see QCborValue::compare().
@@ -1276,6 +1283,47 @@ inline int QCborContainerPrivate::compareElement_helper(const QCborContainerPriv
     \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
         operator==(), operator!=()
  */
+
+/*!
+    \fn bool QCborValue::operator<=(const QCborValue &lhs, const QCborValue &rhs)
+
+    Compares \a lhs and \a rhs, and returns true if \a lhs should be
+    sorted before \a rhs or is being equal to \a rhs, false otherwise.
+    If each QCborValue contains an array or map, the comparison is recursive
+    to elements contained in them.
+
+    For more information on CBOR sorting order, see QCborValue::compare().
+
+    \sa compare(), QCborValue::operator<(), QCborMap::operator==(),
+        operator==(), operator!=()
+*/
+
+/*!
+    \fn bool QCborValue::operator>(const QCborValue &lhs, const QCborValue &rhs)
+
+    Compares \a lhs and \a rhs, and returns true if \a lhs should be
+    sorted after \a rhs, false otherwise. If each QCborValue contains an
+    array or map, the comparison is recursive to elements contained in them.
+
+    For more information on CBOR sorting order, see QCborValue::compare().
+
+    \sa compare(), QCborValue::operator>=(), QCborMap::operator==(),
+        operator==(), operator!=()
+*/
+
+/*!
+    \fn bool QCborValue::operator>=(const QCborValue &lhs, const QCborValue &rhs)
+
+    Compares \a lhs and \a rhs, and returns true if \a lhs should be
+    sorted after \a rhs or is being equal to \a rhs, false otherwise.
+    If each QCborValue contains an array or map, the comparison is recursive
+    to elements contained in them.
+
+    For more information on CBOR sorting order, see QCborValue::compare().
+
+    \sa compare(), QCborValue::operator>(), QCborMap::operator==(),
+        operator==(), operator!=()
+*/
 
 /*!
     Compares this value and \a other, and returns an integer that indicates
