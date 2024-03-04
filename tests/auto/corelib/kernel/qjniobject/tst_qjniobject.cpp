@@ -117,6 +117,7 @@ private slots:
 
     void callback_data();
     void callback();
+    void callStaticOverloadResolution();
 
     void cleanupTestCase();
 };
@@ -2067,6 +2068,19 @@ void tst_QJniObject::callback()
     }
     }
     QCOMPARE(result, int(parameterType));
+}
+
+// Make sure the new callStaticMethod overload taking a class, return type,
+// and argument as template parameters, doesn't break overload resolution
+// and that the class name doesn't get interpreted as the function name.
+void tst_QJniObject::callStaticOverloadResolution()
+{
+    const QString value = u"Hello World"_s;
+    QJniObject str = QJniObject::fromString(value);
+    const auto result = QJniObject::callStaticMethod<jstring, jstring>(
+            QtJniTypes::Traits<TestClass>::className(),
+            "staticEchoMethod", str.object<jstring>()).toString();
+    QCOMPARE(result, value);
 }
 
 QTEST_MAIN(tst_QJniObject)
