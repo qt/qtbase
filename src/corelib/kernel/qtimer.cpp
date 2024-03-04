@@ -213,7 +213,7 @@ void QTimer::start()
     if (d->isActive()) // stop running timer
         stop();
 
-    const auto newId = Qt::TimerId{QObject::startTimer(d->inter * 1ms, d->type)};
+    Qt::TimerId newId{ QObject::startTimer(d->inter * 1ms, d->type) }; // overflow impossible
     if (newId > Qt::TimerId::Invalid) {
         d->id = newId;
         d->isActiveData.notify();
@@ -332,7 +332,7 @@ void QTimer::singleShotImpl(std::chrono::milliseconds msec, Qt::TimerType timerT
         return;
     }
 
-    new QSingleShotTimer(msec, timerType, receiver, slotObj);
+    new QSingleShotTimer(QSingleShotTimer::fromMsecs(msec), timerType, receiver, slotObj);
 }
 
 /*!
@@ -396,7 +396,7 @@ void QTimer::singleShot(std::chrono::milliseconds msec, Qt::TimerType timerType,
                                       Qt::QueuedConnection);
             return;
         }
-        (void) new QSingleShotTimer(msec, timerType, receiver, member);
+        (void) new QSingleShotTimer(QSingleShotTimer::fromMsecs(msec), timerType, receiver, member);
     }
 }
 
@@ -592,7 +592,7 @@ void QTimer::setInterval(std::chrono::milliseconds interval)
     d->inter.setValueBypassingBindings(msec);
     if (d->isActive()) { // create new timer
         QObject::killTimer(d->id);                        // restart timer
-        const auto newId = Qt::TimerId{QObject::startTimer(msec * 1ms, d->type)};
+        Qt::TimerId newId{ QObject::startTimer(msec * 1ms, d->type) };  // overflow impossible
         if (newId > Qt::TimerId::Invalid) {
             // Restarted successfully. No need to update the active state.
             d->id = newId;

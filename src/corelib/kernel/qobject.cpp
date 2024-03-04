@@ -1816,6 +1816,8 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
 
 int QObject::startTimer(int interval, Qt::TimerType timerType)
 {
+    // no overflow can happen here:
+    // 2^31 ms * 1,000,000 always fits a 64-bit signed integer type
     return startTimer(std::chrono::milliseconds{interval}, timerType);
 }
 

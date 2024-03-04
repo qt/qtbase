@@ -19,6 +19,7 @@
 #include "qabstracteventdispatcher.h"
 #include "qcoreapplication.h"
 #include "qmetaobject_p.h"
+#include "private/qnumeric_p.h"
 
 #include <chrono>
 
@@ -43,6 +44,20 @@ public:
     inline void startTimerForReceiver(Duration interval, Qt::TimerType timerType,
                                       const QObject *receiver);
 
+    static Duration fromMsecs(std::chrono::milliseconds ms)
+    {
+        using namespace std::chrono;
+        using ratio = std::ratio_divide<std::milli, Duration::period>;
+        static_assert(ratio::den == 1);
+
+        Duration::rep r;
+        if (qMulOverflow<ratio::num>(ms.count(), &r)) {
+            qWarning("QTimer::singleShot(std::chrono::milliseconds, ...): "
+                     "interval argument overflowed when converted to nanoseconds.");
+            return Duration::max();
+        }
+        return Duration{r};
+    }
 Q_SIGNALS:
     void timeout();
 

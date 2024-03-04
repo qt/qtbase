@@ -1012,11 +1012,13 @@ int QObject::startTimer(std::chrono::milliseconds time, Qt::TimerType timerType)
 {
     using namespace std::chrono;
     using ratio = std::ratio_divide<std::milli, std::nano>;
-    if (nanoseconds::rep r; qMulOverflow<ratio::num>(time.count(), &r)) {
-        qWarning("QObject::startTimer(std::chrono::milliseconds time ...): "
-                 "'time' arg will overflow when converted to nanoseconds.");
+    nanoseconds::rep r;
+    if (qMulOverflow<ratio::num>(time.count(), &r)) {
+        qWarning("QObject::startTimer(std::chrono::milliseconds): "
+                 "'time' arg overflowed when converted to nanoseconds.");
+        r = nanoseconds::max().count();
     }
-    return startTimer(nanoseconds{time}, timerType);
+    return startTimer(nanoseconds{r}, timerType);
 }
 
 #if QT_CONFIG(processenvironment)
