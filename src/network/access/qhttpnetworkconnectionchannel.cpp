@@ -91,14 +91,14 @@ void QHttpNetworkConnectionChannel::init()
     // After some back and forth in all the last years, this is now a DirectConnection because otherwise
     // the state inside the *Socket classes gets messed up, also in conjunction with the socket notifiers
     // which behave slightly differently on Windows vs Linux
-    QObject::connect(socket, SIGNAL(bytesWritten(qint64)),
-                     this, SLOT(_q_bytesWritten(qint64)),
+    QObject::connect(socket, &QIODevice::bytesWritten,
+                     this, &QHttpNetworkConnectionChannel::_q_bytesWritten,
                      Qt::DirectConnection);
-    QObject::connect(socket, SIGNAL(connected()),
-                     this, SLOT(_q_connected()),
+    QObject::connect(socket, &QAbstractSocket::connected,
+                     this, &QHttpNetworkConnectionChannel::_q_connected,
                      Qt::DirectConnection);
-    QObject::connect(socket, SIGNAL(readyRead()),
-                     this, SLOT(_q_readyRead()),
+    QObject::connect(socket, &QIODevice::readyRead,
+                     this, &QHttpNetworkConnectionChannel::_q_readyRead,
                      Qt::DirectConnection);
 
     // The disconnected() and error() signals may already come
@@ -108,17 +108,17 @@ void QHttpNetworkConnectionChannel::init()
     // but cannot be caught because the user did not have a chance yet
     // to connect to QNetworkReply's signals.
     qRegisterMetaType<QAbstractSocket::SocketError>();
-    QObject::connect(socket, SIGNAL(disconnected()),
-                     this, SLOT(_q_disconnected()),
+    QObject::connect(socket, &QAbstractSocket::disconnected,
+                     this, &QHttpNetworkConnectionChannel::_q_disconnected,
                      Qt::DirectConnection);
-    QObject::connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
-                     this, SLOT(_q_error(QAbstractSocket::SocketError)),
+    QObject::connect(socket, &QAbstractSocket::errorOccurred,
+                     this, &QHttpNetworkConnectionChannel::_q_error,
                      Qt::DirectConnection);
 
 
 #ifndef QT_NO_NETWORKPROXY
-    QObject::connect(socket, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
-                     this, SLOT(_q_proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
+    QObject::connect(socket, &QAbstractSocket::proxyAuthenticationRequired,
+                     this, &QHttpNetworkConnectionChannel::_q_proxyAuthenticationRequired,
                      Qt::DirectConnection);
 #endif
 
@@ -126,17 +126,17 @@ void QHttpNetworkConnectionChannel::init()
     QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
     if (sslSocket) {
         // won't be a sslSocket if encrypt is false
-        QObject::connect(sslSocket, SIGNAL(encrypted()),
-                         this, SLOT(_q_encrypted()),
+        QObject::connect(sslSocket, &QSslSocket::encrypted,
+                         this, &QHttpNetworkConnectionChannel::_q_encrypted,
                          Qt::DirectConnection);
-        QObject::connect(sslSocket, SIGNAL(sslErrors(QList<QSslError>)),
-                         this, SLOT(_q_sslErrors(QList<QSslError>)),
+        QObject::connect(sslSocket, &QSslSocket::sslErrors,
+                         this, &QHttpNetworkConnectionChannel::_q_sslErrors,
                          Qt::DirectConnection);
-        QObject::connect(sslSocket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)),
-                         this, SLOT(_q_preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)),
+        QObject::connect(sslSocket, &QSslSocket::preSharedKeyAuthenticationRequired,
+                         this, &QHttpNetworkConnectionChannel::_q_preSharedKeyAuthenticationRequired,
                          Qt::DirectConnection);
-        QObject::connect(sslSocket, SIGNAL(encryptedBytesWritten(qint64)),
-                         this, SLOT(_q_encryptedBytesWritten(qint64)),
+        QObject::connect(sslSocket, &QSslSocket::encryptedBytesWritten,
+                         this, &QHttpNetworkConnectionChannel::_q_encryptedBytesWritten,
                          Qt::DirectConnection);
 
         if (ignoreAllSslErrors)
