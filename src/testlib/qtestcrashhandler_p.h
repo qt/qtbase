@@ -82,7 +82,7 @@ namespace CrashHandler {
 #endif
 
     void maybeDisableCoreDump();
-    void prepareStackTrace();
+    Q_TESTLIB_EXPORT void prepareStackTrace();
 
 #if defined(Q_OS_WIN)
     // Helper class for resolving symbol names by dynamically loading "dbghelp.dll".
@@ -135,7 +135,7 @@ namespace CrashHandler {
         SymFromAddrType m_symFromAddr;
     };
 
-    class WindowsFaultHandler
+    class Q_TESTLIB_EXPORT WindowsFaultHandler
     {
     public:
         WindowsFaultHandler();
@@ -145,7 +145,7 @@ namespace CrashHandler {
     };
     using FatalSignalHandler = WindowsFaultHandler;
 #elif defined(Q_OS_UNIX) && !defined(Q_OS_WASM)
-    class FatalSignalHandler
+    class Q_TESTLIB_EXPORT FatalSignalHandler
     {
     public:
     #  define OUR_SIGNALS(F)    \
@@ -241,7 +241,7 @@ namespace CrashHandler {
         static bool pauseOnCrash;
     };
 #else // Q_OS_WASM or weird systems
-class FatalSignalHandler {};
+class Q_TESTLIB_EXPORT FatalSignalHandler {};
 inline void blockUnixSignals() {}
 #endif // Q_OS_* choice
 } // namespace CrashHandler

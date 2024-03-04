@@ -377,6 +377,9 @@ namespace QTest
         return msg;
     }
 
+    // Exported so Qt Quick Test can also use it for generating backtraces upon crashes.
+    Q_TESTLIB_EXPORT extern bool noCrashHandler;
+
     } // namespace Internal
 
     template<typename T>

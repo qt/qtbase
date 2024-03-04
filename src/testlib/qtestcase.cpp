@@ -432,10 +432,13 @@ static int eventDelay = -1;
 #if QT_CONFIG(thread)
 static int timeout = -1;
 #endif
-static bool noCrashHandler = false;
 static int repetitions = 1;
 static bool repeatForever = false;
 static bool skipBlacklisted = false;
+
+namespace Internal {
+bool noCrashHandler = false;
+}
 
 static bool invokeTestMethodIfValid(QMetaMethod m, QObject *obj = QTest::currentTestObject)
 {
@@ -843,7 +846,7 @@ Q_TESTLIB_EXPORT void qtest_qParseArgs(int argc, const char *const argv[], bool 
                 repeatForever = repetitions < 0;
             }
         } else if (strcmp(argv[i], "-nocrashhandler") == 0) {
-            QTest::noCrashHandler = true;
+            QTest::Internal::noCrashHandler = true;
         } else if (strcmp(argv[i], "-skipblacklisted") == 0) {
             QTest::skipBlacklisted = true;
         } else if (strcmp(argv[i], "-throwonfail") == 0) {
@@ -1889,7 +1892,7 @@ int QTest::qRun()
     {
         std::optional<CrashHandler::FatalSignalHandler> handler;
         CrashHandler::prepareStackTrace();
-        if (!noCrashHandler)
+        if (!Internal::noCrashHandler)
             handler.emplace();
 
         bool seenBad = false;
