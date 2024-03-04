@@ -374,12 +374,10 @@ void QAndroidPlatformScreen::doRedraw(QImage* screenGrabImage)
     if (m_dirtyRect.isEmpty())
         return;
 
-    // Stop if there are no visible raster windows. If we only have RasterGLSurface
-    // windows that have renderToTexture children (i.e. they need the OpenGL path) then
-    // we do not need an overlay surface.
+    // Stop if there are no visible raster windows
     bool hasVisibleRasterWindows = false;
     for (QAndroidPlatformWindow *window : std::as_const(m_windowStack)) {
-        if (window->window()->isVisible() && window->isRaster() && !qt_window_private(window->window())->compositing) {
+        if (window->window()->isVisible() && window->isRaster()) {
             hasVisibleRasterWindows = true;
             break;
         }
@@ -434,9 +432,7 @@ void QAndroidPlatformScreen::doRedraw(QImage* screenGrabImage)
 
     QRegion visibleRegion(m_dirtyRect);
     for (QAndroidPlatformWindow *window : std::as_const(m_windowStack)) {
-        if (!window->window()->isVisible()
-                || qt_window_private(window->window())->compositing
-                || !window->isRaster())
+        if (!window->window()->isVisible() || !window->isRaster())
             continue;
 
         for (const QRect &rect : std::vector<QRect>(visibleRegion.begin(), visibleRegion.end())) {
