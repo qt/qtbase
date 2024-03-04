@@ -166,12 +166,12 @@ public:
 
     enum { ChunkSize = 4096 };
 
-    int indexOf(QAbstractSocket *socket) const;
+    int indexOf(QIODevice *socket) const;
 
     QHttpNetworkReply *queueRequest(const QHttpNetworkRequest &request);
     void requeueRequest(const HttpMessagePair &pair); // e.g. after pipeline broke
     void fillHttp2Queue();
-    bool dequeueRequest(QAbstractSocket *socket);
+    bool dequeueRequest(QIODevice *socket);
     void prepareRequest(HttpMessagePair &request);
     void updateChannel(int i, const HttpMessagePair &messagePair);
     QHttpNetworkRequest predictNextRequest() const;
@@ -195,7 +195,7 @@ public:
     void _q_hostLookupFinished(const QHostInfo &info);
     void _q_connectDelayedChannel();
 
-    void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);
+    void createAuthorization(QIODevice *socket, QHttpNetworkRequest &request);
 
     QString errorDetail(QNetworkReply::NetworkError errorCode, QAbstractSocket *socket,
                         const QString &extraDetail = QString());
@@ -213,7 +213,7 @@ public:
     const int channelCount;
     QTimer delayedConnectionTimer;
     QHttpNetworkConnectionChannel *channels; // parallel connections to the server
-    bool shouldEmitChannelError(QAbstractSocket *socket);
+    bool shouldEmitChannelError(QIODevice *socket);
 
     qint64 uncompressedBytesAvailable(const QHttpNetworkReply &reply) const;
     qint64 uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const;

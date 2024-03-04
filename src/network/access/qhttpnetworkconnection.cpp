@@ -135,7 +135,7 @@ void QHttpNetworkConnectionPrivate::resumeConnection()
     QMetaObject::invokeMethod(this->q_func(), "_q_startNextRequest", Qt::QueuedConnection);
 }
 
-int QHttpNetworkConnectionPrivate::indexOf(QAbstractSocket *socket) const
+int QHttpNetworkConnectionPrivate::indexOf(QIODevice *socket) const
 {
     for (int i = 0; i < activeChannelCount; ++i)
         if (channels[i].socket == socket)
@@ -149,7 +149,7 @@ int QHttpNetworkConnectionPrivate::indexOf(QAbstractSocket *socket) const
 // emitted. This function will check the status of the connection channels if we
 // have not decided the networkLayerState and will return true if the channel error
 // should be emitted by the channel.
-bool QHttpNetworkConnectionPrivate::shouldEmitChannelError(QAbstractSocket *socket)
+bool QHttpNetworkConnectionPrivate::shouldEmitChannelError(QIODevice *socket)
 {
     Q_Q(QHttpNetworkConnection);
 
@@ -550,7 +550,7 @@ QHttpNetworkConnectionPrivate::parseRedirectResponse(QHttpNetworkReply *reply)
     return {std::move(redirectUrl), QNetworkReply::NoError};
 }
 
-void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request)
+void QHttpNetworkConnectionPrivate::createAuthorization(QIODevice *socket, QHttpNetworkRequest &request)
 {
     Q_ASSERT(socket);
 
@@ -686,7 +686,7 @@ void QHttpNetworkConnectionPrivate::requeueRequest(const HttpMessagePair &pair)
     QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
 }
 
-bool QHttpNetworkConnectionPrivate::dequeueRequest(QAbstractSocket *socket)
+bool QHttpNetworkConnectionPrivate::dequeueRequest(QIODevice *socket)
 {
     int i = 0;
     if (socket)
