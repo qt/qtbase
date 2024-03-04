@@ -83,6 +83,8 @@ protected:
         bool cloneFlipPending = false;
     };
     QList<CloneDestination> m_cloneDests;
+
+    bool needsNewModeSetForNextFb = false;
 };
 
 QT_END_NAMESPACE
