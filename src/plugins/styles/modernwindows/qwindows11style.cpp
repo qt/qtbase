@@ -1724,19 +1724,6 @@ QRect QWindows11Style::subControlRect(ComplexControl control, const QStyleOption
     QRect ret;
 
     switch (control) {
-#if QT_CONFIG(combobox)
-    case QStyle::CC_ComboBox:
-        if (const QStyleOptionComboBox *combobox = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
-            switch (subControl) {
-            case SC_ComboBoxEditField:
-                ret = combobox->rect.adjusted(8,0,0,0);
-                break;
-            default:
-                ret = QWindowsVistaStyle::subControlRect(control, option, subControl, widget);
-            }
-        }
-        break;
-#endif
 #if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinbox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
@@ -1969,9 +1956,11 @@ void QWindows11Style::polish(QWidget* widget)
         widget->setPalette(pal);
     }
     else if (widget->inherits("QAbstractScrollArea") && !widget->inherits("QMdiArea")) {
-        if (auto scrollarea = qobject_cast<QAbstractScrollArea*>(widget)) {
+        if (const auto *scrollarea = qobject_cast<QAbstractScrollArea *>(widget)) {
             QPalette pal = widget->palette();
-            pal.setColor(scrollarea->viewport()->backgroundRole(), Qt::transparent);
+            QColor backgroundColor = widget->palette().base().color();
+            backgroundColor.setAlpha(255);
+            pal.setColor(scrollarea->viewport()->backgroundRole(), backgroundColor);
             scrollarea->viewport()->setPalette(pal);
         }
     }
