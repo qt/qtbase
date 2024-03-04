@@ -84,6 +84,7 @@ public:
     QNetworkReply *get(const QNetworkRequest &request, const QByteArray &data);
     QNetworkReply *post(const QNetworkRequest &request, QIODevice *data);
     QNetworkReply *post(const QNetworkRequest &request, const QByteArray &data);
+    QNetworkReply *post(const QNetworkRequest &request, std::nullptr_t nptr);
     QNetworkReply *put(const QNetworkRequest &request, QIODevice *data);
     QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data);
     QNetworkReply *deleteResource(const QNetworkRequest &request);

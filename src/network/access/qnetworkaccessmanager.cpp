@@ -856,6 +856,24 @@ QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, const
     return reply;
 }
 
+/*!
+    \overload
+
+    \since 6.8
+
+    Sends the POST request specified by \a request without a body and returns
+    a new QNetworkReply object.
+*/
+QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, std::nullptr_t nptr)
+{
+    Q_UNUSED(nptr);
+    QIODevice *dev = nullptr;
+
+    return d_func()->postProcess(createRequest(QNetworkAccessManager::PostOperation,
+                                               request,
+                                               dev));
+}
+
 #if QT_CONFIG(http) || defined(Q_OS_WASM)
 /*!
     \since 4.8

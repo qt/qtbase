@@ -270,6 +270,8 @@ private Q_SLOTS:
     void postToHttpMultipart_data();
     void postToHttpMultipart();
     void multipartSkipIndices(); // QTBUG-32534
+    void postWithoutBody_data();
+    void postWithoutBody();
 #if QT_CONFIG(ssl)
     void putToHttps_data();
     void putToHttps();
@@ -646,6 +648,7 @@ public:
 
     bool stopTransfer = false;
     bool checkedContentLength = false;
+    bool foundContentLength = false;
     int contentRead = 0;
     int contentLength = 0;
 
@@ -677,6 +680,7 @@ public:
     {
         contentLength = 0;
         receivedData.clear();
+        foundContentLength = false;
     }
 
 protected:
@@ -736,6 +740,8 @@ private:
         int index = receivedData.indexOf("content-length:");
         if (index == -1)
             return;
+
+        foundContentLength = true;
 
         index += sizeof("content-length:") - 1;
         const auto end = std::find(receivedData.cbegin() + index, receivedData.cend(), '\r');
@@ -3060,6 +3066,47 @@ void tst_QNetworkReply::multipartSkipIndices() // QTBUG-32534
         }
     }
     multiPart->deleteLater();
+}
+
+void tst_QNetworkReply::postWithoutBody_data()
+{
+    QTest::addColumn<bool>("client_data");
+
+    QTest::newRow("client_has_data") << true;
+    QTest::newRow("client_does_not_have_data") << false;
+}
+
+void tst_QNetworkReply::postWithoutBody()
+{
+    QFETCH(bool, client_data);
+
+    QBuffer buff;
+
+    if (client_data) {
+        buff.setData("Dummy data from client to server");
+        buff.open(QIODevice::ReadOnly);
+    }
+
+    QByteArray dataFromServerToClient = QByteArray("Some ridiculous dummy data");
+    QByteArray httpResponse = QByteArray("HTTP/1.0 200 OK\r\nContent-Length: ");
+    httpResponse += QByteArray::number(dataFromServerToClient.size());
+    httpResponse += "\r\n\r\n";
+    httpResponse += dataFromServerToClient;
+
+    MiniHttpServer server(httpResponse);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
+
+    QNetworkReplyPtr reply;
+    if (client_data)
+        reply.reset(manager.post(request, &buff));
+    else
+        reply.reset(manager.post(request, nullptr));
+
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
+    QCOMPARE(server.foundContentLength, client_data);
 }
 
 void tst_QNetworkReply::putToHttpMultipart_data()
