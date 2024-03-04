@@ -131,10 +131,7 @@ public:
 
     bool operator()(const T &el)
     {
-        if (!movedFrom)
-            return el.isOdd();
-        else
-            return -1;
+        return movedFrom || el.isOdd();
     }
 };
 
