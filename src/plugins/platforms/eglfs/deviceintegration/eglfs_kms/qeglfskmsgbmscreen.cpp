@@ -184,6 +184,11 @@ void QEglFSKmsGbmScreen::resetSurface()
     // still do its work, when called. Otherwise we end up
     // in device-is-busy errors if there is a new QWindow
     // created afterwards. (QTBUG-122663)
+
+    // If not using atomic, will need a new drmModeSetCrtc if a new window
+    // gets created later on (and so there's a new fb).
+    if (!device()->hasAtomicSupport())
+        needsNewModeSetForNextFb = true;
 }
 
 void QEglFSKmsGbmScreen::initCloning(QPlatformScreen *screenThisScreenClones,
@@ -213,8 +218,9 @@ void QEglFSKmsGbmScreen::ensureModeSet(uint32_t fb)
     QKmsOutput &op(output());
     const int fd = device()->fd();
 
-    if (!op.mode_set) {
+    if (!op.mode_set || needsNewModeSetForNextFb) {
         op.mode_set = true;
+        needsNewModeSetForNextFb = false;
 
         bool doModeSet = true;
         drmModeCrtcPtr currentMode = drmModeGetCrtc(fd, op.crtc_id);
