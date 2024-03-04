@@ -6,7 +6,8 @@ function(qt_internal_validate_cmake_generator)
 
     if(NOT warning_shown
             AND NOT CMAKE_GENERATOR MATCHES "Ninja"
-            AND NOT QT_SILENCE_CMAKE_GENERATOR_WARNING)
+            AND NOT QT_SILENCE_CMAKE_GENERATOR_WARNING
+            AND NOT DEFINED ENV{QT_SILENCE_CMAKE_GENERATOR_WARNING})
         set_property(GLOBAL PROPERTY _qt_validate_cmake_generator_warning_shown TRUE)
         message(WARNING
                "The officially supported CMake generator for building Qt is "
