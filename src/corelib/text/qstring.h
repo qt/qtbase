@@ -167,6 +167,7 @@ public:
     QString(QChar c);
     QString(qsizetype size, QChar c);
     inline QString(QLatin1StringView latin1);
+    explicit QString(QStringView sv) : QString(sv.data(), sv.size()) {}
 #if defined(__cpp_char8_t) || defined(Q_QDOC)
     Q_WEAK_OVERLOAD
     inline QString(const char8_t *str)
@@ -1118,7 +1119,7 @@ int QStringView::compare(QUtf8StringView other, Qt::CaseSensitivity cs) const no
 //
 
 QString QStringView::toString() const
-{ return QString(data(), size()); }
+{ return QString(*this); }
 
 qint64 QStringView::toLongLong(bool *ok, int base) const
 { return QString::toIntegral_helper<qint64>(*this, ok, base); }

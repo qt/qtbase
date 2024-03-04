@@ -92,6 +92,7 @@ public:
     QByteArray(const char *, qsizetype size = -1);
     QByteArray(qsizetype size, char c);
     QByteArray(qsizetype size, Qt::Initialization);
+    explicit QByteArray(QByteArrayView v) : QByteArray(v.data(), v.size()) {}
     inline QByteArray(const QByteArray &) noexcept;
     inline ~QByteArray();
 
@@ -794,7 +795,7 @@ qsizetype erase_if(QByteArray &ba, Predicate pred)
 //
 QByteArray QByteArrayView::toByteArray() const
 {
-    return QByteArray(data(), size());
+    return QByteArray(*this);
 }
 
 namespace Qt {
