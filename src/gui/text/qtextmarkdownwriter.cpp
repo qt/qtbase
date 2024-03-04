@@ -81,8 +81,10 @@ void QTextMarkdownWriter::writeTable(const QAbstractItemModel *table)
 
 void QTextMarkdownWriter::writeFrontMatter(const QString &fm)
 {
-    if (fm.isEmpty() || !m_features.testFlag(static_cast<QTextDocument::MarkdownFeature>(
-                QTextMarkdownImporter::FeatureFrontMatter)))
+    const bool featureEnabled = m_features.testFlag(
+            static_cast<QTextDocument::MarkdownFeature>(QTextMarkdownImporter::FeatureFrontMatter));
+    qCDebug(lcMDW) << "writing FrontMatter?" << featureEnabled << "size" << fm.size();
+    if (fm.isEmpty() || !featureEnabled)
         return;
     m_stream << "---\n"_L1 << fm;
     if (!fm.endsWith(qtmw_Newline))
