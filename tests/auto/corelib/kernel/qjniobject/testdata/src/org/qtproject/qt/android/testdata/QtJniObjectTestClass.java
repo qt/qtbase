@@ -128,6 +128,9 @@ public class QtJniObjectTestClass
     public String stringMethod() { return staticStringMethod(); }
 
     // --------------------------------------------------------------------------------------------
+    public static String staticEchoMethod(String value) { return value; }
+
+    // --------------------------------------------------------------------------------------------
     public static Throwable staticThrowableMethod() { return A_THROWABLE_OBJECT; }
     public Throwable throwableMethod() { return staticThrowableMethod(); }
 
