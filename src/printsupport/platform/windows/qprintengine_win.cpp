@@ -1707,7 +1707,8 @@ void QWin32PrintEnginePrivate::updateMetrics()
     m_paintSizeMM = QSize(qRound(sizeMM.width()), qRound(sizeMM.height()));
     // Calculate the origin using the physical device pixels, not our paint pixels
     // Origin is defined as User Margins - Device Margins
-    QMarginsF margins = m_pageLayout.margins(QPageLayout::Millimeter) / 25.4;
+    const bool isFullPage = (m_pageLayout.mode() == QPageLayout::FullPageMode);
+    const QMarginsF margins = isFullPage ? QMarginsF() : (m_pageLayout.margins(QPageLayout::Millimeter) / 25.4);
     origin_x = qRound(pageScaleX * margins.left() * dpi_x) - GetDeviceCaps(hdc, PHYSICALOFFSETX);
     origin_y = qRound(pageScaleY * margins.top() * dpi_y) - GetDeviceCaps(hdc, PHYSICALOFFSETY);
 }
