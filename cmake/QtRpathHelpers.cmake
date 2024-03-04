@@ -217,6 +217,24 @@ macro(qt_internal_set_default_rpath_settings)
     if(NOT QT_NO_DISABLE_CMAKE_INSTALL_RPATH_USE_LINK_PATH)
         set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
     endif()
+
+    # If Qt is built without rpath support, we should not add "user-project default rpaths" to
+    # qt qml plugins. Do this by setting QT_NO_QML_PLUGIN_RPATH to TRUE, which is
+    # then read by qt6_add_qml_plugin.
+    # We do this as part of the internal API, because we still want to allow user project qml
+    # plugins to have sensible default rpaths, even if Qt qml plugins were built without support
+    # for rpaths.
+    #
+    # Note that feature evaluation is not done yet in qtbase at this point, so we check both
+    # feature variable variants. In practice it doesn't really matter, because the variable is only
+    # read during qtdeclarative configuration time when the feature is already evaluated.
+    #
+    # We also make sure not to set it as a cache var just in case somebody wants to override it
+    # per directory scope.
+    if(NOT DEFINED QT_NO_QML_PLUGIN_RPATH
+            AND (QT_DISABLE_RPATH OR (NOT FEATURE_rpath) OR (NOT QT_FEATURE_rpath)))
+        set(QT_NO_QML_PLUGIN_RPATH "TRUE")
+    endif()
 endmacro()
 
 # Overrides the CMAKE_STAGING_PREFIX in a subdirectory scope, to stop CMake from rewriting build
