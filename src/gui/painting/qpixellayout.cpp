@@ -1676,7 +1676,7 @@ static const QRgba64 *QT_FASTCALL convertCMYK32ToToRGBA64PM(QRgba64 *buffer, con
                                                             const QList<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
-        buffer[i] = qPremultiply(QCmyk32::fromCmyk32(src[i]).toColor().rgba64());
+        buffer[i] = QCmyk32::fromCmyk32(src[i]).toColor().rgba64();
     return buffer;
 }
 
@@ -1685,7 +1685,7 @@ static const uint *QT_FASTCALL fetchCMYK32ToARGB32PM(uint *buffer, const uchar *
 {
     const uint *s = reinterpret_cast<const uint *>(src) + index;
     for (int i = 0; i < count; ++i)
-        buffer[i] = qPremultiply(QCmyk32::fromCmyk32(s[i]).toColor().rgba());
+        buffer[i] = QCmyk32::fromCmyk32(s[i]).toColor().rgba();
     return buffer;
 }
 
@@ -1694,7 +1694,7 @@ static const QRgba64 *QT_FASTCALL fetchCMYK32ToRGBA64PM(QRgba64 *buffer, const u
 {
     const uint *s = reinterpret_cast<const uint *>(src) + index;
     for (int i = 0; i < count; ++i)
-        buffer[i] = qPremultiply(QCmyk32::fromCmyk32(s[i]).toColor().rgba64());
+        buffer[i] = QCmyk32::fromCmyk32(s[i]).toColor().rgba64();
     return buffer;
 }
 
