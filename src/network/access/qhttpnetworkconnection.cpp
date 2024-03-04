@@ -102,13 +102,18 @@ void QHttpNetworkConnectionPrivate::pauseConnection()
 
     // Disable all socket notifiers
     for (int i = 0; i < activeChannelCount; i++) {
-        if (channels[i].socket) {
+        if (auto *absSocket = qobject_cast<QAbstractSocket *>(channels[i].socket)) {
 #ifndef QT_NO_SSL
             if (encrypt)
-                QSslSocketPrivate::pauseSocketNotifiers(static_cast<QSslSocket*>(channels[i].socket));
+                QSslSocketPrivate::pauseSocketNotifiers(static_cast<QSslSocket*>(absSocket));
             else
 #endif
-                QAbstractSocketPrivate::pauseSocketNotifiers(channels[i].socket);
+                QAbstractSocketPrivate::pauseSocketNotifiers(absSocket);
+        } else if (qobject_cast<QLocalSocket *>(channels[i].socket)) {
+            // @todo how would we do this?
+#if 0 // @todo Enable this when there is a debug category for this
+            qDebug() << "Should pause socket but there is no way to do it for local sockets";
+#endif
         }
     }
 }
@@ -118,17 +123,21 @@ void QHttpNetworkConnectionPrivate::resumeConnection()
     state = RunningState;
     // Enable all socket notifiers
     for (int i = 0; i < activeChannelCount; i++) {
-        if (channels[i].socket) {
+        if (auto *absSocket = qobject_cast<QAbstractSocket *>(channels[i].socket)) {
 #ifndef QT_NO_SSL
             if (encrypt)
-                QSslSocketPrivate::resumeSocketNotifiers(static_cast<QSslSocket*>(channels[i].socket));
+                QSslSocketPrivate::resumeSocketNotifiers(static_cast<QSslSocket*>(absSocket));
             else
 #endif
-                QAbstractSocketPrivate::resumeSocketNotifiers(channels[i].socket);
+                QAbstractSocketPrivate::resumeSocketNotifiers(absSocket);
 
             // Resume pending upload if needed
             if (channels[i].state == QHttpNetworkConnectionChannel::WritingState)
                 QMetaObject::invokeMethod(&channels[i], "_q_uploadDataReadyRead", Qt::QueuedConnection);
+        } else if (qobject_cast<QLocalSocket *>(channels[i].socket)) {
+#if 0 // @todo Enable this when there is a debug category for this
+            qDebug() << "Should resume socket but there is no way to do it for local sockets";
+#endif
         }
     }
 
@@ -1024,7 +1033,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     for (int i = 0; i < activeChannelCount; ++i) {
         if (channels[i].resendCurrent && (channels[i].state != QHttpNetworkConnectionChannel::ClosingState)) {
             if (!channels[i].socket
-                || channels[i].socket->state() == QAbstractSocket::UnconnectedState) {
+                || QSocketAbstraction::socketState(channels[i].socket) == QAbstractSocket::UnconnectedState) {
                 if (!channels[i].ensureConnection())
                     continue;
             }
@@ -1048,7 +1057,9 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         // try to get a free AND connected socket
         for (int i = 0; i < activeChannelCount; ++i) {
             if (channels[i].socket) {
-                if (!channels[i].reply && !channels[i].isSocketBusy() && channels[i].socket->state() == QAbstractSocket::ConnectedState) {
+                if (!channels[i].reply && !channels[i].isSocketBusy()
+                    && QSocketAbstraction::socketState(channels[i].socket)
+                            == QAbstractSocket::ConnectedState) {
                     if (dequeueRequest(channels[i].socket))
                         channels[i].sendRequest();
                 }
@@ -1068,7 +1079,8 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         else if (networkLayerState == IPv6)
             channels[0].networkLayerPreference = QAbstractSocket::IPv6Protocol;
         channels[0].ensureConnection();
-        if (channels[0].socket && channels[0].socket->state() == QAbstractSocket::ConnectedState
+        if (auto *s = channels[0].socket; s
+            && QSocketAbstraction::socketState(s) == QAbstractSocket::ConnectedState
             && !channels[0].pendingEncrypt) {
             if (channels[0].h2RequestsToSend.size()) {
                 channels[0].sendRequest();
@@ -1095,9 +1107,13 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     // return fast if there is nothing to pipeline
     if (highPriorityQueue.isEmpty() && lowPriorityQueue.isEmpty())
         return;
-    for (int i = 0; i < activeChannelCount; i++)
-        if (channels[i].socket && channels[i].socket->state() == QAbstractSocket::ConnectedState)
+    for (int i = 0; i < activeChannelCount; i++) {
+        if (channels[i].socket
+            && QSocketAbstraction::socketState(channels[i].socket)
+                    == QAbstractSocket::ConnectedState) {
             fillPipeline(channels[i].socket);
+        }
+    }
 
     // If there is not already any connected channels we need to connect a new one.
     // We do not pair the channel with the request until we know if it is
@@ -1122,15 +1138,16 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         if (!channels[i].socket)
             continue;
 
-        if ((channels[i].socket->state() == QAbstractSocket::ConnectingState)
-            || (channels[i].socket->state() == QAbstractSocket::HostLookupState)
+        using State = QAbstractSocket::SocketState;
+        if ((QSocketAbstraction::socketState(channels[i].socket) == State::ConnectingState)
+            || (QSocketAbstraction::socketState(channels[i].socket) == State::HostLookupState)
             || channels[i].pendingEncrypt) { // pendingEncrypt == "EncryptingState"
             neededOpenChannels--;
             continue;
         }
 
         if (!channels[i].reply && !channels[i].isSocketBusy()
-            && (channels[i].socket->state() == QAbstractSocket::UnconnectedState)) {
+            && (QSocketAbstraction::socketState(channels[i].socket) == State::UnconnectedState)) {
             channelsToConnect.push_back(i);
             neededOpenChannels--;
         }

@@ -19,6 +19,7 @@
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkreply.h>
 #include <QtNetwork/qabstractsocket.h>
+#include <QtNetwork/qlocalsocket.h>
 
 #include <private/qobject_p.h>
 #include <qauthenticator.h>
@@ -71,7 +72,7 @@ public:
         ClosingState = 16,
         BusyState = (ConnectingState|WritingState|WaitingState|ReadingState|ClosingState)
     };
-    QAbstractSocket *socket;
+    QIODevice *socket;
     bool ssl;
     bool isInitialized;
     ChannelState state;
@@ -156,6 +157,8 @@ public:
     void _q_bytesWritten(qint64 bytes); // proceed sending
     void _q_readyRead(); // pending data to read
     void _q_disconnected(); // disconnected from host
+    void _q_connected_abstract_socket(QAbstractSocket *socket);
+    void _q_connected_local_socket(QLocalSocket *socket);
     void _q_connected(); // start sending request
     void _q_error(QAbstractSocket::SocketError); // error from socket
 #ifndef QT_NO_NETWORKPROXY
