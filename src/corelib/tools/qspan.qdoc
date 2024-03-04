@@ -341,6 +341,18 @@
     \endlist
 */
 
+/*!
+    \fn template <typename T, size_t E> QSpan<T, E>::QSpan(std::initializer_list<value_type> il);
+
+    Constructs a QSpan referencing the data in the supplied initializer list \a il.
+
+    \note This constructor participates in overload resolution only if \c{T} is \c{const}-qualified.
+
+    \note This constructor is \c{noexcept} only if \c{E} is \c{std::dynamic_extent}.
+
+    \note If \c{E} is not \c{std::dynamic_extent} and the size of \a il is not \c{E}, the behavior is undefined.
+*/
+
 //
 // Member functions: sizes
 //
