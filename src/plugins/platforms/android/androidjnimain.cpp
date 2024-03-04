@@ -85,7 +85,7 @@ static double m_density = 1.0;
 static AndroidAssetsFileEngineHandler *m_androidAssetsFileEngineHandler = nullptr;
 static AndroidContentFileEngineHandler *m_androidContentFileEngineHandler = nullptr;
 
-
+static AndroidBackendRegister *m_backendRegister = nullptr;
 
 static const char m_qtTag[] = "Qt";
 static const char m_classErrorMsg[] = "Can't find class \"%s\"";
@@ -387,6 +387,11 @@ namespace QtAndroid
         return m_assets;
     }
 
+    AndroidBackendRegister *backendRegister()
+    {
+        return m_backendRegister;
+    }
+
 } // namespace QtAndroid
 
 static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring paramsString)
@@ -397,6 +402,7 @@ static jboolean startQtAndroidPlugin(JNIEnv *env, jobject /*object*/, jstring pa
     m_androidAssetsFileEngineHandler = new AndroidAssetsFileEngineHandler();
     m_androidContentFileEngineHandler = new AndroidContentFileEngineHandler();
     m_mainLibraryHnd = nullptr;
+    m_backendRegister = new AndroidBackendRegister();
 
     const QStringList argsList = QProcess::splitCommand(QJniObject(paramsString).toString());
 
@@ -544,6 +550,8 @@ static void terminateQt(JNIEnv *env, jclass /*clazz*/)
     m_androidPlatformIntegration = nullptr;
     delete m_androidAssetsFileEngineHandler;
     m_androidAssetsFileEngineHandler = nullptr;
+    delete m_backendRegister;
+    m_backendRegister = nullptr;
     sem_post(&m_exitSemaphore);
 }
 
@@ -891,7 +899,8 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
             || !QtAndroidDialogHelpers::registerNatives(env)
             || !QAndroidPlatformClipboard::registerNatives(env)
             || !QAndroidPlatformWindow::registerNatives(env)
-            || !QtAndroidWindowEmbedding::registerNatives(env)) {
+            || !QtAndroidWindowEmbedding::registerNatives(env)
+            || !AndroidBackendRegister::registerNatives()) {
         __android_log_print(ANDROID_LOG_FATAL, "Qt", "registerNatives failed");
         return -1;
     }

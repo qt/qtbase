@@ -13,6 +13,7 @@
 #include <QImage>
 #include <private/qjnihelpers_p.h>
 #include <QtCore/QJniObject>
+#include <androidbackendregister.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -33,6 +34,7 @@ namespace QtAndroid
 {
     QBasicMutex *platformInterfaceMutex();
     QAndroidPlatformIntegration *androidPlatformIntegration();
+    AndroidBackendRegister *backendRegister();
     void setAndroidPlatformIntegration(QAndroidPlatformIntegration *androidPlatformIntegration);
     void setQtThread(QThread *thread);
     void setViewVisibility(jobject view, bool visible);

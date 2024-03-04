@@ -40,6 +40,7 @@ set(java_sources
     src/org/qtproject/qt/android/QtView.java
     src/org/qtproject/qt/android/QtEmbeddedViewInterface.java
     src/org/qtproject/qt/android/QtServiceEmbeddedDelegate.java
+    src/org/qtproject/qt/android/BackendRegister.java
 )
 
 qt_internal_add_jar(Qt${QtBase_VERSION_MAJOR}Android
