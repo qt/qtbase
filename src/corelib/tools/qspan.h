@@ -11,6 +11,7 @@
 #include <array>
 #include <cstddef>
 #include <cassert>
+#include <initializer_list>
 #include <QtCore/q20iterator.h>
 #include <QtCore/q20memory.h>
 #ifdef __cpp_lib_span
@@ -224,6 +225,11 @@ public:
         : QSpanBase(other.data(), other.size())
     {}
 
+    template <typename U = T, std::enable_if_t<std::is_const_v<U>, bool> = true>
+    Q_IMPLICIT constexpr QSpanBase(std::initializer_list<std::remove_cv_t<T>> il)
+        : QSpanBase(il.begin(), il.size())
+    {}
+
 #ifdef __cpp_lib_span
     template <typename S, if_qualification_conversion<S> = true>
     Q_IMPLICIT constexpr QSpanBase(std::span<S, E> other) noexcept
@@ -284,6 +290,11 @@ public:
     template <typename S, size_t N, if_qualification_conversion<S> = true>
     Q_IMPLICIT constexpr QSpanBase(QSpan<S, N> other) noexcept
         : QSpanBase(other.data(), other.size())
+    {}
+
+    template <typename U = T, std::enable_if_t<std::is_const_v<U>, bool> = true>
+    Q_IMPLICIT constexpr QSpanBase(std::initializer_list<std::remove_cv_t<T>> il) noexcept
+        : QSpanBase(il.begin(), il.size())
     {}
 
 #if __cpp_lib_span
@@ -347,6 +358,7 @@ public:
     template <typename Range, if_compatible_range<Range> = true> constexpr QSpan(Range &&r);
     template <typename S, size_t N, if_qualification_conversion<S> = true> constexpr QSpan(QSpan<S, N> other) noexcept;
     template <typename S, size_t N, if_qualification_conversion<S> = true> constexpr QSpan(std::span<S, N> other) noexcept;
+    constexpr QSpan(std::initializer_list<value_type> il);
 #endif // Q_QDOC
 
     // [span.obs]
