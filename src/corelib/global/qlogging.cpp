@@ -2075,7 +2075,7 @@ void qErrnoWarning(const char *msg, ...)
 
     buf += " ("_L1 + error_string + u')';
     QMessageLogContext context;
-    qt_message_output(QtCriticalMsg, context, buf);
+    qt_message_output(QtWarningMsg, context, buf);
 }
 
 void qErrnoWarning(int code, const char *msg, ...)
@@ -2089,7 +2089,7 @@ void qErrnoWarning(int code, const char *msg, ...)
 
     buf += " ("_L1 + qt_error_string(code) + u')';
     QMessageLogContext context;
-    qt_message_output(QtCriticalMsg, context, buf);
+    qt_message_output(QtWarningMsg, context, buf);
 }
 
 /*!
