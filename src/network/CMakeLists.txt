@@ -142,6 +142,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_http
         access/qnetworkrequestfactory.h
         access/qrestaccessmanager.cpp access/qrestaccessmanager.h access/qrestaccessmanager_p.h
         access/qrestreply.cpp access/qrestreply.h access/qrestreply_p.h
+        access/qsocketabstraction_p.h
         socket/qhttpsocketengine.cpp socket/qhttpsocketengine_p.h
 )
 
