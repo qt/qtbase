@@ -283,6 +283,16 @@ public:
     }
     Q_DECLARE_STRONGLY_ORDERED(QLatin1StringView, QStringView)
 
+    // Reversed helper methods for QStringView <> QLatin1StringView comparison.
+    // If we do not provide them explicitly, QStringView <> QByteArrayView
+    // overloads will be selected, which will provide wrong results, because
+    // they will convert from utf-8
+    friend bool comparesEqual(const QStringView &lhs, const QLatin1StringView &rhs) noexcept
+    { return comparesEqual(rhs, lhs); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QStringView &lhs, const QLatin1StringView &rhs) noexcept
+    { return QtOrderingPrivate::reversed(compareThreeWay(rhs, lhs)); }
+
 private:
     friend bool comparesEqual(const QLatin1StringView &lhs, const QByteArrayView &rhs) noexcept
     { return equal_helper(lhs, rhs.data(), rhs.size()); }
@@ -292,6 +302,15 @@ private:
         const int res = compare_helper(lhs, rhs.data(), rhs.size());
         return Qt::compareThreeWay(res, 0);
     }
+
+    // Reversed helper methods for QByteArrayView <> QLatin1StringView comparison.
+    // If we do not provide them explicitly, QByteArrayView <> QByteArrayView
+    // overloads will be selected, which will provide wrong results
+    friend bool comparesEqual(const QByteArrayView &lhs, const QLatin1StringView &rhs) noexcept
+    { return comparesEqual(rhs, lhs); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QByteArrayView &lhs, const QLatin1StringView &rhs) noexcept
+    { return QtOrderingPrivate::reversed(compareThreeWay(rhs, lhs)); }
 
 public:
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)

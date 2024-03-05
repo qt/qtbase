@@ -1360,6 +1360,11 @@ void tst_QStringApiSymmetry::compare_impl() const
     CHECK(<=);
     CHECK(>=);
 #undef CHECK
+    // Test that all string-like types implemente compareThreeWay() as a friend
+    // function.
+    const Qt::strong_ordering expectedOrdering =
+            Qt::compareThreeWay(caseSensitiveCompareResult, 0);
+    QCOMPARE_EQ(qCompareThreeWay(lhs, rhs), expectedOrdering);
 }
 
 template <typename LHS, typename RHS>
