@@ -736,19 +736,19 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
 
         painter->setPen(highContrastTheme == true ? option->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorLight]);
         painter->setBrush(Qt::NoBrush);
-        painter->drawRoundedRect(tipRect.marginsAdded(QMargins(0.5,0.5,0.5,0.5)), secondLevelRoundingRadius, secondLevelRoundingRadius);
+        painter->drawRoundedRect(tipRect.marginsAdded(QMarginsF(0.5,0.5,0.5,0.5)), secondLevelRoundingRadius, secondLevelRoundingRadius);
         break;
     }
     case PE_FrameTabWidget:
         if (const QStyleOptionTabWidgetFrame *frame = qstyleoption_cast<const QStyleOptionTabWidgetFrame *>(option)) {
-            QRectF frameRect = frame->rect.marginsRemoved(QMargins(1,1,1,1));
+            QRectF frameRect = frame->rect.marginsRemoved(QMargins(0,0,0,0));
             painter->setPen(Qt::NoPen);
             painter->setBrush(frame->palette.base());
             painter->drawRoundedRect(frameRect, secondLevelRoundingRadius, secondLevelRoundingRadius);
 
             painter->setPen(highContrastTheme == true ? frame->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorLight]);
             painter->setBrush(Qt::NoBrush);
-            painter->drawRoundedRect(frameRect.marginsAdded(QMargins(0.5,0.5,0.5,0.5)), secondLevelRoundingRadius, secondLevelRoundingRadius);
+            painter->drawRoundedRect(frameRect.marginsRemoved(QMarginsF(0.5,0.5,0.5,0.5)), secondLevelRoundingRadius, secondLevelRoundingRadius);
         }
         break;
     case PE_FrameGroupBox:
@@ -855,8 +855,14 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         }
         break;
     case PE_PanelButtonBevel:{
-            QRect rect = option->rect.marginsRemoved(QMargins(2,2,2,2));
+            QRectF rect = option->rect.marginsRemoved(QMargins(2,2,2,2));
+            rect.adjust(-0.5,-0.5,0.5,0.5);
+            painter->setBrush(Qt::NoBrush);
             painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][controlStrokePrimary]));
+            painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+
+            rect = option->rect.marginsRemoved(QMargins(2,2,2,2));
+            painter->setPen(Qt::NoPen);
             if (!(state & (State_Raised)))
                 painter->setBrush(WINUI3Colors[colorSchemeIndex][controlFillTertiary]);
             else if (state & State_MouseOver)
@@ -917,7 +923,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         if (const auto *frame = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
             if (frame->frameShape == QFrame::NoFrame)
                 break;
-            QRectF rect = option->rect.adjusted(2,2,-2,-2);
+            QRectF rect = option->rect.adjusted(1,1,-1,-1);
             if (widget && widget->inherits("QComboBoxPrivateContainer")) {
                 painter->setPen(Qt::NoPen);
                 painter->setBrush(WINUI3Colors[colorSchemeIndex][menuPanelFill]);
@@ -930,7 +936,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
 
             painter->setBrush(Qt::NoBrush);
             painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][frameColorLight]));
-            painter->drawRoundedRect(rect.marginsAdded(QMargins(0.5,0.5,0.5,0.5)), secondLevelRoundingRadius, secondLevelRoundingRadius);
+            painter->drawRoundedRect(rect.marginsRemoved(QMarginsF(0.5,0.5,0.5,0.5)), secondLevelRoundingRadius, secondLevelRoundingRadius);
 
             if (widget && widget->inherits("QTextEdit")) {
                 QRegion clipRegion = option->rect;
