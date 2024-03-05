@@ -91,7 +91,7 @@ void tst_QNumeric::fuzzyCompare_data()
     QTest::addColumn<bool>("isEqual");
     const F zero(0), one(1), ten(10);
     const F huge = Fuzzy<F>::scale, tiny = one / huge;
-    const F deci(.1), giga(1e9), nano(1e-9), big(1e7), small(1e-10);
+    const F deci(.1f), giga(1e9f), nano(1e-9f), big(1e7f), small(1e-10f);
 
     QTest::newRow("zero") << zero << zero << true;
     QTest::newRow("ten") << ten << ten << true;
