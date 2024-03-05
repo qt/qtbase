@@ -1888,7 +1888,9 @@ void QNetworkReplyHttpImplPrivate::setResumeOffset(quint64 offset)
 
 void QNetworkReplyHttpImplPrivate::_q_startOperation()
 {
-    if (state == Working) // ensure this function is only being called once
+    // Ensure this function is only being called once, and not at all if we were
+    // cancelled
+    if (state >= Working)
         return;
 
     state = Working;
@@ -2156,7 +2158,9 @@ void QNetworkReplyHttpImplPrivate::error(QNetworkReplyImpl::NetworkError code, c
     Q_Q(QNetworkReplyHttpImpl);
     // Can't set and emit multiple errors.
     if (errorCode != QNetworkReply::NoError) {
-        qWarning("QNetworkReplyImplPrivate::error: Internal problem, this method must only be called once.");
+        // But somewhat unavoidable if we have cancelled the request:
+        if (errorCode != QNetworkReply::OperationCanceledError)
+            qWarning("QNetworkReplyImplPrivate::error: Internal problem, this method must only be called once.");
         return;
     }
 
