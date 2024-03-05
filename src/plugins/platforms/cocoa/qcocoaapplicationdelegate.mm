@@ -148,7 +148,8 @@ QT_USE_NAMESPACE
 
 - (void)applicationWillFinishLaunching:(NSNotification *)notification
 {
-    Q_UNUSED(notification);
+    if ([reflectionDelegate respondsToSelector:_cmd])
+        [reflectionDelegate applicationWillFinishLaunching:notification];
 
     /*
         From the Cocoa documentation: "A good place to install event handlers
@@ -185,7 +186,9 @@ QT_USE_NAMESPACE
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
-    Q_UNUSED(aNotification);
+    if ([reflectionDelegate respondsToSelector:_cmd])
+        [reflectionDelegate applicationDidFinishLaunching:aNotification];
+
     inLaunch = false;
 
     if (qEnvironmentVariableIsEmpty("QT_MAC_DISABLE_FOREGROUND_APPLICATION_TRANSFORM")) {
