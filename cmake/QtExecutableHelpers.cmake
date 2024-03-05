@@ -390,9 +390,15 @@ function(qt_internal_add_configure_time_executable target)
     if(arg_INSTALL_DIRECTORY)
         set(install_dir "${arg_INSTALL_DIRECTORY}")
     endif()
+
+    set(output_directory_relative "${install_dir}")
     set(output_directory "${QT_BUILD_DIR}/${install_dir}")
+
+    set(target_binary_path_relative
+        "${output_directory_relative}/${configuration_path}${target_binary}")
     set(target_binary_path
         "${output_directory}/${configuration_path}${target_binary}")
+
     get_filename_component(target_binary_path "${target_binary_path}" ABSOLUTE)
 
     if(NOT DEFINED arg_SOURCES)
@@ -521,7 +527,9 @@ function(qt_internal_add_configure_time_executable target)
     add_executable(${QT_CMAKE_EXPORT_NAMESPACE}::${target} ALIAS ${target})
     set_target_properties(${target} PROPERTIES
         _qt_internal_configure_time_target TRUE
-        IMPORTED_LOCATION "${target_binary_path}")
+        _qt_internal_configure_time_target_build_location "${target_binary_path_relative}"
+        IMPORTED_LOCATION "${target_binary_path}"
+    )
 
     if(NOT arg_NO_INSTALL)
         set_target_properties(${target} PROPERTIES
