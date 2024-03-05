@@ -559,6 +559,8 @@ private Q_SLOTS:
     void qtbug68821proxyError_data();
     void qtbug68821proxyError();
 
+    void abortAndError();
+
     // NOTE: This test must be last!
     void parentingRepliesToTheApp();
 private:
@@ -10419,6 +10421,39 @@ void tst_QNetworkReply::qtbug68821proxyError()
     QFETCH(QNetworkReply::NetworkError, error);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).at(0), error);
+}
+
+void tst_QNetworkReply::abortAndError()
+{
+    const QByteArray response =
+    R"(HTTP/1.0 500 Internal Server Error
+Content-Length: 12
+Content-Type: text/plain
+
+Hello World!)"_ba;
+
+    MiniHttpServer server(response);
+
+    QNetworkAccessManager manager;
+    QNetworkRequest req(QUrl("http://127.0.0.1:" + QString::number(server.serverPort())));
+    std::unique_ptr<QNetworkReply> reply(manager.post(req, "my data goes here"_ba));
+    QSignalSpy errorSignal(reply.get(), &QNetworkReply::errorOccurred);
+    QSignalSpy finishedSignal(reply.get(), &QNetworkReply::finished);
+
+    reply->abort();
+
+    // We don't want to print this warning in this case because it is impossible
+    // for users to avoid it.
+    QTest::failOnWarning("QNetworkReplyImplPrivate::error: Internal problem, this method must only "
+                         "be called once.");
+    // Process any signals from the http thread:
+    QTest::qWait(1s);
+    if (QTest::currentTestFailed())
+        return;
+
+    QCOMPARE(finishedSignal.count(), 1);
+    QCOMPARE(errorSignal.count(), 1);
+    QCOMPARE(reply->error(), QNetworkReply::OperationCanceledError);
 }
 
 // NOTE: This test must be last testcase in tst_qnetworkreply!
