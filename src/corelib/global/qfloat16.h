@@ -105,7 +105,9 @@ public:
     static constexpr qfloat16 _limit_lowest()     noexcept { return Bounds::lowest(); }
     static constexpr qfloat16 _limit_infinity()   noexcept { return Bounds::infinity(); }
     static constexpr qfloat16 _limit_quiet_NaN()  noexcept { return Bounds::quiet_NaN(); }
+#if QT_CONFIG(signaling_nan)
     static constexpr qfloat16 _limit_signaling_NaN() noexcept { return Bounds::signaling_NaN(); }
+#endif
 #else
     static constexpr qfloat16 _limit_epsilon()    noexcept { return qfloat16(Wrap(0x1400)); }
     static constexpr qfloat16 _limit_min()        noexcept { return qfloat16(Wrap(0x400)); }
