@@ -826,11 +826,19 @@ endif()
             # For Multi-config developer builds we should simply reuse IMPORTED_LOCATION of the
             # target.
             if(NOT QT_WILL_INSTALL AND QT_FEATURE_debug_and_release)
+                set(configure_time_target_build_location "")
                 get_target_property(configure_time_target_install_location ${target}
                     IMPORTED_LOCATION)
             else()
+                get_target_property(configure_time_target_build_location ${target}
+                    _qt_internal_configure_time_target_build_location)
+
+                set(configure_time_target_build_location
+                    "$\{PACKAGE_PREFIX_DIR}/${configure_time_target_build_location}")
+
                 get_target_property(configure_time_target_install_location ${target}
                     _qt_internal_configure_time_target_install_location)
+
                 set(configure_time_target_install_location
                     "$\{PACKAGE_PREFIX_DIR}/${configure_time_target_install_location}")
             endif()
@@ -838,7 +846,13 @@ endif()
                 string(APPEND content "
 # Import configure-time executable ${full_target}
 if(NOT TARGET ${full_target})
-    set(_qt_imported_location \"${configure_time_target_install_location}\")
+    set(_qt_imported_build_location \"${configure_time_target_build_location}\")
+    set(_qt_imported_install_location \"${configure_time_target_install_location}\")
+    set(_qt_imported_location \"\${_qt_imported_install_location}\")
+    if(NOT EXISTS \"$\{_qt_imported_location}\"
+          AND NOT \"$\{_qt_imported_build_location}\" STREQUAL \"\")
+        set(_qt_imported_location \"\${_qt_imported_build_location}\")
+    endif()
     if(NOT EXISTS \"$\{_qt_imported_location}\")
         message(FATAL_ERROR \"Unable to add configure time executable ${full_target}\"
             \" $\{_qt_imported_location} doesn't exists\")
@@ -849,6 +863,8 @@ if(NOT TARGET ${full_target})
         \"$\{_qt_imported_location}\")
     set_property(TARGET ${full_target} PROPERTY IMPORTED_GLOBAL TRUE)
     unset(_qt_imported_location)
+    unset(_qt_imported_build_location)
+    unset(_qt_imported_install_location)
 endif()
 \n")
             endif()
