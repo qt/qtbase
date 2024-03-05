@@ -10,6 +10,7 @@
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qmath.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qtconfigmacros.h>
 #include <QtCore/qtypes.h>
 
 #include <limits>
