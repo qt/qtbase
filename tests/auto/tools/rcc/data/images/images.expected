@@ -115,7 +115,9 @@ TIMESTAMP:images/subdir/triangle.png
 #   define QT_RCC_MANGLE_NAMESPACE(name) name
 #endif
 
-#ifdef QT_NAMESPACE
+#if defined(QT_INLINE_NAMESPACE)
+inline namespace QT_NAMESPACE {
+#elif defined(QT_NAMESPACE)
 namespace QT_NAMESPACE {
 #endif
 

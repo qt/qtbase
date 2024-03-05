@@ -101,6 +101,7 @@ Build options:
 
   -qt-host-path <path> . Specify path to a Qt host build for cross-compiling.
   -qtnamespace <name> .. Wrap all Qt library code in 'namespace <name> {...}'.
+  -qtinlinenamespace ... Make -qtnamespace an inline namespace
   -qtlibinfix <infix> .. Rename all libQt6*.so to libQt6*<infix>.so.
 
   -coverage <tool> ..... Instrument with the code coverage tool.

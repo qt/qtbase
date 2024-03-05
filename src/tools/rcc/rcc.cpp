@@ -1382,7 +1382,9 @@ bool RCCResourceLibrary::writeInitializer()
                         "#   define QT_RCC_MANGLE_NAMESPACE(name) name\n"
                         "#endif\n\n");
 
-            writeString("#ifdef QT_NAMESPACE\n"
+            writeString("#if defined(QT_INLINE_NAMESPACE)\n"
+                        "inline namespace QT_NAMESPACE {\n"
+                        "#elif defined(QT_NAMESPACE)\n"
                         "namespace QT_NAMESPACE {\n"
                         "#endif\n\n");
         }

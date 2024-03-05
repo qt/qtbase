@@ -105,6 +105,22 @@
 # define QT_FORWARD_DECLARE_CLASS(name) class name;
 # define QT_FORWARD_DECLARE_STRUCT(name) struct name;
 
+#elif defined(QT_INLINE_NAMESPACE) /* user inline namespace FIXME in Qt 7: Default */
+
+# define QT_PREPEND_NAMESPACE(name) ::QT_NAMESPACE::name
+# define QT_USE_NAMESPACE
+# define QT_BEGIN_NAMESPACE inline namespace QT_NAMESPACE {
+# define QT_END_NAMESPACE }
+# define QT_BEGIN_INCLUDE_NAMESPACE }
+# define QT_END_INCLUDE_NAMESPACE inline namespace QT_NAMESPACE {
+# define QT_FORWARD_DECLARE_CLASS(name) \
+QT_BEGIN_NAMESPACE class name; QT_END_NAMESPACE
+
+# define QT_FORWARD_DECLARE_STRUCT(name) \
+QT_BEGIN_NAMESPACE struct name; QT_END_NAMESPACE
+
+inline namespace QT_NAMESPACE {}
+
 #else /* user namespace */
 
 # define QT_PREPEND_NAMESPACE(name) ::QT_NAMESPACE::name
