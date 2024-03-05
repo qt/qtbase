@@ -105,7 +105,7 @@ public:
 
 private:
     friend class QWasmScreen;
-    static constexpr auto minSizeForRegularWindows = 100;
+    static constexpr auto defaultWindowSize = 160;
 
     // QWasmWindowTreeNode:
     QWasmWindow *asWasmWindow() final;

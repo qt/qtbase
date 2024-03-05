@@ -28,7 +28,6 @@ class WidgetTestCase(unittest.TestCase):
         self.addTypeEqualityFunc(Rect, assert_rects_equal)
 
     def test_window_resizing(self):
-        defaultWindowMinSize = 100
         screen = Screen(self._driver, ScreenPosition.FIXED,
                        x=0, y=0, width=600, height=600)
         window = Window(parent=screen, rect=Rect(x=100, y=100, width=200, height=200))
@@ -59,7 +58,7 @@ class WidgetTestCase(unittest.TestCase):
         self.assertEqual(window.rect, Rect(x=75, y=95, width=215, height=230))
 
         window.drag(Handle.BOTTOM_RIGHT, direction=UP(150) + LEFT(150))
-        self.assertEqual(window.rect, Rect(x=75, y=95, width=defaultWindowMinSize, height=defaultWindowMinSize))
+        self.assertEqual(window.rect, Rect(x=75, y=95, width=65, height=80))
 
     def test_cannot_resize_over_screen_top_edge(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
