@@ -61,6 +61,8 @@ static QSemaphore threadsTurn;
 enum {
 #ifdef Q_OS_WIN
     systemTimersResolution = 16,
+#elif defined(Q_OS_QNX)
+    systemTimersResolution = 10,
 #else
     systemTimersResolution = 1,
 #endif
