@@ -1296,7 +1296,8 @@ bool QMainWindow::event(QEvent *event)
             if (!d->layout->draggingWidget)
                 break;
             auto dragMoveEvent = static_cast<QDragMoveEvent *>(event);
-            d->layout->hover(d->layout->draggingWidget, dragMoveEvent->position().toPoint());
+            d->layout->hover(d->layout->draggingWidget,
+                             mapToGlobal(dragMoveEvent->position()).toPoint());
             event->accept();
             return true;
         }
