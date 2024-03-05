@@ -148,3 +148,121 @@ function(_qt_internal_collect_buildsystem_targets result dir)
     endif()
     set(${result} ${${result}} ${real_targets} PARENT_SCOPE)
 endfunction()
+
+# Add a custom target ${target} that is *not* added to the default build target in a safe way.
+# Dependencies must then be added with _qt_internal_add_phony_target_dependencies.
+#
+# What's "safe" in this context? For the Visual Studio generators, we cannot use add_dependencies,
+# because this would enable the dependencies in the default build of the solution. See QTBUG-115166
+# and upstream CMake issue #16668 for details. Instead, we record the dependencies (added with
+# _qt_internal_add_phony_target_dependencies) and create the target at the end of the top-level
+# directory scope.
+#
+# This only works if at least CMake 3.19 is used. Older CMake versions will trigger a warning that
+# can be turned off with the variable ${WARNING_VARIABLE}.
+#
+# For other generators, this is just a call to add_custom_target, unless the target already exists,
+# followed by add_dependencies.
+#
+# Use this function for targets that are not part of the default build, i.e. that should be
+# triggered by the user.
+#
+# TARGET_CREATED_HOOK is the name of a function that is called after the target has been created.
+# It takes the target's name as first and only argument.
+#
+# Example:
+#     _qt_internal_add_phony_target(update_translations
+#          WARNING_VARIABLE QT_NO_GLOBAL_LUPDATE_TARGET_CREATED_WARNING
+#     )
+#     _qt_internal_add_phony_target_dependencies(update_translations
+#          narf_lupdate_zort_lupdate
+#     )
+#
+function(_qt_internal_add_phony_target target)
+    set(no_value_options "")
+    set(single_value_options
+        TARGET_CREATED_HOOK
+        WARNING_VARIABLE
+    )
+    set(multi_value_options "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+    if("${arg_WARNING_VARIABLE}" STREQUAL "")
+        message(FATAL_ERROR "WARNING_VARIABLE must be provided.")
+    endif()
+    if(CMAKE_GENERATOR MATCHES "^Visual Studio ")
+        if(${CMAKE_VERSION} VERSION_LESS "3.19.0")
+            if(NOT ${${arg_WARNING_VARIABLE}})
+                message(WARNING
+                    "Cannot create target ${target} with this CMake version. "
+                    "Please upgrade to CMake 3.19.0 or newer. "
+                    "Set ${WARNING_VARIABLE} to ON to disable this warning."
+                )
+            endif()
+            return()
+        endif()
+
+        get_property(already_deferred GLOBAL PROPERTY _qt_target_${target}_creation_deferred)
+        if(NOT already_deferred)
+            cmake_language(EVAL CODE
+                "cmake_language(DEFER DIRECTORY \"${CMAKE_SOURCE_DIR}\" CALL _qt_internal_add_phony_target_deferred \"${target}\")"
+            )
+            if(DEFINED arg_TARGET_CREATED_HOOK)
+                set_property(GLOBAL
+                    PROPERTY _qt_target_${target}_creation_hook ${arg_TARGET_CREATED_HOOK}
+                )
+            endif()
+        endif()
+        set_property(GLOBAL APPEND PROPERTY _qt_target_${target}_creation_deferred ON)
+    else()
+        if(NOT TARGET ${target})
+            add_custom_target(${target})
+            if(DEFINED arg_TARGET_CREATED_HOOK)
+                if(CMAKE_VERSION VERSION_LESS "3.19")
+                    set(incfile
+                        "${CMAKE_CURRENT_BINARY_DIR}/.qt_internal_add_phony_target.cmake"
+                    )
+                    file(WRITE "${incfile}" "${arg_TARGET_CREATED_HOOK}(${target})")
+                    include("${incfile}")
+                    file(REMOVE "${incfile}")
+                else()
+                    cmake_language(CALL "${arg_TARGET_CREATED_HOOK}" "${target}")
+                endif()
+            endif()
+        endif()
+    endif()
+endfunction()
+
+# Adds dependencies to a custom target that has been created with
+# _qt_internal_add_phony_target. See the docstring at _qt_internal_add_phony_target for
+# more details.
+function(_qt_internal_add_phony_target_dependencies target)
+    set(dependencies ${ARGN})
+    if(CMAKE_GENERATOR MATCHES "^Visual Studio ")
+        set_property(GLOBAL APPEND PROPERTY _qt_target_${target}_dependencies ${dependencies})
+
+        # Exclude the dependencies from the solution's default build to avoid them being enabled
+        # accidentally should the user add another dependency to them.
+        set_target_properties(${dependencies} PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD ON)
+    else()
+        add_dependencies(${target} ${dependencies})
+    endif()
+endfunction()
+
+# Hack for the Visual Studio generator. Create the custom target named ${target} and work
+# around the lack of a working add_dependencies by calling 'cmake --build' for every dependency.
+function(_qt_internal_add_phony_target_deferred target)
+    get_property(target_dependencies GLOBAL PROPERTY _qt_target_${target}_dependencies)
+    set(target_commands "")
+    foreach(dependency IN LISTS target_dependencies)
+        list(APPEND target_commands
+            COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" -t ${dependency}
+        )
+    endforeach()
+    add_custom_target(${target} ${target_commands})
+    get_property(creation_hook GLOBAL PROPERTY _qt_target_${target}_creation_hook)
+    if(creation_hook)
+        cmake_language(CALL ${creation_hook} ${target})
+    endif()
+endfunction()
