@@ -1014,8 +1014,8 @@ void QObjectPrivate::clearBindingStorage()
     outside the parent. If you still do, the destroyed() signal gives
     you an opportunity to detect when an object is destroyed.
 
-    \warning Deleting a QObject while pending events are waiting to
-    be delivered can cause a crash. You must not delete the QObject
+    \warning Deleting a QObject while it is handling an event
+    delivered to it can cause a crash. You must not delete the QObject
     directly if it exists in a different thread than the one currently
     executing. Use deleteLater() instead, which will cause the event
     loop to delete the object after all pending events have been
