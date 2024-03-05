@@ -321,8 +321,11 @@ void tst_QNumeric::classifyfp()
 
     QCOMPARE(qFpClassify(inf), FP_INFINITE);
     QCOMPARE(qFpClassify(-inf), FP_INFINITE);
+    QT_WARNING_PUSH;
+    QT_WARNING_DISABLE_MSVC(4056);
     QCOMPARE(qFpClassify(huge * two), FP_INFINITE);
     QCOMPARE(qFpClassify(huge * -two), FP_INFINITE);
+    QT_WARNING_POP;
 
     QCOMPARE(qFpClassify(one), FP_NORMAL);
     QCOMPARE(qFpClassify(huge), FP_NORMAL);
