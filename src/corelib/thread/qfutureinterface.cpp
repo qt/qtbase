@@ -12,10 +12,6 @@
 #include <private/qthreadpool_p.h>
 #include <private/qobject_p.h>
 
-#ifdef interface
-#  undef interface
-#endif
-
 // GCC 12 gets confused about QFutureInterfaceBase::state, for some non-obvious
 // reason
 //  warning: ‘unsigned int __atomic_or_fetch_4(volatile void*, unsigned int, int)’ writing 4 bytes into a region of size 0 overflows the destination [-Wstringop-overflow=]
@@ -796,9 +792,9 @@ void QFutureInterfaceBasePrivate::sendCallOuts(const QFutureCallOutEvent &callOu
         return;
 
     for (int i = 0; i < outputConnections.size(); ++i) {
-        QFutureCallOutInterface *interface = outputConnections.at(i);
-        interface->postCallOutEvent(callOutEvent1);
-        interface->postCallOutEvent(callOutEvent2);
+        QFutureCallOutInterface *iface = outputConnections.at(i);
+        iface->postCallOutEvent(callOutEvent1);
+        iface->postCallOutEvent(callOutEvent2);
     }
 }
 
@@ -806,7 +802,7 @@ void QFutureInterfaceBasePrivate::sendCallOuts(const QFutureCallOutEvent &callOu
 // to this future. While holding the lock we check the state and ready results
 // and add the appropriate callouts to the queue. In order to avoid deadlocks,
 // the actual callouts are made at the end while not holding the lock.
-void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface *interface)
+void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface *iface)
 {
     QMutexLocker locker(&m_mutex);
 
@@ -855,22 +851,22 @@ void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface
     if (currentState & QFutureInterfaceBase::Finished)
         events.emplace_back(new QFutureCallOutEvent(QFutureCallOutEvent::Finished));
 
-    outputConnections.append(interface);
+    outputConnections.append(iface);
 
     locker.unlock();
     for (auto &&event : events)
-        interface->postCallOutEvent(*event);
+        iface->postCallOutEvent(*event);
 }
 
-void QFutureInterfaceBasePrivate::disconnectOutputInterface(QFutureCallOutInterface *interface)
+void QFutureInterfaceBasePrivate::disconnectOutputInterface(QFutureCallOutInterface *iface)
 {
     QMutexLocker lock(&m_mutex);
-    const qsizetype index = outputConnections.indexOf(interface);
+    const qsizetype index = outputConnections.indexOf(iface);
     if (index == -1)
         return;
     outputConnections.removeAt(index);
 
-    interface->callOutInterfaceDisconnected();
+    iface->callOutInterfaceDisconnected();
 }
 
 void QFutureInterfaceBasePrivate::setState(QFutureInterfaceBase::State newState)
