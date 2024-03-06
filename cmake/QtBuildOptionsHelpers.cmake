@@ -306,6 +306,13 @@ macro(qt_internal_setup_build_examples)
     option(QT_INSTALL_EXAMPLES_SOURCES_BY_DEFAULT
         "Install example sources as part of the default 'install' target" ON)
 
+    # We need a way to force disable building in-tree examples in the CI, so that we instead build
+    # standalone examples. Because the Coin yaml instructions don't allow us to remove
+    # -make examples from from the configure args, we instead read a variable that only Coin sets.
+    if(QT_INTERNAL_CI_NO_BUILD_IN_TREE_EXAMPLES)
+        set(QT_BUILD_EXAMPLES OFF CACHE BOOL "Build Qt examples" FORCE)
+    endif()
+
     if(QT_BUILD_STANDALONE_EXAMPLES)
         # BuildInternals might have set it to OFF on initial configuration. So force it to ON when
         # building standalone examples.

@@ -92,5 +92,6 @@ instructions:
   - type: EnvironmentVariable
     variableName: COIN_CONFIG_TYPE
     variableValue: "Host"
+  - !include "{{qt/qtbase}}/cmake_build_standalone_examples_host.yaml"
   - !include "{{qt/qtbase}}/qmake/get_qmake_location_host.yaml"
   - !include "{{qt/qtbase}}/qmake_examples/build_qmake_examples_instructions.yaml"

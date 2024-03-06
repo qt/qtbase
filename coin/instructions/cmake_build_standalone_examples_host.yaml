@@ -1,0 +1,16 @@
+type: Group
+instructions:
+  - type: EnvironmentVariable
+    variableName: EXAMPLES_ENV_PREFIX
+    variableValue: "{{.Env.ENV_PREFIX}}"
+  - type: EnvironmentVariable
+    variableName: INSTALL_DIR_FOR_EXAMPLES
+    variableValue: "{{.InstallDir}}"
+  - type: EnvironmentVariable
+    variableName: COIN_CMAKE_ARGS
+    variableValue: "{{.Env.COMMON_EXAMPLES_CMAKE_ARGS}}"
+  - !include "{{qt/qtbase}}/cmake_build_standalone_examples.yaml"
+enable_if:
+  condition: property
+  property: features
+  contains_value: StandaloneExamples
