@@ -92,11 +92,12 @@ function(qt_internal_force_set_cmake_build_type_if_cmake_default_initialized val
 endfunction()
 
 function(qt_internal_set_cmake_build_type)
-    # When building standalone tests against a multi-config Qt, we want to configure the tests with
+    # When building standalone tests against a multi-config Qt, we want to configure the
+    # tests / examples with
     # the first multi-config configuration, rather than use CMake's default configuration.
     # In the case of Windows, we definitely don't want it to default to Debug, because that causes
     # issues in the CI.
-    if(QT_BUILD_STANDALONE_TESTS AND QT_MULTI_CONFIG_FIRST_CONFIG)
+    if(QT_INTERNAL_BUILD_STANDALONE_PARTS AND QT_MULTI_CONFIG_FIRST_CONFIG)
         qt_internal_force_set_cmake_build_type_if_cmake_default_initialized(
             "${QT_MULTI_CONFIG_FIRST_CONFIG}")
 
@@ -304,6 +305,16 @@ macro(qt_internal_setup_build_examples)
     option(QT_INSTALL_EXAMPLES_SOURCES "Install example sources" OFF)
     option(QT_INSTALL_EXAMPLES_SOURCES_BY_DEFAULT
         "Install example sources as part of the default 'install' target" ON)
+
+    if(QT_BUILD_STANDALONE_EXAMPLES)
+        # BuildInternals might have set it to OFF on initial configuration. So force it to ON when
+        # building standalone examples.
+        set(QT_BUILD_EXAMPLES ON CACHE BOOL "Build Qt examples" FORCE)
+
+        # Also force the examples to be built as part of the default build target.
+        set(QT_BUILD_EXAMPLES_BY_DEFAULT ON CACHE BOOL
+            "Should examples be built as part of the default 'all' target." FORCE)
+    endif()
 
     # FIXME: Support prefix builds as well QTBUG-96232
     # We don't want to enable EP examples with -debug-and-release because starting with CMake 3.24

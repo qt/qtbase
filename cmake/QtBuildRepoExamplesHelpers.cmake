@@ -8,10 +8,17 @@ macro(qt_examples_build_begin)
 
     cmake_parse_arguments(arg "${options}" "${singleOpts}" "${multiOpts}" ${ARGN})
 
+    # Examples are not unity-ready.
     set(CMAKE_UNITY_BUILD OFF)
 
     # Use by qt_internal_add_example.
     set(QT_EXAMPLE_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    if(QT_BUILD_STANDALONE_EXAMPLES)
+        # Find all qt packages, so that the various if(QT_FEATURE_foo) add_subdirectory()
+        # conditions have correct values, regardless whether we will use ExternalProjects or not.
+        qt_internal_find_standalone_parts_config_files()
+    endif()
 
     if(arg_EXTERNAL_BUILD AND QT_BUILD_EXAMPLES_AS_EXTERNAL)
         # Examples will be built using ExternalProject.
@@ -164,6 +171,11 @@ function(qt_internal_get_example_install_prefix out_var)
     # Allow customizing the installation path of the examples. Will be used in CI.
     if(QT_INTERNAL_EXAMPLES_INSTALL_PREFIX)
         set(qt_example_install_prefix "${QT_INTERNAL_EXAMPLES_INSTALL_PREFIX}")
+    elseif(QT_BUILD_STANDALONE_EXAMPLES)
+        # TODO: We might need to reset and pipe through an empty CMAKE_STAGING_PREFIX if we ever
+        # try to run standalone examples in the CI when cross-compiling, similar how it's done in
+        # qt_internal_set_up_fake_standalone_parts_install_prefix.
+        qt_internal_get_fake_standalone_install_prefix(qt_example_install_prefix)
     else()
         set(qt_example_install_prefix "${CMAKE_INSTALL_PREFIX}/${INSTALL_EXAMPLESDIR}")
     endif()

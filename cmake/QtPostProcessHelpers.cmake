@@ -819,7 +819,7 @@ function(qt_internal_create_config_file_for_standalone_tests)
 
     # Create a Config file that calls find_package on the modules that were built as part
     # of the current repo. This is used for standalone tests.
-    qt_internal_get_standalone_tests_config_file_name(tests_config_file_name)
+    qt_internal_get_standalone_parts_config_file_name(tests_config_file_name)
 
     # Standalone tests Config files should follow the main versioning scheme.
     qt_internal_get_package_version_of_target(Platform main_qt_package_version)
