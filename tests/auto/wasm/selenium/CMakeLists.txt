@@ -14,10 +14,18 @@ qt_internal_add_test(tst_qwasmwindow_harness
         Qt::Gui
 )
 
+if(CMAKE_HOST_WIN32)
+    SET(RUNSHCMD run.bat)
+    SET(RUNSHARG "NotUsed")
+else()
+    SET(RUNSHCMD bash)
+    SET(RUNSHARG run.sh)
+endif()
+
 set_target_properties(tst_qwasmwindow_harness PROPERTIES CROSSCOMPILING_EMULATOR "") # disabling emrun
 qt_internal_create_test_script(NAME tst_qwasmwindow_harness
-    COMMAND bash
-    ARGS run.sh
+    COMMAND ${RUNSHCMD}
+    ARGS    ${RUNSHARG}
     WORKING_DIRECTORY "${test_working_dir}"
     OUTPUT_FILE "${CMAKE_CURRENT_BINARY_DIR}/tst_qwasmwindow_harnessWrapper$<CONFIG>.cmake"
 )
@@ -48,4 +56,11 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_SOURCE_DIR}/run.sh
             ${CMAKE_CURRENT_BINARY_DIR}/run.sh
+)
+
+add_custom_command(
+    TARGET tst_qwasmwindow_harness POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/run.bat
+            ${CMAKE_CURRENT_BINARY_DIR}/run.bat
 )
