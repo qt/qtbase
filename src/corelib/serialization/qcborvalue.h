@@ -368,22 +368,6 @@ public:
 
     int compare(const QCborValue &other) const
     { return concrete().compare(other); }
-#if 0 && __has_include(<compare>)
-    std::strong_ordering operator<=>(const QCborValue &other) const
-    {
-        int c = compare(other);
-        if (c > 0) return std::strong_ordering::greater;
-        if (c == 0) return std::strong_ordering::equivalent;
-        return std::strong_ordering::less;
-    }
-#else
-    bool operator==(const QCborValue &other) const
-    { return compare(other) == 0; }
-    bool operator!=(const QCborValue &other) const
-    { return !(*this == other); }
-    bool operator<(const QCborValue &other) const
-    { return compare(other) < 0; }
-#endif
 
     QVariant toVariant() const                  { return concrete().toVariant(); }
     inline QJsonValue toJsonValue() const;      // in qjsonvalue.h
@@ -405,7 +389,24 @@ protected:
     friend class QCborContainerPrivate;
 
     QCborValue concrete() const noexcept  { return concrete(*this); }
-
+    friend Q_CORE_EXPORT bool comparesEqual(const QCborValueConstRef &lhs,
+                                            const QCborValueConstRef &rhs) noexcept;
+    friend Qt::strong_ordering compareThreeWay(const QCborValueConstRef &lhs,
+                                               const QCborValueConstRef &rhs) noexcept
+    {
+        int c = lhs.compare(rhs.concrete());
+        return Qt::compareThreeWay(c, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QCborValueConstRef)
+    friend Q_CORE_EXPORT bool comparesEqual(const QCborValueConstRef &lhs,
+                                            const QCborValue &rhs) noexcept;
+    friend Qt::strong_ordering compareThreeWay(const QCborValueConstRef &lhs,
+                                               const QCborValue &rhs) noexcept
+    {
+        int c = lhs.compare(rhs);
+        return Qt::compareThreeWay(c, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QCborValueConstRef, QCborValue)
     static Q_CORE_EXPORT QCborValue concrete(QCborValueConstRef that) noexcept;
     static Q_CORE_EXPORT QCborValue::Type concreteType(QCborValueConstRef that) noexcept Q_DECL_PURE_FUNCTION;
     static Q_CORE_EXPORT bool
@@ -523,19 +524,11 @@ public:
 
     int compare(const QCborValue &other) const
     { return concrete().compare(other); }
-#if 0 && __has_include(<compare>)
-    std::strong_ordering operator<=>(const QCborValue &other) const
-    {
-        int c = compare(other);
-        if (c > 0) return std::strong_ordering::greater;
-        if (c == 0) return std::strong_ordering::equivalent;
-        return std::strong_ordering::less;
-    }
-#else
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QCborValue &other) const
     { return compare(other) == 0; }
     bool operator!=(const QCborValue &other) const
-    { return !(*this == other); }
+    { return !operator==(other); }
     bool operator<(const QCborValue &other) const
     { return compare(other) < 0; }
 #endif

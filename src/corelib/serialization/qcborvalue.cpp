@@ -2742,6 +2742,16 @@ QString QCborValueConstRef::concreteString(QCborValueConstRef self, const QStrin
     return self.d->stringAt(self.i);
 }
 
+bool comparesEqual(const QCborValueConstRef &lhs, const QCborValueConstRef &rhs) noexcept
+{
+    return lhs.compare(rhs.concrete()) == 0;
+}
+
+bool comparesEqual(const QCborValueConstRef &lhs, const QCborValue &rhs) noexcept
+{
+    return lhs.compare(rhs) == 0;
+}
+
 QCborValue QCborValueConstRef::concrete(QCborValueConstRef self) noexcept
 {
     return self.d->valueAt(self.i);

@@ -27,7 +27,7 @@ private slots:
     void tagged();
     void extendedTypes_data();
     void extendedTypes();
-    void compareCompiles() { QTestPrivate::testAllComparisonOperatorsCompile<QCborValue>(); }
+    void compareCompiles();
     void copyCompare_data() { basics_data(); }
     void copyCompare();
 
@@ -79,6 +79,8 @@ private slots:
     void mapNested();
 
     void sorting();
+    void comparison_data();
+    void comparison();
 
     void toCbor_data();
     void toCbor();
@@ -444,6 +446,16 @@ void tst_QCborValue::extendedTypes_data()
                                    << QCborValue(raw("\x12\x34\x56\x78" "\0\0\0\0" "\0\0\0\0" "\0\0\0\0"));
     QTest::newRow("Uuid:TooLong") << QCborValue(uuid) << QCborKnownTags::Uuid
                                   << QCborValue(uuid.toRfc4122() + "\1\2\3\4") << QCborValue(uuid.toRfc4122());
+}
+
+void tst_QCborValue::compareCompiles()
+{
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborValue>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborValueRef, QCborValueConstRef>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborValueConstRef, QCborValue>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborValueRef, QCborValue>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborValueRef>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborValueConstRef>();
 }
 
 void tst_QCborValue::extendedTypes()
@@ -1110,8 +1122,7 @@ void tst_QCborValue::mapMutation()
         QVERIFY(v.isTrue());
         QCOMPARE(m, QCborMap({{42, true}}));
         QVERIFY(m.begin()->isTrue());
-        QVERIFY(m.begin().value() == v);
-        QVERIFY(v == m.begin().value());
+        QT_TEST_EQUALITY_OPS(m.begin().value(), v, true);
     }
 
     QVERIFY(m == QCborMap({{42, true}}));
@@ -1135,10 +1146,10 @@ void tst_QCborValue::mapMutation()
     auto end = m.end();
     QCOMPARE(end - it, 2);
     QCOMPARE(it + 2, end);
-    QCOMPARE(it.key(), QCborValue(42));
-    QCOMPARE(it.value(), QCborValue(2.5));
-    QCOMPARE((++it).value(), QCborValue(nullptr));
-    QCOMPARE(it.key(), QCborValue(nullptr));
+    QT_TEST_EQUALITY_OPS(it.key(), QCborValue(42), true);
+    QT_TEST_EQUALITY_OPS(it.value(), QCborValue(2.5), true);
+    QT_TEST_EQUALITY_OPS((++it).value(), QCborValue(nullptr), true);
+    QT_TEST_EQUALITY_OPS(it.key(), QCborValue(nullptr), true);
     QVERIFY(m2 == m);
     QVERIFY(m == m2);
 
@@ -1191,11 +1202,13 @@ void tst_QCborValue::mapMutateWithCopies()
         // see QTBUG-83366
         QCborMap map;
         map[QLatin1String("value")] = "TEST";
+        QT_TEST_EQUALITY_OPS(map[QLatin1String("value")], "TEST", true);
         QCOMPARE(map.size(), 1);
         QCOMPARE(map.value("value"), "TEST");
 
         QCborValue v = map.value("value");
         map[QLatin1String("prop2")] = v;
+        QT_TEST_EQUALITY_OPS(map[QLatin1String("prop2")], v, true);
         QCOMPARE(map.size(), 2);
         QCOMPARE(map.value("value"), "TEST");
         QCOMPARE(map.value("prop2"), "TEST");
@@ -1209,6 +1222,7 @@ void tst_QCborValue::mapMutateWithCopies()
         // same as previous, but this is a QJsonValueRef
         QCborValueRef rv = map[QLatin1String("prop2")];
         rv = map[QLatin1String("value")];
+        QT_TEST_EQUALITY_OPS(map[QLatin1String("value")], rv, true);
         QCOMPARE(map.size(), 2);
         QCOMPARE(map.value("value"), "TEST");
         QCOMPARE(map.value("prop2"), "TEST");
@@ -1223,6 +1237,7 @@ void tst_QCborValue::mapMutateWithCopies()
         // after we create the source QCborValueRef
         QCborValueRef rv = map[QLatin1String("value")];
         map[QLatin1String("prop2")] = rv;
+        QT_TEST_EQUALITY_OPS(map[QLatin1String("prop2")], rv, true);
         QCOMPARE(map.size(), 2);
         QCOMPARE(map.value("value"), "TEST");
         QCOMPARE(map.value("prop2"), "TEST");
@@ -3066,6 +3081,61 @@ void tst_QCborValue::testlibFormatting()
     QScopedArrayPointer<char> hold(QTest::toString(v));
     QString actual = hold.get();
     QCOMPARE(actual, expected);
+}
+
+void tst_QCborValue::comparison_data()
+{
+    QTest::addColumn<QCborValue>("lhs");
+    QTest::addColumn<QCborValue>("rhs");
+    QTest::addColumn<Qt::strong_ordering>("expectedOrdering");
+
+    auto addRow = [](QCborValue lhs, QCborValue rhs, Qt::strong_ordering order) {
+        QTest::addRow("%s-cmp-%s", qPrintable(lhs.toDiagnosticNotation()),
+                      qPrintable(rhs.toDiagnosticNotation()))
+            << lhs << rhs << order;
+    };
+    // typical, sorts as expected
+    addRow(0, 0, Qt::strong_ordering::equivalent);
+    addRow(1, 0, Qt::strong_ordering::greater);
+    addRow(0, 1, Qt::strong_ordering::less);
+    addRow(10.0, 10.0, Qt::strong_ordering::equivalent);
+    addRow(10.5, 10.8, Qt::strong_ordering::less);
+    addRow(-10.5, -10.8, Qt::strong_ordering::less);
+    addRow("Qt","Qt", Qt::strong_ordering::equivalent);
+    addRow("qt","Qt", Qt::strong_ordering::greater);
+
+    // atypical gotchas
+    addRow(0, -1, Qt::strong_ordering::less);
+    addRow(10, 10.0, Qt::strong_ordering::less);
+    addRow(0, "Qt", Qt::strong_ordering::less);
+
+}
+
+void tst_QCborValue::comparison()
+{
+    QFETCH(QCborValue, lhs);
+    QFETCH(QCborValue, rhs);
+    QFETCH(Qt::strong_ordering, expectedOrdering);
+
+    QCborArray array{lhs, rhs};
+
+    QCborValueConstRef lhsCRef = array.constBegin()[0];
+    QCborValueConstRef rhsCRef = array.constBegin()[1];
+    QCborValueRef lhsRef = array[0];
+    QCborValueRef rhsRef = array[1];
+
+    // QCborValue vs QCborValue
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, expectedOrdering);
+    // QCborValueConstRef vs QCborValueConstRef
+    QT_TEST_ALL_COMPARISON_OPS(lhsCRef, rhsCRef, expectedOrdering);
+    // QCborValueRef vs QCborValueRef
+    QT_TEST_ALL_COMPARISON_OPS(lhsRef, rhsRef, expectedOrdering);
+    // QCborValue vs QCborValueConstRef (and reverse)
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhsCRef, expectedOrdering);
+    // QCborValue vs QCborValueRef (and reverse)
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhsRef, expectedOrdering);
+    // QCborValueConstRef vs QCborValueRef (and reverse)
+    QT_TEST_ALL_COMPARISON_OPS(lhsCRef, rhsRef, expectedOrdering);
 }
 
 QTEST_MAIN(tst_QCborValue)
