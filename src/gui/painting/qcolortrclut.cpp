@@ -13,43 +13,80 @@ std::shared_ptr<QColorTrcLut> QColorTrcLut::create()
     return std::make_shared<Access>();
 }
 
-std::shared_ptr<QColorTrcLut> QColorTrcLut::fromGamma(qreal gamma)
+std::shared_ptr<QColorTrcLut> QColorTrcLut::fromGamma(qreal gamma, Direction dir)
 {
     auto cp = create();
-
-    for (int i = 0; i <= (255 * 16); ++i) {
-        cp->m_toLinear[i] = ushort(qRound(qPow(i / qreal(255 * 16), gamma) * (255 * 256)));
-        cp->m_fromLinear[i] = ushort(qRound(qPow(i / qreal(255 * 16), qreal(1) / gamma) * (255 * 256)));
-    }
-
+    cp->setFromGamma(gamma, dir);
     return cp;
 }
 
-std::shared_ptr<QColorTrcLut> QColorTrcLut::fromTransferFunction(const QColorTransferFunction &fun)
+std::shared_ptr<QColorTrcLut> QColorTrcLut::fromTransferFunction(const QColorTransferFunction &fun, Direction dir)
 {
     auto cp = create();
-    QColorTransferFunction inv = fun.inverted();
-
-    for (int i = 0; i <= (255 * 16); ++i) {
-        cp->m_toLinear[i] = ushort(qRound(fun.apply(i / qreal(255 * 16)) * (255 * 256)));
-        cp->m_fromLinear[i] = ushort(qRound(inv.apply(i / qreal(255 * 16)) * (255 * 256)));
-    }
-
+    cp->setFromTransferFunction(fun, dir);
     return cp;
 }
 
-std::shared_ptr<QColorTrcLut> QColorTrcLut::fromTransferTable(const QColorTransferTable &table)
+std::shared_ptr<QColorTrcLut> QColorTrcLut::fromTransferTable(const QColorTransferTable &table, Direction dir)
 {
     auto cp = create();
+    cp->setFromTransferTable(table, dir);
+    return cp;
+}
 
-    float minInverse = 0.0f;
-    for (int i = 0; i <= (255 * 16); ++i) {
-        cp->m_toLinear[i] = ushort(qBound(0, qRound(table.apply(i / qreal(255 * 16)) * (255 * 256)), 65280));
-        minInverse = table.applyInverse(i / qreal(255 * 16), minInverse);
-        cp->m_fromLinear[i] = ushort(qBound(0, qRound(minInverse * (255 * 256)), 65280));
+void QColorTrcLut::setFromGamma(qreal gamma, Direction dir)
+{
+    if (dir & ToLinear) {
+        if (!m_toLinear)
+            m_toLinear.reset(new ushort[Resolution + 1]);
+        for (int i = 0; i <= Resolution; ++i)
+            m_toLinear[i] = ushort(qRound(qPow(i / qreal(Resolution), gamma) * (255 * 256)));
     }
 
-    return cp;
+    if (dir & FromLinear) {
+        if (!m_fromLinear)
+            m_fromLinear.reset(new ushort[Resolution + 1]);
+        for (int i = 0; i <= Resolution; ++i)
+            m_fromLinear[i] = ushort(qRound(qPow(i / qreal(Resolution), qreal(1) / gamma) * (255 * 256)));
+    }
+}
+
+void QColorTrcLut::setFromTransferFunction(const QColorTransferFunction &fun, Direction dir)
+{
+    if (dir & ToLinear) {
+        if (!m_toLinear)
+            m_toLinear.reset(new ushort[Resolution + 1]);
+        for (int i = 0; i <= Resolution; ++i)
+            m_toLinear[i] = ushort(qRound(fun.apply(i / qreal(Resolution)) * (255 * 256)));
+    }
+
+    if (dir & FromLinear) {
+        if (!m_fromLinear)
+            m_fromLinear.reset(new ushort[Resolution + 1]);
+        QColorTransferFunction inv = fun.inverted();
+        for (int i = 0; i <= Resolution; ++i)
+            m_fromLinear[i] = ushort(qRound(inv.apply(i / qreal(Resolution)) * (255 * 256)));
+    }
+}
+
+void QColorTrcLut::setFromTransferTable(const QColorTransferTable &table, Direction dir)
+{
+    if (dir & ToLinear) {
+        if (!m_toLinear)
+            m_toLinear.reset(new ushort[Resolution + 1]);
+        for (int i = 0; i <= Resolution; ++i)
+            m_toLinear[i] = ushort(qBound(0, qRound(table.apply(i / qreal(Resolution)) * (255 * 256)), 65280));
+    }
+
+    if (dir & FromLinear) {
+        if (!m_fromLinear)
+            m_fromLinear.reset(new ushort[Resolution + 1]);
+        float minInverse = 0.0f;
+        for (int i = 0; i <= Resolution; ++i) {
+            minInverse = table.applyInverse(i / qreal(Resolution), minInverse);
+            m_fromLinear[i] = ushort(qBound(0, qRound(minInverse * (255 * 256)), 65280));
+        }
+    }
 }
 
 QT_END_NAMESPACE

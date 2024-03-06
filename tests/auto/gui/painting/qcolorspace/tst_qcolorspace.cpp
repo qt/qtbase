@@ -238,9 +238,10 @@ void tst_QColorSpace::imageConversion_data()
 
     QTest::newRow("sRGB -> Display-P3") << QColorSpace::SRgb << QColorSpace::DisplayP3 << 0;
     QTest::newRow("sRGB -> Adobe RGB") << QColorSpace::SRgb << QColorSpace::AdobeRgb << 2;
-    QTest::newRow("Display-P3 -> sRGB") << QColorSpace::DisplayP3 << QColorSpace::SRgb << 0;
     QTest::newRow("Adobe RGB -> sRGB") << QColorSpace::AdobeRgb << QColorSpace::SRgb << 2;
+    QTest::newRow("Adobe RGB -> Display-P3") << QColorSpace::AdobeRgb << QColorSpace::DisplayP3 << 2;
     QTest::newRow("Display-P3 -> Adobe RGB") << QColorSpace::DisplayP3 << QColorSpace::AdobeRgb << 2;
+    QTest::newRow("Display-P3 -> sRGB") << QColorSpace::DisplayP3 << QColorSpace::SRgb << 0;
     QTest::newRow("sRGB -> sRGB Linear") << QColorSpace::SRgb << QColorSpace::SRgbLinear << 0;
     QTest::newRow("sRGB Linear -> sRGB") << QColorSpace::SRgbLinear << QColorSpace::SRgb << 0;
 }
@@ -282,8 +283,9 @@ void tst_QColorSpace::imageConversion()
     QCOMPARE(testImage.colorSpace(), QColorSpace(fromColorSpace));
     for (int i = 0; i < 256; ++i) {
         QRgb p = testImage.pixel(i, 0);
-        QVERIFY(qAbs(qRed(p) - qGreen(p)) <= tolerance);
         QVERIFY(qAbs(qRed(p) - qBlue(p)) <= tolerance);
+        QVERIFY(qAbs(qRed(p) - qGreen(p)) <= tolerance);
+        QVERIFY(qAbs(qGreen(p) - qBlue(p)) <= tolerance);
         QVERIFY((lastRed   - qRed(p))   <= (tolerance / 2));
         QVERIFY((lastGreen - qGreen(p)) <= (tolerance / 2));
         QVERIFY((lastBlue  - qBlue(p))  <= (tolerance / 2));
@@ -460,7 +462,7 @@ void tst_QColorSpace::imageConversionOverLargerGamut()
     testImage.setColorSpace(csfrom);
     for (int y = 0; y < 256; ++y)
         for (int x = 0; x < 256; ++x)
-            testImage.setPixel(x, y, qRgb(x, y, 0));
+            testImage.setPixel(x, y, qRgb(x, y, qAbs(x - y)));
 
     QImage resultImage = testImage.convertedToColorSpace(csto);
     for (int y = 0; y < 256; ++y) {
