@@ -211,6 +211,28 @@ endif()
 # machineTuple
 qt_config_compile_test_machine_tuple("machine tuple")
 
+# glibc
+qt_config_compile_test(glibc
+    LABEL "Using Glibc"
+    CODE
+"#include <features.h>
+#ifndef __GLIBC__
+#error
+#endif
+int main() {}"
+)
+
+# glibc 2.34, for _FORTIFY_SOURCE == 3
+qt_config_compile_test(glibc_234
+    LABEL "Using Glibc >= 2.34"
+    CODE
+"#include <features.h>
+#if !defined(__GLIBC__) || !__GLIBC_PREREQ(2, 34)
+#error
+#endif
+int main() {}"
+)
+
 # cxx20
 qt_config_compile_test(cxx20
     LABEL "C++20 support"
@@ -398,29 +420,40 @@ alloca(1);
 ")
 
 # stack_protector
-qt_config_compile_test(stack_protector
-    LABEL "stack protection"
-    COMPILE_OPTIONS -fstack-protector-strong
-    CODE
-"#ifdef __QNXNTO__
-#  include <sys/neutrino.h>
-#  if _NTO_VERSION < 700
-#    error stack-protector not used (by default) before QNX 7.0.0.
-#  endif
-#endif
+if(NOT WASM)
+    # emcc doesn't support this, but the detection accidentally succeeds
+    # https://github.com/emscripten-core/emscripten/issues/17030
+    qt_config_compiler_supports_flag_test(stack_protector
+        LABEL "stack protection"
+        FLAG "-fstack-protector-strong"
+    )
+endif()
 
-int main(void)
-{
-    /* BEGIN TEST: */
-    /* END TEST: */
-    return 0;
-}
-")
+# stack_clash_protection
+if(NOT CLANG) # https://gitlab.kitware.com/cmake/cmake/-/issues/21998
+    qt_config_compiler_supports_flag_test(stack_clash_protection
+        LABEL "-fstack-clash-protection support"
+        FLAG "-fstack-clash-protection"
+    )
+endif()
+
+# trivial_auto_var_init_pattern
+qt_config_compiler_supports_flag_test(trivial_auto_var_init_pattern
+    LABEL "-ftrivial-auto-var-init=pattern support"
+    FLAG "-ftrivial-auto-var-init=pattern"
+)
 
 # intelcet
-qt_config_compile_test(intelcet
-    LABEL "Support for Intel Control-flow Enforcement Technology (CET)"
-    CODE
+if(MSVC)
+    qt_config_linker_supports_flag_test(intelcet
+        LABEL "Support for Intel Control-flow Enforcement Technology (CET)"
+        FLAG "-CETCOMPAT"
+    )
+else()
+    qt_config_compile_test(intelcet
+        LABEL "Support for Intel Control-flow Enforcement Technology (CET)"
+        COMPILE_OPTIONS -fcf-protection=full
+        CODE
 "int main(void)
 {
     /* BEGIN TEST: */
@@ -430,8 +463,35 @@ qt_config_compile_test(intelcet
     /* END TEST: */
     return 0;
 }
-")
+"
+    )
+endif()
 
+# -z relro -z now
+if(NOT WIN32)
+    qt_config_linker_supports_flag_test(relro_now_linker
+        LABEL "Support for -z relro and -z now"
+        FLAG "-z,relro,-z,now"
+    )
+endif()
+
+# Is libc++ the default Standard Library?
+qt_config_compile_test(using_stdlib_libcpp
+    LABEL "Compiler defaults to libc++"
+    CODE
+"
+#include <ciso646>
+
+int main(void)
+{
+/* BEGIN TEST: */
+#ifndef _LIBCPP_VERSION
+#   error
+#endif
+/* END TEST: */
+}
+"
+)
 
 
 #### Features
@@ -889,10 +949,6 @@ qt_feature("alloca" PRIVATE
     LABEL "alloca()"
     CONDITION QT_FEATURE_alloca_h OR QT_FEATURE_alloca_malloc_h OR TEST_alloca_stdlib_h
 )
-qt_feature("stack-protector-strong" PRIVATE
-    LABEL "stack protection"
-    CONDITION QNX AND TEST_stack_protector
-)
 qt_feature("system-zlib" PRIVATE
     LABEL "Using system zlib"
     CONDITION WrapSystemZLIB_FOUND
@@ -1056,10 +1112,56 @@ qt_feature("relocatable" PRIVATE
     AUTODETECT QT_FEATURE_shared
     CONDITION QT_FEATURE_dlopen OR WIN32 OR NOT QT_FEATURE_shared
 )
+# hardening features
 qt_feature("intelcet" PRIVATE
-    LABEL "Using Intel CET"
-    CONDITION ( INPUT_intelcet STREQUAL yes ) OR TEST_intelcet
+    LABEL "Using Intel Control-flow Enforcement Technology (CET)"
+    AUTODETECT ON
+    CONDITION TEST_intelcet
 )
+qt_feature_config("intelcet" QMAKE_PUBLIC_CONFIG)
+qt_feature("glibc_fortify_source" PRIVATE
+    LABEL "Using Glibc function fortification"
+    AUTODETECT ON
+    CONDITION TEST_glibc
+)
+qt_feature_config("glibc_fortify_source" QMAKE_PUBLIC_CONFIG)
+qt_feature("trivial_auto_var_init_pattern" PRIVATE
+    LABEL "Using -ftrivial-auto-var-init=pattern"
+    AUTODETECT ON
+    CONDITION TEST_trivial_auto_var_init_pattern
+)
+qt_feature_config("trivial_auto_var_init_pattern" QMAKE_PUBLIC_CONFIG)
+qt_feature("stack_protector" PRIVATE
+    LABEL "Using -fstack-protector-strong"
+    AUTODETECT ON
+    CONDITION TEST_stack_protector
+)
+qt_feature_config("stack_protector" QMAKE_PUBLIC_CONFIG)
+qt_feature("stack_clash_protection" PRIVATE
+    LABEL "Using -fstack-clash-protection"
+    AUTODETECT ON
+    CONDITION TEST_stack_clash_protection
+)
+qt_feature_config("stack_clash_protection" QMAKE_PUBLIC_CONFIG)
+qt_feature("libstdcpp_assertions" PRIVATE
+    LABEL "Using libstdc++ assertions"
+    AUTODETECT ON
+    CONDITION (GCC OR (CLANG AND NOT MSVC AND NOT QT_FEATURE_stdlib_libcpp AND NOT TEST_using_stdlib_libcpp))
+)
+qt_feature_config("libstdcpp_assertions" QMAKE_PUBLIC_CONFIG)
+qt_feature("libcpp_hardening" PRIVATE
+    LABEL "Using libc++ hardening"
+    AUTODETECT ON
+    CONDITION (QT_FEATURE_stdlib_libcpp OR TEST_using_stdlib_libcpp)
+)
+qt_feature_config("libcpp_hardening" QMAKE_PUBLIC_CONFIG)
+qt_feature("relro_now_linker" PRIVATE
+    LABEL "Using -z relro -z now when linking"
+    AUTODETECT ON
+    CONDITION TEST_relro_now_linker
+)
+qt_feature_config("relro_now_linker" QMAKE_PUBLIC_CONFIG)
+
 
 if("${INPUT_coverage}" STREQUAL "gcov")
     qt_config_compile_test(gcov
@@ -1137,6 +1239,13 @@ qt_configure_add_summary_entry(ARGS "relocatable")
 qt_configure_add_summary_entry(ARGS "precompile_header")
 qt_configure_add_summary_entry(ARGS "ltcg")
 qt_configure_add_summary_entry(ARGS "intelcet")
+qt_configure_add_summary_entry(ARGS "glibc_fortify_source")
+qt_configure_add_summary_entry(ARGS "trivial_auto_var_init_pattern")
+qt_configure_add_summary_entry(ARGS "stack_protector")
+qt_configure_add_summary_entry(ARGS "stack_clash_protection")
+qt_configure_add_summary_entry(ARGS "libstdcpp_assertions")
+qt_configure_add_summary_entry(ARGS "libcpp_hardening")
+qt_configure_add_summary_entry(ARGS "relro_now_linker")
 qt_configure_add_summary_entry(
     ARGS "wasm-simd128"
     CONDITION ( TEST_architecture_arch STREQUAL wasm )

@@ -316,17 +316,51 @@ if (GCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.2")
     target_compile_options(PlatformCommonInternal INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-Wsuggest-override>)
 endif()
 
+# Hardening options
 if(QT_FEATURE_intelcet)
     if(MSVC)
-        qt_internal_platform_link_options(PlatformCommonInternal INTERFACE
-            -CETCOMPAT
-        )
+        qt_internal_platform_link_options(PlatformCommonInternal INTERFACE -CETCOMPAT)
     else()
-        target_compile_options(PlatformCommonInternal INTERFACE
-            -fcf-protection=full
-        )
+        target_compile_options(PlatformCommonInternal INTERFACE -fcf-protection=full)
     endif()
 endif()
+
+if(QT_FEATURE_glibc_fortify_source)
+    set(is_optimized_build "$<OR:$<NOT:$<CONFIG:Debug>>,$<BOOL:${QT_FEATURE_optimize_debug}>>")
+    # Some compilers may define _FORTIFY_SOURCE by default when optimizing, remove it
+    # before defining our own
+    target_compile_options(PlatformCommonInternal BEFORE INTERFACE "$<${is_optimized_build}:-U_FORTIFY_SOURCE>")
+    if(TEST_glibc_234)
+        target_compile_options(PlatformCommonInternal INTERFACE "$<${is_optimized_build}:-D_FORTIFY_SOURCE=3>")
+    else()
+        target_compile_options(PlatformCommonInternal INTERFACE "$<${is_optimized_build}:-D_FORTIFY_SOURCE=2>")
+    endif()
+endif()
+
+if(QT_FEATURE_trivial_auto_var_init_pattern)
+    target_compile_options(PlatformCommonInternal INTERFACE -ftrivial-auto-var-init=pattern)
+endif()
+
+if(QT_FEATURE_stack_protector)
+    target_compile_options(PlatformCommonInternal INTERFACE -fstack-protector-strong)
+endif()
+
+if(QT_FEATURE_stack_clash_protection)
+    target_compile_options(PlatformCommonInternal INTERFACE -fstack-clash-protection)
+endif()
+
+if(QT_FEATURE_libstdcpp_assertions)
+    target_compile_definitions(PlatformCommonInternal INTERFACE _GLIBCXX_ASSERTIONS)
+endif()
+
+if(QT_FEATURE_libcpp_hardening)
+    target_compile_definitions(PlatformCommonInternal INTERFACE -D_LIBCPP_HARDENING_MODE="$<IF:$<CONFIG:Debug>,_LIBCPP_HARDENING_MODE_EXTENSIVE,_LIBCPP_HARDENING_MODE_FAST>")
+endif()
+
+if(QT_FEATURE_relro_now_linker)
+    qt_internal_platform_link_options(PlatformCommonInternal INTERFACE "-Wl,-z,relro,-z,now")
+endif()
+
 
 if(QT_FEATURE_force_asserts)
     target_compile_definitions(PlatformCommonInternal INTERFACE QT_FORCE_ASSERTS)

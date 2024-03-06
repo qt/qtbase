@@ -1359,7 +1359,16 @@ function(qt_config_linker_supports_flag_test name)
     endif()
 
     cmake_parse_arguments(arg "" "LABEL;FLAG" "" ${ARGN})
-    set(flags "-Wl,${arg_FLAG}")
+    if(GCC OR CLANG)
+        set(flags "-Wl,--fatal-warnings,${arg_FLAG}")
+    elseif(MSVC)
+        set(flags "${arg_FLAG}")
+    else()
+        # We don't know how to pass linker options in a way that
+        # it reliably fails, so assume the detection failed.
+        set(TEST_${name} "0" CACHE INTERNAL "${label}")
+        return()
+    endif()
 
     # Pass the linker that the main project uses to the compile test.
     qt_internal_get_active_linker_flags(linker_flags)

@@ -138,7 +138,16 @@ Build options:
 
   -pch ................. Use precompiled headers [auto]
   -ltcg ................ Use Link Time Code Generation [no]
-  -intelcet ............ Use Intel Control-flow Enforcement Technology [no]
+  -intelcet ............ Use Intel Control-flow Enforcement Technology [auto]
+  -glibc-fortify-source  Use Glibc function fortification [auto]
+  -trivial-auto-var-init-pattern
+                         Use -ftrivial-auto-var-init=pattern [auto]
+  -stack-protector ..... Use -fstack-protector-strong [auto]
+  -stack-clash-protection
+                         Use -fstack-clash-protection [auto]
+  -libstdcpp-assertions  Use libstdc++ assertions [auto]
+  -libcpp-hardening .... Use libc++ hardening [auto]
+  -relro-now-linker .... Use -z relro -z now when linking [auto]
   -linker [bfd,gold,lld,mold]
                          Force use of the GNU ld, GNU gold, LLVM/LLD or mold
                          linker instead of default one (GCC and clang only)
