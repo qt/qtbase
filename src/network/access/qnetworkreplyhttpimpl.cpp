@@ -1228,7 +1228,8 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
     if (httpRequest.isFollowRedirects()) // update the reply's url as it could've changed
         url = redirectUrl;
 
-    if (managerPrivate->stsEnabled && managerPrivate->stsCache.isKnownHost(url)) {
+    const bool wasLocalSocket = schemeBefore.startsWith("unix"_L1);
+    if (!wasLocalSocket && managerPrivate->stsEnabled && managerPrivate->stsCache.isKnownHost(url)) {
         // RFC6797, 8.3:
         // The UA MUST replace the URI scheme with "https" [RFC2818],
         // and if the URI contains an explicit port component of "80",
@@ -1242,9 +1243,12 @@ void QNetworkReplyHttpImplPrivate::onRedirected(const QUrl &redirectUrl, int htt
             url.setPort(443);
     }
 
-    const bool isLessSafe = schemeBefore == "https"_L1 && url.scheme() == "http"_L1;
-    if (httpRequest.redirectPolicy() == QNetworkRequest::NoLessSafeRedirectPolicy
-        && isLessSafe) {
+    // Just to be on the safe side for local sockets, any changes to the scheme
+    // are considered less safe
+    const bool changingLocalScheme = wasLocalSocket && url.scheme() != schemeBefore;
+    const bool isLessSafe = changingLocalScheme
+            || (schemeBefore == "https"_L1 && url.scheme() == "http"_L1);
+    if (httpRequest.redirectPolicy() == QNetworkRequest::NoLessSafeRedirectPolicy && isLessSafe) {
         error(QNetworkReply::InsecureRedirectError,
               QCoreApplication::translate("QHttp", "Insecure redirect"));
         return;

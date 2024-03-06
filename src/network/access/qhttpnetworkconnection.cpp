@@ -52,10 +52,11 @@ static int getPreferredActiveChannelCount(QHttpNetworkConnection::ConnectionType
 
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(
         quint16 connectionCount, const QString &hostName, quint16 port, bool encrypt,
-        QHttpNetworkConnection::ConnectionType type)
+        bool isLocalSocket, QHttpNetworkConnection::ConnectionType type)
     : hostName(hostName),
       port(port),
       encrypt(encrypt),
+      isLocalSocket(isLocalSocket),
       activeChannelCount(getPreferredActiveChannelCount(type, connectionCount)),
       channelCount(connectionCount),
       channels(new QHttpNetworkConnectionChannel[channelCount]),
@@ -64,6 +65,8 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(
 #endif
       connectionType(type)
 {
+    if (isLocalSocket) // Don't try to do host lookup for local sockets
+        networkLayerState = IPv4;
     // We allocate all 6 channels even if it's an HTTP/2-enabled
     // connection: in case the protocol negotiation via NPN/ALPN fails,
     // we will have normally working HTTP/1.1.
@@ -533,7 +536,9 @@ QHttpNetworkConnectionPrivate::parseRedirectResponse(QHttpNetworkReply *reply)
 
     // Check redirect url protocol
     const QUrl priorUrl(reply->request().url());
-    if (redirectUrl.scheme() == "http"_L1 || redirectUrl.scheme() == "https"_L1) {
+    const QString targetUrlScheme = redirectUrl.scheme();
+    if (targetUrlScheme == "http"_L1 || targetUrlScheme == "https"_L1
+        || targetUrlScheme.startsWith("unix"_L1)) {
         switch (reply->request().redirectPolicy()) {
         case QNetworkRequest::NoLessSafeRedirectPolicy:
             // Here we could handle https->http redirects as InsecureProtocolError.
@@ -544,7 +549,7 @@ QHttpNetworkConnectionPrivate::parseRedirectResponse(QHttpNetworkReply *reply)
             break;
         case QNetworkRequest::SameOriginRedirectPolicy:
             if (priorUrl.host() != redirectUrl.host()
-                || priorUrl.scheme() != redirectUrl.scheme()
+                || priorUrl.scheme() != targetUrlScheme
                 || priorUrl.port() != redirectUrl.port()) {
                 return {{}, QNetworkReply::InsecureRedirectError};
             }
@@ -1346,9 +1351,9 @@ void QHttpNetworkConnectionPrivate::_q_connectDelayedChannel()
 }
 
 QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QString &hostName,
-                                               quint16 port, bool encrypt, QObject *parent,
+                                               quint16 port, bool encrypt, bool isLocalSocket, QObject *parent,
                                                QHttpNetworkConnection::ConnectionType connectionType)
-     : QObject(*(new QHttpNetworkConnectionPrivate(connectionCount, hostName, port, encrypt,
+     : QObject(*(new QHttpNetworkConnectionPrivate(connectionCount, hostName, port, encrypt, isLocalSocket,
                                                    connectionType)), parent)
 {
     Q_D(QHttpNetworkConnection);

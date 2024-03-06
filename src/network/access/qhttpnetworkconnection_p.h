@@ -64,7 +64,8 @@ public:
     };
 
     QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80,
-                           bool encrypt = false, QObject *parent = nullptr,
+                           bool encrypt = false, bool isLocalSocket = false,
+                           QObject *parent = nullptr,
                            ConnectionType connectionType = ConnectionTypeHTTP);
     ~QHttpNetworkConnection();
 
@@ -155,7 +156,8 @@ public:
     };
 
     QHttpNetworkConnectionPrivate(quint16 connectionCount, const QString &hostName, quint16 port,
-                                  bool encrypt, QHttpNetworkConnection::ConnectionType type);
+                                  bool encrypt, bool isLocalSocket,
+                                  QHttpNetworkConnection::ConnectionType type);
     ~QHttpNetworkConnectionPrivate();
     void init();
 
@@ -205,6 +207,7 @@ public:
     QString hostName;
     quint16 port;
     bool encrypt;
+    bool isLocalSocket;
     bool delayIpv4 = true;
 
     // Number of channels we are trying to use at the moment:

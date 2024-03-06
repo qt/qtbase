@@ -79,6 +79,8 @@ void QHttpNetworkConnectionChannel::init()
 #ifndef QT_NO_SSL
     if (connection->d_func()->encrypt)
         socket = new QSslSocket;
+    else if (connection->d_func()->isLocalSocket)
+        socket = new QLocalSocket;
     else
         socket = new QTcpSocket;
 #else

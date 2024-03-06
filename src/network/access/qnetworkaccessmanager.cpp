@@ -1220,6 +1220,13 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
     bool isLocalFile = req.url().isLocalFile();
     QString scheme = req.url().scheme();
 
+    // Remap local+http to unix+http to make further processing easier
+    if (scheme == "local+http"_L1) {
+        scheme = u"unix+http"_s;
+        QUrl url = req.url();
+        url.setScheme(scheme);
+        req.setUrl(url);
+    }
 
     // fast path for GET on file:// URLs
     // The QNetworkAccessFileBackend will right now only be used for PUT
@@ -1296,11 +1303,15 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         u"https",
         u"preconnect-https",
 #endif
+        u"unix+http",
     };
     // Since Qt 5 we use the new QNetworkReplyHttpImpl
     if (std::find(std::begin(httpSchemes), std::end(httpSchemes), scheme) != std::end(httpSchemes)) {
+
 #ifndef QT_NO_SSL
-        if (isStrictTransportSecurityEnabled() && d->stsCache.isKnownHost(request.url())) {
+        const bool isLocalSocket = scheme.startsWith("unix"_L1);
+        if (!isLocalSocket && isStrictTransportSecurityEnabled()
+            && d->stsCache.isKnownHost(request.url())) {
             QUrl stsUrl(request.url());
             // RFC6797, 8.3:
             // The UA MUST replace the URI scheme with "https" [RFC2818],
@@ -1391,6 +1402,8 @@ QStringList QNetworkAccessManager::supportedSchemesImplementation() const
     // Those ones don't exist in backends
 #if QT_CONFIG(http)
     schemes << QStringLiteral("http");
+    schemes << QStringLiteral("unix+http");
+    schemes << QStringLiteral("local+http");
 #ifndef QT_NO_SSL
     if (QSslSocket::supportsSsl())
         schemes << QStringLiteral("https");
