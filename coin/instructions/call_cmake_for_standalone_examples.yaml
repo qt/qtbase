@@ -1,0 +1,26 @@
+type: Group
+instructions:
+  - type: ChangeDirectory
+    directory: "{{.BuildDir}}"
+  - type: ExecuteCommand
+    command: "{{.Env.EXAMPLES_ENV_PREFIX}} {{.Env.INSTALL_DIR_FOR_EXAMPLES}}\\bin\\qt-internal-configure-examples {{.Env.COIN_CMAKE_ARGS}}"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to call configure examples.
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: ExecuteCommand
+    command: "{{.Env.EXAMPLES_ENV_PREFIX}} {{.Env.INSTALL_DIR_FOR_EXAMPLES}}/libexec/qt-internal-configure-examples {{.Env.COIN_CMAKE_ARGS}}"
+    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 1200
+    userMessageOnFailure: >
+      Failed to call configure examples.
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
