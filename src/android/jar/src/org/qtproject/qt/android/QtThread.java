@@ -42,6 +42,14 @@ class QtThread {
         }
     }
 
+    public void sleep(int milliseconds) {
+        try {
+            m_qtThread.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void run(final Runnable runnable) {
         final Semaphore sem = new Semaphore(0);
         synchronized (m_qtThread) {
