@@ -304,6 +304,12 @@ function(qt_internal_add_example_external_project subdir)
         endif()
     endif()
 
+    # We we need to augment the CMAKE_MODULE_PATH with the current repo cmake build dir, to find
+    # files like FindWrapBundledFooConfigExtra.cmake.
+    set(module_paths "${qt_prefixes}")
+    list(TRANSFORM module_paths APPEND "/${INSTALL_LIBDIR}/cmake/${QT_CMAKE_EXPORT_NAMESPACE}")
+    list(APPEND CMAKE_MODULE_PATH ${module_paths})
+
     # In multi-config mode by default we exclude building tools for configs other than the main one.
     # Trying to build an example in a non-default config using the non-installed
     # QtFooConfig.cmake files would error out saying moc is not found.
