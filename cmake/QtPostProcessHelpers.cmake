@@ -451,7 +451,28 @@ if(NOT DEFINED QT_SKIP_AUTO_QML_PLUGIN_INCLUSION)
     set(QT_SKIP_AUTO_QML_PLUGIN_INCLUSION OFF)
 endif()
 
-file(GLOB __qt_qml_plugins_config_file_list \"\${CMAKE_CURRENT_LIST_DIR}/QmlPlugins/${INSTALL_CMAKE_NAMESPACE}*Config.cmake\")
+set(__qt_qml_plugins_config_file_list \"\")
+set(__qt_qml_plugins_glob_prefixes \"\${CMAKE_CURRENT_LIST_DIR}\")
+
+# Allow passing additional prefixes where we will glob for PluginConfig.cmake files.
+if(QT_ADDITIONAL_QML_PLUGIN_GLOB_PREFIXES)
+    foreach(__qt_qml_plugin_glob_prefix IN LISTS QT_ADDITIONAL_QML_PLUGIN_GLOB_PREFIXES)
+        if(__qt_qml_plugin_glob_prefix)
+            list(APPEND __qt_qml_plugins_glob_prefixes \"\${__qt_qml_plugin_glob_prefix}\")
+        endif()
+    endforeach()
+endif()
+
+list(REMOVE_DUPLICATES __qt_qml_plugins_glob_prefixes)
+
+foreach(__qt_qml_plugin_glob_prefix IN LISTS __qt_qml_plugins_glob_prefixes)
+    file(GLOB __qt_qml_plugins_glob_config_file_list
+        \"\${__qt_qml_plugin_glob_prefix}/QmlPlugins/${INSTALL_CMAKE_NAMESPACE}*Config.cmake\")
+    if(__qt_qml_plugins_glob_config_file_list)
+        list(APPEND __qt_qml_plugins_config_file_list \${__qt_qml_plugins_glob_config_file_list})
+    endif()
+endforeach()
+
 if (__qt_qml_plugins_config_file_list AND NOT QT_SKIP_AUTO_QML_PLUGIN_INCLUSION)
     # First round of inclusions ensure all qml plugin targets are brought into scope.
     foreach(__qt_qml_plugin_config_file \${__qt_qml_plugins_config_file_list})
