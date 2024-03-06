@@ -1000,61 +1000,49 @@ public:
     }
 
 private:
-    const Key *keyImpl(const T &value) const noexcept
+    template <typename Fn> Key keyImpl(const T &value, Fn &&defaultFn) const noexcept
     {
         if (d) {
             const_iterator i = begin();
             while (i != end()) {
                 if (i.value() == value)
-                    return &i.key();
+                    return i.key();
                 ++i;
             }
         }
 
-        return nullptr;
+        return defaultFn();
     }
 
 public:
     Key key(const T &value) const noexcept
     {
-        if (auto *k = keyImpl(value))
-            return *k;
-        else
-            return Key();
+        return keyImpl(value, [] { return Key(); });
     }
     Key key(const T &value, const Key &defaultKey) const noexcept
     {
-        if (auto *k = keyImpl(value))
-            return *k;
-        else
-            return defaultKey;
+        return keyImpl(value, [&] { return defaultKey; });
     }
 
 private:
-    T *valueImpl(const Key &key) const noexcept
+    template <typename Fn> T valueImpl(const Key &key, Fn &&defaultValue) const noexcept
     {
         if (d) {
             Node *n = d->findNode(key);
             if (n)
-                return &n->value;
+                return n->value;
         }
-        return nullptr;
+        return defaultValue();
     }
 public:
     T value(const Key &key) const noexcept
     {
-        if (T *v = valueImpl(key))
-            return *v;
-        else
-            return T();
+        return valueImpl(key, [] { return T(); });
     }
 
     T value(const Key &key, const T &defaultValue) const noexcept
     {
-        if (T *v = valueImpl(key))
-            return *v;
-        else
-            return defaultValue;
+        return valueImpl(key, [&] { return defaultValue; });
     }
 
     T &operator[](const Key &key)
@@ -1572,62 +1560,50 @@ public:
     }
 
 private:
-    const Key *keyImpl(const T &value) const noexcept
+    template <typename Fn> Key keyImpl(const T &value, Fn &&defaultValue) const noexcept
     {
         if (d) {
             auto i = d->begin();
             while (i != d->end()) {
                 Chain *e = i.node()->value;
                 if (e->contains(value))
-                    return &i.node()->key;
+                    return i.node()->key;
                 ++i;
             }
         }
 
-        return nullptr;
+        return defaultValue();
     }
 public:
     Key key(const T &value) const noexcept
     {
-        if (auto *k = keyImpl(value))
-            return *k;
-        else
-            return Key();
+        return keyImpl(value, [] { return Key(); });
     }
     Key key(const T &value, const Key &defaultKey) const noexcept
     {
-        if (auto *k = keyImpl(value))
-            return *k;
-        else
-            return defaultKey;
+        return keyImpl(value, [&] { return defaultKey; });
     }
 
 private:
-    T *valueImpl(const Key &key) const noexcept
+    template <typename Fn> T valueImpl(const Key &key, Fn &&defaultValue) const noexcept
     {
         if (d) {
             Node *n = d->findNode(key);
             if (n) {
                 Q_ASSERT(n->value);
-                return &n->value->value;
+                return n->value->value;
             }
         }
-        return nullptr;
+        return defaultValue();
     }
 public:
     T value(const Key &key) const noexcept
     {
-        if (auto *v = valueImpl(key))
-            return *v;
-        else
-            return T();
+        return valueImpl(key, [] { return T(); });
     }
     T value(const Key &key, const T &defaultValue) const noexcept
     {
-        if (auto *v = valueImpl(key))
-            return *v;
-        else
-            return defaultValue;
+        return valueImpl(key, [&] { return defaultValue; });
     }
 
     T &operator[](const Key &key)
