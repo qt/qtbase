@@ -46,6 +46,8 @@ public abstract class QtLoader {
     protected String m_applicationParameters = "";
     protected HashMap<String, String> m_environmentVariables = new HashMap<>();
 
+    protected int m_debuggerSleepMs = 0;
+
     /**
      * Sets and initialize the basic pieces.
      * Initializes the class loader since it doesn't rely on anything
@@ -509,6 +511,9 @@ public abstract class QtLoader {
         String mainLibPath = getLibrariesFullPaths(oneEntryArray).get(0);
         final boolean[] success = {true};
         QtNative.getQtThread().run(() -> {
+            if (m_debuggerSleepMs > 0)
+                QtNative.getQtThread().sleep(m_debuggerSleepMs);
+
             m_mainLibPath = loadLibraryHelper(mainLibPath);
             if (m_mainLibPath == null)
                 success[0] = false;
