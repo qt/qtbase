@@ -700,7 +700,7 @@ struct HeaderName
 
     explicit HeaderName(QAnyStringView name)
     {
-        const auto nname = normalizedName(name);
+        auto nname = normalizedName(name);
         if (auto h = HeaderName::toWellKnownHeader(nname))
             data = *h;
         else
