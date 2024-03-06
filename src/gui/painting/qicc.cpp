@@ -672,6 +672,10 @@ static bool parseLutData(const QByteArray &data, const TagEntry &tagEntry, QColo
         qCWarning(lcIcc) << "Undersized lut8/lut16 tag";
         return false;
     }
+    if (qsizetype(tagEntry.size) > data.size()) {
+        qCWarning(lcIcc) << "Truncated lut8/lut16 tag";
+        return false;
+    }
     using S = std::conditional_t<std::is_same_v<T, Lut8TagData>, uint8_t, uint16_t>;
     const T lut = qFromUnaligned<T>(data.constData() + tagEntry.offset);
     int inputTableEntries, outputTableEntries, precision;
