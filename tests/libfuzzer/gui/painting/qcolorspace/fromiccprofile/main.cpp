@@ -25,11 +25,15 @@ extern "C" int LLVMFuzzerTestOneInput(const char *data, size_t size) {
         QColorSpace cs2 = cs;
         cs2.setDescription("Hello");
         bool b = (cs == cs2);
+        Q_UNUSED(b);
         QRgb color = 0xfaf8fa00;
         color = trans1.map(color);
-        QColorTransform trans2 = QColorSpace(QColorSpace::SRgb).transformationToColorSpace(cs);
-        bool a = (trans1 == trans2);
-        color = trans2.map(color);
+        if (cs.isValidTarget()) {
+            QColorTransform trans2 = QColorSpace(QColorSpace::SRgb).transformationToColorSpace(cs);
+            bool a = (trans1 == trans2);
+            Q_UNUSED(a);
+            color = trans2.map(color);
+        }
     }
     return 0;
 }

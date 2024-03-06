@@ -108,6 +108,7 @@ public:
     TransformModel transformModel() const noexcept;
     void detach();
     bool isValid() const noexcept;
+    bool isValidTarget() const noexcept;
 
     friend inline bool operator==(const QColorSpace &colorSpace1, const QColorSpace &colorSpace2)
     { return colorSpace1.equals(colorSpace2); }

@@ -544,12 +544,14 @@ void QColorSpacePrivate::clearElementListProcessingForEdit()
 
     Defines the processing model used for color space transforms.
 
-    \value ThreeComponentMatrix The transform consist of a matrix calculated from primaries and set of transfer functions for each color channel.
-    This is very fast and used by all predefined color spaces.
-    \value ElementListProcessing The transforms are two lists of processing elements that can do many things,
+    \value ThreeComponentMatrix The transform consist of a matrix calculated from primaries and set of transfer functions
+    for each color channel. This is very fast and used by all predefined color spaces. Any color space on this form is
+    reversible and always both valid sources and targets.
+    \value ElementListProcessing The transforms are one or two lists of processing elements that can do many things,
     each list only process either to the connection color space or from it. This is very flexible, but rather
-    slow, and can only be set by reading ICC profiles (See  \l fromIccProfile()). When changing either primaries
-     or transfer function on a color space on this type it will reset to a ThreeComponentMatrix form.
+    slow, and can only be set by reading ICC profiles (See  \l fromIccProfile()). Since the two lists are
+    separate a color space on this form can be a valid source, but not necessarily also a valid target. When changing
+    either primaries or transfer function on a color space on this type it will reset to an empty ThreeComponentMatrix form.
 */
 
 /*!
@@ -968,12 +970,31 @@ QColorSpace QColorSpace::fromIccProfile(const QByteArray &iccProfile)
 }
 
 /*!
-    Returns \c true if the color space is valid.
+    Returns \c true if the color space is valid. For a color space with \c TransformModel::ThreeComponentMatrix
+    that means both primaries and transfer functions set, and implies isValidTarget().
+    For a color space with \c TransformModel::ElementListProcessing it means it has a valid source transform, to
+    check if it also a valid target color space use isValidTarget().
+
+    \sa isValidTarget()
 */
 bool QColorSpace::isValid() const noexcept
 {
     if (!d_ptr)
         return false;
+    return d_ptr->isValid();
+}
+
+/*!
+    \since 6.8
+
+    Returns \c true if the color space is a valid target color space.
+*/
+bool QColorSpace::isValidTarget() const noexcept
+{
+    if (!d_ptr)
+        return false;
+    if (!d_ptr->isThreeComponentMatrix())
+        return !d_ptr->mBA.isEmpty();
     return d_ptr->isValid();
 }
 
@@ -1148,13 +1169,13 @@ bool QColorSpacePrivate::equals(const QColorSpacePrivate *other) const
 */
 QColorTransform QColorSpace::transformationToColorSpace(const QColorSpace &colorspace) const
 {
-    if (!isValid() || !colorspace.isValid())
+    if (!isValid())
         return QColorTransform();
 
     if (*this == colorspace)
         return QColorTransform();
-    if (colorspace.transformModel() == TransformModel::ElementListProcessing && colorspace.d_ptr->mBA.isEmpty()) {
-        qWarning() << "Attempted transform to from-only colorspace";
+    if (!colorspace.isValidTarget()) {
+        qWarning() << "QColorSpace::transformationToColorSpace: colorspace not a valid target";
         return QColorTransform();
     }
 

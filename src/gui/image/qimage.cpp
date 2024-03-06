@@ -5018,7 +5018,7 @@ void QImage::convertToColorSpace(const QColorSpace &colorSpace)
         return;
     if (!d->colorSpace.isValid())
         return;
-    if (!colorSpace.isValid()) {
+    if (!colorSpace.isValidTarget()) {
         qWarning() << "QImage::convertToColorSpace: Output colorspace is not valid";
         return;
     }
@@ -5039,8 +5039,14 @@ void QImage::convertToColorSpace(const QColorSpace &colorSpace)
 */
 QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace) const
 {
-    if (!d || !d->colorSpace.isValid() || !colorSpace.isValid())
+    if (!d)
         return QImage();
+    if (!d->colorSpace.isValid())
+        return QImage();
+    if (!colorSpace.isValidTarget()) {
+        qWarning() << "QImage::convertedToColorSpace: Output colorspace is not valid";
+        return QImage();
+    }
     if (d->colorSpace == colorSpace)
         return *this;
     QImage image = copy();

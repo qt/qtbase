@@ -558,7 +558,7 @@ void tst_QColorSpace::imageConversionOverNonThreeComponentMatrix()
     QFETCH(QColorSpace, fromColorSpace);
     QFETCH(QColorSpace, toColorSpace);
     QVERIFY(fromColorSpace.isValid());
-    QVERIFY(toColorSpace.isValid());
+    QVERIFY(toColorSpace.isValidTarget());
 
     QVERIFY(!fromColorSpace.transformationToColorSpace(toColorSpace).isIdentity());
 
