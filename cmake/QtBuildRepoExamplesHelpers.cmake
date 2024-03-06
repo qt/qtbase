@@ -312,6 +312,22 @@ function(qt_internal_add_example_external_project subdir)
     list(TRANSFORM module_paths APPEND "/${INSTALL_LIBDIR}/cmake/${QT_CMAKE_EXPORT_NAMESPACE}")
     list(APPEND CMAKE_MODULE_PATH ${module_paths})
 
+    # Pass additional paths where qml plugin config files should be included by Qt6QmlPlugins.cmake.
+    # This is needed in prefix builds, where the cmake files are not installed yet.
+    set(glob_prefixes "${qt_prefixes}")
+    list(TRANSFORM glob_prefixes APPEND "/${INSTALL_LIBDIR}/cmake/${QT_CMAKE_EXPORT_NAMESPACE}Qml")
+
+    set(qml_plugin_cmake_config_file_glob_prefixes "")
+    foreach(glob_prefix IN LISTS glob_prefix)
+        if(EXISTS "${glob_prefix}")
+            list(APPEND qml_plugin_cmake_config_file_glob_prefixes "${glob_prefix}")
+        endif()
+    endforeach()
+
+    if(qml_plugin_cmake_config_file_glob_prefixes)
+        set(QT_ADDITIONAL_QML_PLUGIN_GLOB_PREFIXES ${qml_plugin_cmake_config_file_glob_prefixes})
+    endif()
+
     # In multi-config mode by default we exclude building tools for configs other than the main one.
     # Trying to build an example in a non-default config using the non-installed
     # QtFooConfig.cmake files would error out saying moc is not found.
@@ -378,6 +394,7 @@ function(qt_internal_add_example_external_project subdir)
         CMAKE_PREFIX_PATH:STRING
         QT_BUILD_CMAKE_PREFIX_PATH:STRING
         QT_ADDITIONAL_PACKAGES_PREFIX_PATH:STRING
+        QT_ADDITIONAL_QML_PLUGIN_GLOB_PREFIXES:STRING
         CMAKE_FIND_ROOT_PATH:STRING
         CMAKE_MODULE_PATH:STRING
         BUILD_SHARED_LIBS:BOOL
