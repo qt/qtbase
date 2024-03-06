@@ -3230,7 +3230,7 @@
 */
 
 /*!
-    \enum class Qt::TimerId
+    \enum Qt::TimerId
     \since 6.8
     \relates QObject
     \relates QTimer
