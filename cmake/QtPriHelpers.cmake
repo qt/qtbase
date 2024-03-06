@@ -781,8 +781,23 @@ QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
 
     if(APPLE)
         list(APPEND extra_statements "QT_MAC_SDK_VERSION = ${QT_MAC_SDK_VERSION}")
-        list(APPEND extra_statements
-             "QMAKE_MACOSX_DEPLOYMENT_TARGET = ${CMAKE_OSX_DEPLOYMENT_TARGET}")
+        if(NOT CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+            # macOS
+            list(APPEND extra_statements
+                "QMAKE_MACOSX_DEPLOYMENT_TARGET = ${CMAKE_OSX_DEPLOYMENT_TARGET}")
+            list(APPEND extra_statements
+                 "QT_MAC_SDK_VERSION_MIN = ${QT_SUPPORTED_MIN_MACOS_SDK_VERSION}")
+            list(APPEND extra_statements
+                 "QT_MAC_SDK_VERSION_MAX = ${QT_SUPPORTED_MAX_MACOS_SDK_VERSION}")
+        elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
+            list(APPEND extra_statements
+                "QMAKE_IOS_DEPLOYMENT_TARGET = ${CMAKE_OSX_DEPLOYMENT_TARGET}")
+            list(APPEND extra_statements
+                 "QT_MAC_SDK_VERSION_MIN = ${QT_SUPPORTED_MIN_IOS_SDK_VERSION}")
+            list(APPEND extra_statements
+                 "QT_MAC_SDK_VERSION_MAX = ${QT_SUPPORTED_MAX_IOS_SDK_VERSION}")
+        endif()
+
         if (CMAKE_OSX_ARCHITECTURES)
             list(APPEND architectures "${CMAKE_OSX_ARCHITECTURES}")
             string (REPLACE ";" " " architectures "${architectures}")
