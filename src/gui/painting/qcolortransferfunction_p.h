@@ -16,37 +16,39 @@
 //
 
 #include <QtGui/private/qtguiglobal_p.h>
+#include <QtCore/QFlags>
 
 #include <cmath>
 
 QT_BEGIN_NAMESPACE
 
 // Defines a ICC parametric curve type 4
-class Q_GUI_EXPORT QColorTransferFunction
+class QColorTransferFunction
 {
 public:
     QColorTransferFunction() noexcept
-            : m_a(1.0f), m_b(0.0f), m_c(1.0f), m_d(0.0f), m_e(0.0f), m_f(0.0f), m_g(1.0f)
-            , m_flags(quint32(Hints::Calculated) | quint32(Hints::IsGamma) | quint32(Hints::IsIdentity))
+        : m_a(1.0f), m_b(0.0f), m_c(1.0f), m_d(0.0f), m_e(0.0f), m_f(0.0f), m_g(1.0f)
+        , m_flags(Hints(Hint::Calculated) | Hint::IsGamma | Hint::IsIdentity)
     { }
+
     QColorTransferFunction(float a, float b, float c, float d, float e, float f, float g) noexcept
-            : m_a(a), m_b(b), m_c(c), m_d(d), m_e(e), m_f(f), m_g(g), m_flags(0)
+        : m_a(a), m_b(b), m_c(c), m_d(d), m_e(e), m_f(f), m_g(g), m_flags()
     { }
 
     bool isGamma() const
     {
         updateHints();
-        return m_flags & quint32(Hints::IsGamma);
+        return m_flags & Hint::IsGamma;
     }
     bool isIdentity() const
     {
         updateHints();
-        return m_flags & quint32(Hints::IsIdentity);
+        return m_flags & Hint::IsIdentity;
     }
     bool isSRgb() const
     {
         updateHints();
-        return m_flags & quint32(Hints::IsSRgb);
+        return m_flags & Hint::IsSRgb;
     }
 
     float apply(float x) const
@@ -99,18 +101,18 @@ public:
     static QColorTransferFunction fromGamma(float gamma)
     {
         return QColorTransferFunction(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, gamma,
-                                      quint32(Hints::Calculated) | quint32(Hints::IsGamma) |
-                                      (paramCompare(gamma, 1.0f) ? quint32(Hints::IsIdentity) : 0));
+                                      Hints(Hint::Calculated) | Hint::IsGamma |
+                                      (paramCompare(gamma, 1.0f) ? Hint::IsIdentity : Hint::NoHint));
     }
     static QColorTransferFunction fromSRgb()
     {
         return QColorTransferFunction(1.0f / 1.055f, 0.055f / 1.055f, 1.0f / 12.92f, 0.04045f, 0.0f, 0.0f, 2.4f,
-                                      quint32(Hints::Calculated) | quint32(Hints::IsSRgb));
+                                      Hints(Hint::Calculated) | Hint::IsSRgb);
     }
     static QColorTransferFunction fromProPhotoRgb()
     {
         return QColorTransferFunction(1.0f, 0.0f, 1.0f / 16.0f, 16.0f / 512.0f, 0.0f, 0.0f, 1.8f,
-                                      quint32(Hints::Calculated));
+                                      Hints(Hint::Calculated));
     }
     bool matches(const QColorTransferFunction &o) const
     {
@@ -130,8 +132,18 @@ public:
     float m_f;
     float m_g;
 
+    enum class Hint : quint32 {
+        NoHint = 0,
+        Calculated = 1,
+        IsGamma = 2,
+        IsIdentity = 4,
+        IsSRgb = 8
+    };
+
+    Q_DECLARE_FLAGS(Hints, Hint);
+
 private:
-    QColorTransferFunction(float a, float b, float c, float d, float e, float f, float g, quint32 flags) noexcept
+    QColorTransferFunction(float a, float b, float c, float d, float e, float f, float g, Hints flags) noexcept
         : m_a(a), m_b(b), m_c(c), m_d(d), m_e(e), m_f(f), m_g(g), m_flags(flags)
     { }
     static inline bool paramCompare(float p1, float p2)
@@ -144,7 +156,7 @@ private:
 
     void updateHints() const
     {
-        if (m_flags & quint32(Hints::Calculated))
+        if (m_flags & Hint::Calculated)
             return;
         // We do not consider the case with m_d = 1.0f linear or simple,
         // since it wouldn't be linear for applyExtended().
@@ -152,23 +164,20 @@ private:
                                               && paramCompare(m_d, 0.0f)
                                               && paramCompare(m_e, 0.0f);
         if (simple) {
-            m_flags |= quint32(Hints::IsGamma);
+            m_flags |= Hint::IsGamma;
             if (qFuzzyCompare(m_g, 1.0f))
-                m_flags |= quint32(Hints::IsIdentity);
+                m_flags |= Hint::IsIdentity;
         } else {
             if (*this == fromSRgb())
-                m_flags |= quint32(Hints::IsSRgb);
+                m_flags |= Hint::IsSRgb;
         }
-        m_flags |= quint32(Hints::Calculated);
+        m_flags |= Hint::Calculated;
     }
-    enum class Hints : quint32 {
-        Calculated = 1,
-        IsGamma = 2,
-        IsIdentity = 4,
-        IsSRgb = 8
-    };
-    mutable quint32 m_flags;
+
+    mutable Hints m_flags;
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QColorTransferFunction::Hints);
 
 inline bool operator==(const QColorTransferFunction &f1, const QColorTransferFunction &f2)
 {
