@@ -1224,22 +1224,23 @@ public:
 
     std::pair<iterator, iterator> equal_range(const Key &key)
     {
-        auto first = find(key);
-        auto second = first;
-        if (second != iterator())
-            ++second;
-        return {first, second};
+        return equal_range_impl(*this, key);
     }
-
     std::pair<const_iterator, const_iterator> equal_range(const Key &key) const noexcept
     {
-        auto first = find(key);
+        return equal_range_impl(*this, key);
+    }
+private:
+    template <typename Hash, typename K> static auto equal_range_impl(Hash &self, const K &key)
+    {
+        auto first = self.find(key);
         auto second = first;
-        if (second != iterator())
+        if (second != decltype(first){})
             ++second;
-        return {first, second};
+        return std::make_pair(first, second);
     }
 
+public:
     typedef iterator Iterator;
     typedef const_iterator ConstIterator;
     inline qsizetype count() const noexcept { return d ? qsizetype(d->size) : 0; }
