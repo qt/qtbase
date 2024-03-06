@@ -1,0 +1,5 @@
+#!/bin/sh
+script_dir_path=`dirname $0`
+script_dir_path=`(cd "$script_dir_path"; /bin/pwd)`
+
+"$script_dir_path/@relative_path_from_libexec_dir_to_bin_dir@/qt-cmake" @script_passed_args@ "$@"

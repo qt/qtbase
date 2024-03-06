@@ -98,7 +98,7 @@ macro(qt_enable_cmake_languages)
 
     # The qtbase call is handled in qtbase/CMakeLists.txt.
     # This call is used for projects other than qtbase, including for other project's standalone
-    # tests.
+    # tests/examples.
     # Because the function uses QT_FEATURE_foo values, it's important that find_package(Qt6Core) is
     # called before this function. but that's usually the case for Qt repos.
     if(NOT PROJECT_NAME STREQUAL "QtBase")
@@ -158,7 +158,22 @@ macro(qt_internal_prepare_single_repo_target_set_build)
     endif()
 endmacro()
 
+# There are three necessary copies of this macro in
+#  qtbase/cmake/QtBaseHelpers.cmake
+#  qtbase/cmake/QtBaseTopLevelHelpers.cmake
+#  qtbase/cmake/QtBuildRepoHelpers.cmake
+macro(qt_internal_setup_standalone_parts)
+    # A generic marker for any kind of standalone builds, either tests or examples.
+    if(NOT DEFINED QT_INTERNAL_BUILD_STANDALONE_PARTS
+            AND (QT_BUILD_STANDALONE_TESTS OR QT_BUILD_STANDALONE_EXAMPLES))
+        set(QT_INTERNAL_BUILD_STANDALONE_PARTS TRUE CACHE INTERNAL
+            "Whether standalone tests or examples are being built")
+    endif()
+endmacro()
+
 macro(qt_build_repo_begin)
+    qt_internal_setup_standalone_parts()
+
     set(QT_INTERNAL_REPO_POST_PROCESS_CALLED FALSE)
     list(APPEND CMAKE_MESSAGE_CONTEXT "${PROJECT_NAME}")
 
@@ -300,14 +315,14 @@ endmacro()
 macro(qt_build_repo_post_process)
     if(NOT QT_INTERNAL_REPO_POST_PROCESS_CALLED)
         set(QT_INTERNAL_REPO_POST_PROCESS_CALLED TRUE)
-        if(NOT QT_BUILD_STANDALONE_TESTS)
+        if(NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
             include(QtPostProcess)
         endif()
     endif()
 endmacro()
 
 macro(qt_build_repo_end)
-    if(NOT QT_BUILD_STANDALONE_TESTS)
+    if(NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
         qt_build_repo_post_process()
 
         # Install the repo-specific cmake find modules.
@@ -391,7 +406,7 @@ macro(qt_build_repo_impl_find_package_tests)
     # If testing is enabled, try to find the qtbase Test package.
     # Do this before adding src, because there might be test related conditions
     # in source.
-    if (QT_BUILD_TESTS AND NOT QT_BUILD_STANDALONE_TESTS)
+    if(QT_BUILD_TESTS AND NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
         # When looking for the Test package, do it using the Qt6 package version, in case if
         # PROJECT_VERSION is following a different versioning scheme.
         if(Qt6_VERSION)
@@ -408,7 +423,7 @@ macro(qt_build_repo_impl_find_package_tests)
 endmacro()
 
 macro(qt_build_repo_impl_src)
-    if(NOT QT_BUILD_STANDALONE_TESTS)
+    if(NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
         if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/CMakeLists.txt")
             add_subdirectory(src)
         endif()
@@ -420,7 +435,7 @@ macro(qt_build_repo_impl_src)
 endmacro()
 
 macro(qt_build_repo_impl_tools)
-    if(NOT QT_BUILD_STANDALONE_TESTS)
+    if(NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
         if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tools/CMakeLists.txt")
             add_subdirectory(tools)
         endif()
@@ -428,7 +443,12 @@ macro(qt_build_repo_impl_tools)
 endmacro()
 
 macro(qt_build_repo_impl_tests)
-    if (QT_BUILD_TESTS AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
+    if((QT_BUILD_TESTS OR QT_BUILD_STANDALONE_TESTS)
+            AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
+        if(QT_BUILD_STANDALONE_EXAMPLES)
+            message(FATAL_ERROR
+                "Can't build both standalone tests and standalone examples at once.")
+        endif()
         option(QT_BUILD_TESTS_PROJECT_${PROJECT_NAME} "Configure tests for project ${PROJECT_NAME}" TRUE)
 
         if (QT_BUILD_TESTS_PROJECT_${PROJECT_NAME})
@@ -441,9 +461,13 @@ macro(qt_build_repo_impl_tests)
 endmacro()
 
 macro(qt_build_repo_impl_examples)
-    if(QT_BUILD_EXAMPLES
-            AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt"
-            AND NOT QT_BUILD_STANDALONE_TESTS)
+    if((QT_BUILD_EXAMPLES OR QT_BUILD_STANDALONE_EXAMPLES)
+            AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt")
+        if(QT_BUILD_STANDALONE_TESTS)
+            message(FATAL_ERROR
+                "Can't build both standalone tests and standalone examples at once.")
+        endif()
+
         message(STATUS "Configuring examples.")
 
         option(QT_BUILD_EXAMPLES_PROJECT_${PROJECT_NAME} "Configure examples for project ${PROJECT_NAME}" TRUE)
@@ -466,22 +490,19 @@ macro(qt_set_up_standalone_tests_build)
     # Standalone tests are not handled via the main repo project and qt_build_tests.
 endmacro()
 
-function(qt_get_standalone_tests_config_files_path out_var)
-    set(path "${QT_CONFIG_INSTALL_DIR}/${INSTALL_CMAKE_NAMESPACE}BuildInternals/StandaloneTests")
+function(qt_get_standalone_parts_config_files_path out_var)
+    # TODO: Rename this to StandaloneParts in some future Qt version, if it confuses people too
+    # much. Currently not renamed, not to break distro installation scripts that might exclude
+    # the files.
+    set(dir_name "StandaloneTests")
 
-    # QT_CONFIG_INSTALL_DIR is relative in prefix builds.
-    if(QT_WILL_INSTALL)
-        if(DEFINED CMAKE_STAGING_PREFIX)
-            qt_path_join(path "${CMAKE_STAGING_PREFIX}" "${path}")
-        else()
-            qt_path_join(path "${CMAKE_INSTALL_PREFIX}" "${path}")
-        endif()
-    endif()
+    set(path_suffix "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}BuildInternals/${dir_name}")
+    set(path "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${path_suffix}")
 
     set("${out_var}" "${path}" PARENT_SCOPE)
 endfunction()
 
-function(qt_internal_get_standalone_tests_config_file_name out_var)
+function(qt_internal_get_standalone_parts_config_file_name out_var)
     # When doing a "single repo target set" build (like in qtscxqml) ensure we use a unique tests
     # config file for each repo target set. Using the PROJECT_NAME only is not enough because
     # the same file will be overridden with different content on each repo set install.
@@ -490,46 +511,17 @@ function(qt_internal_get_standalone_tests_config_file_name out_var)
     if(QT_BUILD_SINGLE_REPO_TARGET_SET)
         string(APPEND tests_config_file_name "RepoSet${QT_BUILD_SINGLE_REPO_TARGET_SET}")
     endif()
+
+    # TODO: Rename this to StandalonePartsConfig.cmake in some future Qt version, if it confuses
+    # people too much. Currently not renamed, not to break distro installation scripts that might
+    # exclude # the files.
     string(APPEND tests_config_file_name "TestsConfig.cmake")
 
     set(${out_var} "${tests_config_file_name}" PARENT_SCOPE)
 endfunction()
 
-macro(qt_build_tests)
-    set(CMAKE_UNITY_BUILD OFF)
-
-    # Prepending to QT_BUILD_CMAKE_PREFIX_PATH helps find components of Qt6, because those
-    # find_package calls use NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH is ignored.
-    list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_BUILD_DIR}")
-    list(PREPEND QT_BUILD_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
-
-    if(QT_BUILD_STANDALONE_TESTS)
-        # Find location of TestsConfig.cmake. These contain the modules that need to be
-        # find_package'd when testing.
-        qt_get_standalone_tests_config_files_path(_qt_build_tests_install_prefix)
-
-        qt_internal_get_standalone_tests_config_file_name(_qt_tests_config_file_name)
-        set(_qt_standalone_tests_config_file_path
-            "${_qt_build_tests_install_prefix}/${_qt_tests_config_file_name}")
-        include("${_qt_standalone_tests_config_file_path}"
-            OPTIONAL
-            RESULT_VARIABLE _qt_standalone_tests_included)
-        if(NOT _qt_standalone_tests_included)
-            message(DEBUG
-                "Standalone tests config file not included because it does not exist: "
-                "${_qt_standalone_tests_config_file_path}"
-            )
-        else()
-            message(DEBUG
-                "Standalone tests config file included successfully: "
-                "${_qt_standalone_tests_config_file_path}"
-            )
-        endif()
-
-        unset(_qt_standalone_tests_config_file_path)
-        unset(_qt_standalone_tests_included)
-        unset(_qt_tests_config_file_name)
-
+macro(qt_internal_find_standalone_test_config_file)
+    if(QT_INTERNAL_BUILD_STANDALONE_PARTS)
         # Of course we always need the test module as well.
         # When looking for the Test package, do it using the Qt6 package version, in case if
         # PROJECT_VERSION is following a different versioning scheme.
@@ -540,17 +532,62 @@ macro(qt_build_tests)
         endif()
         find_package(Qt6 "${_qt_build_tests_package_version}" CONFIG REQUIRED COMPONENTS Test)
         unset(_qt_build_tests_package_version)
+    endif()
+endmacro()
 
+# Used by standalone tests and standalone non-ExternalProject examples to find all installed qt
+# packages.
+macro(qt_internal_find_standalone_parts_config_files)
+    if(QT_INTERNAL_BUILD_STANDALONE_PARTS)
+        # Find location of TestsConfig.cmake. These contain the modules that need to be
+        # find_package'd when building tests or examples.
+        qt_get_standalone_parts_config_files_path(_qt_build_parts_install_prefix)
+
+        qt_internal_get_standalone_parts_config_file_name(_qt_parts_config_file_name)
+        set(_qt_standalone_parts_config_file_path
+            "${_qt_build_parts_install_prefix}/${_qt_parts_config_file_name}")
+        include("${_qt_standalone_parts_config_file_path}"
+            OPTIONAL
+            RESULT_VARIABLE _qt_standalone_parts_included)
+        if(NOT _qt_standalone_parts_included)
+            message(DEBUG
+                "Standalone parts config file not included because it does not exist: "
+                "${_qt_standalone_parts_config_file_path}"
+            )
+        else()
+            message(DEBUG
+                "Standalone parts config file included successfully: "
+                "${_qt_standalone_parts_config_file_path}"
+            )
+        endif()
+
+        unset(_qt_standalone_parts_config_file_path)
+        unset(_qt_standalone_parts_included)
+        unset(_qt_parts_config_file_name)
+    endif()
+endmacro()
+
+macro(qt_build_tests)
+    # Tests are not unity-ready.
+    set(CMAKE_UNITY_BUILD OFF)
+
+    # Prepending to QT_BUILD_CMAKE_PREFIX_PATH helps find components of Qt6, because those
+    # find_package calls use NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH is ignored.
+    list(PREPEND CMAKE_FIND_ROOT_PATH "${QT_BUILD_DIR}")
+    list(PREPEND QT_BUILD_CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
+
+    qt_internal_find_standalone_parts_config_files()
+    qt_internal_find_standalone_test_config_file()
+
+    if(QT_BUILD_STANDALONE_TESTS)
         # Set language standards after finding Core, because that's when the relevant
         # feature variables are available, and the call in QtSetup is too early when building
         # standalone tests, because Core was not find_package()'d yet.
         qt_set_language_standards()
 
-        if(NOT QT_SUPERBUILD)
-            # Set up fake standalone tests install prefix, so we don't pollute the Qt install
-            # prefix. For super builds it needs to be done in qt5/CMakeLists.txt.
-            qt_set_up_fake_standalone_tests_install_prefix()
-        endif()
+        # Set up fake standalone parts install prefix, so we don't pollute the Qt install
+        # prefix with tests.
+        qt_internal_set_up_fake_standalone_parts_install_prefix()
     else()
         if(ANDROID)
             # When building in-tree tests we need to specify the QT_ANDROID_ABIS list. Since we
@@ -628,17 +665,22 @@ function(qt_get_relocatable_install_prefix out_var)
     set(${out_var} "${CMAKE_INSTALL_PREFIX}" PARENT_SCOPE)
 endfunction()
 
-function(qt_set_up_fake_standalone_tests_install_prefix)
+function(qt_internal_get_fake_standalone_install_prefix out_var)
+    set(new_install_prefix "${CMAKE_BINARY_DIR}/fake_prefix")
+    set(${out_var} "${new_install_prefix}" PARENT_SCOPE)
+endfunction()
+
+function(qt_internal_set_up_fake_standalone_parts_install_prefix)
     # Set a fake local (non-cache) CMAKE_INSTALL_PREFIX.
     # Needed for standalone tests, we don't want to accidentally install a test into the Qt prefix.
     # Allow opt-out, if a user knows what they're doing.
     if(QT_NO_FAKE_STANDALONE_TESTS_INSTALL_PREFIX)
         return()
     endif()
-    set(new_install_prefix "${CMAKE_BINARY_DIR}/fake_prefix")
+    qt_internal_get_fake_standalone_install_prefix(new_install_prefix)
 
     # It's IMPORTANT that this is not a cache variable. Otherwise
-    # qt_get_standalone_tests_confg_files_path() will not work on re-configuration.
+    # qt_get_standalone_parts_config_files_path() will not work on re-configuration.
     message(STATUS
             "Setting local standalone test install prefix (non-cached) to '${new_install_prefix}'.")
     set(CMAKE_INSTALL_PREFIX "${new_install_prefix}" PARENT_SCOPE)
@@ -656,12 +698,16 @@ function(qt_set_up_fake_standalone_tests_install_prefix)
     endif()
 endfunction()
 
-# Mean to be called when configuring examples as part of the main build tree, as well as for CMake
-# tests (tests that call CMake to try and build CMake applications).
+# Meant to be called when configuring examples as part of the main build tree (unless standalone
+# examples are being built), as well as for CMake tests (tests that call CMake to try and build
+# CMake applications).
 macro(qt_internal_set_up_build_dir_package_paths)
     list(PREPEND CMAKE_PREFIX_PATH "${QT_BUILD_DIR}/${INSTALL_LIBDIR}/cmake")
-    # Make sure the CMake config files do not recreate the already-existing targets
-    set(QT_NO_CREATE_TARGETS TRUE)
+
+    # Make sure the CMake config files do not recreate the already-existing targets.
+    if(NOT QT_BUILD_STANDALONE_EXAMPLES)
+        set(QT_NO_CREATE_TARGETS TRUE)
+    endif()
 endmacro()
 
 function(qt_internal_static_link_order_test)

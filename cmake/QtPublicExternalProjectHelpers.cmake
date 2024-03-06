@@ -24,8 +24,22 @@ function(_qt_internal_get_build_vars_for_external_projects)
         "${no_value_options}" "${single_value_options}" "${multi_value_options}"
     )
 
+    # Standalone tests and examples have QT_BUILD_DIR pointing to the fake standalone prefix.
+    # Use instead the relocatable prefix, because qt must have been built / installed by this point.
+    if(QT_INTERNAL_BUILD_STANDALONE_PARTS)
+        qt_path_join(qt_cmake_dir
+            "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}"
+            "${INSTALL_LIBDIR}/cmake/${QT_CMAKE_EXPORT_NAMESPACE}"
+        )
+
+        set(qt_prefixes "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
+        set(qt_additional_packages_prefixes "${qt_prefixes}")
+
+        if(QT_WILL_INSTALL)
+            list(APPEND qt_prefixes "${QT6_INSTALL_PREFIX}")
+        endif()
     # TODO: Fix example/test builds when using Conan / install prefixes are different for each repo.
-    if(QT_SUPERBUILD OR QtBase_BINARY_DIR)
+    elseif(QT_SUPERBUILD OR QtBase_BINARY_DIR)
         # When doing a top-level build or when building qtbase,
         # always use the Config file from the current build directory, even for prefix builds.
         # We strive to allow building examples without installing Qt first, which means we can't

@@ -52,17 +52,33 @@ function(qt_internal_check_if_path_has_symlinks path)
     endif()
 endfunction()
 
+# There are three necessary copies of this macro in
+#  qtbase/cmake/QtBaseHelpers.cmake
+#  qtbase/cmake/QtBaseTopLevelHelpers.cmake
+#  qtbase/cmake/QtBuildRepoHelpers.cmake
+macro(qt_internal_qtbase_setup_standalone_parts)
+    # A generic marker for any kind of standalone builds, either tests or examples.
+    if(NOT DEFINED QT_INTERNAL_BUILD_STANDALONE_PARTS
+            AND (QT_BUILD_STANDALONE_TESTS OR QT_BUILD_STANDALONE_EXAMPLES))
+        set(QT_INTERNAL_BUILD_STANDALONE_PARTS TRUE CACHE INTERNAL
+            "Whether standalone tests or examples are being built")
+    endif()
+endmacro()
+
 macro(qt_internal_qtbase_run_autodetect)
-    # Run auto detection routines, but not when doing standalone tests. In that case, the detection
+    qt_internal_qtbase_setup_standalone_parts()
+
+    # Run auto detection routines, but not when doing standalone tests or standalone examples.
+    # In that case, the detection
     # results are taken from either QtBuildInternals or the qt.toolchain.cmake file. Also, inhibit
     # auto-detection in a top-level build, because the top-level project file already includes it.
-    if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_SUPERBUILD)
+    if(NOT QT_INTERNAL_BUILD_STANDALONE_PARTS AND NOT QT_SUPERBUILD)
         include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/QtAutoDetect.cmake)
     endif()
 endmacro()
 
 macro(qt_internal_qtbase_pre_project_setup)
-    if(NOT QT_BUILD_STANDALONE_TESTS)
+    if(NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
         # Should this Qt be static or dynamically linked?
         option(BUILD_SHARED_LIBS "Build Qt statically or dynamically" ON)
         set(QT_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
@@ -104,7 +120,7 @@ macro(qt_internal_qtbase_pre_project_setup)
         find_package(QtBuildInternals CMAKE_FIND_ROOT_PATH_BOTH)
         unset(QT_BUILD_INTERNALS_SKIP_CMAKE_MODULE_PATH_ADDITION)
     else()
-        # When building standalone tests, an istalled BuildInternals package already exists.
+        # When building standalone parts, an istalled BuildInternals package already exists.
         find_package(Qt6 REQUIRED COMPONENTS BuildInternals CMAKE_FIND_ROOT_PATH_BOTH)
     endif()
 endmacro()
@@ -137,7 +153,7 @@ macro(qt_internal_qtbase_build_repo)
 
     qt_build_repo_begin()
 
-    if(NOT QT_BUILD_STANDALONE_TESTS)
+    if(NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
         ## Should this Qt be built with Werror?
         option(WARNINGS_ARE_ERRORS "Build Qt with warnings as errors" ${FEATURE_developer_build})
 
@@ -188,7 +204,7 @@ macro(qt_internal_qtbase_build_repo)
         add_subdirectory(src)
     endif()
 
-    if(NOT QT_BUILD_STANDALONE_TESTS)
+    if(NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
         if(QT_WILL_BUILD_TOOLS AND QT_FEATURE_settings)
             add_subdirectory(qmake)
         endif()

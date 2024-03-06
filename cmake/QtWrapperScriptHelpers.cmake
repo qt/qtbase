@@ -224,11 +224,12 @@ function(qt_internal_create_wrapper_scripts)
     qt_install(FILES "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/${__qt_cmake_install_script_name}"
                DESTINATION "${INSTALL_LIBEXECDIR}")
 
-    qt_internal_create_qt_configure_tests_wrapper_script()
+    qt_internal_create_qt_configure_part_wrapper_script("STANDALONE_TESTS")
+    qt_internal_create_qt_configure_part_wrapper_script("STANDALONE_EXAMPLES")
     qt_internal_create_qt_configure_redo_script()
 endfunction()
 
-function(qt_internal_create_qt_configure_tests_wrapper_script)
+function(qt_internal_create_qt_configure_part_wrapper_script component)
     if(QT_GENERATE_WRAPPER_SCRIPTS_FOR_ALL_HOSTS)
         set(generate_unix TRUE)
         set(generate_non_unix TRUE)
@@ -238,17 +239,27 @@ function(qt_internal_create_qt_configure_tests_wrapper_script)
         set(generate_non_unix TRUE)
     endif()
 
-    # Create a private wrapper script to configure and build all standalone tests.
+    # Create a private wrapper script to configure and build all standalone tests / examples.
     #
     # The script uses qt-cmake instead of qt-cmake-private on purpose. That's to ensure we build
     # only one configuration of tests (e.g RelWithDebInfo only) when Qt is configured with more
     # than one configuration (RelWithDebInfo;Debug).
     # Meant to be used by our CI instructions.
     #
-    # The script takes a path to the repo for which the standalone tests will be configured.
-    set(script_name "qt-internal-configure-tests")
+    # The script takes a path to the repo for which the standalone tests / examples will be
+    # configured.
 
-    set(script_passed_args "-DQT_BUILD_STANDALONE_TESTS=ON -DQT_USE_ORIGINAL_COMPILER=ON")
+    if(component STREQUAL "STANDALONE_TESTS")
+        set(script_name "qt-internal-configure-tests")
+        set(script_passed_args "-DQT_BUILD_STANDALONE_TESTS=ON -DQT_BUILD_EXAMPLES=OFF")
+    elseif(component STREQUAL "STANDALONE_EXAMPLES")
+        set(script_name "qt-internal-configure-examples")
+        set(script_passed_args "-DQT_BUILD_STANDALONE_EXAMPLES=ON -DQT_BUILD_TESTS=OFF")
+    else()
+        message(FATAL_ERROR "Invalid component type: ${component}")
+    endif()
+
+    string(APPEND script_passed_args " -DQT_USE_ORIGINAL_COMPILER=ON")
 
     file(RELATIVE_PATH relative_path_from_libexec_dir_to_bin_dir
         ${__qt_libexec_dir_absolute}
