@@ -8,6 +8,7 @@ The following table describes the mapping of configure options to CMake argument
 | -extprefix /opt/qt6                   | -DCMAKE_STAGING_PREFIX=/opt/qt6                   |                                                                 |
 | -bindir <dir>                         | -DINSTALL_BINDIR=<dir>                            | similar for -headerdir -libdir and so on                        |
 | -hostdatadir <dir>                    | -DINSTALL_MKSPECSDIR=<dir>                        |                                                                 |
+| -qt-host-path <dir>                   | -DQT_HOST_PATH=<dir>                              |                                                                 |
 | -help                                 | n/a                                               | Handled by configure[.bat].                                     |
 | -verbose                              | --log-level=STATUS                                | Sets the CMake log level to STATUS. The default one is NOTICE.  |
 | -continue                             |                                                   |                                                                 |
