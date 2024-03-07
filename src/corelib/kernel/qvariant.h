@@ -5,6 +5,7 @@
 #define QVARIANT_H
 
 #include <QtCore/qatomic.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qmetatype.h>
 #ifndef QT_NO_DEBUG_STREAM
@@ -614,10 +615,10 @@ private:
         return std::visit(visitor, std::forward<StdVariant>(v));
     }
 
-    friend inline bool operator==(const QVariant &a, const QVariant &b)
+    friend bool comparesEqual(const QVariant &a, const QVariant &b)
     { return a.equals(b); }
-    friend inline bool operator!=(const QVariant &a, const QVariant &b)
-    { return !a.equals(b); }
+    Q_DECLARE_EQUALITY_COMPARABLE(QVariant)
+
 #ifndef QT_NO_DEBUG_STREAM
     template <typename T>
     friend auto operator<<(const QDebug &debug, const T &variant) -> std::enable_if_t<std::is_same_v<T, QVariant>, QDebug> {

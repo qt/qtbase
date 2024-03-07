@@ -324,6 +324,7 @@ static QVariant::Private clonePrivate(const QVariant::Private &other)
     \ingroup objectmodel
     \ingroup shared
 
+    \compares equality
 
     Because C++ forbids unions from including types that have
     non-default constructors or destructors, most interesting Qt
@@ -2152,9 +2153,9 @@ bool QVariant::view(int type, void *ptr)
 }
 
 /*!
-    \fn bool QVariant::operator==(const QVariant &v1, const QVariant &v2)
+    \fn bool QVariant::operator==(const QVariant &lhs, const QVariant &rhs)
 
-    Returns \c true if \a v1 and \a v2 are equal; otherwise returns \c false.
+    Returns \c true if \a lhs and \a rhs are equal; otherwise returns \c false.
 
     QVariant uses the equality operator of the type() contained to check for
     equality.
@@ -2178,9 +2179,9 @@ bool QVariant::view(int type, void *ptr)
 */
 
 /*!
-    \fn bool QVariant::operator!=(const QVariant &v1, const QVariant &v2)
+    \fn bool QVariant::operator!=(const QVariant &lhs, const QVariant &rhs)
 
-    Returns \c false if \a v1 and \a v2 are equal; otherwise returns \c true.
+    Returns \c false if \a lhs and \a rhs are equal; otherwise returns \c true.
 
     QVariant uses the equality operator of the type() contained to check for
     equality.
