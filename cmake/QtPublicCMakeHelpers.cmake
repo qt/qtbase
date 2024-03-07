@@ -580,3 +580,25 @@ function(_qt_internal_remove_args out_var)
     set(${out_var} "${result}" PARENT_SCOPE)
 endfunction()
 
+# Append ${ARGN} to ${target}'s ${property_name} property, removing duplicates.
+function(_qt_internal_append_to_target_property_without_duplicates target property_name)
+    get_target_property(property "${target}" "${property_name}")
+    if(NOT property)
+        set(property "")
+    endif()
+    list(APPEND property ${ARGN})
+    list(REMOVE_DUPLICATES property)
+    set_property(TARGET "${target}" PROPERTY "${property_name}" "${property}")
+endfunction()
+
+# Append ${ARGN} to global CMake ${property_name} property, removing duplicates.
+function(_qt_internal_append_to_cmake_property_without_duplicates property_name)
+    get_cmake_property(property "${property_name}")
+    if(NOT property)
+        set(property "")
+    endif()
+    list(APPEND property ${ARGN})
+    list(REMOVE_DUPLICATES property)
+    set_property(GLOBAL PROPERTY "${property_name}" "${property}")
+endfunction()
+
