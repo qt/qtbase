@@ -16,7 +16,6 @@
 #include <qpa/qplatformservices.h>
 
 #include <QtGui/private/qguiapplication_p.h>
-#include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <QtGui/qguiapplication.h>
 
@@ -528,6 +527,11 @@ static void populateFromPattern(FcPattern *pattern, QFontDatabasePrivate::Applic
 
 }
 
+static bool isDprScaling()
+{
+    return !qFuzzyCompare(qApp->devicePixelRatio(), 1.0);
+}
+
 QFontconfigDatabase::~QFontconfigDatabase()
 {
     FcConfigDestroy(FcConfigGetCurrent());
@@ -626,7 +630,7 @@ QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintin
         break;
     }
 
-    if (QHighDpiScaling::isActive())
+    if (isDprScaling())
         return QFontEngine::HintNone;
 
     int hint_style = 0;
@@ -925,7 +929,7 @@ QFont QFontconfigDatabase::defaultFont() const
 void QFontconfigDatabase::setupFontEngine(QFontEngineFT *engine, const QFontDef &fontDef) const
 {
     bool antialias = !(fontDef.styleStrategy & QFont::NoAntialias);
-    bool forcedAntialiasSetting = !antialias || QHighDpiScaling::isActive();
+    bool forcedAntialiasSetting = !antialias || isDprScaling();
 
     const QPlatformServices *services = QGuiApplicationPrivate::platformIntegration()->services();
     bool useXftConf = false;
