@@ -212,6 +212,15 @@ macro(qt_find_package)
                                  ${components_as_string})
                 endif()
 
+                # Record the package + component + optional component provided targets.
+                qt_internal_record_package_component_provided_targets(
+                    PACKAGE_NAME "${ARGV0}"
+                    ON_TARGET ${qt_find_package_target_name}
+                    PROVIDED_TARGETS ${arg_PROVIDED_TARGETS}
+                    COMPONENTS ${arg_COMPONENTS}
+                    OPTIONAL_COMPONENTS ${arg_OPTIONAL_COMPONENTS}
+                )
+
                 get_property(is_global TARGET ${qt_find_package_target_name} PROPERTY
                                                                              IMPORTED_GLOBAL)
                 qt_internal_should_not_promote_package_target_to_global(
@@ -236,6 +245,56 @@ macro(qt_find_package)
         endif()
     endif()
 endmacro()
+
+# Records information about a package's provided targets, given a specific list of components.
+#
+# A package might contain multiple components, and create only a subset of targets based on which
+# components are looked for.
+# This function computes a unique key / id using the package name and the components that are
+# passed.
+# Then it saves the id in a property on the ON_TARGET target. The ON_TARGET target is one
+# of the provided targets for that package id. This allows us to create a relationship to find
+# the package id, given a target.
+# The function also appends the list of provided targets for that package id to a global property.
+# This information will later be saved into the module Dependencies.cmake file.
+function(qt_internal_record_package_component_provided_targets)
+    set(opt_args "")
+    set(single_args
+        PACKAGE_NAME
+        ON_TARGET
+    )
+    set(multi_args
+        COMPONENTS
+        OPTIONAL_COMPONENTS
+        PROVIDED_TARGETS
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_PACKAGE_NAME)
+        message(FATAL_ERROR "PACKAGE_NAME is required.")
+    endif()
+
+    if(NOT arg_ON_TARGET)
+        message(FATAL_ERROR "ON_TARGET is required.")
+    endif()
+
+    _qt_internal_get_package_components_id(
+        PACKAGE_NAME "${arg_PACKAGE_NAME}"
+        COMPONENTS ${arg_COMPONENTS}
+        OPTIONAL_COMPONENTS ${arg_OPTIONAL_COMPONENTS}
+        OUT_VAR_KEY package_key
+    )
+
+    set_target_properties(${arg_ON_TARGET} PROPERTIES
+        _qt_package_components_id "${package_key}"
+    )
+
+    _qt_internal_append_to_cmake_property_without_duplicates(
+        _qt_find_package_${package_key}_provided_targets
+        "${arg_PROVIDED_TARGETS}"
+    )
+endfunction()
 
 # Save found packages in the cache. They will be read on next reconfiguration to skip looking
 # for packages that were not previously found.

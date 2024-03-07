@@ -67,12 +67,53 @@ macro(qt_collect_third_party_deps target)
                     set(package_optional_components "")
                 endif()
 
+                get_target_property(package_components_id ${dep} _qt_package_components_id)
+                if(package_components_id)
+                    list(APPEND third_party_deps_package_components_ids ${package_components_id})
+                endif()
+
                 list(APPEND third_party_deps
                     "${package_name}\;${package_is_optional}\;${package_version}\;${package_components}\;${package_optional_components}")
             endif()
         endif()
     endforeach()
 endmacro()
+
+# Collect provided targets for the given list of package component ids.
+#
+# ${target} is merely used as a key infix to avoid name clashes in the Dependencies.cmake files.
+# package_component_ids is a list of '${package_name}-${components}-${optional_components}' keys
+# that are sanitized not to contain spaces or semicolons.
+#
+# The output is a list of variable assignments to add to the dependencies file.
+# Each variable assignment is the list of provided targets for a given package component id.
+#
+# We use these extra assignments instead of adding the info to the existing 'third_party_deps' list
+# to make the information more readable. That list already has 5 items per package, making it
+# quite hard to read.
+function(qt_internal_collect_third_party_dep_packages_info
+        target
+        package_components_ids
+        out_packages_info)
+
+    # There might be multiple calls to find the same package, so remove the duplicates.
+    list(REMOVE_DUPLICATES package_components_ids)
+
+    set(packages_info "")
+
+    foreach(package_key IN LISTS package_components_ids)
+        get_cmake_property(provided_targets _qt_find_package_${package_key}_provided_targets)
+        if(provided_targets)
+            set(key "__qt_${target}_third_party_package_${package_key}_provided_targets")
+
+            # Escape the semicolon, so it is preserved in the list(JOIN) below
+            string(REPLACE ";" "\;" provided_targets "${provided_targets}")
+            string(APPEND packages_info "set(${key} \"${provided_targets}\")\n")
+        endif()
+    endforeach()
+
+    set(${out_packages_info} "${packages_info}" PARENT_SCOPE)
+endfunction()
 
 # Filter the dependency targets to collect unique set of the dependencies.
 # non-Private and Private targets are treated as the single object in this context
@@ -149,6 +190,7 @@ function(qt_internal_create_module_depends_file target)
     # ModuleDependencies.cmake.
     set(third_party_deps "")
     set(third_party_deps_seen "")
+    set(third_party_deps_package_components_ids "")
 
     # Used for collecting Qt tool dependencies that should be find_package()'d in
     # ModuleToolsDependencies.cmake.
@@ -216,6 +258,14 @@ function(qt_internal_create_module_depends_file target)
     endforeach()
 
     qt_collect_third_party_deps(${target})
+    qt_internal_collect_third_party_dep_packages_info(${target}
+        "${third_party_deps_package_components_ids}"
+        packages_info)
+
+    set(third_party_deps_extra_info "")
+    if(packages_info)
+        string(APPEND third_party_deps_extra_info "${packages_info}")
+    endif()
 
     # Add dependency to the main ModuleTool package to ModuleDependencies file.
     if(${target} IN_LIST QT_KNOWN_MODULES_WITH_TOOLS)
