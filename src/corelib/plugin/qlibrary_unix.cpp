@@ -244,7 +244,8 @@ bool QLibraryPrivate::load_sys()
 
     locker.relock();
     if (!hnd) {
-        errorString = QLibrary::tr("Cannot load library %1: %2").arg(fileName, dlerror());
+        errorString = QLibrary::tr("Cannot load library %1: %2").arg(fileName,
+                                                                     QLatin1StringView(dlerror()));
     }
     if (hnd) {
         qualifiedFileName = attempt;
