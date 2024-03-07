@@ -12,7 +12,6 @@
 #include <QtCore/private/qwinregistry_p.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <qpa/qplatformintegration.h>
-#include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/qpainterpath.h>
 
 #if QT_CONFIG(directwrite3)
@@ -166,7 +165,7 @@ static DWRITE_MEASURING_MODE renderModeToMeasureMode(DWRITE_RENDERING_MODE rende
 static DWRITE_RENDERING_MODE hintingPreferenceToRenderingMode(const QFontDef &fontDef)
 {
     QFont::HintingPreference hintingPreference = QFont::HintingPreference(fontDef.hintingPreference);
-    if (QHighDpiScaling::isActive() && hintingPreference == QFont::PreferDefaultHinting) {
+    if (!qFuzzyCompare(qApp->devicePixelRatio(), 1.0) && hintingPreference == QFont::PreferDefaultHinting) {
         // Microsoft documentation recommends using asymmetric rendering for small fonts
         // at pixel size 16 and less, and symmetric for larger fonts.
         hintingPreference = fontDef.pixelSize > 16.0

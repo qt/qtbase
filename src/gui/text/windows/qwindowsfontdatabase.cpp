@@ -10,7 +10,6 @@
 
 #include <QtGui/QFont>
 #include <QtGui/QGuiApplication>
-#include <QtGui/private/qhighdpiscaling_p.h>
 #include <QtGui/private/qtgui-config_p.h>
 
 #include <QtCore/qmath.h>
@@ -57,7 +56,7 @@ static inline bool useDirectWrite(QFont::HintingPreference hintingPreference,
 
     return hintingPreference == QFont::PreferNoHinting
         || hintingPreference == QFont::PreferVerticalHinting
-        || (QHighDpiScaling::isActive() && hintingPreference == QFont::PreferDefaultHinting);
+        || (!qFuzzyCompare(qApp->devicePixelRatio(), 1.0) && hintingPreference == QFont::PreferDefaultHinting);
 }
 #endif // !QT_NO_DIRECTWRITE
 
