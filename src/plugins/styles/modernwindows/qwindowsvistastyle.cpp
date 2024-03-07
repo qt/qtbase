@@ -3106,7 +3106,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                         QColor textShadow = qRgb(GetRValue(textShadowRef), GetGValue(textShadowRef), GetBValue(textShadowRef));
                         painter->setPen(textShadow);
                         drawItemText(painter, titleRect.adjusted(1, 1, 1, 1),
-                                     Qt::AlignLeft | Qt::AlignBottom, dwOpt->palette,
+                                     Qt::AlignLeft | Qt::AlignBottom | Qt::TextHideMnemonic, dwOpt->palette,
                                      dwOpt->state & State_Enabled, titleText);
                     }
 
@@ -3114,7 +3114,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                     QColor textColor = qRgb(GetRValue(captionText), GetGValue(captionText), GetBValue(captionText));
                     painter->setPen(textColor);
                     drawItemText(painter, titleRect,
-                                 Qt::AlignLeft | Qt::AlignBottom, dwOpt->palette,
+                                 Qt::AlignLeft | Qt::AlignBottom | Qt::TextHideMnemonic, dwOpt->palette,
                                  dwOpt->state & State_Enabled, titleText);
                     painter->setFont(oldFont);
                     painter->setPen(oldPen);
@@ -3129,7 +3129,7 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
                                                                           verticalTitleBar ? titleRect.height() : titleRect.width());
                     const int indent = 4;
                     drawItemText(painter, rect.adjusted(indent + 1, 1, -indent - 1, -1),
-                                 Qt::AlignLeft | Qt::AlignVCenter | Qt::TextShowMnemonic,
+                                 Qt::AlignLeft | Qt::AlignVCenter | Qt::TextHideMnemonic,
                                  dwOpt->palette,
                                  dwOpt->state & State_Enabled, titleText,
                                  QPalette::WindowText);
