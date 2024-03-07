@@ -958,6 +958,23 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, const 
 }
 
 /*!
+    \overload
+
+    \since 6.8
+
+    Sends the PUT request specified by \a request without a body and returns
+    a new QNetworkReply object.
+*/
+
+QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, std::nullptr_t nptr)
+{
+    Q_UNUSED(nptr);
+    QIODevice *dev = nullptr;
+
+    return d_func()->postProcess(createRequest(QNetworkAccessManager::PutOperation, request, dev));
+}
+
+/*!
     \since 4.6
 
     Sends a request to delete the resource identified by the URL of \a request.

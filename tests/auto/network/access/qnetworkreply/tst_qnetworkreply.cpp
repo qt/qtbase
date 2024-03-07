@@ -263,6 +263,8 @@ private Q_SLOTS:
     void putToHttpSynchronous();
     void putToHttpMultipart_data();
     void putToHttpMultipart();
+    void putWithoutBody();
+    void putWithoutBody_data();
     void postToHttp_data();
     void postToHttp();
     void postToHttpSynchronous_data();
@@ -2698,6 +2700,48 @@ void tst_QNetworkReply::putToHttpSynchronous()
     QByteArray uploadedData = socket.readAll();
     QCOMPARE(uploadedData, data);
 }
+
+void tst_QNetworkReply::putWithoutBody_data()
+{
+    QTest::addColumn<bool>("client_data");
+
+    QTest::newRow("client_has_data") << true;
+    QTest::newRow("client_does_not_have_data") << false;
+}
+
+void tst_QNetworkReply::putWithoutBody()
+{
+    QFETCH(bool, client_data);
+
+    QBuffer buff;
+
+    if (client_data) {
+        buff.setData("Dummy data from client to server");
+        buff.open(QIODevice::ReadOnly);
+    }
+
+    QByteArray dataFromServerToClient = QByteArray("Some ridiculous dummy data");
+    QByteArray httpResponse = QByteArray("HTTP/1.0 200 OK\r\nContent-Length: ");
+    httpResponse += QByteArray::number(dataFromServerToClient.size());
+    httpResponse += "\r\n\r\n";
+    httpResponse += dataFromServerToClient;
+
+    MiniHttpServer server(httpResponse);
+    server.doClose = true;
+
+    QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
+
+    QNetworkReplyPtr reply;
+    if (client_data)
+        reply.reset(manager.put(request, &buff));
+    else
+        reply.reset(manager.put(request, nullptr));
+
+    QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
+    QCOMPARE(server.foundContentLength, client_data);
+}
+
 
 void tst_QNetworkReply::postToHttp_data()
 {
