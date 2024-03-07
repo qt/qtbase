@@ -68,8 +68,10 @@ bool ClientArea::processPointer(const PointerEvent &event)
     switch (event.type) {
     case EventType::PointerDown:
         m_element.call<void>("setPointerCapture", event.pointerId);
-        if ((m_window->window()->flags() & Qt::WindowDoesNotAcceptFocus) != Qt::WindowDoesNotAcceptFocus)
-            m_window->window()->requestActivate();
+        if ((m_window->window()->flags() & Qt::WindowDoesNotAcceptFocus)
+                    != Qt::WindowDoesNotAcceptFocus
+            && m_window->window()->isTopLevel())
+                m_window->window()->requestActivate();
         break;
     case EventType::PointerUp:
         m_element.call<void>("releasePointerCapture", event.pointerId);
