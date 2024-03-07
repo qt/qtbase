@@ -2,7 +2,17 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 qt_find_package(WrapPCRE2 PROVIDED_TARGETS WrapPCRE2::WrapPCRE2)
+qt_internal_extend_sbom(WrapPCRE2::WrapPCRE2
+    CPE_VENDOR "pcre"
+    CPE_PRODUCT "pcre2"
+    DOWNLOAD_LOCATION "https://github.com/PCRE2Project/pcre2"
+)
 qt_find_package(WrapZLIB PROVIDED_TARGETS WrapZLIB::WrapZLIB)
+qt_internal_extend_sbom(WrapZLIB::WrapZLIB
+    CPE_VENDOR "zlib"
+    CPE_PRODUCT "zlib"
+    DOWNLOAD_LOCATION "https://github.com/madler/zlib"
+)
 
 if(ANDROID)
     set(corelib_extra_cmake_files
@@ -345,6 +355,16 @@ qt_internal_add_module(Core
     POLICIES
         QTP0002
         QTP0003
+    ATTRIBUTION_FILE_DIR_PATHS
+        text
+        tools
+        ../3rdparty/blake2
+        ../3rdparty/md4
+        ../3rdparty/md5
+        ../3rdparty/sha1
+        ../3rdparty/sha3
+        ../3rdparty/rfc6234
+        ../3rdparty/tinycbor
 )
 _qt_internal_setup_deploy_support()
 
@@ -608,6 +628,8 @@ qt_internal_extend_target(Core CONDITION APPLE
         # This makes sure that the tst_qmakelib passes. For some reason,
         # QtCore ends up returning a corrupted error message in
         # write_file(): fail
+    ATTRIBUTION_FILE_DIR_PATHS
+        kernel
 )
 
 qt_internal_extend_target(Core CONDITION MACOS
@@ -777,6 +799,8 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_doubleconversion AND NOT QT_
     INCLUDE_DIRECTORIES
         ../3rdparty/double-conversion/double-conversion
         ../3rdparty/double-conversion
+    ATTRIBUTION_FILE_DIR_PATHS
+        ../3rdparty/double-conversion
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_system_libb2
@@ -788,6 +812,8 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_easingcurve
     SOURCES
         tools/qeasingcurve.cpp tools/qeasingcurve.h
         tools/qtimeline.cpp tools/qtimeline.h
+    ATTRIBUTION_FILE_DIR_PATHS
+        ../3rdparty/easing
 )
 
 qt_internal_extend_target(Core CONDITION UNIX AND NOT HAIKU AND NOT INTEGRITY AND NOT VXWORKS AND NOT WASM AND NOT MACOS
@@ -1002,6 +1028,8 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_process AND UNIX
         ../3rdparty/forkfd/forkfd.h
         io/forkfd_qt.c
     INCLUDE_DIRECTORIES
+        ../3rdparty/forkfd
+    ATTRIBUTION_FILE_DIR_PATHS
         ../3rdparty/forkfd
 )
 

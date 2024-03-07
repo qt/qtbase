@@ -44,6 +44,8 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
         Qt::CorePrivate
         Qt::Gui
         Qt::GuiPrivate
+    ATTRIBUTION_FILE_DIR_PATHS
+        ../../../3rdparty/wasm
 )
 
 # Resources:

@@ -26,6 +26,9 @@ qt_find_package(WrapSystemDoubleConversion
                 PROVIDED_TARGETS WrapSystemDoubleConversion::WrapSystemDoubleConversion
                 MODULE_NAME core QMAKE_LIB doubleconversion)
 qt_find_package(GLIB2 PROVIDED_TARGETS GLIB2::GLIB2 MODULE_NAME core QMAKE_LIB glib)
+qt_find_package_extend_sbom(TARGETS GLIB2::GLIB2
+    LICENSE_EXPRESSION "LGPL-2.1-or-later"
+)
 qt_find_package(ICU 50.1 COMPONENTS i18n uc data PROVIDED_TARGETS ICU::i18n ICU::uc ICU::data
     MODULE_NAME core QMAKE_LIB icu)
 
@@ -35,6 +38,9 @@ endif()
 qt_find_package(Libsystemd PROVIDED_TARGETS PkgConfig::Libsystemd MODULE_NAME core QMAKE_LIB journald)
 qt_find_package(WrapAtomic PROVIDED_TARGETS WrapAtomic::WrapAtomic MODULE_NAME core QMAKE_LIB libatomic)
 qt_find_package(Libb2 PROVIDED_TARGETS Libb2::Libb2 MODULE_NAME core QMAKE_LIB libb2)
+qt_find_package_extend_sbom(TARGETS Libb2::Libb2
+    LICENSE_EXPRESSION "CC0-1.0"
+)
 qt_find_package(WrapRt PROVIDED_TARGETS WrapRt::WrapRt MODULE_NAME core QMAKE_LIB librt)
 qt_find_package(WrapSystemPCRE2 10.20 PROVIDED_TARGETS WrapSystemPCRE2::WrapSystemPCRE2 MODULE_NAME core QMAKE_LIB pcre2)
 set_package_properties(WrapPCRE2 PROPERTIES TYPE REQUIRED)

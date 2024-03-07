@@ -146,6 +146,10 @@ qt_internal_extend_target(XcbQpaPrivate CONDITION QT_FEATURE_fontconfig AND QT_F
 if(QT_FEATURE_system_xcb_xinput)
     qt_internal_extend_target(XcbQpaPrivate LIBRARIES XCB::XINPUT)
 else()
+    qt_internal_extend_target(XcbQpaPrivate
+        ATTRIBUTION_FILE_DIR_PATHS
+            ../../../3rdparty/xcb
+    )
     set(xinput_source "${PROJECT_SOURCE_DIR}/src/3rdparty/xcb/libxcb/xinput.c")
     set_source_files_properties(
         "${xinput_source}"

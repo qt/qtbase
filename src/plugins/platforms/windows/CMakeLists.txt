@@ -131,6 +131,8 @@ qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_tablete
         qwindowstabletsupport.cpp qwindowstabletsupport.h
     INCLUDE_DIRECTORIES
         ${QtBase_SOURCE_DIR}/src/3rdparty/wintab
+    ATTRIBUTION_FILE_DIR_PATHS
+        ../../../3rdparty/wintab
 )
 
 qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_sessionmanager

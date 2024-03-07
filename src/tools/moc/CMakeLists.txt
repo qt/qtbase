@@ -38,6 +38,16 @@ qt_internal_add_tool(${target_name}
 )
 qt_internal_return_unless_building_tools()
 
+qt_internal_extend_sbom(${target_name}
+    COPYRIGHTS
+        "Copyright (C) 2013 Olivier Goffart <ogoffart@woboq.com>"
+        "Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.org>"
+        "Copyright (C) 2016 Intel Corporation."
+        "Copyright (C) 2018 Intel Corporation."
+        "Copyright (C) 2018 The Qt Company Ltd."
+        "Copyright (C) 2019 Olivier Goffart <ogoffart@woboq.com>"
+)
+
 ## Scopes:
 #####################################################################
 
