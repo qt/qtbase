@@ -541,6 +541,8 @@ void QXcbWindow::destroy()
         doFocusOut();
     if (connection()->mouseGrabber() == this)
         connection()->setMouseGrabber(nullptr);
+    if (connection()->mousePressWindow() == this)
+        connection()->setMousePressWindow(nullptr);
 
     if (m_syncCounter && connection()->hasXSync())
         xcb_sync_destroy_counter(xcb_connection(), m_syncCounter);
