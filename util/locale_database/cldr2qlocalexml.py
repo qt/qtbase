@@ -37,17 +37,25 @@ All the scripts mentioned support --help to tell you how to use them.
 """
 
 from pathlib import Path
-import sys
 import argparse
 
 from cldr import CldrReader
 from qlocalexml import QLocaleXmlWriter
 
 
-def main(out, err):
-    all_calendars = ['gregorian', 'persian', 'islamic']  # 'hebrew'
+def main(argv, out, err):
+    """Generate a QLocaleXML file from CLDR data.
+
+    Takes sys.argv, sys.stdout, sys.stderr (or equivalents) as
+    arguments. In argv[1:], it expects the root of the CLDR data
+    directory as first parameter and the name of the file in which to
+    save QLocaleXML data as second parameter. It accepts a --calendars
+    option to select which calendars to support (all available by
+    default)."""
+    all_calendars = ['gregorian', 'persian', 'islamic']
 
     parser = argparse.ArgumentParser(
+        prog=Path(argv[0]).name,
         description='Generate QLocaleXML from CLDR data.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('cldr_path', help='path to the root of the CLDR tree')
@@ -57,7 +65,7 @@ def main(out, err):
                         nargs='+', metavar='CALENDAR',
                         choices=all_calendars, default=all_calendars)
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv[1:])
 
     root = Path(args.cldr_path)
     root_xml_path = 'common/main/root.xml'
@@ -90,4 +98,5 @@ def main(out, err):
     return 0
 
 if __name__ == '__main__':
-    sys.exit(main(sys.stdout, sys.stderr))
+    import sys
+    sys.exit(main(sys.argv, sys.stdout, sys.stderr))
