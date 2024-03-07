@@ -617,6 +617,8 @@ set(_Qt6_COMPONENT_PATH "${CMAKE_CURRENT_LIST_DIR}/..")
 function(qt6_add_executable target)
     cmake_parse_arguments(PARSE_ARGV 1 arg "MANUAL_FINALIZATION" "" "")
 
+    _qt_internal_warn_about_example_add_subdirectory()
+
     _qt_internal_create_executable("${target}" ${arg_UNPARSED_ARGUMENTS})
     target_link_libraries("${target}" PRIVATE Qt6::Core)
     set_property(TARGET ${target} PROPERTY _qt_expects_finalization TRUE)

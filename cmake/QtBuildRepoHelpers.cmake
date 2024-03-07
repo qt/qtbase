@@ -447,7 +447,15 @@ macro(qt_build_repo_impl_examples)
         message(STATUS "Configuring examples.")
 
         option(QT_BUILD_EXAMPLES_PROJECT_${PROJECT_NAME} "Configure examples for project ${PROJECT_NAME}" TRUE)
-        if (QT_BUILD_EXAMPLES_PROJECT_${PROJECT_NAME})
+        if(QT_BUILD_EXAMPLES_PROJECT_${PROJECT_NAME})
+
+            # Set this before any examples subdirectories are added, to warn about examples that are
+            # added via add_subdirectory() calls instead of qt_internal_add_example().
+            if(QT_FEATURE_developer_build
+                    AND NOT QT_NO_WARN_ABOUT_EXAMPLE_ADD_SUBDIRECTORY_WARNING)
+                set(QT_WARN_ABOUT_EXAMPLE_ADD_SUBDIRECTORY TRUE)
+            endif()
+
             add_subdirectory(examples)
         endif()
     endif()

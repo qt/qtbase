@@ -321,3 +321,17 @@ function(_qt_internal_set_up_static_runtime_library target)
         endif()
     endif()
 endfunction()
+
+function(_qt_internal_warn_about_example_add_subdirectory)
+    # This is set by qt_build_repo_impl_examples() in QtBuildRepoHelpers.cmake, only for developer
+    # builds, to catch examples that are added via add_subdirectory instead of via
+    # qt_internal_add_example.
+    if(QT_WARN_ABOUT_EXAMPLE_ADD_SUBDIRECTORY)
+        get_filename_component(dir_name "${PROJECT_SOURCE_DIR}" NAME)
+        message(AUTHOR_WARNING
+            "It looks like this example project was added via add_subdirectory instead of via "
+            "qt_internal_add_example. This causes issues in certain build configurations. Please "
+            "change the code to use\n  qt_internal_add_example(${dir_name})\ninstead."
+        )
+    endif()
+endfunction()

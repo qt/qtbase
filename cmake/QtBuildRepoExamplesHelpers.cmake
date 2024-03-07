@@ -135,6 +135,13 @@ endmacro()
 # Allows building an example either as an ExternalProject or in-tree with the Qt build.
 # Also allows installing the example sources.
 function(qt_internal_add_example subdir)
+    # Don't show warnings for examples that were added via qt_internal_add_example.
+    # Those that are added via add_subdirectory will see the warning, due to the parent scope
+    # having the variable set to TRUE.
+    if(QT_FEATURE_developer_build AND NOT QT_NO_WARN_ABOUT_EXAMPLE_ADD_SUBDIRECTORY_WARNING)
+        set(QT_WARN_ABOUT_EXAMPLE_ADD_SUBDIRECTORY FALSE)
+    endif()
+
     # Pre-compute unique example name based on the subdir, in case of target name clashes.
     qt_internal_get_example_unique_name(unique_example_name "${subdir}")
 
