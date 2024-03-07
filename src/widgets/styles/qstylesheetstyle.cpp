@@ -4488,7 +4488,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
                 QString titleText = p->fontMetrics().elidedText(dwOpt->title, Qt::ElideRight, r.width());
                 drawItemText(p, r,
-                             alignment, dwOpt->palette,
+                             alignment | Qt::TextHideMnemonic, dwOpt->palette,
                              dwOpt->state & State_Enabled, titleText,
                              QPalette::WindowText);
 
