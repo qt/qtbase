@@ -190,6 +190,15 @@ macro(qt_find_package)
                                           PROPERTIES INTERFACE_QT_PACKAGE_VERSION ${ARGV1})
                 endif()
 
+                # Save the retrieved package version.
+                set(_qt_find_package_found_version "")
+                if(${ARGV0}_VERSION)
+                    set(_qt_find_package_found_version "${${ARGV0}_VERSION}")
+                    set_target_properties(${qt_find_package_target_name}
+                        PROPERTIES
+                            _qt_package_found_version "${_qt_find_package_found_version}")
+                endif()
+
                 if(arg_COMPONENTS)
                     string(REPLACE ";" " " components_as_string "${arg_COMPONENTS}")
                     set_property(TARGET ${qt_find_package_target_name}

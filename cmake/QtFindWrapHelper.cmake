@@ -80,10 +80,39 @@ macro(qt_find_package_system_or_bundled _unique_prefix)
                               INTERFACE_QT_3RD_PARTY_PACKAGE_TYPE
                               "${${_unique_prefix}_qt_package_type}")
 
+
+        # This might not be set, because qt_find_package() is called from a configure.cmake file via
+        # qt_feature_evaluate_features, which means the _VERSION var is confined to the function
+        # scope.
+        if(${${_unique_prefix}_qt_package_name_to_use}_VERSION)
+            set(_qfwrap_${_unique_prefix}_package_version
+                "${${${_unique_prefix}_qt_package_name_to_use}_VERSION}"
+            )
+        else()
+            # We set this in qt_find_package, so try to retrieve it.
+            get_target_property(_qfwrap_${_unique_prefix}_package_version_from_prop
+                "${${_unique_prefix}_qt_package_target_to_use}" _qt_package_found_version)
+            if(_qfwrap_${_unique_prefix}_package_version_from_prop)
+                set(_qfwrap_${_unique_prefix}_package_version
+                    "${_qfwrap_${_unique_prefix}_package_version_from_prop}"
+                )
+            else()
+                set(_qfwrap_${_unique_prefix}_package_version "")
+            endif()
+        endif()
+
+        if(_qfwrap_${_unique_prefix}_package_version)
+            set(_qfwrap_${_unique_prefix}_package_version_option
+                VERSION_VAR "_qfwrap_${_unique_prefix}_package_version"
+            )
+        endif()
+
         include(FindPackageHandleStandardArgs)
         find_package_handle_standard_args(
             Wrap${_qfwrap_${_unique_prefix}_FRIENDLY_PACKAGE_NAME}
-            DEFAULT_MSG ${_qfwrap_${_unique_prefix}_WRAP_PACKAGE_FOUND_VAR_NAME})
+            REQUIRED_VARS ${_qfwrap_${_unique_prefix}_WRAP_PACKAGE_FOUND_VAR_NAME}
+            ${_qfwrap_${_unique_prefix}_package_version_option}
+        )
     elseif(${_unique_prefix}_qt_package_type STREQUAL "bundled")
         message(FATAL_ERROR "Can't find ${${_unique_prefix}_qt_package_target_to_use}.")
     endif()
