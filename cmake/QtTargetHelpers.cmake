@@ -45,6 +45,7 @@ function(qt_internal_extend_target target)
     set(single_args
         PRECOMPILED_HEADER
         EXTRA_LINKER_SCRIPT_CONTENT
+        ATTRIBUTION_ENTRY_INDEX
     )
     set(multi_args
         ${__default_public_args}
@@ -54,6 +55,9 @@ function(qt_internal_extend_target target)
         CONDITION_INDEPENDENT_SOURCES
         COMPILE_FLAGS
         EXTRA_LINKER_SCRIPT_EXPORTS
+        SBOM_DEPENDENCIES
+        ATTRIBUTION_FILE_PATHS
+        ATTRIBUTION_FILE_DIR_PATHS
     )
 
     cmake_parse_arguments(PARSE_ARGV 1 arg
@@ -210,6 +214,42 @@ function(qt_internal_extend_target target)
             endif()
         endforeach()
 
+        if(arg_LIBRARIES)
+            _qt_internal_append_to_target_property_without_duplicates(${target}
+                _qt_extend_target_libraries "${arg_LIBRARIES}"
+            )
+        endif()
+
+        if(arg_PUBLIC_LIBRARIES)
+            _qt_internal_append_to_target_property_without_duplicates(${target}
+                _qt_extend_target_public_libraries "${arg_PUBLIC_LIBRARIES}"
+            )
+        endif()
+
+        if(arg_SBOM_DEPENDENCIES)
+            _qt_internal_extend_sbom_dependencies(${target}
+                SBOM_DEPENDENCIES ${arg_SBOM_DEPENDENCIES}
+            )
+        endif()
+
+        if(NOT "${arg_ATTRIBUTION_ENTRY_INDEX}" STREQUAL "")
+            _qt_internal_extend_sbom(${target}
+                ATTRIBUTION_ENTRY_INDEX "${arg_ATTRIBUTION_ENTRY_INDEX}"
+            )
+        endif()
+
+        if(arg_ATTRIBUTION_FILE_PATHS)
+            _qt_internal_extend_sbom(${target}
+                ATTRIBUTION_FILE_PATHS ${arg_ATTRIBUTION_FILE_PATHS}
+            )
+        endif()
+
+        if(arg_ATTRIBUTION_FILE_DIR_PATHS)
+            _qt_internal_extend_sbom(${target}
+                ATTRIBUTION_FILE_DIR_PATHS ${arg_ATTRIBUTION_FILE_DIR_PATHS}
+            )
+        endif()
+
         set(target_private "${target}Private")
         get_target_property(is_internal_module ${target} _qt_is_internal_module)
         # Internal modules don't have Private targets but we still need to
@@ -298,7 +338,7 @@ endfunction()
 function(qt_get_install_target_default_args)
     cmake_parse_arguments(PARSE_ARGV 0 arg
        ""
-       "OUT_VAR;CMAKE_CONFIG;RUNTIME;LIBRARY;ARCHIVE;INCLUDES;BUNDLE"
+       "OUT_VAR;OUT_VAR_RUNTIME;CMAKE_CONFIG;RUNTIME;LIBRARY;ARCHIVE;INCLUDES;BUNDLE"
        "ALL_CMAKE_CONFIGS")
     _qt_internal_validate_all_args_are_parsed(arg)
 
@@ -348,6 +388,13 @@ function(qt_get_install_target_default_args)
         BUNDLE DESTINATION   "${bundle}${suffix}"
         INCLUDES DESTINATION "${includes}${suffix}")
     set(${arg_OUT_VAR} "${args}" PARENT_SCOPE)
+
+    if(arg_OUT_VAR_RUNTIME)
+        set(args
+            "${runtime}${suffix}"
+        )
+        set(${arg_OUT_VAR_RUNTIME} "${args}" PARENT_SCOPE)
+    endif()
 endfunction()
 
 macro(qt_internal_setup_default_target_function_options)
@@ -391,6 +438,15 @@ macro(qt_internal_setup_default_target_function_options)
         TARGET_COPYRIGHT
     )
 
+    set(__qt_internal_sbom_single_args
+        ATTRIBUTION_ENTRY_INDEX
+    )
+    set(__qt_internal_sbom_multi_args
+        SBOM_DEPENDENCIES
+        ATTRIBUTION_FILE_PATHS
+        ATTRIBUTION_FILE_DIR_PATHS
+    )
+
     # Collection of arguments so they can be shared across qt_internal_add_executable
     # and qt_internal_add_test_helper.
     set(__qt_internal_add_executable_optional_args
@@ -408,10 +464,12 @@ macro(qt_internal_setup_default_target_function_options)
         INSTALL_DIRECTORY
         VERSION
         ${__default_target_info_args}
+        ${__qt_internal_sbom_single_args}
     )
     set(__qt_internal_add_executable_multi_args
         ${__default_private_args}
         ${__default_public_args}
+        ${__qt_internal_sbom_multi_args}
     )
 endmacro()
 

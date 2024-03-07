@@ -233,8 +233,25 @@ macro(qt_find_package)
                     qt_find_package_promote_targets_to_global_scope(
                         "${qt_find_package_target_name}")
                 endif()
-            endif()
 
+                set(_qt_find_package_sbom_args "")
+
+                if(_qt_find_package_found_version)
+                    list(APPEND _qt_find_package_sbom_args
+                        PACKAGE_VERSION "${_qt_find_package_found_version}"
+                    )
+                endif()
+
+                # Work around: QTBUG-125371
+                if(NOT "${ARGV0}" STREQUAL "Qt6")
+                    _qt_internal_sbom_record_system_library_usage(
+                        "${qt_find_package_target_name}"
+                        TYPE SYSTEM_LIBRARY
+                        FRIENDLY_PACKAGE_NAME "${ARGV0}"
+                        ${_qt_find_package_sbom_args}
+                    )
+                endif()
+            endif()
         endforeach()
 
         if(arg_MODULE_NAME AND arg_QMAKE_LIB

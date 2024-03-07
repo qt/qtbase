@@ -25,6 +25,8 @@ except -sysconfdir should be located under -prefix:
   -libexecdir <dir> ..... Helper programs [ARCHDATADIR/bin on Windows,
                           ARCHDATADIR/libexec otherwise]
   -qmldir <dir> ......... QML imports [ARCHDATADIR/qml]
+  -sbomdir <dir> .......  Software Bill of Materials (SBOM)
+                          installation directory [ARCHDATADIR/sbom]
   -datadir <dir> ........ Arch-independent data [PREFIX]
   -docdir <dir> ......... Documentation [DATADIR/doc]
   -translationdir <dir> . Translations [DATADIR/translations]
@@ -98,6 +100,9 @@ Build options:
                          This is on by default for platforms which require distribution
                          through an app store by default, in particular Android,
                          iOS, tvOS, and watchOS. [auto]
+
+  -sbom ................ Enable Software Bill of Materials (SBOM) generation
+                         [no]
 
   -qt-host-path <path> . Specify path to a Qt host build for cross-compiling.
   -qtnamespace <name> .. Wrap all Qt library code in 'namespace <name> {...}'.

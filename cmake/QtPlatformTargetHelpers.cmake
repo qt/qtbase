@@ -72,6 +72,11 @@ function(qt_internal_setup_public_platform_target)
 
     # Generate a pkgconfig for Qt::Platform.
     qt_internal_generate_pkg_config_file(Platform)
+
+    qt_internal_add_sbom(Platform
+        TYPE QT_MODULE
+        IMMEDIATE_FINALIZATION
+    )
 endfunction()
 
 function(qt_internal_get_platform_definition_include_dir install_interface build_interface)

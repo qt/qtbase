@@ -130,23 +130,49 @@ function(qt_internal_add_cmake_library target)
     )
 endfunction()
 
+macro(qt_internal_get_3rdparty_library_sbom_options option_args single_args multi_args)
+    set(${option_args} "")
+    set(${single_args}
+        PACKAGE_VERSION
+        CPE_VENDOR
+        CPE_PRODUCT
+        LICENSE_EXPRESSION
+        DOWNLOAD_LOCATION
+        ${__qt_internal_sbom_single_args}
+    )
+    set(${multi_args}
+        COPYRIGHTS
+        CPE # Common Platform Enumeration, free-form
+        ${__qt_internal_sbom_multi_args}
+    )
+endmacro()
+
 # This function replaces qmake's qt_helper_lib feature. It is intended to
 # compile 3rdparty libraries as part of the build.
 #
 function(qt_internal_add_3rdparty_library target)
     qt_internal_get_add_library_option_args(library_option_args)
+    qt_internal_get_3rdparty_library_sbom_options(
+        sbom_option_args
+        sbom_single_args
+        sbom_multi_args
+    )
+
     set(option_args
         EXCEPTIONS
         INSTALL
         SKIP_AUTOMOC
+        ${sbom_option_args}
         )
     set(single_args
         OUTPUT_DIRECTORY
         QMAKE_LIB_NAME
+        ${sbom_single_args}
     )
     set(multi_args
         ${__default_private_args}
         ${__default_public_args}
+        ${sbom_multi_args}
     )
 
     cmake_parse_arguments(PARSE_ARGV 1 arg
@@ -253,6 +279,12 @@ function(qt_internal_add_3rdparty_library target)
     )
 
     if(NOT BUILD_SHARED_LIBS OR arg_INSTALL)
+        set(will_install TRUE)
+    else()
+        set(will_install FALSE)
+    endif()
+
+    if(will_install)
         qt_generate_3rdparty_lib_pri_file("${target}" "${arg_QMAKE_LIB_NAME}" pri_file)
         if(pri_file)
             qt_install(FILES "${pri_file}" DESTINATION "${INSTALL_MKSPECSDIR}/modules")
@@ -327,6 +359,55 @@ function(qt_internal_add_3rdparty_library target)
             INTERPROCEDURAL_OPTIMIZATION OFF
         )
     endif()
+
+    if(QT_GENERATE_SBOM)
+        set(sbom_args "")
+        list(APPEND sbom_args TYPE QT_THIRD_PARTY_MODULE)
+
+        if(NOT will_install)
+            list(APPEND sbom_args NO_INSTALL)
+        endif()
+
+        qt_get_cmake_configurations(configs)
+        foreach(config IN LISTS configs)
+            _qt_internal_sbom_append_multi_config_aware_single_arg_option(
+                RUNTIME_PATH
+                "${INSTALL_BINDIR}"
+                "${config}"
+                sbom_args
+            )
+            _qt_internal_sbom_append_multi_config_aware_single_arg_option(
+                LIBRARY_PATH
+                "${INSTALL_LIBDIR}"
+                "${config}"
+                sbom_args
+            )
+            _qt_internal_sbom_append_multi_config_aware_single_arg_option(
+                ARCHIVE_PATH
+                "${INSTALL_LIBDIR}"
+                "${config}"
+                sbom_args
+            )
+        endforeach()
+
+        _qt_internal_forward_function_args(
+            FORWARD_APPEND
+            FORWARD_PREFIX arg
+            FORWARD_OUT_VAR sbom_args
+            FORWARD_SINGLE
+                ${sbom_single_args}
+            FORWARD_MULTI
+                ${sbom_multi_args}
+        )
+
+        _qt_internal_extend_sbom(${target} ${sbom_args})
+    endif()
+
+    qt_add_list_file_finalizer(qt_internal_finalize_3rdparty_library ${target})
+endfunction()
+
+function(qt_internal_finalize_3rdparty_library target)
+    _qt_internal_finalize_sbom(${target})
 endfunction()
 
 function(qt_install_3rdparty_library_wrap_config_extra_file target)

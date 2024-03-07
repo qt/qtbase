@@ -45,6 +45,7 @@ The following table describes the mapping of configure options to CMake argument
 | -device-option <key=value>            | -DQT_QMAKE_DEVICE_OPTIONS=key1=value1;key2=value2 | Only used for generation qmake-compatibility files.             |
 |                                       |                                                   | The device options are written into mkspecs/qdevice.pri.        |
 | -appstore-compliant                   | -DFEATURE_appstore_compliant=ON                   |                                                                 |
+| -sbom                                 | -DQT_GENERATE_SBOM=ON                             | Enables generation and installation of an SBOM                  |
 | -qtinlinenamespace                    | -DQT_INLINE_NAMESPACE=ON                          | Make the namespace specified by -qtnamespace an inline one.     |
 | -qtnamespace <name>                   | -DQT_NAMESPACE=<name>                             |                                                                 |
 | -qtlibinfix <infix>                   | -DQT_LIBINFIX=<infix>                             |                                                                 |

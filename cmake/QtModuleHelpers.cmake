@@ -33,6 +33,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         SSG_HEADER_FILTERS
         HEADER_SYNC_SOURCE_DIRECTORY
         ${__default_target_info_args}
+        ${__qt_internal_sbom_single_args}
     )
     set(${multi_args}
         QMAKE_MODULE_CONFIG
@@ -43,6 +44,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         ${__default_private_args}
         ${__default_public_args}
         ${__default_private_module_args}
+        ${__qt_internal_sbom_multi_args}
     )
 endmacro()
 
@@ -234,6 +236,10 @@ function(qt_internal_add_module target)
     if(arg_INTERNAL_MODULE)
         set_target_properties(${target} PROPERTIES _qt_is_internal_module TRUE)
         set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES _qt_is_internal_module)
+    endif()
+    if(arg_HEADER_MODULE)
+        set_target_properties(${target} PROPERTIES _qt_is_header_module TRUE)
+        set_property(TARGET ${target} APPEND PROPERTY EXPORT_PROPERTIES _qt_is_header_module)
     endif()
 
     if(NOT arg_CONFIG_MODULE_NAME)
@@ -635,6 +641,10 @@ function(qt_internal_add_module target)
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
         PRECOMPILED_HEADER ${arg_PRECOMPILED_HEADER}
         NO_PCH_SOURCES ${arg_NO_PCH_SOURCES}
+        ATTRIBUTION_ENTRY_INDEX "${arg_ATTRIBUTION_ENTRY_INDEX}"
+        ATTRIBUTION_FILE_PATHS ${arg_ATTRIBUTION_FILE_PATHS}
+        ATTRIBUTION_FILE_DIR_PATHS ${arg_ATTRIBUTION_FILE_DIR_PATHS}
+        SBOM_DEPENDENCIES ${arg_SBOM_DEPENDENCIES}
     )
 
     # The public module define is not meant to be used when building the module itself,
@@ -909,6 +919,43 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
     endif()
 
     qt_describe_module(${target})
+
+    set(sbom_args "")
+
+    if(QT_GENERATE_SBOM)
+        list(APPEND sbom_args TYPE QT_MODULE)
+
+        qt_get_cmake_configurations(configs)
+        foreach(config IN LISTS configs)
+            _qt_internal_sbom_append_multi_config_aware_single_arg_option(
+                RUNTIME_PATH
+                "${INSTALL_BINDIR}"
+                "${config}"
+                sbom_args
+            )
+            _qt_internal_sbom_append_multi_config_aware_single_arg_option(
+                LIBRARY_PATH
+                "${INSTALL_LIBDIR}"
+                "${config}"
+                sbom_args
+            )
+            _qt_internal_sbom_append_multi_config_aware_single_arg_option(
+                ARCHIVE_PATH
+                "${INSTALL_LIBDIR}"
+                "${config}"
+                sbom_args
+            )
+            _qt_internal_sbom_append_multi_config_aware_single_arg_option(
+                FRAMEWORK_PATH
+                "${INSTALL_LIBDIR}/${fw_versioned_binary_dir}"
+                "${config}"
+                sbom_args
+            )
+        endforeach()
+
+        _qt_internal_extend_sbom(${target} ${sbom_args})
+    endif()
+
     qt_add_list_file_finalizer(qt_finalize_module ${target} ${arg_INTERNAL_MODULE} ${arg_NO_PRIVATE_MODULE})
 endfunction()
 
@@ -958,6 +1005,7 @@ function(qt_finalize_module target)
     qt_generate_module_pri_file("${target}" ${ARGN})
     qt_internal_generate_pkg_config_file(${target})
     qt_internal_apply_apple_privacy_manifest(${target})
+    _qt_internal_finalize_sbom(${target})
 endfunction()
 
 # Get a set of Qt module related values based on the target.

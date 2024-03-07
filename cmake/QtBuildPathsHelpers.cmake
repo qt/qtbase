@@ -193,6 +193,8 @@ macro(qt_internal_setup_configure_install_paths)
     qt_configure_process_path(INSTALL_DESCRIPTIONSDIR
                              "${INSTALL_ARCHDATADIR}/modules"
                               "Module description files directory")
+    qt_configure_process_path(INSTALL_SBOMDIR "${INSTALL_ARCHDATADIR}/sbom"
+        "SBOM [PREFIX/sbom]")
 endmacro()
 
 macro(qt_internal_set_cmake_install_libdir)

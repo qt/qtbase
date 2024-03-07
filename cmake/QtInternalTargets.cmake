@@ -138,22 +138,42 @@ endfunction()
 add_library(PlatformCommonInternal INTERFACE)
 qt_internal_add_target_aliases(PlatformCommonInternal)
 target_link_libraries(PlatformCommonInternal INTERFACE Platform)
+qt_internal_add_sbom(PlatformCommonInternal
+    TYPE QT_MODULE
+    IMMEDIATE_FINALIZATION
+)
 
 add_library(PlatformModuleInternal INTERFACE)
 qt_internal_add_target_aliases(PlatformModuleInternal)
 target_link_libraries(PlatformModuleInternal INTERFACE PlatformCommonInternal)
+qt_internal_add_sbom(PlatformModuleInternal
+    TYPE QT_MODULE
+    IMMEDIATE_FINALIZATION
+)
 
 add_library(PlatformPluginInternal INTERFACE)
 qt_internal_add_target_aliases(PlatformPluginInternal)
 target_link_libraries(PlatformPluginInternal INTERFACE PlatformCommonInternal)
+qt_internal_add_sbom(PlatformPluginInternal
+    TYPE QT_MODULE
+    IMMEDIATE_FINALIZATION
+)
 
 add_library(PlatformAppInternal INTERFACE)
 qt_internal_add_target_aliases(PlatformAppInternal)
 target_link_libraries(PlatformAppInternal INTERFACE PlatformCommonInternal)
+qt_internal_add_sbom(PlatformAppInternal
+    TYPE QT_MODULE
+    IMMEDIATE_FINALIZATION
+)
 
 add_library(PlatformToolInternal INTERFACE)
 qt_internal_add_target_aliases(PlatformToolInternal)
 target_link_libraries(PlatformToolInternal INTERFACE PlatformAppInternal)
+qt_internal_add_sbom(PlatformToolInternal
+    TYPE QT_MODULE
+    IMMEDIATE_FINALIZATION
+)
 
 qt_internal_add_global_definition(QT_NO_JAVA_STYLE_ITERATORS)
 qt_internal_add_global_definition(QT_NO_QASCONST)

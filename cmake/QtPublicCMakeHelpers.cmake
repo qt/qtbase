@@ -434,6 +434,10 @@ function(_qt_internal_create_versionless_targets targets install_namespace)
         _qt_package_name
         _qt_package_version
         _qt_private_module_target_name
+        _qt_sbom_spdx_id
+        _qt_sbom_spdx_repo_document_namespace
+        _qt_sbom_spdx_relative_installed_repo_document_path
+        _qt_sbom_spdx_repo_project_name_lowercase
     )
 
     set(supported_target_types STATIC_LIBRARY MODULE_LIBRARY SHARED_LIBRARY OBJECT_LIBRARY
