@@ -195,6 +195,12 @@ endfunction()
 #       version, framework bundle version and tailing module name, e.g.
 #       'QtCore.framework/Versions/A/Headers/6.0.0/Core'
 function(qt_internal_get_framework_info out_var target)
+    # Avoid "INTERFACE_LIBRARY targets may only have whitelisted properties" error on CMake < 3.17.
+    get_target_property(target_type ${target} TYPE)
+    if("${target_type}" STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+
     get_target_property(${out_var}_version ${target} FRAMEWORK_VERSION)
     get_target_property(${out_var}_bundle_version ${target} MACOSX_FRAMEWORK_BUNDLE_VERSION)
 

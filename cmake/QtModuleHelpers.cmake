@@ -915,6 +915,12 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
 endfunction()
 
 function(qt_internal_apply_apple_privacy_manifest target)
+    # Avoid "INTERFACE_LIBRARY targets may only have whitelisted properties" error on CMake < 3.17.
+    get_target_property(target_type ${target} TYPE)
+    if("${target_type}" STREQUAL "INTERFACE_LIBRARY")
+        return()
+    endif()
+
     if(APPLE)
         # Privacy manifest
         get_target_property(is_framework ${target} FRAMEWORK)
