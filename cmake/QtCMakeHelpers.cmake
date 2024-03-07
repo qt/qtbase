@@ -61,14 +61,6 @@ macro(qt_parse_all_arguments result type flags options multiopts)
     endif()
 endmacro()
 
-# Checks whether any unparsed arguments have been passed to the function at the call site.
-# Use this right after `cmake_parse_arguments`.
-function(_qt_internal_validate_all_args_are_parsed prefix)
-    if(DEFINED ${prefix}_UNPARSED_ARGUMENTS)
-        message(FATAL_ERROR "Unknown arguments: (${${prefix}_UNPARSED_ARGUMENTS})")
-    endif()
-endfunction()
-
 # Print all variables defined in the current scope.
 macro(qt_debug_print_variables)
     cmake_parse_arguments(__arg "DEDUP" "" "MATCH;IGNORE" ${ARGN})
@@ -116,63 +108,12 @@ endmacro()
 # Takes a list of path components and joins them into one path separated by forward slashes "/",
 # and saves the path in out_var.
 function(qt_path_join out_var)
-    string(JOIN "/" path ${ARGN})
+    _qt_internal_path_join(path ${ARGN})
     set(${out_var} ${path} PARENT_SCOPE)
 endfunction()
 
-# qt_remove_args can remove arguments from an existing list of function
-# arguments in order to pass a filtered list of arguments to a different function.
-# Parameters:
-#   out_var: result of remove all arguments specified by ARGS_TO_REMOVE from ALL_ARGS
-#   ARGS_TO_REMOVE: Arguments to remove.
-#   ALL_ARGS: All arguments supplied to cmake_parse_arguments
-#   from which ARGS_TO_REMOVE should be removed from. We require all the
-#   arguments or we can't properly identify the range of the arguments detailed
-#   in ARGS_TO_REMOVE.
-#   ARGS: Arguments passed into the function, usually ${ARGV}
-#
-#   E.g.:
-#   We want to forward all arguments from foo to bar, execpt ZZZ since it will
-#   trigger an error in bar.
-#
-#   foo(target BAR .... ZZZ .... WWW ...)
-#   bar(target BAR.... WWW...)
-#
-#   function(foo target)
-#       cmake_parse_arguments(PARSE_ARGV 1 arg "" "" "BAR;ZZZ;WWW")
-#       qt_remove_args(forward_args
-#           ARGS_TO_REMOVE ${target} ZZZ
-#           ALL_ARGS ${target} BAR ZZZ WWW
-#           ARGS ${ARGV}
-#       )
-#       bar(${target} ${forward_args})
-#   endfunction()
-#
 function(qt_remove_args out_var)
-    cmake_parse_arguments(arg "" "" "ARGS_TO_REMOVE;ALL_ARGS;ARGS" ${ARGN})
-    set(result ${arg_ARGS})
-    foreach(arg IN LISTS arg_ARGS_TO_REMOVE)
-        # find arg
-        list(FIND result ${arg} find_result)
-        if (NOT find_result EQUAL -1)
-            # remove arg
-            list(REMOVE_AT result ${find_result})
-            list(LENGTH result result_len)
-            if(find_result EQUAL result_len)
-                # We removed the last argument, could have been an option keyword
-                continue()
-            endif()
-            list(GET result ${find_result} arg_current)
-            # remove values until we hit another arg or the end of the list
-            while(NOT "${arg_current}" IN_LIST arg_ALL_ARGS AND find_result LESS result_len)
-                list(REMOVE_AT result ${find_result})
-                list(LENGTH result result_len)
-                if (NOT find_result EQUAL result_len)
-                    list(GET result ${find_result} arg_current)
-                endif()
-            endwhile()
-        endif()
-    endforeach()
+    _qt_internal_remove_args(result ${ARGN})
     set(${out_var} "${result}" PARENT_SCOPE)
 endfunction()
 
