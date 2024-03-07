@@ -196,6 +196,7 @@ function(qt_internal_get_qt_build_private_helpers out_var)
         QtResourceHelpers
         QtRpathHelpers
         QtSanitizerHelpers
+        QtSbomHelpers
         QtScopeFinalizerHelpers
         QtSeparateDebugInfo
         QtSimdHelpers
@@ -278,7 +279,10 @@ function(qt_internal_get_qt_build_public_helpers out_var)
         QtPublicExternalProjectHelpers
         QtPublicFinalizerHelpers
         QtPublicFindPackageHelpers
+        QtPublicGitHelpers
         QtPublicPluginHelpers
+        QtPublicSbomGenerationHelpers
+        QtPublicSbomHelpers
         QtPublicTargetHelpers
         QtPublicTestHelpers
         QtPublicToolHelpers

@@ -308,6 +308,12 @@ macro(qt_build_repo_begin)
     if(QT_INTERNAL_SYNCED_MODULES)
         set_property(GLOBAL PROPERTY _qt_synced_modules ${QT_INTERNAL_SYNCED_MODULES})
     endif()
+
+    _qt_internal_sbom_begin_project(
+        INSTALL_PREFIX "${QT_STAGING_PREFIX}"
+        INSTALL_SBOM_DIR "${INSTALL_SBOMDIR}"
+        QT_CPE
+    )
 endmacro()
 
 # Runs delayed actions on some of the Qt targets.
@@ -370,6 +376,8 @@ macro(qt_build_repo_end)
     if(QT_INTERNAL_FRESH_REQUESTED)
         set(QT_INTERNAL_FRESH_REQUESTED "FALSE" CACHE INTERNAL "")
     endif()
+
+    _qt_internal_sbom_end_project()
 
     if(NOT QT_SUPERBUILD)
         qt_internal_qt_configure_end()

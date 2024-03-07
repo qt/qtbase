@@ -35,6 +35,37 @@ macro(_qt_internal_find_third_party_dependencies target target_dep_list)
         else()
             find_dependency(${__qt_${target}_find_package_args})
         endif()
+
+        _qt_internal_get_package_components_id(
+            PACKAGE_NAME "${__qt_${target}_pkg}"
+            COMPONENTS ${__qt_${target}_components}
+            OPTIONAL_COMPONENTS ${__qt_${target}_optional_components}
+            OUT_VAR_KEY __qt_${target}_package_components_id
+        )
+        if(${__qt_${target}_pkg}_FOUND
+                AND __qt_${target}_third_party_package_${__qt_${target}_package_components_id}_provided_targets)
+            set(__qt_${target}_sbom_args "")
+
+            if(${__qt_${target}_pkg}_VERSION)
+                list(APPEND __qt_${target}_sbom_args
+                    PACKAGE_VERSION "${${__qt_${target}_pkg}_VERSION}"
+                )
+            endif()
+
+            # Work around: QTBUG-125371
+            if(NOT "${ARGV0}" STREQUAL "Qt6")
+                foreach(__qt_${target}_provided_target
+                        IN LISTS
+                        __qt_${target}_third_party_package_${__qt_${target}_package_components_id}_provided_targets)
+                    _qt_internal_sbom_record_system_library_usage(
+                        "${__qt_${target}_provided_target}"
+                        TYPE SYSTEM_LIBRARY
+                        FRIENDLY_PACKAGE_NAME "${__qt_${target}_pkg}"
+                        ${__qt_${target}_sbom_args}
+                    )
+                endforeach()
+            endif()
+        endif()
     endforeach()
 endmacro()
 

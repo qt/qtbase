@@ -15,10 +15,12 @@ macro(qt_internal_get_internal_add_plugin_keywords option_args single_args multi
         INSTALL_DIRECTORY
         ARCHIVE_INSTALL_DIRECTORY
         ${__default_target_info_args}
+        ${__qt_internal_sbom_single_args}
     )
     set(${multi_args}
         ${__default_private_args}
         ${__default_public_args}
+        ${__qt_internal_sbom_multi_args}
         DEFAULT_IF
     )
 endmacro()
@@ -312,6 +314,10 @@ function(qt_internal_add_plugin target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
+        ATTRIBUTION_ENTRY_INDEX "${arg_ATTRIBUTION_ENTRY_INDEX}"
+        ATTRIBUTION_FILE_PATHS ${arg_ATTRIBUTION_FILE_PATHS}
+        ATTRIBUTION_FILE_DIR_PATHS ${arg_ATTRIBUTION_FILE_DIR_PATHS}
+        SBOM_DEPENDENCIES ${arg_SBOM_DEPENDENCIES}
     )
 
     qt_internal_add_repo_local_defines("${target}")
@@ -414,6 +420,24 @@ function(qt_internal_add_plugin target)
     if(NOT arg_SKIP_INSTALL)
         list(APPEND finalizer_extra_args INSTALL_PATH "${install_directory}")
     endif()
+
+    if(QT_GENERATE_SBOM)
+        set(sbom_args "")
+        list(APPEND sbom_args TYPE QT_PLUGIN)
+
+        qt_get_cmake_configurations(configs)
+        foreach(config IN LISTS configs)
+            _qt_internal_sbom_append_multi_config_aware_single_arg_option(
+                INSTALL_PATH
+                "${install_directory}"
+                "${config}"
+                sbom_args
+            )
+        endforeach()
+
+        _qt_internal_extend_sbom(${target} ${sbom_args})
+    endif()
+
     qt_add_list_file_finalizer(qt_finalize_plugin ${target} ${finalizer_extra_args})
 
     if(NOT arg_SKIP_INSTALL)
@@ -442,6 +466,8 @@ function(qt_finalize_plugin target)
             qt_generate_plugin_pri_file("${target}")
         endif()
     endif()
+
+    _qt_internal_finalize_sbom(${target})
 endfunction()
 
 function(qt_get_sanitized_plugin_type plugin_type out_var)
