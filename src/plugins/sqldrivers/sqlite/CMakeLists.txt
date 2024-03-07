@@ -60,6 +60,8 @@ qt_internal_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_system_sq
         SQLITE_OMIT_COMPLETE
     INCLUDE_DIRECTORIES
         ../../../3rdparty/sqlite
+    ATTRIBUTION_FILE_DIR_PATHS
+        ../../../3rdparty/sqlite
 )
 
 qt_internal_extend_target(QSQLiteDriverPlugin CONDITION CMAKE_BUILD_TYPE STREQUAL Release AND NOT QT_FEATURE_system_sqlite

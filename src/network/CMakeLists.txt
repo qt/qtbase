@@ -166,6 +166,8 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_system_zlib
 qt_internal_extend_target(Network CONDITION NOT QT_FEATURE_system_zlib
     INCLUDE_DIRECTORIES
         ../3rdparty/zlib/src
+    ATTRIBUTION_FILE_DIR_PATHS
+        ../3rdparty/zlib
 )
 
 qt_internal_extend_target(Network CONDITION NOT QT_FEATURE_system_zlib AND NOT no_core_dep
@@ -178,6 +180,8 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_topleveldomain
         kernel/qtldurl.cpp kernel/qtldurl_p.h
         ../3rdparty/libpsl/src/lookup_string_in_fixed_set.c
     INCLUDE_DIRECTORIES
+        ../3rdparty/libpsl
+    ATTRIBUTION_FILE_DIR_PATHS
         ../3rdparty/libpsl
 )
 

@@ -15,6 +15,10 @@ qt_add_library(QtLibraryInfo OBJECT
     propertyprinter.cpp propertyprinter.h
     qmakelibraryinfo.cpp qmakelibraryinfo.h
 )
+qt_internal_add_sbom(QtLibraryInfo
+    TYPE QT_MODULE
+    NO_INSTALL
+)
 
 # Make sure we use same parameters when building QtLibraryInfo and other Qt libraries,
 # otherwise some compilers may have compilation errors, such as clang-cl.

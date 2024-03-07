@@ -294,6 +294,12 @@ qt_internal_add_module(Gui
         "(^|/)qplatform.+\\.h$|(^|/)qwindowsystem.+\\.h$"
     RHI_HEADER_FILTERS
         "(^|/)qrhi\\.h$|(^|/)qrhi_platform\\.h$|(^|/)qshader\\.h$|(^|/)qshaderdescription\\.h$"
+    ATTRIBUTION_FILE_DIR_PATHS
+        rhi
+        opengl
+        painting
+        text
+        ../3rdparty/VulkanMemoryAllocator
 )
 
 # Resources:
@@ -305,6 +311,15 @@ if(QT_FEATURE_pdf)
         "../3rdparty/icc/sRGB2014.icc"
         "painting/qpdfa_metadata.xml"
     )
+    qt_internal_extend_target(Gui
+        ATTRIBUTION_FILE_DIR_PATHS
+            ../3rdparty/icc
+    )
+    qt_internal_sbom_add_license(
+        LICENSE_ID "ICC-License"
+        LICENSE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../3rdparty/icc/LICENSE.txt"
+    )
+
     qt_internal_add_resource(Gui "qpdf"
        PREFIX
            "/qpdf/"
@@ -463,6 +478,8 @@ qt_internal_extend_target(Gui CONDITION WIN32
         dxgi
         dxguid
         d3d12
+    ATTRIBUTION_FILE_DIR_PATHS
+        ../3rdparty/D3D12MemoryAllocator
 )
 
 if(QT_FEATURE_graphicsframecapture)
@@ -719,6 +736,8 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_textmarkdownreader AND NOT QT
         MD4C_USE_UTF8
     INCLUDE_DIRECTORIES
         ../3rdparty/md4c
+    ATTRIBUTION_FILE_DIR_PATHS
+        ../3rdparty/md4c
 )
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_textmarkdownwriter
@@ -798,7 +817,12 @@ qt_internal_extend_target(Gui CONDITION MINGW AND WIN32
 # Note: These helpers are only used for 16-bit surfaces, so excluding them does not generally
 # exclude neon-drawhelpers on these platforms.
 if(UNIX AND NOT ANDROID AND NOT INTEGRITY AND NOT (TEST_architecture_arch STREQUAL "arm64") AND NOT UIKIT AND NOT QT_IS_MACOS_UNIVERSAL)
-    qt_internal_extend_target(Gui DEFINES ENABLE_PIXMAN_DRAWHELPERS)
+    qt_internal_extend_target(Gui
+        DEFINES
+            ENABLE_PIXMAN_DRAWHELPERS
+        ATTRIBUTION_FILE_DIR_PATHS
+            ../3rdparty/pixman
+    )
     qt_internal_add_simd_part(Gui SIMD neon
         SOURCES
             ../3rdparty/pixman/pixman-arm-neon-asm.S
@@ -823,6 +847,8 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_system_zlib
 qt_internal_extend_target(Gui CONDITION NOT QT_FEATURE_system_zlib
     INCLUDE_DIRECTORIES
         ../3rdparty/zlib/src
+    ATTRIBUTION_FILE_DIR_PATHS
+        ../3rdparty/zlib
 )
 
 qt_internal_extend_target(Gui CONDITION NOT QT_FEATURE_system_zlib AND NOT no_core_dep
@@ -888,6 +914,8 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_vulkan
         vulkan/qvulkanfunctions.cpp
         vulkan/qvulkaninstance.cpp vulkan/qvulkaninstance.h vulkan/qvulkaninstance_p.h
         vulkan/qvulkanwindow.cpp vulkan/qvulkanwindow.h vulkan/qvulkanwindow_p.h
+    ATTRIBUTION_FILE_DIR_PATHS
+        vulkan
 )
 if(QT_FEATURE_vulkan)
     qt_internal_add_target_include_dirs_and_optionally_propagate(

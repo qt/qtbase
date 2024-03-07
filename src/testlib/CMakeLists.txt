@@ -78,6 +78,8 @@ qt_internal_add_module(Test
         Qt::Core
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
+    ATTRIBUTION_FILE_DIR_PATHS
+        3rdparty
 )
 
 if(TARGET Gui)

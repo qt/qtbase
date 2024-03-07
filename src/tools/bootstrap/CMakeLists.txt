@@ -8,6 +8,10 @@
 # The bootstrap library has a few manual tweaks compared to other
 # libraries.
 qt_add_library(Bootstrap STATIC)
+qt_internal_add_sbom(Bootstrap
+    TYPE QT_MODULE
+    NO_INSTALL
+)
 
 qt_internal_add_sync_header_dependencies(Bootstrap Core)
 
@@ -199,6 +203,8 @@ qt_internal_extend_target(Bootstrap CONDITION CMAKE_CROSSCOMPILING OR NOT QT_FEA
         PCRE2_DISABLE_JIT
     PUBLIC_INCLUDE_DIRECTORIES
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../3rdparty/pcre2/src>
+    ATTRIBUTION_FILE_DIR_PATHS
+        ../../3rdparty/pcre2
 )
 
 qt_internal_extend_target(Bootstrap

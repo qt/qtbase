@@ -48,6 +48,16 @@ qt_add_qmake_lib_dependency(fontconfig freetype)
 qt_find_package(gbm PROVIDED_TARGETS gbm::gbm MODULE_NAME gui QMAKE_LIB gbm)
 qt_find_package(WrapSystemHarfbuzz 2.6.0 PROVIDED_TARGETS WrapSystemHarfbuzz::WrapSystemHarfbuzz MODULE_NAME gui QMAKE_LIB harfbuzz)
 qt_find_package(Libinput PROVIDED_TARGETS Libinput::Libinput MODULE_NAME gui QMAKE_LIB libinput)
+qt_find_package_extend_sbom(TARGETS Libinput::Libinput
+    COPYRIGHTS
+        "Copyright © 2006-2009 Simon Thum"
+        "Copyright © 2008-2012 Kristian Høgsberg"
+        "Copyright © 2010-2012 Intel Corporation"
+        "Copyright © 2010-2011 Benjamin Franzke"
+        "Copyright © 2011-2012 Collabora, Ltd."
+        "Copyright © 2013-2014 Jonas Ådahl"
+        "Copyright © 2013-2015 Red Hat, Inc."
+)
 qt_find_package(WrapSystemJpeg PROVIDED_TARGETS WrapSystemJpeg::WrapSystemJpeg MODULE_NAME gui QMAKE_LIB libjpeg)
 qt_find_package(WrapSystemMd4c PROVIDED_TARGETS WrapSystemMd4c::WrapSystemMd4c MODULE_NAME gui QMAKE_LIB libmd4c)
 qt_find_package(WrapSystemPNG PROVIDED_TARGETS WrapSystemPNG::WrapSystemPNG MODULE_NAME gui QMAKE_LIB libpng)
