@@ -850,9 +850,11 @@ void QOpenGLWidgetPrivate::initialize()
 
     context = new QOpenGLContext;
     context->setFormat(requestedFormat);
-    if (contextFromRhi) {
-        context->setShareContext(contextFromRhi);
-        context->setScreen(contextFromRhi->screen());
+
+    QOpenGLContext *shareContext = contextFromRhi ? contextFromRhi : qt_gl_global_share_context();
+    if (shareContext) {
+        context->setShareContext(shareContext);
+        context->setScreen(shareContext->screen());
     }
     if (Q_UNLIKELY(!context->create())) {
         qWarning("QOpenGLWidget: Failed to create context");
