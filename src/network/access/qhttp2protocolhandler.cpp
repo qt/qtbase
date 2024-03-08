@@ -973,17 +973,26 @@ void QHttp2ProtocolHandler::handleContinuedHEADERS()
         HPack::BitIStream inputStream{&hpackBlock[0], &hpackBlock[0] + hpackBlock.size()};
         if (!decoder.decodeHeaderFields(inputStream))
             return connectionError(COMPRESSION_ERROR, "HPACK decompression failed");
-    } else if (firstFrameType == FrameType::PUSH_PROMISE) {
-        // It could be a PRIORITY sent in HEADERS - already handled by this
-        // point in handleHEADERS. If it was PUSH_PROMISE (HTTP/2 8.2.1):
-        // "The header fields in PUSH_PROMISE and any subsequent CONTINUATION
-        // frames MUST be a valid and complete set of request header fields
-        // (Section 8.1.2.3) ... If a client receives a PUSH_PROMISE that does
-        // not include a complete and valid set of header fields or the :method
-        // pseudo-header field identifies a method that is not safe, it MUST
-        // respond with a stream error (Section 5.4.2) of type PROTOCOL_ERROR."
-        resetPromisedStream(continuedFrames[0], Http2::PROTOCOL_ERROR);
-        return;
+    } else {
+        if (firstFrameType == FrameType::PUSH_PROMISE) {
+            // It could be a PRIORITY sent in HEADERS - already handled by this
+            // point in handleHEADERS. If it was PUSH_PROMISE (HTTP/2 8.2.1):
+            // "The header fields in PUSH_PROMISE and any subsequent CONTINUATION
+            // frames MUST be a valid and complete set of request header fields
+            // (Section 8.1.2.3) ... If a client receives a PUSH_PROMISE that does
+            // not include a complete and valid set of header fields or the :method
+            // pseudo-header field identifies a method that is not safe, it MUST
+            // respond with a stream error (Section 5.4.2) of type PROTOCOL_ERROR."
+            resetPromisedStream(continuedFrames[0], Http2::PROTOCOL_ERROR);
+            return;
+        }
+
+        // We got back an empty hpack block. Now let's figure out if there was an error.
+        constexpr auto hpackBlockHasContent = [](const auto &c) { return c.hpackBlockSize() > 0; };
+        const bool anyHpackBlock = std::any_of(continuedFrames.cbegin(), continuedFrames.cend(),
+                                               hpackBlockHasContent);
+        if (anyHpackBlock) // There was hpack block data, but returned empty => it overflowed.
+            return connectionError(FRAME_SIZE_ERROR, "HEADERS frame too large");
     }
 
     switch (firstFrameType) {
