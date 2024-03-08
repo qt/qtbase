@@ -62,7 +62,7 @@ qWaitFor(Functor predicate, QDeadlineTimer deadline = QDeadlineTimer(std::chrono
 template <typename Functor>
 [[nodiscard]] static bool qWaitFor(Functor predicate, int timeout)
 {
-    return qWaitFor(predicate, QDeadlineTimer(timeout));
+    return qWaitFor(predicate, QDeadlineTimer{timeout, Qt::PreciseTimer});
 }
 
 Q_CORE_EXPORT void qWait(int ms);
