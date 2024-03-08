@@ -4,7 +4,8 @@
 #ifndef QHTTPHEADERS_H
 #define QHTTPHEADERS_H
 
-#include <QtNetwork/qnetworkrequest.h>
+#include <QtNetwork/qtnetworkglobal.h>
+#include <QtCore/qmetaobject.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qcontainerfwd.h>
 

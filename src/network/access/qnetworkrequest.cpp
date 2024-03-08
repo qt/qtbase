@@ -6,6 +6,7 @@
 #include "qplatformdefs.h"
 #include "qnetworkcookie.h"
 #include "qsslconfiguration.h"
+#include "qhttpheadershelper_p.h"
 #if QT_CONFIG(http)
 #include "qhttp1configuration.h"
 #include "qhttp2configuration.h"
@@ -475,6 +476,7 @@ public:
             && decompressedSafetyCheckThreshold == other.decompressedSafetyCheckThreshold
 #endif
             && transferTimeout == other.transferTimeout
+            && QHttpHeadersHelper::compareStrict(httpHeaders, other.httpHeaders)
             ;
         // don't compare cookedHeaders
     }
@@ -598,6 +600,43 @@ QUrl QNetworkRequest::url() const
 void QNetworkRequest::setUrl(const QUrl &url)
 {
     d->url = url;
+}
+
+/*!
+    \since 6.8
+
+    Returns headers that are set in this network request.
+
+    \sa setHeaders()
+*/
+QHttpHeaders QNetworkRequest::headers() const
+{
+    return d->headers();
+}
+
+/*!
+    \since 6.8
+
+    Sets \a newHeaders as headers in this network request, overriding
+    any previously set headers.
+
+    If some headers correspond to the known headers, the values will
+    be parsed and the corresponding parsed form will also be set.
+
+    \sa headers(), KnownHeaders
+*/
+void QNetworkRequest::setHeaders(QHttpHeaders &&newHeaders)
+{
+    d->setHeaders(std::move(newHeaders));
+}
+
+/*!
+    \overload
+    \since 6.8
+*/
+void QNetworkRequest::setHeaders(const QHttpHeaders &newHeaders)
+{
+    d->setHeaders(newHeaders);
 }
 
 /*!
@@ -1399,6 +1438,33 @@ void QNetworkHeadersPrivate::setCookedHeader(QNetworkRequest::KnownHeaders heade
         setRawHeaderInternal(name, rawValue);
         cookedHeaders.insert(header, value);
     }
+}
+
+QHttpHeaders QNetworkHeadersPrivate::headers() const
+{
+    return httpHeaders;
+}
+
+void QNetworkHeadersPrivate::setHeaders(const QHttpHeaders &newHeaders)
+{
+    httpHeaders = newHeaders;
+}
+
+void QNetworkHeadersPrivate::setHeaders(QHttpHeaders &&newHeaders)
+{
+    httpHeaders = std::move(newHeaders);
+}
+
+void QNetworkHeadersPrivate::setHeader(QHttpHeaders::WellKnownHeader name, QByteArrayView value)
+{
+    httpHeaders.replaceOrAppend(name, value);
+}
+
+void QNetworkHeadersPrivate::clearHeaders()
+{
+    httpHeaders.clear();
+    rawHeaders.clear();
+    cookedHeaders.clear();
 }
 
 void QNetworkHeadersPrivate::setRawHeaderInternal(const QByteArray &key, const QByteArray &value)

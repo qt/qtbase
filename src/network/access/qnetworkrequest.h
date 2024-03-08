@@ -5,6 +5,7 @@
 #define QNETWORKREQUEST_H
 
 #include <QtNetwork/qtnetworkglobal.h>
+#include <QtNetwork/qhttpheaders.h>
 #include <QtCore/QSharedDataPointer>
 #include <QtCore/QString>
 #include <QtCore/QUrl>
@@ -118,6 +119,10 @@ public:
 
     QUrl url() const;
     void setUrl(const QUrl &url);
+
+    QHttpHeaders headers() const;
+    void setHeaders(const QHttpHeaders &newHeaders);
+    void setHeaders(QHttpHeaders &&newHeaders);
 
     // "cooked" headers
     QVariant header(KnownHeaders header) const;

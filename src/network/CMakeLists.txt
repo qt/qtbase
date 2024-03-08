@@ -22,6 +22,7 @@ qt_internal_add_module(Network
         access/qnetworkfile.cpp access/qnetworkfile_p.h
         access/qhttpheaders.cpp access/qhttpheaders.h
         access/qhttpheaderparser.cpp access/qhttpheaderparser_p.h
+        access/qhttpheadershelper.cpp access/qhttpheadershelper_p.h
         access/qnetworkreply.cpp access/qnetworkreply.h access/qnetworkreply_p.h
         access/qnetworkreplydataimpl.cpp access/qnetworkreplydataimpl_p.h
         access/qnetworkreplyfileimpl.cpp access/qnetworkreplyfileimpl_p.h

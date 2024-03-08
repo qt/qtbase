@@ -16,6 +16,7 @@
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
+#include <QtNetwork/qhttpheaders.h>
 #include "qnetworkrequest.h"
 #include "QtCore/qbytearray.h"
 #include "QtCore/qlist.h"
@@ -36,6 +37,7 @@ public:
     typedef QHash<QNetworkRequest::Attribute, QVariant> AttributesMap;
 
     RawHeadersList rawHeaders;
+    QHttpHeaders httpHeaders;
     CookedHeadersMap cookedHeaders;
     AttributesMap attributes;
     QPointer<QObject> originatingObject;
@@ -46,6 +48,13 @@ public:
     void setRawHeader(const QByteArray &key, const QByteArray &value);
     void setAllRawHeaders(const RawHeadersList &list);
     void setCookedHeader(QNetworkRequest::KnownHeaders header, const QVariant &value);
+
+    QHttpHeaders headers() const;
+    void setHeaders(const QHttpHeaders &newHeaders);
+    void setHeaders(QHttpHeaders &&newHeaders);
+    void setHeader(QHttpHeaders::WellKnownHeader name, QByteArrayView value);
+
+    void clearHeaders();
 
     static QDateTime fromHttpDate(const QByteArray &value);
     static QByteArray toHttpDate(const QDateTime &dt);

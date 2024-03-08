@@ -31,6 +31,8 @@ private slots:
     void rawHeaderParsing_data();
     void rawHeaderParsing();
     void originatingObject();
+    void setHeaders_data();
+    void setHeaders();
 
     void removeHeader();
 };
@@ -550,6 +552,33 @@ void tst_QNetworkRequest::originatingObject()
     }
 
     QVERIFY(!request.originatingObject());
+}
+
+void tst_QNetworkRequest::setHeaders_data()
+{
+    QTest::addColumn<QHttpHeaders>("h");
+    QTest::newRow("null") << QHttpHeaders();
+    QHttpHeaders headers;
+    headers.append("name1", "value1");
+    QTest::newRow("valid") << headers;
+}
+
+void tst_QNetworkRequest::setHeaders()
+{
+    QFETCH(QHttpHeaders, h);
+
+    QNetworkRequest r1;
+
+    auto result = r1.headers();
+    QVERIFY(result.isEmpty());
+
+    r1.setHeaders(h);
+    QCOMPARE(r1.headers().toListOfPairs(), h.toListOfPairs());
+
+    QNetworkRequest r2;
+    auto tmp = h;
+    r2.setHeaders(std::move(tmp));
+    QCOMPARE(r2.headers().toListOfPairs(), h.toListOfPairs());
 }
 
 QTEST_MAIN(tst_QNetworkRequest)
