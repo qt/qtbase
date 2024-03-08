@@ -136,7 +136,7 @@ public class QtActivityLoader extends QtLoader {
                 appendApplicationParameters(getDecodedUtfString(extraAppParams));
             }
 
-            m_debuggerSleepMs = 1000;
+            m_debuggerSleepMs = 3000;
             if (Os.getenv("QT_ANDROID_DEBUGGER_MAIN_THREAD_SLEEP_MS") != null) {
                 try {
                    m_debuggerSleepMs = Integer.parseInt(Os.getenv("QT_ANDROID_DEBUGGER_MAIN_THREAD_SLEEP_MS"));
