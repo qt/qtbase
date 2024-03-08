@@ -1969,7 +1969,7 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
         f = toplevel;
 
     QWidget *w = f;
-    QWidget *test = f->d_func()->focus_next;
+    QWidget *test = f->nextInFocusChain();
     bool seenWindow = false;
     bool focusWidgetAfterWindow = false;
     while (test && test != f) {
@@ -2000,7 +2000,7 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
             if (next)
                 break;
         }
-        test = test->d_func()->focus_next;
+        test = test->nextInFocusChain();
     }
 
     if (wrappingOccurred != nullptr)
