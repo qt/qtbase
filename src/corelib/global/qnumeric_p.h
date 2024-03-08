@@ -339,6 +339,39 @@ convertDoubleTo(double v, T *value, bool allow_precision_upgrade = true)
 #  endif
         return sse_check_result(*value);
     }
+
+#  if defined(__F16C__) || defined(__AVX512FP16__)
+    if constexpr (sizeof(T) == 2 && std::numeric_limits<T>::max_exponent == 16) {
+        // qfloat16 or std::float16_t, but not std::bfloat16_t or std::bfloat8_t
+        auto doConvert = [&](auto *out) {
+            asm ("vldmxcsr  %[csr]\n\t"
+#    ifdef __AVX512FP16__
+                 // AVX512FP16 & AVX10 have an instruction for this
+                 "vcvtsd2sh %[in], %[in], %[out]\n\t"
+#    else
+                 "vcvtsd2ss %[in], %[in], %[out]\n\t"   // sets DEST[MAXVL-1:128] := 0
+                 "vcvtps2ph %[rc], %[out], %[out]\n\t"
+#    endif
+                 "vstmxcsr  %[csr]"
+                : [csr] "+m" (csr), [out] "=v" (*out)
+                : [in] "v" (v), [rc] "i" (_MM_FROUND_CUR_DIRECTION)
+            );
+            return sse_check_result(out);
+        };
+
+        if constexpr (std::is_same_v<T, qfloat16> && !std::is_void_v<typename T::NativeType>) {
+            typename T::NativeType tmp;
+            bool b = doConvert(&tmp);
+            *value = tmp;
+            return b;
+        } else {
+#    ifndef Q_CC_CLANG
+            // Clang can only implement this if it has a native FP16 type
+            return doConvert(value);
+#    endif
+        }
+    }
+#  endif
 #endif // __SSE2__ && inline assembly
 
     if (!qt_is_finite(v) && std::numeric_limits<T>::has_infinity) {
