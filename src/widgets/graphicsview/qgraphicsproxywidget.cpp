@@ -340,10 +340,10 @@ QWidget *QGraphicsProxyWidgetPrivate::findFocusChild(QWidget *child, bool next) 
 
     // Run around the focus chain until we find a widget that can take tab focus.
     if (!child) {
-        child = next ? (QWidget *)widget : widget->d_func()->focus_prev;
+        child = next ? widget.data() : widget->previousInFocusChain();
     } else {
-        child = next ? child->d_func()->focus_next : child->d_func()->focus_prev;
-        if ((next && child == widget) || (!next && child == widget->d_func()->focus_prev)) {
+        child = next ? child->nextInFocusChain() : child->previousInFocusChain();
+        if ((next && child == widget) || (!next && child == widget->previousInFocusChain())) {
              return nullptr;
         }
     }
@@ -360,8 +360,8 @@ QWidget *QGraphicsProxyWidgetPrivate::findFocusChild(QWidget *child, bool next) 
             && !(child->d_func()->extra && child->d_func()->extra->focus_proxy)) {
             return child;
         }
-        child = next ? child->d_func()->focus_next : child->d_func()->focus_prev;
-    } while (child != oldChild && !(next && child == widget) && !(!next && child == widget->d_func()->focus_prev));
+        child = next ? child->nextInFocusChain() : child->previousInFocusChain();
+    } while (child != oldChild && !(next && child == widget) && !(!next && child == widget->previousInFocusChain()));
     return nullptr;
 }
 
