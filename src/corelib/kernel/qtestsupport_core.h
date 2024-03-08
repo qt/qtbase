@@ -30,7 +30,6 @@ qWaitFor(Functor predicate, QDeadlineTimer deadline = QDeadlineTimer(std::chrono
 
     using namespace std::chrono;
 
-    auto remaining = 0ms;
     do {
         // We explicitly do not pass the remaining time to processEvents, as
         // that would keep spinning processEvents for the whole duration if
@@ -49,7 +48,7 @@ qWaitFor(Functor predicate, QDeadlineTimer deadline = QDeadlineTimer(std::chrono
             continue;
         }
 
-        remaining = ceil<milliseconds>(deadline.remainingTimeAsDuration());
+        const auto remaining = ceil<milliseconds>(deadline.remainingTimeAsDuration());
         if (remaining == 0ms)
             break;
 
