@@ -45,11 +45,6 @@ qWaitFor(Functor predicate, QDeadlineTimer deadline = QDeadlineTimer(std::chrono
         if (predicate())
             return true;
 
-        if (deadline.isForever()) { // No point checking remaining time
-            qSleep(10ms);
-            continue;
-        }
-
         const auto remaining = ceil<milliseconds>(deadline.remainingTimeAsDuration());
         if (remaining == 0ms)
             break;
