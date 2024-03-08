@@ -6,7 +6,6 @@
 
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdeadlinetimer.h>
-#include <QtCore/qthread.h>
 
 #include <chrono>
 
