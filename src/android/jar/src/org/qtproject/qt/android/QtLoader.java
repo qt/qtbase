@@ -435,6 +435,13 @@ abstract class QtLoader {
         ArrayList<String> nativeLibraries = getQtLibrariesList();
         nativeLibraries.addAll(getLocalLibrariesList());
 
+        if (m_debuggerSleepMs > 0) {
+            Log.i(QtTAG, "Sleeping for " + m_debuggerSleepMs +
+                         "ms, helping the native debugger to settle. " +
+                         "Use the env QT_ANDROID_DEBUGGER_MAIN_THREAD_SLEEP_MS variable to change this value.");
+            QtNative.getQtThread().sleep(m_debuggerSleepMs);
+        }
+
         if (!loadLibraries(nativeLibraries)) {
             Log.e(QtTAG, "Loading Qt native libraries failed");
             finish();
@@ -511,9 +518,6 @@ abstract class QtLoader {
         String mainLibPath = getLibrariesFullPaths(oneEntryArray).get(0);
         final boolean[] success = {true};
         QtNative.getQtThread().run(() -> {
-            if (m_debuggerSleepMs > 0)
-                QtNative.getQtThread().sleep(m_debuggerSleepMs);
-
             m_mainLibPath = loadLibraryHelper(mainLibPath);
             if (m_mainLibPath == null)
                 success[0] = false;
