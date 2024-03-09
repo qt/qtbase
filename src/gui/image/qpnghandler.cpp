@@ -554,10 +554,10 @@ bool QPngHandlerPrivate::readPngHeader()
 #endif
         png_uint_32 profLen;
         png_get_iCCP(png_ptr, info_ptr, &name, &compressionType, &profileData, &profLen);
-        colorSpace = QColorSpace::fromIccProfile(QByteArray((const char *)profileData, profLen));
-        if (!colorSpace.isValid()) {
-            qCDebug(lcImageIo) << "QPngHandler: Failed to parse ICC profile";
-        } else {
+        Q_UNUSED(name);
+        Q_UNUSED(compressionType);
+        if (profLen > 0) {
+            colorSpace = QColorSpace::fromIccProfile(QByteArray((const char *)profileData, profLen));
             QColorSpacePrivate *csD = QColorSpacePrivate::get(colorSpace);
             if (csD->description.isEmpty())
                 csD->description = QString::fromLatin1((const char *)name);
@@ -926,15 +926,15 @@ bool QPNGImageWriter::writeImage(const QImage& image, int compression_in, const 
                  color_type, 0, 0, 0);       // sets #channels
 
 #ifdef PNG_iCCP_SUPPORTED
-    if (image.colorSpace().isValid()) {
-        QColorSpace cs = image.colorSpace();
-        // Support the old gamma making it override transferfunction.
-        if (gamma != 0.0 && !qFuzzyCompare(cs.gamma(), 1.0f / gamma))
-            cs = cs.withTransferFunction(QColorSpace::TransferFunction::Gamma, 1.0f / gamma);
+    QColorSpace cs = image.colorSpace();
+    // Support the old gamma making it override transferfunction (if possible)
+    if (cs.isValid() && gamma != 0.0 && !qFuzzyCompare(cs.gamma(), 1.0f / gamma))
+        cs = cs.withTransferFunction(QColorSpace::TransferFunction::Gamma, 1.0f / gamma);
+    QByteArray iccProfile = cs.iccProfile();
+    if (!iccProfile.isEmpty()) {
         QByteArray iccProfileName = cs.description().toLatin1();
         if (iccProfileName.isEmpty())
             iccProfileName = QByteArrayLiteral("Custom");
-        QByteArray iccProfile = cs.iccProfile();
         png_set_iCCP(png_ptr, info_ptr,
              #if PNG_LIBPNG_VER < 10500
                      iccProfileName.data(), PNG_COMPRESSION_TYPE_BASE, iccProfile.data(),
