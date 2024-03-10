@@ -493,7 +493,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
 
     Qt::TouchPointStates allStates;
     QSet<int> inputIds;
-
+    unsigned long event_time = 0;
     for (quint32 i = 0; i < count; ++i) {
         if (QWindowsContext::verbose > 1)
             qCDebug(lcQpaEvents).noquote().nospace() << Qt::showbase
@@ -540,6 +540,9 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
             m_lastTouchPoints.insert(touchPoint.id, touchPoint);
         }
         allStates |= touchPoint.state;
+        
+        if (event_time == 0)
+            event_time = touchInfo[i].pointerInfo.dwTime;
 
         touchPoints.append(touchPoint);
         inputIds.insert(touchPoint.id);
@@ -565,7 +568,7 @@ bool QWindowsPointerHandler::translateTouchEvent(QWindow *window, HWND hwnd,
     if (allStates == Qt::TouchPointReleased)
         m_touchInputIDToTouchPointID.clear();
 
-    QWindowSystemInterface::handleTouchEvent(window, m_touchDevice, touchPoints,
+    QWindowSystemInterface::handleTouchEvent(window, event_time, m_touchDevice, touchPoints,
                                              QWindowsKeyMapper::queryKeyboardModifiers());
     return false; // Allow mouse messages to be generated.
 }

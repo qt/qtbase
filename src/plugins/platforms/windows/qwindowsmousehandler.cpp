@@ -635,7 +635,7 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
     QTouchPointList touchPoints;
     touchPoints.reserve(winTouchPointCount);
     Qt::TouchPointStates allStates;
-
+    unsigned long event_time = 0;
     GetTouchInputInfo(reinterpret_cast<HTOUCHINPUT>(msg.lParam),
                       UINT(msg.wParam), winTouchInputs.data(), sizeof(TOUCHINPUT));
     for (int i = 0; i < winTouchPointCount; ++i) {
@@ -674,7 +674,9 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
         }
 
         allStates |= touchPoint.state;
-
+        if (event_time == 0)
+            event_time = winTouchInput.dwTime;
+        
         touchPoints.append(touchPoint);
     }
 
@@ -685,6 +687,7 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
         m_touchInputIDToTouchPointID.clear();
 
     QWindowSystemInterface::handleTouchEvent(window,
+                                             event_time,
                                              m_touchDevice,
                                              touchPoints,
                                              QWindowsKeyMapper::queryKeyboardModifiers());
