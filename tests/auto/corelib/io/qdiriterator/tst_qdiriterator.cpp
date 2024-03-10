@@ -87,13 +87,14 @@ private slots:
 #endif
 
 private:
-    QTemporaryDir m_dataDir;
+    QSharedPointer<QTemporaryDir> m_dataDir;
 };
 
 void tst_QDirIterator::initTestCase()
 {
+    QString testdata_dir;
 #ifdef Q_OS_ANDROID
-    QString testdata_dir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    testdata_dir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     QString resourceSourcePath = QStringLiteral(":/testdata");
     QDirIterator it(resourceSourcePath, QDirIterator::Subdirectories);
     while (it.hasNext()) {
@@ -116,11 +117,10 @@ void tst_QDirIterator::initTestCase()
 #elif defined(BUILTIN_TESTDATA)
     m_dataDir = QEXTRACTTESTDATA("/testdata");
     QVERIFY2(!m_dataDir.isNull(), qPrintable("Could not extract test data"));
-    QString testdata_dir = m_dataDir->path();
+    testdata_dir = m_dataDir->path();
 #else
-
-    // chdir into testdata directory, then find testdata by relative paths.
-    QString testdata_dir = m_dataDir.path();
+    m_dataDir.reset(new QTemporaryDir);
+    testdata_dir = m_dataDir->path();
 #endif
 
     QVERIFY(!testdata_dir.isEmpty());
