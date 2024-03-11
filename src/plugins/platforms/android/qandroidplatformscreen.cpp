@@ -57,6 +57,7 @@ Q_DECLARE_JNI_CLASS(Resources, "android/content/res/Resources")
 Q_DECLARE_JNI_CLASS(Size, "android/util/Size")
 Q_DECLARE_JNI_CLASS(QtNative, "org/qtproject/qt/android/QtNative")
 Q_DECLARE_JNI_CLASS(QtDisplayManager, "org/qtproject/qt/android/QtDisplayManager")
+Q_DECLARE_JNI_CLASS(QtWindowInterface, "org/qtproject/qt/android/QtWindowInterface")
 
 Q_DECLARE_JNI_CLASS(DisplayMode, "android/view/Display$Mode")
 
@@ -162,7 +163,10 @@ void QAndroidPlatformScreen::addWindow(QAndroidPlatformWindow *window)
         return;
 
     m_windowStack.prepend(window);
-    QtAndroid::qtActivityDelegate().callMethod<void>("addTopLevelWindow", window->nativeWindow());
+
+    AndroidBackendRegister *reg = QtAndroid::backendRegister();
+    reg->callInterface<QtJniTypes::QtWindowInterface, void>("addTopLevelWindow",
+                                                            window->nativeWindow());
 
     if (window->window()->isVisible())
         topVisibleWindowChanged();
@@ -175,7 +179,9 @@ void QAndroidPlatformScreen::removeWindow(QAndroidPlatformWindow *window)
     if (m_windowStack.contains(window))
         qWarning() << "Failed to remove window";
 
-    QtAndroid::qtActivityDelegate().callMethod<void>("removeTopLevelWindow", window->nativeViewId());
+    AndroidBackendRegister *reg = QtAndroid::backendRegister();
+    reg->callInterface<QtJniTypes::QtWindowInterface, void>("removeTopLevelWindow",
+                                                            window->nativeViewId());
 
     topVisibleWindowChanged();
 }
@@ -187,7 +193,10 @@ void QAndroidPlatformScreen::raise(QAndroidPlatformWindow *window)
         return;
     if (index > 0) {
         m_windowStack.move(index, 0);
-        QtAndroid::qtActivityDelegate().callMethod<void>("bringChildToFront", window->nativeViewId());
+
+        AndroidBackendRegister *reg = QtAndroid::backendRegister();
+        reg->callInterface<QtJniTypes::QtWindowInterface, void>("bringChildToFront",
+                                                                window->nativeViewId());
     }
     topVisibleWindowChanged();
 }
@@ -198,7 +207,10 @@ void QAndroidPlatformScreen::lower(QAndroidPlatformWindow *window)
     if (index == -1 || index == (m_windowStack.size() - 1))
         return;
     m_windowStack.move(index, m_windowStack.size() - 1);
-    QtAndroid::qtActivityDelegate().callMethod<void>("bringChildToBack", window->nativeViewId());
+
+    AndroidBackendRegister *reg = QtAndroid::backendRegister();
+    reg->callInterface<QtJniTypes::QtWindowInterface, void>("bringChildToBack",
+                                                            window->nativeViewId());
 
     topVisibleWindowChanged();
 }

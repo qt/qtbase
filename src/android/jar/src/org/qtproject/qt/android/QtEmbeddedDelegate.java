@@ -22,12 +22,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 class QtEmbeddedDelegate extends QtActivityDelegateBase
-        implements QtNative.AppStateDetailsListener, QtEmbeddedViewInterface
+        implements QtNative.AppStateDetailsListener, QtEmbeddedViewInterface, QtWindowInterface
 {
     // TODO simplistic implementation with one QtView, expand to support multiple views QTBUG-117649
     private QtView m_view;
     private QtNative.ApplicationStateDetails m_stateDetails;
     private boolean m_windowLoaded = false;
+    private boolean m_backendsRegistered = false;
 
     public QtEmbeddedDelegate(Activity context) {
         super(context);
@@ -89,6 +90,13 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
     public void onAppStateDetailsChanged(QtNative.ApplicationStateDetails details) {
         synchronized (this) {
             m_stateDetails = details;
+            if (details.isStarted && !m_backendsRegistered) {
+                m_backendsRegistered = true;
+                BackendRegister.registerBackend(QtWindowInterface.class, (QtWindowInterface)this);
+            } else if (!details.isStarted && m_backendsRegistered) {
+                m_backendsRegistered = false;
+                BackendRegister.unregisterBackend(QtWindowInterface.class);
+            }
         }
     }
 

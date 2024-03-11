@@ -94,6 +94,7 @@ static const char m_methodErrorMsg[] = "Can't find method \"%s%s\"";
 Q_CONSTINIT static QBasicAtomicInt startQtAndroidPluginCalled = Q_BASIC_ATOMIC_INITIALIZER(0);
 
 Q_DECLARE_JNI_CLASS(QtEmbeddedDelegateFactory, "org/qtproject/qt/android/QtEmbeddedDelegateFactory")
+Q_DECLARE_JNI_CLASS(QtWindowInterface, "org/qtproject/qt/android/QtWindowInterface")
 
 namespace QtAndroid
 {
@@ -184,7 +185,9 @@ namespace QtAndroid
     // TODO move calls from here to where they logically belong
     void setSystemUiVisibility(SystemUiVisibility uiVisibility)
     {
-        qtActivityDelegate().callMethod<void>("setSystemUiVisibility", jint(uiVisibility));
+        AndroidBackendRegister *reg = QtAndroid::backendRegister();
+        reg->callInterface<QtJniTypes::QtWindowInterface, void>("setSystemUiVisibility",
+                                                                jint(uiVisibility));
     }
 
     // FIXME: avoid direct access to QtActivityDelegate

@@ -26,20 +26,19 @@ import android.view.Menu;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowInsetsController;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 
 import java.util.HashMap;
 
-class QtActivityDelegate extends QtActivityDelegateBase
+class QtActivityDelegate extends QtActivityDelegateBase implements QtWindowInterface
 {
     private static final String QtTAG = "QtActivityDelegate";
 
     private QtRootLayout m_layout = null;
     private ImageView m_splashScreen = null;
     private boolean m_splashScreenSticky = false;
+    private boolean m_backendsRegistered = false;
 
     private View m_dummyView = null;
     private HashMap<Integer, View> m_nativeViews = new HashMap<Integer, View>();
@@ -53,6 +52,22 @@ class QtActivityDelegate extends QtActivityDelegateBase
         setActivityBackgroundDrawable();
     }
 
+    void registerBackends()
+    {
+        if (!m_backendsRegistered) {
+            m_backendsRegistered = true;
+            BackendRegister.registerBackend(QtWindowInterface.class,
+                                            (QtWindowInterface)QtActivityDelegate.this);
+        }
+    }
+
+    void unregisterBackends()
+    {
+        if (m_backendsRegistered) {
+            m_backendsRegistered = false;
+            BackendRegister.unregisterBackend(QtWindowInterface.class);
+        }
+    }
 
     @UsedFromNativeCode
     @Override
@@ -61,9 +76,8 @@ class QtActivityDelegate extends QtActivityDelegateBase
         return m_layout;
     }
 
-    @UsedFromNativeCode
     @Override
-    void setSystemUiVisibility(int systemUiVisibility)
+    public void setSystemUiVisibility(int systemUiVisibility)
     {
         QtNative.runAction(() -> {
             m_displayManager.setSystemUiVisibility(systemUiVisibility);
@@ -310,7 +324,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
 
     @UsedFromNativeCode
     @Override
-    void removeTopLevelWindow(final int id)
+    public void removeTopLevelWindow(final int id)
     {
         QtNative.runAction(()-> {
             if (m_topLevelWindows.containsKey(id)) {
@@ -328,7 +342,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
 
     @UsedFromNativeCode
     @Override
-    void bringChildToFront(final int id)
+    public void bringChildToFront(final int id)
     {
         QtNative.runAction(() -> {
             QtWindow window = m_topLevelWindows.get(id);
@@ -339,7 +353,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
 
     @UsedFromNativeCode
     @Override
-    void bringChildToBack(int id)
+    public void bringChildToBack(int id)
     {
         QtNative.runAction(() -> {
             QtWindow window = m_topLevelWindows.get(id);

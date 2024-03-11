@@ -55,11 +55,6 @@ abstract class QtActivityDelegateBase
     void hideSplashScreen(final int duration) {}
     void openContextMenu(final int x, final int y, final int w, final int h) {}
     void setActionBarVisibility(boolean visible) {}
-    void addTopLevelWindow(final QtWindow window) {}
-    void removeTopLevelWindow(final int id) {}
-    void bringChildToFront(final int id) {}
-    void bringChildToBack(int id) {}
-    void setSystemUiVisibility(int systemUiVisibility) {}
 
     QtActivityDelegateBase(Activity activity)
     {
