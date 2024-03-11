@@ -699,12 +699,12 @@ void tst_QCborStreamReader::strings()
     if (reader.isByteArray()) {
         QByteArray prefix("some prefix");
         QByteArray ba = prefix;
-        QVERIFY(reader.appendToByteArray(ba));
+        QVERIFY(reader.readAndAppendToByteArray(ba));
         QCOMPARE(ba, prefix + fullString);
     } else {
         QString prefix("some prefix");
         QString str = prefix;
-        QVERIFY(reader.appendToString(str));
+        QVERIFY(reader.readAndAppendToString(str));
         QCOMPARE(str, prefix + QString::fromUtf8(fullString));
     }
 
@@ -714,7 +714,7 @@ void tst_QCborStreamReader::strings()
     if (reader.isString()) {
         QByteArray prefix("some prefix");
         QByteArray utf8 = prefix;
-        QVERIFY(reader.appendToUtf8String(utf8));
+        QVERIFY(reader.readAndAppendToUtf8String(utf8));
         QCOMPARE(utf8, prefix + fullString);
 
         reader.reset();
@@ -954,12 +954,12 @@ void tst_QCborStreamReader::validation()
         if (reader.isString()) {
             QString prefix = "some prefix";
             QString str = prefix;
-            QVERIFY(!reader.appendToString(str));
+            QVERIFY(!reader.readAndAppendToString(str));
             QVERIFY(str.startsWith(prefix));    // but may have decoded some
         } else if (reader.isByteArray()) {
             QByteArray prefix = "some prefix";
             QByteArray ba = prefix;
-            QVERIFY(!reader.appendToByteArray(ba));
+            QVERIFY(!reader.readAndAppendToByteArray(ba));
             QVERIFY(ba.startsWith(prefix));     // but may have decoded some
         }
         QCOMPARE(reader.lastError(), error);
@@ -977,7 +977,7 @@ void tst_QCborStreamReader::validation()
     if (reader.isString()) {
         QByteArray prefix = "some prefix";
         QByteArray ba = prefix;
-        QVERIFY(!reader.appendToUtf8String(ba));
+        QVERIFY(!reader.readAndAppendToUtf8String(ba));
         QVERIFY(ba.startsWith(prefix));     // but may have decoded some
         QCOMPARE(reader.lastError(), error);
 
