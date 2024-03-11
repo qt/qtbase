@@ -1145,10 +1145,12 @@ bool TlsCryptographSchannel::acquireCredentialsHandle()
     }
 
     const QList<QSslCipher> ciphers = configuration.ciphers();
-    if (!containsTls13Cipher(ciphers))
+    if (!ciphers.isEmpty() && !containsTls13Cipher(ciphers))
         protocols &= ~SP_PROT_TLS1_3;
 
-    QList<CRYPTO_SETTINGS> cryptoSettings = cryptoSettingsForCiphers(ciphers);
+    QList<CRYPTO_SETTINGS> cryptoSettings;
+    if (!ciphers.isEmpty())
+        cryptoSettings = cryptoSettingsForCiphers(ciphers);
 
     TLS_PARAMETERS tlsParameters = {
         0,
