@@ -17,17 +17,23 @@ here, research the relevant zone's offset and add a new entry to the
 list of twoples, preserving the ordering. Internet search engines and
 timeanddate.com can help with researching the offset. Note that some
 UTC offset zones (giving only the hour) are present in windowsIdList.
+When adding an entry to windowsIdList, check whether its offset
+corresponds to that of some entry in utcIdList; if not, add such an
+entry.
 
 The utcIdList is again a list of tuples (name, offset), associating
 various UTC-offset names with their offsets in seconds. Aside from
 'UTC' itself, shared with windowsIdList, these include minutes in
-their offsets even when they are whole hour offsets. It is not clear
-where this particular list of offsets came from, but entries should
-not be removed as they make up the available zones of the UTC
-back-end. (That recognizes other offset zones, and its is-available
-check will accept them, but it leaves them out of its list. There are,
-after all, thousands of possible offset zones, but relatively few are
-widely used.)
+their offsets even when they are whole hour offsets. The list contains
+the UTC-equivalents of all offsets seen in the windowsIdList, plus the
+whole hours out to ±14 hours, the two verbose forms of UTC±00:00 and
+any legacy entries from past Windows zone offsets. Entries should not
+be removed, even if the relevant Windows ID becomes obsolete or
+switches to a different offset, as they make up the available zones of
+the UTC back-end. (That recognizes other offset zones, and its
+is-available check will accept them, but it leaves them out of its
+list. There are, after all, thousands of possible offset zones, but
+relatively few are widely used.)
 
 Note: -00:00 (without the UTC prefix) was introduced in RFC3339 as a
 way to indicate that a date-time has been converted to UTC but its use
@@ -51,6 +57,7 @@ utcIdList = (
     ('UTC-12:00', -43200),
     ('UTC-11:00', -39600),
     ('UTC-10:00', -36000),
+    ('UTC-09:30', -34200),
     ('UTC-09:00', -32400),
     ('UTC-08:00', -28800),
     ('UTC-07:00', -25200),
@@ -79,11 +86,14 @@ utcIdList = (
     ('UTC+07:00',  25200),
     ('UTC+08:00',  28800),
     ('UTC+08:30',  30600),
+    ('UTC+08:45',  31500),
     ('UTC+09:00',  32400),
     ('UTC+09:30',  34200),
     ('UTC+10:00',  36000),
+    ('UTC+10:30',  37800),
     ('UTC+11:00',  39600),
     ('UTC+12:00',  43200),
+    ('UTC+12:45',  45900),
     ('UTC+13:00',  46800),
     ('UTC+14:00',  50400),
 )

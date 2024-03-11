@@ -185,6 +185,18 @@ def main(out, err):
                     subsequent_indent=' ', width=80)) + '\n')
         return 1
 
+    # Offsets of the windows tables, that are whole numbers of minutes, in minutes:
+    winOff = set(m for m, s in (divmod(v, 60) for k, v in windowsIdList) if s == 0)
+    winUtc = set(f'UTC-{h:02}:{m:02}'
+                 for h, m in (divmod(-o, 60) for o in winOff if o < 0)).union(
+                         f'UTC+{h:02}:{m:02}'
+                         for h, m in (divmod(o, 60) for o in winOff if o > 0))
+    # All such offsets should be represented by entries in utcIdList:
+    newUtc = winUtc.difference(n for n, o in utcIdList)
+    if newUtc:
+        err.write(f'Please add {", ".join(newUtc)} to zonedata.utcIdList\n')
+        return 1
+
     out.write('Input files parsed, now writing data\n')
 
     try:
