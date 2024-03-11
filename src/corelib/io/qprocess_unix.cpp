@@ -256,15 +256,6 @@ struct QChildProcess
         : d(d), argv(resolveExecutable(d->program), d->arguments),
           envp(d->environmentPrivate())
     {
-        if (!d->workingDirectory.isEmpty()) {
-            workingDirectory = opendirfd(QFile::encodeName(d->workingDirectory));
-            if (workingDirectory < 0) {
-                d->setErrorAndEmit(QProcess::FailedToStart, "chdir: "_L1 + qt_error_string());
-                d->cleanup();
-                return;
-            }
-        }
-
         // Block Unix signals, to ensure the user's handlers aren't run in the
         // child side and do something weird, especially if the handler and the
         // user of QProcess are completely different codebases.
@@ -276,6 +267,15 @@ struct QChildProcess
         // would be bad enough with regular fork(), but it's likely fatal with
         // vfork().
         disableThreadCancellations();
+
+        if (!d->workingDirectory.isEmpty()) {
+            workingDirectory = opendirfd(QFile::encodeName(d->workingDirectory));
+            if (workingDirectory < 0) {
+                d->setErrorAndEmit(QProcess::FailedToStart, "chdir: "_L1 + qt_error_string());
+                d->cleanup();
+            }
+        }
+
     }
     ~QChildProcess() noexcept(false)
     {
