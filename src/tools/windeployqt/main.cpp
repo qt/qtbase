@@ -706,13 +706,15 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
             for (const QString &library : libraries)
                 options->binaries.append(path + u'/' + library);
         } else {
-            if (fi.absolutePath() != options->directory)
+            if (!parser->isSet(dirOption) && fi.absolutePath() != options->directory)
                 multipleDirs = true;
             options->binaries.append(path);
         }
     }
-    if (multipleDirs)
-        std::wcerr << "Warning: using binaries from different directories\n";
+    if (multipleDirs) {
+        std::wcerr << "Warning: using binaries from different directories, deploying to following path: "
+        << options->directory << '\n' << "To disable this warning, use the --dir option\n";
+    }
     if (options->translationsDirectory.isEmpty())
         options->translationsDirectory = options->directory + "/translations"_L1;
     return 0;
