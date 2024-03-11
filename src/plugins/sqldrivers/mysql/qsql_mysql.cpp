@@ -832,28 +832,6 @@ void QMYSQLResult::virtual_hook(int id, void *data)
     QSqlResult::virtual_hook(id, data);
 }
 
-static QT_MYSQL_TIME *toMySqlDate(QDate date, QTime time, int type)
-{
-    Q_ASSERT(type == QMetaType::QTime || type == QMetaType::QDate
-             || type == QMetaType::QDateTime);
-
-    auto myTime = new QT_MYSQL_TIME{};
-
-    if (type == QMetaType::QTime || type == QMetaType::QDateTime) {
-        myTime->hour = time.hour();
-        myTime->minute = time.minute();
-        myTime->second = time.second();
-        myTime->second_part = time.msec() * 1000;
-    }
-    if (type == QMetaType::QDate || type == QMetaType::QDateTime) {
-        myTime->year = date.year();
-        myTime->month = date.month();
-        myTime->day = date.day();
-    }
-
-    return myTime;
-}
-
 bool QMYSQLResult::prepare(const QString& query)
 {
     Q_D(QMYSQLResult);
@@ -943,25 +921,39 @@ bool QMYSQLResult::exec()
                 case QMetaType::QTime:
                 case QMetaType::QDate:
                 case QMetaType::QDateTime: {
-                    QT_MYSQL_TIME *myTime = toMySqlDate(val.toDate(), val.toTime(), val.userType());
+                    auto myTime = new QT_MYSQL_TIME{};
                     timeVector.append(myTime);
-
                     currBind->buffer = myTime;
-                    switch (val.userType()) {
-                    case QMetaType::QTime:
+
+                    QDate date;
+                    QTime time;
+                    int type = val.userType();
+                    if (type == QMetaType::QTime) {
+                        time = val.toTime();
                         currBind->buffer_type = MYSQL_TYPE_TIME;
                         myTime->time_type = MYSQL_TIMESTAMP_TIME;
-                        break;
-                    case QMetaType::QDate:
+                    } else if (type == QMetaType::QDate) {
+                        date = val.toDate();
                         currBind->buffer_type = MYSQL_TYPE_DATE;
                         myTime->time_type = MYSQL_TIMESTAMP_DATE;
-                        break;
-                    case QMetaType::QDateTime:
+                    } else {
+                        QDateTime dt = val.toDateTime();
+                        date = dt.date();
+                        time = dt.time();
                         currBind->buffer_type = MYSQL_TYPE_DATETIME;
                         myTime->time_type = MYSQL_TIMESTAMP_DATETIME;
-                        break;
-                    default:
-                        break;
+                    }
+
+                    if (type == QMetaType::QTime || type == QMetaType::QDateTime) {
+                        myTime->hour = time.hour();
+                        myTime->minute = time.minute();
+                        myTime->second = time.second();
+                        myTime->second_part = time.msec() * 1000;
+                    }
+                    if (type == QMetaType::QDate || type == QMetaType::QDateTime) {
+                        myTime->year = date.year();
+                        myTime->month = date.month();
+                        myTime->day = date.day();
                     }
                     currBind->buffer_length = sizeof(QT_MYSQL_TIME);
                     currBind->length = 0;
