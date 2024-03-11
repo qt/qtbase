@@ -113,7 +113,7 @@ public class QtActivityDelegate extends QtActivityDelegateBase
         m_activity.setContentView(m_layout,
                                   new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                                              ViewGroup.LayoutParams.MATCH_PARENT));
-        QtDisplayManager.handleOrientationChanges(m_activity, false);
+        QtDisplayManager.handleOrientationChanges(m_activity);
 
         handleUiModeChange(m_activity.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK);
 
