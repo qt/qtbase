@@ -1554,30 +1554,35 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
     return createDirectoryWithParents(dirName, securityAttributes, false);
 }
 
-//static
-bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents)
+bool QFileSystemEngine::rmdir(const QFileSystemEntry &entry)
 {
     QString dirName = entry.filePath();
     Q_CHECK_FILE_NAME(dirName, false);
 
-    if (removeEmptyParents) {
-        dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
-        for (int oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
-            const auto chunkRef = QStringView{dirName}.left(slash);
-            if (chunkRef.length() == 2 && chunkRef.at(0).isLetter()
-                && chunkRef.at(1) == u':') {
-                break;
-            }
-            const QString chunk = chunkRef.toString();
-            if (!isDirPath(chunk, nullptr))
-                return false;
-            if (!rmDir(chunk))
-                return oldslash != 0;
-            slash = dirName.lastIndexOf(QDir::separator(), oldslash-1);
+    return rmDir(dirName);
+}
+
+bool QFileSystemEngine::rmpath(const QFileSystemEntry &entry)
+{
+    const QString dirName = QDir::toNativeSeparators(QDir::cleanPath(entry.filePath()));
+    Q_CHECK_FILE_NAME(dirName, false);
+
+    for (int oldslash = 0, slash = dirName.size(); slash > 0; oldslash = slash) {
+        const auto chunkRef = QStringView{dirName}.left(slash);
+        if (chunkRef.length() == 2 && chunkRef.at(0).isLetter()
+            && chunkRef.at(1) == u':') {
+            break;
         }
-        return true;
+        const QString chunk = chunkRef.toString();
+        // TODO: get isDirPath() and rmDir() to accept QStringView
+        if (!isDirPath(chunk, nullptr))
+            return false;
+        if (!rmDir(chunk))
+            return oldslash != 0;
+        slash = dirName.lastIndexOf(QDir::separator(), oldslash - 1);
     }
-    return rmDir(entry.filePath());
+
+    return true;
 }
 
 //static

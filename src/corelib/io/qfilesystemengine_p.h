@@ -117,7 +117,15 @@ public:
 
     static bool createDirectory(const QFileSystemEntry &entry, bool createParents,
                                 std::optional<QFile::Permissions> permissions = std::nullopt);
-    static bool removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents);
+    static bool removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents)
+    {
+        if (removeEmptyParents)
+            return rmpath(entry);
+        return rmdir(entry);
+    }
+
+    static bool rmdir(const QFileSystemEntry &entry);
+    static bool rmpath(const QFileSystemEntry &entry);
 
     static bool createLink(const QFileSystemEntry &source, const QFileSystemEntry &target, QSystemError &error);
 

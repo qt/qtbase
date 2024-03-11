@@ -1552,7 +1552,7 @@ bool QDir::rmdir(const QString &dirName) const
 
     QString fn = filePath(dirName);
     if (!d->fileEngine)
-        return QFileSystemEngine::removeDirectory(QFileSystemEntry(fn), false);
+        return QFileSystemEngine::rmdir(QFileSystemEntry(fn));
 
     return d->fileEngine->rmdir(fn, false);
 }
@@ -1606,7 +1606,7 @@ bool QDir::rmpath(const QString &dirPath) const
 
     QString fn = filePath(dirPath);
     if (!d->fileEngine)
-        return QFileSystemEngine::removeDirectory(QFileSystemEntry(fn), true);
+        return QFileSystemEngine::rmpath(QFileSystemEntry(fn));
     return d->fileEngine->rmdir(fn, true);
 }
 

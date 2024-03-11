@@ -1189,29 +1189,27 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
     return createDirectoryWithParents(dirName, mode, false);
 }
 
-//static
-bool QFileSystemEngine::removeDirectory(const QFileSystemEntry &entry, bool removeEmptyParents)
+bool QFileSystemEngine::rmdir(const QFileSystemEntry &entry)
 {
-    Q_CHECK_FILE_NAME(entry, false);
+    const QByteArray path = entry.nativeFilePath();
+    Q_CHECK_FILE_NAME(path, false);
+    return ::rmdir(path.constData()) == 0;
+}
 
-    if (removeEmptyParents) {
-        QString dirName = QDir::cleanPath(entry.filePath());
-        for (qsizetype oldslash = 0, slash=dirName.size(); slash > 0; oldslash = slash) {
-            const QByteArray chunk = QFile::encodeName(dirName.left(slash));
-            QT_STATBUF st;
-            if (QT_STAT(chunk.constData(), &st) != -1) {
-                if ((st.st_mode & S_IFMT) != S_IFDIR)
-                    return false;
-                if (::rmdir(chunk.constData()) != 0)
-                    return oldslash != 0;
-            } else {
-                return false;
-            }
-            slash = dirName.lastIndexOf(QDir::separator(), oldslash-1);
-        }
-        return true;
+bool QFileSystemEngine::rmpath(const QFileSystemEntry &entry)
+{
+    const QString path = QDir::cleanPath(entry.filePath());
+    Q_CHECK_FILE_NAME(path, false);
+
+    for (qsizetype oldslash = 0, slash = path.size(); slash > 0; oldslash = slash) {
+        const QByteArray chunk = QFile::encodeName(path.left(slash));
+        if (::rmdir(chunk.constData()) != 0)
+            return oldslash != 0;
+
+        slash = path.lastIndexOf(QDir::separator(), oldslash - 1);
     }
-    return rmdir(QFile::encodeName(entry.filePath()).constData()) == 0;
+
+    return true;
 }
 
 //static
