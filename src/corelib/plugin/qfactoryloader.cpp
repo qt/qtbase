@@ -76,7 +76,7 @@ struct QFactoryLoaderIidSearch
     {
         if (key != QtPluginMetaDataKeys::IID)
             return skip(reader);
-        matchesIid = (reader.toString() == iid);
+        matchesIid = (reader.readAllString() == iid);
         return IterationResult::FinishedSearch;
     }
     IterationResult::Result operator()(QUtf8StringView, QCborStreamReader &reader)
@@ -109,7 +109,7 @@ struct QFactoryLoaderMetaDataKeysExtractor : QFactoryLoaderIidSearch
             return IterationResult::ParsingError;
         while (reader.isValid()) {
             // the metadata is JSON, so keys are all strings
-            QByteArray key = reader.toUtf8String();
+            QByteArray key = reader.readAllUtf8String();
             if (key == "Keys") {
                 if (!reader.isArray() || !reader.isLengthKnown())
                     return IterationResult::InvalidHeaderItem;
@@ -155,7 +155,7 @@ template <typename F> static IterationResult iterateInPluginMetaData(QByteArrayV
                 return reader.lastError();
             r = f(key, reader);
         } else if (reader.isString()) {
-            QByteArray key = reader.toUtf8String();
+            QByteArray key = reader.readAllUtf8String();
             if (key.isNull())
                 return reader.lastError();
             r = f(QUtf8StringView(key), reader);
