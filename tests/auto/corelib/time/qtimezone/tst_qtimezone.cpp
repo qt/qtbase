@@ -584,7 +584,7 @@ void tst_QTimeZone::utcOffsetId_data()
 #define ROW(name, valid, offset) \
     QTest::newRow(name) << QByteArray(name) << valid << offset
 
-    // See qtbase/util/locale_database/cldr2qtimezone.py for source
+    // See qtbase/util/locale_database/zonedata.py for source
     // CLDR v35.1 IDs:
     ROW("UTC", true, 0);
     ROW("UTC-14:00", true, -50400);
