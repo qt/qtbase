@@ -783,8 +783,8 @@ private:
 #ifdef Q_QDOC
     friend size_t qHash(const QMap &key, size_t seed = 0);
 #else
-# ifdef Q_CC_GHS
-    // GHS tries to intantiate qHash() for the noexcept running into a
+# if defined(Q_CC_GHS) || defined (Q_CC_MSVC)
+    // GHS and MSVC tries to intantiate qHash() for the noexcept running into a
     // non-SFINAE'ed hard error... Create an artificial SFINAE context as a
     // work-around:
     template <typename M, std::enable_if_t<std::is_same_v<M, QMap>, bool> = true>
