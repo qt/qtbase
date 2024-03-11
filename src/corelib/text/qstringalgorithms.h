@@ -13,8 +13,7 @@
 #endif
 
 #include <algorithm>        // std::find
-
-#include <string.h>         // for memchr
+#include <iterator>         // std::size
 
 #include <QtCore/q20type_traits.h>      // q20::is_constant_evaluated
 
