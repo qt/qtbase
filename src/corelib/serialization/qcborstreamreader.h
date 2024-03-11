@@ -149,21 +149,21 @@ public:
             return -v - 1;
         return v;
     }
-    QString toString()
+    QString readAllString()
     {
         QString dst;
         if (!readAndAppendToString(dst))
             dst = QString{};
         return dst;
     }
-    QByteArray toUtf8String()
+    QByteArray readAllUtf8String()
     {
         QByteArray dst;
         if (!readAndAppendToUtf8String(dst))
             dst = QByteArray{};
         return dst;
     }
-    QByteArray toByteArray()
+    QByteArray readAllByteArray()
     {
         QByteArray dst;
         if (!readAndAppendToByteArray(dst))

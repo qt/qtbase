@@ -964,9 +964,9 @@ void tst_QCborStreamReader::validation()
 
         reader.reset();
         if (reader.isString())
-            QVERIFY(reader.toString().isNull());
+            QVERIFY(reader.readAllString().isNull());
         else
-            QVERIFY(reader.toByteArray().isNull());
+            QVERIFY(reader.readAllByteArray().isNull());
     }
 
     reader.reset();
@@ -980,7 +980,7 @@ void tst_QCborStreamReader::validation()
         QCOMPARE(reader.lastError(), error);
 
         reader.reset();
-        QVERIFY(reader.toUtf8String().isNull());
+        QVERIFY(reader.readAllUtf8String().isNull());
 
         reader.reset();
         auto r = reader.readUtf8String();

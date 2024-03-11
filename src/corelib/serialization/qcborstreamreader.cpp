@@ -1298,7 +1298,7 @@ bool QCborStreamReader::leaveContainer()
 
    \snippet code/src_corelib_serialization_qcborstream.cpp 27
 
-   The toString() function implements the above loop and some extra checks.
+   The readAllString() function implements the above loop and some extra checks.
 
 //! [string-no-type-conversions]
    This function does not perform any type conversions, including from integers
@@ -1306,7 +1306,7 @@ bool QCborStreamReader::leaveContainer()
    true; calling it in any other condition is an error.
 //! [string-no-type-conversions]
 
-   \sa toString(), readByteArray(), isString(), readStringChunk()
+   \sa readAllString(), readByteArray(), isString(), readStringChunk()
  */
 QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
 {
@@ -1335,11 +1335,11 @@ QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
 
    \snippet code/src_corelib_serialization_qcborstream.cpp 27
 
-   The toUtf8String() function implements the above loop and some extra checks.
+   The readAllUtf8String() function implements the above loop and some extra checks.
 
     \include qcborstreamreader.cpp string-no-type-conversions
 
-   \sa toString(), readByteArray(), isString(), readStringChunk()
+   \sa readAllString(), readByteArray(), isString(), readStringChunk()
  */
 QCborStreamReader::StringResult<QByteArray> QCborStreamReader::_readUtf8String_helper()
 {
@@ -1368,7 +1368,7 @@ QCborStreamReader::StringResult<QByteArray> QCborStreamReader::_readUtf8String_h
 
    \snippet code/src_corelib_serialization_qcborstream.cpp 28
 
-   The toByteArray() function implements the above loop and some extra checks.
+   The readAllByteArray() function implements the above loop and some extra checks.
 
 //! [bytearray-no-type-conversions]
    This function does not perform any type conversions, including from integers
@@ -1376,7 +1376,7 @@ QCborStreamReader::StringResult<QByteArray> QCborStreamReader::_readUtf8String_h
    calling it in any other condition is an error.
 //! [bytearray-no-type-conversions]
 
-   \sa toByteArray(), readString(), isByteArray(), readStringChunk()
+   \sa readAllByteArray(), readString(), isByteArray(), readStringChunk()
  */
 QCborStreamReader::StringResult<QByteArray> QCborStreamReader::_readByteArray_helper()
 {
@@ -1439,7 +1439,7 @@ bool QCborStreamReaderPrivate::readFullString(ReadStringChunk params)
 }
 
 /*!
-    \fn QCborStreamReader::toString()
+    \fn QCborStreamReader::readAllString()
     \since 6.7
 
     Decodes the current text string and returns it. If the string is chunked,
@@ -1458,7 +1458,7 @@ bool QCborStreamReaderPrivate::readFullString(ReadStringChunk params)
     QIODevice.
 //! [note-not-restartable]
 
-    \sa readString(), readStringChunk(), isString(), toByteArray()
+    \sa readString(), readStringChunk(), isString(), readAllByteArray()
  */
 /*!
     \fn QCborStreamReader::readAndAppendToString(QString &dst)
@@ -1485,7 +1485,7 @@ bool QCborStreamReader::_readAndAppendToString_helper(QString &dst)
 }
 
 /*!
-    \fn QCborStreamReader::toUtf8String()
+    \fn QCborStreamReader::readAllUtf8String()
     \since 6.7
 
     Decodes the current text string and returns it. If the string is chunked,
@@ -1498,7 +1498,7 @@ bool QCborStreamReader::_readAndAppendToString_helper(QString &dst)
 
     \include qcborstreamreader.cpp note-not-restartable
 
-    \sa readString(), readStringChunk(), isString(), toByteArray()
+    \sa readString(), readStringChunk(), isString(), readAllByteArray()
  */
 /*!
     \fn QCborStreamReader::readAndAppendToUtf8String(QByteArray &dst)
@@ -1526,7 +1526,7 @@ bool QCborStreamReader::_readAndAppendToUtf8String_helper(QByteArray &dst)
 }
 
 /*!
-    \fn QCborStreamReader::toByteArray()
+    \fn QCborStreamReader::readAllByteArray()
     \since 6.7
 
     Decodes the current byte string and returns it. If the string is chunked,
@@ -1539,7 +1539,7 @@ bool QCborStreamReader::_readAndAppendToUtf8String_helper(QByteArray &dst)
 
     \include qcborstreamreader.cpp note-not-restartable
 
-    \sa readByteArray(), readStringChunk(), isByteArray(), toString()
+    \sa readByteArray(), readStringChunk(), isByteArray(), readAllString()
  */
 
 /*!
