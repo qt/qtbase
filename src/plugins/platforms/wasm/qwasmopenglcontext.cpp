@@ -58,27 +58,19 @@ QWasmOpenGLContext::obtainEmscriptenContext(QPlatformSurface *surface)
         return m_ownedWebGLContext.handle;
 
     if (surface->surface()->surfaceClass() == QSurface::Offscreen) {
-        if (const auto *shareContext = m_qGlContext->shareContext()) {
-            // Since there are no resource sharing capabilities with WebGL whatsoever, we use the
-            // same actual underlaying WebGL context. This is not perfect, but it works in most
-            // cases.
-            return static_cast<QWasmOpenGLContext *>(shareContext->handle())
-                    ->m_ownedWebGLContext.handle;
-        } else {
-            // Reuse the existing context for offscreen drawing, even if it happens to be a canvas
-            // context. This is because it is impossible to re-home an existing context to the
-            // new surface and works as an emulation measure.
-            if (m_ownedWebGLContext.handle)
-                return m_ownedWebGLContext.handle;
+        // Reuse the existing context for offscreen drawing, even if it happens to be a canvas
+        // context. This is because it is impossible to re-home an existing context to the
+        // new surface and works as an emulation measure.
+        if (m_ownedWebGLContext.handle)
+            return m_ownedWebGLContext.handle;
 
-            //  The non-shared offscreen context is heavily limited on WASM, but we provide it
-            //  anyway for potential pixel readbacks.
-            m_ownedWebGLContext =
-                    QOpenGLContextData{ .surface = surface,
-                                        .handle = createEmscriptenContext(
-                                                static_cast<QWasmOffscreenSurface *>(surface)->id(),
-                                                m_actualFormat) };
-        }
+        //  The non-shared offscreen context is heavily limited on WASM, but we provide it
+        //  anyway for potential pixel readbacks.
+        m_ownedWebGLContext =
+                QOpenGLContextData{ .surface = surface,
+                                    .handle = createEmscriptenContext(
+                                            static_cast<QWasmOffscreenSurface *>(surface)->id(),
+                                            m_actualFormat) };
     } else {
         destroyWebGLContext(m_ownedWebGLContext.handle);
 
@@ -160,6 +152,9 @@ GLuint QWasmOpenGLContext::defaultFramebufferObject(QPlatformSurface *surface) c
 
 bool QWasmOpenGLContext::makeCurrent(QPlatformSurface *surface)
 {
+   if (auto *shareContext = m_qGlContext->shareContext())
+        return shareContext->makeCurrent(surface->surface());
+
     const auto context = obtainEmscriptenContext(surface);
     if (!context)
         return false;
