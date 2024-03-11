@@ -1461,7 +1461,7 @@ bool QCborStreamReaderPrivate::readFullString(ReadStringChunk params)
     \sa readString(), readStringChunk(), isString(), toByteArray()
  */
 /*!
-    \fn QCborStreamReader::appendToString(QString &dst)
+    \fn QCborStreamReader::readAndAppendToString(QString &dst)
     \since 6.7
 
     Decodes the current text string and appends to \a dst. If the string is
@@ -1474,9 +1474,9 @@ bool QCborStreamReaderPrivate::readFullString(ReadStringChunk params)
 
     \include qcborstreamreader.cpp note-not-restartable
 
-    \sa readString(), readStringChunk(), isString(), appendToByteArray()
+    \sa readString(), readStringChunk(), isString(), readAndAppendToByteArray()
  */
-bool QCborStreamReader::_appendToString_helper(QString &dst)
+bool QCborStreamReader::_readAndAppendToString_helper(QString &dst)
 {
     bool ok = d->readFullString(&dst);
     if (ok)
@@ -1501,7 +1501,7 @@ bool QCborStreamReader::_appendToString_helper(QString &dst)
     \sa readString(), readStringChunk(), isString(), toByteArray()
  */
 /*!
-    \fn QCborStreamReader::appendToUtf8String(QByteArray &dst)
+    \fn QCborStreamReader::readAndAppendToUtf8String(QByteArray &dst)
     \since 6.7
 
     Decodes the current text string and appends to \a dst. If the string is
@@ -1514,9 +1514,9 @@ bool QCborStreamReader::_appendToString_helper(QString &dst)
 
     \include qcborstreamreader.cpp note-not-restartable
 
-    \sa readString(), readStringChunk(), isString(), appendToByteArray()
+    \sa readString(), readStringChunk(), isString(), readAndAppendToByteArray()
  */
-bool QCborStreamReader::_appendToUtf8String_helper(QByteArray &dst)
+bool QCborStreamReader::_readAndAppendToUtf8String_helper(QByteArray &dst)
 {
     using P = QCborStreamReaderPrivate::ReadStringChunk;
     bool ok = d->readFullString({ &dst, P::Utf8String });
@@ -1543,7 +1543,7 @@ bool QCborStreamReader::_appendToUtf8String_helper(QByteArray &dst)
  */
 
 /*!
-    \fn QCborStreamReader::appendToByteArray(QByteArray &dst)
+    \fn QCborStreamReader::readAndAppendToByteArray(QByteArray &dst)
     \since 6.7
 
     Decodes the current byte string and appends to \a dst. If the string is
@@ -1556,9 +1556,9 @@ bool QCborStreamReader::_appendToUtf8String_helper(QByteArray &dst)
 
     \include qcborstreamreader.cpp note-not-restartable
 
-    \sa readByteArray(), readStringChunk(), isByteArray(), appendToString()
+    \sa readByteArray(), readStringChunk(), isByteArray(), readAndAppendToString()
  */
-bool QCborStreamReader::_appendToByteArray_helper(QByteArray &dst)
+bool QCborStreamReader::_readAndAppendToByteArray_helper(QByteArray &dst)
 {
     bool ok = d->readFullString(&dst);
     if (ok)
