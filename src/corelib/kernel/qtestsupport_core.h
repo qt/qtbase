@@ -8,6 +8,8 @@
 #include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qthread.h>
 
+#include <chrono>
+
 QT_BEGIN_NAMESPACE
 
 namespace QTest {
