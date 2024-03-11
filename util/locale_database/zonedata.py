@@ -21,8 +21,7 @@ When adding an entry to windowsIdList, check whether its offset
 corresponds to that of some entry in utcIdList; if not, add such an
 entry.
 
-The utcIdList is again a list of tuples (name, offset), associating
-various UTC-offset names with their offsets in seconds. Aside from
+The utcIdList is a simple list of various UTC-offset names. Aside from
 'UTC' itself, shared with windowsIdList, these include minutes in
 their offsets even when they are whole hour offsets. The list contains
 the UTC-equivalents of all offsets seen in the windowsIdList, plus the
@@ -50,52 +49,37 @@ backwards compatibility.
 
 # Do not remove IDs, as each entry is part of the API/behavior guarantee.
 # IDs for the same offset shall be space-joined; list the preferred ID first.
-# ( UTC Id, Offset Seconds )
 utcIdList = (
-    ('UTC-14:00', -50400),
-    ('UTC-13:00', -46800),
-    ('UTC-12:00', -43200),
-    ('UTC-11:00', -39600),
-    ('UTC-10:00', -36000),
-    ('UTC-09:30', -34200),
-    ('UTC-09:00', -32400),
-    ('UTC-08:00', -28800),
-    ('UTC-07:00', -25200),
-    ('UTC-06:00', -21600),
-    ('UTC-05:00', -18000),
-    ('UTC-04:30', -16200),
-    ('UTC-04:00', -14400),
-    ('UTC-03:30', -12600),
-    ('UTC-03:00', -10800),
-    ('UTC-02:00',  -7200),
-    ('UTC-01:00',  -3600),
-    ('UTC',            0), # Goes first (among zero-offset) to be default
-    ('UTC+00:00',      0),
-    ('UTC-00:00',      0), # Should recognize, but avoid using (see Note above).
-    ('UTC+01:00',   3600),
-    ('UTC+02:00',   7200),
-    ('UTC+03:00',  10800),
-    ('UTC+03:30',  12600),
-    ('UTC+04:00',  14400),
-    ('UTC+04:30',  16200),
-    ('UTC+05:00',  18000),
-    ('UTC+05:30',  19800),
-    ('UTC+05:45',  20700),
-    ('UTC+06:00',  21600),
-    ('UTC+06:30',  23400),
-    ('UTC+07:00',  25200),
-    ('UTC+08:00',  28800),
-    ('UTC+08:30',  30600),
-    ('UTC+08:45',  31500),
-    ('UTC+09:00',  32400),
-    ('UTC+09:30',  34200),
-    ('UTC+10:00',  36000),
-    ('UTC+10:30',  37800),
-    ('UTC+11:00',  39600),
-    ('UTC+12:00',  43200),
-    ('UTC+12:45',  45900),
-    ('UTC+13:00',  46800),
-    ('UTC+14:00',  50400),
+    'UTC-14:00',
+    'UTC-13:00',
+    'UTC-12:00',
+    'UTC-11:00',
+    'UTC-10:00', 'UTC-09:30',
+    'UTC-09:00',
+    'UTC-08:00',
+    'UTC-07:00',
+    'UTC-06:00',
+    'UTC-05:00', 'UTC-04:30',
+    'UTC-04:00', 'UTC-03:30',
+    'UTC-03:00',
+    'UTC-02:00',
+    'UTC-01:00',
+    # UTC Goes first (among zero-offset) to be default:
+    'UTC', 'UTC+00:00', 'UTC-00:00',
+    'UTC+01:00',
+    'UTC+02:00',
+    'UTC+03:00', 'UTC+03:30',
+    'UTC+04:00', 'UTC+04:30',
+    'UTC+05:00', 'UTC+05:30', 'UTC+05:45',
+    'UTC+06:00', 'UTC+06:30',
+    'UTC+07:00',
+    'UTC+08:00', 'UTC+08:30', 'UTC+08:45',
+    'UTC+09:00', 'UTC+09:30',
+    'UTC+10:00', 'UTC+10:30',
+    'UTC+11:00',
+    'UTC+12:00', 'UTC+12:45',
+    'UTC+13:00',
+    'UTC+14:00',
 )
 
 # ( Windows Id, Offset Seconds )

@@ -111,9 +111,21 @@ class ZoneIdWriter (SourceFileEditor):
                     pair[1], pair[0]))
         out('};\n\n')
 
+        def offsetOf(utcName):
+            "Maps a UTC±HH:mm name to its offset in seconds"
+            assert utcName.startswith('UTC')
+            if len(utcName) == 3:
+                return 0
+            assert utcName[3] in '+-', utcName
+            sign = -1 if utcName[3] == '-' else 1
+            assert len(utcName) == 9 and utcName[6] == ':', utcName
+            hour, mins = int(utcName[4:6]), int(utcName[-2:])
+            return sign * (hour * 60 + mins) * 60
+
         offsetMap = {}
-        for pair in utcIdList:
-            offsetMap[pair[1]] = offsetMap.get(pair[1], ()) + (pair[0],)
+        for name in utcIdList:
+            offset = offsetOf(name)
+            offsetMap[offset] = offsetMap.get(offset, ()) + (name,)
         # Write UTC ID key table
         out('// IANA ID Index, UTC Offset\n')
         out('static constexpr UtcData utcDataTable[] = {\n')
@@ -192,7 +204,7 @@ def main(out, err):
                          f'UTC+{h:02}:{m:02}'
                          for h, m in (divmod(o, 60) for o in winOff if o > 0))
     # All such offsets should be represented by entries in utcIdList:
-    newUtc = winUtc.difference(n for n, o in utcIdList)
+    newUtc = winUtc.difference(utcIdList)
     if newUtc:
         err.write(f'Please add {", ".join(newUtc)} to zonedata.utcIdList\n')
         return 1
