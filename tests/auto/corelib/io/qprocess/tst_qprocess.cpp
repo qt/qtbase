@@ -1488,6 +1488,9 @@ struct DisableCrashLogger
     }
 };
 
+QT_BEGIN_NAMESPACE
+Q_AUTOTEST_EXPORT bool _qprocessUsingVfork() noexcept;
+QT_END_NAMESPACE
 static constexpr char messageFromChildProcess[] = "Message from the child process";
 static_assert(std::char_traits<char>::length(messageFromChildProcess) <= PIPE_BUF);
 static void childProcessModifier(int fd)
@@ -1499,17 +1502,28 @@ static void childProcessModifier(int fd)
 void tst_QProcess::setChildProcessModifier_data()
 {
     QTest::addColumn<bool>("detached");
-    QTest::newRow("normal") << false;
-    QTest::newRow("detached") << true;
+    QTest::addColumn<bool>("useVfork");
+    QTest::newRow("normal") << false << false;
+    QTest::newRow("detached") << true << false;
+
+#ifdef QT_BUILD_INTERNAL
+    if (_qprocessUsingVfork()) {
+        QTest::newRow("normal-vfork") << false << true;
+        QTest::newRow("detached-vfork") << true << true;
+    }
+#endif
 }
 
 void tst_QProcess::setChildProcessModifier()
 {
     QFETCH(bool, detached);
+    QFETCH(bool, useVfork);
     int pipes[2] = { -1 , -1 };
     QVERIFY(qt_safe_pipe(pipes) == 0);
 
     QProcess process;
+    if (useVfork)
+        process.setUnixProcessParameters(QProcess::UnixProcessFlag::UseVFork);
     process.setChildProcessModifier([pipes]() {
         ::childProcessModifier(pipes[1]);
     });
@@ -1542,7 +1556,11 @@ void tst_QProcess::failChildProcessModifier()
             "Implementation detail: the length of the message is limited");
 
     QFETCH(bool, detached);
+    QFETCH(bool, useVfork);
+
     QProcess process;
+    if (useVfork)
+        process.setUnixProcessParameters(QProcess::UnixProcessFlag::UseVFork);
     process.setChildProcessModifier([&process]() {
         process.failChildProcessModifier(failureMsg, EPERM);
     });
@@ -1651,9 +1669,6 @@ void tst_QProcess::terminateInChildProcessModifier()
 #endif
 }
 
-QT_BEGIN_NAMESPACE
-Q_AUTOTEST_EXPORT bool _qprocessUsingVfork() noexcept;
-QT_END_NAMESPACE
 void tst_QProcess::raiseInChildProcessModifier()
 {
 #ifdef QT_BUILD_INTERNAL
