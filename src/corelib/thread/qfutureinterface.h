@@ -281,7 +281,7 @@ template <>
 class QFutureInterface<void> : public QFutureInterfaceBase
 {
 public:
-    explicit QFutureInterface<void>(State initialState = NoState)
+    explicit QFutureInterface(State initialState = NoState)
         : QFutureInterfaceBase(initialState)
     { }
 
