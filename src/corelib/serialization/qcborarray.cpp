@@ -19,6 +19,10 @@ using namespace QtCbor;
 
     \brief The QCborArray class is used to hold an array of CBOR elements.
 
+    \compares strong
+    \compareswith strong QCborValueConstRef
+    \endcompareswith
+
     This class can be used to hold one sequential container in CBOR (an array).
     CBOR is the Concise Binary Object Representation, a very compact form of
     binary data encoding that is a superset of JSON. It was created by the IETF
@@ -442,9 +446,9 @@ bool QCborArray::contains(const QCborValue &value) const
  */
 
 /*!
-    \fn bool QCborArray::operator==(const QCborArray &other) const
+    \fn bool QCborArray::operator==(const QCborArray &lhs, const QCborArray &rhs)
 
-    Compares this array and \a other, comparing each element in sequence, and
+    Compares \a lhs and \a rhs arrays, comparing each element in sequence, and
     returns true if both arrays contains the same elements, false otherwise.
 
     For more information on CBOR equality in Qt, see, QCborValue::compare().
@@ -454,9 +458,9 @@ bool QCborArray::contains(const QCborValue &value) const
  */
 
 /*!
-    \fn bool QCborArray::operator!=(const QCborArray &other) const
+    \fn bool QCborArray::operator!=(const QCborArray &lhs, const QCborArray &rhs)
 
-    Compares this array and \a other, comparing each element in sequence, and
+    Compares \a lhs and \a rhs arrays, comparing each element in sequence, and
     returns true if the two arrays' contents are different, false otherwise.
 
     For more information on CBOR equality in Qt, see, QCborValue::compare().
@@ -466,17 +470,56 @@ bool QCborArray::contains(const QCborValue &value) const
  */
 
 /*!
-    \fn bool QCborArray::operator<(const QCborArray &other) const
+    \fn bool QCborArray::operator<(const QCborArray &lhs, const QCborArray &rhs)
 
-    Compares this array and \a other, comparing each element in sequence, and
-    returns true if this array should be sorted before \a other, false
+    Compares \a lhs and \a rhs arrays, comparing each element in sequence, and
+    returns true if \a lhs array should be sorted before \a rhs, false
     otherwise.
 
     For more information on CBOR sorting order, see QCborValue::compare().
 
     \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
-        operator==(), operator!=()
+        operator==(), operator!=(), operator<=()
  */
+
+/*!
+    \fn bool QCborArray::operator<=(const QCborArray &lhs, const QCborArray &rhs)
+
+    Compares \a lhs and \a rhs arrays, comparing each element in sequence, and
+    returns true if \a lhs array should be sorted before \a rhs, or if both
+    arrays contains the same elements, false otherwise.
+
+    For more information on CBOR sorting order, see QCborValue::compare().
+
+    \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
+        operator==(), operator!=(), operator<()
+*/
+
+/*!
+    \fn bool QCborArray::operator>(const QCborArray &lhs, const QCborArray &rhs)
+
+    Compares \a lhs and \a rhs arrays, comparing each element in sequence, and
+    returns true if \a lhs array should be sorted after \a rhs, false
+    otherwise.
+
+    For more information on CBOR sorting order, see QCborValue::compare().
+
+    \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
+        operator==(), operator!=(), operator>=()
+*/
+
+/*!
+    \fn bool QCborArray::operator>=(const QCborArray &lhs, const QCborArray &rhs)
+
+    Compares \a lhs and \a rhs arrays, comparing each element in sequence, and
+    returns true if \a lhs array should be sorted after \a rhs, or if both
+    arrays contains the same elements, false otherwise.
+
+    For more information on CBOR sorting order, see QCborValue::compare().
+
+    \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
+        operator==(), operator!=(), operator>()
+*/
 
 /*!
     \typedef QCborArray::iterator

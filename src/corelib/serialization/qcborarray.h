@@ -181,19 +181,11 @@ public:
     bool contains(const QCborValue &value) const;
 
     int compare(const QCborArray &other) const noexcept Q_DECL_PURE_FUNCTION;
-#if 0 && __has_include(<compare>)
-    std::strong_ordering operator<=>(const QCborArray &other) const
-    {
-        int c = compare(other);
-        if (c > 0) return std::strong_ordering::greater;
-        if (c == 0) return std::strong_ordering::equivalent;
-        return std::strong_ordering::less;
-    }
-#else
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QCborArray &other) const noexcept
     { return compare(other) == 0; }
     bool operator!=(const QCborArray &other) const noexcept
-    { return !(*this == other); }
+    { return !operator==(other); }
     bool operator<(const QCborArray &other) const
     { return compare(other) < 0; }
 #endif
@@ -237,6 +229,31 @@ public:
     QJsonArray toJsonArray() const;
 
 private:
+    friend bool comparesEqual(const QCborArray &lhs, const QCborArray &rhs) noexcept
+    {
+        return lhs.compare(rhs) == 0;
+    }
+    friend Qt::strong_ordering compareThreeWay(const QCborArray &lhs,
+                                               const QCborArray &rhs) noexcept
+    {
+        int c = lhs.compare(rhs);
+        return Qt::compareThreeWay(c, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QCborArray)
+
+    friend bool comparesEqual(const QCborArray &lhs,
+                              const QCborValueConstRef &rhs) noexcept
+    {
+        return lhs.compare(rhs.toArray()) == 0;
+    }
+    friend Qt::strong_ordering compareThreeWay(const QCborArray &lhs,
+                                               const QCborValueConstRef &rhs) noexcept
+    {
+        const int c = lhs.compare(rhs.toArray());
+        return Qt::compareThreeWay(c, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QCborArray, QCborValueConstRef)
+
     void detach(qsizetype reserve = 0);
 
     friend QCborValue;
