@@ -16,6 +16,7 @@
 #include <qsqlquery.h>
 #include <qsqlrecord.h>
 #include <qstringlist.h>
+#include <qtimezone.h>
 #include <QtSql/private/qsqldriver_p.h>
 #include <QtSql/private/qsqlresult_p.h>
 
@@ -97,9 +98,15 @@ static inline QVariant qDateTimeFromString(QString &val)
 #else
     if (val.isEmpty())
         return QVariant(QDateTime());
+
+    // TIMESTAMPS have either the format "yyyyMMddhhmmss" or "yyyy-MM-dd
+    // hh:mm:ss". QDateTime::fromString() can convert the latter, but not the
+    // former, so adapt it if necessary.
     if (val.size() == 14)
-        // TIMESTAMPS have the format yyyyMMddhhmmss
         val.insert(4, u'-').insert(7, u'-').insert(10, u'T').insert(13, u':').insert(16, u':');
+
+    if (!val.endsWith(u'Z'))
+        val.append(u'Z');       // make UTC
     return QVariant(QDateTime::fromString(val, Qt::ISODate));
 #endif
 }
@@ -116,6 +123,18 @@ static inline bool checkPreparedQueries(MYSQL *mysql)
         return false;
 
     return mysql_stmt_param_count(stmt.get()) == 2;
+}
+
+// used with prepared queries and bound arguments
+static inline void setUtcTimeZone(MYSQL *mysql)
+{
+    std::unique_ptr<MYSQL_STMT, decltype(&mysql_stmt_close)> stmt(mysql_stmt_init(mysql), &mysql_stmt_close);
+    if (!stmt)
+        return;
+
+    static const char query[] = "SET time_zone = '+00:00'";
+    if (mysql_stmt_prepare(stmt.get(), query, sizeof(query) - 1))
+        mysql_stmt_execute(stmt.get());
 }
 
 class QMYSQLResultPrivate;
@@ -574,7 +593,7 @@ QVariant QMYSQLResult::data(int field)
             if (f.type.id() != QMetaType::QDate)
                 time = QTime(t->hour, t->minute, t->second, t->second_part / 1000);
             if (f.type.id() == QMetaType::QDateTime)
-                return QDateTime(date, time);
+                return QDateTime(date, time, QTimeZone::UTC);
             else if (f.type.id() == QMetaType::QDate)
                 return date;
             else
@@ -936,7 +955,7 @@ bool QMYSQLResult::exec()
                         currBind->buffer_type = MYSQL_TYPE_DATE;
                         myTime->time_type = MYSQL_TIMESTAMP_DATE;
                     } else {
-                        QDateTime dt = val.toDateTime();
+                        QDateTime dt = val.toDateTime().toUTC();
                         date = dt.date();
                         time = dt.time();
                         currBind->buffer_type = MYSQL_TYPE_DATETIME;
@@ -1392,6 +1411,9 @@ bool QMYSQLDriver::open(const QString &db,
     d->preparedQuerysEnabled = checkPreparedQueries(d->mysql);
     d->dbName = db;
 
+    if (d->preparedQuerysEnabled)
+        setUtcTimeZone(d->mysql);
+
 #if QT_CONFIG(thread)
     mysql_thread_init();
 #endif
@@ -1587,7 +1609,6 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
                 // "+00:00" starting in version 8.0.19. However, if we got here,
                 // it's because the MySQL server is too old for prepared queries
                 // in the first place, so it won't understand timezones either.
-                // Besides, MYSQL_TIME does not support timezones, so match it.
                 r = u'\'' +
                         dt.date().toString(Qt::ISODate) +
                         u'T' +
