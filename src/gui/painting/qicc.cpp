@@ -549,7 +549,7 @@ static quint32 parseTRC(const QByteArrayView &tagData, QColorTrc &gamma, QColorT
             static_assert(sizeof(GenericTagData) == 2 * sizeof(quint32_be),
                           "GenericTagData has padding. The following code is a subject to UB.");
             qFromBigEndian<quint16>(tagData.constData() + valueOffset, curv.valueCount, tabl.data());
-            QColorTransferTable table = QColorTransferTable(curv.valueCount, std::move(tabl), type);
+            QColorTransferTable table(curv.valueCount, tabl, type);
             QColorTransferFunction curve;
             if (!table.checkValidity()) {
                 qCWarning(lcIcc) << "Invalid curv table";

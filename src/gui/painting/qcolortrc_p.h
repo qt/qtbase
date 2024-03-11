@@ -25,12 +25,11 @@ QT_BEGIN_NAMESPACE
 class Q_GUI_EXPORT QColorTrc
 {
 public:
-    QColorTrc() noexcept : m_type(Type::Uninitialized)
-    { }
-    QColorTrc(const QColorTransferFunction &fun) : m_type(Type::Function), m_fun(fun)
-    { }
-    QColorTrc(const QColorTransferTable &table) : m_type(Type::Table), m_table(table)
-    { }
+    QColorTrc() noexcept : m_type(Type::Uninitialized) { }
+    QColorTrc(const QColorTransferFunction &fun) : m_type(Type::Function), m_fun(fun) { }
+    QColorTrc(const QColorTransferTable &table) : m_type(Type::Table), m_table(table) { }
+    QColorTrc(QColorTransferFunction &&fun) noexcept : m_type(Type::Function), m_fun(std::move(fun)) { }
+    QColorTrc(QColorTransferTable &&table) noexcept : m_type(Type::Table), m_table(std::move(table)) { }
 
     enum class Type {
         Uninitialized,
