@@ -2843,9 +2843,8 @@ void tst_QFile::socketPair()
 
 void tst_QFile::textFile()
 {
-    const char *openMode = QOperatingSystemVersion::current().type() != QOperatingSystemVersion::Windows
-        ? "w" : "wt";
-    StdioFileGuard fs(fopen("writeabletextfile", openMode));
+    // The "t" is ignored everywhere except on Windows
+    StdioFileGuard fs(fopen("writeabletextfile", "wt"));
     QVERIFY(fs);
     QFile f;
     QByteArray part1("This\nis\na\nfile\nwith\nnewlines\n");
