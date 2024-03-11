@@ -28,8 +28,6 @@ qWaitFor(Functor predicate, QDeadlineTimer deadline = QDeadlineTimer(std::chrono
     // qWait() is expected to spin the event loop at least once, even when
     // called with a small timeout like 1ns.
 
-    using namespace std::chrono;
-
     do {
         // We explicitly do not pass the remaining time to processEvents, as
         // that would keep spinning processEvents for the whole duration if
@@ -42,6 +40,8 @@ qWaitFor(Functor predicate, QDeadlineTimer deadline = QDeadlineTimer(std::chrono
 
         if (predicate())
             return true;
+
+        using namespace std::chrono;
 
         if (const auto remaining = deadline.remainingTimeAsDuration(); remaining > 0ns)
             qSleep((std::min)(10ms, ceil<milliseconds>(remaining)));
