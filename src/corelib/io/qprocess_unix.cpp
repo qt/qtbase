@@ -1290,7 +1290,6 @@ void QProcessPrivate::waitForDeadChild()
 bool QProcessPrivate::startDetached(qint64 *pid)
 {
     AutoPipe startedPipe, pidPipe;
-    childStartedPipe[1] = startedPipe[1];
     if (!startedPipe || !pidPipe) {
         setErrorAndEmit(QProcess::FailedToStart, "pipe: "_L1 + qt_error_string(errno));
         return false;
@@ -1309,6 +1308,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         return false;
     }
 
+    childStartedPipe[1] = startedPipe[1];   // for failChildProcess()
     pid_t childPid = childProcess.doFork([&] {
         ::setsid();
 
@@ -1323,6 +1323,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         qt_safe_write(pidPipe[1], &doubleForkPid, sizeof(pid_t));
         return 0;
     });
+    childStartedPipe[1] = -1;
 
     int savedErrno = errno;
     closeChannels();
