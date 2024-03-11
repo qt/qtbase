@@ -7,6 +7,8 @@
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdeadlinetimer.h>
 
+#include <chrono>
+
 QT_BEGIN_NAMESPACE
 
 namespace QTest {
