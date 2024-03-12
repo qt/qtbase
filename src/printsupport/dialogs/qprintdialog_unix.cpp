@@ -135,6 +135,9 @@ private:
 
     Ui::QPrintPropertiesWidget widget;
     QDialogButtonBox *m_buttons;
+
+    Ui::QPrintPropertiesWidget widget;
+    QDialogButtonBox *m_buttons;
     QPrintDevice *m_currentPrintDevice;
     QList<QComboBox*> m_advancedOptionsCombos;
     QPrintJobWidget *m_jobOptions;
@@ -324,6 +327,24 @@ QPrintPropertiesDialog::QPrintPropertiesDialog(QPrinter *printer, QPrintDevice *
         widget.tabs->setTabEnabled(advancedTabIndex, false);
     }
 
+    if (currentPrintDevice->isFeatureAvailable(QPrintDevice::PDPK_JobHold, QVariant())
+            || currentPrintDevice->isFeatureAvailable(QPrintDevice::PDPK_JobBillingInfo, QVariant())
+            || currentPrintDevice->isFeatureAvailable(QPrintDevice::PDPK_JobPriority, QVariant())
+            || currentPrintDevice->isFeatureAvailable(QPrintDevice::PDPK_JobStartCoverPage, QVariant())
+            || currentPrintDevice->isFeatureAvailable(QPrintDevice::PDPK_JobEndCoverPage, QVariant()))
+    {
+        m_jobOptions = new QPrintJobWidget(printer, currentPrintDevice, this);
+        widget.tabs->insertTab(1, m_jobOptions, tr("Job Options"));
+    }
+
+    const int advancedTabIndex = widget.tabs->indexOf(widget.cupsPropertiesPage);
+    if (currentPrintDevice->isFeatureAvailable(QPrintDevice::PDPK_AdvancedOptions, QVariant())) {
+        widget.tabs->setTabEnabled(advancedTabIndex, true);
+        widget.scrollArea->setWidget(createAdvancedOptionsWidget(currentPrintDevice));
+    } else {
+        widget.tabs->setTabEnabled(advancedTabIndex, false);
+    }
+
     widget.conflictsLabel->setVisible(anyAdvancedOptionConflict());
 }
 
@@ -339,6 +360,9 @@ void QPrintPropertiesDialog::setupPrinter() const
 #endif
     widget.pageSetup->setupPrinter();
     if (m_jobOptions)
+    m_currentPrintDevice->setProperty(QPrintDevice::PDPK_AdvancedOptions, QVariant(QByteArray("#clear#")));
+
+    widget.pageSetup->setupPrinter();
     m_currentPrintDevice->setProperty(QPrintDevice::PDPK_AdvancedOptions, QVariant(QByteArray("#clear#")));
 
     widget.pageSetup->setupPrinter();
@@ -533,6 +557,10 @@ static const char *ppdOptionProperty = "_q_ppd_option";
     QDialog::showEvent(event);
 }
 
+    widget.conflictsLabel->setVisible(anyAdvancedOptionConflict());
+    QDialog::showEvent(event);
+}
+
 // Used to store the option name for each QComboBox that represents an advanced option
 static const char *optionNameProperty = "_q_print_option_name";
 
@@ -650,6 +678,9 @@ bool QPrintPropertiesDialog::createAdvancedOptionsWidget()
             m_printer->setColorMode(qstrcmp(selectedChoice, "Gray") == 0 ? QPrinter::GrayScale : QPrinter::Color);
 
         if (qstrcmp(option->defchoice, selectedChoice) != 0)
+void QPrintPropertiesDialog::setPrinterAdvancedOptions() const
+{
+    for (const QComboBox *choicesCb : m_advancedOptionsCombos) {
 void QPrintPropertiesDialog::setPrinterAdvancedOptions() const
 {
     for (const QComboBox *choicesCb : m_advancedOptionsCombos) {
@@ -809,6 +840,7 @@ void QPrintDialogPrivate::selectPrinter(const QPrinter::OutputFormat outputForma
     options.duplexShort->setEnabled(supportedDuplexMode.contains(QPrint::DuplexShortSide));
 
     // support feature PDPK_AdvancedColorMode if you want to display Color option separately
+    // among other advanced options in QPrintProperties dialog (eg. CUPS)
     if (top->d->m_currentPrintDevice.isFeatureAvailable(QPrintDevice::PDPK_AdvancedColorMode, QVariant())) {
         options.colorMode->setEnabled(false);
     } else {
@@ -887,6 +919,10 @@ void QPrintDialogPrivate::selectPrinter(const QPrinter::OutputFormat outputForma
 
 
 void QPrintDialogPrivate::updatePpdDuplexOption(QRadioButton *radio)
+    options.pagesRadioButton->setEnabled(outputFormat != QPrinter::PdfFormat
+            && top->d->m_currentPrintDevice.isFeatureAvailable(QPrintDevice::PDPK_PageRange, QVariant()));
+}
+
     options.pagesRadioButton->setEnabled(outputFormat != QPrinter::PdfFormat
             && top->d->m_currentPrintDevice.isFeatureAvailable(QPrintDevice::PDPK_PageRange, QVariant()));
 }
@@ -1001,6 +1037,25 @@ void QPrintDialogPrivate::setupPrinter()
     if (options.color->isChecked())
     else
 #endif
+    if (options.pagesRadioButton->isEnabled() && options.pagesRadioButton->isChecked()) {
+        QString pageRange = options.pagesLineEdit->text();
+        const QPageRanges ranges = QPageRanges::fromString(pageRange);
+        if (!ranges.isEmpty()) {
+            p->setPrintRange(QPrinter::PageRange);
+            p->setPageRanges(ranges);
+        }
+        top->d->m_currentPrintDevice.setProperty(QPrintDevice::PDPK_PageRange, pageRange);
+    }
+    if (!q->testOption(QPrintDialog::PrintPageRange) && options.printRange->isChecked()) {
+        QString pageRange = tr("%1-%2").arg(options.from->value()).arg(qMax(options.from->value(),options.to->value()));
+        top->d->m_currentPrintDevice.setProperty(QPrintDevice::PDPK_PageRange, pageRange);
+    }
+
+    if (options.pageSetCombo->isEnabled()) {
+        top->d->m_currentPrintDevice.setProperty(QPrintDevice::PDPK_PageSet,
+                                                 options.pageSetCombo->itemData(options.pageSetCombo->currentIndex()));
+    }
+
     if (options.pagesRadioButton->isEnabled() && options.pagesRadioButton->isChecked()) {
         QString pageRange = options.pagesLineEdit->text();
         const QPageRanges ranges = QPageRanges::fromString(pageRange);
