@@ -118,25 +118,25 @@
     For an example, please read the \l QTestEventList class documentation.
 */
 
-/*! \fn void QTestEventList::addMousePress(Qt::MouseButton button, Qt::KeyboardModifiers modifiers = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTestEventList::addMousePress(Qt::MouseButton button, Qt::KeyboardModifiers modifiers, QPoint pos = QPoint(), int delay=-1)
 
     Add a mouse press to the list. The event will press the \a button with optional \a modifiers at the position \a pos with an optional \a delay. The default position is the center of the widget.
 
     \sa QTest::mousePress()
 */
-/*! \fn void QTestEventList::addMouseRelease(Qt::MouseButton button, Qt::KeyboardModifiers modifiers = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTestEventList::addMouseRelease(Qt::MouseButton button, Qt::KeyboardModifiers modifiers, QPoint pos = QPoint(), int delay=-1)
 
     Add a mouse release to the list. The event will release the \a button with optional \a modifiers at the position \a pos with an optional \a delay. The default position is the center of the widget.
 
     \sa QTest::mouseRelease()
 */
-/*! \fn void QTestEventList::addMouseClick(Qt::MouseButton button, Qt::KeyboardModifiers modifiers = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTestEventList::addMouseClick(Qt::MouseButton button, Qt::KeyboardModifiers modifiers, QPoint pos = QPoint(), int delay=-1)
 
     Add a mouse click to the list. The event will click the \a button with optional \a modifiers at the position \a pos with an optional \a delay. The default position is the center of the widget.
 
     \sa QTest::mouseClick()
 */
-/*! \fn void QTestEventList::addMouseDClick(Qt::MouseButton button, Qt::KeyboardModifiers modifiers = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTestEventList::addMouseDClick(Qt::MouseButton button, Qt::KeyboardModifiers modifiers, QPoint pos = QPoint(), int delay=-1)
 
     Add a double mouse click to the list. The event will double click the \a button with optional \a modifiers at the position \a pos with an optional \a delay. The default position is the center of the widget.
 

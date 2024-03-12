@@ -1231,7 +1231,7 @@
     \sa QTest::keyClick()
 */
 
-/*! \fn void QTest::mousePress(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mousePress(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier, QPoint pos = QPoint(), int delay=-1)
 
     Simulates pressing a mouse \a button with an optional \a modifier
     on a \a widget.  The position is defined by \a pos; the default
@@ -1242,7 +1242,7 @@
     \sa QTest::mouseRelease(), QTest::mouseClick()
 */
 
-/*! \fn void QTest::mousePress(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mousePress(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey, QPoint pos = QPoint(), int delay=-1)
     \overload
     \since 5.0
 
@@ -1255,7 +1255,7 @@
     \sa QTest::mouseRelease(), QTest::mouseClick()
 */
 
-/*! \fn void QTest::mouseRelease(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mouseRelease(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier, QPoint pos = QPoint(), int delay=-1)
 
     Simulates releasing a mouse \a button with an optional \a modifier
     on a \a widget.  The position of the release is defined by \a pos;
@@ -1275,7 +1275,7 @@
     \sa QTest::mousePress(), QTest::mouseClick()
 */
 
-/*! \fn void QTest::mouseRelease(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mouseRelease(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey, QPoint pos = QPoint(), int delay=-1)
     \overload
     \since 5.0
 
@@ -1297,7 +1297,7 @@
     \sa QTest::mousePress(), QTest::mouseClick()
 */
 
-/*! \fn void QTest::mouseClick(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mouseClick(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier, QPoint pos = QPoint(), int delay=-1)
 
     Simulates clicking a mouse \a button with an optional \a modifier
     on a \a widget.  The position of the click is defined by \a pos;
@@ -1308,7 +1308,7 @@
     \sa QTest::mousePress(), QTest::mouseRelease()
 */
 
-/*! \fn void QTest::mouseClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mouseClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey, QPoint pos = QPoint(), int delay=-1)
     \overload
     \since 5.0
 
@@ -1321,7 +1321,7 @@
     \sa QTest::mousePress(), QTest::mouseRelease()
 */
 
-/*! \fn void QTest::mouseDClick(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mouseDClick(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier, QPoint pos = QPoint(), int delay=-1)
 
     Simulates double clicking a mouse \a button with an optional \a
     modifier on a \a widget.  The position of the click is defined by
@@ -1332,7 +1332,7 @@
     \sa QTest::mouseClick()
 */
 
-/*! \fn void QTest::mouseDClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mouseDClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey, QPoint pos = QPoint(), int delay=-1)
     \overload
     \since 5.0
 
