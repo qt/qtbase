@@ -934,6 +934,8 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
 
 #include "qcborarray.h" // inlined API
 
+#include "qcbormap.h" // inlined API
+
 #include "qcborvalue.h" // inlined API
 
 #include "qdatastream.h" // inlined API

@@ -221,19 +221,11 @@ public:
     { const_iterator it = find(key); return it != end(); }
 
     int compare(const QCborMap &other) const noexcept Q_DECL_PURE_FUNCTION;
-#if 0 && __has_include(<compare>)
-    std::strong_ordering operator<=>(const QCborMap &other) const
-    {
-        int c = compare(other);
-        if (c > 0) return std::strong_ordering::greater;
-        if (c == 0) return std::strong_ordering::equivalent;
-        return std::strong_ordering::less;
-    }
-#else
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QCborMap &other) const noexcept
     { return compare(other) == 0; }
     bool operator!=(const QCborMap &other) const noexcept
-    { return !(*this == other); }
+    { return !operator==(other); }
     bool operator<(const QCborMap &other) const
     { return compare(other) < 0; }
 #endif
@@ -307,6 +299,32 @@ private:
     friend class QCborValueRef;
     friend class QJsonPrivate::Variant;
     void detach(qsizetype reserve = 0);
+
+    friend bool comparesEqual(const QCborMap &lhs, const QCborMap &rhs) noexcept
+    {
+        return lhs.compare(rhs) == 0;
+    }
+    friend Qt::strong_ordering compareThreeWay(const QCborMap &lhs,
+                                               const QCborMap &rhs) noexcept
+    {
+        int c = lhs.compare(rhs);
+        return Qt::compareThreeWay(c, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QCborMap)
+
+    friend bool comparesEqual(const QCborMap &lhs,
+                              const QCborValue &rhs) noexcept
+    {
+        return lhs.compare(rhs.toMap()) == 0;
+    }
+
+    friend Qt::strong_ordering compareThreeWay(const QCborMap &lhs,
+                                               const QCborValue &rhs) noexcept
+    {
+        int c = lhs.compare(rhs.toMap());
+        return Qt::compareThreeWay(c, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QCborMap, QCborValue)
 
     explicit QCborMap(QCborContainerPrivate &dd) noexcept;
     QExplicitlySharedDataPointer<QCborContainerPrivate> d;

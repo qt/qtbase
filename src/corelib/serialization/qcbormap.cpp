@@ -18,6 +18,10 @@ using namespace QtCbor;
 
     \brief The QCborMap class is used to hold an associative container representable in CBOR.
 
+    \compares strong
+    \compareswith strong QCborValue
+    \endcompareswith
+
     This class can be used to hold an associative container in CBOR, a map
     between a key and a value type. CBOR is the Concise Binary Object
     Representation, a very compact form of binary data encoding that is a
@@ -1105,10 +1109,10 @@ QCborValue QCborMap::extract(iterator it)
  */
 
 /*!
-    \fn bool QCborMap::operator==(const QCborMap &other) const
+    \fn bool QCborMap::operator==(const QCborMap &lhs, const QCborMap &rhs)
 
-    Compares this map and \a other, comparing each element in sequence, and
-    returns true if the two maps contains the same elements in the same order,
+    Compares \a lhs and \a rhs maps, comparing each element in sequence, and
+    returns true if the two maps contain the same elements in the same order,
     false otherwise.
 
     Note that CBOR maps are unordered, which means that two maps containing the
@@ -1124,10 +1128,10 @@ QCborValue QCborMap::extract(iterator it)
  */
 
 /*!
-    \fn bool QCborMap::operator!=(const QCborMap &other) const
+    \fn bool QCborMap::operator!=(const QCborMap &lhs, const QCborMap &rhs)
 
-    Compares this map and \a other, comparing each element in sequence, and
-    returns true if the two maps contains any different elements or elements in
+    Compares \a lhs and \a rhs maps, comparing each element in sequence, and
+    returns true if the two maps contain any different elements or elements in
     different orders, false otherwise.
 
     Note that CBOR maps are unordered, which means that two maps containing the
@@ -1143,10 +1147,10 @@ QCborValue QCborMap::extract(iterator it)
  */
 
 /*!
-    \fn bool QCborMap::operator<(const QCborMap &other) const
+    \fn bool QCborMap::operator<(const QCborMap &lhs, const QCborMap &rhs)
 
-    Compares this map and \a other, comparing each element in sequence, and
-    returns true if this map should be sorted before \a other, false
+    Compares \a lhs and \a rhs maps, comparing each element in sequence, and
+    returns true if \a lhs map should be sorted before \a rhs, false
     otherwise.
 
     Note that CBOR maps are unordered, which means that two maps containing the
@@ -1160,6 +1164,65 @@ QCborValue QCborMap::extract(iterator it)
     \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
         operator==(), operator!=()
  */
+
+/*!
+    \fn bool QCborMap::operator<=(const QCborMap &lhs, const QCborMap &rhs)
+
+    Compares \a lhs and \a rhs maps, comparing each element in sequence, and
+    returns true if \a lhs map should be sorted before \a rhs or
+    if the two maps contain the same elements in the same order, false
+    otherwise.
+
+    Note that CBOR maps are unordered, which means that two maps containing the
+    very same pairs but in different order will still compare differently. To
+    avoid this, it is recommended to insert elements into the map in a
+    predictable order, such as by ascending key value. In fact, maps with keys
+    in sorted order are required for Canonical CBOR representation.
+
+    For more information on CBOR sorting order, see QCborValue::compare().
+
+    \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
+        operator==(), operator!=()
+*/
+
+/*!
+    \fn bool QCborMap::operator>=(const QCborMap &lhs, const QCborMap &rhs)
+
+    Compares \a lhs and \a rhs maps, comparing each element in sequence, and
+    returns true if \a lhs map should be sorted after \a rhs or
+    if the two maps contain the same elements in the same order, false
+    otherwise.
+
+    Note that CBOR maps are unordered, which means that two maps containing the
+    very same pairs but in different order will still compare differently. To
+    avoid this, it is recommended to insert elements into the map in a
+    predictable order, such as by ascending key value. In fact, maps with keys
+    in sorted order are required for Canonical CBOR representation.
+
+    For more information on CBOR sorting order, see QCborValue::compare().
+
+    \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
+        operator==(), operator!=()
+*/
+
+/*!
+    \fn bool QCborMap::operator>(const QCborMap &lhs, const QCborMap &rhs)
+
+    Compares \a lhs and \a rhs maps, comparing each element in sequence, and
+    returns true if \a lhs map should be sorted after \a rhs, false
+    otherwise.
+
+    Note that CBOR maps are unordered, which means that two maps containing the
+    very same pairs but in different order will still compare differently. To
+    avoid this, it is recommended to insert elements into the map in a
+    predictable order, such as by ascending key value. In fact, maps with keys
+    in sorted order are required for Canonical CBOR representation.
+
+    For more information on CBOR sorting order, see QCborValue::compare().
+
+    \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
+        operator==(), operator!=()
+*/
 
 void QCborMap::detach(qsizetype reserved)
 {
