@@ -3679,6 +3679,13 @@ void QRhiGles2::executeCommandBuffer(QRhiCommandBuffer *cb)
             if (caps.compute)
                 f->glMemoryBarrier(cmd.args.barrier.barriers);
             break;
+        case QGles2CommandBuffer::Command::InvalidateFramebuffer:
+            if (caps.gles && caps.ctxMajor >= 3) {
+                f->glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER,
+                                           cmd.args.invalidateFramebuffer.attCount,
+                                           cmd.args.invalidateFramebuffer.att);
+            }
+            break;
         default:
             break;
         }
@@ -4506,7 +4513,10 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                 const bool hasZ = resolveTexD->m_flags.testFlag(QRhiTexture::ThreeDimensional)
                     || resolveTexD->m_flags.testFlag(QRhiTexture::TextureArray);
                 cmd.args.blitFromRenderbuffer.dstLayer = hasZ ? colorAtt.resolveLayer() : 0;
-            } else if (!caps.glesMultisampleRenderToTexture) {
+            } else if (caps.glesMultisampleRenderToTexture) {
+                // Nothing to do, resolving into colorAtt.resolveTexture() is automatic,
+                // colorAtt.texture() is in fact not used for anything.
+            } else {
                 Q_ASSERT(colorAtt.texture());
                 QGles2Texture *texD = QRHI_RES(QGles2Texture, colorAtt.texture());
                 if (texD->pixelSize() != size) {
@@ -4540,6 +4550,21 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                     if (resolveTexD->m_flags.testFlag(QRhiTexture::ThreeDimensional) || resolveTexD->m_flags.testFlag(QRhiTexture::TextureArray))
                         cmd.args.blitFromTexture.dstLayer = dstLayer;
                 }
+            }
+        }
+
+        const bool mayDiscardDepthStencil = rtTex->m_desc.depthStencilBuffer()
+            || (rtTex->m_desc.depthTexture() && rtTex->m_flags.testFlag(QRhiTextureRenderTarget::DoNotStoreDepthStencilContents));
+        if (mayDiscardDepthStencil) {
+            QGles2CommandBuffer::Command &cmd(cbD->commands.get());
+            cmd.cmd = QGles2CommandBuffer::Command::InvalidateFramebuffer;
+            if (caps.needsDepthStencilCombinedAttach) {
+                cmd.args.invalidateFramebuffer.attCount = 1;
+                cmd.args.invalidateFramebuffer.att[0] = GL_DEPTH_STENCIL_ATTACHMENT;
+            } else {
+                cmd.args.invalidateFramebuffer.attCount = 2;
+                cmd.args.invalidateFramebuffer.att[0] = GL_DEPTH_ATTACHMENT;
+                cmd.args.invalidateFramebuffer.att[1] = GL_STENCIL_ATTACHMENT;
             }
         }
     }

@@ -337,7 +337,8 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             BindComputePipeline,
             Dispatch,
             BarriersForPass,
-            Barrier
+            Barrier,
+            InvalidateFramebuffer
         };
         Cmd cmd;
 
@@ -536,6 +537,10 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             struct {
                 GLbitfield barriers;
             } barrier;
+            struct {
+                int attCount;
+                GLenum att[3];
+            } invalidateFramebuffer;
         } args;
     };
 

@@ -773,6 +773,7 @@ public:
                                    const QRhiColorAttachment *lastColorAttachment,
                                    bool preserveColor,
                                    bool preserveDs,
+                                   bool storeDs,
                                    QRhiRenderBuffer *depthStencilBuffer,
                                    QRhiTexture *depthTexture);
     bool ensurePipelineCache(const void *initialData = nullptr, size_t initialDataSize = 0);

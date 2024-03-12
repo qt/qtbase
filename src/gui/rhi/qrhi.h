@@ -1181,7 +1181,8 @@ class Q_GUI_EXPORT QRhiTextureRenderTarget : public QRhiRenderTarget
 public:
     enum Flag {
         PreserveColorContents = 1 << 0,
-        PreserveDepthStencilContents = 1 << 1
+        PreserveDepthStencilContents = 1 << 1,
+        DoNotStoreDepthStencilContents = 1 << 2
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 

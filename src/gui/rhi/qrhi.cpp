@@ -2542,6 +2542,24 @@ QRhiColorAttachment::QRhiColorAttachment(QRhiRenderBuffer *renderBuffer)
         QRhiTextureRenderTarget *rt = rhi->newTextureRenderTarget({ colorAtt, depthStencil });
     \endcode
 
+    \note when multisample resolving is enabled, the multisample data may not be
+    written out at all. This means that the multisample texture in a color
+    attachment must not be used afterwards with shaders for sampling (or other
+    puroses) whenever a resolve texture is set, since the multisample color
+    buffer is merely an intermediate storage then that gets no data written back
+    on some GPU architectures at all.
+
+    \note When using setDepthTexture(), not setDepthStencilBuffer(), and the
+    depth (stencil) data is not of interest afterwards, set the
+    DoNotStoreDepthStencilContents flag on the QRhiTextureRenderTarget. This
+    allows indicating to the underlying 3D API that the depth/stencil data can
+    be discarded, leading potentially to better performance with tiled GPU
+    architectures. When the depth-stencil buffer is a QRhiRenderBuffer (and also
+    for the multisample color texture, see previous note) this is implicit, but
+    with a depth (stencil) QRhiTexture the intention needs to be declared
+    explicitly. By default QRhi assumes that the data is of interest (e.g., the
+    depth texture is sampled in a shader afterwards).
+
     \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
@@ -5053,6 +5071,12 @@ QRhiResource::Type QRhiSwapChainRenderTarget::resourceType() const
     (QRhiTextureRenderTargetDescription::depthTexture() is set) because
     depth/stencil renderbuffers may not have any physical backing and data may
     not be written out in the first place.
+
+    \value DoNotStoreDepthStencilContents Indicates that the contents of the
+    depth texture does not need to be written out. Relevant only when a
+    QRhiTexture, not QRhiRenderBuffer, is used as the depth-stencil buffer,
+    because for QRhiRenderBuffer this is implicit. This enum value is introduced
+    in Qt 6.8.
  */
 
 /*!

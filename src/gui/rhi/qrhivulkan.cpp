@@ -1439,6 +1439,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
                                            const QRhiColorAttachment *lastColorAttachment,
                                            bool preserveColor,
                                            bool preserveDs,
+                                           bool storeDs,
                                            QRhiRenderBuffer *depthStencilBuffer,
                                            QRhiTexture *depthTexture)
 {
@@ -1486,7 +1487,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
         const VkSampleCountFlagBits samples = depthTexture ? QRHI_RES(QVkTexture, depthTexture)->samples
                                                            : QRHI_RES(QVkRenderBuffer, depthStencilBuffer)->samples;
         const VkAttachmentLoadOp loadOp = preserveDs ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_CLEAR;
-        const VkAttachmentStoreOp storeOp = depthTexture ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        const VkAttachmentStoreOp storeOp = storeDs ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
         VkAttachmentDescription attDesc = {};
         attDesc.format = dsFormat;
         attDesc.samples = samples;
@@ -6859,6 +6860,7 @@ QRhiRenderPassDescriptor *QVkTextureRenderTarget::newCompatibleRenderPassDescrip
                                          m_desc.cendColorAttachments(),
                                          m_flags.testFlag(QRhiTextureRenderTarget::PreserveColorContents),
                                          m_flags.testFlag(QRhiTextureRenderTarget::PreserveDepthStencilContents),
+                                         m_desc.depthTexture() && !m_flags.testFlag(DoNotStoreDepthStencilContents),
                                          m_desc.depthStencilBuffer(),
                                          m_desc.depthTexture()))
     {
