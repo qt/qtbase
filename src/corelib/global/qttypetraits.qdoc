@@ -123,6 +123,7 @@
 /*!
     \macro QT_NO_QEXCHANGE
     \since 6.6
+    \relates <QtTypeTraits>
 
     Defining this macro removes the availability of the qExchange()
     function.
