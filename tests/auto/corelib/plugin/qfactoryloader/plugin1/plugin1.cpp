@@ -7,3 +7,5 @@ QString Plugin1::pluginName() const
 {
     return QLatin1String("Plugin1 ok");
 }
+
+#include "moc_plugin1.cpp"
