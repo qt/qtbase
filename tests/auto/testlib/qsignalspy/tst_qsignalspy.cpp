@@ -6,7 +6,6 @@
 #include <QSignalSpy>
 #include <QTimer>
 
-
 #include <qdatetime.h>
 
 using namespace Qt::StringLiterals;
@@ -50,6 +49,8 @@ private slots:
 
     void spyOnMetaMethod_invalid();
     void spyOnMetaMethod_invalid_data();
+
+    void signalSpyDoesNotRaceOnCrossThreadSignal();
 };
 
 struct CustomType {};
@@ -491,6 +492,32 @@ void tst_QSignalSpy::spyOnMetaMethod_invalid_data()
         << "QSignalSpy: Not a valid signal: 'deleteLater()'"_ba
         << new QObject(this)
         << QObject::staticMetaObject.method(QObject::staticMetaObject.indexOfMethod("deleteLater()"));
+}
+
+class EmitSignal_Thread : public QThread
+{
+    Q_OBJECT
+public:
+    void run() override
+    {
+        emit valueChanged(42, u"is the answer"_s);
+    }
+
+Q_SIGNALS:
+    void valueChanged(int value, const QString &str);
+};
+
+void tst_QSignalSpy::signalSpyDoesNotRaceOnCrossThreadSignal()
+{
+    EmitSignal_Thread thread;
+    QSignalSpy valueChangedSpy(&thread, &EmitSignal_Thread::valueChanged);
+    QVERIFY(valueChangedSpy.isValid());
+
+    thread.start();
+    QVERIFY(valueChangedSpy.wait(5000));
+    QCOMPARE(valueChangedSpy[0][0].toInt(), 42);
+    QCOMPARE(valueChangedSpy[0][1].toString(), u"is the answer"_s);
+    QVERIFY(thread.wait(5000));
 }
 
 QTEST_MAIN(tst_QSignalSpy)
