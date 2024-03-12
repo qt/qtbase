@@ -831,6 +831,8 @@ function(_qt_internal_finalize_executable target)
         else()
             _qt_internal_finalize_uikit_app("${target}")
         endif()
+    elseif(WIN32)
+        _qt_internal_finalize_windows_app("${target}")
     endif()
 
     # For finalizer mode of plugin importing to work safely, we need to know the list of Qt
