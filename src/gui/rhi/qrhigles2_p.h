@@ -949,7 +949,8 @@ public:
     void (QOPENGLF_APIENTRYP glQueryCounter)(GLuint, GLenum) = nullptr;
     void (QOPENGLF_APIENTRYP glGetQueryObjectui64v)(GLuint, GLenum, quint64 *) = nullptr;
     void (QOPENGLF_APIENTRYP glObjectLabel)(GLenum, GLuint, GLsizei, const GLchar *) = nullptr;
-
+    void (QOPENGLF_APIENTRYP glFramebufferTexture2DMultisampleEXT)(GLenum, GLenum, GLenum, GLuint, GLint, GLsizei) = nullptr;
+    void (QOPENGLF_APIENTRYP glFramebufferTextureMultisampleMultiviewOVR)(GLenum, GLenum, GLuint, GLint, GLsizei, GLint, GLsizei) = nullptr;
     uint vao = 0;
     struct Caps {
         Caps()
@@ -1062,6 +1063,8 @@ public:
         uint multiView : 1;
         uint timestamps : 1;
         uint objectLabel : 1;
+        uint glesMultisampleRenderToTexture : 1;
+        uint glesMultiviewMultisampleRenderToTexture : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;

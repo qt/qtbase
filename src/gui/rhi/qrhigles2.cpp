@@ -1074,6 +1074,28 @@ bool QRhiGles2::create(QRhi::Flags flags)
                             ctx->getProcAddress(QByteArrayLiteral("glObjectLabel")));
     }
 
+    if (caps.gles) {
+        // This is the third way to get multisample rendering with GLES. (1. is
+        // multisample render buffer -> resolve to texture; 2. is multisample
+        // texture with GLES 3.1; 3. is this, avoiding the explicit multisample
+        // buffer and should be more efficient with tiled architectures.
+        // Interesting also because 2. does not seem to work in practice on
+        // devices such as the Quest 3)
+        caps.glesMultisampleRenderToTexture = ctx->hasExtension("GL_EXT_multisampled_render_to_texture");
+        if (caps.glesMultisampleRenderToTexture) {
+            glFramebufferTexture2DMultisampleEXT = reinterpret_cast<void(QOPENGLF_APIENTRYP)(GLenum, GLenum, GLenum, GLuint, GLint, GLsizei)>(
+                ctx->getProcAddress(QByteArrayLiteral("glFramebufferTexture2DMultisampleEXT")));
+        }
+        caps.glesMultiviewMultisampleRenderToTexture = ctx->hasExtension("GL_OVR_multiview_multisampled_render_to_texture");
+        if (caps.glesMultiviewMultisampleRenderToTexture) {
+            glFramebufferTextureMultisampleMultiviewOVR = reinterpret_cast<void(QOPENGLF_APIENTRYP)(GLenum, GLenum, GLuint, GLint, GLsizei, GLint, GLsizei)>(
+                ctx->getProcAddress(QByteArrayLiteral("glFramebufferTextureMultisampleMultiviewOVR")));
+        }
+    } else {
+        caps.glesMultisampleRenderToTexture = false;
+        caps.glesMultiviewMultisampleRenderToTexture = false;
+    }
+
     nativeHandlesStruct.context = ctx;
 
     contextLost = false;
@@ -4484,7 +4506,7 @@ void QRhiGles2::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                 const bool hasZ = resolveTexD->m_flags.testFlag(QRhiTexture::ThreeDimensional)
                     || resolveTexD->m_flags.testFlag(QRhiTexture::TextureArray);
                 cmd.args.blitFromRenderbuffer.dstLayer = hasZ ? colorAtt.resolveLayer() : 0;
-            } else {
+            } else if (!caps.glesMultisampleRenderToTexture) {
                 Q_ASSERT(colorAtt.texture());
                 QGles2Texture *texD = QRHI_RES(QGles2Texture, colorAtt.texture());
                 if (texD->pixelSize() != size) {
@@ -5792,17 +5814,47 @@ bool QGles2TextureRenderTarget::create()
                                                        colorAtt.level(), colorAtt.layer());
                 } else {
                     multiViewCount = colorAtt.multiViewCount();
-                    rhiD->glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), texD->texture,
-                                                           colorAtt.level(), colorAtt.layer(), colorAtt.multiViewCount());
+                    if (texD->sampleCount() > 1 && rhiD->caps.glesMultiviewMultisampleRenderToTexture && colorAtt.resolveTexture()) {
+                        // Special path for GLES and GL_OVR_multiview_multisampled_render_to_texture:
+                        // ignore the color attachment's (multisample) texture
+                        // array and give the resolve texture array to GL. (no
+                        // explicit resolving is needed by us later on)
+                        QGles2Texture *resolveTexD = QRHI_RES(QGles2Texture, colorAtt.resolveTexture());
+                        rhiD->glFramebufferTextureMultisampleMultiviewOVR(GL_FRAMEBUFFER,
+                                                                          GL_COLOR_ATTACHMENT0 + uint(attIndex),
+                                                                          resolveTexD->texture,
+                                                                          colorAtt.resolveLevel(),
+                                                                          texD->sampleCount(),
+                                                                          colorAtt.resolveLayer(),
+                                                                          multiViewCount);
+                    } else {
+                        rhiD->glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER,
+                                                               GL_COLOR_ATTACHMENT0 + uint(attIndex),
+                                                               texD->texture,
+                                                               colorAtt.level(),
+                                                               colorAtt.layer(),
+                                                               multiViewCount);
+                    }
                 }
             } else if (texD->flags().testFlag(QRhiTexture::OneDimensional)) {
                 rhiD->glFramebufferTexture1D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex),
                                              texD->target + uint(colorAtt.layer()), texD->texture,
                                              colorAtt.level());
             } else {
-                const GLenum faceTargetBase = texD->flags().testFlag(QRhiTexture::CubeMap) ? GL_TEXTURE_CUBE_MAP_POSITIVE_X : texD->target;
-                rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), faceTargetBase + uint(colorAtt.layer()),
-                                                texD->texture, colorAtt.level());
+                if (texD->sampleCount() > 1 && rhiD->caps.glesMultisampleRenderToTexture && colorAtt.resolveTexture()) {
+                    // Special path for GLES and GL_EXT_multisampled_render_to_texture:
+                    // ignore the color attachment's (multisample) texture and
+                    // give the resolve texture to GL. (no explicit resolving is
+                    // needed by us later on)
+                    QGles2Texture *resolveTexD = QRHI_RES(QGles2Texture, colorAtt.resolveTexture());
+                    const GLenum faceTargetBase = resolveTexD->flags().testFlag(QRhiTexture::CubeMap) ? GL_TEXTURE_CUBE_MAP_POSITIVE_X : resolveTexD->target;
+                    rhiD->glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), faceTargetBase + uint(colorAtt.resolveLayer()),
+                                                               resolveTexD->texture, colorAtt.level(), texD->sampleCount());
+                } else {
+                    const GLenum faceTargetBase = texD->flags().testFlag(QRhiTexture::CubeMap) ? GL_TEXTURE_CUBE_MAP_POSITIVE_X : texD->target;
+                    rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + uint(attIndex), faceTargetBase + uint(colorAtt.layer()),
+                                                    texD->texture, colorAtt.level());
+                }
             }
             if (attIndex == 0) {
                 d.pixelSize = rhiD->q->sizeForMipLevel(colorAtt.level(), texD->pixelSize());
