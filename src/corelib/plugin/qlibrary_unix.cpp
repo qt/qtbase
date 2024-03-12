@@ -275,20 +275,6 @@ bool QLibraryPrivate::unload_sys()
     return true;
 }
 
-#if defined(Q_OS_LINUX)
-Q_CORE_EXPORT QFunctionPointer qt_linux_find_symbol_sys(const char *symbol)
-{
-    return QFunctionPointer(dlsym(RTLD_DEFAULT, symbol));
-}
-#endif
-
-#ifdef Q_OS_DARWIN
-Q_CORE_EXPORT QFunctionPointer qt_mac_resolve_sys(void *handle, const char *symbol)
-{
-    return QFunctionPointer(dlsym(handle, symbol));
-}
-#endif
-
 QFunctionPointer QLibraryPrivate::resolve_sys(const char *symbol)
 {
     QFunctionPointer address = QFunctionPointer(dlsym(pHnd.loadAcquire(), symbol));
