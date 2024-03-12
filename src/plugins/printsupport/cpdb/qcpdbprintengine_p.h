@@ -15,8 +15,7 @@
 // We mean it.
 //
 
-#include <private/qcpdb_p.h>
-
+#include <qcpdb_p.h>
 #include "QtPrintSupport/qprintengine.h"
 
 #include <QtCore/qstring.h>

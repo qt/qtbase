@@ -1,3 +1,4 @@
 {
-    "Keys": [ "cpdbprintersupport" ]
+    "Keys": [ "cpdbprintersupport" ],
+    "Priority": 80
 }

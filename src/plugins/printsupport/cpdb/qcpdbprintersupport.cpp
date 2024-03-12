@@ -38,8 +38,8 @@ QCpdbPrinterSupport::QCpdbPrinterSupport()
 
     QByteArray instanceName = "Qt";
     frontendObj = cpdbGetNewFrontendObj(instanceName.constData(), printerCb);
-    cpdbConnectToDBus(frontendObj);
     cpdbIgnoreLastSavedSettings(frontendObj);
+    cpdbConnectToDBus(frontendObj);
 }
 
 QCpdbPrinterSupport::~QCpdbPrinterSupport()
@@ -71,7 +71,6 @@ QPrintDevice QCpdbPrinterSupport::createPrintDevice(const QString &id)
             break;
         }
     }
-
     return QPlatformPrinterSupport::createPrintDevice(new QCpdbPrintDevice(printerObj));
 }
 

@@ -5,6 +5,7 @@
 
 if(QT_FEATURE_cpdb AND UNIX AND NOT APPLE)
     add_subdirectory(cpdb)
-elseif(QT_FEATURE_cups AND UNIX AND NOT APPLE)
+endif()
+if (QT_FEATURE_cups AND UNIX AND NOT APPLE)
     add_subdirectory(cups)
 endif()

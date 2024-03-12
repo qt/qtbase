@@ -51,16 +51,61 @@ static void cleanupPrinterSupport()
 QPlatformPrinterSupport *QPlatformPrinterSupportPlugin::get()
 {
     if (!printerSupport) {
-        const QMultiMap<int, QString> keyMap = loader()->keyMap();
+
+
+        QFactoryLoader *l = loader();
+
+        // Load plugin metadata
+        QMultiMap<QString,QCborMap> plugins;
+        QList<QPluginParsedMetaData> meta = l->metaData();
+        for (int i = 0; i < meta.size(); ++i) {
+            QCborMap obj = meta.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
+            obj.insert(QLatin1String("index"), i);
+            QCborValue keys = obj.value(QStringLiteral("Keys"));
+            if (keys.isArray() && !keys.toArray().empty())
+                plugins.insert(keys.toArray()[0].toString(), obj);
+            else if (keys.isString())
+                plugins.insert(keys.toString(), obj);
+        }
+
+        qInfo() << "Available print plugins";
+        for (auto key : plugins.keys()) {
+            qInfo() << key;
+        }
+
+        // Search for user specified print plugin
+        const QMultiMap<int, QString> keyMap = l->keyMap();
         QMultiMap<int, QString>::const_iterator it = keyMap.cbegin();
+        bool pluginFound = false;
         if (!qEnvironmentVariableIsEmpty("QT_PRINTER_MODULE")) {
             QString module = qEnvironmentVariable("QT_PRINTER_MODULE");
             QMultiMap<int, QString>::const_iterator it2 = std::find_if(keyMap.cbegin(), keyMap.cend(), [module](const QString &value){ return value == module; });
-            if (it2 == keyMap.cend())
+            if (it2 == keyMap.cend()) {
                 qWarning() << "Unable to load printer plugin" << module;
+            } else {
+                pluginFound = true;
+                it = it2;
+            }
+        }
+
+        // Search for highest priority plugin if user didn't specify one
+        if (!pluginFound) {
+            int priority = -1;
+            QString key;
+            for (const auto &&[keyIter, metadata] : plugins.asKeyValueRange()) {
+                const int pluginPriority = metadata.value(QStringLiteral("Priority")).toInteger();
+                if (pluginPriority > priority) {
+                    priority = pluginPriority;
+                    key = keyIter;
+                }
+            }
+            QMultiMap<int, QString>::const_iterator it2 = std::find_if(keyMap.cbegin(), keyMap.cend(), [key](const QString &value){ return value == key; });
+            if (it2 == keyMap.cend())
+                qWarning() << "Unable to load printer plugin" << key;
             else
                 it = it2;
         }
+
         if (it != keyMap.cend())
             printerSupport = qLoadPlugin<QPlatformPrinterSupport, QPlatformPrinterSupportPlugin>(loader(), it.value());
         if (printerSupport)

@@ -22,8 +22,6 @@
 #include "QtPrintSupport/qprinter.h"
 #include "QtCore/qdatetime.h"
 
-QT_REQUIRE_CONFIG(cups);
-
 QT_BEGIN_NAMESPACE
 
 class QPrintDevice;
@@ -42,7 +40,7 @@ class QPrintDevice;
 #define PDPK_CupsJobHoldUntil QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 5)
 #define PDPK_PpdChoiceIsInstallableConflict QPrintDevice::PrintDevicePropertyKey(QPrintDevice::PDPK_CustomBase + 6)
 
-class Q_PRINTSUPPORT_EXPORT QCUPSSupport
+class QCUPSSupport
 {
 public:
     // Enum for values of job-hold-until option
@@ -110,6 +108,9 @@ public:
                                        const PagesPerSheetLayout pagesPerSheetLayout);
     static void setPageRange(QPrinter *printer, int pageFrom, int pageTo);
     static void setPageRange(QPrinter *printer, const QString &pageRange);
+
+    static bool isBlacklistedGroup(const ppd_group_t *group) noexcept;
+    static bool isBlacklistedOption(const char *keyword) noexcept;
 
     struct JobSheets
     {

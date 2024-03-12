@@ -15,10 +15,12 @@
 // We mean it.
 //
 
-#include <private/qcpdb_p.h>
+#include <qcpdb_p.h>
+#include <private/qprint_p.h>
 
 #include <qpa/qplatformprintdevice.h>
 
+#include <QSet>
 #include <QtCore/qmargins.h>
 
 QT_BEGIN_NAMESPACE
@@ -66,6 +68,31 @@ protected:
 
 private:
     cpdb_printer_obj_t *m_printerObj;
+    // options exlcuded from the advanced tab in print properties dialog,
+    // because they have been displayed elsewhere in the dialog
+    const QSet<QByteArray> m_nonAdvancedOptions{
+        CPDB_OPTION_PAGE_RANGES,
+        CPDB_OPTION_PAGE_SET,
+        CPDB_OPTION_COPIES,
+        CPDB_OPTION_PAGE_DELIVERY,
+        CPDB_OPTION_COLLATE,
+        CPDB_OPTION_SIDES,
+        CPDB_OPTION_COLOR_MODE,
+        CPDB_OPTION_MEDIA,
+        CPDB_OPTION_ORIENTATION,
+        CPDB_OPTION_MARGIN_LEFT,
+        CPDB_OPTION_MARGIN_RIGHT,
+        CPDB_OPTION_MARGIN_TOP,
+        CPDB_OPTION_MARGIN_BOTTOM,
+        CPDB_OPTION_NUMBER_UP,
+        CPDB_OPTION_NUMBER_UP_LAYOUT,
+        CPDB_OPTION_JOB_HOLD_UNTIL,
+        CPDB_OPTION_JOB_PRIORITY,
+        CPDB_OPTION_BILLING_INFO,
+        CPDB_OPTION_JOB_SHEETS,
+        CPDB_OPTION_FIDELITY,
+        "borderless"
+    };
 };
 
 QT_END_NAMESPACE

@@ -207,9 +207,9 @@ void QCpdbPrintEnginePrivate::changePrinter(const QString &newPrinter)
         duplexRequestedExplicitly = false;
     }
 
-    QPrint::ColorMode colorMode = grayscale ? QPrint::GrayScale : QPrint::Color;
-    if (!m_printDevice.supportedColorModes().contains(colorMode))
-        grayscale = (m_printDevice.defaultColorMode() == QPrint::GrayScale);
+//    QPrint::ColorMode colorMode = grayscale ? QPrint::GrayScale : QPrint::Color;
+//    if (!m_printDevice.supportedColorModes().contains(colorMode))
+//        grayscale = (m_printDevice.defaultColorMode() == QPrint::GrayScale);
 
     // Get the equivalent page size for this printer as supported names may be different
     if (m_printDevice.supportedPageSize(m_pageLayout.pageSize()).isValid())

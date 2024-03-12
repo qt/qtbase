@@ -17,7 +17,7 @@
 
 #include <qpa/qplatformprintersupport.h>
 
-#include <private/qcpdb_p.h>
+#include <qcpdb_p.h>
 
 QT_BEGIN_NAMESPACE
 

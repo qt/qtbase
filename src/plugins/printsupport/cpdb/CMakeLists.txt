@@ -7,6 +7,7 @@ qt_internal_add_plugin(QCpdbPrinterSupportPlugin
     PLUGIN_TYPE printsupport
     SOURCES
         main.cpp
+        qcpdb.cpp qcpdb_p.h
         qcpdbprintengine.cpp qcpdbprintengine_p.h
         qcpdbprintersupport.cpp qcpdbprintersupport_p.h
         qcpdbprintdevice.cpp qcpdbprintdevice.h

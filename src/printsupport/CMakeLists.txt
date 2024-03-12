@@ -84,12 +84,10 @@ qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printpreviewwidget
         widgets/qprintpreviewwidget.cpp widgets/qprintpreviewwidget.h
 )
 
-qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_cpdb AND UNIX AND NOT APPLE
-    SOURCES
-        kernel/qcpdb.cpp kernel/qcpdb_p.h
-    LIBRARIES
-        WrapCPDB::WrapCPDB
-)
+#qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_cpdb AND UNIX AND NOT APPLE
+#    LIBRARIES
+#        WrapCPDB::WrapCPDB
+#)
 
 qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_cpdbjobwidget AND UNIX AND NOT APPLE
     SOURCES
@@ -124,6 +122,10 @@ qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_cupsjobwidget AND UN
     ENABLE_AUTOGEN_TOOLS
         uic
 )
+#qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_cups AND UNIX AND NOT APPLE
+#    SOURCES
+#        kernel/qcups.cpp kernel/qcups_p.h
+#)
 
 qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printdialog
     SOURCES
@@ -133,6 +135,12 @@ qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printdialog
         dialogs/qprintdialog.h
     ENABLE_AUTOGEN_TOOLS
         uic
+)
+
+qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printjobwidget AND UNIX AND NOT APPLE
+    SOURCES
+        widgets/qprintjobwidget.cpp widgets/qprintjobwidget.ui widgets/qprintjobwidget_p.h
+
 )
 
 if(QT_FEATURE_printdialog)
@@ -210,11 +218,9 @@ qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printdialog AND WIN3
 qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printdialog AND UNIX AND NOT MACOS
     SOURCES
         dialogs/qpagesetupdialog_unix.cpp dialogs/qpagesetupdialog_unix_p.h
-        dialogs/qprintdialog_unix.cpp
         dialogs/qprintpropertieswidget.ui
         dialogs/qprintsettingsoutput.ui
         dialogs/qprintwidget.ui
-    NO_UNITY_BUILD_SOURCES
         dialogs/qprintdialog_unix.cpp   # Clashes with CUPS headers
     INCLUDE_DIRECTORIES
         ${QtBase_SOURCE_DIR}/src/plugins/printsupport/cpdb

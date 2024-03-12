@@ -17,6 +17,7 @@ qt_internal_add_plugin(QCupsPrinterSupportPlugin
     PLUGIN_TYPE printsupport
     SOURCES
         main.cpp
+        qcups.cpp qcups_p.h
         qcupsprintengine.cpp qcupsprintengine_p.h
         qcupsprintersupport.cpp qcupsprintersupport_p.h
         qppdprintdevice.cpp qppdprintdevice.h

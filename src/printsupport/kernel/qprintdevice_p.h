@@ -94,7 +94,23 @@ public:
     QList<QPrint::ColorMode> supportedColorModes() const;
 
     enum PrintDevicePropertyKey {
-        PDPK_CustomBase = 0xff00
+        PDPK_Duplex,
+        PDPK_PageSet,
+        PDPK_PageRange,
+        PDPK_JobHold,
+        PDPK_JobBillingInfo,
+        PDPK_JobPriority,
+        PDPK_JobStartCoverPage,
+        PDPK_JobEndCoverPage,
+        PDPK_AdvancedOptions,
+        PDPK_OptionConflict,
+        PDPK_NumberUp,
+        PDPK_NumberUpLayout,
+        PDPK_PageSize,
+        PDPK_PageLayout,
+        PDPK_AdvancedColorMode,
+        PDPK_Locale,
+        PDPK_CustomBase
     };
 
     QVariant property(PrintDevicePropertyKey key) const;

@@ -118,7 +118,34 @@ namespace QPrint {
         QPrint::OutputBinId id;
     };
 
+    struct OptionCombo {
+        QByteArray name;
+        QString displayName;
+        QList<QByteArray> choices;
+        QList<QString> displayChoices;
+        int defaultChoice;
+    };
+
+    struct OptionSetting {
+        QByteArray name;
+        QByteArray choice;
+    };
+
+    struct OptionCombosGroup {
+        QByteArray groupName;
+        QString displayGroup;
+        QList<QPrint::OptionCombo> options;
+    };
+
+    struct PageLayout {
+        QSizeF size;
+        QMarginsF margins;
+    };
 }
+
+Q_DECLARE_METATYPE(QPrint::OptionCombo)
+Q_DECLARE_METATYPE(QPrint::OptionSetting)
+Q_DECLARE_METATYPE(QPrint::OptionCombosGroup)
 
 struct InputSlotMap {
     QPrint::InputSlotId id;

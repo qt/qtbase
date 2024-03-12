@@ -17,11 +17,6 @@
 
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
 
-#if QT_CONFIG(cpdb)
-#include <cpdb/cpdb-frontend.h>
-#include <private/qcpdb_p.h>
-#endif
-
 #include "qprinter.h"
 #include "kernel/qprint_p.h"
 
@@ -48,12 +43,13 @@ public:
     void updateSavedValues();
     void revertToSavedValues();
 
-#if QT_CONFIG(cups)
-    bool hasPpdConflict() const;
+    bool hasOptionConflict() const;
+//#if QT_CONFIG(cups)
+//    bool hasPpdConflict() const;
 
-Q_SIGNALS:
-    void ppdOptionChanged();
-#endif
+//Q_SIGNALS:
+//    void ppdOptionChanged();
+//#endif
 
 private Q_SLOTS:
     void pageSizeChanged();
@@ -77,12 +73,12 @@ private:
     QPagePreview *m_pagePreview;
     QPrinter *m_printer;
     QPrintDevice *m_printDevice;
-#if QT_CONFIG(cpdb)
-    cpdb_printer_obj_t *m_printerObj;
-#endif
-#if QT_CONFIG(cups)
-    ppd_option_t *m_pageSizePpdOption;
-#endif
+//#if QT_CONFIG(cpdb)
+//    cpdb_printer_obj_t *m_printerObj;
+//#endif
+//#if QT_CONFIG(cups)
+//    ppd_option_t *m_pageSizePpdOption;
+//#endif
     QPrinter::OutputFormat m_outputFormat;
     QString m_printerName;
     QPageLayout m_pageLayout;

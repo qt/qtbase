@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 
-#ifndef QCPDBJOBWIDGET_P_H
-#define QCPDBJOBWIDGET_P_H
+#ifndef QPRINTJOBWIDGET_P_H
+#define QPRINTJOBWIDGET_P_H
 
 //
 //  W A R N I N G
@@ -18,12 +18,8 @@
 //
 
 #include <QtPrintSupport/private/qtprintsupportglobal_p.h>
-#include <private/qcpdb_p.h>
 
-QT_REQUIRE_CONFIG(cpdbjobwidget);
-
-// Use the same UI as CUPS job widget
-#include <ui_qcupsjobwidget.h>
+#include <ui_qprintjobwidget.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -32,35 +28,37 @@ class QTime;
 class QPrinter;
 class QPrintDevice;
 
-class QCpdbJobWidget : public QWidget
+class QPrintJobWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit QCpdbJobWidget(QPrinter *printer, QPrintDevice *printDevice, QWidget *parent = nullptr);
-    ~QCpdbJobWidget();
+    explicit QPrintJobWidget(QPrinter *printer, QPrintDevice *printDevice, QWidget *parent = nullptr);
+    ~QPrintJobWidget();
     void setupPrinter();
 
     void updateSavedValues();
     void revertToSavedValues();
 
-    Q_DISABLE_COPY_MOVE(QCpdbJobWidget)
+    Q_DISABLE_COPY_MOVE(QPrintJobWidget)
 
 private Q_SLOTS:
     void toggleJobHoldTime();
 
 private:
 
+    QByteArray jobHold() const;
     QTime jobHoldTime() const;
     QString jobBilling() const;
     int jobPriority() const;
-
-    void setJobBilling(const QString &jobBilling = QString());
-    void setJobPriority(int priority = 50);
-
     QByteArray startBannerPage() const;
     QByteArray endBannerPage() const;
-    QByteArray jobHold() const;
+
+    void setJobHold(const QByteArray &jobHold, const QTime &holdUntilTime);
+    void setJobBilling(const QString &jobBilling = QString());
+    void setJobPriority(int priority = 50);
+    void setStartBannerPage(const QByteArray &bannerPage);
+    void setEndBannerPage(const QByteArray &bannerPage);
 
     void initJobHold();
     void initJobBilling();
@@ -68,10 +66,15 @@ private:
     void initBannerPages();
 
     QPrinter *m_printer;
-    Ui::QCupsJobWidget m_ui;
-    cpdb_printer_obj_t *m_printerObj;
+    QPrintDevice *m_printDevice;
+    Ui::QPrintJobWidget m_ui;
+
+    QPair<QByteArray,QTime> m_savedJobHoldWithTime;
+    QString m_savedJobBilling;
+    int m_savedPriority;
+    QPair<QByteArray,QByteArray> m_savedJobSheets;
 };
 
 QT_END_NAMESPACE
 
-#endif  // QCPDBJOBWIDGET_P_H
+#endif  // QPRINTJOBWIDGET_P_H

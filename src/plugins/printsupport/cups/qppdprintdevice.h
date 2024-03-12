@@ -68,13 +68,17 @@ protected:
 #endif
 
 private:
+    QString getCupsOption(const QString &option) const;
+    void setCupsOption(const QString &option, const QString &value);
     QString printerOption(const QString &key) const;
+    ppd_option_t *findPpdOption(const char *optionName) const;
     cups_ptype_e printerTypeFlags() const;
 
     cups_dest_t *m_cupsDest;
     ppd_file_t *m_ppd;
     QByteArray m_cupsName;
     QByteArray m_cupsInstance;
+    QStringList m_cupsOptions;
     QMarginsF m_customMargins;
     mutable QHash<QString, QMarginsF> m_printableMargins;
 };

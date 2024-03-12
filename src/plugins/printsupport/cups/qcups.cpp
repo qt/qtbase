@@ -253,4 +253,28 @@ void QCUPSSupport::setPageRange(QPrinter *printer, const QString &pageRange)
     setCupsOption(printer, QStringLiteral("page-ranges"), pageRange);
 }
 
+bool QCUPSSupport::isBlacklistedGroup(const ppd_group_t *group) noexcept
+{
+    return qstrcmp(group->name, "InstallableOptions") == 0;
+}
+
+bool QCUPSSupport::isBlacklistedOption(const char *keyword) noexcept
+{
+    // We already let the user set these options elsewhere
+    const char *cupsOptionBlacklist[] = {
+        "Collate",
+        "Copies",
+        "OutputOrder",
+        "PageRegion",
+        "PageSize",
+        "Duplex" // handled by the main dialog
+    };
+    auto equals = [](const char *keyword) {
+        return [keyword](const char *candidate) {
+            return qstrcmp(keyword, candidate) == 0;
+        };
+    };
+    return std::any_of(std::begin(cupsOptionBlacklist), std::end(cupsOptionBlacklist), equals(keyword));
+}
+
 QT_END_NAMESPACE
