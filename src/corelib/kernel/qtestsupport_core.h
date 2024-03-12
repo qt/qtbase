@@ -25,9 +25,8 @@ qWaitFor(Functor predicate, QDeadlineTimer deadline = QDeadlineTimer(std::chrono
     if (predicate())
         return true;
 
-    // qWait() is expected to spin the event loop, even when called with a small
-    // timeout like 1ms, so we we can't use a simple while-loop here based on
-    // the deadline timer not having timed out. Use do-while instead.
+    // qWait() is expected to spin the event loop at least once, even when
+    // called with a small timeout like 1ns.
 
     using namespace std::chrono;
 
