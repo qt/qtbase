@@ -459,6 +459,13 @@ elseif(WASM)
         "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-wasmtestrunner.py" @ONLY)
     qt_install(PROGRAMS "${QT_BUILD_DIR}/${INSTALL_LIBEXECDIR}/qt-wasmtestrunner.py"
         DESTINATION "${INSTALL_LIBEXECDIR}")
+elseif(WIN32)
+    qt_copy_or_install(FILES "cmake/windows/app.exe.manifest.in"
+        DESTINATION "${__GlobalConfig_install_dir}/windows"
+    )
+    file(COPY "cmake/windows/app.exe.manifest.in"
+        DESTINATION "${__GlobalConfig_install_dir}/windows"
+    )
 endif()
 
 # Install CI support files to libexec.

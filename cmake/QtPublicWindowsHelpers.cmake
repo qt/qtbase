@@ -1,6 +1,134 @@
 # Copyright (C) 2024 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+function(_qt_internal_normalize_project_version)
+    # Default if PROJECT_VERSION is missing or empty
+    if(NOT DEFINED PROJECT_VERSION OR PROJECT_VERSION STREQUAL "")
+        set(_version "1.0.0.0")
+    else()
+        set(_version "${PROJECT_VERSION}")
+    endif()
+
+    # Split version into components
+    string(REPLACE "." ";" _ver_list "${_version}")
+
+    # Ensure exactly 4 segments
+    list(LENGTH _ver_list _len)
+    while(_len LESS 4)
+        list(APPEND _ver_list "0")
+        list(LENGTH _ver_list _len)
+    endwhile()
+
+    # Truncate extra segments
+    list(SUBLIST _ver_list 0 4 _ver_list)
+
+    # Windows Application Manifests require a 4-part version (Major.Minor.Build.Revision).
+    # Each segment is stored as a 16-bit unsigned integer (USHORT).
+    # Values exceeding 65535 will cause schema validation errors in MSIX/AppX
+    # or 'Side-by-Side' (SxS) configuration failures in Win32 executables.
+    # We clamp the values here to ensure the manifest remains valid for Windows.
+    set(_ver_list_tmp "")
+    foreach(i RANGE 0 3)
+        list(GET _ver_list ${i} seg)
+        if(seg LESS 0)
+            message(WARNING
+                        "Version segment '${seg}' is less than 0. Capping to 0.")
+            set(seg 0)
+        elseif(seg GREATER 65535)
+            message(WARNING
+                "Version segment '${seg}' exceeds 65535. Capping to 65535.")
+            set(seg 65535)
+        endif()
+        list(APPEND _ver_list_tmp ${seg})
+    endforeach()
+
+    list(GET _ver_list_tmp 0 _maj)
+    list(GET _ver_list_tmp 1 _min)
+    list(GET _ver_list_tmp 2 _build)
+    list(GET _ver_list_tmp 3 _revision)
+
+    # Recompose canonical version
+    set(PROJECT_VERSION
+        "${_maj}.${_min}.${_build}.${_revision}"
+        PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_finalize_windows_app target)
+    get_target_property(targetType "${target}" TYPE)
+    if(NOT "${targetType}" STREQUAL "EXECUTABLE" AND
+            NOT "${targetType}" STREQUAL "SHARED_LIBRARY")
+        return()
+    endif()
+
+    # If the project already specifies a custom file, we don't override it.
+    get_target_property(sources "${target}" SOURCES)
+    set(manifest_in "${sources}")
+    list(FILTER manifest_in INCLUDE REGEX ".*\.manifest")
+    if(manifest_in)
+        message(DEBUG "Skipping manifest magic due to user specified manifest file")
+        return()
+    endif()
+
+    set(manifest_in "${__qt_internal_cmake_windows_support_files_path}/app.exe.manifest.in")
+
+    get_target_property(output_name ${target} OUTPUT_NAME)
+    if(NOT output_name)
+        set(output_name "${target}")
+    endif()
+    string(MAKE_C_IDENTIFIER "${target}" target_identifier)
+    set(manifest_out_dir "${CMAKE_CURRENT_BINARY_DIR}")
+    set(manifest_out "${manifest_out_dir}/${output_name}.exe.manifest")
+
+    _qt_internal_normalize_project_version()
+
+    get_target_property(project_identifier "${target}" QT_WINDOWS_APP_PROJECT_IDENTIFIER)
+    if(NOT project_identifier)
+        message(DEBUG "QT_WINDOWS_APP_PROJECT_IDENTIFIER not set, "
+                      "using com.yourcompany.${target_identifier} as fallback")
+        set(QT_WINDOWS_APP_PROJECT_IDENTIFIER "com.yourcompany.${target_identifier}")
+    else()
+        set(QT_WINDOWS_APP_PROJECT_IDENTIFIER "${project_identifier}")
+    endif()
+
+    get_target_property(project_executionlevel "${target}" QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL)
+    if(NOT project_executionlevel)
+        message(DEBUG "QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL not set, "
+                      "using asInvoker as fallback")
+        set(QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL "asInvoker")
+    else()
+        # Validate value
+        set(_valid_execution_levels
+            "asInvoker"
+            "highestAvailable"
+            "requireAdministrator"
+        )
+
+        if(NOT project_executionlevel IN_LIST _valid_execution_levels)
+            message(WARNING
+                "Invalid QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL value: "
+                "'${project_executionlevel}' for target '${target}'."
+                "Defaulting to 'asInvoker'."
+                " Valid values are: asInvoker, highestAvailable, requireAdministrator."
+            )
+            set(QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL "asInvoker")
+        else()
+            set(QT_WINDOWS_APP_PROJECT_EXECUTION_LEVEL "${project_executionlevel}")
+        endif()
+    endif()
+
+    # Call configure_file to substitute Qt-specific @FOO@ values, not ${FOO} values.
+    configure_file(
+        "${manifest_in}"
+        "${manifest_out}"
+        @ONLY
+    )
+
+    target_sources("${target}" PRIVATE "${manifest_out}")
+    if(MSVC)
+        target_link_options(${target} PRIVATE "/MANIFEST:NO")
+    endif()
+endfunction()
+
 function(qt6_add_win_app_sdk target)
     if(NOT MSVC)
         message(WARNING

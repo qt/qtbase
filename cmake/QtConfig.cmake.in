@@ -79,6 +79,10 @@ if(APPLE)
     endif()
 endif()
 
+if(WIN32)
+    set(__qt_internal_cmake_windows_support_files_path "${_qt_import_prefix}/windows")
+endif()
+
 # Public helpers available to all Qt packages.
 set(__qt_public_files_to_include
     @QT_PUBLIC_FILES_TO_INCLUDE@
