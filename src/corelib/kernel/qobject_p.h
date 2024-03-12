@@ -141,9 +141,7 @@ public:
     void moveToThread_helper();
     void setThreadData_helper(QThreadData *currentData, QThreadData *targetData, QBindingStatus *status);
 
-    bool isSender(const QObject *receiver, const char *signal) const;
     QObjectList receiverList(const char *signal) const;
-    QObjectList senderList() const;
 
     inline void ensureConnectionData();
     inline void addConnection(int signal, Connection *c);

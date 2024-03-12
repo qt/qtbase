@@ -227,27 +227,6 @@ static void computeOffsets(const QMetaObject *metaobject, int *signalOffset, int
 }
 
 // Used by QAccessibleWidget
-bool QObjectPrivate::isSender(const QObject *receiver, const char *signal) const
-{
-    Q_Q(const QObject);
-    int signal_index = signalIndex(signal);
-    ConnectionData *cd = connections.loadRelaxed();
-    if (signal_index < 0 || !cd)
-        return false;
-    QMutexLocker locker(signalSlotLock(q));
-    if (signal_index < cd->signalVectorCount()) {
-        const QObjectPrivate::Connection *c = cd->signalVector.loadRelaxed()->at(signal_index).first.loadRelaxed();
-
-        while (c) {
-            if (c->receiver.loadRelaxed() == receiver)
-                return true;
-            c = c->nextConnectionList.loadRelaxed();
-        }
-    }
-    return false;
-}
-
-// Used by QAccessibleWidget
 QObjectList QObjectPrivate::receiverList(const char *signal) const
 {
     QObjectList returnValue;
@@ -264,19 +243,6 @@ QObjectList QObjectPrivate::receiverList(const char *signal) const
                 returnValue << r;
             c = c->nextConnectionList.loadRelaxed();
         }
-    }
-    return returnValue;
-}
-
-// Used by QAccessibleWidget
-QObjectList QObjectPrivate::senderList() const
-{
-    QObjectList returnValue;
-    ConnectionData *cd = connections.loadRelaxed();
-    if (cd) {
-        QMutexLocker locker(signalSlotLock(q_func()));
-        for (Connection *c = cd->senders; c; c = c->next)
-            returnValue << c->sender;
     }
     return returnValue;
 }
