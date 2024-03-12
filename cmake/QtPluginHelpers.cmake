@@ -91,6 +91,11 @@ function(qt_internal_add_plugin target)
     qt6_add_plugin(${target} ${plugin_args})
     qt_internal_mark_as_internal_library(${target})
 
+    get_target_property(target_type "${target}" TYPE)
+    if(target_type STREQUAL STATIC_LIBRARY)
+        qt_internal_add_target_aliases("${plugin_init_target}")
+    endif()
+
     set(plugin_type "")
     # TODO: Transitional: Remove the TYPE option handling after all repos have been converted to use
     # PLUGIN_TYPE.
@@ -390,7 +395,6 @@ function(qt_internal_add_plugin target)
 
     qt_register_target_dependencies("${target}" "${arg_PUBLIC_LIBRARIES}" "${qt_libs_private}")
 
-    get_target_property(target_type "${target}" TYPE)
     if(target_type STREQUAL STATIC_LIBRARY)
         if(qt_module_target)
             qt_internal_link_internal_platform_for_object_library("${plugin_init_target}")
