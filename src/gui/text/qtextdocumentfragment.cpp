@@ -577,14 +577,12 @@ bool QTextHtmlImporter::appendNodeText()
     if (wsm == QTextHtmlParserNode::WhiteSpacePre || wsm == QTextHtmlParserNode::WhiteSpacePreWrap)
         compressNextWhitespace = PreserveWhiteSpace;
 
-    QString text = currentNode->text;
+    const QString text = currentNode->text;
 
     QString textToInsert;
     textToInsert.reserve(text.size());
 
-    for (int i = 0; i < text.size(); ++i) {
-        QChar ch = text.at(i);
-
+    for (QChar ch : text) {
         if (ch.isSpace()
             && ch != QChar::Nbsp
             && ch != QChar::ParagraphSeparator) {
