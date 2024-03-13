@@ -95,7 +95,7 @@
     To mark parts of a class:
         class QClass : public QObject
         {
-            Q_OBJECT
+            // Q_OBJECT omitted d/t QTBUG-123229
 
             QT_TECH_PREVIEW_API
             Q_PROPERTY(int countNG ...)   // this is TP
