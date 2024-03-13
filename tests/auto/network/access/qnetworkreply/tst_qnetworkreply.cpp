@@ -9931,6 +9931,7 @@ void tst_QNetworkReply::requestWithTimeout()
     // Manager instance remains between case runs => always reset it's transferTimeout to
     // ensure setting its transferTimeout in this case has effect
     manager.setTransferTimeout(0ms);
+    auto cleanup = qScopeGuard([this] { manager.setTransferTimeout(0ms); });
 
     MiniHttpServer server(tst_QNetworkReply::httpEmpty200Response, false);
     server.stopTransfer = true;
