@@ -326,6 +326,38 @@ void tst_QByteArrayView::constExpr() const
         static_assert(sv.size() == 0);
         static_assert(sv.data() == nullptr);
     }
+    {
+        constexpr QByteArrayView bv(QLatin1StringView("Hello"));
+        static_assert(bv.size() == 5);
+        static_assert(!bv.empty());
+        static_assert(!bv.isEmpty());
+        static_assert(!bv.isNull());
+        static_assert(*bv.data() == 'H');
+        static_assert(bv[0]      == 'H');
+        static_assert(bv.at(0)   == 'H');
+        static_assert(bv.front() == 'H');
+        static_assert(bv.first() == 'H');
+        static_assert(bv[4]      == 'o');
+        static_assert(bv.at(4)   == 'o');
+        static_assert(bv.back()  == 'o');
+        static_assert(bv.last()  == 'o');
+    }
+    {
+        constexpr QByteArrayView bv(QUtf8StringView("Hello"));
+        static_assert(bv.size() == 5);
+        static_assert(!bv.empty());
+        static_assert(!bv.isEmpty());
+        static_assert(!bv.isNull());
+        static_assert(*bv.data() == 'H');
+        static_assert(bv[0]      == 'H');
+        static_assert(bv.at(0)   == 'H');
+        static_assert(bv.front() == 'H');
+        static_assert(bv.first() == 'H');
+        static_assert(bv[4]      == 'o');
+        static_assert(bv.at(4)   == 'o');
+        static_assert(bv.back()  == 'o');
+        static_assert(bv.last()  == 'o');
+    }
 }
 
 void tst_QByteArrayView::basics() const
