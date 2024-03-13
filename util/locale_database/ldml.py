@@ -358,6 +358,7 @@ class LocaleScanner (object):
 
     def endonyms(self, language, script, territory, variant):
         # TODO: take variant into account ?
+        # TODO: QTBUG-47892, support query for all combinations
         for seq in ((language, script, territory),
                     (language, script), (language, territory), (language,)):
             if not all(seq):

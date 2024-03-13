@@ -620,6 +620,8 @@ enumdata.py (keeping the old name as an alias):
             source = self.__supplementalData
             for elt in source.findNodes('currencyData/region'):
                 iso, digits, rounding = '', 2, 1
+                # TODO: fractions/info[iso4217=DEFAULT] has rounding=0 - why do we differ ?
+                # Also: some fractions/info have cashDigits and cashRounding - should we use them ?
                 try:
                     territory = elt.dom.attributes['iso3166'].nodeValue
                 except KeyError:

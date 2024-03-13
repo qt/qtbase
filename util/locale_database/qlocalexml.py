@@ -195,6 +195,8 @@ class QLocaleXmlReader (object):
         child = elt.firstChild
         while child:
             if child.nodeType == elt.TEXT_NODE:
+                # Note: do not strip(), as some group separators are
+                # non-breaking spaces, that strip() will discard.
                 yield child.nodeValue
             child = child.nextSibling
 

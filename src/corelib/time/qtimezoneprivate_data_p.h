@@ -57,6 +57,7 @@ struct AliasData
     constexpr QByteArrayView ianaId() const;
 };
 
+// FIXME: rename ianaIdData[] to ianaListData[], aliasIdData[] to ianaIdData[]
 struct ZoneData
 {
     // Keys (table is sorted in Windows ID, then on territory enum value):
@@ -76,6 +77,7 @@ struct WindowsData
     // Values for this Windows zone:
     quint16 ianaIdIndex;       // Index in ianaIdData of space-joined IANA IDs
     qint32 offsetFromUtc;      // Standard Time Offset from UTC, used for quick look-ups
+    // FIXME: ianaIdIndex is actually always a single IANA ID, so re-route to alias table
     constexpr QByteArrayView windowsId() const;
     constexpr QByteArrayView ianaId() const; // Space-joined list of IANA IDs
 };
