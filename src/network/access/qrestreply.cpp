@@ -370,5 +370,3 @@ QByteArray QRestReplyPrivate::contentCharset(const QNetworkReply* reply)
 }
 
 QT_END_NAMESPACE
-
-#include "moc_qrestreply.cpp"
