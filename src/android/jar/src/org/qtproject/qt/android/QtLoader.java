@@ -495,10 +495,13 @@ abstract class QtLoader {
 
         ArrayList<String> absolutePathLibraries = new ArrayList<>();
         for (String libName : libraries) {
-            if (!libName.startsWith("lib"))
-                libName = "lib" + libName;
-            if (!libName.endsWith(".so"))
+            // Add lib and .so to the lib name only if it doesn't already end with .so,
+            // this means some names don't necessarily need to have the lib prefix
+            if (!libName.endsWith(".so")) {
                 libName = libName + ".so";
+                libName = "lib" + libName;
+            }
+
             File file = new File(m_nativeLibrariesDir + libName);
             absolutePathLibraries.add(file.getAbsolutePath());
         }
