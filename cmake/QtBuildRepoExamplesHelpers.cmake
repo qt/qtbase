@@ -271,7 +271,9 @@ function(qt_internal_add_example_in_tree subdir)
     install(CODE "
 # Unset the CMAKE_INSTALL_PREFIX in the current cmake_install.cmake file so that it can be
 # overridden in the included add_subdirectory-specific cmake_install.cmake files instead.
+# Also unset the deployment prefix, so it can be recomputed for each example subdirectory.
 unset(CMAKE_INSTALL_PREFIX)
+unset(QT_DEPLOY_PREFIX)
 ")
 
     # Override the install prefix in the subdir cmake_install.cmake, so that
