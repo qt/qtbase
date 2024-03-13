@@ -13,6 +13,7 @@ from selenium.webdriver.support.expected_conditions import presence_of_element_l
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
+import time
 import unittest
 from enum import Enum, auto
 
@@ -436,7 +437,40 @@ class WidgetTestCase(unittest.TestCase):
 
         self.assertEqual(w1_w1_w1.color_at(0, 0), Color(r=255, g=255, b=0))
 
-    #TODO FIX IN CI
+    def test_opengl_painting(self):
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                        x=0, y=0, width=800, height=800)
+        bottom = Window(parent=screen, rect=Rect(x=0, y=0, width=400, height=400), title='root',opengl=1)
+        bottom.set_background_color(Color(r=255, g=0, b=0))
+        wait_for_animation_frame(self._driver)
+        time.sleep(1)
+
+        self.assertEqual(bottom.window_color_at_0_0(), Color(r=255, g=0, b=0))
+
+        w1 = Window(parent=screen, rect=Rect(x=100, y=100, width=600, height=600), title='w1', opengl=1)
+        w1.set_background_color(Color(r=0, g=255, b=0))
+        wait_for_animation_frame(self._driver)
+        time.sleep(1)
+
+        self.assertEqual(w1.window_color_at_0_0(), Color(r=0, g=255, b=0))
+
+        w1_w1 = Window(parent=screen, rect=Rect(x=100, y=100, width=400, height=400), title='w1_w1', opengl=1)
+        w1_w1.set_parent(w1)
+        w1_w1.set_background_color(Color(r=0, g=0, b=255))
+        wait_for_animation_frame(self._driver)
+        time.sleep(1)
+
+        self.assertEqual(w1_w1.window_color_at_0_0(), Color(r=0, g=0, b=255))
+
+        w1_w1_w1 = Window(parent=screen, rect=Rect(x=100, y=100, width=200, height=200), title='w1_w1_w1', opengl=1)
+        w1_w1_w1.set_parent(w1_w1)
+        w1_w1_w1.set_background_color(Color(r=255, g=255, b=0))
+        wait_for_animation_frame(self._driver)
+        time.sleep(1)
+
+        self.assertEqual(w1_w1_w1.window_color_at_0_0(), Color(r=255, g=255, b=0))
+
+#TODO FIX IN CI
     @unittest.skip('Does not work in CI')
     def test_keyboard_input(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
@@ -607,8 +641,9 @@ class Widget:
 
 
 class Window:
-    def __init__(self, parent=None, rect=None, title=None, element=None, visible=True):
+    def __init__(self, parent=None, rect=None, title=None, element=None, visible=True, opengl=0):
         self.driver = parent.driver
+        self.opengl = opengl
         if element is not None:
             self.element = element
             self.title = element.find_element(
@@ -621,7 +656,7 @@ class Window:
             if isinstance(parent, Window):
                 self.driver.execute_script(
                     f'''
-                        instance.createWindow({rect.x}, {rect.y}, {rect.width}, {rect.height}, 'window', '{parent.title}', '{title}');
+                        instance.createWindow({rect.x}, {rect.y}, {rect.width}, {rect.height}, 'window', '{parent.title}', '{title}', {opengl});
                     '''
                 )
                 self.screen = parent.screen
@@ -629,7 +664,7 @@ class Window:
                 assert(isinstance(parent, Screen))
                 self.driver.execute_script(
                     f'''
-                        instance.createWindow({rect.x}, {rect.y}, {rect.width}, {rect.height}, 'screen', '{parent.name}', '{title}');
+                        instance.createWindow({rect.x}, {rect.y}, {rect.width}, {rect.height}, 'screen', '{parent.name}', '{title}', {opengl});
                     '''
                 )
                 self.screen = parent
@@ -765,6 +800,16 @@ class Window:
                 instance.closeWindow('{self.title}');
             '''
         )
+
+    def window_color_at_0_0(self):
+        color = call_instance_function_arg(self.driver, 'getOpenGLColorAt_0_0', self.title)
+
+        wcol = color[0]
+        r = wcol['r']
+        g = wcol['g']
+        b = wcol['b']
+
+        return Color(r,g,b)
 
     def color_at(self, x, y):
         raw = self.driver.execute_script(

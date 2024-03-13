@@ -17,6 +17,10 @@
 #include <QDialog>
 #include <QSysInfo>
 
+#include <QOpenGLWindow>
+#include <QOpenGLFunctions>
+#include <QOpenGLShaderProgram>
+
 #include <emscripten.h>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
@@ -25,25 +29,58 @@
 #include <sstream>
 #include <vector>
 
+class TestWindowBase
+{
+public:
+    virtual ~TestWindowBase() {}
+    virtual void setBackgroundColor(int r, int g, int b) = 0;
+    virtual void setVisible(bool visible) = 0;
+    virtual void setParent(QWindow *parent) = 0;
+    virtual bool close() = 0;
+    virtual QWindow *qWindow() = 0;
+    virtual void opengl_color_at_0_0(int *r, int *g, int *b) = 0;
+};
+
 class TestWidget : public QDialog
 {
     Q_OBJECT
 };
 
-
-class TestWindow : public QRasterWindow
+class TestWindow : public QRasterWindow, public TestWindowBase
 {
     Q_OBJECT
 
 public:
-    void setBackgroundColor(int r, int g, int b)
+    virtual void setBackgroundColor(int r, int g, int b) override final
     {
         m_backgroundColor = QColor::fromRgb(r, g, b);
         update();
     }
+    virtual void setVisible(bool visible) override final
+    {
+        QRasterWindow::setVisible(visible);
+    }
+    virtual void setParent(QWindow *parent) override final
+    {
+        QRasterWindow::setParent(parent);
+    }
+    virtual bool close() override final
+    {
+        return QRasterWindow::close();
+    }
+    virtual QWindow *qWindow() override final
+    {
+        return static_cast<QRasterWindow *>(this);
+    }
+    virtual void opengl_color_at_0_0(int *r, int *g, int *b) override final
+    {
+        *r = 0;
+        *g = 0;
+        *b = 0;
+    }
 
 private:
-    void closeEvent(QCloseEvent *ev) override
+    void closeEvent(QCloseEvent *ev) override final
     {
         Q_UNUSED(ev);
         delete this;
@@ -78,14 +115,238 @@ private:
     QColor m_backgroundColor = Qt::white;
 };
 
+class ContextGuard
+{
+public:
+    ContextGuard(QOpenGLContext *context, QSurface *surface) : m_context(context)
+    {
+        m_contextMutex.lock();
+        m_context->makeCurrent(surface);
+    }
+
+    ~ContextGuard()
+    {
+        m_context->doneCurrent();
+        m_contextMutex.unlock();
+    }
+
+private:
+    QOpenGLContext *m_context = nullptr;
+    static std::mutex m_contextMutex;
+};
+
+std::mutex ContextGuard::m_contextMutex;
+
+class TestOpenGLWindow : public QWindow, QOpenGLFunctions, public TestWindowBase
+{
+    Q_OBJECT
+
+public:
+    TestOpenGLWindow()
+    {
+        setSurfaceType(OpenGLSurface);
+        create();
+
+        //
+        // Create the texture in the share context
+        //
+        m_shareContext = std::make_shared<QOpenGLContext>();
+        m_shareContext->create();
+
+        {
+            ContextGuard guard(m_shareContext.get(), this);
+            initializeOpenGLFunctions();
+
+            m_shaderProgram = std::make_shared<QOpenGLShaderProgram>();
+
+            if (!m_shaderProgram->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/vshader.glsl")
+                || !m_shaderProgram->addShaderFromSourceFile(QOpenGLShader::Fragment,
+                                                             ":/fshader.glsl")
+                || !m_shaderProgram->link() || !m_shaderProgram->bind()) {
+
+                qDebug() << " Build problem";
+                qDebug() << "Log " << m_shaderProgram->log();
+
+                m_shaderProgram = nullptr;
+            } else {
+                m_shaderProgram->setUniformValue("texture", 0);
+            }
+
+            //
+            // Texture
+            //
+            glGenTextures(1, &m_TextureId);
+            glBindTexture(GL_TEXTURE_2D, m_TextureId);
+
+            uint8_t pixel[4] = { 255, 255, 255, 128 };
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+            const GLfloat triangleData[] = { -1.0, -1.0, 0.0,  0.5, 0.5, 1.0, -1.0, 0.0,
+                                             0.5,  0.5,  -1.0, 1.0, 0.0, 0.5, 0.5 };
+            const GLushort indices[] = { 0, 1, 2 };
+
+            glGenBuffers(1, &m_vertexBufferId);
+            glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferId);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(float[5]) * 3, &triangleData, GL_STATIC_DRAW);
+
+            glGenBuffers(1, &m_indexBufferId);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBufferId);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * 3, indices, GL_STATIC_DRAW);
+
+            glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferId);
+
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float[5]), 0);
+
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float[5]), (void *)(12));
+        }
+
+        //
+        // We will use the texture in this context
+        //
+        m_context = std::make_shared<QOpenGLContext>();
+        m_context->setShareContext(m_shareContext.get());
+        m_context->create();
+
+        {
+            ContextGuard guard(m_context.get(), this);
+            initializeOpenGLFunctions();
+
+            glBindTexture(GL_TEXTURE_2D, m_TextureId);
+            glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferId);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBufferId);
+            m_shaderProgram->bind();
+
+            // Tell OpenGL programmable pipeline how to locate vertex position data
+            const int vertexLocation = m_shaderProgram->attributeLocation("a_position");
+            m_shaderProgram->enableAttributeArray(vertexLocation);
+            m_shaderProgram->setAttributeBuffer(vertexLocation, GL_FLOAT, 0, 3, sizeof(float[5]));
+
+            // Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
+            const int texcoordLocation = m_shaderProgram->attributeLocation("a_texcoord");
+            m_shaderProgram->enableAttributeArray(texcoordLocation);
+            m_shaderProgram->setAttributeBuffer(texcoordLocation, GL_FLOAT, sizeof(float[3]), 2,
+                                                sizeof(float[5]));
+        }
+
+        renderLater();
+    }
+
+public:
+    virtual void setBackgroundColor(int red, int green, int blue) override final
+    {
+        {
+            ContextGuard guard(m_shareContext.get(), this);
+
+            //
+            // Update texture
+            //
+            const uint8_t pixel[4] = { (uint8_t)red, (uint8_t)green, (uint8_t)blue, 128 };
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+        }
+
+        renderLater();
+    }
+    virtual void setVisible(bool visible) override final { QWindow::setVisible(visible); }
+    virtual void setParent(QWindow *parent) override final { QWindow::setParent(parent); }
+    virtual bool close() override final { return QWindow::close(); }
+    virtual QWindow *qWindow() override final { return static_cast<QWindow *>(this); }
+    virtual void opengl_color_at_0_0(int *r, int *g, int *b) override final
+    {
+        ContextGuard guard(m_context.get(), this);
+
+        *r = m_rgba[0];
+        *g = m_rgba[1];
+        *b = m_rgba[2];
+    }
+
+private:
+    bool event(QEvent *event) override final
+    {
+        switch (event->type()) {
+        case QEvent::UpdateRequest:
+            renderNow();
+            return true;
+        default:
+            return QWindow::event(event);
+        }
+    }
+
+    void exposeEvent(QExposeEvent *event) override final
+    {
+        Q_UNUSED(event);
+
+        if (isExposed())
+            renderNow();
+    }
+
+    void closeEvent(QCloseEvent *ev) override final
+    {
+        Q_UNUSED(ev);
+        delete this;
+    }
+
+    void keyPressEvent(QKeyEvent *event) override final
+    {
+        auto data = emscripten::val::object();
+        data.set("type", emscripten::val("keyPress"));
+        data.set("windowId", emscripten::val(winId()));
+        data.set("windowTitle", emscripten::val(title().toStdString()));
+        data.set("key", emscripten::val(event->text().toStdString()));
+        emscripten::val::global("window")["testSupport"].call<void>("reportEvent", std::move(data));
+    }
+
+    void keyReleaseEvent(QKeyEvent *event) override final
+    {
+        auto data = emscripten::val::object();
+        data.set("type", emscripten::val("keyRelease"));
+        data.set("windowId", emscripten::val(winId()));
+        data.set("windowTitle", emscripten::val(title().toStdString()));
+        data.set("key", emscripten::val(event->text().toStdString()));
+        emscripten::val::global("window")["testSupport"].call<void>("reportEvent", std::move(data));
+    }
+    void renderLater() { requestUpdate(); }
+    void renderNow()
+    {
+        qDebug() << " Render now";
+        ContextGuard guard(m_context.get(), this);
+        const auto sz = size();
+        glViewport(0, 0, sz.width(), sz.height());
+
+        glClearColor(1, 1, 1, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // Draw triangle using indices from VBO
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, nullptr);
+
+        glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, m_rgba);
+        m_context->swapBuffers(this);
+    }
+
+private:
+    std::shared_ptr<QOpenGLShaderProgram> m_shaderProgram;
+    GLuint m_vertexBufferId = 0;
+    GLuint m_indexBufferId = 0;
+    GLuint m_TextureId = 0;
+
+    std::shared_ptr<QOpenGLContext> m_shareContext;
+    std::shared_ptr<QOpenGLContext> m_context;
+    uint8_t m_rgba[4]; // Color at location(0, 0)
+};
+
 namespace {
-TestWindow *findWindowByTitle(const std::string &title)
+TestWindowBase *findWindowByTitle(const std::string &title)
 {
     auto windows = qGuiApp->allWindows();
     auto window_it = std::find_if(windows.begin(), windows.end(), [&title](QWindow *window) {
         return window->title() == QString::fromLatin1(title);
     });
-    return window_it == windows.end() ? nullptr : static_cast<TestWindow *>(*window_it);
+    return window_it == windows.end() ? nullptr : dynamic_cast<TestWindowBase *>(*window_it);
 }
 
 class WidgetStorage
@@ -280,7 +541,7 @@ void clearWidgets()
 }
 
 void createWindow(int x, int y, int w, int h, const std::string &parentType, const std::string &parentId,
-                  const std::string &title)
+                  const std::string &title, bool opengl)
 {
     QScreen *parentScreen = nullptr;
     QWindow *parentWindow = nullptr;
@@ -295,29 +556,38 @@ void createWindow(int x, int y, int w, int h, const std::string &parentType, con
         }
         parentScreen = *screen_it;
     } else if (parentType == "window") {
-        auto windows = qGuiApp->allWindows();
-        auto window_it = std::find_if(windows.begin(), windows.end(), [&parentId](QWindow *window) {
-            return window->title() == QString::fromLatin1(parentId);
-        });
-        if (window_it == windows.end()) {
-            qWarning() << "No such window: " << parentId;
+        auto testWindow = findWindowByTitle(parentId);
+
+        if (!testWindow) {
+            qWarning() << "No parent window: " << parentId;
             return;
         }
-        parentWindow = *window_it;
+        parentWindow = testWindow->qWindow();
         parentScreen = parentWindow->screen();
     } else {
         qWarning() << "Wrong parent type " << parentType;
         return;
     }
 
-    auto *window = new TestWindow;
-
-    window->setFlag(Qt::WindowTitleHint);
-    window->setFlag(Qt::WindowMaximizeButtonHint);
-    window->setTitle(QString::fromLatin1(title));
-    window->setGeometry(x, y, w, h);
-    window->setScreen(parentScreen);
-    window->setParent(parentWindow);
+    if (opengl) {
+        qDebug() << "Making OpenGL window";
+        auto window = new TestOpenGLWindow;
+        window->setFlag(Qt::WindowTitleHint);
+        window->setFlag(Qt::WindowMaximizeButtonHint);
+        window->setTitle(QString::fromLatin1(title));
+        window->setGeometry(x, y, w, h);
+        window->setScreen(parentScreen);
+        window->setParent(parentWindow);
+    } else {
+        qDebug() << "Making Raster window";
+        auto window = new TestWindow;
+        window->setFlag(Qt::WindowTitleHint);
+        window->setFlag(Qt::WindowMaximizeButtonHint);
+        window->setTitle(QString::fromLatin1(title));
+        window->setGeometry(x, y, w, h);
+        window->setScreen(parentScreen);
+        window->setParent(parentWindow);
+    }
 }
 
 void setWindowBackgroundColor(const std::string &title, int r, int g, int b)
@@ -330,7 +600,8 @@ void setWindowBackgroundColor(const std::string &title, int r, int g, int b)
     window->setBackgroundColor(r, g, b);
 }
 
-void setWindowVisible(int windowId, bool visible) {
+void setWindowVisible(int windowId, bool visible)
+{
     auto windows = qGuiApp->allWindows();
     auto window_it = std::find_if(windows.begin(), windows.end(), [windowId](QWindow *window) {
         return window->winId() == WId(windowId);
@@ -345,25 +616,52 @@ void setWindowVisible(int windowId, bool visible) {
 
 void setWindowParent(const std::string &windowTitle, const std::string &parentTitle)
 {
-    QWindow *window = findWindowByTitle(windowTitle);
+    TestWindowBase *window = findWindowByTitle(windowTitle);
     if (!window) {
-        qWarning() << "Window could not be found " << parentTitle;
+        qWarning() << "Window could not be found " << windowTitle;
         return;
     }
-    QWindow *parent = nullptr;
+    TestWindowBase *parent = nullptr;
     if (parentTitle != "none") {
         if ((parent = findWindowByTitle(parentTitle)) == nullptr) {
             qWarning() << "Parent window could not be found " << parentTitle;
             return;
         }
     }
-    window->setParent(parent);
+    window->setParent(parent ? parent->qWindow() : nullptr);
 }
 
 bool closeWindow(const std::string &title)
 {
-    QWindow *window = findWindowByTitle(title);
+    TestWindowBase *window = findWindowByTitle(title);
     return window ? window->close() : false;
+}
+
+std::string colorToJs(int r, int g, int b)
+{
+    return
+        "[{"
+        "   r: " + std::to_string(r) + ","
+        "   g: " + std::to_string(g) + ","
+        "   b: " + std::to_string(b) + ""
+        "}]";
+}
+
+void getOpenGLColorAt_0_0(const std::string &windowTitle)
+{
+    TestWindowBase *window = findWindowByTitle(windowTitle);
+    int r = 0;
+    int g = 0;
+    int b = 0;
+
+    if (!window) {
+        qWarning() << "Window could not be found " << windowTitle;
+    } else {
+        window->opengl_color_at_0_0(&r, &g, &b);
+    }
+
+    emscripten::val::global("window").call<void>("getOpenGLColorAt_0_0Callback",
+                                                 emscripten::val(colorToJs(r, g, b)));
 }
 
 EMSCRIPTEN_BINDINGS(qwasmwindow)
@@ -376,6 +674,8 @@ EMSCRIPTEN_BINDINGS(qwasmwindow)
     emscripten::function("setWindowParent", &setWindowParent);
     emscripten::function("closeWindow", &closeWindow);
     emscripten::function("setWindowBackgroundColor", &setWindowBackgroundColor);
+
+    emscripten::function("getOpenGLColorAt_0_0", &getOpenGLColorAt_0_0);
 
     emscripten::function("createWidget", &createWidget);
     emscripten::function("setWidgetNoFocusShow", &setWidgetNoFocusShow);

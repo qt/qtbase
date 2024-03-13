@@ -152,7 +152,13 @@ GLuint QWasmOpenGLContext::defaultFramebufferObject(QPlatformSurface *surface) c
 
 bool QWasmOpenGLContext::makeCurrent(QPlatformSurface *surface)
 {
-   if (auto *shareContext = m_qGlContext->shareContext())
+    static bool sentSharingWarning = false;
+    if (!sentSharingWarning && isSharing()) {
+        qWarning() << "The functionality for sharing OpenGL contexts is limited, see documentation";
+        sentSharingWarning = true;
+    }
+
+    if (auto *shareContext = m_qGlContext->shareContext())
         return shareContext->makeCurrent(surface->surface());
 
     const auto context = obtainEmscriptenContext(surface);

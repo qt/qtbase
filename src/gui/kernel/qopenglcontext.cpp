@@ -138,6 +138,22 @@ QOpenGLContext *qt_gl_global_share_context()
     application is portable between different platforms. However, if you use
     QOpenGLFunctions::glBindFramebuffer(), this is done automatically for you.
 
+    \warning WebAssembly
+
+    We recommend that only one QOpenGLContext is made current with a QSurface,
+    for the entire lifetime of the QSurface. Should more than once context be used,
+    it is important to understand that multiple QOpenGLContext instances may be
+    backed by the same native context underneath with the WebAssembly platform.
+    Therefore, calling makeCurrent() with the same QSurface on two QOpenGLContext
+    objects may not switch to a different native context in the second call. As
+    a result, any OpenGL state changes done after the second makeCurrent() may
+    alter the state of the first QOpenGLContext as well, as they are all backed
+    by the same native context.
+
+    \note This means that when targeting WebAssembly with existing OpenGL-based
+    Qt code, some porting may be required to cater to these limitations.
+
+
     \sa QOpenGLFunctions, QOpenGLBuffer, QOpenGLShaderProgram, QOpenGLFramebufferObject
 */
 

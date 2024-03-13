@@ -12,7 +12,21 @@ qt_internal_add_test(tst_qwasmwindow_harness
     LIBRARIES
         Qt::Core
         Qt::Gui
+        Qt::OpenGL
         Qt::Widgets
+)
+
+# Resources:
+set(shaders_resource_files
+    "fshader.glsl"
+    "vshader.glsl"
+)
+
+qt6_add_resources(tst_qwasmwindow_harness "shaders"
+    PREFIX
+        "/"
+    FILES
+        ${shaders_resource_files}
 )
 
 if(CMAKE_HOST_WIN32)
