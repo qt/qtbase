@@ -92,7 +92,7 @@ function(qt_internal_add_plugin target)
     qt_internal_mark_as_internal_library(${target})
 
     get_target_property(target_type "${target}" TYPE)
-    if(target_type STREQUAL STATIC_LIBRARY)
+    if(plugin_init_target AND TARGET "${plugin_init_target}")
         qt_internal_add_target_aliases("${plugin_init_target}")
     endif()
 
