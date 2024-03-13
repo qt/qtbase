@@ -641,23 +641,18 @@ QVariant QPSQLResult::data(int i)
         }
         return dbl;
     }
+#if QT_CONFIG(datestring)
     case QMetaType::QDate:
-#if QT_CONFIG(datestring)
         return QVariant(QDate::fromString(QString::fromLatin1(val), Qt::ISODate));
-#else
-        return QVariant(QString::fromLatin1(val));
-#endif
     case QMetaType::QTime:
-#if QT_CONFIG(datestring)
         return QVariant(QTime::fromString(QString::fromLatin1(val), Qt::ISODate));
-#else
-        return QVariant(QString::fromLatin1(val));
-#endif
     case QMetaType::QDateTime:
-#if QT_CONFIG(datestring)
         return QVariant(QDateTime::fromString(QString::fromLatin1(val),
                                               Qt::ISODate).toLocalTime());
 #else
+    case QMetaType::QDate:
+    case QMetaType::QTime:
+    case QMetaType::QDateTime:
         return QVariant(QString::fromLatin1(val));
 #endif
     case QMetaType::QByteArray: {
@@ -1439,32 +1434,28 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         r = nullStr();
     } else {
         switch (field.metaType().id()) {
-        case QMetaType::QDateTime:
-#if QT_CONFIG(datestring)
-            if (field.value().toDateTime().isValid()) {
+        case QMetaType::QDateTime: {
+            const auto dt = field.value().toDateTime();
+            if (dt.isValid()) {
                 // we force the value to be considered with a timezone information, and we force it to be UTC
                 // this is safe since postgresql stores only the UTC value and not the timezone offset (only used
                 // while parsing), so we have correct behavior in both case of with timezone and without tz
                 r = QStringLiteral("TIMESTAMP WITH TIME ZONE ") + u'\'' +
-                        QLocale::c().toString(field.value().toDateTime().toUTC(), u"yyyy-MM-ddThh:mm:ss.zzz") +
+                        QLocale::c().toString(dt.toUTC(), u"yyyy-MM-ddThh:mm:ss.zzz") +
                         u'Z' + u'\'';
             } else {
                 r = nullStr();
             }
-#else
-            r = nullStr();
-#endif // datestring
             break;
-        case QMetaType::QTime:
-#if QT_CONFIG(datestring)
-            if (field.value().toTime().isValid()) {
-                r = u'\'' + field.value().toTime().toString(u"hh:mm:ss.zzz") + u'\'';
-            } else
-#endif
-            {
+        }
+        case QMetaType::QTime: {
+            const auto t = field.value().toTime();
+            if (t.isValid())
+                r = u'\'' + QLocale::c().toString(t, u"hh:mm:ss.zzz") + u'\'';
+            else
                 r = nullStr();
-            }
             break;
+        }
         case QMetaType::QString:
             r = QSqlDriver::formatValue(field, trimStrings);
             if (d->hasBackslashEscape)
