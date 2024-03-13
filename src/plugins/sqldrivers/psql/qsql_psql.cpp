@@ -6,6 +6,7 @@
 #include <qcoreapplication.h>
 #include <qvariant.h>
 #include <qdatetime.h>
+#include <qloggingcategory.h>
 #include <qregularexpression.h>
 #include <qsqlerror.h>
 #include <qsqlfield.h>
@@ -64,6 +65,8 @@ Q_DECLARE_OPAQUE_POINTER(PGresult*)
 Q_DECLARE_METATYPE(PGresult*)
 
 QT_BEGIN_NAMESPACE
+
+static Q_LOGGING_CATEGORY(lcPsql, "qt.sql.postgresql")
 
 using namespace Qt::StringLiterals;
 
@@ -208,8 +211,8 @@ PGresult *QPSQLDriverPrivate::getResult(StatementId stmtId) const
     if (stmtId != currentStmtId) {
         // If you change the following warning, remember to update it
         // on sql-driver.html page too.
-        qWarning("QPSQLDriver::getResult: Query results lost - "
-                 "probably discarded on executing another SQL query.");
+        qCWarning(lcPsql, "QPSQLDriver::getResult: Query results lost - "
+                          "probably discarded on executing another SQL query.");
         return nullptr;
     }
     PGresult *result = PQgetResult(connection);
@@ -383,7 +386,7 @@ void QPSQLResultPrivate::deallocatePreparedStmt()
 
         if (PQresultStatus(result) != PGRES_COMMAND_OK) {
             const QString msg = QString::fromUtf8(PQerrorMessage(drv_d_func()->connection));
-            qWarning("Unable to free statement: %ls", qUtf16Printable(msg));
+            qCWarning(lcPsql, "Unable to free statement: %ls.", qUtf16Printable(msg));
         }
         PQclear(result);
     }
@@ -594,7 +597,7 @@ QVariant QPSQLResult::data(int i)
 {
     Q_D(const QPSQLResult);
     if (i >= PQnfields(d->result)) {
-        qWarning("QPSQLResult::data: column %d out of range", i);
+        qCWarning(lcPsql, "QPSQLResult::data: column %d out of range.", i);
         return QVariant();
     }
     const int currentRow = isForwardOnly() ? 0 : at();
@@ -667,7 +670,7 @@ QVariant QPSQLResult::data(int i)
         return QVariant(ba);
     }
     default:
-        qWarning("QPSQLResult::data: unknown data type");
+        qCWarning(lcPsql, "QPSQLResult::data: unhandled data type %d.", type.id());
     }
     return QVariant();
 }
@@ -913,7 +916,7 @@ void QPSQLDriverPrivate::setDatestyle()
     PGresult *result = exec("SET DATESTYLE TO 'ISO'");
     int status =  PQresultStatus(result);
     if (status != PGRES_COMMAND_OK)
-        qWarning() << QString::fromUtf8(PQerrorMessage(connection));
+        qCWarning(lcPsql) << QString::fromUtf8(PQerrorMessage(connection));
     PQclear(result);
 }
 
@@ -926,7 +929,7 @@ void QPSQLDriverPrivate::setByteaOutput()
         PGresult *result = exec("SET bytea_output TO escape");
         int status = PQresultStatus(result);
         if (status != PGRES_COMMAND_OK)
-            qWarning() << QString::fromUtf8(PQerrorMessage(connection));
+            qCWarning(lcPsql) << QString::fromUtf8(PQerrorMessage(connection));
         PQclear(result);
     }
 }
@@ -936,7 +939,7 @@ void QPSQLDriverPrivate::setUtcTimeZone()
     PGresult *result = exec("SET TIME ZONE 'UTC'");
     int status = PQresultStatus(result);
     if (status != PGRES_COMMAND_OK)
-        qWarning() << QString::fromUtf8(PQerrorMessage(connection));
+        qCWarning(lcPsql) << QString::fromUtf8(PQerrorMessage(connection));
     PQclear(result);
 }
 
@@ -1073,16 +1076,16 @@ QPSQLDriver::Protocol QPSQLDriverPrivate::getPSQLVersion()
     if (serverVersion == QPSQLDriver::VersionUnknown) {
         serverVersion = clientVersion;
         if (serverVersion != QPSQLDriver::VersionUnknown)
-            qWarning("The server version of this PostgreSQL is unknown, falling back to the client version.");
+            qCWarning(lcPsql,  "The server version of this PostgreSQL is unknown, "
+                               "falling back to the client version.");
     }
 
     // Keep the old behavior unchanged
     if (serverVersion == QPSQLDriver::VersionUnknown)
         serverVersion = QPSQLDriver::Version6;
 
-    if (serverVersion < QPSQLDriver::Version7_3) {
-        qWarning("This version of PostgreSQL is not supported and may not work.");
-    }
+    if (serverVersion < QPSQLDriver::Version7_3)
+        qCWarning(lcPsql, "This version of PostgreSQL is not supported and may not work.");
 
     return serverVersion;
 }
@@ -1238,7 +1241,7 @@ bool QPSQLDriver::beginTransaction()
 {
     Q_D(QPSQLDriver);
     if (!isOpen()) {
-        qWarning("QPSQLDriver::beginTransaction: Database not open");
+        qCWarning(lcPsql, "QPSQLDriver::beginTransaction: Database not open.");
         return false;
     }
     PGresult *res = d->exec("BEGIN");
@@ -1256,7 +1259,7 @@ bool QPSQLDriver::commitTransaction()
 {
     Q_D(QPSQLDriver);
     if (!isOpen()) {
-        qWarning("QPSQLDriver::commitTransaction: Database not open");
+        qCWarning(lcPsql, "QPSQLDriver::commitTransaction: Database not open.");
         return false;
     }
     PGresult *res = d->exec("COMMIT");
@@ -1285,7 +1288,7 @@ bool QPSQLDriver::rollbackTransaction()
 {
     Q_D(QPSQLDriver);
     if (!isOpen()) {
-        qWarning("QPSQLDriver::rollbackTransaction: Database not open");
+        qCWarning(lcPsql, "QPSQLDriver::rollbackTransaction: Database not open.");
         return false;
     }
     PGresult *res = d->exec("ROLLBACK");
@@ -1541,7 +1544,7 @@ bool QPSQLDriver::subscribeToNotification(const QString &name)
 {
     Q_D(QPSQLDriver);
     if (!isOpen()) {
-        qWarning("QPSQLDriver::subscribeToNotificationImplementation: database not open.");
+        qCWarning(lcPsql, "QPSQLDriver::subscribeToNotification: Database not open.");
         return false;
     }
 
@@ -1570,7 +1573,8 @@ bool QPSQLDriver::subscribeToNotification(const QString &name)
             connect(d->sn, &QSocketNotifier::activated, this, &QPSQLDriver::_q_handleNotification);
         }
     } else {
-        qWarning("QPSQLDriver::subscribeToNotificationImplementation: PQsocket didn't return a valid socket to listen on");
+        qCWarning(lcPsql, "QPSQLDriver::subscribeToNotificationImplementation: "
+                          "PQsocket didn't return a valid socket to listen on.");
         return false;
     }
 
@@ -1581,13 +1585,13 @@ bool QPSQLDriver::unsubscribeFromNotification(const QString &name)
 {
     Q_D(QPSQLDriver);
     if (!isOpen()) {
-        qWarning("QPSQLDriver::unsubscribeFromNotificationImplementation: database not open.");
+        qCWarning(lcPsql, "QPSQLDriver::unsubscribeFromNotification: Database not open.");
         return false;
     }
 
     if (!d->seid.contains(name)) {
-        qWarning("QPSQLDriver::unsubscribeFromNotificationImplementation: not subscribed to '%ls'.",
-            qUtf16Printable(name));
+        qCWarning(lcPsql, "QPSQLDriver::unsubscribeFromNotification: not subscribed to '%ls'.",
+                  qUtf16Printable(name));
         return false;
     }
 
@@ -1636,8 +1640,8 @@ void QPSQLDriver::_q_handleNotification()
             emit notification(name, source, payload);
         }
         else
-            qWarning("QPSQLDriver: received notification for '%ls' which isn't subscribed to.",
-                    qUtf16Printable(name));
+            qCWarning(lcPsql, "QPSQLDriver: received notification for '%ls' which isn't subscribed to.",
+                      qUtf16Printable(name));
 
         qPQfreemem(notify);
     }
