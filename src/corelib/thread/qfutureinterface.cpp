@@ -800,8 +800,7 @@ void QFutureInterfaceBasePrivate::sendCallOuts(const QFutureCallOutEvent &callOu
 
 // This function connects an output interface (for example a QFutureWatcher)
 // to this future. While holding the lock we check the state and ready results
-// and add the appropriate callouts to the queue. In order to avoid deadlocks,
-// the actual callouts are made at the end while not holding the lock.
+// and add the appropriate callouts to the queue.
 void QFutureInterfaceBasePrivate::connectOutputInterface(QFutureCallOutInterface *iface)
 {
     QMutexLocker locker(&m_mutex);
