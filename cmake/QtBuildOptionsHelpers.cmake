@@ -323,6 +323,9 @@ macro(qt_internal_setup_build_examples)
             "Should examples be built as part of the default 'all' target." FORCE)
     endif()
 
+    option(QT_DEPLOY_MINIMAL_EXAMPLES
+        "Deploy minimal subset of examples to save time and space" OFF)
+
     # FIXME: Support prefix builds as well QTBUG-96232
     # We don't want to enable EP examples with -debug-and-release because starting with CMake 3.24
     # ExternalProject_Add ends up creating build rules twice, once for each configuration, in the

@@ -11,6 +11,14 @@ macro(qt_examples_build_begin)
     # Examples are not unity-ready.
     set(CMAKE_UNITY_BUILD OFF)
 
+    # Skip running deployment steps when the developer asked to deploy a minimal subset of examples.
+    # Each example can then decide whether it wants to be deployed as part of the minimal subset
+    # by unsetting the QT_INTERNAL_SKIP_DEPLOYMENT variable before its qt_internal_add_example call.
+    # This will be used by our CI.
+    if(NOT DEFINED QT_INTERNAL_SKIP_DEPLOYMENT AND QT_DEPLOY_MINIMAL_EXAMPLES)
+        set(QT_INTERNAL_SKIP_DEPLOYMENT TRUE)
+    endif()
+
     # Use by qt_internal_add_example.
     set(QT_EXAMPLE_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -414,6 +422,7 @@ function(qt_internal_add_example_external_project subdir)
         QT_BUILD_CMAKE_PREFIX_PATH:STRING
         QT_ADDITIONAL_PACKAGES_PREFIX_PATH:STRING
         QT_ADDITIONAL_QML_PLUGIN_GLOB_PREFIXES:STRING
+        QT_INTERNAL_SKIP_DEPLOYMENT:BOOL
         CMAKE_FIND_ROOT_PATH:STRING
         CMAKE_MODULE_PATH:STRING
         BUILD_SHARED_LIBS:BOOL
