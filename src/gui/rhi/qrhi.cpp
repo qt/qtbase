@@ -2545,9 +2545,10 @@ QRhiColorAttachment::QRhiColorAttachment(QRhiRenderBuffer *renderBuffer)
     \note when multisample resolving is enabled, the multisample data may not be
     written out at all. This means that the multisample texture in a color
     attachment must not be used afterwards with shaders for sampling (or other
-    puroses) whenever a resolve texture is set, since the multisample color
+    purposes) whenever a resolve texture is set, since the multisample color
     buffer is merely an intermediate storage then that gets no data written back
-    on some GPU architectures at all.
+    on some GPU architectures at all. See
+    \l{QRhiTextureRenderTarget::Flag}{PreserveColorContents} for more details.
 
     \note When using setDepthTexture(), not setDepthStencilBuffer(), and the
     depth (stencil) data is not of interest afterwards, set the
@@ -5063,7 +5064,19 @@ QRhiResource::Type QRhiSwapChainRenderTarget::resourceType() const
     \value PreserveColorContents Indicates that the contents of the color
     attachments is to be loaded when starting a render pass, instead of
     clearing. This is potentially more expensive, especially on mobile (tiled)
-    GPUs, but allows preserving the existing contents between passes.
+    GPUs, but allows preserving the existing contents between passes. When doing
+    multisample rendering with a resolve texture set, setting this flag also
+    requests the multisample color data to be stored (written out) to the
+    multisample texture or render buffer. (for non-multisample rendering the
+    color data is always stored, but for MSAA storing the multisample data
+    decreases efficiency for certain GPU architectures, hence defaulting to not
+    writing it out) Note however that this is non-portable: in some cases there
+    is no intermediate multisample texture on the graphics API level, e.g. when
+    using OpenGL ES's \c{GL_EXT_multisampled_render_to_texture} as it is all
+    implicit, handled by the OpenGL ES implementation. In that case,
+    PreserveColorContents will likely have no effect. Therefore, avoid relying
+    on this flag when using multisample rendering and the color attachment is
+    using a multisample QRhiTexture (not QRhiRenderBuffer).
 
     \value PreserveDepthStencilContents Indicates that the contents of the
     depth texture is to be loaded when starting a render pass, instead
