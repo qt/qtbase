@@ -536,6 +536,8 @@ instructions:
 
   # Specify a custom examples installation directory, so that the built example binaries are not
   # packaged into the artifact archive together with the Qt libraries.
+  # Also specify that during examples deployment, only a subset of examples should be deployed, to
+  # save time and space.
   - type: Group
     instructions:
       - type: AppendToEnvironmentVariable
@@ -544,6 +546,12 @@ instructions:
       - type: AppendToEnvironmentVariable
         variableName: COMMON_TARGET_CMAKE_ARGS
         variableValue: " -DQT_INTERNAL_EXAMPLES_INSTALL_PREFIX={{unixPathSeparators .BuildDir}}/installed_examples"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_CMAKE_ARGS
+        variableValue: " -DQT_DEPLOY_MINIMAL_EXAMPLES=ON"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_TARGET_CMAKE_ARGS
+        variableValue: " -DQT_DEPLOY_MINIMAL_EXAMPLES=ON"
       - type: Group
         instructions:
           - type: AppendToEnvironmentVariable
