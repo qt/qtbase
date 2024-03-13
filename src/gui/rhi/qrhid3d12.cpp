@@ -83,22 +83,48 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \variable QRhiD3D12NativeHandles::dev
+
+    Points to a
+    \l{https://learn.microsoft.com/en-us/windows/win32/api/d3d12/nn-d3d12-id3d12device}{ID3D12Device}
+    or left set to \nullptr if no existing device is to be imported.
 */
 
 /*!
     \variable QRhiD3D12NativeHandles::minimumFeatureLevel
+
+    Specifies the \b minimum feature level passed to
+    \l{https://learn.microsoft.com/en-us/windows/win32/api/d3d12/nf-d3d12-d3d12createdevice}{D3D12CreateDevice()}.
+    When not set, \c{D3D_FEATURE_LEVEL_11_0} is used. See
+    \l{https://learn.microsoft.com/en-us/windows/win32/direct3d12/hardware-feature-levels}{this
+    page} for details.
+
+    Relevant only when QRhi creates the device, ignored when importing a device
+    and device context.
 */
 
 /*!
     \variable QRhiD3D12NativeHandles::adapterLuidLow
+
+    The low part of the local identifier (LUID) of the DXGI adapter to use.
+    Relevant only when QRhi creates the device, ignored when importing a device
+    and device context.
 */
 
 /*!
     \variable QRhiD3D12NativeHandles::adapterLuidHigh
+
+    The high part of the local identifier (LUID) of the DXGI adapter to use.
+    Relevant only when QRhi creates the device, ignored when importing a device
+    and device context.
 */
 
 /*!
     \variable QRhiD3D12NativeHandles::commandQueue
+
+    When set, must point to a
+    \l{https://learn.microsoft.com/en-us/windows/win32/api/d3d12/nn-d3d12-id3d12commandqueue}{ID3D12CommandQueue}.
+    It allows to optionally import a command queue as well, in addition to a
+    device.
 */
 
 /*!
