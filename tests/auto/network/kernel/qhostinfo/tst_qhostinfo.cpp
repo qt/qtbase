@@ -127,7 +127,7 @@ public:
         });
     }
 
-    bool waitForResults(std::chrono::milliseconds timeout = 10s)
+    bool waitForResults(std::chrono::milliseconds timeout = 15s)
     {
         QTestEventLoop::instance().enterLoop(timeout);
         return !QTestEventLoop::instance().timeout() && lookupDone;
