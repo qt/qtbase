@@ -46,6 +46,8 @@
 
 #define TEST_DOMAIN ".test.qt-project.org"
 
+using namespace std::chrono_literals;
+
 class tst_QHostInfo : public QObject
 {
     Q_OBJECT
@@ -83,15 +85,55 @@ private slots:
     void cache();
 
     void abortHostLookup();
-protected slots:
-    void resultsReady(const QHostInfo &);
 
 private:
     bool ipv6LookupsAvailable;
     bool ipv6Available;
-    bool lookupDone;
-    int lookupsDoneCounter;
+};
+
+class tst_QHostInfo_Helper : public QObject
+{
+    Q_OBJECT
+protected slots:
+    void resultsReady(const QHostInfo &);
+public:
+    tst_QHostInfo_Helper(const QString &hostname)
+        : hostname(hostname)
+    {}
+
+    QString hostname;
+    bool lookupDone = false;
+    int lookupsDoneCounter = 0;
     QHostInfo lookupResults;
+
+    void blockingLookup()
+    {
+        lookupResults = QHostInfo::fromName(hostname);
+        lookupDone = true;
+        ++lookupsDoneCounter;
+    }
+    void lookupHostOldStyle()
+    {
+        QHostInfo::lookupHost(hostname, this, SLOT(resultsReady(QHostInfo)));
+    }
+    void lookupHostNewStyle()
+    {
+        QHostInfo::lookupHost(hostname, this, &tst_QHostInfo_Helper::resultsReady);
+    }
+    void lookupHostLambda()
+    {
+        QHostInfo::lookupHost(hostname, this, [this](const QHostInfo &hostInfo) {
+            resultsReady(hostInfo);
+        });
+    }
+
+    bool waitForResults(std::chrono::milliseconds timeout = 10s)
+    {
+        QTestEventLoop::instance().enterLoop(timeout);
+        return !QTestEventLoop::instance().timeout() && lookupDone;
+    }
+
+    void checkResults(QHostInfo::HostInfoError err, const QString &addresses);
 };
 
 void tst_QHostInfo::swapFunction()
@@ -207,23 +249,12 @@ void tst_QHostInfo::lookupIPv4_data()
     QTest::newRow("idn-unicode") << QString::fromLatin1("a-single.alqualond\353" TEST_DOMAIN) << "192.0.2.1" << int(QHostInfo::NoError);
 }
 
-void tst_QHostInfo::lookupIPv4()
+void tst_QHostInfo_Helper::checkResults(QHostInfo::HostInfoError err, const QString &addresses)
 {
-    QFETCH(QString, hostname);
-    QFETCH(int, err);
-    QFETCH(QString, addresses);
-
-    lookupDone = false;
-    QHostInfo::lookupHost(hostname, this, SLOT(resultsReady(QHostInfo)));
-
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
-    QVERIFY(lookupDone);
-
     if ((int)lookupResults.error() != (int)err) {
         qWarning() << hostname << "=>" << lookupResults.errorString();
     }
-    QCOMPARE((int)lookupResults.error(), (int)err);
+    QCOMPARE(lookupResults.error(), err);
 
     QStringList tmp;
     for (int i = 0; i < lookupResults.addresses().size(); ++i)
@@ -234,6 +265,18 @@ void tst_QHostInfo::lookupIPv4()
     expected.sort();
 
     QCOMPARE(tmp.join(' '), expected.join(' '));
+}
+
+void tst_QHostInfo::lookupIPv4()
+{
+    QFETCH(QString, hostname);
+    QFETCH(int, err);
+    QFETCH(QString, addresses);
+
+    tst_QHostInfo_Helper helper(hostname);
+    helper.lookupHostOldStyle();
+    QVERIFY(helper.waitForResults());
+    helper.checkResults(QHostInfo::HostInfoError(err), addresses);
 }
 
 void tst_QHostInfo::lookupIPv6_data()
@@ -261,24 +304,10 @@ void tst_QHostInfo::lookupIPv6()
     if (!ipv6LookupsAvailable)
         QSKIP("This platform does not support IPv6 lookups");
 
-    lookupDone = false;
-    QHostInfo::lookupHost(hostname, this, SLOT(resultsReady(QHostInfo)));
-
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
-    QVERIFY(lookupDone);
-
-    QCOMPARE((int)lookupResults.error(), (int)err);
-
-    QStringList tmp;
-    for (int i = 0; i < lookupResults.addresses().size(); ++i)
-        tmp.append(lookupResults.addresses().at(i).toString());
-    tmp.sort();
-
-    QStringList expected = addresses.split(' ');
-    expected.sort();
-
-    QCOMPARE(tmp.join(' ').toLower(), expected.join(' ').toLower());
+    tst_QHostInfo_Helper helper(hostname);
+    helper.lookupHostOldStyle();
+    QVERIFY(helper.waitForResults());
+    helper.checkResults(QHostInfo::HostInfoError(err), addresses);
 }
 
 void tst_QHostInfo::lookupConnectToFunctionPointer_data()
@@ -292,26 +321,10 @@ void tst_QHostInfo::lookupConnectToFunctionPointer()
     QFETCH(int, err);
     QFETCH(QString, addresses);
 
-    lookupDone = false;
-    QHostInfo::lookupHost(hostname, this, &tst_QHostInfo::resultsReady);
-
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
-    QVERIFY(lookupDone);
-
-    if (int(lookupResults.error()) != int(err))
-        qWarning() << hostname << "=>" << lookupResults.errorString();
-    QCOMPARE(int(lookupResults.error()), int(err));
-
-    QStringList tmp;
-    for (const auto &result : lookupResults.addresses())
-        tmp.append(result.toString());
-    tmp.sort();
-
-    QStringList expected = addresses.split(' ');
-    expected.sort();
-
-    QCOMPARE(tmp.join(' '), expected.join(' '));
+    tst_QHostInfo_Helper helper(hostname);
+    helper.lookupHostNewStyle();
+    QVERIFY(helper.waitForResults());
+    helper.checkResults(QHostInfo::HostInfoError(err), addresses);
 }
 
 void tst_QHostInfo::lookupConnectToFunctionPointerDeleted()
@@ -336,28 +349,10 @@ void tst_QHostInfo::lookupConnectToLambda()
     QFETCH(int, err);
     QFETCH(QString, addresses);
 
-    lookupDone = false;
-    QHostInfo::lookupHost(hostname, [this](const QHostInfo &hostInfo) {
-        resultsReady(hostInfo);
-    });
-
-    QTestEventLoop::instance().enterLoop(10);
-    QVERIFY(!QTestEventLoop::instance().timeout());
-    QVERIFY(lookupDone);
-
-    if (int(lookupResults.error()) != int(err))
-        qWarning() << hostname << "=>" << lookupResults.errorString();
-    QCOMPARE(int(lookupResults.error()), int(err));
-
-    QStringList tmp;
-    for (int i = 0; i < lookupResults.addresses().size(); ++i)
-        tmp.append(lookupResults.addresses().at(i).toString());
-    tmp.sort();
-
-    QStringList expected = addresses.split(' ');
-    expected.sort();
-
-    QCOMPARE(tmp.join(' '), expected.join(' '));
+    tst_QHostInfo_Helper helper(hostname);
+    helper.lookupHostLambda();
+    QVERIFY(helper.waitForResults());
+    helper.checkResults(QHostInfo::HostInfoError(err), addresses);
 }
 
 static QStringList reverseLookupHelper(const QString &ip)
@@ -440,21 +435,9 @@ void tst_QHostInfo::blockingLookup()
     QFETCH(int, err);
     QFETCH(QString, addresses);
 
-    QHostInfo hostInfo = QHostInfo::fromName(hostname);
-    QStringList tmp;
-    for (int i = 0; i < hostInfo.addresses().size(); ++i)
-        tmp.append(hostInfo.addresses().at(i).toString());
-    tmp.sort();
-
-    if ((int)hostInfo.error() != (int)err) {
-        qWarning() << hostname << "=>" << lookupResults.errorString();
-    }
-    QCOMPARE((int)hostInfo.error(), (int)err);
-
-    QStringList expected = addresses.split(' ');
-    expected.sort();
-
-    QCOMPARE(tmp.join(' ').toUpper(), expected.join(' ').toUpper());
+    tst_QHostInfo_Helper helper(hostname);
+    helper.blockingLookup();
+    helper.checkResults(QHostInfo::HostInfoError(err), addresses);
 }
 
 void tst_QHostInfo::raceCondition()
@@ -544,17 +527,11 @@ void tst_QHostInfo::threadSafetyAsynchronousAPI()
 void tst_QHostInfo::multipleSameLookups()
 {
     const int COUNT = 10;
-    lookupsDoneCounter = 0;
-
+    tst_QHostInfo_Helper helper("localhost");
     for (int i = 0; i < COUNT; i++)
-        QHostInfo::lookupHost("localhost", this, SLOT(resultsReady(QHostInfo)));
+        helper.lookupHostOldStyle();
 
-    QElapsedTimer timer;
-    timer.start();
-    while (timer.elapsed() < 10000 && lookupsDoneCounter < COUNT) {
-        QTestEventLoop::instance().enterLoop(2);
-    }
-    QCOMPARE(lookupsDoneCounter, COUNT);
+    QTRY_COMPARE_WITH_TIMEOUT(helper.lookupsDoneCounter, COUNT, 10000);
 }
 
 // this test is for the multi-threaded QHostInfo rewrite. It is about getting results at all,
@@ -583,19 +560,15 @@ void tst_QHostInfo::multipleDifferentLookups()
 
     QFETCH(int, repeats);
     const int COUNT = hostnameList.size();
-    lookupsDoneCounter = 0;
+    tst_QHostInfo_Helper helper(QString{});
 
     for (int i = 0; i < hostnameList.size(); i++)
-        for (int j = 0; j < repeats; ++j)
-            QHostInfo::lookupHost(hostnameList.at(i), this, SLOT(resultsReady(QHostInfo)));
+        for (int j = 0; j < repeats; ++j) {
+            helper.hostname = hostnameList.at(i);
+            helper.lookupHostOldStyle();
+        }
 
-    QElapsedTimer timer;
-    timer.start();
-    while (timer.elapsed() < 60000 && lookupsDoneCounter < repeats*COUNT) {
-        QTestEventLoop::instance().enterLoop(2);
-        //qDebug() << "t:" << timer.elapsed();
-    }
-    QCOMPARE(lookupsDoneCounter, repeats*COUNT);
+    QTRY_COMPARE_WITH_TIMEOUT(helper.lookupsDoneCounter, repeats*COUNT, 60000);
 }
 
 void tst_QHostInfo::cache()
@@ -604,13 +577,12 @@ void tst_QHostInfo::cache()
     if (!cache)
         return; // test makes only sense when cache enabled
 
-    // reset slot counter
-    lookupsDoneCounter = 0;
+    tst_QHostInfo_Helper helper("localhost");
 
     // lookup once, wait in event loop, result should not come directly.
     bool valid = true;
     int id = -1;
-    QHostInfo result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
+    QHostInfo result = qt_qhostinfo_lookup(helper.hostname, &helper, SLOT(resultsReady(QHostInfo)), &valid, &id);
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(!valid);
@@ -618,7 +590,7 @@ void tst_QHostInfo::cache()
 
     // loopkup second time, result should come directly
     valid = false;
-    result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
+    result = qt_qhostinfo_lookup(helper.hostname, &helper, SLOT(resultsReady(QHostInfo)), &valid, &id);
     QVERIFY(valid);
     QVERIFY(!result.addresses().isEmpty());
 
@@ -627,17 +599,17 @@ void tst_QHostInfo::cache()
 
     // lookup third time, result should not come directly.
     valid = true;
-    result = qt_qhostinfo_lookup("localhost", this, SLOT(resultsReady(QHostInfo)), &valid, &id);
+    result = qt_qhostinfo_lookup(helper.hostname, &helper, SLOT(resultsReady(QHostInfo)), &valid, &id);
     QTestEventLoop::instance().enterLoop(5);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(!valid);
     QVERIFY(result.addresses().isEmpty());
 
     // the slot should have been called 2 times.
-    QCOMPARE(lookupsDoneCounter, 2);
+    QCOMPARE(helper.lookupsDoneCounter, 2);
 }
 
-void tst_QHostInfo::resultsReady(const QHostInfo &hi)
+void tst_QHostInfo_Helper::resultsReady(const QHostInfo &hi)
 {
     QVERIFY(QThread::currentThread() == thread());
     lookupDone = true;
@@ -648,16 +620,15 @@ void tst_QHostInfo::resultsReady(const QHostInfo &hi)
 
 void tst_QHostInfo::abortHostLookup()
 {
-    //reset counter
-    lookupsDoneCounter = 0;
+    tst_QHostInfo_Helper helper("a-single" TEST_DOMAIN);
     bool valid = false;
     int id = -1;
-    QHostInfo result = qt_qhostinfo_lookup("a-single" TEST_DOMAIN, this, SLOT(resultsReady(QHostInfo)), &valid, &id);
+    QHostInfo result = qt_qhostinfo_lookup(helper.hostname, &helper, SLOT(resultsReady(QHostInfo)), &valid, &id);
     QVERIFY(!valid);
     //it is assumed that the DNS request/response in the backend is slower than it takes to call abort
     QHostInfo::abortHostLookup(id);
     QTestEventLoop::instance().enterLoop(5);
-    QCOMPARE(lookupsDoneCounter, 0);
+    QCOMPARE(helper.lookupsDoneCounter, 0);
 }
 
 class LookupAborter : public QObject
