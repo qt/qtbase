@@ -140,6 +140,7 @@ public:
     bool setEncodingUtf8();
     void setDatestyle();
     void setByteaOutput();
+    void setUtcTimeZone();
     void detectBackslashEscape();
     mutable QHash<int, QString> oidToTable;
 };
@@ -646,9 +647,12 @@ QVariant QPSQLResult::data(int i)
         return QVariant(QDate::fromString(QString::fromLatin1(val), Qt::ISODate));
     case QMetaType::QTime:
         return QVariant(QTime::fromString(QString::fromLatin1(val), Qt::ISODate));
-    case QMetaType::QDateTime:
-        return QVariant(QDateTime::fromString(QString::fromLatin1(val),
-                                              Qt::ISODate).toLocalTime());
+    case QMetaType::QDateTime: {
+        QString tzString(QString::fromLatin1(val));
+        if (!tzString.endsWith(u'Z'))
+            tzString.append(u'Z');       // make UTC
+        return QVariant(QDateTime::fromString(tzString, Qt::ISODate));
+    }
 #else
     case QMetaType::QDate:
     case QMetaType::QTime:
@@ -927,6 +931,15 @@ void QPSQLDriverPrivate::setByteaOutput()
     }
 }
 
+void QPSQLDriverPrivate::setUtcTimeZone()
+{
+    PGresult *result = exec("SET TIME ZONE 'UTC'");
+    int status = PQresultStatus(result);
+    if (status != PGRES_COMMAND_OK)
+        qWarning() << QString::fromUtf8(PQerrorMessage(connection));
+    PQclear(result);
+}
+
 void QPSQLDriverPrivate::detectBackslashEscape()
 {
     // standard_conforming_strings option introduced in 8.2
@@ -1192,6 +1205,7 @@ bool QPSQLDriver::open(const QString &db,
     }
     d->setDatestyle();
     d->setByteaOutput();
+    d->setUtcTimeZone();
 
     setOpen(true);
     setOpenError(false);
