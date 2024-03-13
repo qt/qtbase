@@ -809,6 +809,13 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
 
     httpRequest.setPeerVerifyName(newHttpRequest.peerVerifyName());
 
+    if (scheme.startsWith(("unix"_L1))) {
+        if (QVariant path = newHttpRequest.attribute(QNetworkRequest::FullLocalServerNameAttribute);
+            path.isValid() && path.canConvert<QString>()) {
+            httpRequest.setFullLocalServerName(path.toString());
+        }
+    }
+
     // Create the HTTP thread delegate
     QHttpThreadDelegate *delegate = new QHttpThreadDelegate;
     // Propagate Http/2 settings:

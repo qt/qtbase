@@ -24,6 +24,11 @@ private slots:
 
     void get();
     void post();
+
+#if QT_CONFIG(localserver)
+    void fullServerName_data();
+    void fullServerName();
+#endif
 };
 
 void tst_QNetworkReply_local::initTestCase_data()
@@ -107,6 +112,64 @@ void tst_QNetworkReply_local::post()
     QCOMPARE_GT(firstRequest.receivedData.size(), payload.size() + 4);
     QCOMPARE(firstRequest.receivedData.last(payload.size() + 4), "\r\n\r\n" + payload);
 }
+
+#if QT_CONFIG(localserver)
+void tst_QNetworkReply_local::fullServerName_data()
+{
+#if defined(Q_OS_ANDROID) || defined(QT_PLATFORM_UIKIT)
+    QSKIP("While partially supported, the test as-is doesn't make sense on this platform.");
+#else
+
+    QTest::addColumn<QString>("hostAndPath");
+
+    QTest::newRow("dummy-host") << u"://irrelevant/test"_s;
+    QTest::newRow("no-host") << u":///test"_s;
+#endif
+}
+
+void tst_QNetworkReply_local::fullServerName()
+{
+    QFETCH_GLOBAL(QString, scheme);
+    if (!scheme.startsWith("unix"_L1) && !scheme.startsWith("local"_L1))
+        return; // only relevant for local sockets
+
+    MiniHttpServerV2 server;
+    QLocalServer localServer;
+
+    QString path;
+#ifdef Q_OS_WIN
+    path = uR"(\\.\pipe\qt_networkreply_test_fullServerName)"_s
+            % QString::number(QCoreApplication::applicationPid());
+#else
+    path = u"/tmp/qt_networkreply_test_fullServerName"_s
+            % QString::number(QCoreApplication::applicationPid()) % u".sock"_s;
+#endif
+
+    QVERIFY(localServer.listen(path));
+    server.bind(&localServer);
+
+    QFETCH(QString, hostAndPath);
+    QUrl url(scheme % hostAndPath);
+    QNetworkRequest req(url);
+    req.setAttribute(QNetworkRequest::FullLocalServerNameAttribute, path);
+
+    QNetworkAccessManager manager;
+    std::unique_ptr<QNetworkReply> reply(manager.get(req));
+
+    const bool res = QTest::qWaitFor([reply = reply.get()] { return reply->isFinished(); });
+    QVERIFY(res);
+
+    QCOMPARE(reply->readAll(), QByteArray("Hello World!"));
+    QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
+
+    const QByteArray receivedData = server.peerStates().at(0).receivedData;
+    const QByteArray expectedGet = "GET " % url.path().toUtf8() % " HTTP/1.1\r\n";
+    QVERIFY(receivedData.startsWith(expectedGet));
+
+    const QByteArray expectedHost = "host: " % url.host().toUtf8() % "\r\n";
+    QVERIFY(receivedData.contains(expectedHost));
+}
+#endif
 
 QTEST_MAIN(tst_QNetworkReply_local)
 

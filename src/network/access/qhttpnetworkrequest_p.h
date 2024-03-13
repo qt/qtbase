@@ -117,6 +117,9 @@ public:
     QString peerVerifyName() const;
     void setPeerVerifyName(const QString &peerName);
 
+    QString fullLocalServerName() const;
+    void setFullLocalServerName(const QString &fullServerName);
+
 private:
     QSharedDataPointer<QHttpNetworkRequestPrivate> d;
     friend class QHttpNetworkRequestPrivate;
@@ -140,6 +143,7 @@ public:
 
     QHttpNetworkRequest::Operation operation;
     QByteArray customVerb;
+    QString fullLocalServerName; // for local sockets
     QHttpNetworkRequest::Priority priority;
     mutable QNonContiguousByteDevice* uploadByteDevice;
     bool autoDecompress;

@@ -381,5 +381,15 @@ void QHttpNetworkRequest::setPeerVerifyName(const QString &peerName)
     d->peerVerifyName = peerName;
 }
 
+QString QHttpNetworkRequest::fullLocalServerName() const
+{
+    return d->fullLocalServerName;
+}
+
+void QHttpNetworkRequest::setFullLocalServerName(const QString &fullServerName)
+{
+    d->fullLocalServerName = fullServerName;
+}
+
 QT_END_NAMESPACE
 

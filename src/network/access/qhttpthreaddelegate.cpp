@@ -290,6 +290,12 @@ void QHttpThreadDelegate::startRequest()
         }
     }
 
+    QString extraData = httpRequest.peerVerifyName();
+    if (isLocalSocket) {
+        if (QString path = httpRequest.fullLocalServerName(); !path.isEmpty())
+            extraData = path;
+    }
+
 #ifndef QT_NO_NETWORKPROXY
     if (transparentProxy.type() != QNetworkProxy::NoProxy)
         cacheKey = makeCacheKey(urlCopy, &transparentProxy, httpRequest.peerVerifyName());
@@ -302,10 +308,18 @@ void QHttpThreadDelegate::startRequest()
     // the http object is actually a QHttpNetworkConnection
     httpConnection = static_cast<QNetworkAccessCachedHttpConnection *>(connections.localData()->requestEntryNow(cacheKey));
     if (!httpConnection) {
+
+        QString host = urlCopy.host();
+        // Update the host if a unix socket path or named pipe is used:
+        if (isLocalSocket) {
+            if (QString path = httpRequest.fullLocalServerName(); !path.isEmpty())
+                host = path;
+        }
+
         // no entry in cache; create an object
         // the http object is actually a QHttpNetworkConnection
         httpConnection = new QNetworkAccessCachedHttpConnection(
-                http1Parameters.numberOfConnectionsPerHost(), urlCopy.host(), urlCopy.port(), ssl,
+                http1Parameters.numberOfConnectionsPerHost(), host, urlCopy.port(), ssl,
                 isLocalSocket, connectionType);
         if (connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
             || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {

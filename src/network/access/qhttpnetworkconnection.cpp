@@ -304,7 +304,12 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
         request.setHeaderField("User-Agent", "Mozilla/5.0");
     // set the host
     value = request.headerField("host");
-    if (value.isEmpty()) {
+    if (isLocalSocket && value.isEmpty()) {
+        // The local socket connections might have a full file path, and that
+        // may not be suitable for the Host header. But we can use whatever the
+        // user has set in the URL.
+        request.prependHeaderField("Host", request.url().host().toLocal8Bit());
+    } else if (value.isEmpty()) {
         QHostAddress add;
         QByteArray host;
         if (add.setAddress(hostName)) {

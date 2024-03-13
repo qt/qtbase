@@ -324,6 +324,16 @@ QT_IMPL_METATYPE_EXTERN_TAGGED(QNetworkRequest::RedirectPolicy, QNetworkRequest_
         same-origin requests. This only affects the WebAssembly platform.
         (This value was introduced in 6.5.)
 
+    \value FullLocalServerNameAttribute
+        Requests only, type: QMetaType::String
+        Holds the full local server name to be used for the underlying
+        QLocalSocket. This attribute is used by the QNetworkAccessManager
+        to connect to a specific local server, when QLocalSocket's behavior for
+        a simple name isn't enough. The URL in the QNetworkRequest must still
+        use unix+http: or local+http: scheme. And the hostname in the URL will
+        be used for the Host header in the HTTP request.
+        (This value was introduced in 6.8.)
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default

@@ -70,6 +70,7 @@ public:
         ConnectionCacheExpiryTimeoutSecondsAttribute,
         Http2CleartextAllowedAttribute,
         UseCredentialsAttribute,
+        FullLocalServerNameAttribute,
 
         User = 1000,
         UserMax = 32767
