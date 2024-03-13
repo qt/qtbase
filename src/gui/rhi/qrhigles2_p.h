@@ -215,6 +215,7 @@ struct QGles2TextureRenderTarget : public QRhiTextureRenderTarget
 
     QGles2RenderTargetData d;
     GLuint framebuffer = 0;
+    GLuint nonMsaaThrowawayDepthTexture = 0;
     friend class QRhiGles2;
 };
 
@@ -1103,6 +1104,7 @@ public:
             } renderbuffer;
             struct {
                 GLuint framebuffer;
+                GLuint nonMsaaThrowawayDepthTexture;
             } textureRenderTarget;
         };
     };

@@ -1153,6 +1153,7 @@ void QRhiGles2::executeDeferredReleases()
             break;
         case QRhiGles2::DeferredReleaseEntry::TextureRenderTarget:
             f->glDeleteFramebuffers(1, &e.textureRenderTarget.framebuffer);
+            f->glDeleteTextures(1, &e.textureRenderTarget.nonMsaaThrowawayDepthTexture);
             break;
         default:
             Q_UNREACHABLE();
@@ -5775,8 +5776,10 @@ void QGles2TextureRenderTarget::destroy()
     e.type = QRhiGles2::DeferredReleaseEntry::TextureRenderTarget;
 
     e.textureRenderTarget.framebuffer = framebuffer;
+    e.textureRenderTarget.nonMsaaThrowawayDepthTexture = nonMsaaThrowawayDepthTexture;
 
     framebuffer = 0;
+    nonMsaaThrowawayDepthTexture = 0;
 
     QRHI_RES_RHI(QRhiGles2);
     if (rhiD) {
@@ -5904,12 +5907,14 @@ bool QGles2TextureRenderTarget::create()
             } else {
                 rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
                                                    depthRbD->renderbuffer);
-                if (depthRbD->stencilRenderbuffer)
+                if (depthRbD->stencilRenderbuffer) {
                     rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
                                                        depthRbD->stencilRenderbuffer);
-                else // packed
+                } else {
+                    // packed depth-stencil
                     rhiD->f->glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
                                                        depthRbD->renderbuffer);
+                }
             }
             if (d.colorAttCount == 0) {
                 d.pixelSize = depthRbD->pixelSize();
@@ -5920,17 +5925,66 @@ bool QGles2TextureRenderTarget::create()
             if (multiViewCount < 2) {
                 rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexD->target,
                                                 depthTexD->texture, 0);
-            } else {
-                // This path is OpenGL (ES) 3.0+ and specific to multiview, so
-                // needsDepthStencilCombinedAttach is not a thing. The depth
-                // texture here must be an array with at least multiViewCount
-                // elements, and the format should be D24 or D32F for depth
-                // only, or D24S8 for depth and stencil.
-                rhiD->glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexD->texture,
-                                                       0, 0, multiViewCount);
                 if (rhiD->isStencilSupportingFormat(depthTexD->format())) {
-                    rhiD->glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, depthTexD->texture,
+                    rhiD->f->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, depthTexD->target,
+                                                    depthTexD->texture, 0);
+                }
+            } else {
+                if (depthTexD->sampleCount() > 1 && rhiD->caps.glesMultiviewMultisampleRenderToTexture) {
+                    // And so it turns out
+                    // https://registry.khronos.org/OpenGL/extensions/OVR/OVR_multiview.txt
+                    // does not work with multisample 2D texture arrays. (at least
+                    // that's what Issue 30 in the extension spec seems to imply)
+                    //
+                    // There is https://registry.khronos.org/OpenGL/extensions/EXT/EXT_multiview_texture_multisample.txt
+                    // that seems to resolve that, but that does not seem to
+                    // work (or not available) on GLES devices such as the Quest 3.
+                    //
+                    // So instead, on GLES we can use the
+                    // multisample-multiview-auto-resolving version (which in
+                    // turn is not supported on desktop GL e.g. by NVIDIA), too
+                    // bad we have a multisample depth texture array here as
+                    // every other API out there requires that. So create a
+                    // temporary one ignoring what the user has already created.
+                    //
+                    // (also, why on Earth would we want to waste time on
+                    // resolving the throwaway depth-stencil buffer? Hopefully
+                    // the invalidation at the end of the pass avoids that...)
+                    if (!m_flags.testFlag(DoNotStoreDepthStencilContents)) {
+                        qWarning("Attempted to create a multiview+multisample QRhiTextureRenderTarget, but DoNotStoreDepthStencilContents was not set."
+                                 " This path has no choice but to behave as if DoNotStoreDepthStencilContents was set, because QRhi is forced to create"
+                                 " a throwaway non-multisample depth texture here. Set the flag to silence this warning.");
+                    }
+                    if (!nonMsaaThrowawayDepthTexture) {
+                        rhiD->f->glGenTextures(1, &nonMsaaThrowawayDepthTexture);
+                        rhiD->f->glBindTexture(GL_TEXTURE_2D_ARRAY, nonMsaaThrowawayDepthTexture);
+                        rhiD->f->glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_DEPTH24_STENCIL8,
+                                                depthTexD->pixelSize().width(), depthTexD->pixelSize().height(), multiViewCount);
+                    }
+                    rhiD->glFramebufferTextureMultisampleMultiviewOVR(GL_FRAMEBUFFER,
+                                                                        GL_DEPTH_ATTACHMENT,
+                                                                        nonMsaaThrowawayDepthTexture,
+                                                                        0,
+                                                                        depthTexD->sampleCount(),
+                                                                        0,
+                                                                        multiViewCount);
+                    rhiD->glFramebufferTextureMultisampleMultiviewOVR(GL_FRAMEBUFFER,
+                                                                        GL_STENCIL_ATTACHMENT,
+                                                                        nonMsaaThrowawayDepthTexture,
+                                                                        0,
+                                                                        depthTexD->sampleCount(),
+                                                                        0,
+                                                                        multiViewCount);
+                } else {
+                    // The depth texture here must be an array with at least
+                    // multiViewCount elements, and the format should be D24 or D32F
+                    // for depth only, or D24S8 for depth and stencil.
+                    rhiD->glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexD->texture,
                                                            0, 0, multiViewCount);
+                    if (rhiD->isStencilSupportingFormat(depthTexD->format())) {
+                        rhiD->glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, depthTexD->texture,
+                                                               0, 0, multiViewCount);
+                    }
                 }
             }
             if (d.colorAttCount == 0) {
