@@ -17,6 +17,7 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 
+#include <QtCore/qstring.h>
 #include <QtCore/qstringlist.h>
 #include <QtGui/qaccessible.h>
 
@@ -27,6 +28,7 @@ QT_BEGIN_NAMESPACE
 namespace QAccessibleBridgeUtils {
     Q_GUI_EXPORT QStringList effectiveActionNames(QAccessibleInterface *iface);
     Q_GUI_EXPORT bool performEffectiveAction(QAccessibleInterface *iface, const QString &actionName);
+    Q_GUI_EXPORT QString accessibleId(QAccessibleInterface *accessible);
 }
 
 QT_END_NAMESPACE

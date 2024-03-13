@@ -206,6 +206,7 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
                                             clicked or via a key press.
     \value HypertextLinkSelected            A hypertext link has been selected.
     \value HypertextNLinksChanged
+    \value [since 6.8] IdentifierChanged    The identifier of an object has changed.
     \value LocationChanged                  An object's location on the screen has changed.
     \value MenuCommand                      A menu item is triggered.
     \value MenuEnd                          A menu has been closed (Qt uses PopupMenuEnd for all
@@ -389,14 +390,15 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     This enum specifies string information that an accessible object
     returns.
 
-    \value Name         The name of the object. This can be used both
-                        as an identifier or a short description by
-                        accessible clients.
-    \value Description  A short text describing the object.
-    \value Value        The value of the object.
-    \value Help         A longer text giving information about how to use the object.
-    \value Accelerator  The keyboard shortcut that executes the object's default action.
-    \value UserText     The first value to be used for user defined text.
+    \value Name                    The name of the object. This can be used both
+                                   as an identifier or a short description by
+                                   accessible clients.
+    \value Description             A short text describing the object.
+    \value Value                   The value of the object.
+    \value Help                    A longer text giving information about how to use the object.
+    \value Accelerator             The keyboard shortcut that executes the object's default action.
+    \value UserText                The first value to be used for user defined text.
+    \value [since 6.8] Identifier  An identifier for the object for e.g. UI tests.
     \omitvalue DebugDescription
 */
 
@@ -1248,6 +1250,13 @@ QAccessibleInterface *QAccessibleInterface::focusChild() const
     and a modifier key like Alt, Ctrl or Shift. Command controls like
     tool buttons also have shortcut keys and usually display them in
     their tooltip.
+
+    The \l QAccessible::Identifier can be explicitly set to provide an
+    ID to assistive technologies. This can be especially useful for UI tests.
+    If no identifier has been explicitly set, the identifier is set by the
+    respective interface to an ID based on \l QObject::objectName or its
+    class name and \l QObject::objectName or class name of the parents
+    in its parents chain.
 
     All objects provide a string for \l QAccessible::Name.
 

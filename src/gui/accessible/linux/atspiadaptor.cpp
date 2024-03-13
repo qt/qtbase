@@ -1352,6 +1352,7 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     case QAccessible::HelpChanged:
     case QAccessible::DefaultActionChanged:
     case QAccessible::AcceleratorChanged:
+    case QAccessible::IdentifierChanged:
     case QAccessible::InvalidEvent:
         break;
     }
@@ -1555,26 +1556,6 @@ void AtSpiAdaptor::registerApplication()
     delete registry;
 }
 
-namespace {
-QString accessibleIdForAccessible(QAccessibleInterface *accessible)
-{
-    QString result;
-    while (accessible) {
-        if (!result.isEmpty())
-            result.prepend(u'.');
-        if (auto obj = accessible->object()) {
-            const QString name = obj->objectName();
-            if (!name.isEmpty())
-                result.prepend(name);
-            else
-                result.prepend(QString::fromUtf8(obj->metaObject()->className()));
-        }
-        accessible = accessible->parent();
-    }
-    return result;
-}
-} // namespace
-
 // Accessible
 bool AtSpiAdaptor::accessibleInterface(QAccessibleInterface *interface, const QString &function, const QDBusMessage &message, const QDBusConnection &connection)
 {
@@ -1665,7 +1646,7 @@ bool AtSpiAdaptor::accessibleInterface(QAccessibleInterface *interface, const QS
         connection.send(message.createReply(QVariant::fromValue(children)));
     } else if (function == "GetAccessibleId"_L1) {
         sendReply(connection, message,
-                  QVariant::fromValue(QDBusVariant(accessibleIdForAccessible(interface))));
+                  QVariant::fromValue(QDBusVariant(QAccessibleBridgeUtils::accessibleId(interface))));
     } else {
         qCWarning(lcAccessibilityAtspi) << "AtSpiAdaptor::accessibleInterface does not implement" << function << message.path();
         return false;

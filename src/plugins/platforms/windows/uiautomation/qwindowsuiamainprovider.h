@@ -59,7 +59,6 @@ public:
     HRESULT STDMETHODCALLTYPE GetFocus(IRawElementProviderFragment **pRetVal) override;
 
 private:
-    QString automationIdForAccessible(const QAccessibleInterface *accessible);
     static void fillVariantArrayForRelation(QAccessibleInterface *accessible, QAccessible::Relation relation, VARIANT *pRetVal);
     static void setAriaProperties(QAccessibleInterface *accessible, VARIANT *pRetVal);
     static void setStyle(QAccessibleInterface *accessible, VARIANT *pRetVal);

@@ -10,6 +10,8 @@
 #include "uistrings_p.h"
 #include "qioswindow.h"
 
+#include <QtGui/private/qaccessiblebridgeutils_p.h>
+
 QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
 
 @implementation QMacAccessibilityElement
@@ -68,6 +70,17 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QMacAccessibilityElement);
     }
 
     return iface->text(QAccessible::Name).toNSString();
+}
+
+
+- (NSString*)accessibilityIdentifier
+{
+    QAccessibleInterface *iface = QAccessible::accessibleInterface(self.axid);
+    if (!iface) {
+        qWarning() << "invalid accessible interface for: " << self.axid;
+        return @"";
+    }
+    return QAccessibleBridgeUtils::accessibleId(iface).toNSString();
 }
 
 - (NSString*)accessibilityHint

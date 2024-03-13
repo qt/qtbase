@@ -72,6 +72,28 @@ bool performEffectiveAction(QAccessibleInterface *iface, const QString &actionNa
     return true;
 }
 
+QString accessibleId(QAccessibleInterface *accessible) {
+    QString result;
+    if (!accessible)
+        return result;
+    result = accessible->text(QAccessible::Identifier);
+    if (!result.isEmpty())
+        return result;
+    while (accessible) {
+        if (!result.isEmpty())
+            result.prepend(u'.');
+        if (auto obj = accessible->object()) {
+            const QString name = obj->objectName();
+            if (!name.isEmpty())
+                result.prepend(name);
+            else
+                result.prepend(QString::fromUtf8(obj->metaObject()->className()));
+        }
+        accessible = accessible->parent();
+    }
+    return result;
+}
+
 }   //namespace
 
 QT_END_NAMESPACE

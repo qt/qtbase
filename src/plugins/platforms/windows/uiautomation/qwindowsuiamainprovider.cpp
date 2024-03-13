@@ -23,6 +23,7 @@
 #include "qwindowsuiaprovidercache.h"
 
 #include <QtCore/qloggingcategory.h>
+#include <QtGui/private/qaccessiblebridgeutils_p.h>
 #include <QtGui/qaccessible.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qwindow.h>
@@ -503,7 +504,7 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         break;
     case UIA_AutomationIdPropertyId:
         // Automation ID, which can be used by tools to select a specific control in the UI.
-        setVariantString(automationIdForAccessible(accessible), pRetVal);
+        setVariantString(QAccessibleBridgeUtils::accessibleId(accessible), pRetVal);
         break;
     case UIA_ClassNamePropertyId:
         // Class name.
@@ -608,25 +609,6 @@ HRESULT QWindowsUiaMainProvider::GetPropertyValue(PROPERTYID idProp, VARIANT *pR
         break;
     }
     return S_OK;
-}
-
-// Generates an ID based on the name of the controls and their parents.
-QString QWindowsUiaMainProvider::automationIdForAccessible(const QAccessibleInterface *accessible)
-{
-    QString result;
-    if (accessible) {
-        QObject *obj = accessible->object();
-        while (obj) {
-            QString name = obj->objectName();
-            if (name.isEmpty())
-                return result;
-            if (!result.isEmpty())
-                result.prepend(u'.');
-            result.prepend(name);
-            obj = obj->parent();
-        }
-    }
-    return result;
 }
 
 HRESULT QWindowsUiaMainProvider::get_HostRawElementProvider(IRawElementProviderSimple **pRetVal)

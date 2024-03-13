@@ -102,6 +102,7 @@ public:
         DefaultActionChanged = 0x80B0,
         AcceleratorChanged   = 0x80C0,
         Announcement         = 0x80D0,
+        IdentifierChanged    = 0x80E0,
 
         InvalidEvent
     };
@@ -324,6 +325,7 @@ public:
         Help,
         Accelerator,
         DebugDescription,
+        Identifier,
         UserText     = 0x0000ffff
     };
 

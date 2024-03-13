@@ -284,6 +284,10 @@ emscripten::val QWasmAccessibility::createHtmlElement(QAccessibleInterface *ifac
             element = document.call<emscripten::val>("createElement", std::string("div"));
         }
 
+        QString id = QAccessibleBridgeUtils::accessibleId(iface);
+        if (iface->role() != QAccessible::PageTabList)
+            element.call<void>("setAttribute", std::string("id"), id.toStdString());
+
         return element;
 
     }();

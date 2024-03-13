@@ -520,6 +520,12 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
     return nil;
 }
 
+- (NSString*) accessibilityIdentifier {
+    if (QAccessibleInterface *iface = self.qtInterface)
+        return QAccessibleBridgeUtils::accessibleId(iface).toNSString();
+    return nil;
+}
+
 - (BOOL) isAccessibilityEnabled {
     if (QAccessibleInterface *iface = self.qtInterface)
         return !iface->state().disabled;

@@ -470,6 +470,7 @@ namespace QtAndroidAccessibility
         QAccessible::Role role;
         QStringList actions;
         QString description;
+        QString identifier;
         bool hasTextSelection = false;
         int selectionStart = 0;
         int selectionEnd = 0;
@@ -485,6 +486,7 @@ namespace QtAndroidAccessibility
             info.role = iface->role();
             info.actions = QAccessibleBridgeUtils::effectiveActionNames(iface);
             info.description = descriptionForInterface(iface);
+            info.identifier = QAccessibleBridgeUtils::accessibleId(iface);
             QAccessibleTextInterface *textIface = iface->textInterface();
             if (textIface && (textIface->selectionCount() > 0)) {
                 info.hasTextSelection = true;
@@ -549,6 +551,8 @@ namespace QtAndroidAccessibility
                                        (jsize)info.description.size());
         //CALL_METHOD(node, "setText", "(Ljava/lang/CharSequence;)V", jdesc)
         env->CallVoidMethod(node, m_setContentDescriptionMethodID, jdesc);
+
+        QJniObject(node).callMethod<void>("setViewIdResourceName", info.identifier);
 
         return true;
     }
