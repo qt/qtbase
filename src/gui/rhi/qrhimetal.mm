@@ -103,10 +103,15 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \variable QRhiMetalNativeHandles::dev
+
+    Set to a valid MTLDevice to import an existing device.
 */
 
 /*!
     \variable QRhiMetalNativeHandles::cmdQueue
+
+    Set to a valid MTLCommandQueue when importing an existing command queue.
+    When \nullptr, QRhi will create a new command queue.
 */
 
 /*!

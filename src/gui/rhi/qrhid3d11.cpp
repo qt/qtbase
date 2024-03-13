@@ -93,22 +93,47 @@ using namespace Qt::StringLiterals;
 
 /*!
     \variable QRhiD3D11NativeHandles::dev
+
+    Points to a
+    \l{https://learn.microsoft.com/en-us/windows/win32/api/d3d11/nn-d3d11-id3d11device}{ID3D11Device}
+    or left set to \nullptr if no existing device is to be imported.
+
+    \note When importing a device, both the device and the device context must be set to valid objects.
 */
 
 /*!
     \variable QRhiD3D11NativeHandles::context
+
+    Points to a \l{https://learn.microsoft.com/en-us/windows/win32/api/d3d11/nn-d3d11-id3d11devicecontext}{ID3D11DeviceContext}
+    or left set to \nullptr if no existing device context is to be imported.
+
+    \note When importing a device, both the device and the device context must be set to valid objects.
 */
 
 /*!
     \variable QRhiD3D11NativeHandles::featureLevel
+
+    Specifies the feature level passed to
+    \l{https://learn.microsoft.com/en-us/windows/win32/api/d3d11/nf-d3d11-d3d11createdevice}{D3D11CreateDevice()}.
+    Relevant only when QRhi creates the device, ignored when importing a device
+    and device context. When not set, the default rules outlined in the D3D
+    documentation apply.
 */
 
 /*!
     \variable QRhiD3D11NativeHandles::adapterLuidLow
+
+    The low part of the local identifier (LUID) of the DXGI adapter to use.
+    Relevant only when QRhi creates the device, ignored when importing a device
+    and device context.
 */
 
 /*!
     \variable QRhiD3D11NativeHandles::adapterLuidHigh
+
+    The high part of the local identifier (LUID) of the DXGI adapter to use.
+    Relevant only when QRhi creates the device, ignored when importing a device
+    and device context.
 */
 
 // help mingw with its ancient sdk headers
