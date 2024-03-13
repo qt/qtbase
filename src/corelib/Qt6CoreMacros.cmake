@@ -3154,6 +3154,121 @@ function(_qt_internal_write_target_deploy_info out_file)
     file(GENERATE OUTPUT "${out_file}" CONTENT "${content}")
 endfunction()
 
+function(_qt_internal_is_examples_deployment_supported_in_current_config out_var out_var_reason)
+    # Deployment API doesn't work when examples / tests are built in-tree of a prefix qt build.
+    if(QT_BUILDING_QT AND QT_WILL_INSTALL AND NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
+        set(deployment_supported FALSE)
+        set(not_supported_reason "PREFIX_BUILD")
+    else()
+        set(deployment_supported TRUE)
+        set(not_supported_reason "")
+    endif()
+
+    set(${out_var} "${deployment_supported}" PARENT_SCOPE)
+    set(${out_var_reason} "${not_supported_reason}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_should_skip_deployment_api out_var out_var_reason)
+    set(skip_deployment FALSE)
+    _qt_internal_is_examples_deployment_supported_in_current_config(
+        deployment_supported
+        not_supported_reason
+    )
+
+    # Allow opting out of deployment, so that we can add deployment api to all our examples,
+    # but only run it in the CI for a select few, to avoid the overhead of deploying all examples.
+    if(QT_INTERNAL_SKIP_DEPLOYMENT OR (NOT deployment_supported))
+        set(skip_deployment TRUE)
+    endif()
+
+    set(reason "")
+    if(NOT deployment_supported)
+        set(reason "${not_supported_reason}")
+    elseif(QT_INTERNAL_SKIP_DEPLOYMENT)
+        set(reason "SKIP_REQUESTED")
+    endif()
+
+    set(${out_var} "${skip_deployment}" PARENT_SCOPE)
+    set(${out_var_reason} "${reason}" PARENT_SCOPE)
+endfunction()
+
+function(_qt_internal_should_skip_post_build_deployment_api out_var out_var_reason)
+    set(skip_deployment FALSE)
+    set(deployment_supported TRUE)
+
+    # Allow opting out of deployment, so that we can add deployment api to all our examples,
+    # but only run it in the CI for a select few, to avoid the overhead of deploying all examples.
+    if(QT_INTERNAL_SKIP_DEPLOYMENT OR (NOT deployment_supported))
+        set(skip_deployment TRUE)
+    endif()
+
+    set(reason "")
+    if(NOT deployment_supported)
+        set(reason "REASON_UNSPECIFIED")
+    elseif(QT_INTERNAL_SKIP_DEPLOYMENT)
+        set(reason "SKIP_REQUESTED")
+    endif()
+
+    set(${out_var} "${skip_deployment}" PARENT_SCOPE)
+    set(${out_var_reason} "${reason}" PARENT_SCOPE)
+endfunction()
+
+# Generate a deploy script that does nothing aside from showing a warning message.
+# The warning can be hidden by setting the QT_INTERNAL_HIDE_NO_OP_DEPLOYMENT_WARNING variable.
+function(_qt_internal_generate_no_op_deploy_script)
+    set(no_value_options
+    )
+    set(single_value_options
+        FUNCTION_NAME
+        NAME
+        OUTPUT_SCRIPT
+        SKIP_REASON
+        TARGET
+    )
+    set(multi_value_options
+    )
+
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+
+    if(NOT arg_OUTPUT_SCRIPT)
+        message(FATAL_ERROR "No OUTPUT_SCRIPT option specified")
+    endif()
+    if(NOT arg_FUNCTION_NAME)
+        message(FATAL_ERROR "No FUNCTION_NAME option specified")
+    endif()
+
+    set(generate_args "")
+    if(arg_NAME)
+        list(APPEND generate_args NAME "${arg_NAME}")
+    endif()
+    if(arg_TARGET)
+        list(APPEND generate_args TARGET "${arg_TARGET}")
+    endif()
+
+    set(function_name "${arg_FUNCTION_NAME}")
+
+    # The empty space is required, otherwise
+    set(content "
+message(DEBUG \"Running no-op deployment script because QT_INTERNAL_SKIP_DEPLOYMENT was ON.\")
+")
+    if(NOT QT_INTERNAL_HIDE_NO_OP_DEPLOYMENT_WARNING AND arg_SKIP_REASON STREQUAL "PREFIX_BUILD")
+        set(content "
+message(STATUS \"${function_name}(TARGET ${arg_TARGET}) is a no-op for prefix \"
+\"non-standalone builds due to various issues. Consider using a -no-prefix build \"
+\"or qt-internal-configure-tests or qt-internal-configure-examples if you want deployment to run.\")
+")
+    endif()
+
+    qt6_generate_deploy_script(
+        ${generate_args}
+        OUTPUT_SCRIPT deploy_script
+        CONTENT "${content}")
+
+    set("${arg_OUTPUT_SCRIPT}" "${deploy_script}" PARENT_SCOPE)
+endfunction()
+
 # We basically mirror CMake's policy setup
 # A policy can be set to OLD, set to NEW or unset
 # unset is the default state
@@ -3570,7 +3685,14 @@ function(qt6_generate_deploy_app_script)
         endif()
     endforeach()
 
-    if(APPLE AND NOT IOS AND QT6_IS_SHARED_LIBS_BUILD)
+    _qt_internal_should_skip_deployment_api(skip_deployment skip_reason)
+    if(skip_deployment)
+        _qt_internal_generate_no_op_deploy_script(
+            FUNCTION_NAME "qt6_generate_deploy_app_script"
+            SKIP_REASON "${skip_reason}"
+            ${generate_args}
+        )
+    elseif(APPLE AND NOT IOS AND QT6_IS_SHARED_LIBS_BUILD)
         # TODO: Handle non-bundle applications if possible.
         get_target_property(is_bundle ${arg_TARGET} MACOSX_BUNDLE)
         if(NOT is_bundle)
