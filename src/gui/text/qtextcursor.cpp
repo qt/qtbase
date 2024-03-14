@@ -1679,7 +1679,7 @@ static void getText(QString &text, QTextDocumentPrivate *priv, const QString &do
         const int offsetInFragment = qMax(0, pos - fragIt.position());
         const int len = qMin(int(frag->size_array[0] - offsetInFragment), end - pos);
 
-        text += QString(docText.constData() + frag->stringPosition + offsetInFragment, len);
+        text += QStringView(docText.constData() + frag->stringPosition + offsetInFragment, len);
         pos += len;
     }
 }
