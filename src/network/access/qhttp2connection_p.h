@@ -193,6 +193,7 @@ class Q_NETWORK_EXPORT QHttp2Connection : public QObject
 public:
     enum class CreateStreamError {
         MaxConcurrentStreamsReached,
+        StreamIdsExhausted,
         ReceivedGOAWAY,
     };
     Q_ENUM(CreateStreamError)
