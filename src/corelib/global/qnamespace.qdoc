@@ -204,9 +204,9 @@
 
     \value AA_UseStyleSheetPropagationInWidgetStyles By default, Qt Style Sheets
            disable regular QWidget palette and font propagation. When this flag
-           is enabled, font and palette changes propagate as though the user had
-           manually called the corresponding QWidget methods. See
-           \l{The Style Sheet Syntax#Inheritance}{The Style Sheet Syntax - Inheritance}
+           is enabled, font and palette changes done from a style sheet will propagate
+           a single time, when the style sheet is set.
+           See \l{The Style Sheet Syntax#Inheritance}{The Style Sheet Syntax - Inheritance}
            for more details.
            This value was added in Qt 5.7.
 
