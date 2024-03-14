@@ -640,7 +640,7 @@ Q_CORE_EXPORT size_t qHash(const QDateTime &key, size_t seed = 0);
 Q_CORE_EXPORT size_t qHash(QDate key, size_t seed = 0) noexcept;
 Q_CORE_EXPORT size_t qHash(QTime key, size_t seed = 0) noexcept;
 
-#if QT_CORE_INLINE_IMPL_SINCE(6, 7)
+#if QT_CONFIG(datestring) && QT_CORE_INLINE_IMPL_SINCE(6, 7)
 QDate QDate::fromString(const QString &string, QStringView format, QCalendar cal)
 {
     return fromString(string, format, QLocale::DefaultTwoDigitBaseYear, cal);
