@@ -18,6 +18,7 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/private/qglobal_p.h>
+#include <QtCore/private/qsimd_p.h>
 #include <cmath>
 
 QT_BEGIN_NAMESPACE
@@ -74,6 +75,40 @@ public:
         constexpr QColorVector ref = D50();
         constexpr float eps = 0.008856f;
         constexpr float kap = 903.3f;
+#if defined(__SSE2__)
+        const __m128 iref = _mm_setr_ps(1.f / ref.x, 1.f / ref.y, 1.f / ref.z, 0.f);
+        __m128 v = _mm_loadu_ps(&x);
+        v = _mm_mul_ps(v, iref);
+
+        const __m128 f3 = _mm_set1_ps(3.f);
+        __m128 est = _mm_add_ps(_mm_set1_ps(0.25f), _mm_mul_ps(v, _mm_set1_ps(0.75f))); // float est = 0.25f + (x * 0.75f);
+        __m128 estsq = _mm_mul_ps(est, est);
+        est = _mm_sub_ps(est, _mm_mul_ps(_mm_sub_ps(_mm_mul_ps(estsq, est), v),
+                                         _mm_rcp_ps(_mm_mul_ps(estsq, f3)))); // est -= ((est * est * est) - x) / (3.f * (est * est));
+        estsq = _mm_mul_ps(est, est);
+        est = _mm_sub_ps(est, _mm_mul_ps(_mm_sub_ps(_mm_mul_ps(estsq, est), v),
+                                         _mm_rcp_ps(_mm_mul_ps(estsq, f3)))); // est -= ((est * est * est) - x) / (3.f * (est * est));
+        estsq = _mm_mul_ps(est, est);
+        est = _mm_sub_ps(est, _mm_mul_ps(_mm_sub_ps(_mm_mul_ps(estsq, est), v),
+                                         _mm_rcp_ps(_mm_mul_ps(estsq, f3)))); // est -= ((est * est * est) - x) / (3.f * (est * est));
+        estsq = _mm_mul_ps(est, est);
+        est = _mm_sub_ps(est, _mm_mul_ps(_mm_sub_ps(_mm_mul_ps(estsq, est), v),
+                                         _mm_rcp_ps(_mm_mul_ps(estsq, f3)))); // est -= ((est * est * est) - x) / (3.f * (est * est));
+
+        __m128 kapmul = _mm_mul_ps(_mm_add_ps(_mm_mul_ps(v, _mm_set1_ps(kap)), _mm_set1_ps(16.f)),
+                                   _mm_set1_ps(1.f / 116.f)); // f_ = (kap * f_ + 16.f) * (1.f / 116.f);
+        __m128 cmpgt = _mm_cmpgt_ps(v, _mm_set1_ps(eps)); // if (f_ > eps)
+#if defined(__SSE4_1__)
+        v = _mm_blendv_ps(kapmul, est, cmpgt); // if (..) f_ =..  else f_ =..
+#else
+        v = _mm_or_ps(_mm_and_ps(cmpgt, est), _mm_andnot_ps(cmpgt, kapmul));
+#endif
+        QColorVector out;
+        _mm_store_ps(&out.x, v);
+        const float L = 116.f * out.y - 16.f;
+        const float a = 500.f * (out.x - out.y);
+        const float b = 200.f * (out.y - out.z);
+#else
         float xr = x * (1.f / ref.x);
         float yr = y * (1.f / ref.y);
         float zr = z * (1.f / ref.z);
@@ -95,6 +130,7 @@ public:
         const float L = 116.f * fy - 16.f;
         const float a = 500.f * (fx - fy);
         const float b = 200.f * (fy - fz);
+#endif
         // We output Lab values that has been scaled to 0.0->1.0 values, see also labToXyz.
         return QColorVector(L * (1.f / 100.f), (a + 128.f) * (1.f / 255.f), (b + 128.f) * (1.f / 255.f));
     }
