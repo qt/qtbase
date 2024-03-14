@@ -449,11 +449,7 @@ bool QMoviePrivate::next()
     }
     // Image and delay OK, update internal state
     currentFrameNumber = nextFrameNumber++;
-    QSize scaledSize = reader->scaledSize();
-    if (scaledSize.isValid() && (scaledSize != info.pixmap.size()))
-        currentPixmap = QPixmap::fromImage( info.pixmap.toImage().scaled(scaledSize) );
-    else
-        currentPixmap = info.pixmap;
+    currentPixmap = info.pixmap;
 
     if (!speed)
         return true;

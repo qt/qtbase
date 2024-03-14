@@ -46,6 +46,9 @@ private slots:
 #ifndef QT_NO_ICO
     void multiFrameImage();
 #endif
+
+    void setScaledSize_data();
+    void setScaledSize();
 };
 
 // Testing get/set functions
@@ -288,6 +291,34 @@ void tst_QMovie::multiFrameImage()
     QCOMPARE(frameChangedSpy.size(), expectedFrameCount);
 }
 #endif
+
+void tst_QMovie::setScaledSize_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QSize>("scaledSize");
+    QTest::addColumn<QSize>("expectedSize");
+
+    QTest::newRow("trolltech (50, 50)") << QString("animations/trolltech.gif") << QSize(50, 50) << QSize(50, 50);
+    QTest::newRow("trolltech (400, 400)") << QString("animations/trolltech.gif") << QSize(400, 400) << QSize(400, 400);
+    QTest::newRow("trolltech (50, 0)") << QString("animations/trolltech.gif") << QSize(50, 0) << QSize(50, 25);
+    QTest::newRow("trolltech (50, -1)") << QString("animations/trolltech.gif") << QSize(50, -1) << QSize(50, 25);
+    QTest::newRow("trolltech (0, 50)") << QString("animations/trolltech.gif") << QSize(0, 50) << QSize(100, 50);
+    QTest::newRow("trolltech (-1, 50)") << QString("animations/trolltech.gif") << QSize(-1, 50) << QSize(100, 50);
+}
+
+void tst_QMovie::setScaledSize()
+{
+    QFETCH(QString, fileName);
+    QFETCH(QSize, scaledSize);
+    QFETCH(QSize, expectedSize);
+
+    QMovie movie(QFINDTESTDATA(fileName));
+    movie.setScaledSize(scaledSize);
+
+    movie.start();
+    QCOMPARE(movie.currentFrameNumber(), 0);
+    QCOMPARE(movie.currentImage().size(), expectedSize);
+}
 
 QTEST_MAIN(tst_QMovie)
 #include "tst_qmovie.moc"
