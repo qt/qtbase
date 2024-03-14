@@ -26,6 +26,7 @@ qt_internal_add_test(tst_qxmlstream
     LIBRARIES
         Qt::Network
         Qt::CorePrivate
+        Qt::TestPrivate
     TESTDATA
         ${test_data}
         ${tokenError}

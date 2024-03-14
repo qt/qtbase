@@ -8,6 +8,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QUrl>
 #include <QXmlStreamReader>
 #include <QBuffer>
@@ -542,6 +543,7 @@ public:
 private slots:
     void initTestCase();
     void cleanupTestCase();
+    void compareCompiles();
     void runTestSuite();
     void reportFailures() const;
     void reportFailures_data();
@@ -593,6 +595,8 @@ private slots:
 
     void tokenErrorHandling_data() const;
     void tokenErrorHandling() const;
+    void checkStreamNotationDeclarations() const;
+    void checkStreamEntityDeclarations() const;
 
 private:
     static QByteArray readFile(const QString &filename);
@@ -634,6 +638,14 @@ void tst_QXmlStream::initTestCase()
 
 void tst_QXmlStream::cleanupTestCase()
 {
+}
+
+void tst_QXmlStream::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QXmlStreamAttribute>();
+    QTestPrivate::testEqualityOperatorsCompile<QXmlStreamNamespaceDeclaration>();
+    QTestPrivate::testEqualityOperatorsCompile<QXmlStreamNotationDeclaration>();
+    QTestPrivate::testEqualityOperatorsCompile<QXmlStreamEntityDeclaration>();
 }
 
 void tst_QXmlStream::runTestSuite()
@@ -886,12 +898,17 @@ void tst_QXmlStream::addExtraNamespaceDeclarations()
     }
     {
         QXmlStreamReader xml(data);
-        xml.addExtraNamespaceDeclaration(QXmlStreamNamespaceDeclaration("undeclared", "blabla"));
-        xml.addExtraNamespaceDeclaration(QXmlStreamNamespaceDeclaration("undeclared_too", "foofoo"));
+        QXmlStreamNamespaceDeclaration undeclared("undeclared", "blabla");
+        QXmlStreamNamespaceDeclaration undeclared_too("undeclared_too", "blabla");
+        xml.addExtraNamespaceDeclaration(undeclared);
+        xml.addExtraNamespaceDeclaration(undeclared_too);
         while (!xml.atEnd()) {
             xml.readNext();
         }
         QVERIFY2(!xml.hasError(), xml.errorString().toLatin1().constData());
+        QT_TEST_EQUALITY_OPS(undeclared, undeclared_too, false);
+        undeclared = undeclared_too;
+        QT_TEST_EQUALITY_OPS(undeclared, undeclared_too, true);
     }
 }
 
@@ -1346,6 +1363,15 @@ void tst_QXmlStream::hasAttribute() const
         reader.readNext();
 
     QVERIFY(!reader.hasError());
+
+    QXmlStreamAttribute attrValue1(QLatin1String("http://example.com/"), QString::fromLatin1("attr1"));
+    QXmlStreamAttribute attrValue2 = atts.at(0);
+    QT_TEST_EQUALITY_OPS(atts.at(0), QXmlStreamAttribute(), false);
+    QT_TEST_EQUALITY_OPS(atts.at(0), attrValue1, false);
+    QT_TEST_EQUALITY_OPS(atts.at(0), attrValue2, true);
+    QT_TEST_EQUALITY_OPS(attrValue1, attrValue2, false);
+    attrValue1 = attrValue2;
+    QT_TEST_EQUALITY_OPS(attrValue1, attrValue2, true);
 }
 
 void tst_QXmlStream::writeWithUtf8Codec() const
@@ -1927,4 +1953,52 @@ void tst_QXmlStream::tokenErrorHandling() const
         QVERIFY(reader.errorString().contains(errorKeyWord));
 }
 
+void tst_QXmlStream::checkStreamNotationDeclarations() const
+{
+    QString fileName("12.xml");
+    const QDir dir(QFINDTESTDATA("data"));
+    QFile file(dir.absoluteFilePath(fileName));
+    if (!file.exists())
+        QSKIP(QObject::tr("Testfile %1 not found.").arg(fileName).toUtf8().constData());
+    file.open(QIODevice::ReadOnly);
+    QXmlStreamReader reader(&file);
+    while (!reader.atEnd())
+        reader.readNext();
+
+    QVERIFY(!reader.hasError());
+    QXmlStreamNotationDeclaration notation1, notation2, notation3;
+    QT_TEST_EQUALITY_OPS(notation1, notation2, true);
+    const auto notationDeclarations = reader.notationDeclarations();
+    if (notationDeclarations.count() >= 2) {
+        notation1 = notationDeclarations.at(0);
+        notation2 = notationDeclarations.at(1);
+        notation3 = notationDeclarations.at(1);
+    }
+    QT_TEST_EQUALITY_OPS(notation1, notation2, false);
+    QT_TEST_EQUALITY_OPS(notation3, notation2, true);
+}
+
+void tst_QXmlStream::checkStreamEntityDeclarations() const
+{
+    QString fileName("5.xml");
+    const QDir dir(QFINDTESTDATA("data"));
+    QFile file(dir.absoluteFilePath(fileName));
+    if (!file.exists())
+        QSKIP(QObject::tr("Testfile %1 not found.").arg(fileName).toUtf8().constData());
+    file.open(QIODevice::ReadOnly);
+    QXmlStreamReader reader(&file);
+    while (!reader.atEnd())
+        reader.readNext();
+
+    QVERIFY(!reader.hasError());
+    QXmlStreamEntityDeclaration entity;
+    QT_TEST_EQUALITY_OPS(entity, QXmlStreamEntityDeclaration(), true);
+
+    const auto entityDeclarations = reader.entityDeclarations();
+    if (entityDeclarations.count() >= 2) {
+        entity = entityDeclarations.at(1);
+        QT_TEST_EQUALITY_OPS(entityDeclarations.at(0), entityDeclarations.at(1), false);
+        QT_TEST_EQUALITY_OPS(entity, entityDeclarations.at(1), true);
+    }
+}
 #include "tst_qxmlstream.moc"

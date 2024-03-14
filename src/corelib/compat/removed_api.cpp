@@ -1007,6 +1007,8 @@ int QObject::startTimer(std::chrono::milliseconds time, Qt::TimerType timerType)
 
 #include "qstring.h" // inlined API
 
+#include "qxmlstream.h" // inlined API
+
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically to reduce chances of merge conflicts
