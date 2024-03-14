@@ -74,29 +74,29 @@ public:
         constexpr QColorVector ref = D50();
         constexpr float eps = 0.008856f;
         constexpr float kap = 903.3f;
-        float xr = x / ref.x;
-        float yr = y / ref.y;
-        float zr = z / ref.z;
+        float xr = x * (1.f / ref.x);
+        float yr = y * (1.f / ref.y);
+        float zr = z * (1.f / ref.z);
 
         float fx, fy, fz;
         if (xr > eps)
             fx = fastCbrt(xr);
         else
-            fx = (kap * xr + 16.f) / 116.f;
+            fx = (kap * xr + 16.f) * (1.f / 116.f);
         if (yr > eps)
             fy = fastCbrt(yr);
         else
-            fy = (kap * yr + 16.f) / 116.f;
+            fy = (kap * yr + 16.f) * (1.f / 116.f);
         if (zr > eps)
             fz = fastCbrt(zr);
         else
-            fz = (kap * zr + 16.f) / 116.f;
+            fz = (kap * zr + 16.f) * (1.f / 116.f);
 
         const float L = 116.f * fy - 16.f;
         const float a = 500.f * (fx - fy);
         const float b = 200.f * (fy - fz);
         // We output Lab values that has been scaled to 0.0->1.0 values, see also labToXyz.
-        return QColorVector(L / 100.f, (a + 128.f) / 255.f, (b + 128.f) / 255.f);
+        return QColorVector(L * (1.f / 100.f), (a + 128.f) * (1.f / 255.f), (b + 128.f) * (1.f / 255.f));
     }
 
     QColorVector labToXyz() const
@@ -110,23 +110,23 @@ public:
         const float a = (y * 255.f) - 128.f;
         const float b = (z * 255.f) - 128.f;
         // From here is official Lab->XYZ conversion:
-        float fy = (L + 16.f) / 116.f;
-        float fx = fy + (a / 500.f);
-        float fz = fy - (b / 200.f);
+        float fy = (L + 16.f) * (1.f / 116.f);
+        float fx = fy + (a * (1.f / 500.f));
+        float fz = fy - (b * (1.f / 200.f));
 
         float xr, yr, zr;
         if (fx * fx * fx > eps)
             xr = fx * fx * fx;
         else
-            xr = (116.f * fx - 16) / kap;
+            xr = (116.f * fx - 16) * (1.f / kap);
         if (L > (kap * eps))
             yr = fy * fy * fy;
         else
-            yr = L / kap;
+            yr = L * (1.f / kap);
         if (fz * fz * fz > eps)
             zr = fz * fz * fz;
         else
-            zr = (116.f * fz - 16) / kap;
+            zr = (116.f * fz - 16) * (1.f / kap);
 
         xr = xr * ref.x;
         yr = yr * ref.y;
