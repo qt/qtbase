@@ -161,7 +161,7 @@ public:
     virtual ~QUtcTimeZonePrivate();
 
     // Fall-back for UTC[+-]\d+(:\d+){,2} IDs.
-    static qint64 offsetFromUtcString(const QByteArray &id);
+    static qint64 offsetFromUtcString(QByteArrayView id);
 
     QUtcTimeZonePrivate *clone() const override;
 

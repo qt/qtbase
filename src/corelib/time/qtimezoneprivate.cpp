@@ -9,6 +9,7 @@
 
 #include <qdatastream.h>
 #include <qdebug.h>
+#include <qstring.h>
 
 #include <private/qcalendarmath_p.h>
 #include <private/qnumeric_p.h>
@@ -20,6 +21,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace QtMiscUtils;
 using namespace QtTimeZoneCldr;
+using namespace Qt::StringLiterals;
 
 // For use with std::is_sorted() in assertions:
 [[maybe_unused]]
@@ -838,7 +840,7 @@ QUtcTimeZonePrivate::QUtcTimeZonePrivate(const QByteArray &id)
     }
 }
 
-qint64 QUtcTimeZonePrivate::offsetFromUtcString(const QByteArray &id)
+qint64 QUtcTimeZonePrivate::offsetFromUtcString(QByteArrayView id)
 {
     // Convert reasonable UTC[+-]\d+(:\d+){,2} to offset in seconds.
     // Assumption: id has already been tried as a CLDR UTC offset ID (notably
@@ -850,21 +852,22 @@ qint64 QUtcTimeZonePrivate::offsetFromUtcString(const QByteArray &id)
         return invalidSeconds(); // No sign
     const int sign = signChar == '-' ? -1 : 1;
 
-    const auto offsets = id.mid(4).split(':');
-    if (offsets.isEmpty() || offsets.size() > 3)
-        return invalidSeconds(); // No numbers, or too many.
-
     qint32 seconds = 0;
     int prior = 0; // Number of fields parsed thus far
-    for (const auto &offset : offsets) {
+    for (auto offset : QLatin1StringView(id.mid(4)).tokenize(':'_L1)) {
         bool ok = false;
         unsigned short field = offset.toUShort(&ok);
         // Bound hour above at 24, minutes and seconds at 60:
         if (!ok || field >= (prior ? 60 : 24))
             return invalidSeconds();
         seconds = seconds * 60 + field;
-        ++prior;
+        if (++prior > 3)
+            return invalidSeconds(); // Too many numbers
     }
+
+    if (!prior)
+        return invalidSeconds(); // No numbers
+
     while (prior++ < 3)
         seconds *= 60;
 
