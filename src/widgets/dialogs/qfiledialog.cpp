@@ -3794,8 +3794,9 @@ void QFileDialogPrivate::enterDirectory(const QModelIndex &index)
         }
     } else {
         // Do not accept when shift-clicking to multi-select a file in environments with single-click-activation (KDE)
-        if (!q->style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, nullptr, qFileDialogUi->treeView)
-            || q->fileMode() != QFileDialog::ExistingFiles || !(QGuiApplication::keyboardModifiers() & Qt::CTRL)) {
+        if ((!q->style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, nullptr, qFileDialogUi->treeView)
+             || q->fileMode() != QFileDialog::ExistingFiles || !(QGuiApplication::keyboardModifiers() & Qt::CTRL))
+            && index.model()->flags(index) & Qt::ItemIsEnabled) {
             q->accept();
         }
     }
