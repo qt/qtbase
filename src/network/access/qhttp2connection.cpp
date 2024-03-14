@@ -540,8 +540,9 @@ QHttp2Connection *QHttp2Connection::createDirectServerConnection(QIODevice *sock
 
 QH2Expected<QHttp2Stream *, QHttp2Connection::CreateStreamError> QHttp2Connection::createStream()
 {
-    Q_ASSERT(m_nextStreamID <= lastValidStreamID);
     Q_ASSERT(m_connectionType == Type::Client); // This overload is just for clients
+    if (m_nextStreamID > lastValidStreamID)
+        return { QHttp2Connection::CreateStreamError::StreamIdsExhausted };
     return createStreamInternal();
 }
 
