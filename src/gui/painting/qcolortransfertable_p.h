@@ -97,6 +97,8 @@ public:
 
     float apply(float x) const
     {
+        if (isEmpty())
+            return x;
         x = std::clamp(x, 0.0f, 1.0f);
         x *= m_tableSize - 1;
         const uint32_t lo = static_cast<uint32_t>(std::floor(x));

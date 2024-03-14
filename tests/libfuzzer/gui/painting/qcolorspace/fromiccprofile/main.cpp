@@ -5,6 +5,7 @@
 
 #include <QGuiApplication>
 #include <QColorSpace>
+#include <QImage>
 
 extern "C" int LLVMFuzzerTestOneInput(const char *data, size_t size) {
     // to reduce noise and increase speed
@@ -28,7 +29,12 @@ extern "C" int LLVMFuzzerTestOneInput(const char *data, size_t size) {
         Q_UNUSED(b);
         QRgb color = 0xfaf8fa00;
         color = trans1.map(color);
+        QImage img(16, 2, cs.colorModel() == QColorSpace::ColorModel::Rgb ? QImage::Format_RGB32 : QImage::Format_Grayscale8);
+        img.setColorSpace(cs);
+        QImage img2 = img.convertedToColorSpace(QColorSpace::SRgb);
         if (cs.isValidTarget()) {
+            QImage img3 = img2.convertedToColorSpace(cs);
+
             QColorTransform trans2 = QColorSpace(QColorSpace::SRgb).transformationToColorSpace(cs);
             bool a = (trans1 == trans2);
             Q_UNUSED(a);

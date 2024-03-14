@@ -66,6 +66,8 @@ public:
                        const QList<uint16_t> &redTransferFunctionTable,
                        const QList<uint16_t> &greenTransferFunctionTable,
                        const QList<uint16_t> &blueRransferFunctionTable);
+    QColorSpacePrivate(const QPointF &whitePoint, QColorSpace::TransferFunction transferFunction, float gamma);
+    QColorSpacePrivate(const QPointF &whitePoint, const QList<uint16_t> &transferFunctionTable);
     QColorSpacePrivate(const QColorSpacePrivate &other) = default;
 
     static const QColorSpacePrivate *get(const QColorSpace &colorSpace)
@@ -101,6 +103,7 @@ public:
     QColorSpace::Primaries primaries = QColorSpace::Primaries::Custom;
     QColorSpace::TransferFunction transferFunction = QColorSpace::TransferFunction::Custom;
     QColorSpace::TransformModel transformModel = QColorSpace::TransformModel::ThreeComponentMatrix;
+    QColorSpace::ColorModel colorModel = QColorSpace::ColorModel::Undefined;
     float gamma = 0.0f;
     QColorVector whitePoint;
 

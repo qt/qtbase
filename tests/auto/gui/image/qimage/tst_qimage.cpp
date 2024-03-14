@@ -169,6 +169,9 @@ private slots:
     void largeInplaceRgbConversion_data();
     void largeInplaceRgbConversion();
 
+    void colorSpaceRgbConversion_data();
+    void colorSpaceRgbConversion();
+
     void deepCopyWhenPaintingActive();
     void scaled_QTBUG19157();
 
@@ -3243,6 +3246,81 @@ void tst_QImage::largeInplaceRgbConversion()
         }
     }
 }
+
+void tst_QImage::colorSpaceRgbConversion_data()
+{
+    QTest::addColumn<QImage::Format>("fromFormat");
+    QTest::addColumn<QImage::Format>("toFormat");
+
+    // The various possible code paths for color space conversions compatible with RGB color spaces:
+    QImage::Format formats[] = {
+        QImage::Format_RGB32,
+        QImage::Format_ARGB32,
+        QImage::Format_ARGB32_Premultiplied,
+        QImage::Format_RGBX64,
+        QImage::Format_RGBA64,
+        QImage::Format_RGBA64_Premultiplied,
+        QImage::Format_RGBX32FPx4,
+        QImage::Format_RGBA32FPx4,
+        QImage::Format_RGBA32FPx4_Premultiplied,
+        QImage::Format_Grayscale8,
+        QImage::Format_Grayscale16,
+    };
+
+    for (auto fromFormat : formats) {
+        const QLatin1String formatI = formatToString(fromFormat);
+        for (auto toFormat : formats) {
+            QTest::addRow("%s -> %s", formatI.data(), formatToString(toFormat).data())
+                    << fromFormat << toFormat;
+        }
+    }
+}
+
+void tst_QImage::colorSpaceRgbConversion()
+{
+    // Test that all color space conversions work
+    QFETCH(QImage::Format, fromFormat);
+    QFETCH(QImage::Format, toFormat);
+
+    bool srcGrayscale = fromFormat == QImage::Format_Grayscale8 || fromFormat == QImage::Format_Grayscale16;
+    bool dstGrayscale = toFormat == QImage::Format_Grayscale8 || toFormat == QImage::Format_Grayscale16;
+
+    QImage image(16, 16, fromFormat);
+    image.setColorSpace(QColorSpace::SRgb);
+
+    for (int i = 0; i < image.height(); ++i) {
+        for (int j = 0; j < image.width(); ++j) {
+            if (srcGrayscale || dstGrayscale)
+                image.setPixel(j, i, qRgb((i + j) * 8, (i + j) * 8, (i + j) * 8));
+            else
+                image.setPixel(j, i, qRgb(j * 16, i * 16, (i + j) * 8));
+        }
+    }
+
+    QImage imageConverted = image.convertedToColorSpace(QColorSpace::DisplayP3, toFormat);
+    QCOMPARE(imageConverted.format(), toFormat);
+    QCOMPARE(imageConverted.size(), image.size());
+    if (dstGrayscale) {
+        int gray = 0;
+        for (int x = 0; x < image.width(); ++x) {
+            int newGray = qGray(imageConverted.pixel(x, 6));
+            QCOMPARE_GE(newGray, gray);
+            gray = newGray;
+        }
+    } else {
+        int red = 0;
+        int blue = 0;
+        for (int x = 0; x < image.width(); ++x) {
+            int newRed = qRed(imageConverted.pixel(x, 5));
+            int newBlue = qBlue(imageConverted.pixel(x, 7));
+            QCOMPARE_GE(newBlue, blue);
+            QCOMPARE_GE(newRed, red);
+            blue = newBlue;
+            red = newRed;
+        }
+    }
+}
+
 
 void tst_QImage::deepCopyWhenPaintingActive()
 {

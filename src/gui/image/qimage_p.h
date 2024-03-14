@@ -437,6 +437,43 @@ inline bool qt_fpColorPrecision(QImage::Format format)
     return false;
 }
 
+inline QColorSpace::ColorModel qt_csColorData(QPixelFormat::ColorModel format)
+{
+    switch (format) {
+    case QPixelFormat::ColorModel::RGB:
+    case QPixelFormat::ColorModel::BGR:
+    case QPixelFormat::ColorModel::Indexed:
+        return QColorSpace::ColorModel::Rgb;
+    case QPixelFormat::ColorModel::Alpha:
+        return QColorSpace::ColorModel::Undefined; // No valid colors
+    case QPixelFormat::ColorModel::Grayscale:
+        return QColorSpace::ColorModel::Gray;
+    default:
+        break;
+    }
+    return QColorSpace::ColorModel::Undefined;
+}
+
+inline bool qt_compatibleColorModel(QPixelFormat::ColorModel data, QColorSpace::ColorModel cs)
+{
+    QColorSpace::ColorModel dataCs = qt_csColorData(data);
+
+    if (data == QPixelFormat::ColorModel::Alpha)
+        return true; // Alpha data has no colors and can be handled by any color space
+
+    if (cs == QColorSpace::ColorModel::Undefined || dataCs == QColorSpace::ColorModel::Undefined)
+        return false;
+
+    if (dataCs == cs)
+        return true; // Matching color models
+
+    if (cs == QColorSpace::ColorModel::Rgb)
+        // Can apply RGB CS to Gray data
+        return dataCs == QColorSpace::ColorModel::Gray;
+
+    return false;
+}
+
 inline QImage::Format qt_maybeDataCompatibleAlphaVersion(QImage::Format format)
 {
     switch (format) {

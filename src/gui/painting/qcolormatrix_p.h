@@ -64,6 +64,14 @@ public:
     constexpr QColorVector operator-(const QColorVector &v) const { return QColorVector(x - v.x, y - v.y, z - v.z); }
     void operator+=(const QColorVector &v) { x += v.x; y += v.y; z += v.z; }
 
+    QPointF toChromaticity() const
+    {
+        if (isNull())
+            return QPointF();
+        float mag = 1.0f / (x + y + z);
+        return QPointF(x * mag, y * mag);
+    }
+
     // Common whitepoints:
     static constexpr QPointF D50Chromaticity() { return QPointF(0.34567, 0.35850); }
     static constexpr QPointF D65Chromaticity() { return QPointF(0.31271, 0.32902); }
@@ -279,6 +287,32 @@ public:
                               { 0.0f, v.y,  0.0f },
                               { 0.0f, 0.0f, v.z  } };
     }
+    static QColorMatrix chromaticAdaptation(const QColorVector &whitePoint)
+    {
+        constexpr QColorVector whitePointD50 = QColorVector::D50();
+        if (whitePoint != whitePointD50) {
+            // A chromatic adaptation to map a white point to XYZ D50.
+
+            // The Bradford method chromatic adaptation matrix:
+            const QColorMatrix abrad = { {  0.8951f, -0.7502f,  0.0389f },
+                                         {  0.2664f,  1.7135f, -0.0685f },
+                                         { -0.1614f,  0.0367f,  1.0296f } };
+            const QColorMatrix abradinv = { {  0.9869929f, 0.4323053f, -0.0085287f },
+                                            { -0.1470543f, 0.5183603f,  0.0400428f },
+                                            {  0.1599627f, 0.0492912f,  0.9684867f } };
+
+            const QColorVector srcCone = abrad.map(whitePoint);
+            if (srcCone.x && srcCone.y && srcCone.z) {
+                const QColorVector dstCone = abrad.map(whitePointD50);
+                const QColorMatrix wToD50 = { { dstCone.x / srcCone.x, 0, 0 },
+                                              { 0, dstCone.y / srcCone.y, 0 },
+                                              { 0, 0, dstCone.z / srcCone.z } };
+                return abradinv * (wToD50 * abrad);
+            }
+        }
+        return QColorMatrix::identity();
+    }
+
     // These are used to recognize matrices from ICC profiles:
     static QColorMatrix toXyzFromSRgb()
     {

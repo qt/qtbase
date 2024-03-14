@@ -782,7 +782,7 @@ static bool parseLutData(const QByteArray &data, const TagEntry &tagEntry, QColo
             colorSpacePrivate->mAB.append(inTableElement);
         if (!clutElement.isEmpty())
             colorSpacePrivate->mAB.append(clutElement);
-        if (!outTableIsLinear)
+        if (!outTableIsLinear || colorSpacePrivate->mAB.isEmpty())
             colorSpacePrivate->mAB.append(outTableElement);
     } else {
         // The matrix is only to be applied if the input color-space is XYZ
@@ -792,7 +792,7 @@ static bool parseLutData(const QByteArray &data, const TagEntry &tagEntry, QColo
             colorSpacePrivate->mBA.append(inTableElement);
         if (!clutElement.isEmpty())
             colorSpacePrivate->mBA.append(clutElement);
-        if (!outTableIsLinear)
+        if (!outTableIsLinear || colorSpacePrivate->mBA.isEmpty())
             colorSpacePrivate->mBA.append(outTableElement);
     }
     return true;
@@ -964,7 +964,7 @@ static bool parseMabData(const QByteArray &data, const TagEntry &tagEntry, QColo
             if (!offsetElement.isNull())
                 colorSpacePrivate->mAB.append(std::move(offsetElement));
         }
-        if (!bCurvesAreLinear)
+        if (!bCurvesAreLinear|| colorSpacePrivate->mAB.isEmpty())
             colorSpacePrivate->mAB.append(std::move(bTableElement));
     } else {
         if (!bCurvesAreLinear)
@@ -983,6 +983,8 @@ static bool parseMabData(const QByteArray &data, const TagEntry &tagEntry, QColo
             if (!aCurvesAreLinear)
                 colorSpacePrivate->mBA.append(std::move(aTableElement));
         }
+        if (colorSpacePrivate->mBA.isEmpty()) // Ensure non-empty to indicate valid empty transform
+            colorSpacePrivate->mBA.append(std::move(bTableElement));
     }
 
     return true;
@@ -1269,9 +1271,11 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         if (header.inputColorSpace == uint(ColorSpaceType::Rgb)) {
             if (!parseRgbMatrix(data, tagIndex, colorspaceDPtr))
                 return false;
+            colorspaceDPtr->colorModel = QColorSpace::ColorModel::Rgb;
         } else if (header.inputColorSpace == uint(ColorSpaceType::Gray)) {
             if (!parseGrayMatrix(data, tagIndex, colorspaceDPtr))
                 return false;
+            colorspaceDPtr->colorModel = QColorSpace::ColorModel::Gray;
         } else {
             Q_UNREACHABLE();
         }
@@ -1285,6 +1289,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
     } else {
         colorspaceDPtr->isPcsLab = (header.pcs == uint(Tag::Lab_));
         colorspaceDPtr->transformModel = QColorSpace::TransformModel::ElementListProcessing;
+        colorspaceDPtr->colorModel = QColorSpace::ColorModel::Rgb;
 
         // Only parse the default perceptual transform for now
         if (!parseA2B(data, tagIndex[Tag::A2B0], colorspaceDPtr, true))
@@ -1313,6 +1318,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
 
     colorspaceDPtr->iccProfile = data;
 
+    Q_ASSERT(colorspaceDPtr->isValid());
     return true;
 }
 

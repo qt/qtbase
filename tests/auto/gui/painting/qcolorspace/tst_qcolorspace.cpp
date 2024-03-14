@@ -42,9 +42,12 @@ private slots:
     void imageConversionOverLargerGamut();
     void imageConversionOverLargerGamut2_data();
     void imageConversionOverLargerGamut2();
+    void imageConversionOverAnyGamutFP_data();
+    void imageConversionOverAnyGamutFP();
+    void imageConversionOverAnyGamutFP2_data();
+    void imageConversionOverAnyGamutFP2();
     void imageConversionOverNonThreeComponentMatrix_data();
     void imageConversionOverNonThreeComponentMatrix();
-
     void loadImage();
 
     void primaries();
@@ -63,6 +66,11 @@ private slots:
     void transferFunctionTable();
 
     void description();
+    void whitePoint_data();
+    void whitePoint();
+    void setWhitePoint();
+    void grayColorSpace();
+    void grayColorSpaceEffectivelySRgb();
 };
 
 tst_QColorSpace::tst_QColorSpace()
@@ -530,6 +538,80 @@ void tst_QColorSpace::imageConversionOverLargerGamut2()
     QVERIFY(resultImage.pixelColor(0, 255).greenF() > 1.0f);
 }
 
+void tst_QColorSpace::imageConversionOverAnyGamutFP_data()
+{
+    QTest::addColumn<QColorSpace::NamedColorSpace>("fromColorSpace");
+    QTest::addColumn<QColorSpace::NamedColorSpace>("toColorSpace");
+
+    QTest::newRow("sRGB -> Display-P3") << QColorSpace::SRgb << QColorSpace::DisplayP3;
+    QTest::newRow("sRGB -> Adobe RGB") << QColorSpace::SRgb << QColorSpace::AdobeRgb;
+    QTest::newRow("sRGB -> ProPhoto RGB") << QColorSpace::SRgb << QColorSpace::ProPhotoRgb;
+    QTest::newRow("Adobe RGB -> sRGB") << QColorSpace::AdobeRgb << QColorSpace::SRgb;
+    QTest::newRow("Adobe RGB -> Display-P3") << QColorSpace::AdobeRgb << QColorSpace::DisplayP3;
+    QTest::newRow("Adobe RGB -> ProPhoto RGB") << QColorSpace::AdobeRgb << QColorSpace::ProPhotoRgb;
+    QTest::newRow("Display-P3 -> sRGB") << QColorSpace::DisplayP3 << QColorSpace::SRgb;
+    QTest::newRow("Display-P3 -> Adobe RGB") << QColorSpace::DisplayP3 << QColorSpace::AdobeRgb;
+    QTest::newRow("Display-P3 -> ProPhoto RGB") << QColorSpace::DisplayP3 << QColorSpace::ProPhotoRgb;
+}
+
+void tst_QColorSpace::imageConversionOverAnyGamutFP()
+{
+    QFETCH(QColorSpace::NamedColorSpace, fromColorSpace);
+    QFETCH(QColorSpace::NamedColorSpace, toColorSpace);
+
+    QColorSpace csfrom(fromColorSpace);
+    QColorSpace csto(toColorSpace);
+    csfrom.setTransferFunction(QColorSpace::TransferFunction::Linear);
+    csto.setTransferFunction(QColorSpace::TransferFunction::Linear);
+
+    QImage testImage(256, 256, QImage::Format_RGBX32FPx4);
+    testImage.setColorSpace(csfrom);
+    for (int y = 0; y < 256; ++y)
+        for (int x = 0; x < 256; ++x)
+            testImage.setPixel(x, y, qRgb(x, y, 0));
+
+    QImage resultImage = testImage.convertedToColorSpace(csto);
+    resultImage.convertToColorSpace(csfrom);
+
+    for (int y = 0; y < 256; ++y) {
+        for (int x = 0; x < 256; ++x) {
+            QCOMPARE(resultImage.pixel(x, y), testImage.pixel(x, y));
+        }
+    }
+}
+
+void tst_QColorSpace::imageConversionOverAnyGamutFP2_data()
+{
+    imageConversionOverAnyGamutFP_data();
+}
+
+void tst_QColorSpace::imageConversionOverAnyGamutFP2()
+{
+    QFETCH(QColorSpace::NamedColorSpace, fromColorSpace);
+    QFETCH(QColorSpace::NamedColorSpace, toColorSpace);
+
+    // Same as imageConversionOverAnyGamutFP but using format switching transform
+    QColorSpace csfrom(fromColorSpace);
+    QColorSpace csto(toColorSpace);
+    csfrom.setTransferFunction(QColorSpace::TransferFunction::Linear);
+    csto.setTransferFunction(QColorSpace::TransferFunction::Linear);
+
+    QImage testImage(256, 256, QImage::Format_RGB32);
+    testImage.setColorSpace(csfrom);
+    for (int y = 0; y < 256; ++y)
+        for (int x = 0; x < 256; ++x)
+            testImage.setPixel(x, y, qRgb(x, y, 0));
+
+    QImage resultImage = testImage.convertedToColorSpace(csto, QImage::Format_RGBX32FPx4);
+    resultImage.convertToColorSpace(csfrom, QImage::Format_RGB32);
+
+    for (int y = 0; y < 256; ++y) {
+        for (int x = 0; x < 256; ++x) {
+            QCOMPARE(resultImage.pixel(x, y), testImage.pixel(x, y));
+        }
+    }
+}
+
 void tst_QColorSpace::imageConversionOverNonThreeComponentMatrix_data()
 {
     QTest::addColumn<QColorSpace>("fromColorSpace");
@@ -569,6 +651,7 @@ void tst_QColorSpace::imageConversionOverNonThreeComponentMatrix()
             testImage.setPixel(x, y, qRgb(x, y, 0));
 
     QImage resultImage = testImage.convertedToColorSpace(toColorSpace);
+    QCOMPARE(resultImage.size(), testImage.size());
     for (int y = 0; y < 256; ++y) {
         int lastRed = 0;
         for (int x = 0; x < 256; ++x) {
@@ -832,6 +915,93 @@ void tst_QColorSpace::description()
     QCOMPARE(srgb.description(), QLatin1String("My custom sRGB")); // User given name not reset
     srgb.setDescription(QString());
     QCOMPARE(srgb.description(), QLatin1String("Linear sRGB")); // Set to empty returns default behavior
+}
+
+void tst_QColorSpace::whitePoint_data()
+{
+    QTest::addColumn<QColorSpace::NamedColorSpace>("namedColorSpace");
+    QTest::addColumn<QPointF>("whitePoint");
+
+    QTest::newRow("sRGB") << QColorSpace::SRgb << QColorVector::D65Chromaticity();
+    QTest::newRow("Adobe RGB") << QColorSpace::AdobeRgb << QColorVector::D65Chromaticity();
+    QTest::newRow("Display-P3") << QColorSpace::DisplayP3 << QColorVector::D65Chromaticity();
+    QTest::newRow("ProPhoto RGB") << QColorSpace::ProPhotoRgb << QColorVector::D50Chromaticity();
+}
+
+void tst_QColorSpace::whitePoint()
+{
+    QFETCH(QColorSpace::NamedColorSpace, namedColorSpace);
+    QFETCH(QPointF, whitePoint);
+
+    QColorSpace colorSpace(namedColorSpace);
+    QPointF wpt = colorSpace.whitePoint();
+    QCOMPARE_LE(qAbs(wpt.x() - whitePoint.x()), 0.0000001);
+    QCOMPARE_LE(qAbs(wpt.y() - whitePoint.y()), 0.0000001);
+}
+
+void tst_QColorSpace::setWhitePoint()
+{
+    QColorSpace colorSpace(QColorSpace::SRgb);
+    colorSpace.setWhitePoint(QPointF(0.33, 0.33));
+    QCOMPARE_NE(colorSpace, QColorSpace(QColorSpace::SRgb));
+    colorSpace.setWhitePoint(QColorVector::D65Chromaticity());
+    // Check our matrix manipulations returned us to where we came from
+    QCOMPARE(colorSpace, QColorSpace(QColorSpace::SRgb));
+}
+
+void tst_QColorSpace::grayColorSpace()
+{
+    QColorSpace spc;
+    QCOMPARE(spc.colorModel(), QColorSpace::ColorModel::Undefined);
+    QVERIFY(!spc.isValid());
+    spc.setWhitePoint(QColorVector::D65Chromaticity());
+    spc.setTransferFunction(QColorSpace::TransferFunction::SRgb);
+    QVERIFY(spc.isValid());
+    QCOMPARE(spc.colorModel(), QColorSpace::ColorModel::Gray);
+
+    QColorSpace spc2(QColorVector::D65Chromaticity(), QColorSpace::TransferFunction::SRgb);
+    QVERIFY(spc2.isValid());
+    QCOMPARE(spc2.colorModel(), QColorSpace::ColorModel::Gray);
+    QCOMPARE(spc, spc2);
+
+    QImage rgbImage(1, 8, QImage::Format_RGB32);
+    QImage grayImage(1, 255, QImage::Format_Grayscale8);
+    // RGB images can not have gray color space
+    rgbImage.setColorSpace(spc2);
+    grayImage.setColorSpace(spc2);
+    QCOMPARE_NE(rgbImage.colorSpace(), spc2);
+    QCOMPARE(grayImage.colorSpace(), spc2);
+    // But gray images can have RGB color space
+    rgbImage.setColorSpace(QColorSpace::SRgb);
+    grayImage.setColorSpace(QColorSpace::SRgb);
+    QCOMPARE(rgbImage.colorSpace(), QColorSpace(QColorSpace::SRgb));
+    QCOMPARE(grayImage.colorSpace(), QColorSpace(QColorSpace::SRgb));
+
+    // While we can not set a grayscale color space on rgb image, we can convert to one
+    QImage grayImage2 = rgbImage.convertedToColorSpace(spc2);
+    QCOMPARE(grayImage2.colorSpace(), spc2);
+    QCOMPARE(grayImage2.format(), QImage::Format_Grayscale8);
+}
+
+void tst_QColorSpace::grayColorSpaceEffectivelySRgb()
+{
+    // Test grayscale colorspace conversion by making a gray color space that should act like sRGB on gray values.
+    QColorSpace sRgb(QColorSpace::SRgb);
+    QColorSpace sRgbGray(QColorVector::D65Chromaticity(), QColorSpace::TransferFunction::SRgb);
+
+    QImage grayImage1(256, 1, QImage::Format_Grayscale8);
+    QImage grayImage2(256, 1, QImage::Format_Grayscale8);
+    for (int i = 0; i < 256; ++i) {
+        grayImage1.bits()[i] = i;
+        grayImage2.bits()[i] = i;
+    }
+    grayImage1.setColorSpace(sRgb);
+    grayImage2.setColorSpace(sRgbGray);
+
+    QImage rgbImage1 = grayImage1.convertedTo(QImage::Format_RGB32);
+    QImage rgbImage2 = grayImage2.convertedToColorSpace(sRgb, QImage::Format_RGB32);
+
+    QCOMPARE(rgbImage1, rgbImage2);
 }
 
 QTEST_MAIN(tst_QColorSpace)

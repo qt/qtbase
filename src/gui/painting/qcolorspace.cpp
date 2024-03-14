@@ -95,34 +95,7 @@ QColorMatrix QColorSpacePrimaries::toXyzMatrix() const
     toXyz = toXyz * QColorMatrix::fromScale(whiteScale);
 
     // But we want a conversion to XYZ relative to D50
-    QColorVector wXyzD50 = QColorVector::D50();
-
-    if (wXyz != wXyzD50) {
-        // Do chromatic adaptation to map our white point to XYZ D50.
-
-        // The Bradford method chromatic adaptation matrix:
-        QColorMatrix abrad = { {  0.8951f, -0.7502f,  0.0389f },
-                               {  0.2664f,  1.7135f, -0.0685f },
-                               { -0.1614f,  0.0367f,  1.0296f } };
-        QColorMatrix abradinv = { {  0.9869929f, 0.4323053f, -0.0085287f },
-                                  { -0.1470543f, 0.5183603f,  0.0400428f },
-                                  {  0.1599627f, 0.0492912f,  0.9684867f } };
-
-        QColorVector srcCone = abrad.map(wXyz);
-        QColorVector dstCone = abrad.map(wXyzD50);
-
-        if (srcCone.x && srcCone.y && srcCone.z) {
-            QColorMatrix wToD50 = { { dstCone.x / srcCone.x, 0, 0 },
-                                    { 0, dstCone.y / srcCone.y, 0 },
-                                    { 0, 0, dstCone.z / srcCone.z } };
-
-
-            QColorMatrix chromaticAdaptation = abradinv * (wToD50 * abrad);
-            toXyz = chromaticAdaptation * toXyz;
-        } else {
-            toXyz.r = {0, 0, 0}; // set to invalid value
-        }
-    }
+    toXyz = QColorMatrix::chromaticAdaptation(wXyz) * toXyz;
 
     return toXyz;
 }
@@ -133,6 +106,7 @@ QColorSpacePrivate::QColorSpacePrivate()
 
 QColorSpacePrivate::QColorSpacePrivate(QColorSpace::NamedColorSpace namedColorSpace)
         : namedColorSpace(namedColorSpace)
+        , colorModel(QColorSpace::ColorModel::Rgb)
 {
     switch (namedColorSpace) {
     case QColorSpace::SRgb:
@@ -170,6 +144,7 @@ QColorSpacePrivate::QColorSpacePrivate(QColorSpace::NamedColorSpace namedColorSp
 QColorSpacePrivate::QColorSpacePrivate(QColorSpace::Primaries primaries, QColorSpace::TransferFunction transferFunction, float gamma)
         : primaries(primaries)
         , transferFunction(transferFunction)
+        , colorModel(QColorSpace::ColorModel::Rgb)
         , gamma(gamma)
 {
     identifyColorSpace();
@@ -181,18 +156,45 @@ QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries,
                                        float gamma)
         : primaries(QColorSpace::Primaries::Custom)
         , transferFunction(transferFunction)
+        , colorModel(QColorSpace::ColorModel::Rgb)
         , gamma(gamma)
+        , whitePoint(primaries.whitePoint)
 {
     Q_ASSERT(primaries.areValid());
     toXyz = primaries.toXyzMatrix();
-    whitePoint = QColorVector(primaries.whitePoint);
     identifyColorSpace();
+    setTransferFunction();
+}
+
+QColorSpacePrivate::QColorSpacePrivate(const QPointF &whitePoint,
+                                       QColorSpace::TransferFunction transferFunction,
+                                       float gamma)
+        : primaries(QColorSpace::Primaries::Custom)
+        , transferFunction(transferFunction)
+        , colorModel(QColorSpace::ColorModel::Gray)
+        , gamma(gamma)
+        , whitePoint(whitePoint)
+{
+    toXyz = QColorMatrix::chromaticAdaptation(this->whitePoint);
+    setTransferFunction();
+}
+
+QColorSpacePrivate::QColorSpacePrivate(const QPointF &whitePoint, const QList<uint16_t> &transferFunctionTable)
+      : primaries(QColorSpace::Primaries::Custom)
+      , transferFunction(QColorSpace::TransferFunction::Custom)
+      , colorModel(QColorSpace::ColorModel::Gray)
+      , gamma(0)
+      , whitePoint(whitePoint)
+{
+    toXyz = QColorMatrix::chromaticAdaptation(this->whitePoint);
+    setTransferFunctionTable(transferFunctionTable);
     setTransferFunction();
 }
 
 QColorSpacePrivate::QColorSpacePrivate(QColorSpace::Primaries primaries, const QList<uint16_t> &transferFunctionTable)
         : primaries(primaries)
         , transferFunction(QColorSpace::TransferFunction::Custom)
+        , colorModel(QColorSpace::ColorModel::Rgb)
         , gamma(0)
 {
     setTransferFunctionTable(transferFunctionTable);
@@ -203,11 +205,12 @@ QColorSpacePrivate::QColorSpacePrivate(QColorSpace::Primaries primaries, const Q
 QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries, const QList<uint16_t> &transferFunctionTable)
         : primaries(QColorSpace::Primaries::Custom)
         , transferFunction(QColorSpace::TransferFunction::Custom)
+        , colorModel(QColorSpace::ColorModel::Rgb)
         , gamma(0)
+        , whitePoint(primaries.whitePoint)
 {
     Q_ASSERT(primaries.areValid());
     toXyz = primaries.toXyzMatrix();
-    whitePoint = QColorVector(primaries.whitePoint);
     setTransferFunctionTable(transferFunctionTable);
     identifyColorSpace();
     initialize();
@@ -219,6 +222,7 @@ QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries,
                                        const QList<uint16_t> &blueTransferFunctionTable)
         : primaries(QColorSpace::Primaries::Custom)
         , transferFunction(QColorSpace::TransferFunction::Custom)
+        , colorModel(QColorSpace::ColorModel::Rgb)
         , gamma(0)
 {
     Q_ASSERT(primaries.areValid());
@@ -437,8 +441,9 @@ QColorTransform QColorSpacePrivate::transformationToXYZ() const
     transform.d = ptr;
     ptr->colorSpaceIn = this;
     ptr->colorSpaceOut = this;
+    // Convert to XYZ relative to our white point, not the regular D50 white point.
     if (isThreeComponentMatrix())
-        ptr->colorMatrix = toXyz;
+        ptr->colorMatrix = QColorMatrix::chromaticAdaptation(whitePoint).inverted() * toXyz;
     else
         ptr->colorMatrix = QColorMatrix::identity();
     return transform;
@@ -483,9 +488,10 @@ void QColorSpacePrivate::clearElementListProcessingForEdit()
     A color space can generally speaking be conceived as a combination of set of primary
     colors and a transfer function. The primaries defines the axes of the color space, and
     the transfer function how values are mapped on the axes.
-    The primaries are defined by three primary colors that represent exactly how red, green,
-    and blue look in this particular color space, and a white color that represents where
-    and how bright pure white is. The range of colors expressible by the primary colors is
+    The primaries are for ColorModel::Rgb color spaces defined by three primary colors that
+    represent exactly how red, green, and blue look in this particular color space, and a white
+    color that represents where and how bright pure white is. For grayscale color spaces, only
+    a single white primary is needed. The range of colors expressible by the primary colors is
     called the gamut, and a color space that can represent a wider range of colors is also
     known as a wide-gamut color space.
 
@@ -555,6 +561,17 @@ void QColorSpacePrivate::clearElementListProcessingForEdit()
 */
 
 /*!
+    \enum QColorSpace::ColorModel
+    \since 6.8
+
+    Defines the color model used by the color space data.
+
+    \value Undefined No color model
+    \value Rgb An RGB color model with red, green, and blue colors. Can apply to RGB and grayscale data.
+    \value Gray A gray scale color model. Can only apply to grayscale data.
+*/
+
+/*!
     \fn QColorSpace::QColorSpace()
 
     Creates a new colorspace object that represents an undefined and invalid colorspace.
@@ -613,6 +630,28 @@ QColorSpace::QColorSpace(QColorSpace::Primaries primaries, float gamma)
  */
 QColorSpace::QColorSpace(QColorSpace::Primaries gamut, const QList<uint16_t> &transferFunctionTable)
     : d_ptr(new QColorSpacePrivate(gamut, transferFunctionTable))
+{
+}
+
+/*!
+    Creates a custom grayscale color space with the white point \a whitePoint, using the transfer function \a transferFunction and
+    optionally \a gamma.
+
+    \since 6.8
+*/
+QColorSpace::QColorSpace(const QPointF &whitePoint, TransferFunction transferFunction, float gamma)
+    : d_ptr(new QColorSpacePrivate(whitePoint, transferFunction, gamma))
+{
+}
+
+/*!
+    Creates a custom grayscale color space with white point \a whitePoint, and using the custom transfer function described by
+    \a transferFunctionTable.
+
+    \since 6.8
+*/
+QColorSpace::QColorSpace(const QPointF &whitePoint, const QList<uint16_t> &transferFunctionTable)
+    : d_ptr(new QColorSpacePrivate(whitePoint, transferFunctionTable))
 {
 }
 
@@ -869,6 +908,7 @@ void QColorSpace::setPrimaries(QColorSpace::Primaries primariesId)
     d_ptr->iccProfile = {};
     d_ptr->description = QString();
     d_ptr->primaries = primariesId;
+    d_ptr->colorModel = QColorSpace::ColorModel::Rgb;
     d_ptr->identifyColorSpace();
     d_ptr->setToXyzMatrix();
 }
@@ -898,20 +938,85 @@ void QColorSpace::setPrimaries(const QPointF &whitePoint, const QPointF &redPoin
     d_ptr->iccProfile = {};
     d_ptr->description = QString();
     d_ptr->primaries = QColorSpace::Primaries::Custom;
+    d_ptr->colorModel = QColorSpace::ColorModel::Rgb;
     d_ptr->toXyz = toXyz;
     d_ptr->whitePoint = QColorVector(primaries.whitePoint);
     d_ptr->identifyColorSpace();
 }
 
 /*!
+    Returns the white point used for this color space. Returns a null QPointF if not defined.
+
     \since 6.8
+*/
+QPointF QColorSpace::whitePoint() const
+{
+    if (Q_UNLIKELY(!d_ptr))
+        return QPointF();
+    return d_ptr->whitePoint.toChromaticity();
+}
+
+/*!
+    Sets the white point to used for this color space to \a whitePoint.
+
+    \since 6.8
+*/
+void QColorSpace::setWhitePoint(const QPointF &whitePoint)
+{
+    if (Q_UNLIKELY(!d_ptr)) {
+        d_ptr = new QColorSpacePrivate(whitePoint, TransferFunction::Custom, 0.0f);
+        return;
+    }
+    if (QColorVector(whitePoint) == d_ptr->whitePoint)
+        return;
+    detach();
+    if (d_ptr->transformModel == TransformModel::ElementListProcessing)
+        d_ptr->clearElementListProcessingForEdit();
+    d_ptr->iccProfile = {};
+    d_ptr->description = QString();
+    d_ptr->primaries = QColorSpace::Primaries::Custom;
+    // An RGB color model stays RGB, a gray stays gray, but an undefined one can now be considered gray
+    if (d_ptr->colorModel == QColorSpace::ColorModel::Undefined)
+        d_ptr->colorModel = QColorSpace::ColorModel::Gray;
+    QColorVector wXyz(whitePoint);
+    if (d_ptr->transformModel == QColorSpace::TransformModel::ThreeComponentMatrix) {
+        if (d_ptr->colorModel == QColorSpace::ColorModel::Rgb) {
+            // Rescale toXyz to new whitepoint
+            QColorMatrix chad = QColorMatrix::chromaticAdaptation(d_ptr->whitePoint);
+            QColorMatrix rawToXyz = chad.inverted() * d_ptr->toXyz;
+            QColorVector whiteScale = rawToXyz.inverted().map(wXyz);
+            rawToXyz = rawToXyz * QColorMatrix::fromScale(whiteScale);
+            d_ptr->toXyz = QColorMatrix::chromaticAdaptation(wXyz) * rawToXyz;
+        } else if (d_ptr->colorModel == QColorSpace::ColorModel::Gray) {
+            d_ptr->toXyz = QColorMatrix::chromaticAdaptation(wXyz);
+        }
+    }
+    d_ptr->whitePoint = wXyz;
+    d_ptr->identifyColorSpace();
+}
+
+/*!
     Returns the transfrom processing model used for this color space.
+
+    \since 6.8
 */
 QColorSpace::TransformModel QColorSpace::transformModel() const noexcept
 {
     if (Q_UNLIKELY(!d_ptr))
         return QColorSpace::TransformModel::ThreeComponentMatrix;
     return d_ptr->transformModel;
+}
+
+/*!
+    Returns the color model this color space can represent
+
+    \since 6.8
+*/
+QColorSpace::ColorModel QColorSpace::colorModel() const noexcept
+{
+    if (Q_UNLIKELY(!d_ptr))
+        return QColorSpace::ColorModel::Undefined;
+    return d_ptr->colorModel;
 }
 
 /*!
@@ -1007,8 +1112,13 @@ bool QColorSpacePrivate::isValid() const noexcept
         return !mAB.isEmpty();
     if (!toXyz.isValid())
         return false;
-    if (!trc[0].isValid() || !trc[1].isValid() || !trc[2].isValid())
-        return false;
+    if (colorModel == QColorSpace::ColorModel::Gray) {
+        if (!trc[0].isValid())
+            return false;
+    } else {
+        if (!trc[0].isValid() || !trc[1].isValid() || !trc[2].isValid())
+            return false;
+    }
     return true;
 }
 
