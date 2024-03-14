@@ -420,12 +420,12 @@ static int computeFaceIndex(const QString &faceFileName, const QString &styleNam
             break;
         }
 
-        QString faceStyleName = QString::fromLatin1(face->style_name);
+        const bool found = QLatin1StringView(face->style_name) == styleName;
         numFaces = face->num_faces;
 
         FT_Done_Face(face);
 
-        if (faceStyleName == styleName)
+        if (found)
             return faceIndex;
     } while (++faceIndex < numFaces);
 
