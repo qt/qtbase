@@ -1184,6 +1184,7 @@ struct DeployResult
     bool success = false;
     bool isDebug = false;
     ModuleBitset directlyUsedQtLibraries;
+    ModuleBitset usedQtLibraries;
     ModuleBitset deployedQtLibraries;
 };
 
@@ -1531,8 +1532,17 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     }
 
     QString platformPlugin;
+    // Sort apart Qt 5 libraries in the ones that are represented by the
+    // QtModule enumeration (and thus controlled by flags) and others.
     QStringList deployedQtLibraries;
-    result.deployedQtLibraries = (result.directlyUsedQtLibraries | options.additionalLibraries) & ~options.disabledLibraries;
+    for (int i = 0 ; i < dependentQtLibs.size(); ++i)  {
+        const qint64 module = qtModule(dependentQtLibs.at(i), infix);
+        if (module >= 0)
+            result.usedQtLibraries[module] = 1;
+        else
+            deployedQtLibraries.push_back(dependentQtLibs.at(i)); // Not represented by flag.
+    }
+    result.deployedQtLibraries = (result.usedQtLibraries | options.additionalLibraries) & ~options.disabledLibraries;
 
     ModuleBitset disabled = options.disabledLibraries;
     if (!usesQml2) {
@@ -1562,6 +1572,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
 
     if (optVerboseLevel >= 1) {
         std::wcout << "Direct dependencies: " << formatQtModules(result.directlyUsedQtLibraries).constData()
+                   << "\nAll dependencies   : " << formatQtModules(result.usedQtLibraries).constData()
                    << "\nTo be deployed     : " << formatQtModules(result.deployedQtLibraries).constData() << '\n';
     }
 
