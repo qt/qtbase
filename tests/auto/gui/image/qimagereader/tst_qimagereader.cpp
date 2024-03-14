@@ -62,6 +62,9 @@ private slots:
     void setScaledSize_data();
     void setScaledSize();
 
+    void setScaledSizeOneDimension_data();
+    void setScaledSizeOneDimension();
+
     void setClipRect_data();
     void setClipRect();
 
@@ -369,6 +372,60 @@ void tst_QImageReader::setScaledSize()
     QVERIFY(!image.isNull());
 
     QCOMPARE(image.size(), newSize);
+}
+
+void tst_QImageReader::setScaledSizeOneDimension_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QByteArray>("format");
+
+    QTest::newRow("PNG: kollada") << QString("kollada") << QByteArray("png");
+    QTest::newRow("JPEG: beavis") << QString("beavis") << QByteArray("jpeg");
+    QTest::newRow("GIF: earth") << QString("earth") << QByteArray("gif");
+    QTest::newRow("SVG: rect") << QString("rect") << QByteArray("svg");
+    QTest::newRow("BMP: colorful") << QString("colorful") << QByteArray("bmp");
+    QTest::newRow("XPM: marble") << QString("marble") << QByteArray("xpm");
+    QTest::newRow("PPM: teapot") << QString("teapot") << QByteArray("ppm");
+    QTest::newRow("XBM: gnus") << QString("gnus") << QByteArray("xbm");
+}
+
+void tst_QImageReader::setScaledSizeOneDimension()
+{
+    QFETCH(QString, fileName);
+    QFETCH(QByteArray, format);
+
+    SKIP_IF_UNSUPPORTED(format);
+
+    const QSize originalSize = QImageReader(prefix + fileName).size();
+    QVERIFY(!originalSize.isEmpty());
+
+    auto testScaledSize = [&] (const QSize &scaledSize) {
+        QSize expectedSize = scaledSize;
+        if (scaledSize.width() <= 0)
+            expectedSize.setWidth(qRound(originalSize.width() *
+                                         (qreal(scaledSize.height()) / originalSize.height())));
+        else if (scaledSize.height() <= 0)
+            expectedSize.setHeight(qRound(originalSize.height() *
+                                          (qreal(scaledSize.width()) / originalSize.width())));
+
+        QImageReader reader(prefix + fileName);
+        reader.setScaledSize(scaledSize);
+        QImage image = reader.read();
+        QVERIFY(!image.isNull());
+        QCOMPARE(image.size(), expectedSize);
+    };
+
+    // downscale
+    testScaledSize(QSize(originalSize.width() / 2, 0));
+    testScaledSize(QSize(originalSize.width() / 2, -1));
+    testScaledSize(QSize(0, originalSize.height() / 2));
+    testScaledSize(QSize(-1, originalSize.height() / 2));
+
+    // upscale
+    testScaledSize(QSize(originalSize.width() * 2, 0));
+    testScaledSize(QSize(originalSize.width() * 2, -1));
+    testScaledSize(QSize(0, originalSize.height() * 2));
+    testScaledSize(QSize(-1, originalSize.height() * 2));
 }
 
 void tst_QImageReader::task255627_setNullScaledSize_data()

@@ -940,6 +940,10 @@ QRect QImageReader::clipRect() const
     support scaling), QImageReader will use QImage::scale() with
     Qt::SmoothScaling.
 
+    If only one dimension is set in \a size, the other one will be
+    computed from the image's \l {size()} {natural size} so as to
+    maintain the aspect ratio.
+
     \sa scaledSize(), setClipRect(), setScaledClipRect()
 */
 void QImageReader::setScaledSize(const QSize &size)
@@ -1178,7 +1182,23 @@ bool QImageReader::read(QImage *image)
     if (!d->initHandler())
         return false;
 
-    const bool supportScaledSize = supportsOption(QImageIOHandler::ScaledSize) && d->scaledSize.isValid();
+    QSize scaledSize = d->scaledSize;
+    if ((scaledSize.width() <= 0 && scaledSize.height() > 0) ||
+        (scaledSize.height() <= 0 && scaledSize.width() > 0)) {
+        // if only one dimension is given, let's try to calculate the second one
+        // based on the original image size and maintaining the aspect ratio
+        if (const QSize originalSize = size(); !originalSize.isEmpty()) {
+            if (scaledSize.width() <= 0) {
+                const auto ratio = qreal(scaledSize.height()) / originalSize.height();
+                scaledSize.setWidth(qRound(originalSize.width() * ratio));
+            } else {
+                const auto ratio = qreal(scaledSize.width()) / originalSize.width();
+                scaledSize.setHeight(qRound(originalSize.height() * ratio));
+            }
+        }
+    }
+
+    const bool supportScaledSize = supportsOption(QImageIOHandler::ScaledSize) && scaledSize.isValid();
     const bool supportClipRect = supportsOption(QImageIOHandler::ClipRect) && !d->clipRect.isNull();
     const bool supportScaledClipRect = supportsOption(QImageIOHandler::ScaledClipRect) && !d->scaledClipRect.isNull();
 
@@ -1187,7 +1207,7 @@ bool QImageReader::read(QImage *image)
         if (supportClipRect || d->clipRect.isNull()) {
             // Only enable the ScaledSize option if there is no clip rect, or
             // if the handler also supports ClipRect.
-            d->handler->setOption(QImageIOHandler::ScaledSize, d->scaledSize);
+            d->handler->setOption(QImageIOHandler::ScaledSize, scaledSize);
         }
     }
     if (supportClipRect)
@@ -1229,8 +1249,8 @@ bool QImageReader::read(QImage *image)
                 // supports scaled clipping but not scaling, most
                 // likely a broken handler.
             } else {
-                if (d->scaledSize.isValid()) {
-                    *image = image->scaled(d->scaledSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                if (scaledSize.isValid()) {
+                    *image = image->scaled(scaledSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
                 }
                 if (d->scaledClipRect.isValid()) {
                     *image = image->copy(d->scaledClipRect);
@@ -1256,8 +1276,8 @@ bool QImageReader::read(QImage *image)
                 // provide all workarounds.
                 if (d->clipRect.isValid())
                     *image = image->copy(d->clipRect);
-                if (d->scaledSize.isValid())
-                    *image = image->scaled(d->scaledSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                if (scaledSize.isValid())
+                    *image = image->scaled(scaledSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
                 if (d->scaledClipRect.isValid())
                     *image = image->copy(d->scaledClipRect);
             }
