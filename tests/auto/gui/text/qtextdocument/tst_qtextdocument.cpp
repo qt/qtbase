@@ -184,6 +184,7 @@ private slots:
     void undoContentChangeIndices();
 
     void restoreStrokeFromHtml();
+    void restoreForegroundGradientFromHtml();
 
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
@@ -4054,7 +4055,6 @@ void tst_QTextDocument::restoreStrokeFromHtml()
     QTextCharFormat textOutline;
     textOutline.setTextOutline(QPen(Qt::red, 2.3));
     textCursor.insertText("Outlined text", textOutline);
-
     {
         QTextDocument otherDocument;
         otherDocument.setHtml(document.toHtml());
@@ -4067,6 +4067,94 @@ void tst_QTextDocument::restoreStrokeFromHtml()
         QPen pen = fmt.textOutline();
         QCOMPARE(pen.color(), QColor(Qt::red));
         QCOMPARE(pen.widthF(), 2.3);
+    }
+}
+
+void tst_QTextDocument::restoreForegroundGradientFromHtml()
+{
+    QTextDocument document;
+
+    QTextCursor textCursor(&document);
+
+    QTextCharFormat foregroundGradient;
+    QLinearGradient lg;
+    lg.setColorAt(0.0, Qt::green);
+    lg.setColorAt(1.0, Qt::blue);
+    lg.setStart(QPointF(0,0));
+    lg.setFinalStop(QPointF(800, 1000));
+    foregroundGradient.setForeground(QBrush(lg));
+    textCursor.insertText("Linear gradient text\n", foregroundGradient);
+
+    QRadialGradient rg;
+    rg.setCoordinateMode(QGradient::ObjectBoundingMode);
+    rg.setSpread(QGradient::ReflectSpread);
+    rg.setColorAt(0.0, Qt::green);
+    rg.setColorAt(1.0, Qt::blue);
+    QPointF center(0.5, 0.5);
+    rg.setCenter(center);
+    rg.setFocalPoint(center);
+    rg.setRadius(0.5);
+    foregroundGradient.setForeground(QBrush(rg));
+    textCursor.insertText("Radial gradient text\n", foregroundGradient);
+
+    QConicalGradient cg;
+    cg.setCoordinateMode(QGradient::ObjectMode);
+    cg.setSpread(QGradient::RepeatSpread);
+    cg.setColorAt(0.0, Qt::green);
+    cg.setColorAt(1.0, Qt::blue);
+    cg.setCenter(QPointF(0.5, 0.5));
+    cg.setAngle(0.0);
+    foregroundGradient.setForeground(QBrush(cg));
+    textCursor.insertText("Conical gradient text\n", foregroundGradient);
+
+    {
+        QTextDocument otherDocument;
+        otherDocument.setHtml(document.toHtml());
+
+        QCOMPARE(otherDocument.blockCount(), document.blockCount());
+
+        QTextBlock block = otherDocument.firstBlock();
+        QTextFragment fragment = block.begin().fragment();
+
+        QCOMPARE(fragment.text(), QStringLiteral("Linear gradient text"));
+
+        QTextCharFormat fmt = fragment.charFormat();
+        QVERIFY(fmt.hasProperty(QTextCharFormat::ForegroundBrush));
+
+        QBrush brush = fmt.foreground();
+        QCOMPARE(brush.style(), Qt::LinearGradientPattern);
+        QCOMPARE(brush.gradient()->coordinateMode(), lg.coordinateMode());
+        QCOMPARE(brush.gradient()->spread(), lg.spread());
+        QCOMPARE(brush.gradient()->stops().size(), lg.stops().size());
+        QCOMPARE(static_cast<const QLinearGradient *>(brush.gradient())->start(), lg.start());
+        QCOMPARE(static_cast<const QLinearGradient *>(brush.gradient())->finalStop(), lg.finalStop());
+
+        block = block.next();
+        fragment = block.begin().fragment();
+
+        fmt = fragment.charFormat();
+        QVERIFY(fmt.hasProperty(QTextCharFormat::ForegroundBrush));
+
+        brush = fmt.foreground();
+        QCOMPARE(brush.style(), Qt::RadialGradientPattern);
+        QCOMPARE(brush.gradient()->coordinateMode(), rg.coordinateMode());
+        QCOMPARE(brush.gradient()->spread(), rg.spread());
+        QCOMPARE(static_cast<const QRadialGradient *>(brush.gradient())->center(), rg.center());
+        QCOMPARE(static_cast<const QRadialGradient *>(brush.gradient())->focalPoint(), rg.focalPoint());
+        QCOMPARE(static_cast<const QRadialGradient *>(brush.gradient())->radius(), rg.radius());
+
+        block = block.next();
+        fragment = block.begin().fragment();
+
+        fmt = fragment.charFormat();
+        QVERIFY(fmt.hasProperty(QTextCharFormat::ForegroundBrush));
+
+        brush = fmt.foreground();
+        QCOMPARE(brush.style(), Qt::ConicalGradientPattern);
+        QCOMPARE(brush.gradient()->coordinateMode(), cg.coordinateMode());
+        QCOMPARE(brush.gradient()->spread(), cg.spread());
+        QCOMPARE(static_cast<const QConicalGradient *>(brush.gradient())->center(), cg.center());
+        QCOMPARE(static_cast<const QConicalGradient *>(brush.gradient())->angle(), cg.angle());
     }
 }
 

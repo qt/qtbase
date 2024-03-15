@@ -1405,6 +1405,12 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
             }
             break;
         }
+        case QCss::QtForeground:
+        {
+            QBrush brush = decl.brushValue();
+            charFormat.setForeground(brush);
+            break;
+        }
         default: break;
         }
     }

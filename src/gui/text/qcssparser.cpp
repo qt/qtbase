@@ -39,6 +39,7 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "-qt-background-role", QtBackgroundRole },
     { "-qt-block-indent", QtBlockIndent },
     { "-qt-fg-texture-cachekey", QtForegroundTextureCacheKey },
+    { "-qt-foreground", QtForeground },
     { "-qt-line-height-type", QtLineHeightType },
     { "-qt-list-indent", QtListIndent },
     { "-qt-list-number-prefix", QtListNumberPrefix },
@@ -814,6 +815,10 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
     QStringList spreads;
     spreads << "pad"_L1 << "reflect"_L1 << "repeat"_L1;
 
+    int coordinateMode = -1;
+    QStringList coordinateModes;
+    coordinateModes << "logical"_L1 << "stretchtodevice"_L1 << "objectbounding"_L1 << "object"_L1;
+
     bool dependsOnThePalette = false;
     Parser parser(lst.at(1));
     while (parser.hasNext()) {
@@ -840,11 +845,12 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
             parser.next();
             QCss::Value value;
             (void)parser.parseTerm(&value);
-            if (attr.compare("spread"_L1, Qt::CaseInsensitive) == 0) {
+            if (attr.compare("spread"_L1, Qt::CaseInsensitive) == 0)
                 spread = spreads.indexOf(value.variant.toString());
-            } else {
+            else if (attr.compare("coordinatemode"_L1, Qt::CaseInsensitive) == 0)
+                coordinateMode = coordinateModes.indexOf(value.variant.toString());
+            else
                 vars[attr] = value.variant.toReal();
-            }
         }
         parser.skipSpace();
         (void)parser.test(COMMA);
@@ -853,7 +859,7 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
     if (gradType == 0) {
         QLinearGradient lg(vars.value("x1"_L1), vars.value("y1"_L1),
                            vars.value("x2"_L1), vars.value("y2"_L1));
-        lg.setCoordinateMode(QGradient::ObjectBoundingMode);
+        lg.setCoordinateMode(coordinateMode < 0 ? QGradient::ObjectBoundingMode : QGradient::CoordinateMode(coordinateMode));
         lg.setStops(stops);
         if (spread != -1)
             lg.setSpread(QGradient::Spread(spread));
@@ -867,7 +873,7 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
         QRadialGradient rg(vars.value("cx"_L1), vars.value("cy"_L1),
                            vars.value("radius"_L1), vars.value("fx"_L1),
                            vars.value("fy"_L1));
-        rg.setCoordinateMode(QGradient::ObjectBoundingMode);
+        rg.setCoordinateMode(coordinateMode < 0 ? QGradient::ObjectBoundingMode : QGradient::CoordinateMode(coordinateMode));
         rg.setStops(stops);
         if (spread != -1)
             rg.setSpread(QGradient::Spread(spread));
@@ -879,7 +885,7 @@ static BrushData parseBrushValue(const QCss::Value &v, const QPalette &pal)
 
     if (gradType == 2) {
         QConicalGradient cg(vars.value("cx"_L1), vars.value("cy"_L1), vars.value("angle"_L1));
-        cg.setCoordinateMode(QGradient::ObjectBoundingMode);
+        cg.setCoordinateMode(coordinateMode < 0 ? QGradient::ObjectBoundingMode : QGradient::CoordinateMode(coordinateMode));
         cg.setStops(stops);
         if (spread != -1)
             cg.setSpread(QGradient::Spread(spread));

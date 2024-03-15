@@ -169,6 +169,7 @@ enum Property {
     QtAccent,
     QtStrokeWidth,
     QtStrokeColor,
+    QtForeground,
     NumProperties
 };
 

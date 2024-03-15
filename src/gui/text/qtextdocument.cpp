@@ -2646,6 +2646,53 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
             html += " -qt-fg-texture-cachekey:"_L1;
             html += QString::number(cacheKey);
             html += ";"_L1;
+        } else if (brush.style() == Qt::LinearGradientPattern
+                   || brush.style() == Qt::RadialGradientPattern
+                   || brush.style() == Qt::ConicalGradientPattern) {
+            const QGradient *gradient = brush.gradient();
+            if (gradient->type() == QGradient::LinearGradient) {
+                const QLinearGradient *linearGradient = static_cast<const QLinearGradient *>(brush.gradient());
+
+                html += " -qt-foreground: qlineargradient("_L1;
+                html += "x1:"_L1 + QString::number(linearGradient->start().x()) + u',';
+                html += "y1:"_L1 + QString::number(linearGradient->start().y()) + u',';
+                html += "x2:"_L1 + QString::number(linearGradient->finalStop().x()) + u',';
+                html += "y2:"_L1 + QString::number(linearGradient->finalStop().y()) + u',';
+            } else if (gradient->type() == QGradient::RadialGradient) {
+                const QRadialGradient *radialGradient = static_cast<const QRadialGradient *>(brush.gradient());
+
+                html += " -qt-foreground: qradialgradient("_L1;
+                html += "cx:"_L1 + QString::number(radialGradient->center().x()) + u',';
+                html += "cy:"_L1 + QString::number(radialGradient->center().y()) + u',';
+                html += "fx:"_L1 + QString::number(radialGradient->focalPoint().x()) + u',';
+                html += "fy:"_L1 + QString::number(radialGradient->focalPoint().y()) + u',';
+                html += "radius:"_L1 + QString::number(radialGradient->radius()) + u',';
+            } else {
+                const QConicalGradient *conicalGradient = static_cast<const QConicalGradient *>(brush.gradient());
+
+                html += " -qt-foreground: qconicalgradient("_L1;
+                html += "cx:"_L1 + QString::number(conicalGradient->center().x()) + u',';
+                html += "cy:"_L1 + QString::number(conicalGradient->center().y()) + u',';
+                html += "angle:"_L1 + QString::number(conicalGradient->angle()) + u',';
+            }
+
+            const QStringList coordinateModes = { "logical"_L1, "stretchtodevice"_L1, "objectbounding"_L1, "object"_L1 };
+            html += "coordinatemode:"_L1;
+            html += coordinateModes.at(int(gradient->coordinateMode()));
+            html += u',';
+
+            const QStringList spreads = { "pad"_L1, "reflect"_L1, "repeat"_L1 };
+            html += "spread:"_L1;
+            html += spreads.at(int(gradient->spread()));
+
+            for (const QGradientStop &stop : gradient->stops()) {
+                html += ",stop:"_L1;
+                html += QString::number(stop.first);
+                html += u' ';
+                html += colorValue(stop.second);
+            }
+
+            html += ");"_L1;
         } else {
             html += " color:"_L1;
             html += colorValue(brush.color());
