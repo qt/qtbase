@@ -533,8 +533,15 @@ void tst_QDirIterator::longPath()
     while (dir.exists(dirName) || dir.mkdir(dirName)) {
         ++n;
         dirName.append('x');
+        if (n >= 20480)
+        {
+            break;
+        }
     }
-
+    if (n >= 20480)
+    {
+        qWarning("No maximum length on directory names");
+    }
     QDirIterator it(dir.absolutePath(), QDir::NoDotAndDotDot|QDir::Dirs, QDirIterator::Subdirectories);
     int m = 0;
     while (it.hasNext()) {
@@ -543,13 +550,14 @@ void tst_QDirIterator::longPath()
     }
 
     QCOMPARE(n, m);
-
     dirName.chop(1);
     while (dirName.size() > 0 && dir.exists(dirName) && dir.rmdir(dirName)) {
+        --n;
         dirName.chop(1);
     }
-    dir.cdUp();
-    dir.rmdir("longpaths");
+    QCOMPARE(n, 0);
+    QVERIFY(dir.cdUp());
+    QVERIFY(dir.rmdir("longpaths"));
 }
 
 void tst_QDirIterator::dirorder()

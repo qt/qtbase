@@ -57,6 +57,7 @@ if(QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS)
 endif()
 
 if(WASM)
+    add_subdirectory(corelib/io/qdiriterator)
     add_subdirectory(corelib/io/largefile)
     add_subdirectory(corelib/io/qdataurl)
     add_subdirectory(corelib/io/qbuffer)
