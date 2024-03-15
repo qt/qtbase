@@ -10,6 +10,7 @@
 #include <qcoreapplication.h>
 #include <qdatetime.h>
 #include <qlist.h>
+#include <qloggingcategory.h>
 #include <qmath.h>
 #include <qsqlerror.h>
 #include <qsqlfield.h>
@@ -25,6 +26,8 @@
 #include "private/qtools_p.h"
 
 QT_BEGIN_NAMESPACE
+
+static Q_LOGGING_CATEGORY(lcOdbc, "qt.sql.odbc")
 
 using namespace Qt::StringLiterals;
 
@@ -321,9 +324,9 @@ static void qSqlWarning(const QString &message, T &&val)
 {
     const auto addMsg = errorStringFromDiagRecords(qODBCWarn(val));
     if (addMsg.isEmpty())
-        qWarning() << message;
+        qCWarning(lcOdbc) << message;
     else
-        qWarning() << message << "\tError:" << addMsg;
+        qCWarning(lcOdbc) << message << "\tError:" << addMsg;
 }
 
 static QSqlError qMakeError(const QString &err,
