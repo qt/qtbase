@@ -1551,7 +1551,9 @@ void QHttp2Connection::handleWINDOW_UPDATE()
 void QHttp2Connection::handleCONTINUATION()
 {
     Q_ASSERT(inboundFrame.type() == FrameType::CONTINUATION);
-    Q_ASSERT(!continuedFrames.empty()); // HEADERS frame must be already in.
+    if (continuedFrames.empty())
+        return connectionError(PROTOCOL_ERROR,
+                               "CONTINUATION without a preceding HEADERS or PUSH_PROMISE");
 
     if (inboundFrame.streamID() != continuedFrames.front().streamID())
         return connectionError(PROTOCOL_ERROR, "CONTINUATION on invalid stream");
