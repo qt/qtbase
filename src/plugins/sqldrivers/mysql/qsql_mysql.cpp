@@ -10,6 +10,7 @@
 #include <qdebug.h>
 #include <qfile.h>
 #include <qlist.h>
+#include <qloggingcategory.h>
 #include <qsqlerror.h>
 #include <qsqlfield.h>
 #include <qsqlindex.h>
@@ -51,6 +52,8 @@ struct QT_MYSQL_TIME
 };
 
 QT_BEGIN_NAMESPACE
+
+static Q_LOGGING_CATEGORY(lcMysql, "qt.sql.mysql")
 
 using namespace Qt::StringLiterals;
 
@@ -425,7 +428,7 @@ void QMYSQLResult::cleanup()
 
     if (d->stmt) {
         if (mysql_stmt_close(d->stmt))
-            qWarning("QMYSQLResult::cleanup: unable to free statement handle");
+            qCWarning(lcMysql, "QMYSQLResult::cleanup: unable to free statement handle");
         d->stmt = 0;
     }
 
@@ -561,7 +564,7 @@ QVariant QMYSQLResult::data(int field)
 {
     Q_D(QMYSQLResult);
     if (!isSelect() || field >= d->fields.size()) {
-        qWarning("QMYSQLResult::data: column %d out of range", field);
+        qCWarning(lcMysql, "QMYSQLResult::data: column %d out of range", field);
         return QVariant();
     }
 
@@ -1087,7 +1090,7 @@ static void qLibraryInit()
         return;
 
     if (mysql_library_init(0, 0, 0)) {
-        qWarning("QMYSQLDriver::qServerInit: unable to start server.");
+        qCWarning(lcMysql, "QMYSQLDriver::qServerInit: unable to start server.");
     }
 #endif // Q_NO_MYSQL_EMBEDDED
 
@@ -1194,9 +1197,11 @@ static void setOptionFlag(uint &optionFlags, QStringView opt)
     else if (opt == "CLIENT_ODBC"_L1)
         optionFlags |= CLIENT_ODBC;
     else if (opt == "CLIENT_SSL"_L1)
-        qWarning("QMYSQLDriver: MYSQL_OPT_SSL_KEY, MYSQL_OPT_SSL_CERT and MYSQL_OPT_SSL_CA should be used instead of CLIENT_SSL.");
+        qCWarning(lcMysql, "QMYSQLDriver: MYSQL_OPT_SSL_KEY, MYSQL_OPT_SSL_CERT "
+                           "and MYSQL_OPT_SSL_CA should be used instead of CLIENT_SSL.");
     else
-        qWarning("QMYSQLDriver::open: Unknown connect option '%s'", opt.toLocal8Bit().constData());
+        qCWarning(lcMysql, "QMYSQLDriver::open: Unknown connect option '%ls'",
+                  qUtf16Printable(QString(opt)));
 }
 
 static bool setOptionString(MYSQL *mysql, mysql_option option, QStringView v)
@@ -1233,7 +1238,8 @@ static bool setOptionSslMode(MYSQL *mysql, mysql_option option, QStringView v)
     else if (v == "VERIFY_IDENTITY"_L1 || v == "SSL_MODE_VERIFY_IDENTITY"_L1)
         sslMode = SSL_MODE_VERIFY_IDENTITY;
     else
-        qWarning() << "Unknown ssl mode '" << v << "' - using SSL_MODE_DISABLED";
+        qCWarning(lcMysql, "Unknown ssl mode '%ls' - using SSL_MODE_DISABLED",
+                  qUtf16Printable(QString(v)));
     return mysql_options(mysql, option, &sslMode) == 0;
 }
 #endif
@@ -1252,7 +1258,8 @@ static bool setOptionProtocol(MYSQL *mysql, mysql_option option, QStringView v)
     else if (v == "DEFAULT"_L1 || v == "MYSQL_PROTOCOL_DEFAULT"_L1)
         proto = MYSQL_PROTOCOL_DEFAULT;
     else
-        qWarning() << "Unknown protocol '" << v << "' - using MYSQL_PROTOCOL_DEFAULT";
+        qCWarning(lcMysql, "Unknown protocol '%ls' - using MYSQL_PROTOCOL_DEFAULT",
+                  qUtf16Printable(QString(v)));
     return mysql_options(mysql, option, &proto) == 0;
 }
 
@@ -1311,8 +1318,9 @@ bool QMYSQLDriver::open(const QString &db,
       for (const mysqloptions &opt : options) {
           if (key == opt.key) {
               if (!opt.func(d->mysql, opt.option, value)) {
-                  qWarning("QMYSQLDriver::open: Could not set connect option value '%s' to '%s'",
-                           key.toLocal8Bit().constData(), value.toLocal8Bit().constData());
+                  qCWarning(lcMysql, "QMYSQLDriver::open: Could not set connect option value "
+                                     "'%ls' to '%ls'",
+                            qUtf16Printable(QString(key)), qUtf16Printable(QString(value)));
               }
               return true;
           }
@@ -1343,8 +1351,8 @@ bool QMYSQLDriver::open(const QString &db,
             else if (val == "TRUE"_L1 || val == "1"_L1)
                 setOptionFlag(optionFlags, key);
             else
-                qWarning("QMYSQLDriver::open: Illegal connect option value '%s'",
-                         sv.toLocal8Bit().constData());
+                qCWarning(lcMysql, "QMYSQLDriver::open: Illegal connect option value '%ls'",
+                          qUtf16Printable(QString(sv)));
         } else {
             setOptionFlag(optionFlags, sv);
         }
@@ -1396,9 +1404,10 @@ bool QMYSQLDriver::open(const QString &db,
             }
         }
         if (!ok)
-            qWarning("MySQL: Unable to set the client character set to utf8 (\"%s\"). Using '%s' instead.",
-                     mysql_error(d->mysql),
-                     mysql_character_set_name(d->mysql));
+            qCWarning(lcMysql, "MySQL: Unable to set the client character set to utf8 (\"%s\"). "
+                               "Using '%s' instead.",
+                      mysql_error(d->mysql),
+                      mysql_character_set_name(d->mysql));
     }
 
     if (!db.isEmpty() && mysql_select_db(d->mysql, db.toUtf8().constData())) {
@@ -1533,7 +1542,7 @@ bool QMYSQLDriver::beginTransaction()
 {
     Q_D(QMYSQLDriver);
     if (!isOpen()) {
-        qWarning("QMYSQLDriver::beginTransaction: Database not open");
+        qCWarning(lcMysql, "QMYSQLDriver::beginTransaction: Database not open");
         return false;
     }
     if (mysql_query(d->mysql, "BEGIN WORK")) {
@@ -1548,7 +1557,7 @@ bool QMYSQLDriver::commitTransaction()
 {
     Q_D(QMYSQLDriver);
     if (!isOpen()) {
-        qWarning("QMYSQLDriver::commitTransaction: Database not open");
+        qCWarning(lcMysql, "QMYSQLDriver::commitTransaction: Database not open");
         return false;
     }
     if (mysql_query(d->mysql, "COMMIT")) {
@@ -1563,7 +1572,7 @@ bool QMYSQLDriver::rollbackTransaction()
 {
     Q_D(QMYSQLDriver);
     if (!isOpen()) {
-        qWarning("QMYSQLDriver::rollbackTransaction: Database not open");
+        qCWarning(lcMysql, "QMYSQLDriver::rollbackTransaction: Database not open");
         return false;
     }
     if (mysql_query(d->mysql, "ROLLBACK")) {
@@ -1600,7 +1609,7 @@ QString QMYSQLDriver::formatValue(const QSqlField &field, bool trimStrings) cons
                 r = u'\'' + QString::fromUtf8(buffer.data(), escapedSize) + u'\'';
                 break;
             } else {
-                qWarning("QMYSQLDriver::formatValue: Database not open");
+                qCWarning(lcMysql, "QMYSQLDriver::formatValue: Database not open");
             }
             Q_FALLTHROUGH();
         case QMetaType::QDateTime:
