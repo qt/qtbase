@@ -1652,7 +1652,7 @@ QDateTimeParser::parse(const QString &input, int position,
   length of overlap in *used (if \a used is non-NULL) and the first entry that
   overlapped this much in *usedText (if \a usedText is non-NULL).
  */
-static int findTextEntry(const QString &text, const ShortVector<QString> &entries, QString *usedText, int *used)
+static int findTextEntry(QStringView text, const ShortVector<QString> &entries, QString *usedText, int *used)
 {
     if (text.isEmpty())
         return -1;
@@ -1689,7 +1689,7 @@ static int findTextEntry(const QString &text, const ShortVector<QString> &entrie
   match. Starting from \a index; str should already by lowered
 */
 
-int QDateTimeParser::findMonth(const QString &str1, int startMonth, int sectionIndex,
+int QDateTimeParser::findMonth(QStringView str, int startMonth, int sectionIndex,
                                int year, QString *usedMonth, int *used) const
 {
     const SectionNode &sn = sectionNode(sectionIndex);
@@ -1705,11 +1705,11 @@ int QDateTimeParser::findMonth(const QString &str1, int startMonth, int sectionI
     for (int month = startMonth; month <= 12; ++month)
         monthNames.append(calendar.monthName(l, month, year, type));
 
-    const int index = findTextEntry(str1, monthNames, usedMonth, used);
+    const int index = findTextEntry(str, monthNames, usedMonth, used);
     return index < 0 ? index : index + startMonth;
 }
 
-int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex, QString *usedDay, int *used) const
+int QDateTimeParser::findDay(QStringView str, int startDay, int sectionIndex, QString *usedDay, int *used) const
 {
     const SectionNode &sn = sectionNode(sectionIndex);
     if (!(sn.type & DaySectionMask)) {
@@ -1724,7 +1724,7 @@ int QDateTimeParser::findDay(const QString &str1, int startDay, int sectionIndex
     for (int day = startDay; day <= 7; ++day)
         daysOfWeek.append(l.dayName(day, type));
 
-    const int index = findTextEntry(str1, daysOfWeek, usedDay, used);
+    const int index = findTextEntry(str, daysOfWeek, usedDay, used);
     return index < 0 ? index : index + startDay;
 }
 

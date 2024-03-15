@@ -170,9 +170,9 @@ private:
             {}
     };
     ParsedSection parseSection(const QDateTime &currentValue, int sectionIndex, int offset) const;
-    int findMonth(const QString &str1, int monthstart, int sectionIndex,
+    int findMonth(QStringView str, int monthstart, int sectionIndex,
                   int year, QString *monthName = nullptr, int *used = nullptr) const;
-    int findDay(const QString &str1, int intDaystart, int sectionIndex,
+    int findDay(QStringView str, int intDaystart, int sectionIndex,
                 QString *dayName = nullptr, int *used = nullptr) const;
     ParsedSection findUtcOffset(QStringView str, int mode) const;
     ParsedSection findTimeZoneName(QStringView str, const QDateTime &when) const;
