@@ -81,7 +81,7 @@ void QWindowsUiaMainProvider::notifyFocusChange(QAccessibleEvent *event)
                 accessible = child;
         }
         if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible))
-            QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_AutomationFocusChangedEventId);
+            UiaRaiseAutomationEvent(provider, UIA_AutomationFocusChangedEventId);
     }
 }
 
@@ -98,7 +98,7 @@ void QWindowsUiaMainProvider::notifyStateChange(QAccessibleStateChangeEvent *eve
                     if (accessible->state().checked)
                         toggleState = accessible->state().checkStateMixed ? ToggleState_Indeterminate : ToggleState_On;
                     setVariantI4(toggleState, &newVal);
-                    QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_ToggleToggleStatePropertyId, oldVal, newVal);
+                    UiaRaiseAutomationPropertyChangedEvent(provider, UIA_ToggleToggleStatePropertyId, oldVal, newVal);
                 }
             }
         }
@@ -107,13 +107,13 @@ void QWindowsUiaMainProvider::notifyStateChange(QAccessibleStateChangeEvent *eve
                 // Notifies window opened/closed.
                 if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
                     if (accessible->state().active) {
-                        QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_Window_WindowOpenedEventId);
+                        UiaRaiseAutomationEvent(provider, UIA_Window_WindowOpenedEventId);
                         if (QAccessibleInterface *focused = accessible->focusChild()) {
                             if (QWindowsUiaMainProvider *focusedProvider = providerForAccessible(focused))
-                                QWindowsUiaWrapper::instance()->raiseAutomationEvent(focusedProvider, UIA_AutomationFocusChangedEventId);
+                                UiaRaiseAutomationEvent(focusedProvider, UIA_AutomationFocusChangedEventId);
                         }
                     } else {
-                        QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_Window_WindowClosedEventId);
+                        UiaRaiseAutomationEvent(provider, UIA_Window_WindowClosedEventId);
                     }
                 }
             }
@@ -146,7 +146,7 @@ void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *eve
                 VARIANT oldVal, newVal;
                 clearVariant(&oldVal);
                 setVariantString(event->value().toString(), &newVal);
-                QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_ValueValuePropertyId, oldVal, newVal);
+                UiaRaiseAutomationPropertyChangedEvent(provider, UIA_ValueValuePropertyId, oldVal, newVal);
             }
         } else if (QAccessibleValueInterface *valueInterface = accessible->valueInterface()) {
             if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
@@ -154,7 +154,7 @@ void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *eve
                 VARIANT oldVal, newVal;
                 clearVariant(&oldVal);
                 setVariantDouble(valueInterface->currentValue().toDouble(), &newVal);
-                QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_RangeValueValuePropertyId, oldVal, newVal);
+                UiaRaiseAutomationPropertyChangedEvent(provider, UIA_RangeValueValuePropertyId, oldVal, newVal);
             }
         }
     }
@@ -170,7 +170,7 @@ void QWindowsUiaMainProvider::notifyNameChange(QAccessibleEvent *event)
                 VARIANT oldVal, newVal;
                 clearVariant(&oldVal);
                 setVariantString(accessible->text(QAccessible::Name), &newVal);
-                QWindowsUiaWrapper::instance()->raiseAutomationPropertyChangedEvent(provider, UIA_NamePropertyId, oldVal, newVal);
+                UiaRaiseAutomationPropertyChangedEvent(provider, UIA_NamePropertyId, oldVal, newVal);
                 ::SysFreeString(newVal.bstrVal);
             }
         }
@@ -181,7 +181,7 @@ void QWindowsUiaMainProvider::notifySelectionChange(QAccessibleEvent *event)
 {
     if (QAccessibleInterface *accessible = event->accessibleInterface()) {
         if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
-            QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_SelectionItem_ElementSelectedEventId);
+            UiaRaiseAutomationEvent(provider, UIA_SelectionItem_ElementSelectedEventId);
         }
     }
 }
@@ -193,13 +193,13 @@ void QWindowsUiaMainProvider::notifyTextChange(QAccessibleEvent *event)
         if (accessible->textInterface()) {
             if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
                 if (event->type() == QAccessible::TextSelectionChanged) {
-                    QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_Text_TextSelectionChangedEventId);
+                    UiaRaiseAutomationEvent(provider, UIA_Text_TextSelectionChangedEventId);
                 } else if (event->type() == QAccessible::TextCaretMoved) {
                     if (!accessible->state().readOnly) {
-                        QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_Text_TextSelectionChangedEventId);
+                        UiaRaiseAutomationEvent(provider, UIA_Text_TextSelectionChangedEventId);
                     }
                 } else {
-                    QWindowsUiaWrapper::instance()->raiseAutomationEvent(provider, UIA_Text_TextChangedEventId);
+                    UiaRaiseAutomationEvent(provider, UIA_Text_TextChangedEventId);
                 }
             }
         }
@@ -538,7 +538,7 @@ HRESULT QWindowsUiaMainProvider::get_HostRawElementProvider(IRawElementProviderS
     // Returns a host provider only for controls associated with a native window handle. Others should return NULL.
     if (QAccessibleInterface *accessible = accessibleInterface()) {
         if (HWND hwnd = hwndForAccessible(accessible)) {
-            return QWindowsUiaWrapper::instance()->hostProviderFromHwnd(hwnd, pRetVal);
+            return UiaHostProviderFromHwnd(hwnd, pRetVal);
         }
     }
     return S_OK;

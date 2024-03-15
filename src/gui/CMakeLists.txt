@@ -499,21 +499,6 @@ qt_internal_extend_target(Gui CONDITION APPLE AND QT_FEATURE_accessibility
         ${FWFoundation}
 )
 
-qt_internal_extend_target(Gui CONDITION QT_FEATURE_accessibility AND WIN32
-    SOURCES
-        accessible/windows/apisupport/qwindowsuiawrapper.cpp accessible/windows/apisupport/qwindowsuiawrapper_p.h
-        accessible/windows/apisupport/uiaattributeids_p.h
-        accessible/windows/apisupport/uiaclientinterfaces_p.h
-        accessible/windows/apisupport/uiacontroltypeids_p.h
-        accessible/windows/apisupport/uiaerrorids_p.h
-        accessible/windows/apisupport/uiaeventids_p.h
-        accessible/windows/apisupport/uiageneralids_p.h
-        accessible/windows/apisupport/uiapatternids_p.h
-        accessible/windows/apisupport/uiapropertyids_p.h
-        accessible/windows/apisupport/uiaserverinterfaces_p.h
-        accessible/windows/apisupport/uiatypes_p.h
-)
-
 if(QT_FEATURE_accessibility AND QT_FEATURE_accessibility_atspi_bridge)
     set(atspi_accessibility ON)
 else()

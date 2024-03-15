@@ -10,7 +10,7 @@
 #include <QtGui/qaccessible.h>
 #include <QtCore/qpointer.h>
 
-#include <QtGui/private/qwindowsuiawrapper_p.h>
+#include "qwindowsuiautomation.h"
 #include <QtCore/private/qcomobject_p.h>
 
 QT_BEGIN_NAMESPACE

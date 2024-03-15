@@ -5,7 +5,7 @@
 #ifdef Q_OS_WIN
 # include <QtCore/qt_windows.h>
 # include <oleacc.h>
-# include <QtGui/private/qwindowsuiawrapper_p.h>
+# include <uiautomation.h>
 # include <servprov.h>
 # include <winuser.h>
 #endif
