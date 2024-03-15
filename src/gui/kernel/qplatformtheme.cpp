@@ -638,7 +638,7 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
     case FlickMaximumVelocity:
         return QVariant(2500);
     case FlickDeceleration:
-        return QVariant(5000);
+        return QVariant(1500);
     case MenuBarFocusOnAltPressRelease:
         return false;
     case MouseCursorTheme:
