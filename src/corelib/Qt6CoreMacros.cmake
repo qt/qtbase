@@ -2983,7 +2983,30 @@ function(_qt_internal_setup_deploy_support)
     else()
         set(qt_paths_ext "")
     endif()
-    set(target_qtpaths_path "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_BINS}/qtpaths${qt_paths_ext}")
+
+
+
+    set(target_qtpaths_path "")
+    set(qtpaths_prefix "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_BINS}")
+    get_property(qt_major_version TARGET "${target}" PROPERTY INTERFACE_QT_MAJOR_VERSION)
+    if(qt_major_version)
+        set(target_qtpaths_with_major_version_path
+            "${qtpaths_prefix}/qtpaths${qt_major_version}${qt_paths_ext}")
+        if(EXISTS "${target_qtpaths_with_major_version_path}")
+            set(target_qtpaths_path "${target_qtpaths_with_major_version_path}")
+        endif()
+    endif()
+
+    if(NOT target_qtpaths_path)
+        set(target_qtpaths_path_without_version "${qtpaths_prefix}/qtpaths${qt_paths_ext}")
+        if(EXISTS "${target_qtpaths_path_without_version}")
+            set(target_qtpaths_path "${target_qtpaths_path_without_version}")
+        endif()
+    endif()
+
+    if(NOT target_qtpaths_path)
+        message(DEBUG "No qtpaths executable found for deployment purposes.")
+    endif()
 
     file(GENERATE OUTPUT "${QT_DEPLOY_SUPPORT}" CONTENT
 "cmake_minimum_required(VERSION 3.16...3.21)
