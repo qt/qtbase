@@ -167,6 +167,8 @@ enum Property {
     TextDecorationColor,
     QtPlaceHolderTextColor,
     QtAccent,
+    QtStrokeWidth,
+    QtStrokeColor,
     NumProperties
 };
 

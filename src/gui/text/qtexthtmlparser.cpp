@@ -1387,6 +1387,24 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
             }
             break;
         }
+        case QCss::QtStrokeColor:
+        {
+            QPen pen = charFormat.textOutline();
+            pen.setStyle(Qt::SolidLine);
+            pen.setColor(decl.colorValue());
+            charFormat.setTextOutline(pen);
+            break;
+        }
+        case QCss::QtStrokeWidth:
+        {
+            qreal width;
+            if (decl.realValue(&width, "px")) {
+                QPen pen = charFormat.textOutline();
+                pen.setWidthF(width);
+                charFormat.setTextOutline(pen);
+            }
+            break;
+        }
         default: break;
         }
     }

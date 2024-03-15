@@ -44,6 +44,8 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "-qt-list-number-prefix", QtListNumberPrefix },
     { "-qt-list-number-suffix", QtListNumberSuffix },
     { "-qt-paragraph-type", QtParagraphType },
+    { "-qt-stroke-color", QtStrokeColor },
+    { "-qt-stroke-width", QtStrokeWidth },
     { "-qt-style-features", QtStyleFeatures },
     { "-qt-table-type", QtTableType },
     { "-qt-user-state", QtUserState },

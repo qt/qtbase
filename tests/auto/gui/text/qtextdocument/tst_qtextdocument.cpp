@@ -183,6 +183,8 @@ private slots:
     void delayedLayout();
     void undoContentChangeIndices();
 
+    void restoreStrokeFromHtml();
+
 private:
     void backgroundImage_checkExpectedHtml(const QTextDocument &doc);
     void buildRegExpData();
@@ -4043,6 +4045,29 @@ void tst_QTextDocument::undoContentChangeIndices() // QTBUG-113865
     QCOMPARE(changePos, 0);
     QVERIFY(changeRemoved >= 0);
     QVERIFY(documentLength >= changeEnd);
+}
+
+void tst_QTextDocument::restoreStrokeFromHtml()
+{
+    QTextDocument document;
+    QTextCursor textCursor(&document);
+    QTextCharFormat textOutline;
+    textOutline.setTextOutline(QPen(Qt::red, 2.3));
+    textCursor.insertText("Outlined text", textOutline);
+
+    {
+        QTextDocument otherDocument;
+        otherDocument.setHtml(document.toHtml());
+        QCOMPARE(otherDocument.blockCount(), 1);
+        QTextBlock block = otherDocument.firstBlock();
+        QTextFragment fragment = block.begin().fragment();
+        QCOMPARE(fragment.text(), QStringLiteral("Outlined text"));
+        QTextCharFormat fmt = fragment.charFormat();
+        QVERIFY(fmt.hasProperty(QTextCharFormat::TextOutline));
+        QPen pen = fmt.textOutline();
+        QCOMPARE(pen.color(), QColor(Qt::red));
+        QCOMPARE(pen.widthF(), 2.3);
+    }
 }
 
 QTEST_MAIN(tst_QTextDocument)

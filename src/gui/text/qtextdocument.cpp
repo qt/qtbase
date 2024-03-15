@@ -2701,6 +2701,18 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
         attributesEmitted = true;
     }
 
+    if (format.hasProperty(QTextFormat::TextOutline)) {
+        QPen outlinePen = format.textOutline();
+        html += " -qt-stroke-color:"_L1;
+        html += colorValue(outlinePen.color());
+        html += u';';
+
+        html += " -qt-stroke-width:"_L1;
+        html += QString::number(outlinePen.widthF());
+        html += "px;"_L1;
+        attributesEmitted = true;
+    }
+
     return attributesEmitted;
 }
 
