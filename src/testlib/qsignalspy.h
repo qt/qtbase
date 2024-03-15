@@ -21,7 +21,6 @@ class QSignalSpy: public QObject, public QList<QList<QVariant> >
 {
 public:
     explicit QSignalSpy(const QObject *obj, const char *aSignal)
-        : m_waiting(false)
     {
         if (!isObjectValid(obj))
             return;
@@ -57,7 +56,6 @@ public:
 #else
     template <typename Func>
     QSignalSpy(const typename QtPrivate::FunctionPointer<Func>::Object *obj, Func signal0)
-        : m_waiting(false)
     {
         if (!isObjectValid(obj))
             return;
@@ -83,7 +81,6 @@ public:
 #endif // Q_QDOC
 
     QSignalSpy(const QObject *obj, const QMetaMethod &signal)
-        : m_waiting(false)
     {
         if (isObjectValid(obj) && isSignalMetaMethodValid(signal)) {
             initArgs(signal, obj);
@@ -214,7 +211,7 @@ private:
     QList<int> args;
 
     QTestEventLoop m_loop;
-    bool m_waiting;
+    bool m_waiting = false;
     QMutex m_mutex; // protects m_waiting, args and the QList base class, between appendArgs() and wait()
 };
 
