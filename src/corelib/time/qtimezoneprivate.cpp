@@ -532,6 +532,18 @@ QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds() const
     return QList<QByteArray>();
 }
 
+static QList<QByteArray> selectAvailable(QList<QByteArray>&& desired, const QList<QByteArray>& all)
+{
+    std::sort(desired.begin(), desired.end());
+    const auto newEnd = std::unique(desired.begin(), desired.end());
+    const auto newSize = std::distance(desired.begin(), newEnd);
+    QList<QByteArray> result;
+    result.reserve(qMin(all.size(), newSize));
+    std::set_intersection(all.begin(), all.end(), desired.cbegin(),
+                          std::next(desired.cbegin(), newSize), std::back_inserter(result));
+    return result;
+}
+
 QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(QLocale::Territory territory) const
 {
     // Default fall-back mode, use the zoneTable to find Region of know Zones
@@ -544,17 +556,7 @@ QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(QLocale::Territory terr
                 regions << QByteArray(l1.data(), l1.size());
         }
     }
-
-    std::sort(regions.begin(), regions.end());
-    regions.erase(std::unique(regions.begin(), regions.end()), regions.end());
-
-    // Then select just those that are available
-    const QList<QByteArray> all = availableTimeZoneIds();
-    QList<QByteArray> result;
-    result.reserve(qMin(all.size(), regions.size()));
-    std::set_intersection(all.begin(), all.end(), regions.cbegin(), regions.cend(),
-                          std::back_inserter(result));
-    return result;
+    return selectAvailable(std::move(regions), availableTimeZoneIds());
 }
 
 QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) const
@@ -572,17 +574,7 @@ QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) cons
             }
         }
     }
-
-    std::sort(offsets.begin(), offsets.end());
-    offsets.erase(std::unique(offsets.begin(), offsets.end()), offsets.end());
-
-    // Then select just those that are available
-    const QList<QByteArray> all = availableTimeZoneIds();
-    QList<QByteArray> result;
-    result.reserve(qMin(all.size(), offsets.size()));
-    std::set_intersection(all.begin(), all.end(), offsets.cbegin(), offsets.cend(),
-                          std::back_inserter(result));
-    return result;
+    return selectAvailable(std::move(offsets), availableTimeZoneIds());
 }
 
 #ifndef QT_NO_DATASTREAM
