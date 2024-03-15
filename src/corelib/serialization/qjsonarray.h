@@ -60,9 +60,10 @@ public:
     QJsonValueRef operator[](qsizetype i);
     QJsonValue operator[](qsizetype i) const;
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QJsonArray &other) const;
     bool operator!=(const QJsonArray &other) const;
-
+#endif
     void swap(QJsonArray &other) noexcept
     {
         a.swap(other.a);
@@ -224,6 +225,14 @@ private:
     friend class QJsonDocument;
     friend class QCborArray;
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonArray &);
+
+    friend Q_CORE_EXPORT bool comparesEqual(const QJsonArray &lhs,
+                                            const QJsonArray &rhs) noexcept;
+
+    friend Q_CORE_EXPORT bool comparesEqual(const QJsonArray &lhs,
+                                            const QJsonValue &rhs) noexcept;
+    Q_DECLARE_EQUALITY_COMPARABLE(QJsonArray)
+    Q_DECLARE_EQUALITY_COMPARABLE(QJsonArray, QJsonValue)
 
     QJsonArray(QCborContainerPrivate *array);
     bool detach(qsizetype reserve = 0);

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QMap>
 #include <QVariantList>
 
@@ -27,6 +28,7 @@ class tst_QtJson: public QObject
 private Q_SLOTS:
     void initTestCase();
 
+    void compareCompiles();
     void testValueSimple();
     void testNumbers();
     void testNumbers_2();
@@ -47,6 +49,8 @@ private Q_SLOTS:
     void testArrayNested();
     void testArrayNestedEmpty();
     void testArrayComfortOperators();
+    void testArrayEquality_data();
+    void testArrayEquality();
     void testObjectNestedEmpty();
 
     void testValueRef();
@@ -167,6 +171,12 @@ void tst_QtJson::initTestCase()
     testDataDir = QFileInfo(QFINDTESTDATA("test.json")).absolutePath();
     if (testDataDir.isEmpty())
         testDataDir = QCoreApplication::applicationDirPath();
+}
+
+void tst_QtJson::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QJsonArray>();
+    QTestPrivate::testEqualityOperatorsCompile<QJsonArray, QJsonValue>();
 }
 
 void tst_QtJson::testValueSimple()
@@ -899,6 +909,36 @@ void tst_QtJson::testObjectNestedEmpty()
     object.insert("count", 0.);
     QCOMPARE(object.value("inner").toObject().size(), 0);
     QCOMPARE(object.value("inner").type(), QJsonValue::Object);
+}
+
+void tst_QtJson::testArrayEquality_data()
+{
+    QTest::addColumn<QJsonArray>("array1");
+    QTest::addColumn<QJsonArray>("array2");
+    QTest::addColumn<bool>("expectedResult");
+    QTest::addRow("QJsonArray(), QJsonArray{665, 666, 667}")
+                   << QJsonArray() << QJsonArray{665, 666, 667} << false;
+    QTest::addRow("QJsonArray(), QJsonArray{}")
+            << QJsonArray() << QJsonArray{} <<true;
+    QTest::addRow("QJsonArray(), QJsonArray{123, QLatin1String(\"foo\")}")
+            << QJsonArray() << QJsonArray{123, QLatin1String("foo")} << false;
+    QTest::addRow(
+            "QJsonArray{123,QLatin1String(\"foo\")}, QJsonArray{123,QLatin1String(\"foo\")}")
+            << QJsonArray{123, QLatin1String("foo")}
+            << QJsonArray{123, QLatin1String("foo")}
+            << true;
+}
+
+void tst_QtJson::testArrayEquality()
+{
+    QFETCH(QJsonArray, array1);
+    QFETCH(QJsonArray, array2);
+    QFETCH(bool, expectedResult);
+
+    QJsonValue value = QJsonValue(array1);
+
+    QT_TEST_EQUALITY_OPS(array1, array2, expectedResult);
+    QT_TEST_EQUALITY_OPS(value, array2, expectedResult);
 }
 
 void tst_QtJson::testArrayComfortOperators()

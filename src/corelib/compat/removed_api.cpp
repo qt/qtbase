@@ -959,6 +959,18 @@ bool QFileInfo::operator==(const QFileInfo &fileinfo) const
     return comparesEqual(*this, fileinfo);
 }
 
+#include "qjsonarray.h"
+
+bool QJsonArray::operator==(const QJsonArray &other) const
+{
+    return comparesEqual(*this, other);
+}
+
+bool QJsonArray::operator!=(const QJsonArray &other) const
+{
+    return !comparesEqual(*this, other);
+}
+
 #if QT_CONFIG(processenvironment)
 #include "qprocess.h" // inlined API
 

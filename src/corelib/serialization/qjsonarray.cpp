@@ -28,6 +28,10 @@ QT_BEGIN_NAMESPACE
 
     \brief The QJsonArray class encapsulates a JSON array.
 
+    \compares equality
+    \compareswith equality QJsonValue
+    \endcompareswith
+
     A JSON array is a list of values. The list can be manipulated by inserting and
     removing QJsonValue's from the array.
 
@@ -471,35 +475,39 @@ QJsonValue QJsonArray::operator[](qsizetype i) const
     return at(i);
 }
 
-/*!
-    Returns \c true if this array is equal to \a other.
- */
-bool QJsonArray::operator==(const QJsonArray &other) const
+bool comparesEqual(const QJsonArray &lhs, const QJsonArray &rhs) noexcept
 {
-    if (a == other.a)
+    if (lhs.a == rhs.a)
         return true;
 
-    if (!a)
-        return !other.a->elements.size();
-    if (!other.a)
-        return !a->elements.size();
-    if (a->elements.size() != other.a->elements.size())
+    if (!lhs.a)
+        return !rhs.a->elements.size();
+    if (!rhs.a)
+        return !lhs.a->elements.size();
+    if (lhs.a->elements.size() != rhs.a->elements.size())
         return false;
 
-    for (qsizetype i = 0; i < a->elements.size(); ++i) {
-        if (a->valueAt(i) != other.a->valueAt(i))
+    for (qsizetype i = 0; i < lhs.a->elements.size(); ++i) {
+        if (lhs.a->valueAt(i) != rhs.a->valueAt(i))
             return false;
     }
     return true;
 }
 
-/*!
-    Returns \c true if this array is not equal to \a other.
- */
-bool QJsonArray::operator!=(const QJsonArray &other) const
+bool comparesEqual(const QJsonArray &lhs, const QJsonValue &rhs) noexcept
 {
-    return !(*this == other);
+    return lhs == rhs.toArray();
 }
+
+/*! \fn bool QJsonArray::operator==(const QJsonArray &lhs, const QJsonArray &rhs)
+
+    Returns \c true if \a lhs array is equal to \a rhs, \c false otherwise.
+*/
+
+/*! \fn bool QJsonArray::operator!=(const QJsonArray &lhs, const QJsonArray &rhs)
+
+    Returns \c true if \a lhs array is not equal to \a rhs, \c false otherwise.
+*/
 
 /*! \fn QJsonArray::iterator QJsonArray::begin()
 
