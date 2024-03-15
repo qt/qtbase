@@ -20,6 +20,7 @@
 #include <QFileSystemModel>
 #include <QScrollArea>
 #include <QVBoxLayout>
+#include <QSpinBox>
 
 #include <QOpenGLWindow>
 #include <QOpenGLFunctions>
@@ -33,6 +34,34 @@
 #include <sstream>
 #include <vector>
 
+// Our dialog to test two things
+// 1) Focus logic
+// 2) spinbox context menu
+class TestWidget : public QDialog
+{
+    Q_OBJECT
+};
+
+// We override to be able to test that the contextMenu
+// calls popup and not exec. Calling exec locks the
+// test.
+class TestSpinBox : public QSpinBox
+{
+    Q_OBJECT
+
+public:
+    TestSpinBox(QWidget *parent = nullptr) : QSpinBox(parent) { }
+
+    void ShowContextMenu()
+    {
+        QContextMenuEvent event(QContextMenuEvent::Reason::Mouse, QPoint(0, geometry().bottom()),
+                                mapToGlobal(QPoint(0, geometry().bottom())), Qt::NoModifier);
+
+        contextMenuEvent(&event);
+    }
+};
+
+// Baseclass for our windows, openglwindow and raster window
 class TestWindowBase
 {
 public:
@@ -43,11 +72,6 @@ public:
     virtual bool close() = 0;
     virtual QWindow *qWindow() = 0;
     virtual void opengl_color_at_0_0(int *r, int *g, int *b) = 0;
-};
-
-class TestWidget : public QDialog
-{
-    Q_OBJECT
 };
 
 class TestWindow : public QRasterWindow, public TestWindowBase
@@ -363,9 +387,8 @@ public:
     static WidgetStorage *getInstance()
     {
         if (!s_instance)
-        {
             s_instance = new WidgetStorage();
-        }
+
         return s_instance;
     }
     static void clearInstance()
@@ -382,10 +405,10 @@ public:
         return nullptr;
     }
 
-    QLineEdit *findEdit(const std::string &name)
+    TestSpinBox *findSpinBox(const std::string &name)
     {
-        auto it = m_lineEdits.find(name);
-        if (it != m_lineEdits.end())
+        auto it = m_spinBoxes.find(name);
+        if (it != m_spinBoxes.end())
             return it->second;
         return nullptr;
     }
@@ -393,34 +416,37 @@ public:
     void make(const std::string &name)
     {
         auto widget = std::make_shared<TestWidget>();
+
         widget->setWindowTitle("Dialog");
-        auto *lineEdit = new QLineEdit(widget.get());
+        auto *spinBox = new TestSpinBox(widget.get());
 
         widget->setMinimumSize(200, 200);
         widget->setMaximumSize(200, 200);
         widget->setGeometry(0, m_widgetY, 200, 200);
         m_widgetY += 200;
 
-        lineEdit->setText("Hello world");
-
         m_widgets[name] = widget;
-        m_lineEdits[name] = lineEdit;
+        m_spinBoxes[name] = spinBox;
+    }
+    void showContextMenu(const std::string &name)
+    {
+        TestSpinBox *spinBox = findSpinBox(name);
+        if (spinBox)
+            spinBox->ShowContextMenu();
     }
     void makeNative(const std::string &name)
     {
         auto widget = std::make_shared<TestWidget>();
         widget->setWindowTitle("Dialog");
-        auto *lineEdit = new QLineEdit();
+        auto *spinBox = new TestSpinBox(widget.get());
 
         widget->setMinimumSize(200, 200);
         widget->setMaximumSize(200, 200);
         widget->setGeometry(0, m_widgetY, 200, 200);
         m_widgetY += 200;
 
-        lineEdit->setText("Hello world");
-
         m_widgets[name] = widget;
-        m_lineEdits[name] = lineEdit;
+        m_spinBoxes[name] = spinBox;
 
         QFileSystemModel *model = new QFileSystemModel;
         model->setRootPath(QDir::currentPath());
@@ -430,22 +456,22 @@ public:
         auto *treeView = new QTreeView(scrollArea);
         treeView->setModel(model);
 
-        layout->addWidget(lineEdit);
+        layout->addWidget(spinBox);
         layout->addWidget(scrollArea);
 
         treeView->setAttribute(Qt::WA_NativeWindow);
         scrollArea->setAttribute(Qt::WA_NativeWindow);
-        lineEdit->setAttribute(Qt::WA_NativeWindow);
+        spinBox->setAttribute(Qt::WA_NativeWindow);
         widget->setAttribute(Qt::WA_NativeWindow);
     }
 
 private:
     using TestWidgetPtr = std::shared_ptr<TestWidget>;
 
-    static WidgetStorage               * s_instance;
-    std::map<std::string, TestWidgetPtr> m_widgets;
-    std::map<std::string, QLineEdit  *>  m_lineEdits;
-    int                                  m_widgetY = 0;
+    static WidgetStorage                 *s_instance;
+    std::map<std::string, TestWidgetPtr>  m_widgets;
+    std::map<std::string, TestSpinBox *>  m_spinBoxes;
+    int                                   m_widgetY = 0;
 };
 
 WidgetStorage *WidgetStorage::s_instance = nullptr;
@@ -540,9 +566,15 @@ void createWidget(const std::string &name)
     WidgetStorage::getInstance()->make(name);
 }
 
+
 void createNativeWidget(const std::string &name)
 {
     WidgetStorage::getInstance()->makeNative(name);
+}
+
+void showContextMenuWidget(const std::string &name)
+{
+    WidgetStorage::getInstance()->showContextMenu(name);
 }
 
 void setWidgetNoFocusShow(const std::string &name)
@@ -562,9 +594,9 @@ void showWidget(const std::string &name)
 void hasWidgetFocus(const std::string &name)
 {
     bool focus = false;
-    auto le = WidgetStorage::getInstance()->findEdit(name);
-    if (le)
-        focus = le->hasFocus();
+    auto spinBox = WidgetStorage::getInstance()->findSpinBox(name);
+    if (spinBox)
+        focus = spinBox->hasFocus();
 
     emscripten::val::global("window").call<void>("hasWidgetFocusCallback",
                                                  emscripten::val(focus));
@@ -681,12 +713,17 @@ bool closeWindow(const std::string &title)
 
 std::string colorToJs(int r, int g, int b)
 {
-    return
-        "[{"
-        "   r: " + std::to_string(r) + ","
-        "   g: " + std::to_string(g) + ","
-        "   b: " + std::to_string(b) + ""
-        "}]";
+    return "[{"
+           "   r: "
+            + std::to_string(r)
+            + ","
+              "   g: "
+            + std::to_string(g)
+            + ","
+              "   b: "
+            + std::to_string(b)
+            + ""
+              "}]";
 }
 
 void getOpenGLColorAt_0_0(const std::string &windowTitle)
@@ -721,6 +758,7 @@ EMSCRIPTEN_BINDINGS(qwasmwindow)
 
     emscripten::function("createWidget", &createWidget);
     emscripten::function("createNativeWidget", &createNativeWidget);
+    emscripten::function("showContextMenuWidget", &showContextMenuWidget);
     emscripten::function("setWidgetNoFocusShow", &setWidgetNoFocusShow);
     emscripten::function("showWidget", &showWidget);
     emscripten::function("activateWidget", &activateWidget);

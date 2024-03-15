@@ -2,6 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <qplatformdefs.h>
+#ifdef Q_OS_WASM
+# include <private/qstdweb_p.h>
+#endif
 #include <private/qabstractspinbox_p.h>
 #include <private/qapplication_p.h>
 #if QT_CONFIG(datetimeparser)
@@ -1281,6 +1284,12 @@ void QAbstractSpinBox::timerEvent(QTimerEvent *event)
 #if QT_CONFIG(contextmenu)
 void QAbstractSpinBox::contextMenuEvent(QContextMenuEvent *event)
 {
+#ifdef Q_OS_WASM
+    if (!qstdweb::haveAsyncify()) {
+        qDebug() << " Skipping context menu for spinbox since asyncify is off";
+        return;
+    }
+#endif
     Q_D(QAbstractSpinBox);
 
     QPointer<QMenu> menu = d->edit->createStandardContextMenu();

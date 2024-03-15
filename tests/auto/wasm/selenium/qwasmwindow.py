@@ -81,6 +81,35 @@ class WidgetTestCase(unittest.TestCase):
 
         clearWidgets(self._driver)
 
+    #Looks weird, no asserts, the test is that
+    #the test itself finishes
+    def test_showContextMenu_doesNotDeadlock(self):
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                   x=0, y=0, width=600, height=1200)
+
+        w0 = Widget(self._driver, "w0")
+        w0.show()
+        w0.showContextMenu()
+
+        w1 = Widget(self._driver, "w1")
+        w1.setNoFocusShow()
+        w1.show()
+        w1.showContextMenu()
+
+        w2 = Widget(self._driver, "w2")
+        w2.show()
+        w2.showContextMenu()
+
+        w3 = Widget(self._driver,  "w3")
+        w3.setNoFocusShow()
+        w3.show()
+        w3.showContextMenu()
+
+        w3.activate();
+        w3.showContextMenu()
+
+        clearWidgets(self._driver)
+
     def test_window_resizing(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                        x=0, y=0, width=600, height=600)
@@ -686,6 +715,12 @@ class Widget:
         information = call_instance_function(self.driver, 'windowInformation')
         return next(filter(lambda e: e['title'] == "Dialog", information))
 
+    def showContextMenu(self):
+        self.driver.execute_script(
+            f'''
+                instance.showContextMenuWidget('{self.name}');
+            '''
+        )
 
 class Window:
     def __init__(self, parent=None, rect=None, title=None, element=None, visible=True, opengl=0):
