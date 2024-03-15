@@ -2658,9 +2658,10 @@ QTextEngine::LayoutData::LayoutData(const QString &str, void **stack_memory, qsi
 {
     allocated = _allocated;
 
-    qsizetype space_charAttributes = sizeof(QCharAttributes) * string.size() / sizeof(void*) + 1;
-    qsizetype space_logClusters = sizeof(unsigned short) * string.size() / sizeof(void*) + 1;
-    available_glyphs = (allocated - space_charAttributes - space_logClusters) * sizeof(void*) / QGlyphLayout::SpaceNeeded;
+    constexpr qsizetype voidSize = sizeof(void*);
+    qsizetype space_charAttributes = sizeof(QCharAttributes) * string.size() / voidSize + 1;
+    qsizetype space_logClusters = sizeof(unsigned short) * string.size() / voidSize + 1;
+    available_glyphs = (allocated - space_charAttributes - space_logClusters) * voidSize / QGlyphLayout::SpaceNeeded;
 
     if (available_glyphs < str.size()) {
         // need to allocate on the heap

@@ -159,10 +159,8 @@ Q_DECLARE_TYPEINFO(QGlyphAttributes, Q_PRIMITIVE_TYPE);
 
 struct QGlyphLayout
 {
-    enum {
-        SpaceNeeded = sizeof(glyph_t) + sizeof(QFixed) + sizeof(QFixedPoint)
-                    + sizeof(QGlyphAttributes) + sizeof(QGlyphJustification)
-    };
+    static constexpr qsizetype SpaceNeeded = sizeof(glyph_t) + sizeof(QFixed) + sizeof(QFixedPoint)
+            + sizeof(QGlyphAttributes) + sizeof(QGlyphJustification);
 
     // init to 0 not needed, done when shaping
     QFixedPoint *offsets; // 8 bytes per element
