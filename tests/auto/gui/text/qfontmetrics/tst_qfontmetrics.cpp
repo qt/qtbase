@@ -34,6 +34,8 @@ private slots:
     void zeroWidthMetrics();
     void verticalMetrics_data();
     void verticalMetrics();
+    void largeText_data();
+    void largeText(); // QTBUG-123339
 };
 
 void tst_QFontMetrics::same()
@@ -386,6 +388,26 @@ void tst_QFontMetrics::verticalMetrics()
     QFETCH(QFont, font);
     QFontMetrics fm(font);
     QVERIFY(fm.ascent() != 0 || fm.descent() != 0);
+}
+
+void tst_QFontMetrics::largeText_data()
+{
+    QTest::addColumn<qsizetype>("size");
+    for (int i = 1; i < 20; ++i) {
+        qsizetype size = qsizetype(1) << i;
+        QByteArray rowText = QByteArray::number(size);
+        QTest::newRow(rowText.constData()) << size;
+    }
+}
+
+void tst_QFontMetrics::largeText()
+{
+    QFont font;
+    QFontMetrics fm(font);
+    QFETCH(qsizetype, size);
+    QString string(size, QLatin1Char('A'));
+    QRect boundingRect = fm.boundingRect(string);
+    QVERIFY(boundingRect.isValid());
 }
 
 QTEST_MAIN(tst_QFontMetrics)
