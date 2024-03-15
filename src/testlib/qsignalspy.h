@@ -63,7 +63,7 @@ public:
             return;
 
         if (!signal0) {
-            qWarning("QSignalSpy: Null signal name is not valid");
+            qWarning("QSignalSpy: Null signal pointer is not valid");
             return;
         }
 
