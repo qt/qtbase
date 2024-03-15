@@ -178,7 +178,7 @@ struct QGlyphLayout
     inline explicit QGlyphLayout(char *address, int totalGlyphs)
     {
         offsets = reinterpret_cast<QFixedPoint *>(address);
-        qsizetype offset = totalGlyphs * sizeof(QFixedPoint);
+        int offset = totalGlyphs * sizeof(QFixedPoint);
         glyphs = reinterpret_cast<glyph_t *>(address + offset);
         offset += totalGlyphs * sizeof(glyph_t);
         advances = reinterpret_cast<QFixed *>(address + offset);
@@ -211,7 +211,7 @@ struct QGlyphLayout
             last = numGlyphs;
         if (first == 0 && last == numGlyphs
             && reinterpret_cast<char *>(offsets + numGlyphs) == reinterpret_cast<char *>(glyphs)) {
-            memset(static_cast<void *>(offsets), 0, qsizetype(numGlyphs) * SpaceNeeded);
+            memset(static_cast<void *>(offsets), 0, (numGlyphs * SpaceNeeded));
         } else {
             const int num = last - first;
             memset(static_cast<void *>(offsets + first), 0, num * sizeof(QFixedPoint));
@@ -372,12 +372,12 @@ public:
         LayoutFailed
     };
     struct Q_GUI_EXPORT LayoutData {
-        LayoutData(const QString &str, void **stack_memory, qsizetype mem_size);
+        LayoutData(const QString &str, void **stack_memory, int mem_size);
         LayoutData();
         ~LayoutData();
         mutable QScriptItemArray items;
-        qsizetype allocated;
-        qsizetype available_glyphs;
+        int allocated;
+        int available_glyphs;
         void **memory;
         unsigned short *logClustersPtr;
         QGlyphLayout glyphLayout;
