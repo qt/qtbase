@@ -129,6 +129,9 @@ private:
     friend size_t qHash(qfloat16 key, size_t seed = 0) noexcept
     { return qHash(float(key), seed); } // 6.4 algorithm, so keep using it; ### Qt 7: fix QTBUG-116077
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wfloat-conversion")
+
 #define QF16_MAKE_ARITH_OP_FP(FP, OP) \
     friend inline FP operator OP(qfloat16 lhs, FP rhs) noexcept { return static_cast<FP>(lhs) OP rhs; } \
     friend inline FP operator OP(FP lhs, qfloat16 rhs) noexcept { return lhs OP static_cast<FP>(rhs); }
@@ -164,7 +167,6 @@ private:
     QF16_MAKE_ARITH_OP_INT(/)
 #undef QF16_MAKE_ARITH_OP_INT
 
-QT_WARNING_PUSH
 QT_WARNING_DISABLE_FLOAT_COMPARE
 
     friend inline bool operator>(qfloat16 a, qfloat16 b)  noexcept { return static_cast<NearestFloat>(a) >  static_cast<NearestFloat>(b); }
