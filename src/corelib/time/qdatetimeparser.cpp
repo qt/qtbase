@@ -2303,8 +2303,8 @@ QString QDateTimeParser::getAmPmText(AmPm ap, Case cs) const
     QString raw = ap == AmText ? loc.amText() : loc.pmText();
     switch (cs)
     {
-    case UpperCase: return raw.toUpper();
-    case LowerCase: return raw.toLower();
+    case UpperCase: return std::move(raw).toUpper();
+    case LowerCase: return std::move(raw).toLower();
     case NativeCase: return raw;
     }
     Q_UNREACHABLE_RETURN(raw);
