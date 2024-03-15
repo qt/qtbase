@@ -2993,6 +2993,35 @@ QDataStream &operator>>(QDataStream &stream, QFont::Tag &tag)
     info object is \e not updated.
     \endlist
 
+    \section1 Checking for the existence of a font
+
+    Sometimes it can be useful to check if a font exists before attempting
+    to use it. The most thorough way of doing so is by using \l {exactMatch()}:
+
+    \code
+    const QFont segoeFont(QLatin1String("Segoe UI"));
+    if (QFontInfo(segoeFont).exactMatch()) {
+        // Use the font...
+    }
+    \endcode
+
+    However, this deep search of families can be expensive on some platforms.
+    \c QFontDatabase::families().contains() is a faster, but less thorough
+    alternative:
+
+    \code
+    const QLatin1String segoeUiFamilyName("Segoe UI");
+    if (QFontDatabase::families().contains(segoeUiFamilyName)) {
+        const QFont segoeFont(segoeUiFamilyName);
+        // Use the font...
+    }
+    \endcode
+
+    It's less thorough because it's not a complete search: some font family
+    aliases may be missing from the list. However, this approach results in
+    faster application startup times, and so should always be preferred if
+    possible.
+
     \sa QFont, QFontMetrics, QFontDatabase
 */
 
@@ -3009,6 +3038,8 @@ QDataStream &operator>>(QDataStream &stream, QFont::Tag &tag)
     Use QPainter::fontInfo() to get the font info when painting.
     This will give correct results also when painting on paint device
     that is not screen-compatible.
+
+    \sa {Checking for the existence of a font}
 */
 QFontInfo::QFontInfo(const QFont &font)
     : d(font.d)
@@ -3050,7 +3081,7 @@ QFontInfo &QFontInfo::operator=(const QFontInfo &fi)
 /*!
     Returns the family name of the matched window system font.
 
-    \sa QFont::family()
+    \sa QFont::family(), {Checking for the existence of a font}
 */
 QString QFontInfo::family() const
 {
