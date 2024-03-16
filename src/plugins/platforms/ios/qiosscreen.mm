@@ -296,6 +296,15 @@ QString QIOSScreen::name() const
         return "External display"_L1;
 }
 
+static bool isRunningOnVisionOS()
+{
+    static bool result = []{
+        // This class is documented to only be available on visionOS
+        return NSClassFromString(@"UIWindowSceneGeometryPreferencesVision");
+    }();
+    return result;
+}
+
 void QIOSScreen::updateProperties()
 {
     QRect previousGeometry = m_geometry;
@@ -308,11 +317,17 @@ void QIOSScreen::updateProperties()
     // For convenience, we reflect the safe area margins of the screen's UIWindow
     // by reducing the available geometry of the screen. But we only do this if
     // the UIWindow bounds is representative of the UIScreen.
-    UIEdgeInsets safeAreaInsets = m_uiWindow.safeAreaInsets;
-    if (m_uiWindow.bounds.size.width == m_uiScreen.bounds.size.width)
-        m_availableGeometry.adjust(safeAreaInsets.left, 0, -safeAreaInsets.right, 0);
-    if (m_uiWindow.bounds.size.height == m_uiScreen.bounds.size.height)
-        m_availableGeometry.adjust(0, safeAreaInsets.top, 0, -safeAreaInsets.bottom);
+    if (isRunningOnVisionOS()) {
+        // On visionOS there is no concept of a screen, and hence no concept of
+        // screen-relative system UI that we should keep top level windows away
+        // from, so don't apply the UIWindow safe area insets to the screen.
+    } else {
+        UIEdgeInsets safeAreaInsets = m_uiWindow.safeAreaInsets;
+        if (m_uiWindow.bounds.size.width == m_uiScreen.bounds.size.width)
+            m_availableGeometry.adjust(safeAreaInsets.left, 0, -safeAreaInsets.right, 0);
+        if (m_uiWindow.bounds.size.height == m_uiScreen.bounds.size.height)
+            m_availableGeometry.adjust(0, safeAreaInsets.top, 0, -safeAreaInsets.bottom);
+    }
 
 #ifndef Q_OS_TVOS
     if (m_uiScreen == [UIScreen mainScreen]) {
