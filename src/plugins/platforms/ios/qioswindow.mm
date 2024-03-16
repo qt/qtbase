@@ -251,22 +251,32 @@ void QIOSWindow::setWindowState(Qt::WindowStates state)
     if (state & Qt::WindowMinimized) {
         applyGeometry(QRect());
     } else if (state & (Qt::WindowFullScreen | Qt::WindowMaximized)) {
-        // When an application is in split-view mode, the UIScreen still has the
-        // same geometry, but the UIWindow is resized to the area reserved for the
-        // application. We use this to constrain the geometry used when applying the
-        // fullscreen or maximized window states. Note that we do not do this
-        // in applyGeometry(), as we don't want to artificially limit window
-        // placement "outside" of the screen bounds if that's what the user wants.
-
         QRect uiWindowBounds = QRectF::fromCGRect(m_view.window.bounds).toRect();
-        QRect fullscreenGeometry = screen()->geometry().intersected(uiWindowBounds);
-        QRect maximizedGeometry = window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint ?
-            fullscreenGeometry : screen()->availableGeometry().intersected(uiWindowBounds);
+        if (NSProcessInfo.processInfo.iOSAppOnMac) {
+            // iOS apps running as "Designed for iPad" on macOS do not match
+            // our current window management implementation where a single
+            // UIWindow is tied to a single screen. And even if we're on the
+            // right screen, the UIScreen does not account for the 77% scale
+            // of the UIUserInterfaceIdiomPad environment, so we can't use
+            // it to clamp the window geometry. Instead just use the UIWindow
+            // directly, which represents our "screen".
+            applyGeometry(uiWindowBounds);
+        } else {
+            // When an application is in split-view mode, the UIScreen still has the
+            // same geometry, but the UIWindow is resized to the area reserved for the
+            // application. We use this to constrain the geometry used when applying the
+            // fullscreen or maximized window states. Note that we do not do this
+            // in applyGeometry(), as we don't want to artificially limit window
+            // placement "outside" of the screen bounds if that's what the user wants.
+            QRect fullscreenGeometry = screen()->geometry().intersected(uiWindowBounds);
+            QRect maximizedGeometry = window()->flags() & Qt::MaximizeUsingFullscreenGeometryHint ?
+                fullscreenGeometry : screen()->availableGeometry().intersected(uiWindowBounds);
 
-        if (state & Qt::WindowFullScreen)
-            applyGeometry(fullscreenGeometry);
-        else
-            applyGeometry(maximizedGeometry);
+            if (state & Qt::WindowFullScreen)
+                applyGeometry(fullscreenGeometry);
+            else
+                applyGeometry(maximizedGeometry);
+        }
     } else {
         applyGeometry(m_normalGeometry);
     }
