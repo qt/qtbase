@@ -323,7 +323,7 @@ void QIOSScreen::updateProperties()
     // and do not take split-view constraints into account, so we have to
     // combine the two to get the correct available geometry.
     QRect applicationFrame = QRectF::fromCGRect(m_uiScreen.qt_applicationFrame).toRect();
-    UIEdgeInsets safeAreaInsets = m_uiWindow.qt_safeAreaInsets;
+    UIEdgeInsets safeAreaInsets = m_uiWindow.safeAreaInsets;
     m_availableGeometry = m_geometry.adjusted(safeAreaInsets.left, safeAreaInsets.top,
         -safeAreaInsets.right, -safeAreaInsets.bottom).intersected(applicationFrame);
 

@@ -227,7 +227,7 @@ void QIOSWindow::applyGeometry(const QRect &rect)
 
 QMargins QIOSWindow::safeAreaMargins() const
 {
-    UIEdgeInsets safeAreaInsets = m_view.qt_safeAreaInsets;
+    UIEdgeInsets safeAreaInsets = m_view.safeAreaInsets;
     return QMargins(safeAreaInsets.left, safeAreaInsets.top,
         safeAreaInsets.right, safeAreaInsets.bottom);
 }
