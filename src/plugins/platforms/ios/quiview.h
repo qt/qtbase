@@ -32,7 +32,6 @@ QT_END_NAMESPACE
 - (QWindow *)qwindow;
 - (UIViewController *)viewController;
 - (QIOSViewController*)qtViewController;
-@property (nonatomic, readonly) UIEdgeInsets qt_safeAreaInsets;
 @end
 
 #ifdef Q_OS_IOS
