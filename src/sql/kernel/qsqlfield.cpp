@@ -221,6 +221,7 @@ void QSqlField::setDefaultValue(const QVariant &value)
     d->def = value;
 }
 
+#if QT_DEPRECATED_SINCE(6, 8)
 /*!
     \internal
     \deprecated [6.8] This internal value is no longer used.
@@ -230,6 +231,7 @@ void QSqlField::setSqlType(int type)
     detach();
     d->tp = type;
 }
+#endif
 
 /*!
     Sets \l generated to \a gen.
@@ -470,6 +472,7 @@ QVariant QSqlField::defaultValue() const
     return d->def;
 }
 
+#if QT_DEPRECATED_SINCE(6, 8)
 /*!
     \internal
     \deprecated [6.8] This internal value is no longer used.
@@ -483,6 +486,7 @@ int QSqlField::typeID() const
 {
     return d->tp;
 }
+#endif
 
 /*!
     \property QSqlField::generated
