@@ -207,12 +207,18 @@ private slots:
     void stdfilesystem();
 
 private:
-#ifdef BUILTIN_TESTDATA
-    QString m_dataPath;
     QSharedPointer<QTemporaryDir> m_dataDir;
-#else
-    const QString m_dataPath;
-#endif
+    QString m_dataPath;
+
+    constexpr static const std::array m_testDirs = {
+        "entrylist"_L1,
+        "resources"_L1,
+        "searchdir"_L1,
+        "testData"_L1,
+        "testdir"_L1,
+        "types"_L1,
+        "tst_qdir.cpp"_L1,
+    };
 };
 
 Q_DECLARE_METATYPE(tst_QDir::UncHandling)
@@ -260,6 +266,20 @@ void tst_QDir::initTestCase()
     m_dataDir = QEXTRACTTESTDATA("/");
     QVERIFY2(!m_dataDir.isNull(), qPrintable("Did not find testdata. Is this builtin?"));
     m_dataPath = m_dataDir->path();
+#elif QT_CONFIG(cxx17_filesystem) // This code doesn't work in QNX on the CI
+    m_dataDir.reset(new QTemporaryDir);
+    m_dataPath = m_dataDir->path();
+
+    QString sourceDir = QFileInfo(QFINDTESTDATA(m_testDirs[0])).absolutePath();
+    namespace fs = std::filesystem;
+    for (const auto &entry : m_testDirs) {
+        auto l1 = QLatin1StringView(entry);
+        const auto src = fs::path(QString(sourceDir + u'/' + l1).toStdString());
+        const auto dest = fs::path(QString(m_dataPath + u'/' + l1).toStdString());
+        std::error_code ec;
+        fs::copy(src, dest, fs::copy_options::recursive, ec);
+        QCOMPARE(ec.value(), 0);
+    }
 #endif
 
     QVERIFY2(!m_dataPath.isEmpty(), "test data not found");
