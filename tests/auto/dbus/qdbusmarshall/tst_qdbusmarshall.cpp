@@ -476,6 +476,17 @@ void tst_QDBusMarshall::sendMaps_data()
     QTest::newRow("gs-map") << QVariant::fromValue(gsmap) << "a{gs}"
             << "[Argument: a{gs} {[Signature: a{gs}] = \"array of dict_entry of (signature, string)\", [Signature: i] = \"int32\", [Signature: s] = \"string\"}]";
 
+    QMap<QString, std::pair<int, int>> siimap;
+    QTest::newRow("empty-sii-map") << QVariant::fromValue(siimap) << "a{s(ii)}"
+                                   << "[Argument: a{s(ii)} {}]";
+    siimap["0,0"] = { 0, 0 };
+    siimap["1,-1"] = { 1, -1 };
+    QTest::newRow("sii-map") << QVariant::fromValue(siimap) << "a{s(ii)}"
+                             << "[Argument: a{s(ii)} {"
+                                    "\"0,0\" = [Argument: (ii) 0, 0], "
+                                    "\"1,-1\" = [Argument: (ii) 1, -1]"
+                                "}]";
+
     if (fileDescriptorPassing) {
         svmap["zzfiledescriptor"] = QVariant::fromValue(QDBusUnixFileDescriptor(fileDescriptorForTest()));
         QTest::newRow("sv-map1-fd") << QVariant::fromValue(svmap) << "a{sv}"
