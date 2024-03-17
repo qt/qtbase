@@ -300,7 +300,11 @@ using IfAssociativeIteratorHasKeyAndValue =
 
 template <typename Iterator>
 using IfAssociativeIteratorHasFirstAndSecond =
-    std::enable_if_t<qxp::is_detected_v<FirstAndSecondTest, Iterator>, bool>;
+    std::enable_if_t<
+        std::conjunction_v<
+            std::negation<qxp::is_detected<KeyAndValueTest, Iterator>>,
+            qxp::is_detected<FirstAndSecondTest, Iterator>
+        >, bool>;
 
 template <typename Iterator>
 using MoveBackwardsTest = decltype(
