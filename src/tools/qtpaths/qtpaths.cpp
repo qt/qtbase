@@ -255,7 +255,7 @@ int main(int argc, char **argv)
     }
 
     QT_WARNING_PUSH
-#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 1300 && Q_CC_GNU < 1400
+#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 1300 && Q_CC_GNU < 1500
     QT_WARNING_DISABLE_GCC("-Wdangling-reference")
 #endif
     if (parser.isSet(display)) {
