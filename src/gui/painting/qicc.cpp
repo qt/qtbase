@@ -940,7 +940,8 @@ static bool parseMabData(const QByteArray &data, const TagEntry &tagEntry, QColo
             qFromBigEndian<uint16_t>(data.constData() + tagEntry.offset + mab.clutOffset + 20, clutTable.size(), clutTable.data());
             parseCLUT(clutTable.constData(), (1.f/65535.f), &clutElement);
         } else {
-            parseCLUT(data.constData() + tagEntry.offset + mab.clutOffset + 20, (1.f/255.f), &clutElement);
+            const uint8_t *clutTable = reinterpret_cast<const uint8_t *>(data.constData() + tagEntry.offset + mab.clutOffset + 20);
+            parseCLUT(clutTable, (1.f/255.f), &clutElement);
         }
     }
 
