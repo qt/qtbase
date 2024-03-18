@@ -178,6 +178,10 @@ function(qt_auto_detect_vcpkg)
 endfunction()
 
 function(qt_auto_detect_ios)
+    if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "macx-ios-clang")
+        set(CMAKE_SYSTEM_NAME "iOS" CACHE STRING "")
+    endif()
+
     if(CMAKE_SYSTEM_NAME STREQUAL iOS)
         message(STATUS "Using internal CMake ${CMAKE_SYSTEM_NAME} toolchain file.")
 
@@ -472,9 +476,9 @@ macro(qt_internal_setup_autodetect)
 
     qt_auto_detect_cyclic_toolchain()
     qt_auto_detect_cmake_config()
-    qt_auto_detect_darwin()
     qt_auto_detect_macos_universal()
     qt_auto_detect_ios()
+    qt_auto_detect_darwin()
     qt_auto_detect_android()
     qt_auto_detect_pch()
     qt_auto_detect_wasm()

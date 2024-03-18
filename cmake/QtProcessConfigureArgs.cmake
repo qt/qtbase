@@ -926,11 +926,6 @@ translate_string_input(android-javac-target QT_ANDROID_JAVAC_TARGET)
 
 translate_string_input(sdk QT_APPLE_SDK)
 
-if((DEFINED INPUT_xplatform AND INPUT_xplatform STREQUAL "macx-ios-clang")
-    OR (DEFINED INPUT_platform AND INPUT_platform STREQUAL "macx-ios-clang"))
-    push("-DCMAKE_SYSTEM_NAME=iOS")
-endif()
-
 drop_input(make)
 drop_input(nomake)
 translate_boolean_input(install-examples-sources QT_INSTALL_EXAMPLES_SOURCES)
