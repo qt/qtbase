@@ -2485,7 +2485,7 @@ QSqlRecord QODBCDriver::record(const QString& tablename) const
     if (!isOpen())
         return fil;
 
-    SqlStmtHandle hStmt;
+    SqlStmtHandle hStmt(d->hDbc);
     if (!hStmt.isValid()) {
         qSqlWarning("QODBCDriver::record: Unable to allocate handle"_L1, d);
         return fil;
