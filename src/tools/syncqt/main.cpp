@@ -136,15 +136,22 @@ void printInternalError()
               << std::endl;
 }
 
-std::filesystem::path normilizedPath(const std::string &path)
-{
-    return std::filesystem::path(std::filesystem::weakly_canonical(path).generic_string());
-}
-
 void printFilesystemError(const std::filesystem::filesystem_error &fserr, std::string_view errorMsg)
 {
     std::cerr << errorMsg << ": " << fserr.path1() << ".\n"
               << fserr.what() << "(" << fserr.code().value() << ")" << std::endl;
+}
+
+std::filesystem::path normilizedPath(const std::string &path)
+{
+    try {
+        auto result = std::filesystem::path(std::filesystem::weakly_canonical(path).generic_string());
+        return result;
+    } catch (const std::filesystem::filesystem_error &fserr) {
+        printFilesystemError(fserr, "Unable to normalize path");
+        throw;
+    }
+    return {};
 }
 
 bool createDirectories(const std::string &path, std::string_view errorMsg, bool *exists = nullptr)
