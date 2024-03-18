@@ -356,6 +356,9 @@ function(_qt_internal_create_versionless_targets targets install_namespace)
         QT_QMAKE_PRIVATE_CONFIG
         QT_QMAKE_PUBLIC_CONFIG
         QT_QMAKE_PUBLIC_QT_CONFIG
+    )
+
+    set(known_qt_exported_properties_interface_allowed
         _qt_config_module_name
         _qt_is_public_module
         _qt_module_has_headers
@@ -427,6 +430,15 @@ function(_qt_internal_create_versionless_targets targets install_namespace)
             if(interface_property_value)
                 set_property(TARGET Qt::${target} APPEND PROPERTY
                     INTERFACE_${property} "${interface_property_value}")
+            endif()
+        endforeach()
+
+        foreach(property IN LISTS known_qt_exported_properties_interface_allowed)
+            get_target_property(exported_property_value
+                ${install_namespace}::${target} ${property})
+            if(exported_property_value)
+                set_property(TARGET Qt::${target} APPEND PROPERTY
+                    ${property} "${exported_property_value}")
             endif()
         endforeach()
     endforeach()
