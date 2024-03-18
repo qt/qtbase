@@ -1866,8 +1866,7 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
                 && ucs4 != QChar::LineFeed
                 && ucs4 != QChar::CarriageReturn
                 && ucs4 != QChar::ParagraphSeparator
-                && QChar::category(ucs4) != QChar::Other_Control
-                && QChar::category(ucs4) != QChar::Other_PrivateUse) {
+                && QChar::category(ucs4) != QChar::Other_Control) {
             if (!m_fallbackFamiliesQueried)
                 const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
             for (int x = 1, n = qMin(m_engines.size(), 256); x < n; ++x) {
