@@ -4,6 +4,7 @@
 #ifndef QJSONDOCUMENT_H
 #define QJSONDOCUMENT_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qjsonvalue.h>
 #include <QtCore/qscopedpointer.h>
 
@@ -98,16 +99,19 @@ public:
     const QJsonValue operator[](QStringView key) const;
     const QJsonValue operator[](QLatin1StringView key) const;
     const QJsonValue operator[](qsizetype i) const;
-
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QJsonDocument &other) const;
-    bool operator!=(const QJsonDocument &other) const { return !(*this == other); }
-
+    bool operator!=(const QJsonDocument &other) const { return !operator==(other); }
+#endif
     bool isNull() const;
 
 private:
     friend class QJsonValue;
     friend class QJsonPrivate::Parser;
     friend Q_CORE_EXPORT QDebug operator<<(QDebug, const QJsonDocument &);
+    friend Q_CORE_EXPORT bool comparesEqual(const QJsonDocument &lhs,
+                                            const QJsonDocument &rhs) noexcept;
+    Q_DECLARE_EQUALITY_COMPARABLE(QJsonDocument)
 
     QJsonDocument(const QCborValue &data);
 

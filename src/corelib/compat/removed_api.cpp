@@ -971,6 +971,13 @@ bool QJsonArray::operator!=(const QJsonArray &other) const
     return !comparesEqual(*this, other);
 }
 
+#include "qjsondocument.h"
+
+bool QJsonDocument::operator==(const QJsonDocument &other) const
+{
+    return comparesEqual(*this, other);
+}
+
 #if QT_CONFIG(processenvironment)
 #include "qprocess.h" // inlined API
 

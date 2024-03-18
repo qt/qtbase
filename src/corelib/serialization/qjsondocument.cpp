@@ -30,6 +30,8 @@ QT_BEGIN_NAMESPACE
 
     \brief The QJsonDocument class provides a way to read and write JSON documents.
 
+    \compares equality
+
     QJsonDocument is a class that wraps a complete JSON document and can read
     this document from, and write it to, a UTF-8 encoded text-based
     representation.
@@ -456,20 +458,22 @@ const QJsonValue QJsonDocument::operator[](qsizetype i) const
 }
 
 /*!
-    Returns \c true if the \a other document is equal to this document.
- */
-bool QJsonDocument::operator==(const QJsonDocument &other) const
+    \fn bool QJsonDocument::operator==(const QJsonDocument &lhs, const QJsonDocument &rhs)
+
+    Returns \c true if the \a lhs document is equal to \a rhs document, \c false otherwise.
+*/
+bool comparesEqual(const QJsonDocument &lhs, const QJsonDocument &rhs) noexcept
 {
-    if (d && other.d)
-        return d->value == other.d->value;
-    return !d == !other.d;
+    if (lhs.d && rhs.d)
+        return lhs.d->value == rhs.d->value;
+    return !lhs.d == !rhs.d;
 }
 
 /*!
- \fn bool QJsonDocument::operator!=(const QJsonDocument &other) const
+    \fn bool QJsonDocument::operator!=(const QJsonDocument &lhs, const QJsonDocument &rhs)
 
-    returns \c true if \a other is not equal to this document
- */
+    Returns \c true if the \a lhs document is not equal to \a rhs document, \c false otherwise.
+*/
 
 /*!
     returns \c true if this document is null.

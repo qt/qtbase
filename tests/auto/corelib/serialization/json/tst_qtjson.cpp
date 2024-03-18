@@ -176,6 +176,7 @@ void tst_QtJson::initTestCase()
 void tst_QtJson::compareCompiles()
 {
     QTestPrivate::testEqualityOperatorsCompile<QJsonArray>();
+    QTestPrivate::testEqualityOperatorsCompile<QJsonDocument>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonArray, QJsonValue>();
 }
 
@@ -381,6 +382,7 @@ void tst_QtJson::testNumbers_2()
         QVERIFY2(floatValues[power] == floatValues_1[power], QString("floatValues[%1] != floatValues_1[%1]").arg(power).toLatin1());
     }
 
+    QT_TEST_EQUALITY_OPS(jDocument1, jDocument2, true);
     // The last value is below min denorm and should round to 0, everything else should contain a value
     QVERIFY2(floatValues_1[1075] == 0, "Value after min denorm should round to 0");
 
@@ -412,6 +414,10 @@ void tst_QtJson::testNumbers_3()
 
     QJsonDocument jDocument2(QJsonDocument::fromJson(ba));
 
+    QT_TEST_EQUALITY_OPS(jDocument1, jDocument2, true);
+    QT_TEST_EQUALITY_OPS(jDocument1, QJsonDocument(), false);
+    QT_TEST_EQUALITY_OPS(QJsonDocument(), QJsonDocument(), true);
+
     double d1_1(jDocument2.object().value("d1").toDouble());
     double d2_1(jDocument2.object().value("d2").toDouble());
     QVERIFY(d1_1 != d2_1);
@@ -429,7 +435,8 @@ void tst_QtJson::testNumbers_4()
     array << QJsonValue(-9223372036854775808.0);
     array << QJsonValue(+18446744073709551616.0);
     array << QJsonValue(-18446744073709551616.0);
-    const QByteArray json(QJsonDocument(array).toJson());
+    QJsonDocument doc1 = QJsonDocument(array);
+    const QByteArray json(doc1.toJson());
     const QByteArray expected =
             "[\n"
             "    1000000000000000,\n"
@@ -450,7 +457,8 @@ void tst_QtJson::testNumbers_4()
     array2 << QJsonValue(Q_INT64_C(-9007199254740992));
     array2 << QJsonValue(Q_INT64_C(+9223372036854775807));
     array2 << QJsonValue(Q_INT64_C(-9223372036854775807));
-    const QByteArray json2(QJsonDocument(array2).toJson());
+    QJsonDocument doc2 = QJsonDocument(array2);
+    const QByteArray json2(doc2.toJson());
     const QByteArray expected2 =
             "[\n"
             "    1000000000000000,\n"
@@ -461,6 +469,8 @@ void tst_QtJson::testNumbers_4()
             "    -9223372036854775807\n"
             "]\n";
     QCOMPARE(json2, expected2);
+
+    QT_TEST_EQUALITY_OPS(doc1, doc2, false);
 }
 
 void tst_QtJson::testNumberComparisons()
@@ -886,6 +896,7 @@ void tst_QtJson::testArrayNestedEmpty()
     QJsonValue val = object.value("inner");
     QJsonArray value = object.value("inner").toArray();
     QVERIFY(QJsonDocument(value).isArray());
+    QT_TEST_EQUALITY_OPS(QJsonDocument(), QJsonDocument(value), false);
     QCOMPARE(value.size(), 0);
     QCOMPARE(value, inner);
     QCOMPARE(value.size(), 0);
@@ -903,6 +914,7 @@ void tst_QtJson::testObjectNestedEmpty()
     object.insert("inner2", inner2);
     QJsonObject value = object.value("inner").toObject();
     QVERIFY(QJsonDocument(value).isObject());
+    QT_TEST_EQUALITY_OPS(QJsonDocument(), QJsonDocument(value), false);
     QCOMPARE(value.size(), 0);
     QCOMPARE(value, inner);
     QCOMPARE(value.size(), 0);
@@ -1338,6 +1350,8 @@ void tst_QtJson::testDocument()
     QCOMPARE(doc5.isObject(), false);
     QCOMPARE(doc5.array().size(), 1);
     QCOMPARE(doc5.array().at(0), QJsonValue(23));
+
+    QT_TEST_EQUALITY_OPS(doc2, doc3, true);
 }
 
 void tst_QtJson::nullValues()
@@ -3374,7 +3388,7 @@ void tst_QtJson::documentFromVariant()
 
     // As JSON arrays they should be equal.
     QCOMPARE(da1.array(), da2.array());
-
+    QT_TEST_EQUALITY_OPS(da1, da2, true);
 
     QMap <QString, QVariant> map;
     map["key"] = string;
@@ -3390,6 +3404,7 @@ void tst_QtJson::documentFromVariant()
 
     // As JSON objects they should be equal.
     QCOMPARE(do1.object(), do2.object());
+    QT_TEST_EQUALITY_OPS(do1, do2, true);
 }
 
 void tst_QtJson::parseErrorOffset_data()
@@ -3488,6 +3503,7 @@ void tst_QtJson::streamSerializationQJsonDocument()
     QDataStream load(buffer);
     load >> output;
     QCOMPARE(output, document);
+    QT_TEST_EQUALITY_OPS(output, document, true);
 }
 
 void tst_QtJson::streamSerializationQJsonArray_data()
@@ -3877,6 +3893,7 @@ void tst_QtJson::noLeakOnNameClash()
     QVERIFY2(!expected.isNull(), qPrintable(error.errorString()));
 
     QCOMPARE(doc, expected);
+    QT_TEST_EQUALITY_OPS(doc, expected, true);
 
     // It should not leak.
     // In particular it should not forget to deref the container for the inner objects.
