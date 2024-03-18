@@ -1124,7 +1124,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_dlopen
         ${CMAKE_DL_LIBS}
 )
 
-qt_internal_extend_target(Core CONDITION APPLE AND (IOS OR TVOS)
+qt_internal_extend_target(Core CONDITION APPLE AND UIKIT
     LIBRARIES
         ${FWUIKit}
 )
@@ -1382,7 +1382,7 @@ qt_internal_apply_gc_binaries_conditional(Core PUBLIC)
 
 # Add entry-point on platforms that need it. A project can opt-out of using the
 # entrypoint by setting the qt_no_entrypoint property to TRUE on a target.
-if(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "iOS")
+if(WIN32 OR UIKIT)
     # find_package(Qt6Core) should call find_package(Qt6EntryPointPrivate) so that we can
     # link against EntryPointPrivate. Normally this is handled automatically for deps, but
     # for some reason it doesn't work for the EntryPointPrivate, so we need to add it manually.

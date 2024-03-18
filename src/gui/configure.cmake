@@ -813,7 +813,7 @@ qt_feature("vulkan" PUBLIC
 )
 qt_feature("metal" PUBLIC
     LABEL "Metal"
-    CONDITION MACOS OR IOS
+    CONDITION MACOS OR IOS OR VISIONOS
 )
 qt_feature("vkkhrdisplay" PRIVATE
     SECTION "Platform plugins"
@@ -1255,6 +1255,7 @@ qt_feature("wayland" PUBLIC
     LABEL "Wayland"
     CONDITION TARGET Wayland::Client
 )
+
 qt_configure_add_summary_section(NAME "Qt Gui")
 qt_configure_add_summary_entry(ARGS "accessibility")
 qt_configure_add_summary_entry(ARGS "freetype")
@@ -1371,7 +1372,7 @@ qt_configure_add_report_entry(
 qt_configure_add_report_entry(
     TYPE ERROR
     MESSAGE "The OpenGL functionality tests failed! You might need to modify the OpenGL package search path by setting the OpenGL_DIR CMake variable to the OpenGL library's installation directory."
-    CONDITION QT_FEATURE_gui AND NOT WATCHOS AND ( NOT INPUT_opengl STREQUAL 'no' ) AND NOT QT_FEATURE_opengl_desktop AND NOT QT_FEATURE_opengles2 AND NOT QT_FEATURE_opengl_dynamic
+    CONDITION QT_FEATURE_gui AND NOT WATCHOS AND NOT VISIONOS AND ( NOT INPUT_opengl STREQUAL 'no' ) AND NOT QT_FEATURE_opengl_desktop AND NOT QT_FEATURE_opengles2 AND NOT QT_FEATURE_opengl_dynamic
 )
 qt_configure_add_report_entry(
     TYPE WARNING

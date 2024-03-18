@@ -116,7 +116,7 @@ bool QIOSMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality win
         [m_alertController addAction:createAction(NoButton)];
     }
 
-    UIWindow *window = parent ? reinterpret_cast<UIView *>(parent->winId()).window : qt_apple_sharedApplication().keyWindow;
+    UIWindow *window = presentationWindow(parent);
     if (!window) {
         qCDebug(lcQpaWindow, "Attempting to exec a dialog without any window/widget visible.");
 

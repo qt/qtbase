@@ -321,6 +321,7 @@ qt_copy_or_install(DIRECTORY cmake/
     PATTERN "3rdparty" EXCLUDE
     PATTERN "macos" EXCLUDE
     PATTERN "ios" EXCLUDE
+    PATTERN "visionos" EXCLUDE
     PATTERN "platforms" EXCLUDE
     PATTERN "QtBuildInternals" EXCLUDE
 )
@@ -335,6 +336,7 @@ if(QT_WILL_INSTALL)
         PATTERN "3rdparty" EXCLUDE
         PATTERN "macos" EXCLUDE
         PATTERN "ios" EXCLUDE
+        PATTERN "visionos" EXCLUDE
         PATTERN "platforms" EXCLUDE
         PATTERN "QtBuildInternals" EXCLUDE
     )
@@ -345,6 +347,8 @@ if(APPLE)
         set(platform_shortname "macos")
     elseif(IOS)
         set(platform_shortname "ios")
+    elseif(VISIONOS)
+        set(platform_shortname "visionos")
     endif()
 
     # Info.plist

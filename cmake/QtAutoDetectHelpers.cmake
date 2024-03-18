@@ -184,6 +184,8 @@ function(qt_auto_detect_apple)
 
     if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "macx-ios-clang")
         set(CMAKE_SYSTEM_NAME "iOS" CACHE STRING "")
+    elseif("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "macx-visionos-clang")
+        set(CMAKE_SYSTEM_NAME "visionOS" CACHE STRING "")
     endif()
 
     if(CMAKE_SYSTEM_NAME STREQUAL iOS)
@@ -226,13 +228,14 @@ function(qt_auto_detect_apple)
             endif()
         endif()
 
-        # For non simulator_and_device builds, we need to explicitly set the SYSROOT aka the sdk
-        # value.
-        if(QT_APPLE_SDK)
-            set(CMAKE_OSX_SYSROOT "${QT_APPLE_SDK}" CACHE STRING "")
-        endif()
         set(CMAKE_OSX_ARCHITECTURES "${osx_architectures}" CACHE STRING "")
+    endif()
 
+    if(QT_APPLE_SDK)
+        set(CMAKE_OSX_SYSROOT "${QT_APPLE_SDK}" CACHE STRING "")
+    endif()
+
+    if(CMAKE_SYSTEM_NAME STREQUAL iOS OR CMAKE_SYSTEM_NAME STREQUAL visionOS)
         if(NOT DEFINED BUILD_SHARED_LIBS)
             qt_internal_ensure_static_qt_config()
         endif()

@@ -732,10 +732,14 @@ function(_qt_internal_finalize_executable target)
         _qt_internal_add_wasm_extra_exported_methods("${target}")
         _qt_internal_set_wasm_export_name("${target}")
     endif()
-    if(IOS)
-        _qt_internal_finalize_ios_app("${target}")
-    elseif(APPLE)
-        _qt_internal_finalize_macos_app("${target}")
+
+    if(APPLE)
+        if(NOT CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+            # macOS
+            _qt_internal_finalize_macos_app("${target}")
+        else()
+            _qt_internal_finalize_uikit_app("${target}")
+        endif()
     endif()
 
     # For finalizer mode of plugin importing to work safely, we need to know the list of Qt

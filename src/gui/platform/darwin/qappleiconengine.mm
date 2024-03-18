@@ -5,7 +5,7 @@
 
 #if defined(Q_OS_MACOS)
 # include <AppKit/AppKit.h>
-#elif defined (Q_OS_IOS)
+#elif defined(QT_PLATFORM_UIKIT)
 # include <UIKit/UIKit.h>
 #endif
 
@@ -280,7 +280,7 @@ auto *loadImage(const QString &iconName)
     NSString *systemIconName = it != std::end(iconMap) ? it->second : iconName.toNSString();
 #if defined(Q_OS_MACOS)
     return [NSImage imageWithSystemSymbolName:systemIconName accessibilityDescription:nil];
-#elif defined(Q_OS_IOS)
+#elif defined(QT_PLATFORM_UIKIT)
     return [UIImage systemImageNamed:systemIconName];
 #endif
 }
@@ -374,7 +374,7 @@ auto *configuredImage(const NSImage *image, const QColor &color)
 
     return [image imageWithSymbolConfiguration:config];
 }
-#elif defined(Q_OS_IOS)
+#elif defined(QT_PLATFORM_UIKIT)
 auto *configuredImage(const UIImage *image, const QColor &color)
 {
     auto *config = [UIImageSymbolConfiguration configurationWithPointSize:48
@@ -453,7 +453,7 @@ void QAppleIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode m
 
     [image drawInRect:iconRect fromRect:sourceRect operation:NSCompositingOperationSourceOver fraction:1.0 respectFlipped:YES hints:nil];
     [NSGraphicsContext restoreGraphicsState];
-#elif defined(Q_OS_IOS)
+#elif defined(QT_PLATFORM_UIKIT)
     UIGraphicsPushContext(ctx);
     const CGRect cgrect = CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
     [image drawInRect:cgrect];

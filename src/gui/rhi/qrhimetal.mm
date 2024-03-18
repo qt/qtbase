@@ -567,9 +567,7 @@ bool QRhiMetal::create(QRhi::Flags flags)
     // suitable as deviceId because it does not seem stable on macOS and can
     // apparently change when the system is rebooted.
 
-#ifdef Q_OS_IOS
-    driverInfoStruct.deviceType = QRhiDriverInfo::IntegratedDevice;
-#else
+#ifdef Q_OS_MACOS
     if (@available(macOS 10.15, *)) {
         const MTLDeviceLocation deviceLocation = [d->dev location];
         switch (deviceLocation) {
@@ -586,6 +584,8 @@ bool QRhiMetal::create(QRhi::Flags flags)
             break;
         }
     }
+#else
+    driverInfoStruct.deviceType = QRhiDriverInfo::IntegratedDevice;
 #endif
 
     const QOperatingSystemVersion ver = QOperatingSystemVersion::current();
@@ -6465,12 +6465,12 @@ QRhiSwapChainHdrInfo QMetalSwapChain::hdrInfo()
 
     if (m_window) {
         // Must use m_window, not window, given this may be called before createOrResize().
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS)
         NSView *view = reinterpret_cast<NSView *>(m_window->winId());
         NSScreen *screen = view.window.screen;
         info.limits.colorComponentValue.maxColorComponentValue = screen.maximumExtendedDynamicRangeColorComponentValue;
         info.limits.colorComponentValue.maxPotentialColorComponentValue = screen.maximumPotentialExtendedDynamicRangeColorComponentValue;
-#else
+#elif defined(Q_OS_IOS)
         if (@available(iOS 16.0, *)) {
             UIView *view = reinterpret_cast<UIView *>(m_window->winId());
             UIScreen *screen = view.window.windowScene.screen;

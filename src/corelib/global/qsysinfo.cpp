@@ -784,6 +784,8 @@ QString QSysInfo::productType()
     return QStringLiteral("tvos");
 #elif defined(Q_OS_WATCHOS)
     return QStringLiteral("watchos");
+#elif defined(Q_OS_VISIONOS)
+    return QStringLiteral("visionos");
 #elif defined(Q_OS_MACOS)
     return QStringLiteral("macos");
 #elif defined(Q_OS_DARWIN)

@@ -22,7 +22,7 @@ function(qt_internal_create_wrapper_scripts)
     set(extra_qt_cmake_code "")
     if(generate_unix)
 
-        if(IOS)
+        if(UIKIT)
             set(extra_qt_cmake_code [=[
 # Specify Xcode as the default generator by assigning it to the CMAKE_GENERATOR env var.
 # An explicit -G or -D CMAKE_GENERATOR given on the command line will still take precedence.

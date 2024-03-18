@@ -57,20 +57,31 @@ qt_internal_extend_target(QIOSIntegrationPlugin CONDITION QT_FEATURE_opengl
         Qt::OpenGLPrivate
 )
 
-qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
+qt_internal_extend_target(QIOSIntegrationPlugin CONDITION QT_FEATURE_clipboard
     SOURCES
         qiosclipboard.h qiosclipboard.mm
-        qiosdocumentpickercontroller.h qiosdocumentpickercontroller.mm
+)
+
+qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
+    SOURCES
         qiosfiledialog.h qiosfiledialog.mm
-        qioscolordialog.h qioscolordialog.mm
-        qiosfontdialog.h qiosfontdialog.mm
-        qiosmenu.h qiosmenu.mm
-        qiosmessagedialog.h qiosmessagedialog.mm
-        qiostextinputoverlay.h qiostextinputoverlay.mm
+        qiosdocumentpickercontroller.h qiosdocumentpickercontroller.mm
     LIBRARIES
-        ${FWAssetsLibrary}
         ${FWUniformTypeIdentifiers}
         ${FWPhotos}
+)
+
+qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
+    SOURCES
+        qioscolordialog.h qioscolordialog.mm
+        qiosfontdialog.h qiosfontdialog.mm
+        qiosmessagedialog.h qiosmessagedialog.mm
+)
+
+qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT (TVOS OR VISIONOS)
+    SOURCES
+        qiosmenu.h qiosmenu.mm
+        qiostextinputoverlay.h qiostextinputoverlay.mm
 )
 
 add_subdirectory(optional)

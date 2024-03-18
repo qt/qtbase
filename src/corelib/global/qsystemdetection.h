@@ -19,6 +19,7 @@
      IOS      - iOS
      WATCHOS  - watchOS
      TVOS     - tvOS
+     VISIONOS - visionOS
      WIN32    - Win32 (Windows 2000/XP/Vista/7 and Windows Server 2003/2008)
      CYGWIN   - Cygwin
      SOLARIS  - Sun Solaris
@@ -61,6 +62,8 @@
 #        define Q_OS_WATCHOS
 #      elif defined(TARGET_OS_TV) && TARGET_OS_TV
 #        define Q_OS_TVOS
+#      elif defined(TARGET_OS_VISION) && TARGET_OS_VISION
+#        define Q_OS_VISIONOS
 #      else
 #        // TARGET_OS_IOS is only available in newer SDKs,
 #        // so assume any other iOS-based platform is iOS for now

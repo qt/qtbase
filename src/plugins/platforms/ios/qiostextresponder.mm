@@ -401,7 +401,7 @@
     if (UIView *accessoryView = static_cast<UIView *>(platformData.value(kImePlatformDataInputAccessoryView).value<void *>()))
         self.inputAccessoryView = [[[WrapperView alloc] initWithView:accessoryView] autorelease];
 
-#ifndef Q_OS_TVOS
+#if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
     if (platformData.value(kImePlatformDataHideShortcutsBar).toBool()) {
         // According to the docs, leadingBarButtonGroups/trailingBarButtonGroups should be set to nil to hide the shortcuts bar.
         // However, starting with iOS 10, the API has been surrounded with NS_ASSUME_NONNULL, which contradicts this and causes

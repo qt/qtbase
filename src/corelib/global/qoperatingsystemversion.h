@@ -30,7 +30,8 @@ public:
         IOS,
         TvOS,
         WatchOS,
-        Android
+        Android,
+        VisionOS
     };
 
     constexpr QOperatingSystemVersionBase(OSType osType,
@@ -57,6 +58,8 @@ public:
         return TvOS;
 #elif defined(Q_OS_WATCHOS)
         return WatchOS;
+#elif defined(Q_OS_VISIONOS)
+        return VisionOS;
 #elif defined(Q_OS_ANDROID)
         return Android;
 #else
@@ -158,7 +161,8 @@ public:
         IOS,
         TvOS,
         WatchOS,
-        Android
+        Android,
+        VisionOS
     };
 #endif
 

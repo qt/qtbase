@@ -185,7 +185,7 @@ QPixmap qt_mac_toQPixmap(const NSImage *image, const QSizeF &size)
 
 #endif // Q_OS_MACOS
 
-#ifdef Q_OS_IOS
+#ifdef QT_PLATFORM_UIKIT
 
 QImage qt_mac_toQImage(const UIImage *image, QSizeF size)
 {
@@ -202,7 +202,7 @@ QImage qt_mac_toQImage(const UIImage *image, QSizeF size)
     return ret;
 }
 
-#endif // Q_OS_IOS
+#endif // QT_PLATFORM_UIKIT
 
 // ---------------------- Colors and Brushes ----------------------
 

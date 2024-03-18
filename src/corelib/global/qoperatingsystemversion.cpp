@@ -34,7 +34,7 @@ QT_BEGIN_NAMESPACE
     operating system version (as opposed to the kernel version number or
     marketing version).
 
-    Presently, Android, Apple Platforms (iOS, macOS, tvOS, and watchOS),
+    Presently, Android, Apple Platforms (iOS, macOS, tvOS, watchOS, and visionOS),
     and Windows are supported.
 
     The \a majorVersion(), \a minorVersion(), and \a microVersion() functions
@@ -98,6 +98,7 @@ QT_BEGIN_NAMESPACE
     \value MacOS        The Apple macOS operating system.
     \value TvOS         The Apple tvOS operating system.
     \value WatchOS      The Apple watchOS operating system.
+    \value VisionOS     The Apple visionOS operating system.
     \value Windows      The Microsoft Windows operating system.
 
     \value Unknown      An unknown or unsupported operating system.
@@ -325,6 +326,8 @@ QString QOperatingSystemVersionBase::name(QOperatingSystemVersionBase osversion)
         return QStringLiteral("tvOS");
     case QOperatingSystemVersionBase::WatchOS:
         return QStringLiteral("watchOS");
+    case QOperatingSystemVersionBase::VisionOS:
+        return QStringLiteral("visionOS");
     case QOperatingSystemVersionBase::Android:
         return QStringLiteral("Android");
     case QOperatingSystemVersionBase::Unknown:

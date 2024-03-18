@@ -567,6 +567,9 @@ void qt_apple_check_os_version()
 #elif defined(__TV_OS_VERSION_MIN_REQUIRED)
     const char *os = "tvOS";
     const int version = __TV_OS_VERSION_MIN_REQUIRED;
+#elif defined(__VISION_OS_VERSION_MIN_REQUIRED)
+    const char *os = "visionOS";
+    const int version = __VISION_OS_VERSION_MIN_REQUIRED;
 #elif defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
     const char *os = "iOS";
     const int version = __IPHONE_OS_VERSION_MIN_REQUIRED;

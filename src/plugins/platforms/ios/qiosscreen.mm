@@ -46,6 +46,7 @@ typedef void (^DisplayLinkBlock)(CADisplayLink *displayLink);
 
 // -------------------------------------------------------------------------
 
+#if !defined(Q_OS_VISIONOS)
 static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 {
     foreach (QScreen *screen, QGuiApplication::screens()) {
@@ -149,6 +150,8 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 
 @end
 
+#endif // !defined(Q_OS_VISIONOS)
+
 // -------------------------------------------------------------------------
 
 @implementation QUIWindow
@@ -167,6 +170,7 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
     [super sendEvent:event];
 }
 
+#if !defined(Q_OS_VISIONOS)
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
 {
     [super traitCollectionDidChange:previousTraitCollection];
@@ -189,6 +193,7 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
         }
     }
 }
+#endif
 
 @end
 
@@ -198,6 +203,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
+#if !defined(Q_OS_VISIONOS)
 /*!
     Returns the model identifier of the device.
 */
@@ -217,12 +223,14 @@ static QString deviceModelIdentifier()
     return QString::fromLatin1(QByteArrayView(value, qsizetype(size)));
 #endif
 }
+#endif // !defined(Q_OS_VISIONOS)
 
+#if defined(Q_OS_VISIONOS)
+QIOSScreen::QIOSScreen()
+{
+#else
 QIOSScreen::QIOSScreen(UIScreen *screen)
-    : QPlatformScreen()
-    , m_uiScreen(screen)
-    , m_uiWindow(0)
-    , m_orientationListener(0)
+    : m_uiScreen(screen)
 {
     QString deviceIdentifier = deviceModelIdentifier();
 
@@ -273,11 +281,13 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
 
     m_orientationListener = [[QIOSOrientationListener alloc] initWithQIOSScreen:this];
 
-    updateProperties();
-
     m_displayLink = [m_uiScreen displayLinkWithBlock:^(CADisplayLink *) { deliverUpdateRequests(); }];
     m_displayLink.paused = YES; // Enabled when clients call QWindow::requestUpdate()
     [m_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
+
+#endif // !defined(Q_OS_VISIONOS))
+
+    updateProperties();
 }
 
 QIOSScreen::~QIOSScreen()
@@ -290,13 +300,17 @@ QIOSScreen::~QIOSScreen()
 
 QString QIOSScreen::name() const
 {
+#if defined(Q_OS_VISIONOS)
+    return {};
+#else
     if (m_uiScreen == [UIScreen mainScreen])
         return QString::fromNSString([UIDevice currentDevice].model) + " built-in display"_L1;
     else
         return "External display"_L1;
+#endif
 }
 
-static bool isRunningOnVisionOS()
+[[maybe_unused]] static bool isRunningOnVisionOS()
 {
     static bool result = []{
         // This class is documented to only be available on visionOS
@@ -310,8 +324,13 @@ void QIOSScreen::updateProperties()
     QRect previousGeometry = m_geometry;
     QRect previousAvailableGeometry = m_availableGeometry;
 
+#if defined(Q_OS_VISIONOS)
+    // Based on what iPad app reports
+    m_geometry = QRect(0, 0, 1194, 834);
+    m_availableGeometry = m_geometry;
+    m_depth = 24;
+#else
     m_geometry = QRectF::fromCGRect(m_uiScreen.bounds).toRect();
-
     m_availableGeometry = m_geometry;
 
     // For convenience, we reflect the safe area margins of the screen's UIWindow
@@ -368,6 +387,8 @@ void QIOSScreen::updateProperties()
         static const qreal millimetersPerInch = 25.4;
         m_physicalSize = physicalGeometry.size() / m_physicalDpi * millimetersPerInch;
     }
+
+#endif // defined(Q_OS_VISIONOS)
 
     // At construction time, we don't yet have an associated QScreen, but we still want
     // to compute the properties above so they are ready for when the QScreen attaches.
@@ -453,16 +474,28 @@ QDpi QIOSScreen::logicalBaseDpi() const
 
 qreal QIOSScreen::devicePixelRatio() const
 {
+#if defined(Q_OS_VISIONOS)
+    return 2.0; // Based on what iPad app reports
+#else
     return [m_uiScreen scale];
+#endif
 }
 
 qreal QIOSScreen::refreshRate() const
 {
+#if defined(Q_OS_VISIONOS)
+    return 120.0; // Based on what iPad app reports
+#else
     return m_uiScreen.maximumFramesPerSecond;
+#endif
 }
 
 Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 {
+#if defined(Q_OS_VISIONOS)
+    // Based on iPad app reporting native bounds 1668x2388
+    return Qt::PortraitOrientation;
+#else
     CGRect nativeBounds =
 #if defined(Q_OS_IOS)
         m_uiScreen.nativeBounds;
@@ -474,11 +507,12 @@ Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
     // be on the safe side we compare the width and height of the bounds.
     return nativeBounds.size.width >= nativeBounds.size.height ?
         Qt::LandscapeOrientation : Qt::PortraitOrientation;
+#endif
 }
 
 Qt::ScreenOrientation QIOSScreen::orientation() const
 {
-#ifdef Q_OS_TVOS
+#if defined(Q_OS_TVOS) || defined(Q_OS_VISIONOS)
     return Qt::PrimaryOrientation;
 #else
     // Auxiliary screens are always the same orientation as their primary orientation
@@ -540,10 +574,12 @@ QPixmap QIOSScreen::grabWindow(WId window, int x, int y, int width, int height) 
     return QPixmap::fromImage(qt_mac_toQImage(screenshot.CGImage));
 }
 
+#if !defined(Q_OS_VISIONOS)
 UIScreen *QIOSScreen::uiScreen() const
 {
     return m_uiScreen;
 }
+#endif
 
 UIWindow *QIOSScreen::uiWindow() const
 {

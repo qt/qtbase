@@ -11,6 +11,7 @@
 #include <QtGui/private/qfont_p.h>
 #include <QtGui/private/qfontengine_p.h>
 
+#include "qiosglobal.h"
 #include "qiosfontdialog.h"
 #include "qiosintegration.h"
 
@@ -144,8 +145,7 @@ bool QIOSFontDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality window
     if (windowModality == Qt::ApplicationModal || windowModality == Qt::WindowModal)
         m_viewController.modalInPresentation = YES;
 
-    UIWindow *window = parent ? reinterpret_cast<UIView *>(parent->winId()).window
-        : qt_apple_sharedApplication().keyWindow;
+    UIWindow *window = presentationWindow(parent);
     if (!window)
         return false;
 

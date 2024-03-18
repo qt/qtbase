@@ -23,8 +23,10 @@ public:
 
     Qt::ColorScheme colorScheme() const override;
 
+#if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
     QPlatformMenuItem* createPlatformMenuItem() const override;
     QPlatformMenu* createPlatformMenu() const override;
+#endif
 
     bool usePlatformNativeDialog(DialogType type) const override;
     QPlatformDialogHelper *createPlatformDialogHelper(DialogType type) const override;

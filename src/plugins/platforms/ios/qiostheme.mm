@@ -18,12 +18,15 @@
 #include <UIKit/UIFont.h>
 #include <UIKit/UIInterface.h>
 
-#ifndef Q_OS_TVOS
+#if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
 #include "qiosmenu.h"
+#endif
+
+#if !defined(Q_OS_TVOS)
 #include "qiosfiledialog.h"
-#include "qiosmessagedialog.h"
 #include "qioscolordialog.h"
 #include "qiosfontdialog.h"
+#include "qiosmessagedialog.h"
 #include "qiosscreen.h"
 #endif
 
@@ -82,23 +85,17 @@ const QPalette *QIOSTheme::palette(QPlatformTheme::Palette type) const
     return 0;
 }
 
+#if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
 QPlatformMenuItem* QIOSTheme::createPlatformMenuItem() const
 {
-#ifdef Q_OS_TVOS
-    return 0;
-#else
-    return new QIOSMenuItem();
-#endif
+    return new QIOSMenuItem;
 }
 
 QPlatformMenu* QIOSTheme::createPlatformMenu() const
 {
-#ifdef Q_OS_TVOS
-    return 0;
-#else
-    return new QIOSMenu();
-#endif
+    return new QIOSMenu;
 }
+#endif
 
 bool QIOSTheme::usePlatformNativeDialog(QPlatformTheme::DialogType type) const
 {
@@ -149,6 +146,13 @@ QVariant QIOSTheme::themeHint(ThemeHint hint) const
 
 Qt::ColorScheme QIOSTheme::colorScheme() const
 {
+#if defined(Q_OS_VISIONOS)
+    // On visionOS the concept of light or dark mode does not
+    // apply, as the UI is constantly changing based on what
+    // the lighting conditions are outside the headset, but
+    // the OS reports itself as always being in dark mode.
+    return Qt::ColorScheme::Dark;
+#else
     // Set the appearance based on the QUIWindow
     // Fallback to the UIScreen if no window is created yet
     UIUserInterfaceStyle appearance = UIScreen.mainScreen.traitCollection.userInterfaceStyle;
@@ -163,6 +167,7 @@ Qt::ColorScheme QIOSTheme::colorScheme() const
     return appearance == UIUserInterfaceStyleDark
                        ? Qt::ColorScheme::Dark
                        : Qt::ColorScheme::Light;
+#endif
 }
 
 const QFont *QIOSTheme::font(Font type) const

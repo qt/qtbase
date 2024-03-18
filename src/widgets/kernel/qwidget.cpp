@@ -1289,7 +1289,7 @@ void QWidgetPrivate::create()
 
     Qt::WindowFlags &flags = data.window_flags;
 
-#if defined(Q_OS_IOS) || defined(Q_OS_TVOS)
+#if defined(QT_PLATFORM_UIKIT)
     if (q->testAttribute(Qt::WA_ContentsMarginsRespectsSafeArea))
         flags |= Qt::MaximizeUsingFullscreenGeometryHint;
 #endif

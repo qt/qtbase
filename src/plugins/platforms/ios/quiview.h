@@ -34,7 +34,7 @@ QT_END_NAMESPACE
 - (QIOSViewController*)qtViewController;
 @end
 
-#ifdef Q_OS_IOS
+#if QT_CONFIG(metal)
 @interface QUIMetalView : QUIView
 @end
 #endif

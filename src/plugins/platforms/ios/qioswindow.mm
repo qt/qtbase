@@ -21,7 +21,7 @@
 #import <QuartzCore/CAEAGLLayer.h>
 #endif
 
-#ifdef Q_OS_IOS
+#if QT_CONFIG(metal)
 #import <QuartzCore/CAMetalLayer.h>
 #endif
 
@@ -42,7 +42,7 @@ QIOSWindow::QIOSWindow(QWindow *window, WId nativeHandle)
         m_view = reinterpret_cast<UIView *>(nativeHandle);
         [m_view retain];
     } else {
-#ifdef Q_OS_IOS
+#if QT_CONFIG(metal)
         if (window->surfaceType() == QSurface::RasterSurface)
             window->setSurfaceType(QSurface::MetalSurface);
 
@@ -304,7 +304,6 @@ void QIOSWindow::requestActivateWindow()
     if (blockedByModal())
         return;
 
-    Q_ASSERT(m_view.window);
     [m_view.window makeKeyWindow];
     [m_view becomeFirstResponder];
 

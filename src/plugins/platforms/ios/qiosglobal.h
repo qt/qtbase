@@ -34,6 +34,9 @@ UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation)
 
 int infoPlistValue(NSString* key, int defaultValue);
 
+class QWindow;
+UIWindow *presentationWindow(QWindow *);
+
 QT_END_NAMESPACE
 
 @interface UIResponder (QtFirstResponder)

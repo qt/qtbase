@@ -85,6 +85,16 @@ int infoPlistValue(NSString* key, int defaultValue)
     return value ? [value intValue] : defaultValue;
 }
 
+UIWindow *presentationWindow(QWindow *window)
+{
+    UIWindow *uiWindow = window ? reinterpret_cast<UIView *>(window->winId()).window : nullptr;
+#if !defined(Q_OS_VISIONOS)
+    if (!uiWindow)
+        uiWindow = qt_apple_sharedApplication().keyWindow;
+#endif
+    return uiWindow;
+}
+
 QT_END_NAMESPACE
 
 // -------------------------------------------------------------------------

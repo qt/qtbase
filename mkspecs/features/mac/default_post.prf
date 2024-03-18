@@ -120,10 +120,12 @@ macx-xcode {
 
     QMAKE_XCODE_ARCHS =
 
-    arch_device.name = "ARCHS[sdk=$${device.sdk}*]"
-    arch_device.value = $$QMAKE_APPLE_DEVICE_ARCHS
-    QMAKE_XCODE_ARCHS += $$QMAKE_APPLE_DEVICE_ARCHS
-    QMAKE_MAC_XCODE_SETTINGS += arch_device
+    !isEmpty(QMAKE_APPLE_DEVICE_ARCHS) {
+        arch_device.name = "ARCHS[sdk=$${device.sdk}*]"
+        arch_device.value = $$QMAKE_APPLE_DEVICE_ARCHS
+        QMAKE_XCODE_ARCHS += $$QMAKE_APPLE_DEVICE_ARCHS
+        QMAKE_MAC_XCODE_SETTINGS += arch_device
+    }
 
     ios:simulator {
         arch_simulator.name = "ARCHS[sdk=$${simulator.sdk}*]"
@@ -224,10 +226,16 @@ macx-xcode {
             platform_identifier = $$device.sdk
             sysroot_path  = $$xcodeSDKInfo(Path, $$device.sdk)
         }
-        version_min_flag = -m$${version_identifier}-version-min=$$deployment_target
-        QMAKE_CFLAGS += -isysroot $$sysroot_path $$version_min_flag
-        QMAKE_CXXFLAGS += -isysroot $$sysroot_path $$version_min_flag
-        QMAKE_LFLAGS += -isysroot $$sysroot_path $$version_min_flag
+        QMAKE_CFLAGS += -isysroot $$sysroot_path
+        QMAKE_CXXFLAGS += -isysroot $$sysroot_path
+        QMAKE_LFLAGS += -isysroot $$sysroot_path
+
+        !isEmpty(version_identifier):!isEmpty(deployment_target) {
+            version_min_flag = -m$${version_identifier}-version-min=$$deployment_target
+            QMAKE_CFLAGS += $$version_min_flag
+            QMAKE_CXXFLAGS += $$version_min_flag
+            QMAKE_LFLAGS += $$version_min_flag
+        }
     }
 
     # Enable precompiled headers for multiple architectures

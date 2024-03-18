@@ -8,6 +8,7 @@
 
 #include <QtCore/private/qcore_mac_p.h>
 
+#include "qiosglobal.h"
 #include "qioscolordialog.h"
 #include "qiosintegration.h"
 
@@ -117,8 +118,7 @@ bool QIOSColorDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality windo
     if (windowModality == Qt::ApplicationModal || windowModality == Qt::WindowModal)
         m_viewController.modalInPresentation = YES;
 
-    UIWindow *window = parent ? reinterpret_cast<UIView *>(parent->winId()).window
-        : qt_apple_sharedApplication().keyWindow;
+    UIWindow *window = presentationWindow(parent);
     if (!window)
         return false;
 
