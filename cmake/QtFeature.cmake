@@ -1192,8 +1192,8 @@ function(qt_get_platform_try_compile_vars out_var)
     if(UIKIT)
         # Specify the sysroot, but only if not doing a simulator_and_device build.
         # So keep the sysroot empty for simulator_and_device builds.
-        if(QT_UIKIT_SDK)
-            list(APPEND flags_cmd_line "-DCMAKE_OSX_SYSROOT:STRING=${QT_UIKIT_SDK}")
+        if(QT_APPLE_SDK)
+            list(APPEND flags_cmd_line "-DCMAKE_OSX_SYSROOT:STRING=${QT_APPLE_SDK}")
         endif()
     endif()
     if(QT_NO_USE_FIND_PACKAGE_SYSTEM_ENVIRONMENT_PATH)

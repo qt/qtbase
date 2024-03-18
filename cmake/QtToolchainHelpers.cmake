@@ -157,12 +157,12 @@ endif()")
         list(LENGTH CMAKE_OSX_ARCHITECTURES _qt_osx_architectures_count)
         if(CMAKE_OSX_SYSROOT AND NOT _qt_osx_architectures_count GREATER 1 AND UIKIT)
             list(APPEND init_platform "
-    set(__qt_uikit_sdk \"${QT_UIKIT_SDK}\")
+    set(__qt_apple_sdk \"${QT_APPLE_SDK}\")
     set(__qt_initial_cmake_osx_sysroot \"${CMAKE_OSX_SYSROOT}\")
     if(NOT DEFINED CMAKE_OSX_SYSROOT AND EXISTS \"\${__qt_initial_cmake_osx_sysroot}\")
         set(CMAKE_OSX_SYSROOT \"\${__qt_initial_cmake_osx_sysroot}\" CACHE PATH \"\")
     elseif(NOT DEFINED CMAKE_OSX_SYSROOT AND NOT QT_NO_SET_OSX_SYSROOT)
-        set(CMAKE_OSX_SYSROOT \"\${__qt_uikit_sdk}\" CACHE PATH \"\")
+        set(CMAKE_OSX_SYSROOT \"\${__qt_apple_sdk}\" CACHE PATH \"\")
     endif()")
         endif()
 
@@ -218,7 +218,7 @@ endif()")
             qt_internal_get_first_osx_arch(osx_first_arch)
             list(APPEND init_platform
 "if((NOT CMAKE_GENERATOR STREQUAL \"Xcode\" AND NOT __qt_toolchain_building_qt_repo)
-    OR (CMAKE_GENERATOR STREQUAL \"Xcode\" AND __qt_uikit_sdk AND NOT QT_NO_SET_OSX_ARCHITECTURES))")
+    OR (CMAKE_GENERATOR STREQUAL \"Xcode\" AND __qt_apple_sdk AND NOT QT_NO_SET_OSX_ARCHITECTURES))")
             list(APPEND init_platform
                 "    set(CMAKE_OSX_ARCHITECTURES \"${osx_first_arch}\" CACHE STRING \"\")")
             list(APPEND init_platform "endif()")

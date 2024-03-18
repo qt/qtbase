@@ -83,7 +83,7 @@ The following table describes the mapping of configure options to CMake argument
 | -I <string>                           | -DQT_EXTRA_INCLUDEPATHS=<string1>;<string2>       |                                                                 |
 | -L <string>                           | -DQT_EXTRA_LIBDIRS=<string1>;<string2>            |                                                                 |
 | -F <string>                           | -DQT_EXTRA_FRAMEWORKPATHS=<string1>;<string2>     |                                                                 |
-| -sdk <sdk>                            | -DQT_UIKIT_SDK=<value>                            | Should be provided a value like 'iphoneos' or 'iphonesimulator' |
+| -sdk <sdk>                            | -DQT_APPLE_SDK=<value>                            | Should be provided a value like 'iphoneos' or 'iphonesimulator' |
 |                                       |                                                   | If no value is provided, a simulator_and_device build is        |
 |                                       |                                                   | assumed.                                                        |
 | -android-sdk <path>                   | -DANDROID_SDK_ROOT=<path>                         |                                                                 |

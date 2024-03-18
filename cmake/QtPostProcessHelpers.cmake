@@ -630,9 +630,9 @@ set(__qt_internal_initial_qt_cmake_build_type \"${CMAKE_BUILD_TYPE}\")
                 "set(QT_IS_MACOS_UNIVERSAL \"${QT_IS_MACOS_UNIVERSAL}\" CACHE BOOL \"\")\n")
         endif()
 
-        if(DEFINED QT_UIKIT_SDK)
+        if(DEFINED QT_APPLE_SDK)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(QT_UIKIT_SDK \"${QT_UIKIT_SDK}\" CACHE BOOL \"\")\n")
+                "set(QT_APPLE_SDK \"${QT_APPLE_SDK}\" CACHE BOOL \"\")\n")
         endif()
 
         if(QT_FORCE_FIND_TOOLS)

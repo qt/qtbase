@@ -873,8 +873,8 @@ function(qt_generate_global_device_pri_file)
         endif()
     endif()
 
-    if(QT_UIKIT_SDK)
-        string(APPEND content "QMAKE_MAC_SDK = ${QT_UIKIT_SDK}\n")
+    if(QT_APPLE_SDK)
+        string(APPEND content "QMAKE_MAC_SDK = ${QT_APPLE_SDK}\n")
     endif()
 
     set(gcc_machine_dump "")

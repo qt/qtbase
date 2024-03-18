@@ -181,10 +181,15 @@ function(qt_auto_detect_ios)
     if(CMAKE_SYSTEM_NAME STREQUAL iOS)
         message(STATUS "Using internal CMake ${CMAKE_SYSTEM_NAME} toolchain file.")
 
-        # The QT_UIKIT_SDK check simulates the input.sdk condition for simulator_and_device in
+        # Pass on QT_UIKIT_SDK for compatibility
+        if(QT_UIKIT_SDK AND NOT QT_APPLE_SDK)
+            set(QT_APPLE_SDK "${QT_UIKIT_SDK}" CACHE STRING "")
+        endif()
+
+        # The QT_APPLE_SDK check simulates the input.sdk condition for simulator_and_device in
         # configure.json.
         # If the variable is explicitly provided, assume simulator_and_device to be off.
-        if(QT_UIKIT_SDK)
+        if(QT_APPLE_SDK)
             set(simulator_and_device OFF)
         else()
             # Default to simulator_and_device when an explicit sdk is not requested.
@@ -199,24 +204,24 @@ function(qt_auto_detect_ios)
         # architectures, otherwise compilation fails with unknown defines.
         if(simulator_and_device)
             set(osx_architectures "arm64;x86_64")
-        elseif(QT_UIKIT_SDK STREQUAL "iphoneos")
+        elseif(QT_APPLE_SDK STREQUAL "iphoneos")
             set(osx_architectures "arm64")
-        elseif(QT_UIKIT_SDK STREQUAL "iphonesimulator")
+        elseif(QT_APPLE_SDK STREQUAL "iphonesimulator")
             set(osx_architectures "x86_64")
         else()
-            if(NOT DEFINED QT_UIKIT_SDK)
-                message(FATAL_ERROR "Please provide a value for -DQT_UIKIT_SDK."
+            if(NOT DEFINED QT_APPLE_SDK)
+                message(FATAL_ERROR "Please provide a value for -DQT_APPLE_SDK."
                     " Possible values: iphoneos, iphonesimulator.")
             else()
                 message(FATAL_ERROR
-                        "Unknown SDK argument given to QT_UIKIT_SDK: ${QT_UIKIT_SDK}.")
+                        "Unknown SDK argument given to QT_APPLE_SDK: ${QT_APPLE_SDK}.")
             endif()
         endif()
 
         # For non simulator_and_device builds, we need to explicitly set the SYSROOT aka the sdk
         # value.
-        if(QT_UIKIT_SDK)
-            set(CMAKE_OSX_SYSROOT "${QT_UIKIT_SDK}" CACHE STRING "")
+        if(QT_APPLE_SDK)
+            set(CMAKE_OSX_SYSROOT "${QT_APPLE_SDK}" CACHE STRING "")
         endif()
         set(CMAKE_OSX_ARCHITECTURES "${osx_architectures}" CACHE STRING "")
 

@@ -542,7 +542,7 @@ if(APPLE)
 endif()
 qt_feature("simulator_and_device" PUBLIC
     LABEL "Build for both simulator and device"
-    CONDITION UIKIT AND NOT QT_UIKIT_SDK
+    CONDITION UIKIT AND NOT QT_APPLE_SDK
 )
 qt_feature_config("simulator_and_device" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("rpath" PUBLIC
