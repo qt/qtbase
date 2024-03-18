@@ -1407,6 +1407,11 @@ qt_configure_add_report_entry(
     MESSAGE "You should use the recommended Emscripten version ${QT_EMCC_RECOMMENDED_VERSION} with this Qt. You have ${EMCC_VERSION}."
     CONDITION WASM AND NOT ${EMCC_VERSION} MATCHES ${QT_EMCC_RECOMMENDED_VERSION}
 )
+qt_configure_add_report_entry(
+    TYPE ERROR
+    MESSAGE "Building Qt with C++20 is not supported with MSVC 2019."
+    CONDITION QT_FEATURE_cxx20 AND MSVC AND MSVC_VERSION LESS "1930"
+)
 if(WASM)
     qt_extra_definition("QT_EMCC_VERSION" "\"${EMCC_VERSION}\"" PUBLIC)
 endif()
