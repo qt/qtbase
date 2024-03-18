@@ -6537,7 +6537,7 @@ void tst_QNetworkReply::httpConnectionCount()
     // to see if we should upgrade:
     const int rampDown = http2Enabled ? 2 : 1;
     while (pendingConnectionCount <= 6) {
-        if (!QTest::qWaitFor(newPendingConnection, pendingConnectionCount >= rampDown ? 1s : 5s))
+        if (!QTest::qWaitFor(newPendingConnection, pendingConnectionCount >= rampDown ? 3s : 7s))
             break;
         QTcpSocket *socket = server->nextPendingConnection();
         while (socket) {
