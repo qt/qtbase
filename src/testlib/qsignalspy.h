@@ -215,7 +215,7 @@ private:
 
     QTestEventLoop m_loop;
     bool m_waiting;
-    static inline QMutex m_mutex; // protects m_waiting, args and the QList base class, between appendArgs() and wait()
+    QMutex m_mutex; // protects m_waiting, args and the QList base class, between appendArgs() and wait()
 };
 
 QT_END_NAMESPACE
