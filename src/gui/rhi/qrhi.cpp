@@ -16,7 +16,7 @@
 #include "qrhid3d11_p.h"
 #include "qrhid3d12_p.h"
 #endif
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
 #include "qrhimetal_p.h"
 #endif
 
@@ -8477,7 +8477,7 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
         break;
 #endif
     case Metal:
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
         r->d = new QRhiMetal(static_cast<QRhiMetalInitParams *>(params),
                              static_cast<QRhiMetalNativeHandles *>(importDevice));
         break;
@@ -8536,7 +8536,7 @@ bool QRhi::probe(QRhi::Implementation impl, QRhiInitParams *params)
     // create() and then drop the result.
 
     if (impl == Metal) {
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
         ok = QRhiMetal::probe(static_cast<QRhiMetalInitParams *>(params));
 #endif
     } else {
@@ -8587,7 +8587,7 @@ bool QRhi::probe(QRhi::Implementation impl, QRhiInitParams *params)
  */
 QRhiSwapChainProxyData QRhi::updateSwapChainProxyData(QRhi::Implementation impl, QWindow *window)
 {
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
     if (impl == Metal)
         return QRhiMetal::updateSwapChainProxyData(window);
 #else

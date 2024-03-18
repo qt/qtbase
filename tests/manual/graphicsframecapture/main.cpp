@@ -84,7 +84,7 @@ QRhi::Implementation graphicsApiFromCmd(const QGuiApplication &app) {
     QRhi::Implementation graphicsApi;
 #if defined(Q_OS_WIN)
     graphicsApi = QRhi::D3D11;
-#elif defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#elif QT_CONFIG(metal)
     graphicsApi = QRhi::Metal;
 #elif QT_CONFIG(vulkan)
     graphicsApi = QRhi::Vulkan;

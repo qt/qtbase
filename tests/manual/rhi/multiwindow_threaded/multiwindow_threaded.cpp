@@ -321,7 +321,7 @@ void Renderer::createRhi()
     }
 #endif
 
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
     if (graphicsApi == Metal) {
         QRhiMetalInitParams params;
         r = QRhi::create(QRhi::Metal, &params, rhiFlags);
@@ -654,7 +654,7 @@ int main(int argc, char **argv)
 
 #if defined(Q_OS_WIN)
     graphicsApi = D3D11;
-#elif defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#elif QT_CONFIG(metal)
     graphicsApi = Metal;
 #elif QT_CONFIG(vulkan)
     graphicsApi = Vulkan;

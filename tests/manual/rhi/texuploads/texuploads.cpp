@@ -192,7 +192,7 @@ void Window::customRender()
         if (d.testStage == 6) {
             const QRhiTexture::NativeTexture nativeTexture = d.tex->nativeTexture();
             if (nativeTexture.object) {
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
                 if (graphicsApi == Metal) {
                     qDebug() << "Metal texture: " << nativeTexture.object;
                     // Now could cast to id<MTLTexture> and do something with

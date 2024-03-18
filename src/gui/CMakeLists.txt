@@ -1006,7 +1006,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_xkbcommon AND UNIX
         XKB::XKB
 )
 
-qt_internal_extend_target(Gui CONDITION IOS OR MACOS
+qt_internal_extend_target(Gui CONDITION QT_FEATURE_metal
     SOURCES
         rhi/qrhimetal.mm rhi/qrhimetal_p.h
     PUBLIC_LIBRARIES

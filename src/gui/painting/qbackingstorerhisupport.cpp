@@ -107,7 +107,7 @@ bool QBackingStoreRhiSupport::create()
     }
 #endif
 
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
     if (!rhi && m_config.api() == QPlatformBackingStoreRhiConfig::Metal) {
         QRhiMetalInitParams params;
         // For parity with Qt Quick, fall back to OpenGL when there is no Metal (f.ex. in macOS virtual machines).
@@ -271,7 +271,7 @@ bool QBackingStoreRhiSupport::checkForceRhi(QPlatformBackingStoreRhiConfig *outC
         if (config.isEnabled()) {
 #if defined(Q_OS_WIN)
             config.setApi(QPlatformBackingStoreRhiConfig::D3D11);
-#elif defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#elif QT_CONFIG(metal)
             config.setApi(QPlatformBackingStoreRhiConfig::Metal);
 #elif QT_CONFIG(opengl)
             config.setApi(QPlatformBackingStoreRhiConfig::OpenGL);
@@ -291,7 +291,7 @@ bool QBackingStoreRhiSupport::checkForceRhi(QPlatformBackingStoreRhiConfig *outC
                 if (backend == QStringLiteral("d3d12"))
                     config.setApi(QPlatformBackingStoreRhiConfig::D3D12);
 #endif
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
                 if (backend == QStringLiteral("metal"))
                     config.setApi(QPlatformBackingStoreRhiConfig::Metal);
 #endif

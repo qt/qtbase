@@ -146,7 +146,7 @@ void RhiWindow::init()
     }
 #endif
 
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
     if (m_graphicsApi == QRhi::Metal) {
         QRhiMetalInitParams params;
         m_rhi.reset(QRhi::create(QRhi::Metal, &params));

@@ -41,7 +41,7 @@ static void *glNativeContext(QOpenGLContext *context) {
 #endif
 #endif
 
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
         nctx = context->nativeInterface<QNativeInterface::QCocoaGLContext>()->nativeContext();
 #endif
     }

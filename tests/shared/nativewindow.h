@@ -53,7 +53,7 @@ private:
     Handle m_handle = {};
 };
 
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
 
 @interface View : VIEW_BASE
 @end

@@ -4,7 +4,7 @@
 #include "qgraphicsframecapture_p.h"
 #if (defined (Q_OS_WIN) || defined(Q_OS_LINUX)) && QT_CONFIG(library)
 #include "qgraphicsframecapturerenderdoc_p_p.h"
-#elif defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#elif QT_CONFIG(metal)
 #include "qgraphicsframecapturemetal_p_p.h"
 #else
 #include "qgraphicsframecapture_p_p.h"
@@ -28,7 +28,7 @@ QGraphicsFrameCapture::QGraphicsFrameCapture()
 {
 #if (defined (Q_OS_WIN) || defined(Q_OS_LINUX)) && QT_CONFIG(library)
     d.reset(new QGraphicsFrameCaptureRenderDoc);
-#elif defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#elif QT_CONFIG(metal)
     d.reset(new QGraphicsFrameCaptureMetal);
 #endif
 }
