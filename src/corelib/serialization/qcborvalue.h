@@ -223,7 +223,7 @@ public:
     bool operator==(const QCborValue &other) const noexcept
     { return compare(other) == 0; }
     bool operator!=(const QCborValue &other) const noexcept
-    { return !(*this == other); }
+    { return !operator==(other); }
     bool operator<(const QCborValue &other) const
     { return compare(other) < 0; }
 #endif
