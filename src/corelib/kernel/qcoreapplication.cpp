@@ -525,6 +525,7 @@ void QCoreApplicationPrivate::eventDispatcherReady()
 }
 
 Q_CONSTINIT QBasicAtomicPointer<QThread> QCoreApplicationPrivate::theMainThread = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
+Q_CONSTINIT QBasicAtomicPointer<void> QCoreApplicationPrivate::theMainThreadId = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
 QThread *QCoreApplicationPrivate::mainThread()
 {
     Q_ASSERT(theMainThread.loadRelaxed() != nullptr);

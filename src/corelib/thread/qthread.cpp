@@ -66,8 +66,9 @@ QThreadData::~QThreadData()
     // safeguard the main thread here.. This fix is a bit crude, but it solves
     // the problem...
     if (this->thread.loadAcquire() == QCoreApplicationPrivate::theMainThread.loadAcquire()) {
-       QCoreApplicationPrivate::theMainThread.storeRelease(nullptr);
-       QThreadData::clearCurrentThreadData();
+        QCoreApplicationPrivate::theMainThread.storeRelease(nullptr);
+        QCoreApplicationPrivate::theMainThreadId.storeRelaxed(nullptr);
+        QThreadData::clearCurrentThreadData();
     }
 
     // ~QThread() sets thread to nullptr, so if it isn't null here, it's
@@ -423,6 +424,23 @@ QThread *QThread::currentThread()
     QThreadData *data = QThreadData::current();
     Q_ASSERT(data != nullptr);
     return data->thread.loadAcquire();
+}
+
+/*!
+    \since 6.8
+
+    Returns whether the currently executing thread is the main thread.
+
+    The main thread is the thread in which QCoreApplication was created.
+    This is usually the thread that called the \c{main()} function, but not necessarily so.
+    It is the thread that is processing the GUI events and in which graphical objects
+    (QWindow, QWidget) can be created.
+
+    \sa currentThread(), QCoreApplication::instance()
+*/
+bool QThread::isMainThread()
+{
+    return currentThreadId() == QCoreApplicationPrivate::theMainThreadId.loadRelaxed();
 }
 
 /*!
@@ -1066,8 +1084,10 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         data->threadId.storeRelaxed(Qt::HANDLE(data->thread.loadAcquire()));
         data->deref();
         data->isAdopted = true;
-        if (!QCoreApplicationPrivate::theMainThread.loadAcquire())
+        if (!QCoreApplicationPrivate::theMainThread.loadAcquire()) {
             QCoreApplicationPrivate::theMainThread.storeRelease(data->thread.loadRelaxed());
+            QCoreApplicationPrivate::theMainThreadId.storeRelaxed(data->threadId.loadRelaxed());
+        }
     }
     return data;
 }
