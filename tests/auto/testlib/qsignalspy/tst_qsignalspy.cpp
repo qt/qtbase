@@ -464,27 +464,33 @@ void tst_QSignalSpy::spyOnMetaMethod()
 Q_DECLARE_METATYPE(QMetaMethod);
 void tst_QSignalSpy::spyOnMetaMethod_invalid()
 {
+    QFETCH(const QByteArray, message);
     QFETCH(QObject*, object);
     QFETCH(QMetaMethod, signal);
 
+    QTest::ignoreMessage(QtWarningMsg, message.data());
     QSignalSpy spy(object, signal);
     QVERIFY(!spy.isValid());
 }
 
 void tst_QSignalSpy::spyOnMetaMethod_invalid_data()
 {
+    QTest::addColumn<QByteArray>("message");
     QTest::addColumn<QObject*>("object");
     QTest::addColumn<QMetaMethod>("signal");
 
     QTest::addRow("Invalid object")
+        << "QSignalSpy: Cannot spy on a null object"_ba
         << static_cast<QObject*>(nullptr)
         << QMetaMethod();
 
     QTest::addRow("Empty signal")
+        << "QSignalSpy: Not a valid signal: ''"_ba
         << new QObject(this)
         << QMetaMethod();
 
     QTest::addRow("Method is not a signal")
+        << "QSignalSpy: Not a valid signal: 'deleteLater()'"_ba
         << new QObject(this)
         << QObject::staticMetaObject.method(QObject::staticMetaObject.indexOfMethod("deleteLater()"));
 }
