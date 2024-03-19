@@ -177,7 +177,7 @@ void tst_QOperatingSystemVersion::comparison()
     QCOMPARE_EQ(lhsSystemInfo > rhsSystemInfo, is_gt(expectedResult));
     QCOMPARE_EQ(lhsSystemInfo >= rhsSystemInfo, is_gteq(expectedResult));
 #ifdef __cpp_lib_three_way_comparison
-    Q_COMPARE_EQ(lhsSystemInfo <=> rhsSystemInfo, expectedResult);
+    QCOMPARE_EQ(lhsSystemInfo <=> rhsSystemInfo, expectedResult);
 #endif
 }
 
@@ -237,7 +237,7 @@ void tst_QOperatingSystemVersion::comparison2()
     QCOMPARE_EQ(lhs > rhs, is_gt(result) && comparable);
     QCOMPARE_EQ(lhs >= rhs, is_gteq(result) && comparable);
 #ifdef __cpp_lib_three_way_comparison
-    Q_COMPARE_EQ(lhs <=> rhs, result);
+    QCOMPARE_EQ(lhs <=> rhs, result);
 #endif
 }
 
