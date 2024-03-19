@@ -17,6 +17,8 @@
 #include <qbuffer.h>
 #include <qpair.h>
 #include <qdebug.h>
+#include <qspan.h>
+#include <qvarlengtharray.h>
 
 #ifndef QT_NO_SSL
 #    include <private/qsslsocket_p.h>
@@ -1134,7 +1136,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     if (neededOpenChannels <= 0)
         return;
 
-    QQueue<int> channelsToConnect;
+    QVarLengthArray<int> channelsToConnect;
 
     // use previously used channels first
     for (int i = 0; i < activeChannelCount && neededOpenChannels > 0; ++i) {
@@ -1150,7 +1152,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
 
         if (!channels[i].reply && !channels[i].isSocketBusy()
             && (channels[i].socket->state() == QAbstractSocket::UnconnectedState)) {
-            channelsToConnect.enqueue(i);
+            channelsToConnect.push_back(i);
             neededOpenChannels--;
         }
     }
@@ -1160,12 +1162,14 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         if (channels[i].socket)
             continue;
 
-        channelsToConnect.enqueue(i);
+        channelsToConnect.push_back(i);
         neededOpenChannels--;
     }
 
-    while (!channelsToConnect.isEmpty()) {
-        const int channel = channelsToConnect.dequeue();
+    auto channelToConnectSpan = QSpan{channelsToConnect};
+    while (!channelToConnectSpan.isEmpty()) {
+        const int channel = channelToConnectSpan.front();
+        channelToConnectSpan = channelToConnectSpan.sliced(1);
 
         if (networkLayerState == IPv4)
             channels[channel].networkLayerPreference = QAbstractSocket::IPv4Protocol;
