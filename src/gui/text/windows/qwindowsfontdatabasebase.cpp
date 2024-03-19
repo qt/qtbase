@@ -761,6 +761,9 @@ QFontEngine *QWindowsFontDatabaseBase::fontEngine(const QByteArray &fontData, qr
         return nullptr;
 
     IDWriteFontFace *directWriteFontFace = createDirectWriteFace(fontData);
+    if (directWriteFontFace == nullptr)
+        return nullptr;
+
     fontEngine = new QWindowsFontEngineDirectWrite(directWriteFontFace,
                                                    pixelSize,
                                                    fontEngineData);
