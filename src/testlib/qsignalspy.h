@@ -43,11 +43,7 @@ public:
             return;
         }
 
-        initArgs(mo->method(sigIndex), obj);
-        if (!connectToSignal(obj, sigIndex))
-            return;
-
-        sig = ba;
+        init(obj, mo->method(sigIndex));
     }
 
 #ifdef Q_QDOC
@@ -65,30 +61,15 @@ public:
             return;
         }
 
-        const QMetaObject * const mo = obj->metaObject();
         const QMetaMethod signalMetaMethod = QMetaMethod::fromSignal(signal0);
-        const int sigIndex = signalMetaMethod.methodIndex();
-
-        if (!isSignalMetaMethodValid(signalMetaMethod))
-            return;
-
-        initArgs(mo->method(sigIndex), obj);
-        if (!connectToSignal(obj, sigIndex))
-            return;
-
-        sig = signalMetaMethod.methodSignature();
+        init(obj, signalMetaMethod);
     }
 #endif // Q_QDOC
 
     QSignalSpy(const QObject *obj, QMetaMethod signal)
     {
-        if (isObjectValid(obj) && isSignalMetaMethodValid(signal)) {
-            initArgs(signal, obj);
-            if (!connectToSignal(obj, signal.methodIndex()))
-                return;
-
-            sig = signal.methodSignature();
-        }
+        if (isObjectValid(obj))
+            init(obj, signal);
     }
 
     inline bool isValid() const { return !sig.isEmpty(); }
@@ -128,6 +109,18 @@ public:
     }
 
 private:
+    void init(const QObject *obj, QMetaMethod signal)
+    {
+        if (!isSignalMetaMethodValid(signal))
+            return;
+
+        initArgs(signal, obj);
+        if (!connectToSignal(obj, signal.methodIndex()))
+            return;
+
+        sig = signal.methodSignature();
+    }
+
     bool connectToSignal(const QObject *sender, int sigIndex)
     {
         static const int memberOffset = QObject::staticMetaObject.methodCount();
