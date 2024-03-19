@@ -441,5 +441,7 @@ function(_qt_internal_create_versionless_targets targets install_namespace)
                     ${property} "${exported_property_value}")
             endif()
         endforeach()
+
+        set_property(TARGET Qt::${target} PROPERTY _qt_is_versionless_target TRUE)
     endforeach()
 endfunction()

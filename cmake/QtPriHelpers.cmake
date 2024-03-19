@@ -144,15 +144,6 @@ function(qt_get_direct_module_dependencies target out_var)
             continue()
         endif()
         get_target_property(lib_type ${lib} TYPE)
-        get_target_property(is_versionless_target ${lib} _qt_is_versionless_target)
-        if (lib_type STREQUAL "INTERFACE_LIBRARY" AND is_versionless_target)
-            # Found a version-less target like Qt::Core outside of qtbase.
-            # Skip this one and use what this target points to, e.g. Qt6::Core.
-            # Make sure to process Private interface libraries as-is.
-            get_target_property(ifacelibs ${lib} INTERFACE_LINK_LIBRARIES)
-            list(PREPEND libs ${ifacelibs})
-            continue()
-        endif()
         get_target_property(aliased_target ${lib} ALIASED_TARGET)
         if(TARGET "${aliased_target}")
             # If versionless target is alias, use what the alias points to.
