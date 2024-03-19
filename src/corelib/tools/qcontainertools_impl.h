@@ -380,8 +380,7 @@ template <typename Container, typename T>
 auto sequential_erase_with_copy(Container &c, const T &t)
 {
     using CopyProxy = std::conditional_t<std::is_copy_constructible_v<T>, T, const T &>;
-    const T &tCopy = CopyProxy(t);
-    return sequential_erase(c, tCopy);
+    return sequential_erase(c, CopyProxy(t));
 }
 
 template <typename Container, typename T>
