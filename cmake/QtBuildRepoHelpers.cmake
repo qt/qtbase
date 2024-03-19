@@ -497,7 +497,15 @@ function(qt_get_standalone_parts_config_files_path out_var)
     set(dir_name "StandaloneTests")
 
     set(path_suffix "${INSTALL_LIBDIR}/cmake/${INSTALL_CMAKE_NAMESPACE}BuildInternals/${dir_name}")
-    set(path "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${path_suffix}")
+
+    # Each repo's standalone parts might be configured with a unique CMAKE_STAGING_PREFIX,
+    # different from any previous one, and it might not coincide with where the BuildInternals
+    # config file is.
+    if(QT_WILL_INSTALL AND CMAKE_STAGING_PREFIX)
+        qt_path_join(path "${CMAKE_STAGING_PREFIX}" "${path_suffix}")
+    else()
+        qt_path_join(path "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}" "${path_suffix}")
+    endif()
 
     set("${out_var}" "${path}" PARENT_SCOPE)
 endfunction()
