@@ -9,6 +9,7 @@
 #include <qlist.h>
 #include <qstring.h>
 #include <qbitarray.h>
+#include <qvarlengtharray.h>
 #include <private/qstringiterator_p.h>
 #if 0
 #include <private/qunicodetables_p.h>
@@ -886,6 +887,49 @@ enum class IdnaStatus : unsigned int {
     Deviation,
 };
 
+static const char *emoji_flags_string =
+    "enum class EmojiFlags : uchar {\n"
+    "    NoEmoji = 0,\n"
+    "    Emoji = 1,\n"
+    "    Emoji_Presentation = 2,\n"
+    "    Emoji_Modifier = 4,\n"
+    "    Emoji_Modifier_Base = 8,\n"
+    "    Emoji_Component = 16\n"
+    "};\n\n";
+
+enum class EmojiFlags : uchar
+{
+    NoEmoji = 0,
+    Emoji = 1,
+    Emoji_Presentation = 2,
+    Emoji_Modifier = 4,
+    Emoji_Modifier_Base = 8,
+    Emoji_Component = 16,
+
+    // Stored via grapheme break, so this is not added to emojiFlags property
+    Extended_Pictographic = 32,
+};
+
+static QHash<QByteArray, EmojiFlags> emojiFlagsMap;
+
+static void initEmojiFlagsMap()
+{
+    struct {
+        EmojiFlags flags;
+        const char *name;
+    } data[] = {
+        {EmojiFlags::Emoji,                 "Emoji"},
+        {EmojiFlags::Emoji_Presentation,    "Emoji_Presentation"},
+        {EmojiFlags::Emoji_Modifier,        "Emoji_Modifier"},
+        {EmojiFlags::Emoji_Modifier_Base,   "Emoji_Modifier_Base"},
+        {EmojiFlags::Emoji_Component,       "Emoji_Component"},
+        {EmojiFlags::Extended_Pictographic, "Extended_Pictographic"},
+    };
+
+    for (const auto &entry : data)
+        emojiFlagsMap[entry.name] = entry.flags;
+}
+
 // Keep this one in sync with the code in createPropertyInfo
 static const char *property_string =
     "enum Case {\n"
@@ -898,8 +942,9 @@ static const char *property_string =
     "};\n"
     "\n"
     "struct Properties {\n"
-    "    ushort category            : 8; /* 5 used */\n"
-    "    ushort direction           : 8; /* 5 used */\n"
+    "    ushort category            : 5;\n"
+    "    ushort direction           : 5;\n"
+    "    ushort emojiFlags          : 6; /* 5 used */\n"
     "    ushort combiningClass      : 8;\n"
     "    ushort joining             : 3;\n"
     "    signed short digitValue    : 5;\n"
@@ -968,6 +1013,7 @@ struct PropertyFlags {
         : combiningClass(0)
         , category(QChar::Other_NotAssigned) // Cn
         , direction(QChar::DirL)
+        , emojiFlags(0)
         , joining(QChar::Joining_None)
         , age(QChar::Unicode_Unassigned)
         , mirrorDiff(0) {}
@@ -976,6 +1022,7 @@ struct PropertyFlags {
         return (combiningClass == o.combiningClass
                 && category == o.category
                 && direction == o.direction
+                && emojiFlags == o.emojiFlags
                 && joining == o.joining
                 && age == o.age
                 && eastAsianWidth == o.eastAsianWidth
@@ -1002,6 +1049,8 @@ struct PropertyFlags {
     uchar combiningClass : 8;
     QChar::Category category : 5;
     QChar::Direction direction : 5;
+    // from emoji-data.txt
+    uchar emojiFlags : 5;
     // from ArabicShaping.txt
     QChar::JoiningType joining : 3;
     // from DerivedAge.txt
@@ -2057,10 +2106,8 @@ static void readEmojiData()
         QList<QByteArray> l = line.split(';');
         Q_ASSERT(l.size() == 2);
 
-        // NOTE: for the moment we process emoji_data only to extract
-        // the code points with Extended_Pictographic. This is needed by
-        // extended grapheme clustering (cf. the GB11 rule in UAX #29).
-        if (l[1] != "Extended_Pictographic")
+        EmojiFlags emojiFlags = emojiFlagsMap.value(l[1], EmojiFlags::NoEmoji);
+        if (emojiFlags == EmojiFlags::NoEmoji)
             continue;
 
         QByteArray codes = l[0];
@@ -2079,8 +2126,13 @@ static void readEmojiData()
         for (int codepoint = from; codepoint <= to; ++codepoint) {
             UnicodeData &ud = UnicodeData::valueRef(codepoint);
             // Check we're not overwriting the data from GraphemeBreakProperty.txt...
-            Q_ASSERT(ud.p.graphemeBreakClass == GraphemeBreak_Any);
-            ud.p.graphemeBreakClass = GraphemeBreak_Extended_Pictographic;
+            Q_ASSERT(emojiFlags != EmojiFlags::Extended_Pictographic
+                    // Extended_Pictographic should only replace GB_Any
+                    || ud.p.graphemeBreakClass == GraphemeBreak_Any);
+            if (emojiFlags == EmojiFlags::Extended_Pictographic)
+                ud.p.graphemeBreakClass = GraphemeBreak_Extended_Pictographic;
+            else
+                ud.p.emojiFlags |= int(emojiFlags);
         }
     }
 }
@@ -2987,11 +3039,14 @@ static QByteArray createPropertyInfo()
     for (int i = 0; i < uniqueProperties.size(); ++i) {
         const PropertyFlags &p = uniqueProperties.at(i);
         out += "\n    { ";
-//     "        ushort category            : 8; /* 5 used */\n"
+//     "        ushort category            : 5;\n"
         out += QByteArray::number( p.category );
         out += ", ";
-//     "        ushort direction           : 8; /* 5 used */\n"
+//     "        ushort direction           : 5;\n"
         out += QByteArray::number( p.direction );
+        out += ", ";
+//     "        ushort emojiFlags          : 6; /* 5 used */\n"
+        out += QByteArray::number ( p.emojiFlags );
         out += ", ";
 //     "        ushort combiningClass      : 8;\n"
         out += QByteArray::number( p.combiningClass );
@@ -3018,7 +3073,7 @@ static QByteArray createPropertyInfo()
 //     "            ushort special    : 1;\n"
 //     "            signed short diff : 15;\n"
 //     "        } cases[NumCases];\n"
-        out += " { {";
+        out += "{ {";
         out += QByteArray::number( p.lowerCaseSpecial );
         out += ", ";
         out += QByteArray::number( p.lowerCaseDiff );
@@ -3586,6 +3641,7 @@ int main(int, char **)
     initLineBreak();
     initScriptMap();
     initIdnaStatusMap();
+    initEmojiFlagsMap();
 
     readUnicodeData();
     readBidiMirroring();
@@ -3673,6 +3729,7 @@ int main(int, char **)
     f.write(sentence_break_class_string);
     f.write(line_break_class_string);
     f.write(idna_status_string);
+    f.write(emoji_flags_string);
     f.write(methods);
     f.write("} // namespace QUnicodeTables\n\n"
             "QT_END_NAMESPACE\n\n"
