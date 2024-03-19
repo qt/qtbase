@@ -2927,7 +2927,7 @@ function(_qt_internal_setup_deploy_support)
                 DIRECTORY [[${CMAKE_SOURCE_DIR}]]
                 CALL _qt_internal_write_target_deploy_info [[${targets_file}]])"
         )
-        set_property(TARGET ${target} PROPERTY _qt_deploy_support_files "${targets_file}")
+        _qt_internal_add_deploy_support("${targets_file}")
     endif()
 
     # Make sure to look under the Qt bin dir with find_program, rather than randomly picking up
@@ -3125,7 +3125,7 @@ set(__QT_DEPLOY_QT_DEBUG_POSTFIX \"${QT6_DEBUG_POSTFIX}\")
 
 # Define the CMake commands to be made available during deployment.
 set(__qt_deploy_support_files
-    \"$<JOIN:$<TARGET_PROPERTY:${target},_qt_deploy_support_files>,\"
+    \"$<JOIN:$<TARGET_GENEX_EVAL:${target},$<TARGET_PROPERTY:${target},_qt_deploy_support_files>>,\"
     \">\"
 )
 foreach(__qt_deploy_support_file IN LISTS __qt_deploy_support_files)
