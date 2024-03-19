@@ -1703,11 +1703,17 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
         ret = option->rect.adjusted(8,0,-8,0);
         break;
     case QStyle::SE_ItemViewItemText:
-        if (widget && widget->parentWidget() &&
-            widget->parentWidget()->inherits("QComboBoxPrivateContainer"))
-            ret = option->rect.adjusted(5,0,-5,0);
-        else
+        if (const auto *item = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
+            const int decorationOffset = item->features.testFlag(QStyleOptionViewItem::HasDecoration) ? item->decorationSize.width() : 0;
+            if (widget && widget->parentWidget() &&
+                widget->parentWidget()->inherits("QComboBoxPrivateContainer")) {
+                    ret = option->rect.adjusted(decorationOffset + 5, 0, -5, 0);
+            } else {
+                ret = QWindowsVistaStyle::subElementRect(element, option, widget);
+            }
+        } else {
             ret = QWindowsVistaStyle::subElementRect(element, option, widget);
+        }
         break;
     default:
         ret = QWindowsVistaStyle::subElementRect(element, option, widget);
