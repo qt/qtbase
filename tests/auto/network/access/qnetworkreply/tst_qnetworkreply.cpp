@@ -8430,9 +8430,9 @@ void tst_QNetworkReply::emitErrorForAllReplies() // QTBUG-36890
     for (int a = 0; a < urls.size(); ++a) {
         QVERIFY(replies.at(a)->isFinished());
         QCOMPARE(errorSpies.at(a)->size(), 1);
-        errorSpies.at(a)->deleteLater();
+        delete errorSpies.at(a);
         QCOMPARE(finishedSpies.at(a)->size(), 1);
-        finishedSpies.at(a)->deleteLater();
+        delete finishedSpies.at(a);
         replies.at(a)->deleteLater();
     }
 }
