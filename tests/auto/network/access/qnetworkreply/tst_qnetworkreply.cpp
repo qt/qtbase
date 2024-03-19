@@ -8700,31 +8700,33 @@ void tst_QNetworkReply::ftpAuthentication()
 void tst_QNetworkReply::emitErrorForAllReplies() // QTBUG-36890
 {
     // port 100 is not well-known and should be closed
-    QList<QUrl> urls = QList<QUrl>() << QUrl("http://localhost:100/request1")
-                                     << QUrl("http://localhost:100/request2")
-                                     << QUrl("http://localhost:100/request3");
-    QList<QNetworkReply *> replies;
-    QList<QSignalSpy *> errorSpies;
-    QList<QSignalSpy *> finishedSpies;
-    for (int a = 0; a < urls.size(); ++a) {
-        QNetworkRequest request(urls.at(a));
+    const QUrl urls[] = {
+        QUrl("http://localhost:100/request1"),
+        QUrl("http://localhost:100/request2"),
+        QUrl("http://localhost:100/request3"),
+    };
+    constexpr auto NUrls = std::size(urls);
+
+    std::unique_ptr<QNetworkReply, QScopedPointerDeleteLater> replies[NUrls];
+    std::optional<QSignalSpy> errorSpies[NUrls];
+    std::optional<QSignalSpy> finishedSpies[NUrls];
+
+    for (size_t i = 0; i < NUrls; ++i) {
+        QNetworkRequest request(urls[i]);
         QNetworkReply *reply = manager.get(request);
-        replies.append(reply);
-        QSignalSpy *errorSpy = new QSignalSpy(reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
-        errorSpies.append(errorSpy);
-        QSignalSpy *finishedSpy = new QSignalSpy(reply, SIGNAL(finished()));
-        finishedSpies.append(finishedSpy);
+        replies[i].reset(reply);
+        errorSpies[i].emplace(reply, SIGNAL(errorOccurred(QNetworkReply::NetworkError)));
+        finishedSpies[i].emplace(reply, SIGNAL(finished()));
         QObject::connect(reply, SIGNAL(finished()), SLOT(emitErrorForAllRepliesSlot()));
     }
+
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
-    for (int a = 0; a < urls.size(); ++a) {
-        QVERIFY(replies.at(a)->isFinished());
-        QCOMPARE(errorSpies.at(a)->size(), 1);
-        delete errorSpies.at(a);
-        QCOMPARE(finishedSpies.at(a)->size(), 1);
-        delete finishedSpies.at(a);
-        replies.at(a)->deleteLater();
+
+    for (size_t i = 0; i < NUrls; ++i) {
+        QVERIFY(replies[i]->isFinished());
+        QCOMPARE(errorSpies[i]->size(), 1);
+        QCOMPARE(finishedSpies[i]->size(), 1);
     }
 }
 
