@@ -1544,7 +1544,12 @@ QList<QString> QSslSocket::availableBackends()
     from the list of available backends.
 
     \note When selecting a default backend implicitly, QSslSocket prefers
-    the OpenSSL backend if available.
+    the OpenSSL backend if available. If it's not available, the Schannel backend
+    is implicitly selected on Windows, and Secure Transport on Darwin platforms.
+    Failing these, if a custom TLS backend is found, it is used.
+    If no other backend is found, the "certificate only" backend is selected.
+    For more information about TLS plugins, please see
+    \l {Enabling and Disabling SSL Support when Building Qt from Source}.
 
     \sa setActiveBackend(), availableBackends()
 */
