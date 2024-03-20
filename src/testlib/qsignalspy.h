@@ -200,7 +200,7 @@ private:
             else
                 list << QVariant(QMetaType(type), a[i + 1]);
         }
-        append(list);
+        append(std::move(list));
 
         if (m_waiting) {
             locker.unlock();
