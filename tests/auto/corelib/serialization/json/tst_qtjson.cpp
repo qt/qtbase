@@ -177,7 +177,13 @@ void tst_QtJson::compareCompiles()
 {
     QTestPrivate::testEqualityOperatorsCompile<QJsonArray>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonDocument>();
+    QTestPrivate::testEqualityOperatorsCompile<QJsonValue>();
+    QTestPrivate::testEqualityOperatorsCompile<QJsonValueConstRef>();
+    QTestPrivate::testEqualityOperatorsCompile<QJsonValueRef>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonArray, QJsonValue>();
+    QTestPrivate::testEqualityOperatorsCompile<QJsonValueConstRef, QJsonValue>();
+    QTestPrivate::testEqualityOperatorsCompile<QJsonValueRef, QJsonValue>();
+    QTestPrivate::testEqualityOperatorsCompile<QJsonValueRef, QJsonValueConstRef>();
 }
 
 void tst_QtJson::testValueSimple()
@@ -519,6 +525,7 @@ void tst_QtJson::testObjectSimple()
     QJsonValue value(QLatin1String("foo"));
     object.insert("value", value);
     QCOMPARE(object.value("value"), value);
+    QT_TEST_EQUALITY_OPS(object.value("value"), value, true);
 
     int size = object.size();
     object.remove("boolean");
@@ -527,6 +534,7 @@ void tst_QtJson::testObjectSimple()
 
     QJsonValue taken = object.take("value");
     QCOMPARE(taken, value);
+    QT_TEST_EQUALITY_OPS(taken, value, true);
     QVERIFY2(!object.contains("value"), "key value should have been removed");
 
     QString before = object.value("string").toString();
@@ -1048,6 +1056,12 @@ void tst_QtJson::testValueRefComparison()
     CHECK(a0, c0, a1);
     // val <> val
     CHECK(a0, a0, a1);
+
+    QT_TEST_EQUALITY_OPS(r0, r1, false);
+    QT_TEST_EQUALITY_OPS(r0, c0, true);
+    QT_TEST_EQUALITY_OPS(c0, r1, false);
+    QT_TEST_EQUALITY_OPS(a0, c0, true);
+    QT_TEST_EQUALITY_OPS(a0, r1, false);
 
 #undef CHECK
 #undef CHECK_IMPL
@@ -2824,57 +2838,57 @@ void tst_QtJson::testDetachBug()
 void tst_QtJson::valueEquals()
 {
     QCOMPARE(QJsonValue(), QJsonValue());
-    QVERIFY(QJsonValue() != QJsonValue(QJsonValue::Undefined));
-    QVERIFY(QJsonValue() != QJsonValue(true));
-    QVERIFY(QJsonValue() != QJsonValue(1.));
-    QVERIFY(QJsonValue() != QJsonValue(QJsonArray()));
-    QVERIFY(QJsonValue() != QJsonValue(QJsonObject()));
+    QT_TEST_EQUALITY_OPS(QJsonValue(), QJsonValue(QJsonValue::Undefined), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(), QJsonValue(true), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(), QJsonValue(1.), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(), QJsonValue(QJsonArray()), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(), QJsonValue(QJsonObject()), false);
 
     QCOMPARE(QJsonValue(true), QJsonValue(true));
-    QVERIFY(QJsonValue(true) != QJsonValue(false));
-    QVERIFY(QJsonValue(true) != QJsonValue(QJsonValue::Undefined));
-    QVERIFY(QJsonValue(true) != QJsonValue());
-    QVERIFY(QJsonValue(true) != QJsonValue(1.));
-    QVERIFY(QJsonValue(true) != QJsonValue(QJsonArray()));
-    QVERIFY(QJsonValue(true) != QJsonValue(QJsonObject()));
+    QT_TEST_EQUALITY_OPS(QJsonValue(true), QJsonValue(false), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(true), QJsonValue(QJsonValue::Undefined), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(true), QJsonValue(), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(true), QJsonValue(1.), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(true), QJsonValue(QJsonArray()), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(true), QJsonValue(QJsonObject()), false);
 
     QCOMPARE(QJsonValue(1), QJsonValue(1));
-    QVERIFY(QJsonValue(1) != QJsonValue(2));
+    QT_TEST_EQUALITY_OPS(QJsonValue(1), QJsonValue(2), false);
     QCOMPARE(QJsonValue(1), QJsonValue(1.));
-    QVERIFY(QJsonValue(1) != QJsonValue(1.1));
-    QVERIFY(QJsonValue(1) != QJsonValue(QJsonValue::Undefined));
-    QVERIFY(QJsonValue(1) != QJsonValue());
-    QVERIFY(QJsonValue(1) != QJsonValue(true));
-    QVERIFY(QJsonValue(1) != QJsonValue(QJsonArray()));
-    QVERIFY(QJsonValue(1) != QJsonValue(QJsonObject()));
+    QT_TEST_EQUALITY_OPS(QJsonValue(1), QJsonValue(1.1), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(1), QJsonValue(QJsonValue::Undefined), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(1), QJsonValue(), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(1), QJsonValue(true), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(1), QJsonValue(QJsonArray()), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(1), QJsonValue(QJsonObject()), false);
 
     QCOMPARE(QJsonValue(1.), QJsonValue(1.));
-    QVERIFY(QJsonValue(1.) != QJsonValue(2.));
-    QVERIFY(QJsonValue(1.) != QJsonValue(QJsonValue::Undefined));
-    QVERIFY(QJsonValue(1.) != QJsonValue());
-    QVERIFY(QJsonValue(1.) != QJsonValue(true));
-    QVERIFY(QJsonValue(1.) != QJsonValue(QJsonArray()));
-    QVERIFY(QJsonValue(1.) != QJsonValue(QJsonObject()));
+    QT_TEST_EQUALITY_OPS(QJsonValue(1.), QJsonValue(2.), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(1.), QJsonValue(QJsonValue::Undefined), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(1.), QJsonValue(), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(1.), QJsonValue(true), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(1.), QJsonValue(QJsonArray()), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(1.), QJsonValue(QJsonObject()), false);
 
     QCOMPARE(QJsonValue(QJsonArray()), QJsonValue(QJsonArray()));
     QJsonArray nonEmptyArray;
     nonEmptyArray.append(true);
-    QVERIFY(QJsonValue(QJsonArray()) != nonEmptyArray);
-    QVERIFY(QJsonValue(QJsonArray()) != QJsonValue(QJsonValue::Undefined));
-    QVERIFY(QJsonValue(QJsonArray()) != QJsonValue());
-    QVERIFY(QJsonValue(QJsonArray()) != QJsonValue(true));
-    QVERIFY(QJsonValue(QJsonArray()) != QJsonValue(1.));
-    QVERIFY(QJsonValue(QJsonArray()) != QJsonValue(QJsonObject()));
+    QT_TEST_EQUALITY_OPS(QJsonValue(QJsonArray()), nonEmptyArray, false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(QJsonArray()), QJsonValue(QJsonValue::Undefined), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(QJsonArray()), QJsonValue(), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(QJsonArray()), QJsonValue(true), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(QJsonArray()), QJsonValue(1.), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(QJsonArray()), QJsonValue(QJsonObject()), false);
 
     QCOMPARE(QJsonValue(QJsonObject()), QJsonValue(QJsonObject()));
     QJsonObject nonEmptyObject;
     nonEmptyObject.insert("Key", true);
     QVERIFY(QJsonValue(QJsonObject()) != nonEmptyObject);
-    QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(QJsonValue::Undefined));
-    QVERIFY(QJsonValue(QJsonObject()) != QJsonValue());
-    QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(true));
-    QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(1.));
-    QVERIFY(QJsonValue(QJsonObject()) != QJsonValue(QJsonArray()));
+    QT_TEST_EQUALITY_OPS(QJsonValue(QJsonObject()), QJsonValue(QJsonValue::Undefined), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(QJsonObject()), QJsonValue(), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(QJsonObject()), QJsonValue(true), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(QJsonObject()), QJsonValue(1.), false);
+    QT_TEST_EQUALITY_OPS(QJsonValue(QJsonObject()), QJsonValue(QJsonArray()), false);
 
     QCOMPARE(QJsonValue("foo"), QJsonValue(QLatin1String("foo")));
     QCOMPARE(QJsonValue("foo"), QJsonValue(QString("foo")));

@@ -59,6 +59,10 @@ static QJsonValue::Type convertFromCborType(QCborValue::Type type) noexcept
 
     \brief The QJsonValue class encapsulates a value in JSON.
 
+    \compares equality
+    \compareswith equality QJsonValueConstRef QJsonValueRef
+    \endcompareswith
+
     A value in JSON can be one of 6 basic types:
 
     JSON is a format to store structured data. It has 6 basic data types:
@@ -823,35 +827,37 @@ const QJsonValue QJsonValue::operator[](qsizetype i) const
 }
 
 /*!
-    Returns \c true if the value is equal to \a other.
- */
-bool QJsonValue::operator==(const QJsonValue &other) const
+    \fn bool QJsonValue::operator==(const QJsonValue &lhs, const QJsonValue &rhs)
+
+    Returns \c true if the \a lhs value is equal to \a rhs value, \c false otherwise.
+*/
+bool comparesEqual(const QJsonValue &lhs, const QJsonValue &rhs) noexcept
 {
-    if (value.type() != other.value.type()) {
-        if (isDouble() && other.isDouble()) {
+    if (lhs.value.type() != rhs.value.type()) {
+        if (lhs.isDouble() && rhs.isDouble()) {
             // One value Cbor integer, one Cbor double, should interact as doubles.
-            return toDouble() == other.toDouble();
+            return lhs.toDouble() == rhs.toDouble();
         }
         return false;
     }
 
-    switch (value.type()) {
+    switch (lhs.value.type()) {
     case QCborValue::Undefined:
     case QCborValue::Null:
     case QCborValue::True:
     case QCborValue::False:
         break;
     case QCborValue::Double:
-        return toDouble() == other.toDouble();
+        return lhs.toDouble() == rhs.toDouble();
     case QCborValue::Integer:
-        return QJsonPrivate::Value::valueHelper(value)
-                == QJsonPrivate::Value::valueHelper(other.value);
+        return QJsonPrivate::Value::valueHelper(lhs.value)
+                == QJsonPrivate::Value::valueHelper(rhs.value);
     case QCborValue::String:
-        return toString() == other.toString();
+        return lhs.toString() == rhs.toString();
     case QCborValue::Array:
-        return toArray() == other.toArray();
+        return lhs.toArray() == rhs.toArray();
     case QCborValue::Map:
-        return toObject() == other.toObject();
+        return lhs.toObject() == rhs.toObject();
     default:
         return false;
     }
@@ -859,12 +865,10 @@ bool QJsonValue::operator==(const QJsonValue &other) const
 }
 
 /*!
-    Returns \c true if the value is not equal to \a other.
- */
-bool QJsonValue::operator!=(const QJsonValue &other) const
-{
-    return !(*this == other);
-}
+    \fn bool QJsonValue::operator!=(const QJsonValue &lhs, const QJsonValue &rhs)
+
+    Returns \c true if the \a lhs value is not equal to \a rhs value, \c false otherwise.
+*/
 
 /*!
     \class QJsonValueRef
