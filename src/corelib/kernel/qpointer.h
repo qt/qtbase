@@ -4,6 +4,7 @@
 #ifndef QPOINTER_H
 #define QPOINTER_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qsharedpointer.h>
 #include <QtCore/qtypeinfo.h>
 
@@ -90,27 +91,21 @@ public:
     friend void swap(QPointer &lhs, QPointer &rhs) noexcept
     { lhs.swap(rhs); }
 
-#define DECLARE_COMPARE_SET(T1, A1, T2, A2) \
-    friend bool operator==(T1, T2) noexcept \
-    { return A1 == A2; } \
-    friend bool operator!=(T1, T2) noexcept \
-    { return A1 != A2; }
+private:
+    template <typename X>
+    friend bool comparesEqual(const QPointer &lhs, const QPointer<X> &rhs) noexcept
+    { return lhs.data() == rhs.data(); }
+    QT_DECLARE_EQUALITY_OPERATORS_HELPER(QPointer, QPointer<X>, /* non-constexpr */,
+                                         template <typename X>)
 
-#define DECLARE_TEMPLATE_COMPARE_SET(T1, A1, T2, A2) \
-    template <typename X> \
-    friend bool operator==(T1, T2) noexcept \
-    { return A1 == A2; } \
-    template <typename X> \
-    friend bool operator!=(T1, T2) noexcept \
-    { return A1 != A2; }
+    template <typename X>
+    friend bool comparesEqual(const QPointer &lhs, X *rhs) noexcept
+    { return lhs.data() == rhs; }
+    Q_DECLARE_EQUALITY_COMPARABLE(QPointer, X*, template <typename X>)
 
-    DECLARE_TEMPLATE_COMPARE_SET(const QPointer &p1, p1.data(), const QPointer<X> &p2, p2.data())
-    DECLARE_TEMPLATE_COMPARE_SET(const QPointer &p1, p1.data(), X *ptr, ptr)
-    DECLARE_TEMPLATE_COMPARE_SET(X *ptr, ptr, const QPointer &p2, p2.data())
-    DECLARE_COMPARE_SET(const QPointer &p1, p1.data(), std::nullptr_t, nullptr)
-    DECLARE_COMPARE_SET(std::nullptr_t, nullptr, const QPointer &p2, p2.data())
-#undef DECLARE_COMPARE_SET
-#undef DECLARE_TEMPLATE_COMPARE_SET
+    friend bool comparesEqual(const QPointer &lhs, std::nullptr_t) noexcept
+    { return lhs.data() == nullptr; }
+    Q_DECLARE_EQUALITY_COMPARABLE(QPointer, std::nullptr_t)
 };
 template <class T> Q_DECLARE_TYPEINFO_BODY(QPointer<T>, Q_RELOCATABLE_TYPE);
 
