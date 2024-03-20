@@ -177,10 +177,12 @@ void tst_QtJson::compareCompiles()
 {
     QTestPrivate::testEqualityOperatorsCompile<QJsonArray>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonDocument>();
+    QTestPrivate::testEqualityOperatorsCompile<QJsonObject>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonValue>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonValueConstRef>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonValueRef>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonArray, QJsonValue>();
+    QTestPrivate::testEqualityOperatorsCompile<QJsonObject, QJsonValue>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonValueConstRef, QJsonValue>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonValueRef, QJsonValue>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonValueRef, QJsonValueConstRef>();
@@ -823,9 +825,12 @@ void tst_QtJson::testObjectNested()
     QJsonValue v = inner;
     QCOMPARE(v.toObject(), inner);
     QCOMPARE(v.toObject(otherObject), inner);
+    QT_TEST_EQUALITY_OPS(v.toObject(), inner, true);
+    QT_TEST_EQUALITY_OPS(v.toObject(otherObject), inner, true);
 
     inner.insert("number", 999.);
     outer.insert("nested", inner);
+    QT_TEST_EQUALITY_OPS(outer, inner, false);
 
     // if we don't modify the original JsonObject, value()
     // should return the same object (non-detached).
@@ -835,6 +840,8 @@ void tst_QtJson::testObjectNested()
     QCOMPARE(value.value("number").toDouble(), 999.);
     QCOMPARE(v.toObject(), inner);
     QCOMPARE(v.toObject(otherObject), inner);
+    QT_TEST_EQUALITY_OPS(v.toObject(), inner, true);
+    QT_TEST_EQUALITY_OPS(v.toObject(otherObject), inner, true);
     QCOMPARE(v["number"].toDouble(), 999.);
 
     // if we modify the original object, it should detach and not
@@ -860,6 +867,7 @@ void tst_QtJson::testObjectNested()
     QCOMPARE(outer.value("nested").toObject().value("nested").toObject(), twoDeep);
     QCOMPARE(outer.value("nested").toObject().value("nested").toObject().value("boolean").toBool(),
              true);
+    QT_TEST_EQUALITY_OPS(outer.value("nested").toObject().value("nested").toObject(), twoDeep, true);
 }
 
 void tst_QtJson::testArrayNested()
@@ -885,6 +893,7 @@ void tst_QtJson::testArrayNested()
     object.insert("boolean", true);
     outer.append(object);
     QCOMPARE(outer.last().toObject(), object);
+    QT_TEST_EQUALITY_OPS(outer.last().toObject(), object, true);
     QCOMPARE(outer.last().toObject().value("boolean").toBool(), true);
 
     // two deep arrays
@@ -925,6 +934,7 @@ void tst_QtJson::testObjectNestedEmpty()
     QT_TEST_EQUALITY_OPS(QJsonDocument(), QJsonDocument(value), false);
     QCOMPARE(value.size(), 0);
     QCOMPARE(value, inner);
+    QT_TEST_EQUALITY_OPS(value, inner, true);
     QCOMPARE(value.size(), 0);
     object.insert("count", 0.);
     QCOMPARE(object.value("inner").toObject().size(), 0);
@@ -1096,6 +1106,7 @@ void tst_QtJson::testObjectIteration()
     {
         QJsonObject object2 = object;
         QCOMPARE(object, object2);
+        QT_TEST_EQUALITY_OPS(object, object2, true);
 
         QJsonValue val = *object2.begin();
         auto next = object2.erase(object2.begin());
@@ -1116,6 +1127,7 @@ void tst_QtJson::testObjectIteration()
     {
         QJsonObject object2 = object;
         QCOMPARE(object, object2);
+        QT_TEST_EQUALITY_OPS(object, object2, true);
 
         QJsonValue val = *(object2.end() - 1);
         auto next = object2.erase(object2.end() - 1);
@@ -1135,6 +1147,7 @@ void tst_QtJson::testObjectIteration()
     {
         QJsonObject object2 = object;
         QCOMPARE(object, object2);
+        QT_TEST_EQUALITY_OPS(object, object2, true);
 
         QJsonObject::iterator it = object2.find(QString::number(5));
         QJsonValue val = *it;
@@ -2559,6 +2572,13 @@ void tst_QtJson::testCompaction()
     }
     QCOMPARE(obj.size(), 1);
     QCOMPARE(obj.value(QLatin1String("foo")).toString(), QLatin1String("bar"));
+
+    QJsonObject obj2;
+
+    QT_TEST_EQUALITY_OPS(obj, obj2, false);
+    QT_TEST_EQUALITY_OPS(QJsonObject(), obj2, true);
+    obj2 = obj;
+    QT_TEST_EQUALITY_OPS(obj, obj2, true);
 }
 
 void tst_QtJson::testDebugStream()
@@ -2883,7 +2903,7 @@ void tst_QtJson::valueEquals()
     QCOMPARE(QJsonValue(QJsonObject()), QJsonValue(QJsonObject()));
     QJsonObject nonEmptyObject;
     nonEmptyObject.insert("Key", true);
-    QVERIFY(QJsonValue(QJsonObject()) != nonEmptyObject);
+    QT_TEST_EQUALITY_OPS(QJsonValue(QJsonObject()), nonEmptyObject, false);
     QT_TEST_EQUALITY_OPS(QJsonValue(QJsonObject()), QJsonValue(QJsonValue::Undefined), false);
     QT_TEST_EQUALITY_OPS(QJsonValue(QJsonObject()), QJsonValue(), false);
     QT_TEST_EQUALITY_OPS(QJsonValue(QJsonObject()), QJsonValue(true), false);

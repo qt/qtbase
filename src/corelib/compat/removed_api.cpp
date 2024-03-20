@@ -978,6 +978,19 @@ bool QJsonDocument::operator==(const QJsonDocument &other) const
     return comparesEqual(*this, other);
 }
 
+#include "qjsonobject.h"
+
+bool QJsonObject::operator==(const QJsonObject &other) const
+{
+    return comparesEqual(*this, other);
+}
+
+
+bool QJsonObject::operator!=(const QJsonObject &other) const
+{
+    return !comparesEqual(*this, other);
+}
+
 #include "qjsonvalue.h"
 
 bool QJsonValue::operator==(const QJsonValue &other) const

@@ -72,9 +72,10 @@ public:
     bool contains(QStringView key) const;
     bool contains(QLatin1StringView key) const;
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QJsonObject &other) const;
     bool operator!=(const QJsonObject &other) const;
-
+#endif
     class const_iterator;
 
     class iterator
@@ -236,6 +237,15 @@ public:
     inline bool empty() const { return isEmpty(); }
 
 private:
+    friend Q_CORE_EXPORT bool comparesEqual(const QJsonObject &lhs,
+                                            const QJsonObject &rhs) noexcept;
+    friend bool comparesEqual(const QJsonObject &lhs,
+                              const QJsonValue &rhs) noexcept
+    {
+        return comparesEqual(lhs, rhs.toObject());
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QJsonObject)
+    Q_DECLARE_EQUALITY_COMPARABLE(QJsonObject, QJsonValue)
     friend class QJsonValue;
     friend class QJsonDocument;
     friend class QJsonPrivate::Value;

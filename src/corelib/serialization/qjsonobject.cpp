@@ -31,6 +31,10 @@ QT_BEGIN_NAMESPACE
 
     \brief The QJsonObject class encapsulates a JSON object.
 
+    \compares equality
+    \compareswith equality QJsonValue
+    \endcompareswith
+
     A JSON object is a list of key value pairs, where the keys are unique strings
     and the values are represented by a QJsonValue.
 
@@ -613,22 +617,24 @@ bool QJsonObject::containsImpl(T key) const
 }
 
 /*!
-    Returns \c true if \a other is equal to this object.
- */
-bool QJsonObject::operator==(const QJsonObject &other) const
+    \fn bool QJsonObject::operator==(const QJsonObject &lhs, const QJsonObject &rhs)
+
+    Returns \c true if \a lhs object is equal to \a rhs, \c false otherwise.
+*/
+bool comparesEqual(const QJsonObject &lhs, const QJsonObject &rhs) noexcept
 {
-    if (o == other.o)
+    if (lhs.o == rhs.o)
         return true;
 
-    if (!o)
-        return !other.o->elements.size();
-    if (!other.o)
-        return !o->elements.size();
-    if (o->elements.size() != other.o->elements.size())
+    if (!lhs.o)
+        return !rhs.o->elements.size();
+    if (!rhs.o)
+        return !lhs.o->elements.size();
+    if (lhs.o->elements.size() != rhs.o->elements.size())
         return false;
 
-    for (qsizetype i = 0, end = o->elements.size(); i < end; ++i) {
-        if (o->valueAt(i) != other.o->valueAt(i))
+    for (qsizetype i = 0, end = lhs.o->elements.size(); i < end; ++i) {
+        if (lhs.o->valueAt(i) != rhs.o->valueAt(i))
             return false;
     }
 
@@ -636,12 +642,10 @@ bool QJsonObject::operator==(const QJsonObject &other) const
 }
 
 /*!
-    Returns \c true if \a other is not equal to this object.
- */
-bool QJsonObject::operator!=(const QJsonObject &other) const
-{
-    return !(*this == other);
-}
+    \fn bool QJsonObject::operator!=(const QJsonObject &lhs, const QJsonObject &rhs)
+
+    Returns \c true if \a lhs object is not equal to \a rhs, \c false otherwise.
+*/
 
 /*!
     Removes the (key, value) pair pointed to by the iterator \a it
