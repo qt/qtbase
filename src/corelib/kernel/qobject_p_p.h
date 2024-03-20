@@ -245,7 +245,7 @@ struct QObjectPrivate::Sender
             s = s->previous;
         }
     }
-    Sender *previous;
+    Sender *previous = nullptr;
     QObject *receiver;
     QObject *sender;
     int signal;
