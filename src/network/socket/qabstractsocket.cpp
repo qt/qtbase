@@ -641,7 +641,11 @@ bool QAbstractSocketPrivate::canReadNotification()
             socketEngine->setReadNotificationEnabled(false);
             return true;
         }
-        if (!isUdpSocket || socketEngine->hasPendingDatagrams()) {
+        if (!isUdpSocket
+#if QT_CONFIG(udpsocket)
+            || socketEngine->hasPendingDatagrams()
+#endif
+        ) {
             hasPendingData = true;
             hasPendingDatagram = isUdpSocket;
         }
