@@ -4,18 +4,6 @@
 qt_find_package(WrapPCRE2 PROVIDED_TARGETS WrapPCRE2::WrapPCRE2)
 qt_find_package(WrapZLIB PROVIDED_TARGETS WrapZLIB::WrapZLIB)
 
-
-# compute the reverse relative path from QtCoreConfigExtras to the install prefix
-# this is used in QtCoreConfigExtras to make its install paths relocatable
-if(QT_WILL_INSTALL)
-    get_filename_component(_clean_prefix
-        "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${QT_CONFIG_INSTALL_DIR}" ABSOLUTE)
-else()
-    get_filename_component(_clean_prefix "${QT_CONFIG_BUILD_DIR}" ABSOLUTE)
-endif()
-file(RELATIVE_PATH QT_INVERSE_CONFIG_INSTALL_DIR
-    "${_clean_prefix}" "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
-
 if(ANDROID)
     set(corelib_extra_cmake_files
         "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}AndroidMacros.cmake")
@@ -24,10 +12,6 @@ if(WASM)
     set(corelib_extra_cmake_files
         "${CMAKE_CURRENT_SOURCE_DIR}/${QT_CMAKE_EXPORT_NAMESPACE}WasmMacros.cmake")
 endif()
-
-qt_path_join(config_build_dir ${QT_CONFIG_BUILD_DIR} "${INSTALL_CMAKE_NAMESPACE}Core")
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/QtInstallPaths.cmake.in"
-    "${config_build_dir}/QtInstallPaths.cmake" @ONLY)
 
 #####################################################################
 ## Core Module:
@@ -356,7 +340,6 @@ qt_internal_add_module(Core
         "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreConfigureFileTemplate.in"
         "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreResourceInit.in.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/Qt6CoreDeploySupport.cmake"
-        "${config_build_dir}/QtInstallPaths.cmake"
         ${corelib_extra_cmake_files}
     POLICIES
         QTP0002

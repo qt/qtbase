@@ -8,6 +8,8 @@ cmake_minimum_required(VERSION @min_new_policy_version@...@max_new_policy_versio
 include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@ConfigExtras.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicCMakeVersionHelpers.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicCMakeHelpers.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/QtInstallPaths.cmake")
+
 __qt_internal_require_suitable_cmake_version_for_using_qt()
 
 get_filename_component(_qt_cmake_dir "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)

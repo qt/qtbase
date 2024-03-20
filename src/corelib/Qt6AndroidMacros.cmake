@@ -1104,7 +1104,7 @@ function(_qt_internal_get_android_abi_toolchain_path out_path abi)
 endfunction()
 
 function(_qt_internal_get_android_abi_subdir_path out_path subdir abi)
-    set(install_paths_path "${QT_CMAKE_EXPORT_NAMESPACE}Core/QtInstallPaths.cmake")
+    set(install_paths_path "${QT_CMAKE_EXPORT_NAMESPACE}/QtInstallPaths.cmake")
     _qt_internal_get_android_abi_cmake_dir_path(cmake_dir ${abi})
     include("${cmake_dir}/${install_paths_path}")
     set(${out_path} "${${subdir}}" PARENT_SCOPE)

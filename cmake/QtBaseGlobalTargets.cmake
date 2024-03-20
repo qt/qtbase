@@ -203,11 +203,28 @@ qt_internal_write_qt_package_version_file(
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
 )
 
+# Compute the reverse relative path from QtConfig.cmake to the install prefix
+# this is used in QtInstallPaths to make the install paths relocatable
+if(QT_WILL_INSTALL)
+    get_filename_component(_clean_prefix
+        "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${QT_CONFIG_INSTALL_DIR}" ABSOLUTE)
+else()
+    get_filename_component(_clean_prefix "${QT_CONFIG_BUILD_DIR}" ABSOLUTE)
+endif()
+file(RELATIVE_PATH QT_INVERSE_CONFIG_INSTALL_DIR
+    "${_clean_prefix}" "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
+configure_file(
+    "${PROJECT_SOURCE_DIR}/cmake/QtInstallPaths.cmake.in"
+    "${__GlobalConfig_build_dir}/QtInstallPaths.cmake"
+    @ONLY
+)
+
 qt_install(FILES
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigExtras.cmake"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersionImpl.cmake"
+    "${__GlobalConfig_build_dir}/QtInstallPaths.cmake"
     DESTINATION "${__GlobalConfig_install_dir}"
     COMPONENT Devel
 )
