@@ -1448,22 +1448,60 @@ QDockWidget::DockWidgetFeatures QDockWidget::features() const
 void QDockWidget::setFloating(bool floating)
 {
     Q_D(QDockWidget);
+    d->setFloating(floating);
+}
 
+/*!
+   \internal implementation of setFloating
+ */
+void QDockWidgetPrivate::setFloating(bool floating)
+{
+    Q_Q(QDockWidget);
     // the initial click of a double-click may have started a drag...
-    if (d->state != nullptr)
-        d->endDrag(QDockWidgetPrivate::EndDragMode::Abort);
+    if (state != nullptr)
+        endDrag(QDockWidgetPrivate::EndDragMode::Abort);
 
-    QRect r = d->undockedGeometry;
     // Keep position when undocking for the first time.
-    if (floating && isVisible() && !r.isValid())
-        r = QRect(mapToGlobal(QPoint(0, 0)), size());
+    QRect r = undockedGeometry;
+    if (floating && q->isVisible() && !r.isValid())
+        r = QRect(q->mapToGlobal(QPoint(0, 0)), q->size());
 
-    d->setWindowState(floating, false, floating ? r : QRect());
+    // Reparent, if setFloating() was called on a floating tab
+    // Reparenting has to happen before setWindowState.
+    // The reparented dock widget will inherit visibility from the floating tab.
+    // => Remember visibility and the necessity to update it.
+    enum class VisibilityRule {
+        NoUpdate,
+        Show,
+        Hide,
+    };
+
+    VisibilityRule updateRule = VisibilityRule::NoUpdate;
+
+    if (floating && !q->isFloating()) {
+        if (auto *groupWindow = qobject_cast<QDockWidgetGroupWindow *>(q->parentWidget())) {
+            updateRule = groupWindow->isVisible() ? VisibilityRule::Show : VisibilityRule::Hide;
+            q->setParent(groupWindow->parentWidget());
+        }
+    }
+
+    setWindowState(floating, false, floating ? r : QRect());
 
     if (floating && r.isNull()) {
-        if (x() < 0 || y() < 0) //may happen if we have been hidden
-            move(QPoint());
-        setAttribute(Qt::WA_Moved, false); //we want it at the default position
+        if (q->x() < 0 || q->y() < 0) //may happen if we have been hidden
+            q->move(QPoint());
+        q->setAttribute(Qt::WA_Moved, false); //we want it at the default position
+    }
+
+    switch (updateRule) {
+    case VisibilityRule::NoUpdate:
+        break;
+    case VisibilityRule::Show:
+        q->show();
+        break;
+    case VisibilityRule::Hide:
+        q->hide();
+        break;
     }
 }
 

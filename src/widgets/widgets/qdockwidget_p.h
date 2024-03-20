@@ -104,6 +104,7 @@ public:
     void unplug(const QRect &rect);
     void plug(const QRect &rect);
     void setResizerActive(bool active);
+    void setFloating(bool floating);
 
     bool isAnimating() const;
     bool isTabbed() const;
