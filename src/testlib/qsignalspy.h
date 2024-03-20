@@ -19,20 +19,29 @@ class QVariant;
 
 class QSignalSpy: public QObject, public QList<QList<QVariant> >
 {
+    struct ObjectSignal {
+        const QObject *obj;
+        QMetaMethod sig;
+    };
+
 public:
     explicit QSignalSpy(const QObject *obj, const char *aSignal)
+        : QSignalSpy(verify(obj, aSignal)) {}
+
+private:
+    ObjectSignal verify(const QObject *obj, const char *aSignal)
     {
         if (!isObjectValid(obj))
-            return;
+            return {};
 
         if (!aSignal) {
             qWarning("QSignalSpy: Null signal name is not valid");
-            return;
+            return {};
         }
 
         if (((aSignal[0] - '0') & 0x03) != QSIGNAL_CODE) {
             qWarning("QSignalSpy: Not a valid signal, use the SIGNAL macro");
-            return;
+            return {};
         }
 
         const QByteArray ba = QMetaObject::normalizedSignature(aSignal + 1);
@@ -40,38 +49,52 @@ public:
         const int sigIndex = mo->indexOfMethod(ba.constData());
         if (sigIndex < 0) {
             qWarning("QSignalSpy: No such signal: '%s'", ba.constData());
-            return;
+            return {};
         }
 
-        init(obj, mo->method(sigIndex));
+        return verify(obj, mo->method(sigIndex));
     }
 
+public:
 #ifdef Q_QDOC
     template <typename PointerToMemberFunction>
     QSignalSpy(const QObject *object, PointerToMemberFunction signal);
 #else
     template <typename Func>
     QSignalSpy(const typename QtPrivate::FunctionPointer<Func>::Object *obj, Func signal0)
+        : QSignalSpy(verify(obj, signal0)) {}
+
+private:
+    template <typename Func>
+    ObjectSignal verify(const QObject *obj, Func signal0)
     {
         if (!isObjectValid(obj))
-            return;
+            return {};
 
         if (!signal0) {
             qWarning("QSignalSpy: Null signal pointer is not valid");
-            return;
+            return {};
         }
 
         const QMetaMethod signalMetaMethod = QMetaMethod::fromSignal(signal0);
-        init(obj, signalMetaMethod);
+        return verify(obj, signalMetaMethod);
     }
+public:
 #endif // Q_QDOC
 
     QSignalSpy(const QObject *obj, QMetaMethod signal)
+        : QSignalSpy(verify(obj, signal)) {}
+
+private:
+    ObjectSignal verify(const QObject *obj, QMetaMethod signal)
     {
         if (isObjectValid(obj))
-            init(obj, signal);
+            return {obj, signal};
+        else
+            return {};
     }
 
+public:
     inline bool isValid() const { return !sig.isEmpty(); }
     inline QByteArray signal() const { return sig; }
 
@@ -109,6 +132,13 @@ public:
     }
 
 private:
+    explicit QSignalSpy(ObjectSignal os)
+    {
+        if (!os.obj)
+            return;
+        init(os.obj, os.sig);
+    }
+
     void init(const QObject *obj, QMetaMethod signal)
     {
         if (!isSignalMetaMethodValid(signal))
