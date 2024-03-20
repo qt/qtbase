@@ -642,10 +642,14 @@ public:
     QRhiTexture *depthTexture() const { return m_depthTexture; }
     void setDepthTexture(QRhiTexture *texture) { m_depthTexture = texture; }
 
+    QRhiTexture *depthResolveTexture() const { return m_depthResolveTexture; }
+    void setDepthResolveTexture(QRhiTexture *tex) { m_depthResolveTexture = tex; }
+
 private:
     QVarLengthArray<QRhiColorAttachment, 8> m_colorAttachments;
     QRhiRenderBuffer *m_depthStencilBuffer = nullptr;
     QRhiTexture *m_depthTexture = nullptr;
+    QRhiTexture *m_depthResolveTexture = nullptr;
 };
 
 class Q_GUI_EXPORT QRhiTextureSubresourceUploadDescription
@@ -1866,7 +1870,8 @@ public:
         RenderToOneDimensionalTexture,
         ThreeDimensionalTextureMipmaps,
         MultiView,
-        TextureViewFormat
+        TextureViewFormat,
+        ResolveDepthStencil
     };
 
     enum BeginFrameFlag {

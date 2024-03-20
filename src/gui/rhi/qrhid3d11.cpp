@@ -600,6 +600,8 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::TextureViewFormat:
         return false; // because we use fully typed formats for textures and relaxed casting is a D3D12 thing
+    case QRhi::ResolveDepthStencil:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;
@@ -2119,6 +2121,8 @@ void QRhiD3D11::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
             cmd.args.resolveSubRes.srcSubRes = D3D11CalcSubresource(0, UINT(colorAtt.layer()), 1);
             cmd.args.resolveSubRes.format = dstTexD->dxgiFormat;
         }
+        if (rtTex->m_desc.depthResolveTexture())
+            qWarning("Resolving multisample depth-stencil buffers is not supported with D3D");
     }
 
     cbD->recordingPass = QD3D11CommandBuffer::NoPass;

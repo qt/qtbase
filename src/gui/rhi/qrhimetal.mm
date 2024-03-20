@@ -363,6 +363,7 @@ struct QMetalRenderTargetData
     struct {
         ColorAtt colorAtt[QMetalRenderPassDescriptor::MAX_COLOR_ATTACHMENTS];
         id<MTLTexture> dsTex = nil;
+        id<MTLTexture> dsResolveTex = nil;
         bool hasStencil = false;
         bool depthNeedsStore = false;
         bool preserveColor = false;
@@ -854,6 +855,8 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return caps.multiView;
     case QRhi::TextureViewFormat:
         return false;
+    case QRhi::ResolveDepthStencil:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -2368,6 +2371,7 @@ QRhi::FrameOpResult QRhiMetal::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
 
     swapChainD->rtWrapper.d->fb.colorAtt[0] = colorAtt;
     swapChainD->rtWrapper.d->fb.dsTex = swapChainD->ds ? swapChainD->ds->d->tex : nil;
+    swapChainD->rtWrapper.d->fb.dsResolveTex = nil;
     swapChainD->rtWrapper.d->fb.hasStencil = swapChainD->ds ? true : false;
     swapChainD->rtWrapper.d->fb.depthNeedsStore = false;
 
@@ -2979,6 +2983,8 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
             QRHI_RES(QMetalRenderBuffer, rtTex->m_desc.depthStencilBuffer())->lastActiveFrameSlot = currentFrameSlot;
         if (rtTex->m_desc.depthTexture())
             QRHI_RES(QMetalTexture, rtTex->m_desc.depthTexture())->lastActiveFrameSlot = currentFrameSlot;
+        if (rtTex->m_desc.depthResolveTexture())
+            QRHI_RES(QMetalTexture, rtTex->m_desc.depthResolveTexture())->lastActiveFrameSlot = currentFrameSlot;
     }
         break;
     default:
@@ -3006,6 +3012,15 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         cbD->d->currentPassRpDesc.stencilAttachment.texture = rtD->fb.hasStencil ? rtD->fb.dsTex : nil;
         if (rtD->fb.depthNeedsStore) // Depth/Stencil is set to DontCare by default, override if  needed
             cbD->d->currentPassRpDesc.depthAttachment.storeAction = MTLStoreActionStore;
+        if (rtD->fb.dsResolveTex) {
+            cbD->d->currentPassRpDesc.depthAttachment.storeAction = rtD->fb.depthNeedsStore ? MTLStoreActionStoreAndMultisampleResolve
+                                                                                            : MTLStoreActionMultisampleResolve;
+            cbD->d->currentPassRpDesc.depthAttachment.resolveTexture = rtD->fb.dsResolveTex;
+            if (rtD->fb.hasStencil) {
+                cbD->d->currentPassRpDesc.stencilAttachment.resolveTexture = rtD->fb.dsResolveTex;
+                cbD->d->currentPassRpDesc.stencilAttachment.storeAction = cbD->d->currentPassRpDesc.depthAttachment.storeAction;
+            }
+        }
     }
 
     cbD->d->currentRenderPassEncoder = [cbD->d->cb renderCommandEncoderWithDescriptor: cbD->d->currentPassRpDesc];
@@ -4229,7 +4244,7 @@ bool QMetalTextureRenderTarget::create()
             QMetalTexture *depthTexD = QRHI_RES(QMetalTexture, m_desc.depthTexture());
             d->fb.dsTex = depthTexD->d->tex;
             d->fb.hasStencil = rhiD->isStencilSupportingFormat(depthTexD->format());
-            d->fb.depthNeedsStore = !m_flags.testFlag(DoNotStoreDepthStencilContents);
+            d->fb.depthNeedsStore = !m_flags.testFlag(DoNotStoreDepthStencilContents) && !m_desc.depthResolveTexture();
             d->fb.preserveDs = m_flags.testFlag(QRhiTextureRenderTarget::PreserveDepthStencilContents);
             if (d->colorAttCount == 0) {
                 d->pixelSize = depthTexD->pixelSize();
@@ -4245,6 +4260,10 @@ bool QMetalTextureRenderTarget::create()
                 d->pixelSize = depthRbD->pixelSize();
                 d->sampleCount = depthRbD->samples;
             }
+        }
+        if (m_desc.depthResolveTexture()) {
+            QMetalTexture *depthResolveTexD = QRHI_RES(QMetalTexture, m_desc.depthResolveTexture());
+            d->fb.dsResolveTex = depthResolveTexD->d->tex;
         }
         d->dsAttCount = 1;
     } else {

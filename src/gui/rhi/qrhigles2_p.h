@@ -507,6 +507,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 GLuint dstTexture;
                 int dstLevel;
                 int dstLayer;
+                bool isDepthStencil;
             } blitFromRenderbuffer;
             struct {
                 GLenum srcTarget;
@@ -519,6 +520,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 GLuint dstTexture;
                 int dstLevel;
                 int dstLayer;
+                bool isDepthStencil;
             } blitFromTexture;
             struct {
                 GLenum target;

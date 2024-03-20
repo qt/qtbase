@@ -1022,6 +1022,20 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \l{https://microsoft.github.io/DirectX-Specs/d3d/RelaxedCasting.html} (and
     note that QRhi always uses fully typed formats for textures.) This enum
     value has been introduced in Qt 6.8.
+
+    \value ResolveDepthStencil Indicates that resolving a multisample depth or
+    depth-stencil texture is supported. Otherwise,
+    \l{QRhiTextureRenderTargetDescription::setDepthResolveTexture()}{setting a
+    depth resolve texture} is not functional and must be avoided. Direct 3D 11
+    and 12 have no support for resolving depth/depth-stencil formats, and
+    therefore this feature will never be supported with those. Vulkan 1.0 has no
+    API to request resolving a depth-stencil attachment. Therefore, with Vulkan
+    this feature will only be supported with Vulkan 1.2 and up, and on 1.1
+    implementations with the appropriate extensions present. This feature is
+    provided for the rare case when resolving into a non-multisample depth
+    texture becomes necessary, for example when rendering into an
+    OpenXR-provided depth texture (XR_KHR_composition_layer_depth). This enum
+    value has been introduced in Qt 6.8.
  */
 
 /*!
@@ -2690,6 +2704,39 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
     \l QRhiTexture::D24S8, it will serve as the stencil buffer as well.
 
     \sa setDepthStencilBuffer()
+ */
+
+/*!
+    \fn QRhiTexture *QRhiTextureRenderTargetDescription::depthResolveTexture() const
+
+    \return the texture to which a multisample depth (or depth-stencil) texture
+    (or texture array) is resolved to. \nullptr if there is none, which is the
+    most common case.
+
+    \since 6.8
+    \sa QRhiColorAttachment::resolveTexture(), depthTexture()
+ */
+
+/*!
+    \fn void QRhiTextureRenderTargetDescription::setDepthResolveTexture(QRhiTexture *tex)
+
+    Sets the depth (or depth-stencil) resolve texture \a tex.
+
+    \a tex is expected to be a 2D texture or a 2D texture array with a format
+    matching the texture set via setDepthTexture().
+
+    \note Resolving depth (or depth-stencil) data is only functional when the
+    \l ResolveDepthStencil feature is reported as supported at run time. Support
+    for depth-stencil resolve is not universally available among the graphics
+    APIs. Designs assuming unconditional availability of depth-stencil resolve
+    are therefore non-portable, and should be avoided.
+
+    \note As an additional limitation for OpenGL ES in particular, setting a
+    depth resolve texture may only be functional in combination with
+    setDepthTexture(), not with setDepthStencilBuffer().
+
+    \since 6.8
+    \sa QRhiColorAttachment::setResolveTexture(), setDepthTexture()
  */
 
 /*!
@@ -5088,8 +5135,9 @@ QRhiResource::Type QRhiSwapChainRenderTarget::resourceType() const
     \value DoNotStoreDepthStencilContents Indicates that the contents of the
     depth texture does not need to be written out. Relevant only when a
     QRhiTexture, not QRhiRenderBuffer, is used as the depth-stencil buffer,
-    because for QRhiRenderBuffer this is implicit. This enum value is introduced
-    in Qt 6.8.
+    because for QRhiRenderBuffer this is implicit. When a depthResolveTexture is
+    set, the flag is not relevant, because the behavior is then as if the flag
+    was set. This enum value is introduced in Qt 6.8.
  */
 
 /*!

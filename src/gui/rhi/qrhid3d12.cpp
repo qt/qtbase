@@ -712,6 +712,10 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
         return caps.multiView;
     case QRhi::TextureViewFormat:
         return caps.textureViewFormat;
+    case QRhi::ResolveDepthStencil:
+        // there is no Multisample Resolve support for depth/stencil formats
+        // https://learn.microsoft.com/en-us/windows/win32/direct3ddxgi/hardware-support-for-direct3d-12-1-formats
+        return false;
     }
     return false;
 }
@@ -1960,7 +1964,8 @@ void QRhiD3D12::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                                                  dstTexD->dxgiFormat);
             }
         }
-
+        if (rtTex->m_desc.depthResolveTexture())
+            qWarning("Resolving multisample depth-stencil buffers is not supported with D3D");
     }
 
     cbD->recordingPass = QD3D12CommandBuffer::NoPass;

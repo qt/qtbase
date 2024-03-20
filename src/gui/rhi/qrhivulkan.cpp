@@ -334,7 +334,9 @@ QByteArrayList QRhiVulkanInitParams::preferredExtensionsForImportedDevice()
 {
     return {
         QByteArrayLiteral("VK_KHR_swapchain"),
-        QByteArrayLiteral("VK_EXT_vertex_attribute_divisor")
+        QByteArrayLiteral("VK_EXT_vertex_attribute_divisor"),
+        QByteArrayLiteral("VK_KHR_create_renderpass2"),
+        QByteArrayLiteral("VK_KHR_depth_stencil_resolve")
     };
 }
 
@@ -428,6 +430,8 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         for (const char *ext : inst->extensions())
             qCDebug(QRHI_LOG_INFO, "  %s", ext);
     }
+
+    caps = {};
     caps.debugUtils = inst->extensions().contains(QByteArrayLiteral("VK_EXT_debug_utils"));
 
     QList<VkQueueFamilyProperties> queueFamilyProps;
@@ -659,13 +663,26 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             }
         }
 
-        caps.vertexAttribDivisor = false;
 #ifdef VK_EXT_vertex_attribute_divisor
         if (devExts.contains(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME)) {
             if (hasPhysDevProp2) {
                 requestedDevExts.append(VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME);
                 caps.vertexAttribDivisor = true;
             }
+        }
+#endif
+
+#ifdef VK_KHR_create_renderpass2
+        if (devExts.contains(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME)) {
+            requestedDevExts.append(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
+            caps.renderPass2KHR = true;
+        }
+#endif
+
+#ifdef VK_KHR_depth_stencil_resolve
+        if (devExts.contains(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME)) {
+            requestedDevExts.append(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME);
+            caps.depthStencilResolveKHR = true;
         }
 #endif
 
@@ -750,6 +767,13 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         }
     } else {
         qCDebug(QRHI_LOG_INFO, "Using imported device %p", dev);
+
+        // Here we have no way to tell if the extensions got enabled or not.
+        // Pretend it's all there and supported. If getProcAddress fails, we'll
+        // handle that gracefully.
+        caps.vertexAttribDivisor = true;
+        caps.renderPass2KHR = true;
+        caps.depthStencilResolveKHR = true;
     }
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(
@@ -805,6 +829,18 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 #ifdef VK_VERSION_1_1
     if (caps.apiVersion == QVersionNumber(1, 1))
         caps.multiView = multiviewFeaturesIfApi11.multiview;
+#endif
+
+    // With Vulkan 1.2 renderpass2 and depth_stencil_resolve are core, but we
+    // have to support the case of 1.1 + extensions, in particular for the Quest
+    // 3 (Android, Vulkan 1.1 at the time of writing). Therefore, always rely on
+    // the KHR extension for now.
+#ifdef VK_KHR_create_renderpass2
+    if (caps.renderPass2KHR) {
+        vkCreateRenderPass2KHR = reinterpret_cast<PFN_vkCreateRenderPass2KHR>(f->vkGetDeviceProcAddr(dev, "vkCreateRenderPass2KHR"));
+        if (!vkCreateRenderPass2KHR) // handle it gracefully, the caps flag may be incorrect when using an imported VkDevice
+            caps.renderPass2KHR = false;
+    }
 #endif
 
     if (!importedAllocator) {
@@ -1331,6 +1367,7 @@ bool QRhiVulkan::createDefaultRenderPass(QVkRenderPassDescriptor *rpD, bool hasD
     rpD->colorRefs.append({ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
 
     rpD->hasDepthStencil = hasDepthStencil;
+    rpD->hasDepthStencilResolve = false;
     rpD->multiViewCount = 0;
 
     if (hasDepthStencil) {
@@ -1434,6 +1471,132 @@ struct MultiViewRenderPassSetupHelper
 #endif
 };
 
+#ifdef VK_KHR_create_renderpass2
+// Effectively converts a VkRenderPassCreateInfo into a VkRenderPassCreateInfo2,
+// adding depth-stencil resolve support. Assumes a single subpass and no subpass
+// dependencies.
+struct RenderPass2SetupHelper
+{
+    bool prepare(VkRenderPassCreateInfo2 *rpInfo2, const VkRenderPassCreateInfo *rpInfo, const QVkRenderPassDescriptor *rpD, int multiViewCount) {
+        *rpInfo2 = {};
+
+        viewMask = 0;
+        if (multiViewCount >= 2) {
+            for (uint32_t i = 0; i < uint32_t(multiViewCount); ++i)
+                viewMask |= (1 << i);
+        }
+
+        attDescs2.resize(rpInfo->attachmentCount);
+        for (qsizetype i = 0; i < attDescs2.count(); ++i) {
+            VkAttachmentDescription2KHR &att2(attDescs2[i]);
+            const VkAttachmentDescription &att(rpInfo->pAttachments[i]);
+            att2 = {};
+            att2.sType = VK_STRUCTURE_TYPE_ATTACHMENT_DESCRIPTION_2;
+            att2.flags = att.flags;
+            att2.format = att.format;
+            att2.samples = att.samples;
+            att2.loadOp = att.loadOp;
+            att2.storeOp = att.storeOp;
+            att2.stencilLoadOp = att.stencilLoadOp;
+            att2.stencilStoreOp = att.stencilStoreOp;
+            att2.initialLayout = att.initialLayout;
+            att2.finalLayout = att.finalLayout;
+        }
+
+        attRefs2.clear();
+        subpass2 = {};
+        subpass2.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_2_KHR;
+        const VkSubpassDescription &subpassDesc(rpInfo->pSubpasses[0]);
+        subpass2.flags = subpassDesc.flags;
+        subpass2.pipelineBindPoint = subpassDesc.pipelineBindPoint;
+        if (multiViewCount >= 2)
+            subpass2.viewMask = viewMask;
+
+        // color attachment refs
+        qsizetype startIndex = attRefs2.count();
+        for (uint32_t j = 0; j < subpassDesc.colorAttachmentCount; ++j) {
+            attRefs2.append({});
+            VkAttachmentReference2KHR &attref2(attRefs2.last());
+            const VkAttachmentReference &attref(subpassDesc.pColorAttachments[j]);
+            attref2.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+            attref2.attachment = attref.attachment;
+            attref2.layout = attref.layout;
+            attref2.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        }
+        subpass2.colorAttachmentCount = subpassDesc.colorAttachmentCount;
+        subpass2.pColorAttachments = attRefs2.constData() + startIndex;
+
+        // color resolve refs
+        if (subpassDesc.pResolveAttachments) {
+            startIndex = attRefs2.count();
+            for (uint32_t j = 0; j < subpassDesc.colorAttachmentCount; ++j) {
+                attRefs2.append({});
+                VkAttachmentReference2KHR &attref2(attRefs2.last());
+                const VkAttachmentReference &attref(subpassDesc.pResolveAttachments[j]);
+                attref2.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+                attref2.attachment = attref.attachment;
+                attref2.layout = attref.layout;
+                attref2.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            }
+            subpass2.pResolveAttachments = attRefs2.constData() + startIndex;
+        }
+
+        // depth-stencil ref
+        if (subpassDesc.pDepthStencilAttachment) {
+            startIndex = attRefs2.count();
+            attRefs2.append({});
+            VkAttachmentReference2KHR &attref2(attRefs2.last());
+            const VkAttachmentReference &attref(*subpassDesc.pDepthStencilAttachment);
+            attref2.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+            attref2.attachment = attref.attachment;
+            attref2.layout = attref.layout;
+            attref2.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+            subpass2.pDepthStencilAttachment = attRefs2.constData() + startIndex;
+        }
+
+        // depth-stencil resolve ref
+#ifdef VK_KHR_depth_stencil_resolve
+        dsResolveDesc = {};
+        if (rpD->hasDepthStencilResolve) {
+            startIndex = attRefs2.count();
+            attRefs2.append({});
+            VkAttachmentReference2KHR &attref2(attRefs2.last());
+            attref2.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+            attref2.attachment = rpD->dsResolveRef.attachment;
+            attref2.layout = rpD->dsResolveRef.layout;
+            attref2.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+            dsResolveDesc.sType = VK_STRUCTURE_TYPE_SUBPASS_DESCRIPTION_DEPTH_STENCIL_RESOLVE_KHR;
+            dsResolveDesc.depthResolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
+            dsResolveDesc.stencilResolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
+            dsResolveDesc.pDepthStencilResolveAttachment = attRefs2.constData() + startIndex;
+            subpass2.pNext = &dsResolveDesc;
+        }
+#endif
+
+        rpInfo2->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2_KHR;
+        rpInfo2->pNext = nullptr; // the 1.1 VkRenderPassMultiviewCreateInfo is part of the '2' structs
+        rpInfo2->flags = rpInfo->flags;
+        rpInfo2->attachmentCount = rpInfo->attachmentCount;
+        rpInfo2->pAttachments = attDescs2.constData();
+        rpInfo2->subpassCount = 1;
+        rpInfo2->pSubpasses = &subpass2;
+        if (multiViewCount >= 2) {
+            rpInfo2->correlatedViewMaskCount = 1;
+            rpInfo2->pCorrelatedViewMasks = &viewMask;
+        }
+        return true;
+    }
+
+    QVarLengthArray<VkAttachmentDescription2KHR, 8> attDescs2;
+    QVarLengthArray<VkAttachmentReference2KHR, 8> attRefs2;
+    VkSubpassDescription2KHR subpass2;
+#ifdef VK_KHR_depth_stencil_resolve
+    VkSubpassDescriptionDepthStencilResolveKHR dsResolveDesc;
+#endif
+    uint32_t viewMask;
+};
+#endif // VK_KHR_create_renderpass2
+
 bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
                                            const QRhiColorAttachment *firstColorAttachment,
                                            const QRhiColorAttachment *lastColorAttachment,
@@ -1441,9 +1604,10 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
                                            bool preserveDs,
                                            bool storeDs,
                                            QRhiRenderBuffer *depthStencilBuffer,
-                                           QRhiTexture *depthTexture)
+                                           QRhiTexture *depthTexture,
+                                           QRhiTexture *depthResolveTexture)
 {
-    // attachment list layout is color (0-8), ds (0-1), resolve (0-8)
+    // attachment list layout is color (0-8), ds (0-1), resolve (0-8), ds resolve (0-1)
 
     int multiViewCount = 0;
     for (auto it = firstColorAttachment; it != lastColorAttachment; ++it) {
@@ -1539,6 +1703,31 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
     }
     Q_ASSERT(rpD->colorRefs.size() == rpD->resolveRefs.size());
 
+    rpD->hasDepthStencilResolve = rpD->hasDepthStencil && depthResolveTexture;
+    if (rpD->hasDepthStencilResolve) {
+        QVkTexture *rtexD = QRHI_RES(QVkTexture, depthResolveTexture);
+        if (rtexD->samples > VK_SAMPLE_COUNT_1_BIT)
+            qWarning("Resolving into a multisample depth texture is not supported");
+
+        QVkTexture *texD = QRHI_RES(QVkTexture, depthResolveTexture);
+        if (texD->vkformat != rtexD->vkformat) {
+            qWarning("Multisample resolve between different depth-stencil formats (%d and %d) is not supported.",
+                     int(texD->vkformat), int(rtexD->vkformat));
+        }
+
+        VkAttachmentDescription attDesc = {};
+        attDesc.format = rtexD->viewFormat;
+        attDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+        attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // ignored
+        attDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attDesc.stencilLoadOp = attDesc.loadOp;
+        attDesc.stencilStoreOp = attDesc.storeOp;
+        attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        rpD->attDescs.append(attDesc);
+    }
+    rpD->dsResolveRef = { uint32_t(rpD->attDescs.size() - 1), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+
     // rpD->subpassDeps stays empty: don't yet know the correct initial/final
     // access and stage stuff for the implicit deps at this point, so leave it
     // to the resource tracking and activateTextureRenderTarget() to generate
@@ -1552,10 +1741,31 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
     if (!multiViewHelper.prepare(&rpInfo, multiViewCount, caps.multiView))
         return false;
 
-    VkResult err = df->vkCreateRenderPass(dev, &rpInfo, nullptr, &rpD->rp);
-    if (err != VK_SUCCESS) {
-        qWarning("Failed to create renderpass: %d", err);
-        return false;
+#ifdef VK_KHR_create_renderpass2
+    if (rpD->hasDepthStencilResolve && caps.renderPass2KHR) {
+        // Use the KHR extension, not the 1.2 core API, in order to support Vulkan 1.1.
+        VkRenderPassCreateInfo2KHR rpInfo2;
+        RenderPass2SetupHelper rp2Helper;
+        if (!rp2Helper.prepare(&rpInfo2, &rpInfo, rpD, multiViewCount))
+            return false;
+
+        VkResult err = vkCreateRenderPass2KHR(dev, &rpInfo2, nullptr, &rpD->rp);
+        if (err != VK_SUCCESS) {
+            qWarning("Failed to create renderpass (using VkRenderPassCreateInfo2KHR): %d", err);
+            return false;
+        }
+    } else
+#endif
+    {
+        if (rpD->hasDepthStencilResolve) {
+            qWarning("Resolving multisample depth-stencil buffers is not supported without "
+                     "VK_KHR_depth_stencil_resolve and VK_KHR_create_renderpass2");
+        }
+        VkResult err = df->vkCreateRenderPass(dev, &rpInfo, nullptr, &rpD->rp);
+        if (err != VK_SUCCESS) {
+            qWarning("Failed to create renderpass: %d", err);
+            return false;
+        }
     }
 
     return true;
@@ -2487,6 +2697,13 @@ void QRhiVulkan::activateTextureRenderTarget(QVkCommandBuffer *cbD, QVkTextureRe
                                QRhiPassResourceTracker::TexDepthOutputStage);
         depthTexD->lastActiveFrameSlot = currentFrameSlot;
     }
+    if (rtD->m_desc.depthResolveTexture()) {
+        QVkTexture *depthResolveTexD = QRHI_RES(QVkTexture, rtD->m_desc.depthResolveTexture());
+        trackedRegisterTexture(&passResTracker, depthResolveTexD,
+                               QRhiPassResourceTracker::TexDepthOutput,
+                               QRhiPassResourceTracker::TexDepthOutputStage);
+        depthResolveTexD->lastActiveFrameSlot = currentFrameSlot;
+    }
 }
 
 void QRhiVulkan::resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
@@ -2626,6 +2843,11 @@ void QRhiVulkan::beginPass(QRhiCommandBuffer *cb,
         VkClearValue cv;
         cv.color = { { float(colorClearValue.redF()), float(colorClearValue.greenF()), float(colorClearValue.blueF()),
                        float(colorClearValue.alphaF()) } };
+        cvs.append(cv);
+    }
+    for (int i = 0; i < rtD->dsResolveAttCount; ++i) {
+        VkClearValue cv;
+        cv.depthStencil = { depthStencilClearValue.depthClearValue(), depthStencilClearValue.stencilClearValue() };
         cvs.append(cv);
     }
     rpBeginInfo.clearValueCount = uint32_t(cvs.size());
@@ -3931,6 +4153,7 @@ void QRhiVulkan::executeDeferredReleases(bool forced)
                     df->vkDestroyImageView(dev, e.textureRenderTarget.resrtv[att], nullptr);
                 }
                 df->vkDestroyImageView(dev, e.textureRenderTarget.dsv, nullptr);
+                df->vkDestroyImageView(dev, e.textureRenderTarget.resdsv, nullptr);
                 break;
             case QRhiVulkan::DeferredReleaseEntry::RenderPass:
                 df->vkDestroyRenderPass(dev, e.renderPass.rp, nullptr);
@@ -4592,6 +4815,8 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return caps.multiView;
     case QRhi::TextureViewFormat:
         return true;
+    case QRhi::ResolveDepthStencil:
+        return caps.renderPass2KHR && caps.depthStencilResolveKHR;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -6590,7 +6815,7 @@ bool QVkSampler::create()
 QVkRenderPassDescriptor::QVkRenderPassDescriptor(QRhiImplementation *rhi)
     : QRhiRenderPassDescriptor(rhi)
 {
-    serializedFormatData.reserve(32);
+    serializedFormatData.reserve(64);
 }
 
 QVkRenderPassDescriptor::~QVkRenderPassDescriptor()
@@ -6653,6 +6878,8 @@ bool QVkRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other
         return false;
     if (hasDepthStencil != o->hasDepthStencil)
         return false;
+    if (hasDepthStencilResolve != o->hasDepthStencilResolve)
+        return false;
     if (multiViewCount != o->multiViewCount)
         return false;
 
@@ -6680,6 +6907,14 @@ bool QVkRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other
             return false;
     }
 
+    if (hasDepthStencilResolve) {
+        const uint32_t attIdx = dsResolveRef.attachment;
+        if (attIdx != o->dsResolveRef.attachment)
+            return false;
+        if (attIdx != VK_ATTACHMENT_UNUSED && !attachmentDescriptionEquals(attDescs[attIdx], o->attDescs[attIdx]))
+            return false;
+    }
+
     // subpassDeps is not included
 
     return true;
@@ -6694,6 +6929,7 @@ void QVkRenderPassDescriptor::updateSerializedFormat()
     *p++ = colorRefs.size();
     *p++ = resolveRefs.size();
     *p++ = hasDepthStencil;
+    *p++ = hasDepthStencilResolve;
     *p++ = multiViewCount;
 
     auto serializeAttachmentData = [this, &p](uint32_t attIdx) {
@@ -6726,6 +6962,12 @@ void QVkRenderPassDescriptor::updateSerializedFormat()
         *p++ = attIdx;
         serializeAttachmentData(attIdx);
     }
+
+    if (hasDepthStencilResolve) {
+        const uint32_t attIdx = dsResolveRef.attachment;
+        *p++ = attIdx;
+        serializeAttachmentData(attIdx);
+    }
 }
 
 QRhiRenderPassDescriptor *QVkRenderPassDescriptor::newCompatibleRenderPassDescriptor() const
@@ -6738,8 +6980,10 @@ QRhiRenderPassDescriptor *QVkRenderPassDescriptor::newCompatibleRenderPassDescri
     rpD->resolveRefs = resolveRefs;
     rpD->subpassDeps = subpassDeps;
     rpD->hasDepthStencil = hasDepthStencil;
+    rpD->hasDepthStencilResolve = hasDepthStencilResolve;
     rpD->multiViewCount = multiViewCount;
     rpD->dsRef = dsRef;
+    rpD->dsResolveRef = dsResolveRef;
 
     VkRenderPassCreateInfo rpInfo;
     VkSubpassDescription subpassDesc;
@@ -6842,6 +7086,8 @@ void QVkTextureRenderTarget::destroy()
 
     e.textureRenderTarget.dsv = dsv;
     dsv = VK_NULL_HANDLE;
+    e.textureRenderTarget.resdsv = resdsv;
+    resdsv = VK_NULL_HANDLE;
 
     QRHI_RES_RHI(QRhiVulkan);
     if (rhiD) {
@@ -6861,9 +7107,10 @@ QRhiRenderPassDescriptor *QVkTextureRenderTarget::newCompatibleRenderPassDescrip
                                          m_desc.cendColorAttachments(),
                                          m_flags.testFlag(QRhiTextureRenderTarget::PreserveColorContents),
                                          m_flags.testFlag(QRhiTextureRenderTarget::PreserveDepthStencilContents),
-                                         m_desc.depthTexture() && !m_flags.testFlag(DoNotStoreDepthStencilContents),
+                                         m_desc.depthTexture() && !m_flags.testFlag(DoNotStoreDepthStencilContents) && !m_desc.depthResolveTexture(),
                                          m_desc.depthStencilBuffer(),
-                                         m_desc.depthTexture()))
+                                         m_desc.depthTexture(),
+                                         m_desc.depthResolveTexture()))
     {
         delete rp;
         return nullptr;
@@ -7010,6 +7257,36 @@ bool QVkTextureRenderTarget::create()
         }
     }
 
+    if (m_desc.depthResolveTexture()) {
+        QVkTexture *resTexD = QRHI_RES(QVkTexture, m_desc.depthResolveTexture());
+        Q_ASSERT(resTexD->flags().testFlag(QRhiTexture::RenderTarget));
+
+        VkImageViewCreateInfo viewInfo = {};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = resTexD->image;
+        viewInfo.viewType = d.multiViewCount ? VK_IMAGE_VIEW_TYPE_2D_ARRAY
+                                             : VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = resTexD->viewFormat;
+        viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
+        viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
+        viewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
+        viewInfo.components.a = VK_COMPONENT_SWIZZLE_A;
+        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = qMax<uint32_t>(1, d.multiViewCount);
+        VkResult err = rhiD->df->vkCreateImageView(rhiD->dev, &viewInfo, nullptr, &resdsv);
+        if (err != VK_SUCCESS) {
+            qWarning("Failed to create render target depth resolve image view: %d", err);
+            return false;
+        }
+        views.append(resdsv);
+        d.dsResolveAttCount = 1;
+    } else {
+        d.dsResolveAttCount = 0;
+    }
+
     if (!m_renderPassDesc)
         qWarning("QVkTextureRenderTarget: No renderpass descriptor set. See newCompatibleRenderPassDescriptor() and setRenderPassDescriptor().");
 
@@ -7019,7 +7296,7 @@ bool QVkTextureRenderTarget::create()
     VkFramebufferCreateInfo fbInfo = {};
     fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     fbInfo.renderPass = d.rp->rp;
-    fbInfo.attachmentCount = uint32_t(d.colorAttCount + d.dsAttCount + d.resolveAttCount);
+    fbInfo.attachmentCount = uint32_t(d.colorAttCount + d.dsAttCount + d.resolveAttCount + d.dsResolveAttCount);
     fbInfo.pAttachments = views.constData();
     fbInfo.width = uint32_t(d.pixelSize.width());
     fbInfo.height = uint32_t(d.pixelSize.height());
@@ -7870,6 +8147,7 @@ bool QVkSwapChain::createOrResize()
         rtWrapper.d.dsAttCount = 0;
         ds = nullptr;
     }
+    rtWrapper.d.dsResolveAttCount = 0;
     if (samples > VK_SAMPLE_COUNT_1_BIT)
         rtWrapper.d.resolveAttCount = 1;
     else
@@ -7886,7 +8164,7 @@ bool QVkSwapChain::createOrResize()
         VkFramebufferCreateInfo fbInfo = {};
         fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         fbInfo.renderPass = rtWrapper.d.rp->rp;
-        fbInfo.attachmentCount = uint32_t(rtWrapper.d.colorAttCount + rtWrapper.d.dsAttCount + rtWrapper.d.resolveAttCount);
+        fbInfo.attachmentCount = uint32_t(rtWrapper.d.colorAttCount + rtWrapper.d.dsAttCount + rtWrapper.d.resolveAttCount + rtWrapper.d.dsResolveAttCount);
         fbInfo.pAttachments = views;
         fbInfo.width = uint32_t(pixelSize.width());
         fbInfo.height = uint32_t(pixelSize.height());
@@ -7916,6 +8194,7 @@ bool QVkSwapChain::createOrResize()
             rtWrapperRight.d.dsAttCount = 0;
             ds = nullptr;
         }
+        rtWrapperRight.d.dsResolveAttCount = 0;
         if (samples > VK_SAMPLE_COUNT_1_BIT)
             rtWrapperRight.d.resolveAttCount = 1;
         else
@@ -7934,7 +8213,7 @@ bool QVkSwapChain::createOrResize()
             fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             fbInfo.renderPass = rtWrapperRight.d.rp->rp;
             fbInfo.attachmentCount = uint32_t(rtWrapperRight.d.colorAttCount + rtWrapperRight.d.dsAttCount
-                                              + rtWrapperRight.d.resolveAttCount);
+                                              + rtWrapperRight.d.resolveAttCount + rtWrapperRight.d.dsResolveAttCount);
             fbInfo.pAttachments = views;
             fbInfo.width = uint32_t(pixelSize.width());
             fbInfo.height = uint32_t(pixelSize.height());

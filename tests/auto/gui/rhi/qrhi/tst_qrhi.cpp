@@ -425,7 +425,8 @@ void tst_QRhi::create()
             QRhi::RenderToOneDimensionalTexture,
             QRhi::ThreeDimensionalTextureMipmaps,
             QRhi::MultiView,
-            QRhi::TextureViewFormat
+            QRhi::TextureViewFormat,
+            QRhi::ResolveDepthStencil
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);

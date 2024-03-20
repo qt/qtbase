@@ -164,8 +164,10 @@ struct QVkRenderPassDescriptor : public QRhiRenderPassDescriptor
     QVarLengthArray<VkAttachmentReference, 8> resolveRefs;
     QVarLengthArray<VkSubpassDependency, 2> subpassDeps;
     bool hasDepthStencil = false;
+    bool hasDepthStencilResolve = false;
     uint32_t multiViewCount = 0;
     VkAttachmentReference dsRef;
+    VkAttachmentReference dsResolveRef;
     QVector<quint32> serializedFormatData;
     QRhiVulkanRenderPassNativeHandles nativeHandlesStruct;
     int lastActiveFrameSlot = -1;
@@ -181,6 +183,7 @@ struct QVkRenderTargetData
     int colorAttCount = 0;
     int dsAttCount = 0;
     int resolveAttCount = 0;
+    int dsResolveAttCount = 0;
     int multiViewCount = 0;
     QRhiRenderTargetAttachmentTracker::ResIdList currentResIdList;
     static const int MAX_COLOR_ATTACHMENTS = 8;
@@ -216,6 +219,7 @@ struct QVkTextureRenderTarget : public QRhiTextureRenderTarget
     VkImageView rtv[QVkRenderTargetData::MAX_COLOR_ATTACHMENTS];
     VkImageView dsv = VK_NULL_HANDLE;
     VkImageView resrtv[QVkRenderTargetData::MAX_COLOR_ATTACHMENTS];
+    VkImageView resdsv = VK_NULL_HANDLE;
     int lastActiveFrameSlot = -1;
     friend class QRhiVulkan;
 };
@@ -775,7 +779,8 @@ public:
                                    bool preserveDs,
                                    bool storeDs,
                                    QRhiRenderBuffer *depthStencilBuffer,
-                                   QRhiTexture *depthTexture);
+                                   QRhiTexture *depthTexture,
+                                   QRhiTexture *depthResolveTexture);
     bool ensurePipelineCache(const void *initialData = nullptr, size_t initialDataSize = 0);
     VkShaderModule createShader(const QByteArray &spirv);
 
@@ -876,6 +881,10 @@ public:
     PFN_vkGetPhysicalDeviceSurfaceFormatsKHR vkGetPhysicalDeviceSurfaceFormatsKHR;
     PFN_vkGetPhysicalDeviceSurfacePresentModesKHR vkGetPhysicalDeviceSurfacePresentModesKHR;
 
+#ifdef VK_KHR_create_renderpass2
+    PFN_vkCreateRenderPass2KHR vkCreateRenderPass2KHR = nullptr;
+#endif
+
     struct {
         bool compute = false;
         bool wideLines = false;
@@ -886,6 +895,8 @@ public:
         bool geometryShader = false;
         bool nonFillPolygonMode = false;
         bool multiView = false;
+        bool renderPass2KHR = false;
+        bool depthStencilResolveKHR = false;
         QVersionNumber apiVersion;
     } caps;
 
@@ -1001,6 +1012,7 @@ public:
                 VkImageView rtv[QVkRenderTargetData::MAX_COLOR_ATTACHMENTS];
                 VkImageView resrtv[QVkRenderTargetData::MAX_COLOR_ATTACHMENTS];
                 VkImageView dsv;
+                VkImageView resdsv;
             } textureRenderTarget;
             struct {
                 VkRenderPass rp;
