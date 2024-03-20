@@ -2981,7 +2981,7 @@ void tst_QItemSelectionModel::destroyModel()
     selectionModel->setCurrentIndex(itemModel->index(1, 0), QItemSelectionModel::Select);
     QVERIFY(selectionModel->currentIndex().isValid());
 
-    QTest::failOnWarning(QRegularExpression(".*"));
+    QTest::failOnWarning();
     itemModel.reset();
     QVERIFY(!selectionModel->currentIndex().isValid());
     QVERIFY(selectionModel->selection().isEmpty());

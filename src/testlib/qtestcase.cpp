@@ -2202,6 +2202,19 @@ void QTest::ignoreMessage(QtMsgType type, const QRegularExpression &messagePatte
 #endif // QT_CONFIG(regularexpression)
 
 /*!
+    \since 6.8
+    \overload failOnWarning()
+
+    Appends a test failure to the test log if any warning is output.
+
+    \sa failOnWarning()
+*/
+void QTest::failOnWarning()
+{
+    return QTestLog::failOnWarning();
+}
+
+/*!
     \since 6.3
     \overload failOnWarning()
 
@@ -2247,7 +2260,17 @@ void QTest::failOnWarning(const char *message)
     \code
     void FileTest::init()
     {
-        QTest::failOnWarning(QRegularExpression(".?"));
+        QTest::failOnWarning(
+            QRegularExpression("QFile::.*: File(.*) already open"));
+    }
+    \endcode
+
+    For the common case of failing on \e any warning pass no parameter:
+
+    \code
+    void FileTest::init()
+    {
+        QTest::failOnWarning();
     }
     \endcode
 

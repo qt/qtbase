@@ -71,6 +71,7 @@ public:
 #ifndef QT_NO_REGULAREXPRESSION
     static void ignoreMessage(QtMsgType type, const QRegularExpression &expression);
 #endif
+    static void failOnWarning();
     static void failOnWarning(const char *msg);
 #ifndef QT_NO_REGULAREXPRESSION
     static void failOnWarning(const QRegularExpression &expression);
