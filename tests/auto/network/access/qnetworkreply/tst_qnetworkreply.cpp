@@ -6334,14 +6334,6 @@ struct QThreadCleanup
     }
 };
 
-struct QDeleteLaterCleanup
-{
-    static inline void cleanup(QObject *o)
-    {
-        o->deleteLater();
-    }
-};
-
 #if QT_CONFIG(networkproxy)
 void tst_QNetworkReply::httpProxyCommandsSynchronous()
 {
@@ -6353,7 +6345,7 @@ void tst_QNetworkReply::httpProxyCommandsSynchronous()
     // the server thread, because the client is never returning to the
     // event loop
     QScopedPointer<QThread, QThreadCleanup> serverThread(new QThread);
-    QScopedPointer<MiniHttpServer, QDeleteLaterCleanup> proxyServer(new MiniHttpServer(responseToSend, false, serverThread.data()));
+    QScopedPointer<MiniHttpServer, QScopedPointerDeleteLater> proxyServer(new MiniHttpServer(responseToSend, false, serverThread.data()));
     QNetworkProxy proxy(QNetworkProxy::HttpProxy, "127.0.0.1", proxyServer->serverPort());
 
     manager.setProxy(proxy);
@@ -8569,7 +8561,7 @@ void tst_QNetworkReply::synchronousAuthenticationCache()
     // the server thread, because the client is never returning to the
     // event loop
     QScopedPointer<QThread, QThreadCleanup> serverThread(new QThread);
-    QScopedPointer<MiniHttpServer, QDeleteLaterCleanup> server(new MiniAuthServer(serverThread.data()));
+    QScopedPointer<MiniHttpServer, QScopedPointerDeleteLater> server(new MiniAuthServer(serverThread.data()));
     server->doClose = true;
 
     //1)  URL without credentials, we are not authenticated
