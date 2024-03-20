@@ -62,18 +62,7 @@ public:
 #else
     template <typename Func>
     QSignalSpy(const typename QtPrivate::FunctionPointer<Func>::Object *obj, Func signal0)
-        : QSignalSpy(verify(obj, signal0)) {}
-
-private:
-    template <typename Func>
-    ObjectSignal verify(const QObject *obj, Func signal0)
-    {
-        if (!isObjectValid(obj))
-            return {};
-
-        return verify(obj, QMetaMethod::fromSignal(signal0));
-    }
-public:
+        : QSignalSpy(verify(obj, QMetaMethod::fromSignal(signal0))) {}
 #endif // Q_QDOC
 
     QSignalSpy(const QObject *obj, QMetaMethod signal)
