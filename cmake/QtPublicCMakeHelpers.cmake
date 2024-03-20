@@ -39,6 +39,65 @@ function(_qt_internal_check_depfile_support out_var)
     set(${out_var} "${${out_var}}" PARENT_SCOPE)
 endfunction()
 
+# Checks if the path points to the cmake directory, like lib/cmake.
+function(__qt_internal_check_path_points_to_cmake_dir result path)
+    string(TOUPPER "${QT_CMAKE_EXPORT_NAMESPACE}" export_namespace_upper)
+    if((INSTALL_LIBDIR AND path MATCHES "/${INSTALL_LIBDIR}/cmake$") OR
+        (${export_namespace_upper}_INSTALL_LIBS AND
+            path MATCHES "/${${export_namespace_upper}_INSTALL_LIBS}/cmake$") OR
+        path MATCHES "/lib/cmake$"
+    )
+        set(${result} TRUE PARENT_SCOPE)
+    else()
+        set(${result} FALSE PARENT_SCOPE)
+    endif()
+endfunction()
+
+# Creates a reverse path to prefix from possible cmake directories. Returns the unchanged path
+# if it doesn't point to cmake directory.
+function(__qt_internal_reverse_prefix_path_from_cmake_dir result cmake_path)
+    string(TOUPPER "${QT_CMAKE_EXPORT_NAMESPACE}" export_namespace_upper)
+    if(INSTALL_LIBDIR AND cmake_path MATCHES "(.+)/${INSTALL_LIBDIR}/cmake$")
+        if(CMAKE_MATCH_1)
+            set(${result} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+        endif()
+    elseif(${export_namespace_upper}_INSTALL_LIBS AND
+        cmake_path MATCHES "(.+)/${${export_namespace_upper}_INSTALL_LIBS}/cmake$")
+        if(CMAKE_MATCH_1)
+            set(${result} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+        endif()
+    elseif(result MATCHES "(.+)/lib/cmake$")
+        if(CMAKE_MATCH_1)
+            set(${result} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+        endif()
+    else()
+        set(${result} "${cmake_path}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+# Returns the possible cmake directories based on prefix_path.
+function(__qt_internal_get_possible_cmake_dirs out_paths prefix_path)
+    set(${out_paths} "")
+
+    if(EXISTS "${prefix_path}/lib/cmake")
+        list(APPEND ${out_paths} "${prefix_path}/lib/cmake")
+    endif()
+
+    string(TOUPPER "${QT_CMAKE_EXPORT_NAMESPACE}" export_namespace_upper)
+    set(next_path "${prefix_path}/${${export_namespace_upper}_INSTALL_LIBS}/cmake")
+    if(${export_namespace_upper}_INSTALL_LIBS AND EXISTS "${next_path}")
+        list(APPEND ${out_paths} "${next_path}")
+    endif()
+
+    set(next_path "${prefix_path}/${INSTALL_LIBDIR}/cmake")
+    if(INSTALL_LIBDIR AND EXISTS "${next_path}")
+        list(APPEND ${out_paths} "${next_path}")
+    endif()
+
+    list(REMOVE_DUPLICATES ${out_paths})
+    set(${out_paths} "${${out_paths}}" PARENT_SCOPE)
+endfunction()
+
 # Collect additional package prefix paths to look for Qt packages, both from command line and the
 # env variable ${prefixes_var}. The result is stored in ${out_var} and is a list of paths ending
 # with "/lib/cmake".
@@ -72,10 +131,13 @@ function(__qt_internal_collect_additional_prefix_paths out_var prefixes_var)
         # NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH values are discarded.
         # CMAKE_FIND_ROOT_PATH values are not discarded and togegher with the PATHS option, it
         # ensures packages from additional prefixes are found.
-        if(NOT additional_path MATCHES "/lib/cmake$")
-            string(APPEND additional_path "/lib/cmake")
+        __qt_internal_check_path_points_to_cmake_dir(is_path_to_cmake "${additional_path}")
+        if(is_path_to_cmake)
+            list(APPEND additional_packages_prefix_paths "${additional_path}")
+        else()
+            __qt_internal_get_possible_cmake_dirs(additional_cmake_dirs "${additional_path}")
+            list(APPEND additional_packages_prefix_paths ${additional_cmake_dirs})
         endif()
-        list(APPEND additional_packages_prefix_paths "${additional_path}")
     endforeach()
 
     set("${out_var}" "${additional_packages_prefix_paths}" PARENT_SCOPE)
@@ -87,10 +149,14 @@ function(__qt_internal_collect_additional_module_paths)
         return()
     endif()
     foreach(prefix_path IN LISTS QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
-        list(APPEND CMAKE_MODULE_PATH "${prefix_path}/${QT_CMAKE_EXPORT_NAMESPACE}")
-        # TODO: Need to consider the INSTALL_LIBDIR value when collecting CMAKE_MODULE_PATH.
-        # See QTBUG-123039.
-        list(APPEND CMAKE_MODULE_PATH "${prefix_path}/lib/cmake/${QT_CMAKE_EXPORT_NAMESPACE}")
+        __qt_internal_check_path_points_to_cmake_dir(is_path_to_cmake "${prefix_path}")
+        if(is_path_to_cmake)
+            list(APPEND CMAKE_MODULE_PATH "${prefix_path}/${QT_CMAKE_EXPORT_NAMESPACE}")
+        else()
+            __qt_internal_get_possible_cmake_dirs(additional_cmake_dirs "${additional_path}")
+            list(TRANSFORM additional_cmake_dirs APPEND "/${QT_CMAKE_EXPORT_NAMESPACE}")
+            list(APPEND CMAKE_MODULE_PATH ${additional_cmake_dirs})
+        endif()
     endforeach()
     list(REMOVE_DUPLICATES CMAKE_MODULE_PATH)
     set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE)
@@ -102,10 +168,7 @@ endfunction()
 function(__qt_internal_prefix_paths_to_roots out_var prefix_paths)
     set(result "")
     foreach(path IN LISTS prefix_paths)
-        if(path MATCHES "/lib/cmake$")
-            string(APPEND path "/../..")
-        endif()
-        get_filename_component(path "${path}" ABSOLUTE)
+        __qt_internal_reverse_prefix_path_from_cmake_dir(path "${path}")
         list(APPEND result "${path}")
     endforeach()
     set("${out_var}" "${result}" PARENT_SCOPE)

@@ -55,6 +55,10 @@ foreach(__qt_public_file_to_include IN LISTS __qt_public_files_to_include)
     include("${__qt_public_file_to_include}")
 endforeach()
 
+if(NOT DEFINED QT_CMAKE_EXPORT_NAMESPACE)
+    set(QT_CMAKE_EXPORT_NAMESPACE @QT_CMAKE_EXPORT_NAMESPACE@)
+endif()
+
 set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH "" CACHE STRING
     "Additional directories where find(Qt6 ...) components are searched")
 set(QT_ADDITIONAL_HOST_PACKAGES_PREFIX_PATH "" CACHE STRING
@@ -67,10 +71,6 @@ __qt_internal_collect_additional_prefix_paths(_qt_additional_host_packages_prefi
 
 __qt_internal_prefix_paths_to_roots(_qt_additional_host_packages_root_paths
     "${_qt_additional_host_packages_prefix_paths}")
-
-if(NOT DEFINED QT_CMAKE_EXPORT_NAMESPACE)
-    set(QT_CMAKE_EXPORT_NAMESPACE @QT_CMAKE_EXPORT_NAMESPACE@)
-endif()
 
 __qt_internal_collect_additional_module_paths()
 

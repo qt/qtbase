@@ -143,10 +143,7 @@ function(qt_internal_add_headersclean_target module_target module_headers)
             # If additional package prefixes are provided, we consider they can contain frameworks
             # as well.
             foreach(prefix IN LISTS _qt_additional_packages_prefix_paths)
-                if(prefix MATCHES "/lib/cmake$") # Cut CMake files path
-                    string(APPEND prefix "/../..")
-                endif()
-                get_filename_component(prefix "${prefix}" ABSOLUTE)
+                __qt_internal_reverse_prefix_path_from_cmake_dir(path "${path}")
 
                 set(libdir "${prefix}/${INSTALL_LIBDIR}")
                 if(EXISTS "${libdir}")
