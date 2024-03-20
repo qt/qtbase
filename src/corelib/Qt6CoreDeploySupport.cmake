@@ -546,10 +546,19 @@ if(NOT __QT_NO_CREATE_VERSIONLESS_FUNCTIONS)
 endif()
 
 function(_qt_internal_show_skip_runtime_deploy_message qt_build_type_string)
+    set(no_value_options "")
+    set(single_value_options
+        EXTRA_MESSAGE
+    )
+    set(multi_value_options "")
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
     message(STATUS
         "Skipping runtime deployment steps. "
         "Support for installing runtime dependencies is not implemented for "
-        "this target platform (${__QT_DEPLOY_SYSTEM_NAME}, ${qt_build_type_string})."
+        "this target platform (${__QT_DEPLOY_SYSTEM_NAME}, ${qt_build_type_string}). "
+        "${arg_EXTRA_MESSAGE}"
     )
 endfunction()
 
