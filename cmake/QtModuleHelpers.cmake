@@ -719,6 +719,9 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
         get_filename_component(basename ${cmake_file} NAME)
         file(COPY ${cmake_file} DESTINATION ${config_build_dir})
         list(APPEND extra_cmake_files "${config_build_dir}/${basename}")
+
+        # Make sure touched extra cmake files cause a reconfigure, so they get re-copied.
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${cmake_file}")
     endforeach()
     list(APPEND extra_cmake_includes ${arg_EXTRA_CMAKE_INCLUDES})
 
