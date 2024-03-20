@@ -29,7 +29,7 @@ qt_internal_add_test(tst_qgraphicsview
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(tst_qgraphicsview CONDITION QT_FEATURE_opengl
+qt_internal_extend_target(tst_qgraphicsview CONDITION QT_FEATURE_opengl AND QT_FEATURE_opengl_module
     LIBRARIES
         Qt::OpenGL
         Qt::OpenGLWidgets

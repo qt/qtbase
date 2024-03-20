@@ -62,7 +62,7 @@ qt_internal_extend_target(EglFSDeviceIntegrationPrivate
         PlatformGraphics::PlatformGraphics
 )
 
-qt_internal_extend_target(EglFSDeviceIntegrationPrivate CONDITION QT_FEATURE_opengl
+qt_internal_extend_target(EglFSDeviceIntegrationPrivate CONDITION QT_FEATURE_opengl AND QT_FEATURE_opengl_module
     SOURCES
         api/qeglfscontext.cpp api/qeglfscontext_p.h
         api/qeglfscursor.cpp api/qeglfscursor_p.h

@@ -1143,6 +1143,12 @@ qt_feature("network" PRIVATE
     PURPOSE "Provides the Qt Network module."
     VCPKG_DEFAULT
 )
+qt_feature("opengl_module" PRIVATE  # FEATURE_opengl is already taken
+    LABEL "Qt OpenGL"
+    CONDITION QT_FEATURE_gui    # AND QT_FEATURE_opengl but that is in src/gui/configure.cmake
+    SECTION "Module"
+    PURPOSE "Provides the Qt OpenGL module."
+)
 qt_feature("printsupport" PRIVATE
     LABEL "Qt PrintSupport"
     CONDITION QT_FEATURE_widgets
