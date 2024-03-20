@@ -2609,6 +2609,9 @@ private:
 
 void tst_QApplication::abortQuitOnShow()
 {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        QSKIP("Wayland: This crash, see QTBUG-123172.");
+
     int argc = 0;
     QApplication app(argc, nullptr);
     ShowCloseShowWidget window1(false);
