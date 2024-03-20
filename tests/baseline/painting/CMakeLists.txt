@@ -85,7 +85,7 @@ qt_internal_add_resource(tst_baseline_painting "resources"
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(tst_baseline_painting CONDITION QT_FEATURE_opengl
+qt_internal_extend_target(tst_baseline_painting CONDITION QT_FEATURE_opengl AND QT_FEATURE_opengl_module
     LIBRARIES
         Qt::OpenGL
 )

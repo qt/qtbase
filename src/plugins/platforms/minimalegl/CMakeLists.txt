@@ -29,7 +29,7 @@ qt_internal_add_plugin(QMinimalEglIntegrationPlugin
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(QMinimalEglIntegrationPlugin CONDITION QT_FEATURE_opengl
+qt_internal_extend_target(QMinimalEglIntegrationPlugin CONDITION QT_FEATURE_opengl AND QT_FEATURE_opengl_module
     SOURCES
         qminimaleglbackingstore.cpp qminimaleglbackingstore.h
     LIBRARIES
