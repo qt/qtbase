@@ -43,36 +43,6 @@ bool qWindowsComQueryUnknownInterfaceMulti(Derived *d, REFIID id, LPVOID *iface)
     return false;
 }
 
-// Helper base class to provide IUnknown methods for COM classes (single inheritance)
-template <class ComInterface> class QWindowsComBase : public ComInterface
-{
-    Q_DISABLE_COPY_MOVE(QWindowsComBase)
-public:
-    explicit QWindowsComBase(ULONG initialRefCount = 1) : m_ref(initialRefCount) {}
-    virtual ~QWindowsComBase() = default;
-
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface) override
-    {
-        *iface = nullptr;
-        return qWindowsComQueryInterface<IUnknown>(this, id, iface) || qWindowsComQueryInterface<ComInterface>(this, id, iface)
-            ? S_OK : E_NOINTERFACE;
-    }
-
-    ULONG STDMETHODCALLTYPE AddRef() override { return ++m_ref; }
-
-    ULONG STDMETHODCALLTYPE Release() override
-    {
-        if (!--m_ref) {
-            delete this;
-            return 0;
-        }
-        return m_ref;
-    }
-
-private:
-    ULONG m_ref;
-};
-
 // Clang does not consider __declspec(nothrow) as nothrow
 QT_WARNING_DISABLE_CLANG("-Wmicrosoft-exception-spec")
 QT_WARNING_DISABLE_CLANG("-Wmissing-exception-spec")
