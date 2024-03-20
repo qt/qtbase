@@ -341,6 +341,7 @@ void tst_QDir::setPath()
     QFETCH(QString, dir1);
     QFETCH(QString, dir2);
 
+    QDir::setCurrent(m_dataPath + "/entrylist"_L1);
     QDir shared;
     QDir qDir1(dir1);
     QStringList entries1 = qDir1.entryList();
