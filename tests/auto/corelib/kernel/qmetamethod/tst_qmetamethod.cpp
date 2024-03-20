@@ -47,6 +47,7 @@ private slots:
     void comparisonOperators();
 
     void fromSignal();
+    void fromSignalOfNullSignalIsInvalid();
 
     void gadget();
     void revision();
@@ -739,6 +740,12 @@ void tst_QMetaMethod::fromSignal()
     FROMSIGNAL_HELPER(QObject, deleteLater, ())
 
 #undef FROMSIGNAL_HELPER
+}
+
+void tst_QMetaMethod::fromSignalOfNullSignalIsInvalid()
+{
+    constexpr decltype(&QObject::destroyed) ptr = nullptr;
+    QVERIFY(!QMetaMethod::fromSignal(ptr).isValid());
 }
 
 class MyGadget {
