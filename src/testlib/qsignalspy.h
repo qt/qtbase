@@ -80,7 +80,7 @@ public:
     }
 #endif // Q_QDOC
 
-    QSignalSpy(const QObject *obj, const QMetaMethod &signal)
+    QSignalSpy(const QObject *obj, QMetaMethod signal)
     {
         if (isObjectValid(obj) && isSignalMetaMethodValid(signal)) {
             initArgs(signal, obj);
