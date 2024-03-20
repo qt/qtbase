@@ -2390,7 +2390,7 @@ QMetaMethod::MethodType QMetaMethod::methodType() const
     \since 5.0
 
     Returns the meta-method that corresponds to the given \a signal, or an
-    invalid QMetaMethod if \a signal is not a signal of the class.
+    invalid QMetaMethod if \a signal is \c{nullptr} or not a signal of the class.
 
     Example:
 
