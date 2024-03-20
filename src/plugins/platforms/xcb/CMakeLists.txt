@@ -72,11 +72,6 @@ qt_disable_apple_app_extension_api_only(XcbQpaPrivate)
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(XcbQpaPrivate CONDITION QT_FEATURE_opengl
-    PUBLIC_LIBRARIES
-        Qt::OpenGLPrivate
-)
-
 qt_internal_extend_target(XcbQpaPrivate CONDITION QT_FEATURE_glib
     LIBRARIES
         GLIB2::GLIB2
