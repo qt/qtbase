@@ -44,7 +44,8 @@ QDBusArgument &operator<<(QDBusArgument &argument, const QSpiAccessibleCacheItem
     argument << item.path;
     argument << item.application;
     argument << item.parent;
-    argument << item.children;
+    argument << item.index_in_parent;
+    argument << item.child_count;
     argument << item.supportedInterfaces;
     argument << item.name;
     argument << item.role;
@@ -60,7 +61,8 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, QSpiAccessibleCac
     argument >> item.path;
     argument >> item.application;
     argument >> item.parent;
-    argument >> item.children;
+    argument >> item.index_in_parent;
+    argument >> item.child_count;
     argument >> item.supportedInterfaces;
     argument >> item.name;
     argument >> item.role;

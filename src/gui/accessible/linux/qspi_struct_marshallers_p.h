@@ -53,7 +53,8 @@ struct QSpiAccessibleCacheItem
     QSpiObjectReference         path;
     QSpiObjectReference         application;
     QSpiObjectReference         parent;
-    QSpiObjectReferenceArray children;
+    int                         index_in_parent;
+    int                         child_count;
     QStringList                 supportedInterfaces;
     QString                     name;
     uint                        role;
