@@ -611,6 +611,12 @@ qt_feature("rpath" PUBLIC
     CONDITION BUILD_SHARED_LIBS AND UNIX AND NOT WIN32 AND NOT ANDROID
 )
 qt_feature_config("rpath" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("elf_private_full_version" PRIVATE
+    LABEL "Use Qt's full version number in ELF version symbols"
+    AUTODETECT OFF
+    CONDITION BUILD_SHARED_LIBS AND UNIX AND NOT APPLE
+)
+qt_feature_config("elf_private_full_version" QMAKE_PRIVATE_QT_CONFIG)
 qt_feature("force_asserts" PUBLIC
     LABEL "Force assertions"
     AUTODETECT OFF
