@@ -15,21 +15,18 @@
   integrating to the platform theme. Thus, the final appearance varies
   depending on the active theme.
 
-    \table
-        \row
-            \li The Windows style ("windows") is provided by QWindowsStyle.
-            \li \image windows-style.png Windows Style
-        \row
-            \li \image windows-vista-style.png Windows Vista Style
-            \li The Windows Vista style ("windowsvista") is provided by
-                QWindowsVistaStyle.
-        \row
-            \li The macOS style ("macOS") is provided by QMacStyle.
-            \li \image macos-style.png \macos Style
-        \row
-            \li \image fusion-style.png Fusion Style
-            \li The Fusion style ("fusion") is provided by QFusionStyle.
-    \endtable
+    \image windows-style.png Windows Style
+    \caption The Windows style ("windows") is provided by QWindowsStyle.
+
+    \image windows-vista-style.png Windows Vista Style
+    \caption The Windows Vista style ("windowsvista") is provided by
+        QWindowsVistaStyle.
+
+    \image macos-style.png \macos Style
+    \caption The macOS style ("macOS") is provided by QMacStyle.
+
+    \image fusion-style.png Fusion Style
+    \caption The Fusion style ("fusion") is provided by QFusionStyle.
 
     The Styles example displays the following widgets:
 
