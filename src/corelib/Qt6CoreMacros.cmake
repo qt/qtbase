@@ -2073,7 +2073,7 @@ function(__qt_internal_generate_init_resource_source_file out_var target resourc
 
     # Gets replaced in the template
     __qt_internal_sanitize_resource_name(RESOURCE_NAME "${resource_name}")
-    set(resource_init_path "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qrc_${resource_name}_init.cpp")
+    set(resource_init_path "${CMAKE_CURRENT_BINARY_DIR}/.qt/rcc/qrc_${resource_name}_init.cpp")
 
     configure_file("${template_file}" "${resource_init_path}" @ONLY)
 
@@ -2267,7 +2267,7 @@ function(_qt_internal_process_resource target resourceName)
         endif()
         return()
     endif()
-    set(generatedResourceFile "${CMAKE_CURRENT_BINARY_DIR}/.rcc/${resourceName}.qrc")
+    set(generatedResourceFile "${CMAKE_CURRENT_BINARY_DIR}/.qt/rcc/${resourceName}.qrc")
     _qt_internal_expose_source_file_to_ide(${target} ${generatedResourceFile})
     set_source_files_properties(${generatedResourceFile} PROPERTIES GENERATED TRUE)
 
@@ -2364,9 +2364,9 @@ function(_qt_internal_process_resource target resourceName)
             endif()
         endif()
     elseif(rcc_BIG_RESOURCES)
-        set(generatedOutfile "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qrc_${resourceName}_tmp.cpp")
+        set(generatedOutfile "${CMAKE_CURRENT_BINARY_DIR}/.qt/rcc/qrc_${resourceName}_tmp.cpp")
     else()
-        set(generatedOutfile "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qrc_${resourceName}.cpp")
+        set(generatedOutfile "${CMAKE_CURRENT_BINARY_DIR}/.qt/rcc/qrc_${resourceName}.cpp")
     endif()
 
     set(pass_msg)
@@ -2421,7 +2421,7 @@ function(_qt_internal_process_resource target resourceName)
     if(rcc_BIG_RESOURCES)
         set(pass1OutputFile ${generatedOutfile})
         set(generatedOutfile
-            "${CMAKE_CURRENT_BINARY_DIR}/.rcc/qrc_${resourceName}${CMAKE_CXX_OUTPUT_EXTENSION}")
+            "${CMAKE_CURRENT_BINARY_DIR}/.qt/rcc/qrc_${resourceName}${CMAKE_CXX_OUTPUT_EXTENSION}")
         _qt_internal_add_rcc_pass2(
             RESOURCE_NAME ${resourceName}
             RCC_OPTIONS ${rccArgsAllPasses}
