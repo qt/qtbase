@@ -19,9 +19,15 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::StringLiterals;
+
 static QString appendSlashIfNeeded(const QString &path)
 {
-    if (!path.isEmpty() && !path.endsWith(u'/'))
+    if (!path.isEmpty() && !path.endsWith(u'/')
+#ifdef Q_OS_ANDROID
+        && !path.startsWith("content:/"_L1)
+#endif
+        )
         return QString{path + u'/'};
     return path;
 }
