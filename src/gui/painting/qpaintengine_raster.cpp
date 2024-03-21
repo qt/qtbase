@@ -3808,7 +3808,7 @@ void QClipData::initialize()
         return;
 
     if (!m_clipLines)
-        m_clipLines = (ClipLine *)calloc(sizeof(ClipLine), clipSpanHeight);
+        m_clipLines = (ClipLine *)calloc(clipSpanHeight, sizeof(ClipLine));
 
     Q_CHECK_PTR(m_clipLines);
     QT_TRY {
