@@ -334,4 +334,12 @@ public class QtJniObjectTestClass
     {
         return callbackWithStringList(value);
     }
+
+    public Object callMethodThrowsException() throws Exception {
+        throw new Exception();
+    }
+
+    public static Object callStaticMethodThrowsException() throws Exception {
+        throw new Exception();
+    }
 }

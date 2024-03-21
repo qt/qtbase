@@ -40,10 +40,12 @@ private slots:
 
     void ctor();
     void callMethodTest();
+    void callMethodThrowsException();
     void callObjectMethodTest();
     void stringConvertionTest();
     void compareOperatorTests();
     void className();
+    void callStaticMethodThrowsException();
     void callStaticObjectMethodClassName();
     void callStaticObjectMethod();
     void callStaticObjectMethodById();
@@ -262,6 +264,15 @@ void tst_QJniObject::callMethodTest()
     }
 }
 
+void tst_QJniObject::callMethodThrowsException()
+{
+    QtJniTypes::QtJniObjectTestClass instance;
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("java.lang.Exception"));
+    auto res = instance.callMethod<jobject>("callMethodThrowsException");
+    QVERIFY(!res.isValid());
+    QVERIFY(!QJniEnvironment().checkAndClearExceptions());
+}
+
 void tst_QJniObject::callObjectMethodTest()
 {
     const QString qString = QLatin1String("Hello, Java");
@@ -337,6 +348,15 @@ void tst_QJniObject::className()
         TestClass test;
         QCOMPARE(test.className(), testClassName);
     }
+}
+
+void tst_QJniObject::callStaticMethodThrowsException()
+{
+    QTest::ignoreMessage(QtWarningMsg, QRegularExpression("java.lang.Exception"));
+    auto res = QtJniTypes::QtJniObjectTestClass::callStaticMethod<jobject>(
+            "callStaticMethodThrowsException");
+    QVERIFY(!res.isValid());
+    QVERIFY(!QJniEnvironment().checkAndClearExceptions());
 }
 
 void tst_QJniObject::callStaticObjectMethodClassName()
