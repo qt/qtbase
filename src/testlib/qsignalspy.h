@@ -126,87 +126,14 @@ private:
         sig = os.sig.methodSignature();
     }
 
-    bool connectToSignal(const QObject *sender, int sigIndex)
-    {
-        static const int memberOffset = QObject::staticMetaObject.methodCount();
-        const bool connected = QMetaObject::connect(
-            sender, sigIndex, this, memberOffset, Qt::DirectConnection, nullptr);
 
-        if (!connected)
-            qWarning("QSignalSpy: QMetaObject::connect returned false. Unable to connect.");
+    Q_TESTLIB_EXPORT bool connectToSignal(const QObject *sender, int sigIndex);
 
-        return connected;
-    }
+    Q_TESTLIB_EXPORT static bool isSignalMetaMethodValid(const QMetaMethod &signal);
+    Q_TESTLIB_EXPORT static bool isObjectValid(const QObject *object);
 
-    static bool isSignalMetaMethodValid(const QMetaMethod &signal)
-    {
-        if (!signal.isValid()) {
-            qWarning("QSignalSpy: Null signal is not valid");
-            return false;
-        }
-
-        if (signal.methodType() != QMetaMethod::Signal) {
-            qWarning("QSignalSpy: Not a signal: '%s'", signal.methodSignature().constData());
-            return false;
-        }
-
-        return true;
-    }
-
-    static bool isObjectValid(const QObject *object)
-    {
-        const bool valid = !!object;
-
-        if (!valid)
-            qWarning("QSignalSpy: Cannot spy on a null object");
-
-        return valid;
-    }
-
-    void initArgs(const QMetaMethod &member, const QObject *obj)
-    {
-        QMutexLocker locker(&m_mutex);
-        args.reserve(member.parameterCount());
-        for (int i = 0; i < member.parameterCount(); ++i) {
-            QMetaType tp = member.parameterMetaType(i);
-            if (!tp.isValid() && obj) {
-                locker.unlock();
-                void *argv[] = { &tp, &i };
-                QMetaObject::metacall(const_cast<QObject*>(obj),
-                                      QMetaObject::RegisterMethodArgumentMetaType,
-                                      member.methodIndex(), argv);
-                locker.relock();
-            }
-            if (!tp.isValid()) {
-                qWarning("QSignalSpy: Unable to handle parameter '%s' of type '%s' of method '%s',"
-                         " use qRegisterMetaType to register it.",
-                         member.parameterNames().at(i).constData(),
-                         member.parameterTypes().at(i).constData(),
-                         member.name().constData());
-            }
-            args << tp.id();
-        }
-    }
-
-    void appendArgs(void **a)
-    {
-        QMutexLocker locker(&m_mutex);
-        QList<QVariant> list;
-        list.reserve(args.size());
-        for (qsizetype i = 0; i < args.size(); ++i) {
-            const QMetaType::Type type = static_cast<QMetaType::Type>(args.at(i));
-            if (type == QMetaType::QVariant)
-                list << *reinterpret_cast<QVariant *>(a[i + 1]);
-            else
-                list << QVariant(QMetaType(type), a[i + 1]);
-        }
-        append(std::move(list));
-
-        if (m_waiting) {
-            locker.unlock();
-            m_loop.exitLoop();
-        }
-    }
+    Q_TESTLIB_EXPORT void initArgs(const QMetaMethod &member, const QObject *obj);
+    Q_TESTLIB_EXPORT void appendArgs(void **a);
 
     // the full, normalized signal name
     QByteArray sig;
