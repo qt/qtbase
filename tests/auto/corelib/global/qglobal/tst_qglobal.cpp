@@ -12,8 +12,9 @@
 #include <QString>
 #include <QtVersion>
 
-#include <array>
 #include <cmath>
+#include <limits>
+#include <type_traits>
 
 class tst_QGlobal: public QObject
 {
