@@ -12,8 +12,6 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qmutex.h>
 
-#include <mutex>
-
 QT_BEGIN_NAMESPACE
 
 
@@ -65,15 +63,11 @@ public:
 
 private:
     explicit QSignalSpy(ObjectSignal os)
+        : args(os.obj ? makeArgs(os.sig, os.obj) : QList<int>{})
     {
         if (!os.obj)
             return;
 
-        auto tmp = makeArgs(os.sig, os.obj);
-        {
-            const auto lock = std::scoped_lock(m_mutex);
-            args = std::move(tmp);
-        }
         if (!connectToSignal(os.obj, os.sig.methodIndex()))
             return;
 
@@ -92,11 +86,11 @@ private:
     // the full, normalized signal name
     QByteArray sig;
     // holds the QMetaType types for the argument list of the signal
-    QList<int> args;
+    const QList<int> args;
 
     QTestEventLoop m_loop;
     bool m_waiting = false;
-    QMutex m_mutex; // protects m_waiting, args and the QList base class, between appendArgs() and wait()
+    QMutex m_mutex; // protects m_waiting and the QList base class, between appendArgs() and wait()
 };
 
 QT_END_NAMESPACE

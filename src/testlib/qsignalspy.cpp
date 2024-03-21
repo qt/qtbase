@@ -258,7 +258,6 @@ bool QSignalSpy::connectToSignal(const QObject *sender, int sigIndex)
 
 void QSignalSpy::appendArgs(void **a)
 {
-    QMutexLocker locker(&m_mutex);
     QList<QVariant> list;
     list.reserve(args.size());
     for (qsizetype i = 0; i < args.size(); ++i) {
@@ -268,6 +267,7 @@ void QSignalSpy::appendArgs(void **a)
         else
             list << QVariant(QMetaType(type), a[i + 1]);
     }
+    QMutexLocker locker(&m_mutex);
     append(std::move(list));
 
     if (m_waiting) {
