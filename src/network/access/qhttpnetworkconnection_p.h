@@ -63,9 +63,6 @@ public:
         ConnectionTypeHTTP2Direct
     };
 
-    explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false,
-                                    ConnectionType connectionType = ConnectionTypeHTTP,
-                                    QObject *parent = nullptr);
     QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80,
                            bool encrypt = false, QObject *parent = nullptr,
                            ConnectionType connectionType = ConnectionTypeHTTP);
@@ -156,8 +153,6 @@ public:
         IPv4or6
     };
 
-    QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt,
-                                  QHttpNetworkConnection::ConnectionType type);
     QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt,
                                   QHttpNetworkConnection::ConnectionType type);
     ~QHttpNetworkConnectionPrivate();

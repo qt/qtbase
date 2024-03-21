@@ -41,29 +41,6 @@ const int QHttpNetworkConnectionPrivate::defaultPipelineLength = 3;
 const int QHttpNetworkConnectionPrivate::defaultRePipelineLength = 2;
 
 
-QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &hostName,
-                                                             quint16 port, bool encrypt,
-                                                             QHttpNetworkConnection::ConnectionType type)
-: state(RunningState),
-  networkLayerState(Unknown),
-  hostName(hostName), port(port), encrypt(encrypt), delayIpv4(true)
-  , activeChannelCount(type == QHttpNetworkConnection::ConnectionTypeHTTP2
-                       || type == QHttpNetworkConnection::ConnectionTypeHTTP2Direct
-                       ? 1 : defaultHttpChannelCount)
-  , channelCount(defaultHttpChannelCount)
-#ifndef QT_NO_NETWORKPROXY
-  , networkProxy(QNetworkProxy::NoProxy)
-#endif
-  , preConnectRequests(0)
-  , connectionType(type)
-{
-    // We allocate all 6 channels even if it's HTTP/2 enabled connection:
-    // in case the protocol negotiation via NPN/ALPN fails, we will have
-    // normally working HTTP/1.1.
-    Q_ASSERT(channelCount >= activeChannelCount);
-    channels = new QHttpNetworkConnectionChannel[channelCount];
-}
-
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(quint16 connectionCount, const QString &hostName,
                                                              quint16 port, bool encrypt,
                                                              QHttpNetworkConnection::ConnectionType type)
@@ -1344,18 +1321,6 @@ void QHttpNetworkConnectionPrivate::_q_connectDelayedChannel()
         channels[0].ensureConnection();
     else
         channels[1].ensureConnection();
-}
-
-QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt,
-                                               QHttpNetworkConnection::ConnectionType connectionType, QObject *parent)
-    : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt , connectionType)), parent)
-{
-    Q_D(QHttpNetworkConnection);
-    d->init();
-    if (QNetworkConnectionMonitor::isEnabled()) {
-        connect(&d->connectionMonitor, &QNetworkConnectionMonitor::reachabilityChanged,
-                this, &QHttpNetworkConnection::onlineStateChanged, Qt::QueuedConnection);
-    }
 }
 
 QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QString &hostName,
