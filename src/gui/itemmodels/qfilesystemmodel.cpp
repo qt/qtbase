@@ -31,6 +31,7 @@ using namespace Qt::StringLiterals;
     \value FilePathRole
     \value FileNameRole
     \value FilePermissions
+    \value FileInfoRole The QFileInfo object for the index
 */
 
 /*!
@@ -730,6 +731,8 @@ QVariant QFileSystemModel::data(const QModelIndex &index, int role) const
         return filePath(index);
     case FileNameRole:
         return d->name(index);
+    case FileInfoRole:
+        return QVariant::fromValue(fileInfo(index));
     case Qt::DecorationRole:
         if (index.column() == QFileSystemModelPrivate::NameColumn) {
             QIcon icon = d->icon(index);
@@ -1255,6 +1258,7 @@ QHash<int, QByteArray> QFileSystemModel::roleNames() const
     ret.insert(QFileSystemModel::FilePathRole, QByteArrayLiteral("filePath"));
     ret.insert(QFileSystemModel::FileNameRole, QByteArrayLiteral("fileName"));
     ret.insert(QFileSystemModel::FilePermissions, QByteArrayLiteral("filePermissions"));
+    ret.insert(QFileSystemModel::FileInfoRole, QByteArrayLiteral("fileInfo"));
     return ret;
 }
 
