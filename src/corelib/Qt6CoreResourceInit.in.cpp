@@ -9,6 +9,6 @@ QT_DECLARE_EXTERN_RESOURCE(@RESOURCE_NAME@)
 
 namespace {
     struct resourceReferenceKeeper {
-        resourceReferenceKeeper() { QT_KEEP_RESOURCE(@RESOURCE_NAME@); }
+        resourceReferenceKeeper() { QT_KEEP_RESOURCE(@RESOURCE_NAME@) }
     } resourceReferenceKeeperInstance;
 }
