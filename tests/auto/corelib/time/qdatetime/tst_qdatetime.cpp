@@ -3117,6 +3117,9 @@ void tst_QDateTime::fromStringStringFormat_data()
                 << u"Thu January 2004"_s << u"ddd MMMM yyyy"_s << 1900
                 << QDate(2004, 1, 1).startOfDay();
     }
+    QTest::newRow("yy=24/Mar/20") // QTBUG-123579
+            << u"Wed, 20 Mar 24 16:17:00"_s << u"ddd, dd MMM yy HH:mm:ss"_s << 1900
+            << QDateTime(QDate(2024, 3, 20), QTime(16, 17));
     QTest::newRow("secs-conflict") << u"1020"_s << u"sss"_s << 1900 << QDateTime();
     QTest::newRow("secs-split-conflict")
             << u"10hello20"_s << u"ss'hello'ss"_s << 1900 << QDateTime();
