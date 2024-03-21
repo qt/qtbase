@@ -1,6 +1,10 @@
 // Copyright (C) 2019 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
+#include "qsignalspy.h"
+
+QT_BEGIN_NAMESPACE
+
 /*!
     \class QSignalSpy
     \inmodule QtTest
@@ -142,3 +146,5 @@
         spy.wait(2s);
     \endcode
 */
+
+QT_END_NAMESPACE

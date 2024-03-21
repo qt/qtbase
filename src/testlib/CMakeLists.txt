@@ -28,7 +28,7 @@ qt_internal_add_module(Test
         qplaintestlogger.cpp qplaintestlogger_p.h
         qpropertytesthelper_p.h
         qsignaldumper.cpp qsignaldumper_p.h
-        qsignalspy.h
+        qsignalspy.cpp qsignalspy.h
         qtaptestlogger.cpp qtaptestlogger_p.h
         qteamcitylogger.cpp qteamcitylogger_p.h
         qtest.h
