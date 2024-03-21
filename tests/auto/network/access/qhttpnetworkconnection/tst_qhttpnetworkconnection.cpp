@@ -125,7 +125,7 @@ void tst_QHttpNetworkConnection::head()
     QFETCH(QString, statusString);
     QFETCH(int, contentLength);
 
-    QHttpNetworkConnection connection(host, port, encrypt);
+    QHttpNetworkConnection connection(QHttpNetworkConnectionPrivate::defaultHttpChannelCount, host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
     QCOMPARE(connection.isSsl(), encrypt);
@@ -175,7 +175,7 @@ void tst_QHttpNetworkConnection::get()
     QFETCH(int, contentLength);
     QFETCH(int, downloadSize);
 
-    QHttpNetworkConnection connection(host, port, encrypt);
+    QHttpNetworkConnection connection(QHttpNetworkConnectionPrivate::defaultHttpChannelCount, host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
     QCOMPARE(connection.isSsl(), encrypt);
@@ -241,7 +241,7 @@ void tst_QHttpNetworkConnection::put()
     QFETCH(QString, data);
     QFETCH(bool, succeed);
 
-    QHttpNetworkConnection connection(host, port, encrypt);
+    QHttpNetworkConnection connection(QHttpNetworkConnectionPrivate::defaultHttpChannelCount, host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
     QCOMPARE(connection.isSsl(), encrypt);
@@ -323,7 +323,7 @@ void tst_QHttpNetworkConnection::post()
     QFETCH(int, contentLength);
     QFETCH(int, downloadSize);
 
-    QHttpNetworkConnection connection(host, port, encrypt);
+    QHttpNetworkConnection connection(QHttpNetworkConnectionPrivate::defaultHttpChannelCount, host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
     QCOMPARE(connection.isSsl(), encrypt);
@@ -450,7 +450,7 @@ void tst_QHttpNetworkConnection::get401()
     QFETCH(QString, password);
     QFETCH(int, statusCode);
 
-    QHttpNetworkConnection connection(host, port, encrypt);
+    QHttpNetworkConnection connection(QHttpNetworkConnectionPrivate::defaultHttpChannelCount, host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
     QCOMPARE(connection.isSsl(), encrypt);
@@ -510,7 +510,7 @@ void tst_QHttpNetworkConnection::compression()
     QFETCH(bool, autoCompress);
     QFETCH(QString, contentCoding);
 
-    QHttpNetworkConnection connection(host, port, encrypt);
+    QHttpNetworkConnection connection(QHttpNetworkConnectionPrivate::defaultHttpChannelCount, host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
     QCOMPARE(connection.isSsl(), encrypt);
@@ -584,7 +584,7 @@ void tst_QHttpNetworkConnection::ignoresslerror()
     QFETCH(bool, ignoreFromSignal);
     QFETCH(int, statusCode);
 
-    QHttpNetworkConnection connection(host, port, encrypt);
+    QHttpNetworkConnection connection(QHttpNetworkConnectionPrivate::defaultHttpChannelCount, host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
     if (ignoreInit)
@@ -629,7 +629,7 @@ void tst_QHttpNetworkConnection::nossl()
     QFETCH(bool, encrypt);
     QFETCH(QNetworkReply::NetworkError, networkError);
 
-    QHttpNetworkConnection connection(host, port, encrypt);
+    QHttpNetworkConnection connection(QHttpNetworkConnectionPrivate::defaultHttpChannelCount, host, port, encrypt);
     QCOMPARE(connection.port(), port);
     QCOMPARE(connection.hostName(), host);
 
@@ -919,7 +919,7 @@ void tst_QHttpNetworkConnection::getAndThenDeleteObject_data()
 void tst_QHttpNetworkConnection::getAndThenDeleteObject()
 {
     // yes, this will leak if the testcase fails. I don't care. It must not fail then :P
-    QHttpNetworkConnection *connection = new QHttpNetworkConnection(httpServerName());
+    QHttpNetworkConnection *connection = new QHttpNetworkConnection(QHttpNetworkConnectionPrivate::defaultHttpChannelCount, httpServerName());
     QHttpNetworkRequest request("http://" + httpServerName() + "/qtest/bigfile");
     QHttpNetworkReply *reply = connection->sendRequest(request);
     reply->setDownstreamLimited(true);

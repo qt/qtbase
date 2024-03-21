@@ -138,7 +138,8 @@ class QHttpNetworkConnectionPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QHttpNetworkConnection)
 public:
-    static const int defaultHttpChannelCount;
+    // Note: Only used from auto tests, normal usage is via QHttp1Configuration
+    static constexpr int defaultHttpChannelCount = 6;
     static const int defaultPipelineLength;
     static const int defaultRePipelineLength;
 

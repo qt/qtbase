@@ -34,9 +34,6 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-// Note: Only used from auto tests, normal usage is via QHttp1Configuration
-const int QHttpNetworkConnectionPrivate::defaultHttpChannelCount = 6;
-
 // The pipeline length. So there will be 4 requests in flight.
 const int QHttpNetworkConnectionPrivate::defaultPipelineLength = 3;
 // Only re-fill the pipeline if there's defaultRePipelineLength slots free in the pipeline.
