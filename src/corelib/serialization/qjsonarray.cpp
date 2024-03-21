@@ -603,6 +603,10 @@ bool comparesEqual(const QJsonArray &lhs, const QJsonValue &rhs) noexcept
     \inmodule QtCore
     \brief The QJsonArray::iterator class provides an STL-style non-const iterator for QJsonArray.
 
+    \compares strong
+    \compareswith strong QJsonArray::const_iterator
+    \endcompareswith
+
     QJsonArray::iterator allows you to iterate over a QJsonArray
     and to modify the array item associated with the
     iterator. If you want to iterate over a const QJsonArray, use
@@ -707,55 +711,55 @@ bool comparesEqual(const QJsonArray &lhs, const QJsonValue &rhs) noexcept
 */
 
 /*!
-    \fn bool QJsonArray::iterator::operator==(const iterator &other) const
-    \fn bool QJsonArray::iterator::operator==(const const_iterator &other) const
+    \fn bool QJsonArray::iterator::operator==(const iterator &lhs, const iterator &rhs)
+    \fn bool QJsonArray::iterator::operator==(const iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if \a other points to the same item as this
+    Returns \c true if \a lhs points to the same item as \a rhs
     iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
 
 /*!
-    \fn bool QJsonArray::iterator::operator!=(const iterator &other) const
-    \fn bool QJsonArray::iterator::operator!=(const const_iterator &other) const
+    \fn bool QJsonArray::iterator::operator!=(const iterator &lhs, const iterator &rhs)
+    \fn bool QJsonArray::iterator::operator!=(const iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if \a other points to a different item than this
+    Returns \c true if \a lhs points to a different item than \a rhs
     iterator; otherwise returns \c false.
 
     \sa operator==()
 */
 
 /*!
-    \fn bool QJsonArray::iterator::operator<(const iterator& other) const
-    \fn bool QJsonArray::iterator::operator<(const const_iterator& other) const
+    \fn bool QJsonArray::iterator::operator<(const iterator &lhs, const iterator &rhs)
+    \fn bool QJsonArray::iterator::operator<(const iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if the item pointed to by this iterator is less than
-    the item pointed to by the \a other iterator.
+    Returns \c true if the item pointed to by \a lhs iterator is less than
+    the item pointed to by the \a rhs iterator.
 */
 
 /*!
-    \fn bool QJsonArray::iterator::operator<=(const iterator& other) const
-    \fn bool QJsonArray::iterator::operator<=(const const_iterator& other) const
+    \fn bool QJsonArray::iterator::operator<=(const iterator &lhs, const iterator &rhs)
+    \fn bool QJsonArray::iterator::operator<=(const iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if the item pointed to by this iterator is less than
-    or equal to the item pointed to by the \a other iterator.
+    Returns \c true if the item pointed to by \a lhs iterator is less than
+    or equal to the item pointed to by the \a rhs iterator.
 */
 
 /*!
-    \fn bool QJsonArray::iterator::operator>(const iterator& other) const
-    \fn bool QJsonArray::iterator::operator>(const const_iterator& other) const
+    \fn bool QJsonArray::iterator::operator>(const iterator &lhs, const iterator &rhs)
+    \fn bool QJsonArray::iterator::operator>(const iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if the item pointed to by this iterator is greater
-    than the item pointed to by the \a other iterator.
+    Returns \c true if the item pointed to by \a lhs iterator is greater
+    than the item pointed to by the \a rhs iterator.
 */
 
 /*!
-    \fn bool QJsonArray::iterator::operator>=(const iterator& other) const
-    \fn bool QJsonArray::iterator::operator>=(const const_iterator& other) const
+    \fn bool QJsonArray::iterator::operator>=(const iterator &lhs, const iterator &rhs)
+    \fn bool QJsonArray::iterator::operator>=(const iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if the item pointed to by this iterator is greater
-    than or equal to the item pointed to by the \a other iterator.
+    Returns \c true if the item pointed to by \a lhs iterator is greater
+    than or equal to the item pointed to by the \a rhs iterator.
 */
 
 /*! \fn QJsonArray::iterator &QJsonArray::iterator::operator++()
@@ -837,6 +841,10 @@ bool comparesEqual(const QJsonArray &lhs, const QJsonValue &rhs) noexcept
 /*! \class QJsonArray::const_iterator
     \inmodule QtCore
     \brief The QJsonArray::const_iterator class provides an STL-style const iterator for QJsonArray.
+
+    \compares strong
+    \compareswith strong QJsonArray::iterator
+    \endcompareswith
 
     QJsonArray::const_iterator allows you to iterate over a
     QJsonArray. If you want to modify the QJsonArray as
@@ -930,48 +938,48 @@ bool comparesEqual(const QJsonArray &lhs, const QJsonValue &rhs) noexcept
     \sa operator+()
 */
 
-/*! \fn bool QJsonArray::const_iterator::operator==(const const_iterator &other) const
+/*! \fn bool QJsonArray::const_iterator::operator==(const const_iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if \a other points to the same item as this
+    Returns \c true if \a lhs points to the same item as \a rhs
     iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
 
-/*! \fn bool QJsonArray::const_iterator::operator!=(const const_iterator &other) const
+/*! \fn bool QJsonArray::const_iterator::operator!=(const const_iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if \a other points to a different item than this
+    Returns \c true if \a lhs points to a different item than \a rhs
     iterator; otherwise returns \c false.
 
     \sa operator==()
 */
 
 /*!
-    \fn bool QJsonArray::const_iterator::operator<(const const_iterator& other) const
+    \fn bool QJsonArray::const_iterator::operator<(const const_iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if the item pointed to by this iterator is less than
-    the item pointed to by the \a other iterator.
+    Returns \c true if the item pointed to by \a lhs iterator is less than
+    the item pointed to by the \a rhs iterator.
 */
 
 /*!
-    \fn bool QJsonArray::const_iterator::operator<=(const const_iterator& other) const
+    \fn bool QJsonArray::const_iterator::operator<=(const const_iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if the item pointed to by this iterator is less than
-    or equal to the item pointed to by the \a other iterator.
+    Returns \c true if the item pointed to by \a lhs iterator is less than
+    or equal to the item pointed to by the \a rhs iterator.
 */
 
 /*!
-    \fn bool QJsonArray::const_iterator::operator>(const const_iterator& other) const
+    \fn bool QJsonArray::const_iterator::operator>(const const_iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if the item pointed to by this iterator is greater
-    than the item pointed to by the \a other iterator.
+    Returns \c true if the item pointed to by \a lhs iterator is greater
+    than the item pointed to by the \a rhs iterator.
 */
 
 /*!
-    \fn bool QJsonArray::const_iterator::operator>=(const const_iterator& other) const
+    \fn bool QJsonArray::const_iterator::operator>=(const const_iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if the item pointed to by this iterator is greater
-    than or equal to the item pointed to by the \a other iterator.
+    Returns \c true if the item pointed to by \a lhs iterator is greater
+    than or equal to the item pointed to by the \a rhs iterator.
 */
 
 /*! \fn QJsonArray::const_iterator &QJsonArray::const_iterator::operator++()

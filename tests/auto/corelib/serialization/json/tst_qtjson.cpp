@@ -176,6 +176,10 @@ void tst_QtJson::initTestCase()
 void tst_QtJson::compareCompiles()
 {
     QTestPrivate::testEqualityOperatorsCompile<QJsonArray>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QJsonArray::iterator>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QJsonArray::const_iterator>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QJsonArray::iterator,
+                                                    QJsonArray::const_iterator>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonDocument>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonObject>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonValue>();
@@ -1210,7 +1214,11 @@ void tst_QtJson::testArrayIteration()
     int i = 0;
     for (QJsonArray::iterator it = array.begin(); it != array.end(); ++it, ++i) {
         QJsonValue value = (*it);
+        QJsonArray::iterator it1 = it;
         QCOMPARE((double)i, value.toDouble());
+        QT_TEST_EQUALITY_OPS(QJsonArray::iterator(), QJsonArray::iterator(), true);
+        QT_TEST_EQUALITY_OPS(QJsonArray::iterator(), it, false);
+        QT_TEST_EQUALITY_OPS(it1, it, true);
     }
 
     QCOMPARE(array.begin()->toDouble(), array.constBegin()->toDouble());
@@ -1265,6 +1273,13 @@ void tst_QtJson::testArrayIteration()
         QCOMPARE(QJsonValue(*it2).toDouble(), 7.);
         it2 = it - 1;
         QCOMPARE(QJsonValue(*it2).toDouble(), 1.);
+        QT_TEST_EQUALITY_OPS(it, it2, false);
+        it = array.begin();
+        QT_TEST_EQUALITY_OPS(it, array.begin(), true);
+        it2 = it + 5;
+        QT_TEST_ALL_COMPARISON_OPS(it2, it,  Qt::strong_ordering::greater);
+        it += 5;
+        QT_TEST_EQUALITY_OPS(it, it2, true);
     }
 
     {
@@ -1284,6 +1299,26 @@ void tst_QtJson::testArrayIteration()
         it = array.erase(it);
     QCOMPARE(array.size() , 0);
     QCOMPARE(it, array.end());
+    QT_TEST_EQUALITY_OPS(it, array.end(), true);
+
+    {
+        int i = 0;
+        for (QJsonArray::const_iterator it = array.constBegin();
+             it != array.constEnd(); ++it, ++i) {
+            QJsonArray::const_iterator it1 = it;
+            QT_TEST_EQUALITY_OPS(QJsonArray::const_iterator(), QJsonArray::const_iterator(), true);
+            QT_TEST_EQUALITY_OPS(QJsonArray::const_iterator(), it, false);
+            QT_TEST_EQUALITY_OPS(it1, it, true);
+        }
+    }
+
+    {
+        QJsonArray::iterator nonConstIt = array.begin();
+        QJsonArray::const_iterator it = array.constBegin();
+        QT_TEST_EQUALITY_OPS(nonConstIt, it, true);
+        it+=1;
+        QT_TEST_ALL_COMPARISON_OPS(nonConstIt, it, Qt::strong_ordering::less);
+    }
 }
 
 void tst_QtJson::testObjectFind()
