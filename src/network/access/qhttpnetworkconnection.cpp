@@ -49,16 +49,19 @@ static int getPreferredActiveChannelCount(QHttpNetworkConnection::ConnectionType
             : defaultValue;
 }
 
-QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(quint16 connectionCount, const QString &hostName,
-                                                             quint16 port, bool encrypt,
-                                                             QHttpNetworkConnection::ConnectionType type)
-: hostName(hostName), port(port), encrypt(encrypt),
-  activeChannelCount(getPreferredActiveChannelCount(type, connectionCount)),
-  channelCount(connectionCount), channels(new QHttpNetworkConnectionChannel[channelCount])
+QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(
+        quint16 connectionCount, const QString &hostName, quint16 port, bool encrypt,
+        QHttpNetworkConnection::ConnectionType type)
+    : hostName(hostName),
+      port(port),
+      encrypt(encrypt),
+      activeChannelCount(getPreferredActiveChannelCount(type, connectionCount)),
+      channelCount(connectionCount),
+      channels(new QHttpNetworkConnectionChannel[channelCount]),
 #ifndef QT_NO_NETWORKPROXY
-  , networkProxy(QNetworkProxy::NoProxy)
+      networkProxy(QNetworkProxy::NoProxy),
 #endif
-  , connectionType(type)
+      connectionType(type)
 {
     // We allocate all 6 channels even if it's an HTTP/2-enabled
     // connection: in case the protocol negotiation via NPN/ALPN fails,
