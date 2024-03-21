@@ -40,24 +40,28 @@ const int QHttpNetworkConnectionPrivate::defaultPipelineLength = 3;
 // This means that there are 2 requests in flight and 2 slots free that will be re-filled.
 const int QHttpNetworkConnectionPrivate::defaultRePipelineLength = 2;
 
+static int getPreferredActiveChannelCount(QHttpNetworkConnection::ConnectionType type,
+                                          int defaultValue)
+{
+    return (type == QHttpNetworkConnection::ConnectionTypeHTTP2
+            || type == QHttpNetworkConnection::ConnectionTypeHTTP2Direct)
+            ? 1
+            : defaultValue;
+}
 
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(quint16 connectionCount, const QString &hostName,
                                                              quint16 port, bool encrypt,
                                                              QHttpNetworkConnection::ConnectionType type)
 : state(RunningState), networkLayerState(Unknown),
   hostName(hostName), port(port), encrypt(encrypt), delayIpv4(true),
-  channelCount(connectionCount)
+  activeChannelCount(getPreferredActiveChannelCount(type, connectionCount)),
+  channelCount(connectionCount), channels(new QHttpNetworkConnectionChannel[channelCount])
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
 #endif
   , preConnectRequests(0)
   , connectionType(type)
 {
-    channels = new QHttpNetworkConnectionChannel[channelCount];
-
-    activeChannelCount = (type == QHttpNetworkConnection::ConnectionTypeHTTP2 ||
-                          type == QHttpNetworkConnection::ConnectionTypeHTTP2Direct)
-                       ? 1 : connectionCount;
     // We allocate all 6 channels even if it's an HTTP/2-enabled
     // connection: in case the protocol negotiation via NPN/ALPN fails,
     // we will have normally working HTTP/1.1.
