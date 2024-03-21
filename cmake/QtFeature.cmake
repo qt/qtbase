@@ -1308,6 +1308,31 @@ function(qt_config_compile_test_armintrin extension label)
     set(TEST_subarch_${extension} "${TEST_ARMINTRIN_${extension}}" CACHE INTERNAL "${label}")
 endfunction()
 
+function(qt_config_compile_test_loongarchsimd extension label)
+        if (DEFINED TEST_LOONGARCHSIMD_${extension})
+        return()
+    endif()
+
+    set(flags "-DSIMD:string=${extension}")
+
+    qt_get_platform_try_compile_vars(platform_try_compile_vars)
+    list(APPEND flags ${platform_try_compile_vars})
+
+    message(STATUS "Performing Test ${label} intrinsics")
+    try_compile("TEST_LOONGARCHSIMD_${extension}"
+        "${CMAKE_CURRENT_BINARY_DIR}/config.tests/loongarch_simd_${extension}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/config.tests/loongarch_simd"
+        loongarch_simd
+        CMAKE_FLAGS ${flags})
+    if(${TEST_LOONGARCHSIMD_${extension}})
+        set(status_label "Success")
+    else()
+        set(status_label "Failed")
+    endif()
+    message(STATUS "Performing Test ${label} intrinsics - ${status_label}")
+    set(TEST_subarch_${extension} "${TEST_LOONGARCHSIMD_${extension}}" CACHE INTERNAL "${label}")
+endfunction()
+
 function(qt_config_compile_test_machine_tuple label)
     if(DEFINED TEST_MACHINE_TUPLE OR NOT (LINUX OR HURD) OR ANDROID)
         return()

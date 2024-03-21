@@ -376,6 +376,12 @@ qt_config_compile_test_armintrin(crypto "CRYPTO")
 # arm: sve
 qt_config_compile_test_armintrin(sve "SVE")
 
+# loongarch: lsx
+qt_config_compile_test_loongarchsimd(lsx "LSX")
+
+# loongarch: lasx
+qt_config_compile_test_loongarchsimd(lasx "LASX")
+
 # localtime_r
 qt_config_compile_test(localtime_r
     LABEL "localtime_r()"
@@ -901,6 +907,18 @@ qt_feature("shani" PRIVATE
 )
 qt_feature_definition("shani" "QT_COMPILER_SUPPORTS_SHA" VALUE "1")
 qt_feature_config("shani" QMAKE_PRIVATE_CONFIG)
+qt_feature("lsx" PRIVATE
+    LABEL "LSX"
+    CONDITION ( TEST_architecture_arch STREQUAL loongarch64 ) AND TEST_subarch_lsx
+)
+qt_feature_definition("lsx" "QT_COMPILER_SUPPORTS_LSX" VALUE "1")
+qt_feature_config("lsx" QMAKE_PRIVATE_CONFIG)
+qt_feature("lasx" PRIVATE
+    LABEL "LASX"
+    CONDITION ( TEST_architecture_arch STREQUAL loongarch64 ) AND TEST_subarch_lasx
+)
+qt_feature_definition("lasx" "QT_COMPILER_SUPPORTS_LASX" VALUE "1")
+qt_feature_config("lasx" QMAKE_PRIVATE_CONFIG)
 qt_feature("mips_dsp" PRIVATE
     LABEL "DSP"
     CONDITION ( TEST_architecture_arch STREQUAL mips ) AND TEST_arch_${TEST_architecture_arch}_subarch_dsp
@@ -1300,6 +1318,12 @@ qt_configure_add_summary_entry(
     ARGS "neon arm_crc32 arm_crypto arm_sve"
     MESSAGE "ARM Extensions"
     CONDITION ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 )
+)
+qt_configure_add_summary_entry(
+    TYPE "featureList"
+    ARGS "lsx lasx"
+    MESSAGE "LOONGARCH Extensions"
+    CONDITION ( TEST_architecture_arch STREQUAL loongarch64 )
 )
 qt_configure_add_summary_entry(
     ARGS "mips_dsp"

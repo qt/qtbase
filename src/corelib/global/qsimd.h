@@ -21,6 +21,8 @@
  *  sse4_1     | x86
  *  sse4_2     | x86
  *  avx        | x86
+ *  lsx        | loongarch
+ *  lasx       | loongarch
  *
  * Code can use the following constructs to determine compiler support & status:
  * - #if QT_COMPILER_USES(XXX) (e.g: #if QT_COMPILER_USES(neon) or QT_COMPILER_USES(sse4_1)
@@ -51,6 +53,20 @@
 #  define QT_COMPILER_USES_mips_dspr2 1
 #else
 #  define QT_COMPILER_USES_mips_dspr2 -1
+#endif
+
+#if defined(Q_PROCESSOR_LOONGARCH) && defined(__loongarch_sx)
+#  include <lsxintrin.h>
+#  define QT_COMPILER_USES_lsx 1
+#else
+#  define QT_COMPILER_USES_lsx -1
+#endif
+
+#if defined(Q_PROCESSOR_LOONGARCH) && defined(__loongarch_asx)
+#  include <lasxintrin.h>
+#  define QT_COMPILER_USES_lasx 1
+#else
+#  define QT_COMPILER_USES_lasx -1
 #endif
 
 #if defined(Q_PROCESSOR_X86) && defined(Q_CC_MSVC)

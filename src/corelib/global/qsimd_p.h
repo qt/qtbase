@@ -120,6 +120,9 @@ QT_WARNING_DISABLE_INTEL(103)
 #  if !defined(__MIPS_DSPR2__) && defined(__mips_dspr2) && defined(Q_PROCESSOR_MIPS_32)
 #    define __MIPS_DSPR2__
 #  endif
+#elif defined(Q_PROCESSOR_LOONGARCH)
+#  define QT_COMPILER_SUPPORTS_HERE(x)    QT_COMPILER_SUPPORTS(x)
+#  define QT_FUNCTION_TARGET(x)
 #elif defined(Q_PROCESSOR_X86)
 #  if defined(Q_CC_CLANG) && defined(Q_CC_MSVC)
 #    define QT_COMPILER_SUPPORTS_HERE(x)    (__ ## x ## __)
@@ -383,6 +386,9 @@ enum CPUFeatures {
 #elif defined(Q_PROCESSOR_MIPS)
     CpuFeatureDSP           = 2,
     CpuFeatureDSPR2         = 4,
+#elif defined(Q_PROCESSOR_LOONGARCH)
+    CpuFeatureLSX           = 2,
+    CpuFeatureLASX          = 4,
 #endif
 };
 
@@ -411,6 +417,12 @@ static const uint64_t qCompilerCpuFeatures = 0
 #endif
 #if defined __mips_dspr2
         | CpuFeatureDSPR2
+#endif
+#if defined __loongarch_sx
+        | CpuFeatureLSX
+#endif
+#if defined __loongarch_asx
+        | CpuFeatureLASX
 #endif
         ;
 #endif
