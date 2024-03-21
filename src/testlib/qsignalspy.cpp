@@ -220,10 +220,11 @@ QSignalSpy::ObjectSignal QSignalSpy::verify(const QObject *obj, QMetaMethod sign
         return {};
 }
 
-void QSignalSpy::initArgs(const QMetaMethod &member, const QObject *obj)
+QList<int> QSignalSpy::makeArgs(const QMetaMethod &member, const QObject *obj)
 {
+    QList<int> result;
     QMutexLocker locker(&m_mutex);
-    args.reserve(member.parameterCount());
+    result.reserve(member.parameterCount());
     for (int i = 0; i < member.parameterCount(); ++i) {
         QMetaType tp = member.parameterMetaType(i);
         if (!tp.isValid() && obj) {
@@ -241,8 +242,9 @@ void QSignalSpy::initArgs(const QMetaMethod &member, const QObject *obj)
                      member.parameterTypes().at(i).constData(),
                      member.name().constData());
         }
-        args << tp.id();
+        result.append(tp.id());
     }
+    return result;
 }
 
 bool QSignalSpy::connectToSignal(const QObject *sender, int sigIndex)
