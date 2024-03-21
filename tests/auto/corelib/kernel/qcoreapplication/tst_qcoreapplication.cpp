@@ -1041,7 +1041,7 @@ void tst_QCoreApplication::addRemoveLibPaths()
 static bool theMainThreadIsSet()
 {
     // QCoreApplicationPrivate::mainThread() has a Q_ASSERT we'd trigger
-    return QCoreApplicationPrivate::theMainThread.loadRelaxed() != nullptr;
+    return QCoreApplicationPrivate::theMainThreadId.loadRelaxed() != nullptr;
 }
 
 static bool theMainThreadWasUnset = !theMainThreadIsSet(); // global static
@@ -1053,8 +1053,8 @@ void tst_QCoreApplication::theMainThread()
     int argc = 1;
     char *argv[] = { const_cast<char*>(QTest::currentAppName()) };
     TestApplication app(argc, argv);
-    QVERIFY(QCoreApplicationPrivate::theMainThread.loadRelaxed());
-    QCOMPARE(QCoreApplicationPrivate::theMainThread.loadRelaxed(), thread());
+    QVERIFY(QCoreApplicationPrivate::theMainThreadId.loadRelaxed());
+    QVERIFY(QThread::isMainThread());
     QCOMPARE(app.thread(), thread());
     QCOMPARE(app.thread(), QThread::currentThread());
 }
@@ -1067,7 +1067,7 @@ static void createQObjectOnDestruction()
 
 #if !defined(QT_QGUIAPPLICATIONTEST) && !defined(Q_OS_WIN)
     // QCoreApplicationData's global static destructor has run and cleaned up
-    // the QAdoptedThrad.
+    // the QAdoptedThread.
     if (theMainThreadIsSet())
         qFatal("theMainThreadIsSet() returned true; some QObject must have leaked");
 #endif

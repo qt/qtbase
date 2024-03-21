@@ -65,7 +65,7 @@ QThreadData::~QThreadData()
     // crashing during QCoreApplicationData's global static cleanup we need to
     // safeguard the main thread here.. This fix is a bit crude, but it solves
     // the problem...
-    if (this->thread.loadAcquire() == QCoreApplicationPrivate::theMainThread.loadAcquire()) {
+    if (threadId.loadAcquire() == QCoreApplicationPrivate::theMainThreadId.loadAcquire()) {
         QCoreApplicationPrivate::theMainThread.storeRelease(nullptr);
         QCoreApplicationPrivate::theMainThreadId.storeRelaxed(nullptr);
         QThreadData::clearCurrentThreadData();
@@ -1084,7 +1084,7 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         data->threadId.storeRelaxed(Qt::HANDLE(data->thread.loadAcquire()));
         data->deref();
         data->isAdopted = true;
-        if (!QCoreApplicationPrivate::theMainThread.loadAcquire()) {
+        if (!QCoreApplicationPrivate::theMainThreadId.loadAcquire()) {
             QCoreApplicationPrivate::theMainThread.storeRelease(data->thread.loadRelaxed());
             QCoreApplicationPrivate::theMainThreadId.storeRelaxed(data->threadId.loadRelaxed());
         }
@@ -1207,11 +1207,11 @@ bool QThread::event(QEvent *event)
 
 void QThread::requestInterruption()
 {
-    if (this == QCoreApplicationPrivate::theMainThread.loadAcquire()) {
+    Q_D(QThread);
+    if (d->threadId() == QCoreApplicationPrivate::theMainThreadId.loadAcquire()) {
         qWarning("QThread::requestInterruption has no effect on the main thread");
         return;
     }
-    Q_D(QThread);
     QMutexLocker locker(&d->mutex);
     if (!d->running || d->finished || d->isInFinish)
         return;

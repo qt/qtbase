@@ -87,7 +87,7 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         threadData->isAdopted = true;
         threadData->threadId.storeRelaxed(reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId())));
 
-        if (!QCoreApplicationPrivate::theMainThread) {
+        if (!QCoreApplicationPrivate::theMainThreadId) {
             QCoreApplicationPrivate::theMainThread = threadData->thread.loadRelaxed();
             QCoreApplicationPrivate::theMainThreadId.storeRelaxed(threadData->threadId.loadRelaxed());
         } else {
