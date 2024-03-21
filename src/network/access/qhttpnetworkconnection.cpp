@@ -52,14 +52,12 @@ static int getPreferredActiveChannelCount(QHttpNetworkConnection::ConnectionType
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(quint16 connectionCount, const QString &hostName,
                                                              quint16 port, bool encrypt,
                                                              QHttpNetworkConnection::ConnectionType type)
-: state(RunningState), networkLayerState(Unknown),
-  hostName(hostName), port(port), encrypt(encrypt), delayIpv4(true),
+: hostName(hostName), port(port), encrypt(encrypt),
   activeChannelCount(getPreferredActiveChannelCount(type, connectionCount)),
   channelCount(connectionCount), channels(new QHttpNetworkConnectionChannel[channelCount])
 #ifndef QT_NO_NETWORKPROXY
   , networkProxy(QNetworkProxy::NoProxy)
 #endif
-  , preConnectRequests(0)
   , connectionType(type)
 {
     // We allocate all 6 channels even if it's an HTTP/2-enabled

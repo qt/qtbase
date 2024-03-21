@@ -160,8 +160,8 @@ public:
 
     void pauseConnection();
     void resumeConnection();
-    ConnectionState state;
-    NetworkLayerPreferenceState networkLayerState;
+    ConnectionState state = RunningState;
+    NetworkLayerPreferenceState networkLayerState = Unknown;
 
     enum { ChunkSize = 4096 };
 
@@ -204,7 +204,7 @@ public:
     QString hostName;
     quint16 port;
     bool encrypt;
-    bool delayIpv4;
+    bool delayIpv4 = true;
 
     // Number of channels we are trying to use at the moment:
     int activeChannelCount;
@@ -237,7 +237,7 @@ public:
     QList<HttpMessagePair> highPriorityQueue;
     QList<HttpMessagePair> lowPriorityQueue;
 
-    int preConnectRequests;
+    int preConnectRequests = 0;
 
     QHttpNetworkConnection::ConnectionType connectionType;
 
