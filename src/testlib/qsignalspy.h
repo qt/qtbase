@@ -44,20 +44,7 @@ public:
     bool wait(int timeout)
     { return wait(std::chrono::milliseconds{timeout}); }
 
-    bool wait(std::chrono::milliseconds timeout = std::chrono::seconds{5})
-    {
-        QMutexLocker locker(&m_mutex);
-        Q_ASSERT(!m_waiting);
-        const qsizetype origCount = size();
-        m_waiting = true;
-        locker.unlock();
-
-        m_loop.enterLoop(timeout);
-
-        locker.relock();
-        m_waiting = false;
-        return size() > origCount;
-    }
+    Q_TESTLIB_EXPORT bool wait(std::chrono::milliseconds timeout = std::chrono::seconds{5});
 
     int qt_metacall(QMetaObject::Call call, int methodId, void **a) override
     {

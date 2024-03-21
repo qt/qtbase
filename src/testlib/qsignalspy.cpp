@@ -127,7 +127,7 @@ QT_BEGIN_NAMESPACE
     otherwise returns \c false.
 */
 
-/*! \fn bool QSignalSpy::wait(std::chrono::milliseconds timeout)
+/*!
     \since 6.6
 
     Starts an event loop that runs until the given signal is received
@@ -146,6 +146,20 @@ QT_BEGIN_NAMESPACE
         spy.wait(2s);
     \endcode
 */
+bool QSignalSpy::wait(std::chrono::milliseconds timeout)
+{
+    QMutexLocker locker(&m_mutex);
+    Q_ASSERT(!m_waiting);
+    const qsizetype origCount = size();
+    m_waiting = true;
+    locker.unlock();
+
+    m_loop.enterLoop(timeout);
+
+    locker.relock();
+    m_waiting = false;
+    return size() > origCount;
+}
 
 bool QSignalSpy::isSignalMetaMethodValid(const QMetaMethod &signal)
 {
