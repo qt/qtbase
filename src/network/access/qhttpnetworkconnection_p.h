@@ -153,8 +153,8 @@ public:
         IPv4or6
     };
 
-    QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt,
-                                  QHttpNetworkConnection::ConnectionType type);
+    QHttpNetworkConnectionPrivate(quint16 connectionCount, const QString &hostName, quint16 port,
+                                  bool encrypt, QHttpNetworkConnection::ConnectionType type);
     ~QHttpNetworkConnectionPrivate();
     void init();
 
