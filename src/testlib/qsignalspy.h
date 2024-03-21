@@ -72,8 +72,6 @@ private:
     Q_TESTLIB_EXPORT static ObjectSignal verify(const QObject *obj, QMetaMethod signal);
     Q_TESTLIB_EXPORT static ObjectSignal verify(const QObject *obj, const char *aSignal);
 
-    bool connectToSignal(const QObject *sender, int sigIndex);
-
     Q_TESTLIB_EXPORT static QList<int> makeArgs(const QMetaMethod &member, const QObject *obj);
     Q_TESTLIB_EXPORT void appendArgs(void **a);
 

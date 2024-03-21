@@ -249,22 +249,15 @@ void QSignalSpy::init(ObjectSignal os)
     if (!os.obj)
         return;
 
-    if (!connectToSignal(os.obj, os.sig.methodIndex()))
+    const auto signalIndex = os.sig.methodIndex();
+    const auto slotIndex = QObject::staticMetaObject.methodCount();
+    if (!QMetaObject::connect(os.obj, signalIndex,
+                              this, slotIndex, Qt::DirectConnection)) {
+        qWarning("QSignalSpy: QMetaObject::connect returned false. Unable to connect.");
         return;
+    }
 
     sig = os.sig.methodSignature();
-}
-
-bool QSignalSpy::connectToSignal(const QObject *sender, int sigIndex)
-{
-    static const int memberOffset = QObject::staticMetaObject.methodCount();
-    const bool connected = QMetaObject::connect(
-                sender, sigIndex, this, memberOffset, Qt::DirectConnection, nullptr);
-
-    if (!connected)
-        qWarning("QSignalSpy: QMetaObject::connect returned false. Unable to connect.");
-
-    return connected;
 }
 
 void QSignalSpy::appendArgs(void **a)
