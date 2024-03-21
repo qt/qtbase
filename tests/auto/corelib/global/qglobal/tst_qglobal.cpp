@@ -883,5 +883,54 @@ void tst_QGlobal::nodiscard()
     QCOMPARE(t2.get(), 42);
 }
 
+QT_BEGIN_NAMESPACE
+
+// Compile-time typeinfo tests
+struct Complex1
+{
+    ~Complex1();
+};
+static_assert(QTypeInfo<Complex1>::isComplex);
+static_assert(!QTypeInfo<Complex1>::isRelocatable);
+
+struct Complex2
+{
+    Complex2(Complex2 &&);
+};
+static_assert(QTypeInfo<Complex2>::isComplex);
+static_assert(!QTypeInfo<Complex2>::isRelocatable);
+
+struct Complex3
+{
+    Complex3(int);
+};
+static_assert(QTypeInfo<Complex3>::isComplex);
+static_assert(QTypeInfo<Complex3>::isRelocatable);
+
+struct Relocatable1
+{
+    ~Relocatable1();
+};
+Q_DECLARE_TYPEINFO(Relocatable1, Q_RELOCATABLE_TYPE);
+static_assert(QTypeInfo<Relocatable1>::isComplex);
+static_assert(QTypeInfo<Relocatable1>::isRelocatable);
+
+struct Relocatable2
+{
+    Relocatable2(int);
+};
+Q_DECLARE_TYPEINFO(Relocatable2, Q_RELOCATABLE_TYPE);
+static_assert(QTypeInfo<Relocatable2>::isComplex);
+static_assert(QTypeInfo<Relocatable2>::isRelocatable);
+
+struct Trivial1
+{
+    int x[42];
+};
+static_assert(!QTypeInfo<Trivial1>::isComplex);
+static_assert(QTypeInfo<Trivial1>::isRelocatable);
+
+QT_END_NAMESPACE
+
 QTEST_APPLESS_MAIN(tst_QGlobal)
 #include "tst_qglobal.moc"
