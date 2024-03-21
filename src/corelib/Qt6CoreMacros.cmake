@@ -3474,6 +3474,17 @@ macro(qt6_standard_project_setup)
         if(NOT DEFINED QT_I18N_SOURCE_LANGUAGE)
             set(QT_I18N_SOURCE_LANGUAGE ${__qt_sps_arg_I18N_SOURCE_LANGUAGE})
         endif()
+
+        # Ensure we always use device SDK for Xcode
+        if(CMAKE_GENERATOR STREQUAL "Xcode")
+            if(${CMAKE_OSX_SYSROOT} MATCHES "^[a-z]+simulator$")
+                # Xcode expects the base SDK to be the device SDK
+                set(simulator_sysroot "${CMAKE_OSX_SYSROOT}")
+                string(REGEX REPLACE "simulator" "os" CMAKE_OSX_SYSROOT "${CMAKE_OSX_SYSROOT}")
+                set(CMAKE_OSX_SYSROOT "${CMAKE_OSX_SYSROOT}" CACHE STRING "" FORCE)
+                set(CMAKE_XCODE_ATTRIBUTE_SUPPORTED_PLATFORMS "${simulator_sysroot}")
+            endif()
+        endif()
     endif()
 endmacro()
 
