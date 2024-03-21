@@ -134,6 +134,7 @@ typedef QPair<QHttpNetworkRequest, QHttpNetworkReply*> HttpMessagePair;
 class QHttpNetworkConnectionPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QHttpNetworkConnection)
+    Q_DISABLE_COPY_MOVE(QHttpNetworkConnectionPrivate)
 public:
     // Note: Only used from auto tests, normal usage is via QHttp1Configuration
     static constexpr int defaultHttpChannelCount = 6;
