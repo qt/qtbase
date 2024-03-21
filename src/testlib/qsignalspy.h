@@ -12,6 +12,8 @@
 #include <QtCore/qvariant.h>
 #include <QtCore/qmutex.h>
 
+#include <mutex>
+
 QT_BEGIN_NAMESPACE
 
 
@@ -66,7 +68,12 @@ private:
     {
         if (!os.obj)
             return;
-        args = makeArgs(os.sig, os.obj);
+
+        auto tmp = makeArgs(os.sig, os.obj);
+        {
+            const auto lock = std::scoped_lock(m_mutex);
+            args = std::move(tmp);
+        }
         if (!connectToSignal(os.obj, os.sig.methodIndex()))
             return;
 
@@ -82,7 +89,7 @@ private:
     Q_TESTLIB_EXPORT static bool isSignalMetaMethodValid(const QMetaMethod &signal);
     Q_TESTLIB_EXPORT static bool isObjectValid(const QObject *object);
 
-    Q_TESTLIB_EXPORT QList<int> makeArgs(const QMetaMethod &member, const QObject *obj);
+    Q_TESTLIB_EXPORT static QList<int> makeArgs(const QMetaMethod &member, const QObject *obj);
     Q_TESTLIB_EXPORT void appendArgs(void **a);
 
     // the full, normalized signal name

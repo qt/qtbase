@@ -223,17 +223,14 @@ QSignalSpy::ObjectSignal QSignalSpy::verify(const QObject *obj, QMetaMethod sign
 QList<int> QSignalSpy::makeArgs(const QMetaMethod &member, const QObject *obj)
 {
     QList<int> result;
-    QMutexLocker locker(&m_mutex);
     result.reserve(member.parameterCount());
     for (int i = 0; i < member.parameterCount(); ++i) {
         QMetaType tp = member.parameterMetaType(i);
         if (!tp.isValid() && obj) {
-            locker.unlock();
             void *argv[] = { &tp, &i };
             QMetaObject::metacall(const_cast<QObject*>(obj),
                                   QMetaObject::RegisterMethodArgumentMetaType,
                                   member.methodIndex(), argv);
-            locker.relock();
         }
         if (!tp.isValid()) {
             qWarning("QSignalSpy: Unable to handle parameter '%s' of type '%s' of method '%s',"
