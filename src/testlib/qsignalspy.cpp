@@ -110,10 +110,6 @@ QT_BEGIN_NAMESPACE
     Returns the normalized signal the spy is currently listening to.
 */
 
-/*! \fn int QSignalSpy::qt_metacall(QMetaObject::Call call, int id, void **a)
-    \internal
-*/
-
 /*! \fn bool QSignalSpy::wait(int timeout)
     \since 5.0
 
@@ -244,21 +240,41 @@ QList<int> QSignalSpy::makeArgs(const QMetaMethod &member, const QObject *obj)
     return result;
 }
 
-void QSignalSpy::init(ObjectSignal os)
+class QSignalSpyPrivate : public QObject
+{
+    QSignalSpy * const q;
+public:
+    explicit QSignalSpyPrivate(QSignalSpy *qq) : q(qq) {}
+
+    int qt_metacall(QMetaObject::Call call, int methodId, void **a) override;
+};
+
+QSignalSpy::QSignalSpy(ObjectSignal os)
+    : args(os.obj ? makeArgs(os.sig, os.obj) : QList<int>{})
 {
     if (!os.obj)
         return;
 
+    auto i = std::make_unique<QSignalSpyPrivate>(this);
+
     const auto signalIndex = os.sig.methodIndex();
     const auto slotIndex = QObject::staticMetaObject.methodCount();
     if (!QMetaObject::connect(os.obj, signalIndex,
-                              this, slotIndex, Qt::DirectConnection)) {
+                              i.get(), slotIndex, Qt::DirectConnection)) {
         qWarning("QSignalSpy: QMetaObject::connect returned false. Unable to connect.");
         return;
     }
 
+    d_ptr = std::move(i);
+
     sig = os.sig.methodSignature();
 }
+
+/*!
+    Destructor.
+*/
+QSignalSpy::~QSignalSpy()
+    = default;
 
 void QSignalSpy::appendArgs(void **a)
 {
@@ -278,6 +294,25 @@ void QSignalSpy::appendArgs(void **a)
         locker.unlock();
         m_loop.exitLoop();
     }
+}
+
+/*!
+    \reimp
+    \internal
+*/
+int QSignalSpyPrivate::qt_metacall(QMetaObject::Call call, int methodId, void **a)
+{
+    methodId = QObject::qt_metacall(call, methodId, a);
+    if (methodId < 0)
+        return methodId;
+
+    if (call == QMetaObject::InvokeMetaMethod) {
+        if (methodId == 0) {
+            q->appendArgs(a);
+        }
+        --methodId;
+    }
+    return methodId;
 }
 
 QT_END_NAMESPACE

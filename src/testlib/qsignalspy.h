@@ -6,24 +6,26 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qlist.h>
-#include <QtCore/qobject.h>
 #include <QtCore/qmetaobject.h>
 #include <QtTest/qtesteventloop.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qmutex.h>
 
+#include <memory>
+
 QT_BEGIN_NAMESPACE
 
 
 class QVariant;
-
-class QSignalSpy: public QObject, public QList<QList<QVariant> >
+class QSignalSpyPrivate;
+class QSignalSpy : public QList<QList<QVariant> >
 {
     struct ObjectSignal {
         const QObject *obj;
         QMetaMethod sig;
     };
-
+    friend class QSignalSpyPrivate;
+    std::unique_ptr<QSignalSpyPrivate> d_ptr;
 public:
     explicit QSignalSpy(const QObject *obj, const char *aSignal)
         : QSignalSpy(verify(obj, aSignal)) {}
@@ -37,6 +39,7 @@ public:
 #endif // Q_QDOC
     QSignalSpy(const QObject *obj, QMetaMethod signal)
         : QSignalSpy(verify(obj, signal)) {}
+    Q_TESTLIB_EXPORT ~QSignalSpy();
 
     inline bool isValid() const { return !sig.isEmpty(); }
     inline QByteArray signal() const { return sig; }
@@ -46,28 +49,8 @@ public:
 
     Q_TESTLIB_EXPORT bool wait(std::chrono::milliseconds timeout = std::chrono::seconds{5});
 
-    int qt_metacall(QMetaObject::Call call, int methodId, void **a) override
-    {
-        methodId = QObject::qt_metacall(call, methodId, a);
-        if (methodId < 0)
-            return methodId;
-
-        if (call == QMetaObject::InvokeMetaMethod) {
-            if (methodId == 0) {
-                appendArgs(a);
-            }
-            --methodId;
-        }
-        return methodId;
-    }
-
 private:
-    explicit QSignalSpy(ObjectSignal os)
-        : args(os.obj ? makeArgs(os.sig, os.obj) : QList<int>{})
-    {
-        init(os);
-    }
-    Q_TESTLIB_EXPORT void init(ObjectSignal os);
+    Q_TESTLIB_EXPORT explicit QSignalSpy(ObjectSignal os);
 
     Q_TESTLIB_EXPORT static ObjectSignal verify(const QObject *obj, QMetaMethod signal);
     Q_TESTLIB_EXPORT static ObjectSignal verify(const QObject *obj, const char *aSignal);
