@@ -346,11 +346,9 @@ static jclass getCachedClass(const QByteArray &className)
 */
 static QJniObject getCleanJniObject(jobject object, JNIEnv *env)
 {
-    if (!object)
-        return QJniObject();
-
-    if (QJniEnvironment::checkAndClearExceptions(env)) {
-        env->DeleteLocalRef(object);
+    if (QJniEnvironment::checkAndClearExceptions(env) || !object) {
+        if (object)
+            env->DeleteLocalRef(object);
         return QJniObject();
     }
 
