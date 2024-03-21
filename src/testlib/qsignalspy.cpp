@@ -172,6 +172,40 @@ bool QSignalSpy::isObjectValid(const QObject *object)
     return valid;
 }
 
+QSignalSpy::ObjectSignal QSignalSpy::verify(const QObject *obj, const char *aSignal)
+{
+    if (!isObjectValid(obj))
+        return {};
+
+    if (!aSignal) {
+        qWarning("QSignalSpy: Null signal name is not valid");
+        return {};
+    }
+
+    if (((aSignal[0] - '0') & 0x03) != QSIGNAL_CODE) {
+        qWarning("QSignalSpy: Not a valid signal, use the SIGNAL macro");
+        return {};
+    }
+
+    const QByteArray ba = QMetaObject::normalizedSignature(aSignal + 1);
+    const QMetaObject * const mo = obj->metaObject();
+    const int sigIndex = mo->indexOfMethod(ba.constData());
+    if (sigIndex < 0) {
+        qWarning("QSignalSpy: No such signal: '%s'", ba.constData());
+        return {};
+    }
+
+    return verify(obj, mo->method(sigIndex));
+}
+
+QSignalSpy::ObjectSignal QSignalSpy::verify(const QObject *obj, QMetaMethod signal)
+{
+    if (isObjectValid(obj) && isSignalMetaMethodValid(signal))
+        return {obj, signal};
+    else
+        return {};
+}
+
 void QSignalSpy::initArgs(const QMetaMethod &member, const QObject *obj)
 {
     QMutexLocker locker(&m_mutex);

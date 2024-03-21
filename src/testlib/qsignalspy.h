@@ -27,35 +27,6 @@ class QSignalSpy: public QObject, public QList<QList<QVariant> >
 public:
     explicit QSignalSpy(const QObject *obj, const char *aSignal)
         : QSignalSpy(verify(obj, aSignal)) {}
-
-private:
-    static ObjectSignal verify(const QObject *obj, const char *aSignal)
-    {
-        if (!isObjectValid(obj))
-            return {};
-
-        if (!aSignal) {
-            qWarning("QSignalSpy: Null signal name is not valid");
-            return {};
-        }
-
-        if (((aSignal[0] - '0') & 0x03) != QSIGNAL_CODE) {
-            qWarning("QSignalSpy: Not a valid signal, use the SIGNAL macro");
-            return {};
-        }
-
-        const QByteArray ba = QMetaObject::normalizedSignature(aSignal + 1);
-        const QMetaObject * const mo = obj->metaObject();
-        const int sigIndex = mo->indexOfMethod(ba.constData());
-        if (sigIndex < 0) {
-            qWarning("QSignalSpy: No such signal: '%s'", ba.constData());
-            return {};
-        }
-
-        return verify(obj, mo->method(sigIndex));
-    }
-
-public:
 #ifdef Q_QDOC
     template <typename PointerToMemberFunction>
     QSignalSpy(const QObject *object, PointerToMemberFunction signal);
@@ -64,20 +35,9 @@ public:
     QSignalSpy(const typename QtPrivate::FunctionPointer<Func>::Object *obj, Func signal0)
         : QSignalSpy(verify(obj, QMetaMethod::fromSignal(signal0))) {}
 #endif // Q_QDOC
-
     QSignalSpy(const QObject *obj, QMetaMethod signal)
         : QSignalSpy(verify(obj, signal)) {}
 
-private:
-    static ObjectSignal verify(const QObject *obj, QMetaMethod signal)
-    {
-        if (isObjectValid(obj) && isSignalMetaMethodValid(signal))
-            return {obj, signal};
-        else
-            return {};
-    }
-
-public:
     inline bool isValid() const { return !sig.isEmpty(); }
     inline QByteArray signal() const { return sig; }
 
@@ -126,6 +86,9 @@ private:
         sig = os.sig.methodSignature();
     }
 
+
+    Q_TESTLIB_EXPORT static ObjectSignal verify(const QObject *obj, QMetaMethod signal);
+    Q_TESTLIB_EXPORT static ObjectSignal verify(const QObject *obj, const char *aSignal);
 
     Q_TESTLIB_EXPORT bool connectToSignal(const QObject *sender, int sigIndex);
 
