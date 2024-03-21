@@ -277,7 +277,9 @@ static bool monitorData(HMONITOR hMonitor, QWindowsScreenData *data)
         setMonitorDataFromSetupApi(*data, pathGroup);
     }
     if (data->name.isEmpty())
-        data->name = data->deviceName;
+        data->name.append(u"Internal Display");
+    data->name.prepend(u": ");
+    data->name.prepend(data->deviceName);
     if (data->deviceName == u"WinDisc") {
         data->flags |= QWindowsScreenData::LockScreen;
     } else {
@@ -342,16 +344,7 @@ BOOL QT_WIN_CALLBACK monitorEnumCallback(HMONITOR hMonitor, HDC, LPRECT, LPARAM 
     QWindowsScreenData data;
     if (monitorData(hMonitor, &data)) {
         auto *result = reinterpret_cast<WindowsScreenDataList *>(p);
-        auto it = std::find_if(result->rbegin(), result->rend(),
-            [&data](QWindowsScreenData i){ return i.name == data.name; });
-        if (it != result->rend()) {
-            int previousIndex = 1;
-            if (it->deviceIndex.has_value())
-                previousIndex = it->deviceIndex.value();
-            else
-                (*it).deviceIndex = 1;
-            data.deviceIndex = previousIndex + 1;
-        }
+
         // QWindowSystemInterface::handleScreenAdded() documentation specifies that first
         // added screen will be the primary screen, so order accordingly.
         // Note that the side effect of this policy is that there is no way to change primary
@@ -413,9 +406,7 @@ QWindowsScreen::QWindowsScreen(const QWindowsScreenData &data) :
 
 QString QWindowsScreen::name() const
 {
-    return m_data.deviceIndex.has_value()
-               ? (u"%1 (%2)"_s).arg(m_data.name, QString::number(m_data.deviceIndex.value()))
-               : m_data.name;
+    return m_data.name;
 }
 
 QPixmap QWindowsScreen::grabWindow(WId window, int xIn, int yIn, int width, int height) const
