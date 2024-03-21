@@ -485,12 +485,12 @@ void tst_QSignalSpy::spyOnMetaMethod_invalid_data()
         << QMetaMethod();
 
     QTest::addRow("Empty signal")
-        << "QSignalSpy: Not a valid signal: ''"_ba
+        << "QSignalSpy: Null signal is not valid"_ba
         << new QObject(this)
         << QMetaMethod();
 
     QTest::addRow("Method is not a signal")
-        << "QSignalSpy: Not a valid signal: 'deleteLater()'"_ba
+        << "QSignalSpy: Not a signal: 'deleteLater()'"_ba
         << new QObject(this)
         << QObject::staticMetaObject.method(QObject::staticMetaObject.indexOfMethod("deleteLater()"));
 }

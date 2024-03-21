@@ -71,13 +71,7 @@ private:
         if (!isObjectValid(obj))
             return {};
 
-        if (!signal0) {
-            qWarning("QSignalSpy: Null signal pointer is not valid");
-            return {};
-        }
-
-        const QMetaMethod signalMetaMethod = QMetaMethod::fromSignal(signal0);
-        return verify(obj, signalMetaMethod);
+        return verify(obj, QMetaMethod::fromSignal(signal0));
     }
 public:
 #endif // Q_QDOC
@@ -157,12 +151,17 @@ private:
 
     static bool isSignalMetaMethodValid(const QMetaMethod &signal)
     {
-        const bool valid = signal.isValid() && signal.methodType() == QMetaMethod::Signal;
+        if (!signal.isValid()) {
+            qWarning("QSignalSpy: Null signal is not valid");
+            return false;
+        }
 
-        if (!valid)
-            qWarning("QSignalSpy: Not a valid signal: '%s'", signal.methodSignature().constData());
+        if (signal.methodType() != QMetaMethod::Signal) {
+            qWarning("QSignalSpy: Not a signal: '%s'", signal.methodSignature().constData());
+            return false;
+        }
 
-        return valid;
+        return true;
     }
 
     static bool isObjectValid(const QObject *object)
