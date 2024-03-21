@@ -136,16 +136,11 @@ private:
     {
         if (!os.obj)
             return;
-        init(os.obj, os.sig);
-    }
-
-    void init(const QObject *obj, QMetaMethod signal)
-    {
-        initArgs(signal, obj);
-        if (!connectToSignal(obj, signal.methodIndex()))
+        initArgs(os.sig, os.obj);
+        if (!connectToSignal(os.obj, os.sig.methodIndex()))
             return;
 
-        sig = signal.methodSignature();
+        sig = os.sig.methodSignature();
     }
 
     bool connectToSignal(const QObject *sender, int sigIndex)
