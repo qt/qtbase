@@ -198,7 +198,10 @@ QTemporaryFile *QDBusTrayIcon::tempIcon(const QIcon &icon)
     if (!necessary)
         return nullptr;
     QTemporaryFile *ret = new QTemporaryFile(tempFileTemplate(), this);
-    ret->open();
+    if (!ret->open()) {
+        delete ret;
+        return nullptr;
+    }
     icon.pixmap(QSize(22, 22)).save(ret);
     ret->close();
     return ret;
