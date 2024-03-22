@@ -2008,8 +2008,7 @@ static QList<QWidget *> getFocusChain(QWidget *start, bool bForward)
     });
     do {
         ret += cur;
-        auto widgetPrivate = static_cast<QWidgetPrivate *>(qt_widget_private(cur));
-        cur = bForward ? widgetPrivate->focus_next : widgetPrivate->focus_prev;
+        cur = bForward ? cur->nextInFocusChain() : cur->previousInFocusChain();
         if (!--count)
             return ret;
     } while (cur != start);
@@ -2075,23 +2074,29 @@ void tst_QWidget::defaultTabOrder()
 
 void tst_QWidget::reverseTabOrder()
 {
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+    if (QGuiApplication::platformName().startsWith(QLatin1StringView("wayland"), Qt::CaseInsensitive))
         QSKIP("Wayland: This fails. Figure out why.");
 
     const int compositeCount = 2;
     Container container;
-    container.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    container.setObjectName(QLatin1StringView("Container"));
+    container.setWindowTitle(QLatin1StringView(QTest::currentTestFunction()));
     Composite* composite[compositeCount];
 
     QLineEdit *firstEdit = new QLineEdit();
+    firstEdit->setObjectName(QLatin1StringView("FirstEdit"));
     container.box->addWidget(firstEdit);
 
+    static constexpr QLatin1StringView comp("Composite-%1");
     for (int i = 0; i < compositeCount; i++) {
-        composite[i] = new Composite();
+        const QString name = QString(comp).arg(i);
+        composite[i] = new Composite(nullptr, name);
+        composite[i]->setObjectName(name);
         container.box->addWidget(composite[i]);
     }
 
     QLineEdit *lastEdit = new QLineEdit();
+    lastEdit->setObjectName(QLatin1StringView("LastEdit"));
     container.box->addWidget(lastEdit);
 
     // Reverse tab order inside each composite
@@ -2244,15 +2249,14 @@ void tst_QWidget::tabOrderComboBox()
     // Remove the focus proxy of the first combobox's line edit.
     QComboBox *box = boxes.at(0);
     QLineEdit *lineEdit = box->lineEdit();
-    QWidgetPrivate *lePriv = QWidgetPrivate::get(lineEdit);
-    const QWidget *prev = lePriv->focus_prev;
-    const QWidget *next = lePriv->focus_next;
-    const QWidget *proxy = lePriv->extra->focus_proxy;
+    const QWidget *prev = lineEdit->previousInFocusChain();
+    const QWidget *next = lineEdit->nextInFocusChain();
+    const QWidget *proxy = lineEdit->focusProxy();
     QCOMPARE(proxy, box);
     lineEdit->setFocusProxy(nullptr);
-    QCOMPARE(lePriv->extra->focus_proxy, nullptr);
-    QCOMPARE(lePriv->focus_prev, prev);
-    QCOMPARE(lePriv->focus_next, next);
+    QCOMPARE(lineEdit->focusProxy(), nullptr);
+    QCOMPARE(lineEdit->previousInFocusChain(), prev);
+    QCOMPARE(lineEdit->nextInFocusChain(), next);
 
     // Remove first item and check chain consistency
     boxes.removeFirst();
@@ -2491,14 +2495,15 @@ void tst_QWidget::tabOrderWithProxyOutOfOrder()
 {
     Container container;
     container.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    container.setObjectName(QLatin1StringView("Container"));
 
     // important to create the widgets with parent so that they are
     // added to the focus chain already now, and with the buttonBox
     // before the outsideButton.
     QWidget buttonBox(&container);
-    buttonBox.setObjectName("buttonBox");
+    buttonBox.setObjectName(QLatin1StringView("buttonBox"));
     QPushButton outsideButton(&container);
-    outsideButton.setObjectName("outsideButton");
+    outsideButton.setObjectName(QLatin1StringView("outsideButton"));
 
     container.box->addWidget(&outsideButton);
     container.box->addWidget(&buttonBox);
@@ -13432,6 +13437,7 @@ void tst_QWidget::setParentChangesFocus()
         QApplicationPrivate::setActiveWindow(secondary.get());
         QVERIFY(QTest::qWaitForWindowActive(secondary.get()));
     }
+    QVERIFY(QTest::qWaitFor([]{ return QApplication::focusWidget(); }));
     QCOMPARE(QApplication::focusWidget()->objectName(), focusWidget);
 }
 
