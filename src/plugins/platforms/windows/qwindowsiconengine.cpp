@@ -354,28 +354,7 @@ QPixmap QWindowsIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QI
         m_pixmap.setDevicePixelRatio(scale);
 
         QPainter painter(&m_pixmap);
-        QFont renderFont(m_iconFont);
-        renderFont.setPixelSize(size.height());
-        painter.setFont(renderFont);
-
-        QPalette palette;
-        switch (mode) {
-        case QIcon::Active:
-            painter.setPen(palette.color(QPalette::Active, QPalette::Text));
-            break;
-        case QIcon::Normal:
-            painter.setPen(palette.color(QPalette::Active, QPalette::Text));
-            break;
-        case QIcon::Disabled:
-            painter.setPen(palette.color(QPalette::Disabled, QPalette::Text));
-            break;
-        case QIcon::Selected:
-            painter.setPen(palette.color(QPalette::Active, QPalette::HighlightedText));
-            break;
-        }
-
-        const QRect rect({0, 0}, size);
-        painter.drawText(rect, Qt::AlignCenter, m_glyphs);
+        paint(&painter, QRect(QPoint(), size), mode, state);
 
         m_cacheKey = cacheKey;
     }
@@ -385,8 +364,31 @@ QPixmap QWindowsIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QI
 
 void QWindowsIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
 {
-    const qreal scale = painter->device()->devicePixelRatio();
-    painter->drawPixmap(rect, scaledPixmap(rect.size(), mode, state, scale));
+    Q_UNUSED(state);
+
+    painter->save();
+    QFont renderFont(m_iconFont);
+    renderFont.setPixelSize(rect.height());
+    painter->setFont(renderFont);
+
+    QPalette palette;
+    switch (mode) {
+    case QIcon::Active:
+        painter->setPen(palette.color(QPalette::Active, QPalette::Text));
+        break;
+    case QIcon::Normal:
+        painter->setPen(palette.color(QPalette::Active, QPalette::Text));
+        break;
+    case QIcon::Disabled:
+        painter->setPen(palette.color(QPalette::Disabled, QPalette::Text));
+        break;
+    case QIcon::Selected:
+        painter->setPen(palette.color(QPalette::Active, QPalette::HighlightedText));
+        break;
+    }
+
+    painter->drawText(rect, Qt::AlignCenter, m_glyphs);
+    painter->restore();
 }
 
 QT_END_NAMESPACE

@@ -572,32 +572,11 @@ QPixmap QAndroidPlatformIconEngine::scaledPixmap(const QSize &size, QIcon::Mode 
     const quint64 cacheKey = calculateCacheKey(mode, state);
     if (cacheKey != m_cacheKey || m_pixmap.size() != size || m_pixmap.devicePixelRatio() != scale) {
         m_pixmap = QPixmap(size * scale);
-        m_pixmap.fill(QColor(0, 0, 0, 0));
+        m_pixmap.fill(Qt::transparent);
         m_pixmap.setDevicePixelRatio(scale);
 
         QPainter painter(&m_pixmap);
-        QFont renderFont(m_iconFont);
-        renderFont.setPixelSize(size.height());
-        painter.setFont(renderFont);
-
-        QPalette palette;
-        switch (mode) {
-        case QIcon::Active:
-            painter.setPen(palette.color(QPalette::Active, QPalette::Accent));
-            break;
-        case QIcon::Normal:
-            painter.setPen(palette.color(QPalette::Active, QPalette::Text));
-            break;
-        case QIcon::Disabled:
-            painter.setPen(palette.color(QPalette::Disabled, QPalette::Accent));
-            break;
-        case QIcon::Selected:
-            painter.setPen(palette.color(QPalette::Active, QPalette::Accent));
-            break;
-        }
-
-        const QRect rect({0, 0}, size);
-        painter.drawText(rect, Qt::AlignCenter, m_glyphs);
+        paint(&painter, QRect(QPoint(), size), mode, state);
 
         m_cacheKey = cacheKey;
     }
@@ -607,8 +586,31 @@ QPixmap QAndroidPlatformIconEngine::scaledPixmap(const QSize &size, QIcon::Mode 
 
 void QAndroidPlatformIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
 {
-    const qreal scale = painter->device()->devicePixelRatio();
-    painter->drawPixmap(rect, scaledPixmap(rect.size(), mode, state, scale));
+    Q_UNUSED(state);
+
+    painter->save();
+    QFont renderFont(m_iconFont);
+    renderFont.setPixelSize(rect.height());
+    painter->setFont(renderFont);
+
+    QPalette palette;
+    switch (mode) {
+    case QIcon::Active:
+        painter->setPen(palette.color(QPalette::Active, QPalette::Text));
+        break;
+    case QIcon::Normal:
+        painter->setPen(palette.color(QPalette::Active, QPalette::Text));
+        break;
+    case QIcon::Disabled:
+        painter->setPen(palette.color(QPalette::Disabled, QPalette::Text));
+        break;
+    case QIcon::Selected:
+        painter->setPen(palette.color(QPalette::Active, QPalette::HighlightedText));
+        break;
+    }
+
+    painter->drawText(rect, Qt::AlignCenter, m_glyphs);
+    painter->restore();
 }
 
 QT_END_NAMESPACE
