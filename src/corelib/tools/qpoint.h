@@ -6,6 +6,7 @@
 
 #include <QtCore/qcompare.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qnumeric.h>
 
 #include <QtCore/q20type_traits.h>
 #include <QtCore/q23utility.h>
@@ -246,12 +247,18 @@ public:
 private:
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_FLOAT_COMPARE
-    friend constexpr bool comparesEqual(const QPointF &p1, const QPointF &p2) noexcept
+    friend constexpr bool qFuzzyCompare(const QPointF &p1, const QPointF &p2) noexcept
     {
         return ((!p1.xp || !p2.xp) ? qFuzzyIsNull(p1.xp - p2.xp) : qFuzzyCompare(p1.xp, p2.xp))
             && ((!p1.yp || !p2.yp) ? qFuzzyIsNull(p1.yp - p2.yp) : qFuzzyCompare(p1.yp, p2.yp));
     }
     QT_WARNING_POP
+    friend constexpr bool qFuzzyIsNull(const QPointF &point) noexcept
+    {
+        return qFuzzyIsNull(point.xp) && qFuzzyIsNull(point.yp);
+    }
+    friend constexpr bool comparesEqual(const QPointF &p1, const QPointF &p2) noexcept
+    { return qFuzzyCompare(p1, p2); }
     Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QPointF)
     friend constexpr bool comparesEqual(const QPointF &p1, const QPoint &p2) noexcept
     { return comparesEqual(p1, p2.toPointF()); }

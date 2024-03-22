@@ -76,6 +76,9 @@ private slots:
     void operator_eq_data();
     void operator_eq();
 
+    void fuzzyCompare_data();
+    void fuzzyCompare();
+
     void toPoint_data();
     void toPoint();
 
@@ -103,15 +106,19 @@ void tst_QPointF::isNull()
 {
     QPointF point(0, 0);
     QVERIFY(point.isNull());
+    QVERIFY(qFuzzyIsNull(point));
     ++point.rx();
     QVERIFY(!point.isNull());
+    QVERIFY(!qFuzzyIsNull(point));
     point.rx() -= 2;
     QVERIFY(!point.isNull());
+    QVERIFY(!qFuzzyIsNull(point));
 
     QPointF nullNegativeZero(qreal(-0.0), qreal(-0.0));
     QCOMPARE(nullNegativeZero.x(), (qreal)-0.0f);
     QCOMPARE(nullNegativeZero.y(), (qreal)-0.0f);
     QVERIFY(nullNegativeZero.isNull());
+    QVERIFY(qFuzzyIsNull(nullNegativeZero));
 }
 
 void tst_QPointF::manhattanLength_data()
@@ -383,6 +390,20 @@ void tst_QPointF::operator_eq()
 
     const QPoint intPoint2 = point2.toPoint();
     QT_TEST_EQUALITY_OPS(point1, intPoint2, expectIntEqual);
+}
+
+void tst_QPointF::fuzzyCompare_data()
+{
+    operator_eq_data();
+}
+
+void tst_QPointF::fuzzyCompare()
+{
+    QFETCH(QPointF, point1);
+    QFETCH(QPointF, point2);
+    QFETCH(bool, expectEqual);
+
+    QCOMPARE_EQ(qFuzzyCompare(point1, point2), expectEqual);
 }
 
 void tst_QPointF::toPoint_data()

@@ -762,6 +762,26 @@ size_t qHash(QPoint key, size_t seed) noexcept
     \sa qFuzzyCompare
 */
 
+/*!
+    \fn bool QPointF::qFuzzyCompare(const QPointF &p1, const QPointF &p2)
+    \since 6.8
+
+    Returns \c true if \a p1 is approximately equal to \a p2; otherwise
+    returns \c false.
+
+    \sa qFuzzyIsNull
+*/
+
+/*!
+    \fn bool QPointF::qFuzzyIsNull(const QPointF &point)
+    \since 6.8
+
+    Returns \c true if \a point is approximately equal to a point
+    \c {(0.0, 0.0)}.
+
+    \sa qFuzzyCompare
+*/
+
 #ifndef QT_NO_DATASTREAM
 /*!
     \fn QDataStream &operator<<(QDataStream &stream, const QPointF &point)
