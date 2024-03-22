@@ -1110,7 +1110,6 @@ void tst_QFileDialog2::task254490_selectFileMultipleTimes()
     QTemporaryFile *t;
     t = new QTemporaryFile;
     QVERIFY2(t->open(), qPrintable(t->errorString()));
-    t->open();
     QFileDialog fd(0, "TestFileDialog");
 
     fd.setDirectory(tempPath);
