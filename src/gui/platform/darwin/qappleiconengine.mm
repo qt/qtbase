@@ -395,59 +395,23 @@ auto *configuredImage(const UIImage *image, const QColor &color)
 #endif
 }
 
-namespace {
-template <typename Image>
-QPixmap imageToPixmap(const Image *image, QSizeF renderSize)
-{
-    if constexpr (std::is_same_v<Image, NSImage>)
-        return qt_mac_toQPixmap(image, renderSize.toSize());
-    else
-        return QPixmap::fromImage(qt_mac_toQImage(image, renderSize.toSize()));
-}
-}
-
 QPixmap QAppleIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
 {
     const quint64 cacheKey = calculateCacheKey(mode, state);
     if (cacheKey != m_cacheKey || m_pixmap.size() != size || m_pixmap.devicePixelRatio() != scale) {
-        QColor color;
-        const QPalette palette;
-        switch (mode) {
-        case QIcon::Normal:
-            color = palette.color(QPalette::Inactive, QPalette::Text);
-            break;
-        case QIcon::Disabled:
-            color = palette.color(QPalette::Disabled, QPalette::Text);
-            break;
-        case QIcon::Active:
-            color = palette.color(QPalette::Active, QPalette::Text);
-            break;
-        case QIcon::Selected:
-            color = palette.color(QPalette::Active, QPalette::HighlightedText);
-            break;
-        }
-        const auto *image = configuredImage(m_image, color);
+        const QSize paintSize = actualSize(size, mode, state);
+        const QSize paintOffset = paintSize != size
+                                ? (QSizeF(size - paintSize) * 0.5).toSize()
+                                : QSize();
 
-        // The size we want might have a different aspect ratio than the icon we have.
-        // So ask for a pixmap with the same aspect ratio as the icon, constrained to the
-        // size we want, and then center that within a pixmap of the requested size.
-        const QSize requestedSize = size * scale;
-        const QSizeF renderSize = actualSize(requestedSize, mode, state);
-        QPixmap iconPixmap = imageToPixmap(image, renderSize);
-        iconPixmap.setDevicePixelRatio(scale);
+        m_pixmap = QPixmap(size * scale);
+        m_pixmap.setDevicePixelRatio(scale);
+        m_pixmap.fill(Qt::transparent);
 
-        if (renderSize != requestedSize) {
-            m_pixmap = QPixmap(requestedSize);
-            m_pixmap.fill(Qt::transparent);
-            m_pixmap.setDevicePixelRatio(scale);
+        QPainter painter(&m_pixmap);
+        paint(&painter, QRect(paintOffset.width(), paintOffset.height(),
+                              paintSize.width(), paintSize.height()), mode, state);
 
-            QPainter painter(&m_pixmap);
-            const QSize offset = ((m_pixmap.deviceIndependentSize()
-                                - iconPixmap.deviceIndependentSize()) / 2).toSize();
-            painter.drawPixmap(offset.width(), offset.height(), iconPixmap);
-        } else {
-            m_pixmap = iconPixmap;
-        }
         m_cacheKey = cacheKey;
     }
     return m_pixmap;
@@ -455,9 +419,46 @@ QPixmap QAppleIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIco
 
 void QAppleIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
 {
-    const qreal scale = painter->device()->devicePixelRatio();
-    // TODO: render the image directly if we don't have the pixmap yet and paint on an image
-    painter->drawPixmap(rect, scaledPixmap(rect.size(), mode, state, scale));
+    Q_UNUSED(state);
+
+    QColor color;
+    const QPalette palette;
+    switch (mode) {
+    case QIcon::Normal:
+        color = palette.color(QPalette::Inactive, QPalette::Text);
+        break;
+    case QIcon::Disabled:
+        color = palette.color(QPalette::Disabled, QPalette::Text);
+        break;
+    case QIcon::Active:
+        color = palette.color(QPalette::Active, QPalette::Text);
+        break;
+    case QIcon::Selected:
+        color = palette.color(QPalette::Active, QPalette::HighlightedText);
+        break;
+    }
+    const auto *image = configuredImage(m_image, color);
+
+    QMacCGContext ctx(painter);
+
+#if defined(Q_OS_MACOS)
+    NSGraphicsContext *gc = [NSGraphicsContext graphicsContextWithCGContext:ctx flipped:YES];
+    [NSGraphicsContext saveGraphicsState];
+    [NSGraphicsContext setCurrentContext:gc];
+
+    const NSSize pixmapSize = NSMakeSize(rect.width(), rect.height());
+    [image setSize:pixmapSize];
+    const NSRect sourceRect = NSMakeRect(0, 0, pixmapSize.width, pixmapSize.height);
+    const NSRect iconRect = NSMakeRect(rect.x(), rect.y(), pixmapSize.width, pixmapSize.height);
+
+    [image drawInRect:iconRect fromRect:sourceRect operation:NSCompositingOperationSourceOver fraction:1.0 respectFlipped:YES hints:nil];
+    [NSGraphicsContext restoreGraphicsState];
+#elif defined(Q_OS_IOS)
+    UIGraphicsPushContext(ctx);
+    const CGRect cgrect = CGRectMake(rect.x(), rect.y(), rect.width(), rect.height());
+    [image drawInRect:cgrect];
+    UIGraphicsPopContext();
+#endif
 }
 
 QT_END_NAMESPACE
