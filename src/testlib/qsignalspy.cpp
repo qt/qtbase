@@ -161,7 +161,7 @@ bool QSignalSpy::wait(std::chrono::milliseconds timeout)
     return size() > origCount;
 }
 
-bool QSignalSpy::isSignalMetaMethodValid(const QMetaMethod &signal)
+static bool isSignalMetaMethodValid(QMetaMethod signal)
 {
     if (!signal.isValid()) {
         qWarning("QSignalSpy: Null signal is not valid");
@@ -176,7 +176,7 @@ bool QSignalSpy::isSignalMetaMethodValid(const QMetaMethod &signal)
     return true;
 }
 
-bool QSignalSpy::isObjectValid(const QObject *object)
+static bool isObjectValid(const QObject *object)
 {
     const bool valid = !!object;
 
