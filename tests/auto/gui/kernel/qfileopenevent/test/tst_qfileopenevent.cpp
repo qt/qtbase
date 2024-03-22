@@ -79,7 +79,8 @@ void tst_qfileopenevent::constructor()
 QByteArray tst_qfileopenevent::readFileContent(QFileOpenEvent& event)
 {
     QFile file(event.file());
-    file.open(QFile::ReadOnly);
+    if (!file.open(QFile::ReadOnly))
+        qFatal("Cannot open file %s", qPrintable(event.file()));
     file.seek(0);
     QByteArray data = file.readAll();
     return data;

@@ -95,8 +95,8 @@ static QByteArray makeCanonical(const QString &filename,
                                 bool testIncremental = false)
 {
     QFile file(filename);
-    file.open(QIODevice::ReadOnly);
-
+    if (!file.open(QIODevice::ReadOnly))
+        qFatal("Could not open file %s", qPrintable(filename));
     QXmlStreamReader reader;
 
     QByteArray buffer;
@@ -747,7 +747,8 @@ void tst_QXmlStream::reportSuccess_data() const
 QByteArray tst_QXmlStream::readFile(const QString &filename)
 {
     QFile file(filename);
-    file.open(QIODevice::ReadOnly);
+    if (!file.open(QIODevice::ReadOnly))
+        qFatal("Could not open file %s", qPrintable(filename));
 
     QXmlStreamReader reader;
 

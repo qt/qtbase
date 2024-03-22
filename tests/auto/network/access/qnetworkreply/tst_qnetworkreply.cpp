@@ -5088,6 +5088,10 @@ void tst_QNetworkReply::ioPutToFileFromProcess()
     QByteArray contents = file.readAll();
     QCOMPARE(contents, data);
 
+    if (process.state() == QProcess::Running)
+        QVERIFY(process.waitForFinished());
+    QCOMPARE(process.exitCode(), 0);
+
 #endif // QT_CONFIG(process)
 }
 

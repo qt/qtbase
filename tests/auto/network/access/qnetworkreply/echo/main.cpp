@@ -12,11 +12,13 @@ int main(int argc, char **)
     }
 
     QFile file;
-    file.open(stdin, QFile::ReadWrite);
+    if (!file.open(stdin, QFile::ReadWrite))
+        return 1;
     QByteArray data = file.readAll();
     file.close();
 
-    file.open(stdout, QFile::WriteOnly);
+    if (!file.open(stdout, QFile::WriteOnly))
+        return 1;
     file.write(data);
     file.close();
     return 0;

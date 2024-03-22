@@ -9,7 +9,8 @@ int main(int argc, char **argv)
 {
     QCoreApplication ca(argc, argv);
     QFile f;
-    f.open(stdin, QIODevice::ReadOnly);
+    if (!f.open(stdin, QIODevice::ReadOnly))
+        return 1;
     QByteArray input;
     char buf[1024];
     qint64 len;

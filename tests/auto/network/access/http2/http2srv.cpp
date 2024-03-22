@@ -328,7 +328,8 @@ void Http2Server::incomingConnection(qintptr socketDescriptor)
         connect(sslSocket, SIGNAL(sslErrors(QList<QSslError>)),
                 this, SLOT(ignoreErrorSlot()));
         QFile file(QT_TESTCASE_SOURCEDIR "/certs/fluke.key");
-        file.open(QIODevice::ReadOnly);
+        if (!file.open(QIODevice::ReadOnly))
+            qFatal("Cannot open certificate file %s", qPrintable(file.fileName()));
         QSslKey key(file.readAll(), QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey);
         sslSocket->setPrivateKey(key);
         auto localCert = QSslCertificate::fromPath(QT_TESTCASE_SOURCEDIR "/certs/fluke.cert");
