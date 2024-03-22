@@ -38,9 +38,10 @@ bool Uic::printDependencies()
     QString fileName = opt.inputFile;
 
     QFile f;
-    if (fileName.isEmpty())
-        f.open(stdin, QIODevice::ReadOnly);
-    else {
+    if (fileName.isEmpty()) {
+        if (!f.open(stdin, QIODevice::ReadOnly))
+            return false;
+    } else {
         f.setFileName(fileName);
         if (!f.open(QIODevice::ReadOnly))
             return false;

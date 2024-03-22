@@ -144,10 +144,18 @@ QDBusIntrospection::Interfaces QDBusXmlToCpp::readInput()
     QFile input(inputFile);
     if (inputFile.isEmpty() || inputFile == "-"_L1) {
         reporter.setFileName("<standard input>"_L1);
-        input.open(stdin, QIODevice::ReadOnly);
+        if (!input.open(stdin, QIODevice::ReadOnly)) {
+            fprintf(stderr, PROGRAMNAME ": could not open standard input: %s\n",
+                    qPrintable(input.errorString()));
+            exit(1);
+        }
     } else {
         reporter.setFileName(inputFile);
-        input.open(QIODevice::ReadOnly);
+        if (!input.open(QIODevice::ReadOnly)) {
+            fprintf(stderr, PROGRAMNAME ": could not open input file '%s': %s\n",
+                    qPrintable(inputFile), qPrintable(input.errorString()));
+            exit(1);
+        }
     }
 
     QByteArray data = input.readAll();
