@@ -3750,7 +3750,9 @@ void tst_QNetworkReply::ioGetFromFtp()
 {
     QFETCH(QString, fileName);
     QFile reference(fileName);
-    reference.open(QIODevice::ReadOnly); // will fail for bigfile
+    const bool ok = reference.open(QIODevice::ReadOnly); // will fail for bigfile
+    if (fileName != "bigfile")
+        QVERIFY(ok);
 
     QNetworkRequest request("ftp://" + QtNetworkSettings::ftpServerName() + "/qtest/" + fileName);
     QNetworkReplyPtr reply(manager.get(request));
