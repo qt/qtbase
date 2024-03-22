@@ -4523,8 +4523,7 @@ void tst_QWidget::restoreVersion1Geometry()
     const Qt::WindowStates WindowStateMask = Qt::WindowFullScreen | Qt::WindowMaximized | Qt::WindowMinimized;
 
     QFile f(fileName);
-    QVERIFY(f.exists());
-    f.open(QIODevice::ReadOnly);
+    QVERIFY(f.open(QIODevice::ReadOnly));
     const QByteArray savedGeometry = f.readAll();
     QCOMPARE(savedGeometry.size(), 46);
     f.close();

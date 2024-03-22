@@ -1220,7 +1220,7 @@ void tst_QMetaType::flagsBinaryCompatibility6_0_data()
     QTest::addColumn<quint32>("flags");
 
     QFile file(QFINDTESTDATA("typeFlags.bin"));
-    file.open(QIODevice::ReadOnly);
+    QVERIFY(file.open(QIODevice::ReadOnly));
     QList<quint32> buffer;
     QDataStream ds(&file);
     ds >> buffer;

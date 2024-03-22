@@ -157,7 +157,7 @@ void tst_QFileSystemWatcher::basicTest()
     if (isPollerBackend || isQNX)
         QTest::qWait(pollingEngineTimeout);
 
-    testFile.open(QIODevice::WriteOnly | QIODevice::Append);
+    QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Append));
     testFile.write(QByteArray("world"));
     testFile.close();
 
@@ -172,7 +172,7 @@ void tst_QFileSystemWatcher::basicTest()
 
     // remove the watch and modify the file, should not get a signal from the watcher
     QVERIFY(watcher.removePath(testFile.fileName()));
-    testFile.open(QIODevice::WriteOnly | QIODevice::Truncate);
+    QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Truncate));
     testFile.write(QByteArray("hello universe!"));
     testFile.close();
 
@@ -186,7 +186,7 @@ void tst_QFileSystemWatcher::basicTest()
     const QString relativeTestFileName = QDir::current().relativeFilePath(testFile.fileName());
     QVERIFY(!relativeTestFileName.isEmpty());
     QVERIFY(watcher.addPath(relativeTestFileName));
-    testFile.open(QIODevice::WriteOnly | QIODevice::Truncate);
+    QVERIFY(testFile.open(QIODevice::WriteOnly | QIODevice::Truncate));
     testFile.write(QByteArray("hello multiverse!"));
     testFile.close();
 

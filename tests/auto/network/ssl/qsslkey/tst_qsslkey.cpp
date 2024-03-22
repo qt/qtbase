@@ -580,7 +580,7 @@ void tst_QSslKey::passphraseChecks()
     QVERIFY(keyFile.exists());
     {
         if (!keyFile.isOpen())
-            keyFile.open(QIODevice::ReadOnly);
+            QVERIFY(keyFile.open(QIODevice::ReadOnly));
         else
             keyFile.reset();
         QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey);
@@ -588,7 +588,7 @@ void tst_QSslKey::passphraseChecks()
     }
     {
         if (!keyFile.isOpen())
-            keyFile.open(QIODevice::ReadOnly);
+            QVERIFY(keyFile.open(QIODevice::ReadOnly));
         else
             keyFile.reset();
         QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "");
@@ -596,7 +596,7 @@ void tst_QSslKey::passphraseChecks()
     }
     {
         if (!keyFile.isOpen())
-            keyFile.open(QIODevice::ReadOnly);
+            QVERIFY(keyFile.open(QIODevice::ReadOnly));
         else
             keyFile.reset();
         QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "WRONG!");
@@ -604,7 +604,7 @@ void tst_QSslKey::passphraseChecks()
     }
     {
         if (!keyFile.isOpen())
-            keyFile.open(QIODevice::ReadOnly);
+            QVERIFY(keyFile.open(QIODevice::ReadOnly));
         else
             keyFile.reset();
         QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, passphrase);
@@ -622,7 +622,7 @@ void tst_QSslKey::noPassphraseChecks()
     QFile keyFile(fileName);
     {
         if (!keyFile.isOpen())
-            keyFile.open(QIODevice::ReadOnly);
+            QVERIFY(keyFile.open(QIODevice::ReadOnly));
         else
             keyFile.reset();
         QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey);
@@ -630,7 +630,7 @@ void tst_QSslKey::noPassphraseChecks()
     }
     {
         if (!keyFile.isOpen())
-            keyFile.open(QIODevice::ReadOnly);
+            QVERIFY(keyFile.open(QIODevice::ReadOnly));
         else
             keyFile.reset();
         QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "");
@@ -638,7 +638,7 @@ void tst_QSslKey::noPassphraseChecks()
     }
     {
         if (!keyFile.isOpen())
-            keyFile.open(QIODevice::ReadOnly);
+            QVERIFY(keyFile.open(QIODevice::ReadOnly));
         else
             keyFile.reset();
         QSslKey key(&keyFile,QSsl::Rsa,QSsl::Pem, QSsl::PrivateKey, "xxx");

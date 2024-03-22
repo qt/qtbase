@@ -1423,7 +1423,7 @@ void tst_QPixmap::loadFromDataImage()
     QPixmap pixmapWithCopy = QPixmap::fromImage(imageRef);
 
     QFile file(imagePath);
-    file.open(QIODevice::ReadOnly);
+    QVERIFY(file.open(QIODevice::ReadOnly));
     QByteArray rawData = file.readAll();
 
     QPixmap directLoadingPixmap;

@@ -877,13 +877,13 @@ void tst_QFileSystemModel::sort()
     //Create a file that will be at the end when sorting by name (For Mac, the default)
     //but if we sort by size descending it will be the first
     QFile tempFile(dirPath + "/plop2.txt");
-    tempFile.open(QIODevice::WriteOnly | QIODevice::Text);
+    QVERIFY(tempFile.open(QIODevice::WriteOnly | QIODevice::Text));
     QTextStream out(&tempFile);
     out << "The magic number is: " << 49 << "\n";
     tempFile.close();
 
     QFile tempFile2(dirPath + "/plop.txt");
-    tempFile2.open(QIODevice::WriteOnly | QIODevice::Text);
+    QVERIFY(tempFile2.open(QIODevice::WriteOnly | QIODevice::Text));
     QTextStream out2(&tempFile2);
     out2 << "The magic number is : " << 49 << " but i write some stuff in the file \n";
     tempFile2.close();

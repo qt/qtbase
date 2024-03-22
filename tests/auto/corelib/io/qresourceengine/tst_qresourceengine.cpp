@@ -382,7 +382,7 @@ void tst_QResourceEngine::checkStructure_data()
                                                 << qlonglong(info.size());
 
         QFile file(QFINDTESTDATA("testqrc/aliasdir/compressme.txt"));
-        file.open(QFile::ReadOnly);
+        QVERIFY(file.open(QFile::ReadOnly));
         info = QFileInfo(QFINDTESTDATA("testqrc/aliasdir/compressme.txt"));
         QTest::addRow("%s compressed text", qPrintable(root))   << QString(root + "aliasdir/aliasdir.txt")
                                                   << file.readAll()

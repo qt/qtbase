@@ -520,7 +520,7 @@ void tst_QDir::makedirReturnCode()
     // Remove the directory and create a file with the same path
     QDir::current().rmdir(dirName);
     QVERIFY(!f.exists());
-    f.open(QIODevice::WriteOnly);
+    QVERIFY(f.open(QIODevice::WriteOnly));
     f.write("test");
     f.close();
     QVERIFY2(f.exists(), msgDoesNotExist(f.fileName()).constData());
@@ -614,7 +614,7 @@ void tst_QDir::removeRecursivelySymlink()
     QDir().mkpath(tmpdir);
     QDir currentDir;
     currentDir.mkdir("myDir");
-    QFile("testfile").open(QIODevice::WriteOnly);
+    QVERIFY(QFile("testfile").open(QIODevice::WriteOnly));
     const QString link = tmpdir + "linkToDir.lnk";
     const QString linkToFile = tmpdir + "linkToFile.lnk";
 #ifndef Q_NO_SYMLINKS_TO_DIRS
@@ -1081,7 +1081,7 @@ void tst_QDir::entryListWithSymLinks()
     QFile::remove("testfile.cpp");
     QDir dir;
     dir.mkdir("myDir");
-    QFile("testfile.cpp").open(QIODevice::WriteOnly);
+    QVERIFY(QFile("testfile.cpp").open(QIODevice::WriteOnly));
 #  ifndef Q_NO_SYMLINKS_TO_DIRS
     QVERIFY(QFile::link("myDir", "myLinkToDir.lnk"));
 #  endif
@@ -1623,7 +1623,7 @@ void tst_QDir::filePath()
 void tst_QDir::remove()
 {
     QFile f("remove-test");
-    f.open(QIODevice::WriteOnly);
+    QVERIFY(f.open(QIODevice::WriteOnly));
     f.close();
     QDir dir;
     QVERIFY(dir.remove("remove-test"));
@@ -1636,7 +1636,7 @@ void tst_QDir::remove()
 void tst_QDir::rename()
 {
     QFile f("rename-test");
-    f.open(QIODevice::WriteOnly);
+    QVERIFY(f.open(QIODevice::WriteOnly));
     f.close();
     QDir dir;
     QVERIFY(dir.rename("rename-test", "rename-test-renamed"));

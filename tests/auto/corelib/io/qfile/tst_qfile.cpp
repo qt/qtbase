@@ -1117,7 +1117,7 @@ void tst_QFile::missingEndOfLine()
 void tst_QFile::readBlock()
 {
     QFile f( m_testFile );
-    f.open( QIODevice::ReadOnly );
+    QVERIFY( f.open( QIODevice::ReadOnly ) );
 
     int length = 0;
     char p[256];
@@ -1132,7 +1132,7 @@ void tst_QFile::readBlock()
 void tst_QFile::getch()
 {
     QFile f( m_testFile );
-    f.open( QIODevice::ReadOnly );
+    QVERIFY( f.open( QIODevice::ReadOnly ) );
 
     char c;
     int i = 0;
@@ -1670,7 +1670,7 @@ void tst_QFile::absolutePathLinkToRelativePath()
     QFile::remove("myDir/myLink.lnk");
     QDir dir;
     dir.mkdir("myDir");
-    QFile("myDir/test.txt").open(QFile::WriteOnly);
+    QVERIFY(QFile("myDir/test.txt").open(QFile::WriteOnly));
 
 #ifdef Q_OS_WIN
     QVERIFY(QFile::link("test.txt", "myDir/myLink.lnk"));
@@ -1774,7 +1774,7 @@ void tst_QFile::writeTextFile()
     QCOMPARE(file.write(in), qlonglong(in.size()));
     file.close();
 
-    file.open(QFile::ReadOnly);
+    QVERIFY(file.open(QFile::ReadOnly));
     QCOMPARE(file.readAll(), out);
 }
 
@@ -2399,7 +2399,7 @@ void tst_QFile::useQFileInAFileHandler()
 void tst_QFile::getCharFF()
 {
     QFile file("file.txt");
-    file.open(QFile::ReadWrite);
+    QVERIFY(file.open(QFile::ReadWrite));
     file.write("\xff\xff\xff");
     file.flush();
     file.seek(0);
@@ -2502,7 +2502,7 @@ void tst_QFile::fullDisk()
     QVERIFY(!file.isOpen());
     QCOMPARE(file.error(), QFile::ResourceError);
 
-    file.open(QIODevice::WriteOnly);
+    QVERIFY2(file.open(QIODevice::WriteOnly), msgOpenFailed(file).constData());
     QCOMPARE(file.error(), QFile::NoError);
     QVERIFY(file.flush()); // Shouldn't inherit write buffer
     file.close();
@@ -3114,7 +3114,7 @@ void tst_QFile::handle()
     QFile file2;
     StdioFileGuard fp(fopen(qPrintable(m_testSourceFile), "r"));
     QVERIFY(fp);
-    file2.open(fp, QIODevice::ReadOnly);
+    QVERIFY(file2.open(fp, QIODevice::ReadOnly));
     QCOMPARE(int(file2.handle()), int(QT_FILENO(fp)));
     QCOMPARE(int(file2.handle()), int(QT_FILENO(fp)));
     fp.close();
@@ -3123,7 +3123,7 @@ void tst_QFile::handle()
 #ifdef Q_OS_UNIX
     QFile file3;
     fd = QT_OPEN(qPrintable(m_testSourceFile), QT_OPEN_RDONLY);
-    file3.open(fd, QIODevice::ReadOnly);
+    QVERIFY(file3.open(fd, QIODevice::ReadOnly));
     QCOMPARE(int(file3.handle()), fd);
     QT_CLOSE(fd);
 #endif
@@ -3514,7 +3514,7 @@ void tst_QFile::mapOpenMode()
         *memory = 'a';
         file.unmap(memory);
         file.close();
-        file.open(QIODevice::OpenMode(openMode));
+        QVERIFY(file.open(QIODevice::OpenMode(openMode)));
         file.seek(0);
         char c;
         QVERIFY(file.getChar(&c));
@@ -3661,7 +3661,7 @@ void tst_QFile::openStandardStreamsFileDescriptors()
 
     {
         QFile in;
-        in.open(STDIN_FILENO, QIODevice::ReadOnly);
+        QVERIFY(in.open(STDIN_FILENO, QIODevice::ReadOnly));
         QCOMPARE( in.pos(), streamCurrentPosition(STDIN_FILENO) );
         QCOMPARE( in.size(), streamExpectedSize(STDIN_FILENO) );
     }
@@ -3675,7 +3675,7 @@ void tst_QFile::openStandardStreamsFileDescriptors()
 
     {
         QFile err;
-        err.open(STDERR_FILENO, QIODevice::WriteOnly);
+        QVERIFY(err.open(STDERR_FILENO, QIODevice::WriteOnly));
         QCOMPARE( err.pos(), streamCurrentPosition(STDERR_FILENO) );
         QCOMPARE( err.size(), streamExpectedSize(STDERR_FILENO) );
     }
@@ -3691,21 +3691,21 @@ void tst_QFile::openStandardStreamsBufferedStreams()
     // Using streams
     {
         QFile in;
-        in.open(stdin, QIODevice::ReadOnly);
+        QVERIFY(in.open(stdin, QIODevice::ReadOnly));
         QCOMPARE( in.pos(), streamCurrentPosition(stdin) );
         QCOMPARE( in.size(), streamExpectedSize(QT_FILENO(stdin)) );
     }
 
     {
         QFile out;
-        out.open(stdout, QIODevice::WriteOnly);
+        QVERIFY(out.open(stdout, QIODevice::WriteOnly));
         QCOMPARE( out.pos(), streamCurrentPosition(stdout) );
         QCOMPARE( out.size(), streamExpectedSize(QT_FILENO(stdout)) );
     }
 
     {
         QFile err;
-        err.open(stderr, QIODevice::WriteOnly);
+        QVERIFY(err.open(stderr, QIODevice::WriteOnly));
         QCOMPARE( err.pos(), streamCurrentPosition(stderr) );
         QCOMPARE( err.size(), streamExpectedSize(QT_FILENO(stderr)) );
     }

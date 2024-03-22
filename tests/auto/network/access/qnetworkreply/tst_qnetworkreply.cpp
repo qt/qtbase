@@ -3775,7 +3775,7 @@ void tst_QNetworkReply::ioGetFromFtpWithReuse()
         QSKIP("FTP is not supported");
     QString fileName = testDataDir + "/rfc3252.txt";
     QFile reference(fileName);
-    reference.open(QIODevice::ReadOnly);
+    QVERIFY(reference.open(QIODevice::ReadOnly));
 
     QNetworkRequest request(QUrl("ftp://" + QtNetworkSettings::ftpServerName() + "/qtest/rfc3252.txt"));
 
@@ -3905,7 +3905,7 @@ void tst_QNetworkReply::ioGetFromHttpWithAuth_data()
     QTest::addColumn<int>("expectedAuth");
 
     QFile reference(testDataDir + "/rfc3252.txt");
-    reference.open(QIODevice::ReadOnly);
+    QVERIFY(reference.open(QIODevice::ReadOnly));
     QByteArray referenceData = reference.readAll();
     QString httpServer = QtNetworkSettings::httpServerName();
     QTest::newRow("basic")
@@ -8279,7 +8279,7 @@ void tst_QNetworkReply::synchronousRequest()
     if (expected.startsWith("file:")) {
         QString path = expected.mid(5);
         QFile file(path);
-        file.open(QIODevice::ReadOnly);
+        QVERIFY(file.open(QIODevice::ReadOnly));
         expectedContent = file.readAll();
     } else if (expected.startsWith("data:")) {
         expectedContent = expected.mid(5).toUtf8();
@@ -8903,7 +8903,7 @@ protected slots:
 void tst_QNetworkReply::putWithRateLimiting()
 {
     QFile reference(testDataDir + "/rfc3252.txt");
-    reference.open(QIODevice::ReadOnly);
+    QVERIFY(reference.open(QIODevice::ReadOnly));
     QByteArray data = reference.readAll();
     QVERIFY(data.size() > 0);
 

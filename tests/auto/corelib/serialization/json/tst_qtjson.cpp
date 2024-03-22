@@ -2551,7 +2551,7 @@ void tst_QtJson::parseDuplicateKeys()
 void tst_QtJson::testParser()
 {
     QFile file(testDataDir + "/test.json");
-    file.open(QFile::ReadOnly);
+    QVERIFY(file.open(QFile::ReadOnly));
     QByteArray testJson = file.readAll();
 
     QJsonDocument doc = QJsonDocument::fromJson(testJson);
@@ -3136,7 +3136,7 @@ void tst_QtJson::documentEquals()
 void tst_QtJson::bom()
 {
     QFile file(testDataDir + "/bom.json");
-    file.open(QFile::ReadOnly);
+    QVERIFY(file.open(QFile::ReadOnly));
     QByteArray json = file.readAll();
 
     // Import json document into a QJsonDocument

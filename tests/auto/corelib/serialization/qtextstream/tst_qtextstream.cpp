@@ -550,7 +550,7 @@ void tst_QTextStream::readLineMaxlen()
         QFile::remove("testfile");
         QFile file("testfile");
         if (useDevice) {
-            file.open(QIODevice::ReadWrite);
+            QVERIFY(file.open(QIODevice::ReadWrite));
             file.write(input.toUtf8());
             file.seek(0);
             stream.setDevice(&file);
@@ -935,7 +935,8 @@ void tst_QTextStream::lineCount_data()
     QTest::newRow("buffersize+1 line") << QByteArray(16384, '\n') << 16384;
     QTest::newRow("buffersize+2 line") << QByteArray(16385, '\n') << 16385;
 
-    QFile file(m_rfc3261FilePath); file.open(QFile::ReadOnly);
+    QFile file(m_rfc3261FilePath);
+    QVERIFY(file.open(QFile::ReadOnly));
     QTest::newRow("rfc3261") << file.readAll() << 15067;
 }
 
@@ -946,7 +947,7 @@ void tst_QTextStream::lineCount()
     QFETCH(int, lineCount);
 
     QFile out("out.txt");
-    out.open(QFile::WriteOnly);
+    QVERIFY(out.open(QFile::WriteOnly));
 
     QTextStream lineReader(data);
     int lines = 0;
@@ -1408,7 +1409,7 @@ void tst_QTextStream::pos3LargeFile()
 
     {
         QFile file(testFileName);
-        file.open(QIODevice::WriteOnly | QIODevice::Text);
+        QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
         QTextStream out( &file );
         // NOTE: The unusual spacing is to ensure non-1-character whitespace.
         QString lineString = " 0  1  2\t3  4\t \t5  6  7  8   9 \n";
@@ -1419,7 +1420,7 @@ void tst_QTextStream::pos3LargeFile()
         // File is automatically flushed and closed on destruction.
     }
     QFile file(testFileName);
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
     QTextStream in( &file );
     const int testValues[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     int value;
@@ -1516,7 +1517,7 @@ void tst_QTextStream::read()
     {
         QFile::remove("testfile");
         QFile file("testfile");
-        file.open(QFile::WriteOnly);
+        QVERIFY(file.open(QFile::WriteOnly));
         file.write("4.15 abc ole");
         file.close();
 
@@ -1538,7 +1539,7 @@ void tst_QTextStream::read()
         // File larger than QTEXTSTREAM_BUFFERSIZE
         QFile::remove("testfile");
         QFile file("testfile");
-        file.open(QFile::WriteOnly);
+        QVERIFY(file.open(QFile::WriteOnly));
         for (int i = 0; i < 16384 / 8; ++i)
             file.write("01234567");
         file.write("0");
@@ -1594,8 +1595,8 @@ void tst_QTextStream::forceSign()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::read0d0d0a()
 {
-    QFile file("task113817.txt");
-    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    QFile file(QFINDTESTDATA("task113817.txt"));
+    QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
 
     QTextStream stream(&file);
     while (!stream.atEnd())
@@ -1759,7 +1760,7 @@ void tst_QTextStream::utf8IncompleteAtBufferBoundary()
                                              "\342\200\223"
                                              "\342\200\223");
 
-    data.open(QFile::WriteOnly | QFile::Truncate);
+    QVERIFY(data.open(QFile::WriteOnly | QFile::Truncate));
     {
         QTextStream out(&data);
         out.setEncoding(QStringConverter::Utf8);
@@ -1771,7 +1772,7 @@ void tst_QTextStream::utf8IncompleteAtBufferBoundary()
     }
     data.close();
 
-    data.open(QFile::ReadOnly);
+    QVERIFY(data.open(QFile::ReadOnly));
     QTextStream in(&data);
 
     QFETCH(bool, useLocale);

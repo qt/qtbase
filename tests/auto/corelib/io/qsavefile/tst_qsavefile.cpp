@@ -105,7 +105,7 @@ void tst_QSaveFile::transactionalWrite()
     const QString otherFile = dir.path() + QString::fromLatin1("/otherfile");
     QFile::remove(otherFile);
     QFile other(otherFile);
-    other.open(QIODevice::WriteOnly);
+    QVERIFY(other.open(QIODevice::WriteOnly));
     other.close();
     QCOMPARE(QFile::permissions(targetFile), QFile::permissions(otherFile));
 }

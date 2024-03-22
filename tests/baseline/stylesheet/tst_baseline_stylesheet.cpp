@@ -63,7 +63,7 @@ void tst_Stylesheet::loadTestFiles()
     for (const auto &qssFile : qssFiles) {
         QFileInfo fileInfo(qssFile);
         QFile file(qssFile);
-        file.open(QFile::ReadOnly);
+        QVERIFY(file.open(QFile::ReadOnly));
         QString styleSheet = QString::fromUtf8(file.readAll());
         QBaselineTest::newRow(fileInfo.baseName().toUtf8()) << styleSheet;
     }

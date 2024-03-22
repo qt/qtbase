@@ -205,7 +205,7 @@ void tst_QColorSpace::fromIccProfile()
     QFETCH(QString, description);
 
     QFile file(testProfile);
-    file.open(QIODevice::ReadOnly);
+    QVERIFY(file.open(QIODevice::ReadOnly));
     QByteArray iccProfile = file.readAll();
     QColorSpace fileColorSpace = QColorSpace::fromIccProfile(iccProfile);
     QVERIFY(fileColorSpace.isValid());
@@ -538,8 +538,8 @@ void tst_QColorSpace::imageConversionOverNonThreeComponentMatrix_data()
     QString prefix = QFINDTESTDATA("resources/");
     QFile file1(prefix + "VideoHD.icc");
     QFile file2(prefix + "sRGB_ICC_v4_Appearance.icc");
-    file1.open(QFile::ReadOnly);
-    file2.open(QFile::ReadOnly);
+    QVERIFY(file1.open(QFile::ReadOnly));
+    QVERIFY(file2.open(QFile::ReadOnly));
     QByteArray iccProfile1 = file1.readAll();
     QByteArray iccProfile2 = file2.readAll();
     QColorSpace hdtvColorSpace = QColorSpace::fromIccProfile(iccProfile1);
@@ -772,7 +772,7 @@ void tst_QColorSpace::changePrimaries()
 
 
     QFile iccFile(QFINDTESTDATA("resources/") + "VideoHD.icc");
-    iccFile.open(QFile::ReadOnly);
+    QVERIFY(iccFile.open(QFile::ReadOnly));
     QByteArray iccData = iccFile.readAll();
     QColorSpace hdtvColorSpace = QColorSpace::fromIccProfile(iccData);
     QVERIFY(hdtvColorSpace.isValid());

@@ -171,7 +171,7 @@ void tst_QIODevice::constructing_QFile()
 void tst_QIODevice::read_QByteArray()
 {
     QFile f(QFINDTESTDATA("tst_qiodevice.cpp"));
-    f.open(QIODevice::ReadOnly);
+    QVERIFY(f.open(QIODevice::ReadOnly));
 
     QByteArray b = f.read(10);
     QCOMPARE(b.size(), 10);

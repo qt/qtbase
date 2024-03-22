@@ -1054,7 +1054,7 @@ void tst_QRawFont::qtbug65923_partal_clone_data()
 void tst_QRawFont::qtbug65923_partal_clone()
 {
     QFile file(testFont);
-    file.open(QIODevice::ReadOnly);
+    QVERIFY(file.open(QIODevice::ReadOnly));
     QByteArray fontData = file.readAll();
 
     QRawFont outerFont;

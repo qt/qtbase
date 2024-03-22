@@ -1943,7 +1943,7 @@ void tst_QXmlStream::tokenErrorHandling() const
     if (!file.exists())
         QSKIP(QObject::tr("Testfile %1 not found.").arg(fileName).toUtf8().constData());
 
-    file.open(QIODevice::ReadOnly);
+    QVERIFY(file.open(QIODevice::ReadOnly));
     QXmlStreamReader reader(&file);
     while (!reader.atEnd())
         reader.readNext();
@@ -1960,7 +1960,7 @@ void tst_QXmlStream::checkStreamNotationDeclarations() const
     QFile file(dir.absoluteFilePath(fileName));
     if (!file.exists())
         QSKIP(QObject::tr("Testfile %1 not found.").arg(fileName).toUtf8().constData());
-    file.open(QIODevice::ReadOnly);
+    QVERIFY(file.open(QIODevice::ReadOnly));
     QXmlStreamReader reader(&file);
     while (!reader.atEnd())
         reader.readNext();
@@ -1985,7 +1985,7 @@ void tst_QXmlStream::checkStreamEntityDeclarations() const
     QFile file(dir.absoluteFilePath(fileName));
     if (!file.exists())
         QSKIP(QObject::tr("Testfile %1 not found.").arg(fileName).toUtf8().constData());
-    file.open(QIODevice::ReadOnly);
+    QVERIFY(file.open(QIODevice::ReadOnly));
     QXmlStreamReader reader(&file);
     while (!reader.atEnd())
         reader.readNext();

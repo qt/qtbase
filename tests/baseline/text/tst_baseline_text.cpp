@@ -49,7 +49,7 @@ void tst_Text::loadTestFiles()
     for (const auto &htmlFile : htmlFiles) {
         QFileInfo fileInfo(htmlFile);
         QFile file(htmlFile);
-        file.open(QFile::ReadOnly);
+        QVERIFY(file.open(QFile::ReadOnly));
         QString html = QString::fromUtf8(file.readAll());
         QBaselineTest::newRow(fileInfo.baseName().toUtf8()) << html;
     }

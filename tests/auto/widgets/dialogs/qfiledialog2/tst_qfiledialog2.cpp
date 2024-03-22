@@ -1252,7 +1252,7 @@ void tst_QFileDialog2::QTBUG6558_showDirsOnly()
 
     //Create a file
     QFile tempFile(dirPath + "/plop.txt");
-    tempFile.open(QIODevice::WriteOnly | QIODevice::Text);
+    QVERIFY(tempFile.open(QIODevice::WriteOnly | QIODevice::Text));
     QTextStream out(&tempFile);
     out << "The magic number is: " << 49 << "\n";
     tempFile.close();

@@ -3936,13 +3936,13 @@ void tst_QDataStream::typedefQt5Compat()
         QTemporaryDir dir;
         QVERIFY(dir.isValid());
         QFile file(dir.filePath(u"typedef.q6"_s));
-        file.open(QIODevice::WriteOnly);
+        QVERIFY(file.open(QIODevice::WriteOnly));
         QDataStream stream(&file);
         stream.setVersion(QDataStream::Qt_5_15);
         CustomPair p {42, 100};
         stream << QVariant::fromValue(p);
         file.close();
-        file.open(QIODevice::ReadOnly);
+        QVERIFY(file.open(QIODevice::ReadOnly));
         QCOMPARE(file.readAll(), qt5Data);
     }
 }

@@ -82,9 +82,7 @@ static void generateDataFromFile(const QString &fname, const QSet<QString> &skip
     QString testFile = QFINDTESTDATA(fname);
     QVERIFY2(!testFile.isEmpty(), (fname.toLatin1() + QByteArray(" not found!")));
     QFile f(testFile);
-    QVERIFY(f.exists());
-
-    f.open(QIODevice::ReadOnly);
+    QVERIFY(f.open(QIODevice::ReadOnly));
 
     int linenum = 0;
     while (!f.atEnd()) {

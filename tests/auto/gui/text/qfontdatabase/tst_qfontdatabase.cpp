@@ -231,7 +231,7 @@ void tst_QFontDatabase::addAppFont()
     int id;
     if (useMemoryFont) {
         QFile fontfile(m_ledFont);
-        fontfile.open(QIODevice::ReadOnly);
+        QVERIFY(fontfile.open(QIODevice::ReadOnly));
         QByteArray fontdata = fontfile.readAll();
         QVERIFY(!fontdata.isEmpty());
         id = QFontDatabase::addApplicationFontFromData(fontdata);
