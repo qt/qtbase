@@ -23,13 +23,7 @@ class QDebug;
 namespace QtPrivate {
 
 template <typename T>
-inline constexpr bool qIsRelocatable = (std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>)
-#if defined(__has_builtin)
-#if __has_builtin(__is_trivially_relocatable)
-                                       || __is_trivially_relocatable(T)
-#endif
-#endif
-    ;
+inline constexpr bool qIsRelocatable =  std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>;
 
 // Denotes types that are trivially default constructible, and for which
 // value-initialization can be achieved by filling their storage with 0 bits.

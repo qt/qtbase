@@ -930,20 +930,6 @@ struct Trivial1
 static_assert(!QTypeInfo<Trivial1>::isComplex);
 static_assert(QTypeInfo<Trivial1>::isRelocatable);
 
-#if defined(__has_builtin)
-#if __has_builtin(__is_trivially_relocatable) && __has_attribute(trivial_abi)
-struct [[clang::trivial_abi]] TrivialAbi1
-{
-    ~TrivialAbi1();
-    TrivialAbi1(TrivialAbi1 &&);
-};
-static_assert(__has_builtin(__is_trivially_relocatable));
-static_assert(__is_trivially_relocatable(TrivialAbi1));
-static_assert(QTypeInfo<TrivialAbi1>::isComplex);
-static_assert(QTypeInfo<TrivialAbi1>::isRelocatable);
-#endif
-#endif
-
 QT_END_NAMESPACE
 
 QTEST_APPLESS_MAIN(tst_QGlobal)
