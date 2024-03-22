@@ -20,8 +20,9 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-class QXdgDesktopPortalThemePrivate : public QPlatformThemePrivate
-{
+class QXdgDesktopPortalThemePrivate : public QObject
+    {
+    Q_OBJECT
 public:
     enum XdgColorschemePref {
         None,
@@ -30,7 +31,7 @@ public:
     };
 
     QXdgDesktopPortalThemePrivate()
-        : QPlatformThemePrivate()
+        : QObject()
     { }
 
     ~QXdgDesktopPortalThemePrivate()
@@ -62,6 +63,17 @@ public:
         }
     }
 
+public Q_SLOTS:
+    void settingChanged(const QString &group, const QString &key,
+                        const QDBusVariant &value)
+    {
+        if (group == "org.freedesktop.appearance"_L1 && key == "color-scheme"_L1) {
+            colorScheme = colorSchemeFromXdgPref(static_cast<XdgColorschemePref>(value.variant().toUInt()));
+            QWindowSystemInterface::handleThemeChange();
+        }
+    }
+
+public:
     QPlatformTheme *baseTheme = nullptr;
     uint fileChooserPortalVersion = 0;
     Qt::ColorScheme colorScheme = Qt::ColorScheme::Unknown;
@@ -126,6 +138,11 @@ QXdgDesktopPortalTheme::QXdgDesktopPortalTheme()
         const QXdgDesktopPortalThemePrivate::XdgColorschemePref xdgPref = static_cast<QXdgDesktopPortalThemePrivate::XdgColorschemePref>(dbusVariant.variant().toUInt());
         d->colorScheme = QXdgDesktopPortalThemePrivate::colorSchemeFromXdgPref(xdgPref);
     }
+
+    QDBusConnection::sessionBus().connect(
+            "org.freedesktop.portal.Desktop"_L1, "/org/freedesktop/portal/desktop"_L1,
+            "org.freedesktop.portal.Settings"_L1, "SettingChanged"_L1, d_ptr.get(),
+            SLOT(settingChanged(QString, QString, QDBusVariant)));
 }
 
 QPlatformMenuItem* QXdgDesktopPortalTheme::createPlatformMenuItem() const
@@ -247,3 +264,5 @@ QString QXdgDesktopPortalTheme::standardButtonText(int button) const
 }
 
 QT_END_NAMESPACE
+
+#include "qxdgdesktopportaltheme.moc"
