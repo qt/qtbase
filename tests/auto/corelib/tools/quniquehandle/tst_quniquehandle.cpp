@@ -248,7 +248,7 @@ private slots:
         {
             using Type = int;
 
-            static bool close(Type handle)
+            static bool close(Type)
             {
                 return true;
             }
