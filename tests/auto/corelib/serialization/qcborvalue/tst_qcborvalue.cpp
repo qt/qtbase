@@ -461,6 +461,8 @@ void tst_QCborValue::compareCompiles()
     QTestPrivate::testAllComparisonOperatorsCompile<QCborArray::Iterator>();
     QTestPrivate::testAllComparisonOperatorsCompile<QCborArray::ConstIterator>();
     QTestPrivate::testAllComparisonOperatorsCompile<QCborMap>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborMap::Iterator>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborMap::ConstIterator>();
 
     // QCborValue, Ref and ConstRef
     QTestPrivate::testAllComparisonOperatorsCompile<QCborValueRef, QCborValueConstRef>();
@@ -744,6 +746,13 @@ void tst_QCborValue::mapNonEmptyDetach()
     { QCborMap copy(m); auto it = m.find(QLatin1String("3")); QVERIFY(it == m.end()); }
     { QCborMap copy(m); auto it = m.find(QString("3")); QVERIFY(it == m.end()); }
     { QCborMap copy(m); auto it = m.find(QCborValue(3)); QVERIFY(it == m.end()); }
+
+    QT_TEST_EQUALITY_OPS(m.constBegin(), m.constEnd(), false);
+    QT_TEST_EQUALITY_OPS(m.begin(), m.end(), false);
+    QT_TEST_EQUALITY_OPS(m.constFind(3), m.constEnd(), true);
+    QT_TEST_EQUALITY_OPS(m.find(3), m.end(), true);
+    QT_TEST_EQUALITY_OPS(m.find(3), m.constEnd(), true);
+    QT_TEST_EQUALITY_OPS(m.constFind(3), m.end(), true);
 }
 
 void tst_QCborValue::arrayInitializerList()
@@ -1179,8 +1188,18 @@ void tst_QCborValue::mapMutation()
     m2 = m;
     auto it = m.begin();    // detaches again
     auto end = m.end();
+    auto it1 = m.constBegin();    // detaches again
+    auto end2 = m.constEnd();
     QCOMPARE(end - it, 2);
+    QT_TEST_ALL_COMPARISON_OPS(it, it + 1, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(it, it1 + 1, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(it, it - 1, Qt::strong_ordering::greater);
+    QT_TEST_ALL_COMPARISON_OPS(it, it1 - 1, Qt::strong_ordering::greater);
+    QT_TEST_EQUALITY_OPS(it, it1, true);
     QCOMPARE(it + 2, end);
+    QT_TEST_EQUALITY_OPS(it + 2, end, true);
+    QT_TEST_EQUALITY_OPS(it + 2, end2, true);
+    QT_TEST_EQUALITY_OPS(it1 + 2, end2, true);
     QT_TEST_EQUALITY_OPS(it.key(), QCborValue(42), true);
     QT_TEST_EQUALITY_OPS(it.value(), QCborValue(2.5), true);
     QT_TEST_EQUALITY_OPS((++it).value(), QCborValue(nullptr), true);

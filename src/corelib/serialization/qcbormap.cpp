@@ -1238,6 +1238,10 @@ void QCborMap::detach(qsizetype reserved)
 
     \brief The QCborMap::Iterator class provides an STL-style non-const iterator for QCborMap.
 
+    \compares strong
+    \compareswith strong ConstIterator
+    \endcompareswith
+
     QCborMap::Iterator allows you to iterate over a QCborMap and to modify the
     value (but not the key) stored under a particular key. If you want to
     iterate over a const QCborMap, you should use QCborMap::ConstIterator. It
@@ -1359,56 +1363,56 @@ void QCborMap::detach(qsizetype reserved)
 */
 
 /*!
-    \fn bool QCborMap::Iterator::operator==(const Iterator &other) const
-    \fn bool QCborMap::Iterator::operator==(const ConstIterator &other) const
+    \fn bool QCborMap::Iterator::operator==(const Iterator &lhs, const Iterator &rhs)
+    \fn bool QCborMap::Iterator::operator==(const Iterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if \a other points to the same entry in the map as this
+    Returns \c true if \a lhs points to the same entry in the map as \a rhs
     iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
 
 /*!
-    \fn bool QCborMap::Iterator::operator!=(const Iterator &other) const
-    \fn bool QCborMap::Iterator::operator!=(const ConstIterator &other) const
+    \fn bool QCborMap::Iterator::operator!=(const Iterator &lhs, const Iterator &rhs)
+    \fn bool QCborMap::Iterator::operator!=(const Iterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if \a other points to a different entry in the map than
-    this iterator; otherwise returns \c false.
+    Returns \c true if \a lhs points to a different entry in the map than
+    \a rhs iterator; otherwise returns \c false.
 
     \sa operator==()
 */
 
 /*!
-    \fn bool QCborMap::Iterator::operator<(const Iterator& other) const
-    \fn bool QCborMap::Iterator::operator<(const ConstIterator& other) const
+    \fn bool QCborMap::Iterator::operator<(const Iterator &lhs, const Iterator &rhs)
+    \fn bool QCborMap::Iterator::operator<(const Iterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the map pointed to by this iterator
-    occurs before the entry pointed to by the \a other iterator.
+    Returns \c true if the entry in the map pointed to by \a lhs iterator
+    occurs before the entry pointed to by the \a rhs iterator.
 */
 
 /*!
-    \fn bool QCborMap::Iterator::operator<=(const Iterator& other) const
-    \fn bool QCborMap::Iterator::operator<=(const ConstIterator& other) const
+    \fn bool QCborMap::Iterator::operator<=(const Iterator &lhs, const Iterator &rhs)
+    \fn bool QCborMap::Iterator::operator<=(const Iterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the map pointed to by this iterator
-    occurs before or is the same entry as is pointed to by the \a other
+    Returns \c true if the entry in the map pointed to by \a lhs iterator
+    occurs before or is the same entry as is pointed to by the \a rhs
     iterator.
 */
 
 /*!
-    \fn bool QCborMap::Iterator::operator>(const Iterator& other) const
-    \fn bool QCborMap::Iterator::operator>(const ConstIterator& other) const
+    \fn bool QCborMap::Iterator::operator>(const Iterator &lhs, const Iterator &rhs)
+    \fn bool QCborMap::Iterator::operator>(const Iterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the map pointed to by this iterator
-    occurs after the entry pointed to by the \a other iterator.
+    Returns \c true if the entry in the map pointed to by \a lhs iterator
+    occurs after the entry pointed to by the \a rhs iterator.
  */
 
 /*!
-    \fn bool QCborMap::Iterator::operator>=(const Iterator& other) const
-    \fn bool QCborMap::Iterator::operator>=(const ConstIterator& other) const
+    \fn bool QCborMap::Iterator::operator>=(const Iterator &lhs, const Iterator &rhs)
+    \fn bool QCborMap::Iterator::operator>=(const Iterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the map pointed to by this iterator
-    occurs after or is the same entry as is pointed to by the \a other
+    Returns \c true if the entry in the map pointed to by \a lhs iterator
+    occurs after or is the same entry as is pointed to by the \a rhs
     iterator.
 */
 
@@ -1503,6 +1507,10 @@ void QCborMap::detach(qsizetype reserved)
     \since 5.12
 
     \brief The QCborMap::ConstIterator class provides an STL-style const iterator for QCborMap.
+
+    \compares strong
+    \compareswith strong Iterator
+    \endcompareswith
 
     QCborMap::ConstIterator allows you to iterate over a QCborMap. If you want
     to modify the QCborMap as you iterate over it, you must use
@@ -1604,56 +1612,50 @@ void QCborMap::detach(qsizetype reserved)
  */
 
 /*!
-    \fn bool QCborMap::ConstIterator::operator==(const ConstIterator &other) const
-    \fn bool QCborMap::ConstIterator::operator==(const Iterator &other) const
+    \fn bool QCborMap::ConstIterator::operator==(const ConstIterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if \a other points to the same entry in the map as this
+    Returns \c true if \a lhs points to the same entry in the map as \a rhs
     iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
 
 /*!
-    \fn bool QCborMap::ConstIterator::operator!=(const ConstIterator &other) const
-    \fn bool QCborMap::ConstIterator::operator!=(const Iterator &other) const
+    \fn bool QCborMap::ConstIterator::operator!=(const ConstIterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if \a other points to a different entry in the map than
-    this iterator; otherwise returns \c false.
+    Returns \c true if \a lhs points to a different entry in the map than
+    \a rhs iterator; otherwise returns \c false.
 
     \sa operator==()
  */
 
 /*!
-    \fn bool QCborMap::ConstIterator::operator<(const Iterator &other) const
-    \fn bool QCborMap::ConstIterator::operator<(const ConstIterator &other) const
+    \fn bool QCborMap::ConstIterator::operator<(const ConstIterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the map pointed to by this iterator
-    occurs before the entry pointed to by the \a other iterator.
+    Returns \c true if the entry in the map pointed to by \a lhs iterator
+    occurs before the entry pointed to by the \a rhs iterator.
 */
 
 /*!
-    \fn bool QCborMap::ConstIterator::operator<=(const Iterator &other) const
-    \fn bool QCborMap::ConstIterator::operator<=(const ConstIterator &other) const
+    \fn bool QCborMap::ConstIterator::operator<=(const ConstIterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the map pointed to by this iterator
-    occurs before or is the same entry as is pointed to by the \a other
+    Returns \c true if the entry in the map pointed to by \a lhs iterator
+    occurs before or is the same entry as is pointed to by the \a rhs
     iterator.
 */
 
 /*!
-    \fn bool QCborMap::ConstIterator::operator>(const Iterator &other) const
-    \fn bool QCborMap::ConstIterator::operator>(const ConstIterator &other) const
+    \fn bool QCborMap::ConstIterator::operator>(const ConstIterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the map pointed to by this iterator
-    occurs after the entry pointed to by the \a other iterator.
+    Returns \c true if the entry in the map pointed to by \a lhs iterator
+    occurs after the entry pointed to by the \a rhs iterator.
 */
 
 /*!
-    \fn bool QCborMap::ConstIterator::operator>=(const Iterator &other) const
-    \fn bool QCborMap::ConstIterator::operator>=(const ConstIterator &other) const
+    \fn bool QCborMap::ConstIterator::operator>=(const ConstIterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the map pointed to by this iterator
-    occurs after or is the same entry as is pointed to by the \a other
+    Returns \c true if the entry in the map pointed to by \a lhs iterator
+    occurs after or is the same entry as is pointed to by the \a rhs
     iterator.
 */
 

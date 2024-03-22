@@ -61,18 +61,20 @@ public:
         key() const { return QCborValueRef(item.d, item.i - 1); }
         QCborValueRef value() const { return item; }
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
         bool operator==(const Iterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
-        bool operator!=(const Iterator &o) const { return !(*this == o); }
+        bool operator!=(const Iterator &o) const { return !operator==(o); }
         bool operator<(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i < other.item.i; }
         bool operator<=(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i <= other.item.i; }
         bool operator>(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i > other.item.i; }
         bool operator>=(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i >= other.item.i; }
         bool operator==(const ConstIterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
-        bool operator!=(const ConstIterator &o) const { return !(*this == o); }
+        bool operator!=(const ConstIterator &o) const { return !operator==(o); }
         bool operator<(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i < other.item.i; }
         bool operator<=(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i <= other.item.i; }
         bool operator>(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i > other.item.i; }
         bool operator>=(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i >= other.item.i; }
+#endif
         Iterator &operator++() { item.i += 2; return *this; }
         Iterator operator++(int) { Iterator n = *this; item.i += 2; return n; }
         Iterator &operator--() { item.i -= 2; return *this; }
@@ -82,6 +84,54 @@ public:
         Iterator operator+(qsizetype j) const { return Iterator({ item.d, item.i + 2 * j }); }
         Iterator operator-(qsizetype j) const { return Iterator({ item.d, item.i - 2 * j }); }
         qsizetype operator-(Iterator j) const { return (item.i - j.item.i) / 2; }
+
+    private:
+        // Helper functions
+        static bool comparesEqual_helper(const Iterator &lhs, const Iterator &rhs) noexcept
+        {
+            return lhs.item.d == rhs.item.d && lhs.item.i == rhs.item.i;
+        }
+
+        static bool comparesEqual_helper(const Iterator &lhs, const ConstIterator &rhs) noexcept
+        {
+            return lhs.item.d == rhs.item.d && lhs.item.i == rhs.item.i;
+        }
+
+        static Qt::strong_ordering compareThreeWay_helper(const Iterator &lhs,
+                                                          const Iterator &rhs) noexcept
+        {
+            Q_ASSERT(lhs.item.d == rhs.item.d);
+            return Qt::compareThreeWay(lhs.item.i, rhs.item.i);
+        }
+
+        static Qt::strong_ordering compareThreeWay_helper(const Iterator &lhs,
+                                                          const ConstIterator &rhs) noexcept
+        {
+            Q_ASSERT(lhs.item.d == rhs.item.d);
+            return Qt::compareThreeWay(lhs.item.i, rhs.item.i);
+        }
+
+        // Compare friends
+        friend bool comparesEqual(const Iterator &lhs, const Iterator &rhs) noexcept
+        {
+            return comparesEqual_helper(lhs, rhs);
+        }
+        friend Qt::strong_ordering compareThreeWay(const Iterator &lhs,
+                                                   const Iterator &rhs) noexcept
+        {
+            return compareThreeWay_helper(lhs, rhs);
+        }
+        Q_DECLARE_STRONGLY_ORDERED(Iterator)
+        friend bool comparesEqual(const Iterator &lhs, const ConstIterator &rhs) noexcept
+        {
+            return comparesEqual_helper(lhs, rhs);
+        }
+        friend Qt::strong_ordering compareThreeWay(const Iterator &lhs,
+                                                   const ConstIterator &rhs) noexcept
+        {
+            return compareThreeWay_helper(lhs, rhs);
+        }
+        Q_DECLARE_STRONGLY_ORDERED(Iterator, ConstIterator)
     };
 
     class ConstIterator {
@@ -121,18 +171,20 @@ public:
         key() const { return QCborValueRef(item.d, item.i - 1); }
         QCborValueConstRef value() const { return item; }
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
         bool operator==(const Iterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
-        bool operator!=(const Iterator &o) const { return !(*this == o); }
+        bool operator!=(const Iterator &o) const { return !operator==(o); }
         bool operator<(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i < other.item.i; }
         bool operator<=(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i <= other.item.i; }
         bool operator>(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i > other.item.i; }
         bool operator>=(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i >= other.item.i; }
         bool operator==(const ConstIterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
-        bool operator!=(const ConstIterator &o) const { return !(*this == o); }
+        bool operator!=(const ConstIterator &o) const { return !operator==(o); }
         bool operator<(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i < other.item.i; }
         bool operator<=(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i <= other.item.i; }
         bool operator>(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i > other.item.i; }
         bool operator>=(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i >= other.item.i; }
+#endif
         ConstIterator &operator++() { item.i += 2; return *this; }
         ConstIterator operator++(int) { ConstIterator n = *this; item.i += 2; return n; }
         ConstIterator &operator--() { item.i -= 2; return *this; }
@@ -142,6 +194,31 @@ public:
         ConstIterator operator+(qsizetype j) const { return ConstIterator{ item.d, item.i + 2 * j }; }
         ConstIterator operator-(qsizetype j) const { return ConstIterator{ item.d, item.i - 2 * j }; }
         qsizetype operator-(ConstIterator j) const { return (item.i - j.item.i) / 2; }
+    private:
+        // Helper functions
+        static bool comparesEqual_helper(const ConstIterator &lhs,
+                                         const ConstIterator &rhs) noexcept
+        {
+            return lhs.item.d == rhs.item.d && lhs.item.i == rhs.item.i;
+        }
+        static Qt::strong_ordering compareThreeWay_helper(const ConstIterator &lhs,
+                                                          const ConstIterator &rhs) noexcept
+        {
+            Q_ASSERT(lhs.item.d == rhs.item.d);
+            return Qt::compareThreeWay(lhs.item.i, rhs.item.i);
+        }
+
+        // Compare friends
+        friend bool comparesEqual(const ConstIterator &lhs, const ConstIterator &rhs) noexcept
+        {
+            return comparesEqual_helper(lhs, rhs);
+        }
+        friend Qt::strong_ordering compareThreeWay(const ConstIterator &lhs,
+                                                   const ConstIterator &rhs) noexcept
+        {
+            return compareThreeWay_helper(lhs, rhs);
+        }
+        Q_DECLARE_STRONGLY_ORDERED(ConstIterator)
     };
 
     QCborMap()  noexcept;
@@ -169,25 +246,25 @@ public:
     QList<QCborValue> keys() const;
 
     QCborValue value(qint64 key) const
-    { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
+    { const_iterator it = find(key); return comparesEqual(it, end()) ? QCborValue() : it.value(); }
     QCborValue value(QLatin1StringView key) const
-    { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
+    { const_iterator it = find(key); return comparesEqual(it, end()) ? QCborValue() : it.value(); }
     QCborValue value(const QString & key) const
-    { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
+    { const_iterator it = find(key); return comparesEqual(it, end()) ? QCborValue() : it.value(); }
     QCborValue value(const QCborValue &key) const
-    { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
+    { const_iterator it = find(key); return comparesEqual(it, end()) ? QCborValue() : it.value(); }
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     template<size_t N> QT_ASCII_CAST_WARN const QCborValue value(const char (&key)[N]) const
     { return value(QString::fromUtf8(key, N - 1)); }
 #endif
     const QCborValue operator[](qint64 key) const
-    { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
+    { const_iterator it = find(key); return comparesEqual(it, end()) ? QCborValue() : it.value(); }
     const QCborValue operator[](QLatin1StringView key) const
-    { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
+    { const_iterator it = find(key); return comparesEqual(it, end()) ? QCborValue() : it.value(); }
     const QCborValue operator[](const QString & key) const
-    { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
+    { const_iterator it = find(key); return comparesEqual(it, end()) ? QCborValue() : it.value(); }
     const QCborValue operator[](const QCborValue &key) const
-    { const_iterator it = find(key); return it == end() ? QCborValue() : it.value(); }
+    { const_iterator it = find(key); return comparesEqual(it, end()) ? QCborValue() : it.value(); }
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
     template<size_t N> QT_ASCII_CAST_WARN const QCborValue operator[](const char (&key)[N]) const
     { return operator[](QString::fromUtf8(key, N - 1)); }
@@ -198,29 +275,29 @@ public:
     QCborValueRef operator[](const QCborValue &key);
 
     QCborValue take(qint64 key)
-    { const_iterator it = constFind(key); if (it != constEnd()) return extract(it); return QCborValue(); }
+    { const_iterator it = constFind(key); if (!comparesEqual(it, constEnd())) return extract(it); return QCborValue(); }
     QCborValue take(QLatin1StringView key)
-    { const_iterator it = constFind(key); if (it != constEnd()) return extract(it); return QCborValue(); }
+    { const_iterator it = constFind(key); if (!comparesEqual(it, constEnd())) return extract(it); return QCborValue(); }
     QCborValue take(const QString &key)
-    { const_iterator it = constFind(key); if (it != constEnd()) return extract(it); return QCborValue(); }
+    { const_iterator it = constFind(key); if (!comparesEqual(it, constEnd())) return extract(it); return QCborValue(); }
     QCborValue take(const QCborValue &key)
-    { const_iterator it = constFind(key); if (it != constEnd()) return extract(it); return QCborValue(); }
+    { const_iterator it = constFind(key); if (!comparesEqual(it, constEnd())) return extract(it); return QCborValue(); }
     void remove(qint64 key)
-    { const_iterator it = constFind(key); if (it != constEnd()) erase(it); }
+    { const_iterator it = constFind(key); if (!comparesEqual(it, constEnd())) erase(it); }
     void remove(QLatin1StringView key)
-    { const_iterator it = constFind(key); if (it != constEnd()) erase(it); }
+    { const_iterator it = constFind(key); if (!comparesEqual(it, constEnd())) erase(it); }
     void remove(const QString & key)
-    { const_iterator it = constFind(key); if (it != constEnd()) erase(it); }
+    { const_iterator it = constFind(key); if (!comparesEqual(it, constEnd())) erase(it); }
     void remove(const QCborValue &key)
-    { const_iterator it = constFind(key); if (it != constEnd()) erase(it); }
+    { const_iterator it = constFind(key); if (!comparesEqual(it, constEnd())) erase(it); }
     bool contains(qint64 key) const
-    { const_iterator it = find(key); return it != end(); }
+    { const_iterator it = find(key); return !comparesEqual(it, end()); }
     bool contains(QLatin1StringView key) const
-    { const_iterator it = find(key); return it != end(); }
+    { const_iterator it = find(key); return !comparesEqual(it, end()); }
     bool contains(const QString & key) const
-    { const_iterator it = find(key); return it != end(); }
+    { const_iterator it = find(key); return !comparesEqual(it, end()); }
     bool contains(const QCborValue &key) const
-    { const_iterator it = find(key); return it != end(); }
+    { const_iterator it = find(key); return !comparesEqual(it, end()); }
 
     int compare(const QCborMap &other) const noexcept Q_DECL_PURE_FUNCTION;
 #if QT_CORE_REMOVED_SINCE(6, 8)
