@@ -4,6 +4,7 @@
 #ifndef QPOINT_H
 #define QPOINT_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qnamespace.h>
 
 #include <QtCore/q20type_traits.h>
@@ -51,10 +52,10 @@ public:
     constexpr static inline int dotProduct(const QPoint &p1, const QPoint &p2)
     { return p1.xp * p2.xp + p1.yp * p2.yp; }
 
-    friend constexpr inline bool operator==(const QPoint &p1, const QPoint &p2) noexcept
+private:
+    friend constexpr bool comparesEqual(const QPoint &p1, const QPoint &p2) noexcept
     { return p1.xp == p2.xp && p1.yp == p2.yp; }
-    friend constexpr inline bool operator!=(const QPoint &p1, const QPoint &p2) noexcept
-    { return p1.xp != p2.xp || p1.yp != p2.yp; }
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QPoint)
     friend constexpr inline QPoint operator+(const QPoint &p1, const QPoint &p2) noexcept
     { return QPoint(p1.xp + p2.xp, p1.yp + p2.yp); }
     friend constexpr inline QPoint operator-(const QPoint &p1, const QPoint &p2) noexcept
@@ -78,6 +79,7 @@ public:
     friend constexpr inline QPoint operator/(const QPoint &p, qreal c)
     { return QPoint(qRound(p.xp / c), qRound(p.yp / c)); }
 
+public:
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     [[nodiscard]] Q_CORE_EXPORT CGPoint toCGPoint() const noexcept;
 #endif
@@ -241,19 +243,19 @@ public:
         return p1.xp * p2.xp + p1.yp * p2.yp;
     }
 
+private:
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_FLOAT_COMPARE
-    friend constexpr inline bool operator==(const QPointF &p1, const QPointF &p2)
+    friend constexpr bool comparesEqual(const QPointF &p1, const QPointF &p2) noexcept
     {
         return ((!p1.xp || !p2.xp) ? qFuzzyIsNull(p1.xp - p2.xp) : qFuzzyCompare(p1.xp, p2.xp))
             && ((!p1.yp || !p2.yp) ? qFuzzyIsNull(p1.yp - p2.yp) : qFuzzyCompare(p1.yp, p2.yp));
     }
-    friend constexpr inline bool operator!=(const QPointF &p1, const QPointF &p2)
-    {
-        return !(p1 == p2);
-    }
     QT_WARNING_POP
-
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QPointF)
+    friend constexpr bool comparesEqual(const QPointF &p1, const QPoint &p2) noexcept
+    { return comparesEqual(p1, p2.toPointF()); }
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QPointF, QPoint)
     friend constexpr inline QPointF operator+(const QPointF &p1, const QPointF &p2)
     { return QPointF(p1.xp + p2.xp, p1.yp + p2.yp); }
     friend constexpr inline QPointF operator-(const QPointF &p1, const QPointF &p2)
@@ -272,6 +274,7 @@ public:
         return QPointF(p.xp / divisor, p.yp / divisor);
     }
 
+public:
     constexpr QPoint toPoint() const;
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)

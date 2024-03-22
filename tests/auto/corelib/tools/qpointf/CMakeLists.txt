@@ -14,4 +14,6 @@ endif()
 qt_internal_add_test(tst_qpointf
     SOURCES
         tst_qpointf.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )

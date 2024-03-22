@@ -5,6 +5,7 @@
 #ifdef QVARIANT_H
 # error "This test requires qpoint.h to not include qvariant.h"
 #endif
+#include <private/qcomparisontesthelper_p.h>
 
 // don't assume <type_traits>
 template <typename T, typename U>
@@ -71,6 +72,7 @@ private slots:
     void operator_unary_minus_data();
     void operator_unary_minus();
 
+    void operatorsCompile();
     void operator_eq_data();
     void operator_eq();
 
@@ -345,21 +347,29 @@ void tst_QPointF::operator_unary_minus()
     QCOMPARE(-point, expected);
 }
 
+void tst_QPointF::operatorsCompile()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QPointF>();
+    QTestPrivate::testEqualityOperatorsCompile<QPointF, QPoint>();
+}
+
 void tst_QPointF::operator_eq_data()
 {
     QTest::addColumn<QPointF>("point1");
     QTest::addColumn<QPointF>("point2");
     QTest::addColumn<bool>("expectEqual");
+    QTest::addColumn<bool>("expectIntEqual");
 
-    QTest::newRow("(0, 0) == (0, 0)") << QPointF(0, 0) << QPointF(0, 0) << true;
-    QTest::newRow("(-1, 0) == (-1, 0)") << QPointF(-1, 0) << QPointF(-1, 0) << true;
-    QTest::newRow("(-1, 0) != (0, 0)") << QPointF(-1, 0) << QPointF(0, 0) << false;
-    QTest::newRow("(-1, 0) != (0, -1)") << QPointF(-1, 0) << QPointF(0, -1) << false;
-    QTest::newRow("(-1.125, 0.25) == (-1.125, 0.25)") << QPointF(-1.125, 0.25) << QPointF(-1.125, 0.25) << true;
+    QTest::newRow("(0, 0) == (0, 0)") << QPointF(0, 0) << QPointF(0, 0) << true << true;
+    QTest::newRow("(-1, 0) == (-1, 0)") << QPointF(-1, 0) << QPointF(-1, 0) << true << true;
+    QTest::newRow("(-1, 0) != (0, 0)") << QPointF(-1, 0) << QPointF(0, 0) << false << false;
+    QTest::newRow("(-1, 0) != (0, -1)") << QPointF(-1, 0) << QPointF(0, -1) << false << false;
+    QTest::newRow("(-1.125, 0.25) == (-1.125, 0.25)")
+            << QPointF(-1.125, 0.25) << QPointF(-1.125, 0.25) << true << false;
     QTest::newRow("(QREAL_MIN, QREAL_MIN) == (QREAL_MIN, QREAL_MIN)")
-        << QPointF(QREAL_MIN, QREAL_MIN) << QPointF(QREAL_MIN, QREAL_MIN) << true;
+            << QPointF(QREAL_MIN, QREAL_MIN) << QPointF(QREAL_MIN, QREAL_MIN) << true << true;
     QTest::newRow("(QREAL_MAX, QREAL_MAX) == (QREAL_MAX, QREAL_MAX)")
-        << QPointF(QREAL_MAX, QREAL_MAX) << QPointF(QREAL_MAX, QREAL_MAX) << true;
+            << QPointF(QREAL_MAX, QREAL_MAX) << QPointF(QREAL_MAX, QREAL_MAX) << true << false;
 }
 
 void tst_QPointF::operator_eq()
@@ -367,11 +377,12 @@ void tst_QPointF::operator_eq()
     QFETCH(QPointF, point1);
     QFETCH(QPointF, point2);
     QFETCH(bool, expectEqual);
+    QFETCH(bool, expectIntEqual);
 
-    bool equal = point1 == point2;
-    QCOMPARE(equal, expectEqual);
-    bool notEqual = point1 != point2;
-    QCOMPARE(notEqual, !expectEqual);
+    QT_TEST_EQUALITY_OPS(point1, point2, expectEqual);
+
+    const QPoint intPoint2 = point2.toPoint();
+    QT_TEST_EQUALITY_OPS(point1, intPoint2, expectIntEqual);
 }
 
 void tst_QPointF::toPoint_data()

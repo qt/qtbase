@@ -5,6 +5,7 @@
 #ifdef QVARIANT_H
 # error "This test requires qpoint.h to not include qvariant.h"
 #endif
+#include <private/qcomparisontesthelper_p.h>
 
 // don't assume <type_traits>
 template <typename T, typename U>
@@ -71,6 +72,7 @@ private slots:
     void operator_unary_minus_data();
     void operator_unary_minus();
 
+    void operatorsCompile();
     void operator_eq_data();
     void operator_eq();
 
@@ -155,6 +157,8 @@ void tst_QPoint::toPointF()
     QFETCH(const QPointF, result);
 
     QCOMPARE(input.toPointF(), result);
+    // test also mixed-type comparison
+    QT_TEST_EQUALITY_OPS(input, result, true);
 }
 
 void tst_QPoint::transposed()
@@ -350,6 +354,12 @@ void tst_QPoint::operator_unary_minus()
     QCOMPARE(-point, expected);
 }
 
+void tst_QPoint::operatorsCompile()
+{
+    // Mixed-type comparison is tested in tst_QPointF.
+    QTestPrivate::testEqualityOperatorsCompile<QPoint>();
+}
+
 void tst_QPoint::operator_eq_data()
 {
     QTest::addColumn<QPoint>("point1");
@@ -371,12 +381,9 @@ void tst_QPoint::operator_eq()
     QFETCH(QPoint, point2);
     QFETCH(bool, expectEqual);
 
-    bool equal = point1 == point2;
-    QCOMPARE(equal, expectEqual);
-    bool notEqual = point1 != point2;
-    QCOMPARE(notEqual, !expectEqual);
+    QT_TEST_EQUALITY_OPS(point1, point2, expectEqual);
 
-    if (equal)
+    if (expectEqual)
         QCOMPARE(qHash(point1), qHash(point2));
 }
 
