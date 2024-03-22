@@ -60,10 +60,6 @@ namespace QPdf {
         static inline int maxMemorySize() { return 100000000; }
         static inline int chunkSize()     { return 10000000; }
 
-    protected:
-        void constructor_helper(QIODevice *dev);
-        void constructor_helper(QByteArray *ba);
-
     private:
         void prepareBuffer();
 

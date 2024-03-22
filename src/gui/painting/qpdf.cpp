@@ -270,13 +270,6 @@ namespace QPdf {
         dev->open(QIODevice::ReadWrite | QIODevice::Truncate);
     }
 
-    void ByteStream::constructor_helper(QByteArray *ba)
-    {
-        delete dev;
-        dev = new QBuffer(ba);
-        dev->open(QIODevice::ReadWrite);
-    }
-
     void ByteStream::prepareBuffer()
     {
         Q_ASSERT(!dev->isSequential());
