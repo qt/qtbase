@@ -458,6 +458,8 @@ void tst_QCborValue::compareCompiles()
     QTestPrivate::testAllComparisonOperatorsCompile<QCborValueRef>();
     QTestPrivate::testAllComparisonOperatorsCompile<QCborValueConstRef>();
     QTestPrivate::testAllComparisonOperatorsCompile<QCborArray>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborArray::Iterator>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborArray::ConstIterator>();
     QTestPrivate::testAllComparisonOperatorsCompile<QCborMap>();
 
     // QCborValue, Ref and ConstRef
@@ -472,6 +474,8 @@ void tst_QCborValue::compareCompiles()
     QTestPrivate::testAllComparisonOperatorsCompile<QCborMap, QCborValue>();
     QTestPrivate::testAllComparisonOperatorsCompile<QCborMap, QCborValueRef>();
     QTestPrivate::testAllComparisonOperatorsCompile<QCborMap, QCborValueConstRef>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborArray::Iterator,
+                                                    QCborArray::ConstIterator>();
 }
 
 void tst_QCborValue::extendedTypes()
@@ -786,12 +790,17 @@ void tst_QCborValue::arrayInitializerList()
     // iterators
     auto it = a.constBegin();
     auto end = a.constEnd();
+    QT_TEST_ALL_COMPARISON_OPS(it, end, Qt::strong_ordering::less);
     QCOMPARE(end - it, 7);
     QCOMPARE(it + 7, end);
+    QT_TEST_EQUALITY_OPS(it + 7, end, true);
     QVERIFY(it->isInteger());
     QCOMPARE(*it, QCborValue(0));
     QCOMPARE(it[1], QCborValue(-1));
     QCOMPARE(*(it + 2), QCborValue(false));
+    QT_TEST_EQUALITY_OPS(*it, QCborValue(0), true);
+    QT_TEST_EQUALITY_OPS(it[1], QCborValue(-1), true);
+    QT_TEST_EQUALITY_OPS(*(it + 2), QCborValue(false), true);
     it += 3;
     QCOMPARE(*it, QCborValue(true));
     ++it;
@@ -802,6 +811,24 @@ void tst_QCborValue::arrayInitializerList()
     QCOMPARE(*end, QCborValue(1.0));
     end--;
     QCOMPARE(it, end);
+    QT_TEST_EQUALITY_OPS(it, end, true);
+    QT_TEST_EQUALITY_OPS(it, QCborArray::ConstIterator(), false);
+    QT_TEST_EQUALITY_OPS(QCborArray::ConstIterator(), end, false);
+    QT_TEST_EQUALITY_OPS(QCborArray::ConstIterator(), QCborArray::ConstIterator(), true);
+    QT_TEST_EQUALITY_OPS(QCborArray::ConstIterator(), QCborArray::Iterator(), true);
+
+    {
+        auto it = a.begin();
+        auto it1 = a.constBegin();
+        auto end = a.end();
+        QT_TEST_ALL_COMPARISON_OPS(it, end, Qt::strong_ordering::less);
+        QT_TEST_ALL_COMPARISON_OPS(it1, end, Qt::strong_ordering::less);
+        QT_TEST_EQUALITY_OPS(it + 7, end, true);
+        QT_TEST_EQUALITY_OPS(it1 + 7, end, true);
+        QT_TEST_EQUALITY_OPS(it, QCborArray::Iterator(), false);
+        QT_TEST_EQUALITY_OPS(QCborArray::Iterator(), end, false);
+        QT_TEST_EQUALITY_OPS(QCborArray::Iterator(), QCborArray::ConstIterator(), true);
+    }
 
     // range for
     int i = 0;
@@ -1288,6 +1315,8 @@ void tst_QCborValue::arrayValueRef()
     QVERIFY(v == a.first());
     QVERIFY(v == a.last());
     QVERIFY(v == a[0]);
+    QT_TEST_EQUALITY_OPS(a.first(), v, true);
+    QT_TEST_EQUALITY_OPS(a.last(), v, true);
 
     auto iteratorCheck = [&v](auto it) {
         QT_TEST_EQUALITY_OPS(*it, v, true);

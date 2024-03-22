@@ -46,19 +46,20 @@ public:
         QCborValueRef *operator->() { return &item; }
         const QCborValueConstRef *operator->() const { return &item; }
         QCborValueRef operator[](qsizetype j) const { return { item.d, item.i + j }; }
-
+#if QT_CORE_REMOVED_SINCE(6, 8)
         bool operator==(const Iterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
-        bool operator!=(const Iterator &o) const { return !(*this == o); }
+        bool operator!=(const Iterator &o) const { return !operator==(o); }
         bool operator<(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i < other.item.i; }
         bool operator<=(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i <= other.item.i; }
         bool operator>(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i > other.item.i; }
         bool operator>=(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i >= other.item.i; }
         bool operator==(const ConstIterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
-        bool operator!=(const ConstIterator &o) const { return !(*this == o); }
+        bool operator!=(const ConstIterator &o) const { return !operator==(o); }
         bool operator<(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i < other.item.i; }
         bool operator<=(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i <= other.item.i; }
         bool operator>(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i > other.item.i; }
         bool operator>=(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i >= other.item.i; }
+#endif
         Iterator &operator++() { ++item.i; return *this; }
         Iterator operator++(int) { Iterator n = *this; ++item.i; return n; }
         Iterator &operator--() { item.i--; return *this; }
@@ -68,6 +69,53 @@ public:
         Iterator operator+(qsizetype j) const { return Iterator({ item.d, item.i + j }); }
         Iterator operator-(qsizetype j) const { return Iterator({ item.d, item.i - j }); }
         qsizetype operator-(Iterator j) const { return item.i - j.item.i; }
+    private:
+        // Helper functions
+        static bool comparesEqual_helper(const Iterator &lhs, const Iterator &rhs) noexcept
+        {
+            return lhs.item.d == rhs.item.d && lhs.item.i == rhs.item.i;
+        }
+
+        static bool comparesEqual_helper(const Iterator &lhs, const ConstIterator &rhs) noexcept
+        {
+            return lhs.item.d == rhs.item.d && lhs.item.i == rhs.item.i;
+        }
+
+        static Qt::strong_ordering compareThreeWay_helper(const Iterator &lhs,
+                                                          const Iterator &rhs) noexcept
+        {
+            Q_ASSERT(lhs.item.d == rhs.item.d);
+            return Qt::compareThreeWay(lhs.item.i, rhs.item.i);
+        }
+
+        static Qt::strong_ordering compareThreeWay_helper(const Iterator &lhs,
+                                                          const ConstIterator &rhs) noexcept
+        {
+            Q_ASSERT(lhs.item.d == rhs.item.d);
+            return Qt::compareThreeWay(lhs.item.i, rhs.item.i);
+        }
+
+        // Compare friends
+        friend bool comparesEqual(const Iterator &lhs, const Iterator &rhs) noexcept
+        {
+            return comparesEqual_helper(lhs, rhs);
+        }
+        friend Qt::strong_ordering compareThreeWay(const Iterator &lhs,
+                                                   const Iterator &rhs) noexcept
+        {
+            return compareThreeWay_helper(lhs, rhs);
+        }
+        Q_DECLARE_STRONGLY_ORDERED(Iterator)
+        friend bool comparesEqual(const Iterator &lhs, const ConstIterator &rhs) noexcept
+        {
+            return comparesEqual_helper(lhs, rhs);
+        }
+        friend Qt::strong_ordering compareThreeWay(const Iterator &lhs,
+                                                   const ConstIterator &rhs) noexcept
+        {
+            return compareThreeWay_helper(lhs, rhs);
+        }
+        Q_DECLARE_STRONGLY_ORDERED(Iterator, ConstIterator)
     };
 
     class ConstIterator {
@@ -95,19 +143,20 @@ public:
         QCborValueConstRef operator*() const { return item; }
         const QCborValueConstRef *operator->() const { return &item; }
         QCborValueConstRef operator[](qsizetype j) const { return QCborValueRef{ item.d, item.i + j }; }
-
+#if QT_CORE_REMOVED_SINCE(6, 8)
         bool operator==(const Iterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
-        bool operator!=(const Iterator &o) const { return !(*this == o); }
+        bool operator!=(const Iterator &o) const { return !operator==(o); }
         bool operator<(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i < other.item.i; }
         bool operator<=(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i <= other.item.i; }
         bool operator>(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i > other.item.i; }
         bool operator>=(const Iterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i >= other.item.i; }
         bool operator==(const ConstIterator &o) const { return item.d == o.item.d && item.i == o.item.i; }
-        bool operator!=(const ConstIterator &o) const { return !(*this == o); }
+        bool operator!=(const ConstIterator &o) const { return !operator==(o); }
         bool operator<(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i < other.item.i; }
         bool operator<=(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i <= other.item.i; }
         bool operator>(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i > other.item.i; }
         bool operator>=(const ConstIterator& other) const { Q_ASSERT(item.d == other.item.d); return item.i >= other.item.i; }
+#endif
         ConstIterator &operator++() { ++item.i; return *this; }
         ConstIterator operator++(int) { ConstIterator n = *this; ++item.i; return n; }
         ConstIterator &operator--() { item.i--; return *this; }
@@ -117,6 +166,31 @@ public:
         ConstIterator operator+(qsizetype j) const { return ConstIterator({ item.d, item.i + j }); }
         ConstIterator operator-(qsizetype j) const { return ConstIterator({ item.d, item.i - j }); }
         qsizetype operator-(ConstIterator j) const { return item.i - j.item.i; }
+    private:
+        // Helper functions
+        static bool comparesEqual_helper(const ConstIterator &lhs,
+                                         const ConstIterator &rhs) noexcept
+        {
+            return lhs.item.d == rhs.item.d && lhs.item.i == rhs.item.i;
+        }
+        static Qt::strong_ordering compareThreeWay_helper(const ConstIterator &lhs,
+                                                          const ConstIterator &rhs) noexcept
+        {
+            Q_ASSERT(lhs.item.d == rhs.item.d);
+            return Qt::compareThreeWay(lhs.item.i, rhs.item.i);
+        }
+
+        // Compare friends
+        friend bool comparesEqual(const ConstIterator &lhs, const ConstIterator &rhs) noexcept
+        {
+            return comparesEqual_helper(lhs, rhs);
+        }
+        friend Qt::strong_ordering compareThreeWay(const ConstIterator &lhs,
+                                                   const ConstIterator &rhs) noexcept
+        {
+            return compareThreeWay_helper(lhs, rhs);
+        }
+        Q_DECLARE_STRONGLY_ORDERED(ConstIterator)
     };
 
     typedef qsizetype size_type;
