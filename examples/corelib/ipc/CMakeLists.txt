@@ -4,7 +4,7 @@
 if(NOT TARGET Qt6::Widgets)
     return()
 endif()
-if(QT_FEATURE_sharedmemory)
+if(QT_FEATURE_sharedmemory AND QT_FEATURE_systemsemaphore)
     qt_internal_add_example(sharedmemory)
 endif()
 if(QT_FEATURE_localserver AND TARGET Qt6::Network)
