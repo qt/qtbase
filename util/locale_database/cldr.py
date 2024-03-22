@@ -75,9 +75,8 @@ class CldrReader (object):
             pass # self.__wrapped(self.whitter, 'Skipping likelySubtags (for unknown codes): ', skips)
 
     def readLocales(self, calendars = ('gregorian',)):
-        locales = tuple(self.__allLocales(calendars))
-        return dict(((k.language_id, k.script_id, k.territory_id, k.variant_code),
-                     k) for k in locales)
+        return {(k.language_id, k.script_id, k.territory_id, k.variant_code): k
+                for k in self.__allLocales(calendars)}
 
     def __allLocales(self, calendars):
         def skip(locale, reason):
@@ -381,9 +380,9 @@ class CldrAccess (object):
             for f in k.split('_'):
                 scraps.add(f)
         from enumdata import language_map, territory_map, script_map
-        language = dict((v, k) for k, v in language_map.values() if not v.isspace())
-        territory = dict((v, k) for k, v in territory_map.values() if v != 'ZZ')
-        script = dict((v, k) for k, v in script_map.values() if v != 'Zzzz')
+        language = {v: k for k, v in language_map.values() if not v.isspace()}
+        territory = {v: k for k, v in territory_map.values() if v != 'ZZ'}
+        script = {v: k for k, v in script_map.values() if v != 'Zzzz'}
         lang = dict(self.__checkEnum(language, self.__codeMap('language'), scraps))
         land = dict(self.__checkEnum(territory, self.__codeMap('territory'), scraps))
         text = dict(self.__checkEnum(script, self.__codeMap('script'), scraps))

@@ -109,14 +109,14 @@ class QLocaleXmlReader (object):
         self.__likely = tuple(self.__likelySubtagsMap())
 
         # Mappings {ID: (enum name, code, en.xml name)}
-        self.languages = dict((v[0], v[1:]) for v in languages)
-        self.scripts = dict((v[0], v[1:]) for v in scripts)
-        self.territories = dict((v[0], v[1:]) for v in territories)
+        self.languages = {v[0]: v[1:] for v in languages}
+        self.scripts = {v[0]: v[1:] for v in scripts}
+        self.territories = {v[0]: v[1:] for v in territories}
 
         # Private mappings {enum name: (ID, code)}
-        self.__langByName = dict((v[1], (v[0], v[2])) for v in languages)
-        self.__textByName = dict((v[1], (v[0], v[2])) for v in scripts)
-        self.__landByName = dict((v[1], (v[0], v[2])) for v in territories)
+        self.__langByName = {v[1]: (v[0], v[2]) for v in languages}
+        self.__textByName = {v[1]: (v[0], v[2]) for v in scripts}
+        self.__landByName = {v[1]: (v[0], v[2]) for v in territories}
         # Other properties:
         self.__dupes = set(v[1] for v in languages) & set(v[1] for v in territories)
         self.cldrVersion = self.__firstChildText(self.root, "version")
@@ -527,7 +527,7 @@ class Locale (object):
             data['listDelim' if k == 'list' else k] = lookup(k)
 
         for k in cls.propsMonthDay('months'):
-            data[k] = dict((cal, lookup('_'.join((k, cal)))) for cal in calendars)
+            data[k] = {cal: lookup('_'.join((k, cal))) for cal in calendars}
 
         grouping = lookup('groupSizes').split(';')
         data.update(groupLeast = int(grouping[0]),
