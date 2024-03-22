@@ -140,7 +140,10 @@ BuildsMetaMakefileGenerator::write()
                 if(Option::output.fileName() == "-") {
                     Option::output.setFileName("");
                     Option::output_dir = qmake_getpwd();
-                    Option::output.open(stdout, QIODevice::WriteOnly | QIODevice::Text);
+                    if (!Option::output.open(stdout, QIODevice::WriteOnly | QIODevice::Text)) {
+                        fprintf(stderr, "Failure to open stdout\n");
+                        return false;
+                    }
                     using_stdout = true;
                 } else {
                     if(Option::output.fileName().isEmpty() &&
