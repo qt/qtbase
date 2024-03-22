@@ -5,6 +5,7 @@
 #include <QTest>
 #include <QSignalSpy>
 #include <stdio.h>
+#include <optional>
 #include <qobject.h>
 #include <qmetaobject.h>
 #include <qjsondocument.h>
@@ -4251,9 +4252,12 @@ QT_WARNING_POP
 
 void tst_Moc::mocJsonOutput()
 {
-    const auto readFile = [](const QString &fileName) {
+    const auto readFile = [](const QString &fileName) -> std::optional<QJsonDocument> {
         QFile f(fileName);
-        f.open(QIODevice::ReadOnly);
+        if (!f.open(QIODevice::ReadOnly)) {
+            qWarning() << "Could not open file" << fileName << f.errorString();
+            return std::nullopt;
+        }
         return QJsonDocument::fromJson(f.readAll());
     };
 
@@ -4269,8 +4273,10 @@ void tst_Moc::mocJsonOutput()
     QVERIFY2(QFile::exists(actualFile), qPrintable(actualFile));
     QVERIFY2(QFile::exists(expectedFile), qPrintable(expectedFile));
 
-    QJsonDocument actualOutput = readFile(actualFile);
-    QJsonDocument expectedOutput = readFile(expectedFile);
+    std::optional<QJsonDocument> actualOutput = readFile(actualFile);
+    QVERIFY(actualOutput);
+    std::optional<QJsonDocument> expectedOutput = readFile(expectedFile);
+    QVERIFY(expectedOutput);
 
     const auto showPotentialDiff = [](const QJsonDocument &actual, const QJsonDocument &expected) -> QByteArray {
 #if defined(Q_OS_UNIX)
@@ -4305,7 +4311,7 @@ void tst_Moc::mocJsonOutput()
 #endif
     };
 
-    QVERIFY2(actualOutput == expectedOutput, showPotentialDiff(actualOutput, expectedOutput).constData());
+    QVERIFY2(*actualOutput == *expectedOutput, showPotentialDiff(*actualOutput, *expectedOutput).constData());
 }
 
 void TestFwdProperties::setProp1(const FwdClass1 &v)
