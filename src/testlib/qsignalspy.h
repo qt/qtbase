@@ -88,7 +88,7 @@ public:
 private:
     ObjectSignal verify(const QObject *obj, QMetaMethod signal)
     {
-        if (isObjectValid(obj))
+        if (isObjectValid(obj) && isSignalMetaMethodValid(signal))
             return {obj, signal};
         else
             return {};
@@ -141,9 +141,6 @@ private:
 
     void init(const QObject *obj, QMetaMethod signal)
     {
-        if (!isSignalMetaMethodValid(signal))
-            return;
-
         initArgs(signal, obj);
         if (!connectToSignal(obj, signal.methodIndex()))
             return;
