@@ -207,9 +207,7 @@ class LocaleScanner (object):
             for elt in self.__find(xpath):
                 try:
                     if draft is None or elt.draft <= draft:
-                        value = elt.dom.firstChild.nodeValue
-                        if value != INHERIT:
-                            return value
+                        return elt.dom.firstChild.nodeValue
                 except (AttributeError, KeyError):
                     pass
         except Error as e:
@@ -420,6 +418,7 @@ class LocaleScanner (object):
                     break
 
             else: # Found matching elements
+                elts = tuple(self.__skipInheritors(elts))
                 if elts:
                     foundNone = False
                 # Possibly filter elts to prefer the least drafty ?
@@ -448,6 +447,7 @@ class LocaleScanner (object):
                         raise Error(f'All lack child {selector} for {sought} in {self.name}')
 
             else: # Found matching elements
+                roots = tuple(self.__skipInheritors(roots))
                 if roots:
                     foundNone = False
                 for elt in roots:
@@ -458,6 +458,15 @@ class LocaleScanner (object):
             if sought != xpath:
                 sought += f' (for {xpath})'
             raise Error(f'No {sought} in {self.name}')
+
+    @staticmethod
+    def __skipInheritors(elts):
+        for elt in elts:
+            try:
+                if elt.dom.firstChild.nodeValue != INHERIT:
+                    yield elt
+            except (AttributeError, KeyError):
+                yield elt
 
     def __currencyDisplayName(self, stem):
         try:
