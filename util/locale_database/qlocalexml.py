@@ -396,7 +396,7 @@ class QLocaleXmlWriter (object):
         self.__write(f'<{tag}>{text}</{tag}>')
 
     def close(self, grumble):
-        """Finish writing and grumble any issues discovered."""
+        """Finish writing and grumble about any issues discovered."""
         if self.__rawOutput != self.__complain:
             self.__write('</localeDatabase>')
         self.__rawOutput = self.__complain
