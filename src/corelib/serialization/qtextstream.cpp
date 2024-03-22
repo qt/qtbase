@@ -1002,7 +1002,10 @@ QTextStream::QTextStream(FILE *fileHandle, OpenMode openMode)
            fileHandle, int(openMode));
 #endif
     QFile *file = new QFile;
-    file->open(fileHandle, openMode);
+    // Discarding the return value of open; even if it failed
+    // (and the file is not open), QTextStream still reports `Ok`
+    // for closed QIODevices, so there's nothing really to do here.
+    (void)file->open(fileHandle, openMode);
 
     Q_D(QTextStream);
     d->device = file;
