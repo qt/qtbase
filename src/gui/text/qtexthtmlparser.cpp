@@ -1181,7 +1181,7 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
     QCss::ValueExtractor extractor(declarations);
     extractor.extractBox(margin, padding);
 
-    if (id == Html_td || id == Html_th) {
+    auto getBorderValues = [&extractor](qreal *borderWidth, QBrush *borderBrush, QTextFrameFormat::BorderStyle *borderStyles) {
         QCss::BorderStyle cssStyles[4];
         int cssBorder[4];
         QSize cssRadii[4]; // unused
@@ -1193,12 +1193,16 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
         // QCss::BorderWidth parsing below which expects a single value
         // will not work as expected - which in this case does not matter
         // because tableBorder is not relevant for cells.
-        extractor.extractBorder(cssBorder, tableCellBorderBrush, cssStyles, cssRadii);
+        bool hit = extractor.extractBorder(cssBorder, borderBrush, cssStyles, cssRadii);
         for (int i = 0; i < 4; ++i) {
-            tableCellBorderStyle[i] = toQTextFrameFormat(cssStyles[i]);
-            tableCellBorder[i] = static_cast<qreal>(cssBorder[i]);
+            borderStyles[i] = toQTextFrameFormat(cssStyles[i]);
+            borderWidth[i] = static_cast<qreal>(cssBorder[i]);
         }
-    }
+        return hit;
+    };
+
+    if (id == Html_td || id == Html_th)
+        getBorderValues(tableCellBorder, tableCellBorderBrush, tableCellBorderStyle);
 
     for (int i = 0; i < declarations.size(); ++i) {
         const QCss::Declaration &decl = declarations.at(i);
@@ -1220,6 +1224,19 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
             tableBorder = borders[0];
             }
             break;
+        case QCss::Border: {
+            qreal tblBorder[4];
+            QBrush tblBorderBrush[4];
+            QTextFrameFormat::BorderStyle tblBorderStyle[4];
+            if (getBorderValues(tblBorder, tblBorderBrush, tblBorderStyle)) {
+                tableBorder = tblBorder[0];
+                if (tblBorderBrush[0].color().isValid())
+                    borderBrush = tblBorderBrush[0];
+                if (tblBorderStyle[0] != static_cast<QTextFrameFormat::BorderStyle>(-1))
+                    borderStyle = tblBorderStyle[0];
+            }
+        }
+        break;
         case QCss::BorderCollapse:
             borderCollapse = decl.borderCollapseValue();
             break;
@@ -1697,7 +1714,8 @@ void QTextHtmlParser::applyAttributes(const QStringList &attributes)
                 }
                 break;
             case Html_table:
-                if (key == "border"_L1) {
+                // If table border already set through css style, prefer that one otherwise consider this value
+                if (key == "border"_L1 && !node->tableBorder) {
                     setFloatAttribute(&node->tableBorder, value);
                 } else if (key == "bgcolor"_L1) {
                     QColor c = QColor::fromString(value);

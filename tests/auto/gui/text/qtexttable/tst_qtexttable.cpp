@@ -75,6 +75,8 @@ private slots:
 #endif
     void checkBorderAttributes_data();
     void checkBorderAttributes();
+    void checkTableBorderAttributes_data();
+    void checkTableBorderAttributes();
 
 #ifndef QT_NO_WIDGETS
     void columnWidthWithSpans();
@@ -1259,6 +1261,72 @@ void tst_QTextTable::checkBorderAttributes()
             QCOMPARE(cellFormat.brushProperty(QTextFormat::TableCellRightBorderBrush), rightBorderBrush);
         }
     }
+}
+
+void tst_QTextTable::checkTableBorderAttributes_data()
+{
+    QTest::addColumn<QString>("html");
+    QTest::addColumn<qreal>("tableBorderWidth");
+    QTest::addColumn<QTextFrameFormat::BorderStyle>("tableBorderStyle");
+    QTest::addColumn<QBrush>("tableBorderBrush");
+
+    const QString tableHtmlStart = QStringLiteral("<html><head><style>");
+    const QString tableHtmlEnd1 = QStringLiteral("</style></head><body>"
+                                                "<table><tr><td>One</td><td>Two</td></tr></table>"
+                                                "</body></html>");
+    const QString tableHtmlEnd2 = QStringLiteral("</style></head><body>"
+                                                "<table border=10><tr><td>One</td><td>Two</td></tr></table>"
+                                                "</body></html>");
+
+    QTest::newRow("table-border-attributes-shorthand")
+            << QString("%1"
+                       "table {"
+                            "border: 2px solid red;"
+                       "}"
+                       "%2").arg(tableHtmlStart).arg(tableHtmlEnd1)
+            << 2.0 << QTextFrameFormat::BorderStyle_Solid << QBrush(Qt::red);
+
+    QTest::newRow("table-border-attributes-explicit")
+            << QString("%1"
+                       "table {"
+                            "border-width: 2px;"
+                            "border-color: red;"
+                            "border-style: dashed;"
+                       "}"
+                       "%2").arg(tableHtmlStart).arg(tableHtmlEnd1)
+            << 2.0 << QTextFrameFormat::BorderStyle_Dashed << QBrush(Qt::red);
+
+    QTest::newRow("table-border-override")
+            << QString("%1"
+                       "table {"
+                          "border: 2px solid red;"
+                       "}"
+                       "%2").arg(tableHtmlStart).arg(tableHtmlEnd2)
+            << 2.0 << QTextFrameFormat::BorderStyle_Solid << QBrush(Qt::red);
+
+    QTest::newRow("table-border-default")
+            << QString("%1"
+                       "%2").arg(tableHtmlStart).arg(tableHtmlEnd2)
+            << 10.0 << QTextFrameFormat::BorderStyle_Outset << QBrush(Qt::darkGray);
+}
+
+void tst_QTextTable::checkTableBorderAttributes()
+{
+    QFETCH(QString, html);
+    QFETCH(qreal, tableBorderWidth);
+    QFETCH(QTextFrameFormat::BorderStyle, tableBorderStyle);
+    QFETCH(QBrush, tableBorderBrush);
+
+    QTextDocument doc;
+    doc.setHtml(html);
+    QTextCursor cursor(doc.firstBlock());
+    cursor.movePosition(QTextCursor::Right);
+
+    QTextTable *currentTable = cursor.currentTable();
+    QVERIFY(currentTable);
+    QCOMPARE(currentTable->format().border(), tableBorderWidth);
+    QCOMPARE(currentTable->format().borderStyle(), tableBorderStyle);
+    QCOMPARE(currentTable->format().borderBrush(), tableBorderBrush);
 }
 
 #ifndef QT_NO_WIDGETS
