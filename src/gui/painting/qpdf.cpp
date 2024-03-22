@@ -279,16 +279,17 @@ namespace QPdf {
                 && size > maxMemorySize()) {
             // Switch to file backing.
             QTemporaryFile *newFile = new QTemporaryFile;
-            newFile->open();
-            dev->reset();
-            while (!dev->atEnd()) {
-                QByteArray buf = dev->read(chunkSize());
-                newFile->write(buf);
+            if (newFile->open()) {
+                dev->reset();
+                while (!dev->atEnd()) {
+                    QByteArray buf = dev->read(chunkSize());
+                    newFile->write(buf);
+                }
+                delete dev;
+                dev = newFile;
+                ba.clear();
+                fileBackingActive = true;
             }
-            delete dev;
-            dev = newFile;
-            ba.clear();
-            fileBackingActive = true;
         }
         if (dev->pos() != size) {
             dev->seek(size);
