@@ -1772,7 +1772,8 @@ int QPdfEnginePrivate::writeXmpDcumentMetaData()
         const QString metaDataDate = timeStr + tzStr;
 
         QFile metaDataFile(":/qpdf/qpdfa_metadata.xml"_L1);
-        metaDataFile.open(QIODevice::ReadOnly);
+        bool ok = metaDataFile.open(QIODevice::ReadOnly);
+        Q_ASSERT(ok);
         metaDataContent = QString::fromUtf8(metaDataFile.readAll()).arg(producer.toHtmlEscaped(),
                                                                         title.toHtmlEscaped(),
                                                                         creator.toHtmlEscaped(),
@@ -1798,7 +1799,8 @@ int QPdfEnginePrivate::writeOutputIntent()
     const int colorProfile = addXrefEntry(-1);
     {
         QFile colorProfileFile(":/qpdf/sRGB2014.icc"_L1);
-        colorProfileFile.open(QIODevice::ReadOnly);
+        bool ok = colorProfileFile.open(QIODevice::ReadOnly);
+        Q_ASSERT(ok);
         const QByteArray colorProfileData = colorProfileFile.readAll();
 
         QByteArray data;
