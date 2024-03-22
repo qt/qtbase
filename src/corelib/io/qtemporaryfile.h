@@ -48,7 +48,7 @@ public:
     void setAutoRemove(bool b);
 
     // ### Hides open(flags)
-    bool open() { return open(QIODevice::ReadWrite); }
+    QFILE_MAYBE_NODISCARD bool open() { return open(QIODevice::ReadWrite); }
 
     QString fileName() const override;
     QString fileTemplate() const;

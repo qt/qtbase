@@ -323,6 +323,7 @@ qt_internal_add_module(Core
         QT_NO_QPAIR
         QT_NO_USING_NAMESPACE
         QT_TYPESAFE_FLAGS
+        QT_USE_NODISCARD_FILE_OPEN
     INCLUDE_DIRECTORIES
         "${CMAKE_CURRENT_BINARY_DIR}/global"
         "${CMAKE_CURRENT_BINARY_DIR}/kernel" # for moc_qobject.cpp to be found by qobject.cpp

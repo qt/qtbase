@@ -62,6 +62,7 @@ qt_internal_add_module(Network
         QT_NO_CAST_TO_ASCII
         QT_NO_CAST_FROM_BYTEARRAY
         QT_NO_URL_CAST_FROM_STRING
+        QT_USE_NODISCARD_FILE_OPEN
     INCLUDE_DIRECTORIES
         kernel
     LIBRARIES

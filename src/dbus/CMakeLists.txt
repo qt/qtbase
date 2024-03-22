@@ -47,6 +47,7 @@ qt_internal_add_module(DBus
         QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_QPAIR
+        QT_USE_NODISCARD_FILE_OPEN
     LIBRARIES
         Qt::CorePrivate
     PUBLIC_LIBRARIES

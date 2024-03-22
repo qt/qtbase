@@ -725,7 +725,7 @@ QTemporaryFile::~QTemporaryFile()
   return true upon success and will set the fileName() to the unique
   filename used.
 
-  \sa fileName()
+  \sa fileName(), QT_USE_NODISCARD_FILE_OPEN
 */
 
 /*!

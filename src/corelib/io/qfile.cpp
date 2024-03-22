@@ -897,6 +897,8 @@ QFile::copy(const QString &fileName, const QString &newName)
     of the file name, otherwise, it won't be possible to create this
     non-existing file.
 
+    \sa QT_USE_NODISCARD_FILE_OPEN
+
     \sa QIODevice::OpenMode, setFileName()
 */
 bool QFile::open(OpenMode mode)
@@ -941,7 +943,7 @@ bool QFile::open(OpenMode mode)
     such permissions will generate warnings when the Security tab of the Properties dialog
     is opened. Granting the group all permissions granted to others avoids such warnings.
 
-    \sa QIODevice::OpenMode, setFileName()
+    \sa QIODevice::OpenMode, setFileName(), QT_USE_NODISCARD_FILE_OPEN
     \since 6.3
 */
 bool QFile::open(OpenMode mode, QFile::Permissions permissions)
@@ -998,7 +1000,7 @@ bool QFile::open(OpenMode mode, QFile::Permissions permissions)
            you cannot use this QFile with a QFileInfo.
     \endlist
 
-    \sa close()
+    \sa close(), QT_USE_NODISCARD_FILE_OPEN
 
     \b{Note for the Windows Platform}
 
@@ -1064,7 +1066,7 @@ bool QFile::open(FILE *fh, OpenMode mode, FileHandleFlags handleFlags)
     \warning Since this function opens the file without specifying the file name,
              you cannot use this QFile with a QFileInfo.
 
-    \sa close()
+    \sa close(), QT_USE_NODISCARD_FILE_OPEN
 */
 bool QFile::open(int fd, OpenMode mode, FileHandleFlags handleFlags)
 {

@@ -26,6 +26,7 @@ qt_internal_add_module(Sql
         QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
+        QT_USE_NODISCARD_FILE_OPEN
     LIBRARIES
         Qt::CorePrivate
     PUBLIC_LIBRARIES

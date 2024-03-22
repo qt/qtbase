@@ -30,6 +30,7 @@ qt_internal_add_tool(${target_name}
         QT_NO_CAST_FROM_BYTEARRAY
         QT_NO_FOREACH
         QT_NO_QPAIR
+        QT_USE_NODISCARD_FILE_OPEN
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}
         ../../3rdparty/tinycbor/src

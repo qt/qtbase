@@ -152,7 +152,7 @@ void QSaveFile::setFileName(const QString &name)
     QIODevice::ReadWrite, QIODevice::Append, QIODevice::NewOnly and
     QIODevice::ExistingOnly are not supported at the moment.
 
-    \sa QIODevice::OpenMode, setFileName()
+    \sa QIODevice::OpenMode, setFileName(), QT_USE_NODISCARD_FILE_OPEN
 */
 bool QSaveFile::open(OpenMode mode)
 {

@@ -12,6 +12,22 @@ QT_BEGIN_NAMESPACE
 class QDateTime;
 class QFileDevicePrivate;
 
+#if !defined(QT_USE_NODISCARD_FILE_OPEN) && !defined(QT_NO_USE_NODISCARD_FILE_OPEN)
+#  if QT_VERSION < QT_VERSION_CHECK(6, 10, 0)
+#    define QT_NO_USE_NODISCARD_FILE_OPEN
+#  else
+#    define QT_USE_NODISCARD_FILE_OPEN
+#  endif
+#endif
+
+#if defined(QT_USE_NODISCARD_FILE_OPEN) && defined(QT_NO_USE_NODISCARD_FILE_OPEN)
+#error "Inconsistent macro definition for nodiscard QFile::open"
+#elif defined(QT_USE_NODISCARD_FILE_OPEN)
+#define QFILE_MAYBE_NODISCARD [[nodiscard]]
+#else /* QT_NO_USE_NODISCARD_FILE_OPEN */
+#define QFILE_MAYBE_NODISCARD
+#endif
+
 class Q_CORE_EXPORT QFileDevice : public QIODevice
 {
 #ifndef QT_NO_QOBJECT

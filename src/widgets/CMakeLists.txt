@@ -55,6 +55,7 @@ qt_internal_add_module(Widgets
         QT_NO_CONTEXTLESS_CONNECT
         QT_NO_USING_NAMESPACE
         QT_NO_FOREACH
+        QT_USE_NODISCARD_FILE_OPEN
     INCLUDE_DIRECTORIES
         dialogs
     LIBRARIES
