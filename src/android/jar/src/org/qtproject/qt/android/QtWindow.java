@@ -122,8 +122,8 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
             if (m_surfaceContainer != null) {
                 removeView(m_surfaceContainer);
                 m_surfaceContainer = null;
-            }
-        });
+                }
+        }, false);
     }
 
     public void setGeometry(final int x, final int y, final int w, final int h)
