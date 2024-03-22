@@ -16,6 +16,8 @@ start = element localeDatabase {
   element scriptList { Script+ },
   element territoryList { Territory+ },
   element likelySubtags { LikelySubtag+ },
+  element zoneAliases { ZoneAlias+ },
+  element windowsZone { MsLandZones+, MsZoneIana+ },
   element localeList { Locale+ }
 }
 
@@ -38,6 +40,23 @@ LocaleTriplet = (
   element script { text },
   element territory { text }
 )
+
+# TODO: xsd patterns for IANA IDs and space-joined lists of them
+ZoneAlias = element zoneAlias {
+  element alias { text },
+  element iana { text }
+}
+
+MsLandZones = element msLandZones {
+  element msid { text },
+  element territorycode { text },
+  element ianaids { text }
+}
+
+MsZoneIana = element msZoneIana {
+  element msid { text },
+  element iana { text }
+}
 
 WeekDay = ("sun" | "mon" | "tue" | "wed" | "thu" | "fri" | "sat")
 Digit = xsd:string { pattern = "\d" }

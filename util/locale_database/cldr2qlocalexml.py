@@ -27,10 +27,8 @@ append new entries to enumdata.py's lists and update documentation in
 src/corelib/text/qlocale.qdoc, adding the new entries in alphabetic
 order.
 
-While updating the locale data, check also for updates to MS-Win's
-time zone names; see cldr2qtimezone.py for details.
-
-All the scripts mentioned support --help to tell you how to use them.
+Both of the scripts mentioned support --help to tell you how to use
+them.
 
 .. _CLDR: https://unicode.org/Public/cldr/
 .. _github: https://github.com/unicode-org/cldr
@@ -92,6 +90,7 @@ def main(argv, out, err):
     writer.version(reader.root.cldrVersion)
     writer.enumData(reader.root.englishNaming)
     writer.likelySubTags(reader.likelySubTags())
+    writer.zoneData(*reader.zoneData()) # Locale-independent zone data.
     writer.locales(reader.readLocales(args.calendars), args.calendars)
 
     writer.close(err.write)

@@ -97,6 +97,21 @@ class QLocaleXmlReader (object):
 
             yield (language, script, territory), locale
 
+    def aliasToIana(self):
+        kid = self.__firstChildText
+        for elt in self.__eachEltInGroup(self.root, 'zoneAliases', 'zoneAlias'):
+            yield kid(elt, 'alias'), kid(elt, 'iana')
+
+    def msToIana(self):
+        kid = self.__firstChildText
+        for elt in self.__eachEltInGroup(self.root, 'windowsZone', 'msZoneIana'):
+            yield kid(elt, 'msid'), kid(elt, 'iana')
+
+    def msLandIanas(self):
+        kid = self.__firstChildText
+        for elt in self.__eachEltInGroup(self.root, 'windowsZone', 'msLandZones'):
+            yield (kid(elt, 'msid'), kid(elt, 'territorycode'), kid(elt, 'ianaids'))
+
     def languageIndices(self, locales):
         index = 0
         for key, value in self.languages.items():
@@ -326,6 +341,33 @@ class QLocaleXmlWriter (object):
             self.__likelySubTag('to', give)
             self.__closeTag('likelySubtag')
         self.__closeTag('likelySubtags')
+
+    def zoneData(self, alias, defaults, windowsIds):
+        self.__openTag('zoneAliases')
+        # iana is a single IANA ID
+        # name has the same form, but has been made redundant
+        for name, iana in sorted(alias.items()):
+            self.__openTag('zoneAlias')
+            self.inTag('alias', name)
+            self.inTag('iana', iana)
+            self.__closeTag('zoneAlias')
+        self.__closeTag('zoneAliases')
+
+        self.__openTag('windowsZone')
+        for (msid, code), ids in windowsIds.items():
+            # ianaids is a space-joined sequence of IANA IDs
+            self.__openTag('msLandZones')
+            self.inTag('msid', msid)
+            self.inTag('territorycode', code)
+            self.inTag('ianaids', ids)
+            self.__closeTag('msLandZones')
+
+        for winid, iana in defaults.items():
+            self.__openTag('msZoneIana')
+            self.inTag('msid', winid)
+            self.inTag('iana', iana)
+            self.__closeTag('msZoneIana')
+        self.__closeTag('windowsZone')
 
     def locales(self, locales, calendars):
         self.__openTag('localeList')

@@ -74,6 +74,77 @@ class CldrReader (object):
             # more out.
             pass # self.__wrapped(self.whitter, 'Skipping likelySubtags (for unknown codes): ', skips)
 
+    def zoneData(self):
+        """Locale-independent timezone data.
+
+        Returns a triple (alias, defaults, winIds) in which:
+          * alias is a mapping from aliases for IANA zone IDs, that
+            have the form of IANA IDs, to actual current IANA IDs; in
+            particular, this maps each CLDR zone ID to its
+            corresponding IANA ID.
+          * defaults maps each Windows name for a zone to the IANA ID
+            to use for it by default (when no territory is specified,
+            or when no entry in winIds matches the given Windows name
+            and territory).
+          * winIds is a mapping {(winId, land): ianaList} from Windows
+            name and territory code to the space-joined list of IANA
+            IDs associated with the Windows name in the given
+            territory.
+
+        and reports on any territories found in CLDR timezone data
+        that are not mentioned in enumdata.territory_map, on any
+        Windows IDs given in zonedata.windowsIdList that are no longer
+        covered by the CLDR data."""
+        alias, ignored = self.root.bcp47Aliases()
+        defaults, winIds = self.root.readWindowsTimeZones(alias)
+
+        from zonedata import windowsIdList
+        winUnused = set(n for n, o in windowsIdList).difference(
+            set(defaults).union(w for w, t, ids in winIds))
+        if winUnused:
+            joined = "\n\t".join(winUnused)
+            self.whitter.write(
+                f'No Windows ID in\n\t{joined}\nis still in use.\n'
+                'They could be removed at the next major version.\n')
+
+        # Check for duplicate entries in winIds:
+        last = ('', '', '')
+        winDup = {}
+        for triple in sorted(winIds):
+            if triple[:2] == last[:2]:
+                try:
+                    seq = winDup[triple[:2]]
+                except KeyError:
+                    seq = winDup[triple[:2]] = []
+                seq.append(triple[-1])
+        if winDup:
+            joined = '\n\t'.join(f'{t}, {w}: ", ".join(ids)'
+                                 for (w, t), ids in winDup.items())
+            self.whitter.write(
+                f'Duplicated (territory, Windows ID) entries:\n\t{joined}\n')
+            winIds = [trip for trip in winIds if trip[:2] not in winDup]
+            for (w, t), seq in winDup.items():
+                ianalist = []
+                for ids in seq:
+                    for iana in ids.split():
+                        if iana not in ianaList:
+                            ianaList.append(iana)
+                winIds.append((w, t, ' '.join(ianaList)))
+
+        from enumdata import territory_map
+        unLand = set(t for w, t, ids in winIds).difference(
+            v[1] for k, v in territory_map.items())
+        if unLand:
+            self.grumble.write(
+                'Unknown territory codes in timezone data: '
+                f'{", ".join(unLand)}\n'
+                'Skipping Windows zone mappings for these territories\n')
+            winIds = [(w, t, ids) for w, t, ids in winIds if t not in unLand]
+
+        # Convert list of triples to mapping:
+        winIds = {(w, t): ids for w, t, ids in winIds}
+        return alias, defaults, winIds
+
     def readLocales(self, calendars = ('gregorian',)):
         return {(k.language_id, k.script_id, k.territory_id, k.variant_code): k
                 for k in self.__allLocales(calendars)}
@@ -458,8 +529,12 @@ enumdata.py (keeping the old name as an alias):
 
         return alias, naming
 
-    def readWindowsTimeZones(self, lookup, alias): # For use by cldr2qtimezone.py
+    def readWindowsTimeZones(self, alias):
         """Digest CLDR's MS-Win time-zone name mapping.
+
+        Single argument, alias, should be the first part of the pair
+        returned by a call to bcp47Aliases(); it shall be used to
+        transform CLDR IDs into IANA IDs.
 
         MS-Win have their own eccentric names for time-zones. CLDR
         helpfully provides a translation to more orthodox names,
@@ -468,78 +543,48 @@ enumdata.py (keeping the old name as an alias):
         supplementalData/windowsZones/mapTimezones/mapZone nodes with
         attributes
 
-          territory -- using 001 (World) for 'default'
+          territory -- ISO code
           type -- space-joined sequence of CLDR IDs of zones
           other -- Windows name of these zones in the given territory
 
-        First argument, lookup, is a mapping from known MS-Win names
-        for timezones to a unique integer index (starting at 1). Second
-        argument, alias, should be the first part of the pair returned
-        by a call to bcp47Aliases(); it shall be used to transform
-        CLDR IDs into IANA IDs.
+        When 'territory' is '001', type is always just a single CLDR
+        zone ID. This is the default zone for the given Windows name.
 
-        For each mapZone node, its territory is mapped to a
-        QLocale::Territory enum with numeric value code e, its other
-        is mapped through lookup to obtain an MS-Win name index k and
-        its type is split on spacing and cleaned up as follows. Each
-        entry in type is mapped, via alias (if present in it) to get a
-        list of IANA IDs, omitting any later duplicates from earlier
-        entries; the result list of IANA IDs is joined with spaces
-        between to give a string s.
+        For each mapZone node, its type is split on spacing and
+        cleaned up as follows. Those entries that are keys of alias
+        are mapped thereby to their canonical IANA IDs; all others are
+        presumed to be canonical IANA IDs and left unchanged.  Any
+        later duplicates of earlier entries are omitted. The result
+        list of IANA IDs is joined with single spaces between to give
+        a string s.
 
-        Returns a triple (version, defaults, windows) in which version
-        is the version of CLDR in use, defaults is a mapping {k: s}
-        and windows is a mapping {(k, e): b} in which b maps
-        'windowsId' to the Windows name of the zone (the node's other
-        attribute), 'territoryCode' to e and 'ianaList' to s."""
+        Returns a twople (defaults, windows) in which defaults is a
+        mapping, from Windows ID to IANA ID (derived from the mapZone
+        nodes with territory='001'), and windows is a list of triples
+        (Windows ID, territory code, IANA ID list) in which the first
+        two entries are the 'other' and 'territory' fields of a
+        mapZone element and the last is s, its cleaned-up list of IANA
+        IDs."""
+
+        defaults, windows = {}, []
         zones = self.supplement('windowsZones.xml')
-        enum = self.__enumMap('territory')
-        badZones, unLands, defaults, windows = set(), set(), {}, {}
-
         for name, attrs in zones.find('windowsZones/mapTimezones'):
             if name != 'mapZone':
                 continue
 
-            wid, code = attrs['other'], attrs['territory']
-            cldrs, ianas = attrs['type'].split(), []
-            for cldr in cldrs:
-                if cldr in alias:
-                    iana = alias[cldr]
-                    if iana not in ianas:
-                        ianas.append(iana)
-                else:
-                    ianas.append(cldr)
-            data = dict(windowsId = wid,
-                        territoryCode = code,
-                        ianaList = ' '.join(ianas))
-
-            try:
-                key = lookup[wid]
-            except KeyError:
-                badZones.add(wid)
-                key = 0
-            data['windowsKey'] = key
+            wid, code, ianas = attrs['other'], attrs['territory'], []
+            for cldr in attrs['type'].split():
+                iana = alias.get(cldr, cldr)
+                if iana not in ianas:
+                    ianas.append(iana)
 
             if code == '001':
-                defaults[key] = data['ianaList']
+                assert len(ianas) == 1, (wid, *ianas)
+                defaults[wid] = ianas[0]
             else:
-                try:
-                    land, name = enum[code]
-                except KeyError:
-                    unLands.append(code)
-                    continue
-                data.update(territoryId = land, territory = name)
-                windows[key, land] = data
+                windows.append((wid, code, ' '.join(ianas)))
 
-        if unLands:
-            raise Error('Unknown territory codes, please add to enumdata.py: '
-                        + ', '.join(sorted(unLands)))
-
-        if badZones:
-            raise Error('Unknown Windows IDs, please add to cldr2qtimezone.py: '
-                        + ', '.join(sorted(badZones)))
-
-        return self.cldrVersion, defaults, windows
+        return defaults, windows
 
     @property
     def cldrVersion(self):
