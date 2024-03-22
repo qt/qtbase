@@ -269,15 +269,25 @@ public class QtNative
     // otherwise, queue it to be posted when the the app is active again
     public static void runAction(Runnable action)
     {
+        runAction(action, true);
+    }
+
+    public static void runAction(Runnable action, boolean queueWhenInactive)
+    {
         synchronized (m_mainActivityMutex) {
             final Looper mainLooper = Looper.getMainLooper();
             final Handler handler = new Handler(mainLooper);
-            final boolean isStateVisible =
-                    (m_stateDetails.state != ApplicationState.ApplicationSuspended)
-                    && (m_stateDetails.state != ApplicationState.ApplicationHidden);
-            final boolean active = (isActivityValid() && isStateVisible) || isServiceValid();
-            if (!active || !handler.post(action))
-                m_lostActions.add(action);
+
+            if (queueWhenInactive) {
+                final boolean isStateVisible =
+                        (m_stateDetails.state != ApplicationState.ApplicationSuspended)
+                        && (m_stateDetails.state != ApplicationState.ApplicationHidden);
+                final boolean active = (isActivityValid() && isStateVisible) || isServiceValid();
+                if (!active || !handler.post(action))
+                    m_lostActions.add(action);
+            } else {
+                handler.post(action);
+            }
         }
     }
 
