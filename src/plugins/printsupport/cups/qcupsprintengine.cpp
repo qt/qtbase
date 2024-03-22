@@ -144,7 +144,20 @@ bool QCupsPrintEnginePrivate::openPrintDevice()
         }
         cupsTempFile = QString::fromLocal8Bit(filename);
         outDevice = new QFile();
-        static_cast<QFile *>(outDevice)->open(fd, QIODevice::WriteOnly);
+        if (!static_cast<QFile *>(outDevice)->open(fd, QIODevice::WriteOnly)) {
+            qWarning("QPdfPrinter: Could not open CUPS temporary file descriptor: %s",
+                     qPrintable(outDevice->errorString()));
+            delete outDevice;
+            outDevice = nullptr;
+
+#if defined(Q_OS_WIN) && defined(Q_CC_MSVC)
+            ::_close(fd);
+#else
+            ::close(fd);
+#endif
+            fd = -1;
+            return false;
+        }
     }
 
     return true;
