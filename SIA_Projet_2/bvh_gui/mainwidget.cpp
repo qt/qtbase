@@ -2,10 +2,26 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "mainwidget.h"
-
+#include "../joint.h"
 #include <QMouseEvent>
 
+
 #include <cmath>
+
+MainWidget::MainWidget(std::string filename) {
+    std::pair<std::pair<Joint*, std::vector<Joint*>>, std::pair<int, double>> data = Joint::createFromFile(filename);
+    root = data.first.first;
+    jntVec = data.first.second;
+    nFrames = data.second.first;
+    interval = data.second.second;
+    currFrame = 0;
+    motionTimer = new QTimer(this);
+    //std::cout<<"INTERVALLE : "<<interval<<std::endl;
+    motionTimer->setInterval(1);
+    connect(motionTimer, &QTimer::timeout, this, [&](){MainWidget::motionEvent(nullptr);});
+    motionTimer->start();
+    startTime = std::chrono::high_resolution_clock::now();
+}
 
 MainWidget::~MainWidget()
 {
@@ -48,7 +64,7 @@ void MainWidget::mouseReleaseEvent(QMouseEvent *e)
 void MainWidget::timerEvent(QTimerEvent *)
 {
     // Decrease angular speed (friction)
-    angularSpeed *= 0.99;
+    angularSpeed *= 0.95;
 
     // Stop rotation when speed goes below threshold
     if (angularSpeed < 0.01) {
@@ -72,10 +88,18 @@ void MainWidget::initializeGL()
     initShaders();
     initTextures();
 
-    geometries = new GeometryEngine;
+//! [2]
+    // Enable depth buffer
+    glEnable(GL_DEPTH_TEST);
+
+    // Enable back face culling
+    glEnable(GL_CULL_FACE);
+//! [2]
+
+    geometries = new GeometryEngine(root, jntVec);
 
     // Use QBasicTimer because its faster than QTimer
-    timer.start(12, this);
+    timer.start(0, this);
 }
 
 //! [3]
@@ -124,7 +148,7 @@ void MainWidget::resizeGL(int w, int h)
     qreal aspect = qreal(w) / qreal(h ? h : 1);
 
     // Set near plane to 3.0, far plane to 7.0, field of view 45 degrees
-    const qreal zNear = 3.0, zFar = 7.0, fov = 45.0;
+    const qreal zNear = 3.0, zFar = 1500.0, fov = 45.0;
 
     // Reset projection
     projection.setToIdentity();
@@ -139,21 +163,12 @@ void MainWidget::paintGL()
     // Clear color and depth buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-//! [2]
-    // Enable depth buffer
-    glEnable(GL_DEPTH_TEST);
-
-    // Enable back face culling
-    glEnable(GL_CULL_FACE);
-//! [2]
-
     texture->bind();
-    program.bind();
 
 //! [6]
     // Calculate model view transformation
     QMatrix4x4 matrix;
-    matrix.translate(0.0, 0.0, -5.0);
+    matrix.translate(-80, -200, -1000.0);
     matrix.rotate(rotation);
 
     // Set modelview-projection matrix
@@ -164,5 +179,24 @@ void MainWidget::paintGL()
     program.setUniformValue("texture", 0);
 
     // Draw cube geometry
-    geometries->drawCubeGeometry(&program);
+    //geometries->drawCubeGeometry(&program);
+    // geometries->drawLineGeometry(&program);
+    geometries->drawSkinGeometry(&program);
+}
+
+void MainWidget::motionEvent(QTimerEvent* e) {
+    auto time = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(time - startTime);
+    if (elapsed.count()/interval >= currFrame + 1){
+        std::cout << currFrame << std::endl;
+        root->animate(currFrame);
+        // geometries->updatePos(root);
+        geometries->updateSkinPos(root);
+        currFrame++;
+        update();
+        if (currFrame>=nFrames) {
+            currFrame = 0;
+            startTime = std::chrono::high_resolution_clock::now();
+        }
+    }
 }

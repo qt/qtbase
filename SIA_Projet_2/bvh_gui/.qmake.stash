@@ -1,0 +1,23 @@
+QMAKE_CXX.QT_COMPILER_STDCXX = 201703L
+QMAKE_CXX.QMAKE_GCC_MAJOR_VERSION = 11
+QMAKE_CXX.QMAKE_GCC_MINOR_VERSION = 3
+QMAKE_CXX.QMAKE_GCC_PATCH_VERSION = 0
+QMAKE_CXX.COMPILER_MACROS = \
+    QT_COMPILER_STDCXX \
+    QMAKE_GCC_MAJOR_VERSION \
+    QMAKE_GCC_MINOR_VERSION \
+    QMAKE_GCC_PATCH_VERSION
+QMAKE_CXX.INCDIRS = \
+    /usr/include/c++/11 \
+    /usr/include/x86_64-linux-gnu/c++/11 \
+    /usr/include/c++/11/backward \
+    /usr/lib/gcc/x86_64-linux-gnu/11/include \
+    /usr/local/include \
+    /usr/include/x86_64-linux-gnu \
+    /usr/include
+QMAKE_CXX.LIBDIRS = \
+    /usr/lib/gcc/x86_64-linux-gnu/11 \
+    /usr/lib/x86_64-linux-gnu \
+    /usr/lib \
+    /lib/x86_64-linux-gnu \
+    /lib
