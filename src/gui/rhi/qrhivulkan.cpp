@@ -4569,6 +4569,7 @@ QByteArray QRhiVulkan::pipelineCacheData()
     header.deviceId = physDevProperties.deviceID;
     header.dataSize = quint32(dataSize);
     header.uuidSize = VK_UUID_SIZE;
+    header.reserved = 0;
     memcpy(data.data(), &header, headerSize);
     memcpy(data.data() + headerSize, physDevProperties.pipelineCacheUUID, VK_UUID_SIZE);
 
