@@ -558,6 +558,7 @@ function(qt_internal_add_darwin_permission_plugin permission)
             Qt::Core
             Qt::CorePrivate
             ${FWFoundation}
+        NO_UNITY_BUILD # disable unity build: the same file is built with two different preprocessor defines.
     )
 
     # Disable PCH since CMake falls over on single .mm source targets
@@ -598,10 +599,12 @@ function(qt_internal_add_darwin_permission_plugin permission)
     )
     if(CMAKE_VERSION VERSION_LESS "3.18")
         set_property(SOURCE "${separate_request_source_file}" PROPERTY GENERATED TRUE)
+        set_property(SOURCE "${separate_request_source_file}" PROPERTY SKIP_UNITY_BUILD_INCLUSION TRUE)
     endif()
     target_sources(${plugin_target} PRIVATE
         "$<${separate_request_genex}:${separate_request_source_file}>"
     )
+
     set_property(TARGET ${plugin_target} APPEND PROPERTY
         EXPORT_PROPERTIES _qt_darwin_permissison_separate_request
     )
