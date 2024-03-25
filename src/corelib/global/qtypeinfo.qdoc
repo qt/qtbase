@@ -13,13 +13,13 @@
     \a Flags can be one of the following:
 
     \list
-    \li \c Q_PRIMITIVE_TYPE specifies that \a Type can be created by
-        zero-initializing its storage, requires no operation to be properly
-        destroyed, and for which memcpy()ing creates a valid independent
-        copy of the object.
+    \li \c Q_PRIMITIVE_TYPE specifies that \a Type requires no
+        operation to be performed in order to be properly destroyed,
+        and that it is possible to use memcpy() in order to create a
+        valid independent copy of an object.
     \li \c Q_RELOCATABLE_TYPE specifies that \a Type has a constructor
-       and/or a destructor but can be moved in memory using \c
-       memcpy().
+        and/or a destructor, but it can still be \e{relocated} in memory
+        by using \c memcpy().
     \li \c Q_MOVABLE_TYPE is the same as \c Q_RELOCATABLE_TYPE. Prefer to use
         \c Q_RELOCATABLE_TYPE in new code. Note: despite the name, this
         has nothing to do with move constructors or C++ move semantics.
