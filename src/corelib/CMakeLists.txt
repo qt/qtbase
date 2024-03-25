@@ -992,7 +992,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_filesystemiterator AND WIN32
 qt_internal_extend_target(Core CONDITION QT_FEATURE_process AND UNIX
     SOURCES
         ../3rdparty/forkfd/forkfd.h
-        io/forkfd_qt.cpp
+        io/forkfd_qt.c
     INCLUDE_DIRECTORIES
         ../3rdparty/forkfd
 )
