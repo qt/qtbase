@@ -226,6 +226,8 @@ static bool systemHasStderr()
     return true;
 }
 
+#ifndef Q_OS_WASM
+
 /*!
     Returns true if writing to \c stderr will end up in a console/terminal visible to the user.
 
@@ -309,6 +311,8 @@ bool shouldLogToStderr()
 } // QtPrivate
 
 using namespace QtPrivate;
+
+#endif // ifndef Q_OS_WASM
 
 /*!
     \class QMessageLogContext
@@ -1868,8 +1872,9 @@ static bool wasm_default_message_handler(QtMsgType type,
                                   const QMessageLogContext &,
                                   const QString &formattedMessage)
 {
-    if (shouldLogToStderr())
-        return false; // Leave logging up to stderr handler
+    static bool forceStderrLogging = qEnvironmentVariableIntValue("QT_FORCE_STDERR_LOGGING");
+    if (forceStderrLogging)
+        return false;
 
     int emOutputFlags = EM_LOG_CONSOLE;
     QByteArray localMsg = formattedMessage.toLocal8Bit();
