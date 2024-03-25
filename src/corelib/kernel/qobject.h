@@ -155,6 +155,8 @@ public:
     T findChild(QAnyStringView aName, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
+        static_assert(QtPrivate::HasQ_OBJECT_Macro<ObjType>::Value,
+                          "No Q_OBJECT in the class passed to QObject::findChild");
         return static_cast<T>(qt_qFindChild_helper(this, aName, ObjType::staticMetaObject, options));
     }
 
@@ -162,6 +164,8 @@ public:
     QList<T> findChildren(QAnyStringView aName, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
+        static_assert(QtPrivate::HasQ_OBJECT_Macro<ObjType>::Value,
+                          "No Q_OBJECT in the class passed to QObject::findChildren");
         QList<T> list;
         qt_qFindChildren_helper(this, aName, ObjType::staticMetaObject,
                                 reinterpret_cast<QList<void *> *>(&list), options);
@@ -185,6 +189,8 @@ public:
     inline QList<T> findChildren(const QRegularExpression &re, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
     {
         typedef typename std::remove_cv<typename std::remove_pointer<T>::type>::type ObjType;
+        static_assert(QtPrivate::HasQ_OBJECT_Macro<ObjType>::Value,
+                          "No Q_OBJECT in the class passed to QObject::findChildren");
         QList<T> list;
         qt_qFindChildren_helper(this, re, ObjType::staticMetaObject,
                                 reinterpret_cast<QList<void *> *>(&list), options);
