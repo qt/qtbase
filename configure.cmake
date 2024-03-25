@@ -420,9 +420,12 @@ alloca(1);
 ")
 
 # stack_protector
-if(NOT WASM)
+if(NOT WASM AND NOT VXWORKS)
     # emcc doesn't support this, but the detection accidentally succeeds
     # https://github.com/emscripten-core/emscripten/issues/17030
+
+    # VXWORKS: We currently don't know the correct linker options. This is
+    # tracked at QTBUG-123715
     qt_config_compiler_supports_flag_test(stack_protector
         LABEL "stack protection"
         FLAG "-fstack-protector-strong"
