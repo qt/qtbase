@@ -431,7 +431,7 @@ namespace Qt {
         AA_MacDontSwapCtrlAndMeta = 7,
         AA_Use96Dpi = 8,
         AA_DisableNativeVirtualKeyboard = 9,
-        // AA_X11InitThreads = 10,
+        AA_DontUseNativeMenuWindows = 10,
         AA_SynthesizeTouchForUnhandledMouseEvents = 11,
         AA_SynthesizeMouseForUnhandledTouchEvents = 12,
 #if QT_DEPRECATED_SINCE(6, 0)
@@ -463,7 +463,6 @@ namespace Qt {
         AA_CompressTabletEvents = 29,
         // AA_DisableWindowContextHelpButton = 30,
         AA_DisableSessionManager = 31,
-        AA_DontUseNativeMenuWindows = 32,
 
         // Add new attributes before this line
         AA_AttributeCount

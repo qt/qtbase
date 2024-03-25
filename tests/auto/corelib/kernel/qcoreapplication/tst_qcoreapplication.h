@@ -46,6 +46,9 @@ private slots:
 #endif
     void theMainThread();
     void testDeleteLaterFromBeforeOutermostEventLoop();
+    void setIndividualAttributes_data();
+    void setIndividualAttributes();
+    void setMultipleAttributes();
 };
 
 #endif // TST_QCOREAPPLICATION_H

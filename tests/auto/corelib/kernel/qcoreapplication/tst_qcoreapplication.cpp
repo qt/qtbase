@@ -1108,6 +1108,57 @@ void tst_QCoreApplication::testDeleteLaterFromBeforeOutermostEventLoop()
     QVERIFY(!spyPointer);
 }
 
+void tst_QCoreApplication::setIndividualAttributes_data()
+{
+    QTest::addColumn<Qt::ApplicationAttribute>("attribute");
+
+    const QMetaEnum &metaEnum = Qt::staticMetaObject.enumerator(Qt::staticMetaObject.indexOfEnumerator("ApplicationAttribute"));
+    // - 1 to avoid AA_AttributeCount.
+    for (int i = 0; i < metaEnum.keyCount(); ++i) {
+        const auto attribute = static_cast<Qt::ApplicationAttribute>(metaEnum.value(i));
+        if (attribute == Qt::AA_AttributeCount)
+            continue;
+
+        QTest::addRow("%s", metaEnum.key(i)) << attribute;
+    }
+}
+
+void tst_QCoreApplication::setIndividualAttributes()
+{
+    QFETCH(Qt::ApplicationAttribute, attribute);
+
+    const auto originalValue = QCoreApplication::testAttribute(attribute);
+    auto cleanup = qScopeGuard([=]() {
+        QCoreApplication::setAttribute(attribute, originalValue);
+    });
+
+    QCoreApplication::setAttribute(attribute, true);
+    QVERIFY(QCoreApplication::testAttribute(attribute));
+
+    QCoreApplication::setAttribute(attribute, false);
+    QVERIFY(!QCoreApplication::testAttribute(attribute));
+}
+
+void tst_QCoreApplication::setMultipleAttributes()
+{
+    const auto originalDontUseNativeMenuWindowsValue = QCoreApplication::testAttribute(Qt::AA_DontUseNativeMenuWindows);
+    const auto originalDisableSessionManagerValue = QCoreApplication::testAttribute(Qt::AA_DisableSessionManager);
+    auto cleanup = qScopeGuard([=]() {
+        QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuWindows, originalDontUseNativeMenuWindowsValue);
+        QCoreApplication::setAttribute(Qt::AA_DisableSessionManager, originalDisableSessionManagerValue);
+    });
+
+    QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuWindows, true);
+    QCoreApplication::setAttribute(Qt::AA_DisableSessionManager, true);
+    QVERIFY(QCoreApplication::testAttribute(Qt::AA_DontUseNativeMenuWindows));
+    QVERIFY(QCoreApplication::testAttribute(Qt::AA_DisableSessionManager));
+
+    QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuWindows, false);
+    QCoreApplication::setAttribute(Qt::AA_DisableSessionManager, false);
+    QVERIFY(!QCoreApplication::testAttribute(Qt::AA_DontUseNativeMenuWindows));
+    QVERIFY(!QCoreApplication::testAttribute(Qt::AA_DisableSessionManager));
+}
+
 #ifndef QT_QGUIAPPLICATIONTEST
 QTEST_APPLESS_MAIN(tst_QCoreApplication)
 #endif
