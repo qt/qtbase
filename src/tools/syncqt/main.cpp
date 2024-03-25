@@ -151,7 +151,6 @@ std::filesystem::path normilizedPath(const std::string &path)
         printFilesystemError(fserr, "Unable to normalize path");
         throw;
     }
-    return {};
 }
 
 bool createDirectories(const std::string &path, std::string_view errorMsg, bool *exists = nullptr)
