@@ -295,67 +295,67 @@ using QDebugIfHasDebugStreamContainer =
 template<typename T>
 inline QDebugIfHasDebugStreamContainer<QList<T>, T> operator<<(QDebug debug, const QList<T> &vec)
 {
-    return QtPrivate::printSequentialContainer(debug, "QList", vec);
+    return QtPrivate::printSequentialContainer(std::move(debug), "QList", vec);
 }
 
 template<typename T, qsizetype P>
 inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const QVarLengthArray<T, P> &vec)
 {
-    return QtPrivate::printSequentialContainer(debug, "QVarLengthArray", vec);
+    return QtPrivate::printSequentialContainer(std::move(debug), "QVarLengthArray", vec);
 }
 
 template <typename T, typename Alloc>
 inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const std::vector<T, Alloc> &vec)
 {
-    return QtPrivate::printSequentialContainer(debug, "std::vector", vec);
+    return QtPrivate::printSequentialContainer(std::move(debug), "std::vector", vec);
 }
 
 template <typename T, typename Alloc>
 inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, const std::list<T, Alloc> &vec)
 {
-    return QtPrivate::printSequentialContainer(debug, "std::list", vec);
+    return QtPrivate::printSequentialContainer(std::move(debug), "std::list", vec);
 }
 
 template <typename T>
 inline QDebugIfHasDebugStream<T> operator<<(QDebug debug, std::initializer_list<T> list)
 {
-    return QtPrivate::printSequentialContainer(debug, "std::initializer_list", list);
+    return QtPrivate::printSequentialContainer(std::move(debug), "std::initializer_list", list);
 }
 
 template <typename Key, typename T, typename Compare, typename Alloc>
 inline QDebugIfHasDebugStream<Key, T> operator<<(QDebug debug, const std::map<Key, T, Compare, Alloc> &map)
 {
-    return QtPrivate::printSequentialContainer(debug, "std::map", map); // yes, sequential: *it is std::pair
+    return QtPrivate::printSequentialContainer(std::move(debug), "std::map", map); // yes, sequential: *it is std::pair
 }
 
 template <typename Key, typename T, typename Compare, typename Alloc>
 inline QDebugIfHasDebugStream<Key, T> operator<<(QDebug debug, const std::multimap<Key, T, Compare, Alloc> &map)
 {
-    return QtPrivate::printSequentialContainer(debug, "std::multimap", map); // yes, sequential: *it is std::pair
+    return QtPrivate::printSequentialContainer(std::move(debug), "std::multimap", map); // yes, sequential: *it is std::pair
 }
 
 template <class Key, class T>
 inline QDebugIfHasDebugStreamContainer<QMap<Key, T>, Key, T> operator<<(QDebug debug, const QMap<Key, T> &map)
 {
-    return QtPrivate::printAssociativeContainer(debug, "QMap", map);
+    return QtPrivate::printAssociativeContainer(std::move(debug), "QMap", map);
 }
 
 template <class Key, class T>
 inline QDebugIfHasDebugStreamContainer<QMultiMap<Key, T>, Key, T> operator<<(QDebug debug, const QMultiMap<Key, T> &map)
 {
-    return QtPrivate::printAssociativeContainer(debug, "QMultiMap", map);
+    return QtPrivate::printAssociativeContainer(std::move(debug), "QMultiMap", map);
 }
 
 template <class Key, class T>
 inline QDebugIfHasDebugStreamContainer<QHash<Key, T>, Key, T> operator<<(QDebug debug, const QHash<Key, T> &hash)
 {
-    return QtPrivate::printAssociativeContainer(debug, "QHash", hash);
+    return QtPrivate::printAssociativeContainer(std::move(debug), "QHash", hash);
 }
 
 template <class Key, class T>
 inline QDebugIfHasDebugStreamContainer<QMultiHash<Key, T>, Key, T> operator<<(QDebug debug, const QMultiHash<Key, T> &hash)
 {
-    return QtPrivate::printAssociativeContainer(debug, "QMultiHash", hash);
+    return QtPrivate::printAssociativeContainer(std::move(debug), "QMultiHash", hash);
 }
 
 template <class T1, class T2>
@@ -369,7 +369,7 @@ inline QDebugIfHasDebugStream<T1, T2> operator<<(QDebug debug, const std::pair<T
 template <typename T>
 inline QDebugIfHasDebugStreamContainer<QSet<T>, T> operator<<(QDebug debug, const QSet<T> &set)
 {
-    return QtPrivate::printSequentialContainer(debug, "QSet", set);
+    return QtPrivate::printSequentialContainer(std::move(debug), "QSet", set);
 }
 
 template <class T>
