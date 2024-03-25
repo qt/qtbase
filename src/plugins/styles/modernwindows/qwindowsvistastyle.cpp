@@ -4657,18 +4657,6 @@ void QWindowsVistaStyle::polish(QWidget *widget)
         else if (QListView *list = qobject_cast<QListView *> (widget)) {
             list->viewport()->setAttribute(Qt::WA_Hover);
         }
-        if (widget->inherits("QGraphicsView") && !widget->inherits("QTextEdit")) {
-            QPalette pal = widget->palette();
-            pal.setColor(QPalette::Base, pal.window().color());
-            widget->setPalette(pal);
-        }
-        else if (widget->inherits("QAbstractScrollArea")  && !widget->inherits("QMdiArea")) {
-            if (auto scrollarea = qobject_cast<QAbstractScrollArea*>(widget)) {
-                QPalette pal = widget->palette();
-                pal.setColor(scrollarea->viewport()->backgroundRole(), Qt::transparent);
-                scrollarea->viewport()->setPalette(pal);
-            }
-        }
 }
 
 /*!
