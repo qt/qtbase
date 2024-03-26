@@ -1022,7 +1022,6 @@ bool QCoreApplication::isSetuidAllowed()
     return QCoreApplicationPrivate::setuidAllowed;
 }
 
-
 /*!
     Sets the attribute \a attribute if \a on is true;
     otherwise clears the attribute.
@@ -1035,6 +1034,10 @@ bool QCoreApplication::isSetuidAllowed()
 */
 void QCoreApplication::setAttribute(Qt::ApplicationAttribute attribute, bool on)
 {
+    // Since we bit-shift these values, we can't go higher than 32 on 32 bit operating systems
+    // without changing the storage type of QCoreApplicationPrivate::attribs to quint64.
+    static_assert(Qt::AA_AttributeCount <= sizeof(QCoreApplicationPrivate::attribs) * CHAR_BIT);
+
     if (on)
         QCoreApplicationPrivate::attribs |= 1 << attribute;
     else
