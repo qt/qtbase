@@ -381,6 +381,9 @@ function(qt6_android_add_apk_target target)
     if(TARGET aab)
         add_dependencies(aab ${target}_make_aab)
     endif()
+    if(TARGET aar)
+        add_dependencies(aar ${target}_make_aar)
+    endif()
     if(TARGET apk)
         add_dependencies(apk ${target}_make_apk)
         _qt_internal_create_global_apk_all_target_if_needed()
@@ -418,8 +421,10 @@ function(qt6_android_add_apk_target target)
     endif()
 
     set(apk_file_name "${target}.apk")
+    set(aar_file_name "${target}.aar")
     set(dep_file_name "${target}.d")
     set(apk_final_file_path "${apk_final_dir}/${apk_file_name}")
+    set(aar_final_file_path "${apk_final_dir}/${aar_file_name}")
     set(dep_file_path "${apk_final_dir}/${dep_file_name}")
     set(target_file_copy_relative_path
         "libs/${CMAKE_ANDROID_ARCH_ABI}/$<TARGET_FILE_NAME:${target}>")
@@ -523,10 +528,33 @@ function(qt6_android_add_apk_target target)
             VERBATIM
             ${uses_terminal}
         )
+
+        # Add custom command that creates the aar and triggers rebuild if files listed in
+        # ${dep_file_path} are changed.
+        add_custom_command(OUTPUT "${aar_final_file_path}"
+            COMMAND ${CMAKE_COMMAND}
+                -E copy "$<TARGET_FILE:${target}>"
+                "${apk_final_dir}/${target_file_copy_relative_path}"
+            COMMAND "${deployment_tool}"
+                --input "${deployment_file}"
+                --output "${apk_final_dir}"
+                --apk "${aar_final_file_path}"
+                --depfile "${dep_file_path}"
+                --builddir "${relative_to_dir}"
+                --build-aar
+                ${extra_args}
+            COMMENT "Creating AAR for ${target}"
+            DEPENDS "${target}" "${deployment_file}" ${extra_deps}
+            DEPFILE "${dep_file_path}"
+            VERBATIM
+            ${uses_terminal}
+        )
         cmake_policy(POP)
 
         # Create a ${target}_make_apk target to trigger the apk build.
         add_custom_target(${target}_make_apk DEPENDS "${apk_final_file_path}")
+        # Create a ${target}_make_aar target to trigger the aar build.
+        add_custom_target(${target}_make_aar DEPENDS "${aar_final_file_path}")
     else()
         add_custom_target(${target}_make_apk
             DEPENDS ${target}_prepare_apk_dir
@@ -537,6 +565,19 @@ function(qt6_android_add_apk_target target)
                 ${extra_args}
                 ${sign_apk}
             COMMENT "Creating APK for ${target}"
+            VERBATIM
+            ${uses_terminal}
+        )
+
+        add_custom_target(${target}_make_aar
+            DEPENDS ${target}_prepare_apk_dir
+            COMMAND  ${deployment_tool}
+                --input ${deployment_file}
+                --output ${apk_final_dir}
+                --apk ${aar_final_file_path}
+                --build-aar
+                ${extra_args}
+            COMMENT "Creating AAR for ${target}"
             VERBATIM
             ${uses_terminal}
         )
@@ -638,6 +679,11 @@ function(_qt_internal_create_global_android_targets)
     # It will trigger building all the apk build targets that are added as part of the project.
     # Allow opting out.
     _qt_internal_create_global_android_targets_impl(aab)
+
+    # Create a top-level "aar" target for convenience, so that users can call 'ninja aar'.
+    # It will trigger building all the aar build targets that are added as part of the project.
+    # Allow opting out.
+    _qt_internal_create_global_android_targets_impl(aar)
 endfunction()
 
 # The function collects all known non-imported shared libraries that are created in the build tree.

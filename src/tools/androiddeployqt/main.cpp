@@ -105,6 +105,7 @@ struct Options
         , installApk(false)
         , uninstallApk(false)
         , qmlImportScannerBinaryPath()
+        , buildAar(false)
     {}
 
     enum DeploymentMechanism
@@ -240,6 +241,7 @@ struct Options
     // Override qml import scanner path
     QString qmlImportScannerBinaryPath;
     bool qmlSkipImportScanning = false;
+    bool buildAar;
 };
 
 static const QHash<QByteArray, QByteArray> elfArchitectures = {
@@ -526,6 +528,8 @@ Options parseOptions()
             options.protectedAuthenticationPath = true;
         } else if (argument.compare("--aux-mode"_L1, Qt::CaseInsensitive) == 0) {
             options.auxMode = true;
+        } else if (argument.compare("--build-aar"_L1, Qt::CaseInsensitive) == 0) {
+            options.buildAar = true;
         } else if (argument.compare("--qml-importscanner-binary"_L1, Qt::CaseInsensitive) == 0) {
             options.qmlImportScannerBinaryPath = arguments.at(++i).trimmed();
         } else if (argument.compare("--no-rcc-bundle-cleanup"_L1,
@@ -534,6 +538,23 @@ Options parseOptions()
         } else if (argument.compare("--copy-dependencies-only"_L1,
                                     Qt::CaseInsensitive) == 0) {
             options.copyDependenciesOnly = true;
+        }
+    }
+
+    if (options.buildAar) {
+        if (options.installApk || options.uninstallApk) {
+            fprintf(stderr, "Warning: Skipping %s, AAR packages are not installable.\n",
+                    options.uninstallApk ? "--reinstall" : "--install");
+            options.installApk = false;
+            options.uninstallApk = false;
+        }
+        if (options.buildAAB) {
+            fprintf(stderr, "Warning: Skipping -aab as --build-aar is present.\n");
+            options.buildAAB = false;
+        }
+        if (!options.keyStore.isEmpty()) {
+            fprintf(stderr, "Warning: Skipping --sign, signing AAR packages is not supported.\n");
+            options.keyStore.clear();
         }
     }
 
@@ -643,6 +664,9 @@ Optional arguments:
        The project will not be built or installed.
 
     --apk <path/where/to/copy/the/apk>: Path where to copy the built apk.
+
+    --build-aar: Build an AAR package. This option skips --aab, --install,
+       --reinstall, and --sign options if they are provided.
 
     --qml-importscanner-binary <path/to/qmlimportscanner>: Override the
        default qmlimportscanner binary path. By default the
@@ -1433,6 +1457,9 @@ bool copyAndroidTemplate(const Options &options)
 
     if (!copyAndroidTemplate(options, "/src/android/templates"_L1))
         return false;
+
+    if (options.buildAar)
+        return copyAndroidTemplate(options, "/src/android/templates_aar"_L1);
 
     return true;
 }
@@ -2850,7 +2877,9 @@ bool buildAndroidProject(const Options &options)
         abiList.append(it.key());
     }
     gradleProperties["qtTargetAbiList"] = abiList.toLocal8Bit();// armeabi-v7a or arm64-v8a or ...
-    gradleProperties["qtGradlePluginType"] = "com.android.application";
+    gradleProperties["qtGradlePluginType"] = options.buildAar
+                                           ? "com.android.library"
+                                           : "com.android.application";
     if (!mergeGradleProperties(gradlePropertiesPath, gradleProperties))
         return false;
 
@@ -2938,6 +2967,7 @@ bool uninstallApk(const Options &options)
 
 enum PackageType {
     AAB,
+    AAR,
     UnsignedAPK,
     SignedAPK
 };
@@ -2945,7 +2975,14 @@ enum PackageType {
 QString packagePath(const Options &options, PackageType pt)
 {
     QString path(options.outputDirectory);
-    path += "/build/outputs/%1/"_L1.arg(pt >= UnsignedAPK ? QStringLiteral("apk") : QStringLiteral("bundle"));
+    // The package type is always AAR if option.buildAar has been set
+    if (options.buildAar)
+        pt = AAR;
+    static QHash<PackageType, QString> packageTypeToPath{ { AAB, QStringLiteral("bundle") },
+                                                          { AAR, QStringLiteral("aar") },
+                                                          { UnsignedAPK, QStringLiteral("apk") },
+                                                          { SignedAPK, QStringLiteral("apk") } };
+    path += "/build/outputs/%1/"_L1.arg(packageTypeToPath[pt]);
     QString buildType(options.releasePackage ? "release/"_L1 : "debug/"_L1);
     if (QDir(path + buildType).exists())
         path += buildType;
@@ -2956,6 +2993,9 @@ QString packagePath(const Options &options, PackageType pt)
             if (pt == UnsignedAPK)
                 path += "un"_L1;
             path += "signed.apk"_L1;
+        } else if (pt == AAR){
+            path.chop(1);
+            path += ".aar"_L1;
         } else {
             path.chop(1);
             path += ".aab"_L1;
@@ -2966,6 +3006,8 @@ QString packagePath(const Options &options, PackageType pt)
             if (pt == SignedAPK)
                 path += "-signed"_L1;
             path += ".apk"_L1;
+        } else if (pt == AAR){
+            path += ".aar"_L1;
         } else {
             path += ".aab"_L1;
         }
