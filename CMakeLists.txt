@@ -27,4 +27,6 @@ project(QtBase
     LANGUAGES CXX C ASM
 )
 
+set(QT_BUILD_EXTRA_IDE_FILE_PATTERNS bin/* libexec/*)
+
 qt_internal_qtbase_build_repo()

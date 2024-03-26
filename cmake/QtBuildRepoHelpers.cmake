@@ -351,6 +351,8 @@ macro(qt_build_repo_end)
 
     qt_build_internals_add_toplevel_targets(${qt_repo_targets_name})
 
+    qt_internal_show_extra_ide_sources()
+
     if(NOT QT_SUPERBUILD)
         qt_print_build_instructions()
     endif()
@@ -375,6 +377,61 @@ macro(qt_build_repo_end)
 
     list(POP_BACK CMAKE_MESSAGE_CONTEXT)
 endmacro()
+
+function(qt_internal_show_extra_ide_sources)
+    if(CMAKE_VERSION VERSION_LESS 3.20)
+        set(ide_sources_default OFF)
+    else()
+        set(ide_sources_default ON)
+    endif()
+
+    option(QT_SHOW_EXTRA_IDE_SOURCES "Generate CMake targets exposing non-source files to IDEs" ${ide_sources_default})
+    if(CMAKE_VERSION VERSION_LESS 3.20 AND QT_SHOW_EXTRA_IDE_SOURCES)
+        message(WARNING "QT_SHOW_EXTRA_IDE_SOURCES requires cmake-3.20")
+        return()
+    endif()
+
+    if(NOT QT_SHOW_EXTRA_IDE_SOURCES)
+        return()
+    endif()
+
+    set(target_name ${qt_repo_targets_name}_extra_files)
+    add_custom_target(${target_name})
+
+    set(recursive_glob_patterns
+        coin/*
+        LICENSES/*
+        cmake/*
+        config.tests/*
+        dist/*
+        configure.cmake
+        qt_cmdline.cmake
+        .cmake.conf
+        *.cmake
+        *.cmake.in
+        ${QT_BUILD_EXTRA_IDE_FILE_RECURSIVE_PATTERNS}
+    )
+    set(simple_glob_patterns
+        .gitattributes
+        .gitignore
+        .tag
+        config_help.txt
+        ${QT_BUILD_EXTRA_IDE_FILE_PATTERNS}
+    )
+
+    file(GLOB_RECURSE files LIST_DIRECTORIES false FOLLOW_SYMLINKS ${recursive_glob_patterns})
+    if(files)
+        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${files})
+        target_sources(${target_name} PRIVATE ${files})
+    endif()
+
+    file(GLOB files LIST_DIRECTORIES false ${simple_glob_patterns})
+    if(files)
+        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${files})
+        target_sources(${target_name} PRIVATE ${files})
+    endif()
+endfunction()
+
 
 # Function called either at the end of per-repo configuration, or at the end of configuration of
 # a super build.
