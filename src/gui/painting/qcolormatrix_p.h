@@ -29,11 +29,8 @@ class QColorVector
 public:
     QColorVector() = default;
     constexpr QColorVector(float x, float y, float z, float w = 0.0f) noexcept : x(x), y(y), z(z), w(w) { }
-    explicit constexpr QColorVector(const QPointF &chr) // from XY chromaticity
-            : x(chr.x() / chr.y())
-            , y(1.0f)
-            , z((1.0f - chr.x() - chr.y()) / chr.y())
-    { }
+    static constexpr QColorVector fromXYChromaticity(QPointF chr)
+    { return {float(chr.x() / chr.y()), 1.0f, float((1.0f - chr.x() - chr.y()) / chr.y())}; }
     float x = 0.0f; // X, x, L, or red/cyan
     float y = 0.0f; // Y, y, a, or green/magenta
     float z = 0.0f; // Z, Y, b, or blue/yellow
@@ -75,8 +72,8 @@ public:
     // Common whitepoints:
     static constexpr QPointF D50Chromaticity() { return QPointF(0.34567, 0.35850); }
     static constexpr QPointF D65Chromaticity() { return QPointF(0.31271, 0.32902); }
-    static constexpr QColorVector D50() { return QColorVector(D50Chromaticity()); }
-    static constexpr QColorVector D65() { return QColorVector(D65Chromaticity()); }
+    static constexpr QColorVector D50() { return fromXYChromaticity(D50Chromaticity()); }
+    static constexpr QColorVector D65() { return fromXYChromaticity(D65Chromaticity()); }
 
     QColorVector xyzToLab() const
     {
