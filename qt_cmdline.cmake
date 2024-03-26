@@ -135,7 +135,6 @@ qt_commandline_prefix(F fpaths)
 qt_commandline_prefix(I includes)
 qt_commandline_prefix(L lpaths)
 qt_commandline_prefix(R rpaths)
-qt_commandline_prefix(W wflags)
 
 function(qt_commandline_cxxstd arg val nextok)
     if("${val}" STREQUAL "")
