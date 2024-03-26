@@ -461,7 +461,7 @@ namespace Qt {
         AA_DisableShaderDiskCache = 27,
         AA_DontShowShortcutsInContextMenus = 28,
         AA_CompressTabletEvents = 29,
-        // AA_DisableWindowContextHelpButton = 30,
+        AA_DontUsePopupWindows = 30,
         AA_DisableSessionManager = 31,
 
         // Add new attributes before this line
