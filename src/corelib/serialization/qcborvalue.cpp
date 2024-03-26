@@ -1641,6 +1641,14 @@ static void encodeToCbor(QCborStreamWriter &writer, const QCborContainerPrivate 
 #endif // QT_CONFIG(cborstreamwriter)
 
 #if QT_CONFIG(cborstreamreader)
+// confirm that our basic Types match QCborStreamReader::Types
+static_assert(int(QCborValue::Integer) == int(QCborStreamReader::UnsignedInteger));
+static_assert(int(QCborValue::ByteArray) == int(QCborStreamReader::ByteArray));
+static_assert(int(QCborValue::String) == int(QCborStreamReader::String));
+static_assert(int(QCborValue::Array) == int(QCborStreamReader::Array));
+static_assert(int(QCborValue::Map) == int(QCborStreamReader::Map));
+static_assert(int(QCborValue::Tag) == int(QCborStreamReader::Tag));
+
 static inline double integerOutOfRange(const QCborStreamReader &reader)
 {
     Q_ASSERT(reader.isInteger());
@@ -1803,7 +1811,7 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
     });
 
     Element e = {};
-    e.type = (reader.isByteArray() ? QCborValue::ByteArray : QCborValue::String);
+    e.type = QCborValue::Type(reader.type());
     if (len || !reader.isLengthKnown()) {
         // The use of size_t means none of the operations here can overflow because
         // all inputs are less than half SIZE_MAX.
