@@ -119,7 +119,7 @@ Q_SIGNALS:
     void headersReceived(const HPack::HttpHeader &headers, bool endStream);
     void headersUpdated();
     void errorOccurred(quint32 errorCode, const QString &errorString);
-    void stateChanged(State newState);
+    void stateChanged(QHttp2Stream::State newState);
     void promisedStreamReceived(quint32 newStreamID);
     void uploadBlocked();
     void dataReceived(const QByteArray &data, bool endStream);
@@ -241,7 +241,7 @@ Q_SIGNALS:
     void errorReceived(/*@future: add as needed?*/); // Connection errors only, no stream-specific errors
     void connectionClosed();
     void settingsFrameReceived();
-    void pingFrameRecived(PingState state);
+    void pingFrameRecived(QHttp2Connection::PingState state);
     void errorOccurred(Http2::Http2Error errorCode, const QString &errorString);
     void receivedGOAWAY(quint32 errorCode, quint32 lastStreamID);
 public Q_SLOTS:
