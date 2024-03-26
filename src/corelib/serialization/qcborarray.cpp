@@ -424,7 +424,7 @@ void QCborArray::removeAt(qsizetype i)
 bool QCborArray::contains(const QCborValue &value) const
 {
     for (qsizetype i = 0; i < size(); ++i) {
-        int cmp = d->compareElement(i, value);
+        int cmp = d->compareElement(i, value, Comparison::ForEquality);
         if (cmp == 0)
             return true;
     }

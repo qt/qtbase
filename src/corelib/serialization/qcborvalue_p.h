@@ -29,6 +29,11 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtCbor {
+enum class Comparison {
+    ForEquality,
+    ForOrdering,
+};
+
 struct Undefined {};
 struct Element
 {
@@ -346,7 +351,7 @@ public:
     }
 
     template<typename String>
-    int stringCompareElement(const QtCbor::Element &e, String s) const
+    int stringCompareElement(const QtCbor::Element &e, String s, QtCbor::Comparison mode) const
     {
         if (e.type != QCborValue::String)
             return int(e.type) - int(QCborValue::String);
@@ -355,6 +360,7 @@ public:
         if (!b)
             return s.isEmpty() ? 0 : -1;
 
+        Q_UNUSED(mode);
         if (e.flags & QtCbor::Element::StringIsUtf16)
             return QtPrivate::compareStrings(b->asStringView(), s);
         return compareUtf8(b, s);
@@ -363,7 +369,7 @@ public:
     template<typename String>
     bool stringEqualsElement(const QtCbor::Element &e, String s) const
     {
-        return stringCompareElement(e, s) == 0;
+        return stringCompareElement(e, s, QtCbor::Comparison::ForEquality) == 0;
     }
 
     template<typename String>
@@ -373,12 +379,13 @@ public:
     }
 
     static int compareElement_helper(const QCborContainerPrivate *c1, QtCbor::Element e1,
-                                     const QCborContainerPrivate *c2, QtCbor::Element e2);
-    int compareElement(qsizetype idx, const QCborValue &value) const
+                                     const QCborContainerPrivate *c2, QtCbor::Element e2,
+                                     QtCbor::Comparison mode);
+    int compareElement(qsizetype idx, const QCborValue &value, QtCbor::Comparison mode) const
     {
         auto &e1 = elements.at(idx);
         auto e2 = elementFromValue(value);
-        return compareElement_helper(this, e1, value.container, e2);
+        return compareElement_helper(this, e1, value.container, e2, mode);
     }
 
     void removeAt(qsizetype idx)
@@ -395,7 +402,7 @@ public:
             const auto &e = elements.at(i);
             bool equals;
             if constexpr (std::is_same_v<std::decay_t<KeyType>, QCborValue>) {
-                equals = (compareElement(i, key) == 0);
+                equals = (compareElement(i, key, QtCbor::Comparison::ForEquality) == 0);
             } else if constexpr (std::is_integral_v<KeyType>) {
                 equals = (e.type == QCborValue::Integer && e.value == key);
             } else {

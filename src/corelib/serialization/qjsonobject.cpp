@@ -269,7 +269,7 @@ static qsizetype indexOf(const QExplicitlySharedDataPointer<QCborContainerPrivat
     const auto it = std::lower_bound(
                 begin, end, key,
                 [&](const QJsonPrivate::ConstKeyIterator::value_type &e, const String &key) {
-        return o->stringCompareElement(e.key(), key) < 0;
+        return o->stringCompareElement(e.key(), key, QtCbor::Comparison::ForOrdering) < 0;
     });
 
     *keyExists = (it != end) && o->stringEqualsElement((*it).key(), key);
