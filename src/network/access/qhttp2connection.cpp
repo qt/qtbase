@@ -154,9 +154,6 @@ void QHttp2Stream::internalSendDATA()
         return m_uploadByteDevice->readPointer(requestSize, tmp) != nullptr && tmp > 0;
     };
 
-    constexpr qint32 StackBufferSize = 4096;
-    QVarLengthArray<uchar, StackBufferSize> intermediateBuffer;
-
     bool sentEND_STREAM = false;
     while (remainingWindowSize && deviceCanRead()) {
         quint32 bytesWritten = 0;
