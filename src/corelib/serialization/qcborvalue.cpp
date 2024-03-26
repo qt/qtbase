@@ -1796,6 +1796,12 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
         return;
     }
 
+    auto resetSize = qScopeGuard([this, oldSize = data.size()] {
+        data.resize(oldSize);
+        if (oldSize < data.capacity() / 2)
+            data.squeeze();
+    });
+
     Element e = {};
     e.type = (reader.isByteArray() ? QCborValue::ByteArray : QCborValue::String);
     if (len || !reader.isLengthKnown()) {
@@ -1840,9 +1846,8 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
             // verify UTF-8 string validity
             auto utf8result = QUtf8::isValidUtf8(QByteArrayView(data).last(len));
             if (!utf8result.isValidUtf8) {
-                status = QCborStreamReader::Error;
                 setErrorInReader(reader, { QCborError::InvalidUtf8String });
-                break;
+                return;
             }
             isAscii = isAscii && utf8result.isValidAscii;
         }
@@ -1853,8 +1858,8 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
             status = qt_cbor_append_string_chunk(reader, &data);
         } else {
             // error
-            status = QCborStreamReader::Error;
             setErrorInReader(reader, { QCborError::DataTooLarge });
+            return;
         }
     }
 
@@ -1876,15 +1881,14 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
         if (e.type == QCborValue::String) {
             if (Q_UNLIKELY(b->len > QString::maxSize())) {
                 setErrorInReader(reader, { QCborError::DataTooLarge });
-                status = QCborStreamReader::Error;
+                return;
             }
         }
     }
 
-    if (status == QCborStreamReader::Error) {
-        data.truncate(e.value);
-    } else {
+    if (status == QCborStreamReader::EndOfString) {
         elements.append(e);
+        resetSize.dismiss();
     }
 }
 
