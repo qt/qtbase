@@ -395,20 +395,63 @@ function(qt_internal_show_extra_ide_sources)
         return()
     endif()
 
-    set(target_name ${qt_repo_targets_name}_extra_files)
-    add_custom_target(${target_name})
+    # coin
+    set(coin_target_name ${qt_repo_targets_name}_coin_files)
+    file(GLOB_RECURSE coin_files LIST_DIRECTORIES false FOLLOW_SYMLINKS coin/*)
+    if(coin_files)
+        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/coin" FILES ${coin_files})
+        add_custom_target(${coin_target_name} SOURCES ${coin_files})
+    endif()
 
-    set(recursive_glob_patterns
-        coin/*
-        LICENSES/*
+    # config.test
+    set(config_tests_target_name ${qt_repo_targets_name}_config_tests)
+    file(GLOB_RECURSE config_tests_file LIST_DIRECTORIES false FOLLOW_SYMLINKS config.tests/*)
+    if(config_tests_file)
+        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/config.tests" FILES ${config_tests_file})
+        add_custom_target(${config_tests_target_name} SOURCES ${config_tests_file})
+    endif()
+
+    # cmake
+    set(cmake_target_name ${qt_repo_targets_name}_cmake_files)
+    file(GLOB_RECURSE cmake_files LIST_DIRECTORIES false FOLLOW_SYMLINKS
         cmake/*
-        config.tests/*
-        dist/*
         configure.cmake
         qt_cmdline.cmake
         .cmake.conf
         *.cmake
-        *.cmake.in
+        *.cmake.in)
+    foreach(cmake_file IN LISTS cmake_files)
+        if(NOT ((cmake_file IN_LIST coin_files) OR (file IN_LIST config_tests_files)))
+            list(APPEND cmake_target_files ${cmake_file})
+        endif()
+    endforeach()
+
+    if(cmake_target_files)
+        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${cmake_target_files})
+        add_custom_target(${cmake_target_name} SOURCES ${cmake_target_files})
+    endif()
+
+    # licenses
+    set(licenses_target_name ${qt_repo_targets_name}_licenses)
+    file(GLOB licenses_files LIST_DIRECTORIES false LICENSES/*)
+    if(licenses_files)
+        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSES" FILES ${licenses_files})
+        add_custom_target(${licenses_target_name} SOURCES ${licenses_files})
+    endif()
+
+    # changelogs
+    set(changelogs_target_name ${qt_repo_targets_name}_changelogs)
+    file(GLOB change_logs_files LIST_DIRECTORIES false dist/*)
+    if(change_logs_files)
+        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/dist" FILES ${change_logs_files})
+        add_custom_target(${changelogs_target_name} SOURCES ${change_logs_files})
+    endif()
+
+    # extra files
+    set(target_name ${qt_repo_targets_name}_extra_files)
+    add_custom_target(${target_name})
+
+    set(recursive_glob_patterns
         ${QT_BUILD_EXTRA_IDE_FILE_RECURSIVE_PATTERNS}
     )
     set(simple_glob_patterns
@@ -419,10 +462,12 @@ function(qt_internal_show_extra_ide_sources)
         ${QT_BUILD_EXTRA_IDE_FILE_PATTERNS}
     )
 
-    file(GLOB_RECURSE files LIST_DIRECTORIES false FOLLOW_SYMLINKS ${recursive_glob_patterns})
-    if(files)
-        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${files})
-        target_sources(${target_name} PRIVATE ${files})
+    if(recursive_glob_patterns)
+        file(GLOB_RECURSE files LIST_DIRECTORIES false FOLLOW_SYMLINKS ${recursive_glob_patterns})
+        if(files)
+            source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${files})
+            target_sources(${target_name} PRIVATE ${files})
+        endif()
     endif()
 
     file(GLOB files LIST_DIRECTORIES false ${simple_glob_patterns})
