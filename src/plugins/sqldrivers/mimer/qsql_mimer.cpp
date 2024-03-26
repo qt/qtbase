@@ -690,7 +690,7 @@ QVariant QMimerSQLResult::data(int i)
                                         err, QSqlError::StatementError, d->drv_d_func()));
                 return QVariant(QMetaType(type), nullptr);
             }
-            return QString::number(resLongLong).toLongLong();
+            return (qlonglong)resLongLong;
         }
         case MimerColumnTypes::Boolean: {
             err = MimerGetBoolean(d->statementhandle, static_cast<std::int16_t>(i) + 1);
