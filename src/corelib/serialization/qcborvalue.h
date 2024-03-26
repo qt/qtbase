@@ -259,6 +259,9 @@ private:
     }
 
     Q_DECLARE_STRONGLY_ORDERED(QCborValue)
+    friend class QCborArray;
+    friend class QCborMap;
+    friend class QCborValueConstRef;
     friend class QCborValueRef;
     friend class QCborContainerPrivate;
     friend class QJsonPrivate::Value;
