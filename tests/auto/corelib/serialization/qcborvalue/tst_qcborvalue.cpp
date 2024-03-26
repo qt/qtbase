@@ -80,9 +80,8 @@ private slots:
     void mapComplexKeys();
     void mapNested();
 
+    void sorting_data();
     void sorting();
-    void comparison_data();
-    void comparison();
     void comparisonMap_data();
     void comparisonMap();
 
@@ -1821,8 +1820,12 @@ void tst_QCborValue::mapNested()
     }
 }
 
-void tst_QCborValue::sorting()
+void tst_QCborValue::sorting_data()
 {
+    QTest::addColumn<QCborValue>("lhs");
+    QTest::addColumn<QCborValue>("rhs");
+    QTest::addColumn<Qt::strong_ordering>("expectedOrdering");
+
     QCborValue vundef, vnull(nullptr);
     QCborValue vtrue(true), vfalse(false);
     QCborValue vint1(1), vint2(2);
@@ -1841,62 +1844,111 @@ void tst_QCborValue::sorting()
     QCborValue vurl1(QUrl("https://example.net")), vurl2(QUrl("https://example.com/"));
     QCborValue vuuid1{QUuid()}, vuuid2(QUuid::createUuid());
     QCborValue vsimple1(QCborSimpleType(1)), vsimple32(QCborSimpleType(32)), vsimple255(QCborSimpleType(255));
-    QCborValue vdouble1(1.5), vdouble2(qInf());
+    QCborValue vdouble1(1.5), vdouble2(qInf()), vdouble3(qQNaN());
     QCborValue vndouble1(-1.5), vndouble2(-qInf());
 
+    auto addRow = [](QCborValue lhs, QCborValue rhs, Qt::strong_ordering order) {
+        QTest::addRow("%s-cmp-%s", qPrintable(lhs.toDiagnosticNotation()),
+                      qPrintable(rhs.toDiagnosticNotation()))
+                << lhs << rhs << order;
+    };
+    auto addSelfCmp = [](QCborValue v) {
+        QTest::addRow("self-%s", qPrintable(v.toDiagnosticNotation()))
+                << v << v << Qt::strong_ordering::equal;
+    };
+
+    // self compares
+    addSelfCmp(vundef);
+    addSelfCmp(vnull);
+    addSelfCmp(vfalse);
+    addSelfCmp(vtrue);
+    addSelfCmp(vint1);
+    addSelfCmp(vint2);
+    addSelfCmp(vneg1);
+    addSelfCmp(vneg2);
+    addSelfCmp(vba1);
+    addSelfCmp(vba2);
+    addSelfCmp(vba3);
+    addSelfCmp(vs1);
+    addSelfCmp(vs2);
+    addSelfCmp(vs3);
+    addSelfCmp(va1);
+    addSelfCmp(va2);
+    addSelfCmp(va3);
+    addSelfCmp(vm1);
+    addSelfCmp(vm2);
+    addSelfCmp(vm3);
+    addSelfCmp(vdt1);
+    addSelfCmp(vdt2);
+    addSelfCmp(vtagged1);
+    addSelfCmp(vtagged2);
+    addSelfCmp(vtagged3);
+    addSelfCmp(vtagged4);
+    addSelfCmp(vtagged5);
+    addSelfCmp(vurl1);
+    addSelfCmp(vurl2);
+    addSelfCmp(vuuid1);
+    addSelfCmp(vuuid2);
+    addSelfCmp(vsimple1);
+    addSelfCmp(vsimple32);
+    addSelfCmp(vsimple255);
+    addSelfCmp(vdouble1);
+    addSelfCmp(vdouble2);
+    addSelfCmp(vdouble3);   // surprise: NaNs do compare
+    addSelfCmp(vndouble1);
+    addSelfCmp(vndouble2);
+
     // intra-type comparisons
-    QT_TEST_ALL_COMPARISON_OPS(vfalse, vtrue, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vsimple1, vsimple32, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vsimple32, vsimple255, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vint1, vint2, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vdouble1, vdouble2, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vndouble1, vndouble2, Qt::strong_ordering::less);
+    addRow(vfalse, vtrue, Qt::strong_ordering::less);
+    addRow(vsimple1, vsimple32, Qt::strong_ordering::less);
+    addRow(vsimple32, vsimple255, Qt::strong_ordering::less);
+    addRow(vint1, vint2, Qt::strong_ordering::less);
+    addRow(vdouble1, vdouble2, Qt::strong_ordering::less);
+    addRow(vdouble2, vdouble3, Qt::strong_ordering::less);  // surprise: NaNs do compare
+    addRow(vndouble1, vndouble2, Qt::strong_ordering::less); // surprise: -1.5 < -inf
     // note: shorter length sorts first
-    QT_TEST_ALL_COMPARISON_OPS(vba1, vba2, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vba2, vba3, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vs1, vs2, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vs2, vs3, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(va1, va2, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(va2, va3, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vm1, vm2, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vm2, vm3, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vdt1, vdt2, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vtagged1, vtagged2, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vtagged2, vtagged3, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vtagged3, vtagged4, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vtagged4, vtagged5, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vurl1, vurl2, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vuuid1, vuuid2, Qt::strong_ordering::less);
+    addRow(vba1, vba2, Qt::strong_ordering::less);
+    addRow(vba2, vba3, Qt::strong_ordering::less);
+    addRow(vs1, vs2, Qt::strong_ordering::less);
+    addRow(vs2, vs3, Qt::strong_ordering::less);
+    addRow(va1, va2, Qt::strong_ordering::less);
+    addRow(va2, va3, Qt::strong_ordering::less);
+    addRow(vm1, vm2, Qt::strong_ordering::less);
+    addRow(vm2, vm3, Qt::strong_ordering::less);
+    addRow(vdt1, vdt2, Qt::strong_ordering::less);
+    addRow(vtagged1, vtagged2, Qt::strong_ordering::less);
+    addRow(vtagged2, vtagged3, Qt::strong_ordering::less);
+    addRow(vtagged3, vtagged4, Qt::strong_ordering::less);
+    addRow(vtagged4, vtagged5, Qt::strong_ordering::less);
+    addRow(vurl1, vurl2, Qt::strong_ordering::less);
+    addRow(vuuid1, vuuid2, Qt::strong_ordering::less);
 
     // surprise 1: CBOR sorts integrals by absolute value
-    QT_TEST_ALL_COMPARISON_OPS(vneg1, vneg2, Qt::strong_ordering::less);
+    addRow(vneg1, vneg2, Qt::strong_ordering::less);
 
     // surprise 2: CBOR sorts negatives after positives (sign+magnitude)
-    QT_TEST_ALL_COMPARISON_OPS(vint2, vneg1, Qt::strong_ordering::less);
-    QVERIFY(vint2.toInteger() > vneg1.toInteger());
-    QT_TEST_ALL_COMPARISON_OPS(vdouble2, vndouble1, Qt::strong_ordering::less);
-    QVERIFY(vdouble2.toDouble() > vndouble1.toDouble());
+    addRow(vint2, vneg1, Qt::strong_ordering::less);
+    addRow(vdouble2, vndouble1, Qt::strong_ordering::less);
 
     // inter-type comparisons
-    QT_TEST_ALL_COMPARISON_OPS(vneg2, vba1, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vba3, vs1, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vs3, va1, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(va2, vm1, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vm2, vdt1, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vdt2, vtagged1, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vtagged2, vurl1, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vurl1, vuuid1, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vuuid2, vtagged3, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vtagged4, vsimple1, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vsimple1, vfalse, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vtrue, vnull, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vnull, vundef, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vundef, vsimple32, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vsimple255, vdouble1, Qt::strong_ordering::less);
+    addRow(vneg2, vba1, Qt::strong_ordering::less);
+    addRow(vba3, vs1, Qt::strong_ordering::less);
+    addRow(vs3, va1, Qt::strong_ordering::less);
+    addRow(va2, vm1, Qt::strong_ordering::less);
+    addRow(vm2, vdt1, Qt::strong_ordering::less);
+    addRow(vdt2, vtagged1, Qt::strong_ordering::less);
+    addRow(vtagged2, vurl1, Qt::strong_ordering::less);
+    addRow(vurl1, vuuid1, Qt::strong_ordering::less);
+    addRow(vuuid2, vtagged3, Qt::strong_ordering::less);
+    addRow(vtagged4, vsimple1, Qt::strong_ordering::less);
+    addRow(vsimple1, vfalse, Qt::strong_ordering::less);
+    addRow(vtrue, vnull, Qt::strong_ordering::less);
+    addRow(vnull, vundef, Qt::strong_ordering::less);
+    addRow(vundef, vsimple32, Qt::strong_ordering::less);
+    addRow(vsimple255, vdouble1, Qt::strong_ordering::less);
 
     // which shows all doubles sorted after integrals
-    QT_TEST_ALL_COMPARISON_OPS(vint2, vdouble1, Qt::strong_ordering::less);
-    QVERIFY(vint2.toInteger() > vdouble1.toDouble());
+    addRow(vint2, vdouble1, Qt::strong_ordering::less);
 
     // Add some non-US-ASCII strings. In the current implementation, QCborValue
     // can store a string as either US-ASCII, UTF-8, or UTF-16, so let's exercise
@@ -1911,60 +1963,42 @@ void tst_QCborValue::sorting()
     // 5 code units in UTF-8
     QCborValue vs4_utf16(u"Mørk"_s);
     QCborValue vs4_utf8 = utf8string("Mørk");
-    QT_TEST_ALL_COMPARISON_OPS(vs4_utf8, vs4_utf8, Qt::strong_ordering::equal);
-    QT_TEST_ALL_COMPARISON_OPS(vs4_utf16, vs4_utf16, Qt::strong_ordering::equal);
-    QT_TEST_ALL_COMPARISON_OPS(vs4_utf16, vs4_utf8, Qt::strong_ordering::equal);
+    QTest::newRow("self-utf8_5b") << vs4_utf8 << vs4_utf8 << Qt::strong_ordering::equal;
+    QTest::newRow("self-utf16_5b") << vs4_utf16 << vs4_utf16 << Qt::strong_ordering::equal;
+    QTest::newRow("utf16_5b-cmp-utf8_5b") << vs4_utf16 << vs4_utf8 << Qt::strong_ordering::equal;
 
     // 5 code units in UTF-16
     QCborValue vs5_utf16(u"Først"_s);
     QCborValue vs5_utf8 = utf8string("Først");
-    QT_TEST_ALL_COMPARISON_OPS(vs5_utf8, vs5_utf8, Qt::strong_ordering::equal);
-    QT_TEST_ALL_COMPARISON_OPS(vs5_utf16, vs5_utf16, Qt::strong_ordering::equal);
-    QT_TEST_ALL_COMPARISON_OPS(vs5_utf16, vs5_utf8, Qt::strong_ordering::equal);
+    QTest::newRow("self-utf8_5c") << vs5_utf8 << vs5_utf8 << Qt::strong_ordering::equal;
+    QTest::newRow("self-utf16_5c") << vs5_utf16 << vs5_utf16 << Qt::strong_ordering::equal;
+    QTest::newRow("utf16_5c-cmp-utf8_5c") << vs5_utf16 << vs5_utf8 << Qt::strong_ordering::equal;
 
     // sorted by UTF-8 length first, so "Mørk" < "World" < "Først" (!!)
-    QT_TEST_ALL_COMPARISON_OPS(vs3, vs4_utf8, Qt::strong_ordering::greater);
-    QT_TEST_ALL_COMPARISON_OPS(vs3, vs4_utf16, Qt::strong_ordering::greater);
-    QT_TEST_ALL_COMPARISON_OPS(vs3, vs5_utf8, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vs3, vs5_utf16, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vs4_utf8, vs5_utf8, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vs4_utf8, vs5_utf16, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vs4_utf16, vs5_utf8, Qt::strong_ordering::less);
-    QT_TEST_ALL_COMPARISON_OPS(vs4_utf16, vs5_utf16, Qt::strong_ordering::less);
+    QTest::newRow("ascii-cmp-utf8_5b") << vs3 << vs4_utf8 << Qt::strong_ordering::greater;
+    QTest::newRow("ascii-cmp-utf16_5b") << vs3 << vs4_utf16 << Qt::strong_ordering::greater;
+    QTest::newRow("ascii-cmp-utf8_5c") << vs3 << vs5_utf8 << Qt::strong_ordering::less;
+    QTest::newRow("ascii-cmp-utf16_5c") << vs3 << vs5_utf16 << Qt::strong_ordering::less;
+    QTest::newRow("utf8_5b-cmp-utf8_5c") << vs4_utf8 << vs5_utf8 << Qt::strong_ordering::less;
+    QTest::newRow("utf8_5b-cmp-utf16_5c") << vs4_utf8 << vs5_utf16 << Qt::strong_ordering::less;
+    QTest::newRow("utf16_5b-cmp-utf8_5c") << vs4_utf16 << vs5_utf8 << Qt::strong_ordering::less;
+    QTest::newRow("utf16_5b-cmp-utf16_5c") << vs4_utf16 << vs5_utf16 << Qt::strong_ordering::less;
 }
 
-void tst_QCborValue::comparison_data()
-{
-    QTest::addColumn<QCborValue>("lhs");
-    QTest::addColumn<QCborValue>("rhs");
-    QTest::addColumn<Qt::strong_ordering>("expectedOrdering");
-
-    auto addRow = [](QCborValue lhs, QCborValue rhs, Qt::strong_ordering order) {
-        QTest::addRow("%s-cmp-%s", qPrintable(lhs.toDiagnosticNotation()),
-                      qPrintable(rhs.toDiagnosticNotation()))
-                << lhs << rhs << order;
-    };
-    // typical, sorts as expected
-    addRow(0, 0, Qt::strong_ordering::equivalent);
-    addRow(1, 0, Qt::strong_ordering::greater);
-    addRow(0, 1, Qt::strong_ordering::less);
-    addRow(10.0, 10.0, Qt::strong_ordering::equivalent);
-    addRow(10.5, 10.8, Qt::strong_ordering::less);
-    addRow(-10.5, -10.8, Qt::strong_ordering::less);
-    addRow("Qt","Qt", Qt::strong_ordering::equivalent);
-    addRow("qt","Qt", Qt::strong_ordering::greater);
-
-           // atypical gotchas
-    addRow(0, -1, Qt::strong_ordering::less);
-    addRow(10, 10.0, Qt::strong_ordering::less);
-    addRow(0, "Qt", Qt::strong_ordering::less);
-}
-
-void tst_QCborValue::comparison()
+void tst_QCborValue::sorting()
 {
     QFETCH(QCborValue, lhs);
     QFETCH(QCborValue, rhs);
     QFETCH(Qt::strong_ordering, expectedOrdering);
+
+    // do a QCOMPARE first so we get a proper QTest error in case QCborValue is
+    // broken
+    if (expectedOrdering == Qt::strong_ordering::equal)
+        QCOMPARE_EQ(lhs, rhs);
+    else if (expectedOrdering == Qt::strong_ordering::less)
+        QCOMPARE_LT(lhs, rhs);
+    else if (expectedOrdering == Qt::strong_ordering::greater)
+        QCOMPARE_GT(lhs, rhs);
 
     QCborArray array{lhs, rhs};
 
@@ -1973,7 +2007,7 @@ void tst_QCborValue::comparison()
     QCborValueRef lhsRef = array[0];
     QCborValueRef rhsRef = array[1];
 
-           // QCborValue vs QCborValue
+    // QCborValue vs QCborValue
     QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, expectedOrdering);
     // QCborValueConstRef vs QCborValueConstRef
     QT_TEST_ALL_COMPARISON_OPS(lhsCRef, rhsCRef, expectedOrdering);
@@ -1986,7 +2020,6 @@ void tst_QCborValue::comparison()
     // QCborValueConstRef vs QCborValueRef (and reverse)
     QT_TEST_ALL_COMPARISON_OPS(lhsCRef, rhsRef, expectedOrdering);
 }
-
 
 void tst_QCborValue::comparisonMap_data()
 {
