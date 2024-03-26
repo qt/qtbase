@@ -104,7 +104,7 @@ public:
         v = _mm_or_ps(_mm_and_ps(cmpgt, est), _mm_andnot_ps(cmpgt, kapmul));
 #endif
         QColorVector out;
-        _mm_store_ps(&out.x, v);
+        _mm_storeu_ps(&out.x, v);
         const float L = 116.f * out.y - 16.f;
         const float a = 500.f * (out.x - out.y);
         const float b = 200.f * (out.y - out.z);
