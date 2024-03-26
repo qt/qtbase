@@ -28,7 +28,6 @@ public:
 
     QWindowContainerPrivate()
         : window(nullptr)
-        , oldFocusWindow(nullptr)
         , usesNativeWidgets(false)
     {
     }
@@ -103,7 +102,6 @@ public:
     }
 
     QPointer<QWindow> window;
-    QWindow *oldFocusWindow;
     QWindow fakeParent;
 
     uint usesNativeWidgets : 1;
@@ -207,6 +205,7 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
     }
 
     d->window = embeddedWindow;
+    d->window->installEventFilter(this);
 
     QString windowName = d->window->objectName();
     if (windowName.isEmpty())
@@ -218,9 +217,6 @@ QWindowContainer::QWindowContainer(QWindow *embeddedWindow, QWidget *parent, Qt:
     d->window->setFlag(Qt::SubWindow);
 
     setAcceptDrops(true);
-
-    connect(qGuiApp, &QGuiApplication::focusWindowChanged,
-            this, &QWindowContainer::focusWindowChanged);
 
     connect(containedWindow(), &QWindow::minimumHeightChanged, this, &QWindowContainer::updateGeometry);
     connect(containedWindow(), &QWindow::minimumWidthChanged, this, &QWindowContainer::updateGeometry);
@@ -244,30 +240,12 @@ QWindowContainer::~QWindowContainer()
     // QEvent::PlatformSurface delivery relies on virtuals. Getting
     // SurfaceAboutToBeDestroyed can be essential for OpenGL, Vulkan, etc.
     // QWindow subclasses in particular. Keep these working.
-    if (d->window)
+    if (d->window) {
+        d->window->removeEventFilter(this);
         d->window->destroy();
+    }
 
     delete d->window;
-
-    disconnect(qGuiApp, &QGuiApplication::focusWindowChanged,
-               this, &QWindowContainer::focusWindowChanged);
-}
-
-
-
-/*!
-    \internal
- */
-
-void QWindowContainer::focusWindowChanged(QWindow *focusWindow)
-{
-    Q_D(QWindowContainer);
-    d->oldFocusWindow = focusWindow;
-    if (focusWindow == d->window) {
-        QWidget *widget = QApplication::focusWidget();
-        if (widget)
-            widget->clearFocus();
-    }
 }
 
 /*!
@@ -284,8 +262,12 @@ bool QWindowContainer::eventFilter(QObject *o, QEvent *e)
         QChildEvent *ce = static_cast<QChildEvent *>(e);
         if (ce->child() == d->window) {
             o->removeEventFilter(this);
+            d->window->removeEventFilter(this);
             d->window = nullptr;
         }
+    } else if (e->type() == QEvent::FocusIn) {
+        if (o == d->window)
+            setFocus(Qt::ActiveWindowFocusReason);
     }
     return false;
 }
@@ -335,12 +317,8 @@ bool QWindowContainer::event(QEvent *e)
         break;
     case QEvent::FocusIn:
         if (d->window->parent()) {
-            if (d->oldFocusWindow != d->window) {
+            if (QGuiApplication::focusWindow() != d->window)
                 d->window->requestActivate();
-            } else {
-                QWidget *next = nextInFocusChain();
-                next->setFocus();
-            }
         }
         break;
 #if QT_CONFIG(draganddrop)

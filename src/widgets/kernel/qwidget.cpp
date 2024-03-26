@@ -6616,7 +6616,9 @@ void QWidgetPrivate::setFocus_sys()
 {
     Q_Q(QWidget);
     // Embedded native widget may have taken the focus; get it back to toplevel
-    // if that is the case (QTBUG-25852)
+    // if that is the case (QTBUG-25852), unless widget is a window container.
+    if (extra && extra->hasWindowContainer)
+        return;
     // Do not activate in case the popup menu opens another application (QTBUG-70810)
     // unless the application is embedded (QTBUG-71991).
     if (QWindow *nativeWindow = q->testAttribute(Qt::WA_WState_Created) ? q->window()->windowHandle() : nullptr) {

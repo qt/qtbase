@@ -42,9 +42,6 @@ public:
 protected:
     bool event(QEvent *ev) override;
     bool eventFilter(QObject *, QEvent *ev) override;
-
-private slots:
-    void focusWindowChanged(QWindow *focusWindow);
 };
 
 QT_END_NAMESPACE

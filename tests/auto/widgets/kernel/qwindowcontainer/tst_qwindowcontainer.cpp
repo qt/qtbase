@@ -7,6 +7,7 @@
 #include <qapplication.h>
 #include <qwindow.h>
 #include <qwidget.h>
+#include <qlineedit.h>
 
 #include <qdockwidget.h>
 #include <qmainwindow.h>
@@ -60,6 +61,7 @@ private slots:
     void testNativeContainerParent();
     void testPlatformSurfaceEvent();
     void embedWidgetWindow();
+    void testFocus();
     void cleanup();
 
 private:
@@ -466,6 +468,66 @@ void tst_QWindowContainer::embedWidgetWindow()
     QTRY_VERIFY(widget.isNull());
     QTRY_VERIFY(widgetWindow.isNull());
 
+}
+
+void tst_QWindowContainer::testFocus()
+{
+    QWidget root;
+    root.setGeometry(m_availableGeometry);
+
+    QLineEdit *lineEdit = new QLineEdit(&root);
+    lineEdit->setGeometry(0, 0, m_availableGeometry.width() * 0.1, 17);
+    lineEdit->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+
+    QWindow *embedded = new QWindow();
+    QWidget *container = QWidget::createWindowContainer(embedded, &root);
+    container->setGeometry(0, lineEdit->height() + 10, m_availableGeometry.width() * 0.2, m_availableGeometry.height() - (lineEdit->height() + 10));
+    container->setFocusPolicy(Qt::StrongFocus);
+
+    root.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&root));
+    lineEdit->setFocus();
+    QTRY_VERIFY(lineEdit->hasFocus());
+    QCOMPARE(QGuiApplication::focusWindow(), root.windowHandle());
+    QCOMPARE(QApplication::focusWidget(), lineEdit);
+
+    // embedded window gets focused because of mouse click
+    QPoint embeddedCenter = container->rect().center();
+    QTest::mousePress(root.windowHandle(), Qt::LeftButton, {}, embeddedCenter);
+    QVERIFY(QTest::qWaitForWindowFocused(embedded));
+    QVERIFY(container->hasFocus());
+    QCOMPARE(QGuiApplication::focusWindow(), embedded);
+    QCOMPARE(QApplication::focusWidget(), container);
+    QVERIFY(!lineEdit->hasFocus());
+
+    QTest::mouseClick(lineEdit, Qt::LeftButton, {});
+    QVERIFY(QTest::qWaitForWindowFocused(root.windowHandle()));
+    QCOMPARE(QGuiApplication::focusWindow(), root.windowHandle());
+    QCOMPARE(QApplication::focusWidget(), lineEdit);
+    QVERIFY(lineEdit->hasFocus());
+
+    // embedded window gets focused because of Tab key event
+    QTest::keyClick(root.windowHandle(), Qt::Key_Tab);
+    QVERIFY(QTest::qWaitForWindowFocused(embedded));
+    QVERIFY(container->hasFocus());
+    QCOMPARE(QGuiApplication::focusWindow(), embedded);
+    QCOMPARE(QApplication::focusWidget(), container);
+    QVERIFY(!lineEdit->hasFocus());
+    // A key tab event sent to the root window should cause
+    // the nextInFocusChain of the window container to get focused
+    QTest::keyClick(root.windowHandle(), Qt::Key_Tab);
+    QVERIFY(QTest::qWaitForWindowFocused(root.windowHandle()));
+    QCOMPARE(QGuiApplication::focusWindow(), root.windowHandle());
+    QCOMPARE(QApplication::focusWidget(), lineEdit);
+    QVERIFY(lineEdit->hasFocus());
+
+    // embedded window gets focused programmatically
+    embedded->requestActivate();
+    QVERIFY(QTest::qWaitForWindowFocused(embedded));
+    QVERIFY(container->hasFocus());
+    QCOMPARE(QGuiApplication::focusWindow(), embedded);
+    QCOMPARE(QApplication::focusWidget(), container);
+    QVERIFY(!lineEdit->hasFocus());
 }
 
 QTEST_MAIN(tst_QWindowContainer)
