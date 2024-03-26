@@ -119,7 +119,7 @@ Q_SIGNALS:
     void headersReceived(const HPack::HttpHeader &headers, bool endStream);
     void headersUpdated();
     void errorOccurred(quint32 errorCode, const QString &errorString);
-    void stateChanged(State newState);
+    void stateChanged(QHttp2Stream::State newState);
     void promisedStreamReceived(quint32 newStreamID);
     void uploadBlocked();
     void dataReceived(const QByteArray &data, bool endStream);
