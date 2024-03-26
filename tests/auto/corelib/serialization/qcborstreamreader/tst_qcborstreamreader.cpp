@@ -986,11 +986,17 @@ void tst_QCborStreamReader::validation_data()
     // Add QCborStreamReader-specific limitations due to use of QByteArray and
     // QString, which are allocated by QArrayData::allocate().
     const qsizetype MaxInvalid = std::numeric_limits<QByteArray::size_type>::max();
-    const qsizetype MinInvalid = QByteArray::maxSize() + 1;
+    const qsizetype MinInvalid = QByteArray::maxSize() - 1 - sizeof(quint64);
+
+    // Between this threshold and MaxInvalid, we get QCborError::DataTooLarge
+    // (cannot allocate a data block that big); between it and MinInvalid, we
+    // get QCborError::EndOfFile (i.e., we could allocate, but there's not
+    // enough data in the stream)
+    const qsizetype DataSizeThreshold = MaxInvalid - 1 - sizeof(QByteArray::size_type);
 
     addValidationColumns();
     addValidationData(MinInvalid);
-    addValidationLargeData(MinInvalid, MaxInvalid);
+    addValidationLargeData(MinInvalid, MaxInvalid, DataSizeThreshold);
 }
 
 void tst_QCborStreamReader::validation()

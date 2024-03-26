@@ -30,20 +30,21 @@ QT_BEGIN_NAMESPACE
 
 QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QCborContainerPrivate)
 
-// Worst case memory allocation for a corrupt stream: 256 MB for 32-bit, 1 GB for 64-bit
-static constexpr quint64 MaxAcceptableMemoryUse = (sizeof(void*) == 4 ? 256 : 1024) * 1024 * 1024;
+// Worst case memory allocation for a corrupt stream: 64 MB for 32-bit, 256 MB for 64-bit
+static constexpr quint64 MaxAcceptableElementMemoryUse =
+        (sizeof(void*) == 4 ? 64 : 256) * 1024 * 1024;
 
 // Internal limits to ensure we don't blow up the memory when parsing a corrupt
 // (possibly crafted to exploit) CBOR stream. The recursion impacts both the
 // maps/arrays we'll open when parsing and the thread's stack, as the parser is
 // itself recursive. If someone really needs more than 1024 layers of nesting,
 // they probably have a weird use-case for which custom parsing and
-// serialisation code would make sense. The limit on element count is the
+// serialization code would make sense. The limit on element count is the
 // preallocated limit: if the stream does actually have more elements, we will
 // grow the container.
 Q_DECL_UNUSED static constexpr int MaximumRecursionDepth = 1024;
 Q_DECL_UNUSED static constexpr quint64 MaximumPreallocatedElementCount =
-        MaxAcceptableMemoryUse / MaximumRecursionDepth / sizeof(QtCbor::Element) - 1;
+        MaxAcceptableElementMemoryUse / MaximumRecursionDepth / sizeof(QtCbor::Element) - 1;
 
 /*!
     \class QCborValue
@@ -1841,14 +1842,12 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
     if (reader.lastError() != QCborError::NoError)
         return;
 
-    qsizetype rawlen = reader.currentStringChunkSize();
-    QByteArray::size_type len = rawlen;
-    if (rawlen < 0)
+    qsizetype len = reader.currentStringChunkSize();
+    if (len < 0)
         return;                     // error
-    if (len != rawlen) {
-        // truncation
-        setErrorInReader(reader, { QCborError::DataTooLarge });
-        return;
+    if (len > reader.bytesAvailable()) {
+        // don't even try to allocate the first block, we can't succeed
+        return setErrorInReader(reader, { QCborError::EndOfFile });
     }
 
     auto resetSize = qScopeGuard([this, oldSize = data.size()] {
@@ -1857,17 +1856,17 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
             data.squeeze();
     });
 
+    // allocate the entry in the array and in the byte data: if this is a
+    // single chunk (the typical case), it's the only allocation
     Element e = {};
     e.type = QCborValue::Type(reader.type());
     if (len || !reader.isLengthKnown()) {
         // The use of size_t means none of the operations here can overflow because
         // all inputs are less than half SIZE_MAX.
-        constexpr size_t EstimatedOverhead = 16;
-        constexpr size_t MaxMemoryIncrement = 16384;
         size_t offset = data.size();
 
         // add space for aligned ByteData (this can't overflow)
-        offset += sizeof(QtCbor::ByteData) + alignof(QtCbor::ByteData);
+        offset += sizeof(QtCbor::ByteData) + alignof(QtCbor::ByteData) - 1;
         offset &= ~(alignof(QtCbor::ByteData) - 1);
         if (offset > size_t(QByteArray::maxSize())) {
             // overflow
@@ -1876,20 +1875,17 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
         }
 
         // and calculate the size we want to have
-        size_t newCapacity = offset + len;          // can't overflow
-        if (size_t(len) > MaxMemoryIncrement - EstimatedOverhead) {
-            // there's a non-zero chance that we won't need this memory at all,
-            // so capa how much we allocate
-            newCapacity = offset + MaxMemoryIncrement - EstimatedOverhead;
-        }
+        // (there's a non-zero chance that we won't need this memory at all,
+        // so cap how much we allocate)
+        size_t newCapacity = offset + qMin(size_t(len), MaxAcceptableElementMemoryUse);
         if (newCapacity > size_t(QByteArray::maxSize())) {
             // this may cause an allocation failure
             newCapacity = QByteArray::maxSize();
         }
         if (newCapacity > size_t(data.capacity()))
             data.reserve(newCapacity);
-        data.resize(offset + sizeof(QtCbor::ByteData));
-        e.value = offset;
+        data.resize(offset);
+        e.value = offset - sizeof(QtCbor::ByteData);
         e.flags = Element::HasByteData;
     }
 
@@ -1907,15 +1903,23 @@ void QCborContainerPrivate::decodeStringFromCbor(QCborStreamReader &reader)
             isAscii = isAscii && utf8result.isValidAscii;
         }
 
-        rawlen = reader.currentStringChunkSize();
-        len = rawlen;
-        if (len == rawlen) {
-            status = qt_cbor_append_string_chunk(reader, &data);
-        } else {
-            // error
-            setErrorInReader(reader, { QCborError::DataTooLarge });
+        len = reader.currentStringChunkSize();
+        if (len < 0) {
+            // QCborStreamReader has already failed
+            Q_ASSERT(reader.lastError() != QCborError::NoError);
             return;
         }
+        QCborError err = {};
+        if (len > reader.bytesAvailable())
+            err = { QCborError::EndOfFile };
+        else if (size_t(data.size()) + size_t(len) > size_t(QByteArray::maxSize()))
+            err = { QCborError::DataTooLarge };
+        if (err) {
+            setErrorInReader(reader, err);
+            return;
+        }
+
+        status = qt_cbor_append_string_chunk(reader, &data);
     }
 
     // update size

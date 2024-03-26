@@ -2741,13 +2741,15 @@ void tst_QCborValue::fromCborStreamReaderIODevice()
 
 void tst_QCborValue::validation_data()
 {
-    // Add QCborStreamReader-specific limitations due to use of QByteArray and
-    // QString, which are allocated by QArrayData::allocate().
+    // Add QCborValue-specific limitations due to use of QByteArray internally
+    // with extra size prefixes. Unlike QCborStreamReader, QCborValue first
+    // reports EndOfFile before DataTooLarge, so it's impossible to properly
+    // test the latter.
     const qsizetype MaxInvalid = std::numeric_limits<QByteArray::size_type>::max();
     const qsizetype MinInvalid = QByteArray::maxSize() + 1 - sizeof(QByteArray::size_type);
     addValidationColumns();
     addValidationData(MinInvalid);
-    addValidationLargeData(MinInvalid, MaxInvalid);
+    addValidationLargeData(MinInvalid, MaxInvalid, MaxInvalid);
 
     // Chunked strings whose total overflows the limit, but each individual
     // chunk doesn't. 0x5a for 32-bit, 0x5b for 64-bit.

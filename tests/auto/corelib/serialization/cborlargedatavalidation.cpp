@@ -44,16 +44,17 @@ qint64 LargeIODevice::readData(char *data, qint64 maxlen)
     return maxlen;
 }
 
-void addValidationLargeData(qsizetype minInvalid, qsizetype maxInvalid)
+void addValidationLargeData(qsizetype minInvalid, qsizetype maxInvalid,
+                            qsizetype maxDataSizeThreshold)
 {
     char toolong[1 + sizeof(qsizetype)];
-    for (qsizetype v = maxInvalid; v >= minInvalid; --v) {
+    for (qsizetype i = 0; i + maxInvalid >= minInvalid; --i) {
         // 0x5a for 32-bit, 0x5b for 64-bit
+        qsizetype v = maxInvalid + i;
         toolong[0] = sizeof(v) > 4 ? 0x5b : 0x5a;
         qToBigEndian(v, toolong + 1);
 
-        bool overflows = v > std::numeric_limits<qsizetype>::max() - 1 - qsizetype(sizeof(v));
-        CborError err = overflows ? CborErrorDataTooLarge : CborErrorUnexpectedEOF;
+        CborError err = v > maxDataSizeThreshold ? CborErrorDataTooLarge : CborErrorUnexpectedEOF;
 
         QTest::addRow("bytearray-too-big-for-qbytearray-%zx", size_t(v))
                 << QByteArray(toolong, sizeof(toolong)) << 0 << err;
