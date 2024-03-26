@@ -1156,6 +1156,12 @@ static int compareElementRecursive(const QCborContainerPrivate *c1, const Elemen
     const ByteData *b1 = c1 ? c1->byteData(e1) : nullptr;
     const ByteData *b2 = c2 ? c2->byteData(e2) : nullptr;
     if (b1 || b2) {
+        auto compareStrings = [mode](auto s1, auto s2) {
+            if (mode == Comparison::ForEquality)
+                return QtPrivate::equalStrings(s1, s2) ? 0 : 1;
+            return QtPrivate::compareStrings(s1, s2);
+        };
+
         auto len1 = b1 ? b1->len : 0;
         auto len2 = b2 ? b2->len : 0;
 
@@ -1184,15 +1190,20 @@ static int compareElementRecursive(const QCborContainerPrivate *c1, const Elemen
             // Case 1: both UTF-16, so lengths are comparable.
             // (we can't use memcmp in little-endian machines)
             if (len1 == len2)
-                return QtPrivate::compareStrings(b1->asStringView(), b2->asStringView());
+                return compareStrings(b1->asStringView(), b2->asStringView());
             return len1 < len2 ? -1 : 1;
         }
 
         if (!(e1.flags & Element::StringIsUtf16) && !(e2.flags & Element::StringIsUtf16)) {
             // Cases 4, 5 and 6: neither is UTF-16, so lengths are comparable too
             // (this case includes byte arrays too)
-            if (len1 == len2)
+            if (len1 == len2) {
+                if (mode == Comparison::ForEquality) {
+                    // GCC optimizes this to __memcmpeq(); Clang to bcmp()
+                    return memcmp(b1->byte(), b2->byte(), size_t(len1)) == 0 ? 0 : 1;
+                }
                 return memcmp(b1->byte(), b2->byte(), size_t(len1));
+            }
             return len1 < len2 ? -1 : 1;
         }
 
@@ -1217,8 +1228,8 @@ static int compareElementRecursive(const QCborContainerPrivate *c1, const Elemen
         if (len1 != len2)
             return len1 < len2 ? -1 : 1;
         if (e1.flags & Element::StringIsUtf16)
-            return QtPrivate::compareStrings(b1->asStringView(), b2->asLatin1());
-        return QtPrivate::compareStrings(b1->asLatin1(), b2->asStringView());
+            return compareStrings(b1->asStringView(), b2->asLatin1());
+        return compareStrings(b1->asLatin1(), b2->asStringView());
     }
 
     return compareElementNoData(e1, e2);
