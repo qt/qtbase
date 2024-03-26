@@ -1333,6 +1333,9 @@ QByteArray &QByteArray::operator=(const QByteArray & other) noexcept
     \overload
 
     Assigns \a str to this byte array.
+
+    \a str is assumed to point to a null-terminated string, and its length is
+    determined dynamically.
 */
 
 QByteArray &QByteArray::operator=(const char *str)
