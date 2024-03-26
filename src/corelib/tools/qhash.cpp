@@ -320,13 +320,13 @@ template <int cROUNDS = 2, int dROUNDS = 4> struct SipHash64
     uint64_t k0;
     uint64_t k1;
 
-    inline SipHash64(size_t fulllen, uint64_t seed, uint64_t seed2);
+    inline SipHash64(uint64_t fulllen, uint64_t seed, uint64_t seed2);
     inline void addBlock(const uint8_t *in, size_t inlen);
     inline uint64_t finalize(const uint8_t *in, size_t left);
 };
 
 template <int cROUNDS, int dROUNDS>
-SipHash64<cROUNDS, dROUNDS>::SipHash64(size_t inlen, uint64_t seed, uint64_t seed2)
+SipHash64<cROUNDS, dROUNDS>::SipHash64(uint64_t inlen, uint64_t seed, uint64_t seed2)
 {
     b = inlen << 56;
     k0 = seed;
