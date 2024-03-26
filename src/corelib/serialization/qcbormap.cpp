@@ -19,7 +19,7 @@ using namespace QtCbor;
     \brief The QCborMap class is used to hold an associative container representable in CBOR.
 
     \compares strong
-    \compareswith strong QCborValue
+    \compareswith strong QCborValue QCborValueConstRef
     \endcompareswith
 
     This class can be used to hold an associative container in CBOR, a map

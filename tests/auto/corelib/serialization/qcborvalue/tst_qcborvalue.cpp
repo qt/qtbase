@@ -452,17 +452,25 @@ void tst_QCborValue::extendedTypes_data()
 
 void tst_QCborValue::compareCompiles()
 {
+    // homogeneous types
     QTestPrivate::testAllComparisonOperatorsCompile<QCborValue>();
     QTestPrivate::testAllComparisonOperatorsCompile<QCborValueRef>();
     QTestPrivate::testAllComparisonOperatorsCompile<QCborValueConstRef>();
     QTestPrivate::testAllComparisonOperatorsCompile<QCborArray>();
     QTestPrivate::testAllComparisonOperatorsCompile<QCborMap>();
+
+    // QCborValue, Ref and ConstRef
     QTestPrivate::testAllComparisonOperatorsCompile<QCborValueRef, QCborValueConstRef>();
     QTestPrivate::testAllComparisonOperatorsCompile<QCborValueConstRef, QCborValue>();
     QTestPrivate::testAllComparisonOperatorsCompile<QCborValueRef, QCborValue>();
-    QTestPrivate::testAllComparisonOperatorsCompile<QCborValueConstRef, QCborArray>();
-    QTestPrivate::testAllComparisonOperatorsCompile<QCborValueRef, QCborArray>();
+
+    // QCbor{Array,Map} <=> QCborValue{,Ref,ConstRef}
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborArray, QCborValue>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborArray, QCborValueRef>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborArray, QCborValueConstRef>();
     QTestPrivate::testAllComparisonOperatorsCompile<QCborMap, QCborValue>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborMap, QCborValueRef>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QCborMap, QCborValueConstRef>();
 }
 
 void tst_QCborValue::extendedTypes()

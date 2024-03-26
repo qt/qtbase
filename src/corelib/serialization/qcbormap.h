@@ -326,6 +326,19 @@ private:
     }
     Q_DECLARE_STRONGLY_ORDERED(QCborMap, QCborValue)
 
+    friend bool comparesEqual(const QCborMap &lhs, const QCborValueConstRef &rhs) noexcept
+    {
+        return lhs.compare(rhs.toMap()) == 0;
+    }
+
+    friend Qt::strong_ordering compareThreeWay(const QCborMap &lhs,
+                                               const QCborValueConstRef &rhs) noexcept
+    {
+        int c = lhs.compare(rhs.toMap());
+        return Qt::compareThreeWay(c, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QCborMap, QCborValueConstRef)
+
     explicit QCborMap(QCborContainerPrivate &dd) noexcept;
     QExplicitlySharedDataPointer<QCborContainerPrivate> d;
 };
