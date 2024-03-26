@@ -352,7 +352,7 @@ class QtNative
             if (isServiceValid())
                 m_service.get().stopSelf();
             m_stateDetails.isStarted = false;
-            // Likely no use to call notifyAppStateDetailsChanged at this point since we are exiting
+            notifyAppStateDetailsChanged(m_stateDetails);
         });
     }
 
