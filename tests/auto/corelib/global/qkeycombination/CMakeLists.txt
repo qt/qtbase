@@ -14,4 +14,6 @@ endif()
 qt_internal_add_test(tst_qkeycombination
     SOURCES
         tst_qkeycombination.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )

@@ -3407,6 +3407,8 @@
   \since 6.0
   \brief The QKeyCombination class stores a combination of a key with optional modifiers.
 
+  \compares equality
+
   The QKeyCombination class can be used to represent a combination of a key
   with zero or more keyboard modifiers.
 
@@ -3489,14 +3491,14 @@
 #endif
 
 /*!
-  \fn bool QKeyCombination::operator==(QKeyCombination lhs, QKeyCombination rhs) noexcept
+  \fn bool QKeyCombination::operator==(const QKeyCombination &lhs, const QKeyCombination &rhs)
 
   Returns \c true if \a lhs and \a rhs have the same combination
   of key and modifiers, and \c false otherwise.
 */
 
 /*!
-  \fn bool QKeyCombination::operator!=(QKeyCombination lhs, QKeyCombination rhs) noexcept
+  \fn bool QKeyCombination::operator!=(const QKeyCombination &lhs, const QKeyCombination &rhs)
 
   Returns \c true if \a lhs and \a rhs have different combinations
   of key and modifiers, otherwise \c false.

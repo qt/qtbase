@@ -10,6 +10,7 @@
 #endif
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qtmetamacros.h>
 
 #if defined(__OBJC__) && !defined(__cplusplus)
@@ -1908,18 +1909,14 @@ public:
         return combination;
     }
 #endif
-
-    friend constexpr bool operator==(QKeyCombination lhs, QKeyCombination rhs) noexcept
+    bool operator<(QKeyCombination) const = delete;
+private:
+    friend constexpr bool comparesEqual(const QKeyCombination &lhs,
+                                        const QKeyCombination &rhs) noexcept
     {
         return lhs.combination == rhs.combination;
     }
-
-    friend constexpr bool operator!=(QKeyCombination lhs, QKeyCombination rhs) noexcept
-    {
-        return lhs.combination != rhs.combination;
-    }
-
-    bool operator<(QKeyCombination) const = delete;
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QKeyCombination)
 };
 
 Q_DECLARE_TYPEINFO(QKeyCombination, Q_RELOCATABLE_TYPE);
