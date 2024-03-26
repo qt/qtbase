@@ -229,10 +229,8 @@ public:
     QJsonArray toJsonArray() const;
 
 private:
-    friend bool comparesEqual(const QCborArray &lhs, const QCborArray &rhs) noexcept
-    {
-        return lhs.compare(rhs) == 0;
-    }
+    friend Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool
+    comparesEqual(const QCborArray &lhs, const QCborArray &rhs) noexcept;
     friend Qt::strong_ordering compareThreeWay(const QCborArray &lhs,
                                                const QCborArray &rhs) noexcept
     {
@@ -241,16 +239,35 @@ private:
     }
     Q_DECLARE_STRONGLY_ORDERED(QCborArray)
 
+    static Q_DECL_PURE_FUNCTION bool
+    comparesEqual_helper(const QCborArray &lhs, const QCborValue &rhs) noexcept;
+    static Q_DECL_PURE_FUNCTION Qt::strong_ordering
+    compareThreeWay_helper(const QCborArray &lhs, const QCborValue &rhs) noexcept;
+    friend bool comparesEqual(const QCborArray &lhs,
+                              const QCborValue &rhs) noexcept
+    {
+        return comparesEqual_helper(lhs, rhs);
+    }
+    friend Qt::strong_ordering compareThreeWay(const QCborArray &lhs,
+                                               const QCborValue &rhs) noexcept
+    {
+        return compareThreeWay_helper(lhs, rhs);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QCborArray, QCborValue)
+
+    static Q_DECL_PURE_FUNCTION bool
+    comparesEqual_helper(const QCborArray &lhs, QCborValueConstRef rhs) noexcept;
+    static Q_DECL_PURE_FUNCTION Qt::strong_ordering
+    compareThreeWay_helper(const QCborArray &lhs, QCborValueConstRef rhs) noexcept;
     friend bool comparesEqual(const QCborArray &lhs,
                               const QCborValueConstRef &rhs) noexcept
     {
-        return lhs.compare(rhs.toArray()) == 0;
+        return comparesEqual_helper(lhs, rhs);
     }
     friend Qt::strong_ordering compareThreeWay(const QCborArray &lhs,
                                                const QCborValueConstRef &rhs) noexcept
     {
-        const int c = lhs.compare(rhs.toArray());
-        return Qt::compareThreeWay(c, 0);
+        return compareThreeWay_helper(lhs, rhs);
     }
     Q_DECLARE_STRONGLY_ORDERED(QCborArray, QCborValueConstRef)
 

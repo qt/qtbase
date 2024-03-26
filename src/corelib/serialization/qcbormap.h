@@ -300,10 +300,8 @@ private:
     friend class QJsonPrivate::Variant;
     void detach(qsizetype reserve = 0);
 
-    friend bool comparesEqual(const QCborMap &lhs, const QCborMap &rhs) noexcept
-    {
-        return lhs.compare(rhs) == 0;
-    }
+    friend Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool
+    comparesEqual(const QCborMap &lhs, const QCborMap &rhs) noexcept;
     friend Qt::strong_ordering compareThreeWay(const QCborMap &lhs,
                                                const QCborMap &rhs) noexcept
     {
@@ -312,30 +310,35 @@ private:
     }
     Q_DECLARE_STRONGLY_ORDERED(QCborMap)
 
+    static Q_DECL_PURE_FUNCTION bool
+    comparesEqual_helper(const QCborMap &lhs, const QCborValue &rhs) noexcept;
+    static Q_DECL_PURE_FUNCTION Qt::strong_ordering
+    compareThreeWay_helper(const QCborMap &lhs, const QCborValue &rhs) noexcept;
     friend bool comparesEqual(const QCborMap &lhs,
                               const QCborValue &rhs) noexcept
     {
-        return lhs.compare(rhs.toMap()) == 0;
+        return comparesEqual_helper(lhs, rhs);
     }
-
     friend Qt::strong_ordering compareThreeWay(const QCborMap &lhs,
                                                const QCborValue &rhs) noexcept
     {
-        int c = lhs.compare(rhs.toMap());
-        return Qt::compareThreeWay(c, 0);
+        return compareThreeWay_helper(lhs, rhs);
     }
     Q_DECLARE_STRONGLY_ORDERED(QCborMap, QCborValue)
 
-    friend bool comparesEqual(const QCborMap &lhs, const QCborValueConstRef &rhs) noexcept
+    static Q_DECL_PURE_FUNCTION bool
+    comparesEqual_helper(const QCborMap &lhs, QCborValueConstRef rhs) noexcept;
+    static Q_DECL_PURE_FUNCTION Qt::strong_ordering
+    compareThreeWay_helper(const QCborMap &lhs, QCborValueConstRef rhs) noexcept;
+    friend bool comparesEqual(const QCborMap &lhs,
+                              const QCborValueConstRef &rhs) noexcept
     {
-        return lhs.compare(rhs.toMap()) == 0;
+        return comparesEqual_helper(lhs, rhs);
     }
-
     friend Qt::strong_ordering compareThreeWay(const QCborMap &lhs,
                                                const QCborValueConstRef &rhs) noexcept
     {
-        int c = lhs.compare(rhs.toMap());
-        return Qt::compareThreeWay(c, 0);
+        return compareThreeWay_helper(lhs, rhs);
     }
     Q_DECLARE_STRONGLY_ORDERED(QCborMap, QCborValueConstRef)
 

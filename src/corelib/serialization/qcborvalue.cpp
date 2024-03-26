@@ -1395,14 +1395,48 @@ int QCborValue::compare(const QCborValue &other) const
     return compareElementRecursive(container, e1, other.container, e2);
 }
 
+bool comparesEqual(const QCborArray &lhs, const QCborArray &rhs) noexcept
+{
+    return lhs.compare(rhs) == 0;
+}
+
 int QCborArray::compare(const QCborArray &other) const noexcept
 {
     return compareContainer(d.data(), other.d.data());
 }
 
+bool QCborArray::comparesEqual_helper(const QCborArray &lhs, const QCborValue &rhs) noexcept
+{
+    return lhs.compare(rhs.toArray()) == 0;
+}
+
+Qt::strong_ordering
+QCborArray::compareThreeWay_helper(const QCborArray &lhs, const QCborValue &rhs) noexcept
+{
+    int c = lhs.compare(rhs.toArray());
+    return Qt::compareThreeWay(c, 0);
+}
+
+bool comparesEqual(const QCborMap &lhs, const QCborMap &rhs) noexcept
+{
+    return lhs.compare(rhs) == 0;
+}
+
 int QCborMap::compare(const QCborMap &other) const noexcept
 {
     return compareContainer(d.data(), other.d.data());
+}
+
+bool QCborMap::comparesEqual_helper(const QCborMap &lhs, const QCborValue &rhs) noexcept
+{
+    return lhs.compare(rhs.toMap()) == 0;
+}
+
+Qt::strong_ordering
+QCborMap::compareThreeWay_helper(const QCborMap &lhs, const QCborValue &rhs) noexcept
+{
+    int c = lhs.compare(rhs.toMap());
+    return Qt::compareThreeWay(c, 0);
 }
 
 #if QT_CONFIG(cborstreamwriter)
@@ -2744,14 +2778,54 @@ QString QCborValueConstRef::concreteString(QCborValueConstRef self, const QStrin
     return self.d->stringAt(self.i);
 }
 
-bool comparesEqual(const QCborValueConstRef &lhs, const QCborValueConstRef &rhs) noexcept
+bool
+QCborValueConstRef::comparesEqual_helper(QCborValueConstRef lhs, QCborValueConstRef rhs) noexcept
 {
     return lhs.compare(rhs.concrete()) == 0;
 }
 
-bool comparesEqual(const QCborValueConstRef &lhs, const QCborValue &rhs) noexcept
+Qt::strong_ordering
+QCborValueConstRef::compareThreeWay_helper(QCborValueConstRef lhs, QCborValueConstRef rhs) noexcept
+{
+    int c = lhs.concrete().compare(rhs.concrete());
+    return Qt::compareThreeWay(c, 0);
+}
+
+bool
+QCborValueConstRef::comparesEqual_helper(QCborValueConstRef lhs, const QCborValue &rhs) noexcept
 {
     return lhs.compare(rhs) == 0;
+}
+
+Qt::strong_ordering
+QCborValueConstRef::compareThreeWay_helper(QCborValueConstRef lhs, const QCborValue &rhs) noexcept
+{
+    int c = lhs.concrete().compare(rhs);
+    return Qt::compareThreeWay(c, 0);
+}
+
+bool QCborArray::comparesEqual_helper(const QCborArray &lhs, QCborValueConstRef rhs) noexcept
+{
+    return lhs.compare(rhs.toArray()) == 0;
+}
+
+Qt::strong_ordering
+QCborArray::compareThreeWay_helper(const QCborArray &lhs, QCborValueConstRef rhs) noexcept
+{
+    int c = lhs.compare(rhs.toArray());
+    return Qt::compareThreeWay(c, 0);
+}
+
+bool QCborMap::comparesEqual_helper(const QCborMap &lhs, QCborValueConstRef rhs) noexcept
+{
+    return lhs.compare(rhs.toMap()) == 0;
+}
+
+Qt::strong_ordering
+QCborMap::compareThreeWay_helper(const QCborMap &lhs, QCborValueConstRef rhs) noexcept
+{
+    int c = lhs.compare(rhs.toMap());
+    return Qt::compareThreeWay(c, 0);
 }
 
 QCborValue QCborValueConstRef::concrete(QCborValueConstRef self) noexcept

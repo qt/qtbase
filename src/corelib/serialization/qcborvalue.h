@@ -249,8 +249,8 @@ public:
     QString toDiagnosticNotation(DiagnosticNotationOptions opts = Compact) const;
 
 private:
-    friend Q_CORE_EXPORT bool comparesEqual(const QCborValue &lhs,
-                                            const QCborValue &rhs) noexcept;
+    friend Q_CORE_EXPORT Q_DECL_PURE_FUNCTION
+    bool comparesEqual(const QCborValue &lhs, const QCborValue &rhs) noexcept;
     friend Qt::strong_ordering compareThreeWay(const QCborValue &lhs,
                                                const QCborValue &rhs) noexcept
     {
@@ -389,24 +389,38 @@ protected:
     friend class QCborContainerPrivate;
 
     QCborValue concrete() const noexcept  { return concrete(*this); }
-    friend Q_CORE_EXPORT bool comparesEqual(const QCborValueConstRef &lhs,
-                                            const QCborValueConstRef &rhs) noexcept;
+    static Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool
+    comparesEqual_helper(QCborValueConstRef lhs, QCborValueConstRef rhs) noexcept;
+    static Q_CORE_EXPORT Q_DECL_PURE_FUNCTION Qt::strong_ordering
+    compareThreeWay_helper(QCborValueConstRef lhs, QCborValueConstRef rhs) noexcept;
+    friend bool comparesEqual(const QCborValueConstRef &lhs,
+                              const QCborValueConstRef &rhs) noexcept
+    {
+        return comparesEqual_helper(lhs, rhs);
+    }
     friend Qt::strong_ordering compareThreeWay(const QCborValueConstRef &lhs,
                                                const QCborValueConstRef &rhs) noexcept
     {
-        int c = lhs.compare(rhs.concrete());
-        return Qt::compareThreeWay(c, 0);
+        return compareThreeWay_helper(lhs, rhs);
     }
     Q_DECLARE_STRONGLY_ORDERED(QCborValueConstRef)
-    friend Q_CORE_EXPORT bool comparesEqual(const QCborValueConstRef &lhs,
-                                            const QCborValue &rhs) noexcept;
+
+    static Q_CORE_EXPORT Q_DECL_PURE_FUNCTION bool
+    comparesEqual_helper(QCborValueConstRef lhs, const QCborValue &rhs) noexcept;
+    static Q_CORE_EXPORT Q_DECL_PURE_FUNCTION Qt::strong_ordering
+    compareThreeWay_helper(QCborValueConstRef lhs, const QCborValue &rhs) noexcept;
+    friend bool comparesEqual(const QCborValueConstRef &lhs,
+                              const QCborValue &rhs) noexcept
+    {
+        return comparesEqual_helper(lhs, rhs);
+    }
     friend Qt::strong_ordering compareThreeWay(const QCborValueConstRef &lhs,
                                                const QCborValue &rhs) noexcept
     {
-        int c = lhs.compare(rhs);
-        return Qt::compareThreeWay(c, 0);
+        return compareThreeWay_helper(lhs, rhs);
     }
     Q_DECLARE_STRONGLY_ORDERED(QCborValueConstRef, QCborValue)
+
     static Q_CORE_EXPORT QCborValue concrete(QCborValueConstRef that) noexcept;
     static Q_CORE_EXPORT QCborValue::Type concreteType(QCborValueConstRef that) noexcept Q_DECL_PURE_FUNCTION;
     static Q_CORE_EXPORT bool
