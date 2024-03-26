@@ -769,7 +769,7 @@ void QHttp2Connection::connectionError(Http2Error errorCode, const char *message
     const auto error = qt_error(errorCode);
     auto messageView = QLatin1StringView(message);
 
-    for (QHttp2Stream *stream : m_streams) {
+    for (QHttp2Stream *stream : std::as_const(m_streams)) {
         if (stream && stream->isActive())
             stream->finishWithError(error, messageView);
     }
