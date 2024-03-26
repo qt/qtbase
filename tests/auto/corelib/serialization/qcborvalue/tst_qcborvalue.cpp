@@ -17,6 +17,8 @@ Q_DECLARE_METATYPE(QCborKnownTags)
 Q_DECLARE_METATYPE(QCborValue)
 Q_DECLARE_METATYPE(QCborValue::EncodingOptions)
 
+using namespace Qt::StringLiterals;
+
 class tst_QCborValue : public QObject
 {
     Q_OBJECT
@@ -1874,6 +1876,40 @@ void tst_QCborValue::sorting()
     // which shows all doubles sorted after integrals
     CHECK_ORDER(vint2, vdouble1);
     QVERIFY(vint2.toInteger() > vdouble1.toDouble());
+
+    // Add some non-US-ASCII strings. In the current implementation, QCborValue
+    // can store a string as either US-ASCII, UTF-8, or UTF-16, so let's exercise
+    // those comparisons.
+
+    // we don't have a QUtf8StringView constructor, so work around it
+    auto utf8string = [](QByteArray str) {
+        Q_ASSERT(str.size() < 24);
+        str.prepend(char(QCborValue::String) + str.size());
+        return QCborValue::fromCbor(str);
+    };
+    // 5 code units in UTF-8
+    QCborValue vs4_utf16(u"Mørk"_s);
+    QCborValue vs4_utf8 = utf8string("Mørk");
+    QCOMPARE(vs4_utf8, vs4_utf8);
+    QCOMPARE(vs4_utf16, vs4_utf16);
+    QCOMPARE(vs4_utf16, vs4_utf8);
+
+    // 5 code units in UTF-16
+    QCborValue vs5_utf16(u"Først"_s);
+    QCborValue vs5_utf8 = utf8string("Først");
+    QCOMPARE(vs5_utf8, vs5_utf8);
+    QCOMPARE(vs5_utf16, vs5_utf16);
+    QCOMPARE(vs5_utf16, vs5_utf8);
+
+    // sorted by UTF-8 length first, so "Mørk" < "World" < "Først" (!!)
+    CHECK_ORDER(vs4_utf8, vs3);
+    CHECK_ORDER(vs4_utf16, vs3);
+    CHECK_ORDER(vs3, vs5_utf8);
+    CHECK_ORDER(vs3, vs5_utf16);
+    CHECK_ORDER(vs4_utf8, vs5_utf8);
+    CHECK_ORDER(vs4_utf8, vs5_utf16);
+    CHECK_ORDER(vs4_utf16, vs5_utf8);
+    CHECK_ORDER(vs4_utf16, vs5_utf16);
 #undef CHECK_ORDER
 }
 
