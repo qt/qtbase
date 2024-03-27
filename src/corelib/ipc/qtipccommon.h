@@ -157,21 +157,6 @@ private:
     friend size_t qHash(const QNativeIpcKey &ipcKey) noexcept
     { return qHash(ipcKey, 0); }
 
-    friend bool operator==(const QNativeIpcKey &lhs, const QNativeIpcKey &rhs) noexcept
-    {
-        if (!(lhs.typeAndFlags == rhs.typeAndFlags))
-            return false;
-        if (lhs.key != rhs.key)
-            return false;
-        if (lhs.d == rhs.d)
-            return true;
-        return compare_internal(lhs, rhs) == 0;
-    }
-    friend bool operator!=(const QNativeIpcKey &lhs, const QNativeIpcKey &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
-
     Q_CORE_EXPORT void copy_internal(const QNativeIpcKey &other);
     Q_CORE_EXPORT void move_internal(QNativeIpcKey &&other) noexcept;
     Q_CORE_EXPORT QNativeIpcKey &assign_internal(const QNativeIpcKey &other);
@@ -184,6 +169,17 @@ private:
 #ifdef Q_OS_DARWIN
     Q_DECL_CONST_FUNCTION Q_CORE_EXPORT static Type defaultTypeForOs_internal() noexcept;
 #endif
+    friend bool comparesEqual(const QNativeIpcKey &lhs, const QNativeIpcKey &rhs) noexcept
+    {
+        if (!(lhs.typeAndFlags == rhs.typeAndFlags))
+            return false;
+        if (lhs.key != rhs.key)
+            return false;
+        if (lhs.d == rhs.d)
+            return true;
+        return compare_internal(lhs, rhs) == 0;
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QNativeIpcKey)
 };
 
 // not a shared type, exactly, but this works too

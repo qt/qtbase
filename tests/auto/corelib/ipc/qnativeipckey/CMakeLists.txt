@@ -10,4 +10,6 @@ endif()
 qt_internal_add_test(tst_qnativeipckey
     SOURCES
         tst_qnativeipckey.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )

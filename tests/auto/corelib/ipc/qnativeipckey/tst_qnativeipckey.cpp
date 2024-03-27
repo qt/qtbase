@@ -3,6 +3,7 @@
 
 #include <QtCore/QNativeIpcKey>
 #include <QtTest/QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 
 #include "../ipctestcommon.h"
 
@@ -25,6 +26,7 @@ class tst_QNativeIpcKey : public QObject
 {
     Q_OBJECT
 private slots:
+    void compareCompiles();
     void defaultTypes();
     void construct();
     void getSetCheck();
@@ -38,6 +40,11 @@ private slots:
     void legacyKeys_data();
     void legacyKeys();
 };
+
+void tst_QNativeIpcKey::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QNativeIpcKey>();
+}
 
 void tst_QNativeIpcKey::defaultTypes()
 {
@@ -180,35 +187,43 @@ void tst_QNativeIpcKey::equality()
     QNativeIpcKey key1, key2;
     QCOMPARE(key1, key2);
     QVERIFY(!(key1 != key2));
+    QT_TEST_EQUALITY_OPS(key1, key2, true);
 
     key1.setNativeKey("key1");
     QCOMPARE_NE(key1, key2);
     QVERIFY(!(key1 == key2));
+    QT_TEST_EQUALITY_OPS(key1, key2, false);
 
     key2.setType({});
     QCOMPARE_NE(key1, key2);
     QVERIFY(!(key1 == key2));
+    QT_TEST_EQUALITY_OPS(key1, key2, false);
 
     key2.setNativeKey(key1.nativeKey());
     QCOMPARE_NE(key1, key2);
     QVERIFY(!(key1 == key2));
+    QT_TEST_EQUALITY_OPS(key1, key2, false);
 
     key2.setType(QNativeIpcKey::DefaultTypeForOs);
     QCOMPARE(key1, key2);
     QVERIFY(!(key1 != key2));
+    QT_TEST_EQUALITY_OPS(key1, key2, true);
 
     key1 = makeLegacyKey("key1", QNativeIpcKey::DefaultTypeForOs);
     QCOMPARE_NE(key1, key2);
     QVERIFY(!(key1 == key2));
+    QT_TEST_EQUALITY_OPS(key1, key2, false);
 
     key2 = key1;
     QCOMPARE(key1, key2);
     QVERIFY(!(key1 != key2));
+    QT_TEST_EQUALITY_OPS(key1, key2, true);
 
     // just setting the native key won't make them equal again!
     key2.setNativeKey(key1.nativeKey());
     QCOMPARE_NE(key1, key2);
     QVERIFY(!(key1 == key2));
+    QT_TEST_EQUALITY_OPS(key1, key2, false);
 }
 
 void tst_QNativeIpcKey::hash()
@@ -410,6 +425,7 @@ void tst_QNativeIpcKey::legacyKeys()
     QString string = key.toString();
     QNativeIpcKey key2 = QNativeIpcKey::fromString(string);
     QCOMPARE(key2, key);
+    QT_TEST_EQUALITY_OPS(key, key2, true);
 
     if (!legacyKey.isEmpty()) {
         // confirm it shows up in the encoded form
