@@ -73,8 +73,9 @@ QEglFSKmsGbmScreen::FrameBuffer *QEglFSKmsGbmScreen::framebufferForBufferObject(
         return nullptr;
     }
 
-    gbm_bo_set_user_data(bo, fb.get(), bufferDestroyedHandler);
-    return fb.release();
+    auto res = fb.get();
+    gbm_bo_set_user_data(bo, fb.release(), bufferDestroyedHandler);
+    return res;
 }
 
 QEglFSKmsGbmScreen::QEglFSKmsGbmScreen(QEglFSKmsDevice *device, const QKmsOutput &output, bool headless)
