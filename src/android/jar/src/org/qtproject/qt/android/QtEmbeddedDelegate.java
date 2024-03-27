@@ -126,7 +126,9 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
         // TODO verify if returning m_view here works, this is used by the androidjniinput
         // when e.g. showing a keyboard, so depends on getting the keyboard focus working
         // QTBUG-118873
-        return m_view;
+        if (m_view == null)
+            return null;
+        return m_view.getQtWindow();
     }
 
     public void queueLoadWindow()
