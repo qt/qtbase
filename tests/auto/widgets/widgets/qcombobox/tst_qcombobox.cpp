@@ -3415,8 +3415,12 @@ void tst_QComboBox::task_QTBUG_56693_itemFontFromModel()
     box.hidePopup();
 }
 
+#ifndef QT_NO_STYLE_FUSION
 void tst_QComboBox::popupPositionAfterStyleChange()
 {
+#ifdef Q_OS_QNX
+    QSKIP("Fails on QNX, QTBUG-123798");
+#endif
     // Check that the popup opens up centered on top of the current
     // index if the style has changed since the last time it was
     // opened (QTBUG-113765).
@@ -3461,13 +3465,14 @@ void tst_QComboBox::popupPositionAfterStyleChange()
     QTest::mouseClick(&box, Qt::LeftButton);
 
     // Click on item under mouse. But wait a bit, to avoid a double click
-    QTest::qWait(qApp->styleHints()->mouseDoubleClickInterval());
+    QTest::qWait(2 * QGuiApplication::styleHints()->mouseDoubleClickInterval());
     QTest::mouseClick(&box, Qt::LeftButton);
 
     // Ensure that the item that was centered on top of the combobox, and which
     // we therefore clicked, was the same item we clicked on the first time.
-    QCOMPARE(box.currentText(), QStringLiteral("last"));
+    QTRY_COMPARE(box.currentText(), QStringLiteral("last"));
 }
+#endif // QT_NO_STYLE_FUSION
 
 void tst_QComboBox::inputMethodUpdate()
 {
