@@ -25,7 +25,7 @@ Q_DECLARE_JNI_CLASS(View, "android/view/View");
 namespace QtAndroidWindowEmbedding
 {
     bool registerNatives(QJniEnvironment& env);
-    void createRootWindow(JNIEnv *, jclass, QtJniTypes::View rootView);
+    void createRootWindow(JNIEnv *, jclass, QtJniTypes::View rootView, jint width, jint height);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(createRootWindow)
     void deleteWindow(JNIEnv *, jclass, jlong window);
     Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(deleteWindow)
