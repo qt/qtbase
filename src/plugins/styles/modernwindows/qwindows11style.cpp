@@ -1199,73 +1199,75 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
         break;
     case QStyle::CE_ProgressBarGroove:{
         if (const QStyleOptionProgressBar* progbaropt = qstyleoption_cast<const QStyleOptionProgressBar*>(option)) {
-            const QProgressBar* bar = qobject_cast<const QProgressBar*>(widget);
-            QRect rect = subElementRect(SE_ProgressBarContents, progbaropt, widget);
-            QPointF center = rect.center();
-            if (bar->orientation() & Qt::Horizontal) {
-                rect.setHeight(1);
-                rect.moveTop(center.y());
-            } else {
-                rect.setWidth(1);
-                rect.moveLeft(center.x());
+            if (const QProgressBar* bar = qobject_cast<const QProgressBar*>(widget)) {
+                QRect rect = subElementRect(SE_ProgressBarContents, progbaropt, widget);
+                QPointF center = rect.center();
+                if (bar->orientation() & Qt::Horizontal) {
+                    rect.setHeight(1);
+                    rect.moveTop(center.y());
+                } else {
+                    rect.setWidth(1);
+                    rect.moveLeft(center.x());
+                }
+                painter->setPen(Qt::NoPen);
+                painter->setBrush(Qt::gray);
+                painter->drawRect(rect);
             }
-            painter->setPen(Qt::NoPen);
-            painter->setBrush(Qt::gray);
-            painter->drawRect(rect);
         }
         break;
     }
     case QStyle::CE_ProgressBarContents:
         if (const QStyleOptionProgressBar* progbaropt = qstyleoption_cast<const QStyleOptionProgressBar*>(option)) {
-            const QProgressBar* bar = qobject_cast<const QProgressBar*>(widget);
-            const qreal progressBarThickness = 3;
-            const qreal progressBarHalfThickness = progressBarThickness / 2.0;
-            QRectF rect = subElementRect(SE_ProgressBarContents, progbaropt, widget);
-            QRectF originalRect = rect;
-            QPointF center = rect.center();
-            bool isIndeterminate = progbaropt->maximum == 0 && progbaropt->minimum == 0;
-            float fillPercentage = 0;
-            const qreal offset = (bar->orientation() == Qt::Horizontal && int(rect.height()) % 2 == 0)
-                              || (bar->orientation() == Qt::Vertical && int(rect.width()) % 2 == 0) ? 0.5 : 0.0;
+            if (const QProgressBar* bar = qobject_cast<const QProgressBar*>(widget)) {
+                const qreal progressBarThickness = 3;
+                const qreal progressBarHalfThickness = progressBarThickness / 2.0;
+                QRectF rect = subElementRect(SE_ProgressBarContents, progbaropt, widget);
+                QRectF originalRect = rect;
+                QPointF center = rect.center();
+                bool isIndeterminate = progbaropt->maximum == 0 && progbaropt->minimum == 0;
+                float fillPercentage = 0;
+                const qreal offset = (bar->orientation() == Qt::Horizontal && int(rect.height()) % 2 == 0)
+                                  || (bar->orientation() == Qt::Vertical && int(rect.width()) % 2 == 0) ? 0.5 : 0.0;
 
-            if (!isIndeterminate) {
-                fillPercentage = ((float(progbaropt->progress) - float(progbaropt->minimum)) / (float(progbaropt->maximum) - float(progbaropt->minimum)));
-                if (bar->orientation() == Qt::Horizontal) {
-                    rect.setHeight(progressBarThickness);
-                    rect.moveTop(center.y() - progressBarHalfThickness - offset);
-                    rect.setWidth(rect.width() * fillPercentage);
+                if (!isIndeterminate) {
+                    fillPercentage = ((float(progbaropt->progress) - float(progbaropt->minimum)) / (float(progbaropt->maximum) - float(progbaropt->minimum)));
+                    if (bar->orientation() == Qt::Horizontal) {
+                        rect.setHeight(progressBarThickness);
+                        rect.moveTop(center.y() - progressBarHalfThickness - offset);
+                        rect.setWidth(rect.width() * fillPercentage);
+                    } else {
+                        float oldHeight = rect.height();
+                        rect.setWidth(progressBarThickness);
+                        rect.moveLeft(center.x() - progressBarHalfThickness - offset);
+                        rect.moveTop(oldHeight * (1.0f - fillPercentage));
+                        rect.setHeight(oldHeight * fillPercentage);
+                    }
                 } else {
-                    float oldHeight = rect.height();
-                    rect.setWidth(progressBarThickness);
-                    rect.moveLeft(center.x() - progressBarHalfThickness - offset);
-                    rect.moveTop(oldHeight * (1.0f - fillPercentage));
-                    rect.setHeight(oldHeight * fillPercentage);
+                    auto elapsedTime = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+                    fillPercentage = (elapsedTime.time_since_epoch().count() % 5000)/(5000.0f*0.75);
+                    if (bar->orientation() == Qt::Horizontal) {
+                        float barBegin = qMin(qMax(fillPercentage-0.25,0.0) * rect.width(), float(rect.width()));
+                        float barEnd = qMin(fillPercentage * rect.width(), float(rect.width()));
+                        rect = QRect(QPoint(rect.left() + barBegin, rect.top()), QPoint(rect.left() + barEnd, rect.bottom()));
+                        rect.setHeight(progressBarThickness);
+                        rect.moveTop(center.y() - progressBarHalfThickness - offset);
+                    } else {
+                        float barBegin = qMin(qMax(fillPercentage-0.25,0.0) * rect.height(), float(rect.height()));
+                        float barEnd = qMin(fillPercentage * rect.height(), float(rect.height()));
+                        rect = QRect(QPoint(rect.left(), rect.bottom() - barEnd), QPoint(rect.right(), rect.bottom() - barBegin));
+                        rect.setWidth(progressBarThickness);
+                        rect.moveLeft(center.x() - progressBarHalfThickness - offset);
+                    }
+                    const_cast<QWidget*>(widget)->update();
                 }
-            } else {
-                auto elapsedTime = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
-                fillPercentage = (elapsedTime.time_since_epoch().count() % 5000)/(5000.0f*0.75);
-                if (bar->orientation() == Qt::Horizontal) {
-                    float barBegin = qMin(qMax(fillPercentage-0.25,0.0) * rect.width(), float(rect.width()));
-                    float barEnd = qMin(fillPercentage * rect.width(), float(rect.width()));
-                    rect = QRect(QPoint(rect.left() + barBegin, rect.top()), QPoint(rect.left() + barEnd, rect.bottom()));
-                    rect.setHeight(progressBarThickness);
-                    rect.moveTop(center.y() - progressBarHalfThickness - offset);
-                } else {
-                    float barBegin = qMin(qMax(fillPercentage-0.25,0.0) * rect.height(), float(rect.height()));
-                    float barEnd = qMin(fillPercentage * rect.height(), float(rect.height()));
-                    rect = QRect(QPoint(rect.left(), rect.bottom() - barEnd), QPoint(rect.right(), rect.bottom() - barBegin));
-                    rect.setWidth(progressBarThickness);
-                    rect.moveLeft(center.x() - progressBarHalfThickness - offset);
-                }
-                const_cast<QWidget*>(widget)->update();
+                if (progbaropt->invertedAppearance && bar->orientation() == Qt::Horizontal)
+                    rect.moveLeft(originalRect.width() * (1.0 - fillPercentage));
+                else if (progbaropt->invertedAppearance && bar->orientation() == Qt::Vertical)
+                    rect.moveBottom(originalRect.height() * fillPercentage);
+                painter->setPen(Qt::NoPen);
+                painter->setBrush(progbaropt->palette.accent());
+                painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
             }
-            if (progbaropt->invertedAppearance && bar->orientation() == Qt::Horizontal)
-                rect.moveLeft(originalRect.width() * (1.0 - fillPercentage));
-            else if (progbaropt->invertedAppearance && bar->orientation() == Qt::Vertical)
-                rect.moveBottom(originalRect.height() * fillPercentage);
-            painter->setPen(Qt::NoPen);
-            painter->setBrush(progbaropt->palette.accent());
-            painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
         }
         break;
     case QStyle::CE_ProgressBarLabel:
@@ -1592,93 +1594,94 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     }
     case QStyle::CE_ItemViewItem: {
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
-            const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
-            QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
-            QRect iconRect = proxy()->subElementRect(SE_ItemViewItemDecoration, vopt, widget);
-            QRect textRect = proxy()->subElementRect(SE_ItemViewItemText, vopt, widget);
+                if (const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget)) {
+                QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
+                QRect iconRect = proxy()->subElementRect(SE_ItemViewItemDecoration, vopt, widget);
+                QRect textRect = proxy()->subElementRect(SE_ItemViewItemText, vopt, widget);
 
-            QRect rect = vopt->rect;
+                QRect rect = vopt->rect;
 
-            painter->setPen(highContrastTheme == true ? vopt->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorLight]);
-            if (vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid) {
-            } else if (vopt->viewItemPosition == QStyleOptionViewItem::Beginning) {
-                painter->drawLine(QPointF(option->rect.topRight()) + QPointF(0.5,0.0),
-                                  QPointF(option->rect.bottomRight()) + QPointF(0.5,0.0));
-            } else if (vopt->viewItemPosition == QStyleOptionViewItem::End) {
-                painter->drawLine(QPointF(option->rect.topLeft()) - QPointF(0.5,0.0),
-                                  QPointF(option->rect.bottomLeft()) - QPointF(0.5,0.0));
-            } else {
-                painter->drawLine(QPointF(option->rect.topRight()) + QPointF(0.5,0.0),
-                                  QPointF(option->rect.bottomRight()) + QPointF(0.5,0.0));
-                painter->drawLine(QPointF(option->rect.topLeft()) - QPointF(0.5,0.0),
-                                  QPointF(option->rect.bottomLeft()) - QPointF(0.5,0.0));
-            }
-            painter->setPen(QPen(option->palette.buttonText().color()));
-
-            bool isTreeView = widget && widget->inherits("QTreeView");
-
-            if ((vopt->state & State_Selected || vopt->state & State_MouseOver) && !(isTreeView && vopt->state & State_MouseOver) && vopt->showDecorationSelected) {
-                painter->setBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                QWidget *editorWidget = view->indexWidget(view->currentIndex());
-                if (editorWidget) {
-                    QPalette pal = editorWidget->palette();
-                    QColor editorBgColor = vopt->backgroundBrush == Qt::NoBrush ? vopt->palette.color(widget->backgroundRole()) : vopt->backgroundBrush.color();
-                    editorBgColor.setAlpha(255);
-                    pal.setColor(editorWidget->backgroundRole(),editorBgColor);
-                    editorWidget->setPalette(pal);
+                painter->setPen(highContrastTheme == true ? vopt->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorLight]);
+                if (vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid) {
+                } else if (vopt->viewItemPosition == QStyleOptionViewItem::Beginning) {
+                    painter->drawLine(QPointF(option->rect.topRight()) + QPointF(0.5,0.0),
+                                      QPointF(option->rect.bottomRight()) + QPointF(0.5,0.0));
+                } else if (vopt->viewItemPosition == QStyleOptionViewItem::End) {
+                    painter->drawLine(QPointF(option->rect.topLeft()) - QPointF(0.5,0.0),
+                                      QPointF(option->rect.bottomLeft()) - QPointF(0.5,0.0));
+                } else {
+                    painter->drawLine(QPointF(option->rect.topRight()) + QPointF(0.5,0.0),
+                                      QPointF(option->rect.bottomRight()) + QPointF(0.5,0.0));
+                    painter->drawLine(QPointF(option->rect.topLeft()) - QPointF(0.5,0.0),
+                                      QPointF(option->rect.bottomLeft()) - QPointF(0.5,0.0));
                 }
-            } else {
-                painter->setBrush(vopt->backgroundBrush);
-            }
-            painter->setPen(Qt::NoPen);
+                painter->setPen(QPen(option->palette.buttonText().color()));
 
-            if (vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid) {
-                painter->drawRoundedRect(vopt->rect.marginsRemoved(QMargins(2,2,2,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
-            } else if (vopt->viewItemPosition == QStyleOptionViewItem::Beginning) {
-                painter->drawRoundedRect(rect.marginsRemoved(QMargins(2,2,0,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
-            } else if (vopt->viewItemPosition == QStyleOptionViewItem::End) {
-                painter->drawRoundedRect(vopt->rect.marginsRemoved(QMargins(0,2,2,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
-            } else {
-                painter->drawRect(vopt->rect.marginsRemoved(QMargins(0,2,0,2)));
-            }
+                bool isTreeView = widget && widget->inherits("QTreeView");
 
-            // draw the check mark
-            if (vopt->features & QStyleOptionViewItem::HasCheckIndicator) {
-                QStyleOptionViewItem option(*vopt);
-                option.rect = checkRect;
-                option.state = option.state & ~QStyle::State_HasFocus;
-
-                switch (vopt->checkState) {
-                case Qt::Unchecked:
-                    option.state |= QStyle::State_Off;
-                    break;
-                case Qt::PartiallyChecked:
-                    option.state |= QStyle::State_NoChange;
-                    break;
-                case Qt::Checked:
-                    option.state |= QStyle::State_On;
-                    break;
+                if ((vopt->state & State_Selected || vopt->state & State_MouseOver) && !(isTreeView && vopt->state & State_MouseOver) && vopt->showDecorationSelected) {
+                    painter->setBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
+                    QWidget *editorWidget = view->indexWidget(view->currentIndex());
+                    if (editorWidget) {
+                        QPalette pal = editorWidget->palette();
+                        QColor editorBgColor = vopt->backgroundBrush == Qt::NoBrush ? vopt->palette.color(widget->backgroundRole()) : vopt->backgroundBrush.color();
+                        editorBgColor.setAlpha(255);
+                        pal.setColor(editorWidget->backgroundRole(),editorBgColor);
+                        editorWidget->setPalette(pal);
+                    }
+                } else {
+                    painter->setBrush(vopt->backgroundBrush);
                 }
-                proxy()->drawPrimitive(QStyle::PE_IndicatorItemViewItemCheck, &option, painter, widget);
-            }
+                painter->setPen(Qt::NoPen);
 
-            // draw the icon
-            QIcon::Mode mode = QIcon::Normal;
-            if (!(vopt->state & QStyle::State_Enabled))
-                mode = QIcon::Disabled;
-            else if (vopt->state & QStyle::State_Selected)
-                mode = QIcon::Selected;
-            QIcon::State state = vopt->state & QStyle::State_Open ? QIcon::On : QIcon::Off;
-            vopt->icon.paint(painter, iconRect, vopt->decorationAlignment, mode, state);
+                if (vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid) {
+                    painter->drawRoundedRect(vopt->rect.marginsRemoved(QMargins(2,2,2,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
+                } else if (vopt->viewItemPosition == QStyleOptionViewItem::Beginning) {
+                    painter->drawRoundedRect(rect.marginsRemoved(QMargins(2,2,0,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
+                } else if (vopt->viewItemPosition == QStyleOptionViewItem::End) {
+                    painter->drawRoundedRect(vopt->rect.marginsRemoved(QMargins(0,2,2,2)),secondLevelRoundingRadius,secondLevelRoundingRadius);
+                } else {
+                    painter->drawRect(vopt->rect.marginsRemoved(QMargins(0,2,0,2)));
+                }
 
-            painter->setPen(QPen(option->palette.buttonText().color()));
-            if (!view->isPersistentEditorOpen(vopt->index))
-                d->viewItemDrawText(painter, vopt, textRect);
-            if (vopt->state & State_Selected && (vopt->viewItemPosition == QStyleOptionViewItem::Beginning || vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid)) {
-                if (widget && widget->inherits("QListView") && qobject_cast<const QListView*>(widget)->viewMode() != QListView::IconMode) {
-                    painter->setPen(QPen(vopt->palette.accent().color()));
-                    painter->drawLine(option->rect.x(),option->rect.y()+2,option->rect.x(),option->rect.y() + option->rect.height()-2);
-                    painter->drawLine(option->rect.x()+1,option->rect.y()+2,option->rect.x()+1,option->rect.y() + option->rect.height()-2);
+                // draw the check mark
+                if (vopt->features & QStyleOptionViewItem::HasCheckIndicator) {
+                    QStyleOptionViewItem option(*vopt);
+                    option.rect = checkRect;
+                    option.state = option.state & ~QStyle::State_HasFocus;
+
+                    switch (vopt->checkState) {
+                    case Qt::Unchecked:
+                        option.state |= QStyle::State_Off;
+                        break;
+                    case Qt::PartiallyChecked:
+                        option.state |= QStyle::State_NoChange;
+                        break;
+                    case Qt::Checked:
+                        option.state |= QStyle::State_On;
+                        break;
+                    }
+                    proxy()->drawPrimitive(QStyle::PE_IndicatorItemViewItemCheck, &option, painter, widget);
+                }
+
+                // draw the icon
+                QIcon::Mode mode = QIcon::Normal;
+                if (!(vopt->state & QStyle::State_Enabled))
+                    mode = QIcon::Disabled;
+                else if (vopt->state & QStyle::State_Selected)
+                    mode = QIcon::Selected;
+                QIcon::State state = vopt->state & QStyle::State_Open ? QIcon::On : QIcon::Off;
+                vopt->icon.paint(painter, iconRect, vopt->decorationAlignment, mode, state);
+
+                painter->setPen(QPen(option->palette.buttonText().color()));
+                if (!view->isPersistentEditorOpen(vopt->index))
+                    d->viewItemDrawText(painter, vopt, textRect);
+                if (vopt->state & State_Selected && (vopt->viewItemPosition == QStyleOptionViewItem::Beginning || vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid)) {
+                    if (widget && widget->inherits("QListView") && qobject_cast<const QListView*>(widget)->viewMode() != QListView::IconMode) {
+                        painter->setPen(QPen(vopt->palette.accent().color()));
+                        painter->drawLine(option->rect.x(),option->rect.y()+2,option->rect.x(),option->rect.y() + option->rect.height()-2);
+                        painter->drawLine(option->rect.x()+1,option->rect.y()+2,option->rect.x()+1,option->rect.y() + option->rect.height()-2);
+                    }
                 }
             }
         }
