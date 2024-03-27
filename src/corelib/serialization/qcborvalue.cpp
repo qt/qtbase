@@ -1159,10 +1159,62 @@ static int compareStringsInUtf8(QStringView lhs, QStringView rhs, Comparison mod
     return len1 < len2 ? -1 : 1;
 }
 
+static int compareStringsInUtf8(QUtf8StringView lhs, QStringView rhs, Comparison mode) noexcept
+{
+    // CBOR requires that the shortest of the two strings be sorted first, so
+    // we have to calculate the UTF-8 length of the UTF-16 string while
+    // comparing. Unlike the UTF-32 comparison above, we convert the UTF-16
+    // string to UTF-8 so we only need to decode one string.
+
+    const qsizetype len1 = lhs.size();
+    const auto src1 = reinterpret_cast<const uchar *>(lhs.data());
+    const char16_t *src2 = rhs.utf16();
+    const char16_t *const end2 = src2 + rhs.size();
+
+    // Compare the two strings until we find a difference.
+    int diff = 0;
+    qptrdiff idx1 = 0;
+    qsizetype len2 = 0;
+    do {
+        uchar utf8[4];      // longest possible Unicode character in UTF-8
+        uchar *ptr = utf8;
+        char16_t uc = *src2++;
+        int r = QUtf8Functions::toUtf8<QUtf8BaseTraits>(uc, ptr, src2, end2);
+        Q_UNUSED(r);    // ignore failure to encode proper UTF-16 surrogates
+
+        qptrdiff n = ptr - utf8;
+        len2 += n;
+        if (len1 - idx1 < n)
+            return -1;      // lhs is definitely shorter
+        diff = memcmp(src1 + idx1, utf8, n);
+        idx1 += n;
+    } while (diff == 0 && idx1 < len1 && src2 < end2);
+
+    if (mode == Comparison::ForEquality && diff)
+        return diff;
+    if ((idx1 == len1) != (src2 == end2)) {
+        // One of the strings ended earlier than the other
+        return idx1 == len1 ? -1 : 1;
+    }
+
+    // We found a difference and neither string ended, so continue calculating
+    // the UTF-8 length of rhs.
+    len2 += stringLengthInUtf8(src2, end2);
+
+    if (len1 != len2)
+        return len1 < len2 ? -1 : 1;
+    return diff;
+}
+
+static int compareStringsInUtf8(QStringView lhs, QUtf8StringView rhs, Comparison mode) noexcept
+{
+    return -compareStringsInUtf8(rhs, lhs, mode);
+}
+
 QT_WARNING_DISABLE_MSVC(4146)   // unary minus operator applied to unsigned type, result still unsigned
 static int compareContainer(const QCborContainerPrivate *c1, const QCborContainerPrivate *c2,
-                            Comparison mode);
-static int compareElementNoData(const Element &e1, const Element &e2)
+                            Comparison mode) noexcept;
+static int compareElementNoData(const Element &e1, const Element &e2) noexcept
 {
     Q_ASSERT(e1.type == e2.type);
 
@@ -1207,7 +1259,7 @@ static int compareElementNoData(const Element &e1, const Element &e2)
 
 static int compareElementRecursive(const QCborContainerPrivate *c1, const Element &e1,
                                    const QCborContainerPrivate *c2, const Element &e2,
-                                   Comparison mode)
+                                   Comparison mode) noexcept
 {
     int cmp = typeOrder(e1.type, e2.type);
     if (cmp != 0)
@@ -1256,25 +1308,17 @@ static int compareElementRecursive(const QCborContainerPrivate *c1, const Elemen
         }
 
         // Only one is UTF-16
-        // (we can't use QUtf8::compareUtf8 because we need to compare lengths)
-        auto string = [](const Element &e, const ByteData *b) -> QByteArray {
-            if (e.flags & Element::StringIsUtf16)
-                return b->asStringView().toUtf8();
-            return b->asByteArrayView();    // actually a QByteArray::fromRaw
-        };
-
-        QByteArray s1 = string(e1, b1);
-        QByteArray s2 = string(e2, b2);
-        if (s1.size() == s2.size())
-            return memcmp(s1.constData(), s2.constData(), s1.size());
-        return s1.size() < s2.size() ? -1 : 1;
+        if (e1.flags & Element::StringIsUtf16)
+            return compareStringsInUtf8(b1->asStringView(), b2->asUtf8StringView(), mode);
+        else
+            return compareStringsInUtf8(b1->asUtf8StringView(), b2->asStringView(), mode);
     }
 
     return compareElementNoData(e1, e2);
 }
 
 static int compareContainer(const QCborContainerPrivate *c1, const QCborContainerPrivate *c2,
-                            Comparison mode)
+                            Comparison mode) noexcept
 {
     auto len1 = c1 ? c1->elements.size() : 0;
     auto len2 = c2 ? c2->elements.size() : 0;
@@ -1296,7 +1340,7 @@ static int compareContainer(const QCborContainerPrivate *c1, const QCborContaine
 
 inline int QCborContainerPrivate::compareElement_helper(const QCborContainerPrivate *c1, Element e1,
                                                         const QCborContainerPrivate *c2, Element e2,
-                                                        Comparison mode)
+                                                        Comparison mode) noexcept
 {
     return compareElementRecursive(c1, e1, c2, e2, mode);
 }

@@ -382,7 +382,7 @@ public:
 
     static int compareElement_helper(const QCborContainerPrivate *c1, QtCbor::Element e1,
                                      const QCborContainerPrivate *c2, QtCbor::Element e2,
-                                     QtCbor::Comparison mode);
+                                     QtCbor::Comparison mode) noexcept;
     int compareElement(qsizetype idx, const QCborValue &value, QtCbor::Comparison mode) const
     {
         auto &e1 = elements.at(idx);
