@@ -30,7 +30,7 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
     private QtNative.ApplicationStateDetails m_stateDetails;
     private boolean m_windowLoaded = false;
 
-    private static native void createRootWindow(View rootView);
+    private static native void createRootWindow(View rootView, int width, int height);
     static native void deleteWindow(long windowReference);
 
     public QtEmbeddedDelegate(Activity context) {
@@ -159,7 +159,7 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
 
     private void createRootWindow() {
         if (m_view != null && !m_windowLoaded) {
-            createRootWindow(m_view);
+            createRootWindow(m_view, m_view.getWidth(), m_view.getHeight());
             m_windowLoaded = true;
         }
     }

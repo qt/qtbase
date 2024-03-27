@@ -15,12 +15,13 @@ Q_DECLARE_JNI_CLASS(QtView, "org/qtproject/qt/android/QtView");
 Q_DECLARE_JNI_CLASS(QtEmbeddedDelegate, "org/qtproject/qt/android/QtEmbeddedDelegate");
 
 namespace QtAndroidWindowEmbedding {
-    void createRootWindow(JNIEnv *, jclass, QtJniTypes::View rootView)
+    void createRootWindow(JNIEnv *, jclass, QtJniTypes::View rootView, jint width, jint height)
     {
         // QWindow should be constructed on the Qt thread rather than directly in the caller thread
         // To avoid hitting checkReceiverThread assert in QCoreApplication::doNotify
-        QMetaObject::invokeMethod(qApp, [rootView] {
+        QMetaObject::invokeMethod(qApp, [rootView, width, height] {
             QWindow *parentWindow = QWindow::fromWinId(reinterpret_cast<WId>(rootView.object()));
+            parentWindow->setGeometry(0, 0, width, height);
             rootView.callMethod<void>("createWindow", reinterpret_cast<jlong>(parentWindow));
         });
     }
@@ -38,7 +39,7 @@ namespace QtAndroidWindowEmbedding {
             if (visible) {
                 window->showNormal();
                 if (!window->parent()->isVisible())
-                    window->parent()->show();
+                    window->parent()->showNormal();
             } else {
                 window->hide();
             }
@@ -48,8 +49,10 @@ namespace QtAndroidWindowEmbedding {
     void resizeWindow(JNIEnv *, jclass, jlong windowRef, jint width, jint height)
     {
         QWindow *window = reinterpret_cast<QWindow*>(windowRef);
-        window->setWidth(width);
-        window->setHeight(height);
+        QWindow *parent = window->parent();
+        if (parent)
+            parent->setGeometry(0, 0, width, height);
+        window->setGeometry(0, 0, width, height);
     }
 
     bool registerNatives(QJniEnvironment& env) {
