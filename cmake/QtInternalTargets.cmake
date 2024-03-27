@@ -354,7 +354,7 @@ if(QT_FEATURE_libstdcpp_assertions)
 endif()
 
 if(QT_FEATURE_libcpp_hardening)
-    target_compile_definitions(PlatformCommonInternal INTERFACE -D_LIBCPP_HARDENING_MODE="$<IF:$<CONFIG:Debug>,_LIBCPP_HARDENING_MODE_EXTENSIVE,_LIBCPP_HARDENING_MODE_FAST>")
+    target_compile_definitions(PlatformCommonInternal INTERFACE -D_LIBCPP_HARDENING_MODE=$<IF:$<CONFIG:Debug>,_LIBCPP_HARDENING_MODE_EXTENSIVE,_LIBCPP_HARDENING_MODE_FAST>)
 endif()
 
 if(QT_FEATURE_relro_now_linker)
