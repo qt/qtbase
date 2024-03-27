@@ -38,7 +38,8 @@ abstract class QtView extends ViewGroup {
     abstract protected void createWindow(long parentWindowRef);
 
     private static native void setWindowVisible(long windowReference, boolean visible);
-    private static native void resizeWindow(long windowReference, int width, int height);
+    private static native void resizeWindow(long windowReference,
+                                            int x, int y, int width, int height);
 
     /**
      * Create QtView for embedding a QWindow. Instantiating a QtView will load the Qt libraries
@@ -67,8 +68,10 @@ abstract class QtView extends ViewGroup {
                     final int oldHeight = oldBottom - oldTop;
                     final int newWidth = right - left;
                     final int newHeight = bottom - top;
-                    if (oldWidth != newWidth || oldHeight != newHeight)
-                        resizeWindow(m_windowReference, right - left, bottom - top);
+                    if (oldWidth != newWidth || oldHeight != newHeight || left != oldLeft ||
+                        top != oldTop) {
+                            resizeWindow(m_windowReference, left, top, newWidth, newHeight);
+                    }
                 }
             }
         });
