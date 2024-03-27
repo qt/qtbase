@@ -103,11 +103,11 @@ public:
 #else
         v = _mm_or_ps(_mm_and_ps(cmpgt, est), _mm_andnot_ps(cmpgt, kapmul));
 #endif
-        QColorVector out;
-        _mm_storeu_ps(&out.x, v);
-        const float L = 116.f * out.y - 16.f;
-        const float a = 500.f * (out.x - out.y);
-        const float b = 200.f * (out.y - out.z);
+        alignas(16) float out[4];
+        _mm_store_ps(out, v);
+        const float L = 116.f * out[1] - 16.f;
+        const float a = 500.f * (out[0] - out[1]);
+        const float b = 200.f * (out[1] - out[2]);
 #else
         float xr = x * (1.f / ref.x);
         float yr = y * (1.f / ref.y);
