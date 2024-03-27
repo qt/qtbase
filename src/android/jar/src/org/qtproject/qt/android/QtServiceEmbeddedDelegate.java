@@ -28,6 +28,7 @@ class QtServiceEmbeddedDelegate implements QtEmbeddedViewInterface, QtNative.App
         m_service = service;
         QtNative.registerAppStateListener(this);
         QtNative.setService(service);
+        // QTBUG-122920 TODO Implement accessibility for service UIs
     }
 
     @UsedFromNativeCode

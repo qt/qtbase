@@ -95,6 +95,7 @@ Q_CONSTINIT static QBasicAtomicInt startQtAndroidPluginCalled = Q_BASIC_ATOMIC_I
 
 Q_DECLARE_JNI_CLASS(QtEmbeddedDelegateFactory, "org/qtproject/qt/android/QtEmbeddedDelegateFactory")
 Q_DECLARE_JNI_CLASS(QtWindowInterface, "org/qtproject/qt/android/QtWindowInterface")
+Q_DECLARE_JNI_CLASS(QtAccessibilityInterface, "org/qtproject/qt/android/QtAccessibilityInterface");
 
 namespace QtAndroid
 {
@@ -237,36 +238,46 @@ namespace QtAndroid
         return true;
     }
 
+    void initializeAccessibility()
+    {
+        m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
+                "initializeAccessibility");
+    }
+
     void notifyAccessibilityLocationChange(uint accessibilityObjectId)
     {
-        qtActivityDelegate().callMethod<void>("notifyLocationChange", accessibilityObjectId);
+        m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
+                "notifyLocationChange", accessibilityObjectId);
     }
 
     void notifyObjectHide(uint accessibilityObjectId, uint parentObjectId)
     {
-        qtActivityDelegate().callMethod<void>("notifyObjectHide",
-                                              accessibilityObjectId, parentObjectId);
+        m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
+                "notifyObjectHide", accessibilityObjectId, parentObjectId);
     }
 
     void notifyObjectShow(uint parentObjectId)
     {
-        qtActivityDelegate().callMethod<void>("notifyObjectShow",
-                                              parentObjectId);
+        m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
+                "notifyObjectShow", parentObjectId);
     }
 
     void notifyObjectFocus(uint accessibilityObjectId)
     {
-        qtActivityDelegate().callMethod<void>("notifyObjectFocus", accessibilityObjectId);
+        m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
+                "notifyObjectFocus", accessibilityObjectId);
     }
 
     void notifyValueChanged(uint accessibilityObjectId, jstring value)
     {
-        qtActivityDelegate().callMethod<void>("notifyValueChanged", accessibilityObjectId, value);
+        m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
+                "notifyValueChanged", accessibilityObjectId, value);
     }
 
     void notifyScrolledEvent(uint accessibilityObjectId)
     {
-        qtActivityDelegate().callMethod<void>("notifyScrolledEvent", accessibilityObjectId);
+        m_backendRegister->callInterface<QtJniTypes::QtAccessibilityInterface, void>(
+                "notifyScrolledEvent", accessibilityObjectId);
     }
 
     void notifyNativePluginIntegrationReady(bool ready)

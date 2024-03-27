@@ -122,14 +122,6 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
         QtNative.startApplication(appParams, mainLib);
     }
 
-    @Override
-    QtAccessibilityDelegate createAccessibilityDelegate()
-    {
-        // FIXME make QtAccessibilityDelegate window based or verify current way works
-        // also for child windows: QTBUG-120685
-        return null;
-    }
-
     @UsedFromNativeCode
     @Override
     QtLayout getQtLayout()

@@ -61,6 +61,8 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
     }
     // TODO do we want to have one QtAccessibilityDelegate for the whole app (QtRootLayout) or
     // e.g. one per window?
+    // FIXME make QtAccessibilityDelegate window based or verify current way works
+    // also for child windows: QTBUG-120685
     public QtAccessibilityDelegate(QtLayout layout)
     {
         m_layout = layout;

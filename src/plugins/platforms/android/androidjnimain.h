@@ -65,6 +65,7 @@ namespace QtAndroid
     jobject createBitmap(int width, int height, QImage::Format format, JNIEnv *env);
     jobject createBitmapDrawable(jobject bitmap, JNIEnv *env = nullptr);
 
+    void initializeAccessibility();
     void notifyAccessibilityLocationChange(uint accessibilityObjectId);
     void notifyObjectHide(uint accessibilityObjectId, uint parentObjectId);
     void notifyObjectShow(uint parentObjectId);

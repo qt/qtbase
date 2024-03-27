@@ -82,7 +82,7 @@ namespace QtAndroidAccessibility
 
     void initialize()
     {
-        QtAndroid::qtActivityDelegate().callMethod<void>("initializeAccessibility");
+        QtAndroid::initializeAccessibility();
     }
 
     bool isActive()

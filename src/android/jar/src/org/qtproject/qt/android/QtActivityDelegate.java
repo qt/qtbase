@@ -31,7 +31,8 @@ import android.widget.PopupMenu;
 
 import java.util.HashMap;
 
-class QtActivityDelegate extends QtActivityDelegateBase implements QtWindowInterface
+class QtActivityDelegate
+        extends QtActivityDelegateBase implements QtWindowInterface, QtAccessibilityInterface
 {
     private static final String QtTAG = "QtActivityDelegate";
 
@@ -42,7 +43,7 @@ class QtActivityDelegate extends QtActivityDelegateBase implements QtWindowInter
 
     private View m_dummyView = null;
     private HashMap<Integer, View> m_nativeViews = new HashMap<Integer, View>();
-
+    private QtAccessibilityDelegate m_accessibilityDelegate = null;
 
     QtActivityDelegate(Activity activity)
     {
@@ -58,6 +59,8 @@ class QtActivityDelegate extends QtActivityDelegateBase implements QtWindowInter
             m_backendsRegistered = true;
             BackendRegister.registerBackend(QtWindowInterface.class,
                                             (QtWindowInterface)QtActivityDelegate.this);
+            BackendRegister.registerBackend(QtAccessibilityInterface.class,
+                                            (QtAccessibilityInterface)QtActivityDelegate.this);
         }
     }
 
@@ -66,6 +69,7 @@ class QtActivityDelegate extends QtActivityDelegateBase implements QtWindowInter
         if (m_backendsRegistered) {
             m_backendsRegistered = false;
             BackendRegister.unregisterBackend(QtWindowInterface.class);
+            BackendRegister.unregisterBackend(QtAccessibilityInterface.class);
         }
     }
 
@@ -226,7 +230,55 @@ class QtActivityDelegate extends QtActivityDelegateBase implements QtWindowInter
         });
     }
 
-    @UsedFromNativeCode
+    @Override
+    public void notifyLocationChange(int viewId)
+    {
+        if (m_accessibilityDelegate == null)
+            return;
+        m_accessibilityDelegate.notifyLocationChange(viewId);
+    }
+
+    @Override
+    public void notifyObjectHide(int viewId, int parentId)
+    {
+        if (m_accessibilityDelegate == null)
+            return;
+        m_accessibilityDelegate.notifyObjectHide(viewId, parentId);
+    }
+
+    @Override
+    public void notifyObjectShow(int parentId)
+    {
+        if (m_accessibilityDelegate == null)
+           return;
+        m_accessibilityDelegate.notifyObjectShow(parentId);
+    }
+
+    @Override
+    public void notifyObjectFocus(int viewId)
+    {
+        if (m_accessibilityDelegate == null)
+            return;
+        m_accessibilityDelegate.notifyObjectFocus(viewId);
+    }
+
+    @Override
+    public void notifyValueChanged(int viewId, String value)
+    {
+        if (m_accessibilityDelegate == null)
+            return;
+        m_accessibilityDelegate.notifyValueChanged(viewId, value);
+    }
+
+    @Override
+    public void notifyScrolledEvent(int viewId)
+    {
+        if (m_accessibilityDelegate == null)
+            return;
+        m_accessibilityDelegate.notifyScrolledEvent(viewId);
+    }
+
+    @Override
     public void initializeAccessibility()
     {
         QtNative.runAction(() -> {
@@ -360,16 +412,6 @@ class QtActivityDelegate extends QtActivityDelegateBase implements QtWindowInter
             if (window != null)
                 m_layout.moveChild(window, 0);
         });
-    }
-
-    @Override
-    QtAccessibilityDelegate createAccessibilityDelegate()
-    {
-        if (m_layout != null)
-            return new QtAccessibilityDelegate(m_layout);
-
-        Log.w(QtTAG, "Null layout, failed to initialize accessibility delegate.");
-        return null;
     }
 
     private void setActivityBackgroundDrawable()

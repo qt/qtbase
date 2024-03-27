@@ -37,7 +37,6 @@ abstract class QtActivityDelegateBase
 {
     protected Activity m_activity;
     protected HashMap<Integer, QtWindow> m_topLevelWindows;
-    protected QtAccessibilityDelegate m_accessibilityDelegate = null;
     protected QtDisplayManager m_displayManager = null;
     protected QtInputDelegate m_inputDelegate = null;
 
@@ -46,7 +45,6 @@ abstract class QtActivityDelegateBase
 
     // Subclass must implement these
     abstract void startNativeApplicationImpl(String appParams, String mainLib);
-    abstract QtAccessibilityDelegate createAccessibilityDelegate();
     abstract QtLayout getQtLayout();
 
     // With these we are okay with default implementation doing nothing
@@ -151,62 +149,6 @@ abstract class QtActivityDelegateBase
     public void hideSplashScreen()
     {
         hideSplashScreen(0);
-    }
-
-    @UsedFromNativeCode
-    public void notifyLocationChange(int viewId)
-    {
-        if (m_accessibilityDelegate == null)
-            return;
-        m_accessibilityDelegate.notifyLocationChange(viewId);
-    }
-
-    @UsedFromNativeCode
-    public void notifyObjectHide(int viewId, int parentId)
-    {
-        if (m_accessibilityDelegate == null)
-            return;
-        m_accessibilityDelegate.notifyObjectHide(viewId, parentId);
-    }
-
-    @UsedFromNativeCode
-    public void notifyObjectShow(int parentId)
-    {
-        if (m_accessibilityDelegate == null)
-           return;
-        m_accessibilityDelegate.notifyObjectShow(parentId);
-    }
-
-    @UsedFromNativeCode
-    public void notifyObjectFocus(int viewId)
-    {
-        if (m_accessibilityDelegate == null)
-            return;
-        m_accessibilityDelegate.notifyObjectFocus(viewId);
-    }
-
-    @UsedFromNativeCode
-    public void notifyValueChanged(int viewId, String value)
-    {
-        if (m_accessibilityDelegate == null)
-            return;
-        m_accessibilityDelegate.notifyValueChanged(viewId, value);
-    }
-
-    @UsedFromNativeCode
-    public void notifyScrolledEvent(int viewId)
-    {
-        if (m_accessibilityDelegate == null)
-            return;
-        m_accessibilityDelegate.notifyScrolledEvent(viewId);
-    }
-
-    @UsedFromNativeCode
-    public void initializeAccessibility()
-    {
-        QtNative.runAction(() -> {
-            m_accessibilityDelegate = createAccessibilityDelegate();
-        });
     }
 
     void handleUiModeChange(int uiMode)
