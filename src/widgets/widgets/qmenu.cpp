@@ -2674,6 +2674,7 @@ QAction *QMenuPrivate::exec(const QPoint &p, QAction *action, PositionFunction p
     action = syncAction;
     syncAction = nullptr;
     eventLoop = nullptr;
+    popupScreen.clear();
     return action;
 }
 
