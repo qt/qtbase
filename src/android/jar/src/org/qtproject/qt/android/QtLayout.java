@@ -91,7 +91,6 @@ class QtLayout extends ViewGroup {
     protected void onLayout(boolean changed, int l, int t, int r, int b)
     {
         int count = getChildCount();
-
         for (int i = 0; i < count; i++) {
             View child = getChildAt(i);
             if (child.getVisibility() != GONE) {
@@ -100,10 +99,11 @@ class QtLayout extends ViewGroup {
 
                 int childLeft = lp.x;
                 int childTop = lp.y;
-                child.layout(childLeft, childTop,
-                        childLeft + child.getMeasuredWidth(),
-                        childTop + child.getMeasuredHeight());
-
+                int childRight = (lp.width == ViewGroup.LayoutParams.MATCH_PARENT) ?
+                                 r - l : childLeft + child.getMeasuredWidth();
+                int childBottom = (lp.height == ViewGroup.LayoutParams.MATCH_PARENT) ?
+                                 b - t : childTop + child.getMeasuredHeight();
+                child.layout(childLeft, childTop, childRight, childBottom);
             }
         }
     }
