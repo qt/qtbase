@@ -62,8 +62,13 @@ function(qt_run_config_test_architecture)
     endif()
     message(STATUS "Extracting architecture info from ${_arch_file}.")
 
+    cmake_policy(PUSH)
+    if(POLICY CMP0159)
+        cmake_policy(SET CMP0159 NEW)
+    endif()
     file(STRINGS "${_arch_file}" _arch_lines LENGTH_MINIMUM 16 LENGTH_MAXIMUM 1024 ENCODING UTF-8
          REGEX "==Qt=magic=Qt==")
+    cmake_policy(POP)
 
     foreach (_line ${_arch_lines})
         string(LENGTH "${_line}" lineLength)
