@@ -99,10 +99,13 @@ function(qt_internal_extend_target target)
         get_target_property(target_type ${target} TYPE)
         set(is_library FALSE)
         set(is_interface_lib FALSE)
+        set(is_executable FALSE)
         if(${target_type} STREQUAL "STATIC_LIBRARY" OR ${target_type} STREQUAL "SHARED_LIBRARY")
             set(is_library TRUE)
         elseif(target_type STREQUAL "INTERFACE_LIBRARY")
             set(is_interface_lib TRUE)
+        elseif(target_type STREQUAL "EXECUTABLE")
+            set(is_executable TRUE)
         endif()
 
         foreach(lib ${arg_PUBLIC_LIBRARIES} ${arg_LIBRARIES})
@@ -272,6 +275,11 @@ function(qt_internal_extend_target target)
     if(arg_EXTRA_LINKER_SCRIPT_EXPORTS)
         set_target_properties(${target} PROPERTIES
             _qt_extra_linker_script_exports "${arg_EXTRA_LINKER_SCRIPT_EXPORTS}")
+    endif()
+
+    # For executables collect static plugins that these targets depend on.
+    if(is_executable)
+        qt_internal_import_plugins(${target} ${arg_PUBLIC_LIBRARIES} ${arg_LIBRARIES})
     endif()
 endfunction()
 
