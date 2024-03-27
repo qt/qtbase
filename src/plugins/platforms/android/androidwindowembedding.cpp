@@ -49,11 +49,13 @@ namespace QtAndroidWindowEmbedding {
 
     void resizeWindow(JNIEnv *, jclass, jlong windowRef, jint x, jint y, jint width, jint height)
     {
-        QWindow *window = reinterpret_cast<QWindow*>(windowRef);
-        QWindow *parent = window->parent();
-        if (parent)
-            parent->setGeometry(x, y, width, height);
-        window->setGeometry(0, 0, width, height);
+        QMetaObject::invokeMethod(qApp, [windowRef, x, y, width, height] {
+            QWindow *window = reinterpret_cast<QWindow*>(windowRef);
+            QWindow *parent = window->parent();
+            if (parent)
+                parent->setGeometry(x, y, width, height);
+            window->setGeometry(0, 0, width, height);
+        });
     }
 
     bool registerNatives(QJniEnvironment& env) {
