@@ -277,9 +277,18 @@ function(qt_internal_extend_target target)
             _qt_extra_linker_script_exports "${arg_EXTRA_LINKER_SCRIPT_EXPORTS}")
     endif()
 
-    # For executables collect static plugins that these targets depend on.
     if(is_executable)
-        qt_internal_import_plugins(${target} ${arg_PUBLIC_LIBRARIES} ${arg_LIBRARIES})
+        # If linking against Gui, make sure to also build the default QPA plugin.
+        # This makes the experience of an initial Qt configuration to build and run one single
+        # test / executable nicer.
+        set(linked_libs ${arg_PUBLIC_LIBRARIES} ${arg_LIBRARIES})
+        if(linked_libs MATCHES "(^|;)(${QT_CMAKE_EXPORT_NAMESPACE}::|Qt::)?Gui($|;)" AND
+            TARGET qpa_default_plugins)
+            add_dependencies("${target}" qpa_default_plugins)
+        endif()
+
+        # For executables collect static plugins that these targets depend on.
+        qt_internal_import_plugins(${target} ${linked_libs})
     endif()
 endfunction()
 

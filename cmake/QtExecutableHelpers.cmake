@@ -207,15 +207,6 @@ function(qt_internal_add_executable name)
                                       ADDITIONAL_INSTALL_ARGS ${additional_install_args})
         qt_internal_install_pdb_files(${name} "${arg_INSTALL_DIRECTORY}")
     endif()
-
-    # If linking against Gui, make sure to also build the default QPA plugin.
-    # This makes the experience of an initial Qt configuration to build and run one single
-    # test / executable nicer.
-    get_target_property(linked_libs "${name}" LINK_LIBRARIES)
-    if(linked_libs MATCHES "(^|;)(${QT_CMAKE_EXPORT_NAMESPACE}::|Qt::)?Gui($|;)" AND
-        TARGET qpa_default_plugins)
-        add_dependencies("${name}" qpa_default_plugins)
-    endif()
 endfunction()
 
 # This function compiles the target at configure time the very first time and creates the custom
