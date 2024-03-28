@@ -1375,6 +1375,8 @@ backtraceFramesForLogMessage(int frameCount,
             return true;
         if (function.contains("17qt_message_output"_L1))
             return true;
+        if (function.contains("26QInternalMessageLogContext"_L1))
+            return true;
         return false;
     };
 
