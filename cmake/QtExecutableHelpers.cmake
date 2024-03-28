@@ -212,7 +212,8 @@ function(qt_internal_add_executable name)
     # This makes the experience of an initial Qt configuration to build and run one single
     # test / executable nicer.
     get_target_property(linked_libs "${name}" LINK_LIBRARIES)
-    if("Qt::Gui" IN_LIST linked_libs AND TARGET qpa_default_plugins)
+    if(linked_libs MATCHES "(^|;)(${QT_CMAKE_EXPORT_NAMESPACE}::|Qt::)?Gui($|;)" AND
+        TARGET qpa_default_plugins)
         add_dependencies("${name}" qpa_default_plugins)
     endif()
 endfunction()
