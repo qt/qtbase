@@ -63,25 +63,25 @@
 //! [7]
 
 //! [8]
-    return d1.deadlineNSecs() == d2.deadlineNSecs();
+    return lhs.deadlineNSecs() == rhs.deadlineNSecs();
 //! [8]
 
 //! [9]
-    return d1.deadlineNSecs() != d2.deadlineNSecs();
+    return lhs.deadlineNSecs() != rhs.deadlineNSecs();
 //! [9]
 
 //! [10]
-    return d1.deadlineNSecs() < d2.deadlineNSecs();
+    return lhs.deadlineNSecs() < rhs.deadlineNSecs();
 //! [10]
 
 //! [11]
-    return d1.deadlineNSecs() <= d2.deadlineNSecs();
+    return lhs.deadlineNSecs() <= rhs.deadlineNSecs();
 //! [11]
 
 //! [12]
-    return d1.deadlineNSecs() > d2.deadlineNSecs();
+    return lhs.deadlineNSecs() > rhs.deadlineNSecs();
 //! [12]
 
 //! [13]
-    return d1.deadlineNSecs() >= d2.deadlineNSecs();
+    return lhs.deadlineNSecs() >= rhs.deadlineNSecs();
 //! [13]
