@@ -1671,6 +1671,7 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
                 if (it == elfArchitecures.constEnd() || *it != options.currentArchitecture.toLatin1()) {
                     if (options.verbose)
                         fprintf(stdout, "Skipping \"%s\", architecture mismatch\n", qPrintable(fileName));
+                    pclose(readElfCommand);
                     return {};
                 }
             }
