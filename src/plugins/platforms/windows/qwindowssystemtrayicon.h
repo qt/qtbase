@@ -49,6 +49,7 @@ private:
     void ensureCleanup();
     bool sendTrayMessage(DWORD msg);
     bool setIconVisible(bool visible);
+    bool isIconVisible() const;
     HICON createIcon(const QIcon &icon);
 
     QIcon m_icon;
