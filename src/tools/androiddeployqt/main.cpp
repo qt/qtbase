@@ -2202,6 +2202,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
     QJsonDocument jsonDocument = QJsonDocument::fromJson(output);
     if (jsonDocument.isNull()) {
         fprintf(stderr, "Invalid json output from qmlimportscanner.\n");
+        pclose(qmlImportScannerCommand);
         return false;
     }
 
@@ -2210,6 +2211,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
         QJsonValue value = jsonArray.at(i);
         if (!value.isObject()) {
             fprintf(stderr, "Invalid format of qmlimportscanner output.\n");
+            pclose(qmlImportScannerCommand);
             return false;
         }
 
@@ -2255,6 +2257,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
 
             if (importPathOfThisImport.isEmpty()) {
                 fprintf(stderr, "Import found outside of import paths: %s.\n", qPrintable(info.absoluteFilePath()));
+                pclose(qmlImportScannerCommand);
                 return false;
             }
 
@@ -2322,6 +2325,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
         }
     }
 
+    pclose(qmlImportScannerCommand);
     return true;
 }
 
