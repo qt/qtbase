@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QtTest/private/qpropertytesthelper_p.h>
 #include <QSignalSpy>
 
@@ -24,6 +25,7 @@ public slots:
     void cleanupTestCase();
     void init();
 private slots:
+    void compareCompiles();
     void clear_data();
     void clear();
     void clearAndSelect();
@@ -211,6 +213,11 @@ void tst_QItemSelectionModel::init()
         model->removeRow(0, QModelIndex());
     while (model->rowCount(QModelIndex()) < 5)
         model->insertRow(0, QModelIndex());
+}
+
+void tst_QItemSelectionModel::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QItemSelectionRange>();
 }
 
 void tst_QItemSelectionModel::clear_data()
@@ -2714,6 +2721,9 @@ void tst_QItemSelectionModel::QTBUG48402()
     model.removeRows(removeTop, removeBottom - removeTop + 1);
 
     QCOMPARE(QItemSelectionRange(helper.tl, helper.br), QItemSelectionRange(dtl, dbr));
+    QT_TEST_EQUALITY_OPS(QItemSelectionRange(helper.tl, helper.br), QItemSelectionRange(dtl, dbr), true);
+    QT_TEST_EQUALITY_OPS(QItemSelectionRange(), QItemSelectionRange(), true);
+    QT_TEST_EQUALITY_OPS(QItemSelectionRange(helper.tl, helper.br), QItemSelectionRange(), false);
 }
 
 void tst_QItemSelectionModel::QTBUG58851_data()

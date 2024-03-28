@@ -959,6 +959,8 @@ bool QFileInfo::operator==(const QFileInfo &fileinfo) const
     return comparesEqual(*this, fileinfo);
 }
 
+#include "qitemselectionmodel.h" // inlined API
+
 #include "qjsonarray.h"
 
 bool QJsonArray::operator==(const QJsonArray &other) const
