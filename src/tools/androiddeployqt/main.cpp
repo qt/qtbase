@@ -44,15 +44,16 @@ static const bool mustReadOutputAnyway = true; // pclose seems to return the wro
 
 static QStringList dependenciesForDepfile;
 
-FILE *openProcess(const QString &command)
+auto openProcess(const QString &command)
 {
 #if defined(Q_OS_WIN32)
     QString processedCommand = u'\"' + command + u'\"';
 #else
     const QString& processedCommand = command;
 #endif
-
-    return popen(processedCommand.toLocal8Bit().constData(), QT_POPEN_READ);
+    struct Closer { void operator()(FILE *proc) const { if (proc) (void)pclose(proc); } };
+    using UP = std::unique_ptr<FILE, Closer>;
+    return UP{popen(processedCommand.toLocal8Bit().constData(), QT_POPEN_READ)};
 }
 
 struct QtDependency
@@ -310,24 +311,22 @@ QString fileArchitecture(const Options &options, const QString &path)
 
     readElf = "%1 --needed-libs %2"_L1.arg(shellQuote(readElf), shellQuote(path));
 
-    FILE *readElfCommand = openProcess(readElf);
+    auto readElfCommand = openProcess(readElf);
     if (!readElfCommand) {
         fprintf(stderr, "Cannot execute command %s\n", qPrintable(readElf));
         return {};
     }
 
     char buffer[512];
-    while (fgets(buffer, sizeof(buffer), readElfCommand) != nullptr) {
+    while (fgets(buffer, sizeof(buffer), readElfCommand.get()) != nullptr) {
         QByteArray line = QByteArray::fromRawData(buffer, qstrlen(buffer));
         QString library;
         line = line.trimmed();
         if (line.startsWith("Arch: ")) {
             auto it = elfArchitectures.find(line.mid(6));
-            pclose(readElfCommand);
             return it != elfArchitectures.constEnd() ? QString::fromLatin1(it.value()) : QString{};
         }
     }
-    pclose(readElfCommand);
     return {};
 }
 
@@ -2017,7 +2016,7 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
 
     readElf = "%1 --needed-libs %2"_L1.arg(shellQuote(readElf), shellQuote(fileName));
 
-    FILE *readElfCommand = openProcess(readElf);
+    auto readElfCommand = openProcess(readElf);
     if (!readElfCommand) {
         fprintf(stderr, "Cannot execute command %s\n", qPrintable(readElf));
         return QStringList();
@@ -2027,7 +2026,7 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
 
     bool readLibs = false;
     char buffer[512];
-    while (fgets(buffer, sizeof(buffer), readElfCommand) != nullptr) {
+    while (fgets(buffer, sizeof(buffer), readElfCommand.get()) != nullptr) {
         QByteArray line = QByteArray::fromRawData(buffer, qstrlen(buffer));
         QString library;
         line = line.trimmed();
@@ -2037,7 +2036,6 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
                 if (it == elfArchitectures.constEnd() || *it != options.currentArchitecture.toLatin1()) {
                     if (options.verbose)
                         fprintf(stdout, "Skipping \"%s\", architecture mismatch\n", qPrintable(fileName));
-                    pclose(readElfCommand);
                     return {};
                 }
             }
@@ -2051,8 +2049,6 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
         if (QFile::exists(absoluteFilePath(&options, libraryName)))
             ret += libraryName;
     }
-
-    pclose(readElfCommand);
 
     return ret;
 }
@@ -2191,7 +2187,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
             qmlImportScanner.toLocal8Bit().constData());
     }
 
-    FILE *qmlImportScannerCommand = popen(qmlImportScanner.toLocal8Bit().constData(), QT_POPEN_READ);
+    auto qmlImportScannerCommand = openProcess(qmlImportScanner);
     if (qmlImportScannerCommand == 0) {
         fprintf(stderr, "Couldn't run qmlimportscanner.\n");
         return false;
@@ -2199,13 +2195,12 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
 
     QByteArray output;
     char buffer[512];
-    while (fgets(buffer, sizeof(buffer), qmlImportScannerCommand) != 0)
+    while (fgets(buffer, sizeof(buffer), qmlImportScannerCommand.get()) != nullptr)
         output += QByteArray(buffer, qstrlen(buffer));
 
     QJsonDocument jsonDocument = QJsonDocument::fromJson(output);
     if (jsonDocument.isNull()) {
         fprintf(stderr, "Invalid json output from qmlimportscanner.\n");
-        pclose(qmlImportScannerCommand);
         return false;
     }
 
@@ -2214,7 +2209,6 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
         QJsonValue value = jsonArray.at(i);
         if (!value.isObject()) {
             fprintf(stderr, "Invalid format of qmlimportscanner output.\n");
-            pclose(qmlImportScannerCommand);
             return false;
         }
 
@@ -2260,7 +2254,6 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
 
             if (importPathOfThisImport.isEmpty()) {
                 fprintf(stderr, "Import found outside of import paths: %s.\n", qPrintable(info.absoluteFilePath()));
-                pclose(qmlImportScannerCommand);
                 return false;
             }
 
@@ -2328,7 +2321,6 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
         }
     }
 
-    pclose(qmlImportScannerCommand);
     return true;
 }
 
@@ -2347,17 +2339,17 @@ bool runCommand(const Options &options, const QString &command)
     if (options.verbose)
         fprintf(stdout, "Running command '%s'\n", qPrintable(command));
 
-    FILE *runCommand = openProcess(command);
+    auto runCommand = openProcess(command);
     if (runCommand == nullptr) {
         fprintf(stderr, "Cannot run command '%s'\n", qPrintable(command));
         return false;
     }
     char buffer[4096];
-    while (fgets(buffer, sizeof(buffer), runCommand) != nullptr) {
+    while (fgets(buffer, sizeof(buffer), runCommand.get()) != nullptr) {
         if (options.verbose)
             fprintf(stdout, "%s", buffer);
     }
-    pclose(runCommand);
+    runCommand.reset();
     fflush(stdout);
     fflush(stderr);
     return true;
@@ -2509,7 +2501,8 @@ bool containsApplicationBinary(Options *options)
     return true;
 }
 
-FILE *runAdb(const Options &options, const QString &arguments)
+auto runAdb(const Options &options, const QString &arguments)
+    -> decltype(openProcess({}))
 {
     QString adb = execSuffixAppended(options.sdkPath + "/platform-tools/adb"_L1);
     if (!QFile::exists(adb)) {
@@ -2525,7 +2518,7 @@ FILE *runAdb(const Options &options, const QString &arguments)
     if (options.verbose)
         fprintf(stdout, "Running command \"%s\"\n", adb.toLocal8Bit().constData());
 
-    FILE *adbCommand = openProcess(adb);
+    auto adbCommand = openProcess(adb);
     if (adbCommand == 0) {
         fprintf(stderr, "Cannot start adb: %s\n", qPrintable(adb));
         return 0;
@@ -2869,19 +2862,19 @@ bool buildAndroidProject(const Options &options)
     if (options.verbose)
         commandLine += " --info"_L1;
 
-    FILE *gradleCommand = openProcess(commandLine);
+    auto gradleCommand = openProcess(commandLine);
     if (gradleCommand == 0) {
         fprintf(stderr, "Cannot run gradle command: %s\n.", qPrintable(commandLine));
         return false;
     }
 
     char buffer[512];
-    while (fgets(buffer, sizeof(buffer), gradleCommand) != 0) {
+    while (fgets(buffer, sizeof(buffer), gradleCommand.get()) != nullptr) {
         fprintf(stdout, "%s", buffer);
         fflush(stdout);
     }
 
-    int errorCode = pclose(gradleCommand);
+    const int errorCode = pclose(gradleCommand.release());
     if (errorCode != 0) {
         fprintf(stderr, "Building the android package failed!\n");
         if (!options.verbose)
@@ -2907,18 +2900,18 @@ bool uninstallApk(const Options &options)
         fprintf(stdout, "Uninstalling old Android package %s if present.\n", qPrintable(options.packageName));
 
 
-    FILE *adbCommand = runAdb(options, " uninstall "_L1 + shellQuote(options.packageName));
+    auto adbCommand = runAdb(options, " uninstall "_L1 + shellQuote(options.packageName));
     if (adbCommand == 0)
         return false;
 
     if (options.verbose || mustReadOutputAnyway) {
         char buffer[512];
-        while (fgets(buffer, sizeof(buffer), adbCommand) != 0)
+        while (fgets(buffer, sizeof(buffer), adbCommand.get()) != nullptr)
             if (options.verbose)
                 fprintf(stdout, "%s", buffer);
     }
 
-    int returnCode = pclose(adbCommand);
+    const int returnCode = pclose(adbCommand.release());
     if (returnCode != 0) {
         fprintf(stderr, "Warning: Uninstall failed!\n");
         if (!options.verbose)
@@ -2976,20 +2969,20 @@ bool installApk(const Options &options)
     if (options.verbose)
         fprintf(stdout, "Installing Android package to device.\n");
 
-    FILE *adbCommand = runAdb(options, " install -r "_L1
-                              + packagePath(options, options.keyStore.isEmpty() ? UnsignedAPK
-                                                                                : SignedAPK));
+    auto adbCommand = runAdb(options, " install -r "_L1
+                             + packagePath(options, options.keyStore.isEmpty() ? UnsignedAPK
+                                                                               : SignedAPK));
     if (adbCommand == 0)
         return false;
 
     if (options.verbose || mustReadOutputAnyway) {
         char buffer[512];
-        while (fgets(buffer, sizeof(buffer), adbCommand) != 0)
+        while (fgets(buffer, sizeof(buffer), adbCommand.get()) != nullptr)
             if (options.verbose)
                 fprintf(stdout, "%s", buffer);
     }
 
-    int returnCode = pclose(adbCommand);
+    const int returnCode = pclose(adbCommand.release());
     if (returnCode != 0) {
         fprintf(stderr, "Installing to device failed!\n");
         if (!options.verbose)
@@ -3107,7 +3100,7 @@ bool signAAB(const Options &options)
         QString command = jarSignerTool + " %1 %2"_L1.arg(shellQuote(file))
                                                      .arg(shellQuote(options.keyStoreAlias));
 
-        FILE *jarSignerCommand = openProcess(command);
+        auto jarSignerCommand = openProcess(command);
         if (jarSignerCommand == 0) {
             fprintf(stderr, "Couldn't run jarsigner.\n");
             return false;
@@ -3115,11 +3108,11 @@ bool signAAB(const Options &options)
 
         if (options.verbose) {
             char buffer[512];
-            while (fgets(buffer, sizeof(buffer), jarSignerCommand) != 0)
+            while (fgets(buffer, sizeof(buffer), jarSignerCommand.get()) != nullptr)
                 fprintf(stdout, "%s", buffer);
         }
 
-        int errorCode = pclose(jarSignerCommand);
+        const int errorCode = pclose(jarSignerCommand.release());
         if (errorCode != 0) {
             fprintf(stderr, "jarsigner command failed.\n");
             if (!options.verbose)
@@ -3147,17 +3140,17 @@ bool signPackage(const Options &options)
         return false;
 
     auto zipalignRunner = [](const QString &zipAlignCommandLine) {
-        FILE *zipAlignCommand = openProcess(zipAlignCommandLine);
+        auto zipAlignCommand = openProcess(zipAlignCommandLine);
         if (zipAlignCommand == 0) {
             fprintf(stderr, "Couldn't run zipalign.\n");
             return false;
         }
 
         char buffer[512];
-        while (fgets(buffer, sizeof(buffer), zipAlignCommand) != 0)
+        while (fgets(buffer, sizeof(buffer), zipAlignCommand.get()) != nullptr)
             fprintf(stdout, "%s", buffer);
 
-        return pclose(zipAlignCommand) == 0;
+        return pclose(zipAlignCommand.release()) == 0;
     };
 
     const QString verifyZipAlignCommandLine =
@@ -3214,17 +3207,17 @@ bool signPackage(const Options &options)
     apkSignCommand += " %1"_L1.arg(shellQuote(packagePath(options, SignedAPK)));
 
     auto apkSignerRunner = [](const QString &command, bool verbose) {
-        FILE *apkSigner = openProcess(command);
+        auto apkSigner = openProcess(command);
         if (apkSigner == 0) {
             fprintf(stderr, "Couldn't run apksigner.\n");
             return false;
         }
 
         char buffer[512];
-        while (fgets(buffer, sizeof(buffer), apkSigner) != 0)
+        while (fgets(buffer, sizeof(buffer), apkSigner.get()) != nullptr)
             fprintf(stdout, "%s", buffer);
 
-        int errorCode = pclose(apkSigner);
+        const int errorCode = pclose(apkSigner.release());
         if (errorCode != 0) {
             fprintf(stderr, "apksigner command failed.\n");
             if (!verbose)
