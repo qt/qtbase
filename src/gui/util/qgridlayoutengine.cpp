@@ -964,8 +964,11 @@ void QGridLayoutEngine::insertItem(QGridLayoutItem *item, int index)
 
     for (int i = item->firstRow(); i <= item->lastRow(); ++i) {
         for (int j = item->firstColumn(); j <= item->lastColumn(); ++j) {
-            if (itemAt(i, j))
-                qWarning("QGridLayoutEngine::addItem: Cell (%d, %d) already taken", i, j);
+            const auto existingItem = itemAt(i, j);
+            if (existingItem) {
+                qWarning("QGridLayoutEngine::addItem: Can't add %s at cell (%d, %d) because it's already taken by %s",
+                    qPrintable(item->toString()), i, j, qPrintable(existingItem->toString()));
+            }
             setItemAt(i, j, item);
         }
     }
