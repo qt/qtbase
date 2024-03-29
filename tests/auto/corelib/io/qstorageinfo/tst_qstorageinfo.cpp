@@ -255,7 +255,9 @@ void tst_QStorageInfo::freeSpaceUpdate()
         FlushFileBuffers(HANDLE(_get_osfhandle(file.handle())));
 #elif _POSIX_VERSION >= 200112L
         fsync(file.handle());
+# ifndef Q_OS_VXWORKS
         sync();
+# endif // Q_OS_VXWORKS
 #endif
     };
 
