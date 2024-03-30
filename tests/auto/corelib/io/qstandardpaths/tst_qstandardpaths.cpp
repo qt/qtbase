@@ -533,7 +533,7 @@ void tst_qstandardpaths::testFindExecutableLinkToDirectory()
     QFile::remove(target);
 }
 
-using RuntimeDirSetup = QString (*)(QDir &);
+using RuntimeDirSetup = std::optional<QString> (*)(QDir &);
 Q_DECLARE_METATYPE(RuntimeDirSetup);
 
 void tst_qstandardpaths::testRuntimeDirectory()
@@ -593,18 +593,18 @@ void tst_qstandardpaths::testCustomRuntimeDirectory_data()
         QSKIP("Running this test as root doesn't make sense");
 #  endif
 
-    addRow("environment:non-existing", [](QDir &d) {
+    addRow("environment:non-existing", [](QDir &d) -> std::optional<QString> {
         return updateRuntimeDir(d.filePath("runtime"));
     });
 
-    addRow("environment:existing", [](QDir &d) {
+    addRow("environment:existing", [](QDir &d) -> std::optional<QString> {
         QString p = d.filePath("runtime");
         d.mkdir("runtime");
         QFile::setPermissions(p, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner);
         return updateRuntimeDir(p);
     });
 
-    addRow("environment-to-existing-wrong-perm", [](QDir &d) {
+    addRow("environment-to-existing-wrong-perm", [](QDir &d) -> std::optional<QString> {
         QString p = d.filePath("runtime");
         d.mkdir("runtime");
         QFile::setPermissions(p, QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
@@ -617,7 +617,7 @@ void tst_qstandardpaths::testCustomRuntimeDirectory_data()
         return fallbackXdgRuntimeDir();
     });
 
-    addRow("environment:wrong-owner", [](QDir &) {
+    addRow("environment:wrong-owner", [](QDir &) -> std::optional<QString> {
         QT_STATBUF st;
         QT_STAT("/", &st);
 
@@ -632,10 +632,18 @@ void tst_qstandardpaths::testCustomRuntimeDirectory_data()
         return fallbackXdgRuntimeDir();
     });
 
-    addRow("environment:file", [](QDir &d) {
+    // static so that it can be used in RuntimeDirSetup callable without capturing
+    static auto failedToOpen = [](const QFile &f) {
+        qCritical("QFile::Open: failed to open '%s': %s",
+                  qPrintable(f.fileName()), qPrintable(f.errorString()));
+        return std::nullopt;
+    };
+
+    addRow("environment:file", [](QDir &d) -> std::optional<QString> {
         QString p = d.filePath("file");
         QFile f(p);
-        f.open(QIODevice::WriteOnly);
+        if (!f.open(QIODevice::WriteOnly))
+            return failedToOpen(f);
         f.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
 
         updateRuntimeDir(p);
@@ -646,7 +654,7 @@ void tst_qstandardpaths::testCustomRuntimeDirectory_data()
         return fallbackXdgRuntimeDir();
     });
 
-    addRow("environment:broken-symlink", [](QDir &d) {
+    addRow("environment:broken-symlink", [](QDir &d) -> std::optional<QString> {
         QString p = d.filePath("link");
         QFile::link(d.filePath("this-goes-nowhere"), p);
         updateRuntimeDir(p);
@@ -657,7 +665,7 @@ void tst_qstandardpaths::testCustomRuntimeDirectory_data()
         return fallbackXdgRuntimeDir();
     });
 
-    addRow("environment:symlink-to-dir", [](QDir &d) {
+    addRow("environment:symlink-to-dir", [](QDir &d) -> std::optional<QString> {
         QString p = d.filePath("link");
         d.mkdir("dir");
         QFile::link(d.filePath("dir"), p);
@@ -670,12 +678,12 @@ void tst_qstandardpaths::testCustomRuntimeDirectory_data()
         return fallbackXdgRuntimeDir();
     });
 
-    addRow("no-environment:non-existing", [](QDir &) {
+    addRow("no-environment:non-existing", [](QDir &) -> std::optional<QString> {
         clearRuntimeDir();
         return fallbackXdgRuntimeDir();
     });
 
-    addRow("no-environment:existing", [](QDir &d) {
+    addRow("no-environment:existing", [](QDir &d) -> std::optional<QString> {
         clearRuntimeDir();
         QString p = fallbackXdgRuntimeDir();
         d.mkdir(p);         // probably has wrong permissions
@@ -683,10 +691,11 @@ void tst_qstandardpaths::testCustomRuntimeDirectory_data()
         return p;
     });
 
-    addRow("no-environment:fallback-is-file", [](QDir &) {
+    addRow("no-environment:fallback-is-file", [](QDir &) -> std::optional<QString> {
         QString p = fallbackXdgRuntimeDir();
         QFile f(p);
-        f.open(QIODevice::WriteOnly);
+        if (!f.open(QIODevice::WriteOnly))
+            return failedToOpen(f);
         f.setPermissions(QFile::ReadOwner | QFile::WriteOwner);
 
         clearRuntimeDir();
@@ -697,10 +706,11 @@ void tst_qstandardpaths::testCustomRuntimeDirectory_data()
         return QString();
     });
 
-    addRow("environment-and-fallback-are-files", [](QDir &d) {
+    addRow("environment-and-fallback-are-files", [](QDir &d) -> std::optional<QString> {
         QString p = d.filePath("file1");
         QFile f(p);
-        f.open(QIODevice::WriteOnly);
+        if (!f.open(QIODevice::WriteOnly))
+            return failedToOpen(f);
         f.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup);
         updateRuntimeDir(p);
         QTest::ignoreMessage(QtWarningMsg,
@@ -710,7 +720,8 @@ void tst_qstandardpaths::testCustomRuntimeDirectory_data()
 
         f.close();
         f.setFileName(fallbackXdgRuntimeDir());
-        f.open(QIODevice::WriteOnly);
+        if (!f.open(QIODevice::WriteOnly))
+            return failedToOpen(f);
         f.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ReadGroup);
         QTest::ignoreMessage(QtWarningMsg,
                              QString("QStandardPaths: runtime directory '%1' is not a directory, "
@@ -750,7 +761,9 @@ void tst_qstandardpaths::testCustomRuntimeDirectory()
     qputenv("TMPDIR", QFile::encodeName(tempDir.path()));
 
     QFETCH(RuntimeDirSetup, setup);
-    QString expected = setup(d);
+    std::optional<QString> opt = setup(d);
+    QVERIFY(opt);
+    QString expected = *opt;
 
     QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
     QCOMPARE(runtimeDir, expected);
