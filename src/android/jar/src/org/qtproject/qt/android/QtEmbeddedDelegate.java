@@ -25,7 +25,7 @@ import java.util.HashMap;
 
 class QtEmbeddedDelegate extends QtActivityDelegateBase
         implements QtNative.AppStateDetailsListener, QtEmbeddedViewInterface, QtWindowInterface,
-                   QtMenuInterface
+                   QtMenuInterface, QtLayoutInterface
 {
     private static final String QtTAG = "QtEmbeddedDelegate";
     // TODO simplistic implementation with one QtView, expand to support multiple views QTBUG-117649
@@ -98,10 +98,12 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
                 m_backendsRegistered = true;
                 BackendRegister.registerBackend(QtWindowInterface.class, (QtWindowInterface)this);
                 BackendRegister.registerBackend(QtMenuInterface.class, (QtMenuInterface)this);
+                BackendRegister.registerBackend(QtLayoutInterface.class, (QtLayoutInterface)this);
             } else if (!details.isStarted && m_backendsRegistered) {
                 m_backendsRegistered = false;
                 BackendRegister.unregisterBackend(QtWindowInterface.class);
                 BackendRegister.unregisterBackend(QtMenuInterface.class);
+                BackendRegister.unregisterBackend(QtLayoutInterface.class);
             }
         }
     }
@@ -128,9 +130,8 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
         QtNative.startApplication(appParams, mainLib);
     }
 
-    @UsedFromNativeCode
     @Override
-    QtLayout getQtLayout()
+    public QtLayout getQtLayout()
     {
         // TODO verify if returning m_view here works, this is used by the androidjniinput
         // when e.g. showing a keyboard, so depends on getting the keyboard focus working

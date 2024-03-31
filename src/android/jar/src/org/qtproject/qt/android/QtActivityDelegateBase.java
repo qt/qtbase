@@ -45,7 +45,6 @@ abstract class QtActivityDelegateBase
 
     // Subclass must implement these
     abstract void startNativeApplicationImpl(String appParams, String mainLib);
-    abstract QtLayout getQtLayout();
 
     // With these we are okay with default implementation doing nothing
     void setUpLayout() {}

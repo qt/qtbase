@@ -32,7 +32,7 @@ import android.widget.PopupMenu;
 import java.util.HashMap;
 
 class QtActivityDelegate extends QtActivityDelegateBase
-        implements QtWindowInterface, QtAccessibilityInterface, QtMenuInterface
+        implements QtWindowInterface, QtAccessibilityInterface, QtMenuInterface, QtLayoutInterface
 {
     private static final String QtTAG = "QtActivityDelegate";
 
@@ -63,6 +63,8 @@ class QtActivityDelegate extends QtActivityDelegateBase
                                             (QtAccessibilityInterface)QtActivityDelegate.this);
             BackendRegister.registerBackend(QtMenuInterface.class,
                                             (QtMenuInterface)QtActivityDelegate.this);
+            BackendRegister.registerBackend(QtLayoutInterface.class,
+                                            (QtLayoutInterface)QtActivityDelegate.this);
         }
     }
 
@@ -73,12 +75,12 @@ class QtActivityDelegate extends QtActivityDelegateBase
             BackendRegister.unregisterBackend(QtWindowInterface.class);
             BackendRegister.unregisterBackend(QtAccessibilityInterface.class);
             BackendRegister.unregisterBackend(QtMenuInterface.class);
+            BackendRegister.unregisterBackend(QtLayoutInterface.class);
         }
     }
 
-    @UsedFromNativeCode
     @Override
-    QtLayout getQtLayout()
+    public QtLayout getQtLayout()
     {
         return m_layout;
     }

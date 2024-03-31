@@ -24,6 +24,7 @@ Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods");
 using namespace QtAndroid;
 
 Q_DECLARE_JNI_CLASS(QtLayout, "org/qtproject/qt/android/QtLayout")
+Q_DECLARE_JNI_CLASS(QtLayoutInterface, "org/qtproject/qt/android/QtLayoutInterface")
 
 namespace QtAndroidInput
 {
@@ -98,7 +99,9 @@ namespace QtAndroidInput
 
     QJniObject qtLayout()
     {
-        return qtActivityDelegate().callMethod<QtJniTypes::QtLayout>("getQtLayout");
+        AndroidBackendRegister *reg = QtAndroid::backendRegister();
+        return reg->callInterface<QtJniTypes::QtLayoutInterface, QtJniTypes::QtLayout>(
+                "getQtLayout");
     }
 
     void updateSelection(int selStart, int selEnd, int candidatesStart, int candidatesEnd)
