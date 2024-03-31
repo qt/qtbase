@@ -50,7 +50,6 @@ abstract class QtActivityDelegateBase
     void setUpLayout() {}
     void setUpSplashScreen(int orientation) {}
     void hideSplashScreen(final int duration) {}
-    void openContextMenu(final int x, final int y, final int w, final int h) {}
     void setActionBarVisibility(boolean visible) {}
 
     QtActivityDelegateBase(Activity activity)
@@ -174,29 +173,5 @@ abstract class QtActivityDelegateBase
                 QtDisplayManager.handleUiDarkModeChanged(1);
                 break;
         }
-    }
-
-    @UsedFromNativeCode
-    public void resetOptionsMenu()
-    {
-        QtNative.runAction(() -> m_activity.invalidateOptionsMenu());
-    }
-
-    @UsedFromNativeCode
-    public void openOptionsMenu()
-    {
-        QtNative.runAction(() -> m_activity.openOptionsMenu());
-    }
-
-    public void onCreatePopupMenu(Menu menu)
-    {
-        QtNative.fillContextMenu(menu);
-        m_contextMenuVisible = true;
-    }
-
-    @UsedFromNativeCode
-    public void closeContextMenu()
-    {
-        QtNative.runAction(() -> m_activity.closeContextMenu());
     }
 }
