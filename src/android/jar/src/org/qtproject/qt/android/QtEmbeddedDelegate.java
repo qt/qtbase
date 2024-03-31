@@ -15,15 +15,19 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupMenu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 class QtEmbeddedDelegate extends QtActivityDelegateBase
-        implements QtNative.AppStateDetailsListener, QtEmbeddedViewInterface, QtWindowInterface
+        implements QtNative.AppStateDetailsListener, QtEmbeddedViewInterface, QtWindowInterface,
+                   QtMenuInterface
 {
+    private static final String QtTAG = "QtEmbeddedDelegate";
     // TODO simplistic implementation with one QtView, expand to support multiple views QTBUG-117649
     private QtView m_view;
     private QtNative.ApplicationStateDetails m_stateDetails;
@@ -93,9 +97,11 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
             if (details.isStarted && !m_backendsRegistered) {
                 m_backendsRegistered = true;
                 BackendRegister.registerBackend(QtWindowInterface.class, (QtWindowInterface)this);
+                BackendRegister.registerBackend(QtMenuInterface.class, (QtMenuInterface)this);
             } else if (!details.isStarted && m_backendsRegistered) {
                 m_backendsRegistered = false;
                 BackendRegister.unregisterBackend(QtWindowInterface.class);
+                BackendRegister.unregisterBackend(QtMenuInterface.class);
             }
         }
     }
@@ -175,4 +181,36 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
             m_windowLoaded = true;
         }
     }
+
+    // QtMenuInterface implementation begin
+    @Override
+    public void resetOptionsMenu() { QtNative.runAction(() -> m_activity.invalidateOptionsMenu()); }
+
+    @Override
+    public void openOptionsMenu() { QtNative.runAction(() -> m_activity.openOptionsMenu()); }
+
+    @Override
+    public void closeContextMenu() { QtNative.runAction(() -> m_activity.closeContextMenu()); }
+
+    @Override
+    public void openContextMenu(final int x, final int y, final int w, final int h)
+    {
+        QtLayout layout = getQtLayout();
+        layout.postDelayed(() -> {
+            final QtEditText focusedEditText = m_inputDelegate.getCurrentQtEditText();
+            if (focusedEditText == null) {
+                Log.w(QtTAG, "No focused view when trying to open context menu");
+                return;
+            }
+            layout.setLayoutParams(focusedEditText, new QtLayout.LayoutParams(w, h, x, y), false);
+            PopupMenu popup = new PopupMenu(m_activity, focusedEditText);
+            QtNative.fillContextMenu(popup.getMenu());
+            popup.setOnMenuItemClickListener(menuItem ->
+                    m_activity.onContextItemSelected(menuItem));
+            popup.setOnDismissListener(popupMenu ->
+                    m_activity.onContextMenuClosed(popupMenu.getMenu()));
+            popup.show();
+        }, 100);
+    }
+    // QtMenuInterface implementation end
 }

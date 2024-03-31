@@ -31,8 +31,8 @@ import android.widget.PopupMenu;
 
 import java.util.HashMap;
 
-class QtActivityDelegate
-        extends QtActivityDelegateBase implements QtWindowInterface, QtAccessibilityInterface
+class QtActivityDelegate extends QtActivityDelegateBase
+        implements QtWindowInterface, QtAccessibilityInterface, QtMenuInterface
 {
     private static final String QtTAG = "QtActivityDelegate";
 
@@ -61,6 +61,8 @@ class QtActivityDelegate
                                             (QtWindowInterface)QtActivityDelegate.this);
             BackendRegister.registerBackend(QtAccessibilityInterface.class,
                                             (QtAccessibilityInterface)QtActivityDelegate.this);
+            BackendRegister.registerBackend(QtMenuInterface.class,
+                                            (QtMenuInterface)QtActivityDelegate.this);
         }
     }
 
@@ -70,6 +72,7 @@ class QtActivityDelegate
             m_backendsRegistered = false;
             BackendRegister.unregisterBackend(QtWindowInterface.class);
             BackendRegister.unregisterBackend(QtAccessibilityInterface.class);
+            BackendRegister.unregisterBackend(QtMenuInterface.class);
         }
     }
 
@@ -290,27 +293,25 @@ class QtActivityDelegate
         });
     }
 
-    @UsedFromNativeCode
+    // QtMenuInterface implementation begin
+    @Override
     public void resetOptionsMenu()
     {
         QtNative.runAction(() -> m_activity.invalidateOptionsMenu());
     }
 
-    @UsedFromNativeCode
+    @Override
     public void openOptionsMenu()
     {
         QtNative.runAction(() -> m_activity.openOptionsMenu());
     }
 
-    private boolean m_contextMenuVisible = false;
-
-    public void onCreatePopupMenu(Menu menu)
+    @Override
+    public void closeContextMenu()
     {
-        QtNative.fillContextMenu(menu);
-        m_contextMenuVisible = true;
+        QtNative.runAction(() -> m_activity.closeContextMenu());
     }
 
-    @UsedFromNativeCode
     @Override
     public void openContextMenu(final int x, final int y, final int w, final int h)
     {
@@ -330,11 +331,14 @@ class QtActivityDelegate
             popup.show();
         }, 100);
     }
+    // QtMenuInterface implementation end
 
-    @UsedFromNativeCode
-    public void closeContextMenu()
+    private boolean m_contextMenuVisible = false;
+
+    public void onCreatePopupMenu(Menu menu)
     {
-        QtNative.runAction(() -> m_activity.closeContextMenu());
+        QtNative.fillContextMenu(menu);
+        m_contextMenuVisible = true;
     }
 
     @Override
