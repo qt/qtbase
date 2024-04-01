@@ -404,15 +404,20 @@
     of the ODBC driver. ODBC support can be used as a fallback for compliant
     databases if no native driver is available.
 
-    On Windows, an ODBC driver manager should be installed by default.
+    On Windows, an ODBC driver manager is installed by default.
     For Unix systems, there are some implementations which must be
     installed first. Note that every end user of your application is
     required to have an ODBC driver manager installed, otherwise the
     QODBC plugin will not work.
 
     When connecting to an ODBC datasource, you should pass the name
-    of the ODBC datasource to the QSqlDatabase::setDatabaseName()
+    of the ODBC datasource (DSN) to the QSqlDatabase::setDatabaseName()
     function, rather than the actual database name.
+    It's also possible to pass a FILEDSN (*.dsn) filename or a complete
+    ODBC driver string. When passing a driver string you must make sure,
+    that all parameters (username, password, ...) are properly escaped.
+    Passing the username or password through the QSqlDatabase functions,
+    the escaping is done by the QODBC plugin.
 
     The QODBC Plugin needs an ODBC compliant driver manager version 2.0 or
     later. Some ODBC drivers claim to be version-2.0-compliant,
