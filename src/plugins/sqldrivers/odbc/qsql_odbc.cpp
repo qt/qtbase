@@ -1968,7 +1968,7 @@ bool QODBCDriver::open(const QString & db,
         connQStr = "FILEDSN="_L1 + ensureEscaped(db);
     else if (db.contains("DRIVER="_L1, Qt::CaseInsensitive)
             || db.contains("SERVER="_L1, Qt::CaseInsensitive))
-        connQStr = ensureEscaped(db);
+        connQStr = db;
     else
         connQStr = "DSN="_L1 + ensureEscaped(db);
 
