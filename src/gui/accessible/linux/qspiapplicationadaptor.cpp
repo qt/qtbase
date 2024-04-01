@@ -165,6 +165,7 @@ bool QSpiApplicationAdaptor::eventFilter(QObject *target, QEvent *event)
             keyEvents.enqueue(QPair<QPointer<QObject>, QKeyEvent*> (QPointer<QObject>(target), copyKeyEvent(keyEvent)));
             return true;
         }
+        break;
     }
     default:
         break;
