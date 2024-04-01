@@ -265,6 +265,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return lc_messages.createSeparatedList(in.toStringList());
     case LocaleChanged:
         Q_ASSERT(false);
+        [[fallthrough]];
     default:
         break;
     }
