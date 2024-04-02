@@ -69,15 +69,6 @@ class QtMessageDialogHelper
         if (m_standardIcon == 0)
             return null;
 
-        try {
-            TypedValue typedValue = new TypedValue();
-            m_theme.resolveAttribute(android.R.attr.alertDialogIcon, typedValue, true);
-            return m_activity.getResources().getDrawable(typedValue.resourceId,
-                                                         m_activity.getTheme());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         // Information, Warning, Critical, Question
         switch (m_standardIcon)
         {
@@ -87,7 +78,6 @@ class QtMessageDialogHelper
             case 2: // Warning
                 return m_activity.getResources().getDrawable(android.R.drawable.stat_sys_warning,
                         m_activity.getTheme());
-//                break;
             case 3: // Critical
                 return m_activity.getResources().getDrawable(android.R.drawable.ic_dialog_alert,
                         m_activity.getTheme());
