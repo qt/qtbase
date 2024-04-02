@@ -78,7 +78,8 @@ uint QNetworkInterfaceManager::interfaceIndexFromName(const QString &name)
 
     const QByteArray name8bit = name.toLatin1();
     memset(&req, 0, sizeof(ifreq));
-    memcpy(req.ifr_name, name8bit.data(), qMin<int>(name8bit.length() + 1, sizeof(req.ifr_name) - 1));
+    if (!name8bit.isNull())
+        memcpy(req.ifr_name, name8bit.data(), qMin(size_t(name8bit.length()) + 1, sizeof(req.ifr_name) - 1));
 
     uint id = 0;
     if (qt_safe_ioctl(socket, SIOCGIFINDEX, &req) >= 0)
@@ -235,7 +236,8 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
     for ( ; it != names.constEnd(); ++it) {
         ifreq req;
         memset(&req, 0, sizeof(ifreq));
-        memcpy(req.ifr_name, it->constData(), qMin<int>(it->length() + 1, sizeof(req.ifr_name) - 1));
+        if (!it->isNull())
+            memcpy(req.ifr_name, it->constData(), qMin(size_t(it->length()) + 1, sizeof(req.ifr_name) - 1));
 
         QNetworkInterfacePrivate *iface = findInterface(socket, interfaces, req);
 
@@ -246,7 +248,8 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
             iface->name = QString::fromLatin1(req.ifr_name);
 
             // reset the name:
-            memcpy(req.ifr_name, oldName.constData(), qMin<int>(oldName.length() + 1, sizeof(req.ifr_name) - 1));
+            if (!oldName.isNull())
+                memcpy(req.ifr_name, oldName.constData(), qMin(size_t(oldName.length()) + 1, sizeof(req.ifr_name) - 1));
         } else
 #endif
         {
