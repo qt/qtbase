@@ -80,7 +80,6 @@
 #include <QtCore/private/qduplicatetracker_p.h>
 
 #include <memory>
-#include <stack>
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -92,6 +91,7 @@ class QDirListingPrivate
 public:
     void init(bool resolveEngine);
     void advance();
+    void beginIterating();
 
     bool entryMatches(QDirEntryInfo &info);
     void pushDirectory(QDirEntryInfo &info);
@@ -113,10 +113,10 @@ public:
 #endif
 
     using FEngineIteratorPtr = std::unique_ptr<QAbstractFileEngineIterator>;
-    std::stack<FEngineIteratorPtr, std::vector<FEngineIteratorPtr>> fileEngineIterators;
+    std::vector<FEngineIteratorPtr> fileEngineIterators;
 #ifndef QT_NO_FILESYSTEMITERATOR
     using FsIteratorPtr = std::unique_ptr<QFileSystemIterator>;
-    std::stack<FsIteratorPtr, std::vector<FsIteratorPtr>> nativeIterators;
+    std::vector<FsIteratorPtr> nativeIterators;
 #endif
 
     // Loop protection
@@ -143,7 +143,21 @@ void QDirListingPrivate::init(bool resolveEngine = true)
         engine = QFileSystemEngine::createLegacyEngine(initialEntryInfo.entry,
                                                        initialEntryInfo.metaData);
     }
+}
 
+/*!
+    \internal
+
+    Resets the iteration state (if any), so that calling begin()/cbegin()
+    always starts iterating anew.
+*/
+void QDirListingPrivate::beginIterating()
+{
+#ifndef QT_NO_FILESYSTEMITERATOR
+    nativeIterators.clear();
+#endif
+    fileEngineIterators.clear();
+    visitedLinks.clear();
     pushDirectory(initialEntryInfo);
 }
 
@@ -167,7 +181,7 @@ void QDirListingPrivate::pushDirectory(QDirEntryInfo &entryInfo)
     if (engine) {
         engine->setFileName(path);
         if (auto it = engine->beginEntryList(path, filters, nameFilters)) {
-            fileEngineIterators.emplace(std::move(it));
+            fileEngineIterators.emplace_back(std::move(it));
         } else {
             // No iterator; no entry list.
         }
@@ -178,7 +192,7 @@ void QDirListingPrivate::pushDirectory(QDirEntryInfo &entryInfo)
             fentry = &entryInfo.fileInfoOpt->d_ptr->fileEntry;
         else
             fentry = &entryInfo.entry;
-        nativeIterators.emplace(std::make_unique<QFileSystemIterator>(*fentry, filters));
+        nativeIterators.emplace_back(std::make_unique<QFileSystemIterator>(*fentry, filters));
 #else
         qWarning("Qt was built with -no-feature-filesystemiterator: no files/plugins will be found!");
 #endif
@@ -196,19 +210,18 @@ bool QDirListingPrivate::entryMatches(QDirEntryInfo &entryInfo)
 
     Advances the internal iterator, either a QAbstractFileEngineIterator (e.g.
     QResourceFileEngineIterator) or a QFileSystemIterator (which uses low-level
-    system methods, e.g. readdir() on Unix).
-
-    An iterator stack is used for holding the iterators.
+    system methods, e.g. readdir() on Unix). The iterators are stored in a
+    vector.
 
     A typical example of doing recursive iteration:
     - while iterating directory A we find a sub-dir B
-    - an iterator for B is added to the iterator stack
-    - B's iterator is processed (the top() of the stack) first; then loop
+    - an iterator for B is added to the vector
+    - B's iterator is processed (vector.back()) first; then the loop
       goes back to processing A's iterator
 */
 void QDirListingPrivate::advance()
 {
-    // Use get() in both code paths below because the iterator returned by top()
+    // Use get() in both code paths below because the iterator returned by back()
     // may be invalidated due to reallocation when appending new iterators in
     // pushDirectory().
 
@@ -216,7 +229,7 @@ void QDirListingPrivate::advance()
         while (!fileEngineIterators.empty()) {
             // Find the next valid iterator that matches the filters.
             QAbstractFileEngineIterator *it;
-            while (it = fileEngineIterators.top().get(), it->advance()) {
+            while (it = fileEngineIterators.back().get(), it->advance()) {
                 QDirEntryInfo entryInfo;
                 entryInfo.fileInfoOpt = it->currentFileInfo();
                 if (entryMatches(entryInfo)) {
@@ -225,7 +238,7 @@ void QDirListingPrivate::advance()
                 }
             }
 
-            fileEngineIterators.pop();
+            fileEngineIterators.pop_back();
         }
     } else {
 #ifndef QT_NO_FILESYSTEMITERATOR
@@ -233,7 +246,8 @@ void QDirListingPrivate::advance()
         while (!nativeIterators.empty()) {
             // Find the next valid iterator that matches the filters.
             QFileSystemIterator *it;
-            while (it = nativeIterators.top().get(), it->advance(entryInfo.entry, entryInfo.metaData)) {
+            while (it = nativeIterators.back().get(),
+                   it->advance(entryInfo.entry, entryInfo.metaData)) {
                 if (entryMatches(entryInfo)) {
                     currentEntryInfo = std::move(entryInfo);
                     return;
@@ -241,7 +255,7 @@ void QDirListingPrivate::advance()
                 entryInfo = {};
             }
 
-            nativeIterators.pop();
+            nativeIterators.pop_back();
         }
 #endif
     }
@@ -498,14 +512,15 @@ QString QDirListing::iteratorPath() const
     Here's how to find and read all files filtered by name, recursively:
     \snippet code/src_corelib_io_qdirlisting.cpp 1
 
-    \note As this is a unidirectional (forward-only) iterator, calling
-    begin()/cbegin() more than once on the same QDirListing object could
-    result in unexpected behavior (for example, some entries being skipped).
+    \note This is a forward-only iterator, every time begin()/cbegin() is
+    called (on the same QDirListing object), the internal state is reset and
+    the iteration starts anew.
 
     \sa fileInfo(), fileName(), filePath()
 */
 QDirListing::const_iterator QDirListing::begin() const
 {
+    d->beginIterating();
     const_iterator it{d.get()};
     return ++it;
 }
