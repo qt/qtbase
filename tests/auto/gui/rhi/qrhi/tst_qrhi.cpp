@@ -19,8 +19,7 @@
 # define TST_GL
 #endif
 
-// Never attempt Vulkan on Android, to prevent the emulator in CI from crashing.
-#if QT_CONFIG(vulkan) && !defined(Q_OS_ANDROID)
+#if QT_CONFIG(vulkan)
 # include <QVulkanInstance>
 # include <QVulkanFunctions>
 # define TST_VK
