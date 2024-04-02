@@ -4,6 +4,10 @@
 #ifndef QRESTACCESSMANAGER_H
 #define QRESTACCESSMANAGER_H
 
+#if 0
+#pragma qt_class(QRestAccessManager)
+#endif
+
 #include <QtNetwork/qnetworkaccessmanager.h>
 
 QT_BEGIN_NAMESPACE
