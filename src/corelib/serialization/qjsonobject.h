@@ -244,8 +244,14 @@ private:
     {
         return comparesEqual(lhs, rhs.toObject());
     }
+    friend bool comparesEqual(const QJsonObject &lhs,
+                              const QJsonValueConstRef &rhs) noexcept
+    {
+        return comparesEqual(lhs, rhs.toObject());
+    }
     Q_DECLARE_EQUALITY_COMPARABLE(QJsonObject)
     Q_DECLARE_EQUALITY_COMPARABLE(QJsonObject, QJsonValue)
+    Q_DECLARE_EQUALITY_COMPARABLE(QJsonObject, QJsonValueConstRef)
     friend class QJsonValue;
     friend class QJsonDocument;
     friend class QJsonPrivate::Value;

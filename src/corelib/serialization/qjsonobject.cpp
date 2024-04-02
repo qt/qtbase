@@ -32,7 +32,7 @@ QT_BEGIN_NAMESPACE
     \brief The QJsonObject class encapsulates a JSON object.
 
     \compares equality
-    \compareswith equality QJsonValue
+    \compareswith equality QJsonValue QJsonValueConstRef
     \endcompareswith
 
     A JSON object is a list of key value pairs, where the keys are unique strings

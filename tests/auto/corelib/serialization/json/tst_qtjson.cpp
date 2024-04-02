@@ -187,6 +187,8 @@ void tst_QtJson::compareCompiles()
     QTestPrivate::testEqualityOperatorsCompile<QJsonValueRef>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonArray, QJsonValue>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonObject, QJsonValue>();
+    QTestPrivate::testEqualityOperatorsCompile<QJsonObject, QJsonValueConstRef>();
+    QTestPrivate::testEqualityOperatorsCompile<QJsonObject, QJsonValueRef>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonValueConstRef, QJsonValue>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonValueRef, QJsonValue>();
     QTestPrivate::testEqualityOperatorsCompile<QJsonValueRef, QJsonValueConstRef>();
@@ -670,6 +672,7 @@ void tst_QtJson::testObjectInsertCopies()
         QCOMPARE(obj.size(), 2);
         QCOMPARE(obj.value("value"), "TEST");
         QCOMPARE(obj.value("prop2"), "TEST");
+        QT_TEST_EQUALITY_OPS(rv, obj["value"].toObject(), true);
     }
     {
         QJsonObject obj;
