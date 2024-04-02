@@ -70,9 +70,6 @@ void tst_QRhiWidget::testData()
 #endif
 
 #if QT_CONFIG(vulkan)
-#if defined(Q_OS_ANDROID)
-    qWarning() << "Skipping Vulkan for Android (QTQAINFRA-5971)";
-#else
     // Have to probe to be sure Vulkan is actually working (the test cases
     // themselves will assume QRhi init succeeds).
     if (QVulkanDefaultInstance::instance()) {
@@ -81,7 +78,6 @@ void tst_QRhiWidget::testData()
         if (QRhi::probe(QRhi::Vulkan, &vulkanInitParams))
             QTest::newRow("Vulkan") << QRhiWidget::Api::Vulkan;
     }
-#endif
 #endif
 
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
