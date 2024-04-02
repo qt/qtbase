@@ -266,6 +266,7 @@ void tst_QHttp2Connection::connectToServer()
     QVERIFY(waitForSettingsExchange(connection, serverConnection));
 
     QSignalSpy newIncomingStreamSpy{ serverConnection, &QHttp2Connection::newIncomingStream };
+    QSignalSpy clientIncomingStreamSpy{ connection, &QHttp2Connection::newIncomingStream };
 
     QHttp2Stream *clientStream = connection->createStream().unwrap();
     QSignalSpy clientHeaderReceivedSpy{ clientStream, &QHttp2Stream::headersReceived };
@@ -283,6 +284,8 @@ void tst_QHttp2Connection::connectToServer()
     const HPack::HttpHeader
             headersReceived = clientHeaderReceivedSpy.front().front().value<HPack::HttpHeader>();
     QCOMPARE(headersReceived, ExpectedResponseHeaders);
+
+    QCOMPARE(clientIncomingStreamSpy.count(), 0);
 }
 
 void tst_QHttp2Connection::WINDOW_UPDATE()

@@ -910,8 +910,13 @@ void QHttp2Connection::handleHEADERS()
     if (streamID == connectionStreamID)
         return connectionError(PROTOCOL_ERROR, "HEADERS on 0x0 stream");
 
-    if (streamID > m_lastIncomingStreamID) {
+    const bool isClient = m_connectionType == Type::Client;
+    const bool isClientInitiatedStream = !!(streamID & 1);
+    const bool isRemotelyInitiatedStream = isClient ^ isClientInitiatedStream;
+
+    if (isRemotelyInitiatedStream && streamID > m_lastIncomingStreamID) {
         QHttp2Stream *newStream = createStreamInternal_impl(streamID);
+        Q_ASSERT(newStream);
         m_lastIncomingStreamID = streamID;
         qCDebug(qHttp2ConnectionLog, "[%p] Created new incoming stream %d", this, streamID);
         emit newIncomingStream(newStream);
