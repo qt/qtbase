@@ -403,13 +403,19 @@ static QVariant macToQtFormat(QStringView sys_fmt)
                 result += "zzz"_L1;
             break;
         case 'O': // Time Zone (1, 4)
+            result += u't';
+            break;
         case 'v': // Time Zone (1, 4)
         case 'V': // Time Zone (1..4)
+            result += "tttt"_L1;
+            break;
         case 'x': // Time Zone (1..5)
         case 'X': // Time Zone (1..5)
+            result += (repeat > 1 && (repeat & 1)) ? "ttt"_L1 : "tt"_L1;
+            break;
         case 'z': // Time Zone (1..4)
         case 'Z': // Time Zone (1..5)
-            result += u't';
+            result += repeat < 4 ? "tt"_L1 : repeat > 4 ? "ttt"_L1 : "t"_L1;
             break;
         default:
             // a..z and A..Z are reserved for format codes, so any occurrence of these not

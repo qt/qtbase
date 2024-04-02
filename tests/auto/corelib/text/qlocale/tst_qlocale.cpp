@@ -3327,24 +3327,24 @@ void tst_QLocale::timeFormat()
     const QLocale no("no_NO");
     QCOMPARE(no.timeFormat(QLocale::NarrowFormat), QLatin1String("HH:mm"));
     QCOMPARE(no.timeFormat(QLocale::ShortFormat), QLatin1String("HH:mm"));
-    QCOMPARE(no.timeFormat(QLocale::LongFormat), QLatin1String("HH:mm:ss t"));
+    QCOMPARE(no.timeFormat(QLocale::LongFormat), "HH:mm:ss tttt"_L1);
 
     const QLocale id("id_ID");
     QCOMPARE(id.timeFormat(QLocale::ShortFormat), QLatin1String("HH.mm"));
-    QCOMPARE(id.timeFormat(QLocale::LongFormat), QLatin1String("HH.mm.ss t"));
+    QCOMPARE(id.timeFormat(QLocale::LongFormat), "HH.mm.ss tttt"_L1);
 
     const QLocale cat("ca_ES");
     QCOMPARE(cat.timeFormat(QLocale::ShortFormat), QLatin1String("H:mm"));
-    QCOMPARE(cat.timeFormat(QLocale::LongFormat), QLatin1String("H:mm:ss (t)"));
+    QCOMPARE(cat.timeFormat(QLocale::LongFormat), "H:mm:ss (tttt)"_L1);
 
     const QLocale bra("pt_BR");
     QCOMPARE(bra.timeFormat(QLocale::ShortFormat), QLatin1String("HH:mm"));
-    QCOMPARE(bra.timeFormat(QLocale::LongFormat), QLatin1String("HH:mm:ss t"));
+    QCOMPARE(bra.timeFormat(QLocale::LongFormat), "HH:mm:ss tttt"_L1);
 
     // QTBUG-123872 - we kludge CLDR's B to Ap:
     const QLocale tw("zh_TW");
     QCOMPARE(tw.timeFormat(QLocale::ShortFormat), "Aph:mm"_L1);
-    QCOMPARE(tw.timeFormat(QLocale::LongFormat), "Aph:mm:ss [t]"_L1);
+    QCOMPARE(tw.timeFormat(QLocale::LongFormat), "Aph:mm:ss [tttt]"_L1);
 }
 
 void tst_QLocale::dateTimeFormat()
@@ -3356,7 +3356,7 @@ void tst_QLocale::dateTimeFormat()
     const QLocale no("no_NO");
     QCOMPARE(no.dateTimeFormat(QLocale::NarrowFormat), QLatin1String("dd.MM.yyyy HH:mm"));
     QCOMPARE(no.dateTimeFormat(QLocale::ShortFormat), QLatin1String("dd.MM.yyyy HH:mm"));
-    QCOMPARE(no.dateTimeFormat(QLocale::LongFormat), QLatin1String("dddd d. MMMM yyyy HH:mm:ss t"));
+    QCOMPARE(no.dateTimeFormat(QLocale::LongFormat), "dddd d. MMMM yyyy HH:mm:ss tttt"_L1);
 }
 
 void tst_QLocale::monthName()
