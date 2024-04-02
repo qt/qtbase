@@ -2510,6 +2510,16 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 */
 
 /*!
+    \fn constexpr QStringEncoder::QStringEncoder(const QString &name, Flags flags = Flag::Default)
+    \since 6.8
+
+    Creates an encoder object using \a name and \a flags.
+    If \a name is not the name of a known encoding an invalid converter will get created.
+
+    \sa isValid()
+*/
+
+/*!
     \fn QStringEncoder::DecodedData<const QString &> QStringEncoder::encode(const QString &in)
     \fn QStringEncoder::DecodedData<QStringView> QStringEncoder::encode(QStringView in)
     \fn QStringEncoder::DecodedData<const QString &> QStringEncoder::operator()(const QString &in)
@@ -2593,6 +2603,16 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 
 /*!
     \fn constexpr QStringDecoder::QStringDecoder(const char *name, Flags flags = Flag::Default)
+
+    Creates an decoder object using \a name and \a flags.
+    If \a name is not the name of a known encoding an invalid converter will get created.
+
+    \sa isValid()
+*/
+
+/*!
+    \fn constexpr QStringDecoder::QStringDecoder(const QString &name, Flags flags = Flag::Default)
+    \since 6.8
 
     Creates an decoder object using \a name and \a flags.
     If \a name is not the name of a known encoding an invalid converter will get created.
