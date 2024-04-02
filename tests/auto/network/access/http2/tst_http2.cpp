@@ -25,6 +25,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qurl.h>
+#include <QtCore/qset.h>
 
 #include <cstdlib>
 #include <memory>
@@ -94,6 +95,8 @@ private slots:
 
     void authenticationRequired_data();
     void authenticationRequired();
+
+    void unsupportedAuthenticateChallenge();
 
     void h2cAllowedAttribute_data();
     void h2cAllowedAttribute();
@@ -1241,6 +1244,89 @@ void tst_Http2::authenticationRequired()
     // in the next test running after this. In the `success` case we anyway expect it to have been
     // received.
     QTRY_VERIFY(serverGotSettingsACK);
+}
+
+void tst_Http2::unsupportedAuthenticateChallenge()
+{
+    clearHTTP2State();
+    serverPort = 0;
+
+    if (defaultConnectionType() == H2Type::h2c)
+        QSKIP("This test requires TLS with ALPN to work");
+
+    ServerPtr targetServer(newServer(defaultServerSettings, defaultConnectionType()));
+    QByteArray responseBody = "Hello"_ba;
+    targetServer->setResponseBody(responseBody);
+    targetServer->setAuthenticationHeader("Bearer realm=\"qt.io accounts\"");
+
+    QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    nRequests = 1;
+
+    QUrl url = requestUrl(defaultConnectionType());
+    url.setPath("/index.html");
+    QNetworkRequest request(url);
+
+    QByteArray expectedBody = "Hello, World!";
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    QScopedPointer<QNetworkReply> reply;
+    reply.reset(manager->post(request, expectedBody));
+
+    bool authenticationRequested = false;
+    connect(manager.get(), &QNetworkAccessManager::authenticationRequired, reply.get(),
+            [&](QNetworkReply *, QAuthenticator *auth) {
+                authenticationRequested = true;
+            });
+
+    bool finishedReceived = false;
+    connect(reply.get(), &QNetworkReply::finished, reply.get(),
+            [&]() { finishedReceived = true; });
+    bool errorReceived = false;
+    connect(reply.get(), &QNetworkReply::errorOccurred, reply.get(),
+            [&]() { errorReceived = true; });
+
+    QSet<quint32> receivedDataOnStreams;
+    connect(targetServer.get(), &Http2Server::receivedDATAFrame, reply.get(),
+            [&receivedDataOnStreams](quint32 streamID, const QByteArray &body) {
+                Q_UNUSED(body);
+                receivedDataOnStreams.insert(streamID);
+            });
+
+    // Use queued connection so that the finished signal can be emitted and the
+    // isFinished property can be set.
+    connect(reply.get(), &QNetworkReply::errorOccurred, this,
+            &tst_Http2::replyFinishedWithError, Qt::QueuedConnection);
+
+    // Since we're using self-signed certificates, ignore SSL errors:
+    reply->ignoreSslErrors();
+
+    runEventLoop();
+    STOP_ON_FAILURE
+    QVERIFY2(reply->isFinished(),
+             "The reply should error out if authentication fails, or finish if it succeeds");
+
+    QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+    QVERIFY(reply->isFinished());
+    QVERIFY(errorReceived);
+    QVERIFY(finishedReceived);
+    QCOMPARE(receivedDataOnStreams.size(), 1);
+    QVERIFY(receivedDataOnStreams.contains(1)); // the original, failed, request
+
+    QVERIFY(!authenticationRequested);
+
+    // We should not have sent any authentication headers to the server, since
+    // we don't support the challenge.
+    const QByteArray reqAuthHeader = targetServer->requestAuthorizationHeader();
+    QVERIFY(reqAuthHeader.isEmpty());
+
+    // In the `!success` case we need to wait for the server to emit this or it might cause issues
+    // in the next test running after this. In the `success` case we anyway expect it to have been
+    // received.
+    QTRY_VERIFY(serverGotSettingsACK);
+
 }
 
 void tst_Http2::h2cAllowedAttribute_data()

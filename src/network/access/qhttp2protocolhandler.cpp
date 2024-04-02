@@ -1205,12 +1205,14 @@ void QHttp2ProtocolHandler::handleAuthorization(Stream &stream)
             // In this case IIS will fall back to HTTP/1.1."
             // Though it might be OK to ignore this. The server shouldn't let us connect with
             // HTTP/2 if it doesn't support us using it.
-        } else if (!auth.isEmpty()) {
-            // Somewhat mimics parts of QHttpNetworkConnectionChannel::handleStatus
-            bool resend = false;
-            const bool authenticateHandled = m_connection->d_func()->handleAuthenticateChallenge(
-                    m_socket, httpReply, isProxy, resend);
-            if (authenticateHandled && resend) {
+            return false;
+        }
+        // Somewhat mimics parts of QHttpNetworkConnectionChannel::handleStatus
+        bool resend = false;
+        const bool authenticateHandled = m_connection->d_func()->handleAuthenticateChallenge(
+                m_socket, httpReply, isProxy, resend);
+        if (authenticateHandled) {
+            if (resend) {
                 httpReply->d_func()->eraseData();
                 // Add the request back in queue, we'll retry later now that
                 // we've gotten some username/password set on it:
@@ -1225,11 +1227,15 @@ void QHttp2ProtocolHandler::handleAuthorization(Stream &stream)
                 // We automatically try to send new requests when the stream is
                 // closed, so we don't need to call sendRequest ourselves.
                 return true;
-            } // else: Authentication failed or was cancelled
+            } // else: we're just not resending the request.
+            // @note In the http/1.x case we (at time of writing) call close()
+            // for the connectionChannel (which is a bit weird, we could surely
+            // reuse the open socket outside "connection:close"?), but in http2
+            // we only have one channel, so we won't close anything.
         } else {
-            // No authentication header, but we got a 401/407 so we cannot
-            // succeed. We need to emit signals for headers and data, and then
-            // finishWithError.
+            // No authentication header or authentication isn't supported, but
+            // we got a 401/407 so we cannot succeed. We need to emit signals
+            // for headers and data, and then finishWithError.
             emit httpReply->headerChanged();
             emit httpReply->readyRead();
             QNetworkReply::NetworkError error = httpReply->statusCode() == 401
