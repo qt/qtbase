@@ -373,7 +373,9 @@ static QVariant macToQtFormat(QStringView sys_fmt)
             else
                 result += "ddd"_L1;
             break;
-        case 'a': // AM/PM (1): 1 = short
+        case 'a': // AM/PM (1..n): Qt supports no distinctions
+        case 'b': // Like a, but also distinguishing noon, midnight (ignore difference).
+        case 'B': // Flexible day period (at night, &c.)
             // Translate to Qt uppercase AM/PM
             result += "AP"_L1;
             break;
