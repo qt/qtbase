@@ -1110,8 +1110,6 @@ static bool parseRgbMatrix(const QByteArray &data, const QHash<Tag, TagEntry> &t
 
 static bool parseGrayMatrix(const QByteArray &data, const QHash<Tag, TagEntry> &tagIndex, QColorSpacePrivate *colorspaceDPtr)
 {
-    // We will use sRGB primaries and fit to match the given white-point if
-    // it doesn't match sRGB's.
     QColorVector whitePoint;
     if (!parseXyzData(data, tagIndex[Tag::wtpt], whitePoint))
         return false;
@@ -1119,25 +1117,8 @@ static bool parseGrayMatrix(const QByteArray &data, const QHash<Tag, TagEntry> &
         qCWarning(lcIcc) << "fromIccProfile: Invalid ICC profile - gray white-point not normalized";
         return false;
     }
-    if (whitePoint == QColorVector::D65()) {
-        colorspaceDPtr->primaries = QColorSpace::Primaries::SRgb;
-    } else {
-        colorspaceDPtr->primaries = QColorSpace::Primaries::Custom;
-        // Calculate chromaticity from xyz (assuming y == 1.0f).
-        float y = 1.0f / (1.0f + whitePoint.z + whitePoint.x);
-        float x = whitePoint.x * y;
-        QColorSpacePrimaries primaries(QColorSpace::Primaries::SRgb);
-        primaries.whitePoint = QPointF(x,y);
-        if (!primaries.areValid()) {
-            qCWarning(lcIcc, "fromIccProfile: Invalid ICC profile - invalid white-point(%f, %f)", x, y);
-            return false;
-        }
-        colorspaceDPtr->toXyz = primaries.toXyzMatrix();
-        if (!colorspaceDPtr->toXyz.isValid()) {
-            qCWarning(lcIcc, "fromIccProfile: Invalid ICC profile - invalid white-point(%f, %f)", x, y);
-            return false;
-        }
-    }
+    colorspaceDPtr->primaries = QColorSpace::Primaries::Custom;
+    colorspaceDPtr->whitePoint = whitePoint;
     return true;
 }
 
@@ -1337,6 +1318,8 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         } else {
             colorspaceDPtr->chad = QColorMatrix::chromaticAdaptation(colorspaceDPtr->whitePoint);
         }
+        if (colorspaceDPtr->colorModel == QColorSpace::ColorModel::Gray)
+            colorspaceDPtr->toXyz = colorspaceDPtr->chad;
 
         // Reset the matrix to our canonical values:
         if (colorspaceDPtr->primaries != QColorSpace::Primaries::Custom)
