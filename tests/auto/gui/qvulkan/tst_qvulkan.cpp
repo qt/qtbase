@@ -27,10 +27,6 @@ private slots:
 
 void tst_QVulkan::vulkanInstance()
 {
-#ifdef Q_OS_ANDROID
-    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
-        QSKIP("Fails on Android 12 (QTBUG-111236)");
-#endif
     QVulkanInstance inst;
     if (!inst.create())
         QSKIP("Vulkan init failed; skip");
@@ -67,10 +63,6 @@ void tst_QVulkan::vulkanInstance()
 
 void tst_QVulkan::vulkanCheckSupported()
 {
-#ifdef Q_OS_ANDROID
-    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
-        QSKIP("Fails on Android 12 (QTBUG-111236)");
-#endif
     // Test the early calls to supportedLayers/extensions/apiVersion that need
     // the library and some basics, but do not initialize the instance.
     QVulkanInstance inst;
@@ -214,10 +206,6 @@ void tst_QVulkan::vulkanPlainWindow()
 
 void tst_QVulkan::vulkanVersionRequest()
 {
-#ifdef Q_OS_ANDROID
-    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
-        QSKIP("Fails on Android 12 (QTBUG-111236)");
-#endif
     QVulkanInstance inst;
     if (!inst.create())
         QSKIP("Vulkan init failed; skip");
@@ -264,10 +252,6 @@ static void waitForUnexposed(QWindow *w)
 
 void tst_QVulkan::vulkanWindow()
 {
-#ifdef Q_OS_ANDROID
-    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
-        QSKIP("Fails on Android 12 (QTBUG-111236)");
-#endif
     QVulkanInstance inst;
     if (!inst.create())
         QSKIP("Vulkan init failed; skip");
