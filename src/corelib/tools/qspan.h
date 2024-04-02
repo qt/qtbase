@@ -297,7 +297,7 @@ public:
         : QSpanBase(il.begin(), il.size())
     {}
 
-#if __cpp_lib_span
+#ifdef __cpp_lib_span
     template <typename S, size_t N, if_qualification_conversion<S> = true>
     Q_IMPLICIT constexpr QSpanBase(std::span<S, N> other) noexcept
         : QSpanBase(other.data(), other.size())
