@@ -43,6 +43,10 @@ class Converter (object):
         return 'AP', cls.__count_first(text)
 
     # A: Milliseconds in day. Not supported.
+    b = a # AM/PM/noon/midnight
+    B = a # "Flexible day period" (e.g. "at night" / "in the day")
+    # (Only zh_Hant_TW affected; zh_Hant_{HK,MO} use 'ah', mapped to
+    # 'APh', so do the same here.)
 
     @classmethod
     def c(cls, text): # Stand-alone local day of week
