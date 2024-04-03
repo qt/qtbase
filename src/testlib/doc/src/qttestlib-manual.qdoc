@@ -583,7 +583,5 @@
     \li \l {Chapter 6: Skipping Tests with QSKIP}{Skipping Tests}
     \endlist
 
-    \note You can build and execute the tests from each chapter using the
-    available source code, which is linked to at the end of each chapter.
 
 */
