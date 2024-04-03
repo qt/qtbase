@@ -10684,8 +10684,14 @@ void qSendWindowChangeToTextureChildrenRecursively(QWidget *widget, QEvent::Type
 
     for (int i = 0; i < d->children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(d->children.at(i));
-        if (w && !w->isWindow() && QWidgetPrivate::get(w)->textureChildSeen)
+        if (w && !w->isWindow())
             qSendWindowChangeToTextureChildrenRecursively(w, eventType);
+    }
+
+    // Notify QWidgetWindow after we've notified all child QWidgets
+    if (auto *window = d->windowHandle(QWidgetPrivate::WindowHandleMode::Direct)) {
+        QEvent e(eventType);
+        QCoreApplication::sendEvent(window, &e);
     }
 }
 
@@ -10746,7 +10752,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
 
     // texture-based widgets need a pre-notification when their associated top-level window changes
     // This is not under the wasCreated/newParent conditions above in order to also play nice with QDockWidget.
-    if (d->textureChildSeen && ((!parent && parentWidget()) || (parent && parent->window() != oldtlw)))
+    if ((oldtlw && oldtlw->d_func()->usesRhiFlush) && ((!parent && parentWidget()) || (parent && parent->window() != oldtlw)))
         qSendWindowChangeToTextureChildrenRecursively(this, QEvent::WindowAboutToChangeInternal);
 
     // If we get parented into another window, children will be folded
@@ -10827,7 +10833,7 @@ void QWidget::setParent(QWidget *parent, Qt::WindowFlags f)
 
     // texture-based widgets need another event when their top-level window
     // changes (more precisely, has already changed at this point)
-    if (d->textureChildSeen && oldtlw != window())
+    if ((oldtlw && oldtlw->d_func()->usesRhiFlush) && oldtlw != window())
         qSendWindowChangeToTextureChildrenRecursively(this, QEvent::WindowChangeInternal);
 
     if (!wasCreated) {
