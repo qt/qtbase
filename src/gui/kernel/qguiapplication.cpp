@@ -3797,6 +3797,8 @@ Qt::ApplicationState QGuiApplication::applicationState()
 */
 void QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy policy)
 {
+    if (qApp)
+        qWarning("setHighDpiScaleFactorRoundingPolicy must be called before creating the QGuiApplication instance");
     QGuiApplicationPrivate::highDpiScaleFactorRoundingPolicy = policy;
 }
 
