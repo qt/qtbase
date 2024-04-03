@@ -136,6 +136,10 @@ public:
     static void setApplicationProxy(const QNetworkProxy &proxy);
     static QNetworkProxy applicationProxy();
 
+    QHttpHeaders headers() const;
+    void setHeaders(const QHttpHeaders &newHeaders);
+    void setHeaders(QHttpHeaders &&newHeaders);
+
     // "cooked" headers
     QVariant header(QNetworkRequest::KnownHeaders header) const;
     void setHeader(QNetworkRequest::KnownHeaders header, const QVariant &value);

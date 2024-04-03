@@ -752,6 +752,53 @@ QNetworkProxy QNetworkProxy::applicationProxy()
 }
 
 /*!
+    \since 6.8
+
+    Returns headers that are set in this network request.
+
+    If the proxy is not of type HttpProxy or HttpCachingProxy,
+    default constructed QHttpHeaders is returned.
+
+    \sa setHeaders()
+*/
+QHttpHeaders QNetworkProxy::headers() const
+{
+    if (d->type != HttpProxy && d->type != HttpCachingProxy)
+        return {};
+    return d->headers.headers();
+}
+
+/*!
+    \since 6.8
+
+    Sets \a newHeaders as headers in this network request, overriding
+    any previously set headers.
+
+    If some headers correspond to the known headers, the values will
+    be parsed and the corresponding parsed form will also be set.
+
+    If the proxy is not of type HttpProxy or HttpCachingProxy this has no
+    effect.
+
+    \sa headers(), QNetworkRequest::KnownHeaders
+*/
+void QNetworkProxy::setHeaders(QHttpHeaders &&newHeaders)
+{
+    if (d->type == HttpProxy || d->type == HttpCachingProxy)
+        d->headers.setHeaders(std::move(newHeaders));
+}
+
+/*!
+    \overload
+    \since 6.8
+*/
+void QNetworkProxy::setHeaders(const QHttpHeaders &newHeaders)
+{
+    if (d->type == HttpProxy || d->type == HttpCachingProxy)
+        d->headers.setHeaders(newHeaders);
+}
+
+/*!
     \since 5.0
     Returns the value of the known network header \a header if it is
     in use for this proxy. If it is not present, returns QVariant()
