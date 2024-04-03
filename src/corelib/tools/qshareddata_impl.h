@@ -9,6 +9,7 @@
 #ifndef QSHAREDDATA_IMPL_H
 #define QSHAREDDATA_IMPL_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qshareddata.h>
 
@@ -19,7 +20,7 @@ namespace QtPrivate {
 template <typename T>
 class QExplicitlySharedDataPointerV2
 {
-    T *d;
+    Qt::totally_ordered_wrapper<T *> d;
 
 public:
     constexpr QExplicitlySharedDataPointerV2() noexcept : d(nullptr) {}
@@ -65,14 +66,14 @@ public:
     ~QExplicitlySharedDataPointerV2()
     {
         if (d && !d->ref.deref())
-            delete d;
+            delete d.get();
     }
 
     void detach()
     {
         if (!d) {
             // should this codepath be here on in all user's detach()?
-            d = new T;
+            d.reset(new T);
             d->ref.ref();
         } else if (d->ref.loadRelaxed() != 1) {
             // TODO: qAtomicDetach here...?
@@ -84,15 +85,15 @@ public:
     void reset(T *t = nullptr) noexcept
     {
         if (d && !d->ref.deref())
-            delete d;
-        d = t;
+            delete d.get();
+        d.reset(t);
         if (d)
             d->ref.ref();
     }
 
     constexpr T *take() noexcept
     {
-        return std::exchange(d, nullptr);
+        return std::exchange(d, nullptr).get();
     }
 
     bool isShared() const noexcept
@@ -106,27 +107,33 @@ public:
     }
 
     // important change from QExplicitlySharedDataPointer: deep const
-    constexpr T &operator*() { return *d; }
-    constexpr T *operator->() { return d; }
-    constexpr const T &operator*() const { return *d; }
-    constexpr const T *operator->() const { return d; }
+    constexpr T &operator*() { return *(d.get()); }
+    constexpr T *operator->() { return d.get(); }
+    constexpr const T &operator*() const { return *(d.get()); }
+    constexpr const T *operator->() const { return d.get(); }
 
-    constexpr T *data() noexcept { return d; }
-    constexpr const T *data() const noexcept { return d; }
+    constexpr T *data() noexcept { return d.get(); }
+    constexpr const T *data() const noexcept { return d.get(); }
 
-    constexpr explicit operator bool() const noexcept { return d; }
+    constexpr explicit operator bool() const noexcept { return d.get(); }
 
-    constexpr friend bool operator==(const QExplicitlySharedDataPointerV2 &lhs,
-                                     const QExplicitlySharedDataPointerV2 &rhs) noexcept
-    {
-        return lhs.d == rhs.d;
-    }
+private:
+    constexpr friend bool comparesEqual(const QExplicitlySharedDataPointerV2 &lhs,
+                                        const QExplicitlySharedDataPointerV2 &rhs) noexcept
+    { return lhs.d == rhs.d; }
+    constexpr friend Qt::strong_ordering
+    compareThreeWay(const QExplicitlySharedDataPointerV2 &lhs,
+                    const QExplicitlySharedDataPointerV2 &rhs) noexcept
+    { return Qt::compareThreeWay(lhs.d, rhs.d); }
+    Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QExplicitlySharedDataPointerV2)
 
-    constexpr friend bool operator!=(const QExplicitlySharedDataPointerV2 &lhs,
-                                     const QExplicitlySharedDataPointerV2 &rhs) noexcept
-    {
-        return lhs.d != rhs.d;
-    }
+    constexpr friend bool
+    comparesEqual(const QExplicitlySharedDataPointerV2 &lhs, std::nullptr_t) noexcept
+    { return lhs.d == nullptr; }
+    constexpr friend Qt::strong_ordering
+    compareThreeWay(const QExplicitlySharedDataPointerV2 &lhs, std::nullptr_t) noexcept
+    { return Qt::compareThreeWay(lhs.d, nullptr); }
+    Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QExplicitlySharedDataPointerV2, std::nullptr_t)
 };
 
 template <typename T>

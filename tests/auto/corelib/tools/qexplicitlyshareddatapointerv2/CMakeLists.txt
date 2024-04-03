@@ -14,4 +14,6 @@ endif()
 qt_internal_add_test(tst_qexplicitlyshareddatapointerv2
     SOURCES
         tst_qexplicitlyshareddatapointerv2.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )
