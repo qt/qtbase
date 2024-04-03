@@ -802,7 +802,7 @@ QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QHttpHeadersPrivate)
 template <> void QExplicitlySharedDataPointer<QHttpHeadersPrivate>::detach()
 {
     if (!d) {
-        d = new QHttpHeadersPrivate();
+        d.reset(new QHttpHeadersPrivate());
         d->ref.ref();
     } else if (d->ref.loadRelaxed() != 1) {
         detach_helper();

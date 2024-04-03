@@ -443,6 +443,10 @@ QT_BEGIN_NAMESPACE
     \since 4.4
     \reentrant
 
+    \compares strong
+    \compareswith strong T* std::nullptr_t
+    \endcompareswith
+
     QExplicitlySharedDataPointer\<T\> makes writing your own explicitly
     shared classes easy. QExplicitlySharedDataPointer implements
     \l {thread-safe} reference counting, ensuring that adding
@@ -520,8 +524,8 @@ QT_BEGIN_NAMESPACE
     \since 5.2
 */
 
-/*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator==(const T* ptr, const QExplicitlySharedDataPointer<T>& rhs)
-    Returns \c true if the \e{d pointer} of \a rhs is \a ptr.
+/*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator==(const T* const &lhs, const QExplicitlySharedDataPointer<T>& rhs)
+    Returns \c true if the \e{d pointer} of \a rhs is \a lhs.
  */
 
 /*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator!=(const QExplicitlySharedDataPointer<T>& lhs, const QExplicitlySharedDataPointer<T>& rhs)
@@ -529,8 +533,8 @@ QT_BEGIN_NAMESPACE
     \e{d pointer}.
 */
 
-/*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator!=(const T* ptr, const QExplicitlySharedDataPointer<T>& rhs)
-    Returns \c true if the \e{d pointer} of \a rhs is \e not \a ptr.
+/*! \fn template <class T> bool QExplicitlySharedDataPointer<T>::operator!=(const T* const &lhs, const QExplicitlySharedDataPointer<T>& rhs)
+    Returns \c true if the \e{d pointer} of \a rhs is \e not \a lhs.
  */
 
 /*! \fn template <class T> QExplicitlySharedDataPointer<T>::QExplicitlySharedDataPointer()

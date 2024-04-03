@@ -89,9 +89,7 @@ public:
     QAtomicInt fd;
 };
 
-template<> inline
-QExplicitlySharedDataPointer<QDBusUnixFileDescriptorPrivate>::~QExplicitlySharedDataPointer()
-{ if (d && !d->ref.deref()) delete d; }
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QDBusUnixFileDescriptorPrivate)
 
 /*!
     Constructs a QDBusUnixFileDescriptor without a wrapped file descriptor.
