@@ -100,6 +100,13 @@ class Converter (object):
         n = cls.__count_first(text)
         return ('z' if n < 3 else 'zzz'), n
 
+    @classmethod
+    def u(cls, text): # Extended year (numeric)
+        # Officially, 'u' is simply the full year number, zero-padded
+        # to the length of the field. Qt's closest to that is four-digit.
+        # It explicitly has no special case for two-digit year.
+        return 'yyyy', cls.__count_first(text)
+
     # U: Cyclic Year Name. Not supported
     @classmethod
     def v(cls, text): # Generic non-location format. Map to abbreviation.

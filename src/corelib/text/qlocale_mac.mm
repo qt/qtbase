@@ -344,7 +344,10 @@ static QVariant macToQtFormat(QStringView sys_fmt)
         case 'Y': // Year for Week-of-year calendars (1..n): 1..n = padded number
             break;
 
-        case 'u': // Extended Year (1..n): 2 = short year, 1 & 3..n = padded number
+        case 'u': // Extended Year (1..n), padded number.
+            // Explicitly has no special case for 'uu' as only the last two digits.
+            result += "yyyy"_L1;
+            break;
         case 'y': // Year (1..n): 2 = short year, 1 & 3..n = padded number
             // Qt only supports long (4) or short (2) year, use long for all others
             if (repeat == 2)
