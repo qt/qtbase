@@ -39,8 +39,8 @@ class Converter (object):
     # Please follow alphabetic order, with two cases of the same
     # letter adjacent, lower before upper.
     @classmethod
-    def a(cls, text): # AM/PM indicator
-        return 'AP', cls.__count_first(text)
+    def a(cls, text): # AM/PM indicator; use locale-appropriate case
+        return 'Ap', cls.__count_first(text)
 
     # A: Milliseconds in day. Not supported.
     b = a # AM/PM/noon/midnight
