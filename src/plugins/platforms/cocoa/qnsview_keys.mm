@@ -103,7 +103,10 @@
 
                     qCDebug(lcQpaKeys) << "Interpreting key event for focus object" << focusObject;
                     m_currentlyInterpretedKeyEvent = nsevent;
-                    [self interpretKeyEvents:@[nsevent]];
+                    if (![self.inputContext handleEvent:nsevent]) {
+                        qCDebug(lcQpaKeys) << "Input context did not consume event";
+                        m_sendKeyEvent = true;
+                    }
                     m_currentlyInterpretedKeyEvent = 0;
 
                     // If the last key we sent was dead, then pass the next
