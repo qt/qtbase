@@ -174,8 +174,8 @@ template<> void QSharedDataPointer<QUrlQueryPrivate>::detach()
                              : new QUrlQueryPrivate);
     x->ref.ref();
     if (d && !d->ref.deref())
-        delete d;
-    d = x;
+        delete d.get();
+    d.reset(x);
 }
 
 // Here's how we do the encoding in QUrlQuery

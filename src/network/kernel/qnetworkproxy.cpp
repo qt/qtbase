@@ -450,8 +450,8 @@ template<> void QSharedDataPointer<QNetworkProxyPrivate>::detach()
                                : new QNetworkProxyPrivate);
     x->ref.ref();
     if (d && !d->ref.deref())
-        delete d;
-    d = x;
+        delete d.get();
+    d.reset(x);
 }
 
 /*!
@@ -937,8 +937,8 @@ template<> void QSharedDataPointer<QNetworkProxyQueryPrivate>::detach()
                                     : new QNetworkProxyQueryPrivate);
     x->ref.ref();
     if (d && !d->ref.deref())
-        delete d;
-    d = x;
+        delete d.get();
+    d.reset(x);
 }
 
 /*!

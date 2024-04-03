@@ -182,8 +182,8 @@ template<> Q_INLINE_TEMPLATE void QSharedDataPointer<QProcessEnvironmentPrivate>
                                      : new QProcessEnvironmentPrivate);
     x->ref.ref();
     if (d && !d->ref.deref())
-        delete d;
-    d = x;
+        delete d.get();
+    d.reset(x);
 }
 
 #if QT_CONFIG(process)

@@ -49,6 +49,10 @@ QT_BEGIN_NAMESPACE
     \since 4.0
     \reentrant
 
+    \compares strong
+    \compareswith strong T* std::nullptr_t
+    \endcompareswith
+
     QSharedDataPointer\<T\> makes writing your own \l {implicitly
     shared} classes easy. QSharedDataPointer implements \l {thread-safe}
     reference counting, ensuring that adding QSharedDataPointers to your
@@ -331,13 +335,13 @@ QT_BEGIN_NAMESPACE
     \e{d pointer}. This function does \e not call detach().
 */
 
-/*! \fn template <class T> bool QSharedDataPointer<T>::operator==(const T *ptr, const QSharedDataPointer<T>& rhs)
-    Returns \c true if the \e{d pointer} of \a rhs is \a ptr.
+/*! \fn template <class T> bool QSharedDataPointer<T>::operator==(T* const &lhs, const QSharedDataPointer<T>& rhs)
+    Returns \c true if the \e{d pointer} of \a rhs is \a lhs.
     This function does \e not call detach().
 */
 
-/*! \fn template <class T> bool QSharedDataPointer<T>::operator!=(const T *ptr, const QSharedDataPointer<T>& rhs)
-    Returns \c true if the \e{d pointer} of \a rhs is \e not \a ptr.
+/*! \fn template <class T> bool QSharedDataPointer<T>::operator!=(T* const &lhs, const QSharedDataPointer<T>& rhs)
+    Returns \c true if the \e{d pointer} of \a rhs is \e not \a lhs.
     \e{d pointer}. This function does \e not call detach().
 */
 

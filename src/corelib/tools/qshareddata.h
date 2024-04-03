@@ -6,6 +6,7 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qhashfunctions.h>
 
 #include <functional>
@@ -38,22 +39,22 @@ public:
     typedef T *pointer;
 
     void detach() { if (d && d->ref.loadRelaxed() != 1) detach_helper(); }
-    T &operator*() { detach(); return *d; }
-    const T &operator*() const { return *d; }
-    T *operator->() { detach(); return d; }
-    const T *operator->() const noexcept { return d; }
-    operator T *() { detach(); return d; }
-    operator const T *() const noexcept { return d; }
-    T *data() { detach(); return d; }
-    T *get() { detach(); return d; }
-    const T *data() const noexcept { return d; }
-    const T *get() const noexcept { return d; }
-    const T *constData() const noexcept { return d; }
-    T *take() noexcept { return std::exchange(d, nullptr); }
+    T &operator*() { detach(); return *(d.get()); }
+    const T &operator*() const { return *(d.get()); }
+    T *operator->() { detach(); return d.get(); }
+    const T *operator->() const noexcept { return d.get(); }
+    operator T *() { detach(); return d.get(); }
+    operator const T *() const noexcept { return d.get(); }
+    T *data() { detach(); return d.get(); }
+    T *get() { detach(); return d.get(); }
+    const T *data() const noexcept { return d.get(); }
+    const T *get() const noexcept { return d.get(); }
+    const T *constData() const noexcept { return d.get(); }
+    T *take() noexcept { return std::exchange(d, nullptr).get(); }
 
     Q_NODISCARD_CTOR
     QSharedDataPointer() noexcept : d(nullptr) { }
-    ~QSharedDataPointer() { if (d && !d->ref.deref()) delete d; }
+    ~QSharedDataPointer() { if (d && !d->ref.deref()) delete d.get(); }
 
     Q_NODISCARD_CTOR
     explicit QSharedDataPointer(T *data) noexcept : d(data)
@@ -67,10 +68,10 @@ public:
 
     void reset(T *ptr = nullptr) noexcept
     {
-        if (ptr != d) {
+        if (ptr != d.get()) {
             if (ptr)
                 ptr->ref.ref();
-            T *old = std::exchange(d, ptr);
+            T *old = std::exchange(d, Qt::totally_ordered_wrapper(ptr)).get();
             if (old && !old->ref.deref())
                 delete old;
         }
@@ -78,7 +79,7 @@ public:
 
     QSharedDataPointer &operator=(const QSharedDataPointer &o) noexcept
     {
-        reset(o.d);
+        reset(o.d.get());
         return *this;
     }
     inline QSharedDataPointer &operator=(T *o) noexcept
@@ -96,33 +97,34 @@ public:
     void swap(QSharedDataPointer &other) noexcept
     { qt_ptr_swap(d, other.d); }
 
-#define DECLARE_COMPARE_SET(T1, A1, T2, A2) \
-    friend bool operator<(T1, T2) noexcept \
-    { return std::less<T*>{}(A1, A2); } \
-    friend bool operator<=(T1, T2) noexcept \
-    { return !std::less<T*>{}(A2, A1); } \
-    friend bool operator>(T1, T2) noexcept \
-    { return std::less<T*>{}(A2, A1); } \
-    friend bool operator>=(T1, T2) noexcept \
-    { return !std::less<T*>{}(A1, A2); } \
-    friend bool operator==(T1, T2) noexcept \
-    { return A1 == A2; } \
-    friend bool operator!=(T1, T2) noexcept \
-    { return A1 != A2; } \
-
-    DECLARE_COMPARE_SET(const QSharedDataPointer &p1, p1.d, const QSharedDataPointer &p2, p2.d)
-    DECLARE_COMPARE_SET(const QSharedDataPointer &p1, p1.d, const T *ptr, ptr)
-    DECLARE_COMPARE_SET(const T *ptr, ptr, const QSharedDataPointer &p2, p2.d)
-    DECLARE_COMPARE_SET(const QSharedDataPointer &p1, p1.d, std::nullptr_t, nullptr)
-    DECLARE_COMPARE_SET(std::nullptr_t, nullptr, const QSharedDataPointer &p2, p2.d)
-
 protected:
     T *clone();
 
 private:
+    friend bool comparesEqual(const QSharedDataPointer &lhs, const QSharedDataPointer &rhs) noexcept
+    { return lhs.d == rhs.d; }
+    friend Qt::strong_ordering
+    compareThreeWay(const QSharedDataPointer &lhs, const QSharedDataPointer &rhs) noexcept
+    { return Qt::compareThreeWay(lhs.d, rhs.d); }
+    Q_DECLARE_STRONGLY_ORDERED(QSharedDataPointer)
+
+    friend bool comparesEqual(const QSharedDataPointer &lhs, const T *rhs) noexcept
+    { return lhs.d == rhs; }
+    friend Qt::strong_ordering
+    compareThreeWay(const QSharedDataPointer &lhs, const T *rhs) noexcept
+    { return Qt::compareThreeWay(lhs.d, rhs); }
+    Q_DECLARE_STRONGLY_ORDERED(QSharedDataPointer, T*)
+
+    friend bool comparesEqual(const QSharedDataPointer &lhs, std::nullptr_t) noexcept
+    { return lhs.d == nullptr; }
+    friend Qt::strong_ordering
+    compareThreeWay(const QSharedDataPointer &lhs, std::nullptr_t) noexcept
+    { return Qt::compareThreeWay(lhs.d, nullptr); }
+    Q_DECLARE_STRONGLY_ORDERED(QSharedDataPointer, std::nullptr_t)
+
     void detach_helper();
 
-    T *d;
+    Qt::totally_ordered_wrapper<T *> d;
 };
 
 template <typename T>
@@ -198,6 +200,20 @@ public:
     void swap(QExplicitlySharedDataPointer &other) noexcept
     { qt_ptr_swap(d, other.d); }
 
+#define DECLARE_COMPARE_SET(T1, A1, T2, A2) \
+    friend bool operator<(T1, T2) noexcept \
+    { return std::less<T*>{}(A1, A2); } \
+    friend bool operator<=(T1, T2) noexcept \
+    { return !std::less<T*>{}(A2, A1); } \
+    friend bool operator>(T1, T2) noexcept \
+    { return std::less<T*>{}(A2, A1); } \
+    friend bool operator>=(T1, T2) noexcept \
+    { return !std::less<T*>{}(A1, A2); } \
+    friend bool operator==(T1, T2) noexcept \
+    { return A1 == A2; } \
+    friend bool operator!=(T1, T2) noexcept \
+    { return A1 != A2; } \
+
     DECLARE_COMPARE_SET(const QExplicitlySharedDataPointer &p1, p1.d, const QExplicitlySharedDataPointer &p2, p2.d)
     DECLARE_COMPARE_SET(const QExplicitlySharedDataPointer &p1, p1.d, const T *ptr, ptr)
     DECLARE_COMPARE_SET(const T *ptr, ptr, const QExplicitlySharedDataPointer &p2, p2.d)
@@ -227,9 +243,9 @@ Q_OUTOFLINE_TEMPLATE void QSharedDataPointer<T>::detach_helper()
 {
     T *x = clone();
     x->ref.ref();
-    if (!d->ref.deref())
-        delete d;
-    d = x;
+    if (!d.get()->ref.deref())
+        delete d.get();
+    d.reset(x);
 }
 
 template <typename T>
@@ -280,7 +296,7 @@ template<typename T> Q_DECLARE_TYPEINFO_BODY(QExplicitlySharedDataPointer<T>, Q_
     template<> QSharedDataPointer<Class>::~QSharedDataPointer() \
     { \
         if (d && !d->ref.deref()) \
-            delete d; \
+            delete d.get(); \
     }
 
 #define QT_DECLARE_QESDP_SPECIALIZATION_DTOR(Class) \
