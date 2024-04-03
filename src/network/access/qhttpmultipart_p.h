@@ -18,6 +18,7 @@
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "QtCore/qshareddata.h"
 #include "qnetworkrequest_p.h" // for deriving QHttpPartPrivate from QNetworkHeadersPrivate
+#include "qhttpheadershelper_p.h"
 #include "private/qobject_p.h"
 
 #ifndef Q_OS_WASM
@@ -47,8 +48,10 @@ public:
 
     inline bool operator==(const QHttpPartPrivate &other) const
     {
-        return rawHeaders == other.rawHeaders && body == other.body &&
-                bodyDevice == other.bodyDevice && readPointer == other.readPointer;
+        return QHttpHeadersHelper::compareStrict(httpHeaders, other.httpHeaders)
+               && body == other.body
+               && bodyDevice == other.bodyDevice
+               && readPointer == other.readPointer;
     }
 
     void setBodyDevice(QIODevice *device) {

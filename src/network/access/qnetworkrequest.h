@@ -35,7 +35,8 @@ public:
         IfModifiedSinceHeader,
         ETagHeader,
         IfMatchHeader,
-        IfNoneMatchHeader
+        IfNoneMatchHeader,
+        NumKnownHeaders
     };
     Q_ENUM(KnownHeaders)
 

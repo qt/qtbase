@@ -335,7 +335,7 @@ QDebug operator<<(QDebug debug, const QRestReply &reply)
           << ", bytesAvailable = " << reply.networkReply()->bytesAvailable()
           << ", url " << reply.networkReply()->url()
           << ", operation = " << operationName(reply.networkReply()->operation())
-          << ", reply headers = " << reply.networkReply()->rawHeaderPairs()
+          << ", reply headers = " << reply.networkReply()->headers()
           << ")";
     return debug;
 }
@@ -596,7 +596,7 @@ QByteArray QRestReplyPrivate::contentCharset(const QNetworkReply* reply)
     // text/plain; charset ="utf-8"
 
     const QByteArray contentTypeValue =
-            reply->header(QNetworkRequest::KnownHeaders::ContentTypeHeader).toByteArray();
+            reply->headers().value(QHttpHeaders::WellKnownHeader::ContentType).toByteArray();
 
     const auto r = parse_content_type(contentTypeValue);
     if (r && !r.charset.empty())

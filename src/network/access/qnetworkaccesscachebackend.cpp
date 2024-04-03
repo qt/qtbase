@@ -47,21 +47,21 @@ bool QNetworkAccessCacheBackend::sendCacheContents()
         return false;
 
     QNetworkCacheMetaData::AttributesMap attributes = item.attributes();
-    setAttribute(QNetworkRequest::HttpStatusCodeAttribute, attributes.value(QNetworkRequest::HttpStatusCodeAttribute));
-    setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, attributes.value(QNetworkRequest::HttpReasonPhraseAttribute));
+    setAttribute(QNetworkRequest::HttpStatusCodeAttribute,
+                 attributes.value(QNetworkRequest::HttpStatusCodeAttribute));
+    setAttribute(QNetworkRequest::HttpReasonPhraseAttribute,
+                 attributes.value(QNetworkRequest::HttpReasonPhraseAttribute));
 
-    // set the raw headers
-    const QNetworkCacheMetaData::RawHeaderList rawHeaders = item.rawHeaders();
-    for (const auto &header : rawHeaders) {
-        if (header.first.compare("cache-control", Qt::CaseInsensitive) == 0) {
-            const QLatin1StringView cacheControlValue(header.second);
-            if (cacheControlValue.contains("must-revalidate"_L1, Qt::CaseInsensitive)
-                || cacheControlValue.contains("no-cache"_L1, Qt::CaseInsensitive)) {
-                return false;
-            }
-        }
-        setRawHeader(header.first, header.second);
+    // set the headers
+    auto headers = item.headers();
+    const auto cacheControlValue = QLatin1StringView(
+            headers.value(QHttpHeaders::WellKnownHeader::CacheControl));
+    // RFC 9111 Section 5.2 Cache Control
+    if (cacheControlValue.contains("must-revalidate"_L1, Qt::CaseInsensitive)
+        || cacheControlValue.contains("no-cache"_L1, Qt::CaseInsensitive)) {
+        return false;
     }
+    setHeaders(std::move(headers));
 
     // handle a possible redirect
     QVariant redirectionTarget = attributes.value(QNetworkRequest::RedirectionTargetAttribute);

@@ -354,7 +354,9 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
             }
             if (!value.isEmpty()) {
                 QNetworkProxy proxy(socket->proxy());
-                proxy.setRawHeader("User-Agent", value); //detaches
+                auto h = proxy.headers();
+                h.replaceOrAppend(QHttpHeaders::WellKnownHeader::UserAgent, value);
+                proxy.setHeaders(std::move(h));
                 socket->setProxy(proxy);
             }
         }

@@ -349,7 +349,7 @@ void tst_QNetworkRequest::rawHeaderParsing_data()
                                   << true
                                   << "Content-Type" << "text/html";
     QTest::newRow("Content-Length") << QNetworkRequest::ContentLengthHeader << QVariant(qint64(1))
-                                    << true << "Content-Length" << " 1 ";
+                                    << true << "Content-Length" << "1";
     QTest::newRow("Location") << QNetworkRequest::LocationHeader
                               << QVariant(QUrl("http://foo/with space"))
                               << true << "Location" << "http://foo/with%20space";

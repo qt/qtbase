@@ -129,14 +129,14 @@ class tst_QNetworkReply: public QObject
 
     static QString tempRedirectReplyStr() {
         QString s = "HTTP/1.1 307 Temporary Redirect\r\n"
-                    "Content-Type: text/plain\r\n"
+                    "content-type: text/plain\r\n"
                     "location: %1\r\n"
                     "\r\n";
         return s;
     }
     static QString movedReplyStr() {
         QString s = "HTTP/1.1 301 Moved Permanently\r\n"
-                    "Content-Type: text/plain\r\n"
+                    "content-type: text/plain\r\n"
                     "location: %1\r\n"
                     "\r\n";
         return s;
@@ -144,7 +144,7 @@ class tst_QNetworkReply: public QObject
 
     static QString foundReplyStr() {
         QString s = "HTTP/1.1 302 Found\r\n"
-                    "Content-Type: text/plain\r\n"
+                    "content-type: text/plain\r\n"
                     "location: %1\r\n"
                     "\r\n";
         return s;
@@ -152,7 +152,7 @@ class tst_QNetworkReply: public QObject
 
     static QString permRedirectReplyStr() {
         QString s = "HTTP/1.1 308 Permanent Redirect\r\n"
-                    "Content-Type: text/plain\r\n"
+                    "content-type: text/plain\r\n"
                     "location: %1\r\n"
                     "\r\n";
         return s;
@@ -2756,7 +2756,7 @@ void tst_QNetworkReply::postToHttp()
     QUrl url("http://" + QtNetworkSettings::httpServerName() + "/qtest/cgi-bin/md5sum.cgi");
 
     QNetworkRequest request(url);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
     QNetworkReplyPtr reply;
 
     QFETCH(QByteArray, data);
@@ -2783,7 +2783,7 @@ void tst_QNetworkReply::postToHttpSynchronous()
     QUrl url("http://" + QtNetworkSettings::httpServerName() + "/qtest/cgi-bin/md5sum.cgi");
 
     QNetworkRequest request(url);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
 
     request.setAttribute(
             QNetworkRequest::SynchronousRequestAttribute,
@@ -2844,8 +2844,8 @@ void tst_QNetworkReply::postToHttpMultipart_data()
 
     QHttpMultiPart *customMultiPart = new QHttpMultiPart;
     customMultiPart->append(textPart);
-    expectedData = "header: Content-Type, value: 'text/plain'\n"
-                   "header: Content-Disposition, value: 'form-data; name=\"text\"'\n"
+    expectedData = "header: content-type, value: 'text/plain'\n"
+                   "header: content-disposition, value: 'form-data; name=\"text\"'\n"
                    "content: 7 bytes\n"
                    "\n";
     QTest::newRow("text-custom") << url << customMultiPart << expectedData << QByteArray("custom");
@@ -2881,18 +2881,18 @@ void tst_QNetworkReply::postToHttpMultipart_data()
     multiPart3->append(textPart);
     multiPart3->append(textPart2);
     multiPart3->append(textPart3);
-    expectedData = "header: Content-Type, value: 'text/plain'\n"
-                   "header: Content-Disposition, value: 'form-data; name=\"text\"'\n"
+    expectedData = "header: content-type, value: 'text/plain'\n"
+                   "header: content-disposition, value: 'form-data; name=\"text\"'\n"
                    "content: 7 bytes\n"
                    "\n"
-                   "header: Content-Type, value: 'text/plain'\n"
-                   "header: myRawHeader, value: 'myValue'\n"
-                   "header: Content-Disposition, value: 'form-data; name=\"text2\"'\n"
+                   "header: content-type, value: 'text/plain'\n"
+                   "header: myrawheader, value: 'myValue'\n"
+                   "header: content-disposition, value: 'form-data; name=\"text2\"'\n"
                    "content: some more bytes\n"
                    "\n"
-                   "header: Content-Type, value: 'text/plain'\n"
-                   "header: Content-Disposition, value: 'form-data; name=\"text3\"'\n"
-                   "header: Content-Location, value: 'http://my.test.location.tld'\n"
+                   "header: content-type, value: 'text/plain'\n"
+                   "header: content-disposition, value: 'form-data; name=\"text3\"'\n"
+                   "header: content-location, value: 'http://my.test.location.tld'\n"
                    "content: even more bytes\n\n";
     QTest::newRow("text-text-text") << url << multiPart3 << expectedData << QByteArray("alternative");
 
@@ -3311,7 +3311,7 @@ void tst_QNetworkReply::postToHttps()
     QSslConfiguration conf;
     conf.setCaCertificates(certs);
     request.setSslConfiguration(conf);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
     QNetworkReplyPtr reply;
 
     QFETCH(QByteArray, data);
@@ -3345,7 +3345,7 @@ void tst_QNetworkReply::postToHttpsSynchronous()
     QSslConfiguration conf;
     conf.setCaCertificates(certs);
     request.setSslConfiguration(conf);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
 
     request.setAttribute(
                 QNetworkRequest::SynchronousRequestAttribute,
@@ -4461,7 +4461,7 @@ void tst_QNetworkReply::ioGetFromHttpWithCache_data()
     QByteArray reply200 =
             "HTTP/1.0 200\r\n"
             "Connection: keep-alive\r\n"
-            "Content-Type: text/plain\r\n"
+            "content-type: text/plain\r\n"
             "Cache-control: no-store\r\n"
             "Content-length: 8\r\n"
             "\r\n"
@@ -4596,7 +4596,7 @@ void tst_QNetworkReply::ioGetFromHttpWithCache_data()
     QByteArray reply206 =
             "HTTP/1.0 206\r\n"
             "Connection: keep-alive\r\n"
-            "Content-Type: text/plain\r\n"
+            "content-type: text/plain\r\n"
             "Cache-control: no-cache\r\n"
             "Content-Range: bytes 2-6/8\r\n"
             "Content-length: 4\r\n"
@@ -5205,7 +5205,7 @@ void tst_QNetworkReply::ioPostToHttpFromFile()
 
     QUrl url("http://" + QtNetworkSettings::httpServerName() + "/qtest/cgi-bin/md5sum.cgi");
     QNetworkRequest request(url);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
 
     QNetworkReplyPtr reply(manager.post(request, &sourceFile));
 
@@ -5282,7 +5282,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
     socketpair.endPoints[0]->write(data);
 
     QNetworkRequest request(url);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
 
     manager.setProxy(proxy);
     QNetworkReplyPtr reply(manager.post(request, socketpair.endPoints[1]));
@@ -5356,7 +5356,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocketSynchronous()
 
     QUrl url("http://" + QtNetworkSettings::httpServerName() + "/qtest/cgi-bin/md5sum.cgi");
     QNetworkRequest request(url);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
     request.setAttribute(
             QNetworkRequest::SynchronousRequestAttribute,
             true);
@@ -5387,7 +5387,7 @@ void tst_QNetworkReply::ioPostToHttpFromMiddleOfFileToEnd()
 
     QUrl url = "http://" + QtNetworkSettings::httpServerName() + "/qtest/protected/cgi-bin/md5sum.cgi";
     QNetworkRequest request(url);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
     QNetworkReplyPtr reply(manager.post(request, &sourceFile));
 
     connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
@@ -5413,7 +5413,7 @@ void tst_QNetworkReply::ioPostToHttpFromMiddleOfFileFiveBytes()
 
     QUrl url = "http://" + QtNetworkSettings::httpServerName() + "/qtest/protected/cgi-bin/md5sum.cgi";
     QNetworkRequest request(url);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
     // only send 5 bytes
     request.setHeader(QNetworkRequest::ContentLengthHeader, 5);
     QVERIFY(request.header(QNetworkRequest::ContentLengthHeader).isValid());
@@ -5444,7 +5444,7 @@ void tst_QNetworkReply::ioPostToHttpFromMiddleOfQBufferFiveBytes()
 
     QUrl url = "http://" + QtNetworkSettings::httpServerName() + "/qtest/protected/cgi-bin/md5sum.cgi";
     QNetworkRequest request(url);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
     QNetworkReplyPtr reply(manager.post(request, &uploadBuffer));
 
     connect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
@@ -5472,7 +5472,7 @@ void tst_QNetworkReply::ioPostToHttpNoBufferFlag()
 
     QUrl url = "http://" + QtNetworkSettings::httpServerName() + "/qtest/protected/cgi-bin/md5sum.cgi";
     QNetworkRequest request(url);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
     // disallow buffering
     request.setAttribute(QNetworkRequest::DoNotBufferUploadDataAttribute, true);
     request.setHeader(QNetworkRequest::ContentLengthHeader, data.size());
@@ -5557,7 +5557,7 @@ void tst_QNetworkReply::ioPostToHttpsUploadProgress()
     QUrl url = QUrl(QLatin1String("https://127.0.0.1:") + QString::number(server.serverPort()) + QLatin1Char('/'));
     QNetworkRequest request(url);
 
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
     QNetworkReplyPtr reply(manager.post(request, sourceFile));
 
     QSignalSpy spy(reply.data(), SIGNAL(uploadProgress(qint64,qint64)));
@@ -5711,7 +5711,7 @@ void tst_QNetworkReply::ioPostToHttpUploadProgress()
     // create the request
     QUrl url = QUrl(QString("http://127.0.0.1:%1/").arg(server.serverPort()));
     QNetworkRequest request(url);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
     QNetworkReplyPtr reply(manager.post(request, &sourceFile));
     QSignalSpy spy(reply.data(), SIGNAL(uploadProgress(qint64,qint64)));
     connect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
@@ -5779,7 +5779,7 @@ void tst_QNetworkReply::emitAllUploadProgressSignals()
 
     QUrl url = QUrl(QLatin1String("http://127.0.0.1:") + QString::number(server.serverPort()) + QLatin1Char('/'));
     QNetworkRequest normalRequest(url);
-    normalRequest.setRawHeader("Content-Type", "application/octet-stream");
+    normalRequest.setRawHeader("content-type", "application/octet-stream");
 
     QNetworkRequest catchAllSignalsRequest(normalRequest);
     catchAllSignalsRequest.setAttribute(QNetworkRequest::EmitAllUploadProgressSignalsAttribute, true);
@@ -5830,7 +5830,7 @@ void tst_QNetworkReply::ioPostToHttpEmptyUploadProgress()
     // create the request
     QUrl url = QUrl(QLatin1String("http://127.0.0.1:") + QString::number(server.serverPort()) + QLatin1Char('/'));
     QNetworkRequest request(url);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
     QNetworkReplyPtr reply(manager.post(request, &buffer));
     QSignalSpy spy(reply.data(), SIGNAL(uploadProgress(qint64,qint64)));
     connect(&server, SIGNAL(newConnection()), &QTestEventLoop::instance(), SLOT(exitLoop()));
@@ -5876,7 +5876,11 @@ void tst_QNetworkReply::lastModifiedHeaderForFile()
     QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
 
     QDateTime header = reply->header(QNetworkRequest::LastModifiedHeader).toDateTime();
-    QCOMPARE(header, fileInfo.lastModified());
+    QDateTime expected = fileInfo.lastModified();
+    // remove msecs, HTTP dates don't support it
+    expected = expected.addMSecs(-expected.time().msec());
+
+    QCOMPARE(header.toUTC(), expected.toUTC());
 }
 
 void tst_QNetworkReply::lastModifiedHeaderForHttp()
@@ -6182,7 +6186,7 @@ void tst_QNetworkReply::receiveCookiesFromHttp()
     QByteArray data = cookieString.toLatin1() + '\n';
     QUrl url("http://" + QtNetworkSettings::httpServerName() + "/qtest/cgi-bin/set-cookie.cgi");
     QNetworkRequest request(url);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
     QNetworkReplyPtr reply;
     RUN_REQUEST(runSimpleRequest(QNetworkAccessManager::PostOperation, request, reply, data));
 
@@ -6210,7 +6214,7 @@ void tst_QNetworkReply::receiveCookiesFromHttpSynchronous()
     QUrl url("http://" + QtNetworkSettings::httpServerName() + "/qtest/cgi-bin/set-cookie.cgi");
 
     QNetworkRequest request(url);
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
     request.setAttribute(
             QNetworkRequest::SynchronousRequestAttribute,
             true);
@@ -8046,7 +8050,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QByteArray getReply =
             "HTTP/1.1 200\r\n"
             "Connection: keep-alive\r\n"
-            "Content-Type: text/plain\r\n"
+            "content-type: text/plain\r\n"
             "Cache-control: max-age = 6000\r\n"
             "\r\n"
             "GET";
@@ -8054,7 +8058,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QByteArray postReply =
             "HTTP/1.1 200\r\n"
             "Connection: keep-alive\r\n"
-            "Content-Type: text/plain\r\n"
+            "content-type: text/plain\r\n"
             "Cache-control: max-age = 6000\r\n"
             "Content-length: 4\r\n"
             "\r\n"
@@ -8063,7 +8067,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QByteArray putReply =
             "HTTP/1.1 201\r\n"
             "Connection: keep-alive\r\n"
-            "Content-Type: text/plain\r\n"
+            "content-type: text/plain\r\n"
             "Cache-control: max-age = 6000\r\n"
             "\r\n";
 
@@ -8101,7 +8105,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
 
     server.clearHeaderParserState();
     server.setDataToTransmit(postReply);
-    request.setRawHeader("Content-Type", "text/plain");
+    request.setRawHeader("content-type", "text/plain");
     reply.reset(manager.post(request, postData));
 
     QVERIFY2(waitForFinish(reply) == Success, msgWaitForFinished(reply));
@@ -8597,7 +8601,7 @@ void tst_QNetworkReply::dontInsertPartialContentIntoTheCache()
     QByteArray reply206 =
             "HTTP/1.0 206\r\n"
             "Connection: keep-alive\r\n"
-            "Content-Type: text/plain\r\n"
+            "content-type: text/plain\r\n"
             "Cache-control: no-cache\r\n"
             "Content-Range: bytes 2-6/8\r\n"
             "Content-length: 4\r\n"
@@ -8654,7 +8658,7 @@ void tst_QNetworkReply::synchronousAuthenticationCache()
                 "WWW-Authenticate: Basic realm=\"QNetworkAccessManager Test Realm\"\r\n"
                 "Content-Length: 4\r\n"
                 "Connection: close\r\n"
-                "Content-Type: text/plain\r\n"
+                "content-type: text/plain\r\n"
                 "\r\n"
                 "auth";
             QRegularExpression rx("authorization: Basic ([^\r\n]*)\r\n");
@@ -8663,7 +8667,7 @@ void tst_QNetworkReply::synchronousAuthenticationCache()
                 if (QByteArray::fromBase64(match.captured(1).toLatin1()) == "login:password") {
                     dataToTransmit =
                           "HTTP/1.0 200 OK\r\n"
-                          "Content-Type: text/plain\r\n"
+                          "content-type: text/plain\r\n"
                           "Content-Length: 2\r\n"
                           "\r\n"
                           "OK";
@@ -9033,7 +9037,7 @@ void tst_QNetworkReply::ioHttpRedirectErrors_data()
     QTest::addColumn<QNetworkReply::NetworkError>("error");
 
     QString tempRedirectReply = QString("HTTP/1.1 307 Temporary Redirect\r\n"
-                                        "Content-Type: text/plain\r\n"
+                                        "content-type: text/plain\r\n"
                                         "location: http://localhost:%1\r\n\r\n");
 
     QTest::newRow("too-many-redirects") << "http://localhost" << tempRedirectReply << QNetworkReply::TooManyRedirectsError;
@@ -9341,7 +9345,7 @@ void tst_QNetworkReply::ioHttpRedirect()
     targetUrl.setPort(target.serverPort());
 
     QString redirectReply = QStringLiteral("HTTP/1.1 %1\r\n"
-                                           "Content-Type: text/plain\r\n"
+                                           "content-type: text/plain\r\n"
                                            "location: %2\r\n"
                                            "\r\n").arg(status, targetUrl.toString());
     MiniHttpServer redirectServer(redirectReply.toLatin1(), false);
@@ -9369,7 +9373,7 @@ void tst_QNetworkReply::ioHttpRedirectWithCache()
 {
     // Disallow caching the result so that the second request must also send the request
     QByteArray http200ResponseNoCache = "HTTP/1.1 200 OK\r\n"
-                                        "Content-Type: text/plain\r\n"
+                                        "content-type: text/plain\r\n"
                                         "Cache-Control: no-cache\r\n"
                                         "\r\nHello";
 
@@ -9379,7 +9383,7 @@ void tst_QNetworkReply::ioHttpRedirectWithCache()
 
     // A cache-able redirect reply
     QString redirectReply = QStringLiteral("HTTP/1.1 308\r\n"
-                                           "Content-Type: text/plain\r\n"
+                                           "content-type: text/plain\r\n"
                                            "location: %1\r\n"
                                            "Cache-Control: max-age=3600\r\n"
                                            "\r\nYou're being redirected").arg(targetUrl.toString());
@@ -9491,7 +9495,7 @@ void tst_QNetworkReply::ioHttpRedirectPostPut()
     QUrl targetUrl("http://" + QtNetworkSettings::httpServerName() + "/qtest/cgi-bin/md5sum.cgi");
 
     QString redirectReply = QStringLiteral("HTTP/1.1 %1\r\n"
-                                           "Content-Type: text/plain\r\n"
+                                           "content-type: text/plain\r\n"
                                            "location: %2\r\n"
                                            "\r\n").arg(status, targetUrl.toString());
     MiniHttpServer redirectServer(redirectReply.toLatin1());
@@ -9645,7 +9649,7 @@ void tst_QNetworkReply::ioHttpRedirectWithUploadDevice()
     targetUrl.setPort(target.serverPort());
 
     QString redirectReply = QStringLiteral("HTTP/1.1 %1\r\n"
-                                           "Content-Type: text/plain\r\n"
+                                           "content-type: text/plain\r\n"
                                            "location: %2\r\n"
                                            "\r\n").arg(status, targetUrl.toString());
     MiniHttpServer redirectServer(redirectReply.toLatin1());
@@ -9679,8 +9683,8 @@ void tst_QNetworkReply::ioHttpRedirectWithUploadDevice()
         // we shouldn't send Content-Length with not content (esp. for GET)
         QVERIFY2(!target.receivedData.contains("Content-Length"),
                  "Target server should not have received a Content-Length header");
-        QVERIFY2(!target.receivedData.contains("Content-Type"),
-                 "Target server should not have received a Content-Type header");
+        QVERIFY2(!target.receivedData.contains("content-type"),
+                 "Target server should not have received a content-type header");
     }
 }
 
@@ -10048,7 +10052,7 @@ void tst_QNetworkReply::requestWithTimeout()
     server.stopTransfer = true;
 
     QNetworkRequest request(QUrl("http://localhost:" + QString::number(server.serverPort())));
-    request.setRawHeader("Content-Type", "application/octet-stream");
+    request.setRawHeader("content-type", "application/octet-stream");
     if (reqInt > 0)
         request.setTransferTimeout(reqInt);
     if (reqChrono > 0ms)
@@ -10100,7 +10104,7 @@ void tst_QNetworkReply::moreActivitySignals()
     QNetworkRequest request(url);
     QNetworkReplyPtr reply;
     if (postWithData) {
-        request.setRawHeader("Content-Type", "text/plain");
+        request.setRawHeader("content-type", "text/plain");
         reply.reset(manager.post(request, "Hello, world!"));
     } else {
         reply.reset(manager.get(request));
@@ -10121,7 +10125,7 @@ void tst_QNetworkReply::moreActivitySignals()
     // Second request will not send socketStartedConnecting because of keep-alive, so don't check it.
     QNetworkReplyPtr secondreply;
     if (postWithData) {
-        request.setRawHeader("Content-Type", "text/plain");
+        request.setRawHeader("content-type", "text/plain");
         secondreply.reset(manager.post(request, "Hello, world!"));
     } else {
         secondreply.reset(manager.get(request));

@@ -615,17 +615,11 @@ QNetworkRequest QNetworkRequestFactoryPrivate::newRequest(const QUrl &url) const
     if (!sslConfig.isNull())
         request.setSslConfiguration(sslConfig);
 #endif
-    // Set the header entries to the request. Combine values as there
-    // may be multiple values per name. Note: this would not necessarily
-    // produce right result for 'Set-Cookie' header if it has multiple values,
-    // but since it is a purely server-side (response) header, not relevant here.
-    const auto headerNames = headers.toMultiMap().uniqueKeys(); // ### fixme: port QNR to QHH
-    for (const auto &name : headerNames)
-        request.setRawHeader(name, headers.combinedValue(name));
-
+    auto h = headers;
     constexpr char Bearer[] = "Bearer ";
     if (!bearerToken.isEmpty())
-        request.setRawHeader("Authorization"_ba, Bearer + bearerToken);
+        h.replaceOrAppend(QHttpHeaders::WellKnownHeader::Authorization, Bearer + bearerToken);
+    request.setHeaders(std::move(h));
 
     request.setTransferTimeout(transferTimeout);
     request.setPriority(priority);

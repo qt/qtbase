@@ -842,7 +842,7 @@ bool QNetworkProxy::hasRawHeader(const QByteArray &headerName) const
 {
     if (d->type != HttpProxy && d->type != HttpCachingProxy)
         return false;
-    return d->headers.findRawHeader(headerName) != d->headers.rawHeaders.constEnd();
+    return d->headers.headers().contains(headerName);
 }
 
 /*!
@@ -861,11 +861,7 @@ QByteArray QNetworkProxy::rawHeader(const QByteArray &headerName) const
 {
     if (d->type != HttpProxy && d->type != HttpCachingProxy)
         return QByteArray();
-    QNetworkHeadersPrivate::RawHeadersList::ConstIterator it =
-        d->headers.findRawHeader(headerName);
-    if (it != d->headers.rawHeaders.constEnd())
-        return it->second;
-    return QByteArray();
+    return d->headers.rawHeader(headerName);
 }
 
 /*!

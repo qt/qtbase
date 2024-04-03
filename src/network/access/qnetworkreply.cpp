@@ -617,7 +617,7 @@ QVariant QNetworkReply::header(QNetworkRequest::KnownHeaders header) const
 bool QNetworkReply::hasRawHeader(QAnyStringView headerName) const
 {
     Q_D(const QNetworkReply);
-    return d->findRawHeader(headerName) != d->rawHeaders.constEnd();
+    return d->headers().contains(headerName);
 }
 
 /*!
@@ -633,9 +633,7 @@ bool QNetworkReply::hasRawHeader(QAnyStringView headerName) const
 QByteArray QNetworkReply::rawHeader(QAnyStringView headerName) const
 {
     Q_D(const QNetworkReply);
-    if (const auto it = d->findRawHeader(headerName); it != d->rawHeaders.constEnd())
-        return it->second;
-    return QByteArray();
+    return d->rawHeader(headerName);
 }
 
 /*! \typedef QNetworkReply::RawHeaderPair
@@ -650,7 +648,7 @@ QByteArray QNetworkReply::rawHeader(QAnyStringView headerName) const
 const QList<QNetworkReply::RawHeaderPair>& QNetworkReply::rawHeaderPairs() const
 {
     Q_D(const QNetworkReply);
-    return d->rawHeaders;
+    return d->allRawHeaders();
 }
 
 /*!

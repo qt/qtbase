@@ -104,6 +104,9 @@ public:
     void setHeader(QNetworkRequest::KnownHeaders header, const QVariant &value);
     QByteArray rawHeader(const QByteArray &header) const;
     void setRawHeader(const QByteArray &header, const QByteArray &value);
+    QHttpHeaders headers() const;
+    void setHeaders(const QHttpHeaders &newHeaders);
+    void setHeaders(QHttpHeaders &&newHeaders);
     QNetworkAccessManager::Operation operation() const;
 
     bool isCachingEnabled() const;

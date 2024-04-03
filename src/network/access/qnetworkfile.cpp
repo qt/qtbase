@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qnetworkfile_p.h"
+#include "qnetworkrequest_p.h"
 
 #include <QtCore/QDebug>
 #include <QNetworkReply>
@@ -31,8 +32,10 @@ void QNetworkFile::open()
             "Cannot open %1: Path is a directory").arg(fileName());
         emit error(QNetworkReply::ContentOperationNotPermittedError, msg);
     } else {
-        emit headerRead(QNetworkRequest::LastModifiedHeader, QVariant::fromValue(fi.lastModified()));
-        emit headerRead(QNetworkRequest::ContentLengthHeader, QVariant::fromValue(fi.size()));
+        emit headerRead(QHttpHeaders::WellKnownHeader::LastModified,
+                        QNetworkHeadersPrivate::toHttpDate(fi.lastModified()));
+        emit headerRead(QHttpHeaders::WellKnownHeader::ContentLength,
+                        QByteArray::number(fi.size()));
         opened = QFile::open(QIODevice::ReadOnly | QIODevice::Unbuffered);
         if (!opened) {
             QString msg = QCoreApplication::translate("QNetworkAccessFileBackend",

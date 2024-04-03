@@ -61,10 +61,12 @@ public:
             return warnNoAccessManager();
         verifyThreadAffinity(context);
         QNetworkRequest req(request);
-        if (!request.header(QNetworkRequest::ContentTypeHeader).isValid()) {
-            req.setHeader(QNetworkRequest::ContentTypeHeader,
-                          QLatin1StringView{"application/json"});
+        auto h = req.headers();
+        if (!h.contains(QHttpHeaders::WellKnownHeader::ContentType)) {
+            h.append(QHttpHeaders::WellKnownHeader::ContentType,
+                     QLatin1StringView{"application/json"});
         }
+        req.setHeaders(std::move(h));
         QNetworkReply *reply = requestOperation(qnam, req, jsonDoc.toJson(QJsonDocument::Compact));
         return createActiveRequest(reply, context, slot);
     }

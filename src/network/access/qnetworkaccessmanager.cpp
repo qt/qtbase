@@ -1255,12 +1255,14 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         }
     }
     QNetworkRequest request = req;
+    auto h = request.headers();
 #ifndef Q_OS_WASM // Content-length header is not allowed to be set by user in wasm
-    if (!request.header(QNetworkRequest::ContentLengthHeader).isValid() &&
+    if (!h.contains(QHttpHeaders::WellKnownHeader::ContentLength) &&
         outgoingData && !outgoingData->isSequential()) {
         // request has no Content-Length
         // but the data that is outgoing is random-access
-        request.setHeader(QNetworkRequest::ContentLengthHeader, outgoingData->size());
+        h.append(QHttpHeaders::WellKnownHeader::ContentLength,
+                 QByteArray::number(outgoingData->size()));
     }
 #endif
     if (static_cast<QNetworkRequest::LoadControl>
@@ -1269,9 +1271,11 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
         if (d->cookieJar) {
             QList<QNetworkCookie> cookies = d->cookieJar->cookiesForUrl(request.url());
             if (!cookies.isEmpty())
-                request.setHeader(QNetworkRequest::CookieHeader, QVariant::fromValue(cookies));
+                h.replaceOrAppend(QHttpHeaders::WellKnownHeader::Cookie,
+                                  QNetworkHeadersPrivate::fromCookieList(cookies));
         }
     }
+    request.setHeaders(std::move(h));
 #ifdef Q_OS_WASM
     Q_UNUSED(isLocalFile);
     // Support http, https, and relative urls
@@ -1746,9 +1750,10 @@ QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkReq
 {
     // copy the request, we probably need to add some headers
     QNetworkRequest newRequest(request);
+    auto h = newRequest.headers();
 
     // add Content-Type header if not there already
-    if (!request.header(QNetworkRequest::ContentTypeHeader).isValid()) {
+    if (!h.contains(QHttpHeaders::WellKnownHeader::ContentType)) {
         QByteArray contentType;
         contentType.reserve(34 + multiPart->d_func()->boundary.size());
         contentType += "multipart/";
@@ -1768,14 +1773,15 @@ QNetworkRequest QNetworkAccessManagerPrivate::prepareMultipart(const QNetworkReq
         }
         // putting the boundary into quotes, recommended in RFC 2046 section 5.1.1
         contentType += "; boundary=\"" + multiPart->d_func()->boundary + '"';
-        newRequest.setHeader(QNetworkRequest::ContentTypeHeader, QVariant(contentType));
+        h.append(QHttpHeaders::WellKnownHeader::ContentType, contentType);
     }
 
     // add MIME-Version header if not there already (we must include the header
     // if the message conforms to RFC 2045, see section 4 of that RFC)
-    auto mimeHeader = "MIME-Version"_ba;
-    if (!request.hasRawHeader(mimeHeader))
-        newRequest.setRawHeader(mimeHeader, "1.0"_ba);
+    if (!h.contains(QHttpHeaders::WellKnownHeader::MIMEVersion))
+        h.append(QHttpHeaders::WellKnownHeader::MIMEVersion, "1.0"_ba);
+
+    newRequest.setHeaders(std::move(h));
 
     QIODevice *device = multiPart->d_func()->device;
     if (!device->isReadable()) {

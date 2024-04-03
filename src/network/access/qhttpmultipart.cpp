@@ -386,9 +386,12 @@ void QHttpPartPrivate::checkHeaderCreated() const
 {
     if (!headerCreated) {
         // copied from QHttpNetworkRequestPrivate::header() and adapted
-        const auto fields = allRawHeaders();
-        for (const auto &[name, value] : fields)
-            header += name + ": " + value + "\r\n";
+        const auto h = headers();
+        for (qsizetype i = 0; i < h.size(); ++i) {
+            const auto name = h.nameAt(i);
+            header += QByteArrayView(name.data(), name.size()) + ": " + h.valueAt(i) + "\r\n";
+        }
+
         header += "\r\n";
         headerCreated = true;
     }
@@ -530,8 +533,8 @@ QDebug operator<<(QDebug debug, const QHttpPart &part)
 
     debug << "QHttpPart(headers = ["
           << part.d->cookedHeaders
-          << "], raw headers = ["
-          << part.d->rawHeaders
+          << "], http headers = ["
+          << part.d->httpHeaders
           << "],";
 
     if (part.d->bodyDevice) {

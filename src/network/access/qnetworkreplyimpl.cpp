@@ -118,15 +118,16 @@ void QNetworkReplyImplPrivate::_q_copyReadyRead()
         return;
     }
 
-    QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    const auto totalSizeOpt = QNetworkHeadersPrivate::toInt(
+            headers().value(QHttpHeaders::WellKnownHeader::ContentLength));
+
     pauseNotificationHandling();
     // emit readyRead before downloadProgress in case this will cause events to be
     // processed and we get into a recursive call (as in QProgressDialog).
     emit q->readyRead();
     if (downloadProgressSignalChoke.elapsed() >= progressSignalInterval) {
         downloadProgressSignalChoke.restart();
-        emit q->downloadProgress(bytesDownloaded,
-                             totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
+        emit q->downloadProgress(bytesDownloaded, totalSizeOpt.value_or(-1));
     }
     resumeNotificationHandling();
 }
@@ -243,7 +244,10 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
             if (bufferingDisallowed) {
                 // if a valid content-length header for the request was supplied, we can disable buffering
                 // if not, we will buffer anyway
-                if (req.header(QNetworkRequest::ContentLengthHeader).isValid()) {
+                const auto sizeOpt = QNetworkHeadersPrivate::toInt(
+                        headers().value(QHttpHeaders::WellKnownHeader::ContentLength));
+
+                if (sizeOpt) {
                     QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
                 } else {
                     state = Buffering;
@@ -478,7 +482,8 @@ void QNetworkReplyImplPrivate::appendDownstreamDataSignalEmissions()
 {
     Q_Q(QNetworkReplyImpl);
 
-    QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    const auto totalSizeOpt = QNetworkHeadersPrivate::toInt(
+            headers().value(QHttpHeaders::WellKnownHeader::ContentLength));
     pauseNotificationHandling();
     // important: At the point of this readyRead(), the data parameter list must be empty,
     // else implicit sharing will trigger memcpy when the user is reading data!
@@ -487,8 +492,7 @@ void QNetworkReplyImplPrivate::appendDownstreamDataSignalEmissions()
     // processed and we get into a recursive call (as in QProgressDialog).
     if (downloadProgressSignalChoke.elapsed() >= progressSignalInterval) {
         downloadProgressSignalChoke.restart();
-        emit q->downloadProgress(bytesDownloaded,
-                             totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
+        emit q->downloadProgress(bytesDownloaded, totalSizeOpt.value_or(-1));
     }
 
     resumeNotificationHandling();
@@ -589,7 +593,9 @@ void QNetworkReplyImplPrivate::finished()
         return;
 
     pauseNotificationHandling();
-    QVariant totalSize = cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
+    const auto totalSizeOpt = QNetworkHeadersPrivate::toInt(
+            headers().value(QHttpHeaders::WellKnownHeader::ContentLength));
+    const auto totalSize = totalSizeOpt.value_or(-1);
 
     resumeNotificationHandling();
 
@@ -599,10 +605,10 @@ void QNetworkReplyImplPrivate::finished()
     pendingNotifications.clear();
 
     pauseNotificationHandling();
-    if (totalSize.isNull() || totalSize == -1) {
+    if (totalSize == -1) {
         emit q->downloadProgress(bytesDownloaded, bytesDownloaded);
     } else {
-        emit q->downloadProgress(bytesDownloaded, totalSize.toLongLong());
+        emit q->downloadProgress(bytesDownloaded, totalSize);
     }
 
     if (bytesUploaded == -1 && (outgoingData || outgoingDataBuffer))
@@ -610,7 +616,7 @@ void QNetworkReplyImplPrivate::finished()
     resumeNotificationHandling();
 
     // if we don't know the total size of or we received everything save the cache
-    if (totalSize.isNull() || totalSize == -1 || bytesDownloaded == totalSize)
+    if (totalSize == -1 || bytesDownloaded == totalSize)
         completeCacheSave();
 
     // note: might not be a good idea, since users could decide to delete us
@@ -646,14 +652,14 @@ void QNetworkReplyImplPrivate::metaDataChanged()
     // 1. do we have cookies?
     // 2. are we allowed to set them?
     if (!manager.isNull()) {
-        const auto it = cookedHeaders.constFind(QNetworkRequest::SetCookieHeader);
-        if (it != cookedHeaders.cend()
+        const auto cookiesOpt = QNetworkHeadersPrivate::toSetCookieList(
+                headers().values(QHttpHeaders::WellKnownHeader::SetCookie));
+        const auto cookies = cookiesOpt.value_or(QList<QNetworkCookie>());
+        if (!cookies.empty()
             && request.attribute(QNetworkRequest::CookieSaveControlAttribute,
                                  QNetworkRequest::Automatic).toInt() == QNetworkRequest::Automatic) {
             QNetworkCookieJar *jar = manager->cookieJar();
             if (jar) {
-                QList<QNetworkCookie> cookies =
-                    qvariant_cast<QList<QNetworkCookie> >(it.value());
                 jar->setCookiesFromUrl(cookies, url);
             }
         }
@@ -857,9 +863,10 @@ qint64 QNetworkReplyImpl::readData(char *data, qint64 maxlen)
                 break;
             }
         }
-        QVariant totalSize = d->cookedHeaders.value(QNetworkRequest::ContentLengthHeader);
-        emit downloadProgress(bytesRead,
-                              totalSize.isNull() ? Q_INT64_C(-1) : totalSize.toLongLong());
+
+        const auto totalSizeOpt = QNetworkHeadersPrivate::toInt(
+                headers().value(QHttpHeaders::WellKnownHeader::ContentLength));
+        emit downloadProgress(bytesRead, totalSizeOpt.value_or(-1));
         return bytesRead;
     } else if (d->backend && d->backend->bytesAvailable()) {
         return d->backend->read(data, maxlen);
