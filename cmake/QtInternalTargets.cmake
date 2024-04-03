@@ -242,15 +242,15 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
             "$<${is_static_and_objc}:-fno-objc-msgsend-selector-stubs>"
         )
     endif()
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "15.0.0")
-        # A bug in Xcode 15 adds duplicate flags to the linker. In addition, the
-        # `-warn_duplicate_libraries` is now enabled by default which may result
-        # in several 'duplicate libraries warning'.
-        #   - https://gitlab.kitware.com/cmake/cmake/-/issues/25297 and
-        #   - https://indiestack.com/2023/10/xcode-15-duplicate-library-linker-warnings/
-        target_link_options(PlatformCommonInternal INTERFACE
-            "LINKER:-no_warn_duplicate_libraries")
-    endif()
+
+    # A bug in Xcode 15 adds duplicate flags to the linker. In addition, the
+    # `-warn_duplicate_libraries` is now enabled by default which may result
+    # in several 'duplicate libraries warning'.
+    #   - https://gitlab.kitware.com/cmake/cmake/-/issues/25297 and
+    #   - https://indiestack.com/2023/10/xcode-15-duplicate-library-linker-warnings/
+    set(is_xcode15 "$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,15>")
+    target_link_options(PlatformCommonInternal INTERFACE
+        "$<${is_xcode15}:LINKER:-no_warn_duplicate_libraries>")
 endif()
 
 if(MSVC)
