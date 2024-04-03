@@ -12,7 +12,6 @@
 
 #include <q20memory.h>
 
-#include <linux/mount.h>
 #include <sys/ioctl.h>
 #include <sys/statfs.h>
 
@@ -22,6 +21,11 @@
 #endif
 #ifndef FS_IOC_GETFSLABEL
 #  define FS_IOC_GETFSLABEL     _IOR(0x94, 49, char[FSLABEL_MAX])
+#endif
+
+// or <linux/statfs.h>
+#ifndef ST_RDONLY
+#  define ST_RDONLY             0x0001  /* mount read-only */
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -171,7 +175,7 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
         bytesFree = statfs_buf.f_bfree * statfs_buf.f_frsize;
         bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_frsize;
         blockSize = int(statfs_buf.f_bsize);
-        readOnly = (statfs_buf.f_flags & MS_RDONLY) != 0;
+        readOnly = (statfs_buf.f_flags & ST_RDONLY) != 0;
     }
 }
 
