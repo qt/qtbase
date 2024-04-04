@@ -40,8 +40,17 @@ enum class Uncomparable : CompareUnderlyingType
                 -127
         #elif defined(__GLIBCXX__)   // libstdc++
                    2
-        #else                        // assume MSSTL
+        #elif defined(_MSVC_STL_VERSION) // MS-STL
                 -128
+        #elif defined(Q_CC_GHS) // INTEGRITY does not have a C++20 stdlib,
+                                // but is going to use libc++ in the future,
+                                // so stay compatible for now.
+                -127
+        #elif defined(Q_OS_VXWORKS) // VxWorks does not have a C++20 stdlib,
+                                    // so we wont't promise BC there.
+                   2
+        #else
+        #   error "Unsupported C++ Standard Library implementation. Please submit a bug report."
         #endif
 };
 
