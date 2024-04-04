@@ -1250,7 +1250,7 @@
         },
         "harfbuzz": {
             "label": "HarfBuzz",
-            "condition": "tests.harfbuzz-ng || (!config.darwin && !config.win32 && libs.harfbuzz) || (input.harfbuzz == 'system')",
+            "condition": "input.harfbuzz == 'qt' || tests.harfbuzz-ng || (!config.darwin && !config.win32 && libs.harfbuzz) || (input.harfbuzz == 'system')",
             "output": [ "privateFeature", "feature" ]
         },
         "system-harfbuzz": {
