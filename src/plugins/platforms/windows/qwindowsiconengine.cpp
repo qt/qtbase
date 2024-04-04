@@ -30,7 +30,7 @@ QString QWindowsIconEngine::glyphs() const
         {"document-page-setup"_L1, u"\ue7c3"},
         {"document-print"_L1, u"\ue749"},
         {"document-print-preview"_L1, u"\ue956"},
-        {"document-properties"_L1, u"\ue713"},
+        {"document-properties"_L1, u"\ue90f"},
         {"document-revert"_L1, u"\ue7a7"}, // ?
         {"document-save"_L1, u"\ue74e"}, // or e78c?
         {"document-save-as"_L1, u"\ue792"},
