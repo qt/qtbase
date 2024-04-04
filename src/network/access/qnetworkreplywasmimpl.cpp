@@ -318,10 +318,11 @@ void QNetworkReplyWasmImplPrivate::emitDataReadProgress(qint64 bytesReceived, qi
     emit q->downloadProgress(bytesReceived, bytesTotal);
 }
 
-void QNetworkReplyWasmImplPrivate::dataReceived(const QByteArray &buffer, int bufferSize)
+void QNetworkReplyWasmImplPrivate::dataReceived(const QByteArray &buffer)
 {
     Q_Q(QNetworkReplyWasmImpl);
 
+    const qsizetype bufferSize = buffer.size();
     if (bufferSize > 0)
         q->setReadBufferSize(bufferSize);
 
@@ -334,7 +335,7 @@ void QNetworkReplyWasmImplPrivate::dataReceived(const QByteArray &buffer, int bu
 
     totalDownloadSize = downloadBufferCurrentSize;
 
-    downloadBuffer.append(buffer, bufferSize);
+    downloadBuffer.append(buffer);
 
     emit q->readyRead();
 }
@@ -476,7 +477,7 @@ void QNetworkReplyWasmImplPrivate::downloadSucceeded(emscripten_fetch_t *fetch)
     if (reply) {
         if (reply->state != QNetworkReplyPrivate::Aborted) {
             QByteArray buffer(fetch->data, fetch->numBytes);
-            reply->dataReceived(buffer, buffer.size());
+            reply->dataReceived(buffer);
             QByteArray statusText(fetch->statusText);
             reply->setStatusCode(fetch->status, statusText);
             reply->setReplyFinished();
@@ -539,7 +540,7 @@ void QNetworkReplyWasmImplPrivate::downloadFailed(emscripten_fetch_t *fetch)
             else
                 reasonStr = QString::fromUtf8(fetch->statusText);
             QByteArray buffer(fetch->data, fetch->numBytes);
-            reply->dataReceived(buffer, buffer.size());
+            reply->dataReceived(buffer);
             QByteArray statusText(fetch->statusText);
             reply->setStatusCode(fetch->status, statusText);
             reply->emitReplyError(reply->statusCodeFromHttp(fetch->status, reply->request.url()), reasonStr);

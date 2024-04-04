@@ -57,7 +57,7 @@ public:
 
     Q_PRIVATE_SLOT(d_func(), void emitReplyError(QNetworkReply::NetworkError errorCode, const QString &errorString))
     Q_PRIVATE_SLOT(d_func(), void emitDataReadProgress(qint64 done, qint64 total))
-    Q_PRIVATE_SLOT(d_func(), void dataReceived(char *buffer, int bufferSize))
+    Q_PRIVATE_SLOT(d_func(), void dataReceived(const QByteArray &buffer))
 
 private:
     QByteArray methodName() const;
@@ -75,7 +75,7 @@ public:
 
     void emitReplyError(QNetworkReply::NetworkError errorCode, const QString &);
     void emitDataReadProgress(qint64 done, qint64 total);
-    void dataReceived(const QByteArray &buffer, int bufferSize);
+    void dataReceived(const QByteArray &buffer);
     void headersReceived(const QByteArray &buffer);
 
     void setStatusCode(int status, const QByteArray &statusText);
