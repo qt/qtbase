@@ -41,11 +41,11 @@ int main(int argc, char *argv[])
     widget.setLayout(&mainLayout);
 
 //! [Connect button signals]
-    QObject::connect(&happyButton, &QPushButton::clicked, []() {
+    QObject::connect(&happyButton, &QPushButton::clicked, &happyButton, []() {
         NotificationClient().setNotification("The user is happy!");
     });
 
-    QObject::connect(&sadButton, &QPushButton::clicked, []() {
+    QObject::connect(&sadButton, &QPushButton::clicked, &happyButton, []() {
         NotificationClient().setNotification("The user is sad!");
     });
 //! [Connect button signals]
