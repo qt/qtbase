@@ -54,7 +54,6 @@ public:
     void wakeUp() override;
 
     static void runOnMainThread(std::function<void(void)> fn);
-    static void runOnMainThreadAsync(std::function<void(void)> fn);
     static void socketSelect(int timeout, int socket, bool waitForRead, bool waitForWrite,
                             bool *selectForRead, bool *selectForWrite, bool *socketDisconnect);
 protected:
@@ -91,6 +90,7 @@ private:
 
     static void run(std::function<void(void)> fn);
     static void runAsync(std::function<void(void)> fn);
+    static void runOnMainThreadAsync(std::function<void(void)> fn);
 
     static QEventDispatcherWasm *g_mainThreadEventDispatcher;
 
