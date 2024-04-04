@@ -11,6 +11,7 @@
 #include <variant>
 #include <optional>
 #include <tuple>
+#include <type_traits>
 
 QT_BEGIN_NAMESPACE
 
