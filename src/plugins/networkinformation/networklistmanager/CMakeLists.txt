@@ -14,7 +14,7 @@ qt_internal_add_plugin(QNLMNIPlugin
         Qt::NetworkPrivate
 )
 
-qt_internal_extend_target(QNLMNIPlugin CONDITION MSVC
+qt_internal_extend_target(QNLMNIPlugin CONDITION WIN32
     LIBRARIES
         runtimeobject
         oleaut32
