@@ -1968,8 +1968,10 @@ void QXcbWindow::handleButtonReleaseEvent(int event_x, int event_y, int root_x, 
         return;
     }
 
-    if (connection()->buttonState() == Qt::NoButton)
+    if (connection()->buttonState() == Qt::NoButton) {
         connection()->setMousePressWindow(nullptr);
+        m_ignorePressedWindowOnMouseLeave = false;
+    }
 
     handleMouseEvent(timestamp, local, global, modifiers, type, source);
 }
@@ -1987,11 +1989,6 @@ static inline bool doCheckUnGrabAncestor(QXcbConnection *conn)
         return mouseButtonsPressed || conn->hasXInput2();
     }
     return true;
-}
-
-static bool windowContainsGlobalPoint(QXcbWindow *window, int x, int y)
-{
-    return window ? window->geometry().contains(window->mapFromGlobal(QPoint(x, y))) : false;
 }
 
 static bool ignoreLeaveEvent(quint8 mode, quint8 detail, QXcbConnection *conn)
@@ -2017,11 +2014,16 @@ void QXcbWindow::handleEnterNotifyEvent(int event_x, int event_y, int root_x, in
 {
     connection()->setTime(timestamp);
 
-    if (ignoreEnterEvent(mode, detail, connection()) || connection()->mousePressWindow())
+    if (ignoreEnterEvent(mode, detail, connection())
+        || (connection()->mousePressWindow() && !m_ignorePressedWindowOnMouseLeave)) {
         return;
+    }
 
     // Updates scroll valuators, as user might have done some scrolling outside our X client.
     connection()->xi2UpdateScrollingDevices();
+
+    if (mode == XCB_NOTIFY_MODE_UNGRAB && connection()->queryMouseButtons() != Qt::NoButton)
+        m_ignorePressedWindowOnMouseLeave = true;
 
     const QPoint global = QPoint(root_x, root_y);
     const QPoint local(event_x, event_y);
@@ -2035,7 +2037,7 @@ void QXcbWindow::handleLeaveNotifyEvent(int root_x, int root_y,
 
     QXcbWindow *mousePressWindow = connection()->mousePressWindow();
     if (ignoreLeaveEvent(mode, detail, connection())
-        || (mousePressWindow && windowContainsGlobalPoint(mousePressWindow, root_x, root_y))) {
+        || (mousePressWindow && !m_ignorePressedWindowOnMouseLeave)) {
         return;
     }
 
@@ -2055,7 +2057,7 @@ void QXcbWindow::handleLeaveNotifyEvent(int root_x, int root_y,
         QWindowSystemInterface::handleEnterLeaveEvent(enterWindow->window(), window(), local, global);
     } else {
         QWindowSystemInterface::handleLeaveEvent(window());
-        if (!windowContainsGlobalPoint(this, root_x, root_y))
+        if (m_ignorePressedWindowOnMouseLeave)
             connection()->setMousePressWindow(nullptr);
     }
 
