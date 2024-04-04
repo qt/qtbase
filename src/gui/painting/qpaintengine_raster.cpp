@@ -3713,15 +3713,9 @@ bool QRasterPaintEnginePrivate::canUseImageBlitting(QPainter::CompositionMode mo
 
     QImage::Format dFormat = rasterBuffer->format;
     QImage::Format sFormat = image.format();
-    // Formats must match or source format must be a subset of destination format
-    if (dFormat != sFormat && image.pixelFormat().alphaUsage() == QPixelFormat::IgnoresAlpha) {
-        if ((sFormat == QImage::Format_RGB32 && dFormat == QImage::Format_ARGB32)
-            || (sFormat == QImage::Format_RGBX8888 && dFormat == QImage::Format_RGBA8888)
-            || (sFormat == QImage::Format_RGBX64 && dFormat == QImage::Format_RGBA64))
-            sFormat = dFormat;
-        else
-            sFormat = qt_maybeAlphaVersionWithSameDepth(sFormat); // this returns premul formats
-    }
+    // Formats must match or source format must be an opaque version of destination format
+    if (dFormat != sFormat && image.pixelFormat().alphaUsage() == QPixelFormat::IgnoresAlpha)
+        dFormat = qt_maybeDataCompatibleOpaqueVersion(dFormat);
     return (dFormat == sFormat);
 }
 

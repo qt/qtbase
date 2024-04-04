@@ -60,7 +60,7 @@ QImage::Format QRhiBackingStore::format() const
     // image must have an alpha channel. Hence upgrading the format. Matches
     // what other platforms (Windows, xcb) do.
     if (QImage::toPixelFormat(fmt).alphaUsage() != QPixelFormat::UsesAlpha)
-        fmt = qt_maybeAlphaVersionWithSameDepth(fmt);
+        fmt = qt_maybeDataCompatibleAlphaVersion(fmt);
 
     return fmt;
 }
