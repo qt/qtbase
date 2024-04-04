@@ -400,7 +400,7 @@ QByteArray toIccProfile(const QColorSpace &space)
     // Profile header:
     stream << uint(0); // Size, we will update this later
     stream << uint(0);
-    stream << uint(0x02400000); // Version 2.4 (note we use 'para' from version 4)
+    stream << uint(0x04400000); // Version 4.4
     stream << uint(ProfileClass::Display);
     stream << uint(Tag::RGB_);
     stream << (spaceDPtr->isPcsLab ? uint(Tag::Lab_) : uint(Tag::XYZ_));
@@ -423,8 +423,8 @@ QByteArray toIccProfile(const QColorSpace &space)
     stream << uint(Tag::gXYZ) << uint(profileDataOffset + 20) << uint(20);
     stream << uint(Tag::bXYZ) << uint(profileDataOffset + 40) << uint(20);
     stream << uint(Tag::wtpt) << uint(profileDataOffset + 60) << uint(20);
-    stream << uint(Tag::cprt) << uint(profileDataOffset + 80) << uint(12);
-    currentOffset += 92;
+    stream << uint(Tag::cprt) << uint(profileDataOffset + 80) << uint(34);
+    currentOffset += 20 + 20 + 20 + 20 + 34 + 2;
     if (writeChad) {
         stream << uint(Tag::chad) << uint(currentOffset) << uint(44);
         currentOffset += 44;
@@ -452,8 +452,12 @@ QByteArray toIccProfile(const QColorSpace &space)
     stream << toFixedS1516(spaceDPtr->whitePoint.x);
     stream << toFixedS1516(spaceDPtr->whitePoint.y);
     stream << toFixedS1516(spaceDPtr->whitePoint.z);
-    stream << uint(Tag::text) << uint(0);
-    stream << uint(IccTag('N', '/', 'A', '\0'));
+    stream << uint(Tag::mluc) << uint(0);
+    stream << uint(1) << uint(12);
+    stream << uchar('e') << uchar('n') << uchar('U') << uchar('S');
+    stream << uint(6) << uint(28);
+    stream << ushort('N') << ushort('/') << ushort('A');
+    stream << ushort(0); // 4-byte alignment
     if (writeChad) {
         QColorMatrix chad = QColorMatrix::chromaticAdaptation(spaceDPtr->whitePoint);
         stream << uint(Tag::sf32) << uint(0);
@@ -489,16 +493,20 @@ QByteArray toIccProfile(const QColorSpace &space)
         currentOffset += bTrcSize;
     }
 
+    // Writing description
     descOffset = currentOffset;
-    QByteArray description = space.description().toUtf8();
-    stream << uint(Tag::desc) << uint(0);
-    stream << uint(description.size() + 1);
-    stream.writeRawData(description.constData(), description.size() + 1);
-    stream << uint(0) << uint(0);
-    stream << ushort(0) << uchar(0);
-    QByteArray macdesc(67, '\0');
-    stream.writeRawData(macdesc.constData(), 67);
-    descSize = 90 + description.size() + 1;
+    QString description = space.description();
+    stream << uint(Tag::mluc) << uint(0);
+    stream << uint(1) << uint(12);
+    stream << uchar('e') << uchar('n') << uchar('U') << uchar('S');
+    stream << uint(description.size() * 2) << uint(28);
+    for (QChar ch : description)
+        stream << ushort(ch.unicode());
+    descSize = 28 + description.size() * 2;
+    if (description.size() & 1) {
+        stream << ushort(0);
+        currentOffset += 2;
+    }
     currentOffset += descSize;
 
     buffer.close();
@@ -1054,7 +1062,7 @@ static bool parseDesc(const QByteArray &data, const TagEntry &tagEntry, QString 
     const MlucTagData mluc = qFromUnaligned<MlucTagData>(data.constData() + tagEntry.offset);
     if (mluc.recordCount < 1)
         return false;
-    if (mluc.recordSize < 12)
+    if (mluc.recordSize != 12)
         return false;
     // We just use the primary record regardless of language or country.
     const quint32 stringOffset = mluc.records[0].offset;
