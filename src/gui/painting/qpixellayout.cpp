@@ -2080,7 +2080,7 @@ static const QRgbaFloat32 * QT_FASTCALL convertCMYKToRGBA32F(QRgbaFloat32 *buffe
                                                              const QList<QRgb> *, QDitherInfo *)
 {
     for (int i = 0; i < count; ++i)
-        QRgbaFloat32::fromArgb32(QCmyk32::fromCmyk32(src[i]).toColor().rgba());
+        buffer[i] = QRgbaFloat32::fromArgb32(QCmyk32::fromCmyk32(src[i]).toColor().rgba());
 
     return buffer;
 }
