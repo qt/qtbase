@@ -547,26 +547,26 @@ QPixmap QIOSScreen::grabWindow(WId window, int x, int y, int width, int height) 
     if (window && ![reinterpret_cast<id>(window) isKindOfClass:[UIView class]])
         return QPixmap();
 
-    UIView *view = window ? reinterpret_cast<UIView *>(window) : m_uiWindow;
+    UIView *view = window ? reinterpret_cast<UIView *>(window) : m_uiWindow.rootViewController.view;
 
     if (width < 0)
         width = qMax(view.bounds.size.width - x, CGFloat(0));
     if (height < 0)
         height = qMax(view.bounds.size.height - y, CGFloat(0));
 
-    CGRect captureRect = [m_uiWindow convertRect:CGRectMake(x, y, width, height) fromView:view];
-    captureRect = CGRectIntersection(captureRect, m_uiWindow.bounds);
+    CGRect captureRect = [view.window convertRect:CGRectMake(x, y, width, height) fromView:view];
+    captureRect = CGRectIntersection(captureRect, view.window.bounds);
 
     UIGraphicsBeginImageContextWithOptions(captureRect.size, NO, 0.0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextTranslateCTM(context, -captureRect.origin.x, -captureRect.origin.y);
 
-    // Draws the complete view hierarchy of m_uiWindow into the given rect, which
-    // needs to be the same aspect ratio as the m_uiWindow's size. Since we've
+    // Draws the complete view hierarchy of view.window into the given rect, which
+    // needs to be the same aspect ratio as the view.window's size. Since we've
     // translated the graphics context, and are potentially drawing into a smaller
     // context than the full window, the resulting image will be a subsection of the
     // full screen.
-    [m_uiWindow drawViewHierarchyInRect:m_uiWindow.bounds afterScreenUpdates:NO];
+    [view.window drawViewHierarchyInRect:view.window.bounds afterScreenUpdates:NO];
 
     UIImage *screenshot = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
