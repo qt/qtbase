@@ -828,7 +828,7 @@ QLocale QSystemLocale::fallbackLocale() const
     return QLocale(QString::fromLatin1(getWinLocaleName()));
 }
 
-QVariant QSystemLocale::query(QueryType type, QVariant in) const
+QVariant QSystemLocale::query(QueryType type, QVariant &&in) const
 {
     QSystemLocalePrivate *d = systemLocalePrivate();
     switch(type) {
