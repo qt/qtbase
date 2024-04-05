@@ -111,18 +111,18 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code,
 
     auto searchCode = [codeBuf](auto f) {
         return std::find_if(languageCodeList.begin(), languageCodeList.end(),
-                            [=](const LanguageCodeEntry &i) { return f(i) == codeBuf; });
+                            [=](LanguageCodeEntry i) { return f(i) == codeBuf; });
     };
 
     if (codeTypes.testFlag(QLocale::ISO639Part1) && uc3 == 0) {
-        auto i = searchCode([](const LanguageCodeEntry &i) { return i.part1; });
+        auto i = searchCode([](LanguageCodeEntry i) { return i.part1; });
         if (i != languageCodeList.end())
             return QLocale::Language(std::distance(languageCodeList.begin(), i));
     }
 
     if (uc3 != 0) {
         if (codeTypes.testFlag(QLocale::ISO639Part2B)) {
-            auto i = searchCode([](const LanguageCodeEntry &i) { return i.part2B; });
+            auto i = searchCode([](LanguageCodeEntry i) { return i.part2B; });
             if (i != languageCodeList.end())
                 return QLocale::Language(std::distance(languageCodeList.begin(), i));
         }
@@ -131,13 +131,13 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code,
         // This is asserted in iso639_3.LanguageCodeData.
         if (codeTypes.testFlag(QLocale::ISO639Part2T)
             && !codeTypes.testFlag(QLocale::ISO639Part3)) {
-            auto i = searchCode([](const LanguageCodeEntry &i) { return i.part2T; });
+            auto i = searchCode([](LanguageCodeEntry i) { return i.part2T; });
             if (i != languageCodeList.end())
                 return QLocale::Language(std::distance(languageCodeList.begin(), i));
         }
 
         if (codeTypes.testFlag(QLocale::ISO639Part3)) {
-            auto i = searchCode([](const LanguageCodeEntry &i) { return i.part3; });
+            auto i = searchCode([](LanguageCodeEntry i) { return i.part3; });
             if (i != languageCodeList.end())
                 return QLocale::Language(std::distance(languageCodeList.begin(), i));
         }
