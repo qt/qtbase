@@ -1153,7 +1153,7 @@
 */
 
 /*!
-    \fn QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
+    \fn QVariant QSystemLocale::query(QueryType type, QVariant &&in = QVariant()) const
 
     Generic query method for locale data. Provides indirection.
     Denotes the \a type of the query

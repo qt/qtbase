@@ -124,7 +124,7 @@ QLocale QSystemLocale::fallbackLocale() const
     return QLocale(lang);
 }
 
-QVariant QSystemLocale::query(QueryType type, QVariant in) const
+QVariant QSystemLocale::query(QueryType type, QVariant &&in) const
 {
     QSystemLocaleData *d = qSystemLocaleData();
 
@@ -258,9 +258,10 @@ QVariant QSystemLocale::query(QueryType type, QVariant in) const
         return d->uiLanguages.isEmpty() ? QVariant() : QVariant(d->uiLanguages);
     }
     case StringToStandardQuotation:
-        return lc_messages.quoteString(qvariant_cast<QStringView>(in));
+        return lc_messages.quoteString(qvariant_cast<QStringView>(std::move(in)));
     case StringToAlternateQuotation:
-        return lc_messages.quoteString(qvariant_cast<QStringView>(in), QLocale::AlternateQuotation);
+        return lc_messages.quoteString(qvariant_cast<QStringView>(std::move(in)),
+                                       QLocale::AlternateQuotation);
     case ListToSeparatedString:
         return lc_messages.createSeparatedList(in.toStringList());
     case LocaleChanged:
