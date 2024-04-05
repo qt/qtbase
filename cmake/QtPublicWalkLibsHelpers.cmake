@@ -255,8 +255,8 @@ function(__qt_internal_walk_libs
                         __qt_internal_promote_target_to_global(${lib_target_unaliased})
                     endif()
                 endif()
-            elseif("${lib_target}" MATCHES "^Qt::(.*)")
-                message(FATAL_ERROR "The ${CMAKE_MATCH_1} target is mentioned as a dependency for \
+            elseif("${lib_target}" MATCHES "^(Qt|${QT_CMAKE_EXPORT_NAMESPACE})::(.*)")
+                message(FATAL_ERROR "The ${CMAKE_MATCH_2} target is mentioned as a dependency for \
 ${target}, but not declared.")
             else()
                 if(NOT operation MATCHES "^(collect|direct)_targets$")
