@@ -4019,7 +4019,7 @@ public:
     {
     }
 
-    QVariant query(QueryType type, QVariant /*in*/) const override
+    QVariant query(QueryType type, QVariant &&/*in*/) const override
     {
         switch (type) {
         case UILanguages:

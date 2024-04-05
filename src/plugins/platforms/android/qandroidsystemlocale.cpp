@@ -43,7 +43,7 @@ void QAndroidSystemLocale::getLocaleFromJava() const
     m_locale = QLocale(languageCode + u'_' + countryCode);
 }
 
-QVariant QAndroidSystemLocale::query(QueryType type, QVariant in) const
+QVariant QAndroidSystemLocale::query(QueryType type, QVariant &&in) const
 {
     if (type == LocaleChanged) {
         getLocaleFromJava();

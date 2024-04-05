@@ -15,7 +15,7 @@ class QAndroidSystemLocale : public QSystemLocale
 public:
     QAndroidSystemLocale();
 
-    QVariant query(QueryType type, QVariant in) const override;
+    QVariant query(QueryType type, QVariant &&in) const override;
     QLocale fallbackLocale() const override;
 
 private:

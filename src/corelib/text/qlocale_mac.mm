@@ -573,7 +573,7 @@ static QLocale::Language codeToLanguage(QStringView s)
     return QLocalePrivate::codeToLanguage(s);
 }
 
-QVariant QSystemLocale::query(QueryType type, QVariant in) const
+QVariant QSystemLocale::query(QueryType type, QVariant &&in) const
 {
     QMacAutoReleasePool pool;
 
