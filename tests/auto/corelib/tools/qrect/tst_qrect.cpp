@@ -38,8 +38,11 @@ private slots:
     void comparisonCompiles();
     void comparison_data();
     void comparison();
+    void fuzzyComparison_data();
+    void fuzzyComparison();
     void isNull_data();
     void isNull();
+    void fuzzyIsNull();
     void newIsEmpty_data();
     void newIsEmpty();
     void newIsValid_data();
@@ -309,6 +312,20 @@ void tst_QRect::comparison()
     QT_TEST_EQUALITY_OPS(lhs, rhsF, mixedResult);
 }
 
+void tst_QRect::fuzzyComparison_data()
+{
+    comparison_data();
+}
+
+void tst_QRect::fuzzyComparison()
+{
+    QFETCH(const QRectF, lhsF);
+    QFETCH(const QRectF, rhsF);
+    QFETCH(const bool, floatResult);
+
+    QCOMPARE_EQ(qFuzzyCompare(lhsF, rhsF), floatResult);
+}
+
 void tst_QRect::isNull_data()
 {
     QTest::addColumn<QRect>("r");
@@ -336,6 +353,14 @@ void tst_QRect::isNull()
 
     QVERIFY( r.isNull() == isNull );
     QVERIFY( rf.isNull() == isNull );
+}
+
+void tst_QRect::fuzzyIsNull()
+{
+    QRectF rf(QPointF(-qreal_min, qreal_min), QPointF(qreal_min, -qreal_min));
+
+    QVERIFY(!rf.isNull()); // QRectF::isNull() does strict comparison
+    QVERIFY(qFuzzyIsNull(rf));
 }
 
 void tst_QRect::newIsEmpty_data()

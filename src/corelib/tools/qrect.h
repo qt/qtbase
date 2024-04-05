@@ -585,6 +585,17 @@ private:
     { return r1.topLeft() == r2.topLeft() && r1.size() == r2.size(); }
     Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QRectF, QRect)
 
+    friend constexpr bool qFuzzyCompare(const QRectF &lhs, const QRectF &rhs) noexcept
+    {
+        return qFuzzyCompare(lhs.topLeft(), rhs.topLeft())
+                && qFuzzyCompare(lhs.bottomRight(), rhs.bottomRight());
+    }
+
+    friend constexpr bool qFuzzyIsNull(const QRectF &rect) noexcept
+    {
+        return qFuzzyIsNull(rect.w) && qFuzzyIsNull(rect.h);
+    }
+
 public:
     [[nodiscard]] constexpr inline QRect toRect() const noexcept;
     [[nodiscard]] QRect toAlignedRect() const noexcept;

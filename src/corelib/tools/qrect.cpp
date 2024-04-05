@@ -2437,6 +2437,22 @@ QRect QRectF::toAlignedRect() const noexcept
     \sa marginsRemoved(), operator+=(), marginsAdded()
 */
 
+/*!
+    \fn bool QRectF::qFuzzyCompare(const QRectF &lhs, const QRectF &rhs)
+    \since 6.8
+
+    Returns \c true if the rectangle \a lhs is approximately equal to the
+    rectangle \a rhs; otherwise returns \c false.
+*/
+
+/*!
+    \fn bool QRectF::qFuzzyIsNull(const QRectF &rect)
+    \since 6.8
+
+    Returns \c true if both width and height of the rectangle \a rect are
+    approximately equal to zero; otherwise returns \c false.
+*/
+
 /*****************************************************************************
   QRectF stream functions
  *****************************************************************************/
