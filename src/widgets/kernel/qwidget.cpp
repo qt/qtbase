@@ -85,7 +85,7 @@ using namespace Qt::StringLiterals;
 Q_LOGGING_CATEGORY(lcWidgetPainting, "qt.widgets.painting", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcWidgetShowHide, "qt.widgets.showhide", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcWidgetWindow, "qt.widgets.window", QtWarningMsg);
-Q_LOGGING_CATEGORY(lcFocus, "qt.widgets.focus")
+Q_LOGGING_CATEGORY(lcWidgetFocus, "qt.widgets.focus")
 
 #ifndef QT_NO_DEBUG_STREAM
 namespace {
@@ -13304,12 +13304,12 @@ bool QWidgetPrivate::removeFromFocusChain(FocusChainRemovalRules rules, FocusDir
         if (rules.testFlag(FocusChainRemovalRule::AssertConsistency))
             qFatal() << q << "has inconsistent focus chain.";
 #endif
-        qCDebug(lcFocus) << q << "wasn't removed, because of inconsistent focus chain.";
+        qCDebug(lcWidgetFocus) << q << "wasn't removed, because of inconsistent focus chain.";
         return false;
     }
 
     if (!isInFocusChain()) {
-        qCDebug(lcFocus) << q << "wasn't removed, because it is not part of a focus chain.";
+        qCDebug(lcWidgetFocus) << q << "wasn't removed, because it is not part of a focus chain.";
         return false;
     }
 
@@ -13319,7 +13319,7 @@ bool QWidgetPrivate::removeFromFocusChain(FocusChainRemovalRules rules, FocusDir
     FOCUS_NEXT(FOCUS_PREV(q)) = FOCUS_NEXT(q);
     FOCUS_PREV(FOCUS_NEXT(q)) = FOCUS_PREV(q);
     initFocusChain();
-    qCDebug(lcFocus) << q << "removed from focus chain.";
+    qCDebug(lcWidgetFocus) << q << "removed from focus chain.";
     return true;
 }
 
@@ -13330,7 +13330,7 @@ bool QWidgetPrivate::removeFromFocusChain(FocusChainRemovalRules rules, FocusDir
 void QWidgetPrivate::initFocusChain()
 {
     Q_Q(QWidget);
-    qCDebug(lcFocus) << "Initializing focus chain of" << q;
+    qCDebug(lcWidgetFocus) << "Initializing focus chain of" << q;
     FOCUS_PREV(q) = q;
     FOCUS_NEXT(q) = q;
 }
@@ -13390,7 +13390,7 @@ bool QWidgetPrivate::insertIntoFocusChain(FocusDirection direction, QWidget *pos
     switch (direction) {
     case FocusDirection::Next:
         if (previous == position) {
-            qCDebug(lcFocus) << "No-op insertion." << q << "is already before" << position;
+            qCDebug(lcWidgetFocus) << "No-op insertion." << q << "is already before" << position;
             return false;
         }
 
@@ -13400,12 +13400,12 @@ bool QWidgetPrivate::insertIntoFocusChain(FocusDirection direction, QWidget *pos
         FOCUS_PREV(FOCUS_NEXT(position)) = q;
         FOCUS_NEXT(position) = q;
         FOCUS_PREV(q) = position;
-        qCDebug(lcFocus) << q << "inserted after" << position;
+        qCDebug(lcWidgetFocus) << q << "inserted after" << position;
         break;
 
     case FocusDirection::Previous:
         if (next == position) {
-            qCDebug(lcFocus) << "No-op insertion." << q << "is already after" << position;
+            qCDebug(lcWidgetFocus) << "No-op insertion." << q << "is already after" << position;
             return false;
         }
 
@@ -13415,7 +13415,7 @@ bool QWidgetPrivate::insertIntoFocusChain(FocusDirection direction, QWidget *pos
         FOCUS_NEXT(FOCUS_PREV(position)) = q;
         FOCUS_PREV(position) = q;
         FOCUS_NEXT(q) = position;
-        qCDebug(lcFocus) << q << "inserted before" << position;
+        qCDebug(lcWidgetFocus) << q << "inserted before" << position;
         break;
     }
 
@@ -13435,7 +13435,7 @@ bool QWidgetPrivate::insertIntoFocusChain(const QWidgetList &toBeInserted,
                                         FocusDirection direction, QWidget *position)
 {
     if (toBeInserted.isEmpty()) {
-        qCDebug(lcFocus) << "No-op insertion of an empty list";
+        qCDebug(lcWidgetFocus) << "No-op insertion of an empty list";
         return false;
     }
 
@@ -13454,7 +13454,7 @@ bool QWidgetPrivate::insertIntoFocusChain(const QWidgetList &toBeInserted,
     switch (direction) {
     case FocusDirection::Previous:
         if (FOCUS_PREV(position) == last) {
-            qCDebug(lcFocus) << "No-op insertion." << toBeInserted << "is already before"
+            qCDebug(lcWidgetFocus) << "No-op insertion." << toBeInserted << "is already before"
                              << position;
             return false;
         }
@@ -13462,11 +13462,11 @@ bool QWidgetPrivate::insertIntoFocusChain(const QWidgetList &toBeInserted,
         FOCUS_PREV(first) = FOCUS_PREV(position);
         FOCUS_NEXT(last) = position;
         FOCUS_PREV(position) = last;
-        qCDebug(lcFocus) << toBeInserted << "inserted before" << position;
+        qCDebug(lcWidgetFocus) << toBeInserted << "inserted before" << position;
         break;
     case FocusDirection::Next:
         if (FOCUS_PREV(position) == last) {
-            qCDebug(lcFocus) << "No-op insertion." << toBeInserted << "is already after"
+            qCDebug(lcWidgetFocus) << "No-op insertion." << toBeInserted << "is already after"
                              << position;
             return false;
         }
@@ -13474,7 +13474,7 @@ bool QWidgetPrivate::insertIntoFocusChain(const QWidgetList &toBeInserted,
         FOCUS_NEXT(last) = FOCUS_NEXT(position);
         FOCUS_PREV(first) = position;
         FOCUS_NEXT(position) = first;
-        qCDebug(lcFocus) << toBeInserted << "inserted after" << position;
+        qCDebug(lcWidgetFocus) << toBeInserted << "inserted after" << position;
         break;
     }
 
@@ -13524,7 +13524,7 @@ QWidgetList QWidgetPrivate::takeFromFocusChain(QWidget *from,
     // Check if there is a path from->to in direction
     const QWidgetList path = focusPath(from, to , direction);
     if (path.isEmpty()) {
-        qCDebug(lcFocus) << "No-op removal. Focus chain from" << from << "doesn't lead to " << to;
+        qCDebug(lcWidgetFocus) << "No-op removal. Focus chain from" << from << "doesn't lead to " << to;
         return QWidgetList();
     }
 
@@ -13539,7 +13539,7 @@ QWidgetList QWidgetPrivate::takeFromFocusChain(QWidget *from,
     FOCUS_PREV(FOCUS_NEXT(last)) = FOCUS_PREV(first);
     FOCUS_PREV(first) = last;
     FOCUS_NEXT(last) = first;
-    qCDebug(lcFocus) << path << "removed from focus chain";
+    qCDebug(lcWidgetFocus) << path << "removed from focus chain";
     return path;
 }
 
@@ -13635,14 +13635,14 @@ bool QWidgetPrivate::isFocusChainConsistent() const
 
     for (int i = 0; i < QApplication::allWidgets().count(); ++i) {
         if (!FOCUS_PREV(position) || !FOCUS_NEXT(position)) {
-            qCDebug(lcFocus) << "Nullptr found at:" << position
+            qCDebug(lcWidgetFocus) << "Nullptr found at:" << position
                              << "Previous pointing to" << FOCUS_PREV(position)
                              << "Next pointing to" << FOCUS_NEXT(position);
             return false;
         }
         if (!(FOCUS_PREV(FOCUS_NEXT(position)) == position
             && FOCUS_NEXT(FOCUS_PREV(position)) == position)) {
-            qCDebug(lcFocus) << "Inconsistent focus chain at:" << position
+            qCDebug(lcWidgetFocus) << "Inconsistent focus chain at:" << position
                              << "Previous pointing to" << FOCUS_PREV(FOCUS_NEXT(position))
                              << "Next pointing to" << FOCUS_NEXT(FOCUS_PREV(position));
             return false;
@@ -13653,7 +13653,7 @@ bool QWidgetPrivate::isFocusChainConsistent() const
 
     }
 
-    qCDebug(lcFocus) << "Focus chain leading from" << q << "to" << position << "is not closed.";
+    qCDebug(lcWidgetFocus) << "Focus chain leading from" << q << "to" << position << "is not closed.";
     return false;
 }
 
