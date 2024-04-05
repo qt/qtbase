@@ -11,6 +11,7 @@ QT_BEGIN_NAMESPACE
 
 class QAndroidSystemLocale : public QSystemLocale
 {
+    Q_DISABLE_COPY_MOVE(QAndroidSystemLocale)
 public:
     QAndroidSystemLocale();
 
