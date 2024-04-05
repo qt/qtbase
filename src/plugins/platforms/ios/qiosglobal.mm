@@ -88,10 +88,15 @@ int infoPlistValue(NSString* key, int defaultValue)
 UIWindow *presentationWindow(QWindow *window)
 {
     UIWindow *uiWindow = window ? reinterpret_cast<UIView *>(window->winId()).window : nullptr;
-#if !defined(Q_OS_VISIONOS)
-    if (!uiWindow)
-        uiWindow = qt_apple_sharedApplication().keyWindow;
-#endif
+    if (!uiWindow) {
+        auto *scenes = [qt_apple_sharedApplication().connectedScenes allObjects];
+        if (scenes.count > 0) {
+            auto *windowScene = static_cast<UIWindowScene*>(scenes[0]);
+            uiWindow = windowScene.keyWindow;
+            if (!uiWindow && windowScene.windows.count)
+                uiWindow = windowScene.windows[0];
+        }
+    }
     return uiWindow;
 }
 

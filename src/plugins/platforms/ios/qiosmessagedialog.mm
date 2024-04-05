@@ -117,24 +117,16 @@ bool QIOSMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality win
     }
 
     UIWindow *window = presentationWindow(parent);
-    if (!window) {
-        qCDebug(lcQpaWindow, "Attempting to exec a dialog without any window/widget visible.");
-
-        auto *primaryScreen = static_cast<QIOSScreen*>(QGuiApplication::primaryScreen()->handle());
-        Q_ASSERT(primaryScreen);
-
-        window = primaryScreen->uiWindow();
-        if (window.hidden) {
-            // With a window hidden, an attempt to present view controller
-            // below fails with a warning, that a view "is not a part of
-            // any view hierarchy". The UIWindow is initially hidden,
-            // as unhiding it is what hides the splash screen.
-            window.hidden = NO;
-        }
-    }
-
     if (!window)
         return false;
+
+    if (window.hidden) {
+         // With a window hidden, an attempt to present view controller
+         // below fails with a warning, that a view "is not a part of
+         // any view hierarchy". The UIWindow is initially hidden,
+         // as unhiding it is what hides the splash screen.
+         window.hidden = NO;
+    }
 
     [window.rootViewController presentViewController:m_alertController animated:YES completion:nil];
     return true;
