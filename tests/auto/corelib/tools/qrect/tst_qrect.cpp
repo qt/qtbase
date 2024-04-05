@@ -7,6 +7,8 @@
 #include <limits.h>
 #include <qdebug.h>
 
+#include <private/qcomparisontesthelper_p.h>
+
 #include <array>
 
 class tst_QRect : public QObject
@@ -33,6 +35,9 @@ public:
     static QPoint getQPointCase( QPointCases p );
 
 private slots:
+    void comparisonCompiles();
+    void comparison_data();
+    void comparison();
     void isNull_data();
     void isNull();
     void newIsEmpty_data();
@@ -160,6 +165,8 @@ private slots:
 #define LARGE 1000000000
 static bool isLarge(int x) { return x > LARGE || x < -LARGE; }
 
+static constexpr qreal qreal_min = std::numeric_limits<qreal>::min();
+
 QRect tst_QRect::getQRectCase( QRectCases c )
 {
     // Should return the best variety of possible QRects, if a
@@ -240,6 +247,66 @@ QPoint tst_QRect::getQPointCase( QPointCases p )
     default:
         return QPoint();
     }
+}
+
+void tst_QRect::comparisonCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QRect>();
+    QTestPrivate::testEqualityOperatorsCompile<QRectF>();
+    QTestPrivate::testEqualityOperatorsCompile<QRectF, QRect>();
+}
+
+void tst_QRect::comparison_data()
+{
+    QTest::addColumn<QRectF>("lhsF");
+    QTest::addColumn<QRectF>("rhsF");
+    QTest::addColumn<bool>("result");
+    QTest::addColumn<bool>("floatResult");
+    QTest::addColumn<bool>("mixedResult");
+
+    QTest::newRow("Invalid_vs_Invalid") << getQRectCase(InvalidQRect).toRectF()
+                                        << getQRectCase(InvalidQRect).toRectF()
+                                        << true << true << true;
+
+    QTest::newRow("Null_vs_Null") << getQRectCase(NullQRect).toRectF()
+                                  << getQRectCase(NullQRect).toRectF()
+                                  << true << true << true;
+
+    QTest::newRow("Empty_vs_Empty") << getQRectCase(EmptyQRect).toRectF()
+                                    << getQRectCase(EmptyQRect).toRectF()
+                                    << true << true << true;
+
+    QTest::newRow("NegativeSize_vs_NegativeSize") << getQRectCase(NegativeSizeQRect).toRectF()
+                                                  << getQRectCase(NegativeSizeQRect).toRectF()
+                                                  << true << true << true;
+
+    QTest::newRow("Invalid_vs_Null") << getQRectCase(InvalidQRect).toRectF()
+                                     << getQRectCase(NullQRect).toRectF()
+                                     << false << false << false;
+
+    QTest::newRow("NearlySimilar") << QRectF(QPointF(1.1, 9.9), QPointF(9.9, 1.1))
+                                   << QRectF(QPointF(1., 10.), QPointF(10., 1.))
+                                   << true << false << true;
+
+    QTest::newRow("WithQREAL_MIN") << QRectF(QPointF(0., -10.), QPointF(-1., 0.))
+                                   << QRectF(QPointF(-qreal_min, -10.), QPointF(-1., qreal_min))
+                                   << true << true << true;
+}
+
+void tst_QRect::comparison()
+{
+    QFETCH(const QRectF, lhsF);
+    QFETCH(const QRectF, rhsF);
+    QFETCH(const bool, result);
+    QFETCH(const bool, floatResult);
+    QFETCH(const bool, mixedResult);
+
+    const QRect lhs = lhsF.toRect();
+    const QRect rhs = rhsF.toRect();
+
+    QT_TEST_EQUALITY_OPS(lhs, rhs, result);
+    QT_TEST_EQUALITY_OPS(lhsF, rhsF, floatResult);
+    QT_TEST_EQUALITY_OPS(lhs, rhsF, mixedResult);
 }
 
 void tst_QRect::isNull_data()

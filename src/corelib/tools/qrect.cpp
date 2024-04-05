@@ -15,6 +15,10 @@ QT_BEGIN_NAMESPACE
     \ingroup painting
     \reentrant
 
+    \compares equality
+    \compareswith equality QRectF
+    \endcompareswith
+
     \brief The QRect class defines a rectangle in the plane using
     integer precision.
 
@@ -1105,18 +1109,18 @@ bool QRect::intersects(const QRect &r) const noexcept
 }
 
 /*!
-    \fn bool QRect::operator==(const QRect &r1, const QRect &r2)
+    \fn bool QRect::operator==(const QRect &lhs, const QRect &rhs)
 
-    Returns \c true if the rectangles \a r1 and \a r2 are equal,
+    Returns \c true if the rectangles \a lhs and \a rhs are equal,
     otherwise returns \c false.
 */
 
 
 /*!
-    \fn bool QRect::operator!=(const QRect &r1, const QRect &r2)
+    \fn bool QRect::operator!=(const QRect &lhs, const QRect &rhs)
 
-    Returns \c true if the rectangles \a r1 and \a r2 are different, otherwise
-    returns \c false.
+    Returns \c true if the rectangles \a lhs and \a rhs are different,
+    otherwise returns \c false.
 */
 
 /*!
@@ -1278,6 +1282,10 @@ QDebug operator<<(QDebug dbg, const QRect &r)
     \inmodule QtCore
     \ingroup painting
     \reentrant
+
+    \compares equality
+    \compareswith equality QRect
+    \endcompareswith
 
     \brief The QRectF class defines a finite rectangle in the plane using
     floating point precision.
@@ -2346,10 +2354,10 @@ QRect QRectF::toAlignedRect() const noexcept
 */
 
 /*!
-    \fn bool QRectF::operator==(const QRectF &r1, const QRectF &r2)
+    \fn bool QRectF::operator==(const QRectF &lhs, const QRectF &rhs)
 
-    Returns \c true if the rectangles \a r1 and \a r2 are \b approximately equal,
-    otherwise returns \c false.
+    Returns \c true if the rectangles \a lhs and \a rhs are \b approximately
+    equal, otherwise returns \c false.
 
     \warning This function does not check for strict equality; instead,
     it uses a fuzzy comparison to compare the rectangles' coordinates.
@@ -2359,9 +2367,9 @@ QRect QRectF::toAlignedRect() const noexcept
 
 
 /*!
-    \fn bool QRectF::operator!=(const QRectF &r1, const QRectF &r2)
+    \fn bool QRectF::operator!=(const QRectF &lhs, const QRectF &rhs)
 
-    Returns \c true if the rectangles \a r1 and \a r2 are sufficiently
+    Returns \c true if the rectangles \a lhs and \a rhs are sufficiently
     different, otherwise returns \c false.
 
     \warning This function does not check for strict inequality; instead,
