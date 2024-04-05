@@ -1005,6 +1005,8 @@ bool QJsonValue::operator!=(const QJsonValue &other) const
     return !comparesEqual(*this, other);
 }
 
+#include "qline.h" // inlined API
+
 #include "qmimetype.h"
 
 bool QMimeType::operator==(const QMimeType &other) const

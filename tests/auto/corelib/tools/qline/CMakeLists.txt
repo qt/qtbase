@@ -14,6 +14,8 @@ endif()
 qt_internal_add_test(tst_qline
     SOURCES
         tst_qline.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )
 
 ## Scopes:
