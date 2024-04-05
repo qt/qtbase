@@ -41,15 +41,8 @@
 
     \snippet code/src_corelib_global_qglobal.cpp 39
 
-    Qt will try to detect the class of a type using
-    \l {https://en.cppreference.com/w/cpp/types/is_trivial} {std::is_trivial_v<T>}
-    to identify primitive
-    types and it will require both
-    \l {https://en.cppreference.com/w/cpp/types/is_trivially_copyable} {std::is_trivially_copyable_v<T>}
-    and
-    \l {https://en.cppreference.com/w/cpp/types/is_destructible} {std::is_trivially_destructible_v<T>}
-    to identify relocatable types.
-    Use this macro to tune the behavior.
+    Qt will try to detect the class of a type using standard C++ type traits;
+    use this macro to tune the behavior.
     For instance many types would be candidates for Q_RELOCATABLE_TYPE despite
     not being trivially-copyable.
 */
