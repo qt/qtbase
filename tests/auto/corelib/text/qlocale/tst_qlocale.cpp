@@ -3966,6 +3966,7 @@ void tst_QLocale::bcp47Name()
 #  ifdef QT_BUILD_INTERNAL
 class MySystemLocale : public QSystemLocale
 {
+    Q_DISABLE_COPY_MOVE(MySystemLocale)
 public:
     MySystemLocale(const QString &locale)
     : m_name(locale), m_id(QLocaleId::fromName(locale)), m_locale(locale)
