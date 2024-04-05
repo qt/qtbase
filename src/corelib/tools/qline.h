@@ -305,7 +305,7 @@ constexpr inline qreal QLineF::y2() const
 
 constexpr inline bool QLineF::isNull() const
 {
-    return qFuzzyCompare(pt1.x(), pt2.x()) && qFuzzyCompare(pt1.y(), pt2.y());
+    return qFuzzyCompare(pt1, pt2);
 }
 
 constexpr inline QPointF QLineF::p1() const

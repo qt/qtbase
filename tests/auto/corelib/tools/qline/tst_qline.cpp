@@ -16,6 +16,9 @@ private slots:
     void testComparison_data();
     void testComparison();
 
+    void testIsNull_data();
+    void testIsNull();
+
     void testIntersection();
     void testIntersection_data();
 
@@ -46,6 +49,7 @@ private slots:
 };
 
 const qreal epsilon = sizeof(qreal) == sizeof(double) ? 1e-8 : 1e-4;
+constexpr static qreal qreal_min = std::numeric_limits<qreal>::min();
 
 void tst_QLine::testComparisonCompiles()
 {
@@ -81,8 +85,6 @@ void tst_QLine::testComparison_data()
                 << result << floatResult << mixedResult;
     };
 
-    constexpr static qreal qreal_min = std::numeric_limits<qreal>::min();
-
     row(-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, true, true, true);
     row(-1.1, -0.9, 1.1, 0.9, -1.0, -1.0, 1.0, 1.0, true, false, false);
     row(-1.0, -1.0, 1.0, 1.0, -0.9, -1.1, 0.9, 1.1,  true, false, true);
@@ -112,6 +114,30 @@ void tst_QLine::testComparison()
     QT_TEST_EQUALITY_OPS(l1, l2, result);
     QT_TEST_EQUALITY_OPS(l1f, l2f, floatResult);
     QT_TEST_EQUALITY_OPS(l1f, l2, mixedResult);
+}
+
+void tst_QLine::testIsNull_data()
+{
+    QTest::addColumn<QLineF>("lineF");
+    QTest::addColumn<bool>("result");
+    QTest::addColumn<bool>("floatResult");
+
+    QTest::newRow("non-null") << QLineF(1.0, 1.0, 2.0, 2.0) << false << false;
+    QTest::newRow("null") << QLineF(1.0, 1.0, 1.0, 1.0) << true << true;
+    QTest::newRow("null_int_non-null_float") << QLineF(1.0, 1.0, 1.1, 1.1) << true << false;
+    QTest::newRow("with_qreal_min") << QLineF(-qreal_min, qreal_min, 0.0, 0.0) << true << true;
+}
+
+void tst_QLine::testIsNull()
+{
+    QFETCH(QLineF, lineF);
+    QFETCH(bool, result);
+    QFETCH(bool, floatResult);
+
+    const QLine line = lineF.toLine();
+
+    QCOMPARE_EQ(line.isNull(), result);
+    QCOMPARE_EQ(lineF.isNull(), floatResult);
 }
 
 void tst_QLine::testSet()
