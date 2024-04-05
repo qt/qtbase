@@ -35,6 +35,7 @@ struct QLocaleData;
 // Subclassed by Android platform plugin:
 class Q_CORE_EXPORT QSystemLocale
 {
+    Q_DISABLE_COPY_MOVE(QSystemLocale)
     QSystemLocale *next = nullptr; // Maintains a stack.
 public:
     QSystemLocale();
