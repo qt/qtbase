@@ -63,7 +63,7 @@ private:
     BoundaryType t = Grapheme;
     QString s;
     QStringView sv;
-    qsizetype pos;
+    qsizetype pos = 0;
     uint freeBuffer : 1;
     uint unused : 31;
     QCharAttributes *attributes = nullptr;
