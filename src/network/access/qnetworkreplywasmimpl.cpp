@@ -62,7 +62,7 @@ QNetworkReplyWasmImplPrivate::QNetworkReplyWasmImplPrivate()
     , downloadBufferCurrentSize(0)
     , totalDownloadSize(0)
     , percentFinished(0)
-    , m_fetch(0)
+    , m_fetch(nullptr)
 {
 }
 
@@ -79,6 +79,9 @@ QNetworkReplyWasmImpl::QNetworkReplyWasmImpl(QObject *parent)
 
 QNetworkReplyWasmImpl::~QNetworkReplyWasmImpl()
 {
+    if (isRunning())
+        abort();
+    close();
 }
 
 QByteArray QNetworkReplyWasmImpl::methodName() const
@@ -131,7 +134,8 @@ void QNetworkReplyWasmImpl::abort()
 void QNetworkReplyWasmImplPrivate::setCanceled()
 {
     Q_Q(QNetworkReplyWasmImpl);
-    m_fetch->userData = nullptr;
+    if (m_fetch)
+        m_fetch->userData = nullptr;
 
     emitReplyError(QNetworkReply::OperationCanceledError, QStringLiteral("Operation canceled"));
     q->setFinished(true);
@@ -489,6 +493,7 @@ void QNetworkReplyWasmImplPrivate::downloadSucceeded(emscripten_fetch_t *fetch)
 void QNetworkReplyWasmImplPrivate::setReplyFinished()
 {
     Q_Q(QNetworkReplyWasmImpl);
+    state = QNetworkReplyPrivate::Finished;
     q->setFinished(true);
     emit q->readChannelFinished();
     emit q->finished();
