@@ -787,6 +787,25 @@ qreal QLineF::angleTo(const QLineF &l) const
         return delta_normalized;
 }
 
+/*!
+    \fn bool QLineF::qFuzzyCompare(const QLineF &lhs, const QLineF &rhs)
+    \since 6.8
+
+    Returns \c true if line \a lhs is approximately equal to line \a rhs;
+    otherwise returns \c false.
+
+    The lines are considered approximately equal if their start and end
+    points are approximately equal.
+*/
+
+/*!
+    \fn bool QLineF::qFuzzyIsNull(const QLineF &line)
+    \since 6.8
+
+    Returns \c true if the start point of line \a line is approximately
+    equal to its end point; otherwise returns \c false.
+*/
+
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QLineF &p)
 {

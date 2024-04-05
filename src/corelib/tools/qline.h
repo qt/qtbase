@@ -261,6 +261,12 @@ private:
     { return comparesEqual(lhs, rhs.toLineF()); }
     Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QLineF, QLine)
 
+    friend constexpr bool qFuzzyCompare(const QLineF &lhs, const QLineF &rhs) noexcept
+    { return qFuzzyCompare(lhs.pt1, rhs.pt1) && qFuzzyCompare(lhs.pt2, rhs.pt2); }
+
+    friend constexpr bool qFuzzyIsNull(const QLineF &line) noexcept
+    { return qFuzzyCompare(line.pt1, line.pt2); }
+
     QPointF pt1, pt2;
 };
 Q_DECLARE_TYPEINFO(QLineF, Q_PRIMITIVE_TYPE);

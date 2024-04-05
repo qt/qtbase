@@ -16,6 +16,9 @@ private slots:
     void testComparison_data();
     void testComparison();
 
+    void testFuzzyCompare_data();
+    void testFuzzyCompare();
+
     void testIsNull_data();
     void testIsNull();
 
@@ -116,6 +119,29 @@ void tst_QLine::testComparison()
     QT_TEST_EQUALITY_OPS(l1f, l2, mixedResult);
 }
 
+void tst_QLine::testFuzzyCompare_data()
+{
+    testComparison_data();
+}
+
+void tst_QLine::testFuzzyCompare()
+{
+    QFETCH(double, xa1);
+    QFETCH(double, ya1);
+    QFETCH(double, xa2);
+    QFETCH(double, ya2);
+    QFETCH(double, xb1);
+    QFETCH(double, yb1);
+    QFETCH(double, xb2);
+    QFETCH(double, yb2);
+    QFETCH(bool, floatResult);
+
+    const QLineF l1f(xa1, ya1, xa2, ya2);
+    const QLineF l2f(xb1, yb1, xb2, yb2);
+
+    QCOMPARE_EQ(qFuzzyCompare(l1f, l2f), floatResult);
+}
+
 void tst_QLine::testIsNull_data()
 {
     QTest::addColumn<QLineF>("lineF");
@@ -138,6 +164,7 @@ void tst_QLine::testIsNull()
 
     QCOMPARE_EQ(line.isNull(), result);
     QCOMPARE_EQ(lineF.isNull(), floatResult);
+    QCOMPARE_EQ(qFuzzyIsNull(lineF), floatResult);
 }
 
 void tst_QLine::testSet()
