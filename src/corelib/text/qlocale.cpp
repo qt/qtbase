@@ -252,7 +252,7 @@ struct LikelyPair
     QLocaleId value = QLocaleId { 0, 0, 0 };
 };
 
-bool operator<(const LikelyPair &lhs, const LikelyPair &rhs)
+bool operator<(LikelyPair lhs, LikelyPair rhs)
 {
     // Must match the comparison LocaleDataWriter.likelySubtags() uses when
     // sorting, see qtbase/util/locale_database.qlocalexml2cpp.py
@@ -465,7 +465,7 @@ QByteArray QLocalePrivate::bcp47Name(char separator) const
     return m_data->id().withLikelySubtagsRemoved().name(separator);
 }
 
-static qsizetype findLocaleIndexById(const QLocaleId &localeId)
+static qsizetype findLocaleIndexById(QLocaleId localeId)
 {
     qsizetype idx = locale_index[localeId.language_id];
     // If there are no locales for specified language (so we we've got the
