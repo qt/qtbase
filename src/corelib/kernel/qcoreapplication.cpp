@@ -241,7 +241,11 @@ void QCoreApplicationPrivate::processCommandLineArguments()
 
 // Support for introspection
 
-extern "C" void Q_DECL_EXPORT_OVERRIDABLE qt_startup_hook()
+extern "C" void
+#ifdef QT_SHARED
+Q_DECL_EXPORT_OVERRIDABLE
+#endif
+qt_startup_hook()
 {
 }
 
