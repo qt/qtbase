@@ -29,6 +29,15 @@ bool isQtApplication()
     return isQt;
 }
 
+bool isRunningOnVisionOS()
+{
+    static bool result = []{
+        // This class is documented to only be available on visionOS
+        return NSClassFromString(@"UIWindowSceneGeometryPreferencesVision");
+    }();
+    return result;
+}
+
 #ifndef Q_OS_TVOS
 Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation)
 {

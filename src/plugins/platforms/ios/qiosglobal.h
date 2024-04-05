@@ -26,6 +26,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcQpaWindow);
 class QPlatformScreen;
 
 bool isQtApplication();
+bool isRunningOnVisionOS();
 
 #ifndef Q_OS_TVOS
 Qt::ScreenOrientation toQtScreenOrientation(UIDeviceOrientation uiDeviceOrientation);
