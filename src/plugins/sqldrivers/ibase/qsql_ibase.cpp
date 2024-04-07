@@ -8,6 +8,7 @@
 #include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qvariant.h>
@@ -24,6 +25,8 @@
 #include <mutex>
 
 QT_BEGIN_NAMESPACE
+
+static Q_LOGGING_CATEGORY(lcIbase, "qt.sql.ibase")
 
 using namespace Qt::StringLiterals;
 
@@ -171,7 +174,7 @@ static QMetaType::Type qIBaseTypeName(int iType, bool hasScale)
     case blr_boolean_dtype:
         return QMetaType::Bool;
     }
-    qWarning("qIBaseTypeName: unknown datatype: %d", iType);
+    qCWarning(lcIbase, "qIBaseTypeName: unknown datatype: %d", iType);
     return QMetaType::UnknownType;
 }
 
@@ -950,13 +953,13 @@ bool QIBaseResult::prepare(const QString& query)
 
     createDA(d->sqlda);
     if (d->sqlda == (XSQLDA*)0) {
-        qWarning()<<"QIOBaseResult: createDA(): failed to allocate memory";
+        qCWarning(lcIbase) << "QIOBaseResult: createDA(): failed to allocate memory";
         return false;
     }
 
     createDA(d->inda);
     if (d->inda == (XSQLDA*)0){
-        qWarning()<<"QIOBaseResult: createDA():  failed to allocate memory";
+        qCWarning(lcIbase) << "QIOBaseResult: createDA():  failed to allocate memory";
         return false;
     }
 
@@ -980,7 +983,7 @@ bool QIBaseResult::prepare(const QString& query)
     if (d->inda->sqld > d->inda->sqln) {
         enlargeDA(d->inda, d->inda->sqld);
         if (d->inda == (XSQLDA*)0) {
-            qWarning()<<"QIOBaseResult: enlargeDA(): failed to allocate memory";
+            qCWarning(lcIbase) << "QIOBaseResult: enlargeDA(): failed to allocate memory";
             return false;
         }
 
@@ -994,7 +997,7 @@ bool QIBaseResult::prepare(const QString& query)
         // need more field descriptors
         enlargeDA(d->sqlda, d->sqlda->sqld);
         if (d->sqlda == (XSQLDA*)0) {
-            qWarning()<<"QIOBaseResult: enlargeDA(): failed to allocate memory";
+            qCWarning(lcIbase) << "QIOBaseResult: enlargeDA(): failed to allocate memory";
             return false;
         }
 
@@ -1030,9 +1033,9 @@ bool QIBaseResult::exec()
     if (d->inda) {
         const QList<QVariant> &values = boundValues();
         if (values.count() > d->inda->sqld) {
-            qWarning() << "QIBaseResult::exec: Parameter mismatch, expected"_L1 <<
-                          d->inda->sqld << ", got"_L1 << values.count() <<
-                          "parameters"_L1;
+            qCWarning(lcIbase) << "QIBaseResult::exec: Parameter mismatch, expected"_L1
+                               << d->inda->sqld << ", got"_L1 << values.count()
+                               << "parameters"_L1;
             return false;
         }
         for (qsizetype para = 0; para < values.count(); ++para) {
@@ -1053,9 +1056,9 @@ bool QIBaseResult::exec()
                 *(d->inda->sqlvar[para].sqlind) = 0;
             } else {
                 if (QSqlResultPrivate::isVariantNull(val)) {
-                    qWarning() << "QIBaseResult::exec: Null value replaced by default (zero)"_L1
-                               << "value for type of column"_L1 << d->inda->sqlvar[para].ownname
-                               << ", which is not nullable."_L1;
+                    qCWarning(lcIbase) << "QIBaseResult::exec: Null value replaced by default (zero)"_L1
+                                       << "value for type of column"_L1 << d->inda->sqlvar[para].ownname
+                                       << ", which is not nullable."_L1;
                 }
             }
             switch(d->inda->sqlvar[para].sqltype & ~1) {
@@ -1120,8 +1123,8 @@ bool QIBaseResult::exec()
                 *((bool*)d->inda->sqlvar[para].sqldata) = val.toBool();
                 break;
             default:
-                    qWarning("QIBaseResult::exec: Unknown datatype %d",
-                             d->inda->sqlvar[para].sqltype & ~1);
+                    qCWarning(lcIbase, "QIBaseResult::exec: Unknown datatype %d",
+                              d->inda->sqlvar[para].sqltype & ~1);
                     break;
             }
         }
@@ -1392,7 +1395,7 @@ int QIBaseResult::numRowsAffected()
         bIsProcedure = true; // will sum all changes
         break;
     default:
-        qWarning() << "numRowsAffected: Unknown statement type (" << d->queryType << ")";
+        qCWarning(lcIbase) << "numRowsAffected: Unknown statement type (" << d->queryType << ")";
         return -1;
     }
 
@@ -1834,13 +1837,13 @@ bool QIBaseDriver::subscribeToNotification(const QString &name)
 {
     Q_D(QIBaseDriver);
     if (!isOpen()) {
-        qWarning("QIBaseDriver::subscribeFromNotificationImplementation: database not open.");
+        qCWarning(lcIbase, "QIBaseDriver::subscribeFromNotificationImplementation: database not open.");
         return false;
     }
 
     if (d->eventBuffers.contains(name)) {
-        qWarning("QIBaseDriver::subscribeToNotificationImplementation: already subscribing to '%ls'.",
-            qUtf16Printable(name));
+        qCWarning(lcIbase, "QIBaseDriver::subscribeToNotificationImplementation: already subscribing to '%ls'.",
+                  qUtf16Printable(name));
         return false;
     }
 
@@ -1881,13 +1884,13 @@ bool QIBaseDriver::unsubscribeFromNotification(const QString &name)
 {
     Q_D(QIBaseDriver);
     if (!isOpen()) {
-        qWarning("QIBaseDriver::unsubscribeFromNotificationImplementation: database not open.");
+        qCWarning(lcIbase, "QIBaseDriver::unsubscribeFromNotificationImplementation: database not open.");
         return false;
     }
 
     if (!d->eventBuffers.contains(name)) {
-        qWarning("QIBaseDriver::QIBaseSubscriptionState not subscribed to '%ls'.",
-            qUtf16Printable(name));
+        qCWarning(lcIbase, "QIBaseDriver::QIBaseSubscriptionState not subscribed to '%ls'.",
+                  qUtf16Printable(name));
         return false;
     }
 
