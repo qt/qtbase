@@ -5,6 +5,7 @@
 #include <qvariant.h>
 #include <qmetatype.h>
 #include <qdatetime.h>
+#include <qloggingcategory.h>
 #include <qsqlerror.h>
 #include <qsqlfield.h>
 #include <qsqlindex.h>
@@ -29,6 +30,8 @@ Q_DECLARE_OPAQUE_POINTER(MimerStatement)
 Q_DECLARE_METATYPE(MimerStatement)
 
 QT_BEGIN_NAMESPACE
+
+static Q_LOGGING_CATEGORY(lcMimer, "qt.sql.mimer")
 
 enum class MimerColumnTypes {
     Binary,
@@ -271,7 +274,7 @@ static MimerColumnTypes mimerMapColumnTypes(int32_t t)
     case MIMER_UUID:
         return MimerColumnTypes::Uuid;
     default:
-        qWarning() << "QMimerSQLDriver::mimerMapColumnTypes: Unknown data type: " << t;
+        qCWarning(lcMimer) << "QMimerSQLDriver::mimerMapColumnTypes: Unknown data type:" << t;
     }
     return MimerColumnTypes::Unknown;
 }
@@ -344,7 +347,7 @@ static QMetaType::Type qDecodeMSQLType(int32_t t)
     case MIMER_UUID:
         return QMetaType::QUuid;
     default:
-        qWarning() << "QMimerSQLDriver::qDecodeMSQLType: Unknown data type: " << t;
+        qCWarning(lcMimer) << "QMimerSQLDriver::qDecodeMSQLType: Unknown data type:" << t;
         return QMetaType::UnknownType;
     }
 }
@@ -423,7 +426,7 @@ static int32_t qLookupMimDataType(QStringView s)
         return MIMER_UUID;
     if (s == u"USER-DEFINED")
         return MIMER_DEFAULT_DATATYPE;
-    qWarning() << "QMimerSQLDriver::qLookupMimDataType: Unhandled data type: " << s;
+    qCWarning(lcMimer) << "QMimerSQLDriver::qLookupMimDataType: Unhandled data type:" << s;
     return MIMER_DEFAULT_DATATYPE;
 }
 
