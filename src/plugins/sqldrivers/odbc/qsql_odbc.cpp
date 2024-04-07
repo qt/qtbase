@@ -44,7 +44,7 @@ static constexpr SQLSMALLINT qParamType[4] = { SQL_PARAM_INPUT, SQL_PARAM_INPUT,
 class SqlStmtHandle
 {
 public:
-    SqlStmtHandle(SQLHANDLE hDbc = SQL_NULL_HSTMT)
+    SqlStmtHandle(SQLHANDLE hDbc)
     {
         SQLAllocHandle(SQL_HANDLE_STMT, hDbc, &stmtHandle);
     }
