@@ -92,8 +92,8 @@ using namespace Qt::StringLiterals;
 
 /*
     Dijkstra's bisection algorithm to find the square root of an integer.
-    Deliberately not exported as part of the Qt API, but used in both
-    qsimplerichtext.cpp and qgfxraster_qws.cpp
+    Deliberately not exported as part of the Qt API, but used in
+    qtextdocument.cpp.
 */
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION unsigned int qt_int_sqrt(unsigned int n)
 {
