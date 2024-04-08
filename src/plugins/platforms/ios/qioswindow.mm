@@ -55,7 +55,8 @@ QIOSWindow::QIOSWindow(QWindow *window, WId nativeHandle)
 
     connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QIOSWindow::applicationStateChanged);
 
-    setParent(QPlatformWindow::parent());
+    if (QPlatformWindow::parent())
+        setParent(QPlatformWindow::parent());
 
     if (!isForeignWindow()) {
         // Resolve default window geometry in case it was not set before creating the

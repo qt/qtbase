@@ -522,6 +522,10 @@ QXcbForeignWindow::QXcbForeignWindow(QWindow *window, WId nativeHandle)
         QRect nativeGeometry(geometry->x, geometry->y, geometry->width, geometry->height);
         QPlatformWindow::setGeometry(nativeGeometry);
     }
+
+    // And reparent, if we have a parent already
+    if (QPlatformWindow::parent())
+        setParent(QPlatformWindow::parent());
 }
 
 QXcbForeignWindow::~QXcbForeignWindow()

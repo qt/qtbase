@@ -1357,6 +1357,8 @@ QWindowsForeignWindow::QWindowsForeignWindow(QWindow *window, HWND hwnd)
     , m_hwnd(hwnd)
     , m_topLevelStyle(0)
 {
+    if (QPlatformWindow::parent())
+        setParent(QPlatformWindow::parent());
 }
 
 void QWindowsForeignWindow::setParent(const QPlatformWindow *newParentWindow)
