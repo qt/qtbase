@@ -350,7 +350,7 @@ QFontEngine *QWindowsDirectWriteFontDatabase::fontEngine(const QFontDef &fontDef
 {
     const FontHandle *fontHandle = static_cast<const FontHandle *>(handle);
     IDWriteFontFace *face = fontHandle->fontFace;
-    if (face == nullptr || fontDef.styleStrategy & QFont::NoAntialias) {
+    if (face == nullptr) {
         qCDebug(lcQpaFonts) << "Falling back to GDI";
         return QWindowsFontDatabase::fontEngine(fontDef, handle);
     }
