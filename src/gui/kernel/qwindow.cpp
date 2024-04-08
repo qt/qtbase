@@ -521,7 +521,9 @@ void QWindowPrivate::setTopLevelScreen(QScreen *newScreen, bool recreate)
     }
 }
 
-void QWindowPrivate::create(bool recursive, WId nativeHandle)
+static constexpr auto kForeignWindowId = "_q_foreignWinId";
+
+void QWindowPrivate::create(bool recursive)
 {
     Q_Q(QWindow);
     if (platformWindow)
@@ -548,6 +550,8 @@ void QWindowPrivate::create(bool recursive, WId nativeHandle)
         if (QScreen *screen = screenForGeometry(geometry))
             setTopLevelScreen(screen, false);
     }
+
+    const WId nativeHandle = q->property(kForeignWindowId).value<WId>();
 
     QPlatformIntegration *platformIntegration = QGuiApplicationPrivate::platformIntegration();
     platformWindow = nativeHandle ? platformIntegration->createForeignWindow(q, nativeHandle)
@@ -2059,6 +2063,16 @@ void QWindowPrivate::destroy()
         QObject *object = childrenWindows.at(i);
         if (object->isWindowType()) {
             QWindow *w = static_cast<QWindow*>(object);
+            auto *childPlatformWindow = w->handle();
+            if (!childPlatformWindow)
+                continue;
+
+            // Decouple the foreign window from this window,
+            // so that destroying our native handle doesn't
+            // bring down the foreign window as well.
+            if (childPlatformWindow->isForeignWindow())
+                childPlatformWindow->setParent(nullptr);
+
             qt_window_private(w)->destroy();
         }
     }
@@ -2986,7 +3000,11 @@ QWindow *QWindow::fromWinId(WId id)
     }
 
     QWindow *window = new QWindow;
-    qt_window_private(window)->create(false, id);
+
+    // Persist the winId in a private property so that we
+    // can recreate the window after being destroyed.
+    window->setProperty(kForeignWindowId, id);
+    window->create();
 
     if (!window->handle()) {
         delete window;
