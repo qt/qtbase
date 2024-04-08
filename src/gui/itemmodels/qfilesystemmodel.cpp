@@ -2079,7 +2079,7 @@ QFileSystemModelPrivate::QFileSystemModelPrivate()
 QFileSystemModelPrivate::~QFileSystemModelPrivate()
 {
 #if QT_CONFIG(filesystemwatcher)
-    fileInfoGatherer->requestInterruption();
+    fileInfoGatherer->requestAbort();
     if (!fileInfoGatherer->wait(1000)) {
         // If the thread hangs, perhaps because the network was disconnected
         // while the gatherer was stat'ing a remote file, then don't block
