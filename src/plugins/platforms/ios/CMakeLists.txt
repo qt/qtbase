@@ -27,6 +27,7 @@ qt_internal_add_plugin(QIOSIntegrationPlugin
         qioswindow.h qioswindow.mm
         quiaccessibilityelement.h quiaccessibilityelement.mm
         quiview.h quiview.mm
+        quiwindow.mm quiwindow.h
         uistrings_p.h uistrings.cpp
     NO_PCH_SOURCES
         qioscontext.mm # undef QT_NO_FOREACH

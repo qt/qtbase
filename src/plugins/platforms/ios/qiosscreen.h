@@ -10,10 +10,6 @@
 
 @class QIOSOrientationListener;
 
-@interface QUIWindow : UIWindow
-@property (nonatomic, readonly) BOOL sendingEvent;
-@end
-
 QT_BEGIN_NAMESPACE
 
 class QIOSScreen : public QObject, public QPlatformScreen

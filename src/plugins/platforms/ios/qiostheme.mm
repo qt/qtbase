@@ -28,6 +28,7 @@
 #include "qiosfontdialog.h"
 #include "qiosmessagedialog.h"
 #include "qiosscreen.h"
+#include "quiwindow.h"
 #endif
 
 QT_BEGIN_NAMESPACE
