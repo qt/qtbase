@@ -76,7 +76,8 @@ static_assert(sizeof(SignedIOType) == sizeof(UnsignedIOType),
 */
 
 //**************** QFSFileEnginePrivate
-QFSFileEnginePrivate::QFSFileEnginePrivate() : QAbstractFileEnginePrivate()
+QFSFileEnginePrivate::QFSFileEnginePrivate(QAbstractFileEngine *q)
+    : QAbstractFileEnginePrivate(q)
 {
     init();
 }
@@ -108,7 +109,7 @@ void QFSFileEnginePrivate::init()
     Constructs a QFSFileEngine for the file name \a file.
 */
 QFSFileEngine::QFSFileEngine(const QString &file)
-    : QAbstractFileEngine(*new QFSFileEnginePrivate)
+    : QAbstractFileEngine(*new QFSFileEnginePrivate(this))
 {
     Q_D(QFSFileEngine);
     d->fileEntry = QFileSystemEntry(file);
@@ -117,7 +118,7 @@ QFSFileEngine::QFSFileEngine(const QString &file)
 /*!
     Constructs a QFSFileEngine.
 */
-QFSFileEngine::QFSFileEngine() : QAbstractFileEngine(*new QFSFileEnginePrivate)
+QFSFileEngine::QFSFileEngine() : QAbstractFileEngine(*new QFSFileEnginePrivate(this))
 {
 }
 

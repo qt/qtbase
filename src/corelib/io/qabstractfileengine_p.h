@@ -242,8 +242,8 @@ private:
 class QAbstractFileEnginePrivate
 {
 public:
-    inline QAbstractFileEnginePrivate()
-        : fileError(QFile::UnspecifiedError)
+    inline QAbstractFileEnginePrivate(QAbstractFileEngine *q)
+        : fileError(QFile::UnspecifiedError), q_ptr(q)
     {
     }
     inline virtual ~QAbstractFileEnginePrivate() { }
@@ -251,7 +251,7 @@ public:
     QFile::FileError fileError;
     QString errorString;
 
-    QAbstractFileEngine *q_ptr;
+    QAbstractFileEngine *const q_ptr;
     Q_DECLARE_PUBLIC(QAbstractFileEngine)
 };
 

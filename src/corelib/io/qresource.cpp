@@ -1397,6 +1397,9 @@ private:
     // minimum size for which we'll try to re-open ourselves in mapUncompressed()
     static constexpr qsizetype RemapCompressedThreshold = 16384;
 protected:
+    QResourceFileEnginePrivate(QAbstractFileEngine *q) :
+        QAbstractFileEnginePrivate(q) {}
+
     ~QResourceFileEnginePrivate()
     {
         if (mustUnmap)
@@ -1410,7 +1413,7 @@ bool QResourceFileEngine::caseSensitive() const
 }
 
 QResourceFileEngine::QResourceFileEngine(const QString &file) :
-    QAbstractFileEngine(*new QResourceFileEnginePrivate)
+    QAbstractFileEngine(*new QResourceFileEnginePrivate(this))
 {
     Q_D(QResourceFileEngine);
     d->resource.setFileName(file);

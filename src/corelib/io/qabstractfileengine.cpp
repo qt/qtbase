@@ -318,9 +318,8 @@ std::unique_ptr<QAbstractFileEngine> QAbstractFileEngine::create(const QString &
 
    \sa setFileName()
  */
-QAbstractFileEngine::QAbstractFileEngine() : d_ptr(new QAbstractFileEnginePrivate)
+QAbstractFileEngine::QAbstractFileEngine() : d_ptr(new QAbstractFileEnginePrivate(this))
 {
-    d_ptr->q_ptr = this;
 }
 
 /*!
@@ -330,7 +329,7 @@ QAbstractFileEngine::QAbstractFileEngine() : d_ptr(new QAbstractFileEnginePrivat
  */
 QAbstractFileEngine::QAbstractFileEngine(QAbstractFileEnginePrivate &dd) : d_ptr(&dd)
 {
-    d_ptr->q_ptr = this;
+    Q_ASSERT(d_ptr->q_ptr == this);
 }
 
 /*!
