@@ -779,10 +779,7 @@ bool QAbstractFileEngine::atEnd() const
 
 uchar *QAbstractFileEngine::map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags)
 {
-    MapExtensionOption option;
-    option.offset = offset;
-    option.size = size;
-    option.flags = flags;
+    const MapExtensionOption option(offset, size, flags);
     MapExtensionReturn r;
     if (!extension(MapExtension, &option, &r))
         return nullptr;
@@ -803,8 +800,7 @@ uchar *QAbstractFileEngine::map(qint64 offset, qint64 size, QFile::MemoryMapFlag
  */
 bool QAbstractFileEngine::unmap(uchar *address)
 {
-    UnMapExtensionOption options;
-    options.address = address;
+    const UnMapExtensionOption options(address);
     return extension(UnMapExtension, &options);
 }
 

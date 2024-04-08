@@ -147,19 +147,26 @@ public:
     {};
 
     class MapExtensionOption : public ExtensionOption {
+        Q_DISABLE_COPY_MOVE(MapExtensionOption)
     public:
         qint64 offset;
         qint64 size;
         QFile::MemoryMapFlags flags;
+        constexpr MapExtensionOption(qint64 off, qint64 sz, QFile::MemoryMapFlags f)
+            : offset(off), size(sz), flags(f) {}
     };
     class MapExtensionReturn : public ExtensionReturn {
+        Q_DISABLE_COPY_MOVE(MapExtensionReturn)
     public:
-        uchar *address;
+        MapExtensionReturn() = default;
+        uchar *address = nullptr;
     };
 
     class UnMapExtensionOption : public ExtensionOption {
+        Q_DISABLE_COPY_MOVE(UnMapExtensionOption)
     public:
-        uchar *address;
+        uchar *address = nullptr;
+        constexpr UnMapExtensionOption(uchar *p) : address(p) {}
     };
 
     virtual bool extension(Extension extension, const ExtensionOption *option = nullptr, ExtensionReturn *output = nullptr);
