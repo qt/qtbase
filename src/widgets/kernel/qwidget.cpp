@@ -6107,6 +6107,13 @@ void QWidget::setWindowTitle(const QString &title)
     if (QWidget::windowTitle() == title && !title.isEmpty() && !title.isNull())
         return;
 
+#if QT_CONFIG(accessibility)
+    QString oldAccessibleName;
+    const QAccessibleInterface *accessible = QAccessible::queryAccessibleInterface(this);
+    if (accessible)
+        oldAccessibleName = accessible->text(QAccessible::Name);
+#endif
+
     Q_D(QWidget);
     d->topData()->caption = title;
     d->setWindowTitle_helper(title);
@@ -6115,6 +6122,13 @@ void QWidget::setWindowTitle(const QString &title)
     QCoreApplication::sendEvent(this, &e);
 
     emit windowTitleChanged(title);
+
+#if QT_CONFIG(accessibility)
+    if (accessible && accessible->text(QAccessible::Name) != oldAccessibleName) {
+        QAccessibleEvent event(this, QAccessible::NameChanged);
+        QAccessible::updateAccessibility(&event);
+    }
+#endif
 }
 
 
