@@ -807,10 +807,21 @@ endif()
                 get_target_property(configure_time_target_install_location ${target}
                     IMPORTED_LOCATION)
             else()
+                if(IS_ABSOLUTE "${arg_CONFIG_INSTALL_DIR}")
+                    file(RELATIVE_PATH reverse_relative_prefix_path
+                        "${arg_CONFIG_INSTALL_DIR}" "${CMAKE_INSTALL_PREFIX}")
+                else()
+                    file(RELATIVE_PATH reverse_relative_prefix_path
+                        "${CMAKE_INSTALL_PREFIX}/${arg_CONFIG_INSTALL_DIR}"
+                        "${CMAKE_INSTALL_PREFIX}")
+                endif()
                 get_target_property(configure_time_target_install_location ${target}
                     _qt_internal_configure_time_target_install_location)
-                set(configure_time_target_install_location
-                    "$\{PACKAGE_PREFIX_DIR}/${configure_time_target_install_location}")
+
+                string(JOIN "" configure_time_target_install_location
+                    "$\{CMAKE_CURRENT_LIST_DIR}/"
+                    "${reverse_relative_prefix_path}"
+                    "${configure_time_target_install_location}")
             endif()
             if(configure_time_target_install_location)
                 string(APPEND content "
