@@ -63,7 +63,6 @@ private:
     uint m_physicalDpi;
 #endif
     QSizeF m_physicalSize;
-    QIOSOrientationListener *m_orientationListener = nullptr;
     CADisplayLink *m_displayLink = nullptr;
 };
 

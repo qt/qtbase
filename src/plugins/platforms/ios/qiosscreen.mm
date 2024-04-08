@@ -107,50 +107,6 @@ static QIOSScreen* qtPlatformScreenFor(UIScreen *uiScreen)
 
 @end
 
-// -------------------------------------------------------------------------
-
-@interface QIOSOrientationListener : NSObject
-@end
-
-@implementation QIOSOrientationListener {
-    QIOSScreen *m_screen;
-}
-
-- (instancetype)initWithQIOSScreen:(QIOSScreen *)screen
-{
-    self = [super init];
-    if (self) {
-        m_screen = screen;
-#ifndef Q_OS_TVOS
-        [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
-        [[NSNotificationCenter defaultCenter]
-            addObserver:self
-            selector:@selector(orientationChanged:)
-            name:@"UIDeviceOrientationDidChangeNotification" object:nil];
-#endif
-    }
-    return self;
-}
-
-- (void)dealloc
-{
-#ifndef Q_OS_TVOS
-    [[UIDevice currentDevice] endGeneratingDeviceOrientationNotifications];
-    [[NSNotificationCenter defaultCenter]
-        removeObserver:self
-        name:@"UIDeviceOrientationDidChangeNotification" object:nil];
-#endif
-    [super dealloc];
-}
-
-- (void)orientationChanged:(NSNotification *)notification
-{
-    Q_UNUSED(notification);
-    m_screen->updateProperties();
-}
-
-@end
-
 #endif // !defined(Q_OS_VISIONOS)
 
 // -------------------------------------------------------------------------
@@ -235,8 +191,6 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
         }
     }
 
-    m_orientationListener = [[QIOSOrientationListener alloc] initWithQIOSScreen:this];
-
     m_displayLink = [m_uiScreen displayLinkWithBlock:^(CADisplayLink *) { deliverUpdateRequests(); }];
     m_displayLink.paused = YES; // Enabled when clients call QWindow::requestUpdate()
     [m_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
@@ -250,7 +204,6 @@ QIOSScreen::~QIOSScreen()
 {
     [m_displayLink invalidate];
 
-    [m_orientationListener release];
     [m_uiWindow release];
 }
 
@@ -423,34 +376,13 @@ Qt::ScreenOrientation QIOSScreen::nativeOrientation() const
 
 Qt::ScreenOrientation QIOSScreen::orientation() const
 {
-#if defined(Q_OS_TVOS) || defined(Q_OS_VISIONOS)
-    return Qt::PrimaryOrientation;
-#else
-    // Auxiliary screens are always the same orientation as their primary orientation
-    if (m_uiScreen != [UIScreen mainScreen])
-        return Qt::PrimaryOrientation;
-
-    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
-
-    // At startup, iOS will report an unknown orientation for the device, even
-    // if we've asked it to begin generating device orientation notifications.
-    // In this case we fall back to the status bar orientation, which reflects
-    // the orientation the application was started up in (which may not match
-    // the physical orientation of the device, but typically does unless the
-    // application has been locked to a subset of the available orientations).
-    if (deviceOrientation == UIDeviceOrientationUnknown && !qt_apple_isApplicationExtension())
-        deviceOrientation = UIDeviceOrientation(qt_apple_sharedApplication().statusBarOrientation);
-
-    // If the device reports face up or face down orientations, we can't map
-    // them to Qt orientations, so we pretend we're in the same orientation
-    // as before.
-    if (deviceOrientation == UIDeviceOrientationFaceUp || deviceOrientation == UIDeviceOrientationFaceDown) {
-        Q_ASSERT(screen());
-        return screen()->orientation();
-    }
-
-    return toQtScreenOrientation(deviceOrientation);
-#endif
+    // We don't report UIDevice.currentDevice.orientation here,
+    // as that would report the actual orientation of the device,
+    // even if the orientation of the UI was locked to a subset
+    // of the possible orientations via the app's Info.plist or
+    // via [UIViewController supportedInterfaceOrientations].
+    return m_geometry.width() >= m_geometry.height() ?
+        Qt::LandscapeOrientation : Qt::PortraitOrientation;
 }
 
 QPixmap QIOSScreen::grabWindow(WId window, int x, int y, int width, int height) const
