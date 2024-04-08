@@ -88,7 +88,10 @@ Q_GLOBAL_STATIC(QReadWriteLock, fileEngineHandlerMutex, QReadWriteLock::Recursiv
 Q_CONSTINIT static bool qt_abstractfileenginehandlerlist_shutDown = false;
 class QAbstractFileEngineHandlerList : public QList<QAbstractFileEngineHandler *>
 {
+    Q_DISABLE_COPY_MOVE(QAbstractFileEngineHandlerList)
 public:
+    QAbstractFileEngineHandlerList() = default;
+
     ~QAbstractFileEngineHandlerList()
     {
         QWriteLocker locker(fileEngineHandlerMutex());

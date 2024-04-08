@@ -12,7 +12,10 @@ QT_BEGIN_NAMESPACE
 
 class QIOSFileEngineFactory : public QAbstractFileEngineHandler
 {
+    Q_DISABLE_COPY_MOVE(QIOSFileEngineFactory)
 public:
+    QIOSFileEngineFactory() = default;
+
     std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const
     {
         Q_CONSTINIT static QLatin1StringView assetsScheme("assets-library:");

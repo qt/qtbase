@@ -490,6 +490,7 @@ QHash<QString, QSharedPointer<ReferenceFileEngine::File> > ReferenceFileEngine::
 class FileEngineHandler
     : QAbstractFileEngineHandler
 {
+    Q_DISABLE_COPY_MOVE(FileEngineHandler)
     std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const override
     {
         if (fileName.endsWith(".tar") || fileName.contains(".tar/"))
@@ -508,6 +509,8 @@ class FileEngineHandler
 
         return nullptr;
     }
+public:
+    FileEngineHandler() = default;
 };
 
 void tst_QAbstractFileEngine::initTestCase()

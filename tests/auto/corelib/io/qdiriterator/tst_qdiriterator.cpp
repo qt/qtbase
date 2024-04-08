@@ -443,7 +443,10 @@ public:
 
 class EngineWithNoIteratorHandler : public QAbstractFileEngineHandler
 {
+    Q_DISABLE_COPY_MOVE(EngineWithNoIteratorHandler)
 public:
+    EngineWithNoIteratorHandler() = default;
+
     std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const override
     {
         return std::make_unique<EngineWithNoIterator>(fileName);
@@ -462,7 +465,10 @@ void tst_QDirIterator::engineWithNoIterator()
 
 class CustomEngineHandler : public QAbstractFileEngineHandler
 {
+    Q_DISABLE_COPY_MOVE(CustomEngineHandler)
 public:
+    CustomEngineHandler() = default;
+
     std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const override
     {
         // We want to test QFSFileEngine specifically, so force QDirIterator to use it

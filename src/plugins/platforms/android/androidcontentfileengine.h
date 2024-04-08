@@ -43,6 +43,7 @@ private:
 
 class AndroidContentFileEngineHandler : public QAbstractFileEngineHandler
 {
+    Q_DISABLE_COPY_MOVE(AndroidContentFileEngineHandler)
 public:
     AndroidContentFileEngineHandler();
     ~AndroidContentFileEngineHandler();

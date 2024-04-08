@@ -2334,7 +2334,9 @@ private:
 
 class MyHandler : public QAbstractFileEngineHandler
 {
+    Q_DISABLE_COPY_MOVE(MyHandler)
 public:
+    MyHandler() = default;
     std::unique_ptr<QAbstractFileEngine> create(const QString &) const override
     {
         return std::make_unique<MyEngine>(1);
@@ -2343,7 +2345,10 @@ public:
 
 class MyHandler2 : public QAbstractFileEngineHandler
 {
+    Q_DISABLE_COPY_MOVE(MyHandler2)
 public:
+    MyHandler2() = default;
+
     std::unique_ptr<QAbstractFileEngine> create(const QString &) const override
     {
         return std::make_unique<MyEngine>(2);
@@ -2374,7 +2379,10 @@ void tst_QFile::fileEngineHandler()
 #ifdef QT_BUILD_INTERNAL
 class MyRecursiveHandler : public QAbstractFileEngineHandler
 {
+    Q_DISABLE_COPY_MOVE(MyRecursiveHandler)
 public:
+    MyRecursiveHandler() = default;
+
     std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const override
     {
         if (fileName.startsWith(":!")) {

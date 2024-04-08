@@ -184,6 +184,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(QAbstractFileEngine::FileFlags)
 
 class Q_CORE_EXPORT QAbstractFileEngineHandler
 {
+    Q_DISABLE_COPY_MOVE(QAbstractFileEngineHandler)
 public:
     QAbstractFileEngineHandler();
     virtual ~QAbstractFileEngineHandler();
