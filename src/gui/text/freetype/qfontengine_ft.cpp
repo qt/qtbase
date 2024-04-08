@@ -1678,15 +1678,16 @@ glyph_t QFontEngineFT::glyphIndex(uint ucs4) const
     return glyph;
 }
 
-bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
+int QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
                                  QFontEngine::ShaperFlags flags) const
 {
     Q_ASSERT(glyphs->numGlyphs >= *nglyphs);
     if (*nglyphs < len) {
         *nglyphs = len;
-        return false;
+        return -1;
     }
 
+    int mappedGlyphs = 0;
     int glyph_pos = 0;
     if (freetype->symbol_map) {
         FT_Face face = freetype->face;
@@ -1719,6 +1720,8 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
                 if (uc < QFreetypeFace::cmapCacheSize)
                     freetype->cmapCache[uc] = glyph;
             }
+            if (glyphs->glyphs[glyph_pos] || isIgnorableChar(uc))
+                mappedGlyphs++;
             ++glyph_pos;
         }
     } else {
@@ -1740,6 +1743,8 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
                         freetype->cmapCache[uc] = glyph;
                 }
             }
+            if (glyphs->glyphs[glyph_pos] || isIgnorableChar(uc))
+                mappedGlyphs++;
             ++glyph_pos;
         }
     }
@@ -1750,7 +1755,7 @@ bool QFontEngineFT::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs
     if (!(flags & GlyphIndicesOnly))
         recalcAdvances(glyphs, flags);
 
-    return true;
+    return mappedGlyphs;
 }
 
 bool QFontEngineFT::shouldUseDesignMetrics(QFontEngine::ShaperFlags flags) const

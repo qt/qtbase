@@ -13,6 +13,7 @@
 #include "qpainter.h"
 #include "qpainterpath.h"
 #include "qvarlengtharray.h"
+#include "qtextengine_p.h"
 #include <qmath.h>
 #include <qendian.h>
 #include <private/qstringiterator_p.h>
@@ -1542,12 +1543,12 @@ glyph_t QFontEngineBox::glyphIndex(uint ucs4) const
     return 1;
 }
 
-bool QFontEngineBox::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
+int QFontEngineBox::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
     Q_ASSERT(glyphs->numGlyphs >= *nglyphs);
     if (*nglyphs < len) {
         *nglyphs = len;
-        return false;
+        return -1;
     }
 
     int ucs4Length = 0;
@@ -1563,7 +1564,7 @@ bool QFontEngineBox::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
     if (!(flags & GlyphIndicesOnly))
         recalcAdvances(glyphs, flags);
 
-    return true;
+    return *nglyphs;
 }
 
 void QFontEngineBox::recalcAdvances(QGlyphLayout *glyphs, QFontEngine::ShaperFlags) const
@@ -1793,11 +1794,7 @@ QFontEngine *QFontEngineMulti::loadEngine(int at)
 glyph_t QFontEngineMulti::glyphIndex(uint ucs4) const
 {
     glyph_t glyph = engine(0)->glyphIndex(ucs4);
-    if (glyph == 0
-            && ucs4 != QChar::LineSeparator
-            && ucs4 != QChar::LineFeed
-            && ucs4 != QChar::CarriageReturn
-            && ucs4 != QChar::ParagraphSeparator) {
+    if (glyph == 0 && !isIgnorableChar(ucs4)) {
         if (!m_fallbackFamiliesQueried)
             const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
         for (int x = 1, n = qMin(m_engines.size(), 256); x < n; ++x) {
@@ -1824,13 +1821,55 @@ glyph_t QFontEngineMulti::glyphIndex(uint ucs4) const
     return glyph;
 }
 
-bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
-                                    QGlyphLayout *glyphs, int *nglyphs,
-                                    QFontEngine::ShaperFlags flags) const
+int QFontEngineMulti::stringToCMap(const QChar *str, int len,
+                                   QGlyphLayout *glyphs, int *nglyphs,
+                                   QFontEngine::ShaperFlags flags) const
 {
-    if (!engine(0)->stringToCMap(str, len, glyphs, nglyphs, flags))
-        return false;
+    const int originalNumGlyphs = glyphs->numGlyphs;
+    int mappedGlyphCount = engine(0)->stringToCMap(str, len, glyphs, nglyphs, flags);
+    if (mappedGlyphCount < 0)
+        return -1;
 
+    // If ContextFontMerging is set and the match for the string was incomplete, we try all
+    // fallbacks on the full string until we find the best match.
+    bool contextFontMerging = mappedGlyphCount < *nglyphs && (fontDef.styleStrategy & QFont::ContextFontMerging);
+    if (contextFontMerging) {
+        QVarLengthGlyphLayoutArray tempLayout(len);
+        if (!m_fallbackFamiliesQueried)
+            const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
+
+        int maxGlyphCount = 0;
+        uchar engineIndex = 0;
+        for (int x = 1, n = qMin(m_engines.size(), 256); x < n; ++x) {
+            int numGlyphs = len;
+            const_cast<QFontEngineMulti *>(this)->ensureEngineAt(x);
+            maxGlyphCount = engine(x)->stringToCMap(str, len, &tempLayout, &numGlyphs, flags);
+
+            // If we found a better match, we copy data into the main QGlyphLayout
+            if (maxGlyphCount > mappedGlyphCount) {
+                *nglyphs = numGlyphs;
+                glyphs->numGlyphs = originalNumGlyphs;
+                glyphs->copy(&tempLayout);
+                engineIndex = x;
+                if (maxGlyphCount == numGlyphs)
+                    break;
+            }
+        }
+
+        if (engineIndex > 0) {
+            for (int y = 0; y < glyphs->numGlyphs; ++y) {
+                if (glyphs->glyphs[y] != 0)
+                    glyphs->glyphs[y] |= (engineIndex << 24);
+            }
+        } else {
+            contextFontMerging = false;
+        }
+
+        mappedGlyphCount = maxGlyphCount;
+    }
+
+    // Fill in missing glyphs by going through string one character at the time and finding
+    // the first viable fallback.
     int glyph_pos = 0;
     QStringIterator it(str, str + len);
 
@@ -1861,15 +1900,10 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
             lastFallback = -1;
         }
 
-        if (glyphs->glyphs[glyph_pos] == 0
-                && ucs4 != QChar::LineSeparator
-                && ucs4 != QChar::LineFeed
-                && ucs4 != QChar::CarriageReturn
-                && ucs4 != QChar::ParagraphSeparator
-                && QChar::category(ucs4) != QChar::Other_Control) {
+        if (glyphs->glyphs[glyph_pos] == 0 && !isIgnorableChar(ucs4)) {
             if (!m_fallbackFamiliesQueried)
                 const_cast<QFontEngineMulti *>(this)->ensureFallbackFamiliesQueried();
-            for (int x = 1, n = qMin(m_engines.size(), 256); x < n; ++x) {
+            for (int x = contextFontMerging ? 0 : 1, n = qMin(m_engines.size(), 256); x < n; ++x) {
                 QFontEngine *engine = m_engines.at(x);
                 if (!engine) {
                     if (!shouldLoadFontEngineForCharacter(x, ucs4))
@@ -1946,8 +1980,7 @@ bool QFontEngineMulti::stringToCMap(const QChar *str, int len,
 
     *nglyphs = glyph_pos;
     glyphs->numGlyphs = glyph_pos;
-
-    return true;
+    return mappedGlyphCount;
 }
 
 bool QFontEngineMulti::shouldLoadFontEngineForCharacter(int at, uint ucs4) const
@@ -2239,7 +2272,7 @@ bool QFontEngineMulti::canRender(const QChar *string, int len) const
     QGlyphLayout g;
     g.numGlyphs = nglyphs;
     g.glyphs = glyphs.data();
-    if (!stringToCMap(string, len, &g, &nglyphs, GlyphIndicesOnly))
+    if (stringToCMap(string, len, &g, &nglyphs, GlyphIndicesOnly) < 0)
         Q_UNREACHABLE();
 
     for (int i = 0; i < nglyphs; i++) {

@@ -48,7 +48,7 @@ public:
     QFixed emSquareSize() const override;
 
     glyph_t glyphIndex(uint ucs4) const override;
-    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const override;
+    int stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const override;
     void recalcAdvances(QGlyphLayout *glyphs, ShaperFlags) const override;
 
     void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags) override;
@@ -88,7 +88,7 @@ public:
 
     bool hasUnreliableGlyphOutline() const override;
 
-    int getGlyphIndexes(const QChar *ch, int numChars, QGlyphLayout *glyphs) const;
+    int getGlyphIndexes(const QChar *ch, int numChars, QGlyphLayout *glyphs, int *mappedGlyphs) const;
     void getCMap();
 
     bool getOutlineMetrics(glyph_t glyph, const QTransform &t, glyph_metrics_t *metrics) const;

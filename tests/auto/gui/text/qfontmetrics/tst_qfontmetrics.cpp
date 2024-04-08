@@ -263,7 +263,7 @@ void tst_QFontMetrics::inFontUcs4()
             glyphs.glyphs[0] = 0;
             QVERIFY(engine->stringToCMap(string.constData(), string.size(),
                                          &glyphs, &glyphs.numGlyphs,
-                                         QFontEngine::GlyphIndicesOnly));
+                                         QFontEngine::GlyphIndicesOnly) > 0);
             QCOMPARE(glyphs.numGlyphs, 1);
             QCOMPARE(glyphs.glyphs[0], uint(1));
         }
@@ -275,7 +275,7 @@ void tst_QFontMetrics::inFontUcs4()
             glyphs.glyphs[0] = 0;
             QVERIFY(engine->stringToCMap(string.constData(), string.size(),
                                          &glyphs, &glyphs.numGlyphs,
-                                         QFontEngine::GlyphIndicesOnly));
+                                         QFontEngine::GlyphIndicesOnly) >= 0);
             QVERIFY(glyphs.glyphs[0] != 1);
         }
     }

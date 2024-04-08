@@ -1462,6 +1462,14 @@ QFont::StyleHint QFont::styleHint() const
     \value NoAntialias don't antialias the fonts.
     \value NoSubpixelAntialias avoid subpixel antialiasing on the fonts if possible.
     \value PreferAntialias antialias if possible.
+    \value [since 6.8] ContextFontMerging If the selected font does not contain a certain character,
+           then Qt automatically chooses a similar-looking fallback font that contains the
+           character. By default this is done on a character-by-character basis. This means that in
+           certain uncommon cases, multiple fonts may be used to represent one string of text even
+           if it's in the same script. Setting \c ContextFontMerging will try finding the fallback
+           font that matches the largest subset of the input string instead. This will be more
+           expensive for strings where missing glyphs occur, but may give more consistent results.
+           If \c NoFontMerging is set, then \c ContextFontMerging will have no effect.
     \value NoFontMerging If the font selected for a certain writing system
            does not contain a character requested to draw, then Qt automatically chooses a similar
            looking font that contains the character. The NoFontMerging flag disables this feature.
@@ -3266,7 +3274,7 @@ bool QFontInfo::fixedPitch() const
         QChar ch[2] = { u'i', u'm' };
         QGlyphLayoutArray<2> g;
         int l = 2;
-        if (!engine->stringToCMap(ch, 2, &g, &l, {}))
+        if (engine->stringToCMap(ch, 2, &g, &l, {}) < 0)
             Q_UNREACHABLE();
         Q_ASSERT(l == 2);
         engine->fontDef.fixedPitch = g.advances[0] == g.advances[1];

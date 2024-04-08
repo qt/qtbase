@@ -224,6 +224,7 @@ struct QGlyphLayout
         return reinterpret_cast<char *>(offsets);
     }
 
+    void copy(QGlyphLayout *other);
     void grow(char *address, int totalGlyphs);
 };
 

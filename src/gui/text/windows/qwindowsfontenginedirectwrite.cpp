@@ -435,13 +435,13 @@ glyph_t QWindowsFontEngineDirectWrite::glyphIndex(uint ucs4) const
     return glyphIndex;
 }
 
-bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
-                                                 int *nglyphs, QFontEngine::ShaperFlags flags) const
+int QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs,
+                                                int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
     Q_ASSERT(glyphs->numGlyphs >= *nglyphs);
     if (*nglyphs < len) {
         *nglyphs = len;
-        return false;
+        return -1;
     }
 
     QVarLengthArray<UINT32> codePoints(len);
@@ -455,11 +455,15 @@ bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGly
                                                          glyphIndices.data());
     if (FAILED(hr)) {
         qErrnoWarning("%s: GetGlyphIndicesW failed", __FUNCTION__);
-        return false;
+        return -1;
     }
 
-    for (int i = 0; i < actualLength; ++i)
+    int mappedGlyphs = 0;
+    for (int i = 0; i < actualLength; ++i) {
         glyphs->glyphs[i] = glyphIndices.at(i);
+        if (glyphs->glyphs[i] != 0 || isIgnorableChar(codePoints.at(i)))
+            mappedGlyphs++;
+    }
 
     *nglyphs = actualLength;
     glyphs->numGlyphs = actualLength;
@@ -467,7 +471,7 @@ bool QWindowsFontEngineDirectWrite::stringToCMap(const QChar *str, int len, QGly
     if (!(flags & GlyphIndicesOnly))
         recalcAdvances(glyphs, {});
 
-    return true;
+    return mappedGlyphs;
 }
 
 QFontEngine::FaceId QWindowsFontEngineDirectWrite::faceId() const

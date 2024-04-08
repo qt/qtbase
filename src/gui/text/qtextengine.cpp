@@ -1445,7 +1445,7 @@ void QTextEngine::shapeText(int item) const
                 shapingEnabled
                     ? QFontEngine::GlyphIndicesOnly
                     : QFontEngine::ShaperFlag(0);
-        if (!fontEngine->stringToCMap(reinterpret_cast<const QChar *>(string), itemLength, &initialGlyphs, &nGlyphs, shaperFlags))
+        if (fontEngine->stringToCMap(reinterpret_cast<const QChar *>(string), itemLength, &initialGlyphs, &nGlyphs, shaperFlags) < 0)
             Q_UNREACHABLE();
     }
 
@@ -2739,6 +2739,21 @@ bool QTextEngine::LayoutData::reallocate(int totalGlyphs)
 
     allocated = newAllocated;
     return true;
+}
+
+void QGlyphLayout::copy(QGlyphLayout *oldLayout)
+{
+    Q_ASSERT(offsets != oldLayout->offsets);
+
+    int n = std::min(numGlyphs, oldLayout->numGlyphs);
+
+    memcpy(offsets, oldLayout->offsets, n * sizeof(QFixedPoint));
+    memcpy(attributes, oldLayout->attributes, n * sizeof(QGlyphAttributes));
+    memcpy(justifications, oldLayout->justifications, n * sizeof(QGlyphJustification));
+    memcpy(advances, oldLayout->advances, n * sizeof(QFixed));
+    memcpy(glyphs, oldLayout->glyphs, n * sizeof(glyph_t));
+
+    numGlyphs = n;
 }
 
 // grow to the new size, copying the existing data to the new layout

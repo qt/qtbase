@@ -53,8 +53,8 @@ public:
     QFixed emSquareSize() const override;
 
     glyph_t glyphIndex(uint ucs4) const override;
-    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
-                      ShaperFlags flags) const override;
+    int stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs,
+                     ShaperFlags flags) const override;
     void recalcAdvances(QGlyphLayout *glyphs, ShaperFlags) const override;
 
     void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,

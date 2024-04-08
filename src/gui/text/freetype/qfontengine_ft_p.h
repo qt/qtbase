@@ -186,7 +186,7 @@ private:
     void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs,
                   QPainterPath *path, QTextItem::RenderFlags flags) override;
 
-    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const override;
+    int stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const override;
 
     glyph_metrics_t boundingBox(const QGlyphLayout &glyphs) override;
     glyph_metrics_t boundingBox(glyph_t glyph) override;
