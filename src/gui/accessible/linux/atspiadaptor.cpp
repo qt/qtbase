@@ -135,6 +135,7 @@ QString AtSpiAdaptor::introspect(const QString &path) const
                 "  <interface name=\"org.a11y.atspi.Accessible\">\n"
                 "    <property access=\"read\" type=\"s\" name=\"Name\"/>\n"
                 "    <property access=\"read\" type=\"s\" name=\"Description\"/>\n"
+                "    <property access=\"read\" type=\"s\" name=\"HelpText\"/>\n"
                 "    <property access=\"read\" type=\"(so)\" name=\"Parent\">\n"
                 "      <annotation value=\"QSpiObjectReference\" name=\"org.qtproject.QtDBus.QtTypeName\"/>\n"
                 "    </property>\n"
@@ -1624,6 +1625,8 @@ bool AtSpiAdaptor::accessibleInterface(QAccessibleInterface *interface, const QS
         sendReply(connection, message, accessibleInterfaces(interface));
     } else if (function == "GetDescription"_L1) {
         sendReply(connection, message, QVariant::fromValue(QDBusVariant(interface->text(QAccessible::Description))));
+    } else if (function == "GetHelpText"_L1) {
+        sendReply(connection, message, QVariant::fromValue(QDBusVariant(interface->text(QAccessible::Help))));
     } else if (function == "GetState"_L1) {
         quint64 spiState = spiStatesFromQState(interface->state());
         if (interface->tableInterface()) {
