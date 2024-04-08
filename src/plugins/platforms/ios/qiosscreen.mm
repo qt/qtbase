@@ -278,31 +278,6 @@ void QIOSScreen::updateProperties()
 #else
     m_geometry = QRectF::fromCGRect(m_uiScreen.bounds).toRect();
 
-#ifndef Q_OS_TVOS
-    if (m_uiScreen == [UIScreen mainScreen]) {
-        QIOSViewController *qtViewController = [m_uiWindow.rootViewController isKindOfClass:[QIOSViewController class]] ?
-            static_cast<QIOSViewController *>(m_uiWindow.rootViewController) : nil;
-
-        if (qtViewController.lockedOrientation) {
-            Q_ASSERT(!qt_apple_isApplicationExtension());
-
-            // Setting the statusbar orientation (content orientation) on will affect the screen geometry,
-            // which is not what we want. We want to reflect the screen geometry based on the locked orientation,
-            // and adjust the available geometry based on the repositioned status bar for the current status
-            // bar orientation.
-
-            Qt::ScreenOrientation statusBarOrientation = toQtScreenOrientation(
-                UIDeviceOrientation(qt_apple_sharedApplication().statusBarOrientation));
-
-            Qt::ScreenOrientation lockedOrientation = toQtScreenOrientation(UIDeviceOrientation(qtViewController.lockedOrientation));
-            QTransform transform = transformBetween(lockedOrientation, statusBarOrientation, m_geometry).inverted();
-
-            m_geometry = transform.mapRect(m_geometry);
-            m_availableGeometry = transform.mapRect(m_availableGeometry);
-        }
-    }
-#endif
-
     if (m_geometry != previousGeometry) {
         // We can't use the primaryOrientation of screen(), as we haven't reported the new geometry yet
         Qt::ScreenOrientation primaryOrientation = m_geometry.width() >= m_geometry.height() ?

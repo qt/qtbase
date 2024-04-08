@@ -18,8 +18,6 @@ QT_END_NAMESPACE
 - (void)handleShortcut:(UIKeyCommand*)keyCommand;
 
 #ifndef Q_OS_TVOS
-@property (nonatomic, assign) UIInterfaceOrientation lockedOrientation;
-
 // UIViewController
 @property (nonatomic, assign) BOOL prefersStatusBarHidden;
 @property (nonatomic, assign) UIStatusBarAnimation preferredStatusBarUpdateAnimation;

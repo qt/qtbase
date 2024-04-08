@@ -382,16 +382,6 @@ void QIOSWindow::updateWindowLevel()
         m_windowLevel = qMax(transientParentWindow->m_windowLevel, m_windowLevel);
 }
 
-void QIOSWindow::handleContentOrientationChange(Qt::ScreenOrientation orientation)
-{
-    // Update the QWindow representation straight away, so that
-    // we can update the statusbar orientation based on the new
-    // content orientation.
-    qt_window_private(window())->contentOrientation = orientation;
-
-    [m_view.qtViewController updateProperties];
-}
-
 void QIOSWindow::applicationStateChanged(Qt::ApplicationState)
 {
     if (isForeignWindow())
