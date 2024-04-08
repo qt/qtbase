@@ -212,7 +212,7 @@ public:
     // The total number of channels we reserved:
     const int channelCount;
     QTimer delayedConnectionTimer;
-    QHttpNetworkConnectionChannel *channels; // parallel connections to the server
+    QHttpNetworkConnectionChannel * const channels; // parallel connections to the server
     bool shouldEmitChannelError(QIODevice *socket);
 
     qint64 uncompressedBytesAvailable(const QHttpNetworkReply &reply) const;
