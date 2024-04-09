@@ -85,6 +85,8 @@ private:
 
     void notifyStateChange(QAccessibleInterface *interface, const QString& state, int value);
 
+    void sendAnnouncement(QAccessibleAnnouncementEvent *event);
+
     // accessible helper functions
     AtspiRole getRole(QAccessibleInterface *interface) const;
     QSpiRelationArray relationSet(QAccessibleInterface *interface, const QDBusConnection &connection) const;
@@ -130,6 +132,7 @@ private:
     // all of object
     uint sendObject : 1;
     uint sendObject_active_descendant_changed : 1;
+    uint sendObject_announcement : 1;
     uint sendObject_attributes_changed : 1;
     uint sendObject_bounds_changed : 1;
     uint sendObject_children_changed : 1;
