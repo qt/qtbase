@@ -30,8 +30,10 @@
 
 QT_BEGIN_NAMESPACE
 
+class QColorTransferGenericFunction;
 class QColorTransferFunction;
 class QColorTransferTable;
+class QColorTrc;
 
 class Q_GUI_EXPORT QColorTrcLut
 {
@@ -46,12 +48,13 @@ public:
         BiLinear = ToLinear | FromLinear
     };
 
-    static std::shared_ptr<QColorTrcLut> fromGamma(qreal gamma, Direction dir = BiLinear);
-    static std::shared_ptr<QColorTrcLut> fromTransferFunction(const QColorTransferFunction &transFn, Direction dir = BiLinear);
-    static std::shared_ptr<QColorTrcLut> fromTransferTable(const QColorTransferTable &transTable, Direction dir = BiLinear);
-    void setFromGamma(qreal gamma, Direction dir = BiLinear);
+    static std::shared_ptr<QColorTrcLut> fromGamma(float gamma, Direction dir = BiLinear);
+    static std::shared_ptr<QColorTrcLut> fromTrc(const QColorTrc &trc, Direction dir = BiLinear);
+    void setFromGamma(float gamma, Direction dir = BiLinear);
     void setFromTransferFunction(const QColorTransferFunction &transFn, Direction dir = BiLinear);
     void setFromTransferTable(const QColorTransferTable &transTable, Direction dir = BiLinear);
+    void setFromTransferGenericFunction(const QColorTransferGenericFunction &transfn, Direction dir);
+    void setFromTrc(const QColorTrc &trc, Direction dir);
 
     // The following methods all convert opaque or unpremultiplied colors:
 

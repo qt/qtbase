@@ -171,6 +171,7 @@ qt_internal_add_module(Gui
         painting/qcolormatrix_p.h
         painting/qcolorspace.cpp painting/qcolorspace.h painting/qcolorspace_p.h
         painting/qcolortransferfunction_p.h
+        painting/qcolortransfergeneric_p.h
         painting/qcolortransfertable_p.h
         painting/qcolortransform.cpp painting/qcolortransform.h painting/qcolortransform_p.h
         painting/qcolortrc_p.h

@@ -17,6 +17,7 @@
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include "qcolortransferfunction_p.h"
+#include "qcolortransfergeneric_p.h"
 #include "qcolortransfertable_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -26,20 +27,23 @@ class Q_GUI_EXPORT QColorTrc
 {
 public:
     QColorTrc() noexcept : m_type(Type::Uninitialized) { }
-    QColorTrc(const QColorTransferFunction &fun) : m_type(Type::Function), m_fun(fun) { }
+    QColorTrc(const QColorTransferFunction &fun) : m_type(Type::ParameterizedFunction), m_fun(fun) { }
     QColorTrc(const QColorTransferTable &table) : m_type(Type::Table), m_table(table) { }
-    QColorTrc(QColorTransferFunction &&fun) noexcept : m_type(Type::Function), m_fun(std::move(fun)) { }
+    QColorTrc(const QColorTransferGenericFunction &hdr) : m_type(Type::GenericFunction), m_hdr(hdr) { }
+    QColorTrc(QColorTransferFunction &&fun) noexcept : m_type(Type::ParameterizedFunction), m_fun(std::move(fun)) { }
     QColorTrc(QColorTransferTable &&table) noexcept : m_type(Type::Table), m_table(std::move(table)) { }
+    QColorTrc(QColorTransferGenericFunction &&hdr) noexcept : m_type(Type::GenericFunction), m_hdr(std::move(hdr)) { }
 
     enum class Type {
         Uninitialized,
-        Function,
-        Table
+        ParameterizedFunction,
+        GenericFunction,
+        Table,
     };
 
     bool isIdentity() const
     {
-        return (m_type == Type::Function && m_fun.isIdentity())
+        return (m_type == Type::ParameterizedFunction && m_fun.isIdentity())
             || (m_type == Type::Table && m_table.isIdentity());
     }
     bool isValid() const
@@ -48,64 +52,87 @@ public:
     }
     float apply(float x) const
     {
-        if (m_type == Type::Table)
-            return m_table.apply(x);
-        if (m_type == Type::Function)
-            return m_fun.apply(x);
+        switch (m_type) {
+        case Type::ParameterizedFunction:
+            return fun().apply(x);
+        case Type::GenericFunction:
+            return hdr().apply(x);
+        case Type::Table:
+            return table().apply(x);
+        default:
+            break;
+        }
         return x;
     }
     float applyExtended(float x) const
     {
-        if (x >= 0.0f && x <= 1.0f)
-            return apply(x);
-        if (m_type == Type::Function)
-            return std::copysign(m_fun.apply(std::abs(x)), x);
-        if (m_type == Type::Table)
-            return x < 0.0f ? 0.0f : 1.0f;
+        switch (m_type) {
+        case Type::ParameterizedFunction:
+            return std::copysign(fun().apply(std::abs(x)), x);
+        case Type::GenericFunction:
+            return hdr().apply(x);
+        case Type::Table:
+            return table().apply(x);
+        default:
+            break;
+        }
         return x;
     }
     float applyInverse(float x) const
     {
-        if (m_type == Type::Table)
-            return m_table.applyInverse(x);
-        if (m_type == Type::Function)
-            return m_fun.inverted().apply(x);
+        switch (m_type) {
+        case Type::ParameterizedFunction:
+            return fun().inverted().apply(x);
+        case Type::GenericFunction:
+            return hdr().applyInverse(x);
+        case Type::Table:
+            return table().applyInverse(x);
+        default:
+            break;
+        }
         return x;
     }
     float applyInverseExtended(float x) const
     {
-        if (x >= 0.0f && x <= 1.0f)
-            return applyInverse(x);
-        if (m_type == Type::Function)
+        switch (m_type) {
+        case Type::ParameterizedFunction:
             return std::copysign(applyInverse(std::abs(x)), x);
-        if (m_type == Type::Table)
-            return x < 0.0f ? 0.0f : 1.0f;
+        case Type::GenericFunction:
+            return hdr().applyInverse(x);
+        case Type::Table:
+            return table().applyInverse(x);
+        default:
+            break;
+        }
         return x;
     }
 
-    friend inline bool operator!=(const QColorTrc &o1, const QColorTrc &o2);
-    friend inline bool operator==(const QColorTrc &o1, const QColorTrc &o2);
-
     const QColorTransferTable &table() const { return m_table; }
+    const QColorTransferFunction &fun() const{ return m_fun; }
+    const QColorTransferGenericFunction &hdr() const { return m_hdr; }
+    Type type() const noexcept { return m_type; }
 
     Type m_type;
+
+    friend inline bool comparesEqual(const QColorTrc &lhs, const QColorTrc &rhs);
+    Q_DECLARE_EQUALITY_COMPARABLE(QColorTrc);
+
     QColorTransferFunction m_fun;
     QColorTransferTable m_table;
+    QColorTransferGenericFunction m_hdr;
 };
 
-inline bool operator!=(const QColorTrc &o1, const QColorTrc &o2)
+inline bool comparesEqual(const QColorTrc &o1, const QColorTrc &o2)
 {
     if (o1.m_type != o2.m_type)
-        return true;
-    if (o1.m_type == QColorTrc::Type::Function)
-        return o1.m_fun != o2.m_fun;
+        return false;
+    if (o1.m_type == QColorTrc::Type::ParameterizedFunction)
+        return o1.m_fun == o2.m_fun;
     if (o1.m_type == QColorTrc::Type::Table)
-        return o1.m_table != o2.m_table;
-    return false;
-}
-inline bool operator==(const QColorTrc &o1, const QColorTrc &o2)
-{
-    return !(o1 != o2);
+        return o1.m_table == o2.m_table;
+    if (o1.m_type == QColorTrc::Type::GenericFunction)
+        return o1.m_hdr == o2.m_hdr;
+    return true;
 }
 
 QT_END_NAMESPACE

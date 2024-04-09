@@ -114,6 +114,11 @@ public:
         return QColorTransferFunction(1.0f, 0.0f, 1.0f / 16.0f, 16.0f / 512.0f, 0.0f, 0.0f, 1.8f,
                                       Hints(Hint::Calculated));
     }
+    static QColorTransferFunction fromBt2020()
+    {
+        return QColorTransferFunction(1.0f / 1.0993f, 0.0993f / 1.0993f, 1.0f / 4.5f, 0.08145f, 0.0f, 0.0f, 2.2f,
+                                      Hints(Hint::Calculated));
+    }
     bool matches(const QColorTransferFunction &o) const
     {
         return paramCompare(m_a, o.m_a) && paramCompare(m_b, o.m_b)

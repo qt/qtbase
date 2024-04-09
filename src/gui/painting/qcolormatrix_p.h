@@ -336,6 +336,12 @@ public:
                               { 0.1351922452f, 0.7118769884f, 0.0000000000f },
                               { 0.0313525312f, 0.0000856627f, 0.8251883388f } };
     }
+    static QColorMatrix toXyzFromBt2020()
+    {
+        return QColorMatrix { { 0.673447f, 0.279037f, -0.00192261f },
+                              { 0.165665f, 0.675339f,  0.0299835f  },
+                              { 0.125092f, 0.0456238f, 0.797134f   } };
+    }
     friend inline bool comparesEqual(const QColorMatrix &lhs, const QColorMatrix &rhs);
     Q_DECLARE_EQUALITY_COMPARABLE(QColorMatrix);
 };

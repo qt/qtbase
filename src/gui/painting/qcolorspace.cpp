@@ -21,7 +21,7 @@ QT_BEGIN_NAMESPACE
 
 Q_CONSTINIT QBasicMutex QColorSpacePrivate::s_lutWriteLock;
 
-Q_CONSTINIT static QAtomicPointer<QColorSpacePrivate> s_predefinedColorspacePrivates[QColorSpace::ProPhotoRgb] = {};
+Q_CONSTINIT static QAtomicPointer<QColorSpacePrivate> s_predefinedColorspacePrivates[QColorSpace::Bt2100Hlg] = {};
 static void cleanupPredefinedColorspaces()
 {
     for (QAtomicPointer<QColorSpacePrivate> &ptr : s_predefinedColorspacePrivates) {
@@ -59,6 +59,12 @@ QColorSpacePrimaries::QColorSpacePrimaries(QColorSpace::Primaries primaries)
         greenPoint = QPointF(0.1596, 0.8404);
         bluePoint  = QPointF(0.0366, 0.0001);
         whitePoint = QColorVector::D50Chromaticity();
+        break;
+    case QColorSpace::Primaries::Bt2020:
+        redPoint   = QPointF(0.708, 0.292);
+        greenPoint = QPointF(0.170, 0.797);
+        bluePoint  = QPointF(0.131, 0.046);
+        whitePoint = QColorVector::D65Chromaticity();
         break;
     default:
         Q_UNREACHABLE();
@@ -131,6 +137,21 @@ QColorSpacePrivate::QColorSpacePrivate(QColorSpace::NamedColorSpace namedColorSp
         primaries = QColorSpace::Primaries::ProPhotoRgb;
         transferFunction = QColorSpace::TransferFunction::ProPhotoRgb;
         description = QStringLiteral("ProPhoto RGB");
+        break;
+    case QColorSpace::Bt2020:
+        primaries = QColorSpace::Primaries::Bt2020;
+        transferFunction = QColorSpace::TransferFunction::Bt2020;
+        description = QStringLiteral("BT.2020");
+        break;
+    case QColorSpace::Bt2100Pq:
+        primaries = QColorSpace::Primaries::Bt2020;
+        transferFunction = QColorSpace::TransferFunction::St2084;
+        description = QStringLiteral("BT.2100(PQ)");
+        break;
+    case QColorSpace::Bt2100Hlg:
+        primaries = QColorSpace::Primaries::Bt2020;
+        transferFunction = QColorSpace::TransferFunction::Hlg;
+        description = QStringLiteral("BT.2100(HLG)");
         break;
     default:
         Q_UNREACHABLE();
@@ -292,6 +313,26 @@ void QColorSpacePrivate::identifyColorSpace()
             }
         }
         break;
+    case QColorSpace::Primaries::Bt2020:
+        if (transferFunction == QColorSpace::TransferFunction::Bt2020) {
+            namedColorSpace = QColorSpace::Bt2020;
+            if (description.isEmpty())
+                description = QStringLiteral("BT.2020");
+            return;
+        }
+        if (transferFunction == QColorSpace::TransferFunction::St2084) {
+            namedColorSpace = QColorSpace::Bt2100Pq;
+            if (description.isEmpty())
+                description = QStringLiteral("BT.2100(PQ)");
+            return;
+        }
+        if (transferFunction == QColorSpace::TransferFunction::Hlg) {
+            namedColorSpace = QColorSpace::Bt2100Hlg;
+            if (description.isEmpty())
+                description = QStringLiteral("BT.2100(HLG)");
+            return;
+        }
+        break;
     default:
         break;
     }
@@ -337,7 +378,7 @@ void QColorSpacePrivate::setTransferFunctionTable(const QList<uint16_t> &transfe
         } else if (curve.isSRgb()) {
             transferFunction = QColorSpace::TransferFunction::SRgb;
         }
-        trc[0].m_type = QColorTrc::Type::Function;
+        trc[0].m_type = QColorTrc::Type::ParameterizedFunction;
         trc[0].m_fun = curve;
     } else {
         trc[0].m_type = QColorTrc::Type::Table;
@@ -363,21 +404,21 @@ void QColorSpacePrivate::setTransferFunctionTables(const QList<uint16_t> &redTra
     transferFunction = QColorSpace::TransferFunction::Custom;
     QColorTransferFunction curve;
     if (redTable.asColorTransferFunction(&curve)) {
-        trc[0].m_type = QColorTrc::Type::Function;
+        trc[0].m_type = QColorTrc::Type::ParameterizedFunction;
         trc[0].m_fun = curve;
     } else {
         trc[0].m_type = QColorTrc::Type::Table;
         trc[0].m_table = redTable;
     }
     if (greenTable.asColorTransferFunction(&curve)) {
-        trc[1].m_type = QColorTrc::Type::Function;
+        trc[1].m_type = QColorTrc::Type::ParameterizedFunction;
         trc[1].m_fun = curve;
     } else {
         trc[1].m_type = QColorTrc::Type::Table;
         trc[1].m_table = greenTable;
     }
     if (blueTable.asColorTransferFunction(&curve)) {
-        trc[2].m_type = QColorTrc::Type::Function;
+        trc[2].m_type = QColorTrc::Type::ParameterizedFunction;
         trc[2].m_fun = curve;
     } else {
         trc[2].m_type = QColorTrc::Type::Table;
@@ -390,26 +431,33 @@ void QColorSpacePrivate::setTransferFunction()
 {
     switch (transferFunction) {
     case QColorSpace::TransferFunction::Linear:
-        trc[0].m_type = QColorTrc::Type::Function;
-        trc[0].m_fun = QColorTransferFunction();
+        trc[0] = QColorTransferFunction();
         if (qFuzzyIsNull(gamma))
             gamma = 1.0f;
         break;
     case QColorSpace::TransferFunction::Gamma:
-        trc[0].m_type = QColorTrc::Type::Function;
-        trc[0].m_fun = QColorTransferFunction::fromGamma(gamma);
+        trc[0] = QColorTransferFunction::fromGamma(gamma);
         break;
     case QColorSpace::TransferFunction::SRgb:
-        trc[0].m_type = QColorTrc::Type::Function;
-        trc[0].m_fun = QColorTransferFunction::fromSRgb();
+        trc[0] = QColorTransferFunction::fromSRgb();
         if (qFuzzyIsNull(gamma))
             gamma = 2.31f;
         break;
     case QColorSpace::TransferFunction::ProPhotoRgb:
-        trc[0].m_type = QColorTrc::Type::Function;
-        trc[0].m_fun = QColorTransferFunction::fromProPhotoRgb();
+        trc[0] = QColorTransferFunction::fromProPhotoRgb();
         if (qFuzzyIsNull(gamma))
             gamma = 1.8f;
+        break;
+    case QColorSpace::TransferFunction::Bt2020:
+        trc[0] = QColorTransferFunction::fromBt2020();
+        if (qFuzzyIsNull(gamma))
+            gamma = 2.1f;
+        break;
+    case QColorSpace::TransferFunction::St2084:
+        trc[0] = QColorTransferGenericFunction::pq();
+        break;
+    case QColorSpace::TransferFunction::Hlg:
+        trc[0] = QColorTransferGenericFunction::hlg();
         break;
     case QColorSpace::TransferFunction::Custom:
         break;
@@ -530,6 +578,13 @@ void QColorSpacePrivate::clearElementListProcessingForEdit()
     \l{http://www.color.org/chardata/rgb/DCIP3.xalter}{ICC registration of DCI-P3}
     \value ProPhotoRgb The Pro Photo RGB color space, also known as ROMM RGB is a very wide gamut color space.
     \l{http://www.color.org/chardata/rgb/rommrgb.xalter}{ICC registration of ROMM RGB}
+    \value [since 6.8] Bt2020 BT.2020, also known as Rec.2020 is a basic colorspace of HDR TVs.
+    \l{http://www.color.org/chardata/rgb/BT2020.xalter}{ICC registration of BT.2020}
+    \value [since 6.8] Bt2100Pq BT.2100(PQ), also known as Rec.2100 or HDR10 is an HDR encoding with the same
+    primaries as Bt2020 but using the Perceptual Quantizer transfer function.
+    \l{http://www.color.org/chardata/rgb/BT2100.xalter}{ICC registration of BT.2100}
+    \value [since 6.8] Bt2100Hlg BT.2100 (HLG) is an HDR encoding with the same
+    primaries as Bt2020 but using the Hybrid Log-Gamma transfer function.
 */
 
 /*!
@@ -542,6 +597,7 @@ void QColorSpacePrivate::clearElementListProcessingForEdit()
     \value AdobeRgb The Adobe RGB primaries
     \value DciP3D65 The DCI-P3 primaries with the D65 whitepoint
     \value ProPhotoRgb The ProPhoto RGB primaries with the D50 whitepoint
+    \value [since 6.8] Bt2020 The BT.2020 primaries with a D65 whitepoint
 */
 
 /*!
@@ -554,6 +610,10 @@ void QColorSpacePrivate::clearElementListProcessingForEdit()
     \value Gamma A transfer function that is a real gamma curve based on the value of gamma()
     \value SRgb The sRGB transfer function, composed of linear and gamma parts
     \value ProPhotoRgb The ProPhoto RGB transfer function, composed of linear and gamma parts
+    \value [since 6.8] Bt2020 The BT.2020 transfer function, composited of linear and gamma parts
+    \value [since 6.8] St2084 The SMPTE ST 2084 transfer function, also known Perceptual Quantizer(PQ).
+    \value [since 6.8] Hlg The Hybrid log-gamma transfer function.
+
 */
 
 /*!
@@ -596,7 +656,7 @@ void QColorSpacePrivate::clearElementListProcessingForEdit()
  */
 QColorSpace::QColorSpace(NamedColorSpace namedColorSpace)
 {
-    if (namedColorSpace < QColorSpace::SRgb || namedColorSpace > QColorSpace::ProPhotoRgb) {
+    if (namedColorSpace < QColorSpace::SRgb || namedColorSpace > QColorSpace::Bt2100Hlg) {
         qWarning() << "QColorSpace attempted constructed from invalid QColorSpace::NamedColorSpace: " << int(namedColorSpace);
         return;
     }
@@ -1133,9 +1193,11 @@ bool QColorSpacePrivate::isValid() const noexcept
     if (colorModel == QColorSpace::ColorModel::Gray) {
         if (!trc[0].isValid())
             return false;
-    } else {
+    } else if (colorModel == QColorSpace::ColorModel::Rgb){
         if (!trc[0].isValid() || !trc[1].isValid() || !trc[2].isValid())
             return false;
+    } else {
+        return false;
     }
     return true;
 }

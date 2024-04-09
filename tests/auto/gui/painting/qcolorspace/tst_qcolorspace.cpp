@@ -123,6 +123,15 @@ void tst_QColorSpace::namedColorSpaces_data()
     QTest::newRow("ProPhoto RGB") << QColorSpace::ProPhotoRgb << true
                                   << QColorSpace::Primaries::ProPhotoRgb
                                   << QColorSpace::TransferFunction::ProPhotoRgb;
+    QTest::newRow("BT.2020") << QColorSpace::Bt2020 << true
+                             << QColorSpace::Primaries::Bt2020
+                             << QColorSpace::TransferFunction::Bt2020;
+    QTest::newRow("BT.2100 PQ") << QColorSpace::Bt2100Pq << true
+                                << QColorSpace::Primaries::Bt2020
+                                << QColorSpace::TransferFunction::St2084;
+    QTest::newRow("BT.2100 HLG") << QColorSpace::Bt2100Hlg << true
+                                 << QColorSpace::Primaries::Bt2020
+                                 << QColorSpace::TransferFunction::Hlg;
     QTest::newRow("0") << QColorSpace::NamedColorSpace(0)
                        << false
                        << QColorSpace::Primaries::Custom
@@ -225,6 +234,11 @@ void tst_QColorSpace::fromIccProfile_data()
                                   << QColorSpace::TransferFunction::Custom
                                   << QColorSpace::TransformModel::ElementListProcessing
                                   << QColorSpace::ColorModel::Cmyk << QString("uCMY");
+    // BT.2100 PQ profile
+    QTest::newRow("BT.2100 PQ") << prefix + "Rec. ITU-R BT.2100 PQ.icc" << QColorSpace::Bt2100Pq
+                                  << QColorSpace::TransferFunction::St2084
+                                  << QColorSpace::TransformModel::ThreeComponentMatrix
+                                  << QColorSpace::ColorModel::Rgb << QString("Rec. ITU-R BT.2100 PQ");
 }
 
 void tst_QColorSpace::fromIccProfile()

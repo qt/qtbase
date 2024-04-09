@@ -116,6 +116,7 @@ enum class Tag : quint32 {
     mAB_ = IccTag('m', 'A', 'B', ' '),
     mBA_ = IccTag('m', 'B', 'A', ' '),
     chad = IccTag('c', 'h', 'a', 'd'),
+    cicp = IccTag('c', 'i', 'c', 'p'),
     gamt = IccTag('g', 'a', 'm', 't'),
     sf32 = IccTag('s', 'f', '3', '2'),
 
@@ -247,6 +248,13 @@ struct Sf32TagData : GenericTagData {
     quint32_be value[9];
 };
 
+struct CicpTagData : GenericTagData {
+    quint8 colorPrimaries;
+    quint8 transferCharacteristics;
+    quint8 matrixCoefficients;
+    quint8 videoFullRangeFlag;
+};
+
 struct MatrixElement {
     qint32_be e0;
     qint32_be e1;
@@ -331,7 +339,7 @@ static int writeColorTrc(QDataStream &stream, const QColorTrc &trc)
         return 12;
     }
 
-    if (trc.m_type == QColorTrc::Type::Function) {
+    if (trc.m_type == QColorTrc::Type::ParameterizedFunction) {
         const QColorTransferFunction &fun = trc.m_fun;
         stream << uint(Tag::para) << uint(0);
         if (fun.isGamma()) {
@@ -351,6 +359,14 @@ static int writeColorTrc(QDataStream &stream, const QColorTrc &trc)
         stream << toFixedS1516(fun.m_e);
         stream << toFixedS1516(fun.m_f);
         return 12 + 7 * 4;
+    }
+    if (trc.m_type != QColorTrc::Type::Table) {
+        stream << uint(Tag::curv) << uint(0);
+        stream << uint(16);
+        for (uint i = 0; i < 16; ++i) {
+            stream << ushort(qBound(0, qRound(trc.apply(i / 15.f) * 65535.f), 65535));
+        }
+        return 12 + 16 * 2;
     }
 
     Q_ASSERT(trc.m_type == QColorTrc::Type::Table);
@@ -763,6 +779,7 @@ QByteArray toIccProfile(const QColorSpace &space)
         fixedLengthTagCount = 2;
     bool writeChad = false;
     bool writeB2a = true;
+    bool writeCicp = false;
     if (spaceDPtr->isThreeComponentMatrix() && !spaceDPtr->chad.isIdentity()) {
         writeChad = true;
         fixedLengthTagCount++;
@@ -778,10 +795,19 @@ QByteArray toIccProfile(const QColorSpace &space)
         Q_ASSERT(!spaceDPtr->isThreeComponentMatrix());
         varLengthTagCount--;
     }
+    switch (spaceDPtr->transferFunction) {
+    case QColorSpace::TransferFunction::St2084:
+    case QColorSpace::TransferFunction::Hlg:
+        writeCicp = true;
+        fixedLengthTagCount++;
+    default:
+        break;
+    }
 
     const int tagCount = fixedLengthTagCount + varLengthTagCount;
     const uint profileDataOffset = 128 + 4 + 12 * tagCount;
     uint variableTagTableOffsets = 128 + 4 + 12 * fixedLengthTagCount;
+
     uint currentOffset = 0;
     uint rTrcOffset = 0;
     uint gTrcOffset = 0;
@@ -850,6 +876,10 @@ QByteArray toIccProfile(const QColorSpace &space)
             stream << uint(Tag::chad) << uint(currentOffset) << uint(44);
             currentOffset += 44;
         }
+        if (writeCicp) {
+            stream << uint(Tag::cicp) << uint(currentOffset) << uint(12);
+            currentOffset += 12;
+        }
         // From here the offset and size will be updated later:
         if (spaceDPtr->colorModel == QColorSpace::ColorModel::Rgb) {
             stream << uint(Tag::rTRC) << uint(0) << uint(0);
@@ -897,6 +927,18 @@ QByteArray toIccProfile(const QColorSpace &space)
             stream << toFixedS1516(chad.r.z);
             stream << toFixedS1516(chad.g.z);
             stream << toFixedS1516(chad.b.z);
+        }
+        if (writeCicp) {
+            stream << uint(Tag::cicp) << uint(0);
+            stream << uchar(2); // Unspecified primaries
+            if (spaceDPtr->transferFunction == QColorSpace::TransferFunction::St2084)
+                stream << uchar(16);
+            else if (spaceDPtr->transferFunction == QColorSpace::TransferFunction::Hlg)
+                stream << uchar(18);
+            else
+                Q_UNREACHABLE();
+            stream << uchar(0); // Only for YCbCr, otherwise 0
+            stream << uchar(1); // Video full range
         }
 
         // From now on the data is variable sized:
@@ -1062,11 +1104,11 @@ static quint32 parseTRC(const QByteArrayView &tagData, QColorTrc &gamma, QColorT
         }
         const auto valueOffset = sizeof(CurvTagData);
         if (curv.valueCount == 0) {
-            gamma.m_type = QColorTrc::Type::Function;
+            gamma.m_type = QColorTrc::Type::ParameterizedFunction;
             gamma.m_fun = QColorTransferFunction(); // Linear
         } else if (curv.valueCount == 1) {
             const quint16 v = qFromBigEndian<quint16>(tagData.constData() + valueOffset);
-            gamma.m_type = QColorTrc::Type::Function;
+            gamma.m_type = QColorTrc::Type::ParameterizedFunction;
             gamma.m_fun = QColorTransferFunction::fromGamma(v * (1.0f / 256.0f));
         } else {
             QList<quint16> tabl;
@@ -1084,7 +1126,7 @@ static quint32 parseTRC(const QByteArrayView &tagData, QColorTrc &gamma, QColorT
                 gamma.m_table = table;
             } else {
                 qCDebug(lcIcc) << "Detected curv table as function";
-                gamma.m_type = QColorTrc::Type::Function;
+                gamma.m_type = QColorTrc::Type::ParameterizedFunction;
                 gamma.m_fun = curve;
             }
         }
@@ -1101,7 +1143,7 @@ static quint32 parseTRC(const QByteArrayView &tagData, QColorTrc &gamma, QColorT
                 return 0;
             qFromBigEndian<quint32>(tagData.constData() + parametersOffset, 1, parameters);
             float g = fromFixedS1516(parameters[0]);
-            gamma.m_type = QColorTrc::Type::Function;
+            gamma.m_type = QColorTrc::Type::ParameterizedFunction;
             gamma.m_fun = QColorTransferFunction::fromGamma(g);
             return 12 + 1 * 4;
         }
@@ -1115,7 +1157,7 @@ static quint32 parseTRC(const QByteArrayView &tagData, QColorTrc &gamma, QColorT
             float a = fromFixedS1516(parameters[1]);
             float b = fromFixedS1516(parameters[2]);
             float d = -b / a;
-            gamma.m_type = QColorTrc::Type::Function;
+            gamma.m_type = QColorTrc::Type::ParameterizedFunction;
             gamma.m_fun = QColorTransferFunction(a, b, 0.0f, d, 0.0f, 0.0f, g);
             return 12 + 3 * 4;
         }
@@ -1130,7 +1172,7 @@ static quint32 parseTRC(const QByteArrayView &tagData, QColorTrc &gamma, QColorT
             float b = fromFixedS1516(parameters[2]);
             float c = fromFixedS1516(parameters[3]);
             float d = -b / a;
-            gamma.m_type = QColorTrc::Type::Function;
+            gamma.m_type = QColorTrc::Type::ParameterizedFunction;
             gamma.m_fun = QColorTransferFunction(a, b, 0.0f, d, c, c, g);
             return 12 + 4 * 4;
         }
@@ -1143,7 +1185,7 @@ static quint32 parseTRC(const QByteArrayView &tagData, QColorTrc &gamma, QColorT
             float b = fromFixedS1516(parameters[2]);
             float c = fromFixedS1516(parameters[3]);
             float d = fromFixedS1516(parameters[4]);
-            gamma.m_type = QColorTrc::Type::Function;
+            gamma.m_type = QColorTrc::Type::ParameterizedFunction;
             gamma.m_fun = QColorTransferFunction(a, b, c, d, 0.0f, 0.0f, g);
             return 12 + 5 * 4;
         }
@@ -1158,7 +1200,7 @@ static quint32 parseTRC(const QByteArrayView &tagData, QColorTrc &gamma, QColorT
             float d = fromFixedS1516(parameters[4]);
             float e = fromFixedS1516(parameters[5]);
             float f = fromFixedS1516(parameters[6]);
-            gamma.m_type = QColorTrc::Type::Function;
+            gamma.m_type = QColorTrc::Type::ParameterizedFunction;
             gamma.m_fun = QColorTransferFunction(a, b, c, d, e, f, g);
             return 12 + 7 * 4;
         }
@@ -1629,10 +1671,12 @@ static bool parseRgbMatrix(const QByteArray &data, const QHash<Tag, TagEntry> &t
     } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromDciP3D65()) {
         qCDebug(lcIcc) << "fromIccProfile: DCI-P3 D65 primaries detected";
         colorspaceDPtr->primaries = QColorSpace::Primaries::DciP3D65;
-    }
-    if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromProPhotoRgb()) {
+    } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromProPhotoRgb()) {
         qCDebug(lcIcc) << "fromIccProfile: ProPhoto RGB primaries detected";
         colorspaceDPtr->primaries = QColorSpace::Primaries::ProPhotoRgb;
+    } else if (colorspaceDPtr->toXyz == QColorMatrix::toXyzFromBt2020()) {
+        qCDebug(lcIcc) << "fromIccProfile: BT.2020 primaries detected";
+        colorspaceDPtr->primaries = QColorSpace::Primaries::Bt2020;
     }
     return true;
 }
@@ -1720,12 +1764,12 @@ static bool parseTRCs(const QByteArray &data, const QHash<Tag, TagEntry> &tagInd
             colorspaceDPtr->trc[0] = QColorTransferFunction();
             colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Linear;
             colorspaceDPtr->gamma = 1.0f;
-        } else if (rCurve.m_type == QColorTrc::Type::Function && rCurve.m_fun.isGamma()) {
+        } else if (rCurve.m_type == QColorTrc::Type::ParameterizedFunction && rCurve.m_fun.isGamma()) {
             qCDebug(lcIcc) << "fromIccProfile: Simple gamma detected";
             colorspaceDPtr->trc[0] = QColorTransferFunction::fromGamma(rCurve.m_fun.m_g);
             colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Gamma;
             colorspaceDPtr->gamma = rCurve.m_fun.m_g;
-        } else if (rCurve.m_type == QColorTrc::Type::Function && rCurve.m_fun.isSRgb()) {
+        } else if (rCurve.m_type == QColorTrc::Type::ParameterizedFunction && rCurve.m_fun.isSRgb()) {
             qCDebug(lcIcc) << "fromIccProfile: sRGB gamma detected";
             colorspaceDPtr->trc[0] = QColorTransferFunction::fromSRgb();
             colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::SRgb;
@@ -1740,6 +1784,63 @@ static bool parseTRCs(const QByteArray &data, const QHash<Tag, TagEntry> &tagInd
         colorspaceDPtr->trc[1] = gCurve;
         colorspaceDPtr->trc[2] = bCurve;
         colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Custom;
+    }
+    return true;
+}
+
+static bool parseCicp(const QByteArray &data, const TagEntry &tagEntry, QColorSpacePrivate *colorspaceDPtr)
+{
+    if (colorspaceDPtr->isPcsLab)
+        return false;
+    if (tagEntry.size < sizeof(CicpTagData) || qsizetype(tagEntry.size) > data.size())
+        return false;
+    const CicpTagData cicp = qFromUnaligned<CicpTagData>(data.constData() + tagEntry.offset);
+    if (cicp.type != uint32_t(Tag::cicp)) {
+        qCWarning(lcIcc, "fromIccProfile: bad cicp data type");
+        return false;
+    }
+    switch (cicp.transferCharacteristics) {
+    case 4:
+        colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Gamma;
+        colorspaceDPtr->gamma = 2.2f;
+        break;
+    case 5:
+        colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Gamma;
+        colorspaceDPtr->gamma = 2.8f;
+        break;
+    case 8:
+        colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Linear;
+        break;
+    case 13:
+        colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::SRgb;
+        break;
+    case 1:
+    case 6:
+    case 14:
+    case 15:
+        colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Bt2020;
+        break;
+    case 16:
+        colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::St2084;
+        break;
+    case 18:
+        colorspaceDPtr->transferFunction = QColorSpace::TransferFunction::Hlg;
+        break;
+    default:
+        return false;
+    }
+    switch (cicp.colorPrimaries) {
+    case 1:
+        colorspaceDPtr->primaries = QColorSpace::Primaries::SRgb;
+        break;
+    case 9:
+        colorspaceDPtr->primaries = QColorSpace::Primaries::Bt2020;
+        break;
+    case 12:
+        colorspaceDPtr->primaries = QColorSpace::Primaries::DciP3D65;
+        break;
+    default:
+        return false;
     }
     return true;
 }
@@ -1832,12 +1933,22 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
     colorSpace->detach();
     QColorSpacePrivate *colorspaceDPtr = QColorSpacePrivate::get(*colorSpace);
 
+    colorspaceDPtr->isPcsLab = (header.pcs == uint(Tag::Lab_));
+    if (tagIndex.contains(Tag::cicp)) {
+        // Let cicp override nLut profiles if we fully recognize it.
+        if (parseCicp(data, tagIndex[Tag::cicp], colorspaceDPtr))
+            threeComponentMatrix = true;
+        if (colorspaceDPtr->primaries != QColorSpace::Primaries::Custom)
+            colorspaceDPtr->setToXyzMatrix();
+        if (colorspaceDPtr->transferFunction != QColorSpace::TransferFunction::Custom)
+            colorspaceDPtr->setTransferFunction();
+    }
+
     if (threeComponentMatrix) {
-        colorspaceDPtr->isPcsLab = false;
         colorspaceDPtr->transformModel = QColorSpace::TransformModel::ThreeComponentMatrix;
 
         if (header.inputColorSpace == uint(ColorSpaceType::Rgb)) {
-            if (!parseRgbMatrix(data, tagIndex, colorspaceDPtr))
+            if (colorspaceDPtr->primaries == QColorSpace::Primaries::Custom && !parseRgbMatrix(data, tagIndex, colorspaceDPtr))
                 return false;
             colorspaceDPtr->colorModel = QColorSpace::ColorModel::Rgb;
         } else if (header.inputColorSpace == uint(ColorSpaceType::Gray)) {
@@ -1860,10 +1971,10 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         if (colorspaceDPtr->primaries != QColorSpace::Primaries::Custom)
             colorspaceDPtr->setToXyzMatrix();
 
-        if (!parseTRCs(data, tagIndex, colorspaceDPtr, header.inputColorSpace == uint(ColorSpaceType::Gray)))
+        if (colorspaceDPtr->transferFunction == QColorSpace::TransferFunction::Custom &&
+            !parseTRCs(data, tagIndex, colorspaceDPtr, header.inputColorSpace == uint(ColorSpaceType::Gray)))
             return false;
     } else {
-        colorspaceDPtr->isPcsLab = (header.pcs == uint(Tag::Lab_));
         colorspaceDPtr->transformModel = QColorSpace::TransformModel::ElementListProcessing;
         if (header.inputColorSpace == uint(ColorSpaceType::Cmyk))
             colorspaceDPtr->colorModel = QColorSpace::ColorModel::Cmyk;
