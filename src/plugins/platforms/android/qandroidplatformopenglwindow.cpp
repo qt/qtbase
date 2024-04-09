@@ -33,7 +33,7 @@ QAndroidPlatformOpenGLWindow::~QAndroidPlatformOpenGLWindow()
     m_surfaceWaitCondition.wakeOne();
     lockSurface();
     destroySurface();
-    clearEgl();
+    clearSurface();
     unlockSurface();
 }
 
@@ -58,13 +58,15 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
         QGuiApplication::applicationState() == Qt::ApplicationSuspended) {
         return m_eglSurface;
     }
-
+    // If we haven't called createSurface() yet, call it and wait until Android has created
+    // the Surface
     if (!m_surfaceCreated) {
         AndroidDeadlockProtector protector;
         if (!protector.acquire())
             return m_eglSurface;
 
         createSurface();
+        qCDebug(lcQpaWindow) << "called createSurface(), waiting for Surface to be ready...";
         m_surfaceWaitCondition.wait(&m_surfaceMutex);
     }
 
@@ -79,7 +81,7 @@ EGLSurface QAndroidPlatformOpenGLWindow::eglSurface(EGLConfig config)
 bool QAndroidPlatformOpenGLWindow::checkNativeSurface(EGLConfig config)
 {
     // Either no surface created, or the m_eglSurface already wraps the active Surface
-    // -> makeCurrent is NOT needed.
+    // -> makeCurrent is NOT needed, and we should not create a new EGL surface
     if (!m_surfaceCreated || !m_androidSurfaceObject.isValid())
         return false;
 
@@ -96,14 +98,14 @@ void QAndroidPlatformOpenGLWindow::applicationStateChanged(Qt::ApplicationState 
     if (state <=  Qt::ApplicationHidden) {
         lockSurface();
         destroySurface();
-        clearEgl();
+        clearSurface();
         unlockSurface();
     }
 }
 
 void QAndroidPlatformOpenGLWindow::createEgl(EGLConfig config)
 {
-    clearEgl();
+    clearSurface();
     QJniEnvironment env;
     m_nativeWindow = ANativeWindow_fromSurface(env.jniEnv(), m_androidSurfaceObject.object());
     m_androidSurfaceObject = QJniObject();
@@ -124,7 +126,7 @@ QSurfaceFormat QAndroidPlatformOpenGLWindow::format() const
     return m_format;
 }
 
-void QAndroidPlatformOpenGLWindow::clearEgl()
+void QAndroidPlatformOpenGLWindow::clearSurface()
 {
     if (m_eglSurface != EGL_NO_SURFACE) {
         eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -134,7 +136,7 @@ void QAndroidPlatformOpenGLWindow::clearEgl()
 
     if (m_nativeWindow) {
         ANativeWindow_release(m_nativeWindow);
-        m_nativeWindow = 0;
+        m_nativeWindow = nullptr;
     }
 }
 

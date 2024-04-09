@@ -47,6 +47,8 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback
     @Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
+        // Once we return from this function, the Surface will be destroyed,
+        // so everything holding a reference to it needs to clean it up before we do that
         if (m_surfaceCallback != null)
             m_surfaceCallback.onSurfaceChanged(null);
     }
