@@ -204,6 +204,8 @@ public:
     QtFontFamily **families;
     bool populated = false;
 
+    QHash<QChar::Script, QStringList> applicationFallbackFontFamilies;
+
     QCache<QtFontFallbacksCacheKey, QStringList> fallbacksCache;
     struct ApplicationFont {
         QString fileName;

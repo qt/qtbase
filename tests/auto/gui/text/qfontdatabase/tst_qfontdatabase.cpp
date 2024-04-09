@@ -70,6 +70,8 @@ private slots:
     void findCourier();
 #endif
 
+    void addApplicationFontFallback();
+
 private:
     QString m_ledFont;
     QString m_testFont;
@@ -553,6 +555,84 @@ void tst_QFontDatabase::variableFont()
     }
 
     QFontDatabase::removeApplicationFont(id);
+}
+
+void tst_QFontDatabase::addApplicationFontFallback()
+{
+    int ledId = -1;
+    int id = -1;
+    auto cleanup = qScopeGuard([&id, &ledId] {
+        if (id >= 0)
+            QFontDatabase::removeApplicationFont(id);
+        if (ledId >= 0)
+            QFontDatabase::removeApplicationFont(ledId);
+    });
+
+    const QChar hebrewChar(0x05D0); // Hebrew 'aleph'
+
+    ledId = QFontDatabase::addApplicationFont(m_ledFont);
+    if (ledId < 0)
+        QSKIP("Skip the test since app fonts are not supported on this system");
+
+    auto getHebrewFont = [&]() {
+        QTextLayout layout;
+        layout.setText(hebrewChar);
+        layout.setFont(QFont(u"LED Real"_s));
+        layout.beginLayout();
+        layout.createLine();
+        layout.endLayout();
+
+        QList<QGlyphRun> glyphRuns = layout.glyphRuns();
+        if (glyphRuns.isEmpty())
+            return QString{};
+
+        return glyphRuns.first().rawFont().familyName();
+    };
+
+    QString defaultHebrewFont = getHebrewFont();
+    if (defaultHebrewFont.isEmpty())
+        QSKIP("Skip the test since Hebrew is not supported on this system");
+
+    QVERIFY(QFontDatabase::applicationFallbackFontFamilies(QChar::Script_Hebrew).isEmpty());
+    QFontDatabase::addApplicationFallbackFontFamily(QChar::Script_Hebrew, u"QtBidiTestFont"_s);
+
+    QCOMPARE(QFontDatabase::applicationFallbackFontFamilies(QChar::Script_Hebrew).size(), 1);
+    QCOMPARE(QFontDatabase::applicationFallbackFontFamilies(QChar::Script_Hebrew).first(), u"QtBidiTestFont"_s);
+
+    {
+        QString hebrewFontNow = getHebrewFont();
+        QCOMPARE(hebrewFontNow, defaultHebrewFont);
+    }
+
+    id = QFontDatabase::addApplicationFont(m_testFont);
+    QVERIFY(id >= 0);
+
+    {
+        QString hebrewFontNow = getHebrewFont();
+        QCOMPARE(hebrewFontNow, u"QtBidiTestFont"_s);
+    }
+
+    QFontDatabase::removeApplicationFallbackFontFamily(QChar::Script_Hebrew, u"QtBidiTestFont"_s);
+
+    {
+        QString hebrewFontNow = getHebrewFont();
+        QCOMPARE(hebrewFontNow, defaultHebrewFont);
+    }
+
+    QFontDatabase::setApplicationFallbackFontFamilies(QChar::Script_Hebrew, QStringList(u"QtBidiTestFont"_s));
+
+    {
+        QString hebrewFontNow = getHebrewFont();
+        QCOMPARE(hebrewFontNow, u"QtBidiTestFont"_s);
+    }
+
+    QFontDatabase::setApplicationFallbackFontFamilies(QChar::Script_Hebrew, QStringList{});
+
+    {
+        QString hebrewFontNow = getHebrewFont();
+        QCOMPARE(hebrewFontNow, defaultHebrewFont);
+    }
+
 }
 
 QTEST_MAIN(tst_QFontDatabase)
