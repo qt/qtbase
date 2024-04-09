@@ -11,6 +11,7 @@
 #include <qlist.h>
 #include <qshareddata.h>
 
+QT_REQUIRE_CONFIG(dom);
 QT_BEGIN_NAMESPACE
 
 //
