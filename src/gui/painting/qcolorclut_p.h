@@ -16,7 +16,11 @@
 //
 
 #include <QtCore/qlist.h>
+#include <QtCore/qsimd.h>
 #include <QtGui/private/qcolormatrix_p.h>
+#if defined(__SSE2__)
+#include <immintrin.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -44,6 +48,43 @@ public:
     {
         Q_ASSERT(table.size() == qsizetype(gridPointsX * gridPointsY * gridPointsZ * gridPointsW));
         QColorVector frac;
+#if defined(__SSE2__)
+        const __m128 minV = _mm_setzero_ps();
+        const __m128 maxV = _mm_set1_ps(1.0f);
+        const __m128i gridPointsInt = _mm_loadu_si128(reinterpret_cast<const __m128i *>(&gridPointsX));
+        const __m128 gridPointsV = _mm_cvtepi32_ps(_mm_add_epi32(gridPointsInt, _mm_set1_epi32(-1)));
+        __m128 c = _mm_loadu_ps(&v.x);
+        c = _mm_max_ps(c, minV);
+        c = _mm_min_ps(c, maxV);
+        c = _mm_mul_ps(c, gridPointsV);
+#if !defined(__SSE4_1__)
+        const __m128 clo = _mm_cvtepi32_ps(_mm_cvttps_epi32(c)); // truncation == floor for x >= 0
+#else
+        const __m128 clo = _mm_floor_ps(c);
+#endif
+        __m128 chi = _mm_add_ps(clo, maxV);
+        chi = _mm_min_ps(chi, gridPointsV);
+        _mm_storeu_ps(reinterpret_cast<float *>(&frac), _mm_sub_ps(c, clo));
+        const __m128i ilo = _mm_cvtps_epi32(clo);
+        const __m128i ihi = _mm_cvtps_epi32(chi);
+        const uint32_t lox = _mm_cvtsi128_si32(ilo);
+        const uint32_t hix = _mm_cvtsi128_si32(ihi);
+#if !defined(__SSE4_1__)
+        const uint32_t loy = _mm_cvtsi128_si32(_mm_shuffle_epi32(ilo, _MM_SHUFFLE(1, 1, 1, 1)));
+        const uint32_t loz = _mm_cvtsi128_si32(_mm_unpackhi_epi32(ilo, ilo));
+        const uint32_t low = _mm_cvtsi128_si32(_mm_shuffle_epi32(ilo, _MM_SHUFFLE(3, 3, 3, 3)));
+        const uint32_t hiy = _mm_cvtsi128_si32(_mm_shuffle_epi32(ihi, _MM_SHUFFLE(1, 1, 1, 1)));
+        const uint32_t hiz = _mm_cvtsi128_si32(_mm_unpackhi_epi32(ihi, ihi));
+        const uint32_t hiw = _mm_cvtsi128_si32(_mm_shuffle_epi32(ihi, _MM_SHUFFLE(3, 3, 3, 3)));
+#else
+        const uint32_t loy = _mm_extract_epi32(ilo, 1);
+        const uint32_t loz = _mm_extract_epi32(ilo, 2);
+        const uint32_t low = _mm_extract_epi32(ilo, 3);
+        const uint32_t hiy = _mm_extract_epi32(ihi, 1);
+        const uint32_t hiz = _mm_extract_epi32(ihi, 2);
+        const uint32_t hiw = _mm_extract_epi32(ihi, 3);
+#endif
+#else
         const float x = std::clamp(v.x, 0.0f, 1.0f) * (gridPointsX - 1);
         const float y = std::clamp(v.y, 0.0f, 1.0f) * (gridPointsY - 1);
         const float z = std::clamp(v.z, 0.0f, 1.0f) * (gridPointsZ - 1);
@@ -60,6 +101,7 @@ public:
         frac.y = y - static_cast<float>(loy);
         frac.z = z - static_cast<float>(loz);
         frac.w = w - static_cast<float>(low);
+#endif
         if (gridPointsW > 1) {
             auto index = [&](qsizetype x, qsizetype y, qsizetype z, qsizetype w) -> qsizetype {
                 return x * gridPointsW * gridPointsZ * gridPointsY
