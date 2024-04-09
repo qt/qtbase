@@ -101,7 +101,7 @@ public:
             return x;
         x = std::clamp(x, 0.0f, 1.0f);
         x *= m_tableSize - 1;
-        const uint32_t lo = static_cast<uint32_t>(std::floor(x));
+        const uint32_t lo = static_cast<uint32_t>(x);
         const uint32_t hi = std::min(lo + 1, m_tableSize - 1);
         const float frac = x - lo;
         if (!m_table16.isEmpty())
@@ -120,36 +120,10 @@ public:
             return 0.0f;
         if (x >= 1.0f)
             return 1.0f;
-        if (!m_table16.isEmpty()) {
-            const float v = x * 65535.0f;
-            uint32_t i = static_cast<uint32_t>(std::floor(resultLargerThan * (m_tableSize - 1)));
-            auto it = std::lower_bound(m_table16.cbegin() + i, m_table16.cend(), v);
-            i = it - m_table16.cbegin();
-            if (i == 0)
-                return 0.0f;
-            if (i >= m_tableSize - 1)
-                return 1.0f;
-            const float y1 = m_table16[i - 1];
-            const float y2 = m_table16[i];
-            Q_ASSERT(v >= y1 && v <= y2);
-            const float fr = (v - y1) / (y2 - y1);
-            return (i + fr) * (1.0f / (m_tableSize - 1));
-        }
-        if (!m_table8.isEmpty()) {
-            const float v = x * 255.0f;
-            uint32_t i = static_cast<uint32_t>(std::floor(resultLargerThan * (m_tableSize - 1)));
-            auto it = std::lower_bound(m_table8.cbegin() + i, m_table8.cend(), v);
-            i = it - m_table8.cbegin();
-            if (i == 0)
-                return 0.0f;
-            if (i >= m_tableSize - 1)
-                return 1.0f;
-            const float y1 = m_table8[i - 1];
-            const float y2 = m_table8[i];
-            Q_ASSERT(v >= y1 && v <= y2);
-            const float fr = (v - y1) / (y2 - y1);
-            return (i + fr) * (1.0f / (m_tableSize - 1));
-        }
+        if (!m_table16.isEmpty())
+            return inverseLookup(x * 65535.0f, resultLargerThan, m_table16, m_tableSize - 1);
+        if (!m_table8.isEmpty())
+            return inverseLookup(x * 255.0f, resultLargerThan, m_table8, m_tableSize - 1);
         return x;
     }
 
@@ -213,6 +187,24 @@ public:
     uint32_t m_tableSize = 0;
     QList<uint8_t> m_table8;
     QList<uint16_t> m_table16;
+private:
+    template<typename T>
+    static float inverseLookup(float needle, float resultLargerThan, const QList<T> &table, quint32 tableMax)
+    {
+        uint32_t i = static_cast<uint32_t>(resultLargerThan * tableMax);
+        auto it = std::lower_bound(table.cbegin() + i, table.cend(), needle);
+        i = it - table.cbegin();
+        if (i == 0)
+            return 0.0f;
+        if (i >= tableMax)
+            return 1.0f;
+        const float y1 = table[i - 1];
+        const float y2 = table[i];
+        Q_ASSERT(needle >= y1 && needle <= y2);
+        const float fr = (needle - y1) / (y2 - y1);
+        return (i + fr) * (1.0f / tableMax);
+    }
+
 };
 
 inline bool operator!=(const QColorTransferTable &t1, const QColorTransferTable &t2)
