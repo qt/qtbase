@@ -624,12 +624,6 @@ qt_feature("force_asserts" PUBLIC
     LABEL "Force assertions"
     AUTODETECT OFF
 )
-qt_feature("headersclean"
-    LABEL "Check for clean headers"
-    AUTODETECT OFF
-    CONDITION NOT WASM
-)
-qt_feature_config("headersclean" QMAKE_PRIVATE_CONFIG)
 qt_feature("framework" PUBLIC
     LABEL "Build Apple Frameworks"
     AUTODETECT BUILD_SHARED_LIBS

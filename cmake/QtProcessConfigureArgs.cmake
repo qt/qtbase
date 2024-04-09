@@ -302,6 +302,11 @@ function(qt_commandline_option name)
     endif()
 endfunction()
 
+# Add the common command line options for every qt repo.
+macro(qt_add_common_commandline_options)
+    qt_commandline_option(headersclean TYPE boolean)
+endmacro()
+
 function(qt_commandline_prefix arg var)
     set(idx ${commandline_nr_of_prefixes})
     set(commandline_prefix_${idx} "${arg}" "${var}" PARENT_SCOPE)
@@ -317,6 +322,8 @@ set(QT_CONFIGURE_RUNNING ON)
 ####################################################################################################
 # Load qt_cmdline.cmake files
 ####################################################################################################
+
+qt_add_common_commandline_options()
 
 while(commandline_files)
     list(POP_FRONT commandline_files commandline_file)

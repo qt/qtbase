@@ -5,6 +5,10 @@
 # ${module_headers} with a custom set of defines. This makes sure our public headers
 # are self-contained, and also compile with more strict compiler options.
 function(qt_internal_add_headersclean_target module_target module_headers)
+    if(INPUT_headersclean AND WASM)
+        message(FATAL_ERROR "The headersclean targets are not supported on WASM platform.")
+    endif()
+
     get_target_property(no_headersclean_check ${module_target} _qt_no_headersclean_check)
     if(no_headersclean_check)
         return()

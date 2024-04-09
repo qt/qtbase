@@ -486,7 +486,7 @@ function(qt_internal_add_module target)
     endif()
 
     if(arg_NO_HEADERSCLEAN_CHECK OR arg_NO_MODULE_HEADERS OR arg_NO_SYNC_QT
-        OR NOT QT_FEATURE_headersclean)
+        OR NOT INPUT_headersclean)
         set_target_properties("${target}" PROPERTIES _qt_no_headersclean_check ON)
     endif()
 
