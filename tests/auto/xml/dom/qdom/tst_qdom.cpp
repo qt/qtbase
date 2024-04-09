@@ -17,6 +17,7 @@
 #include <cmath>
 #include <QtXml/private/qdom_p.h>
 
+QT_REQUIRE_CONFIG(dom);
 QT_FORWARD_DECLARE_CLASS(QDomDocument)
 QT_FORWARD_DECLARE_CLASS(QDomNode)
 

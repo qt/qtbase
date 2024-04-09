@@ -3,7 +3,7 @@
 
 #include <QtXml/qtxmlglobal.h>
 
-#ifndef QT_NO_DOM
+#if QT_CONFIG(dom)
 
 #include "qdomhelpers_p.h"
 #include "qdom_p.h"
@@ -442,4 +442,4 @@ bool QDomParser::parseMarkupDecl()
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_DOM
+#endif // feature dom
