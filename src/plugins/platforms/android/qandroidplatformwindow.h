@@ -77,6 +77,7 @@ protected:
     void sendExpose() const;
     bool blockedByModal() const;
     bool isEmbeddingContainer() const;
+    virtual void clearSurface() {}
 
     Qt::WindowFlags m_windowFlags;
     Qt::WindowStates m_windowState;

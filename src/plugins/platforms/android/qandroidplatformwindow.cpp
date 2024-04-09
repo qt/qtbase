@@ -303,10 +303,14 @@ void QAndroidPlatformWindow::destroySurface()
 void QAndroidPlatformWindow::onSurfaceChanged(QtJniTypes::Surface surface)
 {
     lockSurface();
+    const bool surfaceIsValid = surface.isValid();
+    qCDebug(lcQpaWindow) << "onSurfaceChanged():, valid Surface received" << surfaceIsValid;
     m_androidSurfaceObject = surface;
-    if (m_androidSurfaceObject.isValid()) {
+    if (surfaceIsValid) {
         // wait until we have a valid surface to draw into
         m_surfaceWaitCondition.wakeOne();
+    } else {
+        clearSurface();
     }
 
     unlockSurface();

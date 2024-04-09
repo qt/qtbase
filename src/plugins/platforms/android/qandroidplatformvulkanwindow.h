@@ -31,8 +31,10 @@ public:
 
     VkSurfaceKHR *vkSurface();
 
+protected:
+    void clearSurface() override;
+
 private:
-    void clearSurface();
     void destroyAndClearSurface();
 
     ANativeWindow *m_nativeWindow;

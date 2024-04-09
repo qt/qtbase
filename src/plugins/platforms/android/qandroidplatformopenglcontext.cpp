@@ -50,6 +50,12 @@ bool QAndroidPlatformOpenGLContext::makeCurrent(QPlatformSurface *surface)
 
     QAndroidPlatformOpenGLWindow *window = static_cast<QAndroidPlatformOpenGLWindow *>(surface);
     window->lockSurface();
+    // Has the Surface been destroyed?
+    if (window->eglSurface(eglConfig()) == EGL_NO_SURFACE) {
+        qWarning() << "makeCurrent(): no EGLSurface, likely Surface destroyed by Android.";
+        window->unlockSurface();
+        return false;
+    }
     const bool ok = QEGLPlatformContext::makeCurrent(surface);
     window->unlockSurface();
     return ok;
