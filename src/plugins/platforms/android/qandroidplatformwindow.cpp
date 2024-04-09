@@ -304,14 +304,12 @@ void QAndroidPlatformWindow::onSurfaceChanged(QtJniTypes::Surface surface)
 {
     lockSurface();
     m_androidSurfaceObject = surface;
-    if (m_androidSurfaceObject.isValid()) // wait until we have a valid surface to draw into
-         m_surfaceWaitCondition.wakeOne();
-    unlockSurface();
-
     if (m_androidSurfaceObject.isValid()) {
-        // repaint the window, when we have a valid surface
-        sendExpose();
+        // wait until we have a valid surface to draw into
+        m_surfaceWaitCondition.wakeOne();
     }
+
+    unlockSurface();
 }
 
 void QAndroidPlatformWindow::sendExpose() const

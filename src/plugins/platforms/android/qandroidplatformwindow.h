@@ -67,10 +67,11 @@ public:
     static bool registerNatives(QJniEnvironment &env);
     void onSurfaceChanged(QtJniTypes::Surface surface);
 
-protected:
-    void setGeometry(const QRect &rect) override;
     void lockSurface() { m_surfaceMutex.lock(); }
     void unlockSurface() { m_surfaceMutex.unlock(); }
+
+protected:
+    void setGeometry(const QRect &rect) override;
     void createSurface();
     void destroySurface();
     void sendExpose() const;
@@ -85,7 +86,11 @@ protected:
     QtJniTypes::QtWindow m_nativeQtWindow;
     SurfaceContainer m_surfaceContainerType = SurfaceContainer::SurfaceView;
     QtJniTypes::QtWindow m_nativeParentQtWindow;
-    // The Android Surface, accessed from multiple threads, guarded by m_surfaceMutex
+    // The Android Surface, accessed from multiple threads, guarded by m_surfaceMutex.
+    // If the window is using QtSurface, which is a SurfaceView subclass, this Surface will be
+    // automatically created by Android when QtSurface is in a layout and visible. If the
+    // QtSurface is detached or hidden (app goes to background), Android will automatically
+    // destroy the Surface.
     QtJniTypes::Surface m_androidSurfaceObject;
     QWaitCondition m_surfaceWaitCondition;
     bool m_surfaceCreated = false;
