@@ -16,6 +16,10 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window")
 
+Q_DECLARE_JNI_CLASS(QtInputInterface, "org/qtproject/qt/android/QtInputInterface")
+Q_DECLARE_JNI_CLASS(QtInputConnectionListener,
+                    "org/qtproject/qt/android/QtInputConnection$QtInputConnectionListener")
+
 QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
     : QPlatformWindow(window), m_nativeQtWindow(nullptr),
       m_surfaceContainerType(SurfaceContainer::TextureView), m_nativeParentQtWindow(nullptr),
@@ -55,10 +59,13 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
             m_nativeParentQtWindow = androidParent->nativeWindow();
     }
 
+    AndroidBackendRegister *reg = QtAndroid::backendRegister();
+    QtJniTypes::QtInputConnectionListener listener =
+            reg->callInterface<QtJniTypes::QtInputInterface, QtJniTypes::QtInputConnectionListener>(
+                    "getInputConnectionListener");
+
     m_nativeQtWindow = QJniObject::construct<QtJniTypes::QtWindow>(
-        QNativeInterface::QAndroidApplication::context(),
-        m_nativeParentQtWindow,
-        QtAndroid::qtInputDelegate());
+            QNativeInterface::QAndroidApplication::context(), m_nativeParentQtWindow, listener);
     m_nativeViewId = m_nativeQtWindow.callMethod<jint>("getId");
 
     if (window->isTopLevel())

@@ -29,13 +29,7 @@ class QtServiceEmbeddedDelegate implements QtEmbeddedViewInterface, QtNative.App
         QtNative.registerAppStateListener(this);
         QtNative.setService(service);
         // QTBUG-122920 TODO Implement accessibility for service UIs
-    }
-
-    @UsedFromNativeCode
-    QtInputDelegate getInputDelegate()
-    {
-        // TODO Implement text input (QTBUG-122552)
-        return null;
+        // QTBUG-122552 TODO Implement text input
     }
 
     @Override

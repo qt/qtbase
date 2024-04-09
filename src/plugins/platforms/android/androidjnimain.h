@@ -51,7 +51,6 @@ namespace QtAndroid
     jclass applicationClass();
 
     QtJniTypes::QtActivityDelegateBase qtActivityDelegate();
-    QtJniTypes::QtInputDelegate qtInputDelegate();
 
     // Keep synchronized with flags in ActivityDelegate.java
     enum SystemUiVisibility {

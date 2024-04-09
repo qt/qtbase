@@ -64,7 +64,6 @@ abstract class QtActivityDelegateBase
         return m_displayManager;
     }
 
-    @UsedFromNativeCode
     QtInputDelegate getInputDelegate() {
         return m_inputDelegate;
     }

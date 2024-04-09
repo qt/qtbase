@@ -77,6 +77,10 @@ class QtInputConnection extends BaseInputConnection
                 Log.w(QtTAG, "HideKeyboardRunnable: The activity reference is null");
                 return;
             }
+            if (m_qtInputConnectionListener == null) {
+                Log.w(QtTAG, "HideKeyboardRunnable: QtInputConnectionListener is null");
+                return;
+            }
 
             Rect r = new Rect();
             activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(r);
@@ -109,7 +113,7 @@ class QtInputConnection extends BaseInputConnection
     {
         if (closing)
             m_view.postDelayed(new HideKeyboardRunnable(), 100);
-        else
+        else if (m_qtInputConnectionListener != null)
             m_qtInputConnectionListener.onSetClosing(false);
     }
 
@@ -297,7 +301,8 @@ class QtInputConnection extends BaseInputConnection
                     restartImmInput();
                     break;
                 default:
-                    m_qtInputConnectionListener.onSendKeyEventDefaultCase();
+                    if (m_qtInputConnectionListener != null)
+                        m_qtInputConnectionListener.onSendKeyEventDefaultCase();
                     break;
             }
         }

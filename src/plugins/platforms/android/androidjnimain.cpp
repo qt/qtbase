@@ -55,7 +55,6 @@ static jclass m_qtActivityClass = nullptr;
 static jclass m_qtServiceClass = nullptr;
 
 static QtJniTypes::QtActivityDelegateBase m_activityDelegate = nullptr;
-static QtJniTypes::QtInputDelegate m_inputDelegate = nullptr;
 
 static int m_pendingApplicationState = -1;
 static QBasicMutex m_platformMutex;
@@ -208,16 +207,6 @@ namespace QtAndroid
         }
 
         return m_activityDelegate;
-    }
-
-    QtJniTypes::QtInputDelegate qtInputDelegate()
-    {
-        if (!m_inputDelegate.isValid()) {
-            m_inputDelegate = qtActivityDelegate().callMethod<QtJniTypes::QtInputDelegate>(
-                    "getInputDelegate");
-        }
-
-        return m_inputDelegate;
     }
 
     bool isQtApplication()

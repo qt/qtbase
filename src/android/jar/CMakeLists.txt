@@ -45,6 +45,7 @@ set(java_sources
     src/org/qtproject/qt/android/QtAccessibilityInterface.java
     src/org/qtproject/qt/android/QtMenuInterface.java
     src/org/qtproject/qt/android/QtLayoutInterface.java
+    src/org/qtproject/qt/android/QtInputInterface.java
 )
 
 qt_internal_add_jar(Qt${QtBase_VERSION_MAJOR}Android

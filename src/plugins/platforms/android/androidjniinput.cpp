@@ -25,6 +25,7 @@ using namespace QtAndroid;
 
 Q_DECLARE_JNI_CLASS(QtLayout, "org/qtproject/qt/android/QtLayout")
 Q_DECLARE_JNI_CLASS(QtLayoutInterface, "org/qtproject/qt/android/QtLayoutInterface")
+Q_DECLARE_JNI_CLASS(QtInputInterface, "org/qtproject/qt/android/QtInputInterface")
 
 namespace QtAndroidInput
 {
@@ -107,42 +108,40 @@ namespace QtAndroidInput
     void updateSelection(int selStart, int selEnd, int candidatesStart, int candidatesEnd)
     {
         qCDebug(lcQpaInputMethods) << ">>> UPDATESELECTION" << selStart << selEnd << candidatesStart << candidatesEnd;
-        qtInputDelegate().callMethod<void>("updateSelection",
-                                           selStart,
-                                           selEnd,
-                                           candidatesStart,
-                                           candidatesEnd);
+        AndroidBackendRegister *reg = QtAndroid::backendRegister();
+        reg->callInterface<QtJniTypes::QtInputInterface, void>("updateSelection", selStart, selEnd,
+                                                               candidatesStart, candidatesEnd);
     }
 
     void showSoftwareKeyboard(int left, int top, int width, int height, int inputHints, int enterKeyType)
     {
-        qtInputDelegate().callMethod<void>("showSoftwareKeyboard",
-                                           QtAndroidPrivate::activity(),
-                                           qtLayout().object<QtJniTypes::QtLayout>(),
-                                           left,
-                                           top,
-                                           width,
-                                           height,
-                                           inputHints,
-                                           enterKeyType);
+        AndroidBackendRegister *reg = QtAndroid::backendRegister();
+        reg->callInterface<QtJniTypes::QtInputInterface, void>(
+                "showSoftwareKeyboard", QtAndroidPrivate::activity(),
+                qtLayout().object<QtJniTypes::QtLayout>(), left, top, width, height, inputHints,
+                enterKeyType);
         qCDebug(lcQpaInputMethods) << "@@@ SHOWSOFTWAREKEYBOARD" << left << top << width << height << inputHints << enterKeyType;
     }
 
     void resetSoftwareKeyboard()
     {
-        qtInputDelegate().callMethod<void>("resetSoftwareKeyboard");
+        AndroidBackendRegister *reg = QtAndroid::backendRegister();
+        reg->callInterface<QtJniTypes::QtInputInterface, void>("resetSoftwareKeyboard");
         qCDebug(lcQpaInputMethods) << "@@@ RESETSOFTWAREKEYBOARD";
     }
 
     void hideSoftwareKeyboard()
     {
-        qtInputDelegate().callMethod<void>("hideSoftwareKeyboard");
+        AndroidBackendRegister *reg = QtAndroid::backendRegister();
+        reg->callInterface<QtJniTypes::QtInputInterface, void>("hideSoftwareKeyboard");
         qCDebug(lcQpaInputMethods) << "@@@ HIDESOFTWAREKEYBOARD";
     }
 
     bool isSoftwareKeyboardVisible()
     {
-        return qtInputDelegate().callMethod<jboolean>("isSoftwareKeyboardVisible");
+        AndroidBackendRegister *reg = QtAndroid::backendRegister();
+        return reg->callInterface<QtJniTypes::QtInputInterface, jboolean>(
+                "isSoftwareKeyboardVisible");
     }
 
     QRect softwareKeyboardRect()
@@ -152,17 +151,17 @@ namespace QtAndroidInput
 
     int getSelectHandleWidth()
     {
-        return qtInputDelegate().callMethod<jint>("getSelectHandleWidth");
+        AndroidBackendRegister *reg = QtAndroid::backendRegister();
+        return reg->callInterface<QtJniTypes::QtInputInterface, jint>("getSelectHandleWidth");
     }
 
     void updateHandles(int mode, QPoint editMenuPos, uint32_t editButtons, QPoint cursor, QPoint anchor, bool rtl)
     {
-        qtInputDelegate().callMethod<void>("updateHandles",
-                                           QtAndroidPrivate::activity(),
-                                           qtLayout().object<QtJniTypes::QtLayout>(),
-                                           mode, editMenuPos.x(), editMenuPos.y(), editButtons,
-                                           cursor.x(), cursor.y(),
-                                           anchor.x(), anchor.y(), rtl);
+        AndroidBackendRegister *reg = QtAndroid::backendRegister();
+        reg->callInterface<QtJniTypes::QtInputInterface, void>(
+                "updateHandles", QtAndroidPrivate::activity(),
+                qtLayout().object<QtJniTypes::QtLayout>(), mode, editMenuPos.x(), editMenuPos.y(),
+                editButtons, cursor.x(), cursor.y(), anchor.x(), anchor.y(), rtl);
     }
 
     // from https://developer.android.com/reference/android/view/MotionEvent#getButtonState()

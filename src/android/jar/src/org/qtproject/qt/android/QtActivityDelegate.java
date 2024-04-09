@@ -65,6 +65,8 @@ class QtActivityDelegate extends QtActivityDelegateBase
                                             (QtMenuInterface)QtActivityDelegate.this);
             BackendRegister.registerBackend(QtLayoutInterface.class,
                                             (QtLayoutInterface)QtActivityDelegate.this);
+            BackendRegister.registerBackend(QtInputInterface.class,
+                                            (QtInputInterface)m_inputDelegate);
         }
     }
 
@@ -76,6 +78,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
             BackendRegister.unregisterBackend(QtAccessibilityInterface.class);
             BackendRegister.unregisterBackend(QtMenuInterface.class);
             BackendRegister.unregisterBackend(QtLayoutInterface.class);
+            BackendRegister.unregisterBackend(QtInputInterface.class);
         }
     }
 
