@@ -45,9 +45,11 @@
 
 //#define QOCI_DEBUG
 
-Q_DECLARE_OPAQUE_POINTER(OCIEnv*);
+Q_DECLARE_OPAQUE_POINTER(QOCIResult*)
+Q_DECLARE_METATYPE(QOCIResult*)
+Q_DECLARE_OPAQUE_POINTER(OCIEnv*)
 Q_DECLARE_METATYPE(OCIEnv*)
-Q_DECLARE_OPAQUE_POINTER(OCIStmt*);
+Q_DECLARE_OPAQUE_POINTER(OCIStmt*)
 Q_DECLARE_METATYPE(OCIStmt*)
 
 QT_BEGIN_NAMESPACE
@@ -203,31 +205,6 @@ public:
 };
 
 class QOCICols;
-class QOCIResultPrivate;
-
-class QOCIResult: public QSqlCachedResult
-{
-    Q_DECLARE_PRIVATE(QOCIResult)
-    friend class QOCIDriver;
-    friend class QOCICols;
-public:
-    QOCIResult(const QOCIDriver *db);
-    ~QOCIResult();
-    bool prepare(const QString &query) override;
-    bool exec() override;
-    QVariant handle() const override;
-
-protected:
-    bool gotoNext(ValueCache &values, int index) override;
-    bool reset(const QString &query) override;
-    int size() override;
-    int numRowsAffected() override;
-    QSqlRecord record() const override;
-    QVariant lastInsertId() const override;
-    bool execBatch(bool arrayBind = false) override;
-    void virtual_hook(int id, void *data) override;
-    bool fetchNext() override;
-};
 
 class QOCIResultPrivate: public QSqlCachedResultPrivate
 {
@@ -435,6 +412,18 @@ int QOCIResultPrivate::bindValue(OCIStmt *sql, OCIBind **hbnd, OCIError *err, in
                                  const_cast<OCIRowid **>(&rptr->id),
                                  -1,
                                  SQLT_RDD, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+            } else if (val.canConvert<QOCIResult *>() && isOutValue(pos)) {
+                QOCIResult *res = qvariant_cast<QOCIResult *>(val);
+
+                if (res->internal_prepare()) {
+                    r = OCIBindByPos(sql, hbnd, err,
+                                    pos + 1,
+                                    const_cast<OCIStmt **>(&res->d->sql),
+                                    (sb4)0,
+                                    SQLT_RSET, indPtr, 0, 0, 0, 0, OCI_DEFAULT);
+
+                    res->isCursor = true;
+                }
             } else {
                 qCWarning(lcOci, "Unknown bind variable");
                 r = OCI_ERROR;
@@ -1831,6 +1820,7 @@ QOCIResultPrivate::~QOCIResultPrivate()
 QOCIResult::QOCIResult(const QOCIDriver *db)
     : QSqlCachedResult(*new QOCIResultPrivate(this, db))
 {
+    isCursor = false;
 }
 
 QOCIResult::~QOCIResult()
@@ -1923,11 +1913,12 @@ int QOCIResult::numRowsAffected()
     return rowCount;
 }
 
-bool QOCIResult::prepare(const QString& query)
++bool QOCIResult::internal_prepare()
 {
     Q_D(QOCIResult);
     int r = 0;
-    QSqlResult::prepare(query);
+    QString noStr;
+    QSqlResult::prepare(noStr);
 
     delete d->cols;
     d->cols = nullptr;
@@ -1940,8 +1931,7 @@ bool QOCIResult::prepare(const QString& query)
         else
             qOraWarning("QOCIResult::prepare: unable to free statement handle:", d->err);
     }
-    if (query.isEmpty())
-        return false;
+
     r = OCIHandleAlloc(d->env,
                        reinterpret_cast<void **>(&d->sql),
                        OCI_HTYPE_STMT,
@@ -1953,6 +1943,19 @@ bool QOCIResult::prepare(const QString& query)
         return false;
     }
     d->setStatementAttributes();
+
+    return true;
+}
+
+bool QOCIResult::prepare(const QString& query)
+{
+    if (query.isEmpty())
+        return false;
+
+    if (!internal_prepare())
+        return false;
+
+    int r;
     const OraText *txt = reinterpret_cast<const OraText *>(query.utf16());
     const int len = query.length() * sizeof(QChar);
     r = OCIStmtPrepare(d->sql,
@@ -2013,23 +2016,25 @@ bool QOCIResult::exec()
         return false;
     }
 
-    // execute
-    r = OCIStmtExecute(d->svc,
-                       d->sql,
-                       d->err,
-                       iters,
-                       0,
-                       0,
-                       0,
-                       mode);
-    if (r != OCI_SUCCESS && r != OCI_SUCCESS_WITH_INFO) {
-        qOraWarning("QOCIResult::exec: unable to execute statement:", d->err);
-        setLastError(qMakeError(QCoreApplication::translate("QOCIResult",
-                     "Unable to execute statement"), QSqlError::StatementError, d->err));
-#ifdef QOCI_DEBUG
-        qCDebug(lcOci) << "lastQuery()" << lastQuery();
-#endif
-        return false;
+    if (!isCursor()) {
+        // execute
+        r = OCIStmtExecute(d->svc,
+                           d->sql,
+                           d->err,
+                           iters,
+                           0,
+                           0,
+                           0,
+                           mode);
+        if (r != OCI_SUCCESS && r != OCI_SUCCESS_WITH_INFO) {
+            qOraWarning("QOCIResult::exec: unable to execute statement:", d->err);
+            setLastError(qMakeError(QCoreApplication::translate("QOCIResult",
+                        "Unable to execute statement"), QSqlError::StatementError, d->err));
+    #ifdef QOCI_DEBUG
+            qCDebug(lcOci) << "lastQuery()" << lastQuery();
+    #endif
+            return false;
+        }
     }
 
     if (stmtType == OCI_STMT_SELECT) {
