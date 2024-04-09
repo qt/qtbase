@@ -85,7 +85,7 @@ public:
         return vector.data();
     }
 
-    int currentResultCount;
+    int currentResultCount = 0;
     ThreadEngine<T> *threadEngine;
     QList<T> vector;
 
