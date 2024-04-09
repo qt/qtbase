@@ -5,7 +5,7 @@
 #include <qdom.h>
 #include "private/qxmlutils_p.h"
 
-#ifndef QT_NO_DOM
+#if QT_CONFIG(dom)
 
 #include "qdom_p.h"
 #include "qdomhelpers_p.h"
@@ -6975,4 +6975,4 @@ QDomComment QDomNode::toComment() const
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_DOM
+#endif // feature dom

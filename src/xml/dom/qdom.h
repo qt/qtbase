@@ -7,12 +7,11 @@
 #include <QtXml/qtxmlglobal.h>
 #include <QtCore/qstring.h>
 
+#if QT_CONFIG(dom)
+
 class tst_QDom;
 
 QT_BEGIN_NAMESPACE
-
-
-#ifndef QT_NO_DOM
 
 class QIODevice;
 class QTextStream;
@@ -666,8 +665,8 @@ private:
 
 Q_XML_EXPORT QTextStream& operator<<(QTextStream&, const QDomNode&);
 
-#endif // QT_NO_DOM
-
 QT_END_NAMESPACE
+
+#endif // feature dom
 
 #endif // QDOM_H

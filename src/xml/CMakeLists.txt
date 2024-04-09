@@ -7,8 +7,6 @@
 
 qt_internal_add_module(Xml
     SOURCES
-        dom/qdom.cpp dom/qdom.h dom/qdom_p.h
-        dom/qdomhelpers.cpp dom/qdomhelpers_p.h
         qtxmlglobal.h
     DEFINES
         QT_NO_CONTEXTLESS_CONNECT
@@ -23,13 +21,17 @@ qt_internal_add_module(Xml
     GENERATE_CPP_EXPORTS
 )
 
-## Scopes:
-#####################################################################
+qt_internal_extend_target(Xml CONDITION QT_FEATURE_dom
+    SOURCES
+        dom/qdom.cpp dom/qdom.h dom/qdom_p.h
+        dom/qdomhelpers.cpp dom/qdomhelpers_p.h
+)
 
 qt_internal_extend_target(Xml CONDITION MSVC AND (TEST_architecture_arch STREQUAL "i386")
     LINK_OPTIONS
         "/BASE:0x61000000"
 )
+
 qt_internal_add_docs(Xml
     doc/qtxml.qdocconf
 )
