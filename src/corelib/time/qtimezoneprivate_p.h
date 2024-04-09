@@ -38,6 +38,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSTimeZone);
 #include <QJniObject>
 #endif
 
+QT_REQUIRE_CONFIG(timezone);
 QT_BEGIN_NAMESPACE
 
 class Q_AUTOTEST_EXPORT QTimeZonePrivate : public QSharedData
