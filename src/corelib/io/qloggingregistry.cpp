@@ -32,8 +32,7 @@ Q_GLOBAL_STATIC(QLoggingRegistry, qtLoggingRegistry)
     \internal
     Constructs a logging rule with default values.
 */
-QLoggingRule::QLoggingRule() :
-    enabled(false)
+QLoggingRule::QLoggingRule()
 {
 }
 
@@ -41,9 +40,7 @@ QLoggingRule::QLoggingRule() :
     \internal
     Constructs a logging rule.
 */
-QLoggingRule::QLoggingRule(QStringView pattern, bool enabled) :
-    messageType(-1),
-    enabled(enabled)
+QLoggingRule::QLoggingRule(QStringView pattern, bool enabled) : enabled(enabled)
 {
     parse(pattern);
 }

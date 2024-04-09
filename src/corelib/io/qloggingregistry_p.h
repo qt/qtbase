@@ -55,9 +55,9 @@ public:
     Q_DECLARE_FLAGS(PatternFlags, PatternFlag)
 
     QString category;
-    int messageType;
+    int messageType = -1;
     PatternFlags flags;
-    bool enabled;
+    bool enabled = false;
 
 private:
     void parse(QStringView pattern);
