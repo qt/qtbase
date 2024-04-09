@@ -54,8 +54,6 @@ static jobject m_resourcesObj = nullptr;
 static jclass m_qtActivityClass = nullptr;
 static jclass m_qtServiceClass = nullptr;
 
-static QtJniTypes::QtActivityDelegateBase m_activityDelegate = nullptr;
-
 static int m_pendingApplicationState = -1;
 static QBasicMutex m_platformMutex;
 
@@ -92,7 +90,6 @@ static const char m_methodErrorMsg[] = "Can't find method \"%s%s\"";
 
 Q_CONSTINIT static QBasicAtomicInt startQtAndroidPluginCalled = Q_BASIC_ATOMIC_INITIALIZER(0);
 
-Q_DECLARE_JNI_CLASS(QtEmbeddedDelegateFactory, "org/qtproject/qt/android/QtEmbeddedDelegateFactory")
 Q_DECLARE_JNI_CLASS(QtWindowInterface, "org/qtproject/qt/android/QtWindowInterface")
 Q_DECLARE_JNI_CLASS(QtAccessibilityInterface, "org/qtproject/qt/android/QtAccessibilityInterface");
 
@@ -188,25 +185,6 @@ namespace QtAndroid
         AndroidBackendRegister *reg = QtAndroid::backendRegister();
         reg->callInterface<QtJniTypes::QtWindowInterface, void>("setSystemUiVisibility",
                                                                 jint(uiVisibility));
-    }
-
-    // FIXME: avoid direct access to QtActivityDelegate
-    QtJniTypes::QtActivityDelegateBase qtActivityDelegate()
-    {
-        using namespace QtJniTypes;
-        if (!m_activityDelegate.isValid()) {
-            if (isQtApplication()) {
-                auto context = QtAndroidPrivate::activity();
-                m_activityDelegate = context.callMethod<QtActivityDelegateBase>("getActivityDelegate");
-            } else {
-                m_activityDelegate = QJniObject::callStaticMethod<QtActivityDelegateBase>(
-                                                    Traits<QtEmbeddedDelegateFactory>::className(),
-                                                    "getActivityDelegate",
-                                                    QtAndroidPrivate::activity());
-            }
-        }
-
-        return m_activityDelegate;
     }
 
     bool isQtApplication()
