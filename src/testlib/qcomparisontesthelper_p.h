@@ -167,7 +167,8 @@ void testAllComparisonOperatorsCompile()
     Basic testing of equality operators.
 
     The helper function tests {in}equality operators (== and !=) for the \a lhs
-    operand of type \c {LeftType} and the \a rhs operand of type \c {RightType}.
+    operand of type \c {LeftType} and the \a rhs operand of type \c {RightType},
+    plus the reverse order of the operands.
 
     The \a expectedEqual parameter is an expected result for \c {operator==()}.
 
@@ -187,10 +188,8 @@ void testEqualityOperators(LeftType lhs, RightType rhs, bool expectedEqual)
 {
     CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, lhs, rhs, ==, expectedEqual);
     CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, lhs, rhs, !=, !expectedEqual);
-    if constexpr (!std::is_same_v<LeftType, RightType>) {
-        CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, rhs, lhs, ==, expectedEqual);
-        CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, rhs, lhs, !=, !expectedEqual);
-    }
+    CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, rhs, lhs, ==, expectedEqual);
+    CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, rhs, lhs, !=, !expectedEqual);
 }
 
 /*!
@@ -199,7 +198,8 @@ void testEqualityOperators(LeftType lhs, RightType rhs, bool expectedEqual)
 
     The helper function tests all six relation and equality operators
     (==, !=, <, >, <=, >=) for the \a lhs operand of type \c {LeftType} and
-    the \a rhs operand of type \c {RightType}.
+    the \a rhs operand of type \c {RightType} and all six for the reverse
+    order of the operands.
 
     If compiled in C++20 mode, also checks \c {operator<=>()} if that is
     implemented.
@@ -283,7 +283,6 @@ void testAllComparisonOperators(LeftType lhs, RightType rhs, OrderingType expect
     }
 #endif
 
-    if constexpr (!std::is_same_v<LeftType, RightType>) {
         CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, rhs, lhs, ==,
                            !expectedUnordered && expectedEqual);
         CHECK_RUNTIME_CREF(CHECK_RUNTIME_LR, rhs, lhs, !=,
@@ -319,7 +318,6 @@ void testAllComparisonOperators(LeftType lhs, RightType rhs, OrderingType expect
                                !expectedUnordered && (expectedEqual || expectedLess));
         }
 #endif
-    }
 }
 
 #ifdef __cpp_lib_three_way_comparison
