@@ -458,6 +458,23 @@ class CalendarDataWriter (LocaleSourceEditor):
         self.writer.write('};\n')
         months_data.write(self.writer)
 
+
+class TestLocaleWriter (LocaleSourceEditor):
+    def localeList(self, locales):
+        self.writer.write('const LocaleListItem g_locale_list[] = {\n')
+        from enumdata import language_map, territory_map
+        # TODO: update testlocales/ to include script.
+        # For now, only mention each (lang, land) pair once:
+        pairs = set((lang, land) for lang, script, land in locales)
+        for lang, script, land in locales:
+            if (lang, land) in pairs:
+                pairs.discard((lang, land))
+                langName = language_map[lang][0]
+                landName = territory_map[land][0]
+                self.writer.write(f'    {{ {lang:6d},{land:6d} }}, // {langName}/{landName}\n')
+        self.writer.write('};\n\n')
+
+
 class LocaleHeaderWriter (SourceFileEditor):
     def __init__(self, path, temp, enumify):
         super().__init__(path, temp)
@@ -593,6 +610,15 @@ def main(out, err):
     except Exception as e:
         err.write(f'\nError updating qlocale.h: {e}\n')
         return 1
+
+    # ./testlocales/localemodel.cpp
+    try:
+        path = 'util/locale_database/testlocales/localemodel.cpp'
+        with TestLocaleWriter(qtsrcdir.joinpath(path), qtsrcdir,
+                              reader.cldrVersion) as test:
+            test.localeList(locale_keys)
+    except Exception as e:
+        err.write(f'\nError updating localemodel.cpp: {e}\n')
 
     return 0
 
