@@ -173,6 +173,7 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \value ActionChanged                    An action has been changed.
     \value ActiveDescendantChanged
     \value Alert                            A system alert (e.g., a message from a QMessageBox)
+    \value [since 6.8] Announcement         The announcement of a message is requested.
     \value AttributeChanged
     \value ContextHelpEnd                   Context help (QWhatsThis) for an object is finished.
     \value ContextHelpStart                 Context help (QWhatsThis) for an object is initiated.
@@ -447,6 +448,30 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
                                 matches the "aria-level" property in ARIA.
 
     \sa QAccessibleAttributesInterface
+*/
+
+/*! \enum QAccessible::AnnouncementPriority
+    This enum describes the priority for announcements used by the
+    \l QAccessibleAnnouncementEvent.
+    \since 6.8
+
+    With \a QAccessible::AnouncementPriority::Polite, assistive technologies
+    should announce the message at the next graceful opportunity such as at the
+    end of speaking the current sentence or when the user pauses typing.
+
+    When specifying \a QAccessible::AnouncementPriority::Assertive, assistive
+    technologies should notify the user immediately.
+
+    Because an interruption might disorient users or cause them to not complete
+    their current task, \a QAccessible::AnouncementPriority::Assertive should
+    not be used unless the interruption is imperative.
+
+    \value Polite      The announcement has normal priority.
+    \value Assertive   The announcement has high priority and should notify
+                       the user immediately, even if that means interrupting the user's
+                       current task.
+
+    \sa QAccessibleAnnouncementEvent
 */
 
 
@@ -1778,7 +1803,56 @@ QAccessibleTextSelectionEvent::~QAccessibleTextSelectionEvent()
 {
 }
 
+/*!
+    \since 6.8
+    \class QAccessibleAnnouncementEvent
+    \ingroup accessibility
+    \inmodule QtGui
 
+    \brief The QAccessibleAnnouncementEvent is used to request the announcement
+    of a given message by assistive technologies.
+
+    This class is used with \l QAccessible::updateAccessibility().
+*/
+
+/*! \fn QAccessibleAnnouncementEvent::QAccessibleAnnouncementEvent(QObject *object, const QString &message)
+
+    Constructs a new QAccessibleAnnouncementEvent event for \a object
+    to request the announcement of \a message with priority \l QAccessible::AnnouncementPriority::Polite.
+
+    \l QAccessibleAnnouncementEvent::setPriority can be used to adjust the priority.
+*/
+
+/*! \fn QAccessibleAnnouncementEvent::QAccessibleAnnouncementEvent(QAccessibleInterface *iface, const QString &message)
+
+    Constructs a new QAccessibleAnnouncementEvent event for \a iface
+    to request the announcement of \a message with priority \l QAccessible::AnnouncementPriority::Polite.
+
+    \l QAccessibleAnnouncementEvent::setPriority can be used to adjust the priority.
+*/
+
+/*! \fn QString QAccessibleAnnouncementEvent::message() const
+
+    Returns the message.
+*/
+
+/*! \fn QAccessible::AnnouncementPriority QAccessibleAnnouncementEvent::priority() const
+
+    Returns the priority.
+*/
+
+/*! \fn void QAccessibleAnnouncementEvent::setPriority(QAccessible::AnnouncementPriority priority)
+
+    Sets the priority with which the announcement will be requested to \a priority.
+*/
+
+
+/*!
+    \internal
+*/
+QAccessibleAnnouncementEvent::~QAccessibleAnnouncementEvent()
+{
+}
 
 /*!
     Returns the QAccessibleInterface associated with the event.
