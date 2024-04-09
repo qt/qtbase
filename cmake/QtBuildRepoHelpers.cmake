@@ -383,7 +383,9 @@ function(qt_internal_qt_configure_end)
     # If Qt is configued via the configure script, remove the marker variable, so that any future
     # reconfigurations that are done by calling cmake directly don't trigger configure specific
     # logic.
-    unset(QT_INTERNAL_CALLED_FROM_CONFIGURE CACHE)
+    if(QT_INTERNAL_CALLED_FROM_CONFIGURE)
+        unset(QT_INTERNAL_CALLED_FROM_CONFIGURE CACHE)
+    endif()
 endfunction()
 
 macro(qt_build_repo)
