@@ -520,10 +520,11 @@ void QLayoutPrivate::doResize()
 void QLayout::widgetEvent(QEvent *e)
 {
     Q_D(QLayout);
-    if (!d->enabled)
+    const QEvent::Type type = e->type();
+    if (!d->enabled && type != QEvent::ChildRemoved)
         return;
 
-    switch (e->type()) {
+    switch (type) {
     case QEvent::Resize:
         if (d->activated)
             d->doResize();
