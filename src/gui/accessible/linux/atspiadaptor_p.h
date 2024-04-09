@@ -16,7 +16,7 @@
 // We mean it.
 //
 
-#include <atspi/atspi-constants.h>
+#include <atspi/atspi.h>
 
 #include <QtGui/private/qtguiglobal_p.h>
 #include <QtDBus/qdbusvirtualobject.h>
