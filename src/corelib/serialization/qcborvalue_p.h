@@ -228,13 +228,14 @@ public:
     void append(QLatin1StringView s)
     {
         if (!QtPrivate::isAscii(s))
-            return append(QString(s));
+            return appendNonAsciiString(QString(s));
 
         // US-ASCII is a subset of UTF-8, so we can keep in 8-bit
         appendByteData(s.latin1(), s.size(), QCborValue::String,
                        QtCbor::Element::StringIsAscii);
     }
     void appendAsciiString(QStringView s);
+    void appendNonAsciiString(QStringView s);
 
     void append(const QString &s)
     {
@@ -246,8 +247,7 @@ public:
         if (QtPrivate::isAscii(s))
             appendAsciiString(s);
         else
-            appendByteData(reinterpret_cast<const char *>(s.utf16()), s.size() * 2,
-                           QCborValue::String, QtCbor::Element::StringIsUtf16);
+            appendNonAsciiString(s);
     }
     void append(const QCborValue &v)
     {

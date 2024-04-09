@@ -1065,6 +1065,12 @@ Q_NEVER_INLINE void QCborContainerPrivate::appendAsciiString(QStringView s)
     qt_to_latin1_unchecked(l, s.utf16(), len);
 }
 
+void QCborContainerPrivate::appendNonAsciiString(QStringView s)
+{
+    appendByteData(reinterpret_cast<const char *>(s.utf16()), s.size() * 2,
+                   QCborValue::String, QtCbor::Element::StringIsUtf16);
+}
+
 QCborValue QCborContainerPrivate::extractAt_complex(Element e)
 {
     // create a new container for the returned value, containing the byte data
