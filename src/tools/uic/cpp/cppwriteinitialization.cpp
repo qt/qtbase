@@ -2698,10 +2698,6 @@ ConnectionSyntax WriteInitialization::connectionSyntax(const language::SignalSlo
         return ConnectionSyntax::StringBased;
     }
 
-    // QTBUG-110952, ambiguous overloads of display()
-    if (receiver.className == u"QLCDNumber" && receiver.signature.startsWith(u"display("))
-        return ConnectionSyntax::StringBased;
-
     if ((sender.name == m_mainFormVarName && m_customSignals.contains(sender.signature))
          || (receiver.name == m_mainFormVarName && m_customSlots.contains(receiver.signature))) {
         return ConnectionSyntax::StringBased;
@@ -2729,14 +2725,21 @@ void WriteInitialization::acceptConnection(DomConnection *connection)
         return;
     }
     const QString senderSignature = connection->elementSignal();
+    const QString slotSignature = connection->elementSlot();
+    const bool senderAmbiguous = m_uic->customWidgetsInfo()->isAmbiguousSignal(senderDecl.className,
+                                                                               senderSignature);
+    const bool slotAmbiguous = m_uic->customWidgetsInfo()->isAmbiguousSlot(receiverDecl.className,
+                                                                           slotSignature);
+
     language::SignalSlotOptions signalOptions;
-    if (m_uic->customWidgetsInfo()->isAmbiguousSignal(senderDecl.className, senderSignature))
-        signalOptions.setFlag(language::SignalSlotOption::Ambiguous);
+    signalOptions.setFlag(language::SignalSlotOption::Ambiguous, senderAmbiguous);
+    language::SignalSlotOptions slotOptions;
+    slotOptions.setFlag(language::SignalSlotOption::Ambiguous, slotAmbiguous);
 
     language::SignalSlot theSignal{senderDecl.name, senderSignature,
                                    senderDecl.className, signalOptions};
-    language::SignalSlot theSlot{receiverDecl.name, connection->elementSlot(),
-                                 receiverDecl.className, {}};
+    language::SignalSlot theSlot{receiverDecl.name, slotSignature,
+                                 receiverDecl.className, slotOptions};
 
     m_output << m_indent;
     language::formatConnection(m_output, theSignal, theSlot,
