@@ -9,7 +9,7 @@
 
 void tst_QTimeZone_darwinTypes()
 {
-#if !defined(QT_NO_SYSTEMLOCALE)
+#if QT_CONFIG(timezone)
     // QTimeZone <-> CFTimeZone
     {
         QTimeZone qtTimeZone("America/Los_Angeles");
@@ -39,5 +39,5 @@ void tst_QTimeZone_darwinTypes()
         QVERIFY([qtTimeZone.toNSTimeZone() isEqual:nsTimeZone]);
         [autoreleasepool release];
     }
-#endif
+#endif // feature timezone
 }

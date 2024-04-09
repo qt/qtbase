@@ -20,6 +20,7 @@
 #include "qbytearrayview.h"
 #include "qstring.h"
 
+QT_REQUIRE_CONFIG(timezone);
 QT_BEGIN_NAMESPACE
 
 namespace QtTimeZoneCldr {

@@ -17,6 +17,7 @@
 
 #include <QtCore/qtimezone.h>
 
+QT_REQUIRE_CONFIG(timezone);
 QT_REQUIRE_CONFIG(timezone_locale);
 
 namespace QtTimeZoneLocale {
