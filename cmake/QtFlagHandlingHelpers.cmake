@@ -404,7 +404,7 @@ function(qt_internal_enable_unicode_defines)
         set(no_unicode_condition
             "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_NO_UNICODE_DEFINES>>>")
         target_compile_definitions(Platform
-            INTERFACE "$<${no_unicode_condition}:UNICODE;_UNICODE>")
+            INTERFACE "$<${no_unicode_condition}:UNICODE$<SEMICOLON>_UNICODE>")
     endif()
 endfunction()
 
