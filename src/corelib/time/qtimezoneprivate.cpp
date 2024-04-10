@@ -588,25 +588,19 @@ void QTimeZonePrivate::serialize(QDataStream &ds) const
 
 QTimeZone::OffsetData QTimeZonePrivate::invalidOffsetData()
 {
-    QTimeZone::OffsetData offsetData;
-    offsetData.atUtc = QDateTime();
-    offsetData.offsetFromUtc = invalidSeconds();
-    offsetData.standardTimeOffset = invalidSeconds();
-    offsetData.daylightTimeOffset = invalidSeconds();
-    return offsetData;
+    return { QString(), QDateTime(),
+             invalidSeconds(), invalidSeconds(), invalidSeconds() };
 }
 
 QTimeZone::OffsetData QTimeZonePrivate::toOffsetData(const QTimeZonePrivate::Data &data)
 {
-    QTimeZone::OffsetData offsetData = invalidOffsetData();
-    if (data.atMSecsSinceEpoch != invalidMSecs()) {
-        offsetData.atUtc = QDateTime::fromMSecsSinceEpoch(data.atMSecsSinceEpoch, QTimeZone::UTC);
-        offsetData.offsetFromUtc = data.offsetFromUtc;
-        offsetData.standardTimeOffset = data.standardTimeOffset;
-        offsetData.daylightTimeOffset = data.daylightTimeOffset;
-        offsetData.abbreviation = data.abbreviation;
-    }
-    return offsetData;
+    if (data.atMSecsSinceEpoch == invalidMSecs())
+        return invalidOffsetData();
+
+    return {
+        data.abbreviation,
+        QDateTime::fromMSecsSinceEpoch(data.atMSecsSinceEpoch, QTimeZone::UTC),
+        data.offsetFromUtc, data.standardTimeOffset, data.daylightTimeOffset };
 }
 
 // Is the format of the ID valid ?
