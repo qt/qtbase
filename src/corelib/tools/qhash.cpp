@@ -2042,6 +2042,12 @@ size_t qHash(long double key, size_t seed) noexcept
     a \l{default-constructed value} into the hash with the \a key, and
     returns a reference to it.
 
+//! [qhash-iterator-invalidation-func-desc]
+    \warning Returned iterators/references should be considered invalidated
+    the next time you call a non-const function on the hash, or when the
+    hash is destroyed.
+//! [qhash-iterator-invalidation-func-desc]
+
     \sa insert(), value()
 */
 
@@ -2125,12 +2131,16 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first item in
     the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa constBegin(), end()
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::begin() const
 
     \overload
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::cbegin() const
@@ -2139,6 +2149,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa begin(), cend()
 */
 
@@ -2146,6 +2158,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa begin(), constEnd()
 */
@@ -2156,6 +2170,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first key
     in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyEnd()
 */
 
@@ -2164,18 +2180,24 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
     after the last item in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa begin(), constEnd()
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::end() const
 
     \overload
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::constEnd() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa constBegin(), end()
 */
@@ -2186,6 +2208,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa cbegin(), end()
 */
 
@@ -2194,6 +2218,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last key in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa keyBegin()
 */
@@ -2204,6 +2230,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first entry
     in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyValueEnd()
 */
 
@@ -2212,6 +2240,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     entry after the last entry in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa keyValueBegin()
 */
@@ -2222,6 +2252,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
     in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyValueEnd()
 */
 
@@ -2230,6 +2262,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
     in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa keyValueBegin()
 */
@@ -2240,6 +2274,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     entry after the last entry in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyValueBegin()
 */
 
@@ -2248,6 +2284,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     entry after the last entry in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa constKeyValueBegin()
 */
@@ -2268,6 +2306,8 @@ size_t qHash(long double key, size_t seed) noexcept
     references to the ones in the hash. Specifically, mutating the value
     will modify the hash itself.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa QKeyValueIterator
 */
 
@@ -2284,6 +2324,8 @@ size_t qHash(long double key, size_t seed) noexcept
     the hash. For example:
 
     \snippet code/src_corelib_tools_qhash.cpp 15
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa remove(), take(), find()
 */
@@ -2304,12 +2346,16 @@ size_t qHash(long double key, size_t seed) noexcept
 
     \snippet code/src_corelib_tools_qhash.cpp 16
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa value(), values()
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::find(const Key &key) const
 
     \overload
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::constFind(const Key &key) const
@@ -2320,6 +2366,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     If the hash contains no item with the \a key, the function
     returns constEnd().
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa find()
 */
@@ -2332,6 +2380,8 @@ size_t qHash(long double key, size_t seed) noexcept
     is replaced with \a value.
 
     Returns an iterator pointing to the new/updated element.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*!
@@ -2343,6 +2393,8 @@ size_t qHash(long double key, size_t seed) noexcept
     construction.
 
     Returns an iterator pointing to the new element.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 
@@ -2367,12 +2419,16 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a pair of iterators delimiting the range of values \c{[first, second)}, that
     are stored under \a key. If the range is empty then both iterators will be equal to end().
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*!
     \fn template <class Key, class T> std::pair<const_iterator, const_iterator> QMultiHash<Key, T>::equal_range(const Key &key) const
     \overload
     \since 5.7
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*! \typedef QHash::ConstIterator
@@ -2970,6 +3026,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns an iterator pointing to the new/updated element.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa insert()
 */
 
@@ -2983,6 +3041,8 @@ size_t qHash(long double key, size_t seed) noexcept
     existing item.)
 
     Returns an iterator pointing to the new element.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa replace()
 */
@@ -3002,6 +3062,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns an iterator pointing to the new element.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa insert
 */
 
@@ -3017,6 +3079,8 @@ size_t qHash(long double key, size_t seed) noexcept
     value is replaced with a value constructed from \a args.
 
     Returns an iterator pointing to the new element.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa replace, emplace
 */
@@ -3083,6 +3147,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     If the hash contains multiple items with the \a key, this function returns
     a reference to the most recently inserted value.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa insert(), value()
 */
@@ -3236,12 +3302,16 @@ size_t qHash(long double key, size_t seed) noexcept
 
     If the hash contains multiple items with the \a key and \a value, the
     iterator returned points to the most recently inserted item.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*!
     \fn template <class Key, class T> typename QMultiHash<Key, T>::const_iterator QMultiHash<Key, T>::find(const Key &key, const T &value) const
     \since 4.3
     \overload
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*!
@@ -3253,6 +3323,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     If the hash contains no such item, the function returns
     constEnd().
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*! \fn template <class Key, class T> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::begin()
@@ -3260,12 +3332,16 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first item in
     the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa constBegin(), end()
 */
 
 /*! \fn template <class Key, class T> QMultiHash<Key, T>::const_iterator QMultiHash<Key, T>::begin() const
 
     \overload
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*! \fn template <class Key, class T> QMultiHash<Key, T>::const_iterator QMultiHash<Key, T>::cbegin() const
@@ -3274,6 +3350,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa begin(), cend()
 */
 
@@ -3281,6 +3359,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa begin(), constEnd()
 */
@@ -3291,6 +3371,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first key
     in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyEnd()
 */
 
@@ -3298,6 +3380,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
     after the last item in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa begin(), constEnd()
 */
@@ -3312,6 +3396,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa constBegin(), end()
 */
 
@@ -3320,6 +3406,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa cbegin(), end()
 */
@@ -3330,6 +3418,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last key in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyBegin()
 */
 
@@ -3338,6 +3428,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first entry
     in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa keyValueEnd()
 */
@@ -3348,6 +3440,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     entry after the last entry in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyValueBegin()
 */
 
@@ -3356,6 +3450,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
     in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa keyValueEnd()
 */
@@ -3366,6 +3462,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
     in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyValueBegin()
 */
 
@@ -3375,6 +3473,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     entry after the last entry in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyValueBegin()
 */
 
@@ -3383,6 +3483,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     entry after the last entry in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa constKeyValueBegin()
 */
@@ -3402,6 +3504,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Note that both the key and the value obtained this way are
     references to the ones in the hash. Specifically, mutating the value
     will modify the hash itself.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa QKeyValueIterator
 */
