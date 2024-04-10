@@ -521,12 +521,10 @@ struct PosixZone
     };
 
     QString name;
-    int offset;
-
-    static PosixZone invalid() { return {QString(), InvalidOffset}; }
-    static PosixZone parse(const char *&pos, const char *end);
-
+    int offset = InvalidOffset;
     bool hasValidOffset() const noexcept { return offset != InvalidOffset; }
+
+    static PosixZone parse(const char *&pos, const char *end);
 };
 
 } // unnamed namespace
@@ -557,7 +555,7 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
         pos = nameEnd;
     }
     if (nameEnd - nameBegin < 3)
-        return invalid();  // name must be at least 3 characters long
+        return {};  // name must be at least 3 characters long
 
     // zone offset, form [+-]hh:mm:ss
     const char *zoneBegin = pos;
@@ -576,7 +574,7 @@ PosixZone PosixZone::parse(const char *&pos, const char *end)
     // UTC+hh:mm:ss or GMT+hh:mm:ss should be read as offsets from UTC, not as a
     // POSIX rule naming a zone as UTC or GMT and specifying a non-zero offset.
     if (offset != 0 && (name =="UTC"_L1 || name == "GMT"_L1))
-        return invalid();
+        return {};
     return {std::move(name), offset};
 }
 
@@ -646,7 +644,7 @@ static QList<QTimeZonePrivate::Data> calculatePosixTransitions(const QByteArray 
     // and the link in validatePosixRule(), above.
     QList<QByteArray> parts = posixRule.split(',');
 
-    PosixZone stdZone, dstZone = PosixZone::invalid();
+    PosixZone stdZone, dstZone;
     {
         const QByteArray &zoneinfo = parts.at(0);
         const char *begin = zoneinfo.constBegin();
