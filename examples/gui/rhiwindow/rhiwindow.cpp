@@ -281,17 +281,18 @@ void HelloWindow::ensureFullscreenTexture(const QSize &pixelSize, QRhiResourceUp
     m_texture->create();
 
     QImage image(pixelSize, QImage::Format_RGBA8888_Premultiplied);
+    image.setDevicePixelRatio(devicePixelRatio());
 //! [ensure-texture]
     QPainter painter(&image);
-    painter.fillRect(QRectF(QPointF(0, 0), pixelSize), QColor::fromRgbF(0.4f, 0.7f, 0.0f, 1.0f));
+    painter.fillRect(QRectF(QPointF(0, 0), size()), QColor::fromRgbF(0.4f, 0.7f, 0.0f, 1.0f));
     painter.setPen(Qt::transparent);
     painter.setBrush({ QGradient(QGradient::DeepBlue) });
-    painter.drawRoundedRect(QRectF(QPointF(20, 20), pixelSize - QSize(40, 40)), 16, 16);
+    painter.drawRoundedRect(QRectF(QPointF(20, 20), size() - QSize(40, 40)), 16, 16);
     painter.setPen(Qt::black);
     QFont font;
-    font.setPixelSize(0.05 * qMin(pixelSize.width(), pixelSize.height()));
+    font.setPixelSize(0.05 * qMin(width(), height()));
     painter.setFont(font);
-    painter.drawText(QRectF(QPointF(60, 60), pixelSize - QSize(120, 120)), 0,
+    painter.drawText(QRectF(QPointF(60, 60), size() - QSize(120, 120)), 0,
                      QLatin1String("Rendering with QRhi to a resizable QWindow.\nThe 3D API is %1.\nUse the command-line options to choose a different API.")
                      .arg(graphicsApiName()));
     painter.end();

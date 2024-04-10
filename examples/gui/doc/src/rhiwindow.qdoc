@@ -427,6 +427,11 @@
     QRhiShaderResourceBindings, continue to be valid all the time. It is only
     the underlying native resources that come and go over time.
 
+    Note also that we set a device pixel ratio on the image that matches
+    the window that we're drawing into. This ensures that the drawing code
+    can be DPR-agnostic, producing the same layout regardless of the DPR,
+    while also taking advantage of the additional pixels for improved fidelity.
+
     \snippet rhiwindow/rhiwindow.cpp ensure-texture
 
     Once a QImage is generated and the QPainter-based drawing into it has
