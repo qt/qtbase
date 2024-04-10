@@ -182,16 +182,11 @@ bool QAndroidTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
 QTimeZonePrivate::Data QAndroidTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 {
     if (androidTimeZone.isValid()) {
-        Data data;
-        data.atMSecsSinceEpoch = forMSecsSinceEpoch;
-        data.standardTimeOffset = standardTimeOffset(forMSecsSinceEpoch);
-        data.offsetFromUtc = offsetFromUtc(forMSecsSinceEpoch);
-        data.daylightTimeOffset = data.offsetFromUtc - data.standardTimeOffset;
-        data.abbreviation = abbreviation(forMSecsSinceEpoch);
-        return data;
-    } else {
-        return invalidData();
+        return Data(abbreviation(forMSecsSinceEpoch), forMSecsSinceEpoch,
+                    offsetFromUtc(forMSecsSinceEpoch),
+                    standardTimeOffset(forMSecsSinceEpoch));
     }
+    return {};
 }
 
 // java.util.TimeZone does not directly provide transitions,

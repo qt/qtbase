@@ -153,7 +153,7 @@ static QTimeZonePrivate::Data ucalTimeZoneTransition(UCalendar *m_ucal,
                                                      UTimeZoneTransitionType type,
                                                      qint64 atMSecsSinceEpoch)
 {
-    QTimeZonePrivate::Data tran = QTimeZonePrivate::invalidData();
+    QTimeZonePrivate::Data tran;
 
     // Clone the ucal so we don't change the shared object
     UErrorCode status = U_ZERO_ERROR;
@@ -384,7 +384,7 @@ bool QIcuTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
 QTimeZonePrivate::Data QIcuTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 {
     // Available in ICU C++ api, and draft C api in v50
-    QTimeZonePrivate::Data data = invalidData();
+    QTimeZonePrivate::Data data;
 #if U_ICU_VERSION_MAJOR_NUM >= 50
     data = ucalTimeZoneTransition(m_ucal, UCAL_TZ_TRANSITION_PREVIOUS_INCLUSIVE,
                                   forMSecsSinceEpoch);
@@ -417,7 +417,7 @@ QTimeZonePrivate::Data QIcuTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
     return ucalTimeZoneTransition(m_ucal, UCAL_TZ_TRANSITION_NEXT, afterMSecsSinceEpoch);
 #else
     Q_UNUSED(afterMSecsSinceEpoch);
-    return invalidData();
+    return {};
 #endif
 }
 
@@ -428,7 +428,7 @@ QTimeZonePrivate::Data QIcuTimeZonePrivate::previousTransition(qint64 beforeMSec
     return ucalTimeZoneTransition(m_ucal, UCAL_TZ_TRANSITION_PREVIOUS, beforeMSecsSinceEpoch);
 #else
     Q_UNUSED(beforeMSecsSinceEpoch);
-    return invalidData();
+    return {};
 #endif
 }
 

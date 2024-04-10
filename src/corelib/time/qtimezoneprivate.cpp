@@ -230,7 +230,7 @@ bool QTimeZonePrivate::isDaylightTime(qint64 atMSecsSinceEpoch) const
 QTimeZonePrivate::Data QTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 {
     Q_UNUSED(forMSecsSinceEpoch);
-    return invalidData();
+    return {};
 }
 
 // Private only method for use by QDateTime to convert local msecs to epoch msecs
@@ -489,13 +489,13 @@ bool QTimeZonePrivate::hasTransitions() const
 QTimeZonePrivate::Data QTimeZonePrivate::nextTransition(qint64 afterMSecsSinceEpoch) const
 {
     Q_UNUSED(afterMSecsSinceEpoch);
-    return invalidData();
+    return {};
 }
 
 QTimeZonePrivate::Data QTimeZonePrivate::previousTransition(qint64 beforeMSecsSinceEpoch) const
 {
     Q_UNUSED(beforeMSecsSinceEpoch);
-    return invalidData();
+    return {};
 }
 
 QTimeZonePrivate::DataList QTimeZonePrivate::transitions(qint64 fromMSecsSinceEpoch,
@@ -585,16 +585,6 @@ void QTimeZonePrivate::serialize(QDataStream &ds) const
 #endif // QT_NO_DATASTREAM
 
 // Static Utility Methods
-
-QTimeZonePrivate::Data QTimeZonePrivate::invalidData()
-{
-    Data data;
-    data.atMSecsSinceEpoch = invalidMSecs();
-    data.offsetFromUtc = invalidSeconds();
-    data.standardTimeOffset = invalidSeconds();
-    data.daylightTimeOffset = invalidSeconds();
-    return data;
-}
 
 QTimeZone::OffsetData QTimeZonePrivate::invalidOffsetData()
 {

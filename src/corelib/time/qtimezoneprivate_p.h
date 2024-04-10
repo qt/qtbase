@@ -44,13 +44,26 @@ QT_BEGIN_NAMESPACE
 class Q_AUTOTEST_EXPORT QTimeZonePrivate : public QSharedData
 {
 public:
-    //Version of QTimeZone::OffsetData struct using msecs for efficiency
+    // Version of QTimeZone::OffsetData struct using msecs for efficiency
     struct Data {
         QString abbreviation;
         qint64 atMSecsSinceEpoch;
         int offsetFromUtc;
         int standardTimeOffset;
         int daylightTimeOffset;
+        Data()
+            : atMSecsSinceEpoch(QTimeZonePrivate::invalidMSecs()),
+              offsetFromUtc(QTimeZonePrivate::invalidSeconds()),
+              standardTimeOffset(QTimeZonePrivate::invalidSeconds()),
+              daylightTimeOffset(QTimeZonePrivate::invalidSeconds())
+        {}
+        Data(const QString &name, qint64 when, int offset, int standard)
+            : abbreviation(name),
+              atMSecsSinceEpoch(when),
+              offsetFromUtc(offset),
+              standardTimeOffset(standard),
+              daylightTimeOffset(offset - standard)
+        {}
     };
     typedef QList<Data> DataList;
 
@@ -112,7 +125,6 @@ public:
     { return (std::numeric_limits<qint64>::min)(); }
     [[nodiscard]] static constexpr qint64 invalidSeconds()
     { return (std::numeric_limits<int>::min)(); }
-    static Data invalidData();
     static QTimeZone::OffsetData invalidOffsetData();
     static QTimeZone::OffsetData toOffsetData(const Data &data);
     static bool isValidId(const QByteArray &ianaId);

@@ -190,7 +190,7 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::nextTransition(qint64 afterMSecsSinc
     const NSTimeInterval nextSecs = nextDate.timeIntervalSince1970;
     if (nextDate == nil || nextSecs <= seconds) {
         [nextDate release];
-        return invalidData();
+        return {};
     }
     tran.atMSecsSinceEpoch = nextSecs * 1000;
     tran.offsetFromUtc = [m_nstz secondsFromGMTForDate:nextDate];
@@ -273,7 +273,7 @@ QTimeZonePrivate::Data QMacTimeZonePrivate::previousTransition(qint64 beforeMSec
         return data(qint64(prevSecs * 1e3));
 
     // No transition data; or first transition later than requested time.
-    return invalidData();
+    return {};
 }
 
 QByteArray QMacTimeZonePrivate::systemTimeZoneId() const
