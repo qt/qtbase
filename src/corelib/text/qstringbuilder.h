@@ -101,7 +101,7 @@ private:
             return T();
         }
 
-        const qsizetype len = QConcatenable< QStringBuilder<A, B> >::size(*this);
+        const qsizetype len = Concatenable::size(*this);
         T s(len, Qt::Uninitialized);
 
         // Using data_ptr() here (private API) so we can bypass the
@@ -110,9 +110,9 @@ private:
         // the same if len != 0.
         auto d = reinterpret_cast<typename T::iterator>(s.data_ptr().data());
         const auto start = d;
-        QConcatenable<QStringBuilder<A, B>>::appendTo(*this, d);
+        Concatenable::appendTo(*this, d);
 
-        if constexpr (QConcatenable<QStringBuilder<A, B>>::ExactSize) {
+        if constexpr (Concatenable::ExactSize) {
             Q_UNUSED(start)
         } else {
             if (len != d - start) {
