@@ -109,18 +109,17 @@ private:
         // both QString and QByteArray's data() and constData(). The result is
         // the same if len != 0.
         auto d = reinterpret_cast<typename T::iterator>(s.data_ptr().data());
+        const auto start = d;
+        QConcatenable<QStringBuilder<A, B>>::appendTo(*this, d);
 
         if constexpr (QConcatenable<QStringBuilder<A, B>>::ExactSize) {
-            QConcatenable<QStringBuilder<A, B>>::appendTo(*this, d);
-            return s;
-        }
-
-        typename T::const_iterator const start = d;
-        QConcatenable<QStringBuilder<A, B>>::appendTo(*this, d);
-        if (len != d - start) {
-            // this resize is necessary since we allocate a bit too much
-            // when dealing with variable sized 8-bit encodings
-            s.resize(d - start);
+            Q_UNUSED(start)
+        } else {
+            if (len != d - start) {
+                // this resize is necessary since we allocate a bit too much
+                // when dealing with variable sized 8-bit encodings
+                s.resize(d - start);
+            }
         }
         return s;
     }
