@@ -28,14 +28,14 @@ using namespace Qt::StringLiterals;
 
 // For use with std::is_sorted() in assertions:
 [[maybe_unused]]
-constexpr bool earlierZoneData(const ZoneData &less, const ZoneData &more) noexcept
+constexpr bool earlierZoneData(ZoneData less, ZoneData more) noexcept
 {
     return less.windowsIdKey < more.windowsIdKey
         || (less.windowsIdKey == more.windowsIdKey && less.territory < more.territory);
 }
 
 [[maybe_unused]]
-static bool earlierWinData(const WindowsData &less, const WindowsData &more) noexcept
+static bool earlierWinData(WindowsData less, WindowsData more) noexcept
 {
     // Actually only tested in the negative, to check more < less never happens,
     // so should be true if more < less in either part; hence || not && combines.
@@ -44,27 +44,27 @@ static bool earlierWinData(const WindowsData &less, const WindowsData &more) noe
 }
 
 // For use with std::lower_bound():
-constexpr bool atLowerUtcOffset(const UtcData &entry, qint32 offsetSeconds) noexcept
+constexpr bool atLowerUtcOffset(UtcData entry, qint32 offsetSeconds) noexcept
 {
     return entry.offsetFromUtc < offsetSeconds;
 }
 
-constexpr bool atLowerWindowsKey(const WindowsData &entry, qint16 winIdKey) noexcept
+constexpr bool atLowerWindowsKey(WindowsData entry, qint16 winIdKey) noexcept
 {
     return entry.windowsIdKey < winIdKey;
 }
 
-static bool earlierAliasId(const AliasData &entry, QByteArrayView aliasId) noexcept
+static bool earlierAliasId(AliasData entry, QByteArrayView aliasId) noexcept
 {
     return entry.aliasId().compare(aliasId, Qt::CaseInsensitive) < 0;
 }
 
-static bool earlierWindowsId(const WindowsData &entry, QByteArrayView winId) noexcept
+static bool earlierWindowsId(WindowsData entry, QByteArrayView winId) noexcept
 {
     return entry.windowsId().compare(winId, Qt::CaseInsensitive) < 0;
 }
 
-constexpr bool zoneAtLowerWindowsKey(const ZoneData &entry, qint16 winIdKey) noexcept
+constexpr bool zoneAtLowerWindowsKey(ZoneData entry, qint16 winIdKey) noexcept
 {
     return entry.windowsIdKey < winIdKey;
 }

@@ -1108,7 +1108,7 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 
     // Otherwise, use the rule for the most recent or first transition:
     auto last = std::partition_point(tranCache().cbegin(), tranCache().cend(),
-                                     [forMSecsSinceEpoch] (const QTzTransitionTime &at) {
+                                     [forMSecsSinceEpoch] (QTzTransitionTime at) {
                                          return at.atMSecsSinceEpoch <= forMSecsSinceEpoch;
                                      });
     if (last == tranCache().cbegin())
@@ -1154,7 +1154,7 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::data(QTimeZone::TimeType timeType) co
     // Otherwise, we can look backwards through transitions for a match; if we
     // have a POSIX rule, it clearly doesn't do DST (or we'd have hit it by
     // now), so we only need to look in the tranCache() up to now.
-    const auto untilNow = [currentMSecs](const QTzTransitionTime &at) {
+    const auto untilNow = [currentMSecs](QTzTransitionTime at) {
         return at.atMSecsSinceEpoch <= currentMSecs;
     };
     auto it = std::partition_point(tranCache().cbegin(), tranCache().cend(), untilNow);
@@ -1198,7 +1198,7 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::nextTransition(qint64 afterMSecsSince
 
     // Otherwise, if we can find a valid tran, use its rule:
     auto last = std::partition_point(tranCache().cbegin(), tranCache().cend(),
-                                     [afterMSecsSinceEpoch] (const QTzTransitionTime &at) {
+                                     [afterMSecsSinceEpoch] (QTzTransitionTime at) {
                                          return at.atMSecsSinceEpoch <= afterMSecsSinceEpoch;
                                      });
     return last != tranCache().cend() ? dataForTzTransition(*last) : Data{};
@@ -1223,7 +1223,7 @@ QTimeZonePrivate::Data QTzTimeZonePrivate::previousTransition(qint64 beforeMSecs
 
     // Otherwise if we can find a valid tran then use its rule
     auto last = std::partition_point(tranCache().cbegin(), tranCache().cend(),
-                                     [beforeMSecsSinceEpoch] (const QTzTransitionTime &at) {
+                                     [beforeMSecsSinceEpoch] (QTzTransitionTime at) {
                                          return at.atMSecsSinceEpoch < beforeMSecsSinceEpoch;
                                      });
     return last > tranCache().cbegin() ? dataForTzTransition(*--last) : Data{};
@@ -1316,8 +1316,8 @@ private:
         constexpr StatIdent() : m_dev(bad), m_ino(bad) {}
         StatIdent(const QT_STATBUF &data) : m_dev(data.st_dev), m_ino(data.st_ino) {}
         bool isValid() { return m_dev != bad || m_ino != bad; }
-        bool operator==(const StatIdent &other)
-        { return other.m_dev == m_dev && other.m_ino == m_ino; }
+        friend constexpr bool operator==(StatIdent lhs, StatIdent rhs)
+        { return lhs.m_dev == rhs.m_dev && lhs.m_ino == rhs.m_ino; }
     };
     StatIdent m_last;
 
