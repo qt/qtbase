@@ -1798,6 +1798,18 @@ void tst_QCborValue::mapNested()
 
 void tst_QCborValue::sorting()
 {
+    // CBOR data comparisons are done as if we were comparing their canonically
+    // (deterministic) encoded forms in the byte stream, including the Major
+    // Type. That has a few surprises noted below:
+    // 1) because the length of a string precedes it, effectively strings are
+    //    sorted by their UTF-8 length before their contents
+    // 2) because negative integers are stored in negated form, they sort in
+    //    descending order (i.e. by absolute value)
+    // 3) negative integers (Major Type 1) sort after all positive integers
+    //    (Major Type 0)
+    //    Effectively, this means integers are sorted as sign+magnitude.
+    // 4) floating point types (Major Type 7) sort after all integers
+
     QCborValue vundef, vnull(nullptr);
     QCborValue vtrue(true), vfalse(false);
     QCborValue vint1(1), vint2(2);
@@ -1830,7 +1842,6 @@ void tst_QCborValue::sorting()
     CHECK_ORDER(vint1, vint2);
     CHECK_ORDER(vdouble1, vdouble2);
     CHECK_ORDER(vndouble1, vndouble2);
-    // note: shorter length sorts first
     CHECK_ORDER(vba1, vba2);
     CHECK_ORDER(vba2, vba3);
     CHECK_ORDER(vs1, vs2);
@@ -1887,29 +1898,85 @@ void tst_QCborValue::sorting()
         str.prepend(char(QCborValue::String) + str.size());
         return QCborValue::fromCbor(str);
     };
-    // 5 code units in UTF-8
-    QCborValue vs4_utf16(u"Mørk"_s);
-    QCborValue vs4_utf8 = utf8string("Mørk");
-    QCOMPARE(vs4_utf8, vs4_utf8);
-    QCOMPARE(vs4_utf16, vs4_utf16);
-    QCOMPARE(vs4_utf16, vs4_utf8);
 
-    // 5 code units in UTF-16
-    QCborValue vs5_utf16(u"Først"_s);
-    QCborValue vs5_utf8 = utf8string("Først");
-    QCOMPARE(vs5_utf8, vs5_utf8);
-    QCOMPARE(vs5_utf16, vs5_utf16);
-    QCOMPARE(vs5_utf16, vs5_utf8);
+    auto addStringCmp = [&](const char *, const char *, QUtf8StringView lhs,
+            QUtf8StringView rhs) {
+        // CBOR orders strings by UTF-8 length
+        bool is_lt = (lhs.size() < rhs.size());
+        if (!is_lt)
+            is_lt = (lhs < rhs);
 
-    // sorted by UTF-8 length first, so "Mørk" < "World" < "Først" (!!)
-    CHECK_ORDER(vs4_utf8, vs3);
-    CHECK_ORDER(vs4_utf16, vs3);
-    CHECK_ORDER(vs3, vs5_utf8);
-    CHECK_ORDER(vs3, vs5_utf16);
-    CHECK_ORDER(vs4_utf8, vs5_utf8);
-    CHECK_ORDER(vs4_utf8, vs5_utf16);
-    CHECK_ORDER(vs4_utf16, vs5_utf8);
-    CHECK_ORDER(vs4_utf16, vs5_utf16);
+        QCborValue lhs_utf8 = utf8string(QByteArrayView(lhs).toByteArray());
+        QCborValue rhs_utf8 = utf8string(QByteArrayView(rhs).toByteArray());
+        QCborValue lhs_utf16 = QString::fromUtf8(lhs);
+        QCborValue rhs_utf16 = QString::fromUtf8(rhs);
+
+        if (is_lt) {
+            CHECK_ORDER(lhs_utf8, rhs_utf8);
+            CHECK_ORDER(lhs_utf8, rhs_utf16);
+            CHECK_ORDER(lhs_utf16, rhs_utf8);
+            CHECK_ORDER(lhs_utf16, rhs_utf16);
+        } else {
+            QCOMPARE(lhs_utf8, rhs_utf8);
+            QCOMPARE(lhs_utf8, rhs_utf16);
+            QCOMPARE(lhs_utf16, rhs_utf8);
+            QCOMPARE(lhs_utf16, rhs_utf16);
+        }
+    };
+    auto addStringCmpSameLength = [&](const char *tag, QUtf8StringView lhs, QUtf8StringView rhs) {
+        Q_ASSERT(lhs.size() == rhs.size());
+        addStringCmp("samelength-", tag, lhs, rhs);
+    };
+    auto addStringCmpShorter = [&](const char *tag, QUtf8StringView lhs, QUtf8StringView rhs) {
+        Q_ASSERT(lhs.size() < rhs.size());
+        addStringCmp("shorter-", tag, lhs, rhs);
+    };
+
+    // ascii-only is already tested
+    addStringCmp("equal-", "1continuation", "ab\u00A0c", "ab\u00A0c");
+    addStringCmp("equal-", "2continuation", "ab\u0800", "ab\u0800");
+    addStringCmp("equal-", "3continuation", "a\U00010000", "a\U00010000");
+
+    // these strings all have the same UTF-8 length (5 bytes)
+    addStringCmpSameLength("less-ascii", "abcde", "ab\u00A0c");
+    addStringCmpSameLength("less-1continuation", "ab\u00A0c", "ab\u07FFc");
+    addStringCmpSameLength("less-2continuation", "ab\u0800", "ab\uFFFC");
+    addStringCmpSameLength("less-3continuation", "a\U00010000", "a\U0010FFFC");
+    addStringCmpSameLength("less-0-vs-1continuation", "abcde", "ab\u00A0c");
+    addStringCmpSameLength("less-0-vs-2continuation", "abcde", "ab\u0800");
+    addStringCmpSameLength("less-0-vs-3continuation", "abcde", "a\U00010000");
+    addStringCmpSameLength("less-1-vs-2continuation", "ab\u00A0c", "ab\uFFFC");
+    addStringCmpSameLength("less-1-vs-3continuation", "ab\u00A0c", "a\U00010000");
+    addStringCmpSameLength("less-2-vs-3continuation", "ab\u0800", "a\U00010000");
+    addStringCmpSameLength("less-2-vs-3continuation_surrogate", "a\uFFFCz", "a\U00010000"); // even though U+D800 < U+FFFC
+
+    // these strings have different lengths in UTF-8
+    // (0continuation already tested)
+    addStringCmpShorter("1continuation", "ab\u00A0", "ab\u00A0c");
+    addStringCmpShorter("2continuation", "ab\u0800", "ab\u0800c");
+    addStringCmpShorter("3continuation", "ab\U00010000", "ab\U00010000c");
+    // most of these have the same length in UTF-16!
+    addStringCmpShorter("0-vs-1continuation", "abc", "ab\u00A0");
+    addStringCmpShorter("0-vs-2continuation", "abcd", "ab\u0800");
+    addStringCmpShorter("0-vs-3continuation", "abcde", "ab\U00010000");
+    addStringCmpShorter("1-vs-2continuation", "ab\u00A0", "ab\u0800");
+    addStringCmpShorter("1-vs-3continuation", "abc\u00A0", "ab\U00010000");
+    addStringCmpShorter("2-vs-3continuation", "ab\u0800", "ab\U00010000");
+
+    // lhs is 4xUTF-16 and 8xUTF-8; rhs is 3xUTF-16 but 9xUTF-8
+    addStringCmpShorter("3x2-vs-2x3continuation", "\U00010000\U00010000", "\u0800\u0800\u0800");
+
+    // slight surprising because normally rhs would sort first ("aa" vs "ab" prefix)
+    // (0continuation_surprise already tested)
+    addStringCmpShorter("1continuation_surprise", "ab\u00A0", "aa\u00A0c");
+    addStringCmpShorter("2continuation_surprise", "ab\u0800", "aa\u0800c");
+    addStringCmpShorter("3continuation_surprise", "ab\U00010000", "aa\U00010000c");
+    addStringCmpShorter("0-vs-1continuation_surprise", "abc", "aa\u00A0");
+    addStringCmpShorter("0-vs-2continuation_surprise", "abcd", "aa\u0800");
+    addStringCmpShorter("0-vs-3continuation_surprise", "abcde", "aa\U00010000");
+    addStringCmpShorter("1-vs-2continuation_surprise", "ab\u00A0", "aa\u0800");
+    addStringCmpShorter("1-vs-3continuation_surprise", "abc\u00A0", "aa\U00010000");
+    addStringCmpShorter("2-vs-3continuation_surprise", "ab\u0800", "aa\U00010000");
 #undef CHECK_ORDER
 }
 
