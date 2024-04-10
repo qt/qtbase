@@ -302,7 +302,7 @@ class Q_CORE_EXPORT QDateTime
         quintptr status : 8;
 #  endif
 #endif
-        friend constexpr bool operator==(const ShortData &lhs, const ShortData &rhs)
+        friend constexpr bool operator==(ShortData lhs, ShortData rhs)
         { return lhs.status == rhs.status && lhs.msecs == rhs.msecs; }
     };
 

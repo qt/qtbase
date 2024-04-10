@@ -49,7 +49,7 @@ class Q_CORE_EXPORT QTimeZone
 #endif
         {
         }
-        friend constexpr bool operator==(const ShortData &lhs, const ShortData &rhs)
+        friend constexpr bool operator==(ShortData lhs, ShortData rhs)
         { return lhs.mode == rhs.mode && lhs.offset == rhs.offset; }
         constexpr Qt::TimeSpec spec() const { return Qt::TimeSpec((mode + 3) & 3); }
     };
