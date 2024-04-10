@@ -584,6 +584,11 @@ function(qt_internal_add_test name)
         set_target_properties(${name} PROPERTIES _qt_is_manual_test ${arg_MANUAL})
     endif()
 
+    set(blacklist_file "${CMAKE_CURRENT_SOURCE_DIR}/BLACKLIST")
+    if(EXISTS ${blacklist_file})
+        _qt_internal_expose_source_file_to_ide("${name}" ${blacklist_file})
+    endif()
+
     foreach(path IN LISTS arg_QML_IMPORTPATH)
         list(APPEND extra_test_args "-import" "${path}")
     endforeach()
