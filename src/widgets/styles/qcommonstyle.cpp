@@ -1679,9 +1679,12 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             QFontMetrics fm(header->fontMetrics);
             if (header->state & QStyle::State_On) {
                 QFont fnt = p->font();
-                fnt.setBold(true);
-                p->setFont(fnt);
-                fm = QFontMetrics((p->font()));
+                // the font already has a weight set; don't override that
+                if (!(fnt.resolveMask() & QFont::WeightResolved)) {
+                    fnt.setBold(true);
+                    p->setFont(fnt);
+                    fm = QFontMetrics((p->font()));
+                }
             }
             QString text = header->text;
             if (const QStyleOptionHeaderV2 *headerV2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(header)) {
