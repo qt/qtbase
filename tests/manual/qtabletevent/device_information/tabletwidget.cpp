@@ -57,6 +57,8 @@ bool TabletWidget::eventFilter(QObject *, QEvent *ev)
             mPos = event->pos();
             mGPos = event->globalPosition();
             mTimestamp = event->timestamp();
+            if (isVisible())
+                update();
         }
         break;
     case QEvent::Wheel:
