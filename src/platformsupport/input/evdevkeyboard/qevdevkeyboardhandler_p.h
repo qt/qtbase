@@ -165,7 +165,9 @@ public:
 private:
     void processKeyEvent(int nativecode, int unicode, int qtcode,
                          Qt::KeyboardModifiers modifiers, bool isPress, bool autoRepeat);
+#ifndef Q_OS_VXWORKS
     void switchLed(int, bool);
+#endif
 
     QString m_device;
     QFdContainer m_fd;

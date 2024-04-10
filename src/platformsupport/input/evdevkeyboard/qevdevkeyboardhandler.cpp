@@ -19,6 +19,8 @@
 
 #ifdef Q_OS_FREEBSD
 #include <dev/evdev/input.h>
+#elif defined(Q_OS_VXWORKS)
+#include <evdevLib.h>
 #else
 #include <linux/input.h>
 #endif
@@ -111,11 +113,22 @@ std::unique_ptr<QEvdevKeyboardHandler> QEvdevKeyboardHandler::create(const QStri
         fd.reset(qt_safe_open(device.toLocal8Bit().constData(), O_RDONLY | O_NDELAY, 0));
     }
     if (fd.get() >= 0) {
+#if !defined(Q_OS_VXWORKS)
         ::ioctl(fd.get(), EVIOCGRAB, grab);
         if (repeatDelay > 0 && repeatRate > 0) {
             int kbdrep[2] = { repeatDelay, repeatRate };
             ::ioctl(fd.get(), EVIOCSREP, kbdrep);
         }
+#else
+        Q_UNUSED(repeatDelay)
+        Q_UNUSED(repeatRate)
+        Q_UNUSED(grab)
+        UINT32 kbdMode = EV_DEV_KBD_KEYCODE_MODE;
+        if (ERROR == ioctl (fd.get(), EV_DEV_IO_SET_KBD_MODE, (char *)&kbdMode)) {
+            qWarning("Cannot set keyboard mapping mode to KEYCODE mode '%s': %s", qPrintable(device), strerror(errno));
+            return 0;
+        }
+#endif
 
         return std::unique_ptr<QEvdevKeyboardHandler>(new QEvdevKeyboardHandler(device, fd, disableZap, enableCompose, keymapFile));
     } else {
@@ -124,6 +137,7 @@ std::unique_ptr<QEvdevKeyboardHandler> QEvdevKeyboardHandler::create(const QStri
     }
 }
 
+#if !defined(Q_OS_VXWORKS)
 void QEvdevKeyboardHandler::switchLed(int led, bool state)
 {
     qCDebug(qLcEvdevKey, "switchLed %d %d", led, int(state));
@@ -139,9 +153,45 @@ void QEvdevKeyboardHandler::switchLed(int led, bool state)
 
     qt_safe_write(m_fd.get(), &led_ie, sizeof(led_ie));
 }
+#endif
 
 void QEvdevKeyboardHandler::readKeycode()
 {
+#if defined(Q_OS_VXWORKS)
+    EV_DEV_EVENT ev;
+    int n = ERROR;
+
+    while (n == ERROR) {
+        n = read(m_fd.get(), (char *)(&ev), sizeof(EV_DEV_EVENT));
+
+        if (n == 0) {
+            qWarning("evdevkeyboard: Got EOF from the input device");
+            return;
+        }
+
+        if (n == ERROR) {
+            if (errno == EINTR || errno == EAGAIN)
+                continue;
+
+            qErrnoWarning("evdevkeyboard: Could not read from input device");
+            if (errno == ENXIO) {
+                close(m_fd.get());
+                delete m_notify;
+                m_notify = nullptr;
+                m_fd.reset();
+            }
+            return;
+        }
+    }
+
+    if (n < sizeof(EV_DEV_EVENT)) return;
+    if (ev.type != EV_DEV_KEY) return;
+
+    quint16 code = ev.code;
+    qint32 value = ev.value;
+
+    processKeycode(code, value != 0, value == 2);
+#else
     struct ::input_event buffer[32];
     int n = 0;
 
@@ -203,6 +253,7 @@ void QEvdevKeyboardHandler::readKeycode()
             break;
         }
     }
+#endif
 }
 
 void QEvdevKeyboardHandler::processKeyEvent(int nativecode, int unicode, int qtcode,
@@ -478,6 +529,7 @@ void QEvdevKeyboardHandler::unloadKeymap()
     m_composing = 0;
     m_dead_unicode = 0xffff;
 
+#if !defined(Q_OS_VXWORKS)
     //Set locks according to keyboard leds
     quint16 ledbits[1];
     memset(ledbits, 0, sizeof(ledbits));
@@ -500,6 +552,7 @@ void QEvdevKeyboardHandler::unloadKeymap()
     }
 
     m_langLock = 0;
+#endif
 }
 
 bool QEvdevKeyboardHandler::loadKeymap(const QString &file)
