@@ -74,6 +74,15 @@ macro(qt_internal_top_level_end)
     # Depends on QtBuildInternalsConfig being included, which is the case whenver any repo is
     # configured.
     qt_internal_qt_configure_end()
+
+    if(QT_WILL_INSTALL AND QT_INSTALL_CONFIG_INFO_FILES)
+        qt_install(
+            FILES
+                "${CMAKE_BINARY_DIR}/config.opt"
+                "${CMAKE_BINARY_DIR}/config.summary"
+            DESTINATION ${INSTALL_DATADIR}
+        )
+    endif()
 endmacro()
 
 function(qt_internal_print_top_level_info)
