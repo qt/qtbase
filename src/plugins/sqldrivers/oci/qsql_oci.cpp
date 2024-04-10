@@ -1429,7 +1429,7 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVariantList &boundValues, bool a
 
         // we may now populate column with data
         for (uint row = 0; row < col.recordCount; ++row) {
-            const QVariant &val = boundValues.at(i).toList().at(row);
+            const QVariant val = boundValues.at(i).toList().at(row);
 
             if (QSqlResultPrivate::isVariantNull(val) && !d->isOutValue(i)) {
                 columns[i].indicators[row] = -1;
