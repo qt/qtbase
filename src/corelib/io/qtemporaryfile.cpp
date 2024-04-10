@@ -184,8 +184,9 @@ static bool createFileFromTemplate(NativeFileHandle &file, QTemporaryFileName &t
         const DWORD shareMode = (flags & QTemporaryFileEngine::Win32NonShared)
                                 ? 0u : (FILE_SHARE_READ | FILE_SHARE_WRITE);
 
+        const DWORD extraAccessFlags = (flags & QTemporaryFileEngine::Win32NonShared) ? DELETE : 0;
         file = CreateFile((const wchar_t *)path.constData(),
-                GENERIC_READ | GENERIC_WRITE,
+                GENERIC_READ | GENERIC_WRITE | extraAccessFlags,
                 shareMode, NULL, CREATE_NEW,
                 FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -390,6 +391,12 @@ bool QTemporaryFileEngine::renameOverwrite(const QString &newName)
         QFSFileEngine::close();
         return ok;
     }
+#ifdef Q_OS_WIN
+    if (d_func()->nativeRenameOverwrite(newName)) {
+        QFSFileEngine::close();
+        return true;
+    }
+#endif
     QFSFileEngine::close();
     return QFSFileEngine::renameOverwrite(newName);
 }
