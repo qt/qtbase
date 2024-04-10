@@ -745,6 +745,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextTableCellFormat &
     \value ImageWidth
     \value ImageHeight
     \value ImageQuality
+    \value ImageMaxWidth    This enum value has been added in Qt 6.8.
 
     Selection properties
 
@@ -3426,7 +3427,7 @@ QTextImageFormat::QTextImageFormat(const QTextFormat &fmt)
 
     Sets the \a width of the rectangle occupied by the image.
 
-    \sa width(), setHeight()
+    \sa width(), setHeight(), maximumWidth()
 */
 
 
@@ -3436,6 +3437,24 @@ QTextImageFormat::QTextImageFormat(const QTextFormat &fmt)
     Returns the width of the rectangle occupied by the image.
 
     \sa height(), setWidth()
+*/
+
+/*!
+    \fn void QTextImageFormat::setMaximumWidth(QTextLength maximumWidth)
+
+    Sets the \a maximumWidth of the rectangle occupied by the image. This
+    can be an absolute number or a percentage of the available document size.
+
+    \sa width(), setHeight()
+*/
+
+
+/*!
+    \fn QTextLength QTextImageFormat::maximumWidth() const
+
+    Returns the maximum width of the rectangle occupied by the image.
+
+    \sa width(), setMaximumWidth()
 */
 
 

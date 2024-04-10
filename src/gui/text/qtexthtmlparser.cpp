@@ -1428,6 +1428,13 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
             charFormat.setForeground(brush);
             break;
         }
+        case QCss::MaximumWidth:
+            if (id == Html_img) {
+                auto imageFormat = charFormat.toImageFormat();
+                imageFormat.setMaximumWidth(extractor.textLength(decl));
+                charFormat = imageFormat;
+            }
+            break;
         default: break;
         }
     }

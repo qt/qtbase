@@ -241,6 +241,7 @@ public:
         ImageWidth = 0x5010,
         ImageHeight = 0x5011,
         ImageQuality = 0x5014,
+        ImageMaxWidth = 0x5015,
 
         // internal
         /*
@@ -796,6 +797,10 @@ public:
     inline qreal width() const
     { return doubleProperty(ImageWidth); }
 
+    inline void setMaximumWidth(QTextLength maxWidth);
+    inline QTextLength maximumWidth() const
+    { return lengthProperty(ImageMaxWidth); }
+
     inline void setHeight(qreal height);
     inline qreal height() const
     { return doubleProperty(ImageHeight); }
@@ -822,6 +827,9 @@ inline void QTextImageFormat::setName(const QString &aname)
 
 inline void QTextImageFormat::setWidth(qreal awidth)
 { setProperty(ImageWidth, awidth); }
+
+inline void QTextImageFormat::setMaximumWidth(QTextLength maxWidth)
+{ setProperty(ImageMaxWidth, maxWidth); }
 
 inline void QTextImageFormat::setHeight(qreal aheight)
 { setProperty(ImageHeight, aheight); }

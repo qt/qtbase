@@ -6,6 +6,10 @@
 #include <QPainter>
 #include <private/qtextimagehandler_p.h>
 
+using namespace Qt::StringLiterals;
+
+// #define DEBUG_WRITE_HTML
+
 class tst_QTextImageHandler : public QObject
 {
     Q_OBJECT
@@ -20,6 +24,8 @@ private slots:
     void loadAtNImages_data();
 #ifndef QT_NO_TEXTHTMLPARSER
     void loadAtNImages();
+    void maxWidth_data();
+    void maxWidth();
 #endif
 };
 
@@ -61,7 +67,7 @@ void tst_QTextImageHandler::loadAtNImages()
     const auto it = std::find_if(formats.begin(), formats.end(), [](const auto &format){
         return format.objectType() == QTextFormat::ImageObject;
     });
-    QVERIFY(it != formats.end());
+    QCOMPARE_NE(it, formats.end());
     const QTextImageFormat format = (*it).toImageFormat();
     QTextImageHandler handler;
 
@@ -76,6 +82,64 @@ void tst_QTextImageHandler::loadAtNImages()
         const auto expectedColor = dpr == 1 ? Qt::red : Qt::green;
         QCOMPARE(img.pixelColor(0, 0), expectedColor);
     }
+}
+
+void tst_QTextImageHandler::maxWidth_data()
+{
+    QTest::addColumn<QString>("imageFile");
+    QTest::addColumn<QSizeF>("pageSize");
+    QTest::addColumn<QTextLength>("maxWidth");
+    QTest::addColumn<QSizeF>("expectedSize");
+
+    QTest::addRow("constrained-percentage") << QFINDTESTDATA("data/image.png") << QSizeF(16, 16) << QTextLength(QTextLength::PercentageLength, 100) << QSizeF(12, 12);
+    QTest::addRow("not-constrained-percentage") << QFINDTESTDATA("data/image.png") << QSizeF(200, 200) << QTextLength(QTextLength::PercentageLength, 100) << QSizeF(16, 16);
+    QTest::addRow("constrained-fixed") << QFINDTESTDATA("data/image.png") << QSizeF(16, 16) << QTextLength(QTextLength::FixedLength, 5) << QSizeF(5, 5);
+    QTest::addRow("not-constrained-fixed") << QFINDTESTDATA("data/image.png") << QSizeF(200, 200) << QTextLength(QTextLength::FixedLength, 5) << QSizeF(5, 5);
+    QTest::addRow("not-constrained-default") << QFINDTESTDATA("data/image.png") << QSizeF(200, 200) << QTextLength(QTextLength::VariableLength, 5) << QSizeF(16, 16);
+}
+
+void tst_QTextImageHandler::maxWidth()
+{
+    QFETCH(QString, imageFile);
+    QFETCH(QSizeF, pageSize);
+    QFETCH(QTextLength, maxWidth);
+    QFETCH(QSizeF, expectedSize);
+
+    QTextDocument doc;
+    doc.setPageSize(pageSize);
+    doc.setDocumentMargin(2);
+    QTextCursor c(&doc);
+    QString style;
+    if (maxWidth.type() == QTextLength::PercentageLength)
+        style = " style=\"max-width:"_L1 + QString::number(maxWidth.rawValue()) + "%;\""_L1;
+    else if (maxWidth.type() == QTextLength::FixedLength)
+        style = " style=\"max-width:"_L1 + QString::number(maxWidth.rawValue()) + "px;\""_L1;
+    const QString html = "<img src=\"" + imageFile + u'\"' + style + "\">";
+    c.insertHtml(html);
+
+#ifdef DEBUG_WRITE_HTML
+    {
+        QFile out("/tmp/" + QLatin1String(QTest::currentDataTag()) + ".html");
+        out.open(QFile::WriteOnly);
+        out.write(html.toLatin1());
+        out.close();
+    }
+    {
+        QFile out("/tmp/" + QLatin1String(QTest::currentDataTag()) + "_rewrite.html");
+        out.open(QFile::WriteOnly);
+        out.write(doc.toHtml().toLatin1());
+        out.close();
+    }
+#endif
+    const auto formats = doc.allFormats();
+    const auto it = std::find_if(formats.begin(), formats.end(), [](const auto &format){
+        return format.objectType() == QTextFormat::ImageObject;
+    });
+    QCOMPARE_NE(it, formats.end());
+    const QTextImageFormat format = (*it).toImageFormat();
+    QTextImageHandler handler;
+
+    QCOMPARE(handler.intrinsicSize(&doc, 0, format), expectedSize);
 }
 #endif
 

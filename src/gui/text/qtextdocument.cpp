@@ -2944,6 +2944,17 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
 
             html += "<img"_L1;
 
+            QString maxWidthCss;
+
+            if (imgFmt.hasProperty(QTextFormat::ImageMaxWidth)) {
+                auto length = imgFmt.lengthProperty(QTextFormat::ImageMaxWidth);
+                maxWidthCss += "max-width:"_L1;
+                if (length.type() == QTextLength::PercentageLength)
+                    maxWidthCss += QString::number(length.rawValue()) + "%;"_L1;
+                else if (length.type() == QTextLength::FixedLength)
+                    maxWidthCss += QString::number(length.rawValue()) + "px;"_L1;
+            }
+
             if (imgFmt.hasProperty(QTextFormat::ImageName))
                 emitAttribute("src", imgFmt.name());
 
@@ -2960,9 +2971,11 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
                 emitAttribute("height", QString::number(imgFmt.height()));
 
             if (imgFmt.verticalAlignment() == QTextCharFormat::AlignMiddle)
-                html += " style=\"vertical-align: middle;\""_L1;
+                html += " style=\"vertical-align: middle;"_L1 + maxWidthCss + u'\"';
             else if (imgFmt.verticalAlignment() == QTextCharFormat::AlignTop)
-                html += " style=\"vertical-align: top;\""_L1;
+                html += " style=\"vertical-align: top;"_L1 + maxWidthCss + u'\"';
+            else if (!maxWidthCss.isEmpty())
+                html += " style=\""_L1 + maxWidthCss + u'\"';
 
             if (QTextFrame *imageFrame = qobject_cast<QTextFrame *>(doc->objectForFormat(imgFmt)))
                 emitFloatStyle(imageFrame->frameFormat().position());

@@ -12,6 +12,7 @@
 #include <private/qtextengine_p.h>
 #include <qpalette.h>
 #include <qthread.h>
+#include <limits>
 
 QT_BEGIN_NAMESPACE
 
@@ -72,21 +73,40 @@ template<typename T>
 static QSize getSize(QTextDocument *doc, const QTextImageFormat &format)
 {
     const bool hasWidth = format.hasProperty(QTextFormat::ImageWidth);
-    const int width = qRound(format.width());
+    int width = qRound(format.width());
     const bool hasHeight = format.hasProperty(QTextFormat::ImageHeight);
     const int height = qRound(format.height());
+
+    const bool hasMaxWidth = format.hasProperty(QTextFormat::ImageMaxWidth);
+    const auto maxWidth = format.maximumWidth();
+
+    int effectiveMaxWidth = std::numeric_limits<int>::max();
+    if (hasMaxWidth) {
+        if (maxWidth.type() == QTextLength::PercentageLength)
+            effectiveMaxWidth = (doc->pageSize().width() - 2 * doc->documentMargin()) * maxWidth.value(100) / 100;
+        else
+            effectiveMaxWidth = maxWidth.rawValue();
+
+        width = qMin(effectiveMaxWidth, width);
+    }
 
     T source;
     QSize size(width, height);
     if (!hasWidth || !hasHeight) {
         source = getAs<T>(doc, format);
-        const QSizeF sourceSize = source.deviceIndependentSize();
+        QSizeF sourceSize = source.deviceIndependentSize();
+
+        if (sourceSize.width() > effectiveMaxWidth) {
+            // image is bigger than effectiveMaxWidth, scale it down
+            sourceSize.setHeight(effectiveMaxWidth * (sourceSize.height() / qreal(sourceSize.width())));
+            sourceSize.setWidth(effectiveMaxWidth);
+        }
 
         if (!hasWidth) {
             if (!hasHeight)
                 size.setWidth(sourceSize.width());
             else
-                size.setWidth(qRound(height * (sourceSize.width() / qreal(sourceSize.height()))));
+                size.setWidth(qMin(effectiveMaxWidth, qRound(height * (sourceSize.width() / qreal(sourceSize.height())))));
         }
         if (!hasHeight) {
             if (!hasWidth)

@@ -12,6 +12,7 @@
 #include <qfontmetrics.h>
 #include <qbrush.h>
 #include <qimagereader.h>
+#include <qtextformat.h>
 
 #include <algorithm>
 
@@ -396,6 +397,8 @@ LengthData ValueExtractor::lengthValue(const Value& v)
 
     if (data.unit != LengthData::None)
         s.chop(2);
+    else if (v.type == Value::Percentage)
+        data.unit = LengthData::Percent;
 
     data.number = s.toDouble();
     return data;
@@ -407,6 +410,15 @@ static int lengthValueFromData(const LengthData& data, const QFont& f)
                       : data.unit == LengthData::Em ? QFontMetrics(f).height() : 1);
     // raised lower limit due to the implementation of qRound()
     return qRound(qBound(double(INT_MIN) + 0.1, scale * data.number, double(INT_MAX)));
+}
+
+QTextLength ValueExtractor::textLength(const Declaration &decl)
+{
+    const LengthData data = lengthValue(decl.d->values.at(0));
+    if (data.unit == LengthData::Percent)
+        return QTextLength(QTextLength::PercentageLength, data.number);
+
+    return QTextLength(QTextLength::FixedLength, lengthValueFromData(data, f));
 }
 
 int ValueExtractor::lengthValue(const Declaration &decl)

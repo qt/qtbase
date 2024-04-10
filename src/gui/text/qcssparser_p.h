@@ -392,7 +392,7 @@ QT_CSS_DECLARE_TYPEINFO(BackgroundData, Q_RELOCATABLE_TYPE)
 
 struct LengthData {
     qreal number;
-    enum { None, Px, Ex, Em } unit;
+    enum { None, Px, Ex, Em, Percent } unit;
 };
 QT_CSS_DECLARE_TYPEINFO(LengthData, Q_PRIMITIVE_TYPE)
 
@@ -835,6 +835,7 @@ struct Q_GUI_EXPORT ValueExtractor
     bool extractIcon(QIcon *icon, QSize *size);
 
     void lengthValues(const Declaration &decl, int *m);
+    QTextLength textLength(const Declaration &decl);
 
 private:
     void extractFont();
