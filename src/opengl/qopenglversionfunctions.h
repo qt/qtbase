@@ -1179,25 +1179,25 @@ public:
     F(void, NamedFramebufferParameteri, (GLuint framebuffer, GLenum pname, GLint param)) \
     F(void, NamedFramebufferRenderbuffer, (GLuint framebuffer, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer)) \
     F(void, CreateFramebuffers, (GLsizei n, GLuint *framebuffers)) \
-    F(void, GetNamedBufferSubData, (GLuint buffer, GLintptr offset, GLsizei size, void *data)) \
+    F(void, GetNamedBufferSubData, (GLuint buffer, GLintptr offset, GLsizeiptr size, void *data)) \
     F(void, GetNamedBufferPointerv, (GLuint buffer, GLenum pname, GLvoid* *params)) \
     F(void, GetNamedBufferParameteri64v, (GLuint buffer, GLenum pname, GLint64 *params)) \
     F(void, GetNamedBufferParameteriv, (GLuint buffer, GLenum pname, GLint *params)) \
-    F(void, FlushMappedNamedBufferRange, (GLuint buffer, GLintptr offset, GLsizei length)) \
+    F(void, FlushMappedNamedBufferRange, (GLuint buffer, GLintptr offset, GLsizeiptr length)) \
     F(GLboolean, UnmapNamedBuffer, (GLuint buffer)) \
-    F(GLvoid *, MapNamedBufferRange, (GLuint buffer, GLintptr offset, GLsizei length, GLbitfield access)) \
+    F(GLvoid *, MapNamedBufferRange, (GLuint buffer, GLintptr offset, GLsizeiptr length, GLbitfield access)) \
     F(GLvoid *, MapNamedBuffer, (GLuint buffer, GLenum access)) \
-    F(void, ClearNamedBufferSubData, (GLuint buffer, GLenum internalformat, GLintptr offset, GLsizei size, GLenum format, GLenum type, const void *data)) \
+    F(void, ClearNamedBufferSubData, (GLuint buffer, GLenum internalformat, GLintptr offset, GLsizeiptr size, GLenum format, GLenum type, const void *data)) \
     F(void, ClearNamedBufferData, (GLuint buffer, GLenum internalformat, GLenum format, GLenum type, const void *data)) \
-    F(void, CopyNamedBufferSubData, (GLuint readBuffer, GLuint writeBuffer, GLintptr readOffset, GLintptr writeOffset, GLsizei size)) \
-    F(void, NamedBufferSubData, (GLuint buffer, GLintptr offset, GLsizei size, const void *data)) \
-    F(void, NamedBufferData, (GLuint buffer, GLsizei size, const void *data, GLenum usage)) \
-    F(void, NamedBufferStorage, (GLuint buffer, GLsizei size, const void *data, GLbitfield flags)) \
+    F(void, CopyNamedBufferSubData, (GLuint readBuffer, GLuint writeBuffer, GLintptr readOffset, GLintptr writeOffset, GLsizeiptr size)) \
+    F(void, NamedBufferSubData, (GLuint buffer, GLintptr offset, GLsizeiptr size, const void *data)) \
+    F(void, NamedBufferData, (GLuint buffer, GLsizeiptr size, const void *data, GLenum usage)) \
+    F(void, NamedBufferStorage, (GLuint buffer, GLsizeiptr size, const void *data, GLbitfield flags)) \
     F(void, CreateBuffers, (GLsizei n, GLuint *buffers)) \
     F(void, GetTransformFeedbacki64_v,(GLuint xfb, GLenum pname, GLuint index, GLint64 *param)) \
     F(void, GetTransformFeedbacki_v,(GLuint xfb, GLenum pname, GLuint index, GLint *param)) \
     F(void, GetTransformFeedbackiv, (GLuint xfb, GLenum pname, GLint *param)) \
-    F(void, TransformFeedbackBufferRange, (GLuint xfb, GLuint index, GLuint buffer, GLintptr offset, GLsizei size)) \
+    F(void, TransformFeedbackBufferRange, (GLuint xfb, GLuint index, GLuint buffer, GLintptr offset, GLsizeiptr size)) \
     F(void, TransformFeedbackBufferBase, (GLuint xfb, GLuint index, GLuint buffer)) \
     F(void, CreateTransformFeedbacks, (GLsizei n, GLuint *ids)) \
     F(void, ClipControl, (GLenum origin, GLenum depth)) \
