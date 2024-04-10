@@ -176,21 +176,6 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
         m_physicalDpi = 96;
     }
 
-    if (!qt_apple_isApplicationExtension()) {
-        for (UIWindow *existingWindow in qt_apple_sharedApplication().windows) {
-            if (existingWindow.screen == m_uiScreen) {
-                m_uiWindow = [existingWindow retain];
-                break;
-            }
-        }
-
-        if (!m_uiWindow) {
-            // Create a window and associated view-controller that we can use
-            m_uiWindow = [[QUIWindow alloc] initWithFrame:[m_uiScreen bounds]];
-            m_uiWindow.rootViewController = [[[QIOSViewController alloc] initWithQIOSScreen:this] autorelease];
-        }
-    }
-
     m_displayLink = [m_uiScreen displayLinkWithBlock:^(CADisplayLink *) { deliverUpdateRequests(); }];
     m_displayLink.paused = YES; // Enabled when clients call QWindow::requestUpdate()
     [m_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
@@ -203,8 +188,6 @@ QIOSScreen::QIOSScreen(UIScreen *screen)
 QIOSScreen::~QIOSScreen()
 {
     [m_displayLink invalidate];
-
-    [m_uiWindow release];
 }
 
 QString QIOSScreen::name() const
@@ -390,7 +373,8 @@ QPixmap QIOSScreen::grabWindow(WId window, int x, int y, int width, int height) 
     if (window && ![reinterpret_cast<id>(window) isKindOfClass:[UIView class]])
         return QPixmap();
 
-    UIView *view = window ? reinterpret_cast<UIView *>(window) : m_uiWindow.rootViewController.view;
+    UIView *view = window ? reinterpret_cast<UIView *>(window)
+                          : rootViewForScreen(screen());
 
     if (width < 0)
         width = qMax(view.bounds.size.width - x, CGFloat(0));
@@ -423,11 +407,6 @@ UIScreen *QIOSScreen::uiScreen() const
     return m_uiScreen;
 }
 #endif
-
-UIWindow *QIOSScreen::uiWindow() const
-{
-    return m_uiWindow;
-}
 
 QT_END_NAMESPACE
 

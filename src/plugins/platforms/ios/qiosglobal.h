@@ -14,6 +14,7 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_LOGGING_CATEGORY(lcQpaApplication);
 Q_DECLARE_LOGGING_CATEGORY(lcQpaInputMethods);
 Q_DECLARE_LOGGING_CATEGORY(lcQpaWindow);
+Q_DECLARE_LOGGING_CATEGORY(lcQpaWindowScene);
 
 #if !defined(QT_NO_DEBUG)
 #define qImDebug \
@@ -36,7 +37,9 @@ UIDeviceOrientation fromQtScreenOrientation(Qt::ScreenOrientation qtOrientation)
 int infoPlistValue(NSString* key, int defaultValue);
 
 class QWindow;
+class QScreen;
 UIWindow *presentationWindow(QWindow *);
+UIView *rootViewForScreen(QScreen *);
 
 QT_END_NAMESPACE
 

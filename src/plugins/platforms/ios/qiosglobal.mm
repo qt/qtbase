@@ -13,6 +13,7 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcQpaApplication, "qt.qpa.application");
 Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods");
 Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
+Q_LOGGING_CATEGORY(lcQpaWindowScene, "qt.qpa.window.scene");
 
 bool isQtApplication()
 {
@@ -107,6 +108,32 @@ UIWindow *presentationWindow(QWindow *window)
         }
     }
     return uiWindow;
+}
+
+UIView *rootViewForScreen(QScreen *screen)
+{
+    const auto *iosScreen = static_cast<QIOSScreen *>(screen->handle());
+    for (UIScene *scene in [qt_apple_sharedApplication().connectedScenes allObjects]) {
+        if (![scene isKindOfClass:UIWindowScene.class])
+            continue;
+
+        auto *windowScene = static_cast<UIWindowScene*>(scene);
+
+#if !defined(Q_OS_VISIONOS)
+        if (windowScene.screen != iosScreen->uiScreen())
+            continue;
+#else
+        Q_UNUSED(iosScreen);
+#endif
+
+        UIWindow *uiWindow = windowScene.keyWindow;
+        if (!uiWindow && windowScene.windows.count)
+            uiWindow = windowScene.windows[0];
+
+        return uiWindow.rootViewController.view;
+    }
+
+    return nullptr;
 }
 
 QT_END_NAMESPACE
