@@ -1774,7 +1774,7 @@ static qsizetype toLatin1Len(qsizetype l) { return l + 1; }
     operation, encoding UTF-16 encoded data (usually in the form of a QString) to
     the requested encoding.
 
-    The supported encodings are:
+    The following encodings are always supported:
 
     \list
     \li UTF-8
@@ -1787,6 +1787,10 @@ static qsizetype toLatin1Len(qsizetype l) { return l + 1; }
     \li ISO-8859-1 (Latin-1)
     \li The system encoding
     \endlist
+
+    QStringConverter may support more encodings depending on how Qt was
+    compiled. If more codecs are supported, they can be listed using
+    availableCodecs().
 
     \l {QStringConverter}s can be used as follows to convert some encoded
     string to and from UTF-16.
@@ -2355,6 +2359,10 @@ static qsizetype availableCodecCount()
     by this function can be passed to QStringEncoder's and
     QStringDecoder's constructor to create a en- or decoder for
     the given codec.
+
+    This function may be used to obtain a listing of additional codecs beyond
+    the standard ones. Support for additional codecs requires Qt be compiled
+    with support for the ICU library.
 
     \note The order of codecs is an internal implementation detail
     and not guaranteed to be stable.
