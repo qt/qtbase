@@ -54,7 +54,7 @@ typedef QHash<QByteArray, QTzTimeZone> QTzTimeZoneHash;
 static bool isTzFile(const QString &name);
 
 // Open a named file under the zone info directory:
-static bool openZoneInfo(QString name, QFile *file)
+static bool openZoneInfo(const QString &name, QFile *file)
 {
     // At least on Linux / glibc (see man 3 tzset), $TZDIR overrides the system
     // default location for zone info:

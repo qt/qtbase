@@ -237,7 +237,7 @@ QTimeZonePrivate::Data QTimeZonePrivate::data(qint64 forMSecsSinceEpoch) const
 QDateTimePrivate::ZoneState QTimeZonePrivate::stateAtZoneTime(
     qint64 forLocalMSecs, QDateTimePrivate::TransitionOptions resolve) const
 {
-    auto dataToState = [](QTimeZonePrivate::Data d) {
+    auto dataToState = [](const QTimeZonePrivate::Data &d) {
         return QDateTimePrivate::ZoneState(d.atMSecsSinceEpoch + d.offsetFromUtc * 1000,
                                            d.offsetFromUtc,
                                            d.daylightTimeOffset ? QDateTimePrivate::DaylightTime

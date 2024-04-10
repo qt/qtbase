@@ -3256,7 +3256,7 @@ static void checkValidDateTime(QDateTimeData &d, QDateTime::TransitionResolution
     }
 }
 
-static void reviseTimeZone(QDateTimeData &d, QTimeZone zone,
+static void reviseTimeZone(QDateTimeData &d, const QTimeZone &zone,
                            QDateTime::TransitionResolution resolve)
 {
     Qt::TimeSpec spec = zone.timeSpec();
