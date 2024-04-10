@@ -67,7 +67,7 @@ public:
     int cursorPosition() const override { return edit ? edit->cursorPosition() : -1; }
 
     int absoluteIndex(QDateTimeEdit::Section s, int index) const;
-    int absoluteIndex(const SectionNode &s) const;
+    int absoluteIndex(SectionNode s) const;
     QDateTime stepBy(int index, int steps, bool test = false) const;
     int sectionAt(int pos) const;
     int closestSection(int index, bool forward) const;

@@ -334,7 +334,7 @@ int QDateTimeParser::sectionPos(int sectionIndex) const
     return sectionPos(sectionNode(sectionIndex));
 }
 
-int QDateTimeParser::sectionPos(const SectionNode &sn) const
+int QDateTimeParser::sectionPos(SectionNode sn) const
 {
     switch (sn.type) {
     case FirstSection: return 0;
@@ -2314,11 +2314,9 @@ QString QDateTimeParser::getAmPmText(AmPm ap, Case cs) const
 
 /*
   \internal
-
-  I give arg2 preference because arg1 is always a QDateTime.
 */
 
-bool operator==(const QDateTimeParser::SectionNode &s1, const QDateTimeParser::SectionNode &s2)
+bool operator==(QDateTimeParser::SectionNode s1, QDateTimeParser::SectionNode s2)
 {
     return (s1.type == s2.type) && (s1.pos == s2.pos) && (s1.count == s2.count);
 }

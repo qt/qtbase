@@ -212,7 +212,7 @@ protected: // for the benefit of QDateTimeEditPrivate
     int sectionSize(int index) const;
     int sectionMaxSize(int index) const;
     int sectionPos(int index) const;
-    int sectionPos(const SectionNode &sn) const;
+    int sectionPos(SectionNode sn) const;
 
     const SectionNode &sectionNode(int index) const;
     Section sectionType(int index) const;
@@ -265,7 +265,7 @@ protected: // for the benefit of QDateTimeEditPrivate
 };
 Q_DECLARE_TYPEINFO(QDateTimeParser::SectionNode, Q_PRIMITIVE_TYPE);
 
-Q_CORE_EXPORT bool operator==(const QDateTimeParser::SectionNode &s1, const QDateTimeParser::SectionNode &s2);
+Q_CORE_EXPORT bool operator==(QDateTimeParser::SectionNode s1, QDateTimeParser::SectionNode s2);
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimeParser::Sections)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimeParser::FieldInfo)

@@ -2478,7 +2478,7 @@ int QDateTimeEditPrivate::absoluteIndex(QDateTimeEdit::Section s, int index) con
     return NoSectionIndex;
 }
 
-int QDateTimeEditPrivate::absoluteIndex(const SectionNode &s) const
+int QDateTimeEditPrivate::absoluteIndex(SectionNode s) const
 {
     return sectionNodes.indexOf(s);
 }
