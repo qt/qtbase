@@ -36,6 +36,7 @@ private slots:
     void playMovie();
     void jumpToFrame_data();
     void jumpToFrame();
+    void frameDelay();
     void changeMovieFile();
 #ifndef QT_NO_WIDGETS
     void infiniteLoop();
@@ -179,6 +180,17 @@ void tst_QMovie::jumpToFrame()
     movie.stop();
     QVERIFY(!movie.jumpToFrame(-1));
     QCOMPARE(movie.currentFrameNumber(), 0);
+}
+
+void tst_QMovie::frameDelay()
+{
+    QMovie movie(QFINDTESTDATA("animations/comicsecard.gif"));
+    QList<int> frameDelays{ 200, 800, 800, 2000, 2600 };
+    for (int i = 0; i < movie.frameCount(); i++) {
+        movie.jumpToFrame(i);
+        // Processing may have taken a little time, so round to nearest 100ms
+        QCOMPARE(100 * qRound(movie.nextFrameDelay() / 100.0f), frameDelays[i]);
+    }
 }
 
 void tst_QMovie::changeMovieFile()

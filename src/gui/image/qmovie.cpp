@@ -319,7 +319,7 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
     // For an animated image format, QImageIOHandler::nextImageDelay() should
     // provide the time to wait until showing the next frame; but multi-frame
     // formats are not expected to provide this value, so use 1000 ms by default.
-    const int nextFrameDelay = supportsAnimation ? reader->nextImageDelay() : 1000;
+    const auto nextFrameDelay = [&]() { return supportsAnimation ? reader->nextImageDelay() : 1000; };
 
     if (cacheMode == QMovie::CacheNone) {
         if (frameNumber != currentFrameNumber+1) {
@@ -363,7 +363,7 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
             }
             if (frameNumber > greatestFrameNumber)
                 greatestFrameNumber = frameNumber;
-            return QFrameInfo(QPixmap::fromImage(std::move(anImage)), nextFrameDelay);
+            return QFrameInfo(QPixmap::fromImage(std::move(anImage)), nextFrameDelay());
         } else if (frameNumber != 0) {
             // We've read all frames now. Return an end marker
             haveReadAll = true;
@@ -391,7 +391,7 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
                     return QFrameInfo(); // Invalid
                 }
                 greatestFrameNumber = i;
-                QFrameInfo info(QPixmap::fromImage(std::move(anImage)), nextFrameDelay);
+                QFrameInfo info(QPixmap::fromImage(std::move(anImage)), nextFrameDelay());
                 // Cache it!
                 frameMap.insert(i, info);
                 if (i == frameNumber) {
