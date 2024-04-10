@@ -27,6 +27,9 @@ private slots:
     void tst_QTreeView_data();
     void tst_QTreeView();
 
+    void tst_QHeaderView_data();
+    void tst_QHeaderView();
+
 private:
     QDir styleSheetDir;
 };
@@ -203,6 +206,22 @@ void tst_Stylesheet::tst_QTreeView()
 
     tw->topLevelItem(Children)->child(0)->setSelected(true);
     QBASELINE_CHECK_DEFERRED(takeSnapshot(), "itemSelected");
+}
+
+void tst_Stylesheet::tst_QHeaderView_data()
+{
+    loadTestFiles();
+}
+
+void tst_Stylesheet::tst_QHeaderView()
+{
+    QHBoxLayout *layout = new QHBoxLayout;
+    QTableWidget *tw = new QTableWidget(10, 10);
+    tw->setCurrentCell(1, 1);
+    layout->addWidget(tw);
+    testWindow()->setLayout(layout);
+    makeVisible();
+    QBASELINE_TEST(takeSnapshot());
 }
 
 #define main _realmain

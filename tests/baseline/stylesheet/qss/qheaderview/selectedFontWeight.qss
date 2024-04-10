@@ -1,0 +1,16 @@
+QHeaderView::section {
+    background-color: red;
+    font-size: 10px;
+}
+
+QHeaderView::section:checked {
+    background-color: green;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+QHeaderView::section:first {
+    background-color: yellow;
+    font-size: 20px;
+    font-weight: normal;
+}
