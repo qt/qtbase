@@ -130,7 +130,7 @@ ParsedInt readInt(QStringView text)
 struct ParsedRfcDateTime {
     QDate date;
     QTime time;
-    int utcOffset;
+    int utcOffset = 0;
 };
 
 static int shortDayFromName(QStringView name)

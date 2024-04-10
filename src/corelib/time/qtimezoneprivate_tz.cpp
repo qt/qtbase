@@ -884,8 +884,6 @@ QTzTimeZoneCacheEntry QTzTimeZoneCache::findEntry(const QByteArray &ianaId)
     // TODO: is typeList[0] always the "before zones" data ? It seems to be ...
     if (typeList.size())
         ret.m_preZoneRule = { typeList.at(0).tz_gmtoff, 0, typeList.at(0).tz_abbrind };
-    else
-        ret.m_preZoneRule = { 0, 0, 0 };
 
     // Offsets are stored as total offset, want to know separate UTC and DST offsets
     // so find the first non-dst transition to use as base UTC Offset

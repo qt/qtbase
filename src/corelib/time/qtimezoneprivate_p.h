@@ -254,9 +254,9 @@ struct QTzTransitionTime
 Q_DECLARE_TYPEINFO(QTzTransitionTime, Q_PRIMITIVE_TYPE);
 struct QTzTransitionRule
 {
-    int stdOffset;
-    int dstOffset;
-    quint8 abbreviationIndex;
+    int stdOffset = 0;
+    int dstOffset = 0;
+    quint8 abbreviationIndex = 0;
 };
 Q_DECLARE_TYPEINFO(QTzTransitionRule, Q_PRIMITIVE_TYPE);
 constexpr inline bool operator==(const QTzTransitionRule &lhs, const QTzTransitionRule &rhs) noexcept
@@ -273,7 +273,7 @@ struct QTzTimeZoneCacheEntry
     QList<QByteArray> m_abbreviations;
     QByteArray m_posixRule;
     QTzTransitionRule m_preZoneRule;
-    bool m_hasDst;
+    bool m_hasDst = false;
 };
 
 class Q_AUTOTEST_EXPORT QTzTimeZonePrivate final : public QTimeZonePrivate
