@@ -363,15 +363,25 @@ qt_config_compile_test(evdev
     CODE
 "#if defined(__FreeBSD__)
 #  include <dev/evdev/input.h>
+#elif defined(__VXWORKS__)
+#include <evdevLib.h>
+typedef EV_DEV_EVENT input_event;
 #else
 #  include <linux/input.h>
 #  include <linux/kd.h>
 #endif
 enum {
+#if defined(__VXWORKS__)
+    e1 = EV_DEV_ABS,
+    e2 = EV_DEV_PTR_ABS_X,
+    e3 = EV_DEV_PTR_ABS_Y,
+    e4 = EV_DEV_PTR_BTN_TOUCH,
+#else
     e1 = ABS_PRESSURE,
     e2 = ABS_X,
     e3 = REL_X,
     e4 = SYN_REPORT,
+#endif
 };
 
 int main(void)
