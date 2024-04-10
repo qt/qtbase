@@ -64,11 +64,20 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
     if (window->isTopLevel())
         platformScreen()->addWindow(this);
 
-    // TODO should handle case where this changes at runtime -> need to change existing window
-    // into TextureView (or perhaps not, if the parent window would be SurfaceView, as long as
-    // onTop was false it would stay below the children)
-    if (platformScreen()->windows().size() <= 1)
+    static bool ok = false;
+    static const int value = qEnvironmentVariableIntValue("QT_ANDROID_SURFACE_CONTAINER_TYPE", &ok);
+    if (ok) {
+        static const SurfaceContainer type = static_cast<SurfaceContainer>(value);
+        if (type == SurfaceContainer::SurfaceView || type == SurfaceContainer::TextureView)
+            m_surfaceContainerType = type;
+    } else if (platformScreen()->windows().size() <= 1) {
+        // TODO should handle case where this changes at runtime -> need to change existing window
+        // into TextureView (or perhaps not, if the parent window would be SurfaceView, as long as
+        // onTop was false it would stay below the children)
         m_surfaceContainerType = SurfaceContainer::SurfaceView;
+    }
+    qCDebug(lcQpaWindow) << "Window" << m_nativeViewId << "using surface container type"
+                         << static_cast<int>(m_surfaceContainerType);
 }
 
 QAndroidPlatformWindow::~QAndroidPlatformWindow()
