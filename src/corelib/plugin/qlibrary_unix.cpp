@@ -207,14 +207,6 @@ bool QLibraryPrivate::load_sys()
                 auto attemptFromBundle = attempt;
                 hnd = dlopen(QFile::encodeName(attemptFromBundle.replace(u'/', u'_')), dlFlags);
             }
-            if (hnd) {
-                using JniOnLoadPtr = jint (*)(JavaVM *vm, void *reserved);
-                JniOnLoadPtr jniOnLoad = reinterpret_cast<JniOnLoadPtr>(dlsym(hnd, "JNI_OnLoad"));
-                if (jniOnLoad && jniOnLoad(QJniEnvironment::javaVM(), nullptr) == JNI_ERR) {
-                    dlclose(hnd);
-                    hnd = nullptr;
-                }
-            }
 #endif
 
             if (!hnd && fileName.startsWith(u'/') && QFile::exists(attempt)) {
