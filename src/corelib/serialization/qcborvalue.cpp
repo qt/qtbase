@@ -1219,51 +1219,33 @@ static int compareElementRecursive(const QCborContainerPrivate *c1, const Elemen
         Q_ASSERT(b2);
 
         // Officially with CBOR, we sort first the string with the shortest
-        // UTF-8 length. The length of an ASCII string is the same as its UTF-8
-        // and UTF-16 ones, but the UTF-8 length of a string is bigger than the
-        // UTF-16 equivalent. Combinations are:
-        //  1) UTF-16 and UTF-16
-        //  2) UTF-16 and UTF-8  <=== this is the problem case
-        //  3) UTF-16 and US-ASCII
-        //  4) UTF-8 and UTF-8
-        //  5) UTF-8 and US-ASCII
-        //  6) US-ASCII and US-ASCII
-        if ((e1.flags & Element::StringIsUtf16) && (e2.flags & Element::StringIsUtf16)) {
-            // Case 1: both UTF-16
+        // UTF-8 length. Since US-ASCII is just a subset of UTF-8, its length
+        // is the UTF-8 length. But the UTF-16 length may not be directly
+        // comparable.
+        if ((e1.flags & Element::StringIsUtf16) && (e2.flags & Element::StringIsUtf16))
             return compareStringsInUtf8(b1->asStringView(), b2->asStringView());
-        }
 
         if (!(e1.flags & Element::StringIsUtf16) && !(e2.flags & Element::StringIsUtf16)) {
-            // Cases 4, 5 and 6: neither is UTF-16, so lengths are comparable too
+            // Neither is UTF-16, so lengths are comparable too
             // (this case includes byte arrays too)
             if (len1 == len2)
                 return memcmp(b1->byte(), b2->byte(), size_t(len1));
             return len1 < len2 ? -1 : 1;
         }
 
-        if (!(e1.flags & Element::StringIsAscii) || !(e2.flags & Element::StringIsAscii)) {
-            // Case 2: one of them is UTF-8 and the other is UTF-16, so lengths
-            // are NOT comparable. We need to convert to UTF-8 first...
-            // (we can't use QUtf8::compareUtf8 because we need to compare lengths)
-            auto string = [](const Element &e, const ByteData *b) -> QByteArray {
-                if (e.flags & Element::StringIsUtf16)
-                    return b->asStringView().toUtf8();
-                return b->asByteArrayView();    // actually a QByteArray::fromRaw
-            };
+        // Only one is UTF-16
+        // (we can't use QUtf8::compareUtf8 because we need to compare lengths)
+        auto string = [](const Element &e, const ByteData *b) -> QByteArray {
+            if (e.flags & Element::StringIsUtf16)
+                return b->asStringView().toUtf8();
+            return b->asByteArrayView();    // actually a QByteArray::fromRaw
+        };
 
-            QByteArray s1 = string(e1, b1);
-            QByteArray s2 = string(e2, b2);
-            if (s1.size() == s2.size())
-                return memcmp(s1.constData(), s2.constData(), s1.size());
-            return s1.size() < s2.size() ? -1 : 1;
-        }
-
-        // Case 3 (UTF-16 and US-ASCII) remains, so lengths are comparable again
-        if (len1 != len2)
-            return len1 < len2 ? -1 : 1;
-        if (e1.flags & Element::StringIsUtf16)
-            return QtPrivate::compareStrings(b1->asStringView(), b2->asLatin1());
-        return QtPrivate::compareStrings(b1->asLatin1(), b2->asStringView());
+        QByteArray s1 = string(e1, b1);
+        QByteArray s2 = string(e2, b2);
+        if (s1.size() == s2.size())
+            return memcmp(s1.constData(), s2.constData(), s1.size());
+        return s1.size() < s2.size() ? -1 : 1;
     }
 
     return compareElementNoData(e1, e2);
