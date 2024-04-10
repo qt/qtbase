@@ -50,7 +50,7 @@ void QOutlineMapper::setClipRect(QRect clipRect)
 
     if (clipRect != m_clip_rect) {
         m_clip_rect = limitCoords(clipRect);
-        const int mw = 64; // margin width. No need to trigger clipping for slight overshooting
+        const int mw = 1 << 10; // margin width. No need to trigger clipping for slight overshooting
         m_clip_trigger_rect = QRectF(limitCoords(m_clip_rect.adjusted(-mw, -mw, mw, mw)));
     }
 }
