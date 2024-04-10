@@ -21,6 +21,22 @@
 
 #ifdef Q_OS_FREEBSD
 #include <dev/evdev/input.h>
+#elif defined(Q_OS_VXWORKS)
+#include <qpa/qplatformscreen.h>
+#include <evdevLib.h>
+#define SYN_REPORT      0
+#define EV_SYN          EV_DEV_SYN
+#define EV_KEY          EV_DEV_KEY
+#define EV_ABS          EV_DEV_ABS
+#define ABS_X           EV_DEV_PTR_ABS_X
+#define ABS_Y           EV_DEV_PTR_ABS_Y
+#define BTN_TOUCH       EV_DEV_PTR_BTN_TOUCH
+#define ABS_MAX         0x3f
+#define ABS_MT_SLOT     EV_DEV_PTR_ABS_MT_SLOT //0x2F
+#define ABS_MT_POSITION_X   EV_DEV_PTR_ABS_MT_POSITION_X //0x35
+#define ABS_MT_POSITION_Y   EV_DEV_PTR_ABS_MT_POSITION_Y //0x36
+#define ABS_MT_TRACKING_ID  EV_DEV_PTR_ABS_MT_TRACKING_ID //0x39
+typedef EV_DEV_EVENT input_event;
 #else
 #include <linux/input.h>
 #endif
@@ -164,7 +180,7 @@ QEvdevTouchScreenData::QEvdevTouchScreenData(QEvdevTouchScreenHandler *q_ptr, co
 #define LONG_BITS (sizeof(long) << 3)
 #define NUM_LONGS(bits) (((bits) + LONG_BITS - 1) / LONG_BITS)
 
-#if !QT_CONFIG(mtdev)
+#if !QT_CONFIG(mtdev) && !defined(Q_OS_VXWORKS)
 static inline bool testBit(long bit, const long *array)
 {
     return (array[bit / LONG_BITS] >> bit % LONG_BITS) & 1;
@@ -236,13 +252,14 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
     d->m_typeB = true;
 #else
     const char *mtdevStr = "";
+#if !defined(Q_OS_VXWORKS)
     long absbits[NUM_LONGS(ABS_CNT)];
     if (ioctl(m_fd, EVIOCGBIT(EV_ABS, sizeof(absbits)), absbits) >= 0) {
         d->m_typeB = testBit(ABS_MT_SLOT, absbits);
         d->m_singleTouch = !testBit(ABS_MT_POSITION_X, absbits);
     }
 #endif
-
+#endif
     d->deviceNode = device;
     qCDebug(qLcEvdevTouch,
             "evdevtouch: %ls: Protocol type %c %s (%s), filtered=%s",
@@ -253,9 +270,10 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
     if (d->m_filtered)
         qCDebug(qLcEvdevTouch, " - prediction=%d", d->m_prediction);
 
+    bool has_x_range = false, has_y_range = false;
+#if !defined(Q_OS_VXWORKS)
     input_absinfo absInfo;
     memset(&absInfo, 0, sizeof(input_absinfo));
-    bool has_x_range = false, has_y_range = false;
 
     if (ioctl(m_fd, EVIOCGABS((d->m_singleTouch ? ABS_X : ABS_MT_POSITION_X)), &absInfo) >= 0) {
         qCDebug(qLcEvdevTouch, "evdevtouch: %ls: min X: %d max X: %d", qUtf16Printable(device),
@@ -272,10 +290,12 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
         d->hw_range_y_max = absInfo.maximum;
         has_y_range = true;
     }
+#endif
 
     if (!has_x_range || !has_y_range)
         qWarning("evdevtouch: %ls: Invalid ABS limits, behavior unspecified", qUtf16Printable(device));
 
+#if !defined(Q_OS_VXWORKS)
     if (ioctl(m_fd, EVIOCGABS(ABS_PRESSURE), &absInfo) >= 0) {
         qCDebug(qLcEvdevTouch, "evdevtouch: %ls: min pressure: %d max pressure: %d", qUtf16Printable(device),
                 absInfo.minimum, absInfo.maximum);
@@ -290,6 +310,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
         d->hw_name = QString::fromLocal8Bit(name);
         qCDebug(qLcEvdevTouch, "evdevtouch: %ls: device name: %s", qUtf16Printable(device), name);
     }
+#endif
 
     // Fix up the coordinate ranges for am335x in case the kernel driver does not have them fixed.
     if (d->hw_name == "ti-tsc"_L1) {
@@ -305,11 +326,13 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
                 d->hw_range_x_min, d->hw_range_x_max, d->hw_range_y_min, d->hw_range_y_max);
     }
 
+#if !defined(Q_OS_VXWORKS)
     bool grabSuccess = !ioctl(m_fd, EVIOCGRAB, (void *) 1);
     if (grabSuccess)
         ioctl(m_fd, EVIOCGRAB, (void *) 0);
     else
         qWarning("evdevtouch: The device is grabbed by another process. No events will be read.");
+#endif
 
     if (rotationAngle)
         d->m_rotate = QTransform::fromTranslate(0.5, 0.5).rotate(rotationAngle).translate(-0.5, -0.5);
@@ -360,9 +383,9 @@ QPointingDevice *QEvdevTouchScreenHandler::touchDevice() const
 
 void QEvdevTouchScreenHandler::readData()
 {
-    ::input_event buffer[32];
     int events = 0;
-
+#if !defined(Q_OS_VXWORKS)
+    ::input_event buffer[32];
 #if QT_CONFIG(mtdev)
     forever {
         do {
@@ -398,6 +421,7 @@ void QEvdevTouchScreenHandler::readData()
     for (int i = 0; i < n; ++i)
         d->processInputEvent(&buffer[i]);
 #endif
+#endif // Q_OS_VXWORKS
     return;
 
 err:
@@ -548,6 +572,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
                 m_currentData.state = QEventPoint::State::Released;
             if (m_typeB)
                 m_contacts[m_currentSlot].maj = m_currentData.maj;
+#if !defined(Q_OS_VXWORKS)
         } else if (data->code == ABS_PRESSURE || data->code == ABS_MT_PRESSURE) {
             if (Q_UNLIKELY(qLcEvents().isDebugEnabled()))
                 qCDebug(qLcEvents, "EV_ABS code 0x%x: pressure %d; bounding to [%d,%d]",
@@ -555,6 +580,7 @@ void QEvdevTouchScreenData::processInputEvent(input_event *data)
             m_currentData.pressure = qBound(hw_pressure_min, data->value, hw_pressure_max);
             if (m_typeB || m_singleTouch)
                 m_contacts[m_currentSlot].pressure = m_currentData.pressure;
+#endif
         } else if (data->code == ABS_MT_SLOT) {
             m_currentSlot = data->value;
         }
