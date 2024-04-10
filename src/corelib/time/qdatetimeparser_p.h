@@ -46,7 +46,7 @@ public:
         FromString,
         DateTimeEdit
     };
-    QDateTimeParser(QMetaType::Type t, Context ctx, const QCalendar &cal = QCalendar())
+    QDateTimeParser(QMetaType::Type t, Context ctx, QCalendar cal = QCalendar())
         : parserType(t), context(ctx), calendar(cal)
     {
         defaultLocale = QLocale::system();
@@ -153,7 +153,7 @@ public:
 
     void setDefaultLocale(const QLocale &loc) { defaultLocale = loc; }
     virtual QString displayText() const { return m_text; }
-    void setCalendar(const QCalendar &calendar);
+    void setCalendar(QCalendar calendar);
 
 private:
     int sectionMaxSize(Section s, int count) const;

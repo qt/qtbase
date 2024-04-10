@@ -1012,7 +1012,7 @@ static int yearInCenturyFrom(int y2d, int baseYear)
   when on valid date is consistent with the data.
 */
 
-static QDate actualDate(QDateTimeParser::Sections known, const QCalendar &calendar, int baseYear,
+static QDate actualDate(QDateTimeParser::Sections known, QCalendar calendar, int baseYear,
                         int year, int year2digits, int month, int day, int dayofweek)
 {
     QDate actual(year, month, day, calendar);
@@ -2327,7 +2327,7 @@ bool operator==(const QDateTimeParser::SectionNode &s1, const QDateTimeParser::S
   Sets \a cal as the calendar to use. The default is Gregorian.
 */
 
-void QDateTimeParser::setCalendar(const QCalendar &cal)
+void QDateTimeParser::setCalendar(QCalendar cal)
 {
     calendar = cal;
 }
