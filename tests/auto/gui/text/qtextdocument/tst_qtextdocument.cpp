@@ -1172,7 +1172,7 @@ void tst_QTextDocument::toHtml_data()
         cursor.insertTable(2, 2);
 
         QTest::newRow("simpletable") << QTextDocumentFragment(&doc)
-                                  << QString("<table border=\"1\" cellspacing=\"2\">"
+                                  << QString("<table border=\"1\" style=\" border-collapse:collapse;\" cellpadding=\"4\">"
                                              "\n<tr>\n<td></td>\n<td></td></tr>"
                                              "\n<tr>\n<td></td>\n<td></td></tr>"
                                              "</table>");
@@ -1186,7 +1186,7 @@ void tst_QTextDocument::toHtml_data()
         table->mergeCells(0, 2, 1, 2);
 
         QTest::newRow("tablespans") << QTextDocumentFragment(&doc)
-                                 << QString("<table border=\"1\" cellspacing=\"2\">"
+                                 << QString("<table border=\"1\" style=\" border-collapse:collapse;\" cellpadding=\"4\">"
                                              "\n<tr>\n<td colspan=\"2\"></td>\n<td colspan=\"2\"></td></tr>"
                                              "</table>");
     }
@@ -1205,7 +1205,7 @@ void tst_QTextDocument::toHtml_data()
         cursor.insertTable(2, 2, fmt);
 
         QTest::newRow("tableattrs") << QTextDocumentFragment(&doc)
-                                  << QString("<table border=\"1\" style=\" float: right;\" align=\"center\" width=\"50%\" cellspacing=\"3\" cellpadding=\"3\" bgcolor=\"#ff00ff\">"
+                                  << QString("<table border=\"1\" style=\" float: right; border-collapse:collapse;\" align=\"center\" width=\"50%\" cellspacing=\"3\" cellpadding=\"3\" bgcolor=\"#ff00ff\">"
                                              "\n<tr>\n<td></td>\n<td></td></tr>"
                                              "\n<tr>\n<td></td>\n<td></td></tr>"
                                              "</table>");
@@ -1227,7 +1227,7 @@ void tst_QTextDocument::toHtml_data()
         cursor.insertTable(2, 2, fmt);
 
         QTest::newRow("tableattrs2") << QTextDocumentFragment(&doc)
-                                  << QString("<table border=\"1\" style=\" float: right; margin-top:0px; margin-bottom:35px; margin-left:25px; margin-right:0px;\" align=\"center\" width=\"50%\" cellspacing=\"3\" cellpadding=\"3\" bgcolor=\"#ff00ff\">"
+                                  << QString("<table border=\"1\" style=\" float: right; margin-top:0px; margin-bottom:35px; margin-left:25px; margin-right:0px; border-collapse:collapse;\" align=\"center\" width=\"50%\" cellspacing=\"3\" cellpadding=\"3\" bgcolor=\"#ff00ff\">"
                                              "\n<tr>\n<td></td>\n<td></td></tr>"
                                              "\n<tr>\n<td></td>\n<td></td></tr>"
                                              "</table>");
@@ -1241,7 +1241,7 @@ void tst_QTextDocument::toHtml_data()
         cursor.insertTable(4, 2, fmt);
 
         QTest::newRow("tableheader") << QTextDocumentFragment(&doc)
-                                  << QString("<table border=\"1\" cellspacing=\"2\">"
+                                  << QString("<table border=\"1\" style=\" border-collapse:collapse;\" cellpadding=\"4\">"
                                              "<thead>\n<tr>\n<td></td>\n<td></td></tr>"
                                              "\n<tr>\n<td></td>\n<td></td></tr></thead>"
                                              "\n<tr>\n<td></td>\n<td></td></tr>"
@@ -1257,8 +1257,8 @@ void tst_QTextDocument::toHtml_data()
         subTable->cellAt(0, 0).firstCursorPosition().insertText("Hey");
 
         QTest::newRow("nestedtable") << QTextDocumentFragment(&doc)
-                                  << QString("<table border=\"1\" cellspacing=\"2\">"
-                                             "\n<tr>\n<td></td>\n<td>\n<table border=\"1\" cellspacing=\"2\">\n<tr>\n<td>\n<p DEFAULTBLOCKSTYLE>Hey</p></td></tr></table></td></tr>"
+                                  << QString("<table border=\"1\" style=\" border-collapse:collapse;\" cellpadding=\"4\">"
+                                             "\n<tr>\n<td></td>\n<td>\n<table border=\"1\" style=\" border-collapse:collapse;\" cellpadding=\"4\">\n<tr>\n<td>\n<p DEFAULTBLOCKSTYLE>Hey</p></td></tr></table></td></tr>"
                                              "\n<tr>\n<td></td>\n<td></td></tr>"
                                              "</table>");
     }
@@ -1275,7 +1275,7 @@ void tst_QTextDocument::toHtml_data()
         cursor.insertTable(1, 3, fmt);
 
         QTest::newRow("colwidths") << QTextDocumentFragment(&doc)
-                                  << QString("<table border=\"1\" cellspacing=\"2\">"
+                                  << QString("<table border=\"1\" style=\" border-collapse:collapse;\" cellpadding=\"4\">"
                                              "\n<tr>\n<td></td>\n<td width=\"30%\"></td>\n<td width=\"40\"></td></tr>"
                                              "</table>");
     }
@@ -1292,7 +1292,7 @@ void tst_QTextDocument::toHtml_data()
         cellCurs.mergeBlockCharFormat(fmt);
 
         QTest::newRow("cellproperties") << QTextDocumentFragment(&doc)
-                                     << QString("<table border=\"1\" cellspacing=\"2\">"
+                                     << QString("<table border=\"1\" style=\" border-collapse:collapse;\" cellpadding=\"4\">"
                                                 "\n<tr>\n<td bgcolor=\"#ffffff\"></td></tr>"
                                                 "</table>");
     }
@@ -1559,7 +1559,7 @@ void tst_QTextDocument::toHtml_data()
         table->setFormat(fmt);
 
         QTest::newRow("mergedtablecolwidths") << QTextDocumentFragment(&doc)
-                                  << QString("<table border=\"1\" cellspacing=\"2\">"
+                                  << QString("<table border=\"1\" style=\" border-collapse:collapse;\" cellpadding=\"4\">"
                                              "\n<tr>\n<td colspan=\"2\"></td></tr>"
                                              "\n<tr>\n<td width=\"20\"></td>\n<td width=\"40\"></td></tr>"
                                              "</table>");
@@ -1622,7 +1622,7 @@ void tst_QTextDocument::toHtml_data()
         table->cellAt(0, 0).firstCursorPosition().insertText("Blah");
 
         QTest::newRow("table-vertical-alignment") << QTextDocumentFragment(&doc)
-                                  << QString("<table border=\"1\" cellspacing=\"2\">"
+                                  << QString("<table border=\"1\" style=\" border-collapse:collapse;\" cellpadding=\"4\">"
                                              "\n<tr>\n<td style=\" vertical-align:middle;\">\n"
                                              "<p DEFAULTBLOCKSTYLE>Blah</p></td>"
                                              "\n<td style=\" vertical-align:top;\"></td></tr>"
@@ -1651,7 +1651,7 @@ void tst_QTextDocument::toHtml_data()
         table->cellAt(0, 0).firstCursorPosition().insertText("Blah");
 
         QTest::newRow("table-cell-paddings") << QTextDocumentFragment(&doc)
-                                  << QString("<table border=\"1\" cellspacing=\"2\">"
+                                  << QString("<table border=\"1\" style=\" border-collapse:collapse;\" cellpadding=\"4\">"
                                              "\n<tr>\n<td style=\" padding-left:1;\">\n"
                                              "<p DEFAULTBLOCKSTYLE>Blah</p></td>"
                                              "\n<td style=\" padding-right:1;\"></td></tr>"
@@ -1669,7 +1669,7 @@ void tst_QTextDocument::toHtml_data()
         cursor.insertTable(2, 2, fmt);
 
         QTest::newRow("tableborder") << QTextDocumentFragment(&doc)
-                                     << QString("<table border=\"1\" style=\" border-color:#0000ff; border-style:solid;\" cellspacing=\"2\">"
+                                     << QString("<table border=\"1\" style=\" border-color:#0000ff; border-style:solid; border-collapse:collapse;\" cellpadding=\"4\">"
                                                 "\n<tr>\n<td></td>\n<td></td></tr>"
                                                 "\n<tr>\n<td></td>\n<td></td></tr>"
                                                 "</table>");
@@ -1711,7 +1711,7 @@ void tst_QTextDocument::toHtml_data()
                                    << QString("EMPTYBLOCK") +
                                       QString("<p OPENDEFAULTBLOCKSTYLE page-break-before:always;\">Foo</p>"
                                               "\n<p OPENDEFAULTBLOCKSTYLE page-break-before:always; page-break-after:always;\">Bar</p>"
-                                              "\n<table border=\"1\" style=\" page-break-after:always;\" cellspacing=\"2\">\n<tr>\n<td></td></tr></table>");
+                                              "\n<table border=\"1\" style=\" page-break-after:always; border-collapse:collapse;\" cellpadding=\"4\">\n<tr>\n<td></td></tr></table>");
     }
 
     {

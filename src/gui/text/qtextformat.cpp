@@ -3156,7 +3156,8 @@ QTextTableFormat::QTextTableFormat()
  : QTextFrameFormat()
 {
     setObjectType(TableObject);
-    setCellSpacing(2);
+    setCellPadding(4);
+    setBorderCollapse(true);
     setBorder(1);
 }
 
