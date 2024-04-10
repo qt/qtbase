@@ -5626,16 +5626,7 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             const auto frameAdjust = 1.0 / p->device()->devicePixelRatio();
             const auto innerFrameRect = outerFrameRect.adjusted(frameAdjust, frameAdjust, -frameAdjust, 0);
             QPainterPath innerFramePath = d->windowPanelPath(innerFrameRect);
-            if (isActive) {
-                QLinearGradient g;
-                g.setStart(QPointF(0, 0));
-                g.setFinalStop(QPointF(0, 2 * opt->rect.height()));
-                g.setColorAt(0, opt->palette.button().color());
-                g.setColorAt(1, opt->palette.dark().color());
-                p->fillPath(innerFramePath, g);
-            } else {
-                p->fillPath(innerFramePath, opt->palette.button());
-            }
+            p->fillPath(innerFramePath, opt->palette.button());
 
             if (titlebar->subControls & (SC_TitleBarCloseButton
                                          | SC_TitleBarMaxButton
