@@ -12,7 +12,6 @@ qt_internal_add_plugin(QWindowsDirect2DIntegrationPlugin
         ../windows/qtwindowsglobal.h
         ../windows/qwin10helpers.cpp ../windows/qwin10helpers.h
         ../windows/qwindowsapplication.cpp ../windows/qwindowsapplication.h
-        ../windows/qwindowscombase.h
         ../windows/qwindowscontext.cpp ../windows/qwindowscontext.h
         ../windows/qwindowscursor.cpp ../windows/qwindowscursor.h
         ../windows/qwindowsdialoghelpers.cpp ../windows/qwindowsdialoghelpers.h
