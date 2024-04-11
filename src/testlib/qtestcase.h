@@ -5,6 +5,7 @@
 #define QTESTCASE_H
 
 #include <QtTest/qttestglobal.h>
+#include <QtTest/qtesttostring.h>
 
 #include <QtCore/qstring.h>
 #include <QtCore/qnamespace.h>
@@ -318,9 +319,6 @@ do {\
 class QObject;
 class QTestData;
 
-#define QTEST_COMPARE_DECL(KLASS)\
-    template<> Q_TESTLIB_EXPORT char *toString<KLASS >(const KLASS &);
-
 namespace QTest
 {
     namespace Internal {
@@ -332,77 +330,10 @@ namespace QTest
 
     Q_TESTLIB_EXPORT QString formatTryTimeoutDebugMessage(q_no_char8_t::QUtf8StringView expr, int timeout, int actual);
 
-    template<typename T> // Output registered enums
-    inline typename std::enable_if<QtPrivate::IsQEnumHelper<T>::Value, char*>::type toString(T e)
-    {
-        QMetaEnum me = QMetaEnum::fromType<T>();
-        return qstrdup(me.valueToKey(int(e))); // int cast is necessary to support enum classes
-    }
-
-    template <typename T>
-    inline typename std::enable_if<!QtPrivate::IsQEnumHelper<T>::Value && std::is_enum_v<T>, char*>::type toString(const T &e)
-    {
-        return qstrdup(QByteArray::number(static_cast<std::underlying_type_t<T>>(e)).constData());
-    }
-
-    template <typename T> // Fallback; for built-in types debug streaming must be possible
-    inline typename std::enable_if<!QtPrivate::IsQEnumHelper<T>::Value && !std::is_enum_v<T>, char *>::type toString(const T &t)
-    {
-        char *result = nullptr;
-#ifndef QT_NO_DEBUG_STREAM
-        if constexpr (QTypeTraits::has_ostream_operator_v<QDebug, T>) {
-            result = qstrdup(QDebug::toString(t).toUtf8().constData());
-        } else {
-            static_assert(!QMetaTypeId2<T>::IsBuiltIn,
-                        "Built-in type must implement debug streaming operator "
-                        "or provide QTest::toString specialization");
-        }
-#endif
-        return result;
-    }
-
-    template<typename F> // Output QFlags of registered enumerations
-    inline typename std::enable_if<QtPrivate::IsQEnumHelper<F>::Value, char*>::type toString(QFlags<F> f)
-    {
-        const QMetaEnum me = QMetaEnum::fromType<F>();
-        return qstrdup(me.valueToKeys(int(f.toInt())).constData());
-    }
-
-    template <typename F> // Fallback: Output hex value
-    inline typename std::enable_if<!QtPrivate::IsQEnumHelper<F>::Value, char*>::type toString(QFlags<F> f)
-    {
-        const size_t space = 3 + 2 * sizeof(unsigned); // 2 for 0x, two hex digits per byte, 1 for '\0'
-        char *msg = new char[space];
-        qsnprintf(msg, space, "0x%x", unsigned(f.toInt()));
-        return msg;
-    }
-
     // Exported so Qt Quick Test can also use it for generating backtraces upon crashes.
     Q_TESTLIB_EXPORT extern bool noCrashHandler;
 
     } // namespace Internal
-
-    template<typename T>
-    inline char *toString(const T &t)
-    {
-        return Internal::toString(t);
-    }
-
-    template <typename T1, typename T2>
-    inline char *toString(const std::pair<T1, T2> &pair);
-
-    template <class... Types>
-    inline char *toString(const std::tuple<Types...> &tuple);
-
-    template <typename Rep, typename Period>
-    inline char *toString(std::chrono::duration<Rep, Period> duration);
-
-    Q_TESTLIB_EXPORT char *toHexRepresentation(const char *ba, qsizetype length);
-    Q_TESTLIB_EXPORT char *toPrettyCString(const char *unicode, qsizetype length);
-    Q_TESTLIB_EXPORT char *toPrettyUnicode(QStringView string);
-    Q_TESTLIB_EXPORT char *toString(const char *);
-    Q_TESTLIB_EXPORT char *toString(const volatile void *);
-    Q_TESTLIB_EXPORT char *toString(const volatile QObject *);
 
     Q_TESTLIB_EXPORT void qInit(QObject *testObject, int argc = 0, char **argv = nullptr);
     Q_TESTLIB_EXPORT int qRun();
@@ -620,30 +551,6 @@ namespace QTest
                               actual, expected, file, line);
     }
 
-    Q_TESTLIB_EXPORT bool compare_string_helper(const char *t1, const char *t2, const char *actual,
-                                      const char *expected, const char *file, int line);
-
-    Q_TESTLIB_EXPORT char *formatString(const char *prefix, const char *suffix, size_t numArguments, ...);
-
-#ifndef Q_QDOC
-    QTEST_COMPARE_DECL(short)
-    QTEST_COMPARE_DECL(ushort)
-    QTEST_COMPARE_DECL(int)
-    QTEST_COMPARE_DECL(uint)
-    QTEST_COMPARE_DECL(long)
-    QTEST_COMPARE_DECL(ulong)
-    QTEST_COMPARE_DECL(qint64)
-    QTEST_COMPARE_DECL(quint64)
-
-    QTEST_COMPARE_DECL(float)
-    QTEST_COMPARE_DECL(double)
-    QTEST_COMPARE_DECL(qfloat16)
-    QTEST_COMPARE_DECL(char)
-    QTEST_COMPARE_DECL(signed char)
-    QTEST_COMPARE_DECL(unsigned char)
-    QTEST_COMPARE_DECL(bool)
-#endif
-
     template <typename T1, typename T2 = T1>
     inline bool qCompare(const T1 &t1, const T2 &t2, const char *actual, const char *expected,
                          const char *file, int line)
@@ -743,7 +650,6 @@ namespace QTest
                                        ComparisonOperation op, const char *file, int line);
 }
 
-#undef QTEST_COMPARE_DECL
 
 #define QWARN(msg) QTest::qWarn(static_cast<const char *>(msg), __FILE__, __LINE__)
 
