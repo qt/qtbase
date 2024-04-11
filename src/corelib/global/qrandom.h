@@ -39,6 +39,8 @@ public:
     Q_CORE_EXPORT QRandomGenerator(const QRandomGenerator &other);
     Q_CORE_EXPORT QRandomGenerator &operator=(const QRandomGenerator &other);
 
+    ~QRandomGenerator() = default;
+
     friend Q_CORE_EXPORT bool operator==(const QRandomGenerator &rng1, const QRandomGenerator &rng2);
     friend bool operator!=(const QRandomGenerator &rng1, const QRandomGenerator &rng2)
     {
