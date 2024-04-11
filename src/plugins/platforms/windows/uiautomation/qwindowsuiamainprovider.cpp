@@ -18,7 +18,6 @@
 #include "qwindowsuiagriditemprovider.h"
 #include "qwindowsuiawindowprovider.h"
 #include "qwindowsuiaexpandcollapseprovider.h"
-#include "qwindowscombase.h"
 #include "qwindowscontext.h"
 #include "qwindowsuiautils.h"
 #include "qwindowsuiaprovidercache.h"
@@ -62,9 +61,8 @@ QWindowsUiaMainProvider *QWindowsUiaMainProvider::providerForAccessible(QAccessi
     return provider;
 }
 
-QWindowsUiaMainProvider::QWindowsUiaMainProvider(QAccessibleInterface *a, int initialRefCount)
-    : QWindowsUiaBaseProvider(QAccessible::uniqueId(a)),
-      m_ref(initialRefCount)
+QWindowsUiaMainProvider::QWindowsUiaMainProvider(QAccessibleInterface *a)
+    : QWindowsUiaBaseProvider(QAccessible::uniqueId(a))
 {
 }
 
@@ -208,33 +206,26 @@ void QWindowsUiaMainProvider::notifyTextChange(QAccessibleEvent *event)
 
 HRESULT STDMETHODCALLTYPE QWindowsUiaMainProvider::QueryInterface(REFIID iid, LPVOID *iface)
 {
-    if (!iface)
-        return E_INVALIDARG;
-    *iface = nullptr;
+    HRESULT result = QComObject::QueryInterface(iid, iface);
 
-    QAccessibleInterface *accessible = accessibleInterface();
+    if (SUCCEEDED(result) && iid == __uuidof(IRawElementProviderFragmentRoot)) {
+        QAccessibleInterface *accessible = accessibleInterface();
+        if (accessible && hwndForAccessible(accessible)) {
+            result = S_OK;
+        } else {
+            result = E_NOINTERFACE;
+            iface = nullptr;
+        }
+    }
 
-    const bool result = qWindowsComQueryUnknownInterfaceMulti<IRawElementProviderSimple>(this, iid, iface)
-        || qWindowsComQueryInterface<IRawElementProviderSimple>(this, iid, iface)
-        || qWindowsComQueryInterface<IRawElementProviderFragment>(this, iid, iface)
-        || (accessible && hwndForAccessible(accessible) && qWindowsComQueryInterface<IRawElementProviderFragmentRoot>(this, iid, iface));
-    return result ? S_OK : E_NOINTERFACE;
-}
-
-ULONG QWindowsUiaMainProvider::AddRef()
-{
-    return ++m_ref;
+    return result;
 }
 
 ULONG STDMETHODCALLTYPE QWindowsUiaMainProvider::Release()
 {
     QMutexLocker locker(&m_mutex);
 
-    if (!--m_ref) {
-        delete this;
-        return 0;
-    }
-    return m_ref;
+    return QComObject::Release();
 }
 
 HRESULT QWindowsUiaMainProvider::get_ProviderOptions(ProviderOptions *pRetVal)

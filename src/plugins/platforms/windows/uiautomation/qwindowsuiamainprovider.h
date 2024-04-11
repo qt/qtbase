@@ -20,15 +20,13 @@ QT_BEGIN_NAMESPACE
 // The main UI Automation class.
 class QWindowsUiaMainProvider :
     public QWindowsUiaBaseProvider,
-    public IRawElementProviderSimple,
-    public IRawElementProviderFragment,
-    public IRawElementProviderFragmentRoot
+    public QComObject<IRawElementProviderSimple, IRawElementProviderFragment, IRawElementProviderFragmentRoot>
 {
     Q_OBJECT
     Q_DISABLE_COPY_MOVE(QWindowsUiaMainProvider)
 public:
     static QWindowsUiaMainProvider *providerForAccessible(QAccessibleInterface *accessible);
-    explicit QWindowsUiaMainProvider(QAccessibleInterface *a, int initialRefCount = 1);
+    explicit QWindowsUiaMainProvider(QAccessibleInterface *a);
     virtual ~QWindowsUiaMainProvider();
     static void notifyFocusChange(QAccessibleEvent *event);
     static void notifyStateChange(QAccessibleStateChangeEvent *event);
@@ -39,7 +37,6 @@ public:
 
     // IUnknown
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface) override;
-    ULONG STDMETHODCALLTYPE AddRef() override;
     ULONG STDMETHODCALLTYPE Release() override;
 
     // IRawElementProviderSimple methods
@@ -63,7 +60,6 @@ public:
 private:
     QString automationIdForAccessible(const QAccessibleInterface *accessible);
     static void fillVariantArrayForRelation(QAccessibleInterface *accessible, QAccessible::Relation relation, VARIANT *pRetVal);
-    ULONG m_ref;
     static QMutex m_mutex;
 };
 
