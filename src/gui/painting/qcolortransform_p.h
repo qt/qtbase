@@ -37,7 +37,6 @@ public:
     void updateLutsIn() const;
     void updateLutsOut() const;
     bool isIdentity() const;
-    bool isThreeComponentMatrix() const;
 
     Q_GUI_EXPORT void prepare();
     enum TransformFlag {
@@ -60,14 +59,11 @@ public:
     void applyReturnGray(D *dst, const S *src, qsizetype count, TransformFlags flags) const;
 
 private:
+    void pcsAdapt(QColorVector *buffer, qsizetype len) const;
     template<typename S>
     void applyConvertIn(const S *src, QColorVector *buffer, qsizetype len, TransformFlags flags) const;
     template<typename D, typename S>
     void applyConvertOut(D *dst, const S *src, QColorVector *buffer, qsizetype len, TransformFlags flags) const;
-    template<typename D, typename S>
-    void applyElementListTransform(D *dst, const S *src, qsizetype count, TransformFlags flags) const;
-    template<typename D, typename S>
-    void applyThreeComponentMatrix(D *dst, const S *src, qsizetype count, TransformFlags flags) const;
 };
 
 QT_END_NAMESPACE

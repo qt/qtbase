@@ -1640,7 +1640,7 @@ void QColorTransformPrivate::applyConvertIn(const S *src, QColorVector *buffer, 
                 loadUnpremultiplied(buffer, src, len, this);
 
             if (!colorSpaceOut->isThreeComponentMatrix())
-                applyMatrix<DoClamp>(buffer, len, colorMatrix); // colorMatrix should have the first half only.
+                applyMatrix<DoClamp>(buffer, len, colorSpaceIn->toXyz);
             return;
         }
     }
@@ -1666,7 +1666,7 @@ void QColorTransformPrivate::applyConvertOut(D *dst, const S *src, QColorVector 
     // Avoid compiling this part for D=QCmyk32:
     if constexpr (!std::is_same_v<D, QCmyk32>) {
         if (colorSpaceOut->isThreeComponentMatrix()) {
-            applyMatrix<doClamp>(buffer, len, colorMatrix); // colorMatrix should have the latter half only.
+            applyMatrix<doClamp>(buffer, len, colorMatrix);
 
             if constexpr (std::is_same_v<S, QCmyk32>) {
                 storeOpaque(dst, buffer, len, this);
@@ -1695,77 +1695,19 @@ void QColorTransformPrivate::applyConvertOut(D *dst, const S *src, QColorVector 
         storeUnpremultipliedLUT(dst, src, buffer, len);
 }
 
-template<typename D, typename S>
-void QColorTransformPrivate::applyElementListTransform(D *dst, const S *src, qsizetype count, TransformFlags flags) const
+/*!
+    \internal
+    Adapt Profile Connecting Color spaces.
+*/
+void QColorTransformPrivate::pcsAdapt(QColorVector *buffer, qsizetype count) const
 {
-    Q_ASSERT(!colorSpaceIn->isThreeComponentMatrix() || !colorSpaceOut->isThreeComponentMatrix());
-
-    if (!colorMatrix.isValid())
-        return;
-
-    if (colorSpaceIn->isThreeComponentMatrix())
-        updateLutsIn();
-    if (colorSpaceOut->isThreeComponentMatrix())
-        updateLutsOut();
-
-    QUninitialized<QColorVector, WorkBlockSize> buffer;
-    qsizetype i = 0;
-    while (i < count) {
-        const qsizetype len = qMin(count - i, WorkBlockSize);
-
-        applyConvertIn(src + i, buffer, len, flags);
-
-        // Match Profile Connection Spaces (PCS):
-        if (colorSpaceOut->isPcsLab && !colorSpaceIn->isPcsLab) {
-            for (qsizetype j = 0; j < len; ++j)
-                buffer[j] = buffer[j].xyzToLab();
-        } else if (colorSpaceIn->isPcsLab && !colorSpaceOut->isPcsLab) {
-            for (qsizetype j = 0; j < len; ++j)
-                buffer[j] = buffer[j].labToXyz();
-        }
-
-        applyConvertOut(dst + i, src + i, buffer, len, flags);
-
-        i += len;
-    }
-}
-
-template<typename D, typename S>
-void QColorTransformPrivate::applyThreeComponentMatrix(D *dst, const S *src, qsizetype count, TransformFlags flags) const
-{
-    Q_ASSERT(colorSpaceIn->isThreeComponentMatrix() && colorSpaceOut->isThreeComponentMatrix());
-
-    if (!colorMatrix.isValid())
-        return;
-
-    updateLutsIn();
-    updateLutsOut();
-
-    bool doApplyMatrix = !colorMatrix.isIdentity();
-    constexpr ApplyMatrixForm doClamp = (std::is_same_v<D, QRgbaFloat16> || std::is_same_v<D, QRgbaFloat32>) ? DoNotClamp : DoClamp;
-
-    QUninitialized<QColorVector, WorkBlockSize> buffer;
-    qsizetype i = 0;
-    while (i < count) {
-        const qsizetype len = qMin(count - i, WorkBlockSize);
-        if (flags & InputPremultiplied)
-            loadPremultiplied(buffer, src + i, len, this);
-        else
-            loadUnpremultiplied(buffer, src + i, len, this);
-
-        if (doApplyMatrix)
-            applyMatrix<doClamp>(buffer, len, colorMatrix);
-        else
-            clampIfNeeded<doClamp>(buffer, len);
-
-        if (flags & InputOpaque)
-            storeOpaque(dst + i, buffer, len, this);
-        else if (flags & OutputPremultiplied)
-            storePremultiplied(dst + i, src + i, buffer, len, this);
-        else
-            storeUnpremultiplied(dst + i, src + i, buffer, len, this);
-
-        i += len;
+    // Match Profile Connection Spaces (PCS):
+    if (colorSpaceOut->isPcsLab && !colorSpaceIn->isPcsLab) {
+        for (qsizetype j = 0; j < count; ++j)
+            buffer[j] = buffer[j].xyzToLab();
+    } else if (colorSpaceIn->isPcsLab && !colorSpaceOut->isPcsLab) {
+        for (qsizetype j = 0; j < count; ++j)
+            buffer[j] = buffer[j].labToXyz();
     }
 }
 
@@ -1781,11 +1723,24 @@ void QColorTransformPrivate::applyThreeComponentMatrix(D *dst, const S *src, qsi
 template<typename D, typename S>
 void QColorTransformPrivate::apply(D *dst, const S *src, qsizetype count, TransformFlags flags) const
 {
-    if constexpr (!std::is_same_v<D, QCmyk32> && !std::is_same_v<S, QCmyk32>) {
-        if (isThreeComponentMatrix())
-            return applyThreeComponentMatrix<D, S>(dst, src, count, flags);
+    if (colorSpaceIn->isThreeComponentMatrix())
+        updateLutsIn();
+    if (colorSpaceOut->isThreeComponentMatrix())
+        updateLutsOut();
+
+    QUninitialized<QColorVector, WorkBlockSize> buffer;
+    qsizetype i = 0;
+    while (i < count) {
+        const qsizetype len = qMin(count - i, WorkBlockSize);
+
+        applyConvertIn(src + i, buffer, len, flags);
+
+        pcsAdapt(buffer, len);
+
+        applyConvertOut(dst + i, src + i, buffer, len, flags);
+
+        i += len;
     }
-    applyElementListTransform<D, S>(dst, src, count, flags);
 }
 
 /*!
@@ -1970,15 +1925,6 @@ template void QColorTransformPrivate::apply<QRgbaFloat32, QCmyk32>(QRgbaFloat32 
 template void QColorTransformPrivate::apply<QRgbaFloat32, QRgba64>(QRgbaFloat32 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags) const;
 template void QColorTransformPrivate::apply<QRgbaFloat32, QRgbaFloat32>(QRgbaFloat32 *dst, const QRgbaFloat32 *src, qsizetype count, TransformFlags flags) const;
 
-bool QColorTransformPrivate::isThreeComponentMatrix() const
-{
-    if (colorSpaceIn && !colorSpaceIn->isThreeComponentMatrix())
-        return false;
-    if (colorSpaceOut && !colorSpaceOut->isThreeComponentMatrix())
-        return false;
-    return true;
-}
-
 /*!
     \internal
 */
@@ -1991,7 +1937,7 @@ bool QColorTransformPrivate::isIdentity() const
     if (colorSpaceIn && colorSpaceOut) {
         if (colorSpaceIn->equals(colorSpaceOut.constData()))
             return true;
-        if (!isThreeComponentMatrix())
+        if (!colorSpaceIn->isThreeComponentMatrix() || !colorSpaceOut->isThreeComponentMatrix())
             return false;
         if (colorSpaceIn->transferFunction != colorSpaceOut->transferFunction)
             return false;
@@ -2001,7 +1947,9 @@ bool QColorTransformPrivate::isIdentity() const
                 && colorSpaceIn->trc[2] == colorSpaceOut->trc[2];
         }
     } else {
-        if (!isThreeComponentMatrix())
+        if (colorSpaceIn && !colorSpaceIn->isThreeComponentMatrix())
+            return false;
+        if (colorSpaceOut && !colorSpaceOut->isThreeComponentMatrix())
             return false;
         if (colorSpaceIn && colorSpaceIn->transferFunction != QColorSpace::TransferFunction::Linear)
             return false;

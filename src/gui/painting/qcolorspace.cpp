@@ -448,11 +448,15 @@ QColorTransform QColorSpacePrivate::transformationToXYZ() const
     transform.d = ptr;
     ptr->colorSpaceIn = this;
     ptr->colorSpaceOut = this;
-    // Convert to XYZ relative to our white point, not the regular D50 white point.
     if (isThreeComponentMatrix())
-        ptr->colorMatrix = QColorMatrix::chromaticAdaptation(whitePoint).inverted() * toXyz;
+        ptr->colorMatrix = toXyz;
     else
         ptr->colorMatrix = QColorMatrix::identity();
+    // Convert to XYZ relative to our white point, not the regular D50 white point.
+    if (!chad.isNull())
+        ptr->colorMatrix = chad.inverted() * ptr->colorMatrix;
+    else if (!whitePoint.isNull())
+        ptr->colorMatrix = QColorMatrix::chromaticAdaptation(whitePoint).inverted() * ptr->colorMatrix;
     return transform;
 }
 
