@@ -402,7 +402,6 @@ namespace QTest
     Q_TESTLIB_EXPORT char *toPrettyUnicode(QStringView string);
     Q_TESTLIB_EXPORT char *toString(const char *);
     Q_TESTLIB_EXPORT char *toString(const volatile void *);
-    Q_TESTLIB_EXPORT char *toString(const void *); // ### FIXME: Qt 7: Remove
     Q_TESTLIB_EXPORT char *toString(const volatile QObject *);
 
     Q_TESTLIB_EXPORT void qInit(QObject *testObject, int argc = 0, char **argv = nullptr);
@@ -495,8 +494,6 @@ namespace QTest
     Q_TESTLIB_EXPORT Qt::Key asciiToKey(char ascii);
     Q_TESTLIB_EXPORT char keyToAscii(Qt::Key key);
 
-    // ### TODO: remove QTestResult::compare() overload that takes char * values
-    // when this overload is removed.
 #if QT_DEPRECATED_SINCE(6, 4)
     QT_DEPRECATED_VERSION_X_6_4("use an overload that takes function_ref as parameters, "
                                 "or an overload that takes only failure message, if you "

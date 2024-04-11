@@ -13,6 +13,7 @@ qt_internal_add_module(Test
     EXCEPTIONS
     SOURCES
         3rdparty/cycle_p.h
+        removed_api.cpp     # keep first
         qabstracttestlogger.cpp qabstracttestlogger_p.h
         qasciikey.cpp
         qbenchmark.cpp qbenchmark.h qbenchmark_p.h
@@ -70,6 +71,8 @@ qt_internal_add_module(Test
         QT_NO_MESSAGELOGCONTEXT
     LIBRARIES
         Qt::CorePrivate
+    NO_PCH_SOURCES
+        removed_api.cpp
     PUBLIC_LIBRARIES
         Qt::Core
     PRIVATE_MODULE_INTERFACE

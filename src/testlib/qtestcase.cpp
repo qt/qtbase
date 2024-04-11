@@ -3061,11 +3061,6 @@ char *QTest::toString(const char *str)
 */
 char *QTest::toString(const volatile void *p) // Use volatile to match compare_ptr_helper()
 {
-    return QTest::toString(const_cast<const void *>(p));
-}
-
-char *QTest::toString(const void *p)
-{
     char *msg = new char[128];
     qsnprintf(msg, 128, "%p", p);
     return msg;
