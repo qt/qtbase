@@ -203,7 +203,9 @@ public:
 
     void swap(QPageSize &other) noexcept { d.swap(other.d); }
 
+#if QT_GUI_REMOVED_SINCE(6, 4)
     friend Q_GUI_EXPORT bool operator==(const QPageSize &lhs, const QPageSize &rhs);
+#endif
     bool isEquivalentTo(const QPageSize &other) const;
 
     bool isValid() const;
