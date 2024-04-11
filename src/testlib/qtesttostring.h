@@ -79,6 +79,19 @@ inline typename std::enable_if<!QtPrivate::IsQEnumHelper<F>::Value, char*>::type
     return msg;
 }
 
+template <typename T>
+constexpr bool is_suitable_type_helper_v = std::disjunction_v<std::is_same<T, char>,
+                                                              std::is_same<T, void>,
+                                                              std::is_same<T, QObject>
+                                                             >;
+
+template <typename T>
+using is_suitable_type_v =
+    std::enable_if_t<!(std::is_pointer_v<T>
+                        && is_suitable_type_helper_v<
+                                   std::remove_const_t<std::remove_pointer_t<T>>>),
+                    bool>;
+
 } // namespace Internal
 
 Q_TESTLIB_EXPORT bool compare_string_helper(const char *t1, const char *t2, const char *actual,
@@ -91,7 +104,7 @@ Q_TESTLIB_EXPORT char *toString(const char *);
 Q_TESTLIB_EXPORT char *toString(const volatile void *);
 Q_TESTLIB_EXPORT char *toString(const volatile QObject *);
 
-template<typename T>
+template<typename T, Internal::is_suitable_type_v<T> = true>
 inline char *toString(const T &t)
 {
     return Internal::toString(t);

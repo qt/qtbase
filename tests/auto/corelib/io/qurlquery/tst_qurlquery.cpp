@@ -73,9 +73,12 @@ static QByteArray prettyList(const QueryItems &items)
 static bool compare(const QueryItems &actual, const QueryItems &expected,
                     const char *actualStr, const char *expectedStr, const char *file, int line)
 {
+    auto formatter = [](const void *val) -> const char * {
+        const QueryItems items = *static_cast<const QueryItems *>(val);
+        return qstrdup(prettyList(items).constData());
+    };
     return QTest::compare_helper(actual == expected, "Compared values are not the same",
-                                 [&actual] { return qstrdup(prettyList(actual).constData()); },
-                                 [&expected] { return qstrdup(prettyList(expected).constData()); },
+                                 &actual, &expected, formatter, formatter,
                                  actualStr, expectedStr, file, line);
 }
 

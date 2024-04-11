@@ -102,8 +102,8 @@ public:
     static const char *currentAppName();
 
     static bool reportResult(bool success, const void *lhs, const void *rhs,
-                             const char *(*lhsFormatter)(const void*),
-                             const char *(*rhsFormatter)(const void*),
+                             const char *(*lhsFormatter)(const void *),
+                             const char *(*rhsFormatter)(const void *),
                              const char *lhsExpr, const char *rhsExpr,
                              QTest::ComparisonOperation op, const char *file, int line,
                              const char *failureMessage = nullptr);

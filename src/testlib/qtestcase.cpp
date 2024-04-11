@@ -2748,6 +2748,7 @@ bool QTest::compare_helper(bool success, const char *failureMsg,
 }
 #endif // QT_DEPRECATED_SINCE(6, 4)
 
+#if QT_DEPRECATED_SINCE(6, 8)
 /*! \internal
     \since 6.4
     This function is called by various specializations of QTest::qCompare
@@ -2767,12 +2768,34 @@ bool QTest::compare_helper(bool success, const char *failureMsg,
                            const char *actual, const char *expected,
                            const char *file, int line)
 {
-    auto functionRefFormatter = [](const void *f) {
-        auto formatter = static_cast<const qxp::function_ref<const char *()> *>(f);
-        return (*formatter)();
-    };
-    return QTestResult::reportResult(success, &actualVal, &expectedVal, functionRefFormatter,
-                                     functionRefFormatter, actual, expected,
+    return QTestResult::reportResult(success, &actualVal, &expectedVal,
+                                     QTest::functionRefFormatter,
+                                     QTest::functionRefFormatter, actual, expected,
+                                     QTest::ComparisonOperation::CustomCompare,
+                                     file, line, failureMsg);
+}
+#endif // QT_DEPRECATED_SINCE(6, 8)
+
+/*! \internal
+    \since 6.8
+    This function is called by various specializations of QTest::qCompare
+    to decide whether to report a failure and to produce verbose test output.
+
+    The \a failureMsg parameter can be \c {nullptr}, in which case a default
+    message will be output if the compare fails. If the comparison succeeds,
+    \a failureMsg will not be output.
+*/
+
+bool QTest::compare_helper(bool success, const char *failureMsg,
+                           const void *actualPtr, const void *expectedPtr,
+                           const char *(*actualFormatter)(const void *),
+                           const char *(*expectedFormatter)(const void *),
+                           const char *actual, const char *expected,
+                           const char *file, int line)
+{
+    return QTestResult::reportResult(success, actualPtr, expectedPtr,
+                                     actualFormatter, expectedFormatter,
+                                     actual, expected,
                                      QTest::ComparisonOperation::CustomCompare,
                                      file, line, failureMsg);
 }
@@ -2818,9 +2841,10 @@ static bool floatingCompare(const T &actual, const T &expected)
 bool QTest::qCompare(qfloat16 const &t1, qfloat16 const &t2, const char *actual, const char *expected,
                      const char *file, int line)
 {
+    auto formatter = Internal::genericToString<qfloat16>;
     return compare_helper(floatingCompare(t1, t2),
                           "Compared qfloat16s are not the same (fuzzy compare)",
-                          [&t1] { return toString(t1); }, [&t2] { return toString(t2); },
+                          &t1, &t2, formatter, formatter,
                           actual, expected, file, line);
 }
 
@@ -3137,8 +3161,9 @@ char *QTest::toString(const volatile QObject *vo)
 bool QTest::compare_string_helper(const char *t1, const char *t2, const char *actual,
                                   const char *expected, const char *file, int line)
 {
+    auto formatter = Internal::genericToString<const char *>;
     return compare_helper(qstrcmp(t1, t2) == 0, "Compared strings are not the same",
-                          [t1] { return toString(t1); }, [t2] { return toString(t2); },
+                          &t1, &t2, formatter, formatter,
                           actual, expected, file, line);
 }
 
