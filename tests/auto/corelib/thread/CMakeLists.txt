@@ -1,7 +1,7 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-if(WASM) # not all tests currently work in WebAssembly
+if(QT_BUILD_WASM_BATCHED_TESTS) # not all tests currently work in WebAssembly
     add_subdirectory(qatomicint)
     add_subdirectory(qatomicinteger)
     add_subdirectory(qatomicpointer)
