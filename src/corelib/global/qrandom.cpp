@@ -377,8 +377,9 @@ struct QRandomGenerator::SystemAndGlobalGenerators
 
     struct PRNGLocker
     {
+        Q_DISABLE_COPY_MOVE(PRNGLocker)
         const bool locked;
-        PRNGLocker(const QRandomGenerator *that)
+        Q_NODISCARD_CTOR explicit PRNGLocker(const QRandomGenerator *that)
             : locked(that == globalNoInit())
         {
             if (locked)
