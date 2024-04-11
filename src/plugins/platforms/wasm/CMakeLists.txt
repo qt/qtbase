@@ -7,7 +7,7 @@
 
 qt_internal_add_plugin(QWasmIntegrationPlugin
     OUTPUT_NAME qwasm
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES wasm
+    DEFAULT_IF "wasm" IN_LIST QT_QPA_PLATFORMS
     PLUGIN_TYPE platforms
     SOURCES
         main.cpp

@@ -164,7 +164,7 @@ endif()
 qt_internal_add_plugin(QXcbIntegrationPlugin
     OUTPUT_NAME qxcb
     PLUGIN_TYPE platforms
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES xcb
+    DEFAULT_IF "xcb" IN_LIST QT_QPA_PLATFORMS
     SOURCES
         qxcbmain.cpp
     DEFINES

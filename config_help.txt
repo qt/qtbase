@@ -290,8 +290,10 @@ Gui, printing, widget options:
   -opengles3 ........... Enable OpenGL ES 3.x support instead of ES 2.x [auto]
   -egl ................. Enable EGL support [auto]
 
-  -qpa <name> .......... Select default QPA backend(s) (e.g., xcb, cocoa, windows)
-                         A prioritized list separated by semi-colons.
+  -qpa <qpa1>[;<qpa2>] . Select supported QPA backend(s) (e.g., xcb, cocoa,
+                         windows). A list separated by semi-colons.
+  -default-qpa <name> .. Select the default QPA backend (e.g., xcb, cocoa,
+                         windows).
   -xcb-xlib............. Enable Xcb-Xlib support [auto]
 
   Platform backends:

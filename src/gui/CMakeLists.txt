@@ -7,7 +7,9 @@ qt_find_package(WrapPNG PROVIDED_TARGETS WrapPNG::WrapPNG)
 qt_find_package(WrapFreetype PROVIDED_TARGETS WrapFreetype::WrapFreetype)
 
 if (QT_FEATURE_gui)
-    if(WIN32)
+    if(QT_QPA_PLATFORMS)
+        list(GET QT_QPA_PLATFORMS 0 _default_platform)
+    elseif(WIN32)
         set(_default_platform "windows")
     elseif(ANDROID)
         set(_default_platform "android")
@@ -30,6 +32,11 @@ if (QT_FEATURE_gui)
     endif()
 
     set(QT_QPA_DEFAULT_PLATFORM "${_default_platform}" CACHE STRING "QPA default platform")
+    if(NOT "${QT_QPA_DEFAULT_PLATFORM}" IN_LIST QT_QPA_PLATFORMS)
+        list(APPEND QT_QPA_PLATFORMS "${QT_QPA_DEFAULT_PLATFORM}")
+        set(QT_QPA_PLATFORMS "${QT_QPA_PLATFORMS}" CACHE STRING
+            "QPA platforms deployed by default" FORCE)
+    endif()
 endif()
 
 # Silence warnings in 3rdparty code

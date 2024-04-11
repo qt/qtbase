@@ -145,7 +145,8 @@ The following table describes the mapping of configure options to CMake argument
 | -opengl <api>                         | -DINPUT_opengl=<api>                              |                                                                 |
 | -opengles3                            | -DFEATURE_opengles3=ON                            |                                                                 |
 | -egl                                  | -DFEATURE_egl=ON                                  |                                                                 |
-| -qpa <name>                           | -DQT_QPA_DEFAULT_PLATFORM=<name>                  |                                                                 |
+| -qpa <name>;...;<name_n>              | -DQT_QPA_PLATFORMS=<name>;...;<name_n>            |                                                                 |
+| -default-qpa <name>                   | -DQT_QPA_DEFAULT_PLATFORM=<name>                  |                                                                 |
 | -xcb-xlib                             | -DFEATURE_xcb_xlib=ON                             |                                                                 |
 | -direct2d                             | -DFEATURE_direct2d=ON                             |                                                                 |
 | -directfb                             | -DFEATURE_directfb=ON                             |                                                                 |

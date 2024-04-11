@@ -10,7 +10,7 @@ qt_find_package(WrapFreetype PROVIDED_TARGETS WrapFreetype::WrapFreetype)
 qt_internal_add_plugin(QMinimalIntegrationPlugin
     OUTPUT_NAME qminimal
     PLUGIN_TYPE platforms
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES minimal
+    DEFAULT_IF "minimal" IN_LIST QT_QPA_PLATFORMS
     SOURCES
         main.cpp
         qminimalbackingstore.cpp qminimalbackingstore.h

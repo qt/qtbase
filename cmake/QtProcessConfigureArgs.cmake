@@ -943,6 +943,7 @@ translate_string_input(platform QT_QMAKE_TARGET_MKSPEC)
 translate_string_input(xplatform QT_QMAKE_TARGET_MKSPEC)
 guess_compiler_from_mkspec()
 translate_string_input(qpa_default_platform QT_QPA_DEFAULT_PLATFORM)
+translate_list_input(qpa_platforms QT_QPA_PLATFORMS)
 
 translate_path_input(android-sdk ANDROID_SDK_ROOT)
 translate_path_input(android-ndk ANDROID_NDK_ROOT)

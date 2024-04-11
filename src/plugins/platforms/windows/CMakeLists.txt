@@ -8,7 +8,7 @@
 qt_internal_add_plugin(QWindowsIntegrationPlugin
     OUTPUT_NAME qwindows
     PLUGIN_TYPE platforms
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES windows
+    DEFAULT_IF "windows" IN_LIST QT_QPA_PLATFORMS
     SOURCES
         main.cpp
         qtwindowsglobal.h

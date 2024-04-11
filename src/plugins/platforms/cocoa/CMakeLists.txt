@@ -7,7 +7,7 @@
 
 qt_internal_add_plugin(QCocoaIntegrationPlugin
     OUTPUT_NAME qcocoa
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES cocoa
+    DEFAULT_IF "cocoa" IN_LIST QT_QPA_PLATFORMS
     PLUGIN_TYPE platforms
     SOURCES
         main.mm

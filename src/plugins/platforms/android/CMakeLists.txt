@@ -9,7 +9,7 @@ qt_find_package(EGL)
 qt_internal_add_plugin(QAndroidIntegrationPlugin
     OUTPUT_NAME qtforandroid
     PLUGIN_TYPE platforms
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES android
+    DEFAULT_IF "android" IN_LIST QT_QPA_PLATFORMS
     SOURCES
         androidcontentfileengine.cpp androidcontentfileengine.h
         androiddeadlockprotector.h

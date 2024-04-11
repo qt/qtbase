@@ -8,7 +8,7 @@
 qt_internal_add_plugin(QOffscreenIntegrationPlugin
     OUTPUT_NAME qoffscreen
     PLUGIN_TYPE platforms
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES offscreen
+    DEFAULT_IF "offscreen" IN_LIST QT_QPA_PLATFORMS
     SOURCES
         main.cpp
         qoffscreencommon.cpp qoffscreencommon.h

@@ -653,11 +653,17 @@ set(__qt_internal_initial_qt_cmake_build_type \"${CMAKE_BUILD_TYPE}\")
         endif()
 
         # Save the default qpa platform.
-        # Used by qtwayland/src/plugins/platforms/qwayland-generic/CMakeLists.txt. Otherwise
-        # the DEFAULT_IF condition is evaluated incorrectly.
         if(DEFINED QT_QPA_DEFAULT_PLATFORM)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "set(QT_QPA_DEFAULT_PLATFORM \"${QT_QPA_DEFAULT_PLATFORM}\" CACHE STRING \"\")\n")
+        endif()
+
+        # Save the list of default qpa platforms.
+        # Used by qtwayland/src/plugins/platforms/qwayland-generic/CMakeLists.txt. Otherwise
+        # the DEFAULT_IF condition is evaluated incorrectly.
+        if(DEFINED QT_QPA_PLATFORMS)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(QT_QPA_PLATFORMS \"${QT_QPA_PLATFORMS}\" CACHE STRING \"\")\n")
         endif()
 
         # Save minimum and policy-related CMake versions to ensure the same minimum is
