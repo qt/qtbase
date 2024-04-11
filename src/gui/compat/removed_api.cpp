@@ -7,6 +7,17 @@
 
 QT_USE_NAMESPACE
 
+#if QT_GUI_REMOVED_SINCE(6, 4)
+
+#include "qpagesize.h" // removed duplicate declaration of op==
+                       // (still caused an symbol on some platforms)
+
+// #include "qotherheader.h"
+// // implement removed functions from qotherheader.h
+// order sections alphabetically
+
+#endif // QT_GUI_REMOVED_SINCE(6, 4)
+
 #if QT_GUI_REMOVED_SINCE(6, 6)
 
 #include "qpixmapcache.h" // inlined API
