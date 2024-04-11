@@ -1443,7 +1443,7 @@ function(qt6_extract_metatypes target)
         VERBATIM
     )
 
-    if(CMAKE_GENERATOR MATCHES " Makefiles" OR CMAKE_GENERATOR MATCHES "^Visual Studio")
+    if(CMAKE_GENERATOR MATCHES " Makefiles")
         # Work around https://gitlab.kitware.com/cmake/cmake/-/issues/19005 to trigger the command
         # that generates ${metatypes_file}.
         add_custom_command(
