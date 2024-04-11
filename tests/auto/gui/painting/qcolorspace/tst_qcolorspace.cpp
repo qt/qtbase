@@ -71,6 +71,8 @@ private slots:
     void setWhitePoint();
     void grayColorSpace();
     void grayColorSpaceEffectivelySRgb();
+
+    void scaleAlphaValue();
 };
 
 tst_QColorSpace::tst_QColorSpace()
@@ -1028,6 +1030,15 @@ void tst_QColorSpace::grayColorSpaceEffectivelySRgb()
     QImage rgbImage2 = grayImage2.convertedToColorSpace(sRgb, QImage::Format_RGB32);
 
     QCOMPARE(rgbImage1, rgbImage2);
+}
+
+void tst_QColorSpace::scaleAlphaValue()
+{
+    QImage image(1, 1, QImage::Format_ARGB32);
+    image.setPixel(0, 0, qRgba(255, 255, 255, 125));
+    image.setColorSpace(QColorSpace::SRgb);
+    image.convertToColorSpace(QColorSpace::SRgbLinear, QImage::Format_RGBA64);
+    QCOMPARE(reinterpret_cast<const QRgba64 *>(image.constBits())->alpha(), 257 * 125);
 }
 
 QTEST_MAIN(tst_QColorSpace)

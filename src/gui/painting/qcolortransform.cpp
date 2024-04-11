@@ -390,6 +390,14 @@ template<>
 inline int getAlpha<QRgba64>(const QRgba64 &p)
 {    return p.alpha(); }
 
+template<typename T>
+static inline constexpr int getFactor();
+template<>
+inline constexpr int getFactor<QRgb>()
+{   return 255; }
+template<>
+inline constexpr int getFactor<QRgba64>()
+{   return 65535; }
 #endif
 
 template<typename T>
@@ -823,8 +831,9 @@ static void storePremultiplied(D *dst, const S *src, const QColorVector *buffer,
     const __m128 vTrcRes = _mm_set1_ps(float(QColorTrcLut::Resolution));
     const __m128 iFF00 = _mm_set1_ps(1.0f / (255 * 256));
     constexpr bool isARGB = isArgb<D>();
+    static_assert(getFactor<D>() >= getFactor<S>());
     for (qsizetype i = 0; i < len; ++i) {
-        const int a = getAlpha<S>(src[i]);
+        const int a = getAlpha<S>(src[i]) * (getFactor<D>() / getFactor<S>());
         __m128 vf = _mm_loadu_ps(&buffer[i].x);
         __m128i v = _mm_cvtps_epi32(_mm_mul_ps(vf, vTrcRes));
         __m128 va = _mm_mul_ps(_mm_set1_ps(a), iFF00);
@@ -905,8 +914,9 @@ static void storeUnpremultiplied(D *dst, const S *src, const QColorVector *buffe
 {
     const __m128 vTrcRes = _mm_set1_ps(float(QColorTrcLut::Resolution));
     constexpr bool isARGB = isArgb<D>();
+    static_assert(getFactor<D>() >= getFactor<S>());
     for (qsizetype i = 0; i < len; ++i) {
-        const int a = getAlpha<S>(src[i]);
+        const int a = getAlpha<S>(src[i]) * (getFactor<D>() / getFactor<S>());
         __m128 vf = _mm_loadu_ps(&buffer[i].x);
         __m128i v = _mm_cvtps_epi32(_mm_mul_ps(vf, vTrcRes));
         const int ridx = _mm_extract_epi16(v, 0);
@@ -1029,8 +1039,9 @@ static void storePremultiplied(D *dst, const S *src, const QColorVector *buffer,
 {
     const float iFF00 = 1.0f / (255 * 256);
     constexpr bool isARGB = isArgb<D>();
+    static_assert(getFactor<D>() >= getFactor<S>());
     for (qsizetype i = 0; i < len; ++i) {
-        const int a = getAlpha<S>(src[i]);
+        const int a = getAlpha<S>(src[i]) * (getFactor<D>() / getFactor<S>());
         float32x4_t vf = vld1q_f32(&buffer[i].x);
         uint32x4_t v = vcvtq_u32_f32(vaddq_f32(vmulq_n_f32(vf, float(QColorTrcLut::Resolution)), vdupq_n_f32(0.5f)));
         const int ridx = vgetq_lane_u32(v, 0);
@@ -1073,8 +1084,9 @@ static void storeUnpremultiplied(D *dst, const S *src, const QColorVector *buffe
                                  const QColorTransformPrivate *d_ptr)
 {
     constexpr bool isARGB = isArgb<D>();
+    static_assert(getFactor<D>() >= getFactor<S>());
     for (qsizetype i = 0; i < len; ++i) {
-        const int a = getAlpha<S>(src[i]);
+        const int a = getAlpha<S>(src[i]) * (getFactor<D>() / getFactor<S>());
         float32x4_t vf = vld1q_f32(&buffer[i].x);
         uint16x4_t v = vmovn_u32(vcvtq_u32_f32(vaddq_f32(vmulq_n_f32(vf, float(QColorTrcLut::Resolution)), vdupq_n_f32(0.5f))));
         const int ridx = vget_lane_u16(v, 0);
