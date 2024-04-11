@@ -4368,7 +4368,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             if (subRule.hasDrawable()) {
                 subRule.configurePalette(&optCopy.palette, vopt->state & QStyle::State_Selected ? QPalette::HighlightedText : QPalette::Text,
                                                            vopt->state & QStyle::State_Selected ? QPalette::Highlight : QPalette::Base);
-                baseStyle()->drawControl(ce, &optCopy, p, w);
+                QWindowsStyle::drawControl(ce, &optCopy, p, w);
             } else {
                 p->save();
                 if (hasStyleRule(w, PseudoElement_Indicator)) {
@@ -4387,7 +4387,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                     optIndicator.backgroundBrush = Qt::NoBrush; // no background
                     optIndicator.text.clear();
                     optIndicator.icon = QIcon();
-                    baseStyle()->drawControl(ce, &optIndicator, p, w);
+                    QWindowsStyle::drawControl(ce, &optIndicator, p, w);
 
                     // Now draw text, background,icon, and highlight, but not the indicator  with
                     // the base style. Since we can't turn off HasCheckIndicator to prevent the base
