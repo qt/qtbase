@@ -13,7 +13,7 @@
     <Incident type="fail" file="qtbase/tests/auto/testlib/selftests/testlib/tst_testlib.cpp" line="0">
       <Description><![CDATA[Compared QObject pointers are not the same
    Actual   (QTest::testObject()): tst_TestLib/"TestObject"
-   Expected (nullptr)            : (nullptr)]]></Description>
+   Expected (nullptr)            : "nullptr"]]></Description>
     </Incident>
     <Duration msecs="0"/>
   </TestFunction>

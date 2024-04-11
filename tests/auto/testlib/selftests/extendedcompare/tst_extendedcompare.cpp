@@ -93,10 +93,12 @@ static ClassWithPointerGetter getClassForValue(int val)
 // various toString() overloads
 namespace QTest {
 
-char *toString(const int *val)
+template <> char *toString(const int *const &val)
 {
     return val ? toString(*val) : toString(nullptr);
 }
+
+} // namespace QTest
 
 char *toString(const MyClass &val)
 {
@@ -116,8 +118,6 @@ char *toString(const MyClass *val)
     }
     return toString(nullptr);
 }
-
-} // namespace QTest
 
 enum MyUnregisteredEnum { MyUnregisteredEnumValue1, MyUnregisteredEnumValue2 };
 
@@ -293,16 +293,12 @@ public:
     }
 };
 
-namespace QTest {
-
 char *toString(const ClassWithDeferredSetter &val)
 {
     char *msg = new char[128];
     qsnprintf(msg, 128, "ClassWithDeferredSetter(%d)", val.value());
     return msg;
 }
-
-} // namespace QTest
 
 void tst_ExtendedCompare::checkComparisonWithTimeout()
 {

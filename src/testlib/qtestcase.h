@@ -95,8 +95,7 @@ do { \
         return QTest::reportResult(std::forward<decltype(qt_lhs_arg)>(qt_lhs_arg) \
                                    op \
                                    std::forward<decltype(qt_rhs_arg)>(qt_rhs_arg), \
-                                   [&qt_lhs_arg] { return QTest::toString(qt_lhs_arg); }, \
-                                   [&qt_rhs_arg] { return QTest::toString(qt_rhs_arg); }, \
+                                   qt_lhs_arg, qt_rhs_arg, \
                                    #lhs, #rhs, QTest::ComparisonOperation::opId, \
                                    __FILE__, __LINE__); \
     }(lhs, rhs)) { \
@@ -329,6 +328,18 @@ namespace QTest
     Q_TESTLIB_EXPORT void maybeThrowOnSkip();
 
     Q_TESTLIB_EXPORT QString formatTryTimeoutDebugMessage(q_no_char8_t::QUtf8StringView expr, int timeout, int actual);
+
+    template <typename T1> const char *genericToString(const void *arg)
+    {
+        using QTest::toString;
+        return toString(*static_cast<const T1 *>(arg));
+    }
+
+    template <> inline const char *genericToString<char *>(const void *arg)
+    {
+        using QTest::toString;
+        return toString(static_cast<const char *>(arg));
+    }
 
     // Exported so Qt Quick Test can also use it for generating backtraces upon crashes.
     Q_TESTLIB_EXPORT extern bool noCrashHandler;
@@ -644,10 +655,32 @@ namespace QTest
                        qMetaTypeId<T>())), actualStr, expected, file, line);
     }
 
+#if QT_DEPRECATED_SINCE(6, 8)
+    QT_DEPRECATED_VERSION_X_6_8("use the overload without qxp::function_ref")
     Q_TESTLIB_EXPORT bool reportResult(bool success, qxp::function_ref<const char*()> lhs,
                                        qxp::function_ref<const char*()> rhs,
                                        const char *lhsExpr, const char *rhsExpr,
                                        ComparisonOperation op, const char *file, int line);
+#endif // QT_DEPRECATED_SINCE(6, 8)
+
+    Q_TESTLIB_EXPORT bool reportResult(bool success, const void *lhs, const void *rhs,
+                                       const char *(*lhsFormatter)(const void*),
+                                       const char *(*rhsFormatter)(const void*),
+                                       const char *lhsExpr, const char *rhsExpr,
+                                       ComparisonOperation op, const char *file, int line);
+
+    template <typename T1, typename T2>
+    inline bool reportResult(bool result, const T1 &lhs, const T2 &rhs,
+                             const char *lhsExpr, const char *rhsExpr,
+                             ComparisonOperation op, const char *file, int line)
+    {
+        using D1 = std::decay_t<T1>;
+        using D2 = std::decay_t<T2>;
+        using Internal::genericToString;
+        return reportResult(result, std::addressof(lhs), std::addressof(rhs),
+                            genericToString<D1>, genericToString<D2>,
+                            lhsExpr, rhsExpr, op, file, line);
+    }
 }
 
 

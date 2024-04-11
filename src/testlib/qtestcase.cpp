@@ -1745,14 +1745,33 @@ void TestMethods::invokeTests(QObject *testObject) const
     QSignalDumper::endDump();
 }
 
+#if QT_DEPRECATED_SINCE(6, 8)
+static const char *functionRefFormatter(const void *f)
+{
+    auto formatter = static_cast<const qxp::function_ref<const char *()> *>(f);
+    return (*formatter)();
+};
+
 bool reportResult(bool success, qxp::function_ref<const char *()> lhs,
                   qxp::function_ref<const char *()> rhs,
                   const char *lhsExpr, const char *rhsExpr,
                   ComparisonOperation op, const char *file, int line)
 {
-    return QTestResult::reportResult(success, lhs, rhs, lhsExpr, rhsExpr, op, file, line);
+    return QTestResult::reportResult(success, &lhs, &rhs,
+                                     functionRefFormatter, functionRefFormatter,
+                                     lhsExpr, rhsExpr, op, file, line);
 }
+#endif // QT_DEPRECATED_SINCE(6, 8)
 
+bool reportResult(bool success, const void *lhs, const void *rhs,
+                  const char *(*lhsFormatter)(const void*),
+                  const char *(*rhsFormatter)(const void*),
+                  const char *lhsExpr, const char *rhsExpr,
+                  ComparisonOperation op, const char *file, int line)
+{
+    return QTestResult::reportResult(success, lhs, rhs, lhsFormatter, rhsFormatter,
+                                     lhsExpr, rhsExpr, op, file, line);
+}
 } // namespace QTest
 
 static void initEnvironment()
@@ -2748,7 +2767,12 @@ bool QTest::compare_helper(bool success, const char *failureMsg,
                            const char *actual, const char *expected,
                            const char *file, int line)
 {
-    return QTestResult::reportResult(success, actualVal, expectedVal, actual, expected,
+    auto functionRefFormatter = [](const void *f) {
+        auto formatter = static_cast<const qxp::function_ref<const char *()> *>(f);
+        return (*formatter)();
+    };
+    return QTestResult::reportResult(success, &actualVal, &expectedVal, functionRefFormatter,
+                                     functionRefFormatter, actual, expected,
                                      QTest::ComparisonOperation::CustomCompare,
                                      file, line, failureMsg);
 }

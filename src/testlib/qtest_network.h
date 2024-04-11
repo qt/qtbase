@@ -4,7 +4,7 @@
 #ifndef QTEST_NETWORK_H
 #define QTEST_NETWORK_H
 
-#include <QtTest/qtest.h>
+#include <QtTest/qtesttostring.h>
 
 // enable NETWORK features
 #ifndef QT_NETWORK_LIB
@@ -43,6 +43,7 @@ inline char *toString<QHostAddress>(const QHostAddress &addr)
 
     return toString(addr.toString());
 }
+} // namespace QTest
 
 inline char *toString(QNetworkReply::NetworkError code)
 {
@@ -57,7 +58,7 @@ inline char *toString(QNetworkReply::NetworkError code)
 
 inline char *toString(const QNetworkCookie &cookie)
 {
-    return toString(cookie.toRawForm());
+    return QTest::toString(cookie.toRawForm());
 }
 
 inline char *toString(const QList<QNetworkCookie> &list)
@@ -69,10 +70,8 @@ inline char *toString(const QList<QNetworkCookie> &list)
         result.chop(2); // remove trailing ", "
     }
     result.append(')');
-    return toString(result);
+    return QTest::toString(result);
 }
-
-} // namespace QTest
 
 QT_END_NAMESPACE
 

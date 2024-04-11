@@ -1608,7 +1608,8 @@
 */
 
 /*!
-    \fn char *QTest::toString(QSizePolicy::ControlType ct)
+    \fn char *toString(QSizePolicy::ControlType ct)
+    \relates QTest
     \overload
     \since 5.5
 
@@ -1616,7 +1617,8 @@
 */
 
 /*!
-    \fn char *QTest::toString(QSizePolicy::ControlTypes cts)
+    \fn char *toString(QSizePolicy::ControlTypes cts)
+    \relates QTest
     \overload
     \since 5.5
 
@@ -1624,7 +1626,8 @@
 */
 
 /*!
-    \fn char *QTest::toString(QSizePolicy::Policy p)
+    \fn char *toString(QSizePolicy::Policy p)
+    \relates QTest
     \overload
     \since 5.5
 
@@ -1632,7 +1635,8 @@
 */
 
 /*!
-    \fn char *QTest::toString(QSizePolicy sp)
+    \fn char *toString(QSizePolicy sp)
+    \relates QTest
     \overload
     \since 5.5
 
