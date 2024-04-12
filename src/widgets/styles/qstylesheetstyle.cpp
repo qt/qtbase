@@ -6512,6 +6512,9 @@ bool QStyleSheetStyle::isNaturalChild(const QObject *obj)
 
 QPixmap QStyleSheetStyle::loadPixmap(const QString &fileName, const QObject *context)
 {
+    if (fileName.isEmpty())
+        return {};
+
     qreal ratio = -1.0;
     if (const QWidget *widget = qobject_cast<const QWidget *>(context)) {
         if (QScreen *screen = QApplication::screenAt(widget->mapToGlobal(QPoint(0, 0))))
