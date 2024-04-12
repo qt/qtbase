@@ -303,12 +303,28 @@ void QDateTimeEdit::setTime(QTime time)
     }
 }
 
+/*!
+    \since 5.14
+    Report the calendar system in use by this widget.
+
+    \sa setCalendar()
+*/
 
 QCalendar QDateTimeEdit::calendar() const
 {
     Q_D(const QDateTimeEdit);
     return d->calendar;
 }
+
+/*!
+    \since 5.14
+    Set \a calendar as the calendar system to be used by this widget.
+
+    The widget can use any supported calendar system.
+    By default, it uses the Gregorian calendar.
+
+    \sa calendar()
+*/
 
 void QDateTimeEdit::setCalendar(QCalendar calendar)
 {
