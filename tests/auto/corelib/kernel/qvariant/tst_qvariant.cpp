@@ -3170,7 +3170,7 @@ QT_WARNING_POP
     addComparePair(qQNaN(), std::numeric_limits<float>::quiet_NaN());
     if (sizeof(qreal) == sizeof(double)) {
         addComparePair(std::numeric_limits<float>::min(), std::numeric_limits<double>::min());
-        addComparePair(std::numeric_limits<float>::min(), std::numeric_limits<double>::min());
+        addComparePair(std::numeric_limits<float>::min(), std::numeric_limits<double>::max());
         addComparePair(std::numeric_limits<float>::max(), std::numeric_limits<double>::min());
         addComparePair(std::numeric_limits<float>::max(), std::numeric_limits<double>::max());
         addComparePair(double(Q_INT64_C(1) << 53), Q_INT64_C(1) << 53);
