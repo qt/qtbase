@@ -71,6 +71,10 @@ if(WASM)
     return()
 endif()
 
+if(WASM)
+    add_subdirectory(wasm)
+endif()
+
 add_subdirectory(testlib)
 if(NOT CMAKE_CROSSCOMPILING AND QT_FEATURE_process)
      add_subdirectory(tools)

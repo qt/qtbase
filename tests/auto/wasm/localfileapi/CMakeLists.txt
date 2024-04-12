@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 #####################################################################
-## tst_wasm Test:
+## tst_localfileapi Test:
 #####################################################################
 
 if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
@@ -21,38 +21,4 @@ qt_internal_add_test(tst_localfileapi
         Qt::Core
         Qt::Gui
         Qt::Widgets
-)
-
-qt_internal_add_test(tst_qwasmwindowstack
-    SOURCES
-        tst_qwasmwindowstack.cpp
-    DEFINES
-        QT_NO_FOREACH
-    LIBRARIES
-        Qt::GuiPrivate
-        Qt::Core
-        Qt::Gui
-        Qt::Widgets
-)
-
-qt_internal_add_test(tst_qwasmwindowtreenode
-    SOURCES
-        tst_qwasmwindowtreenode.cpp
-    DEFINES
-        QT_NO_FOREACH
-    LIBRARIES
-        Qt::GuiPrivate
-        Qt::Core
-        Qt::Gui
-        Qt::Widgets
-)
-
-qt_internal_add_test(tst_qwasmkeytranslator
-    SOURCES
-        tst_qwasmkeytranslator.cpp
-    DEFINES
-        QT_NO_FOREACH
-    LIBRARIES
-        Qt::GuiPrivate
-        Qt::Core
 )
