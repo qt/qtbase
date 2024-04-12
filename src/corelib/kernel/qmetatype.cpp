@@ -1173,6 +1173,9 @@ static constexpr struct : QMetaTypeModuleHelper
         QMETATYPE_CONVERTER_ASSIGN_QCHAR(ULong);
         QMETATYPE_CONVERTER_ASSIGN_QCHAR(UInt);
         QMETATYPE_CONVERTER_ASSIGN_QCHAR(ULongLong);
+        QMETATYPE_CONVERTER_ASSIGN_QCHAR(Char16);
+
+        QMETATYPE_CONVERTER(Char16, QChar, result = source.unicode(); return true;)
 
         // conversions to QString
         QMETATYPE_CONVERTER_ASSIGN(QString, QChar);
