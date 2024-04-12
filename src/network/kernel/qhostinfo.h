@@ -17,6 +17,7 @@ class QHostInfoPrivate;
 
 class Q_NETWORK_EXPORT QHostInfo
 {
+    Q_GADGET
 public:
     enum HostInfoError {
         NoError,

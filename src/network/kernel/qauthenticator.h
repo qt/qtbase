@@ -16,6 +16,7 @@ class QUrl;
 
 class Q_NETWORK_EXPORT QAuthenticator
 {
+    Q_GADGET
 public:
     QAuthenticator();
     ~QAuthenticator();

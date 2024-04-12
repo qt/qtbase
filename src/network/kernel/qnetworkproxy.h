@@ -77,6 +77,7 @@ class QNetworkProxyPrivate;
 
 class Q_NETWORK_EXPORT QNetworkProxy
 {
+    Q_GADGET
 public:
     enum ProxyType {
         DefaultProxy,
