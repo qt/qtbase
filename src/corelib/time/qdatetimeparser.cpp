@@ -1277,7 +1277,7 @@ QDateTimeParser::scanString(const QDateTime &defaultValue, bool fixup) const
         if (fixup && sect.state == Intermediate && sect.used < sn.count) {
             const FieldInfo fi = fieldInfo(index);
             if ((fi & (Numeric|FixedWidth)) == (Numeric|FixedWidth)) {
-                const QString newText = QString("%1"_L1).arg(sect.value, sn.count, 10, '0'_L1);
+                const QString newText = QString::asprintf("%0*d", sn.count, sect.value);
                 m_text.replace(pos, sect.used, newText);
                 sect.used = sn.count;
             }
