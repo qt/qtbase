@@ -84,6 +84,26 @@ namespace A {
 }
 #endif
 
+
+namespace TokenStartingWithNumber
+{
+Q_NAMESPACE
+
+#define FOR_EACH_ITEM( CALL ) \
+  CALL( EXAMPLE ) \
+  CALL( 123_EXAMPLE ) \
+  CALL( OTHER_EXAMPLE )
+
+enum FooItems
+{
+
+#define ENUM_ITEM(NAME, ...) FOO ## NAME,
+  FOR_EACH_ITEM( ENUM_ITEM )
+};
+
+Q_ENUM_NS(FooItems)
+}
+
 Q_DECLARE_METATYPE(const QMetaObject*);
 
 #define TESTEXPORTMACRO Q_DECL_EXPORT
@@ -851,6 +871,7 @@ private slots:
     void readWriteThroughBindable();
     void invokableCtors();
     void virtualInlineTaggedSlot();
+    void tokenStartingWithNumber();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -4665,6 +4686,15 @@ void tst_Moc::virtualInlineTaggedSlot()
     QVERIFY(method.isValid());
     QCOMPARE(method.tag(), "Q_NOREPLY");
     QCOMPARE(method.returnMetaType(), QMetaType::fromType<int>());
+}
+
+void tst_Moc::tokenStartingWithNumber()
+{
+    auto *mo  = &TokenStartingWithNumber::staticMetaObject;
+    int index = mo->indexOfEnumerator("FooItems");
+    QMetaEnum metaEnum = mo->enumerator(index);
+    QVERIFY(metaEnum.isValid());
+    QCOMPARE(metaEnum.keyCount(), 3);
 }
 
 QTEST_MAIN(tst_Moc)
