@@ -595,7 +595,7 @@ void QTableViewPrivate::init()
     cornerWidget->setFocusPolicy(Qt::NoFocus);
     cornerWidgetConnection = QObject::connect(
           cornerWidget, &QTableCornerButton::clicked,
-          q, &QTableView::reset);
+          q, &QTableView::selectAll);
 #endif
 }
 
