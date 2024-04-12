@@ -3005,9 +3005,11 @@ void tst_QVariant::compareNumerics_data() const
                         QString::number(v.toULongLong()) :
                         QString::number(v.toLongLong());
         switch (v.typeId()) {
-        case QMetaType::Char:
         case QMetaType::Char16:
+            return QString::number(qvariant_cast<char16_t>(v));
         case QMetaType::Char32:
+            return QString::number(qvariant_cast<char32_t>(v));
+        case QMetaType::Char:
         case QMetaType::UChar:
             return QString::number(v.toUInt());
         case QMetaType::SChar:
