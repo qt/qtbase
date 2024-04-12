@@ -42,6 +42,7 @@ typedef QPair<qreal, qreal> QDpi;
 
 class Q_GUI_EXPORT QPlatformScreen
 {
+    Q_GADGET
     Q_DECLARE_PRIVATE(QPlatformScreen)
 
 public:
