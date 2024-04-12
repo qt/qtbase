@@ -92,6 +92,7 @@ qt_internal_add_module(Core
         global/q23utility.h
         global/qxpfunctional.h
         global/qxptype_traits.h
+        global/qversiontagging.h
         ipc/qsharedmemory.cpp ipc/qsharedmemory.h ipc/qsharedmemory_p.h
         ipc/qsystemsemaphore.cpp ipc/qsystemsemaphore.h ipc/qsystemsemaphore_p.h
         ipc/qtipccommon.cpp ipc/qtipccommon.h ipc/qtipccommon_p.h
@@ -453,8 +454,7 @@ endif()
 # Add version tagging source files if the linker has version script support
 # or the platform supports it.
 set(core_version_tagging_files
-    global/qversiontagging.cpp
-    global/qversiontagging.h)
+    global/qversiontagging.cpp)
 qt_internal_extend_target(Core
     CONDITION TEST_ld_version_script OR APPLE OR WIN32
     SOURCES ${core_version_tagging_files}
