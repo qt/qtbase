@@ -1931,6 +1931,11 @@ bool QMainWindowTabBar::contains(const QDockWidget *dockWidget) const
     return false;
 }
 
+// When a dock widget is removed from a floating tab,
+// Events need to be processed for the tab bar to realize that the dock widget is gone.
+// In this case count() counts the dock widget in transition and accesses dockAt
+// with an out-of-bounds index.
+// => return nullptr in contrast to other xxxxxAt() functions
 QDockWidget *QMainWindowTabBar::dockAt(int index) const
 {
     QMainWindowTabBar *that = const_cast<QMainWindowTabBar *>(this);
@@ -1938,10 +1943,15 @@ QDockWidget *QMainWindowTabBar::dockAt(int index) const
     QDockAreaLayoutInfo *info = mlayout->dockInfo(that);
     if (!info)
         return nullptr;
+
     const int itemIndex = info->tabIndexToListIndex(index);
-    Q_ASSERT(itemIndex >= 0 && itemIndex < info->item_list.count());
-    const QDockAreaLayoutItem &item = info->item_list.at(itemIndex);
-    return item.widgetItem ? qobject_cast<QDockWidget *>(item.widgetItem->widget()) : nullptr;
+    if (itemIndex >= 0) {
+        Q_ASSERT(itemIndex < info->item_list.count());
+        const QDockAreaLayoutItem &item = info->item_list.at(itemIndex);
+        return item.widgetItem ? qobject_cast<QDockWidget *>(item.widgetItem->widget()) : nullptr;
+    }
+
+    return nullptr;
 }
 
 void QMainWindowTabBar::mouseMoveEvent(QMouseEvent *e)
