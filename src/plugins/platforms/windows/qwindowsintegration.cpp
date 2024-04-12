@@ -625,12 +625,16 @@ void QWindowsIntegration::setApplicationBadge(qint64 number)
     // We prefer the native BadgeUpdater API, that allows us to set a number directly,
     // but it requires that the application has a package identity, and also doesn't
     // seem to work in all cases on < Windows 11.
-    if (isWindows11 && qt_win_hasPackageIdentity()) {
-        using namespace winrt::Windows::UI::Notifications;
-        auto badgeXml = BadgeUpdateManager::GetTemplateContent(BadgeTemplateType::BadgeNumber);
-        badgeXml.SelectSingleNode(L"//badge/@value").NodeValue(winrt::box_value(winrt::to_hstring(number)));
-        BadgeUpdateManager::CreateBadgeUpdaterForApplication().Update(BadgeNotification(badgeXml));
-        return;
+    QT_TRY {
+        if (isWindows11 && qt_win_hasPackageIdentity()) {
+            using namespace winrt::Windows::UI::Notifications;
+            auto badgeXml = BadgeUpdateManager::GetTemplateContent(BadgeTemplateType::BadgeNumber);
+            badgeXml.SelectSingleNode(L"//badge/@value").NodeValue(winrt::box_value(winrt::to_hstring(number)));
+            BadgeUpdateManager::CreateBadgeUpdaterForApplication().Update(BadgeNotification(badgeXml));
+            return;
+        }
+    } QT_CATCH(...) {
+        // fall back to win32 implementation
     }
 #endif
 
