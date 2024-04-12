@@ -12,7 +12,9 @@
 
 #include <q20memory.h>
 
-#include <linux/mount.h>
+// PETROSYS CHANGE
+// switched back to sys as EL7 doesn't have mount.h in linux
+#include <sys/mount.h>
 #include <sys/ioctl.h>
 #include <sys/statfs.h>
 

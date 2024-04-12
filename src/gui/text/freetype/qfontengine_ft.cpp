@@ -338,7 +338,10 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id,
                     }
                 }
                 FT_Set_Var_Design_Coordinates(face, var->num_axis, coords.data());
-                FT_Done_MM_Var(qt_getFreetype(), var);
+                // EL7 freetype doesn't have FT_Done_MM_Var, so replace with free. We could use 
+                // Qt built-in freetype, but then we lose access to system fontconfig.
+                //FT_Done_MM_Var(qt_getFreetype(), var);
+                free(var);
             }
         }
 
@@ -359,7 +362,12 @@ void QFreetypeFace::cleanup()
 {
     hbFace.reset();
     if (mm_var && face && face->glyph)
-        FT_Done_MM_Var(face->glyph->library, mm_var);
+    {
+        // EL7 freetype doesn't have FT_Done_MM_Var, so replace with free. We could use 
+        // Qt built-in freetype, but then we lose access to system fontconfig.
+        free(mm_var);
+        //FT_Done_MM_Var(face->glyph->library, mm_var);
+    }
     mm_var = nullptr;
     FT_Done_Face(face);
     face = nullptr;
