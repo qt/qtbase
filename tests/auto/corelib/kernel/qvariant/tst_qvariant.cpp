@@ -3143,7 +3143,7 @@ QT_WARNING_POP
     addComparePair(LLONG_MIN, quint64(LLONG_MIN) + 1);
     addComparePair(LLONG_MIN + 1, quint64(LLONG_MIN) + 1);
     addComparePair(LLONG_MIN, LLONG_MAX - 1);
-    addComparePair(LLONG_MIN, LLONG_MAX);
+    // addComparePair(LLONG_MIN, LLONG_MAX); // already added by addSingleType()
 
     // floating point
     addComparePair(0.f, 0);
@@ -3151,7 +3151,6 @@ QT_WARNING_POP
     addComparePair(0.f, Q_INT64_C(0));
     addComparePair(0.f, Q_UINT64_C(0));
     addComparePair(0.f, 0.);
-    addComparePair(0.f, 1.);
     addComparePair(0.f, 1.);
     addComparePair(float(1 << 24), 1 << 24);
     addComparePair(float(1 << 24) - 1, (1 << 24) - 1);
