@@ -2216,17 +2216,15 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
     }
     case QTextListFormat::ListSquare:
         if (!marker)
-            painter->fillRect(r, brush);
+            painter->fillRect(r, painter->pen().brush());
         break;
     case QTextListFormat::ListCircle:
-        if (!marker) {
-            painter->setPen(QPen(brush, 0));
+        if (!marker)
             painter->drawEllipse(r.translated(0.5, 0.5)); // pixel align for sharper rendering
-        }
         break;
     case QTextListFormat::ListDisc:
         if (!marker) {
-            painter->setBrush(brush);
+            painter->setBrush(painter->pen().brush());
             painter->setPen(Qt::NoPen);
             painter->drawEllipse(r);
         }
