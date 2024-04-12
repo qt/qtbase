@@ -295,6 +295,10 @@ void tst_QAbstractItemView::getSetCheck()
     QCOMPARE(20, obj1->autoScrollMargin());
     obj1->setAutoScrollMargin(16);
     QCOMPARE(16, obj1->autoScrollMargin());
+
+    QCOMPARE(200U, obj1->updateThreshold());
+    obj1->setUpdateThreshold(4711);
+    QCOMPARE(4711U, obj1->updateThreshold());
 }
 
 void tst_QAbstractItemView::cleanup()

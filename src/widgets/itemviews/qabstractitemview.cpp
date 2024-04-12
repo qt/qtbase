@@ -85,7 +85,8 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         delayedPendingLayout(true),
         moveCursorUpdatedView(false),
         verticalScrollModeSet(false),
-        horizontalScrollModeSet(false)
+        horizontalScrollModeSet(false),
+        updateThreshold(200)
 {
     keyboardInputTime.invalidate();
 }
@@ -3204,6 +3205,37 @@ int QAbstractItemView::sizeHintForColumn(int column) const
 }
 
 /*!
+    \property QAbstractItemView::updateThreshold
+    \since 6.9
+    This property holds the amount of changed indexes to directly trigger
+    a full update of the view inside dataChanged().
+
+    The algorithm inside dataChanged() tries to minimize a full update of the
+    view by calculating if the changed indexes are visible or not. For very
+    large models, with a lot of large changes, this might take longer than the
+    actual update so it's counter-productive. This property gives the ability
+    to control the algorithm to skip the check and directly trigger a full
+    update when the amount of changed indexes exceeds the given value.
+
+    The default value is 200.
+
+    \sa dataChanged()
+*/
+uint32_t QAbstractItemView::updateThreshold() const
+{
+    Q_D(const QAbstractItemView);
+    return d->updateThreshold;
+}
+
+void QAbstractItemView::setUpdateThreshold(uint32_t threshold)
+{
+    Q_D(QAbstractItemView);
+    if (d->updateThreshold == threshold)
+        return;
+    d->updateThreshold = threshold;
+}
+
+/*!
     Opens a persistent editor on the item at the given \a index.
     If no editor exists, the delegate will create a new editor.
 
@@ -3397,6 +3429,11 @@ void QAbstractItemView::dataChanged(const QModelIndex &topLeft, const QModelInde
                 topLeft.row() > bottomRight.row() ||
                 topLeft.column() > bottomRight.column()) {
                 // invalid parameter - call update() to redraw all
+                Q_ASSERT(false);
+                d->viewport->update();
+            } else if ((bottomRight.row() - topLeft.row() + 1ULL) *
+                       (bottomRight.column() - topLeft.column() + 1ULL) > d->updateThreshold) {
+                // too many indices to check - force full update
                 d->viewport->update();
             } else {
                 const QRect updateRect = d->intersectedRect(d->viewport->rect(), topLeft, bottomRight);

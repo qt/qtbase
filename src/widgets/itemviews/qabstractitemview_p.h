@@ -421,6 +421,8 @@ public:
     bool verticalScrollModeSet;
     bool horizontalScrollModeSet;
 
+    uint32_t updateThreshold;
+
     virtual QRect visualRect(const QModelIndex &index) const { return q_func()->visualRect(index); }
 
     std::array<QMetaObject::Connection, 14> modelConnections;

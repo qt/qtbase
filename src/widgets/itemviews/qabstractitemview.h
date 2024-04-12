@@ -46,6 +46,8 @@ class Q_WIDGETS_EXPORT QAbstractItemView : public QAbstractScrollArea
                RESET resetVerticalScrollMode)
     Q_PROPERTY(ScrollMode horizontalScrollMode READ horizontalScrollMode
                WRITE setHorizontalScrollMode RESET resetHorizontalScrollMode)
+    Q_PROPERTY(uint32_t updateThreshold READ updateThreshold
+               WRITE setUpdateThreshold)
 
 public:
     enum SelectionMode {
@@ -176,6 +178,9 @@ public:
     QSize sizeHintForIndex(const QModelIndex &index) const;
     virtual int sizeHintForRow(int row) const;
     virtual int sizeHintForColumn(int column) const;
+
+    uint32_t updateThreshold() const;
+    void setUpdateThreshold(uint32_t threshold);
 
     void openPersistentEditor(const QModelIndex &index);
     void closePersistentEditor(const QModelIndex &index);
