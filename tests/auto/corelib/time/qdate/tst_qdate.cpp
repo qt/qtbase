@@ -1334,7 +1334,7 @@ void tst_QDate::fromStringFormat_data()
     QTest::newRow("year-match-1999") << u"1999:99"_s << u"yyyy:yy"_s << 1900 << QDate(1999, 1, 1);
     QTest::newRow("year-match-2099") << u"2099:99"_s << u"yyyy:yy"_s << 1900 << QDate(2099, 1, 1);
     QTest::newRow("year-match-2001") << u"2001:01"_s << u"yyyy:yy"_s << 1900 << QDate(2001, 1, 1);
-    QTest::newRow("year-match-1999") << u"99"_s << u"yy"_s << 1900 << QDate(1999, 1, 1);
+    QTest::newRow("just-yy-1999") << u"99"_s << u"yy"_s << 1900 << QDate(1999, 1, 1);
     QTest::newRow("just-yy-1901") << u"01"_s << u"yy"_s << 1900 << QDate(1901, 1, 1);
     QTest::newRow("just-yy-2001") << u"01"_s << u"yy"_s << 1970 << QDate(2001, 1, 1);
 
