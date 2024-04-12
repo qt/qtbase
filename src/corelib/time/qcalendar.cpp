@@ -498,8 +498,8 @@ Q_GLOBAL_STATIC(QtPrivate::QCalendarRegistry, calendarRegistry);
     base-classes for custom calendar backends, but cannot be instantiated
     themselves.
 
-    \sa calendarId(), QDate, QDateTime, QDateEdit,
-        QDateTimeEdit, QCalendarWidget
+    \sa calendarId(), QDate, QDateTime, QDateEdit, QDateTimeEdit,
+        QCalendarWidget, {The Low-Level API: Extending Qt Applications}
 */
 
 /*!
