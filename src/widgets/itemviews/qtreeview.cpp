@@ -1412,13 +1412,48 @@ QRect QTreeViewPrivate::intersectedRect(const QRect rect, const QModelIndex &top
     const auto parentIdx = topLeft.parent();
     executePostedLayout();
     QRect updateRect;
-    for (int r = topLeft.row(); r <= bottomRight.row(); ++r) {
-        if (isRowHidden(model->index(r, 0, parentIdx)))
+    int left = std::numeric_limits<int>::max();
+    int right = std::numeric_limits<int>::min();
+    for (int row = topLeft.row(); row <= bottomRight.row(); ++row) {
+        const auto idxCol0 = model->index(row, 0, parentIdx);
+        if (isRowHidden(idxCol0))
             continue;
-        for (int c = topLeft.column(); c <= bottomRight.column(); ++c) {
-            const QModelIndex idx(model->index(r, c, parentIdx));
-            updateRect |= visualRect(idx, SingleSection);
+        QRect rowRect;
+        if (left != std::numeric_limits<int>::max()) {
+            // we already know left and right boundary of the rect to update
+            rowRect = visualRect(idxCol0, FullRow);
+            if (!rowRect.intersects(rect))
+                continue;
+            rowRect = QRect(left, rowRect.top(), right, rowRect.bottom());
+        } else if (!spanningIndexes.isEmpty() && spanningIndexes.contains(idxCol0)) {
+            // isFirstColumnSpanned re-creates the child index so take a shortcut here
+            // spans the whole row, therefore ask for FullRow instead for every cell
+            rowRect = visualRect(idxCol0, FullRow);
+            if (!rowRect.intersects(rect))
+                continue;
+        } else {
+            for (int col = topLeft.column(); col <= bottomRight.column(); ++col) {
+                if (header->isSectionHidden(col))
+                    continue;
+                const QModelIndex idx(model->index(row, col, parentIdx));
+                const QRect idxRect = visualRect(idx, SingleSection);
+                if (idxRect.isNull())
+                    continue;
+                // early exit when complete row is out of viewport
+                if (idxRect.top() > rect.bottom() && idxRect.bottom() < rect.top())
+                    break;
+                if (!idxRect.intersects(rect))
+                    continue;
+                rowRect = rowRect.united(idxRect);
+                if (rowRect.left() < rect.left() && rowRect.right() > rect.right())
+                    break;
+            }
+            left = std::min(left, rowRect.left());
+            right = std::max(right, rowRect.right());
         }
+        updateRect = updateRect.united(rowRect);
+        if (updateRect.contains(rect))  // already full rect covered?
+            break;
     }
     return rect.intersected(updateRect);
 }
