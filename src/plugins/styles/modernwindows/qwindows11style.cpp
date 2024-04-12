@@ -1629,7 +1629,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
 
                 if ((vopt->state & State_Selected || vopt->state & State_MouseOver) && !(isTreeView && vopt->state & State_MouseOver) && vopt->showDecorationSelected) {
                     painter->setBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
-                    QWidget *editorWidget = view->indexWidget(view->currentIndex());
+                    QWidget *editorWidget = view ? view->indexWidget(view->currentIndex()) : nullptr;
                     if (editorWidget) {
                         QPalette pal = editorWidget->palette();
                         QColor editorBgColor = vopt->backgroundBrush == Qt::NoBrush ? vopt->palette.color(widget->backgroundRole()) : vopt->backgroundBrush.color();
@@ -1682,7 +1682,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 vopt->icon.paint(painter, iconRect, vopt->decorationAlignment, mode, state);
 
                 painter->setPen(QPen(option->palette.buttonText().color()));
-                if (!view->isPersistentEditorOpen(vopt->index))
+                if (!view || !view->isPersistentEditorOpen(vopt->index))
                     d->viewItemDrawText(painter, vopt, textRect);
                 if (vopt->state & State_Selected
                  && (vopt->viewItemPosition == QStyleOptionViewItem::Beginning
