@@ -747,6 +747,9 @@ void tst_QDockWidget::updateTabBarOnVisibilityChanged()
     QCOMPARE(tabBar->currentIndex(), 0);
 
     QCOMPARE(mw.tabifiedDockWidgets(dw2), {dw3});
+
+    mw.removeDockWidget(dw3);
+    QCOMPARE(mw.tabifiedDockWidgets(dw2).count(), 0);
 }
 
 Q_DECLARE_METATYPE(Qt::DockWidgetArea)
