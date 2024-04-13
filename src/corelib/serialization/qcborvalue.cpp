@@ -1149,11 +1149,6 @@ static int compareElementRecursive(const QCborContainerPrivate *c1, const Elemen
     if (b1 || b2) {
         auto len1 = b1 ? b1->len : 0;
         auto len2 = b2 ? b2->len : 0;
-
-        if (e1.flags & Element::StringIsUtf16)
-            len1 /= 2;
-        if (e2.flags & Element::StringIsUtf16)
-            len2 /= 2;
         if (len1 == 0 || len2 == 0)
             return len1 < len2 ? -1 : len1 == len2 ? 0 : 1;
 
