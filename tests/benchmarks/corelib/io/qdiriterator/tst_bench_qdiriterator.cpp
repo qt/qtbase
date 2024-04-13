@@ -269,8 +269,7 @@ void tst_QDirIterator::stdRecursiveDirectoryIterator()
     // than the other methods in this source file.
     QBENCHMARK {
         int c = 0;
-        for (const auto &dirEntry : fs::recursive_directory_iterator(
-                                dirpath.data(), fs::directory_options::skip_permission_denied, ec)) {
+        for (const auto &dirEntry : fs::recursive_directory_iterator(dirpath.data(), ec)) {
             if (dirEntry.is_directory())
                 continue;
             c++;
