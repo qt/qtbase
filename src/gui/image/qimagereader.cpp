@@ -529,14 +529,15 @@ bool QImageReaderPrivate::initHandler()
         int currentExtension = 0;
 
         QString fileName = file->fileName();
+        bool fileIsOpen;
 
         do {
             file->setFileName(fileName + u'.'
                     + QLatin1StringView(extensions.at(currentExtension++).constData()));
-            file->open(QIODevice::ReadOnly);
-        } while (!file->isOpen() && currentExtension < extensions.size());
+            fileIsOpen = file->open(QIODevice::ReadOnly);
+        } while (!fileIsOpen && currentExtension < extensions.size());
 
-        if (!device->isOpen()) {
+        if (!fileIsOpen) {
             imageReaderError = QImageReader::FileNotFoundError;
             errorString = QImageReader::tr("File not found");
             file->setFileName(fileName); // restore the old file name
