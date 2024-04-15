@@ -1534,7 +1534,7 @@ void QFont::setStyleStrategy(StyleStrategy s)
     Predefined stretch values that follow the CSS naming convention. The higher
     the value, the more stretched the text is.
 
-    \value AnyStretch 0 Accept any stretch matched using the other QFont properties (added in Qt 5.8)
+    \value [since 5.8]  AnyStretch 0 Accept any stretch matched using the other QFont properties
     \value UltraCondensed 50
     \value ExtraCondensed 62
     \value Condensed 75

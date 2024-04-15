@@ -710,38 +710,58 @@ bool QImageData::checkForAlphaPixels() const
                             The unused bits are always zero.
     \value Format_ARGB4444_Premultiplied  The image is stored using a
                             premultiplied 16-bit ARGB format (4-4-4-4).
-    \value Format_RGBX8888   The image is stored using a 32-bit byte-ordered RGB(x) format (8-8-8-8).
-                             This is the same as the Format_RGBA8888 except alpha must always be 255. (added in Qt 5.2)
-    \value Format_RGBA8888   The image is stored using a 32-bit byte-ordered RGBA format (8-8-8-8).
+    \value [since 5.2]
+           Format_RGBX8888   The image is stored using a 32-bit byte-ordered RGB(x) format (8-8-8-8).
+                             This is the same as the Format_RGBA8888 except alpha must always be 255.
+    \value [since 5.2]
+           Format_RGBA8888   The image is stored using a 32-bit byte-ordered RGBA format (8-8-8-8).
                              Unlike ARGB32 this is a byte-ordered format, which means the 32bit
                              encoding differs between big endian and little endian architectures,
                              being respectively (0xRRGGBBAA) and (0xAABBGGRR). The order of the colors
-                             is the same on any architecture if read as bytes 0xRR,0xGG,0xBB,0xAA. (added in Qt 5.2)
-    \value Format_RGBA8888_Premultiplied    The image is stored using a
-                            premultiplied 32-bit byte-ordered RGBA format (8-8-8-8). (added in Qt 5.2)
-    \value Format_BGR30      The image is stored using a 32-bit BGR format (x-10-10-10). (added in Qt 5.4)
-    \value Format_A2BGR30_Premultiplied    The image is stored using a 32-bit premultiplied ABGR format (2-10-10-10). (added in Qt 5.4)
-    \value Format_RGB30      The image is stored using a 32-bit RGB format (x-10-10-10). (added in Qt 5.4)
-    \value Format_A2RGB30_Premultiplied    The image is stored using a 32-bit premultiplied ARGB format (2-10-10-10). (added in Qt 5.4)
-    \value Format_Alpha8     The image is stored using an 8-bit alpha only format. (added in Qt 5.5)
-    \value Format_Grayscale8 The image is stored using an 8-bit grayscale format. (added in Qt 5.5)
-    \value Format_Grayscale16 The image is stored using an 16-bit grayscale format. (added in Qt 5.13)
-    \value Format_RGBX64     The image is stored using a 64-bit halfword-ordered RGB(x) format (16-16-16-16).
-                             This is the same as the Format_RGBA64 except alpha must always be 65535. (added in Qt 5.12)
-    \value Format_RGBA64     The image is stored using a 64-bit halfword-ordered RGBA format (16-16-16-16). (added in Qt 5.12)
-    \value Format_RGBA64_Premultiplied    The image is stored using a premultiplied 64-bit halfword-ordered
-                             RGBA format (16-16-16-16). (added in Qt 5.12)
-    \value Format_BGR888     The image is stored using a 24-bit BGR format. (added in Qt 5.14)
-    \value Format_RGBX16FPx4 The image is stored using a 4 16-bit halfword floating point RGBx format (16FP-16FP-16FP-16FP).
-                             This is the same as the Format_RGBA16FPx4 except alpha must always be 1.0. (added in Qt 6.2)
-    \value Format_RGBA16FPx4 The image is stored using a 4 16-bit halfword floating point RGBA format (16FP-16FP-16FP-16FP). (added in Qt 6.2)
-    \value Format_RGBA16FPx4_Premultiplied    The image is stored using a premultiplied 4 16-bit halfword floating point
-                             RGBA format (16FP-16FP-16FP-16FP). (added in Qt 6.2)
-    \value Format_RGBX32FPx4 The image is stored using a 4 32-bit floating point RGBx format (32FP-32FP-32FP-32FP).
-                             This is the same as the Format_RGBA32FPx4 except alpha must always be 1.0. (added in Qt 6.2)
-    \value Format_RGBA32FPx4 The image is stored using a 4 32-bit floating point RGBA format (32FP-32FP-32FP-32FP). (added in Qt 6.2)
-    \value Format_RGBA32FPx4_Premultiplied    The image is stored using a premultiplied 4 32-bit floating point
-                             RGBA format (32FP-32FP-32FP-32FP). (added in Qt 6.2)
+                             is the same on any architecture if read as bytes 0xRR,0xGG,0xBB,0xAA.
+    \value [since 5.2]
+           Format_RGBA8888_Premultiplied    The image is stored using a
+                            premultiplied 32-bit byte-ordered RGBA format (8-8-8-8).
+    \value [since 5.4]
+           Format_BGR30      The image is stored using a 32-bit BGR format (x-10-10-10).
+    \value [since 5.4]
+           Format_A2BGR30_Premultiplied    The image is stored using a 32-bit premultiplied ABGR format (2-10-10-10).
+    \value [since 5.4]
+           Format_RGB30      The image is stored using a 32-bit RGB format (x-10-10-10).
+    \value [since 5.4]
+           Format_A2RGB30_Premultiplied    The image is stored using a 32-bit premultiplied ARGB format (2-10-10-10).
+    \value [since 5.5]
+           Format_Alpha8     The image is stored using an 8-bit alpha only format.
+    \value [since 5.5]
+           Format_Grayscale8 The image is stored using an 8-bit grayscale format.
+    \value [since 5.13]
+           Format_Grayscale16 The image is stored using an 16-bit grayscale format.
+    \value [since 5.12]
+           Format_RGBX64     The image is stored using a 64-bit halfword-ordered RGB(x) format (16-16-16-16).
+                             This is the same as the Format_RGBA64 except alpha must always be 65535.
+    \value [since 5.12]
+           Format_RGBA64     The image is stored using a 64-bit halfword-ordered RGBA format (16-16-16-16).
+    \value [since 5.12]
+           Format_RGBA64_Premultiplied    The image is stored using a premultiplied 64-bit halfword-ordered
+                             RGBA format (16-16-16-16).
+    \value [since 5.14]
+           Format_BGR888     The image is stored using a 24-bit BGR format.
+    \value [since 6.2]
+           Format_RGBX16FPx4 The image is stored using a four 16-bit halfword floating point RGBx format (16FP-16FP-16FP-16FP).
+                             This is the same as the Format_RGBA16FPx4 except alpha must always be 1.0.
+    \value [since 6.2]
+           Format_RGBA16FPx4 The image is stored using a four 16-bit halfword floating point RGBA format (16FP-16FP-16FP-16FP).
+    \value [since 6.2]
+           Format_RGBA16FPx4_Premultiplied    The image is stored using a premultiplied four 16-bit halfword floating point
+                             RGBA format (16FP-16FP-16FP-16FP).
+    \value [since 6.2]
+           Format_RGBX32FPx4 The image is stored using a four 32-bit floating point RGBx format (32FP-32FP-32FP-32FP).
+                             This is the same as the Format_RGBA32FPx4 except alpha must always be 1.0.
+    \value [since 6.2]
+           Format_RGBA32FPx4 The image is stored using a four 32-bit floating point RGBA format (32FP-32FP-32FP-32FP).
+    \value [since 6.2]
+           Format_RGBA32FPx4_Premultiplied    The image is stored using a premultiplied four 32-bit floating point
+                             RGBA format (32FP-32FP-32FP-32FP).
 
     \note Drawing into a QImage with QImage::Format_Indexed8 is not
     supported.
