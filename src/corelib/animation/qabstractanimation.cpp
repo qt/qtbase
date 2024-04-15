@@ -856,12 +856,15 @@ qint64 QAnimationDriver::elapsed() const
 QDefaultAnimationDriver::QDefaultAnimationDriver(QUnifiedTimer *timer)
     : QAnimationDriver(nullptr), m_unified_timer(timer)
 {
-    connect(this, SIGNAL(started()), this, SLOT(startTimer()));
-    connect(this, SIGNAL(stopped()), this, SLOT(stopTimer()));
+    connect(this, &QAnimationDriver::started, this, &QDefaultAnimationDriver::startTimer);
+    connect(this, &QAnimationDriver::stopped, this, &QDefaultAnimationDriver::stopTimer);
 }
 
 QDefaultAnimationDriver::~QDefaultAnimationDriver()
-    = default;
+{
+    disconnect(this, &QAnimationDriver::started, this, &QDefaultAnimationDriver::startTimer);
+    disconnect(this, &QAnimationDriver::stopped, this, &QDefaultAnimationDriver::stopTimer);
+}
 
 void QDefaultAnimationDriver::timerEvent(QTimerEvent *e)
 {
