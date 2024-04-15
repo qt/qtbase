@@ -434,11 +434,20 @@ void QWindows11Style::drawComplexControl(ComplexControl control, const QStyleOpt
 #if QT_CONFIG(combobox)
     case CC_ComboBox:
         if (const QStyleOptionComboBox *combobox = qstyleoption_cast<const QStyleOptionComboBox *>(option)) {
-            QBrush fillColor = state & State_MouseOver && !(state & State_HasFocus) ? QBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]) : option->palette.brush(QPalette::Base);
+            QBrush fillColor = combobox->palette.brush(QPalette::Base);
             QRectF rect = option->rect.adjusted(2,2,-2,-2);
             painter->setBrush(fillColor);
             painter->setPen(Qt::NoPen);
             painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+
+            // In case the QComboBox is hovered overdraw the background with a alpha mask to
+            // highlight the QComboBox.
+            if (state & State_MouseOver) {
+                fillColor = QBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
+                painter->setBrush(fillColor);
+                painter->setPen(Qt::NoPen);
+                painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+            }
 
             rect.adjust(0.5,0.5,-0.5,-0.5);
             painter->setBrush(Qt::NoBrush);
@@ -905,12 +914,20 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
         if (widget && widget->objectName() == "qt_spinbox_lineedit")
             break;
         if (const auto *panel = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
-            QBrush fillColor = state & State_MouseOver && !(state & State_HasFocus) ? QBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]) : option->palette.brush(QPalette::Base);
-            painter->setBrush(fillColor);
-            painter->setPen(Qt::NoPen);
             QRectF frameRect = option->rect;
             frameRect.adjust(0.5,0.5,-0.5,-0.5);
+            QBrush fillColor = option->palette.brush(QPalette::Base);
+            painter->setBrush(fillColor);
+            painter->setPen(Qt::NoPen);
             painter->drawRoundedRect(frameRect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+            // In case the QLineEdit is hovered overdraw the background with a alpha mask to
+            // highlight the QLineEdit.
+            if (state & State_MouseOver && !(state & State_HasFocus)) {
+                fillColor = QBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
+                painter->setBrush(fillColor);
+                painter->setPen(Qt::NoPen);
+                painter->drawRoundedRect(frameRect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+            }
             if (panel->lineWidth > 0)
                 proxy()->drawPrimitive(PE_FrameLineEdit, panel, painter, widget);
         }
@@ -1104,7 +1121,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 rect.translate(shiftX, shiftY);
                 painter->setFont(toolbutton->font);
                 const QString text = d->toolButtonElideText(toolbutton, rect, alignment);
-                if (toolbutton->state & State_Raised)
+                if (toolbutton->state & State_Raised || d->defaultPalette.buttonText() != toolbutton->palette.buttonText())
                     painter->setPen(QPen(toolbutton->palette.buttonText().color()));
                 else
                     painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][controlTextSecondary]));
@@ -1158,7 +1175,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                     }
                     tr.translate(shiftX, shiftY);
                     const QString text = d->toolButtonElideText(toolbutton, tr, alignment);
-                    if (toolbutton->state & State_Raised)
+                    if (toolbutton->state & State_Raised || d->defaultPalette.buttonText() != toolbutton->palette.buttonText())
                         painter->setPen(QPen(toolbutton->palette.buttonText().color()));
                     else
                         painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][controlTextSecondary]));
@@ -1361,13 +1378,15 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             } else {
                 QRectF rect = btn->rect.marginsRemoved(QMargins(2,2,2,2));
                 painter->setPen(Qt::NoPen);
-                if (flags & (State_Sunken))
-                    painter->setBrush(flags & State_On ? option->palette.accent().color().lighter(120) : WINUI3Colors[colorSchemeIndex][controlFillTertiary]);
-                else if (flags & State_MouseOver)
-                    painter->setBrush(flags & State_On ? option->palette.accent().color().lighter(110) : WINUI3Colors[colorSchemeIndex][controlFillSecondary]);
-                else
-                    painter->setBrush(flags & State_On ? option->palette.accent() : option->palette.button());
+                painter->setBrush(flags & State_On ? option->palette.accent() : option->palette.button());
                 painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+                if (flags.testFlags(State_Sunken | State_MouseOver)) {
+                    if (flags & (State_Sunken))
+                        painter->setBrush(flags & State_On ? option->palette.accent().color().lighter(120) : WINUI3Colors[colorSchemeIndex][controlFillTertiary]);
+                    else if (flags & State_MouseOver)
+                        painter->setBrush(flags & State_On ? option->palette.accent().color().lighter(110) : WINUI3Colors[colorSchemeIndex][controlFillSecondary]);
+                    painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
+                }
 
                 rect.adjust(0.5,0.5,-0.5,-0.5);
                 painter->setBrush(Qt::NoBrush);
@@ -1575,7 +1594,13 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
         break;
     case CE_HeaderSection: {
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(header->palette.button());
+            painter->drawRect(header->rect);
+
             painter->setPen(highContrastTheme == true ? header->palette.buttonText().color() : WINUI3Colors[colorSchemeIndex][frameColorLight]);
+            painter->setBrush(Qt::NoBrush);
+
             if (header->position == QStyleOptionHeader::OnlyOneSection) {
                 break;
             }
@@ -2011,6 +2036,8 @@ void QWindows11Style::polish(QWidget* widget)
             QLineEdit *le = cb->lineEdit();
             le->setFrame(false);
         }
+    } else if (widget->inherits("QAbstractButton") || widget->inherits("QToolButton")) {
+        widget->setAutoFillBackground(false);
     } else if (qobject_cast<QGraphicsView *>(widget) && !qobject_cast<QTextEdit *>(widget)) {
         QPalette pal = widget->palette();
         pal.setColor(QPalette::Base, pal.window().color());
@@ -2099,6 +2126,7 @@ static void populateLightSystemBasePalette(QPalette &result)
  */
 void QWindows11Style::polish(QPalette& pal)
 {
+    Q_D(QWindows11Style);
     highContrastTheme = QGuiApplicationPrivate::colorScheme() == Qt::ColorScheme::Unknown;
     colorSchemeIndex = QGuiApplicationPrivate::colorScheme() == Qt::ColorScheme::Light ? 0 : 1;
 
@@ -2126,6 +2154,7 @@ void QWindows11Style::polish(QPalette& pal)
 
     if (highContrastTheme)
         pal.setColor(QPalette::Active, QPalette::HighlightedText, pal.windowText().color());
+    d->defaultPalette = pal;
 }
 
 QT_END_NAMESPACE
