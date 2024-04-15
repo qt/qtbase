@@ -1345,8 +1345,8 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         } else {
             Q_UNREACHABLE();
         }
-        if (tagIndex.contains(Tag::chad)) {
-            if (!parseChad(data, tagIndex[Tag::chad], colorspaceDPtr))
+        if (auto it = tagIndex.constFind(Tag::chad); it != tagIndex.constEnd()) {
+            if (!parseChad(data, it.value(), colorspaceDPtr))
                 return false;
         } else {
             colorspaceDPtr->chad = QColorMatrix::chromaticAdaptation(colorspaceDPtr->whitePoint);
@@ -1371,19 +1371,19 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
         // Only parse the default perceptual transform for now
         if (!parseA2B(data, tagIndex[Tag::A2B0], colorspaceDPtr, true))
             return false;
-        if (tagIndex.contains(Tag::B2A0)) {
-            if (!parseA2B(data, tagIndex[Tag::B2A0], colorspaceDPtr, false))
+        if (auto it = tagIndex.constFind(Tag::B2A0); it != tagIndex.constEnd()) {
+            if (!parseA2B(data, it.value(), colorspaceDPtr, false))
                 return false;
         }
 
-        if (tagIndex.contains(Tag::wtpt)) {
-            if (!parseXyzData(data, tagIndex[Tag::wtpt], colorspaceDPtr->whitePoint))
+        if (auto it = tagIndex.constFind(Tag::wtpt); it != tagIndex.constEnd()) {
+            if (!parseXyzData(data, it.value(), colorspaceDPtr->whitePoint))
                 return false;
         }
     }
 
-    if (tagIndex.contains(Tag::desc)) {
-        if (!parseDesc(data, tagIndex[Tag::desc], colorspaceDPtr->description))
+    if (auto it = tagIndex.constFind(Tag::desc); it != tagIndex.constEnd()) {
+        if (!parseDesc(data, it.value(), colorspaceDPtr->description))
             qCWarning(lcIcc) << "fromIccProfile: Failed to parse description";
         else
             qCDebug(lcIcc) << "fromIccProfile: Description" << colorspaceDPtr->description;
