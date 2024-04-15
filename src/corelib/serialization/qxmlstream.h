@@ -206,7 +206,9 @@ typedef QList<QXmlStreamEntityDeclaration> QXmlStreamEntityDeclarations;
 
 class Q_CORE_EXPORT QXmlStreamEntityResolver
 {
+    Q_DISABLE_COPY_MOVE(QXmlStreamEntityResolver)
 public:
+    QXmlStreamEntityResolver() = default;
     virtual ~QXmlStreamEntityResolver();
     virtual QString resolveEntity(const QString& publicId, const QString& systemId);
     virtual QString resolveUndeclaredEntity(const QString &name);
