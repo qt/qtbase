@@ -419,10 +419,10 @@ bool QFSFileEnginePrivate::nativeRenameOverwrite(const QString &newName)
 
     bool res = SetFileInformationByHandle(fileHandle, FileRenameInfo, renameInfo,
                                           DWORD(renameDataSize));
-#if 0
-    if (!res)
-        qErrnoWarning("QFSFileEnginePrivate::nativeRenameOverwrite failed");
-#endif
+    if (!res) {
+        DWORD error = GetLastError();
+        q_func()->setError(QFile::RenameError, qt_error_string(int(error)));
+    }
     return res;
 }
 
