@@ -501,8 +501,8 @@ public class QtInputDelegate implements QtInputConnection.QtInputConnectionListe
     // tablet methods
 
     // pointer methods
-    public static native void mouseDown(int winId, int x, int y);
-    public static native void mouseUp(int winId, int x, int y);
+    public static native void mouseDown(int winId, int x, int y, int mouseButtonState);
+    public static native void mouseUp(int winId, int x, int y, int mouseButtonState);
     public static native void mouseMove(int winId, int x, int y);
     public static native void mouseWheel(int winId, int x, int y, float hDelta, float vDelta);
     public static native void touchBegin(int winId);
@@ -618,11 +618,11 @@ public class QtInputDelegate implements QtInputConnection.QtInputConnectionListe
     {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_UP:
-                mouseUp(id, (int) event.getX(), (int) event.getY());
+                mouseUp(id, (int) event.getX(), (int) event.getY(), event.getButtonState());
                 break;
 
             case MotionEvent.ACTION_DOWN:
-                mouseDown(id, (int) event.getX(), (int) event.getY());
+                mouseDown(id, (int) event.getX(), (int) event.getY(), event.getButtonState());
                 m_oldX = (int) event.getX();
                 m_oldY = (int) event.getY();
                 break;

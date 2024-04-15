@@ -28,6 +28,8 @@ Q_DECLARE_JNI_CLASS(QtLayout, "org/qtproject/qt/android/QtLayout")
 namespace QtAndroidInput
 {
     static bool m_ignoreMouseEvents = false;
+    static Qt::MouseButtons m_buttons = Qt::NoButton;
+
     static QRect m_softwareKeyboardRect;
 
     static QList<QWindowSystemInterface::TouchPoint> m_touchPoints;
@@ -160,7 +162,72 @@ namespace QtAndroidInput
                                            anchor.x(), anchor.y(), rtl);
     }
 
-    static void mouseDown(JNIEnv */*env*/, jobject /*thiz*/, jint winId, jint x, jint y)
+    // from https://developer.android.com/reference/android/view/MotionEvent#getButtonState()
+    enum AndroidMouseButton {
+        BUTTON_PRIMARY = 0x00000001,
+        BUTTON_SECONDARY = 0x00000002,
+        BUTTON_TERTIARY = 0x00000004,
+        BUTTON_BACK = 0x00000008,
+        BUTTON_FORWARD = 0x00000010,
+        BUTTON_STYLUS_PRIMARY = 0x00000020,
+        BUTTON_STYLUS_SECONDARY = 0x00000040,
+    };
+    Q_DECLARE_FLAGS(AndroidMouseButtons, AndroidMouseButton)
+
+    static Qt::MouseButtons toMouseButtons(jint j_buttons)
+    {
+        const auto buttons = static_cast<AndroidMouseButtons>(j_buttons);
+        Qt::MouseButtons mouseButtons;
+        if (buttons.testFlag(BUTTON_PRIMARY))
+            mouseButtons.setFlag(Qt::LeftButton);
+
+        if (buttons.testFlag(BUTTON_SECONDARY))
+            mouseButtons.setFlag(Qt::RightButton);
+
+        if (buttons.testFlag(BUTTON_TERTIARY))
+            mouseButtons.setFlag(Qt::MiddleButton);
+
+        if (buttons.testFlag(BUTTON_BACK))
+            mouseButtons.setFlag(Qt::BackButton);
+
+        if (buttons.testFlag(BUTTON_FORWARD))
+            mouseButtons.setFlag(Qt::ForwardButton);
+
+        if (buttons.testFlag(BUTTON_STYLUS_PRIMARY))
+            mouseButtons.setFlag(Qt::LeftButton);
+
+        if (buttons.testFlag(BUTTON_STYLUS_SECONDARY))
+            mouseButtons.setFlag(Qt::RightButton);
+
+        // Fall back to left button
+        if (Q_UNLIKELY(buttons != 0 && mouseButtons == Qt::NoButton)) {
+            qWarning() << "Unhandled button value:" << buttons << "Falling back to Qt::LeftButton";
+            mouseButtons = Qt::LeftButton;
+        }
+        return mouseButtons;
+    }
+
+    static void sendMouseButtonEvents(QWindow *topLevel, QPoint localPos, QPoint globalPos,
+                                      jint mouseButtonState, QEvent::Type type)
+    {
+        const Qt::MouseButtons mouseButtons = toMouseButtons(mouseButtonState);
+        const Qt::MouseButtons changedButtons = mouseButtons & ~m_buttons;
+
+        if (changedButtons == Qt::NoButton)
+            return;
+
+        static_assert (sizeof(changedButtons) <= sizeof(uint), "Qt::MouseButtons size changed. Adapt code.");
+
+        for (uint buttonInt = 0x1; static_cast<uint>(changedButtons) >= buttonInt; buttonInt <<= 1) {
+            const auto button = static_cast<Qt::MouseButton>(buttonInt);
+            if (changedButtons.testFlag(button)) {
+                QWindowSystemInterface::handleMouseEvent(topLevel, localPos, globalPos,
+                                                         mouseButtons, button, type);
+            }
+        }
+    }
+
+    static void mouseDown(JNIEnv */*env*/, jobject /*thiz*/, jint winId, jint x, jint y, jint mouseButtonState)
     {
         if (m_ignoreMouseEvents)
             return;
@@ -169,13 +236,11 @@ namespace QtAndroidInput
         QWindow *window = windowFromId(winId);
         m_mouseGrabber = window;
         const QPoint localPos = window && window->handle() ?
-                                    window->handle()->mapFromGlobal(globalPos) : globalPos;
-        QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos,
-                                                 Qt::MouseButtons(Qt::LeftButton),
-                                                 Qt::LeftButton, QEvent::MouseButtonPress);
+                window->handle()->mapFromGlobal(globalPos) : globalPos;
+        sendMouseButtonEvents(window, localPos, globalPos, mouseButtonState, QEvent::MouseButtonPress);
     }
 
-    static void mouseUp(JNIEnv */*env*/, jobject /*thiz*/, jint winId, jint x, jint y)
+    static void mouseUp(JNIEnv */*env*/, jobject /*thiz*/, jint winId, jint x, jint y, jint mouseButtonState)
     {
         const QPoint globalPos(x,y);
         QWindow *window = m_mouseGrabber.data();
@@ -184,9 +249,8 @@ namespace QtAndroidInput
 
         const QPoint localPos = window && window->handle() ?
                                     window->handle()->mapFromGlobal(globalPos) : globalPos;
-        QWindowSystemInterface::handleMouseEvent(window, localPos, globalPos,
-                                                 Qt::MouseButtons(Qt::NoButton),
-                                                 Qt::LeftButton, QEvent::MouseButtonRelease);
+
+        sendMouseButtonEvents(window, localPos, globalPos, mouseButtonState, QEvent::MouseButtonRelease);
         m_ignoreMouseEvents = false;
         m_mouseGrabber.clear();
     }
@@ -900,8 +964,8 @@ namespace QtAndroidInput
         {"touchAdd","(IIIZIIFFFF)V",(void*)touchAdd},
         {"touchEnd","(II)V",(void*)touchEnd},
         {"touchCancel", "(I)V", (void *)touchCancel},
-        {"mouseDown", "(III)V", (void *)mouseDown},
-        {"mouseUp", "(III)V", (void *)mouseUp},
+        {"mouseDown", "(IIII)V", (void *)mouseDown},
+        {"mouseUp", "(IIII)V", (void *)mouseUp},
         {"mouseMove", "(III)V", (void *)mouseMove},
         {"mouseWheel", "(IIIFF)V", (void *)mouseWheel},
         {"longPress", "(III)V", (void *)longPress},
