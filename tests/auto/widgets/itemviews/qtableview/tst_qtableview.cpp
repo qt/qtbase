@@ -391,6 +391,7 @@ private slots:
 
     void resizeToContents();
     void resizeToContentsSpans();
+    void resizeToContentsEarly();
 
     void tabFocus();
     void bigModel();
@@ -3775,6 +3776,35 @@ void tst_QTableView::resizeToContentsSpans()
     view2.resizeColumnToContents(1);
     QCOMPARE(view1.columnWidth(0), view3.columnWidth(0) - view1.columnWidth(1));
     QCOMPARE(view2.columnWidth(0), view3.columnWidth(0) - view2.columnWidth(1));
+}
+
+void tst_QTableView::resizeToContentsEarly()
+{
+    QStringListModel model;
+    QTableView view;
+
+    // connect to the model before setting it on the view
+    connect(&model, &QStringListModel::modelReset, &model, [&view]{
+        view.resizeColumnsToContents();
+    });
+    connect(&model, &QStringListModel::modelReset, &model, [&view]{
+        view.resizeRowsToContents();
+    });
+
+    // the view only connects now to the model's signals, so responds to the
+    // reset signal *after* the lambdas above
+    view.setModel(&model);
+
+    QStringList data(200, QString("Hello World"));
+    model.setStringList(data);
+
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());
+
+    data = data.sliced(data.size() / 2);
+    model.setStringList(data);
 }
 
 QT_BEGIN_NAMESPACE
