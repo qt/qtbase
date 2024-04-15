@@ -122,7 +122,8 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
 
     // pixmap based style doesn't support any features
     bool styleIsPixmapBased = baseStyle()->inherits("QMacStyle")
-                           || baseStyle()->inherits("QWindowsVistaStyle");
+            || (baseStyle()->inherits("QWindowsVistaStyle")
+                && !baseStyle()->inherits("QWindows11Style"));
 
 
     /*QLineEdit {

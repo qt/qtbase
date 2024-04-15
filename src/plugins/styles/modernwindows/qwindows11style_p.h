@@ -63,6 +63,7 @@ private:
 
 class QWindows11StylePrivate : public QWindowsVistaStylePrivate {
     Q_DECLARE_PUBLIC(QWindows11Style)
+    QPalette defaultPalette;
 };
 
 QT_END_NAMESPACE
