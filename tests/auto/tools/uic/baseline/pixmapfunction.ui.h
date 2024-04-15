@@ -42,10 +42,10 @@ public:
         pushButton = new QPushButton(Form);
         pushButton->setObjectName("pushButton");
         QIcon icon;
-        icon.addPixmap(QPixmap(pixmapFunction("buttonIconNormalOff")), QIcon::Normal, QIcon::Off);
-        icon.addPixmap(QPixmap(pixmapFunction("buttonIconNormalOn")), QIcon::Normal, QIcon::On);
-        icon.addPixmap(QPixmap(pixmapFunction("buttonIconDisabledOff")), QIcon::Disabled, QIcon::Off);
-        icon.addPixmap(QPixmap(pixmapFunction("buttonIconDisabledOn")), QIcon::Disabled, QIcon::On);
+        icon.addPixmap(QPixmap(pixmapFunction("buttonIconNormalOff")), QIcon::Mode::Normal, QIcon::State::Off);
+        icon.addPixmap(QPixmap(pixmapFunction("buttonIconNormalOn")), QIcon::Mode::Normal, QIcon::State::On);
+        icon.addPixmap(QPixmap(pixmapFunction("buttonIconDisabledOff")), QIcon::Mode::Disabled, QIcon::State::Off);
+        icon.addPixmap(QPixmap(pixmapFunction("buttonIconDisabledOn")), QIcon::Mode::Disabled, QIcon::State::On);
         pushButton->setIcon(icon);
 
         verticalLayout->addWidget(pushButton);

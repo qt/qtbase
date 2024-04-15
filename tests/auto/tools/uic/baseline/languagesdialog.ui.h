@@ -55,7 +55,7 @@ public:
         upButton->setObjectName("upButton");
         upButton->setEnabled(false);
         QIcon icon;
-        icon.addFile(QString::fromUtf8(":/images/up.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon.addFile(QString::fromUtf8(":/images/up.png"), QSize(), QIcon::Mode::Normal, QIcon::State::Off);
         upButton->setIcon(icon);
 
         hboxLayout->addWidget(upButton);
@@ -64,7 +64,7 @@ public:
         downButton->setObjectName("downButton");
         downButton->setEnabled(false);
         QIcon icon1;
-        icon1.addFile(QString::fromUtf8(":/images/down.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon1.addFile(QString::fromUtf8(":/images/down.png"), QSize(), QIcon::Mode::Normal, QIcon::State::Off);
         downButton->setIcon(icon1);
 
         hboxLayout->addWidget(downButton);
@@ -73,7 +73,7 @@ public:
         removeButton->setObjectName("removeButton");
         removeButton->setEnabled(false);
         QIcon icon2;
-        icon2.addFile(QString::fromUtf8(":/images/editdelete.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon2.addFile(QString::fromUtf8(":/images/editdelete.png"), QSize(), QIcon::Mode::Normal, QIcon::State::Off);
         removeButton->setIcon(icon2);
 
         hboxLayout->addWidget(removeButton);
@@ -82,7 +82,7 @@ public:
         openFileButton->setObjectName("openFileButton");
         openFileButton->setEnabled(true);
         QIcon icon3;
-        icon3.addFile(QString::fromUtf8(":/images/mac/fileopen.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon3.addFile(QString::fromUtf8(":/images/mac/fileopen.png"), QSize(), QIcon::Mode::Normal, QIcon::State::Off);
         openFileButton->setIcon(icon3);
 
         hboxLayout->addWidget(openFileButton);
