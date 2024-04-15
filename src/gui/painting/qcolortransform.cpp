@@ -1644,19 +1644,19 @@ void QColorTransformPrivate::applyConvertIn(const S *src, QColorVector *buffer, 
             return;
         }
     }
-    if (!colorSpaceIn->isThreeComponentMatrix()) {
-        if (flags & InputPremultiplied)
-            loadPremultipliedLUT(buffer, src, len);
-        else
-            loadUnpremultipliedLUT(buffer, src, len);
+    Q_ASSERT(!colorSpaceIn->isThreeComponentMatrix());
 
-        if constexpr (std::is_same_v<S, QRgbaFloat16> || std::is_same_v<S, QRgbaFloat32>)
-            clampIfNeeded<DoClamp>(buffer, len);
+    if (flags & InputPremultiplied)
+        loadPremultipliedLUT(buffer, src, len);
+    else
+        loadUnpremultipliedLUT(buffer, src, len);
 
-        // Do element based conversion
-        for (auto &&element : colorSpaceIn->mAB)
-            std::visit([&buffer, len](auto &&elm) { visitElement(elm, buffer, len); }, element);
-    }
+    if constexpr (std::is_same_v<S, QRgbaFloat16> || std::is_same_v<S, QRgbaFloat32>)
+        clampIfNeeded<DoClamp>(buffer, len);
+
+    // Do element based conversion
+    for (auto &&element : colorSpaceIn->mAB)
+        std::visit([&buffer, len](auto &&elm) { visitElement(elm, buffer, len); }, element);
 }
 
 template<typename D, typename S>
@@ -1681,18 +1681,18 @@ void QColorTransformPrivate::applyConvertOut(D *dst, const S *src, QColorVector 
             return;
         }
     }
-    if (!colorSpaceOut->isThreeComponentMatrix()) {
-        // Do element based conversion
-        for (auto &&element : colorSpaceOut->mBA)
-            std::visit([&buffer, len](auto &&elm) { visitElement(elm, buffer, len); }, element);
+    Q_ASSERT(!colorSpaceOut->isThreeComponentMatrix());
 
-        clampIfNeeded<doClamp>(buffer, len);
+    // Do element based conversion
+    for (auto &&element : colorSpaceOut->mBA)
+        std::visit([&buffer, len](auto &&elm) { visitElement(elm, buffer, len); }, element);
 
-        if (flags & OutputPremultiplied)
-            storePremultipliedLUT(dst, src, buffer, len);
-        else
-            storeUnpremultipliedLUT(dst, src, buffer, len);
-    }
+    clampIfNeeded<doClamp>(buffer, len);
+
+    if (flags & OutputPremultiplied)
+        storePremultipliedLUT(dst, src, buffer, len);
+    else
+        storeUnpremultipliedLUT(dst, src, buffer, len);
 }
 
 template<typename D, typename S>
