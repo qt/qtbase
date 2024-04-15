@@ -496,7 +496,7 @@ QByteArray toIccProfile(const QColorSpace &space)
 
     // Writing description
     descOffset = currentOffset;
-    QString description = space.description();
+    const QString description = space.description();
     stream << uint(Tag::mluc) << uint(0);
     stream << uint(1) << uint(12);
     stream << uchar('e') << uchar('n') << uchar('U') << uchar('S');
