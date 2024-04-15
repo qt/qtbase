@@ -4844,8 +4844,24 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         // only indirectly through the background of the item. To get the
         // same background for all parts drawn by QTreeView, we have to
         // use the background rule for the item here.
-        if (renderRule(w, opt, PseudoElement_ViewItem).hasBackground())
+        if (renderRule(w, opt, PseudoElement_ViewItem).hasBackground()) {
             pseudoElement = PseudoElement_ViewItem;
+            // Skip border for the branch and draw only the brackground
+            if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(opt)) {
+                QRenderRule rule = renderRule(w, opt, PseudoElement_ViewItem);
+                if (vopt->features & QStyleOptionViewItem::HasDecoration &&
+                    (vopt->viewItemPosition == QStyleOptionViewItem::Beginning ||
+                     vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne) && rule.hasBorder()) {
+                    if (rule.hasDrawable()) {
+                        rule.drawBackground(p, rect);
+                        rule.drawImage(p, rule.contentsRect(rect));
+                    } else {
+                        baseStyle()->drawPrimitive(pe, opt, p, w);
+                    }
+                    return;
+                }
+            }
+        }
         break;
     case PE_PanelItemViewItem:
         pseudoElement = PseudoElement_ViewItem;
