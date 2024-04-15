@@ -621,12 +621,12 @@ void tst_QAbstractFileEngine::fileIO()
          * the original size + the '\r' characters added by autocrlf. */
 
         QFile::OpenMode openMode = QIODevice::ReadOnly | QIODevice::Unbuffered;
-#ifdef Q_OS_WIN
+#if defined (Q_OS_WIN) || defined(Q_OS_WASM)
         openMode |= QIODevice::Text;
 #endif
         QVERIFY(file.open(openMode));
         QVERIFY(file.isOpen());
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_WASM)
         const qint64 convertedSize = fileSize + readContent.count('\n');
         if (file.size() == convertedSize)
             fileSize = convertedSize;
