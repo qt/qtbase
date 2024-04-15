@@ -686,6 +686,7 @@ QDebug operator<<(QDebug dbg, const QPersistentModelIndex &idx)
 
 class QEmptyItemModel : public QAbstractItemModel
 {
+    Q_OBJECT
 public:
     explicit QEmptyItemModel(QObject *parent = nullptr) : QAbstractItemModel(parent) {}
     QModelIndex index(int, int, const QModelIndex &) const override { return QModelIndex(); }
@@ -4169,3 +4170,4 @@ void QAbstractItemModelPrivate::Persistent::insertMultiAtEnd(const QModelIndex& 
 QT_END_NAMESPACE
 
 #include "moc_qabstractitemmodel.cpp"
+#include "qabstractitemmodel.moc"
