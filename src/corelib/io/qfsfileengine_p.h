@@ -152,7 +152,7 @@ public:
     bool isSequentialFdFh() const;
 #endif
 #ifdef Q_OS_WIN
-    bool nativeRenameOverwrite(const QString &newName) const;
+    bool nativeRenameOverwrite(const QString &newName);
 #endif
 
     uchar *map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags);

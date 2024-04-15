@@ -396,7 +396,7 @@ bool QFSFileEnginePrivate::nativeIsSequential() const
             || (fileType == FILE_TYPE_PIPE);
 }
 
-bool QFSFileEnginePrivate::nativeRenameOverwrite(const QString &newName) const
+bool QFSFileEnginePrivate::nativeRenameOverwrite(const QString &newName)
 {
     if (fileHandle == INVALID_HANDLE_VALUE)
         return false;
