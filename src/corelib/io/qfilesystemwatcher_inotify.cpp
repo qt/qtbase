@@ -217,7 +217,8 @@ QInotifyFileSystemWatcherEngine::QInotifyFileSystemWatcherEngine(int fd, QObject
       notifier(fd, QSocketNotifier::Read, this)
 {
     fcntl(inotifyFd, F_SETFD, FD_CLOEXEC);
-    connect(&notifier, SIGNAL(activated(QSocketDescriptor)), SLOT(readFromInotify()));
+    QObject::connect(&notifier, &QSocketNotifier::activated,
+                     this, &QInotifyFileSystemWatcherEngine::readFromInotify);
 }
 
 QInotifyFileSystemWatcherEngine::~QInotifyFileSystemWatcherEngine()
