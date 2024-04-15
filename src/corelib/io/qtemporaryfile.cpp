@@ -392,9 +392,11 @@ bool QTemporaryFileEngine::renameOverwrite(const QString &newName)
         return ok;
     }
 #ifdef Q_OS_WIN
-    if (d_func()->nativeRenameOverwrite(newName)) {
-        QFSFileEngine::close();
-        return true;
+    if (flags & Win32NonShared) {
+        if (d_func()->nativeRenameOverwrite(newName)) {
+            QFSFileEngine::close();
+            return true;
+        }
     }
 #endif
     QFSFileEngine::close();
