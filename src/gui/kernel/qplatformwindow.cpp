@@ -778,6 +778,15 @@ void QPlatformWindow::deliverUpdateRequest()
 
     QWindow *w = window();
     QWindowPrivate *wp = qt_window_private(w);
+
+    // We expect that the platform plugins send DevicePixelRatioChange events.
+    // As a fail-safe make a final check here to make sure the cached DPR value is
+    // always up to date before delivering the update request.
+    if (wp->updateDevicePixelRatio()) {
+        qWarning() << "The cached device pixel ratio value was stale on window update. "
+                   << "Please file a QTBUG which explains how to reproduce.";
+    }
+
     wp->updateRequestPending = false;
     QEvent request(QEvent::UpdateRequest);
     QCoreApplication::sendEvent(w, &request);
