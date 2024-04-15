@@ -2,8 +2,6 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtCore/qsystemdetection.h>
-
 #if 0
 #pragma qt_class(QtCompilerDetection)
 #pragma qt_sync_skip_header_check
@@ -14,6 +12,7 @@
 #define QCOMPILERDETECTION_H
 
 #include <QtCore/qprocessordetection.h>
+#include <QtCore/qsystemdetection.h>
 #include <QtCore/qtconfiginclude.h>
 
 /*
