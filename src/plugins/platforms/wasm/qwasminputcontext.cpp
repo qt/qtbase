@@ -49,24 +49,24 @@ QWasmInputContext::QWasmInputContext()
     m_inputElement.set("style", "position:absolute;left:-1000px;top:-1000px"); // offscreen
     m_inputElement.set("contenteditable","true");
 
-    if (platform() == Platform::Android || platform() == Platform::Windows) {
-        const std::string inputType = platform() == Platform::Windows ? "textInput" : "input";
-
-        document.call<void>("addEventListener", inputType,
-                                  emscripten::val::module_property("qtInputContextCallback"),
-                                  emscripten::val(false));
-        m_inputElement.set("data-qinputcontext",
-                           emscripten::val(quintptr(reinterpret_cast<void *>(this))));
-        emscripten::val body = document["body"];
-        body.call<void>("appendChild", m_inputElement);
-    }
-
     if (platform() == Platform::MacOS || platform() == Platform::iOS) {
         auto callback = [=](emscripten::val) {
             m_inputElement["parentElement"].call<void>("removeChild", m_inputElement);
             inputPanelIsOpen = false;
         };
         m_blurEventHandler.reset(new EventCallback(m_inputElement, "blur", callback));
+
+    } else {
+
+        const std::string inputType = platform() == Platform::Windows ? "textInput" : "input";
+
+        document.call<void>("addEventListener", inputType,
+                            emscripten::val::module_property("qtInputContextCallback"),
+                            emscripten::val(false));
+        m_inputElement.set("data-qinputcontext",
+                           emscripten::val(quintptr(reinterpret_cast<void *>(this))));
+        emscripten::val body = document["body"];
+        body.call<void>("appendChild", m_inputElement);
     }
 
     QObject::connect(qGuiApp, &QGuiApplication::focusWindowChanged, this,
