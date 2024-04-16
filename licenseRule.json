@@ -109,6 +109,11 @@
                 "file type" : "module and plugin",
                 "spdx"      : ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
             },
+            "src/corelib/(time|text)/q.*_data_p\\.h" : {
+                "comment" : "generated from Unicode CLDR data",
+                "file type" : "module and plugin",
+                "spdx"      : ["Unicode-3.0"]
+            },
             "src/tools/" : {
                 "comment" : "Default",
                 "file type" : "tools and utils",
