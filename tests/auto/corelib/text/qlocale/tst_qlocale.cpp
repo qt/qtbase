@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QLocale>
 
 #include <QDateTime>
@@ -40,6 +41,7 @@ public:
 
 private slots:
     void initTestCase();
+    void compareCompiles();
 #if defined(Q_OS_WIN)
     void windowsDefaultLocale();
 #endif
@@ -187,6 +189,11 @@ tst_QLocale::tst_QLocale()
         && QDate(QDate::currentDate().year(), 7, 1).startOfDay().offsetFromUtc() == 7200)
 {
     qRegisterMetaType<QLocale::FormatType>("QLocale::FormatType");
+}
+
+void tst_QLocale::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QLocale>();
 }
 
 void tst_QLocale::initTestCase()
@@ -741,8 +748,8 @@ void tst_QLocale::legacyNames()
 void tst_QLocale::consistentC()
 {
     const QLocale c(QLocale::C);
-    QCOMPARE(c, QLocale::c());
-    QCOMPARE(c, QLocale(QLocale::C, QLocale::AnyScript, QLocale::AnyTerritory));
+    QT_TEST_EQUALITY_OPS(c, QLocale::c(), true);
+    QT_TEST_EQUALITY_OPS(c, QLocale(QLocale::C, QLocale::AnyScript, QLocale::AnyTerritory), true);
     QVERIFY(QLocale::matchingLocales(QLocale::AnyLanguage, QLocale::AnyScript,
                                      QLocale::AnyTerritory).contains(c));
 }
@@ -751,6 +758,7 @@ void tst_QLocale::matchingLocales()
 {
     const QLocale c(QLocale::C);
     const QLocale ru_RU(QLocale::Russian, QLocale::Russia);
+    QT_TEST_EQUALITY_OPS(c, ru_RU, false);
 
     QList<QLocale> locales = QLocale::matchingLocales(QLocale::C, QLocale::AnyScript, QLocale::AnyTerritory);
     QCOMPARE(locales.size(), 1);
@@ -1618,6 +1626,11 @@ void tst_QLocale::infNaN()
 {
     // TODO: QTBUG-95460 -- could support localized forms of inf/NaN
     const QLocale c(QLocale::C);
+
+    QT_TEST_EQUALITY_OPS(QLocale(), QLocale(QLocale::C), false);
+    QT_TEST_EQUALITY_OPS(QLocale(), QLocale(), true);
+    QT_TEST_EQUALITY_OPS(QLocale(QLocale::C), c, true);
+
     QCOMPARE(c.toString(qQNaN()), u"nan");
     QCOMPARE(c.toString(qQNaN(), 'e'), u"nan");
     QCOMPARE(c.toString(qQNaN(), 'f'), u"nan");
@@ -2966,6 +2979,7 @@ void tst_QLocale::numberOptions()
     QVERIFY(ok);
     locale.toDouble(QString("12.400"), &ok);
     QVERIFY(!ok);
+    QT_TEST_EQUALITY_OPS(locale, locale2, false);
 }
 
 void tst_QLocale::negativeNumbers()
@@ -3030,6 +3044,7 @@ void tst_QLocale::negativeNumbers()
     i = farsi.toInt(u"\u200e+\u06f4\u06f0\u06f3"_s, &ok);
     QVERIFY(ok);
     QCOMPARE(i, 403);
+    QT_TEST_EQUALITY_OPS(egypt, farsi, false);
 }
 
 #include <private/qlocale_p.h>
@@ -3288,6 +3303,11 @@ void tst_QLocale::dateFormat()
     const QLocale ir("ga_IE");
     QCOMPARE(ir.dateFormat(QLocale::ShortFormat), QLatin1String("dd/MM/yyyy"));
 
+    QT_TEST_EQUALITY_OPS(c, no, false);
+    QT_TEST_EQUALITY_OPS(ca, ja, false);
+    QT_TEST_EQUALITY_OPS(ca, ir, false);
+    QT_TEST_EQUALITY_OPS(ir, ja, false);
+
     const auto sys = QLocale::system(); // QTBUG-92018, ru_RU on MS
     const QDate date(2021, 3, 17);
     QCOMPARE(sys.toString(date, sys.dateFormat(QLocale::LongFormat)), sys.toString(date));
@@ -3345,6 +3365,11 @@ void tst_QLocale::timeFormat()
     const QLocale tw("zh_TW");
     QCOMPARE(tw.timeFormat(QLocale::ShortFormat), "Aph:mm"_L1);
     QCOMPARE(tw.timeFormat(QLocale::LongFormat), "Aph:mm:ss [tttt]"_L1);
+
+    QT_TEST_EQUALITY_OPS(c, no, false);
+    QT_TEST_EQUALITY_OPS(id, no, false);
+    QT_TEST_EQUALITY_OPS(c, cat, false);
+    QT_TEST_EQUALITY_OPS(bra, no, false);
 }
 
 void tst_QLocale::dateTimeFormat()
@@ -3357,6 +3382,8 @@ void tst_QLocale::dateTimeFormat()
     QCOMPARE(no.dateTimeFormat(QLocale::NarrowFormat), QLatin1String("dd.MM.yyyy HH:mm"));
     QCOMPARE(no.dateTimeFormat(QLocale::ShortFormat), QLatin1String("dd.MM.yyyy HH:mm"));
     QCOMPARE(no.dateTimeFormat(QLocale::LongFormat), "dddd d. MMMM yyyy HH:mm:ss tttt"_L1);
+
+    QT_TEST_EQUALITY_OPS(c, no, false);
 }
 
 void tst_QLocale::monthName()
@@ -3616,6 +3643,7 @@ void tst_QLocale::currency()
 
     const QLocale system = QLocale::system();
     QVERIFY(system.toCurrencyString(1, QLatin1String("FOO")).contains(QLatin1String("FOO")));
+    QT_TEST_EQUALITY_OPS(system, es_CR, false);
 }
 
 void tst_QLocale::quoteString()
@@ -3630,6 +3658,7 @@ void tst_QLocale::quoteString()
     QCOMPARE(de_CH.quoteString(someText), QString::fromUtf8("\xe2\x80\x9e" "text" "\xe2\x80\x9c"));
     QCOMPARE(de_CH.quoteString(someText, QLocale::AlternateQuotation),
              QString::fromUtf8("\xe2\x80\x9a" "text" "\xe2\x80\x98"));
+    QT_TEST_EQUALITY_OPS(de_CH, c, false);
 }
 
 void tst_QLocale::uiLanguages_data()
@@ -4011,6 +4040,7 @@ void tst_QLocale::bcp47Name()
     QTest::ignoreMessage(QtWarningMsg, "QLocale::bcp47Name(): "
                          "Using non-ASCII separator '\u00ff' (ff) is unsupported");
     QCOMPARE(locale.bcp47Name(QLocale::TagSeparator{'\xff'}), QString());
+    QT_TEST_EQUALITY_OPS(locale, QLocale(QLatin1String(QTest::currentDataTag())), true);
 }
 
 #ifndef QT_NO_SYSTEMLOCALE
@@ -4152,8 +4182,8 @@ void tst_QLocale::mySystemLocale()
     }
 
     // Verify MySystemLocale tidy-up restored prior state:
-    QCOMPARE(QLocale(), originalLocale);
-    QCOMPARE(QLocale::system(), originalSystemLocale);
+    QT_TEST_EQUALITY_OPS(QLocale(), originalLocale, true);
+    QT_TEST_EQUALITY_OPS(QLocale::system(), originalSystemLocale, true);
 }
 #  endif // QT_BUILD_INTERNAL
 

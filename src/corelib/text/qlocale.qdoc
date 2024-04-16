@@ -7,6 +7,7 @@
     \brief The QLocale class converts between numbers and their
     string representations in various languages.
 
+    \compares equality
     \reentrant
     \ingroup i18n
     \ingroup string-processing

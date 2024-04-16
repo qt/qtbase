@@ -11,6 +11,7 @@ qt_internal_add_test(tst_qlocale
         ../tst_qlocale.cpp
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
 )
 
 ## Scopes:
