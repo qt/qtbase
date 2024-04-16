@@ -29,7 +29,7 @@ public:
         : QSignalSpy(verify(obj, aSignal)) {}
 
 private:
-    ObjectSignal verify(const QObject *obj, const char *aSignal)
+    static ObjectSignal verify(const QObject *obj, const char *aSignal)
     {
         if (!isObjectValid(obj))
             return {};
@@ -69,7 +69,7 @@ public:
         : QSignalSpy(verify(obj, signal)) {}
 
 private:
-    ObjectSignal verify(const QObject *obj, QMetaMethod signal)
+    static ObjectSignal verify(const QObject *obj, QMetaMethod signal)
     {
         if (isObjectValid(obj) && isSignalMetaMethodValid(signal))
             return {obj, signal};
