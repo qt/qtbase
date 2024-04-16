@@ -642,7 +642,7 @@ QFontEngineMulti *QFontconfigDatabase::fontEngineMulti(QFontEngine *fontEngine, 
 }
 
 namespace {
-QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintingPreference, FcPattern *match, bool useXftConf)
+QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintingPreference, FcPattern *match, bool preferXftConf)
 {
     switch (hintingPreference) {
     case QFont::PreferNoHinting:
@@ -657,6 +657,13 @@ QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintin
 
     if (isDprScaling())
         return QFontEngine::HintNone;
+
+    void *hintStyleResource =
+            QGuiApplication::platformNativeInterface()->nativeResourceForScreen("hintstyle",
+                                                                                QGuiApplication::primaryScreen());
+    int xftHintStyle =  int(reinterpret_cast<qintptr>(hintStyleResource));
+    if (preferXftConf && xftHintStyle > 0)
+        return QFontEngine::HintStyle(xftHintStyle - 1);
 
     int hint_style = 0;
     if (FcPatternGetInteger (match, FC_HINT_STYLE, 0, &hint_style) == FcResultMatch) {
@@ -674,21 +681,21 @@ QFontEngine::HintStyle defaultHintStyleFromMatch(QFont::HintingPreference hintin
             break;
         }
     }
-
-    if (useXftConf) {
-        void *hintStyleResource =
-                QGuiApplication::platformNativeInterface()->nativeResourceForScreen("hintstyle",
-                                                                                    QGuiApplication::primaryScreen());
-        int hintStyle = int(reinterpret_cast<qintptr>(hintStyleResource));
-        if (hintStyle > 0)
-            return QFontEngine::HintStyle(hintStyle - 1);
-    }
+    if (xftHintStyle > 0)
+        return QFontEngine::HintStyle(xftHintStyle - 1);
 
     return QFontEngine::HintFull;
 }
 
-QFontEngine::SubpixelAntialiasingType subpixelTypeFromMatch(FcPattern *match, bool useXftConf)
+QFontEngine::SubpixelAntialiasingType subpixelTypeFromMatch(FcPattern *match, bool preferXftConf)
 {
+    void *subpixelTypeResource =
+            QGuiApplication::platformNativeInterface()->nativeResourceForScreen("subpixeltype",
+                                                                                QGuiApplication::primaryScreen());
+    int xftSubpixelType = int(reinterpret_cast<qintptr>(subpixelTypeResource));
+    if (preferXftConf && xftSubpixelType > 0)
+        return QFontEngine::SubpixelAntialiasingType(xftSubpixelType - 1);
+
     int subpixel = FC_RGBA_UNKNOWN;
     if (FcPatternGetInteger(match, FC_RGBA, 0, &subpixel) == FcResultMatch) {
         switch (subpixel) {
@@ -709,14 +716,8 @@ QFontEngine::SubpixelAntialiasingType subpixelTypeFromMatch(FcPattern *match, bo
         }
     }
 
-    if (useXftConf) {
-        void *subpixelTypeResource =
-                QGuiApplication::platformNativeInterface()->nativeResourceForScreen("subpixeltype",
-                                                                                    QGuiApplication::primaryScreen());
-        int subpixelType = int(reinterpret_cast<qintptr>(subpixelTypeResource));
-        if (subpixelType > 0)
-            return QFontEngine::SubpixelAntialiasingType(subpixelType - 1);
-    }
+    if (xftSubpixelType > 0)
+        return QFontEngine::SubpixelAntialiasingType(xftSubpixelType - 1);
 
     return QFontEngine::Subpixel_None;
 }
@@ -965,20 +966,11 @@ void QFontconfigDatabase::setupFontEngine(QFontEngineFT *engine, const QFontDef 
     bool forcedAntialiasSetting = !antialias || isDprScaling();
 
     const QPlatformServices *services = QGuiApplicationPrivate::platformIntegration()->services();
-    bool useXftConf = false;
+    bool preferXftConf = false;
 
     if (services) {
         const QList<QByteArray> desktopEnv = services->desktopEnvironment().split(':');
-        useXftConf = desktopEnv.contains("GNOME") || desktopEnv.contains("UNITY") || desktopEnv.contains("XFCE");
-    }
-
-    if (useXftConf && !forcedAntialiasSetting) {
-        void *antialiasResource =
-                QGuiApplication::platformNativeInterface()->nativeResourceForScreen("antialiasingEnabled",
-                                                                                    QGuiApplication::primaryScreen());
-        int antialiasingEnabled = int(reinterpret_cast<qintptr>(antialiasResource));
-        if (antialiasingEnabled > 0)
-            antialias = antialiasingEnabled - 1;
+        preferXftConf = !(desktopEnv.contains("KDE") || desktopEnv.contains("LXQT") || desktopEnv.contains("UKUI"));
     }
 
     QFontEngine::GlyphFormat format;
@@ -1060,8 +1052,19 @@ bail:
     if (!match)
         match = FcFontMatch(nullptr, pattern, &result);
 
+    int xftAntialias = 0;
+    if (!forcedAntialiasSetting) {
+        void *antialiasResource =
+                QGuiApplication::platformNativeInterface()->nativeResourceForScreen("antialiasingEnabled",
+                                                                                    QGuiApplication::primaryScreen());
+        xftAntialias = int(reinterpret_cast<qintptr>(antialiasResource));
+        if ((preferXftConf || !match) && xftAntialias > 0) {
+            antialias = xftAntialias - 1;
+            forcedAntialiasSetting = true;
+        }
+    }
     if (match) {
-        engine->setDefaultHintStyle(defaultHintStyleFromMatch((QFont::HintingPreference)fontDef.hintingPreference, match, useXftConf));
+        engine->setDefaultHintStyle(defaultHintStyleFromMatch((QFont::HintingPreference)fontDef.hintingPreference, match, preferXftConf));
 
         FcBool fc_autohint;
         if (FcPatternGetBool(match, FC_AUTOHINT,0, &fc_autohint) == FcResultMatch)
@@ -1082,18 +1085,37 @@ bail:
         if (antialias) {
             QFontEngine::SubpixelAntialiasingType subpixelType = QFontEngine::Subpixel_None;
             if (!(fontDef.styleStrategy & QFont::NoSubpixelAntialias))
-                subpixelType = subpixelTypeFromMatch(match, useXftConf);
+                subpixelType = subpixelTypeFromMatch(match, preferXftConf);
             engine->subpixelType = subpixelType;
-
-            format = (subpixelType == QFontEngine::Subpixel_None)
-                    ? QFontEngine::Format_A8
-                    : QFontEngine::Format_A32;
-        } else
-            format = QFontEngine::Format_Mono;
+        }
 
         FcPatternDestroy(match);
-    } else
-        format = antialias ? QFontEngine::Format_A8 : QFontEngine::Format_Mono;
+    } else {
+        void *hintStyleResource =
+                QGuiApplication::platformNativeInterface()->nativeResourceForScreen("hintstyle",
+                                                                                    QGuiApplication::primaryScreen());
+        int xftHintStyle =  int(reinterpret_cast<qintptr>(hintStyleResource));
+        if (xftHintStyle > 0)
+            engine->setDefaultHintStyle(QFontEngine::HintStyle(xftHintStyle - 1));
+        if (antialias) {
+            engine->subpixelType = QFontEngine::Subpixel_None;
+            if (!(fontDef.styleStrategy & QFont::NoSubpixelAntialias)) {
+                void *subpixelTypeResource =
+                        QGuiApplication::platformNativeInterface()->nativeResourceForScreen("subpixeltype",
+                                                                                            QGuiApplication::primaryScreen());
+                int xftSubpixelType = int(reinterpret_cast<qintptr>(subpixelTypeResource));
+                if (xftSubpixelType > 1)
+                    engine->subpixelType = QFontEngine::SubpixelAntialiasingType(xftSubpixelType - 1);
+            }
+        }
+    }
+    if (antialias) {
+        format = (engine->subpixelType == QFontEngine::Subpixel_None)
+                ? QFontEngine::Format_A8
+                : QFontEngine::Format_A32;
+    } else {
+        format = QFontEngine::Format_Mono;
+    }
 
     FcPatternDestroy(pattern);
 
