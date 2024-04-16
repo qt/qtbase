@@ -6,6 +6,7 @@ SUBDIRS = \
     mimetypes \
     serialization \
     tools \
-    platform
+    platform \
+    time
 
 qtConfig(thread): SUBDIRS += threads

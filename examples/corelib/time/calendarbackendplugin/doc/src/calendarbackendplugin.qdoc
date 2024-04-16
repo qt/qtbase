@@ -1,0 +1,186 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example time/calendarbackendplugin
+    \title Calendar Backend Plugin Example
+    \examplecategory {Data Processing & I/O}
+    \ingroup examples-time
+    \brief QCalendar example illustrating user-supplied custom calendars.
+
+    \image calendarwindow_transition.png
+
+    \section1 Introduction
+
+    There are numerous different calendar systems in use around the globe.
+    Qt has built-in support for some of them (see \l{QCalendar::}{System}),
+    but can't provide general support due to their high number.
+    Additional calendar systems can be provided by implementing a
+    custom QCalendarBackend, which is a private API.
+
+    This example demonstrates how to write a custom calendar backend
+    and how to use the low-level plugin API to extend an application
+    to user-selectable calendars.
+    Many countries transitioned from the Julian to the Gregorian calendar
+    at some point in their history, and this custom calendar backend will
+    implement the respective calendar as an example. The custom backend
+    is compiled into a plugin and loaded at runtime by the main application.
+    The exact transition date, different for various regions, is provided
+    as a string to the plugin and can be determined by the user.
+
+    \section1 Calendar backend
+
+    The calendar backend class must inherit from \c QCalendarBackend and implement its
+    pure virtual functions in a \c thread-safe way. It may also override
+    some other virtual functions as needed.
+
+    \section2 Example implementation
+
+    This example inherits from the already existing \c QRomanCalendar,
+    which in turn inherits from the \c QCalendarBackend and implements some of
+    its virtual functions.
+    It's constructive to do this because the transition calendar shares,
+    with both Julian and Gregorian calendars, parts provided by the Roman calendar.
+
+    Here is the class declaration of \c JulianGregorianCalendar:
+
+    \snippet time/calendarbackendplugin/plugin/calendarbackend.h 0
+
+    The \c QDate passed to the constructor - \a endJulian - is the date of the last day
+    of the Julian calendar. The calendar will automatically calculate the shift for a given
+    year, e.g in 1582, 10 days were omitted, but in 1700, 12 days had to be omitted.
+    The calendar backend is registered under \a name and a calendar instance can be
+    created using that name. The class only overrides functions where the two calendars
+    it combines differ from the Roman base. It has instances of the Julian and Gregorian
+    calendars to which these functions can delegate.
+
+    \section2 Julian Day conversions
+
+    \c dateToJulianDay(int year, int month, int day, qint64 *jd) computes the Julian
+    day number corresponding to the specified \a year, \a month and \a day.
+    Returns \c true and sets \a jd if there is such a date in this calendar; otherwise,
+    returns \c false.
+
+    \snippet time/calendarbackendplugin/plugin/calendarbackend.cpp 0
+
+    \c julianDayToDate(qint64 jd) computes year, month and day in this calendar for the given
+    Julian day number, \a jd. If the given day falls outside this calendar's scope,
+    the return value for \c isValid() is \c false. In this example, if the given date
+    falls in the gap jumped over by the transition from Julian to Gregorian calendar,
+    it is out of scope.
+
+    \snippet time/calendarbackendplugin/plugin/calendarbackend.cpp 1
+
+    \section2 Locale support
+
+    A calendar may, in general, have its own naming of months of the year
+    and days of the week. These must be suitably localized to be intelligible
+    to all users. By default the backend baseclass takes care of week day
+    names for us, which is entirely sufficient for these Julian/Gregorian
+    transition calendars.
+
+    Although a backend can directly override the month naming methods, the
+    baseclass version of these can be customized by implementing
+    \c localeMonthData() and \c localeMonthIndexData() to provide tables
+    of localized month names. Since the Julian and Gregorian
+    calendars use the same month naming, they inherit that customization
+    from a common base, \c QRomanCalendar. This also means the custom
+    calendar can use the same names, again by inheriting from that base.
+    This takes care of localization.
+
+    \sa QCalendarWidget, QCalendar, QDate, QLocale
+
+    \section1 Plugin
+
+    Qt applications can be extended through plugins. This requires the application to
+    detect and load plugins using \l{QPluginLoader}.
+
+    \section2 Writing a plugin
+
+    To write a plugin, the first thing that has to be done is to
+    create a pure virtual class that defines the interface between
+    plugin and application.
+
+    In this example the following interface was used:
+
+    \snippet time/calendarbackendplugin/common/calendarBackendInterface.h 0
+
+    and register it in the Qt meta-object system:
+
+    \snippet time/calendarbackendplugin/common/calendarBackendInterface.h 1
+
+    \l{<QtPlugin>::}{Q_DECLARE_INTERFACE()} macro is used to associate the
+    \c ClassName (here: \c RequestedCalendarInterface) with the defined
+    \c Identifier (here: \c RequestedCalendarInterface_iid). The \c Identifier
+    must be unique. This interface can be implemented by plugins that load
+    other calendars, interpreting \c loadCalendar()'s string parameter in
+    various ways. It isn't limited to this particular plugin that will be implemented
+    using it, so it has a generic name, not one specific to this particular backend.
+
+    Then a plugin class that inherits from \l{QObject} and from the interface is created.
+
+    \snippet time/calendarbackendplugin/plugin/calendarplugin.h 0
+
+    \l{<QtPlugin>::}{Q_PLUGIN_METADATA()} and \l{QObject::}{Q_INTERFACES()}
+    are being used to declare meta data that was also declared
+    in the interface class and to tell Qt which interface the class implements.
+
+    \sa QtPlugin
+
+    This plugin instantiates and registers a custom calendar backend which
+    can in turn be used to instantiate \l{QCalendar} by the application at
+    any point.
+
+    Qt Plugins are stored in a single shared library (a DLL) and \l{QPluginLoader}
+    is used for detecting and dynamically loading the plugin file (for more
+    see \l{How to Create Qt Plugins}).
+
+    \section2 Loading the plugin
+
+    \l{QPluginLoader} checks if the plugin's version of Qt
+    is the same as that of the application and
+    provides direct access to a Qt plugin.
+
+    Here is the use of \l QPluginLoader in the example:
+
+    \snippet time/calendarbackendplugin/application/main.cpp 0
+
+    First, an instance of a QPluginLoader object needs to be initialized. Next,
+    it has to be specified which plugin to load by passing a DLL file name to
+    \l{QPluginLoader::}{setFileName()}. Then, by using \l{QPluginLoader::}{load()},
+    the plugin file is dynamically loaded. At the end, a call to \l{QObject::}{qobject_cast()}
+    tests whether a plugin implements a given interface. \l{QObject::}{qobject_cast()}
+    uses \l{QPluginLoader::}{instance()} to access the root component in the plugin.
+    If the plugin has been loaded correctly, its functions should be available.
+
+    \sa QPluginLoader
+
+    \section2 Instantiating the backend
+
+    In this example there is only one function in the plugin. \c loadCalendar()
+    is responsible for registering the custom calendar backend in
+    \c QCalendarRegistry with given date of the transition and names.
+
+    \snippet time/calendarbackendplugin/plugin/calendarplugin.cpp 0
+
+    String argument for \c loadCalendar() is supplied by the user via command
+    line arguments. Then, the date of transition from the Julian calendar to
+    the Gregorian is extracted by splitting the given string.
+    After validation, a custom backend object is created.
+    The backend must be registered before it can be used in \l{QCalendar},
+    using the \c registerCustomBackend() method.
+    Once a backend is registered, a QCalendar can be instantiated with
+    the respective \l{QCalendar::}{SystemId} or \c name.
+
+    Here is the use of \c loadCalendar in the \c main:
+
+    \snippet time/calendarbackendplugin/application/main.cpp 1
+
+    \section2 Extending QCalendarWidget
+
+    By creating a \l{QCalendar} instance with a specific calendar as a backend,
+    it is possible to provide \l{QCalendarWidget} with that backend and
+    visualize it.
+
+    \snippet time/calendarbackendplugin/application/main.cpp 2
+*/
