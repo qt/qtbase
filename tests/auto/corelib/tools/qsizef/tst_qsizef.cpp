@@ -24,14 +24,21 @@ CHECK(const &&);
 #undef CHECK
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <qsize.h>
 
 Q_DECLARE_METATYPE(QMarginsF)
+
+static constexpr qreal qreal_min = std::numeric_limits<qreal>::min();
 
 class tst_QSizeF : public QObject
 {
     Q_OBJECT
 private slots:
+    void compareCompiles();
+    void compare_data();
+    void compare();
+
     void isNull_data();
     void isNull();
 
@@ -51,6 +58,47 @@ private slots:
 
     void structuredBinding();
 };
+
+void tst_QSizeF::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QSizeF>();
+    QTestPrivate::testEqualityOperatorsCompile<QSizeF, QSize>();
+}
+
+void tst_QSizeF::compare_data()
+{
+    QTest::addColumn<QSizeF>("lhs");
+    QTest::addColumn<QSizeF>("rhs");
+    QTest::addColumn<bool>("result");
+    QTest::addColumn<bool>("mixedResult");
+
+    auto row = [&](QSizeF lhs, QSizeF rhs, bool res, bool mixedRes) {
+        QString str;
+        QDebug dbg(&str);
+        dbg.nospace() << "(" << lhs.width() << ", " << lhs.height() << ") vs "
+                      << "(" << rhs.width() << ", " << rhs.height() << ")";
+        QTest::addRow("%s", str.toLatin1().constData()) << lhs << rhs << res << mixedRes;
+    };
+
+    row(QSizeF(0.0, 0.0), QSizeF(0.0, 0.0), true, true);
+    row(QSizeF(1.0, 2.0), QSizeF(1.0, 2.0), true, true);
+    row(QSizeF(1.0, -1.0), QSizeF(-1.0, 1.0), false, false);
+    row(QSizeF(0.1, 1.1), QSizeF(0.1, 1.1), true, false);
+    row(QSizeF(qreal_min, 0.0), QSizeF(0.0, -qreal_min), true, true);
+}
+
+void tst_QSizeF::compare()
+{
+    QFETCH(QSizeF, lhs);
+    QFETCH(QSizeF, rhs);
+    QFETCH(bool, result);
+    QFETCH(bool, mixedResult);
+
+    QT_TEST_EQUALITY_OPS(lhs, rhs, result);
+
+    const QSize rhsFixed = rhs.toSize();
+    QT_TEST_EQUALITY_OPS(lhs, rhsFixed, mixedResult);
+}
 
 void tst_QSizeF::isNull_data()
 {
