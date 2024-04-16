@@ -250,7 +250,8 @@ public:
 };
 
 QSignalSpy::QSignalSpy(ObjectSignal os)
-    : args(os.obj ? makeArgs(os.sig, os.obj) : QList<int>{})
+    : sig(os.sig.methodSignature()),
+      args(os.obj ? makeArgs(os.sig, os.obj) : QList<int>{})
 {
     if (!os.obj)
         return;
@@ -266,8 +267,6 @@ QSignalSpy::QSignalSpy(ObjectSignal os)
     }
 
     d_ptr = std::move(i);
-
-    sig = os.sig.methodSignature();
 }
 
 /*!

@@ -41,7 +41,7 @@ public:
         : QSignalSpy(verify(obj, signal)) {}
     Q_TESTLIB_EXPORT ~QSignalSpy();
 
-    inline bool isValid() const { return !sig.isEmpty(); }
+    bool isValid() const noexcept { return d_ptr != nullptr; }
     inline QByteArray signal() const { return sig; }
 
     bool wait(int timeout)
@@ -58,7 +58,7 @@ private:
     Q_TESTLIB_EXPORT void appendArgs(void **a);
 
     // the full, normalized signal name
-    QByteArray sig;
+    const QByteArray sig;
     // holds the QMetaType types for the argument list of the signal
     const QList<int> args;
 
