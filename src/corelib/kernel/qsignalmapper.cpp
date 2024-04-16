@@ -13,11 +13,6 @@ class QSignalMapperPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QSignalMapper)
 public:
-    void _q_senderDestroyed()
-    {
-        Q_Q(QSignalMapper);
-        q->removeMappings(q->sender());
-    }
 
     template <class Signal, class Container>
     void emitMappedValue(QObject *sender, Signal signal, const Container &mappedValues)
@@ -129,7 +124,7 @@ void QSignalMapper::setMapping(QObject *sender, int id)
 {
     Q_D(QSignalMapper);
     d->intHash.insert(sender, id);
-    connect(sender, SIGNAL(destroyed()), this, SLOT(_q_senderDestroyed()));
+    connect(sender, &QObject::destroyed, this, &QSignalMapper::removeMappings);
 }
 
 /*!
@@ -142,7 +137,7 @@ void QSignalMapper::setMapping(QObject *sender, const QString &text)
 {
     Q_D(QSignalMapper);
     d->stringHash.insert(sender, text);
-    connect(sender, SIGNAL(destroyed()), this, SLOT(_q_senderDestroyed()));
+    connect(sender, &QObject::destroyed, this, &QSignalMapper::removeMappings);
 }
 
 /*!
@@ -155,7 +150,7 @@ void QSignalMapper::setMapping(QObject *sender, QObject *object)
 {
     Q_D(QSignalMapper);
     d->objectHash.insert(sender, object);
-    connect(sender, SIGNAL(destroyed()), this, SLOT(_q_senderDestroyed()));
+    connect(sender, &QObject::destroyed, this, &QSignalMapper::removeMappings);
 }
 
 /*!

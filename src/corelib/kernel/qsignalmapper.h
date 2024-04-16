@@ -38,7 +38,6 @@ public Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(QSignalMapper)
-    Q_PRIVATE_SLOT(d_func(), void _q_senderDestroyed())
 };
 
 QT_END_NAMESPACE
