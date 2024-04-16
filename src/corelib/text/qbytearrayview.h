@@ -256,12 +256,12 @@ public:
 
     [[nodiscard]] bool startsWith(QByteArrayView other) const noexcept
     { return QtPrivate::startsWith(*this, other); }
-    [[nodiscard]] bool startsWith(char c) const noexcept
+    [[nodiscard]] constexpr bool startsWith(char c) const noexcept
     { return !empty() && front() == c; }
 
     [[nodiscard]] bool endsWith(QByteArrayView other) const noexcept
     { return QtPrivate::endsWith(*this, other); }
-    [[nodiscard]] bool endsWith(char c) const noexcept
+    [[nodiscard]] constexpr bool endsWith(char c) const noexcept
     { return !empty() && back() == c; }
 
     [[nodiscard]] qsizetype indexOf(QByteArrayView a, qsizetype from = 0) const noexcept
