@@ -116,8 +116,10 @@ public:
     QBitArray operator~() const;
 #endif
 
-    inline bool operator==(const QBitArray &other) const { return d == other.d; }
-    inline bool operator!=(const QBitArray &other) const { return d != other.d; }
+#if QT_CORE_REMOVED_SINCE(6, 8)
+    inline bool operator==(const QBitArray &other) const { return comparesEqual(d, other.d); }
+    inline bool operator!=(const QBitArray &other) const { return !operator==(other); }
+#endif
 
     bool fill(bool aval, qsizetype asize = -1)
     { *this = QBitArray((asize < 0 ? this->size() : asize), aval); return true; }
@@ -134,6 +136,13 @@ public:
     typedef QByteArray::DataPointer DataPtr;
     inline DataPtr &data_ptr() { return d.data_ptr(); }
     inline const DataPtr &data_ptr() const { return d.data_ptr(); }
+
+private:
+    friend bool comparesEqual(const QBitArray &lhs, const QBitArray &rhs) noexcept
+    {
+        return lhs.d == rhs.d;
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QBitArray)
 };
 
 class QT6_ONLY(Q_CORE_EXPORT) QBitRef

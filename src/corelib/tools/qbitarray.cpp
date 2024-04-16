@@ -23,6 +23,8 @@ QT_BEGIN_NAMESPACE
     \ingroup shared
     \reentrant
 
+    \compares equality
+
     A QBitArray is an array that gives access to individual bits and
     provides operators (\l{operator&()}{AND}, \l{operator|()}{OR},
     \l{operator^()}{XOR}, and \l{operator~()}{NOT}) that work on
@@ -499,17 +501,17 @@ quint32 QBitArray::toUInt32(QSysInfo::Endian endianness, bool *ok) const noexcep
     fast and never fails.
 */
 
-/*! \fn bool QBitArray::operator==(const QBitArray &other) const
+/*! \fn bool QBitArray::operator==(const QBitArray &lhs, const QBitArray &rhs)
 
-    Returns \c true if \a other is equal to this bit array; otherwise
+    Returns \c true if \a lhs is equal to \a rhs bit array; otherwise
     returns \c false.
 
     \sa operator!=()
 */
 
-/*! \fn bool QBitArray::operator!=(const QBitArray &other) const
+/*! \fn bool QBitArray::operator!=(const QBitArray &lhs, const QBitArray &rhs)
 
-    Returns \c true if \a other is not equal to this bit array;
+    Returns \c true if \a lhs is not equal to \a rhs bit array;
     otherwise returns \c false.
 
     \sa operator==()
