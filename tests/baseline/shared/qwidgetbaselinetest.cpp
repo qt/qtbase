@@ -77,11 +77,14 @@ void QWidgetBaselineTest::initTestCase()
 void QWidgetBaselineTest::init()
 {
     QVERIFY(!window);
-    window = new QWidget;
+    background = new QWidget(nullptr, Qt::FramelessWindowHint);
+    window = new QWidget(background, Qt::Window);
     window->setWindowTitle(QTest::currentDataTag());
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    background->setScreen(QGuiApplication::primaryScreen());
     window->setScreen(QGuiApplication::primaryScreen());
 #endif
+    background->move(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
     window->move(QGuiApplication::primaryScreen()->availableGeometry().topLeft());
 
     doInit();
@@ -91,13 +94,15 @@ void QWidgetBaselineTest::cleanup()
 {
     doCleanup();
 
-    delete window;
+    delete background;
+    background = nullptr;
     window = nullptr;
 }
 
 void QWidgetBaselineTest::makeVisible()
 {
     Q_ASSERT(window);
+    background->showMaximized();
     window->show();
     QApplicationPrivate::setActiveWindow(window);
     QVERIFY(QTest::qWaitForWindowActive(window));

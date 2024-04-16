@@ -35,6 +35,7 @@ protected:
     QImage takeScreenSnapshot(const QRect& rect = QRect());
 
 private:
+    QWidget *background = nullptr;
     QWidget *window = nullptr;
 };
 
