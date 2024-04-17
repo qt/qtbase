@@ -990,6 +990,17 @@ bool QFSFileEngine::remove()
     return ret;
 }
 
+/*
+    An alternative to setFileName() when you have already constructed
+    a QFileSystemEntry.
+*/
+void QFSFileEngine::setFileEntry(QFileSystemEntry &&entry)
+{
+    Q_D(QFSFileEngine);
+    d->init();
+    d->fileEntry = std::move(entry);
+}
+
 bool QFSFileEngine::rename_helper(const QString &newName, RenameMode mode)
 {
     Q_D(QFSFileEngine);
@@ -997,10 +1008,14 @@ bool QFSFileEngine::rename_helper(const QString &newName, RenameMode mode)
     auto func = mode == Rename ? QFileSystemEngine::renameFile
                                : QFileSystemEngine::renameOverwriteFile;
     QSystemError error;
-    const bool ret = func(d->fileEntry, QFileSystemEntry(newName), error);
-    if (!ret)
+    auto newEntry = QFileSystemEntry(newName);
+    const bool ret = func(d->fileEntry, newEntry, error);
+    if (!ret) {
         setError(QFile::RenameError, error.toString());
-    return ret;
+        return false;
+    }
+    setFileEntry(std::move(newEntry));
+    return true;
 }
 
 /*!

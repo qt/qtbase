@@ -396,11 +396,10 @@ bool QFSFileEnginePrivate::nativeIsSequential() const
             || (fileType == FILE_TYPE_PIPE);
 }
 
-bool QFSFileEnginePrivate::nativeRenameOverwrite(const QString &newName)
+bool QFSFileEnginePrivate::nativeRenameOverwrite(const QFileSystemEntry &newEntry)
 {
     if (fileHandle == INVALID_HANDLE_VALUE)
         return false;
-    QFileSystemEntry newEntry(newName, QFileSystemEntry::FromInternalPath());
     const QString newFilePath = newEntry.nativeFilePath();
     const size_t nameByteLength = newFilePath.length() * sizeof(wchar_t);
     if (nameByteLength + sizeof(wchar_t) > std::numeric_limits<DWORD>::max())

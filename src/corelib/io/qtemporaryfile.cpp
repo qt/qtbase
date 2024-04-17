@@ -393,8 +393,13 @@ bool QTemporaryFileEngine::renameOverwrite(const QString &newName)
     }
 #ifdef Q_OS_WIN
     if (flags & Win32NonShared) {
-        bool ok = d_func()->nativeRenameOverwrite(newName);
+        QFileSystemEntry newEntry(newName, QFileSystemEntry::FromInternalPath());
+        bool ok = d_func()->nativeRenameOverwrite(newEntry);
         QFSFileEngine::close();
+        if (ok) {
+            // Match what QFSFileEngine::renameOverwrite() does
+            setFileEntry(std::move(newEntry));
+        }
         return ok;
     }
 #endif
@@ -868,7 +873,6 @@ bool QTemporaryFile::rename(const QString &newName)
         if (tef->rename(newName)) {
             unsetError();
             // engine was able to handle the new name so we just reset it
-            tef->setFileName(newName);
             d->fileName = newName;
             return true;
         }
