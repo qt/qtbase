@@ -3,7 +3,7 @@
 
 #include "qsqldatabase.h"
 #include "qsqlquery.h"
-#include "qdebug.h"
+#include "qloggingcategory.h"
 #include "qcoreapplication.h"
 #include "qreadwritelock.h"
 #include "qsqldriver.h"
@@ -17,16 +17,18 @@
 
 QT_BEGIN_NAMESPACE
 
+static Q_LOGGING_CATEGORY(lcSqlDb, "qt.sql.qsqldatabase")
+
 using namespace Qt::StringLiterals;
 
 #define CHECK_QCOREAPPLICATION \
     if (Q_UNLIKELY(!QCoreApplication::instance())) { \
-        qWarning("QSqlDatabase requires a QCoreApplication"); \
+        qCWarning(lcSqlDb, "QSqlDatabase requires a QCoreApplication"); \
         return; \
     }
 #define CHECK_QCOREAPPLICATION_RETVAL \
     if (Q_UNLIKELY(!QCoreApplication::instance())) { \
-        qWarning("QSqlDatabase requires a QCoreApplication"); \
+        qCWarning(lcSqlDb, "QSqlDatabase requires a QCoreApplication"); \
         return {}; \
     }
 
@@ -134,8 +136,8 @@ QSqlDatabasePrivate *QSqlDatabasePrivate::shared_null()
 void QSqlDatabasePrivate::invalidateDb(const QSqlDatabase &db, const QString &name, bool doWarn)
 {
     if (db.d->ref.loadRelaxed() != 1 && doWarn) {
-        qWarning("QSqlDatabasePrivate::removeDatabase: connection '%s' is still in use, "
-                 "all queries will cease to work.", name.toLocal8Bit().constData());
+        qCWarning(lcSqlDb, "QSqlDatabasePrivate::removeDatabase: connection '%ls' is still in use, "
+                 "all queries will cease to work.", qUtf16Printable(name));
         db.d->disable();
         db.d->connName.clear();
     }
@@ -161,8 +163,8 @@ void QSqlDatabasePrivate::addDatabase(const QSqlDatabase &db, const QString &nam
 
     if (sqlGlobals->connections.contains(name)) {
         invalidateDb(sqlGlobals->connections.take(name), name);
-        qWarning("QSqlDatabasePrivate::addDatabase: duplicate connection name '%s', old "
-                 "connection removed.", name.toLocal8Bit().data());
+        qCWarning(lcSqlDb, "QSqlDatabasePrivate::addDatabase: duplicate connection name '%ls', old "
+                 "connection removed.", qUtf16Printable(name));
     }
     sqlGlobals->connections.insert(name, db);
     db.d->connName = name;
@@ -177,13 +179,13 @@ QSqlDatabase QSqlDatabasePrivate::database(const QString& name, bool open)
     if (!db.isValid())
         return db;
     if (db.driver()->thread() != QThread::currentThread()) {
-        qWarning("QSqlDatabasePrivate::database: requested database does not belong to the calling thread.");
+        qCWarning(lcSqlDb, "QSqlDatabasePrivate::database: requested database does not belong to the calling thread.");
         return QSqlDatabase();
     }
 
     if (open && !db.isOpen()) {
         if (!db.open())
-            qWarning() << "QSqlDatabasePrivate::database: unable to open database:" << db.lastError().text();
+            qCWarning(lcSqlDb) << "QSqlDatabasePrivate::database: unable to open database:" << db.lastError().text();
 
     }
     return db;
@@ -646,11 +648,11 @@ void QSqlDatabasePrivate::init(const QString &type)
         driver = qLoadPlugin<QSqlDriver, QSqlDriverPlugin>(loader(), type);
 
     if (!driver) {
-        qWarning("QSqlDatabase: %s driver not loaded", type.toLatin1().data());
-        qWarning("QSqlDatabase: available drivers: %s",
-                        QSqlDatabase::drivers().join(u' ').toLatin1().data());
+        qCWarning(lcSqlDb, "QSqlDatabase: %ls driver not loaded", qUtf16Printable(type));
+        qCWarning(lcSqlDb, "QSqlDatabase: available drivers: %ls",
+                  qUtf16Printable(QSqlDatabase::drivers().join(u' ')));
         if (QCoreApplication::instance() == nullptr)
-            qWarning("QSqlDatabase: an instance of QCoreApplication is required for loading driver plugins");
+            qCWarning(lcSqlDb, "QSqlDatabase: an instance of QCoreApplication is required for loading driver plugins");
         driver = shared_null()->driver;
     }
 }
