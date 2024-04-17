@@ -21,7 +21,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-class QSqlRelationalTableModelSql: public QSqlTableModelSql
+class QSqlRelationalTableModelSql: public QSqlQueryModelSql
 {
 public:
     inline const static QString relTablePrefix(int i) { return QString::number(i).prepend("relTblAl_"_L1); }
@@ -108,12 +108,12 @@ struct QRelation
 
         void populateModel();
 
-        bool isDictionaryInitialized();
+        bool isDictionaryInitialized() const;
         void populateDictionary();
         void clearDictionary();
 
         void clear();
-        bool isValid();
+        bool isValid() const;
 
         QSqlRelation rel;
         QRelatedTableModel *model;
@@ -158,7 +158,7 @@ void QRelation::populateModel()
     }
 }
 
-bool QRelation::isDictionaryInitialized()
+bool QRelation::isDictionaryInitialized() const
 {
     return m_dictInitialized;
 }
@@ -204,7 +204,7 @@ void QRelation::clear()
     clearDictionary();
 }
 
-bool QRelation::isValid()
+bool QRelation::isValid() const
 {
     return (rel.isValid() && m_parent != nullptr);
 }
@@ -253,10 +253,8 @@ public:
 
 void QSqlRelationalTableModelPrivate::clearChanges()
 {
-    for (int i = 0; i < relations.size(); ++i) {
-        QRelation &rel = relations[i];
+    for (auto &rel : relations)
         rel.clear();
-    }
 }
 
 void QSqlRelationalTableModelPrivate::revertCachedRow(int row)
@@ -277,8 +275,8 @@ int QSqlRelationalTableModelPrivate::nameToIndex(const QString &name) const
 
 void QSqlRelationalTableModelPrivate::clearCache()
 {
-    for (int i = 0; i < relations.size(); ++i)
-        relations[i].clearDictionary();
+    for (auto &rel : relations)
+        rel.clearDictionary();
 
     QSqlTableModelPrivate::clearCache();
 }

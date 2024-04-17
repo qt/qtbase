@@ -19,12 +19,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-using SqlTm = QSqlTableModelSql;
-
-QSqlTableModelPrivate::~QSqlTableModelPrivate()
-{
-
-}
+using SqlTm = QSqlQueryModelSql;
 
 /*! \internal
     Populates our record with values.
@@ -143,11 +138,10 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
                 return false;
             }
         }
-        int i;
-        for (i = 0; i < rec.count(); ++i)
+        for (int i = 0; i < rec.count(); ++i)
             if (rec.isGenerated(i))
                 editQuery.addBindValue(rec.value(i));
-        for (i = 0; i < whereValues.count(); ++i)
+        for (int i = 0; i < whereValues.count(); ++i)
             if (whereValues.isGenerated(i) && !whereValues.isNull(i))
                 editQuery.addBindValue(whereValues.value(i));
 
@@ -475,10 +469,8 @@ QVariant QSqlTableModel::headerData(int section, Qt::Orientation orientation, in
 bool QSqlTableModel::isDirty() const
 {
     Q_D(const QSqlTableModel);
-    QSqlTableModelPrivate::CacheMap::ConstIterator i = d->cache.constBegin();
-    const QSqlTableModelPrivate::CacheMap::ConstIterator e = d->cache.constEnd();
-    for (; i != e; ++i) {
-        if (!i.value().submitted())
+    for (const auto &val : std::as_const(d->cache)) {
+        if (!val.submitted())
             return true;
     }
     return false;
@@ -1360,8 +1352,7 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
         return false;
 
     // Check field names and remember mapping
-    typedef QMap<int, int> Map;
-    Map map;
+    QMap<int, int> map;
     for (int i = 0; i < values.count(); ++i) {
         int idx = d->nameToIndex(values.fieldName(i));
         if (idx == -1)
@@ -1374,18 +1365,16 @@ bool QSqlTableModel::setRecord(int row, const QSqlRecord &values)
         mrow = QSqlTableModelPrivate::ModifiedRow(QSqlTableModelPrivate::Update,
                                                   QSqlQueryModel::record(row));
 
-    Map::const_iterator i = map.constBegin();
-    const Map::const_iterator e = map.constEnd();
-    for ( ; i != e; ++i) {
+    for (const auto i : map.asKeyValueRange()) {
         // have to use virtual setData() here rather than mrow.setValue()
         EditStrategy strategy = d->strategy;
         d->strategy = OnManualSubmit;
-        QModelIndex cIndex = createIndex(row, i.value());
-        setData(cIndex, values.value(i.key()));
+        QModelIndex cIndex = createIndex(row, i.second);
+        setData(cIndex, values.value(i.first));
         d->strategy = strategy;
         // setData() sets generated to TRUE, but source record should prevail.
-        if (!values.isGenerated(i.key()))
-            mrow.recRef().setGenerated(i.value(), false);
+        if (!values.isGenerated(i.first))
+            mrow.recRef().setGenerated(i.second, false);
     }
 
     if (d->strategy != OnManualSubmit)

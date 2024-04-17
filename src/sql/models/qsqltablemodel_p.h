@@ -35,7 +35,6 @@ public:
           strategy(QSqlTableModel::OnRowChange),
           busyInsertingRows(false)
     {}
-    ~QSqlTableModelPrivate();
 
     void clear();
     virtual void clearCache();
@@ -152,11 +151,6 @@ public:
 
     typedef QMap<int, ModifiedRow> CacheMap;
     CacheMap cache;
-};
-
-class QSqlTableModelSql: public QSqlQueryModelSql
-{
-public:
 };
 
 QT_END_NAMESPACE
