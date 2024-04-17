@@ -57,6 +57,7 @@ public:
     QList<QDnsDomainNameRecord> nameServerRecords;
     QList<QDnsDomainNameRecord> pointerRecords;
     QList<QDnsServiceRecord> serviceRecords;
+    QList<QDnsTlsAssociationRecord> tlsAssociationRecords;
     QList<QDnsTextRecord> textRecords;
 
 #if QT_CONFIG(ssl)
@@ -294,6 +295,15 @@ public:
     { }
 
     QList<QByteArray> values;
+};
+
+class QDnsTlsAssociationRecordPrivate : public QDnsRecordPrivate
+{
+public:
+    QDnsTlsAssociationRecord::CertificateUsage usage;
+    QDnsTlsAssociationRecord::Selector selector;
+    QDnsTlsAssociationRecord::MatchingType matchType;
+    QByteArray value;
 };
 
 QT_END_NAMESPACE

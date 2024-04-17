@@ -224,6 +224,25 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
             record.d->timeToLive = ptr->dwTtl;
             record.d->weight = ptr->Data.Srv.wWeight;
             reply->serviceRecords.append(record);
+        } else if (ptr->wType == QDnsLookup::TLSA) {
+            // Note: untested, because the DNS_RECORD reply appears to contain
+            // no records relating to TLSA. Maybe WinDNS filters them out of
+            // zones without DNSSEC.
+            QDnsTlsAssociationRecord record;
+            record.d->name = name;
+            record.d->timeToLive = ptr->dwTtl;
+
+            const auto &tlsa = ptr->Data.Tlsa;
+            const quint8 usage = tlsa.bCertUsage;
+            const quint8 selector = tlsa.bSelector;
+            const quint8 matchType = tlsa.bMatchingType;
+
+            record.d->usage = QDnsTlsAssociationRecord::CertificateUsage(usage);
+            record.d->selector = QDnsTlsAssociationRecord::Selector(selector);
+            record.d->matchType = QDnsTlsAssociationRecord::MatchingType(matchType);
+            record.d->value.assign(tlsa.bCertificateAssociationData,
+                                   tlsa.bCertificateAssociationData + tlsa.bCertificateAssociationDataLength);
+            reply->tlsAssociationRecords.append(std::move(record));
         } else if (ptr->wType == QDnsLookup::TXT) {
             QDnsTextRecord record;
             record.d->name = name;

@@ -374,6 +374,14 @@ QStringList tst_QDnsLookup::formatReply(const QDnsLookup *lookup) const
         result.append(std::move(entry));
     }
 
+    for (const QDnsTlsAssociationRecord &rr : lookup->tlsAssociationRecords()) {
+        QString entry = u"TLSA %1 %2 %3 %4"_s.arg(int(rr.usage())).arg(int(rr.selector()))
+                .arg(int(rr.matchType())).arg(rr.value().toHex().toUpper());
+        if (rr.name() != domain)
+            entry = "TLSA unexpected label to "_L1 + rr.name();
+        result.append(std::move(entry));
+    }
+
     result.sort();
     return result;
 }
@@ -504,6 +512,10 @@ void tst_QDnsLookup::lookup_data()
                                   "SRV     2 50 7 aaaa-single;"
                                   "SRV     3 50 7 a-multi";
 
+    QTest::newRow("tlsa") << QDnsLookup::Type::TLSA << "_25._tcp.multi"
+                          << "TLSA 3 1 1 0123456789ABCDEFFEDCBA9876543210"
+                             "0123456789ABCDEFFEDCBA9876543210";
+
     QTest::newRow("txt-single") << QDnsLookup::TXT << "txt-single"
                                 << "TXT \"Hello\"";
     QTest::newRow("txt-multi-onerr") << QDnsLookup::TXT << "txt-multi-onerr"
@@ -522,8 +534,12 @@ void tst_QDnsLookup::lookup()
     if (!lookup)
         return;
 
-    QCOMPARE(lookup->error(), QDnsLookup::NoError);
+#ifdef Q_OS_WIN
+    if (QTest::currentDataTag() == "tlsa"_L1)
+        QSKIP("WinDNS doesn't work properly with TLSA records and we don't know why");
+#endif
     QCOMPARE(lookup->errorString(), QString());
+    QCOMPARE(lookup->error(), QDnsLookup::NoError);
     QCOMPARE(lookup->type(), type);
     QCOMPARE(lookup->name(), domainName(domain));
 

@@ -257,6 +257,8 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
 
     \value SRV      service records.
 
+    \value[since 6.8] TLSA     TLS association records.
+
     \value TXT      text records.
 */
 
@@ -702,6 +704,21 @@ QList<QDnsServiceRecord> QDnsLookup::serviceRecords() const
 QList<QDnsTextRecord> QDnsLookup::textRecords() const
 {
     return d_func()->reply.textRecords;
+}
+
+/*!
+    \since 6.8
+    Returns the list of TLS association records associated with this lookup.
+
+    According to the standards relating to DNS-based Authentication of Named
+    Entities (DANE), this field should be ignored and must not be used for
+    verifying the authentity of a given server if the authenticity of the DNS
+    reply cannot itself be confirmed. See isAuthenticData() for more
+    information.
+ */
+QList<QDnsTlsAssociationRecord> QDnsLookup::tlsAssociationRecords() const
+{
+    return d_func()->reply.tlsAssociationRecords;
 }
 
 #if QT_CONFIG(ssl)
@@ -1260,6 +1277,223 @@ QDnsTextRecord &QDnsTextRecord::operator=(const QDnsTextRecord &other)
     Swaps this text record instance with \a other. This function is
     very fast and never fails.
 */
+
+/*!
+    \class QDnsTlsAssociationRecord
+    \since 6.8
+    \brief The QDnsTlsAssociationRecord class stores information about a DNS TLSA record.
+
+    \inmodule QtNetwork
+    \ingroup network
+    \ingroup shared
+
+    When performing a text lookup, zero or more records will be returned. Each
+    record is represented by a QDnsTlsAssociationRecord instance.
+
+    The meaning of the fields is defined in \l{RFC 6698}.
+
+    \sa QDnsLookup
+*/
+
+QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QDnsTlsAssociationRecordPrivate)
+
+/*!
+    \enum QDnsTlsAssociationRecord::CertificateUsage
+
+    This enumeration contains valid values for the certificate usage field of
+    TLS Association queries. The following list is up-to-date with \l{RFC 6698}
+    section 2.1.1 and RFC 7218 section 2.1. Please refer to those documents for
+    authoritative instructions on interpreting this enumeration.
+
+    \value CertificateAuthorityConstrait
+        Indicates the record includes an association to a specific Certificate
+        Authority that must be found in the TLS server's certificate chain and
+        must pass PKIX validation.
+
+    \value ServiceCertificateConstraint
+        Indicates the record includes an association to a certificate that must
+        match the end entity certificate provided by the TLS server and must
+        pass PKIX validation.
+
+    \value TrustAnchorAssertion
+        Indicates the record includes an association to a certificate that MUST
+        be used as the ultimate trust anchor to validate the TLS server's
+        certificate and must pass PKIX validation.
+
+    \value DomainIssuedCertificate
+        Indicates the record includes an association to a certificate that must
+        match the end entity certificate provided by the TLS server. PKIX
+        validation is not tested.
+
+    \value PrivateUse
+        No standard meaning applied.
+
+    \value PKIX_TA
+        Alias; mnemonic for Public Key Infrastructure Trust Anchor
+
+    \value PKIX_EE
+        Alias; mnemonic for Public Key Infrastructure End Entity
+
+    \value DANE_TA
+        Alias; mnemonic for DNS-based Authentication of Named Entities Trust Anchor
+
+    \value DANE_EE
+        Alias; mnemonic for DNS-based Authentication of Named Entities End Entity
+
+    \value PrivCert
+        Alias
+
+    Other values are currently reserved, but may be unreserved by future
+    standards. This enumeration can be used for those values even if no
+    enumerator is provided.
+
+    \sa certificateUsage()
+*/
+
+/*!
+    \enum QDnsTlsAssociationRecord::Selector
+
+    This enumeration contains valid values for the selector field of TLS
+    Association queries. The following list is up-to-date with \l{RFC 6698}
+    section 2.1.2 and RFC 7218 section 2.2. Please refer to those documents for
+    authoritative instructions on interpreting this enumeration.
+
+    \value FullCertificate
+        Indicates this record refers to the full certificate in its binary
+        structure form.
+
+    \value SubjectPublicKeyInfo
+        Indicates the record refers to the certificate's subject and public
+        key information, in DER-encoded binary structure form.
+
+    \value PrivateUse
+        No standard meaning applied.
+
+    \value Cert
+        Alias
+
+    \value SPKI
+        Alias
+
+    \value PrivSel
+        Alias
+
+    Other values are currently reserved, but may be unreserved by future
+    standards. This enumeration can be used for those values even if no
+    enumerator is provided.
+
+    \sa selector()
+*/
+
+/*!
+    \enum QDnsTlsAssociationRecord::MatchingType
+
+    This enumeration contains valid values for the matching type field of TLS
+    Association queries. The following list is up-to-date with \l{RFC 6698}
+    section 2.1.3 and RFC 7218 section 2.3. Please refer to those documents for
+    authoritative instructions on interpreting this enumeration.
+
+    \value Exact
+        Indicates this the certificate or SPKI data is stored verbatim in this
+        record.
+
+    \value Sha256
+        Indicates this a SHA-256 checksum of the the certificate or SPKI data
+        present in this record.
+
+    \value Sha512
+        Indicates this a SHA-512 checksum of the the certificate or SPKI data
+        present in this record.
+
+    \value PrivateUse
+        No standard meaning applied.
+
+    \value PrivMatch
+        Alias
+
+    Other values are currently reserved, but may be unreserved by future
+    standards. This enumeration can be used for those values even if no
+    enumerator is provided.
+
+    \sa matchingType()
+*/
+
+/*!
+    Constructs an empty TLS Association record.
+ */
+QDnsTlsAssociationRecord::QDnsTlsAssociationRecord()
+    : d(new QDnsTlsAssociationRecordPrivate)
+{
+}
+
+/*!
+    Constructs a copy of \a other.
+ */
+QDnsTlsAssociationRecord::QDnsTlsAssociationRecord(const QDnsTlsAssociationRecord &other) = default;
+
+/*!
+    Moves the content of \a other into this object.
+ */
+QDnsTlsAssociationRecord &
+QDnsTlsAssociationRecord::operator=(const QDnsTlsAssociationRecord &other) = default;
+
+/*!
+    Destroys this TLS Association record object.
+ */
+QDnsTlsAssociationRecord::~QDnsTlsAssociationRecord() = default;
+
+/*!
+    Returns the name of this record.
+*/
+QString QDnsTlsAssociationRecord::name() const
+{
+    return d->name;
+}
+
+/*!
+    Returns the duration in seconds for which this record is valid.
+*/
+quint32 QDnsTlsAssociationRecord::timeToLive() const
+{
+    return d->timeToLive;
+}
+
+/*!
+    Returns the certificate usage field for this record.
+ */
+QDnsTlsAssociationRecord::CertificateUsage QDnsTlsAssociationRecord::usage() const
+{
+    return d->usage;
+}
+
+/*!
+    Returns the selector field for this record.
+ */
+QDnsTlsAssociationRecord::Selector QDnsTlsAssociationRecord::selector() const
+{
+    return d->selector;
+}
+
+/*!
+    Returns the match type field for this record.
+ */
+QDnsTlsAssociationRecord::MatchingType QDnsTlsAssociationRecord::matchType() const
+{
+    return d->matchType;
+}
+
+/*!
+    Returns the binary data field for this record. The interpretation of this
+    binary data depends on the three numeric fields provided by
+    certificateUsage(), selector(), and matchType().
+
+    Do note this is a binary field, even for the checksums, similar to what
+    QCyrptographicHash::result() returns.
+ */
+QByteArray QDnsTlsAssociationRecord::value() const
+{
+    return d->value;
+}
 
 static QDnsLookupRunnable::EncodedLabel encodeLabel(const QString &label)
 {

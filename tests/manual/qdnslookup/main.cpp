@@ -37,10 +37,18 @@ static QDnsLookup::Type typeFromString(QString str)
     return QDnsLookup::Type(value);
 }
 
-template <typename Enum> [[maybe_unused]] static const char *enumToKey(Enum e)
+template <typename Enum> QByteArray enumToString(Enum value)
 {
     QMetaEnum me = QMetaEnum::fromType<Enum>();
-    return me.valueToKey(int(e));
+    QByteArray keys = me.valueToKeys(int(value));
+    if (keys.isEmpty())
+        return QByteArrayLiteral("<unknown>");
+
+    // return the last one
+    qsizetype idx = keys.lastIndexOf('|');
+    if (idx > 0)
+        return std::move(keys).sliced(idx + 1);
+    return keys;
 }
 
 static int showHelp(const char *argv0, int exitcode)
@@ -113,6 +121,14 @@ static void printAnswers(const QDnsLookup &lookup)
             printf("%s ", qPrintable(QDebug::toString(data)));
         puts("");
     }
+
+    for (const QDnsTlsAssociationRecord &rr : lookup.tlsAssociationRecords()) {
+        printRecordCommon(rr, "TLSA");
+        printf("( %u %u %u ; %s %s %s\n\t%s )\n", quint8(rr.usage()), quint8(rr.selector()),
+               quint8(rr.matchType()), enumToString(rr.usage()).constData(),
+               enumToString(rr.selector()).constData(), enumToString(rr.matchType()).constData(),
+               rr.value().toHex().toUpper().constData());
+    }
 }
 
 static void printResults(const QDnsLookup &lookup, QElapsedTimer::Duration duration)
@@ -143,7 +159,7 @@ static void printResults(const QDnsLookup &lookup, QElapsedTimer::Duration durat
 #if QT_CONFIG(ssl)
         if (lookup.nameserverProtocol() != QDnsLookup::Standard) {
             if (QSslConfiguration conf = lookup.sslConfiguration(); !conf.isNull()) {
-                printf(" (%s %s)", enumToKey(conf.sessionProtocol()),
+                printf(" (%s %s)", enumToString(conf.sessionProtocol()).constData(),
                        qPrintable(conf.sessionCipher().name()));
             }
         }

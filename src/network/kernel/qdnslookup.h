@@ -22,7 +22,10 @@ class QDnsHostAddressRecordPrivate;
 class QDnsMailExchangeRecordPrivate;
 class QDnsServiceRecordPrivate;
 class QDnsTextRecordPrivate;
+class QDnsTlsAssociationRecordPrivate;
 class QSslConfiguration;
+
+QT_DECLARE_QSDP_SPECIALIZATION_DTOR(QDnsTlsAssociationRecordPrivate)
 
 class Q_NETWORK_EXPORT QDnsDomainNameRecord
 {
@@ -138,6 +141,78 @@ private:
 
 Q_DECLARE_SHARED(QDnsTextRecord)
 
+class Q_NETWORK_EXPORT QDnsTlsAssociationRecord
+{
+    Q_GADGET
+public:
+    enum class CertificateUsage : quint8 {
+        // https://www.iana.org/assignments/dane-parameters/dane-parameters.xhtml#certificate-usages
+        // RFC 6698
+        CertificateAuthorityConstrait = 0,
+        ServiceCertificateConstraint = 1,
+        TrustAnchorAssertion = 2,
+        DomainIssuedCertificate = 3,
+        PrivateUse = 255,
+
+        // Aliases by RFC 7218
+        PKIX_TA = 0,
+        PKIX_EE = 1,
+        DANE_TA = 2,
+        DANE_EE = 3,
+        PrivCert = 255,
+    };
+    Q_ENUM(CertificateUsage)
+
+    enum class Selector : quint8 {
+        // https://www.iana.org/assignments/dane-parameters/dane-parameters.xhtml#selectors
+        // RFC 6698
+        FullCertificate = 0,
+        SubjectPublicKeyInfo = 1,
+        PrivateUse = 255,
+
+        // Aliases by RFC 7218
+        Cert = FullCertificate,
+        SPKI = SubjectPublicKeyInfo,
+        PrivSel = PrivateUse,
+    };
+    Q_ENUM(Selector)
+
+    enum class MatchingType : quint8 {
+        // https://www.iana.org/assignments/dane-parameters/dane-parameters.xhtml#matching-types
+        // RFC 6698
+        Exact = 0,
+        Sha256 = 1,
+        Sha512 = 2,
+        PrivateUse = 255,
+        PrivMatch = PrivateUse,
+    };
+    Q_ENUM(MatchingType)
+
+    QDnsTlsAssociationRecord();
+    QDnsTlsAssociationRecord(const QDnsTlsAssociationRecord &other);
+    QDnsTlsAssociationRecord(QDnsTlsAssociationRecord &&other)
+        : d(std::move(other.d))
+    {}
+    QDnsTlsAssociationRecord &operator=(QDnsTlsAssociationRecord &&other) noexcept { swap(other); return *this; }
+    QDnsTlsAssociationRecord &operator=(const QDnsTlsAssociationRecord &other);
+    ~QDnsTlsAssociationRecord();
+
+    void swap(QDnsTlsAssociationRecord &other) noexcept { d.swap(other.d); }
+
+    QString name() const;
+    quint32 timeToLive() const;
+    CertificateUsage usage() const;
+    Selector selector() const;
+    MatchingType matchType() const;
+    QByteArray value() const;
+
+private:
+    QSharedDataPointer<QDnsTlsAssociationRecordPrivate> d;
+    friend class QDnsLookupRunnable;
+};
+
+Q_DECLARE_SHARED(QDnsTlsAssociationRecord)
+
 class Q_NETWORK_EXPORT QDnsLookup : public QObject
 {
     Q_OBJECT
@@ -178,6 +253,7 @@ public:
         NS = 2,
         PTR = 12,
         SRV = 33,
+        TLSA = 52,
         TXT = 16
     };
     Q_ENUM(Type)
@@ -230,7 +306,7 @@ public:
     QList<QDnsDomainNameRecord> pointerRecords() const;
     QList<QDnsServiceRecord> serviceRecords() const;
     QList<QDnsTextRecord> textRecords() const;
-
+    QList<QDnsTlsAssociationRecord> tlsAssociationRecords() const;
 
 #if QT_CONFIG(ssl)
     void setSslConfiguration(const QSslConfiguration &sslConfiguration);

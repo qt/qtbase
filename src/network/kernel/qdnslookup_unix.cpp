@@ -406,6 +406,23 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
             if (status < 0)
                 return reply->makeInvalidReplyError(QDnsLookup::tr("Invalid service record"));
             reply->serviceRecords.append(record);
+        } else if (type == QDnsLookup::TLSA) {
+            // https://datatracker.ietf.org/doc/html/rfc6698#section-2.1
+            if (size < 3)
+                return reply->makeInvalidReplyError(QDnsLookup::tr("Invalid TLS association record"));
+
+            const quint8 usage = response[offset];
+            const quint8 selector = response[offset + 1];
+            const quint8 matchType = response[offset + 2];
+
+            QDnsTlsAssociationRecord record;
+            record.d->name = name;
+            record.d->timeToLive = ttl;
+            record.d->usage = QDnsTlsAssociationRecord::CertificateUsage(usage);
+            record.d->selector = QDnsTlsAssociationRecord::Selector(selector);
+            record.d->matchType = QDnsTlsAssociationRecord::MatchingType(matchType);
+            record.d->value.assign(response + offset + 3, response + offset + size);
+            reply->tlsAssociationRecords.append(std::move(record));
         } else if (type == QDnsLookup::TXT) {
             QDnsTextRecord record;
             record.d->name = name;
