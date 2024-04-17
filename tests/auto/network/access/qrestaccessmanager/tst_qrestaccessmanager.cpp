@@ -13,6 +13,7 @@
 #include <QTest>
 #include <QtTest/qsignalspy.h>
 
+#include <QtCore/private/qglobal_p.h> // for access to Qt's feature system
 #include <QtCore/qbuffer.h>
 #include <QtCore/qjsonobject.h>
 #include <QtCore/qjsondocument.h>
@@ -665,7 +666,7 @@ void tst_QRestAccessManager::json()
     }
 }
 
-#define VERIFY_TEXT_REPLY_OK \
+#define VERIFY_TEXT_REPLY_OK_IMPL(...) \
 { \
     manager.get(request, this, [&](QRestReply &reply) { networkReply = reply.networkReply(); }); \
     QTRY_VERIFY(networkReply); \
@@ -673,8 +674,11 @@ void tst_QRestAccessManager::json()
     responseString = restReply.readText(); \
     networkReply->deleteLater(); \
     networkReply = nullptr; \
+    __VA_ARGS__ ; \
     QCOMPARE(responseString, sourceString); \
 }
+#define VERIFY_TEXT_REPLY_OK VERIFY_TEXT_REPLY_OK_IMPL(do {} while (false))
+#define VERIFY_TEXT_REPLY_XFAIL(JIRA) VERIFY_TEXT_REPLY_OK_IMPL(QEXPECT_FAIL("", #JIRA, Continue))
 
 #define VERIFY_TEXT_REPLY_ERROR(WARNING_MESSAGE) \
 { \
@@ -721,8 +725,27 @@ void tst_QRestAccessManager::text()
     // should consider the indicated charset and convert it to an UTF-16 QString => the returned
     // QString from text() should match with the original (UTF-16) QString.
 
-    // Successful UTF-8
+    // Successful UTF-8 (explicit)
     serverSideResponse.headers.insert("Content-Type:"_ba, "text/plain; charset=UTF-8"_ba);
+    serverSideResponse.body = encUTF8(sourceString);
+    VERIFY_TEXT_REPLY_OK;
+
+    // Successful UTF-8 (obfuscated)
+    serverSideResponse.headers["Content-Type:"_ba] = "text/plain; charset=\"UT\\F-8\""_ba;
+    serverSideResponse.body = encUTF8(sourceString);
+#if QT_CONFIG(icu) // ICU ignores `\` during name lookup, making this test succeed when it shouldn't
+    VERIFY_TEXT_REPLY_OK;
+#else
+    VERIFY_TEXT_REPLY_XFAIL(QTBUG-120307);
+#endif
+
+    // Successful UTF-8 (empty charset)
+    serverSideResponse.headers["Content-Type:"_ba] = "text/plain; charset=\"\""_ba;
+    serverSideResponse.body = encUTF8(sourceString);
+    VERIFY_TEXT_REPLY_XFAIL(QTBUG-120307);
+
+    // Successful UTF-8 (implicit)
+    serverSideResponse.headers["Content-Type:"_ba] = "text/plain"_ba;
     serverSideResponse.body = encUTF8(sourceString);
     VERIFY_TEXT_REPLY_OK;
 
@@ -741,11 +764,17 @@ void tst_QRestAccessManager::text()
     serverSideResponse.body = encUTF32(sourceString);
     VERIFY_TEXT_REPLY_OK;
 
-    // Successful UTF-32 with spec-wise allowed extra content in the Content-Type header value
+    // Successful UTF-32 with spec-wise allowed extra trailing content in the Content-Type header value
     serverSideResponse.headers.insert("Content-Type:"_ba,
                                       "text/plain; charset = \"UTF-32\";extraparameter=bar"_ba);
     serverSideResponse.body = encUTF32(sourceString);
     VERIFY_TEXT_REPLY_OK;
+
+    // Successful UTF-32 with spec-wise allowed extra leading content in the Content-Type header value
+    serverSideResponse.headers.insert("Content-Type:"_ba,
+                                      "text/plain; extraparameter=bar;charset    =     \"UT\\F-32\""_ba);
+    serverSideResponse.body = encUTF32(sourceString);
+    VERIFY_TEXT_REPLY_XFAIL(QTBUG-120307);
 
     {
         // Unsuccessful UTF-32, wrong encoding indicated (indicated UTF-32 but data is UTF-8)
