@@ -636,12 +636,13 @@ void tst_QRestAccessManager::json()
         QTRY_VERIFY(networkReply);
         QRestReply restReply(networkReply);
         parseError.error = QJsonParseError::ParseError::DocumentTooLarge;
-        QVERIFY(!restReply.readJson(&parseError).has_value()); // std::nullopt returned
+        const auto json = restReply.readJson(&parseError);
+        networkReply->deleteLater();
+        networkReply = nullptr;
+        QCOMPARE_EQ(json, std::nullopt);
         QCOMPARE_NE(parseError.error, QJsonParseError::ParseError::NoError);
         QCOMPARE_NE(parseError.error, QJsonParseError::ParseError::DocumentTooLarge);
         QCOMPARE_GT(parseError.offset, 0);
-        networkReply->deleteLater();
-        networkReply = nullptr;
     }
 
     {
@@ -652,6 +653,8 @@ void tst_QRestAccessManager::json()
         QRestReply restReply(networkReply);
         parseError.error = QJsonParseError::ParseError::DocumentTooLarge;
         json = restReply.readJson(&parseError);
+        networkReply->deleteLater();
+        networkReply = nullptr;
         QCOMPARE(parseError.error, QJsonParseError::ParseError::NoError);
         QVERIFY(json);
         responseJsonDocument = *json;
@@ -659,8 +662,6 @@ void tst_QRestAccessManager::json()
         QCOMPARE(responseJsonDocument.array().size(), 2);
         QCOMPARE(responseJsonDocument[0].toString(), "foo"_L1);
         QCOMPARE(responseJsonDocument[1].toString(), "bar"_L1);
-        networkReply->deleteLater();
-        networkReply = nullptr;
     }
 }
 
@@ -670,9 +671,9 @@ void tst_QRestAccessManager::json()
     QTRY_VERIFY(networkReply); \
     QRestReply restReply(networkReply); \
     responseString = restReply.readText(); \
-    QCOMPARE(responseString, sourceString); \
     networkReply->deleteLater(); \
     networkReply = nullptr; \
+    QCOMPARE(responseString, sourceString); \
 }
 
 #define VERIFY_TEXT_REPLY_ERROR(WARNING_MESSAGE) \
@@ -682,9 +683,9 @@ void tst_QRestAccessManager::json()
     QTest::ignoreMessage(QtWarningMsg, WARNING_MESSAGE); \
     QRestReply restReply(networkReply); \
     responseString = restReply.readText(); \
-    QVERIFY(responseString.isEmpty()); \
     networkReply->deleteLater(); \
     networkReply = nullptr; \
+    QVERIFY(responseString.isEmpty()); \
 }
 
 void tst_QRestAccessManager::text()
