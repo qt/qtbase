@@ -666,7 +666,7 @@ void tst_QRestAccessManager::json()
     }
 }
 
-#define VERIFY_TEXT_REPLY_OK_IMPL(...) \
+#define VERIFY_TEXT_REPLY_OK \
 { \
     manager.get(request, this, [&](QRestReply &reply) { networkReply = reply.networkReply(); }); \
     QTRY_VERIFY(networkReply); \
@@ -674,11 +674,8 @@ void tst_QRestAccessManager::json()
     responseString = restReply.readText(); \
     networkReply->deleteLater(); \
     networkReply = nullptr; \
-    __VA_ARGS__ ; \
     QCOMPARE(responseString, sourceString); \
 }
-#define VERIFY_TEXT_REPLY_OK VERIFY_TEXT_REPLY_OK_IMPL(do {} while (false))
-#define VERIFY_TEXT_REPLY_XFAIL(JIRA) VERIFY_TEXT_REPLY_OK_IMPL(QEXPECT_FAIL("", #JIRA, Continue))
 
 #define VERIFY_TEXT_REPLY_ERROR(WARNING_MESSAGE) \
 { \
@@ -733,16 +730,12 @@ void tst_QRestAccessManager::text()
     // Successful UTF-8 (obfuscated)
     serverSideResponse.headers["Content-Type:"_ba] = "text/plain; charset=\"UT\\F-8\""_ba;
     serverSideResponse.body = encUTF8(sourceString);
-#if QT_CONFIG(icu) // ICU ignores `\` during name lookup, making this test succeed when it shouldn't
     VERIFY_TEXT_REPLY_OK;
-#else
-    VERIFY_TEXT_REPLY_XFAIL(QTBUG-120307);
-#endif
 
     // Successful UTF-8 (empty charset)
     serverSideResponse.headers["Content-Type:"_ba] = "text/plain; charset=\"\""_ba;
     serverSideResponse.body = encUTF8(sourceString);
-    VERIFY_TEXT_REPLY_XFAIL(QTBUG-120307);
+    VERIFY_TEXT_REPLY_OK;
 
     // Successful UTF-8 (implicit)
     serverSideResponse.headers["Content-Type:"_ba] = "text/plain"_ba;
@@ -774,7 +767,7 @@ void tst_QRestAccessManager::text()
     serverSideResponse.headers.insert("Content-Type:"_ba,
                                       "text/plain; extraparameter=bar;charset    =     \"UT\\F-32\""_ba);
     serverSideResponse.body = encUTF32(sourceString);
-    VERIFY_TEXT_REPLY_XFAIL(QTBUG-120307);
+    VERIFY_TEXT_REPLY_OK;
 
     {
         // Unsuccessful UTF-32, wrong encoding indicated (indicated UTF-32 but data is UTF-8)
