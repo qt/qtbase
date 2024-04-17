@@ -4,10 +4,16 @@
 #include "qrestreply.h"
 #include "qrestreply_p.h"
 
+#include <QtNetwork/private/qnetworkreply_p.h>
+
+#include <QtCore/qbytearrayview.h>
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qlatin1stringmatcher.h>
+#include <QtCore/qlatin1stringview.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstringconverter.h>
+
+#include <QtCore/qxpfunctional.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -335,6 +341,201 @@ QDebug operator<<(QDebug debug, const QRestReply &reply)
 }
 #endif // QT_NO_DEBUG_STREAM
 
+static constexpr auto parse_OWS(QByteArrayView data) noexcept
+{
+    struct R {
+        QByteArrayView ows, tail;
+    };
+
+    constexpr auto is_OWS_char = [](auto ch) { return ch == ' ' || ch == '\t'; };
+
+    qsizetype i = 0;
+    while (i < data.size() && is_OWS_char(data[i]))
+        ++i;
+
+    return R{data.first(i), data.sliced(i)};
+}
+
+static constexpr void eat_OWS(QByteArrayView &data) noexcept
+{
+    data = parse_OWS(data).tail;
+}
+
+static constexpr auto parse_quoted_string(QByteArrayView data, qxp::function_ref<void(char) const> yield)
+{
+    struct R {
+        QByteArrayView quotedString, tail;
+        constexpr explicit operator bool() const noexcept { return !quotedString.isEmpty(); }
+    };
+
+    if (!data.startsWith('"'))
+        return R{{}, data};
+
+    qsizetype i = 1; // one past initial DQUOTE
+    while (i < data.size()) {
+        switch (auto ch = data[i++]) {
+        case '"':  // final DQUOTE -> end of string
+            return R{data.first(i), data.sliced(i)};
+        case '\\': // quoted-pair
+            // https://www.rfc-editor.org/rfc/rfc9110.html#section-5.6.4-3:
+            //   Recipients that process the value of a quoted-string MUST handle a
+            //   quoted-pair as if it were replaced by the octet following the backslash.
+            if (i == data.size())
+                break; // premature end
+            ch = data[i++]; // eat '\\'
+            [[fallthrough]];
+        default:
+            // we don't validate quoted-string octets to be only qdtext (Postel's Law)
+            yield(ch);
+        }
+    }
+
+    return R{{}, data}; // premature end
+}
+
+static constexpr bool is_tchar(char ch) noexcept
+{
+    // ### optimize
+    switch (ch) {
+    case '!':
+    case '#':
+    case '$':
+    case '%':
+    case '&':
+    case '\'':
+    case '*':
+    case '+':
+    case '-':
+    case '.':
+    case '^':
+    case '_':
+    case '`':
+    case '|':
+    case '~':
+        return true;
+    default:
+        return (ch >= 'a' && ch <= 'z')
+            || (ch >= '0' && ch <= '9')
+            || (ch >= 'A' && ch <= 'Z');
+    }
+}
+
+static constexpr auto parse_token(QByteArrayView data) noexcept
+{
+    struct R {
+        QByteArrayView token, tail;
+        constexpr explicit operator bool() const noexcept { return !token.isEmpty(); }
+    };
+
+    qsizetype i = 0;
+    while (i < data.size() && is_tchar(data[i]))
+        ++i;
+
+    return R{data.first(i), data.sliced(i)};
+}
+
+static constexpr auto parse_parameter(QByteArrayView data, qxp::function_ref<void(char) const> yield)
+{
+    struct R {
+        QLatin1StringView name; QByteArrayView value; QByteArrayView tail;
+        constexpr explicit operator bool() const noexcept { return !name.isEmpty(); }
+    };
+
+    const auto invalid = R{{}, {}, data}; // preserves original `data`
+
+    // parameter       = parameter-name "=" parameter-value
+    // parameter-name  = token
+    // parameter-value = ( token / quoted-string )
+
+    const auto name = parse_token(data);
+    if (!name)
+        return invalid;
+    data = name.tail;
+
+    eat_OWS(data); // not in the grammar, but accepted under Postel's Law
+
+    if (!data.startsWith('='))
+        return invalid;
+    data = data.sliced(1);
+
+    eat_OWS(data); // not in the grammar, but accepted under Postel's Law
+
+    if (Q_UNLIKELY(data.startsWith('"'))) { // value is a quoted-string
+
+        const auto value = parse_quoted_string(data, yield);
+        if (!value)
+            return invalid;
+        data = value.tail;
+
+        return R{QLatin1StringView{name.token}, value.quotedString, data};
+
+    } else { // value is a token
+
+        const auto value = parse_token(data);
+        if (!value)
+            return invalid;
+        data = value.tail;
+
+        return R{QLatin1StringView{name.token}, value.token, data};
+    }
+}
+
+static auto parse_content_type(QByteArrayView data)
+{
+    struct R {
+        QLatin1StringView type, subtype;
+        std::string charset;
+        constexpr explicit operator bool() const noexcept { return !type.isEmpty(); }
+    };
+
+    eat_OWS(data); // not in the grammar, but accepted under Postel's Law
+
+    const auto type = parse_token(data);
+    if (!type)
+        return R{};
+    data = type.tail;
+
+    eat_OWS(data); // not in the grammar, but accepted under Postel's Law
+
+    if (!data.startsWith('/'))
+        return R{};
+    data = data.sliced(1);
+
+    eat_OWS(data); // not in the grammar, but accepted under Postel's Law
+
+    const auto subtype = parse_token(data);
+    if (!subtype)
+        return R{};
+    data = subtype.tail;
+
+    eat_OWS(data);
+
+    auto r = R{QLatin1StringView{type.token}, QLatin1StringView{subtype.token}, {}};
+
+    while (data.startsWith(';')) {
+
+        data = data.sliced(1); // eat ';'
+
+        eat_OWS(data);
+
+        const auto param = parse_parameter(data, [&](char ch) { r.charset.append(1, ch); });
+        if (param.name.compare("charset"_L1, Qt::CaseInsensitive) == 0) {
+            if (r.charset.empty() && !param.value.startsWith('"')) // wasn't a quoted-string
+                r.charset.assign(param.value.begin(), param.value.end());
+            return r; // charset found
+        }
+        r.charset.clear(); // wasn't an actual charset
+        if (param.tail.size() == data.size()) // no progress was made
+            break; // returns {type, subtype}
+        // otherwise, continue (accepting e.g. `;;`)
+        data = param.tail;
+
+        eat_OWS(data);
+    }
+
+    return r; // no charset found
+}
+
 QByteArray QRestReplyPrivate::contentCharset(const QNetworkReply* reply)
 {
     // Content-type consists of mimetype and optional parameters, of which one may be 'charset'
@@ -345,28 +546,15 @@ QByteArray QRestReplyPrivate::contentCharset(const QNetworkReply* reply)
     // text/plain; charset=utf-8;version=1.7
     // text/plain; charset = utf-8
     // text/plain; charset ="utf-8"
-    // Default to the most commonly used UTF-8.
-    QByteArray charset{"UTF-8"};
+
     const QByteArray contentTypeValue =
             reply->header(QNetworkRequest::KnownHeaders::ContentTypeHeader).toByteArray();
 
-    QList<QByteArray> parameters = contentTypeValue.split(';');
-    if (parameters.size() >= 2) { // Need at least one parameter in addition to the mimetype itself
-        parameters.removeFirst(); // Exclude the mimetype itself, only interested in parameters
-        QLatin1StringMatcher matcher("charset="_L1, Qt::CaseSensitivity::CaseInsensitive);
-        qsizetype matchIndex = -1;
-        for (auto &parameter : parameters) {
-            // Remove whitespaces and parantheses
-            const QByteArray curated = parameter.replace(" ", "").replace("\"","");
-            // Check for match
-            matchIndex = matcher.indexIn(QLatin1String(curated.constData()));
-            if (matchIndex >= 0) {
-                charset = curated.sliced(matchIndex + 8); // 8 is size of "charset="
-                break;
-            }
-        }
-    }
-    return charset;
+    const auto r = parse_content_type(contentTypeValue);
+    if (r && !r.charset.empty())
+        return QByteArrayView(r.charset).toByteArray();
+    else
+        return "UTF-8"_ba; // Default to the most commonly used UTF-8.
 }
 
 QT_END_NAMESPACE
