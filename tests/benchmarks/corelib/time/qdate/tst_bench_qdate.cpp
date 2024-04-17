@@ -58,6 +58,9 @@ private Q_SLOTS:
     void addDays();
     void addMonths();
     void addYears();
+
+    void fromString_data();
+    void fromString();
 };
 
 QList<QDate> tst_QDate::daily(qint64 start, qint64 end)
@@ -207,6 +210,28 @@ void tst_QDate::addYears()
             store = test.addYears(17);
     }
     Q_UNUSED(store);
+}
+
+void tst_QDate::fromString_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QString>("format");
+
+    QTest::newRow("yyyyMMdd") << QStringLiteral("20240412") << QStringLiteral("yyyyMMdd");
+    QTest::newRow("yyyy-MM-dd") << QStringLiteral("2024-04-12") << QStringLiteral("yyyy-MM-dd");
+    QTest::newRow("YYYYMMDD") // Invalid, QTBUG-124465.
+        << QStringLiteral("20240412") << QStringLiteral("YYYYMMDD");
+}
+
+void tst_QDate::fromString()
+{
+    QFETCH(const QString, string);
+    QFETCH(const QString, format);
+    QDate date;
+    QBENCHMARK {
+        date = QDate::fromString(string, format);
+    }
+    Q_UNUSED(date);
 }
 
 QTEST_MAIN(tst_QDate)
