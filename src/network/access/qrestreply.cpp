@@ -173,7 +173,7 @@ QString QRestReply::readText()
 
     if (!d->decoder) {
         const QByteArray charset = QRestReplyPrivate::contentCharset(wrapped);
-        d->decoder = QStringDecoder(charset);
+        d->decoder.emplace(charset);
         if (!d->decoder->isValid()) { // the decoder may not support the mimetype's charset
             qCWarning(lcQrest, "readText(): Charset \"%s\" is not supported", charset.constData());
             return result;
