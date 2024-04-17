@@ -60,8 +60,12 @@ public:
     bool isSequential() const override;
     bool remove() override;
     bool copy(const QString &newName) override;
-    bool rename(const QString &newName) override;
-    bool renameOverwrite(const QString &newName) override;
+
+    bool rename(const QString &newName) override
+    { return rename_helper(newName, Rename); }
+    bool renameOverwrite(const QString &newName) override
+    { return rename_helper(newName, RenameOverwrite); }
+
     bool link(const QString &newName) override;
     bool mkdir(const QString &dirName, bool createParentDirectories,
                std::optional<QFile::Permissions> permissions) const override;
@@ -110,6 +114,10 @@ public:
 
 protected:
     QFSFileEngine(QFSFileEnginePrivate &dd);
+
+private:
+    enum RenameMode : int { Rename, RenameOverwrite };
+    bool rename_helper(const QString &newName, RenameMode mode);
 };
 
 class Q_AUTOTEST_EXPORT QFSFileEnginePrivate : public QAbstractFileEnginePrivate

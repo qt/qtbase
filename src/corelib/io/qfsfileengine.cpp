@@ -990,26 +990,14 @@ bool QFSFileEngine::remove()
     return ret;
 }
 
-/*!
-  \reimp
-*/
-bool QFSFileEngine::rename(const QString &newName)
+bool QFSFileEngine::rename_helper(const QString &newName, RenameMode mode)
 {
     Q_D(QFSFileEngine);
+
+    auto func = mode == Rename ? QFileSystemEngine::renameFile
+                               : QFileSystemEngine::renameOverwriteFile;
     QSystemError error;
-    bool ret = QFileSystemEngine::renameFile(d->fileEntry, QFileSystemEntry(newName), error);
-    if (!ret)
-        setError(QFile::RenameError, error.toString());
-    return ret;
-}
-/*!
-  \reimp
-*/
-bool QFSFileEngine::renameOverwrite(const QString &newName)
-{
-    Q_D(QFSFileEngine);
-    QSystemError error;
-    bool ret = QFileSystemEngine::renameOverwriteFile(d->fileEntry, QFileSystemEntry(newName), error);
+    const bool ret = func(d->fileEntry, QFileSystemEntry(newName), error);
     if (!ret)
         setError(QFile::RenameError, error.toString());
     return ret;
