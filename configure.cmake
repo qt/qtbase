@@ -1018,6 +1018,11 @@ qt_feature("qreal"
 )
 qt_feature_definition("qreal" "QT_COORD_TYPE" VALUE "${QT_COORD_TYPE}")
 qt_feature_definition("qreal" "QT_COORD_TYPE_STRING" VALUE "\"${QT_COORD_TYPE}\"")
+if(QT_COORD_TYPE STREQUAL "double")
+    qt_feature_definition("qreal" "QT_COORD_TYPE_IS_DOUBLE" VALUE "1")
+elseif(QT_COORD_TYPE STREQUAL "float")
+    qt_feature_definition("qreal" "QT_COORD_TYPE_IS_FLOAT" VALUE "1")
+endif()
 qt_feature("gui" PRIVATE
     LABEL "Qt Gui"
 )
