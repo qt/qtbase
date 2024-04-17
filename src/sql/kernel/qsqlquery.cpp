@@ -7,6 +7,7 @@
 
 #include "qatomic.h"
 #include "qdebug.h"
+#include "qloggingcategory.h"
 #include "qsqlrecord.h"
 #include "qsqlresult.h"
 #include "qsqldriver.h"
@@ -18,6 +19,8 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+static Q_LOGGING_CATEGORY(lcSqlQuery, "qt.sql.qsqlquery")
 
 class QSqlQueryPrivate
 {
@@ -346,7 +349,7 @@ bool QSqlQuery::isNull(QStringView name) const
     qsizetype index = d->sqlResult->record().indexOf(name);
     if (index > -1)
         return isNull(index);
-    qWarning("QSqlQuery::isNull: unknown field name '%s'", qPrintable(name.toString()));
+    qCWarning(lcSqlQuery, "QSqlQuery::isNull: unknown field name '%ls'", qUtf16Printable(name.toString()));
     return true;
 }
 
@@ -382,7 +385,7 @@ bool QSqlQuery::exec(const QString& query)
     t.start();
 #endif
     if (!driver()) {
-        qWarning("QSqlQuery::exec: called before driver has been set up");
+        qCWarning(lcSqlQuery, "QSqlQuery::exec: called before driver has been set up");
         return false;
     }
     if (d->ref.loadRelaxed() != 1) {
@@ -399,19 +402,20 @@ bool QSqlQuery::exec(const QString& query)
     }
     d->sqlResult->setQuery(query.trimmed());
     if (!driver()->isOpen() || driver()->isOpenError()) {
-        qWarning("QSqlQuery::exec: database not open");
+        qCWarning(lcSqlQuery, "QSqlQuery::exec: database not open");
         return false;
     }
     if (query.isEmpty()) {
-        qWarning("QSqlQuery::exec: empty query");
+        qCWarning(lcSqlQuery, "QSqlQuery::exec: empty query");
         return false;
     }
 
     bool retval = d->sqlResult->reset(query);
 #ifdef QT_DEBUG_SQL
-    qDebug().nospace() << "Executed query (" << t.elapsed() << "ms, " << d->sqlResult->size()
-                       << " results, " << d->sqlResult->numRowsAffected()
-                       << " affected): " << d->sqlResult->lastQuery();
+    qCDebug(lcSqlQuery()).nospace() << "Executed query (" << t.elapsed() << "ms, "
+                                    << d->sqlResult->size()
+                                    << " results, " << d->sqlResult->numRowsAffected()
+                                    << " affected): " << d->sqlResult->lastQuery();
 #endif
     return retval;
 }
@@ -439,7 +443,7 @@ QVariant QSqlQuery::value(int index) const
 {
     if (isActive() && isValid() && (index > -1))
         return d->sqlResult->data(index);
-    qWarning("QSqlQuery::value: not positioned on a valid record");
+    qCWarning(lcSqlQuery, "QSqlQuery::value: not positioned on a valid record");
     return QVariant();
 }
 
@@ -464,7 +468,7 @@ QVariant QSqlQuery::value(QStringView name) const
     qsizetype index = d->sqlResult->record().indexOf(name);
     if (index > -1)
         return value(index);
-    qWarning("QSqlQuery::value: unknown field name '%s'", qPrintable(name.toString()));
+    qCWarning(lcSqlQuery, "QSqlQuery::value: unknown field name '%ls'", qUtf16Printable(name.toString()));
     return QVariant();
 }
 
@@ -610,7 +614,7 @@ bool QSqlQuery::seek(int index, bool relative)
     }
     // let drivers optimize
     if (isForwardOnly() && actualIdx < at()) {
-        qWarning("QSqlQuery::seek: cannot seek backwards in a forward only query");
+        qCWarning(lcSqlQuery, "QSqlQuery::seek: cannot seek backwards in a forward only query");
         return false;
     }
     if (actualIdx == (at() + 1) && at() != QSql::BeforeFirstRow) {
@@ -716,7 +720,7 @@ bool QSqlQuery::previous()
     if (!isSelect() || !isActive())
         return false;
     if (isForwardOnly()) {
-        qWarning("QSqlQuery::seek: cannot seek backwards in a forward only query");
+        qCWarning(lcSqlQuery, "QSqlQuery::seek: cannot seek backwards in a forward only query");
         return false;
     }
 
@@ -749,7 +753,7 @@ bool QSqlQuery::first()
     if (!isSelect() || !isActive())
         return false;
     if (isForwardOnly() && at() > QSql::BeforeFirstRow) {
-        qWarning("QSqlQuery::seek: cannot seek backwards in a forward only query");
+        qCWarning(lcSqlQuery, "QSqlQuery::seek: cannot seek backwards in a forward only query");
         return false;
     }
     return d->sqlResult->fetchFirst();
@@ -996,19 +1000,19 @@ bool QSqlQuery::prepare(const QString& query)
         d->sqlResult->setNumericalPrecisionPolicy(d->sqlResult->numericalPrecisionPolicy());
     }
     if (!driver()) {
-        qWarning("QSqlQuery::prepare: no driver");
+        qCWarning(lcSqlQuery, "QSqlQuery::prepare: no driver");
         return false;
     }
     if (!driver()->isOpen() || driver()->isOpenError()) {
-        qWarning("QSqlQuery::prepare: database not open");
+        qCWarning(lcSqlQuery, "QSqlQuery::prepare: database not open");
         return false;
     }
     if (query.isEmpty()) {
-        qWarning("QSqlQuery::prepare: empty query");
+        qCWarning(lcSqlQuery, "QSqlQuery::prepare: empty query");
         return false;
     }
 #ifdef QT_DEBUG_SQL
-    qDebug("\n QSqlQuery::prepare: %s", query.toLocal8Bit().constData());
+    qCDebug(lcSqlQuery, "\n QSqlQuery::prepare: %ls", qUtf16Printable(query));
 #endif
     return d->sqlResult->savePrepare(query);
 }
@@ -1035,9 +1039,9 @@ bool QSqlQuery::exec()
 
     bool retval = d->sqlResult->exec();
 #ifdef QT_DEBUG_SQL
-    qDebug().nospace() << "Executed prepared query (" << t.elapsed() << "ms, "
-                       << d->sqlResult->size() << " results, " << d->sqlResult->numRowsAffected()
-                       << " affected): " << d->sqlResult->lastQuery();
+    qCDebug(lcSqlQuery).nospace() << "Executed prepared query (" << t.elapsed() << "ms, "
+                                  << d->sqlResult->size() << " results, " << d->sqlResult->numRowsAffected()
+                                  << " affected): " << d->sqlResult->lastQuery();
 #endif
     return retval;
 }
