@@ -1172,9 +1172,10 @@ static void copyPhysicalMetadata(QImageData *dst, const QImageData *src)
 
 static void copyMetadata(QImageData *dst, const QImageData *src)
 {
-    // Doesn't copy colortable and alpha_clut, or offset.
+    // Doesn't copy colortable and alpha_clut.
     copyPhysicalMetadata(dst, src);
     dst->text = src->text;
+    dst->offset = src->offset;
     dst->colorSpace = src->colorSpace;
 }
 
@@ -1239,7 +1240,6 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::copy(const QRect& r) const
         } else
             memcpy(image.bits(), bits(), d->nbytes);
         image.d->colortable = d->colortable;
-        image.d->offset = d->offset;
         image.d->has_alpha_clut = d->has_alpha_clut;
         copyMetadata(image.d, d);
         return image;
@@ -1328,7 +1328,6 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::copy(const QRect& r) const
     }
 
     copyMetadata(image.d, d);
-    image.d->offset = offset();
     image.d->has_alpha_clut = d->has_alpha_clut;
     return image;
 }
@@ -2228,7 +2227,6 @@ QImage QImage::convertToFormat_helper(Format format, Qt::ImageConversionFlags fl
 
         QIMAGE_SANITYCHECK_MEMORY(image);
 
-        image.d->offset = offset();
         copyMetadata(image.d, d);
 
         converter(image.d, d, flags);
