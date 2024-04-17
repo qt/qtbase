@@ -23,7 +23,8 @@
  * - fontDpi: number
  *      Specifies font DPI for the instance
  * - onLoaded: () => void
- *      Called when the module has loaded.
+ *      Called when the module has loaded, at the point in time where any loading placeholder
+ *      should be hidden and the application window should be shown.
  * - entryFunction: (emscriptenConfig: object) => Promise<EmscriptenModule>
  *      Qt always uses emscripten's MODULARIZE option. This is the MODULARIZE entry function.
  * - module: Promise<WebAssembly.Module>
@@ -172,9 +173,14 @@ async function qtLoad(config)
         config.preRun = [];
     config.preRun.push(qtPreRun);
 
+    const originalOnRuntimeInitialized = config.onRuntimeInitialized;
+    config.onRuntimeInitialized = () => {
+        originalOnRuntimeInitialized?.();
+        config.qt.onLoaded?.();
+    }
+
     const originalLocateFile = config.locateFile;
-    config.locateFile = filename =>
-    {
+    config.locateFile = filename => {
         const originalLocatedFilename = originalLocateFile ? originalLocateFile(filename) : filename;
         if (originalLocatedFilename.startsWith('libQt6'))
             return `${config.qt.qtdir}/lib/${originalLocatedFilename}`;

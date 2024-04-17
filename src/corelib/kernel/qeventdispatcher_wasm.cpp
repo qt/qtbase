@@ -938,10 +938,11 @@ void QEventDispatcherWasm::callOnLoadedIfRequired()
 
 void QEventDispatcherWasm::onLoaded()
 {
-    emscripten::val qt = emscripten::val::module_property("qt");
-    if (qt.isUndefined())
-        return;
-    qt.call<void>("onLoaded");
+    // TODO: call qtloader.js onLoaded from here, in order to delay
+    // hiding the "Loading..." message until the app is ready to paint
+    // the first frame. Currently onLoaded must be called early before
+    // main() in order to ensure that the screen/container elements
+    // have valid geometry at startup.
 }
 
 namespace {
