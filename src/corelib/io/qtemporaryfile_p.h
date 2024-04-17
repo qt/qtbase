@@ -88,8 +88,7 @@ public:
         if (filePathIsTemplate) {
             d->fileEntry.clear();
         } else {
-            d->fileEntry = QFileSystemEntry(file);
-            QFSFileEngine::setFileName(file);
+            QFSFileEngine::setFileEntry(QFileSystemEntry(file));
         }
     }
     ~QTemporaryFileEngine();
