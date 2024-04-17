@@ -808,7 +808,24 @@ QSizeF QSizeF::scaled(const QSizeF &s, Qt::AspectRatioMode mode) const noexcept
     \sa expandedTo(), scale()
 */
 
+/*!
+    \fn bool QSizeF::qFuzzyCompare(const QSizeF &lhs, const QSizeF &rhs)
+    \since 6.8
 
+    Returns \c true if the size \a lhs is approximately equal to the
+    size \a rhs; otherwise returns \c false.
+
+    The sizes are considered approximately equal if their width and
+    height are approximately equal.
+*/
+
+/*!
+    \fn bool QSizeF::qFuzzyIsNull(const QSizeF &size)
+    \since 6.8
+
+    Returns \c true if both width and height of the size \a size
+    are approximately equal to zero.
+*/
 
 /*****************************************************************************
   QSizeF stream functions

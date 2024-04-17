@@ -39,8 +39,14 @@ private slots:
     void compare_data();
     void compare();
 
+    void fuzzyCompare_data();
+    void fuzzyCompare();
+
     void isNull_data();
     void isNull();
+
+    void fuzzyIsNull_data();
+    void fuzzyIsNull();
 
     void scale();
 
@@ -100,6 +106,20 @@ void tst_QSizeF::compare()
     QT_TEST_EQUALITY_OPS(lhs, rhsFixed, mixedResult);
 }
 
+void tst_QSizeF::fuzzyCompare_data()
+{
+    compare_data();
+}
+
+void tst_QSizeF::fuzzyCompare()
+{
+    QFETCH(QSizeF, lhs);
+    QFETCH(QSizeF, rhs);
+    QFETCH(bool, result);
+
+    QCOMPARE_EQ(qFuzzyCompare(lhs, rhs), result);
+}
+
 void tst_QSizeF::isNull_data()
 {
     QTest::addColumn<qreal>("width");
@@ -114,6 +134,7 @@ void tst_QSizeF::isNull_data()
     QTest::newRow("0, -0.1") << qreal(0) << qreal(-0.1) << false;
     QTest::newRow("0.1, 0") << qreal(0.1) << qreal(0) << false;
     QTest::newRow("0, 0.1") << qreal(0) << qreal(0.1) << false;
+    QTest::newRow("qreal_min, -qreal_min") << qreal_min << -qreal_min << false;
 }
 
 void tst_QSizeF::isNull()
@@ -126,6 +147,33 @@ void tst_QSizeF::isNull()
     QCOMPARE(size.width(), width);
     QCOMPARE(size.height(), height);
     QCOMPARE(size.isNull(), isNull);
+}
+
+void tst_QSizeF::fuzzyIsNull_data()
+{
+    QTest::addColumn<qreal>("width");
+    QTest::addColumn<qreal>("height");
+    QTest::addColumn<bool>("fuzzyNull");
+
+    QTest::newRow("0, 0") << qreal(0.0) << qreal(0.0) << true;
+    QTest::newRow("-0, -0") << qreal(-0.0) << qreal(-0.0) << true;
+    QTest::newRow("0, -0") << qreal(0) << qreal(-0.0) << true;
+    QTest::newRow("-0, 0") << qreal(-0.0) << qreal(0) << true;
+    QTest::newRow("-0.1, 0") << qreal(-0.1) << qreal(0) << false;
+    QTest::newRow("0, -0.1") << qreal(0) << qreal(-0.1) << false;
+    QTest::newRow("0.1, 0") << qreal(0.1) << qreal(0) << false;
+    QTest::newRow("0, 0.1") << qreal(0) << qreal(0.1) << false;
+    QTest::newRow("qreal_min, -qreal_min") << qreal_min << -qreal_min << true;
+}
+
+void tst_QSizeF::fuzzyIsNull()
+{
+    QFETCH(qreal, width);
+    QFETCH(qreal, height);
+    QFETCH(bool, fuzzyNull);
+
+    QSizeF size(width, height);
+    QCOMPARE(qFuzzyIsNull(size), fuzzyNull);
 }
 
 void tst_QSizeF::scale() {

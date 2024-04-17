@@ -2976,11 +2976,6 @@ static QSizeF wfh(Qt::SizeHint /*which*/, const QSizeF &constraint)
     return result;
 }
 
-bool qFuzzyCompare(const QSizeF &a, const QSizeF &b)
-{
-    return qFuzzyCompare(a.width(), b.width()) && qFuzzyCompare(a.height(), b.height());
-}
-
 void tst_QGraphicsGridLayout::heightForWidth()
 {
     QGraphicsWidget *widget = new QGraphicsWidget;
