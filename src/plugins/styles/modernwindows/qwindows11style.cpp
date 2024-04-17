@@ -9,6 +9,7 @@
 #include <qstyleoption.h>
 #include <qpainter.h>
 #include <QGraphicsDropShadowEffect>
+#include <QLatin1StringView>
 #include <QtWidgets/qcombobox.h>
 #include <QtWidgets/qcommandlinkbutton.h>
 #include <QtWidgets/qgraphicsview.h>
@@ -27,6 +28,7 @@ QT_BEGIN_NAMESPACE
 
 const static int topLevelRoundingRadius    = 8; //Radius for toplevel items like popups for round corners
 const static int secondLevelRoundingRadius = 4; //Radius for second level items like hovered menu item round corners
+constexpr QLatin1StringView originalWidthProperty("_q_windows11_style_original_width");
 
 enum WINUI3Color {
     subtleHighlightColor,             //Subtle highlight based on alpha used for hovered elements
@@ -2046,6 +2048,13 @@ void QWindows11Style::polish(QWidget* widget)
             QLineEdit *le = cb->lineEdit();
             le->setFrame(false);
         }
+    } else if (widget->inherits("QAbstractSpinBox")) {
+        const int minWidth = 2 * 24 + 40;
+        const int originalWidth = widget->size().width();
+        if (originalWidth < minWidth) {
+            widget->resize(minWidth, widget->size().height());
+            widget->setProperty(originalWidthProperty.constData(), originalWidth);
+        }
     } else if (widget->inherits("QAbstractButton") || widget->inherits("QToolButton")) {
         widget->setAutoFillBackground(false);
     } else if (qobject_cast<QGraphicsView *>(widget) && !qobject_cast<QTextEdit *>(widget)) {
@@ -2084,6 +2093,13 @@ void QWindows11Style::unpolish(QWidget *widget)
         const QPalette pal = scrollarea->viewport()->property("_q_original_background_palette").value<QPalette>();
         scrollarea->viewport()->setPalette(pal);
         scrollarea->viewport()->setProperty("_q_original_background_palette", QVariant());
+    }
+    if (widget->inherits("QAbstractSpinBox")) {
+        const QVariant originalWidth = widget->property(originalWidthProperty.constData());
+        if (originalWidth.isValid()) {
+            widget->resize(originalWidth.toInt(), widget->size().height());
+            widget->setProperty(originalWidthProperty.constData(), QVariant());
+        }
     }
 }
 
