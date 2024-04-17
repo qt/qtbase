@@ -406,12 +406,13 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener {
         if (!QtClipboardManager.hasClipboardText(activity))
             editButtons &= ~EditContextView.PASTE_BUTTON;
 
-        if ((mode & CursorHandleShowEdit) == CursorHandleShowEdit && editButtons != 0) {
-            m_editPopupMenu.setPosition(editX, editY, editButtons,
-                    m_cursorHandle, m_leftSelectionHandle, m_rightSelectionHandle);
-        } else {
-            if (m_editPopupMenu != null)
+        if (m_editPopupMenu != null) {
+            if ((mode & CursorHandleShowEdit) == CursorHandleShowEdit && editButtons != 0) {
+                m_editPopupMenu.setPosition(editX, editY, editButtons,
+                        m_cursorHandle, m_leftSelectionHandle, m_rightSelectionHandle);
+            } else {
                 m_editPopupMenu.hide();
+            }
         }
     }
 
