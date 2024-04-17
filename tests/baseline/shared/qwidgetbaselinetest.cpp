@@ -80,6 +80,7 @@ void QWidgetBaselineTest::init()
     background = new QWidget(nullptr, Qt::FramelessWindowHint);
     window = new QWidget(background, Qt::Window);
     window->setWindowTitle(QTest::currentDataTag());
+    window->setFocusPolicy(Qt::StrongFocus);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     background->setScreen(QGuiApplication::primaryScreen());
     window->setScreen(QGuiApplication::primaryScreen());
@@ -106,9 +107,9 @@ void QWidgetBaselineTest::makeVisible()
     window->show();
     QApplicationPrivate::setActiveWindow(window);
     QVERIFY(QTest::qWaitForWindowActive(window));
-    // explicitly unset focus, the test needs to control when focus is shown
-    if (window->focusWidget())
-        window->focusWidget()->clearFocus();
+    // explicitly set focus on the window so that the test widget doesn't have it
+    window->setFocus(Qt::OtherFocusReason);
+    QTRY_COMPARE(window->focusWidget(), window);
 }
 
 /*
@@ -146,23 +147,25 @@ QImage QWidgetBaselineTest::takeScreenSnapshot(const QRect& windowRect)
 void QWidgetBaselineTest::takeStandardSnapshots()
 {
     makeVisible();
-    struct PublicWidget : QWidget {
-        bool focusNextPrevChild(bool next) override { return QWidget::focusNextPrevChild(next); }
-    };
 
+    QWidget *oldFocusWidget = testWindow()->focusWidget();
+    QCOMPARE(oldFocusWidget, testWindow());
     QBASELINE_CHECK_DEFERRED(takeSnapshot(), "default");
 
     // try hard to set focus
-    static_cast<PublicWidget*>(window)->focusNextPrevChild(true);
-    if (!window->focusWidget()) {
-        QWidget *firstChild = window->findChild<QWidget*>();
-        if (firstChild)
-            firstChild->setFocus();
-    }
+    QWidget *testWidget = window->nextInFocusChain();
+    if (!testWidget)
+        testWidget = window->findChild<QWidget*>();
+    QVERIFY(testWidget);
+    // use TabFocusReason, some widgets handle that specifically to e.g. select
+    testWidget->setFocus(Qt::TabFocusReason);
 
-    if (testWindow()->focusWidget()) {
+    if (testWindow()->focusWidget() != oldFocusWidget) {
         QBASELINE_CHECK_DEFERRED(takeSnapshot(), "focused");
-        testWindow()->focusWidget()->clearFocus();
+        // set focus back
+        oldFocusWidget->setFocus(Qt::OtherFocusReason);
+    } else {
+        qWarning() << "Couldn't set focus on tested widget" << testWidget;
     }
 
     // this disables all children
