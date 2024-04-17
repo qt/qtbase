@@ -143,9 +143,19 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
 
     void setView(QtView view) {
         m_view = view;
+        updateInputDelegate();
         if (m_view != null)
             registerGlobalFocusChangeListener(m_view);
     }
+
+    private void updateInputDelegate() {
+        if (m_view == null) {
+            m_inputDelegate.setEditPopupMenu(null);
+            return;
+        }
+        m_inputDelegate.setEditPopupMenu(new EditPopupMenu(m_activity, m_view));
+    }
+
 
     public void setRootWindowRef(long ref) {
         m_rootWindowRef = ref;
