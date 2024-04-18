@@ -28,7 +28,7 @@ class NativeWindow
 public:
 #if defined(Q_OS_MACOS)
     using Handle = NSView*;
-#elif defined(Q_OS_IOS)
+#elif defined(QT_PLATFORM_UIKIT)
     using Handle = UIView*;
 #elif defined(Q_OS_WIN)
     using Handle = HWND;
@@ -53,7 +53,7 @@ private:
     Handle m_handle = {};
 };
 
-#if QT_CONFIG(metal)
+#if defined(Q_OS_MACOS) || defined(QT_PLATFORM_UIKIT)
 
 @interface View : VIEW_BASE
 @end
