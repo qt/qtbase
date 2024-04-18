@@ -31,10 +31,6 @@ QUrl HttpTestServer::url()
     return QUrl(u"http://127.0.0.1:%1"_s.arg(serverPort()));
 }
 
-void HttpTestServer::setHandler(const Handler &handler) {
-    m_handler = handler;
-}
-
 void HttpTestServer::handleConnected()
 {
     Q_ASSERT(!m_socket); // No socket must exist previously, this is a single-connection server

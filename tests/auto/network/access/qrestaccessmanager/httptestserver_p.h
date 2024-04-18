@@ -9,6 +9,8 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qurl.h>
 
+#include <functional>
+
 // This struct is used for parsing the incoming network request data into, as well
 // as getting the response data from the testcase
 struct HttpData {
@@ -72,7 +74,7 @@ public:
     // Settable callback for testcase. Gives the received request data, and takes in response data
     using Handler = std::function<void(const HttpData &request, HttpData &response,
                                        ResponseControl &control)>;
-    void setHandler(const Handler &handler);
+    void setHandler(Handler handler) { m_handler = std::move(handler); }
 
 private slots:
     void handleConnected();
