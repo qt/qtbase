@@ -9,6 +9,14 @@
 #include <qstyleoption.h>
 #include <qpainter.h>
 #include <QGraphicsDropShadowEffect>
+#include <QtWidgets/qcombobox.h>
+#include <QtWidgets/qcommandlinkbutton.h>
+#include <QtWidgets/qgraphicsview.h>
+#include <QtWidgets/qlistview.h>
+#include <QtWidgets/qmenu.h>
+#include <QtWidgets/qmdiarea.h>
+#include <QtWidgets/qtextedit.h>
+#include <QtWidgets/qtreeview.h>
 
 #include "qdrawutil.h"
 #include <chrono>
@@ -938,7 +946,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
             painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][frameColorLight]));
             painter->drawRoundedRect(rect.marginsRemoved(QMarginsF(0.5,0.5,0.5,0.5)), secondLevelRoundingRadius, secondLevelRoundingRadius);
 
-            if (widget && widget->inherits("QTextEdit")) {
+            if (qobject_cast<const QTextEdit *>(widget)) {
                 QRegion clipRegion = option->rect;
                 QColor lineColor = state & State_HasFocus ? option->palette.accent().color() : QColor(0,0,0,255);
                 painter->setPen(QPen(lineColor));
@@ -953,7 +961,7 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
                 painter->setBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
                 painter->setPen(Qt::NoPen);
                 painter->drawRoundedRect(vopt->rect.marginsRemoved(QMargins(0,2,-2,2)),2,2);
-                int offset = (widget && widget->inherits("QTreeView")) ? 2 : 0;
+                const int offset = qobject_cast<const QTreeView *>(widget) ? 2 : 0;
                 if (vopt->viewItemPosition == QStyleOptionViewItem::Beginning && option->state & State_Selected) {
                     painter->setPen(QPen(option->palette.accent().color()));
                     painter->drawLine(option->rect.x(),option->rect.y()+offset,option->rect.x(),option->rect.y() + option->rect.height()-2);
@@ -1594,7 +1602,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
     }
     case QStyle::CE_ItemViewItem: {
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
-                if (const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget)) {
+            if (const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget)) {
                 QRect checkRect = proxy()->subElementRect(SE_ItemViewItemCheckIndicator, vopt, widget);
                 QRect iconRect = proxy()->subElementRect(SE_ItemViewItemDecoration, vopt, widget);
                 QRect textRect = proxy()->subElementRect(SE_ItemViewItemText, vopt, widget);
@@ -1617,7 +1625,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 }
                 painter->setPen(QPen(option->palette.buttonText().color()));
 
-                bool isTreeView = widget && widget->inherits("QTreeView");
+                const bool isTreeView = qobject_cast<const QTreeView *>(widget);
 
                 if ((vopt->state & State_Selected || vopt->state & State_MouseOver) && !(isTreeView && vopt->state & State_MouseOver) && vopt->showDecorationSelected) {
                     painter->setBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
@@ -1676,11 +1684,17 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 painter->setPen(QPen(option->palette.buttonText().color()));
                 if (!view->isPersistentEditorOpen(vopt->index))
                     d->viewItemDrawText(painter, vopt, textRect);
-                if (vopt->state & State_Selected && (vopt->viewItemPosition == QStyleOptionViewItem::Beginning || vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne || vopt->viewItemPosition == QStyleOptionViewItem::Invalid)) {
-                    if (widget && widget->inherits("QListView") && qobject_cast<const QListView*>(widget)->viewMode() != QListView::IconMode) {
+                if (vopt->state & State_Selected
+                 && (vopt->viewItemPosition == QStyleOptionViewItem::Beginning
+                  || vopt->viewItemPosition == QStyleOptionViewItem::OnlyOne
+                  || vopt->viewItemPosition == QStyleOptionViewItem::Invalid)) {
+                    if (const QListView *lv = qobject_cast<const QListView *>(widget);
+                        lv && lv->viewMode() != QListView::IconMode) {
                         painter->setPen(QPen(vopt->palette.accent().color()));
-                        painter->drawLine(option->rect.x(),option->rect.y()+2,option->rect.x(),option->rect.y() + option->rect.height()-2);
-                        painter->drawLine(option->rect.x()+1,option->rect.y()+2,option->rect.x()+1,option->rect.y() + option->rect.height()-2);
+                        painter->drawLine(option->rect.x(), option->rect.y() + 2,
+                                          option->rect.x(),option->rect.y() + option->rect.height() - 2);
+                        painter->drawLine(option->rect.x() + 1, option->rect.y() + 2,
+                                          option->rect.x() + 1,option->rect.y() + option->rect.height() - 2);
                     }
                 }
             }
@@ -1718,9 +1732,9 @@ QRect QWindows11Style::subElementRect(QStyle::SubElement element, const QStyleOp
     case QStyle::SE_ItemViewItemText:
         if (const auto *item = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
             const int decorationOffset = item->features.testFlag(QStyleOptionViewItem::HasDecoration) ? item->decorationSize.width() : 0;
-            if (widget && widget->parentWidget() &&
-                widget->parentWidget()->inherits("QComboBoxPrivateContainer")) {
-                    ret = option->rect.adjusted(decorationOffset + 5, 0, -5, 0);
+            if (widget && widget->parentWidget()
+             && widget->parentWidget()->inherits("QComboBoxPrivateContainer")) {
+                ret = option->rect.adjusted(decorationOffset + 5, 0, -5, 0);
             } else {
                 ret = QWindowsVistaStyle::subElementRect(element, option, widget);
             }
@@ -1975,7 +1989,8 @@ int QWindows11Style::pixelMetric(PixelMetric metric, const QStyleOption *option,
 void QWindows11Style::polish(QWidget* widget)
 {
     QWindowsVistaStyle::polish(widget);
-    if (widget->inherits("QScrollBar") || widget->inherits("QComboBoxPrivateContainer") || widget->inherits("QMenu")) {
+    const bool isScrollBar = qobject_cast<QScrollBar *>(widget);
+    if (isScrollBar || qobject_cast<QMenu *>(widget) || widget->inherits("QComboBoxPrivateContainer")) {
         bool wasCreated = widget->testAttribute(Qt::WA_WState_Created);
         bool layoutDirection = widget->testAttribute(Qt::WA_RightToLeft);
         widget->setAttribute(Qt::WA_OpaquePaintEvent,false);
@@ -1987,37 +2002,30 @@ void QWindows11Style::polish(QWidget* widget)
         auto pal = widget->palette();
         pal.setColor(widget->backgroundRole(), Qt::transparent);
         widget->setPalette(pal);
-    }
-    if (widget->inherits("QComboBoxPrivateContainer") || widget->inherits("QMenu")) {
-        QGraphicsDropShadowEffect* dropshadow = new QGraphicsDropShadowEffect(widget);
-        dropshadow->setBlurRadius(3);
-        dropshadow->setXOffset(3);
-        dropshadow->setYOffset(3);
-        widget->setGraphicsEffect(dropshadow);
-    }
-    if (widget->inherits("QComboBox")) {
-
-        QComboBox* cb = qobject_cast<QComboBox*>(widget);
+        if (!isScrollBar) { // for menus and combobox containers...
+            QGraphicsDropShadowEffect* dropshadow = new QGraphicsDropShadowEffect(widget);
+            dropshadow->setBlurRadius(3);
+            dropshadow->setXOffset(3);
+            dropshadow->setYOffset(3);
+            widget->setGraphicsEffect(dropshadow);
+        }
+    } else if (QComboBox* cb = qobject_cast<QComboBox*>(widget)) {
         if (cb->isEditable()) {
             QLineEdit *le = cb->lineEdit();
             le->setFrame(false);
         }
-    }
-    if (widget->inherits("QGraphicsView") && !widget->inherits("QTextEdit")) {
+    } else if (qobject_cast<QGraphicsView *>(widget) && !qobject_cast<QTextEdit *>(widget)) {
         QPalette pal = widget->palette();
         pal.setColor(QPalette::Base, pal.window().color());
         widget->setPalette(pal);
-    }
-    else if (widget->inherits("QAbstractScrollArea") && !widget->inherits("QMdiArea")) {
-        if (const auto *scrollarea = qobject_cast<QAbstractScrollArea *>(widget)) {
-            QPalette pal = widget->palette();
-            QColor backgroundColor = widget->palette().base().color();
-            backgroundColor.setAlpha(255);
-            pal.setColor(scrollarea->viewport()->backgroundRole(), backgroundColor);
-            scrollarea->viewport()->setPalette(pal);
-        }
-    }
-    if (widget->inherits("QCommandLinkButton")) {
+    } else if (const auto *scrollarea = qobject_cast<QAbstractScrollArea *>(widget);
+               scrollarea && !qobject_cast<QMdiArea *>(widget)) {
+        QPalette pal = widget->palette();
+        QColor backgroundColor = widget->palette().base().color();
+        backgroundColor.setAlpha(255);
+        pal.setColor(scrollarea->viewport()->backgroundRole(), backgroundColor);
+        scrollarea->viewport()->setPalette(pal);
+    } else if (qobject_cast<QCommandLinkButton *>(widget)) {
         widget->setProperty("_qt_usingVistaStyle",false);
         QPalette pal = widget->palette();
         pal.setColor(QPalette::ButtonText, pal.text().color());
