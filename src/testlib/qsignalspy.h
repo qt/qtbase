@@ -65,20 +65,14 @@ private:
     explicit QSignalSpy(ObjectSignal os)
         : args(os.obj ? makeArgs(os.sig, os.obj) : QList<int>{})
     {
-        if (!os.obj)
-            return;
-
-        if (!connectToSignal(os.obj, os.sig.methodIndex()))
-            return;
-
-        sig = os.sig.methodSignature();
+        init(os);
     }
-
+    Q_TESTLIB_EXPORT void init(ObjectSignal os);
 
     Q_TESTLIB_EXPORT static ObjectSignal verify(const QObject *obj, QMetaMethod signal);
     Q_TESTLIB_EXPORT static ObjectSignal verify(const QObject *obj, const char *aSignal);
 
-    Q_TESTLIB_EXPORT bool connectToSignal(const QObject *sender, int sigIndex);
+    bool connectToSignal(const QObject *sender, int sigIndex);
 
     Q_TESTLIB_EXPORT static QList<int> makeArgs(const QMetaMethod &member, const QObject *obj);
     Q_TESTLIB_EXPORT void appendArgs(void **a);

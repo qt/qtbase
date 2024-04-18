@@ -244,6 +244,17 @@ QList<int> QSignalSpy::makeArgs(const QMetaMethod &member, const QObject *obj)
     return result;
 }
 
+void QSignalSpy::init(ObjectSignal os)
+{
+    if (!os.obj)
+        return;
+
+    if (!connectToSignal(os.obj, os.sig.methodIndex()))
+        return;
+
+    sig = os.sig.methodSignature();
+}
+
 bool QSignalSpy::connectToSignal(const QObject *sender, int sigIndex)
 {
     static const int memberOffset = QObject::staticMetaObject.methodCount();
