@@ -14,6 +14,8 @@ QT_BEGIN_NAMESPACE
 
     \ingroup objectmodel
 
+    \compares equality
+
     The class provides a number of primitive container operations, using void*
     as operands. This way, you can manipulate a generic container retrieved from
     a Variant without knowing its type.
@@ -790,21 +792,19 @@ void QMetaSequence::valueAtConstIterator(const void *iterator, void *result) con
 }
 
 /*!
-    \fn bool operator==(QMetaSequence a, QMetaSequence b)
+    \fn bool QMetaSequence::operator==(const QMetaSequence &lhs, const QMetaSequence &rhs)
     \since 6.0
-    \relates QMetaSequence
 
-    Returns \c true if the QMetaSequence \a a represents the same container type
-    as the QMetaSequence \a b, otherwise returns \c false.
+    Returns \c true if the QMetaSequence \a lhs represents the same container type
+    as the QMetaSequence \a rhs, otherwise returns \c false.
 */
 
 /*!
-    \fn bool operator!=(QMetaSequence a, QMetaSequence b)
+    \fn bool QMetaSequence::operator!=(const QMetaSequence &lhs, const QMetaSequence &rhs)
     \since 6.0
-    \relates QMetaSequence
 
-    Returns \c true if the QMetaSequence \a a represents a different container
-    type than the QMetaSequence \a b, otherwise returns \c false.
+    Returns \c true if the QMetaSequence \a lhs represents a different container
+    type than the QMetaSequence \a rhs, otherwise returns \c false.
 */
 
 

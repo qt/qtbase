@@ -16,4 +16,5 @@ qt_internal_add_test(tst_qmetacontainer
         tst_qmetacontainer.cpp
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
 )

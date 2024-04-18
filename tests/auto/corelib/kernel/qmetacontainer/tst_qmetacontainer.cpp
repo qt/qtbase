@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtTest/qtest.h>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QtCore/qcontainerinfo.h>
 #include <QtCore/qmetacontainer.h>
 #include <QtCore/QMap>
@@ -157,6 +158,7 @@ private:
 
 private slots:
     void init();
+    void compareCompiles();
     void testSequence_data();
     void testSequence();
 
@@ -201,6 +203,12 @@ void tst_QMetaContainer::init()
         { 393, QMetaAssociation::fromContainer<std::map<QString, int>>() },
         { 293, QMetaAssociation::fromContainer<std::unordered_map<int, QMetaAssociation>>() }
     };
+}
+
+void tst_QMetaContainer::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QMetaSequence>();
+    QTestPrivate::testEqualityOperatorsCompile<QMetaAssociation>();
 }
 
 void tst_QMetaContainer::cleanup()
@@ -501,6 +509,9 @@ void tst_QMetaContainer::testSequence()
     QVERIFY(metaSequence.iface() != nullptr);
     QMetaSequence defaultConstructed;
     QVERIFY(defaultConstructed.iface() == nullptr);
+    QT_TEST_EQUALITY_OPS(QMetaSequence(), defaultConstructed, true);
+    QT_TEST_EQUALITY_OPS(QMetaSequence(), QMetaSequence(), true);
+    QT_TEST_EQUALITY_OPS(defaultConstructed, metaSequence, false);
 }
 
 void tst_QMetaContainer::testAssociation_data()
@@ -728,8 +739,10 @@ void tst_QMetaContainer::testAssociation()
     metaAssociation.destroyConstIterator(constEnd);
 
     QVERIFY(metaAssociation.iface() != nullptr);
-    QMetaSequence defaultConstructed;
+    QMetaAssociation defaultConstructed;
     QVERIFY(defaultConstructed.iface() == nullptr);
+    QT_TEST_EQUALITY_OPS(QMetaAssociation(), QMetaAssociation(), true);
+    QT_TEST_EQUALITY_OPS(QMetaAssociation(), metaAssociation, false);
 }
 
 QTEST_MAIN(tst_QMetaContainer)
