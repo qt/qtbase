@@ -91,19 +91,23 @@ static QList<QHostAddress> systemNameservers()
         }
     }
 #else
-    QFile f("/etc/resolv.conf");
-    if (!f.open(QIODevice::ReadOnly))
-        return result;
+    auto parseFile = [&](QLatin1StringView path) {
+        QFile f(path);
+        if (!f.open(QIODevice::ReadOnly))
+            return;
 
-    while (!f.atEnd()) {
-        static const char command[] = "nameserver";
-        QByteArray line = f.readLine().simplified();
-        if (!line.startsWith(command))
-            continue;
+        while (!f.atEnd()) {
+            static const char command[] = "nameserver";
+            QByteArray line = f.readLine().simplified();
+            if (!line.startsWith(command))
+                continue;
 
-        QString addr = QLatin1StringView(line).mid(sizeof(command));
-        result.emplaceBack(addr);
-    }
+            QString addr = QLatin1StringView(line).mid(sizeof(command));
+            result.emplaceBack(addr);
+        }
+    };
+    parseFile("/etc/resolv.conf"_L1);
+    parseFile("/run/systemd/resolve/resolv.conf"_L1);
 #endif
 
     return result;
