@@ -38,6 +38,7 @@ class tst_QDnsLookup: public QObject
 
     std::unique_ptr<QDnsLookup> lookupCommon(QDnsLookup::Type type, const QString &domain,
                                              const QHostAddress &server = {}, quint16 port = 53);
+    QStringList formatReply(const QDnsLookup *lookup) const;
 public slots:
     void initTestCase();
 
@@ -245,6 +246,69 @@ tst_QDnsLookup::lookupCommon(QDnsLookup::Type type, const QString &domain,
     return lookup;
 }
 
+QStringList tst_QDnsLookup::formatReply(const QDnsLookup *lookup) const
+{
+    QStringList result;
+    QString domain = lookup->name();
+
+    auto shorter = [this](QString value) {
+        const QString &ending = usingIdnDomain ? idnDomain : normalDomain;
+        if (value.endsWith(ending))
+            value.chop(ending.size());
+        else
+            value += u'.';
+        return value;
+    };
+
+    for (const QDnsMailExchangeRecord &rr : lookup->mailExchangeRecords()) {
+        QString entry = u"MX %1 %2"_s.arg(rr.preference(), 5).arg(shorter(rr.exchange()));
+        if (rr.name() != domain)
+            entry = "MX unexpected label to "_L1 + rr.name();
+        result.append(std::move(entry));
+    }
+
+    for (const QDnsServiceRecord &rr : lookup->serviceRecords()) {
+        QString entry = u"SRV %1 %2 %3 %4"_s.arg(rr.priority(), 5).arg(rr.weight())
+                .arg(rr.port()).arg(shorter(rr.target()));
+        if (rr.name() != domain)
+            entry = "SRV unexpected label to "_L1 + rr.name();
+        result.append(std::move(entry));
+    }
+
+    auto addNameRecords = [&](QLatin1StringView rrtype, const QList<QDnsDomainNameRecord> &rrset) {
+        for (const QDnsDomainNameRecord &rr : rrset) {
+            QString entry = u"%1 %2"_s.arg(rrtype, shorter(rr.value()));
+            if (rr.name() != domain)
+                entry = rrtype + " unexpected label to "_L1 + rr.name();
+            result.append(std::move(entry));
+        }
+    };
+    addNameRecords("NS"_L1, lookup->nameServerRecords());
+    addNameRecords("PTR"_L1, lookup->pointerRecords());
+    addNameRecords("CNAME"_L1, lookup->canonicalNameRecords());
+
+    for (const QDnsHostAddressRecord &rr : lookup->hostAddressRecords()) {
+        if (rr.name() != domain)
+            continue;   // A and AAAA may appear as extra records in the answer section
+        QHostAddress addr = rr.value();
+        result.append(u"%1 %2"_s
+                      .arg(addr.protocol() == QHostAddress::IPv6Protocol ? "AAAA" : "A",
+                           addr.toString()));
+    }
+
+    for (const QDnsTextRecord &rr : lookup->textRecords()) {
+        QString entry = "TXT"_L1;
+        for (const QByteArray &data : rr.values()) {
+            entry += u' ';
+            entry += QDebug::toString(data);
+        }
+        result.append(std::move(entry));
+    }
+
+    result.sort();
+    return result;
+}
+
 void tst_QDnsLookup::lookupLocalhost()
 {
     QDnsLookup lookup(QDnsLookup::Type::A, u"localhost"_s);
@@ -308,205 +372,94 @@ void tst_QDnsLookup::lookupNxDomain()
 
 void tst_QDnsLookup::lookup_data()
 {
-    QTest::addColumn<int>("type");
+    QTest::addColumn<QDnsLookup::Type>("type");
     QTest::addColumn<QString>("domain");
-    QTest::addColumn<int>("error");
-    QTest::addColumn<QString>("cname");
-    QTest::addColumn<QString>("host");
-    QTest::addColumn<QString>("mx");
-    QTest::addColumn<QString>("ns");
-    QTest::addColumn<QString>("ptr");
-    QTest::addColumn<QString>("srv");
-    QTest::addColumn<QString>("txt");
+    QTest::addColumn<QString>("expected");
 
-    QTest::newRow("a-single") << int(QDnsLookup::A) << "a-single" << int(QDnsLookup::NoError) << "" << "192.0.2.1" << "" << "" << "" << "" << "";
-    QTest::newRow("a-multi") << int(QDnsLookup::A) << "a-multi" << int(QDnsLookup::NoError) << "" << "192.0.2.1;192.0.2.2;192.0.2.3" << "" << "" << "" << "" << "";
-    QTest::newRow("aaaa-single") << int(QDnsLookup::AAAA) << "aaaa-single" << int(QDnsLookup::NoError) << "" << "2001:db8::1" << "" << "" << "" << "" << "";
-    QTest::newRow("aaaa-multi") << int(QDnsLookup::AAAA) << "aaaa-multi" << int(QDnsLookup::NoError) << "" << "2001:db8::1;2001:db8::2;2001:db8::3" << "" << "" << "" << "" << "";
+    QTest::newRow("a-single") << QDnsLookup::A << "a-single"
+                              << "A 192.0.2.1";
+    QTest::newRow("a-multi") << QDnsLookup::A << "a-multi"
+                             << "A 192.0.2.1;A 192.0.2.2;A 192.0.2.3";
+    QTest::newRow("aaaa-single") << QDnsLookup::AAAA << "aaaa-single"
+                                 << "AAAA 2001:db8::1";
+    QTest::newRow("aaaa-multi") << QDnsLookup::AAAA << "aaaa-multi"
+                                << "AAAA 2001:db8::1;AAAA 2001:db8::2;AAAA 2001:db8::3";
 
-    QTest::newRow("any-a-single") << int(QDnsLookup::ANY) << "a-single" << int(QDnsLookup::NoError) << "" << "192.0.2.1" << "" << "" << "" << ""  << "";
-    QTest::newRow("any-a-plus-aaaa") << int(QDnsLookup::ANY) << "a-plus-aaaa" << int(QDnsLookup::NoError) << "" << "198.51.100.1;2001:db8::1:1" << "" << "" << "" << ""  << "";
-    QTest::newRow("any-multi") << int(QDnsLookup::ANY) << "multi" << int(QDnsLookup::NoError) << "" << "198.51.100.1;198.51.100.2;198.51.100.3;2001:db8::1:1;2001:db8::1:2" << "" << "" << "" << ""  << "";
+    QTest::newRow("any-a-single") << QDnsLookup::ANY << "a-single"
+                                  << "A 192.0.2.1";
+    QTest::newRow("any-a-plus-aaaa") << QDnsLookup::ANY << "a-plus-aaaa"
+                                     << "A 198.51.100.1;AAAA 2001:db8::1:1";
+    QTest::newRow("any-multi") << QDnsLookup::ANY << "multi"
+                               << "A 198.51.100.1;A 198.51.100.2;A 198.51.100.3;"
+                                  "AAAA 2001:db8::1:1;AAAA 2001:db8::1:2" ;
 
-    QTest::newRow("mx-single") << int(QDnsLookup::MX) << "mx-single" << int(QDnsLookup::NoError) << "" << "" << "10 multi" << "" << "" << "" << "";
-    QTest::newRow("mx-single-cname") << int(QDnsLookup::MX) << "mx-single-cname" << int(QDnsLookup::NoError) << "" << "" << "10 cname" << "" << "" << "" << "";
-    QTest::newRow("mx-multi") << int(QDnsLookup::MX) << "mx-multi" << int(QDnsLookup::NoError) << "" << "" << "10 multi;20 a-single" << "" << "" << "" << "";
-    QTest::newRow("mx-multi-sameprio") << int(QDnsLookup::MX) << "mx-multi-sameprio" << int(QDnsLookup::NoError) << "" << ""
-                                       << "10 multi;10 a-single|"
-                                          "10 a-single;10 multi" << "" << "" << "" << "";
+    QTest::newRow("mx-single") << QDnsLookup::MX << "mx-single"
+                               << "MX    10 multi";
+    QTest::newRow("mx-single-cname") << QDnsLookup::MX << "mx-single-cname"
+                                     << "MX    10 cname";
+    QTest::newRow("mx-multi") << QDnsLookup::MX << "mx-multi"
+                              << "MX    10 multi;MX    20 a-single";
+    QTest::newRow("mx-multi-sameprio") << QDnsLookup::MX << "mx-multi-sameprio"
+                                       << "MX    10 a-single;MX    10 multi";
 
-    QTest::newRow("ns-single") << int(QDnsLookup::NS) << "ns-single" << int(QDnsLookup::NoError) << "" << "" << "" << "ns11.cloudns.net." << "" << "" << "";
-    QTest::newRow("ns-multi") << int(QDnsLookup::NS) << "ns-multi" << int(QDnsLookup::NoError) << "" << "" << "" << "ns11.cloudns.net.;ns12.cloudns.net." << "" << "" << "";
+    QTest::newRow("ns-single") << QDnsLookup::NS << "ns-single"
+                               << "NS ns11.cloudns.net.";
+    QTest::newRow("ns-multi") << QDnsLookup::NS << "ns-multi"
+                              << "NS ns11.cloudns.net.;NS ns12.cloudns.net.";
 
 #if 0
     // temporarily disabled since the new hosting provider can't insert
     // PTR records outside of the in-addr.arpa zone
-    QTest::newRow("ptr-single") << int(QDnsLookup::PTR) << "ptr-single" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "a-single" << "" << "";
+    QTest::newRow("ptr-single") << QDnsLookup::PTR << "ptr-single"
+                                << "PTR a-single";
 #endif
 
-    QTest::newRow("srv-single") << int(QDnsLookup::SRV) << "_echo._tcp.srv-single" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "5 0 7 multi" << "";
-    QTest::newRow("srv-prio") << int(QDnsLookup::SRV) << "_echo._tcp.srv-prio" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "1 0 7 multi;2 0 7 a-plus-aaaa" << "";
-    QTest::newRow("srv-weighted") << int(QDnsLookup::SRV) << "_echo._tcp.srv-weighted" << int(QDnsLookup::NoError) << "" << "" << "" << "" << ""
-                                  << "5 75 7 multi;5 25 7 a-plus-aaaa|"
-                                     "5 25 7 a-plus-aaaa;5 75 7 multi" << "";
-    QTest::newRow("srv-multi") << int(QDnsLookup::SRV) << "_echo._tcp.srv-multi" << int(QDnsLookup::NoError) << "" << "" << "" << "" << ""
-                               << "1 50 7 multi;2 50 7 a-single;2 50 7 aaaa-single;3 50 7 a-multi|"
-                                  "1 50 7 multi;2 50 7 aaaa-single;2 50 7 a-single;3 50 7 a-multi" << "";
+    QTest::newRow("srv-single") << QDnsLookup::SRV << "_echo._tcp.srv-single"
+                                << "SRV     5 0 7 multi";
+    QTest::newRow("srv-prio") << QDnsLookup::SRV << "_echo._tcp.srv-prio"
+                              << "SRV     1 0 7 multi;SRV     2 0 7 a-plus-aaaa";
+    QTest::newRow("srv-weighted") << QDnsLookup::SRV << "_echo._tcp.srv-weighted"
+                                  << "SRV     5 25 7 a-plus-aaaa;SRV     5 75 7 multi";
+    QTest::newRow("srv-multi") << QDnsLookup::SRV << "_echo._tcp.srv-multi"
+                               << "SRV     1 50 7 multi;"
+                                  "SRV     2 50 7 a-single;"
+                                  "SRV     2 50 7 aaaa-single;"
+                                  "SRV     3 50 7 a-multi";
 
-    QTest::newRow("txt-single") << int(QDnsLookup::TXT) << "txt-single" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "" << "Hello";
-    QTest::newRow("txt-multi-onerr") << int(QDnsLookup::TXT) << "txt-multi-onerr" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << ""
-                                     << QString::fromLatin1("Hello\0World", sizeof("Hello\0World") - 1);
-    QTest::newRow("txt-multi-multirr") << int(QDnsLookup::TXT) << "txt-multi-multirr" << int(QDnsLookup::NoError) << "" << "" << "" << "" << "" << "" << "Hello;World";
+    QTest::newRow("txt-single") << QDnsLookup::TXT << "txt-single"
+                                << "TXT \"Hello\"";
+    QTest::newRow("txt-multi-onerr") << QDnsLookup::TXT << "txt-multi-onerr"
+                                     << "TXT \"Hello\" \"World\"";
+    QTest::newRow("txt-multi-multirr") << QDnsLookup::TXT << "txt-multi-multirr"
+                                       << "TXT \"Hello\";TXT \"World\"";
 }
 
 void tst_QDnsLookup::lookup()
 {
-    QFETCH(int, type);
+    QFETCH(QDnsLookup::Type, type);
     QFETCH(QString, domain);
-    QFETCH(int, error);
-    QFETCH(QString, cname);
-    QFETCH(QString, host);
-    QFETCH(QString, mx);
-    QFETCH(QString, ns);
-    QFETCH(QString, ptr);
-    QFETCH(QString, srv);
-    QFETCH(QString, txt);
+    QFETCH(QString, expected);
 
-    // transform the inputs
-    domain = domainName(domain);
-    cname = domainName(cname);
-    ns = domainNameList(ns);
-    ptr = domainNameList(ptr);
-
-    // SRV and MX have reply entries that can change order
-    // and we can't sort
-    QStringList mx_alternatives = domainNameListAlternatives(mx);
-    QStringList srv_alternatives = domainNameListAlternatives(srv);
-
-    QDnsLookup lookup;
-    lookup.setType(static_cast<QDnsLookup::Type>(type));
-    lookup.setName(domain);
-    lookup.lookup();
-    QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
-
-    auto extraErrorMsg = [&] () {
-        QString result;
-        QTextStream str(&result);
-        str << "Actual error: " << lookup.error();
-        if (QString errorString = lookup.errorString(); !errorString.isEmpty())
-            str << " (" << errorString << ')';
-        str << ", expected: " << error;
-        str << ", domain: " << domain;
-        if (!cname.isEmpty())
-            str << ", cname: " << cname;
-        str << ", host: " << host;
-        if (!srv.isEmpty())
-            str << " server: " << srv;
-        if (!mx.isEmpty())
-            str << " mx: " << mx;
-        if (!ns.isEmpty())
-            str << " ns: " << ns;
-        if (!ptr.isEmpty())
-            str << " ptr: " << ptr;
-        return result.toLocal8Bit();
-    };
-
-    if (!dnsServersMustWork && (lookup.error() == QDnsLookup::ServerFailureError
-                                || lookup.error() == QDnsLookup::ServerRefusedError
-                                || lookup.error() == QDnsLookup::TimeoutError)) {
-        // It's not a QDnsLookup problem if the server refuses to answer the query.
-        // This happens for queries of type ANY through Dnsmasq, for example.
-        qWarning("Server refused or was unable to answer query; %s", extraErrorMsg().constData());
+    std::unique_ptr<QDnsLookup> lookup = lookupCommon(type, domain);
+    if (!lookup)
         return;
-    }
 
-    QVERIFY2(int(lookup.error()) == error, extraErrorMsg());
-    if (error == QDnsLookup::NoError)
-        QVERIFY(lookup.errorString().isEmpty());
-    QCOMPARE(int(lookup.type()), type);
-    QCOMPARE(lookup.name(), domain);
+    QCOMPARE(lookup->error(), QDnsLookup::NoError);
+    QCOMPARE(lookup->errorString(), QString());
+    QCOMPARE(lookup->type(), type);
+    QCOMPARE(lookup->name(), domainName(domain));
 
-    // canonical names
-    if (!cname.isEmpty()) {
-        QVERIFY(!lookup.canonicalNameRecords().isEmpty());
-        const QDnsDomainNameRecord cnameRecord = lookup.canonicalNameRecords().first();
-        QCOMPARE(cnameRecord.name(), domain);
-        QCOMPARE(cnameRecord.value(), cname);
-    } else {
-        QVERIFY(lookup.canonicalNameRecords().isEmpty());
-    }
+    QString result = formatReply(lookup.get()).join(u';');
+    QCOMPARE(result, expected);
 
-    // host addresses
-    const QString hostName = cname.isEmpty() ? domain : cname;
-    QStringList addresses;
-    const auto records = lookup.hostAddressRecords();
-    for (const QDnsHostAddressRecord &record : records) {
-        //reply may include A & AAAA records for nameservers, ignore them and only look at records matching the query
-        if (record.name() == hostName)
-            addresses << record.value().toString().toLower();
-    }
-    addresses.sort();
-    QCOMPARE(addresses.join(';'), host);
+    // confirm that MX and SRV records are properly sorted
+    const QList<QDnsMailExchangeRecord> mx = lookup->mailExchangeRecords();
+    for (qsizetype i = 1; i < mx.size(); ++i)
+        QCOMPARE_GE(mx[i].preference(), mx[i - 1].preference());
 
-    // mail exchanges
-    QStringList mailExchanges;
-    const auto mailRecords = lookup.mailExchangeRecords();
-    for (const QDnsMailExchangeRecord &record : mailRecords) {
-        QCOMPARE(record.name(), domain);
-        mailExchanges << QString::number(record.preference()) + QLatin1Char(' ') + record.exchange();
-    }
-    QVERIFY2(mx_alternatives.contains(mailExchanges.join(';')),
-             qPrintable("Actual: " + mailExchanges.join(';') + "\nExpected one of:\n" + mx_alternatives.join('\n')));
-
-    // name servers
-    QStringList nameServers;
-    const auto nameServerRecords = lookup.nameServerRecords();
-    for (const QDnsDomainNameRecord &record : nameServerRecords) {
-        //reply may include NS records for authoritative nameservers, ignore them and only look at records matching the query
-        if (record.name() == domain)
-            nameServers << record.value();
-    }
-    nameServers.sort();
-    QCOMPARE(nameServers.join(';'), ns);
-
-    // pointers
-    if (!ptr.isEmpty()) {
-        QVERIFY(!lookup.pointerRecords().isEmpty());
-        const QDnsDomainNameRecord ptrRecord = lookup.pointerRecords().first();
-        QCOMPARE(ptrRecord.name(), domain);
-        QCOMPARE(ptrRecord.value(), ptr);
-    } else {
-        QVERIFY(lookup.pointerRecords().isEmpty());
-    }
-
-    // services
-    QStringList services;
-    const auto serviceRecords = lookup.serviceRecords();
-    for (const QDnsServiceRecord &record : serviceRecords) {
-        QCOMPARE(record.name(), domain);
-        services << (QString::number(record.priority()) + QLatin1Char(' ')
-                     + QString::number(record.weight()) + QLatin1Char(' ')
-                     + QString::number(record.port()) + QLatin1Char(' ') + record.target());
-    }
-    QVERIFY2(srv_alternatives.contains(services.join(';')),
-             qPrintable("Actual: " + services.join(';') + "\nExpected one of:\n" + srv_alternatives.join('\n')));
-
-    // text
-    QStringList texts;
-    const auto textRecords = lookup.textRecords();
-    for (const QDnsTextRecord &record : textRecords) {
-        QCOMPARE(record.name(), domain);
-        QString text;
-        const auto values = record.values();
-        for (const QByteArray &ba : values) {
-            if (!text.isEmpty())
-                text += '\0';
-            text += QString::fromLatin1(ba);
-        }
-        texts << text;
-    }
-    texts.sort();
-    QCOMPARE(texts.join(';'), txt);
+    const QList<QDnsServiceRecord> srv = lookup->serviceRecords();
+    for (qsizetype i = 1; i < srv.size(); ++i)
+        QCOMPARE_GE(srv[i].priority(), srv[i - 1].priority());
 }
 
 void tst_QDnsLookup::lookupIdn()
