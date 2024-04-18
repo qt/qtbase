@@ -1976,7 +1976,7 @@ struct QStringConverterICU : QStringConverter
         const void *context;
         ucnv_getToUCallBack(icu_conv, &action, &context);
         if (context != state)
-             ucnv_setToUCallBack(icu_conv, action, &state, nullptr, nullptr, &err);
+             ucnv_setToUCallBack(icu_conv, action, state, nullptr, nullptr, &err);
 
         ucnv_toUnicode(icu_conv, &target, targetLimit, &source, sourceLimit, nullptr, flush, &err);
         // We did reserve enough space:
@@ -2009,7 +2009,7 @@ struct QStringConverterICU : QStringConverter
         const void *context;
         ucnv_getFromUCallBack(icu_conv, &action, &context);
         if (context != state)
-             ucnv_setFromUCallBack(icu_conv, action, &state, nullptr, nullptr, &err);
+             ucnv_setFromUCallBack(icu_conv, action, state, nullptr, nullptr, &err);
 
         ucnv_fromUnicode(icu_conv, &target, targetLimit, &source, sourceLimit, nullptr, flush, &err);
         // We did reserve enough space:
