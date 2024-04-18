@@ -2277,6 +2277,10 @@ void QProcess::start(OpenMode mode)
 void QProcess::startCommand(const QString &command, OpenMode mode)
 {
     QStringList args = splitCommand(command);
+    if (args.isEmpty()) {
+        qWarning("QProcess::startCommand: empty or whitespace-only command was provided");
+        return;
+    }
     const QString program = args.takeFirst();
     start(program, args, mode);
 }
