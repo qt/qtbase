@@ -759,7 +759,7 @@ void tst_QRestAccessManager::text()
 
     // Successful UTF-32 with spec-wise allowed extra trailing content in the Content-Type header value
     serverSideResponse.headers.insert("Content-Type:"_ba,
-                                      "text/plain; charset = \"UTF-32\";extraparameter=bar"_ba);
+                                      "text(this is a \\)comment)/ (this (too)) plain; charset = \"UTF-32\";extraparameter=bar"_ba);
     serverSideResponse.body = encUTF32(sourceString);
     VERIFY_TEXT_REPLY_OK;
 

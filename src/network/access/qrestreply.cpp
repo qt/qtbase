@@ -420,6 +420,54 @@ static constexpr bool is_tchar(char ch) noexcept
     }
 }
 
+static auto parse_comment(QByteArrayView data) noexcept
+{
+    struct R {
+        QByteArrayView comment, tail;
+        constexpr explicit operator bool() const noexcept { return !comment.isEmpty(); }
+    };
+
+    const auto invalid = R{{}, data}; // preserves original `data`
+
+    // comment        = "(" *( ctext / quoted-pair / comment ) ")"
+    // ctext          = HTAB / SP / %x21-27 / %x2A-5B / %x5D-7E / obs-text
+
+    if (!data.startsWith('('))
+        return invalid;
+
+    qsizetype i = 1;
+    qsizetype level = 1;
+    while (i < data.size()) {
+        switch (data[i++]) {
+        case '(': // nested comment
+            ++level;
+            break;
+        case ')': // end of comment
+            if (--level == 0)
+                return R{data.first(i), data.sliced(i)};
+            break;
+        case '\\': // quoted-pair
+            if (i == data.size())
+                return invalid; // premature end
+            ++i; // eat escaped character
+            break;
+        default:
+            ; // don't validate ctext - accept everything (Postel's Law)
+        }
+    }
+
+    return invalid; // premature end / unbalanced nesting levels
+}
+
+static void eat_CWS(QByteArrayView &data) noexcept
+{
+    eat_OWS(data);
+    while (const auto comment = parse_comment(data)) {
+        data = comment.tail;
+        eat_OWS(data);
+    }
+}
+
 static constexpr auto parse_token(QByteArrayView data) noexcept
 {
     struct R {
@@ -452,13 +500,13 @@ static auto parse_parameter(QByteArrayView data, qxp::function_ref<void(char) co
         return invalid;
     data = name.tail;
 
-    eat_OWS(data); // not in the grammar, but accepted under Postel's Law
+    eat_CWS(data); // not in the grammar, but accepted under Postel's Law
 
     if (!data.startsWith('='))
         return invalid;
     data = data.sliced(1);
 
-    eat_OWS(data); // not in the grammar, but accepted under Postel's Law
+    eat_CWS(data); // not in the grammar, but accepted under Postel's Law
 
     if (Q_UNLIKELY(data.startsWith('"'))) { // value is a quoted-string
 
@@ -488,27 +536,27 @@ static auto parse_content_type(QByteArrayView data)
         constexpr explicit operator bool() const noexcept { return !type.isEmpty(); }
     };
 
-    eat_OWS(data); // not in the grammar, but accepted under Postel's Law
+    eat_CWS(data); // not in the grammar, but accepted under Postel's Law
 
     const auto type = parse_token(data);
     if (!type)
         return R{};
     data = type.tail;
 
-    eat_OWS(data); // not in the grammar, but accepted under Postel's Law
+    eat_CWS(data); // not in the grammar, but accepted under Postel's Law
 
     if (!data.startsWith('/'))
         return R{};
     data = data.sliced(1);
 
-    eat_OWS(data); // not in the grammar, but accepted under Postel's Law
+    eat_CWS(data); // not in the grammar, but accepted under Postel's Law
 
     const auto subtype = parse_token(data);
     if (!subtype)
         return R{};
     data = subtype.tail;
 
-    eat_OWS(data);
+    eat_CWS(data);
 
     auto r = R{QLatin1StringView{type.token}, QLatin1StringView{subtype.token}, {}};
 
@@ -516,7 +564,7 @@ static auto parse_content_type(QByteArrayView data)
 
         data = data.sliced(1); // eat ';'
 
-        eat_OWS(data);
+        eat_CWS(data);
 
         const auto param = parse_parameter(data, [&](char ch) { r.charset.append(1, ch); });
         if (param.name.compare("charset"_L1, Qt::CaseInsensitive) == 0) {
@@ -530,7 +578,7 @@ static auto parse_content_type(QByteArrayView data)
         // otherwise, continue (accepting e.g. `;;`)
         data = param.tail;
 
-        eat_OWS(data);
+        eat_CWS(data);
     }
 
     return r; // no charset found
