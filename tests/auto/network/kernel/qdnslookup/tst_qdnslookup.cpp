@@ -416,6 +416,16 @@ void tst_QDnsLookup::lookup_data()
     QTest::newRow("ptr-single") << QDnsLookup::PTR << "ptr-single"
                                 << "PTR a-single";
 #endif
+    QTest::newRow("ptr-1.1.1.1") << QDnsLookup::PTR << "1.1.1.1.in-addr.arpa."
+                                 << "PTR one.one.one.one.";
+    QTest::newRow("ptr-8.8.8.8") << QDnsLookup::PTR << "8.8.8.8.in-addr.arpa."
+                                 << "PTR dns.google.";
+    QTest::newRow("ptr-2001:4860:4860::8888")
+            << QDnsLookup::PTR << "8.8.8.8.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.6.8.4.0.6.8.4.1.0.0.2.ip6.arpa."
+            << "PTR dns.google.";
+    QTest::newRow("ptr-2606:4700:4700::1111")
+            << QDnsLookup::PTR << "1.1.1.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.7.4.0.0.7.4.6.0.6.2.ip6.arpa."
+            << "PTR one.one.one.one.";
 
     QTest::newRow("srv-single") << QDnsLookup::SRV << "_echo._tcp.srv-single"
                                 << "SRV     5 0 7 multi";
