@@ -15,12 +15,14 @@
 // We mean it.
 //
 
+#include <QtCore/private/qstringconverter_p.h>
+
 #include <optional>
 
 QT_BEGIN_NAMESPACE
 
+class QByteArray;
 class QNetworkReply;
-class QStringDecoder;
 
 class QRestReplyPrivate
 {
