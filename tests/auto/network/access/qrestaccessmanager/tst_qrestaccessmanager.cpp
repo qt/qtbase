@@ -109,7 +109,7 @@ void tst_QRestAccessManager::requests()
     HttpData serverSideRequest;  // The request data the server received
     HttpData serverSideResponse; // The response data the server responds with
     serverSideResponse.status = 200;
-    server.setHandler([&](HttpData request, HttpData &response, ResponseControl&) {
+    server.setHandler([&](const HttpData &request, HttpData &response, ResponseControl&) {
         serverSideRequest = request;
         response = serverSideResponse;
 
@@ -473,7 +473,7 @@ void tst_QRestAccessManager::errors()
     QNetworkRequest request(server.url());
 
     HttpData serverSideResponse; // The response data the server responds with
-    server.setHandler([&](HttpData, HttpData &response, ResponseControl &) {
+    server.setHandler([&](const HttpData &, HttpData &response, ResponseControl &) {
         response  = serverSideResponse;
     });
 
@@ -540,7 +540,7 @@ void tst_QRestAccessManager::body()
 
     HttpData serverSideRequest;  // The request data the server received
     HttpData serverSideResponse; // The response data the server responds with
-    server.setHandler([&](HttpData request, HttpData &response, ResponseControl&) {
+    server.setHandler([&](const HttpData &request, HttpData &response, ResponseControl&) {
         serverSideRequest = request;
         response = serverSideResponse;
     });
@@ -601,7 +601,7 @@ void tst_QRestAccessManager::json()
     HttpData serverSideRequest;  // The request data the server received
     HttpData serverSideResponse; // The response data the server responds with
     serverSideResponse.status = 200;
-    server.setHandler([&](HttpData request, HttpData &response, ResponseControl&) {
+    server.setHandler([&](const HttpData &request, HttpData &response, ResponseControl&) {
         serverSideRequest = request;
         response = serverSideResponse;
     });
@@ -709,7 +709,7 @@ void tst_QRestAccessManager::text()
     HttpData serverSideRequest;  // The request data the server received
     HttpData serverSideResponse; // The response data the server responds with
     serverSideResponse.status = 200;
-    server.setHandler([&](HttpData request, HttpData &response, ResponseControl&) {
+    server.setHandler([&](const HttpData &request, HttpData &response, ResponseControl&) {
         serverSideRequest = request;
         response = serverSideResponse;
     });
@@ -801,7 +801,7 @@ void tst_QRestAccessManager::textStreaming()
     serverSideResponse.body = encUTF8(expectedData);
     serverSideResponse.status = 200;
 
-    server.setHandler([&](HttpData, HttpData &response, ResponseControl &control) {
+    server.setHandler([&](const HttpData &, HttpData &response, ResponseControl &control) {
         response = serverSideResponse;
         responseControl = &control; // store for later
         control.responseChunkSize = 5; // tell testserver to send data in chunks of this size
