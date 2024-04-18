@@ -6716,9 +6716,15 @@ void tst_QString::arg()
     str = str.arg(u"ahoy"_s, u"there"_s);
     QCOMPARE(str, "one 2 3 4 5 6 7 8 9 foo ahoy there bar"_L1);
 
-    QString str2(u"%123 %234 %345 %456 %567 %999 %1000 %1230"_s);
-    str2 = str2.arg(u"A"_s, u"B"_s, u"C"_s, u"D"_s, u"E"_s, u"F"_s);
-    QCOMPARE(str2, QLatin1String("A B C D E F %1000 %1230"));
+    // Make sure the single- and multi-arg expand the same sequences: at most
+    // two digits. The sequence below has four replacements: %01, %10 (twice),
+    // %11, and %12.
+    QString str2 = u"%100 %101 %110 %12 %0100"_s;
+    QLatin1StringView str2expected = "B0 B1 C0 D A00"_L1;
+    QCOMPARE(str2.arg(QChar(u'A')).arg(QChar(u'B')).arg(QChar(u'C')).arg(QChar(u'D')), str2expected);
+    QCOMPARE(str2.arg(QChar(u'A'), QChar(u'B')).arg(QChar(u'C')).arg(QChar(u'D')), str2expected);
+    QCOMPARE(str2.arg(QChar(u'A'), QChar(u'B'), QChar(u'C')).arg(QChar(u'D')), str2expected);
+    QCOMPARE(str2.arg(QChar(u'A'), QChar(u'B'), QChar(u'C'), QChar(u'D')), str2expected);
 
     QCOMPARE(u"%1"_s.arg(-1, 3, 10, QChar(u'0')), "-01"_L1);
     QCOMPARE(u"%1"_s.arg(-100, 3, 10, QChar(u'0')), "-100"_L1);
