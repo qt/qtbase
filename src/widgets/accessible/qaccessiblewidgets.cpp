@@ -95,7 +95,7 @@ QWidgetList _q_ac_childWidgets(const QWidget *widget)
 QAccessiblePlainTextEdit::QAccessiblePlainTextEdit(QWidget* o)
   :QAccessibleTextWidget(o)
 {
-    Q_ASSERT(widget()->inherits("QPlainTextEdit"));
+    Q_ASSERT(qobject_cast<QPlainTextEdit *>(widget()));
 }
 
 QPlainTextEdit* QAccessiblePlainTextEdit::plainTextEdit() const
@@ -192,7 +192,7 @@ void QAccessiblePlainTextEdit::scrollToSubstring(int startIndex, int endIndex)
 QAccessibleTextEdit::QAccessibleTextEdit(QWidget *o)
 : QAccessibleTextWidget(o, QAccessible::EditableText)
 {
-    Q_ASSERT(widget()->inherits("QTextEdit"));
+    Q_ASSERT(qobject_cast<QTextEdit *>(widget()));
 }
 
 /*! Returns the text edit. */
