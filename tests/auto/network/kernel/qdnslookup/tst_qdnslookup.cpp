@@ -558,7 +558,8 @@ void tst_QDnsLookup::setNameserverLoopback()
     QByteArray reply = data;
     reply[2] = 0x80U;   // header->qr = true;
     reply[3] = 3;       // header->rcode = NXDOMAIN;
-    server.writeDatagram(dgram.makeReply(reply));
+    server.writeDatagram(reply.constData(), reply.size(), dgram.senderAddress(),
+                         dgram.senderPort());
     server.close();
 
     // now check that the QDnsLookup finished
