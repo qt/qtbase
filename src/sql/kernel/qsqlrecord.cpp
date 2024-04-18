@@ -19,6 +19,32 @@ public:
       return index >= 0 && index < fields.size();
     }
 
+    qsizetype indexOfImpl(QStringView name)
+    {
+        QStringView tableName;
+        QStringView fieldName;
+        const auto it = std::find(name.begin(), name.end(), u'.');
+        const auto idx = (it == name.end()) ? -1 : it - name.begin();
+        if (idx != -1) {
+            tableName = name.left(idx);
+            fieldName = name.mid(idx + 1);
+        }
+        const auto cnt = fields.size();
+        for (qsizetype i = 0; i < cnt; ++i) {
+            // Check the passed in name first in case it is an alias using a dot.
+            // Then check if both the table and field match when there is a table name specified.
+            const auto &currentField = fields.at(i);
+            const auto &currentFieldName = currentField.name();
+            if (name.compare(currentFieldName, Qt::CaseInsensitive) == 0)
+                return i;
+            if (idx != -1 &&
+                tableName.compare(currentField.tableName(), Qt::CaseInsensitive) == 0 &&
+                fieldName.compare(currentFieldName, Qt::CaseInsensitive) == 0)
+                return i;
+        }
+        return -1;
+    }
+
     QList<QSqlField> fields;
 };
 QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QSqlRecordPrivate)
@@ -211,26 +237,7 @@ int QSqlRecord::indexOf(const QString &name) const
  */
 int QSqlRecord::indexOf(QStringView name) const
 {
-    QStringView tableName;
-    QStringView fieldName(name);
-    const qsizetype idx = name.indexOf(u'.');
-    if (idx != -1) {
-        tableName = fieldName.left(idx);
-        fieldName = fieldName.mid(idx + 1);
-    }
-    const int cnt = count();
-    for (int i = 0; i < cnt; ++i) {
-        // Check the passed in name first in case it is an alias using a dot.
-        // Then check if both the table and field match when there is a table name specified.
-        const auto &currentField = d->fields.at(i);
-        const auto &currentFieldName = currentField.name();
-        if (currentFieldName.compare(name, Qt::CaseInsensitive) == 0
-            || (idx != -1 && currentFieldName.compare(fieldName, Qt::CaseInsensitive) == 0
-                && currentField.tableName().compare(tableName, Qt::CaseInsensitive) == 0)) {
-            return i;
-        }
-    }
-    return -1;
+    return d->indexOfImpl(name);
 }
 
 /*!
