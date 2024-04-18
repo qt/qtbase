@@ -688,8 +688,10 @@ void QSortFilterProxyModelPrivate::sort_source_rows(
             QSortFilterProxyModelGreaterThan gt(source_sort_column, source_parent, model, q);
             std::stable_sort(source_rows.begin(), source_rows.end(), gt);
         }
-    } else { // restore the source model order
-        std::stable_sort(source_rows.begin(), source_rows.end());
+    } else if (sort_order == Qt::AscendingOrder) {
+        std::stable_sort(source_rows.begin(), source_rows.end(), std::less{});
+    } else {
+        std::stable_sort(source_rows.begin(), source_rows.end(), std::greater{});
     }
 }
 
@@ -2490,7 +2492,10 @@ QSize QSortFilterProxyModel::span(const QModelIndex &index) const
 }
 
 /*!
-  \reimp
+    \reimp
+    Sorts the model by \a column in the given \a order.
+    If the sort \a column is less than zero, the model will be sorted by source model row
+    in the given \a order.
 */
 void QSortFilterProxyModel::sort(int column, Qt::SortOrder order)
 {

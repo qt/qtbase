@@ -247,13 +247,16 @@ void tst_QSortFilterProxyModel::sort()
         QCOMPARE(m_proxy->data(index, Qt::DisplayRole).toString(), expected.at(row));
     }
 
-    // restore the unsorted order
-    m_proxy->sort(-1);
+    // restore the unsorted order in the given order
+    m_proxy->sort(-1, sortOrder);
 
-    // make sure the proxy is unsorted again
+    // make sure the proxy is sorted by source row in the given order
+    int sourceIndex = sortOrder == Qt::AscendingOrder ? 0 : initial.size() - 1;
+    int adjustmentValue = sortOrder == Qt::AscendingOrder ? 1 : -1;
     for (int row = 0; row < m_proxy->rowCount(QModelIndex()); ++row) {
         QModelIndex index = m_proxy->index(row, 0, QModelIndex());
-        QCOMPARE(m_proxy->data(index, Qt::DisplayRole).toString(), initial.at(row));
+        QCOMPARE(m_proxy->data(index, Qt::DisplayRole).toString(), initial.at(sourceIndex));
+        sourceIndex += adjustmentValue;
     }
 }
 
