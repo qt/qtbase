@@ -2402,6 +2402,16 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
         dispatch_semaphore_signal(swapChainD->d->sem[thisFrameSlot]);
     }];
 
+#ifdef QRHI_METAL_COMMAND_BUFFERS_WITH_UNRETAINED_REFERENCES
+    // When Metal API validation diagnostics is enabled in Xcode the texture is
+    // released before the command buffer is done with it. Manually keep it alive
+    // to work around this.
+    id<MTLTexture> drawableTexture = [swapChainD->d->curDrawable.texture retain];
+    [swapChainD->cbWrapper.d->cb addCompletedHandler:^(id<MTLCommandBuffer>) {
+        [drawableTexture release];
+    }];
+#endif
+
     const bool needsPresent = !flags.testFlag(QRhi::SkipPresent);
     const bool presentsWithTransaction = swapChainD->d->layer.presentsWithTransaction;
     if (!presentsWithTransaction && needsPresent) {
