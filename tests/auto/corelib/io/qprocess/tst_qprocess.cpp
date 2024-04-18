@@ -48,6 +48,7 @@ private slots:
     void constructing();
     void simpleStart();
     void startCommand();
+    void startCommandEmptyString();
     void startWithOpen();
     void startWithOldOpen();
     void execute();
@@ -297,6 +298,25 @@ void tst_QProcess::startCommand()
     actual.remove(0, actual.indexOf('|') + 1);
     QByteArray expected = "foo|b a r|baz";
     QCOMPARE(actual, expected);
+}
+
+void tst_QProcess::startCommandEmptyString()
+{
+    static const char warningMsg[] =
+            "QProcess::startCommand: empty or whitespace-only command was provided";
+    QProcess process;
+
+    QTest::ignoreMessage(QtWarningMsg, warningMsg);
+    process.startCommand("");
+    QVERIFY(!process.waitForStarted());
+
+    QTest::ignoreMessage(QtWarningMsg, warningMsg);
+    process.startCommand("   ");
+    QVERIFY(!process.waitForStarted());
+
+    QTest::ignoreMessage(QtWarningMsg, warningMsg);
+    process.startCommand("\t\n");
+    QVERIFY(!process.waitForStarted());
 }
 
 void tst_QProcess::startWithOpen()
