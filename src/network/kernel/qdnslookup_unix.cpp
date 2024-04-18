@@ -183,14 +183,22 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     auto attemptToSend = [&]() {
         std::memset(buffer.data(), 0, HFIXEDSZ);        // the header is enough
         int responseLength = res_nsend(&state, qbuffer.data(), queryLength, buffer.data(), buffer.size());
-        if (responseLength < 0) {
-            // network error of some sort
-            if (errno == ETIMEDOUT)
-                reply->makeTimeoutError();
-            else
-                reply->makeResolverSystemError();
-        }
-        return responseLength;
+        if (responseLength >= 0)
+            return responseLength;  // success
+
+        // libresolv uses ETIMEDOUT for resolver errors ("no answer")
+        if (errno == ECONNREFUSED)
+            reply->setError(QDnsLookup::ServerRefusedError, qt_error_string());
+        else if (errno != ETIMEDOUT)
+            reply->makeResolverSystemError();   // some other error
+
+        auto query = reinterpret_cast<HEADER *>(qbuffer.data());
+        auto header = reinterpret_cast<HEADER *>(buffer.data());
+        if (query->id == header->id && header->qr)
+            reply->makeDnsRcodeError(header->rcode);
+        else
+            reply->makeTimeoutError();      // must really be a timeout
+        return -1;
     };
 
     // strictly use UDP, we'll deal with truncated replies ourselves
