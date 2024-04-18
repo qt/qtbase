@@ -571,11 +571,10 @@ void tst_QStringConverter::charByCharConsistency_data()
 
 void tst_QStringConverter::charByCharConsistency()
 {
-    QFETCH(QStringView, source);
-    QFETCH(QByteArray, codec);
+    QFETCH(const QStringView, source);
+    QFETCH(const QByteArray, codec);
 
-    {
-        QStringEncoder encoder(codec);
+    const auto check = [&](QStringEncoder encoder){
         if (!encoder.isValid())
             QSKIP("Unsupported codec");
 
@@ -586,19 +585,28 @@ void tst_QStringConverter::charByCharConsistency()
             stepByStepConverted += encoder.encode(codeUnit);
         }
         QCOMPARE(stepByStepConverted, fullyConverted);
-    }
+    };
+
+    check(QStringEncoder(codec));
+    if (QTest::currentTestResolved()) return;
+
+    check(QStringEncoder(codec, QStringConverter::Flag::ConvertInvalidToNull));
+    if (QTest::currentTestResolved()) return;
+
+    // moved codecs also work:
 
     {
-        QStringEncoder encoder(codec, QStringConverter::Flag::ConvertInvalidToNull);
-
-        QByteArray fullyConverted = encoder.encode(source);
-        encoder.resetState();
-        QByteArray stepByStepConverted;
-        for (const auto& codeUnit: source) {
-            stepByStepConverted += encoder.encode(codeUnit);
-        }
-        QCOMPARE(stepByStepConverted, fullyConverted);
+        QStringEncoder dec(codec);
+        check(std::move(dec));
     }
+    if (QTest::currentTestResolved()) return;
+
+    {
+        QStringEncoder dec(codec, QStringConverter::Flag::ConvertInvalidToNull);
+        check(std::move(dec));
+    }
+    if (QTest::currentTestResolved()) return;
+
 }
 
 void tst_QStringConverter::byteByByteConsistency_data()
@@ -615,11 +623,10 @@ void tst_QStringConverter::byteByByteConsistency_data()
 
 void tst_QStringConverter::byteByByteConsistency()
 {
-    QFETCH(QByteArray, source);
-    QFETCH(QByteArray, codec);
+    QFETCH(const QByteArray, source);
+    QFETCH(const QByteArray, codec);
 
-    {
-        QStringDecoder decoder(codec);
+    const auto check = [&](QStringDecoder decoder) {
         if (!decoder.isValid())
             QSKIP("Unsupported codec");
 
@@ -632,23 +639,28 @@ void tst_QStringConverter::byteByByteConsistency()
             stepByStepConverted += decoder.decode(singleChar);
         }
         QCOMPARE(stepByStepConverted, fullyConverted);
-    }
+    };
+
+    check(QStringDecoder(codec));
+    if (QTest::currentTestResolved()) return;
+
+    check(QStringDecoder(codec, QStringConverter::Flag::ConvertInvalidToNull));
+    if (QTest::currentTestResolved()) return;
+
+    // moved codecs also work:
 
     {
-        QStringDecoder decoder(codec, QStringConverter::Flag::ConvertInvalidToNull);
-        if (!decoder.isValid())
-            QSKIP("Unsupported codec");
-
-        QString fullyConverted = decoder.decode(source);
-        decoder.resetState();
-        QString stepByStepConverted;
-        for (const auto& byte: source) {
-            QByteArray singleChar;
-            singleChar.append(byte);
-            stepByStepConverted += decoder.decode(singleChar);
-        }
-        QCOMPARE(stepByStepConverted, fullyConverted);
+        QStringDecoder dec(codec);
+        check(std::move(dec));
     }
+    if (QTest::currentTestResolved()) return;
+
+    {
+        QStringDecoder dec(codec, QStringConverter::Flag::ConvertInvalidToNull);
+        check(std::move(dec));
+    }
+    if (QTest::currentTestResolved()) return;
+
 }
 
 void tst_QStringConverter::statefulPieceWise()
