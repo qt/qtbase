@@ -311,15 +311,14 @@ QStringList tst_QDnsLookup::formatReply(const QDnsLookup *lookup) const
 
 void tst_QDnsLookup::lookupLocalhost()
 {
-    QDnsLookup lookup(QDnsLookup::Type::A, u"localhost"_s);
-    lookup.lookup();
-    QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
-    QCOMPARE(lookup.error(), QDnsLookup::NoError);
+    auto lookup = lookupCommon(QDnsLookup::Type::A, u"localhost."_s);
+    QVERIFY(lookup);
+    QCOMPARE(lookup->error(), QDnsLookup::NoError);
 
-    QList<QDnsHostAddressRecord> hosts = lookup.hostAddressRecords();
+    QList<QDnsHostAddressRecord> hosts = lookup->hostAddressRecords();
     QCOMPARE(hosts.size(), 1);
     QCOMPARE(hosts.at(0).value(), QHostAddress::LocalHost);
-    QVERIFY2(hosts.at(0).name().startsWith(lookup.name()),
+    QVERIFY2(hosts.at(0).name().startsWith(lookup->name()),
              qPrintable(hosts.at(0).name()));
 }
 
@@ -328,12 +327,12 @@ void tst_QDnsLookup::lookupRoot()
 #ifdef Q_OS_WIN
     QSKIP("This test fails on Windows as it seems to treat the lookup as a local one.");
 #else
-    QDnsLookup lookup(QDnsLookup::Type::NS, u""_s);
-    lookup.lookup();
-    QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
-    QCOMPARE(lookup.error(), QDnsLookup::NoError);
+    auto lookup = lookupCommon(QDnsLookup::Type::NS, u""_s);
+    if (!lookup)
+        return;
+    QCOMPARE(lookup->error(), QDnsLookup::NoError);
 
-    const QList<QDnsDomainNameRecord> servers = lookup.nameServerRecords();
+    const QList<QDnsDomainNameRecord> servers = lookup->nameServerRecords();
     QVERIFY(!servers.isEmpty());
     for (const QDnsDomainNameRecord &ns : servers) {
         QCOMPARE(ns.name(), QString());
@@ -594,18 +593,13 @@ void tst_QDnsLookup::setNameserver_data()
 void tst_QDnsLookup::setNameserver()
 {
     QFETCH(QHostAddress, server);
-    QDnsLookup lookup;
-    lookup.setNameserver(server);
-
-    lookup.setType(QDnsLookup::Type::A);
-    lookup.setName(domainName("a-single"));
-    lookup.lookup();
-
-    QTRY_VERIFY_WITH_TIMEOUT(lookup.isFinished(), Timeout);
-    QCOMPARE(int(lookup.error()), int(QDnsLookup::NoError));
-    QVERIFY(!lookup.hostAddressRecords().isEmpty());
-    QCOMPARE(lookup.hostAddressRecords().first().name(), domainName("a-single"));
-    QCOMPARE(lookup.hostAddressRecords().first().value(), QHostAddress("192.0.2.1"));
+    std::unique_ptr<QDnsLookup> lookup =
+            lookupCommon(QDnsLookup::Type::A, "a-single", server);
+    if (!lookup)
+        return;
+    QCOMPARE(lookup->error(), QDnsLookup::NoError);
+    QString result = formatReply(lookup.get()).join(';');
+    QCOMPARE(result, "A 192.0.2.1");
 }
 
 void tst_QDnsLookup::bindingsAndProperties()
