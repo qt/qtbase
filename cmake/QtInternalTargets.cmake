@@ -249,8 +249,9 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     #   - https://gitlab.kitware.com/cmake/cmake/-/issues/25297 and
     #   - https://indiestack.com/2023/10/xcode-15-duplicate-library-linker-warnings/
     set(is_xcode15 "$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,15>")
+    set(not_disabled "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_NO_DISABLE_WARN_DUPLICATE_LIBRARIES>>>")
     target_link_options(PlatformCommonInternal INTERFACE
-        "$<${is_xcode15}:LINKER:-no_warn_duplicate_libraries>")
+        "$<$<AND:${not_disabled},${is_xcode15}>:LINKER:-no_warn_duplicate_libraries>")
 endif()
 
 if(MSVC)
