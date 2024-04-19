@@ -304,18 +304,25 @@ private:
     qreal m_right;
     qreal m_bottom;
 
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_FLOAT_COMPARE
     friend constexpr inline bool operator==(const QMarginsF &lhs, const QMarginsF &rhs) noexcept
     {
-        return qFuzzyCompare(lhs.left(), rhs.left())
-            && qFuzzyCompare(lhs.top(), rhs.top())
-            && qFuzzyCompare(lhs.right(), rhs.right())
-            && qFuzzyCompare(lhs.bottom(), rhs.bottom());
+        return ((!lhs.m_left || !rhs.m_left) ? qFuzzyIsNull(lhs.m_left - rhs.m_left)
+                                             : qFuzzyCompare(lhs.m_left, rhs.m_left))
+            && ((!lhs.m_top || !rhs.m_top) ? qFuzzyIsNull(lhs.m_top - rhs.m_top)
+                                           : qFuzzyCompare(lhs.m_top, rhs.m_top))
+            && ((!lhs.m_right || !rhs.m_right) ? qFuzzyIsNull(lhs.m_right - rhs.m_right)
+                                               : qFuzzyCompare(lhs.m_right, rhs.m_right))
+            && ((!lhs.m_bottom || !rhs.m_bottom) ? qFuzzyIsNull(lhs.m_bottom - rhs.m_bottom)
+                                                 : qFuzzyCompare(lhs.m_bottom, rhs.m_bottom));
     }
 
     friend constexpr inline bool operator!=(const QMarginsF &lhs, const QMarginsF &rhs) noexcept
     {
         return !(lhs == rhs);
     }
+    QT_WARNING_POP
 
     template <std::size_t I,
               typename M,

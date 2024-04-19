@@ -32,15 +32,21 @@ CHECK(const &&);
 
 #include <QTest>
 #include <qmargins.h>
+#include <private/qcomparisontesthelper_p.h>
 
 #include <array>
 
 Q_DECLARE_METATYPE(QMargins)
 
+constexpr static qreal qreal_min = std::numeric_limits<qreal>::min();
+
 class tst_QMargins : public QObject
 {
     Q_OBJECT
 private slots:
+    void comparison_data();
+    void comparison();
+
     void getSetCheck();
 #ifndef QT_NO_DATASTREAM
     void dataStreamCheck();
@@ -64,6 +70,46 @@ private slots:
     void toMarginsF_data();
     void toMarginsF();
 };
+
+void tst_QMargins::comparison_data()
+{
+    QTest::addColumn<QMarginsF>("lhs");
+    QTest::addColumn<QMarginsF>("rhs");
+    QTest::addColumn<bool>("result");
+    QTest::addColumn<bool>("floatResult");
+    QTest::addColumn<bool>("mixedResult");
+
+    auto row = [](const QMarginsF &lhs, const QMarginsF &rhs, bool res, bool fRes, bool mRes) {
+        QString str;
+        QDebug dbg(&str);
+        dbg.nospace() << "(" << lhs.left() << ", " << lhs.top() << ", " << lhs.right() << ", "
+                      << lhs.bottom() << ") vs (" << rhs.left() << ", " << rhs.top() << ", "
+                      << rhs.right() << ", " << rhs.bottom() << ")";
+        QTest::addRow("%s", str.toLatin1().constData()) << lhs << rhs << res << fRes << mRes;
+    };
+
+    row(QMarginsF(0.0, 0.0, 0.0, 0.0), QMarginsF(0.0, 0.0, 0.0, 0.0), true, true, true);
+    row(QMarginsF(qreal_min, -qreal_min, -qreal_min, qreal_min), QMarginsF(0.0, 0.0, 0.0, 0.0), true, true, true);
+    row(QMarginsF(1.0, 2.0, 3.0, 4.0), QMarginsF(1.1, 2.1, 2.9, 3.9), true, false, true);
+    row(QMarginsF(1.5, 2.5, 3.0, 4.0), QMarginsF(1.1, 2.1, 2.9, 3.9), false, false, false);
+}
+
+void tst_QMargins::comparison()
+{
+    QFETCH(const QMarginsF, lhs);
+    QFETCH(const QMarginsF, rhs);
+    QFETCH(const bool, result);
+    QFETCH(const bool, floatResult);
+    QFETCH(const bool, mixedResult);
+
+    QT_TEST_EQUALITY_OPS(lhs, rhs, floatResult);
+
+    const QMargins lhsInt = lhs.toMargins();
+    const QMargins rhsInt = rhs.toMargins();
+    QT_TEST_EQUALITY_OPS(lhsInt, rhsInt, result);
+
+    QT_TEST_EQUALITY_OPS(lhs, rhsInt, mixedResult);
+}
 
 // Testing get/set functions
 void tst_QMargins::getSetCheck()
