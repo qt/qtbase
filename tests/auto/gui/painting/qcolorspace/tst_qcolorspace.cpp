@@ -292,9 +292,9 @@ void tst_QColorSpace::imageConversion()
     int lastBlue = 0;
     for (int i = 0; i < 256; ++i) {
         QRgb p = testImage.pixel(i, 0);
-        QVERIFY(qRed(p) >= lastRed);
-        QVERIFY(qGreen(p) >= lastGreen);
-        QVERIFY(qBlue(p) >= lastBlue);
+        QCOMPARE_GE(qRed(p), lastRed);
+        QCOMPARE_GE(qGreen(p), lastGreen);
+        QCOMPARE_GE(qBlue(p), lastBlue);
         lastRed = qRed(p);
         lastGreen = qGreen(p);
         lastBlue = qBlue(p);
@@ -307,12 +307,12 @@ void tst_QColorSpace::imageConversion()
     QCOMPARE(testImage.colorSpace(), QColorSpace(fromColorSpace));
     for (int i = 0; i < 256; ++i) {
         QRgb p = testImage.pixel(i, 0);
-        QVERIFY(qAbs(qRed(p) - qBlue(p)) <= tolerance);
-        QVERIFY(qAbs(qRed(p) - qGreen(p)) <= tolerance);
-        QVERIFY(qAbs(qGreen(p) - qBlue(p)) <= tolerance);
-        QVERIFY((lastRed   - qRed(p))   <= (tolerance / 2));
-        QVERIFY((lastGreen - qGreen(p)) <= (tolerance / 2));
-        QVERIFY((lastBlue  - qBlue(p))  <= (tolerance / 2));
+        QCOMPARE_LE(qAbs(qRed(p) - qBlue(p)), tolerance);
+        QCOMPARE_LE(qAbs(qRed(p) - qGreen(p)), tolerance);
+        QCOMPARE_LE(qAbs(qGreen(p) - qBlue(p)), tolerance);
+        QCOMPARE_LE(lastRed   - qRed(p), tolerance / 2);
+        QCOMPARE_LE(lastBlue  - qBlue(p), tolerance / 2);
+        QCOMPARE_LE(lastGreen - qGreen(p), tolerance / 2);
         lastRed = qRed(p);
         lastGreen = qGreen(p);
         lastBlue = qBlue(p);
@@ -353,9 +353,9 @@ void tst_QColorSpace::imageConversion64()
     int lastBlue = 0;
     for (int i = 0; i < 256; ++i) {
         QRgb p = testImage.pixel(i, 0);
-        QVERIFY(qRed(p) >= lastRed);
-        QVERIFY(qGreen(p) >= lastGreen);
-        QVERIFY(qBlue(p) >= lastBlue);
+        QCOMPARE_GE(qRed(p), lastRed);
+        QCOMPARE_GE(qGreen(p), lastGreen);
+        QCOMPARE_GE(qBlue(p), lastBlue);
         lastRed = qRed(p);
         lastGreen = qGreen(p);
         lastBlue = qBlue(p);
@@ -370,9 +370,9 @@ void tst_QColorSpace::imageConversion64()
         QRgb p = testImage.pixel(i, 0);
         QCOMPARE(qRed(p),  qGreen(p));
         QCOMPARE(qRed(p),  qBlue(p));
-        QVERIFY((lastRed   - qRed(p))   <= 0);
-        QVERIFY((lastGreen - qGreen(p)) <= 0);
-        QVERIFY((lastBlue  - qBlue(p))  <= 0);
+        QCOMPARE_GE(qRed(p), lastRed);
+        QCOMPARE_GE(qGreen(p), lastGreen);
+        QCOMPARE_GE(qBlue(p), lastBlue);
         lastRed = qRed(p);
         lastGreen = qGreen(p);
         lastBlue = qBlue(p);
@@ -415,17 +415,17 @@ void tst_QColorSpace::imageConversion64PM()
         const int expectedAlpha = j * 15;
         for (int i = 0; i < 256; ++i) {
             QRgb p = testImage.pixel(i, j);
-            QVERIFY(qRed(p) >= lastRed);
-            QVERIFY(qGreen(p) >= lastGreen);
-            QVERIFY(qBlue(p) >= lastBlue);
+            QCOMPARE_GE(qRed(p), lastRed);
+            QCOMPARE_GE(qGreen(p), lastGreen);
+            QCOMPARE_GE(qBlue(p), lastBlue);
             QCOMPARE(qAlpha(p), expectedAlpha);
             lastRed = qRed(p);
             lastGreen = qGreen(p);
             lastBlue = qBlue(p);
         }
-        QVERIFY(lastRed <= expectedAlpha);
-        QVERIFY(lastGreen <= expectedAlpha);
-        QVERIFY(lastBlue <= expectedAlpha);
+        QCOMPARE_LE(lastRed, expectedAlpha);
+        QCOMPARE_LE(lastGreen, expectedAlpha);
+        QCOMPARE_LE(lastBlue, expectedAlpha);
         lastRed = 0;
         lastGreen = 0;
         lastBlue = 0;
@@ -438,15 +438,15 @@ void tst_QColorSpace::imageConversion64PM()
         for (int i = 0; i < 256; ++i) {
             QRgb expected = qPremultiply(qRgba(i, i, i, expectedAlpha));
             QRgb p = testImage.pixel(i, j);
-            QVERIFY(qAbs(qRed(p) - qGreen(p)) <= 1);
-            QVERIFY(qAbs(qRed(p) - qBlue(p)) <= 1);
+            QCOMPARE_LE(qAbs(qRed(p) - qGreen(p)), 1);
+            QCOMPARE_LE(qAbs(qRed(p) - qBlue(p)), 1);
             QCOMPARE(qAlpha(p), expectedAlpha);
-            QVERIFY((lastRed   - qRed(p))   <= 0);
-            QVERIFY((lastGreen - qGreen(p)) <= 0);
-            QVERIFY((lastBlue  - qBlue(p))  <= 0);
-            QVERIFY(qAbs(qRed(p) - qRed(expected)) <= 1);
-            QVERIFY(qAbs(qGreen(p) - qGreen(expected)) <= 1);
-            QVERIFY(qAbs(qBlue(p) - qBlue(expected)) <= 1);
+            QCOMPARE_GE(qRed(p), lastRed);
+            QCOMPARE_GE(qGreen(p), lastGreen);
+            QCOMPARE_GE(qBlue(p), lastBlue);
+            QCOMPARE_LE(qAbs(qRed(p) - qRed(expected)), 1);
+            QCOMPARE_LE(qAbs(qGreen(p) - qGreen(expected)), 1);
+            QCOMPARE_LE(qAbs(qBlue(p) - qBlue(expected)), 1);
             lastRed = qRed(p);
             lastGreen = qGreen(p);
             lastBlue = qBlue(p);
@@ -493,7 +493,7 @@ void tst_QColorSpace::imageConversionOverLargerGamut()
         int lastRed = 0;
         for (int x = 0; x < 256; ++x) {
             QRgb p = resultImage.pixel(x, y);
-            QVERIFY(qRed(p) >= lastRed);
+            QCOMPARE_GE(qRed(p), lastRed);
             lastRed = qRed(p);
         }
     }
@@ -501,7 +501,7 @@ void tst_QColorSpace::imageConversionOverLargerGamut()
         int lastGreen = 0;
         for (int y = 0; y < 256; ++y) {
             QRgb p = resultImage.pixel(x, y);
-            QVERIFY(qGreen(p) >= lastGreen);
+            QCOMPARE_GE(qGreen(p), lastGreen);
             lastGreen = qGreen(p);
         }
     }
