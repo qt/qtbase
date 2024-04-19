@@ -14,6 +14,8 @@ endif()
 qt_internal_add_test(tst_qversionnumber
     SOURCES
         tst_qversionnumber.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )
 
 ## Scopes:

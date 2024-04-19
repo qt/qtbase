@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QtCore/qversionnumber.h>
 #include <QtCore/qlibraryinfo.h>
 
@@ -16,24 +17,15 @@ private:
 
 private slots:
     void initTestCase();
+    void compareCompiles();
     void constructorDefault();
     void constructorVersioned_data();
     void constructorVersioned();
     void constructorExplicit();
     void constructorCopy_data();
     void constructorCopy();
-    void compareGreater_data();
-    void compareGreater();
-    void compareGreaterEqual_data();
-    void compareGreaterEqual();
-    void compareLess_data();
-    void compareLess();
-    void compareLessEqual_data();
-    void compareLessEqual();
-    void compareEqual_data();
-    void compareEqual();
-    void compareNotEqual_data();
-    void compareNotEqual();
+    void comparisonOperators_data();
+    void comparisonOperators();
     void compare_data();
     void compare();
     void isPrefixOf_data();
@@ -121,79 +113,79 @@ void tst_QVersionNumber::comparisonData()
 {
     QTest::addColumn<QVersionNumber>("lhs");
     QTest::addColumn<QVersionNumber>("rhs");
-    QTest::addColumn<bool>("equal");
-    QTest::addColumn<bool>("notEqual");
-    QTest::addColumn<bool>("lessThan");
-    QTest::addColumn<bool>("lessThanOrEqual");
-    QTest::addColumn<bool>("greaterThan");
-    QTest::addColumn<bool>("greaterThanOrEqual");
+    QTest::addColumn<Qt::strong_ordering>("ordering");
     QTest::addColumn<int>("compareResult");
     QTest::addColumn<bool>("isPrefix");
     QTest::addColumn<QVersionNumber>("common");
 
-    //                                LHS                          RHS                          ==       !=       <        <=       >        >=       compareResult     isPrefixOf        commonPrefix
-    QTest::newRow("null, null")    << QVersionNumber()          << QVersionNumber()          << true  << false << false << true  << false << true  <<  0             << true           << QVersionNumber();
-    QTest::newRow("null, 0")       << QVersionNumber()          << QVersionNumber(0)         << false << true  << true  << true  << false << false << -1             << true           << QVersionNumber();
-    QTest::newRow("0, null")       << QVersionNumber(0)         << QVersionNumber()          << false << true  << false << false << true  << true  <<  1             << false          << QVersionNumber();
-    QTest::newRow("0, 0")          << QVersionNumber(0)         << QVersionNumber(0)         << true  << false << false << true  << false << true  <<  0             << true           << QVersionNumber(0);
-    QTest::newRow("1.0, 1.0")      << QVersionNumber(1, 0)      << QVersionNumber(1, 0)      << true  << false << false << true  << false << true  <<  0             << true           << QVersionNumber(1, 0);
-    QTest::newRow("1, 1.0")        << QVersionNumber(1)         << QVersionNumber(1, 0)      << false << true  << true  << true  << false << false << -1             << true           << QVersionNumber(1);
-    QTest::newRow("1.0, 1")        << QVersionNumber(1, 0)      << QVersionNumber(1)         << false << true  << false << false << true  << true  <<  1             << false          << QVersionNumber(1);
+    //                                LHS                          RHS                          ordering                        compareResult     isPrefixOf        commonPrefix
+    QTest::newRow("null, null")    << QVersionNumber()          << QVersionNumber()          << Qt::strong_ordering::equal   <<  0             << true           << QVersionNumber();
+    QTest::newRow("null, 0")       << QVersionNumber()          << QVersionNumber(0)         << Qt::strong_ordering::less    << -1             << true           << QVersionNumber();
+    QTest::newRow("0, null")       << QVersionNumber(0)         << QVersionNumber()          << Qt::strong_ordering::greater <<  1             << false          << QVersionNumber();
+    QTest::newRow("0, 0")          << QVersionNumber(0)         << QVersionNumber(0)         << Qt::strong_ordering::equal   <<  0             << true           << QVersionNumber(0);
+    QTest::newRow("1.0, 1.0")      << QVersionNumber(1, 0)      << QVersionNumber(1, 0)      << Qt::strong_ordering::equal   <<  0             << true           << QVersionNumber(1, 0);
+    QTest::newRow("1, 1.0")        << QVersionNumber(1)         << QVersionNumber(1, 0)      << Qt::strong_ordering::less    << -1             << true           << QVersionNumber(1);
+    QTest::newRow("1.0, 1")        << QVersionNumber(1, 0)      << QVersionNumber(1)         << Qt::strong_ordering::greater <<  1             << false          << QVersionNumber(1);
 
-    QTest::newRow("0.1.2, 0.1")    << QVersionNumber(0, 1, 2)   << QVersionNumber(0, 1)      << false << true  << false << false << true  << true  <<  2             << false          << QVersionNumber(0, 1);
-    QTest::newRow("0.1, 0.1.2")    << QVersionNumber(0, 1)      << QVersionNumber(0, 1, 2)   << false << true  << true  << true  << false << false << -2             << true           << QVersionNumber(0, 1);
-    QTest::newRow("0.1.2, 0.1.2")  << QVersionNumber(0, 1, 2)   << QVersionNumber(0, 1, 2)   << true  << false << false << true  << false << true  <<  0             << true           << QVersionNumber(0, 1, 2);
-    QTest::newRow("0.1.2, 1.1.2")  << QVersionNumber(0, 1, 2)   << QVersionNumber(1, 1, 2)   << false << true  << true  << true  << false << false << -1             << false          << QVersionNumber();
-    QTest::newRow("1.1.2, 0.1.2")  << QVersionNumber(1, 1, 2)   << QVersionNumber(0, 1, 2)   << false << true  << false << false << true  << true  <<  1             << false          << QVersionNumber();
-    QTest::newRow("1, -1")         << QVersionNumber(1)         << QVersionNumber(-1)        << false << true  << false << false << true  << true  <<  2             << false          << QVersionNumber();
-    QTest::newRow("-1, 1")         << QVersionNumber(-1)        << QVersionNumber(1)         << false << true  << true  << true  << false << false << -2             << false          << QVersionNumber();
-    QTest::newRow("0.1, 0.-1")     << QVersionNumber(0, 1)      << QVersionNumber(0, -1)     << false << true  << false << false << true  << true  <<  2             << false          << QVersionNumber(0);
-    QTest::newRow("0.-1, 0.1")     << QVersionNumber(0, -1)     << QVersionNumber(0, 1)      << false << true  << true  << true  << false << false << -2             << false          << QVersionNumber(0);
-    QTest::newRow("0.-1, 0")       << QVersionNumber(0, -1)     << QVersionNumber(0)         << false << true  << true  << true  << false << false << -1             << false          << QVersionNumber(0);
-    QTest::newRow("0, 0.-1")       << QVersionNumber(0)         << QVersionNumber(0, -1)     << false << true  << false << false << true  << true  <<  1             << true           << QVersionNumber(0);
+    QTest::newRow("0.1.2, 0.1")    << QVersionNumber(0, 1, 2)   << QVersionNumber(0, 1)      << Qt::strong_ordering::greater  <<  2             << false          << QVersionNumber(0, 1);
+    QTest::newRow("0.1, 0.1.2")    << QVersionNumber(0, 1)      << QVersionNumber(0, 1, 2)   << Qt::strong_ordering::less     << -2             << true           << QVersionNumber(0, 1);
+    QTest::newRow("0.1.2, 0.1.2")  << QVersionNumber(0, 1, 2)   << QVersionNumber(0, 1, 2)   << Qt::strong_ordering::equal    <<  0             << true           << QVersionNumber(0, 1, 2);
+    QTest::newRow("0.1.2, 1.1.2")  << QVersionNumber(0, 1, 2)   << QVersionNumber(1, 1, 2)   << Qt::strong_ordering::less     << -1             << false          << QVersionNumber();
+    QTest::newRow("1.1.2, 0.1.2")  << QVersionNumber(1, 1, 2)   << QVersionNumber(0, 1, 2)   << Qt::strong_ordering::greater  <<  1             << false          << QVersionNumber();
+    QTest::newRow("1, -1")         << QVersionNumber(1)         << QVersionNumber(-1)        << Qt::strong_ordering::greater  <<  2             << false          << QVersionNumber();
+    QTest::newRow("-1, 1")         << QVersionNumber(-1)        << QVersionNumber(1)         << Qt::strong_ordering::less     << -2             << false          << QVersionNumber();
+    QTest::newRow("0.1, 0.-1")     << QVersionNumber(0, 1)      << QVersionNumber(0, -1)     << Qt::strong_ordering::greater  <<  2             << false          << QVersionNumber(0);
+    QTest::newRow("0.-1, 0.1")     << QVersionNumber(0, -1)     << QVersionNumber(0, 1)      << Qt::strong_ordering::less     << -2             << false          << QVersionNumber(0);
+    QTest::newRow("0.-1, 0")       << QVersionNumber(0, -1)     << QVersionNumber(0)         << Qt::strong_ordering::less     << -1             << false          << QVersionNumber(0);
+    QTest::newRow("0, 0.-1")       << QVersionNumber(0)         << QVersionNumber(0, -1)     << Qt::strong_ordering::greater  <<  1             << true           << QVersionNumber(0);
 
-    QTest::newRow("0.127.2, 0.127")     << QVersionNumber(0, 127, 2)   << QVersionNumber(0, 127)      << false << true  << false << false << true  << true  <<  2    << false          << QVersionNumber(0, 127);
-    QTest::newRow("0.127, 0.127.2")     << QVersionNumber(0, 127)      << QVersionNumber(0, 127, 2)   << false << true  << true  << true  << false << false << -2    << true           << QVersionNumber(0, 127);
-    QTest::newRow("0.127.2, 0.127.2")   << QVersionNumber(0, 127, 2)   << QVersionNumber(0, 127, 2)   << true  << false << false << true  << false << true  <<  0    << true           << QVersionNumber(0, 127, 2);
-    QTest::newRow("0.127.2, 127.127.2") << QVersionNumber(0, 127, 2)   << QVersionNumber(127, 127, 2) << false << true  << true  << true  << false << false << -127  << false          << QVersionNumber();
-    QTest::newRow("127.127.2, 0.127.2") << QVersionNumber(127, 127, 2) << QVersionNumber(0, 127, 2)   << false << true  << false << false << true  << true  <<  127  << false          << QVersionNumber();
-    QTest::newRow("127, -128")          << QVersionNumber(127)         << QVersionNumber(-128)        << false << true  << false << false << true  << true  <<  255  << false          << QVersionNumber();
-    QTest::newRow("-128, 127")          << QVersionNumber(-128)        << QVersionNumber(127)         << false << true  << true  << true  << false << false << -255  << false          << QVersionNumber();
-    QTest::newRow("0.127, 0.-128")      << QVersionNumber(0, 127)      << QVersionNumber(0, -128)     << false << true  << false << false << true  << true  <<  255  << false          << QVersionNumber(0);
-    QTest::newRow("0.-128, 0.127")      << QVersionNumber(0, -128)     << QVersionNumber(0, 127)      << false << true  << true  << true  << false << false << -255  << false          << QVersionNumber(0);
-    QTest::newRow("0.-128, 0")          << QVersionNumber(0, -128)     << QVersionNumber(0)           << false << true  << true  << true  << false << false << -128  << false          << QVersionNumber(0);
-    QTest::newRow("0, 0.-128")          << QVersionNumber(0)           << QVersionNumber(0, -128)     << false << true  << false << false << true  << true  <<  128  << true           << QVersionNumber(0);
+    QTest::newRow("0.127.2, 0.127")     << QVersionNumber(0, 127, 2)   << QVersionNumber(0, 127)      << Qt::strong_ordering::greater  <<  2    << false          << QVersionNumber(0, 127);
+    QTest::newRow("0.127, 0.127.2")     << QVersionNumber(0, 127)      << QVersionNumber(0, 127, 2)   << Qt::strong_ordering::less     << -2    << true           << QVersionNumber(0, 127);
+    QTest::newRow("0.127.2, 0.127.2")   << QVersionNumber(0, 127, 2)   << QVersionNumber(0, 127, 2)   << Qt::strong_ordering::equal    <<  0    << true           << QVersionNumber(0, 127, 2);
+    QTest::newRow("0.127.2, 127.127.2") << QVersionNumber(0, 127, 2)   << QVersionNumber(127, 127, 2) << Qt::strong_ordering::less     << -127  << false          << QVersionNumber();
+    QTest::newRow("127.127.2, 0.127.2") << QVersionNumber(127, 127, 2) << QVersionNumber(0, 127, 2)   << Qt::strong_ordering::greater  <<  127  << false          << QVersionNumber();
+    QTest::newRow("127, -128")          << QVersionNumber(127)         << QVersionNumber(-128)        << Qt::strong_ordering::greater  <<  255  << false          << QVersionNumber();
+    QTest::newRow("-128, 127")          << QVersionNumber(-128)        << QVersionNumber(127)         << Qt::strong_ordering::less     << -255  << false          << QVersionNumber();
+    QTest::newRow("0.127, 0.-128")      << QVersionNumber(0, 127)      << QVersionNumber(0, -128)     << Qt::strong_ordering::greater  <<  255  << false          << QVersionNumber(0);
+    QTest::newRow("0.-128, 0.127")      << QVersionNumber(0, -128)     << QVersionNumber(0, 127)      << Qt::strong_ordering::less     << -255  << false          << QVersionNumber(0);
+    QTest::newRow("0.-128, 0")          << QVersionNumber(0, -128)     << QVersionNumber(0)           << Qt::strong_ordering::less     << -128  << false          << QVersionNumber(0);
+    QTest::newRow("0, 0.-128")          << QVersionNumber(0)           << QVersionNumber(0, -128)     << Qt::strong_ordering::greater  <<  128  << true           << QVersionNumber(0);
 
-    QTest::newRow("0.128.2, 0.128")     << QVersionNumber(0, 128, 2)   << QVersionNumber(0, 128)      << false << true  << false << false << true  << true  <<  2    << false          << QVersionNumber(0, 128);
-    QTest::newRow("0.128, 0.128.2")     << QVersionNumber(0, 128)      << QVersionNumber(0, 128, 2)   << false << true  << true  << true  << false << false << -2    << true           << QVersionNumber(0, 128);
-    QTest::newRow("0.128.2, 0.128.2")   << QVersionNumber(0, 128, 2)   << QVersionNumber(0, 128, 2)   << true  << false << false << true  << false << true  <<  0    << true           << QVersionNumber(0, 128, 2);
-    QTest::newRow("0.128.2, 128.128.2") << QVersionNumber(0, 128, 2)   << QVersionNumber(128, 128, 2) << false << true  << true  << true  << false << false << -128  << false          << QVersionNumber();
-    QTest::newRow("128.128.2, 0.128.2") << QVersionNumber(128, 128, 2) << QVersionNumber(0, 128, 2)   << false << true  << false << false << true  << true  <<  128  << false          << QVersionNumber();
-    QTest::newRow("128, -129")          << QVersionNumber(128)         << QVersionNumber(-129)        << false << true  << false << false << true  << true  <<  257  << false          << QVersionNumber();
-    QTest::newRow("-129, 128")          << QVersionNumber(-129)        << QVersionNumber(128)         << false << true  << true  << true  << false << false << -257  << false          << QVersionNumber();
-    QTest::newRow("0.128, 0.-129")      << QVersionNumber(0, 128)      << QVersionNumber(0, -129)     << false << true  << false << false << true  << true  <<  257  << false          << QVersionNumber(0);
-    QTest::newRow("0.-129, 0.128")      << QVersionNumber(0, -129)     << QVersionNumber(0, 128)      << false << true  << true  << true  << false << false << -257  << false          << QVersionNumber(0);
-    QTest::newRow("0.-129, 0")          << QVersionNumber(0, -129)     << QVersionNumber(0)           << false << true  << true  << true  << false << false << -129  << false          << QVersionNumber(0);
-    QTest::newRow("0, 0.-129")          << QVersionNumber(0)           << QVersionNumber(0, -129)     << false << true  << false << false << true  << true  <<  129  << true           << QVersionNumber(0);
+    QTest::newRow("0.128.2, 0.128")     << QVersionNumber(0, 128, 2)   << QVersionNumber(0, 128)      << Qt::strong_ordering::greater  <<  2    << false          << QVersionNumber(0, 128);
+    QTest::newRow("0.128, 0.128.2")     << QVersionNumber(0, 128)      << QVersionNumber(0, 128, 2)   << Qt::strong_ordering::less     << -2    << true           << QVersionNumber(0, 128);
+    QTest::newRow("0.128.2, 0.128.2")   << QVersionNumber(0, 128, 2)   << QVersionNumber(0, 128, 2)   << Qt::strong_ordering::equal    <<  0    << true           << QVersionNumber(0, 128, 2);
+    QTest::newRow("0.128.2, 128.128.2") << QVersionNumber(0, 128, 2)   << QVersionNumber(128, 128, 2) << Qt::strong_ordering::less     << -128  << false          << QVersionNumber();
+    QTest::newRow("128.128.2, 0.128.2") << QVersionNumber(128, 128, 2) << QVersionNumber(0, 128, 2)   << Qt::strong_ordering::greater  <<  128  << false          << QVersionNumber();
+    QTest::newRow("128, -129")          << QVersionNumber(128)         << QVersionNumber(-129)        << Qt::strong_ordering::greater  <<  257  << false          << QVersionNumber();
+    QTest::newRow("-129, 128")          << QVersionNumber(-129)        << QVersionNumber(128)         << Qt::strong_ordering::less     << -257  << false          << QVersionNumber();
+    QTest::newRow("0.128, 0.-129")      << QVersionNumber(0, 128)      << QVersionNumber(0, -129)     << Qt::strong_ordering::greater  <<  257  << false          << QVersionNumber(0);
+    QTest::newRow("0.-129, 0.128")      << QVersionNumber(0, -129)     << QVersionNumber(0, 128)      << Qt::strong_ordering::less     << -257  << false          << QVersionNumber(0);
+    QTest::newRow("0.-129, 0")          << QVersionNumber(0, -129)     << QVersionNumber(0)           << Qt::strong_ordering::less     << -129  << false          << QVersionNumber(0);
+    QTest::newRow("0, 0.-129")          << QVersionNumber(0)           << QVersionNumber(0, -129)     << Qt::strong_ordering::greater  <<  129  << true           << QVersionNumber(0);
 
     const QList<int> common = QList<int>({ 0, 1, 2, 3, 4, 5, 6 });
     using namespace UglyOperator;
-    QTest::newRow("0.1.2.3.4.5.6.0.1.2, 0.1.2.3.4.5.6.0.1")    << QVersionNumber(common + 0 + 1 + 2) << QVersionNumber(common + 0 + 1)     << false << true  << false << false << true  << true  <<  2             << false          << QVersionNumber(common + 0 + 1);
-    QTest::newRow("0.1.2.3.4.5.6.0.1, 0.1.2.3.4.5.6.0.1.2")    << QVersionNumber(common + 0 + 1)     << QVersionNumber(common + 0 + 1 + 2) << false << true  << true  << true  << false << false << -2             << true           << QVersionNumber(common + 0 + 1);
-    QTest::newRow("0.1.2.3.4.5.6.0.1.2, 0.1.2.3.4.5.6.0.1.2")  << QVersionNumber(common + 0 + 1 + 2) << QVersionNumber(common + 0 + 1 + 2) << true  << false << false << true  << false << true  <<  0             << true           << QVersionNumber(common + 0 + 1 + 2);
-    QTest::newRow("0.1.2.3.4.5.6.0.1.2, 0.1.2.3.4.5.6.1.1.2")  << QVersionNumber(common + 0 + 1 + 2) << QVersionNumber(common + 1 + 1 + 2) << false << true  << true  << true  << false << false << -1             << false          << QVersionNumber(common);
-    QTest::newRow("0.1.2.3.4.5.6.1.1.2, 0.1.2.3.4.5.6.0.1.2")  << QVersionNumber(common + 1 + 1 + 2) << QVersionNumber(common + 0 + 1 + 2) << false << true  << false << false << true  << true  <<  1             << false          << QVersionNumber(common);
-    QTest::newRow("0.1.2.3.4.5.6.1, 0.1.2.3.4.5.6.-1")         << QVersionNumber(common + 1)         << QVersionNumber(common + -1)        << false << true  << false << false << true  << true  <<  2             << false          << QVersionNumber(common);
-    QTest::newRow("0.1.2.3.4.5.6.-1, 0.1.2.3.4.5.6.1")         << QVersionNumber(common + -1)        << QVersionNumber(common + 1)         << false << true  << true  << true  << false << false << -2             << false          << QVersionNumber(common);
-    QTest::newRow("0.1.2.3.4.5.6.0.1, 0.1.2.3.4.5.6.0.-1")     << QVersionNumber(common + 0 + 1)     << QVersionNumber(common + 0 + -1)    << false << true  << false << false << true  << true  <<  2             << false          << QVersionNumber(common + 0);
-    QTest::newRow("0.1.2.3.4.5.6.0.-1, 0.1.2.3.4.5.6.0.1")     << QVersionNumber(common + 0 + -1)    << QVersionNumber(common + 0 + 1)     << false << true  << true  << true  << false << false << -2             << false          << QVersionNumber(common + 0);
-    QTest::newRow("0.1.2.3.4.5.6.0.-1, 0.1.2.3.4.5.6.0")       << QVersionNumber(common + 0 + -1)    << QVersionNumber(common + 0)         << false << true  << true  << true  << false << false << -1             << false          << QVersionNumber(common + 0);
-    QTest::newRow("0.1.2.3.4.5.6.0, 0.1.2.3.4.5.6.0.-1")       << QVersionNumber(common + 0)         << QVersionNumber(common + 0 + -1)    << false << true  << false << false << true  << true  <<  1             << true           << QVersionNumber(common + 0);
+    QTest::newRow("0.1.2.3.4.5.6.0.1.2, 0.1.2.3.4.5.6.0.1")    << QVersionNumber(common + 0 + 1 + 2) << QVersionNumber(common + 0 + 1)     << Qt::strong_ordering::greater  <<  2             << false          << QVersionNumber(common + 0 + 1);
+    QTest::newRow("0.1.2.3.4.5.6.0.1, 0.1.2.3.4.5.6.0.1.2")    << QVersionNumber(common + 0 + 1)     << QVersionNumber(common + 0 + 1 + 2) << Qt::strong_ordering::less     << -2             << true           << QVersionNumber(common + 0 + 1);
+    QTest::newRow("0.1.2.3.4.5.6.0.1.2, 0.1.2.3.4.5.6.0.1.2")  << QVersionNumber(common + 0 + 1 + 2) << QVersionNumber(common + 0 + 1 + 2) << Qt::strong_ordering::equal    <<  0             << true           << QVersionNumber(common + 0 + 1 + 2);
+    QTest::newRow("0.1.2.3.4.5.6.0.1.2, 0.1.2.3.4.5.6.1.1.2")  << QVersionNumber(common + 0 + 1 + 2) << QVersionNumber(common + 1 + 1 + 2) << Qt::strong_ordering::less     << -1             << false          << QVersionNumber(common);
+    QTest::newRow("0.1.2.3.4.5.6.1.1.2, 0.1.2.3.4.5.6.0.1.2")  << QVersionNumber(common + 1 + 1 + 2) << QVersionNumber(common + 0 + 1 + 2) << Qt::strong_ordering::greater  <<  1             << false          << QVersionNumber(common);
+    QTest::newRow("0.1.2.3.4.5.6.1, 0.1.2.3.4.5.6.-1")         << QVersionNumber(common + 1)         << QVersionNumber(common + -1)        << Qt::strong_ordering::greater  <<  2             << false          << QVersionNumber(common);
+    QTest::newRow("0.1.2.3.4.5.6.-1, 0.1.2.3.4.5.6.1")         << QVersionNumber(common + -1)        << QVersionNumber(common + 1)         << Qt::strong_ordering::less     << -2             << false          << QVersionNumber(common);
+    QTest::newRow("0.1.2.3.4.5.6.0.1, 0.1.2.3.4.5.6.0.-1")     << QVersionNumber(common + 0 + 1)     << QVersionNumber(common + 0 + -1)    << Qt::strong_ordering::greater  <<  2             << false          << QVersionNumber(common + 0);
+    QTest::newRow("0.1.2.3.4.5.6.0.-1, 0.1.2.3.4.5.6.0.1")     << QVersionNumber(common + 0 + -1)    << QVersionNumber(common + 0 + 1)     << Qt::strong_ordering::less     << -2             << false          << QVersionNumber(common + 0);
+    QTest::newRow("0.1.2.3.4.5.6.0.-1, 0.1.2.3.4.5.6.0")       << QVersionNumber(common + 0 + -1)    << QVersionNumber(common + 0)         << Qt::strong_ordering::less     << -1             << false          << QVersionNumber(common + 0);
+    QTest::newRow("0.1.2.3.4.5.6.0, 0.1.2.3.4.5.6.0.-1")       << QVersionNumber(common + 0)         << QVersionNumber(common + 0 + -1)    << Qt::strong_ordering::greater  <<  1             << true           << QVersionNumber(common + 0);
 }
 
 void tst_QVersionNumber::initTestCase()
 {
     qRegisterMetaType<QList<int>>();
+}
+
+void tst_QVersionNumber::compareCompiles()
+{
+    QTestPrivate::testAllComparisonOperatorsCompile<QVersionNumber>();
 }
 
 void tst_QVersionNumber::constructorDefault()
@@ -270,88 +262,18 @@ void tst_QVersionNumber::constructorCopy()
     QCOMPARE(version.segments(), expectedVersion.segments());
 }
 
-void tst_QVersionNumber::compareGreater_data()
+void tst_QVersionNumber::comparisonOperators_data()
 {
     comparisonData();
 }
 
-void tst_QVersionNumber::compareGreater()
+void tst_QVersionNumber::comparisonOperators()
 {
     QFETCH(QVersionNumber, lhs);
     QFETCH(QVersionNumber, rhs);
-    QFETCH(bool, greaterThan);
+    QFETCH(Qt::strong_ordering, ordering);
 
-    QCOMPARE(lhs > rhs, greaterThan);
-}
-
-void tst_QVersionNumber::compareGreaterEqual_data()
-{
-    comparisonData();
-}
-
-void tst_QVersionNumber::compareGreaterEqual()
-{
-    QFETCH(QVersionNumber, lhs);
-    QFETCH(QVersionNumber, rhs);
-    QFETCH(bool, greaterThanOrEqual);
-
-    QCOMPARE(lhs >= rhs, greaterThanOrEqual);
-}
-
-void tst_QVersionNumber::compareLess_data()
-{
-    comparisonData();
-}
-
-void tst_QVersionNumber::compareLess()
-{
-    QFETCH(QVersionNumber, lhs);
-    QFETCH(QVersionNumber, rhs);
-    QFETCH(bool, lessThan);
-
-    QCOMPARE(lhs < rhs, lessThan);
-}
-
-void tst_QVersionNumber::compareLessEqual_data()
-{
-    comparisonData();
-}
-
-void tst_QVersionNumber::compareLessEqual()
-{
-    QFETCH(QVersionNumber, lhs);
-    QFETCH(QVersionNumber, rhs);
-    QFETCH(bool, lessThanOrEqual);
-
-    QCOMPARE(lhs <= rhs, lessThanOrEqual);
-}
-
-void tst_QVersionNumber::compareEqual_data()
-{
-    comparisonData();
-}
-
-void tst_QVersionNumber::compareEqual()
-{
-    QFETCH(QVersionNumber, lhs);
-    QFETCH(QVersionNumber, rhs);
-    QFETCH(bool, equal);
-
-    QCOMPARE(lhs == rhs, equal);
-}
-
-void tst_QVersionNumber::compareNotEqual_data()
-{
-    comparisonData();
-}
-
-void tst_QVersionNumber::compareNotEqual()
-{
-    QFETCH(QVersionNumber, lhs);
-    QFETCH(QVersionNumber, rhs);
-    QFETCH(bool, notEqual);
-
-    QCOMPARE(lhs != rhs, notEqual);
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, ordering);
 }
 
 void tst_QVersionNumber::compare_data()
@@ -394,7 +316,7 @@ void tst_QVersionNumber::commonPrefix()
     QFETCH(QVersionNumber, common);
 
     QVersionNumber calculatedPrefix = QVersionNumber::commonPrefix(lhs, rhs);
-    QCOMPARE(calculatedPrefix, common);
+    QT_TEST_EQUALITY_OPS(calculatedPrefix, common, true);
     QCOMPARE(calculatedPrefix.segments(), common.segments());
 }
 
@@ -530,18 +452,18 @@ void tst_QVersionNumber::fromString_extra()
     // when passing explicit nullptr:
     {
         auto v = QVersionNumber::fromString("1.2.3-rc1", nullptr);
-        QCOMPARE(v, QVersionNumber({1, 2, 3}));
+        QT_TEST_EQUALITY_OPS(v, QVersionNumber({1, 2, 3}), true);
     }
     {
         auto v = QVersionNumber::fromString("1.2.3-rc1", 0);
-        QCOMPARE(v, QVersionNumber({1, 2, 3}));
+        QT_TEST_EQUALITY_OPS(v, QVersionNumber({1, 2, 3}), true);
     }
 
     // check the UTF16->L1 conversion isn't doing something weird
     {
         qsizetype i = -1;
         auto v = QVersionNumber::fromString(u"1.0ı", &i); // LATIN SMALL LETTER DOTLESS I
-        QCOMPARE(v, QVersionNumber(1, 0));
+        QT_TEST_EQUALITY_OPS(v, QVersionNumber(1, 0), true);
         QCOMPARE(i, 3);
     }
 }
@@ -652,14 +574,14 @@ void tst_QVersionNumber::moveSemantics()
     {
         QVersionNumber v1(1, 2, 3);
         QVersionNumber v2 = std::move(v1);
-        QCOMPARE(v2, QVersionNumber(1, 2, 3));
+        QT_TEST_EQUALITY_OPS(v2, QVersionNumber(1, 2, 3), true);
     }
     // QVersionNumber &operator=(QVersionNumber &&)
     {
         QVersionNumber v1(1, 2, 3);
         QVersionNumber v2;
         v2 = std::move(v1);
-        QCOMPARE(v2, QVersionNumber(1, 2, 3));
+        QT_TEST_EQUALITY_OPS(v2, QVersionNumber(1, 2, 3), true);
     }
     // QVersionNumber(QList<int> &&)
     {
@@ -668,7 +590,7 @@ void tst_QVersionNumber::moveSemantics()
         QVersionNumber v2(std::move(segments));
         QVERIFY(!v1.isNull());
         QVERIFY(!v2.isNull());
-        QCOMPARE(v1, v2);
+        QT_TEST_EQUALITY_OPS(v1, v2, true);
     }
 #ifdef Q_COMPILER_REF_QUALIFIERS
     // normalized()

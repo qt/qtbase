@@ -6,6 +6,7 @@
 #ifndef QVERSIONNUMBER_H
 #define QVERSIONNUMBER_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qcontainertools_impl.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qmetatype.h>
@@ -355,25 +356,20 @@ public:
     [[nodiscard]] Q_CORE_EXPORT static QVersionNumber fromString(QStringView string, int *suffixIndex);
 #endif
 
-    [[nodiscard]] friend bool operator> (const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-    { return compare(lhs, rhs) > 0; }
-
-    [[nodiscard]] friend bool operator>=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-    { return compare(lhs, rhs) >= 0; }
-
-    [[nodiscard]] friend bool operator< (const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-    { return compare(lhs, rhs) < 0; }
-
-    [[nodiscard]] friend bool operator<=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-    { return compare(lhs, rhs) <= 0; }
-
-    [[nodiscard]] friend bool operator==(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-    { return compare(lhs, rhs) == 0; }
-
-    [[nodiscard]] friend bool operator!=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-    { return compare(lhs, rhs) != 0; }
-
 private:
+    [[nodiscard]] friend bool comparesEqual(const QVersionNumber &lhs,
+                                            const QVersionNumber &rhs) noexcept
+    {
+        return compare(lhs, rhs) == 0;
+    }
+    [[nodiscard]] friend Qt::strong_ordering compareThreeWay(const QVersionNumber &lhs,
+                                                             const QVersionNumber &rhs) noexcept
+    {
+        int c = compare(lhs, rhs);
+        return Qt::compareThreeWay(c, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QVersionNumber)
+
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream& operator>>(QDataStream &in, QVersionNumber &version);
 #endif

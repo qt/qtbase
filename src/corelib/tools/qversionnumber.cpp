@@ -30,6 +30,7 @@ QT_IMPL_METATYPE_EXTERN(QVersionNumber)
     \brief The QVersionNumber class contains a version number with an arbitrary
            number of segments.
 
+    \compares strong
     \snippet qversionnumber/main.cpp 0
 */
 
