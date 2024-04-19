@@ -41,7 +41,7 @@ public:
     int m_touchDoubleTapDistance = -1;
 
     Qt::ColorScheme colorScheme() const { return m_colorScheme; }
-    void setColorScheme(Qt::ColorScheme colorScheme);
+    void updateColorScheme(Qt::ColorScheme colorScheme);
 
     static QStyleHintsPrivate *get(QStyleHints *q);
 

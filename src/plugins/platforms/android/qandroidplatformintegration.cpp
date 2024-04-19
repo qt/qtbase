@@ -537,7 +537,7 @@ void QAndroidPlatformIntegration::setScreenSize(int width, int height)
 
 Qt::ColorScheme QAndroidPlatformIntegration::m_colorScheme = Qt::ColorScheme::Light;
 
-void QAndroidPlatformIntegration::setColorScheme(Qt::ColorScheme colorScheme)
+void QAndroidPlatformIntegration::updateColorScheme(Qt::ColorScheme colorScheme)
 {
     if (m_colorScheme == colorScheme)
         return;

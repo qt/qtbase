@@ -703,7 +703,7 @@ Q_DECLARE_JNI_NATIVE_METHOD(handleScreenRemoved)
 
 static void handleUiDarkModeChanged(JNIEnv */*env*/, jobject /*thiz*/, jint newUiMode)
 {
-    QAndroidPlatformIntegration::setColorScheme(
+    QAndroidPlatformIntegration::updateColorScheme(
         (newUiMode == 1 ) ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light);
 }
 Q_DECLARE_JNI_NATIVE_METHOD(handleUiDarkModeChanged)

@@ -595,11 +595,15 @@ int QStyleHints::mouseQuickSelectionThreshold() const
 
 /*!
    \internal
-   QStyleHintsPrivate::setColorScheme - set a new color scheme.
+   QStyleHintsPrivate::updateColorScheme - set a new color scheme.
+
+   This function is called by the QPA plugin when the system theme changes. This in
+   turn might be the result of an explicit request of a color scheme via setColorScheme.
+
    Set \a colorScheme as the new color scheme of the QStyleHints.
    The colorSchemeChanged signal will be emitted if present and new color scheme differ.
  */
-void QStyleHintsPrivate::setColorScheme(Qt::ColorScheme colorScheme)
+void QStyleHintsPrivate::updateColorScheme(Qt::ColorScheme colorScheme)
 {
     if (m_colorScheme == colorScheme)
         return;
