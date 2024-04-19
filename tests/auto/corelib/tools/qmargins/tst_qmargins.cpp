@@ -48,6 +48,12 @@ private slots:
     void comparison_data();
     void comparison();
 
+    void fuzzyComparison_data();
+    void fuzzyComparison();
+
+    void isNull_data();
+    void isNull();
+
     void getSetCheck();
 #ifndef QT_NO_DATASTREAM
     void dataStreamCheck();
@@ -117,6 +123,45 @@ void tst_QMargins::comparison()
     QT_TEST_EQUALITY_OPS(lhsInt, rhsInt, result);
 
     QT_TEST_EQUALITY_OPS(lhs, rhsInt, mixedResult);
+}
+
+void tst_QMargins::fuzzyComparison_data()
+{
+    comparison_data();
+}
+
+void tst_QMargins::fuzzyComparison()
+{
+    QFETCH(const QMarginsF, lhs);
+    QFETCH(const QMarginsF, rhs);
+    QFETCH(const bool, floatResult);
+
+    QCOMPARE_EQ(qFuzzyCompare(lhs, rhs), floatResult);
+}
+
+void tst_QMargins::isNull_data()
+{
+    QTest::addColumn<QMarginsF>("margins");
+    QTest::addColumn<bool>("result");
+
+    QTest::newRow("null") << QMarginsF(0.0, 0.0, 0.0, 0.0) << true;
+    QTest::newRow("non_null_left") << QMarginsF(1.0, 0.0, 0.0, 0.0) << false;
+    QTest::newRow("non_null_top") << QMarginsF(0.0, 0.5, 0.0, 0.0) << false;
+    QTest::newRow("non_null_right") << QMarginsF(0.0, 0.0, -2.0, 0.0) << false;
+    QTest::newRow("non_null_bottom") << QMarginsF(0.0, 0.0, 0.0, -0.6) << false;
+    QTest::newRow("almost_null") << QMarginsF(qreal_min, -qreal_min, qreal_min, -qreal_min) << true;
+}
+
+void tst_QMargins::isNull()
+{
+    QFETCH(const QMarginsF, margins);
+    QFETCH(const bool, result);
+
+    QCOMPARE_EQ(margins.isNull(), result);
+    QCOMPARE_EQ(qFuzzyIsNull(margins), result);
+
+    const QMargins marginsInt = margins.toMargins();
+    QCOMPARE_EQ(marginsInt.isNull(), result);
 }
 
 // Testing get/set functions

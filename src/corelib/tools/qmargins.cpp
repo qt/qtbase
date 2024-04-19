@@ -754,6 +754,22 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     \sa QMarginsF(), QMargins::toMarginsF()
 */
 
+/*!
+    \fn bool QMarginsF::qFuzzyCompare(const QMarginsF &lhs, const QMarginsF &rhs)
+    \since 6.8
+
+    Returns \c true if \a lhs is approximately equal to \a rhs;
+    otherwise returns \c false.
+*/
+
+/*!
+    \fn bool QMarginsF::qFuzzyIsNull(const QMarginsF &margins)
+    \since 6.8
+
+    Returns \c true if all components of margsins \a margins are
+    approximately equal to zero; otherwise returns \c false.
+*/
+
 /*****************************************************************************
   QMarginsF stream functions
  *****************************************************************************/

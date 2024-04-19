@@ -302,7 +302,7 @@ private:
 
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_FLOAT_COMPARE
-    friend constexpr bool comparesEqual(const QMarginsF &lhs, const QMarginsF &rhs) noexcept
+    friend constexpr bool qFuzzyCompare(const QMarginsF &lhs, const QMarginsF &rhs) noexcept
     {
         return ((!lhs.m_left || !rhs.m_left) ? qFuzzyIsNull(lhs.m_left - rhs.m_left)
                                              : qFuzzyCompare(lhs.m_left, rhs.m_left))
@@ -314,6 +314,16 @@ private:
                                                      : qFuzzyCompare(lhs.m_bottom, rhs.m_bottom));
     }
     QT_WARNING_POP
+    friend constexpr bool qFuzzyIsNull(const QMarginsF &m) noexcept
+    {
+        return qFuzzyIsNull(m.m_left) && qFuzzyIsNull(m.m_top)
+                && qFuzzyIsNull(m.m_right) && qFuzzyIsNull(m.m_bottom);
+    }
+
+    friend constexpr bool comparesEqual(const QMarginsF &lhs, const QMarginsF &rhs) noexcept
+    {
+        return qFuzzyCompare(lhs, rhs);
+    }
     Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QMarginsF)
 
     friend constexpr bool comparesEqual(const QMarginsF &lhs, const QMargins &rhs) noexcept
