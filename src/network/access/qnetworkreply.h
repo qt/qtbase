@@ -109,6 +109,7 @@ public:
 
     typedef QPair<QByteArray, QByteArray> RawHeaderPair;
     const QList<RawHeaderPair>& rawHeaderPairs() const;
+    QHttpHeaders headers() const;
 
     // attributes
     QVariant attribute(QNetworkRequest::Attribute code) const;
@@ -152,6 +153,9 @@ protected:
     void setUrl(const QUrl &url);
     void setHeader(QNetworkRequest::KnownHeaders header, const QVariant &value);
     void setRawHeader(const QByteArray &headerName, const QByteArray &value);
+    void setHeaders(const QHttpHeaders &newHeaders);
+    void setHeaders(QHttpHeaders &&newHeaders);
+    void setWellKnownHeader(QHttpHeaders::WellKnownHeader name, const QByteArray &value);
     void setAttribute(QNetworkRequest::Attribute code, const QVariant &value);
 
 #if QT_CONFIG(ssl)
