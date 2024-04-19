@@ -157,7 +157,7 @@ static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QS
     const QString cacheKey = QStyleHelper::uniqueName("fusion-arrow"_L1
                                                           % HexString<uint>(type)
                                                           % HexString<uint>(color.rgba()),
-                                                      option, rect.size());
+                                                      option, rect.size(), dpr);
     if (!QPixmapCache::find(cacheKey, &cachePixmap)) {
         cachePixmap = styleCachePixmap(rect.size(), dpr);
         QPainter cachePainter(&cachePixmap);
@@ -1143,7 +1143,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                                                                     % HexString(header->position)
                                                                     % HexString(header->orientation)
                                                                     % QLatin1Char(isSectionDragTarget ? '1' : '0'),
-                                                                option, option->rect.size());
+                                                                option, option->rect.size(), dpr);
             QPixmap cache;
             if (!QPixmapCache::find(pixmapName, &cache)) {
                 cache = styleCachePixmap(rect.size(), dpr);
@@ -1881,7 +1881,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             const qreal dpr = painter->device()->devicePixelRatio();
             QPixmap cache;
-            QString pixmapName = QStyleHelper::uniqueName("spinbox"_L1, spinBox, spinBox->rect.size());
+            QString pixmapName = QStyleHelper::uniqueName("spinbox"_L1, spinBox, spinBox->rect.size(), dpr);
             if (!QPixmapCache::find(pixmapName, &cache)) {
 
                 cache = styleCachePixmap(spinBox->rect.size(), dpr);
@@ -2583,7 +2583,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                                                                     % QLatin1StringView(comboBox->editable ? "-editable" : "")
                                                                     % QLatin1StringView(isEnabled ? "-enabled" : "")
                                                                     % QLatin1StringView(!comboBox->frame ? "-frameless" : ""),
-                                                                option, comboBox->rect.size());
+                                                                option, comboBox->rect.size(), dpr);
             if (!QPixmapCache::find(pixmapName, &cache)) {
                 cache = styleCachePixmap(comboBox->rect.size(), dpr);
                 QPainter cachePainter(&cache);
@@ -2695,7 +2695,8 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 grooveColor.setHsv(buttonColor.hue(),
                                    qMin(255, (int)(buttonColor.saturation())),
                                    qMin(255, (int)(buttonColor.value()*0.9)));
-                QString groovePixmapName = QStyleHelper::uniqueName("slider_groove"_L1, option, groove.size());
+                QString groovePixmapName = QStyleHelper::uniqueName("slider_groove"_L1, option,
+                                                                    groove.size(), dpr);
                 QRect pixmapRect(0, 0, groove.width(), groove.height());
 
                 // draw background groove
@@ -2838,7 +2839,8 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             }
             // draw handle
             if ((option->subControls & SC_SliderHandle) ) {
-                QString handlePixmapName = QStyleHelper::uniqueName("slider_handle"_L1, option, handle.size());
+                QString handlePixmapName = QStyleHelper::uniqueName("slider_handle"_L1, option,
+                                                                    handle.size(), dpr);
                 if (!QPixmapCache::find(handlePixmapName, &cache)) {
                     cache = styleCachePixmap(handle.size(), dpr);
                     QRect pixmapRect(0, 0, handle.width(), handle.height());

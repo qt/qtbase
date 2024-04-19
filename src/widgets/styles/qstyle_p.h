@@ -48,7 +48,7 @@ inline QPixmap styleCachePixmap(const QSize &size, qreal pixelRatio)
     QPixmap internalPixmapCache; \
     QPainter *p = painter; \
     const auto dpr = p->device()->devicePixelRatio(); \
-    const QString unique = QStyleHelper::uniqueName((a), option, option->rect.size()); \
+    const QString unique = QStyleHelper::uniqueName((a), option, option->rect.size(), dpr); \
     int txType = painter->deviceTransform().type() | painter->worldTransform().type(); \
     const bool doPixmapCache = (!option->rect.isEmpty()) \
             && ((txType <= QTransform::TxTranslate) || (painter->deviceTransform().type() == QTransform::TxScale)); \
