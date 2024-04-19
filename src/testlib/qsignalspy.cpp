@@ -216,7 +216,7 @@ QSignalSpy::ObjectSignal QSignalSpy::verify(const QObject *obj, QMetaMethod sign
         return {};
 }
 
-QList<int> QSignalSpy::makeArgs(const QMetaMethod &member, const QObject *obj)
+static QList<int> makeArgs(QMetaMethod member, const QObject *obj)
 {
     QList<int> result;
     result.reserve(member.parameterCount());
