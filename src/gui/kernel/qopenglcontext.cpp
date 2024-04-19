@@ -154,6 +154,9 @@ QOpenGLContext *QOpenGLContextPrivate::setCurrentContext(QOpenGLContext *context
             qWarning("No QTLS available. currentContext won't work");
             return nullptr;
         }
+        if (!context)
+            return nullptr;
+
         threadContext = new QGuiGLThreadContext;
         qwindow_context_storage()->setLocalData(threadContext);
     }
