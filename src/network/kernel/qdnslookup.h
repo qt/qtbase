@@ -142,6 +142,7 @@ class Q_NETWORK_EXPORT QDnsLookup : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(Error error READ error NOTIFY finished)
+    Q_PROPERTY(bool authenticData READ isAuthenticData NOTIFY finished)
     Q_PROPERTY(QString errorString READ errorString NOTIFY finished)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged BINDABLE bindableName)
     Q_PROPERTY(Type type READ type WRITE setType NOTIFY typeChanged BINDABLE bindableType)
@@ -196,6 +197,7 @@ public:
                quint16 port = 0, QObject *parent = nullptr);
     ~QDnsLookup();
 
+    bool isAuthenticData() const;
     Error error() const;
     QString errorString() const;
     bool isFinished() const;

@@ -48,6 +48,7 @@ class QDnsLookupReply
 {
 public:
     QDnsLookup::Error error = QDnsLookup::NoError;
+    bool authenticData = false;
     QString errorString;
 
     QList<QDnsDomainNameRecord> canonicalNameRecords;

@@ -67,11 +67,9 @@ using Cache = QList<QDnsCachedName>;    // QHash or QMap are overkill
 // https://docs.oracle.com/cd/E86824_01/html/E54774/res-setservers-3resolv.html
 static bool applyNameServer(res_state state, const QHostAddress &nameserver, quint16 port)
 {
-    if (!nameserver.isNull()) {
-        union res_sockaddr_union u;
-        setSockaddr(reinterpret_cast<sockaddr *>(&u.sin), nameserver, port);
-        res_setservers(state, &u, 1);
-    }
+    union res_sockaddr_union u;
+    setSockaddr(reinterpret_cast<sockaddr *>(&u.sin), nameserver, port);
+    res_setservers(state, &u, 1);
     return true;
 }
 #else
@@ -122,9 +120,6 @@ template <typename State> bool setIpv6NameServer(State *, const void *, quint16)
 
 static bool applyNameServer(res_state state, const QHostAddress &nameserver, quint16 port)
 {
-    if (nameserver.isNull())
-        return true;
-
     state->nscount = 1;
     state->nsaddr_list[0].sin_family = AF_UNSPEC;
     if (nameserver.protocol() == QAbstractSocket::IPv6Protocol)
@@ -155,11 +150,22 @@ prepareQueryBuffer(res_state state, QueryBuffer &buffer, const char *label, ns_r
 static int sendStandardDns(QDnsLookupReply *reply, res_state state, QSpan<unsigned char> qbuffer,
                            ReplyBuffer &buffer, const QHostAddress &nameserver, quint16 port)
 {
-    //Check if a nameserver was set. If so, use it
-    if (!applyNameServer(state, nameserver, port)) {
-        reply->setError(QDnsLookup::ResolverError,
-                        QDnsLookup::tr("IPv6 nameservers are currently not supported on this OS"));
-        return -1;
+    // Check if a nameserver was set. If so, use it.
+    if (!nameserver.isNull()) {
+        if (!applyNameServer(state, nameserver, port)) {
+            reply->setError(QDnsLookup::ResolverError,
+                            QDnsLookup::tr("IPv6 nameservers are currently not supported on this OS"));
+            return -1;
+        }
+
+        // Request the name server attempt to authenticate the reply.
+        reinterpret_cast<HEADER *>(buffer.data())->ad = true;
+
+#ifdef RES_TRUSTAD
+        // Need to set this option even though we set the AD bit, otherwise
+        // glibc turns it off.
+        state->options |= RES_TRUSTAD;
+#endif
     }
 
     auto attemptToSend = [&]() {
@@ -209,6 +215,15 @@ static int sendStandardDns(QDnsLookupReply *reply, res_state state, QSpan<unsign
             return -1;
         }
     }
+
+    // We only trust the AD bit in the reply if we're querying a custom name
+    // server or if we can tell the system administrator configured the resolver
+    // to trust replies.
+#ifndef RES_TRUSTAD
+    if (nameserver.isNull())
+        header->ad = false;
+#endif
+    reply->authenticData = header->ad;
 
     return responseLength;
 }

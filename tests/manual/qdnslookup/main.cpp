@@ -118,10 +118,13 @@ static void printAnswers(const QDnsLookup &lookup)
 static void printResults(const QDnsLookup &lookup, QElapsedTimer::Duration duration)
 {
     if (QDnsLookup::Error error = lookup.error())
-        printf(";; status: %s (%s)\n", QMetaEnum::fromType<QDnsLookup::Error>().valueToKey(error),
+        printf(";; status: %s (%s)", QMetaEnum::fromType<QDnsLookup::Error>().valueToKey(error),
                qPrintable(lookup.errorString()));
     else
-        printf(";; status: NoError\n");
+        printf(";; status: NoError");
+    if (lookup.isAuthenticData())
+        printf("; AuthenticData");
+    puts("");
 
     QMetaEnum me = QMetaEnum::fromType<QDnsLookup::Type>();
     printf(";; QUESTION:\n");

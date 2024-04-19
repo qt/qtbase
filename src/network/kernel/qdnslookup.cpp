@@ -168,7 +168,7 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
     name, or the host name associated with an IP address you should use
     QHostInfo instead.
 
-    \section1 DNS-over-TLS
+    \section1 DNS-over-TLS and Authentic Data
 
     QDnsLookup supports DNS-over-TLS (DoT, as specified by \l{RFC 7858}) on
     some platforms. That currently includes all Unix platforms where regular
@@ -182,6 +182,27 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
     server being connected to. Clients may use setSslConfiguration() to impose
     additional restrictions and sslConfiguration() to obtain information after
     the query is complete.
+
+    QDnsLookup will request DNS servers queried over TLS to perform
+    authentication on the data they return. If they confirm the data is valid,
+    the \l authenticData property will be set to true. QDnsLookup does not
+    verify the integrity of the data by itself, so applications should only
+    trust this property on servers they have confirmed through other means to
+    be trustworthy.
+
+    \section2 Authentic Data without TLS
+
+    QDnsLookup request Authentic Data for any server set with setNameserver(),
+    even if TLS encryption is not required. This is useful when querying a
+    caching nameserver on the same host as the application or on a trusted
+    network. Though similar to the TLS case, the application is responsible for
+    determining if the server it chose to use is trustworthy, and if the
+    unencrypted connection cannot be tampered with.
+
+    QDnsLookup obeys the system configuration to request Authentic Data on the
+    default nameserver (that is, if setNameserver() is not called). This is
+    currently only supported on Linux systems using glibc 2.31 or later. On any
+    other systems, QDnsLookup will ignore the AD bit in the query header.
 */
 
 /*!
@@ -416,6 +437,28 @@ QDnsLookup::QDnsLookup(Type type, const QString &name, Protocol protocol,
 
 QDnsLookup::~QDnsLookup()
 {
+}
+
+/*!
+    \since 6.8
+    \property QDnsLookup::authenticData
+    \brief whether the reply was authenticated by the resolver.
+
+    QDnsLookup does not perform the authentication itself. Instead, it trusts
+    the name server that was queried to perform the authentication and report
+    it. The application is responsible for determining if any servers it
+    configured with setNameserver() are trustworthy; if no server was set,
+    QDnsLookup obeys system configuration on whether responses should be
+    trusted.
+
+    This property may be set even if error() indicates a resolver error
+    occurred.
+
+    \sa setNameserver(), nameserverProtocol()
+*/
+bool QDnsLookup::isAuthenticData() const
+{
+    return d_func()->reply.authenticData;
 }
 
 /*!
@@ -1308,6 +1351,7 @@ inline QDebug operator<<(QDebug &d, QDnsLookupRunnable *r)
 #if QT_CONFIG(ssl)
 static constexpr std::chrono::milliseconds DnsOverTlsConnectTimeout(15'000);
 static constexpr std::chrono::milliseconds DnsOverTlsTimeout(120'000);
+static constexpr quint8 DnsAuthenticDataBit = 0x20;
 
 static int makeReplyErrorFromSocket(QDnsLookupReply *reply, const QAbstractSocket *socket)
 {
@@ -1333,6 +1377,9 @@ bool QDnsLookupRunnable::sendDnsOverTls(QDnsLookupReply *reply, QSpan<unsigned c
 #  if QT_CONFIG(networkproxy)
     socket.setProtocolTag("domain-s"_L1);
 #  endif
+
+    // Request the name server attempt to authenticate the reply.
+    query[3] |= DnsAuthenticDataBit;
 
     do {
         quint16 size = qToBigEndian<quint16>(query.size());
@@ -1363,8 +1410,12 @@ bool QDnsLookupRunnable::sendDnsOverTls(QDnsLookupReply *reply, QSpan<unsigned c
         // the maximum allocation is small.
         size = qFromBigEndian(size);
         response.resize(size);
-        if (waitForBytes(response.data(), size))
+        if (waitForBytes(response.data(), size)) {
+            // check if the AD bit is set; we'll trust it over TLS requests
+            if (size >= 4)
+                reply->authenticData = response[3] & DnsAuthenticDataBit;
             return true;
+        }
     } while (false);
 
     // handle errors
