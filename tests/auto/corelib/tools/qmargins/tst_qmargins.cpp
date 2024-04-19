@@ -44,6 +44,7 @@ class tst_QMargins : public QObject
 {
     Q_OBJECT
 private slots:
+    void comparisonCompiles();
     void comparison_data();
     void comparison();
 
@@ -70,6 +71,13 @@ private slots:
     void toMarginsF_data();
     void toMarginsF();
 };
+
+void tst_QMargins::comparisonCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QMargins>();
+    QTestPrivate::testEqualityOperatorsCompile<QMarginsF>();
+    QTestPrivate::testEqualityOperatorsCompile<QMarginsF, QMargins>();
+}
 
 void tst_QMargins::comparison_data()
 {

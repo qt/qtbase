@@ -4,6 +4,7 @@
 #ifndef QMARGINS_H
 #define QMARGINS_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qnamespace.h>
 
 #include <QtCore/q20type_traits.h>
@@ -54,19 +55,14 @@ private:
     int m_right;
     int m_bottom;
 
-    friend constexpr inline bool operator==(const QMargins &m1, const QMargins &m2) noexcept
+    friend constexpr bool comparesEqual(const QMargins &lhs, const QMargins &rhs) noexcept
     {
-        return
-                m1.m_left == m2.m_left &&
-                m1.m_top == m2.m_top &&
-                m1.m_right == m2.m_right &&
-                m1.m_bottom == m2.m_bottom;
+        return lhs.m_left == rhs.m_left
+                && lhs.m_top == rhs.m_top
+                && lhs.m_right == rhs.m_right
+                && lhs.m_bottom == rhs.m_bottom;
     }
-
-    friend constexpr inline bool operator!=(const QMargins &m1, const QMargins &m2) noexcept
-    {
-        return !(m1 == m2);
-    }
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QMargins)
 
     template <std::size_t I,
               typename M,
@@ -306,23 +302,23 @@ private:
 
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_FLOAT_COMPARE
-    friend constexpr inline bool operator==(const QMarginsF &lhs, const QMarginsF &rhs) noexcept
+    friend constexpr bool comparesEqual(const QMarginsF &lhs, const QMarginsF &rhs) noexcept
     {
         return ((!lhs.m_left || !rhs.m_left) ? qFuzzyIsNull(lhs.m_left - rhs.m_left)
                                              : qFuzzyCompare(lhs.m_left, rhs.m_left))
-            && ((!lhs.m_top || !rhs.m_top) ? qFuzzyIsNull(lhs.m_top - rhs.m_top)
-                                           : qFuzzyCompare(lhs.m_top, rhs.m_top))
-            && ((!lhs.m_right || !rhs.m_right) ? qFuzzyIsNull(lhs.m_right - rhs.m_right)
-                                               : qFuzzyCompare(lhs.m_right, rhs.m_right))
-            && ((!lhs.m_bottom || !rhs.m_bottom) ? qFuzzyIsNull(lhs.m_bottom - rhs.m_bottom)
-                                                 : qFuzzyCompare(lhs.m_bottom, rhs.m_bottom));
-    }
-
-    friend constexpr inline bool operator!=(const QMarginsF &lhs, const QMarginsF &rhs) noexcept
-    {
-        return !(lhs == rhs);
+                && ((!lhs.m_top || !rhs.m_top) ? qFuzzyIsNull(lhs.m_top - rhs.m_top)
+                                               : qFuzzyCompare(lhs.m_top, rhs.m_top))
+                && ((!lhs.m_right || !rhs.m_right) ? qFuzzyIsNull(lhs.m_right - rhs.m_right)
+                                                   : qFuzzyCompare(lhs.m_right, rhs.m_right))
+                && ((!lhs.m_bottom || !rhs.m_bottom) ? qFuzzyIsNull(lhs.m_bottom - rhs.m_bottom)
+                                                     : qFuzzyCompare(lhs.m_bottom, rhs.m_bottom));
     }
     QT_WARNING_POP
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QMarginsF)
+
+    friend constexpr bool comparesEqual(const QMarginsF &lhs, const QMargins &rhs) noexcept
+    { return comparesEqual(lhs, rhs.toMarginsF()); }
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QMarginsF, QMargins)
 
     template <std::size_t I,
               typename M,
