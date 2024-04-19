@@ -42,6 +42,7 @@ using namespace Qt::StringLiterals;
 
     \keyword regular expression
 
+    \compares equality
     Regular expressions, or \e{regexps}, are a very powerful tool to handle
     strings and texts. This is useful in many contexts, e.g.,
 
@@ -1734,18 +1735,20 @@ void QRegularExpression::optimize() const
 }
 
 /*!
-    Returns \c true if the regular expression is equal to \a re, or false
+    \fn bool QRegularExpression::operator==(const QRegularExpression &lhs, const QRegularExpression &rhs) noexcept
+
+    Returns \c true if the \a lhs regular expression is equal to the \a rhs, or false
     otherwise. Two QRegularExpression objects are equal if they have
     the same pattern string and the same pattern options.
 
     \sa operator!=()
 */
-bool QRegularExpression::operator==(const QRegularExpression &re) const
+bool comparesEqual(const QRegularExpression &lhs,
+                   const QRegularExpression &rhs) noexcept
 {
-    return (d == re.d) ||
-           (d->pattern == re.d->pattern && d->patternOptions == re.d->patternOptions);
+    return (lhs.d == rhs.d) ||
+            (lhs.d->pattern == rhs.d->pattern && lhs.d->patternOptions == rhs.d->patternOptions);
 }
-
 /*!
     \fn QRegularExpression & QRegularExpression::operator=(QRegularExpression && re)
 
@@ -1758,9 +1761,9 @@ bool QRegularExpression::operator==(const QRegularExpression &re) const
 */
 
 /*!
-    \fn bool QRegularExpression::operator!=(const QRegularExpression &re) const
+    \fn bool QRegularExpression::operator!=(const QRegularExpression &lhs, const QRegularExpression &rhs) noexcept
 
-    Returns \c true if the regular expression is different from \a re, or
+    Returns \c true if the \a lhs regular expression is different from the \a rhs, or
     false otherwise.
 
     \sa operator==()

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <qstring.h>
 #include <qlist.h>
 #include <qstringlist.h>
@@ -27,6 +28,7 @@ public:
     static void initMain();
 
 private slots:
+    void compareCompiles();
     void defaultConstructors();
     void moveSemantics();
     void moveSemanticsMatch();
@@ -460,6 +462,11 @@ void tst_QRegularExpression::initMain()
     }
 }
 
+void tst_QRegularExpression::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QRegularExpression>();
+}
+
 void tst_QRegularExpression::defaultConstructors()
 {
     QRegularExpression re;
@@ -564,12 +571,12 @@ void tst_QRegularExpression::moveSemanticsMatchIterator()
     QRegularExpressionMatchIterator it1 = re.globalMatch("some test");
     QVERIFY(it1.isValid());
     QVERIFY(it1.hasNext());
-    QCOMPARE(it1.regularExpression(), re);
+    QT_TEST_EQUALITY_OPS(it1.regularExpression(), re, true);
 
     QRegularExpressionMatchIterator it2(std::move(it1));
     QVERIFY(it2.isValid());
     QVERIFY(it2.hasNext());
-    QCOMPARE(it2.regularExpression(), re);
+    QT_TEST_EQUALITY_OPS(it2.regularExpression(), re, true);
     consistencyCheck(it2);
     if (QTest::currentTestFailed())
         return;
@@ -578,13 +585,13 @@ void tst_QRegularExpression::moveSemanticsMatchIterator()
     QRegularExpressionMatchIterator it3 = re2.globalMatch("123test456");
     QVERIFY(it3.isValid());
     QVERIFY(it3.hasNext());
-    QCOMPARE(it3.regularExpression(), re2);
+    QT_TEST_EQUALITY_OPS(it3.regularExpression(), re2, true);
 
     // check that (move)assigning to the moved-from object is ok
     it1 = std::move(it3);
     QVERIFY(it1.isValid());
     QVERIFY(it1.hasNext());
-    QCOMPARE(it1.regularExpression(), re2);
+    QT_TEST_EQUALITY_OPS(it1.regularExpression(), re2, true);
     consistencyCheck(it1);
     if (QTest::currentTestFailed())
         return;
@@ -1680,38 +1687,23 @@ void tst_QRegularExpression::serialize()
 
 static void verifyEquality(const QRegularExpression &re1, const QRegularExpression &re2)
 {
-    QVERIFY(re1 == re2);
-    QVERIFY(re2 == re1);
+    QT_TEST_EQUALITY_OPS(re1, re2, true);
     QCOMPARE(qHash(re1), qHash(re2));
-    QVERIFY(!(re1 != re2));
-    QVERIFY(!(re2 != re1));
 
     QRegularExpression re3(re1);
 
-    QVERIFY(re1 == re3);
-    QVERIFY(re3 == re1);
     QCOMPARE(qHash(re1), qHash(re3));
-    QVERIFY(!(re1 != re3));
-    QVERIFY(!(re3 != re1));
+    QT_TEST_EQUALITY_OPS(re1, re3, true);
 
-    QVERIFY(re2 == re3);
-    QVERIFY(re3 == re2);
     QCOMPARE(qHash(re2), qHash(re3));
-    QVERIFY(!(re2 != re3));
-    QVERIFY(!(re3 != re2));
+    QT_TEST_EQUALITY_OPS(re2, re3, true);
 
     re3 = re2;
-    QVERIFY(re1 == re3);
-    QVERIFY(re3 == re1);
     QCOMPARE(qHash(re1), qHash(re3));
-    QVERIFY(!(re1 != re3));
-    QVERIFY(!(re3 != re1));
+    QT_TEST_EQUALITY_OPS(re1, re3, true);
 
-    QVERIFY(re2 == re3);
-    QVERIFY(re3 == re2);
     QCOMPARE(qHash(re2), qHash(re3));
-    QVERIFY(!(re2 != re3));
-    QVERIFY(!(re3 != re2));
+    QT_TEST_EQUALITY_OPS(re2, re3, true);
 }
 
 void tst_QRegularExpression::operatoreq_data()

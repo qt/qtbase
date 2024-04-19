@@ -1069,6 +1069,11 @@ qsizetype QRegularExpressionMatch::capturedEnd(QStringView name) const
 {
     return capturedEnd(QAnyStringView(name));
 }
+
+bool QRegularExpression::operator==(const QRegularExpression &other) const
+{
+    return comparesEqual(*this, other);
+}
 #endif // QT_CONFIG(regularexpression)
 
 #include "qstring.h" // inlined API
