@@ -1798,6 +1798,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
     function.
 
     \ingroup objectmodel
+    \compares equality
 
     A QMetaMethod has a methodType(), a methodSignature(), a list of
     parameterTypes() and parameterNames(), a return typeName(), a
@@ -1825,19 +1826,19 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
     invoked), otherwise returns \c false.
 */
 
-/*! \fn bool QMetaMethod::operator==(const QMetaMethod &m1, const QMetaMethod &m2)
+/*! \fn bool QMetaMethod::operator==(const QMetaMethod &lhs, const QMetaMethod &rhs)
     \since 5.0
     \overload
 
-    Returns \c true if method \a m1 is equal to method \a m2,
+    Returns \c true if method \a lhs is equal to method \a rhs,
     otherwise returns \c false.
 */
 
-/*! \fn bool QMetaMethod::operator!=(const QMetaMethod &m1, const QMetaMethod &m2)
+/*! \fn bool QMetaMethod::operator!=(const QMetaMethod &lhs, const QMetaMethod &rhs)
     \since 5.0
     \overload
 
-    Returns \c true if method \a m1 is not equal to method \a m2,
+    Returns \c true if method \a lhs is not equal to method \a rhs,
     otherwise returns \c false.
 */
 

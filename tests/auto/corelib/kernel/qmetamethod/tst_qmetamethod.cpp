@@ -4,6 +4,7 @@
 
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QTypeRevision>
 
 #include <qobject.h>
@@ -14,6 +15,7 @@ class tst_QMetaMethod : public QObject
     Q_OBJECT
 
 private slots:
+    void compareCompiles();
     void method_data();
     void method();
 
@@ -165,6 +167,11 @@ QVariant MethodTestObject::qvariantSlotBoolIntUIntLonglongULonglongDoubleLongSho
     return QVariant();
 }
 void MethodTestObject::voidSlotNoParameterNames(bool, int) {}
+
+void tst_QMetaMethod::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QMetaMethod>();
+}
 
 void tst_QMetaMethod::method_data()
 {
@@ -647,6 +654,8 @@ void tst_QMetaMethod::method()
     // Bogus indexes
     QCOMPARE(method.parameterType(-1), 0);
     QCOMPARE(method.parameterType(parameterTypes.size()), 0);
+    QT_TEST_EQUALITY_OPS(method, QMetaMethod(), false);
+    QT_TEST_EQUALITY_OPS(QMetaMethod(), QMetaMethod(), true);
 }
 
 void tst_QMetaMethod::invalidMethod()
@@ -659,6 +668,9 @@ void tst_QMetaMethod::invalidMethod()
 
     QMetaMethod method3 = staticMetaObject.method(-1);
     QVERIFY(!method3.isValid());
+    QT_TEST_EQUALITY_OPS(method, method2, true);
+    QT_TEST_EQUALITY_OPS(method2, method3, true);
+    QT_TEST_EQUALITY_OPS(method, method3, true);
 }
 
 void tst_QMetaMethod::comparisonOperators()
@@ -673,16 +685,9 @@ void tst_QMetaMethod::comparisonOperators()
                 QMetaMethod other = x ? mo->constructor(j) : mo->method(j);
                 bool expectedEqual = ((methodMo == other.enclosingMetaObject())
                                       && (i == j));
-                QCOMPARE(method == other, expectedEqual);
-                QCOMPARE(method != other, !expectedEqual);
-                QCOMPARE(other == method, expectedEqual);
-                QCOMPARE(other != method, !expectedEqual);
+                QT_TEST_EQUALITY_OPS(method, other, expectedEqual);
             }
-
-            QVERIFY(method != QMetaMethod());
-            QVERIFY(QMetaMethod() != method);
-            QVERIFY(!(method == QMetaMethod()));
-            QVERIFY(!(QMetaMethod() == method));
+            QT_TEST_EQUALITY_OPS(method, QMetaMethod(), false);
         }
     }
 
@@ -691,8 +696,7 @@ void tst_QMetaMethod::comparisonOperators()
     for (int i = 0; i < qMin(mo->methodCount(), mo->constructorCount()); ++i) {
         QMetaMethod method = mo->method(i);
         QMetaMethod constructor = mo->constructor(i);
-        QVERIFY(method != constructor);
-        QVERIFY(!(method == constructor));
+        QT_TEST_EQUALITY_OPS(method, constructor, false);
     }
 }
 
@@ -748,6 +752,7 @@ void tst_QMetaMethod::gadget()
     QMetaMethod getValueMethod = MyGadget::staticMetaObject.method(idx);
     QVERIFY(getValueMethod.isValid());
 
+    QT_TEST_EQUALITY_OPS(setValueMethod, getValueMethod, false);
     {
         MyGadget gadget;
         QString string;

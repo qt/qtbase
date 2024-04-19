@@ -14,4 +14,6 @@ endif()
 qt_internal_add_test(tst_qmetamethod
     SOURCES
         tst_qmetamethod.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )
