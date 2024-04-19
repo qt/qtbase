@@ -24,7 +24,6 @@ public:
     bool isWinTabEnabled() const override;
     bool setWinTabEnabled(bool enabled) override;
 
-    bool isDarkMode() const override;
     DarkModeHandling darkModeHandling() const override;
     void setDarkModeHandling(DarkModeHandling handling) override;
 

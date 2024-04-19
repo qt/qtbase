@@ -403,8 +403,6 @@ struct Q_GUI_EXPORT QWindowsApplication
     virtual bool isWinTabEnabled() const = 0;
     virtual bool setWinTabEnabled(bool enabled) = 0;
 
-    virtual bool isDarkMode() const = 0;
-
     virtual DarkModeHandling darkModeHandling() const = 0;
     virtual void setDarkModeHandling(DarkModeHandling handling) = 0;
 
