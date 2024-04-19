@@ -33,6 +33,8 @@ public:
 
     Qt::ColorScheme colorScheme() const override;
 
+    static void handleSettingsChanged();
+
     const QPalette *palette(Palette type = SystemPalette) const override
         { return m_palettes[type]; }
     const QFont *font(Font type = SystemFont) const override
@@ -71,6 +73,7 @@ private:
     void refreshIconPixmapSizes();
 
     static QWindowsTheme *m_instance;
+    static inline bool s_darkMode = false;
     QPalette *m_palettes[NPalettes];
     QFont *m_fonts[NFonts];
     QList<QSize> m_fileIconSizes;

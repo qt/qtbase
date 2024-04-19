@@ -74,7 +74,7 @@ bool QWindowsApplication::setWinTabEnabled(bool enabled)
 
 bool QWindowsApplication::isDarkMode() const
 {
-    return QWindowsContext::isDarkMode();
+    return QWindowsTheme::instance()->colorScheme() == Qt::ColorScheme::Dark;
 }
 
 QWindowsApplication::DarkModeHandling QWindowsApplication::darkModeHandling() const

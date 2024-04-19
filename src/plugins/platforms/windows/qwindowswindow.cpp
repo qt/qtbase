@@ -5,6 +5,7 @@
 
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
+#include "qwindowstheme.h"
 #if QT_CONFIG(draganddrop)
 #  include "qwindowsdrag.h"
 #endif
@@ -929,7 +930,7 @@ QWindowsWindowData
         return result;
     }
 
-    if (QWindowsContext::isDarkMode() && shouldApplyDarkFrame(w))
+    if (QWindowsTheme::instance()->colorScheme() == Qt::ColorScheme::Dark && shouldApplyDarkFrame(w))
         QWindowsWindow::setDarkBorderToWindow(result.hwnd, true);
 
     if (mirrorParentWidth != 0) {
@@ -2689,7 +2690,7 @@ bool QWindowsWindow::windowEvent(QEvent *event)
 {
     switch (event->type()) {
     case QEvent::ApplicationPaletteChange:
-        setDarkBorder(QWindowsContext::isDarkMode());
+        setDarkBorder(QWindowsTheme::instance()->colorScheme() == Qt::ColorScheme::Dark);
         break;
     case QEvent::WindowBlocked: // Blocked by another modal window.
         setEnabled(false);

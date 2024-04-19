@@ -13,6 +13,7 @@
 #  include "qwindowssystemtrayicon.h"
 #endif
 #include "qwindowsscreen.h"
+#include "qwindowswindow.h"
 #include <commctrl.h>
 #include <objbase.h>
 #include <commoncontrols.h>
@@ -451,6 +452,7 @@ QWindowsTheme *QWindowsTheme::m_instance = nullptr;
 QWindowsTheme::QWindowsTheme()
 {
     m_instance = this;
+    s_darkMode = QWindowsTheme::queryDarkMode();
     std::fill(m_fonts, m_fonts + NFonts, nullptr);
     std::fill(m_palettes, m_palettes + NPalettes, nullptr);
     refresh();
@@ -542,7 +544,26 @@ Qt::ColorScheme QWindowsTheme::colorScheme() const
 {
     if (queryHighContrast())
         return Qt::ColorScheme::Unknown;
-    return QWindowsContext::isDarkMode() ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light;
+    return s_darkMode ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light;
+}
+
+void QWindowsTheme::handleSettingsChanged()
+{
+    const bool darkMode = QWindowsTheme::queryDarkMode();
+    const bool darkModeChanged = darkMode != QWindowsTheme::s_darkMode;
+    s_darkMode = darkMode;
+    auto integration = QWindowsIntegration::instance();
+    integration->updateApplicationBadge();
+    if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle)) {
+        QWindowsTheme::instance()->refresh();
+        QWindowSystemInterface::handleThemeChange();
+    }
+    if (darkModeChanged) {
+        if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeWindowFrames)) {
+            for (QWindowsWindow *w : std::as_const(QWindowsContext::instance()->windows()))
+                w->setDarkBorder(s_darkMode);
+        }
+    }
 }
 
 void QWindowsTheme::clearPalettes()
@@ -556,7 +577,7 @@ void QWindowsTheme::refreshPalettes()
     if (!QGuiApplication::desktopSettingsAware())
         return;
     const bool light =
-        !QWindowsContext::isDarkMode()
+        !s_darkMode
         || !QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle);
     clearPalettes();
     m_palettes[SystemPalette] = new QPalette(QWindowsTheme::systemPalette(light ? Qt::ColorScheme::Light : Qt::ColorScheme::Dark));

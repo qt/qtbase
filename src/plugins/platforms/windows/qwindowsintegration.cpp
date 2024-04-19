@@ -642,7 +642,8 @@ void QWindowsIntegration::setApplicationBadge(qint64 number)
         return;
     }
 
-    const bool isDarkMode = QWindowsContext::isDarkMode();
+    const bool isDarkMode = QWindowsTheme::instance()->colorScheme()
+                         == Qt::ColorScheme::Dark;
 
     QColor badgeColor;
     QColor textColor;
