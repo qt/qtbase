@@ -145,6 +145,7 @@ static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QS
         return;
 
     const qreal dpi = QStyleHelper::dpi(option);
+    const qreal dpr = painter->device()->devicePixelRatio();
     const int arrowWidth = int(QStyleHelper::dpiScaled(14, dpi));
     const int arrowHeight = int(QStyleHelper::dpiScaled(8, dpi));
 
@@ -158,8 +159,7 @@ static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QS
                                                           % HexString<uint>(color.rgba()),
                                                       option, rect.size());
     if (!QPixmapCache::find(cacheKey, &cachePixmap)) {
-        cachePixmap = styleCachePixmap(rect.size());
-        cachePixmap.fill(Qt::transparent);
+        cachePixmap = styleCachePixmap(rect.size(), dpr);
         QPainter cachePainter(&cachePixmap);
 
         QRectF arrowRect;
@@ -1138,6 +1138,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             const QStyleOptionHeaderV2 *headerV2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(option);
             const bool isSectionDragTarget = headerV2 ? headerV2->isSectionDragTarget : false;
+            const qreal dpr = painter->device()->devicePixelRatio();
             const QString pixmapName = QStyleHelper::uniqueName("headersection-"_L1
                                                                     % HexString(header->position)
                                                                     % HexString(header->orientation)
@@ -1145,8 +1146,7 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
                                                                 option, option->rect.size());
             QPixmap cache;
             if (!QPixmapCache::find(pixmapName, &cache)) {
-                cache = styleCachePixmap(rect.size());
-                cache.fill(Qt::transparent);
+                cache = styleCachePixmap(rect.size(), dpr);
                 QRect pixmapRect(0, 0, rect.width(), rect.height());
                 QPainter cachePainter(&cache);
                 QColor buttonColor = d->buttonColor(option->palette);
@@ -1879,12 +1879,12 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 #if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
+            const qreal dpr = painter->device()->devicePixelRatio();
             QPixmap cache;
             QString pixmapName = QStyleHelper::uniqueName("spinbox"_L1, spinBox, spinBox->rect.size());
             if (!QPixmapCache::find(pixmapName, &cache)) {
 
-                cache = styleCachePixmap(spinBox->rect.size());
-                cache.fill(Qt::transparent);
+                cache = styleCachePixmap(spinBox->rect.size(), dpr);
 
                 QRect pixmapRect(0, 0, spinBox->rect.width(), spinBox->rect.height());
                 QRect rect = pixmapRect;
@@ -2576,6 +2576,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             bool hasFocus = option->state & State_HasFocus && option->state & State_KeyboardFocusChange;
             bool sunken = comboBox->state & State_On; // play dead, if combobox has no items
             bool isEnabled = (comboBox->state & State_Enabled);
+            const qreal dpr = painter->device()->devicePixelRatio();
             QPixmap cache;
             const QString pixmapName = QStyleHelper::uniqueName("combobox"_L1
                                                                     % QLatin1StringView(sunken ? "-sunken" : "")
@@ -2584,8 +2585,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                                                                     % QLatin1StringView(!comboBox->frame ? "-frameless" : ""),
                                                                 option, comboBox->rect.size());
             if (!QPixmapCache::find(pixmapName, &cache)) {
-                cache = styleCachePixmap(comboBox->rect.size());
-                cache.fill(Qt::transparent);
+                cache = styleCachePixmap(comboBox->rect.size(), dpr);
                 QPainter cachePainter(&cache);
                 QRect pixmapRect(0, 0, comboBox->rect.width(), comboBox->rect.height());
                 QStyleOptionComboBox comboBoxCopy = *comboBox;
@@ -2673,6 +2673,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 #if QT_CONFIG(slider)
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
+            const qreal dpr = painter->device()->devicePixelRatio();
             QRect groove = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
             QRect handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
 
@@ -2699,8 +2700,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
                 // draw background groove
                 if (!QPixmapCache::find(groovePixmapName, &cache)) {
-                    cache = styleCachePixmap(pixmapRect.size());
-                    cache.fill(Qt::transparent);
+                    cache = styleCachePixmap(pixmapRect.size(), dpr);
                     QPainter groovePainter(&cache);
                     groovePainter.setRenderHint(QPainter::Antialiasing, true);
                     groovePainter.translate(0.5, 0.5);
@@ -2728,8 +2728,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 if (!groovePixmapName.isEmpty())
                     groovePixmapName += "_blue"_L1;
                 if (!QPixmapCache::find(groovePixmapName, &cache)) {
-                    cache = styleCachePixmap(pixmapRect.size());
-                    cache.fill(Qt::transparent);
+                    cache = styleCachePixmap(pixmapRect.size(), dpr);
                     QPainter groovePainter(&cache);
                     QLinearGradient gradient;
                     if (horizontal) {
@@ -2841,8 +2840,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             if ((option->subControls & SC_SliderHandle) ) {
                 QString handlePixmapName = QStyleHelper::uniqueName("slider_handle"_L1, option, handle.size());
                 if (!QPixmapCache::find(handlePixmapName, &cache)) {
-                    cache = styleCachePixmap(handle.size());
-                    cache.fill(Qt::transparent);
+                    cache = styleCachePixmap(handle.size(), dpr);
                     QRect pixmapRect(0, 0, handle.width(), handle.height());
                     QPainter handlePainter(&cache);
                     QRect gradRect = pixmapRect.adjusted(2, 2, -2, -2);
