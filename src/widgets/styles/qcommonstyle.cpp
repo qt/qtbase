@@ -750,22 +750,21 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
     case PE_IndicatorArrowRight:
     case PE_IndicatorArrowLeft:
         {
-            if (opt->rect.width() <= 1 || opt->rect.height() <= 1)
+            const QRect &r = opt->rect;
+            if (r.width() <= 1 || r.height() <= 1)
                 break;
-            QRect r = opt->rect;
             int size = qMin(r.height(), r.width());
             QPixmap pixmap;
-            const qreal pixelRatio = p->device()->devicePixelRatio();
+            const qreal dpr = p->device()->devicePixelRatio();
             const QString pixmapName = QStyleHelper::uniqueName("$qt_ia-"_L1
                                                      % QLatin1StringView(metaObject()->className())
                                                      % HexString<uint>(pe),
-                                             opt, QSize(size, size), pixelRatio);
+                                             opt, QSize(size, size), dpr);
             if (!QPixmapCache::find(pixmapName, &pixmap)) {
-                const qreal border = pixelRatio * (size / 5.);
-                const qreal sqsize = pixelRatio * size;
-                QImage image(sqsize, sqsize, QImage::Format_ARGB32_Premultiplied);
-                image.fill(Qt::transparent);
-                QPainter imagePainter(&image);
+                const qreal border = size / 5.;
+                const qreal sqsize = size;
+                pixmap = styleCachePixmap(QSize(size, size), dpr);
+                QPainter imagePainter(&pixmap);
                 imagePainter.setRenderHint(QPainter::Antialiasing);
 
                 QPolygonF poly;
@@ -813,8 +812,6 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
 
                 imagePainter.drawPolygon(poly);
                 imagePainter.end();
-                pixmap = QPixmap::fromImage(image);
-                pixmap.setDevicePixelRatio(pixelRatio);
                 QPixmapCache::insert(pixmapName, pixmap);
             }
             int xOffset = r.x() + (r.width() - size)/2;
