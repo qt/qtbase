@@ -29,12 +29,8 @@ class QStylePrivate: public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QStyle)
 public:
-    inline QStylePrivate()
-        : layoutSpacingIndex(-1), proxyStyle(nullptr) {}
-
     static bool useFullScreenForPopup();
 
-    mutable int layoutSpacingIndex;
     QStyle *proxyStyle;
     QString name;
 };
