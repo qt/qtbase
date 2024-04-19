@@ -54,6 +54,13 @@ static auto parseServerAddress(QString server)
 
     r.port = url.port();
     r.address.setAddress(url.host());
+    if (r.address.isNull()) {
+        // try to resolve a hostname
+        QHostInfo hostinfo = QHostInfo::fromName(url.host());
+        const QList<QHostAddress> addresses = hostinfo.addresses();
+        if (!hostinfo.error() && !addresses.isEmpty())
+            r.address = addresses.at(0);
+    }
     return r;
 }
 
