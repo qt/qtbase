@@ -8,7 +8,7 @@
 #include <QVariantMap>
 
 #include <QTest>
-
+#include <QtTest/private/qcomparisontesthelper_p.h>
 
 class tst_qmimetype : public QObject
 {
@@ -17,7 +17,9 @@ class tst_qmimetype : public QObject
 private slots:
     void initTestCase();
 
+    void compareCompiles();
     void isValid();
+    void compareQMimetypes();
     void name();
     void genericIconName();
     void iconName();
@@ -41,6 +43,28 @@ static QString qMimeTypeName()
 
 // ------------------------------------------------------------------------------------------------
 
+void tst_qmimetype::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QMimeType>();
+}
+
+// ------------------------------------------------------------------------------------------------
+
+void tst_qmimetype::compareQMimetypes()
+{
+    QMimeType instantiatedQMimeType{ QMimeTypePrivate(qMimeTypeName()) };
+    QMimeType otherQMimeType (instantiatedQMimeType);
+    QMimeType defaultQMimeType;
+
+    QVERIFY(!defaultQMimeType.isValid());
+    QT_TEST_EQUALITY_OPS(defaultQMimeType, QMimeType(), true);
+    QT_TEST_EQUALITY_OPS(QMimeType(), QMimeType(), true);
+    QT_TEST_EQUALITY_OPS(instantiatedQMimeType, QMimeType(), false);
+    QT_TEST_EQUALITY_OPS(otherQMimeType, defaultQMimeType, false);
+}
+
+// ------------------------------------------------------------------------------------------------
+
 void tst_qmimetype::isValid()
 {
     QMimeType instantiatedQMimeType{ QMimeTypePrivate(qMimeTypeName()) };
@@ -49,7 +73,7 @@ void tst_qmimetype::isValid()
     QMimeType otherQMimeType (instantiatedQMimeType);
 
     QVERIFY(otherQMimeType.isValid());
-    QCOMPARE(instantiatedQMimeType, otherQMimeType);
+    QT_TEST_EQUALITY_OPS(instantiatedQMimeType, otherQMimeType, true);
 
     QMimeType defaultQMimeType;
 
@@ -66,8 +90,7 @@ void tst_qmimetype::name()
     // Verify that the Name is part of the equality test:
     QCOMPARE(instantiatedQMimeType.name(), qMimeTypeName());
 
-    QVERIFY(instantiatedQMimeType != otherQMimeType);
-    QVERIFY(!(instantiatedQMimeType == otherQMimeType));
+    QT_TEST_EQUALITY_OPS(instantiatedQMimeType, otherQMimeType, false);
 }
 
 // ------------------------------------------------------------------------------------------------

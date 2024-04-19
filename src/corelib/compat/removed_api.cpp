@@ -1006,6 +1006,13 @@ bool QJsonValue::operator!=(const QJsonValue &other) const
     return !comparesEqual(*this, other);
 }
 
+#include "qmimetype.h"
+
+bool QMimeType::operator==(const QMimeType &other) const
+{
+    return comparesEqual(*this, other);
+}
+
 #include "qobject.h"
 
 int QObject::startTimer(std::chrono::milliseconds time, Qt::TimerType timerType)

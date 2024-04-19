@@ -49,14 +49,14 @@ public:
     }
     explicit QMimeType(const QMimeTypePrivate &dd);
     ~QMimeType();
-
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QMimeType &other) const;
 
     inline bool operator!=(const QMimeType &other) const
     {
         return !operator==(other);
     }
-
+#endif
     bool isValid() const;
 
     bool isDefault() const;
@@ -86,6 +86,10 @@ protected:
     friend Q_CORE_EXPORT size_t qHash(const QMimeType &key, size_t seed) noexcept;
 
     QExplicitlySharedDataPointer<QMimeTypePrivate> d;
+
+private:
+    friend Q_CORE_EXPORT bool comparesEqual(const QMimeType &lhs, const QMimeType &rhs) noexcept;
+    Q_DECLARE_EQUALITY_COMPARABLE(QMimeType)
 };
 
 Q_DECLARE_SHARED(QMimeType)

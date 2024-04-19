@@ -24,6 +24,7 @@ using namespace Qt::StringLiterals;
     \brief The QMimeType class describes types of file or data, represented by a MIME type string.
 
     \since 5.0
+    \compares equality
 
     For instance a file named "readme.txt" has the MIME type "text/plain".
     The MIME type can be determined from the file name, or from the file
@@ -111,14 +112,15 @@ QMimeType::~QMimeType()
 }
 
 /*!
-    \fn bool QMimeType::operator==(const QMimeType &other) const;
-    Returns \c true if \a other equals this QMimeType object, otherwise returns \c false.
+    \fn bool QMimeType::operator==(const QMimeType &lhs, const QMimeType &rhs);
+    Returns \c true if \a lhs equals to the \a rhs QMimeType object, otherwise
+    returns \c false.
     The name is the unique identifier for a mimetype, so two mimetypes with
     the same name, are equal.
  */
-bool QMimeType::operator==(const QMimeType &other) const
+bool comparesEqual(const QMimeType &lhs, const QMimeType &rhs) noexcept
 {
-    return d == other.d || d->name == other.d->name;
+    return lhs.d == rhs.d || lhs.d->name == rhs.d->name;
 }
 
 /*!
@@ -134,8 +136,9 @@ size_t qHash(const QMimeType &key, size_t seed) noexcept
 }
 
 /*!
-    \fn bool QMimeType::operator!=(const QMimeType &other) const;
-    Returns \c true if \a other does not equal this QMimeType object, otherwise returns \c false.
+    \fn bool QMimeType::operator!=(const QMimeType &lhs, const QMimeType &rhs);
+    Returns \c true if QMimeType \a lhs is not equal to QMimeType \a rhs,
+    otherwise returns \c false.
  */
 
 /*!
