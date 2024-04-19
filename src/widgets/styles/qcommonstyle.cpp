@@ -755,17 +755,18 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             QRect r = opt->rect;
             int size = qMin(r.height(), r.width());
             QPixmap pixmap;
+            const qreal pixelRatio = p->device()->devicePixelRatio();
             const QString pixmapName = QStyleHelper::uniqueName("$qt_ia-"_L1
                                                      % QLatin1StringView(metaObject()->className())
                                                      % HexString<uint>(pe),
-                                             opt, QSize(size, size));
+                                             opt, QSize(size, size) * pixelRatio);
             if (!QPixmapCache::find(pixmapName, &pixmap)) {
-                const qreal pixelRatio = p->device()->devicePixelRatio();
                 const qreal border = pixelRatio * (size / 5.);
                 const qreal sqsize = pixelRatio * size;
                 QImage image(sqsize, sqsize, QImage::Format_ARGB32_Premultiplied);
                 image.fill(Qt::transparent);
                 QPainter imagePainter(&image);
+                imagePainter.setRenderHint(QPainter::Antialiasing);
 
                 QPolygonF poly;
                 switch (pe) {
@@ -793,9 +794,9 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                     bsy = proxy()->pixelMetric(PM_ButtonShiftVertical, opt, widget);
                 }
 
-                const QRectF bounds = poly.boundingRect();
-                const qreal sx = sqsize / 2 - bounds.center().x() - 1;
-                const qreal sy = sqsize / 2 - bounds.center().y() - 1;
+                const QPointF boundsCenter = poly.boundingRect().center();
+                const qreal sx = sqsize / 2 - boundsCenter.x();
+                const qreal sy = sqsize / 2 - boundsCenter.y();
                 imagePainter.translate(sx + bsx, sy + bsy);
                 imagePainter.setPen(opt->palette.buttonText().color());
                 imagePainter.setBrush(opt->palette.buttonText());
