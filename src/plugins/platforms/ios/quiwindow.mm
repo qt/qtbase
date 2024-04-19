@@ -22,6 +22,15 @@
     return self;
 }
 
+- (instancetype)initWithWindowScene:(UIWindowScene *)windowScene
+{
+    if ((self = [super initWithWindowScene:windowScene]))
+        self->_sendingEvent = NO;
+
+    QIOSTheme::applyTheme(self);
+    return self;
+}
+
 - (void)sendEvent:(UIEvent *)event
 {
     QScopedValueRollback<BOOL> sendingEvent(self->_sendingEvent, YES);

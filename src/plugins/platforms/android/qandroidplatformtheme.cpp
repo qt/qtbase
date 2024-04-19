@@ -161,7 +161,10 @@ QJsonObject AndroidStyle::loadStyleData()
     if (!stylePath.isEmpty() && !stylePath.endsWith(slashChar))
         stylePath += slashChar;
 
-    if (QAndroidPlatformIntegration::colorScheme() == Qt::ColorScheme::Dark)
+    const Qt::ColorScheme colorScheme = QAndroidPlatformTheme::instance()
+                                      ? QAndroidPlatformTheme::instance()->colorScheme()
+                                      : QAndroidPlatformIntegration::colorScheme();
+    if (colorScheme == Qt::ColorScheme::Dark)
         stylePath += "darkUiMode/"_L1;
 
     Q_ASSERT(!stylePath.isEmpty());
@@ -423,7 +426,17 @@ void QAndroidPlatformTheme::showPlatformMenuBar()
 
 Qt::ColorScheme QAndroidPlatformTheme::colorScheme() const
 {
+    if (m_colorSchemeOverride != Qt::ColorScheme::Unknown)
+        return m_colorSchemeOverride;
     return QAndroidPlatformIntegration::colorScheme();
+}
+
+void QAndroidPlatformTheme::requestColorScheme(Qt::ColorScheme scheme)
+{
+    m_colorSchemeOverride = scheme;
+    QMetaObject::invokeMethod(qGuiApp, [this]{
+        updateColorScheme();
+    });
 }
 
 static inline int paletteType(QPlatformTheme::Palette type)

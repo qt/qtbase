@@ -447,6 +447,11 @@ Qt::ColorScheme QPlatformTheme::colorScheme() const
     return Qt::ColorScheme::Unknown;
 }
 
+void QPlatformTheme::requestColorScheme(Qt::ColorScheme scheme)
+{
+    Q_UNUSED(scheme);
+}
+
 const QPalette *QPlatformTheme::palette(Palette type) const
 {
     Q_D(const QPlatformTheme);

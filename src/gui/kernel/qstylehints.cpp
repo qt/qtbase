@@ -123,8 +123,29 @@ int QStyleHints::touchDoubleTapDistance() const
 
 /*!
     \property QStyleHints::colorScheme
-    \brief the color scheme of the platform theme.
-    \sa Qt::ColorScheme
+    \brief the color scheme used by the application.
+
+    By default, this follows the system's default color scheme (also known as appearance),
+    and changes when the system color scheme changes (e.g. during dusk or dawn).
+    Setting the color scheme to an explicit value will override the system setting and
+    ignore any changes to the system's color scheme. However, doing so is a hint to the
+    system, and overriding the color scheme is not supported on all platforms.
+
+    Resetting this property, or setting it to \l{Qt::ColorScheme::Unknown}, will remove
+    the override and make the application follow the system default again. The property
+    value will change to the color scheme the system currently has.
+
+    When this property changes, Qt will read the system palette and update the default
+    palette, but won't overwrite palette entries that have been explicitly set by the
+    application. When the colorSchemeChange() signal gets emitted, the old palette is
+    still in effect.
+
+    Application-specific colors should be selected to work well with the effective
+    palette, taking the current color scheme into account. To update application-
+    specific colors when the effective palette changes, handle
+    \l{QEvent::}{PaletteChange} or \l{QEvent::}{ApplicationPaletteChange} events.
+
+    \sa Qt::ColorScheme, QGuiApplication::palette(), QEvent::PaletteChange
     \since 6.5
 */
 Qt::ColorScheme QStyleHints::colorScheme() const
@@ -132,6 +153,30 @@ Qt::ColorScheme QStyleHints::colorScheme() const
     Q_D(const QStyleHints);
     return d->colorScheme();
 }
+
+/*!
+    \since 6.8
+
+    Sets the color scheme used by the application to an explicit \a scheme, or
+    revert to the system's current color scheme if \a scheme is Qt::ColorScheme::Unknown.
+*/
+void QStyleHints::setColorScheme(Qt::ColorScheme scheme)
+{
+    if (!QCoreApplication::instance()) {
+        qWarning("Must construct a QGuiApplication before accessing a platform theme hint.");
+        return;
+    }
+    if (QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme())
+        theme->requestColorScheme(scheme);
+}
+
+/*!
+    \fn void QStyleHints::unsetColorScheme()
+    \since 6.8
+
+    Restores the color scheme to the system's current color scheme.
+*/
+
 
 /*!
     Sets the \a mousePressAndHoldInterval.

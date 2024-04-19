@@ -52,7 +52,8 @@ class Q_GUI_EXPORT QStyleHints : public QObject
     Q_PROPERTY(int mouseDoubleClickDistance READ mouseDoubleClickDistance STORED false CONSTANT
                FINAL)
     Q_PROPERTY(int touchDoubleTapDistance READ touchDoubleTapDistance STORED false CONSTANT FINAL)
-    Q_PROPERTY(Qt::ColorScheme colorScheme READ colorScheme NOTIFY colorSchemeChanged FINAL)
+    Q_PROPERTY(Qt::ColorScheme colorScheme READ colorScheme WRITE setColorScheme
+               RESET unsetColorScheme NOTIFY colorSchemeChanged FINAL)
 
 public:
     void setMouseDoubleClickInterval(int mouseDoubleClickInterval);
@@ -94,6 +95,8 @@ public:
     void setMouseQuickSelectionThreshold(int threshold);
     int mouseQuickSelectionThreshold() const;
     Qt::ColorScheme colorScheme() const;
+    void setColorScheme(Qt::ColorScheme scheme);
+    void unsetColorScheme() { setColorScheme(Qt::ColorScheme::Unknown); }
 
 Q_SIGNALS:
     void cursorFlashTimeChanged(int cursorFlashTime);

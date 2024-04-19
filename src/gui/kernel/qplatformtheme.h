@@ -295,6 +295,7 @@ public:
 #endif
 
     virtual Qt::ColorScheme colorScheme() const;
+    virtual void requestColorScheme(Qt::ColorScheme scheme);
 
     virtual const QPalette *palette(Palette type = SystemPalette) const;
 

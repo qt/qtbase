@@ -32,6 +32,8 @@ public:
     QVariant themeHint(ThemeHint) const override;
 
     Qt::ColorScheme colorScheme() const override;
+    void requestColorScheme(Qt::ColorScheme scheme) override;
+    Qt::ColorScheme requestedColorScheme() const { return s_colorSchemeOverride; }
 
     static void handleSettingsChanged();
 
@@ -79,6 +81,8 @@ private:
 
     static QWindowsTheme *m_instance;
     static inline Qt::ColorScheme s_colorScheme = Qt::ColorScheme::Unknown;
+    static inline Qt::ColorScheme s_colorSchemeOverride = Qt::ColorScheme::Unknown;
+
     QPalette *m_palettes[NPalettes];
     QFont *m_fonts[NFonts];
     QList<QSize> m_fileIconSizes;

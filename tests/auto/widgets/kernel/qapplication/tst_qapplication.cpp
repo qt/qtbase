@@ -23,6 +23,7 @@
 
 #include <QtGui/QFontDatabase>
 #include <QtGui/QClipboard>
+#include <QtGui/QStyleHints>
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
@@ -119,6 +120,7 @@ private slots:
 
     void style();
     void applicationPalettePolish();
+    void setColorScheme();
 
     void allWidgets();
     void topLevelWidgets();
@@ -2049,6 +2051,122 @@ void tst_QApplication::applicationPalettePolish()
         QCOMPARE(app.palette().color(QPalette::Link), Qt::red);
         QCOMPARE(app.palette().color(QPalette::Highlight), Qt::green);
     }
+}
+
+void tst_QApplication::setColorScheme()
+{
+    int argc = 1;
+    QApplication app(argc, &argv0);
+
+    if (QStringList{"minimal", "offscreen", "wayland", "xcb", "wasm", "webassembly"}
+        .contains(QGuiApplication::platformName(), Qt::CaseInsensitive)) {
+        QSKIP("Setting the colorScheme is not implemented on this platform.");
+    }
+    qDebug() << "Testing setColorScheme on platform" << QGuiApplication::platformName();
+
+    if (QByteArrayView(app.style()->metaObject()->className()) == "QWindowsVistaStyle")
+        QSKIP("Setting the colorScheme is not supported with the Windows Vista style.");
+
+    const Qt::ColorScheme defaultColorScheme = QApplication::styleHints()->colorScheme();
+    // if we implement setColorScheme, then we must be able to read it
+    QVERIFY(defaultColorScheme != Qt::ColorScheme::Unknown);
+    const Qt::ColorScheme newColorScheme = defaultColorScheme == Qt::ColorScheme::Light
+                                         ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light;
+
+    class TopLevelWidget : public QWidget
+    {
+        QList<QEvent::Type> events;
+    public:
+        TopLevelWidget()
+        {
+            setObjectName("colorScheme TopLevelWidget");
+        }
+
+        void clearEvents()
+        {
+            events.clear();
+        }
+        qsizetype eventCount(QEvent::Type type) const
+        {
+            return events.count(type);
+        }
+    protected:
+        bool event(QEvent *event) override
+        {
+            switch (event->type()) {
+            case QEvent::ApplicationPaletteChange:
+            case QEvent::PaletteChange:
+            case QEvent::ThemeChange:
+                events << event->type();
+                break;
+            default:
+                break;
+            }
+
+            return QWidget::event(event);
+        }
+    } topLevelWidget;
+    topLevelWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevelWidget));
+
+    QSignalSpy colorSchemeChangedSpy(app.styleHints(), &QStyleHints::colorSchemeChanged);
+
+    // always start with a clean list
+    topLevelWidget.clearEvents();
+    const QPalette defaultPalette = topLevelWidget.palette();
+
+    bool oldPaletteWhenSchemeChanged = false;
+    connect(app.styleHints(), &QStyleHints::colorSchemeChanged, this,
+            [defaultPalette, &topLevelWidget, &oldPaletteWhenSchemeChanged]{
+        oldPaletteWhenSchemeChanged = defaultPalette == topLevelWidget.palette();
+    });
+
+    app.styleHints()->setColorScheme(newColorScheme);
+    QTRY_COMPARE(colorSchemeChangedSpy.count(), 1);
+    // We have not yet updated the palette when we emit the colorSchemeChanged
+    // signal, so the toplevel widget should still use the previous palette
+    QVERIFY(oldPaletteWhenSchemeChanged);
+    QCOMPARE(topLevelWidget.eventCount(QEvent::ThemeChange), 1);
+    // We can't guarantee that there is only one ApplicationPaletteChange,
+    // and they might arrive asynchronously in response to ThemeChange
+    QTRY_COMPARE_GE(topLevelWidget.eventCount(QEvent::ApplicationPaletteChange), 1);
+    // But we can guarantee a single PaletteChange event for the widget
+    QCOMPARE(topLevelWidget.eventCount(QEvent::PaletteChange), 1);
+    // The palette should have changed
+    QCOMPARE_NE(topLevelWidget.palette(), defaultPalette);
+
+    topLevelWidget.clearEvents();
+    colorSchemeChangedSpy.clear();
+
+    // verify that a widget shown with a color scheme override in place respect that
+    QWidget newWidget;
+    newWidget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&newWidget));
+    QCOMPARE(newWidget.palette(), topLevelWidget.palette());
+
+    // Setting to Unknown should follow the system preference again
+    app.styleHints()->setColorScheme(Qt::ColorScheme::Unknown);
+    QTRY_COMPARE(colorSchemeChangedSpy.count(), 1);
+    QCOMPARE(app.styleHints()->colorScheme(), defaultColorScheme);
+    QTRY_COMPARE(topLevelWidget.eventCount(QEvent::PaletteChange), 1);
+
+    auto debugPalette = qScopeGuard([defaultPalette, &topLevelWidget]{
+        qDebug() << "Inspecting palettes for differences";
+        const QPalette palette = topLevelWidget.palette();
+        for (int g = 0; g < QPalette::NColorGroups; ++g) {
+            for (int r = 0; r < QPalette::NColorRoles; ++r) {
+                const auto group = static_cast<QPalette::ColorGroup>(g);
+                const auto role = static_cast<QPalette::ColorRole>(r);
+                qDebug() << "...Checking" << group << role;
+                const auto actualBrush = palette.brush(group, role);
+                const auto expectedBrush = defaultPalette.brush(group, role);
+                if (palette.brush(group, role) != defaultPalette.brush(group, role))
+                    qWarning() << "...Difference in" << group << role << actualBrush << expectedBrush;
+            }
+        }
+    });
+    QCOMPARE(topLevelWidget.palette(), defaultPalette);
+    debugPalette.dismiss();
 }
 
 void tst_QApplication::allWidgets()

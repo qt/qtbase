@@ -850,9 +850,16 @@ static inline bool shouldApplyDarkFrame(const QWindow *w)
 {
     if (!w->isTopLevel() || w->flags().testFlag(Qt::FramelessWindowHint))
         return false;
-    // the application has explicitly opted out of dark frames
+
+    // the user of the application has explicitly opted out of dark frames
     if (!QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeWindowFrames))
         return false;
+
+    // the application explicitly overrides the color scheme
+    if (const auto requestedColorScheme = QWindowsTheme::instance()->requestedColorScheme();
+        requestedColorScheme != Qt::ColorScheme::Unknown) {
+        return requestedColorScheme == Qt::ColorScheme::Dark;
+    }
 
     // if the application supports a dark border, and the palette is dark (window background color
     // is darker than the text), then turn dark-border support on, otherwise use a light border.

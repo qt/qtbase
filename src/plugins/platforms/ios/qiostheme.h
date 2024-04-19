@@ -4,6 +4,8 @@
 #ifndef QIOSTHEME_H
 #define QIOSTHEME_H
 
+#import <UIKit/UIKit.h>
+
 #include <QtCore/QHash>
 #include <QtGui/QPalette>
 #include <qpa/qplatformtheme.h>
@@ -22,6 +24,7 @@ public:
     QVariant themeHint(ThemeHint hint) const override;
 
     Qt::ColorScheme colorScheme() const override;
+    void requestColorScheme(Qt::ColorScheme scheme) override;
 
 #if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
     QPlatformMenuItem* createPlatformMenuItem() const override;
@@ -37,9 +40,11 @@ public:
     static const char *name;
 
     static void initializeSystemPalette();
+    static void applyTheme(UIWindow *window);
 
 private:
     static QPalette s_systemPalette;
+    static inline Qt::ColorScheme s_colorSchemeOverride = Qt::ColorScheme::Unknown;
     QMacNotificationObserver m_contentSizeCategoryObserver;
 };
 

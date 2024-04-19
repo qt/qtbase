@@ -478,6 +478,23 @@ Qt::ColorScheme QCocoaTheme::colorScheme() const
     return m_colorScheme;
 }
 
+void QCocoaTheme::requestColorScheme(Qt::ColorScheme scheme)
+{
+    NSAppearance *appearance = nil;
+    switch (scheme) {
+    case Qt::ColorScheme::Dark:
+        appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
+        break;
+    case Qt::ColorScheme::Light:
+        appearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
+        break;
+    case Qt::ColorScheme::Unknown:
+        break;
+    }
+    if (appearance != NSApp.effectiveAppearance)
+        NSApplication.sharedApplication.appearance = appearance;
+}
+
 /*
     Update the theme's color scheme based on the current appearance.
 

@@ -301,6 +301,9 @@ void QWindowsTheme::populateLightSystemBasePalette(QPalette &result)
 
 void QWindowsTheme::populateDarkSystemBasePalette(QPalette &result)
 {
+    QColor foreground, background,
+           accent, accentDark, accentDarker, accentDarkest,
+           accentLight, accentLighter, accentLightest;
 #if QT_CONFIG(cpp_winrt)
     using namespace winrt::Windows::UI::ViewManagement;
     const auto settings = UISettings();
@@ -308,32 +311,37 @@ void QWindowsTheme::populateDarkSystemBasePalette(QPalette &result)
     // We have to craft a palette from these colors. The settings.UIElementColor(UIElementType) API
     // returns the old system colors, not the dark mode colors. If the background is black (which it
     // usually), then override it with a dark gray instead so that we can go up and down the lightness.
-    const QColor foreground = getSysColor(settings.GetColorValue(UIColorType::Foreground));
-    const QColor background = [&settings]() -> QColor {
-        auto systemBackground = getSysColor(settings.GetColorValue(UIColorType::Background));
-        if (systemBackground == Qt::black)
-            systemBackground = QColor(0x1E, 0x1E, 0x1E);
-        return systemBackground;
-    }();
+    if (QWindowsTheme::queryColorScheme() == Qt::ColorScheme::Dark) {
+        // the system is actually running in dark mode, so UISettings will give us dark colors
+        foreground = getSysColor(settings.GetColorValue(UIColorType::Foreground));
+        background = [&settings]() -> QColor {
+            auto systemBackground = getSysColor(settings.GetColorValue(UIColorType::Background));
+            if (systemBackground == Qt::black)
+                systemBackground = QColor(0x1E, 0x1E, 0x1E);
+            return systemBackground;
+        }();
 
-    const QColor accent = getSysColor(settings.GetColorValue(UIColorType::Accent));
-    const QColor accentDark = getSysColor(settings.GetColorValue(UIColorType::AccentDark1));
-    const QColor accentDarker = getSysColor(settings.GetColorValue(UIColorType::AccentDark2));
-    const QColor accentDarkest = getSysColor(settings.GetColorValue(UIColorType::AccentDark3));
-    const QColor accentLight = getSysColor(settings.GetColorValue(UIColorType::AccentLight1));
-    const QColor accentLighter = getSysColor(settings.GetColorValue(UIColorType::AccentLight2));
-    const QColor accentLightest = getSysColor(settings.GetColorValue(UIColorType::AccentLight3));
-#else
-    const QColor foreground = Qt::white;
-    const QColor background = QColor(0x1E, 0x1E, 0x1E);
-    const QColor accent = qt_accentColor(AccentColorNormal);
-    const QColor accentDark = accent.darker(120);
-    const QColor accentDarker = accentDark.darker(120);
-    const QColor accentDarkest = accentDarker.darker(120);
-    const QColor accentLight = accent.lighter(120);
-    const QColor accentLighter = accentLight.lighter(120);
-    const QColor accentLightest = accentLighter.lighter(120);
+        accent = getSysColor(settings.GetColorValue(UIColorType::Accent));
+        accentDark = getSysColor(settings.GetColorValue(UIColorType::AccentDark1));
+        accentDarker = getSysColor(settings.GetColorValue(UIColorType::AccentDark2));
+        accentDarkest = getSysColor(settings.GetColorValue(UIColorType::AccentDark3));
+        accentLight = getSysColor(settings.GetColorValue(UIColorType::AccentLight1));
+        accentLighter = getSysColor(settings.GetColorValue(UIColorType::AccentLight2));
+        accentLightest = getSysColor(settings.GetColorValue(UIColorType::AccentLight3));
+    } else
 #endif
+    {
+        // If the system is running in light mode, then we need to make up our own dark palette
+        foreground = Qt::white;
+        background = QColor(0x1E, 0x1E, 0x1E);
+        accent = qt_accentColor(AccentColorNormal);
+        accentDark = accent.darker(120);
+        accentDarker = accentDark.darker(120);
+        accentDarkest = accentDarker.darker(120);
+        accentLight = accent.lighter(120);
+        accentLighter = accentLight.lighter(120);
+        accentLightest = accentLighter.lighter(120);
+    }
     const QColor linkColor = accent;
     const QColor buttonColor = background.lighter(200);
 
@@ -549,13 +557,25 @@ Qt::ColorScheme QWindowsTheme::effectiveColorScheme()
 {
     if (queryHighContrast())
         return Qt::ColorScheme::Unknown;
-    return s_colorScheme;
+    if (s_colorSchemeOverride != Qt::ColorScheme::Unknown)
+        return s_colorSchemeOverride;
+    if (s_colorScheme != Qt::ColorScheme::Unknown)
+        return s_colorScheme;
+    return queryColorScheme();
+}
+
+void QWindowsTheme::requestColorScheme(Qt::ColorScheme scheme)
+{
+    s_colorSchemeOverride = scheme;
+    handleSettingsChanged();
 }
 
 void QWindowsTheme::handleSettingsChanged()
 {
-    const auto newColorScheme = QWindowsTheme::queryColorScheme();
-    const bool colorSchemeChanged = newColorScheme != QWindowsTheme::s_colorScheme;
+    const auto oldColorScheme = s_colorScheme;
+    s_colorScheme = Qt::ColorScheme::Unknown; // make effectiveColorScheme() query registry
+    const auto newColorScheme = effectiveColorScheme();
+    const bool colorSchemeChanged = newColorScheme != oldColorScheme;
     s_colorScheme = newColorScheme;
     auto integration = QWindowsIntegration::instance();
     integration->updateApplicationBadge();

@@ -40,6 +40,8 @@ public:
     QPlatformMenuItem *createPlatformMenuItem() const override;
     void showPlatformMenuBar() override;
     Qt::ColorScheme colorScheme() const override;
+    void requestColorScheme(Qt::ColorScheme scheme) override;
+
     const QPalette *palette(Palette type = SystemPalette) const override;
     const QFont *font(Font type = SystemFont) const override;
     QIconEngine *createIconEngine(const QString &iconName) const override;
@@ -57,6 +59,7 @@ private:
     std::shared_ptr<AndroidStyle> m_androidStyleData;
     QPalette m_defaultPalette;
     QFont m_systemFont;
+    Qt::ColorScheme m_colorSchemeOverride = Qt::ColorScheme::Unknown;
 };
 
 QT_END_NAMESPACE
