@@ -122,7 +122,7 @@ QSqlDatabasePrivate::~QSqlDatabasePrivate()
 QtSqlGlobals::~QtSqlGlobals()
 {
     qDeleteAll(registeredDrivers);
-    for (const auto &[k, v] : connections.asKeyValueRange())
+    for (const auto &[k, v] : std::as_const(connections).asKeyValueRange())
         QSqlDatabasePrivate::invalidateDb(v, k, false);
 }
 
