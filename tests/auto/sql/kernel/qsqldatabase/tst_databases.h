@@ -518,7 +518,10 @@ protected:
     void cleanup()
     {
         QSqlQuery q(m_db);
-        q.exec("DROP PROCEDURE IF EXISTS " + m_procName);
+        if (m_db.driverName() == "QIBASE")
+            q.exec("DROP PROCEDURE " + m_procName);
+        else
+            q.exec("DROP PROCEDURE IF EXISTS " + m_procName);
     }
 private:
     QSqlDatabase m_db;
