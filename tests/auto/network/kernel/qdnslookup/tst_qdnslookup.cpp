@@ -698,10 +698,13 @@ void tst_QDnsLookup::setNameserver_data()
 void tst_QDnsLookup::setNameserver_helper(QDnsLookup::Protocol protocol)
 {
     QFETCH(QHostAddress, server);
+    QElapsedTimer timer;
+    timer.start();
     std::unique_ptr<QDnsLookup> lookup =
             lookupCommon(QDnsLookup::Type::A, "a-single", server, 0, protocol);
     if (!lookup)
         return;
+    qDebug() << "Lookup took" << timer.elapsed() << "ms";
     QCOMPARE(lookup->error(), QDnsLookup::NoError);
     QString result = formatReply(lookup.get()).join(';');
     QCOMPARE(result, "A 192.0.2.1");
