@@ -150,13 +150,7 @@ struct QMetaTypeCustomRegistry
         auto &ti = registry[idx];
 
         // We must unregister all names.
-        auto it = aliases.begin();
-        while (it != aliases.end()) {
-            if (it.value() == ti)
-                it = aliases.erase(it);
-            else
-                ++it;
-        }
+        aliases.removeIf([ti] (const auto &kv) { return kv.value() == ti; });
 
         ti = nullptr;
 
