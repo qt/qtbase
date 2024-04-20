@@ -159,6 +159,21 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
     \note If you simply want to find the IP address(es) associated with a host
     name, or the host name associated with an IP address you should use
     QHostInfo instead.
+
+    \section1 DNS-over-TLS
+
+    QDnsLookup supports DNS-over-TLS (DoT, as specified by \l{RFC 7858}) on
+    some platforms. That currently includes all Unix platforms where regular
+    queries are supported, if \l QSslSocket support is present in Qt. To query
+    if support is present at runtime, use isProtocolSupported().
+
+    When using DNS-over-TLS, QDnsLookup only implements the "Opportunistic
+    Privacy Profile" method of authentication, as described in \l{RFC 7858}
+    section 4.1. In this mode, QDnsLookup (through \l QSslSocket) only
+    validates that the server presents a certificate that is valid for the
+    server being connected to. Clients may use setSslConfiguration() to impose
+    additional restrictions and sslConfiguration() to obtain information after
+    the query is complete.
 */
 
 /*!
@@ -217,6 +232,62 @@ static void qt_qdnsservicerecord_sort(QList<QDnsServiceRecord> &records)
 */
 
 /*!
+    \enum QDnsLookup::Protocol
+
+    Indicates the type of DNS server that is being queried.
+
+    \value Standard
+        Regular, unencrypted DNS, using UDP and falling back to TCP as necessary
+        (default port: 53)
+
+    \value DnsOverTls
+        Encrypted DNS over TLS (DoT, as specified by \l{RFC 7858}), over TCP
+        (default port: 853)
+
+    \sa isProtocolSupported(), nameserverProtocol, setNameserver()
+*/
+
+/*!
+    \since 6.8
+
+    Returns true if DNS queries using \a protocol are supported with QDnsLookup.
+
+    \sa nameserverProtocol
+*/
+bool QDnsLookup::isProtocolSupported(Protocol protocol)
+{
+#if QT_CONFIG(libresolv) || defined(Q_OS_WIN)
+    switch (protocol) {
+    case QDnsLookup::Standard:
+        return true;
+    case QDnsLookup::DnsOverTls:
+        return false;
+    }
+#else
+    Q_UNUSED(protocol)
+#endif
+    return false;
+}
+
+/*!
+    \since 6.8
+
+    Returns the standard (default) port number for the protocol \a protocol.
+
+    \sa isProtocolSupported()
+*/
+quint16 QDnsLookup::defaultPortForProtocol(Protocol protocol) noexcept
+{
+    switch (protocol) {
+    case QDnsLookup::Standard:
+        return DnsPort;
+    case QDnsLookup::DnsOverTls:
+        return DnsOverTlsPort;
+    }
+    return 0;       // will probably fail somewhere
+}
+
+/*!
     \fn void QDnsLookup::finished()
 
     This signal is emitted when the reply has finished processing.
@@ -270,7 +341,7 @@ QDnsLookup::QDnsLookup(Type type, const QString &name, QObject *parent)
 */
 
 QDnsLookup::QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, QObject *parent)
-    : QDnsLookup(type, name, nameserver, DnsPort, parent)
+    : QDnsLookup(type, name, nameserver, 0, parent)
 {
 }
 
@@ -285,8 +356,9 @@ QDnsLookup::QDnsLookup(Type type, const QString &name, const QHostAddress &names
 //! [nameserver-port]
     \note Setting the port number to any value other than the default (53) can
     cause the name resolution to fail, depending on the operating system
-    limitations and firewalls. Notably, the Windows API used by QDnsLookup is
-    unable to handle alternate port numbers.
+    limitations and firewalls, if the nameserverProtocol() to be used
+    QDnsLookup::Standard. Notably, the Windows API used by QDnsLookup is unable
+    to handle alternate port numbers.
 //! [nameserver-port]
 */
 QDnsLookup::QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, quint16 port, QObject *parent)
@@ -297,6 +369,30 @@ QDnsLookup::QDnsLookup(Type type, const QString &name, const QHostAddress &names
     d->type = type;
     d->port = port;
     d->nameserver = nameserver;
+}
+
+/*!
+    \since 6.8
+
+    Constructs a QDnsLookup object to issue a query for \a name of record type
+    \a type, using the DNS server \a nameserver running on port \a port, and
+    sets \a parent as the parent object.
+
+    The query will be sent using \a protocol, if supported. Use
+    isProtocolSupported() to check if it is supported.
+
+    \include qdnslookup.cpp nameserver-port
+*/
+QDnsLookup::QDnsLookup(Type type, const QString &name, Protocol protocol,
+                       const QHostAddress &nameserver, quint16 port, QObject *parent)
+    : QObject(*new QDnsLookupPrivate, parent)
+{
+    Q_D(QDnsLookup);
+    d->name = name;
+    d->type = type;
+    d->nameserver = nameserver;
+    d->port = port;
+    d->protocol = protocol;
 }
 
 /*!
@@ -416,6 +512,10 @@ QBindable<QHostAddress> QDnsLookup::bindableNameserver()
     \property QDnsLookup::nameserverPort
     \since 6.6
     \brief the port number of nameserver to use for DNS lookup.
+
+    The value of 0 indicates that QDnsLookup should use the default port for
+    the nameserverProtocol().
+
     \include qdnslookup.cpp nameserver-port
 */
 
@@ -437,18 +537,44 @@ QBindable<quint16> QDnsLookup::bindableNameserverPort()
 }
 
 /*!
+    \property QDnsLookup::nameserverProtocol
+    \since 6.8
+    \brief the protocol to use when sending the DNS query
+
+    \sa isProtocolSupported()
+*/
+QDnsLookup::Protocol QDnsLookup::nameserverProtocol() const
+{
+    return d_func()->protocol;
+}
+
+void QDnsLookup::setNameserverProtocol(Protocol protocol)
+{
+    d_func()->protocol = protocol;
+}
+
+QBindable<QDnsLookup::Protocol> QDnsLookup::bindableNameserverProtocol()
+{
+    return &d_func()->protocol;
+}
+
+/*!
+    \fn void QDnsLookup::setNameserver(const QHostAddress &nameserver, quint16 port)
     \since 6.6
+
     Sets the nameserver to \a nameserver and the port to \a port.
 
     \include qdnslookup.cpp nameserver-port
 
     \sa QDnsLookup::nameserver, QDnsLookup::nameserverPort
 */
-void QDnsLookup::setNameserver(const QHostAddress &nameserver, quint16 port)
+
+void QDnsLookup::setNameserver(Protocol protocol, const QHostAddress &nameserver, quint16 port)
 {
     Qt::beginPropertyUpdateGroup();
     setNameserver(nameserver);
     setNameserverPort(port);
+    setNameserverProtocol(protocol);
     Qt::endPropertyUpdateGroup();
 }
 
@@ -523,6 +649,29 @@ QList<QDnsTextRecord> QDnsLookup::textRecords() const
     return d_func()->reply.textRecords;
 }
 
+#if QT_CONFIG(ssl)
+/*!
+    \since 6.8
+    Sets the \a sslConfiguration to use for outgoing DNS-over-TLS connections.
+
+    \sa sslConfiguration(), QSslSocket::setSslConfiguration()
+*/
+void QDnsLookup::setSslConfiguration(const QSslConfiguration &sslConfiguration)
+{
+    Q_UNUSED(sslConfiguration)
+}
+
+/*!
+    Returns the current SSL configuration.
+
+    \sa setSslConfiguration()
+*/
+QSslConfiguration QDnsLookup::sslConfiguration() const
+{
+    return {};
+}
+#endif
+
 /*!
     Aborts the DNS lookup operation.
 
@@ -564,6 +713,9 @@ void QDnsLookup::lookup()
         if (d->runnable == sender()) {
 #ifdef QDNSLOOKUP_DEBUG
             qDebug("DNS reply for %s: %i (%s)", qPrintable(d->name), reply.error, qPrintable(reply.errorString));
+#endif
+#if QT_CONFIG(ssl)
+            d->sslConfiguration = std::move(reply.sslConfiguration);
 #endif
             d->reply = reply;
             d->runnable = nullptr;
@@ -1070,8 +1222,14 @@ inline QDnsLookupRunnable::QDnsLookupRunnable(const QDnsLookupPrivate *d)
     : requestName(encodeLabel(d->name)),
       nameserver(d->nameserver),
       requestType(d->type),
-      port(d->port)
+      port(d->port),
+      protocol(d->protocol)
 {
+    if (port == 0)
+        port = QDnsLookup::defaultPortForProtocol(protocol);
+#if QT_CONFIG(ssl)
+    sslConfiguration = d->sslConfiguration;
+#endif
 }
 
 void QDnsLookupRunnable::run()
@@ -1120,9 +1278,16 @@ inline QDebug operator<<(QDebug &d, QDnsLookupRunnable *r)
     if (r->requestName.size() > MaxDomainNameLength)
         d << "... (truncated)";
     d << " type " << r->requestType;
-    if (!r->nameserver.isNull())
+    if (!r->nameserver.isNull()) {
         d << " to nameserver " << qUtf16Printable(r->nameserver.toString())
-          << " port " << (r->port ? r->port : DnsPort);
+          << " port " << (r->port ? r->port : QDnsLookup::defaultPortForProtocol(r->protocol));
+        switch (r->protocol) {
+        case QDnsLookup::Standard:
+            break;
+        case QDnsLookup::DnsOverTls:
+            d << " (TLS)";
+        }
+    }
     return d;
 }
 

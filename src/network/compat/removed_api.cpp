@@ -58,6 +58,9 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
 
 #if QT_NETWORK_REMOVED_SINCE(6, 8)
 
+#if QT_CONFIG(dnslookup)
+#  include "qdnslookup.h" // inlined API
+#endif
 #include "qnetworkrequest.h" // inlined API
 
 // #include "qotherheader.h"

@@ -73,7 +73,7 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     request.QueryType = requestType;
     request.QueryOptions = DNS_QUERY_STANDARD | DNS_QUERY_TREAT_AS_FQDN;
 
-    if (!nameserver.isNull()) {
+    if (protocol == QDnsLookup::Standard && !nameserver.isNull()) {
         memset(dnsAddresses, 0, sizeof(dnsAddresses));
         request.pDnsServerList = new (dnsAddresses) DNS_ADDR_ARRAY;
         auto addr = new (request.pDnsServerList->AddrArray) DNS_ADDR[1];
@@ -87,7 +87,16 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
 
     DNS_QUERY_RESULT results = {};
     results.Version = 1;
-    const DNS_STATUS status = DnsQueryEx(&request, &results, nullptr);
+    DNS_STATUS status = ERROR_INVALID_PARAMETER;
+    switch (protocol) {
+    case QDnsLookup::Standard:
+        status = DnsQueryEx(&request, &results, nullptr);
+        break;
+    case QDnsLookup::DnsOverTls:
+        return reply->setError(QDnsLookup::ResolverError,
+                               QDnsLookup::tr("DNS over TLS not implemented"));
+    }
+
     if (status >= DNS_ERROR_RCODE_FORMAT_ERROR && status <= DNS_ERROR_RCODE_LAST)
         return reply->makeDnsRcodeError(status - DNS_ERROR_RCODE_FORMAT_ERROR + 1);
     else if (status == ERROR_TIMEOUT)

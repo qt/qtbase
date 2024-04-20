@@ -155,6 +155,10 @@ prepareQueryBuffer(res_state state, QueryBuffer &buffer, const char *label, ns_r
 
 void QDnsLookupRunnable::query(QDnsLookupReply *reply)
 {
+    if (protocol != QDnsLookup::Standard)
+        return reply->setError(QDnsLookup::ResolverError,
+                               QDnsLookup::tr("DNS over TLS not implemented"));
+
     // Initialize state.
     std::remove_pointer_t<res_state> state = {};
     if (res_ninit(&state) < 0) {

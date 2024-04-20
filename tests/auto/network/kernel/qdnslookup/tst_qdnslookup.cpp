@@ -37,8 +37,11 @@ class tst_QDnsLookup: public QObject
     QStringList domainNameListAlternatives(const QString &input);
 
     std::unique_ptr<QDnsLookup> lookupCommon(QDnsLookup::Type type, const QString &domain,
-                                             const QHostAddress &server = {}, quint16 port = 53);
+                                             const QHostAddress &server = {}, quint16 port = 0,
+                                             QDnsLookup::Protocol protocol = QDnsLookup::Standard);
     QStringList formatReply(const QDnsLookup *lookup) const;
+
+    void setNameserver_helper(QDnsLookup::Protocol protocol);
 public slots:
     void initTestCase();
 
@@ -57,6 +60,8 @@ private slots:
     void setNameserverLoopback();
     void setNameserver_data();
     void setNameserver();
+    void dnsOverTls_data();
+    void dnsOverTls();
     void bindingsAndProperties();
     void automatedBindings();
 };
@@ -74,9 +79,11 @@ static const char preparedDnsQuery[] =
         "\x00\x00\x06\x00\x01"  // <root domain> IN SOA
         ;
 
-static QList<QHostAddress> systemNameservers()
+static QList<QHostAddress> systemNameservers(QDnsLookup::Protocol protocol)
 {
     QList<QHostAddress> result;
+    if (protocol != QDnsLookup::Standard)
+        return result;
 
 #ifdef Q_OS_WIN
     ULONG infosize = 0;
@@ -113,7 +120,7 @@ static QList<QHostAddress> systemNameservers()
     return result;
 }
 
-static QList<QHostAddress> globalPublicNameservers()
+static QList<QHostAddress> globalPublicNameservers(QDnsLookup::Protocol proto)
 {
     const char *const candidates[] = {
         // Google's dns.google
@@ -129,6 +136,8 @@ static QList<QHostAddress> globalPublicNameservers()
     };
 
     QList<QHostAddress> result;
+    if (proto != QDnsLookup::Standard)
+        return result;
     QRandomGenerator &rng = *QRandomGenerator::system();
     for (auto name : candidates) {
         // check the candidates for reachability
@@ -221,9 +230,10 @@ QStringList tst_QDnsLookup::domainNameListAlternatives(const QString &input)
 
 std::unique_ptr<QDnsLookup>
 tst_QDnsLookup::lookupCommon(QDnsLookup::Type type, const QString &domain,
-                             const QHostAddress &server, quint16 port)
+                             const QHostAddress &server, quint16 port,
+                             QDnsLookup::Protocol protocol)
 {
-    auto lookup = std::make_unique<QDnsLookup>(type, domainName(domain), server, port);
+    auto lookup = std::make_unique<QDnsLookup>(type, domainName(domain), protocol, server, port);
     QObject::connect(lookup.get(), &QDnsLookup::finished,
                      &QTestEventLoop::instance(), &QTestEventLoop::exitLoop);
     lookup->lookup();
@@ -591,29 +601,54 @@ void tst_QDnsLookup::setNameserverLoopback()
     QCOMPARE(lookup.error(), QDnsLookup::NotFoundError);
 }
 
-void tst_QDnsLookup::setNameserver_data()
+template <QDnsLookup::Protocol Protocol>
+static void setNameserver_data_helper(const QByteArray &protoName)
 {
-    static QList<QHostAddress> servers = systemNameservers() + globalPublicNameservers();
+    if (!QDnsLookup::isProtocolSupported(Protocol))
+        QSKIP(protoName + " not supported");
+
+    static QList<QHostAddress> servers = systemNameservers(Protocol)
+            + globalPublicNameservers(Protocol);
     QTest::addColumn<QHostAddress>("server");
 
     if (servers.isEmpty()) {
-        QSKIP("No reachable DNS servers were found");
+        QSKIP("No reachable " + protoName + " servers were found");
     } else {
         for (const QHostAddress &h : std::as_const(servers))
             QTest::addRow("%s", qUtf8Printable(h.toString())) << h;
     }
 }
 
-void tst_QDnsLookup::setNameserver()
+void tst_QDnsLookup::setNameserver_data()
+{
+    setNameserver_data_helper<QDnsLookup::Standard>("DNS");
+}
+
+void tst_QDnsLookup::setNameserver_helper(QDnsLookup::Protocol protocol)
 {
     QFETCH(QHostAddress, server);
     std::unique_ptr<QDnsLookup> lookup =
-            lookupCommon(QDnsLookup::Type::A, "a-single", server);
+            lookupCommon(QDnsLookup::Type::A, "a-single", server, 0, protocol);
     if (!lookup)
         return;
     QCOMPARE(lookup->error(), QDnsLookup::NoError);
     QString result = formatReply(lookup.get()).join(';');
     QCOMPARE(result, "A 192.0.2.1");
+}
+
+void tst_QDnsLookup::setNameserver()
+{
+    setNameserver_helper(QDnsLookup::Standard);
+}
+
+void tst_QDnsLookup::dnsOverTls_data()
+{
+    setNameserver_data_helper<QDnsLookup::DnsOverTls>("DNS-over-TLS");
+}
+
+void tst_QDnsLookup::dnsOverTls()
+{
+    setNameserver_helper(QDnsLookup::DnsOverTls);
 }
 
 void tst_QDnsLookup::bindingsAndProperties()

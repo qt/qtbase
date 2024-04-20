@@ -22,6 +22,7 @@ class QDnsHostAddressRecordPrivate;
 class QDnsMailExchangeRecordPrivate;
 class QDnsServiceRecordPrivate;
 class QDnsTextRecordPrivate;
+class QSslConfiguration;
 
 class Q_NETWORK_EXPORT QDnsDomainNameRecord
 {
@@ -148,6 +149,8 @@ class Q_NETWORK_EXPORT QDnsLookup : public QObject
                BINDABLE bindableNameserver)
     Q_PROPERTY(quint16 nameserverPort READ nameserverPort WRITE setNameserverPort
                NOTIFY nameserverPortChanged BINDABLE bindableNameserverPort)
+    Q_PROPERTY(Protocol nameserverProtocol READ nameserverProtocol WRITE setNameserverProtocol
+               NOTIFY nameserverProtocolChanged BINDABLE bindableNameserverProtocol)
 
 public:
     enum Error
@@ -178,11 +181,19 @@ public:
     };
     Q_ENUM(Type)
 
+    enum Protocol : quint8 {
+        Standard = 0,
+        DnsOverTls,
+    };
+    Q_ENUM(Protocol)
+
     explicit QDnsLookup(QObject *parent = nullptr);
     QDnsLookup(Type type, const QString &name, QObject *parent = nullptr);
     QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, QObject *parent = nullptr);
     QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, quint16 port,
                QObject *parent = nullptr);
+    QDnsLookup(Type type, const QString &name, Protocol protocol, const QHostAddress &nameserver,
+               quint16 port = 0, QObject *parent = nullptr);
     ~QDnsLookup();
 
     Error error() const;
@@ -203,6 +214,11 @@ public:
     quint16 nameserverPort() const;
     void setNameserverPort(quint16 port);
     QBindable<quint16> bindableNameserverPort();
+    Protocol nameserverProtocol() const;
+    void setNameserverProtocol(Protocol protocol);
+    QBindable<Protocol> bindableNameserverProtocol();
+    void setNameserver(Protocol protocol, const QHostAddress &nameserver, quint16 port = 0);
+    QT_NETWORK_INLINE_SINCE(6, 8)
     void setNameserver(const QHostAddress &nameserver, quint16 port);
 
     QList<QDnsDomainNameRecord> canonicalNameRecords() const;
@@ -214,6 +230,14 @@ public:
     QList<QDnsTextRecord> textRecords() const;
 
 
+#if QT_CONFIG(ssl)
+    void setSslConfiguration(const QSslConfiguration &sslConfiguration);
+    QSslConfiguration sslConfiguration() const;
+#endif
+
+    static bool isProtocolSupported(Protocol protocol);
+    static quint16 defaultPortForProtocol(Protocol protocol) noexcept Q_DECL_CONST_FUNCTION;
+
 public Q_SLOTS:
     void abort();
     void lookup();
@@ -224,10 +248,18 @@ Q_SIGNALS:
     void typeChanged(Type type);
     void nameserverChanged(const QHostAddress &nameserver);
     void nameserverPortChanged(quint16 port);
+    void nameserverProtocolChanged(Protocol protocol);
 
 private:
     Q_DECLARE_PRIVATE(QDnsLookup)
 };
+
+#if QT_NETWORK_INLINE_IMPL_SINCE(6, 8)
+void QDnsLookup::setNameserver(const QHostAddress &nameserver, quint16 port)
+{
+    setNameserver(Standard, nameserver, port);
+}
+#endif
 
 QT_END_NAMESPACE
 

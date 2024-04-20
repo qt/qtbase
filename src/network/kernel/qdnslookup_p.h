@@ -27,6 +27,10 @@
 #include "private/qobject_p.h"
 #include "private/qurl_p.h"
 
+#if QT_CONFIG(ssl)
+#  include "qsslconfiguration.h"
+#endif
+
 QT_REQUIRE_CONFIG(dnslookup);
 
 QT_BEGIN_NAMESPACE
@@ -35,6 +39,7 @@ QT_BEGIN_NAMESPACE
 
 constexpr qsizetype MaxDomainNameLength = 255;
 constexpr quint16 DnsPort = 53;
+constexpr quint16 DnsOverTlsPort = 853;
 
 class QDnsLookupRunnable;
 QDebug operator<<(QDebug &, QDnsLookupRunnable *);
@@ -52,6 +57,10 @@ public:
     QList<QDnsDomainNameRecord> pointerRecords;
     QList<QDnsServiceRecord> serviceRecords;
     QList<QDnsTextRecord> textRecords;
+
+#if QT_CONFIG(ssl)
+    std::optional<QSslConfiguration> sslConfiguration;
+#endif
 
     // helper methods
     void setError(QDnsLookup::Error err, QString &&msg)
@@ -129,7 +138,8 @@ class QDnsLookupPrivate : public QObjectPrivate
 public:
     QDnsLookupPrivate()
         : type(QDnsLookup::A)
-        , port(DnsPort)
+        , port(0)
+        , protocol(QDnsLookup::Standard)
     { }
 
     void nameChanged()
@@ -162,10 +172,21 @@ public:
     Q_OBJECT_BINDABLE_PROPERTY(QDnsLookupPrivate, quint16,
                                port, &QDnsLookupPrivate::nameserverPortChanged);
 
+    void nameserverProtocolChanged()
+    {
+        emit q_func()->nameserverProtocolChanged(protocol);
+    }
+
+    Q_OBJECT_BINDABLE_PROPERTY(QDnsLookupPrivate, QDnsLookup::Protocol,
+                               protocol, &QDnsLookupPrivate::nameserverProtocolChanged);
 
     QDnsLookupReply reply;
     QDnsLookupRunnable *runnable = nullptr;
     bool isFinished = false;
+
+#if QT_CONFIG(ssl)
+    std::optional<QSslConfiguration> sslConfiguration;
+#endif
 
     Q_DECLARE_PUBLIC(QDnsLookup)
 };
@@ -198,6 +219,11 @@ private:
     QHostAddress nameserver;
     QDnsLookup::Type requestType;
     quint16 port;
+    QDnsLookup::Protocol protocol;
+
+#if QT_CONFIG(ssl)
+    std::optional<QSslConfiguration> sslConfiguration;
+#endif
     friend QDebug operator<<(QDebug &, QDnsLookupRunnable *);
 };
 
