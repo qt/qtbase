@@ -3,11 +3,13 @@
 
 #include "qsql_ibase_p.h"
 #include <QtCore/qcoreapplication.h>
+#include <QtCore/qendian.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qtimezone.h>
 #include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
+#include <QtCore/private/qlocale_tools_p.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qmutex.h>
@@ -39,6 +41,10 @@ using namespace Qt::StringLiterals;
 // Firebird uses blr_bool and not blr_boolean_dtype which is what Interbase uses
 #ifndef blr_boolean_dtype
 #define blr_boolean_dtype blr_bool
+#endif
+
+#if (defined(QT_SUPPORTS_INT128) || defined(Q_CC_MSVC)) && (FB_API_VER >= 40)
+#define IBASE_INT128_SUPPORTED
 #endif
 
 constexpr qsizetype QIBaseChunkSize = SHRT_MAX / 2;
@@ -100,6 +106,9 @@ static void initDA(XSQLDA *sqlda)
         case SQL_TIMESTAMP:
 #if (FB_API_VER >= 40)
         case SQL_TIMESTAMP_TZ:
+#ifdef IBASE_INT128_SUPPORTED
+        case SQL_INT128:
+#endif
 #endif
         case SQL_TYPE_TIME:
         case SQL_TYPE_DATE:
@@ -401,6 +410,32 @@ protected:
     QSqlRecord record() const override;
 
     template<typename T>
+    static QString numberToHighPrecision(T val, int scale)
+    {
+        const bool negative = val < 0;
+        QString number;
+#ifdef IBASE_INT128_SUPPORTED
+        if constexpr (std::is_same_v<qinternalint128, T>) {
+            number = negative ? qint128toBasicLatin(val * -1)
+                              : qint128toBasicLatin(val);
+        } else
+#endif
+            number = negative ? QString::number(qAbs(val))
+                              : QString::number(val);
+        auto len = number.size();
+        scale *= -1;
+        if (scale >= len) {
+            number = QString(scale - len + 1, u'0') + number;
+            len = number.size();
+        }
+        const auto sepPos = len - scale;
+        number = number.left(sepPos) + u'.' + number.mid(sepPos);
+        if (negative)
+            number = u'-' + number;
+        return number;
+    }
+
+    template<typename T>
     QVariant applyScale(T val, int scale) const
     {
         if (scale >= 0)
@@ -413,25 +448,8 @@ protected:
             return QVariant(qint64(val * pow(10.0, scale)));
         case QSql::LowPrecisionDouble:
             return QVariant(double(val * pow(10.0, scale)));
-        case QSql::HighPrecision: {
-            const bool negative = val < 0;
-            QString number;
-            if constexpr (std::is_signed_v<T> || negative)
-                number = QString::number(qAbs(val));
-            else
-                number = QString::number(val);
-            auto len = number.size();
-            scale *= -1;
-            if (scale >= len) {
-                number = QString(scale - len + 1, u'0') + number;
-                len = number.size();
-            }
-            const auto sepPos = len - scale;
-            number = number.left(sepPos) + u'.' + number.mid(sepPos);
-            if (negative)
-                number = u'-' + number;
-            return QVariant(number);
-        }
+        case QSql::HighPrecision:
+            return QVariant(numberToHighPrecision(val, scale));
         }
         return QVariant(val);
     }
@@ -440,8 +458,23 @@ protected:
     void setWithScale(const QVariant &val, int scale, char *data)
     {
         auto ptr = reinterpret_cast<T *>(data);
-        if (scale < 0)
-            *ptr = static_cast<T>(floor(0.5 + val.toDouble() * pow(10.0, scale * -1)));
+        if (scale < 0) {
+            double d = floor(0.5 + val.toDouble() * pow(10.0, scale * -1));
+#ifdef IBASE_INT128_SUPPORTED
+            if constexpr (std::is_same_v<qinternalint128, T>) {
+                quint64 lower = quint64(d);
+                quint64 tmp = quint64(std::numeric_limits<quint32>::max()) + 1;
+                d /= tmp;
+                d /= tmp;
+                quint64 higher = quint64(d);
+                qinternalint128 result = higher;
+                result <<= 64;
+                result += lower;
+                *ptr = static_cast<T>(result);
+            } else
+#endif
+                *ptr = static_cast<T>(d);
+        }
         else
             *ptr = val.value<T>();
     }
@@ -1107,6 +1140,12 @@ bool QIBaseResult::exec()
             case SQL_INT64:
                 setWithScale<qint64>(val, d->inda->sqlvar[para].sqlscale, d->inda->sqlvar[para].sqldata);
                 break;
+#ifdef IBASE_INT128_SUPPORTED
+            case SQL_INT128:
+                setWithScale<qinternalint128>(val, d->inda->sqlvar[para].sqlscale,
+                                              d->inda->sqlvar[para].sqldata);
+                break;
+#endif
             case SQL_LONG:
                 if (d->inda->sqlvar[para].sqllen == 4)
                     setWithScale<qint32>(val, d->inda->sqlvar[para].sqlscale, d->inda->sqlvar[para].sqldata);
@@ -1272,6 +1311,17 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             row[idx] = applyScale(val, scale);
             break;
         }
+#ifdef IBASE_INT128_SUPPORTED
+        case SQL_INT128: {
+            Q_ASSERT(d->sqlda->sqlvar[i].sqllen == sizeof(qinternalint128));
+            const qinternalint128 val128 = qFromUnaligned<qinternalint128>(buf);
+            const auto scale = d->sqlda->sqlvar[i].sqlscale;
+            row[idx] = numberToHighPrecision(val128, scale);
+            if (numericalPrecisionPolicy() != QSql::HighPrecision)
+                row[idx] = applyScale(row[idx].toDouble(), 0);
+            break;
+        }
+#endif
         case SQL_LONG:
             if (d->sqlda->sqlvar[i].sqllen == 4) {
                 const auto val = *(qint32 *)buf;

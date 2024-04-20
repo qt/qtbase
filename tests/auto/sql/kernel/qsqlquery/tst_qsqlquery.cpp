@@ -256,6 +256,9 @@ private slots:
     void ibaseDateTimeWithTZ();
     void ibaseTimeStampTzArray_data() { generic_data("QIBASE"); }
     void ibaseTimeStampTzArray();
+    void ibaseInt128_data() { generic_data("QIBASE"); }
+    void ibaseInt128();
+
 
     void psqlJsonOperator_data() { generic_data("QPSQL"); }
     void psqlJsonOperator();
@@ -1875,52 +1878,54 @@ void tst_QSqlQuery::oci_rawField()
 // Test whether we can fetch values with more than DOUBLE precision
 // note that SQLite highest precision is that of a double, although
 // you can define field with higher precision:
+// Test whether we can fetch values with more than DOUBLE precision
+// note that SQLite highest precision is that of a double, although
+// you can define field with higher precision:
 void tst_QSqlQuery::precision()
 {
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
     const QSqlDriver::DbmsType dbType = tst_Databases::getDatabaseType(db);
-    if (dbType == QSqlDriver::Interbase)
-        QSKIP("DB unable to store high precision");
 
     const auto tidier = qScopeGuard([db, oldPrecision = db.driver()->numericalPrecisionPolicy()]() {
         db.driver()->setNumericalPrecisionPolicy(oldPrecision);
     });
+    int digits = 21;
+    int decimals = 20;
+    std::array<QLatin1String, 2> precStrings = { "1.2345678901234567891"_L1,
+                                                 "-1.2345678901234567891"_L1 };
+    if (dbType == QSqlDriver::SQLite) {
+        // SQLite 3.45 does not return more, even when speicfied
+        digits = 17;
+        decimals = 16;
+        precStrings = { "1.2345678901234567"_L1, "-1.2345678901234567"_L1 };
+    } else if (dbType == QSqlDriver::Sybase)
+        decimals = 18;
 
     db.driver()->setNumericalPrecisionPolicy(QSql::HighPrecision);
     TableScope ts(db, "qtest_precision", __FILE__);
-    static const QLatin1String precStr("1.2345678901234567891");
 
-    {
-        // need a new scope for SQLITE
-        QSqlQuery q(db);
-
-        QVERIFY_SQL(q, exec(QLatin1String(tst_Databases::isMSAccess(db)
-                                          ? "CREATE TABLE %1 (col1 number)"
-                                          : "CREATE TABLE %1 (col1 numeric(21, 20))")
-                            .arg(ts.tableName())));
-
-        QVERIFY_SQL(q, exec(QLatin1String("INSERT INTO %1 (col1) VALUES (%2)")
-                            .arg(ts.tableName(), precStr)));
+    QSqlQuery q(db);
+    QString stmt = "CREATE TABLE %1 (col1 numeric("_L1 + QString::number(digits) + ", "_L1 +
+                    QString::number(decimals) + "))"_L1;
+    if (tst_Databases::isMSAccess(db))
+        stmt = "CREATE TABLE %1 (col1 number)"_L1;
+    QVERIFY_SQL(q, exec(stmt.arg(ts.tableName())));
+    for (const auto &precStr : precStrings) {
+        QVERIFY_SQL(q, exec("DELETE FROM %1"_L1.arg(ts.tableName())));
+        QVERIFY_SQL(q, exec("INSERT INTO %1 (col1) VALUES (%2)"_L1.arg(ts.tableName(), precStr)));
         QVERIFY_SQL(q, exec("SELECT * FROM " + ts.tableName()));
         QVERIFY(q.next());
         const QString val = q.value(0).toString();
         if (!val.startsWith(precStr)) {
             int i = 0;
-            while (i < val.size() && precStr[i] != 0 && precStr[i] == val[i].toLatin1())
+            while (i < val.size() && precStr[i] != 0 && precStr[i] == val[i])
                 ++i;
-
-            // TDS has crappy precisions by default
-            if (dbType == QSqlDriver::Sybase) {
-                if (i < 18)
-                    qWarning("TDS didn't return the right precision");
-            } else {
-                qWarning() << tst_Databases::dbToString(db) << "didn't return the right precision ("
-                    << i << "out of 21)," << val;
-            }
+            qWarning() << tst_Databases::dbToString(db) << "didn't return the right precision ("
+                        << i << "out of " << digits << ")," << val;
         }
-    } // SQLITE scope
+    }
 }
 
 void tst_QSqlQuery::nullResult()
@@ -5032,6 +5037,54 @@ void tst_QSqlQuery::ibaseTimeStampTzArray()
     QVERIFY(qry.next());
     QCOMPARE(qry.value(0).toList(), timeStampData.toList());
 #endif // QT_CONFIG(timezone)
+}
+
+void tst_QSqlQuery::ibaseInt128()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    TableScope ts(db, "int128test", __FILE__);
+    db.setNumericalPrecisionPolicy(QSql::HighPrecision);
+    QSqlQuery q(db);
+    if (!q.exec("CREATE TABLE " + ts.tableName() + " (id INT PRIMARY KEY, price NUMERIC(20, 4))"))
+        QSKIP("Need at least Firebird 4 for this test - skipping");
+
+    QVERIFY_SQL(q, exec("INSERT INTO " + ts.tableName() + "(id,price) values(1,40001.1234)"));
+    QVERIFY_SQL(q, prepare("INSERT INTO " + ts.tableName() + "(id,price) values(2,:amount)"));
+    q.bindValue(":amount", 12345.67890);
+    QVERIFY_SQL(q, exec());
+    {
+        QSqlQuery q2(db);
+        q2.setNumericalPrecisionPolicy(QSql::LowPrecisionDouble);
+        QVERIFY_SQL(q2, exec("SELECT price FROM " + ts.tableName() + " ORDER BY id"));
+        QVERIFY_SQL(q2, next());
+        QCOMPARE(q2.value(0).metaType().id(), QMetaType::Double);
+        QCOMPARE(q2.value(0).toDouble(), 40001.1234);
+        QVERIFY_SQL(q2, next());
+        QCOMPARE(q2.value(0).metaType().id(), QMetaType::Double);
+        QCOMPARE(q2.value(0).toDouble(), 12345.6789);
+        QVERIFY_SQL(q2, exec("SELECT sum(price) FROM " + ts.tableName()));
+        QVERIFY_SQL(q2, next());
+        QCOMPARE(q2.value(0).metaType().id(), QMetaType::Double);
+        QCOMPARE(q2.value(0).toDouble(), 52346.8023);
+    }
+    {
+        QSqlQuery q2(db);
+        q2.setNumericalPrecisionPolicy(QSql::HighPrecision);
+        QVERIFY_SQL(q2, exec("SELECT price FROM " + ts.tableName() + " ORDER BY id"));
+        QVERIFY_SQL(q2, next());
+        QCOMPARE(q2.value(0).metaType().id(), QMetaType::QString);
+        QCOMPARE(q2.value(0).toString(), "40001.1234");
+        QVERIFY_SQL(q2, next());
+        QCOMPARE(q2.value(0).metaType().id(), QMetaType::QString);
+        QCOMPARE(q2.value(0).toString(), "12345.6789");
+        QVERIFY_SQL(q2, exec("SELECT sum(price) FROM " + ts.tableName()));
+        QVERIFY_SQL(q2, next());
+        QCOMPARE(q2.value(0).metaType().id(), QMetaType::QString);
+        QCOMPARE(q2.value(0).toString(), "52346.8023");
+    }
 }
 
 void tst_QSqlQuery::ibase_executeBlock()
