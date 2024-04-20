@@ -118,6 +118,7 @@ static void initDA(XSQLDA *sqlda)
         default:
             // not supported - do not bind.
             sqlda->sqlvar[i].sqldata = 0;
+            qCWarning(lcIbase, "initDA: unknown sqltype: %d", sqlda->sqlvar[i].sqltype & ~1);
             break;
         }
         if (sqlda->sqlvar[i].sqltype & 1) {
@@ -208,8 +209,10 @@ static QMetaType::Type qIBaseTypeName2(int iType, bool hasScale)
     case SQL_BOOLEAN:
         return QMetaType::Bool;
     default:
-        return QMetaType::UnknownType;
+        break;
     }
+    qCWarning(lcIbase, "qIBaseTypeName: unknown datatype: %d", iType);
+    return QMetaType::UnknownType;
 }
 
 static ISC_TIMESTAMP toTimeStamp(const QDateTime &dt)
@@ -1291,6 +1294,8 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
 #endif
         default:
             // unknown type - don't even try to fetch
+            qCWarning(lcIbase, "gotoNext: unknown sqltype: %d",
+                      d->sqlda->sqlvar[i].sqltype & ~1);
             row[idx] = QVariant();
             break;
         }
