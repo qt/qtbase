@@ -405,26 +405,26 @@ Q_GUI_EXPORT QDataStream &operator<<(QDataStream &stream, const QTextFormat &fmt
 {
     QMap<int, QVariant> properties = fmt.properties();
     if (stream.version() < QDataStream::Qt_6_0) {
-        auto it = properties.find(QTextFormat::FontLetterSpacingType);
-        if (it != properties.end()) {
+        auto it = properties.constFind(QTextFormat::FontLetterSpacingType);
+        if (it != properties.cend()) {
             properties[QTextFormat::OldFontLetterSpacingType] = it.value();
             properties.erase(it);
         }
 
-        it = properties.find(QTextFormat::FontStretch);
-        if (it != properties.end()) {
+        it = properties.constFind(QTextFormat::FontStretch);
+        if (it != properties.cend()) {
             properties[QTextFormat::OldFontStretch] = it.value();
             properties.erase(it);
         }
 
-        it = properties.find(QTextFormat::TextUnderlineColor);
-        if (it != properties.end()) {
+        it = properties.constFind(QTextFormat::TextUnderlineColor);
+        if (it != properties.cend()) {
             properties[QTextFormat::OldTextUnderlineColor] = it.value();
             properties.erase(it);
         }
 
-        it = properties.find(QTextFormat::FontFamilies);
-        if (it != properties.end()) {
+        it = properties.constFind(QTextFormat::FontFamilies);
+        if (it != properties.cend()) {
             properties[QTextFormat::OldFontFamily] = QVariant(it.value().toStringList().constFirst());
             properties.erase(it);
         }
