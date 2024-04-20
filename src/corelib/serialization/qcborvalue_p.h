@@ -195,7 +195,7 @@ public:
     }
     void insertAt(qsizetype idx, const QCborValue &value, ContainerDisposition disp = CopyContainer)
     {
-        replaceAt_internal(*elements.insert(elements.begin() + int(idx), {}), value, disp);
+        replaceAt_internal(*elements.insert(idx, {}), value, disp);
     }
 
     void append(QtCbor::Undefined)
