@@ -5,7 +5,6 @@
 
 #include "qmetatype.h"
 #include "qmetatype_p.h"
-#include "qobject.h"
 #include "qobjectdefs.h"
 #include "qdatetime.h"
 #include "qbytearray.h"
@@ -43,6 +42,7 @@
 #  include "qmetaobject.h"
 #  include "qsequentialiterable.h"
 #  include "qassociativeiterable.h"
+#  include "qobject.h"
 #endif
 
 #if QT_CONFIG(itemmodel)
@@ -56,7 +56,6 @@
 # include "qline.h"
 #endif
 
-#include <bitset>
 #include <new>
 #include <cstring>
 
