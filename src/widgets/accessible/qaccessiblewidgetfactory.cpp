@@ -121,7 +121,6 @@ QAccessibleInterface *qAccessibleFactory(const QString &classname, QObject *obje
 #if QT_CONFIG(itemviews)
     } else if (classname == "QTableView"_L1 || classname == "QListView"_L1) {
         iface = new QAccessibleTable(widget);
-    // ### This should be cleaned up. We return the parent for the scrollarea to hide it.
 #endif // QT_CONFIG(itemviews)
 #if QT_CONFIG(tabbar)
     } else if (classname == "QTabBar"_L1) {
