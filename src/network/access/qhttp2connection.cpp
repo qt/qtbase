@@ -1222,8 +1222,8 @@ void QHttp2Connection::handleDATA()
 
     sessionReceiveWindowSize -= inboundFrame.payloadSize();
 
-    auto it = m_streams.find(streamID);
-    if (it != m_streams.end() && it.value())
+    auto it = m_streams.constFind(streamID);
+    if (it != m_streams.cend() && it.value())
         it.value()->handleDATA(inboundFrame);
 
     if (sessionReceiveWindowSize < maxSessionReceiveWindowSize / 2) {
@@ -1581,9 +1581,9 @@ void QHttp2Connection::handleContinuedHEADERS()
 
     const auto streamID = continuedFrames[0].streamID();
 
-    const auto streamIt = m_streams.find(streamID);
+    const auto streamIt = m_streams.constFind(streamID);
     if (firstFrameType == FrameType::HEADERS) {
-        if (streamIt != m_streams.end()) {
+        if (streamIt != m_streams.cend()) {
             QHttp2Stream *stream = streamIt.value();
             if (stream->state() != QHttp2Stream::State::HalfClosedLocal
                 && stream->state() != QHttp2Stream::State::ReservedRemote
@@ -1619,7 +1619,7 @@ void QHttp2Connection::handleContinuedHEADERS()
             // not include a complete and valid set of header fields or the :method
             // pseudo-header field identifies a method that is not safe, it MUST
             // respond with a stream error (Section 5.4.2) of type PROTOCOL_ERROR."
-            if (streamIt != m_streams.end())
+            if (streamIt != m_streams.cend())
                 (*streamIt)->sendRST_STREAM(PROTOCOL_ERROR);
             return;
         }
@@ -1632,7 +1632,7 @@ void QHttp2Connection::handleContinuedHEADERS()
             return connectionError(FRAME_SIZE_ERROR, "HEADERS frame too large");
     }
 
-    if (streamIt == m_streams.end()) // No more processing without a stream from here on.
+    if (streamIt == m_streams.cend()) // No more processing without a stream from here on.
         return;
 
     switch (firstFrameType) {
