@@ -85,6 +85,14 @@ void tst_QMimeData::data() const
     QCOMPARE(mimeData.data("text/markdown"), QByteArray("vikings"));
     QCOMPARE(mimeData.data("text/html"), QByteArray("ninjas"));
     QCOMPARE(mimeData.data("text/plain"), QByteArray("pirates"));
+
+    // URI list
+    QByteArray list = "https://example.com/\r\nhttps://example.net/\r\nhttps://example.org/\r\n";
+    mimeData.setData("text/uri-list", list);
+    QCOMPARE(mimeData.data("text/uri-list"), list);
+
+    mimeData.setData("text/uri-list", list.chopped(2)); // without the ending CRLF
+    QCOMPARE(mimeData.data("text/uri-list"), list);
 }
 
 void tst_QMimeData::formats() const
