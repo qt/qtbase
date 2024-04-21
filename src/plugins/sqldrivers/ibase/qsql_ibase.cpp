@@ -406,6 +406,42 @@ protected:
     int size() override;
     int numRowsAffected() override;
     QSqlRecord record() const override;
+
+    template<typename T>
+    QVariant applyScale(T val, int scale) const
+    {
+        if (scale >= 0)
+            return QVariant(val);
+
+        switch (numericalPrecisionPolicy()) {
+        case QSql::LowPrecisionInt32:
+            return QVariant(qint32(val * pow(10.0, scale)));
+        case QSql::LowPrecisionInt64:
+            return QVariant(qint64(val * pow(10.0, scale)));
+        case QSql::LowPrecisionDouble:
+            return QVariant(double(val * pow(10.0, scale)));
+        case QSql::HighPrecision: {
+            const bool negative = val < 0;
+            QString number;
+            if constexpr (std::is_signed_v<T> || negative)
+                number = QString::number(qAbs(val));
+            else
+                number = QString::number(val);
+            auto len = number.size();
+            scale *= -1;
+            if (scale >= len) {
+                number = QString(scale - len + 1, u'0') + number;
+                len = number.size();
+            }
+            const auto sepPos = len - scale;
+            number = number.left(sepPos) + u'.' + number.mid(sepPos);
+            if (negative)
+                number = u'-' + number;
+            return QVariant(number);
+        }
+        }
+        return QVariant(val);
+    }
 };
 
 class QIBaseResultPrivate: public QSqlCachedResultPrivate
@@ -1239,27 +1275,26 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             // pascal strings - a short with a length information followed by the data
             row[idx] = QString::fromUtf8(buf + sizeof(short), *(short*)buf);
             break;
-        case SQL_INT64:
-            if (d->sqlda->sqlvar[i].sqlscale < 0)
-                row[idx] = *(qint64*)buf * pow(10.0, d->sqlda->sqlvar[i].sqlscale);
-            else
-                row[idx] = QVariant(*(qint64*)buf);
+        case SQL_INT64: {
+            Q_ASSERT(d->sqlda->sqlvar[i].sqllen == sizeof(qint64));
+            const auto val = *(qint64 *)buf;
+            const auto scale = d->sqlda->sqlvar[i].sqlscale;
+            row[idx] = applyScale(val, scale);
             break;
         case SQL_LONG:
-            if (d->sqlda->sqlvar[i].sqllen == 4)
-                if (d->sqlda->sqlvar[i].sqlscale < 0)
-                    row[idx] = QVariant(*(qint32*)buf * pow(10.0, d->sqlda->sqlvar[i].sqlscale));
-                else
-                    row[idx] = QVariant(*(qint32*)buf);
-            else
+            if (d->sqlda->sqlvar[i].sqllen == 4) {
+                const auto val = *(qint32 *)buf;
+                const auto scale = d->sqlda->sqlvar[i].sqlscale;
+                row[idx] = applyScale(val, scale);
+            } else
                 row[idx] = QVariant(*(qint64*)buf);
             break;
-        case SQL_SHORT:
-            if (d->sqlda->sqlvar[i].sqlscale < 0)
-                row[idx] = QVariant(long((*(short*)buf)) * pow(10.0, d->sqlda->sqlvar[i].sqlscale));
-            else
-                row[idx] = QVariant(int((*(short*)buf)));
+        case SQL_SHORT: {
+            const auto val = *(short *)buf;
+            const auto scale = d->sqlda->sqlvar[i].sqlscale;
+            row[idx] = applyScale(val, scale);
             break;
+        }
         case SQL_FLOAT:
             row[idx] = QVariant(double((*(float*)buf)));
             break;
@@ -1298,27 +1333,6 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
                       d->sqlda->sqlvar[i].sqltype & ~1);
             row[idx] = QVariant();
             break;
-        }
-        if (d->sqlda->sqlvar[i].sqlscale < 0) {
-            QVariant v = row[idx];
-            switch(numericalPrecisionPolicy()) {
-            case QSql::LowPrecisionInt32:
-                if (v.convert(QMetaType(QMetaType::Int)))
-                    row[idx]=v;
-                break;
-            case QSql::LowPrecisionInt64:
-                if (v.convert(QMetaType(QMetaType::LongLong)))
-                    row[idx]=v;
-                break;
-            case QSql::LowPrecisionDouble:
-                if (v.convert(QMetaType(QMetaType::Double)))
-                    row[idx]=v;
-                break;
-            case QSql::HighPrecision:
-                if (v.convert(QMetaType(QMetaType::QString)))
-                    row[idx]=v;
-                break;
-            }
         }
     }
 
