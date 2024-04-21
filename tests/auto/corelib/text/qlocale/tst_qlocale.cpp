@@ -4178,6 +4178,8 @@ void tst_QLocale::mySystemLocale()
             qDebug("\n\t%s", qPrintable(QLocale::system().uiLanguages().join(u"\n\t")));
         });
         QCOMPARE(QLocale::system().uiLanguages(), uiLanguages);
+        QCOMPARE(QLocale::system().uiLanguages(QLocale::TagSeparator::Underscore),
+                 uiLanguages.replaceInStrings(u"-", u"_"));
         reporter.dismiss();
     }
 
