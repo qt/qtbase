@@ -4750,6 +4750,11 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
     const bool isSystem = d->m_data == &systemLocaleData;
     if (isSystem) {
         uiLanguages = systemLocale()->query(QSystemLocale::UILanguages).toStringList();
+        if (separator != TagSeparator::Dash) {
+            // Map from default separator, Dash, used by backends:
+            const QChar join = QLatin1Char(sep);
+            uiLanguages = uiLanguages.replaceInStrings(u"-", QStringView(&join, 1));
+        }
         // ... but we need to include likely-adjusted forms of each of those, too.
         // For now, collect up locale Ids representing the entries, for later processing:
         for (const auto &entry : std::as_const(uiLanguages))
