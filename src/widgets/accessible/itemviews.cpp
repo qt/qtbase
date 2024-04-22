@@ -39,16 +39,24 @@ QAbstractItemView *QAccessibleTable::view() const
 
 int QAccessibleTable::logicalIndex(const QModelIndex &index) const
 {
-    const QAbstractItemView *theView = view();
     const QAbstractItemModel *theModel = index.model();
     if (!theModel || !index.isValid())
         return -1;
 
-    const QModelIndex rootIndex = theView->rootIndex();
-    const int vHeader = verticalHeader() ? 1 : 0;
-    const int hHeader = horizontalHeader() ? 1 : 0;
-    return (index.row() + hHeader) * (theModel->columnCount(rootIndex) + vHeader)
-         + (index.column() + vHeader);
+#if QT_CONFIG(listview)
+    if (m_role == QAccessible::List) {
+        if (index.column() != qobject_cast<const QListView*>(view())->modelColumn())
+            return -1;
+        else
+            return index.row();
+    } else
+#endif
+    {
+        const int vHeader = verticalHeader() ? 1 : 0;
+        const int hHeader = horizontalHeader() ? 1 : 0;
+        return (index.row() + hHeader) * (columnCount() + vHeader)
+             + (index.column() + vHeader);
+    }
 }
 
 QAccessibleTable::QAccessibleTable(QWidget *w)
@@ -122,6 +130,7 @@ QAccessibleInterface *QAccessibleTable::cellAt(int row, int column) const
     const QAbstractItemModel *theModel = theView->model();
     if (!theModel)
         return nullptr;
+    Q_ASSERT(role() != QAccessible::List);
     Q_ASSERT(role() != QAccessible::Tree);
     QModelIndex index = theModel->index(row, column, theView->rootIndex());
     if (Q_UNLIKELY(!index.isValid())) {
@@ -151,7 +160,8 @@ int QAccessibleTable::columnCount() const
     const QAbstractItemModel *theModel = theView->model();
     if (!theModel)
         return 0;
-    return theModel->columnCount(theView->rootIndex());
+    const int modelColumnCount = theModel->columnCount(theView->rootIndex());
+    return m_role == QAccessible::List ? qMin(1, modelColumnCount) : modelColumnCount;
 }
 
 int QAccessibleTable::rowCount() const
@@ -541,7 +551,7 @@ int QAccessibleTable::childCount() const
     const QModelIndex rootIndex = theView->rootIndex();
     int vHeader = verticalHeader() ? 1 : 0;
     int hHeader = horizontalHeader() ? 1 : 0;
-    return (theModel->rowCount(rootIndex) + hHeader) * (theModel->columnCount(rootIndex) + vHeader);
+    return (theModel->rowCount(rootIndex) + hHeader) * (columnCount() + vHeader);
 }
 
 int QAccessibleTable::indexOfChild(const QAccessibleInterface *iface) const
@@ -969,6 +979,84 @@ bool QAccessibleTree::selectRow(int row)
 
 #endif // QT_CONFIG(treeview)
 
+#if QT_CONFIG(listview)
+
+// LIST VIEW
+
+QAccessibleInterface *QAccessibleList::child(int logicalIndex) const
+{
+    QAbstractItemView *theView = view();
+    const QAbstractItemModel *theModel = theView->model();
+    if (!theModel)
+        return nullptr;
+
+    if (columnCount() == 0) {
+        return nullptr;
+    }
+
+    const auto id = childToId.constFind(logicalIndex);
+    if (id != childToId.constEnd())
+        return QAccessible::accessibleInterface(id.value());
+
+    const QListView *listView = qobject_cast<const QListView*>(theView);
+    Q_ASSERT(listView);
+    int row = logicalIndex;
+    int column = listView->modelColumn();
+
+    const QModelIndex rootIndex = theView->rootIndex();
+    const QModelIndex index = theModel->index(row, column, rootIndex);
+    if (Q_UNLIKELY(!index.isValid())) {
+        qWarning("QAccessibleList::child: Invalid index at: %d %d", row, column);
+        return nullptr;
+    }
+    const auto iface = new QAccessibleTableCell(theView, index, cellRole());
+
+    QAccessible::registerAccessibleInterface(iface);
+    childToId.insert(logicalIndex, QAccessible::uniqueId(iface));
+    return iface;
+}
+
+QAccessibleInterface *QAccessibleList::cellAt(int row, int column) const
+{
+    if (column != 0)
+        return nullptr;
+
+    return child(row);
+}
+
+int QAccessibleList::selectedCellCount() const
+{
+    QAbstractItemView *theView = view();
+    if (!theView->selectionModel())
+        return 0;
+    const QListView *listView = qobject_cast<const QListView*>(theView);
+    const int modelColumn = listView->modelColumn();
+    const QModelIndexList selectedIndexes = theView->selectionModel()->selectedIndexes();
+    return std::count_if(selectedIndexes.cbegin(), selectedIndexes.cend(),
+                         [modelColumn](const auto &index) {
+                             return index.column() == modelColumn;
+                         });
+}
+
+QList<QAccessibleInterface *> QAccessibleList::selectedCells() const
+{
+    QAbstractItemView *theView = view();
+    QList<QAccessibleInterface*> cells;
+    if (!view()->selectionModel() || columnCount() == 0)
+        return cells;
+    const QListView *listView = qobject_cast<const QListView*>(theView);
+    const int modelColumn = listView->modelColumn();
+    const QModelIndexList selectedIndexes = theView->selectionModel()->selectedIndexes();
+    cells.reserve(qMin(selectedIndexes.size(), rowCount()));
+    for (const QModelIndex &index : selectedIndexes)
+        if (index.column() == modelColumn) {
+            cells.append(child(index.row()));
+        }
+    return cells;
+}
+
+#endif // QT_CONFIG(listview)
+
 // TABLE CELL
 
 QAccessibleTableCell::QAccessibleTableCell(QAbstractItemView *view_, const QModelIndex &index_, QAccessible::Role role_)
@@ -1042,6 +1130,11 @@ int QAccessibleTableCell::columnIndex() const
 {
     if (!isValid())
         return -1;
+#if QT_CONFIG(listview)
+    if (role() == QAccessible::ListItem) {
+        return 0;
+    }
+#endif
     return m_index.column();
 }
 

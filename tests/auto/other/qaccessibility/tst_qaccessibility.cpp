@@ -2845,11 +2845,15 @@ void tst_QAccessibility::scrollAreaTest()
 void tst_QAccessibility::listTest()
 {
     {
-    auto lvHolder = std::make_unique<QListWidget>();
+    const auto modelHolder = std::make_unique<QStandardItemModel>();
+    auto model = modelHolder.get();
+    model->appendRow({new QStandardItem("Norway"), new QStandardItem("Oslo"), new QStandardItem("NOK")});
+    model->appendRow({new QStandardItem("Germany"), new QStandardItem("Berlin"), new QStandardItem("EUR")});
+    model->appendRow({new QStandardItem("Australia"), new QStandardItem("Brisbane"), new QStandardItem("AUD")});
+    auto lvHolder = std::make_unique<QListView>();
     auto listView = lvHolder.get();
-    listView->addItem("Oslo");
-    listView->addItem("Berlin");
-    listView->addItem("Brisbane");
+    listView->setModel(model);
+    listView->setModelColumn(1);
     listView->resize(400,400);
     listView->show();
     QTest::qWait(1); // Need this for indexOfchild to work.
@@ -2888,14 +2892,14 @@ void tst_QAccessibility::listTest()
     QTestAccessibility::clearEvents();
 
     // Check for events
-    QTest::mouseClick(listView->viewport(), Qt::LeftButton, { }, listView->visualItemRect(listView->item(1)).center());
+    QTest::mouseClick(listView->viewport(), Qt::LeftButton, { }, listView->visualRect(model->index(1, listView->modelColumn())).center());
     QAccessibleEvent selectionEvent(listView, QAccessible::SelectionAdd);
     selectionEvent.setChild(1);
     QAccessibleEvent focusEvent(listView, QAccessible::Focus);
     focusEvent.setChild(1);
     QVERIFY(QTestAccessibility::containsEvent(&selectionEvent));
     QVERIFY(QTestAccessibility::containsEvent(&focusEvent));
-    QTest::mouseClick(listView->viewport(), Qt::LeftButton, { }, listView->visualItemRect(listView->item(2)).center());
+    QTest::mouseClick(listView->viewport(), Qt::LeftButton, { }, listView->visualRect(model->index(2, listView->modelColumn())).center());
 
     QAccessibleEvent selectionEvent2(listView, QAccessible::SelectionAdd);
     selectionEvent2.setChild(2);
@@ -2904,7 +2908,7 @@ void tst_QAccessibility::listTest()
     QVERIFY(QTestAccessibility::containsEvent(&selectionEvent2));
     QVERIFY(QTestAccessibility::containsEvent(&focusEvent2));
 
-    listView->addItem("Munich");
+    model->appendRow({new QStandardItem("Germany"), new QStandardItem("Munich"), new QStandardItem("EUR")});
     QCOMPARE(iface->childCount(), 4);
 
     // table 2
@@ -2936,9 +2940,10 @@ void tst_QAccessibility::listTest()
     QVERIFY(!(cell4->state().expandable));
     QVERIFY( (cell4->state().selectable));
     QVERIFY(!(cell4->state().selected));
-    table2->selectRow(3);
-    QCOMPARE(listView->selectedItems().size(), 1);
-    QCOMPARE(listView->selectedItems().at(0)->text(), QLatin1String("Munich"));
+    QAccessibleSelectionInterface *selection2 = iface->selectionInterface();
+    selection2->select(cell4);
+    QCOMPARE(listView->selectionModel()->selectedIndexes().size(), 1);
+    QCOMPARE(model->itemFromIndex(listView->selectionModel()->selectedIndexes().at(0))->text(), QLatin1String("Munich"));
     QVERIFY(cell4->state().selected);
     QVERIFY(cellInterface->isSelected());
 
@@ -2950,21 +2955,24 @@ void tst_QAccessibility::listTest()
     // verify that unique id stays the same
     QAccessible::Id axidMunich = QAccessible::uniqueId(cell4);
     // insertion and deletion of items
-    listView->insertItem(1, "Helsinki");
+    model->insertRow(1, {new QStandardItem("Finland"), new QStandardItem("Helsinki"), new QStandardItem("EUR")});
     // list: Oslo, Helsinki, Berlin, Brisbane, Munich
 
     QAccessibleInterface *cellMunich2 = table2->cellAt(4,0);
     QCOMPARE(cell4, cellMunich2);
     QCOMPARE(axidMunich, QAccessible::uniqueId(cellMunich2));
 
-    delete listView->takeItem(2);
-    delete listView->takeItem(2);
+    for (auto item : model->takeRow(2))
+        delete item;
+    for (auto item : model->takeRow(2))
+        delete item;
     // list: Oslo, Helsinki, Munich
 
     QAccessibleInterface *cellMunich3 = table2->cellAt(2,0);
     QCOMPARE(cell4, cellMunich3);
     QCOMPARE(axidMunich, QAccessible::uniqueId(cellMunich3));
-    delete listView->takeItem(2);
+    for (auto item : model->takeRow(2))
+        delete item;
     // list: Oslo, Helsinki
     // verify that it doesn't return an invalid item from the cache
     QVERIFY(table2->cellAt(2,0) == 0);
@@ -3447,7 +3455,7 @@ void tst_QAccessibility::rootIndexView()
 
     view.setRootIndex(model.index(1, 0));
     QCOMPARE(accTable->rowCount(), 10);
-    QCOMPARE(accTable->columnCount(), 2);
+    QCOMPARE(accTable->columnCount(), 1);
 
     QTestAccessibility::clearEvents();
 }

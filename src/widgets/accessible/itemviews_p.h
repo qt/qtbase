@@ -149,6 +149,25 @@ private:
 };
 #endif
 
+#if QT_CONFIG(listview)
+class QAccessibleList :public QAccessibleTable
+{
+public:
+    explicit QAccessibleList(QWidget *w)
+        : QAccessibleTable(w)
+    {}
+
+    QAccessibleInterface *child(int index) const override;
+
+    // table interface
+    QAccessibleInterface *cellAt(int row, int column) const override;
+
+    // selection
+    int selectedCellCount() const override;
+    QList<QAccessibleInterface*> selectedCells() const override;
+};
+#endif
+
 class QAccessibleTableCell: public QAccessibleInterface, public QAccessibleTableCellInterface, public QAccessibleActionInterface
 {
 public:
@@ -200,6 +219,9 @@ friend class QAccessibleTable;
 #if QT_CONFIG(treeview)
 friend class QAccessibleTree;
 #endif
+#if QT_CONFIG(listview)
+friend class QAccessibleList;
+#endif
 };
 
 
@@ -235,6 +257,9 @@ private:
 friend class QAccessibleTable;
 #if QT_CONFIG(treeview)
 friend class QAccessibleTree;
+#endif
+#if QT_CONFIG(listview)
+friend class QAccessibleList;
 #endif
 };
 
