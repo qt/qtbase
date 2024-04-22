@@ -3,6 +3,8 @@
 
 #include "qabstractnetworkcache.h"
 #include "qabstractnetworkcache_p.h"
+#include "qnetworkrequest_p.h"
+#include "qhttpheadershelper_p.h"
 
 #include <qdatastream.h>
 #include <qdatetime.h>
@@ -28,14 +30,14 @@ public:
             url == other.url
             && lastModified == other.lastModified
             && expirationDate == other.expirationDate
-            && headers == other.headers
-            && saveToDisk == other.saveToDisk;
+            && saveToDisk == other.saveToDisk
+            && QHttpHeadersHelper::compareStrict(headers, other.headers);
     }
 
     QUrl url;
     QDateTime lastModified;
     QDateTime expirationDate;
-    QNetworkCacheMetaData::RawHeaderList headers;
+    QHttpHeaders headers;
     QNetworkCacheMetaData::AttributesMap attributes;
     bool saveToDisk;
 
@@ -207,21 +209,45 @@ void QNetworkCacheMetaData::setUrl(const QUrl &url)
     Returns a list of all raw headers that are set in this meta data.
     The list is in the same order that the headers were set.
 
-    \sa setRawHeaders()
+    \sa setRawHeaders(), headers()
  */
 QNetworkCacheMetaData::RawHeaderList QNetworkCacheMetaData::rawHeaders() const
 {
-    return d->headers;
+    return QNetworkHeadersPrivate::fromHttpToRaw(d->headers);
 }
 
 /*!
     Sets the raw headers to \a list.
 
-    \sa rawHeaders()
+    \sa rawHeaders(), setHeaders()
  */
 void QNetworkCacheMetaData::setRawHeaders(const RawHeaderList &list)
 {
-    d->headers = list;
+    d->headers = QNetworkHeadersPrivate::fromRawToHttp(list);
+}
+
+/*!
+    \since 6.8
+
+    Returns headers in form of QHttpHeaders that are set in this meta data.
+
+    \sa setHeaders()
+*/
+QHttpHeaders QNetworkCacheMetaData::headers() const
+{
+    return d->headers;
+}
+
+/*!
+    \since 6.8
+
+    Sets the headers of this network cache meta data to \a headers.
+
+    \sa headers()
+*/
+void QNetworkCacheMetaData::setHeaders(const QHttpHeaders &headers)
+{
+    d->headers = headers;
 }
 
 /*!
@@ -367,7 +393,8 @@ void QNetworkCacheMetaDataPrivate::load(QDataStream &in, QNetworkCacheMetaData &
     in >> p->lastModified;
     in >> p->saveToDisk;
     in >> p->attributes;
-    in >> p->headers;
+    QNetworkCacheMetaData::RawHeaderList list; in >> list;
+    metaData.setRawHeaders(list);
 }
 
 /*!

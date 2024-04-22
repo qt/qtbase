@@ -1602,6 +1602,59 @@ QByteArray QNetworkHeadersPrivate::toHttpDate(const QDateTime &dt)
     return QLocale::c().toString(dt.toUTC(), u"ddd, dd MMM yyyy hh:mm:ss 'GMT'").toLatin1();
 }
 
+QNetworkHeadersPrivate::RawHeadersList QNetworkHeadersPrivate::fromHttpToRaw(const QHttpHeaders &headers)
+{
+    if (headers.isEmpty())
+        return {};
+
+    QNetworkHeadersPrivate::RawHeadersList list;
+    QHash<QByteArray, qsizetype> nameToIndex;
+    list.reserve(headers.size());
+    nameToIndex.reserve(headers.size());
+
+    for (qsizetype i = 0; i < headers.size(); ++i) {
+        const auto nameL1 = headers.nameAt(i);
+        const auto value = headers.valueAt(i);
+
+        const bool isSetCookie = nameL1 == QHttpHeaders::wellKnownHeaderName(
+                                         QHttpHeaders::WellKnownHeader::SetCookie);
+
+        const auto name = QByteArray(nameL1.data(), nameL1.size());
+        if (auto it = nameToIndex.find(name); it != nameToIndex.end()) {
+            list[it.value()].second += isSetCookie ? "\n" : ", ";
+            list[it.value()].second += value;
+        } else {
+            nameToIndex[name] = list.size();
+            list.emplaceBack(name, value.toByteArray());
+        }
+    }
+
+    return list;
+}
+
+QHttpHeaders QNetworkHeadersPrivate::fromRawToHttp(const RawHeadersList &raw)
+{
+    if (raw.empty())
+        return {};
+
+    QHttpHeaders headers;
+    headers.reserve(raw.size());
+
+    for (const auto &[key, value] : raw) {
+        const bool isSetCookie = key.compare(QHttpHeaders::wellKnownHeaderName(
+                                             QHttpHeaders::WellKnownHeader::SetCookie),
+                                             Qt::CaseInsensitive) == 0;
+        if (isSetCookie) {
+            for (auto header : QLatin1StringView(value).tokenize('\n'_L1))
+                headers.append(key, header);
+        } else {
+            headers.append(key, value);
+        }
+    }
+
+    return headers;
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qnetworkrequest.cpp"

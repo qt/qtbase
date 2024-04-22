@@ -59,6 +59,9 @@ public:
     static QDateTime fromHttpDate(const QByteArray &value);
     static QByteArray toHttpDate(const QDateTime &dt);
 
+    static RawHeadersList fromHttpToRaw(const QHttpHeaders &headers);
+    static QHttpHeaders fromRawToHttp(const RawHeadersList &raw);
+
 private:
     void setRawHeaderInternal(const QByteArray &key, const QByteArray &value);
     void parseAndSetHeader(const QByteArray &key, const QByteArray &value);

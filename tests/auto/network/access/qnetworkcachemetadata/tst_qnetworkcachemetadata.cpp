@@ -29,6 +29,8 @@ private slots:
     void operatorEqualEqual();
     void rawHeaders_data();
     void rawHeaders();
+    void headers_data();
+    void headers();
     void saveToDisk_data();
     void saveToDisk();
     void url_data();
@@ -114,6 +116,12 @@ void tst_QNetworkCacheMetaData::isValid_data()
     QNetworkCacheMetaData data5;
     data5.setSaveToDisk(false);
     QTest::newRow("valid-5") << data5 << true;
+
+    QNetworkCacheMetaData data6;
+    QHttpHeaders httpHeaders;
+    httpHeaders.append("name", "value");
+    data6.setHeaders(httpHeaders);
+    QTest::newRow("valid-6") << data6 << true;
 }
 
 // public bool isValid() const
@@ -153,6 +161,9 @@ void tst_QNetworkCacheMetaData::operatorEqual_data()
     QNetworkCacheMetaData::RawHeaderList headers;
     headers.append(QNetworkCacheMetaData::RawHeader("foo", "Bar"));
     data.setRawHeaders(headers);
+    QHttpHeaders httpHeaders;
+    httpHeaders.append("name", "value");
+    data.setHeaders(httpHeaders);
     data.setLastModified(QDateTime::currentDateTime());
     data.setExpirationDate(QDateTime::currentDateTime());
     data.setSaveToDisk(false);
@@ -212,6 +223,18 @@ void tst_QNetworkCacheMetaData::operatorEqualEqual_data()
     QTest::newRow("valid-5-4") << data5 << data2 << false;
     QTest::newRow("valid-5-5") << data5 << data3 << false;
     QTest::newRow("valid-5-6") << data5 << data4 << false;
+
+    QNetworkCacheMetaData data6;
+    QHttpHeaders httpHeaders;
+    httpHeaders.append("name", "value");
+    data6.setHeaders(httpHeaders);
+    QTest::newRow("valid-6-1") << data6 << QNetworkCacheMetaData() << false;
+    QTest::newRow("valid-6-2") << data6 << data6 << true;
+    QTest::newRow("valid-6-3") << data6 << data1 << false;
+    QTest::newRow("valid-6-4") << data6 << data2 << false;
+    QTest::newRow("valid-6-5") << data6 << data3 << false;
+    QTest::newRow("valid-6-6") << data6 << data4 << false;
+    QTest::newRow("valid-6-7") << data6 << data5 << false;
 }
 
 // public bool operator==(QNetworkCacheMetaData const& other) const
@@ -231,7 +254,11 @@ void tst_QNetworkCacheMetaData::rawHeaders_data()
     QTest::newRow("null") << QNetworkCacheMetaData::RawHeaderList();
     QNetworkCacheMetaData::RawHeaderList headers;
     headers.append(QNetworkCacheMetaData::RawHeader("foo", "Bar"));
-    QTest::newRow("valie") << headers;
+    QTest::newRow("valid") << headers;
+    headers.append(QNetworkCacheMetaData::RawHeader("n1", "V1, v2, v3"));
+    headers.append(QNetworkCacheMetaData::RawHeader("n2", "V2"));
+    headers.append(QNetworkCacheMetaData::RawHeader("set-cookie", "v1\nV2\nV3"));
+    QTest::newRow("valid-2") << headers;
 }
 
 // public QNetworkCacheMetaData::RawHeaderList rawHeaders() const
@@ -243,6 +270,25 @@ void tst_QNetworkCacheMetaData::rawHeaders()
 
     data.setRawHeaders(rawHeaders);
     QCOMPARE(data.rawHeaders(), rawHeaders);
+}
+
+void tst_QNetworkCacheMetaData::headers_data()
+{
+    QTest::addColumn<QHttpHeaders>("httpHeaders");
+    QTest::newRow("null") << QHttpHeaders();
+    QHttpHeaders headers;
+    headers.append("foo", "Bar");
+    QTest::newRow("valid") << headers;
+}
+
+void tst_QNetworkCacheMetaData::headers()
+{
+    QFETCH(QHttpHeaders, httpHeaders);
+
+    SubQNetworkCacheMetaData data;
+
+    data.setHeaders(httpHeaders);
+    QCOMPARE(data.headers().toListOfPairs(), httpHeaders.toListOfPairs());
 }
 
 void tst_QNetworkCacheMetaData::saveToDisk_data()
@@ -289,6 +335,9 @@ void tst_QNetworkCacheMetaData::stream()
     QNetworkCacheMetaData::RawHeaderList headers;
     headers.append(QNetworkCacheMetaData::RawHeader("foo", "Bar"));
     data.setRawHeaders(headers);
+    QHttpHeaders httpHeaders;
+    httpHeaders.append("name", "value");
+    data.setHeaders(httpHeaders);
     data.setLastModified(QDateTime::currentDateTime());
     data.setExpirationDate(QDateTime::currentDateTime());
     data.setSaveToDisk(false);

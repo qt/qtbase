@@ -48,6 +48,9 @@ public:
     RawHeaderList rawHeaders() const;
     void setRawHeaders(const RawHeaderList &headers);
 
+    QHttpHeaders headers() const;
+    void setHeaders(const QHttpHeaders &headers);
+
     QDateTime lastModified() const;
     void setLastModified(const QDateTime &dateTime);
 
