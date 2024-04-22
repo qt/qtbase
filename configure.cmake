@@ -626,7 +626,7 @@ qt_feature("force_asserts" PUBLIC
 )
 qt_feature("framework" PUBLIC
     LABEL "Build Apple Frameworks"
-    AUTODETECT BUILD_SHARED_LIBS
+    AUTODETECT ON
     CONDITION APPLE
 )
 qt_feature_definition("framework" "QT_MAC_FRAMEWORK_BUILD")
