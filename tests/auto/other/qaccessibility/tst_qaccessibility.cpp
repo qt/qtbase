@@ -2936,7 +2936,8 @@ void tst_QAccessibility::listTest()
     QVERIFY(!(cell4->state().expandable));
     QVERIFY( (cell4->state().selectable));
     QVERIFY(!(cell4->state().selected));
-    table2->selectRow(3);
+    QAccessibleSelectionInterface *selection2 = iface->selectionInterface();
+    selection2->select(cell4);
     QCOMPARE(listView->selectedItems().size(), 1);
     QCOMPARE(listView->selectedItems().at(0)->text(), QLatin1String("Munich"));
     QVERIFY(cell4->state().selected);
