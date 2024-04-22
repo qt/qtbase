@@ -2020,11 +2020,11 @@ void QWindows11Style::polish(QWidget* widget)
         widget->setPalette(pal);
     } else if (const auto *scrollarea = qobject_cast<QAbstractScrollArea *>(widget);
                scrollarea && !qobject_cast<QMdiArea *>(widget)) {
-        QPalette pal = widget->palette();
-        QColor backgroundColor = widget->palette().base().color();
-        backgroundColor.setAlpha(255);
-        pal.setColor(scrollarea->viewport()->backgroundRole(), backgroundColor);
+        QPalette pal = scrollarea->viewport()->palette();
+        const QPalette originalPalette = pal;
+        pal.setColor(scrollarea->viewport()->backgroundRole(), Qt::transparent);
         scrollarea->viewport()->setPalette(pal);
+        scrollarea->viewport()->setProperty("_q_original_background_palette", originalPalette);
     } else if (qobject_cast<QCommandLinkButton *>(widget)) {
         widget->setProperty("_qt_usingVistaStyle",false);
         QPalette pal = widget->palette();
@@ -2034,6 +2034,16 @@ void QWindows11Style::polish(QWidget* widget)
     }
 }
 
+void QWindows11Style::unpolish(QWidget *widget)
+{
+    QWindowsVistaStyle::unpolish(widget);
+    if (const auto *scrollarea = qobject_cast<QAbstractScrollArea *>(widget);
+        scrollarea && !qobject_cast<QMdiArea *>(widget)) {
+        const QPalette pal = scrollarea->viewport()->property("_q_original_background_palette").value<QPalette>();
+        scrollarea->viewport()->setPalette(pal);
+        scrollarea->viewport()->setProperty("_q_original_background_palette", QVariant());
+    }
+}
 
 /*
 The colors for Windows 11 are taken from the official WinUI3 Figma style at

@@ -48,6 +48,7 @@ public:
     int pixelMetric(PixelMetric metric, const QStyleOption *option = nullptr,
                     const QWidget *widget = nullptr) const override;
     void polish(QPalette &pal) override;
+    void unpolish(QWidget *widget) override;
 protected:
     QWindows11Style(QWindows11StylePrivate &dd);
 private:
