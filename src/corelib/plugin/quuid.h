@@ -4,6 +4,7 @@
 #ifndef QUUID_H
 #define QUUID_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qendian.h>
 #include <QtCore/qstring.h>
 
@@ -122,27 +123,59 @@ QT_WARNING_POP
     constexpr quint128 toUInt128(QSysInfo::Endian order = QSysInfo::BigEndian) const noexcept;
 #endif
 
-    constexpr bool operator==(const QUuid &orig) const noexcept
+private:
+    friend constexpr bool comparesEqual(const QUuid &lhs, const QUuid &rhs) noexcept
     {
-        if (data1 != orig.data1 || data2 != orig.data2 ||
-             data3 != orig.data3)
+        if (lhs.data1 != rhs.data1 || lhs.data2 != rhs.data2 || lhs.data3 != rhs.data3)
             return false;
 
-        for (uint i = 0; i < 8; i++)
-            if (data4[i] != orig.data4[i])
+        for (uint i = 0; i < 8; i++) {
+            if (lhs.data4[i] != rhs.data4[i])
                 return false;
+        }
 
         return true;
+    }
+    friend Qt::strong_ordering compareThreeWay(const QUuid &lhs, const QUuid &rhs) noexcept
+    {
+        if (lhs.variant() != rhs.variant())
+            return Qt::compareThreeWay(lhs.variant(), rhs.variant());
+
+#define CHECK(f1, f2) if ((f1) != (f2)) return Qt::compareThreeWay(f1, f2)
+        CHECK(lhs.data1, rhs.data1);
+        CHECK(lhs.data2, rhs.data2);
+        CHECK(lhs.data3, rhs.data3);
+#undef CHECK
+        int c = std::memcmp(lhs.data4, rhs.data4, sizeof(lhs.data4));
+        return Qt::compareThreeWay(c, 0);
+    }
+
+public:
+/*  To prevent a meta-type creation ambiguity on Windows, we put comparison
+    macros under NOT QT_CORE_REMOVED_SINCE(6, 8) part. */
+#if QT_CORE_REMOVED_SINCE(6, 8)
+    constexpr bool operator==(const QUuid &orig) const noexcept
+    {
+        return comparesEqual(*this, orig);
     }
 
     constexpr bool operator!=(const QUuid &orig) const noexcept
     {
-        return !(*this == orig);
+        return !operator==(orig);
     }
 
     bool operator<(const QUuid &other) const noexcept;
     bool operator>(const QUuid &other) const noexcept;
-
+#else
+private:
+#if defined(__cpp_lib_three_way_comparison) && !defined(Q_QDOC)
+    QT_DECLARE_3WAY_HELPER_STRONG(QUuid, QUuid, /* non-constexpr */, /* no attributes */)
+#else
+    QT_DECLARE_ORDERING_HELPER_STRONG(QUuid, QUuid, /* non-constexpr */, /* no attributes */)
+#endif // defined(__cpp_lib_three_way_comparison) && !defined(Q_QDOC)
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QUuid)
+#endif // QT_CORE_REMOVED_SINCE(6, 8)
+public:
 #if defined(Q_OS_WIN) || defined(Q_QDOC)
     // On Windows we have a type GUID that is used by the platform API, so we
     // provide convenience operators to cast from and to this type.
@@ -162,17 +195,29 @@ QT_WARNING_POP
         GUID guid = { data1, data2, data3, { data4[0], data4[1], data4[2], data4[3], data4[4], data4[5], data4[6], data4[7] } };
         return guid;
     }
-
+private:
+    friend constexpr bool comparesEqual(const QUuid &lhs, const GUID &rhs) noexcept
+    {
+        return comparesEqual(lhs, QUuid(rhs));
+    }
+public:
+/*  To prevent a meta-type creation ambiguity on Windows, we put comparison
+    macros under NOT QT_CORE_REMOVED_SINCE(6, 8) part. */
+#if QT_CORE_REMOVED_SINCE(6, 8)
     constexpr bool operator==(const GUID &guid) const noexcept
     {
-        return *this == QUuid(guid);
+        return comparesEqual(*this, QUuid(guid));
     }
 
     constexpr bool operator!=(const GUID &guid) const noexcept
     {
-        return !(*this == guid);
+        return !operator==(guid);
     }
+#else
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QUuid, GUID)
+#endif // !QT_CORE_REMOVED_SINCE(6, 8)
 #endif
+public:
     static QUuid createUuid();
 #ifndef QT_BOOTSTRAPPED
     static QUuid createUuidV3(const QUuid &ns, const QByteArray &baseData);
@@ -290,11 +335,6 @@ constexpr quint128 QUuid::toUInt128(QSysInfo::Endian order) const noexcept
     return result;
 }
 #endif
-
-inline bool operator<=(const QUuid &lhs, const QUuid &rhs) noexcept
-{ return !(rhs < lhs); }
-inline bool operator>=(const QUuid &lhs, const QUuid &rhs) noexcept
-{ return !(lhs < rhs); }
 
 #if defined(Q_QDOC)
 // provide fake declarations of qXXXEndian() functions, so that qDoc could

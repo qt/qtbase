@@ -142,6 +142,11 @@ static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCrypto
 
     \reentrant
 
+    \compares strong
+    \compareswith strong GUID
+    \note Comparison with GUID is Windows-only.
+    \endcompareswith
+
     Using \e{U}niversally \e{U}nique \e{ID}entifiers (UUID) is a
     standard way to uniquely identify entities in a distributed
     computing environment. A UUID is a 16-byte (128-bit) number
@@ -600,16 +605,16 @@ QUuid QUuid::fromRfc4122(QByteArrayView bytes) noexcept
 }
 
 /*!
-    \fn bool QUuid::operator==(const QUuid &other) const
+    \fn bool QUuid::operator==(const QUuid &lhs, const QUuid &rhs)
 
-    Returns \c true if this QUuid and the \a other QUuid are identical;
+    Returns \c true if \a lhs QUuid and the \a rhs QUuid are identical;
     otherwise returns \c false.
 */
 
 /*!
-    \fn bool QUuid::operator!=(const QUuid &other) const
+    \fn bool QUuid::operator!=(const QUuid &lhs, const QUuid &rhs)
 
-    Returns \c true if this QUuid and the \a other QUuid are different;
+    Returns \c true if \a lhs QUuid and the \a rhs QUuid are different;
     otherwise returns \c false.
 */
 
@@ -898,51 +903,31 @@ QUuid::Version QUuid::version() const noexcept
 }
 
 /*!
-    \fn bool QUuid::operator<(const QUuid &other) const
+    \fn bool QUuid::operator<(const QUuid &lhs, const QUuid &rhs)
 
-    Returns \c true if this QUuid has the same \l{Variant field}
-    {variant field} as the \a other QUuid and is lexicographically
-    \e{before} the \a other QUuid. If the \a other QUuid has a
+    Returns \c true if \a lhs QUuid has the same \l{Variant field}
+    {variant field} as the \a rhs QUuid and is lexicographically
+    \e{before} the \a rhs QUuid. If the \a rhs QUuid has a
     different variant field, the return value is determined by
     comparing the two \l{QUuid::Variant} {variants}.
 
     \sa variant()
 */
-bool QUuid::operator<(const QUuid &other) const noexcept
-{
-    if (variant() != other.variant())
-        return variant() < other.variant();
-
-#define ISLESS(f1, f2) if (f1!=f2) return (f1<f2);
-    ISLESS(data1, other.data1);
-    ISLESS(data2, other.data2);
-    ISLESS(data3, other.data3);
-    for (int n = 0; n < 8; n++) {
-        ISLESS(data4[n], other.data4[n]);
-    }
-#undef ISLESS
-    return false;
-}
 
 /*!
-    \fn bool QUuid::operator>(const QUuid &other) const
+    \fn bool QUuid::operator>(const QUuid &lhs, const QUuid &rhs)
 
-    Returns \c true if this QUuid has the same \l{Variant field}
-    {variant field} as the \a other QUuid and is lexicographically
-    \e{after} the \a other QUuid. If the \a other QUuid has a
+    Returns \c true if \a lhs QUuid has the same \l{Variant field}
+    {variant field} as the \a rhs QUuid and is lexicographically
+    \e{after} the \a rhs QUuid. If the \a rhs QUuid has a
     different variant field, the return value is determined by
     comparing the two \l{QUuid::Variant} {variants}.
 
     \sa variant()
 */
-bool QUuid::operator>(const QUuid &other) const noexcept
-{
-    return other < *this;
-}
 
 /*!
-    \fn bool operator<=(const QUuid &lhs, const QUuid &rhs)
-    \relates QUuid
+    \fn bool QUuid::operator<=(const QUuid &lhs, const QUuid &rhs)
     \since 5.5
 
     Returns \c true if \a lhs has the same \l{Variant field}
@@ -955,8 +940,7 @@ bool QUuid::operator>(const QUuid &other) const noexcept
 */
 
 /*!
-    \fn bool operator>=(const QUuid &lhs, const QUuid &rhs)
-    \relates QUuid
+    \fn bool QUuid::operator>=(const QUuid &lhs, const QUuid &rhs)
     \since 5.5
 
     Returns \c true if \a lhs has the same \l{Variant field}
@@ -1009,17 +993,17 @@ QUuid QUuid::createUuid()
 #endif // !Q_OS_WIN && !QT_BOOTSTRAPPED
 
 /*!
-    \fn bool QUuid::operator==(const GUID &guid) const
+    \fn bool QUuid::operator==(const QUuid &lhs, const GUID &rhs)
 
-    Returns \c true if this UUID is equal to the Windows GUID \a guid;
+    Returns \c true if \a lhs UUID is equal to the Windows GUID \a rhs;
     otherwise returns \c false.
 */
 
 /*!
-    \fn bool QUuid::operator!=(const GUID &guid) const
+    \fn bool QUuid::operator!=(const QUuid &lhs, const GUID &rhs)
 
-    Returns \c true if this UUID is not equal to the Windows GUID \a
-    guid; otherwise returns \c false.
+    Returns \c true if \a lhs UUID is not equal to the Windows GUID \a rhs;
+    otherwise returns \c false.
 */
 
 #ifndef QT_NO_DEBUG_STREAM

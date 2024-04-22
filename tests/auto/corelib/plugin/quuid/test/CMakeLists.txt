@@ -9,6 +9,8 @@ qt_internal_add_test(tst_quuid
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../"
     SOURCES
         ../tst_quuid.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )
 
 ## Scopes:

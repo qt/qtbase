@@ -1129,6 +1129,18 @@ bool QUrlQuery::operator==(const QUrlQuery &other) const
     return comparesEqual(*this, other);
 }
 
+#include "quuid.h"
+
+bool QUuid::operator<(const QUuid &other) const noexcept
+{
+    return is_lt(compareThreeWay(*this, other));
+}
+
+bool QUuid::operator>(const QUuid &other) const noexcept
+{
+    return is_gt(compareThreeWay(*this, other));
+}
+
 #include "qxmlstream.h" // inlined API
 
 // #include "qotherheader.h"
