@@ -415,6 +415,13 @@ qt_internal_extend_target(Gui CONDITION APPLE
         ${FWImageIO}
 )
 
+qt_internal_extend_target(Gui CONDITION APPLE AND QT_FEATURE_metal
+    SOURCES
+        platform/darwin/qmetallayer.mm platform/darwin/qmetallayer_p.h
+    LIBRARIES
+        ${FWQuartzCore}
+)
+
 qt_internal_extend_target(Gui CONDITION QNX
     SOURCES
         painting/qrasterbackingstore.cpp painting/qrasterbackingstore_p.h

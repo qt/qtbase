@@ -13,6 +13,7 @@
 #include <QOperatingSystemVersion>
 
 #include <QtCore/private/qcore_mac_p.h>
+#include <QtGui/private/qmetallayer_p.h>
 
 #ifdef Q_OS_MACOS
 #include <AppKit/AppKit.h>
@@ -20,8 +21,9 @@
 #include <UIKit/UIKit.h>
 #endif
 
+#include <QuartzCore/CATransaction.h>
+
 #include <Metal/Metal.h>
-#include <QuartzCore/CAMetalLayer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -461,11 +463,6 @@ struct QMetalSwapChainData
     id<MTLTexture> msaaTex[QMTL_FRAMES_IN_FLIGHT];
     QRhiTexture::Format rhiColorFormat;
     MTLPixelFormat colorFormat;
-#ifdef Q_OS_MACOS
-    bool liveResizeObserverSet = false;
-    QMacNotificationObserver liveResizeStartObserver;
-    QMacNotificationObserver liveResizeEndObserver;
-#endif
 };
 
 QRhiMetal::QRhiMetal(QRhiMetalInitParams *params, QRhiMetalNativeHandles *importDevice)
@@ -2396,8 +2393,11 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     QMetalSwapChain *swapChainD = QRHI_RES(QMetalSwapChain, swapChain);
     Q_ASSERT(currentSwapChain == swapChainD);
 
+    // Keep strong reference to command buffer
+    id<MTLCommandBuffer> commandBuffer = swapChainD->cbWrapper.d->cb;
+
     __block int thisFrameSlot = currentFrameSlot;
-    [swapChainD->cbWrapper.d->cb addCompletedHandler: ^(id<MTLCommandBuffer> cb) {
+    [commandBuffer addCompletedHandler: ^(id<MTLCommandBuffer> cb) {
         swapChainD->d->lastGpuTime[thisFrameSlot] += cb.GPUEndTime - cb.GPUStartTime;
         dispatch_semaphore_signal(swapChainD->d->sem[thisFrameSlot]);
     }];
@@ -2407,30 +2407,75 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     // released before the command buffer is done with it. Manually keep it alive
     // to work around this.
     id<MTLTexture> drawableTexture = [swapChainD->d->curDrawable.texture retain];
-    [swapChainD->cbWrapper.d->cb addCompletedHandler:^(id<MTLCommandBuffer>) {
+    [commandBuffer addCompletedHandler:^(id<MTLCommandBuffer>) {
         [drawableTexture release];
     }];
 #endif
 
-    const bool needsPresent = !flags.testFlag(QRhi::SkipPresent);
-    const bool presentsWithTransaction = swapChainD->d->layer.presentsWithTransaction;
-    if (!presentsWithTransaction && needsPresent) {
-        // beginFrame-endFrame without a render pass inbetween means there is no drawable.
-        if (id<CAMetalDrawable> drawable = swapChainD->d->curDrawable)
-            [swapChainD->cbWrapper.d->cb presentDrawable: drawable];
-    }
-
-    [swapChainD->cbWrapper.d->cb commit];
-
-    if (presentsWithTransaction && needsPresent) {
-        // beginFrame-endFrame without a render pass inbetween means there is no drawable.
+    if (flags.testFlag(QRhi::SkipPresent)) {
+        // Just need to commit, that's it
+        [commandBuffer commit];
+    } else {
         if (id<CAMetalDrawable> drawable = swapChainD->d->curDrawable) {
-            // The layer has presentsWithTransaction set to true to avoid flicker on resizing,
-            // so here it is important to follow what the Metal docs say when it comes to the
-            // issuing the present.
-            [swapChainD->cbWrapper.d->cb waitUntilScheduled];
-            [drawable present];
+            // Got something to present
+            if (swapChainD->d->layer.presentsWithTransaction) {
+                [commandBuffer commit];
+                // Keep strong reference to Metal layer
+                auto *metalLayer = swapChainD->d->layer;
+                auto presentWithTransaction = ^{
+                    [commandBuffer waitUntilScheduled];
+                    // If the layer has been resized while we waited to be scheduled we bail out,
+                    // as the drawable is no longer valid for the layer, and we'll get a follow-up
+                    // display with the right size. We know we are on the main thread here, which
+                    // means we can access the layer directly. We also know that the layer is valid,
+                    // since the block keeps a strong reference to it, compared to the QRhiSwapChain
+                    // that can go away under our feet by the time we're scheduled.
+                    const auto surfaceSize = QSizeF::fromCGSize(metalLayer.bounds.size) * metalLayer.contentsScale;
+                    const auto textureSize = QSizeF(drawable.texture.width, drawable.texture.height);
+                    if (textureSize == surfaceSize) {
+                        [drawable present];
+                    } else {
+                        qCDebug(QRHI_LOG_INFO) << "Skipping" << drawable << "due to texture size"
+                            << textureSize << "not matching surface size" << surfaceSize;
+                    }
+                };
+
+                if (NSThread.currentThread == NSThread.mainThread) {
+                    presentWithTransaction();
+                } else {
+                    auto *qtMetalLayer = qt_objc_cast<QMetalLayer*>(swapChainD->d->layer);
+                    Q_ASSERT(qtMetalLayer);
+                    // Let the main thread present the drawable from displayLayer
+                    qtMetalLayer.mainThreadPresentation = presentWithTransaction;
+                }
+            } else {
+                // Keep strong reference to Metal layer so it's valid in the block
+                auto *qtMetalLayer = qt_objc_cast<QMetalLayer*>(swapChainD->d->layer);
+                [commandBuffer addScheduledHandler:^(id<MTLCommandBuffer>) {
+                    if (qtMetalLayer) {
+                        // The schedule handler comes in on the com.Metal.CompletionQueueDispatch
+                        // thread, which means we might be racing against a display cycle on the
+                        // main thread. If the displayLayer is already in progress, we don't want
+                        // to step on its toes.
+                        if (qtMetalLayer.displayLock.tryLockForRead()) {
+                            [drawable present];
+                            qtMetalLayer.displayLock.unlock();
+                        } else {
+                            qCDebug(QRHI_LOG_INFO) << "Skipping" << drawable
+                                << "due to" << qtMetalLayer << "needing display";
+                        }
+                    } else {
+                        [drawable present];
+                    }
+                }];
+                [commandBuffer commit];
+            }
+        } else {
+            // Still need to commit, even if we don't have a drawable
+            [commandBuffer commit];
         }
+
+        swapChainD->currentFrameSlot = (swapChainD->currentFrameSlot + 1) % QMTL_FRAMES_IN_FLIGHT;
     }
 
     // Must not hold on to the drawable, regardless of needsPresent
@@ -2438,9 +2483,6 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
     swapChainD->d->curDrawable = nil;
 
     [d->captureScope endScope];
-
-    if (needsPresent)
-        swapChainD->currentFrameSlot = (swapChainD->currentFrameSlot + 1) % QMTL_FRAMES_IN_FLIGHT;
 
     swapChainD->frameCount += 1;
     currentSwapChain = nullptr;
@@ -6168,12 +6210,6 @@ void QMetalSwapChain::destroy()
         d->msaaTex[i] = nil;
     }
 
-#ifdef Q_OS_MACOS
-    d->liveResizeStartObserver.remove();
-    d->liveResizeEndObserver.remove();
-    d->liveResizeObserverSet = false;
-#endif
-
     d->layer = nullptr;
     m_proxyData = {};
 
@@ -6379,34 +6415,6 @@ bool QMetalSwapChain::createOrResize()
     pixelSize = m_currentPixelSize;
 
     [d->layer setDevice: rhiD->d->dev];
-
-#ifdef Q_OS_MACOS
-    // Can only use presentsWithTransaction (to get smooth resizing) when
-    // presenting from the main (gui) thread. We predict that based on the
-    // thread this function is called on since if the QRhiSwapChain is
-    // initialied on a given thread then that's almost certainly the thread on
-    // which the QRhi renders and presents.
-    const bool canUsePresentsWithTransaction = NSThread.isMainThread;
-
-    // Have an env.var. just in case it turns out presentsWithTransaction is
-    // not desired in some specific case.
-    static bool allowPresentsWithTransaction = !qEnvironmentVariableIntValue("QT_MTL_NO_TRANSACTION");
-
-    if (allowPresentsWithTransaction && canUsePresentsWithTransaction && !d->liveResizeObserverSet) {
-        d->liveResizeObserverSet = true;
-        NSView *view = reinterpret_cast<NSView *>(window->winId());
-        NSWindow *window = view.window;
-        if (window) {
-            qCDebug(QRHI_LOG_INFO, "will set presentsWithTransaction during live resize");
-            d->liveResizeStartObserver = QMacNotificationObserver(window, NSWindowWillStartLiveResizeNotification, [this] {
-                d->layer.presentsWithTransaction = true;
-            });
-            d->liveResizeEndObserver = QMacNotificationObserver(window, NSWindowDidEndLiveResizeNotification, [this] {
-                d->layer.presentsWithTransaction = false;
-            });
-        }
-    }
-#endif
 
     [d->curDrawable release];
     d->curDrawable = nil;

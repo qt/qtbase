@@ -24,6 +24,7 @@
 #include <qpa/qplatformscreen.h>
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/private/qhighdpiscaling_p.h>
+#include <QtGui/private/qmetallayer_p.h>
 
 #include <QDebug>
 
@@ -1284,8 +1285,26 @@ void QCocoaWindow::windowDidResize()
         handleWindowStateChanged();
 }
 
+void QCocoaWindow::windowWillStartLiveResize()
+{
+    // Track live resizing for all windows, including
+    // child windows, so we know if it's safe to update
+    // the window unthrottled outside of the main thread.
+    m_inLiveResize = true;
+}
+
+bool QCocoaWindow::inLiveResize() const
+{
+    // Use member variable to track this instead of reflecting
+    // NSView.inLiveResize directly, so it can be called from
+    // non-main threads.
+    return m_inLiveResize;
+}
+
 void QCocoaWindow::windowDidEndLiveResize()
 {
+    m_inLiveResize = false;
+
     if (!isContentView())
         return;
 
@@ -1671,6 +1690,23 @@ bool QCocoaWindow::updatesWithDisplayLink() const
 void QCocoaWindow::deliverUpdateRequest()
 {
     qCDebug(lcQpaDrawing) << "Delivering update request to" << window();
+
+    if (auto *qtMetalLayer = qt_objc_cast<QMetalLayer*>(m_view.layer)) {
+        // We attempt a read lock here, so that the animation/render thread is
+        // prioritized lower than the main thread's displayLayer processing.
+        // Without this the two threads might fight over the next drawable,
+        // starving the main thread's presentation of the resized layer.
+        if (!qtMetalLayer.displayLock.tryLockForRead()) {
+            qCDebug(lcQpaDrawing) << "Deferring update request"
+                << "due to" << qtMetalLayer << "needing display";
+            return;
+        }
+
+        // But we don't hold the lock, as the update request can recurse
+        // back into setNeedsDisplay, which would deadlock.
+        qtMetalLayer.displayLock.unlock();
+    }
+
     QPlatformWindow::deliverUpdateRequest();
 }
 

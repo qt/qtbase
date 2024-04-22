@@ -124,6 +124,7 @@ public:
 
     Q_NOTIFICATION_HANDLER(NSWindowDidMoveNotification) void windowDidMove();
     Q_NOTIFICATION_HANDLER(NSWindowDidResizeNotification) void windowDidResize();
+    Q_NOTIFICATION_HANDLER(NSWindowWillStartLiveResizeNotification) void windowWillStartLiveResize();
     Q_NOTIFICATION_HANDLER(NSWindowDidEndLiveResizeNotification) void windowDidEndLiveResize();
     Q_NOTIFICATION_HANDLER(NSWindowDidBecomeKeyNotification) void windowDidBecomeKey();
     Q_NOTIFICATION_HANDLER(NSWindowDidResignKeyNotification) void windowDidResignKey();
@@ -188,6 +189,8 @@ public:
     Q_DECLARE_FLAGS(RecreationReasons, RecreationReason)
     Q_FLAG(RecreationReasons)
 
+    bool inLiveResize() const override;
+
 protected:
     void recreateWindowIfNeeded();
     QCocoaNSWindow *createNSWindow(bool shouldBePanel);
@@ -234,6 +237,7 @@ public: // for QNSView
     bool m_inSetVisible = false;
     bool m_inSetGeometry = false;
     bool m_inSetStyleMask = false;
+    bool m_inLiveResize = false;
 
     QCocoaMenuBar *m_menubar = nullptr;
 
