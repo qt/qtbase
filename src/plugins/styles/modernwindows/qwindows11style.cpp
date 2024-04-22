@@ -134,6 +134,8 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
 */
 QWindows11Style::QWindows11Style() : QWindowsVistaStyle(*new QWindows11StylePrivate)
 {
+    highContrastTheme = QGuiApplicationPrivate::styleHints->colorScheme() == Qt::ColorScheme::Unknown;
+    colorSchemeIndex = QGuiApplicationPrivate::styleHints->colorScheme() == Qt::ColorScheme::Light ? 0 : 1;
 }
 
 /*!
@@ -142,6 +144,8 @@ QWindows11Style::QWindows11Style() : QWindowsVistaStyle(*new QWindows11StylePriv
 */
 QWindows11Style::QWindows11Style(QWindows11StylePrivate &dd) : QWindowsVistaStyle(dd)
 {
+    highContrastTheme = QGuiApplicationPrivate::styleHints->colorScheme() == Qt::ColorScheme::Unknown;
+    colorSchemeIndex = QGuiApplicationPrivate::styleHints->colorScheme() == Qt::ColorScheme::Light ? 0 : 1;
 }
 
 /*!
