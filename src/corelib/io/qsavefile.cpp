@@ -113,10 +113,10 @@ QSaveFile::QSaveFile(const QString &name, QObject *parent)
 QSaveFile::~QSaveFile()
 {
     Q_D(QSaveFile);
-    QFileDevice::close();
-    if (d->fileEngine) {
+    if (isOpen()) {
+        QFileDevice::close();
+        Q_ASSERT(d->fileEngine);
         d->fileEngine->remove();
-        d->fileEngine.reset();
     }
 }
 
@@ -298,7 +298,7 @@ bool QSaveFile::commit()
     }
     QFileDevice::close(); // calls flush()
 
-    const auto fe = std::move(d->fileEngine);
+    const auto &fe = d->fileEngine;
 
     // Sync to disk if possible. Ignore errors (e.g. not supported).
     fe->syncToDisk();

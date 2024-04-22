@@ -5,6 +5,7 @@
 #include <QSaveFile>
 #include <qcoreapplication.h>
 #include <qstring.h>
+#include <qsystemdetection.h>
 #include <qtemporaryfile.h>
 #include <qfile.h>
 #include <qdir.h>
@@ -93,14 +94,30 @@ void tst_QSaveFile::transactionalWrite()
     QCOMPARE(file.write(data), qint64(strlen(data)));
     QCOMPARE(file.error(), QFile::NoError);
     QVERIFY(!QFile::exists(targetFile));
+    QVERIFY(file.fileTime(QFile::FileModificationTime).isValid());
 
     QVERIFY(file.commit());
     QVERIFY(QFile::exists(targetFile));
     QCOMPARE(file.fileName(), targetFile);
+#if defined(Q_OS_WIN)
+    // Without this delay, file.fileTime() and file.size() tests fail to
+    // pass on Windows in the CI. It passes locally in a VM, so it looks like
+    // it depends on how often different filesystems on different OSes, update
+    // their metadata.
+    // Interestingly, this delay is enough to fix similar tests in the rest
+    // of tst_QSaveFile's functions.
+    QTRY_VERIFY(file.fileTime(QFile::FileModificationTime).isValid());
+#else
+    QVERIFY(file.fileTime(QFile::FileModificationTime).isValid());
+#endif
+
+    QCOMPARE(file.size(), qint64(strlen(data)));
 
     QFile reader(targetFile);
     QVERIFY(reader.open(QIODevice::ReadOnly));
     QCOMPARE(QString::fromLatin1(reader.readAll()), QString::fromLatin1(data));
+    QCOMPARE(file.fileTime(QFile::FileModificationTime),
+             reader.fileTime(QFile::FileModificationTime));
 
     // check that permissions are the same as for QFile
     const QString otherFile = dir.path() + QString::fromLatin1("/otherfile");
@@ -147,6 +164,7 @@ void tst_QSaveFile::retryTransactionalWrite()
     QCOMPARE(file.write(data), qint64(strlen(data)));
     QCOMPARE(file.error(), QFile::NoError);
     QVERIFY(file.commit());
+    QCOMPARE(file.size(), qint64(strlen(data)));
 }
 
 void tst_QSaveFile::saveTwice()
@@ -161,11 +179,13 @@ void tst_QSaveFile::saveTwice()
     QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
     QCOMPARE(file.write(hello), qint64(strlen(hello)));
     QVERIFY2(file.commit(), qPrintable(file.errorString()));
+    QCOMPARE(file.size(), qint64(strlen(hello)));
 
     const char *world = "World";
     QVERIFY2(file.open(QIODevice::WriteOnly), msgCannotOpen(file).constData());
     QCOMPARE(file.write(world), qint64(strlen(world)));
     QVERIFY2(file.commit(), qPrintable(file.errorString()));
+    QCOMPARE(file.size(), qint64(strlen(world)));
 
     QFile reader(targetFile);
     QVERIFY2(reader.open(QIODevice::ReadOnly), msgCannotOpen(reader).constData());
@@ -188,6 +208,7 @@ void tst_QSaveFile::textStreamManualFlush()
     QVERIFY(!QFile::exists(targetFile));
 
     QVERIFY(file.commit());
+    QCOMPARE(file.size(), qint64(strlen(data)));
     QFile reader(targetFile);
     QVERIFY(reader.open(QIODevice::ReadOnly));
     QCOMPARE(QString::fromLatin1(reader.readAll().constData()), QString::fromLatin1(data));
@@ -437,6 +458,7 @@ void tst_QSaveFile::symlink()
         QVERIFY(saveFile.open(QIODevice::WriteOnly));
         QCOMPARE(saveFile.write(someData), someData.size());
         saveFile.commit();
+        QCOMPARE(saveFile.size(), someData.size());
 
         QFile file(targetFile);
         QVERIFY2(file.open(QIODevice::ReadOnly), msgCannotOpen(file).constData());
@@ -466,6 +488,7 @@ void tst_QSaveFile::symlink()
         QVERIFY(saveFile.open(QIODevice::WriteOnly));
         QCOMPARE(saveFile.write(someData), someData.size());
         saveFile.commit();
+        QCOMPARE(saveFile.size(), someData.size());
 
         // the explicit file becomes a file instead of a link
         QVERIFY(!QFileInfo(cyclicLink + QLatin1Char('1')).isSymLink());
@@ -545,6 +568,7 @@ void tst_QSaveFile::alternateDataStream()
         QVERIFY2(file.open(QIODevice::WriteOnly), qPrintable(file.errorString()));
         file.write(newContent);
         QVERIFY2(file.commit(), qPrintable(file.errorString()));
+        QCOMPARE(file.size(), qint64(strlen(newContent)));
 
         // check the contents
         QFile targetFile(adsName);
