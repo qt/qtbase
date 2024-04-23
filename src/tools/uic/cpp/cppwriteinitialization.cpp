@@ -1393,8 +1393,8 @@ void WriteInitialization::writeProperties(const QString &varName,
         case DomProperty::CursorShape:
             if (p->hasAttributeStdset() && !p->attributeStdset())
                 varNewName += language::derefPointer + "viewport()"_L1;
-            propertyValue = "QCursor(Qt"_L1 + language::qualifier
-                + p->elementCursorShape() + u')';
+            propertyValue = "QCursor(Qt"_L1 + language::qualifier + "CursorShape"_L1
+                            + language::qualifier + p->elementCursorShape() + u')';
             break;
         case DomProperty::Enum:
             propertyValue = p->elementEnum();
@@ -1708,8 +1708,9 @@ static void writeIconAddFile(QTextStream &output, const QString &indent,
 {
     output << indent << iconName << ".addFile("
         << language::qstring(fileName, indent) << ", QSize(), QIcon"
-        << language::qualifier << mode << ", QIcon" << language::qualifier
-        << state << ')' << language::eol;
+        << language::qualifier << "Mode" << language::qualifier << mode
+        << ", QIcon" << language::qualifier << "State" << language::qualifier << state
+        << ')' << language::eol;
 }
 
 // Post 4.4 write resource icon
@@ -1757,7 +1758,8 @@ static void writeIconAddPixmap(QTextStream &output, const QString &indent,
                                const char *mode, const char *state)
 {
     output << indent << iconName << ".addPixmap(" << call << ", QIcon"
-        << language::qualifier << mode << ", QIcon" << language::qualifier
+        << language::qualifier << "Mode" << language::qualifier << mode
+        << ", QIcon" << language::qualifier << "State" << language::qualifier
         << state << ')' << language::eol;
 }
 

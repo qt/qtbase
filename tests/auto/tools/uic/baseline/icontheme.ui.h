@@ -38,7 +38,7 @@ public:
         fileicon = new QPushButton(Form);
         fileicon->setObjectName("fileicon");
         QIcon icon;
-        icon.addFile(QString::fromUtf8("image1.png"), QSize(), QIcon::Normal, QIcon::Off);
+        icon.addFile(QString::fromUtf8("image1.png"), QSize(), QIcon::Mode::Normal, QIcon::State::Off);
         fileicon->setIcon(icon);
 
         verticalLayout->addWidget(fileicon);
@@ -50,7 +50,7 @@ public:
         if (QIcon::hasThemeIcon(iconThemeName)) {
             icon1 = QIcon::fromTheme(iconThemeName);
         } else {
-            icon1.addFile(QString::fromUtf8("image7.png"), QSize(), QIcon::Normal, QIcon::Off);
+            icon1.addFile(QString::fromUtf8("image7.png"), QSize(), QIcon::Mode::Normal, QIcon::State::Off);
         }
         fileandthemeicon->setIcon(icon1);
 
@@ -76,7 +76,7 @@ public:
         if (QIcon::hasThemeIcon(QIcon::ThemeIcon::EditCopy)) {
             icon4 = QIcon::fromTheme(QIcon::ThemeIcon::EditCopy);
         } else {
-            icon4.addFile(QString::fromUtf8("image7.png"), QSize(), QIcon::Normal, QIcon::Off);
+            icon4.addFile(QString::fromUtf8("image7.png"), QSize(), QIcon::Mode::Normal, QIcon::State::Off);
         }
         fileandthemeenum->setIcon(icon4);
 

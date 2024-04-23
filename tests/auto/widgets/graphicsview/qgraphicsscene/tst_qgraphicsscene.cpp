@@ -3044,7 +3044,6 @@ void tst_QGraphicsScene::tabFocus_emptyScene()
     widget.setLayout(layout);
     widget.setWindowTitle(QTest::currentTestFunction());
     widget.show();
-    QApplicationPrivate::setActiveWindow(&widget);
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
 
@@ -3096,7 +3095,6 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusableItems()
     widget.setWindowTitle(QTest::currentTestFunction());
     widget.setLayout(layout);
     widget.show();
-    QApplicationPrivate::setActiveWindow(&widget);
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
 
@@ -3825,7 +3823,6 @@ void tst_QGraphicsScene::inputMethod()
     view.resize(m_testSize);
     view.show();
     view.setWindowTitle(QTest::currentTestFunction());
-    QApplicationPrivate::setActiveWindow(&view);
     view.setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(QApplication::activeWindow(), &view);
@@ -4069,7 +4066,6 @@ void tst_QGraphicsScene::isActive()
         view1->setVisible(false);
 
         toplevel1.show();
-        QApplicationPrivate::setActiveWindow(&toplevel1);
         QVERIFY(QTest::qWaitForWindowActive(&toplevel1));
         QCOMPARE(QApplication::activeWindow(), &toplevel1);
 
@@ -4246,7 +4242,6 @@ void tst_QGraphicsScene::isActive()
 
 
         toplevel3.show();
-        QApplicationPrivate::setActiveWindow(&toplevel3);
         QVERIFY(QTest::qWaitForWindowActive(&toplevel3));
         QCOMPARE(QApplication::activeWindow(), &toplevel3);
 
