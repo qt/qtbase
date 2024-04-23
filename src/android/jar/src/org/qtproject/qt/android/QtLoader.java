@@ -13,12 +13,14 @@ import android.content.ContextWrapper;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ComponentInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
 import java.io.File;
+import java.lang.IllegalArgumentException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -52,44 +54,41 @@ abstract class QtLoader {
      * Initializes the class loader since it doesn't rely on anything
      * other than the context.
      * Also, we can already initialize the static classes contexts here.
+     * @throws IllegalArgumentException if the given Context is not either an Activity or Service,
+     *         or no ComponentInfo could be found for it
      **/
-    public QtLoader(ContextWrapper context) {
+    public QtLoader(ContextWrapper context) throws IllegalArgumentException {
         m_resources = context.getResources();
         m_packageName = context.getPackageName();
         final Context baseContext = context.getBaseContext();
+        if (!(baseContext instanceof Activity || baseContext instanceof Service)) {
+            throw new IllegalArgumentException("QtLoader: Context is not an instance of " +
+                                               "Activity or Service");
+        }
 
         initClassLoader(baseContext);
         initStaticClasses(baseContext);
-        initContextInfo(baseContext);
+        try {
+            initContextInfo(baseContext);
+        } catch (NameNotFoundException e) {
+            throw new IllegalArgumentException("QtLoader: No ComponentInfo found for given " +
+                                               "Context", e);
+        }
     }
-
-    /**
-     * Implements the logic for finish the extended context, mostly called
-     * in error cases.
-     **/
-    abstract protected void finish();
 
     /**
      * Initializes the context info instance which is used to retrieve
      * the app metadata from the AndroidManifest.xml or other xml resources.
      * Some values are dependent on the context being an Activity or Service.
      **/
-    protected void initContextInfo(Context context) {
-        try {
-            if (context instanceof Activity) {
-                m_contextInfo = context.getPackageManager().getActivityInfo(
-                        ((Activity)context).getComponentName(), PackageManager.GET_META_DATA);
-            } else if (context instanceof Service) {
-                m_contextInfo = context.getPackageManager().getServiceInfo(
-                        new ComponentName(context, context.getClass()),
-                        PackageManager.GET_META_DATA);
-            } else {
-                Log.w(QtTAG, "Context is not an instance of Activity or Service, could not get " +
-                             "context info for it");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            finish();
+    protected void initContextInfo(Context context) throws NameNotFoundException {
+        if (context instanceof Activity) {
+            m_contextInfo = context.getPackageManager().getActivityInfo(
+                    ((Activity)context).getComponentName(), PackageManager.GET_META_DATA);
+        } else if (context instanceof Service) {
+            m_contextInfo = context.getPackageManager().getServiceInfo(
+                    new ComponentName(context, context.getClass()),
+                    PackageManager.GET_META_DATA);
         }
     }
 
@@ -333,9 +332,6 @@ abstract class QtLoader {
      *
      * @noinspection SameParameterValue*/
     private String getApplicationMetaData(String key) {
-        if (m_contextInfo == null)
-            return "";
-
         ApplicationInfo applicationInfo = m_contextInfo.applicationInfo;
         if (applicationInfo == null)
             return "";
@@ -417,11 +413,10 @@ abstract class QtLoader {
     /**
      * Loads all Qt native bundled libraries and main library.
      **/
-    public void loadQtLibraries() {
+    public boolean loadQtLibraries() {
         if (!useLocalQtLibs()) {
             Log.w(QtTAG, "Use local Qt libs is false");
-            finish();
-            return;
+            return false;
         }
 
         if (m_nativeLibrariesDir == null)
@@ -429,8 +424,7 @@ abstract class QtLoader {
 
         if (m_nativeLibrariesDir == null || m_nativeLibrariesDir.isEmpty()) {
             Log.e(QtTAG, "The native libraries directory is null or empty");
-            finish();
-            return;
+            return false;
         }
 
         setEnvironmentVariable("QT_PLUGIN_PATH", m_nativeLibrariesDir);
@@ -449,16 +443,14 @@ abstract class QtLoader {
 
         if (!loadLibraries(nativeLibraries)) {
             Log.e(QtTAG, "Loading Qt native libraries failed");
-            finish();
-            return;
+            return false;
         }
 
         // add all bundled Qt libs to loader params
         ArrayList<String> bundledLibraries = new ArrayList<>(preferredAbiLibs(getBundledLibs()));
         if (!loadLibraries(bundledLibraries)) {
             Log.e(QtTAG, "Loading Qt bundled libraries failed");
-            finish();
-            return;
+            return false;
         }
 
         if (m_mainLibName == null)
@@ -466,8 +458,9 @@ abstract class QtLoader {
         // Load main lib
         if (!loadMainLibrary(m_mainLibName + "_" + m_preferredAbi)) {
             Log.e(QtTAG, "Loading main library failed");
-            finish();
+            return false;
         }
+        return true;
     }
 
     // Loading libraries using System.load() uses full lib paths

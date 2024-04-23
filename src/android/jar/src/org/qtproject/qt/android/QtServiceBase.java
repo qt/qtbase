@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.lang.IllegalArgumentException;
+
 public class QtServiceBase extends Service {
     @Override
     public void onCreate()
@@ -25,10 +27,20 @@ public class QtServiceBase extends Service {
 
         QtNative.setService(this);
 
-        QtServiceLoader loader = new QtServiceLoader(this);
-        loader.loadQtLibraries();
-        QtNative.startApplication(loader.getApplicationParameters(), loader.getMainLibraryPath());
-        QtNative.setApplicationState(QtNative.ApplicationState.ApplicationHidden);
+        try {
+            QtServiceLoader loader = new QtServiceLoader(this);
+            if (loader.loadQtLibraries()) {
+                QtNative.startApplication(loader.getApplicationParameters(),
+                                          loader.getMainLibraryPath());
+                QtNative.setApplicationState(QtNative.ApplicationState.ApplicationHidden);
+            } else {
+                Log.w(QtNative.QtTAG, "QtServiceLoader: failed to load Qt libraries");
+                stopSelf();
+            }
+        } catch (IllegalArgumentException e) {
+            Log.w(QtNative.QtTAG, e.getMessage());
+            stopSelf();
+        }
     }
 
     @Override

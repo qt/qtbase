@@ -4,22 +4,19 @@
 
 package org.qtproject.qt.android;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.system.Os;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
+import java.lang.IllegalArgumentException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -27,38 +24,12 @@ import java.nio.charset.StandardCharsets;
 class QtActivityLoader extends QtLoader {
     private final Activity m_activity;
 
-    QtActivityLoader(Activity activity)
+    QtActivityLoader(Activity activity) throws IllegalArgumentException
     {
         super(new ContextWrapper(activity));
         m_activity = activity;
 
         extractContextMetaData(m_activity);
-    }
-
-    private void showErrorDialog() {
-        if (m_activity == null) {
-            Log.w(QtTAG, "cannot show the error dialog from a null activity object");
-            return;
-        }
-        Resources resources = m_activity.getResources();
-        String packageName = m_activity.getPackageName();
-        AlertDialog errorDialog = new AlertDialog.Builder(m_activity).create();
-        @SuppressLint("DiscouragedApi") int id = resources.getIdentifier(
-                "fatal_error_msg", "string", packageName);
-        errorDialog.setMessage(resources.getString(id));
-        errorDialog.setButton(Dialog.BUTTON_POSITIVE, resources.getString(android.R.string.ok),
-                (dialog, which) -> finish());
-        errorDialog.show();
-    }
-
-    @Override
-    protected void finish() {
-        if (m_activity == null) {
-            Log.w(QtTAG, "finish() called when activity object is null");
-            return;
-        }
-        showErrorDialog();
-        m_activity.finish();
     }
 
     private String getDecodedUtfString(String str)
