@@ -1349,6 +1349,7 @@ private:
     uchar *map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags);
     bool unmap(uchar *ptr);
     void uncompress() const;
+    void mapUncompressed();
     qint64 offset;
     QResource resource;
     mutable QByteArray uncompressed;
@@ -1565,7 +1566,6 @@ bool QResourceFileEngine::supportsExtension(Extension extension) const
 uchar *QResourceFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags)
 {
     Q_Q(QResourceFileEngine);
-    Q_UNUSED(flags);
     Q_ASSERT_X(resource.compressionAlgorithm() == QResource::NoCompression
                || !uncompressed.isNull(), "QFile::map()",
                "open() should have uncompressed compressed resources");
@@ -1584,6 +1584,12 @@ uchar *QResourceFileEnginePrivate::map(qint64 offset, qint64 size, QFile::Memory
 
     // resource was not compressed
     address = resource.data();
+    if (flags & QFile::MapPrivateOption) {
+        // We need to provide read-write memory
+        mapUncompressed();
+        address = reinterpret_cast<const uchar *>(uncompressed.constData());
+    }
+
     return const_cast<uchar *>(address) + offset;
 }
 
@@ -1599,6 +1605,15 @@ void QResourceFileEnginePrivate::uncompress() const
             || !uncompressed.isEmpty() || resource.size() == 0)
         return;     // nothing to do
     uncompressed = resource.uncompressedData();
+}
+
+void QResourceFileEnginePrivate::mapUncompressed()
+{
+    Q_ASSERT(resource.compressionAlgorithm() == QResource::NoCompression);
+    if (!uncompressed.isNull())
+        return;     // nothing to do
+    uncompressed = resource.uncompressedData();
+    uncompressed.detach();
 }
 
 #endif // !defined(QT_BOOTSTRAPPED)

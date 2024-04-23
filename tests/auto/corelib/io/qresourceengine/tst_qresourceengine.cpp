@@ -180,6 +180,7 @@ void tst_QResourceEngine::checkStructure_data()
 #if defined(BUILTIN_TESTDATA)
                  << QLatin1String("testqrc")
 #endif
+                 << QLatin1String("uncompresseddir")
                  << QLatin1String("withoutslashes");
 
     QTest::newRow("root dir")          << QString(":/")
@@ -384,8 +385,16 @@ void tst_QResourceEngine::checkStructure_data()
         QFile file(QFINDTESTDATA("testqrc/aliasdir/compressme.txt"));
         QVERIFY(file.open(QFile::ReadOnly));
         info = QFileInfo(QFINDTESTDATA("testqrc/aliasdir/compressme.txt"));
+        QByteArray compressmeContents = file.readAll();
         QTest::addRow("%s compressed text", qPrintable(root))   << QString(root + "aliasdir/aliasdir.txt")
-                                                  << file.readAll()
+                                                  << compressmeContents
+                                                  << QStringList()
+                                                  << QStringList()
+                                                  << QLocale("de_CH")
+                                                  << qlonglong(info.size());
+
+        QTest::addRow("%s non-compressed text", qPrintable(root))   << QString(root + "uncompresseddir/uncompressed.txt")
+                                                  << compressmeContents
                                                   << QStringList()
                                                   << QStringList()
                                                   << QLocale("de_CH")
@@ -463,6 +472,18 @@ void tst_QResourceEngine::checkStructure()
         // check that it is still valid after closing the file
         file.close();
         QCOMPARE(ba, contents);
+
+        // memory should be writable because we used MapPrivateOption
+        *ptr = '\0';
+
+        // but shouldn't affect the actual file or a new mapping
+        QFile file2(pathName);
+        QVERIFY(file2.open(QFile::ReadOnly));
+        QCOMPARE(file2.readAll(), contents);
+        ptr = file2.map(0, file.size(), QFile::MapPrivateOption);
+        QVERIFY2(ptr, qPrintable(file2.errorString()));
+        QByteArrayView bav(reinterpret_cast<const char *>(ptr), file.size());
+        QCOMPARE(bav, contents);
     }
     QLocale::setDefault(QLocale::system());
 }
