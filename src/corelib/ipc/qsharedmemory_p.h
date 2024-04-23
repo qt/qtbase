@@ -41,12 +41,21 @@ class QSharedMemoryPrivate;
   */
 class QSharedMemoryLocker
 {
-
+    Q_DISABLE_COPY(QSharedMemoryLocker)
 public:
     Q_NODISCARD_CTOR QSharedMemoryLocker(QSharedMemory *sharedMemory) : q_sm(sharedMemory)
     {
         Q_ASSERT(q_sm);
     }
+
+    Q_NODISCARD_CTOR QSharedMemoryLocker(QSharedMemoryLocker &&other) noexcept
+        : q_sm{std::exchange(other.q_sm, nullptr)}
+    {}
+
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_MOVE_AND_SWAP(QSharedMemoryLocker)
+
+    void swap(QSharedMemoryLocker &other) noexcept
+    { qt_ptr_swap(q_sm, other.q_sm); }
 
     inline ~QSharedMemoryLocker()
     {
@@ -63,6 +72,9 @@ public:
     }
 
 private:
+    friend void swap(QSharedMemoryLocker &lhs, QSharedMemoryLocker &rhs) noexcept
+    { lhs.swap(rhs); }
+
     QSharedMemory *q_sm;
 };
 #endif // QT_CONFIG(systemsemaphore)
