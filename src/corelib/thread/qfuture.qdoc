@@ -613,17 +613,17 @@
     Returns a pointer to the current result.
 */
 
-/*! \fn template <typename T> bool QFuture<T>::const_iterator::operator!=(const const_iterator &other) const
+/*! \fn template <typename T> bool QFuture<T>::const_iterator::operator!=(const const_iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if \a other points to a different result than this iterator;
+    Returns \c true if \a lhs points to a different result than \a rhs iterator;
     otherwise returns \c false.
 
     \sa operator==()
 */
 
-/*! \fn template <typename T> bool QFuture<T>::const_iterator::operator==(const const_iterator &other) const
+/*! \fn template <typename T> bool QFuture<T>::const_iterator::operator==(const const_iterator &lhs, const const_iterator &rhs)
 
-    Returns \c true if \a other points to the same result as this iterator;
+    Returns \c true if \a lhs points to the same result as \a rhs iterator;
     otherwise returns \c false.
 
     \sa operator!=()

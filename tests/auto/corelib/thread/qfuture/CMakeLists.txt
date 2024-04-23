@@ -16,6 +16,7 @@ qt_internal_add_test(tst_qfuture
         tst_qfuture.cpp
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
 )
 
 qt_internal_extend_target(tst_qfuture CONDITION MSVC
