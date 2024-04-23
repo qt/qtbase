@@ -2418,6 +2418,13 @@ void tst_QWidget::tabOrderWithProxy()
     QVERIFY(firstEdit->hasFocus());
 }
 
+static QString focusWidgetName()
+{
+    return QApplication::focusWidget() != nullptr
+            ? QApplication::focusWidget()->objectName()
+            : QStringLiteral("No focus widget");
+}
+
 void tst_QWidget::tabOrderWithProxyDisabled()
 {
     Container container;
@@ -2449,23 +2456,23 @@ void tst_QWidget::tabOrderWithProxyDisabled()
         QSKIP("Window failed to activate, skipping test");
 
     QVERIFY2(lineEdit1.hasFocus(),
-             qPrintable(QApplication::focusWidget()->objectName()));
+             qPrintable(focusWidgetName()));
     container.tab();
     QVERIFY2(!lineEdit2.hasFocus(),
-             qPrintable(QApplication::focusWidget()->objectName()));
+             qPrintable(focusWidgetName()));
     QVERIFY2(lineEdit3.hasFocus(),
-             qPrintable(QApplication::focusWidget()->objectName()));
+             qPrintable(focusWidgetName()));
     container.tab();
     QVERIFY2(lineEdit1.hasFocus(),
-             qPrintable(QApplication::focusWidget()->objectName()));
+             qPrintable(focusWidgetName()));
     container.backTab();
     QVERIFY2(lineEdit3.hasFocus(),
-             qPrintable(QApplication::focusWidget()->objectName()));
+             qPrintable(focusWidgetName()));
     container.backTab();
     QVERIFY2(!lineEdit2.hasFocus(),
-             qPrintable(QApplication::focusWidget()->objectName()));
+             qPrintable(focusWidgetName()));
     QVERIFY2(lineEdit1.hasFocus(),
-             qPrintable(QApplication::focusWidget()->objectName()));
+             qPrintable(focusWidgetName()));
 }
 
 //#define DEBUG_FOCUS_CHAIN
@@ -2777,23 +2784,23 @@ void tst_QWidget::tabOrderWithCompoundWidgetsNoFocusPolicy()
         QSKIP("Window failed to activate, skipping test");
 
     QVERIFY2(spinbox1.hasFocus(),
-             qPrintable(QApplication::focusWidget()->objectName()));
+             qPrintable(focusWidgetName()));
     container.tab();
     QVERIFY2(!spinbox2.hasFocus(),
-             qPrintable(QApplication::focusWidget()->objectName()));
+             qPrintable(focusWidgetName()));
     QVERIFY2(spinbox3.hasFocus(),
-             qPrintable(QApplication::focusWidget()->objectName()));
+             qPrintable(focusWidgetName()));
     container.tab();
     QVERIFY2(spinbox1.hasFocus(),
-             qPrintable(QApplication::focusWidget()->objectName()));
+             qPrintable(focusWidgetName()));
     container.backTab();
     QVERIFY2(spinbox3.hasFocus(),
-             qPrintable(QApplication::focusWidget()->objectName()));
+             qPrintable(focusWidgetName()));
     container.backTab();
     QVERIFY2(!spinbox2.hasFocus(),
-             qPrintable(QApplication::focusWidget()->objectName()));
+             qPrintable(focusWidgetName()));
     QVERIFY2(spinbox1.hasFocus(),
-             qPrintable(QApplication::focusWidget()->objectName()));
+             qPrintable(focusWidgetName()));
 }
 
 void tst_QWidget::tabOrderNoChange()
