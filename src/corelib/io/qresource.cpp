@@ -37,6 +37,9 @@
 #  define QT_USE_MMAP
 #  include <sys/mman.h>
 #endif
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+#endif
 
 //#define DEBUG_RESOURCE_MATCH
 
@@ -1147,6 +1150,9 @@ void QDynamicFileResourceRoot::unmap_sys(void *base, qsizetype size)
 {
 #if defined(QT_USE_MMAP)
     munmap(base, size);
+#elif defined(Q_OS_WIN)
+    Q_UNUSED(size)
+    UnmapViewOfFile(reinterpret_cast<void *>(base));
 #endif
 }
 
@@ -1166,6 +1172,16 @@ uchar *QDynamicFileResourceRoot::map_sys(QFile &file, qint64 offset, qsizetype s
     ptr = QT_MMAP(nullptr, size, protection, flags, fd, offset);
     if (ptr == MAP_FAILED)
         ptr = nullptr;
+#elif defined(Q_OS_WIN)
+    int fd = file.handle();
+    HANDLE fileHandle = reinterpret_cast<HANDLE>(_get_osfhandle(fd));
+    if (fileHandle != INVALID_HANDLE_VALUE) {
+        HANDLE mapHandle = CreateFileMapping(fileHandle, 0, PAGE_WRITECOPY, 0, 0, 0);
+        if (mapHandle) {
+            ptr = MapViewOfFile(mapHandle, FILE_MAP_COPY, DWORD(offset >> 32), DWORD(offset), size);
+            CloseHandle(mapHandle);
+        }
+    }
 #endif // QT_USE_MMAP
     return static_cast<uchar *>(ptr);
 }
