@@ -110,7 +110,7 @@ class QLocaleXmlReader (object):
     def msLandIanas(self):
         kid = self.__firstChildText
         for elt in self.__eachEltInGroup(self.root, 'windowsZone', 'msLandZones'):
-            yield (kid(elt, 'msid'), kid(elt, 'territorycode'), kid(elt, 'ianaids'))
+            yield kid(elt, 'msid'), kid(elt, 'territorycode'), kid(elt, 'ianaids')
 
     def languageIndices(self, locales):
         index = 0
@@ -251,17 +251,16 @@ class Spacer (object):
         First argument, indent, is either None (its default, for
         'minifying'), an ingeter (number of spaces) or the unit of
         text that is to be used for each indentation level (e.g. '\t'
-        to use tabs).  If indent is None, no indentation is added, nor
+        to use tabs). If indent is None, no indentation is added, nor
         are line-breaks; otherwise, self(text), for non-empty text,
         shall end with a newline and begin with indentation.
 
         Second argument, initial, is the initial indentation; it is
-        ignored if indent is None.  Indentation increases after each
+        ignored if indent is None. Indentation increases after each
         call to self(text) in which text starts with a tag and doesn't
         include its end-tag; indentation decreases if text starts with
-        an end-tag.  The text is not parsed any more carefully than
-        just described.
-        """
+        an end-tag. The text is not parsed any more carefully than
+        just described."""
         if indent is None:
             self.__call = lambda x: x
         else:
@@ -287,6 +286,10 @@ class Spacer (object):
         return self.__call(line)
 
 class QLocaleXmlWriter (object):
+    """Save the full set of locale data to a QLocaleXML file.
+
+    The output saved by this should conform to qlocalexml.rnc's
+    schema."""
     def __init__(self, save = None, space = Spacer(4)):
         """Set up to write digested CLDR data as QLocale XML.
 
@@ -442,7 +445,10 @@ class QLocaleXmlWriter (object):
         self.__scripts.discard(locale.script_code)
         self.__territories.discard(locale.territory_code)
 
-    def __openTag(self, tag):
+    def __openTag(self, tag, **attrs):
+        if attrs:
+            text = ', '.join(f'{k}="{v}"' for k, v in attrs.items())
+            tag = f'{tag} {text}'
         self.__write(f'<{tag}>')
     def __closeTag(self, tag):
         self.__write(f'</{tag}>')
@@ -489,7 +495,8 @@ class Locale (object):
                "longTimeFormat", "shortTimeFormat",
                'byte_unit', 'byte_si_quantified', 'byte_iec_quantified',
                "currencyIsoCode", "currencySymbol", "currencyDisplayName",
-               "currencyFormat", "currencyNegativeFormat")
+               "currencyFormat", "currencyNegativeFormat",
+               )
 
     # Day-of-Week numbering used by Qt:
     __qDoW = {"mon": 1, "tue": 2, "wed": 3, "thu": 4, "fri": 5, "sat": 6, "sun": 7}
@@ -498,12 +505,15 @@ class Locale (object):
     def fromXmlData(cls, lookup, calendars=('gregorian',)):
         """Constructor from the contents of XML elements.
 
-        Single parameter, lookup, is called with the names of XML
-        elements that should contain the relevant data, within a CLDR
-        locale element (within a localeList element); these names are
-        used for the attributes of the object constructed.  Attribute
-        values are obtained by suitably digesting the returned element
-        texts.\n"""
+        First parameter, lookup, is called with the names of XML elements that
+        should contain the relevant data, within a QLocaleXML locale element
+        (within a localeList element); these names mostly match the attributes
+        of the object constructed. Its return must be the full text of the
+        first child DOM node element with the given name. Attribute values are
+        obtained by suitably digesting the returned element texts.
+
+        Optional second parameter, calendars, is a sequence of calendars for
+        which data is to be retrieved."""
         data = {}
         for k in cls.__asint:
             data[k] = int(lookup(k))
@@ -554,7 +564,7 @@ class Locale (object):
                     'longDateFormat', 'shortDateFormat',
                     'longTimeFormat', 'shortTimeFormat',
                     'currencyIsoCode', 'currencySymbol', 'currencyDisplayName',
-                    'currencyFormat', 'currencyNegativeFormat'
+                    'currencyFormat', 'currencyNegativeFormat',
                     ) + tuple(self.propsMonthDay('days')) + tuple(
                 '_'.join((k, cal))
                 for k in self.propsMonthDay('months')
