@@ -994,6 +994,13 @@ void QWindows11Style::drawPrimitive(PrimitiveElement element, const QStyleOption
     }
     case QStyle::PE_PanelItemViewRow:
         if (const QStyleOptionViewItem *vopt = qstyleoption_cast<const QStyleOptionViewItem *>(option)) {
+            painter->setPen(Qt::NoPen);
+            if (vopt->features & QStyleOptionViewItem::Alternate)
+                painter->setBrush(vopt->palette.alternateBase());
+            else
+                painter->setBrush(vopt->palette.base());
+            int markerOffset = 2;
+            painter->drawRect(vopt->rect.marginsRemoved(QMargins(markerOffset, 0, -markerOffset, 0)));
             if ((vopt->state & State_Selected || vopt->state & State_MouseOver) && vopt->showDecorationSelected) {
                 painter->setBrush(WINUI3Colors[colorSchemeIndex][subtleHighlightColor]);
                 painter->setPen(Qt::NoPen);
@@ -2146,6 +2153,7 @@ static void populateLightSystemBasePalette(QPalette &result)
 
     const QColor textColor = QColor(0x00,0x00,0x00,0xE4);
     const QColor btnFace = QColor(0xFF,0xFF,0xFF,0xB3);
+    const QColor alternateBase = QColor(0x00,0x00,0x00,0x09);
     const QColor btnHighlight = result.accent().color();
     const QColor btnColor = result.button().color();
 
@@ -2164,6 +2172,7 @@ static void populateLightSystemBasePalette(QPalette &result)
     SET_IF_UNRESOLVED(QPalette::All, QPalette::Shadow, Qt::black);
     SET_IF_UNRESOLVED(QPalette::All, QPalette::ToolTipBase, result.window().color());
     SET_IF_UNRESOLVED(QPalette::All, QPalette::ToolTipText, result.windowText().color());
+    SET_IF_UNRESOLVED(QPalette::All, QPalette::AlternateBase, alternateBase);
 
     if (result.midlight() == result.button())
         result.setColor(QPalette::Midlight, btnColor.lighter(110));
