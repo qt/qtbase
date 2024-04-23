@@ -2861,6 +2861,7 @@ void tst_QAccessibility::listTest()
     auto listView = lvHolder.get();
     listView->setModel(model);
     listView->setModelColumn(1);
+    listView->setSelectionMode(QAbstractItemView::ExtendedSelection);
     listView->resize(400,400);
     listView->show();
     QTest::qWait(1); // Need this for indexOfchild to work.
@@ -2915,6 +2916,17 @@ void tst_QAccessibility::listTest()
     QVERIFY(QTestAccessibility::containsEvent(&selectionEvent2));
     QVERIFY(QTestAccessibility::containsEvent(&focusEvent2));
 
+    QAccessibleTableInterface *table = iface->tableInterface();
+    QAccessibleInterface *cell3 = table->cellAt(2, 0);
+    QVERIFY(cell3->tableCellInterface()->isSelected());
+    QCOMPARE(table->selectedCellCount(), 1);
+    QCOMPARE(table->selectedCells(), {cell3});
+
+    QAccessibleSelectionInterface *selection = iface->selectionInterface();
+    QCOMPARE(selection->selectedItemCount(), 1);
+    QCOMPARE(selection->selectedItems(), {cell3});
+    QVERIFY(selection->isSelected(cell3));
+
     model->appendRow({new QStandardItem("Germany"), new QStandardItem("Munich"), new QStandardItem("EUR")});
     QCOMPARE(iface->childCount(), 4);
 
@@ -2953,6 +2965,15 @@ void tst_QAccessibility::listTest()
     QCOMPARE(model->itemFromIndex(listView->selectionModel()->selectedIndexes().at(0))->text(), QLatin1String("Munich"));
     QVERIFY(cell4->state().selected);
     QVERIFY(cellInterface->isSelected());
+
+    selection2->clear();
+    QVERIFY(!listView->selectionModel()->hasSelection());
+    QVERIFY(!cell4->state().selected);
+    QVERIFY(!cellInterface->isSelected());
+
+    selection2->selectAll();
+    QCOMPARE(listView->selectionModel()->selectedIndexes().size(), 12);
+    QCOMPARE(table2->selectedCellCount(), 4);
 
     QVERIFY(table2->cellAt(-1, 0) == 0);
     QVERIFY(table2->cellAt(0, -1) == 0);
