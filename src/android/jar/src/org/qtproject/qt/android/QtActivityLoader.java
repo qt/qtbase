@@ -8,6 +8,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -31,7 +32,7 @@ class QtActivityLoader extends QtLoader {
         super(new ContextWrapper(activity));
         m_activity = activity;
 
-        extractContextMetaData();
+        extractContextMetaData(m_activity);
     }
 
     private void showErrorDialog() {
@@ -97,9 +98,9 @@ class QtActivityLoader extends QtLoader {
     }
 
     @Override
-    protected void extractContextMetaData()
+    protected void extractContextMetaData(Context context)
     {
-        super.extractContextMetaData();
+        super.extractContextMetaData(context);
 
         setEnvironmentVariable("QT_USE_ANDROID_NATIVE_DIALOGS", String.valueOf(1));
         setEnvironmentVariable("QT_ANDROID_APP_ICON_SIZE", String.valueOf(getAppIconSize()));
