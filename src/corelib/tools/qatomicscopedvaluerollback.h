@@ -104,15 +104,12 @@ public:
                                std::memory_order mo = std::memory_order_seq_cst)
         : QAtomicScopedValueRollback(var._q_value, value, mo) {}
 
-#if __cpp_constexpr >= 201907L
-    constexpr
-#endif
     ~QAtomicScopedValueRollback()
     {
         m_atomic.store(m_value, store_part(m_mo));
     }
 
-    constexpr void commit()
+    void commit()
     {
         m_value = m_atomic.load(load_part(m_mo));
     }
