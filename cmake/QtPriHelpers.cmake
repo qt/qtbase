@@ -807,8 +807,6 @@ QT_PATCH_VERSION = ${PROJECT_VERSION_PATCH}
         list(APPEND extra_statements "QT_ARCHS = ${architectures}")
     endif()
 
-    list(APPEND extra_statements "QT_EDITION = Open Source")
-
     if(WASM)
         list(APPEND extra_statements
             "QT_EMCC_VERSION = ${EMCC_VERSION}")
