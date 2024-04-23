@@ -1085,6 +1085,20 @@ bool QRegularExpression::operator==(const QRegularExpression &other) const
 }
 #endif // QT_CONFIG(regularexpression)
 
+#if QT_CONFIG(future)
+#include "qresultstore.h"
+
+bool QtPrivate::ResultIteratorBase::operator==(const QtPrivate::ResultIteratorBase &other) const
+{
+    return comparesEqual(*this, other);
+}
+
+bool QtPrivate::ResultIteratorBase::operator!=(const QtPrivate::ResultIteratorBase &other) const
+{
+    return !comparesEqual(*this, other);
+}
+#endif // QT_CONFIG(future)
+
 #include "qstring.h" // inlined API
 
 #if QT_CONFIG(thread)

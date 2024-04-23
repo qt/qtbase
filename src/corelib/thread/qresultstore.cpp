@@ -88,16 +88,6 @@ void ResultIteratorBase::batchedAdvance()
     m_vectorIndex = 0;
 }
 
-bool ResultIteratorBase::operator==(const ResultIteratorBase &other) const
-{
-    return (mapIterator == other.mapIterator && m_vectorIndex == other.m_vectorIndex);
-}
-
-bool ResultIteratorBase::operator!=(const ResultIteratorBase &other) const
-{
-    return !operator==(other);
-}
-
 bool ResultIteratorBase::isVector() const
 {
     return mapIterator.value().isVector();

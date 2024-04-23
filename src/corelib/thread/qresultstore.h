@@ -46,12 +46,21 @@ public:
     ResultIteratorBase operator++();
     int batchSize() const;
     void batchedAdvance();
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const ResultIteratorBase &other) const;
     bool operator!=(const ResultIteratorBase &other) const;
+#endif
     bool isVector() const;
     bool canIncrementVectorIndex() const;
     bool isValid() const;
 
+private:
+    friend bool comparesEqual(const ResultIteratorBase &lhs,
+                              const ResultIteratorBase &rhs) noexcept
+    {
+        return (lhs.mapIterator == rhs.mapIterator && lhs.m_vectorIndex == rhs.m_vectorIndex);
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(ResultIteratorBase)
 protected:
     QMap<int, ResultItem>::const_iterator mapIterator;
     int m_vectorIndex;

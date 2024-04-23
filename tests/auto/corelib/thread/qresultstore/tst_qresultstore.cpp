@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
-
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <qresultstore.h>
 
 using namespace QtPrivate;
@@ -23,6 +23,7 @@ class tst_QtConcurrentResultStore : public QObject
 public slots:
     void init();
 private slots:
+    void compareCompiles();
     void construction();
     void iterators();
     void addResult();
@@ -52,6 +53,11 @@ void tst_QtConcurrentResultStore::init()
     vec1 = QList<int> { 4, 5 };
 }
 
+void tst_QtConcurrentResultStore::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<ResultIteratorBase>();
+}
+
 void tst_QtConcurrentResultStore::construction()
 {
     ResultStoreBase store;
@@ -74,17 +80,20 @@ void tst_QtConcurrentResultStore::iterators()
         storebase.addResult(1, &int1);  // ResultStoreBase does not take ownership, only ResultStore<> does.
         ResultIteratorBase it = storebase.begin();
         QCOMPARE(it.resultIndex(), 0);
-        QCOMPARE(it, storebase.begin());
+        QT_TEST_EQUALITY_OPS(it, storebase.begin(), true);
         QVERIFY(it != storebase.end());
 
         ++it;
         QCOMPARE(it.resultIndex(), 1);
         QVERIFY(it != storebase.begin());
         QVERIFY(it != storebase.end());
+        QT_TEST_EQUALITY_OPS(it, storebase.begin(), false);
+        QT_TEST_EQUALITY_OPS(it, storebase.end(), false);
 
         ++it;
         QVERIFY(it != storebase.begin());
         QCOMPARE(it, storebase.end());
+        QT_TEST_EQUALITY_OPS(it, storebase.end(), true);
     }
 }
 
@@ -147,8 +156,8 @@ void tst_QtConcurrentResultStore::addResults()
     store.addResults(-1, &vec1);
     ResultIteratorBase it = store.begin();
     QCOMPARE(it.resultIndex(), 0);
-    QCOMPARE(it, store.begin());
-    QVERIFY(it != store.end());
+    QT_TEST_EQUALITY_OPS(it, store.begin(), true);
+    QT_TEST_EQUALITY_OPS(it, store.end(), false);
 
     ++it;
     QCOMPARE(it.resultIndex(), 1);
@@ -162,7 +171,7 @@ void tst_QtConcurrentResultStore::addResults()
     QCOMPARE(it.resultIndex(), 3);
 
     ++it;
-    QCOMPARE(it, store.end());
+    QT_TEST_EQUALITY_OPS(it, store.end(), true);
 
     QList<int> empty;
     const auto countBefore = store.count();
@@ -184,22 +193,22 @@ void tst_QtConcurrentResultStore::resultIndex()
 
     ResultIteratorBase it = store.begin();
     QCOMPARE(it.resultIndex(), 0);
-    QVERIFY(it == store.begin());
-    QVERIFY(it != store.end());
+    QT_TEST_EQUALITY_OPS(it, store.begin(), true);
+    QT_TEST_EQUALITY_OPS(it, store.end(), false);
 
     ++it;
     QCOMPARE(it.resultIndex(), 1);
-    QVERIFY(it != store.begin());
-    QVERIFY(it != store.end());
+    QT_TEST_EQUALITY_OPS(it, store.begin(), false);
+    QT_TEST_EQUALITY_OPS(it, store.end(), false);
 
     ++it;
     QCOMPARE(it.resultIndex(), 2);
-    QVERIFY(it != store.end());
+    QT_TEST_EQUALITY_OPS(it, store.end(), false);
     ++it;
     QCOMPARE(it.resultIndex(), 3);
-    QVERIFY(it != store.end());
+    QT_TEST_EQUALITY_OPS(it, store.end(), false);
     ++it;
-    QVERIFY(it == store.end());
+    QT_TEST_EQUALITY_OPS(it, store.end(), true);
 
     QCOMPARE(store.resultAt(0).value<int>(), int0);
     QCOMPARE(store.resultAt(1).value<int>(), vec0[0]);
