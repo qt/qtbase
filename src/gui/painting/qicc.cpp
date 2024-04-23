@@ -778,6 +778,10 @@ static bool parseLutData(const QByteArray &data, const TagEntry &tagEntry, QColo
         qCWarning(lcIcc) << "Undersized lut8/lut16 tag, no room for tables";
         return false;
     }
+    if (colorSpacePrivate->colorModel == QColorSpace::ColorModel::Cmyk && clutTableSize == 0) {
+        qCWarning(lcIcc) << "Cmyk conversion must have a CLUT";
+        return false;
+    }
 
     const uint8_t *tableData = reinterpret_cast<const uint8_t *>(data.constData() + tagEntry.offset + sizeof(T));
 
@@ -997,6 +1001,9 @@ static bool parseMabData(const QByteArray &data, const TagEntry &tagEntry, QColo
             const uint8_t *clutTable = reinterpret_cast<const uint8_t *>(data.constData() + tagEntry.offset + mab.clutOffset + 20);
             parseCLUT(clutTable, (1.f/255.f), &clutElement, mab.outputChannels);
         }
+    } else if (colorSpacePrivate->colorModel == QColorSpace::ColorModel::Cmyk) {
+        qCWarning(lcIcc) << "Cmyk conversion must have a CLUT";
+        return false;
     }
 
     if (isAb) {
