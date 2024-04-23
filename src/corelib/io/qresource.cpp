@@ -1566,6 +1566,9 @@ uchar *QResourceFileEnginePrivate::map(qint64 offset, qint64 size, QFile::Memory
 {
     Q_Q(QResourceFileEngine);
     Q_UNUSED(flags);
+    Q_ASSERT_X(resource.compressionAlgorithm() == QResource::NoCompression
+               || !uncompressed.isNull(), "QFile::map()",
+               "open() should have uncompressed compressed resources");
 
     qint64 max = resource.uncompressedSize();
     qint64 end;
@@ -1575,14 +1578,12 @@ uchar *QResourceFileEnginePrivate::map(qint64 offset, qint64 size, QFile::Memory
         return nullptr;
     }
 
-    const uchar *address = resource.data();
-    if (resource.compressionAlgorithm() != QResource::NoCompression) {
-        uncompress();
-        if (uncompressed.isNull())
-            return nullptr;
-        address = reinterpret_cast<const uchar *>(uncompressed.constData());
-    }
+    const uchar *address = reinterpret_cast<const uchar *>(uncompressed.constBegin());
+    if (!uncompressed.isNull())
+        return const_cast<uchar *>(address) + offset;
 
+    // resource was not compressed
+    address = resource.data();
     return const_cast<uchar *>(address) + offset;
 }
 
