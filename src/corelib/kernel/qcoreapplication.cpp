@@ -1825,6 +1825,8 @@ void QCoreApplicationPrivate::sendPostedEvents(QObject *receiver, int event_type
 
     // Exception-safe cleaning up without the need for a try/catch block
     struct CleanUp {
+        Q_DISABLE_COPY_MOVE(CleanUp)
+
         QObject *receiver;
         int event_type;
         QThreadData *data;
