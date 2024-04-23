@@ -17,7 +17,7 @@ qt_internal_add_test(tst_qcomparehelpers
 
 # CMake recognizes CXX_STANDARD=23 only starting from version 3.20
 # macOS has some issues with concepts, see QTBUG-117765
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.20" AND NOT MACOS AND NOT VXWORKS AND NOT (LINUX AND ${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64"))
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.20" AND NOT MACOS AND NOT VXWORKS AND NOT (LINUX AND "${CMAKE_SYSTEM_PROCESSOR}" MATCHES "aarch64"))
     qt_internal_add_test(tst_qcomparehelpers_cpp23
         SOURCES
             tst_qcomparehelpers.h tst_qcomparehelpers.cpp
