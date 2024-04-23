@@ -15,7 +15,7 @@ class QtServiceLoader extends QtLoader {
         super(new ContextWrapper(service));
         m_service = service;
 
-        extractContextMetaData();
+        extractContextMetaData(m_service);
     }
 
     @Override

@@ -38,7 +38,6 @@ abstract class QtLoader {
     private String m_nativeLibrariesDir = null;
     private ClassLoader m_classLoader;
 
-    protected final ContextWrapper m_context;
     protected ComponentInfo m_contextInfo;
 
     protected String m_mainLibPath;
@@ -55,13 +54,13 @@ abstract class QtLoader {
      * Also, we can already initialize the static classes contexts here.
      **/
     public QtLoader(ContextWrapper context) {
-        m_context = context;
-        m_resources = m_context.getResources();
-        m_packageName = m_context.getPackageName();
+        m_resources = context.getResources();
+        m_packageName = context.getPackageName();
+        final Context baseContext = context.getBaseContext();
 
-        initClassLoader();
-        initStaticClasses();
-        initContextInfo();
+        initClassLoader(baseContext);
+        initStaticClasses(baseContext);
+        initContextInfo(baseContext);
     }
 
     /**
@@ -75,9 +74,8 @@ abstract class QtLoader {
      * the app metadata from the AndroidManifest.xml or other xml resources.
      * Some values are dependent on the context being an Activity or Service.
      **/
-    protected void initContextInfo() {
+    protected void initContextInfo(Context context) {
         try {
-            Context context = m_context.getBaseContext();
             if (context instanceof Activity) {
                 m_contextInfo = context.getPackageManager().getActivityInfo(
                         ((Activity)context).getComponentName(), PackageManager.GET_META_DATA);
@@ -100,13 +98,13 @@ abstract class QtLoader {
      * call context specific metadata extraction. This also sets the various environment
      * variables and application parameters.
      **/
-    protected void extractContextMetaData() {
+    protected void extractContextMetaData(Context context) {
         setEnvironmentVariable("QT_ANDROID_FONTS", "Roboto;Droid Sans;Droid Sans Fallback");
         String monospaceFonts = "Droid Sans Mono;Droid Sans;Droid Sans Fallback";
         setEnvironmentVariable("QT_ANDROID_FONTS_MONOSPACE", monospaceFonts);
         setEnvironmentVariable("QT_ANDROID_FONTS_SERIF", "Droid Serif");
-        setEnvironmentVariable("HOME", m_context.getFilesDir().getAbsolutePath());
-        setEnvironmentVariable("TMPDIR", m_context.getCacheDir().getAbsolutePath());
+        setEnvironmentVariable("HOME", context.getFilesDir().getAbsolutePath());
+        setEnvironmentVariable("TMPDIR", context.getCacheDir().getAbsolutePath());
         setEnvironmentVariable("QT_BLOCK_EVENT_LOOPS_WHEN_SUSPENDED", isBackgroundRunningBlocked());
         setEnvironmentVariable("QTRACE_LOCATION", getMetaData("android.app.trace_location"));
         appendApplicationParameters(getMetaData("android.app.arguments"));
@@ -146,8 +144,7 @@ abstract class QtLoader {
         return new ArrayList<>();
     }
 
-    private void initStaticClasses() {
-        Context context = m_context.getBaseContext();
+    private void initStaticClasses(Context context) {
         boolean isActivity = context instanceof Activity;
         for (String className : getStaticInitClasses()) {
             try {
@@ -190,12 +187,12 @@ abstract class QtLoader {
      * Initialize the class loader instance and sets it via QtNative.
      * This would also be used by QJniObject API.
      **/
-    private void initClassLoader()
+    private void initClassLoader(Context context)
     {
         // directory where optimized DEX files should be written.
-        String outDexPath = m_context.getDir("outdex", Context.MODE_PRIVATE).getAbsolutePath();
-        String sourceDir = m_context.getApplicationInfo().sourceDir;
-        m_classLoader = new DexClassLoader(sourceDir, outDexPath, null, m_context.getClassLoader());
+        String outDexPath = context.getDir("outdex", Context.MODE_PRIVATE).getAbsolutePath();
+        String sourceDir = context.getApplicationInfo().sourceDir;
+        m_classLoader = new DexClassLoader(sourceDir, outDexPath, null, context.getClassLoader());
         QtNative.setClassLoader(m_classLoader);
     }
 
@@ -284,8 +281,10 @@ abstract class QtLoader {
      * If none of the above are valid, it falls back to predefined system path.
      **/
     private void parseNativeLibrariesDir() {
+        if (m_contextInfo == null)
+            return;
         if (isBundleQtLibs()) {
-            String nativeLibraryPrefix = m_context.getApplicationInfo().nativeLibraryDir + "/";
+            String nativeLibraryPrefix = m_contextInfo.applicationInfo.nativeLibraryDir + "/";
             File nativeLibraryDir = new File(nativeLibraryPrefix);
             if (nativeLibraryDir.exists()) {
                 String[] list = nativeLibraryDir.list();
