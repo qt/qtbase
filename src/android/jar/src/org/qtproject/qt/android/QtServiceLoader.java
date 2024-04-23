@@ -6,23 +6,12 @@ package org.qtproject.qt.android;
 
 import android.app.Service;
 import android.content.ContextWrapper;
-import android.util.Log;
+
+import java.lang.IllegalArgumentException;
 
 class QtServiceLoader extends QtLoader {
-    private final Service m_service;
-
-    QtServiceLoader(Service service) {
+    QtServiceLoader(Service service) throws IllegalArgumentException {
         super(new ContextWrapper(service));
-        m_service = service;
-
-        extractContextMetaData(m_service);
-    }
-
-    @Override
-    protected void finish() {
-        if (m_service != null)
-            m_service.stopSelf();
-        else
-            Log.w(QtTAG, "finish() called when service object is null");
+        extractContextMetaData(service);
     }
 }

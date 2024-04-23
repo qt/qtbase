@@ -10,6 +10,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -83,7 +84,6 @@ abstract class QtView extends ViewGroup {
             throw new InvalidParameterException("QtView: argument 'appLibName' may not be empty "+
                                                 "or null");
         }
-
         loadQtLibraries(appLibName);
     }
 
@@ -143,12 +143,25 @@ abstract class QtView extends ViewGroup {
     }
 
     void loadQtLibraries(String appLibName) {
-        QtEmbeddedLoader loader = new QtEmbeddedLoader(getContext());
+        QtEmbeddedLoader loader = null;
+        try {
+            loader = new QtEmbeddedLoader(getContext());
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, e.getMessage());
+            QtEmbeddedViewInterfaceFactory.remove(getContext());
+            return;
+        }
+
         loader.setMainLibraryName(appLibName);
-        loader.loadQtLibraries();
-        // Start Native Qt application
-        m_viewInterface.startQtApplication(loader.getApplicationParameters(),
-                                           loader.getMainLibraryPath());
+        if (loader.loadQtLibraries()) {
+            // Start Native Qt application
+            m_viewInterface.startQtApplication(loader.getApplicationParameters(),
+                                               loader.getMainLibraryPath());
+        } else {
+            // If we weren't able to load the libraries, remove the delegate from the factory
+            // as it's holding a reference to the Context, and we don't want it leaked
+            QtEmbeddedViewInterfaceFactory.remove(getContext());
+        }
     }
 
     void setWindowReference(long windowReference) {

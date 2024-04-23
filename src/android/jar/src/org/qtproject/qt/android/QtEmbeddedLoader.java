@@ -19,6 +19,7 @@ import android.view.SurfaceView;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.lang.IllegalArgumentException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -34,7 +35,7 @@ import android.content.res.Resources;
 class QtEmbeddedLoader extends QtLoader {
     private static final String TAG = "QtEmbeddedLoader";
 
-    QtEmbeddedLoader(Context context) {
+    QtEmbeddedLoader(Context context) throws IllegalArgumentException {
         super(new ContextWrapper(context));
         // TODO Service context handling QTBUG-118874
         int displayDensity = context.getResources().getDisplayMetrics().densityDpi;
@@ -42,9 +43,5 @@ class QtEmbeddedLoader extends QtLoader {
         String stylePath = ExtractStyle.setup(context, "minimal", displayDensity);
         setEnvironmentVariable("ANDROID_STYLE_PATH", stylePath);
         setEnvironmentVariable("QT_ANDROID_NO_EXIT_CALL", String.valueOf(true));
-    }
-
-    @Override
-    protected void finish() {
     }
 }
