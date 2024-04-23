@@ -1109,6 +1109,11 @@ public:
 
 class QDynamicFileResourceRoot : public QDynamicBufferResourceRoot
 {
+public:
+    static uchar *map_sys(QFile &file, qint64 base, qsizetype size);
+    static void unmap_sys(void *base, qsizetype size);
+
+private:
     QString fileName;
     // for mmap'ed files, this is what needs to be unmapped.
     uchar *unmapPointer;
@@ -1119,16 +1124,10 @@ public:
         : QDynamicBufferResourceRoot(_root), unmapPointer(nullptr), unmapLength(0)
     { }
     ~QDynamicFileResourceRoot() {
-#if defined(QT_USE_MMAP)
-        if (unmapPointer) {
-            munmap(reinterpret_cast<char *>(unmapPointer), unmapLength);
-            unmapPointer = nullptr;
-            unmapLength = 0;
-        } else
-#endif
-        {
+        if (unmapPointer)
+            unmap_sys(unmapPointer, unmapLength);
+        else
             delete[] mappingBuffer();
-        }
     }
     QString mappingFile() const { return fileName; }
     ResourceRootType type() const override { return Resource_File; }
@@ -1144,49 +1143,56 @@ public:
 #  define MAP_FAILED reinterpret_cast<void *>(-1)
 #endif
 
+void QDynamicFileResourceRoot::unmap_sys(void *base, qsizetype size)
+{
+#if defined(QT_USE_MMAP)
+    munmap(base, size);
+#endif
+}
+
+// Note: caller must ensure \a offset and \a size are acceptable to the OS.
+uchar *QDynamicFileResourceRoot::map_sys(QFile &file, qint64 offset, qsizetype size)
+{
+    Q_ASSERT(file.isOpen());
+    void *ptr = nullptr;
+    if (size < 0)
+        size = qMin(file.size() - offset, (std::numeric_limits<qsizetype>::max)());
+
+    // We don't use QFile::map() here because we want to dispose of the QFile object
+#if defined(QT_USE_MMAP)
+    int fd = file.handle();
+    int protection = PROT_READ;                 // read-only memory
+    int flags = MAP_FILE | MAP_PRIVATE;         // swap-backed map from file
+    ptr = QT_MMAP(nullptr, size, protection, flags, fd, offset);
+    if (ptr == MAP_FAILED)
+        ptr = nullptr;
+#endif // QT_USE_MMAP
+    return static_cast<uchar *>(ptr);
+}
+
 bool QDynamicFileResourceRoot::registerSelf(const QString &f)
 {
-    bool fromMM = false;
-    uchar *data = nullptr;
-    qsizetype data_len = 0;
+    QFile file(f);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
 
-#if defined(QT_USE_MMAP)
-    int fd = QT_OPEN(QFile::encodeName(f), O_RDONLY);
-    if (fd >= 0) {
-        QT_STATBUF st;
-        if (!QT_FSTAT(fd, &st) && st.st_size <= std::numeric_limits<qsizetype>::max()) {
-            int protection = PROT_READ;                 // read-only memory
-            int flags = MAP_FILE | MAP_PRIVATE;         // swap-backed map from file
-            void *ptr = QT_MMAP(nullptr, st.st_size,    // any address, whole file
-                                protection, flags,
-                                fd, 0);                 // from offset 0 of fd
-            if (ptr != MAP_FAILED) {
-                data = static_cast<uchar *>(ptr);
-                data_len = st.st_size;
-                fromMM = true;
-            }
-        }
-        QT_CLOSE(fd);
-    }
-#endif // QT_USE_MMAP
-    if (!data) {
-        QFile file(f);
+    qint64 data_len = file.size();
+    if (data_len > std::numeric_limits<qsizetype>::max())
+        return false;
+
+    uchar *data = map_sys(file, 0, data_len);
+    bool fromMM = !!data;
+
+    if (!fromMM) {
         bool ok = false;
-        if (file.open(QIODevice::ReadOnly)) {
-            qint64 fsize = file.size();
-            if (fsize <= std::numeric_limits<qsizetype>::max()) {
-                data_len = file.size();
-                data = new uchar[data_len];
-                ok = (data_len == file.read(reinterpret_cast<char *>(data), data_len));
-            }
-        }
+        data = new uchar[data_len];
+        ok = (data_len == file.read(reinterpret_cast<char *>(data), data_len));
         if (!ok) {
             delete[] data;
             data = nullptr;
             data_len = 0;
             return false;
         }
-        fromMM = false;
     }
     if (data && QDynamicBufferResourceRoot::registerSelf(data, data_len)) {
         if (fromMM) {
