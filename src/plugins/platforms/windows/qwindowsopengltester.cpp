@@ -408,8 +408,8 @@ bool QWindowsOpenGLTester::testDesktopGL()
             qCDebug(lcQpaGl, "OpenGL 1.x entry points not found");
         }
 
-        // Check for a shader-specific function.
-        if (WGL_GetProcAddress("glCreateShader")) {
+        // Check for a shader-specific function, as well as FBO support.
+        if (WGL_GetProcAddress("glCreateShader") && WGL_GetProcAddress("glBindFramebuffer")) {
             result = true;
             qCDebug(lcQpaGl, "OpenGL 2.0 entry points available");
         } else {
