@@ -65,6 +65,7 @@ RCC_FEATURE_SYMBOL(Zstd)
 
 #undef RCC_FEATURE_SYMBOL
 
+namespace {
 class QStringSplitter
 {
 public:
@@ -159,15 +160,18 @@ static QString cleanPath(const QString &_path)
         path.remove(0, 1);
     return path;
 }
+} // unnamed namespace
 
 Q_DECLARE_TYPEINFO(QResourceRoot, Q_RELOCATABLE_TYPE);
 
 typedef QList<QResourceRoot*> ResourceList;
+namespace {
 struct QResourceGlobalData
 {
     QRecursiveMutex resourceMutex;
     ResourceList resourceList;
 };
+}
 Q_GLOBAL_STATIC(QResourceGlobalData, resourceGlobalData)
 
 static inline QRecursiveMutex &resourceMutex()
@@ -1031,8 +1035,8 @@ Q_CORE_EXPORT bool qUnregisterResourceData(int version, const unsigned char *tre
     return false;
 }
 
+namespace {
 // run time resource creation
-
 class QDynamicBufferResourceRoot : public QResourceRoot
 {
     QString root;
@@ -1131,6 +1135,7 @@ public:
 
     bool registerSelf(const QString &f);
 };
+} // unnamed namespace
 
 #ifndef MAP_FILE
 #  define MAP_FILE 0
