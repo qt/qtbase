@@ -53,6 +53,7 @@ private slots:
     void setStackSize();
     void exit();
     void start();
+    void startSlotUsedInStringBasedLookups();
     void terminate();
     void quit();
     void started();
@@ -464,6 +465,56 @@ void tst_QThread::start()
         QVERIFY(thread.isFinished());
         QVERIFY(!thread.isRunning());
     }
+}
+
+class QThreadStarter : public QObject
+{
+    Q_OBJECT
+public:
+    using QObject::QObject;
+Q_SIGNALS:
+    void start(QThread::Priority);
+};
+
+class QThreadSelfStarter : public QThread
+{
+    Q_OBJECT
+public:
+    using QThread::QThread;
+
+    void check()
+    {
+        QVERIFY(connect(this, SIGNAL(starting(Priority)),
+                        this, SLOT(start(Priority))));
+        QVERIFY(QMetaObject::invokeMethod(this, "start", Q_ARG(Priority, IdlePriority)));
+    }
+
+Q_SIGNALS:
+    void starting(Priority);
+};
+
+void tst_QThread::startSlotUsedInStringBasedLookups()
+{
+    // QTBUG-124723
+
+    QThread thread;
+    {
+        QThreadStarter starter;
+        QVERIFY(QObject::connect(&starter, SIGNAL(start(QThread::Priority)),
+                                 &thread, SLOT(start(QThread::Priority))));
+    }
+    {
+        QThreadSelfStarter selfStarter;
+        selfStarter.check();
+        if (QTest::currentTestFailed())
+            return;
+        selfStarter.exit();
+        selfStarter.wait(30s);
+    }
+    QVERIFY(QMetaObject::invokeMethod(&thread, "start",
+                                      Q_ARG(QThread::Priority, QThread::IdlePriority)));
+    thread.exit();
+    thread.wait(30s);
 }
 
 void tst_QThread::terminate()
