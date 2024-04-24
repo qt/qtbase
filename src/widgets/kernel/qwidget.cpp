@@ -13614,7 +13614,8 @@ bool QWidgetPrivate::isInFocusChain() const
     when the focus chain has been initialized. A newly constructed widget is considered to have
     a consistent focus chain, while not being part of a focus chain.
 
-    This method returns \c true early, if a widget is pointing to itself.
+    The method always returns \c true, when the logging category "qt.widgets.focus" is disabled.
+    When it is enabled, the method returns \c true early, if a widget is pointing to itself.
     It returns \c false, if one of the following is detected:
     \list
     \li nullptr found in a previous/next pointer.
@@ -13631,6 +13632,10 @@ bool QWidgetPrivate::isInFocusChain() const
 bool QWidgetPrivate::isFocusChainConsistent() const
 {
     Q_Q(const QWidget);
+    const bool skip = !QLoggingCategory("qt.widgets.focus").isDebugEnabled();
+    if (skip)
+        return true;
+
     if (!isInFocusChain())
         return true;
 

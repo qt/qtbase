@@ -2017,6 +2017,7 @@ static QList<QWidget *> getFocusChain(QWidget *start, bool bForward)
 
 void tst_QWidget::focusAbstraction()
 {
+    QLoggingCategory::setFilterRules("qt.widgets.focus=true");
     QWidget *widget1 = new QWidget;
     widget1->setObjectName("Widget 1");
     QWidget *widget2 = new QWidget;
