@@ -337,7 +337,11 @@ static_assert(alignof(QCoreApplication) >= 4);
 /*!
     Creates an event locker operating on the QCoreApplication.
 
-    The application will quit when there are no more QEventLoopLockers operating on it.
+    The application will attempt to quit when there are no more QEventLoopLockers
+    operating on it, as long as QCoreApplication::isQuitLockEnabled() is \c true.
+
+    Note that attempting a quit may not necessarily result in the application quitting,
+    if there for example are open windows, or the QEvent::Quit event is ignored.
 
     \sa QCoreApplication::quit(), QCoreApplication::isQuitLockEnabled()
  */

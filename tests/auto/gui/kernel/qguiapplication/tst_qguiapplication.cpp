@@ -1008,8 +1008,8 @@ void tst_QGuiApplication::quitOnLastWindowClosedWithEventLoopLocker()
     });
 
     {
-        // Disabling QEventLoopLocker support should not affect
-        // quitting when last window is closed.
+        // Disabling QEventLoopLocker automatic quit should not affect
+        // quitting when last window is closed if there are no lockers.
         app.setQuitLockEnabled(false);
 
         QuitSpy quitSpy;
@@ -1023,8 +1023,40 @@ void tst_QGuiApplication::quitOnLastWindowClosedWithEventLoopLocker()
     }
 
     {
-        // Disabling quitOnLastWindowClosed support should not affect
-        // quitting when last QEventLoopLocker goes out of scope.
+        // Disabling QEventLoopLocker automatic quit should still block
+        // quitting when last window is closed if there is a locker alive.
+        app.setQuitLockEnabled(false);
+
+        QScopedPointer<QEventLoopLocker> locker(new QEventLoopLocker);
+
+        QuitSpy quitSpy;
+        QWindow window;
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+        QTimer::singleShot(0, &window, &QWindow::close);
+        QTimer::singleShot(200, &app, []{ QCoreApplication::exit(0); });
+        app.exec();
+        QCOMPARE(quitSpy.quits, 0);
+    }
+
+    {
+        // Disabling quitOnLastWindowClosed automatic quit should not affect
+        // quitting when last QEventLoopLocker goes out of scope if
+        // there are no windows.
+        app.setQuitLockEnabled(true);
+        app.setQuitOnLastWindowClosed(false);
+
+        QuitSpy quitSpy;
+        QScopedPointer<QEventLoopLocker> locker(new QEventLoopLocker);
+        QTimer::singleShot(0, [&]{ locker.reset(nullptr); });
+        QTimer::singleShot(200, &app, []{ QCoreApplication::exit(0); });
+        app.exec();
+        QCOMPARE(quitSpy.quits, 1);
+    }
+
+    {
+        // Disabling quitOnLastWindowClosed automatic quit should still block
+        // quitting via QEventLoopLocker if there's a window alive.
         app.setQuitLockEnabled(true);
         app.setQuitOnLastWindowClosed(false);
 
@@ -1036,7 +1068,7 @@ void tst_QGuiApplication::quitOnLastWindowClosedWithEventLoopLocker()
         QTimer::singleShot(0, [&]{ locker.reset(nullptr); });
         QTimer::singleShot(200, &app, []{ QCoreApplication::exit(0); });
         app.exec();
-        QCOMPARE(quitSpy.quits, 1);
+        QCOMPARE(quitSpy.quits, 0);
     }
 
     {
