@@ -174,12 +174,21 @@ lengthHelperContainer(const Char (&str)[N])
     return lengthHelperContainerLoop(str);
 }
 
+inline qsizetype qstrnlen_helper(const char *str, size_t maxlen)
+{
+#if !defined(Q_COMPILER_SLOW_QSTRNLEN_COMPILATION)
+    return qstrnlen(str, maxlen);
+#else
+    return strnlen_s(str, maxlen);
+#endif
+}
+
 template <typename Char, size_t N> [[nodiscard]] constexpr inline
 std::enable_if_t<sizeof(Char) == 1, qsizetype> lengthHelperContainer(const Char (&str)[N])
 {
 #ifdef QT_SUPPORTS_IS_CONSTANT_EVALUATED
     if (!q20::is_constant_evaluated())
-        return qstrnlen(reinterpret_cast<const char *>(str), N);
+        return qstrnlen_helper(reinterpret_cast<const char *>(str), N);
 #endif
 
     return lengthHelperContainerLoop(str);

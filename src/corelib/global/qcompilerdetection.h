@@ -857,6 +857,8 @@
 #    if _MSC_VER < 1936
 #      define Q_COMPILER_LACKS_THREE_WAY_COMPARE_SYMMETRY
 #    endif
+// QTBUG-124376: MSVC is slow at compiling qstrnlen()
+#    define Q_COMPILER_SLOW_QSTRNLEN_COMPILATION
 #  endif /* __cplusplus */
 #endif // defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
 
