@@ -41,6 +41,7 @@ class QtEmbeddedLoader extends QtLoader {
         setEnvironmentVariable("QT_ANDROID_THEME_DISPLAY_DPI", String.valueOf(displayDensity));
         String stylePath = ExtractStyle.setup(m_context, "minimal", displayDensity);
         setEnvironmentVariable("ANDROID_STYLE_PATH", stylePath);
+        setEnvironmentVariable("QT_ANDROID_NO_EXIT_CALL", String.valueOf(true));
     }
 
     @Override
