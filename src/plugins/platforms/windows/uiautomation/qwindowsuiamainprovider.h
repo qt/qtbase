@@ -34,6 +34,7 @@ public:
     static void notifyNameChange(QAccessibleEvent *event);
     static void notifySelectionChange(QAccessibleEvent *event);
     static void notifyTextChange(QAccessibleEvent *event);
+    static void raiseNotification(QAccessibleAnnouncementEvent *event);
 
     // IUnknown
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface) override;

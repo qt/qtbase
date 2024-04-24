@@ -204,6 +204,24 @@ void QWindowsUiaMainProvider::notifyTextChange(QAccessibleEvent *event)
     }
 }
 
+void QWindowsUiaMainProvider::raiseNotification(QAccessibleAnnouncementEvent *event)
+{
+    if (QAccessibleInterface *accessible = event->accessibleInterface()) {
+        if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
+            BSTR message = bStrFromQString(event->message());
+            QAccessible::AnnouncementPriority prio = event->priority();
+            NotificationProcessing processing = (prio == QAccessible::AnnouncementPriority::Assertive)
+                    ? NotificationProcessing_ImportantAll
+                    : NotificationProcessing_All;
+            BSTR activityId = bStrFromQString(QString::fromLatin1(""));
+            UiaRaiseNotificationEvent(provider, NotificationKind_Other, processing, message, activityId);
+
+            ::SysFreeString(message);
+            ::SysFreeString(activityId);
+        }
+    }
+}
+
 HRESULT STDMETHODCALLTYPE QWindowsUiaMainProvider::QueryInterface(REFIID iid, LPVOID *iface)
 {
     HRESULT result = QComObject::QueryInterface(iid, iface);

@@ -69,6 +69,14 @@ HRESULT WINAPI UiaRaiseAutomationEvent(IRawElementProviderSimple *pProvider, EVE
     return func.invoke(pProvider, id);
 }
 
+HRESULT WINAPI UiaRaiseNotificationEvent(
+    IRawElementProviderSimple *pProvider, NotificationKind notificationKind,
+    NotificationProcessing notificationProcessing, BSTR displayString, BSTR activityId)
+{
+    static auto func = winapi_func("uiautomationcore", FN(UiaRaiseNotificationEvent));
+    return func.invoke(pProvider, notificationKind, notificationProcessing, displayString, activityId);
+}
+
 #endif // defined(__MINGW32__) || defined(__MINGW64__)
 
 #endif // QT_CONFIG(accessibility)
