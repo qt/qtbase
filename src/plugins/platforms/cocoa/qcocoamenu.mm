@@ -326,7 +326,9 @@ void QCocoaMenu::showPopup(const QWindow *parentWindow, const QRect &targetRect,
     QPointer<QCocoaMenu> guard = this;
 
     QPoint pos =  QPoint(targetRect.left(), targetRect.top() + targetRect.height());
-    QCocoaWindow *cocoaWindow = parentWindow ? static_cast<QCocoaWindow *>(parentWindow->handle()) : nullptr;
+    // If the app quits while the menu is open (e.g. through a timer that starts before the menu was opened),
+    // then the window will have been destroyed before this function finishes executing. Account for that with QPointer.
+    QPointer<QCocoaWindow> cocoaWindow = parentWindow ? static_cast<QCocoaWindow *>(parentWindow->handle()) : nullptr;
     NSView *view = cocoaWindow ? cocoaWindow->view() : nil;
     NSMenuItem *nsItem = item ? ((QCocoaMenuItem *)item)->nsItem() : nil;
 
