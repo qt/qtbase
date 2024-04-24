@@ -433,8 +433,11 @@ function(qt_internal_show_extra_ide_sources)
     # licenses
     set(licenses_target_name ${qt_repo_targets_name}_licenses)
     file(GLOB licenses_files LIST_DIRECTORIES false LICENSES/*)
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/licenseRule.json")
+        list(APPEND licenses_files "${CMAKE_CURRENT_SOURCE_DIR}/licenseRule.json")
+    endif()
     if(licenses_files)
-        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSES" FILES ${licenses_files})
+        source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${licenses_files})
         add_custom_target(${licenses_target_name} SOURCES ${licenses_files})
     endif()
 
