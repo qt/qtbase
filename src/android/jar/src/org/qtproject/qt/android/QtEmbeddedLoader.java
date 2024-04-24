@@ -6,10 +6,12 @@ package org.qtproject.qt.android;
 import android.content.Context;
 import android.content.ContextWrapper;
 
+import android.util.Log;
+
 class QtEmbeddedLoader extends QtLoader {
     private static final String TAG = "QtEmbeddedLoader";
 
-    QtEmbeddedLoader(Context context) throws IllegalArgumentException {
+    private QtEmbeddedLoader(Context context) throws IllegalArgumentException {
         super(new ContextWrapper(context));
         // TODO Service context handling QTBUG-118874
         int displayDensity = context.getResources().getDisplayMetrics().densityDpi;
@@ -17,5 +19,11 @@ class QtEmbeddedLoader extends QtLoader {
         String stylePath = ExtractStyle.setup(context, "minimal", displayDensity);
         setEnvironmentVariable("ANDROID_STYLE_PATH", stylePath);
         setEnvironmentVariable("QT_ANDROID_NO_EXIT_CALL", String.valueOf(true));
+    }
+
+    static QtEmbeddedLoader getEmbeddedLoader(Context context) throws IllegalArgumentException {
+        if (m_instance == null)
+            m_instance = new QtEmbeddedLoader(context);
+        return (QtEmbeddedLoader) m_instance;
     }
 }

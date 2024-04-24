@@ -24,12 +24,18 @@ import java.nio.charset.StandardCharsets;
 class QtActivityLoader extends QtLoader {
     private final Activity m_activity;
 
-    QtActivityLoader(Activity activity) throws IllegalArgumentException
+    private QtActivityLoader(Activity activity) throws IllegalArgumentException
     {
         super(new ContextWrapper(activity));
         m_activity = activity;
 
         extractContextMetaData(m_activity);
+    }
+
+    static QtActivityLoader getActivityLoader(Activity activity) throws IllegalArgumentException {
+        if (m_instance == null)
+            m_instance = new QtActivityLoader(activity);
+        return (QtActivityLoader) m_instance;
     }
 
     private String getDecodedUtfString(String str)

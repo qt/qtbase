@@ -14,4 +14,10 @@ class QtServiceLoader extends QtLoader {
         super(new ContextWrapper(service));
         extractContextMetaData(service);
     }
+
+    static QtServiceLoader getServiceLoader(Service service) throws IllegalArgumentException {
+        if (m_instance == null)
+            m_instance = new QtServiceLoader(service);
+        return (QtServiceLoader) m_instance;
+    }
 }

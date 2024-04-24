@@ -49,6 +49,9 @@ abstract class QtLoader {
 
     protected int m_debuggerSleepMs = 0;
 
+    protected static QtLoader m_instance = null;
+    protected boolean m_librariesLoaded;
+
     /**
      * Sets and initialize the basic pieces.
      * Initializes the class loader since it doesn't rely on anything
@@ -57,7 +60,7 @@ abstract class QtLoader {
      * @throws IllegalArgumentException if the given Context is not either an Activity or Service,
      *         or no ComponentInfo could be found for it
      **/
-    public QtLoader(ContextWrapper context) throws IllegalArgumentException {
+     QtLoader(ContextWrapper context) throws IllegalArgumentException {
         m_resources = context.getResources();
         m_packageName = context.getPackageName();
         final Context baseContext = context.getBaseContext();
@@ -414,6 +417,9 @@ abstract class QtLoader {
      * Loads all Qt native bundled libraries and main library.
      **/
     public boolean loadQtLibraries() {
+        if (m_librariesLoaded)
+            return true;
+
         if (!useLocalQtLibs()) {
             Log.w(QtTAG, "Use local Qt libs is false");
             return false;
@@ -460,6 +466,7 @@ abstract class QtLoader {
             Log.e(QtTAG, "Loading main library failed");
             return false;
         }
+        m_librariesLoaded = true;
         return true;
     }
 
