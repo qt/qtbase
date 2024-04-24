@@ -1091,6 +1091,14 @@ bool QCoreApplication::testAttribute(Qt::ApplicationAttribute attribute)
     \brief Whether the use of the QEventLoopLocker feature can cause the
     application to quit.
 
+    When this property is \c true the release of the last remaining
+    QEventLoopLocker operating on the application will attempt to
+    quit the application.
+
+    Note that attempting a quit may not necessarily result in the
+    application quitting, for example if there still are open windows,
+    or the QEvent::Quit event is ignored.
+
     The default is \c true.
 
     \sa QEventLoopLocker
@@ -2094,7 +2102,13 @@ bool QCoreApplicationPrivate::canQuitAutomatically()
     if (!in_exec)
         return false;
 
-    if (quitLockEnabled && quitLockRef.loadRelaxed())
+    // The automatic quit functionality is triggered by
+    // both QEventLoopLocker and maybeLastWindowClosed.
+    // In either case, we don't want to quit if there
+    // are active QEventLoopLockers, even if quitLockEnabled
+    // is not enabled, as the property signals whether to
+    // trigger the automatic quit, not whether to block it.
+    if (quitLockRef.loadRelaxed())
         return false;
 
     return true;
