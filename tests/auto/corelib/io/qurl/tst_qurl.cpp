@@ -4126,14 +4126,30 @@ void tst_QUrl::testThreadingHelper()
 
 void tst_QUrl::testThreading()
 {
+    enum { Count = 100 };
+
     if (QTestPrivate::isRunningArmOnX86())
         QSKIP("This test fails in QEMU and looks like because of a data race, QTBUG-93176");
     s_urlStorage = new UrlStorage;
-    QThreadPool::globalInstance()->setMaxThreadCount(100);
-    QFutureSynchronizer<void> sync;
-    for (int i = 0; i < 100; ++i)
-        sync.addFuture(QtConcurrent::run(&tst_QUrl::testThreadingHelper, this));
-    sync.waitForFinished();
+    QThreadPool::globalInstance()->setMaxThreadCount(Count);
+
+    // Written this way because wasm need the eventloop
+    QList<QFuture<void>> futures;
+    futures.reserve(Count);
+
+    for (int i = 0; i < Count; ++i)
+        futures.push_back(QtConcurrent::run(&tst_QUrl::testThreadingHelper, this));
+
+    QEventLoop loop;
+    std::atomic<int> remaining = Count;
+    for (int i = 0; i < Count; ++i) {
+        futures[i].then([&]() {
+            if (!--remaining)
+                loop.quit();
+        });
+    }
+    loop.exec();
+
     delete s_urlStorage;
 }
 
