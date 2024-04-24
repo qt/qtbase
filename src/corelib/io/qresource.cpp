@@ -36,6 +36,10 @@
 #if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
 #  define QT_USE_MMAP
 #  include <sys/mman.h>
+#  ifdef Q_OS_LINUX
+// since 5.7, so define in case we're being compiled with older kernel headers
+#    define MREMAP_DONTUNMAP    4
+#  endif
 #endif
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
@@ -285,6 +289,8 @@ public:
 
     bool load(const QString &file);
     void clear();
+
+    static bool mayRemapData(const QResource &resource);
 
     QLocale locale;
     QString fileName, absoluteFilePath;
@@ -1127,13 +1133,14 @@ public:
         : QDynamicBufferResourceRoot(_root), unmapPointer(nullptr), unmapLength(0)
     { }
     ~QDynamicFileResourceRoot() {
-        if (unmapPointer)
+        if (wasMemoryMapped())
             unmap_sys(unmapPointer, unmapLength);
         else
             delete[] mappingBuffer();
     }
     QString mappingFile() const { return fileName; }
     ResourceRootType type() const override { return Resource_File; }
+    bool wasMemoryMapped() const { return unmapPointer; }
 
     bool registerSelf(const QString &f);
 };
@@ -1377,11 +1384,21 @@ private:
     bool unmap(uchar *ptr);
     void uncompress() const;
     void mapUncompressed();
-    qint64 offset;
+    bool mapUncompressed_sys();
+    void unmapUncompressed_sys();
+    qint64 offset = 0;
     QResource resource;
     mutable QByteArray uncompressed;
+    bool mustUnmap = false;
+
+    // minimum size for which we'll try to re-open ourselves in mapUncompressed()
+    static constexpr qsizetype RemapCompressedThreshold = 16384;
 protected:
-    QResourceFileEnginePrivate() : offset(0) { }
+    ~QResourceFileEnginePrivate()
+    {
+        if (mustUnmap)
+            unmapUncompressed_sys();
+    }
 };
 
 bool QResourceFileEngine::caseSensitive() const
@@ -1639,8 +1656,105 @@ void QResourceFileEnginePrivate::mapUncompressed()
     Q_ASSERT(resource.compressionAlgorithm() == QResource::NoCompression);
     if (!uncompressed.isNull())
         return;     // nothing to do
+
+    if (resource.uncompressedSize() >= RemapCompressedThreshold) {
+        if (mapUncompressed_sys())
+            return;
+    }
+
     uncompressed = resource.uncompressedData();
     uncompressed.detach();
+}
+
+#if defined(MREMAP_MAYMOVE) && defined(MREMAP_DONTUNMAP)
+inline bool QResourcePrivate::mayRemapData(const QResource &resource)
+{
+    auto d = resource.d_func();
+
+    // assumptions from load():
+    // - d->related is not empty
+    // - the first item in d->related is the one with our data
+    // by current construction, it's also the only item
+    const QResourceRoot *root = d->related.at(0);
+
+    switch (root->type()) {
+    case QResourceRoot::Resource_Builtin:
+        return true;        // always acceptable, memory is read-only
+    case QResourceRoot::Resource_Buffer:
+        return false;       // never acceptable, memory is heap
+    case QResourceRoot::Resource_File:
+        break;
+    }
+
+    auto df = static_cast<const QDynamicFileResourceRoot *>(root);
+    return df->wasMemoryMapped();
+}
+#endif
+
+// Returns the page boundaries of where \a location is located in memory.
+static auto mappingBoundaries(const void *location, qsizetype size)
+{
+#ifdef Q_OS_WIN
+    auto getpagesize = [] {
+        SYSTEM_INFO sysinfo;
+        ::GetSystemInfo(&sysinfo);
+        return sysinfo.dwAllocationGranularity;
+    };
+#endif
+    struct R {
+        void *begin;
+        qsizetype size;
+        qptrdiff offset;
+    } r;
+
+    const quintptr pageMask = getpagesize() - 1;
+    quintptr data = quintptr(location);
+    quintptr begin = data & ~pageMask;
+    quintptr end = (data + size + pageMask) & ~pageMask;
+    r.begin = reinterpret_cast<void *>(begin);
+    r.size = end - begin;
+    r.offset = data & pageMask;
+    return r;
+}
+
+bool QResourceFileEnginePrivate::mapUncompressed_sys()
+{
+    auto r = mappingBoundaries(resource.data(), resource.uncompressedSize());
+    void *ptr = nullptr;
+
+#if defined(MREMAP_MAYMOVE) && defined(MREMAP_DONTUNMAP)
+    // Use MREMAP_MAYMOVE to tell the kernel to give us a new address and use
+    // MREMAP_DONTUNMAP (supported since kernel 5.7) to request that it create
+    // a new mapping of the same pages, instead of moving. We can only do that
+    // for pages that are read-only, otherwise the kernel replaces the source
+    // with pages full of nulls.
+    if (!QResourcePrivate::mayRemapData(resource))
+        return false;
+
+    ptr = mremap(r.begin, r.size, r.size, MREMAP_MAYMOVE | MREMAP_DONTUNMAP);
+    if (ptr == MAP_FAILED)
+        return false;
+
+    // Allow writing, which the documentation says we allow. This is safe
+    // because MREMAP_DONTUNMAP only works for private mappings.
+    if (mprotect(ptr, r.size, PROT_READ | PROT_WRITE) != 0) {
+        munmap(ptr, r.size);
+        return false;
+    }
+#endif
+
+    if (!ptr)
+        return false;
+    const char *newdata = static_cast<char *>(ptr) + r.offset;
+    uncompressed = QByteArray::fromRawData(newdata, resource.uncompressedSize());
+    mustUnmap = true;
+    return true;
+}
+
+void QResourceFileEnginePrivate::unmapUncompressed_sys()
+{
+    auto r = mappingBoundaries(uncompressed.constBegin(), uncompressed.size());
+    QDynamicFileResourceRoot::unmap_sys(r.begin, r.size);
 }
 
 #endif // !defined(QT_BOOTSTRAPPED)
