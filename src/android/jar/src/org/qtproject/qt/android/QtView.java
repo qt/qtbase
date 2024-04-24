@@ -145,7 +145,7 @@ abstract class QtView extends ViewGroup {
     void loadQtLibraries(String appLibName) {
         QtEmbeddedLoader loader = null;
         try {
-            loader = new QtEmbeddedLoader(getContext());
+            loader = QtEmbeddedLoader.getEmbeddedLoader(getContext());
         } catch (IllegalArgumentException e) {
             Log.e(TAG, e.getMessage());
             QtEmbeddedViewInterfaceFactory.remove(getContext());

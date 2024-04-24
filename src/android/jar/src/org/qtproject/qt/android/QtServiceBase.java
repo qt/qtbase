@@ -28,7 +28,7 @@ public class QtServiceBase extends Service {
         QtNative.setService(this);
 
         try {
-            QtServiceLoader loader = new QtServiceLoader(this);
+            QtServiceLoader loader = QtServiceLoader.getServiceLoader(this);
             if (loader.loadQtLibraries()) {
                 QtNative.startApplication(loader.getApplicationParameters(),
                                           loader.getMainLibraryPath());

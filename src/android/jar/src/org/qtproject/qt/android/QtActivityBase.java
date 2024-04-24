@@ -107,7 +107,7 @@ public class QtActivityBase extends Activity implements QtNative.AppStateDetails
         addReferrer(getIntent());
 
         try {
-            QtActivityLoader loader = new QtActivityLoader(this);
+            QtActivityLoader loader = QtActivityLoader.getActivityLoader(this);
             loader.appendApplicationParameters(m_applicationParams);
 
             if (loader.loadQtLibraries()) {
