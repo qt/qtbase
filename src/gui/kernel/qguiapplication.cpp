@@ -3655,9 +3655,13 @@ void QGuiApplicationPrivate::notifyWindowIconChanged()
 
     The default is \c true.
 
-    If this property is \c true, the applications quits when the last visible
-    \l{Primary and Secondary Windows}{primary window} (i.e. top level window
-    with no transient parent) is closed.
+    If this property is \c true, the application will attempt to
+    quit when the last visible \l{Primary and Secondary Windows}{primary window}
+    (i.e. top level window with no transient parent) is closed.
+
+    Note that attempting a quit may not necessarily result in the
+    application quitting, for example if there still are active
+    QEventLoopLocker instances, or the QEvent::Quit event is ignored.
 
     \sa quit(), QWindow::close()
  */
@@ -3713,7 +3717,13 @@ bool QGuiApplicationPrivate::lastWindowClosed() const
 
 bool QGuiApplicationPrivate::canQuitAutomatically()
 {
-    if (quitOnLastWindowClosed && !lastWindowClosed())
+    // The automatic quit functionality is triggered by
+    // both QEventLoopLocker and maybeLastWindowClosed.
+    // Although the former is a QCoreApplication feature
+    // we don't want to quit the application when there
+    // are open windows, regardless of whether the app
+    // also quits automatically on maybeLastWindowClosed.
+    if (!lastWindowClosed())
         return false;
 
     return QCoreApplicationPrivate::canQuitAutomatically();
