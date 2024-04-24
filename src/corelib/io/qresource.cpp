@@ -39,6 +39,9 @@
 #  ifdef Q_OS_LINUX
 // since 5.7, so define in case we're being compiled with older kernel headers
 #    define MREMAP_DONTUNMAP    4
+#  elif defined(Q_OS_DARWIN)
+#    include <mach/mach.h>
+#    include <mach/vm_map.h>
 #  endif
 #endif
 #ifdef Q_OS_WIN
@@ -1738,6 +1741,25 @@ bool QResourceFileEnginePrivate::mapUncompressed_sys()
     // Allow writing, which the documentation says we allow. This is safe
     // because MREMAP_DONTUNMAP only works for private mappings.
     if (mprotect(ptr, r.size, PROT_READ | PROT_WRITE) != 0) {
+        munmap(ptr, r.size);
+        return false;
+    }
+#elif defined(Q_OS_DARWIN)
+    mach_port_t self = mach_task_self();
+    vm_address_t addr = 0;
+    vm_address_t mask = 0;
+    bool anywhere = true;
+    bool copy = true;
+    vm_prot_t cur_prot = VM_PROT_READ | VM_PROT_WRITE;
+    vm_prot_t max_prot = VM_PROT_ALL;
+    kern_return_t res = vm_remap(self, &addr, r.size, mask, anywhere,
+                                 self, vm_address_t(r.begin), copy, &cur_prot,
+                                 &max_prot, VM_INHERIT_DEFAULT);
+    if (res != KERN_SUCCESS)
+        return false;
+
+    ptr = reinterpret_cast<void *>(addr);
+    if ((max_prot & VM_PROT_WRITE) == 0 || mprotect(ptr, r.size, PROT_READ | PROT_WRITE) != 0) {
         munmap(ptr, r.size);
         return false;
     }
