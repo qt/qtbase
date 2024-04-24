@@ -752,11 +752,11 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
         if (newRequestHeaders.contains(QHttpHeaders::WellKnownHeader::Range)) {
             // Need to adjust resume offset for user specified range
 
-            newRequestHeaders.removeAll(QHttpHeaders::WellKnownHeader::Range);
-
             // We've already verified that requestRange starts with "bytes=", see canResume.
-            const auto rangeHeader = newHttpRequest.headers().value(QHttpHeaders::WellKnownHeader::Range);
+            const auto rangeHeader = newRequestHeaders.value(QHttpHeaders::WellKnownHeader::Range);
             const auto requestRange = QByteArrayView(rangeHeader).mid(bytesEqualPrefix().size());
+
+            newRequestHeaders.removeAll(QHttpHeaders::WellKnownHeader::Range);
 
             int index = requestRange.indexOf('-');
 
