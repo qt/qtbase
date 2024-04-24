@@ -83,20 +83,20 @@ public:
 
     Q_DECL_CONSTEXPR_NOT_WIN bool isValid() const noexcept { return *this != QSocketDescriptor(); }
 
-    friend Q_DECL_CONSTEXPR_NOT_WIN bool operator==(QSocketDescriptor lhs,
-                                                    QSocketDescriptor rhs) noexcept
+private:
+    friend Q_DECL_CONSTEXPR_NOT_WIN bool comparesEqual(const QSocketDescriptor &lhs,
+                                                       const QSocketDescriptor &rhs) noexcept
     {
         return lhs.sockfd == rhs.sockfd;
     }
-    friend Q_DECL_CONSTEXPR_NOT_WIN bool operator!=(QSocketDescriptor lhs,
-                                                    QSocketDescriptor rhs) noexcept
-    {
-        return lhs.sockfd != rhs.sockfd;
-    }
+#if defined(Q_OS_WIN) || defined(Q_QDOC)
+    Q_DECLARE_EQUALITY_COMPARABLE(QSocketDescriptor)
+#else
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QSocketDescriptor)
+#endif
 
 #undef Q_DECL_CONSTEXPR_NOT_WIN
 
-private:
     DescriptorType sockfd;
 };
 
