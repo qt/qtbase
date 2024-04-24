@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/resource.h>
+#include <termios.h>
 #include <unistd.h>
 
 #if __has_include(<paths.h>)
