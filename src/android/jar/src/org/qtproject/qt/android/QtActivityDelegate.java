@@ -224,33 +224,6 @@ class QtActivityDelegate extends QtActivityDelegateBase
         });
     }
 
-    void handleUiModeChange(int uiMode)
-    {
-        // QTBUG-108365
-        if (Build.VERSION.SDK_INT >= 30) {
-            // Since 29 version we are using Theme_DeviceDefault_DayNight
-            Window window = m_activity.getWindow();
-            WindowInsetsController controller = window.getInsetsController();
-            if (controller != null) {
-                // set APPEARANCE_LIGHT_STATUS_BARS if needed
-                int appearanceLight = Color.luminance(window.getStatusBarColor()) > 0.5 ?
-                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS : 0;
-                controller.setSystemBarsAppearance(appearanceLight,
-                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS);
-            }
-        }
-        switch (uiMode) {
-            case Configuration.UI_MODE_NIGHT_NO:
-                ExtractStyle.runIfNeeded(m_activity, false);
-                QtDisplayManager.handleUiDarkModeChanged(0);
-                break;
-            case Configuration.UI_MODE_NIGHT_YES:
-                ExtractStyle.runIfNeeded(m_activity, true);
-                QtDisplayManager.handleUiDarkModeChanged(1);
-                break;
-        }
-    }
-
     @UsedFromNativeCode
     public void resetOptionsMenu()
     {
