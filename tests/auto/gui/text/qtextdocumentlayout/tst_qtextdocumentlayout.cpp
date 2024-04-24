@@ -24,18 +24,24 @@ private slots:
     void cleanupTestCase();
     void defaultPageSizeHandling();
     void idealWidth();
+#ifndef QT_NO_TEXTHTMLPARSER
     void lineSeparatorFollowingTable();
+#endif
 #ifndef QT_NO_WIDGETS
     void wrapAtWordBoundaryOrAnywhere();
 #endif
     void inlineImage();
+#ifndef QT_NO_TEXTHTMLPARSER
     void clippedTableCell();
+#endif
     void floatingTablePageBreak();
     void imageAtRightAlignedTab();
     void blockVisibility();
+#ifndef QT_NO_TEXTHTMLPARSER
     void testHitTest();
 
     void largeImage();
+#endif
 
 private:
     QTextDocument *doc;
@@ -99,6 +105,7 @@ void tst_QTextDocumentLayout::idealWidth()
     QVERIFY(doc->idealWidth() > 0);
 }
 
+#ifndef QT_NO_TEXTHTMLPARSER
 // none of the QTextLine items in the document should intersect with the margin rect
 void tst_QTextDocumentLayout::lineSeparatorFollowingTable()
 {
@@ -145,6 +152,7 @@ void tst_QTextDocumentLayout::lineSeparatorFollowingTable()
         }
     }
 }
+#endif
 
 #ifndef QT_NO_WIDGETS
 void tst_QTextDocumentLayout::wrapAtWordBoundaryOrAnywhere()
@@ -184,6 +192,7 @@ void tst_QTextDocumentLayout::inlineImage()
     QCOMPARE(doc->pageCount(), 1);
 }
 
+#ifndef QT_NO_TEXTHTMLPARSER
 void tst_QTextDocumentLayout::clippedTableCell()
 {
     const char *html =
@@ -224,6 +233,7 @@ void tst_QTextDocumentLayout::clippedTableCell()
     expected.save("expected.png");
     QCOMPARE(img, expected);
 }
+#endif
 
 void tst_QTextDocumentLayout::floatingTablePageBreak()
 {
@@ -323,6 +333,7 @@ void tst_QTextDocumentLayout::blockVisibility()
     QCOMPARE(doc->size(), halfSize);
 }
 
+#ifndef QT_NO_TEXTHTMLPARSER
 void tst_QTextDocumentLayout::largeImage()
 {
      auto img = QImage(400, 500, QImage::Format_ARGB32_Premultiplied);
@@ -416,6 +427,7 @@ void tst_QTextDocumentLayout::testHitTest()
          QVERIFY(positionY - topMargin <= y);
     }
 }
+#endif
 
 QTEST_MAIN(tst_QTextDocumentLayout)
 #include "tst_qtextdocumentlayout.moc"

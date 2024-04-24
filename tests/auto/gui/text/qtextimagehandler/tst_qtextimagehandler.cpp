@@ -18,7 +18,9 @@ private slots:
     void cleanup();
     void cleanupTestCase();
     void loadAtNImages_data();
+#ifndef QT_NO_TEXTHTMLPARSER
     void loadAtNImages();
+#endif
 };
 
 tst_QTextImageHandler::tst_QTextImageHandler()
@@ -47,6 +49,7 @@ void tst_QTextImageHandler::loadAtNImages_data()
     QTest::addRow("qrc_url") << "qrc:/data/image.png";
 }
 
+#ifndef QT_NO_TEXTHTMLPARSER
 void tst_QTextImageHandler::loadAtNImages()
 {
     QFETCH(QString, imageFile);
@@ -74,6 +77,7 @@ void tst_QTextImageHandler::loadAtNImages()
         QCOMPARE(img.pixelColor(0, 0), expectedColor);
     }
 }
+#endif
 
 QTEST_MAIN(tst_QTextImageHandler)
 #include "tst_qtextimagehandler.moc"

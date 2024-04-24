@@ -7,7 +7,9 @@
 
 #include <qcoreapplication.h>
 #include <qdebug.h>
+#if QT_CONFIG(settings)
 #include <qsettings.h>
+#endif
 #include <qtextformat.h>
 #include <private/qtextformat_p.h>
 #include <qtextdocument.h>
@@ -27,7 +29,9 @@ Q_OBJECT
 private slots:
     void getSetCheck();
     void defaultAlignment();
+#if QT_CONFIG(settings)
     void testQTextCharFormat() const;
+#endif
     void testUnderlinePropertyPrecedence();
     void toFormat();
     void resolveFont();
@@ -47,6 +51,7 @@ private slots:
 #endif
 };
 
+#if QT_CONFIG(settings)
 /*! \internal
   This (used to) trigger a crash in:
 
@@ -61,6 +66,7 @@ void tst_QTextFormat::testQTextCharFormat() const
 
     settings.value("test", test);
 }
+#endif
 
 // Testing get/set functions
 void tst_QTextFormat::getSetCheck()

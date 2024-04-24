@@ -6,7 +6,9 @@
 #include <QtTest/private/qcomparisontesthelper_p.h>
 
 #include <QtCore/QCoreApplication>
+#if QT_CONFIG(sortfilterproxymodel)
 #include <QtCore/QSortFilterProxyModel>
+#endif
 #include <QtCore/QStringListModel>
 #include <QtGui/QStandardItemModel>
 
@@ -80,9 +82,11 @@ private slots:
     void testMoveWithinOwnRange_data();
     void testMoveWithinOwnRange();
 
+#if QT_CONFIG(sortfilterproxymodel)
     void testMoveThroughProxy();
 
     void testReset();
+#endif
 
     void testDataChanged();
 
@@ -1239,6 +1243,7 @@ void tst_QAbstractItemModel::testMoveSameParentUp()
     }
 }
 
+#if QT_CONFIG(sortfilterproxymodel)
 void tst_QAbstractItemModel::testMoveThroughProxy()
 {
     QSortFilterProxyModel *proxy = new QSortFilterProxyModel(this);
@@ -1257,6 +1262,7 @@ void tst_QAbstractItemModel::testMoveThroughProxy()
     moveCommand->setDestRow(0);
     moveCommand->doCommand();
 }
+#endif
 
 void tst_QAbstractItemModel::testMoveToGrandParent_data()
 {
@@ -1804,6 +1810,7 @@ void tst_QAbstractItemModel::testMoveWithinOwnRange()
     QCOMPARE(afterSpy.size(), 0);
 }
 
+#if QT_CONFIG(proxymodel)
 class ListenerObject : public QObject
 {
     Q_OBJECT
@@ -1822,7 +1829,7 @@ private:
     QList<QPersistentModelIndex> m_persistentIndexes;
     QModelIndexList m_nonPersistentIndexes;
 };
-
+#endif
 
 class ModelWithCustomRole : public QStringListModel
 {
@@ -1836,6 +1843,7 @@ public:
     }
 };
 
+#if QT_CONFIG(proxymodel)
 ListenerObject::ListenerObject(QAbstractProxyModel *parent)
     : QObject(parent), m_model(parent)
 {
@@ -1876,7 +1884,9 @@ void ListenerObject::slotReset()
         QVERIFY(!idx.isValid());
     }
 }
+#endif
 
+#if QT_CONFIG(sortfilterproxymodel)
 void tst_QAbstractItemModel::testReset()
 {
     QSignalSpy beforeResetSpy(m_model, &DynamicTreeModel::modelAboutToBeReset);
@@ -1931,6 +1941,7 @@ void tst_QAbstractItemModel::testReset()
     // After being reset the proxy must be queried again.
     QCOMPARE(nullProxy->roleNames().value(Qt::UserRole + 1), QByteArray());
 }
+#endif
 
 class CustomRoleModel : public QStringListModel
 {

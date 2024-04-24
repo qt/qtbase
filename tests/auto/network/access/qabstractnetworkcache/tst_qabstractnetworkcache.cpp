@@ -50,6 +50,7 @@ private:
 
 };
 
+#if QT_CONFIG(networkdiskcache)
 class NetworkDiskCache : public QNetworkDiskCache
 {
     Q_OBJECT
@@ -72,6 +73,7 @@ public:
     QTemporaryDir tempDir;
     bool gotData;
 };
+#endif
 
 
 tst_QAbstractNetworkCache::tst_QAbstractNetworkCache()
@@ -254,10 +256,12 @@ void tst_QAbstractNetworkCache::runTest()
     QFETCH(bool, fetchFromCache);
 
     QNetworkAccessManager manager;
+#if QT_CONFIG(networkdiskcache)
     NetworkDiskCache *diskCache = new NetworkDiskCache(&manager);
     QVERIFY2(diskCache->tempDir.isValid(), qPrintable(diskCache->tempDir.errorString()));
     manager.setCache(diskCache);
     QCOMPARE(diskCache->gotData, false);
+#endif
 
     QUrl realUrl = url.contains("://") ? url : TESTFILE + url;
     QNetworkRequest request(realUrl);
@@ -266,7 +270,9 @@ void tst_QAbstractNetworkCache::runTest()
     QNetworkReply *reply = manager.get(request);
     QSignalSpy downloaded1(reply, SIGNAL(finished()));
     QTRY_COMPARE(downloaded1.size(), 1);
+#if QT_CONFIG(networkdiskcache)
     QCOMPARE(diskCache->gotData, false);
+#endif
     QByteArray goodData = reply->readAll();
 
     request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, cacheLoadControl);
@@ -293,7 +299,9 @@ void tst_QAbstractNetworkCache::runTest()
         std::sort(rawHeaderList.begin(), rawHeaderList.end());
         std::sort(rawHeaderList2.begin(), rawHeaderList2.end());
     }
+#if QT_CONFIG(networkdiskcache)
     QCOMPARE(diskCache->gotData, fetchFromCache);
+#endif
 }
 
 void tst_QAbstractNetworkCache::checkSynchronous()
@@ -305,10 +313,12 @@ void tst_QAbstractNetworkCache::checkSynchronous()
     QFETCH(bool, fetchFromCache);
 
     QNetworkAccessManager manager;
+#if QT_CONFIG(networkdiskcache)
     NetworkDiskCache *diskCache = new NetworkDiskCache(&manager);
     QVERIFY2(diskCache->tempDir.isValid(), qPrintable(diskCache->tempDir.errorString()));
     manager.setCache(diskCache);
     QCOMPARE(diskCache->gotData, false);
+#endif
 
     QUrl realUrl = url.contains("://") ? url : TESTFILE + url;
     QNetworkRequest request(realUrl);
@@ -320,7 +330,9 @@ void tst_QAbstractNetworkCache::checkSynchronous()
     // prime the cache
     QNetworkReply *reply = manager.get(request);
     QVERIFY(reply->isFinished()); // synchronous
+#if QT_CONFIG(networkdiskcache)
     QCOMPARE(diskCache->gotData, false);
+#endif
     QByteArray goodData = reply->readAll();
 
     request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, cacheLoadControl);
@@ -348,15 +360,19 @@ void tst_QAbstractNetworkCache::checkSynchronous()
         std::sort(rawHeaderList.begin(), rawHeaderList.end());
         std::sort(rawHeaderList2.begin(), rawHeaderList2.end());
     }
+#if QT_CONFIG(networkdiskcache)
     QCOMPARE(diskCache->gotData, fetchFromCache);
+#endif
 }
 
 void tst_QAbstractNetworkCache::deleteCache()
 {
     QNetworkAccessManager manager;
+#if QT_CONFIG(networkdiskcache)
     NetworkDiskCache *diskCache = new NetworkDiskCache(&manager);
     QVERIFY2(diskCache->tempDir.isValid(), qPrintable(diskCache->tempDir.errorString()));
     manager.setCache(diskCache);
+#endif
 
     QString url = "httpcachetest_cachecontrol.cgi?max-age=1000";
     QNetworkRequest request(QUrl(TESTFILE + url));

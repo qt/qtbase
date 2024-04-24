@@ -3,7 +3,9 @@
 
 #include "httptestserver_p.h"
 
+#if QT_CONFIG(http)
 #include <QtNetwork/qhttpmultipart.h>
+#endif
 #include <QtNetwork/qrestaccessmanager.h>
 #include <QtNetwork/qauthenticator.h>
 #include <QtNetwork/qnetworkreply.h>
@@ -33,7 +35,9 @@ private slots:
     void initialization();
     void destruction();
     void callbacks();
+#if QT_CONFIG(http)
     void requests();
+#endif
     void reply();
     void errors();
     void body();
@@ -90,6 +94,7 @@ void tst_QRestAccessManager::reply()
     networkReply = nullptr;                     \
 }
 
+#if QT_CONFIG(http)
 void tst_QRestAccessManager::requests()
 {
     // A basic test for each HTTP method against the local testserver.
@@ -268,6 +273,7 @@ void tst_QRestAccessManager::requests()
     //manager.sendCustomRequest(request, this, [](){}); // No verb && no data
     //manager.sendCustomRequest(request, "FOOBAR", this, [](){}); // No verb || no data
 }
+#endif
 
 void tst_QRestAccessManager::memberHandler(QRestReply &reply)
 {

@@ -22,9 +22,11 @@ public:
 private slots:
     void getSetCheck();
     void maximumBlockCount();
+#ifndef QT_NO_TEXTHTMLPARSER
     void anchorAt();
     void imageAt();
     void formatAt();
+#endif
 };
 
 tst_QAbstractTextDocumentLayout::tst_QAbstractTextDocumentLayout()
@@ -119,6 +121,7 @@ void tst_QAbstractTextDocumentLayout::maximumBlockCount()
     QCOMPARE(layout.blockCount, 10);
 }
 
+#ifndef QT_NO_TEXTHTMLPARSER
 void tst_QAbstractTextDocumentLayout::anchorAt()
 {
     QTextDocument doc;
@@ -204,6 +207,7 @@ void tst_QAbstractTextDocumentLayout::formatAt()
     QVERIFY(!format.toCharFormat().fontItalic());
     QVERIFY(!format.isImageFormat());
 }
+#endif
 
 QTEST_MAIN(tst_QAbstractTextDocumentLayout)
 #include "tst_qabstracttextdocumentlayout.moc"

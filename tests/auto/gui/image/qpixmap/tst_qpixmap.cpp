@@ -1176,8 +1176,10 @@ void tst_QPixmap::dprPassthrough()
     pm.convertFromImage(img);
     QCOMPARE(pm.devicePixelRatio(), dpr);
 
+#ifndef QT_NO_IMAGE_HEURISTIC_MASK
     QBitmap heuristicMask = src.createHeuristicMask();
     QCOMPARE(heuristicMask.devicePixelRatio(), dpr);
+#endif
 
     QBitmap maskFromColor = src.createMaskFromColor(Qt::white);
     QCOMPARE(maskFromColor.devicePixelRatio(), dpr);

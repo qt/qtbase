@@ -1396,7 +1396,9 @@ void QTextEngine::shapeText(int item) const
 
     QFontEngine *fontEngine = this->fontEngine(si, &si.ascent, &si.descent, &si.leading);
 
+#if QT_CONFIG(harfbuzz)
     bool kerningEnabled;
+#endif
     bool letterSpacingIsAbsolute;
     bool shapingEnabled = false;
     QHash<QFont::Tag, quint32> features;
@@ -1405,8 +1407,8 @@ void QTextEngine::shapeText(int item) const
     if (useRawFont) {
         QTextCharFormat f = format(&si);
         QFont font = f.font();
-        kerningEnabled = font.kerning();
 #  if QT_CONFIG(harfbuzz)
+        kerningEnabled = font.kerning();
         shapingEnabled = QFontEngine::scriptRequiresOpenType(QChar::Script(si.analysis.script))
                 || (font.styleStrategy() & QFont::PreferNoShaping) == 0;
 #  endif
@@ -1418,8 +1420,8 @@ void QTextEngine::shapeText(int item) const
 #endif
     {
         QFont font = this->font(si);
-        kerningEnabled = font.d->kerning;
 #if QT_CONFIG(harfbuzz)
+        kerningEnabled = font.d->kerning;
         shapingEnabled = QFontEngine::scriptRequiresOpenType(QChar::Script(si.analysis.script))
                 || (font.d->request.styleStrategy & QFont::PreferNoShaping) == 0;
 #endif

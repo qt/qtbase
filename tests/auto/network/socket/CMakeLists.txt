@@ -7,11 +7,14 @@ if(QT_FEATURE_private_tests)
     add_subdirectory(qsocks5socketengine)
     add_subdirectory(platformsocketengine)
 endif()
-add_subdirectory(qudpsocket)
+if(QT_FEATURE_udpsocket)
+    add_subdirectory(qudpsocket)
+endif()
 add_subdirectory(qabstractsocket)
-if(NOT ANDROID)
+if(QT_FEATURE_localserver AND NOT ANDROID)
     # QTBUG-87387
     add_subdirectory(qlocalsocket)
+
     # QTBUG-87388
     add_subdirectory(qtcpserver)
 endif()

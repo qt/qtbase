@@ -450,10 +450,12 @@ void PaintCommands::staticInit()
                       "^drawGlyphRun\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
                       "drawGlyphRun <x> <y> <text> - Will create glyph run using QTextLayout and draw this",
                       "drawGlyphRun 10 10 \"my text\"");
+#ifndef QT_NO_TEXTHTMLPARSER
     DECL_PAINTCOMMAND("drawTextDocument", command_drawTextDocument,
                       "^drawTextDocument\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
                       "drawTextDocument <x> <y> <html>",
                       "drawTextDocument 10 10 \"html\"");
+#endif
     DECL_PAINTCOMMAND("drawTiledPixmap", command_drawTiledPixmap,
                       "^drawTiledPixmap\\s+([\\w.:\\/]*)"
                       "\\s+(-?\\w*)\\s+(-?\\w*)\\s*(-?\\w*)\\s*(-?\\w*)"
@@ -1404,6 +1406,7 @@ void PaintCommands::command_drawGlyphRun(QRegularExpressionMatch re)
         m_painter->drawGlyphRun(QPointF(x, y), glyphRun);
 }
 
+#ifndef QT_NO_TEXTHTMLPARSER
 void PaintCommands::command_drawTextDocument(QRegularExpressionMatch re)
 {
     if (!m_shouldDrawText)
@@ -1425,6 +1428,7 @@ void PaintCommands::command_drawTextDocument(QRegularExpressionMatch re)
     doc.drawContents(m_painter);
     m_painter->restore();
 }
+#endif
 
 /***************************************************************************************************/
 void PaintCommands::command_fillRect(QRegularExpressionMatch re)

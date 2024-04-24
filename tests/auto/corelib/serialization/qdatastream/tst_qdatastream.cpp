@@ -143,9 +143,11 @@ private slots:
     void stream_QJsonObject();
     void stream_QJsonValue();
 
+#if QT_CONFIG(cborstreamwriter)
     void stream_QCborArray();
     void stream_QCborMap();
     void stream_QCborValue();
+#endif
 
     void setVersion_data();
     void setVersion();
@@ -2326,6 +2328,7 @@ void tst_QDataStream::stream_QJsonValue()
     }
 }
 
+#if QT_CONFIG(cborstreamwriter)
 void tst_QDataStream::stream_QCborArray()
 {
     QByteArray buffer;
@@ -2361,6 +2364,7 @@ void tst_QDataStream::stream_QCborValue()
     load >> valueLoad;
     QCOMPARE(valueLoad, valueSave);
 }
+#endif
 
 void tst_QDataStream::setVersion_data()
 {
@@ -3254,11 +3258,13 @@ void tst_QDataStream::streamRealDataTypes()
     // Generate QPicture from pixmap.
     QPixmap pm(open_xpm);
     QVERIFY(!pm.isNull());
+#ifndef QT_NO_PICTURE
     QPicture picture;
     picture.setBoundingRect(QRect(QPoint(0, 0), pm.size()));
     QPainter painter(&picture);
     painter.drawPixmap(0, 0, pm);
     painter.end();
+#endif
 
     // Generate path
     QPainterPath path;
@@ -3296,7 +3302,9 @@ void tst_QDataStream::streamRealDataTypes()
             stream << QPointF(3, 5) << QRectF(-1, -2, 3, 4) << (QPolygonF() << QPointF(0, 0) << QPointF(1, 2));
             stream << QTransform().rotate(90).scale(2, 2).asAffineMatrix();
             stream << path;
+#ifndef QT_NO_PICTURE
             stream << picture;
+#endif
             stream << QTextLength(QTextLength::VariableLength, 1.5);
             stream << color;
             stream << radialBrush << conicalBrush;
@@ -3310,7 +3318,9 @@ void tst_QDataStream::streamRealDataTypes()
         QPolygonF polygon {{3, 4}, {5, 6}};
         QTransform transform;
         QPainterPath p = otherPath;
+#ifndef QT_NO_PICTURE
         QPicture pict;
+#endif
         QTextLength textLength(QTextLength::FixedLength, 2.5);
         QColor col(128, 128, 127);
         QBrush rGrad(Qt::CrossPattern);
@@ -3363,6 +3373,7 @@ void tst_QDataStream::streamRealDataTypes()
         QCOMPARE(transform, QTransform().rotate(90).scale(2, 2));
         stream >> p;
         QCOMPARE(p, path);
+#ifndef QT_NO_PICTURE
         if (i == 1) {
             stream >> pict;
 
@@ -3376,6 +3387,7 @@ void tst_QDataStream::streamRealDataTypes()
 
             QCOMPARE(pictA, pictB);
         }
+#endif
         stream >> textLength;
         QCOMPARE(textLength, QTextLength(QTextLength::VariableLength, 1.5));
         stream >> col;

@@ -3863,10 +3863,12 @@ void tst_QImage::metadataPassthrough()
     QCOMPARE(alphaMask.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(alphaMask.devicePixelRatio(), a.devicePixelRatio());
 
+#ifndef QT_NO_IMAGE_HEURISTIC_MASK
     QImage heuristicMask = a.createHeuristicMask();
     QCOMPARE(heuristicMask.dotsPerMeterX(), a.dotsPerMeterX());
     QCOMPARE(heuristicMask.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(heuristicMask.devicePixelRatio(), a.devicePixelRatio());
+#endif
 
     QImage maskFromColor = a.createMaskFromColor(qRgb(0, 0, 0));
     QCOMPARE(maskFromColor.dotsPerMeterX(), a.dotsPerMeterX());

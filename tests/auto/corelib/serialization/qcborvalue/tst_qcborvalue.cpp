@@ -7,7 +7,9 @@
 
 #include <QBuffer>
 #include <QCborStreamReader>
+#if QT_CONFIG(cborstreamwriter)
 #include <QCborStreamWriter>
+#endif
 #include <QDateTime>
 #include <QtEndian>
 #include <QTimeZone>
@@ -86,9 +88,11 @@ private slots:
     void comparisonMap();
 
     void toCbor_data();
+#if QT_CONFIG(cborstreamwriter)
     void toCbor();
     void toCborStreamWriter_data() { toCbor_data(); }
     void toCborStreamWriter();
+#endif
     void fromCbor_data();
     void fromCbor();
     void fromCborStreamReaderByteArray_data() { fromCbor_data(); }
@@ -2311,6 +2315,7 @@ void tst_QCborValue::toCbor_data()
     QTest::newRow("UseInteger:-2^65") << QCborValue(-2 * 18446744073709551616.0) << raw("\xfb\xc4\0\0\0""\0\0\0\0") << QCborValue::EncodingOptions(QCborValue::UseIntegers);
 }
 
+#if QT_CONFIG(cborstreamwriter)
 void tst_QCborValue::toCbor()
 {
     QFETCH(QCborValue, v);
@@ -2350,6 +2355,7 @@ void tst_QCborValue::toCborStreamWriter()
     QCOMPARE(buffer.pos(), result.size());
     QCOMPARE(output, result);
 }
+#endif
 
 void tst_QCborValue::fromCbor_data()
 {
@@ -2667,12 +2673,14 @@ void tst_QCborValue::extendedTypeValidation()
     QCOMPARE(error.offset, data.size());
     QT_TEST_EQUALITY_OPS(decoded, expected, true);
 
+#if QT_CONFIG(cborstreamwriter)
     QByteArray encoded = decoded.toCbor();
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     // behavior change, see qdatetime.cpp:fromIsoTimeString
     QEXPECT_FAIL("DateTime:Null-at-19", "QDateTime parsing fixed, but only in 6.0", Abort);
 #endif
     QCOMPARE(encoded, data);
+#endif
 }
 
 void tst_QCborValue::hugeDeviceValidation_data()
@@ -3000,7 +3008,9 @@ template <typename ValueRef> static void cborValueRef_template()
     else
         QCOMPARE(ref.toVariant(), v.toVariant());
     QCOMPARE(ref.toJsonValue(), v.toJsonValue());
+#if QT_CONFIG(cborstreamwriter)
     QCOMPARE(ref.toCbor(), v.toCbor());
+#endif
     QCOMPARE(ref.toDiagnosticNotation(), v.toDiagnosticNotation());
 }
 
@@ -3160,6 +3170,7 @@ void tst_QCborValue::datastreamSerialization_data()
 
 void tst_QCborValue::datastreamSerialization()
 {
+#if QT_CONFIG(cborstreamwriter)
     QFETCH(QCborValue, v);
     QByteArray buffer;
     {
@@ -3187,6 +3198,7 @@ void tst_QCborValue::datastreamSerialization()
         load >> output;
         QCOMPARE(output, map);
     }
+#endif
 }
 
 void tst_QCborValue::streamVariantSerialization()

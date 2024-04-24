@@ -21,7 +21,7 @@ private Q_SLOTS:
     void deterministicSeed();
     void reseeding();
     void quality();
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && QT_DEPRECATED_SINCE(6,6)
     void compatibilityApi();
     void deterministicSeed_compat();
 #endif
@@ -157,7 +157,7 @@ void tst_QHashSeed::quality()
              "seedsToMinus1 = " + QByteArray::number(seedsToMinus1));
 }
 
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && QT_DEPRECATED_SINCE(6,6)
 QT_WARNING_DISABLE_DEPRECATED
 void tst_QHashSeed::compatibilityApi()
 {

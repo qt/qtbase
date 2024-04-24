@@ -3,11 +3,15 @@
 
 #include <QTest>
 #include <QSignalSpy>
+#if QT_CONFIG(sortfilterproxymodel)
 #include <QSortFilterProxyModel>
+#endif
 
 #include <qobject.h>
 #include <qmetaobject.h>
+#if QT_CONFIG(proxymodel)
 #include <qabstractproxymodel.h>
+#endif
 #include <private/qmetaobject_p.h>
 
 Q_DECLARE_METATYPE(const QMetaObject *)
@@ -1906,6 +1910,7 @@ void tst_QMetaObject::invokeBlockingQueuedPointer()
 void tst_QMetaObject::qtMetaObjectInheritance()
 {
     QVERIFY(!QObject::staticMetaObject.superClass());
+#if QT_CONFIG(sortfilterproxymodel)
     QCOMPARE(QSortFilterProxyModel::staticMetaObject.indexOfEnumerator("Qt::CaseSensitivity"), -1);
     QCOMPARE(QSortFilterProxyModel::staticMetaObject.indexOfEnumerator("CaseSensitivity"), -1);
     int indexOfSortCaseSensitivity = QSortFilterProxyModel::staticMetaObject.indexOfProperty("sortCaseSensitivity");
@@ -1913,6 +1918,7 @@ void tst_QMetaObject::qtMetaObjectInheritance()
     QMetaProperty sortCaseSensitivity = QSortFilterProxyModel::staticMetaObject.property(indexOfSortCaseSensitivity);
     QVERIFY(sortCaseSensitivity.isValid());
     QCOMPARE(sortCaseSensitivity.enumerator().name(), "CaseSensitivity");
+#endif
 }
 
 struct MyType
@@ -2515,7 +2521,9 @@ void tst_QMetaObject::metaType()
 {
     QCOMPARE(QObject::staticMetaObject.metaType(), QMetaType::fromType<QObject>());
     QCOMPARE(MyGadget::staticMetaObject.metaType(), QMetaType::fromType<MyGadget>());
+#if QT_CONFIG(proxymodel)
     QCOMPARE(QAbstractProxyModel::staticMetaObject.metaType(), QMetaType::fromType<QAbstractProxyModel>());
+#endif
     auto qtNameSpaceMetaType = Qt::staticMetaObject.metaType();
     QVERIFY2(!qtNameSpaceMetaType.isValid(), qtNameSpaceMetaType.name());
 }

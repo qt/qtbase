@@ -39,7 +39,9 @@ private slots:
     void navigation7();
     void navigation8();
     void navigation9();
+#ifndef QT_NO_TEXTHTMLPARSER
     void navigation10();
+#endif
     void movePositionEndOfLine();
     void insertBlock();
     void insertWithBlockSeparator1();
@@ -431,6 +433,7 @@ void tst_QTextCursor::navigation9()
     QCOMPARE(cursor.position(), 15);
 }
 
+#ifndef QT_NO_TEXTHTMLPARSER
 void tst_QTextCursor::navigation10()
 {
     doc->setHtml("<html><p>just a simple paragraph.</p>"
@@ -542,6 +545,7 @@ void tst_QTextCursor::navigation10()
     QVERIFY(ok);
     QCOMPARE(cursor.position(), 1); // a
 }
+#endif
 
 void tst_QTextCursor::insertBlock()
 {

@@ -25,7 +25,9 @@ public:
 
 private slots:
     void loadHtml_data();
+#ifndef QT_NO_TEXTHTMLPARSER
     void loadHtml();
+#endif
 
     void shaping_data();
     void shaping();
@@ -47,9 +49,11 @@ private slots:
     void paintLayoutToPixmap();
     void paintLayoutToPixmap_painterFill();
 
+#ifndef QT_NO_TEXTHTMLPARSER
     void document();
     void paintDocToPixmap();
     void paintDocToPixmap_painterFill();
+#endif
 
 private:
     QSize setupTextLayout(QTextLayout *layout, bool wrap = true, int wrapWidth = 100);
@@ -76,6 +80,7 @@ void tst_QText::loadHtml_data()
         + parag;
 }
 
+#ifndef QT_NO_TEXTHTMLPARSER
 void tst_QText::loadHtml()
 {
     QFETCH(QString, source);
@@ -84,6 +89,7 @@ void tst_QText::loadHtml()
         doc.setHtml(source);
     }
 }
+#endif
 
 void tst_QText::shaping_data()
 {
@@ -371,6 +377,7 @@ void tst_QText::paintLayoutToPixmap_painterFill()
     }
 }
 
+#ifndef QT_NO_TEXTHTMLPARSER
 void tst_QText::document()
 {
     QTextDocument *doc = new QTextDocument;
@@ -413,6 +420,7 @@ void tst_QText::paintDocToPixmap_painterFill()
         doc->drawContents(&p);
     }
 }
+#endif
 
 QTEST_MAIN(tst_QText)
 

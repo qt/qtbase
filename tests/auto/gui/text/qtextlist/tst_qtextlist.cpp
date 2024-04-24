@@ -140,6 +140,7 @@ void tst_QTextList::autoNumberingPrefixAndSuffixHtmlExportImport()
 
     QCOMPARE(list->count(), 28);
 
+#ifndef QT_NO_TEXTHTMLPARSER
     QString htmlExport = doc->toHtml();
     QTextDocument importDoc;
     importDoc.setHtml(htmlExport);
@@ -152,6 +153,7 @@ void tst_QTextList::autoNumberingPrefixAndSuffixHtmlExportImport()
     QCOMPARE(importCursor.currentList()->itemNumber(importCursor.block()), 27);
     QCOMPARE(importCursor.currentList()->itemText(importCursor.block()), QLatin1String("\"ab#"));
     QCOMPARE(importCursor.currentList()->format().indent(), 10);
+#endif
 }
 
 void tst_QTextList::autoNumberingRTL()

@@ -893,7 +893,7 @@ qt_feature("jpeg" PRIVATE
     CONDITION QT_FEATURE_imageformatplugin
     DISABLE INPUT_libjpeg STREQUAL 'no'
 )
-qt_feature_definition("jpeg" "QT_NO_IMAGEFORMAT_JPEG" NEGATE)
+qt_feature_definition("jpeg" "QT_NO_IMAGEFORMAT_JPEG" NEGATE VALUE "1")
 qt_feature("system-jpeg" PRIVATE
     LABEL "  Using system libjpeg"
     CONDITION QT_FEATURE_jpeg AND JPEG_FOUND

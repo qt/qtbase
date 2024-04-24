@@ -57,8 +57,10 @@ private slots:
     void merge();
     void isRowSelected();
     void childrenDeselectionSignal();
+#if QT_CONFIG(proxymodel)
     void layoutChangedWithAllSelected1();
     void layoutChangedWithAllSelected2();
+#endif
     void layoutChangedTreeSelection();
     void deselectRemovedMiddleRange();
     void setModel();
@@ -75,7 +77,9 @@ private slots:
     void QTBUG48402();
 
     void QTBUG58851_data();
+#if QT_CONFIG(proxymodel)
     void QTBUG58851();
+#endif
 
     void QTBUG18001_data();
     void QTBUG18001();
@@ -2260,6 +2264,7 @@ void tst_QItemSelectionModel::childrenDeselectionSignal()
     QVERIFY(selectionModel.selection().contains(sel2));
 }
 
+#if QT_CONFIG(proxymodel)
 void tst_QItemSelectionModel::layoutChangedWithAllSelected1()
 {
     QStringListModel model( QStringList() << "foo" << "bar" << "foo2");
@@ -2338,6 +2343,7 @@ void tst_QItemSelectionModel::layoutChangedWithAllSelected2()
     for (const auto &index : indexList)
         QVERIFY(selection.isSelected(index));
 }
+#endif
 
 // This test is a regression test for QTBUG-2804.
 void tst_QItemSelectionModel::layoutChangedTreeSelection()
@@ -2752,6 +2758,7 @@ void tst_QItemSelectionModel::QTBUG58851_data()
                 << IntPair(2, 3));
 }
 
+#if QT_CONFIG(proxymodel)
 void tst_QItemSelectionModel::QTBUG58851()
 {
     using IntPair = std::pair<int, int>;
@@ -2796,6 +2803,7 @@ void tst_QItemSelectionModel::QTBUG58851()
         QVERIFY(selections.isSelected(i));
     }
 }
+#endif
 
 void tst_QItemSelectionModel::QTBUG18001_data()
 {

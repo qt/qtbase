@@ -1179,7 +1179,7 @@ void tst_QDate::operator_insert_extract()
     QCOMPARE(deserialised, date);
 }
 
-#if QT_CONFIG(datetimeparser)
+#if QT_CONFIG(datestring)
 void tst_QDate::fromStringDateFormat_data()
 {
     QTest::addColumn<QString>("dateStr");
@@ -1303,6 +1303,7 @@ void tst_QDate::fromStringDateFormat()
     QCOMPARE(QDate::fromString(dateStr, dateFormat), expectedDate);
 }
 
+# if QT_CONFIG(datetimeparser)
 void tst_QDate::fromStringFormat_data()
 {
     QTest::addColumn<QString>("string");
@@ -1490,7 +1491,6 @@ void tst_QDate::fromStringFormat()
 }
 #endif // datetimeparser
 
-#if QT_CONFIG(datestring)
 void tst_QDate::toStringFormat_data()
 {
     QTest::addColumn<QDate>("t");

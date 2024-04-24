@@ -3,7 +3,9 @@
 
 add_subdirectory(json)
 add_subdirectory(qcborstreamreader)
-add_subdirectory(qcborstreamwriter)
+if(QT_FEATURE_cborstreamwriter)
+    add_subdirectory(qcborstreamwriter)
+endif()
 if(NOT WASM)
     add_subdirectory(qcborvalue)
 endif()
