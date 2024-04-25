@@ -5,8 +5,11 @@
 #define QQNXNAVIGATORPPS_H
 
 #include "qqnxabstractnavigator.h"
+#include <QtCore/QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaQnxNavigator);
 
 template <typename K, typename V> class QHash;
 

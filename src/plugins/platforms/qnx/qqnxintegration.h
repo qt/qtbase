@@ -10,12 +10,16 @@
 #include <QtCore/qmutex.h>
 
 #include <screen/screen.h>
+#include <QtCore/QLoggingCategory>
 
 #if QT_CONFIG(opengl)
 #include <EGL/egl.h>
 #endif
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaQnx);
+Q_DECLARE_LOGGING_CATEGORY(lcQpaGLContext);
 
 class QQnxScreenEventThread;
 class QQnxFileDialogHelper;

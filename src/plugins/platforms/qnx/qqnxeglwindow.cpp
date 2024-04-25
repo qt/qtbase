@@ -10,13 +10,9 @@
 
 #include <errno.h>
 
-#if defined(QQNXEGLWINDOW_DEBUG)
-#define qEglWindowDebug qDebug
-#else
-#define qEglWindowDebug QT_NO_QDEBUG_MACRO
-#endif
-
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQpaWindowEgl, "qt.qpa.window.egl");
 
 QQnxEglWindow::QQnxEglWindow(QWindow *window, screen_context_t context, bool needRootWindow) :
     QQnxWindow(window, context, needRootWindow),
@@ -96,8 +92,8 @@ void QQnxEglWindow::createEGLSurface(QQnxGLContext *context)
         EGL_NONE
     };
 
-    qEglWindowDebug() << "Creating EGL surface from" << this << context
-        << window()->surfaceType() << window()->type();
+    qCDebug(lcQpaWindowEgl) << "Creating EGL surface from" << this << context
+                            << window()->surfaceType() << window()->type();
 
     // Create EGL surface
     EGLSurface eglSurface = eglCreateWindowSurface(

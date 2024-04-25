@@ -8,6 +8,7 @@
 #include "qqnxabstractcover.h"
 
 #include <QtCore/QScopedPointer>
+#include <QtCore/QLoggingCategory>
 
 #if !defined(QT_NO_OPENGL)
 #include <EGL/egl.h>
@@ -16,6 +17,8 @@
 #include <screen/screen.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaWindow);
 
 // all surfaces double buffered
 #define MAX_BUFFER_COUNT    2

@@ -13,13 +13,9 @@
 #include <QtCore/QSocketNotifier>
 #include <QtCore/private/qcore_unix_p.h>
 
-#if defined(QQNXBUTTON_DEBUG)
-#define qButtonDebug qDebug
-#else
-#define qButtonDebug QT_NO_QDEBUG_MACRO
-#endif
-
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQpaInputHwButton, "qt.qpa.input.hwbutton");
 
 const char *QQnxButtonEventNotifier::ppsPath = "/pps/system/buttons/status";
 const size_t QQnxButtonEventNotifier::ppsBufferSize = 256;
@@ -47,7 +43,7 @@ QQnxButtonEventNotifier::~QQnxButtonEventNotifier()
 
 void QQnxButtonEventNotifier::start()
 {
-    qButtonDebug("starting hardware button event processing");
+    qCDebug(lcQpaInputHwButton) << "Starting hardware button event processing";
     if (m_fd != -1)
         return;
 
@@ -64,7 +60,7 @@ void QQnxButtonEventNotifier::start()
     m_readNotifier = new QSocketNotifier(m_fd, QSocketNotifier::Read);
     QObject::connect(m_readNotifier, SIGNAL(activated(QSocketDescriptor)), this, SLOT(updateButtonStates()));
 
-    qButtonDebug("successfully connected to Navigator. fd = %d", m_fd);
+    qCDebug(lcQpaInputHwButton, "successfully connected to Navigator. fd = %d", m_fd);
 }
 
 void QQnxButtonEventNotifier::updateButtonStates()
@@ -75,7 +71,8 @@ void QQnxButtonEventNotifier::updateButtonStates()
     // Attempt to read pps data
     errno = 0;
     int bytes = qt_safe_read(m_fd, buffer, ppsBufferSize - 1);
-    qButtonDebug() << "Read" << bytes << "bytes of data";
+    qCDebug(lcQpaInputHwButton) << "Read" << bytes << "bytes of data";
+
     if (bytes == -1) {
         qWarning("QQNX: failed to read hardware buttons pps object, errno=%d", errno);
         return;
@@ -88,7 +85,7 @@ void QQnxButtonEventNotifier::updateButtonStates()
     // Ensure data is null terminated
     buffer[bytes] = '\0';
 
-    qButtonDebug("received PPS message:\n%s", buffer);
+    qCDebug(lcQpaInputHwButton, "Received PPS message:\n%s", buffer);
 
     // Process received message
     QByteArray ppsData = QByteArray::fromRawData(buffer, bytes);
@@ -104,7 +101,8 @@ void QQnxButtonEventNotifier::updateButtonStates()
 
         // If state has changed, update our state and inject a keypress event
         if (m_state[buttonId] != newState) {
-            qButtonDebug() << "Hardware button event: button =" << key << "state =" << fields.value(key);
+            qCDebug(lcQpaInputHwButton) << "Hardware button event: button =" << key << "state =" << fields.value(key);
+
             m_state[buttonId] = newState;
 
             // Is it a key press or key release event?
@@ -129,7 +127,7 @@ void QQnxButtonEventNotifier::updateButtonStates()
                     break;
 
                 default:
-                    qButtonDebug("Unknown hardware button");
+                    qCDebug(lcQpaInputHwButton) << "Unknown hardware button";
                     continue;
             }
 
@@ -170,7 +168,7 @@ bool QQnxButtonEventNotifier::parsePPS(const QByteArray &ppsData, QHash<QByteArr
         // tokenize current attribute
         const QByteArray &attr = lines.at(i);
 
-        qButtonDebug() << "attr=" << attr;
+        qCDebug(lcQpaInputHwButton) << Q_FUNC_INFO << "attr =" << attr;
 
         int doubleColon = attr.indexOf(QByteArrayLiteral("::"));
         if (doubleColon == -1) {

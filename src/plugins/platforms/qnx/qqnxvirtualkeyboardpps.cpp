@@ -18,13 +18,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#if defined(QQNXVIRTUALKEYBOARD_DEBUG)
-#define qVirtualKeyboardDebug qDebug
-#else
-#define qVirtualKeyboardDebug QT_NO_QDEBUG_MACRO
-#endif
-
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQpaQnxVirtualKeyboard, "qt.qpa.qnx.virtualkeyboard");
 
 const char  *QQnxVirtualKeyboardPps::ms_PPSPath = "/pps/services/input/control";
 const size_t QQnxVirtualKeyboardPps::ms_bufferSize = 2048;
@@ -45,7 +41,7 @@ QQnxVirtualKeyboardPps::~QQnxVirtualKeyboardPps()
 
 void QQnxVirtualKeyboardPps::start()
 {
-    qVirtualKeyboardDebug("starting keyboard event processing");
+    qCDebug(lcQpaQnxVirtualKeyboard) << "Starting keyboard event processing";
     if (!connect())
         return;
 }
@@ -90,8 +86,8 @@ bool QQnxVirtualKeyboardPps::connect()
     m_fd = ::open(ms_PPSPath, O_RDWR);
     if (m_fd == -1)
     {
-        qVirtualKeyboardDebug() << "Unable to open" << ms_PPSPath
-                                               << ':' << strerror(errno);
+        qCDebug(lcQpaQnxVirtualKeyboard) << "Unable to open" << ms_PPSPath
+                                         << ':' << strerror(errno);
         close();
         return false;
     }
@@ -128,7 +124,7 @@ void QQnxVirtualKeyboardPps::ppsDataReady()
 {
     qint64 nread = qt_safe_read(m_fd, m_buffer, ms_bufferSize - 1);
 
-    qVirtualKeyboardDebug("keyboardMessage size: %lld", nread);
+    qCDebug(lcQpaQnxVirtualKeyboard, "keyboardMessage size: %lld", nread);
     if (nread < 0){
         connect(); // reconnect
         return;
@@ -167,7 +163,7 @@ void QQnxVirtualKeyboardPps::ppsDataReady()
         else if (strcmp(value, "info") == 0)
             handleKeyboardInfoMessage();
         else if (strcmp(value, "connect") == 0)
-            qVirtualKeyboardDebug("Unhandled command 'connect'");
+            qCDebug(lcQpaQnxVirtualKeyboard, "Unhandled command 'connect'");
         else
             qCritical("QQnxVirtualKeyboard: Unexpected keyboard PPS msg value: %s", value ? value : "[null]");
     } else if (pps_decoder_get_string(m_decoder, "res", &value) == PPS_DECODER_OK) {
@@ -194,12 +190,12 @@ void QQnxVirtualKeyboardPps::handleKeyboardInfoMessage()
     }
     setHeight(newHeight);
 
-    qVirtualKeyboardDebug("size=%d", newHeight);
+    qCDebug(lcQpaQnxVirtualKeyboard, "size=%d", newHeight);
 }
 
 bool QQnxVirtualKeyboardPps::showKeyboard()
 {
-    qVirtualKeyboardDebug();
+    qCDebug(lcQpaQnxVirtualKeyboard) << Q_FUNC_INFO;
 
     if (!prepareToSend())
         return false;
@@ -221,7 +217,7 @@ bool QQnxVirtualKeyboardPps::showKeyboard()
 
 bool QQnxVirtualKeyboardPps::hideKeyboard()
 {
-    qVirtualKeyboardDebug();
+    qCDebug(lcQpaQnxVirtualKeyboard) << Q_FUNC_INFO;
 
     if (!prepareToSend())
         return false;

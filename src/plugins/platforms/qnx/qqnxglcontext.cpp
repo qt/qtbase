@@ -14,13 +14,9 @@
 
 #include <dlfcn.h>
 
-#if defined(QQNXGLCONTEXT_DEBUG)
-#define qGLContextDebug qDebug
-#else
-#define qGLContextDebug QT_NO_QDEBUG_MACRO
-#endif
-
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQpaGLContext, "qt.qpa.glcontext");
 
 static QEGLPlatformContext::Flags makeFlags()
 {
@@ -51,13 +47,13 @@ EGLSurface QQnxGLContext::eglSurfaceForPlatformSurface(QPlatformSurface *surface
 
 bool QQnxGLContext::makeCurrent(QPlatformSurface *surface)
 {
-    qGLContextDebug();
+    qCDebug(lcQpaGLContext) << Q_FUNC_INFO;
     return QEGLPlatformContext::makeCurrent(surface);
 }
 
 void QQnxGLContext::swapBuffers(QPlatformSurface *surface)
 {
-    qGLContextDebug();
+    qCDebug(lcQpaGLContext) << Q_FUNC_INFO;
 
     QEGLPlatformContext::swapBuffers(surface);
 

@@ -6,8 +6,11 @@
 
 #include "qqnxwindow.h"
 #include <QtCore/QMutex>
+#include <QtCore/QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaWindowEgl);
 
 class QQnxGLContext;
 

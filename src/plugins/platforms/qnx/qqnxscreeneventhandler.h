@@ -5,10 +5,13 @@
 #define QQNXSCREENEVENTHANDLER_H
 
 #include <qpa/qwindowsysteminterface.h>
+#include <QtCore/QLoggingCategory>
 
 #include <screen/screen.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaScreenEvents);
 
 class QQnxIntegration;
 class QQnxScreenEventFilter;

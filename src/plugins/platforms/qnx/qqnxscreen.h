@@ -30,6 +30,10 @@ const int SCREEN_PROPERTY_SYM = SCREEN_PROPERTY_KEY_SYM;
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(lcQpaScreen);
+Q_DECLARE_LOGGING_CATEGORY(lcQpaScreenEvents);
+Q_DECLARE_LOGGING_CATEGORY(lcQpaScreenBuffer);
+
 class QQnxWindow;
 
 class QQnxScreen : public QObject, public QPlatformScreen

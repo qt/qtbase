@@ -10,12 +10,6 @@
 
 #include <errno.h>
 
-#if defined(QQNXRASTERWINDOW_DEBUG)
-#define qRasterWindowDebug qDebug
-#else
-#define qRasterWindowDebug QT_NO_QDEBUG_MACRO
-#endif
-
 QT_BEGIN_NAMESPACE
 
 QQnxRasterWindow::QQnxRasterWindow(QWindow *window, screen_context_t context, bool needRootWindow) :
@@ -61,7 +55,7 @@ void QQnxRasterWindow::post(const QRegion &dirty)
 
     // Check if render buffer exists and something was rendered
     if (m_currentBufferIndex != -1 && !dirty.isEmpty()) {
-        qRasterWindowDebug() << "window =" << window();
+        qCDebug(lcQpaWindow) << Q_FUNC_INFO << "window = " << window();
         QQnxBuffer &currentBuffer = m_buffers[m_currentBufferIndex];
 
         // Copy unmodified region from old render buffer to new render buffer;
@@ -94,14 +88,14 @@ void QQnxRasterWindow::post(const QRegion &dirty)
 
 void QQnxRasterWindow::scroll(const QRegion &region, int dx, int dy, bool flush)
 {
-    qRasterWindowDebug() << "window =" << window();
+    qCDebug(lcQpaWindow) << Q_FUNC_INFO << "window = " << window();
     blitPreviousToCurrent(region, dx, dy, flush);
     m_scrolled += region;
 }
 
 QQnxBuffer &QQnxRasterWindow::renderBuffer()
 {
-    qRasterWindowDebug() << "window =" << window();
+    qCDebug(lcQpaWindow) << Q_FUNC_INFO << "window = " << window();
 
     // Check if render buffer is invalid
     if (m_currentBufferIndex == -1) {
@@ -162,7 +156,7 @@ void QQnxRasterWindow::resetBuffers()
 
 void QQnxRasterWindow::blitPreviousToCurrent(const QRegion &region, int dx, int dy, bool flush)
 {
-    qRasterWindowDebug() << "window =" << window();
+    qCDebug(lcQpaWindow) << Q_FUNC_INFO << "window = " << window();
 
     // Abort if previous buffer is invalid or if nothing to copy
     if (m_previousBufferIndex == -1 || region.isEmpty())

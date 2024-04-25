@@ -5,8 +5,11 @@
 #define QQNXBUTTONSEVENTNOTIFIER_H
 
 #include <QObject>
+#include <QtCore/QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaInputHwButton);
 
 class QSocketNotifier;
 

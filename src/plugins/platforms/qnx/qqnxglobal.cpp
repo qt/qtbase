@@ -15,6 +15,8 @@ void qScreenCheckError(int rc, const char *funcInfo, const char *message, bool c
     }
 
     if (Q_UNLIKELY(rc)) {
+        qCDebug(lcQpaQnx, "%s - Screen: %s - Error: %s (%i)", funcInfo, message, strerror(errno), errno);
+
         if (Q_UNLIKELY(critical))
             qCritical("%s - Screen: %s - Error: %s (%i)", funcInfo, message, strerror(errno), errno);
         else

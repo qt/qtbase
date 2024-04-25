@@ -5,10 +5,13 @@
 #define QQNXBUFFER_H
 
 #include <QtGui/QImage>
+#include <QtCore/QLoggingCategory>
 
 #include <screen/screen.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQpaScreenBuffer)
 
 class QQnxBuffer
 {
