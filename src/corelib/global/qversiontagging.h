@@ -4,6 +4,10 @@
 #if !defined(QVERSIONTAGGING_H)
 #define QVERSIONTAGGING_H
 
+#if 0
+#pragma qt_no_master_include
+#endif
+
 #include <QtCore/qcompilerdetection.h>
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qtversionchecks.h>
