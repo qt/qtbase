@@ -29,7 +29,9 @@ enum PlatformFlag {
     ClangMsvc    = 0x00400,
     ClangMinGW   = 0x00800,
     // Platforms
-    WindowsDesktopMsvc = WindowsBased + IntelBased + Msvc,
+    WindowsDesktopMsvc = WindowsBased + Msvc,
+    WindowsDesktopMsvcIntel = WindowsDesktopMsvc + IntelBased,
+    WindowsDesktopMsvcArm = WindowsDesktopMsvc + ArmBased,
     WindowsDesktopMinGW = WindowsBased + IntelBased + MinGW,
     WindowsDesktopClangMsvc = WindowsBased + IntelBased + ClangMsvc,
     WindowsDesktopClangMinGW = WindowsBased + IntelBased + ClangMinGW,
