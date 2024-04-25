@@ -773,8 +773,8 @@ public:
                                  VkSampleCountFlagBits samples,
                                  VkFormat colorFormat);
     bool createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
-                                   const QRhiColorAttachment *firstColorAttachment,
-                                   const QRhiColorAttachment *lastColorAttachment,
+                                   const QRhiColorAttachment *colorAttachmentsBegin,
+                                   const QRhiColorAttachment *colorAttachmentsEnd,
                                    bool preserveColor,
                                    bool preserveDs,
                                    bool storeDs,

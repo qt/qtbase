@@ -1598,8 +1598,8 @@ struct RenderPass2SetupHelper
 #endif // VK_KHR_create_renderpass2
 
 bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
-                                           const QRhiColorAttachment *firstColorAttachment,
-                                           const QRhiColorAttachment *lastColorAttachment,
+                                           const QRhiColorAttachment *colorAttachmentsBegin,
+                                           const QRhiColorAttachment *colorAttachmentsEnd,
                                            bool preserveColor,
                                            bool preserveDs,
                                            bool storeDs,
@@ -1610,7 +1610,7 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
     // attachment list layout is color (0-8), ds (0-1), resolve (0-8), ds resolve (0-1)
 
     int multiViewCount = 0;
-    for (auto it = firstColorAttachment; it != lastColorAttachment; ++it) {
+    for (auto it = colorAttachmentsBegin; it != colorAttachmentsEnd; ++it) {
         QVkTexture *texD = QRHI_RES(QVkTexture, it->texture());
         QVkRenderBuffer *rbD = QRHI_RES(QVkRenderBuffer, it->renderBuffer());
         Q_ASSERT(texD || rbD);
@@ -1662,10 +1662,14 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
         attDesc.initialLayout = preserveDs ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED;
         attDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         rpD->attDescs.append(attDesc);
+        if (depthTexture && depthTexture->arraySize() >= 2 && colorAttachmentsBegin == colorAttachmentsEnd) {
+            multiViewCount = depthTexture->arraySize();
+            rpD->multiViewCount = multiViewCount;
+        }
     }
     rpD->dsRef = { uint32_t(rpD->attDescs.size() - 1), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
 
-    for (auto it = firstColorAttachment; it != lastColorAttachment; ++it) {
+    for (auto it = colorAttachmentsBegin; it != colorAttachmentsEnd; ++it) {
         if (it->resolveTexture()) {
             QVkTexture *rtexD = QRHI_RES(QVkTexture, it->resolveTexture());
             const VkFormat dstFormat = rtexD->vkformat;
