@@ -139,8 +139,10 @@ static Platform platformFromMkSpec(const QString &xSpec)
             return WindowsDesktopClangMsvc;
         if (xSpec.contains("arm"_L1))
             return WindowsDesktopMsvcArm;
+        if (xSpec.contains("G++"_L1))
+            return WindowsDesktopMinGW;
 
-        return xSpec.contains("g++"_L1) ? WindowsDesktopMinGW : WindowsDesktopMsvcIntel;
+        return WindowsDesktopMsvc;
     }
     return UnknownPlatform;
 }
@@ -1856,6 +1858,24 @@ int main(int argc, char **argv)
     }
 
     options.platform = platformFromMkSpec(xSpec);
+    // We are on MSVC and not crosscompiling. We need the host arch
+    if (options.platform == WindowsDesktopMsvc) {
+        SYSTEM_INFO si;
+        GetSystemInfo(&si);
+        switch (si.wProcessorArchitecture) {
+        case PROCESSOR_ARCHITECTURE_INTEL:
+        case PROCESSOR_ARCHITECTURE_IA64:
+        case PROCESSOR_ARCHITECTURE_AMD64:
+            options.platform |= IntelBased;
+            break;
+        case PROCESSOR_ARCHITECTURE_ARM:
+        case PROCESSOR_ARCHITECTURE_ARM64:
+            options.platform |= ArmBased;
+            break;
+        default:
+            options.platform = UnknownPlatform;
+        }
+    }
     if (options.platform == UnknownPlatform) {
         std::wcerr << "Unsupported platform " << xSpec << '\n';
         return 1;
