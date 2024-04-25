@@ -28,6 +28,7 @@ public:
     ~QDialog();
 
     enum DialogCode { Rejected, Accepted };
+    Q_ENUM(DialogCode)
 
     int result() const;
 
