@@ -63,6 +63,7 @@ SOURCES += \
     $$PWD/src/hb-subset-cff1.cc \
     $$PWD/src/hb-subset-cff2.cc \
     $$PWD/src/hb-subset-input.cc \
+    $$PWD/src/hb-subset-instancer-iup.cc \
     $$PWD/src/hb-subset-instancer-solver.cc \
     $$PWD/src/hb-subset-plan.cc \
     $$PWD/src/hb-subset-repacker.cc \
@@ -92,6 +93,7 @@ HEADERS += \
     $$PWD/src/hb-shaper-impl.hh \
     $$PWD/src/hb-shaper-list.hh \
     $$PWD/src/hb-string-array.hh \
+    $$PWD/src/hb-subset-instancer-iup.hh \
     $$PWD/src/hb-subset-plan-member-list.hh \
     $$PWD/src/hb-subset-repacker.h \
     $$PWD/src/hb-unicode.hh
