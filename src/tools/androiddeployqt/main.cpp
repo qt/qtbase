@@ -2972,47 +2972,38 @@ enum PackageType {
     SignedAPK
 };
 
-QString packagePath(const Options &options, PackageType pt)
+QString packagePath(const Options &options, PackageType packageType)
 {
-    QString path(options.outputDirectory);
     // The package type is always AAR if option.buildAar has been set
     if (options.buildAar)
-        pt = AAR;
-    static QHash<PackageType, QString> packageTypeToPath{ { AAB, QStringLiteral("bundle") },
-                                                          { AAR, QStringLiteral("aar") },
-                                                          { UnsignedAPK, QStringLiteral("apk") },
-                                                          { SignedAPK, QStringLiteral("apk") } };
-    path += "/build/outputs/%1/"_L1.arg(packageTypeToPath[pt]);
-    QString buildType(options.releasePackage ? "release/"_L1 : "debug/"_L1);
-    if (QDir(path + buildType).exists())
-        path += buildType;
-    path += QDir(options.outputDirectory).dirName() + u'-';
-    if (options.releasePackage) {
-        path += "release-"_L1;
-        if (pt >= UnsignedAPK) {
-            if (pt == UnsignedAPK)
-                path += "un"_L1;
-            path += "signed.apk"_L1;
-        } else if (pt == AAR){
-            path.chop(1);
-            path += ".aar"_L1;
-        } else {
-            path.chop(1);
-            path += ".aab"_L1;
-        }
-    } else {
-        path += "debug"_L1;
-        if (pt >= UnsignedAPK) {
-            if (pt == SignedAPK)
-                path += "-signed"_L1;
-            path += ".apk"_L1;
-        } else if (pt == AAR){
-            path += ".aar"_L1;
-        } else {
-            path += ".aab"_L1;
-        }
-    }
-    return path;
+        packageType = AAR;
+
+    static const QHash<PackageType, QLatin1StringView> packageTypeToPath{
+        { AAB, "bundle"_L1 }, { AAR, "aar"_L1 }, { UnsignedAPK, "apk"_L1 }, { SignedAPK, "apk"_L1 }
+    };
+    static const QHash<PackageType, QLatin1StringView> packageTypeToExtension{
+        { AAB, "aab"_L1 }, { AAR, "aar"_L1 }, { UnsignedAPK, "apk"_L1 }, { SignedAPK, "apk"_L1 }
+    };
+
+    const QString buildType(options.releasePackage ? "release"_L1 : "debug"_L1);
+    QString signedSuffix;
+    if (packageType == SignedAPK)
+        signedSuffix = "-signed"_L1;
+    else if (packageType == UnsignedAPK && options.releasePackage)
+        signedSuffix = "-unsigned"_L1;
+
+    QString dirPath(options.outputDirectory);
+    dirPath += "/build/outputs/%1/"_L1.arg(packageTypeToPath[packageType]);
+    if (QDir(dirPath + buildType).exists())
+        dirPath += buildType;
+
+    const QString fileName = "/%1-%2%3.%4"_L1.arg(
+            QDir(options.outputDirectory).dirName(),
+            buildType,
+            signedSuffix,
+            packageTypeToExtension[packageType]);
+
+    return dirPath + fileName;
 }
 
 bool installApk(const Options &options)
