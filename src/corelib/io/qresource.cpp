@@ -130,7 +130,7 @@ public:
         return QResource::NoCompression;
     }
     const uchar *data(int node, qint64 *size) const;
-    quint64 lastModified(int node) const;
+    qint64 lastModified(int node) const;
     QStringList children(int node) const;
     virtual QString mappingRoot() const { return QString(); }
     bool mappingRootSubdir(const QString &path, QString *match = nullptr) const;
@@ -283,7 +283,7 @@ public:
     QString fileName, absoluteFilePath;
     QList<QResourceRoot *> related;
     qint64 size;
-    quint64 lastModified;
+    qint64 lastModified;
     const uchar *data;
     mutable QStringList children;
     quint8 compressionAlgo;
@@ -928,14 +928,14 @@ const uchar *QResourceRoot::data(int node, qint64 *size) const
     return nullptr;
 }
 
-quint64 QResourceRoot::lastModified(int node) const
+qint64 QResourceRoot::lastModified(int node) const
 {
     if (node == -1 || version < 0x02)
         return 0;
 
     const int offset = findOffset(node) + 14;
 
-    return qFromBigEndian<quint64>(tree + offset);
+    return qFromBigEndian<qint64>(tree + offset);
 }
 
 QStringList QResourceRoot::children(int node) const
