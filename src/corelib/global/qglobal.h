@@ -67,8 +67,9 @@
 #include <QtCore/qtresource.h>
 #include <QtCore/qttranslation.h>
 #include <QtCore/qttypetraits.h>
+#if QT_CONFIG(version_tagging)
 #include <QtCore/qversiontagging.h>
-
+#endif
 #endif /* __cplusplus */
 
 #endif /* QGLOBAL_H */

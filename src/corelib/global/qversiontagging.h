@@ -13,6 +13,8 @@
 #include <QtCore/qtversionchecks.h>
 #include <QtCore/qtypes.h>
 
+QT_REQUIRE_CONFIG(version_tagging);
+
 QT_BEGIN_NAMESPACE
 
 /*

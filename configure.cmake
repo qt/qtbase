@@ -203,8 +203,16 @@ if(NOT QT_CONFIGURE_RUNNING)
     qt_evaluate_feature(use_gold_linker)
     qt_evaluate_feature(use_lld_linker)
     qt_evaluate_feature(use_mold_linker)
+
+    qt_run_linker_version_script_support()
 endif()
 
+qt_feature("version_tagging"
+    PUBLIC
+    AUTODETECT TRUE
+    CONDITION TEST_ld_version_script OR APPLE OR WIN32
+)
+qt_feature_definition("version_tagging" "QT_NO_VERSION_TAGGING" NEGATE)
 
 #### Tests
 
