@@ -27,7 +27,7 @@ class QCmyk32;
 class QColorTransformPrivate : public QSharedData
 {
 public:
-    QColorMatrix colorMatrix;
+    QColorMatrix colorMatrix; // Combined colorSpaceIn->toXyz and colorSpaceOut->toXyz.inverted()
     QExplicitlySharedDataPointer<const QColorSpacePrivate> colorSpaceIn;
     QExplicitlySharedDataPointer<const QColorSpacePrivate> colorSpaceOut;
 
@@ -53,10 +53,6 @@ public:
 
     template<typename D, typename S>
     void apply(D *dst, const S *src, qsizetype count, TransformFlags flags) const;
-    template<typename D, typename S>
-    void applyGray(D *dst, const S *src, qsizetype count, TransformFlags flags) const;
-    template<typename D, typename S>
-    void applyReturnGray(D *dst, const S *src, qsizetype count, TransformFlags flags) const;
 
 private:
     void pcsAdapt(QColorVector *buffer, qsizetype len) const;

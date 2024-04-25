@@ -1424,7 +1424,7 @@ static void convert_ARGB_to_gray8(QImageData *dest, const QImageData *src, Qt::I
 
     for (int i = 0; i < src->height; ++i) {
         const QRgb *src_line = reinterpret_cast<const QRgb *>(src_data);
-        tfd->applyReturnGray(dest_data, src_line, src->width, flags);
+        tfd->apply(dest_data, src_line, src->width, flags);
         src_data += sbpl;
         dest_data += dbpl;
     }
@@ -1461,7 +1461,7 @@ static void convert_ARGB_to_gray16(QImageData *dest, const QImageData *src, Qt::
             const int len = std::min(src->width - j, BufferSize);
             for (int k = 0; k < len; ++k)
                 tmp_line[k] = QRgba64::fromArgb32(src_line[j + k]);
-            tfd->applyReturnGray(dest_line + j, tmp_line, len, flags);
+            tfd->apply(dest_line + j, tmp_line, len, flags);
             j += len;
         }
         src_data += sbpl;
@@ -1498,7 +1498,7 @@ static void convert_RGBA64_to_gray8(QImageData *dest, const QImageData *src, Qt:
         int j = 0;
         while (j < src->width) {
             const int len = std::min(src->width - j, BufferSize);
-            tfd->applyReturnGray(gray_line, src_line + j, len, flags);
+            tfd->apply(gray_line, src_line + j, len, flags);
             for (int k = 0; k < len; ++k)
                 dest_line[j + k] = qt_div_257(gray_line[k]);
             j += len;
@@ -1533,7 +1533,7 @@ static void convert_RGBA64_to_gray16(QImageData *dest, const QImageData *src, Qt
     for (int i = 0; i < src->height; ++i) {
         const QRgba64 *src_line = reinterpret_cast<const QRgba64 *>(src_data);
         quint16 *dest_line = reinterpret_cast<quint16 *>(dest_data);
-        tfd->applyReturnGray(dest_line, src_line, src->width, flags);
+        tfd->apply(dest_line, src_line, src->width, flags);
         src_data += sbpl;
         dest_data += dbpl;
     }

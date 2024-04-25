@@ -503,8 +503,6 @@ QColorTransform QColorSpacePrivate::transformationToXYZ() const
     // Convert to XYZ relative to our white point, not the regular D50 white point.
     if (!chad.isNull())
         ptr->colorMatrix = chad.inverted() * ptr->colorMatrix;
-    else if (!whitePoint.isNull())
-        ptr->colorMatrix = QColorMatrix::chromaticAdaptation(whitePoint).inverted() * ptr->colorMatrix;
     return transform;
 }
 

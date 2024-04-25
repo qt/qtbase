@@ -1993,6 +1993,12 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
             if (!parseXyzData(data, it.value(), colorspaceDPtr->whitePoint))
                 return false;
         }
+        if (auto it = tagIndex.constFind(Tag::chad); it != tagIndex.constEnd()) {
+            if (!parseChad(data, it.value(), colorspaceDPtr))
+                return false;
+        } else if (!colorspaceDPtr->whitePoint.isNull()) {
+            colorspaceDPtr->chad = QColorMatrix::chromaticAdaptation(colorspaceDPtr->whitePoint);
+        }
     }
 
     if (auto it = tagIndex.constFind(Tag::desc); it != tagIndex.constEnd()) {

@@ -5027,7 +5027,7 @@ void QImage::setColorSpace(const QColorSpace &colorSpace)
         return;
     if (d->colorSpace == colorSpace)
         return;
-    if (colorSpace.isValid() && !qt_compatibleColorModel(pixelFormat().colorModel(), colorSpace.colorModel()))
+    if (colorSpace.isValid() && !qt_compatibleColorModelSource(pixelFormat().colorModel(), colorSpace.colorModel()))
         return;
 
     detachMetadata(false);
@@ -5057,7 +5057,7 @@ void QImage::convertToColorSpace(const QColorSpace &colorSpace)
     }
     if (d->colorSpace == colorSpace)
         return;
-    if (!qt_compatibleColorModel(pixelFormat().colorModel(), colorSpace.colorModel())) {
+    if (!qt_compatibleColorModelTarget(pixelFormat().colorModel(), colorSpace.colorModel(), colorSpace.transformModel())) {
         *this = convertedToColorSpace(colorSpace);
         return;
     }
@@ -5088,7 +5088,7 @@ void QImage::convertToColorSpace(const QColorSpace &colorSpace, QImage::Format f
         qWarning() << "QImage::convertToColorSpace: Output colorspace is not valid";
         return;
     }
-    if (!qt_compatibleColorModel(toPixelFormat(format).colorModel(), colorSpace.colorModel())) {
+    if (!qt_compatibleColorModelTarget(toPixelFormat(format).colorModel(), colorSpace.colorModel(), colorSpace.transformModel())) {
         qWarning() << "QImage::convertToColorSpace: Color space is not compatible with format";
         return;
     }
@@ -5148,7 +5148,7 @@ QImage QImage::convertedToColorSpace(const QColorSpace &colorSpace, QImage::Form
         qWarning() << "QImage::convertedToColorSpace: Output colorspace is not valid";
         return QImage();
     }
-    if (!qt_compatibleColorModel(toPixelFormat(format).colorModel(), colorSpace.colorModel())) {
+    if (!qt_compatibleColorModelTarget(toPixelFormat(format).colorModel(), colorSpace.colorModel(), colorSpace.transformModel())) {
         qWarning() << "QImage::convertedToColorSpace: Color space is not compatible with format";
         return QImage();
     }
@@ -5181,8 +5181,9 @@ void QImage::applyColorTransform(const QColorTransform &transform)
     if (transform.isIdentity())
         return;
 
-    if (!qt_compatibleColorModel(pixelFormat().colorModel(), QColorTransformPrivate::get(transform)->colorSpaceIn->colorModel) ||
-        !qt_compatibleColorModel(pixelFormat().colorModel(), QColorTransformPrivate::get(transform)->colorSpaceOut->colorModel)) {
+    if (!qt_compatibleColorModelSource(pixelFormat().colorModel(), QColorTransformPrivate::get(transform)->colorSpaceIn->colorModel) ||
+        !qt_compatibleColorModelTarget(pixelFormat().colorModel(), QColorTransformPrivate::get(transform)->colorSpaceOut->colorModel,
+                                       QColorTransformPrivate::get(transform)->colorSpaceOut->transformModel)) {
         qWarning() << "QImage::applyColorTransform can not apply format switching transform without switching format";
         return;
     }
@@ -5242,14 +5243,14 @@ void QImage::applyColorTransform(const QColorTransform &transform)
         transformSegment = [&](int yStart, int yEnd) {
             for (int y = yStart; y < yEnd; ++y) {
                 uint8_t *scanline = reinterpret_cast<uint8_t *>(d->data + y * d->bytes_per_line);
-                QColorTransformPrivate::get(transform)->applyGray(scanline, scanline, width(), flags);
+                QColorTransformPrivate::get(transform)->apply(scanline, scanline, width(), flags);
             }
         };
     } else if (format() == Format_Grayscale16) {
         transformSegment = [&](int yStart, int yEnd) {
             for (int y = yStart; y < yEnd; ++y) {
                 uint16_t *scanline = reinterpret_cast<uint16_t *>(d->data + y * d->bytes_per_line);
-                QColorTransformPrivate::get(transform)->applyGray(scanline, scanline, width(), flags);
+                QColorTransformPrivate::get(transform)->apply(scanline, scanline, width(), flags);
             }
         };
     } else if (qt_fpColorPrecision(format())) {
@@ -5343,15 +5344,15 @@ QImage QImage::colorTransformed(const QColorTransform &transform) const &
     if (transform.isIdentity())
         return *this;
 
-    QColorSpace::ColorModel inColorModel = QColorTransformPrivate::get(transform)->colorSpaceIn->colorModel;
-    QColorSpace::ColorModel outColorModel = QColorTransformPrivate::get(transform)->colorSpaceOut->colorModel;
-    if (!qt_compatibleColorModel(pixelFormat().colorModel(), inColorModel)) {
+    const QColorSpacePrivate *inColorSpace = QColorTransformPrivate::get(transform)->colorSpaceIn.constData();
+    const QColorSpacePrivate *outColorSpace = QColorTransformPrivate::get(transform)->colorSpaceOut.constData();
+    if (!qt_compatibleColorModelSource(pixelFormat().colorModel(), inColorSpace->colorModel)) {
         qWarning() << "QImage::colorTransformed: Invalid input color space for transform";
         return QImage();
     }
-    if (!qt_compatibleColorModel(pixelFormat().colorModel(), outColorModel)) {
+    if (!qt_compatibleColorModelTarget(pixelFormat().colorModel(), outColorSpace->colorModel, outColorSpace->transformModel)) {
         // All model switching transforms are opaque in at least one end.
-        switch (outColorModel) {
+        switch (outColorSpace->colorModel) {
         case QColorSpace::ColorModel::Rgb:
             return colorTransformed(transform, qt_highColorPrecision(format(), true) ? QImage::Format_RGBX64 : QImage::Format_RGB32);
         case QColorSpace::ColorModel::Gray:
@@ -5430,13 +5431,13 @@ QImage QImage::colorTransformed(const QColorTransform &transform, QImage::Format
     if (transform.isIdentity())
         return convertedTo(toFormat, flags);
 
-    QColorSpace::ColorModel inColorModel = QColorTransformPrivate::get(transform)->colorSpaceIn->colorModel;
-    QColorSpace::ColorModel outColorModel = QColorTransformPrivate::get(transform)->colorSpaceOut->colorModel;
-    if (!qt_compatibleColorModel(pixelFormat().colorModel(), inColorModel)) {
+    const QColorSpacePrivate *inColorSpace = QColorTransformPrivate::get(transform)->colorSpaceIn.constData();
+    const QColorSpacePrivate *outColorSpace = QColorTransformPrivate::get(transform)->colorSpaceOut.constData();
+    if (!qt_compatibleColorModelSource(pixelFormat().colorModel(), inColorSpace->colorModel)) {
         qWarning() << "QImage::colorTransformed: Invalid input color space for transform";
         return QImage();
     }
-    if (!qt_compatibleColorModel(toPixelFormat(toFormat).colorModel(), outColorModel)) {
+    if (!qt_compatibleColorModelTarget(toPixelFormat(toFormat).colorModel(), outColorSpace->colorModel, outColorSpace->transformModel)) {
         qWarning() << "QImage::colorTransformed: Invalid output color space for transform";
         return QImage();
     }
@@ -5533,7 +5534,7 @@ QImage QImage::colorTransformed(const QColorTransform &transform, QImage::Format
                     for (int y = yStart; y < yEnd; ++y) {
                         const quint8 *in_scanline = reinterpret_cast<const quint8 *>(d->data + y * d->bytes_per_line);
                         QRgb *out_scanline = reinterpret_cast<QRgb *>(toImage.d->data + y * toImage.bytesPerLine());
-                        QColorTransformPrivate::get(transform)->applyGray(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
+                        QColorTransformPrivate::get(transform)->apply(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
                     }
                 };
             } else {
@@ -5541,7 +5542,7 @@ QImage QImage::colorTransformed(const QColorTransform &transform, QImage::Format
                     for (int y = yStart; y < yEnd; ++y) {
                         const quint16 *in_scanline = reinterpret_cast<const quint16 *>(d->data + y * d->bytes_per_line);
                         QRgba64 *out_scanline = reinterpret_cast<QRgba64 *>(toImage.d->data + y * toImage.bytesPerLine());
-                        QColorTransformPrivate::get(transform)->applyGray(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
+                        QColorTransformPrivate::get(transform)->apply(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
                     }
                 };
             }
@@ -5552,7 +5553,7 @@ QImage QImage::colorTransformed(const QColorTransform &transform, QImage::Format
                     for (int y = yStart; y < yEnd; ++y) {
                         const quint8 *in_scanline = reinterpret_cast<const quint8 *>(d->data + y * d->bytes_per_line);
                         QCmyk32 *out_scanline = reinterpret_cast<QCmyk32 *>(toImage.d->data + y * toImage.bytesPerLine());
-                        QColorTransformPrivate::get(transform)->applyGray(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
+                        QColorTransformPrivate::get(transform)->apply(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
                     }
                 };
             } else {
@@ -5560,7 +5561,7 @@ QImage QImage::colorTransformed(const QColorTransform &transform, QImage::Format
                     for (int y = yStart; y < yEnd; ++y) {
                         const quint16 *in_scanline = reinterpret_cast<const quint16 *>(d->data + y * d->bytes_per_line);
                         QCmyk32 *out_scanline = reinterpret_cast<QCmyk32 *>(toImage.d->data + y * toImage.bytesPerLine());
-                        QColorTransformPrivate::get(transform)->applyGray(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
+                        QColorTransformPrivate::get(transform)->apply(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
                     }
                 };
             }
@@ -5572,7 +5573,7 @@ QImage QImage::colorTransformed(const QColorTransform &transform, QImage::Format
                     for (int y = yStart; y < yEnd; ++y) {
                         const QRgb *in_scanline = reinterpret_cast<const QRgb *>(fromImage.constBits() + y * fromImage.bytesPerLine());
                         quint8 *out_scanline = reinterpret_cast<quint8 *>(toImage.d->data + y * toImage.bytesPerLine());
-                        QColorTransformPrivate::get(transform)->applyReturnGray(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
+                        QColorTransformPrivate::get(transform)->apply(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
                     }
                 };
             } else {
@@ -5581,7 +5582,7 @@ QImage QImage::colorTransformed(const QColorTransform &transform, QImage::Format
                     for (int y = yStart; y < yEnd; ++y) {
                         const QRgba64 *in_scanline = reinterpret_cast<const QRgba64 *>(fromImage.constBits() + y * fromImage.bytesPerLine());
                         quint16 *out_scanline = reinterpret_cast<quint16 *>(toImage.d->data + y * toImage.bytesPerLine());
-                        QColorTransformPrivate::get(transform)->applyReturnGray(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
+                        QColorTransformPrivate::get(transform)->apply(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
                     }
                 };
             }
@@ -5592,7 +5593,7 @@ QImage QImage::colorTransformed(const QColorTransform &transform, QImage::Format
                     for (int y = yStart; y < yEnd; ++y) {
                         const QCmyk32 *in_scanline = reinterpret_cast<const QCmyk32 *>(fromImage.constBits() + y * fromImage.bytesPerLine());
                         quint8 *out_scanline = reinterpret_cast<quint8 *>(toImage.d->data + y * toImage.bytesPerLine());
-                        QColorTransformPrivate::get(transform)->applyReturnGray(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
+                        QColorTransformPrivate::get(transform)->apply(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
                     }
                 };
             } else {
@@ -5600,7 +5601,7 @@ QImage QImage::colorTransformed(const QColorTransform &transform, QImage::Format
                     for (int y = yStart; y < yEnd; ++y) {
                         const QCmyk32 *in_scanline = reinterpret_cast<const QCmyk32 *>(fromImage.constBits() + y * fromImage.bytesPerLine());
                         quint16 *out_scanline = reinterpret_cast<quint16 *>(toImage.d->data + y * toImage.bytesPerLine());
-                        QColorTransformPrivate::get(transform)->applyReturnGray(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
+                        QColorTransformPrivate::get(transform)->apply(out_scanline, in_scanline, width(), QColorTransformPrivate::InputOpaque);
                     }
                 };
             }
@@ -5704,11 +5705,11 @@ QImage QImage::colorTransformed(const QColorTransform &transform, QImage::Format
                     const quint8 *in_scanline = reinterpret_cast<const quint8 *>(fromImage.constBits() + y * fromImage.bytesPerLine());
                     if (tmpFormat == Format_Grayscale8) {
                         quint8 *out_scanline = reinterpret_cast<quint8 *>(toImage.d->data + y * toImage.bytesPerLine());
-                        QColorTransformPrivate::get(transform)->applyGray(out_scanline, in_scanline, width(), transFlags);
+                        QColorTransformPrivate::get(transform)->apply(out_scanline, in_scanline, width(), transFlags);
                     } else {
                         Q_ASSERT(tmpFormat == Format_Grayscale16);
                         quint16 *out_scanline = reinterpret_cast<quint16 *>(toImage.d->data + y * toImage.bytesPerLine());
-                        QColorTransformPrivate::get(transform)->applyGray(out_scanline, in_scanline, width(), transFlags);
+                        QColorTransformPrivate::get(transform)->apply(out_scanline, in_scanline, width(), transFlags);
                     }
                 }
             };
@@ -5717,7 +5718,7 @@ QImage QImage::colorTransformed(const QColorTransform &transform, QImage::Format
                 for (int y = yStart; y < yEnd; ++y) {
                     const quint16 *in_scanline = reinterpret_cast<const quint16 *>(fromImage.constBits() + y * fromImage.bytesPerLine());
                     quint16 *out_scanline = reinterpret_cast<quint16 *>(toImage.d->data + y * toImage.bytesPerLine());
-                    QColorTransformPrivate::get(transform)->applyGray(out_scanline, in_scanline, width(), transFlags);
+                    QColorTransformPrivate::get(transform)->apply(out_scanline, in_scanline, width(), transFlags);
                 }
             };
         } else if (fromImage.format() == Format_CMYK8888) {
@@ -5811,15 +5812,15 @@ QImage QImage::colorTransformed(const QColorTransform &transform) &&
     if (!d)
         return QImage();
 
-    QColorSpace::ColorModel inColorModel = QColorTransformPrivate::get(transform)->colorSpaceIn->colorModel;
-    QColorSpace::ColorModel outColorModel = QColorTransformPrivate::get(transform)->colorSpaceOut->colorModel;
-    if (!qt_compatibleColorModel(pixelFormat().colorModel(), inColorModel)) {
+    const QColorSpacePrivate *inColorSpace = QColorTransformPrivate::get(transform)->colorSpaceIn.constData();
+    const QColorSpacePrivate *outColorSpace = QColorTransformPrivate::get(transform)->colorSpaceOut.constData();
+    if (!qt_compatibleColorModelSource(pixelFormat().colorModel(), inColorSpace->colorModel)) {
         qWarning() << "QImage::colorTransformed: Invalid input color space for transform";
         return QImage();
     }
-    if (!qt_compatibleColorModel(pixelFormat().colorModel(), outColorModel)) {
+    if (!qt_compatibleColorModelTarget(pixelFormat().colorModel(), outColorSpace->colorModel, outColorSpace->transformModel)) {
         // There is currently no inplace conversion of both colorspace and format, so just use the normal version.
-        switch (outColorModel) {
+        switch (outColorSpace->colorModel) {
         case QColorSpace::ColorModel::Rgb:
             return colorTransformed(transform, qt_highColorPrecision(format(), true) ? QImage::Format_RGBX64 : QImage::Format_RGB32);
         case QColorSpace::ColorModel::Gray:

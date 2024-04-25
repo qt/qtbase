@@ -176,6 +176,10 @@ private slots:
     void colorSpaceRgbConversion();
     void colorSpaceCmykConversion_data();
     void colorSpaceCmykConversion();
+    void colorSpaceFromGrayConversion_data();
+    void colorSpaceFromGrayConversion();
+    void colorSpaceToGrayConversion_data();
+    void colorSpaceToGrayConversion();
 
     void deepCopyWhenPaintingActive();
     void scaled_QTBUG19157();
@@ -3457,6 +3461,120 @@ void tst_QImage::colorSpaceCmykConversion()
             QCOMPARE_GE(newRed, red);
             red = newRed;
         }
+    }
+}
+
+void tst_QImage::colorSpaceFromGrayConversion_data()
+{
+    QTest::addColumn<QImage::Format>("fromFormat");
+    QTest::addColumn<QColorSpace>("fromCS");
+    QTest::addColumn<QColorSpace>("toCS");
+
+    QImage::Format formats[] = {
+        QImage::Format_Grayscale8,
+        QImage::Format_Grayscale16,
+    };
+
+    QList<QColorSpace> colorSpaces = {
+        QColorSpace::SRgbLinear,
+        QColorSpace::DisplayP3,
+        QColorSpace(QPointF(0.31271, 0.32902), QColorSpace::TransferFunction::SRgb),
+        QColorSpace(QPointF(0.30, 0.33), QColorSpace::TransferFunction::Linear)
+    };
+    std::string names[] = {
+        "sRgbLinear",
+        "displayP3",
+        "graySRgb",
+        "grayOther",
+        "videoHD(A2B)"
+    };
+
+    QFile iccProfile(m_prefix + "VideoHD.icc");
+    iccProfile.open(QIODevice::ReadOnly);
+    colorSpaces.append(QColorSpace::fromIccProfile(iccProfile.readAll()));
+
+    for (auto fromFormat : formats) {
+        for (int from = 0; from < 5; ++from) {
+            for (int to = 0; to < 4; ++to) {
+                QTest::addRow("%s: %s -> %s", formatToString(fromFormat).data(), names[from].c_str(), names[to].c_str())
+                        << fromFormat << colorSpaces[from] << colorSpaces[to];
+            }
+        }
+    }
+}
+
+void tst_QImage::colorSpaceFromGrayConversion()
+{
+    QFETCH(QImage::Format, fromFormat);
+    QFETCH(QColorSpace, fromCS);
+    QFETCH(QColorSpace, toCS);
+
+    QImage image(16, 16, fromFormat);
+    image.setColorSpace(fromCS);
+    QVERIFY(image.colorSpace().isValid());
+
+    for (int i = 0; i < image.height(); ++i) {
+        for (int j = 0; j < image.width(); ++j) {
+            image.setPixel(j, i, qRgb((i + j) * 8, (i + j) * 8, (i + j) * 8));
+        }
+    }
+    QImage imageConverted = image.convertedToColorSpace(toCS);
+    QCOMPARE(imageConverted.format(), fromFormat);
+    QCOMPARE(imageConverted.size(), image.size());
+    int gray = 0;
+    for (int x = 0; x < image.width(); ++x) {
+        int newGray = qGray(imageConverted.pixel(x, 3));
+        QCOMPARE_GE(newGray, gray);
+        gray = newGray;
+    }
+}
+
+void tst_QImage::colorSpaceToGrayConversion_data()
+{
+    QTest::addColumn<QImage::Format>("fromFormat");
+
+    QImage::Format formats[] = {
+        QImage::Format_RGB32,
+        QImage::Format_ARGB32,
+        QImage::Format_ARGB32_Premultiplied,
+        QImage::Format_RGBX64,
+        QImage::Format_RGBA64,
+        QImage::Format_RGBA64_Premultiplied,
+        QImage::Format_RGBX32FPx4,
+        QImage::Format_RGBA32FPx4,
+        QImage::Format_RGBA32FPx4_Premultiplied,
+        QImage::Format_Grayscale8,
+        QImage::Format_Grayscale16,
+    };
+
+    for (auto fromFormat : formats)
+        QTest::addRow("%s -> Gray", formatToString(fromFormat).data()) << fromFormat;
+}
+
+void tst_QImage::colorSpaceToGrayConversion()
+{
+    QFETCH(QImage::Format, fromFormat);
+
+    QImage image(16, 16, fromFormat);
+    image.setColorSpace(QColorSpace::DisplayP3);
+    QVERIFY(image.colorSpace().isValid());
+
+    for (int i = 0; i < image.height(); ++i) {
+        for (int j = 0; j < image.width(); ++j) {
+            image.setPixel(j, i, qRgb((i + j) * 8, (i + j) * 8, (i + j) * 8));
+        }
+    }
+
+    QColorSpace grayColorSpace(QPointF(0.31271, 0.32902), QColorSpace::TransferFunction::SRgb);
+
+    QImage imageConverted = image.convertedToColorSpace(grayColorSpace);
+    QVERIFY(imageConverted.format() == QImage::Format_Grayscale8 || imageConverted.format() == QImage::Format_Grayscale16);
+    QCOMPARE(imageConverted.size(), image.size());
+    int gray = 0;
+    for (int x = 0; x < image.width(); ++x) {
+        int newGray = qGray(imageConverted.pixel(x, 11));
+        QCOMPARE_GE(newGray, gray);
+        gray = newGray;
     }
 }
 

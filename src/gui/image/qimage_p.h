@@ -456,7 +456,7 @@ inline QColorSpace::ColorModel qt_csColorData(QPixelFormat::ColorModel format)
     return QColorSpace::ColorModel::Undefined;
 }
 
-inline bool qt_compatibleColorModel(QPixelFormat::ColorModel data, QColorSpace::ColorModel cs)
+inline bool qt_compatibleColorModelBase(QPixelFormat::ColorModel data, QColorSpace::ColorModel cs)
 {
     QColorSpace::ColorModel dataCs = qt_csColorData(data);
 
@@ -466,11 +466,27 @@ inline bool qt_compatibleColorModel(QPixelFormat::ColorModel data, QColorSpace::
     if (cs == QColorSpace::ColorModel::Undefined || dataCs == QColorSpace::ColorModel::Undefined)
         return false;
 
-    if (dataCs == cs)
-        return true; // Matching color models
+    return (dataCs == cs); // Matching color models
+}
 
-    if (dataCs == QColorSpace::ColorModel::Gray)
-        return true; // Can apply any CS with white point to Gray data
+inline bool qt_compatibleColorModelSource(QPixelFormat::ColorModel data, QColorSpace::ColorModel cs)
+{
+    if (qt_compatibleColorModelBase(data, cs))
+        return true;
+
+    if (data == QPixelFormat::ColorModel::Grayscale && cs == QColorSpace::ColorModel::Rgb)
+        return true; // Can apply Rgb CS to Gray input data
+
+    return false;
+}
+
+inline bool qt_compatibleColorModelTarget(QPixelFormat::ColorModel data, QColorSpace::ColorModel cs, QColorSpace::TransformModel tm)
+{
+    if (qt_compatibleColorModelBase(data, cs))
+        return true;
+
+    if (data == QPixelFormat::ColorModel::Grayscale && tm == QColorSpace::TransformModel::ThreeComponentMatrix)
+        return true; // Can apply three-component matrix CS to gray output
 
     return false;
 }
