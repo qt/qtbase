@@ -45,6 +45,7 @@ private slots:
 
 private:
     const QString m_runtimeResourceRcc;
+    QByteArray m_runtimeResourceData;
 };
 
 
@@ -73,15 +74,27 @@ void tst_QResourceEngine::initTestCase()
 #endif
 
     QVERIFY(!m_runtimeResourceRcc.isEmpty());
+
+    QFile resourceFile(m_runtimeResourceRcc);
+    QVERIFY2(resourceFile.open(QIODevice::ReadOnly), qPrintable(resourceFile.errorString()));
+
+    // register once with the file name, which will attempt to use mmap()
+    // (uses QDynamicFileResourceRoot)
     QVERIFY(QResource::registerResource(m_runtimeResourceRcc));
-    QVERIFY(QResource::registerResource(m_runtimeResourceRcc, "/secondary_root/"));
+
+    // and register a second time with a gifted memory block
+    // (uses QDynamicBufferResourceRoot)
+    m_runtimeResourceData = resourceFile.readAll();
+    auto resourcePtr = reinterpret_cast<const uchar *>(m_runtimeResourceData.constData());
+    QVERIFY(QResource::registerResource(resourcePtr, "/secondary_root/"));
 }
 
 void tst_QResourceEngine::cleanupTestCase()
 {
     // make sure we don't leak memory
     QVERIFY(QResource::unregisterResource(m_runtimeResourceRcc));
-    QVERIFY(QResource::unregisterResource(m_runtimeResourceRcc, "/secondary_root/"));
+    auto resourcePtr = reinterpret_cast<const uchar *>(m_runtimeResourceData.constData());
+    QVERIFY(QResource::unregisterResource(resourcePtr, "/secondary_root/"));
 }
 
 void tst_QResourceEngine::compressedResource_data()
