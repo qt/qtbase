@@ -137,7 +137,10 @@ static Platform platformFromMkSpec(const QString &xSpec)
             return WindowsDesktopClangMinGW;
         if (xSpec.contains("clang-msvc++"_L1))
             return WindowsDesktopClangMsvc;
-        return xSpec.contains("g++"_L1) ? WindowsDesktopMinGW : WindowsDesktopMsvc;
+        if (xSpec.contains("arm"_L1))
+            return WindowsDesktopMsvcArm;
+
+        return xSpec.contains("g++"_L1) ? WindowsDesktopMinGW : WindowsDesktopMsvcIntel;
     }
     return UnknownPlatform;
 }
@@ -183,7 +186,7 @@ struct Options {
     bool softwareRasterizer = true;
     bool ffmpeg = true;
     PluginSelections pluginSelections;
-    Platform platform = WindowsDesktopMsvc;
+    Platform platform = WindowsDesktopMsvcIntel;
     ModuleBitset additionalLibraries;
     ModuleBitset disabledLibraries;
     unsigned updateFileFlags = 0;
@@ -563,13 +566,14 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     options->quickImports = !parser->isSet(noQuickImportOption);
 
     // default to deployment of compiler runtime for windows desktop configurations
-    if (options->platform == WindowsDesktopMinGW || options->platform == WindowsDesktopMsvc
+    if (options->platform == WindowsDesktopMinGW || options->platform.testFlags(WindowsDesktopMsvc)
             || parser->isSet(compilerRunTimeOption))
         options->compilerRunTime = true;
     if (parser->isSet(noCompilerRunTimeOption))
         options->compilerRunTime = false;
 
-    if (options->compilerRunTime && options->platform != WindowsDesktopMinGW && options->platform != WindowsDesktopMsvc) {
+    if (options->compilerRunTime && options->platform != WindowsDesktopMinGW
+        && !options->platform.testFlags(WindowsDesktopMsvc)) {
         *errorMessage = QStringLiteral("Deployment of the compiler runtime is implemented for Desktop MSVC/g++ only.");
         return CommandLineParseError;
     }
@@ -1363,7 +1367,8 @@ static QStringList compilerRunTimeLibs(const QString &qtBinDir, Platform platfor
         break;
     }
 #ifdef Q_OS_WIN
-    case WindowsDesktopMsvc: { // MSVC/Desktop: Add redistributable packages.
+    case WindowsDesktopMsvcIntel:
+    case WindowsDesktopMsvcArm: { // MSVC/Desktop: Add redistributable packages.
         QString vcRedistDirName = vcRedistDir();
         if (vcRedistDirName.isEmpty())
              break;
