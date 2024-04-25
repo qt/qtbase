@@ -282,11 +282,11 @@ public:
     QLocale locale;
     QString fileName, absoluteFilePath;
     QList<QResourceRoot *> related;
-    mutable qint64 size;
-    mutable quint64 lastModified;
-    mutable const uchar *data;
+    qint64 size;
+    quint64 lastModified;
+    const uchar *data;
     mutable QStringList children;
-    mutable quint8 compressionAlgo;
+    quint8 compressionAlgo;
     bool container;
     /* 2 or 6 padding bytes */
 
