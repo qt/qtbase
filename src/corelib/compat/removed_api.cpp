@@ -1005,6 +1005,19 @@ bool QJsonValue::operator!=(const QJsonValue &other) const
     return !comparesEqual(*this, other);
 }
 
+#include "qobject.h"
+
+int QObject::startTimer(std::chrono::milliseconds time, Qt::TimerType timerType)
+{
+    using namespace std::chrono;
+    using ratio = std::ratio_divide<std::milli, std::nano>;
+    if (nanoseconds::rep r; qMulOverflow<ratio::num>(time.count(), &r)) {
+        qWarning("QObject::startTimer(std::chrono::milliseconds time ...): "
+                 "'time' arg will overflow when converted to nanoseconds.");
+    }
+    return startTimer(nanoseconds{time}, timerType);
+}
+
 #if QT_CONFIG(processenvironment)
 #include "qprocess.h" // inlined API
 
@@ -1036,19 +1049,6 @@ bool QUrl::operator!=(const QUrl &url) const
 bool QUrlQuery::operator==(const QUrlQuery &other) const
 {
     return comparesEqual(*this, other);
-}
-
-#include "qobject.h"
-
-int QObject::startTimer(std::chrono::milliseconds time, Qt::TimerType timerType)
-{
-    using namespace std::chrono;
-    using ratio = std::ratio_divide<std::milli, std::nano>;
-    if (nanoseconds::rep r; qMulOverflow<ratio::num>(time.count(), &r)) {
-        qWarning("QObject::startTimer(std::chrono::milliseconds time ...): "
-                 "'time' arg will overflow when converted to nanoseconds.");
-    }
-    return startTimer(nanoseconds{time}, timerType);
 }
 
 #include "qstring.h" // inlined API
