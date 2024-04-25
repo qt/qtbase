@@ -56,6 +56,7 @@ qt_internal_add_3rdparty_library(BundledHarfbuzz
         src/hb-subset-cff1.cc
         src/hb-subset-cff2.cc
         src/hb-subset-input.cc
+        src/hb-subset-instancer-iup.cc src/hb-subset-instancer-iup.hh
         src/hb-subset-instancer-solver.cc
         src/hb-subset-plan.cc
         src/hb-subset-plan-member-list.hh
