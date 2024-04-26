@@ -807,4 +807,78 @@ QByteArray qdtoAscii(double d, QLocaleData::DoubleForm form, int precision, bool
     return dtoString<QByteArray>(d, form, precision, uppercase);
 }
 
+#if defined(QT_SUPPORTS_INT128) || (defined(Q_CC_MSVC) && (_MSC_VER >= 1930))
+static inline quint64 toUInt64(qinternaluint128 v)
+{
+#ifdef Q_CC_MSVC
+    return quint64(v._Word[0]);
+#else
+    return quint64(v);
+#endif
+}
+QString quint128toBasicLatin(qinternaluint128 number, int base)
+{
+    // We divide our 128-bit number into parts that we can do text
+    // concatenation with. This list is the maximum power of the
+    // base that is less than 2^64.
+    static constexpr auto dividers = []() constexpr {
+        std::array<quint64, 35> bases {};
+        for (int base = 2; base <= 36; ++base) {
+            quint64 v = base;
+            while (v * base > v)
+                v *= base;
+            bases[base - 2] = v;
+        }
+        return bases;
+    }();
+    static constexpr auto digitCounts = []() constexpr {
+        std::array<quint8, 35> digits{};
+        for (int base = 2; base <= 36; ++base) {
+            quint64 v = base;
+            int i = 0;
+            for (i = 0; v * base > v; ++i)
+                v *= base;
+            digits[base - 2] = i;
+        }
+        return digits;
+    }();
+
+    QString result;
+
+    constexpr unsigned flags = QLocaleData::NoFlags;
+    const QLocaleData *dd = QLocaleData::c();
+
+    // special base cases:
+    constexpr int Width = -1;
+    if (base == 2 || base == 4 || base == 16) {
+        // 2^64 is a power of 2, 4 and 16
+        result = dd->unsLongLongToString(quint64(number), 64, base, Width, flags);
+        result.prepend(dd->unsLongLongToString(quint64(number >> 64), -1, base, Width, flags));
+    } else {
+        int digitCount = digitCounts[base - 2];
+        quint64 divider = dividers[base - 2];
+        quint64 lower = toUInt64(number % divider);
+        number /= divider;
+        while (number) {
+            result.prepend(dd->unsLongLongToString(lower, digitCount, base, Width, flags));
+            lower = toUInt64(number % divider);
+            number /= divider;
+        }
+        result.prepend(dd->unsLongLongToString(lower, -1, base, Width, flags));
+    }
+    return result;
+}
+
+QString qint128toBasicLatin(qinternalint128 number, int base)
+{
+    const bool negative = number < 0;
+    if (negative)
+        number *= -1;
+    QString result = quint128toBasicLatin(qinternaluint128(number), base);
+    if (negative)
+        result.prepend(u'-');
+    return result;
+}
+#endif // defined(QT_SUPPORTS_INT128) || (defined(Q_CC_MSVC) && (_MSC_VER >= 1930))
+
 QT_END_NAMESPACE

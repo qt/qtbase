@@ -20,6 +20,15 @@
 
 QT_BEGIN_NAMESPACE
 
+#if defined(QT_SUPPORTS_INT128)
+using qinternalint128 = qint128;
+using qinternaluint128 = quint128;
+#elif defined(Q_CC_MSVC) && (_MSC_VER >= 1930)
+#include <__msvc_int128.hpp>
+using qinternalint128 = std::_Signed128;
+using qinternaluint128 = std::_Unsigned128;
+#endif
+
 enum StrayCharacterMode {
     TrailingJunkProhibited,
     TrailingJunkAllowed,
@@ -42,6 +51,13 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision,
                                      int precision, bool uppercase);
 [[nodiscard]] QByteArray qdtoAscii(double d, QLocaleData::DoubleForm form,
                                    int precision, bool uppercase);
+
+#if defined(QT_SUPPORTS_INT128) || (defined(Q_CC_MSVC) && (_MSC_VER >= 1930))
+[[nodiscard]] Q_CORE_EXPORT QString quint128toBasicLatin(qinternaluint128 number,
+                                                         int base = 10);
+[[nodiscard]] Q_CORE_EXPORT QString qint128toBasicLatin(qinternalint128 number,
+                                                        int base = 10);
+#endif
 
 [[nodiscard]] constexpr inline bool isZero(double d)
 {
