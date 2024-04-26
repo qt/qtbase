@@ -44,59 +44,6 @@ def startCount(c, text): # strspn
     except StopIteration:
         return len(text)
 
-def convertFormat(format):
-    """Convert date/time format-specier from CLDR to Qt
-
-    Match up (as best we can) the differences between:
-    * https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
-    * QDateTimeParser::parseFormat() and QLocalePrivate::dateTimeToString()
-    """
-    # Compare and contrast dateconverter.py's convert_date().
-    # Need to (check consistency and) reduce redundancy !
-    result = ""
-    i = 0
-    while i < len(format):
-        if format[i] == "'":
-            result += "'"
-            i += 1
-            while i < len(format) and format[i] != "'":
-                result += format[i]
-                i += 1
-            if i < len(format):
-                result += "'"
-                i += 1
-        else:
-            s = format[i:]
-            if s.startswith('E'): # week-day
-                n = startCount('E', s)
-                if n < 3:
-                    result += 'ddd'
-                elif n == 4:
-                    result += 'dddd'
-                else: # 5: narrow, 6 short; but should be name, not number :-(
-                    result += 'd' if n < 6 else 'dd'
-                i += n
-            elif s[0] in 'ab': # am/pm
-                # 'b' should distinguish noon/midnight, too :-(
-                result += "AP"
-                i += startCount('ab', s)
-            elif s.startswith('S'): # fractions of seconds: count('S') == number of decimals to show
-                result += 'z'
-                i += startCount('S', s)
-            elif s.startswith('V'): # long time zone specifiers (and a deprecated short ID)
-                result += 't'
-                i += startCount('V', s)
-            elif s[0] in 'zv': # zone
-                # Should use full name, e.g. "Central European Time", if 'zzzz' :-(
-                # 'v' should get generic non-location format, e.g. PT for "Pacific Time", no DST indicator
-                result += "t"
-                i += startCount('zv', s)
-            else:
-                result += format[i]
-                i += 1
-
-    return result
-
 class QLocaleXmlReader (object):
     def __init__(self, filename):
         self.root = self.__parse(filename)
@@ -486,8 +433,6 @@ class Locale (object):
     __asint = ("currencyDigits", "currencyRounding")
     # Convert day-name to Qt day-of-week number:
     __asdow = ("firstDayOfWeek", "weekendStart", "weekendEnd")
-    # Convert from CLDR format-strings to QDateTimeParser ones:
-    __asfmt = ("longDateFormat", "shortDateFormat", "longTimeFormat", "shortTimeFormat")
     # Just use the raw text:
     __astxt = ("language", "languageEndonym", "script", "territory", "territoryEndonym",
                "decimal", "group", "zero",
@@ -496,6 +441,8 @@ class Locale (object):
                "alternateQuotationStart", "alternateQuotationEnd",
                "listPatternPartStart", "listPatternPartMiddle",
                "listPatternPartEnd", "listPatternPartTwo", "am", "pm",
+               "longDateFormat", "shortDateFormat",
+               "longTimeFormat", "shortTimeFormat",
                'byte_unit', 'byte_si_quantified', 'byte_iec_quantified',
                "currencyIsoCode", "currencySymbol", "currencyDisplayName",
                "currencyFormat", "currencyNegativeFormat")
@@ -519,9 +466,6 @@ class Locale (object):
 
         for k in cls.__asdow:
             data[k] = cls.__qDoW[lookup(k)]
-
-        for k in cls.__asfmt:
-            data[k] = convertFormat(lookup(k))
 
         for k in cls.__astxt + tuple(cls.propsMonthDay('days')):
             data['listDelim' if k == 'list' else k] = lookup(k)
@@ -659,8 +603,8 @@ class Locale (object):
                    byte_iec_quantified=';'.join(q.upper() + 'iB' for q in quantifiers),
                    am='AM', pm='PM', firstDayOfWeek='mon',
                    weekendStart='sat', weekendEnd='sun',
-                   longDateFormat='EEEE, d MMMM yyyy', shortDateFormat='d MMM yyyy',
-                   longTimeFormat='HH:mm:ss z', shortTimeFormat='HH:mm:ss',
+                   longDateFormat='dddd, d MMMM yyyy', shortDateFormat='d MMM yyyy',
+                   longTimeFormat='HH:mm:ss t', shortTimeFormat='HH:mm:ss',
                    longDays=';'.join(days),
                    shortDays=';'.join(d[:3] for d in days),
                    narrowDays='7;1;2;3;4;5;6',
