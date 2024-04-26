@@ -1113,28 +1113,22 @@ QDataStream &QDataStream::readBytes(char *&s, qint64 &l)
 
     qsizetype step = 1024 * 1024;
     qsizetype allocated = 0;
-    char *prevBuf = nullptr;
-    char *curBuf = nullptr;
+    std::unique_ptr<char[]> curBuf = nullptr;
 
     constexpr qsizetype StepIncreaseThreshold = std::numeric_limits<qsizetype>::max() / 2;
     do {
         qsizetype blockSize = qMin(step, len - allocated);
-        prevBuf = curBuf;
-        curBuf = new char[allocated + blockSize + 1];
-        if (prevBuf) {
-            memcpy(curBuf, prevBuf, allocated);
-            delete [] prevBuf;
-        }
-        if (readBlock(curBuf + allocated, blockSize) != blockSize) {
-            delete [] curBuf;
+        const qsizetype n = allocated + blockSize + 1;
+        if (const auto prevBuf = std::exchange(curBuf, std::make_unique<char[]>(n)))
+            memcpy(curBuf.get(), prevBuf.get(), allocated);
+        if (readBlock(curBuf.get() + allocated, blockSize) != blockSize)
             return *this;
-        }
         allocated += blockSize;
         if (step <= StepIncreaseThreshold)
             step *= 2;
     } while (allocated < len);
 
-    s = curBuf;
+    s = curBuf.release();
     s[len] = '\0';
     l = len;
     return *this;
