@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <private/qcomparisontesthelper_p.h>
 
 #include <qeasingcurve.h>
 
@@ -16,6 +17,7 @@ private slots:
     void valueForProgress_data();
     void valueForProgress();
     void setCustomType();
+    void comparisonCompiles();
     void operators();
     void properties();
     void metaTypes();
@@ -420,6 +422,11 @@ void tst_QEasingCurve::setCustomType()
     QCOMPARE(curve.valueForProgress(0.99), 0.99);
 }
 
+void tst_QEasingCurve::comparisonCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QEasingCurve>();
+}
+
 void tst_QEasingCurve::operators()
 {
     { // member-swap()
@@ -447,28 +454,28 @@ void tst_QEasingCurve::operators()
     curve2 = curve;
     curve2.setOvershoot(qreal(1.70158));
     QCOMPARE(curve.overshoot(), curve2.overshoot());
-    QVERIFY(curve2 == curve);
+    QT_TEST_EQUALITY_OPS(curve2, curve, true);
 
     curve.setOvershoot(3.0);
-    QVERIFY(curve2 != curve);
+    QT_TEST_EQUALITY_OPS(curve2, curve, false);
     curve2.setOvershoot(3.0);
-    QVERIFY(curve2 == curve);
+    QT_TEST_EQUALITY_OPS(curve2, curve, true);
 
     curve2.setType(QEasingCurve::Linear);
     QCOMPARE(curve.overshoot(), curve2.overshoot());
-    QVERIFY(curve2 != curve);
+    QT_TEST_EQUALITY_OPS(curve2, curve, false);
     curve2.setType(QEasingCurve::InBack);
     QCOMPARE(curve.overshoot(), curve2.overshoot());
-    QVERIFY(curve2 == curve);
+    QT_TEST_EQUALITY_OPS(curve2, curve, true);
 
     QEasingCurve curve3;
     QEasingCurve curve4;
     curve4.setAmplitude(curve4.amplitude());
     QEasingCurve curve5;
     curve5.setAmplitude(0.12345);
-    QVERIFY(curve3 == curve4); // default value and not assigned
-    QVERIFY(curve3 != curve5); // unassinged and other value
-    QVERIFY(curve4 != curve5);
+    QT_TEST_EQUALITY_OPS(curve3, curve4, true); // default value and not assigned
+    QT_TEST_EQUALITY_OPS(curve3, curve5, false); // unassinged and other value
+    QT_TEST_EQUALITY_OPS(curve4, curve5, false);
 }
 
 class tst_QEasingProperties : public QObject
@@ -890,7 +897,7 @@ void tst_QEasingCurve::streamInOut()
     dsw << orig;
     dsr >> copy;
 
-    QCOMPARE(copy == orig, equality);
+    QT_TEST_EQUALITY_OPS(copy, orig, equality);
 }
 
 QTEST_MAIN(tst_QEasingCurve)

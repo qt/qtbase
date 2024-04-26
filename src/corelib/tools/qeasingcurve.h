@@ -8,6 +8,7 @@
 
 QT_REQUIRE_CONFIG(easingcurve);
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qobjectdefs.h>
 
@@ -47,9 +48,11 @@ public:
 
     void swap(QEasingCurve &other) noexcept { qt_ptr_swap(d_ptr, other.d_ptr); }
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QEasingCurve &other) const;
     inline bool operator!=(const QEasingCurve &other) const
     { return !(this->operator==(other)); }
+#endif
 
     qreal amplitude() const;
     void setAmplitude(qreal amplitude);
@@ -80,6 +83,11 @@ private:
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QEasingCurve &);
     friend Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QEasingCurve &);
+#endif
+    friend Q_CORE_EXPORT bool
+    comparesEqual(const QEasingCurve &lhs, const QEasingCurve &rhs) noexcept;
+#if !QT_CORE_REMOVED_SINCE(6, 8)
+    Q_DECLARE_EQUALITY_COMPARABLE(QEasingCurve)
 #endif
 };
 Q_DECLARE_SHARED(QEasingCurve)

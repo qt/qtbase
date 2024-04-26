@@ -1153,32 +1153,37 @@ QEasingCurve::~QEasingCurve()
 */
 
 /*!
-    Compare this easing curve with \a other and returns \c true if they are
-    equal. It will also compare the properties of a curve.
- */
-bool QEasingCurve::operator==(const QEasingCurve &other) const
-{
-    bool res = d_ptr->func == other.d_ptr->func
-            && d_ptr->type == other.d_ptr->type;
-    if (res) {
-        if (d_ptr->config && other.d_ptr->config) {
-            // catch the config content
-            res = d_ptr->config->operator==(*(other.d_ptr->config));
+    \fn bool QEasingCurve::operator==(const QEasingCurve &lhs, const QEasingCurve &rhs)
 
-        } else if (d_ptr->config || other.d_ptr->config) {
+    Compares easing curve \a lhs with \a rhs and returns \c true if they are
+    equal; otherwise returns \c false.
+    It will also compare the properties of the curves.
+ */
+bool comparesEqual(const QEasingCurve &lhs, const QEasingCurve &rhs) noexcept
+{
+    bool res = lhs.d_ptr->func == rhs.d_ptr->func
+            && lhs.d_ptr->type == rhs.d_ptr->type;
+    if (res) {
+        if (lhs.d_ptr->config && rhs.d_ptr->config) {
+            // catch the config content
+            res = lhs.d_ptr->config->operator==(*(rhs.d_ptr->config));
+
+        } else if (lhs.d_ptr->config || rhs.d_ptr->config) {
             // one one has a config object, which could contain default values
-            res = qFuzzyCompare(amplitude(), other.amplitude())
-               && qFuzzyCompare(period(), other.period())
-               && qFuzzyCompare(overshoot(), other.overshoot());
+            res = qFuzzyCompare(lhs.amplitude(), rhs.amplitude())
+               && qFuzzyCompare(lhs.period(), rhs.period())
+               && qFuzzyCompare(lhs.overshoot(), rhs.overshoot());
         }
     }
     return res;
 }
 
 /*!
-    \fn bool QEasingCurve::operator!=(const QEasingCurve &other) const
-    Compare this easing curve with \a other and returns \c true if they are not equal.
-    It will also compare the properties of a curve.
+    \fn bool QEasingCurve::operator!=(const QEasingCurve &lhs, const QEasingCurve &rhs)
+
+    Compares easing curve \a lhs with \a rhs and returns \c true if they are
+    not equal; otherwise returns \c false.
+    It will also compare the properties of the curves.
 
     \sa operator==()
 */

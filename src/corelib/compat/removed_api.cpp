@@ -952,6 +952,13 @@ bool QDir::operator==(const QDir &dir) const
     return comparesEqual(*this, dir);
 }
 
+#include "qeasingcurve.h"
+
+bool QEasingCurve::operator==(const QEasingCurve &other) const
+{
+    return comparesEqual(*this, other);
+}
+
 #include "qfileinfo.h" // inlined API
 
 bool QFileInfo::operator==(const QFileInfo &fileinfo) const
