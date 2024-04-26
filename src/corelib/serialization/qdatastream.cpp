@@ -1090,6 +1090,7 @@ QDataStream &QDataStream::readBytes(char *&s, qint64 &l)
     qsizetype allocated = 0;
     std::unique_ptr<char[]> curBuf = nullptr;
 
+    constexpr qsizetype StepIncreaseThreshold = std::numeric_limits<qsizetype>::max() / 2;
     do {
         qsizetype blockSize = qMin(step, len - allocated);
         const qsizetype n = allocated + blockSize + 1;
@@ -1098,7 +1099,8 @@ QDataStream &QDataStream::readBytes(char *&s, qint64 &l)
         if (readBlock(curBuf.get() + allocated, blockSize) != blockSize)
             return *this;
         allocated += blockSize;
-        step *= 2;
+        if (step <= StepIncreaseThreshold)
+            step *= 2;
     } while (allocated < len);
 
     s = curBuf.release();
