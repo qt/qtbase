@@ -601,9 +601,12 @@ class Locale (object):
             base[k] = ';'.join(x[:3] for x in base[k].split(';'))
 
         return cls(base,
-                   language='C', language_code='0', languageEndonym='',
-                   script='AnyScript', script_code='0',
-                   territory='AnyTerritory', territory_code='0', territoryEndonym='',
+                   language='C', language_code='',
+                   language_id=0, languageEndonym='',
+                   script='AnyScript', script_code='', script_id=0,
+                   territory='AnyTerritory', territory_code='',
+                   territory_id=0, territoryEndonym='',
+                   variant='', variant_code='', variant_id=0,
                    # CLDR has non-ASCII versions of these:
                    quotationStart='"', quotationEnd='"',
                    alternateQuotationStart="'", alternateQuotationEnd="'",
