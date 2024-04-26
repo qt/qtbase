@@ -761,11 +761,11 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
                                                      % HexString<uint>(pe),
                                              opt, QSize(size, size), dpr);
             if (!QPixmapCache::find(pixmapName, &pixmap)) {
-                const qreal border = size / 5.;
-                const qreal sqsize = size;
-                pixmap = styleCachePixmap(QSize(size, size), dpr);
+                const qreal border = dpr * (size / 5.);
+                const qreal sqsize = dpr * size;
+                pixmap = QPixmap(QSize(size, size));
+                pixmap.fill(Qt::transparent);
                 QPainter imagePainter(&pixmap);
-                imagePainter.setRenderHint(QPainter::Antialiasing);
 
                 QPolygonF poly;
                 switch (pe) {
@@ -812,6 +812,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
 
                 imagePainter.drawPolygon(poly);
                 imagePainter.end();
+                pixmap.setDevicePixelRatio(dpr);
                 QPixmapCache::insert(pixmapName, pixmap);
             }
             int xOffset = r.x() + (r.width() - size)/2;
