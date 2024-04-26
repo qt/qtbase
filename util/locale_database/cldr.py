@@ -146,7 +146,7 @@ class CldrReader (object):
         return alias, defaults, winIds
 
     def readLocales(self, calendars = ('gregorian',)):
-        return {(k.language_id, k.script_id, k.territory_id, k.variant_code): k
+        return {(k.language_id, k.script_id, k.territory_id, k.variant_id): k
                 for k in self.__allLocales(calendars)}
 
     def __allLocales(self, calendars):
@@ -264,7 +264,7 @@ class CldrReader (object):
             language = names[0], language_code = language, language_id = ids[0],
             script = names[1], script_code = script, script_id = ids[1],
             territory = names[2], territory_code = territory, territory_id = ids[2],
-            variant_code = variant)
+            variant_code = variant, variant_id = ids[3])
 
         firstDay, weStart, weEnd = self.root.weekData(territory)
         assert all(day in ('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')

@@ -91,7 +91,8 @@ def main(argv, out, err):
     writer.enumData(reader.root.englishNaming)
     writer.likelySubTags(reader.likelySubTags())
     writer.zoneData(*reader.zoneData()) # Locale-independent zone data.
-    writer.locales(reader.readLocales(args.calendars), args.calendars)
+    en_US = tuple(id for id, name in reader.root.codesToIdName('en', '', 'US'))
+    writer.locales(reader.readLocales(args.calendars), args.calendars, en_US)
 
     writer.close(err.write)
     return 0

@@ -372,10 +372,19 @@ class QLocaleXmlWriter (object):
             self.__closeTag('msZoneIana')
         self.__closeTag('windowsZone')
 
-    def locales(self, locales, calendars):
+    def locales(self, locales, calendars, en_US):
+        """Write the data for each locale.
+
+        First argument, locales, is the mapping whose values are the
+        Locale objects, with each key being the matching tuple of
+        numeric IDs for language, script, territory and variant.
+        Second argument is a tuple of calendar names. Third is the
+        tuple of numeric IDs that corresponds to en_US (needed to
+        provide fallbacks for the C locale)."""
+
         self.__openTag('localeList')
         self.__openTag('locale')
-        self.__writeLocale(Locale.C(calendars), calendars)
+        self.__writeLocale(Locale.C(locales[en_US]), calendars)
         self.__closeTag('locale')
         for key in sorted(locales.keys()):
             self.__openTag('locale')
@@ -575,97 +584,46 @@ class Locale (object):
         for key in ('currencyDigits', 'currencyRounding'):
             write(key, get(key))
 
-    # Tools used by __monthNames:
-    def fullName(i, name): return name
-    def firstThree(i, name): return name[:3]
-    def initial(i, name): return name[:1]
-    def number(i, name): return str(i + 1)
-    def islamicShort(i, name):
-        if not name: return name
-        if name == 'Shawwal': return 'Shaw.'
-        words = name.split()
-        if words[0].startswith('Dhu'):
-            words[0] = words[0][:7] + '.'
-        elif len(words[0]) > 3:
-            words[0] = words[0][:3] + '.'
-        return ' '.join(words)
-    @staticmethod
-    def __monthNames(calendars,
-                     known={ # Map calendar to (names, extractors...):
-            # TODO: do we even need these ?  CLDR's root.xml seems to
-            # have them, complete with yeartype="leap" handling for
-            # Hebrew's extra.
-            'gregorian': (('January', 'February', 'March', 'April', 'May', 'June', 'July',
-                           'August', 'September', 'October', 'November', 'December'),
-                          # Extractor pairs, (plain, standalone)
-                          (fullName, fullName), # long
-                          (firstThree, firstThree), # short
-                          (number, initial)), # narrow
-            'persian': (('Farvardin', 'Ordibehesht', 'Khordad', 'Tir', 'Mordad',
-                         'Shahrivar', 'Mehr', 'Aban', 'Azar', 'Dey', 'Bahman', 'Esfand'),
-                        (fullName, fullName),
-                        (firstThree, firstThree),
-                        (number, initial)),
-            'islamic': (('Muharram', 'Safar', 'Rabiʻ I', 'Rabiʻ II', 'Jumada I',
-                         'Jumada II', 'Rajab', 'Shaʻban', 'Ramadan', 'Shawwal',
-                         'Dhuʻl-Qiʻdah', 'Dhuʻl-Hijjah'),
-                        (fullName, fullName),
-                        (islamicShort, islamicShort),
-                        (number, number)),
-            'hebrew': (('Tishri', 'Heshvan', 'Kislev', 'Tevet', 'Shevat', 'Adar I',
-                        'Adar', 'Nisan', 'Iyar', 'Sivan', 'Tamuz', 'Av'),
-                       (fullName, fullName),
-                       (fullName, fullName),
-                       (number, number)),
-                     },
-                     sizes=('long', 'short', 'narrow')):
-        for cal in calendars:
-            try:
-                data = known[cal]
-            except KeyError as e: # Need to add an entry to known, above.
-                e.args += ('Unsupported calendar:', cal)
-                raise
-            names, get = data[0], data[1:]
-            for n, size in enumerate(sizes):
-                yield ('_'.join((camelCase((size, 'months')), cal)),
-                       ';'.join(get[n][0](i, x) for i, x in enumerate(names)))
-                yield ('_'.join((camelCase(('standalone', size, 'months')), cal)),
-                       ';'.join(get[n][1](i, x) for i, x in enumerate(names)))
-    del fullName, firstThree, initial, number, islamicShort
-
     @classmethod
-    def C(cls, calendars=('gregorian',),
-          days = ('Sunday', 'Monday', 'Tuesday', 'Wednesday',
-                  'Thursday', 'Friday', 'Saturday'),
-          quantifiers=('k', 'M', 'G', 'T', 'P', 'E')):
-        """Returns an object representing the C locale."""
-        return cls(cls.__monthNames(calendars),
+    def C(cls, en_US):
+        """Returns an object representing the C locale.
+
+        Required argument, en_US, is the corresponding object for the
+        en_US locale (or the en_US_POSIX one if we ever support
+        variants). The C locale inherits from this, overriding what it
+        may need to."""
+        base = en_US.__dict__.copy()
+        # Soroush's original contribution shortened Jalali month names
+        # - contrary to CLDR, which doesn't abbreviate these in
+        # root.xml or en.xml, although some locales do, e.g. fr_CA.
+        # For compatibility with that,
+        for k in ('shortMonths_persian', 'standaloneShortMonths_persian'):
+            base[k] = ';'.join(x[:3] for x in base[k].split(';'))
+
+        return cls(base,
                    language='C', language_code='0', languageEndonym='',
                    script='AnyScript', script_code='0',
                    territory='AnyTerritory', territory_code='0', territoryEndonym='',
-                   groupSizes=(3, 3, 1),
-                   decimal='.', group=',', list=';', percent='%',
-                   zero='0', minus='-', plus='+', exp='e',
+                   # CLDR has non-ASCII versions of these:
                    quotationStart='"', quotationEnd='"',
-                   alternateQuotationStart='\'', alternateQuotationEnd='\'',
-                   listPatternPartStart='%1, %2',
-                   listPatternPartMiddle='%1, %2',
-                   listPatternPartEnd='%1, %2',
-                   listPatternPartTwo='%1, %2',
-                   byte_unit='bytes',
-                   byte_si_quantified=';'.join(q + 'B' for q in quantifiers),
-                   byte_iec_quantified=';'.join(q.upper() + 'iB' for q in quantifiers),
-                   am='AM', pm='PM', firstDayOfWeek='mon',
-                   weekendStart='sat', weekendEnd='sun',
+                   alternateQuotationStart="'", alternateQuotationEnd="'",
+                   # CLDR gives 'dddd, MMMM d, yyyy', 'M/d/yy', 'h:mm:ss Ap tttt',
+                   # 'h:mm Ap' with non-breaking space before Ap.
                    longDateFormat='dddd, d MMMM yyyy', shortDateFormat='d MMM yyyy',
                    longTimeFormat='HH:mm:ss t', shortTimeFormat='HH:mm:ss',
-                   longDays=';'.join(days),
-                   shortDays=';'.join(d[:3] for d in days),
-                   narrowDays='7;1;2;3;4;5;6',
-                   standaloneLongDays=';'.join(days),
-                   standaloneShortDays=';'.join(d[:3] for d in days),
-                   standaloneNarrowDays=';'.join(d[:1] for d in days),
-                   currencyIsoCode='', currencySymbol='',
-                   currencyDisplayName='',
+                   # CLDR has US-$ and US-style formats:
+                   currencyIsoCode='', currencySymbol='', currencyDisplayName='',
                    currencyDigits=2, currencyRounding=1,
-                   currencyFormat='%1%2', currencyNegativeFormat='')
+                   currencyFormat='%1%2', currencyNegativeFormat='',
+                   # We may want to fall back to CLDR for some of these:
+                   firstDayOfWeek='mon', # CLDR has 'sun'
+                   exp='e', # CLDR has 'E'
+                   listPatternPartEnd='%1, %2', # CLDR has '%1, and %2'
+                   listPatternPartTwo='%1, %2', # CLDR has '%1 and %2'
+                   narrowDays='7;1;2;3;4;5;6', # CLDR has letters
+                   narrowMonths_gregorian='1;2;3;4;5;6;7;8;9;10;11;12', # CLDR has letters
+                   standaloneNarrowMonths_persian='F;O;K;T;M;S;M;A;A;D;B;E', # CLDR has digits
+                   # Keep these explicit, despite matching CLDR:
+                   decimal='.', group=',', percent='%',
+                   zero='0', minus='-', plus='+',
+                   am='AM', pm='PM', weekendStart='sat', weekendEnd='sun')
