@@ -3238,7 +3238,7 @@ void QCoreApplication::installNativeEventFilter(QAbstractNativeEventFilter *filt
 */
 void QCoreApplication::removeNativeEventFilter(QAbstractNativeEventFilter *filterObject)
 {
-    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance();
+    QAbstractEventDispatcher *eventDispatcher = QAbstractEventDispatcher::instance(QCoreApplicationPrivate::theMainThread.loadAcquire());
     if (!filterObject || !eventDispatcher)
         return;
     eventDispatcher->removeNativeEventFilter(filterObject);
