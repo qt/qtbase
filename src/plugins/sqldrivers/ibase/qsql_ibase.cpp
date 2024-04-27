@@ -435,6 +435,16 @@ protected:
         }
         return QVariant(val);
     }
+
+    template<typename T>
+    void setWithScale(const QVariant &val, int scale, char *data)
+    {
+        auto ptr = reinterpret_cast<T *>(data);
+        if (scale < 0)
+            *ptr = static_cast<T>(floor(0.5 + val.toDouble() * pow(10.0, scale * -1)));
+        else
+            *ptr = val.value<T>();
+    }
 };
 
 class QIBaseResultPrivate: public QSqlCachedResultPrivate
@@ -1095,32 +1105,19 @@ bool QIBaseResult::exec()
             }
             switch(d->inda->sqlvar[para].sqltype & ~1) {
             case SQL_INT64:
-                if (d->inda->sqlvar[para].sqlscale < 0)
-                    *((qint64*)d->inda->sqlvar[para].sqldata) =
-                        (qint64)floor(0.5 + val.toDouble() * pow(10.0, d->inda->sqlvar[para].sqlscale * -1));
-                else
-                    *((qint64*)d->inda->sqlvar[para].sqldata) = val.toLongLong();
+                setWithScale<qint64>(val, d->inda->sqlvar[para].sqlscale, d->inda->sqlvar[para].sqldata);
                 break;
             case SQL_LONG:
-                if (d->inda->sqlvar[para].sqllen == 4) {
-                    if (d->inda->sqlvar[para].sqlscale < 0)
-                        *((qint32*)d->inda->sqlvar[para].sqldata) =
-                            (qint32)floor(0.5 + val.toDouble() * pow(10.0, d->inda->sqlvar[para].sqlscale * -1));
-                    else
-                        *((qint32*)d->inda->sqlvar[para].sqldata) = (qint32)val.toInt();
-                } else {
-                    *((qint64*)d->inda->sqlvar[para].sqldata) = val.toLongLong();
-                }
+                if (d->inda->sqlvar[para].sqllen == 4)
+                    setWithScale<qint32>(val, d->inda->sqlvar[para].sqlscale, d->inda->sqlvar[para].sqldata);
+                else
+                    setWithScale<qint64>(val, 0, d->inda->sqlvar[para].sqldata);
                 break;
             case SQL_SHORT:
-                if (d->inda->sqlvar[para].sqlscale < 0)
-                    *((short*)d->inda->sqlvar[para].sqldata) =
-                        (short)floor(0.5 + val.toDouble() * pow(10.0, d->inda->sqlvar[para].sqlscale * -1));
-                else
-                    *((short*)d->inda->sqlvar[para].sqldata) = (short)val.toInt();
+                setWithScale<qint16>(val, d->inda->sqlvar[para].sqlscale, d->inda->sqlvar[para].sqldata);
                 break;
             case SQL_FLOAT:
-                *((float*)d->inda->sqlvar[para].sqldata) = (float)val.toDouble();
+                *((float*)d->inda->sqlvar[para].sqldata) = val.toFloat();
                 break;
             case SQL_DOUBLE:
                 *((double*)d->inda->sqlvar[para].sqldata) = val.toDouble();
