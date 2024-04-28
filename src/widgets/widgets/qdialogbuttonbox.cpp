@@ -647,12 +647,12 @@ void QDialogButtonBox::clear()
     d->standardButtonHash.clear();
     for (int i = 0; i < NRoles; ++i) {
         QList<QAbstractButton *> &list = d->buttonLists[i];
-        while (list.size()) {
-            QAbstractButton *button = list.takeAt(0);
+        for (auto button : std::as_const(list)) {
             QObjectPrivate::disconnect(button, &QAbstractButton::destroyed,
                                        d, &QDialogButtonBoxPrivate::handleButtonDestroyed);
             delete button;
         }
+        list.clear();
     }
 }
 
@@ -818,8 +818,8 @@ void QDialogButtonBox::setStandardButtons(StandardButtons buttons)
 {
     Q_D(QDialogButtonBox);
     // Clear out all the old standard buttons, then recreate them.
-    qDeleteAll(d->standardButtonHash.keyBegin(), d->standardButtonHash.keyEnd());
-    d->standardButtonHash.clear();
+    const auto toDelete = std::exchange(d->standardButtonHash, {});
+    qDeleteAll(toDelete.keyBegin(), toDelete.keyEnd());
 
     d->createStandardButtons(buttons);
 }
