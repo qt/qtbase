@@ -755,64 +755,71 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
             QRect r = opt->rect;
             int size = qMin(r.height(), r.width());
             QPixmap pixmap;
-            const qreal pixelRatio = p->device()->devicePixelRatio();
+            const qreal dpr = p->device()->devicePixelRatio();
             const QString pixmapName = QStyleHelper::uniqueName("$qt_ia-"_L1
                                                      % QLatin1StringView(metaObject()->className())
                                                      % HexString<uint>(pe),
-                                             opt, QSize(size, size) * pixelRatio);
+                                             opt, QSize(size, size));
             if (!QPixmapCache::find(pixmapName, &pixmap)) {
-                const qreal border = pixelRatio * (size / 5.);
-                const qreal sqsize = pixelRatio * size;
-                pixmap = QPixmap(QSize(size, size));
+                // dpr scaling does not work well on such small pixel sizes, do it on our own
+                const int border = 1 * dpr;
+                const int sizeDpr = size * dpr;
+                int width = sizeDpr - 2 * border - 1;
+                int height = width / 2;
+                const int add = ((width & 1) == 1);
+                if (pe == PE_IndicatorArrowRight || pe == PE_IndicatorArrowLeft)
+                    std::swap(width, height);
+                pixmap = QPixmap(QSize(sizeDpr, sizeDpr));
                 pixmap.fill(Qt::transparent);
-                QPainter imagePainter(&pixmap);
 
-                QPolygonF poly;
+                std::array<QPointF, 4> poly;
                 switch (pe) {
                     case PE_IndicatorArrowUp:
-                        poly = {QPointF(border, sqsize / 2), QPointF(sqsize / 2, border),  QPointF(sqsize - border, sqsize / 2)};
+                        poly = {QPointF(0, height), QPointF(width, height),
+                                QPointF(width / 2 + add, 0), QPointF(width / 2, 0)};
                         break;
                     case PE_IndicatorArrowDown:
-                        poly = {QPointF(border, sqsize / 2), QPointF(sqsize / 2, sqsize - border), QPointF(sqsize - border, sqsize / 2)};
+                        poly = {QPointF(0, 0), QPointF(width, 0),
+                                QPointF(width / 2 + add, height), QPointF(width / 2, height)};
                         break;
                     case PE_IndicatorArrowRight:
-                        poly = {QPointF(sqsize - border, sqsize / 2), QPointF(sqsize / 2, border), QPointF(sqsize / 2, sqsize - border)};
+                        poly = {QPointF(0, 0), QPointF(0, height),
+                                QPointF(width, height / 2 + add), QPointF(width, height / 2)};
                         break;
                     case PE_IndicatorArrowLeft:
-                        poly = {QPointF(border, sqsize / 2), QPointF(sqsize / 2, border), QPointF(sqsize / 2, sqsize - border)};
+                        poly = {QPointF(width, 0), QPointF(width, height),
+                                QPointF(0, height / 2 + add), QPointF(0, height / 2)};
                         break;
                     default:
                         break;
                 }
 
-                int bsx = 0;
-                int bsy = 0;
-
+                QPainter imagePainter(&pixmap);
+                imagePainter.translate((sizeDpr - width) / 2, (sizeDpr - height) / 2);
                 if (opt->state & State_Sunken) {
-                    bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt, widget);
-                    bsy = proxy()->pixelMetric(PM_ButtonShiftVertical, opt, widget);
+                    const auto bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt, widget);
+                    const auto bsy = proxy()->pixelMetric(PM_ButtonShiftVertical, opt, widget);
+                    imagePainter.translate(bsx, bsy);
                 }
-
-                const QPointF boundsCenter = poly.boundingRect().center();
-                const qreal sx = sqsize / 2 - boundsCenter.x();
-                const qreal sy = sqsize / 2 - boundsCenter.y();
-                imagePainter.translate(sx + bsx, sy + bsy);
                 imagePainter.setPen(opt->palette.buttonText().color());
                 imagePainter.setBrush(opt->palette.buttonText());
 
                 if (!(opt->state & State_Enabled)) {
-                    imagePainter.translate(1, 1);
+                    const int ofs = qRound(1 * dpr);
+                    imagePainter.translate(ofs, ofs);
                     imagePainter.setBrush(opt->palette.light().color());
                     imagePainter.setPen(opt->palette.light().color());
-                    imagePainter.drawPolygon(poly);
-                    imagePainter.translate(-1, -1);
+                    imagePainter.drawPolygon(poly.data(), int(poly.size()));
+                    imagePainter.drawPoints(poly.data(), int(poly.size()));
+                    imagePainter.translate(-ofs, -ofs);
                     imagePainter.setBrush(opt->palette.mid().color());
                     imagePainter.setPen(opt->palette.mid().color());
                 }
-
-                imagePainter.drawPolygon(poly);
+                imagePainter.drawPolygon(poly.data(), int(poly.size()));
+                // sometimes the corners are not drawn by drawPolygon for unknown reaons, so re-draw them again
+                imagePainter.drawPoints(poly.data(), int(poly.size()));
                 imagePainter.end();
-                pixmap.setDevicePixelRatio(pixelRatio);
+                pixmap.setDevicePixelRatio(dpr);
                 QPixmapCache::insert(pixmapName, pixmap);
             }
             int xOffset = r.x() + (r.width() - size)/2;
