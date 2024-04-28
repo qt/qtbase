@@ -1281,6 +1281,7 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             const auto scale = d->sqlda->sqlvar[i].sqlscale;
             row[idx] = applyScale(val, scale);
             break;
+        }
         case SQL_LONG:
             if (d->sqlda->sqlvar[i].sqllen == 4) {
                 const auto val = *(qint32 *)buf;
