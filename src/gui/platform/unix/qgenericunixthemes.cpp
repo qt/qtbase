@@ -81,15 +81,10 @@ enum { defaultSystemFontSize = 9 };
 static bool shouldUseDBusTray() {
     // There's no other tray implementation to fallback to on non-X11
     // and QDBusTrayIcon can register the icon on the fly after creation
-    static bool result = QGuiApplication::platformName() != "xcb"_L1;
-    static bool resultKnown = result;
-    if (!resultKnown) {
-        QDBusMenuConnection conn;
-        if (conn.isWatcherRegistered())
-            result = true;
-        resultKnown = true;
-        qCDebug(qLcTray) << "D-Bus tray available:" << result;
-    }
+    if (QGuiApplication::platformName() != "xcb"_L1)
+        return true;
+    const bool result = QDBusMenuConnection().isWatcherRegistered();
+    qCDebug(qLcTray) << "D-Bus tray available:" << result;
     return result;
 }
 #endif
