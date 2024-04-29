@@ -1296,10 +1296,21 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
 {
     Q_D(QCompleter);
 
-    if (d->eatFocusOut && o == d->widget && e->type() == QEvent::FocusOut) {
-        d->hiddenBecauseNoMatch = false;
-        if (d->popup && d->popup->isVisible())
-            return true;
+    if (o == d->widget) {
+        switch (e->type()) {
+        case QEvent::FocusOut:
+            if (d->eatFocusOut) {
+                d->hiddenBecauseNoMatch = false;
+                if (d->popup && d->popup->isVisible())
+                    return true;
+            }
+            break;
+        case QEvent::Hide:
+            if (d->popup)
+                d->popup->hide();
+        default:
+            break;
+        }
     }
 
     if (o != d->popup)
