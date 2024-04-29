@@ -109,6 +109,8 @@ private slots:
     void dynamicSortOrder();
     void disabledItems();
 
+    void hideWidget();
+
     // task-specific tests below me
     void task178797_activatedOnReturn();
     void task189564_omitNonSelectableItems();
@@ -1180,6 +1182,32 @@ void tst_QCompleter::disabledItems()
     QTest::mouseClick(view->viewport(), Qt::LeftButton, {}, view->visualRect(view->model()->index(1, 0)).center());
     QCOMPARE(spy.size(), 1);
     QVERIFY(!view->isVisible());
+}
+
+void tst_QCompleter::hideWidget()
+{
+    // hiding the widget should hide/close the popup
+    QWidget w;
+    w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    w.setLayout(new QVBoxLayout);
+
+    QLineEdit edit;
+    edit.setCompleter(new QCompleter({ "foo", "bar" }));
+
+    w.layout()->addWidget(&edit);
+
+    const auto pos = w.screen()->availableGeometry().topLeft() + QPoint(200, 200);
+    w.move(pos);
+    w.show();
+    QApplicationPrivate::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+
+    // activate the completer
+    QTest::keyClick(&edit, Qt::Key_F);
+    QVERIFY(edit.completer()->popup());
+    QTRY_VERIFY(edit.completer()->popup()->isVisible());
+    edit.hide();
+    QVERIFY(!edit.completer()->popup()->isVisible());
 }
 
 void tst_QCompleter::task178797_activatedOnReturn()
