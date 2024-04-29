@@ -11079,6 +11079,10 @@ void tst_QWidget::hoverPosition()
     QVERIFY(QTest::qWaitForWindowExposed(&root));
 
     const QPoint middle(50, 50);
+    // wait until we got the correct global pos
+    QPoint expectedGlobalPos = root.geometry().topLeft() + QPoint(100, 100) + middle;
+    if (!QTest::qWaitFor([&]{ return expectedGlobalPos == h.mapToGlobal(middle); }))
+        QSKIP("Can't move cursor");
     QPoint curpos = h.mapToGlobal(middle);
     QCursor::setPos(curpos);
     if (!QTest::qWaitFor([curpos]{ return QCursor::pos() == curpos; }))
