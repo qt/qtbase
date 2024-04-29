@@ -2435,9 +2435,7 @@ std::optional<QFont::Tag> QFont::Tag::fromString(QAnyStringView view) noexcept
 
     By default, no variable axes are set.
 
-    \note In order to use variable axes on Windows, the application has to run with either the
-    FreeType or DirectWrite font databases. See the documentation for
-    QGuiApplication::QGuiApplication() for more information on how to select these technologies.
+    \note On Windows, variable axes are not supported if the optional GDI font backend is in use.
 
     \sa unsetVariableAxis
  */
