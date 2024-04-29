@@ -9,6 +9,7 @@
 #endif
 
 #include <QtCore/qtconfiginclude.h>
+#include <QtCore/qtversionchecks.h>
 
 #include <assert.h>
 
