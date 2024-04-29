@@ -4,7 +4,6 @@
 #define QT_CORE_BUILD_REMOVED_API
 
 #include "qglobal.h"
-#include "qnumeric.h"
 
 QT_USE_NAMESPACE
 
@@ -1014,6 +1013,7 @@ bool QMimeType::operator==(const QMimeType &other) const
 }
 
 #include "qobject.h"
+#include "qnumeric.h"
 
 int QObject::startTimer(std::chrono::milliseconds time, Qt::TimerType timerType)
 {
@@ -1071,6 +1071,8 @@ qsizetype QRegularExpressionMatch::capturedEnd(QStringView name) const
 }
 #endif // QT_CONFIG(regularexpression)
 
+#include "qstring.h" // inlined API
+
 #include "qurl.h"
 
 bool QUrl::operator<(const QUrl &url) const
@@ -1094,8 +1096,6 @@ bool QUrlQuery::operator==(const QUrlQuery &other) const
 {
     return comparesEqual(*this, other);
 }
-
-#include "qstring.h" // inlined API
 
 #include "qxmlstream.h" // inlined API
 
