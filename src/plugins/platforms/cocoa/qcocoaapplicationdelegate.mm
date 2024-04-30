@@ -334,6 +334,28 @@ QT_USE_NAMESPACE
         [self doesNotRecognizeSelector:invocationSelector];
 }
 
+- (BOOL)application:(NSApplication *)application continueUserActivity:(NSUserActivity *)userActivity
+          restorationHandler:(void(^)(NSArray<id<NSUserActivityRestoring>> *restorableObjects))restorationHandler
+{
+    // Check if eg. user has installed an app delegate capable of handling this
+    if ([reflectionDelegate respondsToSelector:_cmd]
+        && [reflectionDelegate application:application continueUserActivity:userActivity
+                         restorationHandler:restorationHandler] == YES) {
+        return YES;
+    }
+
+    if (!QGuiApplication::instance())
+        return NO;
+
+    if ([userActivity.activityType isEqualToString:NSUserActivityTypeBrowsingWeb]) {
+        QCocoaIntegration *cocoaIntegration = QCocoaIntegration::instance();
+        Q_ASSERT(cocoaIntegration);
+        return cocoaIntegration->services()->handleUrl(QUrl::fromNSURL(userActivity.webpageURL));
+    }
+
+    return NO;
+}
+
 - (void)getUrl:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
 {
     Q_UNUSED(replyEvent);
