@@ -968,10 +968,11 @@ Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::erase(const_iterator abegin, const_iterat
 
     Q_ASSERT(n > 0); // aend must be reachable from abegin
 
-    if constexpr (QTypeInfo<T>::isComplex) {
+    if constexpr (!QTypeInfo<T>::isRelocatable) {
         std::move(begin() + l, end(), QT_MAKE_CHECKED_ARRAY_ITERATOR(begin() + f, size() - f));
         std::destroy(end() - n, end());
     } else {
+        std::destroy(abegin, aend);
         memmove(static_cast<void *>(data() + f), static_cast<const void *>(data() + l), (size() - l) * sizeof(T));
     }
     this->s -= n;
