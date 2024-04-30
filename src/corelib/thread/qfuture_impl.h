@@ -287,6 +287,7 @@ using IsForwardIterable =
 template<typename Function, typename ResultType, typename ParentResultType>
 class Continuation
 {
+    Q_DISABLE_COPY_MOVE(Continuation)
 public:
     template<typename F = Function>
     Continuation(F &&func, const QFuture<ParentResultType> &f, QPromise<ResultType> &&p)
