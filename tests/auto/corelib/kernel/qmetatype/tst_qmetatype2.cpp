@@ -5,6 +5,7 @@
 #include "tst_qmetatype_libs.h"
 
 #include <QtCore/private/qmetaobjectbuilder_p.h>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 
 void tst_QMetaType::constRefs()
 {
@@ -418,6 +419,11 @@ struct CharTemplate
     } y;
 };
 
+void tst_QMetaType::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QMetaType>();
+}
+
 void tst_QMetaType::operatorEq_data()
 {
     QTest::addColumn<QMetaType>("typeA");
@@ -447,10 +453,7 @@ void tst_QMetaType::operatorEq()
     QFETCH(QMetaType, typeB);
     QFETCH(bool, eq);
 
-    QCOMPARE(typeA == typeB, eq);
-    QCOMPARE(typeB == typeA, eq);
-    QCOMPARE(typeA != typeB, !eq);
-    QCOMPARE(typeB != typeA, !eq);
+    QT_TEST_EQUALITY_OPS(typeA, typeB, eq);
 
 #if !defined(Q_OS_WIN) && !defined(Q_OS_INTEGRITY)
     // for built-in types or locally-defined types, this must also hold true
@@ -487,10 +490,10 @@ FOR_EACH_CORE_METATYPE(GET_METATYPE_FROM_TYPE)
     QCOMPARE(fromId2.id(), type);
 
     // confirm that they're all equal
-    QCOMPARE(fromId1, fromId2);
-    QCOMPARE(fromType1, fromType2);
-    QCOMPARE(fromType1, fromId1);
-    QCOMPARE(fromType2, fromId2);
+    QT_TEST_EQUALITY_OPS(fromId1, fromId2, true);
+    QT_TEST_EQUALITY_OPS(fromType1, fromType2, true);
+    QT_TEST_EQUALITY_OPS(fromType1, fromId1, true);
+    QT_TEST_EQUALITY_OPS(fromType2, fromId2, true);
 
 #if !defined(Q_OS_WIN) && !defined(Q_OS_INTEGRITY)
     // for built-in types (other than void), this must be true
@@ -541,7 +544,7 @@ void tst_QMetaType::operatorEqAcrossLibs()
     // DO THIS FIRST:
     // if this isn't a built-in type, then the QMetaTypeInterface::typeId is
     // initially set to 0
-    QCOMPARE(lib1Type, lib2Type);
+    QT_TEST_EQUALITY_OPS(lib1Type, lib2Type, true);
 
     int actualTypeId = localType.id();
     bool builtinTypeExpected = builtinTypeId != QMetaType::UnknownType;
@@ -559,8 +562,8 @@ void tst_QMetaType::operatorEqAcrossLibs()
     QCOMPARE(lib2Type.id(), actualTypeId);
     QCOMPARE(QByteArray(lib1Type.name()), QByteArray(localType.name()));
     QCOMPARE(QByteArray(lib2Type.name()), QByteArray(localType.name()));
-    QCOMPARE(lib1Type, localType);
-    QCOMPARE(lib2Type, localType);
+    QT_TEST_EQUALITY_OPS(lib1Type, localType, true);
+    QT_TEST_EQUALITY_OPS(lib2Type, localType, true);
 
 #if !defined(Q_OS_WIN) && !defined(Q_OS_INTEGRITY)
     if (actualTypeId < QMetaType::FirstGuiType && actualTypeId != QMetaType::Void) {

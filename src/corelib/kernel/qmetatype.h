@@ -518,20 +518,20 @@ public:
     template<typename T>
     constexpr static QMetaType fromType();
     static QMetaType fromName(QByteArrayView name);
-
-    friend bool operator==(QMetaType a, QMetaType b)
+private:
+    friend bool comparesEqual(const QMetaType &lhs,
+                              const QMetaType &rhs) noexcept
     {
-        if (a.d_ptr == b.d_ptr)
+        if (lhs.d_ptr == rhs.d_ptr)
             return true;
-        if (!a.d_ptr || !b.d_ptr)
+        if (!lhs.d_ptr || !rhs.d_ptr)
             return false; // one type is undefined, the other is defined
         // avoid id call if we already have the id
-        const int aId = a.id();
-        const int bId = b.id();
+        const int aId = lhs.id();
+        const int bId = rhs.id();
         return aId == bId;
     }
-    friend bool operator!=(QMetaType a, QMetaType b) { return !(a == b); }
-
+    Q_DECLARE_EQUALITY_COMPARABLE(QMetaType)
 #ifndef QT_NO_DEBUG_STREAM
 private:
     friend Q_CORE_EXPORT QDebug operator<<(QDebug d, QMetaType m);

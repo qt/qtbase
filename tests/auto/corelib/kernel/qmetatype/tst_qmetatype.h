@@ -111,6 +111,7 @@ private slots:
     void customDebugStream();
     void unknownType();
     void fromType();
+    void compareCompiles();
     void operatorEq_data();
     void operatorEq();
     void operatorEq2_data();

@@ -474,6 +474,7 @@ const char *QtMetaTypePrivate::typedefNameForType(const QtPrivate::QMetaTypeInte
 
     \ingroup objectmodel
     \threadsafe
+    \compares equality
 
     The class is used as a helper to marshall types in QVariant and
     in queued signals and slots connections. It associates a type
@@ -925,20 +926,20 @@ void QMetaType::unregisterMetaType(QMetaType type)
     Returns the QMetaType corresponding to the type in the template parameter.
 */
 
-/*! \fn bool QMetaType::operator==(QMetaType a, QMetaType b)
+/*! \fn bool QMetaType::operator==(const QMetaType &lhs, const QMetaType &rhs)
     \since 5.15
     \overload
 
-    Returns \c true if the QMetaType \a a represents the same type
-    as the QMetaType \a b, otherwise returns \c false.
+    Returns \c true if the QMetaType \a lhs represents the same type
+    as the QMetaType \a rhs, otherwise returns \c false.
 */
 
-/*! \fn bool QMetaType::operator!=(QMetaType a, QMetaType b)
+/*! \fn bool QMetaType::operator!=(const QMetaType &lhs, const QMetaType &rhs)
     \since 5.15
     \overload
 
-    Returns \c true if the QMetaType \a a represents a different type
-    than the QMetaType \a b, otherwise returns \c false.
+    Returns \c true if the QMetaType \a lhs represents a different type
+    than the QMetaType \a rhs, otherwise returns \c false.
 */
 
 /*! \internal */

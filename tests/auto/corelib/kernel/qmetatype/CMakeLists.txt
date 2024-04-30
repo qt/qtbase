@@ -51,6 +51,7 @@ qt_internal_add_test(tst_qmetatype
         ../../../other/qvariant_common
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
         Qt::Gui
         qmetatype_lib1
         qmetatype_lib2

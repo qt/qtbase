@@ -95,28 +95,20 @@ public:
     void swap(QPropertyBindingPrivatePtr &other) noexcept
     { qt_ptr_swap(d, other.d); }
 
-    friend bool operator==(const QPropertyBindingPrivatePtr &p1, const QPropertyBindingPrivatePtr &p2) noexcept
-    { return p1.d == p2.d; }
-    friend bool operator!=(const QPropertyBindingPrivatePtr &p1, const QPropertyBindingPrivatePtr &p2) noexcept
-    { return p1.d != p2.d; }
-    friend bool operator==(const QPropertyBindingPrivatePtr &p1, const T *ptr) noexcept
-    { return p1.d == ptr; }
-    friend bool operator!=(const QPropertyBindingPrivatePtr &p1, const T *ptr) noexcept
-    { return p1.d != ptr; }
-    friend bool operator==(const T *ptr, const QPropertyBindingPrivatePtr &p2) noexcept
-    { return ptr == p2.d; }
-    friend bool operator!=(const T *ptr, const QPropertyBindingPrivatePtr &p2) noexcept
-    { return ptr != p2.d; }
-    friend bool operator==(const QPropertyBindingPrivatePtr &p1, std::nullptr_t) noexcept
-    { return !p1; }
-    friend bool operator!=(const QPropertyBindingPrivatePtr &p1, std::nullptr_t) noexcept
-    { return p1; }
-    friend bool operator==(std::nullptr_t, const QPropertyBindingPrivatePtr &p2) noexcept
-    { return !p2; }
-    friend bool operator!=(std::nullptr_t, const QPropertyBindingPrivatePtr &p2) noexcept
-    { return p2; }
-
 private:
+    friend bool comparesEqual(const QPropertyBindingPrivatePtr &lhs,
+                              const QPropertyBindingPrivatePtr &rhs) noexcept
+    { return lhs.d == rhs.d; }
+    Q_DECLARE_EQUALITY_COMPARABLE(QPropertyBindingPrivatePtr)
+    friend bool comparesEqual(const QPropertyBindingPrivatePtr &lhs,
+                              const T *rhs) noexcept
+    { return lhs.d == rhs; }
+    Q_DECLARE_EQUALITY_COMPARABLE(QPropertyBindingPrivatePtr, T*)
+    friend bool comparesEqual(const QPropertyBindingPrivatePtr &lhs,
+                              std::nullptr_t) noexcept
+    { return !lhs; }
+    Q_DECLARE_EQUALITY_COMPARABLE(QPropertyBindingPrivatePtr, std::nullptr_t)
+
     QtPrivate::RefCounted *d;
 };
 
