@@ -2981,9 +2981,11 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
             cbD->d->currentPassRpDesc.depthAttachment.loadAction = MTLLoadActionLoad;
             cbD->d->currentPassRpDesc.stencilAttachment.loadAction = MTLLoadActionLoad;
         }
+        int colorAttCount = 0;
         for (auto it = rtTex->m_desc.cbeginColorAttachments(), itEnd = rtTex->m_desc.cendColorAttachments();
              it != itEnd; ++it)
         {
+            colorAttCount += 1;
             if (it->texture()) {
                 QRHI_RES(QMetalTexture, it->texture())->lastActiveFrameSlot = currentFrameSlot;
                 if (it->multiViewCount() >= 2)
@@ -2996,8 +2998,12 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         }
         if (rtTex->m_desc.depthStencilBuffer())
             QRHI_RES(QMetalRenderBuffer, rtTex->m_desc.depthStencilBuffer())->lastActiveFrameSlot = currentFrameSlot;
-        if (rtTex->m_desc.depthTexture())
-            QRHI_RES(QMetalTexture, rtTex->m_desc.depthTexture())->lastActiveFrameSlot = currentFrameSlot;
+        if (rtTex->m_desc.depthTexture()) {
+            QMetalTexture *depthTexture = QRHI_RES(QMetalTexture, rtTex->m_desc.depthTexture());
+            depthTexture->lastActiveFrameSlot = currentFrameSlot;
+            if (colorAttCount == 0 && depthTexture->arraySize() >= 2)
+                cbD->d->currentPassRpDesc.renderTargetArrayLength = NSUInteger(depthTexture->arraySize());
+        }
         if (rtTex->m_desc.depthResolveTexture())
             QRHI_RES(QMetalTexture, rtTex->m_desc.depthResolveTexture())->lastActiveFrameSlot = currentFrameSlot;
     }
