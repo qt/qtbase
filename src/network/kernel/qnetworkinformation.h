@@ -83,7 +83,6 @@ Q_SIGNALS:
 
 private:
     friend struct QNetworkInformationDeleter;
-    friend class QNetworkInformationPrivate;
     QNetworkInformation(QNetworkInformationBackend *backend);
     ~QNetworkInformation() override;
 
