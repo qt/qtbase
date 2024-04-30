@@ -452,7 +452,7 @@ QWindowsTheme *QWindowsTheme::m_instance = nullptr;
 QWindowsTheme::QWindowsTheme()
 {
     m_instance = this;
-    s_darkMode = QWindowsTheme::queryDarkMode();
+    s_colorScheme = QWindowsTheme::queryColorScheme();
     std::fill(m_fonts, m_fonts + NFonts, nullptr);
     std::fill(m_palettes, m_palettes + NPalettes, nullptr);
     refresh();
@@ -544,24 +544,24 @@ Qt::ColorScheme QWindowsTheme::colorScheme() const
 {
     if (queryHighContrast())
         return Qt::ColorScheme::Unknown;
-    return s_darkMode ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light;
+    return s_colorScheme;
 }
 
 void QWindowsTheme::handleSettingsChanged()
 {
-    const bool darkMode = QWindowsTheme::queryDarkMode();
-    const bool darkModeChanged = darkMode != QWindowsTheme::s_darkMode;
-    s_darkMode = darkMode;
+    const auto newColorScheme = QWindowsTheme::queryColorScheme();
+    const bool colorSchemeChanged = newColorScheme != QWindowsTheme::s_colorScheme;
+    s_colorScheme = newColorScheme;
     auto integration = QWindowsIntegration::instance();
     integration->updateApplicationBadge();
     if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle)) {
         QWindowsTheme::instance()->refresh();
         QWindowSystemInterface::handleThemeChange();
     }
-    if (darkModeChanged) {
+    if (colorSchemeChanged) {
         if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeWindowFrames)) {
             for (QWindowsWindow *w : std::as_const(QWindowsContext::instance()->windows()))
-                w->setDarkBorder(s_darkMode);
+                w->setDarkBorder(s_colorScheme == Qt::ColorScheme::Dark);
         }
     }
 }
@@ -577,10 +577,10 @@ void QWindowsTheme::refreshPalettes()
     if (!QGuiApplication::desktopSettingsAware())
         return;
     const bool light =
-        !s_darkMode
+        s_colorScheme != Qt::ColorScheme::Dark
         || !QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle);
     clearPalettes();
-    m_palettes[SystemPalette] = new QPalette(QWindowsTheme::systemPalette(light ? Qt::ColorScheme::Light : Qt::ColorScheme::Dark));
+    m_palettes[SystemPalette] = new QPalette(QWindowsTheme::systemPalette(s_colorScheme));
     m_palettes[ToolTipPalette] = new QPalette(toolTipPalette(*m_palettes[SystemPalette], light));
     m_palettes[MenuPalette] = new QPalette(menuPalette(*m_palettes[SystemPalette], light));
     m_palettes[MenuBarPalette] = menuBarPalette(*m_palettes[MenuPalette], light);
@@ -598,14 +598,14 @@ QPalette QWindowsTheme::systemPalette(Qt::ColorScheme colorScheme)
     QPalette result = standardPalette();
 
     switch (colorScheme) {
+    case Qt::ColorScheme::Unknown:
+        // when a high-contrast theme is active or when we fail to read, assume light
+        Q_FALLTHROUGH();
     case Qt::ColorScheme::Light:
         populateLightSystemBasePalette(result);
         break;
     case Qt::ColorScheme::Dark:
         populateDarkSystemBasePalette(result);
-        break;
-    default:
-        qFatal("Unknown color scheme");
         break;
     }
 
@@ -1112,14 +1112,14 @@ bool QWindowsTheme::useNativeMenus()
     return result;
 }
 
-bool QWindowsTheme::queryDarkMode()
+Qt::ColorScheme QWindowsTheme::queryColorScheme()
 {
-    if (queryHighContrast()) {
-        return false;
-    }
+    if (queryHighContrast())
+        return Qt::ColorScheme::Unknown;
+
     const auto setting = QWinRegistryKey(HKEY_CURRENT_USER, LR"(Software\Microsoft\Windows\CurrentVersion\Themes\Personalize)")
                          .dwordValue(L"AppsUseLightTheme");
-    return setting.second && setting.first == 0;
+    return setting.second && setting.first == 0 ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light;
 }
 
 bool QWindowsTheme::queryHighContrast()

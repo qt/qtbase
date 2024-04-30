@@ -56,8 +56,6 @@ public:
     void showPlatformMenuBar() override;
 
     static bool useNativeMenus();
-    static bool queryDarkMode();
-    static bool queryHighContrast();
 
     void refreshFonts();
     void refresh();
@@ -72,8 +70,11 @@ private:
     void clearFonts();
     void refreshIconPixmapSizes();
 
+    static Qt::ColorScheme queryColorScheme();
+    static bool queryHighContrast();
+
     static QWindowsTheme *m_instance;
-    static inline bool s_darkMode = false;
+    static inline Qt::ColorScheme s_colorScheme = Qt::ColorScheme::Unknown;
     QPalette *m_palettes[NPalettes];
     QFont *m_fonts[NFonts];
     QList<QSize> m_fileIconSizes;
