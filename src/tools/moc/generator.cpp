@@ -833,7 +833,7 @@ void Generator::generateProperties()
     //
 
     if (cdef->propertyList.size())
-        fprintf(out, "\n // properties: name, type, flags\n");
+        fprintf(out, "\n // properties: name, type, flags, notifyId, revision\n");
     for (const PropertyDef &p : std::as_const(cdef->propertyList)) {
         uint flags = Invalid;
         if (!isBuiltinType(p.type))
