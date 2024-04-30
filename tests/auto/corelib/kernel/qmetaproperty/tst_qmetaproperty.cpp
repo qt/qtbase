@@ -170,11 +170,55 @@ public:
     {}
 };
 
+enum FreeEnum {
+    FreeEnumValue1,
+    FreeEnumValue2
+};
+
+namespace MySpace {
+    enum NamespacedEnum {
+        NamespacedEnumValue1,
+        NamespacedEnumValue2
+    };
+};
+
+namespace MyQtSpace {
+    Q_NAMESPACE
+    enum NamespacedEnum {
+        NamespacedEnumValue1,
+        NamespacedEnumValue2
+    };
+    Q_DECLARE_FLAGS(NamespacedFlags, NamespacedEnum)
+    Q_FLAG_NS(NamespacedFlags)
+};
+
+namespace SeparateEnumNamespace {
+    Q_NAMESPACE
+    enum Enum {
+        Value1,
+        Value2
+    };
+    Q_ENUM_NS(Enum)
+};
+namespace SeparateFlagsNamespace {
+    Q_NAMESPACE
+    Q_DECLARE_FLAGS(Flags, SeparateEnumNamespace::Enum)
+    Q_FLAG_NS(Flags)
+}
+
 class EnumFlagsTester : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(TestEnum enumProperty READ enumProperty WRITE setEnumProperty)
     Q_PROPERTY(TestFlags flagProperty READ flagProperty WRITE setFlagProperty)
+
+    Q_PROPERTY(FreeEnum freeEnumProperty READ freeEnumProperty WRITE setFreeEnumProperty)
+    Q_PROPERTY(MySpace::NamespacedEnum namespacedEnumProperty READ namespacedEnumProperty WRITE setNamespacedEnumProperty)
+    Q_PROPERTY(MyQtSpace::NamespacedEnum qtNamespacedEnumProperty READ qtNamespacedEnumProperty WRITE setQtNamespacedEnumProperty)
+    Q_PROPERTY(MyQtSpace::NamespacedFlags qtNamespacedFlagProperty READ qtNamespacedFlagProperty WRITE setQtNamespacedFlagProperty)
+
+    Q_PROPERTY(SeparateEnumNamespace::Enum sepEnum READ sepEnum WRITE setSepEnum)
+    Q_PROPERTY(SeparateFlagsNamespace::Flags sepFlags READ sepFlags WRITE setSepFlags)
 public:
     enum TestEnum { e1, e2 };
     Q_ENUM(TestEnum)
@@ -190,9 +234,35 @@ public:
     TestFlags flagProperty() const { return m_flags; }
     void setFlagProperty(TestFlags f) { m_flags = f; }
 
+    FreeEnum freeEnumProperty() const { return m_freeEnum; }
+    void setFreeEnumProperty(FreeEnum e) { m_freeEnum = e; }
+
+    MySpace::NamespacedEnum namespacedEnumProperty() const { return m_namespacedEnum; }
+    void setNamespacedEnumProperty(MySpace::NamespacedEnum e) { m_namespacedEnum = e; }
+
+    MyQtSpace::NamespacedEnum qtNamespacedEnumProperty() const { return m_qtNamespaceEnum; }
+    void setQtNamespacedEnumProperty(MyQtSpace::NamespacedEnum e) { m_qtNamespaceEnum = e; }
+
+    MyQtSpace::NamespacedFlags qtNamespacedFlagProperty() const { return m_qtNamespaceFlags; }
+    void setQtNamespacedFlagProperty(MyQtSpace::NamespacedFlags f) { m_qtNamespaceFlags = f; }
+
+    SeparateEnumNamespace::Enum sepEnum() const { return m_sepEnum; }
+    void setSepEnum(SeparateEnumNamespace::Enum e) { m_sepEnum = e; }
+
+    SeparateFlagsNamespace::Flags sepFlags() const { return m_sepFlags; }
+    void setSepFlags(SeparateFlagsNamespace::Flags f) { m_sepFlags = f; }
+
 private:
     TestEnum m_enum = e1;
     TestFlags m_flags;
+
+    FreeEnum m_freeEnum = FreeEnum::FreeEnumValue1;
+    MySpace::NamespacedEnum m_namespacedEnum = MySpace::NamespacedEnumValue1;
+    MyQtSpace::NamespacedEnum m_qtNamespaceEnum = MyQtSpace::NamespacedEnumValue1;
+    MyQtSpace::NamespacedFlags m_qtNamespaceFlags;
+
+    SeparateEnumNamespace::Enum m_sepEnum = SeparateEnumNamespace::Value1;
+    SeparateFlagsNamespace::Flags m_sepFlags;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(EnumFlagsTester::TestFlags)
@@ -276,6 +346,7 @@ void tst_QMetaProperty::enumsFlags()
     QVERIFY(enumProperty.metaType().flags().testFlag(QMetaType::IsEnumeration));
     QVERIFY(enumProperty.write(&t, QVariant(int(EnumFlagsTester::e2))));
     QCOMPARE(t.enumProperty(), EnumFlagsTester::e2);
+    QVERIFY(enumProperty.enumerator().isValid()); // OK: Q_ENUM
 
     const int flagsIndex = mo->indexOfProperty("flagProperty");
     QVERIFY(flagsIndex >= 0);
@@ -283,6 +354,55 @@ void tst_QMetaProperty::enumsFlags()
     QVERIFY(flagsProperty.metaType().flags().testFlag(QMetaType::IsEnumeration));
     QVERIFY(flagsProperty.write(&t, QVariant(int(EnumFlagsTester::flag2))));
     QCOMPARE(t.flagProperty(), EnumFlagsTester::flag2);
+    QVERIFY(!flagsProperty.enumerator().isValid()); // Not using Q_FLAG
+
+    const int freeEnumIndex = mo->indexOfProperty("freeEnumProperty");
+    QVERIFY(freeEnumIndex >= 0);
+    auto freeEnumProperty = mo->property(freeEnumIndex);
+    QVERIFY(freeEnumProperty.metaType().flags().testFlag(QMetaType::IsEnumeration));
+    QVERIFY(freeEnumProperty.write(&t, QVariant(FreeEnumValue2)));
+    QCOMPARE(t.freeEnumProperty(), FreeEnumValue2);
+    QVERIFY(!freeEnumProperty.enumerator().isValid()); // Not using Q_ENUM
+
+    const int namespacedEnumIndex = mo->indexOfProperty("namespacedEnumProperty");
+    QVERIFY(namespacedEnumIndex >= 0);
+    auto namespacedEnumProperty = mo->property(namespacedEnumIndex);
+    QVERIFY(namespacedEnumProperty.metaType().flags().testFlag(QMetaType::IsEnumeration));
+    QVERIFY(namespacedEnumProperty.write(&t, QVariant(MySpace::NamespacedEnumValue2)));
+    QCOMPARE(t.namespacedEnumProperty(), MySpace::NamespacedEnumValue2);
+    QVERIFY(!namespacedEnumProperty.enumerator().isValid()); // Not using Q_NAMESPACE/Q_ENUM_NS
+
+    const int qtNamespacedEnumIndex = mo->indexOfProperty("qtNamespacedEnumProperty");
+    QVERIFY(qtNamespacedEnumIndex >= 0);
+    auto qtNamespacedEnumProperty = mo->property(qtNamespacedEnumIndex);
+    QVERIFY(qtNamespacedEnumProperty.metaType().flags().testFlag(QMetaType::IsEnumeration));
+    QVERIFY(qtNamespacedEnumProperty.write(&t, QVariant(MyQtSpace::NamespacedEnumValue2)));
+    QCOMPARE(t.qtNamespacedEnumProperty(), MyQtSpace::NamespacedEnumValue2);
+    QVERIFY(qtNamespacedEnumProperty.enumerator().isValid()); // OK: Q_ENUM_NS
+
+    const int qtNamespacedFlagIndex = mo->indexOfProperty("qtNamespacedFlagProperty");
+    QVERIFY(qtNamespacedFlagIndex >= 0);
+    auto qtNamespacedFlagProperty = mo->property(qtNamespacedFlagIndex);
+    QVERIFY(qtNamespacedFlagProperty.metaType().flags().testFlag(QMetaType::IsEnumeration));
+    QVERIFY(qtNamespacedFlagProperty.write(&t, QVariant(MyQtSpace::NamespacedFlags(MyQtSpace::NamespacedEnumValue2))));
+    QCOMPARE(t.qtNamespacedFlagProperty(), MyQtSpace::NamespacedFlags(MyQtSpace::NamespacedEnumValue2));
+    QVERIFY(qtNamespacedFlagProperty.enumerator().isValid()); // OK: Q_FLAG
+
+    const int sepEnumIndex = mo->indexOfProperty("sepEnum");
+    QVERIFY(sepEnumIndex >= 0);
+    auto sepEnumProperty = mo->property(sepEnumIndex);
+    QVERIFY(sepEnumProperty.metaType().flags().testFlag(QMetaType::IsEnumeration));
+    QVERIFY(sepEnumProperty.write(&t, QVariant(SeparateEnumNamespace::Value2)));
+    QCOMPARE(t.sepEnum(), SeparateEnumNamespace::Value2);
+    QVERIFY(sepEnumProperty.enumerator().isValid()); // OK: Q_ENUM_NS
+
+    const int sepFlagsIndex = mo->indexOfProperty("sepFlags");
+    QVERIFY(sepFlagsIndex >= 0);
+    auto sepFlagsProperty = mo->property(sepFlagsIndex);
+    QVERIFY(sepFlagsProperty.metaType().flags().testFlag(QMetaType::IsEnumeration));
+    QVERIFY(sepFlagsProperty.write(&t, QVariant(SeparateEnumNamespace::Value1)));
+    QCOMPARE(t.sepFlags(), SeparateEnumNamespace::Value1);
+    QVERIFY(!sepFlagsProperty.enumerator().isValid()); // NOK: the meta object is empty
 }
 
 
