@@ -335,7 +335,7 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway) noexcept
     d->running = false;
     d->finished = true;
     d->isInFinish = false;
-    d->interruptionRequested = false;
+    d->interruptionRequested.store(false, std::memory_order_relaxed);
 
     if (!d->waiters) {
         CloseHandle(d->handle);
@@ -412,7 +412,7 @@ void QThread::start(Priority priority)
     d->finished = false;
     d->exited = false;
     d->returnCode = 0;
-    d->interruptionRequested = false;
+    d->interruptionRequested.store(false, std::memory_order_relaxed);
 
     /*
       NOTE: we create the thread in the suspended state, set the
