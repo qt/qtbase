@@ -2643,10 +2643,6 @@ void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::
 
     QIconPrivate::clearIconCache();
 
-    const auto newColorScheme = platformTheme() ? platformTheme()->colorScheme()
-                                                : Qt::ColorScheme::Unknown;
-    QStyleHintsPrivate::get(QGuiApplication::styleHints())->updateColorScheme(newColorScheme);
-
     QEvent themeChangeEvent(QEvent::ThemeChange);
     const QWindowList windows = tce->window ? QWindowList{tce->window} : window_list;
     for (auto *window : windows)
@@ -2655,6 +2651,10 @@ void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::
 
 void QGuiApplicationPrivate::handleThemeChanged()
 {
+    const auto newColorScheme = platformTheme() ? platformTheme()->colorScheme()
+                                                : Qt::ColorScheme::Unknown;
+    QStyleHintsPrivate::get(QGuiApplication::styleHints())->updateColorScheme(newColorScheme);
+
     updatePalette();
 
     QIconLoader::instance()->updateSystemTheme();
