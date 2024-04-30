@@ -24,12 +24,8 @@ import java.util.HashMap;
 class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppStateDetailsListener {
     // TODO simplistic implementation with one QtView, expand to support multiple views QTBUG-117649
     private QtView m_view;
-    private long m_rootWindowRef = 0L;
     private QtNative.ApplicationStateDetails m_stateDetails;
     private boolean m_windowLoaded = false;
-
-    private static native void createRootWindow(View rootView, int x, int y, int width, int height);
-    static native void deleteWindow(long windowReference);
 
     public QtEmbeddedDelegate(Activity context) {
         super(context);
@@ -82,7 +78,6 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
                     QtNative.terminateQt();
                     QtNative.setActivity(null);
                     QtNative.getQtThread().exit();
-                    onDestroy();
                 }
             }
         });
@@ -154,20 +149,10 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
         m_inputDelegate.setEditPopupMenu(new EditPopupMenu(m_activity, m_view));
     }
 
-
-    public void setRootWindowRef(long ref) {
-        m_rootWindowRef = ref;
-    }
-
-    public void onDestroy() {
-        if (m_rootWindowRef != 0L)
-            deleteWindow(m_rootWindowRef);
-        m_rootWindowRef = 0L;
-    }
-
     private void createRootWindow() {
         if (m_view != null && !m_windowLoaded) {
-            createRootWindow(m_view, m_view.getLeft(), m_view.getTop(),  m_view.getWidth(), m_view.getHeight());
+            QtView.createRootWindow(m_view, m_view.getLeft(), m_view.getTop(), m_view.getWidth(),
+                                    m_view.getHeight());
             m_windowLoaded = true;
         }
     }

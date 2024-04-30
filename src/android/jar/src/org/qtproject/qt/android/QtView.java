@@ -29,6 +29,7 @@ abstract class QtView extends ViewGroup {
 
     protected QtWindow m_window;
     protected long m_windowReference;
+    protected long m_parentWindowReference;
     protected QtWindowListener m_windowListener;
     protected QtEmbeddedDelegate m_delegate;
     // Implement in subclass to handle the creation of the QWindow and its parent container.
@@ -37,6 +38,8 @@ abstract class QtView extends ViewGroup {
     // too much JNI back and forth. Related to parent window creation, so handle with QTBUG-121511.
     abstract protected void createWindow(long parentWindowRef);
 
+    static native void createRootWindow(View rootView, int x, int y, int width, int height);
+    static native void deleteWindow(long windowReference);
     private static native void setWindowVisible(long windowReference, boolean visible);
     private static native void resizeWindow(long windowReference,
                                             int x, int y, int width, int height);
@@ -156,7 +159,7 @@ abstract class QtView extends ViewGroup {
     // viewReference - the reference to the created QQuickView
     void addQtWindow(QtWindow window, long viewReference, long parentWindowRef) {
         setWindowReference(viewReference);
-        m_delegate.setRootWindowRef(parentWindowRef);
+        m_parentWindowReference = parentWindowRef;
         final Handler handler = new Handler(Looper.getMainLooper());
         handler.post(new Runnable() {
             @Override
@@ -176,9 +179,9 @@ abstract class QtView extends ViewGroup {
 
     // Destroy the underlying QWindow
     void destroyWindow() {
-        if (m_windowReference != 0L)
-            QtEmbeddedDelegate.deleteWindow(m_windowReference);
-        m_windowReference = 0L;
+        if (m_parentWindowReference != 0L)
+            deleteWindow(m_parentWindowReference);
+        m_parentWindowReference = 0L;
     }
 
     QtWindow getQtWindow() {

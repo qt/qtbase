@@ -12,7 +12,6 @@
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_JNI_CLASS(QtView, "org/qtproject/qt/android/QtView");
-Q_DECLARE_JNI_CLASS(QtEmbeddedDelegate, "org/qtproject/qt/android/QtEmbeddedDelegate");
 
 namespace QtAndroidWindowEmbedding {
     void createRootWindow(JNIEnv *, jclass, QtJniTypes::View rootView,
@@ -59,16 +58,12 @@ namespace QtAndroidWindowEmbedding {
     }
 
     bool registerNatives(QJniEnvironment& env) {
-        using namespace QtJniTypes;
-        bool success = env.registerNativeMethods(Traits<QtEmbeddedDelegate>::className(),
-                            {Q_JNI_NATIVE_SCOPED_METHOD(createRootWindow, QtAndroidWindowEmbedding),
-                             Q_JNI_NATIVE_SCOPED_METHOD(deleteWindow, QtAndroidWindowEmbedding)});
-
-        success &= env.registerNativeMethods(Traits<QtView>::className(),
-                            {Q_JNI_NATIVE_SCOPED_METHOD(setWindowVisible, QtAndroidWindowEmbedding),
-                             Q_JNI_NATIVE_SCOPED_METHOD(resizeWindow, QtAndroidWindowEmbedding)});
-        return success;
-
+        return env.registerNativeMethods(
+                QtJniTypes::Traits<QtJniTypes::QtView>::className(),
+                { Q_JNI_NATIVE_SCOPED_METHOD(createRootWindow, QtAndroidWindowEmbedding),
+                  Q_JNI_NATIVE_SCOPED_METHOD(deleteWindow, QtAndroidWindowEmbedding),
+                  Q_JNI_NATIVE_SCOPED_METHOD(setWindowVisible, QtAndroidWindowEmbedding),
+                  Q_JNI_NATIVE_SCOPED_METHOD(resizeWindow, QtAndroidWindowEmbedding) });
     }
 }
 
