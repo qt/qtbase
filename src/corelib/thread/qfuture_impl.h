@@ -588,9 +588,6 @@ void Continuation<Function, ResultType, ParentResultType>::create(F &&func,
     f->d.setContinuation(ContinuationWrapper(std::move(continuation)), fi.d);
 }
 
-// defined in qfutureinterface.cpp:
-Q_CORE_EXPORT void watchContinuationImpl(const QObject *context, QSlotObjectBase *slotObj,
-                                         QFutureInterfaceBase &fi);
 template <typename Continuation>
 void watchContinuation(const QObject *context, Continuation &&c, QFutureInterfaceBase &fi)
 {
