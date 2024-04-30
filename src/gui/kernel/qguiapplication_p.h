@@ -323,8 +323,6 @@ public:
 
     static void updatePalette();
 
-    static Qt::ColorScheme colorScheme();
-
 protected:
     virtual void handleThemeChanged();
 

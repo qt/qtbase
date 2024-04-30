@@ -2643,24 +2643,14 @@ void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::
 
     QIconPrivate::clearIconCache();
 
-    QStyleHintsPrivate::get(QGuiApplication::styleHints())->updateColorScheme(colorScheme());
+    const auto newColorScheme = platformTheme() ? platformTheme()->colorScheme()
+                                                : Qt::ColorScheme::Unknown;
+    QStyleHintsPrivate::get(QGuiApplication::styleHints())->updateColorScheme(newColorScheme);
 
     QEvent themeChangeEvent(QEvent::ThemeChange);
     const QWindowList windows = tce->window ? QWindowList{tce->window} : window_list;
     for (auto *window : windows)
         QGuiApplication::sendSpontaneousEvent(window, &themeChangeEvent);
-}
-
-/*!
-   \internal
-   \brief QGuiApplicationPrivate::colorScheme
-   \return the platform theme's color scheme
-   or Qt::ColorScheme::Unknown if a platform theme cannot be established
- */
-Qt::ColorScheme QGuiApplicationPrivate::colorScheme()
-{
-    return platformTheme() ? platformTheme()->colorScheme()
-                           : Qt::ColorScheme::Unknown;
 }
 
 void QGuiApplicationPrivate::handleThemeChanged()

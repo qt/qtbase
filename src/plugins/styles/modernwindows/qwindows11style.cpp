@@ -2127,8 +2127,9 @@ static void populateLightSystemBasePalette(QPalette &result)
 void QWindows11Style::polish(QPalette& pal)
 {
     Q_D(QWindows11Style);
-    highContrastTheme = QGuiApplicationPrivate::colorScheme() == Qt::ColorScheme::Unknown;
-    colorSchemeIndex = QGuiApplicationPrivate::colorScheme() == Qt::ColorScheme::Light ? 0 : 1;
+
+    highContrastTheme = QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Unknown;
+    colorSchemeIndex = QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Light ? 0 : 1;
 
     if (!highContrastTheme && colorSchemeIndex == 0)
         populateLightSystemBasePalette(pal);
