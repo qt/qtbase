@@ -956,8 +956,8 @@ Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::insert_impl(qsizetype prealloc, void *arr
 template <class T>
 Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::erase(const_iterator abegin, const_iterator aend) -> iterator
 {
-    Q_ASSERT_X(isValidIterator(abegin), "QVarLengthArray::insert", "The specified const_iterator argument 'abegin' is invalid");
-    Q_ASSERT_X(isValidIterator(aend), "QVarLengthArray::insert", "The specified const_iterator argument 'aend' is invalid");
+    Q_ASSERT_X(isValidIterator(abegin), "QVarLengthArray::erase", "The specified const_iterator argument 'abegin' is invalid");
+    Q_ASSERT_X(isValidIterator(aend), "QVarLengthArray::erase", "The specified const_iterator argument 'aend' is invalid");
 
     qsizetype f = qsizetype(abegin - cbegin());
     qsizetype l = qsizetype(aend - cbegin());
