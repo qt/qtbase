@@ -2581,7 +2581,6 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
         int w = img.width();
         int h = img.height();
         int bpl = img.bytesPerLine();
-        int srcOffset = 0;
 
         if (!subresDesc.sourceSize().isEmpty() || !subresDesc.sourceTopLeft().isNull()) {
             const int sx = subresDesc.sourceTopLeft().x();
@@ -2590,10 +2589,12 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
                 w = subresDesc.sourceSize().width();
                 h = subresDesc.sourceSize().height();
             }
-            if (img.depth() == 32) {
-                memcpy(reinterpret_cast<char *>(mp) + *curOfs, img.constBits(), size_t(fullImageSizeBytes));
-                srcOffset = sy * bpl + sx * 4;
-                // bpl remains set to the original image's row stride
+            if (w == img.width()) {
+                const int bpc = qMax(1, img.depth() / 8);
+                Q_ASSERT(h * img.bytesPerLine() <= fullImageSizeBytes);
+                memcpy(reinterpret_cast<char *>(mp) + *curOfs,
+                       img.constBits() + sy * img.bytesPerLine() + sx * bpc,
+                       h * img.bytesPerLine());
             } else {
                 img = img.copy(sx, sy, w, h);
                 bpl = img.bytesPerLine();
@@ -2605,7 +2606,7 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
         }
 
         [blitEnc copyFromBuffer: texD->d->stagingBuf[currentFrameSlot]
-                                 sourceOffset: NSUInteger(*curOfs + srcOffset)
+                                 sourceOffset: NSUInteger(*curOfs)
                                  sourceBytesPerRow: NSUInteger(bpl)
                                  sourceBytesPerImage: 0
                                  sourceSize: MTLSizeMake(NSUInteger(w), NSUInteger(h), 1)
