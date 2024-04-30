@@ -62,7 +62,10 @@ def main(argv, out, err):
     parser.add_argument('--calendars', help='select calendars to emit data for',
                         nargs='+', metavar='CALENDAR',
                         choices=all_calendars, default=all_calendars)
-
+    parser.add_argument('-v', '--verbose', help='more verbose output',
+                        action='count', default=0)
+    parser.add_argument('-q', '--quiet', help='less output',
+                        dest='verbose', action='store_const', const=-1)
     args = parser.parse_args(argv[1:])
 
     root = Path(args.cldr_path)
@@ -83,8 +86,11 @@ def main(argv, out, err):
         except IOError as e:
             parser.error(f'Failed to open "{xml}" to write output to it')
 
-    # TODO - command line options to tune choice of grumble and whitter:
-    reader = CldrReader(root, err.write, err.write)
+    reader = CldrReader(root,
+                        (lambda *x: None) if args.verbose < 0 else
+                        # Use stderr for logging if stdout is where our XML is going:
+                        err.write if out is emit else out.write,
+                        err.write)
     writer = QLocaleXmlWriter(emit.write)
 
     writer.version(reader.root.cldrVersion)

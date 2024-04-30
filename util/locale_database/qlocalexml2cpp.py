@@ -684,6 +684,10 @@ def main(argv, out, err):
     parser.add_argument('--calendars', help='select calendars to emit data for',
                         nargs='+', metavar='CALENDAR',
                         choices=all_calendars, default=all_calendars)
+    parser.add_argument('-v', '--verbose', help='more verbose output',
+                        action='count', default=0)
+    parser.add_argument('-q', '--quiet', help='less output',
+                        dest='verbose', action='store_const', const=-1)
     args = parser.parse_args(argv[1:])
 
     qlocalexml = args.input_file
@@ -717,6 +721,8 @@ def main(argv, out, err):
             writer.territoryCodes(reader.territories)
     except Exception as e:
         err.write(f'\nError updating locale data: {e}\n')
+        if args.verbose > 0:
+            raise
         return 1
 
     # Generate calendar data
@@ -728,6 +734,9 @@ def main(argv, out, err):
                 writer.write(calendar, locale_map, locale_keys)
         except Exception as e:
             err.write(f'\nError updating {calendar} locale data: {e}\n')
+            if args.verbose > 0:
+                raise
+            return 1
 
     # qlocale.h
     try:
@@ -738,6 +747,9 @@ def main(argv, out, err):
             writer.territories(reader.territories)
     except Exception as e:
         err.write(f'\nError updating qlocale.h: {e}\n')
+        if args.verbose > 0:
+            raise
+        return 1
 
     # qlocale.qdoc
     try:
@@ -750,6 +762,8 @@ def main(argv, out, err):
                     qdoc.writer.write(line)
     except Exception as e:
         err.write(f'\nError updating qlocale.h: {e}\n')
+        if args.verbose > 0:
+            raise
         return 1
 
     # Locale-independent timezone data
@@ -764,6 +778,8 @@ def main(argv, out, err):
             writer.writeTables()
     except Exception as e:
         err.write(f'\nError updating qtimezoneprivate_data_p.h: {e}\n')
+        if args.verbose > 0:
+            raise
         return 1
 
     # ./testlocales/localemodel.cpp
@@ -774,6 +790,9 @@ def main(argv, out, err):
             test.localeList(locale_keys)
     except Exception as e:
         err.write(f'\nError updating localemodel.cpp: {e}\n')
+        if args.verbose > 0:
+            raise
+        return 1
 
     return 0
 
