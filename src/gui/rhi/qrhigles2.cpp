@@ -1096,6 +1096,8 @@ bool QRhiGles2::create(QRhi::Flags flags)
         caps.glesMultiviewMultisampleRenderToTexture = false;
     }
 
+    caps.unpackRowLength = !caps.gles || caps.ctxMajor >= 3;
+
     nativeHandlesStruct.context = ctx;
 
     contextLost = false;
@@ -1426,7 +1428,7 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::PipelineCacheDataLoadSave:
         return caps.programBinary;
     case QRhi::ImageDataStride:
-        return !caps.gles || caps.ctxMajor >= 3;
+        return caps.unpackRowLength;
     case QRhi::RenderBufferImport:
         return true;
     case QRhi::ThreeDimensionalTextures:
@@ -2363,7 +2365,7 @@ void QRhiGles2::enqueueSubresUpload(QGles2Texture *texD, QGles2CommandBuffer *cb
             dataStride = bytesPerLine;
 
         cmd.args.subImage.rowStartAlign = (dataStride & 3) ? 1 : 4;
-        cmd.args.subImage.rowLength = bytesPerPixel ? dataStride / bytesPerPixel : 0;
+        cmd.args.subImage.rowLength = caps.unpackRowLength ? (bytesPerPixel ? dataStride / bytesPerPixel : 0) : 0;
 
         cmd.args.subImage.data = data;
     };

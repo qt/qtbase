@@ -1014,7 +1014,10 @@ public:
               halfAttributes(false),
               multiView(false),
               timestamps(false),
-              objectLabel(false)
+              objectLabel(false),
+              glesMultisampleRenderToTexture(false),
+              glesMultiviewMultisampleRenderToTexture(false),
+              unpackRowLength(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -1073,6 +1076,7 @@ public:
         uint objectLabel : 1;
         uint glesMultisampleRenderToTexture : 1;
         uint glesMultiviewMultisampleRenderToTexture : 1;
+        uint unpackRowLength : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;
