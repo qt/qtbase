@@ -3225,12 +3225,12 @@ void QRhiVulkan::prepareUploadSubres(QVkTexture *texD, int layer, int level,
             const int sy = subresDesc.sourceTopLeft().y();
             if (!subresDesc.sourceSize().isEmpty())
                 size = subresDesc.sourceSize();
-            if (image.depth() == 32) {
-                // The staging buffer will get the full image
-                // regardless, just adjust the vk
-                // buffer-to-image copy start offset.
-                copyInfo.bufferOffset += VkDeviceSize(sy * image.bytesPerLine() + sx * 4);
-                // bufferRowLength remains set to the original image's width
+
+            if (size.width() == image.width()) {
+                // No need to make a QImage copy here, can copy from the source
+                // QImage into staging directly.
+                src = image.constBits() + sy * image.bytesPerLine() + sx * bpc;
+                copySizeBytes = size.height() * image.bytesPerLine();
             } else {
                 image = image.copy(sx, sy, size.width(), size.height());
                 src = image.constBits();
