@@ -554,6 +554,10 @@ QString QLibraryInfoPrivate::path(QLibraryInfo::LibraryPath p, UsageMode usageMo
             }
 
             qsizetype startIndex = 0;
+            /* We support placeholders of the form $(<ENV_VAR>) in qt.conf.
+               The loop below tries to find all such placeholders, and replaces
+               them with the actual value of the ENV_VAR environment variable
+             */
             while (true) {
                 startIndex = ret.indexOf(u'$', startIndex);
                 if (startIndex < 0)
