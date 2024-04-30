@@ -259,7 +259,7 @@ static QColor placeHolderColor(QColor textColor)
     This is used when the theme is light mode, and when the theme is dark but the
     application doesn't support dark mode. In the latter case, we need to check.
 */
-static void populateLightSystemBasePalette(QPalette &result)
+void QWindowsTheme::populateLightSystemBasePalette(QPalette &result)
 {
     const QColor background = getSysColor(COLOR_BTNFACE);
     const QColor textColor = getSysColor(COLOR_WINDOWTEXT);
@@ -299,7 +299,7 @@ static void populateLightSystemBasePalette(QPalette &result)
         result.setColor(QPalette::Midlight, result.button().color().lighter(110));
 }
 
-static void populateDarkSystemBasePalette(QPalette &result)
+void QWindowsTheme::populateDarkSystemBasePalette(QPalette &result)
 {
 #if QT_CONFIG(cpp_winrt)
     using namespace winrt::Windows::UI::ViewManagement;
@@ -542,6 +542,11 @@ QVariant QWindowsTheme::themeHint(ThemeHint hint) const
 
 Qt::ColorScheme QWindowsTheme::colorScheme() const
 {
+    return QWindowsTheme::effectiveColorScheme();
+}
+
+Qt::ColorScheme QWindowsTheme::effectiveColorScheme()
+{
     if (queryHighContrast())
         return Qt::ColorScheme::Unknown;
     return s_colorScheme;
@@ -577,7 +582,7 @@ void QWindowsTheme::refreshPalettes()
     if (!QGuiApplication::desktopSettingsAware())
         return;
     const bool light =
-        s_colorScheme != Qt::ColorScheme::Dark
+        effectiveColorScheme() != Qt::ColorScheme::Dark
         || !QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle);
     clearPalettes();
     m_palettes[SystemPalette] = new QPalette(QWindowsTheme::systemPalette(s_colorScheme));

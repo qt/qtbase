@@ -70,7 +70,11 @@ private:
     void clearFonts();
     void refreshIconPixmapSizes();
 
+    static void populateLightSystemBasePalette(QPalette &result);
+    static void populateDarkSystemBasePalette(QPalette &result);
+
     static Qt::ColorScheme queryColorScheme();
+    static Qt::ColorScheme effectiveColorScheme();
     static bool queryHighContrast();
 
     static QWindowsTheme *m_instance;
