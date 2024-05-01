@@ -161,7 +161,9 @@ void basicStringTypes_data()
 {
     QTest::newRow("string") << QVariant("ping") << "s" << "\"ping\"";
     QTest::newRow("objectpath") << QVariant::fromValue(QDBusObjectPath("/org/kde")) << "o" << "[ObjectPath: /org/kde]";
+    QTest::newRow("emptysignature") << QVariant::fromValue(QDBusSignature(QString())) << "g" << "[Signature: ]";
     QTest::newRow("signature") << QVariant::fromValue(QDBusSignature("g")) << "g" << "[Signature: g]";
+    QTest::newRow("multisignature") << QVariant::fromValue(QDBusSignature("bit")) << "g" << "[Signature: bit]";
     QTest::newRow("emptystring") << QVariant("") << "s" << "\"\"";
     QTest::newRow("nullstring") << QVariant(QString()) << "s" << "\"\"";
 }
@@ -907,7 +909,7 @@ void tst_QDBusMarshall::sendSignalErrors()
     QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal to service \"\" path \"/foo\" interface \"local.interfaceName\" member \"signalName\": Marshalling failed: Invalid object path passed in arguments");
     QVERIFY(!con.send(msg));
 
-    QDBusSignature sig;
+    QDBusSignature sig(QChar(0));
     msg.setArguments(QVariantList() << QVariant::fromValue(sig));
     QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal to service \"\" path \"/foo\" interface \"local.interfaceName\" member \"signalName\": Marshalling failed: Invalid signature passed in arguments");
     QVERIFY(!con.send(msg));
@@ -992,7 +994,7 @@ void tst_QDBusMarshall::sendCallErrors_data()
             << "";
 
     QTest::newRow("invalid-signature-arg") << serviceName << objectPath << interfaceName << "ping"
-            << (QVariantList() << QVariant::fromValue(QDBusSignature()))
+            << (QVariantList() << QVariant::fromValue(QDBusSignature(QChar(0))))
             << "org.freedesktop.DBus.Error.Failed"
             << "Marshalling failed: Invalid signature passed in arguments"
             << "";
