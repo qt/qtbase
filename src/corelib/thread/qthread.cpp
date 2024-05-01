@@ -127,8 +127,7 @@ QAdoptedThread::QAdoptedThread(QThreadData *data)
     // thread should be running and not finished for the lifetime
     // of the application (even if QCoreApplication goes away)
 #if QT_CONFIG(thread)
-    d_func()->running = true;
-    d_func()->finished = false;
+    d_func()->threadState = QThreadPrivate::Running;
     init();
     d_func()->m_statusOrPendingObjects.setStatusAndClearList(
                 QtPrivate::getBindingStatus({}));
@@ -170,10 +169,7 @@ QScopedScopeLevelCounter::~QScopedScopeLevelCounter()
 */
 
 QThreadPrivate::QThreadPrivate(QThreadData *d)
-    : QObjectPrivate(), running(false), finished(false),
-      isInFinish(false), interruptionRequested(false),
-      exited(false), returnCode(-1),
-      stackSize(0), priority(QThread::InheritPriority), data(d)
+    : QObjectPrivate(), data(d)
 {
 
 // INTEGRITY doesn't support self-extending stack. The default stack size for
@@ -492,12 +488,12 @@ QThread::~QThread()
     Q_D(QThread);
     {
         QMutexLocker locker(&d->mutex);
-        if (d->isInFinish) {
+        if (d->threadState == QThreadPrivate::Finishing) {
             locker.unlock();
             wait();
             locker.relock();
         }
-        if (d->running && !d->finished && !d->data->isAdopted)
+        if (d->threadState == QThreadPrivate::Running && !d->data->isAdopted)
             qFatal("QThread: Destroyed while thread is still running");
 
         d->data->thread.storeRelease(nullptr);
@@ -514,7 +510,7 @@ bool QThread::isFinished() const
 {
     Q_D(const QThread);
     QMutexLocker locker(&d->mutex);
-    return d->finished || d->isInFinish;
+    return d->threadState >= QThreadPrivate::Finishing;
 }
 
 /*!
@@ -527,7 +523,7 @@ bool QThread::isRunning() const
 {
     Q_D(const QThread);
     QMutexLocker locker(&d->mutex);
-    return d->running && !d->isInFinish;
+    return d->threadState == QThreadPrivate::Running;
 }
 
 /*!
@@ -553,9 +549,9 @@ bool QThread::isRunning() const
 void QThread::setStackSize(uint stackSize)
 {
     Q_D(QThread);
-    QMutexLocker locker(&d->mutex);
-    Q_ASSERT_X(!d->running, "QThread::setStackSize",
+    Q_ASSERT_X(!isRunning(), "QThread::setStackSize",
                "cannot change stack size while the thread is running");
+    QMutexLocker locker(&d->mutex);
     d->stackSize = stackSize;
 }
 
@@ -769,7 +765,7 @@ void QThread::setPriority(Priority priority)
     }
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
-    if (!d->running) {
+    if (d->threadState != QThreadPrivate::Running) {
         qWarning("QThread::setPriority: Cannot set priority, thread is not running");
         return;
     }
@@ -1223,7 +1219,7 @@ void QThread::requestInterruption()
         return;
     }
     QMutexLocker locker(&d->mutex);
-    if (!d->running || d->finished || d->isInFinish)
+    if (d->threadState != QThreadPrivate::Running)
         return;
     d->interruptionRequested.store(true, std::memory_order_relaxed);
 }
@@ -1262,7 +1258,7 @@ bool QThread::isInterruptionRequested() const
         return false;
     // slow path: if the flag is set, take into account run status:
     QMutexLocker locker(&d->mutex);
-    return d->running && !d->finished && !d->isInFinish;
+    return d->threadState == QThreadPrivate::Running;
 }
 
 /*!

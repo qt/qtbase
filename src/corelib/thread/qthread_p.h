@@ -184,16 +184,22 @@ public:
     mutable QMutex mutex;
     QAtomicInt quitLockRef;
 
-    bool running;
-    bool finished;
-    bool isInFinish; //when in QThreadPrivate::finish
+    enum State : quint8 {
+        // All state changes are imprecise
+        NotStarted = 0,     // before start() or if failed to start
+        Running = 1,        // in run()
+        Finishing = 2,      // in QThreadPrivate::finish()
+        Finished = 3,       // QThreadPrivate::finish() is done
+    };
+
+    State threadState = NotStarted;
+    bool exited = false;
     std::atomic<bool> interruptionRequested;
 
-    bool exited;
-    int returnCode;
+    int returnCode = -1;
 
-    uint stackSize;
-    std::underlying_type_t<QThread::Priority> priority;
+    uint stackSize = 0;
+    std::underlying_type_t<QThread::Priority> priority = QThread::InheritPriority;
 
 #ifdef Q_OS_UNIX
     QWaitCondition thread_done;
@@ -226,7 +232,7 @@ public:
 
     void deref()
     {
-        if (!quitLockRef.deref() && running) {
+        if (!quitLockRef.deref() && threadState == Running) {
             QCoreApplication::instance()->postEvent(q_ptr, new QEvent(QEvent::Quit));
         }
     }

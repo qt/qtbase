@@ -208,7 +208,7 @@ DWORD WINAPI qt_adopted_thread_watcher_function(LPVOID)
             Q_ASSERT(thread);
             auto thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
             Q_UNUSED(thread_p);
-            Q_ASSERT(!thread_p->finished);
+            Q_ASSERT(thread_p->threadState == QThreadPrivate::Running);
             QThreadPrivate::finish(thread);
         }
         data->deref();
@@ -290,7 +290,7 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway) noexcept
     QThreadPrivate *d = thr->d_func();
 
     QMutexLocker locker(lockAnyway ? &d->mutex : nullptr);
-    d->isInFinish = true;
+    d->threadState = QThreadPrivate::Finishing;
     d->priority = QThread::InheritPriority;
     void **tls_data = reinterpret_cast<void **>(&d->data->tls);
     if (lockAnyway)
@@ -313,9 +313,7 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway) noexcept
             locker.relock();
     }
 
-    d->running = false;
-    d->finished = true;
-    d->isInFinish = false;
+    d->threadState = QThreadPrivate::Finished;
     d->interruptionRequested.store(false, std::memory_order_relaxed);
 
     if (!d->waiters) {
@@ -377,20 +375,19 @@ void QThread::start(Priority priority)
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
 
-    if (d->isInFinish) {
+    if (d->threadState == QThreadPrivate::Finishing) {
         locker.unlock();
         wait();
         locker.relock();
     }
 
-    if (d->running)
+    if (d->threadState == QThreadPrivate::Running)
         return;
 
     // avoid interacting with the binding system
     d->objectName = d->extraData ? d->extraData->objectName.valueBypassingBindings()
                                  : QString();
-    d->running = true;
-    d->finished = false;
+    d->threadState = QThreadPrivate::Running;
     d->exited = false;
     d->returnCode = 0;
     d->interruptionRequested.store(false, std::memory_order_relaxed);
@@ -418,8 +415,7 @@ void QThread::start(Priority priority)
 
     if (!d->handle) {
         qErrnoWarning("QThread::start: Failed to create thread");
-        d->running = false;
-        d->finished = true;
+        d->threadState = QThreadPrivate::NotStarted;
         return;
     }
 
@@ -473,7 +469,7 @@ void QThread::terminate()
 {
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
-    if (!d->running)
+    if (d->threadState != QThreadPrivate::Running)
         return;
     if (!d->terminationEnabled) {
         d->terminatePending = true;
@@ -493,7 +489,7 @@ bool QThread::wait(QDeadlineTimer deadline)
         qWarning("QThread::wait: Thread tried to wait on itself");
         return false;
     }
-    if (d->finished || !d->running)
+    if (d->threadState == QThreadPrivate::NotStarted || d->threadState == QThreadPrivate::Finished)
         return true;
 
     ++d->waiters;
@@ -516,13 +512,13 @@ bool QThread::wait(QDeadlineTimer deadline)
     locker.mutex()->lock();
     --d->waiters;
 
-    if (ret && !d->finished) {
+    if (ret && d->threadState < QThreadPrivate::Finished) {
         // thread was terminated by someone else
 
         QThreadPrivate::finish(this, false);
     }
 
-    if (d->finished && !d->waiters) {
+    if (d->threadState == QThreadPrivate::Finished && !d->waiters) {
         CloseHandle(d->handle);
         d->handle = 0;
     }

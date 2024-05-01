@@ -95,7 +95,7 @@ static void destroy_current_thread_data(void *p)
         QThread *thread = data->thread.loadAcquire();
         Q_ASSERT(thread);
         QThreadPrivate *thread_p = static_cast<QThreadPrivate *>(QObjectPrivate::get(thread));
-        Q_ASSERT(!thread_p->finished);
+        Q_ASSERT(thread_p->threadState == QThreadPrivate::Running);
         thread_p->finish(thread);
     }
     data->deref();
@@ -347,7 +347,7 @@ void QThreadPrivate::finish(void *arg)
 
         QMutexLocker locker(&d->mutex);
 
-        d->isInFinish = true;
+        d->threadState = QThreadPrivate::Finishing;
         d->priority = QThread::InheritPriority;
         void *data = &d->data->tls;
         locker.unlock();
@@ -366,11 +366,9 @@ void QThreadPrivate::finish(void *arg)
             locker.relock();
         }
 
-        d->running = false;
-        d->finished = true;
+        d->threadState = QThreadPrivate::Finished;
         d->interruptionRequested.store(false, std::memory_order_relaxed);
 
-        d->isInFinish = false;
         d->data->threadId.storeRelaxed(nullptr);
 
         d->thread_done.wakeAll();
@@ -629,14 +627,13 @@ void QThread::start(Priority priority)
     Q_D(QThread);
     QMutexLocker locker(&d->mutex);
 
-    if (d->isInFinish)
+    if (d->threadState == QThreadPrivate::Finishing)
         d->thread_done.wait(locker.mutex());
 
-    if (d->running)
+    if (d->threadState == QThreadPrivate::Running)
         return;
 
-    d->running = true;
-    d->finished = false;
+    d->threadState = QThreadPrivate::Running;
     d->returnCode = 0;
     d->exited = false;
     d->interruptionRequested.store(false, std::memory_order_relaxed);
@@ -702,8 +699,7 @@ void QThread::start(Priority priority)
 
             // we failed to set the stacksize, and as the documentation states,
             // the thread will fail to run...
-            d->running = false;
-            d->finished = false;
+            d->threadState = QThreadPrivate::NotStarted;
             return;
         }
     }
@@ -736,8 +732,7 @@ void QThread::start(Priority priority)
     if (code) {
         qErrnoWarning(code, "QThread::start: Thread creation error");
 
-        d->running = false;
-        d->finished = false;
+        d->threadState = QThreadPrivate::NotStarted;
         d->data->threadId.storeRelaxed(nullptr);
     }
 }
@@ -768,10 +763,10 @@ bool QThread::wait(QDeadlineTimer deadline)
         return false;
     }
 
-    if (d->finished || !d->running)
+    if (d->threadState == QThreadPrivate::NotStarted)
         return true;
 
-    while (d->running) {
+    while (d->threadState != QThreadPrivate::Finished) {
         if (!d->thread_done.wait(locker.mutex(), deadline))
             return false;
     }
