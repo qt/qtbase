@@ -74,7 +74,10 @@ class Q_DBUS_EXPORT QDBusSignature
 {
     QString m_signature;
 public:
-    QDBusSignature() noexcept : m_signature() {}
+    QDBusSignature() noexcept
+    {
+        m_signature.detach(); // mark non-null (empty signatures are valid)
+    }
     // compiler-generated copy/move constructor/assignment operators are ok!
     // compiler-generated destructor is ok!
 
