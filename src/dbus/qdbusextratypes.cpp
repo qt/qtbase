@@ -25,6 +25,8 @@ void QDBusSignature::doCheck()
     if (!QDBusUtil::isValidSignature(m_signature)) {
         qWarning("QDBusSignature: invalid signature \"%s\"", qPrintable(m_signature));
         m_signature.clear();
+    } else if (m_signature.isEmpty()) {
+        m_signature.detach();       // we need it to not be null
     }
 }
 
