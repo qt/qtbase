@@ -282,8 +282,7 @@ void QBuffer::setData(const char *data, qsizetype size)
         qWarning("QBuffer::setData: Buffer is open");
         return;
     }
-    d->buf->replace(qsizetype(0), d->buf->size(), // ### QByteArray lacks assign(ptr, n)
-                    data, size);
+    d->buf->assign(data, data + size);
 }
 
 /*!
