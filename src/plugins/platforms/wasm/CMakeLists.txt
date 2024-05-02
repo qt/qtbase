@@ -9,7 +9,6 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
     OUTPUT_NAME qwasm
     DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES wasm
     PLUGIN_TYPE platforms
-    STATIC
     SOURCES
         main.cpp
         qwasmaccessibility.cpp qwasmaccessibility.h
