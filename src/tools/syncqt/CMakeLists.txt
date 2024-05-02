@@ -1,3 +1,5 @@
+# Copyright (C) 2024 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
 if(NOT QT_INTERNAL_AVOID_OVERRIDING_SYNCQT_CONFIG)
     qt_internal_get_configs_for_flag_manipulation(configs)
     qt_internal_remove_known_optimization_flags(LANGUAGES CXX CONFIGS ${configs})
