@@ -3656,8 +3656,8 @@ QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
       data(getMetaPropertyData(mobj, index))
 {
     Q_ASSERT(index >= 0 && index < priv(mobj->d.data)->propertyCount);
-
-    if (!(data.flags() & EnumOrFlag))
+    // The code below here just resolves menum if the property is an enum type:
+    if (!(data.flags() & EnumOrFlag) || !metaType().flags().testFlag(QMetaType::IsEnumeration))
         return;
     QByteArrayView enum_name = typeNameFromTypeInfo(mobj, data.type());
     menum = mobj->enumerator(QMetaObjectPrivate::indexOfEnumerator(mobj, enum_name));
