@@ -3,6 +3,8 @@
 
 #include <QTest>
 
+#include <QtNetwork/QHttp1Configuration>
+#include <QtNetwork/QHttp2Configuration>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkCookie>
 
@@ -33,6 +35,8 @@ private slots:
     void originatingObject();
     void setHeaders_data();
     void setHeaders();
+    void operatorEqual_data();
+    void operatorEqual();
 
     void removeHeader();
 };
@@ -579,6 +583,129 @@ void tst_QNetworkRequest::setHeaders()
     auto tmp = h;
     r2.setHeaders(std::move(tmp));
     QCOMPARE(r2.headers().toListOfPairs(), h.toListOfPairs());
+}
+
+void tst_QNetworkRequest::operatorEqual_data()
+{
+    QTest::addColumn<QNetworkRequest>("a");
+    QTest::addColumn<QNetworkRequest>("b");
+    QTest::addColumn<bool>("expectedToMatch");
+    QTest::newRow("null") << QNetworkRequest() << QNetworkRequest() << true;
+
+    QNetworkRequest data1;
+    data1.setUrl(QUrl("http://qt-project.org"));
+    QTest::newRow("url-1-1") << data1 << QNetworkRequest() << false;
+    QTest::newRow("url-1-2") << data1 << data1 << true;
+
+    QNetworkRequest data2;
+    QHttpHeaders headers;
+    headers.append("name1", "value1");
+    data2.setHeaders(headers);
+    QTest::newRow("headers-2-1") << data2 << QNetworkRequest() << false;
+    QTest::newRow("headers-2-2") << data2 << data2 << true;
+    QTest::newRow("headers-2-3") << data2 << data1 << false;
+
+    QNetworkRequest data3;
+    data3.setPeerVerifyName("peerName");
+    QTest::newRow("peerName-3-1") << data3 << QNetworkRequest() << false;
+    QTest::newRow("peerName-3-2") << data3 << data3 << true;
+    QTest::newRow("peerName-3-3") << data3 << data1 << false;
+    QTest::newRow("peerName-3-4") << data3 << data2 << false;
+
+    QNetworkRequest data4;
+    data4.setAttribute(QNetworkRequest::Http2AllowedAttribute, true);
+    QTest::newRow("attribute-4-1") << data4 << QNetworkRequest() << false;
+    QTest::newRow("attribute-4-2") << data4 << data4 << true;
+    QTest::newRow("attribute-4-3") << data4 << data1 << false;
+    QTest::newRow("attribute-4-4") << data4 << data2 << false;
+    QTest::newRow("attribute-4-5") << data4 << data3 << false;
+
+    QNetworkRequest data5;
+    data5.setPriority(QNetworkRequest::Priority::HighPriority);
+    QTest::newRow("priority-5-1") << data5 << QNetworkRequest() << false;
+    QTest::newRow("priority-5-2") << data5 << data5 << true;
+    QTest::newRow("priority-5-3") << data5 << data1 << false;
+    QTest::newRow("priority-5-4") << data5 << data2 << false;
+    QTest::newRow("priority-5-5") << data5 << data3 << false;
+    QTest::newRow("priority-5-6") << data5 << data4 << false;
+
+    QNetworkRequest data6;
+    data6.setMaximumRedirectsAllowed(3);
+    QTest::newRow("maxRedirects-6-1") << data6 << QNetworkRequest() << false;
+    QTest::newRow("maxRedirects-6-2") << data6 << data6 << true;
+    QTest::newRow("maxRedirects-6-3") << data6 << data1 << false;
+    QTest::newRow("maxRedirects-6-4") << data6 << data2 << false;
+    QTest::newRow("maxRedirects-6-5") << data6 << data3 << false;
+    QTest::newRow("maxRedirects-6-6") << data6 << data4 << false;
+    QTest::newRow("maxRedirects-6-7") << data6 << data5 << false;
+
+#if QT_CONFIG(http)
+    QNetworkRequest data7;
+    QHttp1Configuration http1Configuration;
+    http1Configuration.setNumberOfConnectionsPerHost(5);
+    data7.setHttp1Configuration(http1Configuration);
+    QTest::newRow("http1Config-7-1") << data7 << QNetworkRequest() << false;
+    QTest::newRow("http1Config-7-2") << data7 << data7 << true;
+    QTest::newRow("http1Config-7-3") << data7 << data1 << false;
+    QTest::newRow("http1Config-7-4") << data7 << data2 << false;
+    QTest::newRow("http1Config-7-5") << data7 << data3 << false;
+    QTest::newRow("http1Config-7-6") << data7 << data4 << false;
+    QTest::newRow("http1Config-7-7") << data7 << data5 << false;
+    QTest::newRow("http1Config-7-8") << data7 << data6 << false;
+
+    QNetworkRequest data8;
+    QHttp2Configuration http2Configuration;
+    http2Configuration.setMaxFrameSize(16386);
+    data8.setHttp2Configuration(http2Configuration);
+    QTest::newRow("http2Config-8-1") << data8 << QNetworkRequest() << false;
+    QTest::newRow("http2Config-8-2") << data8 << data8 << true;
+    QTest::newRow("http2Config-8-3") << data8 << data1 << false;
+    QTest::newRow("http2Config-8-4") << data8 << data2 << false;
+    QTest::newRow("http2Config-8-5") << data8 << data3 << false;
+    QTest::newRow("http2Config-8-6") << data8 << data4 << false;
+    QTest::newRow("http2Config-8-7") << data8 << data5 << false;
+    QTest::newRow("http2Config-8-8") << data8 << data6 << false;
+    QTest::newRow("http2Config-8-9") << data8 << data7 << false;
+
+    QNetworkRequest data9;
+    data9.setDecompressedSafetyCheckThreshold(-1);
+    QTest::newRow("threshold-9-1") << data9 << QNetworkRequest() << false;
+    QTest::newRow("threshold-9-2") << data9 << data9 << true;
+    QTest::newRow("threshold-9-3") << data9 << data1 << false;
+    QTest::newRow("threshold-9-4") << data9 << data2 << false;
+    QTest::newRow("threshold-9-5") << data9 << data3 << false;
+    QTest::newRow("threshold-9-6") << data9 << data4 << false;
+    QTest::newRow("threshold-9-7") << data9 << data5 << false;
+    QTest::newRow("threshold-9-8") << data9 << data6 << false;
+    QTest::newRow("threshold-9-9") << data9 << data7 << false;
+    QTest::newRow("threshold-9-10") << data9 << data8 << false;
+#endif
+
+#if QT_CONFIG(http) || defined (Q_OS_WASM)
+    QNetworkRequest data10;
+    data10.setTransferTimeout(50000);
+    QTest::newRow("timeout-10-1") << data10 << QNetworkRequest() << false;
+    QTest::newRow("timeout-10-2") << data10 << data10 << true;
+    QTest::newRow("timeout-10-3") << data10 << data1 << false;
+    QTest::newRow("timeout-10-4") << data10 << data2 << false;
+    QTest::newRow("timeout-10-5") << data10 << data3 << false;
+    QTest::newRow("timeout-10-6") << data10 << data4 << false;
+    QTest::newRow("timeout-10-7") << data10 << data5 << false;
+    QTest::newRow("timeout-10-8") << data10 << data6 << false;
+    QTest::newRow("timeout-10-9") << data10 << data7 << false;
+    QTest::newRow("timeout-10-10") << data10 << data8 << false;
+    QTest::newRow("timeout-10-11") << data10 << data9 << false;
+#endif
+}
+
+// public bool operator==(const QNetworkRequest &other) const
+void tst_QNetworkRequest::operatorEqual()
+{
+    QFETCH(QNetworkRequest, a);
+    QFETCH(QNetworkRequest, b);
+    QFETCH(bool, expectedToMatch);
+
+    QCOMPARE(a == b, expectedToMatch);
 }
 
 QTEST_MAIN(tst_QNetworkRequest)
