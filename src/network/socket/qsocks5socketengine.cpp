@@ -1460,7 +1460,7 @@ qint64 QSocks5SocketEngine::read(char *data, qint64 maxlen)
                 //imitate remote closed
                 close();
                 setError(QAbstractSocket::RemoteHostClosedError,
-                         "Remote host closed connection###"_L1);
+                         "Remote host closed connection"_L1);
                 setState(QAbstractSocket::UnconnectedState);
                 return -1;
             } else {
