@@ -986,11 +986,9 @@ QString tst_qmessagehandler::backtraceHelperPath()
 #ifdef Q_OS_ANDROID
     QString appExe(QCoreApplication::applicationDirPath()
                    + QLatin1String("/lib" BACKTRACE_HELPER_NAME ".so"));
-#elif defined(Q_OS_WEBOS)
+#else
     QString appExe(QCoreApplication::applicationDirPath()
                    + QLatin1String("/" BACKTRACE_HELPER_NAME));
-#else
-    QString appExe(QLatin1String(HELPER_BINARY));
 #endif
     return appExe;
 }
