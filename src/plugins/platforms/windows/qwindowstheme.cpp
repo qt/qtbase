@@ -561,7 +561,7 @@ void QWindowsTheme::handleSettingsChanged()
     integration->updateApplicationBadge();
     if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle)) {
         QWindowsTheme::instance()->refresh();
-        QWindowSystemInterface::handleThemeChange();
+        QWindowSystemInterface::handleThemeChange<QWindowSystemInterface::SynchronousDelivery>();
     }
     if (colorSchemeChanged) {
         for (QWindowsWindow *w : std::as_const(QWindowsContext::instance()->windows()))
