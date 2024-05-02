@@ -353,6 +353,9 @@ void tst_Android::orientationChange()
     QFETCH(Qt::ScreenOrientation, expected);
     QFETCH(QSize, screenSize);
 
+    if (QNativeInterface::QAndroidApplication::sdkVersion() == __ANDROID_API_P__)
+        QSKIP("Android 9 orientation changes callbacks are buggy (QTBUG-124890).");
+
     // For QTBUG-94459 to check that the widget size are consistent after orientation changes
     QWidget widget;
     widget.show();
