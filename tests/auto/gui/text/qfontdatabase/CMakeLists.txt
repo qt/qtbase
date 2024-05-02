@@ -47,6 +47,8 @@ set(testdata_resource_files
     "../../../shared/resources/testfont_open.otf"
     "../../../shared/resources/testfont_variable.ttf"
     "LED_REAL.TTF"
+    "QtTestLimitedFont-Regular.ttf"
+    "QtTestFallbackFont-Regular.ttf"
 )
 
 qt_internal_add_resource(tst_qfontdatabase "testdata"

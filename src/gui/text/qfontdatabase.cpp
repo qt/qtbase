@@ -670,7 +670,7 @@ static QStringList fallbacksForFamily(const QString &family, QFont::Style style,
         return *fallbacks;
 
     // make sure that the db has all fallback families
-    QStringList userFallbacks = db->applicationFallbackFontFamilies.value(script == QChar::Script_Common ? QChar::Script_Latin : script);
+    QStringList userFallbacks = db->applicationFallbackFontFamilies.value(script == QChar::Script_Latin ? QChar::Script_Common : script);
     QStringList retList = userFallbacks + QGuiApplicationPrivate::platformIntegration()->fontDatabase()->fallbacksForFamily(family,style,styleHint,script);
 
     QStringList::iterator i;
@@ -2187,6 +2187,8 @@ int QFontDatabasePrivate::addAppFont(const QByteArray &fontData, const QString &
     // loaded, so it has to be flushed.
     QFontCache::instance()->clear();
 
+    fallbacksCache.clear();
+
     emit qApp->fontDatabaseChanged();
 
     return i;
@@ -2386,16 +2388,23 @@ bool QFontDatabase::removeAllApplicationFonts()
     be prioritized in reverse order, so that the last family added will be checked first and so
     on.
 
+    \note Qt's font matching algorithm considers \c{QChar::Script_Common} (undetermined script)
+    and \c{QChar::Script_Latin} the same. Adding a fallback for either of these will also apply
+    to the other.
+
     \sa setApplicationFallbackFontFamilies(), removeApplicationFallbackFontFamily(), applicationFallbackFontFamilies()
 */
 void QFontDatabase::addApplicationFallbackFontFamily(QChar::Script script, const QString &familyName)
 {
     QMutexLocker locker(fontDatabaseMutex());
 
-    if (script < QChar::Script_Latin) {
+    if (script < QChar::Script_Common) {
         qCWarning(lcFontDb) << "Invalid script passed to addApplicationFallbackFontFamily:" << script;
         return;
     }
+
+    if (script == QChar::Script_Latin)
+        script = QChar::Script_Common;
 
     auto *db = QFontDatabasePrivate::instance();
     auto it = db->applicationFallbackFontFamilies.find(script);
@@ -2403,6 +2412,8 @@ void QFontDatabase::addApplicationFallbackFontFamily(QChar::Script script, const
         it = db->applicationFallbackFontFamilies.insert(script, QStringList{});
 
     it->prepend(familyName);
+
+    QFontCache::instance()->clear();
     db->fallbacksCache.clear();
 }
 
@@ -2419,6 +2430,14 @@ void QFontDatabase::addApplicationFallbackFontFamily(QChar::Script script, const
 bool QFontDatabase::removeApplicationFallbackFontFamily(QChar::Script script, const QString &familyName)
 {
     QMutexLocker locker(fontDatabaseMutex());
+
+    if (script < QChar::Script_Common) {
+        qCWarning(lcFontDb) << "Invalid script passed to removeApplicationFallbackFontFamily:" << script;
+        return false;
+    }
+
+    if (script == QChar::Script_Latin)
+        script = QChar::Script_Common;
 
     auto *db = QFontDatabasePrivate::instance();
     auto it = db->applicationFallbackFontFamilies.find(script);
@@ -2452,10 +2471,13 @@ void QFontDatabase::setApplicationFallbackFontFamilies(QChar::Script script, con
 {
     QMutexLocker locker(fontDatabaseMutex());
 
-    if (script < QChar::Script_Latin) {
+    if (script < QChar::Script_Common) {
         qCWarning(lcFontDb) << "Invalid script passed to setApplicationFallbackFontFamilies:" << script;
         return;
     }
+
+    if (script == QChar::Script_Latin)
+        script = QChar::Script_Common;
 
     auto *db = QFontDatabasePrivate::instance();
     db->applicationFallbackFontFamilies[script] = familyNames;
@@ -2475,6 +2497,9 @@ void QFontDatabase::setApplicationFallbackFontFamilies(QChar::Script script, con
 QStringList QFontDatabase::applicationFallbackFontFamilies(QChar::Script script)
 {
     QMutexLocker locker(fontDatabaseMutex());
+
+    if (script == QChar::Script_Latin)
+        script = QChar::Script_Common;
 
     auto *db = QFontDatabasePrivate::instance();
     return db->applicationFallbackFontFamilies.value(script);
