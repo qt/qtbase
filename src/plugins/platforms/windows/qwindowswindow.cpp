@@ -3286,17 +3286,6 @@ enum : WORD {
     DwmwaUseImmersiveDarkModeBefore20h1 = 19
 };
 
-static bool queryDarkBorder(HWND hwnd)
-{
-    BOOL result = FALSE;
-    const bool ok =
-        SUCCEEDED(DwmGetWindowAttribute(hwnd, DwmwaUseImmersiveDarkMode, &result, sizeof(result)))
-        || SUCCEEDED(DwmGetWindowAttribute(hwnd, DwmwaUseImmersiveDarkModeBefore20h1, &result, sizeof(result)));
-    if (!ok)
-        qCWarning(lcQpaWindow, "%s: Unable to retrieve dark window border setting.", __FUNCTION__);
-    return result == TRUE;
-}
-
 bool QWindowsWindow::setDarkBorderToWindow(HWND hwnd, bool d)
 {
     const BOOL darkBorder = d ? TRUE : FALSE;
@@ -3312,8 +3301,6 @@ void QWindowsWindow::setDarkBorder(bool d)
 {
     // respect explicit opt-out and incompatible palettes or styles
     d = d && shouldApplyDarkFrame(window());
-    if (queryDarkBorder(m_data.hwnd) == d)
-        return;
 
     setDarkBorderToWindow(m_data.hwnd, d);
 }
