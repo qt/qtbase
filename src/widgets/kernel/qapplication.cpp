@@ -1094,6 +1094,12 @@ QPalette QApplicationPrivate::basePalette() const
     if (const QPalette *themePalette = platformTheme() ? platformTheme()->palette() : nullptr)
         palette = themePalette->resolve(palette);
 
+    // This palette now is Qt-generated, so reset the resolve mask. This allows
+    // QStyle::polish implementations to respect palettes that are user provided,
+    // by checking if the palette has a brush set for a color that the style might
+    // otherwise overwrite.
+    palette.setResolveMask(0);
+
     // Finish off by letting the application style polish the palette. This will
     // not result in the polished palette becoming a user-set palette, as the
     // resulting base palette is only used as a fallback, with the resolve mask
