@@ -2928,6 +2928,8 @@ void tst_QDataStream::status_QBitArray_data()
     QTest::newRow("badsize 2") << QByteArray("\x00\x00\x00\x02", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
     QTest::newRow("badsize 3") << QByteArray("\x00\x00\x00\x03", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
     QTest::newRow("badsize 7") << QByteArray("\x00\x00\x00\x04", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
+    QTest::newRow("badsize INT_MAX") << QByteArray("\x7f\xff\xff\xff\xff\xff\xff", 7) << int(QDataStream::ReadPastEnd) << QBitArray(); // size accepted
+    QTest::addRow("badsize INT_MAX + 1") << QByteArray("\x80\x00\x00\x01" "\xff\xff\xff", 7) << int(QDataStream::ReadCorruptData) << QBitArray(); // size rejected
     QTest::newRow("size 8") << QByteArray("\x00\x00\x00\x08", 4) << (int) QDataStream::ReadPastEnd << QBitArray();
     QTest::newRow("size 9") << QByteArray("\x00\x00\x00\x09\xff", 5) << (int) QDataStream::ReadPastEnd << QBitArray();
     QTest::newRow("size 15") << QByteArray("\x00\x00\x00\x0f\xff", 5) << (int) QDataStream::ReadPastEnd << QBitArray();

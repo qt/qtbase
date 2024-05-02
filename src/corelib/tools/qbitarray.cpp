@@ -43,6 +43,9 @@
 #include <qdatastream.h>
 #include <qdebug.h>
 #include <qendian.h>
+
+#include <limits>
+
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
@@ -779,6 +782,10 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
     ba.clear();
     quint32 len;
     in >> len;
+    if (Q_UNLIKELY(len > quint32((std::numeric_limits<qint32>::max)()))) {
+        in.setStatus(QDataStream::ReadCorruptData);
+        return in;
+    }
     if (len == 0) {
         ba.clear();
         return in;
