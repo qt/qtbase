@@ -138,12 +138,15 @@ void tst_QRegion::rects()
         QRegion region(rect);
         QVERIFY(region.isEmpty());
         QCOMPARE(region.begin(), region.end());
+        QVERIFY(region.rects().isEmpty());
     }
     {
         QRect rect(10, -20, 30, 40);
         QRegion region(rect);
         QCOMPARE(region.end(), region.begin() + 1);
         QCOMPARE(*region.begin(), rect);
+        QCOMPARE(region.rects().size(), 1);
+        QCOMPARE(region.rects()[0], rect);
     }
     {
         QRect r(QPoint(10, 10), QPoint(40, 40));
@@ -190,6 +193,7 @@ void tst_QRegion::setRects()
         QCOMPARE(region, QRegion());
         QCOMPARE(region.begin(), region.end());
         QVERIFY(!region.boundingRect().isValid());
+        QVERIFY(region.rects().isEmpty());
     }
     {
         QRegion region;
@@ -197,12 +201,15 @@ void tst_QRegion::setRects()
         region.setRects(&rect, 1);
         QCOMPARE(region.begin(), region.end());
         QVERIFY(!region.boundingRect().isValid());
+        QVERIFY(region.rects().isEmpty());
     }
     {
         QRegion region;
         QRect rect(10, -20, 30, 40);
         region.setRects(&rect, 1);
         QCOMPARE(region.end(), region.begin() + 1);
+        QCOMPARE(region.rects().size(), 1);
+        QCOMPARE(region.rects()[0], rect);
         QCOMPARE(*region.begin(), rect);
     }
 }
@@ -316,9 +323,11 @@ void tst_QRegion::emptyPolygonRegion()
     QRegion r(pa);
     QTEST(r.isEmpty(), "isEmpty");
     QTEST(int(std::distance(r.begin(), r.end())), "numRects");
-    QList<QRect> rects;
-    std::copy(r.begin(), r.end(), std::back_inserter(rects));
+    QList<QRect> rects{r.begin(), r.end()};
     QTEST(int(rects.size()), "numRects");
+    QTEST(rects, "rects");
+    const auto span = r.rects();
+    rects.assign(span.begin(), span.end());
     QTEST(rects, "rects");
 }
 
@@ -862,6 +871,7 @@ void tst_QRegion::isEmpty()
     QCOMPARE(region, QRegion());
     QCOMPARE(region.rectCount(), 0);
     QCOMPARE(region.boundingRect(), QRect());
+    QVERIFY(region.rects().isEmpty());
 }
 
 void tst_QRegion::regionFromPath()
@@ -876,6 +886,10 @@ void tst_QRegion::regionFromPath()
         QCOMPARE(rgn.end(), rgn.begin() + 2);
         QCOMPARE(rgn.begin()[0], QRect(0, 0, 10, 10));
         QCOMPARE(rgn.begin()[1], QRect(0, 100, 100, 1000));
+
+        QCOMPARE(rgn.rects().size(), 2);
+        QCOMPARE(rgn.rects()[0], QRect(0, 0, 10, 10));
+        QCOMPARE(rgn.rects()[1], QRect(0, 100, 100, 1000));
 
         QCOMPARE(rgn.boundingRect(), QRect(0, 0, 100, 1100));
     }
@@ -892,6 +906,12 @@ void tst_QRegion::regionFromPath()
         QCOMPARE(rgn.begin()[1], QRect(0, 10, 10, 80));
         QCOMPARE(rgn.begin()[2], QRect(90, 10, 10, 80));
         QCOMPARE(rgn.begin()[3], QRect(0, 90, 100, 10));
+
+        QCOMPARE(rgn.rects().size(), 4);
+        QCOMPARE(rgn.rects()[0], QRect(0, 0, 100, 10));
+        QCOMPARE(rgn.rects()[1], QRect(0, 10, 10, 80));
+        QCOMPARE(rgn.rects()[2], QRect(90, 10, 10, 80));
+        QCOMPARE(rgn.rects()[3], QRect(0, 90, 100, 10));
 
         QCOMPARE(rgn.boundingRect(), QRect(0, 0, 100, 100));
     }

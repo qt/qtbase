@@ -8,11 +8,11 @@
 #include <QtCore/qatomic.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qwindowdefs.h>
-#include <QtCore/qcontainerfwd.h>
 
 #ifndef QT_NO_DATASTREAM
 #include <QtCore/qdatastream.h>
 #endif
+#include <QtCore/qspan.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -75,6 +75,8 @@ public:
 
     QRect boundingRect() const noexcept;
     void setRects(const QRect *rect, int num);
+    void setRects(QSpan<const QRect> r);
+    QSpan<const QRect> rects() const noexcept;
     int rectCount() const noexcept;
 
     QRegion operator|(const QRegion &r) const;

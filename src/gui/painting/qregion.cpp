@@ -876,9 +876,15 @@ QRegion QRegion::intersect(const QRect &r) const
 
 /*!
     \fn void QRegion::setRects(const QRect *rects, int number)
+    \overload
+    \obsolete Use the QSpan overload instead.
+*/
 
-    Sets the region using the array of rectangles specified by \a rects and
-    \a number.
+/*!
+    \fn void QRegion::setRects(QSpan<const QRect> rects)
+    \since 6.8
+
+    Sets the region using the array of rectangles specified by \a rects.
     The rectangles \e must be optimally Y-X sorted and follow these restrictions:
 
     \list
@@ -892,6 +898,11 @@ QRegion QRegion::intersect(const QRect &r) const
     \omit
     Only some platforms have these restrictions (Qt for Embedded Linux, X11 and \macos).
     \endomit
+
+    \note For historical reasons, \c{rects.size()} must be less than \c{INT_MAX}
+    (see rectCount()).
+
+    \sa rects()
 */
 
 namespace {
@@ -4214,18 +4225,39 @@ QRegion::const_iterator QRegion::end() const noexcept
     return d->qt_rgn ? d->qt_rgn->end() : nullptr;
 }
 
-void QRegion::setRects(const QRect *rects, int num)
+static Q_DECL_COLD_FUNCTION
+void set_rects_warn(const char *what)
 {
+    qWarning("QRegion::setRects(): %s", what);
+}
+
+void QRegion::setRects(const QRect *r, int n)
+{
+    if (!r && n) { // old setRects() allowed this, but QSpan doesn't
+        set_rects_warn("passing num != 0 when rects == nullptr is deprecated.");
+        n = 0;
+    }
+    setRects(QSpan<const QRect>(r, n));
+}
+
+void QRegion::setRects(QSpan<const QRect> rects)
+{
+    const auto num = int(rects.size());
+    if (num != rects.size()) {
+        set_rects_warn("span size exceeds INT_MAX, ignoring");
+        return;
+    }
+
     *this = QRegion();
-    if (!rects || num == 0 || (num == 1 && rects->isEmpty()))
+    if (!rects.data() || num == 0 || (num == 1 && rects.front().isEmpty()))
         return;
 
     detach();
 
     d->qt_rgn->numRects = num;
     if (num == 1) {
-        d->qt_rgn->extents = *rects;
-        d->qt_rgn->innerRect = *rects;
+        d->qt_rgn->extents = rects.front();
+        d->qt_rgn->innerRect = rects.front();
     } else {
         d->qt_rgn->rects.resize(num);
 
@@ -4246,11 +4278,29 @@ void QRegion::setRects(const QRect *rects, int num)
     }
 }
 
+/*!
+    \since 6.8
+
+    Returns a span of non-overlapping rectangles that make up the region. The
+    span remains valid until the next call of a mutating (non-const) method on
+    this region.
+
+    The union of all the rectangles is equal to the original region.
+
+    \note This functions existed in Qt 5, too, but returned QVector<QRect>
+    instead.
+
+    \sa setRects()
+*/
+QSpan<const QRect> QRegion::rects() const noexcept
+{
+    return {begin(), end()};
+};
+
 int QRegion::rectCount() const noexcept
 {
     return (d->qt_rgn ? d->qt_rgn->numRects : 0);
 }
-
 
 bool QRegion::operator==(const QRegion &r) const
 {
