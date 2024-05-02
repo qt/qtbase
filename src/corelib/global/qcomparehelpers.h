@@ -145,8 +145,8 @@ template <typename In> constexpr auto to_Qt(In in) noexcept
         noexcept(noexcept(compareThreeWay(rhs, lhs))) \
     { \
         const auto r = compareThreeWay(rhs, lhs); \
-        if (r > 0) return std::strong_ordering::less; \
-        if (r < 0) return std::strong_ordering::greater; \
+        if (is_gt(r)) return std::strong_ordering::less; \
+        if (is_lt(r)) return std::strong_ordering::greater; \
         return r; \
     }
 
@@ -157,8 +157,8 @@ template <typename In> constexpr auto to_Qt(In in) noexcept
         noexcept(noexcept(compareThreeWay(rhs, lhs))) \
     { \
         const auto r = compareThreeWay(rhs, lhs); \
-        if (r > 0) return std::weak_ordering::less; \
-        if (r < 0) return std::weak_ordering::greater; \
+        if (is_gt(r)) return std::weak_ordering::less; \
+        if (is_lt(r)) return std::weak_ordering::greater; \
         return r; \
     }
 
@@ -169,8 +169,8 @@ template <typename In> constexpr auto to_Qt(In in) noexcept
         noexcept(noexcept(compareThreeWay(rhs, lhs))) \
     { \
         const auto r = compareThreeWay(rhs, lhs); \
-        if (r > 0) return std::partial_ordering::less; \
-        if (r < 0) return std::partial_ordering::greater; \
+        if (is_gt(r)) return std::partial_ordering::less; \
+        if (is_lt(r)) return std::partial_ordering::greater; \
         return r; \
     }
 
@@ -218,19 +218,19 @@ template <typename In> constexpr auto to_Qt(In in) noexcept
     Attributes \
     friend Constexpr bool operator<(LeftType const &lhs, RightType const &rhs) \
         noexcept(noexcept(compareThreeWay(lhs, rhs))) \
-    { return compareThreeWay(lhs, rhs) < 0; } \
+    { return is_lt(compareThreeWay(lhs, rhs)); }      \
     Attributes \
     friend Constexpr bool operator>(LeftType const &lhs, RightType const &rhs) \
         noexcept(noexcept(compareThreeWay(lhs, rhs))) \
-    { return compareThreeWay(lhs, rhs) > 0; } \
+    { return is_gt(compareThreeWay(lhs, rhs)); }      \
     Attributes \
     friend Constexpr bool operator<=(LeftType const &lhs, RightType const &rhs) \
         noexcept(noexcept(compareThreeWay(lhs, rhs))) \
-    { return compareThreeWay(lhs, rhs) <= 0; } \
+    { return is_lteq(compareThreeWay(lhs, rhs)); }    \
     Attributes \
     friend Constexpr bool operator>=(LeftType const &lhs, RightType const &rhs) \
         noexcept(noexcept(compareThreeWay(lhs, rhs))) \
-    { return compareThreeWay(lhs, rhs) >= 0; }
+    { return is_gteq(compareThreeWay(lhs, rhs)); }
 
 #define QT_DECLARE_ORDERING_HELPER_PARTIAL(LeftType, RightType, Constexpr, Attributes) \
     QT_DECLARE_ORDERING_HELPER_TEMPLATE(Qt::partial_ordering, LeftType, RightType, Constexpr, \
@@ -255,19 +255,19 @@ template <typename In> constexpr auto to_Qt(In in) noexcept
     Attributes \
     friend Constexpr bool operator<(RightType const &lhs, LeftType const &rhs) \
         noexcept(noexcept(compareThreeWay(rhs, lhs))) \
-    { return compareThreeWay(rhs, lhs) > 0; } \
+    { return is_gt(compareThreeWay(rhs, lhs)); }      \
     Attributes \
     friend Constexpr bool operator>(RightType const &lhs, LeftType const &rhs) \
         noexcept(noexcept(compareThreeWay(rhs, lhs))) \
-    { return compareThreeWay(rhs, lhs) < 0; } \
+    { return is_lt(compareThreeWay(rhs, lhs)); }      \
     Attributes \
     friend Constexpr bool operator<=(RightType const &lhs, LeftType const &rhs) \
         noexcept(noexcept(compareThreeWay(rhs, lhs))) \
-    { return compareThreeWay(rhs, lhs) >= 0; } \
+    { return is_gteq(compareThreeWay(rhs, lhs)); }    \
     Attributes \
     friend Constexpr bool operator>=(RightType const &lhs, LeftType const &rhs) \
         noexcept(noexcept(compareThreeWay(rhs, lhs))) \
-    { return compareThreeWay(rhs, lhs) <= 0; }
+    { return is_lteq(compareThreeWay(rhs, lhs)); }
 
 #define QT_DECLARE_REVERSED_ORDERING_HELPER_PARTIAL(LeftType, RightType, Constexpr, Attributes) \
     QT_DECLARE_REVERSED_ORDERING_HELPER_TEMPLATE(Qt::partial_ordering, LeftType, RightType, \
