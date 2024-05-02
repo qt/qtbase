@@ -661,6 +661,9 @@ void tst_QFileSystemModel::filters()
 
 #ifdef Q_OS_LINUX
     if (files.size() >= 3 && rowCount >= 3 && rowCount != 5) {
+        if (::geteuid() == 0)
+            QSKIP("Running this test as root doesn't make sense");
+
         QString fileName1 = (tmp + '/' + files.at(0));
         QString fileName2 = (tmp + '/' + files.at(1));
         QString fileName3 = (tmp + '/' + files.at(2));
