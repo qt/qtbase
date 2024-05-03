@@ -1802,7 +1802,8 @@ int QPdfEnginePrivate::writeOutputIntent()
         s << "/N 3\n";
         s << "/Alternate /DeviceRGB\n";
         s << "/Length " << length_object << "0 R\n";
-        s << "/Filter /FlateDecode\n";
+        if (do_compress)
+            s << "/Filter /FlateDecode\n";
         s << ">>\n";
         s << "stream\n";
         write(data);
