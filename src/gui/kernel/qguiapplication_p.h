@@ -323,6 +323,8 @@ public:
 
     static void updatePalette();
 
+    static QEvent::Type contextMenuEventType();
+
 protected:
     virtual void handleThemeChanged();
 

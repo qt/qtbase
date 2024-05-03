@@ -36,6 +36,8 @@ class Q_GUI_EXPORT QStyleHints : public QObject
     Q_PROPERTY(bool showIsMaximized READ showIsMaximized STORED false CONSTANT FINAL)
     Q_PROPERTY(bool showShortcutsInContextMenus READ showShortcutsInContextMenus
                WRITE setShowShortcutsInContextMenus NOTIFY showShortcutsInContextMenusChanged FINAL)
+    Q_PROPERTY(Qt::ContextMenuTrigger contextMenuTrigger READ contextMenuTrigger WRITE
+                   setContextMenuTrigger NOTIFY contextMenuTriggerChanged FINAL)
     Q_PROPERTY(int startDragDistance READ startDragDistance NOTIFY startDragDistanceChanged FINAL)
     Q_PROPERTY(int startDragTime READ startDragTime NOTIFY startDragTimeChanged FINAL)
     Q_PROPERTY(int startDragVelocity READ startDragVelocity STORED false CONSTANT FINAL)
@@ -80,6 +82,8 @@ public:
     bool showIsMaximized() const;
     bool showShortcutsInContextMenus() const;
     void setShowShortcutsInContextMenus(bool showShortcutsInContextMenus);
+    Qt::ContextMenuTrigger contextMenuTrigger() const;
+    void setContextMenuTrigger(Qt::ContextMenuTrigger contextMenuTrigger);
     int passwordMaskDelay() const;
     QChar passwordMaskCharacter() const;
     qreal fontSmoothingGamma() const;
@@ -108,6 +112,7 @@ Q_SIGNALS:
     void tabFocusBehaviorChanged(Qt::TabFocusBehavior tabFocusBehavior);
     void useHoverEffectsChanged(bool useHoverEffects);
     void showShortcutsInContextMenusChanged(bool);
+    void contextMenuTriggerChanged(Qt::ContextMenuTrigger contextMenuTrigger);
     void wheelScrollLinesChanged(int scrollLines);
     void mouseQuickSelectionThresholdChanged(int threshold);
     void colorSchemeChanged(Qt::ColorScheme colorScheme);

@@ -443,6 +443,40 @@ void QStyleHints::setShowShortcutsInContextMenus(bool s)
 }
 
 /*!
+    \property QStyleHints::contextMenuTrigger
+    \since 6.8
+    \brief mouse event used to trigger a context menu event.
+
+    The default on UNIX systems is to show context menu on mouse button press event, while on
+    Windows it is the mouse button release event. This property can be used to override the default
+    platform behavior.
+
+    \note Developers must use this property with great care, as it changes the default interaction
+    mode that their users will expect on the platform that they are running on.
+
+    \sa Qt::ContextMenuTrigger
+*/
+Qt::ContextMenuTrigger QStyleHints::contextMenuTrigger() const
+{
+    Q_D(const QStyleHints);
+    if (d->m_contextMenuTrigger == -1) {
+        return themeableHint(QPlatformTheme::ContextMenuOnMouseRelease).toBool()
+                   ? Qt::ContextMenuTrigger::Release
+                   : Qt::ContextMenuTrigger::Press;
+    }
+    return Qt::ContextMenuTrigger(d->m_contextMenuTrigger);
+}
+
+void QStyleHints::setContextMenuTrigger(Qt::ContextMenuTrigger contextMenuTrigger)
+{
+    Q_D(QStyleHints);
+    const Qt::ContextMenuTrigger currentTrigger = this->contextMenuTrigger();
+    d->m_contextMenuTrigger = int(contextMenuTrigger);
+    if (currentTrigger != contextMenuTrigger)
+        emit contextMenuTriggerChanged(contextMenuTrigger);
+}
+
+/*!
     \property QStyleHints::passwordMaskDelay
     \brief the time, in milliseconds, a typed letter is displayed unshrouded
     in a text input field in password mode.

@@ -1356,6 +1356,11 @@ namespace Qt {
         PreventContextMenu
     };
 
+    enum class ContextMenuTrigger {
+        Press,
+        Release,
+    };
+
     enum InputMethodQuery {
         ImEnabled = 0x1,
         ImCursorRectangle = 0x2,
@@ -1731,6 +1736,7 @@ namespace Qt {
     Q_ENUM_NS(ScrollBarPolicy)
     Q_ENUM_NS(FocusPolicy)
     Q_ENUM_NS(ContextMenuPolicy)
+    Q_ENUM_NS(ContextMenuTrigger)
     Q_ENUM_NS(ArrowType)
     Q_ENUM_NS(ToolButtonStyle)
     Q_ENUM_NS(PenStyle)

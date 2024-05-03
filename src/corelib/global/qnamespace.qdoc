@@ -2087,6 +2087,18 @@
 */
 
 /*!
+    \enum Qt::ContextMenuTrigger
+    \since 6.8
+
+    This enum type defines the mouse event used to trigger a context menu event.
+
+    \value Press context menu on mouse press event, default on UNIX systems.
+    \value Release context menu on mouse release event, default on Windows.
+
+    \sa QStyleHints::contextMenuTrigger
+*/
+
+/*!
     \enum Qt::FocusPolicy
 
     This enum type defines the various policies a widget can have with

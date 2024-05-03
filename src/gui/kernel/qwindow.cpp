@@ -2654,16 +2654,14 @@ bool QWindow::event(QEvent *ev)
         This logic could be simplified by always synthesizing events in
         QGuiApplicationPrivate, or perhaps even in each QPA plugin. See QTBUG-93486.
     */
-    static const QEvent::Type contextMenuTrigger =
-        QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::ContextMenuOnMouseRelease).toBool() ?
-        QEvent::MouseButtonRelease : QEvent::MouseButtonPress;
     auto asMouseEvent = [](QEvent *ev) {
         const auto t = ev->type();
         return t == QEvent::MouseButtonPress || t == QEvent::MouseButtonRelease
                 ? static_cast<QMouseEvent *>(ev) : nullptr ;
     };
-    if (QMouseEvent *me = asMouseEvent(ev); me &&
-        ev->type() == contextMenuTrigger && me->button() == Qt::RightButton) {
+    if (QMouseEvent *me = asMouseEvent(ev);
+        me && ev->type() == QGuiApplicationPrivate::contextMenuEventType()
+        && me->button() == Qt::RightButton) {
         QContextMenuEvent e(QContextMenuEvent::Mouse, me->position().toPoint(),
                             me->globalPosition().toPoint(), me->modifiers());
         QGuiApplication::sendEvent(this, &e);

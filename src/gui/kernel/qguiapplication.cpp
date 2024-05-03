@@ -3447,6 +3447,15 @@ void QGuiApplicationPrivate::updatePalette()
     }
 }
 
+QEvent::Type QGuiApplicationPrivate::contextMenuEventType()
+{
+    switch (QGuiApplication::styleHints()->contextMenuTrigger()) {
+    case Qt::ContextMenuTrigger::Press: return QEvent::MouseButtonPress;
+    case Qt::ContextMenuTrigger::Release: return QEvent::MouseButtonRelease;
+    }
+    return QEvent::None;
+}
+
 void QGuiApplicationPrivate::clearPalette()
 {
     delete app_pal;

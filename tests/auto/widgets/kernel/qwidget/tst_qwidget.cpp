@@ -477,6 +477,10 @@ private slots:
     void reparentWindowHandles_data();
     void reparentWindowHandles();
 
+#ifndef QT_NO_CONTEXTMENU
+    void contextMenuTrigger();
+#endif
+
 private:
     const QString m_platform;
     QSize m_testWidgetSize;
@@ -14039,6 +14043,42 @@ void tst_QWidget::reparentWindowHandles()
         Q_UNREACHABLE();
     }
 }
+
+#ifndef QT_NO_CONTEXTMENU
+void tst_QWidget::contextMenuTrigger()
+{
+    class ContextMenuWidget : public QWidget
+    {
+    public:
+        int events = 0;
+
+    protected:
+        void contextMenuEvent(QContextMenuEvent *) override { ++events; }
+    };
+
+    const Qt::ContextMenuTrigger wasTrigger = QGuiApplication::styleHints()->contextMenuTrigger();
+    auto restoreTriggerGuard = qScopeGuard([wasTrigger]{
+        QGuiApplication::styleHints()->setContextMenuTrigger(wasTrigger);
+    });
+
+    ContextMenuWidget widget;
+    widget.show();
+    QVERIFY(!qApp->topLevelWindows().empty());
+    auto *window = qApp->topLevelWindows()[0];
+    QVERIFY(window);
+    QCOMPARE(widget.events, 0);
+    QGuiApplication::styleHints()->setContextMenuTrigger(Qt::ContextMenuTrigger::Press);
+    QTest::mousePress(window, Qt::RightButton);
+    QCOMPARE(widget.events, 1);
+    QTest::mouseRelease(window, Qt::RightButton);
+    QCOMPARE(widget.events, 1);
+    QGuiApplication::styleHints()->setContextMenuTrigger(Qt::ContextMenuTrigger::Release);
+    QTest::mousePress(window, Qt::RightButton);
+    QCOMPARE(widget.events, 1);
+    QTest::mouseRelease(window, Qt::RightButton);
+    QCOMPARE(widget.events, 2);
+}
+#endif
 
 QTEST_MAIN(tst_QWidget)
 #include "tst_qwidget.moc"

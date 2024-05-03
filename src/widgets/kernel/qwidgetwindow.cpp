@@ -505,9 +505,6 @@ void QWidgetWindow::handleNonClientAreaMouseEvent(QMouseEvent *e)
 
 void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 {
-    static const QEvent::Type contextMenuTrigger =
-        QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::ContextMenuOnMouseRelease).toBool() ?
-        QEvent::MouseButtonRelease : QEvent::MouseButtonPress;
     if (QApplicationPrivate::inPopupMode()) {
         QPointer<QWidget> activePopupWidget = QApplication::activePopupWidget();
         QPointF mapped = event->position();
@@ -624,7 +621,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             }
             qt_replay_popup_mouse_event = false;
 #ifndef QT_NO_CONTEXTMENU
-        } else if (event->type() == contextMenuTrigger
+        } else if (event->type() == QGuiApplicationPrivate::contextMenuEventType()
                    && event->button() == Qt::RightButton
                    && (openPopupCount == oldOpenPopupCount)) {
             QWidget *receiver = activePopupWidget;
@@ -637,7 +634,6 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             QApplication::forwardEvent(receiver, &e, event);
         }
 #else
-            Q_UNUSED(contextMenuTrigger);
             Q_UNUSED(oldOpenPopupCount);
         }
 #endif
@@ -684,7 +680,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         event->setAccepted(translated.isAccepted());
     }
 #ifndef QT_NO_CONTEXTMENU
-    if (event->type() == contextMenuTrigger && event->button() == Qt::RightButton
+    if (event->type() == QGuiApplicationPrivate::contextMenuEventType()
+        && event->button() == Qt::RightButton
         && m_widget->rect().contains(event->position().toPoint())) {
         QContextMenuEvent e(QContextMenuEvent::Mouse, mapped, event->globalPosition().toPoint(), event->modifiers());
         QGuiApplication::forwardEvent(receiver, &e, event);
