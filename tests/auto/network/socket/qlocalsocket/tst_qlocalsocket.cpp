@@ -1664,6 +1664,9 @@ void tst_QLocalSocket::asyncDisconnectNotify()
 void tst_QLocalSocket::verifySocketOptions_data()
 {
 #ifdef Q_OS_LINUX
+    if (::geteuid() == 0)
+        QSKIP("Running this test as root doesn't make sense");
+
     QTest::addColumn<QString>("service");
     QTest::addColumn<QLocalServer::SocketOption>("opts");
     QTest::addColumn<QFile::Permissions>("perms");
