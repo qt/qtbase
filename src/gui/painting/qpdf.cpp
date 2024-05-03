@@ -20,6 +20,7 @@
 #include <qimagewriter.h>
 #include <qnumeric.h>
 #include <qtemporaryfile.h>
+#include <qtimezone.h>
 #include <quuid.h>
 
 #ifndef QT_NO_COMPRESS
@@ -1754,26 +1755,12 @@ int QPdfEnginePrivate::writeXmpDocumentMetaData()
     if (xmpDocumentMetadata.isEmpty()) {
         const QString producer(QString::fromLatin1("Qt " QT_VERSION_STR));
 
-        const QDateTime now = QDateTime::currentDateTime();
-        const QDate date = now.date();
-        const QTime time = now.time();
-        const QString timeStr =
-                QString::asprintf("%d-%02d-%02dT%02d:%02d:%02d",
-                                  date.year(), date.month(), date.day(),
-                                  time.hour(), time.minute(), time.second());
-
-        const int offset = now.offsetFromUtc();
-        const int hours  = (offset / 60) / 60;
-        const int mins   = (offset / 60) % 60;
-        QString tzStr;
-        if (offset < 0)
-            tzStr = QString::asprintf("-%02d:%02d", -hours, -mins);
-        else if (offset > 0)
-            tzStr = QString::asprintf("+%02d:%02d", hours , mins);
-        else
-            tzStr = "Z"_L1;
-
-        const QString metaDataDate = timeStr + tzStr;
+#if QT_CONFIG(timezone)
+        const QDateTime now = QDateTime::currentDateTime(QTimeZone::systemTimeZone());
+#else
+        const QDateTime now = QDateTime::currentDateTimeUtc();
+#endif
+        const QString metaDataDate = now.toString(Qt::ISODate);
 
         QFile metaDataFile(":/qpdf/qpdfa_metadata.xml"_L1);
         bool ok = metaDataFile.open(QIODevice::ReadOnly);
