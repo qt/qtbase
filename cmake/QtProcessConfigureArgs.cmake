@@ -90,7 +90,11 @@ unset(device_options)
 unset(options_json_file)
 set_property(GLOBAL PROPERTY UNHANDLED_ARGS "")
 while(NOT "${configure_args}" STREQUAL "")
-    list(POP_FRONT configure_args arg)
+    list(POP_FRONT configure_args raw_arg)
+
+    # Condense '--foo-bar' arguments into '-foo-bar'.
+    string(REGEX REPLACE "^--([^-])" "-\\1" arg "${raw_arg}")
+
     if(arg STREQUAL "-cmake-generator")
         list(POP_FRONT configure_args generator)
     elseif(arg STREQUAL "-cmake-use-default-generator")
@@ -156,7 +160,7 @@ while(NOT "${configure_args}" STREQUAL "")
         list(POP_FRONT configure_args version)
         is_valid_qt_hex_version("${arg}" "${version}")
         push("-DQT_DISABLE_DEPRECATED_UP_TO=${version}")
-    elseif(arg STREQUAL "--")
+    elseif(raw_arg STREQUAL "--")
         # Everything after this argument will be passed to CMake verbatim.
         list(APPEND cmake_args "${configure_args}")
         break()
