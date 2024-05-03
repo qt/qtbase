@@ -3155,13 +3155,17 @@ endfunction()
 # Write deployment information for the targets of the project.
 function(_qt_internal_write_target_deploy_info out_file)
     set(targets "")
+    set(dynamic_target_types EXECUTABLE SHARED_LIBRARY MODULE_LIBRARY)
     _qt_internal_collect_buildsystem_targets(targets
-        "${CMAKE_SOURCE_DIR}" INCLUDE EXECUTABLE SHARED_LIBRARY MODULE_LIBRARY)
+        "${CMAKE_SOURCE_DIR}" INCLUDE ${dynamic_target_types} STATIC_LIBRARY)
     set(content "")
     foreach(target IN LISTS targets)
         set(var_prefix "__QT_DEPLOY_TARGET_${target}")
         string(APPEND content "set(${var_prefix}_FILE $<TARGET_FILE:${target}>)\n")
-        if(WIN32 AND CMAKE_VERSION GREATER_EQUAL "3.21")
+        get_target_property(target_type ${target} TYPE)
+        string(APPEND content "set(${var_prefix}_TYPE ${target_type})\n")
+        if(WIN32 AND CMAKE_VERSION GREATER_EQUAL "3.21"
+            AND target_type IN_LIST dynamic_target_types)
             string(APPEND content
                 "set(${var_prefix}_RUNTIME_DLLS $<TARGET_RUNTIME_DLLS:${target}>)\n")
         endif()
