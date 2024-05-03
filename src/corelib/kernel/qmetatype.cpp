@@ -2660,6 +2660,36 @@ bool QMetaType::hasRegisteredConverterFunction(QMetaType fromType, QMetaType toT
 }
 
 /*!
+    \internal
+    Non-template helper ("SCARY") for IsMetaTypePair::registerConverter().
+*/
+bool QtPrivate::hasRegisteredConverterFunctionToPairVariantInterface(QMetaType m)
+{
+    const QMetaType to = QMetaType::fromType<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
+    return QMetaType::hasRegisteredConverterFunction(m, to);
+}
+
+/*!
+    \internal
+    Non-template helper ("SCARY") for SequentialValueTypeIsMetaType::registerConverter().
+*/
+bool QtPrivate::hasRegisteredConverterFunctionToIterableMetaSequence(QMetaType m)
+{
+    const QMetaType to = QMetaType::fromType<QIterable<QMetaSequence>>();
+    return QMetaType::hasRegisteredConverterFunction(m, to);
+}
+
+/*!
+    \internal
+    Non-template helper ("SCARY") for AssociativeKeyTypeIsMetaType::registerConverter().
+*/
+bool QtPrivate::hasRegisteredConverterFunctionToIterableMetaAssociation(QMetaType m)
+{
+    const QMetaType to = QMetaType::fromType<QIterable<QMetaAssociation>>();
+    return QMetaType::hasRegisteredConverterFunction(m, to);
+}
+
+/*!
     \fn template<typename From, typename To> bool QMetaType::hasRegisteredMutableViewFunction()
     Returns \c true, if the meta type system has a registered mutable view on type From of type To.
     \since 6.0
@@ -2674,6 +2704,26 @@ bool QMetaType::hasRegisteredConverterFunction(QMetaType fromType, QMetaType toT
 bool QMetaType::hasRegisteredMutableViewFunction(QMetaType fromType, QMetaType toType)
 {
     return customTypesMutableViewRegistry()->contains({fromType.id(), toType.id()});
+}
+
+/*!
+    \internal
+    Non-template helper ("SCARY") for SequentialValueTypeIsMetaType::registerMutableView().
+*/
+bool QtPrivate::hasRegisteredMutableViewFunctionToIterableMetaSequence(QMetaType m)
+{
+    const QMetaType to = QMetaType::fromType<QIterable<QMetaSequence>>();
+    return QMetaType::hasRegisteredMutableViewFunction(m, to);
+}
+
+/*!
+    \internal
+    Non-template helper ("SCARY") for AssociativeKeyTypeIsMetaType::registerMutableView().
+*/
+bool QtPrivate::hasRegisteredMutableViewFunctionToIterableMetaAssociation(QMetaType m)
+{
+    const QMetaType to = QMetaType::fromType<QIterable<QMetaAssociation>>();
+    return QMetaType::hasRegisteredMutableViewFunction(m, to);
 }
 
 /*!

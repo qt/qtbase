@@ -1750,11 +1750,19 @@ QT_FOR_EACH_STATIC_TYPE(Q_DECLARE_BUILTIN_METATYPE)
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate {
+// out-of-line helpers to reduce template code bloat ("SCARY") and improve compile times:
+Q_CORE_EXPORT bool hasRegisteredConverterFunctionToPairVariantInterface(QMetaType m);
+Q_CORE_EXPORT bool hasRegisteredConverterFunctionToIterableMetaSequence(QMetaType m);
+Q_CORE_EXPORT bool hasRegisteredMutableViewFunctionToIterableMetaSequence(QMetaType m);
+Q_CORE_EXPORT bool hasRegisteredConverterFunctionToIterableMetaAssociation(QMetaType m);
+Q_CORE_EXPORT bool hasRegisteredMutableViewFunctionToIterableMetaAssociation(QMetaType m);
+}
+
 template <typename T>
 inline bool QtPrivate::IsMetaTypePair<T, true>::registerConverter()
 {
-    const QMetaType to = QMetaType::fromType<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
-    if (!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<T>(), to)) {
+    if (!QtPrivate::hasRegisteredConverterFunctionToPairVariantInterface(QMetaType::fromType<T>())) {
         QtMetaTypePrivate::QPairVariantInterfaceConvertFunctor<T> o;
         return QMetaType::registerConverter<T, QtMetaTypePrivate::QPairVariantInterfaceImpl>(o);
     }
@@ -1786,8 +1794,7 @@ struct SequentialValueTypeIsMetaType<T, true>
 {
     static bool registerConverter()
     {
-        const QMetaType to = QMetaType::fromType<QIterable<QMetaSequence>>();
-        if (!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<T>(), to)) {
+        if (!QtPrivate::hasRegisteredConverterFunctionToIterableMetaSequence(QMetaType::fromType<T>())) {
             QSequentialIterableConvertFunctor<T> o;
             return QMetaType::registerConverter<T, QIterable<QMetaSequence>>(o);
         }
@@ -1796,8 +1803,7 @@ struct SequentialValueTypeIsMetaType<T, true>
 
     static bool registerMutableView()
     {
-        const QMetaType to = QMetaType::fromType<QIterable<QMetaSequence>>();
-        if (!QMetaType::hasRegisteredMutableViewFunction(QMetaType::fromType<T>(), to)) {
+        if (!QtPrivate::hasRegisteredMutableViewFunctionToIterableMetaSequence(QMetaType::fromType<T>())) {
             QSequentialIterableMutableViewFunctor<T> o;
             return QMetaType::registerMutableView<T, QIterable<QMetaSequence>>(o);
         }
@@ -1830,8 +1836,7 @@ struct AssociativeKeyTypeIsMetaType<T, true> : AssociativeMappedTypeIsMetaType<T
 {
     static bool registerConverter()
     {
-        const QMetaType to = QMetaType::fromType<QIterable<QMetaAssociation>>();
-        if (!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<T>(), to)) {
+        if (!QtPrivate::hasRegisteredConverterFunctionToIterableMetaAssociation(QMetaType::fromType<T>())) {
             QAssociativeIterableConvertFunctor<T> o;
             return QMetaType::registerConverter<T, QIterable<QMetaAssociation>>(o);
         }
@@ -1840,8 +1845,7 @@ struct AssociativeKeyTypeIsMetaType<T, true> : AssociativeMappedTypeIsMetaType<T
 
     static bool registerMutableView()
     {
-        const QMetaType to = QMetaType::fromType<QIterable<QMetaAssociation>>();
-        if (!QMetaType::hasRegisteredMutableViewFunction(QMetaType::fromType<T>(), to)) {
+        if (!QtPrivate::hasRegisteredMutableViewFunctionToIterableMetaAssociation(QMetaType::fromType<T>())) {
             QAssociativeIterableMutableViewFunctor<T> o;
             return QMetaType::registerMutableView<T, QIterable<QMetaAssociation>>(o);
         }
