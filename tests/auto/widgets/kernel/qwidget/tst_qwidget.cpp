@@ -319,6 +319,7 @@ private slots:
     void renderTargetOffset();
     void renderInvisible();
     void renderWithPainter();
+    void renderRTL();
     void render_task188133();
     void render_task211796();
     void render_task217815();
@@ -8472,6 +8473,47 @@ void tst_QWidget::renderWithPainter()
     QPainter::RenderHints oldRenderHints = painter.renderHints();
     widget.render(&painter);
     QCOMPARE(painter.renderHints(), oldRenderHints);
+}
+
+void tst_QWidget::renderRTL()
+{
+    QFont f;
+    f.setStyleStrategy(QFont::NoAntialias);
+    const QScopedPointer<QStyle> style(QStyleFactory::create(QLatin1String("Windows")));
+
+    QMenu menu;
+    menu.setMinimumWidth(200);
+    menu.setFont(f);
+    menu.setStyle(style.data());
+    menu.addAction("I");
+    menu.show();
+    menu.setLayoutDirection(Qt::LeftToRight);
+    QVERIFY(QTest::qWaitForWindowExposed(&menu));
+
+    QImage imageLTR(menu.size(), QImage::Format_ARGB32);
+    menu.render(&imageLTR);
+    //imageLTR.save("/tmp/rendered_1.png");
+
+    menu.setLayoutDirection(Qt::RightToLeft);
+    QImage imageRTL(menu.size(), QImage::Format_ARGB32);
+    menu.render(&imageRTL);
+    imageRTL = imageRTL.mirrored(true, false);
+    //imageRTL.save("/tmp/rendered_2.png");
+
+    QCOMPARE(imageLTR.height(), imageRTL.height());
+    QCOMPARE(imageLTR.width(), imageRTL.width());
+    static constexpr auto border = 4;
+    for (int h = border; h < imageRTL.height() - border; ++h) {
+        // there should be no difference on the right (aka no text)
+        for (int w = imageRTL.width() / 2; w < imageRTL.width() - border; ++w) {
+            auto pixLTR = imageLTR.pixel(w, h);
+            auto pixRTL = imageRTL.pixel(w, h);
+            if (pixLTR != pixRTL)
+                qDebug() << "Pixel do not match at" << w << h << ":"
+                         << Qt::hex << pixLTR << "<->" << pixRTL;
+            QCOMPARE(pixLTR, pixRTL);
+        }
+    }
 }
 
 void tst_QWidget::render_task188133()
