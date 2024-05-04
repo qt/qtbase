@@ -5171,6 +5171,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     const QRegion oldSystemClip = enginePriv->systemClip;
     const QRegion oldBaseClip = enginePriv->baseSystemClip;
     const QRegion oldSystemViewport = enginePriv->systemViewport;
+    const Qt::LayoutDirection oldLayoutDirection = painter->layoutDirection();
 
     // This ensures that all painting triggered by render() is clipped to the current engine clip.
     if (painter->hasClipping()) {
@@ -5179,6 +5180,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     } else {
         enginePriv->setSystemViewport(oldSystemClip);
     }
+    painter->setLayoutDirection(layoutDirection());
 
     d->render(target, targetOffset, toBePainted, renderFlags);
 
@@ -5186,6 +5188,7 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     enginePriv->baseSystemClip = oldBaseClip;
     enginePriv->setSystemTransformAndViewport(oldTransform, oldSystemViewport);
     enginePriv->systemStateChanged();
+    painter->setLayoutDirection(oldLayoutDirection);
 
     // Restore shared painter.
     d->setSharedPainter(oldPainter);
