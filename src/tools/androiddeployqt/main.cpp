@@ -20,6 +20,7 @@
 #include <QHash>
 #include <QSet>
 #include <QMap>
+#include <QProcess>
 
 #include <depfile_shared.h>
 #include <shellquote_shared.h>
@@ -106,6 +107,8 @@ struct Options
         , uninstallApk(false)
         , qmlImportScannerBinaryPath()
         , buildAar(false)
+        , qmlDomBinaryPath()
+        , generateJavaQmlComponents(false)
     {}
 
     enum DeploymentMechanism
@@ -242,6 +245,9 @@ struct Options
     QString qmlImportScannerBinaryPath;
     bool qmlSkipImportScanning = false;
     bool buildAar;
+    QString qmlDomBinaryPath;
+    bool generateJavaQmlComponents;
+    QSet<QString> selectedJavaQmlComponents;
 };
 
 static const QHash<QByteArray, QByteArray> elfArchitectures = {
@@ -1293,6 +1299,40 @@ bool readInputFile(Options *options)
         const QJsonValue rccBinaryPath = jsonObject.value("rcc-binary"_L1);
         if (!rccBinaryPath.isUndefined())
             options->rccBinaryPath = rccBinaryPath.toString();
+    }
+
+    {
+        const QJsonValue genJavaQmlComponents = jsonObject.value("generate-java-qml-components"_L1);
+        if (!genJavaQmlComponents.isUndefined() && genJavaQmlComponents.isBool()) {
+            options->generateJavaQmlComponents = genJavaQmlComponents.toBool(false);
+            if (options->generateJavaQmlComponents && !options->buildAar) {
+                fprintf(stderr,
+                        "Warning: Skipping the generation of Java components from QML as it can be "
+                        "enabled only for an AAR target.\n");
+                options->generateJavaQmlComponents = false;
+            }
+        }
+    }
+
+    {
+        const QJsonValue qmlDomBinaryPath = jsonObject.value("qml-dom-binary"_L1);
+        if (!qmlDomBinaryPath.isUndefined()) {
+            options->qmlDomBinaryPath = qmlDomBinaryPath.toString();
+        } else if (options->generateJavaQmlComponents) {
+            fprintf(stderr,
+                    "No qmldom binary defined in json file which is required when "
+                    "building with QT_ANDROID_GENERATE_JAVA_QML_COMPONENTS flag.\n");
+            return false;
+        }
+    }
+
+    {
+        const QJsonValue qmlFiles = jsonObject.value("qml-files-for-code-generator"_L1);
+        if (!qmlFiles.isUndefined() && qmlFiles.isArray()) {
+            const QJsonArray jArray = qmlFiles.toArray();
+            for (auto &item : jArray)
+                options->selectedJavaQmlComponents << item.toString();
+        }
     }
 
     {
@@ -3339,7 +3379,8 @@ enum ErrorCode
     CannotInstallApk = 16,
     CannotCopyAndroidExtraResources = 19,
     CannotCopyApk = 20,
-    CannotCreateRcc = 21
+    CannotCreateRcc = 21,
+    CannotGenerateJavaQmlComponents = 22
 };
 
 bool writeDependencyFile(const Options &options)
@@ -3370,6 +3411,362 @@ bool writeDependencyFile(const Options &options)
         depFile.write("\n");
     }
     return true;
+}
+
+int generateJavaQmlComponents(const Options &options)
+{
+    // TODO QTBUG-125892: Current method of path discovery are to be improved
+    // For instance, it does not discover statically linked **inner** QML modules.
+    const auto getImportPaths = [](const QString &buildPath, const QString &libName,
+                             QStringList &appImports, QStringList &externalImports) -> bool {
+        QFile confRspFile("/%1/.qt/qml_imports/%2_conf.rsp"_L1.arg(buildPath, libName));
+        if (!confRspFile.exists() || !confRspFile.open(QFile::ReadOnly))
+            return false;
+        QTextStream rspStream(&confRspFile);
+        while (!rspStream.atEnd()) {
+            QString currentLine = rspStream.readLine();
+            if (currentLine.compare("-importPath"_L1) == 0) {
+                currentLine = rspStream.readLine();
+                if (QDir::cleanPath(currentLine).startsWith(QDir::cleanPath(buildPath)))
+                    appImports << currentLine;
+                else
+                    externalImports << currentLine;
+            }
+        }
+        return appImports.count() + externalImports.count();
+    };
+
+    struct ComponentInfo {
+        QString name;
+        QString path;
+    };
+
+    struct ModuleInfo
+    {
+        QString moduleName;
+        QString preferPath;
+        QList<ComponentInfo> qmlComponents;
+        bool isValid() { return qmlComponents.size() && moduleName.size(); }
+    };
+
+    const auto getModuleInfo = [](const QString &qmldirPath) -> ModuleInfo {
+        QFile qmlDirFile(qmldirPath + "/qmldir"_L1);
+        if (!qmlDirFile.exists() || !qmlDirFile.open(QFile::ReadOnly))
+            return ModuleInfo();
+        ModuleInfo moduleInfo;
+        QTextStream qmldirStream(&qmlDirFile);
+        while (!qmldirStream.atEnd()) {
+            const QString currentLine = qmldirStream.readLine();
+            if (currentLine.size() && currentLine[0].isLower()) {
+                // TODO QTBUG-125891: Handling of  QML modules with dotted URI
+                if (currentLine.startsWith("module "_L1))
+                    moduleInfo.moduleName = currentLine.split(" "_L1)[1];
+                else if (currentLine.startsWith("prefer "_L1))
+                    moduleInfo.preferPath = currentLine.split(" "_L1)[1];
+            } else if (currentLine.size()
+                       && (currentLine[0].isUpper() || currentLine.startsWith("singleton"_L1))) {
+                const QStringList parts = currentLine.split(" "_L1);
+                if (parts.size() > 2)
+                    moduleInfo.qmlComponents.append({ parts.first(), parts.last() });
+            }
+        }
+        return moduleInfo;
+    };
+
+    const auto extractDomInfo = [](const QString &qmlDomExecPath, const QString &qmldirPath,
+                             const QString &qmlFile,
+                             const QStringList &otherImportPaths) -> QJsonObject {
+        QByteArray domInfo;
+        QString importFlags;
+        for (auto &importPath : otherImportPaths)
+            importFlags.append(" -i %1"_L1.arg(shellQuote(importPath)));
+
+        const QString qmlDomCmd = "%1 -d -D required -f +:propertyInfos %2 %3"_L1.arg(
+                shellQuote(qmlDomExecPath), importFlags,
+                shellQuote("%1/%2"_L1.arg(qmldirPath, qmlFile)));
+        const QStringList qmlDomCmdParts = QProcess::splitCommand(qmlDomCmd);
+        QProcess process;
+        process.start(qmlDomCmdParts.first(), qmlDomCmdParts.sliced(1));
+        if (!process.waitForStarted()) {
+            fprintf(stderr, "Cannot execute command %s\n", qPrintable(qmlDomCmd));
+            return QJsonObject();
+        }
+        // Wait, maximum 30 seconds
+        if (!process.waitForFinished(30000)) {
+            fprintf(stderr, "Execution of command %s timed out.\n", qPrintable(qmlDomCmd));
+            return QJsonObject();
+        }
+        domInfo = process.readAllStandardOutput();
+
+        QJsonParseError jsonError;
+        const QJsonDocument jsonDoc = QJsonDocument::fromJson(domInfo, &jsonError);
+        if (jsonError.error != QJsonParseError::NoError)
+            fprintf(stderr, "Output of %s is not valid JSON document.", qPrintable(qmlDomCmd));
+        return jsonDoc.object();
+    };
+
+    const auto getComponent = [](const QJsonObject &dom) -> QJsonObject {
+        if (dom.isEmpty())
+            return QJsonObject();
+
+        const QJsonObject currentItem = dom.value("currentItem"_L1).toObject();
+        if (!currentItem.value("isValid"_L1).toBool(false))
+            return QJsonObject();
+
+        const QJsonArray components =
+                currentItem.value("components"_L1).toObject().value(""_L1).toArray();
+        if (components.isEmpty())
+            return QJsonObject();
+        return components.constBegin()->toObject();
+    };
+
+    const auto getProperties = [](const QJsonObject &component) -> QJsonArray {
+        QJsonArray properties;
+        const QJsonArray objects = component.value("objects"_L1).toArray();
+        if (objects.isEmpty())
+            return QJsonArray();
+        const QJsonObject propertiesObject =
+                objects[0].toObject().value("propertyInfos"_L1).toObject();
+        for (const auto &jsonProperty : propertiesObject) {
+            const QJsonArray propertyDefs =
+                    jsonProperty.toObject().value("propertyDefs"_L1).toArray();
+            if (propertyDefs.isEmpty())
+                continue;
+
+            properties.append(propertyDefs[0].toObject());
+        }
+        return properties;
+    };
+
+    const auto getMethods = [](const QJsonObject &component) -> QJsonArray {
+        QJsonArray methods;
+        const QJsonArray objects = component.value("objects"_L1).toArray();
+        if (objects.isEmpty())
+            return QJsonArray();
+        const QJsonObject methodsObject = objects[0].toObject().value("methods"_L1).toObject();
+        for (const auto &jsonMethod : methodsObject) {
+            const QJsonArray overloads = jsonMethod.toArray();
+            for (const auto &m : overloads)
+                methods.append(m);
+        }
+        return methods;
+    };
+
+    const static QHash<QString, QString> qmlToJavaType = {
+        { "qreal"_L1, "Double"_L1 }, { "double"_L1, "Double"_L1 }, { "int"_L1, "Integer"_L1 },
+        { "float"_L1, "Float"_L1 },  { "bool"_L1, "Boolean"_L1 },  { "string"_L1, "String"_L1 },
+        { "void"_L1, "Void"_L1 }
+    };
+
+    const auto endBlock = [](QTextStream &stream, int indentWidth = 0) {
+        stream << QString(indentWidth, u' ') << "}\n";
+    };
+
+    const auto createHeaderBlock = [](QTextStream &stream, const QString &javaPackage) {
+        stream << "/* This file is autogenerated by androiddeployqt. Do not edit */\n\n"
+               << "package %1;\n\n"_L1.arg(javaPackage)
+               << "import org.qtproject.qt.android.QtSignalListener;\n"
+               << "import org.qtproject.qt.android.QtQmlComponent;\n\n";
+    };
+
+    const auto beginLibraryBlock = [](QTextStream &stream, const QString &libName) {
+        stream << QLatin1StringView("public final class %1 {\n").arg(libName);
+    };
+
+    const auto beginModuleBlock = [](QTextStream &stream, const QString &moduleName,
+                                     bool topLevel = false, int indentWidth = 4) {
+        const QString indent(indentWidth, u' ');
+        stream << indent
+               << "public final%1 class %2 {\n"_L1.arg(topLevel ? ""_L1 : " static"_L1, moduleName);
+    };
+
+    const auto beginComponentBlock = [](QTextStream &stream, const QString &libName,
+                                        const QString &moduleName, const QString &preferPath,
+                                        const ComponentInfo &componentInfo, int indentWidth = 8) {
+        const QString indent(indentWidth, u' ');
+
+        stream << indent
+               << "public final static class %1 extends QtQmlComponent {\n"_L1
+                                                        .arg(componentInfo.name)
+               << indent << "    @Override public String getLibraryName() {\n"_L1
+               << indent << "        return \"%1\";\n"_L1.arg(libName)
+               << indent << "    }\n"_L1
+               << indent << "    @Override public String getModuleName() {\n"_L1
+               << indent << "        return \"%1\";\n"_L1.arg(moduleName)
+               << indent << "    }\n"_L1
+               << indent << "    @Override public String getFilePath() {\n"_L1
+               << indent << "        return \"qrc%1%2\";\n"_L1.arg(preferPath)
+                                                         .arg(componentInfo.path)
+               << indent << "    }\n"_L1;
+    };
+
+    const auto beginPropertyBlock = [](QTextStream &stream, const QJsonObject &propertyData,
+                                 int indentWidth = 8) {
+        const QString indent(indentWidth, u' ');
+        const QString propertyName = propertyData["name"_L1].toString();
+        if (propertyName.isEmpty())
+            return;
+        const QString upperPropertyName =
+                propertyName[0].toUpper() + propertyName.last(propertyName.size() - 1);
+        const QString typeName = propertyData["typeName"_L1].toString();
+        const bool isReadyonly = propertyData["isReadonly"_L1].toBool();
+
+        const QString javaTypeName = qmlToJavaType.value(typeName, "Object"_L1);
+
+        if (!isReadyonly) {
+            stream << indent
+                   << "public void set%1(%2 %3) { setProperty(\"%3\", %3); }\n"_L1.arg(
+                              upperPropertyName, javaTypeName, propertyName);
+        }
+
+        stream << indent
+               << "public %2 get%1() { return this.<%2>getProperty(\"%3\"); }\n"_L1
+                          .arg(upperPropertyName, javaTypeName, propertyName)
+               << indent
+               << "public int connect%1ChangeListener(QtSignalListener<%2> signalListener) {\n"_L1
+                          .arg(upperPropertyName, javaTypeName)
+               << indent
+               << "    return connectSignalListener(\"%1\", %2.class, signalListener);\n"_L1.arg(
+                          propertyName, javaTypeName)
+               << indent << "}\n";
+    };
+
+    const auto beginSignalBlock = [](QTextStream &stream, const QJsonObject &methodData,
+                                     int indentWidth = 8) {
+        const QString indent(indentWidth, u' ');
+        if (methodData["methodType"_L1] != 0)
+            return;
+        const QJsonArray parameters = methodData["parameters"_L1].toArray();
+        if (parameters.size() > 1)
+            return;
+
+        const QString methodName = methodData["name"_L1].toString();
+        if (methodName.isEmpty())
+            return;
+        const QString upperMethodName =
+                methodName[0].toUpper() + methodName.last(methodName.size() - 1);
+        const QString typeName = !parameters.isEmpty()
+                ? parameters[0].toObject()["typeName"_L1].toString()
+                : "void"_L1;
+
+        const QString javaTypeName = qmlToJavaType.value(typeName, "Object"_L1);
+        stream << indent
+               << "public int connect%1Listener(QtSignalListener<%2> signalListener) {\n"_L1.arg(
+                          upperMethodName, javaTypeName)
+               << indent
+               << "    return connectSignalListener(\"%1\", %2.class, signalListener);\n"_L1.arg(
+                          methodName, javaTypeName)
+               << indent << "}\n";
+    };
+
+    const QString libName(options.applicationBinary);
+    const QString libClassname = libName[0].toUpper() + libName.last(libName.size() - 1);
+    const QString javaPackage = options.packageName;
+    const QString outputDir = "%1/src/%2"_L1.arg(options.outputDirectory,
+                                                 QString(javaPackage).replace(u'.', u'/'));
+    const QString buildPath(QDir(options.buildDirectory).absolutePath());
+    const QString domBinaryPath(options.qmlDomBinaryPath);
+    const bool leafEqualsLibname = javaPackage.endsWith(".%1"_L1.arg(libName));
+
+    fprintf(stdout, "Generating Java QML Components in %s directory.\n", qPrintable(outputDir));
+    if (!QDir().current().mkpath(outputDir)) {
+        fprintf(stderr, "Cannot create %s directory\n", qPrintable(outputDir));
+        return false;
+    }
+
+    QStringList appImports;
+    QStringList externalImports;
+    if (!getImportPaths(buildPath, libName, appImports, externalImports))
+        return false;
+
+    QTextStream outputStream;
+    std::unique_ptr<QFile> outputFile;
+
+    if (!leafEqualsLibname) {
+        outputFile.reset(new QFile("%1/%2.java"_L1.arg(outputDir, libClassname)));
+        if (outputFile->exists())
+            outputFile->remove();
+        if (!outputFile->open(QFile::ReadWrite)) {
+            fprintf(stderr, "Cannot open %s file to write.\n",
+                    qPrintable(outputFile->fileName()));
+            return false;
+        }
+        outputStream.setDevice(outputFile.get());
+        createHeaderBlock(outputStream, javaPackage);
+        beginLibraryBlock(outputStream, libClassname);
+    }
+
+    int generatedComponents = 0;
+    for (const auto &importPath : appImports) {
+        ModuleInfo moduleInfo = getModuleInfo(importPath);
+        if (!moduleInfo.isValid())
+            continue;
+
+        const QString moduleClassname = moduleInfo.moduleName[0].toUpper()
+                + moduleInfo.moduleName.last(moduleInfo.moduleName.size() - 1);
+
+        int indentBase = 4;
+        if (leafEqualsLibname) {
+            indentBase = 0;
+            QIODevice *outputStreamDevice = outputStream.device();
+            if (outputStreamDevice) {
+                outputStream.flush();
+                outputStream.reset();
+                outputStreamDevice->close();
+            }
+
+            outputFile.reset(new QFile("%1/%2.java"_L1.arg(outputDir,moduleClassname)));
+            if (outputFile->exists() && !outputFile->remove())
+                return false;
+            if (!outputFile->open(QFile::ReadWrite)) {
+                fprintf(stderr, "Cannot open %s file to write.\n", qPrintable(outputFile->fileName()));
+                return false;
+            }
+
+            outputStream.setDevice(outputFile.get());
+            createHeaderBlock(outputStream, javaPackage);
+        }
+
+        beginModuleBlock(outputStream, moduleClassname, leafEqualsLibname, indentBase);
+        indentBase += 4;
+
+        for (const auto &qmlComponent : moduleInfo.qmlComponents) {
+            const bool isSelected = options.selectedJavaQmlComponents.contains(
+                    "%1.%2"_L1.arg(moduleInfo.moduleName, qmlComponent.name));
+            if (!options.selectedJavaQmlComponents.isEmpty() && !isSelected)
+                continue;
+
+            QJsonObject domInfo = extractDomInfo(domBinaryPath, importPath, qmlComponent.path,
+                                                 externalImports + appImports);
+            QJsonObject component = getComponent(domInfo);
+            if (component.isEmpty())
+                continue;
+
+            beginComponentBlock(outputStream, libName, moduleInfo.moduleName, moduleInfo.preferPath,
+                                qmlComponent, indentBase);
+            indentBase += 4;
+
+            const QJsonArray properties = getProperties(component);
+            for (const QJsonValue &p : std::as_const(properties))
+                beginPropertyBlock(outputStream, p.toObject(), indentBase);
+
+            const QJsonArray methods = getMethods(component);
+            for (const QJsonValue &m : std::as_const(methods))
+                beginSignalBlock(outputStream, m.toObject(), indentBase);
+
+            indentBase -= 4;
+            endBlock(outputStream, indentBase);
+            generatedComponents++;
+        }
+        indentBase -= 4;
+        endBlock(outputStream, indentBase);
+    }
+    if (!leafEqualsLibname)
+        endBlock(outputStream, 0);
+
+    outputStream.flush();
+    outputStream.device()->close();
+    return generatedComponents;
 }
 
 int main(int argc, char *argv[])
@@ -3458,6 +3855,16 @@ int main(int argc, char *argv[])
 
         if (Q_UNLIKELY(options.timing))
             fprintf(stdout, "[TIMING] %lld ns: Copied GNU STL\n", options.timer.nsecsElapsed());
+
+        if (options.generateJavaQmlComponents) {
+            if (!generateJavaQmlComponents(options))
+                return CannotGenerateJavaQmlComponents;
+        }
+
+        if (Q_UNLIKELY(options.timing)) {
+            fprintf(stdout, "[TIMING] %lld ns: Generate Java QtQmlComponents.\n",
+                    options.timer.nsecsElapsed());
+        }
 
         // If Unbundled deployment is used, remove app lib as we don't want it packaged inside the APK
         if (options.deploymentMechanism == Options::Unbundled) {
