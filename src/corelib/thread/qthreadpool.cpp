@@ -593,18 +593,17 @@ bool QThreadPool::tryStart(QRunnable *runnable)
 
 int QThreadPool::expiryTimeout() const
 {
+    using namespace std::chrono;
     Q_D(const QThreadPool);
     QMutexLocker locker(&d->mutex);
-    return d->expiryTimeout;
+    return duration_cast<milliseconds>(d->expiryTimeout).count();
 }
 
 void QThreadPool::setExpiryTimeout(int expiryTimeout)
 {
     Q_D(QThreadPool);
     QMutexLocker locker(&d->mutex);
-    if (d->expiryTimeout == expiryTimeout)
-        return;
-    d->expiryTimeout = expiryTimeout;
+    d->expiryTimeout = std::chrono::milliseconds(expiryTimeout);
 }
 
 /*! \property QThreadPool::maxThreadCount
