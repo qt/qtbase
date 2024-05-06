@@ -30,14 +30,14 @@
         case QFileDialogOptions::AnyFile:
         case QFileDialogOptions::ExistingFile:
         case QFileDialogOptions::ExistingFiles:
-            [docTypes addObject:[UTType typeWithIdentifier:(__bridge NSString *)UTTypeContent]];
-            [docTypes addObject:[UTType typeWithIdentifier:(__bridge NSString *)UTTypeItem]];
-            [docTypes addObject:[UTType typeWithIdentifier:(__bridge NSString *)UTTypeData]];
+            [docTypes addObject:UTTypeContent];
+            [docTypes addObject:UTTypeItem];
+            [docTypes addObject:UTTypeData];
             break;
         // Showing files is not supported in Directory mode in iOS
         case QFileDialogOptions::Directory:
         case QFileDialogOptions::DirectoryOnly:
-            [docTypes addObject:[UTType typeWithIdentifier:(__bridge NSString *)UTTypeFolder]];
+            [docTypes addObject:UTTypeFolder];
             break;
         }
     }
