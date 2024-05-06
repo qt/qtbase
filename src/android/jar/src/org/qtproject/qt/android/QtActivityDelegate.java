@@ -692,9 +692,6 @@ public class QtActivityDelegate
                 activityClass.getMethod("super_dispatchGenericMotionEvent", MotionEvent.class);
 
         m_softInputMode = m_activity.getPackageManager().getActivityInfo(m_activity.getComponentName(), 0).softInputMode;
-
-        DisplayManager displayManager = (DisplayManager)m_activity.getSystemService(Context.DISPLAY_SERVICE);
-        displayManager.registerDisplayListener(displayListener, null);
     }
 
     public boolean loadApplication(Activity activity, ClassLoader classLoader, Bundle loaderParams)
@@ -864,6 +861,9 @@ public class QtActivityDelegate
             };
         }
         m_layout = new QtLayout(m_activity, startApplication);
+
+        DisplayManager displayManager = (DisplayManager)m_activity.getSystemService(Context.DISPLAY_SERVICE);
+        displayManager.registerDisplayListener(displayListener, null);
 
         int orientation = m_activity.getResources().getConfiguration().orientation;
 
