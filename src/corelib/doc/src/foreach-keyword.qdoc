@@ -73,4 +73,18 @@
     \c foreach would not. But using \c foreach always copies the container,
     which is usually not cheap for STL containers. If in doubt, prefer
     \c foreach for Qt containers, and range based \c for for STL ones.
+
+    You can remove the availability of the Qt's \c foreach loop by
+    defining the \c{QT_NO_FOREACH} macro.
+*/
+
+/*!
+    \macro QT_NO_FOREACH
+    \since 6.0
+    \relates <QtGlobal>
+
+    Defining this macro removes the availability of Qt's \c foreach
+    loop.
+
+    \sa QT_NO_KEYWORDS
 */

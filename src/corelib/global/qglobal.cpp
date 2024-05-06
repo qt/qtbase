@@ -214,6 +214,19 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 }
 
 /*!
+    \macro QT_NO_KEYWORDS
+    \relates <QtGlobal>
+
+    Define this macro to disable the Qt-specific keywords that are usually enabled,
+    such as \c signals and \c slots. Use \c Q_SIGNALS and \c Q_SLOTS instead.
+
+    Libraries should define this macro to make sure that they don't use the generic
+    keywords without the \c Q_ prefix in their public headers.
+
+    \sa QT_NO_FOREACH
+*/
+
+/*!
     \macro QT_NAMESPACE
     \internal
 
