@@ -529,7 +529,7 @@ public:
     QT_POST_CXX17_API_IN_EXPORTED_CLASS
     static QDateTime fromStdLocalTime(const std::chrono::local_time<std::chrono::milliseconds> &time)
     {
-        QDateTime result(QDate(1970, 1, 1), QTime(0, 0, 0));
+        QDateTime result(QDate(1970, 1, 1), QTime(0, 0, 0), TransitionResolution::LegacyBehavior);
         return result.addMSecs(time.time_since_epoch().count());
     }
 
