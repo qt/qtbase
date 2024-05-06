@@ -434,7 +434,7 @@ static void executeBlockWithoutAnimation(Block block)
 
     if (enabled) {
         _focusView = [reinterpret_cast<UIView *>(qApp->focusWindow()->winId()) retain];
-        _desktopView = [qt_apple_sharedApplication().keyWindow.rootViewController.view retain];
+        _desktopView = [presentationWindow(nullptr).rootViewController.view retain];
         Q_ASSERT(_focusView && _desktopView && _desktopView.superview);
         [_desktopView addGestureRecognizer:self];
     } else {
