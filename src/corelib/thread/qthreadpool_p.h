@@ -128,7 +128,6 @@ public:
     { return qMax(requestedMaxThreadCount, 1); }    // documentation says we start at least one
     void startThread(QRunnable *runnable = nullptr);
     void reset();
-    bool waitForDone(int msecs);
     bool waitForDone(const QDeadlineTimer &timer);
     void clear();
     void stealAndRunRunnable(QRunnable *runnable);

@@ -1078,6 +1078,10 @@ bool QRegularExpression::operator==(const QRegularExpression &other) const
 
 #include "qstring.h" // inlined API
 
+#if QT_CONFIG(thread)
+#  include "qthreadpool.h" // inlined API
+#endif
+
 #include "qurl.h"
 
 bool QUrl::operator<(const QUrl &url) const
