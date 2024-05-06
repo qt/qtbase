@@ -4857,7 +4857,7 @@ void QMetalGraphicsPipeline::setupAttachmentsInMetalRenderPassDescriptor(void *m
     }
 
     QRHI_RES_RHI(QRhiMetal);
-    rpDesc.sampleCount = NSUInteger(rhiD->effectiveSampleCount(m_sampleCount));
+    rpDesc.rasterSampleCount = NSUInteger(rhiD->effectiveSampleCount(m_sampleCount));
 }
 
 void QMetalGraphicsPipeline::setupMetalDepthStencilDescriptor(void *metalDsDesc)
