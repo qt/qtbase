@@ -5,6 +5,8 @@
 #include "qiosapplicationdelegate.h"
 #include "qiosviewcontroller.h"
 #include "qiosscreen.h"
+#include "quiwindow.h"
+#include "qioseventdispatcher.h"
 
 #include <QtCore/private/qcore_mac_p.h>
 
@@ -17,17 +19,13 @@ Q_LOGGING_CATEGORY(lcQpaWindowScene, "qt.qpa.window.scene");
 
 bool isQtApplication()
 {
-    if (qt_apple_isApplicationExtension())
-        return false;
-
     // Returns \c true if the plugin is in full control of the whole application. This means
     // that we control the application delegate and the top view controller, and can take
     // actions that impacts all parts of the application. The opposite means that we are
     // embedded inside a native iOS application, and should be more focused on playing along
     // with native UIControls, and less inclined to change structures that lies outside the
     // scope of our QWindows/UIViews.
-    static bool isQt = ([qt_apple_sharedApplication().delegate isKindOfClass:[QIOSApplicationDelegate class]]);
-    return isQt;
+    return QIOSEventDispatcher::isQtApplication();
 }
 
 bool isRunningOnVisionOS()
@@ -126,9 +124,15 @@ UIView *rootViewForScreen(QScreen *screen)
         Q_UNUSED(iosScreen);
 #endif
 
-        UIWindow *uiWindow = windowScene.keyWindow;
-        if (!uiWindow && windowScene.windows.count)
-            uiWindow = windowScene.windows[0];
+        UIWindow *uiWindow = qt_objc_cast<QUIWindow*>(windowScene.keyWindow);
+        if (!uiWindow) {
+            for (UIWindow *win in windowScene.windows) {
+                if (qt_objc_cast<QUIWindow*>(win)) {
+                    uiWindow = win;
+                    break;
+                }
+            }
+        }
 
         return uiWindow.rootViewController.view;
     }

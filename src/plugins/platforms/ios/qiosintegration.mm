@@ -17,6 +17,10 @@
 #include "qiosservices.h"
 #include "qiosoptionalplugininterface.h"
 
+#if defined(Q_OS_VISIONOS)
+#include "qiosswiftintegration.h"
+#endif
+
 #include <QtGui/qpointingdevice.h>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qrhibackingstore_p.h>
@@ -293,6 +297,39 @@ void QIOSIntegration::setApplicationBadge(qint64 number)
 {
     UIApplication.sharedApplication.applicationIconBadgeNumber = number;
 }
+
+// ---------------------------------------------------------
+
+#if defined(Q_OS_VISIONOS)
+void QIOSIntegration::openImmersiveSpace()
+{
+    [ImmersiveSpaceManager openImmersiveSpace];
+}
+
+void QIOSIntegration::dismissImmersiveSpace()
+{
+    [ImmersiveSpaceManager dismissImmersiveSpace];
+}
+
+void QIOSIntegration::setImmersiveSpaceCompositorLayer(CompositorLayer *layer)
+{
+    m_immersiveSpaceCompositorLayer = layer;
+}
+
+void QIOSIntegration::configureCompositorLayer(cp_layer_renderer_capabilities_t capabilities,
+                                               cp_layer_renderer_configuration_t configuration)
+{
+    if (m_immersiveSpaceCompositorLayer)
+        m_immersiveSpaceCompositorLayer->configure(capabilities, configuration);
+}
+
+void QIOSIntegration::renderCompositorLayer(cp_layer_renderer_t renderer)
+{
+    if (m_immersiveSpaceCompositorLayer)
+        m_immersiveSpaceCompositorLayer->render(renderer);
+}
+
+#endif
 
 // ---------------------------------------------------------
 

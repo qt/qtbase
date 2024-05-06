@@ -5,6 +5,10 @@
 #include "qiosapplicationdelegate.h"
 #include "qiosglobal.h"
 
+#if defined(Q_OS_VISIONOS)
+#include "qiosswiftintegration.h"
+#endif
+
 #include <QtCore/qprocessordetection.h>
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qthread_p.h>
@@ -173,12 +177,16 @@ namespace
         QAppleLogActivity UIApplicationMain;
         QAppleLogActivity applicationDidFinishLaunching;
     } logActivity;
+
+    static bool s_isQtApplication = false;
 }
 
 using namespace QT_PREPEND_NAMESPACE(QtPrivate);
 
 extern "C" int qt_main_wrapper(int argc, char *argv[])
 {
+    s_isQtApplication = true;
+
     @autoreleasepool {
         size_t defaultStackSize = 512 * kBytesPerKiloByte; // Same as secondary threads
 
@@ -202,8 +210,16 @@ extern "C" int qt_main_wrapper(int argc, char *argv[])
         logActivity.UIApplicationMain = QT_APPLE_LOG_ACTIVITY(
             lcEventDispatcher().isDebugEnabled(), "UIApplicationMain").enter();
 
+#if defined(Q_OS_VISIONOS)
+        Q_UNUSED(argc);
+        Q_UNUSED(argv);
+        qCDebug(lcEventDispatcher) << "Starting Swift app";
+        QIOSIntegrationPluginSwift::runSwiftAppMain();
+        Q_UNREACHABLE();
+#else
         qCDebug(lcEventDispatcher) << "Running UIApplicationMain";
         return UIApplicationMain(argc, argv, nil, NSStringFromClass([QIOSApplicationDelegate class]));
+#endif
     }
 }
 
@@ -422,6 +438,11 @@ QIOSEventDispatcher::QIOSEventDispatcher(QObject *parent)
 {
     // We want all delivery of events from the system to be handled synchronously
     QWindowSystemInterface::setSynchronousWindowSystemEvents(true);
+}
+
+bool QIOSEventDispatcher::isQtApplication()
+{
+    return s_isQtApplication;
 }
 
 /*!

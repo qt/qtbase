@@ -16,6 +16,8 @@ public:
     static QIOSEventDispatcher* create();
     bool processPostedEvents() override;
 
+    static bool isQtApplication();
+
 protected:
     explicit QIOSEventDispatcher(QObject *parent = nullptr);
 };

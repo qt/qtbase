@@ -4401,6 +4401,9 @@ void *QGuiApplication::resolveInterface(const char *name, int revision) const
 #if QT_CONFIG(wayland)
     QT_NATIVE_INTERFACE_RETURN_IF(QWaylandApplication, platformNativeInterface());
 #endif
+#if defined(Q_OS_VISIONOS)
+    QT_NATIVE_INTERFACE_RETURN_IF(QVisionOSApplication, platformIntegration);
+#endif
 
     return QCoreApplication::resolveInterface(name, revision);
 }

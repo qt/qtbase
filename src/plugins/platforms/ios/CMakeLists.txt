@@ -5,6 +5,19 @@
 ## QIOSIntegrationPlugin Plugin:
 #####################################################################
 
+if(VISIONOS)
+    include(SwiftIntegration.cmake)
+
+    qt_install(TARGETS QIOSIntegrationPluginSwift
+        EXPORT "${INSTALL_CMAKE_NAMESPACE}QIOSIntegrationPluginTargets"
+        DESTINATION "${INSTALL_LIBDIR}"
+    )
+    qt_internal_add_targets_to_additional_targets_export_file(
+        TARGETS QIOSIntegrationPluginSwift
+        EXPORT_NAME_PREFIX "${INSTALL_CMAKE_NAMESPACE}QIOSIntegrationPlugin"
+    )
+endif()
+
 qt_internal_add_plugin(QIOSIntegrationPlugin
     OUTPUT_NAME qios
     STATIC # Force static, even in shared builds
@@ -86,3 +99,7 @@ qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT (TVOS OR VISIONOS)
 )
 
 add_subdirectory(optional)
+
+if(VISIONOS)
+    target_link_libraries(QIOSIntegrationPlugin PRIVATE QIOSIntegrationPluginSwift)
+endif()

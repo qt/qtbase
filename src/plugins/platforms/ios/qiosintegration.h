@@ -16,11 +16,24 @@
 #include "qiostextinputoverlay.h"
 #endif
 
+#if defined(Q_OS_VISIONOS)
+#include <swift/bridging>
+#endif
+
 QT_BEGIN_NAMESPACE
+
+using namespace QNativeInterface;
 
 class QIOSServices;
 
-class QIOSIntegration : public QPlatformNativeInterface, public QPlatformIntegration
+class
+#if defined(Q_OS_VISIONOS)
+    SWIFT_IMMORTAL_REFERENCE
+#endif
+QIOSIntegration : public QPlatformNativeInterface, public QPlatformIntegration
+#if defined(Q_OS_VISIONOS)
+    , public QVisionOSApplication
+#endif
 {
     Q_OBJECT
 public:
@@ -77,6 +90,17 @@ public:
 
     QIOSApplicationState applicationState;
 
+#if defined(Q_OS_VISIONOS)
+    void openImmersiveSpace() override;
+    void dismissImmersiveSpace() override;
+
+    using CompositorLayer = QVisionOSApplication::ImmersiveSpaceCompositorLayer;
+    void setImmersiveSpaceCompositorLayer(CompositorLayer *layer) override;
+
+    void configureCompositorLayer(cp_layer_renderer_capabilities_t, cp_layer_renderer_configuration_t);
+    void renderCompositorLayer(cp_layer_renderer_t);
+#endif
+
 private:
     QPlatformFontDatabase *m_fontDatabase;
 #if QT_CONFIG(clipboard)
@@ -89,6 +113,10 @@ private:
     QFactoryLoader *m_optionalPlugins;
 #if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
     QIOSTextInputOverlay m_textInputOverlay;
+#endif
+
+#if defined(Q_OS_VISIONOS)
+    CompositorLayer *m_immersiveSpaceCompositorLayer = nullptr;
 #endif
 };
 

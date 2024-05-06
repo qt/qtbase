@@ -376,6 +376,11 @@ qt_internal_extend_target(Gui CONDITION MACOS
         ${FWAppKit}
 )
 
+qt_internal_extend_target(Gui CONDITION UIKIT
+    SOURCES
+        platform/ios/qiosnativeinterface.cpp
+)
+
 qt_internal_extend_target(Gui CONDITION WASM
     SOURCES
         platform/wasm/qwasmnativeinterface.cpp
