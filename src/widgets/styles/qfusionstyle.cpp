@@ -3660,7 +3660,7 @@ QRect QFusionStyle::subElementRect(SubElement sr, const QStyleOption *opt, const
 }
 
 /*!
-    \reimp
+    \internal
 */
 QIcon QFusionStyle::iconFromTheme(StandardPixmap standardIcon) const
 {
