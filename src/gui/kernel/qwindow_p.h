@@ -84,7 +84,7 @@ public:
         Next,
         Prev
     };
-    virtual void setFocusToTarget(QWindowPrivate::FocusTarget) {}
+    virtual void setFocusToTarget(FocusTarget, Qt::FocusReason) {}
 
     virtual QRectF closestAcceptableGeometry(const QRectF &rect) const;
 

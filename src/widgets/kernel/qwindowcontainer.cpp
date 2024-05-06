@@ -326,7 +326,7 @@ bool QWindowContainer::event(QEvent *e)
                     target = QWindowPrivate::FocusTarget::First;
                 else if (reason == Qt::BacktabFocusReason)
                     target = QWindowPrivate::FocusTarget::Last;
-                qt_window_private(d->window)->setFocusToTarget(target);
+                qt_window_private(d->window)->setFocusToTarget(target, reason);
                 d->window->requestActivate();
             }
         }

@@ -77,7 +77,7 @@ public:
             widget->focusWidget()->clearFocus();
     }
 
-    void setFocusToTarget(QWindowPrivate::FocusTarget target) override
+    void setFocusToTarget(FocusTarget target, Qt::FocusReason reason) override
     {
         Q_Q(QWidgetWindow);
         QWidget *widget = q->widget();
@@ -107,7 +107,7 @@ public:
         }
 
         if (newFocusWidget)
-            newFocusWidget->setFocus();
+            newFocusWidget->setFocus(reason);
     }
 
     QRectF closestAcceptableGeometry(const QRectF &rect) const override;
