@@ -201,9 +201,13 @@ public:
 #else
     using EncodedLabel = QByteArray;
 #endif
+    // minimum IPv6 MTU (1280) minus the IPv6 (40) and UDP headers (8)
+    static constexpr qsizetype ReplyBufferSize = 1280 - 40 - 8;
+    using ReplyBuffer = QVarLengthArray<unsigned char, ReplyBufferSize>;
 
     QDnsLookupRunnable(const QDnsLookupPrivate *d);
     void run() override;
+    bool sendDnsOverTls(QDnsLookupReply *reply, QSpan<unsigned char> query, ReplyBuffer &response);
 
 signals:
     void finished(const QDnsLookupReply &reply);

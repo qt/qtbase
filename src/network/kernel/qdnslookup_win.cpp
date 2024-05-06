@@ -5,9 +5,11 @@
 #include <winsock2.h>
 #include "qdnslookup_p.h"
 
-#include <qurl.h>
+#include <qendian.h>
 #include <private/qnativesocketengine_p.h>
 #include <private/qsystemerror_p.h>
+#include <qurl.h>
+#include <qspan.h>
 
 #include <qt_windows.h>
 #include <windns.h>
@@ -63,6 +65,58 @@ DNS_STATUS WINAPI DnsQueryEx(PDNS_QUERY_REQUEST pQueryRequest,
 
 QT_BEGIN_NAMESPACE
 
+static DNS_STATUS sendAlternate(QDnsLookupRunnable *self, QDnsLookupReply *reply,
+                                PDNS_QUERY_REQUEST request, PDNS_QUERY_RESULT results)
+{
+    // WinDNS wants MTU - IP Header - UDP header for some reason, in spite
+    // of never needing that much
+    QVarLengthArray<unsigned char, 1472> query(1472);
+
+    auto dnsBuffer = new (query.data()) DNS_MESSAGE_BUFFER;
+    DWORD dnsBufferSize = query.size();
+    WORD xid = 0;
+    bool recursionDesired = true;
+
+    SetLastError(ERROR_SUCCESS);
+
+    // MinGW winheaders incorrectly declare the third parameter as LPWSTR
+    if (!DnsWriteQuestionToBuffer_W(dnsBuffer, &dnsBufferSize,
+                                    const_cast<LPWSTR>(request->QueryName), request->QueryType,
+                                    xid, recursionDesired)) {
+        // let's try reallocating
+        query.resize(dnsBufferSize);
+        if (!DnsWriteQuestionToBuffer_W(dnsBuffer, &dnsBufferSize,
+                                        const_cast<LPWSTR>(request->QueryName), request->QueryType,
+                                        xid, recursionDesired)) {
+            return GetLastError();
+        }
+    }
+
+    // set AD bit: we want to trust this server
+    dnsBuffer->MessageHead.AuthenticatedData = true;
+
+    QDnsLookupRunnable::ReplyBuffer replyBuffer;
+    if (!self->sendDnsOverTls(reply, { query.data(), dnsBufferSize }, replyBuffer))
+        return DNS_STATUS(-1);   // error set in reply
+
+    // interpret the RCODE in the reply
+    auto response = reinterpret_cast<PDNS_MESSAGE_BUFFER>(replyBuffer.data());
+    DNS_HEADER *header = &response->MessageHead;
+    if (!header->IsResponse)
+        return DNS_ERROR_BAD_PACKET;        // not a reply
+
+    // Convert the byte order for the 16-bit quantities in the header, so
+    // DnsExtractRecordsFromMessage can parse the contents.
+    //header->Xid = qFromBigEndian(header->Xid);
+    header->QuestionCount = qFromBigEndian(header->QuestionCount);
+    header->AnswerCount = qFromBigEndian(header->AnswerCount);
+    header->NameServerCount = qFromBigEndian(header->NameServerCount);
+    header->AdditionalCount = qFromBigEndian(header->AdditionalCount);
+
+    results->QueryOptions = request->QueryOptions;
+    return DnsExtractRecordsFromMessage_W(response, replyBuffer.size(), &results->pQueryRecords);
+}
+
 void QDnsLookupRunnable::query(QDnsLookupReply *reply)
 {
     // Perform DNS query.
@@ -93,10 +147,12 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
         status = DnsQueryEx(&request, &results, nullptr);
         break;
     case QDnsLookup::DnsOverTls:
-        return reply->setError(QDnsLookup::ResolverError,
-                               QDnsLookup::tr("DNS over TLS not implemented"));
+        status = sendAlternate(this, reply, &request, &results);
+        break;
     }
 
+    if (status == DNS_STATUS(-1))
+        return;     // error already set in reply
     if (status >= DNS_ERROR_RCODE_FORMAT_ERROR && status <= DNS_ERROR_RCODE_LAST)
         return reply->makeDnsRcodeError(status - DNS_ERROR_RCODE_FORMAT_ERROR + 1);
     else if (status == ERROR_TIMEOUT)

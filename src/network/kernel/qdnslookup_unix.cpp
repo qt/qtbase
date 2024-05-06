@@ -6,6 +6,7 @@
 
 #include <qendian.h>
 #include <qscopedpointer.h>
+#include <qspan.h>
 #include <qurl.h>
 #include <qvarlengtharray.h>
 #include <private/qnativesocketengine_p.h>      // for setSockAddr
@@ -32,15 +33,13 @@ QT_REQUIRE_CONFIG(libresolv);
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
-
-// minimum IPv6 MTU (1280) minus the IPv6 (40) and UDP headers (8)
-static constexpr qsizetype ReplyBufferSize = 1280 - 40 - 8;
+using ReplyBuffer = QDnsLookupRunnable::ReplyBuffer;
 
 // https://www.rfc-editor.org/rfc/rfc6891
 static constexpr unsigned char Edns0Record[] = {
     0x00,                                           // root label
     T_OPT >> 8, T_OPT & 0xff,                       // type OPT
-    ReplyBufferSize >> 8, ReplyBufferSize & 0xff,   // payload size
+    ReplyBuffer::PreallocatedSize >> 8, ReplyBuffer::PreallocatedSize & 0xff,   // payload size
     NOERROR,                                        // extended rcode
     0,                                              // version
     0x00, 0x00,                                     // flags
@@ -153,40 +152,19 @@ prepareQueryBuffer(res_state state, QueryBuffer &buffer, const char *label, ns_r
     return queryLength + sizeof(Edns0Record);
 }
 
-void QDnsLookupRunnable::query(QDnsLookupReply *reply)
+static int sendStandardDns(QDnsLookupReply *reply, res_state state, QSpan<unsigned char> qbuffer,
+                           ReplyBuffer &buffer, const QHostAddress &nameserver, quint16 port)
 {
-    if (protocol != QDnsLookup::Standard)
-        return reply->setError(QDnsLookup::ResolverError,
-                               QDnsLookup::tr("DNS over TLS not implemented"));
-
-    // Initialize state.
-    std::remove_pointer_t<res_state> state = {};
-    if (res_ninit(&state) < 0) {
-        int error = errno;
-        qErrnoWarning(error, "QDnsLookup: Resolver initialization failed");
-        return reply->makeResolverSystemError(error);
-    }
-    auto guard = qScopeGuard([&] { res_nclose(&state); });
-
     //Check if a nameserver was set. If so, use it
-    if (!applyNameServer(&state, nameserver, port))
-        return reply->setError(QDnsLookup::ResolverError,
-                               QDnsLookup::tr("IPv6 nameservers are currently not supported on this OS"));
-#ifdef QDNSLOOKUP_DEBUG
-    state.options |= RES_DEBUG;
-#endif
+    if (!applyNameServer(state, nameserver, port)) {
+        reply->setError(QDnsLookup::ResolverError,
+                        QDnsLookup::tr("IPv6 nameservers are currently not supported on this OS"));
+        return -1;
+    }
 
-    // Prepare the DNS query.
-    QueryBuffer qbuffer;
-    int queryLength = prepareQueryBuffer(&state, qbuffer, requestName.constData(), ns_rcode(requestType));
-    if (Q_UNLIKELY(queryLength < 0))
-        return reply->makeResolverSystemError();
-
-    // Perform DNS query.
-    QVarLengthArray<unsigned char, ReplyBufferSize> buffer(ReplyBufferSize);
     auto attemptToSend = [&]() {
         std::memset(buffer.data(), 0, HFIXEDSZ);        // the header is enough
-        int responseLength = res_nsend(&state, qbuffer.data(), queryLength, buffer.data(), buffer.size());
+        int responseLength = res_nsend(state, qbuffer.data(), qbuffer.size(), buffer.data(), buffer.size());
         if (responseLength >= 0)
             return responseLength;  // success
 
@@ -206,10 +184,10 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
     };
 
     // strictly use UDP, we'll deal with truncated replies ourselves
-    state.options |= RES_IGNTC;
+    state->options |= RES_IGNTC;
     int responseLength = attemptToSend();
     if (responseLength < 0)
-        return;
+        return responseLength;
 
     // check if we need to use the virtual circuit (TCP)
     auto header = reinterpret_cast<HEADER *>(buffer.data());
@@ -220,17 +198,56 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
 
         // remove the EDNS record in the query
         reinterpret_cast<HEADER *>(qbuffer.data())->arcount = 0;
-        queryLength -= sizeof(Edns0Record);
+        qbuffer = qbuffer.first(qbuffer.size() - sizeof(Edns0Record));
 
         // send using the virtual circuit
-        state.options |= RES_USEVC;
+        state->options |= RES_USEVC;
         responseLength = attemptToSend();
         if (Q_UNLIKELY(responseLength > buffer.size())) {
             // Ok, we give up.
-            return reply->setError(QDnsLookup::ResolverError,
-                                   QDnsLookup::tr("Reply was too large"));
+            reply->setError(QDnsLookup::ResolverError, QDnsLookup::tr("Reply was too large"));
+            return -1;
         }
     }
+
+    return responseLength;
+}
+
+void QDnsLookupRunnable::query(QDnsLookupReply *reply)
+{
+    // Initialize state.
+    std::remove_pointer_t<res_state> state = {};
+    if (res_ninit(&state) < 0) {
+        int error = errno;
+        qErrnoWarning(error, "QDnsLookup: Resolver initialization failed");
+        return reply->makeResolverSystemError(error);
+    }
+    auto guard = qScopeGuard([&] { res_nclose(&state); });
+
+#ifdef QDNSLOOKUP_DEBUG
+    state.options |= RES_DEBUG;
+#endif
+
+    // Prepare the DNS query.
+    QueryBuffer qbuffer;
+    int queryLength = prepareQueryBuffer(&state, qbuffer, requestName.constData(), ns_rcode(requestType));
+    if (Q_UNLIKELY(queryLength < 0))
+        return reply->makeResolverSystemError();
+
+    // Perform DNS query.
+    ReplyBuffer buffer(ReplyBufferSize);
+    int responseLength = -1;
+    switch (protocol) {
+    case QDnsLookup::Standard:
+        responseLength = sendStandardDns(reply, &state, qbuffer, buffer, nameserver, port);
+        break;
+    case QDnsLookup::DnsOverTls:
+        if (!sendDnsOverTls(reply, qbuffer, buffer))
+            return;
+        responseLength = buffer.size();
+        break;
+    }
+
     if (responseLength < 0)
         return;
 
@@ -239,6 +256,7 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
         return reply->makeInvalidReplyError();
 
     // Parse the reply.
+    auto header = reinterpret_cast<HEADER *>(buffer.data());
     if (header->rcode)
         return reply->makeDnsRcodeError(header->rcode);
 

@@ -8,13 +8,21 @@
 #include <qapplicationstatic.h>
 #include <qcoreapplication.h>
 #include <qdatetime.h>
+#include <qendian.h>
 #include <qloggingcategory.h>
 #include <qrandom.h>
+#include <qspan.h>
 #include <qurl.h>
+
+#if QT_CONFIG(ssl)
+#  include <qsslsocket.h>
+#endif
 
 #include <algorithm>
 
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::StringLiterals;
 
 static Q_LOGGING_CATEGORY(lcDnsLookup, "qt.network.dnslookup", QtCriticalMsg)
 
@@ -261,6 +269,10 @@ bool QDnsLookup::isProtocolSupported(Protocol protocol)
     case QDnsLookup::Standard:
         return true;
     case QDnsLookup::DnsOverTls:
+#  if QT_CONFIG(ssl)
+        if (QSslSocket::supportsSsl())
+            return true;
+#  endif
         return false;
     }
 #else
@@ -658,7 +670,8 @@ QList<QDnsTextRecord> QDnsLookup::textRecords() const
 */
 void QDnsLookup::setSslConfiguration(const QSslConfiguration &sslConfiguration)
 {
-    Q_UNUSED(sslConfiguration)
+    Q_D(QDnsLookup);
+    d->sslConfiguration.emplace(sslConfiguration);
 }
 
 /*!
@@ -668,7 +681,8 @@ void QDnsLookup::setSslConfiguration(const QSslConfiguration &sslConfiguration)
 */
 QSslConfiguration QDnsLookup::sslConfiguration() const
 {
-    return {};
+    const Q_D(QDnsLookup);
+    return d->sslConfiguration.value_or(QSslConfiguration::defaultConfiguration());
 }
 #endif
 
@@ -1290,6 +1304,82 @@ inline QDebug operator<<(QDebug &d, QDnsLookupRunnable *r)
     }
     return d;
 }
+
+#if QT_CONFIG(ssl)
+static constexpr std::chrono::milliseconds DnsOverTlsConnectTimeout(15'000);
+static constexpr std::chrono::milliseconds DnsOverTlsTimeout(120'000);
+
+static int makeReplyErrorFromSocket(QDnsLookupReply *reply, const QAbstractSocket *socket)
+{
+    QDnsLookup::Error error = [&] {
+        switch (socket->error()) {
+        case QAbstractSocket::SocketTimeoutError:
+        case QAbstractSocket::ProxyConnectionTimeoutError:
+            return QDnsLookup::TimeoutError;
+        default:
+            return QDnsLookup::ResolverError;
+        }
+    }();
+    reply->setError(error, socket->errorString());
+    return false;
+}
+
+bool QDnsLookupRunnable::sendDnsOverTls(QDnsLookupReply *reply, QSpan<unsigned char> query,
+                                        ReplyBuffer &response)
+{
+    QSslSocket socket;
+    socket.setSslConfiguration(sslConfiguration.value_or(QSslConfiguration::defaultConfiguration()));
+
+#  if QT_CONFIG(networkproxy)
+    socket.setProtocolTag("domain-s"_L1);
+#  endif
+
+    do {
+        quint16 size = qToBigEndian<quint16>(query.size());
+        QDeadlineTimer timeout(DnsOverTlsTimeout);
+
+        socket.connectToHostEncrypted(nameserver.toString(), port);
+        socket.write(reinterpret_cast<const char *>(&size), sizeof(size));
+        socket.write(reinterpret_cast<const char *>(query.data()), query.size());
+        if (!socket.waitForEncrypted(DnsOverTlsConnectTimeout.count()))
+            break;
+
+        reply->sslConfiguration = socket.sslConfiguration();
+
+        // accumulate reply
+        auto waitForBytes = [&](void *buffer, int count) {
+            int remaining = timeout.remainingTime();
+            while (remaining >= 0 && socket.bytesAvailable() < count) {
+                if (!socket.waitForReadyRead(remaining))
+                    return false;
+            }
+            return socket.read(static_cast<char *>(buffer), count) == count;
+        };
+        if (!waitForBytes(&size, sizeof(size)))
+            break;
+
+        // note: strictly speaking, we're allocating memory based on untrusted data
+        // but in practice, due to limited range of the data type (16 bits),
+        // the maximum allocation is small.
+        size = qFromBigEndian(size);
+        response.resize(size);
+        if (waitForBytes(response.data(), size))
+            return true;
+    } while (false);
+
+    // handle errors
+    return makeReplyErrorFromSocket(reply, &socket);
+}
+#else
+bool QDnsLookupRunnable::sendDnsOverTls(QDnsLookupReply *reply, QSpan<unsigned char> query,
+                                        ReplyBuffer &response)
+{
+    Q_UNUSED(query)
+    Q_UNUSED(response)
+    reply->setError(QDnsLookup::ResolverError, QDnsLookup::tr("SSL/TLS support not present"));
+    return false;
+}
+#endif
 
 QT_END_NAMESPACE
 

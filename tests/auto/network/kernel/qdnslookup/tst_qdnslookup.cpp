@@ -13,6 +13,13 @@
 #include <QtNetwork/QNetworkDatagram>
 #include <QtNetwork/QUdpSocket>
 
+#if QT_CONFIG(networkproxy)
+#  include <QtNetwork/QNetworkProxyFactory>
+#endif
+#if QT_CONFIG(ssl)
+#  include <QtNetwork/QSslSocket>
+#endif
+
 #ifdef Q_OS_UNIX
 #  include <QtCore/QFile>
 #else
@@ -135,9 +142,57 @@ static QList<QHostAddress> globalPublicNameservers(QDnsLookup::Protocol proto)
         //"9.9.9.9", "2620:fe::9",
     };
 
+    auto udpSendAndReceive = [](const QHostAddress &addr, QByteArray &data) {
+        QUdpSocket socket;
+        socket.connectToHost(addr, 53);
+        if (socket.waitForConnected(1))
+            socket.write(data);
+
+        if (!socket.waitForReadyRead(1000))
+            return socket.errorString();
+
+        QNetworkDatagram dgram = socket.receiveDatagram();
+        if (!dgram.isValid())
+            return socket.errorString();
+
+        data = dgram.data();
+        return QString();
+    };
+
+    auto tlsSendAndReceive = [](const QHostAddress &addr, QByteArray &data) {
+#if QT_CONFIG(ssl)
+        QSslSocket socket;
+        QDeadlineTimer timeout(2000);
+        socket.connectToHostEncrypted(addr.toString(), 853);
+        if (!socket.waitForEncrypted(2000))
+            return socket.errorString();
+
+        quint16 size = qToBigEndian<quint16>(data.size());
+        socket.write(reinterpret_cast<char *>(&size), sizeof(size));
+        socket.write(data);
+
+        if (!socket.waitForReadyRead(timeout.remainingTime()))
+            return socket.errorString();
+        if (socket.bytesAvailable() < 2)
+            return u"protocol error"_s;
+
+        socket.read(reinterpret_cast<char *>(&size), sizeof(size));
+        size = qFromBigEndian(size);
+
+        while (socket.bytesAvailable() < size) {
+            int remaining = timeout.remainingTime();
+            if (remaining < 0 || !socket.waitForReadyRead(remaining))
+                return socket.errorString();
+        }
+
+        data = socket.readAll();
+        return QString();
+#else
+        return u"SSL/TLS support not compiled in"_s;
+#endif
+    };
+
     QList<QHostAddress> result;
-    if (proto != QDnsLookup::Standard)
-        return result;
     QRandomGenerator &rng = *QRandomGenerator::system();
     for (auto name : candidates) {
         // check the candidates for reachability
@@ -147,23 +202,18 @@ static QList<QHostAddress> globalPublicNameservers(QDnsLookup::Protocol proto)
         char *ptr = data.data();
         qToBigEndian(id, ptr);
 
-        QUdpSocket socket;
-        socket.connectToHost(addr, 53);
-        if (socket.waitForConnected(1))
-            socket.write(data);
-
-        if (!socket.waitForReadyRead(1000)) {
-            qDebug() << addr << "discarded:" << socket.errorString();
+        QString errorString = [&] {
+            switch (proto) {
+            case QDnsLookup::Standard:      return udpSendAndReceive(addr, data);
+            case QDnsLookup::DnsOverTls:    return tlsSendAndReceive(addr, data);
+            }
+            Q_UNREACHABLE();
+        }();
+        if (!errorString.isEmpty()) {
+            qDebug() << addr << "discarded:" << errorString;
             continue;
         }
 
-        QNetworkDatagram dgram = socket.receiveDatagram();
-        if (!dgram.isValid()) {
-            qDebug() << addr << "discarded:" << socket.errorString();
-            continue;
-        }
-
-        data = dgram.data();
         ptr = data.data();
         if (data.size() < HeaderSize) {
             qDebug() << addr << "discarded: reply too small";
@@ -190,6 +240,11 @@ void tst_QDnsLookup::initTestCase()
 {
     if (qgetenv("QTEST_ENVIRONMENT") == "ci")
         dnsServersMustWork = true;
+
+#if QT_CONFIG(networkproxy)
+    // for DNS-over-TLS
+    QNetworkProxyFactory::setUseSystemConfiguration(true);
+#endif
 }
 
 QString tst_QDnsLookup::domainName(const QString &input)
