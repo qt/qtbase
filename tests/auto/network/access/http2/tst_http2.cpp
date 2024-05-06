@@ -1211,7 +1211,7 @@ void tst_Http2::unsupportedAuthenticateChallenge()
 
     bool authenticationRequested = false;
     connect(manager.get(), &QNetworkAccessManager::authenticationRequired, reply.get(),
-            [&](QNetworkReply *, QAuthenticator *auth) {
+            [&](QNetworkReply *, QAuthenticator *) {
                 authenticationRequested = true;
             });
 
