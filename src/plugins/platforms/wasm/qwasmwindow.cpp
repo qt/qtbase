@@ -128,9 +128,8 @@ QWasmWindow::QWasmWindow(QWindow *w, QWasmDeadKeySupport *deadKeySupport,
     });
 
    emscripten::val keyFocusWindow;
-    if (QWasmIntegration::get()->inputContext()) {
-        QWasmInputContext *wasmContext =
-            static_cast<QWasmInputContext *>(QWasmIntegration::get()->inputContext());
+    if (QWasmInputContext *wasmContext =
+       qobject_cast<QWasmInputContext *>(QWasmIntegration::get()->inputContext())) {
         // if there is an touchscreen input context,
         // use that window for key input
         keyFocusWindow = wasmContext->m_inputElement;
