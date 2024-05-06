@@ -17,7 +17,7 @@ QT_BEGIN_NAMESPACE
 
 template <typename T> class QJniArray;
 template <typename T>
-struct QJniArrayIterator
+struct QT_TECH_PREVIEW_API QJniArrayIterator
 {
     QJniArrayIterator() = default;
 
@@ -85,7 +85,7 @@ private:
     {}
 };
 
-class QJniArrayBase
+class QT_TECH_PREVIEW_API QJniArrayBase
 {
     // for SFINAE'ing out the fromContainer named constructor
     template <typename Container, typename = void> struct CanConvertHelper : std::false_type {};
@@ -190,7 +190,7 @@ private:
 };
 
 template <typename T>
-class QJniArray : public QJniArrayBase
+class QT_TECH_PREVIEW_API QJniArray : public QJniArrayBase
 {
     friend struct QJniArrayIterator<T>;
 public:

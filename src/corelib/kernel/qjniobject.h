@@ -668,7 +668,7 @@ inline bool operator!=(const QJniObject &obj1, const QJniObject &obj2)
 }
 
 namespace QtJniTypes {
-struct JObjectBase
+struct QT_TECH_PREVIEW_API JObjectBase
 {
     operator QJniObject() const { return m_object; }
 
@@ -693,7 +693,7 @@ protected:
 };
 
 template<typename Type>
-class JObject : public JObjectBase
+class QT_TECH_PREVIEW_API JObject : public JObjectBase
 {
 public:
     using Class = Type;
