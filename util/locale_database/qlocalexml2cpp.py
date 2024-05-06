@@ -65,10 +65,12 @@ class LocaleKeySorter:
         return (key[0], self.foreign(key)) + key[1:]
 
 class ByteArrayData:
+    # Only for use with ASCII data, e.g. IANA IDs.
     def __init__(self):
         self.data, self.hash = [], {}
 
     def append(self, s):
+        assert s.isascii(), s
         s += '\0'
         if s in self.hash:
             return self.hash[s]
@@ -83,7 +85,7 @@ class ByteArrayData:
     def write(self, out, name):
         out(f'\nstatic constexpr char {name}[] = {{\n')
         out(wrap_list(self.data, 16)) # 16 == 100 // len('0xhh, ')
-        # Will over-spill 100-col if some 4-digit hex show up, but none do (yet).
+        # All data is ASCII, so only two-digit hex is ever needed.
         out('\n};\n')
 
 class StringDataToken:
