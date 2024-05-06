@@ -81,7 +81,10 @@
 /*!
     \macro QT_NO_FOREACH
     \since 6.0
+    \relates <QtGlobal>
 
     Defining this macro removes the availability of Qt's \c foreach
     loop.
+
+    \sa QT_NO_KEYWORDS
 */
