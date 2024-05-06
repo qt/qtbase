@@ -93,6 +93,11 @@ public:
     \fn void QCheckBox::stateChanged(int state)
 
     \deprecated [6.9] Use checkStateChanged(Qt::CheckState) instead.
+
+    This signal is emitted whenever the checkbox's state changes, i.e.,
+    whenever the user checks or unchecks it.
+
+    \a state contains the checkbox's new Qt::CheckState.
 */
 
 /*!
