@@ -510,7 +510,7 @@ QFile::moveToTrash()
     \since 5.15
     \overload
 
-    Moves the file specified by fileName() to the trash. Returns \c true if successful,
+    Moves the file specified by \a fileName to the trash. Returns \c true if successful,
     and sets \a pathInTrash (if provided) to the path at which the file can be found within
     the trash; otherwise returns \c false.
 
