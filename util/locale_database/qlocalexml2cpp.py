@@ -89,38 +89,39 @@ class ByteArrayData:
         out('\n};\n')
 
 class StringDataToken:
-    def __init__(self, index, length, bits):
-        if index > 0xffff:
-            raise ValueError(f'Start-index ({index}) exceeds the uint16 range!')
-        if length >= (1 << bits):
-            raise ValueError(f'Data size ({length}) exceeds the {bits}-bit range!')
+    def __init__(self, index, length, lenbits, indbits):
+        if index >= (1 << indbits):
+            raise ValueError(f'Start-index ({index}) exceeds the {indbits}-bit range!')
+        if length >= (1 << lenbits):
+            raise ValueError(f'Data size ({length}) exceeds the {lenbits}-bit range!')
 
         self.index = index
         self.length = length
 
 class StringData:
-    def __init__(self, name):
+    def __init__(self, name, lenbits = 8, indbits = 16):
         self.data = []
         self.hash = {}
         self.name = name
         self.text = '' # Used in quick-search for matches in data
+        self.__bits = lenbits, indbits
 
-    def append(self, s, bits = 8):
+    def append(self, s):
         try:
             token = self.hash[s]
         except KeyError:
-            token = self.__store(s, bits)
+            token = self.__store(s)
             self.hash[s] = token
         return token
 
-    def __store(self, s, bits):
+    def __store(self, s):
         """Add string s to known data.
 
         Seeks to avoid duplication, where possible.
         For example, short-forms may be prefixes of long-forms.
         """
         if not s:
-            return StringDataToken(0, 0, bits)
+            return StringDataToken(0, 0, *self.__bits)
         ucs2 = unicode2hex(s)
         try:
             index = self.text.index(s) - 1
@@ -138,14 +139,16 @@ class StringData:
 
         assert index >= 0
         try:
-            return StringDataToken(index, len(ucs2), bits)
+            return StringDataToken(index, len(ucs2), *self.__bits)
         except ValueError as e:
             e.args += (self.name, s)
             raise
 
     def write(self, fd):
-        if len(self.data) > 0xffff:
-            raise ValueError(f'Data is too big ({len(self.data)}) for quint16 index to its end!',
+        indbits = self.__bits[1]
+        if len(self.data) >= (1 << indbits):
+            raise ValueError(f'Data is too big ({len(self.data)}) '
+                             f'for {indbits}-bit index to its end!',
                              self.name)
         fd.write(f"\nstatic constexpr char16_t {self.name}[] = {{\n")
         fd.write(wrap_list(self.data, 12)) # 12 == 100 // len('0xhhhh, ')
@@ -541,7 +544,7 @@ class CalendarDataWriter (LocaleSourceEditor):
         + ','.join(('{:6d}',) * 3 + ('{:5d}',) * 6 + ('{:3d}',) * 6)
         + ' }},').format
     def write(self, calendar, locales, names):
-        months_data = StringData('months_data')
+        months_data = StringData('months_data', 16)
 
         self.writer.write('static constexpr QCalendarLocale locale_data[] = {\n')
         self.writer.write(
@@ -565,11 +568,10 @@ class CalendarDataWriter (LocaleSourceEditor):
             # Sequence of StringDataToken:
             try:
                 # Twelve long month names can add up to more than 256 (e.g. kde_TZ: 264)
-                ranges = (tuple(months_data.append(m[calendar], 16) for m in
-                                (locale.standaloneLongMonths, locale.longMonths)) +
-                          tuple(months_data.append(m[calendar]) for m in
-                                (locale.standaloneShortMonths, locale.shortMonths,
-                                 locale.standaloneNarrowMonths, locale.narrowMonths)))
+                ranges = tuple(months_data.append(m[calendar]) for m in
+                               (locale.standaloneLongMonths, locale.longMonths,
+                                locale.standaloneShortMonths, locale.shortMonths,
+                                locale.standaloneNarrowMonths, locale.narrowMonths))
             except ValueError as e:
                 e.args += (locale.language, locale.script, locale.territory)
                 raise
