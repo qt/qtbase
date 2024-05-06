@@ -11,6 +11,10 @@
 
 #include <new>
 
+#if 0
+#pragma qt_class(QApplicationStatic)
+#endif
+
 QT_BEGIN_NAMESPACE
 
 namespace QtGlobalStatic {
