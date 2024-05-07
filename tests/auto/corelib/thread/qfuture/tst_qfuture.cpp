@@ -4632,6 +4632,9 @@ void testWhenAllDifferentTypes()
 
 void tst_QFuture::whenAllDifferentTypes()
 {
+#ifdef Q_OS_VXWORKS
+    QSKIP("std::variant implementation on VxWorks 24.03 is broken and doesn't work with duplicated types");
+#endif
     using Futures = std::variant<QFuture<int>, QFuture<int>, QFuture<void>>;
     testWhenAllDifferentTypes<QList<Futures>>();
     if (QTest::currentTestFailed())
@@ -4841,6 +4844,9 @@ void tst_QFuture::whenAnyIteratorsWithFailed()
 
 void tst_QFuture::whenAnyDifferentTypes()
 {
+#ifdef Q_OS_VXWORKS
+    QSKIP("std::variant implementation on VxWorks 24.03 is broken and doesn't work with duplicated types");
+#endif
     QPromise<int> pInt1;
     QPromise<int> pInt2;
     QPromise<void> pVoid;
