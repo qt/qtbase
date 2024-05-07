@@ -3,6 +3,10 @@
 
 if(QT_FEATURE_localserver)
     add_subdirectory(qlocalsocket)
-    add_subdirectory(qtcpserver)
+endif()
+
+if(QT_FEATURE_udpsocket)
     add_subdirectory(qudpsocket)
 endif()
+
+add_subdirectory(qtcpserver)

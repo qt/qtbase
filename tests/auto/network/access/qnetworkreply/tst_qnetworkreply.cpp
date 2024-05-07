@@ -35,8 +35,10 @@
 
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QTcpSocket>
+#if QT_CONFIG(localserver)
 #include <QtNetwork/QLocalSocket>
 #include <QtNetwork/QLocalServer>
+#endif
 #include <QtNetwork/QHostInfo>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
@@ -44,14 +46,18 @@
 #include <QtNetwork/QAbstractNetworkCache>
 #include <QtNetwork/qauthenticator.h>
 #include <QtNetwork/qnetworkaccessmanager.h>
+#if QT_CONFIG(networkdiskcache)
 #include <QtNetwork/qnetworkdiskcache.h>
+#endif
 #include <QtNetwork/qnetworkrequest.h>
 #include <QtNetwork/qnetworkreply.h>
-#include <QtNetwork/QHttp1Configuration>
 #include <QtNetwork/qnetworkcookie.h>
 #include <QtNetwork/QNetworkCookieJar>
+#if QT_CONFIG(http)
 #include <QtNetwork/QHttpPart>
 #include <QtNetwork/QHttpMultiPart>
+#include <QtNetwork/QHttp1Configuration>
+#endif
 #include <QtNetwork/QNetworkProxyQuery>
 #if QT_CONFIG(ssl)
 #include <QtNetwork/qsslerror.h>
@@ -194,8 +200,10 @@ public:
     ~tst_QNetworkReply();
     QString runSimpleRequest(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
                              QNetworkReplyPtr &reply, const QByteArray &data = QByteArray());
+#if QT_CONFIG(http)
     QString runMultipartRequest(const QNetworkRequest &request, QNetworkReplyPtr &reply,
                                     QHttpMultiPart *multiPart, const QByteArray &verb);
+#endif
 
     QString runCustomRequest(const QNetworkRequest &request, QNetworkReplyPtr &reply,
                              const QByteArray &verb, QIODevice *data);
@@ -261,17 +269,21 @@ private Q_SLOTS:
     void putToHttp();
     void putToHttpSynchronous_data();
     void putToHttpSynchronous();
+#if QT_CONFIG(http)
     void putToHttpMultipart_data();
     void putToHttpMultipart();
+#endif
     void putWithoutBody();
     void putWithoutBody_data();
     void postToHttp_data();
     void postToHttp();
     void postToHttpSynchronous_data();
     void postToHttpSynchronous();
+#if QT_CONFIG(http)
     void postToHttpMultipart_data();
     void postToHttpMultipart();
     void multipartSkipIndices(); // QTBUG-32534
+#endif
     void postWithoutBody_data();
     void postWithoutBody();
 #if QT_CONFIG(ssl)
@@ -342,8 +354,10 @@ private Q_SLOTS:
     void ioPutToFileFromFile();
     void ioPutToFileFromSocket_data();
     void ioPutToFileFromSocket();
+#if QT_CONFIG(localserver)
     void ioPutToFileFromLocalSocket_data();
     void ioPutToFileFromLocalSocket();
+#endif
     void ioPutToFileFromProcess_data();
     void ioPutToFileFromProcess();
     void ioPutToFtpFromFile_data();
@@ -449,7 +463,9 @@ private Q_SLOTS:
     void ioGetFromHttpWithoutContentLength();
 
     void ioGetFromHttpBrokenChunkedEncoding();
+#if QT_CONFIG(http)
     void qtbug12908compressedHttpReply();
+#endif
     void compressedHttpReplyBrokenGzip();
 
     void getFromUnreachableIp();
@@ -468,7 +484,9 @@ private Q_SLOTS:
     void qtbug27161httpHeaderMayBeDamaged_data();
     void qtbug27161httpHeaderMayBeDamaged();
 
+#if QT_CONFIG(networkdiskcache)
     void qtbug28035browserDoesNotLoadQtProjectOrgCorrectly();
+#endif
 
     void qtbug45581WrongReplyStatusCode();
 
@@ -484,8 +502,10 @@ private Q_SLOTS:
     void varyingCacheExpiry_data();
     void varyingCacheExpiry();
 
+#if QT_CONFIG(http)
     void amountOfHttp1ConnectionsQtbug25280_data();
     void amountOfHttp1ConnectionsQtbug25280();
+#endif
 
     void dontInsertPartialContentIntoTheCache();
 
@@ -521,12 +541,16 @@ private Q_SLOTS:
     void ioHttpCookiesDuringRedirect();
     void ioHttpRedirect_data();
     void ioHttpRedirect();
+#if QT_CONFIG(networkdiskcache)
     void ioHttpRedirectWithCache();
+#endif
     void ioHttpRedirectFromLocalToRemote();
     void ioHttpRedirectPostPut_data();
     void ioHttpRedirectPostPut();
+#if QT_CONFIG(http)
     void ioHttpRedirectMultipartPost_data();
     void ioHttpRedirectMultipartPost();
+#endif
     void ioHttpRedirectDelete();
     void ioHttpRedirectCustom();
     void ioHttpRedirectWithUploadDevice_data();
@@ -540,16 +564,20 @@ private Q_SLOTS:
     void autoDeleteReplies_data();
     void autoDeleteReplies();
 
+#if QT_CONFIG(http) || defined (Q_OS_WASM)
     void requestWithTimeout_data();
     void requestWithTimeout();
+#endif
 
     void moreActivitySignals_data();
     void moreActivitySignals();
 
     void contentEncoding_data();
     void contentEncoding();
+#if QT_CONFIG(http)
     void contentEncodingBigPayload_data();
     void contentEncodingBigPayload();
+#endif
     void cacheWithContentEncoding_data();
     void cacheWithContentEncoding();
     void downloadProgressWithContentEncoding_data();
@@ -560,11 +588,13 @@ private Q_SLOTS:
     void notFoundWithCompression_data();
     void notFoundWithCompression();
 
+#if QT_CONFIG(http)
     void qhttpPartDebug_data();
     void qhttpPartDebug();
 
     void qtbug68821proxyError_data();
     void qtbug68821proxyError();
+#endif
 
     void abortAndError();
 
@@ -1440,6 +1470,7 @@ void tst_QNetworkReply::storeSslConfiguration()
 }
 #endif
 
+#if QT_CONFIG(http)
 QString tst_QNetworkReply::runMultipartRequest(const QNetworkRequest &request,
                                                    QNetworkReplyPtr &reply,
                                                    QHttpMultiPart *multiPart,
@@ -1471,6 +1502,7 @@ QString tst_QNetworkReply::runMultipartRequest(const QNetworkRequest &request,
     }
     return QString();
 }
+#endif
 
 QString tst_QNetworkReply::runSimpleRequest(QNetworkAccessManager::Operation op,
                                             const QNetworkRequest &request,
@@ -2805,6 +2837,7 @@ void tst_QNetworkReply::postToHttpSynchronous()
     QCOMPARE(uploadedData, md5sum.toHex());
 }
 
+#if QT_CONFIG(http)
 void tst_QNetworkReply::postToHttpMultipart_data()
 {
     QTest::addColumn<QUrl>("url");
@@ -3114,6 +3147,7 @@ void tst_QNetworkReply::multipartSkipIndices() // QTBUG-32534
     }
     multiPart->deleteLater();
 }
+#endif
 
 void tst_QNetworkReply::postWithoutBody_data()
 {
@@ -3156,6 +3190,7 @@ void tst_QNetworkReply::postWithoutBody()
     QCOMPARE(server.foundContentLength, client_data);
 }
 
+#if QT_CONFIG(http)
 void tst_QNetworkReply::putToHttpMultipart_data()
 {
     postToHttpMultipart_data();
@@ -3200,6 +3235,7 @@ void tst_QNetworkReply::putToHttpMultipart()
 //    QEXPECT_FAIL("nested", "the server does not understand nested multipart messages", Continue); // see above
     QCOMPARE(replyData, expectedReplyData);
 }
+#endif
 
 #if QT_CONFIG(ssl)
 void tst_QNetworkReply::putToHttps_data()
@@ -3367,6 +3403,7 @@ void tst_QNetworkReply::postToHttpsSynchronous()
     QCOMPARE(uploadedData, md5sum.toHex());
 }
 
+#if QT_CONFIG(http)
 void tst_QNetworkReply::postToHttpsMultipart_data()
 {
     if (isSecureTransport)
@@ -3417,7 +3454,7 @@ void tst_QNetworkReply::postToHttpsMultipart()
     expectedReplyData.prepend("content type: multipart/" + contentType + "; boundary=\"" + multiPart->boundary() + "\"\n");
     QCOMPARE(replyData, expectedReplyData);
 }
-
+#endif
 #endif // QT_CONFIG(ssl)
 
 void tst_QNetworkReply::deleteFromHttp_data()
@@ -4999,6 +5036,7 @@ void tst_QNetworkReply::ioPutToFileFromSocket()
     QCOMPARE(contents, data);
 }
 
+#if QT_CONFIG(localserver)
 void tst_QNetworkReply::ioPutToFileFromLocalSocket_data()
 {
     putToFile_data();
@@ -5042,6 +5080,7 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
     QByteArray contents = file.readAll();
     QCOMPARE(contents, data);
 }
+#endif
 
 // Currently no stdin/out supported for Windows CE.
 void tst_QNetworkReply::ioPutToFileFromProcess_data()
@@ -7492,6 +7531,7 @@ void tst_QNetworkReply::ioGetFromHttpBrokenChunkedEncoding()
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 }
 
+#if QT_CONFIG(http)
 // TODO:
 // Prepare a gzip that has one chunk that expands to the size mentioned in the bugreport.
 // Then have a custom HTTP server that waits after this chunk so the returning gets
@@ -7520,6 +7560,7 @@ void tst_QNetworkReply::qtbug12908compressedHttpReply()
     QCOMPARE(reply->size(), qint64(16384));
     QCOMPARE(reply->readAll(), QByteArray(16384, '\0'));
 }
+#endif
 
 void tst_QNetworkReply::compressedHttpReplyBrokenGzip()
 {
@@ -8046,6 +8087,7 @@ void tst_QNetworkReply::qtbug27161httpHeaderMayBeDamaged(){
     QCOMPARE(reply->readAll(), QByteArray("ABC"));
 }
 
+#if QT_CONFIG(networkdiskcache)
 void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QByteArray getReply =
             "HTTP/1.1 200\r\n"
@@ -8170,6 +8212,7 @@ void tst_QNetworkReply::qtbug28035browserDoesNotLoadQtProjectOrgCorrectly() {
     QCOMPARE(reply->readAll(), QByteArray("GET"));
     QCOMPARE(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool(), true);
 }
+#endif
 
 void tst_QNetworkReply::qtbug45581WrongReplyStatusCode()
 {
@@ -8555,6 +8598,7 @@ public:
     }
 };
 
+#if QT_CONFIG(http)
 void tst_QNetworkReply::amountOfHttp1ConnectionsQtbug25280_data()
 {
     QTest::addColumn<int>("amount");
@@ -8595,6 +8639,7 @@ void tst_QNetworkReply::amountOfHttp1ConnectionsQtbug25280()
     }
     QCOMPARE(server.receivedSockets.size(), amount);
 }
+#endif
 
 void tst_QNetworkReply::dontInsertPartialContentIntoTheCache()
 {
@@ -9363,6 +9408,7 @@ void tst_QNetworkReply::ioHttpRedirect()
     QVERIFY(validateRedirectedResponseHeaders(reply));
 }
 
+#if QT_CONFIG(networkdiskcache)
 /*
     Test that, if we load a redirect from cache, we don't treat the request to
     the destination of the redirect as a redirect.
@@ -9420,6 +9466,7 @@ void tst_QNetworkReply::ioHttpRedirectWithCache()
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
     QVERIFY(validateRedirectedResponseHeaders(reply));
 }
+#endif
 
 void tst_QNetworkReply::ioHttpRedirectFromLocalToRemote()
 {
@@ -9514,6 +9561,7 @@ void tst_QNetworkReply::ioHttpRedirectPostPut()
     QCOMPARE(reply->readAll().trimmed(), md5sum(data).toHex());
 }
 
+#if QT_CONFIG(http)
 void tst_QNetworkReply::ioHttpRedirectMultipartPost_data()
 {
     postToHttpMultipart_data();
@@ -9574,6 +9622,7 @@ void tst_QNetworkReply::ioHttpRedirectMultipartPost()
 //    QEXPECT_FAIL("nested", "the server does not understand nested multipart messages", Continue); // see above
     QCOMPARE(replyData, expectedReplyData);
 }
+#endif
 
 void tst_QNetworkReply::ioHttpRedirectDelete()
 {
@@ -10015,6 +10064,7 @@ void tst_QNetworkReply::autoDeleteReplies()
     }
 }
 
+#if QT_CONFIG(http) || defined (Q_OS_WASM)
 void tst_QNetworkReply::requestWithTimeout_data()
 {
     using Operation = QNetworkAccessManager::Operation;
@@ -10074,6 +10124,7 @@ void tst_QNetworkReply::requestWithTimeout()
     QCOMPARE(spy.size(), 1);
     QCOMPARE(reply->error(), QNetworkReply::OperationCanceledError);
 }
+#endif
 
 void tst_QNetworkReply::moreActivitySignals_data()
 {
@@ -10246,6 +10297,7 @@ void tst_QNetworkReply::contentEncoding()
     }
 }
 
+#if QT_CONFIG(http)
 void tst_QNetworkReply::contentEncodingBigPayload_data()
 {
     QTest::addColumn<QByteArray>("encoding");
@@ -10304,6 +10356,7 @@ void tst_QNetworkReply::contentEncodingBigPayload()
     }
     QCOMPARE(total, expectedSize);
 }
+#endif
 
 void tst_QNetworkReply::cacheWithContentEncoding_data()
 {
@@ -10486,6 +10539,7 @@ void tst_QNetworkReply::notFoundWithCompression()
     QCOMPARE(reply->readAll(), expected);
 }
 
+#if QT_CONFIG(http)
 void tst_QNetworkReply::qhttpPartDebug_data()
 {
     QTest::addColumn<QByteArray>("header_data");
@@ -10587,6 +10641,7 @@ void tst_QNetworkReply::qtbug68821proxyError()
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).at(0), error);
 }
+#endif
 
 void tst_QNetworkReply::abortAndError()
 {

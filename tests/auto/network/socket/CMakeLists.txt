@@ -14,10 +14,13 @@ add_subdirectory(qabstractsocket)
 if(QT_FEATURE_localserver AND NOT ANDROID)
     # QTBUG-87387
     add_subdirectory(qlocalsocket)
+endif()
 
+if(QT_FEATURE_networkinterface AND NOT ANDROID)
     # QTBUG-87388
     add_subdirectory(qtcpserver)
 endif()
+
 if(QT_FEATURE_sctp)
     add_subdirectory(qsctpsocket)
 endif()
