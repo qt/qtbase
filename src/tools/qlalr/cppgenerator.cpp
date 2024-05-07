@@ -1,5 +1,7 @@
+// REUSE-IgnoreStart
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// REUSE-IgnoreEnd
 
 #include "cppgenerator.h"
 
@@ -39,7 +41,7 @@ void generateList(const QList<int> &list, QTextStream &out)
 }
 
 }
-
+// REUSE-IgnoreStart
 QString CppGenerator::copyrightHeader() const
 {
   return
@@ -47,6 +49,7 @@ QString CppGenerator::copyrightHeader() const
     "// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0\n"
     "\n"_L1;
 }
+// REUSE-IgnoreEnd
 
 QString CppGenerator::privateCopyrightHeader() const
 {
