@@ -1422,7 +1422,7 @@ void tst_QDBusConnection::connectionLimit()
 
     QProcess daemon;
     daemon.start("dbus-daemon",
-                 QStringList() << "--config-file" << QFINDTESTDATA("tst_qdbusconnection.conf")
+                 QStringList() << "--config-file" << QFINDTESTDATA("../qdbusconnection/tst_qdbusconnection.conf")
                                << "--nofork"
                                << "--print-address");
     QVERIFY2(daemon.waitForReadyRead(2000),
