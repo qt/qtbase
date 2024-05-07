@@ -5253,8 +5253,9 @@ QString QString::section(const QRegularExpression &re, qsizetype start, qsizetyp
     \fn QString QString::left(qsizetype n) const &
     \fn QString QString::left(qsizetype n) &&
 
-    Returns a substring that contains the \a n leftmost characters
-    of the string.
+    Returns a substring that contains the \a n leftmost characters of
+    this string (that is, from the beginning of this string up to, but not
+    including, the element at index position \a n).
 
     If you know that \a n cannot be out of bounds, use first() instead in new
     code, because it is faster.
@@ -5285,8 +5286,9 @@ QString QString::section(const QRegularExpression &re, qsizetype start, qsizetyp
     \fn QString QString::mid(qsizetype position, qsizetype n) const &
     \fn QString QString::mid(qsizetype position, qsizetype n) &&
 
-    Returns a string that contains \a n characters of this string,
-    starting at the specified \a position index.
+    Returns a string that contains \a n characters of this string, starting
+    at the specified \a position index up to, but not including, the element
+    at index position \c {\a position + n}.
 
     If you know that \a position and \a n cannot be out of bounds, use sliced()
     instead in new code, because it is faster.
@@ -5341,8 +5343,9 @@ QString QString::mid(qsizetype position, qsizetype n) &&
     \fn QString QString::first(qsizetype n) &&
     \since 6.0
 
-    Returns a string that contains the first \a n characters
-    of this string.
+    Returns a string that contains the first \a n characters of this string,
+    (that is, from the beginning of this string up to, but not including,
+    the element at index position \a n).
 
     \note The behavior is undefined when \a n < 0 or \a n > size().
 
@@ -5370,8 +5373,9 @@ QString QString::mid(qsizetype position, qsizetype n) &&
     \fn QString QString::sliced(qsizetype pos, qsizetype n) &&
     \since 6.0
 
-    Returns a string that contains \a n characters of this string,
-    starting at position \a pos.
+    Returns a string that contains \a n characters of this string, starting
+    at position \a pos up to, but not including, the element at index position
+    \c {\a pos + n}.
 
     \note The behavior is undefined when \a pos < 0, \a n < 0,
     or \a pos + \a n > size().
@@ -5407,8 +5411,9 @@ QString QString::sliced_helper(QString &str, qsizetype pos, qsizetype n)
     \fn QString &QString::slice(qsizetype pos, qsizetype n)
     \since 6.8
 
-    Modifies this string to start at position \a pos, extending for \a n
-    characters (code points), and returns a reference to this string.
+    Modifies this string to start at position \a pos, up to, but not including,
+    the character (code point) at index position \c {\a pos + n}; and returns
+    a reference to this string.
 
     \note The behavior is undefined if \a pos < 0, \a n < 0,
     or \a pos + \a n > size().
@@ -6304,7 +6309,8 @@ QString QString::trimmed_helper(QString &str)
 /*!
     \fn void QString::truncate(qsizetype position)
 
-    Truncates the string at the given \a position index.
+    Truncates the string starting from, and including, the element at index
+    \a position.
 
     If the specified \a position index is beyond the end of the
     string, nothing happens.
