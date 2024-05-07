@@ -393,6 +393,8 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
                 return reply->makeInvalidReplyError(QDnsLookup::tr("Invalid mail exchange record"));
             reply->mailExchangeRecords.append(record);
         } else if (type == QDnsLookup::SRV) {
+            if (size < 7)
+                return reply->makeInvalidReplyError(QDnsLookup::tr("Invalid service record"));
             const quint16 priority = qFromBigEndian<quint16>(response + offset);
             const quint16 weight = qFromBigEndian<quint16>(response + offset + 2);
             const quint16 port = qFromBigEndian<quint16>(response + offset + 4);
