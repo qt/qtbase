@@ -523,6 +523,34 @@ QString QLibraryInfo::path(LibraryPath p)
 }
 
 
+static QString normalizePath(QString ret)
+{
+    qsizetype startIndex = 0;
+    /* We support placeholders of the form $(<ENV_VAR>) in qt.conf.
+       The loop below tries to find all such placeholders, and replaces
+       them with the actual value of the ENV_VAR environment variable
+     */
+    while (true) {
+        startIndex = ret.indexOf(u'$', startIndex);
+        if (startIndex < 0)
+            break;
+        if (ret.size() < startIndex + 3)
+            break;
+        if (ret.at(startIndex + 1) != u'(') {
+            startIndex++;
+            continue;
+        }
+        qsizetype endIndex = ret.indexOf(u')', startIndex + 2);
+        if (endIndex < 0)
+            break;
+        auto envVarName = QStringView{ret}.sliced(startIndex + 2, endIndex - startIndex - 2);
+        QString value = qEnvironmentVariable(envVarName.toLocal8Bit().constData());
+        ret.replace(startIndex, endIndex - startIndex + 1, value);
+        startIndex += value.size();
+    }
+    return QDir::fromNativeSeparators(ret);
+};
+
 /*
     Returns the path specified by \a p.
 
@@ -543,6 +571,7 @@ QString QLibraryInfoPrivate::path(QLibraryInfo::LibraryPath p, UsageMode usageMo
             QSettings *config = QLibraryInfoPrivate::configuration();
             Q_ASSERT(config != nullptr);
             config->beginGroup("Paths"_L1);
+            auto cleanup = qScopeGuard([&]() { config->endGroup(); });
 
             if (li.fallbackKey.isNull()) {
                 ret = config->value(li.key, li.defaultValue).toString();
@@ -553,33 +582,7 @@ QString QLibraryInfoPrivate::path(QLibraryInfo::LibraryPath p, UsageMode usageMo
                 ret = v.toString();
             }
 
-            qsizetype startIndex = 0;
-            /* We support placeholders of the form $(<ENV_VAR>) in qt.conf.
-               The loop below tries to find all such placeholders, and replaces
-               them with the actual value of the ENV_VAR environment variable
-             */
-            while (true) {
-                startIndex = ret.indexOf(u'$', startIndex);
-                if (startIndex < 0)
-                    break;
-                if (ret.size() < startIndex + 3)
-                    break;
-                if (ret.at(startIndex + 1) != u'(') {
-                    startIndex++;
-                    continue;
-                }
-                qsizetype endIndex = ret.indexOf(u')', startIndex + 2);
-                if (endIndex < 0)
-                    break;
-                auto envVarName = QStringView{ret}.mid(startIndex + 2, endIndex - startIndex - 2);
-                QString value = QString::fromLocal8Bit(qgetenv(envVarName.toLocal8Bit().constData()));
-                ret.replace(startIndex, endIndex - startIndex + 1, value);
-                startIndex += value.size();
-            }
-
-            config->endGroup();
-
-            ret = QDir::fromNativeSeparators(ret);
+            ret = normalizePath(std::move(ret));
         }
     }
 #endif // settings
