@@ -551,6 +551,28 @@ static QString normalizePath(QString ret)
     return QDir::fromNativeSeparators(ret);
 };
 
+#if QT_CONFIG(settings)
+static QVariant libraryPathToValue(QLibraryInfo::LibraryPath loc)
+{
+    QVariant value;
+    auto li = QLibraryInfoPrivate::locationInfo(loc);
+    if (li.key.isNull())
+        return value;
+    QSettings *config = QLibraryInfoPrivate::configuration();
+    Q_ASSERT(config != nullptr);
+    config->beginGroup("Paths"_L1);
+    auto cleanup = qScopeGuard([&]() { config->endGroup(); });
+    if (li.fallbackKey.isNull()) {
+        value = config->value(li.key, li.defaultValue);
+    } else {
+        value = config->value(li.key);
+        if (!value.isValid())
+            value = config->value(li.fallbackKey, li.defaultValue);
+    }
+    return value;
+}
+#endif // settings
+
 /*
     Returns the path specified by \a p.
 
@@ -566,22 +588,9 @@ QString QLibraryInfoPrivate::path(QLibraryInfo::LibraryPath p, UsageMode usageMo
     if (havePaths()) {
         fromConf = true;
 
-        auto li = QLibraryInfoPrivate::locationInfo(loc);
-        if (!li.key.isNull()) {
-            QSettings *config = QLibraryInfoPrivate::configuration();
-            Q_ASSERT(config != nullptr);
-            config->beginGroup("Paths"_L1);
-            auto cleanup = qScopeGuard([&]() { config->endGroup(); });
-
-            if (li.fallbackKey.isNull()) {
-                ret = config->value(li.key, li.defaultValue).toString();
-            } else {
-                QVariant v = config->value(li.key);
-                if (!v.isValid())
-                    v = config->value(li.fallbackKey, li.defaultValue);
-                ret = v.toString();
-            }
-
+        QVariant value = libraryPathToValue(loc);
+        if (value.isValid()) {
+            ret = std::move(value).toString();
             ret = normalizePath(std::move(ret));
         }
     }
