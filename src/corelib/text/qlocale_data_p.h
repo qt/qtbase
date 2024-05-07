@@ -78,7 +78,7 @@ struct LanguageCodeEntry {
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2024-04-04 from the
+    This part of the file was generated on 2024-05-07 from the
     Common Locale Data Repository v44.1
 
     http://www.unicode.org/cldr/
@@ -1048,7 +1048,7 @@ static constexpr QLocaleId likely_subtags[] = {
     {   0, 138,   0 }, { 302, 138, 227 }, // und_Ugar -> uga_Ugar_SY
     {   0, 139,   0 }, { 308, 139, 134 }, // und_Vaii -> vai_Vaii_LR
     {   0, 141,   0 }, { 255, 141,  50 }, // und_Yiii -> ii_Yiii_CN
-    {   0, 142,   0 }, { 339, 142, 161 }  // und_Rohg -> rhg_Rohg_MM
+    {   0, 142,   0 }, { 339, 142, 161 }, // und_Rohg -> rhg_Rohg_MM
 };
 
 static constexpr quint16 locale_index[] = {

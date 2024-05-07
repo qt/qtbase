@@ -268,25 +268,11 @@ class TimeZoneDataWriter (LocaleSourceEditor):
 
 class LocaleDataWriter (LocaleSourceEditor):
     def likelySubtags(self, likely):
-        # First sort likely, so that we can use binary search in C++
-        # code. Although the entries are (lang, script, region), sort
-        # as (lang, region, script) and sort 0 after all non-zero
-        # values. This ensures that, when several mappings partially
-        # match a requested locale, the one we should prefer to use
-        # appears first.
-        huge = 0x10000 # > any ushort; all tag values are ushort
-        def keyLikely(entry):
-            have = entry[1] # Numeric id triple
-            return have[0] or huge, have[2] or huge, have[1] or huge # language, region, script
-        likely = sorted(likely, key=keyLikely)
-
-        i = 0
+        # Sort order of likely is taken care of upstream.
         self.writer.write('static constexpr QLocaleId likely_subtags[] = {\n')
         for had, have, got, give in likely:
-            i += 1
             self.writer.write('    {{ {:3d}, {:3d}, {:3d} }}'.format(*have))
-            self.writer.write(', {{ {:3d}, {:3d}, {:3d} }}'.format(*give))
-            self.writer.write(' ' if i == len(likely) else ',')
+            self.writer.write(', {{ {:3d}, {:3d}, {:3d} }},'.format(*give))
             self.writer.write(f' // {had} -> {got}\n')
         self.writer.write('};\n\n')
 

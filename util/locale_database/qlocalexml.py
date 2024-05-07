@@ -53,7 +53,7 @@ class QLocaleXmlReader (object):
         languages = tuple(self.__loadMap('language', language_map))
         scripts = tuple(self.__loadMap('script', script_map))
         territories = tuple(self.__loadMap('territory', territory_map))
-        self.__likely = tuple(self.__likelySubtagsMap())
+        self.__likely = tuple(self.__likelySubtagsMap()) # in enum name form
 
         # Mappings {ID: (enum name, code, en.xml name)}
         self.languages = {v[0]: v[1:] for v in languages}
@@ -137,9 +137,19 @@ class QLocaleXmlReader (object):
         def ids(t):
             return tuple(x[0] for x in t)
 
-        for pair in self.__likely:
-            have = self.__fromNames(pair[0])
-            give = self.__fromNames(pair[1])
+        def keyLikely(pair, kl=self.__keyLikely):
+            """Sort by IDs from first entry in pair
+
+            We're passed a pair (h, g) of triplets (lang, script, territory) of
+            pairs (ID, name); we extract the ID from each entry in the first
+            triplet, then hand that triplet of IDs off to __keyLikely()."""
+            return kl(tuple(x[0] for x in pair[0]))
+
+        # Sort self.__likely to enable binary search in C++ code.
+        for have, give in sorted(((self.__fromNames(has),
+                                   self.__fromNames(got))
+                                  for has, got in self.__likely),
+                                 key = keyLikely):
             yield ('_'.join(tag(have)), ids(have),
                    '_'.join(tag(give)), ids(give))
 
@@ -197,6 +207,11 @@ class QLocaleXmlReader (object):
             key = int(key)
             yield key, enum[key][0], code, name
 
+    def __fromNames(self, names):
+        # Three (ID, code) pairs:
+        return self.__langByName[names[0]], self.__textByName[names[1]], self.__landByName[names[2]]
+
+    # Likely subtag management:
     def __likelySubtagsMap(self):
         def triplet(element, keys=('language', 'script', 'territory'), kid = self.__firstChildText):
             return tuple(kid(element, key) for key in keys)
@@ -205,8 +220,21 @@ class QLocaleXmlReader (object):
         for elt in self.__eachEltInGroup(self.root, 'likelySubtags', 'likelySubtag'):
             yield triplet(kid(elt, "from")), triplet(kid(elt, "to"))
 
-    def __fromNames(self, names):
-        return self.__langByName[names[0]], self.__textByName[names[1]], self.__landByName[names[2]]
+    @staticmethod
+    def __keyLikely(key, huge=0x10000):
+        """Sort order key for a likely subtag key
+
+        Although the entries are (lang, script, region), sort by (lang, region,
+        script) and sort 0 after all non-zero values, in each position. This
+        ensures that, when several mappings partially match a requested locale,
+        the one we should prefer to use appears first.
+
+        We use 0x10000 as replacement for 0, as all IDs are unsigned short, so
+        less than 2^16."""
+        # Map zero to huge:
+        have = tuple(x or huge for x in key)
+        # Use language, territory, script for sort order:
+        return have[0], have[2], have[1]
 
     # DOM access:
     from xml.dom import minidom
