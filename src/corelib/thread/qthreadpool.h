@@ -9,7 +9,9 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qrunnable.h>
 
+#if QT_CORE_REMOVED_SINCE(6, 6)
 #include <functional>
+#endif
 
 QT_REQUIRE_CONFIG(thread);
 
