@@ -35,6 +35,7 @@ android {
      * Changing them manually might break the compilation!
      *******************************************************/
 
+    namespace androidPackageName
     compileSdkVersion androidCompileSdkVersion
     buildToolsVersion androidBuildToolsVersion
     ndkVersion androidNdkVersion

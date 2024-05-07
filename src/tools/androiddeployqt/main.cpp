@@ -731,6 +731,53 @@ bool copyFileIfNewer(const QString &sourceFileName,
     return true;
 }
 
+struct GradleBuildConfigs {
+    QString appNamespace;
+    bool setsLegacyPackaging = false;
+    bool usesIntegerCompileSdkVersion = false;
+};
+
+GradleBuildConfigs gradleBuildConfigs(const QString &path)
+{
+    GradleBuildConfigs configs;
+
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly))
+        return configs;
+
+    auto isComment = [](const QByteArray &trimmed) {
+        return trimmed.startsWith("//") || trimmed.startsWith('*') || trimmed.startsWith("/*");
+    };
+
+    auto extractValue = [](const QByteArray &trimmed) {
+        int idx = trimmed.indexOf('=');
+
+        if (idx == -1)
+            idx = trimmed.indexOf(' ');
+
+        if (idx > -1)
+            return trimmed.mid(idx + 1).trimmed();
+
+        return QByteArray();
+    };
+
+    const auto lines = file.readAll().split('\n');
+    for (const auto &line : lines) {
+        const QByteArray trimmedLine = line.trimmed();
+        if (isComment(trimmedLine))
+            continue;
+        if (trimmedLine.contains("useLegacyPackaging")) {
+            configs.setsLegacyPackaging = true;
+        } else if (trimmedLine.contains("compileSdkVersion androidCompileSdkVersion.toInteger()")) {
+            configs.usesIntegerCompileSdkVersion = true;
+        } else if (trimmedLine.contains("namespace")) {
+            configs.appNamespace = QString::fromUtf8(extractValue(trimmedLine));
+        }
+    }
+
+    return configs;
+}
+
 QString cleanPackageName(QString packageName)
 {
     auto isLegalChar = [] (QChar c) -> bool {
@@ -812,18 +859,28 @@ QString detectLatestAndroidPlatform(const QString &sdkPath)
     return latestPlatform.baseName();
 }
 
-QString packageNameFromAndroidManifest(const QString &androidManifestPath)
+QString extractPackageName(Options *options)
 {
-    QFile androidManifestXml(androidManifestPath);
+    QString packageName;
+    QFile androidManifestXml(options->androidSourceDirectory + "/AndroidManifest.xml"_L1);
     if (androidManifestXml.open(QIODevice::ReadOnly)) {
         QXmlStreamReader reader(&androidManifestXml);
         while (!reader.atEnd()) {
             reader.readNext();
             if (reader.isStartElement() && reader.name() == "manifest"_L1)
-                return cleanPackageName(reader.attributes().value("package"_L1).toString());
+                packageName = reader.attributes().value("package"_L1).toString();
         }
     }
-    return {};
+
+    if (packageName.isEmpty()) {
+        const QString gradleBuildFile = options->androidSourceDirectory + "/build.gradle"_L1;
+        packageName = gradleBuildConfigs(gradleBuildFile).appNamespace;
+    }
+
+    if (packageName.isEmpty() || packageName == "androidPackageName"_L1)
+        packageName = "org.qtproject.example.%1"_L1.arg(options->applicationBinary);
+
+    return cleanPackageName(packageName);
 }
 
 bool parseCmakeBoolean(const QJsonValue &value)
@@ -1278,9 +1335,7 @@ bool readInputFile(Options *options)
             options->isZstdCompressionEnabled = zstdCompressionFlag.toBool();
         }
     }
-    options->packageName = packageNameFromAndroidManifest(options->androidSourceDirectory + "/AndroidManifest.xml"_L1);
-    if (options->packageName.isEmpty())
-        options->packageName = cleanPackageName("org.qtproject.example.%1"_L1.arg(options->applicationBinary));
+    options->packageName = extractPackageName(options);
 
     return true;
 }
@@ -1735,13 +1790,7 @@ bool updateAndroidManifest(Options &options)
             reader.readNext();
 
             if (reader.isStartElement()) {
-                if (reader.name() == "manifest"_L1) {
-                    if (!reader.attributes().hasAttribute("package"_L1)) {
-                        fprintf(stderr, "Invalid android manifest file: %s\n", qPrintable(androidManifestPath));
-                        return false;
-                    }
-                    options.packageName = reader.attributes().value("package"_L1).toString();
-                } else if (reader.name() == "uses-sdk"_L1) {
+                if (reader.name() == "uses-sdk"_L1) {
                     if (reader.attributes().hasAttribute("android:minSdkVersion"_L1))
                         if (reader.attributes().value("android:minSdkVersion"_L1).toInt() < 23) {
                             fprintf(stderr, "Invalid minSdkVersion version, minSdkVersion must be >= 23\n");
@@ -2740,38 +2789,6 @@ void checkAndWarnGradleLongPaths(const QString &outputDirectory)
 }
 #endif
 
-struct GradleFlags {
-    bool setsLegacyPackaging = false;
-    bool usesIntegerCompileSdkVersion = false;
-};
-
-GradleFlags gradleBuildFlags(const QString &path)
-{
-    GradleFlags flags;
-
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly))
-        return flags;
-
-    auto isComment = [](const QByteArray &line) {
-        const auto trimmed = line.trimmed();
-        return trimmed.startsWith("//") || trimmed.startsWith('*') || trimmed.startsWith("/*");
-    };
-
-    const auto lines = file.readAll().split('\n');
-    for (const auto &line : lines) {
-        if (isComment(line))
-            continue;
-        if (line.contains("useLegacyPackaging")) {
-            flags.setsLegacyPackaging = true;
-        } else if (line.contains("compileSdkVersion androidCompileSdkVersion.toInteger()")) {
-            flags.usesIntegerCompileSdkVersion = true;
-        }
-    }
-
-    return flags;
-}
-
 bool buildAndroidProject(const Options &options)
 {
     GradleProperties localProperties;
@@ -2784,8 +2801,8 @@ bool buildAndroidProject(const Options &options)
     GradleProperties gradleProperties = readGradleProperties(gradlePropertiesPath);
 
     const QString gradleBuildFilePath = options.outputDirectory + "build.gradle"_L1;
-    GradleFlags gradleFlags = gradleBuildFlags(gradleBuildFilePath);
-    if (!gradleFlags.setsLegacyPackaging)
+    GradleBuildConfigs gradleConfigs = gradleBuildConfigs(gradleBuildFilePath);
+    if (!gradleConfigs.setsLegacyPackaging)
         gradleProperties["android.bundle.enableUncompressedNativeLibs"] = "false";
 
     gradleProperties["buildDir"] = "build";
@@ -2804,7 +2821,7 @@ bool buildAndroidProject(const Options &options)
     QByteArray sdkPlatformVersion;
     // Provide the integer version only if build.gradle explicitly converts to Integer,
     // to avoid regression to existing projects that build for sdk platform of form android-xx.
-    if (gradleFlags.usesIntegerCompileSdkVersion) {
+    if (gradleConfigs.usesIntegerCompileSdkVersion) {
         const QByteArray tmp = options.androidPlatform.split(u'-').last().toLocal8Bit();
         bool ok;
         tmp.toInt(&ok);
@@ -2819,6 +2836,7 @@ bool buildAndroidProject(const Options &options)
     if (sdkPlatformVersion.isEmpty())
         sdkPlatformVersion = options.androidPlatform.toLocal8Bit();
 
+    gradleProperties["androidPackageName"] = options.packageName.toLocal8Bit();
     gradleProperties["androidCompileSdkVersion"] = sdkPlatformVersion;
     gradleProperties["qtMinSdkVersion"] = options.minSdkVersion;
     gradleProperties["qtTargetSdkVersion"] = options.targetSdkVersion;
