@@ -136,6 +136,11 @@ int QPaintDeviceWindow::metric(PaintDeviceMetric metric) const
     case PdmDevicePixelRatioScaled:
         return int(QWindow::devicePixelRatio() * devicePixelRatioFScale());
         break;
+    case PdmDevicePixelRatioF_EncodedA:
+        Q_FALLTHROUGH();
+    case PdmDevicePixelRatioF_EncodedB:
+        return QPaintDevice::encodeMetricF(metric, QWindow::devicePixelRatio());
+        break;
     default:
         break;
     }

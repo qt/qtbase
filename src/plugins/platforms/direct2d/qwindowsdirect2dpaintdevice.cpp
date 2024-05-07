@@ -84,9 +84,11 @@ QT_WARNING_POP
     case QPaintDevice::PdmDevicePixelRatio:
         return 1;
     case QPaintDevice::PdmDevicePixelRatioScaled:
-        return qRound(devicePixelRatioFScale());
+        return int(devicePixelRatioFScale());
     case QPaintDevice::PdmWidthMM:
     case QPaintDevice::PdmHeightMM:
+        break;
+    default:
         break;
     }
 

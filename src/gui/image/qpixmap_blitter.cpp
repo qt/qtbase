@@ -88,6 +88,10 @@ int QBlittablePlatformPixmap::metric(QPaintDevice::PaintDeviceMetric metric) con
         return devicePixelRatio();
     case QPaintDevice::PdmDevicePixelRatioScaled:
         return devicePixelRatio() * QPaintDevice::devicePixelRatioFScale();
+    case QPaintDevice::PdmDevicePixelRatioF_EncodedA:
+        Q_FALLTHROUGH();
+    case QPaintDevice::PdmDevicePixelRatioF_EncodedB:
+        return QPaintDevice::encodeMetricF(metric, devicePixelRatio());
     default:
         qWarning("QRasterPlatformPixmap::metric(): Unhandled metric type %d", metric);
         break;

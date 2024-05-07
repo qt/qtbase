@@ -247,6 +247,10 @@ int QOpenGLPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
         return d_ptr->devicePixelRatio;
     case PdmDevicePixelRatioScaled:
         return d_ptr->devicePixelRatio * QPaintDevice::devicePixelRatioFScale();
+    case PdmDevicePixelRatioF_EncodedA:
+        Q_FALLTHROUGH();
+    case PdmDevicePixelRatioF_EncodedB:
+        return QPaintDevice::encodeMetricF(metric, d_ptr->devicePixelRatio);
 
     default:
         qWarning("QOpenGLPaintDevice::metric() - metric %d not known", metric);

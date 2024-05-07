@@ -4323,6 +4323,12 @@ int QImage::metric(PaintDeviceMetric metric) const
         return d->devicePixelRatio * QPaintDevice::devicePixelRatioFScale();
         break;
 
+    case PdmDevicePixelRatioF_EncodedA:
+        Q_FALLTHROUGH();
+    case PdmDevicePixelRatioF_EncodedB:
+        return QPaintDevice::encodeMetricF(metric, d->devicePixelRatio);
+        break;
+
     default:
         qWarning("QImage::metric(): Unhandled metric type %d", metric);
         break;

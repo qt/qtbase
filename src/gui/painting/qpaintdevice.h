@@ -29,7 +29,9 @@ public:
         PdmPhysicalDpiX,
         PdmPhysicalDpiY,
         PdmDevicePixelRatio,
-        PdmDevicePixelRatioScaled
+        PdmDevicePixelRatioScaled,
+        PdmDevicePixelRatioF_EncodedA,
+        PdmDevicePixelRatioF_EncodedB
     };
 
     virtual ~QPaintDevice();
@@ -46,18 +48,20 @@ public:
     int logicalDpiY() const { return metric(PdmDpiY); }
     int physicalDpiX() const { return metric(PdmPhysicalDpiX); }
     int physicalDpiY() const { return metric(PdmPhysicalDpiY); }
-    qreal devicePixelRatio() const { return metric(PdmDevicePixelRatioScaled) / devicePixelRatioFScale(); }
+    qreal devicePixelRatio() const;
     qreal devicePixelRatioF()  const { return devicePixelRatio(); }
     int colorCount() const { return metric(PdmNumColors); }
     int depth() const { return metric(PdmDepth); }
 
     static inline qreal devicePixelRatioFScale() { return 0x10000; }
+    static inline int encodeMetricF(PaintDeviceMetric metric, double value);
 protected:
     QPaintDevice() noexcept;
     virtual int metric(PaintDeviceMetric metric) const;
     virtual void initPainter(QPainter *painter) const;
     virtual QPaintDevice *redirected(QPoint *offset) const;
     virtual QPainter *sharedPainter() const;
+    double getDecodedMetricF(PaintDeviceMetric metricA, PaintDeviceMetric metricB) const;
 
     ushort        painters;                        // refcount
 private:
@@ -79,6 +83,14 @@ inline int QPaintDevice::devType() const
 
 inline bool QPaintDevice::paintingActive() const
 { return painters != 0; }
+
+inline int QPaintDevice::encodeMetricF(PaintDeviceMetric metric, double value)
+{
+    qint32 buf[2];
+    Q_STATIC_ASSERT(sizeof(buf) == sizeof(double));
+    memcpy(buf, &value, sizeof(buf));
+    return buf[metric & 1];
+}
 
 QT_END_NAMESPACE
 

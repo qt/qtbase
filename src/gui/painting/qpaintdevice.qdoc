@@ -99,6 +99,14 @@
     The constant scaling factor used is devicePixelRatioFScale(). This enum value
     has been introduced in Qt 5.6.
 
+    \value [since 6.8] PdmDevicePixelRatioF_EncodedA This enum item, together with the
+    corresponding \c B item, are used together for the device pixel ratio of the device, as an
+    encoded \c double floating point value. A QPaintDevice subclass that supports \e fractional DPR
+    values should implement support for these two enum items in its override of the metric()
+    function. The return value is expected to be the result of the encodeMetricF() function.
+
+    \value [since 6.8] PdmDevicePixelRatioF_EncodedB See PdmDevicePixelRatioF_EncodedA.
+
     \sa metric(), devicePixelRatio()
 */
 
@@ -287,4 +295,16 @@
     function is more efficient than a static member variable.
 
     \since 5.6
+*/
+
+/*!
+    \fn int QPaintDevice::encodeMetricF(PaintDeviceMetric metric, double value)
+
+    \internal
+
+    Returns \a value encoded for the metric \a metric. Subclasses implementing metric() should use
+    this function to encode \value as an integer return value when the query metric specifies an
+    encoded floating-point value.
+
+    \since 6.8
 */

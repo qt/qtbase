@@ -12956,6 +12956,10 @@ int QWidget::metric(PaintDeviceMetric m) const
         return resolveDevicePixelRatio();
     case PdmDevicePixelRatioScaled:
         return QPaintDevice::devicePixelRatioFScale() * resolveDevicePixelRatio();
+    case PdmDevicePixelRatioF_EncodedA:
+        Q_FALLTHROUGH();
+    case PdmDevicePixelRatioF_EncodedB:
+        return QPaintDevice::encodeMetricF(m, resolveDevicePixelRatio());
     default:
         break;
     }
