@@ -18,8 +18,6 @@
 #include <qpa/qplatformintegration.h>
 #include <qdir.h>
 
-#include <QtCore/private/qlocking_p.h>
-
 QT_BEGIN_NAMESPACE
 
 class QOpenUrlHandlerRegistry
@@ -36,35 +34,9 @@ public:
     };
     typedef QHash<QString, Handler> HandlerHash;
     HandlerHash handlers;
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
-    QObject context;
-
-    void handlerDestroyed(QObject *handler);
-#endif
-
 };
 
 Q_GLOBAL_STATIC(QOpenUrlHandlerRegistry, handlerRegistry)
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
-void QOpenUrlHandlerRegistry::handlerDestroyed(QObject *handler)
-{
-    const auto lock = qt_scoped_lock(mutex);
-    HandlerHash::Iterator it = handlers.begin();
-    while (it != handlers.end()) {
-        if (it->receiver == handler) {
-            it = handlers.erase(it);
-            qWarning("Please call QDesktopServices::unsetUrlHandler() before destroying a "
-                     "registered URL handler object.\n"
-                     "Support for destroying a registered URL handler object is deprecated, "
-                     "and will be removed in Qt 6.6.");
-        } else {
-            ++it;
-        }
-    }
-}
-#endif
 
 /*!
     \class QDesktopServices
@@ -306,11 +278,6 @@ void QDesktopServices::setUrlHandler(const QString &scheme, QObject *receiver, c
     h.receiver = receiver;
     h.name = method;
     registry->handlers.insert(scheme.toLower(), h);
-#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
-    QObject::connect(receiver, &QObject::destroyed, &registry->context,
-                     [registry](QObject *obj) { registry->handlerDestroyed(obj); },
-                     Qt::DirectConnection);
-#endif
 }
 
 /*!
