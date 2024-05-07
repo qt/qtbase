@@ -204,6 +204,8 @@ QWindowsContext::~QWindowsContext()
     if (d->m_powerDummyWindow)
         DestroyWindow(d->m_powerDummyWindow);
 
+    d->m_screenManager.destroyWindow();
+
     unregisterWindowClasses();
     if (d->m_oleInitializeResult == S_OK || d->m_oleInitializeResult == S_FALSE) {
 #ifdef QT_USE_FACTORY_CACHE_REGISTRATION
