@@ -698,10 +698,14 @@ void QWindowsScreenManager::initialize()
     handleScreenChanges();
 }
 
-QWindowsScreenManager::~QWindowsScreenManager()
+void QWindowsScreenManager::destroyWindow()
 {
+    qCDebug(lcQpaScreen) << "Destroying display change observer" << m_displayChangeObserver;
     DestroyWindow(m_displayChangeObserver);
+    m_displayChangeObserver = nullptr;
 }
+
+QWindowsScreenManager::~QWindowsScreenManager() = default;
 
 bool QWindowsScreenManager::isSingleScreen()
 {
