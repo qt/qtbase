@@ -104,7 +104,10 @@ void DataTransfer::toMimeDataWithFile(std::function<void(QMimeData *)> callback)
             if (--m_remainingItemCount > 0)
                 return;
 
-            mimeData->setUrls(fileUrls);
+            QList<QUrl> allUrls;
+            allUrls.append(mimeData->urls());
+            allUrls.append(fileUrls);
+            mimeData->setUrls(allUrls);
 
             m_callback(mimeData);
 
@@ -201,7 +204,11 @@ void DataTransfer::toMimeDataWithFile(std::function<void(QMimeData *)> callback)
                     mimeContext->mimeData->setHtml(data);
                 else if (itemMimeType.isEmpty() || itemMimeType == "text/plain")
                     mimeContext->mimeData->setText(data); // the type can be empty
-                else {
+                else if (itemMimeType.isEmpty() || itemMimeType == "text/uri-list") {
+                    QList<QUrl> urls;
+                    urls.append(data);
+                    mimeContext->mimeData->setUrls(urls);
+                } else {
                     // TODO improve encoding
                     if (data.startsWith("QB64")) {
                         data.remove(0, 4);
