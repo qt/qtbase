@@ -2057,6 +2057,11 @@ void QWidgetTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
             || e->preeditString() != cursor.block().layout()->preeditAreaText()
             || e->replacementLength() > 0;
 
+    if (!isGettingInput && e->attributes().isEmpty()) {
+        e->ignore();
+        return;
+    }
+
     int oldCursorPos = cursor.position();
 
     cursor.beginEditBlock();

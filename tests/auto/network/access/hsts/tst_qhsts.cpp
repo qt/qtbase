@@ -242,6 +242,12 @@ void tst_QHsts::testSTSHeaderParser()
     QVERIFY(parser.includeSubDomains());
 
     list.pop_back();
+    list << Header("strict-transport-security", "includeSubDomains;max-age=1000");
+    QVERIFY(parser.parse(list));
+    QVERIFY(parser.expirationDate() > QDateTime::currentDateTimeUtc());
+    QVERIFY(parser.includeSubDomains());
+
+    list.pop_back();
     // Invalid (includeSubDomains twice):
     list << Header("Strict-Transport-Security", "max-age = 1000 ; includeSubDomains;includeSubDomains");
     QVERIFY(!parser.parse(list));

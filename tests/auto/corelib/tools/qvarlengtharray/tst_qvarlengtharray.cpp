@@ -33,12 +33,29 @@
 
 #include <memory>
 
+class NonCopyable
+{
+    Q_DISABLE_COPY(NonCopyable)
+    int n;
+public:
+    NonCopyable() : n(0) {}
+    explicit NonCopyable(int n) : n(n) {}
+
+    friend bool operator==(const NonCopyable &lhs, const NonCopyable &rhs) noexcept
+    { return lhs.n == rhs.n; }
+    friend bool operator!=(const NonCopyable &lhs, const NonCopyable &rhs) noexcept
+    { return !operator==(lhs, rhs); }
+};
+
 class tst_QVarLengthArray : public QObject
 {
     Q_OBJECT
 private slots:
     void defaultConstructor_int() { defaultConstructor<int>(); }
     void defaultConstructor_QString() { defaultConstructor<QString>(); }
+    void sizeConstructor_int() { sizeConstructor<int>(); }
+    void sizeConstructor_QString() { sizeConstructor<QString>(); }
+    void sizeConstructor_NonCopyable() { sizeConstructor<NonCopyable>(); }
     void append();
     void removeLast();
     void oldTests();
@@ -67,6 +84,8 @@ private slots:
 private:
     template <typename T>
     void defaultConstructor();
+    template <typename T>
+    void sizeConstructor();
     template<typename T>
     void initializeList();
 };
@@ -100,6 +119,31 @@ void tst_QVarLengthArray::defaultConstructor()
     {
         QVarLengthArray<T> vla;
         QCOMPARE(vla.capacity(), 256);    // notice, should we change the default
+    }
+}
+
+template <typename T>
+void tst_QVarLengthArray::sizeConstructor()
+{
+    {
+        QVarLengthArray<T, 123> vla(0);
+        QCOMPARE(vla.size(), 0);
+        QVERIFY(vla.empty());
+        QVERIFY(vla.isEmpty());
+        QCOMPARE(vla.begin(), vla.end());
+        QCOMPARE(vla.capacity(), 123);
+    }
+    {
+        QVarLengthArray<T, 124> vla(124);
+        QCOMPARE(vla.size(), 124);
+        QVERIFY(!vla.empty());
+        QCOMPARE(vla.capacity(), 124);
+    }
+    {
+        QVarLengthArray<T, 124> vla(125);
+        QCOMPARE(vla.size(), 125);
+        QVERIFY(!vla.empty());
+        QVERIFY(vla.capacity() >= 125);
     }
 }
 

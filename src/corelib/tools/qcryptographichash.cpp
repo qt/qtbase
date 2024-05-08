@@ -40,6 +40,8 @@
 
 #include <qcryptographichash.h>
 #include <qiodevice.h>
+#include <qmutex.h>
+#include <private/qlocking_p.h>
 
 #include "../../3rdparty/sha1/sha1.cpp"
 
@@ -192,6 +194,8 @@ public:
     };
     void sha3Finish(int bitCount, Sha3Variant sha3Variant);
 #endif
+    // protects result in result()
+    QMutex finalizeMutex;
     QByteArray result;
 };
 
@@ -448,6 +452,9 @@ bool QCryptographicHash::addData(QIODevice* device)
 */
 QByteArray QCryptographicHash::result() const
 {
+    // result() is a const function, so concurrent calls are allowed; protect:
+    const auto lock = qt_scoped_lock(d->finalizeMutex);
+    // check that no other thread already finalized before us:
     if (!d->result.isEmpty())
         return d->result;
 
@@ -535,6 +542,7 @@ QByteArray QCryptographicHash::result() const
     }
 #endif
     }
+
     return d->result;
 }
 

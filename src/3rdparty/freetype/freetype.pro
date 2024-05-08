@@ -12,7 +12,6 @@ MODULE_EXT_HEADERS_DIR = $$PWD/include
 load(qt_helper_lib)
 
 SOURCES += \
-    $$PWD/src/autofit/afangles.c \
     $$PWD/src/autofit/afdummy.c \
     $$PWD/src/autofit/afglobal.c \
     $$PWD/src/autofit/afhints.c \

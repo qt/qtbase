@@ -106,7 +106,6 @@ public class QtLayout extends ViewGroup
         final WindowManager windowManager = activity.getWindowManager();
         Display display;
 
-        final WindowInsets rootInsets = getRootWindowInsets();
 
         int maxWidth = 0;
         int maxHeight = 0;

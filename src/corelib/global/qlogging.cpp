@@ -106,6 +106,8 @@
 #    if __UCLIBC_HAS_BACKTRACE__
 #      define QLOGGING_HAVE_BACKTRACE
 #    endif
+#  elif defined(Q_OS_ANDROID) && __ANDROID_API__ < 33
+    // Android lacked backtrace logging until API level 33.
 #  elif (defined(__GLIBC__) && defined(__GLIBCXX__)) || (__has_include(<cxxabi.h>) && __has_include(<execinfo.h>))
 #    define QLOGGING_HAVE_BACKTRACE
 #  endif
@@ -934,6 +936,12 @@ Q_AUTOTEST_EXPORT QByteArray qCleanupFuncinfo(QByteArray info)
         if (pos == -1) {
             // Don't know how to parse this function name
             return info;
+        }
+        if (info.indexOf('>', pos) != -1
+                || info.indexOf(':', pos) != -1) {
+            // that wasn't the function argument list.
+            pos = info.size();
+            break;
         }
 
         // find the beginning of the argument list

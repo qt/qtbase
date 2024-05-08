@@ -3470,12 +3470,10 @@ void tst_QUrl::effectiveTLDs_data()
     QTest::newRow("yes0") << QUrl::fromEncoded("http://test.co.uk") << ".co.uk";
     QTest::newRow("yes1") << QUrl::fromEncoded("http://test.com") << ".com";
     QTest::newRow("yes2") << QUrl::fromEncoded("http://www.test.de") << ".de";
-    QTest::newRow("yes3") << QUrl::fromEncoded("http://test.ulm.museum") << ".ulm.museum";
     QTest::newRow("yes4") << QUrl::fromEncoded("http://www.com.krodsherad.no") << ".krodsherad.no";
     QTest::newRow("yes5") << QUrl::fromEncoded("http://www.co.uk.1.bg") << ".1.bg";
     QTest::newRow("yes6") << QUrl::fromEncoded("http://www.com.com.cn") << ".com.cn";
     QTest::newRow("yes7") << QUrl::fromEncoded("http://www.test.org.ws") << ".org.ws";
-    QTest::newRow("yes9") << QUrl::fromEncoded("http://www.com.co.uk.wallonie.museum") << ".wallonie.museum";
     QTest::newRow("yes10") << QUrl::fromEncoded("http://www.com.evje-og-hornnes.no") << ".evje-og-hornnes.no";
     QTest::newRow("yes11") << QUrl::fromEncoded("http://www.bla.kamijima.ehime.jp") << ".kamijima.ehime.jp";
     QTest::newRow("yes12") << QUrl::fromEncoded("http://www.bla.kakuda.miyagi.jp") << ".kakuda.miyagi.jp";

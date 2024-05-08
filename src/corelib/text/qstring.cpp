@@ -2932,8 +2932,7 @@ static void removeStringImpl(QString &s, const T &needle, Qt::CaseSensitivity cs
 QString &QString::remove(const QString &str, Qt::CaseSensitivity cs)
 {
     const auto s = reinterpret_cast<const ushort *>(str.data());
-    const std::less<const ushort *> less = {};
-    if (!less(s, d->data()) && less(s, d->data() + d->alloc)) {
+    if (QtPrivate::q_points_into_range(s, d->data(), d->data() + d->alloc)) {
         // Part of me - take a copy
         const QVarLengthArray<ushort> copy(s, s + str.size());
         removeStringImpl(*this, QStringView{copy.data(), copy.size()}, cs);

@@ -49,6 +49,7 @@
 #include <algorithm>
 #include <initializer_list>
 #include <iterator>
+#include <memory>
 #include <new>
 #include <string.h>
 #include <stdlib.h>
@@ -236,6 +237,20 @@ public:
 
 private:
     void realloc(int size, int alloc);
+
+    void resize_impl(int newSize, const T &t)
+    {
+        const auto increment = newSize - size();
+        if (increment > 0 && QtPrivate::q_points_into_range(&t, cbegin(), cend())) {
+            resize_impl(newSize, T(t));
+            return;
+        }
+        realloc(qMin(size(), newSize), qMax(newSize, capacity()));
+
+        if (increment > 0)
+            std::uninitialized_fill_n(end(), increment, t);
+        s = newSize;
+    }
 
     int a;      // capacity
     int s;      // size
@@ -479,12 +494,7 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
     append(std::move(t));
     const auto b = begin() + offset;
     const auto e = end();
-    if (QTypeInfo<T>::isRelocatable) {
-        auto cast = [](T *p) { return reinterpret_cast<uchar*>(p); };
-        std::rotate(cast(b), cast(e - 1), cast(e));
-    } else {
-        std::rotate(b, e - 1, e);
-    }
+    QtPrivate::q_rotate(b, e - 1, e);
     return b;
 }
 
@@ -493,28 +503,12 @@ Q_OUTOFLINE_TEMPLATE typename QVarLengthArray<T, Prealloc>::iterator QVarLengthA
 {
     Q_ASSERT_X(isValidIterator(before), "QVarLengthArray::insert", "The specified const_iterator argument 'before' is invalid");
 
-    int offset = int(before - ptr);
-    if (n != 0) {
-        const T copy(t); // `t` could alias an element in [begin(), end()[
-        resize(s + n);
-        if (!QTypeInfoQuery<T>::isRelocatable) {
-            T *b = ptr + offset;
-            T *j = ptr + s;
-            T *i = j - n;
-            while (i != b)
-                *--j = *--i;
-            i = b + n;
-            while (i != b)
-                *--i = copy;
-        } else {
-            T *b = ptr + offset;
-            T *i = b + n;
-            memmove(static_cast<void *>(i), static_cast<const void *>(b), (s - offset - n) * sizeof(T));
-            while (i != b)
-                new (--i) T(copy);
-        }
-    }
-    return ptr + offset;
+    const int offset = int(before - cbegin());
+    resize_impl(size() + n, t);
+    const auto b = begin() + offset;
+    const auto e = end();
+    QtPrivate::q_rotate(b, e - n, e);
+    return b;
 }
 
 template <class T, int Prealloc>

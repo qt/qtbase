@@ -191,15 +191,19 @@ char *qstrcpy(char *dst, const char *src)
     A safe \c strncpy() function.
 
     Copies at most \a len bytes from \a src (stopping at \a len or the
-    terminating '\\0' whichever comes first) into \a dst and returns a
-    pointer to \a dst. Guarantees that \a dst is '\\0'-terminated. If
-    \a src or \a dst is \nullptr, returns \nullptr immediately.
+    terminating '\\0' whichever comes first) into \a dst. Guarantees that \a
+    dst is '\\0'-terminated, except when \a dst is \nullptr or \a len is 0. If
+    \a src is \nullptr, returns \nullptr, otherwise returns \a dst.
 
     This function assumes that \a dst is at least \a len characters
     long.
 
     \note If \a dst and \a src overlap, the behavior is undefined.
 
+    \note Unlike strncpy(), this function does \e not write '\\0' to all \a
+    len bytes of \a dst, but stops after the terminating '\\0'. In this sense,
+    it's similar to C11's strncpy_s().
+    
     \note When compiling with Visual C++ compiler version 14.00
     (Visual C++ 2005) or later, internally the function strncpy_s
     will be used.
@@ -209,9 +213,11 @@ char *qstrcpy(char *dst, const char *src)
 
 char *qstrncpy(char *dst, const char *src, uint len)
 {
-    if (!src || !dst)
-        return nullptr;
-    if (len > 0) {
+    if (dst && len > 0) {
+        if (!src) {
+            *dst = '\0';
+            return nullptr;
+        }
 #ifdef Q_CC_MSVC
         strncpy_s(dst, len, src, len - 1);
 #else
@@ -219,7 +225,7 @@ char *qstrncpy(char *dst, const char *src, uint len)
 #endif
         dst[len-1] = '\0';
     }
-    return dst;
+    return src ? dst : nullptr;
 }
 
 /*! \fn uint qstrlen(const char *str)

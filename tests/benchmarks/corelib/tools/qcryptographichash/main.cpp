@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2023 The Qt Company Ltd.
 ** Copyright (C) 2017 Intel Corporation.
 ** Contact: https://www.qt.io/licensing/
 **
@@ -29,9 +30,14 @@
 #include <QByteArray>
 #include <QCryptographicHash>
 #include <QFile>
+#include <QMetaEnum>
+#include <QMessageAuthenticationCode>
 #include <QRandomGenerator>
 #include <QString>
 #include <QtTest>
+
+#include <functional>
+#include <numeric>
 
 #include <time.h>
 
@@ -39,6 +45,8 @@ class tst_bench_QCryptographicHash : public QObject
 {
     Q_OBJECT
     QByteArray blockOfData;
+
+    using Algorithm = QCryptographicHash::Algorithm;
 
 public:
     tst_bench_QCryptographicHash();
@@ -50,47 +58,25 @@ private Q_SLOTS:
     void addData();
     void addDataChunked_data() { hash_data(); }
     void addDataChunked();
+
+    // QMessageAuthenticationCode:
+    void hmac_hash_data() { hash_data(); }
+    void hmac_hash();
+    void hmac_addData_data() { hash_data(); }
+    void hmac_addData();
+    void hmac_setKey_data();
+    void hmac_setKey();
 };
 
-const int MaxCryptoAlgorithm = QCryptographicHash::Sha3_512;
 const int MaxBlockSize = 65536;
 
-const char *algoname(int i)
+static void for_each_algorithm(std::function<void(QCryptographicHash::Algorithm, const char*)> f)
 {
-    switch (QCryptographicHash::Algorithm(i)) {
-    case QCryptographicHash::Md4:
-        return "md4-";
-    case QCryptographicHash::Md5:
-        return "md5-";
-    case QCryptographicHash::Sha1:
-        return "sha1-";
-    case QCryptographicHash::Sha224:
-        return "sha2_224-";
-    case QCryptographicHash::Sha256:
-        return "sha2_256-";
-    case QCryptographicHash::Sha384:
-        return "sha2_384-";
-    case QCryptographicHash::Sha512:
-        return "sha2_512-";
-    case QCryptographicHash::Sha3_224:
-        return "sha3_224-";
-    case QCryptographicHash::Sha3_256:
-        return "sha3_256-";
-    case QCryptographicHash::Sha3_384:
-        return "sha3_384-";
-    case QCryptographicHash::Sha3_512:
-        return "sha3_512-";
-    case QCryptographicHash::Keccak_224:
-        return "keccak_224-";
-    case QCryptographicHash::Keccak_256:
-        return "keccak_256-";
-    case QCryptographicHash::Keccak_384:
-        return "keccak_384-";
-    case QCryptographicHash::Keccak_512:
-        return "keccak_512-";
-    }
-    Q_UNREACHABLE();
-    return 0;
+    Q_ASSERT(f);
+    using A = QCryptographicHash::Algorithm;
+    static const auto metaEnum = QMetaEnum::fromType<A>();
+    for (int i = 0, value = metaEnum.value(i); value != -1; value = metaEnum.value(++i))
+        f(A(value), metaEnum.key(i));
 }
 
 tst_bench_QCryptographicHash::tst_bench_QCryptographicHash()
@@ -110,7 +96,7 @@ tst_bench_QCryptographicHash::tst_bench_QCryptographicHash()
 
 void tst_bench_QCryptographicHash::hash_data()
 {
-    QTest::addColumn<int>("algorithm");
+    QTest::addColumn<Algorithm>("algo");
     QTest::addColumn<QByteArray>("data");
 
     static const int datasizes[] = { 0, 1, 64, 65, 512, 4095, 4096, 4097, 65536 };
@@ -118,17 +104,17 @@ void tst_bench_QCryptographicHash::hash_data()
         Q_ASSERT(datasizes[i] < MaxBlockSize);
         QByteArray data = QByteArray::fromRawData(blockOfData.constData(), datasizes[i]);
 
-        for (int algo = QCryptographicHash::Md4; algo <= MaxCryptoAlgorithm; ++algo)
-            QTest::newRow(algoname(algo) + QByteArray::number(datasizes[i])) << algo << data;
+        for_each_algorithm([&] (Algorithm algo, const char *name) {
+            QTest::addRow("%s-%d", name, datasizes[i]) << algo << data;
+        });
     }
 }
 
 void tst_bench_QCryptographicHash::hash()
 {
-    QFETCH(int, algorithm);
+    QFETCH(const Algorithm, algo);
     QFETCH(QByteArray, data);
 
-    QCryptographicHash::Algorithm algo = QCryptographicHash::Algorithm(algorithm);
     QBENCHMARK {
         QCryptographicHash::hash(data, algo);
     }
@@ -136,10 +122,9 @@ void tst_bench_QCryptographicHash::hash()
 
 void tst_bench_QCryptographicHash::addData()
 {
-    QFETCH(int, algorithm);
+    QFETCH(const Algorithm, algo);
     QFETCH(QByteArray, data);
 
-    QCryptographicHash::Algorithm algo = QCryptographicHash::Algorithm(algorithm);
     QCryptographicHash hash(algo);
     QBENCHMARK {
         hash.reset();
@@ -150,10 +135,9 @@ void tst_bench_QCryptographicHash::addData()
 
 void tst_bench_QCryptographicHash::addDataChunked()
 {
-    QFETCH(int, algorithm);
+    QFETCH(const Algorithm, algo);
     QFETCH(QByteArray, data);
 
-    QCryptographicHash::Algorithm algo = QCryptographicHash::Algorithm(algorithm);
     QCryptographicHash hash(algo);
     QBENCHMARK {
         hash.reset();
@@ -166,6 +150,73 @@ void tst_bench_QCryptographicHash::addDataChunked()
         hash.result();
     }
 }
+
+static QByteArray hmacKey() {
+    static QByteArray key = [] {
+            QByteArray result(277, Qt::Uninitialized);
+            std::iota(result.begin(), result.end(), uchar(0)); // uchar so wraps after UCHAR_MAX
+            return result;
+        }();
+    return key;
+}
+
+void tst_bench_QCryptographicHash::hmac_hash()
+{
+    QFETCH(const Algorithm, algo);
+    QFETCH(const QByteArray, data);
+
+    const auto key = hmacKey();
+    QBENCHMARK {
+        auto r = QMessageAuthenticationCode::hash(data, key, algo);
+        Q_UNUSED(r);
+    }
+}
+
+void tst_bench_QCryptographicHash::hmac_addData()
+{
+    QFETCH(const Algorithm, algo);
+    QFETCH(const QByteArray, data);
+
+    const auto key = hmacKey();
+    QMessageAuthenticationCode mac(algo, key);
+    QBENCHMARK {
+        mac.reset();
+        mac.addData(data);
+        auto r = mac.result();
+        Q_UNUSED(r);
+    }
+}
+
+void tst_bench_QCryptographicHash::hmac_setKey_data()
+{
+    QTest::addColumn<Algorithm>("algo");
+    for_each_algorithm([] (Algorithm algo, const char *name) {
+        QTest::addRow("%s", name) << algo;
+    });
+}
+
+void tst_bench_QCryptographicHash::hmac_setKey()
+{
+    QFETCH(const Algorithm, algo);
+
+    const QByteArrayList keys = [] {
+            QByteArrayList result;
+            const auto fullKey = hmacKey();
+            result.reserve(fullKey.size());
+            for (auto i = fullKey.size(); i > 0; --i)
+                result.push_back(fullKey.mid(i));
+            return result;
+        }();
+
+    QMessageAuthenticationCode mac(algo);
+    QBENCHMARK {
+        for (const auto &key : keys) {
+            mac.setKey(key);
+            mac.addData("abc", 3); // avoid lazy setKey()
+        }
+    }
+}
+
 
 QTEST_APPLESS_MAIN(tst_bench_QCryptographicHash)
 

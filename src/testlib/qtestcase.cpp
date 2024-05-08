@@ -82,10 +82,10 @@
 #include <QtTest/private/qappletestlogger_p.h>
 #endif
 
+#include <atomic>
 #include <cmath>
 #include <numeric>
 #include <algorithm>
-#include <condition_variable>
 #include <mutex>
 #include <chrono>
 
@@ -1007,16 +1007,30 @@ void TestMethods::invokeTestOnData(int index) const
 
 class WatchDog : public QThread
 {
-    enum Expectation {
+    enum Expectation : std::size_t {
+        // bits 0..1: state
         ThreadStart,
         TestFunctionStart,
         TestFunctionEnd,
         ThreadEnd,
-    };
+        ExpectationMask = ThreadStart | TestFunctionStart | TestFunctionEnd | ThreadEnd,
 
-    bool waitFor(std::unique_lock<QtPrivate::mutex> &m, Expectation e) {
-        auto expectationChanged = [this, e] { return expecting != e; };
-        switch (e) {
+        // bits 2..: generation
+    };
+    Q_STATIC_ASSERT(size_t(ExpectationMask) == 0x3);
+    // static constexpr size_t GenerationShift = 2; // C++17-ism, so inline in combine and generation.
+
+    static constexpr Expectation state(Expectation e) noexcept
+    { return static_cast<Expectation>(e & ExpectationMask); }
+    static constexpr size_t generation(Expectation e) noexcept
+    { return e >> 2; }
+    static constexpr Expectation combine(Expectation e, size_t gen) noexcept
+    { return static_cast<Expectation>(e | (gen << 2)); }
+
+    bool waitFor(std::unique_lock<QtPrivate::mutex> &m, Expectation e)
+    {
+        auto expectationChanged = [this, e] { return expecting.load(std::memory_order_relaxed) != e; };
+        switch (state(e)) {
         case TestFunctionEnd:
             return waitCondition.wait_for(m, defaultTimeout(), expectationChanged);
         case ThreadStart:
@@ -1029,48 +1043,59 @@ class WatchDog : public QThread
         return false;
     }
 
+    void setExpectation(Expectation e)
+    {
+        Q_ASSERT(generation(e) == 0); // no embedded generation allowed
+        const auto locker = qt_scoped_lock(mutex);
+        auto cur = expecting.load(std::memory_order_relaxed);
+        auto gen = generation(cur);
+        if (e == TestFunctionStart)
+            ++gen;
+        e = combine(e, gen);
+        expecting.store(e, std::memory_order_relaxed);
+        waitCondition.notify_all();
+    }
+
 public:
     WatchDog()
     {
         auto locker = qt_unique_lock(mutex);
-        expecting = ThreadStart;
+        expecting.store(ThreadStart, std::memory_order_relaxed);
         start();
         waitFor(locker, ThreadStart);
     }
-    ~WatchDog() {
-        {
-            const auto locker = qt_scoped_lock(mutex);
-            expecting = ThreadEnd;
-            waitCondition.notify_all();
-        }
+
+    ~WatchDog()
+    {
+        setExpectation(ThreadEnd);
         wait();
     }
 
-    void beginTest() {
-        const auto locker = qt_scoped_lock(mutex);
-        expecting = TestFunctionEnd;
-        waitCondition.notify_all();
+    void beginTest()
+    {
+        setExpectation(TestFunctionEnd);
     }
 
-    void testFinished() {
-        const auto locker = qt_scoped_lock(mutex);
-        expecting = TestFunctionStart;
-        waitCondition.notify_all();
+    void testFinished()
+    {
+        setExpectation(TestFunctionStart);
     }
 
-    void run() override {
+    void run() override
+    {
         auto locker = qt_unique_lock(mutex);
-        expecting = TestFunctionStart;
+        expecting.store(TestFunctionStart, std::memory_order_release);
         waitCondition.notify_all();
         while (true) {
-            switch (expecting) {
+            Expectation e = expecting.load(std::memory_order_acquire);
+            switch (state(e)) {
             case ThreadEnd:
                 return;
             case ThreadStart:
                 Q_UNREACHABLE();
             case TestFunctionStart:
             case TestFunctionEnd:
-                if (Q_UNLIKELY(!waitFor(locker, expecting))) {
+                if (Q_UNLIKELY(!waitFor(locker, e))) {
                     stackTrace();
                     qFatal("Test function timed out");
                 }
@@ -1081,7 +1106,7 @@ public:
 private:
     QtPrivate::mutex mutex;
     QtPrivate::condition_variable waitCondition;
-    Expectation expecting;
+    std::atomic<Expectation> expecting;
 };
 
 #else // !QT_CONFIG(thread)

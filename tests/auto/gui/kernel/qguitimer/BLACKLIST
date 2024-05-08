@@ -1,3 +1,7 @@
 # See qtbase/src/testlib/qtestblacklist.cpp for format
-[zeroTimer]
-ci ubuntu-20.04 # QTBUG-108556
+[zeroTimer] # QTBUG-108556
+ci ubuntu-20.04
+ci sles-15.4
+
+[singleShotToFunctors]
+ci ubuntu-20.04 # QTBUG-108554

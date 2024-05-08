@@ -39,7 +39,8 @@ sles-15
 [windowState]
 # QTBUG-75270
 winrt
-
+[widgetAt]
+sles-15.4 # QTBUG-112760
 [syntheticEnterLeave]
 macos # Can't move cursor (QTBUG-76312)
 [taskQTBUG_4055_sendSyntheticEnterLeave]
