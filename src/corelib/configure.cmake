@@ -411,6 +411,34 @@ int main(void)
 }
 ")
 
+# <future>
+qt_config_compile_test(cxx_std_async_noncopyable
+    LABEL "std::async() NonCopyable"
+    CODE
+"// Calling std::async with lambda which takes non-copyable argument causes compilation error on
+// some platforms (VxWorks 24.03 and older with C++17-compatibility for example)
+#include <future>
+
+class NonCopyable {
+public:
+    NonCopyable(const NonCopyable&) = delete;
+    NonCopyable(NonCopyable&&) = default;
+
+    NonCopyable(int value)
+        :value (value)
+    {}
+
+    int value;
+};
+
+int main(int argc, char** argv) {
+    return std::async(
+        std::launch::deferred,
+        [](NonCopyable value) { return value.value; },
+        NonCopyable(argc - 1)).get();
+}
+")
+
 #### Features
 
 qt_feature("clock-gettime" PRIVATE
@@ -439,7 +467,7 @@ qt_feature("system-doubleconversion" PRIVATE
 )
 qt_feature("cxx11_future" PUBLIC
     LABEL "C++11 <future>"
-    CONDITION ON
+    CONDITION TEST_cxx_std_async_noncopyable
 )
 qt_feature("cxx17_filesystem" PUBLIC
     LABEL "C++17 <filesystem>"
