@@ -2850,6 +2850,7 @@ bool buildAndroidProject(const Options &options)
         abiList.append(it.key());
     }
     gradleProperties["qtTargetAbiList"] = abiList.toLocal8Bit();// armeabi-v7a or arm64-v8a or ...
+    gradleProperties["qtGradlePluginType"] = "com.android.application";
     if (!mergeGradleProperties(gradlePropertiesPath, gradleProperties))
         return false;
 
