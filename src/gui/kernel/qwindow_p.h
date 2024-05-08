@@ -66,7 +66,7 @@ public:
     void updateSiblingPosition(SiblingPosition);
 
     bool windowRecreationRequired(QScreen *newScreen) const;
-    void create(bool recursive);
+    void create(bool recursive, WId nativeHandle = 0);
     void destroy();
     void setTopLevelScreen(QScreen *newScreen, bool recreate);
     void connectToScreen(QScreen *topLevelScreen);

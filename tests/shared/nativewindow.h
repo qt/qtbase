@@ -238,7 +238,7 @@ WId NativeWindow::parentWinId() const
     xcb_query_tree_reply_t *tree = xcb_query_tree_reply(
         connection, xcb_query_tree(connection, m_handle), nullptr);
     const auto cleanup = qScopeGuard([&]{ free(tree); });
-    return tree ? tree->parent : 0;
+    return tree->parent;
 }
 
 bool NativeWindow::isParentOf(WId childWinId)
