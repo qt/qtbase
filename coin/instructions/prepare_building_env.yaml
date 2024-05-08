@@ -473,6 +473,26 @@ instructions:
         property: features
         contains_value: UseConfigure
 
+  # Packaging
+  - type: Group
+    enable_if:
+      condition: property
+      property: features
+      contains_value: Packaging
+    instructions:
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_CMAKE_ARGS
+      variableValue: " -DQT_INSTALL_CONFIG_INFO_FILES=ON"
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_NON_QTBASE_CMAKE_ARGS
+      variableValue: " -DQT_INSTALL_CONFIG_INFO_FILES=ON"
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_TARGET_CMAKE_ARGS
+      variableValue: " -DQT_INSTALL_CONFIG_INFO_FILES=ON"
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_NON_QTBASE_TARGET_CMAKE_ARGS
+      variableValue: " -DQT_INSTALL_CONFIG_INFO_FILES=ON"
+
   # SBOM
   - type: Group
     enable_if:
