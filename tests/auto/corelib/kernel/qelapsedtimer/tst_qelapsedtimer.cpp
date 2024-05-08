@@ -5,6 +5,7 @@
 #include <QtCore/QString>
 #include <QtCore/QElapsedTimer>
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QTimer>
 
 static const int minResolution = 100; // the minimum resolution for the tests
@@ -22,12 +23,18 @@ class tst_QElapsedTimer : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void compareCompiles();
     void statics();
     void validity();
     void basics();
     void elapsed();
     void msecsTo();
 };
+
+void tst_QElapsedTimer::compareCompiles()
+{
+    QTestPrivate::testAllComparisonOperatorsCompile<QElapsedTimer>();
+}
 
 void tst_QElapsedTimer::statics()
 {
@@ -77,6 +84,7 @@ void tst_QElapsedTimer::basics()
     QVERIFY(!(t1 < t1));
     QCOMPARE(t1.msecsTo(t1), qint64(0));
     QCOMPARE(t1.secsTo(t1), qint64(0));
+    QT_TEST_ALL_COMPARISON_OPS(t1, t1, Qt::strong_ordering::equal);
 
     quint64 value1 = t1.msecsSinceReference();
     qDebug() << "value1:" << value1 << "t1:" << t1;
@@ -141,10 +149,16 @@ void tst_QElapsedTimer::msecsTo()
     QTest::qSleep(minResolution);
     QElapsedTimer t2;
     t2.start();
+    QTest::qSleep(minResolution);
+    QElapsedTimer t3;
+    t3.start();
 
-    QVERIFY(t1 != t2);
-    QVERIFY(!(t1 == t2));
-    QVERIFY(t1 < t2);
+    QT_TEST_EQUALITY_OPS(t1, t2, false);
+    QT_TEST_EQUALITY_OPS(QElapsedTimer(), QElapsedTimer(), true);
+    QT_TEST_EQUALITY_OPS(QElapsedTimer(), t2, false);
+    QT_TEST_ALL_COMPARISON_OPS(t1, t2, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(t3, t2, Qt::strong_ordering::greater);
+    QT_TEST_ALL_COMPARISON_OPS(t3, QElapsedTimer(), Qt::strong_ordering::greater);
 
     auto diff = t1.msecsTo(t2);
     QVERIFY2(diff > 0, QString("difference t1 and t2 is %1").arg(diff).toLatin1());
