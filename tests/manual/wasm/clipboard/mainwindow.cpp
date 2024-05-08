@@ -275,7 +275,11 @@ void MainWindow::dropEvent(QDropEvent* e)
         }
 
         ui->textEdit_2->insertPlainText("    Drop has url data length: " + sizeStr + "\n");
-        ui->textEdit_2->insertPlainText("        " + urlStr + " sha1 " + sha1.left(8) + "\n");
+        if (sha1.isEmpty()) {
+            ui->textEdit->insertPlainText(urlStr);
+        }
+        ui->textEdit_2->insertPlainText("        " + urlStr + (!sha1.isEmpty() ? " sha1 " + sha1.left(8) : "") + "\n");
+
     }
     ui->textEdit_2->insertPlainText("\n");
 
