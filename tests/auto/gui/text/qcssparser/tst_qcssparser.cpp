@@ -56,6 +56,10 @@ private slots:
     void quotedAndUnquotedIdentifiers();
     void whitespaceValues_data();
     void whitespaceValues();
+    void strokeLineCapValues_data();
+    void strokeLineCapValues();
+    void strokeLineJoinValues_data();
+    void strokeLineJoinValues();
 };
 
 void tst_QCssParser::scanner_data()
@@ -1756,6 +1760,57 @@ void tst_QCssParser::whitespaceValues()
     QCOMPARE(rule.declarations.size(), 1);
 
     QCOMPARE(rule.declarations.at(0).d->property, QLatin1String("white-space"));
+    QCOMPARE(rule.declarations.at(0).d->values.first().toString(), value);
+}
+
+void tst_QCssParser::strokeLineCapValues_data()
+{
+    QTest::addColumn<QString>("value");
+
+    QTest::newRow("flatcap") << "flatcap";
+    QTest::newRow("roundcap") << "roundcap";
+    QTest::newRow("squarecap") << "squarecap";
+}
+
+void tst_QCssParser::strokeLineCapValues()
+{
+    QFETCH(QString, value);
+    QCss::Parser parser(QString("foo { -qt-stroke-linecap: %1 }").arg(value));
+    QCss::StyleSheet sheet;
+    QVERIFY(parser.parse(&sheet));
+
+    QCss::StyleRule rule = (!sheet.styleRules.isEmpty()) ?
+            sheet.styleRules.at(0) : *sheet.nameIndex.begin();
+    QCOMPARE(rule.declarations.size(), 1);
+
+    QCOMPARE(rule.declarations.at(0).d->property, QLatin1String("-qt-stroke-linecap"));
+    QCOMPARE(rule.declarations.at(0).d->values.first().type, QCss::Value::KnownIdentifier);
+    QCOMPARE(rule.declarations.at(0).d->values.first().toString(), value);
+}
+
+void tst_QCssParser::strokeLineJoinValues_data()
+{
+    QTest::addColumn<QString>("value");
+
+    QTest::newRow("beveljoin") << "beveljoin";
+    QTest::newRow("miterjoin") << "miterjoin";
+    QTest::newRow("roundjoin") << "roundjoin";
+    QTest::newRow("svgmiterjoin") << "svgmiterjoin";
+}
+
+void tst_QCssParser::strokeLineJoinValues()
+{
+    QFETCH(QString, value);
+    QCss::Parser parser(QString("foo { -qt-stroke-linejoin: %1 }").arg(value));
+    QCss::StyleSheet sheet;
+    QVERIFY(parser.parse(&sheet));
+
+    QCss::StyleRule rule = (!sheet.styleRules.isEmpty()) ?
+            sheet.styleRules.at(0) : *sheet.nameIndex.begin();
+    QCOMPARE(rule.declarations.size(), 1);
+
+    QCOMPARE(rule.declarations.at(0).d->property, QLatin1String("-qt-stroke-linejoin"));
+    QCOMPARE(rule.declarations.at(0).d->values.first().type, QCss::Value::KnownIdentifier);
     QCOMPARE(rule.declarations.at(0).d->values.first().toString(), value);
 }
 

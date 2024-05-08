@@ -1422,6 +1422,61 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
             }
             break;
         }
+        case QCss::QtStrokeLineCap:
+        {
+            QPen pen = charFormat.textOutline();
+            switch (identifier) {
+            case QCss::Value_SquareCap: pen.setCapStyle(Qt::SquareCap); break;
+            case QCss::Value_FlatCap: pen.setCapStyle(Qt::FlatCap); break;
+            case QCss::Value_RoundCap: pen.setCapStyle(Qt::RoundCap); break;
+            default: break;
+            }
+            charFormat.setTextOutline(pen);
+            break;
+        }
+        case QCss::QtStrokeLineJoin:
+        {
+            QPen pen = charFormat.textOutline();
+            switch (identifier) {
+            case QCss::Value_MiterJoin: pen.setJoinStyle(Qt::MiterJoin); break;
+            case QCss::Value_BevelJoin: pen.setJoinStyle(Qt::BevelJoin); break;
+            case QCss::Value_RoundJoin: pen.setJoinStyle(Qt::RoundJoin); break;
+            case QCss::Value_SvgMiterJoin: pen.setJoinStyle(Qt::SvgMiterJoin); break;
+            default: break;
+            }
+            charFormat.setTextOutline(pen);
+            break;
+        }
+        case QCss::QtStrokeMiterLimit:
+        {
+            qreal miterLimit;
+            if (decl.realValue(&miterLimit)) {
+                QPen pen = charFormat.textOutline();
+                pen.setMiterLimit(miterLimit);
+                charFormat.setTextOutline(pen);
+            }
+            break;
+        }
+        case QCss::QtStrokeDashArray:
+        {
+            QList<qreal> dashes = decl.dashArray();
+            if (!dashes.empty()) {
+                QPen pen = charFormat.textOutline();
+                pen.setDashPattern(dashes);
+                charFormat.setTextOutline(pen);
+            }
+            break;
+        }
+        case QCss::QtStrokeDashOffset:
+        {
+            qreal dashOffset;
+            if (decl.realValue(&dashOffset)) {
+                QPen pen = charFormat.textOutline();
+                pen.setDashOffset(dashOffset);
+                charFormat.setTextOutline(pen);
+            }
+            break;
+        }
         case QCss::QtForeground:
         {
             QBrush brush = decl.brushValue();

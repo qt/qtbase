@@ -36,6 +36,7 @@ struct QCssKnownValue
     quint64 id;
 };
 
+// This array is sorted alphabetically.
 static const QCssKnownValue properties[NumProperties - 1] = {
     { "-qt-background-role", QtBackgroundRole },
     { "-qt-block-indent", QtBlockIndent },
@@ -47,6 +48,11 @@ static const QCssKnownValue properties[NumProperties - 1] = {
     { "-qt-list-number-suffix", QtListNumberSuffix },
     { "-qt-paragraph-type", QtParagraphType },
     { "-qt-stroke-color", QtStrokeColor },
+    { "-qt-stroke-dasharray", QtStrokeDashArray },
+    { "-qt-stroke-dashoffset", QtStrokeDashOffset },
+    { "-qt-stroke-linecap", QtStrokeLineCap },
+    { "-qt-stroke-linejoin", QtStrokeLineJoin },
+    { "-qt-stroke-miterlimit", QtStrokeMiterLimit },
     { "-qt-stroke-width", QtStrokeWidth },
     { "-qt-style-features", QtStyleFeatures },
     { "-qt-table-type", QtTableType },
@@ -160,6 +166,7 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
     { "always", Value_Always },
     { "auto", Value_Auto },
     { "base", Value_Base },
+    { "beveljoin", Value_BevelJoin},
     { "bold", Value_Bold },
     { "bottom", Value_Bottom },
     { "bright-text", Value_BrightText },
@@ -176,6 +183,7 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
     { "dot-dot-dash", Value_DotDotDash },
     { "dotted", Value_Dotted },
     { "double", Value_Double },
+    { "flatcap", Value_FlatCap},
     { "groove", Value_Groove },
     { "highlight", Value_Highlight },
     { "highlighted-text", Value_HighlightedText },
@@ -194,6 +202,7 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
     { "mid", Value_Mid },
     { "middle", Value_Middle },
     { "midlight", Value_Midlight },
+    { "miterjoin", Value_MiterJoin},
     { "native", Value_Native },
     { "none", Value_None },
     { "normal", Value_Normal },
@@ -208,14 +217,18 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
     { "pre-wrap", Value_PreWrap },
     { "ridge", Value_Ridge },
     { "right", Value_Right },
+    { "roundcap", Value_RoundCap},
+    { "roundjoin", Value_RoundJoin},
     { "selected", Value_Selected },
     { "shadow", Value_Shadow },
     { "small" , Value_Small },
     { "small-caps", Value_SmallCaps },
     { "solid", Value_Solid },
     { "square", Value_Square },
+    { "squarecap", Value_SquareCap},
     { "sub", Value_Sub },
     { "super", Value_Super },
+    { "svgmiterjoin", Value_SvgMiterJoin},
     { "text", Value_Text },
     { "top", Value_Top },
     { "transparent", Value_Transparent },
@@ -231,10 +244,10 @@ static const QCssKnownValue values[NumKnownValues - 1] = {
 };
 
 //Map id to strings as they appears in the 'values' array above
-static const short indexOfId[NumKnownValues] = { 0, 41, 48, 42, 49, 50, 55, 35, 26, 71, 72, 25, 43, 5, 64, 48,
-    29, 59, 60, 27, 52, 62, 6, 10, 39, 56, 19, 13, 17, 18, 20, 21, 51, 24, 46, 68, 37, 3, 2, 40, 63, 16,
-    11, 58, 14, 32, 65, 33, 66, 56, 67, 34, 70, 8, 28, 38, 12, 36, 61, 7, 9, 4, 69, 54, 22, 23, 30, 31,
-    1, 15, 0, 53, 45, 44 };
+static const short indexOfId[NumKnownValues] = { 0, 44, 51, 45, 52, 53, 60, 37, 28, 78, 79, 27, 46, 6, 71, 50,
+    31, 65, 66, 29, 55, 69, 7, 11, 42, 62, 20, 14, 18, 19, 21, 23, 54, 26, 49, 75, 39, 3, 2, 43, 70, 17, 12,
+    63, 15, 34, 72, 35, 73, 61, 74, 36, 64, 22, 56, 41, 5, 57, 67, 77, 9, 30, 40, 13, 38, 68, 8, 10, 4, 76,
+    59, 24, 25, 32, 33, 1, 16, 0, 58, 48, 47 };
 
 QString Value::toString() const
 {
@@ -1833,6 +1846,35 @@ bool Declaration::borderCollapseValue() const
         return false;
     else
         return d->values.at(0).toString() == "collapse"_L1;
+}
+
+QList<qreal> Declaration::dashArray() const
+{
+    if (d->propertyId != Property::QtStrokeDashArray || d->values.empty())
+        return QList<qreal>();
+
+    bool isValid = true;
+    QList<qreal> dashes;
+    for (int i = 0; i < d->values.size(); i++) {
+        Value v = d->values[i];
+        // Separators must be at odd indices and Numbers at even indices.
+        bool isValidSeparator = (i & 1) && v.type == Value::TermOperatorComma;
+        bool isValidNumber = !(i & 1) && v.type == Value::Number;
+        if (!isValidNumber && !isValidSeparator) {
+            isValid = false;
+            break;
+        } else if (isValidNumber) {
+            bool ok;
+            dashes.append(v.variant.toReal(&ok));
+            if (!ok) {
+                isValid = false;
+                break;
+            }
+        }
+    }
+
+    isValid &= !(dashes.size() & 1);
+    return isValid ? dashes : QList<qreal>();
 }
 
 QIcon Declaration::iconValue() const

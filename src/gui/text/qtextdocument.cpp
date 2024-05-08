@@ -2757,6 +2757,51 @@ bool QTextHtmlExporter::emitCharFormatStyle(const QTextCharFormat &format)
         html += " -qt-stroke-width:"_L1;
         html += QString::number(outlinePen.widthF());
         html += "px;"_L1;
+
+        html += " -qt-stroke-linecap:"_L1;
+        if (outlinePen.capStyle() == Qt::SquareCap)
+            html += "squarecap;"_L1;
+        else if (outlinePen.capStyle() == Qt::FlatCap)
+            html += "flatcap;"_L1;
+        else if (outlinePen.capStyle() == Qt::RoundCap)
+            html += "roundcap;"_L1;
+
+        html += " -qt-stroke-linejoin:"_L1;
+        if (outlinePen.joinStyle() == Qt::MiterJoin)
+            html += "miterjoin;"_L1;
+        else if (outlinePen.joinStyle() == Qt::SvgMiterJoin)
+            html += "svgmiterjoin;"_L1;
+        else if (outlinePen.joinStyle() == Qt::BevelJoin)
+            html += "beveljoin;"_L1;
+        else if (outlinePen.joinStyle() == Qt::RoundJoin)
+            html += "roundjoin;"_L1;
+
+        if (outlinePen.joinStyle() == Qt::MiterJoin ||
+            outlinePen.joinStyle() == Qt::SvgMiterJoin) {
+            html += " -qt-stroke-miterlimit:"_L1;
+            html += QString::number(outlinePen.miterLimit());
+            html += u';';
+        }
+
+        if (outlinePen.style() == Qt::CustomDashLine && !outlinePen.dashPattern().empty()) {
+            html += " -qt-stroke-dasharray:"_L1;
+            QString dashArrayString;
+            QList<qreal> dashes = outlinePen.dashPattern();
+
+            for (int i = 0; i < dashes.length() - 1; i++) {
+                qreal dash = dashes[i];
+                dashArrayString += QString::number(dash) + u',';
+            }
+
+            dashArrayString += QString::number(dashes.last());
+            html += dashArrayString;
+            html += u';';
+
+            html += " -qt-stroke-dashoffset:"_L1;
+            html += QString::number(outlinePen.dashOffset());
+            html += u';';
+        }
+
         attributesEmitted = true;
     }
 

@@ -4053,20 +4053,107 @@ void tst_QTextDocument::restoreStrokeFromHtml()
     QTextDocument document;
     QTextCursor textCursor(&document);
     QTextCharFormat textOutline;
-    textOutline.setTextOutline(QPen(Qt::red, 2.3));
-    textCursor.insertText("Outlined text", textOutline);
+
+    // Set stroke color and width
+    {
+        QPen pen(Qt::red, 2.3, Qt::SolidLine);
+        textOutline.setTextOutline(pen);
+        textCursor.insertText("Outlined text", textOutline);
+    }
+
+    // Set Cap and Join styles
+    {
+        QPen pen;
+        pen.setCapStyle(Qt::FlatCap);
+        pen.setJoinStyle(Qt::RoundJoin);
+        textOutline.setTextOutline(pen);
+        textCursor.insertBlock();
+        textCursor.insertText("Cap and Join Style", textOutline);
+    }
+
+    // Set Miter limit
+    {
+        QPen pen;
+        pen.setJoinStyle(Qt::MiterJoin);
+        pen.setMiterLimit(4);
+        textOutline.setTextOutline(pen);
+        textCursor.insertBlock();
+        textCursor.insertText("Miter Limit", textOutline);
+    }
+
+    // Set Dash Array and Dash Offset
+    {
+        QPen pen;
+        QList<qreal> pattern;
+        const int dash = 2;
+        const int gap = 4;
+        pattern << dash << gap << dash << gap << dash << gap;
+        pen.setDashPattern(pattern);
+        pen.setDashOffset(3);
+        textOutline.setTextOutline(pen);
+        textCursor.insertBlock();
+        textCursor.insertText("Dash Pattern", textOutline);
+    }
+
     {
         QTextDocument otherDocument;
         otherDocument.setHtml(document.toHtml());
-        QCOMPARE(otherDocument.blockCount(), 1);
-        QTextBlock block = otherDocument.firstBlock();
-        QTextFragment fragment = block.begin().fragment();
-        QCOMPARE(fragment.text(), QStringLiteral("Outlined text"));
-        QTextCharFormat fmt = fragment.charFormat();
-        QVERIFY(fmt.hasProperty(QTextCharFormat::TextOutline));
-        QPen pen = fmt.textOutline();
-        QCOMPARE(pen.color(), QColor(Qt::red));
-        QCOMPARE(pen.widthF(), 2.3);
+        QCOMPARE(otherDocument.blockCount(), document.blockCount());
+
+        QTextBlock block;
+        QTextFragment fragment;
+        QTextCharFormat fmt;
+        QPen pen;
+
+        {
+            block = otherDocument.findBlockByNumber(0);
+            fragment = block.begin().fragment();
+            QCOMPARE(fragment.text(), QStringLiteral("Outlined text"));
+            fmt = fragment.charFormat();
+            QVERIFY(fmt.hasProperty(QTextCharFormat::TextOutline));
+            pen = fmt.textOutline();
+            QCOMPARE(pen.color(), QColor(Qt::red));
+            QCOMPARE(pen.widthF(), 2.3);
+        }
+
+        {
+            block = otherDocument.findBlockByNumber(1);
+            qDebug() << block.text();
+            fragment = block.begin().fragment();
+            QCOMPARE(fragment.text(), QStringLiteral("Cap and Join Style"));
+            fmt = fragment.charFormat();
+            QVERIFY(fmt.hasProperty(QTextCharFormat::TextOutline));
+            pen = fmt.textOutline();
+            QCOMPARE(pen.capStyle(), Qt::FlatCap);
+            QCOMPARE(pen.joinStyle(), Qt::RoundJoin);
+        }
+
+        {
+            block = otherDocument.findBlockByNumber(2);
+            fragment = block.begin().fragment();
+            QCOMPARE(fragment.text(), QStringLiteral("Miter Limit"));
+            fmt = fragment.charFormat();
+            QVERIFY(fmt.hasProperty(QTextCharFormat::TextOutline));
+            pen = fmt.textOutline();
+            QCOMPARE(pen.joinStyle(), Qt::MiterJoin);
+            QCOMPARE(pen.miterLimit(), 4);
+        }
+
+
+        {
+            block = otherDocument.findBlockByNumber(3);
+            fragment = block.begin().fragment();
+            QCOMPARE(fragment.text(), QStringLiteral("Dash Pattern"));
+            fmt = fragment.charFormat();
+            QVERIFY(fmt.hasProperty(QTextCharFormat::TextOutline));
+            pen = fmt.textOutline();
+            QCOMPARE(pen.dashOffset(), 3);
+            QList<qreal> pattern;
+            const int dash = 2;
+            const int gap = 4;
+            pattern << dash << gap << dash << gap << dash << gap;
+            QCOMPARE(pen.dashPattern(), pattern);
+        }
     }
 }
 

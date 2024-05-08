@@ -169,6 +169,11 @@ enum Property {
     QtAccent,
     QtStrokeWidth,
     QtStrokeColor,
+    QtStrokeLineCap,
+    QtStrokeLineJoin,
+    QtStrokeMiterLimit,
+    QtStrokeDashArray,
+    QtStrokeDashOffset,
     QtForeground,
     NumProperties
 };
@@ -226,6 +231,13 @@ enum KnownValue {
     Value_SmallCaps,
     Value_Uppercase,
     Value_Lowercase,
+    Value_SquareCap,
+    Value_FlatCap,
+    Value_RoundCap,
+    Value_MiterJoin,
+    Value_BevelJoin,
+    Value_RoundJoin,
+    Value_SvgMiterJoin,
 
     /* keep these in same order as QPalette::ColorRole */
     Value_FirstColorRole,
@@ -451,6 +463,8 @@ struct Q_GUI_EXPORT Declaration
 
     void borderImageValue(QString *image, int *cuts, TileMode *h, TileMode *v) const;
     bool borderCollapseValue() const;
+
+    QList<qreal> dashArray() const;
 };
 QT_CSS_DECLARE_TYPEINFO(Declaration, Q_RELOCATABLE_TYPE)
 
