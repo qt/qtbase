@@ -1738,6 +1738,10 @@ int QWindows11Style::styleHint(StyleHint hint, const QStyleOption *opt,
         return 0;
     case QStyle::SH_ItemView_ShowDecorationSelected:
         return 1;
+    case QStyle::SH_Slider_AbsoluteSetButtons:
+        return Qt::LeftButton;
+    case QStyle::SH_Slider_PageSetButtons:
+        return 0;
     default:
         return QWindowsVistaStyle::styleHint(hint, opt, widget, returnData);
     }
