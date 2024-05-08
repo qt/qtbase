@@ -172,6 +172,9 @@ void tst_ForeignWindow::destroyWhenParentIsDestroyed()
     // Reparenting into a window will result in creating it
     QVERIFY(parentWindow.handle());
 
+    parentWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&parentWindow));
+
     // Destroying the parent window of the foreign window results
     // in destroying the foreign window as well, as the foreign
     // window no longer has a parent it can be embedded in.
@@ -184,6 +187,9 @@ void tst_ForeignWindow::destroyWhenParentIsDestroyed()
     foreignWindow->create();
     QVERIFY(foreignWindow->handle());
     QTRY_COMPARE(nativeWindow.parentWinId(), parentWindow.winId());
+
+    parentWindow.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&parentWindow));
 }
 
 #include <tst_foreignwindow.moc>

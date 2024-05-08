@@ -55,8 +55,10 @@ QIOSWindow::QIOSWindow(QWindow *window, WId nativeHandle)
 
     connect(qGuiApp, &QGuiApplication::applicationStateChanged, this, &QIOSWindow::applicationStateChanged);
 
-    if (QPlatformWindow::parent())
-        setParent(QPlatformWindow::parent());
+    // Always set parent, even if we don't have a parent window,
+    // as we use setParent to reparent top levels into our desktop
+    // manager view.
+    setParent(QPlatformWindow::parent());
 
     if (!isForeignWindow()) {
         // Resolve default window geometry in case it was not set before creating the
