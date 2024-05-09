@@ -106,7 +106,7 @@ KeyEvent::KeyEvent(EventType type, emscripten::val event) : Event(type, event)
     const auto code = event["code"].as<std::string>();
     const auto webKey = event["key"].as<std::string>();
     deadKey = isDeadKeyEvent(webKey.c_str());
-
+    autoRepeat = event["repeat"].as<bool>();
     modifiers = KeyboardModifier::getForEvent(event);
     key = webKeyToQtKey(code, webKey, deadKey, modifiers);
 
