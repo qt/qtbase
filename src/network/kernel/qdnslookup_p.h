@@ -131,6 +131,7 @@ private:
                 && nameServerRecords.isEmpty()
                 && pointerRecords.isEmpty()
                 && serviceRecords.isEmpty()
+                && tlsAssociationRecords.isEmpty()
                 && textRecords.isEmpty();
     }
 };
