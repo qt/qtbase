@@ -153,6 +153,7 @@ struct KeyEvent : public Event
     QFlags<Qt::KeyboardModifier> modifiers;
     bool deadKey;
     QString text;
+    bool autoRepeat;
 };
 
 struct MouseEvent : public Event

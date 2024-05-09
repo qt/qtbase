@@ -502,7 +502,7 @@ bool QWasmWindow::processKey(const KeyEvent &event)
 
     const auto result = QWindowSystemInterface::handleKeyEvent(
             0, event.type == EventType::KeyDown ? QEvent::KeyPress : QEvent::KeyRelease, event.key,
-            event.modifiers, event.text);
+            event.modifiers, event.text, event.autoRepeat);
     return clipboardResult == ProcessKeyboardResult::NativeClipboardEventAndCopiedDataNeeded
             ? ProceedToNativeEvent
             : result;
