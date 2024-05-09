@@ -646,30 +646,17 @@ QFileSystemEntry QFileSystemEngine::getRawLinkPath(const QFileSystemEntry &link,
 QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry, QFileSystemMetaData &data)
 {
     Q_CHECK_FILE_NAME(entry, entry);
+    char *resolved_name = nullptr;
 
-#if !defined(Q_OS_DARWIN) && !defined(Q_OS_QNX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_HAIKU) && _POSIX_VERSION < 200809L && !defined(Q_OS_VXWORKS)
-    // realpath(X,0) is not supported
-    Q_UNUSED(data);
-    return QFileSystemEntry(slowCanonicalized(absoluteName(entry).filePath()));
-#else
-# if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || _POSIX_VERSION < 200801L
-    // used to store the result of realpath in case where realpath cannot allocate itself
+#ifdef PATH_MAX
+    // use the stack to avoid the overhead of memory allocation
     char stack_result[PATH_MAX + 1];
 #else
-    // enables unconditionally passing stack_result below
+    // system with unlimited file paths -> must use heap
     std::nullptr_t stack_result = nullptr;
-# endif
-    auto resolved_path_deleter = [&](char *ptr) {
-        // frees resolved_name if it was allocated by realpath
-# if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID) || _POSIX_VERSION < 200801L
-        // ptr is either null, or points to stack_result
-        Q_ASSERT(!ptr || ptr == stack_result);
-        return;
-#else
-        free(ptr);
-# endif
-    };
-    std::unique_ptr<char, decltype (resolved_path_deleter)> resolved_name {nullptr, resolved_path_deleter};
+    auto freer = qScopeGuard([&] { free(resolved_name); });
+#endif
+
 # if defined(Q_OS_DARWIN) || defined(Q_OS_ANDROID)
     // On some Android and macOS versions, realpath() will return a path even if
     // it does not exist. To work around this, we check existence in advance.
@@ -679,14 +666,14 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
     if (!data.exists())
         errno = ENOENT;
     else
-        resolved_name.reset(realpath(entry.nativeFilePath().constData(), stack_result));
+        resolved_name = realpath(entry.nativeFilePath().constData(), stack_result);
 # else
-    resolved_name.reset(realpath(entry.nativeFilePath().constData(), stack_result));
+    resolved_name = realpath(entry.nativeFilePath().constData(), stack_result);
 # endif
     if (resolved_name) {
         data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
         data.entryFlags |= QFileSystemMetaData::ExistsAttribute;
-        QString canonicalPath = QDir::cleanPath(QFile::decodeName(resolved_name.get()));
+        QString canonicalPath = QDir::cleanPath(QFile::decodeName(resolved_name));
         return QFileSystemEntry(canonicalPath);
     } else if (errno == ENOENT || errno == ENOTDIR) { // file doesn't exist
         data.knownFlagsMask |= QFileSystemMetaData::ExistsAttribute;
@@ -694,7 +681,6 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
         return QFileSystemEntry();
     }
     return entry;
-#endif
 }
 
 //static
