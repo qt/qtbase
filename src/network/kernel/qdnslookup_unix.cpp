@@ -310,7 +310,7 @@ void QDnsLookupRunnable::query(QDnsLookupReply *reply)
         expandHost(offset);
         if (status < 0)
             return;
-        if (offset + status + 4 >= responseLength)
+        if (offset + status + 4 > responseLength)
             header->qdcount = 0xffff;   // invalid reply below
         else
             offset += status + 4;
