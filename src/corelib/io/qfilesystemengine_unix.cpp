@@ -642,7 +642,7 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
 {
     Q_CHECK_FILE_NAME(entry, entry);
 
-#if !defined(Q_OS_DARWIN) && !defined(Q_OS_QNX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_HAIKU) && _POSIX_VERSION < 200809L
+#if !defined(Q_OS_DARWIN) && !defined(Q_OS_QNX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_HAIKU) && _POSIX_VERSION < 200809L && !defined(Q_OS_VXWORKS)
     // realpath(X,0) is not supported
     Q_UNUSED(data);
     return QFileSystemEntry(slowCanonicalized(absoluteName(entry).filePath()));
