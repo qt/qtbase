@@ -1014,8 +1014,9 @@ inline bool QUrlPrivate::setScheme(const QString &value, qsizetype len, bool doS
 inline void QUrlPrivate::setAuthority(const QString &auth, qsizetype from, qsizetype end, QUrl::ParsingMode mode)
 {
     sectionIsPresent &= ~Authority;
-    sectionIsPresent |= Host;
     port = -1;
+    if (from == end && !auth.isNull())
+        sectionIsPresent |= Host;   // empty but not null authority implies host
 
     // we never actually _loop_
     while (from != end) {
@@ -1155,8 +1156,11 @@ inline void QUrlPrivate::setQuery(const QString &value, qsizetype from, qsizetyp
 
 inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions options) const
 {
-    if (host.isEmpty())
+    if (host.isEmpty()) {
+        if ((sectionIsPresent & Host) && appendTo.isNull())
+            appendTo.detach();
         return;
+    }
     if (host.at(0).unicode() == '[') {
         // IPv6 addresses might contain a zone-id which needs to be recoded
         if (options != 0)
@@ -1274,7 +1278,9 @@ QUrlPrivate::setHost(const QString &value, qsizetype from, qsizetype iend, QUrl:
 
     const qsizetype len = end - begin;
     host.clear();
-    sectionIsPresent |= Host;
+    sectionIsPresent &= ~Host;
+    if (!value.isNull() || (sectionIsPresent & Authority))
+        sectionIsPresent |= Host;
     if (len == 0)
         return true;
 
@@ -2029,11 +2035,6 @@ void QUrl::setAuthority(const QString &authority, ParsingMode mode)
     }
 
     d->setAuthority(authority, 0, authority.size(), mode);
-    if (authority.isNull()) {
-        // QUrlPrivate::setAuthority cleared almost everything
-        // but it leaves the Host bit set
-        d->sectionIsPresent &= ~QUrlPrivate::Authority;
-    }
 }
 
 /*!
@@ -2297,8 +2298,7 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
     }
 
     if (d->setHost(data, 0, data.size(), mode)) {
-        if (host.isNull())
-            d->sectionIsPresent &= ~QUrlPrivate::Host;
+        return;
     } else if (!data.startsWith(u'[')) {
         // setHost failed, it might be IPv6 or IPvFuture in need of bracketing
         Q_ASSERT(d->error);
@@ -2311,6 +2311,7 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
                 // source data contains ':', so it's an IPv6 error
                 d->error->code = QUrlPrivate::InvalidIPv6AddressError;
             }
+            d->sectionIsPresent &= ~QUrlPrivate::Host;
         } else {
             // succeeded
             d->clearError();

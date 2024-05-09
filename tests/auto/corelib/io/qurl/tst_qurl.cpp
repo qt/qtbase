@@ -3776,13 +3776,13 @@ void tst_QUrl::setComponents_data()
                                << PrettyDecoded << QString() << "foo:/path";
     QTest::newRow("host-empty") << QUrl("foo://example.com/path")
                                << int(Host) << "" << Tolerant << true
-                               << PrettyDecoded << QString() << "foo:///path";
+                               << PrettyDecoded << "" << "foo:///path";
     QTest::newRow("authority-null") << QUrl("foo://example.com/path")
                                     << int(Authority) << QString() << Tolerant << true
                                     << PrettyDecoded << QString() << "foo:/path";
     QTest::newRow("authority-empty") << QUrl("foo://example.com/path")
                                      << int(Authority) << "" << Tolerant << true
-                                     << PrettyDecoded << QString() << "foo:///path";
+                                     << PrettyDecoded << "" << "foo:///path";
     QTest::newRow("query-null") << QUrl("http://example.com/?q=foo")
                                    << int(Query) << QString() << Tolerant << true
                                    << PrettyDecoded << QString() << "http://example.com/";
@@ -3840,10 +3840,10 @@ void tst_QUrl::setComponents_data()
                                     << PrettyDecoded << QString() << QString();
     QTest::newRow("invalid-authority-1") << QUrl("http://example.com")
                                          << int(Authority) << "-not-valid-" << Tolerant << false
-                                         << PrettyDecoded << QString() << QString();
+                                         << PrettyDecoded << "" << QString();
     QTest::newRow("invalid-authority-2") << QUrl("http://example.com")
                                          << int(Authority) << "%31%30.%30.%30.%31" << Strict << false
-                                         << PrettyDecoded << QString() << QString();
+                                         << PrettyDecoded << "" << QString();
 
     QTest::newRow("invalid-path-0") << QUrl("http://example.com")
                                     << int(Path) << "{}" << Strict << false
