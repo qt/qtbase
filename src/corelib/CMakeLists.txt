@@ -111,6 +111,7 @@ qt_internal_add_module(Core
         io/qfilesystementry.cpp io/qfilesystementry_p.h
         io/qfilesystemiterator_p.h
         io/qfilesystemmetadata_p.h
+        io/qfloat16format.h
         io/qfsfileengine.cpp io/qfsfileengine_p.h
         io/qfsfileengine_iterator.cpp io/qfsfileengine_iterator_p.h
         io/qiodevice.cpp io/qiodevice.h io/qiodevice_p.h
@@ -127,6 +128,7 @@ qt_internal_add_module(Core
         io/qstorageinfo.cpp io/qstorageinfo.h io/qstorageinfo_p.h
         io/qtemporarydir.cpp io/qtemporarydir.h
         io/qtemporaryfile.cpp io/qtemporaryfile.h io/qtemporaryfile_p.h
+        io/qtformat_impl.h
         io/qurl.cpp io/qurl.h io/qurl_p.h
         io/qurlidna.cpp
         io/qurlquery.cpp io/qurlquery.h

@@ -68,3 +68,9 @@ endif()
 if(QT_FEATURE_private_tests)
     add_subdirectory(qzip)
 endif()
+if(NOT (MACOS AND "$ENV{QT_BUILD_ENVIRONMENT}" STREQUAL "ci"))
+    # On macOS the new features require at least macOS 13.3,
+    # but we also run the tests on older OS versions.
+    # So just skip macOS on CI for now.
+    add_subdirectory(qfloat16format)
+endif()
