@@ -96,7 +96,7 @@ static DNS_STATUS sendAlternate(QDnsLookupRunnable *self, QDnsLookupReply *reply
     dnsBuffer->MessageHead.AuthenticatedData = true;
 
     QDnsLookupRunnable::ReplyBuffer replyBuffer;
-    if (!self->sendDnsOverTls(reply, { query.data(), dnsBufferSize }, replyBuffer))
+    if (!self->sendDnsOverTls(reply, { query.data(), qsizetype(dnsBufferSize) }, replyBuffer))
         return DNS_STATUS(-1);   // error set in reply
 
     // interpret the RCODE in the reply
