@@ -7093,7 +7093,6 @@ void QWidgetPrivate::reparentFocusWidgets(QWidget * oldtlw)
     if (focus_child)
         focus_child->clearFocus();
 
-    insertIntoFocusChain(QWidgetPrivate::FocusDirection::Previous, q->window());
     reparentFocusChildren(QWidgetPrivate::FocusDirection::Next);
 }
 
@@ -13369,32 +13368,61 @@ void QWidgetPrivate::initFocusChain()
 void QWidgetPrivate::reparentFocusChildren(FocusDirection direction)
 {
     Q_Q(QWidget);
-    QWidgetList focusChildrenInsideChain;
-    QDuplicateTracker<QWidget *> seen;
-    QWidget *widget = q->nextInFocusChain();
-    while (q->isAncestorOf(widget)
-           && !seen.hasSeen(widget)
-           && widget != q->window()) {
-        if (widget->focusPolicy() != Qt::NoFocus)
-            focusChildrenInsideChain << widget;
 
-        widget = direction == FocusDirection::Next ? widget->nextInFocusChain()
-                                                   : widget->previousInFocusChain();
+    // separate the focus chain into new (children of myself) and old (the rest)
+    QWidget *firstOld = nullptr;
+    QWidget *lastOld = nullptr; // last in the old list
+    QWidget *lastNew = q; // last in the new list
+    bool prevWasNew = true;
+    QWidget *widget = nextPrevElementInFocusChain(direction);
+
+    // For efficiency, do not maintain the list invariant inside the loop.
+    // Append items to the relevant list, and we optimize by not changing pointers,
+    // when subsequent items are going into the same list.
+    while (widget != q) {
+        bool currentIsNew = q->isAncestorOf(widget);
+        if (currentIsNew) {
+            if (!prevWasNew) {
+                // previous was old => append to new list
+                FOCUS_NEXT(lastNew) = widget;
+                FOCUS_PREV(widget) = lastNew;
+            }
+            lastNew = widget;
+        } else {
+            if (prevWasNew) {
+                // prev was new => append to old list, if it exists
+                if (lastOld) {
+                    FOCUS_NEXT(lastOld) = widget;
+                    FOCUS_PREV(widget) = lastOld;
+                } else {
+                    // start the old list
+                    firstOld = widget;
+                }
+            }
+            lastOld = widget;
+        }
+        widget = widget->d_func()->nextPrevElementInFocusChain(direction);
+        prevWasNew = currentIsNew;
     }
 
-    const QWidgetList children = q->findChildren<QWidget *>(Qt::FindDirectChildrenOnly);
-    QWidgetList focusChildrenOutsideChain;
-    for (auto *child : children) {
-        if (!focusChildrenInsideChain.contains(child))
-            focusChildrenOutsideChain << child;
+    // repair old list:
+    if (firstOld) {
+        FOCUS_NEXT(lastOld) = firstOld;
+        FOCUS_PREV(firstOld) = lastOld;
     }
-    if (focusChildrenOutsideChain.isEmpty())
-        return;
 
-    QWidget *previous = q;
-    for (auto *child : focusChildrenOutsideChain) {
-        child->d_func()->insertIntoFocusChain(direction, previous);
-        previous = child;
+    if (!q->isWindow()) {
+        QWidget *topLevel = q->window();
+        // insert new chain into toplevel's chain
+        QWidget *prev = FOCUS_PREV(topLevel);
+        FOCUS_PREV(topLevel) = lastNew;
+        FOCUS_NEXT(prev) = q;
+        FOCUS_PREV(q) = prev;
+        FOCUS_NEXT(lastNew) = topLevel;
+    } else {
+        // repair new list
+        FOCUS_NEXT(lastNew) = q;
+        FOCUS_PREV(q) = lastNew;
     }
 }
 

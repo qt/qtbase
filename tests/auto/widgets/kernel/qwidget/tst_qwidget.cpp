@@ -1902,6 +1902,7 @@ void tst_QWidget::focusChainOnReparent()
     }
 
     QWidget window2;
+    child22->setParent(child21);
     child2->setParent(&window2);
 
     QWidget *expectedNewChain[5] = {&window2, child2,  child21, child22, &window2};
