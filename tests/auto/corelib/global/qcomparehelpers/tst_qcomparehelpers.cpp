@@ -597,4 +597,4 @@ void tst_QCompareHelpers::builtinOrder()
 }
 
 QTEST_MAIN(tst_QCompareHelpers)
-#include "tst_qcomparehelpers.moc"
+#include "moc_tst_qcomparehelpers.cpp"
