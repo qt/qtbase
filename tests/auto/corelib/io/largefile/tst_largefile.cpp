@@ -46,6 +46,10 @@ public:
         // This means that files are limited to 2 GB − 1 bytes.
         // Limit max size to 256MB
         maxSizeBits = 28; // 256 MiB
+    #elif defined(Q_OS_VXWORKS)
+        // VxWorks doesn't support sparse files, also, default /tmp directory is a RAM-disk which
+        // limits its capacity.
+        maxSizeBits = 28; // 256 MiB
     #elif defined (Q_OS_WASM)
         maxSizeBits = 28; // 256 MiB
     #elif defined(QT_LARGEFILE_SUPPORT)
@@ -494,6 +498,7 @@ void tst_LargeFile::mapFile()
 //  32-bit: limited to 44-bit offsets (when sizeof(off_t) == 8)
 //Windows: memory-mapping beyond EOF is not allowed
 //wasm: as for linux
+//VxWorks: memory-mapping beyond EOF is not allowed
 void tst_LargeFile::mapOffsetOverflow()
 {
     enum {
@@ -506,6 +511,9 @@ void tst_LargeFile::mapOffsetOverflow()
 #elif (defined(Q_OS_LINUX) || defined(Q_OS_ANDROID)) && (Q_PROCESSOR_WORDSIZE == 4)
         Succeeds = true,
         MaxOffset = sizeof(QT_OFF_T) > 4 ? 43 : 30
+#elif defined(Q_OS_VXWORKS)
+        Succeeds = false,
+        MaxOffset = 8 * sizeof(QT_OFF_T) - 1
 #else
         Succeeds = true,
         MaxOffset = 8 * sizeof(QT_OFF_T) - 1
