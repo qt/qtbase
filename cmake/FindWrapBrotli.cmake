@@ -20,6 +20,13 @@ if (unofficial-brotli_FOUND)
 
     set(WrapBrotli_FOUND ON)
 else()
+    get_cmake_property(__packages_not_found PACKAGES_NOT_FOUND)
+    if(__packages_not_found)
+        list(REMOVE_ITEM __packages_not_found unofficial-brotli)
+        set_property(GLOBAL PROPERTY PACKAGES_NOT_FOUND "${__packages_not_found}")
+    endif()
+    unset(__packages_not_found)
+
     find_package(PkgConfig QUIET)
     if (PKG_CONFIG_FOUND)
         pkg_check_modules(libbrotlidec QUIET IMPORTED_TARGET "libbrotlidec")
