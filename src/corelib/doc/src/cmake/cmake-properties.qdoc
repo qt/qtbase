@@ -245,6 +245,55 @@ CMake will attempt to use the latest installed version.
 */
 
 /*!
+\page cmake-target-property-qt-android-package-name.html
+\ingroup cmake-properties-qtcore
+\ingroup cmake-target-properties-qtcore
+
+\title QT_ANDROID_PACKAGE_NAME
+\target cmake-target-property-QT_ANDROID_PACKAGE_NAME
+
+\summary {The app's package name.}
+
+\cmakepropertysince 6.8
+\preliminarycmakeproperty
+\cmakepropertyandroidonly
+
+Specifies the app's package name. This is usually a unique dot separated
+name for the app, that will be used to identify the app on devices or in
+the Play Store. For example, "org.qtproject.example.gallery".
+
+The package name set by this property is passed to the \c build.gradle file
+as a \c namespace property, instead of \c AndroidManifest.xml, since the
+latter is deprecated since Android Gradle Plugin 7.4.
+
+The package name considers some words or characters as illegal and the build
+will clean such names if any is encountered. An underscore (\c _) either replaces
+illegal characters or is appended to illegal words.
+
+\list
+    \li Allowed characters: alphanumeric, an underscore or a dot [a-zA-Z0-9_.].
+    \li Illegal words: abstract, continue, for, new, switch, assert, default,
+        if, package, synchronized, boolean, do, goto, private, this, break,
+        double, implements, protected, throw, byte, else, import, public,
+        throws, case, enum, instanceof, return, transient, catch, extends,
+        int, short, try, char, final, interface, static, void, class, finally,
+        long, strictfp, volatile, const, float, native, super, while.
+\endlist
+
+The default package name for Qt for Android apps is \c org.qtproject.example.<target_name>.
+
+\note Setting the package name manually in \c build.gradle (via
+\c namespace property) takes precedence over \c AndroidManifest.xml
+(via \c package attribute), and the latter also takes precedence over
+this property.
+
+For more information, see Android's
+\l{Android: Configure the app module}{configure the app module}.
+
+\sa{qt6_android_generate_deployment_settings}{qt_android_generate_deployment_settings()}
+*/
+
+/*!
 \page cmake-target-property-qt-android-version-code.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore

@@ -33,6 +33,10 @@
     \title Android: Tagged Pointers
 */
 /*!
+    \externalpage https://developer.android.com/build/configure-app-module
+    \title Android: Configure the app module
+*/
+/*!
     \externalpage https://developer.apple.com/documentation/uikit/uiapplication/1622952-canopenurl
     \title iOS: canOpenURL:
 */

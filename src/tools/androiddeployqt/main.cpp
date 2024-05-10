@@ -802,18 +802,25 @@ GradleBuildConfigs gradleBuildConfigs(const QString &path)
     return configs;
 }
 
-QString cleanPackageName(QString packageName)
+QString cleanPackageName(QString packageName, bool *cleaned = nullptr)
 {
     auto isLegalChar = [] (QChar c) -> bool {
         ushort ch = c.unicode();
         return (ch >= '0' && ch <= '9') ||
                 (ch >= 'A' && ch <= 'Z') ||
                 (ch >= 'a' && ch <= 'z') ||
-                ch == '.';
+                ch == '.' || ch == '_';
     };
+
+    if (cleaned)
+        *cleaned = false;
+
     for (QChar &c : packageName) {
-        if (!isLegalChar(c))
+        if (!isLegalChar(c)) {
             c = u'_';
+            if (cleaned)
+                *cleaned = true;
+        }
     }
 
     static QStringList keywords;
@@ -848,12 +855,16 @@ QString cleanPackageName(QString packageName)
             QChar c = word[0];
             if ((c >= u'0' && c <= u'9') || c == u'_') {
                 packageName.insert(index + 1, u'a');
+                if (cleaned)
+                    *cleaned = true;
                 index = next + 1;
                 continue;
             }
         }
         if (keywords.contains(word)) {
             packageName.insert(next, "_"_L1);
+            if (cleaned)
+                *cleaned = true;
             index = next + 1;
         } else {
             index = next;
@@ -885,26 +896,29 @@ QString detectLatestAndroidPlatform(const QString &sdkPath)
 
 QString extractPackageName(Options *options)
 {
-    QString packageName;
+    {
+        const QString gradleBuildFile = options->androidSourceDirectory + "/build.gradle"_L1;
+        QString packageName = gradleBuildConfigs(gradleBuildFile).appNamespace;
+
+        if (!packageName.isEmpty() && packageName != "androidPackageName"_L1)
+            return packageName;
+    }
+
     QFile androidManifestXml(options->androidSourceDirectory + "/AndroidManifest.xml"_L1);
     if (androidManifestXml.open(QIODevice::ReadOnly)) {
         QXmlStreamReader reader(&androidManifestXml);
         while (!reader.atEnd()) {
             reader.readNext();
-            if (reader.isStartElement() && reader.name() == "manifest"_L1)
-                packageName = reader.attributes().value("package"_L1).toString();
+            if (reader.isStartElement() && reader.name() == "manifest"_L1) {
+                QString packageName = reader.attributes().value("package"_L1).toString();
+                if (!packageName.isEmpty() && packageName != "org.qtproject.example"_L1)
+                    return packageName;
+                break;
+            }
         }
     }
 
-    if (packageName.isEmpty()) {
-        const QString gradleBuildFile = options->androidSourceDirectory + "/build.gradle"_L1;
-        packageName = gradleBuildConfigs(gradleBuildFile).appNamespace;
-    }
-
-    if (packageName.isEmpty() || packageName == "androidPackageName"_L1)
-        packageName = "org.qtproject.example.%1"_L1.arg(options->applicationBinary);
-
-    return cleanPackageName(packageName);
+    return QString();
 }
 
 bool parseCmakeBoolean(const QJsonValue &value)
@@ -1302,6 +1316,24 @@ bool readInputFile(Options *options)
     }
 
     {
+        const QJsonValue androidPackageName = jsonObject.value("android-package-name"_L1);
+        const QString extractedPackageName = extractPackageName(options);
+        if (!extractedPackageName.isEmpty())
+            options->packageName = extractedPackageName;
+        else if (!androidPackageName.isUndefined())
+            options->packageName = androidPackageName.toString();
+        else
+            options->packageName = "org.qtproject.example.%1"_L1.arg(options->applicationBinary);
+
+        bool cleaned;
+        options->packageName = cleanPackageName(options->packageName, &cleaned);
+        if (cleaned) {
+            fprintf(stderr, "Warning: Package name contained illegal characters and was cleaned "
+                            "to \"%s\"\n", qPrintable(options->packageName));
+        }
+    }
+
+    {
         using ItFlag = QDirListing::IteratorFlag;
         const QJsonValue deploymentDependencies = jsonObject.value("deployment-dependencies"_L1);
         if (!deploymentDependencies.isUndefined()) {
@@ -1358,7 +1390,6 @@ bool readInputFile(Options *options)
             options->isZstdCompressionEnabled = zstdCompressionFlag.toBool();
         }
     }
-    options->packageName = extractPackageName(options);
 
     return true;
 }
