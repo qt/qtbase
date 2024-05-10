@@ -28,5 +28,13 @@ if(ZLIB_FOUND)
     endif()
 endif()
 
+if(ZLIB_VERSION)
+    set(WrapSystemZLIB_VERSION "${ZLIB_VERSION}")
+elseif(ZLIB_VERSION_STRING)
+    set(WrapSystemZLIB_VERSION "${ZLIB_VERSION_STRING}")
+endif()
+
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(WrapSystemZLIB DEFAULT_MSG WrapSystemZLIB_FOUND)
+find_package_handle_standard_args(WrapSystemZLIB
+                                  REQUIRED_VARS WrapSystemZLIB_FOUND
+                                  VERSION_VAR WrapSystemZLIB_VERSION)
