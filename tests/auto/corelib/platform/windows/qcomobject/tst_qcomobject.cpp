@@ -69,6 +69,7 @@ struct QComObjectTraits<IDirect>
 };
 
 } // namespace QtPrivate
+QT_END_NAMESPACE
 
 class tst_QComObject : public QObject
 {
@@ -262,7 +263,5 @@ void tst_QComObject::Release_decrementsReferenceCountByOne()
 
 QTEST_MAIN(tst_QComObject)
 #  include "tst_qcomobject.moc"
-
-QT_END_NAMESPACE
 
 #endif // Q_OS_WIN
