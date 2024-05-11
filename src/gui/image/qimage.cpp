@@ -1093,7 +1093,6 @@ QImage &QImage::operator=(const QImage &image)
 
 /*!
     \fn void QImage::swap(QImage &other)
-    \since 4.8
 
     Swaps image \a other with this image. This operation is very
     fast and never fails.
@@ -1412,7 +1411,6 @@ int QImage::depth() const
 }
 
 /*!
-    \since 4.6
     \fn int QImage::colorCount() const
 
     Returns the size of the color table for the image.
@@ -1676,7 +1674,6 @@ const uchar *QImage::scanLine(int i) const
     shared pixel data, because the returned data is const.
 
     \sa scanLine(), constBits()
-    \since 4.7
 */
 const uchar *QImage::constScanLine(int i) const
 {
@@ -1732,7 +1729,6 @@ const uchar *QImage::bits() const
     shared pixel data, because the returned data is const.
 
     \sa bits(), constScanLine()
-    \since 4.7
 */
 const uchar *QImage::constBits() const
 {
@@ -1839,7 +1835,6 @@ void QImage::fill(uint pixel)
 /*!
     \fn void QImage::fill(Qt::GlobalColor color)
     \overload
-    \since 4.8
 
     Fills the image with the given \a color, described as a standard global
     color.
@@ -1865,8 +1860,6 @@ void QImage::fill(Qt::GlobalColor color)
     If the depth of the image is 8, the image will be filled with the
     index corresponding the \a color in the color table if present; it
     will otherwise be filled with 0.
-
-    \since 4.8
 */
 
 void QImage::fill(const QColor &color)
@@ -2123,7 +2116,6 @@ void QImage::invertPixels(InvertMode mode)
 #endif
 
 /*!
-    \since 4.6
     Resizes the color table to contain \a colorCount entries.
 
     If the color table is expanded, all the extra colors will be set to
@@ -4607,7 +4599,6 @@ bool QImage::hasAlphaChannel() const
 }
 
 /*!
-    \since 4.7
     Returns the number of bit planes in the image.
 
     The number of bit planes is the number of bits of color and
