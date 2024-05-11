@@ -160,15 +160,16 @@ static inline int area(const QSize &s) { return s.width() * s.height(); }
 // the 2x pixmaps then.)
 static QPixmapIconEngineEntry *bestSizeScaleMatch(const QSize &size, qreal scale, QPixmapIconEngineEntry *pa, QPixmapIconEngineEntry *pb)
 {
-
+    const auto scaleA = pa->pixmap.devicePixelRatio();
+    const auto scaleB = pb->pixmap.devicePixelRatio();
     // scale: we can only differentiate on scale if the scale differs
-    if (pa->scale != pb->scale) {
+    if (scaleA != scaleB) {
 
         // Score the pixmaps: 0 is an exact scale match, positive
         // scores have more detail than requested, negative scores
         // have less detail than requested.
-        qreal ascore = pa->scale - scale;
-        qreal bscore = pb->scale - scale;
+        qreal ascore = scaleA - scale;
+        qreal bscore = scaleB - scale;
 
         // always prefer positive scores to prevent upscaling
         if ((ascore < 0) != (bscore < 0))
@@ -201,13 +202,14 @@ static QPixmapIconEngineEntry *bestSizeScaleMatch(const QSize &size, qreal scale
 QPixmapIconEngineEntry *QPixmapIconEngine::tryMatch(const QSize &size, qreal scale, QIcon::Mode mode, QIcon::State state)
 {
     QPixmapIconEngineEntry *pe = nullptr;
-    for (int i = 0; i < pixmaps.size(); ++i)
-        if (pixmaps.at(i).mode == mode && pixmaps.at(i).state == state) {
+    for (auto &entry : pixmaps) {
+        if (entry.mode == mode && entry.state == state) {
             if (pe)
-                pe = bestSizeScaleMatch(size, scale, &pixmaps[i], pe);
+                pe = bestSizeScaleMatch(size, scale, &entry, pe);
             else
-                pe = &pixmaps[i];
+                pe = &entry;
         }
+    }
     return pe;
 }
 
@@ -278,7 +280,7 @@ QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIc
         pm = pe->pixmap;
 
     if (pm.isNull()) {
-        int idx = pixmaps.size();
+        auto idx = pixmaps.size();
         while (--idx >= 0) {
             if (pe == &pixmaps.at(idx)) {
                 pixmaps.remove(idx);
@@ -369,7 +371,7 @@ void QPixmapIconEngine::addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon
 {
     if (!pixmap.isNull()) {
         QPixmapIconEngineEntry *pe = tryMatch(pixmap.size(), pixmap.devicePixelRatio(), mode, state);
-        if (pe && pe->size == pixmap.size() && pe->scale == pixmap.devicePixelRatio()) {
+        if (pe && pe->size == pixmap.size() && pe->pixmap.devicePixelRatio() == pixmap.devicePixelRatio()) {
             pe->pixmap = pixmap;
             pe->fileName.clear();
         } else {
@@ -387,7 +389,7 @@ static inline int origIcoDepth(const QImage &image)
 
 static inline int findBySize(const QList<QImage> &images, const QSize &size)
 {
-    for (int i = 0; i < images.size(); ++i) {
+    for (qsizetype i = 0; i < images.size(); ++i) {
         if (images.at(i).size() == size)
             return i;
     }
