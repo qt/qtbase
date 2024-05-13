@@ -19,11 +19,12 @@
 #include <qproperty.h>
 
 #include <qmetaobject.h>
-#include <qscopedpointer.h>
 #include <qscopedvaluerollback.h>
 #include <qvariant.h>
 #include <vector>
 #include <QtCore/QVarLengthArray>
+
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -292,7 +293,7 @@ private:
     ObserverArray inlineDependencyObservers; // for things we are observing
 
     QPropertyObserverPointer firstObserver; // list of observers observing us
-    QScopedPointer<std::vector<QPropertyObserver>> heapObservers; // for things we are observing
+    std::unique_ptr<std::vector<QPropertyObserver>> heapObservers; // for things we are observing
 
 protected:
     QUntypedPropertyData *propertyDataPtr = nullptr;
