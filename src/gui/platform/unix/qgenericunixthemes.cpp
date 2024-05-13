@@ -541,6 +541,48 @@ class QKdeThemePrivate : public QPlatformThemePrivate
 {
 
 public:
+    enum class KdeSettingType {
+        Root,
+        KDE,
+        Icons,
+        ToolBarIcons,
+        ToolBarStyle,
+        Fonts,
+        Colors,
+    };
+
+    enum class KdeSetting {
+        WidgetStyle,
+        ColorScheme,
+        SingleClick,
+        ShowIconsOnPushButtons,
+        IconTheme,
+        ToolBarIconSize,
+        ToolButtonStyle,
+        WheelScrollLines,
+        DoubleClickInterval,
+        StartDragDistance,
+        StartDragTime,
+        CursorBlinkRate,
+        Font,
+        Fixed,
+        MenuFont,
+        ToolBarFont,
+        ButtonBackground,
+        WindowBackground,
+        ViewForeground,
+        WindowForeground,
+        ViewBackground,
+        SelectionBackground,
+        SelectionForeground,
+        ViewBackgroundAlternate,
+        ButtonForeground,
+        ViewForegroundLink,
+        ViewForegroundVisited,
+        TooltipBackground,
+        TooltipForeground,
+    };
+
     QKdeThemePrivate(const QStringList &kdeDirs, int kdeVersion);
 
     static QString kdeGlobals(const QString &kdeDir, int kdeVersion)
@@ -551,7 +593,9 @@ public:
     }
 
     void refresh();
-    static QVariant readKdeSetting(const QString &key, const QStringList &kdeDirs, int kdeVersion, QHash<QString, QSettings*> &kdeSettings);
+    static QVariant readKdeSetting(KdeSetting s, const QStringList &kdeDirs, int kdeVersion, QHash<QString, QSettings*> &settings);
+    QVariant readKdeSetting(KdeSetting s) const;
+    void clearKdeSettings() const;
     static void readKdeSystemPalette(const QStringList &kdeDirs, int kdeVersion, QHash<QString, QSettings*> &kdeSettings, QPalette *pal);
     static QFont *kdeFont(const QVariant &fontValue);
     static QStringList kdeIconThemeSearchPaths(const QStringList &kdeDirs);
@@ -575,8 +619,9 @@ public:
     Qt::ColorScheme m_colorScheme = Qt::ColorScheme::Unknown;
     void updateColorScheme(const QString &themeName);
 
-#ifndef QT_NO_DBUS
 private:
+    mutable QHash<QString, QSettings *> kdeSettings;
+#ifndef QT_NO_DBUS
     std::unique_ptr<QGenericUnixThemeDBusListener> dbus;
     bool initDbus();
     void settingChangedHandler(QGenericUnixThemeDBusListener::Provider provider,
@@ -632,9 +677,136 @@ QKdeThemePrivate::QKdeThemePrivate(const QStringList &kdeDirs, int kdeVersion)
 #endif // QT_NO_DBUS
 }
 
+static constexpr QLatin1StringView settingsPrefix(QKdeThemePrivate::KdeSettingType type)
+{
+    switch (type) {
+    case QKdeThemePrivate::KdeSettingType::Root:
+        return QLatin1StringView();
+    case QKdeThemePrivate::KdeSettingType::KDE:
+        return QLatin1StringView("KDE/");
+    case QKdeThemePrivate::KdeSettingType::Fonts:
+        return QLatin1StringView();
+    case QKdeThemePrivate::KdeSettingType::Colors:
+        return QLatin1StringView("Colors:");
+    case QKdeThemePrivate::KdeSettingType::Icons:
+        return QLatin1StringView("Icons/");
+    case QKdeThemePrivate::KdeSettingType::ToolBarIcons:
+        return QLatin1StringView("ToolbarIcons/");
+    case QKdeThemePrivate::KdeSettingType::ToolBarStyle:
+        return QLatin1StringView("Toolbar style/");
+    }
+    Q_UNREACHABLE_RETURN(QLatin1StringView());
+}
+
+static constexpr QKdeThemePrivate::KdeSettingType settingsType(QKdeThemePrivate::KdeSetting setting)
+{
+#define CASE(s, type) case QKdeThemePrivate::KdeSetting::s:\
+        return QKdeThemePrivate::KdeSettingType::type
+
+    switch (setting) {
+    CASE(WidgetStyle, Root);
+    CASE(ColorScheme, Root);
+    CASE(SingleClick, KDE);
+    CASE(ShowIconsOnPushButtons, KDE);
+    CASE(IconTheme, Icons);
+    CASE(ToolBarIconSize, ToolBarIcons);
+    CASE(ToolButtonStyle, ToolBarStyle);
+    CASE(WheelScrollLines, KDE);
+    CASE(DoubleClickInterval, KDE);
+    CASE(StartDragDistance, KDE);
+    CASE(StartDragTime, KDE);
+    CASE(CursorBlinkRate, KDE);
+    CASE(Font, Root);
+    CASE(Fixed, Root);
+    CASE(MenuFont, Root);
+    CASE(ToolBarFont, Root);
+    CASE(ButtonBackground, Colors);
+    CASE(WindowBackground, Colors);
+    CASE(ViewForeground, Colors);
+    CASE(WindowForeground, Colors);
+    CASE(ViewBackground, Colors);
+    CASE(SelectionBackground, Colors);
+    CASE(SelectionForeground, Colors);
+    CASE(ViewBackgroundAlternate, Colors);
+    CASE(ButtonForeground, Colors);
+    CASE(ViewForegroundLink, Colors);
+    CASE(ViewForegroundVisited, Colors);
+    CASE(TooltipBackground, Colors);
+    CASE(TooltipForeground, Colors);
+    };
+    Q_UNREACHABLE_RETURN(QKdeThemePrivate::KdeSettingType::Root);
+}
+#undef CASE
+
+static constexpr QLatin1StringView settingsKey(QKdeThemePrivate::KdeSetting setting)
+{
+    switch (setting) {
+    case QKdeThemePrivate::KdeSetting::WidgetStyle:
+        return QLatin1StringView("widgetStyle");
+    case QKdeThemePrivate::KdeSetting::ColorScheme:
+        return QLatin1StringView("ColorScheme");
+    case QKdeThemePrivate::KdeSetting::SingleClick:
+        return QLatin1StringView("SingleClick");
+    case QKdeThemePrivate::KdeSetting::ShowIconsOnPushButtons:
+        return QLatin1StringView("ShowIconsOnPushButtons");
+    case QKdeThemePrivate::KdeSetting::IconTheme:
+        return QLatin1StringView("Theme");
+    case QKdeThemePrivate::KdeSetting::ToolBarIconSize:
+        return QLatin1StringView("Size");
+    case QKdeThemePrivate::KdeSetting::ToolButtonStyle:
+        return QLatin1StringView("ToolButtonStyle");
+    case QKdeThemePrivate::KdeSetting::WheelScrollLines:
+        return QLatin1StringView("WheelScrollLines");
+    case QKdeThemePrivate::KdeSetting::DoubleClickInterval:
+        return QLatin1StringView("DoubleClickInterval");
+    case QKdeThemePrivate::KdeSetting::StartDragDistance:
+        return QLatin1StringView("StartDragDist");
+    case QKdeThemePrivate::KdeSetting::StartDragTime:
+        return QLatin1StringView("StartDragTime");
+    case QKdeThemePrivate::KdeSetting::CursorBlinkRate:
+        return QLatin1StringView("CursorBlinkRate");
+    case QKdeThemePrivate::KdeSetting::Font:
+        return QLatin1StringView("font");
+    case QKdeThemePrivate::KdeSetting::Fixed:
+        return QLatin1StringView("fixed");
+    case QKdeThemePrivate::KdeSetting::MenuFont:
+        return QLatin1StringView("menuFont");
+    case QKdeThemePrivate::KdeSetting::ToolBarFont:
+        return QLatin1StringView("toolBarFont");
+    case QKdeThemePrivate::KdeSetting::ButtonBackground:
+        return QLatin1StringView("Button/BackgroundNormal");
+    case QKdeThemePrivate::KdeSetting::WindowBackground:
+        return QLatin1StringView("Window/BackgroundNormal");
+    case QKdeThemePrivate::KdeSetting::ViewForeground:
+        return QLatin1StringView("View/ForegroundNormal");
+    case QKdeThemePrivate::KdeSetting::WindowForeground:
+        return QLatin1StringView("Window/ForegroundNormal");
+    case QKdeThemePrivate::KdeSetting::ViewBackground:
+        return QLatin1StringView("View/BackgroundNormal");
+    case QKdeThemePrivate::KdeSetting::SelectionBackground:
+        return QLatin1StringView("Selection/BackgroundNormal");
+    case QKdeThemePrivate::KdeSetting::SelectionForeground:
+        return QLatin1StringView("Selection/ForegroundNormal");
+    case QKdeThemePrivate::KdeSetting::ViewBackgroundAlternate:
+        return QLatin1StringView("View/BackgroundAlternate");
+    case QKdeThemePrivate::KdeSetting::ButtonForeground:
+        return QLatin1StringView("Button/ForegroundNormal");
+    case QKdeThemePrivate::KdeSetting::ViewForegroundLink:
+        return QLatin1StringView("View/ForegroundLink");
+    case QKdeThemePrivate::KdeSetting::ViewForegroundVisited:
+        return QLatin1StringView("View/ForegroundVisited");
+    case QKdeThemePrivate::KdeSetting::TooltipBackground:
+        return QLatin1StringView("Tooltip/BackgroundNormal");
+    case QKdeThemePrivate::KdeSetting::TooltipForeground:
+        return QLatin1StringView("Tooltip/ForegroundNormal");
+    };
+    Q_UNREACHABLE_RETURN(QLatin1StringView());
+}
+
 void QKdeThemePrivate::refresh()
 {
     resources.clear();
+    clearKdeSettings();
 
     toolButtonStyle = Qt::ToolButtonTextBesideIcon;
     toolBarIconSize = 0;
@@ -647,45 +819,42 @@ void QKdeThemePrivate::refresh()
     else
         iconFallbackThemeName = iconThemeName = QStringLiteral("oxygen");
 
-    QHash<QString, QSettings*> kdeSettings;
-
     QPalette systemPalette = QPalette();
     readKdeSystemPalette(kdeDirs, kdeVersion, kdeSettings, &systemPalette);
     resources.palettes[QPlatformTheme::SystemPalette] = new QPalette(systemPalette);
     //## TODO tooltip color
 
-    const QVariant styleValue = readKdeSetting(QStringLiteral("widgetStyle"), kdeDirs, kdeVersion, kdeSettings);
+    const QVariant styleValue = readKdeSetting(KdeSetting::WidgetStyle);
     if (styleValue.isValid()) {
         const QString style = styleValue.toString();
         if (style != styleNames.front())
             styleNames.push_front(style);
     }
 
-    const QVariant colorScheme = readKdeSetting(QStringLiteral("ColorScheme"), kdeDirs,
-                                                   kdeVersion, kdeSettings);
+    const QVariant colorScheme = readKdeSetting(KdeSetting::ColorScheme);
 
     if (colorScheme.isValid())
         updateColorScheme(colorScheme.toString());
     else
         m_colorScheme = Qt::ColorScheme::Unknown;
 
-    const QVariant singleClickValue = readKdeSetting(QStringLiteral("KDE/SingleClick"), kdeDirs, kdeVersion, kdeSettings);
+    const QVariant singleClickValue = readKdeSetting(KdeSetting::SingleClick);
     if (singleClickValue.isValid())
         singleClick = singleClickValue.toBool();
 
-    const QVariant showIconsOnPushButtonsValue = readKdeSetting(QStringLiteral("KDE/ShowIconsOnPushButtons"), kdeDirs, kdeVersion, kdeSettings);
+    const QVariant showIconsOnPushButtonsValue = readKdeSetting(KdeSetting::ShowIconsOnPushButtons);
     if (showIconsOnPushButtonsValue.isValid())
         showIconsOnPushButtons = showIconsOnPushButtonsValue.toBool();
 
-    const QVariant themeValue = readKdeSetting(QStringLiteral("Icons/Theme"), kdeDirs, kdeVersion, kdeSettings);
+    const QVariant themeValue = readKdeSetting(KdeSetting::IconTheme);
     if (themeValue.isValid())
         iconThemeName = themeValue.toString();
 
-    const QVariant toolBarIconSizeValue = readKdeSetting(QStringLiteral("ToolbarIcons/Size"), kdeDirs, kdeVersion, kdeSettings);
+    const QVariant toolBarIconSizeValue = readKdeSetting(KdeSetting::ToolBarIconSize);
     if (toolBarIconSizeValue.isValid())
         toolBarIconSize = toolBarIconSizeValue.toInt();
 
-    const QVariant toolbarStyleValue = readKdeSetting(QStringLiteral("Toolbar style/ToolButtonStyle"), kdeDirs, kdeVersion, kdeSettings);
+    const QVariant toolbarStyleValue = readKdeSetting(KdeSetting::ToolButtonStyle);
     if (toolbarStyleValue.isValid()) {
         const QString toolBarStyle = toolbarStyleValue.toString();
         if (toolBarStyle == "TextBesideIcon"_L1)
@@ -696,35 +865,35 @@ void QKdeThemePrivate::refresh()
             toolButtonStyle = Qt::ToolButtonTextUnderIcon;
     }
 
-    const QVariant wheelScrollLinesValue = readKdeSetting(QStringLiteral("KDE/WheelScrollLines"), kdeDirs, kdeVersion, kdeSettings);
+    const QVariant wheelScrollLinesValue = readKdeSetting(KdeSetting::WheelScrollLines);
     if (wheelScrollLinesValue.isValid())
         wheelScrollLines = wheelScrollLinesValue.toInt();
 
-    const QVariant doubleClickIntervalValue = readKdeSetting(QStringLiteral("KDE/DoubleClickInterval"), kdeDirs, kdeVersion, kdeSettings);
+    const QVariant doubleClickIntervalValue = readKdeSetting(KdeSetting::DoubleClickInterval);
     if (doubleClickIntervalValue.isValid())
         doubleClickInterval = doubleClickIntervalValue.toInt();
 
-    const QVariant startDragDistValue = readKdeSetting(QStringLiteral("KDE/StartDragDist"), kdeDirs, kdeVersion, kdeSettings);
+    const QVariant startDragDistValue = readKdeSetting(KdeSetting::StartDragDistance);
     if (startDragDistValue.isValid())
         startDragDist = startDragDistValue.toInt();
 
-    const QVariant startDragTimeValue = readKdeSetting(QStringLiteral("KDE/StartDragTime"), kdeDirs, kdeVersion, kdeSettings);
+    const QVariant startDragTimeValue = readKdeSetting(KdeSetting::StartDragTime);
     if (startDragTimeValue.isValid())
         startDragTime = startDragTimeValue.toInt();
 
-    const QVariant cursorBlinkRateValue = readKdeSetting(QStringLiteral("KDE/CursorBlinkRate"), kdeDirs, kdeVersion, kdeSettings);
+    const QVariant cursorBlinkRateValue = readKdeSetting(KdeSetting::CursorBlinkRate);
     if (cursorBlinkRateValue.isValid()) {
         cursorBlinkRate = cursorBlinkRateValue.toInt();
         cursorBlinkRate = cursorBlinkRate > 0 ? qBound(200, cursorBlinkRate, 2000) : 0;
     }
 
     // Read system font, ignore 'smallestReadableFont'
-    if (QFont *systemFont = kdeFont(readKdeSetting(QStringLiteral("font"), kdeDirs, kdeVersion, kdeSettings)))
+    if (QFont *systemFont = kdeFont(readKdeSetting(KdeSetting::Font)))
         resources.fonts[QPlatformTheme::SystemFont] = systemFont;
     else
         resources.fonts[QPlatformTheme::SystemFont] = new QFont(QLatin1StringView(defaultSystemFontNameC), defaultSystemFontSize);
 
-    if (QFont *fixedFont = kdeFont(readKdeSetting(QStringLiteral("fixed"), kdeDirs, kdeVersion, kdeSettings))) {
+    if (QFont *fixedFont = kdeFont(readKdeSetting(KdeSetting::Fixed))) {
         resources.fonts[QPlatformTheme::FixedFont] = fixedFont;
     } else {
         fixedFont = new QFont(QLatin1StringView(defaultFixedFontNameC), defaultSystemFontSize);
@@ -732,12 +901,12 @@ void QKdeThemePrivate::refresh()
         resources.fonts[QPlatformTheme::FixedFont] = fixedFont;
     }
 
-    if (QFont *menuFont = kdeFont(readKdeSetting(QStringLiteral("menuFont"), kdeDirs, kdeVersion, kdeSettings))) {
+    if (QFont *menuFont = kdeFont(readKdeSetting(KdeSetting::MenuFont))) {
         resources.fonts[QPlatformTheme::MenuFont] = menuFont;
         resources.fonts[QPlatformTheme::MenuBarFont] = new QFont(*menuFont);
     }
 
-    if (QFont *toolBarFont = kdeFont(readKdeSetting(QStringLiteral("toolBarFont"), kdeDirs, kdeVersion, kdeSettings)))
+    if (QFont *toolBarFont = kdeFont(readKdeSetting(KdeSetting::ToolBarFont)))
         resources.fonts[QPlatformTheme::ToolButtonFont] = toolBarFont;
 
     QWindowSystemInterface::handleThemeChange();
@@ -747,7 +916,7 @@ void QKdeThemePrivate::refresh()
     qDeleteAll(kdeSettings);
 }
 
-QVariant QKdeThemePrivate::readKdeSetting(const QString &key, const QStringList &kdeDirs, int kdeVersion, QHash<QString, QSettings*> &kdeSettings)
+QVariant QKdeThemePrivate::readKdeSetting(KdeSetting s, const QStringList &kdeDirs, int kdeVersion, QHash<QString, QSettings*> &kdeSettings)
 {
     for (const QString &kdeDir : kdeDirs) {
         QSettings *settings = kdeSettings.value(kdeDir);
@@ -759,12 +928,23 @@ QVariant QKdeThemePrivate::readKdeSetting(const QString &key, const QStringList 
             }
         }
         if (settings) {
+            const QString key = settingsPrefix(settingsType(s)) + settingsKey(s);
             const QVariant value = settings->value(key);
             if (value.isValid())
                 return value;
         }
     }
     return QVariant();
+}
+
+QVariant QKdeThemePrivate::readKdeSetting(KdeSetting s) const
+{
+    return readKdeSetting(s, kdeDirs, kdeVersion, kdeSettings);
+}
+
+void QKdeThemePrivate::clearKdeSettings() const
+{
+    kdeSettings.clear();
 }
 
 // Reads the color from the KDE configuration, and store it in the
@@ -782,7 +962,7 @@ static inline bool kdeColor(QPalette *pal, QPalette::ColorRole role, const QVari
 
 void QKdeThemePrivate::readKdeSystemPalette(const QStringList &kdeDirs, int kdeVersion, QHash<QString, QSettings*> &kdeSettings, QPalette *pal)
 {
-    if (!kdeColor(pal, QPalette::Button, readKdeSetting(QStringLiteral("Colors:Button/BackgroundNormal"), kdeDirs, kdeVersion, kdeSettings))) {
+    if (!kdeColor(pal, QPalette::Button, readKdeSetting(KdeSetting::ButtonBackground, kdeDirs, kdeVersion, kdeSettings))) {
         // kcolorscheme.cpp: SetDefaultColors
         const QColor defaultWindowBackground(214, 210, 208);
         const QColor defaultButtonBackground(223, 220, 217);
@@ -790,18 +970,18 @@ void QKdeThemePrivate::readKdeSystemPalette(const QStringList &kdeDirs, int kdeV
         return;
     }
 
-    kdeColor(pal, QPalette::Window, readKdeSetting(QStringLiteral("Colors:Window/BackgroundNormal"), kdeDirs, kdeVersion, kdeSettings));
-    kdeColor(pal, QPalette::Text, readKdeSetting(QStringLiteral("Colors:View/ForegroundNormal"), kdeDirs, kdeVersion, kdeSettings));
-    kdeColor(pal, QPalette::WindowText, readKdeSetting(QStringLiteral("Colors:Window/ForegroundNormal"), kdeDirs, kdeVersion, kdeSettings));
-    kdeColor(pal, QPalette::Base, readKdeSetting(QStringLiteral("Colors:View/BackgroundNormal"), kdeDirs, kdeVersion, kdeSettings));
-    kdeColor(pal, QPalette::Highlight, readKdeSetting(QStringLiteral("Colors:Selection/BackgroundNormal"), kdeDirs, kdeVersion, kdeSettings));
-    kdeColor(pal, QPalette::HighlightedText, readKdeSetting(QStringLiteral("Colors:Selection/ForegroundNormal"), kdeDirs, kdeVersion, kdeSettings));
-    kdeColor(pal, QPalette::AlternateBase, readKdeSetting(QStringLiteral("Colors:View/BackgroundAlternate"), kdeDirs, kdeVersion, kdeSettings));
-    kdeColor(pal, QPalette::ButtonText, readKdeSetting(QStringLiteral("Colors:Button/ForegroundNormal"), kdeDirs, kdeVersion, kdeSettings));
-    kdeColor(pal, QPalette::Link, readKdeSetting(QStringLiteral("Colors:View/ForegroundLink"), kdeDirs, kdeVersion, kdeSettings));
-    kdeColor(pal, QPalette::LinkVisited, readKdeSetting(QStringLiteral("Colors:View/ForegroundVisited"), kdeDirs, kdeVersion, kdeSettings));
-    kdeColor(pal, QPalette::ToolTipBase, readKdeSetting(QStringLiteral("Colors:Tooltip/BackgroundNormal"), kdeDirs, kdeVersion, kdeSettings));
-    kdeColor(pal, QPalette::ToolTipText, readKdeSetting(QStringLiteral("Colors:Tooltip/ForegroundNormal"), kdeDirs, kdeVersion, kdeSettings));
+    kdeColor(pal, QPalette::Window, readKdeSetting(KdeSetting::WindowBackground, kdeDirs, kdeVersion, kdeSettings));
+    kdeColor(pal, QPalette::Text, readKdeSetting(KdeSetting::ViewForeground, kdeDirs, kdeVersion, kdeSettings));
+    kdeColor(pal, QPalette::WindowText, readKdeSetting(KdeSetting::WindowForeground, kdeDirs, kdeVersion, kdeSettings));
+    kdeColor(pal, QPalette::Base, readKdeSetting(KdeSetting::ViewBackground, kdeDirs, kdeVersion, kdeSettings));
+    kdeColor(pal, QPalette::Highlight, readKdeSetting(KdeSetting::SelectionBackground, kdeDirs, kdeVersion, kdeSettings));
+    kdeColor(pal, QPalette::HighlightedText, readKdeSetting(KdeSetting::SelectionForeground, kdeDirs, kdeVersion, kdeSettings));
+    kdeColor(pal, QPalette::AlternateBase, readKdeSetting(KdeSetting::ViewBackgroundAlternate, kdeDirs, kdeVersion, kdeSettings));
+    kdeColor(pal, QPalette::ButtonText, readKdeSetting(KdeSetting::ButtonForeground, kdeDirs, kdeVersion, kdeSettings));
+    kdeColor(pal, QPalette::Link, readKdeSetting(KdeSetting::ViewForegroundLink, kdeDirs, kdeVersion, kdeSettings));
+    kdeColor(pal, QPalette::LinkVisited, readKdeSetting(KdeSetting::ViewForegroundVisited, kdeDirs, kdeVersion, kdeSettings));
+    kdeColor(pal, QPalette::ToolTipBase, readKdeSetting(KdeSetting::TooltipBackground, kdeDirs, kdeVersion, kdeSettings));
+    kdeColor(pal, QPalette::ToolTipText, readKdeSetting(KdeSetting::TooltipForeground, kdeDirs, kdeVersion, kdeSettings));
 
     // The above code sets _all_ color roles to "normal" colors. In KDE, the disabled
     // color roles are calculated by applying various effects described in kdeglobals.
@@ -990,7 +1170,6 @@ void QKdeThemePrivate::updateColorScheme(const QString &themeName)
 
     m_colorScheme = Qt::ColorScheme::Unknown;
 }
-
 
 const QPalette *QKdeTheme::palette(Palette type) const
 {
