@@ -228,11 +228,6 @@ static qsizetype qFindByteArrayBoyerMoore(
                    (const uchar *)needle, needleLen, skiptable);
 }
 
-#define REHASH(a) \
-    if (sl_minus_1 < sizeof(std::size_t) * CHAR_BIT) \
-        hashHaystack -= std::size_t(a) << sl_minus_1; \
-    hashHaystack <<= 1
-
 /*!
     \internal
  */
@@ -290,7 +285,9 @@ qsizetype qFindByteArray(const char *haystack0, qsizetype l, qsizetype from,
              && memcmp(needle, haystack, sl) == 0)
             return haystack - haystack0;
 
-        REHASH(*haystack);
+        if (sl_minus_1 < sizeof(std::size_t) * CHAR_BIT)
+            hashHaystack -= std::size_t(*haystack) << sl_minus_1;
+        hashHaystack <<= 1;
         ++haystack;
     }
     return -1;
@@ -398,7 +395,4 @@ qsizetype QStaticByteArrayMatcherBase::indexOfIn(const char *needle, size_t nlen
     \snippet code/src_corelib_text_qbytearraymatcher.cpp 1
 */
 
-
 QT_END_NAMESPACE
-
-#undef REHASH

@@ -2676,11 +2676,6 @@ QByteArray QByteArray::repeated(qsizetype times) const
     return result;
 }
 
-#define REHASH(a) \
-    if (ol_minus_1 < sizeof(std::size_t) * CHAR_BIT) \
-        hashHaystack -= std::size_t(a) << ol_minus_1; \
-    hashHaystack <<= 1
-
 /*! \fn qsizetype QByteArray::indexOf(QByteArrayView bv, qsizetype from) const
     \since 6.0
 
@@ -2736,10 +2731,11 @@ static qsizetype lastIndexOfHelper(const char *haystack, qsizetype l, const char
         if (hashHaystack == hashNeedle && memcmp(needle, haystack, ol) == 0)
             return haystack - end;
         --haystack;
-        REHASH(*(haystack + ol));
+        if (ol_minus_1 < sizeof(std::size_t) * CHAR_BIT)
+            hashHaystack -= std::size_t(*(haystack + ol)) << ol_minus_1;
+        hashHaystack <<= 1;
     }
     return -1;
-
 }
 
 static inline qsizetype lastIndexOfCharHelper(QByteArrayView haystack, qsizetype from, char needle) noexcept
@@ -5182,5 +5178,3 @@ size_t qHash(const QByteArray::FromBase64Result &key, size_t seed) noexcept
 */
 
 QT_END_NAMESPACE
-
-#undef REHASH
