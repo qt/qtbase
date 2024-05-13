@@ -270,8 +270,8 @@ qsizetype qFindByteArray(const char *haystack0, qsizetype l, qsizetype from,
     */
     const char *haystack = haystack0 + from;
     const char *end = haystack0 + (l - sl);
-    const auto sl_minus_1 = std::size_t(sl - 1);
-    std::size_t hashNeedle = 0, hashHaystack = 0;
+    const qregisteruint sl_minus_1 = sl - 1;
+    qregisteruint hashNeedle = 0, hashHaystack = 0;
     qsizetype idx;
     for (idx = 0; idx < sl; ++idx) {
         hashNeedle = ((hashNeedle<<1) + needle[idx]);
@@ -285,8 +285,8 @@ qsizetype qFindByteArray(const char *haystack0, qsizetype l, qsizetype from,
              && memcmp(needle, haystack, sl) == 0)
             return haystack - haystack0;
 
-        if (sl_minus_1 < sizeof(std::size_t) * CHAR_BIT)
-            hashHaystack -= std::size_t(*haystack) << sl_minus_1;
+        if (sl_minus_1 < sizeof(sl_minus_1) * CHAR_BIT)
+            hashHaystack -= qregisteruint(*haystack) << sl_minus_1;
         hashHaystack <<= 1;
         ++haystack;
     }

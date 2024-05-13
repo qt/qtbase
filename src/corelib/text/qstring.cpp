@@ -63,8 +63,8 @@
 #endif
 
 #define REHASH(a) \
-    if (sl_minus_1 < sizeof(std::size_t) * CHAR_BIT)  \
-        hashHaystack -= std::size_t(a) << sl_minus_1; \
+    if (sl_minus_1 < sizeof(sl_minus_1) * CHAR_BIT)  \
+        hashHaystack -= decltype(hashHaystack)(a) << sl_minus_1; \
     hashHaystack <<= 1
 
 QT_BEGIN_NAMESPACE
@@ -183,10 +183,10 @@ static qsizetype qLastIndexOf(Haystack haystack0, qsizetype from,
     const auto needle = needle0.data();
     const auto *end = haystack;
     haystack += from;
-    const std::size_t sl_minus_1 = sl ? sl - 1 : 0;
+    const qregisteruint sl_minus_1 = sl ? sl - 1 : 0;
     const auto *n = needle + sl_minus_1;
     const auto *h = haystack + sl_minus_1;
-    std::size_t hashNeedle = 0, hashHaystack = 0;
+    qregisteruint hashNeedle = 0, hashHaystack = 0;
 
     if (cs == Qt::CaseSensitive) {
         for (qsizetype idx = 0; idx < sl; ++idx) {
@@ -9905,8 +9905,8 @@ qsizetype QtPrivate::findString(QStringView haystack0, qsizetype from, QStringVi
     const char16_t *needle = needle0.utf16();
     const char16_t *haystack = haystack0.utf16() + from;
     const char16_t *end = haystack0.utf16() + (l - sl);
-    const std::size_t sl_minus_1 = sl - 1;
-    std::size_t hashNeedle = 0, hashHaystack = 0;
+    const qregisteruint sl_minus_1 = sl - 1;
+    qregisteruint hashNeedle = 0, hashHaystack = 0;
     qsizetype idx;
 
     if (cs == Qt::CaseSensitive) {

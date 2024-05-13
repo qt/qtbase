@@ -2716,10 +2716,10 @@ static qsizetype lastIndexOfHelper(const char *haystack, qsizetype l, const char
 
     const char *end = haystack;
     haystack += from;
-    const auto ol_minus_1 = std::size_t(ol - 1);
+    const qregisteruint ol_minus_1 = ol - 1;
     const char *n = needle + ol_minus_1;
     const char *h = haystack + ol_minus_1;
-    std::size_t hashNeedle = 0, hashHaystack = 0;
+    qregisteruint hashNeedle = 0, hashHaystack = 0;
     qsizetype idx;
     for (idx = 0; idx < ol; ++idx) {
         hashNeedle = ((hashNeedle<<1) + *(n-idx));
@@ -2731,8 +2731,8 @@ static qsizetype lastIndexOfHelper(const char *haystack, qsizetype l, const char
         if (hashHaystack == hashNeedle && memcmp(needle, haystack, ol) == 0)
             return haystack - end;
         --haystack;
-        if (ol_minus_1 < sizeof(std::size_t) * CHAR_BIT)
-            hashHaystack -= std::size_t(*(haystack + ol)) << ol_minus_1;
+        if (ol_minus_1 < sizeof(ol_minus_1) * CHAR_BIT)
+            hashHaystack -= qregisteruint(*(haystack + ol)) << ol_minus_1;
         hashHaystack <<= 1;
     }
     return -1;
