@@ -10,7 +10,7 @@
 
 #define PACKAGE_NAME "libjpeg-turbo"
 
-#define VERSION "3.0.2"
+#define VERSION "3.0.3"
 
 #if SIZE_MAX == 0xffffffff
 #define SIZEOF_SIZE_T 4
