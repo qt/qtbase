@@ -330,7 +330,7 @@ public:
     ~QDebugStateSaver();
 private:
     Q_DISABLE_COPY(QDebugStateSaver)
-    QScopedPointer<QDebugStateSaverPrivate> d;
+    std::unique_ptr<QDebugStateSaverPrivate> d;
 };
 
 class QNoDebug
