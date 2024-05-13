@@ -212,23 +212,6 @@ qsizetype QByteArrayMatcher::indexIn(QByteArrayView data, qsizetype from) const
     \sa setPattern()
 */
 
-
-static qsizetype findChar(const char *str, qsizetype len, char ch, qsizetype from)
-{
-    const uchar *s = (const uchar *)str;
-    uchar c = (uchar)ch;
-    if (from < 0)
-        from = qMax(from + len, qsizetype(0));
-    if (from < len) {
-        const uchar *n = s + from - 1;
-        const uchar *e = s + len;
-        while (++n != e)
-            if (*n == c)
-                return  n - s;
-    }
-    return -1;
-}
-
 /*!
     \internal
  */
@@ -268,7 +251,7 @@ qsizetype qFindByteArray(
         return -1;
 
     if (sl == 1)
-        return findChar(haystack0, haystackLen, needle[0], from);
+        return QtPrivate::findByteArray({ haystack0, haystackLen }, from, needle[0]);
 
     /*
       We use the Boyer-Moore algorithm in cases where the overhead
