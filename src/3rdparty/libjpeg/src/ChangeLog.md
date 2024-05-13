@@ -1,3 +1,27 @@
+3.0.3
+=====
+
+### Significant changes relative to 3.0.2:
+
+1. Fixed an issue in the build system, introduced in 3.0.2, that caused all
+libjpeg-turbo components to depend on the Visual C++ run-time DLL when built
+with Visual C++ and CMake 3.15 or later, regardless of value of the
+`WITH_CRT_DLL` CMake variable.
+
+2. The x86-64 SIMD extensions now include support for Intel Control-flow
+Enforcement Technology (CET), which is enabled automatically if CET is enabled
+in the C compiler.
+
+3. Fixed a regression introduced by 3.0 beta2[6] that made it impossible for
+calling applications to supply custom Huffman tables when generating
+12-bit-per-component lossy JPEG images using the libjpeg API.
+
+4. Fixed a segfault that occurred when attempting to use the jpegtran `-drop`
+option with a specially-crafted malformed input image or drop image
+(specifically an image in which all of the scans contain fewer components than
+the number of components specified in the Start Of Frame segment.)
+
+
 3.0.2
 =====
 
