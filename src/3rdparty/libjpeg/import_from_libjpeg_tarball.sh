@@ -145,7 +145,7 @@ sed -i -e "s/@COPYRIGHT_YEAR@/$cyear/" $TARGET_DIR/src/jversion.h
 
 sed -n -e 's/^[ ]*"//
            s/\(\\n\)*"[ ]*\\*$//
-           /JCOPYRIGHT\ /,/^[ ]*$/ {
+           /JCOPYRIGHT.\ /,/^[ ]*$/ {
                /Copyright/p
            }
           ' $TARGET_DIR/src/jversion.h > $TARGET_DIR/COPYRIGHT.txt
