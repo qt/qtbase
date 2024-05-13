@@ -32,6 +32,7 @@
 #include <QtCore/qvariant.h>
 
 #include <cstdio>
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
@@ -321,7 +322,7 @@ struct QCborValueFormatter
 
     static char *formatTag(QCborTag tag, const QCborValue &taggedValue)
     {
-        QScopedArrayPointer<char> hold(format(taggedValue));
+        const std::unique_ptr<char[]> hold(format(taggedValue));
         char *buf = new char[BufferLen];
         std::snprintf(buf, BufferLen, "QCborValue(QCborTag(%llu), %s)",
                       qToUnderlying(tag), hold.get());
@@ -346,7 +347,7 @@ struct QCborValueFormatter
 
     template<typename T> static char *format(QCborValue::Type type, const T &t)
     {
-        QScopedArrayPointer<char> hold(QTest::toString(t));
+        const std::unique_ptr<char[]> hold(QTest::toString(t));
         return innerFormat(type, hold.get());
     }
 
@@ -360,9 +361,9 @@ struct QCborValueFormatter
         case QCborValue::String:
             return format(v.type(), v.toString());
         case QCborValue::Array:
-            return innerFormat(v.type(), QScopedArrayPointer<char>(format(v.toArray())).get());
+            return innerFormat(v.type(), std::unique_ptr<char[]>(format(v.toArray())).get());
         case QCborValue::Map:
-            return innerFormat(v.type(), QScopedArrayPointer<char>(format(v.toMap())).get());
+            return innerFormat(v.type(), std::unique_ptr<char[]>(format(v.toMap())).get());
         case QCborValue::Tag:
             return formatTag(v.tag(), v.taggedValue());
         case QCborValue::SimpleType:
@@ -397,7 +398,7 @@ struct QCborValueFormatter
         QByteArray out(1, '[');
         const char *comma = "";
         for (QCborValueConstRef v : a) {
-            QScopedArrayPointer<char> s(format(v));
+            const std::unique_ptr<char[]> s(format(v));
             out += comma;
             out += s.get();
             comma = ", ";
@@ -411,8 +412,8 @@ struct QCborValueFormatter
         QByteArray out(1, '{');
         const char *comma = "";
         for (auto pair : m) {
-            QScopedArrayPointer<char> key(format(pair.first));
-            QScopedArrayPointer<char> value(format(pair.second));
+            const std::unique_ptr<char[]> key(format(pair.first));
+            const std::unique_ptr<char[]> value(format(pair.second));
             out += comma;
             out += key.get();
             out += ": ";
@@ -461,9 +462,9 @@ template <typename Rep, typename Period> char *toString(std::chrono::duration<Re
 template <typename T1, typename T2>
 inline char *toString(const std::pair<T1, T2> &pair)
 {
-    const QScopedArrayPointer<char> first(toString(pair.first));
-    const QScopedArrayPointer<char> second(toString(pair.second));
-    return formatString("std::pair(", ")", 2, first.data(), second.data());
+    const std::unique_ptr<char[]> first(toString(pair.first));
+    const std::unique_ptr<char[]> second(toString(pair.second));
+    return formatString("std::pair(", ")", 2, first.get(), second.get());
 }
 
 template <typename Tuple, std::size_t... I>
