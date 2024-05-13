@@ -541,7 +541,7 @@ QMacRootLevelAutoReleasePool::QMacRootLevelAutoReleasePool()
     if (qEnvironmentVariableIsSet(ROOT_LEVEL_POOL_DISABLE_SWITCH))
         return;
 
-    pool.reset(new QMacAutoReleasePool);
+    pool.emplace();
 
     [[[ROOT_LEVEL_POOL_MARKER alloc] init] autorelease];
 
