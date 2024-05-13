@@ -243,6 +243,9 @@ qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, QByt
     const auto haystack0 = haystack.data();
     const auto l = haystack.size();
     const auto sl = needle.size();
+    if (sl == 1)
+        return findByteArray(haystack, from, needle.front());
+
     if (from < 0)
         from += l;
     if (std::size_t(sl + from) > std::size_t(l))
@@ -251,9 +254,6 @@ qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, QByt
         return from;
     if (!l)
         return -1;
-
-    if (sl == 1)
-        return findByteArray(haystack, from, needle.front());
 
     /*
       We use the Boyer-Moore algorithm in cases where the overhead
