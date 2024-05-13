@@ -16,13 +16,44 @@
 
 #include <QtCore/qfloat16.h>
 
+#include <type_traits>
+
+QT_BEGIN_NAMESPACE
+
+namespace QtPrivate {
+
+// [format.formatter.spec] / 5
+template <typename T, typename CharT>
+constexpr bool FormatterDoesNotExist =
+        std::negation_v<
+            std::disjunction<
+                std::is_default_constructible<std::formatter<T, CharT>>,
+                std::is_copy_constructible<std::formatter<T, CharT>>,
+                std::is_move_constructible<std::formatter<T, CharT>>,
+                std::is_copy_assignable<std::formatter<T, CharT>>,
+                std::is_move_assignable<std::formatter<T, CharT>>
+            >
+        >;
+
 template <typename CharT>
-struct std::formatter<QT_PREPEND_NAMESPACE(qfloat16), CharT> : std::formatter<float, CharT>
+using QFloat16FormatterBaseType =
+        std::conditional_t<FormatterDoesNotExist<qfloat16::NearestFloat, CharT>,
+                           float,
+                           qfloat16::NearestFloat>;
+
+} // namespace QtPrivate
+
+QT_END_NAMESPACE
+
+template <typename CharT>
+struct std::formatter<QT_PREPEND_NAMESPACE(qfloat16), CharT>
+    : std::formatter<QT_PREPEND_NAMESPACE(QtPrivate::QFloat16FormatterBaseType<CharT>), CharT>
 {
     template <typename FormatContext>
     auto format(QT_PREPEND_NAMESPACE(qfloat16) val, FormatContext &ctx) const
     {
-        return std::formatter<float, CharT>::format(float(val), ctx);
+        using FloatType = QT_PREPEND_NAMESPACE(QtPrivate::QFloat16FormatterBaseType<CharT>);
+        return std::formatter<FloatType, CharT>::format(FloatType(val), ctx);
     }
 };
 
