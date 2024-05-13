@@ -6,8 +6,9 @@
 
 #include <QtCore/qiodevicebase.h>
 #include <QtCore/qchar.h>
-#include <QtCore/qscopedpointer.h>
 #include <QtCore/qstringconverter_base.h>
+
+#include <memory>
 
 #include <stdio.h>
 
@@ -174,7 +175,7 @@ private:
     friend class QDebugStateSaverPrivate;
     friend class QDebug;
 
-    QScopedPointer<QTextStreamPrivate> d_ptr;
+    std::unique_ptr<QTextStreamPrivate> d_ptr;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextStream::NumberFlags)
