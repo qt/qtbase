@@ -833,10 +833,7 @@ void QKdeThemePrivate::refresh()
 
     const QVariant colorScheme = readKdeSetting(KdeSetting::ColorScheme);
 
-    if (colorScheme.isValid())
-        updateColorScheme(colorScheme.toString());
-    else
-        m_colorScheme = Qt::ColorScheme::Unknown;
+    updateColorScheme(colorScheme.toString());
 
     const QVariant singleClickValue = readKdeSetting(KdeSetting::SingleClick);
     if (singleClickValue.isValid())
