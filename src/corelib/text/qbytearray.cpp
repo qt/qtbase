@@ -56,10 +56,6 @@ static constexpr inline uchar asciiLower(uchar c)
     return c >= 'A' && c <= 'Z' ? c | 0x20 : c;
 }
 
-qsizetype qFindByteArray(
-        const char *haystack0, qsizetype haystackLen, qsizetype from,
-        const char *needle0, qsizetype needleLen);
-
 /*****************************************************************************
   Safe and portable C string functions; extensions to standard string.h
  *****************************************************************************/
@@ -2684,26 +2680,6 @@ QByteArray QByteArray::repeated(qsizetype times) const
     if (ol_minus_1 < sizeof(std::size_t) * CHAR_BIT) \
         hashHaystack -= std::size_t(a) << ol_minus_1; \
     hashHaystack <<= 1
-
-qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, QByteArrayView needle) noexcept
-{
-    const auto ol = needle.size();
-    const auto l = haystack.size();
-    if (ol == 0) {
-        if (from < 0)
-            return qMax(from + l, 0);
-        else
-            return from > l ? -1 : from;
-    }
-
-    if (ol == 1)
-        return findByteArray(haystack, from, needle.front());
-
-    if (from > l || ol + from > l)
-        return -1;
-
-    return qFindByteArray(haystack.data(), haystack.size(), from, needle.data(), ol);
-}
 
 /*! \fn qsizetype QByteArray::indexOf(QByteArrayView bv, qsizetype from) const
     \since 6.0

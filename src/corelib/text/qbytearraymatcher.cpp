@@ -215,6 +215,7 @@ qsizetype QByteArrayMatcher::indexIn(QByteArrayView data, qsizetype from) const
 /*!
     \internal
  */
+Q_NEVER_INLINE
 static qsizetype qFindByteArrayBoyerMoore(
     const char *haystack, qsizetype haystackLen, qsizetype haystackOffset,
     const char *needle, qsizetype needleLen)
@@ -235,12 +236,13 @@ static qsizetype qFindByteArrayBoyerMoore(
 /*!
     \internal
  */
-qsizetype qFindByteArray(
-    const char *haystack0, qsizetype haystackLen, qsizetype from,
-    const char *needle, qsizetype needleLen)
+static qsizetype qFindByteArray(const char *haystack0, qsizetype l, qsizetype from,
+                                const char *needle, qsizetype sl);
+qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, QByteArrayView needle) noexcept
 {
-    const auto l = haystackLen;
-    const auto sl = needleLen;
+    const auto haystack0 = haystack.data();
+    const auto l = haystack.size();
+    const auto sl = needle.size();
     if (from < 0)
         from += l;
     if (std::size_t(sl + from) > std::size_t(l))
@@ -251,7 +253,7 @@ qsizetype qFindByteArray(
         return -1;
 
     if (sl == 1)
-        return QtPrivate::findByteArray({ haystack0, haystackLen }, from, needle[0]);
+        return findByteArray(haystack, from, needle.front());
 
     /*
       We use the Boyer-Moore algorithm in cases where the overhead
@@ -259,13 +261,17 @@ qsizetype qFindByteArray(
       hash function.
     */
     if (l > 500 && sl > 5)
-        return qFindByteArrayBoyerMoore(haystack0, haystackLen, from,
-                                        needle, needleLen);
+        return qFindByteArrayBoyerMoore(haystack0, l, from, needle.data(), sl);
+    return qFindByteArray(haystack0, l, from, needle.data(), sl);
+}
 
+qsizetype qFindByteArray(const char *haystack0, qsizetype l, qsizetype from,
+                         const char *needle, qsizetype sl)
+{
     /*
       We use some hashing for efficiency's sake. Instead of
       comparing strings, we compare the hash value of str with that
-      of a part of this QString. Only if that matches, we call memcmp().
+      of a part of this QByteArray. Only if that matches, we call memcmp().
     */
     const char *haystack = haystack0 + from;
     const char *end = haystack0 + (l - sl);
