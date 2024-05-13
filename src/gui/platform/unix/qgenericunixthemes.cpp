@@ -957,13 +957,13 @@ Qt::ColorScheme QKdeTheme::colorScheme() const
 
 /*!
    \internal
-   \brief QKdeTheme::updateColorScheme - guess and set appearance for unix themes.
-   KDE themes do not have an appearance property.
-   The key words "dark" or "light" should be part of the theme name.
+   \brief QKdeTheme::updateColorScheme - guess and set a color scheme for unix themes.
+   KDE themes do not have a color scheme property.
+   The key words "dark" or "light" are usually part of the theme name.
    This is, however, not a mandatory convention.
 
-   If \param themeName contains a key word, the respective appearance is set.
-   If it doesn't, the appearance is heuristically determined by comparing text and base color
+   If \param themeName contains a valid key word, the respective color scheme is set.
+   If it doesn't, the color scheme is heuristically determined by comparing text and base color
    of the system palette.
  */
 void QKdeThemePrivate::updateColorScheme(const QString &themeName)
