@@ -105,9 +105,9 @@ using namespace Qt::StringLiterals;
     // C++ code
     QJniObject string1 = QJniObject::fromString("String1");
     QJniObject string2 = QJniObject::fromString("String2");
-    QJniObject stringArray = QJniObject::callStaticObjectMethod<jstringArray>(
+    QJniObject stringArray = QJniObject::callStaticObjectMethod<jobjectArray>(
                                                                 "org/qtproject/qt/TestClass",
-                                                                "stringArray"
+                                                                "stringArray",
                                                                 string1.object<jstring>(),
                                                                 string2.object<jstring>());
     \endcode
