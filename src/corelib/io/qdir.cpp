@@ -313,9 +313,10 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, const QFileInfoList 
                 names->append(fi.fileName());
         }
     } else {
-        QScopedArrayPointer<QDirSortItem> si(new QDirSortItem[n]);
+        QVarLengthArray<QDirSortItem, 64> si;
+        si.reserve(n);
         for (qsizetype i = 0; i < n; ++i)
-            si[i] = QDirSortItem{l.at(i), sort};
+            si.emplace_back(l.at(i), sort);
 
 #ifndef QT_BOOTSTRAPPED
     if (sort.testAnyFlag(QDir::LocaleAware)) {
