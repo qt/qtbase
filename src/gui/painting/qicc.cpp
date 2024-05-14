@@ -559,6 +559,8 @@ static bool parseXyzData(const QByteArray &data, const TagEntry &tagEntry, QColo
 
 static quint32 parseTRC(const QByteArrayView &tagData, QColorTrc &gamma, QColorTransferTable::Type type = QColorTransferTable::TwoWay)
 {
+    if (tagData.size() < 12)
+        return 0;
     const GenericTagData trcData = qFromUnaligned<GenericTagData>(tagData.constData());
     if (trcData.type == quint32(Tag::curv)) {
         Q_STATIC_ASSERT(sizeof(CurvTagData) == 12);
@@ -1067,6 +1069,8 @@ static bool parseDesc(const QByteArray &data, const TagEntry &tagEntry, QString 
 
     // Either 'desc' (ICCv2) or 'mluc' (ICCv4)
     if (tag.type == quint32(Tag::desc)) {
+        if (tagEntry.size < sizeof(DescTagData))
+            return false;
         Q_STATIC_ASSERT(sizeof(DescTagData) == 12);
         const DescTagData desc = qFromUnaligned<DescTagData>(data.constData() + tagEntry.offset);
         const quint32 len = desc.asciiDescriptionLength;
@@ -1287,7 +1291,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
             qCWarning(lcIcc) << "fromIccProfile: failed tag offset sanity 2";
             return false;
         }
-        if (tagTable.size < 12) {
+        if (tagTable.size < 8) {
             qCWarning(lcIcc) << "fromIccProfile: failed minimal tag size sanity";
             return false;
         }
