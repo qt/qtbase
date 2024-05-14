@@ -8,12 +8,12 @@ import urllib.request
 # 'https://git.fedorahosted.org/cgit/hwdata.git/plain/pnp.ids'
 # which is discontinued. For now there seems to be a fork at:
 url = 'https://github.com/vcrhonek/hwdata/raw/master/pnp.ids'
-
+# REUSE-IgnoreStart
 copyright = """
 // Copyright (C) 2017 Pier Luigi Fiorini <pierluigi.fiorini@gmail.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 """
-
+# REUSE-IgnoreEnd
 notice = """/*
  * This lookup table was generated from {}
  *
