@@ -2126,17 +2126,24 @@ void QPdfEnginePrivate::writePage()
     qreal userUnit = calcUserUnit();
 
     addXrefEntry(pages.constLast());
+
+    // make sure we use the pagesize from when we started the page, since the user may have changed it
+    const QByteArray formattedPageWidth = QByteArray::number(currentPage->pageSize.width() / userUnit, 'f');
+    const QByteArray formattedPageHeight = QByteArray::number(currentPage->pageSize.height() / userUnit, 'f');
+
     xprintf("<<\n"
             "/Type /Page\n"
             "/Parent %d 0 R\n"
             "/Contents %d 0 R\n"
             "/Resources %d 0 R\n"
             "/Annots %d 0 R\n"
-            "/MediaBox [0 0 %s %s]\n",
+            "/MediaBox [0 0 %s %s]\n"
+            "/TrimBox [0 0 %s %s]\n",
             pageRoot, pageStream, resources, annots,
-            // make sure we use the pagesize from when we started the page, since the user may have changed it
-            QByteArray::number(currentPage->pageSize.width() / userUnit, 'f').constData(),
-            QByteArray::number(currentPage->pageSize.height() / userUnit, 'f').constData());
+            formattedPageWidth.constData(),
+            formattedPageHeight.constData(),
+            formattedPageWidth.constData(),
+            formattedPageHeight.constData());
 
     if (pdfVersion >= QPdfEngine::Version_1_6)
         xprintf("/UserUnit %s\n", QByteArray::number(userUnit, 'f').constData());
