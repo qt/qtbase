@@ -36,9 +36,6 @@ Q_CONSTINIT QAtomicInt QWindowSystemInterfacePrivate::eventAccepted;
 QWindowSystemEventHandler *QWindowSystemInterfacePrivate::eventHandler;
 QWindowSystemInterfacePrivate::WindowSystemEventList QWindowSystemInterfacePrivate::windowSystemEventQueue;
 
-extern QPointer<QWindow> qt_last_mouse_receiver;
-
-
 // ------------------- QWindowSystemInterfacePrivate -------------------
 
 /*!
