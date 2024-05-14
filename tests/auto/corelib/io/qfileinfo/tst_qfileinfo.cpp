@@ -1217,9 +1217,16 @@ void tst_QFileInfo::setFileTimes()
     QCOMPARE(file.write(data), data.size());
     QCOMPARE(file.size(), data.size());
 
-    const QDateTime before = QDateTime::currentDateTimeUtc().addMSecs(-5000);
+    QDateTime before = QDateTime::currentDateTimeUtc().addMSecs(-5000);
+
     QVERIFY(file.setFileTime(before, QFile::FileModificationTime));
     const QDateTime mtime = file.fileTime(QFile::FileModificationTime).toUTC();
+    if (mtime.time().msec() == 0)
+    {
+        const QTime beforeTime = before.time();
+        const QTime beforeTimeWithMSCutOff{beforeTime.hour(), beforeTime.minute(), beforeTime.second(), 0};
+        before.setTime(beforeTimeWithMSCutOff);
+    }
     QCOMPARE(mtime, before);
 }
 
