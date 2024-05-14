@@ -26,14 +26,18 @@
 using namespace std::chrono_literals;
 
 #if defined(Q_OS_QNX)
-// Longer polling times on QNX, otherwise the tests fail on the CI
+constexpr bool isQNX = true;
+#else
+constexpr bool isQNX = false;
+#endif
+
+#if defined(Q_OS_QNX) || defined(Q_OS_VXWORKS)
+// Longer polling times on QNX and VxWorks, otherwise the tests fail on the CI
 constexpr auto nativeEngineTimeout = 1s;
 constexpr auto pollingEngineTimeout = 1s;
-constexpr bool isQNX = true;
 #else
 constexpr auto nativeEngineTimeout = 0ms;
 constexpr auto pollingEngineTimeout = 20ms;
-constexpr bool isQNX = false;
 #endif
 
 /* All tests need to run in temporary directories not used
