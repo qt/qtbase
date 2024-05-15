@@ -61,8 +61,8 @@
     ARM is bi-endian, detect using __ARMEL__ or __ARMEB__, falling back to
     auto-detection implemented below.
 */
-#elif defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM) || defined(_M_ARM64) || defined(__aarch64__) || defined(__ARM64__)
-#  if defined(__aarch64__) || defined(__ARM64__) || defined(_M_ARM64)
+#elif defined(__arm__) || defined(__TARGET_ARCH_ARM) || defined(_M_ARM) || defined(_M_ARM64) || defined(__aarch64__) || defined(__ARM64__) || defined(_ARM64EC_)
+#  if defined(__aarch64__) || defined(__ARM64__) || defined(_M_ARM64) || defined(_ARM64EC_)
 #    define Q_PROCESSOR_ARM_64
 #    define Q_PROCESSOR_WORDSIZE 8
 #  else
@@ -78,7 +78,8 @@
       || defined(__aarch64__) \
       || defined(__ARMv8__) \
       || defined(__ARMv8_A__) \
-      || defined(_M_ARM64)
+      || defined(_M_ARM64) \
+      || defined (_ARM64EC_)
 #    define Q_PROCESSOR_ARM 8
 #  elif defined(__ARM_ARCH_7__) \
       || defined(__ARM_ARCH_7A__) \
@@ -116,7 +117,10 @@
 #  else
 #    error "ARM architecture too old"
 #  endif
-#  if defined(__ARMEL__) || defined(_M_ARM64)
+#  if defined(_ARM64EC_)
+#    define Q_PROCESSOR_ARM_64_EC
+#  endif
+#  if defined(__ARMEL__) || defined(_M_ARM64) || defined(_ARM64EC_)
 #    define Q_BYTE_ORDER Q_LITTLE_ENDIAN
 #  elif defined(__ARMEB__)
 #    define Q_BYTE_ORDER Q_BIG_ENDIAN

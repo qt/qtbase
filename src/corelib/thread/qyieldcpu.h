@@ -10,7 +10,7 @@
 #include <QtCore/qprocessordetection.h>
 #include <QtCore/qtconfigmacros.h>
 
-#ifdef Q_CC_MSVC_ONLY
+#if defined(Q_CC_MSVC_ONLY) && defined(Q_PROCESSOR_X86)
 // MSVC defines _YIELD_PROCESSOR() in <xatomic.h>, but as that is a private
 // header, we include the public ones
 #  ifdef __cplusplus

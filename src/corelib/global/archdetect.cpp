@@ -97,6 +97,8 @@
 #  elif _MIPS_SIM == _ABIO64
 #    define ARCH_ABI1 "-o64"
 #  endif
+#elif defined(Q_PROCESSOR_ARM_64_EC)
+#  define ARCH_ABI1 "-ec"
 #else
 #  define ARCH_ABI1 ""
 #endif
