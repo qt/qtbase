@@ -44,24 +44,15 @@ abstract class QtView extends ViewGroup {
     private static native void resizeWindow(long windowReference,
                                             int x, int y, int width, int height);
 
-    /**
-     * Create QtView for embedding a QWindow. Instantiating a QtView will load the Qt libraries
-     * if they have not already been loaded, including the app library specified by appName, and
-     * starting the said Qt app.
-     * @param context the hosting Context
-     * @param appLibName the name of the Qt app library to load and start. This corresponds to the
-              target name set in Qt app's CMakeLists.txt
-    **/
-    public QtView(Context context, String appLibName) throws InvalidParameterException {
+   /**
+    * Create a QtView for embedding a QWindow without loading the Qt libraries or starting
+    * the Qt app.
+    * @param context the hosting Context
+   **/
+    public QtView(Context context) {
         super(context);
-        if (appLibName == null || appLibName.isEmpty()) {
-            throw new InvalidParameterException("QtView: argument 'appLibName' may not be empty "+
-                                                "or null");
-        }
 
-        QtEmbeddedLoader loader = new QtEmbeddedLoader(context);
         m_viewInterface = QtEmbeddedViewInterfaceFactory.create(context);
-        loader.setMainLibraryName(appLibName);
         addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
@@ -78,10 +69,22 @@ abstract class QtView extends ViewGroup {
                 }
             }
         });
-        loader.loadQtLibraries();
-        // Start Native Qt application
-        m_viewInterface.startQtApplication(loader.getApplicationParameters(),
-                                           loader.getMainLibraryPath());
+    }
+    /**
+     * Create a QtView for embedding a QWindow, and load the Qt libraries if they have not already
+     * been loaded, including the app library specified by appName, and starting the said Qt app.
+     * @param context the hosting Context
+     * @param appLibName the name of the Qt app library to load and start. This corresponds to the
+              target name set in Qt app's CMakeLists.txt
+    **/
+    public QtView(Context context, String appLibName) throws InvalidParameterException {
+        this(context);
+        if (appLibName == null || appLibName.isEmpty()) {
+            throw new InvalidParameterException("QtView: argument 'appLibName' may not be empty "+
+                                                "or null");
+        }
+
+        loadQtLibraries(appLibName);
     }
 
     @Override
@@ -137,6 +140,15 @@ abstract class QtView extends ViewGroup {
 
     public void setQtWindowListener(QtWindowListener listener) {
         m_windowListener = listener;
+    }
+
+    void loadQtLibraries(String appLibName) {
+        QtEmbeddedLoader loader = new QtEmbeddedLoader(getContext());
+        loader.setMainLibraryName(appLibName);
+        loader.loadQtLibraries();
+        // Start Native Qt application
+        m_viewInterface.startQtApplication(loader.getApplicationParameters(),
+                                           loader.getMainLibraryPath());
     }
 
     void setWindowReference(long windowReference) {
