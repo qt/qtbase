@@ -285,6 +285,54 @@ void QCocoaWindow::setCocoaGeometry(const QRect &rect)
     // will call QPlatformWindow::setGeometry(rect) during resize confirmation (see qnsview.mm)
 }
 
+QMargins QCocoaWindow::safeAreaMargins() const
+{
+    // The safe area of the view reflects the area not covered by navigation
+    // bars, tab bars, toolbars, and other ancestor views that might obscure
+    // the current view (by setting additionalSafeAreaInsets). If the window
+    // uses NSWindowStyleMaskFullSizeContentView this also includes the area
+    // of the view covered by the title bar.
+    QMarginsF viewSafeAreaMargins = {
+        m_view.safeAreaInsets.left,
+        m_view.safeAreaInsets.top,
+        m_view.safeAreaInsets.right,
+        m_view.safeAreaInsets.bottom
+    };
+
+    // The screen's safe area insets represent the distances from the screen's
+    // edges at which content isn't obscured. The view's safe area margins do
+    // not include the screen's insets automatically, so we need to manually
+    // merge them.
+    auto screenRect = m_view.window.screen.frame;
+    auto screenInsets = m_view.window.screen.safeAreaInsets;
+    auto screenRelativeViewBounds = QCocoaScreen::mapFromNative(
+        [m_view.window convertRectToScreen:
+            [m_view convertRect:m_view.bounds toView:nil]]
+    );
+
+    // The margins are relative to the screen the window is on.
+    // Note that we do not want represent the area outside of the
+    // screen as being outside of the safe area.
+    QMarginsF screenSafeAreaMargins = {
+        screenInsets.left ?
+            qMax(0.0f, screenInsets.left - screenRelativeViewBounds.left())
+            : 0.0f,
+        screenInsets.top ?
+            qMax(0.0f, screenInsets.top - screenRelativeViewBounds.top())
+            : 0.0f,
+        screenInsets.right ?
+            qMax(0.0f, screenInsets.right
+                - (screenRect.size.width - screenRelativeViewBounds.right()))
+            : 0.0f,
+        screenInsets.bottom ?
+            qMax(0.0f, screenInsets.bottom
+                - (screenRect.size.height - screenRelativeViewBounds.bottom()))
+            : 0.0f
+    };
+
+    return (screenSafeAreaMargins | viewSafeAreaMargins).toMargins();
+}
+
 bool QCocoaWindow::startSystemMove()
 {
     switch (NSApp.currentEvent.type) {
@@ -1434,6 +1482,12 @@ void QCocoaWindow::handleGeometryChange()
                                << "current" << geometry() << "new" << newGeometry;
 
     QWindowSystemInterface::handleGeometryChange(window(), newGeometry);
+
+    // Changing the window geometry may affect the safe area margins
+    if (safeAreaMargins() != m_lastReportedSafeAreaMargins) {
+        m_lastReportedSafeAreaMargins = safeAreaMargins();
+        QWindowSystemInterface::handleSafeAreaMarginsChanged(window());
+    }
 
     // Guard against processing window system events during QWindow::setGeometry
     // calls, which Qt and Qt applications do not expect.

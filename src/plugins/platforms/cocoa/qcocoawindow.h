@@ -80,6 +80,8 @@ public:
     QRect normalGeometry() const override;
     void setCocoaGeometry(const QRect &rect);
 
+    QMargins safeAreaMargins() const override;
+
     void setVisible(bool visible) override;
     void setWindowFlags(Qt::WindowFlags flags) override;
     void setWindowState(Qt::WindowStates state) override;
@@ -240,6 +242,8 @@ public: // for QNSView
     QRect m_normalGeometry;
     int m_registerTouchCount = 0;
     bool m_resizableTransientParent = false;
+
+    QMargins m_lastReportedSafeAreaMargins;
 
     static const int NoAlertRequest;
     NSInteger m_alertRequest = NoAlertRequest;
