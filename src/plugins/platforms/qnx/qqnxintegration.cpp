@@ -49,6 +49,7 @@
 #include <qpa/qwindowsysteminterface.h>
 
 #include <QtGui/private/qguiapplication_p.h>
+#include <QtGui/private/qrhibackingstore_p.h>
 
 #if !defined(QT_NO_OPENGL)
 #include "qqnxglcontext.h"
@@ -333,7 +334,18 @@ QPlatformWindow *QQnxIntegration::createPlatformWindow(QWindow *window) const
 QPlatformBackingStore *QQnxIntegration::createPlatformBackingStore(QWindow *window) const
 {
     qIntegrationDebug();
-    return new QQnxRasterBackingStore(window);
+    QSurface::SurfaceType surfaceType = window->surfaceType();
+    switch (surfaceType) {
+    case QSurface::RasterSurface:
+        return new QQnxRasterBackingStore(window);
+#if !defined(QT_NO_OPENGL)
+    // Return a QRhiBackingStore for non-raster surface windows
+    case QSurface::OpenGLSurface:
+        return new QRhiBackingStore(window);
+#endif
+    default:
+        return nullptr;
+    }
 }
 
 #if !defined(QT_NO_OPENGL)

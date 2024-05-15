@@ -398,6 +398,12 @@ qt_internal_extend_target(Gui CONDITION APPLE
         ${FWImageIO}
 )
 
+qt_internal_extend_target(Gui CONDITION QNX
+    SOURCES
+        painting/qrasterbackingstore.cpp painting/qrasterbackingstore_p.h
+        painting/qrhibackingstore.cpp painting/qrhibackingstore_p.h
+)
+
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_animation
     SOURCES
         animation/qguivariantanimation.cpp
