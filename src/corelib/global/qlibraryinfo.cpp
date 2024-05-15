@@ -566,6 +566,17 @@ static QString normalizePath(QString ret)
     return QDir::fromNativeSeparators(ret);
 };
 
+static bool keepQtBuildDefaults()
+{
+#if QT_CONFIG(settings)
+    QSettings *config = QLibraryInfoPrivate::configuration();
+    Q_ASSERT(config != nullptr);
+    return config->value("Config/MergeQtConf", false).toBool();
+#else
+    return false;
+#endif
+}
+
 #if QT_CONFIG(settings)
 static QVariant libraryPathToValue(QLibraryInfo::LibraryPath loc)
 {
@@ -575,21 +586,26 @@ static QVariant libraryPathToValue(QLibraryInfo::LibraryPath loc)
         return value;
     QSettings *config = QLibraryInfoPrivate::configuration();
     Q_ASSERT(config != nullptr);
+    // if keepQtBuildDefaults returns true,
+    // we only consider explicit values listed in qt.conf
+    QVariant defaultValue = keepQtBuildDefaults()
+            ? QVariant()
+            : QVariant(li.defaultValue);
     config->beginGroup("Paths"_L1);
     auto cleanup = qScopeGuard([&]() { config->endGroup(); });
     if (li.fallbackKey.isNull()) {
-        value = config->value(li.key, li.defaultValue);
+        value = config->value(li.key, defaultValue);
     } else {
         value = config->value(li.key);
         if (!value.isValid())
-            value = config->value(li.fallbackKey, li.defaultValue);
+            value = config->value(li.fallbackKey, defaultValue);
     }
     return value;
 }
 #endif // settings
 
 QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
-                                       QLibraryInfoPrivate::UsageMode usageMode)
+                                       UsageMode usageMode)
 {
     const QLibraryInfo::LibraryPath loc = p;
     QList<QString> ret;
@@ -611,7 +627,7 @@ QStringList QLibraryInfoPrivate::paths(QLibraryInfo::LibraryPath p,
     }
 #endif // settings
 
-    if (!fromConf) {
+    if (!fromConf || keepQtBuildDefaults()) {
         QString noConfResult;
         if (loc == QLibraryInfo::PrefixPath) {
             noConfResult = getPrefix(usageMode);

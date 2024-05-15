@@ -16,6 +16,7 @@ private slots:
     void path_data();
     void path();
     void paths();
+    void merge();
 };
 
 void tst_QLibraryInfo::initTestCase()
@@ -78,6 +79,23 @@ void tst_QLibraryInfo::paths()
     QCOMPARE(values[1], "/path/to/anotherdoc");
     QString baseDir = QCoreApplication::applicationDirPath();
     QCOMPARE(values[2], baseDir + "/relativePath");
+}
+
+void tst_QLibraryInfo::merge()
+{
+    QString qtConfPath(u":/merge.qt.conf");
+    QLibraryInfoPrivate::setQtconfManualPath(&qtConfPath);
+    QLibraryInfoPrivate::reload();
+
+    QString baseDir = QCoreApplication::applicationDirPath();
+    QString docPath = QLibraryInfo::path(QLibraryInfo::DocumentationPath);
+    // we can't know where exactly the doc path points, but it should not point to ${baseDir}/doc,
+    // which would be the  behavior without merge_qt_conf
+    QCOMPARE_NE(docPath, baseDir + "/doc");
+
+    QList<QString> values = QLibraryInfo::paths(QLibraryInfo::QmlImportsPath);
+    QCOMPARE(values.size(), 2); // custom entry + Qt default entry
+    QCOMPARE(values[0], "/path/to/myqml");
 }
 
 QTEST_GUILESS_MAIN(tst_QLibraryInfo)
