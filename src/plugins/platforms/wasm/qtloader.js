@@ -121,8 +121,13 @@ async function qtLoad(config)
             }
         }
     }
-    const fetchJsonHelper = async path => (await fetch(path)).json();
-    const filesToPreload = (await Promise.all(config.qt.preload.map(fetchJsonHelper))).flat();
+    const preloadFetchHelper = async (path) => {
+        const response = await fetch(path);
+        if (!response.ok)
+            throw new Error("Could not fetch preload file: " + path);
+        return response.json();
+    }
+    const filesToPreload = (await Promise.all(config.qt.preload.map(preloadFetchHelper))).flat();
     const qtPreRun = (instance) => {
         // Copy qt.environment to instance.ENV
         throwIfEnvUsedButNotExported(instance, config);
