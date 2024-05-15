@@ -7694,11 +7694,15 @@ QMargins QWidgetPrivate::safeAreaMargins() const
             return QMargins();
 
         // Or, if one of our ancestors are in a layout that does not have WA_LayoutOnEntireRect
-        // set, then we know that the layout has already taken care of placing us inside the
-        // safe area, by taking the contents rect of its parent widget into account.
+        // set, and the widget respects the safe area, then we know that the layout has already
+        // taken care of placing us inside the safe area, by taking the contents rect of its
+        // parent widget into account.
         const QWidget *assumedSafeWidget = nullptr;
         for (const QWidget *w = q; w != nativeWidget; w = w->parentWidget()) {
             QWidget *parentWidget = w->parentWidget();
+            if (!parentWidget->testAttribute(Qt::WA_ContentsMarginsRespectsSafeArea))
+                continue; // Layout can't help us
+
             if (parentWidget->testAttribute(Qt::WA_LayoutOnEntireRect))
                 continue; // Layout not going to help us
 
