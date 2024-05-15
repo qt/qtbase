@@ -282,9 +282,13 @@ void *QThreadPrivate::start(void *arg)
 #ifdef PTHREAD_CANCEL_DISABLE
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
 #endif
-#if !defined(Q_OS_QNX)
+#if !defined(Q_OS_QNX) && !defined(Q_OS_VXWORKS)
     // On QNX, calling finish() from a thread_local destructor causes the C
     // library to hang.
+    // On VxWorks, its pthread implementation fails on call to `pthead_setspecific` which is made
+    // by first QObject constructor during `finish()`. This causes call to QThread::current, since
+    // QObject doesn't have parent, and since the pthread is already removed, it tries to set
+    // QThreadData for current pthread key, which crashes.
     static thread_local
 #endif
             auto cleanup = qScopeGuard([=] { finish(arg); });
