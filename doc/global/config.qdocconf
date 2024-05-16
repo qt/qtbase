@@ -11,6 +11,9 @@ dita.metadata.default.audience = programmer
 navigation.homepage = index.html
 navigation.hometitle = "Qt $QT_VER"
 
+# Set trademarks page (located in qt/qtdoc)
+navigation.trademarkspage = Trademarks
+
 #Words to ignore for auto-linking
 ignorewords += \
     macOS \
