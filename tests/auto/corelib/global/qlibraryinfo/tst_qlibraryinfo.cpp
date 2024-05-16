@@ -15,6 +15,7 @@ private slots:
     void cleanup();
     void path_data();
     void path();
+    void paths();
 };
 
 void tst_QLibraryInfo::initTestCase()
@@ -59,6 +60,24 @@ void tst_QLibraryInfo::path()
     QString value = QLibraryInfo::path(path);
     QCOMPARE(value, expected);
 
+    // check consistency with paths
+    auto values = QLibraryInfo::paths(path);
+    QVERIFY(!values.isEmpty());
+    QCOMPARE(values.first(), expected);
+}
+
+void tst_QLibraryInfo::paths()
+{
+    QString qtConfPath(u":/list.qt.conf");
+    QLibraryInfoPrivate::setQtconfManualPath(&qtConfPath);
+    QLibraryInfoPrivate::reload();
+
+    QList<QString> values = QLibraryInfo::paths(QLibraryInfo::DocumentationPath);
+    QCOMPARE(values.length(), 3);
+    QCOMPARE(values[0], "/path/to/mydoc");
+    QCOMPARE(values[1], "/path/to/anotherdoc");
+    QString baseDir = QCoreApplication::applicationDirPath();
+    QCOMPARE(values[2], baseDir + "/relativePath");
 }
 
 QTEST_GUILESS_MAIN(tst_QLibraryInfo)

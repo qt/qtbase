@@ -14,4 +14,10 @@ qt_internal_add_test(tst_qlibraryinfo SOURCES tst_qlibraryinfo.cpp
 
 )
 
-qt_add_resources(tst_qlibraryinfo "qtconffiles" PREFIX "/" FILES empty.qt.conf partial.qt.conf)
+qt_add_resources(tst_qlibraryinfo "qtconffiles"
+    PREFIX "/"
+    FILES
+        empty.qt.conf
+        partial.qt.conf
+        list.qt.conf
+)

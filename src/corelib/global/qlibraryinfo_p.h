@@ -50,6 +50,7 @@ public:
     };
 
     static QString path(QLibraryInfo::LibraryPath p, UsageMode usageMode = RegularUsage);
+    static QList<QString> paths(QLibraryInfo::LibraryPath p, UsageMode usageMode = RegularUsage);
 };
 
 QT_END_NAMESPACE

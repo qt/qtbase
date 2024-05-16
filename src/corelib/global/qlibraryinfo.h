@@ -42,6 +42,7 @@ public:
         SettingsPath = 100
     };
     static QString path(LibraryPath p);
+    static QStringList paths(LibraryPath p);
 #if QT_DEPRECATED_SINCE(6, 0)
     using LibraryLocation = LibraryPath;
     QT_DEPRECATED_VERSION_X_6_0("Use path()")
