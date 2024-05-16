@@ -7,6 +7,7 @@
 #include <private/qcomparisontesthelper_p.h>
 
 #include <qlocale.h>
+#include <qscopeguard.h>
 
 #if defined(Q_OS_WIN)
 #include <QOperatingSystemVersion>
@@ -15,6 +16,8 @@
 #if defined(Q_OS_WIN) && !QT_CONFIG(icu)
 #  define USING_WIN_TZ
 #endif
+
+using namespace Qt::StringLiterals;
 
 class tst_QTimeZone : public QObject
 {
@@ -38,6 +41,8 @@ private Q_SLOTS:
     void availableTimeZoneIds();
     void utcOffsetId_data();
     void utcOffsetId();
+    void aliasMatches_data();
+    void aliasMatches();
     void specificTransition_data();
     void specificTransition();
     void transitionEachZone_data();
@@ -558,9 +563,12 @@ void tst_QTimeZone::isTimeZoneIdAvailable()
     const QList<QByteArray> available = QTimeZone::availableTimeZoneIds();
     for (const QByteArray &id : available) {
         QVERIFY2(QTimeZone::isTimeZoneIdAvailable(id), id);
-        QVERIFY2(QTimeZone(id).isValid(), id);
-        QCOMPARE(QTimeZone(id).id(), id);
+        const QTimeZone zone(id);
+        QVERIFY2(zone.isValid(), id);
+        QVERIFY2(zone.aliasMatches(id), zone.id() + " != " + id);
     }
+    // availableTimeZoneIds() doesn't list all possible offset IDs, but
+    // isTimeZoneIdAvailable() should accept them.
     for (qint32 offset = QTimeZone::MinUtcOffsetSecs;
          offset <= QTimeZone::MinUtcOffsetSecs; ++offset) {
         const QByteArray id = QTimeZone(offset).id();
@@ -698,6 +706,61 @@ void tst_QTimeZone::utcOffsetId()
 
         QCOMPARE(zone.id(), id);
     }
+}
+
+void tst_QTimeZone::aliasMatches_data()
+{
+    QTest::addColumn<QByteArray>("iana");
+    QTest::addColumn<QByteArray>("alias");
+
+    QTest::newRow("Montreal=Toronto") << "America/Toronto"_ba << "America/Montreal"_ba;
+    QTest::newRow("Asmera=Asmara") << "Africa/Asmara"_ba << "Africa/Asmera"_ba;
+    QTest::newRow("Argentina/Catamarca")
+        << "America/Argentina/Catamarca"_ba << "America/Catamarca"_ba;
+    QTest::newRow("Godthab=Nuuk") << "America/Nuuk"_ba << "America/Godthab"_ba;
+    QTest::newRow("Indiana/Indianapolis")
+        << "America/Indiana/Indianapolis"_ba << "America/Indianapolis"_ba;
+    QTest::newRow("Kentucky/Louisville")
+        << "America/Kentucky/Louisville"_ba << "America/Louisville"_ba;
+    QTest::newRow("Calcutta=Kolkata") << "Asia/Kolkata"_ba << "Asia/Calcutta"_ba;
+    QTest::newRow("Katmandu=Kathmandu") << "Asia/Kathmandu"_ba << "Asia/Katmandu"_ba;
+    QTest::newRow("Rangoon=Yangon") << "Asia/Yangon"_ba << "Asia/Rangoon"_ba;
+    QTest::newRow("Saigon=Ho_Chi_Minh") << "Asia/Ho_Chi_Minh"_ba << "Asia/Saigon"_ba;
+    QTest::newRow("Faeroe=Faroe") << "Atlantic/Faroe"_ba << "Atlantic/Faeroe"_ba;
+    QTest::newRow("Currie=Hobart") << "Australia/Hobart"_ba << "Australia/Currie"_ba;
+    QTest::newRow("Kiev=Kyiv") << "Europe/Kyiv"_ba << "Europe/Kiev"_ba;
+    QTest::newRow("Uzhgorod=Kyiv") << "Europe/Kyiv"_ba << "Europe/Uzhgorod"_ba;
+    QTest::newRow("Zaporozhye=Kyiv") << "Europe/Kyiv"_ba << "Europe/Zaporozhye"_ba;
+    QTest::newRow("Fiji=Fiji") << "Pacific/Fiji"_ba << "Pacific/Fiji"_ba;
+    QTest::newRow("Enderbury=Enderbury") << "Pacific/Enderbury"_ba << "Pacific/Enderbury"_ba;
+}
+
+void tst_QTimeZone::aliasMatches()
+{
+    QFETCH(const QByteArray, iana);
+    QFETCH(const QByteArray, alias);
+    const QTimeZone zone(iana);
+    const QTimeZone peer(alias);
+    if (!zone.isValid())
+        QSKIP("Backend doesn't support IANA ID");
+
+    auto report = qScopeGuard([zone, peer]() {
+        const QByteArray zid = zone.id(), pid = peer.id();
+        qDebug("Using %s and %s", zid.constData(), pid.constData());
+    });
+    QVERIFY2(peer.isValid(), "Construction should have fallen back on IANA ID");
+    QVERIFY(zone.aliasMatches(zone.id()));
+    QVERIFY(zone.aliasMatches(iana));
+    QVERIFY(peer.aliasMatches(peer.id()));
+    QVERIFY(peer.aliasMatches(alias));
+    QEXPECT_FAIL("Currie=Hobart", "Needs update to CLDR v44.1", Abort);
+    QEXPECT_FAIL("Uzhgorod=Kyiv", "Needs update to CLDR v44.1", Abort);
+    QEXPECT_FAIL("Zaporozhye=Kyiv", "Needs update to CLDR v44.1", Abort);
+    QVERIFY(zone.aliasMatches(peer.id()));
+    QVERIFY(zone.aliasMatches(alias));
+    QVERIFY(peer.aliasMatches(zone.id()));
+    QVERIFY(peer.aliasMatches(iana));
+    report.dismiss();
 }
 
 void tst_QTimeZone::specificTransition_data()
@@ -924,7 +987,7 @@ void tst_QTimeZone::stressTest()
     for (const QByteArray &id : idList) {
         QTimeZone testZone = QTimeZone(id);
         QCOMPARE(testZone.isValid(), true);
-        QCOMPARE(testZone.id(), id);
+        QVERIFY2(testZone.aliasMatches(id), testZone.id() + " != " + id);
         QDateTime testDate = QDateTime(QDate(2015, 1, 1), QTime(0, 0), UTC);
         testZone.territory();
         testZone.comment();
@@ -1860,7 +1923,7 @@ void tst_QTimeZone::stdCompatibility()
     QByteArrayView zoneName = QByteArrayView(timeZone->name());
     QTimeZone tz = QTimeZone::fromStdTimeZonePtr(timeZone);
     if (tz.isValid())
-        QCOMPARE(tz.id(), zoneName);
+        QVERIFY2(tz.aliasMatches(zoneName), tz.id().constData());
     else
         QVERIFY(!QTimeZone::isTimeZoneIdAvailable(zoneName.toByteArray()));
 #else

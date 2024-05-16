@@ -780,6 +780,9 @@ QByteArray QTimeZonePrivate::aliasToIana(QByteArrayView alias)
                                        alias, earlierAliasId);
     if (data != std::end(aliasMappingTable) && data->aliasId() == alias)
         return data->ianaId().toByteArray();
+    // Note: empty return means not an alias, which is true of an ID that others
+    // are aliases to, as the table omits self-alias entries. Let caller sort
+    // that out, rather than allocating to return alias.toByteArray().
     return {};
 }
 

@@ -830,6 +830,34 @@ QByteArray QTimeZone::id() const
 }
 
 /*!
+    \since 6.8
+    Returns \c true if \a alias is an alternative name for this timezone.
+
+    The IANA (formerly Olson) database has renamed some zones during its
+    history. There are also some zones that only differed prior to 1970 but are
+    now treated as synonymous. Some backends may have data reaching to before
+    1970 and produce distinct zones in the latter case. Others may produce zones
+    indistinguishable except by id(). This method determines whether an ID
+    refers (at least since 1970) to the same zone that this timezone object
+    describes.
+
+    This method is only available when feature \c timezone is enabled.
+*/
+bool QTimeZone::aliasMatches(QByteArrayView alias) const
+{
+    if (alias == id())
+        return true;
+    QByteArray mine = QTimeZonePrivate::aliasToIana(id());
+    // Empty if id() aliases to itself, which we've already checked:
+    if (!mine.isEmpty() && alias == mine)
+        return true;
+    QByteArray its = QTimeZonePrivate::aliasToIana(alias);
+    // Empty if alias aliases to itself, which we've already compared to id()
+    // and, where relevant, mine.
+    return !its.isEmpty() && its == (mine.isEmpty() ? id() : mine);
+}
+
+/*!
     \since 6.2
 
     Returns the territory for the time zone.

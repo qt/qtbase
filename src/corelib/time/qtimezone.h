@@ -166,6 +166,7 @@ public:
     };
     typedef QList<OffsetData> OffsetDataList;
 
+    bool aliasMatches(QByteArrayView alias) const;
     QByteArray id() const;
     QLocale::Territory territory() const;
 #  if QT_DEPRECATED_SINCE(6, 6)
