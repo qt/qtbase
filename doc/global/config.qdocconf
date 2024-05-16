@@ -15,6 +15,9 @@ productname = Qt
 navigation.homepage = index.html
 navigation.hometitle = "$productname $QT_VER"
 
+# Set trademarks page (located in qt/qtdoc)
+navigation.trademarkspage = Trademarks
+
 #Words to ignore for auto-linking
 ignorewords += \
     macOS \
