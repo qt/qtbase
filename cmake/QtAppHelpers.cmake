@@ -35,8 +35,6 @@ function(qt_internal_add_app target)
             "a future Qt version. Use the LIBRARIES option instead.")
     endif()
 
-    qt_internal_library_deprecation_level(deprecation_define)
-
     if(arg_NO_UNITY_BUILD)
         set(arg_NO_UNITY_BUILD "NO_UNITY_BUILD")
     else()

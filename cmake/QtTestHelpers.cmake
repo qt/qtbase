@@ -38,8 +38,6 @@ function(qt_internal_add_benchmark target)
         endif()
     endif()
 
-    qt_internal_library_deprecation_level(deprecation_define)
-
     qt_internal_add_executable(${target}
         NO_INSTALL # we don't install benchmarks
         NO_UNITY_BUILD # excluded by default
@@ -251,7 +249,6 @@ function(qt_internal_add_test_to_batch batch_name name)
 
     # Lazy-init the test batch
     if(NOT TARGET ${target})
-        qt_internal_library_deprecation_level(deprecation_define)
         qt_internal_add_executable(${target}
             ${exceptions_text}
             ${gui_text}
@@ -513,7 +510,6 @@ function(qt_internal_add_test name)
         list(APPEND private_includes ${arg_INCLUDE_DIRECTORIES})
 
         qt_internal_prepare_test_target_flags(version_arg exceptions_text gui_text ${ARGN})
-        qt_internal_library_deprecation_level(deprecation_define)
 
         qt_internal_add_executable("${name}"
             ${exceptions_text}

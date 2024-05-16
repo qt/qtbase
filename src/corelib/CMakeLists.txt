@@ -1484,3 +1484,39 @@ qt_internal_extend_target(Core
         # QReadWriteLock::destroyRecursive(QReadWriteLockPrivate*)
         "_ZN*14QReadWriteLock16destroyRecursiveEP*21QReadWriteLockPrivate*"
 )
+
+function(qt_internal_library_deprecation_level)
+    # QT_DISABLE_DEPRECATED_UP_TO controls which version we use as a cut-off
+    # compiling in to the library. E.g. if it is set to QT_VERSION then no
+    # code which was deprecated before QT_VERSION will be compiled in.
+    if(NOT DEFINED QT_DISABLE_DEPRECATED_UP_TO)
+        if(WIN32)
+            # On Windows, due to the way DLLs work, we need to export all functions,
+            # including the inlines
+            set(QT_DISABLE_DEPRECATED_UP_TO "0x040800")
+        else()
+            # On other platforms, Qt's own compilation does need to compile the Qt 5.0 API
+            set(QT_DISABLE_DEPRECATED_UP_TO "0x050000")
+        endif()
+    elseif(NOT QT_DISABLE_DEPRECATED_UP_TO MATCHES "^0x[0-9][0-9][0-9][0-9][0-9][0-9]$")
+        message(FATAL_ERROR "Ivalid format of the QT_DISABLE_DEPRECATED_UP_TO macro:"
+            " ${QT_DISABLE_DEPRECATED_UP_TO}. The expected format is the hexadecimal number,"
+            " e.g. 0x060102")
+    endif()
+    # QT_WARN_DEPRECATED_UP_TO controls the upper-bound of deprecation
+    # warnings that are emitted. E.g. if it is set to 0x060500 then all use of
+    # things deprecated in or before 6.5.0 will be warned against.
+    set(QT_WARN_DEPRECATED_UP_TO 0x070000)
+
+    set(output_header "${CMAKE_CURRENT_BINARY_DIR}/global/qtdeprecationdefinitions.h")
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/global/qtdeprecationdefinitions.h.in"
+        "${output_header}"
+        @ONLY
+        NEWLINE_STYLE UNIX
+    )
+
+    target_sources(Core PRIVATE "${output_header}")
+    set_source_files_properties("${output_header}" PROPERTIES GENERATED TRUE)
+endfunction()
+qt_internal_library_deprecation_level()

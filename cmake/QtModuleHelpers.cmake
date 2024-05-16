@@ -497,8 +497,6 @@ function(qt_internal_add_module target)
         endif()
     endif()
 
-    qt_internal_library_deprecation_level(deprecation_define)
-
     if(NOT arg_HEADER_MODULE)
         qt_autogen_tools_initial_setup(${target})
     endif()

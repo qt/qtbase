@@ -170,8 +170,6 @@ function(qt_internal_add_plugin target)
 
     qt_handle_multi_config_output_dirs("${target}")
 
-    qt_internal_library_deprecation_level(deprecation_define)
-
     qt_autogen_tools_initial_setup(${target})
 
     unset(plugin_install_package_suffix)
