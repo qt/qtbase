@@ -1,6 +1,7 @@
 // Copyright (C) 2019 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#include <stdlib.h>     // __argc, __argv
 #include <qt_windows.h>
 #include <shellapi.h>
 
@@ -38,11 +39,14 @@ static inline char *wideToMulti(unsigned int codePage, const wchar_t *aw)
 
 static inline int qtEntryPoint()
 {
-    int argc = 0;
+    int argc = __argc;
+    char **argv = __argv;
+    if (argv)
+        return main(argc, argv);
     wchar_t **argvW = CommandLineToArgvW(GetCommandLineW(), &argc);
     if (argvW == nullptr)
         return -1;
-    char **argv = new char *[argc + 1];
+    argv = new char *[argc + 1];
     for (int i = 0; i != argc; ++i)
         argv[i] = wideToMulti(CP_ACP, argvW[i]);
     argv[argc] = nullptr;
