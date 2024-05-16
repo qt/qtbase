@@ -10,7 +10,7 @@
     "Version": "3.0.3",
     "DownloadLocation": "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/3.0.3/libjpeg-turbo-3.0.3.tar.gz",
 
-    "License": "Independent JPEG Group License and BSD 3-Clause \"New\" or \"Revised\" License and zlib License",
+    "License": "Independent JPEG Group License and BSD 3-Clause \"New\" or \"Revised\" License",
     "LicenseId": "IJG AND BSD-3-Clause",
     "LicenseFiles": [ "LICENSE", "ijg-license.txt" ],
     "CopyrightFile": "COPYRIGHT.txt"
