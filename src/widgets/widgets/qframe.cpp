@@ -32,7 +32,13 @@ QFramePrivate::~QFramePrivate()
 
 inline void QFramePrivate::init()
 {
+    Q_Q(QFrame);
     setLayoutItemMargins(QStyle::SE_FrameLayoutItem);
+
+    // The frameRect property is implemented in terms of the widget's
+    // contentsRect, which conflicts with the implicit inclusion of
+    // the safe area margins in the contentsRect.
+    q->setAttribute(Qt::WA_ContentsMarginsRespectsSafeArea, false);
 }
 
 /*!
