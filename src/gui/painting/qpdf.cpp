@@ -23,6 +23,8 @@
 #include <qtimezone.h>
 #include <quuid.h>
 
+#include <map>
+
 #ifndef QT_NO_COMPRESS
 #include <zlib.h>
 #endif
@@ -1857,7 +1859,7 @@ void QPdfEnginePrivate::writeDestsRoot()
     if (destCache.isEmpty())
         return;
 
-    QHash<QString, int> destObjects;
+    std::map<QString, int> destObjects;
     QByteArray xs, ys;
     for (const DestInfo &destInfo : std::as_const(destCache)) {
         int destObj = addXrefEntry(-1);
@@ -1865,21 +1867,19 @@ void QPdfEnginePrivate::writeDestsRoot()
         ys.setNum(static_cast<double>(destInfo.coords.y()), 'f');
         xprintf("[%d 0 R /XYZ %s %s 0]\n", destInfo.pageObj, xs.constData(), ys.constData());
         xprintf("endobj\n");
-        destObjects.insert(destInfo.anchor, destObj);
+        destObjects.insert_or_assign(destInfo.anchor, destObj);
     }
 
     // names
     destsRoot = addXrefEntry(-1);
-    QStringList anchors = destObjects.keys();
-    anchors.sort();
     xprintf("<<\n/Limits [");
-    printString(anchors.constFirst());
+    printString(destObjects.begin()->first);
     xprintf(" ");
-    printString(anchors.constLast());
+    printString(destObjects.rbegin()->first);
     xprintf("]\n/Names [\n");
-    for (const QString &anchor : std::as_const(anchors)) {
+    for (const auto &[anchor, destObject] : destObjects) {
         printString(anchor);
-        xprintf(" %d 0 R\n", destObjects[anchor]);
+        xprintf(" %d 0 R\n", destObject);
     }
     xprintf("]\n>>\n"
             "endobj\n");
