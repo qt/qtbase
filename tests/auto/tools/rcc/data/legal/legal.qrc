@@ -1,0 +1,10 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <legal>
+        Copyright (C) 2024 Intel Corporation.
+        SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
+    </legal>
+    <qresource>
+        <file>../parentdir.txt</file>
+    </qresource>
+</RCC>

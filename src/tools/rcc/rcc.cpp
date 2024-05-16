@@ -512,6 +512,12 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                     reader.raiseError("expected <RCC> tag"_L1);
                 else
                     tokens.push(RccTag);
+            } else if (reader.name() == m_strings.TAG_LEGAL) {
+                if (tokens.isEmpty() || tokens.top() != RccTag) {
+                    reader.raiseError("unexpected <legal> tag"_L1);
+                } else {
+                    m_legal = reader.readElementText().trimmed();
+                }
             } else if (reader.name() == m_strings.TAG_RESOURCE) {
                 if (tokens.isEmpty() || tokens.top() != RccTag) {
                     reader.raiseError("unexpected <RESOURCE> tag"_L1);
@@ -1087,11 +1093,20 @@ void RCCResourceLibrary::writeNumber8(quint64 number)
 
 bool RCCResourceLibrary::writeHeader()
 {
+    auto writeCopyright = [this](QByteArrayView prefix) {
+        const QStringList lines = m_legal.split(u'\n', Qt::SkipEmptyParts);
+        for (const QString &line : lines) {
+            write(prefix.data(), prefix.size());
+            writeString(line.toUtf8().trimmed());
+            writeChar('\n');
+        }
+    };
     switch (m_format) {
     case C_Code:
     case Pass1:
         writeString("/****************************************************************************\n");
         writeString("** Resource object code\n");
+        writeCopyright("** ");
         writeString("**\n");
         writeString("** Created by: The Resource Compiler for Qt version ");
         writeByteArray(QT_VERSION_STR);
@@ -1105,6 +1120,7 @@ bool RCCResourceLibrary::writeHeader()
         break;
     case Python_Code:
         writeString("# Resource object code (Python 3)\n");
+        writeCopyright("# ");
         writeString("# Created by: object code\n");
         writeString("# Created by: The Resource Compiler for Qt version ");
         writeByteArray(QT_VERSION_STR);
