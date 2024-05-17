@@ -14,6 +14,8 @@
     \ingroup network
     \ingroup shared
 
+    \compares weak
+
     It can parse and construct URLs in both encoded and unencoded
     form. QUrl also has support for internationalized domain names
     (IDNs).
@@ -1012,8 +1014,9 @@ inline bool QUrlPrivate::setScheme(const QString &value, qsizetype len, bool doS
 inline void QUrlPrivate::setAuthority(const QString &auth, qsizetype from, qsizetype end, QUrl::ParsingMode mode)
 {
     sectionIsPresent &= ~Authority;
-    sectionIsPresent |= Host;
     port = -1;
+    if (from == end && !auth.isNull())
+        sectionIsPresent |= Host;   // empty but not null authority implies host
 
     // we never actually _loop_
     while (from != end) {
@@ -1153,8 +1156,11 @@ inline void QUrlPrivate::setQuery(const QString &value, qsizetype from, qsizetyp
 
 inline void QUrlPrivate::appendHost(QString &appendTo, QUrl::FormattingOptions options) const
 {
-    if (host.isEmpty())
+    if (host.isEmpty()) {
+        if ((sectionIsPresent & Host) && appendTo.isNull())
+            appendTo.detach();
         return;
+    }
     if (host.at(0).unicode() == '[') {
         // IPv6 addresses might contain a zone-id which needs to be recoded
         if (options != 0)
@@ -1272,7 +1278,9 @@ QUrlPrivate::setHost(const QString &value, qsizetype from, qsizetype iend, QUrl:
 
     const qsizetype len = end - begin;
     host.clear();
-    sectionIsPresent |= Host;
+    sectionIsPresent &= ~Host;
+    if (!value.isNull() || (sectionIsPresent & Authority))
+        sectionIsPresent |= Host;
     if (len == 0)
         return true;
 
@@ -2027,11 +2035,6 @@ void QUrl::setAuthority(const QString &authority, ParsingMode mode)
     }
 
     d->setAuthority(authority, 0, authority.size(), mode);
-    if (authority.isNull()) {
-        // QUrlPrivate::setAuthority cleared almost everything
-        // but it leaves the Host bit set
-        d->sectionIsPresent &= ~QUrlPrivate::Authority;
-    }
 }
 
 /*!
@@ -2295,8 +2298,7 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
     }
 
     if (d->setHost(data, 0, data.size(), mode)) {
-        if (host.isNull())
-            d->sectionIsPresent &= ~QUrlPrivate::Host;
+        return;
     } else if (!data.startsWith(u'[')) {
         // setHost failed, it might be IPv6 or IPvFuture in need of bracketing
         Q_ASSERT(d->error);
@@ -2309,6 +2311,7 @@ void QUrl::setHost(const QString &host, ParsingMode mode)
                 // source data contains ':', so it's an IPv6 error
                 d->error->code = QUrlPrivate::InvalidIPv6AddressError;
             }
+            d->sectionIsPresent &= ~QUrlPrivate::Host;
         } else {
             // succeeded
             d->clearError();
@@ -3067,88 +3070,101 @@ QByteArray QUrl::toAce(const QString &domain, AceProcessingOptions options)
 /*!
     \internal
 
-    Returns \c true if this URL is "less than" the given \a url. This
+    \fn bool QUrl::operator<(const QUrl &lhs, const QUrl &rhs)
+
+    Returns \c true if URL \a lhs is "less than" URL \a rhs. This
     provides a means of ordering URLs.
 */
-bool QUrl::operator <(const QUrl &url) const
+
+Qt::weak_ordering compareThreeWay(const QUrl &lhs, const QUrl &rhs)
 {
-    if (!d || !url.d) {
-        bool thisIsEmpty = !d || d->isEmpty();
-        bool thatIsEmpty = !url.d || url.d->isEmpty();
+    if (!lhs.d || !rhs.d) {
+        bool thisIsEmpty = !lhs.d || lhs.d->isEmpty();
+        bool thatIsEmpty = !rhs.d || rhs.d->isEmpty();
 
         // sort an empty URL first
-        return thisIsEmpty && !thatIsEmpty;
+        if (thisIsEmpty) {
+            if (!thatIsEmpty)
+                return Qt::weak_ordering::less;
+            else
+                return Qt::weak_ordering::equivalent;
+        } else {
+            return Qt::weak_ordering::greater;
+        }
     }
 
     int cmp;
-    cmp = d->scheme.compare(url.d->scheme);
+    cmp = lhs.d->scheme.compare(rhs.d->scheme);
     if (cmp != 0)
-        return cmp < 0;
+        return Qt::compareThreeWay(cmp, 0);
 
-    cmp = d->userName.compare(url.d->userName);
+    cmp = lhs.d->userName.compare(rhs.d->userName);
     if (cmp != 0)
-        return cmp < 0;
+        return Qt::compareThreeWay(cmp, 0);
 
-    cmp = d->password.compare(url.d->password);
+    cmp = lhs.d->password.compare(rhs.d->password);
     if (cmp != 0)
-        return cmp < 0;
+        return Qt::compareThreeWay(cmp, 0);
 
-    cmp = d->host.compare(url.d->host);
+    cmp = lhs.d->host.compare(rhs.d->host);
     if (cmp != 0)
-        return cmp < 0;
+        return Qt::compareThreeWay(cmp, 0);
 
-    if (d->port != url.d->port)
-        return d->port < url.d->port;
+    if (lhs.d->port != rhs.d->port)
+        return Qt::compareThreeWay(lhs.d->port, rhs.d->port);
 
-    cmp = d->path.compare(url.d->path);
+    cmp = lhs.d->path.compare(rhs.d->path);
     if (cmp != 0)
-        return cmp < 0;
+        return Qt::compareThreeWay(cmp, 0);
 
-    if (d->hasQuery() != url.d->hasQuery())
-        return url.d->hasQuery();
+    if (lhs.d->hasQuery() != rhs.d->hasQuery())
+        return rhs.d->hasQuery() ? Qt::weak_ordering::less : Qt::weak_ordering::greater;
 
-    cmp = d->query.compare(url.d->query);
+    cmp = lhs.d->query.compare(rhs.d->query);
     if (cmp != 0)
-        return cmp < 0;
+        return Qt::compareThreeWay(cmp, 0);
 
-    if (d->hasFragment() != url.d->hasFragment())
-        return url.d->hasFragment();
+    if (lhs.d->hasFragment() != rhs.d->hasFragment())
+        return rhs.d->hasFragment() ? Qt::weak_ordering::less : Qt::weak_ordering::greater;
 
-    cmp = d->fragment.compare(url.d->fragment);
-    return cmp < 0;
+    cmp = lhs.d->fragment.compare(rhs.d->fragment);
+    return Qt::compareThreeWay(cmp, 0);
 }
 
 /*!
-    Returns \c true if this URL and the given \a url are equal;
+    \fn bool QUrl::operator==(const QUrl &lhs, const QUrl &rhs)
+
+    Returns \c true if \a lhs and \a rhs URLs are equivalent;
     otherwise returns \c false.
 
     \sa matches()
 */
-bool QUrl::operator ==(const QUrl &url) const
+
+bool comparesEqual(const QUrl &lhs, const QUrl &rhs)
 {
-    if (!d && !url.d)
+    if (!lhs.d && !rhs.d)
         return true;
-    if (!d)
-        return url.d->isEmpty();
-    if (!url.d)
-        return d->isEmpty();
+    if (!lhs.d)
+        return rhs.d->isEmpty();
+    if (!rhs.d)
+        return lhs.d->isEmpty();
 
     // First, compare which sections are present, since it speeds up the
     // processing considerably. We just have to ignore the host-is-present flag
     // for local files (the "file" protocol), due to the requirements of the
     // XDG file URI specification.
     int mask = QUrlPrivate::FullUrl;
-    if (isLocalFile())
+    if (lhs.isLocalFile())
         mask &= ~QUrlPrivate::Host;
-    return (d->sectionIsPresent & mask) == (url.d->sectionIsPresent & mask) &&
-            d->scheme == url.d->scheme &&
-            d->userName == url.d->userName &&
-            d->password == url.d->password &&
-            d->host == url.d->host &&
-            d->port == url.d->port &&
-            d->path == url.d->path &&
-            d->query == url.d->query &&
-            d->fragment == url.d->fragment;
+    return (lhs.d->sectionIsPresent & mask) == (rhs.d->sectionIsPresent & mask) &&
+            lhs.d->scheme == rhs.d->scheme &&
+            lhs.d->userName == rhs.d->userName &&
+            lhs.d->password == rhs.d->password &&
+            lhs.d->host == rhs.d->host &&
+            lhs.d->port == rhs.d->port &&
+            lhs.d->path == rhs.d->path &&
+            lhs.d->query == rhs.d->query &&
+            lhs.d->fragment == rhs.d->fragment;
 }
 
 /*!
@@ -3228,15 +3244,13 @@ bool QUrl::matches(const QUrl &url, FormattingOptions options) const
 }
 
 /*!
-    Returns \c true if this URL and the given \a url are not equal;
+    \fn bool QUrl::operator !=(const QUrl &lhs, const QUrl &rhs)
+
+    Returns \c true if \a lhs and \a rhs URLs are not equal;
     otherwise returns \c false.
 
     \sa matches()
 */
-bool QUrl::operator !=(const QUrl &url) const
-{
-    return !(*this == url);
-}
 
 /*!
     Assigns the specified \a url to this object.

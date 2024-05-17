@@ -1,5 +1,5 @@
 # Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 add_subdirectory(ipc)
 add_subdirectory(mimetypes)
@@ -10,5 +10,5 @@ if(QT_FEATURE_thread)
     add_subdirectory(threads)
 endif()
 if(QT_FEATURE_widgets)
-    add_subdirectory(bindableproperties)
+    qt_internal_add_example(bindableproperties)
 endif()

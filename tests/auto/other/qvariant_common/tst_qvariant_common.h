@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #ifndef TST_QVARIANT_COMMON
 #define TST_QVARIANT_COMMON
@@ -119,6 +119,13 @@ protected:
     QFETCH(bool, UIntCast); \
     QFETCH(bool, ULongLongCast);
 
+#if QT_CONFIG(shortcut)
+#define QMETATYPE_QKEYSEQUENCE \
+    QCOMPARE(val.canConvert(QMetaType(QMetaType::QKeySequence)), KeySequenceCast);
+#else
+#define QMETATYPE_QKEYSEQUENCE
+#endif
+
 #define TST_QVARIANT_CANCONVERT_COMPARE_DATA \
     QCOMPARE(val.canConvert(QMetaType(QMetaType::QBitArray)), BitArrayCast); \
     QCOMPARE(val.canConvert(QMetaType(QMetaType::QBitmap)), BitmapCast); \
@@ -135,7 +142,7 @@ protected:
     QCOMPARE(val.canConvert(QMetaType(QMetaType::QImage)), ImageCast); \
     QCOMPARE(val.canConvert(QMetaType(QMetaType::Int)), IntCast); \
     QCOMPARE(val.canConvert(QMetaType(QMetaType::UnknownType)), InvalidCast); \
-    QCOMPARE(val.canConvert(QMetaType(QMetaType::QKeySequence)), KeySequenceCast); \
+    QMETATYPE_QKEYSEQUENCE \
     QCOMPARE(val.canConvert(QMetaType(QMetaType::QVariantList)), ListCast); \
     QCOMPARE(val.canConvert(QMetaType(QMetaType::LongLong)), LongLongCast); \
     QCOMPARE(val.canConvert(QMetaType(QMetaType::QVariantMap)), MapCast); \

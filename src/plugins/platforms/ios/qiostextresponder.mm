@@ -401,7 +401,7 @@
     if (UIView *accessoryView = static_cast<UIView *>(platformData.value(kImePlatformDataInputAccessoryView).value<void *>()))
         self.inputAccessoryView = [[[WrapperView alloc] initWithView:accessoryView] autorelease];
 
-#ifndef Q_OS_TVOS
+#if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
     if (platformData.value(kImePlatformDataHideShortcutsBar).toBool()) {
         // According to the docs, leadingBarButtonGroups/trailingBarButtonGroups should be set to nil to hide the shortcuts bar.
         // However, starting with iOS 10, the API has been surrounded with NS_ASSUME_NONNULL, which contradicts this and causes
@@ -902,7 +902,7 @@
         QInputMethodEvent e(m_markedText, attrs);
         [self sendEventToFocusObject:e];
     }
-    QRectF startRect = QPlatformInputContext::cursorRectangle();;
+    QRectF startRect = QPlatformInputContext::cursorRectangle();
 
     attrs = QList<QInputMethodEvent::Attribute>();
     attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, r.location + r.length, 0, 0);
@@ -910,7 +910,7 @@
         QInputMethodEvent e(m_markedText, attrs);
         [self sendEventToFocusObject:e];
     }
-    QRectF endRect = QPlatformInputContext::cursorRectangle();;
+    QRectF endRect = QPlatformInputContext::cursorRectangle();
 
     if (cursorPos != int(r.location + r.length) || cursorPos != anchorPos) {
         attrs = QList<QInputMethodEvent::Attribute>();

@@ -19,6 +19,7 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_MULTIPLE_MASTERS_H
 
 
 #ifndef Q_OS_WIN
@@ -62,6 +63,7 @@ public:
     }
 
     FT_Face face;
+    FT_MM_Var *mm_var;
     int xsize; // 26.6
     int ysize; // 26.6
     FT_Matrix matrix;
@@ -75,6 +77,7 @@ public:
 
     int getPointInOutline(glyph_t glyph, int flags, quint32 point, QFixed *xpos, QFixed *ypos, quint32 *nPoints);
 
+    bool isScalable() const;
     bool isScalableBitmap() const;
 
     static void addGlyphToPath(FT_Face face, FT_GlyphSlot g, const QFixedPoint &point, QPainterPath *path, FT_Fixed x_scale, FT_Fixed y_scale);
@@ -183,7 +186,7 @@ private:
     void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs,
                   QPainterPath *path, QTextItem::RenderFlags flags) override;
 
-    bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const override;
+    int stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, ShaperFlags flags) const override;
 
     glyph_metrics_t boundingBox(const QGlyphLayout &glyphs) override;
     glyph_metrics_t boundingBox(glyph_t glyph) override;

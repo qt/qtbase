@@ -133,9 +133,9 @@ void QGroupBoxPrivate::click()
     widgets). The following example shows how we can set up a
     QGroupBox with a layout:
 
-    \snippet widgets/groupbox/window.cpp 2
+    \snippet code/src_gui_widgets_qgroupbox.cpp Set up QGroupBox with layout
 
-    \sa QButtonGroup, {Group Box Example}
+    \sa QButtonGroup
 */
 
 

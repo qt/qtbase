@@ -149,10 +149,13 @@ class ExtractStyle {
         return (config.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
     }
 
-    public static String setup(Activity activity, String extractOption, int dpi) {
+    public static String setup(Context context, String extractOption, int dpi) {
 
-        String dataDir = activity.getApplicationInfo().dataDir;
+        String dataDir = context.getApplicationInfo().dataDir;
         m_stylePath = dataDir + "/qt-reserved-files/android-style/" + dpi + "/";
+
+        if (extractOption.equals("none"))
+            return m_stylePath;
 
         if (extractOption.isEmpty())
             extractOption = "minimal";
@@ -168,7 +171,7 @@ class ExtractStyle {
         // SDK version >= 28 when the target SDK version is set to something lower then 28,
         // so default to "none" and issue a warning if that is the case.
         if (extractOption.equals("default")) {
-            int targetSdk = activity.getApplicationInfo().targetSdkVersion;
+            int targetSdk = context.getApplicationInfo().targetSdkVersion;
             if (targetSdk < 28 && Build.VERSION.SDK_INT >= 28) {
                 Log.e(QtTAG, "extract_android_style option set to \"none\" when " +
                         "targetSdkVersion is less then 28");
@@ -181,7 +184,7 @@ class ExtractStyle {
         m_missingNormalStyle = !(new File(m_stylePath + "style.json").exists());
         m_extractMinimal = extractOption.equals("minimal");
 
-        ExtractStyle.runIfNeeded(activity, isUiModeDark(activity.getResources().getConfiguration()));
+        ExtractStyle.runIfNeeded(context, isUiModeDark(context.getResources().getConfiguration()));
 
         return m_stylePath;
     }

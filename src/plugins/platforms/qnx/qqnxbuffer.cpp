@@ -10,24 +10,20 @@
 #include <errno.h>
 #include <sys/mman.h>
 
-#if defined(QQNXBUFFER_DEBUG)
-#define qBufferDebug qDebug
-#else
-#define qBufferDebug QT_NO_QDEBUG_MACRO
-#endif
-
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQpaScreenBuffer, "qt.qpa.screen.buffer");
 
 QQnxBuffer::QQnxBuffer()
     : m_buffer(0)
 {
-    qBufferDebug("empty");
+    qCDebug(lcQpaScreenBuffer) << Q_FUNC_INFO << "Empty";
 }
 
 QQnxBuffer::QQnxBuffer(screen_buffer_t buffer)
     : m_buffer(buffer)
 {
-    qBufferDebug("normal");
+    qCDebug(lcQpaScreenBuffer) << Q_FUNC_INFO << "Normal";
 
     // Get size of buffer
     int size[2];
@@ -77,7 +73,7 @@ QQnxBuffer::QQnxBuffer(screen_buffer_t buffer)
         imageFormat = QImage::Format_ARGB32_Premultiplied;
         break;
     default:
-        qFatal("QQNX: unsupported buffer format, format=%d", screenFormat);
+        qFatal(lcQpaScreenBuffer, "QQNX: unsupported buffer format, format=%d", screenFormat);
     }
 
     // wrap buffer in an image
@@ -88,27 +84,27 @@ QQnxBuffer::QQnxBuffer(const QQnxBuffer &other)
     : m_buffer(other.m_buffer),
       m_image(other.m_image)
 {
-    qBufferDebug("copy");
+    qCDebug(lcQpaScreenBuffer) << Q_FUNC_INFO << "Copy";
 }
 
 QQnxBuffer::~QQnxBuffer()
 {
-    qBufferDebug();
+    qCDebug(lcQpaScreenBuffer) << Q_FUNC_INFO;
 }
 
 void QQnxBuffer::invalidateInCache()
 {
-    qBufferDebug();
+    qCDebug(lcQpaScreenBuffer) << Q_FUNC_INFO;
 
     // Verify native buffer exists
     if (Q_UNLIKELY(!m_buffer))
-        qFatal("QQNX: can't invalidate cache for null buffer");
+        qFatal(lcQpaScreenBuffer, "QQNX: can't invalidate cache for null buffer");
 
     // Evict buffer's data from cache
     errno = 0;
     int result = msync(m_image.bits(), m_image.height() * m_image.bytesPerLine(), MS_INVALIDATE | MS_CACHE_ONLY);
     if (Q_UNLIKELY(result != 0))
-        qFatal("QQNX: failed to invalidate cache, errno=%d", errno);
+        qFatal(lcQpaScreenBuffer, "QQNX: failed to invalidate cache, errno=%d", errno);
 }
 
 QT_END_NAMESPACE

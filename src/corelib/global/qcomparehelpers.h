@@ -66,6 +66,9 @@ template <typename In> constexpr auto to_Qt(In in) noexcept
     * RightType - the type of the right operand of the comparison
     * Constexpr - must be either constexpr or empty. Defines whether the
                   operator is constexpr or not
+    * Attributes - an optional list of attributes. For example, pass
+                   \c QT_ASCII_CAST_WARN when defining comparisons between
+                   C-style string and an encoding-aware string type.
 
     The macros require two helper functions. For operators to be constexpr,
     these must be constexpr, too. Additionally, other attributes (like
@@ -88,12 +91,14 @@ template <typename In> constexpr auto to_Qt(In in) noexcept
 #if defined(__cpp_lib_three_way_comparison) && !defined(Q_QDOC)
 // C++20 - provide operator==() for equality, and operator<=>() for ordering
 
-#define QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, Constexpr) \
+#define QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, Constexpr, Attributes) \
+    Attributes \
     friend Constexpr bool operator==(LeftType const &lhs, RightType const &rhs) \
         noexcept(noexcept(comparesEqual(lhs, rhs))) \
     { return comparesEqual(lhs, rhs); }
 
-#define QT_DECLARE_3WAY_HELPER_STRONG(LeftType, RightType, Constexpr) \
+#define QT_DECLARE_3WAY_HELPER_STRONG(LeftType, RightType, Constexpr, Attributes) \
+    Attributes \
     friend Constexpr std::strong_ordering \
     operator<=>(LeftType const &lhs, RightType const &rhs) \
         noexcept(noexcept(compareThreeWay(lhs, rhs))) \
@@ -101,7 +106,8 @@ template <typename In> constexpr auto to_Qt(In in) noexcept
         return compareThreeWay(lhs, rhs); \
     }
 
-#define QT_DECLARE_3WAY_HELPER_WEAK(LeftType, RightType, Constexpr) \
+#define QT_DECLARE_3WAY_HELPER_WEAK(LeftType, RightType, Constexpr, Attributes) \
+    Attributes \
     friend Constexpr std::weak_ordering \
     operator<=>(LeftType const &lhs, RightType const &rhs) \
         noexcept(noexcept(compareThreeWay(lhs, rhs))) \
@@ -109,7 +115,8 @@ template <typename In> constexpr auto to_Qt(In in) noexcept
         return compareThreeWay(lhs, rhs); \
     }
 
-#define QT_DECLARE_3WAY_HELPER_PARTIAL(LeftType, RightType, Constexpr) \
+#define QT_DECLARE_3WAY_HELPER_PARTIAL(LeftType, RightType, Constexpr, Attributes) \
+    Attributes \
     friend Constexpr std::partial_ordering \
     operator<=>(LeftType const &lhs, RightType const &rhs) \
         noexcept(noexcept(compareThreeWay(lhs, rhs))) \
@@ -117,61 +124,67 @@ template <typename In> constexpr auto to_Qt(In in) noexcept
         return compareThreeWay(lhs, rhs); \
     }
 
-#define QT_DECLARE_ORDERING_OPERATORS_HELPER(OrderingType, LeftType, RightType, Constexpr) \
-    QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, Constexpr) \
-    QT_DECLARE_3WAY_HELPER_ ## OrderingType (LeftType, RightType, Constexpr)
+#define QT_DECLARE_ORDERING_OPERATORS_HELPER(OrderingType, LeftType, RightType, Constexpr, \
+                                             Attributes) \
+    QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, Constexpr, Attributes) \
+    QT_DECLARE_3WAY_HELPER_ ## OrderingType (LeftType, RightType, Constexpr, Attributes)
 
 #ifdef Q_COMPILER_LACKS_THREE_WAY_COMPARE_SYMMETRY
 
 // define reversed versions of the operators manually, because buggy MSVC versions do not do it
-#define QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, Constexpr) \
+#define QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, Constexpr, Attributes) \
+    Attributes \
     friend Constexpr bool operator==(RightType const &lhs, LeftType const &rhs) \
         noexcept(noexcept(comparesEqual(rhs, lhs))) \
     { return comparesEqual(rhs, lhs); }
 
-#define QT_DECLARE_REVERSED_3WAY_HELPER_STRONG(LeftType, RightType, Constexpr) \
+#define QT_DECLARE_REVERSED_3WAY_HELPER_STRONG(LeftType, RightType, Constexpr, Attributes) \
+    Attributes \
     friend Constexpr std::strong_ordering \
     operator<=>(RightType const &lhs, LeftType const &rhs) \
         noexcept(noexcept(compareThreeWay(rhs, lhs))) \
     { \
         const auto r = compareThreeWay(rhs, lhs); \
-        if (r > 0) return std::strong_ordering::less; \
-        if (r < 0) return std::strong_ordering::greater; \
+        if (is_gt(r)) return std::strong_ordering::less; \
+        if (is_lt(r)) return std::strong_ordering::greater; \
         return r; \
     }
 
-#define QT_DECLARE_REVERSED_3WAY_HELPER_WEAK(LeftType, RightType, Constexpr) \
+#define QT_DECLARE_REVERSED_3WAY_HELPER_WEAK(LeftType, RightType, Constexpr, Attributes) \
+    Attributes \
     friend Constexpr std::weak_ordering \
     operator<=>(RightType const &lhs, LeftType const &rhs) \
         noexcept(noexcept(compareThreeWay(rhs, lhs))) \
     { \
         const auto r = compareThreeWay(rhs, lhs); \
-        if (r > 0) return std::weak_ordering::less; \
-        if (r < 0) return std::weak_ordering::greater; \
+        if (is_gt(r)) return std::weak_ordering::less; \
+        if (is_lt(r)) return std::weak_ordering::greater; \
         return r; \
     }
 
-#define QT_DECLARE_REVERSED_3WAY_HELPER_PARTIAL(LeftType, RightType, Constexpr) \
+#define QT_DECLARE_REVERSED_3WAY_HELPER_PARTIAL(LeftType, RightType, Constexpr, Attributes) \
+    Attributes \
     friend Constexpr std::partial_ordering \
     operator<=>(RightType const &lhs, LeftType const &rhs) \
         noexcept(noexcept(compareThreeWay(rhs, lhs))) \
     { \
         const auto r = compareThreeWay(rhs, lhs); \
-        if (r > 0) return std::partial_ordering::less; \
-        if (r < 0) return std::partial_ordering::greater; \
+        if (is_gt(r)) return std::partial_ordering::less; \
+        if (is_lt(r)) return std::partial_ordering::greater; \
         return r; \
     }
 
 #define QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(OrderingString, LeftType, RightType, \
-                                                      Constexpr) \
-    QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, Constexpr) \
-    QT_DECLARE_REVERSED_3WAY_HELPER_ ## OrderingString (LeftType, RightType, Constexpr)
+                                                      Constexpr, Attributes) \
+    QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, Constexpr, Attributes) \
+    QT_DECLARE_REVERSED_3WAY_HELPER_ ## OrderingString (LeftType, RightType, Constexpr, Attributes)
 
 #else
 
 // dummy macros for C++17 compatibility, reversed operators are generated by the compiler
-#define QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, Constexpr)
-#define QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(OrderingString, LeftType, RightType, Constexpr)
+#define QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, Constexpr, Attributes)
+#define QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(OrderingString, LeftType, RightType, \
+                                                      Constexpr, Attributes)
 
 #endif // Q_COMPILER_LACKS_THREE_WAY_COMPARE_SYMMETRY
 
@@ -179,78 +192,100 @@ template <typename In> constexpr auto to_Qt(In in) noexcept
 // C++17 - provide operator==() and operator!=() for equality,
 // and all 4 comparison operators for ordering
 
-#define QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, Constexpr) \
+#define QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, Constexpr, Attributes) \
+    Attributes \
     friend Constexpr bool operator==(LeftType const &lhs, RightType const &rhs) \
         noexcept(noexcept(comparesEqual(lhs, rhs))) \
     { return comparesEqual(lhs, rhs); } \
+    Attributes \
     friend Constexpr bool operator!=(LeftType const &lhs, RightType const &rhs) \
         noexcept(noexcept(comparesEqual(lhs, rhs))) \
     { return !comparesEqual(lhs, rhs); }
 
 // Helpers for reversed comparison, using the existing comparesEqual() function.
-#define QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, Constexpr) \
+#define QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, Constexpr, Attributes) \
+    Attributes \
     friend Constexpr bool operator==(RightType const &lhs, LeftType const &rhs) \
         noexcept(noexcept(comparesEqual(rhs, lhs))) \
     { return comparesEqual(rhs, lhs); } \
+    Attributes \
     friend Constexpr bool operator!=(RightType const &lhs, LeftType const &rhs) \
         noexcept(noexcept(comparesEqual(rhs, lhs))) \
     { return !comparesEqual(rhs, lhs); }
 
-#define QT_DECLARE_ORDERING_HELPER_TEMPLATE(OrderingType, LeftType, RightType, Constexpr) \
+#define QT_DECLARE_ORDERING_HELPER_TEMPLATE(OrderingType, LeftType, RightType, Constexpr, \
+                                            Attributes) \
+    Attributes \
     friend Constexpr bool operator<(LeftType const &lhs, RightType const &rhs) \
         noexcept(noexcept(compareThreeWay(lhs, rhs))) \
-    { return compareThreeWay(lhs, rhs) < 0; } \
+    { return is_lt(compareThreeWay(lhs, rhs)); }      \
+    Attributes \
     friend Constexpr bool operator>(LeftType const &lhs, RightType const &rhs) \
         noexcept(noexcept(compareThreeWay(lhs, rhs))) \
-    { return compareThreeWay(lhs, rhs) > 0; } \
+    { return is_gt(compareThreeWay(lhs, rhs)); }      \
+    Attributes \
     friend Constexpr bool operator<=(LeftType const &lhs, RightType const &rhs) \
         noexcept(noexcept(compareThreeWay(lhs, rhs))) \
-    { return compareThreeWay(lhs, rhs) <= 0; } \
+    { return is_lteq(compareThreeWay(lhs, rhs)); }    \
+    Attributes \
     friend Constexpr bool operator>=(LeftType const &lhs, RightType const &rhs) \
         noexcept(noexcept(compareThreeWay(lhs, rhs))) \
-    { return compareThreeWay(lhs, rhs) >= 0; }
+    { return is_gteq(compareThreeWay(lhs, rhs)); }
 
-#define QT_DECLARE_ORDERING_HELPER_PARTIAL(LeftType, RightType, Constexpr) \
-    QT_DECLARE_ORDERING_HELPER_TEMPLATE(Qt::partial_ordering, LeftType, RightType, Constexpr)
+#define QT_DECLARE_ORDERING_HELPER_PARTIAL(LeftType, RightType, Constexpr, Attributes) \
+    QT_DECLARE_ORDERING_HELPER_TEMPLATE(Qt::partial_ordering, LeftType, RightType, Constexpr, \
+                                        Attributes)
 
-#define QT_DECLARE_ORDERING_HELPER_WEAK(LeftType, RightType, Constexpr) \
-    QT_DECLARE_ORDERING_HELPER_TEMPLATE(Qt::weak_ordering, LeftType, RightType, Constexpr)
+#define QT_DECLARE_ORDERING_HELPER_WEAK(LeftType, RightType, Constexpr, Attributes) \
+    QT_DECLARE_ORDERING_HELPER_TEMPLATE(Qt::weak_ordering, LeftType, RightType, Constexpr, \
+                                        Attributes)
 
-#define QT_DECLARE_ORDERING_HELPER_STRONG(LeftType, RightType, Constexpr) \
-    QT_DECLARE_ORDERING_HELPER_TEMPLATE(Qt::strong_ordering, LeftType, RightType, Constexpr)
+#define QT_DECLARE_ORDERING_HELPER_STRONG(LeftType, RightType, Constexpr, Attributes) \
+    QT_DECLARE_ORDERING_HELPER_TEMPLATE(Qt::strong_ordering, LeftType, RightType, Constexpr, \
+                                        Attributes)
 
-#define QT_DECLARE_ORDERING_OPERATORS_HELPER(OrderingString, LeftType, RightType, Constexpr) \
-    QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, Constexpr) \
-    QT_DECLARE_ORDERING_HELPER_ ## OrderingString (LeftType, RightType, Constexpr)
+#define QT_DECLARE_ORDERING_OPERATORS_HELPER(OrderingString, LeftType, RightType, Constexpr, \
+                                             Attributes) \
+    QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, Constexpr, Attributes) \
+    QT_DECLARE_ORDERING_HELPER_ ## OrderingString (LeftType, RightType, Constexpr, Attributes)
 
 // Helpers for reversed ordering, using the existing compareThreeWay() function.
-#define QT_DECLARE_REVERSED_ORDERING_HELPER_TEMPLATE(OrderingType, LeftType, RightType, Constexpr) \
+#define QT_DECLARE_REVERSED_ORDERING_HELPER_TEMPLATE(OrderingType, LeftType, RightType, Constexpr, \
+                                                     Attributes) \
+    Attributes \
     friend Constexpr bool operator<(RightType const &lhs, LeftType const &rhs) \
         noexcept(noexcept(compareThreeWay(rhs, lhs))) \
-    { return compareThreeWay(rhs, lhs) > 0; } \
+    { return is_gt(compareThreeWay(rhs, lhs)); }      \
+    Attributes \
     friend Constexpr bool operator>(RightType const &lhs, LeftType const &rhs) \
         noexcept(noexcept(compareThreeWay(rhs, lhs))) \
-    { return compareThreeWay(rhs, lhs) < 0; } \
+    { return is_lt(compareThreeWay(rhs, lhs)); }      \
+    Attributes \
     friend Constexpr bool operator<=(RightType const &lhs, LeftType const &rhs) \
         noexcept(noexcept(compareThreeWay(rhs, lhs))) \
-    { return compareThreeWay(rhs, lhs) >= 0; } \
+    { return is_gteq(compareThreeWay(rhs, lhs)); }    \
+    Attributes \
     friend Constexpr bool operator>=(RightType const &lhs, LeftType const &rhs) \
         noexcept(noexcept(compareThreeWay(rhs, lhs))) \
-    { return compareThreeWay(rhs, lhs) <= 0; }
+    { return is_lteq(compareThreeWay(rhs, lhs)); }
 
-#define QT_DECLARE_REVERSED_ORDERING_HELPER_PARTIAL(LeftType, RightType, Constexpr) \
-    QT_DECLARE_REVERSED_ORDERING_HELPER_TEMPLATE(Qt::partial_ordering, LeftType, RightType, Constexpr)
+#define QT_DECLARE_REVERSED_ORDERING_HELPER_PARTIAL(LeftType, RightType, Constexpr, Attributes) \
+    QT_DECLARE_REVERSED_ORDERING_HELPER_TEMPLATE(Qt::partial_ordering, LeftType, RightType, \
+                                                 Constexpr, Attributes)
 
-#define QT_DECLARE_REVERSED_ORDERING_HELPER_WEAK(LeftType, RightType, Constexpr) \
-    QT_DECLARE_REVERSED_ORDERING_HELPER_TEMPLATE(Qt::weak_ordering, LeftType, RightType, Constexpr)
+#define QT_DECLARE_REVERSED_ORDERING_HELPER_WEAK(LeftType, RightType, Constexpr, Attributes) \
+    QT_DECLARE_REVERSED_ORDERING_HELPER_TEMPLATE(Qt::weak_ordering, LeftType, RightType, \
+                                                 Constexpr, Attributes)
 
-#define QT_DECLARE_REVERSED_ORDERING_HELPER_STRONG(LeftType, RightType, Constexpr) \
-    QT_DECLARE_REVERSED_ORDERING_HELPER_TEMPLATE(Qt::strong_ordering, LeftType, RightType, Constexpr)
+#define QT_DECLARE_REVERSED_ORDERING_HELPER_STRONG(LeftType, RightType, Constexpr, Attributes) \
+    QT_DECLARE_REVERSED_ORDERING_HELPER_TEMPLATE(Qt::strong_ordering, LeftType, RightType, \
+                                                 Constexpr, Attributes)
 
 #define QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(OrderingString, LeftType, RightType, \
-                                                      Constexpr) \
-    QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, Constexpr) \
-    QT_DECLARE_REVERSED_ORDERING_HELPER_ ## OrderingString (LeftType, RightType, Constexpr)
+                                                      Constexpr, Attributes) \
+    QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, Constexpr, Attributes) \
+    QT_DECLARE_REVERSED_ORDERING_HELPER_ ## OrderingString (LeftType, RightType, Constexpr, \
+                                                            Attributes)
 
 #endif // __cpp_lib_three_way_comparison
 
@@ -258,84 +293,143 @@ template <typename In> constexpr auto to_Qt(In in) noexcept
 
 // Equality operators
 #define QT_DECLARE_EQUALITY_COMPARABLE_1(Type) \
-    QT_DECLARE_EQUALITY_OPERATORS_HELPER(Type, Type, /* non-constexpr */)
+    QT_DECLARE_EQUALITY_OPERATORS_HELPER(Type, Type, /* non-constexpr */, /* no attributes */)
 
 #define QT_DECLARE_EQUALITY_COMPARABLE_2(LeftType, RightType) \
-    QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, /* non-constexpr */) \
-    QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, /* non-constexpr */)
+    QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, /* non-constexpr */, \
+                                         /* no attributes */) \
+    QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, /* non-constexpr */, \
+                                                  /* no attributes */)
+
+#define QT_DECLARE_EQUALITY_COMPARABLE_3(LeftType, RightType, Attributes) \
+    QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, /* non-constexpr */, Attributes) \
+    QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, /* non-constexpr */, \
+                                                  Attributes)
 
 #define Q_DECLARE_EQUALITY_COMPARABLE(...) \
     QT_OVERLOADED_MACRO(QT_DECLARE_EQUALITY_COMPARABLE, __VA_ARGS__)
 
 #define QT_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE_1(Type) \
-    QT_DECLARE_EQUALITY_OPERATORS_HELPER(Type, Type, constexpr)
+    QT_DECLARE_EQUALITY_OPERATORS_HELPER(Type, Type, constexpr, /* no attributes */)
 
 #define QT_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE_2(LeftType, RightType) \
-    QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, constexpr) \
-    QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, constexpr)
+    QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, constexpr, /* no attributes */) \
+    QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, constexpr, \
+                                                  /* no attributes */)
+
+#define QT_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE_3(LeftType, RightType, Attributes) \
+    QT_DECLARE_EQUALITY_OPERATORS_HELPER(LeftType, RightType, constexpr, Attributes) \
+    QT_DECLARE_EQUALITY_OPERATORS_REVERSED_HELPER(LeftType, RightType, constexpr, Attributes)
 
 #define Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(...) \
     QT_OVERLOADED_MACRO(QT_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE, __VA_ARGS__)
 
 // Partial ordering operators
 #define QT_DECLARE_PARTIALLY_ORDERED_1(Type) \
-    QT_DECLARE_ORDERING_OPERATORS_HELPER(PARTIAL, Type, Type, /* non-constexpr */)
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(PARTIAL, Type, Type, /* non-constexpr */, \
+                                         /* no attributes */)
 
 #define QT_DECLARE_PARTIALLY_ORDERED_2(LeftType, RightType) \
-    QT_DECLARE_ORDERING_OPERATORS_HELPER(PARTIAL, LeftType, RightType, /* non-constexpr */) \
-    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(PARTIAL, LeftType, RightType, /* non-constexpr */)
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(PARTIAL, LeftType, RightType, /* non-constexpr */, \
+                                         /* no attributes */) \
+    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(PARTIAL, LeftType, RightType, \
+                                                  /* non-constexpr */, /* no attributes */)
+
+#define QT_DECLARE_PARTIALLY_ORDERED_3(LeftType, RightType, Attributes) \
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(PARTIAL, LeftType, RightType, /* non-constexpr */, \
+                                         Attributes) \
+    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(PARTIAL, LeftType, RightType, \
+                                                  /* non-constexpr */, Attributes)
 
 #define Q_DECLARE_PARTIALLY_ORDERED(...) \
     QT_OVERLOADED_MACRO(QT_DECLARE_PARTIALLY_ORDERED, __VA_ARGS__)
 
 #define QT_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE_1(Type) \
-    QT_DECLARE_ORDERING_OPERATORS_HELPER(PARTIAL, Type, Type, constexpr)
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(PARTIAL, Type, Type, constexpr, /* no attributes */)
 
 #define QT_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE_2(LeftType, RightType) \
-    QT_DECLARE_ORDERING_OPERATORS_HELPER(PARTIAL, LeftType, RightType, constexpr) \
-    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(PARTIAL, LeftType, RightType, constexpr)
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(PARTIAL, LeftType, RightType, constexpr, \
+                                         /* no attributes */) \
+    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(PARTIAL, LeftType, RightType, constexpr, \
+                                                  /* no attributes */)
+
+#define QT_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE_3(LeftType, RightType, Attributes) \
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(PARTIAL, LeftType, RightType, constexpr, Attributes) \
+    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(PARTIAL, LeftType, RightType, constexpr, \
+                                                  Attributes)
 
 #define Q_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE(...) \
     QT_OVERLOADED_MACRO(QT_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE, __VA_ARGS__)
 
 // Weak ordering operators
 #define QT_DECLARE_WEAKLY_ORDERED_1(Type) \
-    QT_DECLARE_ORDERING_OPERATORS_HELPER(WEAK, Type, Type, /* non-constexpr */)
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(WEAK, Type, Type, /* non-constexpr */, /* no attributes */)
 
 #define QT_DECLARE_WEAKLY_ORDERED_2(LeftType, RightType) \
-    QT_DECLARE_ORDERING_OPERATORS_HELPER(WEAK, LeftType, RightType, /* non-constexpr */) \
-    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(WEAK, LeftType, RightType, /* non-constexpr */)
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(WEAK, LeftType, RightType, /* non-constexpr */, \
+                                         /* no attributes */) \
+    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(WEAK, LeftType, RightType, /* non-constexpr */, \
+                                                  /* no attributes */)
+
+#define QT_DECLARE_WEAKLY_ORDERED_3(LeftType, RightType, Attributes) \
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(WEAK, LeftType, RightType, /* non-constexpr */, \
+                                         Attributes) \
+    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(WEAK, LeftType, RightType, /* non-constexpr */, \
+                                                  Attributes)
 
 #define Q_DECLARE_WEAKLY_ORDERED(...) \
     QT_OVERLOADED_MACRO(QT_DECLARE_WEAKLY_ORDERED, __VA_ARGS__)
 
 #define QT_DECLARE_WEAKLY_ORDERED_LITERAL_TYPE_1(Type) \
-    QT_DECLARE_ORDERING_OPERATORS_HELPER(WEAK, Type, Type, constexpr)
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(WEAK, Type, Type, constexpr, /* no attributes */)
 
 #define QT_DECLARE_WEAKLY_ORDERED_LITERAL_TYPE_2(LeftType, RightType) \
-    QT_DECLARE_ORDERING_OPERATORS_HELPER(WEAK, LeftType, RightType, constexpr) \
-    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(WEAK, LeftType, RightType, constexpr)
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(WEAK, LeftType, RightType, constexpr, \
+                                         /* no attributes */) \
+    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(WEAK, LeftType, RightType, constexpr, \
+                                                  /* no attributes */)
+
+#define QT_DECLARE_WEAKLY_ORDERED_LITERAL_TYPE_3(LeftType, RightType, Attributes) \
+QT_DECLARE_ORDERING_OPERATORS_HELPER(WEAK, LeftType, RightType, constexpr, Attributes) \
+        QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(WEAK, LeftType, RightType, constexpr, \
+                                                      Attributes)
 
 #define Q_DECLARE_WEAKLY_ORDERED_LITERAL_TYPE(...) \
     QT_OVERLOADED_MACRO(QT_DECLARE_WEAKLY_ORDERED_LITERAL_TYPE, __VA_ARGS__)
 
 // Strong ordering operators
 #define QT_DECLARE_STRONGLY_ORDERED_1(Type) \
-    QT_DECLARE_ORDERING_OPERATORS_HELPER(STRONG, Type, Type, /* non-constexpr */)
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(STRONG, Type, Type, /* non-constexpr */, \
+                                         /* no attributes */)
 
 #define QT_DECLARE_STRONGLY_ORDERED_2(LeftType, RightType) \
-    QT_DECLARE_ORDERING_OPERATORS_HELPER(STRONG, LeftType, RightType, /* non-constexpr */) \
-    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(STRONG, LeftType, RightType, /* non-constexpr */)
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(STRONG, LeftType, RightType, /* non-constexpr */, \
+                                         /* no attributes */) \
+    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(STRONG, LeftType, RightType, \
+                                                  /* non-constexpr */, /* no attributes */)
+
+#define QT_DECLARE_STRONGLY_ORDERED_3(LeftType, RightType, Attributes) \
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(STRONG, LeftType, RightType, /* non-constexpr */, \
+                                         Attributes) \
+    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(STRONG, LeftType, RightType, \
+                                                  /* non-constexpr */, Attributes)
 
 #define Q_DECLARE_STRONGLY_ORDERED(...) \
     QT_OVERLOADED_MACRO(QT_DECLARE_STRONGLY_ORDERED, __VA_ARGS__)
 
 #define QT_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE_1(Type) \
-    QT_DECLARE_ORDERING_OPERATORS_HELPER(STRONG, Type, Type, constexpr)
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(STRONG, Type, Type, constexpr, /* no attributes */)
 
 #define QT_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE_2(LeftType, RightType) \
-    QT_DECLARE_ORDERING_OPERATORS_HELPER(STRONG, LeftType, RightType, constexpr) \
-    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(STRONG, LeftType, RightType, constexpr)
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(STRONG, LeftType, RightType, constexpr, \
+                                         /* no attributes */) \
+    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(STRONG, LeftType, RightType, constexpr, \
+                                                  /* no attributes */)
+
+#define QT_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE_3(LeftType, RightType, Attributes) \
+    QT_DECLARE_ORDERING_OPERATORS_HELPER(STRONG, LeftType, RightType, constexpr, Attributes) \
+    QT_DECLARE_ORDERING_OPERATORS_REVERSED_HELPER(STRONG, LeftType, RightType, constexpr, \
+                                                  Attributes)
 
 #define Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(...) \
     QT_OVERLOADED_MACRO(QT_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE, __VA_ARGS__)

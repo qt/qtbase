@@ -19,6 +19,10 @@ using namespace QtCbor;
 
     \brief The QCborArray class is used to hold an array of CBOR elements.
 
+    \compares strong
+    \compareswith strong QCborValueConstRef
+    \endcompareswith
+
     This class can be used to hold one sequential container in CBOR (an array).
     CBOR is the Concise Binary Object Representation, a very compact form of
     binary data encoding that is a superset of JSON. It was created by the IETF
@@ -420,7 +424,7 @@ void QCborArray::removeAt(qsizetype i)
 bool QCborArray::contains(const QCborValue &value) const
 {
     for (qsizetype i = 0; i < size(); ++i) {
-        int cmp = d->compareElement(i, value);
+        int cmp = d->compareElement(i, value, Comparison::ForEquality);
         if (cmp == 0)
             return true;
     }
@@ -442,9 +446,9 @@ bool QCborArray::contains(const QCborValue &value) const
  */
 
 /*!
-    \fn bool QCborArray::operator==(const QCborArray &other) const
+    \fn bool QCborArray::operator==(const QCborArray &lhs, const QCborArray &rhs)
 
-    Compares this array and \a other, comparing each element in sequence, and
+    Compares \a lhs and \a rhs arrays, comparing each element in sequence, and
     returns true if both arrays contains the same elements, false otherwise.
 
     For more information on CBOR equality in Qt, see, QCborValue::compare().
@@ -454,9 +458,9 @@ bool QCborArray::contains(const QCborValue &value) const
  */
 
 /*!
-    \fn bool QCborArray::operator!=(const QCborArray &other) const
+    \fn bool QCborArray::operator!=(const QCborArray &lhs, const QCborArray &rhs)
 
-    Compares this array and \a other, comparing each element in sequence, and
+    Compares \a lhs and \a rhs arrays, comparing each element in sequence, and
     returns true if the two arrays' contents are different, false otherwise.
 
     For more information on CBOR equality in Qt, see, QCborValue::compare().
@@ -466,17 +470,56 @@ bool QCborArray::contains(const QCborValue &value) const
  */
 
 /*!
-    \fn bool QCborArray::operator<(const QCborArray &other) const
+    \fn bool QCborArray::operator<(const QCborArray &lhs, const QCborArray &rhs)
 
-    Compares this array and \a other, comparing each element in sequence, and
-    returns true if this array should be sorted before \a other, false
+    Compares \a lhs and \a rhs arrays, comparing each element in sequence, and
+    returns true if \a lhs array should be sorted before \a rhs, false
     otherwise.
 
     For more information on CBOR sorting order, see QCborValue::compare().
 
     \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
-        operator==(), operator!=()
+        operator==(), operator!=(), operator<=()
  */
+
+/*!
+    \fn bool QCborArray::operator<=(const QCborArray &lhs, const QCborArray &rhs)
+
+    Compares \a lhs and \a rhs arrays, comparing each element in sequence, and
+    returns true if \a lhs array should be sorted before \a rhs, or if both
+    arrays contains the same elements, false otherwise.
+
+    For more information on CBOR sorting order, see QCborValue::compare().
+
+    \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
+        operator==(), operator!=(), operator<()
+*/
+
+/*!
+    \fn bool QCborArray::operator>(const QCborArray &lhs, const QCborArray &rhs)
+
+    Compares \a lhs and \a rhs arrays, comparing each element in sequence, and
+    returns true if \a lhs array should be sorted after \a rhs, false
+    otherwise.
+
+    For more information on CBOR sorting order, see QCborValue::compare().
+
+    \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
+        operator==(), operator!=(), operator>=()
+*/
+
+/*!
+    \fn bool QCborArray::operator>=(const QCborArray &lhs, const QCborArray &rhs)
+
+    Compares \a lhs and \a rhs arrays, comparing each element in sequence, and
+    returns true if \a lhs array should be sorted after \a rhs, or if both
+    arrays contains the same elements, false otherwise.
+
+    For more information on CBOR sorting order, see QCborValue::compare().
+
+    \sa compare(), QCborValue::operator==(), QCborMap::operator==(),
+        operator==(), operator!=(), operator>()
+*/
 
 /*!
     \typedef QCborArray::iterator
@@ -679,6 +722,10 @@ void QCborArray::detach(qsizetype reserved)
 
     \brief The QCborArray::Iterator class provides an STL-style non-const iterator for QCborArray.
 
+    \compares strong
+    \compareswith strong QCborArray::ConstIterator
+    \endcompareswith
+
     QCborArray::Iterator allows you to iterate over a QCborArray and to modify
     the array item associated with the iterator. If you want to iterate over a
     const QCborArray, use QCborArray::ConstIterator instead. It is generally a
@@ -793,56 +840,56 @@ void QCborArray::detach(qsizetype reserved)
 */
 
 /*!
-    \fn bool QCborArray::Iterator::operator==(const Iterator &other) const
-    \fn bool QCborArray::Iterator::operator==(const ConstIterator &other) const
+    \fn bool QCborArray::Iterator::operator==(const Iterator &lhs, const Iterator &rhs)
+    \fn bool QCborArray::Iterator::operator==(const Iterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if \a other points to the same entry in the array as this
+    Returns \c true if \a lhs points to the same entry in the array as \a rhs
     iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
 
 /*!
-    \fn bool QCborArray::Iterator::operator!=(const Iterator &other) const
-    \fn bool QCborArray::Iterator::operator!=(const ConstIterator &other) const
+    \fn bool QCborArray::Iterator::operator!=(const Iterator &lhs, const Iterator &rhs)
+    \fn bool QCborArray::Iterator::operator!=(const Iterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if \a other points to a different entry in the array than
-    this iterator; otherwise returns \c false.
+    Returns \c true if \a lhs points to a different entry in the array than
+    \a rhs iterator; otherwise returns \c false.
 
     \sa operator==()
 */
 
 /*!
-    \fn bool QCborArray::Iterator::operator<(const Iterator& other) const
-    \fn bool QCborArray::Iterator::operator<(const ConstIterator& other) const
+    \fn bool QCborArray::Iterator::operator<(const Iterator &lhs, const Iterator &rhs)
+    \fn bool QCborArray::Iterator::operator<(const Iterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the array pointed to by this iterator
-    occurs before the entry pointed to by the \a other iterator.
+    Returns \c true if the entry in the array pointed to by \a lhs iterator
+    occurs before the entry pointed to by the \a rhs iterator.
 */
 
 /*!
-    \fn bool QCborArray::Iterator::operator<=(const Iterator& other) const
-    \fn bool QCborArray::Iterator::operator<=(const ConstIterator& other) const
+    \fn bool QCborArray::Iterator::operator<=(const Iterator &lhs, const Iterator &rhs)
+    \fn bool QCborArray::Iterator::operator<=(const Iterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the array pointed to by this iterator
-    occurs before or is the same entry as is pointed to by the \a other
+    Returns \c true if the entry in the array pointed to by \a lhs iterator
+    occurs before or is the same entry as is pointed to by the \a rhs
     iterator.
 */
 
 /*!
-    \fn bool QCborArray::Iterator::operator>(const Iterator& other) const
-    \fn bool QCborArray::Iterator::operator>(const ConstIterator& other) const
+    \fn bool QCborArray::Iterator::operator>(const Iterator &lhs, const Iterator &rhs)
+    \fn bool QCborArray::Iterator::operator>(const Iterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the array pointed to by this iterator
-    occurs after the entry pointed to by the \a other iterator.
+    Returns \c true if the entry in the array pointed to by \a lhs iterator
+    occurs after the entry pointed to by the \a rhs iterator.
  */
 
 /*!
-    \fn bool QCborArray::Iterator::operator>=(const Iterator& other) const
-    \fn bool QCborArray::Iterator::operator>=(const ConstIterator& other) const
+    \fn bool QCborArray::Iterator::operator>=(const Iterator &lhs, const Iterator &rhs)
+    \fn bool QCborArray::Iterator::operator>=(const Iterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the array pointed to by this iterator
-    occurs after or is the same entry as is pointed to by the \a other
+    Returns \c true if the entry in the array pointed to by \a lhs iterator
+    occurs after or is the same entry as is pointed to by the \a rhs
     iterator.
 */
 
@@ -933,6 +980,10 @@ void QCborArray::detach(qsizetype reserved)
     \since 5.12
 
     \brief The QCborArray::ConstIterator class provides an STL-style const iterator for QCborArray.
+
+    \compares strong
+    \compareswith strong QCborArray::Iterator
+    \endcompareswith
 
     QCborArray::ConstIterator allows you to iterate over a QCborArray. If you
     want to modify the QCborArray as you iterate over it, use
@@ -1033,56 +1084,50 @@ void QCborArray::detach(qsizetype reserved)
 */
 
 /*!
-    \fn bool QCborArray::ConstIterator::operator==(const Iterator &other) const
-    \fn bool QCborArray::ConstIterator::operator==(const ConstIterator &other) const
+    \fn bool QCborArray::ConstIterator::operator==(const ConstIterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if \a other points to the same entry in the array as this
+    Returns \c true if \a lhs points to the same entry in the array as \a rhs
     iterator; otherwise returns \c false.
 
     \sa operator!=()
 */
 
 /*!
-    \fn bool QCborArray::ConstIterator::operator!=(const Iterator &o) const
-    \fn bool QCborArray::ConstIterator::operator!=(const ConstIterator &o) const
+    \fn bool QCborArray::ConstIterator::operator!=(const ConstIterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if \a o points to a different entry in the array than
-    this iterator; otherwise returns \c false.
+    Returns \c true if \a lhs points to a different entry in the array than
+    \a rhs iterator; otherwise returns \c false.
 
     \sa operator==()
 */
 
 /*!
-    \fn bool QCborArray::ConstIterator::operator<(const Iterator &other) const
-    \fn bool QCborArray::ConstIterator::operator<(const ConstIterator &other) const
+    \fn bool QCborArray::ConstIterator::operator<(const ConstIterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the array pointed to by this iterator
-    occurs before the entry pointed to by the \a other iterator.
+    Returns \c true if the entry in the array pointed to by \a lhs iterator
+    occurs before the entry pointed to by the \a rhs iterator.
 */
 
 /*!
-    \fn bool QCborArray::ConstIterator::operator<=(const Iterator &other) const
-    \fn bool QCborArray::ConstIterator::operator<=(const ConstIterator &other) const
+    \fn bool QCborArray::ConstIterator::operator<=(const ConstIterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the array pointed to by this iterator
-    occurs before or is the same entry as is pointed to by the \a other
+    Returns \c true if the entry in the array pointed to by \a lhs iterator
+    occurs before or is the same entry as is pointed to by the \a rhs
     iterator.
 */
 
 /*!
-    \fn bool QCborArray::ConstIterator::operator>(const Iterator &other) const
-    \fn bool QCborArray::ConstIterator::operator>(const ConstIterator &other) const
+    \fn bool QCborArray::ConstIterator::operator>(const ConstIterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the array pointed to by this iterator
-    occurs after the entry pointed to by the \a other iterator.
+    Returns \c true if the entry in the array pointed to by \a lhs iterator
+    occurs after the entry pointed to by the \a rhs iterator.
 */
 
 /*!
-    \fn bool QCborArray::ConstIterator::operator>=(const Iterator &other) const
-    \fn bool QCborArray::ConstIterator::operator>=(const ConstIterator &other) const
+    \fn bool QCborArray::ConstIterator::operator>=(const ConstIterator &lhs, const ConstIterator &rhs)
 
-    Returns \c true if the entry in the array pointed to by this iterator
-    occurs after or is the same entry as is pointed to by the \a other
+    Returns \c true if the entry in the array pointed to by \a lhs iterator
+    occurs after or is the same entry as is pointed to by the \a rhs
     iterator.
 */
 

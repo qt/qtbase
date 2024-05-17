@@ -112,6 +112,11 @@ public:
     static bool removeApplicationFont(int id);
     static bool removeAllApplicationFonts();
 
+    static void addApplicationFallbackFontFamily(QChar::Script script, const QString &familyName);
+    static bool removeApplicationFallbackFontFamily(QChar::Script script, const QString &familyName);
+    static void setApplicationFallbackFontFamilies(QChar::Script, const QStringList &familyNames);
+    static QStringList applicationFallbackFontFamilies(QChar::Script script);
+
     static QFont systemFont(SystemFont type);
 };
 

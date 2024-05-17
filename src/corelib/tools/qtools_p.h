@@ -115,9 +115,6 @@ constexpr inline int qt_lencmp(qsizetype lhs, qsizetype rhs) noexcept
 
 } // namespace QtMiscUtils
 
-// We typically need an extra bit for qNextPowerOfTwo when determining the next allocation size.
-constexpr qsizetype MaxAllocSize = (std::numeric_limits<qsizetype>::max)();
-
 struct CalculateGrowingBlockSizeResult
 {
     qsizetype size;

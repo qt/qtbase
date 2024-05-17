@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -1930,7 +1930,7 @@ void tst_QMainWindow::addToolbarAfterShow()
 void tst_QMainWindow::centralWidgetSize()
 {
     if (qGuiApp->styleHints()->showIsFullScreen())
-        QSKIP("The platform is auto maximizing, so the test makes no sense");;
+        QSKIP("The platform is auto maximizing, so the test makes no sense");
 
     QMainWindow mainWindow;
     mainWindow.menuBar()->addMenu("menu");

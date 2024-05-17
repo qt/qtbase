@@ -1,0 +1,32 @@
+type: Group
+instructions:
+  - type: ChangeDirectory
+    directory: "{{.SourceDir}}"
+  - type: MakeDirectory
+    directory: "{{.SourceDir}}_standalone_examples"
+  - type: SetBuildDirectory
+    directory: "{{.SourceDir}}_standalone_examples"
+  - type: ChangeDirectory
+    directory: "{{.BuildDir}}"
+  - type: AppendToEnvironmentVariable
+    variableName: COIN_CMAKE_ARGS
+    variableValue: " -S {{.SourceDir}} -B ."
+    disable_if:
+      condition: runtime
+      env_var: COIN_CMAKE_ARGS
+      equals_value: null
+  - type: EnvironmentVariable
+    variableName: COIN_CMAKE_ARGS
+    variableValue: "-S {{.SourceDir}} -B ."
+    enable_if:
+      condition: runtime
+      env_var: COIN_CMAKE_ARGS
+      equals_value: null
+
+  - !include "{{qt/qtbase}}/call_cmake_for_standalone_examples.yaml"
+  - type: ExecuteCommand
+    command: "{{.Env.EXAMPLES_ENV_PREFIX}} cmake --build . --parallel -v"
+    maxTimeInSeconds: 6000
+    maxTimeBetweenOutput: 4800
+    userMessageOnFailure: >
+      Failed to build examples.

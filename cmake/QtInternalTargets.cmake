@@ -156,7 +156,7 @@ qt_internal_add_target_aliases(PlatformToolInternal)
 target_link_libraries(PlatformToolInternal INTERFACE PlatformAppInternal)
 
 qt_internal_add_global_definition(QT_NO_JAVA_STYLE_ITERATORS)
-qt_internal_add_global_definition(QT_NO_AS_CONST)
+qt_internal_add_global_definition(QT_NO_QASCONST)
 qt_internal_add_global_definition(QT_NO_QEXCHANGE)
 qt_internal_add_global_definition(QT_NO_NARROWING_CONVERSIONS_IN_CONNECT)
 qt_internal_add_global_definition(QT_EXPLICIT_QFILE_CONSTRUCTION_FROM_PATH)
@@ -242,15 +242,16 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
             "$<${is_static_and_objc}:-fno-objc-msgsend-selector-stubs>"
         )
     endif()
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "15.0.0")
-        # A bug in Xcode 15 adds duplicate flags to the linker. In addition, the
-        # `-warn_duplicate_libraries` is now enabled by default which may result
-        # in several 'duplicate libraries warning'.
-        #   - https://gitlab.kitware.com/cmake/cmake/-/issues/25297 and
-        #   - https://indiestack.com/2023/10/xcode-15-duplicate-library-linker-warnings/
-        target_link_options(PlatformCommonInternal INTERFACE
-            "LINKER:-no_warn_duplicate_libraries")
-    endif()
+
+    # A bug in Xcode 15 adds duplicate flags to the linker. In addition, the
+    # `-warn_duplicate_libraries` is now enabled by default which may result
+    # in several 'duplicate libraries warning'.
+    #   - https://gitlab.kitware.com/cmake/cmake/-/issues/25297 and
+    #   - https://indiestack.com/2023/10/xcode-15-duplicate-library-linker-warnings/
+    set(is_xcode15 "$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,15>")
+    set(not_disabled "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_NO_DISABLE_WARN_DUPLICATE_LIBRARIES>>>")
+    target_link_options(PlatformCommonInternal INTERFACE
+        "$<$<AND:${not_disabled},${is_xcode15}>:LINKER:-no_warn_duplicate_libraries>")
 endif()
 
 if(MSVC)
@@ -316,17 +317,51 @@ if (GCC AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "9.2")
     target_compile_options(PlatformCommonInternal INTERFACE $<$<COMPILE_LANGUAGE:CXX>:-Wsuggest-override>)
 endif()
 
+# Hardening options
 if(QT_FEATURE_intelcet)
     if(MSVC)
-        qt_internal_platform_link_options(PlatformCommonInternal INTERFACE
-            -CETCOMPAT
-        )
+        qt_internal_platform_link_options(PlatformCommonInternal INTERFACE -CETCOMPAT)
     else()
-        target_compile_options(PlatformCommonInternal INTERFACE
-            -fcf-protection=full
-        )
+        target_compile_options(PlatformCommonInternal INTERFACE -fcf-protection=full)
     endif()
 endif()
+
+if(QT_FEATURE_glibc_fortify_source)
+    set(is_optimized_build "$<OR:$<NOT:$<CONFIG:Debug>>,$<BOOL:${QT_FEATURE_optimize_debug}>>")
+    # Some compilers may define _FORTIFY_SOURCE by default when optimizing, remove it
+    # before defining our own
+    target_compile_options(PlatformCommonInternal BEFORE INTERFACE "$<${is_optimized_build}:-U_FORTIFY_SOURCE>")
+    if(TEST_glibc_234)
+        target_compile_options(PlatformCommonInternal INTERFACE "$<${is_optimized_build}:-D_FORTIFY_SOURCE=3>")
+    else()
+        target_compile_options(PlatformCommonInternal INTERFACE "$<${is_optimized_build}:-D_FORTIFY_SOURCE=2>")
+    endif()
+endif()
+
+if(QT_FEATURE_trivial_auto_var_init_pattern)
+    target_compile_options(PlatformCommonInternal INTERFACE -ftrivial-auto-var-init=pattern)
+endif()
+
+if(QT_FEATURE_stack_protector)
+    target_compile_options(PlatformCommonInternal INTERFACE -fstack-protector-strong)
+endif()
+
+if(QT_FEATURE_stack_clash_protection)
+    target_compile_options(PlatformCommonInternal INTERFACE -fstack-clash-protection)
+endif()
+
+if(QT_FEATURE_libstdcpp_assertions)
+    target_compile_definitions(PlatformCommonInternal INTERFACE _GLIBCXX_ASSERTIONS)
+endif()
+
+if(QT_FEATURE_libcpp_hardening)
+    target_compile_definitions(PlatformCommonInternal INTERFACE -D_LIBCPP_HARDENING_MODE=$<IF:$<CONFIG:Debug>,_LIBCPP_HARDENING_MODE_EXTENSIVE,_LIBCPP_HARDENING_MODE_FAST>)
+endif()
+
+if(QT_FEATURE_relro_now_linker)
+    qt_internal_platform_link_options(PlatformCommonInternal INTERFACE "-Wl,-z,relro,-z,now")
+endif()
+
 
 if(QT_FEATURE_force_asserts)
     target_compile_definitions(PlatformCommonInternal INTERFACE QT_FORCE_ASSERTS)

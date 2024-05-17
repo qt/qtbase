@@ -12,10 +12,10 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
 endif()
 
 # Collect test data
-list(APPEND test_data "data/thematicBreaks.md")
-list(APPEND test_data "data/headingBulletsContinuations.md")
-list(APPEND test_data "data/fuzz20450.md")
-list(APPEND test_data "data/fuzz20580.md")
+file(GLOB_RECURSE test_data
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    data/*
+)
 
 qt_internal_add_test(tst_qtextmarkdownimporter
     SOURCES

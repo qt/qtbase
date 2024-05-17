@@ -11,26 +11,27 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate {
+
+template <>
+struct QComObjectTraits<ISelectionProvider2>
+{
+    static constexpr bool isGuidOf(REFIID riid) noexcept
+    {
+        return QComObjectTraits<ISelectionProvider2, ISelectionProvider>::isGuidOf(riid);
+    }
+};
+
+} // namespace QtPrivate
+
 // Implements the Selection control pattern provider. Used for Lists.
 class QWindowsUiaSelectionProvider : public QWindowsUiaBaseProvider,
-                                     public QWindowsComBase<ISelectionProvider2>
+                                     public QComObject<ISelectionProvider2>
 {
     Q_DISABLE_COPY_MOVE(QWindowsUiaSelectionProvider)
 public:
     explicit QWindowsUiaSelectionProvider(QAccessible::Id id);
     virtual ~QWindowsUiaSelectionProvider();
-
-    // override to support ISelectionProvider and ISelectionProvider2 at the same time
-    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID id, LPVOID *iface) override
-    {
-        HRESULT res = QWindowsComBase<ISelectionProvider2>::QueryInterface(id, iface);
-        // QWindowsComBase<ISelectionProvider2>::QueryInterface doesn't handle ISelectionProvider,
-        // from which ISelectionProvider2 inherits
-        if (res == E_NOINTERFACE)
-            res = qWindowsComQueryInterface<ISelectionProvider>(this, id, iface) ? S_OK : E_NOINTERFACE;
-
-        return res;
-    };
 
     // ISelectionProvider
     HRESULT STDMETHODCALLTYPE GetSelection(SAFEARRAY **pRetVal) override;

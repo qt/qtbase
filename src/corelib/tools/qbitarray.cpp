@@ -7,6 +7,9 @@
 #include <qdatastream.h>
 #include <qdebug.h>
 #include <qendian.h>
+
+#include <limits>
+
 #include <string.h>
 
 QT_BEGIN_NAMESPACE
@@ -19,6 +22,8 @@ QT_BEGIN_NAMESPACE
     \ingroup tools
     \ingroup shared
     \reentrant
+
+    \compares equality
 
     A QBitArray is an array that gives access to individual bits and
     provides operators (\l{operator&()}{AND}, \l{operator|()}{OR},
@@ -74,6 +79,7 @@ QT_BEGIN_NAMESPACE
     \sa QByteArray, QList
 */
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 /*!
     \fn QBitArray::QBitArray(QBitArray &&other)
 
@@ -82,6 +88,7 @@ QT_BEGIN_NAMESPACE
 
     \since 5.2
 */
+#endif
 
 /*! \fn QBitArray::QBitArray()
 
@@ -104,22 +111,39 @@ QT_BEGIN_NAMESPACE
  *    inline qsizetype size() const { return (d.size() << 3) - *d.constData(); }
  */
 
+static constexpr qsizetype storage_size(qsizetype size)
+{
+    // avoid overflow when adding 7, by doing the arithmetic in unsigned space:
+    return qsizetype((size_t(size) + 7) / 8);
+}
+
+static constexpr qsizetype allocation_size(qsizetype size)
+{
+    return size <= 0 ? 0 : storage_size(size) + 1;
+}
+
+static void adjust_head_and_tail(char *data, qsizetype storageSize, qsizetype logicalSize)
+{
+    quint8 *c = reinterpret_cast<quint8 *>(data);
+    // store the difference between storage and logical size in d[0]:
+    *c = quint8(size_t(storageSize) * 8 - logicalSize);
+    // reset unallocated bits to 0:
+    if (logicalSize & 7)
+        *(c + 1 + logicalSize / 8) &= (1 << (logicalSize & 7)) - 1;
+}
+
 /*!
     Constructs a bit array containing \a size bits. The bits are
     initialized with \a value, which defaults to false (0).
 */
 QBitArray::QBitArray(qsizetype size, bool value)
-    : d(size <= 0 ? 0 : 1 + (size + 7) / 8, Qt::Uninitialized)
+    : d(allocation_size(size), value ? 0xFF : 0x00)
 {
     Q_ASSERT_X(size >= 0, "QBitArray::QBitArray", "Size must be greater than or equal to 0.");
     if (size <= 0)
         return;
 
-    uchar *c = reinterpret_cast<uchar *>(d.data());
-    memset(c + 1, value ? 0xff : 0, d.size() - 1);
-    *c = d.size() * 8 - size;
-    if (value && size && size & 7)
-        *(c + 1 + size / 8) &= (1 << (size & 7)) - 1;
+    adjust_head_and_tail(d.data(), d.size(), size);
 }
 
 /*! \fn qsizetype QBitArray::size() const
@@ -183,17 +207,12 @@ qsizetype QBitArray::count(bool on) const
 */
 void QBitArray::resize(qsizetype size)
 {
-    if (!size) {
+    Q_ASSERT_X(size >= 0, "QBitArray::resize", "Size must be greater than or equal to 0.");
+    if (size <= 0) {
         d.resize(0);
     } else {
-        qsizetype s = d.size();
-        d.resize(1 + (size + 7) / 8);
-        uchar *c = reinterpret_cast<uchar *>(d.data());
-        if (size > (s << 3))
-            memset(c + s, 0, d.size() - s);
-        else if (size & 7)
-            *(c + 1 + size / 8) &= (1 << (size & 7)) - 1;
-        *c = d.size() * 8 - size;
+        d.resize(allocation_size(size), 0x00);
+        adjust_head_and_tail(d.data(), d.size(), size);
     }
 }
 
@@ -289,20 +308,15 @@ void QBitArray::fill(bool value, qsizetype begin, qsizetype end)
  */
 QBitArray QBitArray::fromBits(const char *data, qsizetype size)
 {
+    Q_ASSERT_X(size >= 0, "QBitArray::fromBits", "Size must be greater than or equal to 0.");
     QBitArray result;
-    if (size == 0)
+    if (size <= 0)
         return result;
-    qsizetype nbytes = (size + 7) / 8;
 
-    result.d = QByteArray(nbytes + 1, Qt::Uninitialized);
-    char *bits = result.d.data();
-    memcpy(bits + 1, data, nbytes);
-
-    // clear any unused bits from the last byte
-    if (size & 7)
-        bits[nbytes] &= 0xffU >> (8 - (size & 7));
-
-    *bits = result.d.size() * 8 - size;
+    auto &d = result.d;
+    d.resize(allocation_size(size));
+    memcpy(d.data() + 1, data, d.size() - 1);
+    adjust_head_and_tail(d.data(), d.size(), size);
     return result;
 }
 
@@ -453,6 +467,7 @@ quint32 QBitArray::toUInt32(QSysInfo::Endian endianness, bool *ok) const noexcep
     \overload
 */
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 /*! \fn QBitArray::QBitArray(const QBitArray &other) noexcept
 
     Constructs a copy of \a other.
@@ -477,6 +492,7 @@ quint32 QBitArray::toUInt32(QSysInfo::Endian endianness, bool *ok) const noexcep
     Moves \a other to this bit array and returns a reference to
     this bit array.
 */
+#endif // Qt 6
 
 /*! \fn void QBitArray::swap(QBitArray &other)
     \since 4.8
@@ -485,17 +501,17 @@ quint32 QBitArray::toUInt32(QSysInfo::Endian endianness, bool *ok) const noexcep
     fast and never fails.
 */
 
-/*! \fn bool QBitArray::operator==(const QBitArray &other) const
+/*! \fn bool QBitArray::operator==(const QBitArray &lhs, const QBitArray &rhs)
 
-    Returns \c true if \a other is equal to this bit array; otherwise
+    Returns \c true if \a lhs is equal to \a rhs bit array; otherwise
     returns \c false.
 
     \sa operator!=()
 */
 
-/*! \fn bool QBitArray::operator!=(const QBitArray &other) const
+/*! \fn bool QBitArray::operator!=(const QBitArray &lhs, const QBitArray &rhs)
 
-    Returns \c true if \a other is not equal to this bit array;
+    Returns \c true if \a lhs is not equal to \a rhs bit array;
     otherwise returns \c false.
 
     \sa operator==()
@@ -880,19 +896,19 @@ QBitArray operator^(const QBitArray &a1, const QBitArray &a2)
 
 QDataStream &operator<<(QDataStream &out, const QBitArray &ba)
 {
+    const qsizetype len = ba.size();
     if (out.version() < QDataStream::Qt_6_0) {
-        quint32 len = ba.size();
-        out << len;
-        if (len > 0)
-            out.writeRawData(ba.d.constData() + 1, ba.d.size() - 1);
-        return out;
+        if (Q_UNLIKELY(len > qsizetype{(std::numeric_limits<qint32>::max)()})) {
+            out.setStatus(QDataStream::Status::SizeLimitExceeded);
+            return out;
+        }
+        out << quint32(len);
     } else {
-        quint64 len = ba.size();
-        out << len;
-        if (len > 0)
-            out.writeRawData(ba.d.constData() + 1, ba.d.size() - 1);
-        return out;
+        out << quint64(len);
     }
+    if (len > 0)
+        out.writeRawData(ba.d.data() + 1, ba.d.size() - 1);
+    return out;
 }
 
 /*!
@@ -910,10 +926,18 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
     if (in.version() < QDataStream::Qt_6_0) {
         quint32 tmp;
         in >> tmp;
+        if (Q_UNLIKELY(tmp > quint32((std::numeric_limits<qint32>::max)()))) {
+            in.setStatus(QDataStream::ReadCorruptData);
+            return in;
+        }
         len = tmp;
     } else {
         quint64 tmp;
         in >> tmp;
+        if (Q_UNLIKELY(tmp > quint64((std::numeric_limits<qsizetype>::max)()))) {
+            in.setStatus(QDataStream::Status::SizeLimitExceeded);
+            return in;
+        }
         len = tmp;
     }
     if (len == 0) {
@@ -922,7 +946,7 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
     }
 
     const qsizetype Step = 8 * 1024 * 1024;
-    qsizetype totalBytes = (len + 7) / 8;
+    const qsizetype totalBytes = storage_size(len);
     qsizetype allocated = 0;
 
     while (allocated < totalBytes) {
@@ -936,14 +960,13 @@ QDataStream &operator>>(QDataStream &in, QBitArray &ba)
         allocated += blockSize;
     }
 
-    qsizetype paddingMask = ~((0x1 << (len & 0x7)) - 1);
-    if (paddingMask != ~0x0 && (ba.d.constData()[ba.d.size() - 1] & paddingMask)) {
+    const auto fromStream = ba.d.back();
+    adjust_head_and_tail(ba.d.data(), ba.d.size(), len);
+    if (ba.d.back() != fromStream) {
         ba.clear();
         in.setStatus(QDataStream::ReadCorruptData);
         return in;
     }
-
-    *ba.d.data() = ba.d.size() * 8 - len;
     return in;
 }
 #endif // QT_NO_DATASTREAM

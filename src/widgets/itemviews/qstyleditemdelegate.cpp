@@ -137,12 +137,17 @@ public:
     instance provided by QItemEditorFactory is installed on all item
     delegates. You can set a custom factory using
     setItemEditorFactory() or set a new default factory with
-    QItemEditorFactory::setDefaultFactory(). It is the data stored in
-    the item model with the \l{Qt::}{EditRole} that is edited. See the
-    QItemEditorFactory class for a more high-level introduction to
-    item editor factories. The \l{Color Editor Factory Example}{Color
-    Editor Factory} example shows how to create custom editors with a
-    factory.
+    QItemEditorFactory::setDefaultFactory().
+
+    \snippet code/src_gui_itemviews_qitemeditorfactory.cpp setDefaultFactory
+
+    After the new factory has been set, all standard item delegates
+    will use it (i.e, also delegates that were created before the new
+    default factory was set).
+
+    It is the data stored in the item model with the \l{Qt::}{EditRole}
+    that is edited. See the QItemEditorFactory class for a more
+    high-level introduction to item editor factories.
 
     \section1 Subclassing QStyledItemDelegate
 
@@ -204,7 +209,7 @@ public:
     documentation for details.
 
     \sa {Delegate Classes}, QItemDelegate, QAbstractItemDelegate, QStyle,
-        {Star Delegate Example}, {Color Editor Factory Example}
+        {Star Delegate Example}
 */
 
 

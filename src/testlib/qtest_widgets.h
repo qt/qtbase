@@ -62,15 +62,16 @@ inline QByteArray toString(QSizePolicy sp)
 }
 
 } // namespace Internal
+} // namespace QTest
 
 inline char *toString(QSizePolicy::Policy p)
 {
-    return qstrdup(Internal::toString(p));
+    return qstrdup(QTest::Internal::toString(p));
 }
 
 inline char *toString(QSizePolicy::ControlTypes ct)
 {
-    return qstrdup(Internal::toString(ct).constData());
+    return qstrdup(QTest::Internal::toString(ct).constData());
 }
 
 inline char *toString(QSizePolicy::ControlType ct)
@@ -80,10 +81,8 @@ inline char *toString(QSizePolicy::ControlType ct)
 
 inline char *toString(QSizePolicy sp)
 {
-    return qstrdup(Internal::toString(sp).constData());
+    return qstrdup(QTest::Internal::toString(sp).constData());
 }
-
-} // namespace QTest
 
 QT_END_NAMESPACE
 

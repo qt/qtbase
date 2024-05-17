@@ -1,11 +1,12 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 #include <QTest>
 #include <QSignalSpy>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QStyle>
 #include <QtWidgets/QLayout>
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QLineEdit>
 #include <QtGui/QAction>
 #include <QtGui/QStyleHints>
 #include <qdialogbuttonbox.h>
@@ -82,6 +83,8 @@ private slots:
     void task191642_default();
     void testDeletedStandardButton();
     void automaticDefaultButton();
+    void initialFocus_data();
+    void initialFocus();
 
 private:
     qint64 timeStamp;
@@ -956,6 +959,40 @@ void tst_QDialogButtonBox::automaticDefaultButton()
         QTest::keyPress(&dialog, Qt::Key_Enter);
         QCOMPARE(buttonClicked.count(), 1);
     }
+}
+
+void tst_QDialogButtonBox::initialFocus_data()
+{
+    QTest::addColumn<Qt::FocusPolicy>("focusPolicy");
+    QTest::addColumn<bool>("lineEditHasFocus");
+
+    QTest::addRow("TabFocus") << Qt::FocusPolicy::TabFocus << false;
+    QTest::addRow("StrongFocus") << Qt::FocusPolicy::StrongFocus << true;
+    QTest::addRow("NoFocus") << Qt::FocusPolicy::NoFocus << false;
+    QTest::addRow("ClickFocus") << Qt::FocusPolicy::ClickFocus << false;
+    QTest::addRow("WheelFocus") << Qt::FocusPolicy::WheelFocus << false;
+}
+
+void tst_QDialogButtonBox::initialFocus()
+{
+    QFETCH(const Qt::FocusPolicy, focusPolicy);
+    QFETCH(const bool, lineEditHasFocus);
+    QDialog dialog;
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+    QLineEdit *lineEdit = new QLineEdit(&dialog);
+    lineEdit->setFocusPolicy(focusPolicy);
+    layout->addWidget(lineEdit);
+    QDialogButtonBox *dialogButtonBox = new QDialogButtonBox(&dialog);
+    layout->addWidget(dialogButtonBox);
+    dialogButtonBox->addButton(QDialogButtonBox::Reset);
+    const auto *firstAcceptButton = dialogButtonBox->addButton(QDialogButtonBox::Ok);
+    dialogButtonBox->addButton(QDialogButtonBox::Cancel);
+    dialog.show();
+    dialog.activateWindow();
+    if (lineEditHasFocus)
+        QTRY_VERIFY(lineEdit->hasFocus());
+    else
+        QTRY_VERIFY(firstAcceptButton->hasFocus());
 }
 
 QTEST_MAIN(tst_QDialogButtonBox)

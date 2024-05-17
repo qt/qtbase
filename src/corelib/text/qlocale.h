@@ -382,6 +382,9 @@ public:
         Ligurian = 338,
         Rohingya = 339,
         Torwali = 340,
+        Anii = 341,
+        Kangri = 342,
+        Venetian = 343,
 
         Afan = Oromo,
         Bengali = Bangla,
@@ -403,7 +406,7 @@ public:
         Uigur = Uyghur,
         Walamo = Wolaytta,
 
-        LastLanguage = Torwali
+        LastLanguage = Venetian
     };
 
     enum Script : ushort {
@@ -1170,8 +1173,11 @@ private:
     friend class QRomanCalendar;
     friend Q_CORE_EXPORT size_t qHash(const QLocale &key, size_t seed) noexcept;
 
-    friend bool operator==(const QLocale &lhs, const QLocale &rhs) { return lhs.equals(rhs); }
-    friend bool operator!=(const QLocale &lhs, const QLocale &rhs) { return !lhs.equals(rhs); }
+    friend bool comparesEqual(const QLocale &lhs, const QLocale &rhs) noexcept
+    {
+        return lhs.equals(rhs);
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QLocale)
 
     QSharedDataPointer<QLocalePrivate> d;
 };

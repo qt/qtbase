@@ -46,6 +46,7 @@ public:
         FeaturePermissiveWWWAutoLinks =   0x0400,
         FeatureTasklists =                0x0800,
         FeatureUnderline =                0x4000,
+        FeatureFrontMatter =            0x100000, // Qt feature, not yet in MD4C
         // composite flags
         FeaturePermissiveAutoLinks = FeaturePermissiveMailAutoLinks
             | FeaturePermissiveURLAutoLinks | FeaturePermissiveWWWAutoLinks,

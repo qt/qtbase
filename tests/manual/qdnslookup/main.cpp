@@ -1,5 +1,5 @@
 // Copyright (C) 2023 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
@@ -10,6 +10,11 @@
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QHostInfo>
 #include <QtNetwork/QDnsLookup>
+
+#if QT_CONFIG(ssl)
+#  include <QtNetwork/QSslCipher>
+#  include <QtNetwork/QSslConfiguration>
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -32,6 +37,20 @@ static QDnsLookup::Type typeFromString(QString str)
     return QDnsLookup::Type(value);
 }
 
+template <typename Enum> QByteArray enumToString(Enum value)
+{
+    QMetaEnum me = QMetaEnum::fromType<Enum>();
+    QByteArray keys = me.valueToKeys(int(value));
+    if (keys.isEmpty())
+        return QByteArrayLiteral("<unknown>");
+
+    // return the last one
+    qsizetype idx = keys.lastIndexOf('|');
+    if (idx > 0)
+        return std::move(keys).sliced(idx + 1);
+    return keys;
+}
+
 static int showHelp(const char *argv0, int exitcode)
 {
     // like dig
@@ -43,7 +62,7 @@ static auto parseServerAddress(QString server)
 {
     struct R {
         QHostAddress address;
-        int port = -1;
+        int port;
     } r;
 
     // let's use QUrl to help us
@@ -52,8 +71,15 @@ static auto parseServerAddress(QString server)
     if (!url.isValid() || !url.userInfo().isNull())
         return r;           // failed
 
-    r.port = url.port();
+    r.port = url.port(0);
     r.address.setAddress(url.host());
+    if (r.address.isNull()) {
+        // try to resolve a hostname
+        QHostInfo hostinfo = QHostInfo::fromName(url.host());
+        const QList<QHostAddress> addresses = hostinfo.addresses();
+        if (!hostinfo.error() && !addresses.isEmpty())
+            r.address = addresses.at(0);
+    }
     return r;
 }
 
@@ -95,15 +121,26 @@ static void printAnswers(const QDnsLookup &lookup)
             printf("%s ", qPrintable(QDebug::toString(data)));
         puts("");
     }
+
+    for (const QDnsTlsAssociationRecord &rr : lookup.tlsAssociationRecords()) {
+        printRecordCommon(rr, "TLSA");
+        printf("( %u %u %u ; %s %s %s\n\t%s )\n", quint8(rr.usage()), quint8(rr.selector()),
+               quint8(rr.matchType()), enumToString(rr.usage()).constData(),
+               enumToString(rr.selector()).constData(), enumToString(rr.matchType()).constData(),
+               rr.value().toHex().toUpper().constData());
+    }
 }
 
 static void printResults(const QDnsLookup &lookup, QElapsedTimer::Duration duration)
 {
     if (QDnsLookup::Error error = lookup.error())
-        printf(";; status: %s (%s)\n", QMetaEnum::fromType<QDnsLookup::Error>().valueToKey(error),
+        printf(";; status: %s (%s)", QMetaEnum::fromType<QDnsLookup::Error>().valueToKey(error),
                qPrintable(lookup.errorString()));
     else
-        printf(";; status: NoError\n");
+        printf(";; status: NoError");
+    if (lookup.isAuthenticData())
+        printf("; AuthenticData");
+    puts("");
 
     QMetaEnum me = QMetaEnum::fromType<QDnsLookup::Type>();
     printf(";; QUESTION:\n");
@@ -114,8 +151,21 @@ static void printResults(const QDnsLookup &lookup, QElapsedTimer::Duration durat
         printAnswers(lookup);
 
     printf("\n;; Query time: %lld ms\n", qint64(duration_cast<milliseconds>(duration).count()));
-    if (QHostAddress server = lookup.nameserver(); !server.isNull())
-        printf(";; SERVER: %s#%d\n", qPrintable(server.toString()), lookup.nameserverPort());
+    if (QHostAddress server = lookup.nameserver(); !server.isNull()) {
+        quint16 port = lookup.nameserverPort();
+        if (port == 0)
+            port = QDnsLookup::defaultPortForProtocol(lookup.nameserverProtocol());
+        printf(";; SERVER: %s#%d", qPrintable(server.toString()), port);
+#if QT_CONFIG(ssl)
+        if (lookup.nameserverProtocol() != QDnsLookup::Standard) {
+            if (QSslConfiguration conf = lookup.sslConfiguration(); !conf.isNull()) {
+                printf(" (%s %s)", enumToString(conf.sessionProtocol()).constData(),
+                       qPrintable(conf.sessionCipher().name()));
+            }
+        }
+#endif
+        puts("");
+    }
 }
 
 int main(int argc, char *argv[])
@@ -123,6 +173,7 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
 
     QDnsLookup::Type type = {};
+    QDnsLookup::Protocol protocol = QDnsLookup::Standard;
     QString domain, server;
     const QStringList args = QCoreApplication::arguments().sliced(1);
     for (const QString &arg : args) {
@@ -132,6 +183,14 @@ int main(int argc, char *argv[])
         }
         if (arg == u"-h")
             return showHelp(argv[0], EXIT_SUCCESS);
+        if (arg == "+tls") {
+            protocol = QDnsLookup::DnsOverTls;
+            continue;
+        } else if (arg == "+notls") {
+            protocol = QDnsLookup::Standard;
+            continue;
+        }
+
         if (domain.isNull()) {
             domain = arg;
             continue;
@@ -163,9 +222,7 @@ int main(int argc, char *argv[])
                     argv[0], qPrintable(server));
             return EXIT_FAILURE;
         }
-        lookup.setNameserver(addr.address);
-        if (addr.port > 0)
-            lookup.setNameserverPort(addr.port);
+        lookup.setNameserver(protocol, addr.address, addr.port);
     }
 
     // execute the lookup

@@ -19,4 +19,5 @@ qt_internal_add_test(tst_qcborvalue
         ../../../../../src/3rdparty/tinycbor/tests/parser
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
 )

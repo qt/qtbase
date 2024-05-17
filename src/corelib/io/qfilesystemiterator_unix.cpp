@@ -4,9 +4,9 @@
 #include "qplatformdefs.h"
 #include "qfilesystemiterator_p.h"
 
-#include <private/qstringconverter_p.h>
-
 #ifndef QT_NO_FILESYSTEMITERATOR
+
+#include <qvarlengtharray.h>
 
 #include <memory>
 
@@ -15,53 +15,66 @@
 
 QT_BEGIN_NAMESPACE
 
-static bool checkNameDecodable(const char *d_name, qsizetype len)
-{
-    // This function is called in a loop from advance() below, but the loop is
-    // usually run only once.
-
-    return QUtf8::isValidUtf8(QByteArrayView(d_name, len)).isValidUtf8;
-}
-
-QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters,
-                                         const QStringList &nameFilters, QDirIterator::IteratorFlags flags)
-    : nativePath(entry.nativeFilePath())
-    , dir(nullptr)
-    , dirEntry(nullptr)
-    , lastError(0)
+/*
+    Native filesystem iterator, which uses ::opendir()/readdir()/dirent from the system
+    libraries to iterate over the directory represented by \a entry.
+*/
+QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters)
+    : dirPath(entry.filePath()),
+      toUtf16(QStringDecoder::Utf8)
 {
     Q_UNUSED(filters);
-    Q_UNUSED(nameFilters);
-    Q_UNUSED(flags);
 
-    if ((dir = QT_OPENDIR(nativePath.constData())) == nullptr) {
+    dir.reset(QT_OPENDIR(entry.nativeFilePath().constData()));
+    if (!dir) {
         lastError = errno;
     } else {
-        if (!nativePath.endsWith('/'))
-            nativePath.append('/');
+        if (!dirPath.endsWith(u'/'))
+            dirPath.append(u'/');
     }
 }
 
-QFileSystemIterator::~QFileSystemIterator()
-{
-    if (dir)
-        QT_CLOSEDIR(dir);
-}
+QFileSystemIterator::~QFileSystemIterator() = default;
 
 bool QFileSystemIterator::advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData)
 {
+    auto asFileEntry = [this](QStringView name) {
+#ifdef Q_OS_DARWIN
+        // must match QFile::decodeName
+        QString normalized = name.toString().normalized(QString::NormalizationForm_C);
+        name = normalized;
+#endif
+        return QFileSystemEntry(dirPath + name, QFileSystemEntry::FromInternalPath());
+    };
     if (!dir)
         return false;
 
     for (;;) {
-        dirEntry = QT_READDIR(dir);
+        // From readdir man page:
+        // If the end of the directory stream is reached, NULL is returned and errno is
+        // not changed. If an error occurs, NULL is returned and errno is set to indicate
+        // the error. To distinguish end of stream from an error, set errno to zero before
+        // calling readdir() and then check the value of errno if NULL is returned.
+        errno = 0;
+        dirEntry = QT_READDIR(dir.get());
 
         if (dirEntry) {
-            qsizetype len = strlen(dirEntry->d_name);
-            if (checkNameDecodable(dirEntry->d_name, len)) {
-                fileEntry = QFileSystemEntry(nativePath + QByteArray(dirEntry->d_name, len), QFileSystemEntry::FromNativePath());
+            // POSIX allows readdir() to return a file name in struct dirent that
+            // extends past the end of the d_name array (it's a char[1] array on QNX, for
+            // example). Therefore, we *must* call strlen() on it to get the actual length
+            // of the file name. See:
+            // https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/dirent.h.html#tag_13_07_05
+            QByteArrayView name(dirEntry->d_name, strlen(dirEntry->d_name));
+            // name.size() is sufficient here, see QUtf8::convertToUnicode() for details
+            QVarLengthArray<char16_t> buffer(name.size());
+            auto *end = toUtf16.appendToBuffer(buffer.data(), name);
+            buffer.resize(end - buffer.constData());
+            if (!toUtf16.hasError()) {
+                fileEntry = asFileEntry(buffer);
                 metaData.fillFromDirEnt(*dirEntry);
                 return true;
+            } else {
+                errno = EILSEQ; // Invalid or incomplete multibyte or wide character
             }
         } else {
             break;

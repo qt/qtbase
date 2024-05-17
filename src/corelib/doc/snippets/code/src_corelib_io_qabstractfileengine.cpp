@@ -1,17 +1,21 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+using namespace Qt::StringLiterals;
+
 //! [0]
 class ZipEngineHandler : public QAbstractFileEngineHandler
 {
 public:
-    QAbstractFileEngine *create(const QString &fileName) const override;
+    std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const override;
 };
 
-QAbstractFileEngine *ZipEngineHandler::create(const QString &fileName) const
+std::unique_ptr<QAbstractFileEngine> ZipEngineHandler::create(const QString &fileName) const
 {
     // ZipEngineHandler returns a ZipEngine for all .zip files
-    return fileName.toLower().endsWith(".zip") ? new ZipEngine(fileName) : 0;
+    if (fileName.toLower().endsWith(".zip"_L1))
+        return std::make_unique<ZipEngine>(fileName);
+    return {};
 }
 
 int main(int argc, char **argv)
@@ -27,21 +31,24 @@ int main(int argc, char **argv)
 }
 //! [0]
 
-
 //! [1]
-QAbstractSocketEngine *ZipEngineHandler::create(const QString &fileName) const
+std::unique_ptr<QAbstractFileEngine> ZipEngineHandler::create(const QString &fileName) const
 {
     // ZipEngineHandler returns a ZipEngine for all .zip files
-    return fileName.toLower().endsWith(".zip") ? new ZipEngine(fileName) : 0;
+    if (fileName.toLower().endsWith(".zip"_L1))
+        return std::make_unique<ZipEngine>(fileName);
+    else
+        return {};
 }
 //! [1]
 
 
 //! [2]
-QAbstractFileEngineIterator *
-CustomFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
+QAbstractFileEngine::IteratorUniquePtr
+CustomFileEngine::beginEntryList(const QString &path, QDir::Filters filters,
+                                 const QStringList &filterNames)
 {
-    return new CustomFileEngineIterator(filters, filterNames);
+    return std::make_unique<CustomFileEngineIterator>(path, filters, filterNames);
 }
 //! [2]
 
@@ -50,25 +57,23 @@ CustomFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filte
 class CustomIterator : public QAbstractFileEngineIterator
 {
 public:
-    CustomIterator(const QStringList &nameFilters, QDir::Filters filters)
-        : QAbstractFileEngineIterator(nameFilters, filters), index(0)
+    CustomIterator(const QString &path, const QStringList &nameFilters, QDir::Filters filters)
+        : QAbstractFileEngineIterator(path, nameFilters, filters), index(0)
     {
         // In a real iterator, these entries are fetched from the
         // file system based on the value of path().
         entries << "entry1" << "entry2" << "entry3";
     }
 
-    bool hasNext() const override
+    bool advance() override
     {
-        return index < entries.size() - 1;
-    }
-
-    QString next() override
-    {
-       if (!hasNext())
-           return QString();
-       ++index;
-       return currentFilePath();
+        if (entries.isEmpty())
+            return false;
+        if (index < entries.size() - 1) {
+            ++index;
+            return true;
+        }
+        return false;
     }
 
     QString currentFileName() override

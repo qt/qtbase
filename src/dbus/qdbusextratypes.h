@@ -69,12 +69,18 @@ inline bool operator<(const QDBusObjectPath &lhs, const QDBusObjectPath &rhs)
 inline size_t qHash(const QDBusObjectPath &objectPath, size_t seed = 0)
 { return qHash(objectPath.path(), seed); }
 
+#ifndef QT_NO_DEBUG_STREAM
+Q_DBUS_EXPORT QDebug operator<<(QDebug, const QDBusObjectPath &);
+#endif
 
 class Q_DBUS_EXPORT QDBusSignature
 {
     QString m_signature;
 public:
-    QDBusSignature() noexcept : m_signature() {}
+    QDBusSignature() noexcept
+    {
+        m_signature.detach(); // mark non-null (empty signatures are valid)
+    }
     // compiler-generated copy/move constructor/assignment operators are ok!
     // compiler-generated destructor is ok!
 

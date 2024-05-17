@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtNetwork/qtnetworkglobal.h>
 
@@ -25,6 +25,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qurl.h>
+#include <QtCore/qset.h>
 
 #include <cstdlib>
 #include <memory>
@@ -72,6 +73,8 @@ private slots:
     void defaultQnamHttp2Configuration();
     void singleRequest_data();
     void singleRequest();
+    void informationalRequest_data();
+    void informationalRequest();
     void multipleRequests();
     void flowControlClientSide();
     void flowControlServerSide();
@@ -92,6 +95,8 @@ private slots:
 
     void authenticationRequired_data();
     void authenticationRequired();
+
+    void unsupportedAuthenticateChallenge();
 
     void h2cAllowedAttribute_data();
     void h2cAllowedAttribute();
@@ -298,6 +303,70 @@ void tst_Http2::singleRequest()
     if (connectionType == H2Type::h2Alpn || connectionType == H2Type::h2Direct)
         QCOMPARE(encSpy.size(), 1);
 #endif // QT_CONFIG(ssl)
+}
+
+void tst_Http2::informationalRequest_data()
+{
+    QTest::addColumn<int>("statusCode");
+
+    // 'Clear text' that should always work, either via the protocol upgrade
+    // or as direct.
+    QTest::addRow("statusCode-100") << 100;
+    QTest::addRow("statusCode-125") << 125;
+    QTest::addRow("statusCode-150") << 150;
+    QTest::addRow("statusCode-175") << 175;
+}
+
+void tst_Http2::informationalRequest()
+{
+    clearHTTP2State();
+
+    serverPort = 0;
+    nRequests = 1;
+
+    ServerPtr srv(newServer(defaultServerSettings, defaultConnectionType()));
+
+    QFETCH(const int, statusCode);
+    srv->setInformationalStatusCode(statusCode);
+
+    QMetaObject::invokeMethod(srv.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    auto url = requestUrl(defaultConnectionType());
+    url.setPath("/index.html");
+
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::Http2CleartextAllowedAttribute, true);
+
+    auto reply = manager->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, &tst_Http2::replyFinished);
+    // Since we're using self-signed certificates,
+    // ignore SSL errors:
+    reply->ignoreSslErrors();
+
+    runEventLoop();
+    STOP_ON_FAILURE
+
+    QCOMPARE(nRequests, 0);
+    QVERIFY(prefaceOK);
+    QVERIFY(serverGotSettingsACK);
+
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
+    QVERIFY(reply->isFinished());
+
+    const QVariant code(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute));
+
+    // We are discarding informational headers if the status code is in the range of
+    // 102-199 or if it is 100. As these header fields were part of  the informational
+    // header used for this test case, we should not see them at this point and the
+    // status code should be 200.
+
+    QCOMPARE(code.value<int>(), 200);
+    QVERIFY(!reply->hasRawHeader("a_random_header_field"));
+    QVERIFY(!reply->hasRawHeader("another_random_header_field"));
 }
 
 void tst_Http2::multipleRequests()
@@ -1175,6 +1244,89 @@ void tst_Http2::authenticationRequired()
     // in the next test running after this. In the `success` case we anyway expect it to have been
     // received.
     QTRY_VERIFY(serverGotSettingsACK);
+}
+
+void tst_Http2::unsupportedAuthenticateChallenge()
+{
+    clearHTTP2State();
+    serverPort = 0;
+
+    if (defaultConnectionType() == H2Type::h2c)
+        QSKIP("This test requires TLS with ALPN to work");
+
+    ServerPtr targetServer(newServer(defaultServerSettings, defaultConnectionType()));
+    QByteArray responseBody = "Hello"_ba;
+    targetServer->setResponseBody(responseBody);
+    targetServer->setAuthenticationHeader("Bearer realm=\"qt.io accounts\"");
+
+    QMetaObject::invokeMethod(targetServer.data(), "startServer", Qt::QueuedConnection);
+    runEventLoop();
+
+    QVERIFY(serverPort != 0);
+
+    nRequests = 1;
+
+    QUrl url = requestUrl(defaultConnectionType());
+    url.setPath("/index.html");
+    QNetworkRequest request(url);
+
+    QByteArray expectedBody = "Hello, World!";
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    QScopedPointer<QNetworkReply> reply;
+    reply.reset(manager->post(request, expectedBody));
+
+    bool authenticationRequested = false;
+    connect(manager.get(), &QNetworkAccessManager::authenticationRequired, reply.get(),
+            [&](QNetworkReply *, QAuthenticator *auth) {
+                authenticationRequested = true;
+            });
+
+    bool finishedReceived = false;
+    connect(reply.get(), &QNetworkReply::finished, reply.get(),
+            [&]() { finishedReceived = true; });
+    bool errorReceived = false;
+    connect(reply.get(), &QNetworkReply::errorOccurred, reply.get(),
+            [&]() { errorReceived = true; });
+
+    QSet<quint32> receivedDataOnStreams;
+    connect(targetServer.get(), &Http2Server::receivedDATAFrame, reply.get(),
+            [&receivedDataOnStreams](quint32 streamID, const QByteArray &body) {
+                Q_UNUSED(body);
+                receivedDataOnStreams.insert(streamID);
+            });
+
+    // Use queued connection so that the finished signal can be emitted and the
+    // isFinished property can be set.
+    connect(reply.get(), &QNetworkReply::errorOccurred, this,
+            &tst_Http2::replyFinishedWithError, Qt::QueuedConnection);
+
+    // Since we're using self-signed certificates, ignore SSL errors:
+    reply->ignoreSslErrors();
+
+    runEventLoop();
+    STOP_ON_FAILURE
+    QVERIFY2(reply->isFinished(),
+             "The reply should error out if authentication fails, or finish if it succeeds");
+
+    QCOMPARE(reply->error(), QNetworkReply::AuthenticationRequiredError);
+    QVERIFY(reply->isFinished());
+    QVERIFY(errorReceived);
+    QVERIFY(finishedReceived);
+    QCOMPARE(receivedDataOnStreams.size(), 1);
+    QVERIFY(receivedDataOnStreams.contains(1)); // the original, failed, request
+
+    QVERIFY(!authenticationRequested);
+
+    // We should not have sent any authentication headers to the server, since
+    // we don't support the challenge.
+    const QByteArray reqAuthHeader = targetServer->requestAuthorizationHeader();
+    QVERIFY(reqAuthHeader.isEmpty());
+
+    // In the `!success` case we need to wait for the server to emit this or it might cause issues
+    // in the next test running after this. In the `success` case we anyway expect it to have been
+    // received.
+    QTRY_VERIFY(serverGotSettingsACK);
+
 }
 
 void tst_Http2::h2cAllowedAttribute_data()

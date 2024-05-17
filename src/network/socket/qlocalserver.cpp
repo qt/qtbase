@@ -265,9 +265,27 @@ bool QLocalServer::hasPendingConnections() const
  */
 void QLocalServer::incomingConnection(quintptr socketDescriptor)
 {
-    Q_D(QLocalServer);
     QLocalSocket *socket = new QLocalSocket(this);
     socket->setSocketDescriptor(socketDescriptor);
+    addPendingConnection(socket);
+}
+
+/*!
+    This function is called by QLocalServer::incomingConnection()
+    to add the \a socket to the list of pending incoming connections.
+
+    \note Don't forget to call this member from reimplemented
+    incomingConnection() if you do not want to break the
+    Pending Connections mechanism. This function emits the
+    pendingConnectionAvailable() signal after the socket has been
+    added.
+
+    \sa incomingConnection(), pendingConnectionAvailable()
+    \since 6.8
+*/
+void QLocalServer::addPendingConnection(QLocalSocket *socket)
+{
+    Q_D(QLocalServer);
     d->pendingConnections.enqueue(socket);
     emit newConnection();
 }

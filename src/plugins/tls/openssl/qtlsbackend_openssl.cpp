@@ -17,7 +17,7 @@
 #include <QtNetwork/qssl.h>
 
 #include <QtCore/qdir.h>
-#include <QtCore/qdiriterator.h>
+#include <QtCore/qdirlisting.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qscopeguard.h>
@@ -204,11 +204,11 @@ void QTlsBackendOpenSSL::ensureCiphersAndCertsLoaded() const
 #elif defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
     // check whether we can enable on-demand root-cert loading (i.e. check whether the sym links are there)
     const QList<QByteArray> dirs = QSslSocketPrivate::unixRootCertDirectories();
-    QStringList symLinkFilter;
-    symLinkFilter << "[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].[0-9]"_L1;
+    const QStringList symLinkFilter{
+        u"[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].[0-9]"_s};
     for (const auto &dir : dirs) {
-        QDirIterator iterator(QLatin1StringView(dir), symLinkFilter, QDir::Files);
-        if (iterator.hasNext()) {
+        QDirListing dirList(QString::fromLatin1(dir), symLinkFilter, QDir::Files);
+        if (dirList.cbegin() != dirList.cend()) { // Not empty
             QSslSocketPrivate::setRootCertOnDemandLoadingSupported(true);
             break;
         }
@@ -394,10 +394,9 @@ QList<QSslCertificate> systemCaCertificates()
         currentDir.setNameFilters(QStringList{QStringLiteral("*.pem"), QStringLiteral("*.crt")});
         for (const auto &directory : directories) {
             currentDir.setPath(QLatin1StringView(directory));
-            QDirIterator it(currentDir);
-            while (it.hasNext()) {
+            for (const auto &dirEntry : QDirListing(currentDir)) {
                 // use canonical path here to not load the same certificate twice if symlinked
-                certFiles.insert(it.nextFileInfo().canonicalFilePath());
+                certFiles.insert(dirEntry.canonicalFilePath());
             }
         }
         for (const QString& file : std::as_const(certFiles))

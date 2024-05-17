@@ -405,26 +405,26 @@ Q_GUI_EXPORT QDataStream &operator<<(QDataStream &stream, const QTextFormat &fmt
 {
     QMap<int, QVariant> properties = fmt.properties();
     if (stream.version() < QDataStream::Qt_6_0) {
-        auto it = properties.find(QTextFormat::FontLetterSpacingType);
-        if (it != properties.end()) {
+        auto it = properties.constFind(QTextFormat::FontLetterSpacingType);
+        if (it != properties.cend()) {
             properties[QTextFormat::OldFontLetterSpacingType] = it.value();
             properties.erase(it);
         }
 
-        it = properties.find(QTextFormat::FontStretch);
-        if (it != properties.end()) {
+        it = properties.constFind(QTextFormat::FontStretch);
+        if (it != properties.cend()) {
             properties[QTextFormat::OldFontStretch] = it.value();
             properties.erase(it);
         }
 
-        it = properties.find(QTextFormat::TextUnderlineColor);
-        if (it != properties.end()) {
+        it = properties.constFind(QTextFormat::TextUnderlineColor);
+        if (it != properties.cend()) {
             properties[QTextFormat::OldTextUnderlineColor] = it.value();
             properties.erase(it);
         }
 
-        it = properties.find(QTextFormat::FontFamilies);
-        if (it != properties.end()) {
+        it = properties.constFind(QTextFormat::FontFamilies);
+        if (it != properties.cend()) {
             properties[QTextFormat::OldFontFamily] = QVariant(it.value().toStringList().constFirst());
             properties.erase(it);
         }
@@ -745,6 +745,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextTableCellFormat &
     \value ImageWidth
     \value ImageHeight
     \value ImageQuality
+    \value ImageMaxWidth    This enum value has been added in Qt 6.8.
 
     Selection properties
 
@@ -3156,7 +3157,8 @@ QTextTableFormat::QTextTableFormat()
  : QTextFrameFormat()
 {
     setObjectType(TableObject);
-    setCellSpacing(2);
+    setCellPadding(4);
+    setBorderCollapse(true);
     setBorder(1);
 }
 
@@ -3425,7 +3427,7 @@ QTextImageFormat::QTextImageFormat(const QTextFormat &fmt)
 
     Sets the \a width of the rectangle occupied by the image.
 
-    \sa width(), setHeight()
+    \sa width(), setHeight(), maximumWidth()
 */
 
 
@@ -3435,6 +3437,24 @@ QTextImageFormat::QTextImageFormat(const QTextFormat &fmt)
     Returns the width of the rectangle occupied by the image.
 
     \sa height(), setWidth()
+*/
+
+/*!
+    \fn void QTextImageFormat::setMaximumWidth(QTextLength maximumWidth)
+
+    Sets the \a maximumWidth of the rectangle occupied by the image. This
+    can be an absolute number or a percentage of the available document size.
+
+    \sa width(), setHeight()
+*/
+
+
+/*!
+    \fn QTextLength QTextImageFormat::maximumWidth() const
+
+    Returns the maximum width of the rectangle occupied by the image.
+
+    \sa width(), setMaximumWidth()
 */
 
 

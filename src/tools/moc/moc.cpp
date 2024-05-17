@@ -26,6 +26,15 @@ static QByteArray normalizeType(const QByteArray &ba)
     return ba.size() ? normalizeTypeInternal(ba.constBegin(), ba.constEnd()) : ba;
 }
 
+const QByteArray &Moc::toFullyQualified(const QByteArray &name) const noexcept
+{
+    if (auto it = knownQObjectClasses.find(name); it != knownQObjectClasses.end())
+        return it.value();
+    if (auto it = knownGadgets.find(name); it != knownGadgets.end())
+        return it.value();
+    return name;
+}
+
 bool Moc::parseClassHead(ClassDef *def)
 {
     // figure out whether this is a class declaration, or only a
@@ -87,12 +96,12 @@ bool Moc::parseClassHead(ClassDef *def)
             else
                 test(PUBLIC);
             test(VIRTUAL);
-            const QByteArray type = parseType().name;
+            const Type type = parseType();
             // ignore the 'class Foo : BAR(Baz)' case
             if (test(LPAREN)) {
                 until(RPAREN);
             } else {
-                def->superclassList += SuperClass{type, access};
+                def->superclassList.push_back({type.name, toFullyQualified(type.name), access});
             }
         } while (test(COMMA));
 
@@ -427,7 +436,7 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
     // note that testFunctionAttribute is handled further below,
     // and revisions and attributes must come first
     while (testForFunctionModifiers(def)) {}
-    Type tempType = parseType();;
+    Type tempType = parseType();
     while (!tempType.name.isEmpty() && lookup() != LPAREN) {
         if (testFunctionAttribute(def->type.firstToken, def))
             ; // fine
@@ -545,7 +554,7 @@ bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
         // but otherwise we end up with misparses
         if (def->isSlot || def->isSignal || def->isInvokable)
             while (testForFunctionModifiers(def)) {}
-        Type tempType = parseType();;
+        Type tempType = parseType();
         while (!tempType.name.isEmpty() && lookup() != LPAREN) {
             if (testFunctionAttribute(def->type.firstToken, def))
                 ; // fine
@@ -1167,6 +1176,7 @@ void Moc::generate(FILE *out, FILE *jsonOutput)
     fprintf(out, "\n#include <QtCore/qtmochelpers.h>\n");
 
     fprintf(out, "\n#include <memory>\n\n");  // For std::addressof
+    fprintf(out, "\n#include <QtCore/qxptype_traits.h>\n"); // is_detected
 
     fprintf(out, "#if !defined(Q_MOC_OUTPUT_REVISION)\n"
             "#error \"The header file '%s' doesn't include <QObject>.\"\n", fn.constData());
@@ -2040,6 +2050,8 @@ QJsonObject ClassDef::toJson() const
     for (const auto &super: std::as_const(superclassList)) {
         QJsonObject superCls;
         superCls["name"_L1] = QString::fromUtf8(super.classname);
+        if (super.classname != super.qualified)
+            superCls["fullyQualifiedName"_L1] = QString::fromUtf8(super.qualified);
         FunctionDef::accessToJson(&superCls, super.access);
         superClasses.append(superCls);
     }

@@ -120,9 +120,12 @@ public:
     bool enterContainer()               { Q_ASSERT(isContainer()); return _enterContainer_helper(); }
     bool leaveContainer();
 
-    bool toString(QString &dst)             { Q_ASSERT(isString()); return _toString_helper(dst); }
-    bool toUtf8String(QByteArray &dst)      { Q_ASSERT(isString()); return _toUtf8String_helper(dst); }
-    bool toByteArray(QByteArray &dst)       { Q_ASSERT(isByteArray()); return _toByteArray_helper(dst); }
+    bool readAndAppendToString(QString &dst)
+    { Q_ASSERT(isString()); return _readAndAppendToString_helper(dst); }
+    bool readAndAppendToUtf8String(QByteArray &dst)
+    { Q_ASSERT(isString()); return _readAndAppendToUtf8String_helper(dst); }
+    bool readAndAppendToByteArray(QByteArray &dst)
+    { Q_ASSERT(isByteArray()); return _readAndAppendToByteArray_helper(dst); }
     StringResult<QString> readString()      { Q_ASSERT(isString()); return _readString_helper(); }
     StringResult<QByteArray> readUtf8String() { Q_ASSERT(isString()); return _readUtf8String_helper(); }
     StringResult<QByteArray> readByteArray(){ Q_ASSERT(isByteArray()); return _readByteArray_helper(); }
@@ -146,25 +149,25 @@ public:
             return -v - 1;
         return v;
     }
-    QString toString()
+    QString readAllString()
     {
         QString dst;
-        if (!toString(dst))
-            dst.clear();
+        if (!readAndAppendToString(dst))
+            dst = QString{};
         return dst;
     }
-    QByteArray toUtf8String()
+    QByteArray readAllUtf8String()
     {
         QByteArray dst;
-        if (!toUtf8String(dst))
-            dst.clear();
+        if (!readAndAppendToUtf8String(dst))
+            dst = QByteArray{};
         return dst;
     }
-    QByteArray toByteArray()
+    QByteArray readAllByteArray()
     {
         QByteArray dst;
-        if (!toByteArray(dst))
-            dst.clear();
+        if (!readAndAppendToByteArray(dst))
+            dst = QByteArray{};
         return dst;
     }
 
@@ -175,9 +178,9 @@ private:
     StringResult<QByteArray> _readUtf8String_helper();
     StringResult<QByteArray> _readByteArray_helper();
     qsizetype _currentStringChunkSize() const;
-    bool _toString_helper(QString &);
-    bool _toUtf8String_helper(QByteArray &);
-    bool _toByteArray_helper(QByteArray &);
+    bool _readAndAppendToString_helper(QString &);
+    bool _readAndAppendToUtf8String_helper(QByteArray &);
+    bool _readAndAppendToByteArray_helper(QByteArray &);
 
     template <typename FP> FP _toFloatingPoint() const noexcept
     {

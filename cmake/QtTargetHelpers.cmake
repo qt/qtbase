@@ -19,7 +19,7 @@
 #   EXTRA_LINKER_SCRIPT_EXPORTS
 #     Extra content that should be added to export section of the linker script.
 #   NO_PCH_SOURCES
-#     Skip the specified source files by PRECOMPILE_HEADERS feature.
+#     Exclude the specified source files from PRECOMPILE_HEADERS and UNITY_BUILD builds.
 function(qt_internal_extend_target target)
     if(NOT TARGET "${target}")
         message(FATAL_ERROR "${target} is not a target.")
@@ -99,10 +99,13 @@ function(qt_internal_extend_target target)
         get_target_property(target_type ${target} TYPE)
         set(is_library FALSE)
         set(is_interface_lib FALSE)
+        set(is_executable FALSE)
         if(${target_type} STREQUAL "STATIC_LIBRARY" OR ${target_type} STREQUAL "SHARED_LIBRARY")
             set(is_library TRUE)
         elseif(target_type STREQUAL "INTERFACE_LIBRARY")
             set(is_interface_lib TRUE)
+        elseif(target_type STREQUAL "EXECUTABLE")
+            set(is_executable TRUE)
         endif()
 
         foreach(lib ${arg_PUBLIC_LIBRARIES} ${arg_LIBRARIES})
@@ -133,6 +136,9 @@ function(qt_internal_extend_target target)
                 endif()
             endif()
         endforeach()
+
+        list(TRANSFORM arg_PUBLIC_LIBRARIES REPLACE "^Qt::" "${QT_CMAKE_EXPORT_NAMESPACE}::")
+        list(TRANSFORM arg_LIBRARIES REPLACE "^Qt::" "${QT_CMAKE_EXPORT_NAMESPACE}::")
 
         # Set-up the target
 
@@ -269,6 +275,20 @@ function(qt_internal_extend_target target)
     if(arg_EXTRA_LINKER_SCRIPT_EXPORTS)
         set_target_properties(${target} PROPERTIES
             _qt_extra_linker_script_exports "${arg_EXTRA_LINKER_SCRIPT_EXPORTS}")
+    endif()
+
+    if(is_executable)
+        # If linking against Gui, make sure to also build the default QPA plugin.
+        # This makes the experience of an initial Qt configuration to build and run one single
+        # test / executable nicer.
+        set(linked_libs ${arg_PUBLIC_LIBRARIES} ${arg_LIBRARIES})
+        if(linked_libs MATCHES "(^|;)(${QT_CMAKE_EXPORT_NAMESPACE}::|Qt::)?Gui($|;)" AND
+            TARGET qpa_default_plugins)
+            add_dependencies("${target}" qpa_default_plugins)
+        endif()
+
+        # For executables collect static plugins that these targets depend on.
+        qt_internal_import_plugins(${target} ${linked_libs})
     endif()
 endfunction()
 
@@ -823,19 +843,46 @@ endif()
             # For Multi-config developer builds we should simply reuse IMPORTED_LOCATION of the
             # target.
             if(NOT QT_WILL_INSTALL AND QT_FEATURE_debug_and_release)
+                set(configure_time_target_build_location "")
                 get_target_property(configure_time_target_install_location ${target}
                     IMPORTED_LOCATION)
             else()
+                if(IS_ABSOLUTE "${arg_CONFIG_INSTALL_DIR}")
+                    file(RELATIVE_PATH reverse_relative_prefix_path
+                        "${arg_CONFIG_INSTALL_DIR}" "${CMAKE_INSTALL_PREFIX}")
+                else()
+                    file(RELATIVE_PATH reverse_relative_prefix_path
+                        "${CMAKE_INSTALL_PREFIX}/${arg_CONFIG_INSTALL_DIR}"
+                        "${CMAKE_INSTALL_PREFIX}")
+                endif()
+
+                get_target_property(configure_time_target_build_location ${target}
+                    _qt_internal_configure_time_target_build_location)
+                string(TOUPPER "${QT_CMAKE_EXPORT_NAMESPACE}_INSTALL_PREFIX" install_prefix_var)
+                string(JOIN "" configure_time_target_build_location
+                    "$\{CMAKE_CURRENT_LIST_DIR}/"
+                    "${reverse_relative_prefix_path}"
+                    "${configure_time_target_build_location}")
+
                 get_target_property(configure_time_target_install_location ${target}
                     _qt_internal_configure_time_target_install_location)
-                set(configure_time_target_install_location
-                    "$\{PACKAGE_PREFIX_DIR}/${configure_time_target_install_location}")
+
+                string(JOIN "" configure_time_target_install_location
+                    "$\{CMAKE_CURRENT_LIST_DIR}/"
+                    "${reverse_relative_prefix_path}"
+                    "${configure_time_target_install_location}")
             endif()
             if(configure_time_target_install_location)
                 string(APPEND content "
 # Import configure-time executable ${full_target}
 if(NOT TARGET ${full_target})
-    set(_qt_imported_location \"${configure_time_target_install_location}\")
+    set(_qt_imported_build_location \"${configure_time_target_build_location}\")
+    set(_qt_imported_install_location \"${configure_time_target_install_location}\")
+    set(_qt_imported_location \"\${_qt_imported_install_location}\")
+    if(NOT EXISTS \"$\{_qt_imported_location}\"
+          AND NOT \"$\{_qt_imported_build_location}\" STREQUAL \"\")
+        set(_qt_imported_location \"\${_qt_imported_build_location}\")
+    endif()
     if(NOT EXISTS \"$\{_qt_imported_location}\")
         message(FATAL_ERROR \"Unable to add configure time executable ${full_target}\"
             \" $\{_qt_imported_location} doesn't exists\")
@@ -846,6 +893,8 @@ if(NOT TARGET ${full_target})
         \"$\{_qt_imported_location}\")
     set_property(TARGET ${full_target} PROPERTY IMPORTED_GLOBAL TRUE)
     unset(_qt_imported_location)
+    unset(_qt_imported_build_location)
+    unset(_qt_imported_install_location)
 endif()
 \n")
             endif()
@@ -985,25 +1034,51 @@ unset(_qt_imported_configs)")
 endfunction()
 
 function(qt_internal_export_modern_cmake_config_targets_file)
-    cmake_parse_arguments(__arg "" "EXPORT_NAME_PREFIX;CONFIG_INSTALL_DIR" "TARGETS" ${ARGN})
+    cmake_parse_arguments(arg
+        ""
+        "EXPORT_NAME_PREFIX;CONFIG_BUILD_DIR;CONFIG_INSTALL_DIR"
+        "TARGETS"
+        ${ARGN}
+    )
 
-    set(export_name "${__arg_EXPORT_NAME_PREFIX}VersionlessTargets")
-    foreach(target ${__arg_TARGETS})
-        if (TARGET "${target}Versionless")
-            continue()
-        endif()
+    if("${arg_TARGETS}" STREQUAL "")
+        message(FATAL_ERROR "Target list is empty")
+    endif()
 
-        add_library("${target}Versionless" INTERFACE)
-        target_link_libraries("${target}Versionless" INTERFACE "${target}")
-        set_target_properties("${target}Versionless" PROPERTIES
-            EXPORT_NAME "${target}"
-            _qt_is_versionless_target "TRUE")
-        set_property(TARGET "${target}Versionless"
-                     APPEND PROPERTY EXPORT_PROPERTIES _qt_is_versionless_target)
+    if("${arg_CONFIG_BUILD_DIR}" STREQUAL "")
+        message(FATAL_ERROR "CONFIG_BUILD_DIR is not specified")
+    endif()
 
-        qt_install(TARGETS "${target}Versionless" EXPORT ${export_name})
-    endforeach()
-    qt_install(EXPORT ${export_name} NAMESPACE Qt:: DESTINATION "${__arg_CONFIG_INSTALL_DIR}")
+    if("${arg_CONFIG_INSTALL_DIR}" STREQUAL "")
+        message(FATAL_ERROR "CONFIG_INSTALL_DIR is not specified")
+    endif()
+
+    if("${arg_EXPORT_NAME_PREFIX}" STREQUAL "")
+        message(FATAL_ERROR "EXPORT_NAME_PREFIX is not specified")
+    endif()
+
+    set(versionless_targets ${arg_TARGETS})
+
+    # CMake versions < 3.18 compatibility code. Creates the mimics of the versioned libraries.
+    set(versionless_targets_export "${arg_CONFIG_BUILD_DIR}/${arg_EXPORT_NAME_PREFIX}VersionlessTargets.cmake")
+    configure_file("${QT_CMAKE_DIR}/QtVersionlessTargets.cmake.in"
+        "${versionless_targets_export}"
+        @ONLY
+    )
+
+    # CMake versions >= 3.18 code. Create the versionless ALIAS targets.
+    set(alias_export "${arg_CONFIG_BUILD_DIR}/${arg_EXPORT_NAME_PREFIX}VersionlessAliasTargets.cmake")
+    configure_file("${QT_CMAKE_DIR}/QtVersionlessAliasTargets.cmake.in"
+        "${alias_export}"
+        @ONLY
+    )
+
+    qt_install(FILES
+        "${alias_export}"
+        "${versionless_targets_export}"
+        DESTINATION "${arg_CONFIG_INSTALL_DIR}"
+        COMPONENT Devel
+    )
 endfunction()
 
 function(qt_internal_create_tracepoints name tracepoints_file)
@@ -1582,3 +1657,32 @@ function(qt_internal_export_genex_properties)
         COMPONENT Devel
     )
 endfunction()
+
+# The macro promotes the Qt platform targets and their dependencies to global. The macro shouldn't
+# be called explicitly in regular cases. It's called right after the first find_package(Qt ...)
+# call in the qt_internal_project_setup macro.
+# This allows using the qt_find_package(Wrap<3rdparty> PROVIDED_TARGETS ...) function,
+# without the risk of having duplicated global promotion of Qt internals. This is especially
+# sensitive for the bundled 3rdparty libraries.
+macro(qt_internal_promote_platform_targets_to_global)
+    if(TARGET Qt6::Platform)
+        get_target_property(is_imported Qt6::Platform IMPORTED)
+        if(is_imported)
+            set(known_platform_targets
+                Platform
+                PlatformCommonInternal
+                PlatformModuleInternal
+                PlatformPluginInternal
+                PlatformAppInternal
+                PlatformToolInternal
+            )
+            set(versionless_platform_targets ${known_platform_targets})
+
+            list(TRANSFORM known_platform_targets PREPEND Qt6::)
+            list(TRANSFORM versionless_platform_targets PREPEND Qt::)
+            qt_find_package(Qt6 PROVIDED_TARGETS
+                ${known_platform_targets}
+                ${versionless_platform_targets})
+        endif()
+    endif()
+endmacro()

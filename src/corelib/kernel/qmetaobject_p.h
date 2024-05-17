@@ -111,22 +111,18 @@ public:
             const_cast<QArgumentType *>(this)->_name = QMetaType(_type).name();
         return _name;
     }
-    bool operator==(const QArgumentType &other) const
-    {
-        if (_type && other._type)
-            return _type == other._type;
-        else
-            return name() == other.name();
-    }
-    bool operator!=(const QArgumentType &other) const
-    {
-        if (_type && other._type)
-            return _type != other._type;
-        else
-            return name() != other.name();
-    }
 
 private:
+    friend bool comparesEqual(const QArgumentType &lhs,
+                              const QArgumentType &rhs) noexcept
+    {
+        if (lhs._type && rhs._type)
+            return lhs._type == rhs._type;
+        else
+            return lhs.name() == rhs.name();
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QArgumentType)
+
     int _type;
     QByteArray _name;
 };
@@ -215,6 +211,7 @@ struct QMetaObjectPrivate
 
     enum class Which { Name, Alias };
     static int indexOfEnumerator(const QMetaObject *m, QByteArrayView name, Which which);
+    static int indexOfEnumerator(const QMetaObject *m, QByteArrayView name);
 
     Q_CORE_EXPORT static QMetaMethod signal(const QMetaObject *m, int signal_index);
     static inline int signalOffset(const QMetaObject *m)

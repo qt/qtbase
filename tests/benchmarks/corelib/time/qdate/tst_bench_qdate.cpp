@@ -1,9 +1,10 @@
 // Copyright (C) 2019 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QDate>
 #include <QTest>
 #include <QList>
+using namespace Qt::StringLiterals;
 
 class tst_QDate : public QObject
 {
@@ -33,6 +34,9 @@ private Q_SLOTS:
     void addDays();
     void addMonths();
     void addYears();
+
+    void fromString_data();
+    void fromString();
 };
 
 QList<QDate> tst_QDate::daily(qint64 start, qint64 end)
@@ -182,6 +186,29 @@ void tst_QDate::addYears()
             store = test.addYears(17);
     }
     Q_UNUSED(store);
+}
+
+void tst_QDate::fromString_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QString>("format");
+    QTest::addColumn<int>("baseYear");
+
+    QTest::newRow("yyyyMMdd") << u"20240412"_s << u"yyyyMMdd"_s << 2000;
+    QTest::newRow("yyyy-MM-dd") << u"2024-04-12"_s << u"yyyy-MM-dd"_s << 2000;
+    QTest::newRow("YYYYMMDD") << u"20240412"_s << u"YYYYMMDD"_s << 2000; // Invalid, QTBUG-124465.
+}
+
+void tst_QDate::fromString()
+{
+    QFETCH(const QString, string);
+    QFETCH(const QString, format);
+    QFETCH(const int, baseYear);
+    QDate date;
+    QBENCHMARK {
+        date = QDate::fromString(string, format, baseYear);
+    }
+    Q_UNUSED(date);
 }
 
 QTEST_MAIN(tst_QDate)

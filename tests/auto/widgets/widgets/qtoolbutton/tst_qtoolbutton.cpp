@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -34,6 +34,7 @@ private slots:
     void qtbug_26956_popupTimerDone();
     void qtbug_34759_sizeHintResetWhenSettingMenu();
     void defaultActionSynced();
+    void deleteInHandler();
 
 protected slots:
     void sendMouseClick();
@@ -181,7 +182,6 @@ void tst_QToolButton::task176137_autoRepeatOfAction()
     label->move(0, 50);
 
     mainWidget.show();
-    QApplicationPrivate::setActiveWindow(&mainWidget);
     QVERIFY(QTest::qWaitForWindowActive(&mainWidget));
 
     QSignalSpy spy(&action,SIGNAL(triggered()));
@@ -314,6 +314,23 @@ void tst_QToolButton::defaultActionSynced()
     QCOMPARE(tbSpy.size(), ++tbToggledCount);
     QCOMPARE(aSpy.size(), aToggledCount);
     QCOMPARE(bSpy.size(), ++bToggledCount);
+}
+
+void tst_QToolButton::deleteInHandler()
+{
+    // Tests that if something deletes the button
+    // while its event handler is still on the callstack, we don't crash
+
+    QPointer<QToolButton> tb = new QToolButton();
+    tb->show();
+    QVERIFY(QTest::qWaitForWindowActive(tb));
+
+    connect(tb, &QToolButton::clicked, this, [tb] {
+        delete tb;
+    });
+
+    QTest::mouseClick(tb, Qt::LeftButton);
+    QVERIFY(!tb);
 }
 
 QTEST_MAIN(tst_QToolButton)

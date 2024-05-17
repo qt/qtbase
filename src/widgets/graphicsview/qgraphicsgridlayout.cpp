@@ -146,7 +146,7 @@ void QGraphicsGridLayout::addItem(QGraphicsLayoutItem *item, int row, int column
 }
 
 /*!
-    \fn QGraphicsGridLayout::addItem(QGraphicsLayoutItem *item, int row, int column, Qt::Alignment alignment = 0)
+    \fn QGraphicsGridLayout::addItem(QGraphicsLayoutItem *item, int row, int column, Qt::Alignment alignment)
 
     Adds \a item to the grid on \a row and \a column. You can specify
     an optional \a alignment for \a item.

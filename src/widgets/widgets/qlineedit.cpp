@@ -1462,6 +1462,8 @@ bool QLineEdit::event(QEvent * e)
                 || style()->styleHint(QStyle::SH_BlinkCursorWhenTextSelected, &opt, this))
                 d->setCursorVisible(true);
         }
+    } else if (e->type() == QEvent::Hide) {
+        d->control->setBlinkingCursorEnabled(false);
 #if QT_CONFIG(action)
     } else if (e->type() == QEvent::ActionRemoved) {
         d->removeAction(static_cast<QActionEvent *>(e)->action());
@@ -1843,7 +1845,7 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property, QVariant arg
     Q_D(const QLineEdit);
     switch(property) {
     case Qt::ImEnabled:
-        return isEnabled();
+        return isEnabled() && !isReadOnly();
     case Qt::ImCursorRectangle:
         return d->cursorRect();
     case Qt::ImAnchorRectangle:
@@ -2209,11 +2211,13 @@ QMenu *QLineEdit::createStandardContextMenu()
     if (!isReadOnly()) {
         action = popup->addAction(QLineEdit::tr("&Undo") + ACCEL_KEY(QKeySequence::Undo));
         action->setEnabled(d->control->isUndoAvailable());
+        action->setObjectName(QStringLiteral("edit-undo"));
         setActionIcon(action, QStringLiteral("edit-undo"));
         connect(action, &QAction::triggered, this, &QLineEdit::undo);
 
         action = popup->addAction(QLineEdit::tr("&Redo") + ACCEL_KEY(QKeySequence::Redo));
         action->setEnabled(d->control->isRedoAvailable());
+        action->setObjectName(QStringLiteral("edit-redo"));
         setActionIcon(action, QStringLiteral("edit-redo"));
         connect(action, &QAction::triggered, this, &QLineEdit::redo);
 
@@ -2225,6 +2229,7 @@ QMenu *QLineEdit::createStandardContextMenu()
         action = popup->addAction(QLineEdit::tr("Cu&t") + ACCEL_KEY(QKeySequence::Cut));
         action->setEnabled(!d->control->isReadOnly() && d->control->hasSelectedText()
                 && d->control->echoMode() == QLineEdit::Normal);
+        action->setObjectName(QStringLiteral("edit-cut"));
         setActionIcon(action, QStringLiteral("edit-cut"));
         connect(action, &QAction::triggered, this, &QLineEdit::cut);
     }
@@ -2232,12 +2237,14 @@ QMenu *QLineEdit::createStandardContextMenu()
     action = popup->addAction(QLineEdit::tr("&Copy") + ACCEL_KEY(QKeySequence::Copy));
     action->setEnabled(d->control->hasSelectedText()
             && d->control->echoMode() == QLineEdit::Normal);
+    action->setObjectName(QStringLiteral("edit-copy"));
     setActionIcon(action, QStringLiteral("edit-copy"));
     connect(action, &QAction::triggered, this, &QLineEdit::copy);
 
     if (!isReadOnly()) {
         action = popup->addAction(QLineEdit::tr("&Paste") + ACCEL_KEY(QKeySequence::Paste));
         action->setEnabled(!d->control->isReadOnly() && !QGuiApplication::clipboard()->text().isEmpty());
+        action->setObjectName(QStringLiteral("edit-paste"));
         setActionIcon(action, QStringLiteral("edit-paste"));
         connect(action, &QAction::triggered, this, &QLineEdit::paste);
     }
@@ -2246,6 +2253,7 @@ QMenu *QLineEdit::createStandardContextMenu()
     if (!isReadOnly()) {
         action = popup->addAction(QLineEdit::tr("Delete"));
         action->setEnabled(!d->control->isReadOnly() && !d->control->text().isEmpty() && d->control->hasSelectedText());
+        action->setObjectName(QStringLiteral("edit-delete"));
         setActionIcon(action, QStringLiteral("edit-delete"));
         connect(action, &QAction::triggered,
                 d->control, &QWidgetLineControl::_q_deleteSelected);
@@ -2256,6 +2264,7 @@ QMenu *QLineEdit::createStandardContextMenu()
 
     action = popup->addAction(QLineEdit::tr("Select All") + ACCEL_KEY(QKeySequence::SelectAll));
     action->setEnabled(!d->control->text().isEmpty() && !d->control->allSelected());
+    action->setObjectName(QStringLiteral("select-all"));
     setActionIcon(action, QStringLiteral("edit-select-all"));
     d->selectAllAction = action;
     connect(action, &QAction::triggered, this, &QLineEdit::selectAll);

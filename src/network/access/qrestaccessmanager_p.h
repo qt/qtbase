@@ -24,6 +24,7 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qjsondocument.h>
 #include <QtCore/qjsonobject.h>
+#include <QtCore/qxpfunctional.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -34,48 +35,51 @@ public:
     QRestAccessManagerPrivate();
     ~QRestAccessManagerPrivate() override;
 
-    void ensureNetworkAccessManager();
+    QNetworkReply* createActiveRequest(QNetworkReply *reply, const QObject *contextObject,
+                                       QtPrivate::QSlotObjectBase *slot);
+    void handleReplyFinished(QNetworkReply *reply);
 
-    QRestReply *createActiveRequest(QNetworkReply *networkReply, const QObject *contextObject,
-                                    QtPrivate::QSlotObjectBase *slot);
-
-    void removeActiveRequest(QRestReply *restReply);
-    void handleReplyFinished(QRestReply *restReply);
-    void handleAuthenticationRequired(QNetworkReply *networkReply, QAuthenticator *authenticator);
-    QRestReply *restReplyFromNetworkReply(QNetworkReply *networkReply);
-
-    template<typename Functor>
-    QRestReply *executeRequest(Functor requestOperation,
+    using ReqOpRef = qxp::function_ref<QNetworkReply*(QNetworkAccessManager*) const>;
+    QNetworkReply *executeRequest(ReqOpRef requestOperation,
                                const QObject *context, QtPrivate::QSlotObjectBase *slot)
     {
+        if (!qnam)
+            return warnNoAccessManager();
         verifyThreadAffinity(context);
-        QNetworkReply *reply = requestOperation();
+        QNetworkReply *reply = requestOperation(qnam);
         return createActiveRequest(reply, context, slot);
     }
 
-    template<typename Functor, typename Json>
-    QRestReply *executeRequest(Functor requestOperation, Json jsonData,
+    using ReqOpRefJson = qxp::function_ref<QNetworkReply*(QNetworkAccessManager*,
+                                                          const QNetworkRequest &,
+                                                          const QByteArray &) const>;
+    QNetworkReply *executeRequest(ReqOpRefJson requestOperation, const QJsonDocument &jsonDoc,
                                const QNetworkRequest &request,
                                const QObject *context, QtPrivate::QSlotObjectBase *slot)
     {
+        if (!qnam)
+            return warnNoAccessManager();
         verifyThreadAffinity(context);
         QNetworkRequest req(request);
-        if (!request.header(QNetworkRequest::ContentTypeHeader).isValid()) {
-            req.setHeader(QNetworkRequest::ContentTypeHeader,
-                          QLatin1StringView{"application/json"});
+        auto h = req.headers();
+        if (!h.contains(QHttpHeaders::WellKnownHeader::ContentType)) {
+            h.append(QHttpHeaders::WellKnownHeader::ContentType,
+                     QLatin1StringView{"application/json"});
         }
-        QJsonDocument json(jsonData);
-        QNetworkReply *reply = requestOperation(req, json.toJson(QJsonDocument::Compact));
+        req.setHeaders(std::move(h));
+        QNetworkReply *reply = requestOperation(qnam, req, jsonDoc.toJson(QJsonDocument::Compact));
         return createActiveRequest(reply, context, slot);
     }
 
     void verifyThreadAffinity(const QObject *contextObject);
+    Q_DECL_COLD_FUNCTION
+    QNetworkReply* warnNoAccessManager();
 
     struct CallerInfo {
-        const QObject *contextObject = nullptr;
+        QPointer<const QObject> contextObject = nullptr;
         QtPrivate::SlotObjSharedPtr slot;
     };
-    QHash<QRestReply*, CallerInfo> activeRequests;
+    QHash<QNetworkReply*, CallerInfo> activeRequests;
 
     QNetworkAccessManager *qnam = nullptr;
     bool deletesRepliesOnFinished = true;

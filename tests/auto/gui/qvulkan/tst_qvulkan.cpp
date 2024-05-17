@@ -1,5 +1,5 @@
 // Copyright (C) 2017 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtGui/QVulkanInstance>
 #include <QtGui/QVulkanFunctions>
@@ -15,7 +15,6 @@ class tst_QVulkan : public QObject
     Q_OBJECT
 
 private slots:
-    void initTestCase();
     void vulkanInstance();
     void vulkanCheckSupported();
     void vulkanPlainWindow();
@@ -25,13 +24,6 @@ private slots:
     void vulkanWindowRenderer();
     void vulkanWindowGrab();
 };
-
-void tst_QVulkan::initTestCase()
-{
-#ifdef Q_OS_ANDROID
-    QSKIP("Fails on Android emulators in CI. Should not be needed on real devices, but skipping for now. QTBUG-105739, QTBUG-108328, QTBUG-111236, QTBUG-118234");
-#endif
-}
 
 void tst_QVulkan::vulkanInstance()
 {
@@ -96,6 +88,10 @@ void tst_QVulkan::vulkanCheckSupported()
 
 void tst_QVulkan::vulkan11()
 {
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
+        QSKIP("Fails on Android 12 (QTBUG-105739)");
+#endif
 #if VK_VERSION_1_1
     QVulkanInstance inst;
     if (inst.supportedApiVersion() < QVersionNumber(1, 1))
@@ -170,6 +166,10 @@ void tst_QVulkan::vulkan11()
 
 void tst_QVulkan::vulkanPlainWindow()
 {
+#ifdef Q_OS_ANDROID
+    QSKIP("Fails on Android 7 emulator (QTBUG-108328)");
+#endif
+
     QVulkanInstance inst;
     if (!inst.create())
         QSKIP("Vulkan init failed; skip");
@@ -457,6 +457,10 @@ void tst_QVulkan::vulkanWindowRenderer()
 
 void tst_QVulkan::vulkanWindowGrab()
 {
+#ifdef Q_OS_ANDROID
+    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
+        QSKIP("Fails on Android 12 (QTBUG-105739)");
+#endif
     QVulkanInstance inst;
     inst.setLayers(QByteArrayList() << "VK_LAYER_KHRONOS_validation");
     if (!inst.create())

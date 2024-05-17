@@ -1,5 +1,5 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <qbaselinetest.h>
 #include <qwidgetbaselinetest.h>
@@ -49,7 +49,7 @@ void tst_Text::loadTestFiles()
     for (const auto &htmlFile : htmlFiles) {
         QFileInfo fileInfo(htmlFile);
         QFile file(htmlFile);
-        file.open(QFile::ReadOnly);
+        QVERIFY(file.open(QFile::ReadOnly));
         QString html = QString::fromUtf8(file.readAll());
         QBaselineTest::newRow(fileInfo.baseName().toUtf8()) << html;
     }

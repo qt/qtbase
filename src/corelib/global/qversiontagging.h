@@ -4,10 +4,16 @@
 #if !defined(QVERSIONTAGGING_H)
 #define QVERSIONTAGGING_H
 
+#if 0
+#pragma qt_no_master_include
+#endif
+
 #include <QtCore/qcompilerdetection.h>
 #include <QtCore/qtconfigmacros.h>
 #include <QtCore/qtversionchecks.h>
 #include <QtCore/qtypes.h>
+
+QT_REQUIRE_CONFIG(version_tagging);
 
 QT_BEGIN_NAMESPACE
 

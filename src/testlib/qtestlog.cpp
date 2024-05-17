@@ -629,6 +629,11 @@ void QTestLog::ignoreMessage(QtMsgType type, const QRegularExpression &expressio
 }
 #endif // QT_CONFIG(regularexpression)
 
+void QTestLog::failOnWarning()
+{
+    QTest::failOnWarningList.push_back({});
+}
+
 void QTestLog::failOnWarning(const char *msg)
 {
     QTest::failOnWarningList.push_back(QString::fromUtf8(msg));

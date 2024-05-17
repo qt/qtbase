@@ -40,7 +40,7 @@
    inkscape:pageopacity="0"
    inkscape:pageshadow="2"
    inkscape:window-width="1920"
-   inkscape:window-height="918"
+   inkscape:window-height="917"
    id="namedview116"
    showgrid="false"
    inkscape:zoom="63.727999"
@@ -59,13 +59,7 @@
 </style>
 <g
    id="g105">
-		<rect
-   class="st0"
-   width="8"
-   height="8"
-   id="rect103"
-   x="0"
-   y="0" />
+		
 	</g>
 <g
    id="g981"><rect
@@ -76,7 +70,7 @@
      width="1.0760319"
      height="5.9950356"
      id="rect107"
-     style="stroke-width:0.768594;fill:#6c6a67;fill-opacity:1" /><rect
+     style="fill:#6c6a67;fill-opacity:1;stroke-width:0.768594" /><rect
      x="-0.53801638"
      y="-8.6545134"
      transform="rotate(135)"
@@ -84,7 +78,7 @@
      width="1.0760319"
      height="5.9950356"
      id="rect109"
-     style="stroke-width:0.768594;fill:#6c6a67;fill-opacity:1" /><rect
+     style="fill:#6c6a67;fill-opacity:1;stroke-width:0.768594" /><rect
      style="fill:none;stroke:#6c6a67;stroke-width:0.469731;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
      id="rect151"
      width="6.5302691"

@@ -281,17 +281,28 @@ void QMenuBarPrivate::popupAction(QAction *action, bool activateFirst)
     if (action->isEnabled() && action->menu()->isEnabled()) {
         closePopupMode = 0;
         activeMenu = action->menu();
-        activeMenu->d_func()->causedPopup.widget = q;
-        activeMenu->d_func()->causedPopup.action = action;
+        auto *activeMenuPriv = activeMenu->d_func();
+        activeMenuPriv->causedPopup.widget = q;
+        activeMenuPriv->causedPopup.action = action;
 
         QRect adjustedActionRect = actionRect(action);
-        QPoint pos(q->mapToGlobal(QPoint(adjustedActionRect.left(), adjustedActionRect.bottom() + 1)));
-        QSize popup_size = activeMenu->sizeHint();
+        QPoint popupPos = adjustedActionRect.bottomLeft() + QPoint(0, 1);
+
         //we put the popup menu on the screen containing the bottom-center of the action rect
         QScreen *menubarScreen = q->window()->windowHandle()->screen();
-        QScreen *popupScreen = menubarScreen->virtualSiblingAt(pos + QPoint(adjustedActionRect.width() / 2, 0));
+        QPoint screenTestPos = q->mapToGlobal(popupPos + QPoint(adjustedActionRect.width() / 2, 0));
+        QPointer<QScreen> popupScreen = menubarScreen->virtualSiblingAt(screenTestPos);
         if (!popupScreen)
             popupScreen = menubarScreen;
+        std::swap(popupScreen, activeMenuPriv->popupScreen);
+        const QSize popup_size = activeMenu->sizeHint();
+        std::swap(popupScreen, activeMenuPriv->popupScreen);
+
+        // Use screenTestPos.y() for the popup y position. This is the correct global y
+        // consistent with the selected screen in cases where the action rect spans
+        // multiple screens with different scale factors.
+        QPoint pos(q->mapToGlobal(popupPos).x(), screenTestPos.y());
+
         QRect screenRect = popupScreen->geometry();
         pos = QPoint(qMax(pos.x(), screenRect.x()), qMax(pos.y(), screenRect.y()));
         const bool fitUp = (pos.y() - popup_size.height() >= screenRect.top());

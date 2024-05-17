@@ -63,11 +63,9 @@ public:
         ConnectionTypeHTTP2Direct
     };
 
-    explicit QHttpNetworkConnection(const QString &hostName, quint16 port = 80, bool encrypt = false,
-                                    ConnectionType connectionType = ConnectionTypeHTTP,
-                                    QObject *parent = nullptr);
     QHttpNetworkConnection(quint16 channelCount, const QString &hostName, quint16 port = 80,
-                           bool encrypt = false, QObject *parent = nullptr,
+                           bool encrypt = false, bool isLocalSocket = false,
+                           QObject *parent = nullptr,
                            ConnectionType connectionType = ConnectionTypeHTTP);
     ~QHttpNetworkConnection();
 
@@ -137,8 +135,10 @@ typedef QPair<QHttpNetworkRequest, QHttpNetworkReply*> HttpMessagePair;
 class QHttpNetworkConnectionPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QHttpNetworkConnection)
+    Q_DISABLE_COPY_MOVE(QHttpNetworkConnectionPrivate)
 public:
-    static const int defaultHttpChannelCount;
+    // Note: Only used from auto tests, normal usage is via QHttp1Configuration
+    static constexpr int defaultHttpChannelCount = 6;
     static const int defaultPipelineLength;
     static const int defaultRePipelineLength;
 
@@ -155,32 +155,31 @@ public:
         IPv4or6
     };
 
-    QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt,
-                                  QHttpNetworkConnection::ConnectionType type);
-    QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt,
+    QHttpNetworkConnectionPrivate(quint16 connectionCount, const QString &hostName, quint16 port,
+                                  bool encrypt, bool isLocalSocket,
                                   QHttpNetworkConnection::ConnectionType type);
     ~QHttpNetworkConnectionPrivate();
     void init();
 
     void pauseConnection();
     void resumeConnection();
-    ConnectionState state;
-    NetworkLayerPreferenceState networkLayerState;
+    ConnectionState state = RunningState;
+    NetworkLayerPreferenceState networkLayerState = Unknown;
 
     enum { ChunkSize = 4096 };
 
-    int indexOf(QAbstractSocket *socket) const;
+    int indexOf(QIODevice *socket) const;
 
     QHttpNetworkReply *queueRequest(const QHttpNetworkRequest &request);
     void requeueRequest(const HttpMessagePair &pair); // e.g. after pipeline broke
     void fillHttp2Queue();
-    bool dequeueRequest(QAbstractSocket *socket);
+    bool dequeueRequest(QIODevice *socket);
     void prepareRequest(HttpMessagePair &request);
     void updateChannel(int i, const HttpMessagePair &messagePair);
     QHttpNetworkRequest predictNextRequest() const;
     QHttpNetworkReply* predictNextRequestsReply() const;
 
-    void fillPipeline(QAbstractSocket *socket);
+    void fillPipeline(QIODevice *socket);
     bool fillPipeline(QList<HttpMessagePair> &queue, QHttpNetworkConnectionChannel &channel);
 
     // read more HTTP body after the next event loop spin
@@ -198,9 +197,9 @@ public:
     void _q_hostLookupFinished(const QHostInfo &info);
     void _q_connectDelayedChannel();
 
-    void createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request);
+    void createAuthorization(QIODevice *socket, QHttpNetworkRequest &request);
 
-    QString errorDetail(QNetworkReply::NetworkError errorCode, QAbstractSocket *socket,
+    QString errorDetail(QNetworkReply::NetworkError errorCode, QIODevice *socket,
                         const QString &extraDetail = QString());
 
     void removeReply(QHttpNetworkReply *reply);
@@ -208,29 +207,30 @@ public:
     QString hostName;
     quint16 port;
     bool encrypt;
-    bool delayIpv4;
+    bool isLocalSocket;
+    bool delayIpv4 = true;
 
     // Number of channels we are trying to use at the moment:
     int activeChannelCount;
     // The total number of channels we reserved:
     const int channelCount;
     QTimer delayedConnectionTimer;
-    QHttpNetworkConnectionChannel *channels; // parallel connections to the server
-    bool shouldEmitChannelError(QAbstractSocket *socket);
+    QHttpNetworkConnectionChannel * const channels; // parallel connections to the server
+    bool shouldEmitChannelError(QIODevice *socket);
 
     qint64 uncompressedBytesAvailable(const QHttpNetworkReply &reply) const;
     qint64 uncompressedBytesAvailableNextBlock(const QHttpNetworkReply &reply) const;
 
 
-    void emitReplyError(QAbstractSocket *socket, QHttpNetworkReply *reply, QNetworkReply::NetworkError errorCode);
-    bool handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);
+    void emitReplyError(QIODevice *socket, QHttpNetworkReply *reply, QNetworkReply::NetworkError errorCode);
+    bool handleAuthenticateChallenge(QIODevice *socket, QHttpNetworkReply *reply, bool isProxy, bool &resend);
     struct ParseRedirectResult {
         QUrl redirectUrl;
         QNetworkReply::NetworkError errorCode;
     };
     static ParseRedirectResult parseRedirectResponse(QHttpNetworkReply *reply);
     // Used by the HTTP1 code-path
-    QUrl parseRedirectResponse(QAbstractSocket *socket, QHttpNetworkReply *reply);
+    QUrl parseRedirectResponse(QIODevice *socket, QHttpNetworkReply *reply);
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy networkProxy;
@@ -241,7 +241,7 @@ public:
     QList<HttpMessagePair> highPriorityQueue;
     QList<HttpMessagePair> lowPriorityQueue;
 
-    int preConnectRequests;
+    int preConnectRequests = 0;
 
     QHttpNetworkConnection::ConnectionType connectionType;
 

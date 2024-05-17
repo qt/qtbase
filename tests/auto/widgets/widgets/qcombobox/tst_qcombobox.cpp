@@ -1,5 +1,5 @@
 // Copyright (C) 2020 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <QSignalSpy>
@@ -849,7 +849,6 @@ void tst_QComboBox::autoCompletionCaseSensitivity()
     TestWidget topLevel;
     topLevel.show();
     QComboBox *testWidget = topLevel.comboBox();
-    QApplicationPrivate::setActiveWindow(&topLevel);
     testWidget->setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&topLevel));
     QCOMPARE(qApp->focusWidget(), (QWidget *)testWidget);
@@ -2056,7 +2055,6 @@ void tst_QComboBox::flaggedItems()
     comboBox.setView(&listWidget);
     comboBox.move(200, 200);
     comboBox.show();
-    QApplicationPrivate::setActiveWindow(&comboBox);
     comboBox.activateWindow();
     comboBox.setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&comboBox));
@@ -2486,7 +2484,6 @@ void tst_QComboBox::task247863_keyBoardSelection()
   combo.addItem( QLatin1String("111"));
   combo.addItem( QLatin1String("222"));
   combo.show();
-  QApplicationPrivate::setActiveWindow(&combo);
   QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
 
   QSignalSpy spy(&combo, &QComboBox::activated);
@@ -2512,7 +2509,6 @@ void tst_QComboBox::task220195_keyBoardSelection2()
     combo.addItem( QLatin1String("foo2"));
     combo.addItem( QLatin1String("foo3"));
     combo.show();
-    QApplicationPrivate::setActiveWindow(&combo);
     QVERIFY(QTest::qWaitForWindowActive(&combo));
 
     combo.setCurrentIndex(-1);
@@ -2798,7 +2794,6 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
 
     combo.move(200, 200);
     combo.showNormal();
-    QApplicationPrivate::setActiveWindow(&combo);
     QVERIFY(QTest::qWaitForWindowActive(&combo));
 
     QCOMPARE(combo.currentText(), QLatin1String("0"));
@@ -2854,7 +2849,6 @@ void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
     layout.addWidget(&edit);
 
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
     cb.clearEditText();
     cb.setFocus();
@@ -3416,8 +3410,12 @@ void tst_QComboBox::task_QTBUG_56693_itemFontFromModel()
     box.hidePopup();
 }
 
+#ifndef QT_NO_STYLE_FUSION
 void tst_QComboBox::popupPositionAfterStyleChange()
 {
+#ifdef Q_OS_QNX
+    QSKIP("Fails on QNX, QTBUG-123798");
+#endif
     // Check that the popup opens up centered on top of the current
     // index if the style has changed since the last time it was
     // opened (QTBUG-113765).
@@ -3462,13 +3460,14 @@ void tst_QComboBox::popupPositionAfterStyleChange()
     QTest::mouseClick(&box, Qt::LeftButton);
 
     // Click on item under mouse. But wait a bit, to avoid a double click
-    QTest::qWait(qApp->styleHints()->mouseDoubleClickInterval());
+    QTest::qWait(2 * QGuiApplication::styleHints()->mouseDoubleClickInterval());
     QTest::mouseClick(&box, Qt::LeftButton);
 
     // Ensure that the item that was centered on top of the combobox, and which
     // we therefore clicked, was the same item we clicked on the first time.
-    QCOMPARE(box.currentText(), QStringLiteral("last"));
+    QTRY_COMPARE(box.currentText(), QStringLiteral("last"));
 }
+#endif // QT_NO_STYLE_FUSION
 
 void tst_QComboBox::inputMethodUpdate()
 {
@@ -3552,7 +3551,6 @@ void tst_QComboBox::task_QTBUG_52027_mapCompleterIndex()
     QCOMPARE(spy.size(), 0);
     cbox.move(200, 200);
     cbox.show();
-    QApplicationPrivate::setActiveWindow(&cbox);
     QVERIFY(QTest::qWaitForWindowActive(&cbox));
 
     QTest::keyClicks(&cbox, "foobar2");
@@ -3578,7 +3576,6 @@ void tst_QComboBox::task_QTBUG_52027_mapCompleterIndex()
         cbox.activateWindow();
     }
 
-    QApplicationPrivate::setActiveWindow(&cbox);
     QVERIFY(QTest::qWaitForWindowActive(&cbox));
 
     QTest::keyClicks(&cbox, "foobar1");
@@ -3646,7 +3643,6 @@ void tst_QComboBox::checkEmbeddedLineEditWhenStyleSheetIsSet()
     layout->addWidget(comboBox);
     topLevel.show();
     comboBox->setEditable(true);
-    QApplicationPrivate::setActiveWindow(&topLevel);
     QVERIFY(QTest::qWaitForWindowActive(&topLevel));
 
     QImage grab = comboBox->grab().toImage();

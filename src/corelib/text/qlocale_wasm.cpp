@@ -27,7 +27,7 @@ QStringList navigatorLanguages()
 
 }
 
-QVariant QSystemLocale::query(QueryType query, QVariant in) const
+QVariant QSystemLocale::query(QueryType query, QVariant &&in) const
 {
     Q_UNUSED(in);
 

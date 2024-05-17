@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include <QApplication>
+#include <QStyleHints>
 
 #include "widgetgallery.h"
 

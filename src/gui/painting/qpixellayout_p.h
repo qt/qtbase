@@ -321,12 +321,12 @@ struct QPixelLayout
 extern ConvertAndStorePixelsFunc64 qStoreFromRGBA64PM[QImage::NImageFormats];
 
 #if QT_CONFIG(raster_fp)
-extern ConvertToFPFunc qConvertToRGBA32F[QImage::NImageFormats];
-extern FetchAndConvertPixelsFuncFP qFetchToRGBA32F[QImage::NImageFormats];
-extern ConvertAndStorePixelsFuncFP qStoreFromRGBA32F[QImage::NImageFormats];
+extern ConvertToFPFunc qConvertToRGBA32F[];
+extern FetchAndConvertPixelsFuncFP qFetchToRGBA32F[];
+extern ConvertAndStorePixelsFuncFP qStoreFromRGBA32F[];
 #endif
 
-extern QPixelLayout qPixelLayouts[QImage::NImageFormats];
+extern QPixelLayout qPixelLayouts[];
 
 extern MemRotateFunc qMemRotateFunctions[QPixelLayout::BPPCount][3];
 

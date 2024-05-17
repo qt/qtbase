@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -462,7 +462,6 @@ void tst_QGroupBox::propagateFocus()
     QGroupBox box;
     QLineEdit lineEdit(&box);
     box.show();
-    QApplicationPrivate::setActiveWindow(&box);
     QVERIFY(QTest::qWaitForWindowActive(&box));
     box.setFocus();
     QTRY_COMPARE(qApp->focusWidget(), static_cast<QWidget*>(&lineEdit));

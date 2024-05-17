@@ -1,5 +1,5 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtWidgets/QRhiWidget>
 #include <QtGui/QPainter>
@@ -70,9 +70,6 @@ void tst_QRhiWidget::testData()
 #endif
 
 #if QT_CONFIG(vulkan)
-#if defined(Q_OS_ANDROID)
-    qWarning() << "Skipping Vulkan for Android (QTQAINFRA-5971)";
-#else
     // Have to probe to be sure Vulkan is actually working (the test cases
     // themselves will assume QRhi init succeeds).
     if (QVulkanDefaultInstance::instance()) {
@@ -82,9 +79,8 @@ void tst_QRhiWidget::testData()
             QTest::newRow("Vulkan") << QRhiWidget::Api::Vulkan;
     }
 #endif
-#endif
 
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
     QRhiMetalInitParams metalInitParams;
     if (QRhi::probe(QRhi::Metal, &metalInitParams))
         QTest::newRow("Metal") << QRhiWidget::Api::Metal;
@@ -635,12 +631,19 @@ void tst_QRhiWidget::reparent()
     QWidget *windowOne = new QWidget;
     windowOne->resize(1280, 720);
 
-    SimpleRhiWidget *rhiWidget = new SimpleRhiWidget(1, windowOne);
+    SimpleRhiWidget *rhiWidget = new SimpleRhiWidget(1);
     rhiWidget->setApi(api);
     rhiWidget->resize(800, 600);
     QSignalSpy frameSpy(rhiWidget, &QRhiWidget::frameSubmitted);
     QSignalSpy errorSpy(rhiWidget, &QRhiWidget::renderFailed);
 
+    rhiWidget->show();
+    QVERIFY(QTest::qWaitForWindowExposed(rhiWidget));
+    QTRY_VERIFY(frameSpy.count() > 0);
+    QCOMPARE(errorSpy.count(), 0);
+
+    frameSpy.clear();
+    rhiWidget->setParent(windowOne);
     windowOne->show();
     QVERIFY(QTest::qWaitForWindowExposed(windowOne));
     QTRY_VERIFY(frameSpy.count() > 0);

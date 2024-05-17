@@ -325,12 +325,19 @@ static const uint64_t qCompilerCpuFeatures = 0
 #if defined __ARM_NEON__
         | CpuFeatureNEON
 #endif
+#if !(defined(Q_OS_LINUX) && defined(Q_PROCESSOR_ARM_64))
+        // Yocto Project recipes enable Crypto extension for all ARMv8 configs,
+        // even for targets without the Crypto extension. That's wrong, but as
+        // the compiler never generates the code for them on their own, most
+        // code never notices the problem. But we would. By not setting the
+        // bits here, we force a runtime detection.
 #if defined __ARM_FEATURE_CRC32
         | CpuFeatureCRC32
 #endif
 #if defined __ARM_FEATURE_CRYPTO
         | CpuFeatureAES
 #endif
+#endif // Q_OS_LINUX && Q_PROCESSOR_ARM64
 #if defined __mips_dsp
         | CpuFeatureDSP
 #endif

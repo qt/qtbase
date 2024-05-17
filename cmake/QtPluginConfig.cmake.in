@@ -1,6 +1,9 @@
+# Copyright (C) 2024 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 include_guard(DIRECTORY)
 
-if(DEFINED QT_REPO_DEPENDENCIES AND NOT QT_BUILD_STANDALONE_TESTS)
+if(DEFINED QT_REPO_DEPENDENCIES AND NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
     # We're building a Qt repository.
     # Skip this plugin if it has not been provided by one of this repo's dependencies.
     string(TOLOWER "@PROJECT_NAME@" lower_case_project_name)

@@ -1,6 +1,6 @@
 // Copyright (C) 2023 The Qt Company Ltd.
 // Copyright (c) 2019, BogDan Vatra <bogdan@kde.org>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 package org.qtproject.qt.android;
 
@@ -45,6 +45,8 @@ abstract class QtLoader {
     protected String m_mainLibName;
     protected String m_applicationParameters = "";
     protected HashMap<String, String> m_environmentVariables = new HashMap<>();
+
+    protected int m_debuggerSleepMs = 0;
 
     /**
      * Sets and initialize the basic pieces.
@@ -433,6 +435,13 @@ abstract class QtLoader {
         ArrayList<String> nativeLibraries = getQtLibrariesList();
         nativeLibraries.addAll(getLocalLibrariesList());
 
+        if (m_debuggerSleepMs > 0) {
+            Log.i(QtTAG, "Sleeping for " + m_debuggerSleepMs +
+                         "ms, helping the native debugger to settle. " +
+                         "Use the env QT_ANDROID_DEBUGGER_MAIN_THREAD_SLEEP_MS variable to change this value.");
+            QtNative.getQtThread().sleep(m_debuggerSleepMs);
+        }
+
         if (!loadLibraries(nativeLibraries)) {
             Log.e(QtTAG, "Loading Qt native libraries failed");
             finish();
@@ -486,10 +495,13 @@ abstract class QtLoader {
 
         ArrayList<String> absolutePathLibraries = new ArrayList<>();
         for (String libName : libraries) {
-            if (!libName.startsWith("lib"))
-                libName = "lib" + libName;
-            if (!libName.endsWith(".so"))
+            // Add lib and .so to the lib name only if it doesn't already end with .so,
+            // this means some names don't necessarily need to have the lib prefix
+            if (!libName.endsWith(".so")) {
                 libName = libName + ".so";
+                libName = "lib" + libName;
+            }
+
             File file = new File(m_nativeLibrariesDir + libName);
             absolutePathLibraries.add(file.getAbsolutePath());
         }

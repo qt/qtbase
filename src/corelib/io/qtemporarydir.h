@@ -11,7 +11,7 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifndef QT_NO_TEMPORARYFILE
+#if QT_CONFIG(temporaryfile)
 
 class QTemporaryDirPrivate;
 
@@ -52,7 +52,7 @@ inline void swap(QTemporaryDir &lhs, QTemporaryDir &rhs) noexcept
     lhs.swap(rhs);
 }
 
-#endif // QT_NO_TEMPORARYFILE
+#endif // QT_CONFIG(temporaryfile)
 
 QT_END_NAMESPACE
 

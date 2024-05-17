@@ -8,6 +8,7 @@ The following table describes the mapping of configure options to CMake argument
 | -extprefix /opt/qt6                   | -DCMAKE_STAGING_PREFIX=/opt/qt6                   |                                                                 |
 | -bindir <dir>                         | -DINSTALL_BINDIR=<dir>                            | similar for -headerdir -libdir and so on                        |
 | -hostdatadir <dir>                    | -DINSTALL_MKSPECSDIR=<dir>                        |                                                                 |
+| -qt-host-path <dir>                   | -DQT_HOST_PATH=<dir>                              |                                                                 |
 | -help                                 | n/a                                               | Handled by configure[.bat].                                     |
 | -verbose                              | --log-level=STATUS                                | Sets the CMake log level to STATUS. The default one is NOTICE.  |
 | -continue                             |                                                   |                                                                 |
@@ -44,6 +45,7 @@ The following table describes the mapping of configure options to CMake argument
 | -device-option <key=value>            | -DQT_QMAKE_DEVICE_OPTIONS=key1=value1;key2=value2 | Only used for generation qmake-compatibility files.             |
 |                                       |                                                   | The device options are written into mkspecs/qdevice.pri.        |
 | -appstore-compliant                   | -DFEATURE_appstore_compliant=ON                   |                                                                 |
+| -qtinlinenamespace                    | -DQT_INLINE_NAMESPACE=ON                          | Make the namespace specified by -qtnamespace an inline one.     |
 | -qtnamespace <name>                   | -DQT_NAMESPACE=<name>                             |                                                                 |
 | -qtlibinfix <infix>                   | -DQT_LIBINFIX=<infix>                             |                                                                 |
 | -coverage <tool>                      | -DINPUT_coverage=<tool>                           | Enables code coverage using the specified tool.                 |
@@ -82,7 +84,7 @@ The following table describes the mapping of configure options to CMake argument
 | -I <string>                           | -DQT_EXTRA_INCLUDEPATHS=<string1>;<string2>       |                                                                 |
 | -L <string>                           | -DQT_EXTRA_LIBDIRS=<string1>;<string2>            |                                                                 |
 | -F <string>                           | -DQT_EXTRA_FRAMEWORKPATHS=<string1>;<string2>     |                                                                 |
-| -sdk <sdk>                            | -DQT_UIKIT_SDK=<value>                            | Should be provided a value like 'iphoneos' or 'iphonesimulator' |
+| -sdk <sdk>                            | -DQT_APPLE_SDK=<value>                            | Should be provided a value like 'iphoneos' or 'iphonesimulator' |
 |                                       |                                                   | If no value is provided, a simulator_and_device build is        |
 |                                       |                                                   | assumed.                                                        |
 | -android-sdk <path>                   | -DANDROID_SDK_ROOT=<path>                         |                                                                 |
@@ -93,7 +95,9 @@ The following table describes the mapping of configure options to CMake argument
 | -android-javac-source                 | -DQT_ANDROID_JAVAC_SOURCE=7                       | Set the javac build source version.                             |
 | -android-javac-target                 | -DQT_ANDROID_JAVAC_TARGET=7                       | Set the javac build target version.                             |
 | -skip <repo>,...,<repo_n>             | -DBUILD_<repo>=OFF                                |                                                                 |
-| -submodules <repo>,...,<repo_n>       | -DQT_BUILD_SUBMODULES=<repo>;...;<repo>            |                                                                 |
+| -skip-tests <repo>,...,<repo_n>       | -DQT_BUILD_TESTS_PROJECT_<repo>=OFF               |                                                                 |
+| -skip-examples <repo>,...,<repo_n>    | -DQT_BUILD_EXAMPLES_PROJECT_<repo>=OFF            |                                                                 |
+| -submodules <repo>,...,<repo_n>       | -DQT_BUILD_SUBMODULES=<repo>;...;<repo>           |                                                                 |
 | -make <part>                          | -DQT_BUILD_TESTS=ON                               | A way to turn on tools explicitly is missing. If tests/examples |
 |                                       | -DQT_BUILD_EXAMPLES=ON                            | are enabled, you can disable their building as part of the      |
 |                                       |                                                   | 'all' target by also passing -DQT_BUILD_TESTS_BY_DEFAULT=OFF or |
@@ -141,7 +145,8 @@ The following table describes the mapping of configure options to CMake argument
 | -opengl <api>                         | -DINPUT_opengl=<api>                              |                                                                 |
 | -opengles3                            | -DFEATURE_opengles3=ON                            |                                                                 |
 | -egl                                  | -DFEATURE_egl=ON                                  |                                                                 |
-| -qpa <name>                           | -DQT_QPA_DEFAULT_PLATFORM=<name>                  |                                                                 |
+| -qpa <name>;...;<name_n>              | -DQT_QPA_PLATFORMS=<name>;...;<name_n>            |                                                                 |
+| -default-qpa <name>                   | -DQT_QPA_DEFAULT_PLATFORM=<name>                  |                                                                 |
 | -xcb-xlib                             | -DFEATURE_xcb_xlib=ON                             |                                                                 |
 | -direct2d                             | -DFEATURE_direct2d=ON                             |                                                                 |
 | -directfb                             | -DFEATURE_directfb=ON                             |                                                                 |
@@ -160,8 +165,8 @@ The following table describes the mapping of configure options to CMake argument
 | -xkbcommon                            | -DFEATURE_xkbcommon=ON                            |                                                                 |
 | -gif                                  | -DFEATURE_gif=ON                                  |                                                                 |
 | -ico                                  | -DFEATURE_ico=ON                                  |                                                                 |
-| -libpng                               | -DFEATURE_png=ON                               |                                                                 |
-| -libjpeg                              | -DFEATURE_jpeg=ON                              |                                                                 |
+| -libpng                               | -DFEATURE_png=ON                                  |                                                                 |
+| -libjpeg                              | -DFEATURE_jpeg=ON                                 |                                                                 |
 | -sql-<driver>                         | -DFEATURE_sql_<driver>=ON                         |                                                                 |
 | -sqlite [qt/system]                   | -DFEATURE_system_sqlite=OFF/ON                    |                                                                 |
 | -disable-deprecated-up-to <hex_version> | -DQT_DISABLE_DEPRECATED_UP_TO=<hex_version>     |                                                                 |

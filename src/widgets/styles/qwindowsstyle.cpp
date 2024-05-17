@@ -88,11 +88,6 @@ enum QSliderDirection { SlUp, SlDown, SlLeft, SlRight };
 
 QWindowsStylePrivate::QWindowsStylePrivate() = default;
 
-qreal QWindowsStylePrivate::appDevicePixelRatio()
-{
-    return qApp->devicePixelRatio();
-}
-
 // Returns \c true if the toplevel parent of \a widget has seen the Alt-key
 bool QWindowsStylePrivate::hasSeenAlt(const QWidget *widget) const
 {
@@ -440,46 +435,6 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
 QPixmap QWindowsStyle::standardPixmap(StandardPixmap standardPixmap, const QStyleOption *opt,
                                       const QWidget *widget) const
 {
-#if defined(Q_OS_WIN)
-    QPixmap desktopIcon;
-    switch(standardPixmap) {
-    case SP_DriveCDIcon:
-    case SP_DriveDVDIcon:
-    case SP_DriveNetIcon:
-    case SP_DriveHDIcon:
-    case SP_DriveFDIcon:
-    case SP_FileIcon:
-    case SP_FileLinkIcon:
-    case SP_DirLinkIcon:
-    case SP_DirClosedIcon:
-    case SP_DesktopIcon:
-    case SP_ComputerIcon:
-    case SP_DirOpenIcon:
-    case SP_FileDialogNewFolder:
-    case SP_DirHomeIcon:
-    case SP_TrashIcon:
-    case SP_VistaShield:
-        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
-            QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardPixmap);
-            desktopIcon = theme->standardPixmap(sp, QSizeF(16, 16));
-        }
-        break;
-    case SP_MessageBoxInformation:
-    case SP_MessageBoxWarning:
-    case SP_MessageBoxCritical:
-    case SP_MessageBoxQuestion:
-        if (const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme()) {
-            QPlatformTheme::StandardPixmap sp = static_cast<QPlatformTheme::StandardPixmap>(standardPixmap);
-            desktopIcon = theme->standardPixmap(sp, QSizeF());
-        }
-        break;
-    default:
-        break;
-    }
-    if (!desktopIcon.isNull()) {
-        return desktopIcon;
-    }
-#endif // Q_OS_WIN
     return QCommonStyle::standardPixmap(standardPixmap, opt, widget);
 }
 

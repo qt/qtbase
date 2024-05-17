@@ -33,6 +33,10 @@
     \title Android: Tagged Pointers
 */
 /*!
+    \externalpage https://developer.android.com/build/configure-app-module
+    \title Android: Configure the app module
+*/
+/*!
     \externalpage https://developer.apple.com/documentation/uikit/uiapplication/1622952-canopenurl
     \title iOS: canOpenURL:
 */
@@ -114,6 +118,11 @@
 /*!
     \externalpage https://cmake.org/cmake/help/latest/command/target_link_libraries.html
     \title CMake target_link_libraries Documentation
+*/
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/variable/BUILD_SHARED_LIBS.html
+    \title CMake BUILD_SHARED_LIBS Documentation
 */
 
 /*!

@@ -411,6 +411,53 @@ int main(void)
 }
 ")
 
+# <stacktrace>
+qt_config_compile_test(cxx23_stacktrace
+    LABEL "C++23 <stacktrace> support"
+    CODE
+"#include <stacktrace>
+#if !defined(__cpp_lib_stacktrace)
+#error
+#endif
+
+int main(void)
+{
+    /* BEGIN TEST: */
+const auto backtrace = std::stacktrace::current();
+    /* END TEST: */
+}
+"
+    CXX_STANDARD 23
+)
+
+# <future>
+qt_config_compile_test(cxx_std_async_noncopyable
+    LABEL "std::async() NonCopyable"
+    CODE
+"// Calling std::async with lambda which takes non-copyable argument causes compilation error on
+// some platforms (VxWorks 24.03 and older with C++17-compatibility for example)
+#include <future>
+
+class NonCopyable {
+public:
+    NonCopyable(const NonCopyable&) = delete;
+    NonCopyable(NonCopyable&&) = default;
+
+    NonCopyable(int value)
+        :value (value)
+    {}
+
+    int value;
+};
+
+int main(int argc, char** argv) {
+    return std::async(
+        std::launch::deferred,
+        [](NonCopyable value) { return value.value; },
+        NonCopyable(argc - 1)).get();
+}
+")
+
 #### Features
 
 qt_feature("clock-gettime" PRIVATE
@@ -439,7 +486,7 @@ qt_feature("system-doubleconversion" PRIVATE
 )
 qt_feature("cxx11_future" PUBLIC
     LABEL "C++11 <future>"
-    CONDITION ON
+    CONDITION TEST_cxx_std_async_noncopyable
 )
 qt_feature("cxx17_filesystem" PUBLIC
     LABEL "C++17 <filesystem>"
@@ -552,7 +599,7 @@ qt_feature("poll_select" PRIVATE
 qt_feature_definition("poll_select" "QT_NO_NATIVE_POLL")
 qt_feature("posix_sem" PRIVATE
     LABEL "POSIX semaphores"
-    CONDITION TEST_posix_sem
+    CONDITION TEST_posix_sem AND QT_FEATURE_systemsemaphore
 )
 qt_feature("posix_shm" PRIVATE
     LABEL "POSIX shared memory"
@@ -577,7 +624,7 @@ qt_feature("syslog" PRIVATE
 )
 qt_feature("sysv_sem" PRIVATE
     LABEL "System V / XSI semaphores"
-    CONDITION TEST_sysv_sem
+    CONDITION TEST_sysv_sem AND QT_FEATURE_systemsemaphore
 )
 qt_feature("sysv_shm" PRIVATE
     LABEL "System V / XSI shared memory"
@@ -599,6 +646,10 @@ qt_feature_definition("regularexpression" "QT_NO_REGULAREXPRESSION" NEGATE VALUE
 qt_feature("backtrace" PRIVATE
     LABEL "backtrace"
     CONDITION UNIX AND QT_FEATURE_regularexpression AND WrapBacktrace_FOUND
+)
+qt_feature("cxx23_stacktrace" PRIVATE
+    LABEL "C++23 <stacktrace>"
+    CONDITION TEST_cxx23_stacktrace AND QT_FEATURE_cxx2b
 )
 qt_feature("sharedmemory" PUBLIC
     SECTION "Kernel"
@@ -805,6 +856,13 @@ qt_feature("timezone" PUBLIC
     PURPOSE "Provides support for time-zone handling."
     CONDITION NOT WASM AND NOT VXWORKS
 )
+qt_feature("timezone_locale" PRIVATE
+    SECTION "Utilities"
+    LABEL "QTimeZone"
+    PURPOSE "Provides support for localized time-zone display names."
+    CONDITION
+        QT_FEATURE_timezone AND ( ( UNIX AND NOT APPLE AND NOT ANDROID ) OR QT_FEATURE_icu )
+)
 qt_feature("datetimeparser" PRIVATE
     SECTION "Utilities"
     LABEL "QDateTimeParser"
@@ -870,6 +928,7 @@ qt_feature("openssl-hash" PRIVATE
 
 qt_configure_add_summary_section(NAME "Qt Core")
 qt_configure_add_summary_entry(ARGS "backtrace")
+qt_configure_add_summary_entry(ARGS "cxx23_stacktrace")
 qt_configure_add_summary_entry(ARGS "doubleconversion")
 qt_configure_add_summary_entry(ARGS "system-doubleconversion")
 qt_configure_add_summary_entry(ARGS "forkfd_pidfd" CONDITION LINUX)

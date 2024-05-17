@@ -1,6 +1,6 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 /* WARNING: this source-code is reused by another test.
 
@@ -38,6 +38,8 @@ static bool glibDisabled = []() {
     return true;
 }();
 #endif
+
+using namespace std::chrono_literals;
 
 class tst_QTimer : public QObject
 {
@@ -94,6 +96,9 @@ private slots:
     void bindToTimer();
     void bindTimer();
     void automatedBindingTests();
+
+    void negativeInterval();
+    void testTimerId();
 };
 
 void tst_QTimer::zeroTimer()
@@ -166,7 +171,6 @@ void tst_QTimer::singleShotNormalizes_data()
 
 void tst_QTimer::singleShotNormalizes()
 {
-    using namespace std::chrono_literals;
     static constexpr auto TestTimeout = 250ms;
     QFETCH(QByteArray, slotName);
     QEventLoop loop;
@@ -813,12 +817,10 @@ void tst_QTimer::timerFiresOnlyOncePerProcessEvents()
 class TimerIdPersistsAfterThreadExitThread : public QThread
 {
 public:
-    QTimer *timer;
-    int timerId, returnValue;
+    QTimer *timer = nullptr;
+    Qt::TimerId timerId = Qt::TimerId::Invalid;
+    int returnValue = -1;
 
-    TimerIdPersistsAfterThreadExitThread()
-        : QThread(), timer(0), timerId(-1), returnValue(-1)
-    { }
     ~TimerIdPersistsAfterThreadExitThread()
     {
         delete timer;
@@ -830,10 +832,14 @@ public:
         timer = new QTimer;
         connect(timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
         timer->start(100);
-        timerId = timer->timerId();
+        timerId = timer->id();
         returnValue = eventLoop.exec();
     }
 };
+
+namespace {
+int operator&(Qt::TimerId id, int i) { return qToUnderlying(id) & i; }
+}
 
 void tst_QTimer::timerIdPersistsAfterThreadExit()
 {
@@ -858,6 +864,19 @@ void tst_QTimer::cancelLongTimer()
     QVERIFY(timer.isActive()); //if the timer completes immediately with an error, then this will fail
     timer.stop();
     QVERIFY(!timer.isActive());
+}
+
+void tst_QTimer::testTimerId()
+{
+    QTimer timer;
+    timer.start(100ms);
+    QVERIFY(timer.isActive());
+    QCOMPARE_GT(timer.timerId(), 0);
+    QCOMPARE_GT(timer.id(), Qt::TimerId::Invalid);
+    timer.stop();
+    QVERIFY(!timer.isActive());
+    QCOMPARE(timer.timerId(), -1);
+    QCOMPARE(timer.id(), Qt::TimerId::Invalid);
 }
 
 class TimeoutCounter : public QObject
@@ -1287,6 +1306,23 @@ void tst_QTimer::bindToTimer()
 
     timer.stop();
     QVERIFY(!active);
+
+    auto ignoreMsg = [] {
+        QTest::ignoreMessage(QtWarningMsg,
+                             "QObject::startTimer: Timers cannot have negative intervals");
+    };
+
+    // also test that using negative interval updates the binding correctly
+    timer.start(100);
+    QVERIFY(active);
+    ignoreMsg();
+    timer.setInterval(-100);
+    QVERIFY(!active);
+    timer.start(100);
+    QVERIFY(active);
+    ignoreMsg();
+    timer.start(-100);
+    QVERIFY(!active);
 }
 
 void tst_QTimer::bindTimer()
@@ -1365,6 +1401,37 @@ void tst_QTimer::automatedBindingTests()
         qDebug("Failed property test for QTimer::active");
         return;
     }
+}
+
+void tst_QTimer::negativeInterval()
+{
+    auto ignoreMsg = [] {
+        QTest::ignoreMessage(QtWarningMsg,
+                             "QObject::startTimer: Timers cannot have negative intervals");
+    };
+
+    QTimer timer;
+
+    // Starting with a negative interval does not change active state.
+    ignoreMsg();
+    timer.start(-100ms);
+    QVERIFY(!timer.isActive());
+
+    // Updating the interval to a negative value stops the timer and changes
+    // the active state.
+    timer.start(100ms);
+    QVERIFY(timer.isActive());
+    ignoreMsg();
+    timer.setInterval(-100);
+    QVERIFY(!timer.isActive());
+
+    // Starting with a negative interval when already started leads to stop
+    // and inactive state.
+    timer.start(100);
+    QVERIFY(timer.isActive());
+    ignoreMsg();
+    timer.start(-100ms);
+    QVERIFY(!timer.isActive());
 }
 
 class OrderHelper : public QObject

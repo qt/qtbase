@@ -637,12 +637,29 @@ void Generator::generateCode()
 // Generate function to make sure the non-class signals exist in the parent classes
 //
     if (!cdef->nonClassSignalList.isEmpty()) {
-        fprintf(out, "// If you get a compile error in this function it can be because either\n");
-        fprintf(out, "//     a) You are using a NOTIFY signal that does not exist. Fix it.\n");
-        fprintf(out, "//     b) You are using a NOTIFY signal that does exist (in a parent class) but has a non-empty parameter list. This is a moc limitation.\n");
-        fprintf(out, "[[maybe_unused]] static void checkNotifySignalValidity_%s(%s *t) {\n", qualifiedClassNameIdentifier.constData(), cdef->qualified.constData());
-        for (const QByteArray &nonClassSignal : std::as_const(cdef->nonClassSignalList))
-            fprintf(out, "    t->%s();\n", nonClassSignal.constData());
+        fprintf(out, "namespace CheckNotifySignalValidity_%s {\n", qualifiedClassNameIdentifier.constData());
+        for (const QByteArray &nonClassSignal : std::as_const(cdef->nonClassSignalList)) {
+            const auto propertyIt = std::find_if(cdef->propertyList.constBegin(),
+                                   cdef->propertyList.constEnd(),
+                                   [&nonClassSignal](const PropertyDef &p) {
+                return nonClassSignal == p.notify;
+            });
+            // must find something, otherwise checkProperties wouldn't have inserted an entry into nonClassSignalList
+            Q_ASSERT(propertyIt != cdef->propertyList.constEnd());
+            fprintf(out, "template<typename T> using has_nullary_%s = decltype(std::declval<T>().%s());\n",
+                    nonClassSignal.constData(),
+                    nonClassSignal.constData());
+            const auto &propertyType = propertyIt->type;
+            fprintf(out, "template<typename T> using has_unary_%s = decltype(std::declval<T>().%s(std::declval<%s>()));\n",
+                    nonClassSignal.constData(),
+                    nonClassSignal.constData(),
+                    propertyType.constData());
+            fprintf(out, "static_assert(qxp::is_detected_v<has_nullary_%s, %s> || qxp::is_detected_v<has_unary_%s, %s>,\n"
+                         "              \"NOTIFY signal %s does not exist in class (or is private in its parent)\");\n",
+                    nonClassSignal.constData(), cdef->qualified.constData(),
+                    nonClassSignal.constData(), cdef->qualified.constData(),
+                    nonClassSignal.constData());
+        }
         fprintf(out, "}\n");
     }
 }
@@ -816,7 +833,7 @@ void Generator::generateProperties()
     //
 
     if (cdef->propertyList.size())
-        fprintf(out, "\n // properties: name, type, flags\n");
+        fprintf(out, "\n // properties: name, type, flags, notifyId, revision\n");
     for (const PropertyDef &p : std::as_const(cdef->propertyList)) {
         uint flags = Invalid;
         if (!isBuiltinType(p.type))

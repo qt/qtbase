@@ -132,6 +132,7 @@ target_include_directories(GlobalConfigPrivate INTERFACE
     $<INSTALL_INTERFACE:${INSTALL_INCLUDEDIR}/QtCore/${PROJECT_VERSION}/QtCore>
 )
 add_library(Qt::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
+add_library(${QT_CMAKE_EXPORT_NAMESPACE}::GlobalConfigPrivate ALIAS GlobalConfigPrivate)
 
 qt_internal_setup_public_platform_target()
 
@@ -158,9 +159,10 @@ qt_install(EXPORT ${__export_name}
            DESTINATION "${__GlobalConfig_install_dir}")
 
 qt_internal_export_modern_cmake_config_targets_file(TARGETS ${__export_targets}
-                                                    EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}
-                                                    CONFIG_INSTALL_DIR
-                                                    ${__GlobalConfig_install_dir})
+    EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}
+    CONFIG_BUILD_DIR "${__GlobalConfig_build_dir}"
+    CONFIG_INSTALL_DIR "${__GlobalConfig_install_dir}"
+)
 
 # Save minimum required CMake version to use Qt.
 qt_internal_get_supported_min_cmake_version_for_using_qt(supported_min_version_for_using_qt)
@@ -201,11 +203,28 @@ qt_internal_write_qt_package_version_file(
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
 )
 
+# Compute the reverse relative path from QtConfig.cmake to the install prefix
+# this is used in QtInstallPaths to make the install paths relocatable
+if(QT_WILL_INSTALL)
+    get_filename_component(_clean_prefix
+        "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}/${QT_CONFIG_INSTALL_DIR}" ABSOLUTE)
+else()
+    get_filename_component(_clean_prefix "${QT_CONFIG_BUILD_DIR}" ABSOLUTE)
+endif()
+file(RELATIVE_PATH QT_INVERSE_CONFIG_INSTALL_DIR
+    "${_clean_prefix}" "${QT_BUILD_INTERNALS_RELOCATABLE_INSTALL_PREFIX}")
+configure_file(
+    "${PROJECT_SOURCE_DIR}/cmake/QtInstallPaths.cmake.in"
+    "${__GlobalConfig_build_dir}/QtInstallPaths.cmake"
+    @ONLY
+)
+
 qt_install(FILES
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}Config.cmake"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigExtras.cmake"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersion.cmake"
     "${__GlobalConfig_build_dir}/${INSTALL_CMAKE_NAMESPACE}ConfigVersionImpl.cmake"
+    "${__GlobalConfig_build_dir}/QtInstallPaths.cmake"
     DESTINATION "${__GlobalConfig_install_dir}"
     COMPONENT Devel
 )
@@ -302,6 +321,7 @@ qt_copy_or_install(DIRECTORY cmake/
     PATTERN "3rdparty" EXCLUDE
     PATTERN "macos" EXCLUDE
     PATTERN "ios" EXCLUDE
+    PATTERN "visionos" EXCLUDE
     PATTERN "platforms" EXCLUDE
     PATTERN "QtBuildInternals" EXCLUDE
 )
@@ -316,6 +336,7 @@ if(QT_WILL_INSTALL)
         PATTERN "3rdparty" EXCLUDE
         PATTERN "macos" EXCLUDE
         PATTERN "ios" EXCLUDE
+        PATTERN "visionos" EXCLUDE
         PATTERN "platforms" EXCLUDE
         PATTERN "QtBuildInternals" EXCLUDE
     )
@@ -326,13 +347,25 @@ if(APPLE)
         set(platform_shortname "macos")
     elseif(IOS)
         set(platform_shortname "ios")
+    elseif(VISIONOS)
+        set(platform_shortname "visionos")
     endif()
 
+    # Info.plist
     qt_copy_or_install(FILES "cmake/${platform_shortname}/Info.plist.app.in"
         DESTINATION "${__GlobalConfig_install_dir}/${platform_shortname}"
     )
     # For examples built as part of prefix build before install
     file(COPY "cmake/${platform_shortname}/Info.plist.app.in"
+        DESTINATION "${__GlobalConfig_build_dir}/${platform_shortname}"
+    )
+
+    # Privacy manifest
+    qt_copy_or_install(FILES "cmake/${platform_shortname}/PrivacyInfo.xcprivacy"
+        DESTINATION "${__GlobalConfig_install_dir}/${platform_shortname}"
+    )
+    # For examples built as part of prefix build before install
+    file(COPY "cmake/${platform_shortname}/PrivacyInfo.xcprivacy"
         DESTINATION "${__GlobalConfig_build_dir}/${platform_shortname}"
     )
 

@@ -21,7 +21,7 @@ import android.view.inputmethod.InputMethodManager;
 import org.qtproject.qt.android.QtInputConnection.QtInputConnectionListener;
 
 /** @noinspection FieldCanBeLocal*/
-class QtInputDelegate {
+class QtInputDelegate implements QtInputConnection.QtInputConnectionListener {
 
     // keyboard methods
     public static native void keyDown(int key, int unicode, int modifier, boolean autoRepeat);
@@ -39,7 +39,7 @@ class QtInputDelegate {
     public static native void handleLocationChanged(int id, int x, int y);
     // handle methods
 
-    private final QtEditText m_editText;
+    private QtEditText m_currentEditText = null;
     private final InputMethodManager m_imm;
 
     private boolean m_keyboardIsVisible = false;
@@ -52,31 +52,6 @@ class QtInputDelegate {
     private CursorHandle m_leftSelectionHandle;
     private CursorHandle m_rightSelectionHandle;
     private EditPopupMenu m_editPopupMenu;
-
-    // input method hints - must be kept in sync with QTDIR/src/corelib/global/qnamespace.h
-    private final int ImhHiddenText = 0x1;
-    private final int ImhSensitiveData = 0x2;
-    private final int ImhNoAutoUppercase = 0x4;
-    private final int ImhPreferNumbers = 0x8;
-    private final int ImhPreferUppercase = 0x10;
-    private final int ImhPreferLowercase = 0x20;
-    private final int ImhNoPredictiveText = 0x40;
-
-    private final int ImhDate = 0x80;
-    private final int ImhTime = 0x100;
-
-    private final int ImhPreferLatin = 0x200;
-
-    private final int ImhMultiLine = 0x400;
-
-    private final int ImhDigitsOnly = 0x10000;
-    private final int ImhFormattedNumbersOnly = 0x20000;
-    private final int ImhUppercaseOnly = 0x40000;
-    private final int ImhLowercaseOnly = 0x80000;
-    private final int ImhDialableCharactersOnly = 0x100000;
-    private final int ImhEmailCharactersOnly = 0x200000;
-    private final int ImhUrlCharactersOnly = 0x400000;
-    private final int ImhLatinOnly = 0x800000;
 
     private int m_softInputMode = 0;
 
@@ -112,27 +87,26 @@ class QtInputDelegate {
     QtInputDelegate(Activity activity, KeyboardVisibilityListener listener)
     {
         this.m_keyboardVisibilityListener = listener;
-        m_editText = new QtEditText(activity);
         m_imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-        QtInputConnectionListener inputConnectionListener = new QtInputConnectionListener() {
-            @Override
-            public void onSetClosing(boolean closing) {
-                if (!closing)
-                    setKeyboardVisibility(true, System.nanoTime());
-            }
-
-            @Override
-            public void onHideKeyboardRunnableDone(boolean visibility, long hideTimeStamp) {
-                setKeyboardVisibility(visibility, hideTimeStamp);
-            }
-
-            @Override
-            public void onSendKeyEventDefaultCase() {
-                hideSoftwareKeyboard();
-            }
-        };
-        m_editText.setQtInputConnectionListener(inputConnectionListener);
     }
+
+    // QtInputConnectionListener methods
+    @Override
+    public void onSetClosing(boolean closing) {
+        if (!closing)
+            setKeyboardVisibility(true, System.nanoTime());
+    }
+
+    @Override
+    public void onHideKeyboardRunnableDone(boolean visibility, long hideTimeStamp) {
+        setKeyboardVisibility(visibility, hideTimeStamp);
+    }
+
+    @Override
+    public void onSendKeyEventDefaultCase() {
+        hideSoftwareKeyboard();
+    }
+    // QtInputConnectionListener methods
 
     public boolean isKeyboardVisible()
     {
@@ -151,9 +125,9 @@ class QtInputDelegate {
         m_softInputMode = inputMode;
     }
 
-    QtEditText getQtEditText()
+    QtEditText getCurrentQtEditText()
     {
-        return m_editText;
+        return m_currentEditText;
     }
 
     void setEditPopupMenu(EditPopupMenu editPopupMenu)
@@ -187,12 +161,17 @@ class QtInputDelegate {
     @UsedFromNativeCode
     public void resetSoftwareKeyboard()
     {
-        if (m_imm == null)
+        if (m_imm == null || m_currentEditText == null)
             return;
-        m_editText.postDelayed(() -> {
-            m_imm.restartInput(m_editText);
-            m_editText.m_optionsChanged = false;
+        m_currentEditText.postDelayed(() -> {
+            m_imm.restartInput(m_currentEditText);
+            m_currentEditText.m_optionsChanged = false;
         }, 5);
+    }
+
+    void setFocusedView(QtEditText currentEditText)
+    {
+        m_currentEditText = currentEditText;
     }
 
     public void showSoftwareKeyboard(Activity activity, QtLayout layout,
@@ -200,21 +179,16 @@ class QtInputDelegate {
                                      final int inputHints, final int enterKeyType)
     {
         QtNative.runAction(() -> {
-            if (m_imm == null)
+            if (m_imm == null || m_currentEditText == null)
                 return;
 
             if (updateSoftInputMode(activity, height))
                 return;
 
-            setEditTextOptions(enterKeyType, inputHints);
+            m_currentEditText.setEditTextOptions(enterKeyType, inputHints);
 
-            // TODO: The editText is added to the QtLayout, but is it ever removed?
-            QtLayout.LayoutParams layoutParams = new QtLayout.LayoutParams(width, height, x, y);
-            layout.setLayoutParams(m_editText, layoutParams, false);
-            m_editText.requestFocus();
-
-            m_editText.postDelayed(() -> {
-                m_imm.showSoftInput(m_editText, 0, new ResultReceiver(new Handler()) {
+            m_currentEditText.postDelayed(() -> {
+                m_imm.showSoftInput(m_currentEditText, 0, new ResultReceiver(new Handler()) {
                     @Override
                     protected void onReceiveResult(int resultCode, Bundle resultData) {
                         switch (resultCode) {
@@ -235,84 +209,12 @@ class QtInputDelegate {
                         }
                     }
                 });
-                if (m_editText.m_optionsChanged) {
-                    m_imm.restartInput(m_editText);
-                    m_editText.m_optionsChanged = false;
+                if (m_currentEditText.m_optionsChanged) {
+                    m_imm.restartInput(m_currentEditText);
+                    m_currentEditText.m_optionsChanged = false;
                 }
             }, 15);
         });
-    }
-
-    private void setEditTextOptions(int enterKeyType, int inputHints)
-    {
-        int initialCapsMode = 0;
-        int imeOptions = imeOptionsFromEnterKeyType(enterKeyType);
-        int inputType = android.text.InputType.TYPE_CLASS_TEXT;
-
-        if ((inputHints & (ImhPreferNumbers | ImhDigitsOnly | ImhFormattedNumbersOnly)) != 0) {
-            inputType = android.text.InputType.TYPE_CLASS_NUMBER;
-            if ((inputHints & ImhFormattedNumbersOnly) != 0) {
-                inputType |= (android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
-                        | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED);
-            }
-
-            if ((inputHints & ImhHiddenText) != 0)
-                inputType |= android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
-        } else if ((inputHints & ImhDialableCharactersOnly) != 0) {
-            inputType = android.text.InputType.TYPE_CLASS_PHONE;
-        } else if ((inputHints & (ImhDate | ImhTime)) != 0) {
-            inputType = android.text.InputType.TYPE_CLASS_DATETIME;
-            if ((inputHints & (ImhDate | ImhTime)) != (ImhDate | ImhTime)) {
-                if ((inputHints & ImhDate) != 0)
-                    inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_DATE;
-                else
-                    inputType |= android.text.InputType.TYPE_DATETIME_VARIATION_TIME;
-            } // else {  TYPE_DATETIME_VARIATION_NORMAL(0) }
-        } else { // CLASS_TEXT
-            if ((inputHints & ImhHiddenText) != 0) {
-                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
-            } else if ((inputHints & ImhSensitiveData) != 0 ||
-                    isDisablePredictiveTextWorkaround(inputHints)) {
-                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
-            } else if ((inputHints & ImhUrlCharactersOnly) != 0) {
-                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_URI;
-                if (enterKeyType == 0) // not explicitly overridden
-                    imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
-            } else if ((inputHints & ImhEmailCharactersOnly) != 0) {
-                inputType |= android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
-            }
-
-            if ((inputHints & ImhMultiLine) != 0) {
-                inputType |= android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE;
-                // Clear imeOptions for Multi-Line Type
-                // User should be able to insert new line in such case
-                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
-            }
-            if ((inputHints & (ImhNoPredictiveText | ImhSensitiveData | ImhHiddenText)) != 0)
-                inputType |= android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
-
-            if ((inputHints & ImhUppercaseOnly) != 0) {
-                initialCapsMode |= android.text.TextUtils.CAP_MODE_CHARACTERS;
-                inputType |= android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS;
-            } else if ((inputHints & ImhLowercaseOnly) == 0
-                    && (inputHints & ImhNoAutoUppercase) == 0) {
-                initialCapsMode |= android.text.TextUtils.CAP_MODE_SENTENCES;
-                inputType |= android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES;
-            }
-        }
-
-        if (enterKeyType == 0 && (inputHints & ImhMultiLine) != 0)
-            imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION;
-
-        m_editText.setInitialCapsMode(initialCapsMode);
-        m_editText.setImeOptions(imeOptions);
-        m_editText.setInputType(inputType);
-    }
-
-    private boolean isDisablePredictiveTextWorkaround(int inputHints)
-    {
-        return (inputHints & ImhNoPredictiveText) != 0 &&
-                System.getenv("QT_ANDROID_ENABLE_WORKAROUND_TO_DISABLE_PREDICTIVE_TEXT") != null;
     }
 
     private boolean updateSoftInputMode(Activity activity, int height)
@@ -347,38 +249,6 @@ class QtInputDelegate {
             }
         }
         return false;
-    }
-
-    private int imeOptionsFromEnterKeyType(int enterKeyType)
-    {
-        int imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
-
-        // enter key type - must be kept in sync with QTDIR/src/corelib/global/qnamespace.h
-        switch (enterKeyType) {
-            case 0: // EnterKeyDefault
-                break;
-            case 1: // EnterKeyReturn
-                imeOptions = android.view.inputmethod.EditorInfo.IME_FLAG_NO_ENTER_ACTION;
-                break;
-            case 2: // EnterKeyDone
-                break;
-            case 3: // EnterKeyGo
-                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
-                break;
-            case 4: // EnterKeySend
-                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEND;
-                break;
-            case 5: // EnterKeySearch
-                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH;
-                break;
-            case 6: // EnterKeyNext
-                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_NEXT;
-                break;
-            case 7: // EnterKeyPrevious
-                imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_PREVIOUS;
-                break;
-        }
-        return imeOptions;
     }
 
     private void probeForKeyboardHeight(QtLayout layout, Activity activity, int x, int y,
@@ -418,10 +288,10 @@ class QtInputDelegate {
     {
         m_isKeyboardHidingAnimationOngoing = true;
         QtNative.runAction(() -> {
-            if (m_imm == null)
+            if (m_imm == null || m_currentEditText == null)
                 return;
 
-            m_imm.hideSoftInputFromWindow(m_editText.getWindowToken(), 0,
+            m_imm.hideSoftInputFromWindow(m_currentEditText.getWindowToken(), 0,
                     new ResultReceiver(new Handler()) {
                 @Override
                 protected void onReceiveResult(int resultCode, Bundle resultData) {
@@ -448,7 +318,7 @@ class QtInputDelegate {
             if (m_imm == null)
                 return;
 
-            m_imm.updateSelection(m_editText, selStart, selEnd, candidatesStart, candidatesEnd);
+            m_imm.updateSelection(m_currentEditText, selStart, selEnd, candidatesStart, candidatesEnd);
         });
     }
 
@@ -536,12 +406,13 @@ class QtInputDelegate {
         if (!QtClipboardManager.hasClipboardText(activity))
             editButtons &= ~EditContextView.PASTE_BUTTON;
 
-        if ((mode & CursorHandleShowEdit) == CursorHandleShowEdit && editButtons != 0) {
-            m_editPopupMenu.setPosition(editX, editY, editButtons,
-                    m_cursorHandle, m_leftSelectionHandle, m_rightSelectionHandle);
-        } else {
-            if (m_editPopupMenu != null)
+        if (m_editPopupMenu != null) {
+            if ((mode & CursorHandleShowEdit) == CursorHandleShowEdit && editButtons != 0) {
+                m_editPopupMenu.setPosition(editX, editY, editButtons,
+                        m_cursorHandle, m_leftSelectionHandle, m_rightSelectionHandle);
+            } else {
                 m_editPopupMenu.hide();
+            }
         }
     }
 
@@ -631,8 +502,8 @@ class QtInputDelegate {
     // tablet methods
 
     // pointer methods
-    public static native void mouseDown(int winId, int x, int y);
-    public static native void mouseUp(int winId, int x, int y);
+    public static native void mouseDown(int winId, int x, int y, int mouseButtonState);
+    public static native void mouseUp(int winId, int x, int y, int mouseButtonState);
     public static native void mouseMove(int winId, int x, int y);
     public static native void mouseWheel(int winId, int x, int y, float hDelta, float vDelta);
     public static native void touchBegin(int winId);
@@ -748,11 +619,11 @@ class QtInputDelegate {
     {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_UP:
-                mouseUp(id, (int) event.getX(), (int) event.getY());
+                mouseUp(id, (int) event.getX(), (int) event.getY(), event.getButtonState());
                 break;
 
             case MotionEvent.ACTION_DOWN:
-                mouseDown(id, (int) event.getX(), (int) event.getY());
+                mouseDown(id, (int) event.getX(), (int) event.getY(), event.getButtonState());
                 m_oldX = (int) event.getX();
                 m_oldY = (int) event.getY();
                 break;

@@ -84,10 +84,18 @@
     QCoreApplication::testAttribute().
 
 
-    \value [since 6.7] AA_QtQuickDontUseDefaultSizePolicy Qt Quick Layouts won't use the built-in
-           size policy of \l Item. This restores previous behavior where all items were fixed size
-           by default. Size policy can be customized by explicitly setting
-           \l{Layout::fillWidth}{Layout.fillWidth} or \l{Layout::fillHeight}{Layout.fillHeight}.
+    \value [since 6.7] AA_QtQuickUseDefaultSizePolicy Qt Quick Layouts use the built-in size
+           policy of \l Item. For example, when this is set, \l Button fills the available
+           width, but has a fixed height. When this is not set, it will use the default
+           sizing behavior of the layout it's in, which is to use its implicit size as the
+           preferred size. This is explained in detail in \l {Specifying preferred size} and
+           \l {Size constraints}. When this is set, the default size policy of the item
+           with the layout can be overridden by explicitly setting
+           \l{Layout::fillWidth}{Layout.fillWidth} or
+           \l{Layout::fillHeight}{Layout.fillHeight}.
+           \b Note: This API is considered tech preview and may change or be removed in future
+           versions of Qt.
+
 
     \value AA_DontShowIconsInMenus Actions with the Icon property won't be
            shown in any menus unless specifically set by the
@@ -196,9 +204,9 @@
 
     \value AA_UseStyleSheetPropagationInWidgetStyles By default, Qt Style Sheets
            disable regular QWidget palette and font propagation. When this flag
-           is enabled, font and palette changes propagate as though the user had
-           manually called the corresponding QWidget methods. See
-           \l{The Style Sheet Syntax#Inheritance}{The Style Sheet Syntax - Inheritance}
+           is enabled, font and palette changes done from a style sheet will propagate
+           a single time, when the style sheet is set.
+           See \l{The Style Sheet Syntax#Inheritance}{The Style Sheet Syntax - Inheritance}
            for more details.
            This value was added in Qt 5.7.
 
@@ -264,6 +272,17 @@
            text input widget gains focus on a system without a physical keyboard.
            Currently supported on the Windows platform only.
            This value was added in 5.15
+
+    \value AA_DontUseNativeMenuWindows Menu popup windows (e.g. context menus,
+           combo box menus, and non-native menubar menus) created while this
+           attribute is set to true will not be represented as native top
+           level windows, unless required by the implementation.
+           This value was added in Qt 6.8.
+
+    \value AA_DontUsePopupWindows When this attribute is set, popups will always appear
+           as items in the scene, rather than having their own dedicated windows.
+           Setting this attribute will only affect Qt Quick applications.
+           This value was added in Qt 6.8.
 
     \omitvalue AA_AttributeCount
     \omitvalue AA_EnableHighDpiScaling
@@ -2068,6 +2087,18 @@
 */
 
 /*!
+    \enum Qt::ContextMenuTrigger
+    \since 6.8
+
+    This enum type defines the mouse event used to trigger a context menu event.
+
+    \value Press context menu on mouse press event, default on UNIX systems.
+    \value Release context menu on mouse release event, default on Windows.
+
+    \sa QStyleHints::contextMenuTrigger
+*/
+
+/*!
     \enum Qt::FocusPolicy
 
     This enum type defines the various policies a widget can have with
@@ -3222,6 +3253,26 @@
 */
 
 /*!
+    \enum Qt::TimerId
+    \since 6.8
+    \relates QObject
+    \relates QTimer
+    \relates QChronoTimer
+
+    This is used to represent timer IDs (for example, QTimer and QChronoTimer).
+    The underlying type is \c int. You can use \l qToUnderlying() to convert
+    Qt::TimerId to \c int.
+
+    \value Invalid Represents a no-op timer ID; it's usage depends on the
+    context, for example, this is the value returned by QObject::startTimer()
+    to indicate it failed to start a timer; whereas QChronoTimer::id() returns
+    this value when the timer is inactive, that is, \c timer.isActive()
+    returns \c false.
+
+    \sa QTimer::id(), QChronoTimer::id(), QObject::startTimer()
+*/
+
+/*!
     \enum Qt::ScrollPhase
     \since 5.2
 
@@ -3368,6 +3419,8 @@
   \since 6.0
   \brief The QKeyCombination class stores a combination of a key with optional modifiers.
 
+  \compares equality
+
   The QKeyCombination class can be used to represent a combination of a key
   with zero or more keyboard modifiers.
 
@@ -3450,14 +3503,14 @@
 #endif
 
 /*!
-  \fn bool QKeyCombination::operator==(QKeyCombination lhs, QKeyCombination rhs) noexcept
+  \fn bool QKeyCombination::operator==(const QKeyCombination &lhs, const QKeyCombination &rhs)
 
   Returns \c true if \a lhs and \a rhs have the same combination
   of key and modifiers, and \c false otherwise.
 */
 
 /*!
-  \fn bool QKeyCombination::operator!=(QKeyCombination lhs, QKeyCombination rhs) noexcept
+  \fn bool QKeyCombination::operator!=(const QKeyCombination &lhs, const QKeyCombination &rhs)
 
   Returns \c true if \a lhs and \a rhs have different combinations
   of key and modifiers, otherwise \c false.

@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QtCore/QCoreApplication>
@@ -16,13 +16,16 @@ int main(int argc, char *argv[])
     QFile file;
 
     if (strcmp(argv[1], "all") == 0) {
-        file.open(stdin, QFile::ReadWrite);
+        if (!file.open(stdin, QFile::ReadWrite))
+            return 1;
         printf("%s", file.readAll().constData());
     } else if (strcmp(argv[1], "line") == 0) {
         if (strcmp(argv[2], "0") == 0) {
-            file.open(stdin, QFile::ReadWrite);
+            if (!file.open(stdin, QFile::ReadWrite))
+                return 1;
         } else {
-            file.open(0, QFile::ReadWrite);
+            if (!file.open(0, QFile::ReadWrite))
+                return 1;
         }
 
         char line[1024];

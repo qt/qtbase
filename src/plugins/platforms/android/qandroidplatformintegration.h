@@ -110,7 +110,7 @@ public:
 
     void flushPendingUpdates();
 
-    static void setColorScheme(Qt::ColorScheme colorScheme);
+    static void updateColorScheme(Qt::ColorScheme colorScheme);
     static Qt::ColorScheme colorScheme() { return m_colorScheme; }
 #if QT_CONFIG(vulkan)
     QPlatformVulkanInstance *createPlatformVulkanInstance(QVulkanInstance *instance) const override;

@@ -1,2 +1,6 @@
 This variable is defined by the script named by \l QT_DEPLOY_SUPPORT. It should
 only be used as part of deployment during installation or a post-build rule.
+
+\note This is a low-level deployment API variable, and should only be used in
+advanced use-cases that are not covered by the higher-level API commands, like
+\l{qt_generate_deploy_app_script}.

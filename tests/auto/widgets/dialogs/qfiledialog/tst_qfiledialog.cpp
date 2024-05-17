@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -925,7 +925,7 @@ void tst_QFiledialog::selectFiles()
     QString filesPath = fd.directory().absolutePath();
     for (int i=0; i < 5; ++i) {
         QFile file(filesPath + QLatin1String("/qfiledialog_auto_test_not_pres_") + QString::number(i));
-        file.open(QIODevice::WriteOnly);
+        QVERIFY(file.open(QIODevice::WriteOnly));
         file.resize(1024);
         file.flush();
         file.close();
@@ -1117,7 +1117,6 @@ void tst_QFiledialog::focus()
     QFileDialog fd;
     fd.setDirectory(QDir::currentPath());
     fd.show();
-    QApplicationPrivate::setActiveWindow(&fd);
     QVERIFY(QTest::qWaitForWindowActive(&fd));
     QCOMPARE(fd.isVisible(), true);
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));

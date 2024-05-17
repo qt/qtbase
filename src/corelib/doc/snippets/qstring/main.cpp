@@ -41,6 +41,7 @@ public:
     void firstFunction();
     void leftJustifiedFunction();
     void slicedFunction();
+    void sliceFunction();
     void numberFunction();
 
     void prependFunction();
@@ -907,6 +908,15 @@ void Widget::arrayOperator()
     if (str[0] == QChar('?'))
         str[0] = QChar('_');
     //! [85]
+}
+
+void Widget::sliceFunction()
+{
+    //! [86]
+    QString x = u"Nine pineapples"_s;
+    x.slice(5);     // x == "pineapples"
+    x.slice(4, 3);  // x == "app"
+    //! [86]
 }
 
 

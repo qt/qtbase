@@ -27,6 +27,8 @@
 #define SECURITY_WIN32
 #include <security.h>
 
+#include <memory>
+
 #ifndef PATH_MAX
 #define PATH_MAX FILENAME_MAX
 #endif
@@ -394,6 +396,35 @@ bool QFSFileEnginePrivate::nativeIsSequential() const
             || (fileType == FILE_TYPE_PIPE);
 }
 
+bool QFSFileEnginePrivate::nativeRenameOverwrite(const QFileSystemEntry &newEntry)
+{
+    if (fileHandle == INVALID_HANDLE_VALUE)
+        return false;
+    const QString newFilePath = newEntry.nativeFilePath();
+    const size_t nameByteLength = newFilePath.length() * sizeof(wchar_t);
+    if (nameByteLength + sizeof(wchar_t) > std::numeric_limits<DWORD>::max())
+        return false;
+
+    constexpr size_t RenameInfoSize = sizeof(FILE_RENAME_INFO);
+    const size_t renameDataSize = RenameInfoSize + nameByteLength + sizeof(wchar_t);
+    QVarLengthArray<char> v(qsizetype(renameDataSize), 0);
+
+    auto *renameInfo = q20::construct_at(reinterpret_cast<FILE_RENAME_INFO *>(v.data()));
+    auto renameInfoRAII = qScopeGuard([&] { std::destroy_at(renameInfo); });
+    renameInfo->ReplaceIfExists = TRUE;
+    renameInfo->RootDirectory = nullptr;
+    renameInfo->FileNameLength = DWORD(nameByteLength);
+    memcpy(renameInfo->FileName, newFilePath.data(), nameByteLength);
+
+    bool res = SetFileInformationByHandle(fileHandle, FileRenameInfo, renameInfo,
+                                          DWORD(renameDataSize));
+    if (!res) {
+        DWORD error = GetLastError();
+        q_func()->setError(QFile::RenameError, qt_error_string(int(error)));
+    }
+    return res;
+}
+
 bool QFSFileEngine::caseSensitive() const
 {
     return false;
@@ -706,7 +737,7 @@ bool QFSFileEngine::setSize(qint64 size)
     return false;
 }
 
-bool QFSFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
+bool QFSFileEngine::setFileTime(const QDateTime &newDate, QFile::FileTime time)
 {
     Q_D(QFSFileEngine);
 
@@ -715,7 +746,7 @@ bool QFSFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
         return false;
     }
 
-    if (!newDate.isValid() || time == QAbstractFileEngine::MetadataChangeTime) {
+    if (!newDate.isValid() || time == QFile::FileMetadataChangeTime) {
         setError(QFile::UnspecifiedError, qt_error_string(ERROR_INVALID_PARAMETER));
         return false;
     }

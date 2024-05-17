@@ -5,13 +5,9 @@
 
 #include <QtCore/QDebug>
 
-#if defined(QQNXCURSOR_DEBUG)
-#define qCursorDebug qDebug
-#else
-#define qCursorDebug QT_NO_QDEBUG_MACRO
-#endif
-
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQpaQnx, "qt.qpa.qnx");
 
 QQnxCursor::QQnxCursor()
 {
@@ -27,13 +23,13 @@ void QQnxCursor::changeCursor(QCursor *windowCursor, QWindow *window)
 
 void QQnxCursor::setPos(const QPoint &pos)
 {
-    qCursorDebug() << "QQnxCursor::setPos -" << pos;
+    qCDebug(lcQpaQnx) << "QQnxCursor::setPos -" << pos;
     m_pos = pos;
 }
 
 QPoint QQnxCursor::pos() const
 {
-    qCursorDebug() << "QQnxCursor::pos -" << m_pos;
+    qCDebug(lcQpaQnx) << "QQnxCursor::pos -" << m_pos;
     return m_pos;
 }
 

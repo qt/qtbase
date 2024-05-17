@@ -8,6 +8,7 @@
 #define QLATIN1STRINGVIEW_H
 
 #include <QtCore/qchar.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qtversionchecks.h>
 #include <QtCore/qstringview.h>
@@ -249,77 +250,73 @@ public:
             -> decltype(qTokenize(*this, std::forward<Needle>(needle), flags...))
     { return qTokenize(*this, std::forward<Needle>(needle), flags...); }
 
-    friend bool operator==(QLatin1StringView s1, QLatin1StringView s2) noexcept
-    { return QByteArrayView(s1) == QByteArrayView(s2); }
-    friend bool operator!=(QLatin1StringView s1, QLatin1StringView s2) noexcept
-    { return !(s1 == s2); }
-    friend bool operator<(QLatin1StringView s1, QLatin1StringView s2) noexcept
+    friend bool comparesEqual(const QLatin1StringView &s1, const QLatin1StringView &s2) noexcept
+    { return s1.size() == s2.size() && QtPrivate::equalStrings(s1, s2); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QLatin1StringView &s1, const QLatin1StringView &s2) noexcept
     {
-        const qsizetype len = qMin(s1.size(), s2.size());
-        const int r = len ? memcmp(s1.latin1(), s2.latin1(), len) : 0;
-        return r < 0 || (r == 0 && s1.size() < s2.size());
+        const int res = QtPrivate::compareStrings(s1, s2);
+        return Qt::compareThreeWay(res, 0);
     }
-    friend bool operator>(QLatin1StringView s1, QLatin1StringView s2) noexcept
-    { return s2 < s1; }
-    friend bool operator<=(QLatin1StringView s1, QLatin1StringView s2) noexcept
-    { return !(s1 > s2); }
-    friend bool operator>=(QLatin1StringView s1, QLatin1StringView s2) noexcept
-    { return !(s1 < s2); }
+    Q_DECLARE_STRONGLY_ORDERED(QLatin1StringView)
 
     // QChar <> QLatin1StringView
-    friend bool operator==(QChar lhs, QLatin1StringView rhs) noexcept { return rhs.size() == 1 && lhs == rhs.front(); }
-    friend bool operator< (QChar lhs, QLatin1StringView rhs) noexcept { return compare_helper(&lhs, 1, rhs) < 0; }
-    friend bool operator> (QChar lhs, QLatin1StringView rhs) noexcept { return compare_helper(&lhs, 1, rhs) > 0; }
-    friend bool operator!=(QChar lhs, QLatin1StringView rhs) noexcept { return !(lhs == rhs); }
-    friend bool operator<=(QChar lhs, QLatin1StringView rhs) noexcept { return !(lhs >  rhs); }
-    friend bool operator>=(QChar lhs, QLatin1StringView rhs) noexcept { return !(lhs <  rhs); }
-
-    friend bool operator==(QLatin1StringView lhs, QChar rhs) noexcept { return   rhs == lhs; }
-    friend bool operator!=(QLatin1StringView lhs, QChar rhs) noexcept { return !(rhs == lhs); }
-    friend bool operator< (QLatin1StringView lhs, QChar rhs) noexcept { return   rhs >  lhs; }
-    friend bool operator> (QLatin1StringView lhs, QChar rhs) noexcept { return   rhs <  lhs; }
-    friend bool operator<=(QLatin1StringView lhs, QChar rhs) noexcept { return !(rhs <  lhs); }
-    friend bool operator>=(QLatin1StringView lhs, QChar rhs) noexcept { return !(rhs >  lhs); }
+    friend bool comparesEqual(const QLatin1StringView &lhs, QChar rhs) noexcept
+    { return lhs.size() == 1 && rhs == lhs.front(); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QLatin1StringView &lhs, QChar rhs) noexcept
+    {
+        // negate, as the helper function expects QChar as lhs
+        const int res = -compare_helper(&rhs, 1, lhs);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QLatin1StringView, QChar)
 
     // QStringView <> QLatin1StringView
-    friend bool operator==(QStringView lhs, QLatin1StringView rhs) noexcept
+    friend bool comparesEqual(const QLatin1StringView &lhs, const QStringView &rhs) noexcept
     { return lhs.size() == rhs.size() && QtPrivate::equalStrings(lhs, rhs); }
-    friend bool operator!=(QStringView lhs, QLatin1StringView rhs) noexcept { return !(lhs == rhs); }
-    friend bool operator< (QStringView lhs, QLatin1StringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) <  0; }
-    friend bool operator<=(QStringView lhs, QLatin1StringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) <= 0; }
-    friend bool operator> (QStringView lhs, QLatin1StringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >  0; }
-    friend bool operator>=(QStringView lhs, QLatin1StringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >= 0; }
+    friend Qt::strong_ordering
+    compareThreeWay(const QLatin1StringView &lhs, const QStringView &rhs) noexcept
+    {
+        const int res = QtPrivate::compareStrings(lhs, rhs);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QLatin1StringView, QStringView)
 
-    friend bool operator==(QLatin1StringView lhs, QStringView rhs) noexcept
-    { return lhs.size() == rhs.size() && QtPrivate::equalStrings(lhs, rhs); }
-    friend bool operator!=(QLatin1StringView lhs, QStringView rhs) noexcept { return !(lhs == rhs); }
-    friend bool operator< (QLatin1StringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) <  0; }
-    friend bool operator<=(QLatin1StringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) <= 0; }
-    friend bool operator> (QLatin1StringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >  0; }
-    friend bool operator>=(QLatin1StringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >= 0; }
+    // Reversed helper methods for QStringView <> QLatin1StringView comparison.
+    // If we do not provide them explicitly, QStringView <> QByteArrayView
+    // overloads will be selected, which will provide wrong results, because
+    // they will convert from utf-8
+    friend bool comparesEqual(const QStringView &lhs, const QLatin1StringView &rhs) noexcept
+    { return comparesEqual(rhs, lhs); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QStringView &lhs, const QLatin1StringView &rhs) noexcept
+    { return QtOrderingPrivate::reversed(compareThreeWay(rhs, lhs)); }
 
+private:
+    friend bool comparesEqual(const QLatin1StringView &lhs, const QByteArrayView &rhs) noexcept
+    { return equal_helper(lhs, rhs.data(), rhs.size()); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QLatin1StringView &lhs, const QByteArrayView &rhs) noexcept
+    {
+        const int res = compare_helper(lhs, rhs.data(), rhs.size());
+        return Qt::compareThreeWay(res, 0);
+    }
 
+    // Reversed helper methods for QByteArrayView <> QLatin1StringView comparison.
+    // If we do not provide them explicitly, QByteArrayView <> QByteArrayView
+    // overloads will be selected, which will provide wrong results
+    friend bool comparesEqual(const QByteArrayView &lhs, const QLatin1StringView &rhs) noexcept
+    { return comparesEqual(rhs, lhs); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QByteArrayView &lhs, const QLatin1StringView &rhs) noexcept
+    { return QtOrderingPrivate::reversed(compareThreeWay(rhs, lhs)); }
+
+public:
 #if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
-    QT_ASCII_CAST_WARN inline bool operator==(const char *s) const;
-    QT_ASCII_CAST_WARN inline bool operator!=(const char *s) const;
-    QT_ASCII_CAST_WARN inline bool operator<(const char *s) const;
-    QT_ASCII_CAST_WARN inline bool operator>(const char *s) const;
-    QT_ASCII_CAST_WARN inline bool operator<=(const char *s) const;
-    QT_ASCII_CAST_WARN inline bool operator>=(const char *s) const;
-
-    QT_ASCII_CAST_WARN inline bool operator==(const QByteArray &s) const;
-    QT_ASCII_CAST_WARN inline bool operator!=(const QByteArray &s) const;
-    QT_ASCII_CAST_WARN inline bool operator<(const QByteArray &s) const;
-    QT_ASCII_CAST_WARN inline bool operator>(const QByteArray &s) const;
-    QT_ASCII_CAST_WARN inline bool operator<=(const QByteArray &s) const;
-    QT_ASCII_CAST_WARN inline bool operator>=(const QByteArray &s) const;
-
-    QT_ASCII_CAST_WARN friend bool operator==(const char *s1, QLatin1StringView s2) { return compare_helper(s2, s1) == 0; }
-    QT_ASCII_CAST_WARN friend bool operator!=(const char *s1, QLatin1StringView s2) { return compare_helper(s2, s1) != 0; }
-    QT_ASCII_CAST_WARN friend bool operator< (const char *s1, QLatin1StringView s2) { return compare_helper(s2, s1) >  0; }
-    QT_ASCII_CAST_WARN friend bool operator> (const char *s1, QLatin1StringView s2) { return compare_helper(s2, s1) <  0; }
-    QT_ASCII_CAST_WARN friend bool operator<=(const char *s1, QLatin1StringView s2) { return compare_helper(s2, s1) >= 0; }
-    QT_ASCII_CAST_WARN friend bool operator>=(const char *s1, QLatin1StringView s2) { return compare_helper(s2, s1) <= 0; }
+    Q_DECLARE_STRONGLY_ORDERED(QLatin1StringView, QByteArrayView, QT_ASCII_CAST_WARN)
+    Q_DECLARE_STRONGLY_ORDERED(QLatin1StringView, QByteArray, QT_ASCII_CAST_WARN)
+    Q_DECLARE_STRONGLY_ORDERED(QLatin1StringView, const char *, QT_ASCII_CAST_WARN)
 #endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
 private:
@@ -333,6 +330,7 @@ private:
     }
     static int compare_helper(const QLatin1StringView &s1, const char *s2) noexcept
     { return compare_helper(s1, s2, qstrlen(s2)); }
+    Q_CORE_EXPORT static bool equal_helper(QLatin1StringView s1, const char *s2, qsizetype len) noexcept;
     Q_CORE_EXPORT static int compare_helper(const QLatin1StringView &s1, const char *s2, qsizetype len) noexcept;
     Q_CORE_EXPORT static int compare_helper(const QChar *data1, qsizetype length1,
                                             QLatin1StringView s2,
@@ -350,6 +348,10 @@ Q_DECLARE_TYPEINFO(QLatin1StringView, Q_RELOCATABLE_TYPE);
 #else
 Q_DECLARE_TYPEINFO(QLatin1String, Q_RELOCATABLE_TYPE);
 #endif
+
+constexpr QByteArrayView::QByteArrayView(QLatin1StringView v) noexcept
+    : QByteArrayView(v.data(), v.size())
+{}
 
 namespace Qt {
 inline namespace Literals {

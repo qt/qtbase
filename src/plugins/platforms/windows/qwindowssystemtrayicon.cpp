@@ -184,6 +184,9 @@ void QWindowsSystemTrayIcon::updateToolTip(const QString &tooltip)
 
 QRect QWindowsSystemTrayIcon::geometry() const
 {
+    if (!isIconVisible())
+        return QRect();
+
     NOTIFYICONIDENTIFIER nid;
     memset(&nid, 0, sizeof(nid));
     nid.cbSize = sizeof(nid);
@@ -220,11 +223,16 @@ void QWindowsSystemTrayIcon::showMessage(const QString &title, const QString &me
 
     const auto size = icon.actualSize(QSize(256, 256));
     QPixmap pm = icon.pixmap(size);
+    if (m_hMessageIcon) {
+        DestroyIcon(m_hMessageIcon);
+        m_hMessageIcon = nullptr;
+    }
     if (pm.isNull()) {
         tnd.dwInfoFlags = NIIF_INFO;
     } else {
         tnd.dwInfoFlags = NIIF_USER | NIIF_LARGE_ICON;
-        tnd.hBalloonIcon = qt_pixmapToWinHICON(pm);
+        m_hMessageIcon = qt_pixmapToWinHICON(pm);
+        tnd.hBalloonIcon = m_hMessageIcon;
     }
     tnd.hWnd = m_hwnd;
     tnd.uTimeout = msecsIn <= 0 ?  UINT(10000) : UINT(msecsIn); // 10s default
@@ -282,7 +290,10 @@ void QWindowsSystemTrayIcon::ensureCleanup()
     }
     if (m_hIcon != nullptr)
         DestroyIcon(m_hIcon);
+    if (m_hMessageIcon != nullptr)
+        DestroyIcon(m_hMessageIcon);
     m_hIcon = nullptr;
+    m_hMessageIcon = nullptr;
     m_menu = nullptr; // externally owned
     m_toolTip.clear();
 }
@@ -297,6 +308,29 @@ bool QWindowsSystemTrayIcon::setIconVisible(bool visible)
     tnd.hWnd = m_hwnd;
     setIconVisibility(tnd, visible);
     return Shell_NotifyIcon(NIM_MODIFY, &tnd) == TRUE;
+}
+
+bool QWindowsSystemTrayIcon::isIconVisible() const
+{
+    NOTIFYICONIDENTIFIER nid;
+    memset(&nid, 0, sizeof(nid));
+    nid.cbSize = sizeof(nid);
+    nid.hWnd = m_hwnd;
+    nid.uID = q_uNOTIFYICONID;
+    RECT rect;
+    const HRESULT hr = Shell_NotifyIconGetRect(&nid, &rect);
+    // Windows 10 returns S_FALSE if the icon is hidden
+    if (FAILED(hr) || hr == S_FALSE)
+        return false;
+
+    HMONITOR monitor = MonitorFromWindow(m_hwnd, MONITOR_DEFAULTTONEAREST);
+    MONITORINFO info;
+    info.cbSize = sizeof(MONITORINFO);
+    GetMonitorInfo(monitor, &info);
+    // Windows 11 seems to return a geometry outside of the current monitor's geometry in case of
+    // the icon being hidden. As it's impossible to change the alignment of the task bar on Windows
+    // 11 this check should be fine.
+    return rect.bottom <= info.rcMonitor.bottom;
 }
 
 bool QWindowsSystemTrayIcon::sendTrayMessage(DWORD msg)

@@ -262,11 +262,7 @@ struct Q_CORE_EXPORT QMetaObject
     int indexOfMethod(const char *method) const;
     int indexOfSignal(const char *signal) const;
     int indexOfSlot(const char *slot) const;
-
-#if QT_CORE_REMOVED_SINCE(6, 7)
     int indexOfEnumerator(const char *name) const;
-#endif
-    int indexOfEnumerator(QByteArrayView name) const;
 
     int indexOfProperty(const char *name) const;
     int indexOfClassInfo(const char *name) const;
@@ -643,6 +639,7 @@ private:
                                     const void **parameters, const char **typeNames,
                                     const QtPrivate::QMetaTypeInterface **metaTypes);
     friend class QTimer;
+    friend class QChronoTimer;
 };
 
 class Q_CORE_EXPORT QMetaObject::Connection {

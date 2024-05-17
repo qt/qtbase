@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -1595,44 +1595,14 @@ void tst_QLineEdit::textMask()
     QCOMPARE( testWidget->text(), insertString );
 }
 
-class LineEditChangingText : public QLineEdit
-{
-    Q_OBJECT
-
-public:
-    LineEditChangingText(QWidget *parent) : QLineEdit(parent)
-    {
-        connect(this, &QLineEdit::textEdited, this, &LineEditChangingText::onTextEdited);
-    }
-
-public slots:
-    void onTextEdited(const QString &text)
-    {
-        if (text.length() == 3)
-            setText(text + "-");
-    }
-};
-
 void tst_QLineEdit::setText()
 {
     QLineEdit *testWidget = ensureTestWidget();
-    {
-        QSignalSpy editedSpy(testWidget, &QLineEdit::textEdited);
-        QSignalSpy changedSpy(testWidget, &QLineEdit::textChanged);
-        testWidget->setText("hello");
-        QCOMPARE(editedSpy.size(), 0);
-        QCOMPARE(changedSpy.value(0).value(0).toString(), QString("hello"));
-    }
-
-    QTestEventList keys;
-    keys.addKeyClick(Qt::Key_A);
-    keys.addKeyClick(Qt::Key_B);
-    keys.addKeyClick(Qt::Key_C);
-
-    LineEditChangingText lineEdit(nullptr);
-    keys.simulate(&lineEdit);
-    QCOMPARE(lineEdit.text(), "abc-");
-    QCOMPARE(lineEdit.cursorPosition(), 4);
+    QSignalSpy editedSpy(testWidget, SIGNAL(textEdited(QString)));
+    QSignalSpy changedSpy(testWidget, SIGNAL(textChanged(QString)));
+    testWidget->setText("hello");
+    QCOMPARE(editedSpy.size(), 0);
+    QCOMPARE(changedSpy.value(0).value(0).toString(), QString("hello"));
 }
 
 void tst_QLineEdit::displayText_data()
@@ -3554,11 +3524,12 @@ void tst_QLineEdit::textMargin_data()
     QLineEdit testWidget;
     QFontMetrics metrics(testWidget.font());
     const QString s = QLatin1String("MMM MMM MMM");
+    const int windows11StyleHorizontalOffset = qApp->style()->inherits("QWindows11Style") ? 8 : 0;
 
     // Different styles generate different offsets, so
     // calculate the width rather than hardcode it.
-    const int pixelWidthOfM = metrics.horizontalAdvance(s, 1);
-    const int pixelWidthOfMMM_MM = metrics.horizontalAdvance(s, 6);
+    const int pixelWidthOfM = windows11StyleHorizontalOffset + metrics.horizontalAdvance(s, 1);
+    const int pixelWidthOfMMM_MM = windows11StyleHorizontalOffset + metrics.horizontalAdvance(s, 6);
 
     QTest::newRow("default-0") << 0 << 0 << 0 << 0 << QPoint(pixelWidthOfMMM_MM, 0) << 6;
     QTest::newRow("default-1") << 0 << 0 << 0 << 0 << QPoint(1, 1) << 0;
@@ -3751,7 +3722,6 @@ void tst_QLineEdit::task174640_editingFinished()
     layout->addWidget(le2);
 
     mw.show();
-    QApplicationPrivate::setActiveWindow(&mw);
     mw.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&mw));
     QCOMPARE(&mw, QApplication::activeWindow());
@@ -3859,7 +3829,6 @@ void tst_QLineEdit::task210502_caseInsensitiveInlineCompletion()
     completer.setCompletionMode(QCompleter::InlineCompletion);
     lineEdit.setCompleter(&completer);
     lineEdit.show();
-    QApplicationPrivate::setActiveWindow(&lineEdit);
     QVERIFY(QTest::qWaitForWindowActive(&lineEdit));
     lineEdit.setFocus();
     QTRY_VERIFY(lineEdit.hasFocus());
@@ -3960,7 +3929,6 @@ void tst_QLineEdit::task241436_passwordEchoOnEditRestoreEchoMode()
     testWidget->setFocus();
     centerOnScreen(testWidget);
     testWidget->show();
-    QApplicationPrivate::setActiveWindow(testWidget);
     QVERIFY(QTest::qWaitForWindowActive(testWidget));
     QVERIFY(testWidget->hasFocus());
 
@@ -4011,7 +3979,6 @@ void tst_QLineEdit::taskQTBUG_4401_enterKeyClearsPassword()
     testWidget->selectAll();
     centerOnScreen(testWidget);
     testWidget->show();
-    QApplicationPrivate::setActiveWindow(testWidget);
     QVERIFY(QTest::qWaitForWindowActive(testWidget));
 
     QTest::keyPress(testWidget, Qt::Key_Enter);
@@ -4094,7 +4061,6 @@ void tst_QLineEdit::taskQTBUG_7395_readOnlyShortcut()
 
     le.show();
     QVERIFY(QTest::qWaitForWindowExposed(&le));
-    QApplicationPrivate::setActiveWindow(&le);
     QVERIFY(QTest::qWaitForWindowActive(&le));
     le.setFocus();
     QTRY_VERIFY(le.hasFocus());
@@ -4116,7 +4082,6 @@ void tst_QLineEdit::QTBUG697_paletteCurrentColorGroup()
     le.setPalette(p);
 
     le.show();
-    QApplicationPrivate::setActiveWindow(&le);
     QVERIFY(QTest::qWaitForWindowActive(&le));
     le.setFocus();
     QTRY_VERIFY(le.hasFocus());
@@ -4611,7 +4576,6 @@ void tst_QLineEdit::clearButton()
     l->addWidget(listView);
     testWidget.move(300, 300);
     testWidget.show();
-    QApplicationPrivate::setActiveWindow(&testWidget);
     QVERIFY(QTest::qWaitForWindowActive(&testWidget));
     // Flip the clear button on,off, trying to detect crashes.
     filterLineEdit->setClearButtonEnabled(true);

@@ -7,6 +7,17 @@
 
 QT_USE_NAMESPACE
 
+#if QT_GUI_REMOVED_SINCE(6, 4)
+
+#include "qpagesize.h" // removed duplicate declaration of op==
+                       // (still caused an symbol on some platforms)
+
+// #include "qotherheader.h"
+// // implement removed functions from qotherheader.h
+// order sections alphabetically
+
+#endif // QT_GUI_REMOVED_SINCE(6, 4)
+
 #if QT_GUI_REMOVED_SINCE(6, 6)
 
 #include "qpixmapcache.h" // inlined API
@@ -26,8 +37,34 @@ bool Qt::mightBeRichText(const QString& text)
     return Qt::mightBeRichText(qToStringViewIgnoringNull(text));
 }
 
+#endif // QT_GUI_REMOVED_SINCE(6, 7)
+
+#if QT_GUI_REMOVED_SINCE(6, 8)
+
+#include "qpagelayout.h"
+
+bool QPageLayout::setMargins(const QMarginsF &margins)
+{
+    return setMargins(margins, OutOfBoundsPolicy::Reject);
+}
+
+bool QPageLayout::setLeftMargin(qreal leftMargin)
+{
+    return setLeftMargin(leftMargin, OutOfBoundsPolicy::Reject);
+}
+
+bool QPageLayout::setRightMargin(qreal rightMargin)
+{
+    return setRightMargin(rightMargin, OutOfBoundsPolicy::Reject);
+}
+
+bool QPageLayout::setTopMargin(qreal topMargin)
+{
+    return setTopMargin(topMargin, OutOfBoundsPolicy::Reject);
+}
+
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically
 
-#endif // QT_GUI_REMOVED_SINCE(6, 7)
+#endif // QT_GUI_REMOVED_SINCE(6, 8)

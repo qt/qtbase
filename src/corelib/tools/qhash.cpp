@@ -49,6 +49,8 @@
 
 QT_BEGIN_NAMESPACE
 
+void qt_from_latin1(char16_t *dst, const char *str, size_t size) noexcept;  // qstring.cpp
+
 // We assume that pointers and size_t have the same size. If that assumption should fail
 // on a platform the code selecting the different methods below needs to be fixed.
 static_assert(sizeof(size_t) == QT_POINTER_SIZE, "size_t and pointers have different size.");
@@ -83,6 +85,7 @@ struct HashSeedStorage
 
     void resetSeed()
     {
+#ifndef QT_BOOTSTRAPPED
         if (state().state < AlreadyInitialized)
             return;
 
@@ -90,6 +93,7 @@ struct HashSeedStorage
         QRandomGenerator *generator = QRandomGenerator::system();
         seeds[0].storeRelaxed(sizeof(size_t) > sizeof(quint32)
                               ? generator->generate64() : generator->generate());
+#endif
     }
 
     void clearSeed()
@@ -281,17 +285,11 @@ static inline uint64_t murmurhash(const void *key, uint64_t len, uint64_t seed) 
 
 #endif
 
-#if QT_POINTER_SIZE == 8
+namespace {
 // This is an inlined version of the SipHash implementation that is
 // trying to avoid some memcpy's from uint64 to uint8[] and back.
-//
 
-// Use SipHash-1-2, which has similar performance characteristics as
-// stablehash() above, instead of the SipHash-2-4 default
-#define cROUNDS 1
-#define dROUNDS 2
-
-#define ROTL(x, b) (uint64_t)(((x) << (b)) | ((x) >> (64 - (b))))
+#define ROTL(x, b) (((x) << (b)) | ((x) >> (sizeof(x) * 8 - (b))))
 
 #define SIPROUND                                                               \
   do {                                                                         \
@@ -311,8 +309,7 @@ static inline uint64_t murmurhash(const void *key, uint64_t len, uint64_t seed) 
     v2 = ROTL(v2, 32);                                                         \
   } while (0)
 
-Q_NEVER_INLINE Q_DECL_HOT_FUNCTION
-static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64_t seed2)
+template <int cROUNDS = 2, int dROUNDS = 4> struct SipHash64
 {
     /* "somepseudorandomlygeneratedbytes" */
     uint64_t v0 = 0x736f6d6570736575ULL;
@@ -320,17 +317,32 @@ static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64
     uint64_t v2 = 0x6c7967656e657261ULL;
     uint64_t v3 = 0x7465646279746573ULL;
     uint64_t b;
-    uint64_t k0 = seed;
-    uint64_t k1 = seed2;
-    int i;
-    const uint8_t *end = in + (inlen & ~7ULL);
-    const int left = inlen & 7;
+    uint64_t k0;
+    uint64_t k1;
+
+    inline SipHash64(uint64_t fulllen, uint64_t seed, uint64_t seed2);
+    inline void addBlock(const uint8_t *in, size_t inlen);
+    inline uint64_t finalize(const uint8_t *in, size_t left);
+};
+
+template <int cROUNDS, int dROUNDS>
+SipHash64<cROUNDS, dROUNDS>::SipHash64(uint64_t inlen, uint64_t seed, uint64_t seed2)
+{
     b = inlen << 56;
+    k0 = seed;
+    k1 = seed2;
     v3 ^= k1;
     v2 ^= k0;
     v1 ^= k1;
     v0 ^= k0;
+}
 
+template <int cROUNDS, int dROUNDS> Q_DECL_HOT_FUNCTION void
+SipHash64<cROUNDS, dROUNDS>::addBlock(const uint8_t *in, size_t inlen)
+{
+    Q_ASSERT((inlen & 7ULL) == 0);
+    int i;
+    const uint8_t *end = in + inlen;
     for (; in != end; in += 8) {
         uint64_t m = qFromUnaligned<uint64_t>(in);
         v3 ^= m;
@@ -340,24 +352,31 @@ static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64
 
         v0 ^= m;
     }
+}
 
-
-#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 700
-    QT_WARNING_DISABLE_GCC("-Wimplicit-fallthrough")
-#endif
+template <int cROUNDS, int dROUNDS> Q_DECL_HOT_FUNCTION uint64_t
+SipHash64<cROUNDS, dROUNDS>::finalize(const uint8_t *in, size_t left)
+{
+    int i;
     switch (left) {
     case 7:
         b |= ((uint64_t)in[6]) << 48;
+        Q_FALLTHROUGH();
     case 6:
         b |= ((uint64_t)in[5]) << 40;
+        Q_FALLTHROUGH();
     case 5:
         b |= ((uint64_t)in[4]) << 32;
+        Q_FALLTHROUGH();
     case 4:
         b |= ((uint64_t)in[3]) << 24;
+        Q_FALLTHROUGH();
     case 3:
         b |= ((uint64_t)in[2]) << 16;
+        Q_FALLTHROUGH();
     case 2:
         b |= ((uint64_t)in[1]) << 8;
+        Q_FALLTHROUGH();
     case 1:
         b |= ((uint64_t)in[0]);
         break;
@@ -380,7 +399,8 @@ static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64
     b = v0 ^ v1 ^ v2 ^ v3;
     return b;
 }
-#else
+#undef SIPROUND
+
 // This is a "SipHash" implementation adopted for 32bit platforms. It performs
 // basically the same operations as the 64bit version using 4 byte at a time
 // instead of 8.
@@ -391,12 +411,6 @@ static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64
 //
 // For the v0-v4 constants, simply use the first four bytes of the 64 bit versions.
 //
-// Use SipHash-1-2, which has similar performance characteristics as
-// stablehash() above, instead of the SipHash-2-4 default
-#define cROUNDS 1
-#define dROUNDS 2
-
-#define ROTL(x, b) (uint32_t)(((x) << (b)) | ((x) >> (32 - (b))))
 
 #define SIPROUND                                                               \
   do {                                                                         \
@@ -416,8 +430,7 @@ static uint64_t siphash(const uint8_t *in, uint64_t inlen, uint64_t seed, uint64
     v2 = ROTL(v2, 16);                                                         \
   } while (0)
 
-Q_NEVER_INLINE Q_DECL_HOT_FUNCTION
-static uint siphash(const uint8_t *in, uint inlen, uint seed, uint seed2)
+template <int cROUNDS = 2, int dROUNDS = 4> struct SipHash32
 {
     /* "somepseudorandomlygeneratedbytes" */
     uint v0 = 0x736f6d65U;
@@ -425,17 +438,32 @@ static uint siphash(const uint8_t *in, uint inlen, uint seed, uint seed2)
     uint v2 = 0x6c796765U;
     uint v3 = 0x74656462U;
     uint b;
+    uint k0;
+    uint k1;
+
+    inline SipHash32(size_t fulllen, uint seed, uint seed2);
+    inline void addBlock(const uint8_t *in, size_t inlen);
+    inline uint finalize(const uint8_t *in, size_t left);
+};
+
+template <int cROUNDS, int dROUNDS> inline
+SipHash32<cROUNDS, dROUNDS>::SipHash32(size_t inlen, uint seed, uint seed2)
+{
     uint k0 = seed;
     uint k1 = seed2;
-    int i;
-    const uint8_t *end = in + (inlen & ~3ULL);
-    const int left = inlen & 3;
     b = inlen << 24;
     v3 ^= k1;
     v2 ^= k0;
     v1 ^= k1;
     v0 ^= k0;
+}
 
+template <int cROUNDS, int dROUNDS> inline Q_DECL_HOT_FUNCTION void
+SipHash32<cROUNDS, dROUNDS>::addBlock(const uint8_t *in, size_t inlen)
+{
+    Q_ASSERT((inlen & 3ULL) == 0);
+    int i;
+    const uint8_t *end = in + inlen;
     for (; in != end; in += 4) {
         uint m = qFromUnaligned<uint>(in);
         v3 ^= m;
@@ -445,15 +473,19 @@ static uint siphash(const uint8_t *in, uint inlen, uint seed, uint seed2)
 
         v0 ^= m;
     }
+}
 
-#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 700
-    QT_WARNING_DISABLE_GCC("-Wimplicit-fallthrough")
-#endif
+template <int cROUNDS, int dROUNDS> inline Q_DECL_HOT_FUNCTION uint
+SipHash32<cROUNDS, dROUNDS>::finalize(const uint8_t *in, size_t left)
+{
+    int i;
     switch (left) {
     case 3:
         b |= ((uint)in[2]) << 16;
+        Q_FALLTHROUGH();
     case 2:
         b |= ((uint)in[1]) << 8;
+        Q_FALLTHROUGH();
     case 1:
         b |= ((uint)in[0]);
         break;
@@ -476,7 +508,70 @@ static uint siphash(const uint8_t *in, uint inlen, uint seed, uint seed2)
     b = v0 ^ v1 ^ v2 ^ v3;
     return b;
 }
-#endif
+#undef SIPROUND
+#undef ROTL
+
+// Use SipHash-1-2, which has similar performance characteristics as
+// stablehash() above, instead of the SipHash-2-4 default
+template <int cROUNDS = 1, int dROUNDS = 2>
+using SipHash = std::conditional_t<sizeof(void *) == 8,
+        SipHash64<cROUNDS, dROUNDS>, SipHash32<cROUNDS, dROUNDS>>;
+} // unnamed namespace
+
+Q_NEVER_INLINE Q_DECL_HOT_FUNCTION
+static size_t siphash(const uint8_t *in, size_t inlen, size_t seed, size_t seed2)
+{
+    constexpr size_t TailSizeMask = sizeof(void *) - 1;
+    SipHash<> hasher(inlen, seed, seed2);
+    hasher.addBlock(in, inlen & ~TailSizeMask);
+    return hasher.finalize(in + (inlen & ~TailSizeMask), inlen & TailSizeMask);
+}
+
+enum ZeroExtension {
+    None = 0,
+    ByteToWord = 1,
+};
+
+template <ZeroExtension = None> static size_t
+qHashBits_fallback(const uchar *p, size_t size, size_t seed, size_t seed2) noexcept;
+template <> size_t qHashBits_fallback<None>(const uchar *p, size_t size, size_t seed, size_t seed2) noexcept
+{
+    if (size <= QT_POINTER_SIZE)
+        return murmurhash(p, size, seed);
+
+    return siphash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
+}
+
+template <> size_t qHashBits_fallback<ByteToWord>(const uchar *data, size_t size, size_t seed, size_t seed2) noexcept
+{
+    auto quick_from_latin1 = [](char16_t *dest, const uchar *data, size_t size) {
+        // Quick, "inlined" version for very short blocks
+        std::copy_n(data, size, dest);
+    };
+    if (size <= QT_POINTER_SIZE / 2) {
+        std::array<char16_t, QT_POINTER_SIZE / 2> buf;
+        quick_from_latin1(buf.data(), data, size);
+        return murmurhash(buf.data(), size * 2, seed);
+    }
+
+    constexpr size_t TailSizeMask = sizeof(void *) / 2 - 1;
+    std::array<char16_t, 256> buf;
+    SipHash<> siphash(size * 2, seed, seed2);
+    ptrdiff_t offset = 0;
+    for ( ; offset + buf.size() < size; offset += buf.size()) {
+        qt_from_latin1(buf.data(), reinterpret_cast<const char *>(data) + offset, buf.size());
+        siphash.addBlock(reinterpret_cast<uint8_t *>(buf.data()), sizeof(buf));
+    }
+    if (size_t n = size - offset; n > TailSizeMask) {
+        n &= ~TailSizeMask;
+        qt_from_latin1(buf.data(), reinterpret_cast<const char *>(data) + offset, n);
+        siphash.addBlock(reinterpret_cast<uint8_t *>(buf.data()), n * 2);
+        offset += n;
+    }
+
+    quick_from_latin1(buf.data(), data + offset, size - offset);
+    return siphash.finalize(reinterpret_cast<uint8_t *>(buf.data()), (size - offset) * 2);
+}
 
 #if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)  // GCC
 #  define QHASH_AES_SANITIZER_BUILD
@@ -523,10 +618,41 @@ namespace {
     // the scrambling round (step 3 in [1]) because it's just very good at
     // spreading the bits around.
     //
+    // Note on Latin-1 hashing (ZX == ByteToWord): for simplicity of the
+    // algorithm, we pass sizes equivalent to the UTF-16 content (ZX == None).
+    // That means we must multiply by 2 on entry, divide by 2 on pointer
+    // advancing, and load half as much data from memory (though we produce
+    // exactly as much data in registers). The compilers appear to optimize
+    // this out.
+    //
     // [1] https://en.wikipedia.org/wiki/Advanced_Encryption_Standard#High-level_description_of_the_algorithm
 
+    template <ZeroExtension ZX, typename T> static const T *advance(const T *ptr, ptrdiff_t n)
+    {
+        if constexpr (ZX == None)
+            return ptr + n;
+
+        // see note above on ZX == ByteToWord hashing
+        auto p = reinterpret_cast<const uchar *>(ptr);
+        n *= sizeof(T);
+        return reinterpret_cast<const T *>(p + n/2);
+    }
+
+    template <ZeroExtension> static __m128i loadu128(const void *ptr);
+    template <> Q_ALWAYS_INLINE QT_FUNCTION_TARGET(AES) __m128i loadu128<None>(const void *ptr)
+    {
+        return _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+    }
+    template <> Q_ALWAYS_INLINE QT_FUNCTION_TARGET(AES) __m128i loadu128<ByteToWord>(const void *ptr)
+    {
+        // use a MOVQ followed by PMOVZXBW
+        // the compiler usually combines them as a single, loading PMOVZXBW
+        __m128i data = _mm_loadl_epi64(static_cast<const __m128i *>(ptr));
+        return _mm_cvtepu8_epi16(data);
+    }
+
     // hash 16 bytes, running 3 scramble rounds of AES on itself (like label "final1")
-    static void QT_FUNCTION_TARGET(AES) QT_VECTORCALL
+    static void Q_ALWAYS_INLINE QT_FUNCTION_TARGET(AES) QT_VECTORCALL
     hash16bytes(__m128i &state0, __m128i data)
     {
         state0 = _mm_xor_si128(state0, data);
@@ -536,11 +662,12 @@ namespace {
     }
 
     // hash twice 16 bytes, running 2 scramble rounds of AES on itself
+    template <ZeroExtension ZX>
     static void QT_FUNCTION_TARGET(AES) QT_VECTORCALL
     hash2x16bytes(__m128i &state0, __m128i &state1, const __m128i *src0, const __m128i *src1)
     {
-        __m128i data0 = _mm_loadu_si128(src0);
-        __m128i data1 = _mm_loadu_si128(src1);
+        __m128i data0 = loadu128<ZX>(src0);
+        __m128i data1 = loadu128<ZX>(src1);
         state0 = _mm_xor_si128(data0, state0);
         state1 = _mm_xor_si128(data1, state1);
         state0 = _mm_aesenc_si128(state0, state0);
@@ -587,16 +714,18 @@ Q_ALWAYS_INLINE __m128i AESHashSeed::state1() const
     }
 }
 
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(AES) QT_VECTORCALL
 aeshash128_16to32(__m128i state0, __m128i state1, const __m128i *src, const __m128i *srcend)
 {
     {
-        if (src + 1 < srcend) {
+        const __m128i *src2 = advance<ZX>(srcend, -1);
+        if (advance<ZX>(src, 1) < srcend) {
             // epilogue: between 16 and 31 bytes
-            hash2x16bytes(state0, state1, src, srcend - 1);
+            hash2x16bytes<ZX>(state0, state1, src, src2);
         } else if (src != srcend) {
             // epilogue: between 1 and 16 bytes, overlap with the end
-            __m128i data = _mm_loadu_si128(srcend - 1);
+            __m128i data = loadu128<ZX>(src2);
             hash16bytes(state0, data);
         }
 
@@ -607,8 +736,21 @@ aeshash128_16to32(__m128i state0, __m128i state1, const __m128i *src, const __m1
     return mm_cvtsi128_sz(state0);
 }
 
+// load all 16 bytes and mask off the bytes past the end of the source
+static const qint8 maskarray[] = {
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+};
+
+// load 16 bytes ending at the data end, then shuffle them to the beginning
+static const qint8 shufflecontrol[] = {
+    1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
+};
+
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(AES) QT_VECTORCALL
-aeshash128_lt16(__m128i state0, const uchar *p, size_t len)
+aeshash128_lt16(__m128i state0, const __m128i *src, const __m128i *srcend, size_t len)
 {
     if (len) {
         // We're going to load 16 bytes and mask zero the part we don't care
@@ -616,28 +758,18 @@ aeshash128_lt16(__m128i state0, const uchar *p, size_t len)
         // including NULLs at the end because the length is in the key)
         // WARNING: this may produce valgrind warnings, but it's safe
 
-        constexpr quintptr PageSize = 4096;
+        constexpr quintptr CachelineSize = 64;
         __m128i data;
 
-        if ((quintptr(p) & (PageSize / 2)) == 0) {
-            // lower half of the page:
-            // load all 16 bytes and mask off the bytes past the end of the source
-            static const qint8 maskarray[] = {
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-            };
+        if ((quintptr(src) & (CachelineSize / 2)) == 0) {
+            // lower half of the cacheline:
             __m128i mask = _mm_loadu_si128(reinterpret_cast<const __m128i *>(maskarray + 15 - len));
-            data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(p));
+            data = loadu128<ZX>(src);
             data = _mm_and_si128(data, mask);
         } else {
-            // upper half of the page:
-            // load 16 bytes ending at the data end, then shuffle them to the beginning
-            static const qint8 shufflecontrol[] = {
-                1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
-                -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-            };
+            // upper half of the cacheline:
             __m128i control = _mm_loadu_si128(reinterpret_cast<const __m128i *>(shufflecontrol + 15 - len));
-            data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(p + len) - 1);
+            data = loadu128<ZX>(advance<ZX>(srcend, -1));
             data = _mm_shuffle_epi8(data, control);
         }
 
@@ -646,24 +778,45 @@ aeshash128_lt16(__m128i state0, const uchar *p, size_t len)
     return mm_cvtsi128_sz(state0);
 }
 
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(AES) QT_VECTORCALL
 aeshash128_ge32(__m128i state0, __m128i state1, const __m128i *src, const __m128i *srcend)
 {
     // main loop: scramble two 16-byte blocks
-    for ( ; src + 2 < srcend; src += 2)
-        hash2x16bytes(state0, state1, src, src + 1);
+    for ( ; advance<ZX>(src, 2) < srcend; src = advance<ZX>(src, 2))
+        hash2x16bytes<ZX>(state0, state1, src, advance<ZX>(src, 1));
 
-    return aeshash128_16to32(state0, state1, src, srcend);
+    return aeshash128_16to32<ZX>(state0, state1, src, srcend);
 }
 
 #  if QT_COMPILER_SUPPORTS_HERE(VAES)
-static size_t QT_FUNCTION_TARGET(ARCH_ICL) QT_VECTORCALL
+template <ZeroExtension> static __m256i loadu256(const void *ptr);
+template <> Q_ALWAYS_INLINE QT_FUNCTION_TARGET(VAES) __m256i loadu256<None>(const void *ptr)
+{
+    return _mm256_loadu_si256(reinterpret_cast<const __m256i *>(ptr));
+}
+template <> Q_ALWAYS_INLINE QT_FUNCTION_TARGET(VAES) __m256i loadu256<ByteToWord>(const void *ptr)
+{
+    // VPMOVZXBW xmm, ymm
+    __m128i data = _mm_loadu_si128(reinterpret_cast<const __m128i *>(ptr));
+    return _mm256_cvtepu8_epi16(data);
+}
+
+template <ZeroExtension ZX>
+static size_t QT_FUNCTION_TARGET(VAES_AVX512) QT_VECTORCALL
 aeshash256_lt32_avx256(__m256i state0, const uchar *p, size_t len)
 {
     __m128i state0_128 = _mm256_castsi256_si128(state0);
     if (len) {
-        __mmask32 mask = _bzhi_u32(-1, unsigned(len));
-        __m256i data = _mm256_maskz_loadu_epi8(mask, p);
+        __m256i data;
+        if constexpr (ZX == None) {
+            __mmask32 mask = _bzhi_u32(-1, unsigned(len));
+            data = _mm256_maskz_loadu_epi8(mask, p);
+        } else {
+            __mmask16 mask = _bzhi_u32(-1, unsigned(len) / 2);
+            __m128i data0 = _mm_maskz_loadu_epi8(mask, p);
+            data = _mm256_cvtepu8_epi16(data0);
+        }
         __m128i data0 = _mm256_castsi256_si128(data);
         if (len >= sizeof(__m128i)) {
             state0 = _mm256_xor_si256(state0, data);
@@ -683,8 +836,9 @@ aeshash256_lt32_avx256(__m256i state0, const uchar *p, size_t len)
     return mm_cvtsi128_sz(state0_128);
 }
 
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(VAES) QT_VECTORCALL
-aeshash256_ge32(__m256i state0, const uchar *p, size_t len)
+aeshash256_ge32(__m256i state0, const __m128i *s, const __m128i *end, size_t len)
 {
     static const auto hash32bytes = [](__m256i &state0, __m256i data) QT_FUNCTION_TARGET(VAES) {
         state0 = _mm256_xor_si256(state0, data);
@@ -694,10 +848,10 @@ aeshash256_ge32(__m256i state0, const uchar *p, size_t len)
     };
 
     // hash twice 32 bytes, running 2 scramble rounds of AES on itself
-    const auto hash2x32bytes = [](__m256i &state0, __m256i &state1, const __m256i *src0,
-            const __m256i *src1) QT_FUNCTION_TARGET(VAES) {
-        __m256i data0 = _mm256_loadu_si256(src0);
-        __m256i data1 = _mm256_loadu_si256(src1);
+    const auto hash2x32bytes = [](__m256i &state0, __m256i &state1, const void *src0,
+            const void *src1) QT_FUNCTION_TARGET(VAES) {
+        __m256i data0 = loadu256<ZX>(src0);
+        __m256i data1 = loadu256<ZX>(src1);
         state0 = _mm256_xor_si256(data0, state0);
         state1 = _mm256_xor_si256(data1, state1);
         state0 = _mm256_aesenc_epi128(state0, state0);
@@ -706,21 +860,22 @@ aeshash256_ge32(__m256i state0, const uchar *p, size_t len)
         state1 = _mm256_aesenc_epi128(state1, state1);
     };
 
-    const __m256i *src = reinterpret_cast<const __m256i *>(p);
-    const __m256i *srcend = reinterpret_cast<const __m256i *>(p + len);
+    const __m256i *src = reinterpret_cast<const __m256i *>(s);
+    const __m256i *srcend = reinterpret_cast<const __m256i *>(end);
 
     __m256i state1 = _mm256_aesenc_epi128(state0, mm256_set1_epz(len));
 
     // main loop: scramble two 32-byte blocks
-    for ( ; src + 2 < srcend; src += 2)
-        hash2x32bytes(state0, state1, src, src + 1);
+    for ( ; advance<ZX>(src, 2) < srcend; src = advance<ZX>(src, 2))
+        hash2x32bytes(state0, state1, src, advance<ZX>(src, 1));
 
-    if (src + 1 < srcend) {
+    const __m256i *src2 = advance<ZX>(srcend, -1);
+    if (advance<ZX>(src, 1) < srcend) {
         // epilogue: between 32 and 31 bytes
-        hash2x32bytes(state0, state1, src, srcend - 1);
+        hash2x32bytes(state0, state1, src, src2);
     } else if (src != srcend) {
         // epilogue: between 1 and 32 bytes, overlap with the end
-        __m256i data = _mm256_loadu_si256(srcend - 1);
+        __m256i data = loadu256<ZX>(src2);
         hash32bytes(state0, data);
     }
 
@@ -733,59 +888,69 @@ aeshash256_ge32(__m256i state0, const uchar *p, size_t len)
     return mm_cvtsi128_sz(_mm_xor_si128(low, high));
 }
 
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(VAES)
 aeshash256(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
 {
     AESHashSeed state(seed, seed2);
     auto src = reinterpret_cast<const __m128i *>(p);
-    const auto srcend = reinterpret_cast<const __m128i *>(p + len);
+    const auto srcend = reinterpret_cast<const __m128i *>(advance<ZX>(p, len));
 
     if (len < sizeof(__m128i))
-        return aeshash128_lt16(state.state0, p, len);
+        return aeshash128_lt16<ZX>(state.state0, src, srcend, len);
 
     if (len <= sizeof(__m256i))
-        return aeshash128_16to32(state.state0, state.state1(), src, srcend);
+        return aeshash128_16to32<ZX>(state.state0, state.state1(), src, srcend);
 
-    return aeshash256_ge32(state.state0_256(), p, len);
+    return aeshash256_ge32<ZX>(state.state0_256(), src, srcend, len);
 }
 
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(VAES_AVX512)
 aeshash256_avx256(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
 {
     AESHashSeed state(seed, seed2);
-    if (len <= sizeof(__m256i))
-        return aeshash256_lt32_avx256(state.state0_256(), p, len);
+    auto src = reinterpret_cast<const __m128i *>(p);
+    const auto srcend = reinterpret_cast<const __m128i *>(advance<ZX>(p, len));
 
-    return aeshash256_ge32(state.state0_256(), p, len);
+    if (len <= sizeof(__m256i))
+        return aeshash256_lt32_avx256<ZX>(state.state0_256(), p, len);
+
+    return aeshash256_ge32<ZX>(state.state0_256(), src, srcend, len);
 }
 #  endif // VAES
 
+template <ZeroExtension ZX>
 static size_t QT_FUNCTION_TARGET(AES)
 aeshash128(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
 {
     AESHashSeed state(seed, seed2);
     auto src = reinterpret_cast<const __m128i *>(p);
-    const auto srcend = reinterpret_cast<const __m128i *>(p + len);
+    const auto srcend = reinterpret_cast<const __m128i *>(advance<ZX>(p, len));
 
     if (len < sizeof(__m128i))
-        return aeshash128_lt16(state.state0, p, len);
+        return aeshash128_lt16<ZX>(state.state0, src, srcend, len);
 
     if (len <= sizeof(__m256i))
-        return aeshash128_16to32(state.state0, state.state1(), src, srcend);
+        return aeshash128_16to32<ZX>(state.state0, state.state1(), src, srcend);
 
-    return aeshash128_ge32(state.state0, state.state1(), src, srcend);
+    return aeshash128_ge32<ZX>(state.state0, state.state1(), src, srcend);
 }
 
+template <ZeroExtension ZX = None>
 static size_t aeshash(const uchar *p, size_t len, size_t seed, size_t seed2) noexcept
 {
+    if constexpr (ZX == ByteToWord)
+        len *= 2;           // see note above on ZX == ByteToWord hashing
+
 #  if QT_COMPILER_SUPPORTS_HERE(VAES)
     if (qCpuHasFeature(VAES)) {
         if (qCpuHasFeature(AVX512VL))
-            return aeshash256_avx256(p, len, seed, seed2);
-        return aeshash256(p, len, seed, seed2);
+            return aeshash256_avx256<ZX>(p, len, seed, seed2);
+        return aeshash256<ZX>(p, len, seed, seed2);
     }
 #  endif
-    return aeshash128(p, len, seed, seed2);
+    return aeshash128<ZX>(p, len, seed, seed2);
 }
 #endif // x86 AESNI
 
@@ -933,24 +1098,17 @@ size_t qHashBits(const void *p, size_t size, size_t seed) noexcept
     size_t seed2 = size;
     if (seed)
         seed2 = qt_qhash_seed.currentSeed(1);
+
+    auto data = reinterpret_cast<const uchar *>(p);
 #ifdef AESHASH
     if (seed && qCpuHasFeature(AES) && qCpuHasFeature(SSE4_2))
-        return aeshash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
+        return aeshash(data, size, seed, seed2);
 #elif defined(Q_PROCESSOR_ARM) && QT_COMPILER_SUPPORTS_HERE(AES) && !defined(QHASH_AES_SANITIZER_BUILD) && !defined(QT_BOOTSTRAPPED)
-# if defined(Q_OS_LINUX)
-    // Do specific runtime-only check as Yocto hard enables Crypto extension for
-    // all armv8 configs
-    if (seed && (qCpuFeatures() & CpuFeatureAES))
-# else
     if (seed && qCpuHasFeature(AES))
-# endif
-        return aeshash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
+        return aeshash(data, size, seed, seed2);
 #endif
 
-    if (size <= QT_POINTER_SIZE)
-        return murmurhash(p, size, seed);
-
-    return siphash(reinterpret_cast<const uchar *>(p), size, seed, seed2);
+    return qHashBits_fallback<>(data, size, seed, seed2);
 }
 
 size_t qHash(QByteArrayView key, size_t seed) noexcept
@@ -963,6 +1121,7 @@ size_t qHash(QStringView key, size_t seed) noexcept
     return qHashBits(key.data(), key.size()*sizeof(QChar), seed);
 }
 
+#ifndef QT_BOOTSTRAPPED
 size_t qHash(const QBitArray &bitArray, size_t seed) noexcept
 {
     qsizetype m = bitArray.d.size() - 1;
@@ -975,10 +1134,30 @@ size_t qHash(const QBitArray &bitArray, size_t seed) noexcept
         result = ((result << 4) + bitArray.d.at(m)) & ((1 << n) - 1);
     return result;
 }
+#endif
 
 size_t qHash(QLatin1StringView key, size_t seed) noexcept
 {
-    return qHashBits(reinterpret_cast<const uchar *>(key.data()), size_t(key.size()), seed);
+#ifdef QT_BOOTSTRAPPED
+    // the seed is always 0 in bootstrapped mode (no seed generation code),
+    // so help the compiler do dead code elimination
+    seed = 0;
+#endif
+
+    auto data = reinterpret_cast<const uchar *>(key.data());
+    size_t size = key.size();
+
+    // Mix in the length as a secondary seed.
+    // Multiplied by 2 to match the byte size of the equiavlent UTF-16 string.
+    size_t seed2 = size * 2;
+    if (seed)
+        seed2 = qt_qhash_seed.currentSeed(1);
+
+#if defined(AESHASH)
+    if (seed && qCpuHasFeature(AES) && qCpuHasFeature(SSE4_2))
+        return aeshash<ByteToWord>(data, size, seed, seed2);
+#endif
+    return qHashBits_fallback<ByteToWord>(data, size, seed, seed2);
 }
 
 /*!
@@ -1383,6 +1562,26 @@ uint qt_hash(QStringView key, uint chained) noexcept
     Returns the hash value for the \a key, using \a seed to seed the calculation.
 */
 
+/*! \fn size_t qHash(quint128 key, size_t seed = 0)
+    \relates QHash
+    \since 6.8
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+
+    \note This function is only available on platforms that support a native
+    128-bit integer type.
+*/
+
+/*! \fn size_t qHash(qint128 key, size_t seed = 0)
+    \relates QHash
+    \since 6.8
+
+    Returns the hash value for the \a key, using \a seed to seed the calculation.
+
+    \note This function is only available on platforms that support a native
+    128-bit integer type.
+ */
+
 /*! \fn size_t qHash(char8_t key, size_t seed = 0)
     \relates QHash
     \since 6.0
@@ -1436,7 +1635,6 @@ size_t qHash(double key, size_t seed) noexcept
     }
 }
 
-#if !defined(Q_OS_DARWIN) || defined(Q_QDOC)
 /*! \relates QHash
     \since 5.3
 
@@ -1454,7 +1652,6 @@ size_t qHash(long double key, size_t seed) noexcept
         return murmurhash(&key, sizeof(key), seed);
     }
 }
-#endif
 
 /*! \fn size_t qHash(const QChar key, size_t seed = 0)
     \relates QHash
@@ -2042,6 +2239,12 @@ size_t qHash(long double key, size_t seed) noexcept
     a \l{default-constructed value} into the hash with the \a key, and
     returns a reference to it.
 
+//! [qhash-iterator-invalidation-func-desc]
+    \warning Returned iterators/references should be considered invalidated
+    the next time you call a non-const function on the hash, or when the
+    hash is destroyed.
+//! [qhash-iterator-invalidation-func-desc]
+
     \sa insert(), value()
 */
 
@@ -2125,12 +2328,16 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first item in
     the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa constBegin(), end()
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::begin() const
 
     \overload
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::cbegin() const
@@ -2139,6 +2346,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa begin(), cend()
 */
 
@@ -2146,6 +2355,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa begin(), constEnd()
 */
@@ -2156,6 +2367,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first key
     in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyEnd()
 */
 
@@ -2164,18 +2377,24 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
     after the last item in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa begin(), constEnd()
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::end() const
 
     \overload
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::constEnd() const
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa constBegin(), end()
 */
@@ -2186,6 +2405,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa cbegin(), end()
 */
 
@@ -2194,6 +2415,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last key in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa keyBegin()
 */
@@ -2204,6 +2427,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first entry
     in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyValueEnd()
 */
 
@@ -2212,6 +2437,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     entry after the last entry in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa keyValueBegin()
 */
@@ -2222,6 +2449,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
     in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyValueEnd()
 */
 
@@ -2230,6 +2459,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
     in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa keyValueBegin()
 */
@@ -2240,6 +2471,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     entry after the last entry in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyValueBegin()
 */
 
@@ -2248,6 +2481,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     entry after the last entry in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa constKeyValueBegin()
 */
@@ -2268,6 +2503,8 @@ size_t qHash(long double key, size_t seed) noexcept
     references to the ones in the hash. Specifically, mutating the value
     will modify the hash itself.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa QKeyValueIterator
 */
 
@@ -2284,6 +2521,8 @@ size_t qHash(long double key, size_t seed) noexcept
     the hash. For example:
 
     \snippet code/src_corelib_tools_qhash.cpp 15
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa remove(), take(), find()
 */
@@ -2304,12 +2543,16 @@ size_t qHash(long double key, size_t seed) noexcept
 
     \snippet code/src_corelib_tools_qhash.cpp 16
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa value(), values()
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::find(const Key &key) const
 
     \overload
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*! \fn template <class Key, class T> QHash<Key, T>::const_iterator QHash<Key, T>::constFind(const Key &key) const
@@ -2320,6 +2563,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     If the hash contains no item with the \a key, the function
     returns constEnd().
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa find()
 */
@@ -2332,6 +2577,8 @@ size_t qHash(long double key, size_t seed) noexcept
     is replaced with \a value.
 
     Returns an iterator pointing to the new/updated element.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*!
@@ -2343,6 +2590,8 @@ size_t qHash(long double key, size_t seed) noexcept
     construction.
 
     Returns an iterator pointing to the new element.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 
@@ -2367,12 +2616,16 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a pair of iterators delimiting the range of values \c{[first, second)}, that
     are stored under \a key. If the range is empty then both iterators will be equal to end().
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*!
     \fn template <class Key, class T> std::pair<const_iterator, const_iterator> QMultiHash<Key, T>::equal_range(const Key &key) const
     \overload
     \since 5.7
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*! \typedef QHash::ConstIterator
@@ -2970,6 +3223,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns an iterator pointing to the new/updated element.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa insert()
 */
 
@@ -2983,6 +3238,8 @@ size_t qHash(long double key, size_t seed) noexcept
     existing item.)
 
     Returns an iterator pointing to the new element.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa replace()
 */
@@ -3002,6 +3259,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns an iterator pointing to the new element.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa insert
 */
 
@@ -3017,6 +3276,8 @@ size_t qHash(long double key, size_t seed) noexcept
     value is replaced with a value constructed from \a args.
 
     Returns an iterator pointing to the new element.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa replace, emplace
 */
@@ -3083,6 +3344,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     If the hash contains multiple items with the \a key, this function returns
     a reference to the most recently inserted value.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa insert(), value()
 */
@@ -3236,12 +3499,16 @@ size_t qHash(long double key, size_t seed) noexcept
 
     If the hash contains multiple items with the \a key and \a value, the
     iterator returned points to the most recently inserted item.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*!
     \fn template <class Key, class T> typename QMultiHash<Key, T>::const_iterator QMultiHash<Key, T>::find(const Key &key, const T &value) const
     \since 4.3
     \overload
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*!
@@ -3253,6 +3520,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     If the hash contains no such item, the function returns
     constEnd().
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*! \fn template <class Key, class T> QMultiHash<Key, T>::iterator QMultiHash<Key, T>::begin()
@@ -3260,12 +3529,16 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first item in
     the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa constBegin(), end()
 */
 
 /*! \fn template <class Key, class T> QMultiHash<Key, T>::const_iterator QMultiHash<Key, T>::begin() const
 
     \overload
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 */
 
 /*! \fn template <class Key, class T> QMultiHash<Key, T>::const_iterator QMultiHash<Key, T>::cbegin() const
@@ -3274,6 +3547,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa begin(), cend()
 */
 
@@ -3281,6 +3556,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first item
     in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa begin(), constEnd()
 */
@@ -3291,6 +3568,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first key
     in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyEnd()
 */
 
@@ -3298,6 +3577,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary item
     after the last item in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa begin(), constEnd()
 */
@@ -3312,6 +3593,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa constBegin(), end()
 */
 
@@ -3320,6 +3603,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last item in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa cbegin(), end()
 */
@@ -3330,6 +3615,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     item after the last key in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyBegin()
 */
 
@@ -3338,6 +3625,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the first entry
     in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa keyValueEnd()
 */
@@ -3348,6 +3637,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns an \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     entry after the last entry in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyValueBegin()
 */
 
@@ -3356,6 +3647,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
     in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa keyValueEnd()
 */
@@ -3366,6 +3659,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the first entry
     in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyValueBegin()
 */
 
@@ -3375,6 +3670,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     entry after the last entry in the hash.
 
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
+
     \sa keyValueBegin()
 */
 
@@ -3383,6 +3680,8 @@ size_t qHash(long double key, size_t seed) noexcept
 
     Returns a const \l{STL-style iterators}{STL-style iterator} pointing to the imaginary
     entry after the last entry in the hash.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa constKeyValueBegin()
 */
@@ -3402,6 +3701,8 @@ size_t qHash(long double key, size_t seed) noexcept
     Note that both the key and the value obtained this way are
     references to the ones in the hash. Specifically, mutating the value
     will modify the hash itself.
+
+    \include qhash.cpp qhash-iterator-invalidation-func-desc
 
     \sa QKeyValueIterator
 */

@@ -19,6 +19,7 @@
 # include <QtCore/private/qtemporaryfile_p.h>
 #endif // QT_BOOTSTRAPPED
 
+#include <grp.h>
 #include <pwd.h>
 #include <stdlib.h> // for realpath()
 #include <unistd.h>
@@ -38,6 +39,11 @@
 #if defined(Q_OS_DARWIN)
 # include <QtCore/private/qcore_mac_p.h>
 # include <CoreFoundation/CFBundle.h>
+# include <UniformTypeIdentifiers/UTType.h>
+# include <UniformTypeIdentifiers/UTCoreTypes.h>
+# include <Foundation/Foundation.h>
+# include <sys/clonefile.h>
+# include <copyfile.h>
 #endif
 
 #ifdef Q_OS_MACOS
@@ -46,15 +52,6 @@
 
 #if defined(QT_PLATFORM_UIKIT)
 #include <MobileCoreServices/MobileCoreServices.h>
-#endif
-
-#if defined(Q_OS_DARWIN)
-# include <sys/clonefile.h>
-# include <copyfile.h>
-// We cannot include <Foundation/Foundation.h> (it's an Objective-C header), but
-// we need these declarations:
-Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
-extern "C" NSString *NSTemporaryDirectory();
 #endif
 
 #if defined(Q_OS_LINUX)
@@ -126,10 +123,9 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
     QString suffix = info.suffix();
 
     if (suffix.length() > 0) {
-        // First step: is the extension known ?
-        QCFType<CFStringRef> extensionRef = suffix.toCFString();
-        QCFType<CFStringRef> uniformTypeIdentifier = UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension, extensionRef, NULL);
-        if (UTTypeConformsTo(uniformTypeIdentifier, kUTTypeBundle))
+        // First step: is it a bundle?
+        const auto *utType = [UTType typeWithFilenameExtension:suffix.toNSString()];
+        if ([utType conformsToType:UTTypeBundle])
             return true;
 
         // Second step: check if an application knows the package type
@@ -646,7 +642,7 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
 {
     Q_CHECK_FILE_NAME(entry, entry);
 
-#if !defined(Q_OS_DARWIN) && !defined(Q_OS_QNX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_HAIKU) && _POSIX_VERSION < 200809L
+#if !defined(Q_OS_DARWIN) && !defined(Q_OS_QNX) && !defined(Q_OS_ANDROID) && !defined(Q_OS_HAIKU) && _POSIX_VERSION < 200809L && !defined(Q_OS_VXWORKS)
     // realpath(X,0) is not supported
     Q_UNUSED(data);
     return QFileSystemEntry(slowCanonicalized(absoluteName(entry).filePath()));
@@ -798,7 +794,7 @@ QString QFileSystemEngine::resolveGroupName(uint groupId)
     QVarLengthArray<char, 1024> buf(size_max);
 #endif
 
-#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_WASM) && !defined(Q_OS_VXWORKS) 
+#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_WASM)
     struct group *gr = nullptr;
 #if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_VXWORKS) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID) && (__ANDROID_API__ >= 24))
     size_max = sysconf(_SC_GETGR_R_SIZE_MAX);
@@ -1124,7 +1120,7 @@ static bool createDirectoryWithParents(const QByteArray &nativeName, mode_t mode
 bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool createParents,
                                         std::optional<QFile::Permissions> permissions)
 {
-    QString dirName = entry.filePath();
+    QByteArray dirName = entry.nativeFilePath();
     Q_CHECK_FILE_NAME(dirName, false);
 
     // Darwin doesn't support trailing /'s, so remove for everyone
@@ -1132,14 +1128,13 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
         dirName.chop(1);
 
     // try to mkdir this directory
-    QByteArray nativeName = QFile::encodeName(dirName);
     mode_t mode = permissions ? QtPrivate::toMode_t(*permissions) : 0777;
-    if (QT_MKDIR(nativeName, mode) == 0)
+    if (QT_MKDIR(dirName, mode) == 0)
         return true;
     if (!createParents)
         return false;
 
-    return createDirectoryWithParents(nativeName, mode, false);
+    return createDirectoryWithParents(dirName, mode, false);
 }
 
 //static
@@ -1688,10 +1683,10 @@ bool QFileSystemEngine::setPermissions(int fd, QFile::Permissions permissions, Q
 }
 
 //static
-bool QFileSystemEngine::setFileTime(int fd, const QDateTime &newDate, QAbstractFileEngine::FileTime time, QSystemError &error)
+bool QFileSystemEngine::setFileTime(int fd, const QDateTime &newDate, QFile::FileTime time, QSystemError &error)
 {
-    if (!newDate.isValid() || time == QAbstractFileEngine::BirthTime ||
-            time == QAbstractFileEngine::MetadataChangeTime) {
+    if (!newDate.isValid()
+        || time == QFile::FileBirthTime || time == QFile::FileMetadataChangeTime) {
         error = QSystemError(EINVAL, QSystemError::StandardLibraryError);
         return false;
     }
@@ -1700,8 +1695,8 @@ bool QFileSystemEngine::setFileTime(int fd, const QDateTime &newDate, QAbstractF
     // UTIME_OMIT: leave file timestamp unchanged
     struct timespec ts[2] = {{0, UTIME_OMIT}, {0, UTIME_OMIT}};
 
-    if (time == QAbstractFileEngine::AccessTime || time == QAbstractFileEngine::ModificationTime) {
-        const int idx = time == QAbstractFileEngine::AccessTime ? 0 : 1;
+    if (time == QFile::FileAccessTime || time == QFile::FileModificationTime) {
+        const int idx = time == QFile::FileAccessTime ? 0 : 1;
         const std::chrono::milliseconds msecs{newDate.toMSecsSinceEpoch()};
         ts[idx] = durationToTimespec(msecs);
     }

@@ -1,11 +1,11 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtCore/qglobal.h>
 #ifdef Q_OS_WIN
 # include <QtCore/qt_windows.h>
 # include <oleacc.h>
-# include <QtGui/private/qwindowsuiawrapper_p.h>
+# include <uiautomation.h>
 # include <servprov.h>
 # include <winuser.h>
 #endif
@@ -2936,7 +2936,8 @@ void tst_QAccessibility::listTest()
     QVERIFY(!(cell4->state().expandable));
     QVERIFY( (cell4->state().selectable));
     QVERIFY(!(cell4->state().selected));
-    table2->selectRow(3);
+    QAccessibleSelectionInterface *selection2 = iface->selectionInterface();
+    selection2->select(cell4);
     QCOMPARE(listView->selectedItems().size(), 1);
     QCOMPARE(listView->selectedItems().at(0)->text(), QLatin1String("Munich"));
     QVERIFY(cell4->state().selected);

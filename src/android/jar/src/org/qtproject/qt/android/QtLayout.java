@@ -16,23 +16,9 @@ import android.view.ViewGroup;
 
 class QtLayout extends ViewGroup {
 
-    interface QtTouchListener  {
-        public boolean onTouchEvent(MotionEvent event);
-        public boolean onTrackballEvent(MotionEvent event);
-        public boolean onGenericMotionEvent(MotionEvent event);
-    }
-
-    private QtTouchListener m_touchListener;
-
     public QtLayout(Context context)
     {
         super(context);
-    }
-
-    public QtLayout(Context context, QtTouchListener listener)
-    {
-        super(context);
-        m_touchListener = listener;
     }
 
     public QtLayout(Context context, AttributeSet attrs)
@@ -43,30 +29,6 @@ class QtLayout extends ViewGroup {
     public QtLayout(Context context, AttributeSet attrs, int defStyle)
     {
         super(context, attrs, defStyle);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event)
-    {
-        if (m_touchListener != null) {
-            event.setLocation(event.getX() + getX(), event.getY() + getY());
-            return m_touchListener.onTouchEvent(event);
-        }
-        return false;
-    }
-    @Override
-    public boolean onTrackballEvent(MotionEvent event)
-    {;
-        if (m_touchListener != null)
-            return m_touchListener.onTrackballEvent(event);
-        return false;
-    }
-    @Override
-    public boolean onGenericMotionEvent(MotionEvent event)
-    {
-        if (m_touchListener != null)
-            return m_touchListener.onGenericMotionEvent(event);
-        return false;
     }
 
     @Override
@@ -129,7 +91,6 @@ class QtLayout extends ViewGroup {
     protected void onLayout(boolean changed, int l, int t, int r, int b)
     {
         int count = getChildCount();
-
         for (int i = 0; i < count; i++) {
             View child = getChildAt(i);
             if (child.getVisibility() != GONE) {
@@ -138,10 +99,11 @@ class QtLayout extends ViewGroup {
 
                 int childLeft = lp.x;
                 int childTop = lp.y;
-                child.layout(childLeft, childTop,
-                        childLeft + child.getMeasuredWidth(),
-                        childTop + child.getMeasuredHeight());
-
+                int childRight = (lp.width == ViewGroup.LayoutParams.MATCH_PARENT) ?
+                                 r - l : childLeft + child.getMeasuredWidth();
+                int childBottom = (lp.height == ViewGroup.LayoutParams.MATCH_PARENT) ?
+                                 b - t : childTop + child.getMeasuredHeight();
+                child.layout(childLeft, childTop, childRight, childBottom);
             }
         }
     }

@@ -10,6 +10,7 @@
 #endif
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qtmetamacros.h>
 
 #if defined(__OBJC__) && !defined(__cplusplus)
@@ -422,7 +423,7 @@ namespace Qt {
     enum ApplicationAttribute
     {
         // AA_ImmediateWidgetCreation = 0,
-        AA_QtQuickDontUseDefaultSizePolicy = 1,
+        AA_QtQuickUseDefaultSizePolicy = 1 QT_TECH_PREVIEW_API,
         AA_DontShowIconsInMenus = 2,
         AA_NativeWindows = 3,
         AA_DontCreateNativeWidgetSiblings = 4,
@@ -431,7 +432,7 @@ namespace Qt {
         AA_MacDontSwapCtrlAndMeta = 7,
         AA_Use96Dpi = 8,
         AA_DisableNativeVirtualKeyboard = 9,
-        // AA_X11InitThreads = 10,
+        AA_DontUseNativeMenuWindows = 10,
         AA_SynthesizeTouchForUnhandledMouseEvents = 11,
         AA_SynthesizeMouseForUnhandledTouchEvents = 12,
 #if QT_DEPRECATED_SINCE(6, 0)
@@ -461,7 +462,7 @@ namespace Qt {
         AA_DisableShaderDiskCache = 27,
         AA_DontShowShortcutsInContextMenus = 28,
         AA_CompressTabletEvents = 29,
-        // AA_DisableWindowContextHelpButton = 30,
+        AA_DontUsePopupWindows = 30,
         AA_DisableSessionManager = 31,
 
         // Add new attributes before this line
@@ -1355,6 +1356,11 @@ namespace Qt {
         PreventContextMenu
     };
 
+    enum class ContextMenuTrigger {
+        Press,
+        Release,
+    };
+
     enum InputMethodQuery {
         ImEnabled = 0x1,
         ImCursorRectangle = 0x2,
@@ -1675,6 +1681,10 @@ namespace Qt {
         VeryCoarseTimer
     };
 
+    enum class TimerId {
+        Invalid = 0,
+    };
+
     enum ScrollPhase {
         NoScrollPhase = 0,
         ScrollBegin,
@@ -1726,6 +1736,7 @@ namespace Qt {
     Q_ENUM_NS(ScrollBarPolicy)
     Q_ENUM_NS(FocusPolicy)
     Q_ENUM_NS(ContextMenuPolicy)
+    Q_ENUM_NS(ContextMenuTrigger)
     Q_ENUM_NS(ArrowType)
     Q_ENUM_NS(ToolButtonStyle)
     Q_ENUM_NS(PenStyle)
@@ -1904,18 +1915,14 @@ public:
         return combination;
     }
 #endif
-
-    friend constexpr bool operator==(QKeyCombination lhs, QKeyCombination rhs) noexcept
+    bool operator<(QKeyCombination) const = delete;
+private:
+    friend constexpr bool comparesEqual(const QKeyCombination &lhs,
+                                        const QKeyCombination &rhs) noexcept
     {
         return lhs.combination == rhs.combination;
     }
-
-    friend constexpr bool operator!=(QKeyCombination lhs, QKeyCombination rhs) noexcept
-    {
-        return lhs.combination != rhs.combination;
-    }
-
-    bool operator<(QKeyCombination) const = delete;
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QKeyCombination)
 };
 
 Q_DECLARE_TYPEINFO(QKeyCombination, Q_RELOCATABLE_TYPE);

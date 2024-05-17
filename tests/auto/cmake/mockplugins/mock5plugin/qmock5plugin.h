@@ -1,5 +1,5 @@
 // Copyright (C) 2018 Kitware, Inc.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #ifndef QMOCK5PLUGIN_H
 #define QMOCK5PLUGIN_H

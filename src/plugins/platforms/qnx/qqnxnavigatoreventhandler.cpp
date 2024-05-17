@@ -10,11 +10,7 @@
 #include <QGuiApplication>
 #include <qpa/qwindowsysteminterface.h>
 
-#if defined(QQNXNAVIGATOREVENTHANDLER_DEBUG)
-#define qNavigatorEventHandlerDebug qDebug
-#else
-#define qNavigatorEventHandlerDebug QT_NO_QDEBUG_MACRO
-#endif
+Q_LOGGING_CATEGORY(lcQpaQnxNavigatorEvents, "qt.qpa.qnx.navigator.events");
 
 QT_BEGIN_NAMESPACE
 
@@ -27,20 +23,20 @@ bool QQnxNavigatorEventHandler::handleOrientationCheck(int angle)
 {
     // reply to navigator that (any) orientation is acceptable
     // TODO: check if top window flags prohibit orientation change
-    qNavigatorEventHandlerDebug("angle=%d", angle);
+    qCDebug(lcQpaQnxNavigatorEvents, "angle=%d", angle);
     return true;
 }
 
 void QQnxNavigatorEventHandler::handleOrientationChange(int angle)
 {
     // update screen geometry and reply to navigator that we're ready
-    qNavigatorEventHandlerDebug("angle=%d", angle);
+    qCDebug(lcQpaQnxNavigatorEvents, "angle=%d", angle);
     emit rotationChanged(angle);
 }
 
 void QQnxNavigatorEventHandler::handleSwipeDown()
 {
-    qNavigatorEventHandlerDebug();
+    qCDebug(lcQpaQnxNavigatorEvents) << Q_FUNC_INFO;
 
     Q_EMIT swipeDown();
 }
@@ -48,25 +44,25 @@ void QQnxNavigatorEventHandler::handleSwipeDown()
 void QQnxNavigatorEventHandler::handleExit()
 {
     // shutdown everything
-    qNavigatorEventHandlerDebug();
+    qCDebug(lcQpaQnxNavigatorEvents) << Q_FUNC_INFO;
     QCoreApplication::quit();
 }
 
 void QQnxNavigatorEventHandler::handleWindowGroupActivated(const QByteArray &id)
 {
-    qNavigatorEventHandlerDebug() << id;
+    qCDebug(lcQpaQnxNavigatorEvents) << Q_FUNC_INFO << id;
     Q_EMIT windowGroupActivated(id);
 }
 
 void QQnxNavigatorEventHandler::handleWindowGroupDeactivated(const QByteArray &id)
 {
-    qNavigatorEventHandlerDebug() << id;
+    qCDebug(lcQpaQnxNavigatorEvents) << Q_FUNC_INFO << id;
     Q_EMIT windowGroupDeactivated(id);
 }
 
 void QQnxNavigatorEventHandler::handleWindowGroupStateChanged(const QByteArray &id, Qt::WindowState state)
 {
-    qNavigatorEventHandlerDebug() << id;
+    qCDebug(lcQpaQnxNavigatorEvents) << Q_FUNC_INFO << id;
     Q_EMIT windowGroupStateChanged(id, state);
 }
 

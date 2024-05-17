@@ -335,6 +335,7 @@ const QKeyBinding QPlatformThemePrivate::keyBindings[] = {
     {QKeySequence::FullScreen,              1,          Qt::Key_F11,                            KB_Win | KB_KDE},
     {QKeySequence::Deselect,                0,          Qt::CTRL | Qt::SHIFT | Qt::Key_A,       KB_X11},
     {QKeySequence::DeleteCompleteLine,      0,          Qt::CTRL | Qt::Key_U,                   KB_X11},
+    {QKeySequence::Backspace,               1,          Qt::Key_Backspace,                      KB_Mac},
     {QKeySequence::Backspace,               0,          Qt::META | Qt::Key_H,                   KB_Mac},
     {QKeySequence::Cancel,                  0,          Qt::Key_Escape,                         KB_All},
     {QKeySequence::Cancel,                  0,          Qt::CTRL | Qt::Key_Period,              KB_Mac}
@@ -444,6 +445,11 @@ QPlatformDialogHelper *QPlatformTheme::createPlatformDialogHelper(DialogType typ
 Qt::ColorScheme QPlatformTheme::colorScheme() const
 {
     return Qt::ColorScheme::Unknown;
+}
+
+void QPlatformTheme::requestColorScheme(Qt::ColorScheme scheme)
+{
+    Q_UNUSED(scheme);
 }
 
 const QPalette *QPlatformTheme::palette(Palette type) const
@@ -637,7 +643,7 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
     case FlickMaximumVelocity:
         return QVariant(2500);
     case FlickDeceleration:
-        return QVariant(5000);
+        return QVariant(1500);
     case MenuBarFocusOnAltPressRelease:
         return false;
     case MouseCursorTheme:

@@ -39,32 +39,25 @@ public:
     void setVisible(bool visible) override
     {
         Q_Q(QWidgetWindow);
-        if (QWidget *widget = q->widget()) {
-            // Check if the widget was already hidden, as this indicates it was done
-            // explicitly and not because the parent window in this case made it hidden.
-            // In which case do not automatically show the widget when the parent
-            // window is shown.
-            const bool wasExplicitShowHide = widget->testAttribute(Qt::WA_WState_ExplicitShowHide);
-            const bool wasHidden = widget->testAttribute(Qt::WA_WState_Hidden);
-            QWidgetPrivate::get(widget)->setVisible(visible);
-            if (wasExplicitShowHide) {
-                widget->setAttribute(Qt::WA_WState_ExplicitShowHide, wasExplicitShowHide);
-                widget->setAttribute(Qt::WA_WState_Hidden, wasHidden);
-            }
+        qCDebug(lcWidgetShowHide) << "Setting visibility of" << q->widget()
+               << "to" << visible << "via QWidgetWindowPrivate";
 
-            // The call to QWidgetPrivate::setVisible() above will normally
-            // recurse back into QWidgetWindow::setNativeWindowVisibility()
-            // to update the QWindow state, but during QWidget::destroy()
-            // this is not the case, as Qt::WA_WState_Created has been
-            // unset by the time we check if we should call hide_helper().
-            // We don't want to change the QWidget logic, as that has
-            // other side effects, so as a targeted fix we sync up the
-            // visibility here if needed.
-            if (q->isVisible() != visible)
-                QWindowPrivate::setVisible(visible);
-        } else {
-            QWindowPrivate::setVisible(visible);
+        if (QWidget *widget = q->widget()) {
+            // If the widget's visible state is already matching the new QWindow
+            // visible state we assume the widget has already synced up.
+            if (visible != widget->isVisible())
+                QWidgetPrivate::get(widget)->setVisible(visible);
         }
+
+        // If we end up calling QWidgetPrivate::setVisible() above, we will
+        // in most cases recurse back into setNativeWindowVisibility() to
+        // update the QWindow state. But during QWidget::destroy() this is
+        // not the case, as Qt::WA_WState_Created has been unset by the time
+        // we check if we should call hide_helper(). We handle this case, as
+        // well as the cases where we don't call QWidgetPrivate::setVisible(),
+        // by syncing up the QWindow state here if needed.
+        if (q->isVisible() != visible)
+            QWindowPrivate::setVisible(visible);
     }
 
     QWindow *eventReceiver() override {
@@ -82,6 +75,39 @@ public:
         QWidget *widget = q->widget();
         if (widget && widget->focusWidget())
             widget->focusWidget()->clearFocus();
+    }
+
+    void setFocusToTarget(FocusTarget target, Qt::FocusReason reason) override
+    {
+        Q_Q(QWidgetWindow);
+        QWidget *widget = q->widget();
+        if (!widget)
+            return;
+        QWidget *newFocusWidget = nullptr;
+
+        switch (target) {
+        case FocusTarget::First:
+            newFocusWidget = q->getFocusWidget(QWidgetWindow::FirstFocusWidget);
+            break;
+        case FocusTarget::Last:
+            newFocusWidget = q->getFocusWidget(QWidgetWindow::LastFocusWidget);
+            break;
+        case FocusTarget::Next: {
+            QWidget *focusWidget = widget->focusWidget() ? widget->focusWidget() : widget;
+            newFocusWidget = focusWidget->nextInFocusChain() ? focusWidget->nextInFocusChain() : focusWidget;
+            break;
+        }
+        case FocusTarget::Prev: {
+            QWidget *focusWidget = widget->focusWidget() ? widget->focusWidget() : widget;
+            newFocusWidget = focusWidget->previousInFocusChain() ? focusWidget->previousInFocusChain() : focusWidget;
+            break;
+        }
+        default:
+            break;
+        }
+
+        if (newFocusWidget)
+            newFocusWidget->setFocus(reason);
     }
 
     QRectF closestAcceptableGeometry(const QRectF &rect) const override;
@@ -196,6 +222,9 @@ QObject *QWidgetWindow::focusObject() const
 void QWidgetWindow::setNativeWindowVisibility(bool visible)
 {
     Q_D(QWidgetWindow);
+    qCDebug(lcWidgetShowHide) << "Setting visibility of" << this
+        << "to" << visible << "via QWidgetWindow::setNativeWindowVisibility";
+
     // Call base class setVisible() implementation to run the QWindow
     // visibility logic. Don't call QWidgetWindowPrivate::setVisible()
     // since that will recurse back into QWidget code.
@@ -476,9 +505,6 @@ void QWidgetWindow::handleNonClientAreaMouseEvent(QMouseEvent *e)
 
 void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
 {
-    static const QEvent::Type contextMenuTrigger =
-        QGuiApplicationPrivate::platformTheme()->themeHint(QPlatformTheme::ContextMenuOnMouseRelease).toBool() ?
-        QEvent::MouseButtonRelease : QEvent::MouseButtonPress;
     if (QApplicationPrivate::inPopupMode()) {
         QPointer<QWidget> activePopupWidget = QApplication::activePopupWidget();
         QPointF mapped = event->position();
@@ -595,7 +621,7 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             }
             qt_replay_popup_mouse_event = false;
 #ifndef QT_NO_CONTEXTMENU
-        } else if (event->type() == contextMenuTrigger
+        } else if (event->type() == QGuiApplicationPrivate::contextMenuEventType()
                    && event->button() == Qt::RightButton
                    && (openPopupCount == oldOpenPopupCount)) {
             QWidget *receiver = activePopupWidget;
@@ -608,7 +634,6 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
             QApplication::forwardEvent(receiver, &e, event);
         }
 #else
-            Q_UNUSED(contextMenuTrigger);
             Q_UNUSED(oldOpenPopupCount);
         }
 #endif
@@ -655,7 +680,8 @@ void QWidgetWindow::handleMouseEvent(QMouseEvent *event)
         event->setAccepted(translated.isAccepted());
     }
 #ifndef QT_NO_CONTEXTMENU
-    if (event->type() == contextMenuTrigger && event->button() == Qt::RightButton
+    if (event->type() == QGuiApplicationPrivate::contextMenuEventType()
+        && event->button() == Qt::RightButton
         && m_widget->rect().contains(event->position().toPoint())) {
         QContextMenuEvent e(QContextMenuEvent::Mouse, mapped, event->globalPosition().toPoint(), event->modifiers());
         QGuiApplication::forwardEvent(receiver, &e, event);

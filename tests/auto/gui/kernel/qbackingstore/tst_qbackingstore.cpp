@@ -1,9 +1,11 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <qwindow.h>
 #include <qbackingstore.h>
 #include <qpa/qplatformbackingstore.h>
+#include <qpa/qplatformintegration.h>
+#include <private/qguiapplication_p.h>
 #include <qpainter.h>
 
 #include <QTest>
@@ -30,6 +32,8 @@ private slots:
 
     void scroll();
     void flush();
+
+    void staticContents();
 };
 
 void tst_QBackingStore::initTestCase_data()
@@ -88,6 +92,11 @@ void tst_QBackingStore::paint()
 
     QRect rect(0, 0, 100, 100);
     backingStore.resize(rect.size());
+
+    // Partial fill of a fresh backingstore should not crash
+    backingStore.beginPaint(QRect(0, 0, 50, 50));
+    backingStore.endPaint();
+    backingStore.flush(rect);
 
     // Two rounds, with flush in between
     for (int i = 0; i < 2; ++i) {
@@ -265,6 +274,80 @@ void tst_QBackingStore::flush()
     window.showMaximized();
 
     QTRY_VERIFY(window.isExposed());
+}
+
+void tst_QBackingStore::staticContents()
+{
+    const auto *integration = QGuiApplicationPrivate::platformIntegration();
+    if (!integration->hasCapability(QPlatformIntegration::BackingStoreStaticContents))
+        QSKIP("Platform does not support static backingstore content");
+
+    QWindow window;
+    window.create();
+
+    const auto dpr = window.devicePixelRatio();
+
+    QBackingStore backingStore(&window);
+
+    QRect initialRect(0, 0, 100, 100);
+
+    // Static contents without paint first should not crash
+    backingStore.setStaticContents(initialRect);
+    backingStore.resize(initialRect.size());
+    QCOMPARE(backingStore.size(), initialRect.size());
+    backingStore.beginPaint(QRect(0, 0, 50, 50));
+    backingStore.endPaint();
+    backingStore.handle()->toImage();
+
+    {
+        backingStore.setStaticContents(QRect());
+        backingStore.beginPaint(initialRect);
+        QPainter p(backingStore.paintDevice());
+        p.fillRect(initialRect, Qt::green);
+        p.end();
+        backingStore.endPaint();
+
+        QImage image = backingStore.handle()->toImage();
+        if (image.isNull())
+            QSKIP("Platform backingstore does not implement toImage");
+
+        QCOMPARE(image.pixelColor(initialRect.topLeft() * dpr), Qt::green);
+        QCOMPARE(image.pixelColor(initialRect.bottomLeft() * dpr), Qt::green);
+        QCOMPARE(image.pixelColor(initialRect.topRight() * dpr), Qt::green);
+        QCOMPARE(image.pixelColor(initialRect.bottomRight() * dpr), Qt::green);
+    }
+
+    {
+        backingStore.setStaticContents(initialRect);
+
+        QRect resizedRect(0, 0, 200, 200);
+        backingStore.resize(resizedRect.size());
+
+        QRegion repaintRegion = QRegion(resizedRect) - QRegion(initialRect);
+
+        backingStore.beginPaint(repaintRegion);
+        QPainter p(backingStore.paintDevice());
+        for (auto repaintRect : repaintRegion)
+            p.fillRect(repaintRect, Qt::red);
+        p.end();
+        backingStore.endPaint();
+
+        QImage image = backingStore.handle()->toImage();
+        if (image.isNull())
+            QSKIP("Platform backingstore does not implement toImage");
+
+        QCOMPARE(image.pixelColor(initialRect.topLeft() * dpr), Qt::green);
+        QCOMPARE(image.pixelColor(initialRect.bottomLeft() * dpr), Qt::green);
+        QCOMPARE(image.pixelColor(initialRect.topRight() * dpr), Qt::green);
+        QCOMPARE(image.pixelColor(initialRect.bottomRight() * dpr), Qt::green);
+
+        for (auto repaintRect : repaintRegion) {
+            QCOMPARE(image.pixelColor(repaintRect.topLeft() * dpr), Qt::red);
+            QCOMPARE(image.pixelColor(repaintRect.bottomLeft() * dpr), Qt::red);
+            QCOMPARE(image.pixelColor(repaintRect.topRight() * dpr), Qt::red);
+            QCOMPARE(image.pixelColor(repaintRect.bottomRight() * dpr), Qt::red);
+        }
+    }
 }
 
 #include <tst_qbackingstore.moc>

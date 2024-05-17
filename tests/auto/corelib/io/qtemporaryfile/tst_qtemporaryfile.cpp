@@ -1,6 +1,6 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // Copyright (C) 2017 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <qcoreapplication.h>
@@ -254,7 +254,7 @@ void tst_QTemporaryFile::fileName()
     QString absoluteTempPath = QDir(tempPath).absolutePath();
     QTemporaryFile file;
     file.setAutoRemove(true);
-    file.open();
+    QVERIFY(file.open());
     QString fileName = file.fileName();
     QVERIFY2(fileName.contains("/tst_qtemporaryfile."), qPrintable(fileName));
     QVERIFY(QFile::exists(fileName));
@@ -426,7 +426,7 @@ void tst_QTemporaryFile::io()
 
     file.reset();
     QFile compare(file.fileName());
-    compare.open(QIODevice::ReadOnly);
+    QVERIFY(compare.open(QIODevice::ReadOnly));
     QCOMPARE(compare.readAll() , data);
     QCOMPARE(compare.fileTime(QFile::FileModificationTime), mtime);
 }
@@ -460,7 +460,7 @@ void tst_QTemporaryFile::removeAndReOpen()
     QString fileName;
     {
         QTemporaryFile file;
-        file.open();
+        QVERIFY(file.open());
         fileName = file.fileName();     // materializes any unnamed file
         QVERIFY(QFile::exists(fileName));
 
@@ -480,7 +480,7 @@ void tst_QTemporaryFile::removeAndReOpen()
 void tst_QTemporaryFile::removeUnnamed()
 {
     QTemporaryFile file;
-    file.open();
+    QVERIFY(file.open());
 
     // we did not call fileName(), so the file name may not have a name
     QVERIFY(file.remove());
@@ -870,7 +870,7 @@ void tst_QTemporaryFile::createNativeFile()
 
     QFile f(filePath);
     if (currentPos != -1) {
-        f.open(QIODevice::ReadOnly);
+        QVERIFY(f.open(QIODevice::ReadOnly));
         f.seek(currentPos);
     }
     QTemporaryFile *tempFile = QTemporaryFile::createNativeFile(f);
@@ -1015,7 +1015,7 @@ void tst_QTemporaryFile::guaranteeUnique()
     // First pass. See which filename QTemporaryFile will try first.
     {
         QTemporaryFile tmpFile("testFile1.XXXXXX");
-        tmpFile.open();
+        QVERIFY(tmpFile.open());
         takenFileName = tmpFile.fileName();
         QVERIFY(QFile::exists(takenFileName));
     }

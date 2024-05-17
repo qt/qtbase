@@ -4,6 +4,7 @@
 #include "language.h"
 
 #include <QtCore/qtextstream.h>
+#include <QtCore/QList>
 
 namespace language {
 
@@ -370,17 +371,40 @@ void _formatStackVariable(QTextStream &str, const char *className, QStringView v
     }
 }
 
-enum OverloadUse {
-    UseOverload,
-    UseOverloadWhenNoArguments, // Use overload only when the argument list is empty,
-                                // in this case there is no chance of connecting
-                                // mismatching T against const T &
-    DontUseOverload
+enum class OverloadUse {
+    Always,
+    WhenAmbiguousOrEmpty, // Use overload if
+                          // - signal/slot is ambiguous
+                          // - argument list is empty (chance of connecting mismatching T against const T &)
+    Never,
 };
 
 // Format a member function for a signal slot connection
-static void formatMemberFnPtr(QTextStream &str, const SignalSlot &s,
-                              OverloadUse useQOverload = DontUseOverload)
+static bool isConstRef(const QStringView &arg)
+{
+    return arg.startsWith(u'Q') && arg != "QPoint"_L1 && arg != "QSize"_L1;
+}
+
+static QString formatOverload(const QStringView &parameters)
+{
+    QString result = "qOverload<"_L1;
+    const auto args = QStringView{parameters}.split(u',');
+    for (qsizetype i = 0, size = args.size(); i < size; ++i) {
+        const auto &arg = args.at(i);
+        if (i > 0)
+            result += u',';
+        const bool constRef = isConstRef(arg);
+        if (constRef)
+            result += "const "_L1;
+        result += arg;
+        if (constRef)
+            result += u'&';
+    }
+    result += u'>';
+    return result;
+}
+
+static void formatMemberFnPtr(QTextStream &str, const SignalSlot &s, OverloadUse useQOverload)
 {
     const qsizetype parenPos = s.signature.indexOf(u'(');
     Q_ASSERT(parenPos >= 0);
@@ -388,11 +412,24 @@ static void formatMemberFnPtr(QTextStream &str, const SignalSlot &s,
 
     const auto parameters = QStringView{s.signature}.mid(parenPos + 1,
                                                s.signature.size() - parenPos - 2);
-    const bool withOverload = useQOverload == UseOverload ||
-            (useQOverload == UseOverloadWhenNoArguments && parameters.isEmpty());
+
+    const bool isAmbiguous = s.options.testFlag(SignalSlotOption::Ambiguous);
+    bool withOverload = false; // just to silence the compiler
+
+    switch (useQOverload) {
+    case OverloadUse::Always:
+        withOverload = true;
+        break;
+    case OverloadUse::Never:
+        withOverload = false;
+        break;
+    case OverloadUse::WhenAmbiguousOrEmpty:
+        withOverload = parameters.empty() || isAmbiguous;
+        break;
+    }
 
     if (withOverload)
-        str << "qOverload<" << parameters << ">(";
+        str << formatOverload(parameters) << '(';
 
     str << '&' << s.className << "::" << functionName;
 
@@ -405,9 +442,9 @@ static void formatMemberFnPtrConnection(QTextStream &str,
                                         const SignalSlot &receiver)
 {
     str << "QObject::connect(" << sender.name << ", ";
-    formatMemberFnPtr(str, sender);
+    formatMemberFnPtr(str, sender, OverloadUse::Never);
     str << ", " << receiver.name << ", ";
-    formatMemberFnPtr(str, receiver, UseOverloadWhenNoArguments);
+    formatMemberFnPtr(str, receiver, OverloadUse::WhenAmbiguousOrEmpty);
     str << ')';
 }
 

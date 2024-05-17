@@ -81,28 +81,6 @@ is written out as part of the deployment settings for a target.
 */
 
 /*!
-\page cmake-variable-qt-android-deploy-release.html
-\ingroup cmake-variables-qtcore
-\ingroup cmake-android-build-properties
-
-\title QT_ANDROID_DEPLOY_RELEASE
-\target cmake-variable-QT_ANDROID_DEPLOY_RELEASE
-
-\summary {Forces release package signing regardless of the build type.}
-
-\cmakevariablesince 6.5.2
-\preliminarycmakevariable
-\cmakevariableandroidonly
-
-When set to \c TRUE, the \c --release flag is passed to the \c androiddeployqt
-tool, even when the application build mode is Debug. In Release and
-RelWithDebInfo builds this is the default. For more control over this, prefer
-using \l QT_ANDROID_DEPLOYMENT_TYPE instead.
-
-\sa {androiddeployqt}
-*/
-
-/*!
 \page cmake-variable-qt-android-deployment-type.html
 \ingroup cmake-variables-qtcore
 \ingroup cmake-android-build-properties
@@ -340,7 +318,7 @@ The mentioned variables are used internally by \l{androiddeployqt}.
 */
 
 /*!
-\page cmake-variable-qt-android-deployment-type.html
+\page cmake-variable-qt-use-target-android-build-dir.html
 \ingroup cmake-variables-qtcore
 
 \title QT_USE_TARGET_ANDROID_BUILD_DIR
@@ -538,8 +516,8 @@ methods provided by CMake.
 \page cmake-variable-qt-i18n-languages.html
 \ingroup cmake-variables-qtcore
 
-\title QT_I18N_LANGUAGES
-\target cmake-variable-QT_I18N_LANGUAGES
+\title QT_I18N_TRANSLATED_LANGUAGES
+\target cmake-variable-QT_I18N_TRANSLATED_LANGUAGES
 
 \summary {List of languages to be used for project internationalization.}
 
@@ -549,7 +527,7 @@ Specifies a list of languages that are used for project
 internationalization. The single languages must be compatible with the
 string-based \l QLocale constructor.
 
-The languages in \c QT_I18N_LANGUAGES are used to:
+The languages in \c QT_I18N_TRANSLATED_LANGUAGES are used to:
 \list
     \li Set up executable targets for consuming \c{.qm} files.
     \li Automatically construct \c{.ts} file names in
@@ -559,6 +537,8 @@ The languages in \c QT_I18N_LANGUAGES are used to:
 This variable can be conveniently set with the
 \l {qt6_standard_project_setup}{qt_standard_project_setup()} command.
 
+By default, translatable strings are considered to be written in \c{en}.
+
 \sa {qt6_standard_project_setup}{qt_standard_project_setup()}
 \sa {qt6_add_translations}{qt_add_translations()}
 */
@@ -567,8 +547,8 @@ This variable can be conveniently set with the
 \page cmake-variable-qt-i18n-native-language.html
 \ingroup cmake-variables-qtcore
 
-\title QT_I18N_NATIVE_LANGUAGE
-\target cmake-variable-QT_I18N_NATIVE_LANGUAGE
+\title QT_I18N_SOURCE_LANGUAGE
+\target cmake-variable-QT_I18N_SOURCE_LANGUAGE
 
 \summary {Specifies the language of translatable strings.}
 
@@ -577,7 +557,7 @@ This variable can be conveniently set with the
 Specifies the language of translatable strings in the source code.
 The language must be compatible with the string-based \l QLocale constructor.
 
-Together with \c{QT_I18N_LANGUAGES}, this variable is used to determine the
+Together with \c{QT_I18N_TRANSLATED_LANGUAGES}, this variable is used to determine the
 names of \c{.ts} files for \l{qt6_add_translations}{qt_add_translations()}.
 
 This variable can be conveniently set with the

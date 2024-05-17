@@ -126,6 +126,8 @@ public:
 Q_SIGNALS:
     void surfaceCreated();
     void surfaceDestroyed();
+    void surfaceRoleCreated();
+    void surfaceRoleDestroyed();
     void xdgActivationTokenCreated(const QString &token);
 
 protected:

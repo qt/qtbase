@@ -1,4 +1,4 @@
-// Copyright (C) 2023 The Qt Company Ltd.
+// Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 package org.qtproject.qt.android;
@@ -21,8 +21,13 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppStateDetailsListener {
+class QtEmbeddedDelegate extends QtActivityDelegateBase
+        implements QtNative.AppStateDetailsListener, QtEmbeddedViewInterface
+{
+    // TODO simplistic implementation with one QtView, expand to support multiple views QTBUG-117649
+    private QtView m_view;
     private QtNative.ApplicationStateDetails m_stateDetails;
+    private boolean m_windowLoaded = false;
 
     public QtEmbeddedDelegate(Activity context) {
         super(context);
@@ -71,10 +76,10 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
                 if (m_activity == activity && m_stateDetails.isStarted) {
                     m_activity.getApplication().unregisterActivityLifecycleCallbacks(this);
                     QtNative.unregisterAppStateListener(QtEmbeddedDelegate.this);
+                    QtEmbeddedDelegateFactory.remove(m_activity);
                     QtNative.terminateQt();
                     QtNative.setActivity(null);
                     QtNative.getQtThread().exit();
-                    onDestroy();
                 }
             }
         });
@@ -82,14 +87,24 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
 
     @Override
     public void onAppStateDetailsChanged(QtNative.ApplicationStateDetails details) {
-        m_stateDetails = details;
-        if (m_stateDetails.nativePluginIntegrationReady) {
-            QtNative.runAction(() -> {
-                DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
-                QtDisplayManager.setApplicationDisplayMetrics(m_activity,
-                                                              metrics.widthPixels,
-                                                              metrics.heightPixels);
-            });
+        synchronized (this) {
+            m_stateDetails = details;
+        }
+    }
+
+    @Override
+    public void onNativePluginIntegrationReadyChanged(boolean ready)
+    {
+        synchronized (this) {
+            if (ready) {
+                QtNative.runAction(() -> {
+                    DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+                    QtDisplayManager.setApplicationDisplayMetrics(m_activity, metrics.widthPixels,
+                                                                  metrics.heightPixels);
+
+                });
+                createRootWindow();
+            }
         }
     }
 
@@ -111,11 +126,53 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase implements QtNative.AppS
     @Override
     QtLayout getQtLayout()
     {
-        // TODO could probably use QtView here when it's added?
-        return null;
+        // TODO verify if returning m_view here works, this is used by the androidjniinput
+        // when e.g. showing a keyboard, so depends on getting the keyboard focus working
+        // QTBUG-118873
+        if (m_view == null)
+            return null;
+        return m_view.getQtWindow();
     }
 
-    public void onDestroy() {
-        // TODO delete the window once it's added
+    // QtEmbeddedViewInterface implementation begin
+    @Override
+    public void startQtApplication(String appParams, String mainLib)
+    {
+        super.startNativeApplication(appParams, mainLib);
+    }
+
+    @Override
+    public void queueLoadWindow()
+    {
+        synchronized (this) {
+            if (m_stateDetails.nativePluginIntegrationReady)
+                createRootWindow();
+        }
+    }
+
+    @Override
+    public void setView(QtView view)
+    {
+        m_view = view;
+        updateInputDelegate();
+        if (m_view != null)
+            registerGlobalFocusChangeListener(m_view);
+    }
+    // QtEmbeddedViewInterface implementation end
+
+    private void updateInputDelegate() {
+        if (m_view == null) {
+            m_inputDelegate.setEditPopupMenu(null);
+            return;
+        }
+        m_inputDelegate.setEditPopupMenu(new EditPopupMenu(m_activity, m_view));
+    }
+
+    private void createRootWindow() {
+        if (m_view != null && !m_windowLoaded) {
+            QtView.createRootWindow(m_view, m_view.getLeft(), m_view.getTop(), m_view.getWidth(),
+                                    m_view.getHeight());
+            m_windowLoaded = true;
+        }
     }
 }

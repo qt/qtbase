@@ -26,6 +26,7 @@ QT_IMPL_METATYPE_EXTERN(QTypeRevision)
     \brief The QTypeRevision class contains a lightweight representation of
            a version number with two 8-bit segments, major and minor, either
            of which can be unknown.
+    \compares strong
 
     Use this class to describe revisions of a type. Compatible revisions can be
     expressed as increments of the minor version. Breaking changes can be

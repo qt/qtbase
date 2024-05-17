@@ -1,9 +1,10 @@
 // Copyright (C) 2022 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <qline.h>
 #include <qmath.h>
+#include <private/qcomparisontesthelper_p.h>
 
 #include <array>
 
@@ -11,6 +12,16 @@ class tst_QLine : public QObject
 {
     Q_OBJECT
 private slots:
+    void testComparisonCompiles();
+    void testComparison_data();
+    void testComparison();
+
+    void testFuzzyCompare_data();
+    void testFuzzyCompare();
+
+    void testIsNull_data();
+    void testIsNull();
+
     void testIntersection();
     void testIntersection_data();
 
@@ -41,6 +52,120 @@ private slots:
 };
 
 const qreal epsilon = sizeof(qreal) == sizeof(double) ? 1e-8 : 1e-4;
+constexpr static qreal qreal_min = std::numeric_limits<qreal>::min();
+
+void tst_QLine::testComparisonCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QLine>();
+    QTestPrivate::testEqualityOperatorsCompile<QLineF>();
+    QTestPrivate::testEqualityOperatorsCompile<QLineF, QLine>();
+}
+
+void tst_QLine::testComparison_data()
+{
+    QTest::addColumn<double>("xa1");
+    QTest::addColumn<double>("ya1");
+    QTest::addColumn<double>("xa2");
+    QTest::addColumn<double>("ya2");
+    QTest::addColumn<double>("xb1");
+    QTest::addColumn<double>("yb1");
+    QTest::addColumn<double>("xb2");
+    QTest::addColumn<double>("yb2");
+    QTest::addColumn<bool>("result");
+    QTest::addColumn<bool>("floatResult");
+    QTest::addColumn<bool>("mixedResult");
+
+    auto row = [&](double xa1, double ya1, double xa2, double ya2,
+                   double xb1, double yb1, double xb2, double yb2,
+                   bool result, bool floatResult, bool mixedResult)
+    {
+        QString str;
+        QDebug dbg(&str);
+        dbg.nospace() << "[(" << xa1 << ", " << ya1 << "); (" << xa2 << ", " << ya2 << ")] vs [("
+                      << xb1 << ", " << yb1 << "); (" << xb2 << ", " << yb2 << ")]";
+        QTest::addRow("%s", str.toLatin1().constData())
+                << xa1 << ya1 << xa2 << ya2 << xb1 << yb1 << xb2 << yb2
+                << result << floatResult << mixedResult;
+    };
+
+    row(-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, true, true, true);
+    row(-1.1, -0.9, 1.1, 0.9, -1.0, -1.0, 1.0, 1.0, true, false, false);
+    row(-1.0, -1.0, 1.0, 1.0, -0.9, -1.1, 0.9, 1.1,  true, false, true);
+    row(-qreal_min, -1.0, 1.0, qreal_min, 0.0, -1.1, 0.9, 0.0,  true, false, true);
+}
+
+void tst_QLine::testComparison()
+{
+    QFETCH(double, xa1);
+    QFETCH(double, ya1);
+    QFETCH(double, xa2);
+    QFETCH(double, ya2);
+    QFETCH(double, xb1);
+    QFETCH(double, yb1);
+    QFETCH(double, xb2);
+    QFETCH(double, yb2);
+    QFETCH(bool, result);
+    QFETCH(bool, floatResult);
+    QFETCH(bool, mixedResult);
+
+    const QLineF l1f(xa1, ya1, xa2, ya2);
+    const QLine l1 = l1f.toLine();
+
+    const QLineF l2f(xb1, yb1, xb2, yb2);
+    const QLine l2 = l2f.toLine();
+
+    QT_TEST_EQUALITY_OPS(l1, l2, result);
+    QT_TEST_EQUALITY_OPS(l1f, l2f, floatResult);
+    QT_TEST_EQUALITY_OPS(l1f, l2, mixedResult);
+}
+
+void tst_QLine::testFuzzyCompare_data()
+{
+    testComparison_data();
+}
+
+void tst_QLine::testFuzzyCompare()
+{
+    QFETCH(double, xa1);
+    QFETCH(double, ya1);
+    QFETCH(double, xa2);
+    QFETCH(double, ya2);
+    QFETCH(double, xb1);
+    QFETCH(double, yb1);
+    QFETCH(double, xb2);
+    QFETCH(double, yb2);
+    QFETCH(bool, floatResult);
+
+    const QLineF l1f(xa1, ya1, xa2, ya2);
+    const QLineF l2f(xb1, yb1, xb2, yb2);
+
+    QCOMPARE_EQ(qFuzzyCompare(l1f, l2f), floatResult);
+}
+
+void tst_QLine::testIsNull_data()
+{
+    QTest::addColumn<QLineF>("lineF");
+    QTest::addColumn<bool>("result");
+    QTest::addColumn<bool>("floatResult");
+
+    QTest::newRow("non-null") << QLineF(1.0, 1.0, 2.0, 2.0) << false << false;
+    QTest::newRow("null") << QLineF(1.0, 1.0, 1.0, 1.0) << true << true;
+    QTest::newRow("null_int_non-null_float") << QLineF(1.0, 1.0, 1.1, 1.1) << true << false;
+    QTest::newRow("with_qreal_min") << QLineF(-qreal_min, qreal_min, 0.0, 0.0) << true << true;
+}
+
+void tst_QLine::testIsNull()
+{
+    QFETCH(QLineF, lineF);
+    QFETCH(bool, result);
+    QFETCH(bool, floatResult);
+
+    const QLine line = lineF.toLine();
+
+    QCOMPARE_EQ(line.isNull(), result);
+    QCOMPARE_EQ(lineF.isNull(), floatResult);
+    QCOMPARE_EQ(qFuzzyIsNull(lineF), floatResult);
+}
 
 void tst_QLine::testSet()
 {

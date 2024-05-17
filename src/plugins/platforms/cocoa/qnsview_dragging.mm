@@ -16,8 +16,8 @@
                    NSPasteboardTypeRTF, NSPasteboardTypeTabularText, NSPasteboardTypeFont,
                    NSPasteboardTypeRuler, NSFileContentsPboardType,
                    NSPasteboardTypeRTFD , NSPasteboardTypeHTML,
-                   NSPasteboardTypeURL, NSPasteboardTypePDF, (NSString *)kUTTypeVCard,
-                   (NSString *)kPasteboardTypeFileURLPromise, (NSString *)kUTTypeInkText,
+                   NSPasteboardTypeURL, NSPasteboardTypePDF, UTTypeVCard.identifier,
+                   (NSString *)kPasteboardTypeFileURLPromise,
                    NSPasteboardTypeMultipleTextSelection, mimeTypeGeneric]];
 
     // Add custom types supported by the application

@@ -4,7 +4,6 @@
 #define QT_NO_URL_CAST_FROM_STRING 1
 
 #include <QtCore/qt_windows.h>
-#include "qwindowscombase.h"
 #include "qwindowsdialoghelpers.h"
 
 #include "qwindowscontext.h"
@@ -33,6 +32,7 @@
 #include <QtCore/qtemporaryfile.h>
 #include <QtCore/private/qfunctions_win_p.h>
 #include <QtCore/private/qsystemerror_p.h>
+#include <QtCore/private/qcomobject_p.h>
 
 #include <algorithm>
 #include <vector>
@@ -423,7 +423,7 @@ inline void QWindowsFileDialogSharedData::fromOptions(const QSharedPointer<QFile
 
 class QWindowsNativeFileDialogBase;
 
-class QWindowsNativeFileDialogEventHandler : public QWindowsComBase<IFileDialogEvents>
+class QWindowsNativeFileDialogEventHandler : public QComObject<IFileDialogEvents>
 {
     Q_DISABLE_COPY_MOVE(QWindowsNativeFileDialogEventHandler)
 public:

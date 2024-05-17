@@ -4748,7 +4748,7 @@ typedef
       "lgr 1,%1\n\t" /* copy the argvec pointer in r1 */          \
       "lgr 7,11\n\t"                                              \
       "lgr 11,%2\n\t"                                             \
-      ".cfi_def_cfa r11, 0\n\t"
+      ".cfi_def_cfa 11, 0\n\t"
 #  define VALGRIND_CFI_EPILOGUE                                   \
       "lgr 11, 7\n\t"                                             \
       ".cfi_restore_state\n\t"

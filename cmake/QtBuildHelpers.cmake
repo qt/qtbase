@@ -6,7 +6,8 @@ function(qt_internal_validate_cmake_generator)
 
     if(NOT warning_shown
             AND NOT CMAKE_GENERATOR MATCHES "Ninja"
-            AND NOT QT_SILENCE_CMAKE_GENERATOR_WARNING)
+            AND NOT QT_SILENCE_CMAKE_GENERATOR_WARNING
+            AND NOT DEFINED ENV{QT_SILENCE_CMAKE_GENERATOR_WARNING})
         set_property(GLOBAL PROPERTY _qt_validate_cmake_generator_warning_shown TRUE)
         message(WARNING
                "The officially supported CMake generator for building Qt is "
@@ -131,6 +132,10 @@ macro(qt_internal_set_apple_archiver_flags)
     endif()
 endmacro()
 
+macro(qt_internal_set_apple_privacy_manifest target manifest_file)
+    set_target_properties(${target} PROPERTIES _qt_privacy_manifest "${manifest_file}")
+endmacro()
+
 macro(qt_internal_set_debug_extend_target)
     option(QT_CMAKE_DEBUG_EXTEND_TARGET "Debug extend_target calls in Qt's build system" OFF)
 endmacro()
@@ -248,6 +253,8 @@ function(qt_internal_get_qt_build_private_files_to_install out_var)
         QtSeparateDebugInfo.Info.plist.in
         QtSetup.cmake
         QtStandaloneTestsConfig.cmake.in
+        QtVersionlessAliasTargets.cmake.in
+        QtVersionlessTargets.cmake.in
         QtWriteArgsFile.cmake
         modulecppexports.h.in
         qbatchedtestrunner.in.cpp
@@ -378,37 +385,26 @@ endmacro()
 macro(qt_internal_setup_build_and_global_variables)
     qt_internal_validate_cmake_generator()
     qt_internal_set_qt_building_qt()
-    qt_internal_compute_features_from_possible_inputs()
-
-    # Depends on qt_internal_compute_features_from_possible_inputs
-    qt_internal_set_default_build_type()
-
+    qt_internal_set_cmake_build_type()
     qt_internal_set_message_log_level(CMAKE_MESSAGE_LOG_LEVEL)
     qt_internal_unset_extra_build_internals_vars()
     qt_internal_get_generator_is_multi_config()
 
-    # Depends on qt_internal_set_default_build_type
+    # Depends on qt_internal_set_cmake_build_type
     qt_internal_setup_cmake_config_postfix()
 
     qt_internal_setup_position_independent_code()
     qt_internal_set_link_depends_no_shared()
-
-    # Depends on qt_internal_compute_features_from_possible_inputs
     qt_internal_setup_default_install_prefix()
-
     qt_internal_set_qt_source_tree_var()
     qt_internal_set_export_compile_commands()
     qt_internal_set_configure_from_ide()
 
-    # Depends on qt_internal_compute_features_from_possible_inputs
     # Depends on qt_internal_set_configure_from_ide
     qt_internal_set_sync_headers_at_configure_time()
 
-    # Depends on qt_internal_compute_features_from_possible_inputs
-
     qt_internal_setup_build_benchmarks()
 
-    # Depends on qt_internal_compute_features_from_possible_inputs
     # Depends on qt_internal_setup_build_benchmarks
     qt_internal_setup_build_tests()
 

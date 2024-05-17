@@ -292,6 +292,7 @@ void QAlphaWidget::alphaBlend()
                 back_data += bpl;
                 front_data += bpl;
             }
+            break;
         }
     default:
         break;

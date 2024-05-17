@@ -35,13 +35,14 @@ public:
     int m_tabFocusBehavior = -1;
     int m_uiEffects = -1;
     int m_showShortcutsInContextMenus = -1;
+    int m_contextMenuTrigger = -1;
     int m_wheelScrollLines = -1;
     int m_mouseQuickSelectionThreshold = -1;
     int m_mouseDoubleClickDistance = -1;
     int m_touchDoubleTapDistance = -1;
 
     Qt::ColorScheme colorScheme() const { return m_colorScheme; }
-    void setColorScheme(Qt::ColorScheme colorScheme);
+    void updateColorScheme(Qt::ColorScheme colorScheme);
 
     static QStyleHintsPrivate *get(QStyleHints *q);
 

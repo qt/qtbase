@@ -166,3 +166,8 @@
     \externalpage https://cmake.org/cmake/help/latest/command/cmake_policy.html
     \title cmake_policy
 */
+
+/*!
+    \externalpage https://cmake.org/cmake/help/latest/guide/importing-exporting/index.html#creating-packages
+    \title Creating CMake packages
+*/

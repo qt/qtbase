@@ -1,5 +1,5 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtTest/qtest.h>
 #include <QtNetwork/qnetworkrequestfactory.h>
@@ -26,6 +26,8 @@ private Q_SLOTS:
     void operators();
     void timeout();
     void userInfo();
+    void priority();
+    void attributes();
 
 private:
     const QUrl url1{u"http://foo.io"_s};
@@ -236,10 +238,10 @@ void tst_QNetworkRequestFactory::headers()
     h1.append(name1, value3);
     factory.setCommonHeaders(h1);
     QVERIFY(factory.commonHeaders().contains(name1));
-    QCOMPARE(factory.commonHeaders().combinedValue(name1), value1 + ',' + value2 + ',' + value3);
+    QCOMPARE(factory.commonHeaders().combinedValue(name1), value1 + ", " + value2 + ", " + value3);
     request = factory.createRequest();
     QVERIFY(request.hasRawHeader(name1));
-    QCOMPARE(request.rawHeader(name1), value1 + ',' + value2 + ',' + value3);
+    QCOMPARE(request.rawHeader(name1), value1 + ", " + value2 + ", " + value3);
 }
 
 void tst_QNetworkRequestFactory::bearerToken()
@@ -352,6 +354,69 @@ void tst_QNetworkRequestFactory::userInfo()
     factory.clearPassword();
     QVERIFY(factory.userName().isEmpty());
     QVERIFY(factory.password().isEmpty());
+}
+
+void tst_QNetworkRequestFactory::priority()
+{
+    QNetworkRequestFactory factory(u"http://example.com"_s);
+    QCOMPARE(factory.priority(), QNetworkRequest::NormalPriority);
+    auto request = factory.createRequest("/index.html");
+    QCOMPARE(request.priority(), QNetworkRequest::NormalPriority);
+
+    factory.setPriority(QNetworkRequest::HighPriority);
+    QCOMPARE(factory.priority(), QNetworkRequest::HighPriority);
+    request = factory.createRequest("/index.html");
+    QCOMPARE(request.priority(), QNetworkRequest::HighPriority);
+}
+
+void tst_QNetworkRequestFactory::attributes()
+{
+    const auto attribute1 = QNetworkRequest::Attribute::BackgroundRequestAttribute;
+    const auto attribute2 = QNetworkRequest::User;
+    QNetworkRequestFactory factory;
+    QNetworkRequest request;
+
+    // Empty factory
+    QVERIFY(!factory.attribute(attribute1).isValid());
+    request = factory.createRequest();
+    QVERIFY(!request.attribute(attribute1).isValid());
+
+    // (Re-)set and clear individual attribute
+    factory.setAttribute(attribute1, true);
+    QVERIFY(factory.attribute(attribute1).isValid());
+    QCOMPARE(factory.attribute(attribute1).toBool(), true);
+    request = factory.createRequest();
+    QVERIFY(request.attribute(attribute1).isValid());
+    QCOMPARE(request.attribute(attribute1).toBool(), true);
+    // Replace previous value
+    factory.setAttribute(attribute1, false);
+    QVERIFY(factory.attribute(attribute1).isValid());
+    QCOMPARE(factory.attribute(attribute1).toBool(), false);
+    request = factory.createRequest();
+    QVERIFY(request.attribute(attribute1).isValid());
+    QCOMPARE(request.attribute(attribute1).toBool(), false);
+    // Clear individual attribute
+    factory.clearAttribute(attribute1);
+    QVERIFY(!factory.attribute(attribute1).isValid());
+
+    // Getter default value
+    QCOMPARE(factory.attribute(attribute2, 111).toInt(), 111); // default value returned
+    factory.setAttribute(attribute2, 222);
+    QCOMPARE(factory.attribute(attribute2, 111).toInt(), 222); // actual value returned
+    factory.clearAttribute(attribute2);
+    QCOMPARE(factory.attribute(attribute2, 111).toInt(), 111); // default value returned
+
+    // Clear attributes
+    factory.setAttribute(attribute1, true);
+    factory.setAttribute(attribute2, 333);
+    QVERIFY(factory.attribute(attribute1).isValid());
+    QVERIFY(factory.attribute(attribute2).isValid());
+    factory.clearAttributes();
+    QVERIFY(!factory.attribute(attribute1).isValid());
+    QVERIFY(!factory.attribute(attribute2).isValid());
+    request = factory.createRequest();
+    QVERIFY(!request.attribute(attribute1).isValid());
+    QVERIFY(!request.attribute(attribute2).isValid());
 }
 
 QTEST_MAIN(tst_QNetworkRequestFactory)

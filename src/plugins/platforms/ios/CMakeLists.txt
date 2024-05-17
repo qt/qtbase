@@ -5,10 +5,23 @@
 ## QIOSIntegrationPlugin Plugin:
 #####################################################################
 
+if(VISIONOS)
+    include(SwiftIntegration.cmake)
+
+    qt_install(TARGETS QIOSIntegrationPluginSwift
+        EXPORT "${INSTALL_CMAKE_NAMESPACE}QIOSIntegrationPluginTargets"
+        DESTINATION "${INSTALL_LIBDIR}"
+    )
+    qt_internal_add_targets_to_additional_targets_export_file(
+        TARGETS QIOSIntegrationPluginSwift
+        EXPORT_NAME_PREFIX "${INSTALL_CMAKE_NAMESPACE}QIOSIntegrationPlugin"
+    )
+endif()
+
 qt_internal_add_plugin(QIOSIntegrationPlugin
     OUTPUT_NAME qios
     STATIC # Force static, even in shared builds
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES ios
+    DEFAULT_IF "ios" IN_LIST QT_QPA_PLATFORMS
     PLUGIN_TYPE platforms
     SOURCES
         plugin.mm
@@ -27,6 +40,7 @@ qt_internal_add_plugin(QIOSIntegrationPlugin
         qioswindow.h qioswindow.mm
         quiaccessibilityelement.h quiaccessibilityelement.mm
         quiview.h quiview.mm
+        quiwindow.mm quiwindow.h
         uistrings_p.h uistrings.cpp
     NO_PCH_SOURCES
         qioscontext.mm # undef QT_NO_FOREACH
@@ -57,20 +71,35 @@ qt_internal_extend_target(QIOSIntegrationPlugin CONDITION QT_FEATURE_opengl
         Qt::OpenGLPrivate
 )
 
-qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
+qt_internal_extend_target(QIOSIntegrationPlugin CONDITION QT_FEATURE_clipboard
     SOURCES
         qiosclipboard.h qiosclipboard.mm
-        qiosdocumentpickercontroller.h qiosdocumentpickercontroller.mm
+)
+
+qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
+    SOURCES
         qiosfiledialog.h qiosfiledialog.mm
-        qioscolordialog.h qioscolordialog.mm
-        qiosfontdialog.h qiosfontdialog.mm
-        qiosmenu.h qiosmenu.mm
-        qiosmessagedialog.h qiosmessagedialog.mm
-        qiostextinputoverlay.h qiostextinputoverlay.mm
+        qiosdocumentpickercontroller.h qiosdocumentpickercontroller.mm
     LIBRARIES
-        ${FWAssetsLibrary}
         ${FWUniformTypeIdentifiers}
         ${FWPhotos}
 )
 
+qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT TVOS
+    SOURCES
+        qioscolordialog.h qioscolordialog.mm
+        qiosfontdialog.h qiosfontdialog.mm
+        qiosmessagedialog.h qiosmessagedialog.mm
+)
+
+qt_internal_extend_target(QIOSIntegrationPlugin CONDITION NOT (TVOS OR VISIONOS)
+    SOURCES
+        qiosmenu.h qiosmenu.mm
+        qiostextinputoverlay.h qiostextinputoverlay.mm
+)
+
 add_subdirectory(optional)
+
+if(VISIONOS)
+    target_link_libraries(QIOSIntegrationPlugin PRIVATE QIOSIntegrationPluginSwift)
+endif()

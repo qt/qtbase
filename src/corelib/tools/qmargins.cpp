@@ -14,6 +14,10 @@ QT_BEGIN_NAMESPACE
     \ingroup painting
     \since 4.6
 
+    \compares equality
+    \compareswith equality QMarginsF
+    \endcompareswith
+
     \brief The QMargins class defines the four margins of a rectangle.
 
     QMargin defines a set of four margins; left, top, right, and bottom,
@@ -107,15 +111,15 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QMargins::operator==(const QMargins &m1, const QMargins &m2)
+    \fn bool QMargins::operator==(const QMargins &lhs, const QMargins &rhs)
 
-    Returns \c true if \a m1 and \a m2 are equal; otherwise returns \c false.
+    Returns \c true if \a lhs and \a rhs are equal; otherwise returns \c false.
 */
 
 /*!
-    \fn bool QMargins::operator!=(const QMargins &m1, const QMargins &m2)
+    \fn bool QMargins::operator!=(const QMargins &lhs, const QMargins &rhs)
 
-    Returns \c true if \a m1 and \a m2 are different; otherwise returns \c false.
+    Returns \c true if \a lhs and \a rhs are different; otherwise returns \c false.
 */
 
 /*!
@@ -438,6 +442,10 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     \ingroup painting
     \since 5.3
 
+    \compares equality
+    \compareswith equality QMargins
+    \endcompareswith
+
     \brief The QMarginsF class defines the four margins of a rectangle.
 
     QMarginsF defines a set of four margins; left, top, right, and bottom,
@@ -744,6 +752,22 @@ QDebug operator<<(QDebug dbg, const QMargins &m)
     the nearest integer.
 
     \sa QMarginsF(), QMargins::toMarginsF()
+*/
+
+/*!
+    \fn bool QMarginsF::qFuzzyCompare(const QMarginsF &lhs, const QMarginsF &rhs)
+    \since 6.8
+
+    Returns \c true if \a lhs is approximately equal to \a rhs;
+    otherwise returns \c false.
+*/
+
+/*!
+    \fn bool QMarginsF::qFuzzyIsNull(const QMarginsF &margins)
+    \since 6.8
+
+    Returns \c true if all components of margsins \a margins are
+    approximately equal to zero; otherwise returns \c false.
 */
 
 /*****************************************************************************

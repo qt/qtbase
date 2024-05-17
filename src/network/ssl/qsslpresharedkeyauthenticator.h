@@ -16,6 +16,7 @@ QT_BEGIN_NAMESPACE
 class QSslPreSharedKeyAuthenticatorPrivate;
 class QSslPreSharedKeyAuthenticator
 {
+    Q_GADGET_EXPORT(Q_NETWORK_EXPORT)
 public:
     Q_NETWORK_EXPORT QSslPreSharedKeyAuthenticator();
     Q_NETWORK_EXPORT ~QSslPreSharedKeyAuthenticator();

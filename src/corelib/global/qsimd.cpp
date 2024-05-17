@@ -561,11 +561,6 @@ QT_FUNCTION_TARGET_BASELINE
 uint64_t QT_MANGLE_NAMESPACE(qDetectCpuFeatures)()
 {
     auto minFeatureTest = minFeature;
-#if defined(Q_OS_LINUX) && defined(Q_PROCESSOR_ARM_64)
-    // Yocto hard-codes CRC32+AES on. Since they are unlikely to be used
-    // automatically by compilers, we can just add runtime check.
-    minFeatureTest &= ~(CpuFeatureAES|CpuFeatureCRC32);
-#endif
 #if defined(Q_PROCESSOR_X86_64) && defined(cpu_feature_shstk)
     // Controlflow Enforcement Technology (CET) is an OS-assisted
     // hardware-feature, meaning the CPUID bit may be disabled if the OS

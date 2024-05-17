@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QSet>
 #include <QTemporaryFile>
@@ -1176,8 +1176,10 @@ void tst_QPixmap::dprPassthrough()
     pm.convertFromImage(img);
     QCOMPARE(pm.devicePixelRatio(), dpr);
 
+#ifndef QT_NO_IMAGE_HEURISTIC_MASK
     QBitmap heuristicMask = src.createHeuristicMask();
     QCOMPARE(heuristicMask.devicePixelRatio(), dpr);
+#endif
 
     QBitmap maskFromColor = src.createMaskFromColor(Qt::white);
     QCOMPARE(maskFromColor.devicePixelRatio(), dpr);
@@ -1423,7 +1425,7 @@ void tst_QPixmap::loadFromDataImage()
     QPixmap pixmapWithCopy = QPixmap::fromImage(imageRef);
 
     QFile file(imagePath);
-    file.open(QIODevice::ReadOnly);
+    QVERIFY(file.open(QIODevice::ReadOnly));
     QByteArray rawData = file.readAll();
 
     QPixmap directLoadingPixmap;

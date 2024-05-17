@@ -75,8 +75,9 @@ customized way.
 For Windows desktop applications, the required runtime files for the compiler
 are also installed by default. To prevent this, specify \c{NO_COMPILER_RUNTIME}.
 
-You can use \c{DEPLOY_TOOL_OPTIONS} to pass additional options to the underlying
-deployment tool.
+Since Qt 6.7, you can use \c{DEPLOY_TOOL_OPTIONS} to pass additional options to
+the underlying deployment tool. This only has an effect if the underlying
+deployment tool is either macdeployqt or windeployqt.
 
 For deploying a QML application, use
 \l{qt6_generate_deploy_qml_app_script}{qt_generate_deploy_qml_app_script()}
@@ -97,5 +98,13 @@ unmodified to \l{qt6_deploy_runtime_dependencies}{qt_deploy_runtime_dependencies
 
 \section1 Example
 
+The following example shows how to deploy an application \c{MyApp}.
+
 \include cmake-generate-deploy-app-script.qdocinc
+
+The following example shows how to use the \c{DEPLOY_TOOL_OPTIONS} parameter to
+pass different options to macdeployqt and windeployqt.
+
+\include cmake-generate-deploy-app-script-deploy-tool-options.qdocinc
+
 */

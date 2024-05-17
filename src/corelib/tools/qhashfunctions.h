@@ -1,5 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // Copyright (C) 2015 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
+// Copyright (C) 2024 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef QHASHFUNCTIONS_H
@@ -11,6 +12,10 @@
 #include <numeric> // for std::accumulate
 #include <functional> // for std::hash
 #include <utility> // For std::pair
+
+#ifdef __cpp_concepts
+#  include <concepts>
+#endif
 
 #if 0
 #pragma qt_class(QHashFunctions)
@@ -44,6 +49,21 @@ struct QHashSeed
 private:
     size_t data;
 };
+
+// Whether, ∀ t of type T && ∀ seed, qHash(Key(t), seed) == qHash(t, seed)
+template <typename Key, typename T> struct QHashHeterogeneousSearch : std::false_type {};
+
+// Specializations
+template <> struct QHashHeterogeneousSearch<QString, QStringView> : std::true_type {};
+template <> struct QHashHeterogeneousSearch<QStringView, QString> : std::true_type {};
+template <> struct QHashHeterogeneousSearch<QByteArray, QByteArrayView> : std::true_type {};
+template <> struct QHashHeterogeneousSearch<QByteArrayView, QByteArray> : std::true_type {};
+#ifndef Q_PROCESSOR_ARM
+template <> struct QHashHeterogeneousSearch<QString, QLatin1StringView> : std::true_type {};
+template <> struct QHashHeterogeneousSearch<QStringView, QLatin1StringView> : std::true_type {};
+template <> struct QHashHeterogeneousSearch<QLatin1StringView, QString> : std::true_type {};
+template <> struct QHashHeterogeneousSearch<QLatin1StringView, QStringView> : std::true_type {};
+#endif
 
 namespace QHashPrivate {
 
@@ -102,7 +122,39 @@ Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(quint64 key, size_t seed = 0
         key ^= (key >> 32);
     return QHashPrivate::hash(size_t(key), seed);
 }
-Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(qint64 key, size_t seed = 0) noexcept { return qHash(quint64(key), seed); }
+Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(qint64 key, size_t seed = 0) noexcept
+{
+    if constexpr (sizeof(qint64) > sizeof(size_t)) {
+        // Avoid QTBUG-116080: we XOR the top half with its own sign bit:
+        // - if the qint64 is in range of qint32, then signmask ^ high == 0
+        //   (for Qt 7 only)
+        // - if the qint64 is in range of quint32, then signmask == 0 and we
+        //   do the same as the quint64 overload above
+        quint32 high = quint32(quint64(key) >> 32);
+        quint32 low = quint32(quint64(key));
+        quint32 signmask = qint32(high) >> 31;  // all zeroes or all ones
+        signmask = QT_VERSION_MAJOR > 6 ? signmask : 0;
+        low ^= signmask ^ high;
+        return qHash(low, seed);
+    }
+    return qHash(quint64(key), seed);
+}
+#if QT_SUPPORTS_INT128
+constexpr size_t qHash(quint128 key, size_t seed = 0) noexcept
+{
+    return qHash(quint64(key + (key >> 64)), seed);
+}
+constexpr size_t qHash(qint128 key, size_t seed = 0) noexcept
+{
+    // Avoid QTBUG-116080: same as above, but with double the sizes and without
+    // the need for compatibility
+    quint64 high = quint64(quint128(key) >> 64);
+    quint64 low = quint64(quint128(key));
+    quint64 signmask = qint64(high) >> 63; // all zeroes or all ones
+    low += signmask ^ high;
+    return qHash(low, seed);
+}
+#endif // QT_SUPPORTS_INT128
 Q_DECL_CONST_FUNCTION inline size_t qHash(float key, size_t seed = 0) noexcept
 {
     // ensure -0 gets mapped to 0
@@ -112,9 +164,7 @@ Q_DECL_CONST_FUNCTION inline size_t qHash(float key, size_t seed = 0) noexcept
     return QHashPrivate::hash(k, seed);
 }
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION size_t qHash(double key, size_t seed = 0) noexcept;
-#if !defined(Q_OS_DARWIN) || defined(Q_QDOC)
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION size_t qHash(long double key, size_t seed = 0) noexcept;
-#endif
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(wchar_t key, size_t seed = 0) noexcept
 { return QHashPrivate::hash(size_t(key), seed); }
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(char16_t key, size_t seed = 0) noexcept
@@ -153,7 +203,9 @@ inline Q_DECL_PURE_FUNCTION size_t qHash(const QByteArray &key, size_t seed = 0
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(QStringView key, size_t seed = 0) noexcept;
 inline Q_DECL_PURE_FUNCTION size_t qHash(const QString &key, size_t seed = 0) noexcept
 { return qHash(QStringView{key}, seed); }
+#ifndef QT_BOOTSTRAPPED
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(const QBitArray &key, size_t seed = 0) noexcept;
+#endif
 Q_CORE_EXPORT Q_DECL_PURE_FUNCTION size_t qHash(QLatin1StringView key, size_t seed = 0) noexcept;
 Q_DECL_CONST_FUNCTION constexpr inline size_t qHash(QKeyCombination key, size_t seed = 0) noexcept
 { return qHash(key.toCombined(), seed); }
@@ -184,8 +236,31 @@ size_t qHash(const T &t, size_t seed) noexcept(noexcept(qHash(t)))
 { return qHash(t) ^ seed; }
 #endif // < Qt 7
 
+namespace QHashPrivate {
+#ifdef __cpp_concepts
+template <typename Key, typename T> concept HeterogeneouslySearchableWithHelper =
+        // if Key and T are not the same (member already exists)
+        !std::is_same_v<Key, T>
+        // but are comparable amongst each other
+        && std::equality_comparable_with<Key, T>
+        // and supports heteregenous hashing
+        && QHashHeterogeneousSearch<Key, T>::value;
+template <typename Key, typename T> concept HeterogeneouslySearchableWith =
+        HeterogeneouslySearchableWithHelper<q20::remove_cvref_t<Key>, q20::remove_cvref_t<T>>;
+#else
+template <typename Key, typename T> constexpr bool HeterogeneouslySearchableWith = false;
+#endif
+}
+
 template<typename T>
 bool qHashEquals(const T &a, const T &b)
+{
+    return a == b;
+}
+
+template <typename T1, typename T2>
+std::enable_if_t<QHashPrivate::HeterogeneouslySearchableWith<T1, T2>, bool>
+qHashEquals(const T1 &a, const T2 &b)
 {
     return a == b;
 }
@@ -326,7 +401,9 @@ QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH_BY_VALUE(QStringView)
 QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH_BY_VALUE(QLatin1StringView)
 QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH_BY_VALUE(QByteArrayView)
 QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH_BY_CREF(QByteArray)
+#ifndef QT_BOOTSTRAPPED
 QT_SPECIALIZE_STD_HASH_TO_CALL_QHASH_BY_CREF(QBitArray)
+#endif
 
 QT_END_NAMESPACE
 

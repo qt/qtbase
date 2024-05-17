@@ -16,6 +16,7 @@
 //
 
 #include <private/qwidget_p.h>
+#include <private/qflatmap_p.h>
 #include <qdialogbuttonbox.h>
 
 QT_BEGIN_NAMESPACE
@@ -42,8 +43,8 @@ public:
     QDialogButtonBoxPrivate(Qt::Orientation orient);
 
     QList<QAbstractButton *> buttonLists[QDialogButtonBox::NRoles];
-    QHash<QPushButton *, QDialogButtonBox::StandardButton> standardButtonHash;
-    QHash<QAbstractButton *, QDialogButtonBox::ButtonRole> hiddenButtons;
+    QVarLengthFlatMap<QPushButton *, QDialogButtonBox::StandardButton, 8> standardButtonMap;
+    QVarLengthFlatMap<QAbstractButton *, QDialogButtonBox::ButtonRole, 8> hiddenButtons;
 
     Qt::Orientation orientation;
     QDialogButtonBox::ButtonLayout layoutPolicy;

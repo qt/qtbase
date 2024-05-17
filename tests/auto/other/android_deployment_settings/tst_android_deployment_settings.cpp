@@ -1,5 +1,5 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -76,6 +76,8 @@ void tst_android_deployment_settings::DeploymentSettings_data()
                                              << "1";
     QTest::newRow("android-target-sdk-version") << "android-target-sdk-version"
                                                 << "2";
+    QTest::newRow("android-package-name") << "android-package-name"
+                                          << "org.qtproject.android_deployment_settings_test";
 }
 
 void tst_android_deployment_settings::DeploymentSettings()

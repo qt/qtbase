@@ -61,6 +61,33 @@ QPointF QLibInputTouch::getPos(libinput_event_touch *e)
     return geom.topLeft() + QPointF(x, y);
 }
 
+static void setMatrix(libinput_device *dev)
+{
+    if (libinput_device_config_calibration_has_matrix(dev)) {
+        QByteArray env = qgetenv("QT_QPA_LIBINPUT_TOUCH_MATRIX");
+        env = env.simplified();
+        if (env.size()) {
+            float matrix[6];
+            QList<QByteArray> list = env.split(' ');
+            if (list.length() != 6) {
+                qCWarning(qLcLibInput, "matrix length %lld wrong, should be 6", list.length());
+                return;
+            }
+            for (int i = 0; i < 6; i++) {
+                bool ok = true;
+                matrix[i] = list[i].toFloat(&ok);
+                if (!ok) {
+                    qCWarning(qLcLibInput, "Invalid matrix entry %d %s ", i, list[i].constData());
+                    return;
+                }
+            }
+            if (libinput_device_config_calibration_set_matrix(dev, matrix) != LIBINPUT_CONFIG_STATUS_SUCCESS)
+                qCWarning(qLcLibInput, "Failed to set libinput calibration matrix ");
+        }
+    } else {
+        qCWarning(qLcLibInput, "Touch device doesn't support matrix");
+    }
+}
 void QLibInputTouch::registerDevice(libinput_device *dev)
 {
     struct udev_device *udev_device;
@@ -92,6 +119,7 @@ void QLibInputTouch::registerDevice(libinput_device *dev)
     if (!geom.isNull())
         devPriv->setAvailableVirtualGeometry(geom);
     QWindowSystemInterface::registerInputDevice(td);
+    setMatrix(dev);
 }
 
 void QLibInputTouch::unregisterDevice(libinput_device *dev)

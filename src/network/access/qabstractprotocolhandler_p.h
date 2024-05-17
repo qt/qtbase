@@ -23,7 +23,7 @@ QT_BEGIN_NAMESPACE
 
 class QHttpNetworkConnectionChannel;
 class QHttpNetworkReply;
-class QAbstractSocket;
+class QIODevice;
 class QHttpNetworkConnection;
 
 class QAbstractProtocolHandler {
@@ -39,7 +39,7 @@ public:
 protected:
     QHttpNetworkConnectionChannel *m_channel;
     QHttpNetworkReply *m_reply;
-    QAbstractSocket *m_socket;
+    QIODevice *m_socket;
     QHttpNetworkConnection *m_connection;
 };
 

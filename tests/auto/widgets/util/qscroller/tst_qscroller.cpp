@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtGui>
 #include <QtWidgets>
@@ -324,7 +324,6 @@ void tst_QScroller::scrollTo()
 {
     QScopedPointer<tst_QScrollerWidget> sw(new tst_QScrollerWidget);
     sw->show();
-    QApplicationPrivate::setActiveWindow(sw.data());
     if (!QTest::qWaitForWindowExposed(sw.data()) || !QTest::qWaitForWindowActive(sw.data()))
         QSKIP("Failed to show and activate window");
 
@@ -356,7 +355,6 @@ void tst_QScroller::scroll()
     QScroller::grabGesture(sw.data(), QScroller::TouchGesture);
     sw->setGeometry(100, 100, 400, 300);
     sw->show();
-    QApplicationPrivate::setActiveWindow(sw.data());
     if (!QTest::qWaitForWindowExposed(sw.data()) || !QTest::qWaitForWindowActive(sw.data()))
         QSKIP("Failed to show and activate window");
 
@@ -397,7 +395,6 @@ void tst_QScroller::overshoot()
     QScroller::grabGesture(sw.data(), QScroller::TouchGesture);
     sw->setGeometry(100, 100, 400, 300);
     sw->show();
-    QApplicationPrivate::setActiveWindow(sw.data());
     if (!QTest::qWaitForWindowExposed(sw.data()) || !QTest::qWaitForWindowActive(sw.data()))
         QSKIP("Failed to show and activate window");
 
@@ -537,7 +534,6 @@ void tst_QScroller::mouseEventTimestamp()
     QScroller::grabGesture(sw.data(), QScroller::LeftMouseButtonGesture);
     sw->setGeometry(100, 100, 400, 300);
     sw->show();
-    QApplicationPrivate::setActiveWindow(sw.data());
     if (!QTest::qWaitForWindowExposed(sw.data()) || !QTest::qWaitForWindowActive(sw.data()))
         QSKIP("Failed to show and activate window");
 

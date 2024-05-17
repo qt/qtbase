@@ -1,5 +1,5 @@
 // Copyright (C) 2020 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
 
@@ -17,6 +17,7 @@
 #include <private/qobject_p.h>
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <qfuture.h>
 #include <qfuturewatcher.h>
 #include <qresultstore.h>
@@ -161,6 +162,7 @@ class tst_QFuture: public QObject
 {
     Q_OBJECT
 private slots:
+    void compareCompiles();
     void resultStore();
     void future();
     void futureToVoid();
@@ -272,6 +274,12 @@ public:
 private:
     QtPrivate::ResultStoreBase &store;
 };
+
+void tst_QFuture::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QFuture<int>::const_iterator>();
+    QTestPrivate::testEqualityOperatorsCompile<QFuture<QString>::const_iterator>();
+}
 
 void tst_QFuture::resultStore()
 {
@@ -1359,16 +1367,16 @@ void tst_QFuture::iterators()
         QFuture<int>::const_iterator i1 = f.begin(), i2 = i1 + 1;
         QFuture<int>::const_iterator c1 = i1, c2 = c1 + 1;
 
-        QCOMPARE(i1, i1);
-        QCOMPARE(i1, c1);
-        QCOMPARE(c1, i1);
-        QCOMPARE(c1, c1);
-        QCOMPARE(i2, i2);
-        QCOMPARE(i2, c2);
-        QCOMPARE(c2, i2);
-        QCOMPARE(c2, c2);
-        QCOMPARE(1 + i1, i1 + 1);
-        QCOMPARE(1 + c1, c1 + 1);
+        QT_TEST_EQUALITY_OPS(i1, i1, true);
+        QT_TEST_EQUALITY_OPS(i1, c1, true);
+        QT_TEST_EQUALITY_OPS(c1, i1, true);
+        QT_TEST_EQUALITY_OPS(c1, c1, true);
+        QT_TEST_EQUALITY_OPS(i2, i2, true);
+        QT_TEST_EQUALITY_OPS(i2, c2, true);
+        QT_TEST_EQUALITY_OPS(c2, i2, true);
+        QT_TEST_EQUALITY_OPS(c2, c2, true);
+        QT_TEST_EQUALITY_OPS(1 + i1, i1 + 1, true);
+        QT_TEST_EQUALITY_OPS(1 + c1, c1 + 1, true);
 
         QVERIFY(i1 != i2);
         QVERIFY(i1 != c2);
@@ -3907,7 +3915,7 @@ void tst_QFuture::signalConnect()
     {
         SenderObject sender;
 
-#if defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
+#if defined(Q_CC_MSVC_ONLY) && (Q_CC_MSVC < 1940 || __cplusplus < 202002L)
 #define EXPECT_FUTURE_CONNECT_FAIL() QEXPECT_FAIL("", "QTBUG-101761, test fails on Windows/MSVC", Continue)
 #else
         QTest::ignoreMessage(QtWarningMsg, "QObject::connect: signal not found in SenderObject");

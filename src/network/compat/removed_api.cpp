@@ -55,3 +55,16 @@ QList<QNetworkCookie> QNetworkCookie::parseCookies(const QByteArray &cookieStrin
 // order sections alphabetically
 
 #endif // QT_NETWORK_REMOVED_SINCE(6, 7)
+
+#if QT_NETWORK_REMOVED_SINCE(6, 8)
+
+#if QT_CONFIG(dnslookup)
+#  include "qdnslookup.h" // inlined API
+#endif
+#include "qnetworkrequest.h" // inlined API
+
+// #include "qotherheader.h"
+// // implement removed functions from qotherheader.h
+// order sections alphabetically
+
+#endif // QT_NETWORK_REMOVED_SINCE(6, 8)

@@ -1818,11 +1818,20 @@ void QTextDocumentLayoutPrivate::drawTableCell(const QRectF &cellRect, QPainter 
     if (r >= headerRowCount)
         topMargin += td->headerHeight.toReal();
 
-    if (!td->borderCollapse && td->border != 0) {
+    // If cell border configured, don't draw default border for cells. It will be taken care later by
+    // drawTableCellBorder().
+    bool cellBorderConfigured = (cell.format().hasProperty(QTextFormat::TableCellLeftBorder) ||
+                                 cell.format().hasProperty(QTextFormat::TableCellTopBorder) ||
+                                 cell.format().hasProperty(QTextFormat::TableCellRightBorder) ||
+                                 cell.format().hasProperty(QTextFormat::TableCellBottomBorder));
+
+    if (!td->borderCollapse && td->border != 0 && !cellBorderConfigured) {
         const QBrush oldBrush = painter->brush();
         const QPen oldPen = painter->pen();
 
-        const qreal border = td->border.toReal();
+        // If border is configured for the table (and not explicitly for the cell), then
+        // always draw 1px border around the cell
+        const qreal border = 1;
 
         QRectF borderRect(cellRect.left() - border, cellRect.top() - border, cellRect.width() + border, cellRect.height() + border);
 
@@ -1885,7 +1894,8 @@ void QTextDocumentLayoutPrivate::drawTableCell(const QRectF &cellRect, QPainter 
     }
 
     // paint over the background - otherwise we would have to adjust the background paint cellRect for the border values
-    drawTableCellBorder(cellRect, painter, table, td, cell);
+    if (cellBorderConfigured)
+        drawTableCellBorder(cellRect, painter, table, td, cell);
 
     const QFixed verticalOffset = td->cellVerticalOffsets.at(c + r * table->columns());
 
@@ -2206,17 +2216,15 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
     }
     case QTextListFormat::ListSquare:
         if (!marker)
-            painter->fillRect(r, brush);
+            painter->fillRect(r, painter->pen().brush());
         break;
     case QTextListFormat::ListCircle:
-        if (!marker) {
-            painter->setPen(QPen(brush, 0));
+        if (!marker)
             painter->drawEllipse(r.translated(0.5, 0.5)); // pixel align for sharper rendering
-        }
         break;
     case QTextListFormat::ListDisc:
         if (!marker) {
-            painter->setBrush(brush);
+            painter->setBrush(painter->pen().brush());
             painter->setPen(Qt::NoPen);
             painter->drawEllipse(r);
         }

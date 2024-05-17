@@ -2,7 +2,7 @@
 # Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-PICK_TO_BRANCHES="6.6 6.5 6.2 5.15"
+PICK_TO_BRANCHES="6.7 6.6 6.5 6.2 5.15"
 #UPSTREAM=github.com:publicsuffix/list.git          # use this if you have a github account
 UPSTREAM=https://github.com/publicsuffix/list.git  # and this if you don't
 
@@ -72,5 +72,10 @@ run_or_die git commit -m "Update public suffix list
 Version $GITSHA1, fetched on
 $TODAY.
 
+[ChangeLog][Third-Party Code] Updated the public suffix list to upstream
+SHA $GITSHA1.
+
 Pick-to: $PICK_TO_BRANCHES
 " --edit
+
+msg "Please use topic=publicsuffix-list-$GITSHA1 when pushing."

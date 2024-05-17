@@ -4,6 +4,7 @@
 #ifndef QANYSTRINGVIEW_H
 #define QANYSTRINGVIEW_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qlatin1stringview.h>
 #include <QtCore/qstringview.h>
 #include <QtCore/qutf8stringview.h>
@@ -101,12 +102,7 @@ private:
     static constexpr bool isAsciiOnlyCharsAtCompileTime(Char *str, qsizetype sz) noexcept
     {
         // do not perform check if not at compile time
-#if !defined(QT_SUPPORTS_IS_CONSTANT_EVALUATED)
-        Q_UNUSED(str);
-        Q_UNUSED(sz);
-        return false;
-#else
-        if (!qIsConstantEvaluated())
+        if (!q20::is_constant_evaluated())
             return false;
         if constexpr (sizeof(Char) != sizeof(char)) {
             Q_UNUSED(str);
@@ -119,7 +115,6 @@ private:
             }
             return true;
         }
-#endif
     }
 
     template<typename Char>
@@ -137,10 +132,8 @@ private:
     template <typename Char>
     static constexpr qsizetype lengthHelperPointer(const Char *str) noexcept
     {
-#ifdef QT_SUPPORTS_IS_CONSTANT_EVALUATED
-        if (qIsConstantEvaluated())
+        if (q20::is_constant_evaluated())
             return qsizetype(std::char_traits<Char>::length(str));
-#endif
         if constexpr (sizeof(Char) == sizeof(char16_t))
             return QtPrivate::qustrlen(reinterpret_cast<const char16_t*>(str));
         else
@@ -275,6 +268,14 @@ public:
     [[nodiscard]] Q_CORE_EXPORT static int compare(QAnyStringView lhs, QAnyStringView rhs, Qt::CaseSensitivity cs = Qt::CaseSensitive) noexcept;
     [[nodiscard]] Q_CORE_EXPORT static bool equal(QAnyStringView lhs, QAnyStringView rhs) noexcept;
 
+    static constexpr inline bool detects_US_ASCII_at_compile_time =
+#ifdef QT_SUPPORTS_IS_CONSTANT_EVALUATED
+            true
+#else
+            false
+#endif
+            ;
+
     //
     // STL compatibility API:
     //
@@ -293,24 +294,15 @@ public:
     { return size(); }
 
 private:
-    [[nodiscard]] friend inline bool operator==(QAnyStringView lhs, QAnyStringView rhs) noexcept
+    friend bool comparesEqual(const QAnyStringView &lhs, const QAnyStringView &rhs) noexcept
     { return QAnyStringView::equal(lhs, rhs); }
-    [[nodiscard]] friend inline bool operator!=(QAnyStringView lhs, QAnyStringView rhs) noexcept
-    { return !QAnyStringView::equal(lhs, rhs); }
-
-#if defined(__cpp_impl_three_way_comparison) && !defined(Q_QDOC)
-    [[nodiscard]] friend inline auto operator<=>(QAnyStringView lhs, QAnyStringView rhs) noexcept
-    { return QAnyStringView::compare(lhs, rhs) <=> 0; }
-#else
-    [[nodiscard]] friend inline bool operator<=(QAnyStringView lhs, QAnyStringView rhs) noexcept
-    { return QAnyStringView::compare(lhs, rhs) <= 0; }
-    [[nodiscard]] friend inline bool operator>=(QAnyStringView lhs, QAnyStringView rhs) noexcept
-    { return QAnyStringView::compare(lhs, rhs) >= 0; }
-    [[nodiscard]] friend inline bool operator<(QAnyStringView lhs, QAnyStringView rhs) noexcept
-    { return QAnyStringView::compare(lhs, rhs) < 0; }
-    [[nodiscard]] friend inline bool operator>(QAnyStringView lhs, QAnyStringView rhs) noexcept
-    { return QAnyStringView::compare(lhs, rhs) > 0; }
-#endif
+    friend Qt::strong_ordering
+    compareThreeWay(const QAnyStringView &lhs, const QAnyStringView &rhs) noexcept
+    {
+        const int res = QAnyStringView::compare(lhs, rhs);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QAnyStringView)
 
 #ifndef QT_NO_DEBUG_STREAM
     Q_CORE_EXPORT friend QDebug operator<<(QDebug d, QAnyStringView s);

@@ -1,10 +1,11 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // Copyright (C) 2020 Olivier Goffart <ogoffart@woboq.com>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <QSignalSpy>
 #include <stdio.h>
+#include <optional>
 #include <qobject.h>
 #include <qmetaobject.h>
 #include <qjsondocument.h>
@@ -62,6 +63,8 @@
 
 #include "qmlmacro.h"
 
+#include "tech-preview.h"
+
 using namespace Qt::StringLiterals;
 
 #ifdef Q_MOC_RUN
@@ -81,6 +84,26 @@ namespace A {
    namespace B::inline C {}
 }
 #endif
+
+
+namespace TokenStartingWithNumber
+{
+Q_NAMESPACE
+
+#define FOR_EACH_ITEM( CALL ) \
+  CALL( EXAMPLE ) \
+  CALL( 123_EXAMPLE ) \
+  CALL( OTHER_EXAMPLE )
+
+enum FooItems
+{
+
+#define ENUM_ITEM(NAME, ...) FOO ## NAME,
+  FOR_EACH_ITEM( ENUM_ITEM )
+};
+
+Q_ENUM_NS(FooItems)
+}
 
 Q_DECLARE_METATYPE(const QMetaObject*);
 
@@ -256,6 +279,24 @@ public:
 };
 
 CreatableGadget creatableGadget; // Force the compiler to use the constructor
+
+struct ParentWithSignalWithArgument : QObject {
+    Q_OBJECT
+    Q_PROPERTY(int i READ i WRITE setI NOTIFY iChanged)
+
+public:
+    int i() const {return 0;}
+    void setI(int) {}
+
+signals:
+    void iChanged(int);
+};
+
+struct SignalWithArgumentInParent : ParentWithSignalWithArgument
+{
+    Q_OBJECT
+    Q_PROPERTY(int otherI READ i WRITE setI NOTIFY iChanged)
+};
 
 struct MyStruct {};
 struct MyStruct2 {};
@@ -831,6 +872,7 @@ private slots:
     void readWriteThroughBindable();
     void invokableCtors();
     void virtualInlineTaggedSlot();
+    void tokenStartingWithNumber();
 
 signals:
     void sigWithUnsignedArg(unsigned foo);
@@ -4231,9 +4273,12 @@ QT_WARNING_POP
 
 void tst_Moc::mocJsonOutput()
 {
-    const auto readFile = [](const QString &fileName) {
+    const auto readFile = [](const QString &fileName) -> std::optional<QJsonDocument> {
         QFile f(fileName);
-        f.open(QIODevice::ReadOnly);
+        if (!f.open(QIODevice::ReadOnly)) {
+            qWarning() << "Could not open file" << fileName << f.errorString();
+            return std::nullopt;
+        }
         return QJsonDocument::fromJson(f.readAll());
     };
 
@@ -4249,8 +4294,10 @@ void tst_Moc::mocJsonOutput()
     QVERIFY2(QFile::exists(actualFile), qPrintable(actualFile));
     QVERIFY2(QFile::exists(expectedFile), qPrintable(expectedFile));
 
-    QJsonDocument actualOutput = readFile(actualFile);
-    QJsonDocument expectedOutput = readFile(expectedFile);
+    std::optional<QJsonDocument> actualOutput = readFile(actualFile);
+    QVERIFY(actualOutput);
+    std::optional<QJsonDocument> expectedOutput = readFile(expectedFile);
+    QVERIFY(expectedOutput);
 
     const auto showPotentialDiff = [](const QJsonDocument &actual, const QJsonDocument &expected) -> QByteArray {
 #if defined(Q_OS_UNIX)
@@ -4285,7 +4332,7 @@ void tst_Moc::mocJsonOutput()
 #endif
     };
 
-    QVERIFY2(actualOutput == expectedOutput, showPotentialDiff(actualOutput, expectedOutput).constData());
+    QVERIFY2(*actualOutput == *expectedOutput, showPotentialDiff(*actualOutput, *expectedOutput).constData());
 }
 
 void TestFwdProperties::setProp1(const FwdClass1 &v)
@@ -4645,6 +4692,15 @@ void tst_Moc::virtualInlineTaggedSlot()
     QVERIFY(method.isValid());
     QCOMPARE(method.tag(), "Q_NOREPLY");
     QCOMPARE(method.returnMetaType(), QMetaType::fromType<int>());
+}
+
+void tst_Moc::tokenStartingWithNumber()
+{
+    auto *mo  = &TokenStartingWithNumber::staticMetaObject;
+    int index = mo->indexOfEnumerator("FooItems");
+    QMetaEnum metaEnum = mo->enumerator(index);
+    QVERIFY(metaEnum.isValid());
+    QCOMPARE(metaEnum.keyCount(), 3);
 }
 
 QTEST_MAIN(tst_Moc)

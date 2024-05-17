@@ -1,5 +1,5 @@
 // Copyright (C) 2022 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtTest>
 
@@ -16,6 +16,7 @@ public:
     tst_QJniArray() = default;
 
 private slots:
+    void construct();
     void size();
     void operators();
 };
@@ -74,6 +75,33 @@ VERIFY_RETURN_FOR_TYPE(QList<double>, QList<double>);
 
 VERIFY_RETURN_FOR_TYPE(QString, QString);
 
+VERIFY_RETURN_FOR_TYPE(List, List);
+VERIFY_RETURN_FOR_TYPE(List[], QJniArray<List>);
+VERIFY_RETURN_FOR_TYPE(QJniArray<List>, QJniArray<List>);
+
+void tst_QJniArray::construct()
+{
+    {
+        QStringList strings;
+        for (int i = 0; i < 10000; ++i)
+            strings << QString::number(i);
+        QJniArray<QString> list(strings);
+        QCOMPARE(list.size(), 10000);
+    }
+    {
+        QJniArray<jint> list{1, 2, 3};
+        QCOMPARE(list.size(), 3);
+    }
+    {
+        QJniArray<jint> list(QList<int>{1, 2, 3});
+        QCOMPARE(list.size(), 3);
+    }
+    {
+        QJniArray<jint> list{QList<int>{1, 2, 3}};
+        QCOMPARE(list.size(), 3);
+    }
+}
+
 void tst_QJniArray::size()
 {
     QJniArray<jint> array;
@@ -93,12 +121,42 @@ void tst_QJniArray::operators()
     QVERIFY(array.isValid());
 
     {
+        auto it = array.begin();
+        QCOMPARE(*it, 'a');
+        QCOMPARE(*++it, 'b');
+        QCOMPARE(*it++, 'b');
+        QCOMPARE(*it, 'c');
+        ++it;
+        it++;
+        QCOMPARE(*it, 'e');
+        QCOMPARE(++it, array.end());
+    }
+    {
+        auto it = array.rbegin();
+        QCOMPARE(*it, 'e');
+        QCOMPARE(*++it, 'd');
+        QCOMPARE(*it++, 'd');
+        QCOMPARE(*it, 'c');
+        ++it;
+        it++;
+        QCOMPARE(*it, 'a');
+        QCOMPARE(++it, array.rend());
+    }
+    {
         QJniArray<jbyte>::const_iterator it = {};
         QCOMPARE(it, QJniArray<jbyte>::const_iterator{});
         QCOMPARE_NE(array.begin(), array.end());
 
         it = array.begin();
         QCOMPARE(it, array.begin());
+    }
+
+    QCOMPARE(std::distance(array.begin(), array.end()), array.size());
+
+    qsizetype index = 0;
+    for (const auto &value : array) {
+        QCOMPARE(value, bytes.at(index));
+        ++index;
     }
 }
 

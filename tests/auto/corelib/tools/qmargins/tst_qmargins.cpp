@@ -1,5 +1,5 @@
 // Copyright (C) 2022 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QMargins>
 #ifdef QVARIANT_H
@@ -32,15 +32,28 @@ CHECK(const &&);
 
 #include <QTest>
 #include <qmargins.h>
+#include <private/qcomparisontesthelper_p.h>
 
 #include <array>
 
 Q_DECLARE_METATYPE(QMargins)
 
+constexpr static qreal qreal_min = std::numeric_limits<qreal>::min();
+
 class tst_QMargins : public QObject
 {
     Q_OBJECT
 private slots:
+    void comparisonCompiles();
+    void comparison_data();
+    void comparison();
+
+    void fuzzyComparison_data();
+    void fuzzyComparison();
+
+    void isNull_data();
+    void isNull();
+
     void getSetCheck();
 #ifndef QT_NO_DATASTREAM
     void dataStreamCheck();
@@ -64,6 +77,92 @@ private slots:
     void toMarginsF_data();
     void toMarginsF();
 };
+
+void tst_QMargins::comparisonCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QMargins>();
+    QTestPrivate::testEqualityOperatorsCompile<QMarginsF>();
+    QTestPrivate::testEqualityOperatorsCompile<QMarginsF, QMargins>();
+}
+
+void tst_QMargins::comparison_data()
+{
+    QTest::addColumn<QMarginsF>("lhs");
+    QTest::addColumn<QMarginsF>("rhs");
+    QTest::addColumn<bool>("result");
+    QTest::addColumn<bool>("floatResult");
+    QTest::addColumn<bool>("mixedResult");
+
+    auto row = [](const QMarginsF &lhs, const QMarginsF &rhs, bool res, bool fRes, bool mRes) {
+        QString str;
+        QDebug dbg(&str);
+        dbg.nospace() << "(" << lhs.left() << ", " << lhs.top() << ", " << lhs.right() << ", "
+                      << lhs.bottom() << ") vs (" << rhs.left() << ", " << rhs.top() << ", "
+                      << rhs.right() << ", " << rhs.bottom() << ")";
+        QTest::addRow("%s", str.toLatin1().constData()) << lhs << rhs << res << fRes << mRes;
+    };
+
+    row(QMarginsF(0.0, 0.0, 0.0, 0.0), QMarginsF(0.0, 0.0, 0.0, 0.0), true, true, true);
+    row(QMarginsF(qreal_min, -qreal_min, -qreal_min, qreal_min), QMarginsF(0.0, 0.0, 0.0, 0.0), true, true, true);
+    row(QMarginsF(1.0, 2.0, 3.0, 4.0), QMarginsF(1.1, 2.1, 2.9, 3.9), true, false, true);
+    row(QMarginsF(1.5, 2.5, 3.0, 4.0), QMarginsF(1.1, 2.1, 2.9, 3.9), false, false, false);
+}
+
+void tst_QMargins::comparison()
+{
+    QFETCH(const QMarginsF, lhs);
+    QFETCH(const QMarginsF, rhs);
+    QFETCH(const bool, result);
+    QFETCH(const bool, floatResult);
+    QFETCH(const bool, mixedResult);
+
+    QT_TEST_EQUALITY_OPS(lhs, rhs, floatResult);
+
+    const QMargins lhsInt = lhs.toMargins();
+    const QMargins rhsInt = rhs.toMargins();
+    QT_TEST_EQUALITY_OPS(lhsInt, rhsInt, result);
+
+    QT_TEST_EQUALITY_OPS(lhs, rhsInt, mixedResult);
+}
+
+void tst_QMargins::fuzzyComparison_data()
+{
+    comparison_data();
+}
+
+void tst_QMargins::fuzzyComparison()
+{
+    QFETCH(const QMarginsF, lhs);
+    QFETCH(const QMarginsF, rhs);
+    QFETCH(const bool, floatResult);
+
+    QCOMPARE_EQ(qFuzzyCompare(lhs, rhs), floatResult);
+}
+
+void tst_QMargins::isNull_data()
+{
+    QTest::addColumn<QMarginsF>("margins");
+    QTest::addColumn<bool>("result");
+
+    QTest::newRow("null") << QMarginsF(0.0, 0.0, 0.0, 0.0) << true;
+    QTest::newRow("non_null_left") << QMarginsF(1.0, 0.0, 0.0, 0.0) << false;
+    QTest::newRow("non_null_top") << QMarginsF(0.0, 0.5, 0.0, 0.0) << false;
+    QTest::newRow("non_null_right") << QMarginsF(0.0, 0.0, -2.0, 0.0) << false;
+    QTest::newRow("non_null_bottom") << QMarginsF(0.0, 0.0, 0.0, -0.6) << false;
+    QTest::newRow("almost_null") << QMarginsF(qreal_min, -qreal_min, qreal_min, -qreal_min) << true;
+}
+
+void tst_QMargins::isNull()
+{
+    QFETCH(const QMarginsF, margins);
+    QFETCH(const bool, result);
+
+    QCOMPARE_EQ(margins.isNull(), result);
+    QCOMPARE_EQ(qFuzzyIsNull(margins), result);
+
+    const QMargins marginsInt = margins.toMargins();
+    QCOMPARE_EQ(marginsInt.isNull(), result);
+}
 
 // Testing get/set functions
 void tst_QMargins::getSetCheck()

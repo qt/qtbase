@@ -13,12 +13,11 @@
 #include "qcbormap.h"
 #include "qcborstreamreader.h"
 #include "qcborvalue.h"
-#include "qdiriterator.h"
+#include "qdirlisting.h"
 #include "qfileinfo.h"
 #include "qjsonarray.h"
 #include "qjsondocument.h"
 #include "qjsonobject.h"
-#include "qmap.h"
 #include "qmutex.h"
 #include "qplugin.h"
 #include "qplugin_p.h"
@@ -30,6 +29,7 @@
 
 #include <qtcore_tracepoints_p.h>
 
+#include <map>
 #include <vector>
 
 QT_BEGIN_NAMESPACE
@@ -76,7 +76,7 @@ struct QFactoryLoaderIidSearch
     {
         if (key != QtPluginMetaDataKeys::IID)
             return skip(reader);
-        matchesIid = (reader.toString() == iid);
+        matchesIid = (reader.readAllString() == iid);
         return IterationResult::FinishedSearch;
     }
     IterationResult::Result operator()(QUtf8StringView, QCborStreamReader &reader)
@@ -109,7 +109,7 @@ struct QFactoryLoaderMetaDataKeysExtractor : QFactoryLoaderIidSearch
             return IterationResult::ParsingError;
         while (reader.isValid()) {
             // the metadata is JSON, so keys are all strings
-            QByteArray key = reader.toUtf8String();
+            QByteArray key = reader.readAllUtf8String();
             if (key == "Keys") {
                 if (!reader.isArray() || !reader.isLengthKnown())
                     return IterationResult::InvalidHeaderItem;
@@ -155,7 +155,7 @@ template <typename F> static IterationResult iterateInPluginMetaData(QByteArrayV
                 return reader.lastError();
             r = f(key, reader);
         } else if (reader.isString()) {
-            QByteArray key = reader.toUtf8String();
+            QByteArray key = reader.readAllUtf8String();
             if (key.isNull())
                 return reader.lastError();
             r = f(QUtf8StringView(key), reader);
@@ -261,7 +261,7 @@ public:
     mutable QMutex mutex;
     QDuplicateTracker<QString> loadedPaths;
     std::vector<QLibraryPrivate::UniquePtr> libraries;
-    QMap<QString,QLibraryPrivate*> keyMap;
+    std::map<QString, QLibraryPrivate*> keyMap;
     QString suffix;
     QString extraSearchPath;
     Qt::CaseSensitivity cs;
@@ -303,7 +303,7 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
 
     qCDebug(lcFactoryLoader) << "checking directory path" << path << "...";
 
-    QDirIterator plugins(path,
+    QDirListing plugins(path,
 #if defined(Q_OS_WIN)
                 QStringList(QStringLiteral("*.dll")),
 #elif defined(Q_OS_ANDROID)
@@ -311,8 +311,8 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
 #endif
                 QDir::Files);
 
-    while (plugins.hasNext()) {
-        QString fileName = plugins.next();
+    for (const auto &dirEntry : plugins) {
+        const QString &fileName = dirEntry.fileName();
 #ifdef Q_OS_DARWIN
         const bool isDebugPlugin = fileName.endsWith("_debug.dylib"_L1);
         const bool isDebugLibrary =
@@ -337,7 +337,7 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
         Q_TRACE(QFactoryLoader_update, fileName);
 
         QLibraryPrivate::UniquePtr library;
-        library.reset(QLibraryPrivate::findOrCreate(QFileInfo(fileName).canonicalFilePath()));
+        library.reset(QLibraryPrivate::findOrCreate(dirEntry.canonicalFilePath()));
         if (!library->isPlugin()) {
             qCDebug(lcFactoryLoader) << library->errorString << Qt::endl
                                      << "         not a plugin";
@@ -368,13 +368,13 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
             // whereas the new one has a Qt version that fits
             // better
             constexpr int QtVersionNoPatch = QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, 0);
-            QLibraryPrivate *previous = keyMap.value(key);
+            QLibraryPrivate *&previous = keyMap[key];
             int prev_qt_version = 0;
             if (previous)
                 prev_qt_version = int(previous->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
             int qt_version = int(library->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
             if (!previous || (prev_qt_version > QtVersionNoPatch && qt_version <= QtVersionNoPatch)) {
-                keyMap[key] = library.get();    // we WILL .release()
+                previous = library.get();    // we WILL .release()
                 ++keyUsageCount;
             }
         }
@@ -422,7 +422,10 @@ QFactoryLoader::~QFactoryLoader()
 QLibraryPrivate *QFactoryLoader::library(const QString &key) const
 {
     Q_D(const QFactoryLoader);
-    return d->keyMap.value(d->cs ? key : key.toLower());
+    const auto it = d->keyMap.find(d->cs ? key : key.toLower());
+    if (it == d->keyMap.cend())
+        return nullptr;
+    return it->second;
 }
 #endif
 

@@ -1,0 +1,4 @@
+module QIOSIntegrationPlugin {
+  header "qiosapplicationdelegate.h"
+  header "qiosintegration.h"
+}

@@ -47,6 +47,7 @@ public:
         NoAntialias         = 0x0100,
         NoSubpixelAntialias = 0x0800,
         PreferNoShaping     = 0x1000,
+        ContextFontMerging  = 0x2000,
         NoFontMerging       = 0x8000
     };
     Q_ENUM(StyleStrategy)

@@ -3,7 +3,7 @@
 
 qt_commandline_option(mysql_config TYPE string)
 qt_commandline_option(psql_config TYPE string)
-qt_commandline_option(sqlite TYPE enum NAME system-sqlite MAPPING qt no system yes)
+qt_commandline_option(sqlite CONTROLS_FEATURE TYPE enum NAME system-sqlite MAPPING qt no system yes)
 qt_commandline_option(sql-db2 TYPE boolean)
 qt_commandline_option(sql-ibase TYPE boolean)
 qt_commandline_option(sql-mysql TYPE boolean)

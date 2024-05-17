@@ -7,6 +7,7 @@
 #include "qpixellayout_p.h"
 #include "qrgba64_p.h"
 #include <QtCore/private/qsimd_p.h>
+#include <QtGui/private/qcmyk_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1657,11 +1658,71 @@ static const QRgba64 *QT_FASTCALL fetchRGBA32FPMToRGBA64PM(QRgba64 *buffer, cons
     return buffer;
 }
 
+inline const uint *qt_convertCMYK8888ToARGB32PM(uint *buffer, const uint *src, int count)
+{
+    UNALIASED_CONVERSION_LOOP(buffer, src, count, [](uint s) {
+        const QColor color = QCmyk32::fromCmyk32(s).toColor();
+        return color.rgba();
+    });
+    return buffer;
+}
+
+static void QT_FASTCALL convertCMYK8888ToARGB32PM(uint *buffer, int count, const QList<QRgb> *)
+{
+    qt_convertCMYK8888ToARGB32PM(buffer, buffer, count);
+}
+
+static const QRgba64 *QT_FASTCALL convertCMYK8888ToToRGBA64PM(QRgba64 *buffer, const uint *src, int count,
+                                                            const QList<QRgb> *, QDitherInfo *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = QCmyk32::fromCmyk32(src[i]).toColor().rgba64();
+    return buffer;
+}
+
+static const uint *QT_FASTCALL fetchCMYK8888ToARGB32PM(uint *buffer, const uchar *src, int index, int count,
+                                                     const QList<QRgb> *, QDitherInfo *)
+{
+    const uint *s = reinterpret_cast<const uint *>(src) + index;
+    for (int i = 0; i < count; ++i)
+        buffer[i] = QCmyk32::fromCmyk32(s[i]).toColor().rgba();
+    return buffer;
+}
+
+static const QRgba64 *QT_FASTCALL fetchCMYK8888ToRGBA64PM(QRgba64 *buffer, const uchar *src, int index, int count,
+                                                        const QList<QRgb> *, QDitherInfo *)
+{
+    const uint *s = reinterpret_cast<const uint *>(src) + index;
+    for (int i = 0; i < count; ++i)
+        buffer[i] = QCmyk32::fromCmyk32(s[i]).toColor().rgba64();
+    return buffer;
+}
+
+static void QT_FASTCALL storeCMYK8888FromARGB32PM(uchar *dest, const uint *src, int index, int count,
+                                              const QList<QRgb> *, QDitherInfo *)
+{
+    uint *d = reinterpret_cast<uint *>(dest) + index;
+    for (int i = 0; i < count; ++i) {
+        QColor c = qUnpremultiply(src[i]);
+        d[i] = QCmyk32::fromColor(c).toUint();
+    }
+}
+
+static void QT_FASTCALL storeCMYK8888FromRGB32(uchar *dest, const uint *src, int index, int count,
+                                           const QList<QRgb> *, QDitherInfo *)
+{
+    uint *d = reinterpret_cast<uint *>(dest) + index;
+    for (int i = 0; i < count; ++i) {
+        QColor c = src[i];
+        d[i] = QCmyk32::fromColor(c).toUint();
+    }
+}
+
 // Note:
 // convertToArgb32() assumes that no color channel is less than 4 bits.
 // storeRGBFromARGB32PM() assumes that no color channel is more than 8 bits.
 // QImage::rgbSwapped() assumes that the red and blue color channels have the same number of bits.
-QPixelLayout qPixelLayouts[QImage::NImageFormats] = {
+QPixelLayout qPixelLayouts[] = {
     { false, false, QPixelLayout::BPPNone, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr }, // Format_Invalid
     { false, false, QPixelLayout::BPP1MSB, nullptr,
       convertIndexedToARGB32PM, convertIndexedTo<QRgba64>,
@@ -1779,9 +1840,13 @@ QPixelLayout qPixelLayouts[QImage::NImageFormats] = {
       convertPassThrough, nullptr,
       fetchRGB32FToRGB32, fetchRGBA32FPMToRGBA64PM,
       storeRGB32FFromRGB32, storeRGB32FFromRGB32 }, // Format_RGBA32FPx4_Premultiplied
+    { false, false, QPixelLayout::BPP32, nullptr,
+      convertCMYK8888ToARGB32PM, convertCMYK8888ToToRGBA64PM,
+      fetchCMYK8888ToARGB32PM, fetchCMYK8888ToRGBA64PM,
+      storeCMYK8888FromARGB32PM, storeCMYK8888FromRGB32 }, // Format_CMYK8888
 };
 
-static_assert(sizeof(qPixelLayouts) / sizeof(*qPixelLayouts) == QImage::NImageFormats);
+static_assert(std::size(qPixelLayouts) == QImage::NImageFormats);
 
 static void QT_FASTCALL convertFromRgb64(uint *dest, const QRgba64 *src, int length)
 {
@@ -1916,7 +1981,15 @@ static void QT_FASTCALL storeRGBA32FPMFromRGBA64PM(uchar *dest, const QRgba64 *s
         d[i] = qConvertRgb64ToRgbaF32(src[i]);
 }
 
-ConvertAndStorePixelsFunc64 qStoreFromRGBA64PM[QImage::NImageFormats] = {
+static void QT_FASTCALL storeCMYKFromRGBA64PM(uchar *dest, const QRgba64 *src, int index, int count,
+                                              const QList<QRgb> *, QDitherInfo *)
+{
+    uint *d = reinterpret_cast<uint *>(dest) + index;
+    for (int i = 0; i < count; ++i)
+        d[i] = QCmyk32::fromColor(QColor(src[i])).toUint();
+}
+
+ConvertAndStorePixelsFunc64 qStoreFromRGBA64PM[] = {
     nullptr,
     nullptr,
     nullptr,
@@ -1953,7 +2026,10 @@ ConvertAndStorePixelsFunc64 qStoreFromRGBA64PM[QImage::NImageFormats] = {
     storeRGBX32FFromRGBA64PM,
     storeRGBA32FFromRGBA64PM,
     storeRGBA32FPMFromRGBA64PM,
+    storeCMYKFromRGBA64PM,
 };
+
+static_assert(std::size(qStoreFromRGBA64PM) == QImage::NImageFormats);
 
 #if QT_CONFIG(raster_fp)
 static void QT_FASTCALL convertToRgbaF32(QRgbaFloat32 *dest, const uint *src, int length)
@@ -2000,7 +2076,16 @@ static const QRgbaFloat32 * QT_FASTCALL convertRGB30ToRGBA32F(QRgbaFloat32 *buff
     return buffer;
 }
 
-ConvertToFPFunc qConvertToRGBA32F[QImage::NImageFormats] = {
+static const QRgbaFloat32 * QT_FASTCALL convertCMYKToRGBA32F(QRgbaFloat32 *buffer, const uint *src, int count,
+                                                             const QList<QRgb> *, QDitherInfo *)
+{
+    for (int i = 0; i < count; ++i)
+        buffer[i] = QRgbaFloat32::fromArgb32(QCmyk32::fromCmyk32(src[i]).toColor().rgba());
+
+    return buffer;
+}
+
+ConvertToFPFunc qConvertToRGBA32F[] = {
     nullptr,
     convertIndexedTo<QRgbaFloat32>,
     convertIndexedTo<QRgbaFloat32>,
@@ -2037,7 +2122,10 @@ ConvertToFPFunc qConvertToRGBA32F[QImage::NImageFormats] = {
     nullptr,
     nullptr,
     nullptr,
+    convertCMYKToRGBA32F,
 };
+
+static_assert(std::size(qConvertToRGBA32F) == QImage::NImageFormats);
 
 static const QRgbaFloat32 *QT_FASTCALL fetchRGBX64ToRGBA32F(QRgbaFloat32 *buffer, const uchar *src, int index, int count,
                                                         const QList<QRgb> *, QDitherInfo *)
@@ -2103,7 +2191,17 @@ static const QRgbaFloat32 *QT_FASTCALL fetchRGBA32F(QRgbaFloat32 *, const uchar 
     return s;
 }
 
-FetchAndConvertPixelsFuncFP qFetchToRGBA32F[QImage::NImageFormats] = {
+static const QRgbaFloat32 *QT_FASTCALL fetchCMYKToRGBA32F(QRgbaFloat32 *buffer, const uchar *src, int index, int count,
+                                                          const QList<QRgb> *, QDitherInfo *)
+{
+    const uint *s = reinterpret_cast<const uint *>(src) + index;
+    for (int i = 0; i < count; ++i)
+        buffer[i] = QRgbaFloat32::fromArgb32(QCmyk32::fromCmyk32(s[i]).toColor().rgba());
+
+    return buffer;
+}
+
+FetchAndConvertPixelsFuncFP qFetchToRGBA32F[] = {
     nullptr,
     fetchIndexedToRGBA32F<QPixelLayout::BPP1MSB>,
     fetchIndexedToRGBA32F<QPixelLayout::BPP1LSB>,
@@ -2140,7 +2238,10 @@ FetchAndConvertPixelsFuncFP qFetchToRGBA32F[QImage::NImageFormats] = {
     fetchRGBA32F,
     fetchRGBA32FToRGBA32F,
     fetchRGBA32F,
+    fetchCMYKToRGBA32F,
 };
+
+static_assert(std::size(qFetchToRGBA32F) == QImage::NImageFormats);
 
 static void QT_FASTCALL convertFromRgba32f(uint *dest, const QRgbaFloat32 *src, int length)
 {
@@ -2278,7 +2379,17 @@ static void QT_FASTCALL storeRGBA32FPMFromRGBA32F(uchar *dest, const QRgbaFloat3
     }
 }
 
-ConvertAndStorePixelsFuncFP qStoreFromRGBA32F[QImage::NImageFormats] = {
+static void QT_FASTCALL storeCMYKFromRGBA32F(uchar *dest, const QRgbaFloat32 *src, int index, int count,
+                                             const QList<QRgb> *, QDitherInfo *)
+{
+    uint *d = reinterpret_cast<uint *>(dest) + index;
+    for (int i = 0; i < count; ++i) {
+        // Yikes, this really needs enablers in QColor and friends
+        d[i] = QCmyk32::fromColor(QColor(src[i].toArgb32())).toUint();
+    }
+}
+
+ConvertAndStorePixelsFuncFP qStoreFromRGBA32F[] = {
     nullptr,
     nullptr,
     nullptr,
@@ -2315,7 +2426,11 @@ ConvertAndStorePixelsFuncFP qStoreFromRGBA32F[QImage::NImageFormats] = {
     storeRGBX32FFromRGBA32F,
     storeRGBA32FFromRGBA32F,
     storeRGBA32FPMFromRGBA32F,
+    storeCMYKFromRGBA32F,
 };
+
+static_assert(std::size(qStoreFromRGBA32F) == QImage::NImageFormats);
+
 #endif // QT_CONFIG(raster_fp)
 
 QT_END_NAMESPACE

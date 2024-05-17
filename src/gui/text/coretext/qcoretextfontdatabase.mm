@@ -572,7 +572,7 @@ CFArrayRef fallbacksForDescriptor(CTFontDescriptorRef descriptor)
     }
 
     CFArrayRef cascadeList = CFArrayRef(CTFontCopyDefaultCascadeListForLanguages(font,
-        (CFArrayRef)[NSUserDefaults.standardUserDefaults stringArrayForKey:@"AppleLanguages"]));
+        (CFArrayRef)NSLocale.preferredLanguages));
 
     if (!cascadeList) {
         qCWarning(lcQpaFonts) << "Failed to create fallback cascade list for" << descriptor;
@@ -896,7 +896,7 @@ static CTFontDescriptorRef fontDescriptorFromTheme(QPlatformTheme::Font f)
         UIFontDescriptor *desc = [UIFontDescriptor preferredFontDescriptorWithTextStyle:textStyle];
         return static_cast<CTFontDescriptorRef>(CFBridgingRetain(desc));
     }
-#endif // Q_OS_IOS, Q_OS_TVOS, Q_OS_WATCHOS
+#endif // QT_PLATFORM_UIKIT
 
     // macOS default case and iOS fallback case
     return descriptorForFontType(fontTypeFromTheme(f));

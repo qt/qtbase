@@ -41,6 +41,7 @@
 #include <private/qgesture_p.h>
 #include <qpa/qplatformbackingstore.h>
 #include <QtGui/private/qbackingstorerhisupport_p.h>
+#include <private/qapplication_p.h>
 
 #include <QtCore/qpointer.h>
 
@@ -50,6 +51,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcWidgetPainting);
+Q_DECLARE_LOGGING_CATEGORY(lcWidgetShowHide);
 
 // Extra QWidget data
 //  - to minimize memory usage for members that are seldom used.
@@ -220,6 +222,8 @@ public:
     void setSharedPainter(QPainter *painter);
     QWidgetRepaintManager *maybeRepaintManager() const;
 
+    QRhi *rhi() const;
+
     enum class WindowHandleMode {
         Direct,
         Closest,
@@ -367,6 +371,8 @@ public:
     void showChildren(bool spontaneous);
     void hideChildren(bool spontaneous);
     void setParent_sys(QWidget *parent, Qt::WindowFlags);
+    void reparentWidgetWindows(QWidget *parentWithWindow, Qt::WindowFlags windowFlags = {});
+    void reparentWidgetWindowChildren(QWidget *parentWithWindow);
     void scroll_sys(int dx, int dy);
     void scroll_sys(int dx, int dy, const QRect &r);
     void deactivateWidgetCleanup();
@@ -379,6 +385,7 @@ public:
     void show_sys();
     void hide_sys();
     void hide_helper();
+    bool isExplicitlyHidden() const;
     void _q_showIfNotHidden();
     void setVisible(bool);
 
@@ -633,6 +640,8 @@ public:
 
     std::string flagsForDumping() const override;
 
+    QWidget *closestParentWidgetWithWindowHandle() const;
+
     // Variables.
     // Regular pointers (keep them together to avoid gaps on 64 bit architectures).
     std::unique_ptr<QWExtra> extra;
@@ -725,6 +734,40 @@ public:
     uint childrenHiddenByWState : 1;
     uint childrenShownByExpose : 1;
 
+    // *************************** Focus abstraction ************************************
+    enum class FocusDirection {
+        Previous,
+        Next,
+    };
+
+    enum class FocusChainRemovalRule {
+        EnsureFocusOut = 0x01,
+        AssertConsistency = 0x02,
+    };
+    Q_DECLARE_FLAGS(FocusChainRemovalRules, FocusChainRemovalRule)
+
+    // Getters
+    QWidget *nextPrevElementInFocusChain(FocusDirection direction) const;
+
+    // manipulators
+    bool removeFromFocusChain(FocusChainRemovalRules rules = FocusChainRemovalRules(),
+                              FocusDirection direction = FocusDirection::Next);
+    bool insertIntoFocusChain(FocusDirection direction, QWidget *position);
+    static bool insertIntoFocusChain(const QWidgetList &toBeInserted, FocusDirection direction, QWidget *position);
+    bool insertIntoFocusChainBefore(QWidget *position)
+    { return insertIntoFocusChain(FocusDirection::Previous, position); }
+    bool insertIntoFocusChainAfter(QWidget *position)
+    { return insertIntoFocusChain(FocusDirection::Next, position); }
+    static QWidgetList takeFromFocusChain(QWidget *from, QWidget *to,
+                                          FocusDirection direction = FocusDirection::Next);
+    void reparentFocusChildren(FocusDirection direction);
+    QWidget *determineLastFocusChild(QWidget *noFurtherThan);
+
+    // Initialization and tests
+    void initFocusChain();
+    bool isInFocusChain() const;
+    bool isFocusChainConsistent() const;
+
     // *************************** Platform specific ************************************
 #if defined(Q_OS_WIN)
     uint noPaintOnScreen : 1; // see qwidget.cpp ::paintEngine()
@@ -735,6 +778,7 @@ public:
 
     bool stealKeyboardGrab(bool grab);
     bool stealMouseGrab(bool grab);
+    bool hasChildWithFocusPolicy(Qt::FocusPolicy policy, const QWidget *excludeChildrenOf = nullptr) const;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWidgetPrivate::DrawWidgetFlags)

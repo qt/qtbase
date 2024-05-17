@@ -40,7 +40,7 @@ public:
     QPixmap scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale) override;
     void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state) override;
 
-    static QList<QSize> availableIconSizes();
+    static QList<QSize> availableIconSizes(double aspectRatio = 1.0);
 
 private:
     static constexpr quint64 calculateCacheKey(QIcon::Mode mode, QIcon::State state)
@@ -51,7 +51,7 @@ private:
     const QString m_iconName;
 #if defined(Q_OS_MACOS)
     const NSImage *m_image;
-#elif defined(Q_OS_IOS)
+#elif defined(QT_PLATFORM_UIKIT)
     const UIImage *m_image;
 #endif
     mutable QPixmap m_pixmap;

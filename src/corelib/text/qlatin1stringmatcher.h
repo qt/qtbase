@@ -14,6 +14,10 @@
 QT_BEGIN_NAMESPACE
 
 namespace QtPrivate {
+template <typename T>
+constexpr inline bool isLatin1OrUtf16View =
+    std::disjunction_v<std::is_same<T, QLatin1StringView>, std::is_same<T, QStringView>>;
+
 template<class RandomIt1,
          class Hash = std::hash<typename std::iterator_traits<RandomIt1>::value_type>,
          class BinaryPredicate = std::equal_to<>>
@@ -147,6 +151,7 @@ public:
     Q_CORE_EXPORT Qt::CaseSensitivity caseSensitivity() const noexcept;
 
     Q_CORE_EXPORT qsizetype indexIn(QLatin1StringView haystack, qsizetype from = 0) const noexcept;
+    Q_CORE_EXPORT qsizetype indexIn(QStringView haystack, qsizetype from = 0) const noexcept;
 
 private:
     void setSearcher() noexcept;
@@ -164,6 +169,10 @@ private:
         CaseSensitiveSearcher m_caseSensitiveSearcher;
         CaseInsensitiveSearcher m_caseInsensitiveSearcher;
     };
+
+    template <typename String>
+    qsizetype indexIn_helper(String haystack, qsizetype from) const noexcept;
+
     char m_foldBuffer[256];
 };
 

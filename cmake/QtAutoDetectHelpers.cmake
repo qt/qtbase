@@ -177,14 +177,29 @@ function(qt_auto_detect_vcpkg)
     endif()
 endfunction()
 
-function(qt_auto_detect_ios)
+function(qt_auto_detect_apple)
+    if(NOT APPLE)
+        return()
+    endif()
+
+    if("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "macx-ios-clang")
+        set(CMAKE_SYSTEM_NAME "iOS" CACHE STRING "")
+    elseif("${QT_QMAKE_TARGET_MKSPEC}" STREQUAL "macx-visionos-clang")
+        set(CMAKE_SYSTEM_NAME "visionOS" CACHE STRING "")
+    endif()
+
     if(CMAKE_SYSTEM_NAME STREQUAL iOS)
         message(STATUS "Using internal CMake ${CMAKE_SYSTEM_NAME} toolchain file.")
 
-        # The QT_UIKIT_SDK check simulates the input.sdk condition for simulator_and_device in
+        # Pass on QT_UIKIT_SDK for compatibility
+        if(QT_UIKIT_SDK AND NOT QT_APPLE_SDK)
+            set(QT_APPLE_SDK "${QT_UIKIT_SDK}" CACHE STRING "")
+        endif()
+
+        # The QT_APPLE_SDK check simulates the input.sdk condition for simulator_and_device in
         # configure.json.
         # If the variable is explicitly provided, assume simulator_and_device to be off.
-        if(QT_UIKIT_SDK)
+        if(QT_APPLE_SDK)
             set(simulator_and_device OFF)
         else()
             # Default to simulator_and_device when an explicit sdk is not requested.
@@ -199,27 +214,28 @@ function(qt_auto_detect_ios)
         # architectures, otherwise compilation fails with unknown defines.
         if(simulator_and_device)
             set(osx_architectures "arm64;x86_64")
-        elseif(QT_UIKIT_SDK STREQUAL "iphoneos")
+        elseif(QT_APPLE_SDK STREQUAL "iphoneos")
             set(osx_architectures "arm64")
-        elseif(QT_UIKIT_SDK STREQUAL "iphonesimulator")
+        elseif(QT_APPLE_SDK STREQUAL "iphonesimulator")
             set(osx_architectures "x86_64")
         else()
-            if(NOT DEFINED QT_UIKIT_SDK)
-                message(FATAL_ERROR "Please provide a value for -DQT_UIKIT_SDK."
+            if(NOT DEFINED QT_APPLE_SDK)
+                message(FATAL_ERROR "Please provide a value for -DQT_APPLE_SDK."
                     " Possible values: iphoneos, iphonesimulator.")
             else()
                 message(FATAL_ERROR
-                        "Unknown SDK argument given to QT_UIKIT_SDK: ${QT_UIKIT_SDK}.")
+                        "Unknown SDK argument given to QT_APPLE_SDK: ${QT_APPLE_SDK}.")
             endif()
         endif()
 
-        # For non simulator_and_device builds, we need to explicitly set the SYSROOT aka the sdk
-        # value.
-        if(QT_UIKIT_SDK)
-            set(CMAKE_OSX_SYSROOT "${QT_UIKIT_SDK}" CACHE STRING "")
-        endif()
         set(CMAKE_OSX_ARCHITECTURES "${osx_architectures}" CACHE STRING "")
+    endif()
 
+    if(QT_APPLE_SDK)
+        set(CMAKE_OSX_SYSROOT "${QT_APPLE_SDK}" CACHE STRING "")
+    endif()
+
+    if(CMAKE_SYSTEM_NAME STREQUAL iOS OR CMAKE_SYSTEM_NAME STREQUAL visionOS)
         if(NOT DEFINED BUILD_SHARED_LIBS)
             qt_internal_ensure_static_qt_config()
         endif()
@@ -228,6 +244,50 @@ function(qt_auto_detect_ios)
         # bundles not being able to use paths outside the app bundle. Not sure this is strictly
         # needed though.
         set(QT_DISABLE_RPATH "OFF" CACHE BOOL "Disable automatic Qt rpath handling." FORCE)
+    endif()
+
+    # If no CMAKE_OSX_DEPLOYMENT_TARGET is provided, default to a value that Qt defines.
+    # This replicates the behavior in mkspecs/common/macx.conf where
+    # QMAKE_MACOSX_DEPLOYMENT_TARGET is set.
+    set(description
+        "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked."
+        " Set to empty string for default value.")
+    if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+        if(NOT CMAKE_SYSTEM_NAME)
+            # macOS
+            set(version "12.0")
+        elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
+            set(version "16.0")
+        endif()
+        if(version)
+            set(CMAKE_OSX_DEPLOYMENT_TARGET "${version}" CACHE STRING "${description}")
+        endif()
+    endif()
+
+    _qt_internal_get_apple_sdk_version(apple_sdk_version)
+    set(QT_MAC_SDK_VERSION "${apple_sdk_version}" CACHE STRING "Darwin SDK version.")
+
+    _qt_internal_get_xcode_version_raw(xcode_version_raw)
+    set(QT_MAC_XCODE_VERSION "${xcode_version_raw}" CACHE STRING "Xcode version.")
+
+    if(NOT CMAKE_SYSTEM_NAME)
+        # macOS
+        list(LENGTH CMAKE_OSX_ARCHITECTURES arch_count)
+        if(arch_count GREATER 0)
+            foreach(arch ${CMAKE_OSX_ARCHITECTURES})
+                if(arch STREQUAL "arm64e")
+                    message(WARNING "Applications built against an arm64e Qt architecture will "
+                                     "likely fail to run on Apple Silicon. Consider targeting "
+                                     "'arm64' instead.")
+                endif()
+            endforeach()
+        endif()
+
+        set(is_universal "OFF")
+        if(arch_count GREATER 1)
+            set(is_universal "ON")
+        endif()
+        set(QT_IS_MACOS_UNIVERSAL "${is_universal}" CACHE INTERNAL "Build universal Qt for macOS")
     endif()
 endfunction()
 
@@ -270,58 +330,6 @@ function(qt_auto_detect_cyclic_toolchain)
                 "qtbase, because that will create a toolchain file that includes itself!\n"
                 "Did you accidentally use qt-cmake to configure qtbase? Make sure to remove the "
                 "CMakeCache.txt file, and configure qtbase with 'cmake' instead of 'qt-cmake'.")
-    endif()
-endfunction()
-
-function(qt_auto_detect_darwin)
-    if(APPLE)
-        # If no CMAKE_OSX_DEPLOYMENT_TARGET is provided, default to a value that Qt defines.
-        # This replicates the behavior in mkspecs/common/macx.conf where
-        # QMAKE_MACOSX_DEPLOYMENT_TARGET is set.
-        set(description
-            "Minimum OS X version to target for deployment (at runtime); newer APIs weak linked."
-            " Set to empty string for default value.")
-        if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
-            if(NOT CMAKE_SYSTEM_NAME)
-                # macOS
-                set(version "11.0")
-            elseif(CMAKE_SYSTEM_NAME STREQUAL iOS)
-                set(version "14.0")
-            endif()
-            if(version)
-                set(CMAKE_OSX_DEPLOYMENT_TARGET "${version}" CACHE STRING "${description}")
-            endif()
-        endif()
-
-        _qt_internal_get_apple_sdk_version(apple_sdk_version)
-        set(QT_MAC_SDK_VERSION "${apple_sdk_version}" CACHE STRING "Darwin SDK version.")
-
-        _qt_internal_get_xcode_version_raw(xcode_version_raw)
-        set(QT_MAC_XCODE_VERSION "${xcode_version_raw}" CACHE STRING "Xcode version.")
-
-        list(LENGTH CMAKE_OSX_ARCHITECTURES arch_count)
-        if(NOT CMAKE_SYSTEM_NAME STREQUAL iOS AND arch_count GREATER 0)
-            foreach(arch ${CMAKE_OSX_ARCHITECTURES})
-                if(arch STREQUAL "arm64e")
-                    message(WARNING "Applications built against an arm64e Qt architecture will "
-                                     "likely fail to run on Apple Silicon. Consider targeting "
-                                     "'arm64' instead.")
-                endif()
-            endforeach()
-        endif()
-    endif()
-endfunction()
-
-function(qt_auto_detect_macos_universal)
-    if(APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL iOS)
-        list(LENGTH CMAKE_OSX_ARCHITECTURES arch_count)
-
-        set(is_universal "OFF")
-        if(arch_count GREATER 1)
-            set(is_universal "ON")
-        endif()
-
-        set(QT_IS_MACOS_UNIVERSAL "${is_universal}" CACHE INTERNAL "Build universal Qt for macOS")
     endif()
 endfunction()
 
@@ -467,9 +475,7 @@ macro(qt_internal_setup_autodetect)
 
     qt_auto_detect_cyclic_toolchain()
     qt_auto_detect_cmake_config()
-    qt_auto_detect_darwin()
-    qt_auto_detect_macos_universal()
-    qt_auto_detect_ios()
+    qt_auto_detect_apple()
     qt_auto_detect_android()
     qt_auto_detect_pch()
     qt_auto_detect_wasm()

@@ -16,6 +16,9 @@
 //
 
 #include "qgtk3interface_p.h"
+#if QT_CONFIG(dbus)
+#include "qgtk3portalinterface_p.h"
+#endif
 
 #include <QtCore/QJsonDocument>
 #include <QtCore/QCache>
@@ -205,7 +208,9 @@ private:
     PaletteMap m_palettes;
 
     std::unique_ptr<QGtk3Interface> m_interface;
-
+#if QT_CONFIG(dbus)
+    std::unique_ptr<QGtk3PortalInterface> m_portalInterface;
+#endif
 
     Qt::ColorScheme m_colorScheme = Qt::ColorScheme::Unknown;
 

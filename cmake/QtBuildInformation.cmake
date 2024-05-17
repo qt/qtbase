@@ -58,8 +58,7 @@ endfunction()
 
 function(qt_print_build_instructions)
     if((NOT PROJECT_NAME STREQUAL "QtBase" AND
-        NOT PROJECT_NAME STREQUAL "Qt") OR
-       QT_BUILD_STANDALONE_TESTS)
+        NOT PROJECT_NAME STREQUAL "Qt") OR QT_INTERNAL_BUILD_STANDALONE_PARTS)
 
         return()
     endif()

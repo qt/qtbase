@@ -1,5 +1,5 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtWidgets>
 
@@ -448,7 +448,8 @@ struct IconView : public QListView
 
     IconView(QAbstractItemModel *model)
     {
-        setViewMode(QListView::IconMode);
+        setViewMode(QListView::ListMode);
+        setIconSize(QSize(64, 64));
         setUniformItemSizes(true);
         proxyModel.setSourceModel(model);
         setModel(&proxyModel);

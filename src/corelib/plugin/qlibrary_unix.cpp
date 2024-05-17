@@ -25,12 +25,6 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-static QString qdlerror()
-{
-    const char *err = dlerror();
-    return err ? u'(' + QString::fromLocal8Bit(err) + u')' : QString();
-}
-
 QStringList QLibraryPrivate::suffixes_sys(const QString &fullVersion)
 {
     QStringList suffixes;
@@ -213,14 +207,6 @@ bool QLibraryPrivate::load_sys()
                 auto attemptFromBundle = attempt;
                 hnd = dlopen(QFile::encodeName(attemptFromBundle.replace(u'/', u'_')), dlFlags);
             }
-            if (hnd) {
-                using JniOnLoadPtr = jint (*)(JavaVM *vm, void *reserved);
-                JniOnLoadPtr jniOnLoad = reinterpret_cast<JniOnLoadPtr>(dlsym(hnd, "JNI_OnLoad"));
-                if (jniOnLoad && jniOnLoad(QJniEnvironment::javaVM(), nullptr) == JNI_ERR) {
-                    dlclose(hnd);
-                    hnd = nullptr;
-                }
-            }
 #endif
 
             if (!hnd && fileName.startsWith(u'/') && QFile::exists(attempt)) {
@@ -250,7 +236,8 @@ bool QLibraryPrivate::load_sys()
 
     locker.relock();
     if (!hnd) {
-        errorString = QLibrary::tr("Cannot load library %1: %2").arg(fileName, qdlerror());
+        errorString = QLibrary::tr("Cannot load library %1: %2").arg(fileName,
+                                                                     QLatin1StringView(dlerror()));
     }
     if (hnd) {
         qualifiedFileName = attempt;
@@ -262,35 +249,26 @@ bool QLibraryPrivate::load_sys()
 
 bool QLibraryPrivate::unload_sys()
 {
-    if (dlclose(pHnd.loadAcquire())) {
-#if defined (Q_OS_QNX)                // Workaround until fixed in QNX; fixes crash in
-        char *error = dlerror();      // QtDeclarative auto test "qqmlenginecleanup" for instance
+    bool doTryUnload = true;
+#ifndef RTLD_NODELETE
+    if (loadHints() & QLibrary::PreventUnloadHint)
+        doTryUnload = false;
+#endif
+    if (doTryUnload && dlclose(pHnd.loadAcquire())) {
+        const char *error = dlerror();
+#if defined (Q_OS_QNX)
+        // Workaround until fixed in QNX; fixes crash in
+        // QtDeclarative auto test "qqmlenginecleanup" for instance
         if (!qstrcmp(error, "Shared objects still referenced")) // On QNX that's only "informative"
             return true;
+#endif
         errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName,
                                                                        QLatin1StringView(error));
-#else
-        errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName, qdlerror());
-#endif
         return false;
     }
     errorString.clear();
     return true;
 }
-
-#if defined(Q_OS_LINUX)
-Q_CORE_EXPORT QFunctionPointer qt_linux_find_symbol_sys(const char *symbol)
-{
-    return QFunctionPointer(dlsym(RTLD_DEFAULT, symbol));
-}
-#endif
-
-#ifdef Q_OS_DARWIN
-Q_CORE_EXPORT QFunctionPointer qt_mac_resolve_sys(void *handle, const char *symbol)
-{
-    return QFunctionPointer(dlsym(handle, symbol));
-}
-#endif
 
 QFunctionPointer QLibraryPrivate::resolve_sys(const char *symbol)
 {

@@ -380,7 +380,7 @@ public:
     std::array<QMetaObject::Connection, 8> modelConnections;
     QAbstractItemModel *model = nullptr;
     QLineEdit *lineEdit = nullptr;
-    QComboBoxPrivateContainer *container = nullptr;
+    QPointer<QComboBoxPrivateContainer> container;
 #ifdef Q_OS_MAC
     QPlatformMenu *m_platformMenu = nullptr;
 #endif

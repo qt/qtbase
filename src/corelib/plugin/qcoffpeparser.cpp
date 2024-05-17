@@ -117,7 +117,7 @@ Q_DECL_UNUSED static QDebug &operator<<(QDebug &d, HeaderDebug h)
     switch (h.h->FileHeader.Machine) {
     case IMAGE_FILE_MACHINE_I386:       d << "i386"; break;
     case IMAGE_FILE_MACHINE_ARM:        d << "ARM"; break;
-    case IMAGE_FILE_MACHINE_ARMNT:      d << "ARM Thumb-2"; break;;
+    case IMAGE_FILE_MACHINE_ARMNT:      d << "ARM Thumb-2"; break;
     case IMAGE_FILE_MACHINE_THUMB:      d << "Thumb"; break;
     case IMAGE_FILE_MACHINE_IA64:       d << "IA-64"; break;
     case IMAGE_FILE_MACHINE_MIPS16:     d << "MIPS16"; break;

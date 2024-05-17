@@ -421,11 +421,13 @@ QJsonArray QCborArray::toJsonArray() const
     return convertToJsonArray(d.data());
 }
 
+#ifndef QT_NO_VARIANT
 QJsonArray QJsonPrivate::Variant::toJsonArray(const QVariantList &list)
 {
     const auto cborArray = QCborArray::fromVariantList(list);
     return convertToJsonArray(cborArray.d.data(), ConversionMode::FromVariantToJson);
 }
+#endif // !QT_NO_VARIANT
 
 /*!
     Recursively converts every \l QCborValue value in this map to JSON using
@@ -469,6 +471,7 @@ QJsonObject QCborMap::toJsonObject() const
     return convertToJsonObject(d.data());
 }
 
+#ifndef QT_NO_VARIANT
 QJsonObject QJsonPrivate::Variant::toJsonObject(const QVariantMap &map)
 {
     const auto cborMap = QCborMap::fromVariantMap(map);
@@ -578,6 +581,7 @@ QVariant QCborValue::toVariant() const
 
     Q_UNREACHABLE_RETURN(QVariant());
 }
+#endif // !QT_NO_VARIANT
 
 /*!
     Converts the JSON value contained in \a v into its corresponding CBOR value
@@ -631,6 +635,7 @@ QCborValue QCborValue::fromJsonValue(const QJsonValue &v)
     return QCborValue();
 }
 
+#ifndef QT_NO_VARIANT
 static void appendVariant(QCborContainerPrivate *d, const QVariant &variant)
 {
     // Handle strings and byte arrays directly, to avoid creating a temporary
@@ -831,6 +836,7 @@ QCborArray QCborArray::fromVariantList(const QVariantList &list)
         appendVariant(a.d.data(), v);
     return a;
 }
+#endif // !QT_NO_VARIANT
 
 /*!
     Converts all JSON items found in the \a array array to CBOR using
@@ -862,6 +868,7 @@ QCborArray QCborArray::fromJsonArray(QJsonArray &&array) noexcept
 
 }
 
+#ifndef QT_NO_VARIANT
 /*!
     Converts the CBOR values to QVariant using QCborValue::toVariant() and
     "stringifies" all the CBOR keys in this map, returning the QVariantMap that
@@ -958,6 +965,7 @@ QCborMap QCborMap::fromVariantHash(const QVariantHash &hash)
     }
     return m;
 }
+#endif // !QT_NO_VARIANT
 
 /*!
     Converts all JSON items found in the \a obj object to CBOR using

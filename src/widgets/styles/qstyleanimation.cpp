@@ -256,6 +256,7 @@ static QImage blendedImage(const QImage &start, const QImage &end, float alpha)
                 front_data += bpl;
             }
         }
+        break;
     default:
         break;
     }

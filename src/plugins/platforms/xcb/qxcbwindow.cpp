@@ -135,6 +135,7 @@ void QXcbWindow::setImageFormatForVisual(const xcb_visualtype_t *visual)
     case 16:
         qWarning("Using RGB16 fallback, if this works your X11 server is reporting a bad screen format.");
         m_imageFormat = QImage::Format_RGB16;
+        break;
     default:
         break;
     }
@@ -521,6 +522,10 @@ QXcbForeignWindow::QXcbForeignWindow(QWindow *window, WId nativeHandle)
         QRect nativeGeometry(geometry->x, geometry->y, geometry->width, geometry->height);
         QPlatformWindow::setGeometry(nativeGeometry);
     }
+
+    // And reparent, if we have a parent already
+    if (QPlatformWindow::parent())
+        setParent(QPlatformWindow::parent());
 }
 
 QXcbForeignWindow::~QXcbForeignWindow()
@@ -540,6 +545,8 @@ void QXcbWindow::destroy()
         doFocusOut();
     if (connection()->mouseGrabber() == this)
         connection()->setMouseGrabber(nullptr);
+    if (connection()->mousePressWindow() == this)
+        connection()->setMousePressWindow(nullptr);
 
     if (m_syncCounter && connection()->hasXSync())
         xcb_sync_destroy_counter(xcb_connection(), m_syncCounter);
@@ -1472,6 +1479,11 @@ void QXcbWindow::requestActivateWindow()
 
     updateNetWmUserTime(connection()->time());
     QWindow *focusWindow = QGuiApplication::focusWindow();
+    xcb_window_t current = XCB_NONE;
+    if (focusWindow) {
+        if (QPlatformWindow *pw = focusWindow->handle())
+            current = pw->winId();
+    }
 
     if (window()->isTopLevel()
         && !(window()->flags() & Qt::X11BypassWindowManagerHint)
@@ -1486,7 +1498,7 @@ void QXcbWindow::requestActivateWindow()
         event.type = atom(QXcbAtom::Atom_NET_ACTIVE_WINDOW);
         event.data.data32[0] = 1;
         event.data.data32[1] = connection()->time();
-        event.data.data32[2] = focusWindow ? focusWindow->winId() : XCB_NONE;
+        event.data.data32[2] = current;
         event.data.data32[3] = 0;
         event.data.data32[4] = 0;
 
@@ -1960,8 +1972,10 @@ void QXcbWindow::handleButtonReleaseEvent(int event_x, int event_y, int root_x, 
         return;
     }
 
-    if (connection()->buttonState() == Qt::NoButton)
+    if (connection()->buttonState() == Qt::NoButton) {
         connection()->setMousePressWindow(nullptr);
+        m_ignorePressedWindowOnMouseLeave = false;
+    }
 
     handleMouseEvent(timestamp, local, global, modifiers, type, source);
 }
@@ -1981,10 +1995,10 @@ static inline bool doCheckUnGrabAncestor(QXcbConnection *conn)
     return true;
 }
 
-static bool ignoreLeaveEvent(quint8 mode, quint8 detail, QXcbConnection *conn = nullptr)
+static bool ignoreLeaveEvent(quint8 mode, quint8 detail, QXcbConnection *conn)
 {
     return ((doCheckUnGrabAncestor(conn)
-             && mode == XCB_NOTIFY_MODE_GRAB && detail == XCB_NOTIFY_DETAIL_ANCESTOR)
+            && mode == XCB_NOTIFY_MODE_GRAB && detail == XCB_NOTIFY_DETAIL_ANCESTOR)
             || (mode == XCB_NOTIFY_MODE_UNGRAB && detail == XCB_NOTIFY_DETAIL_INFERIOR)
             || detail == XCB_NOTIFY_DETAIL_VIRTUAL
             || detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL);
@@ -2004,14 +2018,18 @@ void QXcbWindow::handleEnterNotifyEvent(int event_x, int event_y, int root_x, in
 {
     connection()->setTime(timestamp);
 
-    const QPoint global = QPoint(root_x, root_y);
-
-    if (ignoreEnterEvent(mode, detail, connection()) || connection()->mousePressWindow())
+    if (ignoreEnterEvent(mode, detail, connection())
+        || (connection()->mousePressWindow() && !m_ignorePressedWindowOnMouseLeave)) {
         return;
+    }
 
     // Updates scroll valuators, as user might have done some scrolling outside our X client.
     connection()->xi2UpdateScrollingDevices();
 
+    if (mode == XCB_NOTIFY_MODE_UNGRAB && connection()->queryMouseButtons() != Qt::NoButton)
+        m_ignorePressedWindowOnMouseLeave = true;
+
+    const QPoint global = QPoint(root_x, root_y);
     const QPoint local(event_x, event_y);
     QWindowSystemInterface::handleEnterEvent(window(), local, global);
 }
@@ -2021,8 +2039,11 @@ void QXcbWindow::handleLeaveNotifyEvent(int root_x, int root_y,
 {
     connection()->setTime(timestamp);
 
-    if (ignoreLeaveEvent(mode, detail, connection()) || connection()->mousePressWindow())
+    QXcbWindow *mousePressWindow = connection()->mousePressWindow();
+    if (ignoreLeaveEvent(mode, detail, connection())
+        || (mousePressWindow && !m_ignorePressedWindowOnMouseLeave)) {
         return;
+    }
 
     // check if enter event is buffered
     auto event = connection()->eventQueue()->peek([](xcb_generic_event_t *event, int type) {
@@ -2040,6 +2061,8 @@ void QXcbWindow::handleLeaveNotifyEvent(int root_x, int root_y,
         QWindowSystemInterface::handleEnterLeaveEvent(enterWindow->window(), window(), local, global);
     } else {
         QWindowSystemInterface::handleLeaveEvent(window());
+        if (m_ignorePressedWindowOnMouseLeave)
+            connection()->setMousePressWindow(nullptr);
     }
 
     free(enter);

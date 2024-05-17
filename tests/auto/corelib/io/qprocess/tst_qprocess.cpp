@@ -1,6 +1,6 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // Copyright (C) 2022 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <QTestEventLoop>
@@ -48,6 +48,7 @@ private slots:
     void constructing();
     void simpleStart();
     void startCommand();
+    void startCommandEmptyString();
     void startWithOpen();
     void startWithOldOpen();
     void execute();
@@ -297,6 +298,25 @@ void tst_QProcess::startCommand()
     actual.remove(0, actual.indexOf('|') + 1);
     QByteArray expected = "foo|b a r|baz";
     QCOMPARE(actual, expected);
+}
+
+void tst_QProcess::startCommandEmptyString()
+{
+    static const char warningMsg[] =
+            "QProcess::startCommand: empty or whitespace-only command was provided";
+    QProcess process;
+
+    QTest::ignoreMessage(QtWarningMsg, warningMsg);
+    process.startCommand("");
+    QVERIFY(!process.waitForStarted());
+
+    QTest::ignoreMessage(QtWarningMsg, warningMsg);
+    process.startCommand("   ");
+    QVERIFY(!process.waitForStarted());
+
+    QTest::ignoreMessage(QtWarningMsg, warningMsg);
+    process.startCommand("\t\n");
+    QVERIFY(!process.waitForStarted());
 }
 
 void tst_QProcess::startWithOpen()
@@ -1488,6 +1508,9 @@ struct DisableCrashLogger
     }
 };
 
+QT_BEGIN_NAMESPACE
+Q_AUTOTEST_EXPORT bool _qprocessUsingVfork() noexcept;
+QT_END_NAMESPACE
 static constexpr char messageFromChildProcess[] = "Message from the child process";
 static_assert(std::char_traits<char>::length(messageFromChildProcess) <= PIPE_BUF);
 static void childProcessModifier(int fd)
@@ -1499,17 +1522,28 @@ static void childProcessModifier(int fd)
 void tst_QProcess::setChildProcessModifier_data()
 {
     QTest::addColumn<bool>("detached");
-    QTest::newRow("normal") << false;
-    QTest::newRow("detached") << true;
+    QTest::addColumn<bool>("useVfork");
+    QTest::newRow("normal") << false << false;
+    QTest::newRow("detached") << true << false;
+
+#ifdef QT_BUILD_INTERNAL
+    if (_qprocessUsingVfork()) {
+        QTest::newRow("normal-vfork") << false << true;
+        QTest::newRow("detached-vfork") << true << true;
+    }
+#endif
 }
 
 void tst_QProcess::setChildProcessModifier()
 {
     QFETCH(bool, detached);
+    QFETCH(bool, useVfork);
     int pipes[2] = { -1 , -1 };
     QVERIFY(qt_safe_pipe(pipes) == 0);
 
     QProcess process;
+    if (useVfork)
+        process.setUnixProcessParameters(QProcess::UnixProcessFlag::UseVFork);
     process.setChildProcessModifier([pipes]() {
         ::childProcessModifier(pipes[1]);
     });
@@ -1542,7 +1576,11 @@ void tst_QProcess::failChildProcessModifier()
             "Implementation detail: the length of the message is limited");
 
     QFETCH(bool, detached);
+    QFETCH(bool, useVfork);
+
     QProcess process;
+    if (useVfork)
+        process.setUnixProcessParameters(QProcess::UnixProcessFlag::UseVFork);
     process.setChildProcessModifier([&process]() {
         process.failChildProcessModifier(failureMsg, EPERM);
     });
@@ -1651,9 +1689,6 @@ void tst_QProcess::terminateInChildProcessModifier()
 #endif
 }
 
-QT_BEGIN_NAMESPACE
-Q_AUTOTEST_EXPORT bool _qprocessUsingVfork() noexcept;
-QT_END_NAMESPACE
 void tst_QProcess::raiseInChildProcessModifier()
 {
 #ifdef QT_BUILD_INTERNAL

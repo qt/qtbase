@@ -11,6 +11,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QtEndian>
 #include <QtCore/QLoggingCategory>
+#include <QtCore/QUuid>
 
 #undef QT_NO_FREETYPE
 #include "qfontengine_ft_p.h"
@@ -63,6 +64,14 @@ QFontEngine *QFreeTypeFontDatabase::fontEngine(const QFontDef &fontDef, void *us
     faceId.index = fontfile->indexValue;
     faceId.instanceIndex = fontfile->instanceIndex;
     faceId.variableAxes = fontDef.variableAxisValues;
+
+    // Make sure the FaceId compares uniquely in cases where a
+    // file name is not provided.
+    if (faceId.filename.isEmpty()) {
+        QUuid::Id128Bytes id{};
+        memcpy(&id, &usrPtr, sizeof(usrPtr));
+        faceId.uuid = QUuid(id).toByteArray();
+    }
 
     return QFontEngineFT::create(fontDef, faceId, fontfile->data);
 }

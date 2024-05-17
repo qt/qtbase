@@ -13,7 +13,7 @@
 
 #include <chrono>
 
-#if QT_CONFIG(timezone) && (defined(Q_OS_DARWIN) || defined(Q_QDOC)) && !defined(QT_NO_SYSTEMLOCALE)
+#if QT_CONFIG(timezone) && (defined(Q_OS_DARWIN) || defined(Q_QDOC))
 Q_FORWARD_DECLARE_CF_TYPE(CFTimeZone);
 Q_FORWARD_DECLARE_OBJC_CLASS(NSTimeZone);
 #endif
@@ -49,7 +49,7 @@ class Q_CORE_EXPORT QTimeZone
 #endif
         {
         }
-        friend constexpr bool operator==(const ShortData &lhs, const ShortData &rhs)
+        friend constexpr bool operator==(ShortData lhs, ShortData rhs)
         { return lhs.mode == rhs.mode && lhs.offset == rhs.offset; }
         constexpr Qt::TimeSpec spec() const { return Qt::TimeSpec((mode + 3) & 3); }
     };
@@ -131,7 +131,7 @@ public:
     }
     static QTimeZone fromSecondsAheadOfUtc(int offset)
     {
-        return fromDurationAheadOfUtc(std::chrono::seconds{offset});;
+        return fromDurationAheadOfUtc(std::chrono::seconds{offset});
     }
     constexpr Qt::TimeSpec timeSpec() const noexcept { return d.s.spec(); }
     constexpr int fixedSecondsAheadOfUtc() const noexcept
@@ -214,7 +214,7 @@ public:
     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId,
                                                 QLocale::Territory territory);
 
-#  if (defined(Q_OS_DARWIN) || defined(Q_QDOC)) && !defined(QT_NO_SYSTEMLOCALE)
+#  if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     static QTimeZone fromCFTimeZone(CFTimeZoneRef timeZone);
     CFTimeZoneRef toCFTimeZone() const Q_DECL_CF_RETURNS_RETAINED;
     static QTimeZone fromNSTimeZone(const NSTimeZone *timeZone);

@@ -59,10 +59,10 @@ public:
     constexpr inline QSize &operator*=(qreal c) noexcept;
     inline QSize &operator/=(qreal c);
 
-    friend inline constexpr bool operator==(const QSize &s1, const QSize &s2) noexcept
+private:
+    friend constexpr bool comparesEqual(const QSize &s1, const QSize &s2) noexcept
     { return s1.wd == s2.wd && s1.ht == s2.ht; }
-    friend inline constexpr bool operator!=(const QSize &s1, const QSize &s2) noexcept
-    { return s1.wd != s2.wd || s1.ht != s2.ht; }
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QSize)
     friend inline constexpr QSize operator+(const QSize &s1, const QSize &s2) noexcept
     { return QSize(s1.wd + s2.wd, s1.ht + s2.ht); }
     friend inline constexpr QSize operator-(const QSize &s1, const QSize &s2) noexcept
@@ -75,6 +75,7 @@ public:
     { Q_ASSERT(!qFuzzyIsNull(c)); return QSize(qRound(s.wd / c), qRound(s.ht / c)); }
     friend inline constexpr size_t qHash(const QSize &, size_t) noexcept;
 
+public:
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     [[nodiscard]] CGSize toCGSize() const noexcept;
 #endif
@@ -242,16 +243,25 @@ public:
     constexpr inline QSizeF &operator*=(qreal c) noexcept;
     inline QSizeF &operator/=(qreal c);
 
+private:
     QT_WARNING_PUSH
     QT_WARNING_DISABLE_FLOAT_COMPARE
-    friend constexpr inline bool operator==(const QSizeF &s1, const QSizeF &s2)
+    friend constexpr bool qFuzzyCompare(const QSizeF &s1, const QSizeF &s2) noexcept
     {
+        // Cannot use qFuzzyCompare(), because it will give incorrect results
+        // if one of the arguments is 0.0.
         return ((!s1.wd || !s2.wd) ? qFuzzyIsNull(s1.wd - s2.wd) : qFuzzyCompare(s1.wd, s2.wd))
             && ((!s1.ht || !s2.ht) ? qFuzzyIsNull(s1.ht - s2.ht) : qFuzzyCompare(s1.ht, s2.ht));
     }
     QT_WARNING_POP
-    friend constexpr inline bool operator!=(const QSizeF &s1, const QSizeF &s2)
-    { return !(s1 == s2); }
+    friend constexpr bool qFuzzyIsNull(const QSizeF &size) noexcept
+    { return qFuzzyIsNull(size.wd) && qFuzzyIsNull(size.ht); }
+    friend constexpr bool comparesEqual(const QSizeF &lhs, const QSizeF &rhs) noexcept
+    { return qFuzzyCompare(lhs, rhs); }
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QSizeF)
+    friend constexpr bool comparesEqual(const QSizeF &lhs, const QSize &rhs) noexcept
+    { return comparesEqual(lhs, rhs.toSizeF()); }
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QSizeF, QSize)
     friend constexpr inline QSizeF operator+(const QSizeF &s1, const QSizeF &s2) noexcept
     { return QSizeF(s1.wd + s2.wd, s1.ht + s2.ht); }
     friend constexpr inline QSizeF operator-(const QSizeF &s1, const QSizeF &s2) noexcept
@@ -263,6 +273,7 @@ public:
     friend inline QSizeF operator/(const QSizeF &s, qreal c)
     { Q_ASSERT(!qFuzzyIsNull(c)); return QSizeF(s.wd / c, s.ht / c); }
 
+public:
     constexpr inline QSize toSize() const noexcept;
 
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)

@@ -21,8 +21,7 @@ QT_BEGIN_NAMESPACE
 
 class QCoreApplication;
 
-// GammaRay needs this to be exported with Q_CORE_EXPORT
-class Q_CORE_EXPORT QDeferredDeleteEvent : public QEvent
+class QDeferredDeleteEvent : public QEvent
 {
     Q_DECL_EVENT_COMMON(QDeferredDeleteEvent)
 public:

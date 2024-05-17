@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 add_subdirectory(qapplicationstatic)
+add_subdirectory(qchronotimer)
 add_subdirectory(qcoreapplication)
 add_subdirectory(qdeadlinetimer)
 add_subdirectory(qelapsedtimer)

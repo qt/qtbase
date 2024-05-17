@@ -1,13 +1,15 @@
 // Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QObject>
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 
 class tst_QKeyCombination : public QObject
 {
     Q_OBJECT
 private slots:
+    void compareCompiles();
     void construction();
     void operator_eq();
     void operator_or();
@@ -22,6 +24,11 @@ template <typename ...T>
 constexpr auto bitwiseOr(T ... args)
 {
     return (... | ((int)args));
+}
+
+void tst_QKeyCombination::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QKeyCombination>();
 }
 
 void tst_QKeyCombination::construction()
@@ -131,145 +138,125 @@ void tst_QKeyCombination::operator_eq()
     // default
     {
         QKeyCombination a, b;
-        QVERIFY(a == b);
-        QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
     }
 
     // key only
     {
         QKeyCombination a;
         QKeyCombination b(Qt::Key_X);
-        QVERIFY(a != b);
-        QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 
     {
         QKeyCombination a(Qt::Key_Y);
         QKeyCombination b;
-        QVERIFY(a != b);
-        QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 
     {
         QKeyCombination a(Qt::Key_Y);
         QKeyCombination b(Qt::Key_X);
-        QVERIFY(a != b);
-        QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 
     {
         QKeyCombination a(Qt::Key_F1);
         QKeyCombination b(Qt::Key_F1);
-        QVERIFY(a == b);
-        QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
     }
 
     // modifier only
     {
         QKeyCombination a;
         QKeyCombination b(Qt::CTRL);
-        QVERIFY(a != b);
-        QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 
     {
         QKeyCombination a(Qt::CTRL);
         QKeyCombination b;
-        QVERIFY(a != b);
-        QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 
     {
         QKeyCombination a(Qt::CTRL);
         QKeyCombination b(Qt::SHIFT);
-        QVERIFY(a != b);
-        QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 
     {
         QKeyCombination a(Qt::CTRL);
         QKeyCombination b(Qt::CTRL);
-        QVERIFY(a == b);
-        QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
     }
 
     {
         QKeyCombination a(Qt::CTRL);
         QKeyCombination b(Qt::ControlModifier);
-        QVERIFY(a == b);
-        QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
     }
 
     {
         QKeyCombination a(Qt::ControlModifier);
         QKeyCombination b(Qt::CTRL);
-        QVERIFY(a == b);
-        QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
     }
 
     {
         QKeyCombination a(Qt::ControlModifier);
         QKeyCombination b(Qt::ControlModifier);
-        QVERIFY(a == b);
-        QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
     }
 
     // key and modifier
     {
         QKeyCombination a(Qt::Key_A);
         QKeyCombination b(Qt::SHIFT, Qt::Key_A);
-        QVERIFY(a != b);
-        QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 
     {
         QKeyCombination a(Qt::CTRL, Qt::Key_A);
         QKeyCombination b(Qt::SHIFT, Qt::Key_A);
-        QVERIFY(a != b);
-        QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 
     {
         QKeyCombination a(Qt::SHIFT, Qt::Key_A);
         QKeyCombination b(Qt::SHIFT, Qt::Key_A);
-        QVERIFY(a == b);
-        QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
     }
 
     {
         QKeyCombination a(Qt::SHIFT, Qt::Key_A);
         QKeyCombination b(Qt::SHIFT, Qt::Key_Escape);
-        QVERIFY(a != b);
-        QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 
     {
         QKeyCombination a(Qt::SHIFT, Qt::Key_A);
         QKeyCombination b(Qt::ShiftModifier, Qt::Key_A);
-        QVERIFY(a == b);
-        QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
     }
 
     {
         QKeyCombination a(Qt::SHIFT | Qt::CTRL, Qt::Key_A);
         QKeyCombination b(Qt::ControlModifier | Qt::ShiftModifier, Qt::Key_A);
-        QVERIFY(a == b);
-        QVERIFY(!(a != b));
+        QT_TEST_EQUALITY_OPS(a, b, true);
     }
 
     // corner cases
     {
         QKeyCombination a(Qt::CTRL);
         QKeyCombination b(Qt::Key_Control);
-        QVERIFY(a != b);
-        QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 
     {
         QKeyCombination a(Qt::ALT);
         QKeyCombination b(Qt::Key_Alt);
-        QVERIFY(a != b);
-        QVERIFY(!(a == b));
+        QT_TEST_EQUALITY_OPS(a, b, false);
     }
 }
 

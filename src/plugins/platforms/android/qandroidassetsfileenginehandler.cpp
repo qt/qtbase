@@ -142,17 +142,13 @@ public:
         return m_path + at(m_index).name;
     }
 
-    bool hasNext() const
+    bool advance()
     {
-        return !empty() && m_index + 1 < size();
-    }
-
-    std::optional<std::pair<QString, AssetItem>> next()
-    {
-        if (!hasNext())
-            return {};
-        ++m_index;
-        return std::pair<QString, AssetItem>(currentFileName(), at(m_index));
+        if (!empty() && m_index + 1 < size()) {
+            ++m_index;
+            return true;
+        }
+        return false;
     }
 
 private:
@@ -171,7 +167,7 @@ public:
     AndroidAbstractFileEngineIterator(QDir::Filters filters,
                                       const QStringList &nameFilters,
                                       const QString &path)
-        : QAbstractFileEngineIterator(filters, nameFilters)
+        : QAbstractFileEngineIterator(path, filters, nameFilters)
     {
         m_currentIterator = FolderIterator::fromCache(cleanedAssetPath(path), true);
     }
@@ -195,21 +191,9 @@ public:
         return m_currentIterator->currentFilePath();
     }
 
-    bool hasNext() const override
+    bool advance() override
     {
-        if (!m_currentIterator)
-            return false;
-        return m_currentIterator->hasNext();
-    }
-
-    QString next() override
-    {
-        if (!m_currentIterator)
-            return {};
-        auto res = m_currentIterator->next();
-        if (!res)
-            return {};
-        return res->first;
+        return m_currentIterator ? m_currentIterator->advance() : false;
     }
 
 private:
@@ -367,10 +351,12 @@ public:
         m_assetsInfoCache.insert(m_fileName, newAssetInfoPtr);
     }
 
-    Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override
+    IteratorUniquePtr
+    beginEntryList(const QString &, QDir::Filters filters, const QStringList &filterNames) override
     {
+        // AndroidAbstractFileEngineIterator use `m_fileName` as the path
         if (m_assetInfo && m_assetInfo->type == AssetItem::Type::Folder)
-            return new AndroidAbstractFileEngineIterator(filters, filterNames, m_fileName);
+            return std::make_unique<AndroidAbstractFileEngineIterator>(filters, filterNames, m_fileName);
         return nullptr;
     }
 
@@ -393,13 +379,14 @@ AndroidAssetsFileEngineHandler::AndroidAssetsFileEngineHandler()
     m_assetManager = QtAndroid::assetManager();
 }
 
-QAbstractFileEngine * AndroidAssetsFileEngineHandler::create(const QString &fileName) const
+std::unique_ptr<QAbstractFileEngine>
+AndroidAssetsFileEngineHandler::create(const QString &fileName) const
 {
     if (fileName.isEmpty())
-        return nullptr;
+        return {};
 
     if (!fileName.startsWith(assetsPrefix))
-        return nullptr;
+        return {};
 
     QString path = fileName.mid(prefixSize);
     path.replace("//"_L1, "/"_L1);
@@ -407,7 +394,7 @@ QAbstractFileEngine * AndroidAssetsFileEngineHandler::create(const QString &file
         path.remove(0, 1);
     if (path.endsWith(u'/'))
         path.chop(1);
-    return new AndroidAbstractFileEngine(m_assetManager, path);
+    return std::make_unique<AndroidAbstractFileEngine>(m_assetManager, path);
 }
 
 QT_END_NAMESPACE

@@ -152,7 +152,7 @@ OtoolInfo findDependencyInfo(const QString &binaryPath)
     LogDebug() << " inspecting" << binaryPath;
     QProcess otool;
     otool.start("otool", QStringList() << "-L" << binaryPath);
-    otool.waitForFinished();
+    otool.waitForFinished(-1);
 
     if (otool.exitStatus() != QProcess::NormalExit || otool.exitCode() != 0) {
         LogError() << otool.readAllStandardError();

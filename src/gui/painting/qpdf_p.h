@@ -60,10 +60,6 @@ namespace QPdf {
         static inline int maxMemorySize() { return 100000000; }
         static inline int chunkSize()     { return 10000000; }
 
-    protected:
-        void constructor_helper(QIODevice *dev);
-        void constructor_helper(QByteArray *ba);
-
     private:
         void prepareBuffer();
 
@@ -142,7 +138,7 @@ public:
     };
 
     QPdfEngine();
-    QPdfEngine(QPdfEnginePrivate &d);
+    explicit QPdfEngine(QPdfEnginePrivate &d);
     ~QPdfEngine() {}
 
     void setOutputFilename(const QString &filename);
@@ -156,6 +152,18 @@ public:
     QByteArray documentXmpMetadata() const;
 
     void addFileAttachment(const QString &fileName, const QByteArray &data, const QString &mimeType);
+
+    // keep in sync with QPdfWriter
+    enum class ColorModel
+    {
+        RGB,
+        Grayscale,
+        CMYK,
+        Auto,
+    };
+
+    ColorModel colorModel() const;
+    void setColorModel(ColorModel model);
 
     // reimplementations QPaintEngine
     bool begin(QPaintDevice *pdev) override;
@@ -240,6 +248,7 @@ public:
     bool needsTransform;
     qreal opacity;
     QPdfEngine::PdfVersion pdfVersion;
+    QPdfEngine::ColorModel colorModel;
 
     QHash<QFontEngine::FaceId, QFontSubset *> fonts;
 
@@ -255,7 +264,6 @@ public:
     QString creator;
     bool embedFonts;
     int resolution;
-    bool grayscale;
 
     // Page layout: size, orientation and margins
     QPageLayout m_pageLayout;
@@ -265,8 +273,22 @@ private:
     int generateGradientShader(const QGradient *gradient, const QTransform &matrix, bool alpha = false);
     int generateLinearGradientShader(const QLinearGradient *lg, const QTransform &matrix, bool alpha);
     int generateRadialGradientShader(const QRadialGradient *gradient, const QTransform &matrix, bool alpha);
-    int createShadingFunction(const QGradient *gradient, int from, int to, bool reflect, bool alpha);
+    struct ShadingFunctionResult
+    {
+        int function;
+        QPdfEngine::ColorModel colorModel;
+        void writeColorSpace(QPdf::ByteStream *stream) const;
+    };
+    ShadingFunctionResult createShadingFunction(const QGradient *gradient, int from, int to, bool reflect, bool alpha);
 
+    enum class ColorDomain {
+        Stroking,
+        NonStroking,
+        NonStrokingPattern,
+    };
+
+    QPdfEngine::ColorModel colorModelForColor(const QColor &color) const;
+    void writeColor(ColorDomain domain, const QColor &color);
     void writeInfo();
     int writeXmpDcumentMetaData();
     int writeOutputIntent();
@@ -282,7 +304,15 @@ private:
     QDataStream* stream;
     int streampos;
 
-    int writeImage(const QByteArray &data, int width, int height, int depth,
+    enum class WriteImageOption
+    {
+        Monochrome,
+        Grayscale,
+        RGB,
+        CMYK,
+    };
+
+    int writeImage(const QByteArray &data, int width, int height, WriteImageOption option,
                    int maskObject, int softMaskObject, bool dct = false, bool isMono = false);
     void writePage();
 
@@ -316,7 +346,10 @@ private:
 
     // various PDF objects
     int pageRoot, namesRoot, destsRoot, attachmentsRoot, catalog, info;
-    int graphicsState, patternColorSpace;
+    int graphicsState;
+    int patternColorSpaceRGB;
+    int patternColorSpaceGrayscale;
+    int patternColorSpaceCMYK;
     QList<uint> pages;
     QHash<qint64, uint> imageCache;
     QHash<QPair<uint, uint>, uint > alphaCache;

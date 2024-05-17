@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtCore/QTemporaryDir>
 #include <QTest>
@@ -54,7 +54,7 @@ void tst_qfileopenevent::cleanupTestCase()
 void tst_qfileopenevent::createFile(const QString &filename, const QByteArray &content)
 {
     QFile file(filename);
-    file.open(QFile::WriteOnly);
+    QVERIFY(file.open(QFile::WriteOnly));
     file.write(content);
     file.close();
 }
@@ -79,7 +79,8 @@ void tst_qfileopenevent::constructor()
 QByteArray tst_qfileopenevent::readFileContent(QFileOpenEvent& event)
 {
     QFile file(event.file());
-    file.open(QFile::ReadOnly);
+    if (!file.open(QFile::ReadOnly))
+        qFatal("Cannot open file %s", qPrintable(event.file()));
     file.seek(0);
     QByteArray data = file.readAll();
     return data;
@@ -138,7 +139,7 @@ void tst_qfileopenevent::handleLifetime()
 
     // check the content
     QFile checkContent("testHandleLifetime");
-    checkContent.open(QFile::ReadOnly);
+    QVERIFY(checkContent.open(QFile::ReadOnly));
     QString content(checkContent.readAll());
     QCOMPARE(content, QLatin1String("test content+closed original handles"));
     checkContent.close();

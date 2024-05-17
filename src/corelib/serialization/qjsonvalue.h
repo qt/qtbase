@@ -4,10 +4,11 @@
 #ifndef QJSONVALUE_H
 #define QJSONVALUE_H
 
+#include <QtCore/qcborvalue.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qglobal.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qshareddata.h>
-#include <QtCore/qcborvalue.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -92,10 +93,16 @@ public:
     const QJsonValue operator[](QLatin1StringView key) const;
     const QJsonValue operator[](qsizetype i) const;
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QJsonValue &other) const;
     bool operator!=(const QJsonValue &other) const;
+#endif
 
 private:
+    friend Q_CORE_EXPORT bool comparesEqual(const QJsonValue &lhs,
+                                            const QJsonValue &rhs) noexcept;
+    Q_DECLARE_EQUALITY_COMPARABLE(QJsonValue)
+
     // avoid implicit conversions from char * to bool
     QJsonValue(const void *) = delete;
     friend class QJsonPrivate::Value;
@@ -148,10 +155,20 @@ public:
     const QJsonValue operator[](QLatin1StringView key) const { return concrete(*this)[key]; }
     const QJsonValue operator[](qsizetype i) const { return concrete(*this)[i]; }
 
-    inline bool operator==(const QJsonValue &other) const { return concrete(*this) == other; }
-    inline bool operator!=(const QJsonValue &other) const { return concrete(*this) != other; }
-
 protected:
+    friend bool comparesEqual(const QJsonValueConstRef &lhs,
+                              const QJsonValueConstRef &rhs) noexcept
+    {
+        return comparesEqual(concrete(lhs), concrete(rhs));
+    }
+    friend bool comparesEqual(const QJsonValueConstRef &lhs,
+                              const QJsonValue &rhs) noexcept
+    {
+        return comparesEqual(concrete(lhs), rhs);
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QJsonValueConstRef)
+    Q_DECLARE_EQUALITY_COMPARABLE(QJsonValueConstRef, QJsonValue)
+
     Q_CORE_EXPORT static QJsonValue::Type
     concreteType(QJsonValueConstRef self) noexcept Q_DECL_PURE_FUNCTION;
     Q_CORE_EXPORT static bool
@@ -257,10 +274,25 @@ public:
     const QJsonValue operator[](QLatin1StringView key) const { return QJsonValueConstRef::operator[](key); }
     const QJsonValue operator[](qsizetype i) const { return QJsonValueConstRef::operator[](i); }
 
-    inline bool operator==(const QJsonValue &other) const { return QJsonValueConstRef::operator==(other); }
-    inline bool operator!=(const QJsonValue &other) const { return QJsonValueConstRef::operator!=(other); }
+#if QT_CORE_REMOVED_SINCE(6, 8)
+    inline bool operator==(const QJsonValue &other) const { return comparesEqual(*this, other); }
+    inline bool operator!=(const QJsonValue &other) const { return !comparesEqual(*this, other); }
+#endif
 
 private:
+    friend bool comparesEqual(const QJsonValueRef &lhs,
+                              const QJsonValueRef &rhs) noexcept
+    {
+        return comparesEqual(QJsonValue(lhs), QJsonValue(rhs));
+    }
+    friend bool comparesEqual(const QJsonValueRef &lhs,
+                              const QJsonValueConstRef &rhs) noexcept
+    {
+        return comparesEqual(QJsonValue(lhs), QJsonValue(rhs));
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QJsonValueRef)
+    Q_DECLARE_EQUALITY_COMPARABLE(QJsonValueRef, QJsonValueConstRef)
+
     QJsonValue toValue() const;
 #else
     using QJsonValueConstRef::operator[];
@@ -281,21 +313,6 @@ inline QJsonValue QCborValueConstRef::toJsonValue() const
 {
     return concrete().toJsonValue();
 }
-
-inline bool operator==(const QJsonValueConstRef &lhs, const QJsonValueRef &rhs)
-{ return QJsonValue(lhs) == QJsonValue(rhs); }
-inline bool operator!=(const QJsonValueConstRef &lhs, const QJsonValueRef &rhs)
-{ return !(lhs == rhs); }
-
-inline bool operator==(const QJsonValueRef &lhs, const QJsonValueConstRef &rhs)
-{ return QJsonValue(lhs) == QJsonValue(rhs); }
-inline bool operator!=(const QJsonValueRef &lhs, const QJsonValueConstRef &rhs)
-{ return !(lhs == rhs); }
-
-inline bool operator==(const QJsonValueRef &lhs, const QJsonValueRef &rhs)
-{ return QJsonValue(lhs) == QJsonValue(rhs); }
-inline bool operator!=(const QJsonValueRef &lhs, const QJsonValueRef &rhs)
-{ return !(lhs == rhs); }
 
 Q_CORE_EXPORT size_t qHash(const QJsonValue &value, size_t seed = 0);
 

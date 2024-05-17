@@ -175,5 +175,6 @@ instructions:
   - type: EnvironmentVariable
     variableName: COIN_CONFIG_TYPE
     variableValue: "Target"
+  - !include "{{qt/qtbase}}/cmake_build_standalone_examples_target.yaml"
   - !include "{{qt/qtbase}}/qmake/get_qmake_location_target.yaml"
   - !include "{{qt/qtbase}}/qmake_examples/build_qmake_examples_instructions.yaml"

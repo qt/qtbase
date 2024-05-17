@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
   \endlist
 
   If you need to trigger a repaint from places other than paintGL() (a
-  typical example is when using \l{QTimer}{timers} to animate scenes),
+  typical example is when using \l{QChronoTimer}{timers} to animate scenes),
   you should call the widget's update() function to schedule an update.
 
   Your widget's OpenGL rendering context is made current when
@@ -784,9 +784,7 @@ void QOpenGLWidgetPrivate::ensureRhiDependentResources()
 {
     Q_Q(QOpenGLWidget);
 
-    QRhi *rhi = nullptr;
-    if (QWidgetRepaintManager *repaintManager = QWidgetPrivate::get(q->window())->maybeRepaintManager())
-        rhi = repaintManager->rhi();
+    QRhi *rhi = QWidgetPrivate::rhi();
 
     // If there is no rhi, because we are completely offscreen, then there's no wrapperTexture either
     if (rhi && rhi->backend() == QRhi::OpenGLES2) {
@@ -832,7 +830,6 @@ void QOpenGLWidgetPrivate::initialize()
     // If no global shared context get our toplevel's context with which we
     // will share in order to make the texture usable by the underlying window's backingstore.
     QWidget *tlw = q->window();
-    QWidgetPrivate *tlwd = get(tlw);
 
     // Do not include the sample count. Requesting a multisampled context is not necessary
     // since we render into an FBO, never to an actual surface. What's more, attempting to
@@ -841,9 +838,7 @@ void QOpenGLWidgetPrivate::initialize()
     requestedSamples = requestedFormat.samples();
     requestedFormat.setSamples(0);
 
-    QRhi *rhi = nullptr;
-    if (QWidgetRepaintManager *repaintManager = tlwd->maybeRepaintManager())
-        rhi = repaintManager->rhi();
+    QRhi *rhi = QWidgetPrivate::rhi();
 
     // Could be that something else already initialized the window with some
     // other graphics API for the QRhi, that's not good.
@@ -860,9 +855,11 @@ void QOpenGLWidgetPrivate::initialize()
 
     context = new QOpenGLContext;
     context->setFormat(requestedFormat);
-    if (contextFromRhi) {
-        context->setShareContext(contextFromRhi);
-        context->setScreen(contextFromRhi->screen());
+
+    QOpenGLContext *shareContext = contextFromRhi ? contextFromRhi : qt_gl_global_share_context();
+    if (shareContext) {
+        context->setShareContext(shareContext);
+        context->setScreen(shareContext->screen());
     }
     if (Q_UNLIKELY(!context->create())) {
         qWarning("QOpenGLWidget: Failed to create context");
@@ -1718,8 +1715,8 @@ bool QOpenGLWidget::event(QEvent *e)
             if (!QCoreApplication::testAttribute(Qt::AA_ShareOpenGLContexts))
                 d->reset();
         }
-        if (QWidgetRepaintManager *repaintManager = QWidgetPrivate::get(window())->maybeRepaintManager()) {
-            if (!d->initialized && !size().isEmpty() && repaintManager->rhi()) {
+        if (d->rhi()) {
+            if (!d->initialized && !size().isEmpty()) {
                 d->initialize();
                 if (d->initialized) {
                     d->recreateFbos();

@@ -4,6 +4,7 @@
 #include <private/qguiapplication_p.h>
 #include <private/qcolortransform_p.h>
 #include <private/qcolortrclut_p.h>
+#include <private/qcmyk_p.h>
 #include <private/qdrawhelper_p.h>
 #include <private/qendian_p.h>
 #include <private/qpixellayout_p.h>
@@ -1325,7 +1326,7 @@ static void convert_ARGB32_to_RGBA64(QImageData *dest, const QImageData *src, Qt
 
     for (int i = 0; i < src->height; ++i) {
         fetch(reinterpret_cast<QRgba64 *>(dest_data), src_data, 0, src->width, nullptr, nullptr);
-        src_data += src->bytes_per_line;;
+        src_data += src->bytes_per_line;
         dest_data += dest->bytes_per_line;
     }
 }
@@ -1423,7 +1424,7 @@ static void convert_ARGB_to_gray8(QImageData *dest, const QImageData *src, Qt::I
 
     for (int i = 0; i < src->height; ++i) {
         const QRgb *src_line = reinterpret_cast<const QRgb *>(src_data);
-        tfd->apply(dest_data, src_line, src->width, flags);
+        tfd->applyReturnGray(dest_data, src_line, src->width, flags);
         src_data += sbpl;
         dest_data += dbpl;
     }
@@ -1460,7 +1461,7 @@ static void convert_ARGB_to_gray16(QImageData *dest, const QImageData *src, Qt::
             const int len = std::min(src->width - j, BufferSize);
             for (int k = 0; k < len; ++k)
                 tmp_line[k] = QRgba64::fromArgb32(src_line[j + k]);
-            tfd->apply(dest_line + j, tmp_line, len, flags);
+            tfd->applyReturnGray(dest_line + j, tmp_line, len, flags);
             j += len;
         }
         src_data += sbpl;
@@ -1497,7 +1498,7 @@ static void convert_RGBA64_to_gray8(QImageData *dest, const QImageData *src, Qt:
         int j = 0;
         while (j < src->width) {
             const int len = std::min(src->width - j, BufferSize);
-            tfd->apply(gray_line, src_line + j, len, flags);
+            tfd->applyReturnGray(gray_line, src_line + j, len, flags);
             for (int k = 0; k < len; ++k)
                 dest_line[j + k] = qt_div_257(gray_line[k]);
             j += len;
@@ -1532,7 +1533,7 @@ static void convert_RGBA64_to_gray16(QImageData *dest, const QImageData *src, Qt
     for (int i = 0; i < src->height; ++i) {
         const QRgba64 *src_line = reinterpret_cast<const QRgba64 *>(src_data);
         quint16 *dest_line = reinterpret_cast<quint16 *>(dest_data);
-        tfd->apply(dest_line, src_line, src->width, flags);
+        tfd->applyReturnGray(dest_line, src_line, src->width, flags);
         src_data += sbpl;
         dest_data += dbpl;
     }
@@ -2454,6 +2455,34 @@ static bool convert_Grayscale8_to_Indexed8_inplace(QImageData *data, Qt::ImageCo
     return true;
 }
 
+template <bool SourceIsPremultiplied>
+static void convert_ARGB32_to_CMYK8888(QImageData *dest, const QImageData *src, Qt::ImageConversionFlags)
+{
+    Q_ASSERT(src->format == QImage::Format_RGB32 ||
+             src->format == QImage::Format_ARGB32 ||
+             src->format == QImage::Format_ARGB32_Premultiplied);
+    Q_ASSERT(dest->format == QImage::Format_CMYK8888);
+    Q_ASSERT(src->width == dest->width);
+    Q_ASSERT(src->height == dest->height);
+
+    const uchar *src_data = src->data;
+    uchar *dest_data = dest->data;
+    for (int y = 0; y < src->height; ++y) {
+        const QRgb *srcRgba = reinterpret_cast<const QRgb *>(src_data);
+        uint *destCmyk = reinterpret_cast<uint *>(dest_data);
+
+        for (int x = 0; x < src->width; ++x) {
+            QRgb sourcePixel = srcRgba[x];
+            if constexpr (SourceIsPremultiplied)
+                sourcePixel = qUnpremultiply(sourcePixel);
+
+            destCmyk[x] = QCmyk32::fromRgba(sourcePixel).toUint();
+        }
+
+        src_data += src->bytes_per_line;;
+        dest_data += dest->bytes_per_line;
+    }
+}
 
 // first index source, second dest
 Image_Converter qimage_converter_map[QImage::NImageFormats][QImage::NImageFormats] = {};
@@ -2589,6 +2618,11 @@ static void qInitImageConversions()
 
     qimage_converter_map[QImage::Format_RGBX32FPx4][QImage::Format_RGBA32FPx4] = convert_passthrough;
     qimage_converter_map[QImage::Format_RGBX32FPx4][QImage::Format_RGBA32FPx4_Premultiplied] = convert_passthrough;
+
+    qimage_converter_map[QImage::Format_CMYK8888][QImage::Format_CMYK8888] = convert_passthrough;
+    qimage_converter_map[QImage::Format_RGB32][QImage::Format_CMYK8888] = convert_ARGB32_to_CMYK8888<false>;
+    qimage_converter_map[QImage::Format_ARGB32][QImage::Format_CMYK8888] = convert_ARGB32_to_CMYK8888<false>;
+    qimage_converter_map[QImage::Format_ARGB32_Premultiplied][QImage::Format_CMYK8888] = convert_ARGB32_to_CMYK8888<true>;
 
     // Inline converters:
     qimage_inplace_converter_map[QImage::Format_Indexed8][QImage::Format_Grayscale8] =

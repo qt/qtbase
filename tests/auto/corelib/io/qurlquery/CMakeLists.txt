@@ -16,4 +16,5 @@ qt_internal_add_test(tst_qurlquery
         tst_qurlquery.cpp
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
 )

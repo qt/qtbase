@@ -13,7 +13,7 @@ QT_BEGIN_NAMESPACE
 
 // Implements the Text Range control pattern provider. Used for text controls.
 class QWindowsUiaTextRangeProvider : public QWindowsUiaBaseProvider,
-                                     public QWindowsComBase<ITextRangeProvider>
+                                     public QComObject<ITextRangeProvider>
 {
     Q_DISABLE_COPY_MOVE(QWindowsUiaTextRangeProvider)
 public:

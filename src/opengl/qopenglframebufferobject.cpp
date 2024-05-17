@@ -550,8 +550,22 @@ void QOpenGLFramebufferObjectPrivate::initTexture(int idx)
     else if (color.internalFormat == GL_RGB16F  || color.internalFormat == GL_RGBA16F)
         pixelType = GL_HALF_FLOAT;
 
+    bool isOpaque = false;
+    switch (color.internalFormat) {
+    case GL_RGB8:
+    case GL_RGB16:
+    case GL_RGB16F:
+    case GL_RGB32F:
+        isOpaque = true;
+        break;
+    case GL_RGB10:
+        // opaque but the pixel type (INT_2_10_10_10) has alpha and so requires RGBA texture format
+        break;
+    }
+    const GLuint textureFormat = isOpaque ? GL_RGB : GL_RGBA;
+
     funcs.glTexImage2D(target, 0, color.internalFormat, color.size.width(), color.size.height(), 0,
-                       GL_RGBA, pixelType, nullptr);
+                       textureFormat, pixelType, nullptr);
     if (format.mipmap()) {
         int width = color.size.width();
         int height = color.size.height();
@@ -560,8 +574,8 @@ void QOpenGLFramebufferObjectPrivate::initTexture(int idx)
             width = qMax(1, width >> 1);
             height = qMax(1, height >> 1);
             ++level;
-            funcs.glTexImage2D(target, level, color.internalFormat, width, height, 0,
-                               GL_RGBA, pixelType, nullptr);
+            funcs.glTexImage2D(target, level, color.internalFormat, width, height, 0, textureFormat,
+                               pixelType, nullptr);
         }
     }
     funcs.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + idx,

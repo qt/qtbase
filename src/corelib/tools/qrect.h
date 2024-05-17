@@ -119,12 +119,13 @@ public:
 
     [[nodiscard]] static constexpr inline QRect span(const QPoint &p1, const QPoint &p2) noexcept;
 
-    friend constexpr inline bool operator==(const QRect &r1, const QRect &r2) noexcept
+private:
+    friend constexpr bool comparesEqual(const QRect &r1, const QRect &r2) noexcept
     { return r1.x1==r2.x1 && r1.x2==r2.x2 && r1.y1==r2.y1 && r1.y2==r2.y2; }
-    friend constexpr inline bool operator!=(const QRect &r1, const QRect &r2) noexcept
-    { return r1.x1!=r2.x1 || r1.x2!=r2.x2 || r1.y1!=r2.y1 || r1.y2!=r2.y2; }
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QRect)
     friend constexpr inline size_t qHash(const QRect &, size_t) noexcept;
 
+public:
 #if defined(Q_OS_DARWIN) || defined(Q_QDOC)
     [[nodiscard]] CGRect toCGRect() const noexcept;
 #endif
@@ -572,17 +573,30 @@ public:
     constexpr inline QRectF &operator+=(const QMarginsF &margins) noexcept;
     constexpr inline QRectF &operator-=(const QMarginsF &margins) noexcept;
 
-    friend constexpr inline bool operator==(const QRectF &r1, const QRectF &r2) noexcept
+private:
+    friend constexpr bool comparesEqual(const QRectF &r1, const QRectF &r2) noexcept
     {
         return r1.topLeft() == r2.topLeft()
             && r1.size() == r2.size();
     }
-    friend constexpr inline bool operator!=(const QRectF &r1, const QRectF &r2) noexcept
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QRectF)
+
+    friend constexpr bool comparesEqual(const QRectF &r1, const QRect &r2) noexcept
+    { return r1.topLeft() == r2.topLeft() && r1.size() == r2.size(); }
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QRectF, QRect)
+
+    friend constexpr bool qFuzzyCompare(const QRectF &lhs, const QRectF &rhs) noexcept
     {
-        return r1.topLeft() != r2.topLeft()
-            || r1.size() != r2.size();
+        return qFuzzyCompare(lhs.topLeft(), rhs.topLeft())
+                && qFuzzyCompare(lhs.bottomRight(), rhs.bottomRight());
     }
 
+    friend constexpr bool qFuzzyIsNull(const QRectF &rect) noexcept
+    {
+        return qFuzzyIsNull(rect.w) && qFuzzyIsNull(rect.h);
+    }
+
+public:
     [[nodiscard]] constexpr inline QRect toRect() const noexcept;
     [[nodiscard]] QRect toAlignedRect() const noexcept;
 

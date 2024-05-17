@@ -404,15 +404,20 @@
     of the ODBC driver. ODBC support can be used as a fallback for compliant
     databases if no native driver is available.
 
-    On Windows, an ODBC driver manager should be installed by default.
+    On Windows, an ODBC driver manager is installed by default.
     For Unix systems, there are some implementations which must be
     installed first. Note that every end user of your application is
     required to have an ODBC driver manager installed, otherwise the
     QODBC plugin will not work.
 
     When connecting to an ODBC datasource, you should pass the name
-    of the ODBC datasource to the QSqlDatabase::setDatabaseName()
+    of the ODBC datasource (DSN) to the QSqlDatabase::setDatabaseName()
     function, rather than the actual database name.
+    It's also possible to pass a FILEDSN (*.dsn) filename or a complete
+    ODBC driver string. When passing a driver string you must make sure,
+    that all parameters (username, password, ...) are properly escaped.
+    Passing the username or password through the QSqlDatabase functions,
+    the escaping is done by the QODBC plugin.
 
     The QODBC Plugin needs an ODBC compliant driver manager version 2.0 or
     later. Some ODBC drivers claim to be version-2.0-compliant,
@@ -756,11 +761,14 @@
     \row
       \li QSQLITE_NO_USE_EXTENDED_RESULT_CODES
       \li Disables the usage of the \l {https://www.sqlite.org/c3ref/extended_result_codes.html}
-          {extended result code} feature in SQLite (for backwards compatibility)
+          {extended result code} feature in SQLite
     \row
       \li QSQLITE_ENABLE_NON_ASCII_CASE_FOLDING
       \li If set, the plugin replaces the functions 'lower' and 'upper' with
           QString functions for correct case folding of non-ascii characters
+    \row
+      \li QSQLITE_OPEN_NOFOLLOW
+      \li If set, the database filename is not allowed to contain a symbolic link
     \endtable
 
     \section3 How to Build the QSQLITE Plugin

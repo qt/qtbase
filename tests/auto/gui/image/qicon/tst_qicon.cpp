@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <QImageReader>
@@ -192,7 +192,7 @@ void tst_QIcon::isNull() {
     // test string constructor with empty string
     QIcon iconEmptyString = QIcon(QString());
     QVERIFY(iconEmptyString.isNull());
-    QVERIFY(!iconEmptyString.actualSize(QSize(32, 32)).isValid());;
+    QVERIFY(!iconEmptyString.actualSize(QSize(32, 32)).isValid());
 
     // test string constructor with non-existing file
     QIcon iconNoFile = QIcon("imagedoesnotexist");

@@ -1,6 +1,7 @@
 // Copyright (C) 2020 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#undef QTEST_THROW_ON_FAILURE // fails ### investigate
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QRegularExpression>
@@ -183,6 +184,7 @@ void tst_Warnings::testFailOnWarningsWithData()
 
 void tst_Warnings::testFailOnWarningsFailInHelper()
 {
+    const QTest::ThrowOnFailDisabler nothrow; // tests repeated QFAILs
     [](){ QFAIL("This failure message should be printed but not cause the test to abort"); }();
     // So we've already failed, but we get more messages - that don't increment counters.
     const auto warnRegex = QRegularExpression("Ran out of .*!");

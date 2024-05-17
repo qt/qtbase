@@ -18,13 +18,17 @@
 #include <UIKit/UIFont.h>
 #include <UIKit/UIInterface.h>
 
-#ifndef Q_OS_TVOS
+#if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
 #include "qiosmenu.h"
+#endif
+
+#if !defined(Q_OS_TVOS)
 #include "qiosfiledialog.h"
-#include "qiosmessagedialog.h"
 #include "qioscolordialog.h"
 #include "qiosfontdialog.h"
+#include "qiosmessagedialog.h"
 #include "qiosscreen.h"
+#include "quiwindow.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -82,23 +86,17 @@ const QPalette *QIOSTheme::palette(QPlatformTheme::Palette type) const
     return 0;
 }
 
+#if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
 QPlatformMenuItem* QIOSTheme::createPlatformMenuItem() const
 {
-#ifdef Q_OS_TVOS
-    return 0;
-#else
-    return new QIOSMenuItem();
-#endif
+    return new QIOSMenuItem;
 }
 
 QPlatformMenu* QIOSTheme::createPlatformMenu() const
 {
-#ifdef Q_OS_TVOS
-    return 0;
-#else
-    return new QIOSMenu();
-#endif
+    return new QIOSMenu;
 }
+#endif
 
 bool QIOSTheme::usePlatformNativeDialog(QPlatformTheme::DialogType type) const
 {
@@ -149,6 +147,16 @@ QVariant QIOSTheme::themeHint(ThemeHint hint) const
 
 Qt::ColorScheme QIOSTheme::colorScheme() const
 {
+#if defined(Q_OS_VISIONOS)
+    // On visionOS the concept of light or dark mode does not
+    // apply, as the UI is constantly changing based on what
+    // the lighting conditions are outside the headset, but
+    // the OS reports itself as always being in dark mode.
+    return Qt::ColorScheme::Dark;
+#else
+    if (s_colorSchemeOverride != Qt::ColorScheme::Unknown)
+        return s_colorSchemeOverride;
+
     // Set the appearance based on the QUIWindow
     // Fallback to the UIScreen if no window is created yet
     UIUserInterfaceStyle appearance = UIScreen.mainScreen.traitCollection.userInterfaceStyle;
@@ -163,6 +171,39 @@ Qt::ColorScheme QIOSTheme::colorScheme() const
     return appearance == UIUserInterfaceStyleDark
                        ? Qt::ColorScheme::Dark
                        : Qt::ColorScheme::Light;
+#endif
+}
+
+void QIOSTheme::requestColorScheme(Qt::ColorScheme scheme)
+{
+#if defined(Q_OS_VISIONOS)
+    Q_UNUSED(scheme);
+#else
+    s_colorSchemeOverride = scheme;
+
+    const NSArray<UIWindow *> *windows = qt_apple_sharedApplication().windows;
+    for (UIWindow *window in windows) {
+        // don't apply a theme to windows we don't own
+        if (qt_objc_cast<QUIWindow*>(window))
+            applyTheme(window);
+    }
+#endif
+}
+
+void QIOSTheme::applyTheme(UIWindow *window)
+{
+    const UIUserInterfaceStyle style = []{
+        switch (s_colorSchemeOverride) {
+        case Qt::ColorScheme::Dark:
+            return UIUserInterfaceStyleDark;
+        case Qt::ColorScheme::Light:
+            return UIUserInterfaceStyleLight;
+        case Qt::ColorScheme::Unknown:
+            return UIUserInterfaceStyleUnspecified;
+        }
+    }();
+
+    window.overrideUserInterfaceStyle = style;
 }
 
 const QFont *QIOSTheme::font(Font type) const

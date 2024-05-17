@@ -5,7 +5,9 @@
 #include "qwasmscreen.h"
 #include "qwasmwindow.h"
 
+#include <QtCore/qbuffer.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qstring.h>
 #include <QtGui/qwindow.h>
 
 #include <emscripten/emscripten.h>
@@ -15,10 +17,9 @@ QT_BEGIN_NAMESPACE
 using namespace emscripten;
 
 namespace {
-QByteArray cursorShapeToCss(Qt::CursorShape shape)
+QByteArray cursorToCss(const QCursor *cursor)
 {
-    QByteArray cursorName;
-
+    auto shape = cursor->shape();
     switch (shape) {
     case Qt::ArrowCursor:
         return "default";
@@ -64,8 +65,24 @@ QByteArray cursorShapeToCss(Qt::CursorShape shape)
         return "default";
     case Qt::DragLinkCursor:
         return "alias";
+    case Qt::BitmapCursor: {
+        auto pixmap = cursor->pixmap();
+        QByteArray cursorAsPng;
+        QBuffer buffer(&cursorAsPng);
+        buffer.open(QBuffer::WriteOnly);
+        pixmap.save(&buffer, "PNG");
+        buffer.close();
+        auto cursorAsBase64 = cursorAsPng.toBase64();
+        auto hotSpot = cursor->hotSpot();
+        auto encodedCursor =
+            QString("url(data:image/png;base64,%1) %2 %3, auto")
+                .arg(QString::fromUtf8(cursorAsBase64),
+                     QString::number(hotSpot.x()),
+                     QString::number(hotSpot.y()));
+        return encodedCursor.toUtf8();
+        }
     default:
-        static_assert(Qt::BitmapCursor == 24 && Qt::CustomCursor == 25,
+        static_assert(Qt::CustomCursor == 25,
                       "New cursor type added, handle it");
         qWarning() << "QWasmCursor: " << shape << " unsupported";
         return "default";
@@ -78,7 +95,7 @@ void QWasmCursor::changeCursor(QCursor *windowCursor, QWindow *window)
     if (!window)
         return;
     if (QWasmWindow *wasmWindow = static_cast<QWasmWindow *>(window->handle()))
-        wasmWindow->setWindowCursor(windowCursor ? cursorShapeToCss(windowCursor->shape()) : "default");
+        wasmWindow->setWindowCursor(windowCursor ? cursorToCss(windowCursor) : "default");
 }
 
 QT_END_NAMESPACE

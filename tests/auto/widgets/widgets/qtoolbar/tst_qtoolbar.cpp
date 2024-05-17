@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -1022,7 +1022,6 @@ void tst_QToolBar::accel()
     QSignalSpy spy(action, SIGNAL(triggered(bool)));
 
     mw.show();
-    QApplicationPrivate::setActiveWindow(&mw);
     QVERIFY(QTest::qWaitForWindowActive(&mw));
 
     QTest::keyClick(&mw, Qt::Key_T, Qt::AltModifier);

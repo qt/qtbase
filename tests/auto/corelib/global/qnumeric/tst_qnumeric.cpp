@@ -1,6 +1,6 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -91,7 +91,7 @@ void tst_QNumeric::fuzzyCompare_data()
     QTest::addColumn<bool>("isEqual");
     const F zero(0), one(1), ten(10);
     const F huge = Fuzzy<F>::scale, tiny = one / huge;
-    const F deci(.1), giga(1e9), nano(1e-9), big(1e7), small(1e-10);
+    const F deci(.1f), giga(1e9f), nano(1e-9f), big(1e7f), small(1e-10f);
 
     QTest::newRow("zero") << zero << zero << true;
     QTest::newRow("ten") << ten << ten << true;
@@ -321,8 +321,11 @@ void tst_QNumeric::classifyfp()
 
     QCOMPARE(qFpClassify(inf), FP_INFINITE);
     QCOMPARE(qFpClassify(-inf), FP_INFINITE);
+    QT_WARNING_PUSH;
+    QT_WARNING_DISABLE_MSVC(4056);
     QCOMPARE(qFpClassify(huge * two), FP_INFINITE);
     QCOMPARE(qFpClassify(huge * -two), FP_INFINITE);
+    QT_WARNING_POP;
 
     QCOMPARE(qFpClassify(one), FP_NORMAL);
     QCOMPARE(qFpClassify(huge), FP_NORMAL);

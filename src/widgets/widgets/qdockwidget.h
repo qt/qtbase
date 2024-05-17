@@ -20,7 +20,7 @@ class Q_WIDGETS_EXPORT QDockWidget : public QWidget
 {
     Q_OBJECT
 
-    Q_PROPERTY(bool floating READ isFloating WRITE setFloating)
+    Q_PROPERTY(bool floating READ isFloating WRITE setFloating NOTIFY topLevelChanged)
     Q_PROPERTY(DockWidgetFeatures features READ features WRITE setFeatures NOTIFY featuresChanged)
     Q_PROPERTY(Qt::DockWidgetAreas allowedAreas READ allowedAreas
                WRITE setAllowedAreas NOTIFY allowedAreasChanged)
@@ -65,7 +65,6 @@ public:
     { return (allowedAreas() & area) == area; }
 
 #ifndef QT_NO_DEBUG_STREAM
-    friend Q_WIDGETS_EXPORT QDebug operator<<(QDebug dbg, const QDockWidget &dockWidget);
     friend Q_WIDGETS_EXPORT QDebug operator<<(QDebug dbg, const QDockWidget *dockWidget);
 #endif
 

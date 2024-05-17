@@ -110,7 +110,7 @@
 #endif
 
 #include <QtCore/qdir.h>
-#include <QtCore/qdiriterator.h>
+#include <QtCore/qdirlisting.h>
 #include <QtCore/qfile.h>
 
 QT_BEGIN_NAMESPACE
@@ -680,9 +680,12 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
     QRegularExpression pattern(QRegularExpression::anchoredPattern(sourcePath));
 #endif
 
-    QDirIterator it(pathPrefixString, QDir::Files, QDirIterator::FollowSymlinks | QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        QString filePath = startIndex == 0 ? it.next() : it.next().mid(startIndex);
+    using F = QDirListing::IteratorFlag;
+    constexpr auto iterFlags = F::FollowSymlinks | F::Recursive;
+    for (const auto &dirEntry : QDirListing(pathPrefixString, QDir::Files, iterFlags)) {
+        QString filePath = dirEntry.filePath();
+        if (startIndex > 0)
+            filePath.remove(0, startIndex);
 
 #if QT_CONFIG(regularexpression)
         if (!pattern.match(filePath).hasMatch())

@@ -79,10 +79,11 @@ bool ImageViewer::loadFile(const QString &fileName)
 
 void ImageViewer::setImage(const QImage &newImage)
 {
-    image = newImage;
-    if (image.colorSpace().isValid())
-        image.convertToColorSpace(QColorSpace::SRgb);
-    imageLabel->setPixmap(QPixmap::fromImage(image));
+    if (newImage.colorSpace().isValid())
+        image = newImage.convertedToColorSpace(QColorSpace::SRgb);
+    else
+        image = newImage;
+    imageLabel->setPixmap(QPixmap::fromImage(image, Qt::NoFormatConversion));
 //! [4]
     scaleFactor = 1.0;
 

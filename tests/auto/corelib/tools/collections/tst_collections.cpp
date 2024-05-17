@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #undef QT_NO_FOREACH // this file tests Q_FOREACH over containers (centralize in a tst_qforeach?)
 
@@ -530,7 +530,7 @@ void tst_Collections::list()
             list << "one" << "two" << "one" << "two";
             QVERIFY(!list.removeOne("three"));
             QVERIFY(list.removeOne("two"));
-            QCOMPARE(list, QList<QString>() << "one" << "one" << "two");;
+            QCOMPARE(list, QList<QString>() << "one" << "one" << "two");
             QVERIFY(list.removeOne("two"));
             QCOMPARE(list, QList<QString>() << "one" << "one");
             QVERIFY(!list.removeOne("two"));

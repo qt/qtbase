@@ -5,6 +5,7 @@
 
 #include <AppKit/AppKit.h>
 #include <MetalKit/MetalKit.h>
+#include <UniformTypeIdentifiers/UTCoreTypes.h>
 
 #include "qnsview.h"
 #include "qcocoawindow.h"
@@ -90,6 +91,7 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMenuHelper);
 @property (assign) NSView* previousSuperview;
 @property (assign) NSWindow* previousWindow;
 @property (retain) QNSViewMenuHelper* menuHelper;
+@property (nonatomic, retain) NSColorSpace *colorSpace;
 @end
 
 @implementation QNSView {
@@ -118,6 +120,8 @@ QT_NAMESPACE_ALIAS_OBJC_CLASS(QNSViewMenuHelper);
     QPointer<QObject> m_composingFocusObject;
     NSDraggingContext m_lastSeenContext;
 }
+
+@synthesize colorSpace = m_colorSpace;
 
 - (instancetype)initWithCocoaWindow:(QCocoaWindow *)platformWindow
 {

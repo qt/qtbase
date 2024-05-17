@@ -31,7 +31,11 @@
     \li QBitArray
     \li QBrush
     \li QByteArray
+    \li QCborArray
+    \li QCborMap
+    \li QCborValue
     \li QColor
+    \li QColorSpace
     \li QCursor
     \li QDate
     \li QDateTime
@@ -39,32 +43,71 @@
     \li QFont
     \li QGenericMatrix
     \li QHash<Key, T>
+    \li QHostAddress
     \li QIcon
     \li QImage
+    \li QJsonArray
+    \li QJsonDocument
+    \li QJsonObject
+    \li QJsonValue
     \li QKeySequence
+    \li QLine
+    \li QLineF
     \li QList<T>
+    \li QListWidgetItem
+    \li QLocale
     \li QMap<Key, T>
     \li QMargins
+    \li QMarginsF
     \li QMatrix4x4
+    \li QModelIndex
+    \li QModelIndexList
+    \li QMultiHash<Key
+    \li QMultiMap<Key
+    \li QNetworkCacheMetaData
+    \li QNetworkCacheMetaData::AttributesMap
+    \li QPageRanges
+    \li QPainterPath
     \li std::pair<T1, T2>
     \li QPalette
     \li QPen
     \li QPicture
     \li QPixmap
     \li QPoint
+    \li QPointF
+    \li QPolygon
+    \li QPolygonF
     \li QQuaternion
     \li QRect
+    \li QRectF
     \li QRegularExpression
     \li QRegion
+    \li QSet
     \li QSize
+    \li QSizeF
+    \li QSizePolicy
+    \li QStandardItem
     \li QString
+    \li QTableWidgetItem
+    \li QTextBlockFormat
+    \li QTextCharFormat
+    \li QTextFormat
+    \li QTextFrameFormat
+    \li QTextLength
+    \li QTextListFormat
+    \li QTextTableCellFormat
+    \li QTimeZone
     \li QTime
     \li QTransform
+    \li QTreeWidgetItem
+    \li QTypeRevision
     \li QUrl
+    \li QUuid
     \li QVariant
     \li QVector2D
     \li QVector3D
     \li QVector4D
+    \li QVersionNumber
     \endlist
 
     \sa {JSON Support in Qt}, {CBOR Support in Qt}

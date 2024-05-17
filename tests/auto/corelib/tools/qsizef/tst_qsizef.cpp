@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QSizeF>
 #ifdef QVARIANT_H
@@ -24,16 +24,29 @@ CHECK(const &&);
 #undef CHECK
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <qsize.h>
 
 Q_DECLARE_METATYPE(QMarginsF)
+
+static constexpr qreal qreal_min = std::numeric_limits<qreal>::min();
 
 class tst_QSizeF : public QObject
 {
     Q_OBJECT
 private slots:
+    void compareCompiles();
+    void compare_data();
+    void compare();
+
+    void fuzzyCompare_data();
+    void fuzzyCompare();
+
     void isNull_data();
     void isNull();
+
+    void fuzzyIsNull_data();
+    void fuzzyIsNull();
 
     void scale();
 
@@ -52,6 +65,61 @@ private slots:
     void structuredBinding();
 };
 
+void tst_QSizeF::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QSizeF>();
+    QTestPrivate::testEqualityOperatorsCompile<QSizeF, QSize>();
+}
+
+void tst_QSizeF::compare_data()
+{
+    QTest::addColumn<QSizeF>("lhs");
+    QTest::addColumn<QSizeF>("rhs");
+    QTest::addColumn<bool>("result");
+    QTest::addColumn<bool>("mixedResult");
+
+    auto row = [&](QSizeF lhs, QSizeF rhs, bool res, bool mixedRes) {
+        QString str;
+        QDebug dbg(&str);
+        dbg.nospace() << "(" << lhs.width() << ", " << lhs.height() << ") vs "
+                      << "(" << rhs.width() << ", " << rhs.height() << ")";
+        QTest::addRow("%s", str.toLatin1().constData()) << lhs << rhs << res << mixedRes;
+    };
+
+    row(QSizeF(0.0, 0.0), QSizeF(0.0, 0.0), true, true);
+    row(QSizeF(1.0, 2.0), QSizeF(1.0, 2.0), true, true);
+    row(QSizeF(1.0, -1.0), QSizeF(-1.0, 1.0), false, false);
+    row(QSizeF(0.1, 1.1), QSizeF(0.1, 1.1), true, false);
+    row(QSizeF(qreal_min, 0.0), QSizeF(0.0, -qreal_min), true, true);
+}
+
+void tst_QSizeF::compare()
+{
+    QFETCH(QSizeF, lhs);
+    QFETCH(QSizeF, rhs);
+    QFETCH(bool, result);
+    QFETCH(bool, mixedResult);
+
+    QT_TEST_EQUALITY_OPS(lhs, rhs, result);
+
+    const QSize rhsFixed = rhs.toSize();
+    QT_TEST_EQUALITY_OPS(lhs, rhsFixed, mixedResult);
+}
+
+void tst_QSizeF::fuzzyCompare_data()
+{
+    compare_data();
+}
+
+void tst_QSizeF::fuzzyCompare()
+{
+    QFETCH(QSizeF, lhs);
+    QFETCH(QSizeF, rhs);
+    QFETCH(bool, result);
+
+    QCOMPARE_EQ(qFuzzyCompare(lhs, rhs), result);
+}
+
 void tst_QSizeF::isNull_data()
 {
     QTest::addColumn<qreal>("width");
@@ -66,6 +134,7 @@ void tst_QSizeF::isNull_data()
     QTest::newRow("0, -0.1") << qreal(0) << qreal(-0.1) << false;
     QTest::newRow("0.1, 0") << qreal(0.1) << qreal(0) << false;
     QTest::newRow("0, 0.1") << qreal(0) << qreal(0.1) << false;
+    QTest::newRow("qreal_min, -qreal_min") << qreal_min << -qreal_min << false;
 }
 
 void tst_QSizeF::isNull()
@@ -78,6 +147,33 @@ void tst_QSizeF::isNull()
     QCOMPARE(size.width(), width);
     QCOMPARE(size.height(), height);
     QCOMPARE(size.isNull(), isNull);
+}
+
+void tst_QSizeF::fuzzyIsNull_data()
+{
+    QTest::addColumn<qreal>("width");
+    QTest::addColumn<qreal>("height");
+    QTest::addColumn<bool>("fuzzyNull");
+
+    QTest::newRow("0, 0") << qreal(0.0) << qreal(0.0) << true;
+    QTest::newRow("-0, -0") << qreal(-0.0) << qreal(-0.0) << true;
+    QTest::newRow("0, -0") << qreal(0) << qreal(-0.0) << true;
+    QTest::newRow("-0, 0") << qreal(-0.0) << qreal(0) << true;
+    QTest::newRow("-0.1, 0") << qreal(-0.1) << qreal(0) << false;
+    QTest::newRow("0, -0.1") << qreal(0) << qreal(-0.1) << false;
+    QTest::newRow("0.1, 0") << qreal(0.1) << qreal(0) << false;
+    QTest::newRow("0, 0.1") << qreal(0) << qreal(0.1) << false;
+    QTest::newRow("qreal_min, -qreal_min") << qreal_min << -qreal_min << true;
+}
+
+void tst_QSizeF::fuzzyIsNull()
+{
+    QFETCH(qreal, width);
+    QFETCH(qreal, height);
+    QFETCH(bool, fuzzyNull);
+
+    QSizeF size(width, height);
+    QCOMPARE(qFuzzyIsNull(size), fuzzyNull);
 }
 
 void tst_QSizeF::scale() {

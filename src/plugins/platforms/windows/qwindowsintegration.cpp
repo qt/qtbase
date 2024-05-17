@@ -142,8 +142,8 @@ static inline unsigned parseOptions(const QStringList &paramList,
     unsigned options = 0;
     for (const QString &param : paramList) {
         if (param.startsWith(u"fontengine=")) {
-            if (param.endsWith(u"directwrite")) {
-                options |= QWindowsIntegration::FontDatabaseDirectWrite;
+            if (param.endsWith(u"gdi")) {
+                options |= QWindowsIntegration::FontDatabaseGDI;
             } else if (param.endsWith(u"freetype")) {
                 options |= QWindowsIntegration::FontDatabaseFreeType;
             } else if (param.endsWith(u"native")) {
@@ -256,9 +256,9 @@ QWindowsIntegration::~QWindowsIntegration()
 
 void QWindowsIntegration::initialize()
 {
-    QString icStr = QPlatformInputContextFactory::requested();
-    icStr.isNull() ? d->m_inputContext.reset(new QWindowsInputContext)
-                   : d->m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
+    auto icStrs = QPlatformInputContextFactory::requested();
+    icStrs.isEmpty() ? d->m_inputContext.reset(new QWindowsInputContext)
+                     : d->m_inputContext.reset(QPlatformInputContextFactory::create(icStrs));
 }
 
 bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -286,6 +286,8 @@ bool QWindowsIntegration::hasCapability(QPlatformIntegration::Capability cap) co
         return true;
     case SwitchableWidgetComposition:
         return false; // QTBUG-68329 QTBUG-53515 QTBUG-54734
+    case BackingStoreStaticContents:
+        return true;
     default:
         return QPlatformIntegration::hasCapability(cap);
     }
@@ -482,17 +484,17 @@ QWindowsStaticOpenGLContext *QWindowsIntegration::staticOpenGLContext()
 QPlatformFontDatabase *QWindowsIntegration::fontDatabase() const
 {
     if (!d->m_fontDatabase) {
-#if QT_CONFIG(directwrite3)
-        if (d->m_options & QWindowsIntegration::FontDatabaseDirectWrite)
-            d->m_fontDatabase = new QWindowsDirectWriteFontDatabase;
-        else
-#endif
 #ifndef QT_NO_FREETYPE
         if (d->m_options & QWindowsIntegration::FontDatabaseFreeType)
             d->m_fontDatabase = new QWindowsFontDatabaseFT;
         else
 #endif // QT_NO_FREETYPE
-        d->m_fontDatabase = new QWindowsFontDatabase();
+#if QT_CONFIG(directwrite3)
+        if (!(d->m_options & (QWindowsIntegration::FontDatabaseGDI | QWindowsIntegration::DontUseDirectWriteFonts)))
+            d->m_fontDatabase = new QWindowsDirectWriteFontDatabase;
+        else
+#endif
+            d->m_fontDatabase = new QWindowsFontDatabase;
     }
     return d->m_fontDatabase;
 }
@@ -623,12 +625,16 @@ void QWindowsIntegration::setApplicationBadge(qint64 number)
     // We prefer the native BadgeUpdater API, that allows us to set a number directly,
     // but it requires that the application has a package identity, and also doesn't
     // seem to work in all cases on < Windows 11.
-    if (isWindows11 && qt_win_hasPackageIdentity()) {
-        using namespace winrt::Windows::UI::Notifications;
-        auto badgeXml = BadgeUpdateManager::GetTemplateContent(BadgeTemplateType::BadgeNumber);
-        badgeXml.SelectSingleNode(L"//badge/@value").NodeValue(winrt::box_value(winrt::to_hstring(number)));
-        BadgeUpdateManager::CreateBadgeUpdaterForApplication().Update(BadgeNotification(badgeXml));
-        return;
+    QT_TRY {
+        if (isWindows11 && qt_win_hasPackageIdentity()) {
+            using namespace winrt::Windows::UI::Notifications;
+            auto badgeXml = BadgeUpdateManager::GetTemplateContent(BadgeTemplateType::BadgeNumber);
+            badgeXml.SelectSingleNode(L"//badge/@value").NodeValue(winrt::box_value(winrt::to_hstring(number)));
+            BadgeUpdateManager::CreateBadgeUpdaterForApplication().Update(BadgeNotification(badgeXml));
+            return;
+        }
+    } QT_CATCH(...) {
+        // fall back to win32 implementation
     }
 #endif
 
@@ -640,7 +646,8 @@ void QWindowsIntegration::setApplicationBadge(qint64 number)
         return;
     }
 
-    const bool isDarkMode = QWindowsContext::isDarkMode();
+    const bool isDarkMode = QWindowsTheme::instance()->colorScheme()
+                         == Qt::ColorScheme::Dark;
 
     QColor badgeColor;
     QColor textColor;

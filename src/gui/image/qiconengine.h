@@ -18,6 +18,7 @@ public:
     virtual ~QIconEngine();
     virtual void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state) = 0;
     virtual QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state);
+    // ### Qt7: add qreal scale argument and remove scaledPixmap
     virtual QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state);
 
     virtual void addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon::State state);

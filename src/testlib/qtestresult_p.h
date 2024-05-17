@@ -17,7 +17,6 @@
 
 #include <QtTest/qttestglobal.h>
 #include <QtCore/qstringfwd.h>
-#include <QtCore/qxpfunctional.h>
 #include <QtCore/private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -102,8 +101,9 @@ public:
     static void setCurrentAppName(const char *appName);
     static const char *currentAppName();
 
-    static bool reportResult(bool success, qxp::function_ref<const char *()> lhs,
-                             qxp::function_ref<const char *()> rhs,
+    static bool reportResult(bool success, const void *lhs, const void *rhs,
+                             const char *(*lhsFormatter)(const void *),
+                             const char *(*rhsFormatter)(const void *),
                              const char *lhsExpr, const char *rhsExpr,
                              QTest::ComparisonOperation op, const char *file, int line,
                              const char *failureMessage = nullptr);

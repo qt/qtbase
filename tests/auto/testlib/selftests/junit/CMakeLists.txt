@@ -3,6 +3,7 @@
 
 qt_internal_add_executable(junit
     NO_INSTALL
+    EXCEPTIONS
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES
         tst_junit.cpp

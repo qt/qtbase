@@ -183,6 +183,12 @@ public:
     iterator erase(const_iterator begin, const_iterator end);
     iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
 
+    static constexpr qsizetype max_size() noexcept
+    {
+        // -1 to deal with the pointer one-past-the-end
+        return (QtPrivate::MaxAllocSize / sizeof(T)) - 1;
+    }
+
     size_t hash(size_t seed) const noexcept(QtPrivate::QNothrowHashable_v<T>)
     {
         return qHashRange(begin(), end(), seed);
@@ -278,6 +284,8 @@ class QVarLengthArray
     template <typename InputIterator>
     using if_input_iterator = QtPrivate::IfIsInputIterator<InputIterator>;
 public:
+    static constexpr qsizetype PreallocatedSize = Prealloc;
+
     using size_type = typename Base::size_type;
     using value_type = typename Base::value_type;
     using pointer = typename Base::pointer;
@@ -395,6 +403,7 @@ public:
     }
 #ifdef Q_QDOC
     inline qsizetype size() const { return this->s; }
+    static constexpr qsizetype max_size() noexcept { return QVLABase<T>::max_size(); }
 #endif
     using Base::size;
     inline qsizetype count() const { return size(); }
@@ -947,8 +956,8 @@ Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::insert_impl(qsizetype prealloc, void *arr
 template <class T>
 Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::erase(const_iterator abegin, const_iterator aend) -> iterator
 {
-    Q_ASSERT_X(isValidIterator(abegin), "QVarLengthArray::insert", "The specified const_iterator argument 'abegin' is invalid");
-    Q_ASSERT_X(isValidIterator(aend), "QVarLengthArray::insert", "The specified const_iterator argument 'aend' is invalid");
+    Q_ASSERT_X(isValidIterator(abegin), "QVarLengthArray::erase", "The specified const_iterator argument 'abegin' is invalid");
+    Q_ASSERT_X(isValidIterator(aend), "QVarLengthArray::erase", "The specified const_iterator argument 'aend' is invalid");
 
     qsizetype f = qsizetype(abegin - cbegin());
     qsizetype l = qsizetype(aend - cbegin());
@@ -959,10 +968,11 @@ Q_OUTOFLINE_TEMPLATE auto QVLABase<T>::erase(const_iterator abegin, const_iterat
 
     Q_ASSERT(n > 0); // aend must be reachable from abegin
 
-    if constexpr (QTypeInfo<T>::isComplex) {
+    if constexpr (!QTypeInfo<T>::isRelocatable) {
         std::move(begin() + l, end(), QT_MAKE_CHECKED_ARRAY_ITERATOR(begin() + f, size() - f));
         std::destroy(end() - n, end());
     } else {
+        std::destroy(abegin, aend);
         memmove(static_cast<void *>(data() + f), static_cast<const void *>(data() + l), (size() - l) * sizeof(T));
     }
     this->s -= n;

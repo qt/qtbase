@@ -1,5 +1,5 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -378,10 +378,10 @@ void tst_QLayout::removeWidget()
 {
     QHBoxLayout layout;
     QCOMPARE(layout.count(), 0);
-    QWidget w;
-    layout.addWidget(&w);
+    std::unique_ptr<QWidget> w(new QWidget);
+    layout.addWidget(w.get());
     QCOMPARE(layout.count(), 1);
-    layout.removeWidget(&w);
+    layout.removeWidget(w.get());
     QCOMPARE(layout.count(), 0);
 
     QPointer<QLayout> childLayout(new QHBoxLayout);
@@ -395,6 +395,12 @@ void tst_QLayout::removeWidget()
     QCOMPARE(layout.count(), 0);
 
     QVERIFY(!childLayout.isNull());
+
+    // Test inactive layout consumes ChildRemoved event (QTBUG-124151)
+    layout.addWidget(w.get());
+    layout.setEnabled(false);
+    w.reset();
+    layout.setEnabled(true);
 }
 
 QTEST_MAIN(tst_QLayout)

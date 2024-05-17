@@ -104,6 +104,7 @@ public:
 
     QWindowsScreenManager();
     void initialize();
+    void destroyWindow();
     ~QWindowsScreenManager();
 
     void clearScreens();

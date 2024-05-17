@@ -43,6 +43,7 @@ class QAccessibleTableInterface;
 class QAccessibleTableCellInterface;
 class QAccessibleHyperlinkInterface;
 class QAccessibleSelectionInterface;
+class QAccessibleAttributesInterface;
 class QAccessibleTableModelChangeEvent;
 
 class Q_GUI_EXPORT QAccessibleInterface
@@ -105,6 +106,9 @@ public:
 
     inline QAccessibleSelectionInterface *selectionInterface()
     { return reinterpret_cast<QAccessibleSelectionInterface *>(interface_cast(QAccessible::SelectionInterface)); }
+
+    inline QAccessibleAttributesInterface *attributesInterface()
+    { return reinterpret_cast<QAccessibleAttributesInterface *>(interface_cast(QAccessible::AttributesInterface)); }
 
     virtual void virtual_hook(int id, void *data);
 
@@ -284,6 +288,15 @@ public:
     virtual bool clear() = 0;
 };
 
+class Q_GUI_EXPORT QAccessibleAttributesInterface
+{
+public:
+    virtual ~QAccessibleAttributesInterface();
+    virtual QList<QAccessible::Attribute> attributeKeys() const = 0;
+    virtual QVariant attributeValue(QAccessible::Attribute key) const = 0;
+};
+
+
 class Q_GUI_EXPORT QAccessibleEvent
 {
     Q_DISABLE_COPY(QAccessibleEvent)
@@ -303,6 +316,7 @@ public:
         Q_ASSERT(m_type != QAccessible::TextRemoved);
         Q_ASSERT(m_type != QAccessible::TextUpdated);
         Q_ASSERT(m_type != QAccessible::TableModelChanged);
+        Q_ASSERT(m_type != QAccessible::Announcement);
     }
 
     inline QAccessibleEvent(QAccessibleInterface *iface, QAccessible::Event typ)
@@ -317,6 +331,7 @@ public:
         Q_ASSERT(m_type != QAccessible::TextRemoved);
         Q_ASSERT(m_type != QAccessible::TextUpdated);
         Q_ASSERT(m_type != QAccessible::TableModelChanged);
+        Q_ASSERT(m_type != QAccessible::Announcement);
         m_uniqueId = QAccessible::uniqueId(iface);
         m_object = iface->object();
     }
@@ -590,6 +605,36 @@ protected:
     int m_firstColumn;
     int m_lastRow;
     int m_lastColumn;
+};
+
+class Q_GUI_EXPORT QAccessibleAnnouncementEvent : public QAccessibleEvent
+{
+public:
+    inline QAccessibleAnnouncementEvent(QObject *object, const QString &message)
+        : QAccessibleEvent(object, QAccessible::InvalidEvent)
+          , m_message(message)
+          , m_priority(QAccessible::AnnouncementPriority::Polite)
+    {
+        m_type = QAccessible::Announcement;
+    }
+
+    inline QAccessibleAnnouncementEvent(QAccessibleInterface *iface, const QString &message)
+        : QAccessibleEvent(iface, QAccessible::InvalidEvent)
+          , m_message(message)
+          , m_priority(QAccessible::AnnouncementPriority::Polite)
+    {
+        m_type = QAccessible::Announcement;
+    }
+
+    ~QAccessibleAnnouncementEvent();
+
+    QString message() const { return m_message; }
+    QAccessible::AnnouncementPriority priority() const { return m_priority; }
+    void setPriority(QAccessible::AnnouncementPriority priority) { m_priority = priority; };
+
+protected:
+    QString m_message;
+    QAccessible::AnnouncementPriority m_priority;
 };
 
 #ifndef Q_QDOC

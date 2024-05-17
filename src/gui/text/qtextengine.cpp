@@ -1396,7 +1396,9 @@ void QTextEngine::shapeText(int item) const
 
     QFontEngine *fontEngine = this->fontEngine(si, &si.ascent, &si.descent, &si.leading);
 
+#if QT_CONFIG(harfbuzz)
     bool kerningEnabled;
+#endif
     bool letterSpacingIsAbsolute;
     bool shapingEnabled = false;
     QHash<QFont::Tag, quint32> features;
@@ -1405,8 +1407,8 @@ void QTextEngine::shapeText(int item) const
     if (useRawFont) {
         QTextCharFormat f = format(&si);
         QFont font = f.font();
-        kerningEnabled = font.kerning();
 #  if QT_CONFIG(harfbuzz)
+        kerningEnabled = font.kerning();
         shapingEnabled = QFontEngine::scriptRequiresOpenType(QChar::Script(si.analysis.script))
                 || (font.styleStrategy() & QFont::PreferNoShaping) == 0;
 #  endif
@@ -1418,8 +1420,8 @@ void QTextEngine::shapeText(int item) const
 #endif
     {
         QFont font = this->font(si);
-        kerningEnabled = font.d->kerning;
 #if QT_CONFIG(harfbuzz)
+        kerningEnabled = font.d->kerning;
         shapingEnabled = QFontEngine::scriptRequiresOpenType(QChar::Script(si.analysis.script))
                 || (font.d->request.styleStrategy & QFont::PreferNoShaping) == 0;
 #endif
@@ -1445,7 +1447,7 @@ void QTextEngine::shapeText(int item) const
                 shapingEnabled
                     ? QFontEngine::GlyphIndicesOnly
                     : QFontEngine::ShaperFlag(0);
-        if (!fontEngine->stringToCMap(reinterpret_cast<const QChar *>(string), itemLength, &initialGlyphs, &nGlyphs, shaperFlags))
+        if (fontEngine->stringToCMap(reinterpret_cast<const QChar *>(string), itemLength, &initialGlyphs, &nGlyphs, shaperFlags) < 0)
             Q_UNREACHABLE();
     }
 
@@ -2653,14 +2655,15 @@ QTextEngine::LayoutData::LayoutData()
     currentMaxWidth = 0;
 }
 
-QTextEngine::LayoutData::LayoutData(const QString &str, void **stack_memory, int _allocated)
+QTextEngine::LayoutData::LayoutData(const QString &str, void **stack_memory, qsizetype _allocated)
     : string(str)
 {
     allocated = _allocated;
 
-    int space_charAttributes = int(sizeof(QCharAttributes) * string.size() / sizeof(void*) + 1);
-    int space_logClusters = int(sizeof(unsigned short) * string.size() / sizeof(void*) + 1);
-    available_glyphs = ((int)allocated - space_charAttributes - space_logClusters)*(int)sizeof(void*)/(int)QGlyphLayout::SpaceNeeded;
+    constexpr qsizetype voidSize = sizeof(void*);
+    qsizetype space_charAttributes = sizeof(QCharAttributes) * string.size() / voidSize + 1;
+    qsizetype space_logClusters = sizeof(unsigned short) * string.size() / voidSize + 1;
+    available_glyphs = (allocated - space_charAttributes - space_logClusters) * voidSize / QGlyphLayout::SpaceNeeded;
 
     if (available_glyphs < str.size()) {
         // need to allocate on the heap
@@ -2701,15 +2704,16 @@ bool QTextEngine::LayoutData::reallocate(int totalGlyphs)
         return true;
     }
 
-    int space_charAttributes = int(sizeof(QCharAttributes) * string.size() / sizeof(void*) + 1);
-    int space_logClusters = int(sizeof(unsigned short) * string.size() / sizeof(void*) + 1);
-    int space_glyphs = (totalGlyphs * QGlyphLayout::SpaceNeeded) / sizeof(void *) + 2;
+    const qsizetype space_charAttributes = (sizeof(QCharAttributes) * string.size() / sizeof(void*) + 1);
+    const qsizetype space_logClusters = (sizeof(unsigned short) * string.size() / sizeof(void*) + 1);
+    const qsizetype space_glyphs = qsizetype(totalGlyphs) * QGlyphLayout::SpaceNeeded / sizeof(void *) + 2;
 
-    int newAllocated = space_charAttributes + space_glyphs + space_logClusters;
-    // These values can be negative if the length of string/glyphs causes overflow,
+    const qsizetype newAllocated = space_charAttributes + space_glyphs + space_logClusters;
+    // Check if the length of string/glyphs causes int overflow,
     // we can't layout such a long string all at once, so return false here to
     // indicate there is a failure
-    if (space_charAttributes < 0 || space_logClusters < 0 || space_glyphs < 0 || newAllocated < allocated) {
+    if (size_t(space_charAttributes) > INT_MAX || size_t(space_logClusters) > INT_MAX || totalGlyphs < 0
+        || size_t(space_glyphs) > INT_MAX || size_t(newAllocated) > INT_MAX || newAllocated < allocated) {
         layoutState = LayoutFailed;
         return false;
     }
@@ -2729,7 +2733,7 @@ bool QTextEngine::LayoutData::reallocate(int totalGlyphs)
     logClustersPtr = (unsigned short *) m;
     m += space_logClusters;
 
-    const int space_preGlyphLayout = space_charAttributes + space_logClusters;
+    const qsizetype space_preGlyphLayout = space_charAttributes + space_logClusters;
     if (allocated < space_preGlyphLayout)
         memset(memory + allocated, 0, (space_preGlyphLayout - allocated)*sizeof(void *));
 
@@ -2737,6 +2741,21 @@ bool QTextEngine::LayoutData::reallocate(int totalGlyphs)
 
     allocated = newAllocated;
     return true;
+}
+
+void QGlyphLayout::copy(QGlyphLayout *oldLayout)
+{
+    Q_ASSERT(offsets != oldLayout->offsets);
+
+    int n = std::min(numGlyphs, oldLayout->numGlyphs);
+
+    memcpy(offsets, oldLayout->offsets, n * sizeof(QFixedPoint));
+    memcpy(attributes, oldLayout->attributes, n * sizeof(QGlyphAttributes));
+    memcpy(justifications, oldLayout->justifications, n * sizeof(QGlyphJustification));
+    memcpy(advances, oldLayout->advances, n * sizeof(QFixed));
+    memcpy(glyphs, oldLayout->glyphs, n * sizeof(glyph_t));
+
+    numGlyphs = n;
 }
 
 // grow to the new size, copying the existing data to the new layout

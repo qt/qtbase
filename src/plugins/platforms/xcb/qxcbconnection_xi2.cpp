@@ -813,7 +813,16 @@ void QXcbConnection::xi2ProcessTouch(void *xiDevEvent, QXcbWindow *platformWindo
 {
     auto *xiDeviceEvent = reinterpret_cast<xcb_input_touch_begin_event_t *>(xiDevEvent);
     TouchDeviceData *dev = touchDeviceForId(xiDeviceEvent->sourceid);
-    Q_ASSERT(dev);
+    if (!dev) {
+        qCDebug(lcQpaXInputEvents) << "didn't find the dev for given sourceid - " << xiDeviceEvent->sourceid
+            << ", try to repopulate xi2 devices";
+        xi2SetupDevices();
+        dev = touchDeviceForId(xiDeviceEvent->sourceid);
+        if (!dev) {
+            qCDebug(lcQpaXInputEvents) << "still can't find the dev for it, give up.";
+            return;
+        }
+    }
     const bool firstTouch = dev->touchPoints.isEmpty();
     if (xiDeviceEvent->event_type == XCB_INPUT_TOUCH_BEGIN) {
         QWindowSystemInterface::TouchPoint tp;

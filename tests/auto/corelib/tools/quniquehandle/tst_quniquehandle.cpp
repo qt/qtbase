@@ -1,5 +1,5 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <private/quniquehandle_p.h>
 
@@ -248,7 +248,7 @@ private slots:
         {
             using Type = int;
 
-            static bool close(Type handle)
+            static bool close(Type)
             {
                 return true;
             }

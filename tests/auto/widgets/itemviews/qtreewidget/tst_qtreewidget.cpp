@@ -1,5 +1,5 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QApplication>
@@ -1504,7 +1504,7 @@ void tst_QTreeWidget::keyboardNavigation()
             if (testWidget->currentItem() != item) {
                 QCOMPARE(testWidget->currentItem(), item->parent());
                 item = testWidget->currentItem();
-                row = item->parent() ? item->parent()->indexOfChild(item) : testWidget->indexOfTopLevelItem(item);;
+                row = item->parent() ? item->parent()->indexOfChild(item) : testWidget->indexOfTopLevelItem(item);
             }
             break;
         case Qt::Key_Right:

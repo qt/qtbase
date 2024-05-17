@@ -1,5 +1,5 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "../../../../shared/fakedirmodel.h"
 
@@ -1240,7 +1240,6 @@ void tst_QTreeView::keyboardSearchMultiColumn()
 
     view.setModel(&model);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     view.setCurrentIndex(model.index(0, 1));
@@ -1926,7 +1925,6 @@ void tst_QTreeView::moveCursor()
     view.setColumnHidden(0, true);
     QVERIFY(view.isColumnHidden(0));
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     //here the first visible index should be selected
@@ -3705,7 +3703,6 @@ void tst_QTreeView::task224091_appendColumns()
     treeView->setModel(model);
     topLevel->show();
     treeView->resize(50, 50);
-    QApplicationPrivate::setActiveWindow(topLevel);
     QVERIFY(QTest::qWaitForWindowActive(topLevel));
 
     QVERIFY(!treeView->verticalScrollBar()->isVisible());
@@ -4081,7 +4078,6 @@ void tst_QTreeView::doubleClickedWithSpans()
     view.setModel(&model);
     view.setFirstColumnSpanned(0, QModelIndex(), true);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QVERIFY(view.isActiveWindow());
 
@@ -4183,7 +4179,6 @@ void tst_QTreeView::keyboardNavigationWithDisabled()
 
     view.resize(200, view.visualRect(model.index(0,0)).height()*10);
     topLevel.show();
-    QApplicationPrivate::setActiveWindow(&topLevel);
     QVERIFY(QTest::qWaitForWindowActive(&topLevel));
     QVERIFY(topLevel.isActiveWindow());
 
@@ -4769,7 +4764,6 @@ void tst_QTreeView::statusTip()
     mw.setGeometry(QRect(QPoint(QGuiApplication::primaryScreen()->geometry().center() - QPoint(250, 250)),
                                 QSize(500, 500)));
     mw.show();
-    QApplicationPrivate::setActiveWindow(&mw);
     QVERIFY(QTest::qWaitForWindowActive(&mw));
     // Ensure it is moved away first and then moved to the relevant section
     QTest::mouseMove(mw.windowHandle(), view->mapTo(&mw, view->rect().bottomLeft() + QPoint(20, 20)));

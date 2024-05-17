@@ -54,6 +54,20 @@
 
     To prevent this construct from compiling (and failing at runtime), qAsConst() has
     a second, deleted, overload which binds to rvalues.
+
+    \note You can make the qAsConst() function unavailable by defining
+    the \l{QT_NO_QASCONST} macro.
+*/
+
+/*!
+    \macro QT_NO_QASCONST
+    \since 6.8
+    \relates <QtTypeTraits>
+
+    Defining this macro removes the availability of the qAsConst()
+    function.
+
+    \sa qAsConst
 */
 
 /*!
@@ -79,6 +93,7 @@
     only in that it is \c constexpr already before C++20 and noexcept already before C++23.
 
     We strongly advise to use std::exchange() when you don't need the C++20 or C++23 variants.
+    You can make qExchange() unavailable by defining the \l{QT_NO_QEXCHANGE} macro.
 
     Here is how to use qExchange() to implement move constructors:
     \code
@@ -117,4 +132,15 @@
     This is perfectly safe, as the for-loop keeps the result of qExchange() alive for as
     long as the loop runs, saving the declaration of a temporary variable. Be aware, though,
     that qExchange() returns a non-const object, so Qt containers may detach.
+*/
+
+/*!
+    \macro QT_NO_QEXCHANGE
+    \since 6.6
+    \relates <QtTypeTraits>
+
+    Defining this macro removes the availability of the qExchange()
+    function.
+
+    \sa qExchange
 */

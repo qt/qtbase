@@ -514,7 +514,7 @@ NSInteger QCocoaWindow::windowLevel(Qt::WindowFlags flags)
         auto *nsWindow = transientCocoaWindow->nativeWindow();
 
         // We only upgrade the window level for "special" windows, to work
-        // around Qt Designer parenting the designer windows to the widget
+        // around Qt Widgets Designer parenting the designer windows to the widget
         // palette window (QTBUG-31779). This should be fixed in designer.
         if (type != Qt::Window)
             windowLevel = qMax(windowLevel, nsWindow.level);
@@ -1812,11 +1812,15 @@ QCocoaNSWindow *QCocoaWindow::createNSWindow(bool shouldBePanel)
 
     applyContentBorderThickness(nsWindow);
 
-    if (QColorSpace colorSpace = format().colorSpace(); colorSpace.isValid()) {
-        NSData *iccData = colorSpace.iccProfile().toNSData();
-        nsWindow.colorSpace = [[[NSColorSpace alloc] initWithICCProfileData:iccData] autorelease];
-        qCDebug(lcQpaDrawing) << "Set" << this << "color space to" << nsWindow.colorSpace;
-    }
+    // We propagate the view's color space granulary to both the IOSurfaces
+    // used for QSurface::RasterSurface, as well as the CAMetalLayer used for
+    // QSurface::MetalSurface, but for QSurface::OpenGLSurface we don't have
+    // that option as we use NSOpenGLContext instead of CAOpenGLLayer. As a
+    // workaround we set the NSWindow's color space, which affects GL drawing
+    // with NSOpenGLContext as well. This does not conflict with the granular
+    // modifications we do to each surface for raster or Metal.
+    if (auto *qtView = qnsview_cast(m_view))
+        nsWindow.colorSpace = qtView.colorSpace;
 
     return nsWindow;
 }

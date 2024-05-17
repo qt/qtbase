@@ -8,6 +8,7 @@
 
 #if QT_CONFIG(xmlstream)
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qstring.h>
@@ -58,13 +59,23 @@ public:
     }
     inline QStringView value() const { return m_value; }
     inline bool isDefault() const { return m_isDefault; }
-    inline bool operator==(const QXmlStreamAttribute &other) const {
-        return (value() == other.value()
-                && (namespaceUri().isNull() ? (qualifiedName() == other.qualifiedName())
-                    : (namespaceUri() == other.namespaceUri() && name() == other.name())));
-    }
+#if QT_CORE_REMOVED_SINCE(6, 8)
+    inline bool operator==(const QXmlStreamAttribute &other) const
+    { return comparesEqual(*this, other); }
     inline bool operator!=(const QXmlStreamAttribute &other) const
-        { return !operator==(other); }
+    { return !operator==(other); }
+#endif
+
+private:
+    friend bool comparesEqual(const QXmlStreamAttribute &lhs,
+                              const QXmlStreamAttribute &rhs) noexcept
+    {
+        return (lhs.value() == rhs.value()
+                && (lhs.namespaceUri().isNull() ? (lhs.qualifiedName() == rhs.qualifiedName())
+                                                : (lhs.namespaceUri() == rhs.namespaceUri()
+                                                   && lhs.name() == rhs.name())));
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QXmlStreamAttribute)
 };
 
 Q_DECLARE_TYPEINFO(QXmlStreamAttribute, Q_RELOCATABLE_TYPE);
@@ -111,11 +122,19 @@ public:
 
     inline QStringView prefix() const { return m_prefix; }
     inline QStringView namespaceUri() const { return m_namespaceUri; }
-    inline bool operator==(const QXmlStreamNamespaceDeclaration &other) const {
-        return (prefix() == other.prefix() && namespaceUri() == other.namespaceUri());
-    }
+#if QT_CORE_REMOVED_SINCE(6, 8)
+    inline bool operator==(const QXmlStreamNamespaceDeclaration &other) const
+    { return comparesEqual(*this, other); }
     inline bool operator!=(const QXmlStreamNamespaceDeclaration &other) const
-        { return !operator==(other); }
+    { return !operator==(other); }
+#endif
+private:
+    friend bool comparesEqual(const QXmlStreamNamespaceDeclaration &lhs,
+                              const QXmlStreamNamespaceDeclaration &rhs) noexcept
+    {
+        return (lhs.prefix() == rhs.prefix() && lhs.namespaceUri() == rhs.namespaceUri());
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QXmlStreamNamespaceDeclaration)
 };
 
 Q_DECLARE_TYPEINFO(QXmlStreamNamespaceDeclaration, Q_RELOCATABLE_TYPE);
@@ -131,12 +150,20 @@ public:
     inline QStringView name() const { return m_name; }
     inline QStringView systemId() const { return m_systemId; }
     inline QStringView publicId() const { return m_publicId; }
-    inline bool operator==(const QXmlStreamNotationDeclaration &other) const {
-        return (name() == other.name() && systemId() == other.systemId()
-                && publicId() == other.publicId());
-    }
+#if QT_CORE_REMOVED_SINCE(6, 8)
+    inline bool operator==(const QXmlStreamNotationDeclaration &other) const
+    { return comparesEqual(*this, other); }
     inline bool operator!=(const QXmlStreamNotationDeclaration &other) const
-        { return !operator==(other); }
+    { return !operator==(other); }
+#endif
+private:
+    friend bool comparesEqual(const QXmlStreamNotationDeclaration &lhs,
+                              const QXmlStreamNotationDeclaration &rhs) noexcept
+    {
+        return (lhs.name() == rhs.name() && lhs.systemId() == rhs.systemId()
+                && lhs.publicId() == rhs.publicId());
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QXmlStreamNotationDeclaration)
 };
 
 Q_DECLARE_TYPEINFO(QXmlStreamNotationDeclaration, Q_RELOCATABLE_TYPE);
@@ -154,15 +181,24 @@ public:
     inline QStringView systemId() const { return m_systemId; }
     inline QStringView publicId() const { return m_publicId; }
     inline QStringView value() const { return m_value; }
-    inline bool operator==(const QXmlStreamEntityDeclaration &other) const {
-        return (name() == other.name()
-                && notationName() == other.notationName()
-                && systemId() == other.systemId()
-                && publicId() == other.publicId()
-                && value() == other.value());
-    }
+#if QT_CORE_REMOVED_SINCE(6, 8)
+    inline bool operator==(const QXmlStreamEntityDeclaration &other) const
+    { return comparesEqual(*this, other); }
     inline bool operator!=(const QXmlStreamEntityDeclaration &other) const
-        { return !operator==(other); }
+    { return !operator==(other); }
+#endif
+
+private:
+    friend bool comparesEqual(const QXmlStreamEntityDeclaration &lhs,
+                              const QXmlStreamEntityDeclaration &rhs) noexcept
+    {
+        return (lhs.name() == rhs.name()
+                && lhs.notationName() == rhs.notationName()
+                && lhs.systemId() == rhs.systemId()
+                && lhs.publicId() == rhs.publicId()
+                && lhs.value() == rhs.value());
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QXmlStreamEntityDeclaration)
 };
 
 Q_DECLARE_TYPEINFO(QXmlStreamEntityDeclaration, Q_RELOCATABLE_TYPE);
@@ -170,7 +206,9 @@ typedef QList<QXmlStreamEntityDeclaration> QXmlStreamEntityDeclarations;
 
 class Q_CORE_EXPORT QXmlStreamEntityResolver
 {
+    Q_DISABLE_COPY_MOVE(QXmlStreamEntityResolver)
 public:
+    QXmlStreamEntityResolver() = default;
     virtual ~QXmlStreamEntityResolver();
     virtual QString resolveEntity(const QString& publicId, const QString& systemId);
     virtual QString resolveUndeclaredEntity(const QString &name);

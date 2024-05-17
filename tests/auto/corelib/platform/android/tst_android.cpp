@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <jni.h>
 
@@ -312,11 +312,39 @@ void tst_Android::orientationChange_data()
     const QSize portraitSize = QGuiApplication::primaryScreen()->size();
     const QSize landscapeSize = QSize(portraitSize.height(), portraitSize.width());
 
+    // Rotations without 180 degree or inverted portrait, assuming that the device is in portrait
+    // position. These are ok for Android 6(API 23), 8 (API 27) and 14 (API 34)
     QTest::newRow("InvertedLandscape") << 8 << Qt::InvertedLandscapeOrientation << landscapeSize;
-    QTest::newRow("InvertedPortrait") << 9 << Qt::InvertedPortraitOrientation << portraitSize;
-    QTest::newRow("Landscape") << 0 << Qt::LandscapeOrientation << landscapeSize;
-    // Leave Portrait till the end
     QTest::newRow("Portrait") << 1 << Qt::PortraitOrientation << portraitSize;
+    QTest::newRow("Landscape") << 0 << Qt::LandscapeOrientation << landscapeSize;
+    QTest::newRow("Portrait2") << 1 << Qt::PortraitOrientation << portraitSize;
+
+    // Rotations over inverted portrait doing only 90 degree turns.
+    QTest::newRow("InvertedLandscape2") << 8 << Qt::InvertedLandscapeOrientation << landscapeSize;
+    QTest::newRow("InvertedPortrait") << 9 << Qt::InvertedPortraitOrientation << portraitSize;
+    QTest::newRow("Landscape2") << 0 << Qt::LandscapeOrientation << landscapeSize;
+    QTest::newRow("InvertedPortrait2") << 9 << Qt::InvertedPortraitOrientation << portraitSize;
+    QTest::newRow("InvertedLandscape3") << 8 << Qt::InvertedLandscapeOrientation << landscapeSize;
+
+    // Rotations with 180 degree turns.
+    // Android 6 (API23) Does not understand these transitions.
+    if (QNativeInterface::QAndroidApplication::sdkVersion() > __ANDROID_API_M__) {
+        QTest::newRow("Landscape3") << 0 << Qt::LandscapeOrientation << landscapeSize;
+        QTest::newRow("InvertedLandscape4")
+                << 8 << Qt::InvertedLandscapeOrientation << landscapeSize;
+        QTest::newRow("Portrait3") << 1 << Qt::PortraitOrientation << portraitSize;
+    } else {
+        qWarning() << "180 degree turn rotation test cases are not run on Android 6 (API 23) and "
+                      "below.";
+    }
+    // Android 8 (API 27) does not understand portrait-'inverted portrait'-portrait transition.
+    if (QNativeInterface::QAndroidApplication::sdkVersion() > __ANDROID_API_O_MR1__) {
+        QTest::newRow("InvertedPortrait3") << 9 << Qt::InvertedPortraitOrientation << portraitSize;
+        QTest::newRow("Portrait4") << 1 << Qt::PortraitOrientation << portraitSize;
+    } else {
+        qWarning() << "Portrait-'Inverted portrait'-Portrait rotation test cases are not run on "
+                      "Android 8 (API 27) and below.";
+    }
 }
 
 void tst_Android::orientationChange()
@@ -325,15 +353,20 @@ void tst_Android::orientationChange()
     QFETCH(Qt::ScreenOrientation, expected);
     QFETCH(QSize, screenSize);
 
+    if (QNativeInterface::QAndroidApplication::sdkVersion() == __ANDROID_API_P__)
+        QSKIP("Android 9 orientation changes callbacks are buggy (QTBUG-124890).");
+
     // For QTBUG-94459 to check that the widget size are consistent after orientation changes
     QWidget widget;
     widget.show();
 
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QSignalSpy orientationSpy(screen, SIGNAL(orientationChanged(Qt::ScreenOrientation)));
+
     auto context = QNativeInterface::QAndroidApplication::context();
     context.callMethod<void>("setRequestedOrientation", nativeOrientation);
 
-    QScreen *screen = QGuiApplication::primaryScreen();
-    QSignalSpy orientationSpy(screen, SIGNAL(orientationChanged(Qt::ScreenOrientation)));
+    orientationSpy.wait();
     QTRY_COMPARE(screen->orientation(), expected);
     QCOMPARE(orientationSpy.size(), 1);
     QCOMPARE(screen->size(), screenSize);

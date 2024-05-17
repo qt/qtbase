@@ -709,7 +709,7 @@ void QSplitterPrivate::setSizes_helper(const QList<int> &sizes, bool clampNegati
 bool QSplitterPrivate::shouldShowWidget(const QWidget *w) const
 {
     Q_Q(const QSplitter);
-    return q->isVisible() && !(w->isHidden() && w->testAttribute(Qt::WA_WState_ExplicitShowHide));
+    return q->isVisible() && !QWidgetPrivate::get(w)->isExplicitlyHidden();
 }
 
 void QSplitterPrivate::setGeo(QSplitterLayoutStruct *sls, int p, int s, bool allowCollapse)

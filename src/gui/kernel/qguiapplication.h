@@ -42,7 +42,7 @@ class Q_GUI_EXPORT QGuiApplication : public QCoreApplication
     Q_PROPERTY(QString desktopFileName READ desktopFileName WRITE setDesktopFileName)
     Q_PROPERTY(Qt::LayoutDirection layoutDirection READ layoutDirection WRITE setLayoutDirection
                NOTIFY layoutDirectionChanged)
-    Q_PROPERTY(QString platformName READ platformName STORED false)
+    Q_PROPERTY(QString platformName READ platformName STORED false CONSTANT)
     Q_PROPERTY(bool quitOnLastWindowClosed  READ quitOnLastWindowClosed
                WRITE setQuitOnLastWindowClosed)
     Q_PROPERTY(QScreen *primaryScreen READ primaryScreen NOTIFY primaryScreenChanged STORED false)

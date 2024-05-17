@@ -78,14 +78,23 @@ endfunction()
 
 # Complete manual moc invocation with full control.
 # Use AUTOMOC whenever possible.
-# INCLUDE_DIRECTORIES specifies a list of include directories used by 'moc'.
-# INCLUDE_DIRECTORY_TARGETS specifies a list of targets to extract the INTERFACE_INCLUDE_DIRECTORIES
-# property and use it as the 'moc' include directories.
+# Multi-value Arguments:
+#     INCLUDE_DIRECTORIES
+#         Specifies a list of include directories used by 'moc'.
+#     INCLUDE_DIRECTORY_TARGETS
+#         Specifies a list of targets to extract the INTERFACE_INCLUDE_DIRECTORIES
+#         property and use it as the 'moc' include directories.(Deprecated use TARGETS instead)
+#     DEFINITIONS
+#         List of the definitions that should be added to the moc command line arguments.
+#         Supports the syntax both with and without the prepending '-D'.
+#     TARGETS
+#         The list of targets that will be used to collect the INTERFACE_INCLUDE_DIRECTORIES,
+#         INCLUDE_DIRECTORIES, and COMPILE_DEFINITIONS properties.
 function(qt_manual_moc result)
     cmake_parse_arguments(arg
                           ""
                           "OUTPUT_MOC_JSON_FILES"
-                          "FLAGS;INCLUDE_DIRECTORIES;INCLUDE_DIRECTORY_TARGETS"
+                          "FLAGS;INCLUDE_DIRECTORIES;INCLUDE_DIRECTORY_TARGETS;DEFINITIONS;TARGETS"
                           ${ARGN})
     set(moc_files)
     set(metatypes_json_list)
@@ -102,7 +111,7 @@ function(qt_manual_moc result)
                 "-I\n${dir}")
         endforeach()
 
-        foreach(dep IN ITEMS ${arg_INCLUDE_DIRECTORY_TARGETS})
+        foreach(dep IN LISTS arg_INCLUDE_DIRECTORY_TARGETS arg_TARGETS)
             set(include_expr "$<TARGET_PROPERTY:${dep},INTERFACE_INCLUDE_DIRECTORIES>")
             list(APPEND moc_parameters
                 "$<$<BOOL:${include_expr}>:-I\n$<JOIN:${include_expr},\n-I\n>>")
@@ -125,6 +134,30 @@ function(qt_manual_moc result)
                 if(loc)
                     list(APPEND moc_parameters "\n-F\n${loc}\n")
                 endif()
+            endif()
+        endforeach()
+
+        foreach(dep IN LISTS arg_TARGETS)
+            set(include_property_expr
+                "$<TARGET_GENEX_EVAL:${dep},$<TARGET_PROPERTY:${dep},INCLUDE_DIRECTORIES>>")
+            list(APPEND moc_parameters
+                "$<$<BOOL:${include_property_expr}>:-I\n$<JOIN:${include_property_expr},\n-I\n>>")
+
+            set(defines_property_expr
+                "$<TARGET_GENEX_EVAL:${dep},$<TARGET_PROPERTY:${dep},COMPILE_DEFINITIONS>>")
+            set(defines_with_d "$<FILTER:${defines_property_expr},INCLUDE,^-D>")
+            set(defines_without_d "$<FILTER:${defines_property_expr},EXCLUDE,^-D>")
+            list(APPEND moc_parameters
+                "$<$<BOOL:${defines_with_d}>:$<JOIN:${defines_with_d},\n>>")
+            list(APPEND moc_parameters
+                "$<$<BOOL:${defines_without_d}>:-D\n$<JOIN:${defines_without_d},\n-D\n>>")
+        endforeach()
+
+        foreach(def IN LISTS arg_DEFINITIONS)
+            if(NOT def MATCHES "^-D")
+                list(APPEND moc_parameters "-D\n${def}")
+            else()
+                list(APPEND moc_parameters "${def}")
             endif()
         endforeach()
 

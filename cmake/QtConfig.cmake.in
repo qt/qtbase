@@ -1,9 +1,15 @@
+# Copyright (C) 2024 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 @PACKAGE_INIT@
 
 cmake_minimum_required(VERSION @min_new_policy_version@...@max_new_policy_version@)
 
 include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@ConfigExtras.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/QtPublicCMakeVersionHelpers.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/QtPublicCMakeHelpers.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/QtInstallPaths.cmake")
+
 __qt_internal_require_suitable_cmake_version_for_using_qt()
 
 get_filename_component(_qt_cmake_dir "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
@@ -12,7 +18,11 @@ set(_qt_@PROJECT_VERSION_MAJOR@_config_cmake_dir "${CMAKE_CURRENT_LIST_DIR}")
 if (NOT QT_NO_CREATE_TARGETS)
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@Targets.cmake")
     if(NOT QT_NO_CREATE_VERSIONLESS_TARGETS)
-        include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@VersionlessTargets.cmake")
+        if(CMAKE_VERSION VERSION_LESS 3.18 OR QT_USE_OLD_VERSION_LESS_TARGETS)
+            include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@VersionlessTargets.cmake")
+        else()
+            include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@VersionlessAliasTargets.cmake")
+        endif()
     endif()
 else()
     # For examples using `find_package(...)` inside their CMakeLists.txt files:
@@ -34,6 +44,8 @@ if(APPLE)
         set(__qt_internal_cmake_apple_support_files_path "${_qt_import_prefix}/macos")
     elseif(CMAKE_SYSTEM_NAME STREQUAL "iOS")
         set(__qt_internal_cmake_apple_support_files_path "${_qt_import_prefix}/ios")
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "visionOS")
+        set(__qt_internal_cmake_apple_support_files_path "${_qt_import_prefix}/visionos")
     endif()
 endif()
 
@@ -44,6 +56,10 @@ set(__qt_public_files_to_include
 foreach(__qt_public_file_to_include IN LISTS __qt_public_files_to_include)
     include("${__qt_public_file_to_include}")
 endforeach()
+
+if(NOT DEFINED QT_CMAKE_EXPORT_NAMESPACE)
+    set(QT_CMAKE_EXPORT_NAMESPACE @QT_CMAKE_EXPORT_NAMESPACE@)
+endif()
 
 set(QT_ADDITIONAL_PACKAGES_PREFIX_PATH "" CACHE STRING
     "Additional directories where find(Qt6 ...) components are searched")
@@ -58,9 +74,7 @@ __qt_internal_collect_additional_prefix_paths(_qt_additional_host_packages_prefi
 __qt_internal_prefix_paths_to_roots(_qt_additional_host_packages_root_paths
     "${_qt_additional_host_packages_prefix_paths}")
 
-if(NOT DEFINED QT_CMAKE_EXPORT_NAMESPACE)
-    set(QT_CMAKE_EXPORT_NAMESPACE @QT_CMAKE_EXPORT_NAMESPACE@)
-endif()
+__qt_internal_collect_additional_module_paths()
 
 # Propagate sanitizer flags to both internal Qt builds and user projects.
 # Allow opt-out in case if downstream projects handle it in a different way.

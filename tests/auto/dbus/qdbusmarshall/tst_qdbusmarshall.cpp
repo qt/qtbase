@@ -1,6 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtCore/QtCore>
 #include <QTest>
@@ -161,7 +161,9 @@ void basicStringTypes_data()
 {
     QTest::newRow("string") << QVariant("ping") << "s" << "\"ping\"";
     QTest::newRow("objectpath") << QVariant::fromValue(QDBusObjectPath("/org/kde")) << "o" << "[ObjectPath: /org/kde]";
+    QTest::newRow("emptysignature") << QVariant::fromValue(QDBusSignature(QString())) << "g" << "[Signature: ]";
     QTest::newRow("signature") << QVariant::fromValue(QDBusSignature("g")) << "g" << "[Signature: g]";
+    QTest::newRow("multisignature") << QVariant::fromValue(QDBusSignature("bit")) << "g" << "[Signature: bit]";
     QTest::newRow("emptystring") << QVariant("") << "s" << "\"\"";
     QTest::newRow("nullstring") << QVariant(QString()) << "s" << "\"\"";
 }
@@ -475,6 +477,17 @@ void tst_QDBusMarshall::sendMaps_data()
     gsmap[QDBusSignature("a{gs}")] = "array of dict_entry of (signature, string)";
     QTest::newRow("gs-map") << QVariant::fromValue(gsmap) << "a{gs}"
             << "[Argument: a{gs} {[Signature: a{gs}] = \"array of dict_entry of (signature, string)\", [Signature: i] = \"int32\", [Signature: s] = \"string\"}]";
+
+    QMap<QString, std::pair<int, int>> siimap;
+    QTest::newRow("empty-sii-map") << QVariant::fromValue(siimap) << "a{s(ii)}"
+                                   << "[Argument: a{s(ii)} {}]";
+    siimap["0,0"] = { 0, 0 };
+    siimap["1,-1"] = { 1, -1 };
+    QTest::newRow("sii-map") << QVariant::fromValue(siimap) << "a{s(ii)}"
+                             << "[Argument: a{s(ii)} {"
+                                    "\"0,0\" = [Argument: (ii) 0, 0], "
+                                    "\"1,-1\" = [Argument: (ii) 1, -1]"
+                                "}]";
 
     if (fileDescriptorPassing) {
         svmap["zzfiledescriptor"] = QVariant::fromValue(QDBusUnixFileDescriptor(fileDescriptorForTest()));
@@ -896,7 +909,7 @@ void tst_QDBusMarshall::sendSignalErrors()
     QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal to service \"\" path \"/foo\" interface \"local.interfaceName\" member \"signalName\": Marshalling failed: Invalid object path passed in arguments");
     QVERIFY(!con.send(msg));
 
-    QDBusSignature sig;
+    QDBusSignature sig(QChar(0));
     msg.setArguments(QVariantList() << QVariant::fromValue(sig));
     QTest::ignoreMessage(QtWarningMsg, "QDBusConnection: error: could not send signal to service \"\" path \"/foo\" interface \"local.interfaceName\" member \"signalName\": Marshalling failed: Invalid signature passed in arguments");
     QVERIFY(!con.send(msg));
@@ -981,7 +994,7 @@ void tst_QDBusMarshall::sendCallErrors_data()
             << "";
 
     QTest::newRow("invalid-signature-arg") << serviceName << objectPath << interfaceName << "ping"
-            << (QVariantList() << QVariant::fromValue(QDBusSignature()))
+            << (QVariantList() << QVariant::fromValue(QDBusSignature(QChar(0))))
             << "org.freedesktop.DBus.Error.Failed"
             << "Marshalling failed: Invalid signature passed in arguments"
             << "";

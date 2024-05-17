@@ -40,9 +40,18 @@ template <typename QGS> union Holder
 
     ~Holder()
     {
+        // TSAN does not support atomic_thread_fence and GCC complains:
+        // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=97868
+        // https://github.com/google/sanitizers/issues/1352
+QT_WARNING_PUSH
+#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 1100
+QT_WARNING_DISABLE_GCC("-Wtsan")
+#endif
+        // import changes to *pointer() by other threads before running ~PlainType():
+        std::atomic_thread_fence(std::memory_order_acquire);
+QT_WARNING_POP
         pointer()->~PlainType();
-        std::atomic_thread_fence(std::memory_order_acquire); // avoid mixing stores to guard and *pointer()
-        guard.storeRelaxed(QtGlobalStatic::Destroyed);
+        guard.storeRelease(QtGlobalStatic::Destroyed);
     }
 
     PlainType *pointer() noexcept

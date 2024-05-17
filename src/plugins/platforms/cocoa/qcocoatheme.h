@@ -44,6 +44,7 @@ public:
 
     static const char *name;
 
+    void requestColorScheme(Qt::ColorScheme scheme) override;
     void handleSystemThemeChange();
 
 #ifndef QT_NO_SHORTCUT

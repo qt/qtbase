@@ -1,14 +1,29 @@
 # Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+# There are three necessary copies of this macro in
+#  qtbase/cmake/QtBaseHelpers.cmake
+#  qtbase/cmake/QtBaseTopLevelHelpers.cmake
+#  qtbase/cmake/QtBuildRepoHelpers.cmake
+macro(qt_internal_top_level_setup_standalone_parts)
+    # A generic marker for any kind of standalone builds, either tests or examples.
+    if(NOT DEFINED QT_INTERNAL_BUILD_STANDALONE_PARTS
+            AND (QT_BUILD_STANDALONE_TESTS OR QT_BUILD_STANDALONE_EXAMPLES))
+        set(QT_INTERNAL_BUILD_STANDALONE_PARTS TRUE CACHE INTERNAL
+            "Whether standalone tests or examples are being built")
+    endif()
+endmacro()
+
 # Depends on __qt6_qtbase_src_path being set in the top-level dir.
 macro(qt_internal_top_level_setup_autodetect)
+    qt_internal_top_level_setup_standalone_parts()
+
     # Run platform auto-detection /before/ the first project() call and thus
     # before the toolchain file is loaded.
     # Don't run auto-detection when doing standalone tests. In that case, the detection
     # results are taken from either QtBuildInternals or the qt.toolchain.cmake file.
 
-    if(NOT QT_BUILD_STANDALONE_TESTS)
+    if(NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
         set(__qt6_auto_detect_path "${__qt6_qtbase_src_path}/cmake/QtAutoDetect.cmake")
         if(NOT EXISTS "${__qt6_auto_detect_path}")
             message(FATAL_ERROR "Required file does not exist: '${__qt6_auto_detect_path}'")
@@ -28,7 +43,7 @@ endmacro()
 
 # Depends on __qt6_qtbase_src_path being set in the top-level dir.
 macro(qt_internal_top_level_setup_cmake_module_path)
-    if (NOT QT_BUILD_STANDALONE_TESTS)
+    if (NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
         set(__qt6_cmake_module_path "${__qt6_qtbase_src_path}/cmake")
         if(NOT EXISTS "${__qt6_cmake_module_path}")
             message(FATAL_ERROR "Required directory does not exist: '${__qt6_cmake_module_path}'")
@@ -48,7 +63,7 @@ endmacro()
 
 macro(qt_internal_top_level_setup_no_create_targets)
     # Also make sure the CMake config files do not recreate the already-existing targets
-    if (NOT QT_BUILD_STANDALONE_TESTS)
+    if (NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
         set(QT_NO_CREATE_TARGETS TRUE)
     endif()
 endmacro()
@@ -62,7 +77,7 @@ macro(qt_internal_top_level_end)
 endmacro()
 
 function(qt_internal_print_top_level_info)
-    if(NOT QT_BUILD_STANDALONE_TESTS)
+    if(NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
         # Display a summary of everything
         include(QtBuildInformation)
         include(QtPlatformSupport)
@@ -73,7 +88,7 @@ endfunction()
 
 macro(qt_internal_top_level_after_add_subdirectory)
     if(module STREQUAL "qtbase")
-        if (NOT QT_BUILD_STANDALONE_TESTS)
+        if (NOT QT_INTERNAL_BUILD_STANDALONE_PARTS)
             list(APPEND CMAKE_PREFIX_PATH "${QtBase_BINARY_DIR}/${INSTALL_LIBDIR}/cmake")
             list(APPEND CMAKE_FIND_ROOT_PATH "${QtBase_BINARY_DIR}")
         endif()

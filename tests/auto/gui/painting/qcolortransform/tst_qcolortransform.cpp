@@ -1,5 +1,5 @@
 // Copyright (C) 2022 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -182,21 +182,21 @@ void tst_QColorTransform::mapRGBAFP16x4()
     else
         QVERIFY(result != testColor);
 
-    testColor = QRgbaFloat16{0.0f, 0.0f, 0.0f, 1.0f};
+    testColor = QRgbaFloat16{qfloat16(0.0f), qfloat16(0.0f), qfloat16(0.0f), qfloat16(1.0f)};
     result = transform.map(testColor);
     QCOMPARE(result, testColor);
 
-    testColor = QRgbaFloat16{1.0f, 1.0f, 1.0f, 1.0f};
+    testColor = QRgbaFloat16{qfloat16(1.0f), qfloat16(1.0f), qfloat16(1.0f), qfloat16(1.0f)};
     result = transform.map(testColor);
     QCOMPARE(result, testColor);
 
-    testColor = QRgbaFloat16{1.0f, 1.0f, 0.0f, 1.0f};
+    testColor = QRgbaFloat16{qfloat16(1.0f), qfloat16(1.0f), qfloat16(1.0f), qfloat16(1.0f)};
     result = transform.map(testColor);
     QCOMPARE(result.alpha(), 1.0f);
     if (sharesRed)
         QCOMPARE(result.red(), 1.0f);
 
-    testColor = QRgbaFloat16{0.0f, 1.0f, 1.0f, 1.0f};
+    testColor = QRgbaFloat16{qfloat16(0.0f), qfloat16(1.0f), qfloat16(1.0f), qfloat16(1.0f)};
     result = transform.map(testColor);
     // QRgbaFloat16 might overflow blue if we convert to a smaller gamut:
     QCOMPARE(result.blue16(), 65535);

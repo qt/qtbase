@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtOpenGLWidgets/QOpenGLWidget>
 #include <QtGui/QOpenGLFunctions>
@@ -326,10 +326,6 @@ void tst_QOpenGLWidget::reparentToNotYetCreated()
 
 void tst_QOpenGLWidget::reparentHidden()
 {
-#ifdef Q_OS_ANDROID
-    if (QNativeInterface::QAndroidApplication::sdkVersion() >= 31)
-        QSKIP("Fails on Android 12 (QTBUG-111235)");
-#endif
     // Tests QTBUG-60896
     QWidget topLevel1;
 

@@ -12,7 +12,7 @@
 #include <QtGui/qaccessible.h>
 #include <QtGui/qwindow.h>
 #include <QtCore/qrect.h>
-#include <QtGui/private/qwindowsuiawrapper_p.h>
+#include "qwindowsuiautomation.h"
 
 QT_BEGIN_NAMESPACE
 

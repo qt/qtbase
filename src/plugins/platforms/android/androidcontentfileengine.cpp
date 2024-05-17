@@ -194,10 +194,10 @@ QByteArray AndroidContentFileEngine::id() const
     return m_documentFile->id().toUtf8();
 }
 
-QDateTime AndroidContentFileEngine::fileTime(FileTime time) const
+QDateTime AndroidContentFileEngine::fileTime(QFile::FileTime time) const
 {
     switch (time) {
-    case FileTime::ModificationTime:
+    case QFile::FileModificationTime:
         return m_documentFile->lastModified();
         break;
     default:
@@ -248,31 +248,29 @@ QString AndroidContentFileEngine::fileName(FileName f) const
     return QString();
 }
 
-QAbstractFileEngine::Iterator *AndroidContentFileEngine::beginEntryList(QDir::Filters filters,
-                                                                    const QStringList &filterNames)
+QAbstractFileEngine::IteratorUniquePtr
+AndroidContentFileEngine::beginEntryList(const QString &path, QDir::Filters filters,
+                                         const QStringList &filterNames)
 {
-    return new AndroidContentFileEngineIterator(filters, filterNames);
-}
-
-QAbstractFileEngine::Iterator *AndroidContentFileEngine::endEntryList()
-{
-    return nullptr;
+    return std::make_unique<AndroidContentFileEngineIterator>(path, filters, filterNames);
 }
 
 AndroidContentFileEngineHandler::AndroidContentFileEngineHandler() = default;
 AndroidContentFileEngineHandler::~AndroidContentFileEngineHandler() = default;
 
-QAbstractFileEngine* AndroidContentFileEngineHandler::create(const QString &fileName) const
+std::unique_ptr<QAbstractFileEngine>
+AndroidContentFileEngineHandler::create(const QString &fileName) const
 {
-    if (!fileName.startsWith("content"_L1))
-        return nullptr;
+    if (fileName.startsWith("content"_L1))
+        return std::make_unique<AndroidContentFileEngine>(fileName);
 
-    return new AndroidContentFileEngine(fileName);
+    return {};
+
 }
 
-AndroidContentFileEngineIterator::AndroidContentFileEngineIterator(QDir::Filters filters,
-                                                                   const QStringList &filterNames)
-    : QAbstractFileEngineIterator(filters, filterNames)
+AndroidContentFileEngineIterator::AndroidContentFileEngineIterator(
+    const QString &path, QDir::Filters filters, const QStringList &filterNames)
+    : QAbstractFileEngineIterator(path, filters, filterNames)
 {
 }
 
@@ -280,15 +278,7 @@ AndroidContentFileEngineIterator::~AndroidContentFileEngineIterator()
 {
 }
 
-QString AndroidContentFileEngineIterator::next()
-{
-    if (!hasNext())
-        return QString();
-    ++m_index;
-    return currentFilePath();
-}
-
-bool AndroidContentFileEngineIterator::hasNext() const
+bool AndroidContentFileEngineIterator::advance()
 {
     if (m_index == -1 && m_files.isEmpty()) {
         const auto currentPath = path();
@@ -299,9 +289,18 @@ bool AndroidContentFileEngineIterator::hasNext() const
         if (iterDoc->isDirectory())
             for (const auto &doc : iterDoc->listFiles())
                 m_files.append(doc);
+        if (m_files.isEmpty())
+            return false;
+        m_index = 0;
+        return true;
     }
 
-    return m_index < (m_files.size() - 1);
+    if (m_index < m_files.size() - 1) {
+        ++m_index;
+        return true;
+    }
+
+    return false;
 }
 
 QString AndroidContentFileEngineIterator::currentFileName() const

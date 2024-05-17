@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 #include "paintcommands.h"
 
 #include <qdir.h>
@@ -173,6 +173,7 @@ const char *PaintCommands::imageFormatTable[] = {
     "RGBx32FPx4",
     "RGBA32FPx4",
     "RGBA32FPx4_Premultiplied",
+    "CMYK32",
 };
 
 const char *PaintCommands::renderHintTable[] = {
@@ -449,10 +450,12 @@ void PaintCommands::staticInit()
                       "^drawGlyphRun\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
                       "drawGlyphRun <x> <y> <text> - Will create glyph run using QTextLayout and draw this",
                       "drawGlyphRun 10 10 \"my text\"");
+#ifndef QT_NO_TEXTHTMLPARSER
     DECL_PAINTCOMMAND("drawTextDocument", command_drawTextDocument,
                       "^drawTextDocument\\s+(-?\\w*)\\s+(-?\\w*)\\s+\"(.*)\"$",
                       "drawTextDocument <x> <y> <html>",
                       "drawTextDocument 10 10 \"html\"");
+#endif
     DECL_PAINTCOMMAND("drawTiledPixmap", command_drawTiledPixmap,
                       "^drawTiledPixmap\\s+([\\w.:\\/]*)"
                       "\\s+(-?\\w*)\\s+(-?\\w*)\\s*(-?\\w*)\\s*(-?\\w*)"
@@ -1403,6 +1406,7 @@ void PaintCommands::command_drawGlyphRun(QRegularExpressionMatch re)
         m_painter->drawGlyphRun(QPointF(x, y), glyphRun);
 }
 
+#ifndef QT_NO_TEXTHTMLPARSER
 void PaintCommands::command_drawTextDocument(QRegularExpressionMatch re)
 {
     if (!m_shouldDrawText)
@@ -1424,6 +1428,7 @@ void PaintCommands::command_drawTextDocument(QRegularExpressionMatch re)
     doc.drawContents(m_painter);
     m_painter->restore();
 }
+#endif
 
 /***************************************************************************************************/
 void PaintCommands::command_fillRect(QRegularExpressionMatch re)

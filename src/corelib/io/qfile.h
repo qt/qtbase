@@ -282,10 +282,10 @@ public:
     }
 #endif // QT_CONFIG(cxx17_filesystem)
 
-    bool open(OpenMode flags) override;
-    bool open(OpenMode flags, Permissions permissions);
-    bool open(FILE *f, OpenMode ioFlags, FileHandleFlags handleFlags=DontCloseHandle);
-    bool open(int fd, OpenMode ioFlags, FileHandleFlags handleFlags=DontCloseHandle);
+    QFILE_MAYBE_NODISCARD bool open(OpenMode flags) override;
+    QFILE_MAYBE_NODISCARD bool open(OpenMode flags, Permissions permissions);
+    QFILE_MAYBE_NODISCARD bool open(FILE *f, OpenMode ioFlags, FileHandleFlags handleFlags=DontCloseHandle);
+    QFILE_MAYBE_NODISCARD bool open(int fd, OpenMode ioFlags, FileHandleFlags handleFlags=DontCloseHandle);
 
     qint64 size() const override;
 

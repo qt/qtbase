@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #undef QT_NO_FOREACH // this file tests Q_FOREACH!
@@ -12,8 +12,9 @@
 #include <QString>
 #include <QtVersion>
 
-#include <array>
 #include <cmath>
+#include <limits>
+#include <type_traits>
 
 class tst_QGlobal: public QObject
 {
@@ -881,6 +882,55 @@ void tst_QGlobal::nodiscard()
     Test t2{42.0f};
     QCOMPARE(t2.get(), 42);
 }
+
+QT_BEGIN_NAMESPACE
+
+// Compile-time typeinfo tests
+struct Complex1
+{
+    ~Complex1();
+};
+static_assert(QTypeInfo<Complex1>::isComplex);
+static_assert(!QTypeInfo<Complex1>::isRelocatable);
+
+struct Complex2
+{
+    Complex2(Complex2 &&);
+};
+static_assert(QTypeInfo<Complex2>::isComplex);
+static_assert(!QTypeInfo<Complex2>::isRelocatable);
+
+struct Complex3
+{
+    Complex3(int);
+};
+static_assert(QTypeInfo<Complex3>::isComplex);
+static_assert(QTypeInfo<Complex3>::isRelocatable);
+
+struct Relocatable1
+{
+    ~Relocatable1();
+};
+Q_DECLARE_TYPEINFO(Relocatable1, Q_RELOCATABLE_TYPE);
+static_assert(QTypeInfo<Relocatable1>::isComplex);
+static_assert(QTypeInfo<Relocatable1>::isRelocatable);
+
+struct Relocatable2
+{
+    Relocatable2(int);
+};
+Q_DECLARE_TYPEINFO(Relocatable2, Q_RELOCATABLE_TYPE);
+static_assert(QTypeInfo<Relocatable2>::isComplex);
+static_assert(QTypeInfo<Relocatable2>::isRelocatable);
+
+struct Trivial1
+{
+    int x[42];
+};
+static_assert(!QTypeInfo<Trivial1>::isComplex);
+static_assert(QTypeInfo<Trivial1>::isRelocatable);
+
+QT_END_NAMESPACE
 
 QTEST_APPLESS_MAIN(tst_QGlobal)
 #include "tst_qglobal.moc"

@@ -22,6 +22,7 @@
 #include <QtGui/qrgbafloat.h>
 
 QT_BEGIN_NAMESPACE
+class QCmyk32;
 
 class QColorTransformPrivate : public QSharedData
 {
@@ -47,19 +48,22 @@ public:
     };
     Q_DECLARE_FLAGS(TransformFlags, TransformFlag)
 
-    void apply(QRgb *dst, const QRgb *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
-    void apply(QRgba64 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
-    void apply(QRgbaFloat32 *dst, const QRgbaFloat32 *src, qsizetype count,
-               TransformFlags flags = Unpremultiplied) const;
-    void apply(quint8 *dst, const QRgb *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
-    void apply(quint16 *dst, const QRgba64 *src, qsizetype count, TransformFlags flags = Unpremultiplied) const;
+    QColorVector map(QColorVector color) const;
+    QColorVector mapExtended(QColorVector color) const;
 
-    template<typename T>
-    void apply(T *dst, const T *src, qsizetype count, TransformFlags flags) const;
-
+    template<typename D, typename S>
+    void apply(D *dst, const S *src, qsizetype count, TransformFlags flags) const;
+    template<typename D, typename S>
+    void applyGray(D *dst, const S *src, qsizetype count, TransformFlags flags) const;
     template<typename D, typename S>
     void applyReturnGray(D *dst, const S *src, qsizetype count, TransformFlags flags) const;
 
+private:
+    void pcsAdapt(QColorVector *buffer, qsizetype len) const;
+    template<typename S>
+    void applyConvertIn(const S *src, QColorVector *buffer, qsizetype len, TransformFlags flags) const;
+    template<typename D, typename S>
+    void applyConvertOut(D *dst, const S *src, QColorVector *buffer, qsizetype len, TransformFlags flags) const;
 };
 
 QT_END_NAMESPACE

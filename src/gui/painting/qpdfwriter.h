@@ -44,6 +44,18 @@ public:
 
     void addFileAttachment(const QString &fileName, const QByteArray &data, const QString &mimeType = QString());
 
+    enum class ColorModel
+    {
+        RGB,
+        Grayscale,
+        CMYK,
+        Auto,
+    };
+    Q_ENUM(ColorModel)
+
+    ColorModel colorModel() const;
+    void setColorModel(ColorModel model);
+
 protected:
     QPaintEngine *paintEngine() const override;
     int metric(PaintDeviceMetric id) const override;

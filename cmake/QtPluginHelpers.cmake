@@ -91,6 +91,11 @@ function(qt_internal_add_plugin target)
     qt6_add_plugin(${target} ${plugin_args})
     qt_internal_mark_as_internal_library(${target})
 
+    get_target_property(target_type "${target}" TYPE)
+    if(plugin_init_target AND TARGET "${plugin_init_target}")
+        qt_internal_add_target_aliases("${plugin_init_target}")
+    endif()
+
     set(plugin_type "")
     # TODO: Transitional: Remove the TYPE option handling after all repos have been converted to use
     # PLUGIN_TYPE.
@@ -211,73 +216,17 @@ function(qt_internal_add_plugin target)
             # This QT_PLUGINS assignment is only used by QtPostProcessHelpers to decide if a
             # QtModulePlugins.cmake file should be generated.
             set_property(TARGET "${qt_module_target}" APPEND PROPERTY QT_PLUGINS "${target}")
+        else()
+            # The _qt_plugins property is considered when collecting the plugins in
+            # deployment process. The usecase is following:
+            # QtModuleX is built separately and installed, so it's imported.
+            # The plugin is built in some application build tree and its PLUGIN_TYPE is associated
+            # with QtModuleX.
+            set_property(TARGET "${qt_module_target}" APPEND PROPERTY _qt_plugins "${target}")
         endif()
 
         set(plugin_target_versioned "${QT_CMAKE_EXPORT_NAMESPACE}::${target}")
         get_target_property(type "${plugin_target_versioned}" TYPE)
-        if(type STREQUAL STATIC_LIBRARY)
-            # Associate plugin with its Qt module when both are both built in the same repository.
-            # Check that by comparing the PROJECT_NAME of each.
-            # This covers auto-linking of the majority of plugins to executables and in-tree tests.
-            # Linking of plugins in standalone tests (when the Qt module will be an imported target)
-            # is handled instead by the complicated genex logic in QtModulePlugins.cmake.in.
-            set(is_plugin_and_module_in_same_project FALSE)
-            if(NOT is_imported_qt_module)
-                get_target_property(module_source_dir ${qt_module_target} SOURCE_DIR)
-                get_directory_property(module_project_name
-                    DIRECTORY ${module_source_dir}
-                    DEFINITION PROJECT_NAME
-                )
-                if(module_project_name STREQUAL PROJECT_NAME)
-                    set(is_plugin_and_module_in_same_project TRUE)
-                endif()
-
-                # When linking static plugins with the special logic in qt_internal_add_executable,
-                # make sure to skip non-default plugins.
-                if(is_plugin_and_module_in_same_project AND _default_plugin)
-                    set_property(TARGET ${qt_module_target} APPEND PROPERTY
-                                 _qt_initial_repo_plugins
-                                 "${target}")
-                    set_property(TARGET ${qt_module_target} APPEND PROPERTY
-                                 _qt_initial_repo_plugin_class_names
-                                 "$<TARGET_PROPERTY:${target},QT_PLUGIN_CLASS_NAME>"
-                    )
-                endif()
-            endif()
-
-            # Associate plugin with its Qt module when the plugin is built in the current repository
-            # but the module is built in a different repository (qtsvg's QSvgPlugin associated with
-            # qtbase's QtGui).
-            # The association is done in a separate property, to ensure that reconfiguring in-tree tests
-            # in qtbase doesn't accidentally cause linking to a plugin from a previously built qtsvg.
-            # Needed for in-tree tests like in qtsvg, qtimageformats.
-            # This is done for each Qt module regardless if it's an imported target or not, to handle
-            # both per-repo and top-level builds (in per-repo build of qtsvg QtGui is imported, in a
-            # top-level build Gui is not imported, but in both cases qtsvg tests need to link to
-            # QSvgPlugin).
-            #
-            # TODO: Top-level in-tree tests and qdeclarative per-repo in-tree tests that depend on
-            #       static Qml plugins won't work due to the requirement of running qmlimportscanner
-            #       at configure time, but qmlimportscanner is not built at that point. Moving the
-            #       execution of qmlimportscanner to build time is non-trivial because qmlimportscanner
-            #       not only generates a cpp file to compile but also outputs a list of static plugins
-            #       that should be linked and there is no straightforward way to tell CMake to link
-            #       against a list of libraries that was discovered at build time (apart from
-            #       response files, which apparently might not work on all platforms).
-            #       qmake doesn't have this problem because each project is configured separately so
-            #       qmlimportscanner is always built by the time it needs to be run for a test.
-            if(NOT is_plugin_and_module_in_same_project AND _default_plugin)
-                string(MAKE_C_IDENTIFIER "${PROJECT_NAME}" current_project_name)
-                set(prop_prefix "_qt_repo_${current_project_name}")
-                set_property(TARGET ${qt_module_target} APPEND PROPERTY
-                             ${prop_prefix}_plugins "${target}")
-                set_property(TARGET ${qt_module_target} APPEND PROPERTY
-                             ${prop_prefix}_plugin_class_names
-                    "$<TARGET_PROPERTY:${target},QT_PLUGIN_CLASS_NAME>"
-                )
-            endif()
-        endif()
-
         qt_internal_add_autogen_sync_header_dependencies(${target} ${qt_module_target})
     endif()
 
@@ -383,7 +332,6 @@ function(qt_internal_add_plugin target)
 
     qt_register_target_dependencies("${target}" "${arg_PUBLIC_LIBRARIES}" "${qt_libs_private}")
 
-    get_target_property(target_type "${target}" TYPE)
     if(target_type STREQUAL STATIC_LIBRARY)
         if(qt_module_target)
             qt_internal_link_internal_platform_for_object_library("${plugin_init_target}")
@@ -547,6 +495,7 @@ function(qt_internal_add_darwin_permission_plugin permission)
             Qt::Core
             Qt::CorePrivate
             ${FWFoundation}
+        NO_UNITY_BUILD # disable unity build: the same file is built with two different preprocessor defines.
     )
 
     # Disable PCH since CMake falls over on single .mm source targets
@@ -587,10 +536,12 @@ function(qt_internal_add_darwin_permission_plugin permission)
     )
     if(CMAKE_VERSION VERSION_LESS "3.18")
         set_property(SOURCE "${separate_request_source_file}" PROPERTY GENERATED TRUE)
+        set_property(SOURCE "${separate_request_source_file}" PROPERTY SKIP_UNITY_BUILD_INCLUSION TRUE)
     endif()
     target_sources(${plugin_target} PRIVATE
         "$<${separate_request_genex}:${separate_request_source_file}>"
     )
+
     set_property(TARGET ${plugin_target} APPEND PROPERTY
         EXPORT_PROPERTIES _qt_darwin_permissison_separate_request
     )
@@ -608,4 +559,49 @@ function(qt_internal_add_darwin_permission_plugin permission)
     set_property(TARGET ${plugin_target} PROPERTY
         QT_PLUGIN_PRI_EXTRA_CONTENT ${extra_plugin_pri_content}
     )
+endfunction()
+
+# The function looks and links the static plugins that the target depends on. The function behaves
+# similar to qt_import_plugins, but should be used when building Qt executable or shared libraries.
+# It's expected that all dependencies are valid targets at the time when the function is called.
+# If not their plugins will be not collected for linking.
+function(qt_internal_import_plugins target)
+    set(plugin_targets "")
+    foreach(dep_target IN LISTS ARGN)
+        if(dep_target AND TARGET ${dep_target})
+            get_target_property(plugins ${dep_target} _qt_plugins)
+            if(plugins)
+                list(APPEND plugin_targets ${plugins})
+            else()
+                # Fallback should be remove in Qt 7.
+                get_target_property(target_type ${dep_target} TYPE)
+                if(NOT "${target_type}" STREQUAL "INTERFACE_LIBRARY")
+                    get_target_property(plugins ${dep_target} QT_PLUGINS)
+                    if(plugins)
+                        list(APPEND plugin_targets ${plugins})
+                    endif()
+                endif()
+            endif()
+        endif()
+    endforeach()
+
+    set(non_imported_plugin_targets "")
+    foreach(plugin_target IN LISTS plugin_targets)
+        if(NOT TARGET ${plugin_target} OR "${plugin_target}" IN_LIST non_imported_plugin_targets)
+            continue()
+        endif()
+
+        get_target_property(is_imported ${plugin_target} IMPORTED)
+        if(NOT is_imported)
+            list(APPEND non_imported_plugin_targets "${plugin_target}")
+        endif()
+    endforeach()
+
+    if(plugin_targets)
+        __qt_internal_collect_plugin_init_libraries("${non_imported_plugin_targets}" init_libraries)
+        __qt_internal_collect_plugin_libraries("${non_imported_plugin_targets}" plugin_libraries)
+        if(plugin_libraries OR init_libraries)
+            target_link_libraries(${target} PRIVATE ${plugin_libraries} ${init_libraries})
+        endif()
+    endif()
 endfunction()

@@ -6,6 +6,7 @@
 #define QPLATFORMSYSTEMTRAYICON_H
 
 #include <QtGui/qtguiglobal.h>
+#include <qpa/qplatformscreen.h>
 #include "QtCore/qobject.h"
 
 #ifndef QT_NO_SYSTEMTRAYICON
@@ -13,7 +14,6 @@
 QT_BEGIN_NAMESPACE
 
 class QPlatformMenu;
-class QPlatformScreen;
 class QIcon;
 class QString;
 class QRect;
@@ -21,7 +21,6 @@ class QRect;
 class Q_GUI_EXPORT QPlatformSystemTrayIcon : public QObject
 {
     Q_OBJECT
-    Q_MOC_INCLUDE(<qpa/qplatformscreen.h>)
 public:
     enum ActivationReason {
         Unknown,

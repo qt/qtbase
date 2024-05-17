@@ -101,6 +101,7 @@ Build options:
 
   -qt-host-path <path> . Specify path to a Qt host build for cross-compiling.
   -qtnamespace <name> .. Wrap all Qt library code in 'namespace <name> {...}'.
+  -qtinlinenamespace ... Make -qtnamespace an inline namespace
   -qtlibinfix <infix> .. Rename all libQt6*.so to libQt6*<infix>.so.
 
   -coverage <tool> ..... Instrument with the code coverage tool.
@@ -138,7 +139,16 @@ Build options:
 
   -pch ................. Use precompiled headers [auto]
   -ltcg ................ Use Link Time Code Generation [no]
-  -intelcet ............ Use Intel Control-flow Enforcement Technology [no]
+  -intelcet ............ Use Intel Control-flow Enforcement Technology [auto]
+  -glibc-fortify-source  Use Glibc function fortification [auto]
+  -trivial-auto-var-init-pattern
+                         Use -ftrivial-auto-var-init=pattern [auto]
+  -stack-protector ..... Use -fstack-protector-strong [auto]
+  -stack-clash-protection
+                         Use -fstack-clash-protection [auto]
+  -libstdcpp-assertions  Use libstdc++ assertions [auto]
+  -libcpp-hardening .... Use libc++ hardening [auto]
+  -relro-now-linker .... Use -z relro -z now when linking [auto]
   -linker [bfd,gold,lld,mold]
                          Force use of the GNU ld, GNU gold, LLVM/LLD or mold
                          linker instead of default one (GCC and clang only)
@@ -196,6 +206,21 @@ Component selection:
   -skip <repo>[,<repo>]  Exclude one or more entire repositories from the
                          build. The list should be separated with commas.
                          e.g. -skip qtimageformats,qtsvg
+  -skip-tests <repo>[,<repo>] ... Skip building tests for one or more
+                         repositories. The list should be separated with commas.
+                         e.g. -skip-tests qtimageformats,qtsvg
+  -skip-examples <repo>[,<repo>] ... Skip building examples for one or more
+                         repositories. The list should be separated with commas.
+                         e.g. -skip-examples qtimageformats,qtsvg
+  -init-submodules ..... When configure is called from the qt git super module,
+                         it will automatically clone and initialize the
+                         repositories specified by the -submodules option. When
+                         no -submodules are specified, and no existing
+                         submodules are cloned, a default set of submodules
+                         will be initialized. To adjust other aspects of the
+                         cloning process, check the init-repository --help
+                         output for additional options that can be passed
+                         to configure.
   -make <part> ......... Add <part> to the list of parts to be built.
                          Specifying this option clears the default list first.
                          (allowed values: libs, tools, examples, tests,
@@ -265,8 +290,10 @@ Gui, printing, widget options:
   -opengles3 ........... Enable OpenGL ES 3.x support instead of ES 2.x [auto]
   -egl ................. Enable EGL support [auto]
 
-  -qpa <name> .......... Select default QPA backend(s) (e.g., xcb, cocoa, windows)
-                         A prioritized list separated by semi-colons.
+  -qpa <qpa1>[;<qpa2>] . Select supported QPA backend(s) (e.g., xcb, cocoa,
+                         windows). A list separated by semi-colons.
+  -default-qpa <name> .. Select the default QPA backend (e.g., xcb, cocoa,
+                         windows).
   -xcb-xlib............. Enable Xcb-Xlib support [auto]
 
   Platform backends:

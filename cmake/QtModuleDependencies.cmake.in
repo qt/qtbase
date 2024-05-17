@@ -1,3 +1,6 @@
+# Copyright (C) 2024 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 # Make sure @INSTALL_CMAKE_NAMESPACE@ is found before anything else.
 set(@INSTALL_CMAKE_NAMESPACE@@target@_FOUND FALSE)
 

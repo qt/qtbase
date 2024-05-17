@@ -1,5 +1,5 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qrhiwidget_p.h"
 #include <private/qguiapplication_p.h>
@@ -277,7 +277,7 @@ bool QRhiWidget::event(QEvent *e)
 {
     Q_D(QRhiWidget);
     switch (e->type()) {
-    case QEvent::WindowChangeInternal:
+    case QEvent::WindowAboutToChangeInternal:
         // The QRhi will almost certainly change, prevent texture() from
         // returning the existing QRhiTexture in the meantime.
         d->textureInvalid = true;
@@ -475,14 +475,7 @@ void QRhiWidgetPrivate::releaseResources()
 void QRhiWidgetPrivate::ensureRhi()
 {
     Q_Q(QRhiWidget);
-    // the QRhi and infrastructure belongs to the top-level widget, not to this widget
-    QWidget *tlw = q->window();
-    QWidgetPrivate *wd = get(tlw);
-
-    QRhi *currentRhi = nullptr;
-    if (QWidgetRepaintManager *repaintManager = wd->maybeRepaintManager())
-        currentRhi = repaintManager->rhi();
-
+    QRhi *currentRhi = QWidgetPrivate::rhi();
     if (currentRhi && currentRhi->backend() != QBackingStoreRhiSupport::apiToRhiBackend(config.api())) {
         qWarning("The top-level window is already using another graphics API for composition, "
                  "'%s' is not compatible with this widget",
@@ -491,19 +484,21 @@ void QRhiWidgetPrivate::ensureRhi()
     }
 
     // NB the rhi member may be an invalid object, the pointer can be used, but no deref
-    if (currentRhi && rhi && rhi != currentRhi) {
-        // if previously we created our own but now get a QRhi from the
-        // top-level, then drop what we have and start using the top-level's
-        if (rhi == offscreenRenderer.rhi()) {
-            q->releaseResources(); // notify the user code about the early-release
-            releaseResources();
-            offscreenRenderer.reset();
-        } else {
-            // rhi resources created by us all belong to the old rhi, drop them;
-            // due to nulling out colorTexture this is also what ensures that
-            // initialize() is going to be called again eventually
-            resetRenderTargetObjects();
-            resetColorBufferObjects();
+    if (currentRhi && rhi != currentRhi) {
+        if (rhi) {
+            // if previously we created our own but now get a QRhi from the
+            // top-level, then drop what we have and start using the top-level's
+            if (rhi == offscreenRenderer.rhi()) {
+                q->releaseResources(); // notify the user code about the early-release
+                releaseResources();
+                offscreenRenderer.reset();
+            } else {
+                // rhi resources created by us all belong to the old rhi, drop them;
+                // due to nulling out colorTexture this is also what ensures that
+                // initialize() is going to be called again eventually
+                resetRenderTargetObjects();
+                resetColorBufferObjects();
+            }
         }
 
         // Normally the widget gets destroyed before the QRhi (which is managed by
@@ -946,12 +941,12 @@ void QRhiWidget::setMirrorVertically(bool enabled)
 }
 
 /*!
-    \return the current setting for automatic depth-stencil buffer and render
+    \property QRhiWidget::autoRenderTarget
+
+    The current setting for automatic depth-stencil buffer and render
     target maintenance.
 
     By default the value is \c true.
-
-    \sa setAutoRenderTarget()
  */
 bool QRhiWidget::isAutoRenderTargetEnabled() const
 {

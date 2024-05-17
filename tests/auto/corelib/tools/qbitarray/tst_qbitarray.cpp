@@ -1,11 +1,15 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QtCore/QBuffer>
 #include <QtCore/QDataStream>
 
 #include "qbitarray.h"
+
+#include <QtCore/qelapsedtimer.h>
+#include <QtCore/qscopeguard.h>
 
 /**
  * Helper function to initialize a bitarray from a string
@@ -36,6 +40,8 @@ class tst_QBitArray : public QObject
 {
     Q_OBJECT
 private slots:
+    void compareCompiles();
+    void canHandleIntMaxBits();
     void size_data();
     void size();
     void countBits_data();
@@ -80,6 +86,59 @@ private slots:
     void toUInt32_data();
     void toUInt32();
 };
+
+void tst_QBitArray::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QBitArray>();
+}
+
+void tst_QBitArray::canHandleIntMaxBits()
+{
+    QElapsedTimer timer;
+    timer.start();
+    const auto print = qScopeGuard([&] {
+        qDebug("Function took %lldms", qlonglong(timer.elapsed()));
+    });
+
+    try {
+        constexpr qsizetype Size1 = sizeof(void*) > sizeof(int) ? qsizetype(INT_MAX) + 2 :
+                                                                  INT_MAX - 2;
+        constexpr qsizetype Size2 = Size1 + 2;
+
+        QBitArray ba(Size1, true);
+        QCOMPARE(ba.size(), Size1);
+        QCOMPARE(ba.at(Size1 - 1), true);
+
+        ba.resize(Size2);
+        QCOMPARE(ba.size(), Size2);
+        QCOMPARE(ba.at(Size1 - 1), true);
+        QCOMPARE(ba.at(Size1),     false);
+        QCOMPARE(ba.at(Size2 - 1), false);
+
+        QByteArray serialized;
+        if constexpr (sizeof(void*) > sizeof(int)) {
+            QDataStream ds(&serialized, QIODevice::WriteOnly);
+            ds.setVersion(QDataStream::Qt_5_15);
+            ds << ba;
+            QCOMPARE(ds.status(), QDataStream::Status::SizeLimitExceeded);
+            serialized.clear();
+        }
+        {
+            QDataStream ds(&serialized, QIODevice::WriteOnly);
+            ds << ba;
+            QCOMPARE(ds.status(), QDataStream::Status::Ok);
+        }
+        {
+            QDataStream ds(serialized);
+            QBitArray ba2;
+            ds >> ba2;
+            QCOMPARE(ds.status(), QDataStream::Status::Ok);
+            QT_TEST_EQUALITY_OPS(ba, ba2, true);
+        }
+    } catch (const std::bad_alloc &) {
+        QSKIP("Failed to allocate sufficient memory");
+    }
+}
 
 void tst_QBitArray::size_data()
 {
@@ -214,14 +273,20 @@ void tst_QBitArray::isEmpty()
     QVERIFY(!a1.isEmpty());
     QVERIFY(!a1.isNull());
     QVERIFY(a1.size() == 2);
+
+    QT_TEST_EQUALITY_OPS(a1, a2, false);
+    QT_TEST_EQUALITY_OPS(a2, a3, false);
+    QT_TEST_EQUALITY_OPS(QBitArray(), QBitArray(), true);
+    a3 = a2;
+    QT_TEST_EQUALITY_OPS(a2, a3, true);
 }
 
 void tst_QBitArray::swap()
 {
     QBitArray b1 = QStringToQBitArray("1"), b2 = QStringToQBitArray("10");
     b1.swap(b2);
-    QCOMPARE(b1,QStringToQBitArray("10"));
-    QCOMPARE(b2,QStringToQBitArray("1"));
+    QT_TEST_EQUALITY_OPS(b1,QStringToQBitArray("10"), true);
+    QT_TEST_EQUALITY_OPS(b2,QStringToQBitArray("1"), true);
 }
 
 void tst_QBitArray::fill()
@@ -271,7 +336,7 @@ void tst_QBitArray::toggleBit()
 
     input.toggleBit(index);
 
-    QCOMPARE(input, res);
+    QT_TEST_EQUALITY_OPS(input, res, true);
 }
 
 void tst_QBitArray::operator_andeq_data()
@@ -318,32 +383,32 @@ void tst_QBitArray::operator_andeq()
 
     QBitArray result = input1;
     result &= input2;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input1;
     result &= std::move(input2);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input1;
     result &= detached(input2);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 
     // operation is commutative
     result = input2;
     result &= input1;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input2;
     result &= std::move(input1);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input2;
     result &= detached(input1);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 
     // operation is idempotent
     result &= result;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result &= std::move(result);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result &= detached(result);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 }
 
 void tst_QBitArray::operator_and()
@@ -353,27 +418,27 @@ void tst_QBitArray::operator_and()
     QFETCH(QBitArray, res);
 
     QBitArray result = input1 & input2;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input1 & QBitArray(input2);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input1 & detached(input2);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 
     // operation is commutative
     result = input2 & input1;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input2 & QBitArray(input1);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input2 & detached(input1);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 
     // operation is idempotent
     result = result & result;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = result & QBitArray(result);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = result & detached(result);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 }
 
 void tst_QBitArray::operator_oreq_data()
@@ -424,32 +489,32 @@ void tst_QBitArray::operator_oreq()
 
     QBitArray result = input1;
     result |= input2;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input1;
     result |= QBitArray(input2);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input1;
     result |= detached(input2);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 
     // operation is commutative
     result = input2;
     result |= input1;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input2;
     result |= QBitArray(input1);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input2;
     result |= detached(input1);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 
     // operation is idempotent
     result |= result;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result |= QBitArray(result);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result |= detached(result);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 }
 
 void tst_QBitArray::operator_or()
@@ -459,27 +524,27 @@ void tst_QBitArray::operator_or()
     QFETCH(QBitArray, res);
 
     QBitArray result = input1 | input2;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input1 | QBitArray(input2);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input1 | detached(input2);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 
     // operation is commutative
     result = input2 | input1;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input2 | QBitArray(input1);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input2 | detached(input1);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 
     // operation is idempotent
     result = result | result;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = result | QBitArray(result);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = result | detached(result);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 }
 
 void tst_QBitArray::operator_xoreq_data()
@@ -528,55 +593,55 @@ void tst_QBitArray::operator_xoreq()
 
     QBitArray result = input1;
     result ^= input2;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input1;
     result ^= QBitArray(input2);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input1;
     result ^= detached(input2);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 
     // operation is commutative
     result = input2;
     result ^= input1;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input2;
     result ^= QBitArray(input1);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input2;
     result ^= detached(input1);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 
     // XORing with oneself is nilpotent
     result = input1;
     result ^= input1;
-    QCOMPARE(result, QBitArray(input1.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(input1.size()), true);
     result = input1;
     result ^= QBitArray(result);
-    QCOMPARE(result, QBitArray(input1.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(input1.size()), true);
     result = input1;
     result ^= detached(result);
-    QCOMPARE(result, QBitArray(input1.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(input1.size()), true);
 
     result = input2;
     result ^= input2;
-    QCOMPARE(result, QBitArray(input2.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(input2.size()), true);
     result = input2;
     result ^= QBitArray(input2);
-    QCOMPARE(result, QBitArray(input2.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(input2.size()), true);
     result = input2;
     result ^= detached(input2);
-    QCOMPARE(result, QBitArray(input2.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(input2.size()), true);
 
     result = res;
     result ^= res;
-    QCOMPARE(result, QBitArray(res.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(res.size()), true);
     result = res;
     result ^= QBitArray(res);
-    QCOMPARE(result, QBitArray(res.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(res.size()), true);
     result = res;
     result ^= detached(res);
-    QCOMPARE(result, QBitArray(res.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(res.size()), true);
 }
 
 void tst_QBitArray::operator_xor()
@@ -586,41 +651,41 @@ void tst_QBitArray::operator_xor()
     QFETCH(QBitArray, res);
 
     QBitArray result = input1 ^ input2;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input1 ^ QBitArray(input2);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input1 ^ detached(input2);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 
     // operation is commutative
     result = input2 ^ input1;
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input2 ^ QBitArray(input1);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
     result = input2 ^ detached(input1);
-    QCOMPARE(result, res);
+    QT_TEST_EQUALITY_OPS(result, res, true);
 
     // XORing with oneself is nilpotent
     result = input1 ^ input1;
-    QCOMPARE(result, QBitArray(input1.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(input1.size()), true);
     result = input1 ^ QBitArray(input1);
-    QCOMPARE(result, QBitArray(input1.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(input1.size()), true);
     result = input1 ^ detached(input1);
-    QCOMPARE(result, QBitArray(input1.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(input1.size()), true);
 
     result = input2 ^ input2;
-    QCOMPARE(result, QBitArray(input2.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(input2.size()), true);
     result = input2 ^ QBitArray(input2);
-    QCOMPARE(result, QBitArray(input2.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(input2.size()), true);
     result = input2 ^ detached(input2);
-    QCOMPARE(result, QBitArray(input2.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(input2.size()), true);
 
     result = res ^ res;
-    QCOMPARE(result, QBitArray(res.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(res.size()), true);
     result = res ^ QBitArray(res);
-    QCOMPARE(result, QBitArray(res.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(res.size()), true);
     result = res ^ detached(res);
-    QCOMPARE(result, QBitArray(res.size()));
+    QT_TEST_EQUALITY_OPS(result, QBitArray(res.size()), true);
 }
 
 void tst_QBitArray::operator_neg_data()
@@ -669,8 +734,8 @@ void tst_QBitArray::operator_neg()
 
     input = ~input;
 
-    QCOMPARE(input, res);
-    QCOMPARE(~~input, res);     // performs two in-place negations
+    QT_TEST_EQUALITY_OPS(input, res, true);
+    QT_TEST_EQUALITY_OPS(~~input, res, true);     // performs two in-place negations
 }
 
 void tst_QBitArray::datastream_data()
@@ -730,15 +795,15 @@ void tst_QBitArray::datastream()
     QCOMPARE(array1.count(true), onBits);
     QCOMPARE(array1.count(false), numBits - onBits);
 
-    QCOMPARE(array1, bits);
-    QCOMPARE(array2, bits);
-    QCOMPARE(array3, bits);
+    QT_TEST_EQUALITY_OPS(array1, bits, true);
+    QT_TEST_EQUALITY_OPS(array2, bits, true);
+    QT_TEST_EQUALITY_OPS(array3, bits, true);
 }
 
 void tst_QBitArray::invertOnNull() const
 {
     QBitArray a;
-    QCOMPARE(a = ~a, QBitArray());
+    QT_TEST_EQUALITY_OPS(a = ~a, QBitArray(), true);
 }
 
 void tst_QBitArray::operator_noteq_data()
@@ -779,7 +844,7 @@ void tst_QBitArray::operator_noteq()
     QFETCH(bool, res);
 
     bool b = input1 != input2;
-    QCOMPARE(b, res);
+    QT_TEST_EQUALITY_OPS(b, res, true);
 }
 
 void tst_QBitArray::resize()
@@ -788,22 +853,22 @@ void tst_QBitArray::resize()
     QBitArray a = QStringToQBitArray(QString("11"));
     a.resize(10);
     QVERIFY(a.size() == 10);
-    QCOMPARE( a, QStringToQBitArray(QString("1100000000")) );
+    QT_TEST_EQUALITY_OPS( a, QStringToQBitArray(QString("1100000000")), true);
 
     a.setBit(9);
     a.resize(9);
     // now the bit in a should have been gone:
-    QCOMPARE( a, QStringToQBitArray(QString("110000000")) );
+    QT_TEST_EQUALITY_OPS( a, QStringToQBitArray(QString("110000000")), true);
 
     // grow the array back and check the new bit
     a.resize(10);
-    QCOMPARE( a, QStringToQBitArray(QString("1100000000")) );
+    QT_TEST_EQUALITY_OPS( a, QStringToQBitArray(QString("1100000000")), true);
 
     // other test with and
     a.resize(9);
     QBitArray b = QStringToQBitArray(QString("1111111111"));
     b &= a;
-    QCOMPARE( b, QStringToQBitArray(QString("1100000000")) );
+    QT_TEST_EQUALITY_OPS( b, QStringToQBitArray(QString("1100000000")), true);
 
 }
 
@@ -857,9 +922,9 @@ void tst_QBitArray::fromBits()
     QFETCH(QBitArray, expected);
 
     QBitArray fromBits = QBitArray::fromBits(data, size);
-    QCOMPARE(fromBits, expected);
+    QT_TEST_EQUALITY_OPS(fromBits, expected, true);
 
-    QCOMPARE(QBitArray::fromBits(fromBits.bits(), fromBits.size()), expected);
+    QT_TEST_EQUALITY_OPS(QBitArray::fromBits(fromBits.bits(), fromBits.size()), expected, true);
 }
 
 void tst_QBitArray::toUInt32_data()

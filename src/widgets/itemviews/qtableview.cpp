@@ -595,7 +595,7 @@ void QTableViewPrivate::init()
     cornerWidget->setFocusPolicy(Qt::NoFocus);
     cornerWidgetConnection = QObject::connect(
           cornerWidget, &QTableCornerButton::clicked,
-          q, &QTableView::reset);
+          q, &QTableView::selectAll);
 #endif
 }
 
@@ -2432,12 +2432,12 @@ int QTableView::sizeHintForRow(int row) const
             break;
     }
 
-    int actualRight = d->model->columnCount(d->root) - 1;
+    const int actualRight = d->model->columnCount(d->root) - 1;
     int idxLeft = left;
     int idxRight = column - 1;
 
-    if (maximumProcessCols == 0)
-        columnsProcessed = 0; // skip the while loop
+    if (maximumProcessCols == 0 || actualRight < idxLeft)
+        columnsProcessed = maximumProcessCols; // skip the while loop
 
     while (columnsProcessed != maximumProcessCols && (idxLeft > 0 || idxRight < actualRight)) {
         int logicalIdx  = -1;
@@ -2461,11 +2461,10 @@ int QTableView::sizeHintForRow(int row) const
                 break;
             }
         }
-        if (logicalIdx < 0)
-            continue;
-
-        index = d->model->index(row, logicalIdx, d->root);
-        hint = d->heightHintForIndex(index, hint, option);
+        if (logicalIdx >= 0) {
+            index = d->model->index(row, logicalIdx, d->root);
+            hint = d->heightHintForIndex(index, hint, option);
+        }
         ++columnsProcessed;
     }
 
@@ -2521,12 +2520,12 @@ int QTableView::sizeHintForColumn(int column) const
             break;
     }
 
-    int actualBottom = d->model->rowCount(d->root) - 1;
+    const int actualBottom = d->model->rowCount(d->root) - 1;
     int idxTop = top;
     int idxBottom = row - 1;
 
-    if (maximumProcessRows == 0)
-        rowsProcessed = 0;  // skip the while loop
+    if (maximumProcessRows == 0 || actualBottom < idxTop)
+        rowsProcessed = maximumProcessRows;  // skip the while loop
 
     while (rowsProcessed != maximumProcessRows && (idxTop > 0 || idxBottom < actualBottom)) {
         int logicalIdx  = -1;
@@ -2550,11 +2549,10 @@ int QTableView::sizeHintForColumn(int column) const
                 break;
             }
         }
-        if (logicalIdx < 0)
-            continue;
-
-        index = d->model->index(logicalIdx, column, d->root);
-        hint = d->widthHintForIndex(index, hint, option);
+        if (logicalIdx >= 0) {
+            index = d->model->index(logicalIdx, column, d->root);
+            hint = d->widthHintForIndex(index, hint, option);
+        }
         ++rowsProcessed;
     }
 

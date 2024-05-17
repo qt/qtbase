@@ -215,6 +215,7 @@ struct QGles2TextureRenderTarget : public QRhiTextureRenderTarget
 
     QGles2RenderTargetData d;
     GLuint framebuffer = 0;
+    GLuint nonMsaaThrowawayDepthTexture = 0;
     friend class QRhiGles2;
 };
 
@@ -337,7 +338,8 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             BindComputePipeline,
             Dispatch,
             BarriersForPass,
-            Barrier
+            Barrier,
+            InvalidateFramebuffer
         };
         Cmd cmd;
 
@@ -505,6 +507,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 GLuint dstTexture;
                 int dstLevel;
                 int dstLayer;
+                bool isDepthStencil;
             } blitFromRenderbuffer;
             struct {
                 GLenum srcTarget;
@@ -517,6 +520,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 GLuint dstTexture;
                 int dstLevel;
                 int dstLayer;
+                bool isDepthStencil;
             } blitFromTexture;
             struct {
                 GLenum target;
@@ -536,6 +540,10 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
             struct {
                 GLbitfield barriers;
             } barrier;
+            struct {
+                int attCount;
+                GLenum att[3];
+            } invalidateFramebuffer;
         } args;
     };
 
@@ -948,7 +956,9 @@ public:
                                                               GLint, GLsizei) = nullptr;
     void (QOPENGLF_APIENTRYP glQueryCounter)(GLuint, GLenum) = nullptr;
     void (QOPENGLF_APIENTRYP glGetQueryObjectui64v)(GLuint, GLenum, quint64 *) = nullptr;
-
+    void (QOPENGLF_APIENTRYP glObjectLabel)(GLenum, GLuint, GLsizei, const GLchar *) = nullptr;
+    void (QOPENGLF_APIENTRYP glFramebufferTexture2DMultisampleEXT)(GLenum, GLenum, GLenum, GLuint, GLint, GLsizei) = nullptr;
+    void (QOPENGLF_APIENTRYP glFramebufferTextureMultisampleMultiviewOVR)(GLenum, GLenum, GLuint, GLint, GLsizei, GLint, GLsizei) = nullptr;
     uint vao = 0;
     struct Caps {
         Caps()
@@ -980,7 +990,7 @@ public:
               depthTexture(false),
               packedDepthStencil(false),
               needsDepthStencilCombinedAttach(false),
-              srgbCapableDefaultFramebuffer(false),
+              srgbWriteControl(false),
               coreProfile(false),
               uniformBuffers(false),
               elementIndexUint(false),
@@ -1003,7 +1013,11 @@ public:
               hasDrawBuffersFunc(false),
               halfAttributes(false),
               multiView(false),
-              timestamps(false)
+              timestamps(false),
+              objectLabel(false),
+              glesMultisampleRenderToTexture(false),
+              glesMultiviewMultisampleRenderToTexture(false),
+              unpackRowLength(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -1035,7 +1049,7 @@ public:
         uint depthTexture : 1;
         uint packedDepthStencil : 1;
         uint needsDepthStencilCombinedAttach : 1;
-        uint srgbCapableDefaultFramebuffer : 1;
+        uint srgbWriteControl : 1;
         uint coreProfile : 1;
         uint uniformBuffers : 1;
         uint elementIndexUint : 1;
@@ -1059,6 +1073,10 @@ public:
         uint halfAttributes : 1;
         uint multiView : 1;
         uint timestamps : 1;
+        uint objectLabel : 1;
+        uint glesMultisampleRenderToTexture : 1;
+        uint glesMultiviewMultisampleRenderToTexture : 1;
+        uint unpackRowLength : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;
@@ -1092,6 +1110,7 @@ public:
             } renderbuffer;
             struct {
                 GLuint framebuffer;
+                GLuint nonMsaaThrowawayDepthTexture;
             } textureRenderTarget;
         };
     };

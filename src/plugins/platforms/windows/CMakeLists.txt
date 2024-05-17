@@ -8,14 +8,13 @@
 qt_internal_add_plugin(QWindowsIntegrationPlugin
     OUTPUT_NAME qwindows
     PLUGIN_TYPE platforms
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES windows
+    DEFAULT_IF "windows" IN_LIST QT_QPA_PLATFORMS
     SOURCES
         main.cpp
         qtwindowsglobal.h
         qwin10helpers.cpp qwin10helpers.h
         qwindowsapplication.cpp qwindowsapplication.h
         qwindowsbackingstore.cpp qwindowsbackingstore.h
-        qwindowscombase.h
         qwindowscontext.cpp qwindowscontext.h
         qwindowscursor.cpp qwindowscursor.h
         qwindowsdialoghelpers.cpp qwindowsdialoghelpers.h
@@ -176,6 +175,7 @@ endif()
 
 qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessibility
     SOURCES
+        uiautomation/qwindowsuiautomation.cpp uiautomation/qwindowsuiautomation.h
         uiautomation/qwindowsuiaaccessibility.cpp uiautomation/qwindowsuiaaccessibility.h
         uiautomation/qwindowsuiabaseprovider.cpp uiautomation/qwindowsuiabaseprovider.h
         uiautomation/qwindowsuiaexpandcollapseprovider.cpp uiautomation/qwindowsuiaexpandcollapseprovider.h
@@ -196,6 +196,16 @@ qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION QT_FEATURE_accessi
         uiautomation/qwindowsuiavalueprovider.cpp uiautomation/qwindowsuiavalueprovider.h
         uiautomation/qwindowsuiawindowprovider.cpp uiautomation/qwindowsuiawindowprovider.h
 )
+
+if(QT_FEATURE_accessibility)
+    find_library(UI_AUTOMATION_LIBRARY uiautomationcore)
+    if(UI_AUTOMATION_LIBRARY)
+        qt_internal_extend_target(QWindowsIntegrationPlugin
+            LIBRARIES
+                ${UI_AUTOMATION_LIBRARY}
+        )
+    endif()
+endif()
 
 qt_internal_extend_target(QWindowsIntegrationPlugin CONDITION MINGW AND QT_FEATURE_accessibility
     LIBRARIES

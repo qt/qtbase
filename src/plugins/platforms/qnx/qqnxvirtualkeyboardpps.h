@@ -5,11 +5,13 @@
 #define VIRTUALKEYBOARDPPS_H
 
 #include "qqnxabstractvirtualkeyboard.h"
+#include <QtCore/QLoggingCategory>
 
 #include <sys/pps.h>
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(lcQpaQnxVirtualKeyboard);
 
 class QSocketNotifier;
 

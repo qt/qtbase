@@ -66,6 +66,7 @@ public:
 
 class QNonContiguousByteDeviceByteArrayImpl : public QNonContiguousByteDevice
 {
+    Q_OBJECT
 public:
     explicit QNonContiguousByteDeviceByteArrayImpl(QByteArray *ba);
     ~QNonContiguousByteDeviceByteArrayImpl();
@@ -83,6 +84,7 @@ protected:
 
 class QNonContiguousByteDeviceRingBufferImpl : public QNonContiguousByteDevice
 {
+    Q_OBJECT
 public:
     explicit QNonContiguousByteDeviceRingBufferImpl(std::shared_ptr<QRingBuffer> rb);
     ~QNonContiguousByteDeviceRingBufferImpl();
@@ -143,6 +145,7 @@ protected:
 // ... and the reverse thing
 class QByteDeviceWrappingIoDevice : public QIODevice
 {
+    Q_OBJECT
 public:
     explicit QByteDeviceWrappingIoDevice(QNonContiguousByteDevice *bd);
     ~QByteDeviceWrappingIoDevice();

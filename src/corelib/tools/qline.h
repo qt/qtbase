@@ -48,12 +48,20 @@ public:
     inline void setPoints(const QPoint &p1, const QPoint &p2);
     inline void setLine(int x1, int y1, int x2, int y2);
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     constexpr inline bool operator==(const QLine &d) const noexcept;
-    constexpr inline bool operator!=(const QLine &d) const noexcept { return !(*this == d); }
+    constexpr inline bool operator!=(const QLine &d) const noexcept { return !operator==(d); }
+#endif
 
     [[nodiscard]] constexpr inline QLineF toLineF() const noexcept;
 
 private:
+    friend constexpr bool comparesEqual(const QLine &lhs, const QLine &rhs) noexcept
+    { return lhs.pt1 == rhs.pt1 && lhs.pt2 == rhs.pt2; }
+#if !QT_CORE_REMOVED_SINCE(6, 8)
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QLine)
+#endif
+
     QPoint pt1, pt2;
 };
 Q_DECLARE_TYPEINFO(QLine, Q_PRIMITIVE_TYPE);
@@ -161,10 +169,12 @@ inline void QLine::setLine(int aX1, int aY1, int aX2, int aY2)
     pt2 = QPoint(aX2, aY2);
 }
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
 constexpr inline bool QLine::operator==(const QLine &d) const noexcept
 {
-    return pt1 == d.pt1 && pt2 == d.pt2;
+    return comparesEqual(*this, d);
 }
+#endif
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_CORE_EXPORT QDebug operator<<(QDebug d, const QLine &p);
@@ -233,12 +243,30 @@ public:
     inline void setPoints(const QPointF &p1, const QPointF &p2);
     inline void setLine(qreal x1, qreal y1, qreal x2, qreal y2);
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     constexpr inline bool operator==(const QLineF &d) const;
-    constexpr inline bool operator!=(const QLineF &d) const { return !(*this == d); }
+    constexpr inline bool operator!=(const QLineF &d) const { return !operator==(d); }
+#endif
 
     constexpr QLine toLine() const;
 
 private:
+    friend constexpr bool comparesEqual(const QLineF &lhs, const QLineF &rhs) noexcept
+    { return lhs.pt1 == rhs.pt1 && lhs.pt2 == rhs.pt2; }
+#if !QT_CORE_REMOVED_SINCE(6, 8)
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QLineF)
+#endif
+
+    friend constexpr bool comparesEqual(const QLineF &lhs, const QLine &rhs) noexcept
+    { return comparesEqual(lhs, rhs.toLineF()); }
+    Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(QLineF, QLine)
+
+    friend constexpr bool qFuzzyCompare(const QLineF &lhs, const QLineF &rhs) noexcept
+    { return qFuzzyCompare(lhs.pt1, rhs.pt1) && qFuzzyCompare(lhs.pt2, rhs.pt2); }
+
+    friend constexpr bool qFuzzyIsNull(const QLineF &line) noexcept
+    { return qFuzzyCompare(line.pt1, line.pt2); }
+
     QPointF pt1, pt2;
 };
 Q_DECLARE_TYPEINFO(QLineF, Q_PRIMITIVE_TYPE);
@@ -283,7 +311,7 @@ constexpr inline qreal QLineF::y2() const
 
 constexpr inline bool QLineF::isNull() const
 {
-    return qFuzzyCompare(pt1.x(), pt2.x()) && qFuzzyCompare(pt1.y(), pt2.y());
+    return qFuzzyCompare(pt1, pt2);
 }
 
 constexpr inline QPointF QLineF::p1() const
@@ -383,12 +411,12 @@ inline void QLineF::setLine(qreal aX1, qreal aY1, qreal aX2, qreal aY2)
     pt2 = QPointF(aX2, aY2);
 }
 
-
+#if QT_CORE_REMOVED_SINCE(6, 8)
 constexpr inline bool QLineF::operator==(const QLineF &d) const
 {
-    return pt1 == d.pt1 && pt2 == d.pt2;
+    return comparesEqual(*this, d);
 }
-
+#endif
 
 
 #ifndef QT_NO_DEBUG_STREAM

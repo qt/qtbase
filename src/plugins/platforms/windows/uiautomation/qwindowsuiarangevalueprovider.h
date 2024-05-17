@@ -13,7 +13,7 @@ QT_BEGIN_NAMESPACE
 
 // Implements the Range Value control pattern provider.
 class QWindowsUiaRangeValueProvider : public QWindowsUiaBaseProvider,
-                                      public QWindowsComBase<IRangeValueProvider>
+                                      public QComObject<IRangeValueProvider>
 {
     Q_DISABLE_COPY_MOVE(QWindowsUiaRangeValueProvider)
 public:

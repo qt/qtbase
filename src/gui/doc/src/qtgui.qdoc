@@ -15,6 +15,23 @@
 */
 
 /*!
+    \module QtGuiPrivate
+    \title Qt GUI Private C++ Classes
+    \qtcmakepackage Gui
+    \qtvariable gui-private
+
+    \brief Provides access to private GUI functionality.
+
+    Use the following CMake commands in your \c {CMakeLists.txt} to access
+    private Qt GUI APIs:
+
+    \badcode
+    find_package(Qt6 REQUIRED COMPONENTS Gui)
+    target_link_libraries(mytarget PRIVATE Qt6::GuiPrivate)
+    \endcode
+*/
+
+/*!
     \page qtgui-index.html
     \title Qt GUI
 

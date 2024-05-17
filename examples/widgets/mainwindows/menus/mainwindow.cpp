@@ -160,62 +160,73 @@ void MainWindow::aboutQt()
 void MainWindow::createActions()
 {
 //! [5]
-    newAct = new QAction(tr("&New"), this);
+    newAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentNew),
+                         tr("&New"), this);
     newAct->setShortcuts(QKeySequence::New);
     newAct->setStatusTip(tr("Create a new file"));
     connect(newAct, &QAction::triggered, this, &MainWindow::newFile);
 //! [4]
 
-    openAct = new QAction(tr("&Open..."), this);
+    openAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentOpen),
+                          tr("&Open..."), this);
     openAct->setShortcuts(QKeySequence::Open);
     openAct->setStatusTip(tr("Open an existing file"));
     connect(openAct, &QAction::triggered, this, &MainWindow::open);
 //! [5]
 
-    saveAct = new QAction(tr("&Save"), this);
+    saveAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSave),
+                          tr("&Save"), this);
     saveAct->setShortcuts(QKeySequence::Save);
     saveAct->setStatusTip(tr("Save the document to disk"));
     connect(saveAct, &QAction::triggered, this, &MainWindow::save);
 
-    printAct = new QAction(tr("&Print..."), this);
+    printAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentPrint),
+                           tr("&Print..."), this);
     printAct->setShortcuts(QKeySequence::Print);
     printAct->setStatusTip(tr("Print the document"));
     connect(printAct, &QAction::triggered, this, &MainWindow::print);
 
-    exitAct = new QAction(tr("E&xit"), this);
+    exitAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::ApplicationExit),
+                          tr("E&xit"), this);
     exitAct->setShortcuts(QKeySequence::Quit);
     exitAct->setStatusTip(tr("Exit the application"));
     connect(exitAct, &QAction::triggered, this, &QWidget::close);
 
-    undoAct = new QAction(tr("&Undo"), this);
+    undoAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditUndo),
+                          tr("&Undo"), this);
     undoAct->setShortcuts(QKeySequence::Undo);
     undoAct->setStatusTip(tr("Undo the last operation"));
     connect(undoAct, &QAction::triggered, this, &MainWindow::undo);
 
-    redoAct = new QAction(tr("&Redo"), this);
+    redoAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditRedo),
+                          tr("&Redo"), this);
     redoAct->setShortcuts(QKeySequence::Redo);
     redoAct->setStatusTip(tr("Redo the last operation"));
     connect(redoAct, &QAction::triggered, this, &MainWindow::redo);
 
-    cutAct = new QAction(tr("Cu&t"), this);
+    cutAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditCut),
+                         tr("Cu&t"), this);
     cutAct->setShortcuts(QKeySequence::Cut);
     cutAct->setStatusTip(tr("Cut the current selection's contents to the "
                             "clipboard"));
     connect(cutAct, &QAction::triggered, this, &MainWindow::cut);
 
-    copyAct = new QAction(tr("&Copy"), this);
+    copyAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditCopy),
+                          tr("&Copy"), this);
     copyAct->setShortcuts(QKeySequence::Copy);
     copyAct->setStatusTip(tr("Copy the current selection's contents to the "
                              "clipboard"));
     connect(copyAct, &QAction::triggered, this, &MainWindow::copy);
 
-    pasteAct = new QAction(tr("&Paste"), this);
+    pasteAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::EditPaste),
+                           tr("&Paste"), this);
     pasteAct->setShortcuts(QKeySequence::Paste);
     pasteAct->setStatusTip(tr("Paste the clipboard's contents into the current "
                               "selection"));
     connect(pasteAct, &QAction::triggered, this, &MainWindow::paste);
 
-    boldAct = new QAction(tr("&Bold"), this);
+    boldAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::FormatTextBold),
+                          tr("&Bold"), this);
     boldAct->setCheckable(true);
     boldAct->setShortcut(QKeySequence::Bold);
     boldAct->setStatusTip(tr("Make the text bold"));
@@ -225,7 +236,8 @@ void MainWindow::createActions()
     boldFont.setBold(true);
     boldAct->setFont(boldFont);
 
-    italicAct = new QAction(tr("&Italic"), this);
+    italicAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::FormatTextItalic),
+                            tr("&Italic"), this);
     italicAct->setCheckable(true);
     italicAct->setShortcut(QKeySequence::Italic);
     italicAct->setStatusTip(tr("Make the text italic"));
@@ -245,7 +257,8 @@ void MainWindow::createActions()
     connect(setParagraphSpacingAct, &QAction::triggered,
             this, &MainWindow::setParagraphSpacing);
 
-    aboutAct = new QAction(tr("&About"), this);
+    aboutAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::HelpAbout),
+                           tr("&About"), this);
     aboutAct->setStatusTip(tr("Show the application's About box"));
     connect(aboutAct, &QAction::triggered, this, &MainWindow::about);
 
@@ -254,25 +267,29 @@ void MainWindow::createActions()
     connect(aboutQtAct, &QAction::triggered, qApp, &QApplication::aboutQt);
     connect(aboutQtAct, &QAction::triggered, this, &MainWindow::aboutQt);
 
-    leftAlignAct = new QAction(tr("&Left Align"), this);
+    leftAlignAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::FormatJustifyLeft),
+                               tr("&Left Align"), this);
     leftAlignAct->setCheckable(true);
     leftAlignAct->setShortcut(tr("Ctrl+L"));
     leftAlignAct->setStatusTip(tr("Left align the selected text"));
     connect(leftAlignAct, &QAction::triggered, this, &MainWindow::leftAlign);
 
-    rightAlignAct = new QAction(tr("&Right Align"), this);
+    rightAlignAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::FormatJustifyRight),
+                                tr("&Right Align"), this);
     rightAlignAct->setCheckable(true);
     rightAlignAct->setShortcut(tr("Ctrl+R"));
     rightAlignAct->setStatusTip(tr("Right align the selected text"));
     connect(rightAlignAct, &QAction::triggered, this, &MainWindow::rightAlign);
 
-    justifyAct = new QAction(tr("&Justify"), this);
+    justifyAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::FormatJustifyFill),
+                             tr("&Justify"), this);
     justifyAct->setCheckable(true);
     justifyAct->setShortcut(tr("Ctrl+J"));
     justifyAct->setStatusTip(tr("Justify the selected text"));
     connect(justifyAct, &QAction::triggered, this, &MainWindow::justify);
 
-    centerAct = new QAction(tr("&Center"), this);
+    centerAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::FormatJustifyCenter),
+                            tr("&Center"), this);
     centerAct->setCheckable(true);
     centerAct->setShortcut(tr("Ctrl+E"));
     centerAct->setStatusTip(tr("Center the selected text"));

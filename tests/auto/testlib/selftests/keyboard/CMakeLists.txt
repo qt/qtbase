@@ -7,6 +7,7 @@
 
 qt_internal_add_executable(keyboard
     NO_INSTALL
+    EXCEPTIONS
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES
         tst_keyboard.cpp

@@ -69,7 +69,11 @@ function(qt_internal_add_linker_version_script target)
             endforeach()
         endforeach()
 
-        string(APPEND contents "\n};\nQt_${PROJECT_VERSION_MAJOR}_PRIVATE_API { qt_private_api_tag*;\n")
+        string(APPEND contents "\n};\nQt_${PROJECT_VERSION_MAJOR}")
+        if(QT_FEATURE_elf_private_full_version)
+            string(APPEND contents ".${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+        endif()
+        string(APPEND contents "_PRIVATE_API { qt_private_api_tag*;\n")
         if(arg_PRIVATE_HEADERS)
             foreach(ph ${arg_PRIVATE_HEADERS})
                 string(APPEND contents "    @FILE:${ph}@\n")
@@ -400,7 +404,7 @@ function(qt_internal_enable_unicode_defines)
         set(no_unicode_condition
             "$<NOT:$<BOOL:$<TARGET_PROPERTY:QT_NO_UNICODE_DEFINES>>>")
         target_compile_definitions(Platform
-            INTERFACE "$<${no_unicode_condition}:UNICODE;_UNICODE>")
+            INTERFACE "$<${no_unicode_condition}:UNICODE$<SEMICOLON>_UNICODE>")
     endif()
 endfunction()
 

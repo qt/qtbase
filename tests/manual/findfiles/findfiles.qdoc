@@ -86,7 +86,7 @@
     and a stretchable space in a separate \l QHBoxLayout first, to make the
     buttons appear in the \c Window widget's bottom right corner.
 
-    Alternatively, we could have used Qt Designer to construct a UI file,
+    Alternatively, we could have used \QD to construct a UI file,
     and \l {uic} to generate this code.
 
     \snippet dialogs/findfiles/window.cpp 1

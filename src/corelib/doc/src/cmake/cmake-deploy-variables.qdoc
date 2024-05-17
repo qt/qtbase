@@ -104,15 +104,14 @@ should not be used for that scenario.
 
 \include cmake-deploy-var-usage.qdocinc
 
-\cmakevariablesince 6.8
+\cmakevariablesince 6.7
 
-Projects should use \c QT_DEPLOY_LIBEXEC_DIR in their deploy scripts to avoid
-hard-coding a particular directory in which to deploy the following types of
-binaries:
+On Unix derivatives, projects should use \c QT_DEPLOY_LIBEXEC_DIR in their
+deploy scripts to avoid hard-coding a particular directory in which to deploy
+helper executables that are local to the project.
 
-\list
-\li Helper executables that are local to the project on Unix derivatives.
-\endlist
+For example, projects using QtWebEngine would deploy the \c QtWebEngineProcess
+executable to this directory.
 
 \c QT_DEPLOY_LIBEXEC_DIR defaults to the value of \c${CMAKE_INSTALL_LIBEXECDIR}
 (usually \c{libexec}), which is provided by CMake's \l{GNUInstallDirs} module.

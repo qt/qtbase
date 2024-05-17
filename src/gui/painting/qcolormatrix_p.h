@@ -1,4 +1,4 @@
-// Copyright (C) 2020 The Qt Company Ltd.
+// Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef QCOLORMATRIX_H
@@ -18,6 +18,7 @@
 #include <QtGui/qtguiglobal.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/private/qglobal_p.h>
+#include <QtCore/private/qsimd_p.h>
 #include <cmath>
 
 QT_BEGIN_NAMESPACE
@@ -27,25 +28,24 @@ class QColorVector
 {
 public:
     QColorVector() = default;
-    constexpr QColorVector(float x, float y, float z) : x(x), y(y), z(z) { }
-    explicit constexpr QColorVector(const QPointF &chr) // from XY chromaticity
-            : x(chr.x() / chr.y())
-            , y(1.0f)
-            , z((1.0 - chr.x() - chr.y()) / chr.y())
-    { }
-    float x = 0.0f; // X, x or red
-    float y = 0.0f; // Y, y or green
-    float z = 0.0f; // Z, Y or blue
-    float _unused = 0.0f;
+    constexpr QColorVector(float x, float y, float z, float w = 0.0f) noexcept : x(x), y(y), z(z), w(w) { }
+    static constexpr QColorVector fromXYChromaticity(QPointF chr)
+    { return {float(chr.x() / chr.y()), 1.0f, float((1.0f - chr.x() - chr.y()) / chr.y())}; }
+    float x = 0.0f; // X, x, L, or red/cyan
+    float y = 0.0f; // Y, y, a, or green/magenta
+    float z = 0.0f; // Z, Y, b, or blue/yellow
+    float w = 0.0f; // unused, or black
 
-    friend inline bool operator==(const QColorVector &v1, const QColorVector &v2);
-    friend inline bool operator!=(const QColorVector &v1, const QColorVector &v2);
-    bool isNull() const
+    constexpr bool isNull() const noexcept
     {
-        return !x && !y && !z;
+        return !x && !y && !z && !w;
+    }
+    bool isValid() const noexcept
+    {
+        return std::isfinite(x) && std::isfinite(y) && std::isfinite(z);
     }
 
-    static bool isValidChromaticity(const QPointF &chr)
+    static constexpr bool isValidChromaticity(const QPointF &chr)
     {
         if (chr.x() < qreal(0.0) || chr.x() > qreal(1.0))
             return false;
@@ -56,25 +56,148 @@ public:
         return true;
     }
 
+    constexpr QColorVector operator*(float f) const { return QColorVector(x * f, y * f, z * f, w * f); }
+    constexpr QColorVector operator+(const QColorVector &v) const { return QColorVector(x + v.x, y + v.y, z + v.z, w + v.w); }
+    constexpr QColorVector operator-(const QColorVector &v) const { return QColorVector(x - v.x, y - v.y, z - v.z, w - v.w); }
+    void operator+=(const QColorVector &v) { x += v.x; y += v.y; z += v.z; w += v.w; }
+
+    QPointF toChromaticity() const
+    {
+        if (isNull())
+            return QPointF();
+        float mag = 1.0f / (x + y + z);
+        return QPointF(x * mag, y * mag);
+    }
+
     // Common whitepoints:
     static constexpr QPointF D50Chromaticity() { return QPointF(0.34567, 0.35850); }
     static constexpr QPointF D65Chromaticity() { return QPointF(0.31271, 0.32902); }
-    static constexpr QColorVector D50() { return QColorVector(D50Chromaticity()); }
-    static constexpr QColorVector D65() { return QColorVector(D65Chromaticity()); }
+    static constexpr QColorVector D50() { return fromXYChromaticity(D50Chromaticity()); }
+    static constexpr QColorVector D65() { return fromXYChromaticity(D65Chromaticity()); }
+
+    QColorVector xyzToLab() const
+    {
+        constexpr QColorVector ref = D50();
+        constexpr float eps = 0.008856f;
+        constexpr float kap = 903.3f;
+#if defined(__SSE2__)
+        const __m128 iref = _mm_setr_ps(1.f / ref.x, 1.f / ref.y, 1.f / ref.z, 0.f);
+        __m128 v = _mm_loadu_ps(&x);
+        v = _mm_mul_ps(v, iref);
+
+        const __m128 f3 = _mm_set1_ps(3.f);
+        __m128 est = _mm_add_ps(_mm_set1_ps(0.25f), _mm_mul_ps(v, _mm_set1_ps(0.75f))); // float est = 0.25f + (x * 0.75f);
+        __m128 estsq = _mm_mul_ps(est, est);
+        est = _mm_sub_ps(est, _mm_mul_ps(_mm_sub_ps(_mm_mul_ps(estsq, est), v),
+                                         _mm_rcp_ps(_mm_mul_ps(estsq, f3)))); // est -= ((est * est * est) - x) / (3.f * (est * est));
+        estsq = _mm_mul_ps(est, est);
+        est = _mm_sub_ps(est, _mm_mul_ps(_mm_sub_ps(_mm_mul_ps(estsq, est), v),
+                                         _mm_rcp_ps(_mm_mul_ps(estsq, f3)))); // est -= ((est * est * est) - x) / (3.f * (est * est));
+        estsq = _mm_mul_ps(est, est);
+        est = _mm_sub_ps(est, _mm_mul_ps(_mm_sub_ps(_mm_mul_ps(estsq, est), v),
+                                         _mm_rcp_ps(_mm_mul_ps(estsq, f3)))); // est -= ((est * est * est) - x) / (3.f * (est * est));
+        estsq = _mm_mul_ps(est, est);
+        est = _mm_sub_ps(est, _mm_mul_ps(_mm_sub_ps(_mm_mul_ps(estsq, est), v),
+                                         _mm_rcp_ps(_mm_mul_ps(estsq, f3)))); // est -= ((est * est * est) - x) / (3.f * (est * est));
+
+        __m128 kapmul = _mm_mul_ps(_mm_add_ps(_mm_mul_ps(v, _mm_set1_ps(kap)), _mm_set1_ps(16.f)),
+                                   _mm_set1_ps(1.f / 116.f)); // f_ = (kap * f_ + 16.f) * (1.f / 116.f);
+        __m128 cmpgt = _mm_cmpgt_ps(v, _mm_set1_ps(eps)); // if (f_ > eps)
+#if defined(__SSE4_1__)
+        v = _mm_blendv_ps(kapmul, est, cmpgt); // if (..) f_ =..  else f_ =..
+#else
+        v = _mm_or_ps(_mm_and_ps(cmpgt, est), _mm_andnot_ps(cmpgt, kapmul));
+#endif
+        alignas(16) float out[4];
+        _mm_store_ps(out, v);
+        const float L = 116.f * out[1] - 16.f;
+        const float a = 500.f * (out[0] - out[1]);
+        const float b = 200.f * (out[1] - out[2]);
+#else
+        float xr = x * (1.f / ref.x);
+        float yr = y * (1.f / ref.y);
+        float zr = z * (1.f / ref.z);
+
+        float fx, fy, fz;
+        if (xr > eps)
+            fx = fastCbrt(xr);
+        else
+            fx = (kap * xr + 16.f) * (1.f / 116.f);
+        if (yr > eps)
+            fy = fastCbrt(yr);
+        else
+            fy = (kap * yr + 16.f) * (1.f / 116.f);
+        if (zr > eps)
+            fz = fastCbrt(zr);
+        else
+            fz = (kap * zr + 16.f) * (1.f / 116.f);
+
+        const float L = 116.f * fy - 16.f;
+        const float a = 500.f * (fx - fy);
+        const float b = 200.f * (fy - fz);
+#endif
+        // We output Lab values that has been scaled to 0.0->1.0 values, see also labToXyz.
+        return QColorVector(L * (1.f / 100.f), (a + 128.f) * (1.f / 255.f), (b + 128.f) * (1.f / 255.f));
+    }
+
+    QColorVector labToXyz() const
+    {
+        constexpr QColorVector ref = D50();
+        constexpr float eps = 0.008856f;
+        constexpr float kap = 903.3f;
+        // This transform has been guessed from the ICC spec, but it is not stated
+        // anywhere to be the one to use to map to and from 0.0->1.0 values:
+        const float L = x * 100.f;
+        const float a = (y * 255.f) - 128.f;
+        const float b = (z * 255.f) - 128.f;
+        // From here is official Lab->XYZ conversion:
+        float fy = (L + 16.f) * (1.f / 116.f);
+        float fx = fy + (a * (1.f / 500.f));
+        float fz = fy - (b * (1.f / 200.f));
+
+        float xr, yr, zr;
+        if (fx * fx * fx > eps)
+            xr = fx * fx * fx;
+        else
+            xr = (116.f * fx - 16) * (1.f / kap);
+        if (L > (kap * eps))
+            yr = fy * fy * fy;
+        else
+            yr = L * (1.f / kap);
+        if (fz * fz * fz > eps)
+            zr = fz * fz * fz;
+        else
+            zr = (116.f * fz - 16) * (1.f / kap);
+
+        xr = xr * ref.x;
+        yr = yr * ref.y;
+        zr = zr * ref.z;
+        return QColorVector(xr, yr, zr);
+    }
+    friend inline bool comparesEqual(const QColorVector &lhs, const QColorVector &rhs);
+    Q_DECLARE_EQUALITY_COMPARABLE(QColorVector);
+
+private:
+    static float fastCbrt(float x)
+    {
+        // This gives us cube root within the precision we need.
+        float est = 0.25f + (x * 0.75f); // guessing a cube-root of numbers between 0.01 and 1.
+        est -= ((est * est * est) - x) / (3.f * (est * est));
+        est -= ((est * est * est) - x) / (3.f * (est * est));
+        est -= ((est * est * est) - x) / (3.f * (est * est));
+        est -= ((est * est * est) - x) / (3.f * (est * est));
+        // Q_ASSERT(qAbs(est - std::cbrt(x)) < 0.0001f);
+        return est;
+    }
 };
 
-inline bool operator==(const QColorVector &v1, const QColorVector &v2)
+inline bool comparesEqual(const QColorVector &v1, const QColorVector &v2)
 {
     return (std::abs(v1.x - v2.x) < (1.0f / 2048.0f))
         && (std::abs(v1.y - v2.y) < (1.0f / 2048.0f))
-        && (std::abs(v1.z - v2.z) < (1.0f / 2048.0f));
+        && (std::abs(v1.z - v2.z) < (1.0f / 2048.0f))
+        && (std::abs(v1.w - v2.w) < (1.0f / 2048.0f));
 }
-
-inline bool operator!=(const QColorVector &v1, const QColorVector &v2)
-{
-    return !(v1 == v2);
-}
-
 
 // A matrix mapping 3 value colors.
 // Not using QTransform because only floats are needed and performance is critical.
@@ -86,20 +209,20 @@ public:
     QColorVector g;
     QColorVector b;
 
-    friend inline bool operator==(const QColorMatrix &m1, const QColorMatrix &m2);
-    friend inline bool operator!=(const QColorMatrix &m1, const QColorMatrix &m2);
-
-    bool isNull() const
+    constexpr bool isNull() const
     {
         return r.isNull() && g.isNull() && b.isNull();
+    }
+    constexpr float determinant() const
+    {
+        return r.x * (b.z * g.y - g.z * b.y) -
+               r.y * (b.z * g.x - g.z * b.x) +
+               r.z * (b.y * g.x - g.y * b.x);
     }
     bool isValid() const
     {
         // A color matrix must be invertible
-        float det = r.x * (b.z * g.y - g.z * b.y) -
-                    r.y * (b.z * g.x - g.z * b.x) +
-                    r.z * (b.y * g.x - g.y * b.x);
-        return !qFuzzyIsNull(det);
+        return std::isnormal(determinant());
     }
     bool isIdentity() const noexcept
     {
@@ -108,9 +231,7 @@ public:
 
     QColorMatrix inverted() const
     {
-        float det = r.x * (b.z * g.y - g.z * b.y) -
-                    r.y * (b.z * g.x - g.z * b.x) +
-                    r.z * (b.y * g.x - g.y * b.x);
+        float det = determinant();
         det = 1.0f / det;
         QColorMatrix inv;
         inv.r.x = (g.y * b.z - b.y * g.z) * det;
@@ -124,20 +245,20 @@ public:
         inv.b.z = (r.x * g.y - g.x * r.y) * det;
         return inv;
     }
-    QColorMatrix operator*(const QColorMatrix &o) const
+    friend inline constexpr QColorMatrix operator*(const QColorMatrix &a, const QColorMatrix &o)
     {
         QColorMatrix comb;
-        comb.r.x = r.x * o.r.x + g.x * o.r.y + b.x * o.r.z;
-        comb.g.x = r.x * o.g.x + g.x * o.g.y + b.x * o.g.z;
-        comb.b.x = r.x * o.b.x + g.x * o.b.y + b.x * o.b.z;
+        comb.r.x = a.r.x * o.r.x + a.g.x * o.r.y + a.b.x * o.r.z;
+        comb.g.x = a.r.x * o.g.x + a.g.x * o.g.y + a.b.x * o.g.z;
+        comb.b.x = a.r.x * o.b.x + a.g.x * o.b.y + a.b.x * o.b.z;
 
-        comb.r.y = r.y * o.r.x + g.y * o.r.y + b.y * o.r.z;
-        comb.g.y = r.y * o.g.x + g.y * o.g.y + b.y * o.g.z;
-        comb.b.y = r.y * o.b.x + g.y * o.b.y + b.y * o.b.z;
+        comb.r.y = a.r.y * o.r.x + a.g.y * o.r.y + a.b.y * o.r.z;
+        comb.g.y = a.r.y * o.g.x + a.g.y * o.g.y + a.b.y * o.g.z;
+        comb.b.y = a.r.y * o.b.x + a.g.y * o.b.y + a.b.y * o.b.z;
 
-        comb.r.z = r.z * o.r.x + g.z * o.r.y + b.z * o.r.z;
-        comb.g.z = r.z * o.g.x + g.z * o.g.y + b.z * o.g.z;
-        comb.b.z = r.z * o.b.x + g.z * o.b.y + b.z * o.b.z;
+        comb.r.z = a.r.z * o.r.x + a.g.z * o.r.y + a.b.z * o.r.z;
+        comb.g.z = a.r.z * o.g.x + a.g.z * o.g.y + a.b.z * o.g.z;
+        comb.b.z = a.r.z * o.b.x + a.g.z * o.b.y + a.b.z * o.b.z;
         return comb;
 
     }
@@ -164,6 +285,32 @@ public:
                               { 0.0f, v.y,  0.0f },
                               { 0.0f, 0.0f, v.z  } };
     }
+    static QColorMatrix chromaticAdaptation(const QColorVector &whitePoint)
+    {
+        constexpr QColorVector whitePointD50 = QColorVector::D50();
+        if (whitePoint != whitePointD50) {
+            // A chromatic adaptation to map a white point to XYZ D50.
+
+            // The Bradford method chromatic adaptation matrix:
+            const QColorMatrix abrad = { {  0.8951f, -0.7502f,  0.0389f },
+                                         {  0.2664f,  1.7135f, -0.0685f },
+                                         { -0.1614f,  0.0367f,  1.0296f } };
+            const QColorMatrix abradinv = { {  0.9869929f, 0.4323053f, -0.0085287f },
+                                            { -0.1470543f, 0.5183603f,  0.0400428f },
+                                            {  0.1599627f, 0.0492912f,  0.9684867f } };
+
+            const QColorVector srcCone = abrad.map(whitePoint);
+            if (srcCone.x && srcCone.y && srcCone.z) {
+                const QColorVector dstCone = abrad.map(whitePointD50);
+                const QColorMatrix wToD50 = { { dstCone.x / srcCone.x, 0, 0 },
+                                              { 0, dstCone.y / srcCone.y, 0 },
+                                              { 0, 0, dstCone.z / srcCone.z } };
+                return abradinv * (wToD50 * abrad);
+            }
+        }
+        return QColorMatrix::identity();
+    }
+
     // These are used to recognize matrices from ICC profiles:
     static QColorMatrix toXyzFromSRgb()
     {
@@ -189,16 +336,13 @@ public:
                               { 0.1351922452f, 0.7118769884f, 0.0000000000f },
                               { 0.0313525312f, 0.0000856627f, 0.8251883388f } };
     }
+    friend inline bool comparesEqual(const QColorMatrix &lhs, const QColorMatrix &rhs);
+    Q_DECLARE_EQUALITY_COMPARABLE(QColorMatrix);
 };
 
-inline bool operator==(const QColorMatrix &m1, const QColorMatrix &m2)
+inline bool comparesEqual(const QColorMatrix &m1, const QColorMatrix &m2)
 {
     return (m1.r == m2.r) && (m1.g == m2.g) && (m1.b == m2.b);
-}
-
-inline bool operator!=(const QColorMatrix &m1, const QColorMatrix &m2)
-{
-    return !(m1 == m2);
 }
 
 QT_END_NAMESPACE

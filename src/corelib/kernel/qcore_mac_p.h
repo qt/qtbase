@@ -19,6 +19,8 @@
 
 #include <QtCore/qoperatingsystemversion.h>
 
+#include <optional>
+
 #ifdef Q_OS_MACOS
 #include <mach/port.h>
 struct mach_header;
@@ -48,7 +50,6 @@ kern_return_t IOObjectRelease(io_object_t object);
 #endif
 
 #include "qstring.h"
-#include "qscopedpointer.h"
 #include "qpair.h"
 
 #if defined( __OBJC__) && defined(QT_NAMESPACE)
@@ -129,7 +130,7 @@ public:
     Q_NODISCARD_CTOR QMacRootLevelAutoReleasePool();
     ~QMacRootLevelAutoReleasePool();
 private:
-    QScopedPointer<QMacAutoReleasePool> pool;
+    std::optional<QMacAutoReleasePool> pool = std::nullopt;
 };
 #endif
 

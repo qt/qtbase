@@ -17,13 +17,9 @@
 #include <clipboard/clipboard.h>
 #include <errno.h>
 
-#if defined(QQNXCLIPBOARD_DEBUG)
-#define qClipboardDebug qDebug
-#else
-#define qClipboardDebug QT_NO_QDEBUG_MACRO
-#endif
-
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQpaClipboard, "qt.qpa.clipboard");
 
 // null terminated array
 static const char *typeList[] = {"text/html", "text/plain", "image/png", "image/jpeg", "application/x-color", 0};
@@ -66,13 +62,13 @@ public:
 
     void addFormatToCheck(const QString &format) {
         m_formatsToCheck << format;
-        qClipboardDebug() << "formats=" << m_formatsToCheck;
+        qCDebug(lcQpaClipboard) << "formats=" << m_formatsToCheck;
     }
 
     bool hasFormat(const QString &mimetype) const override
     {
         const bool result = is_clipboard_format_present(mimetype.toUtf8().constData()) == 0;
-        qClipboardDebug() << "mimetype=" << mimetype << "result=" << result;
+        qCDebug(lcQpaClipboard) << "mimetype=" << mimetype << "result=" << result;
         return result;
     }
 
@@ -85,7 +81,7 @@ public:
                 result << format;
         }
 
-        qClipboardDebug() << "result=" << result;
+        qCDebug(lcQpaClipboard) << "result=" << result;
         return result;
     }
 
@@ -109,7 +105,7 @@ public:
 protected:
     QVariant retrieveData(const QString &mimetype, QMetaType preferredType) const override
     {
-        qClipboardDebug() << "mimetype=" << mimetype << "preferredType=" << preferredType.name();
+        qCDebug(lcQpaClipboard) << "mimetype=" << mimetype << "preferredType=" << preferredType.name();
         if (is_clipboard_format_present(mimetype.toUtf8().constData()) != 0)
             return QMimeData::retrieveData(mimetype, preferredType);
 
@@ -121,7 +117,7 @@ private Q_SLOTS:
     void releaseOwnership()
     {
         if (m_userMimeData) {
-            qClipboardDebug() << "user data formats=" << m_userMimeData->formats() << "system formats=" << formats();
+            qCDebug(lcQpaClipboard) << "user data formats=" << m_userMimeData->formats() << "system formats=" << formats();
             delete m_userMimeData;
             m_userMimeData = 0;
             m_clipboard->emitChanged(QClipboard::Clipboard);
@@ -167,7 +163,7 @@ void QQnxClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
     }
 
     const QStringList formats = data->formats();
-    qClipboardDebug() << "formats=" << formats;
+    qCDebug(lcQpaClipboard) << "formats=" << formats;
 
     Q_FOREACH (const QString &format, formats) {
         const QByteArray buf = data->data(format);
@@ -176,7 +172,7 @@ void QQnxClipboard::setMimeData(QMimeData *data, QClipboard::Mode mode)
             continue;
 
         int ret = set_clipboard_data(format.toUtf8().data(), buf.size(), buf.data());
-        qClipboardDebug() << "set " << format << "to clipboard, size=" << buf.size() << ";ret=" << ret;
+        qCDebug(lcQpaClipboard) << "set " << format << "to clipboard, size=" << buf.size() << ";ret=" << ret;
         if (ret)
             m_mimeData->addFormatToCheck(format);
     }

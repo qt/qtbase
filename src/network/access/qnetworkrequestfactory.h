@@ -11,6 +11,7 @@
 #include <QtCore/qshareddata.h>
 #include <QtCore/qurlquery.h>
 #include <QtCore/qurl.h>
+#include <QtCore/qvariant.h>
 
 #include <chrono>
 
@@ -24,7 +25,7 @@ class QSslConfiguration;
 class QNetworkRequestFactoryPrivate;
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QNetworkRequestFactoryPrivate, Q_NETWORK_EXPORT)
 
-class QNetworkRequestFactory
+class QT_TECH_PREVIEW_API QNetworkRequestFactory
 {
 public:
     Q_NETWORK_EXPORT QNetworkRequestFactory();
@@ -73,6 +74,16 @@ public:
     Q_NETWORK_EXPORT QUrlQuery queryParameters() const;
     Q_NETWORK_EXPORT void setQueryParameters(const QUrlQuery &query);
     Q_NETWORK_EXPORT void clearQueryParameters();
+
+    Q_NETWORK_EXPORT void setPriority(QNetworkRequest::Priority priority);
+    Q_NETWORK_EXPORT QNetworkRequest::Priority priority() const;
+
+    Q_NETWORK_EXPORT QVariant attribute(QNetworkRequest::Attribute attribute) const;
+    Q_NETWORK_EXPORT QVariant attribute(QNetworkRequest::Attribute attribute,
+                                        const QVariant &defaultValue) const;
+    Q_NETWORK_EXPORT void setAttribute(QNetworkRequest::Attribute attribute, const QVariant &value);
+    Q_NETWORK_EXPORT void clearAttribute(QNetworkRequest::Attribute attribute);
+    Q_NETWORK_EXPORT void clearAttributes();
 
 private:
 #ifndef QT_NO_DEBUG_STREAM

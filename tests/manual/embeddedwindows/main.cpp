@@ -1,9 +1,9 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtGui>
 
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS) || defined(Q_OS_WIN) || QT_CONFIG(xcb) || defined(ANDROID)
+#if QT_CONFIG(metal) || defined(Q_OS_WIN) || QT_CONFIG(xcb) || defined(ANDROID)
 #include "../../shared/nativewindow.h"
 #define HAVE_NATIVE_WINDOW
 #endif

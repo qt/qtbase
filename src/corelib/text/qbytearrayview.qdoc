@@ -14,6 +14,15 @@
 
     \reentrant
 
+    \compares strong
+    \compareswith strong QByteArray {const char *}
+    \endcompareswith
+    \compareswith strong QString QStringView QUtf8StringView QLatin1StringView \
+                  QChar char16_t
+    When comparing with string and Unicode character types, the content is
+    interpreted as UTF-8.
+    \endcompareswith
+
     A QByteArrayView references a contiguous portion of raw bytes it does
     not own. It acts as an interface type to all kinds of byte-array-like data,
     without the need to construct a QByteArray first.
@@ -332,12 +341,12 @@
 */
 
 /*! //! friend
-    \fn int QByteArrayView::operator==(QByteArrayView lhs, QByteArrayView rhs)
-    \fn int QByteArrayView::operator!=(QByteArrayView lhs, QByteArrayView rhs)
-    \fn int QByteArrayView::operator< (QByteArrayView lhs, QByteArrayView rhs)
-    \fn int QByteArrayView::operator<=(QByteArrayView lhs, QByteArrayView rhs)
-    \fn int QByteArrayView::operator> (QByteArrayView lhs, QByteArrayView rhs)
-    \fn int QByteArrayView::operator>=(QByteArrayView lhs, QByteArrayView rhs)
+    \fn int QByteArrayView::operator==(const QByteArrayView &lhs, const QByteArrayView &rhs)
+    \fn int QByteArrayView::operator!=(const QByteArrayView &lhs, const QByteArrayView &rhs)
+    \fn int QByteArrayView::operator< (const QByteArrayView &lhs, const QByteArrayView &rhs)
+    \fn int QByteArrayView::operator<=(const QByteArrayView &lhs, const QByteArrayView &rhs)
+    \fn int QByteArrayView::operator> (const QByteArrayView &lhs, const QByteArrayView &rhs)
+    \fn int QByteArrayView::operator>=(const QByteArrayView &lhs, const QByteArrayView &rhs)
 
     Comparison operators for QByteArrayView.
 */

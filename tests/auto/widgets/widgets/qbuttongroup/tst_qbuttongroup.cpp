@@ -1,5 +1,5 @@
 // Copyright (C) 2020 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -122,7 +122,6 @@ void tst_QButtonGroup::arrowKeyNavigation()
     layout.addWidget(&g2);
 
     dlg.show();
-    QApplicationPrivate::setActiveWindow(&dlg);
     QVERIFY(QTest::qWaitForWindowActive(&dlg));
 
     bt1.setFocus();
@@ -204,7 +203,6 @@ void tst_QButtonGroup::keyNavigationPushButtons()
     buttonGroup->addButton(pb3);
 
     dlg.show();
-    QApplicationPrivate::setActiveWindow(&dlg);
     if (!QTest::qWaitForWindowActive(&dlg))
         QSKIP("Window activation failed, skipping test");
 
@@ -435,7 +433,6 @@ void tst_QButtonGroup::task106609()
     qRegisterMetaType<QAbstractButton*>("QAbstractButton*");
     QSignalSpy spy1(buttons, SIGNAL(buttonClicked(QAbstractButton*)));
 
-    QApplicationPrivate::setActiveWindow(&dlg);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&dlg));
 
     radio1->setFocus();

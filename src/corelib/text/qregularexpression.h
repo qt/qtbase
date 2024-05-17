@@ -157,11 +157,15 @@ public:
 
     static QRegularExpression fromWildcard(QStringView pattern, Qt::CaseSensitivity cs = Qt::CaseInsensitive,
                                            WildcardConversionOptions options = DefaultWildcardConversion);
-
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QRegularExpression &re) const;
     inline bool operator!=(const QRegularExpression &re) const { return !operator==(re); }
-
+#endif
 private:
+    friend Q_CORE_EXPORT bool comparesEqual(const QRegularExpression &lhs,
+                                            const QRegularExpression &rhs) noexcept;
+    Q_DECLARE_EQUALITY_COMPARABLE(QRegularExpression)
+
     friend struct QRegularExpressionPrivate;
     friend class QRegularExpressionMatch;
     friend struct QRegularExpressionMatchPrivate;
@@ -213,18 +217,26 @@ public:
 
     int lastCapturedIndex() const;
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool hasCaptured(const QString &name) const
-    { return hasCaptured(QStringView(name)); }
+    { return hasCaptured(qToAnyStringViewIgnoringNull(name)); }
     bool hasCaptured(QStringView name) const;
+#endif
+    bool hasCaptured(QAnyStringView name) const;
     bool hasCaptured(int nth) const;
 
     QString captured(int nth = 0) const;
     QStringView capturedView(int nth = 0) const;
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     QString captured(const QString &name) const
-    { return captured(QStringView(name)); }
+    { return captured(qToAnyStringViewIgnoringNull(name)); }
+
     QString captured(QStringView name) const;
     QStringView capturedView(QStringView name) const;
+#endif
+    QString captured(QAnyStringView name) const;
+    QStringView capturedView(QAnyStringView name) const;
 
     QStringList capturedTexts() const;
 
@@ -232,16 +244,21 @@ public:
     qsizetype capturedLength(int nth = 0) const;
     qsizetype capturedEnd(int nth = 0) const;
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     qsizetype capturedStart(const QString &name) const
-    { return capturedStart(QStringView(name)); }
+    { return capturedStart(qToAnyStringViewIgnoringNull(name)); }
     qsizetype capturedLength(const QString &name) const
-    { return capturedLength(QStringView(name)); }
+    { return capturedLength(qToAnyStringViewIgnoringNull(name)); }
     qsizetype capturedEnd(const QString &name) const
-    { return capturedEnd(QStringView(name)); }
+    { return capturedEnd(qToAnyStringViewIgnoringNull(name)); }
 
     qsizetype capturedStart(QStringView name) const;
     qsizetype capturedLength(QStringView name) const;
     qsizetype capturedEnd(QStringView name) const;
+#endif
+    qsizetype capturedStart(QAnyStringView name) const;
+    qsizetype capturedLength(QAnyStringView name) const;
+    qsizetype capturedEnd(QAnyStringView name) const;
 
 private:
     friend class QRegularExpression;
@@ -352,30 +369,24 @@ private:
     // [input.iterators] imposes operator== on us. Unfortunately, it's not
     // trivial to implement, so just do the bare minimum to satifisfy
     // Cpp17EqualityComparable.
-    friend bool operator==(const QRegularExpressionMatchIteratorRangeBasedForIterator &lhs,
-                           const QRegularExpressionMatchIteratorRangeBasedForIterator &rhs) noexcept
+    friend bool comparesEqual(const QRegularExpressionMatchIteratorRangeBasedForIterator &lhs,
+                              const QRegularExpressionMatchIteratorRangeBasedForIterator &rhs)
+            noexcept
     {
         return (&lhs == &rhs);
     }
-
-    friend bool operator!=(const QRegularExpressionMatchIteratorRangeBasedForIterator &lhs,
-                           const QRegularExpressionMatchIteratorRangeBasedForIterator &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QRegularExpressionMatchIteratorRangeBasedForIterator)
 
     // This is what we really use in a range-based for.
-    friend bool operator==(const QRegularExpressionMatchIteratorRangeBasedForIterator &lhs,
-                           QRegularExpressionMatchIteratorRangeBasedForIteratorSentinel) noexcept
+    friend bool comparesEqual(const QRegularExpressionMatchIteratorRangeBasedForIterator &lhs,
+                              const QRegularExpressionMatchIteratorRangeBasedForIteratorSentinel &rhs)
+            noexcept
     {
+        Q_UNUSED(rhs);
         return lhs.m_atEnd;
     }
-
-    friend bool operator!=(const QRegularExpressionMatchIteratorRangeBasedForIterator &lhs,
-                           QRegularExpressionMatchIteratorRangeBasedForIteratorSentinel) noexcept
-    {
-        return !lhs.m_atEnd;
-    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QRegularExpressionMatchIteratorRangeBasedForIterator,
+                                  QRegularExpressionMatchIteratorRangeBasedForIteratorSentinel)
 
     QRegularExpressionMatchIterator m_matchIterator;
     QRegularExpressionMatch m_currentMatch;

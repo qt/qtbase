@@ -512,7 +512,10 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProjectSingleConfig &tool)
 
     QFile filterFile;
     filterFile.setFileName(Option::output.fileName().append(".filters"));
-    filterFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate);
+    if (!filterFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+        warn_msg(WarnLogic, "Generator: cannot open output filter file");
+        return;
+    }
     QTextStream ts(&filterFile);
     XmlOutput xmlFilter(ts, XmlOutput::NoConversion);
 
@@ -751,7 +754,10 @@ void VCXProjectWriter::write(XmlOutput &xml, VCProject &tool)
     // The file filters are added in a separate file for MSBUILD.
     QFile filterFile;
     filterFile.setFileName(Option::output.fileName().append(".filters"));
-    filterFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate);
+    if (!filterFile.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+        warn_msg(WarnLogic, "Cannot open output filter file");
+        return;
+    }
     QTextStream ts(&filterFile);
     XmlOutput xmlFilter(ts, XmlOutput::NoConversion);
 

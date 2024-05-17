@@ -1,3 +1,6 @@
+# Copyright (C) 2024 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 # Find "ModuleTools" dependencies, which are other ModuleTools packages.
 set(@INSTALL_CMAKE_NAMESPACE@@target@_FOUND FALSE)
 set(__qt_@target@_tool_deps "@package_deps@")

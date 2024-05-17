@@ -194,6 +194,7 @@ QEvdevTouchScreenHandler::QEvdevTouchScreenHandler(const QString &device, const 
                 case 180:
                 case 270:
                     rotationAngle = argValue;
+                    break;
                 default:
                     break;
                 }

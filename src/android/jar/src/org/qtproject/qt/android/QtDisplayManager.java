@@ -64,7 +64,6 @@ class QtDisplayManager {
 
             @Override
             public void onDisplayChanged(int displayId) {
-                handleOrientationChanges(m_activity, false);
                 Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
                         ? m_activity.getWindowManager().getDefaultDisplay()
                         : m_activity.getDisplay();
@@ -80,35 +79,17 @@ class QtDisplayManager {
         };
     }
 
-    private static boolean isSameSizeForOrientations(int r1, int r2) {
-        return (r1 == r2) ||
-                (r1 == Surface.ROTATION_0 && r2 == Surface.ROTATION_180)
-                || (r1 == Surface.ROTATION_180 && r2 == Surface.ROTATION_0)
-                || (r1 == Surface.ROTATION_90 && r2 == Surface.ROTATION_270)
-                || (r1 == Surface.ROTATION_270 && r2 == Surface.ROTATION_90);
-    }
-
-    static void handleOrientationChanges(Activity activity, boolean sizeChanged)
+    static void handleOrientationChanges(Activity activity)
     {
         int currentRotation = getDisplayRotation(activity);
-        int nativeOrientation = getNativeOrientation(activity, currentRotation);
-
         if (m_previousRotation == currentRotation)
             return;
-
-        // If the the current and previous rotations are similar then QtLayout.onSizeChanged()
-        // might not be called, so we can already update the orientation, and rely on this to
-        // called again once the resize event is sent.
-        // Note: Android 10 emulator seems to not always send an event when the orientation
-        // changes, could be a bug in the emulator.
-        boolean noResizeNeeded = isSameSizeForOrientations(m_previousRotation, currentRotation);
-        if (m_previousRotation == -1 || sizeChanged || noResizeNeeded) {
-            QtDisplayManager.handleOrientationChanged(currentRotation, nativeOrientation);
-            m_previousRotation = currentRotation;
-        }
+        int nativeOrientation = getNativeOrientation(activity, currentRotation);
+        QtDisplayManager.handleOrientationChanged(currentRotation, nativeOrientation);
+        m_previousRotation = currentRotation;
     }
 
-    private static int getDisplayRotation(Activity activity) {
+    public static int getDisplayRotation(Activity activity) {
         Display display = Build.VERSION.SDK_INT < Build.VERSION_CODES.R ?
                 activity.getWindowManager().getDefaultDisplay() :
                 activity.getDisplay();
@@ -284,20 +265,23 @@ class QtDisplayManager {
 
         final DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
 
-        double xdpi = displayMetrics.xdpi;
-        double ydpi = displayMetrics.ydpi;
-
-        /* Fix buggy dpi report */
-        if (xdpi < android.util.DisplayMetrics.DENSITY_LOW)
-            xdpi = android.util.DisplayMetrics.DENSITY_LOW;
-        if (ydpi < android.util.DisplayMetrics.DENSITY_LOW)
-            ydpi = android.util.DisplayMetrics.DENSITY_LOW;
-
         double density = displayMetrics.density;
         double scaledDensity = displayMetrics.scaledDensity;
 
         setDisplayMetrics(maxWidth, maxHeight, insetLeft, insetTop,
-                width, height, xdpi, ydpi,
+                width, height, getXDpi(displayMetrics), getYDpi(displayMetrics),
                 scaledDensity, density, getRefreshRate(display));
+    }
+
+    public static float getXDpi(final DisplayMetrics metrics) {
+        if (metrics.xdpi < android.util.DisplayMetrics.DENSITY_LOW)
+            return android.util.DisplayMetrics.DENSITY_LOW;
+        return metrics.xdpi;
+    }
+
+    public static float getYDpi(final DisplayMetrics metrics) {
+        if (metrics.ydpi < android.util.DisplayMetrics.DENSITY_LOW)
+            return android.util.DisplayMetrics.DENSITY_LOW;
+        return metrics.ydpi;
     }
 }

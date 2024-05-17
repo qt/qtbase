@@ -6,7 +6,6 @@ import os
 import sys
 import subprocess
 import json
-import re
 
 # Paths to shared libraries and qml imports on the Qt installation on the web server.
 # "$QTDIR" is replaced by qtloader.js at load time (defaults to "qt"), and makes
@@ -28,42 +27,26 @@ def preload_file(source, destination):
     preload_files.append({"source": source, "destination": destination})
 
 
-def find_dependencies(filepath):
-    # Very basic dependency finder which scans for ".so" strings in the file
-    try:
-        with open(filepath, "rb") as file:
-            content = file.read()
-            return [
-                m.group(0).decode("utf-8")
-                for m in re.finditer(rb"[\w\-.]+\.so", content)
-            ]
-    except IOError as e:
-        eprint(f"Error: {e}")
-        return []
-
-
 def extract_preload_files_from_imports(imports):
     libraries = []
-    files = []
     for qml_import in imports:
         try:
             relative_path = qml_import["relativePath"]
             plugin = qml_import["plugin"]
 
             # plugin .so
+            plugin_filename = "lib" + plugin + ".so"
             so_plugin_source_path = os.path.join(
-                qt_qml_path, relative_path, "lib" + plugin + ".so"
+                qt_qml_path, relative_path, plugin_filename
             )
             so_plugin_destination_path = os.path.join(
-                qt_deploy_qml_path, relative_path, "lib" + plugin + ".so"
+                qt_deploy_qml_path, relative_path, plugin_filename
             )
 
             preload_file(so_plugin_source_path, so_plugin_destination_path)
             so_plugin_qt_install_path = os.path.join(
-                qt_wasm_path, "qml", relative_path, "lib" + plugin + ".so"
+                qt_wasm_path, "qml", relative_path, plugin_filename
             )
-            deps = find_dependencies(so_plugin_qt_install_path)
-            libraries.extend(deps)
 
             # qmldir file
             qmldir_source_path = os.path.join(qt_qml_path, relative_path, "qmldir")
@@ -74,30 +57,28 @@ def extract_preload_files_from_imports(imports):
         except Exception as e:
             eprint(e)
             continue
-    return files, libraries
+    return libraries
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python make_qt_symlinks.py <qt-host-path> <qt-wasm-path>")
+    if len(sys.argv) != 4:
+        print("Usage: python preload_qml_imports.py <qml-source-path> <qt-host-path> <qt-wasm-path>")
         sys.exit(1)
 
-    qt_host_path = sys.argv[1]
-    qt_wasm_path = sys.argv[2]
+    qml_source_path = sys.argv[1]
+    qt_host_path = sys.argv[2]
+    qt_wasm_path = sys.argv[3]
 
     qml_import_path = os.path.join(qt_wasm_path, "qml")
     qmlimportsscanner_path = os.path.join(qt_host_path, "libexec/qmlimportscanner")
 
     eprint("runing qmlimportsscanner")
-    result = subprocess.run(
-        [qmlimportsscanner_path, "-rootPath", ".", "-importPath", qml_import_path],
-        stdout=subprocess.PIPE,
-    )
+    command = [qmlimportsscanner_path, "-rootPath", qml_source_path, "-importPath", qml_import_path]
+    result = subprocess.run(command, stdout=subprocess.PIPE)
     imports = json.loads(result.stdout)
 
     preload_files = []
-    libraries = []
-    files, libraries = extract_preload_files_from_imports(imports)
+    libraries = extract_preload_files_from_imports(imports)
 
     # Deploy plugin dependencies, that is, shared libraries used by the plugins.
     # Skip some of the obvious libraries which will be

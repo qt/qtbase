@@ -354,9 +354,13 @@ private Q_SLOTS:
     {
         if (result != 0)
             return;
-        XDGDesktopColor color{};
-        map.value(u"color"_s).value<QDBusArgument>() >> color;
-        Q_EMIT colorPicked(color.toQColor());
+        if (map.contains(u"color"_s)) {
+            XDGDesktopColor color{};
+            map.value(u"color"_s).value<QDBusArgument>() >> color;
+            Q_EMIT colorPicked(color.toQColor());
+        } else {
+            Q_EMIT colorPicked({});
+        }
         deleteLater();
     }
 

@@ -20,6 +20,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtCore/qxpfunctional.h>
 #include <QtNetwork/qhttp2configuration.h>
 #include <QtNetwork/qtcpsocket.h>
 
@@ -118,7 +119,7 @@ Q_SIGNALS:
     void headersReceived(const HPack::HttpHeader &headers, bool endStream);
     void headersUpdated();
     void errorOccurred(quint32 errorCode, const QString &errorString);
-    void stateChanged(State newState);
+    void stateChanged(QHttp2Stream::State newState);
     void promisedStreamReceived(quint32 newStreamID);
     void uploadBlocked();
     void dataReceived(const QByteArray &data, bool endStream);
@@ -134,11 +135,11 @@ public Q_SLOTS:
     void sendDATA(QIODevice *device, bool endStream);
     void sendDATA(QNonContiguousByteDevice *device, bool endStream);
     void sendWINDOW_UPDATE(quint32 delta);
-    void uploadDeviceDestroyed();
 
 private Q_SLOTS:
     void maybeResumeUpload();
     void uploadDeviceReadChannelFinished();
+    void uploadDeviceDestroyed();
 
 private:
     friend class QHttp2Connection;
@@ -193,9 +194,17 @@ class Q_NETWORK_EXPORT QHttp2Connection : public QObject
 public:
     enum class CreateStreamError {
         MaxConcurrentStreamsReached,
+        StreamIdsExhausted,
         ReceivedGOAWAY,
     };
     Q_ENUM(CreateStreamError)
+
+    enum class PingState {
+        Ping,
+        PongSignatureIdentical,
+        PongSignatureChanged,
+        PongNoPingSent, // We got an ACKed ping but had not sent any
+    };
 
     // For a pre-established connection:
     [[nodiscard]] static QHttp2Connection *
@@ -232,9 +241,12 @@ Q_SIGNALS:
     void errorReceived(/*@future: add as needed?*/); // Connection errors only, no stream-specific errors
     void connectionClosed();
     void settingsFrameReceived();
+    void pingFrameRecived(QHttp2Connection::PingState state);
     void errorOccurred(Http2::Http2Error errorCode, const QString &errorString);
     void receivedGOAWAY(quint32 errorCode, quint32 lastStreamID);
 public Q_SLOTS:
+    bool sendPing();
+    bool sendPing(QByteArrayView data);
     void handleReadyRead();
     void handleConnectionClosure();
 
@@ -252,7 +264,9 @@ private:
                          const char *message); // Connection failed to be established?
     void setH2Configuration(QHttp2Configuration config);
     void closeSession();
-    qsizetype numActiveStreams() const noexcept;
+    qsizetype numActiveStreamsImpl(quint32 mask) const noexcept;
+    qsizetype numActiveRemoteStreams() const noexcept;
+    qsizetype numActiveLocalStreams() const noexcept;
 
     bool sendClientPreface();
     bool sendSETTINGS();
@@ -295,6 +309,7 @@ private:
     QHash<quint32, QPointer<QHttp2Stream>> m_streams;
     QHash<QUrl, quint32> m_promisedStreams;
     QVarLengthArray<quint32> m_resetStreamIDs;
+    std::optional<QByteArray> m_lastPingSignature = std::nullopt;
     quint32 m_nextStreamID = 1;
 
     // Peer's max frame size (this min is the default value
@@ -346,7 +361,6 @@ private:
     bool m_upgradedConnection = false;
     bool m_goingAway = false;
     bool pushPromiseEnabled = false;
-    quint32 lastPromisedID = Http2::connectionStreamID;
     quint32 m_lastIncomingStreamID = Http2::connectionStreamID;
 
     // Server-side only:

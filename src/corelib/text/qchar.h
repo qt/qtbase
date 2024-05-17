@@ -5,6 +5,7 @@
 #define QCHAR_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qcompare.h>
 
 #include <functional> // for std::hash
 
@@ -20,26 +21,20 @@ public:
     constexpr inline char toLatin1() const noexcept { return ch; }
     constexpr inline char16_t unicode() const noexcept { return char16_t(uchar(ch)); }
 
-    friend constexpr inline bool operator==(QLatin1Char lhs, QLatin1Char rhs) noexcept { return lhs.ch == rhs.ch; }
-    friend constexpr inline bool operator!=(QLatin1Char lhs, QLatin1Char rhs) noexcept { return lhs.ch != rhs.ch; }
-    friend constexpr inline bool operator<=(QLatin1Char lhs, QLatin1Char rhs) noexcept { return lhs.ch <= rhs.ch; }
-    friend constexpr inline bool operator>=(QLatin1Char lhs, QLatin1Char rhs) noexcept { return lhs.ch >= rhs.ch; }
-    friend constexpr inline bool operator< (QLatin1Char lhs, QLatin1Char rhs) noexcept { return lhs.ch <  rhs.ch; }
-    friend constexpr inline bool operator> (QLatin1Char lhs, QLatin1Char rhs) noexcept { return lhs.ch >  rhs.ch; }
+    friend constexpr bool
+    comparesEqual(const QLatin1Char &lhs, const QLatin1Char &rhs) noexcept
+    { return lhs.ch == rhs.ch; }
+    friend constexpr Qt::strong_ordering
+    compareThreeWay(const QLatin1Char &lhs, const QLatin1Char &rhs) noexcept
+    { return Qt::compareThreeWay(uchar(lhs.ch), uchar(rhs.ch)); }
+    Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QLatin1Char)
 
-    friend constexpr inline bool operator==(char lhs, QLatin1Char rhs) noexcept { return lhs == rhs.toLatin1(); }
-    friend constexpr inline bool operator!=(char lhs, QLatin1Char rhs) noexcept { return lhs != rhs.toLatin1(); }
-    friend constexpr inline bool operator<=(char lhs, QLatin1Char rhs) noexcept { return lhs <= rhs.toLatin1(); }
-    friend constexpr inline bool operator>=(char lhs, QLatin1Char rhs) noexcept { return lhs >= rhs.toLatin1(); }
-    friend constexpr inline bool operator< (char lhs, QLatin1Char rhs) noexcept { return lhs <  rhs.toLatin1(); }
-    friend constexpr inline bool operator> (char lhs, QLatin1Char rhs) noexcept { return lhs >  rhs.toLatin1(); }
-
-    friend constexpr inline bool operator==(QLatin1Char lhs, char rhs) noexcept { return lhs.toLatin1() == rhs; }
-    friend constexpr inline bool operator!=(QLatin1Char lhs, char rhs) noexcept { return lhs.toLatin1() != rhs; }
-    friend constexpr inline bool operator<=(QLatin1Char lhs, char rhs) noexcept { return lhs.toLatin1() <= rhs; }
-    friend constexpr inline bool operator>=(QLatin1Char lhs, char rhs) noexcept { return lhs.toLatin1() >= rhs; }
-    friend constexpr inline bool operator< (QLatin1Char lhs, char rhs) noexcept { return lhs.toLatin1() <  rhs; }
-    friend constexpr inline bool operator> (QLatin1Char lhs, char rhs) noexcept { return lhs.toLatin1() >  rhs; }
+    friend constexpr bool comparesEqual(const QLatin1Char &lhs, char rhs) noexcept
+    { return lhs.toLatin1() == rhs; }
+    friend constexpr Qt::strong_ordering
+    compareThreeWay(const QLatin1Char &lhs, char rhs) noexcept
+    { return Qt::compareThreeWay(uchar(lhs.toLatin1()), uchar(rhs)); }
+    Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QLatin1Char, char)
 
 private:
     char ch;
@@ -432,6 +427,7 @@ public:
         Unicode_13_0,
         Unicode_14_0,
         Unicode_15_0,
+        Unicode_15_1,
     };
 
     inline Category category() const noexcept { return QChar::category(ucs); }
@@ -580,34 +576,44 @@ public:
     static constexpr inline bool isTitleCase(char32_t ucs4) noexcept Q_DECL_CONST_FUNCTION
     { return ucs4 > 127 && QChar::category(ucs4) == Letter_Titlecase; }
 
-    friend constexpr inline bool operator==(QChar c1, QChar c2) noexcept { return c1.ucs == c2.ucs; }
-    friend constexpr inline bool operator< (QChar c1, QChar c2) noexcept { return c1.ucs <  c2.ucs; }
+    friend constexpr bool comparesEqual(const QChar &lhs, const QChar &rhs) noexcept
+    { return lhs.ucs == rhs.ucs; }
+    friend constexpr Qt::strong_ordering
+    compareThreeWay(const QChar &lhs, const QChar &rhs) noexcept
+    { return Qt::compareThreeWay(lhs.ucs, rhs.ucs); }
+    Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QChar)
 
-    friend constexpr inline bool operator!=(QChar c1, QChar c2) noexcept { return !operator==(c1, c2); }
-    friend constexpr inline bool operator>=(QChar c1, QChar c2) noexcept { return !operator< (c1, c2); }
-    friend constexpr inline bool operator> (QChar c1, QChar c2) noexcept { return  operator< (c2, c1); }
-    friend constexpr inline bool operator<=(QChar c1, QChar c2) noexcept { return !operator< (c2, c1); }
-
-    friend constexpr inline bool operator==(QChar lhs, std::nullptr_t) noexcept { return lhs.isNull(); }
-    friend constexpr inline bool operator< (QChar,     std::nullptr_t) noexcept { return false; }
-    friend constexpr inline bool operator==(std::nullptr_t, QChar rhs) noexcept { return rhs.isNull(); }
-    friend constexpr inline bool operator< (std::nullptr_t, QChar rhs) noexcept { return !rhs.isNull(); }
-
-    friend constexpr inline bool operator!=(QChar lhs, std::nullptr_t) noexcept { return !operator==(lhs, nullptr); }
-    friend constexpr inline bool operator>=(QChar lhs, std::nullptr_t) noexcept { return !operator< (lhs, nullptr); }
-    friend constexpr inline bool operator> (QChar lhs, std::nullptr_t) noexcept { return  operator< (nullptr, lhs); }
-    friend constexpr inline bool operator<=(QChar lhs, std::nullptr_t) noexcept { return !operator< (nullptr, lhs); }
-
-    friend constexpr inline bool operator!=(std::nullptr_t, QChar rhs) noexcept { return !operator==(nullptr, rhs); }
-    friend constexpr inline bool operator>=(std::nullptr_t, QChar rhs) noexcept { return !operator< (nullptr, rhs); }
-    friend constexpr inline bool operator> (std::nullptr_t, QChar rhs) noexcept { return  operator< (rhs, nullptr); }
-    friend constexpr inline bool operator<=(std::nullptr_t, QChar rhs) noexcept { return !operator< (rhs, nullptr); }
+    friend constexpr bool comparesEqual(const QChar &lhs, std::nullptr_t) noexcept
+    { return lhs.isNull(); }
+    friend constexpr Qt::strong_ordering
+    compareThreeWay(const QChar &lhs, std::nullptr_t) noexcept
+    { return lhs.isNull() ? Qt::strong_ordering::equivalent : Qt::strong_ordering::greater; }
+    Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(QChar, std::nullptr_t)
 
 private:
     static bool QT_CHAR_FASTCALL isSpace_helper(char32_t ucs4) noexcept Q_DECL_CONST_FUNCTION;
     static bool QT_CHAR_FASTCALL isLetter_helper(char32_t ucs4) noexcept Q_DECL_CONST_FUNCTION;
     static bool QT_CHAR_FASTCALL isNumber_helper(char32_t ucs4) noexcept Q_DECL_CONST_FUNCTION;
     static bool QT_CHAR_FASTCALL isLetterOrNumber_helper(char32_t ucs4) noexcept Q_DECL_CONST_FUNCTION;
+
+    // defined in qstring.cpp, because we need to go via QUtf8StringView
+    static bool QT_CHAR_FASTCALL
+    equal_helper(QChar lhs, const char *rhs) noexcept Q_DECL_CONST_FUNCTION;
+    static int QT_CHAR_FASTCALL
+    compare_helper(QChar lhs, const char *rhs) noexcept Q_DECL_CONST_FUNCTION;
+
+#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
+    Q_WEAK_OVERLOAD
+    friend bool comparesEqual(const QChar &lhs, const char *rhs) noexcept
+    { return equal_helper(lhs, rhs); }
+    Q_WEAK_OVERLOAD
+    friend Qt::strong_ordering compareThreeWay(const QChar &lhs, const char *rhs) noexcept
+    {
+        const int res = compare_helper(lhs, rhs);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QChar, const char *, Q_WEAK_OVERLOAD QT_ASCII_CAST_WARN)
+#endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 
 #ifdef QT_NO_CAST_FROM_ASCII
     QChar(char c) = delete;

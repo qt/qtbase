@@ -1,9 +1,11 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // Copyright (C) 2012 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
+
+#include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 
 #include <QtCore/QUrlQuery>
-#include <QTest>
 
 typedef QList<QPair<QString, QString> > QueryItems;
 Q_DECLARE_METATYPE(QueryItems)
@@ -22,6 +24,9 @@ public:
     }
 
 private Q_SLOTS:
+    void compareCompiles();
+    void compareEquality_data();
+    void compareEquality();
     void constructing();
     void addRemove();
     void multiAddRemove();
@@ -68,9 +73,12 @@ static QByteArray prettyList(const QueryItems &items)
 static bool compare(const QueryItems &actual, const QueryItems &expected,
                     const char *actualStr, const char *expectedStr, const char *file, int line)
 {
+    auto formatter = [](const void *val) -> const char * {
+        const QueryItems items = *static_cast<const QueryItems *>(val);
+        return qstrdup(prettyList(items).constData());
+    };
     return QTest::compare_helper(actual == expected, "Compared values are not the same",
-                                 [&actual] { return qstrdup(prettyList(actual).constData()); },
-                                 [&expected] { return qstrdup(prettyList(expected).constData()); },
+                                 &actual, &expected, formatter, formatter,
                                  actualStr, expectedStr, file, line);
 }
 
@@ -119,6 +127,48 @@ static QUrlQuery emptyQuery()
     return QUrlQuery();
 }
 
+void tst_QUrlQuery::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QUrlQuery>();
+}
+
+void tst_QUrlQuery::compareEquality_data()
+{
+    QTest::addColumn<QUrlQuery>("url1");
+    QTest::addColumn<QUrlQuery>("url2");
+    QTest::addColumn<bool>("equal");
+
+    QTest::newRow("empty-empty") << QUrlQuery() << QUrlQuery() << true;
+
+    QUrlQuery notEmpty;
+    notEmpty.addQueryItem("a", "b");
+    QTest::newRow("empty-notEmpty") << QUrlQuery() << notEmpty << false;
+
+    QUrlQuery notEmpty_copy = notEmpty;
+    QTest::newRow("sameItems") << notEmpty_copy << notEmpty << true;
+
+    QUrlQuery notEmpty_modified = notEmpty;
+    notEmpty_modified.addQueryItem("c", "d");
+    QTest::newRow("addedItems") << notEmpty_copy << notEmpty_modified << false;
+
+    QUrlQuery notEmpty2;
+    notEmpty2.addQueryItem("c", "d");
+    QTest::newRow("differentItems") << notEmpty2 << notEmpty << false;
+
+    QUrlQuery differentPairDelimiters;
+    differentPairDelimiters.setQueryDelimiters('(', ')');
+    QTest::newRow("defaultDelimiters-differentDelimiters") << QUrlQuery() << differentPairDelimiters
+                                                           << false;
+}
+
+void tst_QUrlQuery::compareEquality()
+{
+    QFETCH(QUrlQuery, url1);
+    QFETCH(QUrlQuery, url2);
+    QFETCH(bool, equal);
+    QT_TEST_EQUALITY_OPS(url1, url2, equal);
+}
+
 void tst_QUrlQuery::constructing()
 {
     QUrlQuery empty;
@@ -137,7 +187,7 @@ void tst_QUrlQuery::constructing()
         QVERIFY(!copy.isDetached());
         QCOMPARE(copy, empty);
         QCOMPARE(qHash(copy), qHash(empty));
-        QVERIFY(!(copy != empty));
+        QT_TEST_EQUALITY_OPS(copy, empty, true);
 
         copy = empty;
         QCOMPARE(copy, empty);
@@ -170,7 +220,7 @@ void tst_QUrlQuery::constructing()
     QVERIFY(!other.isEmpty());
     QVERIFY(other.isDetached());
     QCOMPARE_NE(other, empty);
-    QVERIFY(!(other == empty));
+    QT_TEST_EQUALITY_OPS(other, empty, false);
 
     // copy-construct
     QUrlQuery copy(other);
@@ -276,7 +326,7 @@ void tst_QUrlQuery::addRemove()
         QVERIFY(allItems.contains(qItem("c", "d")));
 
         QCOMPARE_NE(query, original);
-        QVERIFY(!(query == original));
+        QT_TEST_EQUALITY_OPS(query, original, false);
     }
 
     {
@@ -299,7 +349,7 @@ void tst_QUrlQuery::addRemove()
         QCOMPARE(allItems.at(0).second, QString("b"));
 
         QCOMPARE(query, original);
-        QVERIFY(!(query != original));
+        QT_TEST_EQUALITY_OPS(query, original, true);
         QCOMPARE(qHash(query), qHash(original));
     }
 
@@ -323,7 +373,7 @@ void tst_QUrlQuery::addRemove()
         QVERIFY(allItems.contains(qItem("e", emptyButNotNull)));
 
         QCOMPARE_NE(query, original);
-        QVERIFY(!(query == original));
+        QT_TEST_EQUALITY_OPS(query, original, false);
     }
 
     {

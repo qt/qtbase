@@ -1,5 +1,5 @@
-QT += core gui
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += core gui widgets
+QT += core-private # For Notification permission request
 
 SOURCES += \
     main.cpp \

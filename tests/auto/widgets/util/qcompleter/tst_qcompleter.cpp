@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <QtGui>
@@ -108,6 +108,8 @@ private slots:
 
     void dynamicSortOrder();
     void disabledItems();
+
+    void hideWidget();
 
     // task-specific tests below me
     void task178797_activatedOnReturn();
@@ -1060,7 +1062,6 @@ void tst_QCompleter::multipleWidgets()
     window.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     window.move(200, 200);
     window.show();
-    QApplicationPrivate::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
 
     QFocusEvent focusIn(QEvent::FocusIn);
@@ -1072,7 +1073,6 @@ void tst_QCompleter::multipleWidgets()
     comboBox->setFocus();
     comboBox->show();
     window.activateWindow();
-    QApplicationPrivate::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
     QCOMPARE(QApplication::focusWidget(), comboBox);
     comboBox->lineEdit()->setText("it");
@@ -1107,7 +1107,6 @@ void tst_QCompleter::focusIn()
     window.move(200, 200);
     window.show();
     window.activateWindow();
-    QApplicationPrivate::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
 
     auto comboBox = new QComboBox(&window);
@@ -1185,6 +1184,32 @@ void tst_QCompleter::disabledItems()
     QVERIFY(!view->isVisible());
 }
 
+void tst_QCompleter::hideWidget()
+{
+    // hiding the widget should hide/close the popup
+    QWidget w;
+    w.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    w.setLayout(new QVBoxLayout);
+
+    QLineEdit edit;
+    edit.setCompleter(new QCompleter({ "foo", "bar" }));
+
+    w.layout()->addWidget(&edit);
+
+    const auto pos = w.screen()->availableGeometry().topLeft() + QPoint(200, 200);
+    w.move(pos);
+    w.show();
+    QApplicationPrivate::setActiveWindow(&w);
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+
+    // activate the completer
+    QTest::keyClick(&edit, Qt::Key_F);
+    QVERIFY(edit.completer()->popup());
+    QTRY_VERIFY(edit.completer()->popup()->isVisible());
+    edit.hide();
+    QVERIFY(!edit.completer()->popup()->isVisible());
+}
+
 void tst_QCompleter::task178797_activatedOnReturn()
 {
     if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
@@ -1198,7 +1223,6 @@ void tst_QCompleter::task178797_activatedOnReturn()
     QCOMPARE(spy.size(), 0);
     ledit.move(200, 200);
     ledit.show();
-    QApplicationPrivate::setActiveWindow(&ledit);
     QVERIFY(QTest::qWaitForWindowActive(&ledit));
     QTest::keyClick(&ledit, Qt::Key_F);
     QCoreApplication::processEvents();
@@ -1282,7 +1306,6 @@ void tst_QCompleter::task246056_setCompletionPrefix()
     comboBox.addItem("a2");
     comboBox.move(200, 200);
     comboBox.show();
-    QApplicationPrivate::setActiveWindow(&comboBox);
     QVERIFY(QTest::qWaitForWindowActive(&comboBox));
     QSignalSpy spy(comboBox.completer(), QOverload<const QModelIndex &>::of(&QCompleter::activated));
     QTest::keyPress(&comboBox, 'a');
@@ -1348,7 +1371,6 @@ void tst_QCompleter::task250064_lostFocus()
     task250064_Widget widget;
     widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     widget.show();
-    QApplicationPrivate::setActiveWindow(&widget);
     QVERIFY(QTest::qWaitForWindowActive(&widget));
     QTest::keyPress(widget.textEdit(), 'a');
     Qt::FocusPolicy origPolicy = widget.textEdit()->focusPolicy();
@@ -1393,7 +1415,6 @@ void tst_QCompleter::task253125_lineEditCompletion()
     edit.move(200, 200);
     edit.show();
     edit.setFocus();
-    QApplicationPrivate::setActiveWindow(&edit);
     QVERIFY(QTest::qWaitForWindowActive(&edit));
 
     QTest::keyClick(&edit, 'i');
@@ -1556,7 +1577,6 @@ void tst_QCompleter::task247560_keyboardNavigation()
     edit.move(200, 200);
     edit.show();
     edit.setFocus();
-    QApplicationPrivate::setActiveWindow(&edit);
     QVERIFY(QTest::qWaitForWindowActive(&edit));
 
     QTest::keyClick(&edit, 'r');
@@ -1670,7 +1690,6 @@ void tst_QCompleter::QTBUG_14292_filesystem()
 
     edit.move(200, 200);
     edit.show();
-    QApplicationPrivate::setActiveWindow(&edit);
     QVERIFY(QTest::qWaitForWindowActive(&edit));
     QCOMPARE(QApplication::activeWindow(), &edit);
     edit.setFocus();
@@ -1715,7 +1734,6 @@ void tst_QCompleter::QTBUG_14292_filesystem()
     QWidget w;
     w.move(400, 200);
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
     QVERIFY(!edit.hasFocus() && !comp.popup()->hasFocus());
 
@@ -1796,7 +1814,6 @@ void tst_QCompleter::QTBUG_51889_activatedSentTwice()
     const auto pos = w.screen()->availableGeometry().topLeft() + QPoint(200,200);
     w.move(pos);
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     QSignalSpy activatedSpy(&cbox, &QComboBox::activated);

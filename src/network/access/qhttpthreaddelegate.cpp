@@ -95,7 +95,9 @@ static QByteArray makeCacheKey(QUrl &url, QNetworkProxy *proxy, const QString &p
     QUrl copy = url;
     QString scheme = copy.scheme();
     bool isEncrypted = scheme == "https"_L1 || scheme == "preconnect-https"_L1;
-    copy.setPort(copy.port(isEncrypted ? 443 : 80));
+    const bool isLocalSocket = scheme.startsWith("unix"_L1);
+    if (!isLocalSocket)
+        copy.setPort(copy.port(isEncrypted ? 443 : 80));
     if (scheme == "preconnect-http"_L1)
         copy.setScheme("http"_L1);
     else if (scheme == "preconnect-https"_L1)
@@ -145,9 +147,9 @@ class QNetworkAccessCachedHttpConnection: public QHttpNetworkConnection,
 {
     // Q_OBJECT
 public:
-    QNetworkAccessCachedHttpConnection(quint16 connectionCount, const QString &hostName, quint16 port, bool encrypt,
+    QNetworkAccessCachedHttpConnection(quint16 connectionCount, const QString &hostName, quint16 port, bool encrypt, bool isLocalSocket,
                                        QHttpNetworkConnection::ConnectionType connectionType)
-        : QHttpNetworkConnection(connectionCount, hostName, port, encrypt, /*parent=*/nullptr, connectionType)
+        : QHttpNetworkConnection(connectionCount, hostName, port, encrypt, isLocalSocket, /*parent=*/nullptr, connectionType)
     {
         setExpires(true);
         setShareable(true);
@@ -244,7 +246,9 @@ void QHttpThreadDelegate::startRequest()
 
     // check if we have an open connection to this host
     QUrl urlCopy = httpRequest.url();
-    urlCopy.setPort(urlCopy.port(ssl ? 443 : 80));
+    const bool isLocalSocket = urlCopy.scheme().startsWith("unix"_L1);
+    if (!isLocalSocket)
+        urlCopy.setPort(urlCopy.port(ssl ? 443 : 80));
 
     QHttpNetworkConnection::ConnectionType connectionType
         = httpRequest.isHTTP2Allowed() ? QHttpNetworkConnection::ConnectionTypeHTTP2
@@ -279,7 +283,10 @@ void QHttpThreadDelegate::startRequest()
         } else
 #endif // QT_CONFIG(ssl)
         {
-            urlCopy.setScheme(QStringLiteral("h2"));
+            if (isLocalSocket)
+                urlCopy.setScheme(QStringLiteral("unix+h2"));
+            else
+                urlCopy.setScheme(QStringLiteral("h2"));
         }
     }
 
@@ -297,8 +304,9 @@ void QHttpThreadDelegate::startRequest()
     if (!httpConnection) {
         // no entry in cache; create an object
         // the http object is actually a QHttpNetworkConnection
-        httpConnection = new QNetworkAccessCachedHttpConnection(http1Parameters.numberOfConnectionsPerHost(), urlCopy.host(), urlCopy.port(), ssl,
-                                                                connectionType);
+        httpConnection = new QNetworkAccessCachedHttpConnection(
+                http1Parameters.numberOfConnectionsPerHost(), urlCopy.host(), urlCopy.port(), ssl,
+                isLocalSocket, connectionType);
         if (connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2
             || connectionType == QHttpNetworkConnection::ConnectionTypeHTTP2Direct) {
             httpConnection->setHttp2Parameters(http2Parameters);

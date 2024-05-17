@@ -196,7 +196,8 @@ class QtNative
     }
 
     interface AppStateDetailsListener {
-        void onAppStateDetailsChanged(ApplicationStateDetails details);
+        default void onAppStateDetailsChanged(ApplicationStateDetails details) {}
+        default void onNativePluginIntegrationReadyChanged(boolean ready) {}
     }
 
     // Keep in sync with src/corelib/global/qnamespace.h
@@ -228,6 +229,7 @@ class QtNative
     public static void notifyNativePluginIntegrationReady(boolean ready)
     {
         m_stateDetails.nativePluginIntegrationReady = ready;
+        notifyNativePluginIntegrationReadyChanged(ready);
         notifyAppStateDetailsChanged(m_stateDetails);
     }
 
@@ -258,6 +260,13 @@ class QtNative
         }
     }
 
+    static void notifyNativePluginIntegrationReadyChanged(boolean ready) {
+        synchronized (m_appStateListenersLock) {
+            for (final AppStateDetailsListener listener : m_appStateListeners)
+                listener.onNativePluginIntegrationReadyChanged(ready);
+        }
+    }
+
     static void notifyAppStateDetailsChanged(ApplicationStateDetails details) {
         synchronized (m_appStateListenersLock) {
             for (AppStateDetailsListener listener : m_appStateListeners)
@@ -269,13 +278,25 @@ class QtNative
     // otherwise, queue it to be posted when the the app is active again
     public static void runAction(Runnable action)
     {
+        runAction(action, true);
+    }
+
+    public static void runAction(Runnable action, boolean queueWhenInactive)
+    {
         synchronized (m_mainActivityMutex) {
             final Looper mainLooper = Looper.getMainLooper();
             final Handler handler = new Handler(mainLooper);
-            final boolean isStateActive = m_stateDetails.state == ApplicationState.ApplicationActive;
-            final boolean active = (isActivityValid() && isStateActive) || isServiceValid();
-            if (!active || !handler.post(action))
-                m_lostActions.add(action);
+
+            if (queueWhenInactive) {
+                final boolean isStateVisible =
+                        (m_stateDetails.state != ApplicationState.ApplicationSuspended)
+                        && (m_stateDetails.state != ApplicationState.ApplicationHidden);
+                final boolean active = (isActivityValid() && isStateVisible) || isServiceValid();
+                if (!active || !handler.post(action))
+                    m_lostActions.add(action);
+            } else {
+                handler.post(action);
+            }
         }
     }
 
@@ -331,7 +352,7 @@ class QtNative
             if (isServiceValid())
                 m_service.get().stopSelf();
             m_stateDetails.isStarted = false;
-            // Likely no use to call notifyAppStateDetailsChanged at this point since we are exiting
+            notifyAppStateDetailsChanged(m_stateDetails);
         });
     }
 

@@ -1,5 +1,5 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtTest/QTest>
 #include <QtTest/QSignalSpy>
@@ -20,6 +20,7 @@ private slots:
     void construct();
     void constructStream();
     void testSETTINGSFrame();
+    void testPING();
     void connectToServer();
     void WINDOW_UPDATE();
 
@@ -257,6 +258,35 @@ void tst_QHttp2Connection::testSETTINGSFrame()
     }
 }
 
+void tst_QHttp2Connection::testPING()
+{
+    auto [client, server] = makeFakeConnectedSockets();
+    auto connection = makeHttp2Connection(client.get(), {}, Client);
+    auto serverConnection = makeHttp2Connection(server.get(), {}, Server);
+
+    QVERIFY(waitForSettingsExchange(connection, serverConnection));
+
+    QSignalSpy serverPingSpy{ serverConnection, &QHttp2Connection::pingFrameRecived };
+    QSignalSpy clientPingSpy{ connection, &QHttp2Connection::pingFrameRecived };
+
+    QByteArray data{"pingpong"};
+    connection->sendPing(data);
+
+    QVERIFY(serverPingSpy.wait());
+    QVERIFY(clientPingSpy.wait());
+
+    QCOMPARE(serverPingSpy.last().at(0).toInt(), int(QHttp2Connection::PingState::Ping));
+    QCOMPARE(clientPingSpy.last().at(0).toInt(), int(QHttp2Connection::PingState::PongSignatureIdentical));
+
+    serverConnection->sendPing();
+
+    QVERIFY(clientPingSpy.wait());
+    QVERIFY(serverPingSpy.wait());
+
+    QCOMPARE(clientPingSpy.last().at(0).toInt(), int(QHttp2Connection::PingState::Ping));
+    QCOMPARE(serverPingSpy.last().at(0).toInt(), int(QHttp2Connection::PingState::PongSignatureIdentical));
+}
+
 void tst_QHttp2Connection::connectToServer()
 {
     auto [client, server] = makeFakeConnectedSockets();
@@ -266,6 +296,7 @@ void tst_QHttp2Connection::connectToServer()
     QVERIFY(waitForSettingsExchange(connection, serverConnection));
 
     QSignalSpy newIncomingStreamSpy{ serverConnection, &QHttp2Connection::newIncomingStream };
+    QSignalSpy clientIncomingStreamSpy{ connection, &QHttp2Connection::newIncomingStream };
 
     QHttp2Stream *clientStream = connection->createStream().unwrap();
     QSignalSpy clientHeaderReceivedSpy{ clientStream, &QHttp2Stream::headersReceived };
@@ -283,6 +314,8 @@ void tst_QHttp2Connection::connectToServer()
     const HPack::HttpHeader
             headersReceived = clientHeaderReceivedSpy.front().front().value<HPack::HttpHeader>();
     QCOMPARE(headersReceived, ExpectedResponseHeaders);
+
+    QCOMPARE(clientIncomingStreamSpy.count(), 0);
 }
 
 void tst_QHttp2Connection::WINDOW_UPDATE()

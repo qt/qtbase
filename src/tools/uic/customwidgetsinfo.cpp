@@ -78,19 +78,89 @@ bool CustomWidgetsInfo::isCustomWidgetContainer(const QString &className) const
     return false;
 }
 
+// FIXME in 7.0 - QTBUG-124241
+// Remove isAmbiguous logic when widget slots have been disambiguated.
+bool CustomWidgetsInfo::isAmbiguous(const QString &className, const QString &signature,
+                                    QMetaMethod::MethodType type) const
+{
+    using TypeMap = QHash<QString, QMetaMethod::MethodType>;
+    struct AmbiguousInClass {
+        QLatin1StringView className;
+        TypeMap methodMap;
+    };
+
+    static const QList<AmbiguousInClass> ambiguousList = {
+
+        {"QAction"_L1, {{"triggered"_L1, QMetaMethod::Signal}}},
+        {"QCommandLinkButton"_L1, {{"triggered"_L1, QMetaMethod::Signal},
+                                   {"clicked"_L1, QMetaMethod::Signal}}},
+        {"QPushButton"_L1, {{"triggered"_L1, QMetaMethod::Signal},
+                            {"clicked"_L1, QMetaMethod::Signal}}},
+        {"QCheckBox"_L1, {{"triggered"_L1, QMetaMethod::Signal},
+                          {"clicked"_L1, QMetaMethod::Signal}}},
+        {"QRadioButton"_L1, {{"triggered"_L1, QMetaMethod::Signal},
+                             {"clicked"_L1, QMetaMethod::Signal}}},
+        {"QToolButton"_L1,  {{"triggered"_L1, QMetaMethod::Signal},
+                            {"clicked"_L1, QMetaMethod::Signal}}},
+        {"QLabel"_L1, {{"setNum"_L1, QMetaMethod::Slot}}},
+        {"QGraphicsView"_L1, {{"invalidateScene"_L1, QMetaMethod::Slot}}},
+        {"QListView"_L1, {{"dataChanged"_L1, QMetaMethod::Slot}}},
+        {"QColumnView"_L1, {{"dataChanged"_L1, QMetaMethod::Slot}}},
+        {"QListWidget"_L1, {{"dataChanged"_L1, QMetaMethod::Slot},
+                           {"scrollToItem"_L1, QMetaMethod::Slot}}},
+        {"QTableView"_L1, {{"dataChanged"_L1, QMetaMethod::Slot}}},
+        {"QTableWidget"_L1, {{"dataChanged"_L1, QMetaMethod::Slot},
+                            {"scrollToItem"_L1, QMetaMethod::Slot}}},
+        {"QTreeView"_L1, {{"dataChanged"_L1, QMetaMethod::Slot},
+                         {"verticalScrollbarValueChanged"_L1, QMetaMethod::Slot},
+                         {"expandRecursively"_L1, QMetaMethod::Slot}}},
+        {"QTreeWidget"_L1, {{"dataChanged"_L1, QMetaMethod::Slot},
+                           {"verticalScrollbarValueChanged"_L1, QMetaMethod::Slot}
+                           ,{"expandRecursively"_L1, QMetaMethod::Slot}
+                           ,{"scrollToItem"_L1, QMetaMethod::Slot}}},
+        {"QUndoView"_L1, {{"dataChanged"_L1, QMetaMethod::Slot}}},
+        {"QLCDNumber"_L1, {{"display"_L1, QMetaMethod::Slot}}},
+        {"QMenuBar"_L1, {{"setVisible"_L1, QMetaMethod::Slot}}},
+        {"QTextBrowser"_L1, {{"setSource"_L1, QMetaMethod::Slot}}},
+
+        /*
+        The following widgets with ambiguities are not used in the widget designer:
+
+        {"QSplashScreen"_L1, {{"showMessage"_L1, QMetaMethod::Slot}}},
+        {"QCompleter"_L1, {{"activated"_L1, QMetaMethod::Signal},
+                          {"highlighted"_L1, QMetaMethod::Signal}}},
+        {"QSystemTrayIcon"_L1, {{"showMessage"_L1, QMetaMethod::Slot}}},
+        {"QStyledItemDelegate"_L1, {{"closeEditor"_L1, QMetaMethod::Signal}}},
+        {"QErrorMessage"_L1, {{"showMessage"_L1, QMetaMethod::Slot}}},
+        {"QGraphicsDropShadowEffect"_L1, {{"setOffset"_L1, QMetaMethod::Slot}}},
+        {"QGraphicsScene"_L1, {{"invalidate"_L1, QMetaMethod::Slot}}},
+        {"QItemDelegate"_L1, {{"closeEditor"_L1, QMetaMethod::Signal}}}
+        */
+    };
+
+    for (auto it = ambiguousList.constBegin(); it != ambiguousList.constEnd(); ++it) {
+        if (extends(className, it->className)) {
+            const qsizetype pos = signature.indexOf(u'(');
+            const QString method = signature.left(pos);
+            const auto methodIterator = it->methodMap.find(method);
+            return methodIterator != it->methodMap.constEnd() && type == methodIterator.value();
+        }
+    }
+    return false;
+}
+
 // Is it ambiguous, resulting in different signals for Python
 // "QAbstractButton::clicked(checked=false)"
 bool CustomWidgetsInfo::isAmbiguousSignal(const QString &className,
                                           const QString &signalSignature) const
 {
-    if (signalSignature.startsWith(u"triggered") && extends(className, "QAction"))
-        return true;
-    if (signalSignature.startsWith(u"clicked(")
-        && extendsOneOf(className, {u"QCommandLinkButton"_s, u"QCheckBox"_s,
-                                    u"QPushButton"_s, u"QRadioButton"_s, u"QToolButton"_s})) {
-        return true;
-    }
-    return false;
+    return isAmbiguous(className, signalSignature, QMetaMethod::Signal);
+}
+
+bool CustomWidgetsInfo::isAmbiguousSlot(const QString &className,
+                                        const QString &signalSignature) const
+{
+    return isAmbiguous(className, signalSignature, QMetaMethod::Slot);
 }
 
 QString CustomWidgetsInfo::realClassName(const QString &className) const

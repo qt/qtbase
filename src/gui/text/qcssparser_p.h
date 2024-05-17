@@ -167,6 +167,14 @@ enum Property {
     TextDecorationColor,
     QtPlaceHolderTextColor,
     QtAccent,
+    QtStrokeWidth,
+    QtStrokeColor,
+    QtStrokeLineCap,
+    QtStrokeLineJoin,
+    QtStrokeMiterLimit,
+    QtStrokeDashArray,
+    QtStrokeDashOffset,
+    QtForeground,
     NumProperties
 };
 
@@ -223,6 +231,13 @@ enum KnownValue {
     Value_SmallCaps,
     Value_Uppercase,
     Value_Lowercase,
+    Value_SquareCap,
+    Value_FlatCap,
+    Value_RoundCap,
+    Value_MiterJoin,
+    Value_BevelJoin,
+    Value_RoundJoin,
+    Value_SvgMiterJoin,
 
     /* keep these in same order as QPalette::ColorRole */
     Value_FirstColorRole,
@@ -389,7 +404,7 @@ QT_CSS_DECLARE_TYPEINFO(BackgroundData, Q_RELOCATABLE_TYPE)
 
 struct LengthData {
     qreal number;
-    enum { None, Px, Ex, Em } unit;
+    enum { None, Px, Ex, Em, Percent } unit;
 };
 QT_CSS_DECLARE_TYPEINFO(LengthData, Q_PRIMITIVE_TYPE)
 
@@ -448,6 +463,8 @@ struct Q_GUI_EXPORT Declaration
 
     void borderImageValue(QString *image, int *cuts, TileMode *h, TileMode *v) const;
     bool borderCollapseValue() const;
+
+    QList<qreal> dashArray() const;
 };
 QT_CSS_DECLARE_TYPEINFO(Declaration, Q_RELOCATABLE_TYPE)
 
@@ -832,6 +849,7 @@ struct Q_GUI_EXPORT ValueExtractor
     bool extractIcon(QIcon *icon, QSize *size);
 
     void lengthValues(const Declaration &decl, int *m);
+    QTextLength textLength(const Declaration &decl);
 
 private:
     void extractFont();

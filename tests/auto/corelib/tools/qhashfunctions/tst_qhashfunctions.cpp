@@ -1,5 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// Copyright (C) 2024 Intel Corporation.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <QVarLengthArray>
@@ -30,7 +31,15 @@ public slots:
     void init();
 
 private Q_SLOTS:
-    void consistent();
+    void unsignedIntegerConsistency_data();
+    void unsignedIntegerConsistency();
+    void signedIntegerConsistency_data();
+    void signedIntegerConsistency();
+    void extendedIntegerConsistency();
+    void floatingPointConsistency_data();
+    void floatingPointConsistency();
+    void stringConsistency_data();
+    void stringConsistency();
     void qhash();
     void qhash_of_empty_and_null_qstring();
     void qhash_of_empty_and_null_qbytearray();
@@ -61,80 +70,6 @@ private Q_SLOTS:
 #endif
 };
 
-void tst_QHashFunctions::consistent()
-{
-    // QString-like
-    const QString s = QStringLiteral("abcdefghijklmnopqrstuvxyz").repeated(16);
-    QCOMPARE(qHash(s, seed), qHash(QStringView(s), seed));
-
-    // unsigned integers
-    {
-        constexpr unsigned char ae = 0xE4; // LATIN SMALL LETTER A WITH DIAERESIS
-        const auto h8   = qHash(quint8(ae), seed);
-        const auto h16  = qHash(quint16(ae), seed);
-        const auto h32  = qHash(quint32(ae), seed);
-        const auto h64  = qHash(quint64(ae), seed);
-        QCOMPARE(h8, h16);
-        QCOMPARE(h16, h32);
-        QCOMPARE(h32, h64);
-       // there are a few more unsigned types:
-#ifdef __cpp_char8_t
-        const auto hc8 = qHash(char8_t(ae), seed);
-#endif
-        const auto hc16  = qHash(char16_t(ae), seed);
-        const auto hc32  = qHash(char32_t(ae), seed);
-#ifdef __cpp_char8_t
-        QCOMPARE(hc8, h8);
-#endif
-        QCOMPARE(hc16, h16);
-        QCOMPARE(hc32, h32);
-    }
-
-    // signed integers
-    {
-        constexpr signed char ae = 0xE4; // LATIN SMALL LETTER A WITH DIAERESIS
-        const auto h8   = qHash(qint8(ae), seed);
-        const auto h16  = qHash(qint16(ae), seed);
-        const auto h32  = qHash(qint32(ae), seed);
-        const auto h64  = qHash(qint64(ae), seed);
-        QCOMPARE(h8, h16);
-        QCOMPARE(h16, h32);
-        if constexpr (sizeof(size_t) == sizeof(int)) // 32-bit
-            QEXPECT_FAIL("", "QTBUG-116080", Continue);
-        QCOMPARE(h32, h64);
-    }
-
-    // mixed signed/unsigned
-    {
-        const auto hu8 = qHash(quint8(42), seed);
-        const auto hs8 = qHash(qint8(42),  seed);
-        QCOMPARE(hu8, hs8);
-
-        const auto hu16 = qHash(quint16(4242), seed);
-        const auto hs16 = qHash(qint16(4242),  seed);
-        QCOMPARE(hu16, hs16);
-
-        const auto hu32 = qHash(quint32(4242'4242), seed);
-        const auto hs32 = qHash(qint32(4242'4242),  seed);
-        QCOMPARE(hu32, hs32);
-
-        const auto hu64 = qHash(quint64(4242'424242), seed);
-        const auto hs64 = qHash(qint64(4242'424242),  seed);
-        QCOMPARE(hu64, hs64);
-    }
-
-    // floats
-    {
-        const/*expr broken: QTBUG-116079*/ qfloat16 f16 = qfloat16(-42.f);
-        const auto h16 = qHash(f16, seed);
-        const auto h32 = qHash(float(f16), seed);
-        const auto h64 = qHash(double(f16), seed);
-        QCOMPARE(h16, h32);
-        QEXPECT_FAIL("", "QTBUG-116077", Continue);
-        QCOMPARE(h32, h64);
-    }
-}
-
 void tst_QHashFunctions::initTestCase()
 {
     QTest::addColumn<quint64>("seedValue");
@@ -154,6 +89,251 @@ void tst_QHashFunctions::init()
 {
     QFETCH_GLOBAL(quint64, seedValue);
     seed = size_t(seedValue);
+}
+
+template <typename T> static void addPositiveCommonRows()
+{
+    QTest::addRow("zero") << T(0);
+    QTest::addRow("positive_7bit") << T(42);
+    QTest::addRow("positive_15bit") << T(0x1f3f);
+    QTest::addRow("positive_31bit") << T(0x4b3d'93c4);
+    QTest::addRow("positive_63bit") << T(Q_INT64_C(0x39df'7338'4b14'fcb0));
+
+    QTest::addRow("SCHAR_MAX") << T(SCHAR_MAX);
+    QTest::addRow("SHRT_MAX") << T(SHRT_MAX);
+    QTest::addRow("INT_MAX") << T(INT_MAX);
+    QTest::addRow("LLONG_MAX") << T(LLONG_MAX);
+}
+
+void tst_QHashFunctions::signedIntegerConsistency_data()
+{
+    QTest::addColumn<qint64>("value");
+    addPositiveCommonRows<qint64>();
+    QTest::addRow("negative_7bit") << Q_INT64_C(-28);
+    QTest::addRow("negative_15bit") << Q_INT64_C(-0x387c);
+    QTest::addRow("negative_31bit") << qint64(-0x7713'30f9);
+
+    QTest::addRow("SCHAR_MIN") << qint64(SCHAR_MIN);
+    QTest::addRow("SHRT_MIN") << qint64(SHRT_MIN);
+    QTest::addRow("INT_MIN") << qint64(INT_MIN);
+    QTest::addRow("LLONG_MIN") << LLONG_MIN;
+}
+
+void tst_QHashFunctions::unsignedIntegerConsistency_data()
+{
+    QTest::addColumn<quint64>("value");
+    addPositiveCommonRows<quint64>();
+
+    QTest::addRow("positive_8bit") << Q_UINT64_C(0xE4);
+    QTest::addRow("positive_16bit") << Q_UINT64_C(0xcafe);
+    QTest::addRow("positive_32bit") << quint64(0xcafe'babe);
+
+    QTest::addRow("UCHAR_MAX") << quint64(UCHAR_MAX);
+    QTest::addRow("UHRT_MAX") << quint64(USHRT_MAX);
+    QTest::addRow("UINT_MAX") << quint64(UINT_MAX);
+    QTest::addRow("ULLONG_MAX") << ULLONG_MAX;
+}
+
+static void unsignedIntegerConsistency(quint64 value, size_t seed)
+{
+    quint8 v8 = quint8(value);
+    quint16 v16 = quint16(value);
+    quint32 v32 = quint32(value);
+
+    const auto hu8  = qHash(v8, seed);
+    const auto hu16 = qHash(v16, seed);
+    const auto hu32 = qHash(v32, seed);
+    const auto hu64 = qHash(value, seed);
+
+    if (v8 == value)
+        QCOMPARE(hu8, hu32);
+    if (v16 == value)
+        QCOMPARE(hu16, hu32);
+    if (v32 == value)
+        QCOMPARE(hu64, hu32);
+
+#if QT_SUPPORTS_INT128
+    const auto hu128 = qHash(quint128(value), seed);
+    QCOMPARE(hu128, hu64);
+#endif
+
+    // there are a few more unsigned types:
+#ifdef __cpp_char8_t
+     const auto hc8 = qHash(char8_t(value), seed);
+#endif
+     const auto hc16  = qHash(char16_t(value), seed);
+     const auto hc32  = qHash(char32_t(value), seed);
+#ifdef __cpp_char8_t
+     QCOMPARE(hc8, hu8);
+#endif
+     QCOMPARE(hc16, hu16);
+     QCOMPARE(hc32, hu32);
+}
+
+void tst_QHashFunctions::unsignedIntegerConsistency()
+{
+    QFETCH(quint64, value);
+    ::unsignedIntegerConsistency(value, seed);
+}
+
+void tst_QHashFunctions::signedIntegerConsistency()
+{
+    QFETCH(qint64, value);
+    qint8 v8 = qint8(value);
+    qint16 v16 = qint16(value);
+    qint32 v32 = qint32(value);
+
+    const auto hs8  = qHash(v8, seed);
+    const auto hs16 = qHash(v16, seed);
+    const auto hs32 = qHash(v32, seed);
+    const auto hs64 = qHash(value, seed);
+
+    if (v8 == value)
+        QCOMPARE(hs8, hs32);
+    if (v16 == value)
+        QCOMPARE(hs16, hs32);
+    if (v32 == value) {
+        // because of QTBUG-116080, this may not match, but we can't guarantee
+        // it mismatches 100% of the time either
+        if constexpr (sizeof(size_t) > sizeof(int) || QT_VERSION_MAJOR > 6)
+            QCOMPARE(hs64, hs32);
+    }
+
+#if QT_SUPPORTS_INT128
+    const auto hs128 = qHash(qint128(value), seed);
+    QCOMPARE(hs128, hs64);
+#endif
+
+    if (value > 0) {
+        quint64 u64 = quint64(value);
+        const auto hu64 = qHash(u64, seed);
+        QCOMPARE(hu64, hs64);
+        ::unsignedIntegerConsistency(u64, seed);
+        // by A == B && B == C -> A == C, we've shown hsXX == huXX for all XX
+    }
+}
+
+void tst_QHashFunctions::extendedIntegerConsistency()
+{
+#ifdef QT_SUPPORTS_INT128
+    // We only need to check qint128 and quint128 consistency here.
+    qint128 v65bit = Q_INT128_C(0x1'abea'06b7'dcf5'106a);
+    qint128 v127bit = Q_INT128_C(0x387c'ac7a'22a0'5242'9ee9'bcaa'6a53'13af);
+
+    QCOMPARE(qHash(quint128(v65bit), seed), qHash(v65bit, seed));
+    QCOMPARE(qHash(quint128(v127bit), seed), qHash(v127bit, seed));
+#else
+    QSKIP("This platform does not support extended integer types.");
+#endif
+}
+
+void tst_QHashFunctions::floatingPointConsistency_data()
+{
+    QTest::addColumn<double>("value");
+    QTest::addRow("zero") << 0.0;
+
+    QTest::addRow("1.0") << 1.0;
+    QTest::addRow("infinity") << std::numeric_limits<double>::infinity();
+
+    QTest::addRow("fp16_epsilon") << double(std::numeric_limits<qfloat16>::epsilon());
+    QTest::addRow("fp16_min") << double(std::numeric_limits<qfloat16>::min());
+    QTest::addRow("fp16_max") << double(std::numeric_limits<qfloat16>::max());
+
+    QTest::addRow("float_epsilon") << double(std::numeric_limits<float>::epsilon());
+    QTest::addRow("float_min") << double(std::numeric_limits<float>::min());
+    QTest::addRow("float_max") << double(std::numeric_limits<float>::max());
+
+    QTest::addRow("double_epsilon") << double(std::numeric_limits<double>::epsilon());
+    QTest::addRow("double_min") << double(std::numeric_limits<double>::min());
+    QTest::addRow("double_max") << double(std::numeric_limits<double>::max());
+}
+
+void tst_QHashFunctions::floatingPointConsistency()
+{
+    QFETCH(double, value);
+    long double lvalue = value;
+    float fp32 = float(value);
+    qfloat16 fp16 = qfloat16(value);
+
+    const auto hfld = qHash(lvalue, seed);
+    const auto hf64 = qHash(value, seed);
+    const auto hf32 = qHash(fp32, seed);
+    const auto hf16 = qHash(fp16, seed);
+
+    const auto hnfld = qHash(-lvalue, seed);
+    const auto hnf64 = qHash(-value, seed);
+    const auto hnf32 = qHash(-fp32, seed);
+    const auto hnf16 = qHash(-fp16, seed);
+
+    if (fp16 == fp32) {
+        QCOMPARE(hf16, hf32);
+        QCOMPARE(hnf16, hnf32);
+    }
+
+    // See QTBUG-116077; the rest isn't guaranteed to match (but we can't
+    // guarantee it will mismatch either).
+    return;
+
+    if (fp32 == value) {
+        QCOMPARE(hf32, hf64);
+        QCOMPARE(hnf32, hnf64);
+    }
+
+    QCOMPARE(hfld, hf64);
+    QCOMPARE(hnfld, hnf64);
+}
+
+void tst_QHashFunctions::stringConsistency_data()
+{
+    QTest::addColumn<QString>("value");
+    QTest::newRow("null") << QString();
+    QTest::newRow("empty") << "";
+    QTest::newRow("withnull") << QStringLiteral("A\0z");
+    QTest::newRow("short-ascii") << "Hello";            // 10 bytes
+    QTest::newRow("medium-ascii") << "Hello, World";    // 24 bytes
+    QTest::newRow("long-ascii") << QStringLiteral("abcdefghijklmnopqrstuvxyz").repeated(16);
+
+    QTest::newRow("short-latin1") << "Bokmål";
+    QTest::newRow("medium-latin1") << "Det går bra!";   // 24 bytes
+    QTest::newRow("long-latin1")
+            << R"(Alle mennesker er født frie og med samme menneskeverd og menneskerettigheter.
+ De er utstyrt med fornuft og samvittighet og bør handle mot hverandre i brorskapets ånd.)";
+
+    QTest::newRow("short-nonlatin1") << "Ελληνικά";
+    QTest::newRow("long-nonlatin1")
+            << R"('Ολοι οι άνθρωποι γεννιούνται ελεύθεροι και ίσοι στην αξιοπρέπεια και τα
+ δικαιώματα. Είναι προικισμένοι με λογική και συνείδηση, και οφείλουν να συμπεριφέρονται μεταξύ
+ τους με πνεύμα αδελφοσύνης.)";
+}
+
+void tst_QHashFunctions::stringConsistency()
+{
+    QFETCH(QString, value);
+    QStringView sv = value;
+    QByteArray u8ba = value.toUtf8();
+    QByteArray u8bav = u8ba;
+
+    // sanity checking:
+    QCOMPARE(sv.isNull(), value.isNull());
+    QCOMPARE(sv.isEmpty(), value.isEmpty());
+    QCOMPARE(u8ba.isNull(), value.isNull());
+    QCOMPARE(u8ba.isEmpty(), value.isEmpty());
+    QCOMPARE(u8bav.isNull(), value.isNull());
+    QCOMPARE(u8bav.isEmpty(), value.isEmpty());
+
+    QCOMPARE(qHash(sv, seed), qHash(value, seed));
+    QCOMPARE(qHash(u8bav, seed), qHash(u8ba, seed));
+
+    if (seed == 0 || QHashHeterogeneousSearch<QString, QLatin1StringView>::value) {
+        QByteArray l1ba = value.toLatin1();
+        QLatin1StringView l1sv(l1ba.data(), l1ba.size());
+#ifdef Q_PROCESSOR_ARM
+        // zero-extending aeshash not implemented on ARM
+#else
+        if (value == l1sv)
+            QCOMPARE(qHash(l1sv, seed), qHash(value, seed));
+#endif
+    }
 }
 
 void tst_QHashFunctions::qhash()
@@ -256,9 +436,7 @@ void tst_QHashFunctions::qhash_of_zero_floating_points()
 {
     QCOMPARE(qHash(-0.0f, seed), qHash(0.0f, seed));
     QCOMPARE(qHash(-0.0 , seed), qHash(0.0 , seed));
-#ifndef Q_OS_DARWIN
     QCOMPARE(qHash(-0.0L, seed), qHash(0.0L, seed));
-#endif
 }
 
 void tst_QHashFunctions::qthash_data()

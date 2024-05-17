@@ -1,5 +1,5 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 // This is a compact, minimal demo of deciding the backend at runtime while
 // using the exact same shaders and rendering code without any branching
@@ -84,7 +84,7 @@ QRhi::Implementation graphicsApiFromCmd(const QGuiApplication &app) {
     QRhi::Implementation graphicsApi;
 #if defined(Q_OS_WIN)
     graphicsApi = QRhi::D3D11;
-#elif defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#elif QT_CONFIG(metal)
     graphicsApi = QRhi::Metal;
 #elif QT_CONFIG(vulkan)
     graphicsApi = QRhi::Vulkan;

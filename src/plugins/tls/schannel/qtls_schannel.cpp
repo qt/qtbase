@@ -1023,8 +1023,10 @@ bool TlsCryptographSchannel::sendToken(void *token, unsigned long tokenLength, b
     Q_ASSERT(d);
     auto *plainSocket = d->plainTcpSocket();
     Q_ASSERT(plainSocket);
-    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid())
+    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid()
+        || !plainSocket->isOpen()) {
         return false;
+    }
 
     const qint64 written = plainSocket->write(static_cast<const char *>(token), tokenLength);
     if (written != qint64(tokenLength)) {
@@ -1143,10 +1145,12 @@ bool TlsCryptographSchannel::acquireCredentialsHandle()
     }
 
     const QList<QSslCipher> ciphers = configuration.ciphers();
-    if (!containsTls13Cipher(ciphers))
+    if (!ciphers.isEmpty() && !containsTls13Cipher(ciphers))
         protocols &= ~SP_PROT_TLS1_3;
 
-    QList<CRYPTO_SETTINGS> cryptoSettings = cryptoSettingsForCiphers(ciphers);
+    QList<CRYPTO_SETTINGS> cryptoSettings;
+    if (!ciphers.isEmpty())
+        cryptoSettings = cryptoSettingsForCiphers(ciphers);
 
     TLS_PARAMETERS tlsParameters = {
         0,
@@ -1387,7 +1391,8 @@ bool TlsCryptographSchannel::performHandshake()
     auto *plainSocket = d->plainTcpSocket();
     Q_ASSERT(plainSocket);
 
-    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid()) {
+    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid()
+        || !plainSocket->isOpen()) {
         setErrorAndEmit(d, QAbstractSocket::RemoteHostClosedError,
                         QSslSocket::tr("The TLS/SSL connection has been closed"));
         return false;
@@ -1763,8 +1768,10 @@ void TlsCryptographSchannel::transmit()
         return; // This function should not have been called
 
     // Can happen if called through QSslSocket::abort->QSslSocket::close->QSslSocket::flush->here
-    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid())
+    if (plainSocket->state() == QAbstractSocket::UnconnectedState || !plainSocket->isValid()
+        || !plainSocket->isOpen()) {
         return;
+    }
 
     if (schannelState != SchannelState::Done) {
         continueHandshake();

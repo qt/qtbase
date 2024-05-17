@@ -1,5 +1,5 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtCore/QCoreApplication>
 #include <QtNetwork/QtNetwork>
@@ -171,7 +171,7 @@ void tst_QIODevice::constructing_QFile()
 void tst_QIODevice::read_QByteArray()
 {
     QFile f(QFINDTESTDATA("tst_qiodevice.cpp"));
-    f.open(QIODevice::ReadOnly);
+    QVERIFY(f.open(QIODevice::ReadOnly));
 
     QByteArray b = f.read(10);
     QCOMPARE(b.size(), 10);

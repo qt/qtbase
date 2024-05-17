@@ -75,9 +75,8 @@ class CldrReader (object):
             pass # self.__wrapped(self.whitter, 'Skipping likelySubtags (for unknown codes): ', skips)
 
     def readLocales(self, calendars = ('gregorian',)):
-        locales = tuple(self.__allLocales(calendars))
-        return dict(((k.language_id, k.script_id, k.territory_id, k.variant_code),
-                     k) for k in locales)
+        return {(k.language_id, k.script_id, k.territory_id, k.variant_code): k
+                for k in self.__allLocales(calendars)}
 
     def __allLocales(self, calendars):
         def skip(locale, reason):
@@ -352,7 +351,11 @@ class CldrAccess (object):
                 parts.append(text)
         if len(parts) > 1:
             parts[-1] = 'and ' + parts[-1]
-        assert parts
+        else:
+            assert parts
+            if parts[0].startswith('variant'):
+                raise Error(f'No support for {parts[0]}',
+                            language, script, territory, variant)
         raise Error('Unknown ' + ', '.join(parts),
                     language, script, territory, variant)
 
@@ -377,9 +380,9 @@ class CldrAccess (object):
             for f in k.split('_'):
                 scraps.add(f)
         from enumdata import language_map, territory_map, script_map
-        language = dict((v, k) for k, v in language_map.values() if not v.isspace())
-        territory = dict((v, k) for k, v in territory_map.values() if v != 'ZZ')
-        script = dict((v, k) for k, v in script_map.values() if v != 'Zzzz')
+        language = {v: k for k, v in language_map.values() if not v.isspace()}
+        territory = {v: k for k, v in territory_map.values() if v != 'ZZ'}
+        script = {v: k for k, v in script_map.values() if v != 'Zzzz'}
         lang = dict(self.__checkEnum(language, self.__codeMap('language'), scraps))
         land = dict(self.__checkEnum(territory, self.__codeMap('territory'), scraps))
         text = dict(self.__checkEnum(script, self.__codeMap('script'), scraps))
@@ -636,15 +639,15 @@ enumdata.py (keeping the old name as an alias):
     def __enumMap(self, key, cache = {}):
         if not cache:
             cache['variant'] = {'': (0, 'This should never be seen outside ldml.py')}
-            # They're not actually lists: mappings from numeric value
-            # to pairs of full name and short code. What we want, in
-            # each case, is a mapping from code to the other two.
+            # They're mappings from numeric value to pairs of full
+            # name and short code. What we want, in each case, is a
+            # mapping from code to the other two.
             from enumdata import language_map, script_map, territory_map
             for form, book, empty in (('language', language_map, 'AnyLanguage'),
                                       ('script', script_map, 'AnyScript'),
                                       ('territory', territory_map, 'AnyTerritory')):
-                cache[form] = dict((pair[1], (num, pair[0]))
-                                   for num, pair in book.items() if pair[0] != 'C')
+                cache[form] = {pair[1]: (num, pair[0])
+                               for num, pair in book.items() if pair[0] != 'C'}
                 # (Have to filter out the C locale, as we give it the
                 # same (all space) code as AnyLanguage, whose code
                 # should probably be 'und' instead.)

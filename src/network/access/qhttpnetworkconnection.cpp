@@ -13,10 +13,13 @@
 #include <qauthenticator.h>
 #include <qcoreapplication.h>
 #include <private/qdecompresshelper_p.h>
+#include <private/qsocketabstraction_p.h>
 
 #include <qbuffer.h>
 #include <qpair.h>
 #include <qdebug.h>
+#include <qspan.h>
+#include <qvarlengtharray.h>
 
 #ifndef QT_NO_SSL
 #    include <private/qsslsocket_p.h>
@@ -32,56 +35,38 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-// Note: Only used from auto tests, normal usage is via QHttp1Configuration
-const int QHttpNetworkConnectionPrivate::defaultHttpChannelCount = 6;
-
 // The pipeline length. So there will be 4 requests in flight.
 const int QHttpNetworkConnectionPrivate::defaultPipelineLength = 3;
 // Only re-fill the pipeline if there's defaultRePipelineLength slots free in the pipeline.
 // This means that there are 2 requests in flight and 2 slots free that will be re-filled.
 const int QHttpNetworkConnectionPrivate::defaultRePipelineLength = 2;
 
-
-QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &hostName,
-                                                             quint16 port, bool encrypt,
-                                                             QHttpNetworkConnection::ConnectionType type)
-: state(RunningState),
-  networkLayerState(Unknown),
-  hostName(hostName), port(port), encrypt(encrypt), delayIpv4(true)
-  , activeChannelCount(type == QHttpNetworkConnection::ConnectionTypeHTTP2
-                       || type == QHttpNetworkConnection::ConnectionTypeHTTP2Direct
-                       ? 1 : defaultHttpChannelCount)
-  , channelCount(defaultHttpChannelCount)
-#ifndef QT_NO_NETWORKPROXY
-  , networkProxy(QNetworkProxy::NoProxy)
-#endif
-  , preConnectRequests(0)
-  , connectionType(type)
+static int getPreferredActiveChannelCount(QHttpNetworkConnection::ConnectionType type,
+                                          int defaultValue)
 {
-    // We allocate all 6 channels even if it's HTTP/2 enabled connection:
-    // in case the protocol negotiation via NPN/ALPN fails, we will have
-    // normally working HTTP/1.1.
-    Q_ASSERT(channelCount >= activeChannelCount);
-    channels = new QHttpNetworkConnectionChannel[channelCount];
+    return (type == QHttpNetworkConnection::ConnectionTypeHTTP2
+            || type == QHttpNetworkConnection::ConnectionTypeHTTP2Direct)
+            ? 1
+            : defaultValue;
 }
 
-QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(quint16 connectionCount, const QString &hostName,
-                                                             quint16 port, bool encrypt,
-                                                             QHttpNetworkConnection::ConnectionType type)
-: state(RunningState), networkLayerState(Unknown),
-  hostName(hostName), port(port), encrypt(encrypt), delayIpv4(true),
-  channelCount(connectionCount)
+QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(
+        quint16 connectionCount, const QString &hostName, quint16 port, bool encrypt,
+        bool isLocalSocket, QHttpNetworkConnection::ConnectionType type)
+    : hostName(hostName),
+      port(port),
+      encrypt(encrypt),
+      isLocalSocket(isLocalSocket),
+      activeChannelCount(getPreferredActiveChannelCount(type, connectionCount)),
+      channelCount(connectionCount),
+      channels(new QHttpNetworkConnectionChannel[channelCount]),
 #ifndef QT_NO_NETWORKPROXY
-  , networkProxy(QNetworkProxy::NoProxy)
+      networkProxy(QNetworkProxy::NoProxy),
 #endif
-  , preConnectRequests(0)
-  , connectionType(type)
+      connectionType(type)
 {
-    channels = new QHttpNetworkConnectionChannel[channelCount];
-
-    activeChannelCount = (type == QHttpNetworkConnection::ConnectionTypeHTTP2 ||
-                          type == QHttpNetworkConnection::ConnectionTypeHTTP2Direct)
-                       ? 1 : connectionCount;
+    if (isLocalSocket) // Don't try to do host lookup for local sockets
+        networkLayerState = IPv4;
     // We allocate all 6 channels even if it's an HTTP/2-enabled
     // connection: in case the protocol negotiation via NPN/ALPN fails,
     // we will have normally working HTTP/1.1.
@@ -120,13 +105,18 @@ void QHttpNetworkConnectionPrivate::pauseConnection()
 
     // Disable all socket notifiers
     for (int i = 0; i < activeChannelCount; i++) {
-        if (channels[i].socket) {
+        if (auto *absSocket = qobject_cast<QAbstractSocket *>(channels[i].socket)) {
 #ifndef QT_NO_SSL
             if (encrypt)
-                QSslSocketPrivate::pauseSocketNotifiers(static_cast<QSslSocket*>(channels[i].socket));
+                QSslSocketPrivate::pauseSocketNotifiers(static_cast<QSslSocket*>(absSocket));
             else
 #endif
-                QAbstractSocketPrivate::pauseSocketNotifiers(channels[i].socket);
+                QAbstractSocketPrivate::pauseSocketNotifiers(absSocket);
+        } else if (qobject_cast<QLocalSocket *>(channels[i].socket)) {
+            // @todo how would we do this?
+#if 0 // @todo Enable this when there is a debug category for this
+            qDebug() << "Should pause socket but there is no way to do it for local sockets";
+#endif
         }
     }
 }
@@ -136,17 +126,21 @@ void QHttpNetworkConnectionPrivate::resumeConnection()
     state = RunningState;
     // Enable all socket notifiers
     for (int i = 0; i < activeChannelCount; i++) {
-        if (channels[i].socket) {
+        if (auto *absSocket = qobject_cast<QAbstractSocket *>(channels[i].socket)) {
 #ifndef QT_NO_SSL
             if (encrypt)
-                QSslSocketPrivate::resumeSocketNotifiers(static_cast<QSslSocket*>(channels[i].socket));
+                QSslSocketPrivate::resumeSocketNotifiers(static_cast<QSslSocket*>(absSocket));
             else
 #endif
-                QAbstractSocketPrivate::resumeSocketNotifiers(channels[i].socket);
+                QAbstractSocketPrivate::resumeSocketNotifiers(absSocket);
 
             // Resume pending upload if needed
             if (channels[i].state == QHttpNetworkConnectionChannel::WritingState)
                 QMetaObject::invokeMethod(&channels[i], "_q_uploadDataReadyRead", Qt::QueuedConnection);
+        } else if (qobject_cast<QLocalSocket *>(channels[i].socket)) {
+#if 0 // @todo Enable this when there is a debug category for this
+            qDebug() << "Should resume socket but there is no way to do it for local sockets";
+#endif
         }
     }
 
@@ -154,7 +148,7 @@ void QHttpNetworkConnectionPrivate::resumeConnection()
     QMetaObject::invokeMethod(this->q_func(), "_q_startNextRequest", Qt::QueuedConnection);
 }
 
-int QHttpNetworkConnectionPrivate::indexOf(QAbstractSocket *socket) const
+int QHttpNetworkConnectionPrivate::indexOf(QIODevice *socket) const
 {
     for (int i = 0; i < activeChannelCount; ++i)
         if (channels[i].socket == socket)
@@ -168,7 +162,7 @@ int QHttpNetworkConnectionPrivate::indexOf(QAbstractSocket *socket) const
 // emitted. This function will check the status of the connection channels if we
 // have not decided the networkLayerState and will return true if the channel error
 // should be emitted by the channel.
-bool QHttpNetworkConnectionPrivate::shouldEmitChannelError(QAbstractSocket *socket)
+bool QHttpNetworkConnectionPrivate::shouldEmitChannelError(QIODevice *socket)
 {
     Q_Q(QHttpNetworkConnection);
 
@@ -338,7 +332,7 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
 
 
 
-void QHttpNetworkConnectionPrivate::emitReplyError(QAbstractSocket *socket,
+void QHttpNetworkConnectionPrivate::emitReplyError(QIODevice *socket,
                                                    QHttpNetworkReply *reply,
                                                    QNetworkReply::NetworkError errorCode)
 {
@@ -403,7 +397,7 @@ void QHttpNetworkConnectionPrivate::copyCredentials(int fromChannel, QAuthentica
 
 
 // handles the authentication for one channel and eventually re-starts the other channels
-bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket *socket, QHttpNetworkReply *reply,
+bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QIODevice *socket, QHttpNetworkReply *reply,
                                                                 bool isProxy, bool &resend)
 {
     Q_ASSERT(socket);
@@ -505,7 +499,7 @@ bool QHttpNetworkConnectionPrivate::handleAuthenticateChallenge(QAbstractSocket 
 }
 
 // Used by the HTTP1 code-path
-QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QAbstractSocket *socket,
+QUrl QHttpNetworkConnectionPrivate::parseRedirectResponse(QIODevice *socket,
                                                           QHttpNetworkReply *reply)
 {
     ParseRedirectResult result = parseRedirectResponse(reply);
@@ -542,7 +536,9 @@ QHttpNetworkConnectionPrivate::parseRedirectResponse(QHttpNetworkReply *reply)
 
     // Check redirect url protocol
     const QUrl priorUrl(reply->request().url());
-    if (redirectUrl.scheme() == "http"_L1 || redirectUrl.scheme() == "https"_L1) {
+    const QString targetUrlScheme = redirectUrl.scheme();
+    if (targetUrlScheme == "http"_L1 || targetUrlScheme == "https"_L1
+        || targetUrlScheme.startsWith("unix"_L1)) {
         switch (reply->request().redirectPolicy()) {
         case QNetworkRequest::NoLessSafeRedirectPolicy:
             // Here we could handle https->http redirects as InsecureProtocolError.
@@ -553,7 +549,7 @@ QHttpNetworkConnectionPrivate::parseRedirectResponse(QHttpNetworkReply *reply)
             break;
         case QNetworkRequest::SameOriginRedirectPolicy:
             if (priorUrl.host() != redirectUrl.host()
-                || priorUrl.scheme() != redirectUrl.scheme()
+                || priorUrl.scheme() != targetUrlScheme
                 || priorUrl.port() != redirectUrl.port()) {
                 return {{}, QNetworkReply::InsecureRedirectError};
             }
@@ -569,7 +565,7 @@ QHttpNetworkConnectionPrivate::parseRedirectResponse(QHttpNetworkReply *reply)
     return {std::move(redirectUrl), QNetworkReply::NoError};
 }
 
-void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket, QHttpNetworkRequest &request)
+void QHttpNetworkConnectionPrivate::createAuthorization(QIODevice *socket, QHttpNetworkRequest &request)
 {
     Q_ASSERT(socket);
 
@@ -705,7 +701,7 @@ void QHttpNetworkConnectionPrivate::requeueRequest(const HttpMessagePair &pair)
     QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
 }
 
-bool QHttpNetworkConnectionPrivate::dequeueRequest(QAbstractSocket *socket)
+bool QHttpNetworkConnectionPrivate::dequeueRequest(QIODevice *socket)
 {
     int i = 0;
     if (socket)
@@ -759,7 +755,7 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::predictNextRequestsReply() con
 }
 
 // this is called from _q_startNextRequest and when a request has been sent down a socket from the channel
-void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
+void QHttpNetworkConnectionPrivate::fillPipeline(QIODevice *socket)
 {
     // return fast if there is nothing to pipeline
     if (highPriorityQueue.isEmpty() && lowPriorityQueue.isEmpty())
@@ -787,7 +783,7 @@ void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
         return;
 
     // check if socket is connected
-    if (socket->state() != QAbstractSocket::ConnectedState)
+    if (QSocketAbstraction::socketState(socket) != QAbstractSocket::ConnectedState)
         return;
 
     // check for resendCurrent
@@ -881,16 +877,15 @@ bool QHttpNetworkConnectionPrivate::fillPipeline(QList<HttpMessagePair> &queue, 
 }
 
 
-QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError errorCode, QAbstractSocket *socket, const QString &extraDetail)
+QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError errorCode, QIODevice *socket, const QString &extraDetail)
 {
     QString errorString;
     switch (errorCode) {
-    case QNetworkReply::HostNotFoundError:
-        if (socket)
-            errorString = QCoreApplication::translate("QHttp", "Host %1 not found").arg(socket->peerName());
-        else
-            errorString = QCoreApplication::translate("QHttp", "Host %1 not found").arg(hostName);
+    case QNetworkReply::HostNotFoundError: {
+        const QString peerName = socket ? QSocketAbstraction::socketPeerName(socket) : hostName;
+        errorString = QCoreApplication::translate("QHttp", "Host %1 not found").arg(peerName);
         break;
+    }
     case QNetworkReply::ConnectionRefusedError:
         errorString = QCoreApplication::translate("QHttp", "Connection refused");
         break;
@@ -1043,7 +1038,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     for (int i = 0; i < activeChannelCount; ++i) {
         if (channels[i].resendCurrent && (channels[i].state != QHttpNetworkConnectionChannel::ClosingState)) {
             if (!channels[i].socket
-                || channels[i].socket->state() == QAbstractSocket::UnconnectedState) {
+                || QSocketAbstraction::socketState(channels[i].socket) == QAbstractSocket::UnconnectedState) {
                 if (!channels[i].ensureConnection())
                     continue;
             }
@@ -1067,7 +1062,9 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         // try to get a free AND connected socket
         for (int i = 0; i < activeChannelCount; ++i) {
             if (channels[i].socket) {
-                if (!channels[i].reply && !channels[i].isSocketBusy() && channels[i].socket->state() == QAbstractSocket::ConnectedState) {
+                if (!channels[i].reply && !channels[i].isSocketBusy()
+                    && QSocketAbstraction::socketState(channels[i].socket)
+                            == QAbstractSocket::ConnectedState) {
                     if (dequeueRequest(channels[i].socket))
                         channels[i].sendRequest();
                 }
@@ -1087,7 +1084,8 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         else if (networkLayerState == IPv6)
             channels[0].networkLayerPreference = QAbstractSocket::IPv6Protocol;
         channels[0].ensureConnection();
-        if (channels[0].socket && channels[0].socket->state() == QAbstractSocket::ConnectedState
+        if (auto *s = channels[0].socket; s
+            && QSocketAbstraction::socketState(s) == QAbstractSocket::ConnectedState
             && !channels[0].pendingEncrypt) {
             if (channels[0].h2RequestsToSend.size()) {
                 channels[0].sendRequest();
@@ -1114,9 +1112,13 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     // return fast if there is nothing to pipeline
     if (highPriorityQueue.isEmpty() && lowPriorityQueue.isEmpty())
         return;
-    for (int i = 0; i < activeChannelCount; i++)
-        if (channels[i].socket && channels[i].socket->state() == QAbstractSocket::ConnectedState)
+    for (int i = 0; i < activeChannelCount; i++) {
+        if (channels[i].socket
+            && QSocketAbstraction::socketState(channels[i].socket)
+                    == QAbstractSocket::ConnectedState) {
             fillPipeline(channels[i].socket);
+        }
+    }
 
     // If there is not already any connected channels we need to connect a new one.
     // We do not pair the channel with the request until we know if it is
@@ -1134,23 +1136,24 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     if (neededOpenChannels <= 0)
         return;
 
-    QQueue<int> channelsToConnect;
+    QVarLengthArray<int> channelsToConnect;
 
     // use previously used channels first
     for (int i = 0; i < activeChannelCount && neededOpenChannels > 0; ++i) {
         if (!channels[i].socket)
             continue;
 
-        if ((channels[i].socket->state() == QAbstractSocket::ConnectingState)
-            || (channels[i].socket->state() == QAbstractSocket::HostLookupState)
+        using State = QAbstractSocket::SocketState;
+        if ((QSocketAbstraction::socketState(channels[i].socket) == State::ConnectingState)
+            || (QSocketAbstraction::socketState(channels[i].socket) == State::HostLookupState)
             || channels[i].pendingEncrypt) { // pendingEncrypt == "EncryptingState"
             neededOpenChannels--;
             continue;
         }
 
         if (!channels[i].reply && !channels[i].isSocketBusy()
-            && (channels[i].socket->state() == QAbstractSocket::UnconnectedState)) {
-            channelsToConnect.enqueue(i);
+            && (QSocketAbstraction::socketState(channels[i].socket) == State::UnconnectedState)) {
+            channelsToConnect.push_back(i);
             neededOpenChannels--;
         }
     }
@@ -1160,12 +1163,14 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
         if (channels[i].socket)
             continue;
 
-        channelsToConnect.enqueue(i);
+        channelsToConnect.push_back(i);
         neededOpenChannels--;
     }
 
-    while (!channelsToConnect.isEmpty()) {
-        const int channel = channelsToConnect.dequeue();
+    auto channelToConnectSpan = QSpan{channelsToConnect};
+    while (!channelToConnectSpan.isEmpty()) {
+        const int channel = channelToConnectSpan.front();
+        channelToConnectSpan = channelToConnectSpan.sliced(1);
 
         if (networkLayerState == IPv4)
             channels[channel].networkLayerPreference = QAbstractSocket::IPv4Protocol;
@@ -1345,22 +1350,10 @@ void QHttpNetworkConnectionPrivate::_q_connectDelayedChannel()
         channels[1].ensureConnection();
 }
 
-QHttpNetworkConnection::QHttpNetworkConnection(const QString &hostName, quint16 port, bool encrypt,
-                                               QHttpNetworkConnection::ConnectionType connectionType, QObject *parent)
-    : QObject(*(new QHttpNetworkConnectionPrivate(hostName, port, encrypt , connectionType)), parent)
-{
-    Q_D(QHttpNetworkConnection);
-    d->init();
-    if (QNetworkConnectionMonitor::isEnabled()) {
-        connect(&d->connectionMonitor, &QNetworkConnectionMonitor::reachabilityChanged,
-                this, &QHttpNetworkConnection::onlineStateChanged, Qt::QueuedConnection);
-    }
-}
-
 QHttpNetworkConnection::QHttpNetworkConnection(quint16 connectionCount, const QString &hostName,
-                                               quint16 port, bool encrypt, QObject *parent,
+                                               quint16 port, bool encrypt, bool isLocalSocket, QObject *parent,
                                                QHttpNetworkConnection::ConnectionType connectionType)
-     : QObject(*(new QHttpNetworkConnectionPrivate(connectionCount, hostName, port, encrypt,
+     : QObject(*(new QHttpNetworkConnectionPrivate(connectionCount, hostName, port, encrypt, isLocalSocket,
                                                    connectionType)), parent)
 {
     Q_D(QHttpNetworkConnection);

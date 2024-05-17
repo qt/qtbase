@@ -8,9 +8,10 @@
 
 QT_BEGIN_NAMESPACE
 
-QResourceFileEngineIterator::QResourceFileEngineIterator(QDir::Filters filters,
+QResourceFileEngineIterator::QResourceFileEngineIterator(const QString &path, QDir::Filters filters,
                                                          const QStringList &filterNames)
-    : QAbstractFileEngineIterator(filters, filterNames), index(-1)
+    : QAbstractFileEngineIterator(path, filters, filterNames),
+      index(-1)
 {
 }
 
@@ -18,15 +19,7 @@ QResourceFileEngineIterator::~QResourceFileEngineIterator()
 {
 }
 
-QString QResourceFileEngineIterator::next()
-{
-    if (!hasNext())
-        return QString();
-    ++index;
-    return currentFilePath();
-}
-
-bool QResourceFileEngineIterator::hasNext() const
+bool QResourceFileEngineIterator::advance()
 {
     if (index == -1) {
         // Lazy initialization of the iterator
@@ -34,19 +27,34 @@ bool QResourceFileEngineIterator::hasNext() const
         if (!resource.isValid())
             return false;
 
-        // Initialize and move to the next entry.
+        // Initialize and move to the first entry.
         entries = resource.children();
+        if (entries.isEmpty())
+            return false;
+
         index = 0;
+        return true;
     }
 
-    return index < entries.size();
+    if (index < entries.size() - 1) {
+        ++index;
+        return true;
+    }
+
+    return false;
 }
 
 QString QResourceFileEngineIterator::currentFileName() const
 {
-    if (index <= 0 || index > entries.size())
+    if (index < 0 || index > entries.size())
         return QString();
-    return entries.at(index - 1);
+    return entries.at(index);
+}
+
+QFileInfo QResourceFileEngineIterator::currentFileInfo() const
+{
+    m_fileInfo = QFileInfo(currentFilePath());
+    return m_fileInfo;
 }
 
 QT_END_NAMESPACE

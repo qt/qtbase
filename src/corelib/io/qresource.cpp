@@ -36,6 +36,16 @@
 #if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
 #  define QT_USE_MMAP
 #  include <sys/mman.h>
+#  ifdef Q_OS_LINUX
+// since 5.7, so define in case we're being compiled with older kernel headers
+#    define MREMAP_DONTUNMAP    4
+#  elif defined(Q_OS_DARWIN)
+#    include <mach/mach.h>
+#    include <mach/vm_map.h>
+#  endif
+#endif
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
 #endif
 
 //#define DEBUG_RESOURCE_MATCH
@@ -65,6 +75,7 @@ RCC_FEATURE_SYMBOL(Zstd)
 
 #undef RCC_FEATURE_SYMBOL
 
+namespace {
 class QStringSplitter
 {
 public:
@@ -130,7 +141,7 @@ public:
         return QResource::NoCompression;
     }
     const uchar *data(int node, qint64 *size) const;
-    quint64 lastModified(int node) const;
+    qint64 lastModified(int node) const;
     QStringList children(int node) const;
     virtual QString mappingRoot() const { return QString(); }
     bool mappingRootSubdir(const QString &path, QString *match = nullptr) const;
@@ -159,15 +170,18 @@ static QString cleanPath(const QString &_path)
         path.remove(0, 1);
     return path;
 }
+} // unnamed namespace
 
 Q_DECLARE_TYPEINFO(QResourceRoot, Q_RELOCATABLE_TYPE);
 
 typedef QList<QResourceRoot*> ResourceList;
+namespace {
 struct QResourceGlobalData
 {
     QRecursiveMutex resourceMutex;
     ResourceList resourceList;
 };
+}
 Q_GLOBAL_STATIC(QResourceGlobalData, resourceGlobalData)
 
 static inline QRecursiveMutex &resourceMutex()
@@ -279,14 +293,16 @@ public:
     bool load(const QString &file);
     void clear();
 
+    static bool mayRemapData(const QResource &resource);
+
     QLocale locale;
     QString fileName, absoluteFilePath;
     QList<QResourceRoot *> related;
-    mutable qint64 size;
-    mutable quint64 lastModified;
-    mutable const uchar *data;
+    qint64 size;
+    qint64 lastModified;
+    const uchar *data;
     mutable QStringList children;
-    mutable quint8 compressionAlgo;
+    quint8 compressionAlgo;
     bool container;
     /* 2 or 6 padding bytes */
 
@@ -928,14 +944,14 @@ const uchar *QResourceRoot::data(int node, qint64 *size) const
     return nullptr;
 }
 
-quint64 QResourceRoot::lastModified(int node) const
+qint64 QResourceRoot::lastModified(int node) const
 {
     if (node == -1 || version < 0x02)
         return 0;
 
     const int offset = findOffset(node) + 14;
 
-    return qFromBigEndian<quint64>(tree + offset);
+    return qFromBigEndian<qint64>(tree + offset);
 }
 
 QStringList QResourceRoot::children(int node) const
@@ -1031,8 +1047,8 @@ Q_CORE_EXPORT bool qUnregisterResourceData(int version, const unsigned char *tre
     return false;
 }
 
+namespace {
 // run time resource creation
-
 class QDynamicBufferResourceRoot : public QResourceRoot
 {
     QString root;
@@ -1105,6 +1121,11 @@ public:
 
 class QDynamicFileResourceRoot : public QDynamicBufferResourceRoot
 {
+public:
+    static uchar *map_sys(QFile &file, qint64 base, qsizetype size);
+    static void unmap_sys(void *base, qsizetype size);
+
+private:
     QString fileName;
     // for mmap'ed files, this is what needs to be unmapped.
     uchar *unmapPointer;
@@ -1115,22 +1136,18 @@ public:
         : QDynamicBufferResourceRoot(_root), unmapPointer(nullptr), unmapLength(0)
     { }
     ~QDynamicFileResourceRoot() {
-#if defined(QT_USE_MMAP)
-        if (unmapPointer) {
-            munmap(reinterpret_cast<char *>(unmapPointer), unmapLength);
-            unmapPointer = nullptr;
-            unmapLength = 0;
-        } else
-#endif
-        {
+        if (wasMemoryMapped())
+            unmap_sys(unmapPointer, unmapLength);
+        else
             delete[] mappingBuffer();
-        }
     }
     QString mappingFile() const { return fileName; }
     ResourceRootType type() const override { return Resource_File; }
+    bool wasMemoryMapped() const { return unmapPointer; }
 
     bool registerSelf(const QString &f);
 };
+} // unnamed namespace
 
 #ifndef MAP_FILE
 #  define MAP_FILE 0
@@ -1139,49 +1156,69 @@ public:
 #  define MAP_FAILED reinterpret_cast<void *>(-1)
 #endif
 
-bool QDynamicFileResourceRoot::registerSelf(const QString &f)
+void QDynamicFileResourceRoot::unmap_sys(void *base, qsizetype size)
 {
-    bool fromMM = false;
-    uchar *data = nullptr;
-    qsizetype data_len = 0;
-
 #if defined(QT_USE_MMAP)
-    int fd = QT_OPEN(QFile::encodeName(f), O_RDONLY);
-    if (fd >= 0) {
-        QT_STATBUF st;
-        if (!QT_FSTAT(fd, &st) && st.st_size <= std::numeric_limits<qsizetype>::max()) {
-            int protection = PROT_READ;                 // read-only memory
-            int flags = MAP_FILE | MAP_PRIVATE;         // swap-backed map from file
-            void *ptr = QT_MMAP(nullptr, st.st_size,    // any address, whole file
-                                protection, flags,
-                                fd, 0);                 // from offset 0 of fd
-            if (ptr != MAP_FAILED) {
-                data = static_cast<uchar *>(ptr);
-                data_len = st.st_size;
-                fromMM = true;
-            }
+    munmap(base, size);
+#elif defined(Q_OS_WIN)
+    Q_UNUSED(size)
+    UnmapViewOfFile(reinterpret_cast<void *>(base));
+#endif
+}
+
+// Note: caller must ensure \a offset and \a size are acceptable to the OS.
+uchar *QDynamicFileResourceRoot::map_sys(QFile &file, qint64 offset, qsizetype size)
+{
+    Q_ASSERT(file.isOpen());
+    void *ptr = nullptr;
+    if (size < 0)
+        size = qMin(file.size() - offset, (std::numeric_limits<qsizetype>::max)());
+
+    // We don't use QFile::map() here because we want to dispose of the QFile object
+#if defined(QT_USE_MMAP)
+    int fd = file.handle();
+    int protection = PROT_READ;                 // read-only memory
+    int flags = MAP_FILE | MAP_PRIVATE;         // swap-backed map from file
+    ptr = QT_MMAP(nullptr, size, protection, flags, fd, offset);
+    if (ptr == MAP_FAILED)
+        ptr = nullptr;
+#elif defined(Q_OS_WIN)
+    int fd = file.handle();
+    HANDLE fileHandle = reinterpret_cast<HANDLE>(_get_osfhandle(fd));
+    if (fileHandle != INVALID_HANDLE_VALUE) {
+        HANDLE mapHandle = CreateFileMapping(fileHandle, 0, PAGE_WRITECOPY, 0, 0, 0);
+        if (mapHandle) {
+            ptr = MapViewOfFile(mapHandle, FILE_MAP_COPY, DWORD(offset >> 32), DWORD(offset), size);
+            CloseHandle(mapHandle);
         }
-        QT_CLOSE(fd);
     }
 #endif // QT_USE_MMAP
-    if (!data) {
-        QFile file(f);
+    return static_cast<uchar *>(ptr);
+}
+
+bool QDynamicFileResourceRoot::registerSelf(const QString &f)
+{
+    QFile file(f);
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+
+    qint64 data_len = file.size();
+    if (data_len > std::numeric_limits<qsizetype>::max())
+        return false;
+
+    uchar *data = map_sys(file, 0, data_len);
+    bool fromMM = !!data;
+
+    if (!fromMM) {
         bool ok = false;
-        if (file.open(QIODevice::ReadOnly)) {
-            qint64 fsize = file.size();
-            if (fsize <= std::numeric_limits<qsizetype>::max()) {
-                data_len = file.size();
-                data = new uchar[data_len];
-                ok = (data_len == file.read(reinterpret_cast<char *>(data), data_len));
-            }
-        }
+        data = new uchar[data_len];
+        ok = (data_len == file.read(reinterpret_cast<char *>(data), data_len));
         if (!ok) {
             delete[] data;
             data = nullptr;
             data_len = 0;
             return false;
         }
-        fromMM = false;
     }
     if (data && QDynamicBufferResourceRoot::registerSelf(data, data_len)) {
         if (fromMM) {
@@ -1349,11 +1386,22 @@ private:
     uchar *map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags);
     bool unmap(uchar *ptr);
     void uncompress() const;
-    qint64 offset;
+    void mapUncompressed();
+    bool mapUncompressed_sys();
+    void unmapUncompressed_sys();
+    qint64 offset = 0;
     QResource resource;
     mutable QByteArray uncompressed;
+    bool mustUnmap = false;
+
+    // minimum size for which we'll try to re-open ourselves in mapUncompressed()
+    static constexpr qsizetype RemapCompressedThreshold = 16384;
 protected:
-    QResourceFileEnginePrivate() : offset(0) { }
+    ~QResourceFileEnginePrivate()
+    {
+        if (mustUnmap)
+            unmapUncompressed_sys();
+    }
 };
 
 bool QResourceFileEngine::caseSensitive() const
@@ -1523,10 +1571,10 @@ uint QResourceFileEngine::ownerId(FileOwner) const
     return nobodyID;
 }
 
-QDateTime QResourceFileEngine::fileTime(FileTime time) const
+QDateTime QResourceFileEngine::fileTime(QFile::FileTime time) const
 {
     Q_D(const QResourceFileEngine);
-    if (time == ModificationTime)
+    if (time == QFile::FileModificationTime)
         return d->resource.lastModified();
     return QDateTime();
 }
@@ -1534,18 +1582,11 @@ QDateTime QResourceFileEngine::fileTime(FileTime time) const
 /*!
     \internal
 */
-QAbstractFileEngine::Iterator *QResourceFileEngine::beginEntryList(QDir::Filters filters,
-                                                                   const QStringList &filterNames)
+QAbstractFileEngine::IteratorUniquePtr
+QResourceFileEngine::beginEntryList(const QString &path, QDir::Filters filters,
+                                    const QStringList &filterNames)
 {
-    return new QResourceFileEngineIterator(filters, filterNames);
-}
-
-/*!
-    \internal
-*/
-QAbstractFileEngine::Iterator *QResourceFileEngine::endEntryList()
-{
-    return nullptr;
+    return std::make_unique<QResourceFileEngineIterator>(path, filters, filterNames);
 }
 
 bool QResourceFileEngine::extension(Extension extension, const ExtensionOption *option, ExtensionReturn *output)
@@ -1572,7 +1613,9 @@ bool QResourceFileEngine::supportsExtension(Extension extension) const
 uchar *QResourceFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags)
 {
     Q_Q(QResourceFileEngine);
-    Q_UNUSED(flags);
+    Q_ASSERT_X(resource.compressionAlgorithm() == QResource::NoCompression
+               || !uncompressed.isNull(), "QFile::map()",
+               "open() should have uncompressed compressed resources");
 
     qint64 max = resource.uncompressedSize();
     qint64 end;
@@ -1582,11 +1625,15 @@ uchar *QResourceFileEnginePrivate::map(qint64 offset, qint64 size, QFile::Memory
         return nullptr;
     }
 
-    const uchar *address = resource.data();
-    if (resource.compressionAlgorithm() != QResource::NoCompression) {
-        uncompress();
-        if (uncompressed.isNull())
-            return nullptr;
+    const uchar *address = reinterpret_cast<const uchar *>(uncompressed.constBegin());
+    if (!uncompressed.isNull())
+        return const_cast<uchar *>(address) + offset;
+
+    // resource was not compressed
+    address = resource.data();
+    if (flags & QFile::MapPrivateOption) {
+        // We need to provide read-write memory
+        mapUncompressed();
         address = reinterpret_cast<const uchar *>(uncompressed.constData());
     }
 
@@ -1605,6 +1652,131 @@ void QResourceFileEnginePrivate::uncompress() const
             || !uncompressed.isEmpty() || resource.size() == 0)
         return;     // nothing to do
     uncompressed = resource.uncompressedData();
+}
+
+void QResourceFileEnginePrivate::mapUncompressed()
+{
+    Q_ASSERT(resource.compressionAlgorithm() == QResource::NoCompression);
+    if (!uncompressed.isNull())
+        return;     // nothing to do
+
+    if (resource.uncompressedSize() >= RemapCompressedThreshold) {
+        if (mapUncompressed_sys())
+            return;
+    }
+
+    uncompressed = resource.uncompressedData();
+    uncompressed.detach();
+}
+
+#if defined(MREMAP_MAYMOVE) && defined(MREMAP_DONTUNMAP)
+inline bool QResourcePrivate::mayRemapData(const QResource &resource)
+{
+    auto d = resource.d_func();
+
+    // assumptions from load():
+    // - d->related is not empty
+    // - the first item in d->related is the one with our data
+    // by current construction, it's also the only item
+    const QResourceRoot *root = d->related.at(0);
+
+    switch (root->type()) {
+    case QResourceRoot::Resource_Builtin:
+        return true;        // always acceptable, memory is read-only
+    case QResourceRoot::Resource_Buffer:
+        return false;       // never acceptable, memory is heap
+    case QResourceRoot::Resource_File:
+        break;
+    }
+
+    auto df = static_cast<const QDynamicFileResourceRoot *>(root);
+    return df->wasMemoryMapped();
+}
+#endif
+
+// Returns the page boundaries of where \a location is located in memory.
+static auto mappingBoundaries(const void *location, qsizetype size)
+{
+#ifdef Q_OS_WIN
+    auto getpagesize = [] {
+        SYSTEM_INFO sysinfo;
+        ::GetSystemInfo(&sysinfo);
+        return sysinfo.dwAllocationGranularity;
+    };
+#endif
+    struct R {
+        void *begin;
+        qsizetype size;
+        qptrdiff offset;
+    } r;
+
+    const quintptr pageMask = getpagesize() - 1;
+    quintptr data = quintptr(location);
+    quintptr begin = data & ~pageMask;
+    quintptr end = (data + size + pageMask) & ~pageMask;
+    r.begin = reinterpret_cast<void *>(begin);
+    r.size = end - begin;
+    r.offset = data & pageMask;
+    return r;
+}
+
+bool QResourceFileEnginePrivate::mapUncompressed_sys()
+{
+    auto r = mappingBoundaries(resource.data(), resource.uncompressedSize());
+    void *ptr = nullptr;
+
+#if defined(MREMAP_MAYMOVE) && defined(MREMAP_DONTUNMAP)
+    // Use MREMAP_MAYMOVE to tell the kernel to give us a new address and use
+    // MREMAP_DONTUNMAP (supported since kernel 5.7) to request that it create
+    // a new mapping of the same pages, instead of moving. We can only do that
+    // for pages that are read-only, otherwise the kernel replaces the source
+    // with pages full of nulls.
+    if (!QResourcePrivate::mayRemapData(resource))
+        return false;
+
+    ptr = mremap(r.begin, r.size, r.size, MREMAP_MAYMOVE | MREMAP_DONTUNMAP);
+    if (ptr == MAP_FAILED)
+        return false;
+
+    // Allow writing, which the documentation says we allow. This is safe
+    // because MREMAP_DONTUNMAP only works for private mappings.
+    if (mprotect(ptr, r.size, PROT_READ | PROT_WRITE) != 0) {
+        munmap(ptr, r.size);
+        return false;
+    }
+#elif defined(Q_OS_DARWIN)
+    mach_port_t self = mach_task_self();
+    vm_address_t addr = 0;
+    vm_address_t mask = 0;
+    bool anywhere = true;
+    bool copy = true;
+    vm_prot_t cur_prot = VM_PROT_READ | VM_PROT_WRITE;
+    vm_prot_t max_prot = VM_PROT_ALL;
+    kern_return_t res = vm_remap(self, &addr, r.size, mask, anywhere,
+                                 self, vm_address_t(r.begin), copy, &cur_prot,
+                                 &max_prot, VM_INHERIT_DEFAULT);
+    if (res != KERN_SUCCESS)
+        return false;
+
+    ptr = reinterpret_cast<void *>(addr);
+    if ((max_prot & VM_PROT_WRITE) == 0 || mprotect(ptr, r.size, PROT_READ | PROT_WRITE) != 0) {
+        munmap(ptr, r.size);
+        return false;
+    }
+#endif
+
+    if (!ptr)
+        return false;
+    const char *newdata = static_cast<char *>(ptr) + r.offset;
+    uncompressed = QByteArray::fromRawData(newdata, resource.uncompressedSize());
+    mustUnmap = true;
+    return true;
+}
+
+void QResourceFileEnginePrivate::unmapUncompressed_sys()
+{
+    auto r = mappingBoundaries(uncompressed.constBegin(), uncompressed.size());
+    QDynamicFileResourceRoot::unmap_sys(r.begin, r.size);
 }
 
 #endif // !defined(QT_BOOTSTRAPPED)

@@ -1393,8 +1393,8 @@ void WriteInitialization::writeProperties(const QString &varName,
         case DomProperty::CursorShape:
             if (p->hasAttributeStdset() && !p->attributeStdset())
                 varNewName += language::derefPointer + "viewport()"_L1;
-            propertyValue = "QCursor(Qt"_L1 + language::qualifier
-                + p->elementCursorShape() + u')';
+            propertyValue = "QCursor(Qt"_L1 + language::qualifier + "CursorShape"_L1
+                            + language::qualifier + p->elementCursorShape() + u')';
             break;
         case DomProperty::Enum:
             propertyValue = p->elementEnum();
@@ -1708,8 +1708,9 @@ static void writeIconAddFile(QTextStream &output, const QString &indent,
 {
     output << indent << iconName << ".addFile("
         << language::qstring(fileName, indent) << ", QSize(), QIcon"
-        << language::qualifier << mode << ", QIcon" << language::qualifier
-        << state << ')' << language::eol;
+        << language::qualifier << "Mode" << language::qualifier << mode
+        << ", QIcon" << language::qualifier << "State" << language::qualifier << state
+        << ')' << language::eol;
 }
 
 // Post 4.4 write resource icon
@@ -1757,7 +1758,8 @@ static void writeIconAddPixmap(QTextStream &output, const QString &indent,
                                const char *mode, const char *state)
 {
     output << indent << iconName << ".addPixmap(" << call << ", QIcon"
-        << language::qualifier << mode << ", QIcon" << language::qualifier
+        << language::qualifier << "Mode" << language::qualifier << mode
+        << ", QIcon" << language::qualifier << "State" << language::qualifier
         << state << ')' << language::eol;
 }
 
@@ -1808,6 +1810,59 @@ void WriteInitialization::writePixmapFunctionIcon(QTextStream &output,
     }
 }
 
+// Write QIcon::fromTheme() (value from enum or variable)
+struct iconFromTheme
+{
+    explicit iconFromTheme(const QString &theme) : m_theme(theme) {}
+
+    QString m_theme;
+};
+
+QTextStream &operator<<(QTextStream &str, const iconFromTheme &i)
+{
+    str << "QIcon" << language::qualifier << "fromTheme(" << i.m_theme << ')';
+    return str;
+}
+
+// Write QIcon::fromTheme() for an XDG icon from string literal
+struct iconFromThemeStringLiteral
+{
+    explicit iconFromThemeStringLiteral(const QString &theme) : m_theme(theme) {}
+
+    QString m_theme;
+};
+
+QTextStream &operator<<(QTextStream &str, const iconFromThemeStringLiteral &i)
+{
+    str << "QIcon" << language::qualifier << "fromTheme(" << language::qstring(i.m_theme) << ')';
+    return str;
+}
+
+// Write QIcon::fromTheme() with a path as fallback, add a check using
+// QIcon::hasThemeIcon().
+void WriteInitialization::writeThemeIconCheckAssignment(const QString &themeValue,
+                                                        const QString &iconName,
+                                                        const DomResourceIcon *i)
+
+{
+    const bool isCpp = language::language() == Language::Cpp;
+    m_output << m_indent << "if ";
+    if (isCpp)
+        m_output << '(';
+    m_output << "QIcon" << language::qualifier << "hasThemeIcon("
+             << themeValue << ')' << (isCpp ? ") {" : ":") << '\n'
+             << m_dindent << iconName << " = " << iconFromTheme(themeValue)
+             << language::eol;
+    m_output << m_indent << (isCpp ? "} else {" : "else:") << '\n';
+    if (m_uic->pixmapFunction().isEmpty())
+        writeResourceIcon(m_output, iconName, m_dindent, i);
+    else
+        writePixmapFunctionIcon(m_output, iconName, m_dindent, i);
+    if (isCpp)
+        m_output << m_indent << '}';
+    m_output  << '\n';
+}
+
 QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
 {
     // check cache
@@ -1832,7 +1887,8 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
     }
 
     // 4.4 onwards
-    if (i->attributeTheme().isEmpty()) {
+    QString theme = i->attributeTheme();
+    if (theme.isEmpty()) {
         // No theme: Write resource icon as is
         m_output << m_indent << language::stackVariable("QIcon", iconName)
             << language::eol;
@@ -1843,12 +1899,21 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
         return iconName;
     }
 
+    const bool isThemeEnum = theme.startsWith("QIcon::"_L1);
+    if (isThemeEnum)
+        theme = language::enumValue(theme);
+
     // Theme: Generate code to check the theme and default to resource
     if (iconHasStatePixmaps(i)) {
         // Theme + default state pixmaps:
         // Generate code to check the theme and default to state pixmaps
         m_output << m_indent << language::stackVariable("QIcon", iconName) << language::eol;
-        const char themeNameStringVariableC[] = "iconThemeName";
+        if (isThemeEnum) {
+            writeThemeIconCheckAssignment(theme, iconName, i);
+            return iconName;
+        }
+
+        static constexpr auto themeNameStringVariableC = "iconThemeName"_L1;
         // Store theme name in a variable
         m_output << m_indent;
         if (m_firstThemeIcon) { // Declare variable string
@@ -1857,31 +1922,19 @@ QString WriteInitialization::writeIconProperties(const DomResourceIcon *i)
             m_firstThemeIcon = false;
         }
         m_output << themeNameStringVariableC << " = "
-            << language::qstring(i->attributeTheme()) << language::eol;
-        m_output << m_indent << "if ";
-        if (isCpp)
-            m_output << '(';
-        m_output << "QIcon" << language::qualifier << "hasThemeIcon("
-            << themeNameStringVariableC << ')' << (isCpp ? ") {" : ":") << '\n'
-            << m_dindent << iconName << " = QIcon" << language::qualifier << "fromTheme("
-            << themeNameStringVariableC << ')' << language::eol
-            << m_indent << (isCpp ? "} else {" : "else:") << '\n';
-        if (m_uic->pixmapFunction().isEmpty())
-            writeResourceIcon(m_output, iconName, m_dindent, i);
-        else
-            writePixmapFunctionIcon(m_output, iconName, m_dindent, i);
-        if (isCpp)
-            m_output << m_indent << '}';
-        m_output  << '\n';
+            << language::qstring(theme) << language::eol;
+        writeThemeIconCheckAssignment(themeNameStringVariableC, iconName, i);
         return iconName;
     }
 
     // Theme, but no state pixmaps: Construct from theme directly.
     m_output << m_indent
-        << language::stackVariableWithInitParameters("QIcon", iconName)
-        << "QIcon" << language::qualifier << "fromTheme("
-        << language::qstring(i->attributeTheme()) << "))"
-        << language::eol;
+             << language::stackVariableWithInitParameters("QIcon", iconName);
+    if (isThemeEnum)
+        m_output << iconFromTheme(theme);
+    else
+        m_output << iconFromThemeStringLiteral(theme);
+    m_output << ')' << language::eol;
     return iconName;
 }
 
@@ -2102,7 +2155,7 @@ QString WriteInitialization::pixCall(const DomProperty *p) const
         s = p->elementPixmap()->text();
         break;
     default:
-        qWarning("%s: Warning: Unknown icon format encountered. The ui-file was generated with a too-recent version of Designer.",
+        qWarning("%s: Warning: Unknown icon format encountered. The ui-file was generated with a too-recent version of Qt Widgets Designer.",
                  qPrintable(m_option.messagePrefix()));
         return "QIcon()"_L1;
         break;
@@ -2647,10 +2700,6 @@ ConnectionSyntax WriteInitialization::connectionSyntax(const language::SignalSlo
         return ConnectionSyntax::StringBased;
     }
 
-    // QTBUG-110952, ambiguous overloads of display()
-    if (receiver.className == u"QLCDNumber" && receiver.signature.startsWith(u"display("))
-        return ConnectionSyntax::StringBased;
-
     if ((sender.name == m_mainFormVarName && m_customSignals.contains(sender.signature))
          || (receiver.name == m_mainFormVarName && m_customSlots.contains(receiver.signature))) {
         return ConnectionSyntax::StringBased;
@@ -2678,14 +2727,21 @@ void WriteInitialization::acceptConnection(DomConnection *connection)
         return;
     }
     const QString senderSignature = connection->elementSignal();
+    const QString slotSignature = connection->elementSlot();
+    const bool senderAmbiguous = m_uic->customWidgetsInfo()->isAmbiguousSignal(senderDecl.className,
+                                                                               senderSignature);
+    const bool slotAmbiguous = m_uic->customWidgetsInfo()->isAmbiguousSlot(receiverDecl.className,
+                                                                           slotSignature);
+
     language::SignalSlotOptions signalOptions;
-    if (m_uic->customWidgetsInfo()->isAmbiguousSignal(senderDecl.className, senderSignature))
-        signalOptions.setFlag(language::SignalSlotOption::Ambiguous);
+    signalOptions.setFlag(language::SignalSlotOption::Ambiguous, senderAmbiguous);
+    language::SignalSlotOptions slotOptions;
+    slotOptions.setFlag(language::SignalSlotOption::Ambiguous, slotAmbiguous);
 
     language::SignalSlot theSignal{senderDecl.name, senderSignature,
                                    senderDecl.className, signalOptions};
-    language::SignalSlot theSlot{receiverDecl.name, connection->elementSlot(),
-                                 receiverDecl.className, {}};
+    language::SignalSlot theSlot{receiverDecl.name, slotSignature,
+                                 receiverDecl.className, slotOptions};
 
     m_output << m_indent;
     language::formatConnection(m_output, theSignal, theSlot,

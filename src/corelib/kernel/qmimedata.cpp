@@ -90,6 +90,11 @@ static QList<QVariant> dataToUrls(QByteArrayView text)
         if (from >= text.size())
             break;
     }
+    if (from != text.size()) {
+        const auto bav = QByteArrayView(begin + from, text.end()).trimmed();
+        if (!bav.isEmpty())
+            list.push_back(QUrl::fromEncoded(bav));
+    }
     return list;
 }
 

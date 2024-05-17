@@ -6,7 +6,6 @@
 #define CBOR_NO_ENCODER_API
 #include <private/qcborcommon_p.h>
 
-#include <private/qbytearray_p.h>
 #include <private/qnumeric_p.h>
 #include <private/qstringconverter_p.h>
 #include <qiodevice.h>
@@ -29,6 +28,7 @@ static CborError qt_cbor_decoder_transfer_string(void *token, const void **userp
 
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_MSVC(4334) // '<<': result of 32-bit shift implicitly converted to 64 bits (was 64-bit shift intended?)
+QT_WARNING_DISABLE_GCC("-Wimplicit-fallthrough")
 
 #include <cborparser.c>
 
@@ -1298,7 +1298,7 @@ bool QCborStreamReader::leaveContainer()
 
    \snippet code/src_corelib_serialization_qcborstream.cpp 27
 
-   The toString() function implements the above loop and some extra checks.
+   The readAllString() function implements the above loop and some extra checks.
 
 //! [string-no-type-conversions]
    This function does not perform any type conversions, including from integers
@@ -1306,7 +1306,7 @@ bool QCborStreamReader::leaveContainer()
    true; calling it in any other condition is an error.
 //! [string-no-type-conversions]
 
-   \sa toString(), readByteArray(), isString(), readStringChunk()
+   \sa readAllString(), readByteArray(), isString(), readStringChunk()
  */
 QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
 {
@@ -1335,11 +1335,11 @@ QCborStreamReader::StringResult<QString> QCborStreamReader::_readString_helper()
 
    \snippet code/src_corelib_serialization_qcborstream.cpp 27
 
-   The toUtf8String() function implements the above loop and some extra checks.
+   The readAllUtf8String() function implements the above loop and some extra checks.
 
     \include qcborstreamreader.cpp string-no-type-conversions
 
-   \sa toString(), readByteArray(), isString(), readStringChunk()
+   \sa readAllString(), readByteArray(), isString(), readStringChunk()
  */
 QCborStreamReader::StringResult<QByteArray> QCborStreamReader::_readUtf8String_helper()
 {
@@ -1368,7 +1368,7 @@ QCborStreamReader::StringResult<QByteArray> QCborStreamReader::_readUtf8String_h
 
    \snippet code/src_corelib_serialization_qcborstream.cpp 28
 
-   The toByteArray() function implements the above loop and some extra checks.
+   The readAllByteArray() function implements the above loop and some extra checks.
 
 //! [bytearray-no-type-conversions]
    This function does not perform any type conversions, including from integers
@@ -1376,7 +1376,7 @@ QCborStreamReader::StringResult<QByteArray> QCborStreamReader::_readUtf8String_h
    calling it in any other condition is an error.
 //! [bytearray-no-type-conversions]
 
-   \sa toByteArray(), readString(), isByteArray(), readStringChunk()
+   \sa readAllByteArray(), readString(), isByteArray(), readStringChunk()
  */
 QCborStreamReader::StringResult<QByteArray> QCborStreamReader::_readByteArray_helper()
 {
@@ -1439,7 +1439,7 @@ bool QCborStreamReaderPrivate::readFullString(ReadStringChunk params)
 }
 
 /*!
-    \fn QCborStreamReader::toString()
+    \fn QCborStreamReader::readAllString()
     \since 6.7
 
     Decodes the current text string and returns it. If the string is chunked,
@@ -1458,11 +1458,10 @@ bool QCborStreamReaderPrivate::readFullString(ReadStringChunk params)
     QIODevice.
 //! [note-not-restartable]
 
-    \sa readString(), readStringChunk(), isString(), toByteArray()
+    \sa readString(), readStringChunk(), isString(), readAllByteArray()
  */
 /*!
-    \fn QCborStreamReader::toString(QString &dst)
-    \overload
+    \fn QCborStreamReader::readAndAppendToString(QString &dst)
     \since 6.7
 
     Decodes the current text string and appends to \a dst. If the string is
@@ -1475,9 +1474,9 @@ bool QCborStreamReaderPrivate::readFullString(ReadStringChunk params)
 
     \include qcborstreamreader.cpp note-not-restartable
 
-    \sa readString(), readStringChunk(), isString(), toByteArray()
+    \sa readString(), readStringChunk(), isString(), readAndAppendToByteArray()
  */
-bool QCborStreamReader::_toString_helper(QString &dst)
+bool QCborStreamReader::_readAndAppendToString_helper(QString &dst)
 {
     bool ok = d->readFullString(&dst);
     if (ok)
@@ -1486,7 +1485,7 @@ bool QCborStreamReader::_toString_helper(QString &dst)
 }
 
 /*!
-    \fn QCborStreamReader::toUtf8String()
+    \fn QCborStreamReader::readAllUtf8String()
     \since 6.7
 
     Decodes the current text string and returns it. If the string is chunked,
@@ -1499,11 +1498,10 @@ bool QCborStreamReader::_toString_helper(QString &dst)
 
     \include qcborstreamreader.cpp note-not-restartable
 
-    \sa readString(), readStringChunk(), isString(), toByteArray()
+    \sa readString(), readStringChunk(), isString(), readAllByteArray()
  */
 /*!
-    \fn QCborStreamReader::toUtf8String(QByteArray &dst)
-    \overload
+    \fn QCborStreamReader::readAndAppendToUtf8String(QByteArray &dst)
     \since 6.7
 
     Decodes the current text string and appends to \a dst. If the string is
@@ -1516,9 +1514,9 @@ bool QCborStreamReader::_toString_helper(QString &dst)
 
     \include qcborstreamreader.cpp note-not-restartable
 
-    \sa readString(), readStringChunk(), isString(), toByteArray()
+    \sa readString(), readStringChunk(), isString(), readAndAppendToByteArray()
  */
-bool QCborStreamReader::_toUtf8String_helper(QByteArray &dst)
+bool QCborStreamReader::_readAndAppendToUtf8String_helper(QByteArray &dst)
 {
     using P = QCborStreamReaderPrivate::ReadStringChunk;
     bool ok = d->readFullString({ &dst, P::Utf8String });
@@ -1528,7 +1526,7 @@ bool QCborStreamReader::_toUtf8String_helper(QByteArray &dst)
 }
 
 /*!
-    \fn QCborStreamReader::toByteArray()
+    \fn QCborStreamReader::readAllByteArray()
     \since 6.7
 
     Decodes the current byte string and returns it. If the string is chunked,
@@ -1541,12 +1539,11 @@ bool QCborStreamReader::_toUtf8String_helper(QByteArray &dst)
 
     \include qcborstreamreader.cpp note-not-restartable
 
-    \sa readByteArray(), readStringChunk(), isByteArray(), toString()
+    \sa readByteArray(), readStringChunk(), isByteArray(), readAllString()
  */
 
 /*!
-    \fn QCborStreamReader::toByteArray(QByteArray &dst)
-    \overload
+    \fn QCborStreamReader::readAndAppendToByteArray(QByteArray &dst)
     \since 6.7
 
     Decodes the current byte string and appends to \a dst. If the string is
@@ -1559,9 +1556,9 @@ bool QCborStreamReader::_toUtf8String_helper(QByteArray &dst)
 
     \include qcborstreamreader.cpp note-not-restartable
 
-    \sa readByteArray(), readStringChunk(), isByteArray(), toString()
+    \sa readByteArray(), readStringChunk(), isByteArray(), readAndAppendToString()
  */
-bool QCborStreamReader::_toByteArray_helper(QByteArray &dst)
+bool QCborStreamReader::_readAndAppendToByteArray_helper(QByteArray &dst)
 {
     bool ok = d->readFullString(&dst);
     if (ok)
@@ -1751,7 +1748,7 @@ QCborStreamReaderPrivate::readStringChunk_byte(ReadStringChunk params, qsizetype
             // the distinction between DataTooLarge and OOM is mostly for
             // compatibility with Qt 5; in Qt 6, we could consider everything
             // to be OOM.
-            handleError(newSize > MaxByteArraySize ? CborErrorDataTooLarge: CborErrorOutOfMemory);
+            handleError(newSize > QByteArray::max_size() ? CborErrorDataTooLarge: CborErrorOutOfMemory);
             return -1;
         }
 
@@ -1790,7 +1787,7 @@ QCborStreamReaderPrivate::readStringChunk_unicode(ReadStringChunk params, qsizet
     // conversion uses the same number of words or less.
     qsizetype currentSize = params.string->size();
     size_t newSize = size_t(utf8len) + size_t(currentSize); // can't overflow
-    if (utf8len > MaxStringSize || qsizetype(newSize) < 0) {
+    if (utf8len > QString::max_size() || qsizetype(newSize) < 0) {
         handleError(CborErrorDataTooLarge);
         return -1;
     }

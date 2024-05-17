@@ -5,8 +5,11 @@
 #define QQNXCURSOR_H
 
 #include <qpa/qplatformcursor.h>
+#include <QtCore/QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
+
+// Q_DECLARE_LOGGING_CATEGORY(lcQpaQnx);
 
 class QQnxCursor : public QPlatformCursor
 {

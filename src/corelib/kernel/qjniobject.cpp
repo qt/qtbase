@@ -105,9 +105,9 @@ using namespace Qt::StringLiterals;
     // C++ code
     QJniObject string1 = QJniObject::fromString("String1");
     QJniObject string2 = QJniObject::fromString("String2");
-    QJniObject stringArray = QJniObject::callStaticObjectMethod<jstringArray>(
+    QJniObject stringArray = QJniObject::callStaticObjectMethod<jobjectArray>(
                                                                 "org/qtproject/qt/TestClass",
-                                                                "stringArray"
+                                                                "stringArray",
                                                                 string1.object<jstring>(),
                                                                 string2.object<jstring>());
     \endcode
@@ -346,11 +346,9 @@ static jclass getCachedClass(const QByteArray &className)
 */
 static QJniObject getCleanJniObject(jobject object, JNIEnv *env)
 {
-    if (!object)
-        return QJniObject();
-
-    if (QJniEnvironment::checkAndClearExceptions(env)) {
-        env->DeleteLocalRef(object);
+    if (QJniEnvironment::checkAndClearExceptions(env) || !object) {
+        if (object)
+            env->DeleteLocalRef(object);
         return QJniObject();
     }
 
@@ -1357,7 +1355,7 @@ bool QJniObject::isClassAvailable(const char *className)
     if (!env.jniEnv())
         return false;
 
-    return loadClass(className, env.jniEnv());;
+    return loadClass(className, env.jniEnv());
 }
 
 /*!

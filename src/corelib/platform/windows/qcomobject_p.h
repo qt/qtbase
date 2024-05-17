@@ -65,7 +65,7 @@ template <typename TFirstInterface, typename... TAdditionalInterfaces>
 class QComObject : public TFirstInterface, public TAdditionalInterfaces...
 {
 public:
-    STDMETHODIMP QueryInterface(REFIID riid, void **ppvObject) final
+    STDMETHODIMP QueryInterface(REFIID riid, void **ppvObject) override
     {
         if (!ppvObject)
             return E_POINTER;
@@ -80,9 +80,9 @@ public:
         return tryQueryInterface<TFirstInterface, TAdditionalInterfaces...>(riid, ppvObject);
     }
 
-    STDMETHODIMP_(ULONG) AddRef() final { return ++m_referenceCount; }
+    STDMETHODIMP_(ULONG) AddRef() override { return ++m_referenceCount; }
 
-    STDMETHODIMP_(ULONG) Release() final
+    STDMETHODIMP_(ULONG) Release() override
     {
         const LONG referenceCount = --m_referenceCount;
         if (referenceCount == 0)

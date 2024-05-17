@@ -5,6 +5,8 @@
 #include "qwidget.h"
 #include "qdebug.h"
 
+#include <QtWidgets/private/qwidget_p.h>
+
 #include "qwidgetaction_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -108,7 +110,7 @@ void QWidgetAction::setDefaultWidget(QWidget *widget)
     if (!widget)
         return;
 
-    setVisible(!(widget->isHidden() && widget->testAttribute(Qt::WA_WState_ExplicitShowHide)));
+    setVisible(!QWidgetPrivate::get(widget)->isExplicitlyHidden());
     d->defaultWidget->hide();
     d->defaultWidget->setParent(nullptr);
     d->defaultWidgetInUse = false;

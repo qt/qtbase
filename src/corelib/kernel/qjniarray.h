@@ -10,14 +10,15 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qjniobject.h>
 
+#include <iterator>
 #include <utility>
-#include <type_traits>
+#include <QtCore/q20type_traits.h>
 
 QT_BEGIN_NAMESPACE
 
 template <typename T> class QJniArray;
 template <typename T>
-struct QJniArrayIterator
+struct QT_TECH_PREVIEW_API QJniArrayIterator
 {
     QJniArrayIterator() = default;
 
@@ -25,6 +26,13 @@ struct QJniArrayIterator
     constexpr QJniArrayIterator(QJniArrayIterator &&other) noexcept = default;
     constexpr QJniArrayIterator &operator=(const QJniArrayIterator &other) noexcept = default;
     constexpr QJniArrayIterator &operator=(QJniArrayIterator &&other) noexcept = default;
+
+    using difference_type = jsize;
+    using value_type = T;
+    using pointer = T *;
+    using reference = T; // difference to container requirements
+    using const_reference = reference;
+    using iterator_category = std::bidirectional_iterator_tag;
 
     friend bool operator==(const QJniArrayIterator &lhs, const QJniArrayIterator &rhs) noexcept
     {
@@ -34,7 +42,7 @@ struct QJniArrayIterator
     {
         return !(lhs == rhs);
     }
-    T operator*() const
+    const_reference operator*() const
     {
         return m_array->at(m_index);
     }
@@ -43,7 +51,23 @@ struct QJniArrayIterator
         ++that.m_index;
         return that;
     }
-
+    friend QJniArrayIterator operator++(QJniArrayIterator &that, int) noexcept
+    {
+        auto copy = that;
+        ++that;
+        return copy;
+    }
+    friend QJniArrayIterator &operator--(QJniArrayIterator &that) noexcept
+    {
+        --that.m_index;
+        return that;
+    }
+    friend QJniArrayIterator operator--(QJniArrayIterator &that, int) noexcept
+    {
+        auto copy = that;
+        --that;
+        return copy;
+    }
     void swap(QJniArrayIterator &other) noexcept
     {
         std::swap(m_index, other.m_index);
@@ -62,27 +86,36 @@ private:
     {}
 };
 
-class QJniArrayBase : public QJniObject
+class QT_TECH_PREVIEW_API QJniArrayBase
 {
     // for SFINAE'ing out the fromContainer named constructor
     template <typename Container, typename = void> struct CanConvertHelper : std::false_type {};
     template <typename Container>
-    struct CanConvertHelper<Container, std::void_t<decltype(std::declval<Container>().data()),
-                                                   decltype(std::declval<Container>().size())
+    struct CanConvertHelper<Container, std::void_t<decltype(std::data(std::declval<Container>())),
+                                                   decltype(std::size(std::declval<Container>())),
+                                                   typename Container::value_type
                                               >
                            > : std::true_type {};
 
 public:
+    using size_type = jsize;
+    using difference_type = size_type;
 
-    qsizetype size() const
+    operator QJniObject() const { return m_object; }
+
+    template <typename T = jobject>
+    T object() const { return m_object.object<T>(); }
+    bool isValid() const { return m_object.isValid(); }
+
+    size_type size() const
     {
-        if (jarray array = object<jarray>())
+        if (jarray array = m_object.object<jarray>())
             return jniEnv()->GetArrayLength(array);
         return 0;
     }
 
     template <typename Container>
-    static constexpr bool canConvert = CanConvertHelper<Container>::value;
+    static constexpr bool canConvert = CanConvertHelper<q20::remove_cvref_t<Container>>::value;
     template <typename Container>
     using IfCanConvert = std::enable_if_t<canConvert<Container>, bool>;
     template <typename Container
@@ -90,9 +123,15 @@ public:
     >
     static auto fromContainer(Container &&container)
     {
+        Q_ASSERT_X(size_t(std::size(container)) <= size_t((std::numeric_limits<size_type>::max)()),
+                   "QJniArray::fromContainer", "Container is too large for a Java array");
+
         using ElementType = typename std::remove_reference_t<Container>::value_type;
         if constexpr (std::disjunction_v<std::is_same<ElementType, jobject>,
-                                         std::is_same<ElementType, QJniObject>>) {
+                                         std::is_same<ElementType, QJniObject>,
+                                         std::is_same<ElementType, QString>,
+                                         std::is_base_of<QtJniTypes::JObjectBase, ElementType>
+                                        >) {
             return makeObjectArray(std::forward<Container>(container));
         } else if constexpr (std::is_same_v<ElementType, jfloat>) {
             return makeArray<jfloat>(std::forward<Container>(container), &JNIEnv::NewFloatArray,
@@ -132,31 +171,41 @@ protected:
     ~QJniArrayBase() = default;
 
     explicit QJniArrayBase(jarray array)
-        : QJniObject(static_cast<jobject>(array))
+        : m_object(static_cast<jobject>(array))
     {
-        static_assert(sizeof(QJniArrayBase) == sizeof(QJniObject),
-                      "QJniArrayBase must have the same size as QJniObject!");
     }
     explicit QJniArrayBase(const QJniObject &object)
-        : QJniObject(object)
+        : m_object(object)
     {}
     explicit QJniArrayBase(QJniObject &&object) noexcept
-        : QJniObject(std::move(object))
+        : m_object(std::move(object))
     {}
+
+    JNIEnv *jniEnv() const noexcept { return QJniEnvironment::getJniEnv(); }
 
     template <typename ElementType, typename List, typename NewFn, typename SetFn>
     static auto makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion);
     template <typename List>
     static auto makeObjectArray(List &&list);
+
+private:
+    QJniObject m_object;
 };
 
 template <typename T>
-class QJniArray : public QJniArrayBase
+class QT_TECH_PREVIEW_API QJniArray : public QJniArrayBase
 {
     friend struct QJniArrayIterator<T>;
 public:
     using Type = T;
+
+    using value_type = T;
+    using reference = T;
+    using const_reference = const reference;
+
+    // read-only container, so no iterator typedef
     using const_iterator = QJniArrayIterator<const T>;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     QJniArray() = default;
     explicit QJniArray(jarray array) : QJniArrayBase(array) {}
@@ -172,7 +221,18 @@ public:
     template <typename Container
         , IfCanConvert<Container> = true
     >
-    explicit QJniArray(Container &&container);
+    explicit QJniArray(Container &&container)
+        : QJniArrayBase(QJniArrayBase::fromContainer(std::forward<Container>(container)))
+    {
+    }
+
+    template <typename E = T
+        , IfCanConvert<std::initializer_list<E>> = true
+    >
+    Q_IMPLICIT inline QJniArray(std::initializer_list<T> list)
+        : QJniArrayBase(QJniArrayBase::fromContainer(list))
+    {
+    }
 
     template <typename Other, std::enable_if_t<std::is_convertible_v<Other, Type>, bool> = true>
     QJniArray(QJniArray<Other> &&other)
@@ -205,15 +265,20 @@ public:
             return object<jarray>();
     }
 
-    const_iterator begin() const { return {0, this}; }
-    const_iterator constBegin() const { return begin(); }
-    const_iterator cbegin() const { return begin(); }
-    const_iterator end() const { return {size(), this}; }
-    const_iterator constEnd() const { return {end()}; }
-    const_iterator cend() const { return {end()}; }
+    const_iterator begin() const noexcept { return {0, this}; }
+    const_iterator constBegin() const noexcept { return begin(); }
+    const_iterator cbegin() const noexcept { return begin(); }
+    const_iterator end() const noexcept { return {size(), this}; }
+    const_iterator constEnd() const noexcept { return {end()}; }
+    const_iterator cend() const noexcept { return {end()}; }
 
-    T operator[](qsizetype i) const { return at(i); }
-    T at(qsizetype i) const
+    const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
+    const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
+    const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end()); }
+    const_reverse_iterator crend() const noexcept { return const_reverse_iterator(begin()); }
+
+    const_reference operator[](size_type i) const { return at(i); }
+    const_reference at(size_type i) const
     {
         JNIEnv *env = jniEnv();
         if constexpr (std::is_convertible_v<jobject, T>) {
@@ -224,6 +289,9 @@ public:
                 return T::fromLocalRef(element);
             else
                 return T{element};
+        } else if constexpr (std::is_base_of_v<std::remove_pointer_t<jobject>, std::remove_pointer_t<T>>) {
+            // jstring, jclass etc
+            return static_cast<T>(env->GetObjectArrayElement(object<jobjectArray>(), i));
         } else {
             T res = {};
             if constexpr (std::is_same_v<T, jbyte>)
@@ -251,8 +319,14 @@ public:
         if constexpr (std::is_same_v<T, jobject>) {
             QList<jobject> res;
             res.reserve(size());
-            for (auto &&element : *this)
+            for (auto element : *this)
                 res.append(element);
+            return res;
+        } else if constexpr (std::is_same_v<T, jstring>) {
+            QStringList res;
+            res.reserve(size());
+            for (auto element : *this)
+                res.append(QJniObject(element).toString());
             return res;
         } else if constexpr (std::is_same_v<T, jbyte>) {
             const qsizetype bytecount = size();
@@ -295,7 +369,7 @@ public:
 template <typename ElementType, typename List, typename NewFn, typename SetFn>
 auto QJniArrayBase::makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion)
 {
-    const int length = int(list.size());
+    const size_type length = size_type(std::size(list));
     JNIEnv *env = QJniEnvironment::getJniEnv();
     auto localArray = (env->*newArray)(length);
     if (QJniEnvironment::checkAndClearExceptions(env))
@@ -304,7 +378,7 @@ auto QJniArrayBase::makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion)
     // can't use static_cast here because we have signed/unsigned mismatches
     if (length) {
         (env->*setRegion)(localArray, 0, length,
-                          reinterpret_cast<const ElementType *>(std::as_const(list).data()));
+                          reinterpret_cast<const ElementType *>(std::data(std::as_const(list))));
     }
     return QJniArray<ElementType>(localArray);
 };
@@ -312,41 +386,49 @@ auto QJniArrayBase::makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion)
 template <typename List>
 auto QJniArrayBase::makeObjectArray(List &&list)
 {
-    using ElementType = typename List::value_type;
-    if (list.isEmpty())
-        return QJniArray<jobject>();
+    using ElementType = typename q20::remove_cvref_t<List>::value_type;
+    using ResultType = QJniArray<decltype(std::declval<QJniObject::LocalFrame<>>().convertToJni(
+                                    std::declval<ElementType>()))
+                                >;
+
+    if (std::size(list) == 0)
+        return ResultType();
 
     JNIEnv *env = QJniEnvironment::getJniEnv();
-    const int length = int(list.size());
+    const size_type length = size_type(std::size(list));
 
     // this assumes that all objects in the list have the same class
     jclass elementClass = nullptr;
-    if constexpr (std::is_same_v<ElementType, QJniObject>)
-        elementClass = list.first().objectClass();
-    else
-        elementClass = env->GetObjectClass(list.first());
+    if constexpr (std::disjunction_v<std::is_same<ElementType, QJniObject>,
+                                     std::is_base_of<QtJniTypes::JObjectBase, ElementType>>) {
+        elementClass = std::begin(list)->objectClass();
+    } else if constexpr (std::is_same_v<ElementType, QString>) {
+        elementClass = env->FindClass("java/lang/String");
+    } else {
+        elementClass = env->GetObjectClass(*std::begin(list));
+    }
     auto localArray = env->NewObjectArray(length, elementClass, nullptr);
     if (QJniEnvironment::checkAndClearExceptions(env))
-        return QJniArray<jobject>();
-    for (int i = 0; i < length; ++i) {
-        jobject object;
-        if constexpr (std::is_same_v<ElementType, QJniObject>)
-            object = list.at(i).object();
-        else
-            object = list.at(i);
+        return ResultType();
+
+    // explicitly manage the frame for local references in chunks of 100
+    QJniObject::LocalFrame frame(env);
+    constexpr jint frameCapacity = 100;
+    qsizetype i = 0;
+    for (const auto &element : std::as_const(list)) {
+        if (i % frameCapacity == 0) {
+            if (i)
+                env->PopLocalFrame(nullptr);
+            if (env->PushLocalFrame(frameCapacity) != 0)
+                return ResultType{};
+        }
+        jobject object = frame.convertToJni(element);
         env->SetObjectArrayElement(localArray, i, object);
+        ++i;
     }
-    return QJniArray<jobject>(localArray);
-}
-
-
-template <typename T>
-template <typename Container
-    , QJniArrayBase::IfCanConvert<Container>
->
-QJniArray<T>::QJniArray(Container &&container)
-    : QJniArrayBase(QJniArrayBase::fromContainer(std::forward<Container>(container)))
-{
+    if (i)
+        env->PopLocalFrame(nullptr);
+    return ResultType(localArray);
 }
 
 namespace QtJniTypes

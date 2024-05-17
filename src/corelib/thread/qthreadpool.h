@@ -9,7 +9,9 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qrunnable.h>
 
+#if QT_CORE_REMOVED_SINCE(6, 6)
 #include <functional>
+#endif
 
 QT_REQUIRE_CONFIG(thread);
 
@@ -70,7 +72,9 @@ public:
     void reserveThread();
     void releaseThread();
 
-    bool waitForDone(int msecs = -1);
+    QT_CORE_INLINE_SINCE(6, 8)
+    bool waitForDone(int msecs);
+    bool waitForDone(QDeadlineTimer deadline = QDeadlineTimer::Forever);
 
     void clear();
 
@@ -100,6 +104,13 @@ void QThreadPool::startOnReservedThread(Callable &&functionToRun)
 {
     startOnReservedThread(QRunnable::create(std::forward<Callable>(functionToRun)));
 }
+
+#if QT_CORE_INLINE_IMPL_SINCE(6, 8)
+bool QThreadPool::waitForDone(int msecs)
+{
+    return waitForDone(QDeadlineTimer(msecs));
+}
+#endif
 
 QT_END_NAMESPACE
 

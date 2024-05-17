@@ -415,6 +415,12 @@
     to e.g. debug an unstable or intermittent failure in a test, by
     launching the test in a debugger. Support for this variable was
     added in Qt 6.1.
+    \li \c QTEST_THROW_ON_FAIL (since 6.8) \br
+    Setting this variable to a non-zero value will cause QCOMPARE()/QVERIFY()
+    etc to throw on failure (as opposed to just returning from the
+    immediately-surrounding function scope).
+    \li \c QTEST_THROW_ON_SKIP (since 6.8) \br
+    Same as \c QTEST_THROW_ON_FAIL, except affecting QSKIP().
     \endlist
 
     \section1 Creating a Benchmark
@@ -583,7 +589,5 @@
     \li \l {Chapter 6: Skipping Tests with QSKIP}{Skipping Tests}
     \endlist
 
-    \note You can build and execute the tests from each chapter using the
-    available source code, which is linked to at the end of each chapter.
 
 */

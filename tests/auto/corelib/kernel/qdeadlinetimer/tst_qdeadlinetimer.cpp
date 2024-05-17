@@ -1,11 +1,12 @@
 // Copyright (C) 2016 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtCore/QString>
 #include <QtCore/QTime>
 #include <QtCore/QDeadlineTimer>
 #include <QtCore/QElapsedTimer>
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QTimer>
 
 #include <chrono>
@@ -35,6 +36,7 @@ class tst_QDeadlineTimer : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
+    void compareCompiles();
     void basics();
     void foreverness();
     void current();
@@ -46,6 +48,11 @@ private Q_SLOTS:
 };
 
 static constexpr auto timerType = Qt::PreciseTimer;
+
+void tst_QDeadlineTimer::compareCompiles()
+{
+    QTestPrivate::testAllComparisonOperatorsCompile<QDeadlineTimer>();
+}
 
 void tst_QDeadlineTimer::basics()
 {
@@ -65,6 +72,9 @@ void tst_QDeadlineTimer::basics()
     QCOMPARE_LE(deadline, deadline);
     QCOMPARE_GE(deadline, deadline);
     QVERIFY(!(deadline > deadline));
+    QT_TEST_ALL_COMPARISON_OPS(deadline, QDeadlineTimer(timerType), Qt::strong_ordering::equal);
+    QT_TEST_ALL_COMPARISON_OPS(deadline, QDeadlineTimer(), Qt::strong_ordering::equal);
+    QT_TEST_ALL_COMPARISON_OPS(QDeadlineTimer(), QDeadlineTimer(), Qt::strong_ordering::equal);
 
     // should have expired, but we may be running too early after boot
     QTRY_VERIFY_WITH_TIMEOUT(deadline.hasExpired(), 100);
@@ -167,6 +177,7 @@ void tst_QDeadlineTimer::foreverness()
     QCOMPARE_LE(deadline, deadline);
     QCOMPARE_GE(deadline, deadline);
     QVERIFY(!(deadline > deadline));
+    QT_TEST_ALL_COMPARISON_OPS(deadline, deadline, Qt::strong_ordering::equal);
 
     // adding to forever must still be forever
     QDeadlineTimer deadline2 = deadline + 1;
@@ -184,6 +195,7 @@ void tst_QDeadlineTimer::foreverness()
     QCOMPARE_LE(deadline2, deadline);
     QCOMPARE_GE(deadline2, deadline);
     QVERIFY(!(deadline2 > deadline));
+    QT_TEST_ALL_COMPARISON_OPS(deadline2, deadline, Qt::strong_ordering::equal);
 
     // subtracting from forever is *also* forever
     deadline2 = deadline - 1;
@@ -201,6 +213,7 @@ void tst_QDeadlineTimer::foreverness()
     QCOMPARE_LE(deadline2, deadline);
     QCOMPARE_GE(deadline2, deadline);
     QVERIFY(!(deadline2 > deadline));
+    QT_TEST_ALL_COMPARISON_OPS(deadline2, deadline, Qt::strong_ordering::equal);
 
     // compare and order against a default-constructed object
     QDeadlineTimer expired;
@@ -210,6 +223,7 @@ void tst_QDeadlineTimer::foreverness()
     QVERIFY(!(deadline <= expired));
     QCOMPARE_GE(deadline, expired);
     QCOMPARE_GT(deadline, expired);
+    QT_TEST_EQUALITY_OPS(deadline, expired, false);
 }
 
 void tst_QDeadlineTimer::current()
@@ -245,6 +259,7 @@ void tst_QDeadlineTimer::current()
     QCOMPARE_LE(earlierDeadline, deadline);
     QVERIFY(!(earlierDeadline >= deadline));
     QVERIFY(!(earlierDeadline > deadline));
+    QT_TEST_ALL_COMPARISON_OPS(earlierDeadline, deadline, Qt::strong_ordering::less);
 }
 
 void tst_QDeadlineTimer::deadlines()
@@ -323,6 +338,7 @@ void tst_QDeadlineTimer::deadlines()
     QVERIFY(!(laterDeadline <= deadline));
     QCOMPARE_GE(laterDeadline, deadline);
     QCOMPARE_GT(laterDeadline, deadline);
+    QT_TEST_ALL_COMPARISON_OPS(laterDeadline, deadline, Qt::strong_ordering::greater);
 
     // compare and order against a default-constructed object
     QDeadlineTimer expired;
@@ -332,9 +348,11 @@ void tst_QDeadlineTimer::deadlines()
     QVERIFY(!(deadline <= expired));
     QCOMPARE_GE(deadline, expired);
     QCOMPARE_GT(deadline, expired);
+    QT_TEST_EQUALITY_OPS(deadline, expired, false);
 
     // compare and order against a forever deadline
     QDeadlineTimer forever_(QDeadlineTimer::Forever);
+    QT_TEST_EQUALITY_OPS(deadline, forever_, false);
     QVERIFY(!(deadline == forever_));
     QCOMPARE_NE(deadline, forever_);
     QCOMPARE_LT(deadline, forever_);
@@ -601,12 +619,14 @@ void tst_QDeadlineTimer::stdchrono()
         QCOMPARE_LT(diff.count(), 3 * minResolution / 2);
         QDeadlineTimer dt_after(steady_after, timerType);
         QCOMPARE_LT(now, dt_after);
+        QT_TEST_ALL_COMPARISON_OPS(now, dt_after, Qt::strong_ordering::less);
 
         diff = duration_cast<milliseconds>(steady_deadline - steady_before);
         QCOMPARE_GT(diff.count(), minResolution / 2);
         QCOMPARE_LT(diff.count(), 3 * minResolution / 2);
         QDeadlineTimer dt_before(steady_before, timerType);
         QCOMPARE_GT(now, dt_before);
+        QT_TEST_ALL_COMPARISON_OPS(now, dt_before, Qt::strong_ordering::greater);
     }
     {
         auto diff = duration_cast<milliseconds>(system_after - system_deadline);
@@ -614,12 +634,14 @@ void tst_QDeadlineTimer::stdchrono()
         QCOMPARE_LT(diff.count(), 3 * minResolution / 2);
         QDeadlineTimer dt_after(system_after, timerType);
         QCOMPARE_LT(now, dt_after);
+        QT_TEST_ALL_COMPARISON_OPS(now, dt_after, Qt::strong_ordering::less);
 
         diff = duration_cast<milliseconds>(system_deadline - system_before);
         QCOMPARE_GT(diff.count(), minResolution / 2);
         QCOMPARE_LT(diff.count(), 3 * minResolution / 2);
         QDeadlineTimer dt_before(system_before, timerType);
         QCOMPARE_GT(now, dt_before);
+        QT_TEST_ALL_COMPARISON_OPS(now, dt_before, Qt::strong_ordering::greater);
     }
 
     // make it regular
@@ -654,6 +676,14 @@ void tst_QDeadlineTimer::stdchrono()
     QCOMPARE_LT(deadline, 5000000ns * minResolution);
     QCOMPARE_GE(deadline, steady_clock::now());
     QCOMPARE_GE(deadline, system_clock::now());
+    QT_TEST_ALL_COMPARISON_OPS(deadline, now + 3ms * minResolution, Qt::strong_ordering::greater);
+    QT_TEST_ALL_COMPARISON_OPS(deadline, now + 5ms * minResolution, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(deadline, now + 3000000ns * minResolution, Qt::strong_ordering::greater);
+    QT_TEST_ALL_COMPARISON_OPS(deadline, now + 5000000ns * minResolution, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(deadline, 3ms * minResolution, Qt::strong_ordering::greater);
+    QT_TEST_ALL_COMPARISON_OPS(deadline, 5ms * minResolution, Qt::strong_ordering::less);
+    QT_TEST_ALL_COMPARISON_OPS(deadline, steady_clock::now(), Qt::strong_ordering::greater);
+    QT_TEST_ALL_COMPARISON_OPS(deadline, system_clock::now(), Qt::strong_ordering::greater);
 
     now = QDeadlineTimer::current(timerType);
     deadline = QDeadlineTimer(1s, timerType);

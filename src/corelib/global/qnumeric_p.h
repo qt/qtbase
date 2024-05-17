@@ -23,6 +23,10 @@
 #include <limits>
 #include <type_traits>
 
+#ifndef __has_extension
+#  define __has_extension(X)    0
+#endif
+
 #if !defined(Q_CC_MSVC) && defined(Q_OS_QNX)
 #  include <math.h>
 #  ifdef isnan
@@ -50,6 +54,8 @@ QT_END_NAMESPACE
 #endif
 
 QT_BEGIN_NAMESPACE
+
+class qfloat16;
 
 namespace qnumeric_std_wrapper {
 #if defined(QT_MATH_H_DEFINES_MACROS)
@@ -145,15 +151,16 @@ namespace {
     it's out of range. If the conversion is successful, the converted value is
     stored in \a value; if it was not successful, \a value will contain the
     minimum or maximum of T, depending on the sign of \a d. If \c T is
-    unsigned, then \a value contains the absolute value of \a v.
+    unsigned, then \a value contains the absolute value of \a v. If \c T is \c
+    float, an underflow is also signalled by returning false and setting \a
+    value to zero.
 
     This function works for v containing infinities, but not NaN. It's the
     caller's responsibility to exclude that possibility before calling it.
 */
-template<typename T>
-static inline bool convertDoubleTo(double v, T *value, bool allow_precision_upgrade = true)
+template <typename T> static inline std::enable_if_t<std::is_integral_v<T>, bool>
+convertDoubleTo(double v, T *value, bool allow_precision_upgrade = true)
 {
-    static_assert(std::numeric_limits<T>::is_integer);
     static_assert(std::is_integral_v<T>);
     constexpr bool TypeIsLarger = std::numeric_limits<T>::digits > std::numeric_limits<double>::digits;
 
@@ -276,6 +283,116 @@ QT_WARNING_DISABLE_FLOAT_COMPARE
     return *value == v;
 
 QT_WARNING_POP
+}
+
+template <typename T> static
+std::enable_if_t<std::is_floating_point_v<T> || std::is_same_v<T, qfloat16>, bool>
+convertDoubleTo(double v, T *value, bool allow_precision_upgrade = true)
+{
+    Q_UNUSED(allow_precision_upgrade);
+    constexpr T Huge = std::numeric_limits<T>::infinity();
+
+    if constexpr (std::numeric_limits<double>::max_exponent <=
+            std::numeric_limits<T>::max_exponent) {
+        // no UB can happen
+        *value = T(v);
+        return true;
+    }
+
+#if defined(__SSE2__) && (defined(Q_CC_GNU) || __has_extension(gnu_asm))
+    // The x86 CVTSD2SH instruction from SSE2 does what we want:
+    // - converts out-of-range doubles to ±infinity and sets #O
+    // - converts underflows to zero and sets #U
+    // We need to clear any previously-stored exceptions from it before the
+    // operation (3-cycle cost) and obtain the new state afterwards (1 cycle).
+
+    unsigned csr = _MM_MASK_MASK;         // clear stored exception indicators
+    auto sse_check_result = [&](auto result) {
+        if ((csr & (_MM_EXCEPT_UNDERFLOW | _MM_EXCEPT_OVERFLOW)) == 0)
+            return true;
+        if (csr & _MM_EXCEPT_OVERFLOW)
+            return false;
+
+        // According to IEEE 754[1], #U is also set when the result is tiny and
+        // inexact, but still non-zero, so detect that (this won't generate
+        // good code for types without hardware support).
+        // [1] https://en.wikipedia.org/wiki/Floating-point_arithmetic#Exception_handling
+        return result != 0;
+    };
+
+    // Written directly in assembly because both Clang and GCC have been
+    // observed to reorder the STMXCSR instruction above the conversion
+    // operation. MSVC generates horrid code when using the intrinsics anyway,
+    // so it's not a loss.
+    // See https://github.com/llvm/llvm-project/issues/83661.
+    if constexpr (std::is_same_v<T, float>) {
+#  ifdef __AVX__
+        asm ("vldmxcsr  %[csr]\n\t"
+             "vcvtsd2ss %[in], %[in], %[out]\n\t"
+             "vstmxcsr  %[csr]"
+            : [csr] "+m" (csr), [out] "=v" (*value) : [in] "v" (v));
+#  else
+        asm ("ldmxcsr  %[csr]\n\t"
+             "cvtsd2ss %[in], %[out]\n\t"
+             "stmxcsr  %[csr]"
+            : [csr] "+m" (csr), [out] "=v" (*value) : [in] "v" (v));
+#  endif
+        return sse_check_result(*value);
+    }
+
+#  if defined(__F16C__) || defined(__AVX512FP16__)
+    if constexpr (sizeof(T) == 2 && std::numeric_limits<T>::max_exponent == 16) {
+        // qfloat16 or std::float16_t, but not std::bfloat16_t or std::bfloat8_t
+        auto doConvert = [&](auto *out) {
+            asm ("vldmxcsr  %[csr]\n\t"
+#    ifdef __AVX512FP16__
+                 // AVX512FP16 & AVX10 have an instruction for this
+                 "vcvtsd2sh %[in], %[in], %[out]\n\t"
+#    else
+                 "vcvtsd2ss %[in], %[in], %[out]\n\t"   // sets DEST[MAXVL-1:128] := 0
+                 "vcvtps2ph %[rc], %[out], %[out]\n\t"
+#    endif
+                 "vstmxcsr  %[csr]"
+                : [csr] "+m" (csr), [out] "=v" (*out)
+                : [in] "v" (v), [rc] "i" (_MM_FROUND_CUR_DIRECTION)
+            );
+            return sse_check_result(out);
+        };
+
+        if constexpr (std::is_same_v<T, qfloat16> && !std::is_void_v<typename T::NativeType>) {
+            typename T::NativeType tmp;
+            bool b = doConvert(&tmp);
+            *value = tmp;
+            return b;
+        } else {
+#    ifndef Q_CC_CLANG
+            // Clang can only implement this if it has a native FP16 type
+            return doConvert(value);
+#    endif
+        }
+    }
+#  endif
+#endif // __SSE2__ && inline assembly
+
+    if (!qt_is_finite(v) && std::numeric_limits<T>::has_infinity) {
+        // infinity (or NaN)
+        *value = T(v);
+        return true;
+    }
+
+    // Check for in-range value to ensure the conversion is not UB (see the
+    // comment above for Standard language).
+    if (std::fabs(v) > (std::numeric_limits<T>::max)()) {
+        *value = v < 0 ? -Huge : Huge;
+        return false;
+    }
+
+    *value = T(v);
+    if (v != 0 && *value == 0) {
+        // Underflow through loss of precision
+        return false;
+    }
+    return true;
 }
 
 template <typename T> inline bool add_overflow(T v1, T v2, T *r) { return qAddOverflow(v1, v2, r); }

@@ -87,9 +87,8 @@ public:
 
     typedef std::function<void(VkPhysicalDeviceFeatures &)> EnabledFeaturesModifier;
     void setEnabledFeaturesModifier(const EnabledFeaturesModifier &modifier);
-
     typedef std::function<void(VkPhysicalDeviceFeatures2 &)> EnabledFeatures2Modifier;
-    void setEnabledFeatures2Modifier(const EnabledFeatures2Modifier &modifier);
+    void setEnabledFeaturesModifier(EnabledFeatures2Modifier modifier);
 
     void setPreferredColorFormats(const QList<VkFormat> &formats);
 

@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "qbaselinetest.h"
 #include "baselineprotocol.h"
@@ -249,6 +249,7 @@ void modifyImage(QImage *img)
 
 bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, bool *error)
 {
+    *error = false;
     ImageItem item = baseline;
     if (simfail) {
         // Simulate test failure by forcing image mismatch; for testing purposes
@@ -259,6 +260,7 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
     } else {
         item.image = img;
     }
+    bool isNewItem = false;
     item.imageChecksums.clear();
     item.imageChecksums.prepend(ImageItem::computeChecksum(item.image));
     QByteArray srvMsg;
@@ -270,9 +272,11 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
         return true;
         break;
     case ImageItem::BaselineNotFound:
-        if (!customInfo.overrides().isEmpty() || baselinePolicy == UploadNone) {
-            qWarning() << "Cannot compare to baseline: No such baseline found on server.";
+        if (!customInfo.overrides().isEmpty())
             return true;
+        if (baselinePolicy == UploadNone) {
+            isNewItem = true;
+            break;
         }
         if (proto.submitNewBaseline(item, &srvMsg))
             qDebug() << msg->constData() << "Baseline not found on server. New baseline uploaded.";
@@ -285,7 +289,6 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
         return true;
         break;
     }
-    *error = false;
     // The actual comparison of the given image with the baseline:
     if (baseline.imageChecksums.contains(item.imageChecksums.at(0))) {
         if (!proto.submitMatch(item, &srvMsg))
@@ -306,7 +309,11 @@ bool compareItem(const ImageItem &baseline, const QImage &img, QByteArray *msg, 
         qInfo() << "Baseline server reports:" << srvMsg;
         return true;            // The server decides: a fuzzy match means no mismatch
     }
-    *msg += "Mismatch. See report:\n   " + srvMsg;
+    if (isNewItem)
+        *msg += "No baseline on server, so cannot compare.";
+    else
+        *msg += "Mismatch.";
+    *msg += " See report:\n   " + srvMsg;
     if (dryRunMode) {
         qDebug() << "Dryrun, so ignoring" << *msg;
         return true;
@@ -372,22 +379,21 @@ QTestData &newRow(const char *dataTag, quint16 checksum)
     return QTest::newRow(dataTag);
 }
 
-
-bool testImage(const QImage& img, QByteArray *msg, bool *error)
+const ImageItem *findCurrentItem(QByteArray *msg, bool *error)
 {
     if (!connected && !connect(msg, error))
-        return true;
+        return nullptr;
 
     if (QTest::currentTestFunction() != curFunction || itemList.isEmpty()) {
-        qWarning() << "Usage error: QBASELINE_TEST used without corresponding QBaselineTest::newRow()";
-        return true;
+        qWarning() << "Usage error: QBASELINE_ macro used without corresponding QBaselineTest::newRow()";
+        return nullptr;
     }
 
     if (!gotBaselines) {
         if (!proto.requestBaselineChecksums(QString::fromLatin1(QTest::currentTestFunction()), &itemList) || itemList.isEmpty()) {
             *msg = "Communication with baseline server failed: " + proto.errorMessage().toLatin1();
             *error = true;
-            return true;
+            return nullptr;
         }
         gotBaselines = true;
     }
@@ -397,10 +403,24 @@ bool testImage(const QImage& img, QByteArray *msg, bool *error)
     while (it != itemList.constEnd() && it->itemName != curTag)
         ++it;
     if (it == itemList.constEnd()) {
-        qWarning() << "Usage error: QBASELINE_TEST used without corresponding QBaselineTest::newRow() for row" << curTag;
-        return true;
+        qWarning() << "Usage error: QBASELINE_ macro used without corresponding QBaselineTest::newRow() for row" << curTag;
+        return nullptr;
     }
-    return compareItem(*it, img, msg, error);
+    return &(*it);
+}
+
+bool testImage(const QImage &img, QByteArray *msg, bool *error)
+{
+    const ImageItem *item = findCurrentItem(msg, error);
+    return item ? compareItem(*item, img, msg, error) : true;
+}
+
+bool isCurrentItemBlacklisted()
+{
+    QByteArray msg;
+    bool error = false;
+    const ImageItem *item = findCurrentItem(&msg, &error);
+    return item ? (item->status == ImageItem::IgnoreItem) : false;
 }
 
 }

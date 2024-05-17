@@ -92,6 +92,12 @@ inline constexpr int qMetaTypeId();
 #else
 #  define QT_FOR_EACH_STATIC_REGULAR_EXPRESSION(F)
 #endif
+#ifndef QT_NO_VARIANT
+#  define QT_FOR_EACH_STATIC_QVARIANT(F) \
+    F(QVariant, 41, QVariant)
+#else
+#  define QT_FOR_EACH_STATIC_QVARIANT(F)
+#endif
 
 #define QT_FOR_EACH_STATIC_CORE_CLASS(F)\
     F(QChar, 7, QChar) \
@@ -113,7 +119,7 @@ inline constexpr int qMetaTypeId();
     F(QPointF, 26, QPointF) \
     QT_FOR_EACH_STATIC_EASINGCURVE(F) \
     F(QUuid, 30, QUuid) \
-    F(QVariant, 41, QVariant) \
+    QT_FOR_EACH_STATIC_QVARIANT(F) \
     QT_FOR_EACH_STATIC_REGULAR_EXPRESSION(F) \
     F(QJsonValue, 45, QJsonValue) \
     F(QJsonObject, 46, QJsonObject) \
@@ -128,13 +134,20 @@ inline constexpr int qMetaTypeId();
 #define QT_FOR_EACH_STATIC_CORE_POINTER(F)\
     F(QObjectStar, 39, QObject*)
 
-#define QT_FOR_EACH_STATIC_CORE_TEMPLATE(F)\
+#ifndef QT_NO_VARIANT
+#  define QT_FOR_EACH_STATIC_CORE_TEMPLATE(F)\
     F(QVariantMap, 8, QVariantMap) \
     F(QVariantList, 9, QVariantList) \
     F(QVariantHash, 28, QVariantHash) \
     F(QVariantPair, 58, QVariantPair) \
     F(QByteArrayList, 49, QByteArrayList) \
     F(QStringList, 11, QStringList) \
+    /**/
+#else
+#  define QT_FOR_EACH_STATIC_CORE_TEMPLATE(F)\
+    F(QByteArrayList, 49, QByteArrayList) \
+    F(QStringList, 11, QStringList)
+#endif
 
 #if QT_CONFIG(shortcut)
 #define QT_FOR_EACH_STATIC_KEYSEQUENCE_CLASS(F)\
@@ -188,12 +201,20 @@ inline constexpr int qMetaTypeId();
     F(UInt, -1, uint, "quint32") \
     F(LongLong, -1, qlonglong, "qint64") \
     F(ULongLong, -1, qulonglong, "quint64") \
+    F(QByteArrayList, -1, QByteArrayList, "QList<QByteArray>") \
+    F(QStringList, -1, QStringList, "QList<QString>") \
+    QT_FOR_EACH_STATIC_VARIANT_ALIAS_TYPE(F)
+
+#ifndef QT_NO_VARIANT
+#define QT_FOR_EACH_STATIC_VARIANT_ALIAS_TYPE(F) \
     F(QVariantList, -1, QVariantList, "QList<QVariant>") \
     F(QVariantMap, -1, QVariantMap, "QMap<QString,QVariant>") \
     F(QVariantHash, -1, QVariantHash, "QHash<QString,QVariant>") \
     F(QVariantPair, -1, QVariantPair, "QPair<QVariant,QVariant>") \
-    F(QByteArrayList, -1, QByteArrayList, "QList<QByteArray>") \
-    F(QStringList, -1, QStringList, "QList<QString>") \
+    /**/
+#else
+#define QT_FOR_EACH_STATIC_VARIANT_ALIAS_TYPE(F)
+#endif
 
 #define QT_FOR_EACH_STATIC_TYPE(F)\
     QT_FOR_EACH_STATIC_PRIMITIVE_TYPE(F)\
@@ -497,20 +518,20 @@ public:
     template<typename T>
     constexpr static QMetaType fromType();
     static QMetaType fromName(QByteArrayView name);
-
-    friend bool operator==(QMetaType a, QMetaType b)
+private:
+    friend bool comparesEqual(const QMetaType &lhs,
+                              const QMetaType &rhs) noexcept
     {
-        if (a.d_ptr == b.d_ptr)
+        if (lhs.d_ptr == rhs.d_ptr)
             return true;
-        if (!a.d_ptr || !b.d_ptr)
+        if (!lhs.d_ptr || !rhs.d_ptr)
             return false; // one type is undefined, the other is defined
         // avoid id call if we already have the id
-        const int aId = a.id();
-        const int bId = b.id();
+        const int aId = lhs.id();
+        const int bId = rhs.id();
         return aId == bId;
     }
-    friend bool operator!=(QMetaType a, QMetaType b) { return !(a == b); }
-
+    Q_DECLARE_EQUALITY_COMPARABLE(QMetaType)
 #ifndef QT_NO_DEBUG_STREAM
 private:
     friend Q_CORE_EXPORT QDebug operator<<(QDebug d, QMetaType m);
@@ -1729,11 +1750,19 @@ QT_FOR_EACH_STATIC_TYPE(Q_DECLARE_BUILTIN_METATYPE)
 
 QT_BEGIN_NAMESPACE
 
+namespace QtPrivate {
+// out-of-line helpers to reduce template code bloat ("SCARY") and improve compile times:
+Q_CORE_EXPORT bool hasRegisteredConverterFunctionToPairVariantInterface(QMetaType m);
+Q_CORE_EXPORT bool hasRegisteredConverterFunctionToIterableMetaSequence(QMetaType m);
+Q_CORE_EXPORT bool hasRegisteredMutableViewFunctionToIterableMetaSequence(QMetaType m);
+Q_CORE_EXPORT bool hasRegisteredConverterFunctionToIterableMetaAssociation(QMetaType m);
+Q_CORE_EXPORT bool hasRegisteredMutableViewFunctionToIterableMetaAssociation(QMetaType m);
+}
+
 template <typename T>
 inline bool QtPrivate::IsMetaTypePair<T, true>::registerConverter()
 {
-    const QMetaType to = QMetaType::fromType<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
-    if (!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<T>(), to)) {
+    if (!QtPrivate::hasRegisteredConverterFunctionToPairVariantInterface(QMetaType::fromType<T>())) {
         QtMetaTypePrivate::QPairVariantInterfaceConvertFunctor<T> o;
         return QMetaType::registerConverter<T, QtMetaTypePrivate::QPairVariantInterfaceImpl>(o);
     }
@@ -1765,8 +1794,7 @@ struct SequentialValueTypeIsMetaType<T, true>
 {
     static bool registerConverter()
     {
-        const QMetaType to = QMetaType::fromType<QIterable<QMetaSequence>>();
-        if (!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<T>(), to)) {
+        if (!QtPrivate::hasRegisteredConverterFunctionToIterableMetaSequence(QMetaType::fromType<T>())) {
             QSequentialIterableConvertFunctor<T> o;
             return QMetaType::registerConverter<T, QIterable<QMetaSequence>>(o);
         }
@@ -1775,8 +1803,7 @@ struct SequentialValueTypeIsMetaType<T, true>
 
     static bool registerMutableView()
     {
-        const QMetaType to = QMetaType::fromType<QIterable<QMetaSequence>>();
-        if (!QMetaType::hasRegisteredMutableViewFunction(QMetaType::fromType<T>(), to)) {
+        if (!QtPrivate::hasRegisteredMutableViewFunctionToIterableMetaSequence(QMetaType::fromType<T>())) {
             QSequentialIterableMutableViewFunctor<T> o;
             return QMetaType::registerMutableView<T, QIterable<QMetaSequence>>(o);
         }
@@ -1809,8 +1836,7 @@ struct AssociativeKeyTypeIsMetaType<T, true> : AssociativeMappedTypeIsMetaType<T
 {
     static bool registerConverter()
     {
-        const QMetaType to = QMetaType::fromType<QIterable<QMetaAssociation>>();
-        if (!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<T>(), to)) {
+        if (!QtPrivate::hasRegisteredConverterFunctionToIterableMetaAssociation(QMetaType::fromType<T>())) {
             QAssociativeIterableConvertFunctor<T> o;
             return QMetaType::registerConverter<T, QIterable<QMetaAssociation>>(o);
         }
@@ -1819,8 +1845,7 @@ struct AssociativeKeyTypeIsMetaType<T, true> : AssociativeMappedTypeIsMetaType<T
 
     static bool registerMutableView()
     {
-        const QMetaType to = QMetaType::fromType<QIterable<QMetaAssociation>>();
-        if (!QMetaType::hasRegisteredMutableViewFunction(QMetaType::fromType<T>(), to)) {
+        if (!QtPrivate::hasRegisteredMutableViewFunctionToIterableMetaAssociation(QMetaType::fromType<T>())) {
             QAssociativeIterableMutableViewFunctor<T> o;
             return QMetaType::registerMutableView<T, QIterable<QMetaAssociation>>(o);
         }
@@ -2369,18 +2394,20 @@ struct QDebugStreamOperatorForType <T, false>
 template<typename T, bool = QTypeTraits::has_stream_operator_v<QDataStream, T>>
 struct QDataStreamOperatorForType
 {
+    static constexpr QMetaTypeInterface::DataStreamOutFn dataStreamOut = nullptr;
+    static constexpr QMetaTypeInterface::DataStreamInFn dataStreamIn = nullptr;
+};
+
+#ifndef QT_NO_DATASTREAM
+template<typename T>
+struct QDataStreamOperatorForType <T, true>
+{
     static void dataStreamOut(const QMetaTypeInterface *, QDataStream &ds, const void *a)
     { ds << *reinterpret_cast<const T *>(a); }
     static void dataStreamIn(const QMetaTypeInterface *, QDataStream &ds, void *a)
     { ds >> *reinterpret_cast<T *>(a); }
 };
-
-template<typename T>
-struct QDataStreamOperatorForType <T, false>
-{
-    static constexpr QMetaTypeInterface::DataStreamOutFn dataStreamOut = nullptr;
-    static constexpr QMetaTypeInterface::DataStreamInFn dataStreamIn = nullptr;
-};
+#endif
 
 // Performance optimization:
 //

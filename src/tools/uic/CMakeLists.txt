@@ -32,6 +32,7 @@ qt_internal_add_tool(${target_name}
     DEFINES
         QT_NO_CAST_FROM_ASCII
         QT_NO_FOREACH
+        QT_USE_NODISCARD_FILE_OPEN
         QT_UIC
     INCLUDE_DIRECTORIES
         ${CMAKE_CURRENT_SOURCE_DIR}

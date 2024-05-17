@@ -282,7 +282,7 @@ namespace qstdweb {
     }
 
     bool haveAsyncify();
-    bool haveJspi();
+    bool Q_CORE_EXPORT haveJspi();
     bool canBlockCallingThread();
 
     struct CancellationFlag

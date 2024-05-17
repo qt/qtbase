@@ -14,4 +14,6 @@ endif()
 qt_internal_add_test(tst_qregularexpression
     SOURCES
         tst_qregularexpression.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )

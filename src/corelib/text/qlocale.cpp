@@ -111,18 +111,18 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code,
 
     auto searchCode = [codeBuf](auto f) {
         return std::find_if(languageCodeList.begin(), languageCodeList.end(),
-                            [=](const LanguageCodeEntry &i) { return f(i) == codeBuf; });
+                            [=](LanguageCodeEntry i) { return f(i) == codeBuf; });
     };
 
     if (codeTypes.testFlag(QLocale::ISO639Part1) && uc3 == 0) {
-        auto i = searchCode([](const LanguageCodeEntry &i) { return i.part1; });
+        auto i = searchCode([](LanguageCodeEntry i) { return i.part1; });
         if (i != languageCodeList.end())
             return QLocale::Language(std::distance(languageCodeList.begin(), i));
     }
 
     if (uc3 != 0) {
         if (codeTypes.testFlag(QLocale::ISO639Part2B)) {
-            auto i = searchCode([](const LanguageCodeEntry &i) { return i.part2B; });
+            auto i = searchCode([](LanguageCodeEntry i) { return i.part2B; });
             if (i != languageCodeList.end())
                 return QLocale::Language(std::distance(languageCodeList.begin(), i));
         }
@@ -131,13 +131,13 @@ QLocale::Language QLocalePrivate::codeToLanguage(QStringView code,
         // This is asserted in iso639_3.LanguageCodeData.
         if (codeTypes.testFlag(QLocale::ISO639Part2T)
             && !codeTypes.testFlag(QLocale::ISO639Part3)) {
-            auto i = searchCode([](const LanguageCodeEntry &i) { return i.part2T; });
+            auto i = searchCode([](LanguageCodeEntry i) { return i.part2T; });
             if (i != languageCodeList.end())
                 return QLocale::Language(std::distance(languageCodeList.begin(), i));
         }
 
         if (codeTypes.testFlag(QLocale::ISO639Part3)) {
-            auto i = searchCode([](const LanguageCodeEntry &i) { return i.part3; });
+            auto i = searchCode([](LanguageCodeEntry i) { return i.part3; });
             if (i != languageCodeList.end())
                 return QLocale::Language(std::distance(languageCodeList.begin(), i));
         }
@@ -252,7 +252,7 @@ struct LikelyPair
     QLocaleId value = QLocaleId { 0, 0, 0 };
 };
 
-bool operator<(const LikelyPair &lhs, const LikelyPair &rhs)
+bool operator<(LikelyPair lhs, LikelyPair rhs)
 {
     // Must match the comparison LocaleDataWriter.likelySubtags() uses when
     // sorting, see qtbase/util/locale_database.qlocalexml2cpp.py
@@ -465,7 +465,7 @@ QByteArray QLocalePrivate::bcp47Name(char separator) const
     return m_data->id().withLikelySubtagsRemoved().name(separator);
 }
 
-static qsizetype findLocaleIndexById(const QLocaleId &localeId)
+static qsizetype findLocaleIndexById(QLocaleId localeId)
 {
     qsizetype idx = locale_index[localeId.language_id];
     // If there are no locales for specified language (so we we've got the
@@ -3018,6 +3018,14 @@ QString QLocale::standaloneDayName(int day, FormatType type) const
 
 // Calendar look-up of month and day names:
 
+// Only used in assertions
+[[maybe_unused]] static bool sameLocale(const QLocaleData *locale, const QCalendarLocale &calendar)
+{
+    return locale->m_language_id == calendar.m_language_id
+        && locale->m_script_id == calendar.m_script_id
+        && locale->m_territory_id == calendar.m_territory_id;
+}
+
 /*!
   \internal
  */
@@ -3126,8 +3134,9 @@ QString QCalendarBackend::monthName(const QLocale &locale, int month, int,
                                     QLocale::FormatType format) const
 {
     Q_ASSERT(month >= 1 && month <= maximumMonthsInYear());
-    return rawMonthName(localeMonthIndexData()[locale.d->m_index],
-                        localeMonthData(), month, format);
+    const QCalendarLocale &monthly = localeMonthIndexData()[locale.d->m_index];
+    Q_ASSERT(sameLocale(locale.d->m_data, monthly));
+    return rawMonthName(monthly, localeMonthData(), month, format);
 }
 
 QString QRomanCalendar::monthName(const QLocale &locale, int month, int year,
@@ -3161,8 +3170,9 @@ QString QCalendarBackend::standaloneMonthName(const QLocale &locale, int month, 
                                               QLocale::FormatType format) const
 {
     Q_ASSERT(month >= 1 && month <= maximumMonthsInYear());
-    return rawStandaloneMonthName(localeMonthIndexData()[locale.d->m_index],
-                                  localeMonthData(), month, format);
+    const QCalendarLocale &monthly = localeMonthIndexData()[locale.d->m_index];
+    Q_ASSERT(sameLocale(locale.d->m_data, monthly));
+    return rawStandaloneMonthName(monthly, localeMonthData(), month, format);
 }
 
 QString QRomanCalendar::standaloneMonthName(const QLocale &locale, int month, int year,
@@ -3710,7 +3720,7 @@ QString QLocaleData::doubleToString(double d, int precision, DoubleForm form,
     qsizetype bufSize = 1;
     if (precision == QLocale::FloatingPointShortest)
         bufSize += std::numeric_limits<double>::max_digits10;
-    else if (form == DFDecimal && qIsFinite(d))
+    else if (form == DFDecimal && qt_is_finite(d))
         bufSize += wholePartSpace(qAbs(d)) + precision;
     else // Add extra digit due to different interpretations of precision.
         bufSize += qMax(2, precision) + 1; // Must also be big enough for "nan" or "inf"
@@ -4750,6 +4760,11 @@ QStringList QLocale::uiLanguages(TagSeparator separator) const
     const bool isSystem = d->m_data == &systemLocaleData;
     if (isSystem) {
         uiLanguages = systemLocale()->query(QSystemLocale::UILanguages).toStringList();
+        if (separator != TagSeparator::Dash) {
+            // Map from default separator, Dash, used by backends:
+            const QChar join = QLatin1Char(sep);
+            uiLanguages = uiLanguages.replaceInStrings(u"-", QStringView(&join, 1));
+        }
         // ... but we need to include likely-adjusted forms of each of those, too.
         // For now, collect up locale Ids representing the entries, for later processing:
         for (const auto &entry : std::as_const(uiLanguages))

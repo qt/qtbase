@@ -63,6 +63,7 @@ how to accomplish this.
 \li \l{cmake-target-property-QT_ANDROID_MIN_SDK_VERSION}{QT_ANDROID_MIN_SDK_VERSION}
 \li \l{cmake-target-property-QT_ANDROID_PACKAGE_SOURCE_DIR}{QT_ANDROID_PACKAGE_SOURCE_DIR}
 \li \l{cmake-target-property-QT_ANDROID_TARGET_SDK_VERSION}{QT_ANDROID_TARGET_SDK_VERSION}
+\li \l{cmake-target-property-QT_ANDROID_PACKAGE_NAME}{QT_ANDROID_PACKAGE_NAME}
 \li \l{cmake-target-property-QT_ANDROID_VERSION_NAME}{QT_ANDROID_VERSION_NAME}
 \li \l{cmake-target-property-QT_ANDROID_VERSION_CODE}{QT_ANDROID_VERSION_CODE}
 \li \l{cmake-target-property-QT_QML_IMPORT_PATH}{QT_QML_IMPORT_PATH}

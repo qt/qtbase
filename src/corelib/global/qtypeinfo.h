@@ -11,6 +11,7 @@
 #include <variant>
 #include <optional>
 #include <tuple>
+#include <type_traits>
 
 QT_BEGIN_NAMESPACE
 
@@ -22,6 +23,13 @@ class QDebug;
 
 namespace QtPrivate {
 
+// A trivially copyable class must also have a trivial, non-deleted
+// destructor [class.prop/1.3], CWG1734. Some implementations don't
+// check for a trivial destructor, because of backwards compatibility
+// with C++98's definition of trivial copyability.
+// Since trivial copiability has implications for the ABI, implementations
+// can't "just fix" their traits. So, although formally redundant, we
+// explicitly check for trivial destruction here.
 template <typename T>
 inline constexpr bool qIsRelocatable =  std::is_trivially_copyable_v<T> && std::is_trivially_destructible_v<T>;
 

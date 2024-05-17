@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <private/qguiapplication_p.h>
 
@@ -109,6 +109,7 @@ private slots:
     void QTBUG6407_extendedSelection();
     void QTBUG6753_selectOnSelection();
     void testDelegateDestroyEditor();
+    void testDelegateDestroyEditorChild();
     void testClickedSignal();
     void testChangeEditorState();
     void deselectInSingleSelection();
@@ -150,6 +151,7 @@ private slots:
     void testSpinBoxAsEditor_data();
     void testSpinBoxAsEditor();
     void removeIndexWhileEditing();
+    void focusNextOnHide();
 
 private:
     static QAbstractItemView *viewFromString(const QByteArray &viewType, QWidget *parent = nullptr)
@@ -176,17 +178,19 @@ public:
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &, const QModelIndex &) const override
     {
         openedEditor = new QWidget(parent);
+        virtualCtorCallCount++;
         return openedEditor;
     }
     void destroyEditor(QWidget *editor, const QModelIndex &) const override
     {
-        calledVirtualDtor = true;
+        virtualDtorCallCount++;
         editor->deleteLater();
     }
     void changeSize() { size = QSize(50, 50); emit sizeHintChanged(QModelIndex()); }
     mutable QWidget *openedEditor = nullptr;
     QSize size;
-    mutable bool calledVirtualDtor = false;
+    mutable int virtualCtorCallCount = 0;
+    mutable int virtualDtorCallCount = 0;
 };
 
 class DialogItemDelegate : public QStyledItemDelegate
@@ -1047,7 +1051,6 @@ void tst_QAbstractItemView::setItemDelegate()
     centerOnScreen(&v);
     moveCursorAway(&v);
     v.show();
-    QApplicationPrivate::setActiveWindow(&v);
     QVERIFY(QTest::qWaitForWindowActive(&v));
 
     QModelIndex index = model.index(cellToEdit.y(), cellToEdit.x());
@@ -1256,7 +1259,6 @@ void tst_QAbstractItemView::task221955_selectedEditor()
     tree.show();
     tree.setFocus();
     tree.setCurrentIndex(tree.model()->index(1,0));
-    QApplicationPrivate::setActiveWindow(&tree);
     QVERIFY(QTest::qWaitForWindowActive(&tree));
 
     QVERIFY(! tree.selectionModel()->selectedIndexes().contains(tree.model()->index(3,0)));
@@ -1555,7 +1557,6 @@ void tst_QAbstractItemView::QTBUG6407_extendedSelection()
     moveCursorAway(&view);
 
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(&view, QApplication::activeWindow());
 
@@ -1616,9 +1617,31 @@ void tst_QAbstractItemView::testDelegateDestroyEditor()
     table.setItemDelegate(&delegate);
     table.edit(table.model()->index(1, 1));
     QAbstractItemView *tv = &table;
-    QVERIFY(!delegate.calledVirtualDtor);
+    QCOMPARE(delegate.virtualDtorCallCount, 0);
     tv->closeEditor(delegate.openedEditor, QAbstractItemDelegate::NoHint);
-    QVERIFY(delegate.calledVirtualDtor);
+    QCOMPARE(delegate.virtualDtorCallCount, 1);
+}
+
+void tst_QAbstractItemView::testDelegateDestroyEditorChild()
+{
+    QTreeWidget tree;
+    MyAbstractItemDelegate delegate;
+    tree.setItemDelegate(&delegate);
+    QTreeWidgetItem *topLevel = new QTreeWidgetItem;
+    QTreeWidgetItem *levelOne1 = new QTreeWidgetItem(topLevel);
+    QTreeWidgetItem *levelTwo1 = new QTreeWidgetItem(levelOne1);
+    QTreeWidgetItem *levelOne2 = new QTreeWidgetItem(topLevel);
+    QTreeWidgetItem *levelTwo2 = new QTreeWidgetItem(levelOne2);
+    tree.insertTopLevelItem(0, topLevel);
+    tree.openPersistentEditor(levelOne1);
+    tree.openPersistentEditor(levelTwo1);
+    tree.openPersistentEditor(levelOne2);
+    tree.openPersistentEditor(levelTwo2);
+    QCOMPARE(delegate.virtualCtorCallCount, 4);
+    levelOne1->removeChild(levelTwo1);
+    QCOMPARE(delegate.virtualDtorCallCount, 1);
+    topLevel->removeChild(levelOne2);
+    QCOMPARE(delegate.virtualDtorCallCount, 3);
 }
 
 void tst_QAbstractItemView::testClickedSignal()
@@ -1631,7 +1654,6 @@ void tst_QAbstractItemView::testClickedSignal()
     centerOnScreen(&view);
     moveCursorAway(&view);
     view.showNormal();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(&view, QApplication::activeWindow());
 
@@ -1682,7 +1704,6 @@ void tst_QAbstractItemView::testChangeEditorState()
     centerOnScreen(&view);
     moveCursorAway(&view);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
     QCOMPARE(&view, QApplication::activeWindow());
 
@@ -1703,7 +1724,6 @@ void tst_QAbstractItemView::deselectInSingleSelection()
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     view.setSelectionMode(QAbstractItemView::SingleSelection);
     view.setEditTriggers(QAbstractItemView::NoEditTriggers);
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     // mouse
     QModelIndex index22 = s.index(2, 2);
@@ -1750,7 +1770,6 @@ void tst_QAbstractItemView::testNoActivateOnDisabledItem()
     moveCursorAway(&treeView);
     treeView.show();
 
-    QApplicationPrivate::setActiveWindow(&treeView);
     QVERIFY(QTest::qWaitForWindowActive(&treeView));
 
     QSignalSpy activatedSpy(&treeView, &QAbstractItemView::activated);
@@ -1797,7 +1816,6 @@ void tst_QAbstractItemView::testFocusPolicy()
     moveCursorAway(&window);
 
     window.show();
-    QApplicationPrivate::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
 
     // itemview accepts focus => editor is closed => return focus to the itemview
@@ -1835,7 +1853,6 @@ void tst_QAbstractItemView::QTBUG31411_noSelection()
     moveCursorAway(&window);
 
     window.show();
-    QApplicationPrivate::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
 
     qRegisterMetaType<QItemSelection>();
@@ -2435,15 +2452,11 @@ void tst_QAbstractItemView::inputMethodEnabled()
 
     // Check focus by switching the activation of the window to force a focus in
     view->setCurrentIndex(model->index(1, 0));
-    QApplicationPrivate::setActiveWindow(nullptr);
-    QApplicationPrivate::setActiveWindow(view.data());
     QVERIFY(QTest::qWaitForWindowActive(view.data()));
     QCOMPARE(view->testAttribute(Qt::WA_InputMethodEnabled), result);
 
     view->setCurrentIndex(QModelIndex());
     QVERIFY(!view->testAttribute(Qt::WA_InputMethodEnabled));
-    QApplicationPrivate::setActiveWindow(nullptr);
-    QApplicationPrivate::setActiveWindow(view.data());
     QVERIFY(QTest::qWaitForWindowActive(view.data()));
     QModelIndex index = model->index(1, 0);
     QPoint p = view->visualRect(index).center();
@@ -2453,8 +2466,6 @@ void tst_QAbstractItemView::inputMethodEnabled()
     QCOMPARE(view->testAttribute(Qt::WA_InputMethodEnabled), result);
 
     index = model->index(0, 0);
-    QApplicationPrivate::setActiveWindow(nullptr);
-    QApplicationPrivate::setActiveWindow(view.data());
     QVERIFY(QTest::qWaitForWindowActive(view.data()));
     p = view->visualRect(index).center();
     QTest::mouseClick(view->viewport(), Qt::LeftButton, Qt::NoModifier, p);
@@ -3521,6 +3532,33 @@ void tst_QAbstractItemView::removeIndexWhileEditing()
         QTRY_VERIFY(!lineEdit);
         QCOMPARE(view.state(), QAbstractItemView::NoState);
     }
+}
+
+void tst_QAbstractItemView::focusNextOnHide()
+{
+    QWidget widget;
+    QTableWidget table(10, 10);
+    table.setTabKeyNavigation(true);
+    QLineEdit lineEdit;
+
+    QHBoxLayout layout;
+    layout.addWidget(&table);
+    layout.addWidget(&lineEdit);
+    widget.setLayout(&layout);
+
+    widget.setTabOrder({&table, &lineEdit});
+
+    widget.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&widget));
+
+    QVERIFY(table.hasFocus());
+    QCOMPARE(table.currentIndex(), table.model()->index(0, 0));
+    QTest::keyPress(&table, Qt::Key_Tab);
+    QCOMPARE(table.currentIndex(), table.model()->index(0, 1));
+
+    table.hide();
+    QCOMPARE(table.currentIndex(), table.model()->index(0, 1));
+    QVERIFY(lineEdit.hasFocus());
 }
 
 QTEST_MAIN(tst_QAbstractItemView)

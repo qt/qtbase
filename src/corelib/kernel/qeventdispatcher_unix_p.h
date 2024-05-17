@@ -61,7 +61,7 @@ struct QThreadPipe
 #endif
 };
 
-class Q_CORE_EXPORT QEventDispatcherUNIX : public QAbstractEventDispatcher
+class Q_CORE_EXPORT QEventDispatcherUNIX : public QAbstractEventDispatcherV2
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QEventDispatcherUNIX)
@@ -75,12 +75,12 @@ public:
     void registerSocketNotifier(QSocketNotifier *notifier) final;
     void unregisterSocketNotifier(QSocketNotifier *notifier) final;
 
-    void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object) final;
-    bool unregisterTimer(int timerId) final;
-    bool unregisterTimers(QObject *object) final;
-    QList<TimerInfo> registeredTimers(QObject *object) const final;
-
-    int remainingTime(int timerId) final;
+    void registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType,
+                       QObject *object) override final;
+    bool unregisterTimer(Qt::TimerId timerId) override final;
+    bool unregisterTimers(QObject *object) override final;
+    QList<TimerInfoV2> timersForObject(QObject *object) const override final;
+    Duration remainingTime(Qt::TimerId timerId) const override final;
 
     void wakeUp() override;
     void interrupt() final;

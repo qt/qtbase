@@ -72,11 +72,6 @@ qt_disable_apple_app_extension_api_only(XcbQpaPrivate)
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(XcbQpaPrivate CONDITION QT_FEATURE_opengl
-    PUBLIC_LIBRARIES
-        Qt::OpenGLPrivate
-)
-
 qt_internal_extend_target(XcbQpaPrivate CONDITION QT_FEATURE_glib
     LIBRARIES
         GLIB2::GLIB2
@@ -169,7 +164,7 @@ endif()
 qt_internal_add_plugin(QXcbIntegrationPlugin
     OUTPUT_NAME qxcb
     PLUGIN_TYPE platforms
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES xcb
+    DEFAULT_IF "xcb" IN_LIST QT_QPA_PLATFORMS
     SOURCES
         qxcbmain.cpp
     DEFINES

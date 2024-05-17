@@ -57,17 +57,27 @@ QAndroidPlatformWindow::QAndroidPlatformWindow(QWindow *window)
 
     m_nativeQtWindow = QJniObject::construct<QtJniTypes::QtWindow>(
         QNativeInterface::QAndroidApplication::context(),
-        m_nativeParentQtWindow);
+        m_nativeParentQtWindow,
+        QtAndroid::qtInputDelegate());
     m_nativeViewId = m_nativeQtWindow.callMethod<jint>("getId");
 
     if (window->isTopLevel())
         platformScreen()->addWindow(this);
 
-    // TODO should handle case where this changes at runtime -> need to change existing window
-    // into TextureView (or perhaps not, if the parent window would be SurfaceView, as long as
-    // onTop was false it would stay below the children)
-    if (platformScreen()->windows().size() <= 1)
+    static bool ok = false;
+    static const int value = qEnvironmentVariableIntValue("QT_ANDROID_SURFACE_CONTAINER_TYPE", &ok);
+    if (ok) {
+        static const SurfaceContainer type = static_cast<SurfaceContainer>(value);
+        if (type == SurfaceContainer::SurfaceView || type == SurfaceContainer::TextureView)
+            m_surfaceContainerType = type;
+    } else if (platformScreen()->windows().size() <= 1) {
+        // TODO should handle case where this changes at runtime -> need to change existing window
+        // into TextureView (or perhaps not, if the parent window would be SurfaceView, as long as
+        // onTop was false it would stay below the children)
         m_surfaceContainerType = SurfaceContainer::SurfaceView;
+    }
+    qCDebug(lcQpaWindow) << "Window" << m_nativeViewId << "using surface container type"
+                         << static_cast<int>(m_surfaceContainerType);
 }
 
 QAndroidPlatformWindow::~QAndroidPlatformWindow()
@@ -253,7 +263,7 @@ void QAndroidPlatformWindow::createSurface()
     }
 
     const bool windowStaysOnTop = bool(window()->flags() & Qt::WindowStaysOnTopHint);
-    const bool isOpaque = format().hasAlpha() || (0.0 < window()->opacity() < 1.0);
+    const bool isOpaque = !format().hasAlpha() && qFuzzyCompare(window()->opacity(), 1.0);
 
     m_nativeQtWindow.callMethod<void>("createSurface", windowStaysOnTop, x, y, w, h, 32, isOpaque,
                                       m_surfaceContainerType);
@@ -342,10 +352,28 @@ void QAndroidPlatformWindow::setSurface(JNIEnv *env, jobject object, jint window
     }
 }
 
+void QAndroidPlatformWindow::windowFocusChanged(JNIEnv *env, jobject object,
+                                          jboolean focus, jint windowId)
+{
+    Q_UNUSED(env)
+    Q_UNUSED(object)
+    QWindow* window = QtAndroid::windowFromId(windowId);
+    Q_ASSERT_X(window, "QAndroidPlatformWindow", "windowFocusChanged event window should exist");
+    if (focus) {
+        QWindowSystemInterface::handleFocusWindowChanged(window);
+    } else if (!focus && window == qGuiApp->focusWindow()) {
+        // Clear focus if current window has lost focus
+        QWindowSystemInterface::handleFocusWindowChanged(nullptr);
+    }
+}
+
 bool QAndroidPlatformWindow::registerNatives(QJniEnvironment &env)
 {
     if (!env.registerNativeMethods(QtJniTypes::Traits<QtJniTypes::QtWindow>::className(),
-                                  {Q_JNI_NATIVE_SCOPED_METHOD(setSurface, QAndroidPlatformWindow)})) {
+                                {
+                                    Q_JNI_NATIVE_SCOPED_METHOD(setSurface, QAndroidPlatformWindow),
+                                    Q_JNI_NATIVE_SCOPED_METHOD(windowFocusChanged, QAndroidPlatformWindow)
+                                })) {
         qCCritical(lcQpaWindow) << "RegisterNatives failed for"
                                 << QtJniTypes::Traits<QtJniTypes::QtWindow>::className();
         return false;

@@ -23,7 +23,6 @@ set_target_properties(qlogging_helper PROPERTIES CXX_VISIBILITY_PRESET default)
 qt_internal_add_test(tst_qlogging SOURCES tst_qlogging.cpp
     DEFINES
         QT_MESSAGELOGCONTEXT
-        HELPER_BINARY="${CMAKE_CURRENT_BINARY_DIR}/qlogging_helper"
 )
 
 add_dependencies(tst_qlogging qlogging_helper)

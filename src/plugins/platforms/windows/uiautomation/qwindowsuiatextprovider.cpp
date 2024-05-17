@@ -26,20 +26,6 @@ QWindowsUiaTextProvider::~QWindowsUiaTextProvider()
 {
 }
 
-HRESULT STDMETHODCALLTYPE QWindowsUiaTextProvider::QueryInterface(REFIID iid, LPVOID *iface)
-{
-    qCDebug(lcQpaUiAutomation) << __FUNCTION__ << this;
-
-    if (!iface)
-        return E_INVALIDARG;
-    *iface = nullptr;
-
-    const bool result = qWindowsComQueryUnknownInterfaceMulti<ITextProvider>(this, iid, iface)
-        || qWindowsComQueryInterface<ITextProvider>(this, iid, iface)
-        || qWindowsComQueryInterface<ITextProvider2>(this, iid, iface);
-    return result ? S_OK : E_NOINTERFACE;
-}
-
 // Returns an array of providers for the selected text ranges.
 HRESULT STDMETHODCALLTYPE QWindowsUiaTextProvider::GetSelection(SAFEARRAY **pRetVal)
 {

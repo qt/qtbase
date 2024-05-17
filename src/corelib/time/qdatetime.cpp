@@ -130,7 +130,7 @@ ParsedInt readInt(QStringView text)
 struct ParsedRfcDateTime {
     QDate date;
     QTime time;
-    int utcOffset;
+    int utcOffset = 0;
 };
 
 static int shortDayFromName(QStringView name)
@@ -347,6 +347,12 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
     \inmodule QtCore
     \reentrant
     \brief The QDate class provides date functions.
+
+    \compares strong
+    \compareswith strong std::chrono::year_month_day std::chrono::year_month_day_last \
+                  std::chrono::year_month_weekday std::chrono::year_month_weekday_last
+    These comparison operators are only available when using C++20.
+    \endcompareswith
 
     A QDate object represents a particular day, regardless of calendar, locale
     or other settings used when creating it or supplied by the system.  It can
@@ -1235,12 +1241,14 @@ QString QDate::toString(Qt::DateFormat format) const
 /*!
     \fn QString QDate::toString(const QString &format, QCalendar cal) const
     \fn QString QDate::toString(QStringView format, QCalendar cal) const
+    \since 5.14
 
     Returns the date as a string. The \a format parameter determines the format
     of the result string. If \a cal is supplied, it determines the calendar used
-    to represent the date; it defaults to Gregorian.
+    to represent the date; it defaults to Gregorian. Prior to Qt 5.14, there was
+    no \a cal parameter and the Gregorian calendar was always used.
 
-    These expressions may be used:
+    These expressions may be used in the \a format parameter:
 
     \table
     \header \li Expression \li Output
@@ -1291,11 +1299,29 @@ QString QDate::toString(Qt::DateFormat format) const
     in May will contribute \c{"MayMay05"} to the output.
 
     \sa fromString(), QDateTime::toString(), QTime::toString(), QLocale::toString()
-
 */
 QString QDate::toString(QStringView format, QCalendar cal) const
 {
     return QLocale::c().toString(*this, format, cal);
+}
+
+// Out-of-line no-calendar overloads, since QCalendar is a non-trivial type
+/*!
+    \overload
+    \since 5.10
+*/
+QString QDate::toString(QStringView format) const
+{
+    return QLocale::c().toString(*this, format, QCalendar());
+}
+
+/*!
+    \overload
+    \since 4.6
+*/
+QString QDate::toString(const QString &format) const
+{
+    return QLocale::c().toString(*this, qToStringViewIgnoringNull(format), QCalendar());
 }
 #endif // datestring
 
@@ -1844,6 +1870,33 @@ QDate QDate::fromString(const QString &string, QStringView format, int baseYear,
     \overload
     \since 6.7
 */
+
+/*!
+    \fn QDate QDate::fromString(QStringView string, QStringView format, int baseYear)
+    \overload
+    \since 6.7
+
+    Uses a default-constructed QCalendar.
+*/
+
+/*!
+    \overload
+    \since 6.7
+
+    Uses a default-constructed QCalendar.
+*/
+QDate QDate::fromString(const QString &string, QStringView format, int baseYear)
+{
+    return fromString(string, format, baseYear, QCalendar());
+}
+
+/*!
+    \fn QDate QDate::fromString(const QString &string, const QString &format, int baseYear)
+    \overload
+    \since 6.7
+
+    Uses a default-constructed QCalendar.
+*/
 #endif // datestring
 
 /*!
@@ -1901,6 +1954,8 @@ bool QDate::isLeapYear(int y)
     \reentrant
 
     \brief The QTime class provides clock time functions.
+
+    \compares strong
 
     A QTime object contains a clock time, which it can express as the numbers of
     hours, minutes, seconds, and milliseconds since midnight. It provides
@@ -3201,7 +3256,7 @@ static void checkValidDateTime(QDateTimeData &d, QDateTime::TransitionResolution
     }
 }
 
-static void reviseTimeZone(QDateTimeData &d, QTimeZone zone,
+static void reviseTimeZone(QDateTimeData &d, const QTimeZone &zone,
                            QDateTime::TransitionResolution resolve)
 {
     Qt::TimeSpec spec = zone.timeSpec();
@@ -3508,6 +3563,8 @@ QDateTime::Data QDateTimePrivate::create(QDate toDate, QTime toTime, const QTime
     \ingroup shared
     \reentrant
     \brief The QDateTime class provides date and time functions.
+
+    \compares weak
 
     A QDateTime object encodes a calendar date and a clock time (a "datetime")
     in accordance with a time representation. It combines features of the QDate
@@ -4620,12 +4677,14 @@ QString QDateTime::toString(Qt::DateFormat format) const
 /*!
     \fn QString QDateTime::toString(const QString &format, QCalendar cal) const
     \fn QString QDateTime::toString(QStringView format, QCalendar cal) const
+    \since 5.14
 
     Returns the datetime as a string. The \a format parameter determines the
-    format of the result string. If \a cal is supplied, it determines the calendar
-    used to represent the date; it defaults to Gregorian. See QTime::toString()
-    and QDate::toString() for the supported specifiers for time and date,
-    respectively.
+    format of the result string. If \a cal is supplied, it determines the
+    calendar used to represent the date; it defaults to Gregorian. Prior to Qt
+    5.14, there was no \a cal parameter and the Gregorian calendar was always
+    used. See QTime::toString() and QDate::toString() for the supported
+    specifiers for time and date, respectively, in the \a format parameter.
 
     Any sequence of characters enclosed in single quotes will be included
     verbatim in the output string (stripped of the quotes), even if it contains
@@ -4661,6 +4720,25 @@ QString QDateTime::toString(Qt::DateFormat format) const
 QString QDateTime::toString(QStringView format, QCalendar cal) const
 {
     return QLocale::c().toString(*this, format, cal);
+}
+
+// Out-of-line no-calendar overloads, since QCalendar is a non-trivial type
+/*!
+    \overload
+    \since 5.10
+*/
+QString QDateTime::toString(QStringView format) const
+{
+    return QLocale::c().toString(*this, format, QCalendar());
+}
+
+/*!
+    \overload
+    \since 4.6
+*/
+QString QDateTime::toString(const QString &format) const
+{
+    return QLocale::c().toString(*this, qToStringViewIgnoringNull(format), QCalendar());
 }
 #endif // datestring
 
@@ -5123,13 +5201,20 @@ bool QDateTime::equals(const QDateTime &other) const
 /*!
     \fn bool QDateTime::operator==(const QDateTime &lhs, const QDateTime &rhs)
 
-    Returns \c true if \a lhs is the same as \a rhs; otherwise returns \c false.
+    Returns \c true if \a lhs represents the same moment in time as \a rhs;
+    otherwise returns \c false.
 
-//! [invalid-vs-valid-datetime]
-    Two datetimes are different if either the date, the time, or the time zone
-    components are different. Since 5.14, all invalid datetimes are equal (and
-    less than all valid datetimes).
-//! [invalid-vs-valid-datetime]
+//! [datetime-order-details]
+    Two datetimes using different time representations can have different
+    offsets from UTC. In this case, they may compare equivalent even if their \l
+    date() and \l time() differ, if that difference matches the difference in
+    UTC offset. If their \c date() and \c time() coincide, the one with higher
+    offset from UTC is less (earlier) than the one with lower offset. As a
+    result, datetimes are only weakly ordered.
+
+    Since 5.14, all invalid datetimes are equivalent and less than all valid
+    datetimes.
+//! [datetime-order-details]
 
     \sa operator!=(), operator<(), operator<=(), operator>(), operator>=()
 */
@@ -5140,7 +5225,7 @@ bool QDateTime::equals(const QDateTime &other) const
     Returns \c true if \a lhs is different from \a rhs; otherwise returns \c
     false.
 
-    \include qdatetime.cpp invalid-vs-valid-datetime
+    \include qdatetime.cpp datetime-order-details
 
     \sa operator==()
 */
@@ -5166,7 +5251,7 @@ Qt::weak_ordering compareThreeWay(const QDateTime &lhs, const QDateTime &rhs)
     Returns \c true if \a lhs is earlier than \a rhs;
     otherwise returns \c false.
 
-    \include qdatetime.cpp invalid-vs-valid-datetime
+    \include qdatetime.cpp datetime-order-details
 
     \sa operator==()
 */
@@ -5177,7 +5262,7 @@ Qt::weak_ordering compareThreeWay(const QDateTime &lhs, const QDateTime &rhs)
     Returns \c true if \a lhs is earlier than or equal to \a rhs; otherwise
     returns \c false.
 
-    \include qdatetime.cpp invalid-vs-valid-datetime
+    \include qdatetime.cpp datetime-order-details
 
     \sa operator==()
 */
@@ -5187,7 +5272,7 @@ Qt::weak_ordering compareThreeWay(const QDateTime &lhs, const QDateTime &rhs)
 
     Returns \c true if \a lhs is later than \a rhs; otherwise returns \c false.
 
-    \include qdatetime.cpp invalid-vs-valid-datetime
+    \include qdatetime.cpp datetime-order-details
 
     \sa operator==()
 */
@@ -5198,7 +5283,7 @@ Qt::weak_ordering compareThreeWay(const QDateTime &lhs, const QDateTime &rhs)
     Returns \c true if \a lhs is later than or equal to \a rhs;
     otherwise returns \c false.
 
-    \include qdatetime.cpp invalid-vs-valid-datetime
+    \include qdatetime.cpp datetime-order-details
 
     \sa operator==()
 */
@@ -5495,7 +5580,6 @@ QDateTime QDateTime::fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec, int offs
 
 /*!
     \since 5.2
-    \overload
 
     Returns a datetime representing a moment the given number \a msecs of
     milliseconds after the start, in UTC, of the year 1970, described as
@@ -5527,7 +5611,6 @@ QDateTime QDateTime::fromMSecsSinceEpoch(qint64 msecs)
 
 /*!
     \since 5.8
-    \overload
 
     Returns a datetime representing a moment the given number \a secs of seconds
     after the start, in UTC, of the year 1970, described as specified by \a
@@ -5847,6 +5930,33 @@ QDateTime QDateTime::fromString(const QString &string, QStringView format, int b
     \fn QDateTime QDateTime::fromString(QStringView string, QStringView format, int baseYear, QCalendar cal)
     \overload
     \since 6.7
+*/
+
+/*!
+    \fn QDateTime QDateTime::fromString(QStringView string, QStringView format, int baseYear)
+    \overload
+    \since 6.7
+
+    Uses a default-constructed QCalendar.
+*/
+
+/*!
+    \overload
+    \since 6.7
+
+    Uses a default-constructed QCalendar.
+*/
+QDateTime QDateTime::fromString(const QString &string, QStringView format, int baseYear)
+{
+    return fromString(string, format, baseYear, QCalendar());
+}
+
+/*!
+    \fn QDateTime QDateTime::fromString(const QString &string, const QString &format, int baseYear)
+    \overload
+    \since 6.7
+
+    Uses a default-constructed QCalendar.
 */
 #endif // datestring
 

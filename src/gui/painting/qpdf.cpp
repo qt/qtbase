@@ -7,6 +7,7 @@
 
 #include "qplatformdefs.h"
 
+#include <private/qcmyk_p.h>
 #include <private/qfont_p.h>
 #include <private/qmath_p.h>
 #include <private/qpainter_p.h>
@@ -44,7 +45,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-inline QPaintEngine::PaintEngineFeatures qt_pdf_decide_features()
+constexpr QPaintEngine::PaintEngineFeatures qt_pdf_decide_features()
 {
     QPaintEngine::PaintEngineFeatures f = QPaintEngine::AllFeatures;
     f &= ~(QPaintEngine::PorterDuff
@@ -270,13 +271,6 @@ namespace QPdf {
         dev->open(QIODevice::ReadWrite | QIODevice::Truncate);
     }
 
-    void ByteStream::constructor_helper(QByteArray *ba)
-    {
-        delete dev;
-        dev = new QBuffer(ba);
-        dev->open(QIODevice::ReadWrite);
-    }
-
     void ByteStream::prepareBuffer()
     {
         Q_ASSERT(!dev->isSequential());
@@ -285,16 +279,17 @@ namespace QPdf {
                 && size > maxMemorySize()) {
             // Switch to file backing.
             QTemporaryFile *newFile = new QTemporaryFile;
-            newFile->open();
-            dev->reset();
-            while (!dev->atEnd()) {
-                QByteArray buf = dev->read(chunkSize());
-                newFile->write(buf);
+            if (newFile->open()) {
+                dev->reset();
+                while (!dev->atEnd()) {
+                    QByteArray buf = dev->read(chunkSize());
+                    newFile->write(buf);
+                }
+                delete dev;
+                dev = newFile;
+                ba.clear();
+                fileBackingActive = true;
             }
-            delete dev;
-            dev = newFile;
-            ba.clear();
-            fileBackingActive = true;
         }
         if (dev->pos() != size) {
             dev->seek(size);
@@ -1239,17 +1234,8 @@ void QPdfEngine::setPen()
     QBrush b = d->pen.brush();
     Q_ASSERT(b.style() == Qt::SolidPattern && b.isOpaque());
 
-    QColor rgba = b.color();
-    if (d->grayscale) {
-        qreal gray = qGray(rgba.rgba())/255.;
-        *d->currentPage << gray << gray << gray;
-    } else {
-        *d->currentPage << rgba.redF()
-                        << rgba.greenF()
-                        << rgba.blueF();
-    }
+    d->writeColor(QPdfEnginePrivate::ColorDomain::Stroking, b.color());
     *d->currentPage << "SCN\n";
-
     *d->currentPage << d->pen.widthF() << "w ";
 
     int pdfCapStyle = 0;
@@ -1303,18 +1289,9 @@ void QPdfEngine::setBrush()
     if (!patternObject && !specifyColor)
         return;
 
-    *d->currentPage << (patternObject ? "/PCSp cs " : "/CSp cs ");
-    if (specifyColor) {
-        QColor rgba = d->brush.color();
-        if (d->grayscale) {
-            qreal gray = qGray(rgba.rgba())/255.;
-            *d->currentPage << gray << gray << gray;
-        } else {
-            *d->currentPage << rgba.redF()
-                            << rgba.greenF()
-                            << rgba.blueF();
-        }
-    }
+    const auto domain = patternObject ? QPdfEnginePrivate::ColorDomain::NonStrokingPattern
+                                      : QPdfEnginePrivate::ColorDomain::NonStroking;
+    d->writeColor(domain, specifyColor ? d->brush.color() : QColor());
     if (patternObject)
         *d->currentPage << "/Pat" << patternObject;
     *d->currentPage << "scn\n";
@@ -1454,9 +1431,9 @@ int QPdfEngine::metric(QPaintDevice::PaintDeviceMetric metricType) const
 QPdfEnginePrivate::QPdfEnginePrivate()
     : clipEnabled(false), allClipped(false), hasPen(true), hasBrush(false), simplePen(false),
       needsTransform(false), pdfVersion(QPdfEngine::Version_1_4),
+      colorModel(QPdfEngine::ColorModel::Auto),
       outDevice(nullptr), ownsDevice(false),
       embedFonts(true),
-      grayscale(false),
       m_pageLayout(QPageSize(QPageSize::A4), QPageLayout::Portrait, QMarginsF(10, 10, 10, 10))
 {
     initResources();
@@ -1511,7 +1488,9 @@ bool QPdfEngine::begin(QPaintDevice *pdev)
     d->catalog = 0;
     d->info = 0;
     d->graphicsState = 0;
-    d->patternColorSpace = 0;
+    d->patternColorSpaceRGB = 0;
+    d->patternColorSpaceGrayscale = 0;
+    d->patternColorSpaceCMYK = 0;
     d->simplePen = false;
     d->needsTransform = false;
 
@@ -1629,10 +1608,108 @@ void QPdfEnginePrivate::writeHeader()
             ">>\n"
             "endobj\n");
 
-    // color space for pattern
-    patternColorSpace = addXrefEntry(-1);
+    // color spaces for pattern
+    patternColorSpaceRGB = addXrefEntry(-1);
     xprintf("[/Pattern /DeviceRGB]\n"
             "endobj\n");
+    patternColorSpaceGrayscale = addXrefEntry(-1);
+    xprintf("[/Pattern /DeviceGray]\n"
+            "endobj\n");
+    patternColorSpaceCMYK = addXrefEntry(-1);
+    xprintf("[/Pattern /DeviceCMYK]\n"
+            "endobj\n");
+}
+
+QPdfEngine::ColorModel QPdfEnginePrivate::colorModelForColor(const QColor &color) const
+{
+    switch (colorModel) {
+    case QPdfEngine::ColorModel::RGB:
+    case QPdfEngine::ColorModel::Grayscale:
+    case QPdfEngine::ColorModel::CMYK:
+        return colorModel;
+    case QPdfEngine::ColorModel::Auto:
+        switch (color.spec()) {
+        case QColor::Invalid:
+        case QColor::Rgb:
+        case QColor::Hsv:
+        case QColor::Hsl:
+        case QColor::ExtendedRgb:
+            return QPdfEngine::ColorModel::RGB;
+        case QColor::Cmyk:
+            return QPdfEngine::ColorModel::CMYK;
+        }
+
+        break;
+    }
+
+    Q_UNREACHABLE_RETURN(QPdfEngine::ColorModel::RGB);
+}
+
+void QPdfEnginePrivate::writeColor(ColorDomain domain, const QColor &color)
+{
+    // Switch to the right colorspace.
+    // For simplicity: do it even if it redundant (= already in that colorspace)
+    const QPdfEngine::ColorModel actualColorModel = colorModelForColor(color);
+
+    switch (actualColorModel) {
+    case QPdfEngine::ColorModel::RGB:
+        switch (domain) {
+        case ColorDomain::Stroking:
+            *currentPage << "/CSp CS\n"; break;
+        case ColorDomain::NonStroking:
+            *currentPage << "/CSp cs\n"; break;
+        case ColorDomain::NonStrokingPattern:
+            *currentPage << "/PCSp cs\n"; break;
+        }
+        break;
+    case QPdfEngine::ColorModel::Grayscale:
+        switch (domain) {
+        case ColorDomain::Stroking:
+            *currentPage << "/CSpg CS\n"; break;
+        case ColorDomain::NonStroking:
+            *currentPage << "/CSpg cs\n"; break;
+        case ColorDomain::NonStrokingPattern:
+            *currentPage << "/PCSpg cs\n"; break;
+        }
+        break;
+    case QPdfEngine::ColorModel::CMYK:
+        switch (domain) {
+        case ColorDomain::Stroking:
+            *currentPage << "/CSpcmyk CS\n"; break;
+        case ColorDomain::NonStroking:
+            *currentPage << "/CSpcmyk cs\n"; break;
+        case ColorDomain::NonStrokingPattern:
+            *currentPage << "/PCSpcmyk cs\n"; break;
+        }
+        break;
+    case QPdfEngine::ColorModel::Auto:
+        Q_UNREACHABLE_RETURN();
+    }
+
+    // If we also have a color specified, write it out.
+    if (!color.isValid())
+        return;
+
+    switch (actualColorModel) {
+    case QPdfEngine::ColorModel::RGB:
+        *currentPage << color.redF()
+                     << color.greenF()
+                     << color.blueF();
+        break;
+    case QPdfEngine::ColorModel::Grayscale: {
+        const qreal gray = qGray(color.rgba()) / 255.;
+        *currentPage << gray;
+        break;
+    }
+    case QPdfEngine::ColorModel::CMYK:
+        *currentPage << color.cyanF()
+                     << color.magentaF()
+                     << color.yellowF()
+                     << color.blackF();
+        break;
+    case QPdfEngine::ColorModel::Auto:
+        Q_UNREACHABLE_RETURN();
+    }
 }
 
 void QPdfEnginePrivate::writeInfo()
@@ -1697,7 +1774,8 @@ int QPdfEnginePrivate::writeXmpDcumentMetaData()
         const QString metaDataDate = timeStr + tzStr;
 
         QFile metaDataFile(":/qpdf/qpdfa_metadata.xml"_L1);
-        metaDataFile.open(QIODevice::ReadOnly);
+        bool ok = metaDataFile.open(QIODevice::ReadOnly);
+        Q_ASSERT(ok);
         metaDataContent = QString::fromUtf8(metaDataFile.readAll()).arg(producer.toHtmlEscaped(),
                                                                         title.toHtmlEscaped(),
                                                                         creator.toHtmlEscaped(),
@@ -1723,7 +1801,8 @@ int QPdfEnginePrivate::writeOutputIntent()
     const int colorProfile = addXrefEntry(-1);
     {
         QFile colorProfileFile(":/qpdf/sRGB2014.icc"_L1);
-        colorProfileFile.open(QIODevice::ReadOnly);
+        bool ok = colorProfileFile.open(QIODevice::ReadOnly);
+        Q_ASSERT(ok);
         const QByteArray colorProfileData = colorProfileFile.readAll();
 
         QByteArray data;
@@ -2078,12 +2157,18 @@ void QPdfEnginePrivate::writePage()
     xprintf("<<\n"
             "/ColorSpace <<\n"
             "/PCSp %d 0 R\n"
+            "/PCSpg %d 0 R\n"
+            "/PCSpcmyk %d 0 R\n"
             "/CSp /DeviceRGB\n"
             "/CSpg /DeviceGray\n"
+            "/CSpcmyk /DeviceCMYK\n"
             ">>\n"
             "/ExtGState <<\n"
             "/GSa %d 0 R\n",
-            patternColorSpace, graphicsState);
+            patternColorSpaceRGB,
+            patternColorSpaceGrayscale,
+            patternColorSpaceCMYK,
+            graphicsState);
 
     for (int i = 0; i < currentPage->graphicStates.size(); ++i)
         xprintf("/GState%d %d 0 R\n", currentPage->graphicStates.at(i), currentPage->graphicStates.at(i));
@@ -2336,7 +2421,7 @@ int QPdfEnginePrivate::writeCompressed(const char *src, int len)
     return len;
 }
 
-int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height, int depth,
+int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height, WriteImageOption option,
                                   int maskObject, int softMaskObject, bool dct, bool isMono)
 {
     int image = addXrefEntry(-1);
@@ -2346,7 +2431,8 @@ int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height,
             "/Width %d\n"
             "/Height %d\n", width, height);
 
-    if (depth == 1) {
+    switch (option) {
+    case WriteImageOption::Monochrome:
         if (!isMono) {
             xprintf("/ImageMask true\n"
                     "/Decode [1 0]\n");
@@ -2354,10 +2440,21 @@ int QPdfEnginePrivate::writeImage(const QByteArray &data, int width, int height,
             xprintf("/BitsPerComponent 1\n"
                     "/ColorSpace /DeviceGray\n");
         }
-    } else {
+        break;
+    case WriteImageOption::Grayscale:
         xprintf("/BitsPerComponent 8\n"
-                "/ColorSpace %s\n", (depth == 32) ? "/DeviceRGB" : "/DeviceGray");
+                "/ColorSpace /DeviceGray\n");
+        break;
+    case WriteImageOption::RGB:
+        xprintf("/BitsPerComponent 8\n"
+                "/ColorSpace /DeviceRGB\n");
+        break;
+    case WriteImageOption::CMYK:
+        xprintf("/BitsPerComponent 8\n"
+                "/ColorSpace /DeviceCMYK\n");
+        break;
     }
+
     if (maskObject > 0)
         xprintf("/Mask %d 0 R\n", maskObject);
     if (softMaskObject > 0)
@@ -2396,7 +2493,23 @@ struct QGradientBound {
 };
 Q_DECLARE_TYPEINFO(QGradientBound, Q_PRIMITIVE_TYPE);
 
-int QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from, int to, bool reflect, bool alpha)
+void QPdfEnginePrivate::ShadingFunctionResult::writeColorSpace(QPdf::ByteStream *stream) const
+{
+    *stream << "/ColorSpace ";
+    switch (colorModel) {
+    case QPdfEngine::ColorModel::RGB:
+        *stream << "/DeviceRGB\n"; break;
+    case QPdfEngine::ColorModel::Grayscale:
+        *stream << "/DeviceGray\n"; break;
+    case QPdfEngine::ColorModel::CMYK:
+        *stream << "/DeviceCMYK\n"; break;
+    case QPdfEngine::ColorModel::Auto:
+        Q_UNREACHABLE(); break;
+    }
+}
+
+QPdfEnginePrivate::ShadingFunctionResult
+QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from, int to, bool reflect, bool alpha)
 {
     QGradientStops stops = gradient->stops();
     if (stops.isEmpty()) {
@@ -2407,6 +2520,35 @@ int QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from
         stops.prepend(QGradientStop(0, stops.at(0).second));
     if (stops.at(stops.size() - 1).first < 1)
         stops.append(QGradientStop(1, stops.at(stops.size() - 1).second));
+
+    // Color to use which colorspace to use
+    const QColor referenceColor = stops.constFirst().second;
+
+    switch (colorModel) {
+    case QPdfEngine::ColorModel::RGB:
+    case QPdfEngine::ColorModel::Grayscale:
+    case QPdfEngine::ColorModel::CMYK:
+        break;
+    case QPdfEngine::ColorModel::Auto: {
+        // Make sure that all the stops have the same color spec
+        // (we don't support anything else)
+        const QColor::Spec referenceSpec = referenceColor.spec();
+        bool warned = false;
+        for (QGradientStop &stop : stops) {
+            if (stop.second.spec() != referenceSpec) {
+                if (!warned) {
+                    qWarning("QPdfEngine: unable to create a gradient between colors of different spec");
+                    warned = true;
+                }
+                stop.second = stop.second.convertTo(referenceSpec);
+            }
+        }
+        break;
+    }
+    }
+
+    ShadingFunctionResult result;
+    result.colorModel = colorModelForColor(referenceColor);
 
     QList<int> functions;
     const int numStops = stops.size();
@@ -2423,8 +2565,31 @@ int QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from
             s << "/C0 [" << stops.at(i).second.alphaF() << "]\n"
                  "/C1 [" << stops.at(i + 1).second.alphaF() << "]\n";
         } else {
-            s << "/C0 [" << stops.at(i).second.redF() << stops.at(i).second.greenF() <<  stops.at(i).second.blueF() << "]\n"
-                 "/C1 [" << stops.at(i + 1).second.redF() << stops.at(i + 1).second.greenF() <<  stops.at(i + 1).second.blueF() << "]\n";
+            switch (result.colorModel) {
+            case QPdfEngine::ColorModel::RGB:
+                s << "/C0 [" << stops.at(i).second.redF() << stops.at(i).second.greenF() <<  stops.at(i).second.blueF() << "]\n"
+                     "/C1 [" << stops.at(i + 1).second.redF() << stops.at(i + 1).second.greenF() <<  stops.at(i + 1).second.blueF() << "]\n";
+                break;
+            case QPdfEngine::ColorModel::Grayscale:
+                s << "/C0 [" << (qGray(stops.at(i).second.rgba()) / 255.) << "]\n"
+                     "/C1 [" << (qGray(stops.at(i + 1).second.rgba()) / 255.) << "]\n";
+                break;
+            case QPdfEngine::ColorModel::CMYK:
+                s << "/C0 [" << stops.at(i).second.cyanF()
+                             << stops.at(i).second.magentaF()
+                             << stops.at(i).second.yellowF()
+                             << stops.at(i).second.blackF() << "]\n"
+                     "/C1 [" << stops.at(i + 1).second.cyanF()
+                             << stops.at(i + 1).second.magentaF()
+                             << stops.at(i + 1).second.yellowF()
+                             << stops.at(i + 1).second.blackF() << "]\n";
+                break;
+
+            case QPdfEngine::ColorModel::Auto:
+                Q_UNREACHABLE();
+                break;
+            }
+
         }
         s << ">>\n"
              "endobj\n";
@@ -2492,7 +2657,8 @@ int QPdfEnginePrivate::createShadingFunction(const QGradient *gradient, int from
     } else {
         function = functions.at(0);
     }
-    return function;
+    result.function = function;
+    return result;
 }
 
 int QPdfEnginePrivate::generateLinearGradientShader(const QLinearGradient *gradient, const QTransform &matrix, bool alpha)
@@ -2538,17 +2704,22 @@ int QPdfEnginePrivate::generateLinearGradientShader(const QLinearGradient *gradi
     }
     }
 
-    int function = createShadingFunction(gradient, from, to, reflect, alpha);
+    const auto shadingFunctionResult = createShadingFunction(gradient, from, to, reflect, alpha);
 
     QByteArray shader;
     QPdf::ByteStream s(&shader);
     s << "<<\n"
-        "/ShadingType 2\n"
-        "/ColorSpace " << (alpha ? "/DeviceGray\n" : "/DeviceRGB\n") <<
-        "/AntiAlias true\n"
+         "/ShadingType 2\n";
+
+    if (alpha)
+        s << "/ColorSpace /DeviceGray\n";
+    else
+        shadingFunctionResult.writeColorSpace(&s);
+
+    s << "/AntiAlias true\n"
         "/Coords [" << start.x() << start.y() << stop.x() << stop.y() << "]\n"
         "/Extend [true true]\n"
-        "/Function " << function << "0 R\n"
+        "/Function " << shadingFunctionResult.function << "0 R\n"
         ">>\n"
         "endobj\n";
     int shaderObject = addXrefEntry(-1);
@@ -2606,18 +2777,23 @@ int QPdfEnginePrivate::generateRadialGradientShader(const QRadialGradient *gradi
     }
     }
 
-    int function = createShadingFunction(gradient, from, to, reflect, alpha);
+    const auto shadingFunctionResult = createShadingFunction(gradient, from, to, reflect, alpha);
 
     QByteArray shader;
     QPdf::ByteStream s(&shader);
     s << "<<\n"
-        "/ShadingType 3\n"
-        "/ColorSpace " << (alpha ? "/DeviceGray\n" : "/DeviceRGB\n") <<
-        "/AntiAlias true\n"
+         "/ShadingType 3\n";
+
+    if (alpha)
+        s << "/ColorSpace /DeviceGray\n";
+    else
+        shadingFunctionResult.writeColorSpace(&s);
+
+    s << "/AntiAlias true\n"
         "/Domain [0 1]\n"
         "/Coords [" << p0.x() << p0.y() << r0 << p1.x() << p1.y() << r1 << "]\n"
         "/Extend [true true]\n"
-        "/Function " << function << "0 R\n"
+        "/Function " << shadingFunctionResult.function << "0 R\n"
         ">>\n"
         "endobj\n";
     int shaderObject = addXrefEntry(-1);
@@ -2856,6 +3032,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
 
     QImage image = img;
     QImage::Format format = image.format();
+    const bool grayscale = (colorModel == QPdfEngine::ColorModel::Grayscale);
 
     if (pdfVersion == QPdfEngine::Version_A1b) {
         if (image.hasAlphaChannel()) {
@@ -2879,7 +3056,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
         format = QImage::Format_Mono;
     } else {
         *bitmap = false;
-        if (format != QImage::Format_RGB32 && format != QImage::Format_ARGB32) {
+        if (format != QImage::Format_RGB32 && format != QImage::Format_ARGB32 && format != QImage::Format_CMYK8888) {
             image = image.convertToFormat(QImage::Format_ARGB32);
             format = QImage::Format_ARGB32;
         }
@@ -2887,7 +3064,6 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
 
     int w = image.width();
     int h = image.height();
-    int d = image.depth();
 
     if (format == QImage::Format_Mono) {
         int bytesPerLine = (w + 7) >> 3;
@@ -2898,7 +3074,7 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
             memcpy(rawdata, image.constScanLine(y), bytesPerLine);
             rawdata += bytesPerLine;
         }
-        object = writeImage(data, w, h, d, 0, 0, false, is_monochrome(img.colorTable()));
+        object = writeImage(data, w, h, WriteImageOption::Monochrome, 0, 0, false, is_monochrome(img.colorTable()));
     } else {
         QByteArray softMaskData;
         bool dct = false;
@@ -2910,10 +3086,14 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
             QBuffer buffer(&imageData);
             QImageWriter writer(&buffer, "jpeg");
             writer.setQuality(94);
+            if (format == QImage::Format_CMYK8888) {
+                // PDFs require CMYK colors not to be inverted in the JPEG encoding
+                writer.setSubType("CMYK");
+            }
             writer.write(image);
             dct = true;
 
-            if (format != QImage::Format_RGB32) {
+            if (format != QImage::Format_RGB32 && format != QImage::Format_CMYK8888) {
                 softMaskData.resize(w * h);
                 uchar *sdata = (uchar *)softMaskData.data();
                 for (int y = 0; y < h; ++y) {
@@ -2928,41 +3108,59 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
                 }
             }
         } else {
-            imageData.resize(grayscale ? w * h : 3 * w * h);
-            uchar *data = (uchar *)imageData.data();
-            softMaskData.resize(w * h);
-            uchar *sdata = (uchar *)softMaskData.data();
-            for (int y = 0; y < h; ++y) {
-                const QRgb *rgb = (const QRgb *)image.constScanLine(y);
+            if (format == QImage::Format_CMYK8888) {
+                imageData.resize(grayscale ? w * h : w * h * 4);
+                uchar *data = (uchar *)imageData.data();
+                const qsizetype bytesPerLine = image.bytesPerLine();
                 if (grayscale) {
-                    for (int x = 0; x < w; ++x) {
-                        *(data++) = qGray(*rgb);
-                        uchar alpha = qAlpha(*rgb);
-                        *sdata++ = alpha;
-                        hasMask |= (alpha < 255);
-                        hasAlpha |= (alpha != 0 && alpha != 255);
-                        ++rgb;
+                    for (int y = 0; y < h; ++y) {
+                        const uint *cmyk = (const uint *)image.constScanLine(y);
+                        for (int x = 0; x < w; ++x)
+                            *data++ = qGray(QCmyk32::fromCmyk32(*cmyk++).toColor().rgba());
                     }
                 } else {
-                    for (int x = 0; x < w; ++x) {
-                        *(data++) = qRed(*rgb);
-                        *(data++) = qGreen(*rgb);
-                        *(data++) = qBlue(*rgb);
-                        uchar alpha = qAlpha(*rgb);
-                        *sdata++ = alpha;
-                        hasMask |= (alpha < 255);
-                        hasAlpha |= (alpha != 0 && alpha != 255);
-                        ++rgb;
+                    for (int y = 0; y < h; ++y) {
+                        uchar *start = data + y * w * 4;
+                        memcpy(start, image.constScanLine(y), bytesPerLine);
+                    }
+                }
+            } else {
+                imageData.resize(grayscale ? w * h : 3 * w * h);
+                uchar *data = (uchar *)imageData.data();
+                softMaskData.resize(w * h);
+                uchar *sdata = (uchar *)softMaskData.data();
+                for (int y = 0; y < h; ++y) {
+                    const QRgb *rgb = (const QRgb *)image.constScanLine(y);
+                    if (grayscale) {
+                        for (int x = 0; x < w; ++x) {
+                            *(data++) = qGray(*rgb);
+                            uchar alpha = qAlpha(*rgb);
+                            *sdata++ = alpha;
+                            hasMask |= (alpha < 255);
+                            hasAlpha |= (alpha != 0 && alpha != 255);
+                            ++rgb;
+                        }
+                    } else {
+                        for (int x = 0; x < w; ++x) {
+                            *(data++) = qRed(*rgb);
+                            *(data++) = qGreen(*rgb);
+                            *(data++) = qBlue(*rgb);
+                            uchar alpha = qAlpha(*rgb);
+                            *sdata++ = alpha;
+                            hasMask |= (alpha < 255);
+                            hasAlpha |= (alpha != 0 && alpha != 255);
+                            ++rgb;
+                        }
                     }
                 }
             }
-            if (format == QImage::Format_RGB32)
+            if (format == QImage::Format_RGB32 || format == QImage::Format_CMYK8888)
                 hasAlpha = hasMask = false;
         }
         int maskObject = 0;
         int softMaskObject = 0;
         if (hasAlpha) {
-            softMaskObject = writeImage(softMaskData, w, h, 8, 0, 0);
+            softMaskObject = writeImage(softMaskData, w, h, WriteImageOption::Grayscale, 0, 0);
         } else if (hasMask) {
             // dither the soft mask to 1bit and add it. This also helps PDF viewers
             // without transparency support
@@ -2978,9 +3176,18 @@ int QPdfEnginePrivate::addImage(const QImage &img, bool *bitmap, bool lossless, 
                 }
                 mdata += bytesPerLine;
             }
-            maskObject = writeImage(mask, w, h, 1, 0, 0);
+            maskObject = writeImage(mask, w, h, WriteImageOption::Monochrome, 0, 0);
         }
-        object = writeImage(imageData, w, h, grayscale ? 8 : 32,
+
+        const WriteImageOption option = [&]() {
+            if (grayscale)
+                return WriteImageOption::Grayscale;
+            if (format == QImage::Format_CMYK8888)
+                return WriteImageOption::CMYK;
+            return WriteImageOption::RGB;
+        }();
+
+        object = writeImage(imageData, w, h, option,
                             maskObject, softMaskObject, dct);
     }
     imageCache.insert(serial_no, object);

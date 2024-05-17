@@ -132,8 +132,9 @@ void QWindowsFontEngine::getCMap()
     }
 }
 
-int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout *glyphs) const
+int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout *glyphs, int *mappedGlyphs) const
 {
+    *mappedGlyphs = 0;
     int glyph_pos = 0;
     {
         if (symbol) {
@@ -143,6 +144,8 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
                 glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
                 if (!glyphs->glyphs[glyph_pos] && uc < 0x100)
                     glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc + 0xf000);
+                if (glyphs->glyphs[glyph_pos] || isIgnorableChar(uc))
+                    (*mappedGlyphs)++;
                 ++glyph_pos;
             }
         } else if (ttf) {
@@ -150,6 +153,8 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
             while (it.hasNext()) {
                 const uint uc = it.next();
                 glyphs->glyphs[glyph_pos] = getTrueTypeGlyphIndex(cmap, cmapSize, uc);
+                if (glyphs->glyphs[glyph_pos] || isIgnorableChar(uc))
+                    (*mappedGlyphs)++;
                 ++glyph_pos;
             }
         } else {
@@ -160,6 +165,8 @@ int QWindowsFontEngine::getGlyphIndexes(const QChar *str, int numChars, QGlyphLa
                     glyphs->glyphs[glyph_pos] = uc;
                 else
                     glyphs->glyphs[glyph_pos] = 0;
+                if (glyphs->glyphs[glyph_pos] || isIgnorableChar(uc))
+                    (*mappedGlyphs)++;
                 ++glyph_pos;
             }
         }
@@ -259,7 +266,7 @@ HGDIOBJ QWindowsFontEngine::selectDesignFont() const
     return SelectObject(m_fontEngineData->hdc, designFont);
 }
 
-bool QWindowsFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
+int QWindowsFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QFontEngine::ShaperFlags flags) const
 {
     Q_ASSERT(glyphs->numGlyphs >= *nglyphs);
     if (*nglyphs < len) {
@@ -268,12 +275,13 @@ bool QWindowsFontEngine::stringToCMap(const QChar *str, int len, QGlyphLayout *g
     }
 
     glyphs->numGlyphs = *nglyphs;
-    *nglyphs = getGlyphIndexes(str, len, glyphs);
+    int mappedGlyphs;
+    *nglyphs = getGlyphIndexes(str, len, glyphs, &mappedGlyphs);
 
     if (!(flags & GlyphIndicesOnly))
         recalcAdvances(glyphs, flags);
 
-    return true;
+    return mappedGlyphs;
 }
 
 inline void calculateTTFGlyphWidth(HDC hdc, UINT glyph, int &width)

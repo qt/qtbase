@@ -22,6 +22,10 @@ class QDnsHostAddressRecordPrivate;
 class QDnsMailExchangeRecordPrivate;
 class QDnsServiceRecordPrivate;
 class QDnsTextRecordPrivate;
+class QDnsTlsAssociationRecordPrivate;
+class QSslConfiguration;
+
+QT_DECLARE_QSDP_SPECIALIZATION_DTOR(QDnsTlsAssociationRecordPrivate)
 
 class Q_NETWORK_EXPORT QDnsDomainNameRecord
 {
@@ -137,10 +141,83 @@ private:
 
 Q_DECLARE_SHARED(QDnsTextRecord)
 
+class Q_NETWORK_EXPORT QDnsTlsAssociationRecord
+{
+    Q_GADGET
+public:
+    enum class CertificateUsage : quint8 {
+        // https://www.iana.org/assignments/dane-parameters/dane-parameters.xhtml#certificate-usages
+        // RFC 6698
+        CertificateAuthorityConstrait = 0,
+        ServiceCertificateConstraint = 1,
+        TrustAnchorAssertion = 2,
+        DomainIssuedCertificate = 3,
+        PrivateUse = 255,
+
+        // Aliases by RFC 7218
+        PKIX_TA = 0,
+        PKIX_EE = 1,
+        DANE_TA = 2,
+        DANE_EE = 3,
+        PrivCert = 255,
+    };
+    Q_ENUM(CertificateUsage)
+
+    enum class Selector : quint8 {
+        // https://www.iana.org/assignments/dane-parameters/dane-parameters.xhtml#selectors
+        // RFC 6698
+        FullCertificate = 0,
+        SubjectPublicKeyInfo = 1,
+        PrivateUse = 255,
+
+        // Aliases by RFC 7218
+        Cert = FullCertificate,
+        SPKI = SubjectPublicKeyInfo,
+        PrivSel = PrivateUse,
+    };
+    Q_ENUM(Selector)
+
+    enum class MatchingType : quint8 {
+        // https://www.iana.org/assignments/dane-parameters/dane-parameters.xhtml#matching-types
+        // RFC 6698
+        Exact = 0,
+        Sha256 = 1,
+        Sha512 = 2,
+        PrivateUse = 255,
+        PrivMatch = PrivateUse,
+    };
+    Q_ENUM(MatchingType)
+
+    QDnsTlsAssociationRecord();
+    QDnsTlsAssociationRecord(const QDnsTlsAssociationRecord &other);
+    QDnsTlsAssociationRecord(QDnsTlsAssociationRecord &&other)
+        : d(std::move(other.d))
+    {}
+    QDnsTlsAssociationRecord &operator=(QDnsTlsAssociationRecord &&other) noexcept { swap(other); return *this; }
+    QDnsTlsAssociationRecord &operator=(const QDnsTlsAssociationRecord &other);
+    ~QDnsTlsAssociationRecord();
+
+    void swap(QDnsTlsAssociationRecord &other) noexcept { d.swap(other.d); }
+
+    QString name() const;
+    quint32 timeToLive() const;
+    CertificateUsage usage() const;
+    Selector selector() const;
+    MatchingType matchType() const;
+    QByteArray value() const;
+
+private:
+    QSharedDataPointer<QDnsTlsAssociationRecordPrivate> d;
+    friend class QDnsLookupRunnable;
+};
+
+Q_DECLARE_SHARED(QDnsTlsAssociationRecord)
+
 class Q_NETWORK_EXPORT QDnsLookup : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(Error error READ error NOTIFY finished)
+    Q_PROPERTY(bool authenticData READ isAuthenticData NOTIFY finished)
     Q_PROPERTY(QString errorString READ errorString NOTIFY finished)
     Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged BINDABLE bindableName)
     Q_PROPERTY(Type type READ type WRITE setType NOTIFY typeChanged BINDABLE bindableType)
@@ -148,6 +225,8 @@ class Q_NETWORK_EXPORT QDnsLookup : public QObject
                BINDABLE bindableNameserver)
     Q_PROPERTY(quint16 nameserverPort READ nameserverPort WRITE setNameserverPort
                NOTIFY nameserverPortChanged BINDABLE bindableNameserverPort)
+    Q_PROPERTY(Protocol nameserverProtocol READ nameserverProtocol WRITE setNameserverProtocol
+               NOTIFY nameserverProtocolChanged BINDABLE bindableNameserverProtocol)
 
 public:
     enum Error
@@ -174,17 +253,27 @@ public:
         NS = 2,
         PTR = 12,
         SRV = 33,
+        TLSA = 52,
         TXT = 16
     };
     Q_ENUM(Type)
+
+    enum Protocol : quint8 {
+        Standard = 0,
+        DnsOverTls,
+    };
+    Q_ENUM(Protocol)
 
     explicit QDnsLookup(QObject *parent = nullptr);
     QDnsLookup(Type type, const QString &name, QObject *parent = nullptr);
     QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, QObject *parent = nullptr);
     QDnsLookup(Type type, const QString &name, const QHostAddress &nameserver, quint16 port,
                QObject *parent = nullptr);
+    QDnsLookup(Type type, const QString &name, Protocol protocol, const QHostAddress &nameserver,
+               quint16 port = 0, QObject *parent = nullptr);
     ~QDnsLookup();
 
+    bool isAuthenticData() const;
     Error error() const;
     QString errorString() const;
     bool isFinished() const;
@@ -203,6 +292,11 @@ public:
     quint16 nameserverPort() const;
     void setNameserverPort(quint16 port);
     QBindable<quint16> bindableNameserverPort();
+    Protocol nameserverProtocol() const;
+    void setNameserverProtocol(Protocol protocol);
+    QBindable<Protocol> bindableNameserverProtocol();
+    void setNameserver(Protocol protocol, const QHostAddress &nameserver, quint16 port = 0);
+    QT_NETWORK_INLINE_SINCE(6, 8)
     void setNameserver(const QHostAddress &nameserver, quint16 port);
 
     QList<QDnsDomainNameRecord> canonicalNameRecords() const;
@@ -212,7 +306,15 @@ public:
     QList<QDnsDomainNameRecord> pointerRecords() const;
     QList<QDnsServiceRecord> serviceRecords() const;
     QList<QDnsTextRecord> textRecords() const;
+    QList<QDnsTlsAssociationRecord> tlsAssociationRecords() const;
 
+#if QT_CONFIG(ssl)
+    void setSslConfiguration(const QSslConfiguration &sslConfiguration);
+    QSslConfiguration sslConfiguration() const;
+#endif
+
+    static bool isProtocolSupported(Protocol protocol);
+    static quint16 defaultPortForProtocol(Protocol protocol) noexcept Q_DECL_CONST_FUNCTION;
 
 public Q_SLOTS:
     void abort();
@@ -224,10 +326,18 @@ Q_SIGNALS:
     void typeChanged(Type type);
     void nameserverChanged(const QHostAddress &nameserver);
     void nameserverPortChanged(quint16 port);
+    void nameserverProtocolChanged(Protocol protocol);
 
 private:
     Q_DECLARE_PRIVATE(QDnsLookup)
 };
+
+#if QT_NETWORK_INLINE_IMPL_SINCE(6, 8)
+void QDnsLookup::setNameserver(const QHostAddress &nameserver, quint16 port)
+{
+    setNameserver(Standard, nameserver, port);
+}
+#endif
 
 QT_END_NAMESPACE
 

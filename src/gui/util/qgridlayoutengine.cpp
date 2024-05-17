@@ -720,7 +720,7 @@ void QGridLayoutItem::dump(int indent) const
     if (q_alignment != 0)
         qDebug("%*s Alignment: %x", indent, "", uint(q_alignment));
     qDebug("%*s Horizontal size policy: %x Vertical size policy: %x",
-        indent, "", sizePolicy(Qt::Horizontal), sizePolicy(Qt::Vertical));
+        indent, "", (unsigned int)sizePolicy(Qt::Horizontal), (unsigned int)sizePolicy(Qt::Vertical));
 }
 #endif
 
@@ -964,8 +964,11 @@ void QGridLayoutEngine::insertItem(QGridLayoutItem *item, int index)
 
     for (int i = item->firstRow(); i <= item->lastRow(); ++i) {
         for (int j = item->firstColumn(); j <= item->lastColumn(); ++j) {
-            if (itemAt(i, j))
-                qWarning("QGridLayoutEngine::addItem: Cell (%d, %d) already taken", i, j);
+            const auto existingItem = itemAt(i, j);
+            if (existingItem) {
+                qWarning("QGridLayoutEngine::addItem: Can't add %s at cell (%d, %d) because it's already taken by %s",
+                    qPrintable(item->toString()), i, j, qPrintable(existingItem->toString()));
+            }
             setItemAt(i, j, item);
         }
     }
@@ -1179,7 +1182,7 @@ void QGridLayoutEngine::dump(int indent) const
 {
     qDebug("%*sEngine", indent, "");
 
-    qDebug("%*s Items (%d)", indent, "", q_items.count());
+    qDebug("%*s Items (%lld)", indent, "", q_items.count());
     int i;
     for (i = 0; i < q_items.count(); ++i)
         q_items.at(i)->dump(indent + 2);

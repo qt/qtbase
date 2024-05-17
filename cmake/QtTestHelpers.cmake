@@ -566,12 +566,14 @@ function(qt_internal_add_test name)
             LIBRARIES ${QT_CMAKE_EXPORT_NAMESPACE}::QuickTest
         )
 
-        qt_internal_extend_target("${name}" CONDITION arg_QMLTEST AND NOT ANDROID
+        qt_internal_extend_target("${name}"
+            CONDITION arg_QMLTEST AND NOT ANDROID AND NOT QT_FORCE_BUILTIN_TESTDATA
             DEFINES
                 QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
         )
 
-        qt_internal_extend_target("${name}" CONDITION arg_QMLTEST AND ANDROID
+        qt_internal_extend_target("${name}"
+            CONDITION arg_QMLTEST AND (ANDROID OR QT_FORCE_BUILTIN_TESTDATA)
             DEFINES
                 QUICK_TEST_SOURCE_DIR=":/"
         )
@@ -582,6 +584,11 @@ function(qt_internal_add_test name)
         )
         set_target_properties(${name} PROPERTIES _qt_is_test_executable TRUE)
         set_target_properties(${name} PROPERTIES _qt_is_manual_test ${arg_MANUAL})
+
+        set(blacklist_file "${CMAKE_CURRENT_SOURCE_DIR}/BLACKLIST")
+        if(EXISTS ${blacklist_file})
+            _qt_internal_expose_source_file_to_ide("${name}" ${blacklist_file})
+        endif()
     endif()
 
     foreach(path IN LISTS arg_QML_IMPORTPATH)
@@ -676,7 +683,11 @@ function(qt_internal_add_test name)
 
         # This tells cmake to run the tests with this script, since wasm files can't be
         # executed directly
-        set_property(TARGET "${name}" PROPERTY CROSSCOMPILING_EMULATOR "emrun")
+        if (CMAKE_HOST_WIN32)
+            set_property(TARGET "${name}" PROPERTY CROSSCOMPILING_EMULATOR "emrun.bat")
+        else()
+            set_property(TARGET "${name}" PROPERTY CROSSCOMPILING_EMULATOR "emrun")
+        endif()
     else()
         if(arg_QMLTEST AND NOT arg_SOURCES)
             set(test_working_dir "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -765,7 +776,7 @@ function(qt_internal_add_test name)
         endif()
     endif()
 
-    if(ANDROID OR IOS OR WASM OR INTEGRITY OR arg_BUILTIN_TESTDATA)
+    if(ANDROID OR IOS OR WASM OR INTEGRITY OR arg_BUILTIN_TESTDATA OR QT_FORCE_BUILTIN_TESTDATA)
         set(builtin_testdata TRUE)
     endif()
 

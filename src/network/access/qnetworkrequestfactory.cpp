@@ -220,8 +220,8 @@ QNetworkRequest QNetworkRequestFactory::createRequest(const QUrlQuery &query) co
 /*!
     Returns a QNetworkRequest.
 
-    The returned request's URL is formed by appending the provided \a path
-    and \a query to the baseUrl (which may itself have a path component).
+    The returned requests URL is formed by appending the provided \a path
+    and \a query to the baseUrl (which may have a path component).
 
     If the provided \a path contains query items, they will be combined
     with the items in \a query.
@@ -276,13 +276,13 @@ void QNetworkRequestFactory::clearCommonHeaders()
 
     The bearer token, if present, is used to set the
     \c {Authorization: Bearer my_token} header for requests. This is a common
-    authorization convention and provided as an additional convenience.
+    authorization convention and is provided as an additional convenience.
 
-    Means to acquire the bearer token varies. Common methods include \c OAuth2
-    and the service provider's website/dashboard. It's common that the bearer
-    token changes over time, for example when updated with a refresh token.
-    By always re-setting the new token ensures that subsequent requests will
-    always have the latest, valid, token.
+    The means to acquire the bearer token vary. Standard methods include \c OAuth2
+    and the service provider's website/dashboard. It is expected that the bearer
+    token changes over time. For example, when updated with a refresh token,
+    always setting the new token again ensures that subsequent requests have
+    the latest, valid token.
 
     The presence of the bearer token does not impact the \l commonHeaders()
     listing. If the \l commonHeaders() also lists \c Authorization header, it
@@ -407,7 +407,7 @@ void QNetworkRequestFactory::clearPassword()
     Sets \a timeout used for transfers.
 
     \sa transferTimeout(), QNetworkRequest::setTransferTimeout(),
-        QRestAccessManager::setTransferTimeout()
+        QNetworkAccessManager::setTransferTimeout()
 */
 void QNetworkRequestFactory::setTransferTimeout(std::chrono::milliseconds timeout)
 {
@@ -422,7 +422,7 @@ void QNetworkRequestFactory::setTransferTimeout(std::chrono::milliseconds timeou
     Returns the timeout used for transfers.
 
     \sa setTransferTimeout(), QNetworkRequest::transferTimeout(),
-        QRestAccessManager::transferTimeout()
+        QNetworkAccessManager::transferTimeout()
 */
 std::chrono::milliseconds QNetworkRequestFactory::transferTimeout() const
 {
@@ -475,6 +475,127 @@ void QNetworkRequestFactory::clearQueryParameters()
     d->queryParameters.clear();
 }
 
+/*!
+    \since 6.8
+
+    Sets the priority for any future requests created by this factory to
+    \a priority.
+
+    The default priority is \l QNetworkRequest::NormalPriority.
+
+    \sa priority(), QNetworkRequest::setPriority()
+*/
+void QNetworkRequestFactory::setPriority(QNetworkRequest::Priority priority)
+{
+    if (d->priority == priority)
+        return;
+    d.detach();
+    d->priority = priority;
+}
+
+/*!
+    \since 6.8
+
+    Returns the priority assigned to any future requests created by this
+    factory.
+
+    \sa setPriority(), QNetworkRequest::priority()
+*/
+QNetworkRequest::Priority QNetworkRequestFactory::priority() const
+{
+    return d->priority;
+}
+
+/*!
+    \since 6.8
+
+    Sets the value associated with \a attribute to \a value.
+    If the attribute is already set, the previous value is
+    replaced. The attributes are set to any future requests
+    created by this factory.
+
+    \sa attribute(), clearAttribute(), clearAttributes(),
+        QNetworkRequest::Attribute
+*/
+void QNetworkRequestFactory::setAttribute(QNetworkRequest::Attribute attribute,
+                                          const QVariant &value)
+{
+    if (attribute == QNetworkRequest::HttpStatusCodeAttribute
+        || attribute == QNetworkRequest::HttpReasonPhraseAttribute
+        || attribute == QNetworkRequest::RedirectionTargetAttribute
+        || attribute == QNetworkRequest::ConnectionEncryptedAttribute
+        || attribute == QNetworkRequest::SourceIsFromCacheAttribute
+        || attribute == QNetworkRequest::HttpPipeliningWasUsedAttribute
+        || attribute == QNetworkRequest::Http2WasUsedAttribute
+        || attribute == QNetworkRequest::OriginalContentLengthAttribute)
+    {
+        qCWarning(lcQrequestfactory, "%i is a reply-only attribute, ignoring.", attribute);
+        return;
+    }
+    d.detach();
+    d->attributes.insert(attribute, value);
+}
+
+/*!
+    \since 6.8
+
+    Returns the value associated with \a attribute. If the
+    attribute has not been set, returns a default-constructed \l QVariant.
+
+    \sa attribute(QNetworkRequest::Attribute, const QVariant &),
+        setAttribute(), clearAttributes(), QNetworkRequest::Attribute
+
+*/
+QVariant QNetworkRequestFactory::attribute(QNetworkRequest::Attribute attribute) const
+{
+    return d->attributes.value(attribute);
+}
+
+/*!
+    \since 6.8
+
+    Returns the value associated with \a attribute. If the
+    attribute has not been set, returns \a defaultValue.
+
+     \sa attribute(), setAttribute(), clearAttributes(),
+         QNetworkRequest::Attribute
+*/
+QVariant QNetworkRequestFactory::attribute(QNetworkRequest::Attribute attribute,
+                                           const QVariant &defaultValue) const
+{
+    return d->attributes.value(attribute, defaultValue);
+}
+
+/*!
+    \since 6.8
+
+    Clears \a attribute set to this factory.
+
+    \sa attribute(), setAttribute()
+*/
+void QNetworkRequestFactory::clearAttribute(QNetworkRequest::Attribute attribute)
+{
+    if (!d->attributes.contains(attribute))
+        return;
+    d.detach();
+    d->attributes.remove(attribute);
+}
+
+/*!
+    \since 6.8
+
+    Clears any attributes set to this factory.
+
+    \sa attribute(), setAttribute()
+*/
+void QNetworkRequestFactory::clearAttributes()
+{
+    if (d->attributes.isEmpty())
+        return;
+    d.detach();
+    d->attributes.clear();
+}
+
 QNetworkRequestFactoryPrivate::QNetworkRequestFactoryPrivate()
     = default;
 
@@ -494,19 +615,18 @@ QNetworkRequest QNetworkRequestFactoryPrivate::newRequest(const QUrl &url) const
     if (!sslConfig.isNull())
         request.setSslConfiguration(sslConfig);
 #endif
-    // Set the header entries to the request. Combine values as there
-    // may be multiple values per name. Note: this would not necessarily
-    // produce right result for 'Set-Cookie' header if it has multiple values,
-    // but since it is a purely server-side (response) header, not relevant here.
-    const auto headerNames = headers.toMultiMap().uniqueKeys(); // ### fixme: port QNR to QHH
-    for (const auto &name : headerNames)
-        request.setRawHeader(name, headers.combinedValue(name));
-
+    auto h = headers;
     constexpr char Bearer[] = "Bearer ";
     if (!bearerToken.isEmpty())
-        request.setRawHeader("Authorization"_ba, Bearer + bearerToken);
+        h.replaceOrAppend(QHttpHeaders::WellKnownHeader::Authorization, Bearer + bearerToken);
+    request.setHeaders(std::move(h));
 
     request.setTransferTimeout(transferTimeout);
+    request.setPriority(priority);
+
+    for (const auto &[attribute, value] : attributes.asKeyValueRange())
+        request.setAttribute(attribute, value);
+
     return request;
 }
 

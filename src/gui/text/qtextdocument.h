@@ -105,7 +105,8 @@ public:
     enum MetaInformation {
         DocumentTitle,
         DocumentUrl,
-        CssMedia
+        CssMedia,
+        FrontMatter,
     };
     void setMetaInformation(MetaInformation info, const QString &);
     QString metaInformation(MetaInformation info) const;
@@ -119,7 +120,7 @@ public:
     enum MarkdownFeature {
         MarkdownNoHTML = 0x0020 | 0x0040,
         MarkdownDialectCommonMark = 0,
-        MarkdownDialectGitHub = 0x0004 | 0x0008 | 0x0400 | 0x0100 | 0x0200 | 0x0800 | 0x4000
+        MarkdownDialectGitHub = 0x0004 | 0x0008 | 0x0400 | 0x0100 | 0x0200 | 0x0800 | 0x4000 | 0x100000
     };
     Q_DECLARE_FLAGS(MarkdownFeatures, MarkdownFeature)
     Q_FLAG(MarkdownFeatures)

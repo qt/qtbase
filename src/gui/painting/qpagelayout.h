@@ -40,6 +40,11 @@ public:
         FullPageMode   // Paint Rect excludes margins
     };
 
+    enum class OutOfBoundsPolicy {
+        Reject,
+        Clamp
+    };
+
     QPageLayout();
     QPageLayout(const QPageSize &pageSize, Orientation orientation,
                 const QMarginsF &margins, Unit units = Point,
@@ -68,11 +73,19 @@ public:
     void setUnits(Unit units);
     Unit units() const;
 
+#if QT_GUI_REMOVED_SINCE(6, 8)
     bool setMargins(const QMarginsF &margins);
     bool setLeftMargin(qreal leftMargin);
     bool setRightMargin(qreal rightMargin);
     bool setTopMargin(qreal topMargin);
     bool setBottomMargin(qreal bottomMargin);
+#endif
+
+    bool setMargins(const QMarginsF &margins, OutOfBoundsPolicy outOfBoundsPolicy = OutOfBoundsPolicy::Reject);
+    bool setLeftMargin(qreal leftMargin, OutOfBoundsPolicy outOfBoundsPolicy = OutOfBoundsPolicy::Reject);
+    bool setRightMargin(qreal rightMargin, OutOfBoundsPolicy outOfBoundsPolicy = OutOfBoundsPolicy::Reject);
+    bool setTopMargin(qreal topMargin, OutOfBoundsPolicy outOfBoundsPolicy = OutOfBoundsPolicy::Reject);
+    bool setBottomMargin(qreal bottomMargin, OutOfBoundsPolicy outOfBoundsPolicy = OutOfBoundsPolicy::Reject);
 
     QMarginsF margins() const;
     QMarginsF margins(Unit units) const;

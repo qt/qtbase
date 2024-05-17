@@ -5,6 +5,13 @@ enable_if:
   contains_value: DebianPackaging
 instructions:
   - type: EnvironmentVariable
+    variableName: COIN_TARGET_DIST
+    variableValue: "tqtc-focal"
+    enable_if:
+      condition: runtime
+      env_var:  COIN_TARGET_DIST
+      equals_value: null
+  - type: EnvironmentVariable
     variableName: COIN_SBUILD_CHROOT
     variableValue: "stable-arm64-sbuild"
     enable_if:
@@ -47,20 +54,10 @@ instructions:
     variableName: COIN_SKIP_DEBIAN
     variableValue: "MISSING_DEBIAN_INST"
     enable_if:
-      condition: or
-      conditions:
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          equals_value: "qtactiveqt"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          equals_value: "qtqa"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          equals_value: "qtdoc"
-        - condition: runtime
-          env_var: TESTED_MODULE_COIN
-          equals_value: "qt5"
+      condition: runtime
+      env_var: COIN_SKIP_DEBIAN_MODULES
+      contains_value: "{{.Env.TESTED_MODULE_COIN}}"
+
   # Set version info to environment
   - type: ParseEnvironmentVariableFromFile
     regex: "QT_REPO_MODULE_VERSION \"(?P<QT_REPO_MODULE_VERSION>.*)\""

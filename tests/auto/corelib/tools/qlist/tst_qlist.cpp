@@ -1,5 +1,5 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <QAtomicInt>
@@ -9,7 +9,7 @@
 #include <qlist.h>
 
 
-#if __cplusplus >= 202002L && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 11)
+#ifdef QT_COMPILER_HAS_LWG3346
 #  if __has_include(<concepts>)
 #    include <concepts>
 #    if defined(__cpp_lib_concepts) && __cpp_lib_concepts >= 202002L
@@ -322,6 +322,7 @@ private slots:
     void resizeToZero() const;
     void resizeToTheSameSize_data();
     void resizeToTheSameSize() const;
+    void resizeForOverwrite() const;
     void iterators() const;
     void constIterators() const;
     void reverseIterators() const;
@@ -2529,6 +2530,51 @@ void tst_QList::resizeToTheSameSize() const
     y = x;
     y.resize(x.size());
     QCOMPARE(y.size(), x.size());
+}
+
+void tst_QList::resizeForOverwrite() const
+{
+    constexpr int BUILD_COUNT = 42;
+    {
+        // Smoke test
+        QList<int> l(BUILD_COUNT, Qt::Uninitialized);
+        l.resizeForOverwrite(l.size() + BUILD_COUNT);
+    }
+
+    {
+        const int beforeCounter = Movable::counter.loadRelaxed();
+        QList<Movable> l(BUILD_COUNT, Qt::Uninitialized);
+        const int after1Counter = Movable::counter.loadRelaxed();
+        QCOMPARE(after1Counter, beforeCounter + BUILD_COUNT);
+
+        l.resizeForOverwrite(l.size() + BUILD_COUNT);
+        const int after2Counter = Movable::counter.loadRelaxed();
+        QCOMPARE(after2Counter, after1Counter + BUILD_COUNT);
+    }
+
+    struct QtInitializationSupport {
+        bool wasInitialized;
+        QtInitializationSupport() : wasInitialized(true) {}
+        explicit QtInitializationSupport(Qt::Initialization) : wasInitialized(false) {}
+    };
+
+    {
+        QList<QtInitializationSupport> l(BUILD_COUNT);
+        for (const auto &elem : l)
+            QVERIFY(elem.wasInitialized);
+        l.resize(l.size() + BUILD_COUNT);
+        for (const auto &elem : l)
+            QVERIFY(elem.wasInitialized);
+    }
+
+    {
+        QList<QtInitializationSupport> l(BUILD_COUNT, Qt::Uninitialized);
+        for (const auto &elem : l)
+            QVERIFY(!elem.wasInitialized);
+        l.resizeForOverwrite(l.size() + BUILD_COUNT);
+        for (const auto &elem : l)
+            QVERIFY(!elem.wasInitialized);
+    }
 }
 
 void tst_QList::iterators() const

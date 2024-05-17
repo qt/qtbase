@@ -5,6 +5,7 @@
 
 #include "qwindowswindow.h"
 #include "qwindowscontext.h"
+#include "qwindowstheme.h"
 #if QT_CONFIG(draganddrop)
 #  include "qwindowsdrag.h"
 #endif
@@ -430,11 +431,7 @@ static inline bool windowIsAccelerated(const QWindow *w)
 {
     switch (w->surfaceType()) {
     case QSurface::OpenGLSurface:
-        return true;
-    case QSurface::RasterGLSurface:
-        return qt_window_private(const_cast<QWindow *>(w))->compositing;
     case QSurface::VulkanSurface:
-        return true;
     case QSurface::Direct3DSurface:
         return true;
     default:
@@ -853,9 +850,16 @@ static inline bool shouldApplyDarkFrame(const QWindow *w)
 {
     if (!w->isTopLevel() || w->flags().testFlag(Qt::FramelessWindowHint))
         return false;
-    // the application has explicitly opted out of dark frames
+
+    // the user of the application has explicitly opted out of dark frames
     if (!QWindowsIntegration::instance()->darkModeHandling().testFlag(QWindowsApplication::DarkModeWindowFrames))
         return false;
+
+    // the application explicitly overrides the color scheme
+    if (const auto requestedColorScheme = QWindowsTheme::instance()->requestedColorScheme();
+        requestedColorScheme != Qt::ColorScheme::Unknown) {
+        return requestedColorScheme == Qt::ColorScheme::Dark;
+    }
 
     // if the application supports a dark border, and the palette is dark (window background color
     // is darker than the text), then turn dark-border support on, otherwise use a light border.
@@ -933,7 +937,7 @@ QWindowsWindowData
         return result;
     }
 
-    if (QWindowsContext::isDarkMode() && shouldApplyDarkFrame(w))
+    if (QWindowsTheme::instance()->colorScheme() == Qt::ColorScheme::Dark && shouldApplyDarkFrame(w))
         QWindowsWindow::setDarkBorderToWindow(result.hwnd, true);
 
     if (mirrorParentWidth != 0) {
@@ -1361,6 +1365,8 @@ QWindowsForeignWindow::QWindowsForeignWindow(QWindow *window, HWND hwnd)
     , m_hwnd(hwnd)
     , m_topLevelStyle(0)
 {
+    if (QPlatformWindow::parent())
+        setParent(QPlatformWindow::parent());
 }
 
 void QWindowsForeignWindow::setParent(const QPlatformWindow *newParentWindow)
@@ -2691,7 +2697,7 @@ bool QWindowsWindow::windowEvent(QEvent *event)
 {
     switch (event->type()) {
     case QEvent::ApplicationPaletteChange:
-        setDarkBorder(QWindowsContext::isDarkMode());
+        setDarkBorder(QWindowsTheme::instance()->colorScheme() == Qt::ColorScheme::Dark);
         break;
     case QEvent::WindowBlocked: // Blocked by another modal window.
         setEnabled(false);
@@ -2812,15 +2818,16 @@ void QWindowsWindow::calculateFullFrameMargins()
     const auto systemMargins = testFlag(DisableNonClientScaling)
         ? QWindowsGeometryHint::frameOnPrimaryScreen(window(), m_data.hwnd)
         : frameMargins_sys();
+    const QMargins actualMargins = systemMargins + customMargins();
 
     const int yDiff = (windowRect.bottom - windowRect.top) - (clientRect.bottom - clientRect.top);
-    const bool typicalFrame = (systemMargins.left() == systemMargins.right())
-            && (systemMargins.right() == systemMargins.bottom());
+    const bool typicalFrame = (actualMargins.left() == actualMargins.right())
+            && (actualMargins.right() == actualMargins.bottom());
 
     const QMargins adjustedMargins = typicalFrame ?
-          QMargins(systemMargins.left(), (yDiff - systemMargins.bottom()),
-                   systemMargins.right(), systemMargins.bottom())
-            : systemMargins + customMargins();
+          QMargins(actualMargins.left(), (yDiff - actualMargins.bottom()),
+                   actualMargins.right(), actualMargins.bottom())
+            : actualMargins;
 
     setFullFrameMargins(adjustedMargins);
 }
@@ -3286,17 +3293,6 @@ enum : WORD {
     DwmwaUseImmersiveDarkModeBefore20h1 = 19
 };
 
-static bool queryDarkBorder(HWND hwnd)
-{
-    BOOL result = FALSE;
-    const bool ok =
-        SUCCEEDED(DwmGetWindowAttribute(hwnd, DwmwaUseImmersiveDarkMode, &result, sizeof(result)))
-        || SUCCEEDED(DwmGetWindowAttribute(hwnd, DwmwaUseImmersiveDarkModeBefore20h1, &result, sizeof(result)));
-    if (!ok)
-        qCWarning(lcQpaWindow, "%s: Unable to retrieve dark window border setting.", __FUNCTION__);
-    return result == TRUE;
-}
-
 bool QWindowsWindow::setDarkBorderToWindow(HWND hwnd, bool d)
 {
     const BOOL darkBorder = d ? TRUE : FALSE;
@@ -3312,8 +3308,6 @@ void QWindowsWindow::setDarkBorder(bool d)
 {
     // respect explicit opt-out and incompatible palettes or styles
     d = d && shouldApplyDarkFrame(window());
-    if (queryDarkBorder(m_data.hwnd) == d)
-        return;
 
     setDarkBorderToWindow(m_data.hwnd, d);
 }
@@ -3440,24 +3434,6 @@ void QWindowsWindow::registerTouchWindow()
         setFlag(TouchRegistered);
     else
         qErrnoWarning("RegisterTouchWindow() failed for window '%s'.", qPrintable(window()->objectName()));
-}
-
-void QWindowsWindow::aboutToMakeCurrent()
-{
-#ifndef QT_NO_OPENGL
-    // For RasterGLSurface windows, that become OpenGL windows dynamically, it might be
-    // time to set up some GL specifics.  This is particularly important for layered
-    // windows (WS_EX_LAYERED due to alpha > 0).
-    const bool isCompositing = qt_window_private(window())->compositing;
-    if (isCompositing != testFlag(Compositing)) {
-        if (isCompositing)
-            setFlag(Compositing);
-        else
-            clearFlag(Compositing);
-
-        updateGLWindowSettings(window(), m_data.hwnd, m_data.flags, m_opacity);
-    }
-#endif
 }
 
 void QWindowsWindow::setHasBorderInFullScreenStatic(QWindow *window, bool border)

@@ -21,6 +21,9 @@ QT_BEGIN_NAMESPACE
 QGtk3Storage::QGtk3Storage()
 {
     m_interface.reset(new QGtk3Interface(this));
+#if QT_CONFIG(dbus)
+    m_portalInterface.reset(new QGtk3PortalInterface(this));
+#endif
     populateMap();
 }
 
@@ -273,7 +276,6 @@ void QGtk3Storage::clear()
  */
 void QGtk3Storage::handleThemeChange()
 {
-    clear();
     populateMap();
     QWindowSystemInterface::handleThemeChange();
 }
@@ -331,21 +333,32 @@ void QGtk3Storage::populateMap()
     static QString m_themeName;
 
     // Distiguish initialization, theme change or call without theme change
+    Qt::ColorScheme newColorScheme = Qt::ColorScheme::Unknown;
     const QString newThemeName = themeName();
-    if (m_themeName == newThemeName)
+
+#if QT_CONFIG(dbus)
+    // Prefer color scheme we get from xdg-desktop-portal as this is what GNOME
+    // relies on these days
+    newColorScheme = m_portalInterface->colorScheme();
+#endif
+
+    if (newColorScheme == Qt::ColorScheme::Unknown) {
+        // Derive color scheme from theme name
+        newColorScheme = newThemeName.contains("dark"_L1, Qt::CaseInsensitive)
+                    ? Qt::ColorScheme::Dark : m_interface->colorSchemeByColors();
+    }
+
+    if (m_themeName == newThemeName && m_colorScheme == newColorScheme)
         return;
 
     clear();
 
-    // Derive color scheme from theme name
-    m_colorScheme = newThemeName.contains("dark"_L1, Qt::CaseInsensitive)
-                   ? Qt::ColorScheme::Dark : m_interface->colorSchemeByColors();
-
     if (m_themeName.isEmpty()) {
-        qCDebug(lcQGtk3Interface) << "GTK theme initialized:" << newThemeName << m_colorScheme;
+        qCDebug(lcQGtk3Interface) << "GTK theme initialized:" << newThemeName << newColorScheme;
     } else {
-        qCDebug(lcQGtk3Interface) << "GTK theme changed to:" << newThemeName << m_colorScheme;
+        qCDebug(lcQGtk3Interface) << "GTK theme changed to:" << newThemeName << newColorScheme;
     }
+    m_colorScheme = newColorScheme;
     m_themeName = newThemeName;
 
     // create standard mapping or load from Json file?

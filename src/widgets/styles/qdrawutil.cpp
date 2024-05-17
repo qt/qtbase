@@ -664,8 +664,11 @@ void qDrawPlainRoundedRect(QPainter *p, int x, int y, int w, int h,
     p->save();
     p->setPen(c);
     p->setBrush(Qt::NoBrush);
-    for (int i=0; i<lineWidth; i++)
-        p->drawRoundedRect(x+i, y+i, w-i*2 - 1, h-i*2 - 1, rx, ry);
+    for (int i=0; i<lineWidth; i++) {
+        QRectF rect(x+i, y+i, w-i*2 - 1, h-i*2 - 1);
+        rect.marginsRemoved(QMarginsF(0.5,0.5,0.5,0.5));
+        p->drawRoundedRect(rect, rx, ry);
+    }
     if (fill) {                                // fill with fill color
         p->setPen(Qt::NoPen);
         p->setBrush(*fill);

@@ -73,8 +73,9 @@ QEglFSKmsGbmScreen::FrameBuffer *QEglFSKmsGbmScreen::framebufferForBufferObject(
         return nullptr;
     }
 
-    gbm_bo_set_user_data(bo, fb.get(), bufferDestroyedHandler);
-    return fb.release();
+    auto res = fb.get();
+    gbm_bo_set_user_data(bo, fb.release(), bufferDestroyedHandler);
+    return res;
 }
 
 QEglFSKmsGbmScreen::QEglFSKmsGbmScreen(QEglFSKmsDevice *device, const QKmsOutput &output, bool headless)
@@ -176,10 +177,19 @@ gbm_surface *QEglFSKmsGbmScreen::createSurface(EGLConfig eglConfig)
 
 void QEglFSKmsGbmScreen::resetSurface()
 {
-    m_flipPending = false;
+    m_flipPending = false; // not necessarily true but enough to keep bo_next
     m_gbm_bo_current = nullptr;
-    m_gbm_bo_next = nullptr;
     m_gbm_surface = nullptr;
+
+    // Leave m_gbm_bo_next untouched. waitForFlip() should
+    // still do its work, when called. Otherwise we end up
+    // in device-is-busy errors if there is a new QWindow
+    // created afterwards. (QTBUG-122663)
+
+    // If not using atomic, will need a new drmModeSetCrtc if a new window
+    // gets created later on (and so there's a new fb).
+    if (!device()->hasAtomicSupport())
+        needsNewModeSetForNextFb = true;
 }
 
 void QEglFSKmsGbmScreen::initCloning(QPlatformScreen *screenThisScreenClones,
@@ -209,8 +219,9 @@ void QEglFSKmsGbmScreen::ensureModeSet(uint32_t fb)
     QKmsOutput &op(output());
     const int fd = device()->fd();
 
-    if (!op.mode_set) {
+    if (!op.mode_set || needsNewModeSetForNextFb) {
         op.mode_set = true;
+        needsNewModeSetForNextFb = false;
 
         bool doModeSet = true;
         drmModeCrtcPtr currentMode = drmModeGetCrtc(fd, op.crtc_id);

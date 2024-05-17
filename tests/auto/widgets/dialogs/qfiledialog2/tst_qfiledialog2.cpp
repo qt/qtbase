@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -1110,7 +1110,6 @@ void tst_QFileDialog2::task254490_selectFileMultipleTimes()
     QTemporaryFile *t;
     t = new QTemporaryFile;
     QVERIFY2(t->open(), qPrintable(t->errorString()));
-    t->open();
     QFileDialog fd(0, "TestFileDialog");
 
     fd.setDirectory(tempPath);
@@ -1253,7 +1252,7 @@ void tst_QFileDialog2::QTBUG6558_showDirsOnly()
 
     //Create a file
     QFile tempFile(dirPath + "/plop.txt");
-    tempFile.open(QIODevice::WriteOnly | QIODevice::Text);
+    QVERIFY(tempFile.open(QIODevice::WriteOnly | QIODevice::Text));
     QTextStream out(&tempFile);
     out << "The magic number is: " << 49 << "\n";
     tempFile.close();
@@ -1266,7 +1265,6 @@ void tst_QFileDialog2::QTBUG6558_showDirsOnly()
     fd.setOption(QFileDialog::ShowDirsOnly, true);
     fd.show();
 
-    QApplicationPrivate::setActiveWindow(&fd);
     QVERIFY(QTest::qWaitForWindowActive(&fd));
     QCOMPARE(fd.isVisible(), true);
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
@@ -1310,7 +1308,6 @@ void tst_QFileDialog2::QTBUG4842_selectFilterWithHideNameFilterDetails()
     fd.selectNameFilter(chosenFilterString);
     fd.show();
 
-    QApplicationPrivate::setActiveWindow(&fd);
     QVERIFY(QTest::qWaitForWindowActive(&fd));
     QCOMPARE(fd.isVisible(), true);
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));
@@ -1326,7 +1323,6 @@ void tst_QFileDialog2::QTBUG4842_selectFilterWithHideNameFilterDetails()
     fd2.selectNameFilter(chosenFilterString);
     fd2.show();
 
-    QApplicationPrivate::setActiveWindow(&fd2);
     QVERIFY(QTest::qWaitForWindowActive(&fd2));
     QCOMPARE(fd2.isVisible(), true);
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd2));
@@ -1346,7 +1342,6 @@ void tst_QFileDialog2::dontShowCompleterOnRoot()
     fd.setAcceptMode(QFileDialog::AcceptSave);
     fd.show();
 
-    QApplicationPrivate::setActiveWindow(&fd);
     QVERIFY(QTest::qWaitForWindowActive(&fd));
     QCOMPARE(fd.isVisible(), true);
     QCOMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&fd));

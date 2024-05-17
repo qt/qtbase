@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QApplication>
 #include <QMainWindow>
@@ -26,9 +26,9 @@ int main(int argc, char **argv)
 
     QToolBar *toolBar = new QToolBar();
 
-    toolBar->addWidget(new StaticWidget())->setVisible(true);;
+    toolBar->addWidget(new StaticWidget())->setVisible(true);
 
-    toolBar->addWidget(new QSpinBox())->setVisible(true);;
+    toolBar->addWidget(new QSpinBox())->setVisible(true);
     mainWindow.addToolBar(toolBar);
 
     mainWindow.resize(600, 400);

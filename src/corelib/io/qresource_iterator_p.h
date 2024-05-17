@@ -24,13 +24,14 @@ class QResourceFileEngineIteratorPrivate;
 class QResourceFileEngineIterator : public QAbstractFileEngineIterator
 {
 public:
-    QResourceFileEngineIterator(QDir::Filters filters, const QStringList &filterNames);
+    QResourceFileEngineIterator(const QString &path, QDir::Filters filters,
+                                const QStringList &filterNames);
     ~QResourceFileEngineIterator();
 
-    QString next() override;
-    bool hasNext() const override;
+    bool advance() override;
 
     QString currentFileName() const override;
+    QFileInfo currentFileInfo() const override;
 
 private:
     mutable QStringList entries;

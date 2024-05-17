@@ -16,6 +16,7 @@ qt_internal_add_test(tst_qfileinfo
         tst_qfileinfo.cpp
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
 )
 
 # Resources:

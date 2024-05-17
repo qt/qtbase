@@ -1,5 +1,5 @@
 // Copyright (C) 2020 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtNetwork/private/qdecompresshelper_p.h>
 
@@ -51,13 +51,14 @@ void tst_QDecompressHelper::decompress()
         file.seek(0);
         QDecompressHelper helper;
         helper.setEncoding(encoding);
+        helper.setDecompressedSafetyCheckThreshold(-1);
         QVERIFY(helper.isValid());
 
         helper.feed(file.readAll());
 
         qsizetype bytes = 0;
+        QByteArray out(64 * 1024, Qt::Uninitialized);
         while (helper.hasData()) {
-            QByteArray out(64 * 1024, Qt::Uninitialized);
             qsizetype bytesRead = helper.read(out.data(), out.size());
             bytes += bytesRead;
         }

@@ -1,6 +1,8 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#undef QTEST_THROW_ON_FAILURE // code expects old behavior
+#undef QTEST_THROW_ON_SKIP    // code expects old behavior
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
@@ -111,6 +113,7 @@ void tst_Subtest::test3()
 
 void tst_Subtest::multiFail()
 {
+    const QTest::ThrowOnFailDisabler nothrow; // tests repeated QFAILs
     // Simulates tests which call a shared function that does common checks, or
     // that do checks in code run asynchronously from a message loop.
     for (int i = 0; i < 10; ++i)
@@ -120,6 +123,7 @@ void tst_Subtest::multiFail()
 
 void tst_Subtest::multiSkip()
 {
+    const QTest::ThrowOnSkipDisabler nothrow; // tests repeated QSKIPs
     // Similar to multiFail()
     for (int i = 0; i < 10; ++i)
         []() { QSKIP("This skip should be repeated ten times"); }();

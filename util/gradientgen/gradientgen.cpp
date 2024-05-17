@@ -17,13 +17,13 @@
 #include <QColor>
 
 using namespace std;
-
+// REUSE-IgnoreStart
 static const char LICENSE_HEADER[] =
 R"(
 // Copyright (C) 2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 )";
-
+// REUSE-IgnoreEnd
 class Printer {
     Q_DISABLE_COPY_MOVE(Printer)
 public:

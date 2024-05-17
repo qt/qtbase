@@ -1,5 +1,5 @@
 // Copyright (C) 2009 Stephen Kelly <steveire@gmail.com>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #ifndef DYNAMICTREEMODEL_H
 #define DYNAMICTREEMODEL_H

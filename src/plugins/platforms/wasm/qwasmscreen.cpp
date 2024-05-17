@@ -361,10 +361,14 @@ QList<QWasmWindow *> QWasmScreen::allWindows()
 {
     QList<QWasmWindow *> windows;
     for (auto *child : childStack()) {
-        QWindowList list = child->window()->findChildren<QWindow *>(Qt::FindChildrenRecursively);
-        std::transform(
-                list.begin(), list.end(), std::back_inserter(windows),
-                [](const QWindow *window) { return static_cast<QWasmWindow *>(window->handle()); });
+        const QWindowList list = child->window()->findChildren<QWindow *>(Qt::FindChildrenRecursively);
+        for (auto child : list) {
+            auto handle = child->handle();
+            if (handle) {
+                auto wnd = static_cast<QWasmWindow *>(handle);
+                windows.push_back(wnd);
+            }
+        }
         windows.push_back(child);
     }
     return windows;

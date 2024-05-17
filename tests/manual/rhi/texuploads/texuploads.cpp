@@ -1,5 +1,5 @@
 // Copyright (C) 2018 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "../shared/examplefw.h"
 #include "../shared/cube.h"
@@ -192,7 +192,7 @@ void Window::customRender()
         if (d.testStage == 6) {
             const QRhiTexture::NativeTexture nativeTexture = d.tex->nativeTexture();
             if (nativeTexture.object) {
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
                 if (graphicsApi == Metal) {
                     qDebug() << "Metal texture: " << nativeTexture.object;
                     // Now could cast to id<MTLTexture> and do something with

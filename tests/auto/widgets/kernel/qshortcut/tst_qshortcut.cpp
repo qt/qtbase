@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -1064,7 +1064,6 @@ void tst_QShortcut::context()
 
     // Focus on 'other1' edit, so Active Window context should trigger
     other1->activateWindow(); // <---
-    QApplicationPrivate::setActiveWindow(other1);
     QCOMPARE(QApplication::activeWindow(), other1->window());
     QCOMPARE(QApplication::focusWidget(), static_cast<QWidget *>(other1));
 
@@ -1156,7 +1155,6 @@ void tst_QShortcut::duplicatedShortcutOverride()
     w.resize(200, 200);
     w.move(QGuiApplication::primaryScreen()->availableGeometry().center() - QPoint(100, 100));
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
     QTest::keyPress(w.windowHandle(), Qt::Key_A);
     QCoreApplication::processEvents();

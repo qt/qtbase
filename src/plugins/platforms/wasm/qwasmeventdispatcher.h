@@ -12,6 +12,7 @@ class QWasmEventDispatcher : public QEventDispatcherWasm
 {
 protected:
     bool processPostedEvents() override;
+    void onLoaded() override;
 };
 
 QT_END_NAMESPACE

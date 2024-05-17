@@ -72,4 +72,43 @@
 # define QT6_CALL_NEW_OVERLOAD_TAIL QT6_ONLY(, QT6_CALL_NEW_OVERLOAD)
 #endif
 
+/*
+    Macro to tag Tech Preview APIs.
+    It expands to nothing, because we want to use it in places where
+    nothing is generally allowed (not even an attribute); for instance:
+    to tag other macros, Q_PROPERTY declarations, and so on.
+
+    Still: use it as if it were an C++ attribute.
+
+    To mark a class as TP:
+        class QT_TECH_PREVIEW_API Q_CORE_EXPORT QClass { ... };
+
+    To mark a function:
+        QT_TECH_PREVIEW_API void qFunction();
+
+    To mark an enumeration or enumerator:
+        enum class QT_TECH_PREVIEW_API QEnum {
+            Enum1,
+            Enum2 QT_TECH_PREVIEW_API,
+        };
+
+    To mark parts of a class:
+        class QClass : public QObject
+        {
+            // Q_OBJECT omitted d/t QTBUG-123229
+
+            QT_TECH_PREVIEW_API
+            Q_PROPERTY(int countNG ...)   // this is TP
+
+            Q_PROPERTY(int count ...)     // this is stable API
+
+        public:
+            QT_TECH_PREVIEW_API
+            void f();     // TP
+
+            void g();     // stable
+        };
+*/
+#define QT_TECH_PREVIEW_API
+
 #endif /* QTVERSIONCHECKS_H */

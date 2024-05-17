@@ -35,6 +35,13 @@
 #define ATSPI_COORD_TYPE_PARENT 2
 #endif
 
+// ATSPI_*_VERSION defines were added in libatspi 2.50,
+// as was the AtspiLive enum; define values here for older versions
+#if !defined(ATSPI_MAJOR_VERSION) || !defined(ATSPI_MINOR_VERSION) || ATSPI_MAJOR_VERSION < 2 || ATSPI_MINOR_VERSION < 50
+#define ATSPI_LIVE_POLITE 1
+#define ATSPI_LIVE_ASSERTIVE 2
+#endif
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
@@ -47,6 +54,7 @@ AtSpiAdaptor::AtSpiAdaptor(DBusConnection *connection, QObject *parent)
     , sendFocus(0)
     , sendObject(0)
     , sendObject_active_descendant_changed(0)
+    , sendObject_announcement(0)
     , sendObject_attributes_changed(0)
     , sendObject_bounds_changed(0)
     , sendObject_children_changed(0)
@@ -678,6 +686,8 @@ void AtSpiAdaptor::setBitFlag(const QString &flag)
             if (false) {
             } else if (right.startsWith("ActiveDescendantChanged"_L1)) {
                 sendObject_active_descendant_changed = 1;
+            } else if (right.startsWith("Announcement"_L1)) {
+                sendObject_announcement = 1;
             } else if (right.startsWith("AttributesChanged"_L1)) {
                 sendObject_attributes_changed = 1;
             } else if (right.startsWith("BoundsChanged"_L1)) {
@@ -929,6 +939,26 @@ void AtSpiAdaptor::notifyStateChange(QAccessibleInterface *interface, const QStr
     sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1, "StateChanged"_L1, stateArgs);
 }
 
+void AtSpiAdaptor::sendAnnouncement(QAccessibleAnnouncementEvent *event)
+{
+    QAccessibleInterface *iface = event->accessibleInterface();
+    if (!iface) {
+        qCWarning(lcAccessibilityAtspi, "Announcement event has no accessible set.");
+        return;
+    }
+    if (!iface->isValid()) {
+        qCWarning(lcAccessibilityAtspi) << "Announcement event with invalid accessible: " << iface;
+        return;
+    }
+
+    const QString path = pathForInterface(iface);
+    const QString message = event->message();
+    const QAccessible::AnnouncementPriority prio = event->priority();
+    const int politeness = (prio == QAccessible::AnnouncementPriority::Assertive) ? ATSPI_LIVE_ASSERTIVE : ATSPI_LIVE_POLITE;
+
+    const QVariantList args = packDBusSignalArguments(QString(), politeness, 0, QVariant::fromValue(QDBusVariant(message)));
+    sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1, "Announcement"_L1, args);
+}
 
 /*!
     This function gets called when Qt notifies about accessibility updates.
@@ -1001,6 +1031,14 @@ void AtSpiAdaptor::notify(QAccessibleEvent *event)
     case QAccessible::Focus: {
         if (sendFocus || sendObject || sendObject_state_changed)
             sendFocusChanged(event->accessibleInterface());
+        break;
+    }
+
+    case QAccessible::Announcement: {
+        if (sendObject || sendObject_announcement) {
+            QAccessibleAnnouncementEvent *announcementEvent = static_cast<QAccessibleAnnouncementEvent*>(event);
+            sendAnnouncement(announcementEvent);
+        }
         break;
     }
     case QAccessible::TextInserted:

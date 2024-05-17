@@ -229,9 +229,13 @@ void WriteImports::addPythonCustomWidget(const QString &className, const DomCust
         QString modulePath = node->elementHeader()->text();
         // Replace the '/' by '.'
         modulePath.replace(u'/', u'.');
-        // '.h' is added by default on headers for <customwidget>
-        if (modulePath.endsWith(".h"_L1))
+        // '.h' is added by default on headers for <customwidget>.
+        if (modulePath.endsWith(".h"_L1, Qt::CaseInsensitive))
             modulePath.chop(2);
+        else if (modulePath.endsWith(".hh"_L1))
+            modulePath.chop(3);
+        else if (modulePath.endsWith(".hpp"_L1))
+            modulePath.chop(4);
         insertClass(modulePath, className, &m_customWidgets);
     }
 }

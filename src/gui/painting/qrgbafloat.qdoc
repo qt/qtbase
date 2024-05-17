@@ -33,7 +33,7 @@
 */
 
 /*!
-    \fn template<typename F> QRgbaFloat QRgbaFloat<F>::fromRgba64(quint16 r, quint16 g, quint16 b, quint16 a)
+    \fn template<typename F> QRgbaFloat QRgbaFloat<F>::fromRgba64(quint16 red, quint16 green, quint16 blue, quint16 alpha)
 
     Constructs a QRgbaFloat  value from the four 16-bit integer color channels \a red, \a green, \a blue and \a alpha.
 

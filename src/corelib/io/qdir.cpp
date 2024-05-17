@@ -9,7 +9,7 @@
 #ifndef QT_NO_DEBUG_STREAM
 #include "qdebug.h"
 #endif
-#include "qdiriterator.h"
+#include "qdirlisting.h"
 #include "qdatetime.h"
 #include "qstring.h"
 #if QT_CONFIG(regularexpression)
@@ -313,9 +313,10 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, const QFileInfoList 
                 names->append(fi.fileName());
         }
     } else {
-        QScopedArrayPointer<QDirSortItem> si(new QDirSortItem[n]);
+        QVarLengthArray<QDirSortItem, 64> si;
+        si.reserve(n);
         for (qsizetype i = 0; i < n; ++i)
-            si[i] = QDirSortItem{l.at(i), sort};
+            si.emplace_back(l.at(i), sort);
 
 #ifndef QT_BOOTSTRAPPED
     if (sort.testAnyFlag(QDir::LocaleAware)) {
@@ -346,9 +347,8 @@ inline void QDirPrivate::initFileLists(const QDir &dir) const
     QMutexLocker locker(&fileCache.mutex);
     if (!fileCache.fileListsInitialized) {
         QFileInfoList l;
-        QDirIterator it(dir);
-        while (it.hasNext())
-            l.append(it.nextFileInfo());
+        for (const auto &dirEntry : QDirListing(dir))
+            l.emplace_back(dirEntry.fileInfo());
 
         sortFileList(sort, l, &fileCache.files, &fileCache.fileInfos);
         fileCache.fileListsInitialized = true;
@@ -363,8 +363,7 @@ inline void QDirPrivate::clearCache(MetaDataClearing mode)
     fileCache.fileListsInitialized = false;
     fileCache.files.clear();
     fileCache.fileInfos.clear();
-    fileEngine.reset(
-            QFileSystemEngine::resolveEntryAndCreateLegacyEngine(dirEntry, fileCache.metaData));
+    fileEngine = QFileSystemEngine::createLegacyEngine(dirEntry, fileCache.metaData);
 }
 
 /*!
@@ -376,6 +375,7 @@ inline void QDirPrivate::clearCache(MetaDataClearing mode)
     \ingroup shared
     \reentrant
 
+    \compares equality
 
     A QDir is used to manipulate path names, access information
     regarding paths and files, and manipulate the underlying file
@@ -1294,6 +1294,7 @@ QDir::SortFlags QDir::sorting() const
     after the directories, again in reverse order.
 */
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     Sets the sort order used by entryList() and entryInfoList().
 
@@ -1426,18 +1427,16 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
         }
     }
 
-    QDirIterator it(d->dirEntry.filePath(), nameFilters, filters);
+    QDirListing dirList(d->dirEntry.filePath(), nameFilters, filters);
     QStringList ret;
     if (needsSorting) {
         QFileInfoList l;
-        while (it.hasNext())
-            l.append(it.nextFileInfo());
+        for (const auto &dirEntry : dirList)
+            l.emplace_back(dirEntry.fileInfo());
         d->sortFileList(sort, l, &ret, nullptr);
     } else {
-        while (it.hasNext()) {
-            it.next();
-            ret.append(it.fileName());
-        }
+        for (const auto &dirEntry : dirList)
+            ret.emplace_back(dirEntry.fileName());
     }
     return ret;
 }
@@ -1474,13 +1473,13 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
     }
 
     QFileInfoList l;
-    QDirIterator it(d->dirEntry.filePath(), nameFilters, filters);
-    while (it.hasNext())
-        l.append(it.nextFileInfo());
+    for (const auto &dirEntry : QDirListing(d->dirEntry.filePath(), nameFilters, filters))
+        l.emplace_back(dirEntry.fileInfo());
     QFileInfoList ret;
     d->sortFileList(sort, l, nullptr, &ret);
     return ret;
 }
+#endif // !QT_BOOTSTRAPPED
 
 /*!
     Creates a sub-directory called \a dirName.
@@ -1617,6 +1616,7 @@ bool QDir::rmpath(const QString &dirPath) const
     return d->fileEngine->rmdir(fn, true);
 }
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     \since 5.0
     Removes the directory, including all its contents.
@@ -1645,12 +1645,11 @@ bool QDir::removeRecursively()
     bool success = true;
     const QString dirPath = path();
     // not empty -- we must empty it first
-    QDirIterator di(dirPath, QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot);
-    while (di.hasNext()) {
-        const QFileInfo fi = di.nextFileInfo();
-        const QString &filePath = di.filePath();
+    constexpr auto dirFilters = QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot;
+    for (const auto &dirEntry : QDirListing(dirPath, dirFilters)) {
+        const QString &filePath = dirEntry.filePath();
         bool ok;
-        if (fi.isDir() && !fi.isSymLink()) {
+        if (dirEntry.isDir() && !dirEntry.isSymLink()) {
             ok = QDir(filePath).removeRecursively(); // recursive
         } else {
             ok = QFile::remove(filePath);
@@ -1670,6 +1669,7 @@ bool QDir::removeRecursively()
 
     return success;
 }
+#endif // !QT_BOOTSTRAPPED
 
 /*!
     Returns \c true if the directory is readable \e and we can open files
@@ -1806,7 +1806,9 @@ bool QDir::makeAbsolute()
 }
 
 /*!
-    Returns \c true if directory \a dir and this directory have the same
+   \fn bool QDir::operator==(const QDir &lhs, const QDir &rhs)
+
+    Returns \c true if directory \a lhs and directory \a rhs have the same
     path and their sort and filter settings are the same; otherwise
     returns \c false.
 
@@ -1814,10 +1816,10 @@ bool QDir::makeAbsolute()
 
     \snippet code/src_corelib_io_qdir.cpp 10
 */
-bool QDir::operator==(const QDir &dir) const
+bool comparesEqual(const QDir &lhs, const QDir &rhs)
 {
-    Q_D(const QDir);
-    const QDirPrivate *other = dir.d_ptr.constData();
+    const QDirPrivate *d = lhs.d_ptr.constData();
+    const QDirPrivate *other = rhs.d_ptr.constData();
 
     if (d == other)
         return true;
@@ -1841,13 +1843,13 @@ bool QDir::operator==(const QDir &dir) const
         if (d->dirEntry.filePath() == other->dirEntry.filePath())
             return true;
 
-        if (exists()) {
-            if (!dir.exists())
+        if (lhs.exists()) {
+            if (!rhs.exists())
                 return false; //can't be equal if only one exists
             // Both exist, fallback to expensive canonical path computation
-            return canonicalPath().compare(dir.canonicalPath(), sensitive) == 0;
+            return lhs.canonicalPath().compare(rhs.canonicalPath(), sensitive) == 0;
         } else {
-            if (dir.exists())
+            if (rhs.exists())
                 return false; //can't be equal if only one exists
             // Neither exists, compare absolute paths rather than canonical (which would be empty strings)
             QString thisFilePath = d->resolveAbsoluteEntry();
@@ -1877,11 +1879,10 @@ QDir &QDir::operator=(const QDir &dir)
 */
 
 /*!
-    \fn bool QDir::operator!=(const QDir &dir) const
+    \fn bool QDir::operator!=(const QDir &lhs, const QDir &rhs)
 
-    Returns \c true if directory \a dir and this directory have different
-    paths or different sort or filter settings; otherwise returns
-    false.
+    Returns \c true if directory \a lhs and directory \a rhs have different
+    paths or different sort or filter settings; otherwise returns \c false.
 
     Example:
 
@@ -1951,6 +1952,7 @@ bool QDir::exists(const QString &name) const
     return QFileInfo::exists(filePath(name));
 }
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     Returns whether the directory is empty.
 
@@ -1967,9 +1969,10 @@ bool QDir::exists(const QString &name) const
 bool QDir::isEmpty(Filters filters) const
 {
     Q_D(const QDir);
-    QDirIterator it(d->dirEntry.filePath(), d->nameFilters, filters);
-    return !it.hasNext();
+    QDirListing dirList(d->dirEntry.filePath(), d->nameFilters, filters);
+    return dirList.cbegin() == dirList.cend();
 }
+#endif // !QT_BOOTSTRAPPED
 
 /*!
     Returns a list of the root directories on this system.
@@ -2356,7 +2359,7 @@ QString qt_normalizePathSegments(const QString &name, QDirPrivate::PathNormaliza
     // If path was not modified return the original value
     if (used == 0)
         return name;
-    return QString::fromUtf16(out + used, len - used);
+    return QStringView(out + used, len - used).toString();
 }
 
 static QString qt_cleanPath(const QString &path, bool *ok)

@@ -60,9 +60,11 @@ HPack::HttpHeader build_headers(const QHttpNetworkRequest &request, quint32 maxH
     if (size.second > maxHeaderListSize)
         return HttpHeader(); // Bad, we cannot send this request ...
 
-    const auto requestHeader = request.header().toListOfPairs();
-    for (const auto &field : requestHeader) {
-        const HeaderSize delta = entry_size(field.first, field.second);
+    const QHttpHeaders requestHeader = request.header();
+    for (qsizetype i = 0; i < requestHeader.size(); ++i) {
+        const auto name = requestHeader.nameAt(i);
+        const auto value = requestHeader.valueAt(i);
+        const HeaderSize delta = entry_size(name, value);
         if (!delta.first) // Overflow???
             break;
         if (std::numeric_limits<quint32>::max() - delta.second < size.second)
@@ -71,18 +73,17 @@ HPack::HttpHeader build_headers(const QHttpNetworkRequest &request, quint32 maxH
         if (size.second > maxHeaderListSize)
             break;
 
-        if (field.first.compare("connection", Qt::CaseInsensitive) == 0 ||
-                field.first.compare("host", Qt::CaseInsensitive) == 0 ||
-                field.first.compare("keep-alive", Qt::CaseInsensitive) == 0 ||
-                field.first.compare("proxy-connection", Qt::CaseInsensitive) == 0 ||
-                field.first.compare("transfer-encoding", Qt::CaseInsensitive) == 0)
+        if (name == "connection"_L1 || name == "host"_L1 || name == "keep-alive"_L1
+            || name == "proxy-connection"_L1 || name == "transfer-encoding"_L1) {
             continue; // Those headers are not valid (section 3.2.1) - from QSpdyProtocolHandler
+        }
         // TODO: verify with specs, which fields are valid to send ....
-        // toLower - 8.1.2 .... "header field names MUST be converted to lowercase prior
-        // to their encoding in HTTP/2.
-        // A request or response containing uppercase header field names
-        // MUST be treated as malformed (Section 8.1.2.6)".
-        header.emplace_back(field.first.toLower(), field.second);
+        //
+        // Note: RFC 7450 8.1.2 (HTTP/2) states that header field names must be lower-cased
+        // prior to their encoding in HTTP/2; header name fields in QHttpHeaders are already
+        // lower-cased
+        header.emplace_back(QByteArray{name.data(), name.size()},
+                            QByteArray{value.data(), value.size()});
     }
 
     return header;
@@ -325,11 +326,13 @@ bool QHttp2ProtocolHandler::sendRequest()
         initReplyFromPushPromise(message, key);
     }
 
-    const auto streamsToUse = std::min<quint32>(maxConcurrentStreams > quint32(activeStreams.size())
-                                                ? maxConcurrentStreams - quint32(activeStreams.size()) : 0,
-                                                requests.size());
+    const auto isClientSide = [](const auto &pair) -> bool { return (pair.first & 1) == 1; };
+    const auto activeClientSideStreams = std::count_if(
+            activeStreams.constKeyValueBegin(), activeStreams.constKeyValueEnd(), isClientSide);
+    const qint64 streamsToUse = qBound(0, qint64(maxConcurrentStreams) - activeClientSideStreams,
+                                       requests.size());
     auto it = requests.begin();
-    for (quint32 i = 0; i < streamsToUse; ++i) {
+    for (qint64 i = 0; i < streamsToUse; ++i) {
         const qint32 newStreamID = createNewStream(*it);
         if (!newStreamID) {
             // TODO: actually we have to open a new connection.
@@ -1100,6 +1103,13 @@ void QHttp2ProtocolHandler::updateStream(Stream &stream, const HPack::HttpHeader
         }
     }
 
+    // Discard all informational (1xx) replies with the exception of 101.
+    // Also see RFC 9110 (Chapter 15.2)
+    if (statusCode == 100 || (102 <= statusCode && statusCode <= 199)) {
+        httpReplyPrivate->clearHttpLayerInformation();
+        return;
+    }
+
     if (QHttpNetworkReply::isHttpRedirect(statusCode) && httpRequest.isFollowRedirects()) {
         QHttpNetworkConnectionPrivate::ParseRedirectResult result =
                 m_connection->d_func()->parseRedirectResponse(httpReply);
@@ -1195,12 +1205,14 @@ void QHttp2ProtocolHandler::handleAuthorization(Stream &stream)
             // In this case IIS will fall back to HTTP/1.1."
             // Though it might be OK to ignore this. The server shouldn't let us connect with
             // HTTP/2 if it doesn't support us using it.
-        } else if (!auth.isEmpty()) {
-            // Somewhat mimics parts of QHttpNetworkConnectionChannel::handleStatus
-            bool resend = false;
-            const bool authenticateHandled = m_connection->d_func()->handleAuthenticateChallenge(
-                    m_socket, httpReply, isProxy, resend);
-            if (authenticateHandled && resend) {
+            return false;
+        }
+        // Somewhat mimics parts of QHttpNetworkConnectionChannel::handleStatus
+        bool resend = false;
+        const bool authenticateHandled = m_connection->d_func()->handleAuthenticateChallenge(
+                m_socket, httpReply, isProxy, resend);
+        if (authenticateHandled) {
+            if (resend) {
                 httpReply->d_func()->eraseData();
                 // Add the request back in queue, we'll retry later now that
                 // we've gotten some username/password set on it:
@@ -1215,11 +1227,15 @@ void QHttp2ProtocolHandler::handleAuthorization(Stream &stream)
                 // We automatically try to send new requests when the stream is
                 // closed, so we don't need to call sendRequest ourselves.
                 return true;
-            } // else: Authentication failed or was cancelled
+            } // else: we're just not resending the request.
+            // @note In the http/1.x case we (at time of writing) call close()
+            // for the connectionChannel (which is a bit weird, we could surely
+            // reuse the open socket outside "connection:close"?), but in http2
+            // we only have one channel, so we won't close anything.
         } else {
-            // No authentication header, but we got a 401/407 so we cannot
-            // succeed. We need to emit signals for headers and data, and then
-            // finishWithError.
+            // No authentication header or authentication isn't supported, but
+            // we got a 401/407 so we cannot succeed. We need to emit signals
+            // for headers and data, and then finishWithError.
             emit httpReply->headerChanged();
             emit httpReply->readyRead();
             QNetworkReply::NetworkError error = httpReply->statusCode() == 401

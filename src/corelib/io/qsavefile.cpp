@@ -3,7 +3,7 @@
 
 #include "qsavefile.h"
 
-#ifndef QT_NO_TEMPORARYFILE
+#if QT_CONFIG(temporaryfile)
 
 #include "qplatformdefs.h"
 #include "private/qsavefile_p.h"
@@ -113,10 +113,10 @@ QSaveFile::QSaveFile(const QString &name, QObject *parent)
 QSaveFile::~QSaveFile()
 {
     Q_D(QSaveFile);
-    QFileDevice::close();
-    if (d->fileEngine) {
+    if (isOpen()) {
+        QFileDevice::close();
+        Q_ASSERT(d->fileEngine);
         d->fileEngine->remove();
-        d->fileEngine.reset();
     }
 }
 
@@ -152,7 +152,7 @@ void QSaveFile::setFileName(const QString &name)
     QIODevice::ReadWrite, QIODevice::Append, QIODevice::NewOnly and
     QIODevice::ExistingOnly are not supported at the moment.
 
-    \sa QIODevice::OpenMode, setFileName()
+    \sa QIODevice::OpenMode, setFileName(), QT_USE_NODISCARD_FILE_OPEN
 */
 bool QSaveFile::open(OpenMode mode)
 {
@@ -200,7 +200,7 @@ bool QSaveFile::open(OpenMode mode)
     }
 
     auto openDirectly = [&]() {
-        d->fileEngine.reset(QAbstractFileEngine::create(d->finalFileName));
+        d->fileEngine = QAbstractFileEngine::create(d->finalFileName);
         if (d->fileEngine->open(mode | QIODevice::Unbuffered)) {
             d->useTemporaryFile = false;
             QFileDevice::open(mode);
@@ -298,7 +298,7 @@ bool QSaveFile::commit()
     }
     QFileDevice::close(); // calls flush()
 
-    const auto fe = std::move(d->fileEngine);
+    const auto &fe = d->fileEngine;
 
     // Sync to disk if possible. Ignore errors (e.g. not supported).
     fe->syncToDisk();
@@ -412,4 +412,4 @@ QT_END_NAMESPACE
 #include "moc_qsavefile.cpp"
 #endif
 
-#endif // QT_NO_TEMPORARYFILE
+#endif // QT_CONFIG(temporaryfile)

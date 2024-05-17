@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #ifndef FILEDIALOGPANEL_H
 #define FILEDIALOGPANEL_H
@@ -9,6 +9,8 @@
 #include <QPointer>
 
 QT_BEGIN_NAMESPACE
+
+class QAbstractFileIconProvider;
 class QPushButton;
 class QCheckBox;
 class QComboBox;
@@ -52,7 +54,7 @@ private:
     QString filterString() const;
     QFileDialog::Options options() const;
     QStringList allowedSchemes() const;
-    void applySettings(QFileDialog *d) const;
+    void applySettings(QFileDialog *d);
 
     QFormLayout *filesLayout;
     QCheckBox *m_showDirsOnly;
@@ -62,6 +64,9 @@ private:
     QCheckBox *m_resolveSymLinks;
     QCheckBox *m_native;
     QCheckBox *m_customDirIcons;
+    QCheckBox *m_noIconProvider = nullptr;
+    QAbstractFileIconProvider *m_origIconProvider = nullptr;
+
     QComboBox *m_acceptMode;
     QComboBox *m_fileMode;
     QComboBox *m_viewMode;

@@ -11,6 +11,7 @@
 #include <array>
 #include <cstddef>
 #include <cassert>
+#include <initializer_list>
 #include <QtCore/q20iterator.h>
 #include <QtCore/q20memory.h>
 #ifdef __cpp_lib_span
@@ -76,14 +77,25 @@ using is_qualification_conversion =
 template <typename From, typename To>
 constexpr inline bool is_qualification_conversion_v = is_qualification_conversion<From, To>::value;
 
+namespace AdlTester {
+#define MAKE_ADL_TEST(what) \
+    using std:: what; /* bring into scope */ \
+    template <typename T> using what ## _result = decltype( what (std::declval<T&&>())); \
+    /* end */
+MAKE_ADL_TEST(begin)
+MAKE_ADL_TEST(data)
+MAKE_ADL_TEST(size)
+#undef MAKE_ADL_TEST
+}
+
 // Replacements for std::ranges::XXX(), but only bringing in ADL XXX()s,
 // not doing the extra work C++20 requires
 template <typename Range>
-decltype(auto) adl_begin(Range &&r) { using std::begin; return begin(r); }
+AdlTester::begin_result<Range> adl_begin(Range &&r) { using std::begin; return begin(r); }
 template <typename Range>
-decltype(auto) adl_data(Range &&r)  { using std::data; return data(r); }
+AdlTester::data_result<Range>  adl_data(Range &&r)  { using std::data; return data(r); }
 template <typename Range>
-decltype(auto) adl_size(Range &&r)  { using std::size; return size(r); }
+AdlTester::size_result<Range>  adl_size(Range &&r)  { using std::size; return size(r); }
 
 // Replacement for std::ranges::iterator_t (which depends on C++20 std::ranges::begin)
 // This one uses adl_begin() instead.
@@ -213,6 +225,11 @@ public:
         : QSpanBase(other.data(), other.size())
     {}
 
+    template <typename U = T, std::enable_if_t<std::is_const_v<U>, bool> = true>
+    Q_IMPLICIT constexpr QSpanBase(std::initializer_list<std::remove_cv_t<T>> il)
+        : QSpanBase(il.begin(), il.size())
+    {}
+
 #ifdef __cpp_lib_span
     template <typename S, if_qualification_conversion<S> = true>
     Q_IMPLICIT constexpr QSpanBase(std::span<S, E> other) noexcept
@@ -275,7 +292,12 @@ public:
         : QSpanBase(other.data(), other.size())
     {}
 
-#if __cpp_lib_span
+    template <typename U = T, std::enable_if_t<std::is_const_v<U>, bool> = true>
+    Q_IMPLICIT constexpr QSpanBase(std::initializer_list<std::remove_cv_t<T>> il) noexcept
+        : QSpanBase(il.begin(), il.size())
+    {}
+
+#ifdef __cpp_lib_span
     template <typename S, size_t N, if_qualification_conversion<S> = true>
     Q_IMPLICIT constexpr QSpanBase(std::span<S, N> other) noexcept
         : QSpanBase(other.data(), other.size())
@@ -305,14 +327,17 @@ class QSpan
     static constexpr bool subspan_always_succeeds_v = N <= E && E != q20::dynamic_extent;
 public:
     // constants and types
+    using value_type = std::remove_cv_t<T>;
+#ifdef QT_COMPILER_HAS_LWG3346
+    using iterator_concept = std::contiguous_iterator_tag;
     using element_type = T;
-    using value_type = std::remove_cv_t<element_type>;
+#endif
     using size_type = qsizetype;               // difference to std::span
     using difference_type = qptrdiff;          // difference to std::span
-    using pointer = element_type*;
-    using const_pointer = const element_type*;
-    using reference = element_type&;
-    using const_reference = const element_type&;
+    using pointer = T*;
+    using const_pointer = const T*;
+    using reference = T&;
+    using const_reference = const T&;
     using iterator = pointer;                  // implementation-defined choice
     using const_iterator = const_pointer;      // implementation-defined choice
     using reverse_iterator = std::reverse_iterator<iterator>;
@@ -333,6 +358,7 @@ public:
     template <typename Range, if_compatible_range<Range> = true> constexpr QSpan(Range &&r);
     template <typename S, size_t N, if_qualification_conversion<S> = true> constexpr QSpan(QSpan<S, N> other) noexcept;
     template <typename S, size_t N, if_qualification_conversion<S> = true> constexpr QSpan(std::span<S, N> other) noexcept;
+    constexpr QSpan(std::initializer_list<value_type> il);
 #endif // Q_QDOC
 
     // [span.obs]

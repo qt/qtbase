@@ -7,6 +7,7 @@
 #include <QtGui/qtguiglobal.h>
 #if QT_CONFIG(accessibility)
 
+#include <QtCore/qt_windows.h>
 #include "qwindowscontext.h"
 #include <qpa/qplatformaccessibility.h>
 

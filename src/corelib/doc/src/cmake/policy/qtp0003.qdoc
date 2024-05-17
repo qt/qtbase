@@ -1,0 +1,46 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+\page qt-cmake-policy-qtp0003.html
+\ingroup qt-cmake-policies
+\since 6.7
+\title QTP0003
+\keyword qt_cmake_policy_qtp0003
+
+\summary {Consider the BUILD_SHARED_LIBS value when creating Qt libraries.}
+
+This policy was introduced in Qt 6.7. The policy affects the default type of the
+libraries created using \l {CMake Commands in Qt6 Core}{Qt CMake API}, like
+\l {qt_add_library}, \l{qt_add_plugin}, \l{qt_add_qml_module}.
+
+If the policy is set to \c OLD, the default library type that is selected is
+aligned with the Qt build type, either \c shared or \c static.
+
+If the policy is set to \c NEW, the library type is selected according to the
+\l {CMake BUILD_SHARED_LIBS Documentation}{BUILD_SHARED_LIBS} value if it's set.
+If \c BUILD_SHARED_LIBS is not set, the default library type falls back to the
+Qt build type.
+
+For example, the following code will use the Qt build type as the default
+library type for the \c MyLib target, despite the fact \c BUILD_SHARED_LIBS is
+set to \c ON:
+\badcode
+set(BUILD_SHARED_LIBS ON)
+...
+qt6_add_library(MyLib sourcefile.h sourcefile.cpp)
+\endcode
+
+If you set the QTP0003 to \c NEW before the \l {qt6_add_library}{qt_add_library}
+call, \c BUILD_SHARED_LIBS will affect the library default type and \c MyLib
+will be the shared library.
+\badcode
+set(BUILD_SHARED_LIBS ON)
+...
+qt_policy(SET QTP0003 NEW)
+qt6_add_library(MyLib sourcefile.h sourcefile.cpp)
+\endcode
+
+\sa qt_policy, {Qt CMake policies}, qt_add_library
+
+*/

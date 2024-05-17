@@ -4,12 +4,16 @@
 #include "qrestreply.h"
 #include "qrestreply_p.h"
 
-#include <QtCore/qjsonarray.h>
+#include <QtNetwork/private/qnetworkreply_p.h>
+
+#include <QtCore/qbytearrayview.h>
 #include <QtCore/qjsondocument.h>
-#include <QtCore/qjsonobject.h>
 #include <QtCore/qlatin1stringmatcher.h>
+#include <QtCore/qlatin1stringview.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstringconverter.h>
+
+#include <QtCore/qxpfunctional.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -19,8 +23,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcQrest)
 /*!
     \class QRestReply
     \since 6.7
-    \brief QRestReply is the class for following up the requests sent with
-    QRestAccessManager.
+    \brief QRestReply is a convenience wrapper for QNetworkReply.
 
     \reentrant
     \ingroup network
@@ -28,128 +31,64 @@ Q_DECLARE_LOGGING_CATEGORY(lcQrest)
 
     \preliminary
 
-    QRestReply is a convenience class for typical RESTful client
-    applications. It wraps the more detailed QNetworkReply and provides
-    convenience methods for data and status handling.
+    QRestReply wraps a QNetworkReply and provides convenience methods for data
+    and status handling. The methods provide convenience for typical RESTful
+    client applications.
 
-    \sa QRestAccessManager, QNetworkReply
+    QRestReply doesn't take ownership of the wrapped QNetworkReply, and the
+    lifetime and ownership of the reply is as defined by QNetworkAccessManager
+    documentation.
+
+    QRestReply object is not copyable, but is movable.
+
+    \sa QRestAccessManager, QNetworkReply, QNetworkAccessManager,
+        QNetworkAccessManager::setAutoDeleteReplies()
 */
 
 /*!
-    \fn void QRestReply::readyRead(QRestReply *reply)
-
-    This signal is emitted when \a reply has received new data.
-
-    \sa body(), bytesAvailable(), isFinished()
+    Creates a QRestReply and initializes the wrapped QNetworkReply to \a reply.
 */
-
-/*!
-    \fn void QRestReply::downloadProgress(qint64 bytesReceived,
-                                          qint64 bytesTotal,
-                                          QRestReply* reply)
-
-    This signal is emitted to indicate the progress of the download part of
-    this network \a reply.
-
-    The \a bytesReceived parameter indicates the number of bytes received,
-    while \a bytesTotal indicates the total number of bytes expected to be
-    downloaded. If the number of bytes to be downloaded is not known, for
-    instance due to a missing \c Content-Length header, \a bytesTotal
-    will be -1.
-
-    See \l QNetworkReply::downloadProgress() documentation for more details.
-
-    \sa bytesAvailable(), readyRead(), uploadProgress()
-*/
-
-/*!
-    \fn void QRestReply::uploadProgress(qint64 bytesSent, qint64 bytesTotal,
-                                        QRestReply* reply)
-
-    This signal is emitted to indicate the progress of the upload part of
-    \a reply.
-
-    The \a bytesSent parameter indicates the number of bytes already uploaded,
-    while \a bytesTotal indicates the total number of bytes still to upload.
-
-    If the number of bytes to upload is not known, \a bytesTotal will be -1.
-
-    See \l QNetworkReply::uploadProgress() documentation for more details.
-
-    \sa QNetworkReply::uploadProgress(), downloadProgress()
-*/
-
-/*!
-    \fn void QRestReply::finished(QRestReply *reply)
-
-    This signal is emitted when \a reply has finished processing. This
-    signal is emitted also in cases when the reply finished due to network
-    or protocol errors (the server did not reply with an HTTP status).
-
-    \sa isFinished(), httpStatus(), error()
-*/
-
-/*!
-    \fn void QRestReply::errorOccurred(QRestReply *reply)
-
-    This signal is emitted if, while processing \a reply, an error occurs that
-    is considered to be a network/protocol error. These errors are
-    disctinct from HTTP error responses such as \c {500 Internal Server Error}.
-    This signal is emitted together with the
-    finished() signal, and often connecting to that is sufficient.
-
-    \sa finished(), isFinished(), httpStatus(), error()
-*/
-
-QRestReply::QRestReply(QNetworkReply *reply, QObject *parent)
-    : QObject(*new QRestReplyPrivate, parent)
+QRestReply::QRestReply(QNetworkReply *reply)
+    : wrapped(reply)
 {
-    Q_D(QRestReply);
-    Q_ASSERT(reply);
-    d->networkReply = reply;
-    // Reparent so that destruction of QRestReply destroys QNetworkReply
-    reply->setParent(this);
-
-    QObject::connect(reply, &QNetworkReply::readyRead, this, [this] {
-        emit readyRead(this);
-    });
-    QObject::connect(reply, &QNetworkReply::downloadProgress, this,
-                     [this](qint64 bytesReceived, qint64 bytesTotal) {
-                         emit downloadProgress(bytesReceived, bytesTotal, this);
-                     });
-    QObject::connect(reply, &QNetworkReply::uploadProgress, this,
-                     [this] (qint64 bytesSent, qint64 bytesTotal) {
-                         emit uploadProgress(bytesSent, bytesTotal, this);
-                     });
+    if (!wrapped)
+        qCWarning(lcQrest, "QRestReply: QNetworkReply is nullptr");
 }
 
 /*!
     Destroys this QRestReply object.
-
-    \sa abort()
 */
 QRestReply::~QRestReply()
-    = default;
+{
+    delete d;
+}
+
+/*!
+    \fn QRestReply::QRestReply(QRestReply &&other) noexcept
+
+    Move-constructs the reply from \a other.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+*/
+
+/*!
+    \fn QRestReply &QRestReply::operator=(QRestReply &&other) noexcept
+
+    Move-assigns \a other and returns a reference to this reply.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+*/
 
 /*!
     Returns a pointer to the underlying QNetworkReply wrapped by this object.
 */
 QNetworkReply *QRestReply::networkReply() const
 {
-    Q_D(const QRestReply);
-    return d->networkReply;
-}
-
-/*!
-    Aborts the network operation immediately. The finished() signal
-    will be emitted.
-
-    \sa QRestAccessManager::abortRequests() QNetworkReply::abort()
-*/
-void QRestReply::abort()
-{
-    Q_D(QRestReply);
-    d->networkReply->abort();
+    return wrapped;
 }
 
 /*!
@@ -167,19 +106,24 @@ void QRestReply::abort()
     set to QJsonParseError::NoError to distinguish this case from an actual
     error.
 
-    \sa body(), text(), finished(), isFinished()
+    \sa readBody(), readText()
 */
-std::optional<QJsonDocument> QRestReply::json(QJsonParseError *error)
+std::optional<QJsonDocument> QRestReply::readJson(QJsonParseError *error)
 {
-    Q_D(QRestReply);
-    if (!isFinished()) {
-        qCWarning(lcQrest, "Attempt to read json() of an unfinished reply, ignoring.");
+    if (!wrapped) {
+        if (error)
+            *error = {0, QJsonParseError::ParseError::NoError};
+        return std::nullopt;
+    }
+
+    if (!wrapped->isFinished()) {
+        qCWarning(lcQrest, "readJson() called on an unfinished reply, ignoring");
         if (error)
             *error = {0, QJsonParseError::ParseError::NoError};
         return std::nullopt;
     }
     QJsonParseError parseError;
-    const QByteArray data = d->networkReply->readAll();
+    const QByteArray data = wrapped->readAll();
     const QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
     if (error)
         *error = parseError;
@@ -195,50 +139,55 @@ std::optional<QJsonDocument> QRestReply::json(QJsonParseError *error)
     calls to get response data will return empty until further data has been
     received.
 
-    \sa json(), text(), bytesAvailable(), readyRead()
+    \sa readJson(), readText(), QNetworkReply::bytesAvailable(),
+        QNetworkReply::readyRead()
 */
-QByteArray QRestReply::body()
+QByteArray QRestReply::readBody()
 {
-    Q_D(QRestReply);
-    return d->networkReply->readAll();
+    return wrapped ? wrapped->readAll() : QByteArray{};
 }
 
 /*!
     Returns the received data as a QString.
 
-    The received data is decoded into a QString (UTF-16). The decoding
+    The received data is decoded into a QString (UTF-16). If available, the decoding
     uses the \e Content-Type header's \e charset parameter to determine the
-    source encoding, if available. If the encoding information is not
-    available or not supported by \l QStringConverter, UTF-8 is used as a
-    default.
+    source encoding. If the encoding information is not available or not supported
+    by \l QStringConverter, UTF-8 is used by default.
 
     Calling this function consumes the data received so far. Returns
     a default constructed value if no new data is available, or if the
     decoding is not supported by \l QStringConverter, or if the decoding
     has errors (for example invalid characters).
 
-    \sa json(), body(), isFinished(), finished()
+    \sa readJson(), readBody(), QNetworkReply::readyRead()
 */
-QString QRestReply::text()
+QString QRestReply::readText()
 {
-    Q_D(QRestReply);
     QString result;
+    if (!wrapped)
+        return result;
 
-    QByteArray data = d->networkReply->readAll();
+    QByteArray data = wrapped->readAll();
     if (data.isEmpty())
         return result;
 
+    // Text decoding needs to persist decoding state across calls to this function,
+    // so allocate decoder if not yet allocated.
+    if (!d)
+        d = new QRestReplyPrivate;
+
     if (!d->decoder) {
-        const QByteArray charset = d->contentCharset();
-        d->decoder = QStringDecoder(charset);
+        const QByteArray charset = QRestReplyPrivate::contentCharset(wrapped);
+        d->decoder.emplace(charset.constData());
         if (!d->decoder->isValid()) { // the decoder may not support the mimetype's charset
-            qCWarning(lcQrest, "text(): Charset \"%s\" is not supported", charset.constData());
+            qCWarning(lcQrest, "readText(): Charset \"%s\" is not supported", charset.constData());
             return result;
         }
     }
     // Check if the decoder already had an error, or has errors after decoding current data chunk
     if (d->decoder->hasError() || (result = (*d->decoder)(data), d->decoder->hasError())) {
-        qCWarning(lcQrest, "text() Decoding error occurred");
+        qCWarning(lcQrest, "readText(): Decoding error occurred");
         return {};
     }
     return result;
@@ -250,8 +199,8 @@ QString QRestReply::text()
     yet).
 
     \note The HTTP status is reported as indicated by the received HTTP
-    response. It is possible that an error() occurs after receiving the status,
-    for instance due to network disconnection while receiving a long response.
+    response. An error() may occur after receiving the status, for instance
+    due to network disconnection while receiving a long response.
     These potential subsequent errors are not represented by the reported
     HTTP status.
 
@@ -259,15 +208,14 @@ QString QRestReply::text()
 */
 int QRestReply::httpStatus() const
 {
-    Q_D(const QRestReply);
-    return d->networkReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    return wrapped ? wrapped->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() : 0;
 }
 
 /*!
     \fn bool QRestReply::isSuccess() const
 
     Returns whether the HTTP status is between 200..299 and no
-    further errors have occurred while receiving the response (for example
+    further errors have occurred while receiving the response (for example,
     abrupt disconnection while receiving the body data). This function
     is a convenient way to check whether the response is considered successful.
 
@@ -296,8 +244,16 @@ bool QRestReply::isHttpStatusSuccess() const
 */
 bool QRestReply::hasError() const
 {
-    Q_D(const QRestReply);
-    return d->hasNonHttpError();
+    if (!wrapped)
+        return false;
+
+    const int status = httpStatus();
+    if (status > 0) {
+        // The HTTP status is set upon receiving the response headers, but the
+        // connection might still fail later while receiving the body data.
+        return wrapped->error() == QNetworkReply::RemoteHostClosedError;
+    }
+    return wrapped->error() != QNetworkReply::NoError;
 }
 
 /*!
@@ -309,10 +265,9 @@ bool QRestReply::hasError() const
 */
 QNetworkReply::NetworkError QRestReply::error() const
 {
-    Q_D(const QRestReply);
     if (!hasError())
         return QNetworkReply::NetworkError::NoError;
-    return d->networkReply->error();
+    return wrapped->error();
 }
 
 /*!
@@ -322,30 +277,9 @@ QNetworkReply::NetworkError QRestReply::error() const
 */
 QString QRestReply::errorString() const
 {
-    Q_D(const QRestReply);
     if (hasError())
-        return d->networkReply->errorString();
+        return wrapped->errorString();
     return {};
-}
-
-/*!
-    Returns whether the network request has finished.
-*/
-bool QRestReply::isFinished() const
-{
-    Q_D(const QRestReply);
-    return d->networkReply->isFinished();
-}
-
-/*!
-    Returns the number of bytes available.
-
-    \sa body
-*/
-qint64 QRestReply::bytesAvailable() const
-{
-    Q_D(const QRestReply);
-    return d->networkReply->bytesAvailable();
 }
 
 QRestReplyPrivate::QRestReplyPrivate()
@@ -377,38 +311,280 @@ static QLatin1StringView operationName(QNetworkAccessManager::Operation operatio
 }
 
 /*!
-    \fn QDebug QRestReply::operator<<(QDebug debug, const QRestReply *reply)
+    \fn QDebug QRestReply::operator<<(QDebug debug, const QRestReply &reply)
 
     Writes the \a reply into the \a debug object for debugging purposes.
 
     \sa {Debugging Techniques}
 */
-QDebug operator<<(QDebug debug, const QRestReply *reply)
+QDebug operator<<(QDebug debug, const QRestReply &reply)
 {
     const QDebugStateSaver saver(debug);
     debug.resetFormat().nospace();
-    if (!reply) {
-        debug << "QRestReply(nullptr)";
+    if (!reply.networkReply()) {
+        debug << "QRestReply(no network reply)";
         return debug;
     }
-
-    debug << "QRestReply(isSuccess = " << reply->isSuccess()
-          << ", httpStatus = " << reply->httpStatus()
-          << ", isHttpStatusSuccess = " << reply->isHttpStatusSuccess()
-          << ", hasError = " << reply->hasError()
-          << ", errorString = " << reply->errorString()
-          << ", error = " << reply->error()
-          << ", isFinished = " << reply->isFinished()
-          << ", bytesAvailable = " << reply->bytesAvailable()
-          << ", url " << reply->networkReply()->url()
-          << ", operation = " << operationName(reply->networkReply()->operation())
-          << ", reply headers = " << reply->networkReply()->rawHeaderPairs()
+    debug << "QRestReply(isSuccess = " << reply.isSuccess()
+          << ", httpStatus = " << reply.httpStatus()
+          << ", isHttpStatusSuccess = " << reply.isHttpStatusSuccess()
+          << ", hasError = " << reply.hasError()
+          << ", errorString = " << reply.errorString()
+          << ", error = " << reply.error()
+          << ", isFinished = " << reply.networkReply()->isFinished()
+          << ", bytesAvailable = " << reply.networkReply()->bytesAvailable()
+          << ", url " << reply.networkReply()->url()
+          << ", operation = " << operationName(reply.networkReply()->operation())
+          << ", reply headers = " << reply.networkReply()->headers()
           << ")";
     return debug;
 }
 #endif // QT_NO_DEBUG_STREAM
 
-QByteArray QRestReplyPrivate::contentCharset() const
+static constexpr auto parse_OWS(QByteArrayView data) noexcept
+{
+    struct R {
+        QByteArrayView ows, tail;
+    };
+
+    constexpr auto is_OWS_char = [](auto ch) { return ch == ' ' || ch == '\t'; };
+
+    qsizetype i = 0;
+    while (i < data.size() && is_OWS_char(data[i]))
+        ++i;
+
+    return R{data.first(i), data.sliced(i)};
+}
+
+static constexpr void eat_OWS(QByteArrayView &data) noexcept
+{
+    data = parse_OWS(data).tail;
+}
+
+static constexpr auto parse_quoted_string(QByteArrayView data, qxp::function_ref<void(char) const> yield)
+{
+    struct R {
+        QByteArrayView quotedString, tail;
+        constexpr explicit operator bool() const noexcept { return !quotedString.isEmpty(); }
+    };
+
+    if (!data.startsWith('"'))
+        return R{{}, data};
+
+    qsizetype i = 1; // one past initial DQUOTE
+    while (i < data.size()) {
+        switch (auto ch = data[i++]) {
+        case '"':  // final DQUOTE -> end of string
+            return R{data.first(i), data.sliced(i)};
+        case '\\': // quoted-pair
+            // https://www.rfc-editor.org/rfc/rfc9110.html#section-5.6.4-3:
+            //   Recipients that process the value of a quoted-string MUST handle a
+            //   quoted-pair as if it were replaced by the octet following the backslash.
+            if (i == data.size())
+                break; // premature end
+            ch = data[i++]; // eat '\\'
+            [[fallthrough]];
+        default:
+            // we don't validate quoted-string octets to be only qdtext (Postel's Law)
+            yield(ch);
+        }
+    }
+
+    return R{{}, data}; // premature end
+}
+
+static constexpr bool is_tchar(char ch) noexcept
+{
+    // ### optimize
+    switch (ch) {
+    case '!':
+    case '#':
+    case '$':
+    case '%':
+    case '&':
+    case '\'':
+    case '*':
+    case '+':
+    case '-':
+    case '.':
+    case '^':
+    case '_':
+    case '`':
+    case '|':
+    case '~':
+        return true;
+    default:
+        return (ch >= 'a' && ch <= 'z')
+            || (ch >= '0' && ch <= '9')
+            || (ch >= 'A' && ch <= 'Z');
+    }
+}
+
+static constexpr auto parse_comment(QByteArrayView data) noexcept
+{
+    struct R {
+        QByteArrayView comment, tail;
+        constexpr explicit operator bool() const noexcept { return !comment.isEmpty(); }
+    };
+
+    const auto invalid = R{{}, data}; // preserves original `data`
+
+    // comment        = "(" *( ctext / quoted-pair / comment ) ")"
+    // ctext          = HTAB / SP / %x21-27 / %x2A-5B / %x5D-7E / obs-text
+
+    if (!data.startsWith('('))
+        return invalid;
+
+    qsizetype i = 1;
+    qsizetype level = 1;
+    while (i < data.size()) {
+        switch (data[i++]) {
+        case '(': // nested comment
+            ++level;
+            break;
+        case ')': // end of comment
+            if (--level == 0)
+                return R{data.first(i), data.sliced(i)};
+            break;
+        case '\\': // quoted-pair
+            if (i == data.size())
+                return invalid; // premature end
+            ++i; // eat escaped character
+            break;
+        default:
+            ; // don't validate ctext - accept everything (Postel's Law)
+        }
+    }
+
+    return invalid; // premature end / unbalanced nesting levels
+}
+
+static constexpr void eat_CWS(QByteArrayView &data) noexcept
+{
+    eat_OWS(data);
+    while (const auto comment = parse_comment(data)) {
+        data = comment.tail;
+        eat_OWS(data);
+    }
+}
+
+static constexpr auto parse_token(QByteArrayView data) noexcept
+{
+    struct R {
+        QByteArrayView token, tail;
+        constexpr explicit operator bool() const noexcept { return !token.isEmpty(); }
+    };
+
+    qsizetype i = 0;
+    while (i < data.size() && is_tchar(data[i]))
+        ++i;
+
+    return R{data.first(i), data.sliced(i)};
+}
+
+static constexpr auto parse_parameter(QByteArrayView data, qxp::function_ref<void(char) const> yield)
+{
+    struct R {
+        QLatin1StringView name; QByteArrayView value; QByteArrayView tail;
+        constexpr explicit operator bool() const noexcept { return !name.isEmpty(); }
+    };
+
+    const auto invalid = R{{}, {}, data}; // preserves original `data`
+
+    // parameter       = parameter-name "=" parameter-value
+    // parameter-name  = token
+    // parameter-value = ( token / quoted-string )
+
+    const auto name = parse_token(data);
+    if (!name)
+        return invalid;
+    data = name.tail;
+
+    eat_CWS(data); // not in the grammar, but accepted under Postel's Law
+
+    if (!data.startsWith('='))
+        return invalid;
+    data = data.sliced(1);
+
+    eat_CWS(data); // not in the grammar, but accepted under Postel's Law
+
+    if (Q_UNLIKELY(data.startsWith('"'))) { // value is a quoted-string
+
+        const auto value = parse_quoted_string(data, yield);
+        if (!value)
+            return invalid;
+        data = value.tail;
+
+        return R{QLatin1StringView{name.token}, value.quotedString, data};
+
+    } else { // value is a token
+
+        const auto value = parse_token(data);
+        if (!value)
+            return invalid;
+        data = value.tail;
+
+        return R{QLatin1StringView{name.token}, value.token, data};
+    }
+}
+
+static auto parse_content_type(QByteArrayView data)
+{
+    struct R {
+        QLatin1StringView type, subtype;
+        std::string charset;
+        constexpr explicit operator bool() const noexcept { return !type.isEmpty(); }
+    };
+
+    eat_CWS(data); // not in the grammar, but accepted under Postel's Law
+
+    const auto type = parse_token(data);
+    if (!type)
+        return R{};
+    data = type.tail;
+
+    eat_CWS(data); // not in the grammar, but accepted under Postel's Law
+
+    if (!data.startsWith('/'))
+        return R{};
+    data = data.sliced(1);
+
+    eat_CWS(data); // not in the grammar, but accepted under Postel's Law
+
+    const auto subtype = parse_token(data);
+    if (!subtype)
+        return R{};
+    data = subtype.tail;
+
+    eat_CWS(data);
+
+    auto r = R{QLatin1StringView{type.token}, QLatin1StringView{subtype.token}, {}};
+
+    while (data.startsWith(';')) {
+
+        data = data.sliced(1); // eat ';'
+
+        eat_CWS(data);
+
+        const auto param = parse_parameter(data, [&](char ch) { r.charset.append(1, ch); });
+        if (param.name.compare("charset"_L1, Qt::CaseInsensitive) == 0) {
+            if (r.charset.empty() && !param.value.startsWith('"')) // wasn't a quoted-string
+                r.charset.assign(param.value.begin(), param.value.end());
+            return r; // charset found
+        }
+        r.charset.clear(); // wasn't an actual charset
+        if (param.tail.size() == data.size()) // no progress was made
+            break; // returns {type, subtype}
+        // otherwise, continue (accepting e.g. `;;`)
+        data = param.tail;
+
+        eat_CWS(data);
+    }
+
+    return r; // no charset found
+}
+
+QByteArray QRestReplyPrivate::contentCharset(const QNetworkReply* reply)
 {
     // Content-type consists of mimetype and optional parameters, of which one may be 'charset'
     // Example values and their combinations below are all valid, see RFC 7231 section 3.1.1.5
@@ -418,42 +594,15 @@ QByteArray QRestReplyPrivate::contentCharset() const
     // text/plain; charset=utf-8;version=1.7
     // text/plain; charset = utf-8
     // text/plain; charset ="utf-8"
-    QByteArray contentTypeValue =
-               networkReply->header(QNetworkRequest::KnownHeaders::ContentTypeHeader).toByteArray();
-    // Default to the most commonly used UTF-8.
-    QByteArray charset{"UTF-8"};
 
-    QList<QByteArray> parameters = contentTypeValue.split(';');
-    if (parameters.size() >= 2) { // Need at least one parameter in addition to the mimetype itself
-        parameters.removeFirst(); // Exclude the mimetype itself, only interested in parameters
-        QLatin1StringMatcher matcher("charset="_L1, Qt::CaseSensitivity::CaseInsensitive);
-        qsizetype matchIndex = -1;
-        for (auto &parameter : parameters) {
-            // Remove whitespaces and parantheses
-            const QByteArray curated = parameter.replace(" ", "").replace("\"","");
-            // Check for match
-            matchIndex = matcher.indexIn(QLatin1String(curated.constData()));
-            if (matchIndex >= 0) {
-                charset = curated.sliced(matchIndex + 8); // 8 is size of "charset="
-                break;
-            }
-        }
-    }
-    return charset;
-}
+    const QByteArray contentTypeValue =
+            reply->headers().value(QHttpHeaders::WellKnownHeader::ContentType).toByteArray();
 
-// Returns true if there's an error that isn't appropriately indicated by the HTTP status
-bool QRestReplyPrivate::hasNonHttpError() const
-{
-    const int status = networkReply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    if (status > 0) {
-        // The HTTP status is set upon receiving the response headers, but the
-        // connection might still fail later while receiving the body data.
-        return networkReply->error() == QNetworkReply::RemoteHostClosedError;
-    }
-    return networkReply->error() != QNetworkReply::NoError;
+    const auto r = parse_content_type(contentTypeValue);
+    if (r && !r.charset.empty())
+        return QByteArrayView(r.charset).toByteArray();
+    else
+        return "UTF-8"_ba; // Default to the most commonly used UTF-8.
 }
 
 QT_END_NAMESPACE
-
-#include "moc_qrestreply.cpp"

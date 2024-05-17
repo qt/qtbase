@@ -96,6 +96,7 @@ public:
     void startAnimation(QStyleAnimation *animation) const;
     void stopAnimation(const QObject *target) const;
     void removeAnimation(const QObject *target) const;
+#endif
 
     QIcon iconFromWindowsTheme(QCommonStyle::StandardPixmap standardIcon,
                                const QStyleOption *option,
@@ -113,6 +114,7 @@ public:
         return (option && option->direction == Qt::RightToLeft) ||
             (!option && QGuiApplication::isRightToLeft());
     }
+#if QT_CONFIG(animation)
 private:
     mutable QHash<const QObject*, QStyleAnimation*> animations;
 #endif // animation

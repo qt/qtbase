@@ -6,7 +6,7 @@
 
 #include <qregularexpression.h>
 #include <qdir.h>
-#include <qdiriterator.h>
+#include <qdirlisting.h>
 #include <qset.h>
 
 #include <time.h>
@@ -314,16 +314,15 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         const QStringList sourceFilesFilter = sourceFilesForImplicitRulesFilter();
         QStringList fixifiedSourceDirs = fileFixify(QList<QString>(source_directories.constBegin(), source_directories.constEnd()), FileFixifyAbsolute);
         fixifiedSourceDirs.removeDuplicates();
+        constexpr auto filters = QDir::Files | QDir::NoDotAndDotDot;
         for (const QString &sourceDir : std::as_const(fixifiedSourceDirs)) {
-            QDirIterator dit(sourceDir, sourceFilesFilter, QDir::Files | QDir::NoDotAndDotDot);
-            while (dit.hasNext()) {
-                const QFileInfo fi = dit.nextFileInfo();
-                QString &duplicate = fileNames[fi.completeBaseName()];
+            for (const auto &dirEntry : QDirListing(sourceDir, sourceFilesFilter, filters)) {
+                QString &duplicate = fileNames[dirEntry.completeBaseName()];
                 if (duplicate.isNull()) {
-                    duplicate = fi.filePath();
+                    duplicate = dirEntry.filePath();
                 } else {
                     warn_msg(WarnLogic, "%s conflicts with %s", qPrintable(duplicate),
-                             qPrintable(fi.filePath()));
+                             qPrintable(dirEntry.filePath()));
                     duplicatesFound = true;
                 }
             }

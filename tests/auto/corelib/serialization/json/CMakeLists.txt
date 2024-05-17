@@ -26,6 +26,7 @@ qt_internal_add_test(tst_json
         tst_qtjson.cpp
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
     TESTDATA ${json_resource_files}
 )
 

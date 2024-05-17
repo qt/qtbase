@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #ifndef HTTP2SRV_H
 #define HTTP2SRV_H
@@ -58,6 +58,8 @@ public:
     ~Http2Server();
 
 
+    // To send responses with status code 1xx
+    void setInformationalStatusCode(int code);
     // To be called before server started:
     void enablePushPromise(bool enabled, const QByteArray &path = QByteArray());
     void setResponseBody(const QByteArray &body);
@@ -210,6 +212,7 @@ private:
     int redirectCount = 0;
 
     bool sendTrailingHEADERS = false;
+    int informationalStatusCode = 0;
 protected slots:
     void ignoreErrorSlot();
 };

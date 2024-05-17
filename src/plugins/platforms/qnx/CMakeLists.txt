@@ -8,7 +8,7 @@
 qt_internal_add_plugin(QQnxIntegrationPlugin
     OUTPUT_NAME qqnx
     PLUGIN_TYPE platforms
-    DEFAULT_IF ${QT_QPA_DEFAULT_PLATFORM} MATCHES qnx
+    DEFAULT_IF "qnx" IN_LIST QT_QPA_PLATFORMS
     SOURCES
         main.cpp main.h
         qqnxabstractcover.h

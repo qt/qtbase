@@ -5,6 +5,7 @@
 #define QMETACONTAINER_H
 
 #include <QtCore/qcontainerinfo.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qflags.h>
 #include <QtCore/qglobal.h>
 
@@ -975,18 +976,15 @@ public:
     bool canGetValueAtConstIterator() const;
     void valueAtConstIterator(const void *iterator, void *result) const;
 
-    friend bool operator==(const QMetaSequence &a, const QMetaSequence &b)
-    {
-        return a.d() == b.d();
-    }
-    friend bool operator!=(const QMetaSequence &a, const QMetaSequence &b)
-    {
-        return a.d() != b.d();
-    }
-
     const QtMetaContainerPrivate::QMetaSequenceInterface *iface() const { return d(); }
 
 private:
+    friend bool comparesEqual(const QMetaSequence &lhs, const QMetaSequence &rhs) noexcept
+    {
+        return lhs.d() == rhs.d();
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QMetaSequence)
+
     template<typename T>
     struct MetaSequence
     {
@@ -1171,18 +1169,15 @@ public:
         return nullptr;
     }
 
-    friend bool operator==(const QMetaAssociation &a, const QMetaAssociation &b)
-    {
-        return a.d() == b.d();
-    }
-    friend bool operator!=(const QMetaAssociation &a, const QMetaAssociation &b)
-    {
-        return a.d() != b.d();
-    }
-
     const QtMetaContainerPrivate::QMetaAssociationInterface *iface() const { return d(); }
 
 private:
+    friend bool comparesEqual(const QMetaAssociation &lhs, const QMetaAssociation &rhs) noexcept
+    {
+        return lhs.d() == rhs.d();
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QMetaAssociation)
+
     template<typename T>
     struct MetaAssociation
     {

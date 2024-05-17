@@ -182,8 +182,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcGuiVk)
   higher. Therefore, full control over the VkPhysicalDeviceFeatures used for
   device creation is possible too by registering a callback function with
   setEnabledFeaturesModifier(). When set, the callback function is invoked,
-  letting it alter the VkPhysicalDeviceFeatures. To instead provide a chainable
-  VkPhysicalDeviceFeatures2, call setEnabledFeatures2Modifier().
+  letting it alter the VkPhysicalDeviceFeatures or VkPhysicalDeviceFeatures2.
 
   \sa QVulkanInstance, QWindow
  */
@@ -1635,7 +1634,7 @@ void QVulkanWindow::setQueueCreateInfoModifier(const QueueCreateInfoModifier &mo
     members as it sees fit.
 
     \note To control Vulkan 1.1, 1.2, or 1.3 features, use
-    setEnabledFeatures2Modifier() and the corresponding callback type instead.
+    EnabledFeatures2Modifier instead.
 
     \sa setEnabledFeaturesModifier()
  */
@@ -1644,7 +1643,7 @@ void QVulkanWindow::setQueueCreateInfoModifier(const QueueCreateInfoModifier &mo
     Sets the enabled device features modification function \a modifier.
 
     \note To control Vulkan 1.1, 1.2, or 1.3 features, use
-    setEnabledFeatures2Modifier() instead.
+    the overload taking a EnabledFeatures2Modifier instead.
 
     \note \a modifier is passed to the callback function with all members set
     to false. It is up to the function to change members as it sees fit.
@@ -1682,19 +1681,19 @@ void QVulkanWindow::setEnabledFeaturesModifier(const EnabledFeaturesModifier &mo
     variables in the QVulkanWindow subclass.
 
     \since 6.7
-    \sa setEnabledFeatures2Modifier()
+    \sa setEnabledFeaturesModifier()
  */
 
 /*!
     Sets the enabled device features modification function \a modifier.
-
+    \overload
     \since 6.7
     \sa EnabledFeatures2Modifier
 */
-void QVulkanWindow::setEnabledFeatures2Modifier(const EnabledFeatures2Modifier &modifier)
+void QVulkanWindow::setEnabledFeaturesModifier(EnabledFeatures2Modifier modifier)
 {
     Q_D(QVulkanWindow);
-    d->enabledFeatures2Modifier = modifier;
+    d->enabledFeatures2Modifier = std::move(modifier);
 }
 
 /*!

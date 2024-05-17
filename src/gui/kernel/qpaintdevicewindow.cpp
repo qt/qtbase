@@ -171,6 +171,8 @@ bool QPaintDeviceWindow::event(QEvent *event)
         auto region = QRect(QPoint(0, 0), size());
         d->doFlush(region); // Will end up calling paintEvent
         return true;
+    } else if (event->type() == QEvent::Resize) {
+        d->handleResizeEvent();
     }
 
     return QWindow::event(event);

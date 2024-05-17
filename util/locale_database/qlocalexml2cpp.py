@@ -283,7 +283,7 @@ class LocaleDataWriter (LocaleSourceEditor):
                              locale.minus, locale.plus, locale.exp,
                              locale.quotationStart, locale.quotationEnd,
                              locale.alternateQuotationStart, locale.alternateQuotationEnd)) +
-                      tuple (date_format_data.append(f) for f in # 2 entries:
+                      tuple(date_format_data.append(f) for f in # 2 entries:
                              (locale.longDateFormat, locale.shortDateFormat)) +
                       tuple(time_format_data.append(f) for f in # 2 entries:
                             (locale.longTimeFormat, locale.shortTimeFormat)) +
@@ -458,6 +458,23 @@ class CalendarDataWriter (LocaleSourceEditor):
         self.writer.write('};\n')
         months_data.write(self.writer)
 
+
+class TestLocaleWriter (LocaleSourceEditor):
+    def localeList(self, locales):
+        self.writer.write('const LocaleListItem g_locale_list[] = {\n')
+        from enumdata import language_map, territory_map
+        # TODO: update testlocales/ to include script.
+        # For now, only mention each (lang, land) pair once:
+        pairs = set((lang, land) for lang, script, land in locales)
+        for lang, script, land in locales:
+            if (lang, land) in pairs:
+                pairs.discard((lang, land))
+                langName = language_map[lang][0]
+                landName = territory_map[land][0]
+                self.writer.write(f'    {{ {lang:6d},{land:6d} }}, // {langName}/{landName}\n')
+        self.writer.write('};\n\n')
+
+
 class LocaleHeaderWriter (SourceFileEditor):
     def __init__(self, path, temp, enumify):
         super().__init__(path, temp)
@@ -504,17 +521,29 @@ class LocaleHeaderWriter (SourceFileEditor):
         out('\n    };\n')
 
 
-def main(out, err):
+def main(argv, out, err):
+    """Updates QLocale's CLDR data from a QLocaleXML file.
+
+    Takes sys.argv, sys.stdout, sys.stderr (or equivalents) as
+    arguments. In argv[1:] it expects the QLocaleXML file as first
+    parameter and the ISO 639-3 data table as second
+    parameter. Accepts the root of the qtbase checkout as third
+    parameter (default is inferred from this script's path) and a
+    --calendars option to select which calendars to support (all
+    available by default).
+
+    Updates various src/corelib/t*/q*_data_p.h files within the qtbase
+    checkout to contain data extracted from the QLocaleXML file."""
     calendars_map = {
         # CLDR name: Qt file name fragment
         'gregorian': 'roman',
         'persian': 'jalali',
         'islamic': 'hijri',
-        # 'hebrew': 'hebrew'
     }
     all_calendars = list(calendars_map.keys())
 
     parser = argparse.ArgumentParser(
+        prog=Path(argv[0]).name,
         description='Generate C++ code from CLDR data in QLocaleXML form.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('input_file', help='input XML file name',
@@ -526,7 +555,7 @@ def main(out, err):
     parser.add_argument('--calendars', help='select calendars to emit data for',
                         nargs='+', metavar='CALENDAR',
                         choices=all_calendars, default=all_calendars)
-    args = parser.parse_args()
+    args = parser.parse_args(argv[1:])
 
     qlocalexml = args.input_file
     qtsrcdir = Path(args.qtbase_path)
@@ -594,8 +623,17 @@ def main(out, err):
         err.write(f'\nError updating qlocale.h: {e}\n')
         return 1
 
+    # ./testlocales/localemodel.cpp
+    try:
+        path = 'util/locale_database/testlocales/localemodel.cpp'
+        with TestLocaleWriter(qtsrcdir.joinpath(path), qtsrcdir,
+                              reader.cldrVersion) as test:
+            test.localeList(locale_keys)
+    except Exception as e:
+        err.write(f'\nError updating localemodel.cpp: {e}\n')
+
     return 0
 
 if __name__ == "__main__":
     import sys
-    sys.exit(main(sys.stdout, sys.stderr))
+    sys.exit(main(sys.argv, sys.stdout, sys.stderr))

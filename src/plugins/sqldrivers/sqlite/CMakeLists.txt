@@ -39,6 +39,11 @@ if(QT_FEATURE_system_sqlite)
     qt_internal_force_macos_intel_arch(QSQLiteDriverPlugin)
 endif()
 
+qt_internal_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_system_sqlite AND VXWORKS
+    DEFINES
+       SQLITE_OS_UNIX=1
+)
+
 qt_internal_extend_target(QSQLiteDriverPlugin CONDITION NOT QT_FEATURE_system_sqlite
     SOURCES
         ../../../3rdparty/sqlite/sqlite3.c

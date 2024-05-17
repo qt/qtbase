@@ -5,6 +5,8 @@
 #include "qiosapplicationdelegate.h"
 #include "qiosviewcontroller.h"
 #include "qiosscreen.h"
+#include "quiwindow.h"
+#include "qioseventdispatcher.h"
 
 #include <QtCore/private/qcore_mac_p.h>
 
@@ -13,20 +15,26 @@ QT_BEGIN_NAMESPACE
 Q_LOGGING_CATEGORY(lcQpaApplication, "qt.qpa.application");
 Q_LOGGING_CATEGORY(lcQpaInputMethods, "qt.qpa.input.methods");
 Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
+Q_LOGGING_CATEGORY(lcQpaWindowScene, "qt.qpa.window.scene");
 
 bool isQtApplication()
 {
-    if (qt_apple_isApplicationExtension())
-        return false;
-
     // Returns \c true if the plugin is in full control of the whole application. This means
     // that we control the application delegate and the top view controller, and can take
     // actions that impacts all parts of the application. The opposite means that we are
     // embedded inside a native iOS application, and should be more focused on playing along
     // with native UIControls, and less inclined to change structures that lies outside the
     // scope of our QWindows/UIViews.
-    static bool isQt = ([qt_apple_sharedApplication().delegate isKindOfClass:[QIOSApplicationDelegate class]]);
-    return isQt;
+    return QIOSEventDispatcher::isQtApplication();
+}
+
+bool isRunningOnVisionOS()
+{
+    static bool result = []{
+        // This class is documented to only be available on visionOS
+        return NSClassFromString(@"UIWindowSceneGeometryPreferencesVision");
+    }();
+    return result;
 }
 
 #ifndef Q_OS_TVOS
@@ -83,6 +91,53 @@ int infoPlistValue(NSString* key, int defaultValue)
     static NSBundle *bundle = [NSBundle mainBundle];
     NSNumber* value = [bundle objectForInfoDictionaryKey:key];
     return value ? [value intValue] : defaultValue;
+}
+
+UIWindow *presentationWindow(QWindow *window)
+{
+    UIWindow *uiWindow = window ? reinterpret_cast<UIView *>(window->winId()).window : nullptr;
+    if (!uiWindow) {
+        auto *scenes = [qt_apple_sharedApplication().connectedScenes allObjects];
+        if (scenes.count > 0) {
+            auto *windowScene = static_cast<UIWindowScene*>(scenes[0]);
+            uiWindow = windowScene.keyWindow;
+            if (!uiWindow && windowScene.windows.count)
+                uiWindow = windowScene.windows[0];
+        }
+    }
+    return uiWindow;
+}
+
+UIView *rootViewForScreen(QScreen *screen)
+{
+    const auto *iosScreen = static_cast<QIOSScreen *>(screen->handle());
+    for (UIScene *scene in [qt_apple_sharedApplication().connectedScenes allObjects]) {
+        if (![scene isKindOfClass:UIWindowScene.class])
+            continue;
+
+        auto *windowScene = static_cast<UIWindowScene*>(scene);
+
+#if !defined(Q_OS_VISIONOS)
+        if (windowScene.screen != iosScreen->uiScreen())
+            continue;
+#else
+        Q_UNUSED(iosScreen);
+#endif
+
+        UIWindow *uiWindow = qt_objc_cast<QUIWindow*>(windowScene.keyWindow);
+        if (!uiWindow) {
+            for (UIWindow *win in windowScene.windows) {
+                if (qt_objc_cast<QUIWindow*>(win)) {
+                    uiWindow = win;
+                    break;
+                }
+            }
+        }
+
+        return uiWindow.rootViewController.view;
+    }
+
+    return nullptr;
 }
 
 QT_END_NAMESPACE

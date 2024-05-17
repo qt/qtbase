@@ -1,3 +1,62 @@
+3.0.3
+=====
+
+### Significant changes relative to 3.0.2:
+
+1. Fixed an issue in the build system, introduced in 3.0.2, that caused all
+libjpeg-turbo components to depend on the Visual C++ run-time DLL when built
+with Visual C++ and CMake 3.15 or later, regardless of value of the
+`WITH_CRT_DLL` CMake variable.
+
+2. The x86-64 SIMD extensions now include support for Intel Control-flow
+Enforcement Technology (CET), which is enabled automatically if CET is enabled
+in the C compiler.
+
+3. Fixed a regression introduced by 3.0 beta2[6] that made it impossible for
+calling applications to supply custom Huffman tables when generating
+12-bit-per-component lossy JPEG images using the libjpeg API.
+
+4. Fixed a segfault that occurred when attempting to use the jpegtran `-drop`
+option with a specially-crafted malformed input image or drop image
+(specifically an image in which all of the scans contain fewer components than
+the number of components specified in the Start Of Frame segment.)
+
+
+3.0.2
+=====
+
+### Significant changes relative to 3.0.1:
+
+1. Fixed a signed integer overflow in the `tj3CompressFromYUV8()`,
+`tj3DecodeYUV8()`, `tj3DecompressToYUV8()`, and `tj3EncodeYUV8()` functions,
+detected by the Clang and GCC undefined behavior sanitizers, that could be
+triggered by setting the `align` parameter to an unreasonably large value.
+This issue did not pose a security threat, but removing the warning made it
+easier to detect actual security issues, should they arise in the future.
+
+2. Introduced a new parameter (`TJPARAM_MAXMEMORY` in the TurboJPEG C API and
+`TJ.PARAM_MAXMEMORY` in the TurboJPEG Java API) and a corresponding TJBench
+option (`-maxmemory`) for specifying the maximum amount of memory (in
+megabytes) that will be allocated for intermediate buffers, which are used with
+progressive JPEG compression and decompression, optimized baseline entropy
+coding, lossless JPEG compression, and lossless transformation.  The new
+parameter and option serve the same purpose as the `max_memory_to_use` field in
+the `jpeg_memory_mgr` struct in the libjpeg API, the `JPEGMEM` environment
+variable, and the cjpeg/djpeg/jpegtran `-maxmemory` option.
+
+3. Introduced a new parameter (`TJPARAM_MAXPIXELS` in the TurboJPEG C API and
+`TJ.PARAM_MAXPIXELS` in the TurboJPEG Java API) and a corresponding TJBench
+option (`-maxpixels`) for specifying the maximum number of pixels that the
+decompression, lossless transformation, and packed-pixel image loading
+functions/methods will process.
+
+4. Fixed an error ("Unsupported color conversion request") that occurred when
+attempting to decompress a 3-component lossless JPEG image without an Adobe
+APP14 marker.  The decompressor now assumes that a 3-component lossless JPEG
+image without an Adobe APP14 marker uses the RGB colorspace if its component
+IDs are 1, 2, and 3.
+
+
 3.0.1
 =====
 
@@ -2146,7 +2205,7 @@ and unit tests now work on those architectures.
 0.0.93
 ======
 
-### Significant changes since 0.0.91:
+### Significant changes relative to 0.0.91:
 
 1. 2982659: Fixed x86-64 build on FreeBSD systems
 

@@ -359,6 +359,10 @@
    is reached, a failure is recorded in the test log and the test won't be
    executed further.
 
+   //![chrono-timeout]
+   Since Qt 6.8, the \a timeout can also be a \c{std::chrono} literal such as \c{2s}.
+   //![chrono-timeout]
+
    \note This macro can only be used in a test function that is invoked
    by the test framework.
 
@@ -390,9 +394,11 @@
    except that it outputs a verbose \a message when \a condition is still false
    after the specified \a timeout (in milliseconds). The \a message is a plain C string.
 
+   \include qtestcase.qdoc chrono-timeout
+
    Example:
    \code
-   QTRY_VERIFY2_WITH_TIMEOUT(list.size() > 2, QByteArray::number(list.size()).constData(), 10000);
+   QTRY_VERIFY2_WITH_TIMEOUT(list.size() > 2, QByteArray::number(list.size()).constData(), 10s);
    \endcode
 
    \note This macro can only be used in a test function that is invoked
@@ -413,7 +419,7 @@
 
    Example:
    \code
-   QTRY_VERIFY2_WITH_TIMEOUT(list.size() > 2, QByteArray::number(list.size()).constData());
+   QTRY_VERIFY2(list.size() > 2, QByteArray::number(list.size()).constData());
    \endcode
 
    \note This macro can only be used in a test function that is invoked
@@ -433,6 +439,8 @@
    are equal or the \a timeout (in milliseconds) is reached.  Between each comparison, events
    will be processed.  If the timeout is reached, a failure is recorded in the
    test log and the test won't be executed further.
+
+   \include qtestcase.qdoc chrono-timeout
 
    \note This macro can only be used in a test function that is invoked
    by the test framework.
@@ -465,6 +473,8 @@
     comparison, events will be processed. If the timeout is reached, a failure
     is recorded in the test log and the test won't be executed further.
 
+    \include qtestcase.qdoc chrono-timeout
+
     \include qtestcase.qdoc macro-usage-limitation
 
     \sa QCOMPARE_EQ(), QTRY_COMPARE_EQ()
@@ -491,6 +501,8 @@
     \c true or the \a timeout (in milliseconds) is reached. Between each
     comparison, events will be processed. If the timeout is reached, a failure
     is recorded in the test log and the test won't be executed further.
+
+    \include qtestcase.qdoc chrono-timeout
 
     \include qtestcase.qdoc macro-usage-limitation
 
@@ -519,6 +531,8 @@
     comparison, events will be processed. If the timeout is reached, a failure
     is recorded in the test log and the test won't be executed further.
 
+    \include qtestcase.qdoc chrono-timeout
+
     \include qtestcase.qdoc macro-usage-limitation
 
     \sa QCOMPARE_LT(), QTRY_COMPARE_LT()
@@ -545,6 +559,8 @@
     \c true or the \a timeout (in milliseconds) is reached. Between each
     comparison, events will be processed. If the timeout is reached, a failure
     is recorded in the test log and the test won't be executed further.
+
+    \include qtestcase.qdoc chrono-timeout
 
     \include qtestcase.qdoc macro-usage-limitation
 
@@ -573,6 +589,8 @@
     comparison, events will be processed. If the timeout is reached, a failure
     is recorded in the test log and the test won't be executed further.
 
+    \include qtestcase.qdoc chrono-timeout
+
     \include qtestcase.qdoc macro-usage-limitation
 
     \sa QCOMPARE_GT(), QTRY_COMPARE_GT()
@@ -599,6 +617,8 @@
     \c true or the \a timeout (in milliseconds) is reached. Between each
     comparison, events will be processed. If the timeout is reached, a failure
     is recorded in the test log and the test won't be executed further.
+
+    \include qtestcase.qdoc chrono-timeout
 
     \include qtestcase.qdoc macro-usage-limitation
 
@@ -1231,7 +1251,7 @@
     \sa QTest::keyClick()
 */
 
-/*! \fn void QTest::mousePress(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mousePress(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier, QPoint pos = QPoint(), int delay=-1)
 
     Simulates pressing a mouse \a button with an optional \a modifier
     on a \a widget.  The position is defined by \a pos; the default
@@ -1242,7 +1262,7 @@
     \sa QTest::mouseRelease(), QTest::mouseClick()
 */
 
-/*! \fn void QTest::mousePress(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mousePress(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey, QPoint pos = QPoint(), int delay=-1)
     \overload
     \since 5.0
 
@@ -1255,7 +1275,7 @@
     \sa QTest::mouseRelease(), QTest::mouseClick()
 */
 
-/*! \fn void QTest::mouseRelease(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mouseRelease(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier, QPoint pos = QPoint(), int delay=-1)
 
     Simulates releasing a mouse \a button with an optional \a modifier
     on a \a widget.  The position of the release is defined by \a pos;
@@ -1275,7 +1295,7 @@
     \sa QTest::mousePress(), QTest::mouseClick()
 */
 
-/*! \fn void QTest::mouseRelease(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mouseRelease(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey, QPoint pos = QPoint(), int delay=-1)
     \overload
     \since 5.0
 
@@ -1297,7 +1317,7 @@
     \sa QTest::mousePress(), QTest::mouseClick()
 */
 
-/*! \fn void QTest::mouseClick(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mouseClick(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier, QPoint pos = QPoint(), int delay=-1)
 
     Simulates clicking a mouse \a button with an optional \a modifier
     on a \a widget.  The position of the click is defined by \a pos;
@@ -1308,7 +1328,7 @@
     \sa QTest::mousePress(), QTest::mouseRelease()
 */
 
-/*! \fn void QTest::mouseClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mouseClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey, QPoint pos = QPoint(), int delay=-1)
     \overload
     \since 5.0
 
@@ -1321,7 +1341,7 @@
     \sa QTest::mousePress(), QTest::mouseRelease()
 */
 
-/*! \fn void QTest::mouseDClick(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mouseDClick(QWidget *widget, Qt::MouseButton button, Qt::KeyboardModifiers modifier, QPoint pos = QPoint(), int delay=-1)
 
     Simulates double clicking a mouse \a button with an optional \a
     modifier on a \a widget.  The position of the click is defined by
@@ -1332,7 +1352,7 @@
     \sa QTest::mouseClick()
 */
 
-/*! \fn void QTest::mouseDClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey = 0, QPoint pos = QPoint(), int delay=-1)
+/*! \fn void QTest::mouseDClick(QWindow *window, Qt::MouseButton button, Qt::KeyboardModifiers stateKey, QPoint pos = QPoint(), int delay=-1)
     \overload
     \since 5.0
 
@@ -1403,7 +1423,7 @@
 */
 
 /*!
-    \fn template<typename T> char *QTest::toString(const T &value)
+    \fn template<typename T, QTest::Internal::is_suitable_type_v<T> = true> char *QTest::toString(const T &value)
 
     Returns a textual representation of \a value. This function is used by
     \l QCOMPARE() to output verbose information in case of a test failure.
@@ -1588,7 +1608,8 @@
 */
 
 /*!
-    \fn char *QTest::toString(QSizePolicy::ControlType ct)
+    \fn char *toString(QSizePolicy::ControlType ct)
+    \relates QTest
     \overload
     \since 5.5
 
@@ -1596,7 +1617,8 @@
 */
 
 /*!
-    \fn char *QTest::toString(QSizePolicy::ControlTypes cts)
+    \fn char *toString(QSizePolicy::ControlTypes cts)
+    \relates QTest
     \overload
     \since 5.5
 
@@ -1604,7 +1626,8 @@
 */
 
 /*!
-    \fn char *QTest::toString(QSizePolicy::Policy p)
+    \fn char *toString(QSizePolicy::Policy p)
+    \relates QTest
     \overload
     \since 5.5
 
@@ -1612,7 +1635,8 @@
 */
 
 /*!
-    \fn char *QTest::toString(QSizePolicy sp)
+    \fn char *toString(QSizePolicy sp)
+    \relates QTest
     \overload
     \since 5.5
 

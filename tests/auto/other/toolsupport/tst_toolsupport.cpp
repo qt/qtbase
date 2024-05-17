@@ -1,5 +1,5 @@
 // Copyright (C) 2015 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 
@@ -38,6 +38,7 @@ template <typename T, typename K>
 size_t pmm_to_offsetof(T K:: *pmm)
 {
 #ifdef Q_CC_MSVC
+
     // Even on 64 bit MSVC uses 4 byte offsets.
     quint32 ret;
 #else
@@ -114,10 +115,10 @@ void tst_toolsupport::offsets_data()
         QTestData &data = QTest::newRow("QFilePrivate::fileName")
                 << pmm_to_offsetof(&QFilePrivate::fileName);
         // Please heed the comment at the top of this file when changing one of these lines:
-#ifdef Q_PROCESSOR_X86
+#ifdef Q_PROCESSOR_X86_32
         // x86 32-bit has weird alignment rules. Refer to QtPrivate::AlignOf in
         // qglobal.h for more details.
-        data << 264 << 424;
+        data << 264 << -1;
 #else
         data << 300 << 424;
 #endif

@@ -5,6 +5,7 @@
 #define QSTRINGVIEW_H
 
 #include <QtCore/qchar.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qstringliteral.h>
 #include <QtCore/qstringalgorithms.h>
@@ -98,15 +99,16 @@ private:
     using if_compatible_pointer = typename std::enable_if<QtPrivate::IsCompatiblePointer<Pointer>::value, bool>::type;
 
     template <typename T>
+    using if_compatible_qstring_like = typename std::enable_if<std::is_same<T, QString>::value, bool>::type;
+
+    template <typename T>
     using if_compatible_container = typename std::enable_if<QtPrivate::IsContainerCompatibleWithQStringView<T>::value, bool>::type;
 
     template <typename Char>
     static constexpr qsizetype lengthHelperPointer(const Char *str) noexcept
     {
-#if defined(QT_SUPPORTS_IS_CONSTANT_EVALUATED)
-        if (qIsConstantEvaluated())
+        if (q20::is_constant_evaluated())
             return std::char_traits<Char>::length(str);
-#endif
         return QtPrivate::qustrlen(reinterpret_cast<const char16_t *>(str));
     }
     static qsizetype lengthHelperPointer(const QChar *str) noexcept
@@ -153,7 +155,13 @@ public:
         : QStringView(str, str ? lengthHelperPointer(str) : 0) {}
 #endif
 
-    inline QStringView(const QString &str) noexcept;
+#ifdef Q_QDOC
+    QStringView(const QString &str) noexcept;
+#else
+    template <typename String, if_compatible_qstring_like<String> = true>
+    QStringView(const String &str) noexcept
+        : QStringView(str.isNull() ? nullptr : str.data(), qsizetype(str.size())) {}
+#endif
 
     template <typename Container, if_compatible_container<Container> = true>
     constexpr Q_ALWAYS_INLINE QStringView(const Container &c) noexcept
@@ -359,27 +367,22 @@ public:
 #endif
 
     // QStringView <> QStringView
-    friend bool operator==(QStringView lhs, QStringView rhs) noexcept { return lhs.size() == rhs.size() && QtPrivate::equalStrings(lhs, rhs); }
-    friend bool operator!=(QStringView lhs, QStringView rhs) noexcept { return !(lhs == rhs); }
-    friend bool operator< (QStringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) <  0; }
-    friend bool operator<=(QStringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) <= 0; }
-    friend bool operator> (QStringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >  0; }
-    friend bool operator>=(QStringView lhs, QStringView rhs) noexcept { return QtPrivate::compareStrings(lhs, rhs) >= 0; }
+    friend bool comparesEqual(const QStringView &lhs, const QStringView &rhs) noexcept
+    { return lhs.size() == rhs.size() && QtPrivate::equalStrings(lhs, rhs); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QStringView &lhs, const QStringView &rhs) noexcept
+    {
+        const int res = QtPrivate::compareStrings(lhs, rhs);
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QStringView)
 
     // QStringView <> QChar
-    friend bool operator==(QStringView lhs, QChar rhs) noexcept { return lhs == QStringView(&rhs, 1); }
-    friend bool operator!=(QStringView lhs, QChar rhs) noexcept { return lhs != QStringView(&rhs, 1); }
-    friend bool operator< (QStringView lhs, QChar rhs) noexcept { return lhs <  QStringView(&rhs, 1); }
-    friend bool operator<=(QStringView lhs, QChar rhs) noexcept { return lhs <= QStringView(&rhs, 1); }
-    friend bool operator> (QStringView lhs, QChar rhs) noexcept { return lhs >  QStringView(&rhs, 1); }
-    friend bool operator>=(QStringView lhs, QChar rhs) noexcept { return lhs >= QStringView(&rhs, 1); }
-
-    friend bool operator==(QChar lhs, QStringView rhs) noexcept { return QStringView(&lhs, 1) == rhs; }
-    friend bool operator!=(QChar lhs, QStringView rhs) noexcept { return QStringView(&lhs, 1) != rhs; }
-    friend bool operator< (QChar lhs, QStringView rhs) noexcept { return QStringView(&lhs, 1) <  rhs; }
-    friend bool operator<=(QChar lhs, QStringView rhs) noexcept { return QStringView(&lhs, 1) <= rhs; }
-    friend bool operator> (QChar lhs, QStringView rhs) noexcept { return QStringView(&lhs, 1) >  rhs; }
-    friend bool operator>=(QChar lhs, QStringView rhs) noexcept { return QStringView(&lhs, 1) >= rhs; }
+    friend bool comparesEqual(const QStringView &lhs, QChar rhs) noexcept
+    { return lhs.size() == 1 && lhs[0] == rhs; }
+    friend Qt::strong_ordering compareThreeWay(const QStringView &lhs, QChar rhs) noexcept
+    { return compareThreeWay(lhs, QStringView(&rhs, 1)); }
+    Q_DECLARE_STRONGLY_ORDERED(QStringView, QChar)
 
     //
     // STL compatibility API:
@@ -431,6 +434,23 @@ private:
 
     constexpr int compare_single_char_helper(int diff) const noexcept
     { return diff ? diff : size() > 1 ? 1 : 0; }
+
+    Q_CORE_EXPORT static bool equal_helper(QStringView sv, const char *data, qsizetype len);
+    Q_CORE_EXPORT static int compare_helper(QStringView sv, const char *data, qsizetype len);
+
+#if !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
+    friend bool comparesEqual(const QStringView &lhs, const QByteArrayView &rhs) noexcept
+    { return equal_helper(lhs, rhs.data(), rhs.size()); }
+    friend Qt::strong_ordering
+    compareThreeWay(const QStringView &lhs, const QByteArrayView &rhs) noexcept
+    {
+        const int res = compare_helper(lhs, rhs.data(), rhs.size());
+        return Qt::compareThreeWay(res, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QStringView, QByteArrayView, QT_ASCII_CAST_WARN)
+    Q_DECLARE_STRONGLY_ORDERED(QStringView, QByteArray, QT_ASCII_CAST_WARN)
+    Q_DECLARE_STRONGLY_ORDERED(QStringView, const char *, QT_ASCII_CAST_WARN)
+#endif // !defined(QT_NO_CAST_FROM_ASCII) && !defined(QT_RESTRICTED_CAST_FROM_ASCII)
 };
 Q_DECLARE_TYPEINFO(QStringView, Q_PRIMITIVE_TYPE);
 

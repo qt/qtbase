@@ -173,9 +173,7 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, const QString &strin
     : t(type)
     , s(string)
     , sv(s)
-    , pos(0)
     , freeBuffer(true)
-    , attributes(nullptr)
 {
     if (sv.size() > 0) {
         attributes = (QCharAttributes *) malloc((sv.size() + 1) * sizeof(QCharAttributes));
@@ -208,9 +206,7 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, const QString &strin
 QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, QStringView string, unsigned char *buffer, qsizetype bufferSize)
     : t(type)
     , sv(string)
-    , pos(0)
     , freeBuffer(true)
-    , attributes(nullptr)
 {
     if (!sv.isEmpty()) {
         if (buffer && bufferSize / int(sizeof(QCharAttributes)) >= sv.size() + 1) {

@@ -519,12 +519,12 @@ int QEvent::registerEventType(int hint) noexcept
     started one or more timers. Each timer has a unique identifier. A
     timer is started with QObject::startTimer().
 
-    The QTimer class provides a high-level programming interface that
+    The QChronoTimer class provides a high-level programming interface that
     uses signals instead of events. It also provides single-shot timers.
 
     The event handler QObject::timerEvent() receives timer events.
 
-    \sa QTimer, QObject::timerEvent(), QObject::startTimer(),
+    \sa QChronoTimer, QObject::timerEvent(), QObject::startTimer(),
     QObject::killTimer()
 */
 

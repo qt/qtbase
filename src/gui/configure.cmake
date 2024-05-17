@@ -580,7 +580,7 @@ qt_config_compile_test(directwrite3
 int main(int, char **)
 {
     IUnknown *factory = nullptr;
-    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory3),
+    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory6),
                         &factory);
     return 0;
 }
@@ -811,6 +811,10 @@ qt_feature("vulkan" PUBLIC
     LABEL "Vulkan"
     CONDITION QT_FEATURE_library AND QT_FEATURE_vkgen AND WrapVulkanHeaders_FOUND
 )
+qt_feature("metal" PUBLIC
+    LABEL "Metal"
+    CONDITION MACOS OR IOS OR VISIONOS
+)
 qt_feature("vkkhrdisplay" PRIVATE
     SECTION "Platform plugins"
     LABEL "VK_KHR_display"
@@ -889,7 +893,7 @@ qt_feature("jpeg" PRIVATE
     CONDITION QT_FEATURE_imageformatplugin
     DISABLE INPUT_libjpeg STREQUAL 'no'
 )
-qt_feature_definition("jpeg" "QT_NO_IMAGEFORMAT_JPEG" NEGATE)
+qt_feature_definition("jpeg" "QT_NO_IMAGEFORMAT_JPEG" NEGATE VALUE "1")
 qt_feature("system-jpeg" PRIVATE
     LABEL "  Using system libjpeg"
     CONDITION QT_FEATURE_jpeg AND JPEG_FOUND
@@ -1012,7 +1016,8 @@ qt_feature("system-textmarkdownreader" PUBLIC
 qt_feature("textmarkdownwriter" PUBLIC
     SECTION "Kernel"
     LABEL "MarkdownWriter"
-    PURPOSE "Provides a Markdown (CommonMark) writer"
+    CONDITION QT_FEATURE_regularexpression
+    PURPOSE "Provides a Markdown (CommonMark and GitHub) writer"
 )
 qt_feature("textodfwriter" PUBLIC
     SECTION "Kernel"
@@ -1250,6 +1255,7 @@ qt_feature("wayland" PUBLIC
     LABEL "Wayland"
     CONDITION TARGET Wayland::Client
 )
+
 qt_configure_add_summary_section(NAME "Qt Gui")
 qt_configure_add_summary_entry(ARGS "accessibility")
 qt_configure_add_summary_entry(ARGS "freetype")
@@ -1287,6 +1293,7 @@ qt_configure_add_summary_entry(ARGS "opengles31")
 qt_configure_add_summary_entry(ARGS "opengles32")
 qt_configure_end_summary_section() # end of "OpenGL" section
 qt_configure_add_summary_entry(ARGS "vulkan")
+qt_configure_add_summary_entry(ARGS "metal")
 qt_configure_add_summary_entry(ARGS "graphicsframecapture")
 qt_configure_add_summary_entry(ARGS "sessionmanager")
 qt_configure_end_summary_section() # end of "Qt Gui" section
@@ -1365,7 +1372,7 @@ qt_configure_add_report_entry(
 qt_configure_add_report_entry(
     TYPE ERROR
     MESSAGE "The OpenGL functionality tests failed! You might need to modify the OpenGL package search path by setting the OpenGL_DIR CMake variable to the OpenGL library's installation directory."
-    CONDITION QT_FEATURE_gui AND NOT WATCHOS AND ( NOT INPUT_opengl STREQUAL 'no' ) AND NOT QT_FEATURE_opengl_desktop AND NOT QT_FEATURE_opengles2 AND NOT QT_FEATURE_opengl_dynamic
+    CONDITION QT_FEATURE_gui AND NOT WATCHOS AND NOT VISIONOS AND ( NOT INPUT_opengl STREQUAL 'no' ) AND NOT QT_FEATURE_opengl_desktop AND NOT QT_FEATURE_opengles2 AND NOT QT_FEATURE_opengl_dynamic
 )
 qt_configure_add_report_entry(
     TYPE WARNING

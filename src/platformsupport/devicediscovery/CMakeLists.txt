@@ -15,6 +15,7 @@ qt_internal_add_module(DeviceDiscoverySupportPrivate
         QT_NO_CAST_FROM_ASCII
     PUBLIC_LIBRARIES
         Qt::CorePrivate
+    NO_GENERATE_CPP_EXPORTS
 )
 
 ## Scopes:

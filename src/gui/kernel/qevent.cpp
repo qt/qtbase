@@ -4478,8 +4478,6 @@ Q_IMPL_EVENT_COMMON(QWindowStateChangeEvent)
 */
 
 /*!
-    \deprecated [6.2] Use another constructor.
-
     Constructs a QTouchEvent with the given \a eventType, \a device,
     \a touchPoints, and current keyboard \a modifiers at the time of the event.
 */

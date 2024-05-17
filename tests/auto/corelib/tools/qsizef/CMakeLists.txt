@@ -14,4 +14,6 @@ endif()
 qt_internal_add_test(tst_qsizef
     SOURCES
         tst_qsizef.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )

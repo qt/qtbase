@@ -3397,16 +3397,18 @@ void QRasterPaintEngine::drawBitmap(const QPointF &pos, const QImage &image, QSp
     // Boundaries
     int w = image.width();
     int h = image.height();
-    int ymax = qMin(qRound(pos.y() + h), d->rasterBuffer->height());
-    int ymin = qMax(qRound(pos.y()), 0);
-    int xmax = qMin(qRound(pos.x() + w), d->rasterBuffer->width());
-    int xmin = qMax(qRound(pos.x()), 0);
+    int px = qRound(pos.x());
+    int py = qRound(pos.y());
+    int ymax = qMin(py + h, d->rasterBuffer->height());
+    int ymin = qMax(py, 0);
+    int xmax = qMin(px + w, d->rasterBuffer->width());
+    int xmin = qMax(px, 0);
 
-    int x_offset = xmin - qRound(pos.x());
+    int x_offset = xmin - px;
 
     QImage::Format format = image.format();
     for (int y = ymin; y < ymax; ++y) {
-        const uchar *src = image.scanLine(y - qRound(pos.y()));
+        const uchar *src = image.scanLine(y - py);
         if (format == QImage::Format_MonoLSB) {
             for (int x = 0; x < xmax - xmin; ++x) {
                 int src_x = x + x_offset;
@@ -3711,15 +3713,9 @@ bool QRasterPaintEnginePrivate::canUseImageBlitting(QPainter::CompositionMode mo
 
     QImage::Format dFormat = rasterBuffer->format;
     QImage::Format sFormat = image.format();
-    // Formats must match or source format must be a subset of destination format
-    if (dFormat != sFormat && image.pixelFormat().alphaUsage() == QPixelFormat::IgnoresAlpha) {
-        if ((sFormat == QImage::Format_RGB32 && dFormat == QImage::Format_ARGB32)
-            || (sFormat == QImage::Format_RGBX8888 && dFormat == QImage::Format_RGBA8888)
-            || (sFormat == QImage::Format_RGBX64 && dFormat == QImage::Format_RGBA64))
-            sFormat = dFormat;
-        else
-            sFormat = qt_maybeAlphaVersionWithSameDepth(sFormat); // this returns premul formats
-    }
+    // Formats must match or source format must be an opaque version of destination format
+    if (dFormat != sFormat && image.pixelFormat().alphaUsage() == QPixelFormat::IgnoresAlpha)
+        dFormat = qt_maybeDataCompatibleOpaqueVersion(dFormat);
     return (dFormat == sFormat);
 }
 
@@ -3806,7 +3802,7 @@ void QClipData::initialize()
         return;
 
     if (!m_clipLines)
-        m_clipLines = (ClipLine *)calloc(sizeof(ClipLine), clipSpanHeight);
+        m_clipLines = (ClipLine *)calloc(clipSpanHeight, sizeof(ClipLine));
 
     Q_CHECK_PTR(m_clipLines);
     QT_TRY {

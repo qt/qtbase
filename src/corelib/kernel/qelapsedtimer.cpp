@@ -14,6 +14,8 @@ QT_BEGIN_NAMESPACE
     \reentrant
     \ingroup tools
 
+    \compares strong
+
     The QElapsedTimer class is usually used to quickly calculate how much
     time has elapsed between two events. Its API is similar to that of QTime,
     so code that was using that can be ported quickly to the new class.
@@ -75,7 +77,7 @@ QT_BEGIN_NAMESPACE
     that the clock used is the same as QElapsedTimer (see
     QElapsedTimer::clockType()).
 
-    \sa QTime, QTimer, QDeadlineTimer
+    \sa QTime, QChronoTimer, QDeadlineTimer
 */
 
 /*!
@@ -155,8 +157,7 @@ QT_BEGIN_NAMESPACE
     Returns \c true if \a lhs and \a rhs contain different times, false otherwise.
 */
 /*!
-    \fn bool operator<(const QElapsedTimer &lhs, const QElapsedTimer &rhs) noexcept
-    \relates QElapsedTimer
+    \fn bool QElapsedTimer::operator<(const QElapsedTimer &lhs, const QElapsedTimer &rhs) noexcept
 
     Returns \c true if \a lhs was started before \a rhs, false otherwise.
 

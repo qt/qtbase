@@ -13,6 +13,7 @@ qt_internal_add_module(Test
     EXCEPTIONS
     SOURCES
         3rdparty/cycle_p.h
+        removed_api.cpp     # keep first
         qabstracttestlogger.cpp qabstracttestlogger_p.h
         qasciikey.cpp
         qbenchmark.cpp qbenchmark.h qbenchmark_p.h
@@ -28,7 +29,7 @@ qt_internal_add_module(Test
         qplaintestlogger.cpp qplaintestlogger_p.h
         qpropertytesthelper_p.h
         qsignaldumper.cpp qsignaldumper_p.h
-        qsignalspy.h
+        qsignalspy.cpp qsignalspy.h
         qtaptestlogger.cpp qtaptestlogger_p.h
         qteamcitylogger.cpp qteamcitylogger_p.h
         qtest.h
@@ -40,6 +41,7 @@ qt_internal_add_module(Test
         qtestblacklist.cpp qtestblacklist_p.h
         qtestcase.cpp qtestcase.h qtestcase_p.h
         qtestcoreelement_p.h
+        qtestcrashhandler.cpp qtestcrashhandler_p.h
         qtestdata.cpp qtestdata.h
         qtestelement.cpp qtestelement_p.h
         qtestelementattribute.cpp qtestelementattribute_p.h
@@ -55,6 +57,7 @@ qt_internal_add_module(Test
         qtestsystem.h
         qtesttable.cpp qtesttable_p.h
         qtesttouch.h
+        qtesttostring.h
         qtestwheel.h
         qttestglobal.h
         qxmltestlogger.cpp qxmltestlogger_p.h
@@ -64,10 +67,13 @@ qt_internal_add_module(Test
         QT_NO_CONTEXTLESS_CONNECT
         QT_NO_DATASTREAM
         QT_NO_FOREACH
+        QT_USE_NODISCARD_FILE_OPEN
         # Ensure uniform location info between release and debug builds
         QT_NO_MESSAGELOGCONTEXT
     LIBRARIES
         Qt::CorePrivate
+    NO_PCH_SOURCES
+        removed_api.cpp
     PUBLIC_LIBRARIES
         Qt::Core
     PRIVATE_MODULE_INTERFACE

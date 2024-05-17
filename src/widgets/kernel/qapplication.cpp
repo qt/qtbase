@@ -1094,6 +1094,12 @@ QPalette QApplicationPrivate::basePalette() const
     if (const QPalette *themePalette = platformTheme() ? platformTheme()->palette() : nullptr)
         palette = themePalette->resolve(palette);
 
+    // This palette now is Qt-generated, so reset the resolve mask. This allows
+    // QStyle::polish implementations to respect palettes that are user provided,
+    // by checking if the palette has a brush set for a color that the style might
+    // otherwise overwrite.
+    palette.setResolveMask(0);
+
     // Finish off by letting the application style polish the palette. This will
     // not result in the polished palette becoming a user-set palette, as the
     // resulting base palette is only used as a fallback, with the resolve mask
@@ -1969,7 +1975,7 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
         f = toplevel;
 
     QWidget *w = f;
-    QWidget *test = f->d_func()->focus_next;
+    QWidget *test = f->nextInFocusChain();
     bool seenWindow = false;
     bool focusWidgetAfterWindow = false;
     while (test && test != f) {
@@ -2000,7 +2006,7 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
             if (next)
                 break;
         }
-        test = test->d_func()->focus_next;
+        test = test->nextInFocusChain();
     }
 
     if (wrappingOccurred != nullptr)
@@ -2025,19 +2031,6 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
  */
 void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave, const QPointF &globalPosF)
 {
-#if 0
-    if (leave) {
-        QEvent e(QEvent::Leave);
-        QCoreApplication::sendEvent(leave, & e);
-    }
-    if (enter) {
-        const QPoint windowPos = enter->window()->mapFromGlobal(globalPos);
-        QEnterEvent e(enter->mapFromGlobal(globalPos), windowPos, globalPos);
-        QCoreApplication::sendEvent(enter, & e);
-    }
-    return;
-#endif
-
     if ((!enter && !leave) || (enter == leave))
         return;
 
@@ -2548,8 +2541,9 @@ int QApplication::startDragDistance()
     exec(), because modal widgets call exec() to start a local event loop.
 
     To make your application perform idle processing, i.e., executing a special
-    function whenever there are no pending events, use a QTimer with 0 timeout.
-    More advanced idle processing schemes can be achieved using processEvents().
+    function whenever there are no pending events, use a QChronoTimer with 0ns
+    timeout. More advanced idle processing schemes can be achieved using
+    processEvents().
 
     We recommend that you connect clean-up code to the
     \l{QCoreApplication::}{aboutToQuit()} signal, instead of putting it in your
@@ -2658,6 +2652,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         Q_FALLTHROUGH();
     case QEvent::Leave:
         d->toolTipWakeUp.stop();
+        break;
     default:
         break;
     }
@@ -2682,6 +2677,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     || key == Qt::Key_Up
                     || key == Qt::Key_Right
                     || key == Qt::Key_Down);
+        break;
     }
     default:
         break;

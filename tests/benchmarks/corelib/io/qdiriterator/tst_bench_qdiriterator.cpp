@@ -1,7 +1,8 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 #include <QDebug>
 #include <QDirIterator>
+#include <QDirListing>
 #include <QString>
 #include <qplatformdefs.h>
 
@@ -23,16 +24,30 @@
 #include <filesystem>
 #endif
 
+using namespace Qt::StringLiterals;
+
+constexpr bool forceStat = false;
+
 class tst_QDirIterator : public QObject
 {
     Q_OBJECT
 
     void data();
+
+    const QDir::Filters dirFilters =
+            // QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot
+            QDir::AllEntries | QDir::Hidden
+            //QDir::Files | QDir::NoDotAndDotDot,
+            // QDir::Files,
+            ;
+
 private slots:
     void posix();
     void posix_data() { data(); }
     void diriterator();
     void diriterator_data() { data(); }
+    void dirlisting();
+    void dirlisting_data() { data(); }
     void fsiterator();
     void fsiterator_data() { data(); }
     void stdRecursiveDirectoryIterator();
@@ -118,9 +133,20 @@ static int posix_helper(const char *dirpath)
         QByteArray ba = dirpath;
         ba += '/';
         ba += entry->d_name;
+        bool isDir = false;
+#if defined(_DIRENT_HAVE_D_TYPE) || defined(Q_OS_BSD4)
+        isDir = entry->d_type == DT_DIR;
+        if (forceStat) {
+            QT_STATBUF st;
+            QT_LSTAT(ba.constData(), &st);
+        }
+#else // d_type not available >>> must stat() to see if it's a dir
         QT_STATBUF st;
         QT_LSTAT(ba.constData(), &st);
-        if (S_ISDIR(st.st_mode))
+        isDir = S_ISDIR(st.st_mode);
+#endif
+
+        if (isDir)
             count += posix_helper(ba.constData());
     }
 
@@ -157,20 +183,40 @@ void tst_QDirIterator::diriterator()
     QBENCHMARK {
         int c = 0;
 
-        QDirIterator dir(dirpath,
-            //QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot,
-            //QDir::AllEntries | QDir::Hidden,
-            QDir::Files,
-            QDirIterator::Subdirectories);
+        QDirIterator dir(dirpath, dirFilters, QDirIterator::Subdirectories);
 
         while (dir.hasNext()) {
             const auto fi = dir.nextFileInfo();
+            if (forceStat)
+                fi.size();
             //printf("%s\n", qPrintable(dir.fileName()));
             0 && printf("%d %s\n",
                 fi.isDir(),
                 //qPrintable(fi.absoluteFilePath()),
                 //qPrintable(dir.path()),
                 qPrintable(fi.filePath()));
+            ++c;
+        }
+        count = c;
+    }
+    qDebug() << count;
+}
+
+void tst_QDirIterator::dirlisting()
+{
+    QFETCH(QByteArray, dirpath);
+
+    int count = 0;
+
+    QBENCHMARK {
+        int c = 0;
+
+        QDirListing dir(dirpath, dirFilters, QDirListing::IteratorFlag::Recursive);
+
+        for (const auto &dirEntry : dir) {
+            const auto path = dirEntry.filePath();
+            if (forceStat)
+                dirEntry.size();
             ++c;
         }
         count = c;
@@ -189,14 +235,12 @@ void tst_QDirIterator::fsiterator()
         int c = 0;
 
         dump && printf("\n\n\n\n");
-        QDirIteratorTest::QFileSystemIterator dir(dirpath,
-            //QDir::AllEntries | QDir::Hidden | QDir::NoDotAndDotDot,
-            //QDir::AllEntries | QDir::Hidden,
-            //QDir::Files | QDir::NoDotAndDotDot,
-            QDir::Files,
-            QDirIteratorTest::QFileSystemIterator::Subdirectories);
+        QDirIteratorTest::QFileSystemIterator dir(
+            dirpath, dirFilters, QDirIteratorTest::QFileSystemIterator::Subdirectories);
 
         for (; !dir.atEnd(); dir.next()) {
+            if (forceStat)
+                dir.fileInfo().size();
             dump && printf("%d %s\n",
                 dir.fileInfo().isDir(),
                 //qPrintable(dir.fileInfo().absoluteFilePath()),
@@ -217,10 +261,16 @@ void tst_QDirIterator::stdRecursiveDirectoryIterator()
 
     int count = 0;
 
+    namespace fs = std::filesystem;
+    std::error_code ec;
+
+    // Note that fs::recursive_directory_iterator may be calling stat() internally,
+    // that depends on the implementation. So the benchmark times might "seem" higher
+    // than the other methods in this source file.
     QBENCHMARK {
         int c = 0;
-        for (auto obj : std::filesystem::recursive_directory_iterator(dirpath.data())) {
-            if (obj.is_directory())
+        for (const auto &dirEntry : fs::recursive_directory_iterator(dirpath.data(), ec)) {
+            if (dirEntry.is_directory())
                 continue;
             c++;
         }

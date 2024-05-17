@@ -25,8 +25,15 @@ set(_qt_compiler_warning_flags_condition
 set(_qt_compiler_warning_flags_genex
     "$<IF:${_qt_compiler_warning_flags_condition},${_qt_compiler_warning_flags_off},${_qt_compiler_warning_flags_on}>")
 
+set(_qt_compiler_warning_flags_language_condition
+    "$<COMPILE_LANGUAGE:CXX,C,OBJC,OBJCXX>")
+set(_qt_compiler_warning_flags_language_conditional_genex
+    "$<${_qt_compiler_warning_flags_language_condition}:${_qt_compiler_warning_flags_genex}>")
+
+
 # Need to replace semicolons so that the list is not wrongly expanded in the add_compile_options
 # call.
 string(REPLACE ";" "$<SEMICOLON>"
-       _qt_compiler_warning_flags_genex "${_qt_compiler_warning_flags_genex}")
-add_compile_options(${_qt_compiler_warning_flags_genex})
+       _qt_compiler_warning_flags_language_conditional_genex
+       "${_qt_compiler_warning_flags_language_conditional_genex}")
+add_compile_options(${_qt_compiler_warning_flags_language_conditional_genex})

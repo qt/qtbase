@@ -224,19 +224,18 @@ struct QObjectPrivate::ConnectionData
 
 struct QObjectPrivate::Sender
 {
-    Sender(QObject *receiver, QObject *sender, int signal)
+    Sender(QObject *receiver, QObject *sender, int signal, ConnectionData *receiverConnections)
         : receiver(receiver), sender(sender), signal(signal)
     {
-        if (receiver) {
-            ConnectionData *cd = receiver->d_func()->connections.loadRelaxed();
-            previous = cd->currentSender;
-            cd->currentSender = this;
+        if (receiverConnections) {
+            previous = receiverConnections->currentSender;
+            receiverConnections->currentSender = this;
         }
     }
     ~Sender()
     {
         if (receiver)
-            receiver->d_func()->connections.loadRelaxed()->currentSender = previous;
+            receiver->d_func()->connections.loadAcquire()->currentSender = previous;
     }
     void receiverDeleted()
     {
@@ -246,7 +245,7 @@ struct QObjectPrivate::Sender
             s = s->previous;
         }
     }
-    Sender *previous;
+    Sender *previous = nullptr;
     QObject *receiver;
     QObject *sender;
     int signal;

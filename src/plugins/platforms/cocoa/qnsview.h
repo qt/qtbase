@@ -32,6 +32,12 @@ QT_DECLARE_NAMESPACED_OBJC_INTERFACE(QNSView, NSView
 - (void)cancelComposingText;
 @end
 
+Q_FORWARD_DECLARE_OBJC_CLASS(NSColorSpace);
+
+@interface QNSView (DrawingAPI)
+@property (nonatomic, readonly) NSColorSpace *colorSpace;
+@end
+
 @interface QNSView (QtExtras)
 @property (nonatomic, readonly) QCocoaWindow *platformWindow;
 @end

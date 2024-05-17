@@ -1,6 +1,6 @@
 // Copyright (C) 2021 David Faure <faure@kde.org>
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #if QT_CONFIG(process)
@@ -523,7 +523,6 @@ void tst_QCommandLineParser::testSingleDashWordOptionModes()
 
 void tst_QCommandLineParser::testCpp11StyleInitialization()
 {
-#if defined(Q_COMPILER_UNIFORM_INIT)
     QCoreApplication app(empty_argc, empty_argv);
 
     QCommandLineParser parser;
@@ -537,9 +536,6 @@ void tst_QCommandLineParser::testCpp11StyleInitialization()
     QVERIFY(parser.parse({"tst_QCommandLineParser", "-a", "-vvv", "--infile=in.txt"}));
     QCOMPARE(parser.optionNames(), (QStringList{"a", "v", "v", "v", "infile"}));
     QCOMPARE(parser.value("infile"), QString("in.txt"));
-#else
-    QSKIP("This test requires C++11 uniform initialization support in the compiler.");
-#endif
 }
 
 void tst_QCommandLineParser::testVersionOption()

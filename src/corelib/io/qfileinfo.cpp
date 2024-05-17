@@ -157,7 +157,7 @@ uint QFileInfoPrivate::getFileFlags(QAbstractFileEngine::FileFlags request) cons
     return fileFlags & request.toInt();
 }
 
-QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) const
+QDateTime &QFileInfoPrivate::getFileTime(QFile::FileTime request) const
 {
     Q_ASSERT(fileEngine); // should never be called when using the native FS
     if (!cache_enabled)
@@ -165,16 +165,16 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
 
     uint cf = 0;
     switch (request) {
-    case QAbstractFileEngine::AccessTime:
+    case QFile::FileAccessTime:
         cf = CachedATime;
         break;
-    case QAbstractFileEngine::BirthTime:
+    case QFile::FileBirthTime:
         cf = CachedBTime;
         break;
-    case QAbstractFileEngine::MetadataChangeTime:
+    case QFile::FileMetadataChangeTime:
         cf = CachedMCTime;
         break;
-    case QAbstractFileEngine::ModificationTime:
+    case QFile::FileModificationTime:
         cf = CachedMTime;
         break;
     }
@@ -192,48 +192,53 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     \class QFileInfo
     \inmodule QtCore
     \reentrant
-    \brief The QFileInfo class provides system-independent file information.
+    \brief The QFileInfo class provides an OS-independent API to retrieve
+    information about file system entries.
 
     \ingroup io
     \ingroup shared
 
-    QFileInfo provides information about a file's name and position
-    (path) in the file system, its access rights and whether it is a
-    directory or symbolic link, etc. The file's size and last
-    modified/read times are also available. QFileInfo can also be
-    used to obtain information about a Qt \l{resource
-    system}{resource}.
+    \compares equality
 
-    A QFileInfo can point to a file with either a relative or an
-    absolute file path. Absolute file paths begin with the directory
-    separator "/" (or with a drive specification on Windows). Relative
-    file names begin with a directory name or a file name and specify
-    a path relative to the current working directory. An example of an
-    absolute path is the string "/tmp/quartz". A relative path might
-    look like "src/fatlib". You can use the function isRelative() to
-    check whether a QFileInfo is using a relative or an absolute file
-    path. You can call the function makeAbsolute() to convert a
-    relative QFileInfo's path to an absolute path.
+    QFileInfo provides information about a file system entry, such as its
+    name, path, access rights and whether it is a regular file, directory or
+    symbolic link. The entry's size and last modified/read times are also
+    available. QFileInfo can also be used to obtain information about a Qt
+    \l{resource system}{resource}.
+
+    A QFileInfo can point to a file system entry with either an absolute or
+    a relative path:
+    \list
+        \li \include qfileinfo.cpp absolute-path-unix-windows
+
+        \li \include qfileinfo.cpp relative-path-note
+    \endlist
+
+    An example of an absolute path is the string \c {"/tmp/quartz"}. A relative
+    path may look like \c {"src/fatlib"}. You can use the function isRelative()
+    to check whether a QFileInfo is using a relative or an absolute path. You
+    can call the function makeAbsolute() to convert a relative QFileInfo's
+    path to an absolute path.
 
 //! [qresource-virtual-fs-colon]
     \note Paths starting with a colon (\e{:}) are always considered
     absolute, as they denote a QResource.
 //! [qresource-virtual-fs-colon]
 
-    The file that the QFileInfo works on is set in the constructor or
-    later with setFile(). Use exists() to see if the file exists and
-    size() to get its size.
+    The file system entry path that the QFileInfo works on is set in the
+    constructor or later with setFile(). Use exists() to see if the entry
+    actually exists and size() to get its size.
 
-    The file's type is obtained with isFile(), isDir() and
-    isSymLink(). The symLinkTarget() function provides the name of the file
-    the symlink points to.
+    The file system entry's type is obtained with isFile(), isDir(), and
+    isSymLink(). The symLinkTarget() function provides the absolute path of
+    the target the symlink points to.
 
-    Elements of the file's name can be extracted with path() and
-    fileName(). The fileName()'s parts can be extracted with
-    baseName(), suffix() or completeSuffix(). QFileInfo objects to
-    directories created by Qt classes will not have a trailing file
-    separator. If you wish to use trailing separators in your own file
-    info objects, just append one to the file name given to the constructors
+    The path elements of the file system entry can be extracted with path()
+    and fileName(). The fileName()'s parts can be extracted with baseName(),
+    suffix(), or completeSuffix(). QFileInfo objects referring to directories
+    created by Qt classes will not have a trailing directory separator
+    \c{'/'}. If you wish to use trailing separators in your own file info
+    objects, just append one to the entry's path given to the constructors
     or setFile().
 
     Date and time related information are returned by birthTime(), fileTime(),
@@ -247,18 +252,18 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
 
     \section1 Symbolic Links and Shortcuts
 
-    On Unix (including \macos and iOS), the property getter functions in this
-    class return the properties such as times and size of the target file, not
-    the symlink, because Unix handles symlinks transparently. Opening a symlink
-    using QFile effectively opens the link's target. For example:
+    On Unix (including \macos and iOS), the property getter functions in
+    this class return the properties such as times and size of the target,
+    not the symlink, because Unix handles symlinks transparently. Opening
+    a symlink using QFile effectively opens the link's target. For example:
 
     \snippet code/src_corelib_io_qfileinfo.cpp 0
 
     On Windows, shortcuts (\c .lnk files) are currently treated as symlinks. As
-    on Unix systems, the property getters return the size of the targeted file,
-    not the \c .lnk file itself.  This behavior is deprecated and will likely be
-    removed in a future version of Qt, after which \c .lnk files will be treated
-    as regular files.
+    on Unix systems, the property getters return the size of the target,
+    not the \c .lnk file itself. This behavior is deprecated and will likely
+    be removed in a future version of Qt, after which \c .lnk files will be
+    treated as regular files.
 
     \snippet code/src_corelib_io_qfileinfo.cpp 1
 
@@ -295,21 +300,24 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
 
     \section1 Performance Considerations
 
-    Some of QFileInfo's functions query the file system, but for
-    performance reasons, some functions only operate on the
-    file name itself. For example: To return the absolute path of
-    a relative file name, absolutePath() has to query the file system.
-    The path() function, however, can work on the file name directly,
-    and so it is faster.
+    Some of QFileInfo's functions have to query the file system, but for
+    performance reasons, some functions only operate on the path string.
+    For example: To return the absolute path of a relative entry's path,
+    absolutePath() has to query the file system. The path() function, however,
+    can work on the file name directly, and so it is faster.
 
-    To speed up performance, QFileInfo also caches information about
-    the file. Because files can be changed by other users or programs, or
-    even by other parts of the same program, there is a function that
-    refreshes the file information: refresh(). If you want to switch
-    off a QFileInfo's caching and force it to access the file system
-    every time you request information from it call setCaching(false).
-    If you want to make sure that all information is read from the
-    file system, use stat().
+    QFileInfo also caches information about the file system entry it refers
+    to. Because the file system can be changed by other users or programs,
+    or even by other parts of the same program, there is a function that
+    refreshes the information stored in QFileInfo, namely refresh(). To switch
+    off a QFileInfo's caching (that is, force it to query the underlying file
+    system every time you request information from it), call setCaching(false).
+
+    Fetching information from the file system is typically done by calling
+    (possibly) expensive system functions, so QFileInfo (depending on the
+    implementation) might not fetch all the information from the file system
+    at construction. To make sure that all information is read from the file
+    system immediately, use the stat() member function.
 
     \l{birthTime()}, \l{fileTime()}, \l{lastModified()}, \l{lastRead()},
     and \l{metadataChangeTime()} return times in \e{local time} by default.
@@ -340,9 +348,8 @@ QFileInfo::QFileInfo(QFileInfoPrivate *p) : d_ptr(p)
 }
 
 /*!
-    Constructs an empty QFileInfo object.
-
-    Note that an empty QFileInfo object contain no file reference.
+    Constructs an empty QFileInfo object that doesn't refer to any file
+    system entry.
 
     \sa setFile()
 */
@@ -351,12 +358,16 @@ QFileInfo::QFileInfo() : d_ptr(new QFileInfoPrivate())
 }
 
 /*!
-    Constructs a new QFileInfo that gives information about the given
-    file. The \a file can also include an absolute or relative path.
+    Constructs a QFileInfo that gives information about a file system entry
+    located at \a path that can be absolute or relative.
+
+//! [preserve-relative-path]
+    If \a path is relative, the QFileInfo will also have a relative path.
+//! [preserve-relative-path]
 
     \sa setFile(), isRelative(), QDir::setCurrent(), QDir::isRelativePath()
 */
-QFileInfo::QFileInfo(const QString &file) : d_ptr(new QFileInfoPrivate(file))
+QFileInfo::QFileInfo(const QString &path) : d_ptr(new QFileInfoPrivate(path))
 {
 }
 
@@ -375,18 +386,20 @@ QFileInfo::QFileInfo(const QFileDevice &file) : d_ptr(new QFileInfoPrivate(file.
 
 /*!
     Constructs a new QFileInfo that gives information about the given
-    \a file relative to the directory \a dir.
+    file system entry \a path that is relative to the directory \a dir.
 
+//! [preserve-relative-or-absolute]
     If \a dir has a relative path, the QFileInfo will also have a
     relative path.
 
-    If \a file is an absolute path, then the directory specified
-    by \a dir will be disregarded.
+    If \a path is absolute, then the directory specified by \a dir
+    will be disregarded.
+//! [preserve-relative-or-absolute]
 
     \sa isRelative()
 */
-QFileInfo::QFileInfo(const QDir &dir, const QString &file)
-    : d_ptr(new QFileInfoPrivate(dir.filePath(file)))
+QFileInfo::QFileInfo(const QDir &dir, const QString &path)
+    : d_ptr(new QFileInfoPrivate(dir.filePath(path)))
 {
 }
 
@@ -408,58 +421,57 @@ QFileInfo::~QFileInfo()
 }
 
 /*!
-    \fn bool QFileInfo::operator!=(const QFileInfo &fileinfo) const
+    \fn bool QFileInfo::operator!=(const QFileInfo &lhs, const QFileInfo &rhs)
 
-    Returns \c true if this QFileInfo object refers to a different file
-    than the one specified by \a fileinfo; otherwise returns \c false.
+    Returns \c true if QFileInfo \a lhs refers to a different file system
+    entry than the one referred to by \a rhs; otherwise returns \c false.
 
     \sa operator==()
 */
 
 /*!
-    Returns \c true if this QFileInfo object refers to a file in the same
-    location as \a fileinfo; otherwise returns \c false.
+    \fn bool QFileInfo::operator==(const QFileInfo &lhs, const QFileInfo &rhs)
 
-    Note that the result of comparing two empty QFileInfo objects,
-    containing no file references (file paths that do not exist or
-    are empty), is undefined.
+    Returns \c true if QFileInfo \a lhs and QFileInfo \a rhs refer to the same
+    entry on the file system; otherwise returns \c false.
 
-    \warning This will not compare two different symbolic links
-    pointing to the same file.
+    Note that the result of comparing two empty QFileInfo objects, containing
+    no file system entry references (paths that do not exist or are empty),
+    is undefined.
 
-    \warning Long and short file names that refer to the same file on Windows
-    are treated as if they referred to different files.
+    \warning This will not compare two different symbolic links pointing to
+    the same target.
+
+    \warning On Windows, long and short paths that refer to the same file
+    system entry are treated as if they referred to different entries.
 
     \sa operator!=()
 */
-bool QFileInfo::operator==(const QFileInfo &fileinfo) const
+bool comparesEqual(const QFileInfo &lhs, const QFileInfo &rhs)
 {
-    Q_D(const QFileInfo);
-    // ### Qt 5: understand long and short file names on Windows
-    // ### (GetFullPathName()).
-    if (fileinfo.d_ptr == d_ptr)
+    if (rhs.d_ptr == lhs.d_ptr)
         return true;
-    if (d->isDefaultConstructed || fileinfo.d_ptr->isDefaultConstructed)
+    if (lhs.d_ptr->isDefaultConstructed || rhs.d_ptr->isDefaultConstructed)
         return false;
 
     // Assume files are the same if path is the same
-    if (d->fileEntry.filePath() == fileinfo.d_ptr->fileEntry.filePath())
+    if (lhs.d_ptr->fileEntry.filePath() == rhs.d_ptr->fileEntry.filePath())
         return true;
 
     Qt::CaseSensitivity sensitive;
-    if (d->fileEngine == nullptr || fileinfo.d_ptr->fileEngine == nullptr) {
-        if (d->fileEngine != fileinfo.d_ptr->fileEngine) // one is native, the other is a custom file-engine
+    if (lhs.d_ptr->fileEngine == nullptr || rhs.d_ptr->fileEngine == nullptr) {
+        if (lhs.d_ptr->fileEngine != rhs.d_ptr->fileEngine) // one is native, the other is a custom file-engine
             return false;
 
         sensitive = QFileSystemEngine::isCaseSensitive() ? Qt::CaseSensitive : Qt::CaseInsensitive;
     } else {
-        if (d->fileEngine->caseSensitive() != fileinfo.d_ptr->fileEngine->caseSensitive())
+        if (lhs.d_ptr->fileEngine->caseSensitive() != rhs.d_ptr->fileEngine->caseSensitive())
             return false;
-        sensitive = d->fileEngine->caseSensitive() ? Qt::CaseSensitive : Qt::CaseInsensitive;
+        sensitive = lhs.d_ptr->fileEngine->caseSensitive() ? Qt::CaseSensitive : Qt::CaseInsensitive;
     }
 
    // Fallback to expensive canonical path computation
-   return canonicalFilePath().compare(fileinfo.canonicalFilePath(), sensitive) == 0;
+   return lhs.canonicalFilePath().compare(rhs.canonicalFilePath(), sensitive) == 0;
 }
 
 /*!
@@ -480,24 +492,30 @@ QFileInfo &QFileInfo::operator=(const QFileInfo &fileinfo)
 */
 
 /*!
-    Sets the file that the QFileInfo provides information about to \a
-    file.
+    Sets the path of the file system entry that this QFileInfo provides
+    information about to \a path that can be absolute or relative.
 
-    The \a file can also include an absolute or relative file path.
-    Absolute paths begin with the directory separator (e.g. "/" under
-    Unix) or a drive specification (under Windows). Relative file
-    names begin with a directory name or a file name and specify a
-    path relative to the current directory.
+//! [absolute-path-unix-windows]
+    On Unix, absolute paths begin with the directory separator \c {'/'}.
+    On Windows, absolute paths begin with a drive specification (for example,
+    \c {D:/}).
+//! [ absolute-path-unix-windows]
+
+//! [relative-path-note]
+    Relative paths begin with a directory name or a regular file name and
+    specify a file system entry's path relative to the current working
+    directory.
+//! [relative-path-note]
 
     Example:
     \snippet code/src_corelib_io_qfileinfo.cpp 2
 
     \sa isRelative(), QDir::setCurrent(), QDir::isRelativePath()
 */
-void QFileInfo::setFile(const QString &file)
+void QFileInfo::setFile(const QString &path)
 {
     bool caching = d_ptr.constData()->cache_enabled;
-    *this = QFileInfo(file);
+    *this = QFileInfo(path);
     d_ptr->cache_enabled = caching;
 }
 
@@ -520,27 +538,29 @@ void QFileInfo::setFile(const QFileDevice &file)
 /*!
     \overload
 
-    Sets the file that the QFileInfo provides information about to \a
-    file in directory \a dir.
+    Sets the path of the file system entry that this QFileInfo provides
+    information about to \a path in directory \a dir.
 
-    If \a file includes a relative path, the QFileInfo will also
-    have a relative path.
+    \include qfileinfo.cpp preserve-relative-or-absolute
 
     \sa isRelative()
 */
-void QFileInfo::setFile(const QDir &dir, const QString &file)
+void QFileInfo::setFile(const QDir &dir, const QString &path)
 {
-    setFile(dir.filePath(file));
+    setFile(dir.filePath(path));
 }
 
 /*!
-    Returns an absolute path including the file name.
+    Returns the absolute full path to the file system entry this QFileInfo
+    refers to, including the entry's name.
 
-    The absolute path name consists of the full path and the file
-    name. On Unix this will always begin with the root, '/',
-    directory. On Windows this will always begin 'D:/' where D is a
-    drive letter, except for network shares that are not mapped to a
-    drive letter, in which case the path will begin '//sharename/'.
+    \include qfileinfo.cpp absolute-path-unix-windows
+
+//! [windows-network-shares]
+    On Windows, the paths of network shares that are not mapped to a drive
+    letter begin with \c{//sharename/}.
+//! [windows-network-shares]
+
     QFileInfo will uppercase drive letters. Note that QDir does not do
     this. The code snippet below shows this.
 
@@ -564,10 +584,11 @@ QString QFileInfo::absoluteFilePath() const
 }
 
 /*!
-    Returns the canonical path including the file name, i.e. an absolute
-    path without symbolic links or redundant "." or ".." elements.
+    Returns the file system entry's canonical path, including the entry's
+    name, that is, an absolute path without symbolic links or redundant
+    \c{'.'} or \c{'..'} elements.
 
-    If the file does not exist, canonicalFilePath() returns an empty
+    If the entry does not exist, canonicalFilePath() returns an empty
     string.
 
     \sa filePath(), absoluteFilePath(), dir()
@@ -582,13 +603,12 @@ QString QFileInfo::canonicalFilePath() const
 
 
 /*!
-    Returns a file's path absolute path. This doesn't include the
-    file name.
+    Returns the absolute path of the file system entry this QFileInfo refers to,
+    excluding the entry's name.
 
-    On Unix the absolute path will always begin with the root, '/',
-    directory. On Windows this will always begin 'D:/' where D is a
-    drive letter, except for network shares that are not mapped to a
-    drive letter, in which case the path will begin '//sharename/'.
+    \include qfileinfo.cpp absolute-path-unix-windows
+
+    \include qfileinfo.cpp windows-network-shares
 
     In contrast to canonicalPath() symbolic links or redundant "." or
     ".." elements are not necessarily removed.
@@ -608,10 +628,10 @@ QString QFileInfo::absolutePath() const
 }
 
 /*!
-    Returns the file's path canonical path (excluding the file name),
+    Returns the file system entry's canonical path (excluding the entry's name),
     i.e. an absolute path without symbolic links or redundant "." or ".." elements.
 
-    If the file does not exist, canonicalPath() returns an empty string.
+    If the entry does not exist, this method returns an empty string.
 
     \sa path(), absolutePath()
 */
@@ -624,11 +644,11 @@ QString QFileInfo::canonicalPath() const
 }
 
 /*!
-    Returns the file's path. This doesn't include the file name.
+    Returns the path of the file system entry this QFileInfo refers to,
+    excluding the entry's name.
 
-    Note that, if this QFileInfo object is given a path ending in a
-    slash, the name of the file is considered empty and this function
-    will return the entire path.
+    \include qfileinfo.cpp path-ends-with-slash-empty-name-component
+    In this case, this function will return the entire path.
 
     \sa filePath(), absolutePath(), canonicalPath(), dir(), fileName(), isRelative()
 */
@@ -643,8 +663,8 @@ QString QFileInfo::path() const
 /*!
     \fn bool QFileInfo::isAbsolute() const
 
-    Returns \c true if the file path is absolute, otherwise returns \c false (i.e.
-    the path is relative).
+    Returns \c true if the file system entry's path is absolute, otherwise
+    returns \c false (that is, the path is relative).
 
     \include qfileinfo.cpp qresource-virtual-fs-colon
 
@@ -652,9 +672,10 @@ QString QFileInfo::path() const
 */
 
 /*!
-    Returns \c true if the file path is relative, otherwise returns \c
-    false (i.e. the path is absolute). (E.g. under Unix a path is absolute
-    if it begins with a "/").
+    Returns \c true if the file system entry's path is relative, otherwise
+    returns \c false (that is, the path is absolute).
+
+    \include qfileinfo.cpp absolute-path-unix-windows
 
     \include qfileinfo.cpp qresource-virtual-fs-colon
 
@@ -671,9 +692,9 @@ bool QFileInfo::isRelative() const
 }
 
 /*!
-    Converts the file's path to an absolute path if it is not already in that form.
-    Returns \c true to indicate that the path was converted; otherwise returns \c false
-    to indicate that the path was already absolute.
+    If the file system entry's path is relative, this method converts it to
+    an absolute path and returns \c true; if the path is already absolute,
+    this method returns \c false.
 
     \sa filePath(), isRelative()
 */
@@ -688,10 +709,11 @@ bool QFileInfo::makeAbsolute()
 }
 
 /*!
-    Returns \c true if the file exists; otherwise returns \c false.
+    Returns \c true if the file system entry this QFileInfo refers to exists;
+    otherwise returns \c false.
 
-    \note If the file is a symlink that points to a non-existing
-    file, false is returned.
+    \note If the entry is a symlink that points to a non-existing
+    target, this method returns \c false.
 */
 bool QFileInfo::exists() const
 {
@@ -709,24 +731,23 @@ bool QFileInfo::exists() const
 /*!
     \since 5.2
 
-    Returns \c true if the \a file exists; otherwise returns \c false.
+    Returns \c true if the file system entry \a path exists; otherwise
+    returns \c false.
 
-    \note If \a file is a symlink that points to a non-existing
-    file, false is returned.
+    \note If \a path is a symlink that points to a non-existing
+    target, this method returns \c false.
 
     \note Using this function is faster than using
-    \c QFileInfo(file).exists() for file system access.
+    \c QFileInfo(path).exists() for file system access.
 */
-bool QFileInfo::exists(const QString &file)
+bool QFileInfo::exists(const QString &path)
 {
-    if (file.isEmpty())
+    if (path.isEmpty())
         return false;
-    QFileSystemEntry entry(file);
+    QFileSystemEntry entry(path);
     QFileSystemMetaData data;
-    std::unique_ptr<QAbstractFileEngine> engine
-        {QFileSystemEngine::resolveEntryAndCreateLegacyEngine(entry, data)};
     // Expensive fallback to non-QFileSystemEngine implementation
-    if (engine)
+    if (auto engine = QFileSystemEngine::createLegacyEngine(entry, data))
         return QFileInfo(new QFileInfoPrivate(entry, data, std::move(engine))).exists();
 
     QFileSystemEngine::fillMetaData(entry, data, QFileSystemMetaData::ExistsAttribute);
@@ -734,8 +755,9 @@ bool QFileInfo::exists(const QString &file)
 }
 
 /*!
-    Refreshes the information about the file, i.e. reads in information
-    from the file system the next time a cached property is fetched.
+    Refreshes the information about the file system entry this QFileInfo
+    refers to, that is, reads in information from the file system the next
+    time a cached property is fetched.
 */
 void QFileInfo::refresh()
 {
@@ -744,8 +766,8 @@ void QFileInfo::refresh()
 }
 
 /*!
-    Returns the file name, including the path (which may be absolute
-    or relative).
+    Returns the path of the file system entry this QFileInfo refers to;
+    the path may be absolute or relative.
 
     \sa absoluteFilePath(), canonicalFilePath(), isRelative()
 */
@@ -758,13 +780,16 @@ QString QFileInfo::filePath() const
 }
 
 /*!
-    Returns the name of the file, excluding the path.
+    Returns the name of the file system entry this QFileInfo refers to,
+    excluding the path.
 
     Example:
     \snippet code/src_corelib_io_qfileinfo.cpp 3
 
-    Note that, if this QFileInfo object is given a path ending in a
-    slash, the name of the file is considered empty.
+//! [path-ends-with-slash-empty-name-component]
+    \note If this QFileInfo is given a path ending with a directory separator
+    \c{'/'}, the entry's name part is considered empty.
+//! [path-ends-with-slash-empty-name-component]
 
     \sa isRelative(), filePath(), baseName(), suffix()
 */
@@ -890,9 +915,10 @@ QString QFileInfo::suffix() const
 
 
 /*!
-    Returns the path of the object's parent directory as a QDir object.
+    Returns a QDir object representing the path of the parent directory of the
+    file system entry that this QFileInfo refers to.
 
-    \b{Note:} The QDir returned always corresponds to the object's
+    \note The QDir returned always corresponds to the object's
     parent directory, even if the QFileInfo represents a directory.
 
     For each of the following, dir() returns the QDir
@@ -914,7 +940,10 @@ QDir QFileInfo::dir() const
 }
 
 /*!
-    Returns the file's absolute path as a QDir object.
+    Returns a QDir object representing the absolute path of the parent
+    directory of the file system entry that this QFileInfo refers to.
+
+    \snippet code/src_corelib_io_qfileinfo.cpp 11
 
     \sa dir(), filePath(), fileName(), isRelative()
 */
@@ -924,13 +953,13 @@ QDir QFileInfo::absoluteDir() const
 }
 
 /*!
-    Returns \c true if the user can read the file; otherwise returns \c false.
+    Returns \c true if the user can read the file system entry this QFileInfo
+    refers to; otherwise returns \c false.
 
-    If the file is a symlink, this function returns true if the target is
-    readable (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \note If the \l{NTFS permissions} check has not been enabled, the result
-    on Windows will merely reflect whether the file exists.
+    on Windows will merely reflect whether the entry exists.
 
     \sa isWritable(), isExecutable(), permission()
 */
@@ -939,18 +968,18 @@ bool QFileInfo::isReadable() const
     Q_D(const QFileInfo);
     return d->checkAttribute<bool>(
                 QFileSystemMetaData::UserReadPermission,
-                [d]() { return (d->metaData.permissions() & QFile::ReadUser) != 0; },
+                [d]() { return d->metaData.isReadable(); },
                 [d]() { return d->getFileFlags(QAbstractFileEngine::ReadUserPerm); });
 }
 
 /*!
-    Returns \c true if the user can write to the file; otherwise returns \c false.
+    Returns \c true if the user can write to the file system entry this
+    QFileInfo refers to; otherwise returns \c false.
 
-    If the file is a symlink, this function returns true if the target is
-    writeable (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \note If the \l{NTFS permissions} check has not been enabled, the result on
-    Windows will merely reflect whether the file is marked as Read Only.
+    Windows will merely reflect whether the entry is marked as Read Only.
 
     \sa isReadable(), isExecutable(), permission()
 */
@@ -959,15 +988,18 @@ bool QFileInfo::isWritable() const
     Q_D(const QFileInfo);
     return d->checkAttribute<bool>(
                 QFileSystemMetaData::UserWritePermission,
-                [d]() { return (d->metaData.permissions() & QFile::WriteUser) != 0; },
+                [d]() { return d->metaData.isWritable(); },
                 [d]() { return d->getFileFlags(QAbstractFileEngine::WriteUserPerm); });
 }
 
 /*!
-    Returns \c true if the file is executable; otherwise returns \c false.
+    Returns \c true if the file system entry this QFileInfo refers to is
+    executable; otherwise returns \c false.
 
-    If the file is a symlink, this function returns true if the target is
-    executable (not the symlink).
+//! [info-about-target-not-symlink]
+    If the file is a symlink, this function returns information about the
+    target, not the symlink.
+//! [info-about-target-not-symlink]
 
     \sa isReadable(), isWritable(), permission()
 */
@@ -976,15 +1008,16 @@ bool QFileInfo::isExecutable() const
     Q_D(const QFileInfo);
     return d->checkAttribute<bool>(
                 QFileSystemMetaData::UserExecutePermission,
-                [d]() { return (d->metaData.permissions() & QFile::ExeUser) != 0; },
+                [d]() { return d->metaData.isExecutable(); },
                 [d]() { return d->getFileFlags(QAbstractFileEngine::ExeUserPerm); });
 }
 
 /*!
-    Returns \c true if this is a `hidden' file; otherwise returns \c false.
+    Returns \c true if the file system entry this QFileInfo refers to is
+    `hidden'; otherwise returns \c false.
 
     \b{Note:} This function returns \c true for the special entries "." and
-    ".." on Unix, even though QDir::entryList threats them as shown. And note
+    ".." on Unix, even though QDir::entryList treats them as shown. And note
     that, since this function inspects the file name, on Unix it will inspect
     the name of the symlink, if this file is a symlink, not the target's name.
 
@@ -1029,8 +1062,7 @@ bool QFileInfo::isNativePath() const
     object points to something that is not a file (such as a directory)
     or that does not exist.
 
-    If the file is a symlink, this function returns true if the target is a
-    regular file (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \sa isDir(), isSymLink(), isBundle()
 */
@@ -1049,8 +1081,7 @@ bool QFileInfo::isFile() const
     object points to something that is not a directory (such as a file)
     or that does not exist.
 
-    If the file is a symlink, this function returns true if the target is a
-    directory (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \sa isFile(), isSymLink(), isBundle()
 */
@@ -1069,8 +1100,7 @@ bool QFileInfo::isDir() const
     Returns \c true if this object points to a bundle or to a symbolic
     link to a bundle on \macos and iOS; otherwise returns \c false.
 
-    If the file is a symlink, this function returns true if the target is a
-    bundle (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \sa isDir(), isSymLink(), isFile()
 */
@@ -1101,8 +1131,10 @@ bool QFileInfo::isBundle() const
 
     \snippet code/src_corelib_io_qfileinfo.cpp 9
 
-    \note If the symlink points to a non existing file, exists() returns
-     false.
+//! [symlink-target-exists-behavior]
+    \note exists() returns \c true if the symlink points to an existing
+    target, otherwise it returns \c false.
+//! [symlink-target-exists-behavior]
 
     \sa isFile(), isDir(), symLinkTarget()
 */
@@ -1130,8 +1162,7 @@ bool QFileInfo::isSymLink() const
     (\c *.lnk files) on Windows and aliases on \macos. Use QFileInfo::isShortcut()
     and QFileInfo::isAlias() instead.
 
-    \note If the symlink points to a non existing file, exists() returns
-    false.
+    \include qfileinfo.cpp symlink-target-exists-behavior
 
     \sa isFile(), isDir(), isShortcut(), symLinkTarget()
 */
@@ -1250,8 +1281,8 @@ bool QFileInfo::isRoot() const
     link.
 
     This name may not represent an existing file; it is only a string.
-    QFileInfo::exists() returns \c true if the symlink points to an
-    existing file.
+
+    \include qfileinfo.cpp symlink-target-exists-behavior
 
     \sa exists(), isSymLink(), isDir(), isFile()
 */
@@ -1313,8 +1344,7 @@ QString QFileInfo::junctionTarget() const
     milliseconds). On Windows, it will return an empty string unless
     the \l{NTFS permissions} check has been enabled.
 
-    If the file is a symlink, this function returns the owner of the target
-    (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \sa ownerId(), group(), groupId()
 */
@@ -1332,8 +1362,7 @@ QString QFileInfo::owner() const
     On Windows and on systems where files do not have owners this
     function returns ((uint) -2).
 
-    If the file is a symlink, this function returns the id of the owner of the target
-    (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \sa owner(), group(), groupId()
 */
@@ -1354,8 +1383,7 @@ uint QFileInfo::ownerId() const
     This function can be time consuming under Unix (in the order of
     milliseconds).
 
-    If the file is a symlink, this function returns the owning group of the
-    target (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \sa groupId(), owner(), ownerId()
 */
@@ -1373,8 +1401,7 @@ QString QFileInfo::group() const
     On Windows and on systems where files do not have groups this
     function always returns (uint) -2.
 
-    If the file is a symlink, this function returns the id of the group owning the
-    target (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \sa group(), owner(), ownerId()
 */
@@ -1401,8 +1428,7 @@ uint QFileInfo::groupId() const
     Example:
     \snippet code/src_corelib_io_qfileinfo.cpp 10
 
-    If the file is a symlink, this function checks the permissions of the
-    target (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \sa isReadable(), isWritable(), isExecutable()
 */
@@ -1427,8 +1453,7 @@ bool QFileInfo::permission(QFile::Permissions permissions) const
     \note The result might be inaccurate on Windows if the
     \l{NTFS permissions} check has not been enabled.
 
-    If the file is a symlink, this function returns the permissions of the
-    target (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 */
 QFile::Permissions QFileInfo::permissions() const
 {
@@ -1446,8 +1471,7 @@ QFile::Permissions QFileInfo::permissions() const
     Returns the file size in bytes. If the file does not exist or cannot be
     fetched, 0 is returned.
 
-    If the file is a symlink, the size of the target file is returned
-    (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \sa exists()
 */
@@ -1473,7 +1497,7 @@ qint64 QFileInfo::size() const
 
     If the file birth time is not available, this function returns an invalid QDateTime.
 
-    If the file is a symlink, the time of the target file is returned (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     This function overloads QFileInfo::birthTime(const QTimeZone &tz), and
     returns the same as \c{birthTime(QTimeZone::LocalTime)}.
@@ -1492,8 +1516,7 @@ qint64 QFileInfo::size() const
     If the file birth time is not available, this function returns an invalid
     QDateTime.
 
-    If the file is a symlink, the time of the target file is returned
-    (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \since 6.6
     \sa lastModified(const QTimeZone &), lastRead(const QTimeZone &),
@@ -1511,8 +1534,7 @@ qint64 QFileInfo::size() const
     occurs whenever the user writes or sets inode information (for example,
     changing the file permissions).
 
-    If the file is a symlink, the time of the target file is returned
-    (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     This function overloads QFileInfo::metadataChangeTime(const QTimeZone &tz),
     and returns the same as \c{metadataChangeTime(QTimeZone::LocalTime)}.
@@ -1531,8 +1553,7 @@ qint64 QFileInfo::size() const
 
     \include qfileinfo.cpp file-times-in-time-zone
 
-    If the file is a symlink, the time of the target file is returned
-    (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \since 6.6
     \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &),
@@ -1545,8 +1566,7 @@ qint64 QFileInfo::size() const
 
     Returns the date and time when the file was last modified.
 
-    If the file is a symlink, the time of the target file is returned
-    (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     This function overloads \l{QFileInfo::lastModified(const QTimeZone &)},
     and returns the same as \c{lastModified(QTimeZone::LocalTime)}.
@@ -1561,8 +1581,7 @@ qint64 QFileInfo::size() const
 
     \include qfileinfo.cpp file-times-in-time-zone
 
-    If the file is a symlink, the time of the target file is returned
-    (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \since 6.6
     \sa birthTime(const QTimeZone &), lastRead(const QTimeZone &),
@@ -1578,8 +1597,7 @@ qint64 QFileInfo::size() const
     On platforms where this information is not available, returns the same
     time as lastModified().
 
-    If the file is a symlink, the time of the target file is returned
-    (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     This function overloads \l{QFileInfo::lastRead(const QTimeZone &)},
     and returns the same as \c{lastRead(QTimeZone::LocalTime)}.
@@ -1597,8 +1615,7 @@ qint64 QFileInfo::size() const
     On platforms where this information is not available, returns the same
     time as lastModified().
 
-    If the file is a symlink, the time of the target file is returned
-    (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \since 6.6
     \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &),
@@ -1612,8 +1629,7 @@ qint64 QFileInfo::size() const
 
     If the time cannot be determined, an invalid date time is returned.
 
-    If the file is a symlink, the time of the target file is returned
-    (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     This function overloads
     \l{QFileInfo::fileTime(QFileDevice::FileTime, const QTimeZone &)},
@@ -1640,8 +1656,7 @@ QDateTime QFileInfo::fileTime(QFile::FileTime time) const {
 
     If the time cannot be determined, an invalid date time is returned.
 
-    If the file is a symlink, the time of the target file is returned
-    (not the symlink).
+    \include qfileinfo.cpp info-about-target-not-symlink
 
     \since 6.6
     \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &),
@@ -1650,13 +1665,7 @@ QDateTime QFileInfo::fileTime(QFile::FileTime time) const {
 */
 QDateTime QFileInfo::fileTime(QFile::FileTime time, const QTimeZone &tz) const
 {
-    static_assert(int(QFile::FileAccessTime) == int(QAbstractFileEngine::AccessTime));
-    static_assert(int(QFile::FileBirthTime) == int(QAbstractFileEngine::BirthTime));
-    static_assert(int(QFile::FileMetadataChangeTime) == int(QAbstractFileEngine::MetadataChangeTime));
-    static_assert(int(QFile::FileModificationTime) == int(QAbstractFileEngine::ModificationTime));
-
     Q_D(const QFileInfo);
-    auto fetime = QAbstractFileEngine::FileTime(time);
     QFileSystemMetaData::MetaDataFlags flag;
     switch (time) {
     case QFile::FileAccessTime:
@@ -1673,9 +1682,10 @@ QDateTime QFileInfo::fileTime(QFile::FileTime time, const QTimeZone &tz) const
         break;
     }
 
-    auto fsLambda = [d, fetime]() { return d->metaData.fileTime(fetime); };
-    auto engineLambda = [d, fetime]() { return d->getFileTime(fetime); };
-    const QDateTime dt = d->checkAttribute<QDateTime>(flag, fsLambda, engineLambda);
+    auto fsLambda = [d, time]() { return d->metaData.fileTime(time); };
+    auto engineLambda = [d, time]() { return d->getFileTime(time); };
+    const auto dt =
+        d->checkAttribute<QDateTime>(flag, std::move(fsLambda), std::move(engineLambda));
     return dt.toTimeZone(tz);
 }
 
@@ -1760,24 +1770,22 @@ QDebug operator<<(QDebug dbg, const QFileInfo &fi)
     \sa setFile(), isRelative(), QDir::setCurrent(), QDir::isRelativePath()
 */
 /*!
-    \fn QFileInfo::QFileInfo(const QDir &dir, const std::filesystem::path &file)
+    \fn QFileInfo::QFileInfo(const QDir &dir, const std::filesystem::path &path)
     \since 6.0
 
-    Constructs a new QFileInfo that gives information about the given
-    \a file relative to the directory \a dir.
+    Constructs a new QFileInfo that gives information about the file system
+    entry at \a path that is relative to the directory \a dir.
 
-    If \a dir has a relative path, the QFileInfo will also have a
-    relative path.
-
-    If \a file is an absolute path, then the directory specified
-    by \a dir will be disregarded.
+    \include qfileinfo.cpp preserve-relative-or-absolute
 */
 /*!
-    \fn void QFileInfo::setFile(const std::filesystem::path &file)
+    \fn void QFileInfo::setFile(const std::filesystem::path &path)
     \since 6.0
 
-    Sets the file that the QFileInfo provides information about to \a
-    file.
+    Sets the path of file system entry that this QFileInfo provides
+    information about to \a path.
+
+    \include qfileinfo.cpp preserve-relative-path
 */
 /*!
     \fn std::filesystem::path QFileInfo::filesystemFilePath() const

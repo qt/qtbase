@@ -52,19 +52,22 @@ instructions:
       property: host.os
       equals_value: Windows
 
+    # Keep the testrun quiet for ASAN testruns, since there are FAILs happening all over the place...
   - type: EnvironmentVariable
     variableName: CTEST_ARGS
     variableValue: "-V"
-    # Keep the testrun quiet for ASAN testruns, since there are FAILs happening all over the place
     disable_if:
       condition: property
       property: features
       contains_value: UseAddressSanitizer
-
-    # Always print the output from a failing test, even when ctest is not in verbose mode
+    # ...and only print the output from a failing test, i.e. test with ASAN errors.
   - type: EnvironmentVariable
     variableName: CTEST_OUTPUT_ON_FAILURE
     variableValue: "1"
+    enable_if:
+      condition: property
+      property: features
+      contains_value: UseAddressSanitizer
 
   - type: AppendToEnvironmentVariable
     variableName: CTEST_ARGS
@@ -84,6 +87,22 @@ instructions:
       equals_value: null
 
   - !include "{{qt/qtbase}}/coin_module_test_android_start_emulator.yaml"
+
+  - type: EnvironmentVariable
+    variableName: COIN_CROSS_PLATFORM_VERSION_TEST
+    variableValue: "TRUE"
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: platformDependency
+          not_equals_value: null
+        - condition: property
+          property: platformDependency.target.osVersion
+          not_equals_property: target.osVersion
+        - condition: property
+          property: features
+          contains_value: TestOnly
 
   - type: ExecuteCommand
     command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"

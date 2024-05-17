@@ -35,7 +35,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void finished(bool ok);
-    void headerRead(QNetworkRequest::KnownHeaders header, const QVariant &value);
+    void headerRead(QHttpHeaders::WellKnownHeader, const QByteArray &value);
     void error(QNetworkReply::NetworkError error, const QString &message);
 };
 

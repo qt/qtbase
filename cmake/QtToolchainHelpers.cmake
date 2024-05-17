@@ -144,26 +144,26 @@ endif()")
     unset(init_additional_used_variables)
     if(APPLE)
 
-        # For an iOS simulator_and_device build, we should not explicitly set the sysroot, but let
-        # CMake do it's universal build magic to use one sysroot / sdk per-arch.
-        # For a single arch / sysroot iOS build, try to use the initially configured sysroot
-        # path if it exists, otherwise just set the name of the sdk to be used.
-        # The latter "name" part is important for user projects so that running 'xcodebuild' from
-        # the command line chooses the correct sdk.
+        # For an iOS simulator_and_device build, we should not explicitly set the sysroot,
+        # but let CMake do it's universal build magic to use one sysroot / sdk per-arch.
+        # For a single arch / sysroot build, try to use the initially configured sysroot
+        # by name.
+        #
         # Also allow to opt out just in case.
         #
         # TODO: Figure out if the same should apply to universal macOS builds.
 
+        # We want to preserve the sysroot as an SDK name, instead of the path
+        # that CMake transforms it into in Darwin-initialize.cmake, so we pick
+        # it out from the cache, where it hasn't been touched by CMake.
+        set(cmake_sysroot_name "$CACHE{CMAKE_OSX_SYSROOT}")
+
         list(LENGTH CMAKE_OSX_ARCHITECTURES _qt_osx_architectures_count)
-        if(CMAKE_OSX_SYSROOT AND NOT _qt_osx_architectures_count GREATER 1 AND UIKIT)
+        if(cmake_sysroot_name AND NOT _qt_osx_architectures_count GREATER 1 AND UIKIT)
             list(APPEND init_platform "
-    set(__qt_uikit_sdk \"${QT_UIKIT_SDK}\")
-    set(__qt_initial_cmake_osx_sysroot \"${CMAKE_OSX_SYSROOT}\")
-    if(NOT DEFINED CMAKE_OSX_SYSROOT AND EXISTS \"\${__qt_initial_cmake_osx_sysroot}\")
-        set(CMAKE_OSX_SYSROOT \"\${__qt_initial_cmake_osx_sysroot}\" CACHE PATH \"\")
-    elseif(NOT DEFINED CMAKE_OSX_SYSROOT AND NOT QT_NO_SET_OSX_SYSROOT)
-        set(CMAKE_OSX_SYSROOT \"\${__qt_uikit_sdk}\" CACHE PATH \"\")
-    endif()")
+if(NOT DEFINED CMAKE_OSX_SYSROOT)
+    set(CMAKE_OSX_SYSROOT \"${cmake_sysroot_name}\" CACHE STRING \"\")
+endif()")
         endif()
 
         if(CMAKE_OSX_DEPLOYMENT_TARGET)
@@ -218,7 +218,7 @@ endif()")
             qt_internal_get_first_osx_arch(osx_first_arch)
             list(APPEND init_platform
 "if((NOT CMAKE_GENERATOR STREQUAL \"Xcode\" AND NOT __qt_toolchain_building_qt_repo)
-    OR (CMAKE_GENERATOR STREQUAL \"Xcode\" AND __qt_uikit_sdk AND NOT QT_NO_SET_OSX_ARCHITECTURES))")
+    OR (CMAKE_GENERATOR STREQUAL \"Xcode\" AND __qt_apple_sdk AND NOT QT_NO_SET_OSX_ARCHITECTURES))")
             list(APPEND init_platform
                 "    set(CMAKE_OSX_ARCHITECTURES \"${osx_first_arch}\" CACHE STRING \"\")")
             list(APPEND init_platform "endif()")

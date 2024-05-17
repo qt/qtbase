@@ -31,6 +31,7 @@ public:
     explicit QWindowContainer(QWindow *embeddedWindow, QWidget *parent = nullptr, Qt::WindowFlags f = { });
     ~QWindowContainer();
     QWindow *containedWindow() const;
+    QSize minimumSizeHint() const override;
 
     static void toplevelAboutToBeDestroyed(QWidget *parent);
     static void parentWasChanged(QWidget *parent);
@@ -41,9 +42,6 @@ public:
 protected:
     bool event(QEvent *ev) override;
     bool eventFilter(QObject *, QEvent *ev) override;
-
-private slots:
-    void focusWindowChanged(QWindow *focusWindow);
 };
 
 QT_END_NAMESPACE

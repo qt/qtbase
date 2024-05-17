@@ -1,3 +1,6 @@
+# Copyright (C) 2024 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 @PACKAGE_INIT@
 
 cmake_minimum_required(VERSION @min_new_policy_version@...@max_new_policy_version@)
@@ -29,9 +32,6 @@ if (NOT QT_NO_CREATE_TARGETS AND @INSTALL_CMAKE_NAMESPACE@@target@_FOUND)
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@AdditionalTargetInfo.cmake")
     include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@ExtraProperties.cmake"
         OPTIONAL)
-    if(NOT QT_NO_CREATE_VERSIONLESS_TARGETS)
-        include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@VersionlessTargets.cmake")
-    endif()
 
     # DEPRECATED
     # Provide old style variables for includes, compile definitions, etc.
@@ -127,6 +127,14 @@ if (TARGET @QT_CMAKE_EXPORT_NAMESPACE@::@target@)
     if (@INSTALL_CMAKE_NAMESPACE@BuildInternals_DIR AND
         EXISTS "${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@BuildInternals.cmake")
         include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@BuildInternals.cmake")
+    endif()
+
+    if(NOT QT_NO_CREATE_VERSIONLESS_TARGETS)
+        if(CMAKE_VERSION VERSION_LESS 3.18 OR QT_USE_OLD_VERSION_LESS_TARGETS)
+            include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@VersionlessTargets.cmake")
+        else()
+            include("${CMAKE_CURRENT_LIST_DIR}/@INSTALL_CMAKE_NAMESPACE@@target@VersionlessAliasTargets.cmake")
+        endif()
     endif()
 else()
 

@@ -14,6 +14,9 @@ QT_BEGIN_NAMESPACE
     \class QLine
     \inmodule QtCore
     \ingroup painting
+    \compares equality
+    \compareswith equality QLineF
+    \endcompareswith
 
     \brief The QLine class provides a two-dimensional vector using
     integer precision.
@@ -133,18 +136,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QLine::operator!=(const QLine &line) const
+    \fn bool QLine::operator!=(const QLine &lhs, const QLine &rhs)
 
-    Returns \c true if the given \a line is not the same as \e this line.
+    Returns \c true if the line \a lhs is not the same as line \a rhs.
 
     A line is different from another line if any of their start or
     end points differ, or the internal order of the points is different.
 */
 
 /*!
-    \fn bool QLine::operator==(const QLine &line) const
+    \fn bool QLine::operator==(const QLine &lhs, const QLine &rhs)
 
-    Returns \c true if the given \a line is the same as \e this line.
+    Returns \c true if the line \a lhs is the same as line \a rhs.
 
     A line is identical to another line if the start and end points
     are identical, and the internal order of the points is the same.
@@ -288,6 +291,9 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
     \class QLineF
     \inmodule QtCore
     \ingroup painting
+    \compares equality
+    \compareswith equality QLine
+    \endcompareswith
 
     \brief The QLineF class provides a two-dimensional vector using
     floating point precision.
@@ -508,18 +514,18 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 */
 
 /*!
-    \fn bool QLineF::operator!=(const QLineF &line) const
+    \fn bool QLineF::operator!=(const QLineF &lhs, const QLineF &rhs)
 
-    Returns \c true if the given \a line is not the same as \e this line.
+    Returns \c true if the line \a lhs is not the same as line \a rhs.
 
     A line is different from another line if their start or end points
     differ, or the internal order of the points is different.
 */
 
 /*!
-    \fn bool QLineF::operator==(const QLineF &line) const
+    \fn bool QLineF::operator==(const QLineF &lhs, const QLineF &rhs)
 
-    Returns \c true if the given \a line is the same as this line.
+    Returns \c true if the line \a lhs is the same as line \a rhs.
 
     A line is identical to another line if the start and end points
     are identical, and the internal order of the points is the same.
@@ -780,6 +786,25 @@ qreal QLineF::angleTo(const QLineF &l) const
     else
         return delta_normalized;
 }
+
+/*!
+    \fn bool QLineF::qFuzzyCompare(const QLineF &lhs, const QLineF &rhs)
+    \since 6.8
+
+    Returns \c true if line \a lhs is approximately equal to line \a rhs;
+    otherwise returns \c false.
+
+    The lines are considered approximately equal if their start and end
+    points are approximately equal.
+*/
+
+/*!
+    \fn bool QLineF::qFuzzyIsNull(const QLineF &line)
+    \since 6.8
+
+    Returns \c true if the start point of line \a line is approximately
+    equal to its end point; otherwise returns \c false.
+*/
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QLineF &p)

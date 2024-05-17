@@ -5,8 +5,10 @@
 #define QSQLDATABASE_H
 
 #include <QtSql/qtsqlglobal.h>
+#include <QtCore/qmetaobject.h>
 #include <QtCore/qstring.h>
 
+// clazy:excludeall=qproperty-without-notify
 QT_BEGIN_NAMESPACE
 
 
@@ -16,6 +18,7 @@ class QSqlIndex;
 class QSqlRecord;
 class QSqlQuery;
 class QSqlDatabasePrivate;
+class QThread;
 
 class Q_SQL_EXPORT QSqlDriverCreatorBase
 {
@@ -33,7 +36,10 @@ public:
 
 class Q_SQL_EXPORT QSqlDatabase
 {
+    Q_GADGET
 public:
+    Q_PROPERTY(QSql::NumericalPrecisionPolicy numericalPrecisionPolicy READ numericalPrecisionPolicy WRITE setNumericalPrecisionPolicy)
+
     QSqlDatabase();
     QSqlDatabase(const QSqlDatabase &other);
     ~QSqlDatabase();
@@ -75,6 +81,8 @@ public:
     QString connectionName() const;
     void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy);
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
+    bool moveToThread(QThread *targetThread);
+    QThread *currentThread() const;
 
     QSqlDriver* driver() const;
 

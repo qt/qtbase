@@ -1,5 +1,5 @@
 // Copyright (C) 2019 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QCheckBox>
@@ -980,7 +980,6 @@ void tst_QStyleSheetStyle::focusColors()
     centerOnScreen(&frame);
     frame.show();
 
-    QApplicationPrivate::setActiveWindow(&frame);
     QVERIFY(QTest::qWaitForWindowActive(&frame));
 
     for (QWidget *widget : frame.widgets()) {
@@ -1026,7 +1025,6 @@ void tst_QStyleSheetStyle::hoverColors()
     QCursor::setPos(frame.geometry().topLeft() - QPoint(100, 0));
     frame.show();
 
-    QApplicationPrivate::setActiveWindow(&frame);
     QVERIFY(QTest::qWaitForWindowActive(&frame));
 
     QWindow *frameWindow = frame.windowHandle();
@@ -1720,7 +1718,6 @@ void tst_QStyleSheetStyle::toolTip()
 
     centerOnScreen(&w);
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     QVERIFY(QTest::qWaitForWindowActive(&w));
 
     QColor normalToolTipBgColor = QToolTip::palette().color(QPalette::Inactive, QPalette::ToolTipBase);
@@ -1889,7 +1886,6 @@ void tst_QStyleSheetStyle::complexWidgetFocus()
 
     centerOnScreen(&frame);
     frame.show();
-    QApplicationPrivate::setActiveWindow(&frame);
     QVERIFY(QTest::qWaitForWindowActive(&frame));
     for (QWidget *widget : widgets) {
         widget->setFocus();
@@ -1978,7 +1974,6 @@ void tst_QStyleSheetStyle::task232085_spinBoxLineEditBg()
 
     centerOnScreen(&frame);
     frame.show();
-    QApplicationPrivate::setActiveWindow(&frame);
     spinbox->setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&frame));
 
@@ -2114,7 +2109,6 @@ void tst_QStyleSheetStyle::QTBUG36933_brokenPseudoClassLookup()
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
 
     widget.activateWindow();
-    QApplicationPrivate::setActiveWindow(&widget);
     QVERIFY(QTest::qWaitForWindowActive(&widget));
 
     QHeaderView *verticalHeader = widget.verticalHeader();

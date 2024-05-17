@@ -2043,6 +2043,7 @@ QVariant operator-(const QVariant &arg1, const QVariant &arg2)
                 dt.setTime(dt.time().addMSecs(msecs));
             ret = QVariant(dt);
         }
+        break;
     }
     default: break;
     }

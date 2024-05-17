@@ -184,13 +184,13 @@ function(__qt_internal_walk_libs
             if(lib_target MATCHES "^::@")
                 continue()
             elseif(TARGET ${lib_target})
-                if ("${lib_target}" MATCHES "^Qt::(.*)")
-                    # If both, Qt::Foo and Foo targets exist, prefer the target name without
+                if(NOT "${lib_target}" MATCHES "^(Qt|${QT_CMAKE_EXPORT_NAMESPACE})::.+")
+                    # If both, Qt::Foo and Foo targets exist, prefer the target name with versioned
                     # namespace. Which one is preferred doesn't really matter. This code exists to
                     # avoid ending up with both, Qt::Foo and Foo in our dependencies.
-                    set(namespaceless_lib_target "${CMAKE_MATCH_1}")
-                    if(TARGET namespaceless_lib_target)
-                        set(lib_target ${namespaceless_lib_target})
+                    set(versioned_qt_target "${QT_CMAKE_EXPORT_NAMESPACE}::${lib_target}")
+                    if(TARGET "${versioned_qt_target}")
+                        set(lib_target ${versioned_qt_target})
                     endif()
                 endif()
                 get_target_property(lib_target_type ${lib_target} TYPE)
@@ -255,8 +255,8 @@ function(__qt_internal_walk_libs
                         __qt_internal_promote_target_to_global(${lib_target_unaliased})
                     endif()
                 endif()
-            elseif("${lib_target}" MATCHES "^Qt::(.*)")
-                message(FATAL_ERROR "The ${CMAKE_MATCH_1} target is mentioned as a dependency for \
+            elseif("${lib_target}" MATCHES "^(Qt|${QT_CMAKE_EXPORT_NAMESPACE})::(.*)")
+                message(FATAL_ERROR "The ${CMAKE_MATCH_2} target is mentioned as a dependency for \
 ${target}, but not declared.")
             else()
                 if(NOT operation MATCHES "^(collect|direct)_targets$")

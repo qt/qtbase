@@ -2731,11 +2731,28 @@ bool QCalendarWidget::isGridVisible() const
     return d->m_view->showGrid();
 }
 
+/*!
+    \since 5.14
+    Report the calendar system in use by this widget.
+
+    \sa setCalendar()
+*/
+
 QCalendar QCalendarWidget::calendar() const
 {
     Q_D(const QCalendarWidget);
     return d->m_model->m_calendar;
 }
+
+/*!
+    \since 5.14
+    Set \a c as the calendar system to be used by this widget.
+
+    The widget can use any supported calendar system.
+    By default, it uses the Gregorian calendar.
+
+    \sa calendar()
+*/
 
 void QCalendarWidget::setCalendar(QCalendar c)
 {
@@ -3099,6 +3116,7 @@ bool QCalendarWidget::event(QEvent *event)
         case QEvent::StyleChange:
             d->cachedSizeHint = QSize();
             d->m_view->updateGeometry();
+            break;
         default:
             break;
     }

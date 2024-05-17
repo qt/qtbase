@@ -75,6 +75,7 @@ public:
         Format_RGBX32FPx4,
         Format_RGBA32FPx4,
         Format_RGBA32FPx4_Premultiplied,
+        Format_CMYK8888,
 #ifndef Q_QDOC
         NImageFormats
 #endif
@@ -230,13 +231,18 @@ public:
     void invertPixels(InvertMode = InvertRgb);
 
     QColorSpace colorSpace() const;
-    [[nodiscard]] QImage convertedToColorSpace(const QColorSpace &) const;
-    void convertToColorSpace(const QColorSpace &);
-    void setColorSpace(const QColorSpace &);
+    [[nodiscard]] QImage convertedToColorSpace(const QColorSpace &colorSpace) const;
+    [[nodiscard]] QImage convertedToColorSpace(const QColorSpace &colorSpace, QImage::Format format, Qt::ImageConversionFlags flags = Qt::AutoColor) const;
+    void convertToColorSpace(const QColorSpace &colorSpace);
+    void convertToColorSpace(const QColorSpace &colorSpace, QImage::Format format, Qt::ImageConversionFlags flags = Qt::AutoColor);
+    void setColorSpace(const QColorSpace &colorSpace);
 
     QImage colorTransformed(const QColorTransform &transform) const &;
+    QImage colorTransformed(const QColorTransform &transform, QImage::Format format, Qt::ImageConversionFlags flags = Qt::AutoColor) const &;
     QImage colorTransformed(const QColorTransform &transform) &&;
+    QImage colorTransformed(const QColorTransform &transform, QImage::Format format, Qt::ImageConversionFlags flags = Qt::AutoColor) &&;
     void applyColorTransform(const QColorTransform &transform);
+    void applyColorTransform(const QColorTransform &transform, QImage::Format format, Qt::ImageConversionFlags flags = Qt::AutoColor);
 
     bool load(QIODevice *device, const char *format);
     bool load(const QString &fileName, const char *format = nullptr);

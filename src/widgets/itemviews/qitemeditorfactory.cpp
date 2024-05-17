@@ -120,7 +120,7 @@ Q_SIGNALS:
 
     Additional editors can be registered with the registerEditor() function.
 
-    \sa QStyledItemDelegate, {Model/View Programming}, {Color Editor Factory Example}
+    \sa QStyledItemDelegate, {Model/View Programming}
 */
 
 /*!
@@ -363,7 +363,7 @@ void QItemEditorFactory::setDefaultFactory(QItemEditorFactory *factory)
     to register widgets without the need to subclass QItemEditorCreatorBase.
 
     \sa QStandardItemEditorCreator, QItemEditorFactory,
-    {Model/View Programming}, {Color Editor Factory Example}
+    {Model/View Programming}
 */
 
 /*!
@@ -432,7 +432,7 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
     property, you should use QStandardItemEditorCreator instead.
 
     \sa QItemEditorCreatorBase, QStandardItemEditorCreator,
-        QItemEditorFactory, {Color Editor Factory Example}
+        QItemEditorFactory
 */
 
 /*!
@@ -488,7 +488,7 @@ QItemEditorCreatorBase::~QItemEditorCreatorBase()
     \snippet code/src_gui_itemviews_qitemeditorfactory.cpp 3
 
     \sa QItemEditorCreatorBase, QItemEditorCreator,
-        QItemEditorFactory, QStyledItemDelegate, {Color Editor Factory Example}
+        QItemEditorFactory, QStyledItemDelegate
 */
 
 /*!

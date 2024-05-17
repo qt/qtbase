@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QDialog>
 #include <QMainWindow>
@@ -113,7 +113,6 @@ void tst_QAction::actionEvent()
     // add action
     MyWidget testWidget(this);
     testWidget.show();
-    QApplicationPrivate::setActiveWindow(&testWidget);
     testWidget.addAction(&a);
     qApp->processEvents();
 
@@ -273,7 +272,6 @@ void tst_QAction::repeat()
 
     MyWidget testWidget(this);
     testWidget.show();
-    QApplicationPrivate::setActiveWindow(&testWidget);
     QVERIFY(QTest::qWaitForWindowActive(&testWidget));
 
     QAction act(&testWidget);
@@ -352,7 +350,6 @@ void tst_QAction::disableShortcutsWithBlockedWidgets()
     dialog.show();
     QVERIFY(QTest::qWaitForWindowExposed(&dialog));
 
-    QApplicationPrivate::setActiveWindow(&window);
     QVERIFY(QTest::qWaitForWindowActive(&window));
 
     QSignalSpy spy(&action, &QAction::triggered);

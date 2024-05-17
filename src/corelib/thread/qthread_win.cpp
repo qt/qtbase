@@ -19,6 +19,17 @@
 #endif // _MT
 #include <process.h>
 
+extern "C" {
+// MinGW is missing the declaration of SetThreadDescription:
+WINBASEAPI
+HRESULT
+WINAPI
+SetThreadDescription(
+    _In_ HANDLE hThread,
+    _In_ PCWSTR lpThreadDescription
+    );
+}
+
 QT_BEGIN_NAMESPACE
 
 #if QT_CONFIG(thread)
@@ -76,8 +87,9 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         threadData->isAdopted = true;
         threadData->threadId.storeRelaxed(reinterpret_cast<Qt::HANDLE>(quintptr(GetCurrentThreadId())));
 
-        if (!QCoreApplicationPrivate::theMainThread) {
-            QCoreApplicationPrivate::theMainThread = threadData->thread.loadRelaxed();
+        if (!QCoreApplicationPrivate::theMainThreadId) {
+            QCoreApplicationPrivate::theMainThread.storeRelease(threadData->thread.loadRelaxed());
+            QCoreApplicationPrivate::theMainThreadId.storeRelaxed(threadData->threadId.loadRelaxed());
         } else {
             HANDLE realHandle = INVALID_HANDLE_VALUE;
             DuplicateHandle(GetCurrentProcess(),
@@ -212,39 +224,6 @@ DWORD WINAPI qt_adopted_thread_watcher_function(LPVOID)
     return 0;
 }
 
-#if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC)
-
-#ifndef Q_OS_WIN64
-#  define ULONG_PTR DWORD
-#endif
-
-typedef struct tagTHREADNAME_INFO
-{
-    DWORD dwType;      // must be 0x1000
-    LPCSTR szName;     // pointer to name (in user addr space)
-    HANDLE dwThreadID; // thread ID (-1=caller thread)
-    DWORD dwFlags;     // reserved for future use, must be zero
-} THREADNAME_INFO;
-
-void qt_set_thread_name(HANDLE threadId, LPCSTR threadName)
-{
-    THREADNAME_INFO info;
-    info.dwType = 0x1000;
-    info.szName = threadName;
-    info.dwThreadID = threadId;
-    info.dwFlags = 0;
-
-    __try
-    {
-        RaiseException(0x406D1388, 0, sizeof(info)/sizeof(DWORD),
-                       reinterpret_cast<const ULONG_PTR*>(&info));
-    }
-    __except (EXCEPTION_CONTINUE_EXECUTION)
-    {
-    }
-}
-#endif // !QT_NO_DEBUG && Q_CC_MSVC
-
 /**************************************************************************
  ** QThreadPrivate
  *************************************************************************/
@@ -278,12 +257,11 @@ unsigned int __stdcall QT_ENSURE_STACK_ALIGNED_FOR_SSE QThreadPrivate::start(voi
     data->ensureEventDispatcher();
     data->eventDispatcher.loadRelaxed()->startingUp();
 
-#if !defined(QT_NO_DEBUG) && defined(Q_CC_MSVC)
     // sets the name of the current thread.
-    qt_set_thread_name(HANDLE(-1), thr->d_func()->objectName.isEmpty()
-                        ? thr->metaObject()->className()
-                        : std::exchange(thr->d_func()->objectName, {}).toLocal8Bit().constData());
-#endif
+    QString threadName = std::exchange(thr->d_func()->objectName, {});
+    if (Q_LIKELY(threadName.isEmpty()))
+        threadName = QString::fromUtf8(thr->metaObject()->className());
+    SetThreadDescription(GetCurrentThread(), reinterpret_cast<const wchar_t *>(threadName.utf16()));
 
     emit thr->started(QThread::QPrivateSignal());
     QThread::setTerminationEnabled(true);
@@ -336,7 +314,7 @@ void QThreadPrivate::finish(void *arg, bool lockAnyway) noexcept
     d->running = false;
     d->finished = true;
     d->isInFinish = false;
-    d->interruptionRequested = false;
+    d->interruptionRequested.store(false, std::memory_order_relaxed);
 
     if (!d->waiters) {
         CloseHandle(d->handle);
@@ -413,7 +391,7 @@ void QThread::start(Priority priority)
     d->finished = false;
     d->exited = false;
     d->returnCode = 0;
-    d->interruptionRequested = false;
+    d->interruptionRequested.store(false, std::memory_order_relaxed);
 
     /*
       NOTE: we create the thread in the suspended state, set the

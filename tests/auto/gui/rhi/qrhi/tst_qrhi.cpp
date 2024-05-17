@@ -1,5 +1,5 @@
 // Copyright (C) 2019 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <QThread>
@@ -19,8 +19,7 @@
 # define TST_GL
 #endif
 
-// Never attempt Vulkan on Android, to prevent the emulator in CI from crashing.
-#if QT_CONFIG(vulkan) && !defined(Q_OS_ANDROID)
+#if QT_CONFIG(vulkan)
 # include <QVulkanInstance>
 # include <QVulkanFunctions>
 # define TST_VK
@@ -31,7 +30,7 @@
 # define TST_D3D12
 #endif
 
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
 # define TST_MTL
 #endif
 
@@ -424,7 +423,9 @@ void tst_QRhi::create()
             QRhi::HalfAttributes,
             QRhi::RenderToOneDimensionalTexture,
             QRhi::ThreeDimensionalTextureMipmaps,
-            QRhi::MultiView
+            QRhi::MultiView,
+            QRhi::TextureViewFormat,
+            QRhi::ResolveDepthStencil
         };
         for (size_t i = 0; i <sizeof(features) / sizeof(QRhi::Feature); ++i)
             rhi->isFeatureSupported(features[i]);
@@ -6993,9 +6994,9 @@ void tst_QRhi::halfPrecisionAttributes()
     // To avoid these errors, we pad the vertices to 8 byte stride.
     //
     static const qfloat16 vertices[] = {
-        -1.0, -1.0, 0.0, 0.0,
-        1.0, -1.0, 0.0, 0.0,
-        0.0, 1.0, 0.0, 0.0,
+        qfloat16(-1.0), qfloat16(-1.0), qfloat16(0.0), qfloat16(0.0),
+        qfloat16(1.0), qfloat16(-1.0), qfloat16(0.0), qfloat16(0.0),
+        qfloat16(0.0), qfloat16(1.0), qfloat16(0.0), qfloat16(0.0),
     };
 
     QScopedPointer<QRhiBuffer> vbuf(rhi->newBuffer(QRhiBuffer::Immutable, QRhiBuffer::VertexBuffer, sizeof(vertices)));

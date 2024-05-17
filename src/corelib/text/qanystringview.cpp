@@ -1,5 +1,5 @@
 // Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qanystringview.h"
 #include "qdebug.h"
@@ -16,6 +16,12 @@ QT_BEGIN_NAMESPACE
     \reentrant
     \ingroup tools
     \ingroup string-processing
+
+    \compares strong
+    \compareswith strong char16_t QChar {const char16_t *} {const char *} \
+                  QByteArray QByteArrayView QString QStringView QUtf8StringView \
+                  QLatin1StringView
+    \endcompareswith
 
     A QAnyStringView references a contiguous portion of a string it does
     not own. It acts as an interface type to all kinds of strings,
@@ -582,12 +588,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QAnyStringView::operator==(QAnyStringView lhs, QAnyStringView rhs)
-    \fn bool QAnyStringView::operator!=(QAnyStringView lhs, QAnyStringView rhs)
-    \fn bool QAnyStringView::operator<=(QAnyStringView lhs, QAnyStringView rhs)
-    \fn bool QAnyStringView::operator>=(QAnyStringView lhs, QAnyStringView rhs)
-    \fn bool QAnyStringView::operator<(QAnyStringView lhs, QAnyStringView rhs)
-    \fn bool QAnyStringView::operator>(QAnyStringView lhs, QAnyStringView rhs)
+    \fn bool QAnyStringView::operator==(const QAnyStringView &lhs, const QAnyStringView & rhs)
+    \fn bool QAnyStringView::operator!=(const QAnyStringView & lhs, const QAnyStringView & rhs)
+    \fn bool QAnyStringView::operator<=(const QAnyStringView & lhs, const QAnyStringView & rhs)
+    \fn bool QAnyStringView::operator>=(const QAnyStringView & lhs, const QAnyStringView & rhs)
+    \fn bool QAnyStringView::operator<(const QAnyStringView & lhs, const QAnyStringView & rhs)
+    \fn bool QAnyStringView::operator>(const QAnyStringView & lhs, const QAnyStringView & rhs)
 
     Operators that compare \a lhs to \a rhs.
 

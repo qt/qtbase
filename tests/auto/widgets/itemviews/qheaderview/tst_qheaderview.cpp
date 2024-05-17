@@ -1,6 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // Copyright (C) 2012 Thorbjørn Lund Martsum - tmartsum[at]gmail.com
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QHeaderView>
 #include <QProxyStyle>
@@ -1620,7 +1620,6 @@ void tst_QHeaderView::focusPolicy()
 
     widget.show();
     widget.setFocus(Qt::OtherFocusReason);
-    QApplicationPrivate::setActiveWindow(&widget);
     widget.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&widget));
     QVERIFY(widget.hasFocus());
@@ -3612,7 +3611,6 @@ void tst_QHeaderView::statusTips()
     headerView.setGeometry(QRect(QPoint(QGuiApplication::primaryScreen()->geometry().center() - QPoint(250, 250)),
                            QSize(500, 500)));
     headerView.show();
-    QApplicationPrivate::setActiveWindow(&headerView);
     QVERIFY(QTest::qWaitForWindowActive(&headerView));
 
     // Ensure it is moved away first and then moved to the relevant section

@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <qmap.h>
 #include <QTest>
@@ -640,16 +640,19 @@ void tst_QMap::operator_eq()
         QMap<int, int> b;
 
         QVERIFY(a == b);
+        QCOMPARE(qHash(a), qHash(b));
         QVERIFY(!(a != b));
 
         a.insert(1,1);
         b.insert(1,1);
         QVERIFY(a == b);
+        QCOMPARE(qHash(a), qHash(b));
         QVERIFY(!(a != b));
 
         a.insert(0,1);
         b.insert(0,1);
         QVERIFY(a == b);
+        QCOMPARE(qHash(a), qHash(b));
         QVERIFY(!(a != b));
 
         // compare for inequality:
@@ -672,6 +675,7 @@ void tst_QMap::operator_eq()
         QMap<QString, QString> b;
 
         QVERIFY(a == b);
+        QCOMPARE(qHash(a), qHash(b));
         QVERIFY(!(a != b));
 
         a.insert("Hello", "World");
@@ -680,6 +684,7 @@ void tst_QMap::operator_eq()
 
         b.insert("Hello", "World");
         QVERIFY(a == b);
+        QCOMPARE(qHash(a), qHash(b));
         QVERIFY(!(a != b));
 
         a.insert("Goodbye", "cruel world");
@@ -696,6 +701,7 @@ void tst_QMap::operator_eq()
         // empty keys and null keys match:
         b.insert(QString(""), QString());
         QVERIFY(a == b);
+        QCOMPARE(qHash(a), qHash(b));
         QVERIFY(!(a != b));
     }
 

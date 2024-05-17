@@ -108,6 +108,7 @@ public:
     virtual void quit();
 
     static QBasicAtomicPointer<QThread> theMainThread;
+    static QBasicAtomicPointer<void> theMainThreadId;
     static QThread *mainThread();
     static bool threadRequiresCoreApplication();
 

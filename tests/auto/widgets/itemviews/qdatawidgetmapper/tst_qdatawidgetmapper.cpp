@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QComboBox>
 #include <QDataWidgetMapper>
@@ -420,7 +420,6 @@ void tst_QDataWidgetMapper::textEditDoesntChangeFocusOnTab_qtbug3305()
 
     container.show();
 
-    QApplicationPrivate::setActiveWindow(&container);
     QVERIFY(QTest::qWaitForWindowActive(&container));
 
     int closeEditorSpyCount = 0;

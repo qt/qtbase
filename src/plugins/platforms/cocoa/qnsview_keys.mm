@@ -30,7 +30,35 @@ static bool isSpecialKey(const QString &text)
     return false;
 }
 
+static bool sendAsShortcut(const KeyEvent &keyEvent, QWindow *window)
+{
+    KeyEvent shortcutEvent = keyEvent;
+    shortcutEvent.type = QEvent::Shortcut;
+    qCDebug(lcQpaKeys) << "Trying potential shortcuts in" << window
+                        << "for" << shortcutEvent;
+
+    if (shortcutEvent.sendWindowSystemEvent(window)) {
+        qCDebug(lcQpaKeys) << "Found matching shortcut; will not send as key event";
+        return true;
+    }
+    qCDebug(lcQpaKeys) << "No matching shortcuts; continuing with key event delivery";
+    return false;
+}
+
 @implementation QNSView (Keys)
+
+- (bool)performKeyEquivalent:(NSEvent *)nsevent
+{
+    // Implemented to handle shortcuts for modified Tab keys, which are
+    // handled by Cocoa and not delivered to your keyDown implementation.
+    if (nsevent.type == NSEventTypeKeyDown && m_composingText.isEmpty()) {
+        const bool ctrlDown = [nsevent modifierFlags] & NSEventModifierFlagControl;
+        const bool isTabKey = nsevent.keyCode == kVK_Tab;
+        if (ctrlDown && isTabKey && sendAsShortcut(KeyEvent(nsevent), [self topLevelWindow]))
+            return YES;
+    }
+    return NO;
+}
 
 - (bool)handleKeyEvent:(NSEvent *)nsevent
 {
@@ -52,17 +80,8 @@ static bool isSpecialKey(const QString &text)
     if (keyEvent.type == QEvent::KeyPress) {
 
         if (m_composingText.isEmpty()) {
-            KeyEvent shortcutEvent = keyEvent;
-            shortcutEvent.type = QEvent::Shortcut;
-            qCDebug(lcQpaKeys) << "Trying potential shortcuts in" << window
-                               << "for" << shortcutEvent;
-
-            if (shortcutEvent.sendWindowSystemEvent(window)) {
-                qCDebug(lcQpaKeys) << "Found matching shortcut; will not send as key event";
+            if (sendAsShortcut(keyEvent, window))
                 return true;
-            } else {
-                qCDebug(lcQpaKeys) << "No matching shortcuts; continuing with key event delivery";
-            }
         }
 
         QObject *focusObject = m_platformWindow ? m_platformWindow->window()->focusObject() : nullptr;
@@ -94,7 +113,10 @@ static bool isSpecialKey(const QString &text)
 
                     qCDebug(lcQpaKeys) << "Interpreting key event for focus object" << focusObject;
                     m_currentlyInterpretedKeyEvent = nsevent;
-                    [self interpretKeyEvents:@[nsevent]];
+                    if (![self.inputContext handleEvent:nsevent]) {
+                        qCDebug(lcQpaKeys) << "Input context did not consume event";
+                        m_sendKeyEvent = true;
+                    }
                     m_currentlyInterpretedKeyEvent = 0;
                     didInterpretKeyEvent = true;
 

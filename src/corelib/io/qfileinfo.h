@@ -4,6 +4,7 @@
 #ifndef QFILEINFO_H
 #define QFILEINFO_H
 
+#include <QtCore/qcompare.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qshareddata.h>
@@ -21,6 +22,7 @@ class QFileInfoPrivate;
 class Q_CORE_EXPORT QFileInfo
 {
     friend class QDirIteratorPrivate;
+    friend class QDirListingPrivate;
 public:
     explicit QFileInfo(QFileInfoPrivate *d);
 
@@ -58,8 +60,10 @@ public:
     void swap(QFileInfo &other) noexcept
     { d_ptr.swap(other.d_ptr); }
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     bool operator==(const QFileInfo &fileinfo) const;
     inline bool operator!=(const QFileInfo &fileinfo) const { return !(operator==(fileinfo)); }
+#endif
 
     void setFile(const QString &file);
     void setFile(const QFileDevice &file);
@@ -171,6 +175,8 @@ protected:
     QSharedDataPointer<QFileInfoPrivate> d_ptr;
 
 private:
+    friend Q_CORE_EXPORT bool comparesEqual(const QFileInfo &lhs, const QFileInfo &rhs);
+    Q_DECLARE_EQUALITY_COMPARABLE(QFileInfo)
     QFileInfoPrivate* d_func();
     inline const QFileInfoPrivate* d_func() const
     {

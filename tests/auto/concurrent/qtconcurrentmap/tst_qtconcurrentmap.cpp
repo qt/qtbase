@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 #include <qtconcurrentmap.h>
 #include <qexception.h>
 #include <qdebug.h>
@@ -226,7 +226,7 @@ void tst_QtConcurrentMap::map()
 #if 0
     // not allowed: map() on a const list, where functors try to modify the items in the list
     {
-        const QList<int> list = QList<int>() << 1 << 2 << 3;;
+        const QList<int> list = QList<int>() << 1 << 2 << 3;
 
         QtConcurrent::map(list, MultiplyBy2InPlace());
         QtConcurrent::map(list, multiplyBy2InPlace);
@@ -363,7 +363,7 @@ void tst_QtConcurrentMap::blockingMap()
 #if 0
     // not allowed: map() on a const list, where functors try to modify the items in the list
     {
-        const QList<int> list = QList<int>() << 1 << 2 << 3;;
+        const QList<int> list = QList<int>() << 1 << 2 << 3;
 
         QtConcurrent::blockingMap(list, MultiplyBy2InPlace());
         QtConcurrent::blockingMap(list, multiplyBy2InPlace);

@@ -1,0 +1,30 @@
+type: Group
+instructions:
+  - type: EnvironmentVariable
+    variableName: EXAMPLES_ENV_PREFIX
+    variableValue: "{{.Env.TARGET_ENV_PREFIX}}"
+  - type: EnvironmentVariable
+    variableName: INSTALL_DIR_FOR_EXAMPLES
+    variableValue: "{{.InstallDir}}\\target"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: INSTALL_DIR_FOR_EXAMPLES
+    variableValue: "{{.InstallDir}}/target"
+    # TODO: Might need android multi-abi support whenever we decide to build examples for that
+    # config. See 7b9bb698b93e747e02bf6ab8310c439867318f8e in qtbase and how the instructions
+    # were modified for multi-abi android tests.
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: COIN_CMAKE_ARGS
+    variableValue: "{{.Env.COMMON_TARGET_EXAMPLES_CMAKE_ARGS}}"
+  - !include "{{qt/qtbase}}/cmake_build_standalone_examples.yaml"
+enable_if:
+  condition: property
+  property: features
+  contains_value: StandaloneExamples

@@ -1,7 +1,11 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
+#include <QChronoTimer>
+#include <QObject>
 #include <QTimer>
+
+using namespace std::chrono;
 
 class Foo : public QObject
 {
@@ -35,7 +39,45 @@ Foo::Foo()
     }
 }
 
+// QChronoTimer
+class MyWidget : QObject
+{
+    MyWidget()
+    {
+//! [qchronotimer-singleshot]
+        MyWidget widget;
+        QChronoTimer::singleShot(200ms, &widget, &MyWidget::updateCaption);
+//! [qchronotimer-singleshot]
+
+//! [zero-timer]
+        // The default interval is 0ns
+        QChronoTimer *timer = new QChronoTimer(this);
+        connect(timer, &QChronoTimer::timeout, this, &MyWidget::processOneThing);
+        timer->start();
+//! [zero-timer]
+
+        {
+//! [timer-interval-in-ctor]
+        QChronoTimer *timer = new QChronoTimer(1s, this);
+        connect(timer, &QChronoTimer::timeout, this, &MyWidget::processOneThing);
+        timer->start();
+//! [timer-interval-in-ctor]
+        }
+
+        {
+//! [timer-setinterval]
+        QChronoTimer *timer = new QChronoTimer(this);
+        connect(timer, &QChronoTimer::timeout, this, &MyWidget::processOneThing);
+        timer->setInterval(1s);
+        timer->start();
+//! [timer-setinterval]
+        }
+    }
+
+public Q_SLOTS:
+    void processOneThing();
+};
+
 int main()
 {
-
 }

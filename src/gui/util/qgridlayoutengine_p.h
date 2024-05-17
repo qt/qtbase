@@ -24,6 +24,7 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qsize.h>
 #include <QtCore/qrect.h>
+#include <QtCore/qdebug.h>
 
 #include <float.h>
 #include "qlayoutpolicy_p.h"
@@ -282,6 +283,8 @@ public:
 
 
     virtual QLayoutPolicy::ControlTypes controlTypes(LayoutSide side) const;
+
+    inline virtual QString toString() const { return QDebug::toString(this); }
 
     QRectF geometryWithin(qreal x, qreal y, qreal width, qreal height, qreal rowDescent, Qt::Alignment align, bool snapToPixelGrid) const;
     QGridLayoutBox box(Qt::Orientation orientation, bool snapToPixelGrid, qreal constraint = -1.0) const;

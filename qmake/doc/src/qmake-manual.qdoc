@@ -1462,9 +1462,10 @@
 
     \section1 FORMS
 
-    Specifies the UI files (see \l{Qt Designer Manual}) to be processed by \c uic
-    before compiling.  All dependencies, headers and source files required
-    to build these UI files will automatically be added to the project.
+    Specifies the UI files (see \l{Qt Widgets Designer Manual}) to be processed
+    by \c uic before compiling.  All dependencies, headers and source files
+    required to build these UI files will automatically be added to the
+    project.
 
     For example:
 
@@ -5465,7 +5466,7 @@
     \li \l{HEADERS} - A list of header files for the application.
     \li \l{SOURCES} - A list of C++ source files for the application.
     \li \l{FORMS} - A list of UI files for the application (created using
-        Qt Designer).
+        \QD).
     \li \l{LEXSOURCES} - A list of Lex source files for the application.
     \li \l{YACCSOURCES} - A list of Yacc source files for the
         application.
@@ -5600,7 +5601,7 @@
     \li VERSION - The version number of the target library. For example, 2.3.1.
     \endlist
 
-    \section2 Building a Qt Designer Plugin
+    \section2 Building a Qt Widgets Designer Plugin
 
     \QD plugins are built using a specific set of configuration settings that
     depend on the way Qt was configured for your system. For convenience, these
@@ -5611,7 +5612,8 @@
     QT          += widgets designer
     \endcode
 
-    See the \l{Qt Designer Examples} for more examples of plugin-based projects.
+    See the \l{Qt Widgets Designer Examples} for more examples of plugin-based
+    projects.
 
     \section1 Building and Installing in Debug and Release Modes
 

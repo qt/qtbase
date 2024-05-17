@@ -422,8 +422,9 @@
     \section1 Testing the model
 
     Correctly implementing an item model can be challenging. The class
-    \l QAbstractItemModelTester from the \l{Qt Test} module checks for model
-    consistency, like the model index creation and parent-child relationships.
+    \l [QtTest] QAbstractItemModelTester from the \l [QtTest]{Qt Test} module
+    checks for model consistency, like the model index creation and
+    parent-child relationships.
 
     You can test your model by just passing a model instance to the class
     constructor, for instance as part of a Qt unit test:

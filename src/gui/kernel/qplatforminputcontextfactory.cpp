@@ -28,10 +28,33 @@ QStringList QPlatformInputContextFactory::keys()
 #endif
 }
 
-QString QPlatformInputContextFactory::requested()
+QStringList QPlatformInputContextFactory::requested()
 {
-    QByteArray env = qgetenv("QT_IM_MODULE");
-    return env.isNull() ? QString() : QString::fromLocal8Bit(env);
+    QStringList imList;
+    QByteArray env = qgetenv("QT_IM_MODULES");
+
+    if (!env.isEmpty())
+        imList = QString::fromLocal8Bit(env).split(QChar::fromLatin1(';'), Qt::SkipEmptyParts);
+
+    if (!imList.isEmpty())
+        return imList;
+
+    env = qgetenv("QT_IM_MODULE");
+    if (!env.isEmpty())
+        imList = {QString::fromLocal8Bit(env)};
+
+    return imList;
+}
+
+QPlatformInputContext *QPlatformInputContextFactory::create(const QStringList& keys)
+{
+    for (const QString &key : keys) {
+        auto plugin = create(key);
+        if (plugin)
+            return plugin;
+    }
+
+    return nullptr;
 }
 
 QPlatformInputContext *QPlatformInputContextFactory::create(const QString& key)

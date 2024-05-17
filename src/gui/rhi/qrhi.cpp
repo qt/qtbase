@@ -16,7 +16,7 @@
 #include "qrhid3d11_p.h"
 #include "qrhid3d12_p.h"
 #endif
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
 #include "qrhimetal_p.h"
 #endif
 
@@ -29,7 +29,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 /*!
     \class QRhi
     \ingroup painting-3D
-    \inmodule QtGui
+    \inmodule QtGuiPrivate
+    \inheaderfile rhi/qrhi.h
     \since 6.6
 
     \brief Accelerated 2D/3D graphics API abstraction.
@@ -1003,6 +1004,38 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     as well. Multiview rendering is not supported in combination with
     tessellation or geometry shaders. See QRhiColorAttachment::setMultiViewCount()
     for further details on multiview rendering. This enum value has been introduced in Qt 6.7.
+
+    \value TextureViewFormat Indicates that setting a
+    \l{QRhiTexture::setWriteViewFormat()}{view format} on a QRhiTexture is
+    effective. When reported as supported, setting the read (sampling) or write
+    (render target / image load-store) view mode changes the texture's viewing
+    format. When unsupported, setting a view format has no effect. Note that Qt
+    has no knowledge or control over format compatibility or resource view rules
+    in the underlying 3D API and its implementation. Passing in unsuitable,
+    incompatible formats may lead to errors and unspecified behavior. This is
+    provided mainly to allow "casting" rendering into a texture created with an
+    sRGB format to non-sRGB to avoid the unwanted linear->sRGB conversion on
+    shader writes. Other types of casting may or may not be functional,
+    depending on the underlying API. Currently implemented for Vulkan and Direct
+    3D 12. With D3D12 the feature is available only if
+    \c CastingFullyTypedFormatSupported is supported, see
+    \l{https://microsoft.github.io/DirectX-Specs/d3d/RelaxedCasting.html} (and
+    note that QRhi always uses fully typed formats for textures.) This enum
+    value has been introduced in Qt 6.8.
+
+    \value ResolveDepthStencil Indicates that resolving a multisample depth or
+    depth-stencil texture is supported. Otherwise,
+    \l{QRhiTextureRenderTargetDescription::setDepthResolveTexture()}{setting a
+    depth resolve texture} is not functional and must be avoided. Direct 3D 11
+    and 12 have no support for resolving depth/depth-stencil formats, and
+    therefore this feature will never be supported with those. Vulkan 1.0 has no
+    API to request resolving a depth-stencil attachment. Therefore, with Vulkan
+    this feature will only be supported with Vulkan 1.2 and up, and on 1.1
+    implementations with the appropriate extensions present. This feature is
+    provided for the rare case when resolving into a non-multisample depth
+    texture becomes necessary, for example when rendering into an
+    OpenXR-provided depth texture (XR_KHR_composition_layer_depth). This enum
+    value has been introduced in Qt 6.8.
  */
 
 /*!
@@ -1671,12 +1704,22 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputBinding &b)
     \value Half3 Three component half precision (16 bit) float vector
     \value Half2 Two component half precision (16 bit) float vector
     \value Half Half precision (16 bit) float
+    \value UShort4 Four component unsigned short (16 bit) integer vector
+    \value UShort3 Three component unsigned short (16 bit) integer vector
+    \value UShort2 Two component unsigned short (16 bit) integer vector
+    \value UShort Unsigned short (16 bit) integer
+    \value SShort4 Four component signed short (16 bit) integer vector
+    \value SShort3 Three component signed short (16 bit) integer vector
+    \value SShort2 Two component signed short (16 bit) integer vector
+    \value SShort Signed short (16 bit) integer
 
     \note Support for half precision floating point attributes is indicated at
-    run time by the QRhi::Feature::HalfAttributes feature flag. Note that
-    Direct3D 11/12 supports half input attributes, but does not support the
-    Half3 type. The D3D backends pass through Half3 as Half4. To ensure cross
-    platform compatibility, Half3 inputs should be padded to 8 bytes.
+    run time by the QRhi::Feature::HalfAttributes feature flag.
+
+    \note Direct3D 11/12 supports 16 bit input attributes, but does not support
+    the Half3, UShort3 or SShort3 types. The D3D backends pass through Half3 as
+    Half4, UShort3 as UShort4, and SShort3 as SShort4. To ensure cross platform
+    compatibility, 16 bit inputs should be padded to 8 bytes.
  */
 
 /*!
@@ -1887,6 +1930,24 @@ quint32 QRhiImplementation::byteSizePerVertexForVertexInputFormat(QRhiVertexInpu
         return 2 * sizeof(qfloat16);
     case QRhiVertexInputAttribute::Half:
         return sizeof(qfloat16);
+
+    case QRhiVertexInputAttribute::UShort4:
+        return 4 * sizeof(quint16);
+    case QRhiVertexInputAttribute::UShort3:
+        return 4 * sizeof(quint16); // ivec3 still takes 8 bytes
+    case QRhiVertexInputAttribute::UShort2:
+        return 2 * sizeof(quint16);
+    case QRhiVertexInputAttribute::UShort:
+        return sizeof(quint16);
+
+    case QRhiVertexInputAttribute::SShort4:
+        return 4 * sizeof(qint16);
+    case QRhiVertexInputAttribute::SShort3:
+        return 4 * sizeof(qint16); // uvec3 still takes 8 bytes
+    case QRhiVertexInputAttribute::SShort2:
+        return 2 * sizeof(qint16);
+    case QRhiVertexInputAttribute::SShort:
+        return sizeof(qint16);
 
     default:
         Q_UNREACHABLE_RETURN(1);
@@ -2495,6 +2556,25 @@ QRhiColorAttachment::QRhiColorAttachment(QRhiRenderBuffer *renderBuffer)
         QRhiTextureRenderTarget *rt = rhi->newTextureRenderTarget({ colorAtt, depthStencil });
     \endcode
 
+    \note when multisample resolving is enabled, the multisample data may not be
+    written out at all. This means that the multisample texture in a color
+    attachment must not be used afterwards with shaders for sampling (or other
+    purposes) whenever a resolve texture is set, since the multisample color
+    buffer is merely an intermediate storage then that gets no data written back
+    on some GPU architectures at all. See
+    \l{QRhiTextureRenderTarget::Flag}{PreserveColorContents} for more details.
+
+    \note When using setDepthTexture(), not setDepthStencilBuffer(), and the
+    depth (stencil) data is not of interest afterwards, set the
+    DoNotStoreDepthStencilContents flag on the QRhiTextureRenderTarget. This
+    allows indicating to the underlying 3D API that the depth/stencil data can
+    be discarded, leading potentially to better performance with tiled GPU
+    architectures. When the depth-stencil buffer is a QRhiRenderBuffer (and also
+    for the multisample color texture, see previous note) this is implicit, but
+    with a depth (stencil) QRhiTexture the intention needs to be declared
+    explicitly. By default QRhi assumes that the data is of interest (e.g., the
+    depth texture is sampled in a shader afterwards).
+
     \note This is a RHI API with limited compatibility guarantees, see \l QRhi
     for details.
 
@@ -2627,6 +2707,39 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
  */
 
 /*!
+    \fn QRhiTexture *QRhiTextureRenderTargetDescription::depthResolveTexture() const
+
+    \return the texture to which a multisample depth (or depth-stencil) texture
+    (or texture array) is resolved to. \nullptr if there is none, which is the
+    most common case.
+
+    \since 6.8
+    \sa QRhiColorAttachment::resolveTexture(), depthTexture()
+ */
+
+/*!
+    \fn void QRhiTextureRenderTargetDescription::setDepthResolveTexture(QRhiTexture *tex)
+
+    Sets the depth (or depth-stencil) resolve texture \a tex.
+
+    \a tex is expected to be a 2D texture or a 2D texture array with a format
+    matching the texture set via setDepthTexture().
+
+    \note Resolving depth (or depth-stencil) data is only functional when the
+    \l ResolveDepthStencil feature is reported as supported at run time. Support
+    for depth-stencil resolve is not universally available among the graphics
+    APIs. Designs assuming unconditional availability of depth-stencil resolve
+    are therefore non-portable, and should be avoided.
+
+    \note As an additional limitation for OpenGL ES in particular, setting a
+    depth resolve texture may only be functional in combination with
+    setDepthTexture(), not with setDepthStencilBuffer().
+
+    \since 6.8
+    \sa QRhiColorAttachment::setResolveTexture(), setDepthTexture()
+ */
+
+/*!
     \class QRhiTextureSubresourceUploadDescription
     \inmodule QtGui
     \since 6.6
@@ -2750,6 +2863,7 @@ QRhiTextureSubresourceUploadDescription::QRhiTextureSubresourceUploadDescription
     \fn void QRhiTextureSubresourceUploadDescription::setImage(const QImage &image)
 
     Sets \a image.
+    Upon textures loading, the image data will be read as is, with no formats conversions.
 
     \note image() and data() cannot be both set at the same time.
  */
@@ -3604,7 +3718,7 @@ QRhi *QRhiResource::rhi() const
         QRhiResourceUpdateBatch *batch = rhi->nextResourceUpdateBatch();
         for (int i = 0; i < N; ++i) {
             batch->updateDynamicBuffer(ubuf, i * ONE_UBUF_SIZE, 64, matrix.constData());
-            updates->updateDynamicBuffer(ubuf, i * ONE_UBUF_SIZE + 64, 4, &opacity);
+            batch->updateDynamicBuffer(ubuf, i * ONE_UBUF_SIZE + 64, 4, &opacity);
         }
         // ...
         // beginPass(), set pipeline, etc., and then:
@@ -4507,6 +4621,87 @@ void QRhiTexture::setNativeLayout(int layout)
  */
 
 /*!
+    \struct QRhiTexture::ViewFormat
+    \inmodule QtGui
+    \since 6.8
+    \brief Specifies the view format for reading or writing from or to the texture.
+
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
+ */
+
+/*!
+    \variable QRhiTexture::ViewFormat::format
+ */
+
+/*!
+    \variable QRhiTexture::ViewFormat::srgb
+ */
+
+/*!
+    \fn QRhiTexture::ViewFormat QRhiTexture::readViewFormat() const
+    \since 6.8
+    \return the view format used when sampling the texture. When not called, the view
+    format is assumed to be the same as format().
+ */
+
+/*!
+    \fn void QRhiTexture::setReadViewFormat(const ViewFormat &fmt)
+    \since 6.8
+
+    Sets the shader resource view format (or the format of the view used for
+    sampling the texture) to \a fmt. By default the same format (and sRGB-ness)
+    is used as the texture itself, and in most cases this function does not need
+    to be called.
+
+    This setting is only taken into account when the \l TextureViewFormat
+    feature is reported as supported.
+
+    \note This functionality is provided to allow "casting" between
+    non-sRGB and sRGB in order to get the shader reads perform, or not perform,
+    the implicit sRGB conversions. Other types of casting may or may not be
+    functional.
+ */
+
+/*!
+    \fn QRhiTexture::ViewFormat QRhiTexture::writeViewFormat() const
+    \since 6.8
+    \return the view format used when writing to the texture and when using it
+    with image load/store. When not called, the view format is assumed to be the
+    same as format().
+ */
+
+/*!
+    \fn void QRhiTexture::setWriteViewFormat(const ViewFormat &fmt)
+    \since 6.8
+
+    Sets the render target view format to \a fmt. By default the same format
+    (and sRGB-ness) is used as the texture itself, and in most cases this
+    function does not need to be called.
+
+    One common use case for providing a write view format is working with
+    externally provided textures that, outside of our control, use an sRGB
+    format with 3D APIs such as Vulkan or Direct 3D, but the rendering engine is
+    already prepared to handle linearization and conversion to sRGB at the end
+    of its shading pipeline. In this case what is wanted when rendering into
+    such a texture is a render target view (e.g. VkImageView) that has the same,
+    but non-sRGB format. (if e.g. from an OpenXR implementation one gets a
+    VK_FORMAT_R8G8B8A8_SRGB texture, it is likely that rendering into it should
+    be done using a VK_FORMAT_R8G8B8A8_UNORM view, if that is what the rendering
+    engine's pipeline requires; in this example one would call this function
+    with a ViewFormat that has a format of QRhiTexture::RGBA8 and \c srgb set to
+    \c false).
+
+    This setting is only taken into account when the \l TextureViewFormat
+    feature is reported as supported.
+
+    \note This functionality is provided to allow "casting" between
+    non-sRGB and sRGB in order to get the shader write not perform, or perform,
+    the implicit sRGB conversions. Other types of casting may or may not be
+    functional.
+ */
+
+/*!
     \class QRhiSampler
     \inmodule QtGui
     \since 6.6
@@ -4916,7 +5111,19 @@ QRhiResource::Type QRhiSwapChainRenderTarget::resourceType() const
     \value PreserveColorContents Indicates that the contents of the color
     attachments is to be loaded when starting a render pass, instead of
     clearing. This is potentially more expensive, especially on mobile (tiled)
-    GPUs, but allows preserving the existing contents between passes.
+    GPUs, but allows preserving the existing contents between passes. When doing
+    multisample rendering with a resolve texture set, setting this flag also
+    requests the multisample color data to be stored (written out) to the
+    multisample texture or render buffer. (for non-multisample rendering the
+    color data is always stored, but for MSAA storing the multisample data
+    decreases efficiency for certain GPU architectures, hence defaulting to not
+    writing it out) Note however that this is non-portable: in some cases there
+    is no intermediate multisample texture on the graphics API level, e.g. when
+    using OpenGL ES's \c{GL_EXT_multisampled_render_to_texture} as it is all
+    implicit, handled by the OpenGL ES implementation. In that case,
+    PreserveColorContents will likely have no effect. Therefore, avoid relying
+    on this flag when using multisample rendering and the color attachment is
+    using a multisample QRhiTexture (not QRhiRenderBuffer).
 
     \value PreserveDepthStencilContents Indicates that the contents of the
     depth texture is to be loaded when starting a render pass, instead
@@ -4924,6 +5131,13 @@ QRhiResource::Type QRhiSwapChainRenderTarget::resourceType() const
     (QRhiTextureRenderTargetDescription::depthTexture() is set) because
     depth/stencil renderbuffers may not have any physical backing and data may
     not be written out in the first place.
+
+    \value DoNotStoreDepthStencilContents Indicates that the contents of the
+    depth texture does not need to be written out. Relevant only when a
+    QRhiTexture, not QRhiRenderBuffer, is used as the depth-stencil buffer,
+    because for QRhiRenderBuffer this is implicit. When a depthResolveTexture is
+    set, the flag is not relevant, because the behavior is then as if the flag
+    was set. This enum value is introduced in Qt 6.8.
  */
 
 /*!
@@ -8311,7 +8525,7 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
         break;
 #endif
     case Metal:
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
         r->d = new QRhiMetal(static_cast<QRhiMetalInitParams *>(params),
                              static_cast<QRhiMetalNativeHandles *>(importDevice));
         break;
@@ -8370,7 +8584,7 @@ bool QRhi::probe(QRhi::Implementation impl, QRhiInitParams *params)
     // create() and then drop the result.
 
     if (impl == Metal) {
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
         ok = QRhiMetal::probe(static_cast<QRhiMetalInitParams *>(params));
 #endif
     } else {
@@ -8421,7 +8635,7 @@ bool QRhi::probe(QRhi::Implementation impl, QRhiInitParams *params)
  */
 QRhiSwapChainProxyData QRhi::updateSwapChainProxyData(QRhi::Implementation impl, QWindow *window)
 {
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
     if (impl == Metal)
         return QRhiMetal::updateSwapChainProxyData(window);
 #else
@@ -8806,6 +9020,8 @@ void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, quint32 offset
 }
 
 /*!
+    \overload
+
     Enqueues updating the entire QRhiBuffer \a buf created with the type
     QRhiBuffer::Immutable or QRhiBuffer::Static.
  */

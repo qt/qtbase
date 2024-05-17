@@ -478,6 +478,23 @@ Qt::ColorScheme QCocoaTheme::colorScheme() const
     return m_colorScheme;
 }
 
+void QCocoaTheme::requestColorScheme(Qt::ColorScheme scheme)
+{
+    NSAppearance *appearance = nil;
+    switch (scheme) {
+    case Qt::ColorScheme::Dark:
+        appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
+        break;
+    case Qt::ColorScheme::Light:
+        appearance = [NSAppearance appearanceNamed:NSAppearanceNameAqua];
+        break;
+    case Qt::ColorScheme::Unknown:
+        break;
+    }
+    if (appearance != NSApp.effectiveAppearance)
+        NSApplication.sharedApplication.appearance = appearance;
+}
+
 /*
     Update the theme's color scheme based on the current appearance.
 
@@ -505,12 +522,16 @@ QKeySequence QCocoaTheme::standardButtonShortcut(int button) const
 
 QPlatformMenuItem *QCocoaTheme::createPlatformMenuItem() const
 {
-    return new QCocoaMenuItem();
+    auto *menuItem = new QCocoaMenuItem();
+    qCDebug(lcQpaMenus) << "Created" << menuItem;
+    return menuItem;
 }
 
 QPlatformMenu *QCocoaTheme::createPlatformMenu() const
 {
-    return new QCocoaMenu();
+    auto *menu = new QCocoaMenu();
+    qCDebug(lcQpaMenus) << "Created" << menu;
+    return menu;
 }
 
 QPlatformMenuBar *QCocoaTheme::createPlatformMenuBar() const
@@ -523,7 +544,9 @@ QPlatformMenuBar *QCocoaTheme::createPlatformMenuBar() const
                 SLOT(onAppFocusWindowChanged(QWindow*)));
     }
 
-    return new QCocoaMenuBar();
+    auto *menuBar = new QCocoaMenuBar();
+    qCDebug(lcQpaMenus) << "Created" << menuBar;
+    return menuBar;
 }
 
 #ifndef QT_NO_SHORTCUT

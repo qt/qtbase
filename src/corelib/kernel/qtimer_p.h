@@ -12,27 +12,61 @@
 //
 // We mean it.
 //
+#include "qtimer.h"
+#include "qchronotimer.h"
+
 #include "qobject_p.h"
 #include "qproperty_p.h"
-#include "qtimer.h"
+#include "qttypetraits.h"
 
 QT_BEGIN_NAMESPACE
 
 class QTimerPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QTimer)
 public:
+    QTimerPrivate(QTimer *qq)
+        : q(qq),
+          isQTimer(true)
+    {}
+
+    QTimerPrivate(std::chrono::nanoseconds nsec, QChronoTimer *qq)
+        : intervalDuration(nsec),
+          q(qq)
+    {
+        intervalDuration.notify();
+    }
+
     static constexpr int INV_TIMER = -1; // invalid timer id
 
-    void setInterval(int msec) { q_func()->setInterval(msec); }
-    bool isActiveActualCalculation() const { return id >= 0; }
+    void setIntervalDuration(std::chrono::nanoseconds nsec)
+    {
+        if (isQTimer) {
+            const auto msec = std::chrono::ceil<std::chrono::milliseconds>(nsec);
+            static_cast<QTimer *>(q)->setInterval(msec);
+        } else {
+            static_cast<QChronoTimer *>(q)->setInterval(nsec);
+        }
+    }
 
-    int id = INV_TIMER;
+    void setInterval(int msec)
+    {
+        Q_ASSERT(isQTimer);
+        static_cast<QTimer *>(q)->setInterval(msec);
+    }
+
+    bool isActive() const { return id > Qt::TimerId::Invalid; }
+
+    Qt::TimerId id = Qt::TimerId::Invalid;
     Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimerPrivate, int, inter, &QTimerPrivate::setInterval, 0)
+    Q_OBJECT_COMPAT_PROPERTY_WITH_ARGS(QTimerPrivate, std::chrono::nanoseconds, intervalDuration,
+                                       &QTimerPrivate::setIntervalDuration,
+                                       std::chrono::nanoseconds{0})
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimerPrivate, bool, single, false)
     Q_OBJECT_BINDABLE_PROPERTY_WITH_ARGS(QTimerPrivate, Qt::TimerType, type, Qt::CoarseTimer)
-    Q_OBJECT_COMPUTED_PROPERTY(QTimerPrivate, bool, isActiveData,
-                               &QTimerPrivate::isActiveActualCalculation)
+    Q_OBJECT_COMPUTED_PROPERTY(QTimerPrivate, bool, isActiveData, &QTimerPrivate::isActive)
+
+    QObject *q;
+    const bool isQTimer = false; // true if q is a QTimer*
 };
 
 QT_END_NAMESPACE

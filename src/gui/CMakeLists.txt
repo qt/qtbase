@@ -7,13 +7,15 @@ qt_find_package(WrapPNG PROVIDED_TARGETS WrapPNG::WrapPNG)
 qt_find_package(WrapFreetype PROVIDED_TARGETS WrapFreetype::WrapFreetype)
 
 if (QT_FEATURE_gui)
-    if(WIN32)
+    if(QT_QPA_PLATFORMS)
+        list(GET QT_QPA_PLATFORMS 0 _default_platform)
+    elseif(WIN32)
         set(_default_platform "windows")
     elseif(ANDROID)
         set(_default_platform "android")
     elseif(MACOS)
         set(_default_platform "cocoa")
-    elseif(TVOS OR IOS)
+    elseif(UIKIT)
         set(_default_platform "ios")
     elseif(WATCHOS)
         set(_default_platform "minimal")
@@ -30,6 +32,11 @@ if (QT_FEATURE_gui)
     endif()
 
     set(QT_QPA_DEFAULT_PLATFORM "${_default_platform}" CACHE STRING "QPA default platform")
+    if(NOT "${QT_QPA_DEFAULT_PLATFORM}" IN_LIST QT_QPA_PLATFORMS)
+        list(APPEND QT_QPA_PLATFORMS "${QT_QPA_DEFAULT_PLATFORM}")
+        set(QT_QPA_PLATFORMS "${QT_QPA_PLATFORMS}" CACHE STRING
+            "QPA platforms deployed by default" FORCE)
+    endif()
 endif()
 
 # Silence warnings in 3rdparty code
@@ -61,7 +68,7 @@ qt_internal_add_module(Gui
         image/qabstractfileiconprovider.cpp image/qabstractfileiconprovider.h image/qabstractfileiconprovider_p.h
         image/qbitmap.cpp image/qbitmap.h
         image/qbmphandler.cpp image/qbmphandler_p.h
-        image/qicon.cpp image/qicon.h image/qicon_p.h image/qiconconstants_impl.h
+        image/qicon.cpp image/qicon.h image/qicon_p.h
         image/qiconengine.cpp image/qiconengine.h image/qiconengine_p.h
         image/qiconengineplugin.cpp image/qiconengineplugin.h
         image/qiconloader.cpp image/qiconloader_p.h
@@ -160,6 +167,7 @@ qt_internal_add_module(Gui
         painting/qblittable.cpp painting/qblittable_p.h
         painting/qbrush.cpp painting/qbrush.h
         painting/qcolor.cpp painting/qcolor.h painting/qcolor_p.h
+        painting/qcolorclut_p.h
         painting/qcolormatrix_p.h
         painting/qcolorspace.cpp painting/qcolorspace.h painting/qcolorspace_p.h
         painting/qcolortransferfunction_p.h
@@ -169,6 +177,7 @@ qt_internal_add_module(Gui
         painting/qcolortrclut.cpp painting/qcolortrclut_p.h
         painting/qcompositionfunctions.cpp
         painting/qcosmeticstroker.cpp painting/qcosmeticstroker_p.h
+        painting/qcmyk_p.h
         painting/qdatabuffer_p.h
         painting/qdrawhelper_p.h
         painting/qdrawhelper_x86_p.h
@@ -177,6 +186,7 @@ qt_internal_add_module(Gui
         painting/qfixed_p.h
         painting/qgrayraster.c painting/qgrayraster_p.h
         painting/qicc.cpp painting/qicc_p.h
+        painting/qimageeffects.cpp
         painting/qimagescale.cpp painting/qimagescale_p.h
         painting/qmath_p.h
         painting/qmemrotate.cpp painting/qmemrotate_p.h
@@ -263,6 +273,7 @@ qt_internal_add_module(Gui
         QT_NO_CONTEXTLESS_CONNECT
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
+        QT_USE_NODISCARD_FILE_OPEN
         QT_QPA_DEFAULT_PLATFORM_NAME="${QT_QPA_DEFAULT_PLATFORM}"
     INCLUDE_DIRECTORIES
         ../3rdparty/VulkanMemoryAllocator
@@ -286,26 +297,27 @@ qt_internal_add_module(Gui
 )
 
 # Resources:
-set_source_files_properties("../3rdparty/icc/sRGB2014.icc"
-    PROPERTIES QT_RESOURCE_ALIAS "sRGB2014.icc"
-)
-set(qpdf_resource_files
-    "../3rdparty/icc/sRGB2014.icc"
-    "painting/qpdfa_metadata.xml"
-)
+if(QT_FEATURE_pdf)
+    set_source_files_properties("../3rdparty/icc/sRGB2014.icc"
+        PROPERTIES QT_RESOURCE_ALIAS "sRGB2014.icc"
+    )
+    set(qpdf_resource_files
+        "../3rdparty/icc/sRGB2014.icc"
+        "painting/qpdfa_metadata.xml"
+    )
+    qt_internal_add_resource(Gui "qpdf"
+       PREFIX
+           "/qpdf/"
+       BASE
+           "painting"
+       FILES
+           ${qpdf_resource_files}
+    )
+endif()
 
 if(WIN32 OR (UNIX AND NOT APPLE))
     set_target_properties(Gui PROPERTIES UNITY_BUILD OFF) # X11 define clashes/Windows oddities.
 endif()
-
-qt_internal_add_resource(Gui "qpdf"
-    PREFIX
-        "/qpdf/"
-    BASE
-        "painting"
-    FILES
-        ${qpdf_resource_files}
-)
 
 qt_internal_add_resource(Gui "gui_shaders"
     PREFIX
@@ -371,6 +383,11 @@ qt_internal_extend_target(Gui CONDITION MACOS
         ${FWAppKit}
 )
 
+qt_internal_extend_target(Gui CONDITION UIKIT
+    SOURCES
+        platform/ios/qiosnativeinterface.cpp
+)
+
 qt_internal_extend_target(Gui CONDITION WASM
     SOURCES
         platform/wasm/qwasmnativeinterface.cpp
@@ -395,6 +412,12 @@ qt_internal_extend_target(Gui CONDITION APPLE
         ${FWFoundation}
     PUBLIC_LIBRARIES
         ${FWImageIO}
+)
+
+qt_internal_extend_target(Gui CONDITION QNX
+    SOURCES
+        painting/qrasterbackingstore.cpp painting/qrasterbackingstore_p.h
+        painting/qrhibackingstore.cpp painting/qrhibackingstore_p.h
 )
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_animation
@@ -494,21 +517,6 @@ qt_internal_extend_target(Gui CONDITION APPLE AND QT_FEATURE_accessibility
         accessible/qaccessiblecache_mac.mm
     LIBRARIES
         ${FWFoundation}
-)
-
-qt_internal_extend_target(Gui CONDITION QT_FEATURE_accessibility AND WIN32
-    SOURCES
-        accessible/windows/apisupport/qwindowsuiawrapper.cpp accessible/windows/apisupport/qwindowsuiawrapper_p.h
-        accessible/windows/apisupport/uiaattributeids_p.h
-        accessible/windows/apisupport/uiaclientinterfaces_p.h
-        accessible/windows/apisupport/uiacontroltypeids_p.h
-        accessible/windows/apisupport/uiaerrorids_p.h
-        accessible/windows/apisupport/uiaeventids_p.h
-        accessible/windows/apisupport/uiageneralids_p.h
-        accessible/windows/apisupport/uiapatternids_p.h
-        accessible/windows/apisupport/uiapropertyids_p.h
-        accessible/windows/apisupport/uiaserverinterfaces_p.h
-        accessible/windows/apisupport/uiatypes_p.h
 )
 
 if(QT_FEATURE_accessibility AND QT_FEATURE_accessibility_atspi_bridge)
@@ -905,7 +913,7 @@ if (QT_FEATURE_vulkan)
     list(APPEND vulkan_fun_command_content
         COMMAND "${qvkgen}"
             "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/vk.xml"
-            "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/generated_header.txt"
+            "${CMAKE_CURRENT_SOURCE_DIR}/vulkan/licenseheader.h.in"
             "${CMAKE_CURRENT_BINARY_DIR}/vulkan/qvulkanfunctions"
         DEPENDS vulkan/vk.xml ${qvkgen}
         COMMENT "Generating vulkan data"
@@ -1003,7 +1011,7 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_xkbcommon AND UNIX
         XKB::XKB
 )
 
-qt_internal_extend_target(Gui CONDITION IOS OR MACOS
+qt_internal_extend_target(Gui CONDITION QT_FEATURE_metal
     SOURCES
         rhi/qrhimetal.mm rhi/qrhimetal_p.h
     PUBLIC_LIBRARIES
@@ -1031,5 +1039,10 @@ qt_internal_generate_tracepoints(Gui gui
 qt_internal_add_docs(Gui
     doc/qtgui.qdocconf
 )
+
+if(IOS)
+    qt_internal_set_apple_privacy_manifest(Gui
+        "${CMAKE_CURRENT_SOURCE_DIR}/platform/ios/PrivacyInfo.xcprivacy")
+endif()
 
 qt_internal_add_optimize_full_flags()

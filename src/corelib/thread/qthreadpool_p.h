@@ -128,7 +128,6 @@ public:
     { return qMax(requestedMaxThreadCount, 1); }    // documentation says we start at least one
     void startThread(QRunnable *runnable = nullptr);
     void reset();
-    bool waitForDone(int msecs);
     bool waitForDone(const QDeadlineTimer &timer);
     void clear();
     void stealAndRunRunnable(QRunnable *runnable);
@@ -144,7 +143,7 @@ public:
     QWaitCondition noActiveThreads;
     QString objectName;
 
-    int expiryTimeout = 30000;
+    std::chrono::duration<int, std::milli> expiryTimeout = std::chrono::seconds(30);
     int requestedMaxThreadCount = QThread::idealThreadCount();  // don't use this directly
     int reservedThreads = 0;
     int activeThreads = 0;

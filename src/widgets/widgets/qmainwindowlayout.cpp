@@ -338,6 +338,7 @@ bool QDockWidgetGroupWindow::event(QEvent *e)
     case QEvent::Resize:
         updateCurrentGapRect();
         emit resized();
+        break;
     default:
         break;
     }
@@ -1430,17 +1431,18 @@ bool QMainWindowLayoutState::restoreState(QDataStream &_stream,
 
 #if QT_CONFIG(toolbar)
 
-static inline void validateToolBarArea(Qt::ToolBarArea &area)
+static constexpr Qt::ToolBarArea validateToolBarArea(Qt::ToolBarArea area)
 {
     switch (area) {
     case Qt::LeftToolBarArea:
     case Qt::RightToolBarArea:
     case Qt::TopToolBarArea:
     case Qt::BottomToolBarArea:
-        break;
+        return area;
     default:
-        area = Qt::TopToolBarArea;
+        break;
     }
+    return Qt::TopToolBarArea;
 }
 
 static QInternal::DockPosition toDockPos(Qt::ToolBarArea area)
@@ -1476,7 +1478,7 @@ static inline Qt::ToolBarArea toToolBarArea(int pos)
 
 void QMainWindowLayout::addToolBarBreak(Qt::ToolBarArea area)
 {
-    validateToolBarArea(area);
+    area = validateToolBarArea(area);
 
     layoutState.toolBarAreaLayout.addToolBarBreak(toDockPos(area));
     if (savedState.isValid())
@@ -1530,7 +1532,7 @@ void QMainWindowLayout::addToolBar(Qt::ToolBarArea area,
                                    QToolBar *toolbar,
                                    bool)
 {
-    validateToolBarArea(area);
+    area = validateToolBarArea(area);
     // let's add the toolbar to the layout
     addChildWidget(toolbar);
     QLayoutItem *item = layoutState.toolBarAreaLayout.addToolBar(toDockPos(area), toolbar);
@@ -1885,12 +1887,24 @@ public:
     ~QMainWindowTabBar();
     QDockWidget *dockAt(int index) const;
     QList<QDockWidget *> dockWidgets() const;
+    bool contains(const QDockWidget *dockWidget) const;
 protected:
     bool event(QEvent *e) override;
     void mouseReleaseEvent(QMouseEvent*) override;
     void mouseMoveEvent(QMouseEvent*) override;
 
 };
+
+QMainWindowTabBar *QMainWindowLayout::findTabBar(const QDockWidget *dockWidget) const
+{
+     for (auto *bar : usedTabBars) {
+        Q_ASSERT(qobject_cast<QMainWindowTabBar *>(bar));
+        auto *tabBar = static_cast<QMainWindowTabBar *>(bar);
+        if (tabBar->contains(dockWidget))
+            return tabBar;
+    }
+    return nullptr;
+}
 
 QMainWindowTabBar::QMainWindowTabBar(QMainWindow *parent)
     : QTabBar(parent), mainWindow(parent)
@@ -1908,6 +1922,20 @@ QList<QDockWidget *> QMainWindowTabBar::dockWidgets() const
     return docks;
 }
 
+bool QMainWindowTabBar::contains(const QDockWidget *dockWidget) const
+{
+    for (int i = 0; i < count(); ++i) {
+        if (dockAt(i) == dockWidget)
+            return true;
+    }
+    return false;
+}
+
+// When a dock widget is removed from a floating tab,
+// Events need to be processed for the tab bar to realize that the dock widget is gone.
+// In this case count() counts the dock widget in transition and accesses dockAt
+// with an out-of-bounds index.
+// => return nullptr in contrast to other xxxxxAt() functions
 QDockWidget *QMainWindowTabBar::dockAt(int index) const
 {
     QMainWindowTabBar *that = const_cast<QMainWindowTabBar *>(this);
@@ -1915,10 +1943,15 @@ QDockWidget *QMainWindowTabBar::dockAt(int index) const
     QDockAreaLayoutInfo *info = mlayout->dockInfo(that);
     if (!info)
         return nullptr;
+
     const int itemIndex = info->tabIndexToListIndex(index);
-    Q_ASSERT(itemIndex >= 0 && itemIndex < info->item_list.count());
-    const QDockAreaLayoutItem &item = info->item_list.at(itemIndex);
-    return item.widgetItem ? qobject_cast<QDockWidget *>(item.widgetItem->widget()) : nullptr;
+    if (itemIndex >= 0) {
+        Q_ASSERT(itemIndex < info->item_list.count());
+        const QDockAreaLayoutItem &item = info->item_list.at(itemIndex);
+        return item.widgetItem ? qobject_cast<QDockWidget *>(item.widgetItem->widget()) : nullptr;
+    }
+
+    return nullptr;
 }
 
 void QMainWindowTabBar::mouseMoveEvent(QMouseEvent *e)
@@ -2011,21 +2044,26 @@ bool QMainWindowTabBar::event(QEvent *e)
     return true;
 }
 
+QList<QDockWidget *> QMainWindowLayout::tabifiedDockWidgets(const QDockWidget *dockWidget) const
+{
+    const auto *bar = findTabBar(dockWidget);
+    if (!bar)
+        return {};
+
+    QList<QDockWidget *> buddies = bar->dockWidgets();
+    // Return only other dock widgets associated with dockWidget in a tab bar.
+    // If dockWidget is alone in a tab bar, return an empty list.
+    buddies.removeOne(dockWidget);
+    return buddies;
+}
+
 bool QMainWindowLayout::isDockWidgetTabbed(const QDockWidget *dockWidget) const
 {
-    for (auto *bar : std::as_const(usedTabBars)) {
-        // A single dock widget in a tab bar is not considered to be tabbed.
-        // This is to make sure, we don't drag an empty QDockWidgetGroupWindow around.
-        // => only consider tab bars with two or more tabs.
-        if (bar->count() <= 1)
-            continue;
-        auto *tabBar = qobject_cast<QMainWindowTabBar *>(bar);
-        Q_ASSERT(tabBar);
-        const auto dockWidgets = tabBar->dockWidgets();
-        if (std::find(dockWidgets.begin(), dockWidgets.end(), dockWidget) != dockWidgets.end())
-            return true;
-    }
-    return false;
+    // A single dock widget in a tab bar is not considered to be tabbed.
+    // This is to make sure, we don't drag an empty QDockWidgetGroupWindow around.
+    // => only consider tab bars with two or more tabs.
+    const auto *bar = findTabBar(dockWidget);
+    return bar && bar->count() > 1;
 }
 
 QTabBar *QMainWindowLayout::getTabBar()
@@ -2230,7 +2268,9 @@ void QMainWindowLayout::applyRestoredState()
 
 void QMainWindowLayout::setGeometry(const QRect &_r)
 {
-    if (savedState.isValid())
+    // Check if the state is valid, and avoid replacing it again if it is currently used
+    // in applyState
+    if (savedState.isValid() || (restoredState && isInApplyState))
         return;
 
     QRect r = _r;

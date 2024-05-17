@@ -1,6 +1,6 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // Copyright (C) 2017 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <QSignalSpy>
@@ -10,6 +10,7 @@
 #endif
 #include <QScopeGuard>
 #include <QVersionNumber>
+#include <QSemaphore>
 
 #include <qcoreapplication.h>
 #include <qfileinfo.h>
@@ -103,6 +104,8 @@ private slots:
     void readyReadForEmptyDatagram();
     void asyncReadDatagram();
     void writeInHostLookupState();
+
+    void readyReadConnectionThrottling();
 
 protected slots:
     void empty_readyReadSlot();
@@ -1903,6 +1906,79 @@ void tst_QUdpSocket::writeInHostLookupState()
     socket.connectToHost("nosuchserver.qt-project.org", 80);
     QCOMPARE(socket.state(), QUdpSocket::HostLookupState);
     QVERIFY(!socket.putChar('0'));
+}
+
+void tst_QUdpSocket::readyReadConnectionThrottling()
+{
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+    using namespace std::chrono_literals;
+
+    // QTBUG-105871:
+    // We have some signal/slot connection throttling in QAbstractSocket, but it
+    // was caring about the bytes, not about the datagrams.
+    // Test that we don't disable read notifications until we have at least one
+    // datagram available. Otherwise our good users who use the datagram APIs
+    // can get into scenarios where they no longer get the readyRead signal
+    // unless they call a read function once in a while.
+
+    QUdpSocket receiver;
+    QVERIFY(receiver.bind(QHostAddress(QHostAddress::LocalHost), 0));
+
+    QSemaphore semaphore;
+
+    // Repro-ing deterministically eludes me, so we are bruteforcing it:
+    // The thread acts as a remote sender, flooding the receiver with datagrams,
+    // and at some point the receiver would get into the broken state mentioned
+    // earlier.
+    std::unique_ptr<QThread> thread(QThread::create([&semaphore, port = receiver.localPort()]() {
+        QUdpSocket sender;
+        sender.connectToHost(QHostAddress(QHostAddress::LocalHost), port);
+        QCOMPARE(sender.state(), QUdpSocket::ConnectedState);
+
+        constexpr qsizetype PayloadSize = 242;
+        const QByteArray payload(PayloadSize, 'a');
+
+        semaphore.acquire(); // Wait for main thread to be ready
+        while (true) {
+            // We send 100 datagrams at a time, then sleep.
+            // This is mostly to let the main thread catch up between bursts so
+            // it doesn't get stuck in the loop.
+            for (int i = 0; i < 100; ++i) {
+                [[maybe_unused]]
+                qsizetype sent = sender.write(payload);
+                Q_ASSERT(sent > 0);
+            }
+            if (QThread::currentThread()->isInterruptionRequested())
+                break;
+            QThread::sleep(20ms);
+        }
+    }));
+    thread->start();
+    auto threadStopAndWaitGuard = qScopeGuard([&thread] {
+        thread->requestInterruption();
+        thread->quit();
+        thread->wait();
+    });
+
+    qsizetype count = 0;
+    QObject::connect(&receiver, &QUdpSocket::readyRead, &receiver,
+            [&] {
+                while (receiver.hasPendingDatagrams()) {
+                    receiver.readDatagram(nullptr, 0);
+                    ++count;
+                }
+                // If this prints `false, xxxx` we were pretty much guaranteed
+                // that we would not get called again:
+                // qDebug() << receiver.hasPendingDatagrams() << receiver.bytesAvailable();
+            },
+            Qt::QueuedConnection);
+
+    semaphore.release();
+    constexpr qsizetype MaxCount = 500;
+    QVERIFY2(QTest::qWaitFor([&] { return count >= MaxCount; }, 10s),
+             QByteArray::number(count).constData());
 }
 
 QTEST_MAIN(tst_QUdpSocket)

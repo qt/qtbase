@@ -6,7 +6,7 @@
 
 #include <QtCore/qglobal.h>
 
-#ifndef QT_NO_TEMPORARYFILE
+#if QT_CONFIG(temporaryfile)
 
 #include <QtCore/qfiledevice.h>
 #include <QtCore/qstring.h>
@@ -39,7 +39,7 @@ public:
     QString fileName() const override;
     void setFileName(const QString &name);
 
-    bool open(OpenMode flags) override;
+    QFILE_MAYBE_NODISCARD bool open(OpenMode flags) override;
     bool commit();
 
     void cancelWriting();
@@ -62,6 +62,6 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_TEMPORARYFILE
+#endif // QT_CONFIG(temporaryfile)
 
 #endif // QSAVEFILE_H

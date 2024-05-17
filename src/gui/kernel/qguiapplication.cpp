@@ -25,6 +25,7 @@
 #include <QtCore/QVariant>
 #include <QtCore/private/qcoreapplication_p.h>
 #include <QtCore/private/qabstracteventdispatcher_p.h>
+#include <QtCore/private/qminimalflatset_p.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/private/qlocking_p.h>
@@ -587,13 +588,10 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
             \c none disables them.
 
         \li \c {fontengine=freetype}, uses the FreeType font engine.
-        \li \c {fontengine=directwrite}, uses the experimental DirectWrite
-               font database and defaults to using the DirectWrite font
+        \li \c {fontengine=gdi}, uses the legacy GDI-based
+               font database and defaults to using the GDI font
                engine (which is otherwise only used for some font types
-               or font properties.) This affects font selection and aims
-               to provide font naming more consistent with other platforms,
-               but does not support all font formats, such as Postscript
-               Type-1 or Microsoft FNT fonts.
+               or font properties.) (Since Qt 6.8).
         \li \c {menus=[native|none]}, controls the use of native menus.
 
                Native menus are implemented using Win32 API and are simpler than
@@ -607,7 +605,8 @@ static QWindowGeometrySpecification windowGeometrySpecification = Q_WINDOW_GEOME
         \li \c {nocolorfonts} Turn off DirectWrite Color fonts
                (since Qt 5.8).
 
-        \li \c {nodirectwrite} Turn off DirectWrite fonts (since Qt 5.8).
+        \li \c {nodirectwrite} Turn off DirectWrite fonts (since Qt 5.8). This implicitly
+               also selects the GDI font engine.
 
         \li \c {nomousefromtouch} Ignores mouse events synthesized
                from touch events by the operating system.
@@ -1532,7 +1531,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
 
     init_platform(QLatin1StringView(platformName), platformPluginPath, platformThemeName, argc, argv);
     if (const QPlatformTheme *theme = platformTheme())
-        QStyleHintsPrivate::get(QGuiApplication::styleHints())->setColorScheme(theme->colorScheme());
+        QStyleHintsPrivate::get(QGuiApplication::styleHints())->updateColorScheme(theme->colorScheme());
 
     if (!icon.isEmpty())
         forcedWindowIcon = QDir::isAbsolutePath(icon) ? QIcon(icon) : QIcon::fromTheme(icon);
@@ -1906,9 +1905,10 @@ QFunctionPointer QGuiApplication::platformFunction(const QByteArray &function)
 
     Generally, no user interaction can take place before calling exec().
 
-    To make your application perform idle processing, e.g., executing a special
-    function whenever there are no pending events, use a QTimer with 0 timeout.
-    More advanced idle processing schemes can be achieved using processEvents().
+    To make your application perform idle processing, e.g., executing a
+    special function whenever there are no pending events, use a QChronoTimer
+    with 0ns timeout. More advanced idle processing schemes can be achieved
+    using processEvents().
 
     We recommend that you connect clean-up code to the
     \l{QCoreApplication::}{aboutToQuit()} signal, instead of putting it in your
@@ -2027,6 +2027,7 @@ bool QGuiApplication::event(QEvent *e)
                 return true;
             }
         }
+        break;
     default:
         break;
     }
@@ -2642,28 +2643,18 @@ void QGuiApplicationPrivate::processThemeChanged(QWindowSystemInterfacePrivate::
 
     QIconPrivate::clearIconCache();
 
-    QStyleHintsPrivate::get(QGuiApplication::styleHints())->setColorScheme(colorScheme());
-
     QEvent themeChangeEvent(QEvent::ThemeChange);
     const QWindowList windows = tce->window ? QWindowList{tce->window} : window_list;
     for (auto *window : windows)
         QGuiApplication::sendSpontaneousEvent(window, &themeChangeEvent);
 }
 
-/*!
-   \internal
-   \brief QGuiApplicationPrivate::colorScheme
-   \return the platform theme's color scheme
-   or Qt::ColorScheme::Unknown if a platform theme cannot be established
- */
-Qt::ColorScheme QGuiApplicationPrivate::colorScheme()
-{
-    return platformTheme() ? platformTheme()->colorScheme()
-                           : Qt::ColorScheme::Unknown;
-}
-
 void QGuiApplicationPrivate::handleThemeChanged()
 {
+    const auto newColorScheme = platformTheme() ? platformTheme()->colorScheme()
+                                                : Qt::ColorScheme::Unknown;
+    QStyleHintsPrivate::get(QGuiApplication::styleHints())->updateColorScheme(newColorScheme);
+
     updatePalette();
 
     QIconLoader::instance()->updateSystemTheme();
@@ -2933,17 +2924,17 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
         // Send the TouchCancel to all windows with active touches and clean up.
         QTouchEvent touchEvent(QEvent::TouchCancel, device, e->modifiers);
         touchEvent.setTimestamp(e->timestamp);
-        QSet<QWindow *> windowsNeedingCancel;
+        constexpr qsizetype Prealloc = decltype(devPriv->activePoints)::mapped_container_type::PreallocatedSize;
+        QMinimalVarLengthFlatSet<QWindow *, Prealloc> windowsNeedingCancel;
 
         for (auto &epd : devPriv->activePoints.values()) {
             if (QWindow *w = QMutableEventPoint::window(epd.eventPoint))
                 windowsNeedingCancel.insert(w);
         }
 
-        for (QSet<QWindow *>::const_iterator winIt = windowsNeedingCancel.constBegin(),
-            winItEnd = windowsNeedingCancel.constEnd(); winIt != winItEnd; ++winIt) {
-            QGuiApplication::sendSpontaneousEvent(*winIt, &touchEvent);
-        }
+        for (QWindow *w : windowsNeedingCancel)
+            QGuiApplication::sendSpontaneousEvent(w, &touchEvent);
+
         if (!self->synthesizedMousePoints.isEmpty() && !e->synthetic()) {
             for (QHash<QWindow *, SynthesizedMouseData>::const_iterator synthIt = self->synthesizedMousePoints.constBegin(),
                  synthItEnd = self->synthesizedMousePoints.constEnd(); synthIt != synthItEnd; ++synthIt) {
@@ -3456,6 +3447,15 @@ void QGuiApplicationPrivate::updatePalette()
     }
 }
 
+QEvent::Type QGuiApplicationPrivate::contextMenuEventType()
+{
+    switch (QGuiApplication::styleHints()->contextMenuTrigger()) {
+    case Qt::ContextMenuTrigger::Press: return QEvent::MouseButtonPress;
+    case Qt::ContextMenuTrigger::Release: return QEvent::MouseButtonRelease;
+    }
+    return QEvent::None;
+}
+
 void QGuiApplicationPrivate::clearPalette()
 {
     delete app_pal;
@@ -3674,9 +3674,13 @@ void QGuiApplicationPrivate::notifyWindowIconChanged()
 
     The default is \c true.
 
-    If this property is \c true, the applications quits when the last visible
-    \l{Primary and Secondary Windows}{primary window} (i.e. top level window
-    with no transient parent) is closed.
+    If this property is \c true, the application will attempt to
+    quit when the last visible \l{Primary and Secondary Windows}{primary window}
+    (i.e. top level window with no transient parent) is closed.
+
+    Note that attempting a quit may not necessarily result in the
+    application quitting, for example if there still are active
+    QEventLoopLocker instances, or the QEvent::Quit event is ignored.
 
     \sa quit(), QWindow::close()
  */
@@ -3732,7 +3736,13 @@ bool QGuiApplicationPrivate::lastWindowClosed() const
 
 bool QGuiApplicationPrivate::canQuitAutomatically()
 {
-    if (quitOnLastWindowClosed && !lastWindowClosed())
+    // The automatic quit functionality is triggered by
+    // both QEventLoopLocker and maybeLastWindowClosed.
+    // Although the former is a QCoreApplication feature
+    // we don't want to quit the application when there
+    // are open windows, regardless of whether the app
+    // also quits automatically on maybeLastWindowClosed.
+    if (!lastWindowClosed())
         return false;
 
     return QCoreApplicationPrivate::canQuitAutomatically();
@@ -3796,6 +3806,8 @@ Qt::ApplicationState QGuiApplication::applicationState()
 */
 void QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy policy)
 {
+    if (qApp)
+        qWarning("setHighDpiScaleFactorRoundingPolicy must be called before creating the QGuiApplication instance");
     QGuiApplicationPrivate::highDpiScaleFactorRoundingPolicy = policy;
 }
 
@@ -4388,6 +4400,9 @@ void *QGuiApplication::resolveInterface(const char *name, int revision) const
 #endif
 #if QT_CONFIG(wayland)
     QT_NATIVE_INTERFACE_RETURN_IF(QWaylandApplication, platformNativeInterface());
+#endif
+#if defined(Q_OS_VISIONOS)
+    QT_NATIVE_INTERFACE_RETURN_IF(QVisionOSApplication, platformIntegration);
 #endif
 
     return QCoreApplication::resolveInterface(name, revision);

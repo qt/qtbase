@@ -497,24 +497,33 @@ endfunction()
 # Sets QT_WILL_BUILD_TOOLS if tools will be built and QT_WILL_RENAME_TOOL_TARGETS
 # if those tools have replaced naming.
 function(qt_check_if_tools_will_be_built)
-    # By default, we build our own tools unless we're cross-building.
+    # By default, we build our own tools unless we're cross-building or QT_HOST_PATH is set.
     set(need_target_rename FALSE)
+    set(require_find_tools FALSE)
     if(CMAKE_CROSSCOMPILING)
         set(will_build_tools FALSE)
         if(QT_FORCE_BUILD_TOOLS)
             set(will_build_tools TRUE)
             set(need_target_rename TRUE)
         endif()
+        set(require_find_tools TRUE)
     else()
-        set(will_build_tools TRUE)
+        if(QT_HOST_PATH)
+            set(will_build_tools FALSE)
+        else()
+            set(will_build_tools TRUE)
+        endif()
         if(QT_FORCE_FIND_TOOLS)
             set(will_build_tools FALSE)
-            if(QT_FORCE_BUILD_TOOLS)
-                set(will_build_tools TRUE)
-                set(need_target_rename TRUE)
-            endif()
+            set(require_find_tools TRUE)
+        endif()
+        if(QT_FORCE_BUILD_TOOLS)
+            set(will_build_tools TRUE)
+            set(need_target_rename TRUE)
         endif()
     endif()
+
+    set_property(GLOBAL PROPERTY qt_require_find_tools "${require_find_tools}")
 
     set(QT_WILL_BUILD_TOOLS ${will_build_tools} CACHE INTERNAL "Are tools going to be built" FORCE)
     set(QT_WILL_RENAME_TOOL_TARGETS ${need_target_rename} CACHE INTERNAL
@@ -552,6 +561,15 @@ function(qt_internal_find_tool out_var target_name tools_target)
         message(FATAL_ERROR "The tool \"${name}\" has not been assigned to a module via"
                             " TOOLS_TARGET (so it can't be found) and it can't be built"
                             " (QT_WILL_BUILD_TOOLS is ${QT_WILL_BUILD_TOOLS}).")
+    endif()
+
+    if(NOT CMAKE_CROSSCOMPILING)
+        if(QT_INTERNAL_FORCE_FIND_HOST_TOOLS_MODULE_LIST AND
+            NOT "${tools_target}" IN_LIST QT_INTERNAL_FORCE_FIND_HOST_TOOLS_MODULE_LIST)
+            message(STATUS "Tool '${full_name}' will be built from source.")
+            set(${out_var} "TRUE" PARENT_SCOPE)
+            return()
+        endif()
     endif()
 
     if(QT_WILL_RENAME_TOOL_TARGETS AND (name STREQUAL target_name))
@@ -667,7 +685,8 @@ function(qt_internal_find_tool out_var target_name tools_target)
         endif()
     endif()
 
-    if(NOT QT_WILL_BUILD_TOOLS)
+    get_property(require_find_tools GLOBAL PROPERTY qt_require_find_tools)
+    if(require_find_tools AND NOT TARGET ${full_name})
         if(${${tools_package_name}_FOUND})
             set(pkg_found_msg "")
             string(APPEND pkg_found_msg
@@ -684,7 +703,9 @@ function(qt_internal_find_tool out_var target_name tools_target)
         message(FATAL_ERROR
             "Failed to find the host tool \"${full_name}\". It is part of "
             ${pkg_found_msg})
-    else()
+    endif()
+
+    if(QT_WILL_BUILD_TOOLS)
         message(STATUS "Tool '${full_name}' will be built from source.")
     endif()
     set(${out_var} "TRUE" PARENT_SCOPE)

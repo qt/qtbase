@@ -1661,7 +1661,7 @@ Qt::TextElideMode QAbstractItemView::textElideMode() const
 bool QAbstractItemView::focusNextPrevChild(bool next)
 {
     Q_D(QAbstractItemView);
-    if (d->tabKeyNavigation && isEnabled() && d->viewport->isEnabled()) {
+    if (d->tabKeyNavigation && isVisible() && isEnabled() && d->viewport->isEnabled()) {
         QKeyEvent event(QEvent::KeyPress, next ? Qt::Key_Tab : Qt::Key_Backtab, Qt::NoModifier);
         keyPressEvent(&event);
         if (event.isAccepted())
@@ -3532,10 +3532,21 @@ void QAbstractItemView::rowsAboutToBeRemoved(const QModelIndex &parent, int star
     }
 
     // Remove all affected editors; this is more efficient than waiting for updateGeometries() to clean out editors for invalid indexes
+    const auto findDirectChildOf = [](const QModelIndex &parent, QModelIndex child)
+    {
+        while (child.isValid()) {
+            const auto parentIndex = child.parent();
+            if (parentIndex == parent)
+                return child;
+            child = parentIndex;
+        }
+        return QModelIndex();
+    };
     QEditorIndexHash::iterator i = d->editorIndexHash.begin();
     while (i != d->editorIndexHash.end()) {
         const QModelIndex index = i.value();
-        if (index.row() >= start && index.row() <= end && d->model->parent(index) == parent) {
+        const QModelIndex directChild = findDirectChildOf(parent, index);
+        if (directChild.isValid() && directChild.row() >= start && directChild.row() <= end) {
             QWidget *editor = i.key();
             QEditorInfo info = d->indexEditorHash.take(index);
             i = d->editorIndexHash.erase(i);
@@ -4290,6 +4301,7 @@ QItemSelectionModel::SelectionFlags QAbstractItemViewPrivate::extendedSelectionC
             default:
                 break;
             }
+            break;
         }
         default:
             break;

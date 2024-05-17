@@ -1,5 +1,5 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef QRHIWIDGET_H
 #define QRHIWIDGET_H
@@ -23,6 +23,7 @@ class Q_WIDGETS_EXPORT QRhiWidget : public QWidget
     Q_PROPERTY(TextureFormat colorBufferFormat READ colorBufferFormat WRITE setColorBufferFormat NOTIFY colorBufferFormatChanged)
     Q_PROPERTY(QSize fixedColorBufferSize READ fixedColorBufferSize WRITE setFixedColorBufferSize NOTIFY fixedColorBufferSizeChanged)
     Q_PROPERTY(bool mirrorVertically READ isMirrorVerticallyEnabled WRITE setMirrorVertically NOTIFY mirrorVerticallyChanged)
+    QDOC_PROPERTY(bool autoRenderTarget READ isAutoRenderTargetEnabled WRITE setAutoRenderTarget)
 
 public:
     explicit QRhiWidget(QWidget *parent = nullptr, Qt::WindowFlags f = {});

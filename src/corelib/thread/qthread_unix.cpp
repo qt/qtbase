@@ -191,8 +191,10 @@ QThreadData *QThreadData::current(bool createIfNecessary)
         data->deref();
         data->isAdopted = true;
         data->threadId.storeRelaxed(to_HANDLE(pthread_self()));
-        if (!QCoreApplicationPrivate::theMainThread.loadAcquire())
+        if (!QCoreApplicationPrivate::theMainThreadId.loadAcquire()) {
             QCoreApplicationPrivate::theMainThread.storeRelease(data->thread.loadRelaxed());
+            QCoreApplicationPrivate::theMainThreadId.storeRelaxed(data->threadId.loadRelaxed());
+        }
     }
     return data;
 }
@@ -280,8 +282,12 @@ void *QThreadPrivate::start(void *arg)
 #ifdef PTHREAD_CANCEL_DISABLE
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, nullptr);
 #endif
-    pthread_cleanup_push(QThreadPrivate::finish, arg);
-
+#if !defined(Q_OS_QNX)
+    // On QNX, calling finish() from a thread_local destructor causes the C
+    // library to hang.
+    static thread_local
+#endif
+            auto cleanup = qScopeGuard([=] { finish(arg); });
     terminate_on_exception([&] {
         QThread *thr = reinterpret_cast<QThread *>(arg);
         QThreadData *data = QThreadData::get2(thr);
@@ -326,11 +332,7 @@ void *QThreadPrivate::start(void *arg)
         thr->run();
     });
 
-    // This pop runs finish() below. It's outside the try/catch (and has its
-    // own try/catch) to prevent finish() to be run in case an exception is
-    // thrown.
-    pthread_cleanup_pop(1);
-
+    // The qScopeGuard above call runs finish() below.
     return nullptr;
 }
 
@@ -363,7 +365,7 @@ void QThreadPrivate::finish(void *arg)
 
         d->running = false;
         d->finished = true;
-        d->interruptionRequested = false;
+        d->interruptionRequested.store(false, std::memory_order_relaxed);
 
         d->isInFinish = false;
         d->data->threadId.storeRelaxed(nullptr);
@@ -640,7 +642,7 @@ void QThread::start(Priority priority)
     d->finished = false;
     d->returnCode = 0;
     d->exited = false;
-    d->interruptionRequested = false;
+    d->interruptionRequested.store(false, std::memory_order_relaxed);
 
     pthread_attr_t attr;
     pthread_attr_init(&attr);

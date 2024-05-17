@@ -4,6 +4,7 @@
 
 qt_internal_add_executable(eventloop
     NO_INSTALL
+    EXCEPTIONS
     OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES
         tst_eventloop.cpp

@@ -6,9 +6,12 @@
 #ifndef QVERSIONNUMBER_H
 #define QVERSIONNUMBER_H
 
+#include <QtCore/qcompare.h>
+#include <QtCore/qcontainertools_impl.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qspan.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qtypeinfo.h>
 #if !defined(QT_LEAN_HEADERS) || QT_LEAN_HEADERS < 2
@@ -112,7 +115,7 @@ class QVersionNumber
 
         Q_CORE_EXPORT void setListData(QList<int> &&seg);
 
-        explicit SegmentStorage(std::initializer_list<int> args)
+        explicit SegmentStorage(QSpan<const int> args)
             : SegmentStorage(args.begin(), args.end()) {}
 
         explicit SegmentStorage(const int *first, const int *last)
@@ -190,23 +193,85 @@ class QVersionNumber
         Q_CORE_EXPORT void setVector(int len, int maj, int min, int mic);
     } m_segments;
 
+    class It
+    {
+        const QVersionNumber *v;
+        qsizetype i;
+
+        friend class QVersionNumber;
+        explicit constexpr It(const QVersionNumber *vn, qsizetype idx) noexcept : v(vn), i(idx) {}
+
+        friend constexpr bool comparesEqual(const It &lhs, const It &rhs)
+        { Q_ASSERT(lhs.v == rhs.v); return lhs.i == rhs.i; }
+        friend constexpr Qt::strong_ordering compareThreeWay(const It &lhs, const It &rhs)
+        { Q_ASSERT(lhs.v == rhs.v); return Qt::compareThreeWay(lhs.i, rhs.i); }
+        Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(It)
+
+    public:
+        // Rule Of Zero applies
+        It() = default;
+
+        using iterator_category = std::random_access_iterator_tag;
+        using value_type = int;
+#ifdef QT_COMPILER_HAS_LWG3346
+        using element_type = const int;
+#endif
+        using difference_type = qptrdiff; // difference to container requirements
+        using size_type = qsizetype;      // difference to container requirements
+        using reference = value_type;     // difference to container requirements
+        using pointer = QtPrivate::ArrowProxy<reference>;
+
+        reference operator*() const { return v->segmentAt(i); }
+        pointer operator->() const { return {**this}; }
+
+        It &operator++() { ++i; return *this; }
+        It operator++(int) { auto copy = *this; ++*this; return copy; }
+
+        It &operator--() { --i; return *this; }
+        It operator--(int) { auto copy = *this; --*this; return copy; }
+
+        It &operator+=(difference_type n) { i += n; return *this; }
+        friend It operator+(It it, difference_type n) { it += n; return it; }
+        friend It operator+(difference_type n, It it) { return it + n; }
+
+        It &operator-=(difference_type n) { i -= n; return *this; }
+        friend It operator-(It it, difference_type n) { it -= n; return it; }
+
+        friend difference_type operator-(It lhs, It rhs)
+        { Q_ASSERT(lhs.v == rhs.v); return lhs.i - rhs.i; }
+
+        reference operator[](difference_type n) const { return *(*this + n); }
+    };
+
 public:
+    using const_iterator = It;
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+    using value_type = It::value_type;
+    using difference_type = It::difference_type;
+    using size_type = It::size_type;
+    using reference = It::reference;
+    using const_reference = reference;
+    using pointer = It::pointer;
+    using const_pointer = pointer;
+
     inline QVersionNumber() noexcept
         : m_segments()
     {}
+    Q_WEAK_OVERLOAD
     inline explicit QVersionNumber(const QList<int> &seg) : m_segments(seg) { }
 
     // compiler-generated copy/move ctor/assignment operators and the destructor are ok
 
+    Q_WEAK_OVERLOAD
     explicit QVersionNumber(QList<int> &&seg) : m_segments(std::move(seg)) { }
 
     inline QVersionNumber(std::initializer_list<int> args)
-        : m_segments(args)
+        : m_segments(QSpan{args})
     {}
 
-    template <qsizetype N>
-    explicit QVersionNumber(const QVarLengthArray<int, N> &sec)
-        : m_segments(sec.begin(), sec.end())
+    explicit QVersionNumber(QSpan<const int> args)
+        : m_segments(args)
     {}
 
     inline explicit QVersionNumber(int maj)
@@ -243,6 +308,19 @@ public:
     [[nodiscard]] inline qsizetype segmentCount() const noexcept
     { return m_segments.size(); }
 
+    [[nodiscard]] const_iterator begin()  const noexcept { return const_iterator{this, 0}; }
+    [[nodiscard]] const_iterator end()    const noexcept { return begin() + segmentCount(); }
+    [[nodiscard]] const_iterator cbegin() const noexcept { return begin(); }
+    [[nodiscard]] const_iterator cend()   const noexcept { return end(); }
+
+    [[nodiscard]] const_reverse_iterator rbegin()  const noexcept { return const_reverse_iterator{end()}; }
+    [[nodiscard]] const_reverse_iterator rend()    const noexcept { return const_reverse_iterator{begin()}; }
+    [[nodiscard]] const_reverse_iterator crbegin() const noexcept { return rbegin(); }
+    [[nodiscard]] const_reverse_iterator crend()   const noexcept { return rend(); }
+
+    [[nodiscard]] const_iterator constBegin() const noexcept { return begin(); }
+    [[nodiscard]] const_iterator constEnd() const noexcept { return end(); }
+
     [[nodiscard]] Q_CORE_EXPORT bool isPrefixOf(const QVersionNumber &other) const noexcept;
 
     [[nodiscard]] Q_CORE_EXPORT static int compare(const QVersionNumber &v1, const QVersionNumber &v2) noexcept;
@@ -278,25 +356,20 @@ public:
     [[nodiscard]] Q_CORE_EXPORT static QVersionNumber fromString(QStringView string, int *suffixIndex);
 #endif
 
-    [[nodiscard]] friend bool operator> (const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-    { return compare(lhs, rhs) > 0; }
-
-    [[nodiscard]] friend bool operator>=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-    { return compare(lhs, rhs) >= 0; }
-
-    [[nodiscard]] friend bool operator< (const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-    { return compare(lhs, rhs) < 0; }
-
-    [[nodiscard]] friend bool operator<=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-    { return compare(lhs, rhs) <= 0; }
-
-    [[nodiscard]] friend bool operator==(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-    { return compare(lhs, rhs) == 0; }
-
-    [[nodiscard]] friend bool operator!=(const QVersionNumber &lhs, const QVersionNumber &rhs) noexcept
-    { return compare(lhs, rhs) != 0; }
-
 private:
+    [[nodiscard]] friend bool comparesEqual(const QVersionNumber &lhs,
+                                            const QVersionNumber &rhs) noexcept
+    {
+        return compare(lhs, rhs) == 0;
+    }
+    [[nodiscard]] friend Qt::strong_ordering compareThreeWay(const QVersionNumber &lhs,
+                                                             const QVersionNumber &rhs) noexcept
+    {
+        int c = compare(lhs, rhs);
+        return Qt::compareThreeWay(c, 0);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QVersionNumber)
+
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream& operator>>(QDataStream &in, QVersionNumber &version);
 #endif

@@ -166,13 +166,15 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
         break;
     // fake URLs to get libproxy to tell us the SOCKS proxy
     case QNetworkProxyQuery::TcpSocket:
-        queryUrl.setScheme(QStringLiteral("tcp"));
+        if (queryUrl.scheme().isEmpty())
+            queryUrl.setScheme(QStringLiteral("tcp"));
         queryUrl.setHost(query.peerHostName());
         queryUrl.setPort(query.peerPort());
         requiredCapabilities |= QNetworkProxy::TunnelingCapability;
         break;
     case QNetworkProxyQuery::UdpSocket:
-        queryUrl.setScheme(QStringLiteral("udp"));
+        if (queryUrl.scheme().isEmpty())
+            queryUrl.setScheme(QStringLiteral("udp"));
         queryUrl.setHost(query.peerHostName());
         queryUrl.setPort(query.peerPort());
         requiredCapabilities |= QNetworkProxy::UdpTunnelingCapability;

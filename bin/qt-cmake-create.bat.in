@@ -1,4 +1,5 @@
 @echo off
+setlocal
 :: The directory of this script is the expanded absolute path of the "$qt_prefix/bin" directory.
 set script_dir_path=%~dp0
 

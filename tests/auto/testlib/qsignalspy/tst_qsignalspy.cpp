@@ -1,13 +1,15 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
 #include <QSignalSpy>
 #include <QTimer>
 
-
 #include <qdatetime.h>
+
+using namespace std::chrono_literals;
+using namespace Qt::StringLiterals;
 
 class tst_QSignalSpy : public QObject
 {
@@ -48,6 +50,8 @@ private slots:
 
     void spyOnMetaMethod_invalid();
     void spyOnMetaMethod_invalid_data();
+
+    void signalSpyDoesNotRaceOnCrossThreadSignal();
 };
 
 struct CustomType {};
@@ -460,29 +464,61 @@ void tst_QSignalSpy::spyOnMetaMethod()
 Q_DECLARE_METATYPE(QMetaMethod);
 void tst_QSignalSpy::spyOnMetaMethod_invalid()
 {
+    QFETCH(const QByteArray, message);
     QFETCH(QObject*, object);
     QFETCH(QMetaMethod, signal);
 
+    QTest::ignoreMessage(QtWarningMsg, message.data());
     QSignalSpy spy(object, signal);
     QVERIFY(!spy.isValid());
 }
 
 void tst_QSignalSpy::spyOnMetaMethod_invalid_data()
 {
+    QTest::addColumn<QByteArray>("message");
     QTest::addColumn<QObject*>("object");
     QTest::addColumn<QMetaMethod>("signal");
 
     QTest::addRow("Invalid object")
+        << "QSignalSpy: Cannot spy on a null object"_ba
         << static_cast<QObject*>(nullptr)
         << QMetaMethod();
 
     QTest::addRow("Empty signal")
+        << "QSignalSpy: Null signal is not valid"_ba
         << new QObject(this)
         << QMetaMethod();
 
     QTest::addRow("Method is not a signal")
+        << "QSignalSpy: Not a signal: 'deleteLater()'"_ba
         << new QObject(this)
         << QObject::staticMetaObject.method(QObject::staticMetaObject.indexOfMethod("deleteLater()"));
+}
+
+class EmitSignal_Thread : public QThread
+{
+    Q_OBJECT
+public:
+    void run() override
+    {
+        emit valueChanged(42, u"is the answer"_s);
+    }
+
+Q_SIGNALS:
+    void valueChanged(int value, const QString &str);
+};
+
+void tst_QSignalSpy::signalSpyDoesNotRaceOnCrossThreadSignal()
+{
+    EmitSignal_Thread thread;
+    QSignalSpy valueChangedSpy(&thread, &EmitSignal_Thread::valueChanged);
+    QVERIFY(valueChangedSpy.isValid());
+
+    thread.start();
+    QVERIFY(valueChangedSpy.wait(5s));
+    QCOMPARE(valueChangedSpy[0][0].toInt(), 42);
+    QCOMPARE(valueChangedSpy[0][1].toString(), u"is the answer"_s);
+    QVERIFY(thread.wait(5s));
 }
 
 QTEST_MAIN(tst_QSignalSpy)

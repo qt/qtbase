@@ -51,10 +51,8 @@ void qYieldCpu(void)
 #elif defined(Q_PROCESSOR_ARM) && Q_PROCESSOR_ARM >= 7 && defined(Q_CC_GNU)
     asm("yield");           // this works everywhere
 
-#elif __has_builtin(__builtin_riscv_pause)
-    __builtin_riscv_pause();        // Zihintpause extension
 #elif defined(Q_PROCESSOR_RISCV)
-    asm("fence w, 0");              // a.k.a. "pause"
+    asm(".word 0x0100000f");        // a.k.a. "pause"
 
 #elif defined(_YIELD_PROCESSOR) && defined(Q_CC_GHS)
     _YIELD_PROCESSOR;       // Green Hills (INTEGRITY), but only on ARM

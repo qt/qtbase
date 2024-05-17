@@ -1,7 +1,7 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-if(WASM) # not all tests currently work in WebAssembly
+if(QT_BUILD_WASM_BATCHED_TESTS) # not all tests currently work in WebAssembly
     add_subdirectory(qatomicint)
     add_subdirectory(qatomicinteger)
     add_subdirectory(qatomicpointer)
@@ -17,11 +17,20 @@ if(QT_FEATURE_thread)
     add_subdirectory(qatomicint)
     add_subdirectory(qatomicinteger)
     add_subdirectory(qatomicpointer)
-    add_subdirectory(qresultstore)
-    if(QT_FEATURE_concurrent AND NOT INTEGRITY)
-        add_subdirectory(qfuture)
+    if(QT_FEATURE_future)
+        if(QT_FEATURE_concurrent AND NOT INTEGRITY)
+            add_subdirectory(qfuture)
+        endif()
+        add_subdirectory(qresultstore)
+        add_subdirectory(qfuturesynchronizer)
+        if(NOT INTEGRITY)
+            add_subdirectory(qpromise)
+        endif()
+        # QTBUG-87431
+        if(TARGET Qt::Concurrent AND NOT INTEGRITY)
+            add_subdirectory(qfuturewatcher)
+        endif()
     endif()
-    add_subdirectory(qfuturesynchronizer)
     add_subdirectory(qmutex)
     add_subdirectory(qmutexlocker)
     add_subdirectory(qreadlocker)
@@ -36,12 +45,5 @@ if(QT_FEATURE_thread)
     add_subdirectory(qthreadstorage)
     add_subdirectory(qwaitcondition)
     add_subdirectory(qwritelocker)
-    if(NOT INTEGRITY)
-        add_subdirectory(qpromise)
-    endif()
 endif()
 
-# QTBUG-87431
-if(TARGET Qt::Concurrent AND NOT INTEGRITY)
-    add_subdirectory(qfuturewatcher)
-endif()

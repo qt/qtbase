@@ -140,6 +140,15 @@
     \sa isEmpty(), resize()
 */
 
+/*! \fn template<class T, qsizetype Prealloc> qsizetype QVarLengthArray<T, Prealloc>::max_size()
+    \since 6.8
+
+    This function is provided for STL compatibility.
+    It returns the maximum number of elements that the array can
+    theoretically hold. In practice, the number can be much smaller,
+    limited by the amount of memory available to the system.
+*/
+
 /*! \fn template<class T, qsizetype Prealloc> T& QVarLengthArray<T, Prealloc>::first()
 
     Returns a reference to the first item in the array. The array must
@@ -460,6 +469,15 @@
 
     If the index \a i is out of bounds, the function returns
     \a defaultValue.
+*/
+
+/*
+    \var QVarLengthArray::PreallocatedSize
+    \since 6.8
+
+    The same value as the \c{Prealloc} template argument. Provided for easier
+    access compared to manually extracting the value from the template
+    argument.
 */
 
 /*!

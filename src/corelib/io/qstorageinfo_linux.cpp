@@ -6,13 +6,12 @@
 
 #include "qstorageinfo_linux_p.h"
 
-#include "qdiriterator.h"
+#include "qdirlisting.h"
 #include <private/qcore_unix_p.h>
 #include <private/qtools_p.h>
 
 #include <q20memory.h>
 
-#include <linux/mount.h>
 #include <sys/ioctl.h>
 #include <sys/statfs.h>
 
@@ -22,6 +21,11 @@
 #endif
 #ifndef FS_IOC_GETFSLABEL
 #  define FS_IOC_GETFSLABEL     _IOR(0x94, 49, char[FSLABEL_MAX])
+#endif
+
+// or <linux/statfs.h>
+#ifndef ST_RDONLY
+#  define ST_RDONLY             0x0001  /* mount read-only */
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -99,13 +103,13 @@ static inline quint64 retrieveDeviceId(const QByteArray &device, quint64 deviceI
     return st.st_rdev;
 }
 
-static QDirIterator devicesByLabel()
+static QDirListing devicesByLabel()
 {
     static const char pathDiskByLabel[] = "/dev/disk/by-label";
     static constexpr auto LabelFileFilter =
             QDir::AllEntries | QDir::System | QDir::Hidden | QDir::NoDotAndDotDot;
 
-    return QDirIterator(QLatin1StringView(pathDiskByLabel), LabelFileFilter);
+    return QDirListing(QLatin1StringView(pathDiskByLabel), LabelFileFilter);
 }
 
 static inline auto retrieveLabels()
@@ -116,13 +120,11 @@ static inline auto retrieveLabels()
     };
     QList<Entry> result;
 
-    QDirIterator it = devicesByLabel();
-    while (it.hasNext()) {
-        QFileInfo fileInfo = it.nextFileInfo();
-        quint64 deviceId = retrieveDeviceId(QFile::encodeName(fileInfo.filePath()));
+    for (const auto &dirEntry : devicesByLabel()) {
+        quint64 deviceId = retrieveDeviceId(QFile::encodeName(dirEntry.filePath()));
         if (!deviceId)
             continue;
-        result.emplaceBack(Entry{ decodeFsEncString(fileInfo.fileName()), deviceId });
+        result.emplaceBack(Entry{ decodeFsEncString(dirEntry.fileName()), deviceId });
     }
     return result;
 }
@@ -153,12 +155,9 @@ static inline QString retrieveLabel(const QStorageInfoPrivate &d, quint64 device
     if (!deviceId)
         return QString();
 
-    QDirIterator it = devicesByLabel();
-    while (it.hasNext()) {
-        QFileInfo fileInfo = it.nextFileInfo();
-        QString name = fileInfo.fileName();
-        if (retrieveDeviceId(QFile::encodeName(fileInfo.filePath())) == deviceId)
-            return decodeFsEncString(std::move(name));
+    for (const auto &dirEntry : devicesByLabel()) {
+        if (retrieveDeviceId(QFile::encodeName(dirEntry.filePath())) == deviceId)
+            return decodeFsEncString(dirEntry.fileName());
     }
     return QString();
 }
@@ -176,7 +175,7 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
         bytesFree = statfs_buf.f_bfree * statfs_buf.f_frsize;
         bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_frsize;
         blockSize = int(statfs_buf.f_bsize);
-        readOnly = (statfs_buf.f_flags & MS_RDONLY) != 0;
+        readOnly = (statfs_buf.f_flags & ST_RDONLY) != 0;
     }
 }
 
@@ -273,13 +272,14 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
 
     QList<QStorageInfo> volumes;
     for (MountInfo &info : infos) {
+        const auto infoStDev = info.stDev;
         QStorageInfoPrivate d(std::move(info));
         d.retrieveVolumeInfo();
         if (d.bytesTotal <= 0 && d.rootPath != u'/')
             continue;
-        if (info.stDev != deviceIdForPath(d.rootPath))
+        if (infoStDev != deviceIdForPath(d.rootPath))
             continue;       // probably something mounted over this mountpoint
-        d.name = labelForDevice(d, info.stDev);
+        d.name = labelForDevice(d, infoStDev);
         volumes.emplace_back(QStorageInfo(*new QStorageInfoPrivate(std::move(d))));
     }
     return volumes;

@@ -105,6 +105,12 @@ const char QSslConfiguration::NextProtocolHttp1_1[] = "http/1.1";
 */
 
 /*!
+    \variable QSslConfiguration::ALPNProtocolHTTP2
+    \brief The value used for negotiating HTTP 2 during the Application-Layer
+    Protocol Negotiation.
+*/
+
+/*!
     Constructs an empty SSL configuration. This configuration contains
     no valid settings and the state will be empty. isNull() will
     return true after this constructor is called.

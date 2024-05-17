@@ -1,7 +1,7 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // Copyright (C) 2022 Intel Corporation.
 // Copyright (C) 2014 Olivier Goffart <ogoffart@woboq.com>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <qdebug.h>
 #include <qglobal.h>
@@ -802,6 +802,10 @@ void tst_qmessagehandler::qMessagePattern_data()
 #ifdef __GLIBC__
 #  if QT_CONFIG(static)
     // These test cases don't work with static Qt builds
+#  elif !defined(Q_PROCESSOR_X86)
+    // On most RISC platforms, call frames do not have to be stored to the
+    // stack (the return pointer may be saved in any callee-saved register), so
+    // this test isn't reliable.
 #  elif defined(QT_ASAN_ENABLED)
     // These tests produce far more call frames under ASan
 #  else
@@ -812,10 +816,9 @@ void tst_qmessagehandler::qMessagePattern_data()
         "[MyClass::myFunction|MyClass::mySlot1|?" BACKTRACE_HELPER_NAME "?|",
 
         // QMetaObject::invokeMethodImpl calls internal function
-        // (QMetaMethodPrivate::invokeImpl, at the tims of this writing), which
+        // (QMetaMethodPrivate::invokeImpl, at the time of this writing), which
         // will usually show only as ?libQt6Core.so? or equivalent, so we skip
 
-        // end of backtrace, actual message
         "|" QT_NAMESPACE_STR "QMetaObject::invokeMethodImpl] from_a_function 34"
     };
     QTest::newRow("backtrace") << "[%{backtrace}] %{message}" << true << expectedBacktrace;
@@ -983,11 +986,9 @@ QString tst_qmessagehandler::backtraceHelperPath()
 #ifdef Q_OS_ANDROID
     QString appExe(QCoreApplication::applicationDirPath()
                    + QLatin1String("/lib" BACKTRACE_HELPER_NAME ".so"));
-#elif defined(Q_OS_WEBOS)
+#else
     QString appExe(QCoreApplication::applicationDirPath()
                    + QLatin1String("/" BACKTRACE_HELPER_NAME));
-#else
-    QString appExe(QLatin1String(HELPER_BINARY));
 #endif
     return appExe;
 }

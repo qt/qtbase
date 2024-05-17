@@ -134,9 +134,12 @@ struct CTString
 // Helper types that allow us to disable variadic overloads that would conflict
 // with overloads that take a const char*.
 template<typename T, size_t N = 0> struct IsStringType : std::false_type {};
-template<> struct IsStringType<const char*, 0> : std::true_type {};
+template<> struct IsStringType<const char *, 0> : std::true_type {};
+template<> struct IsStringType<const char *&, 0> : std::true_type {};
 template<size_t N> struct IsStringType<CTString<N>> : std::true_type {};
 template<size_t N> struct IsStringType<const char[N]> : std::true_type {};
+template<size_t N> struct IsStringType<const char(&)[N]> : std::true_type {};
+template<size_t N> struct IsStringType<char[N]> : std::true_type {};
 
 template <typename T>
 struct Traits {

@@ -143,25 +143,25 @@
 
     The wizard generates a user interface definition in XML format: notepad.ui.
     When you open the notepad.ui file in Qt Creator, it automatically
-    opens in the integrated Qt Designer.
+    opens in the integrated \QD.
 
     When you build the application, Qt Creator launches the Qt
     \l{User Interface Compiler (uic)} that reads the .ui file and creates
     a corresponding C++ header file, ui_notepad.h.
 
-    \section2 Using Qt Designer
+    \section2 Using \QD
 
     The wizard creates an application that uses a QMainWindow. It has
     its own layout to which you can add a menu bar, dock widgets, toolbars,
     and a status bar. The center area can be occupied by any kind of widget.
     The wizard places the Notepad widget there.
 
-    To add widgets in Qt Designer:
+    To add widgets in \QD:
 
     \list 1
         \li In the Qt Creator \uicontrol Edit mode, double-click the notepad.ui
             file in the \uicontrol Projects view to launch the file in the integrated
-            Qt Designer.
+            \QD.
         \li Drag and drop widgets Text Edit (QTextEdit) to the form.
         \li Press \key {Ctrl+A} (or \key {Cmd+A}) to select the widgets and click
             \uicontrol {Lay out Vertically} (or press \key {Ctrl+L}) to apply a vertical
@@ -169,7 +169,7 @@
         \li Press \key {Ctrl+S} (or \key {Cmd+S}) to save your changes.
     \endlist
 
-    The UI now looks as follows in Qt Designer:
+    The UI now looks as follows in \QD:
 
     \image notepad4.png
 
@@ -317,8 +317,8 @@
             \li About
             \li Here
         \row
-            \li Using Qt Designer
-            \li \l{Qt Designer Manual}
+            \li Using \QD
+            \li \l{Qt Widgets Designer Manual}
         \row
             \li Layouts
             \li \l{Layout Management},

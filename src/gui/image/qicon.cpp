@@ -25,6 +25,7 @@
 
 #include "private/qhexstring_p.h"
 #include "private/qguiapplication_p.h"
+#include "private/qoffsetstringarray_p.h"
 #include "qpa/qplatformtheme.h"
 
 #ifndef QT_NO_ICON
@@ -159,15 +160,16 @@ static inline int area(const QSize &s) { return s.width() * s.height(); }
 // the 2x pixmaps then.)
 static QPixmapIconEngineEntry *bestSizeScaleMatch(const QSize &size, qreal scale, QPixmapIconEngineEntry *pa, QPixmapIconEngineEntry *pb)
 {
-
+    const auto scaleA = pa->pixmap.devicePixelRatio();
+    const auto scaleB = pb->pixmap.devicePixelRatio();
     // scale: we can only differentiate on scale if the scale differs
-    if (pa->scale != pb->scale) {
+    if (scaleA != scaleB) {
 
         // Score the pixmaps: 0 is an exact scale match, positive
         // scores have more detail than requested, negative scores
         // have less detail than requested.
-        qreal ascore = pa->scale - scale;
-        qreal bscore = pb->scale - scale;
+        qreal ascore = scaleA - scale;
+        qreal bscore = scaleB - scale;
 
         // always prefer positive scores to prevent upscaling
         if ((ascore < 0) != (bscore < 0))
@@ -200,13 +202,14 @@ static QPixmapIconEngineEntry *bestSizeScaleMatch(const QSize &size, qreal scale
 QPixmapIconEngineEntry *QPixmapIconEngine::tryMatch(const QSize &size, qreal scale, QIcon::Mode mode, QIcon::State state)
 {
     QPixmapIconEngineEntry *pe = nullptr;
-    for (int i = 0; i < pixmaps.size(); ++i)
-        if (pixmaps.at(i).mode == mode && pixmaps.at(i).state == state) {
+    for (auto &entry : pixmaps) {
+        if (entry.mode == mode && entry.state == state) {
             if (pe)
-                pe = bestSizeScaleMatch(size, scale, &pixmaps[i], pe);
+                pe = bestSizeScaleMatch(size, scale, &entry, pe);
             else
-                pe = &pixmaps[i];
+                pe = &entry;
         }
+    }
     return pe;
 }
 
@@ -277,7 +280,7 @@ QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIc
         pm = pe->pixmap;
 
     if (pm.isNull()) {
-        int idx = pixmaps.size();
+        auto idx = pixmaps.size();
         while (--idx >= 0) {
             if (pe == &pixmaps.at(idx)) {
                 pixmaps.remove(idx);
@@ -368,7 +371,7 @@ void QPixmapIconEngine::addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon
 {
     if (!pixmap.isNull()) {
         QPixmapIconEngineEntry *pe = tryMatch(pixmap.size(), pixmap.devicePixelRatio(), mode, state);
-        if (pe && pe->size == pixmap.size() && pe->scale == pixmap.devicePixelRatio()) {
+        if (pe && pe->size == pixmap.size() && pe->pixmap.devicePixelRatio() == pixmap.devicePixelRatio()) {
             pe->pixmap = pixmap;
             pe->fileName.clear();
         } else {
@@ -386,7 +389,7 @@ static inline int origIcoDepth(const QImage &image)
 
 static inline int findBySize(const QList<QImage> &images, const QSize &size)
 {
-    for (int i = 0; i < images.size(); ++i) {
+    for (qsizetype i = 0; i < images.size(); ++i) {
         if (images.at(i).size() == size)
             return i;
     }
@@ -1400,6 +1403,401 @@ bool QIcon::hasThemeIcon(const QString &name)
     QIcon icon = fromTheme(name);
 
     return icon.name() == name;
+}
+
+static constexpr auto themeIconMapping = qOffsetStringArray(
+    "address-book-new",
+    "application-exit",
+    "appointment-new",
+    "call-start",
+    "call-stop",
+    "contact-new",
+    "document-new",
+    "document-open",
+    "document-open-recent",
+    "document-page-setup",
+    "document-print",
+    "document-print-preview",
+    "document-properties",
+    "document-revert",
+    "document-save",
+    "document-save-as",
+    "document-send",
+    "edit-clear",
+    "edit-copy",
+    "edit-cut",
+    "edit-delete",
+    "edit-find",
+    "edit-paste",
+    "edit-redo",
+    "edit-select-all",
+    "edit-undo",
+    "folder-new",
+    "format-indent-less",
+    "format-indent-more",
+    "format-justify-center",
+    "format-justify-fill",
+    "format-justify-left",
+    "format-justify-right",
+    "format-text-direction-ltr",
+    "format-text-direction-rtl",
+    "format-text-bold",
+    "format-text-italic",
+    "format-text-underline",
+    "format-text-strikethrough",
+    "go-down",
+    "go-home",
+    "go-next",
+    "go-previous",
+    "go-up",
+    "help-about",
+    "help-faq",
+    "insert-image",
+    "insert-link",
+    "insert-text",
+    "list-add",
+    "list-remove",
+    "mail-forward",
+    "mail-mark-important",
+    "mail-mark-read",
+    "mail-mark-unread",
+    "mail-message-new",
+    "mail-reply-all",
+    "mail-reply-sender",
+    "mail-send",
+    "media-eject",
+    "media-playback-pause",
+    "media-playback-start",
+    "media-playback-stop",
+    "media-record",
+    "media-seek-backward",
+    "media-seek-forward",
+    "media-skip-backward",
+    "media-skip-forward",
+    "object-rotate-left",
+    "object-rotate-right",
+    "process-stop",
+    "system-lock-screen",
+    "system-log-out",
+    "system-search",
+    "system-reboot",
+    "system-shutdown",
+    "tools-check-spelling",
+    "view-fullscreen",
+    "view-refresh",
+    "view-restore",
+    "window-close",
+    "window-new",
+    "zoom-fit-best",
+    "zoom-in",
+    "zoom-out",
+
+    "audio-card",
+    "audio-input-microphone",
+    "battery",
+    "camera-photo",
+    "camera-video",
+    "camera-web",
+    "computer",
+    "drive-harddisk",
+    "drive-optical",
+    "input-gaming",
+    "input-keyboard",
+    "input-mouse",
+    "input-tablet",
+    "media-flash",
+    "media-optical",
+    "media-tape",
+    "multimedia-player",
+    "network-wired",
+    "network-wireless",
+    "phone",
+    "printer",
+    "scanner",
+    "video-display",
+
+    "appointment-missed",
+    "appointment-soon",
+    "audio-volume-high",
+    "audio-volume-low",
+    "audio-volume-medium",
+    "audio-volume-muted",
+    "battery-caution",
+    "battery-low",
+    "dialog-error",
+    "dialog-information",
+    "dialog-password",
+    "dialog-question",
+    "dialog-warning",
+    "folder-drag-accept",
+    "folder-open",
+    "folder-visiting",
+    "image-loading",
+    "image-missing",
+    "mail-attachment",
+    "mail-unread",
+    "mail-read",
+    "mail-replied",
+    "media-playlist-repeat",
+    "media-playlist-shuffle",
+    "network-offline",
+    "printer-printing",
+    "security-high",
+    "security-low",
+    "software-update-available",
+    "software-update-urgent",
+    "sync-error",
+    "sync-synchronizing",
+    "user-available",
+    "user-offline",
+    "weather-clear",
+    "weather-clear-night",
+    "weather-few-clouds",
+    "weather-few-clouds-night",
+    "weather-fog",
+    "weather-showers",
+    "weather-snow",
+    "weather-storm"
+);
+static_assert(QIcon::ThemeIcon::NThemeIcons == QIcon::ThemeIcon(themeIconMapping.count()));
+
+static constexpr QLatin1StringView themeIconName(QIcon::ThemeIcon icon)
+{
+    using ThemeIconIndex = std::underlying_type_t<QIcon::ThemeIcon>;
+    const auto index = static_cast<ThemeIconIndex>(icon);
+    Q_ASSERT(index < themeIconMapping.count());
+    return QLatin1StringView(themeIconMapping.viewAt(index));
+}
+
+/*!
+    \enum QIcon::ThemeIcon
+    \since 6.7
+
+    This enum provides access to icons that are provided by most
+    icon theme implementations.
+
+    \value AddressBookNew       The icon for the action to create a new address book.
+    \value ApplicationExit      The icon for exiting an application.
+    \value AppointmentNew       The icon for the action to create a new appointment.
+    \value CallStart            The icon for initiating or accepting a call.
+    \value CallStop             The icon for stopping a current call.
+    \value ContactNew           The icon for the action to create a new contact.
+    \value DocumentNew          The icon for the action to create a new document.
+    \value DocumentOpen         The icon for the action to open a document.
+    \value DocumentOpenRecent   The icon for the action to open a document that was recently opened.
+    \value DocumentPageSetup    The icon for the \e{page setup} action.
+    \value DocumentPrint        The icon for the \e{print} action.
+    \value DocumentPrintPreview The icon for the \e{print preview} action.
+    \value DocumentProperties   The icon for the action to view the properties of a document.
+    \value DocumentRevert       The icon for the action of reverting to a previous version of a document.
+    \value DocumentSave         The icon for the \e{save} action.
+    \value DocumentSaveAs       The icon for the \e{save as} action.
+    \value DocumentSend         The icon for the \e{send} action.
+    \value EditClear            The icon for the \e{clear} action.
+    \value EditCopy             The icon for the \e{copy} action.
+    \value EditCut              The icon for the \e{cut} action.
+    \value EditDelete           The icon for the \e{delete} action.
+    \value EditFind             The icon for the \e{find} action.
+    \value EditPaste            The icon for the \e{paste} action.
+    \value EditRedo             The icon for the \e{redo} action.
+    \value EditSelectAll        The icon for the \e{select all} action.
+    \value EditUndo             The icon for the \e{undo} action.
+    \value FolderNew            The icon for creating a new folder.
+    \value FormatIndentLess     The icon for the \e{decrease indent formatting} action.
+    \value FormatIndentMore     The icon for the \e{increase indent formatting} action.
+    \value FormatJustifyCenter  The icon for the \e{center justification formatting} action.
+    \value FormatJustifyFill    The icon for the \e{fill justification formatting} action.
+    \value FormatJustifyLeft    The icon for the \e{left justification formatting} action.
+    \value FormatJustifyRight   The icon for the \e{right justification} action.
+    \value FormatTextDirectionLtr   The icon for the \e{left-to-right text formatting} action.
+    \value FormatTextDirectionRtl   The icon for the \e{right-to-left formatting} action.
+    \value FormatTextBold       The icon for the \e{bold text formatting} action.
+    \value FormatTextItalic     The icon for the \e{italic text formatting} action.
+    \value FormatTextUnderline  The icon for the \e{underlined text formatting} action.
+    \value FormatTextStrikethrough  The icon for the \e{strikethrough text formatting} action.
+    \value GoDown               The icon for the \e{go down in a list} action.
+    \value GoHome               The icon for the \e{go to home location} action.
+    \value GoNext               The icon for the \e{go to the next item in a list} action.
+    \value GoPrevious           The icon for the \e{go to the previous item in a list} action.
+    \value GoUp                 The icon for the \e{go up in a list} action.
+    \value HelpAbout            The icon for the \e{About} item in the Help menu.
+    \value HelpFaq              The icon for the \e{FAQ} item in the Help menu.
+    \value InsertImage          The icon for the \e{insert image} action of an application.
+    \value InsertLink           The icon for the \e{insert link} action of an application.
+    \value InsertText           The icon for the \e{insert text} action of an application.
+    \value ListAdd              The icon for the \e{add to list} action.
+    \value ListRemove           The icon for the \e{remove from list} action.
+    \value MailForward          The icon for the \e{forward} action.
+    \value MailMarkImportant    The icon for the \e{mark as important} action.
+    \value MailMarkRead         The icon for the \e{mark as read} action.
+    \value MailMarkUnread       The icon for the \e{mark as unread} action.
+    \value MailMessageNew       The icon for the \e{compose new mail} action.
+    \value MailReplyAll         The icon for the \e{reply to all} action.
+    \value MailReplySender      The icon for the \e{reply to sender} action.
+    \value MailSend             The icon for the \e{send} action.
+    \value MediaEject           The icon for the \e{eject} action of a media player or file manager.
+    \value MediaPlaybackPause   The icon for the \e{pause} action of a media player.
+    \value MediaPlaybackStart   The icon for the \e{start playback} action of a media player.
+    \value MediaPlaybackStop    The icon for the \e{stop} action of a media player.
+    \value MediaRecord          The icon for the \e{record} action of a media application.
+    \value MediaSeekBackward    The icon for the \e{seek backward} action of a media player.
+    \value MediaSeekForward     The icon for the \e{seek forward} action of a media player.
+    \value MediaSkipBackward    The icon for the \e{skip backward} action of a media player.
+    \value MediaSkipForward     The icon for the \e{skip forward} action of a media player.
+    \value ObjectRotateLeft     The icon for the \e{rotate left} action performed on an object.
+    \value ObjectRotateRight    The icon for the \e{rotate right} action performed on an object.
+    \value ProcessStop          The icon for the \e{stop action in applications with} actions that
+                                may take a while to process, such as web page loading in a browser.
+    \value SystemLockScreen     The icon for the \e{lock screen} action.
+    \value SystemLogOut         The icon for the \e{log out} action.
+    \value SystemSearch         The icon for the \e{search} action.
+    \value SystemReboot         The icon for the \e{reboot} action.
+    \value SystemShutdown       The icon for the \e{shutdown} action.
+    \value ToolsCheckSpelling   The icon for the \e{check spelling} action.
+    \value ViewFullscreen       The icon for the \e{fullscreen} action.
+    \value ViewRefresh          The icon for the \e{refresh} action.
+    \value ViewRestore          The icon for leaving the fullscreen view.
+    \value WindowClose          The icon for the \e{close window} action.
+    \value WindowNew            The icon for the \e{new window} action.
+    \value ZoomFitBest          The icon for the \e{best fit} action.
+    \value ZoomIn               The icon for the \e{zoom in} action.
+    \value ZoomOut              The icon for the \e{zoom out} action.
+
+    \value AudioCard            The icon for the audio rendering device.
+    \value AudioInputMicrophone The icon for the microphone audio input device.
+    \value Battery              The icon for the system battery device.
+    \value CameraPhoto          The icon for a digital still camera devices.
+    \value CameraVideo          The icon for a video camera device.
+    \value CameraWeb            The icon for a web camera device.
+    \value Computer             The icon for the computing device as a whole.
+    \value DriveHarddisk        The icon for hard disk drives.
+    \value DriveOptical         The icon for optical media drives such as CD and DVD.
+    \value InputGaming          The icon for the gaming input device.
+    \value InputKeyboard        The icon for the keyboard input device.
+    \value InputMouse           The icon for the mousing input device.
+    \value InputTablet          The icon for graphics tablet input devices.
+    \value MediaFlash           The icon for flash media, such as a memory stick.
+    \value MediaOptical         The icon for physical optical media such as CD and DVD.
+    \value MediaTape            The icon for generic physical tape media.
+    \value MultimediaPlayer     The icon for generic multimedia playing devices.
+    \value NetworkWired         The icon for wired network connections.
+    \value NetworkWireless      The icon for wireless network connections.
+    \value Phone                The icon for phone devices.
+    \value Printer              The icon for a printer device.
+    \value Scanner              The icon for a scanner device.
+    \value VideoDisplay         The icon for the monitor that video gets displayed on.
+
+    \value AppointmentMissed    The icon for when an appointment was missed.
+    \value AppointmentSoon      The icon for when an appointment will occur soon.
+    \value AudioVolumeHigh      The icon used to indicate high audio volume.
+    \value AudioVolumeLow       The icon used to indicate low audio volume.
+    \value AudioVolumeMedium    The icon used to indicate medium audio volume.
+    \value AudioVolumeMuted     The icon used to indicate the muted state for audio playback.
+    \value BatteryCaution       The icon used when the battery is below 40%.
+    \value BatteryLow           The icon used when the battery is below 20%.
+    \value DialogError          The icon used when a dialog is opened to explain an error
+                                condition to the user.
+    \value DialogInformation    The icon used when a dialog is opened to give information to the
+                                user that may be pertinent to the requested action.
+    \value DialogPassword       The icon used when a dialog requesting the authentication
+                                credentials for a user is opened.
+    \value DialogQuestion       The icon used when a dialog is opened to ask a simple question
+                                to the user.
+    \value DialogWarning        The icon used when a dialog is opened to warn the user of
+                                impending issues with the requested action.
+    \value FolderDragAccept     The icon used for a folder while an acceptable object is being
+                                dragged onto it.
+    \value FolderOpen           The icon used for folders, while their contents are being displayed
+                                within the same window.
+    \value FolderVisiting       The icon used for folders, while their contents are being displayed
+                                in another window.
+    \value ImageLoading         The icon used while another image is being loaded.
+    \value ImageMissing         The icon used when another image could not be loaded.
+    \value MailAttachment       The icon for a message that contains attachments.
+    \value MailUnread           The icon for an unread message.
+    \value MailRead             The icon for a read message.
+    \value MailReplied          The icon for a message that has been replied to.
+    \value MediaPlaylistRepeat  The icon for the repeat mode of a media player.
+    \value MediaPlaylistShuffle The icon for the shuffle mode of a media player.
+    \value NetworkOffline       The icon used to indicate that the device is not connected to the
+                                network.
+    \value PrinterPrinting      The icon used while a print job is successfully being spooled to a
+                                printing device.
+    \value SecurityHigh         The icon used to indicate that the security level of an item is
+                                known to be high.
+    \value SecurityLow          The icon used to indicate that the security level of an item is
+                                known to be low.
+    \value SoftwareUpdateAvailable  The icon used to indicate that an update is available.
+    \value SoftwareUpdateUrgent The icon used to indicate that an urgent update is available.
+    \value SyncError            The icon used when an error occurs while attempting to synchronize
+                                data across devices.
+    \value SyncSynchronizing    The icon used while data is successfully synchronizing across
+                                devices.
+    \value UserAvailable        The icon used to indicate that a user is available.
+    \value UserOffline          The icon used to indicate that a user is not available.
+    \value WeatherClear         The icon used to indicate that the sky is clear.
+    \value WeatherClearNight    The icon used to indicate that the sky is clear
+                                during the night.
+    \value WeatherFewClouds     The icon used to indicate that the sky is partly cloudy.
+    \value WeatherFewCloudsNight    The icon used to indicate that the sky is partly cloudy
+                                during the night.
+    \value WeatherFog           The icon used to indicate that the weather is foggy.
+    \value WeatherShowers       The icon used to indicate that rain showers are occurring.
+    \value WeatherSnow          The icon used to indicate that snow is falling.
+    \value WeatherStorm         The icon used to indicate that the weather is stormy.
+
+    \omitvalue NThemeIcons
+
+    \sa {QIcon#Creating an icon from a theme or icon library},
+        fromTheme()
+*/
+
+/*!
+    \since 6.7
+    \overload
+
+    Returns \c true if there is an icon available for \a icon in the
+    current icon theme or any of the fallbacks, as described by
+    fromTheme(), otherwise returns \c false.
+
+    \sa fromTheme()
+*/
+bool QIcon::hasThemeIcon(QIcon::ThemeIcon icon)
+{
+    return hasThemeIcon(themeIconName(icon));
+}
+
+/*!
+    \fn QIcon QIcon::fromTheme(QIcon::ThemeIcon icon)
+    \fn QIcon QIcon::fromTheme(QIcon::ThemeIcon icon, const QIcon &fallback)
+    \since 6.7
+    \overload
+
+    Returns the QIcon corresponding to \a icon in the
+    \l{themeName()}{current icon theme}.
+
+    If the current theme does not provide an icon for \a icon,
+    the \l{fallbackThemeName()}{fallback icon theme} is consulted,
+    before falling back to looking up standalone icon files in the
+    \l{QIcon::fallbackSearchPaths()}{fallback icon search path}.
+    Finally, the platform's native icon library is consulted.
+
+    If no icon is found and a \a fallback is provided, \a fallback is
+    returned. This is useful to provide a guaranteed fallback, regardless
+    of whether the current set of icon themes and fallbacks paths
+    support the requested icon.
+
+    If no icon is found and no \a fallback is provided, a default
+    constructed, empty QIcon is returned.
+*/
+QIcon QIcon::fromTheme(QIcon::ThemeIcon icon)
+{
+    return fromTheme(themeIconName(icon));
+}
+
+QIcon QIcon::fromTheme(QIcon::ThemeIcon icon, const QIcon &fallback)
+{
+    return fromTheme(themeIconName(icon), fallback);
 }
 
 /*!

@@ -23,7 +23,6 @@
 "itemviews/addressbook Example", "examples/widgets/itemviews/addressbook", "addressbook", 0, -1
 "itemviews/basicsortfiltermodel Example", "examples/widgets/itemviews/basicsortfiltermodel", "basicsortfiltermodel", 10, -1
 "itemviews/chart Example", "examples/widgets/itemviews/chart", "chart", 0, -1
-"itemviews/coloreditorfactory Example", "examples/widgets/itemviews/coloreditorfactory", "coloreditorfactory", 10, -1
 "itemviews/combowidgetmapper Example", "examples/widgets/itemviews/combowidgetmapper", "combowidgetmapper", 6, -1
 "itemviews/customsortfiltermodel Example", "examples/widgets/itemviews/customsortfiltermodel", "customsortfiltermodel", 6, -1
 "itemviews/dirview Example", "examples/widgets/itemviews/dirview", "dirview", 0, -1
@@ -85,7 +84,6 @@
 "widgets/charactermap Example", "examples/widgets/widgets/charactermap", "charactermap", 10, -1
 "widgets/codeeditor Example", "examples/widgets/widgets/codeeditor", "codeeditor", 0, -1
 "widgets/digitalclock Example", "examples/widgets/widgets/digitalclock", "digitalclock", 10, -1
-"widgets/groupbox Example", "examples/widgets/widgets/groupbox", "groupbox", 10, -1
 "widgets/icons Example", "examples/widgets/widgets/icons", "icons", 10, -1
 "widgets/imageviewer Example", "examples/widgets/widgets/imageviewer", "imageviewer", 10, -1
 "widgets/lineedits Example", "examples/widgets/widgets/lineedits", "lineedits", 10, -1

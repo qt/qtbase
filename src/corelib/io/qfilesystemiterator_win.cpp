@@ -14,17 +14,14 @@ using namespace Qt::StringLiterals;
 
 bool done = true;
 
-QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters,
-                                         const QStringList &nameFilters, QDirIterator::IteratorFlags flags)
-    : nativePath(entry.nativeFilePath())
-    , dirPath(entry.filePath())
+QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters)
+    : dirPath(entry.filePath())
+    , nativePath(entry.nativeFilePath())
     , findFileHandle(INVALID_HANDLE_VALUE)
     , uncFallback(false)
     , uncShareIndex(0)
     , onlyDirs(false)
 {
-    Q_UNUSED(nameFilters);
-    Q_UNUSED(flags);
     if (nativePath.endsWith(u".lnk"_s) && !QFileSystemEngine::isDirPath(dirPath, nullptr)) {
         QFileSystemMetaData metaData;
         QFileSystemEntry link = QFileSystemEngine::getLinkTarget(entry, metaData);

@@ -1,3 +1,6 @@
+# Copyright (C) 2024 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 @PACKAGE_INIT@
 
 cmake_minimum_required(VERSION @min_new_policy_version@...@max_new_policy_version@)

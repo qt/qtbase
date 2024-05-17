@@ -171,10 +171,11 @@ void QCocoaEventDispatcherPrivate::maybeStopCFRunLoopTimer()
     runLoopTimerRef = nullptr;
 }
 
-void QCocoaEventDispatcher::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *obj)
+void QCocoaEventDispatcher::registerTimer(Qt::TimerId timerId, Duration interval,
+                                          Qt::TimerType timerType, QObject *obj)
 {
 #ifndef QT_NO_DEBUG
-    if (timerId < 1 || interval < 0 || !obj) {
+    if (qToUnderlying(timerId) < 1 || interval.count() < 0 || !obj) {
         qWarning("QCocoaEventDispatcher::registerTimer: invalid arguments");
         return;
     } else if (obj->thread() != thread() || thread() != QThread::currentThread()) {
@@ -188,10 +189,10 @@ void QCocoaEventDispatcher::registerTimer(int timerId, qint64 interval, Qt::Time
     d->maybeStartCFRunLoopTimer();
 }
 
-bool QCocoaEventDispatcher::unregisterTimer(int timerId)
+bool QCocoaEventDispatcher::unregisterTimer(Qt::TimerId timerId)
 {
 #ifndef QT_NO_DEBUG
-    if (timerId < 1) {
+    if (qToUnderlying(timerId) < 1) {
         qWarning("QCocoaEventDispatcher::unregisterTimer: invalid argument");
         return false;
     } else if (thread() != QThread::currentThread()) {
@@ -230,13 +231,13 @@ bool QCocoaEventDispatcher::unregisterTimers(QObject *obj)
     return returnValue;
 }
 
-QList<QCocoaEventDispatcher::TimerInfo>
-QCocoaEventDispatcher::registeredTimers(QObject *object) const
+QList<QCocoaEventDispatcher::TimerInfoV2>
+QCocoaEventDispatcher::timersForObject(QObject *object) const
 {
 #ifndef QT_NO_DEBUG
     if (!object) {
         qWarning("QCocoaEventDispatcher:registeredTimers: invalid argument");
-        return QList<TimerInfo>();
+        return {};
     }
 #endif
 
@@ -540,17 +541,17 @@ bool QCocoaEventDispatcher::processEvents(QEventLoop::ProcessEventsFlags flags)
     return retVal;
 }
 
-int QCocoaEventDispatcher::remainingTime(int timerId)
+auto QCocoaEventDispatcher::remainingTime(Qt::TimerId timerId) const -> Duration
 {
 #ifndef QT_NO_DEBUG
-    if (timerId < 1) {
+    if (qToUnderlying(timerId) < 1) {
         qWarning("QCocoaEventDispatcher::remainingTime: invalid argument");
-        return -1;
+        return Duration::min();
     }
 #endif
 
-    Q_D(QCocoaEventDispatcher);
-    return d->timerInfoList.timerRemainingTime(timerId);
+    Q_D(const QCocoaEventDispatcher);
+    return d->timerInfoList.remainingDuration(timerId);
 }
 
 void QCocoaEventDispatcher::wakeUp()
@@ -801,7 +802,7 @@ void qt_mac_maybeCancelWaitForMoreEventsForwarder(QAbstractEventDispatcher *even
 }
 
 QCocoaEventDispatcher::QCocoaEventDispatcher(QObject *parent)
-    : QAbstractEventDispatcher(*new QCocoaEventDispatcherPrivate, parent)
+    : QAbstractEventDispatcherV2(*new QCocoaEventDispatcherPrivate, parent)
 {
     Q_D(QCocoaEventDispatcher);
 

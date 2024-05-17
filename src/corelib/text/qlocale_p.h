@@ -18,10 +18,10 @@
 
 #include "qlocale.h"
 
-#include <QtCore/private/qglobal_p.h>
 #include <QtCore/qcalendar.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qnumeric.h>
+#include <QtCore/private/qnumeric_p.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvarlengtharray.h>
@@ -105,6 +105,7 @@ struct QLocaleData;
 // Subclassed by Android platform plugin:
 class Q_CORE_EXPORT QSystemLocale
 {
+    Q_DISABLE_COPY_MOVE(QSystemLocale)
     QSystemLocale *next = nullptr; // Maintains a stack.
 
 public:
@@ -169,7 +170,7 @@ public:
         StandaloneDayNameShort, // QString, in: int
         StandaloneDayNameNarrow // QString, in: int
     };
-    virtual QVariant query(QueryType type, QVariant in = QVariant()) const;
+    virtual QVariant query(QueryType type, QVariant &&in = QVariant()) const;
 
     virtual QLocale fallbackLocale() const;
     inline qsizetype fallbackLocaleIndex() const;
@@ -304,23 +305,14 @@ public:
                                               unsigned flags = NoFlags) const;
 
     // this function is meant to be called with the result of stringToDouble or bytearrayToDouble
+    // so *ok must have been properly set (if not null)
     [[nodiscard]] static float convertDoubleToFloat(double d, bool *ok)
     {
-        if (qIsInf(d))
-            return float(d);
-        if (std::fabs(d) > (std::numeric_limits<float>::max)()) {
-            if (ok)
-                *ok = false;
-            const float huge = std::numeric_limits<float>::infinity();
-            return d < 0 ? -huge : huge;
-        }
-        if (d != 0 && float(d) == 0) {
-            // Values that underflow double already failed. Match them:
-            if (ok)
-                *ok = false;
-            return 0;
-        }
-        return float(d);
+        float result;
+        bool b = convertDoubleTo<float>(d, &result);
+        if (ok && *ok)
+            *ok = b;
+        return result;
     }
 
     [[nodiscard]] double stringToDouble(QStringView str, bool *ok,

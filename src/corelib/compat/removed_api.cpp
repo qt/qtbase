@@ -139,6 +139,16 @@ QLocale::Language QLocale::codeToLanguage(QStringView languageCode) noexcept
 
 #include "qoperatingsystemversion.h"
 
+QOperatingSystemVersion QOperatingSystemVersion::current()
+{
+    return QOperatingSystemVersionBase::current();
+}
+
+QString QOperatingSystemVersion::name() const
+{
+    return QOperatingSystemVersionBase::name();
+}
+
 int QOperatingSystemVersion::compare(const QOperatingSystemVersion &v1,
                                      const QOperatingSystemVersion &v2)
 {
@@ -200,7 +210,7 @@ void QObject::setObjectName(const QString &name)
 
 void QSettings::beginGroup(const QString &prefix)
 {
-    return beginGroup(qToAnyStringViewIgnoringNull(prefix));
+    beginGroup(qToAnyStringViewIgnoringNull(prefix));
 }
 
 int QSettings::beginReadArray(const QString &prefix)
@@ -706,28 +716,9 @@ bool QDateTime::precedes(const QDateTime &other) const
 
 #include "qdatastream.h"
 
-QDataStream &QDataStream::readBytes(char *&s, uint &l)
-{
-    qsizetype length = 0;
-    (void)readBytes(s, length);
-    if (length != qsizetype(uint(length))) {
-        setStatus(ReadCorruptData); // Cannot store length in l
-        delete[] s;
-        l = 0;
-        return *this;
-    }
-    l = uint(length);
-    return *this;
-}
-
 QDataStream &QDataStream::writeBytes(const char *s, uint len)
 {
-    qsizetype length = qsizetype(len);
-    if (length < 0) {
-        setStatus(WriteFailed);
-        return *this;
-    }
-    return writeBytes(s, length);
+    return writeBytes(s, qint64(len));
 }
 
 int QDataStream::skipRawData(int len)
@@ -735,24 +726,20 @@ int QDataStream::skipRawData(int len)
     return int(skipRawData(qint64(len)));
 }
 
-#if QT_POINTER_SIZE != 4
-
 int QDataStream::readBlock(char *data, int len)
 {
-    return int(readBlock(data, qsizetype(len)));
+    return int(readBlock(data, qint64(len)));
 }
 
 int QDataStream::readRawData(char *s, int len)
 {
-    return int(readRawData(s, qsizetype(len)));
+    return int(readRawData(s, qint64(len)));
 }
 
 int QDataStream::writeRawData(const char *s, int len)
 {
-    return writeRawData(s, qsizetype(len));
+    return writeRawData(s, qint64(len));
 }
-
-#endif // QT_POINTER_SIZE != 4
 
 #if defined(Q_OS_ANDROID)
 
@@ -859,11 +846,6 @@ void QObject::moveToThread(QThread *targetThread)
 
 #include "qobjectdefs.h"
 
-int QMetaObject::indexOfEnumerator(const char *name) const
-{
-    return indexOfEnumerator(QByteArrayView(name));
-}
-
 bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *slot, Qt::ConnectionType type, void *ret)
 {
     return invokeMethodImpl(object, slot, type, 1, &ret, nullptr, nullptr);
@@ -936,9 +918,221 @@ QUrl QUrl::fromEncoded(const QByteArray &input, ParsingMode mode)
     return QUrl::fromEncoded(QByteArrayView(input), mode);
 }
 
+#include "qtimer.h" // inlined API
+
 
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically to reduce chances of merge conflicts
 
 #endif // QT_CORE_REMOVED_SINCE(6, 7)
+
+#if QT_CORE_REMOVED_SINCE(6, 8)
+#include "qbitarray.h" // inlined API
+
+#include "qbytearray.h" // inlined API
+
+#include "qcborarray.h" // inlined API
+
+#include "qcbormap.h" // inlined API
+
+#include "qcborvalue.h" // inlined API
+
+#include "qdatastream.h" // inlined API
+
+QDataStream &QDataStream::operator<<(bool i)
+{
+    return (*this << qint8(i));
+}
+
+#include "qdir.h" // inlined API
+
+bool QDir::operator==(const QDir &dir) const
+{
+    return comparesEqual(*this, dir);
+}
+
+#include "qeasingcurve.h"
+
+bool QEasingCurve::operator==(const QEasingCurve &other) const
+{
+    return comparesEqual(*this, other);
+}
+
+#include "qfileinfo.h" // inlined API
+
+bool QFileInfo::operator==(const QFileInfo &fileinfo) const
+{
+    return comparesEqual(*this, fileinfo);
+}
+
+#include "qitemselectionmodel.h" // inlined API
+
+#include "qjsonarray.h"
+
+bool QJsonArray::operator==(const QJsonArray &other) const
+{
+    return comparesEqual(*this, other);
+}
+
+bool QJsonArray::operator!=(const QJsonArray &other) const
+{
+    return !comparesEqual(*this, other);
+}
+
+#include "qjsondocument.h"
+
+bool QJsonDocument::operator==(const QJsonDocument &other) const
+{
+    return comparesEqual(*this, other);
+}
+
+#include "qjsonobject.h"
+
+bool QJsonObject::operator==(const QJsonObject &other) const
+{
+    return comparesEqual(*this, other);
+}
+
+
+bool QJsonObject::operator!=(const QJsonObject &other) const
+{
+    return !comparesEqual(*this, other);
+}
+
+#include "qjsonvalue.h"
+
+bool QJsonValue::operator==(const QJsonValue &other) const
+{
+    return comparesEqual(*this, other);
+}
+
+bool QJsonValue::operator!=(const QJsonValue &other) const
+{
+    return !comparesEqual(*this, other);
+}
+
+#include "qline.h" // inlined API
+
+#include "qmimetype.h"
+
+bool QMimeType::operator==(const QMimeType &other) const
+{
+    return comparesEqual(*this, other);
+}
+
+#include "qobject.h"
+#include "qnumeric.h"
+
+int QObject::startTimer(std::chrono::milliseconds time, Qt::TimerType timerType)
+{
+    using namespace std::chrono;
+    using ratio = std::ratio_divide<std::milli, std::nano>;
+    nanoseconds::rep r;
+    if (qMulOverflow<ratio::num>(time.count(), &r)) {
+        qWarning("QObject::startTimer(std::chrono::milliseconds): "
+                 "'time' arg overflowed when converted to nanoseconds.");
+        r = nanoseconds::max().count();
+    }
+    return startTimer(nanoseconds{r}, timerType);
+}
+
+#if QT_CONFIG(processenvironment)
+#include "qprocess.h" // inlined API
+
+bool QProcessEnvironment::operator==(const QProcessEnvironment &other) const
+{
+    return comparesEqual(*this, other);
+}
+#endif // QT_CONFIG(processenvironment)
+
+#if QT_CONFIG(regularexpression)
+#include "qregularexpression.h"
+
+bool QRegularExpressionMatch::hasCaptured(QStringView name) const
+{
+    return hasCaptured(QAnyStringView(name));
+}
+
+QString QRegularExpressionMatch::captured(QStringView name) const
+{
+    return captured(QAnyStringView(name));
+}
+
+QStringView QRegularExpressionMatch::capturedView(QStringView name) const
+{
+    return capturedView(QAnyStringView(name));
+}
+
+qsizetype QRegularExpressionMatch::capturedStart(QStringView name) const
+{
+    return capturedStart(QAnyStringView(name));
+}
+
+qsizetype QRegularExpressionMatch::capturedLength(QStringView name) const
+{
+    return capturedLength(QAnyStringView(name));
+}
+
+qsizetype QRegularExpressionMatch::capturedEnd(QStringView name) const
+{
+    return capturedEnd(QAnyStringView(name));
+}
+
+bool QRegularExpression::operator==(const QRegularExpression &other) const
+{
+    return comparesEqual(*this, other);
+}
+#endif // QT_CONFIG(regularexpression)
+
+#if QT_CONFIG(future)
+#include "qresultstore.h"
+
+bool QtPrivate::ResultIteratorBase::operator==(const QtPrivate::ResultIteratorBase &other) const
+{
+    return comparesEqual(*this, other);
+}
+
+bool QtPrivate::ResultIteratorBase::operator!=(const QtPrivate::ResultIteratorBase &other) const
+{
+    return !comparesEqual(*this, other);
+}
+#endif // QT_CONFIG(future)
+
+#include "qstring.h" // inlined API
+
+#if QT_CONFIG(thread)
+#  include "qthreadpool.h" // inlined API
+#endif
+
+#include "qurl.h"
+
+bool QUrl::operator<(const QUrl &url) const
+{
+    return is_lt(compareThreeWay(*this, url));
+}
+
+bool QUrl::operator==(const QUrl &url) const
+{
+    return comparesEqual(*this, url);
+}
+
+bool QUrl::operator!=(const QUrl &url) const
+{
+    return !comparesEqual(*this, url);
+}
+
+#include "qurlquery.h"
+
+bool QUrlQuery::operator==(const QUrlQuery &other) const
+{
+    return comparesEqual(*this, other);
+}
+
+#include "qxmlstream.h" // inlined API
+
+// #include "qotherheader.h"
+// // implement removed functions from qotherheader.h
+// order sections alphabetically to reduce chances of merge conflicts
+
+#endif // QT_CORE_REMOVED_SINCE(6, 8)

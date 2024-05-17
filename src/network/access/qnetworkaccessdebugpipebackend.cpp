@@ -97,7 +97,9 @@ qint64 QNetworkAccessDebugPipeBackend::read(char *data, qint64 maxlen)
     if (haveRead == -1) {
         hasDownloadFinished = true;
         // this ensures a good last downloadProgress is emitted
-        setHeader(QNetworkRequest::ContentLengthHeader, QVariant());
+        auto h = headers();
+        h.removeAll(QHttpHeaders::WellKnownHeader::ContentLength);
+        setHeaders(std::move(h));
         possiblyFinish();
         return haveRead;
     }
@@ -184,7 +186,7 @@ void QNetworkAccessDebugPipeBackend::possiblyFinish()
 
 void QNetworkAccessDebugPipeBackend::close()
 {
-    qWarning("QNetworkAccessDebugPipeBackend::closeDownstreamChannel() %d",operation());;
+    qWarning("QNetworkAccessDebugPipeBackend::closeDownstreamChannel() %d",operation());
     //if (operation() == QNetworkAccessManager::GetOperation)
     //    socket.disconnectFromHost();
 }

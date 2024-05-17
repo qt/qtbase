@@ -1,5 +1,5 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
 
@@ -86,6 +86,7 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     , m_resolveSymLinks(new QCheckBox(tr("Resolve symlinks")))
     , m_native(new QCheckBox(tr("Use native dialog")))
     , m_customDirIcons(new QCheckBox(tr("Don't use custom directory icons")))
+    , m_noIconProvider(new QCheckBox(tr("Null icon provider")))
     , m_acceptMode(createCombo(this, acceptModeComboData, sizeof(acceptModeComboData)/sizeof(FlagData)))
     , m_fileMode(createCombo(this, fileModeComboData, sizeof(fileModeComboData)/sizeof(FlagData)))
     , m_viewMode(createCombo(this, viewModeComboData, sizeof(viewModeComboData)/sizeof(FlagData)))
@@ -113,6 +114,7 @@ FileDialogPanel::FileDialogPanel(QWidget *parent)
     optionsLayout->addRow(m_resolveSymLinks);
     optionsLayout->addRow(m_readOnly);
     optionsLayout->addRow(m_customDirIcons);
+    optionsLayout->addRow(m_noIconProvider);
 
     // Files
     QGroupBox *filesGroupBox = new QGroupBox(tr("Files / Filters"));
@@ -417,12 +419,19 @@ void FileDialogPanel::restoreDefaults()
         l->restoreDefault(&d);
 }
 
-void FileDialogPanel::applySettings(QFileDialog *d) const
+void FileDialogPanel::applySettings(QFileDialog *d)
 {
     d->setAcceptMode(comboBoxValue<QFileDialog::AcceptMode>(m_acceptMode));
     d->setViewMode(comboBoxValue<QFileDialog::ViewMode>(m_viewMode));
     d->setFileMode(comboBoxValue<QFileDialog::FileMode>(m_fileMode));
     d->setOptions(options());
+    if (m_noIconProvider->isChecked()) {
+        m_origIconProvider = d->iconProvider();
+        d->setIconProvider(nullptr);
+    } else if (m_origIconProvider) {
+        d->setIconProvider(m_origIconProvider);
+    }
+
     d->setDefaultSuffix(m_defaultSuffix->text().trimmed());
     const QString directory = m_directory->text().trimmed();
     if (!directory.isEmpty())

@@ -1,0 +1,167 @@
+<!doctype html>
+
+<script src="qtloader.js"></script>
+<script src="fontloading.js"></script>
+
+<style>
+    body {
+        padding: 5px;
+    }
+
+    .container {
+        display: flex;
+    }
+
+    .column {
+        flex: 1;
+    }
+</style>
+
+
+<script>
+
+    // UI
+    let familyCount;
+    let families;
+
+    // Data
+    let fontFamilies = new Set();
+    let loadStartTime;
+
+    // App
+    let instance;
+
+    async function updatePermissionStatus() {
+        let permissonStatusElement = document.getElementById("permissonStatus");
+        let permissionStatus = await navigator.permissions.query({ name: "local-fonts" })
+        permissonStatusElement.innerHTML = permissionStatus.state;
+    }
+
+    window.onload = async () => {
+        let supported = document.getElementById("supported");
+        let permissonStatus = document.getElementById("permissonStatus");
+        let permission = document.getElementById("permission");
+        let defaultfonts = document.getElementById("defaultfonts");
+        let allfonts = document.getElementById("allfonts");
+        let start = document.getElementById("start");
+        let loadFonts = document.getElementById("loadFonts");
+        startupTime = document.getElementById("startupTime");
+        familyCount = document.getElementById("familyCount");
+        families = document.getElementById("families");
+
+        fontFamilies.clear();
+
+        let localFontsAccessSupported = window.queryLocalFonts ? true : false
+        if (localFontsAccessSupported) {
+            supported.innerHTML = "True"
+        } else {
+            supported.innerHTML = "False"
+            return;
+        }
+
+        updatePermissionStatus();
+
+        const module = WebAssembly.compileStreaming(fetch('fontloading.wasm'));
+
+        start.onclick = async () => {
+
+            // Delete any previous instance.
+            if (instance) {
+                instance.deleteapp(); // see main.cpp
+                instance = null;
+            }
+
+            loadStartTime = performance.now();
+            startupTime.innerHTML = 0;
+            familyCount.innerHTML = 0;
+            let localFontFamilyLoadCollection = "NoFontFamilies"
+            if (defaultfonts.checked)
+                localFontFamilyLoadCollection = "DefaultFontFamilies"
+            else if (allfonts.checked)
+                localFontFamilyLoadCollection = "AllFontFamilies"
+
+            let qtcontainer = document.getElementById("qtcontainer");
+            qtcontainer.innerHTML = ""; // clear children
+            qtcontainer.style.visibility = "hidden";
+
+            let extraFonts = document.getElementById("extrafonts").value.split(",");
+
+            let config = {
+                qt: {
+                    module: module,
+                    containerElements: [qtcontainer],
+                    onLoaded: () => {
+                        console.log("JS: onLoaded")
+                        qtcontainer.style.visibility = "visible";
+                    },
+                    entryFunction: window.fontloading_entry,
+                    localFonts: {
+                        requestPermission: permission.checked,
+                        familiesCollection: localFontFamilyLoadCollection,
+                        extraFamilies: extraFonts,
+                    }
+                }
+            }
+            instance = await qtLoad(config);
+
+            updatePermissionStatus();
+        }
+
+        loadFonts.onclick = async () => {
+            loadStartTime = null; // disable timer
+            let fontsFamilies = document.getElementById("extraRuntimeFontFamilies").value.split(",");
+            console.log("extraRuntimeFontFamilies: " + fontsFamilies);
+            instance.qtLoadLocalFontFamilies(fontsFamilies);
+        }
+    };
+
+    function fontFamiliesLoaded(count) {
+        familyCount.innerHTML = count;
+        if (loadStartTime) {
+            elapsed = performance.now() - loadStartTime;
+            startupTime.innerHTML = Math.round(elapsed  + 1);
+        }
+    }
+
+    function fontFamilyLoaded(family) {
+        fontFamilies.add(family);
+    }
+
+</script>
+
+<h2>Local Font Loading Test</h2>
+<p>Click "Load" button below to load the Qt test app with the specified settings. This test provides additional logs on the JavaScript console.</p>
+
+<div class="container">
+    <div class="column">
+        <span>Browser supports the Local Font Access API: </span><span id="supported" style="font-weight: bold;"></span><br>
+        <span>Local Font Access permission status: </span><span id="permissonStatus" style="font-weight: bold;"></span><br>
+        <br>
+        <input type="checkbox" id="permission"><label for="permission">Ask for Local Font access permission on startup</label><br>
+        <input type="radio" id="nofonts" name="fontset"></input><label for="nofonts">No local fonts</label><br>
+        <input type="radio" id="defaultfonts" name="fontset" checked></input><label for="defaultfonts">Default local fonts (web-safe fonts)</label><br>
+        <input type="radio" id="allfonts" name="fontset"></input><label for="allfonts">All local fonts (warning: extremely slow)</label><br>
+        <br>
+        <label for="extrafonts">Extra Font Families (comma separated) </label><input type="text" id="extrafonts" value=""></input><br>
+        <br>
+        <input type="checkbox" id="permission"><label for="permission">Enable 'Fonts' Logging Category</label><br>
+        <input type="checkbox" id="permission"><label for="permission">Enable Font Streaming</label><br>
+        <br>
+        <button type="button" id="start">Start Application</button><br>
+        <br>
+
+        <span>Startup time: </span><span id="startupTime"></span><br>
+        <span>Font family count: </span><span id="familyCount"></span><br>
+        <span>Font families: </span><span id="families"></span><br>
+        <br>
+
+        <button type="button" id="loadFonts">Load Extra Fonts</button>
+        <input type="text" id="extraRuntimeFontFamilies" value=""></input><br>
+    </div>
+
+    <div class="column">
+        <div id="qtcontainer" style="width: 100%; height: 300px; visibility: hidden;"></div>
+    </div>
+</div>
+
+

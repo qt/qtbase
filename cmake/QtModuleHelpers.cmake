@@ -16,7 +16,8 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         NO_ADDITIONAL_TARGET_INFO
         NO_GENERATE_METATYPES
         NO_HEADERSCLEAN_CHECK
-        GENERATE_CPP_EXPORTS
+        GENERATE_CPP_EXPORTS # deprecated
+        NO_GENERATE_CPP_EXPORTS
         NO_UNITY_BUILD
     )
     set(${single_args}
@@ -422,7 +423,8 @@ function(qt_internal_add_module target)
         # We should not generate export headers if module is defined as pure STATIC.
         # Static libraries don't need to export their symbols, and corner cases when sources are
         # also used in shared libraries, should be handled manually.
-        if(arg_GENERATE_CPP_EXPORTS AND NOT arg_STATIC)
+        if((NOT arg_NO_GENERATE_CPP_EXPORTS OR arg_GENERATE_CPP_EXPORTS) AND NOT arg_STATIC
+            AND NOT arg_HEADER_MODULE)
             if(arg_CPP_EXPORT_HEADER_BASE_NAME)
                 set(cpp_export_header_base_name
                     "CPP_EXPORT_HEADER_BASE_NAME;${arg_CPP_EXPORT_HEADER_BASE_NAME}"
@@ -484,7 +486,7 @@ function(qt_internal_add_module target)
     endif()
 
     if(arg_NO_HEADERSCLEAN_CHECK OR arg_NO_MODULE_HEADERS OR arg_NO_SYNC_QT
-        OR NOT QT_FEATURE_headersclean)
+        OR NOT INPUT_headersclean)
         set_target_properties("${target}" PROPERTIES _qt_no_headersclean_check ON)
     endif()
 
@@ -683,8 +685,21 @@ function(qt_internal_add_module target)
         list(APPEND extra_cmake_files "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}Macros.cmake")
         list(APPEND extra_cmake_includes "${INSTALL_CMAKE_NAMESPACE}${target}Macros.cmake")
     endif()
+
     if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${INSTALL_CMAKE_NAMESPACE}${target}ConfigExtras.cmake.in")
         if(target STREQUAL Core)
+            if(NOT "${QT_NAMESPACE}" STREQUAL "")
+                string(MAKE_C_IDENTIFIER "${QT_NAMESPACE}" qt_namespace_sanity)
+                if(NOT "${QT_NAMESPACE}" STREQUAL "${qt_namespace_sanity}")
+                    message(FATAL_ERROR "QT_NAMESPACE is not a valid C++ identifier: "
+                        "${QT_NAMESPACE}.")
+                endif()
+                string(JOIN "" qtcore_namespace_definition
+                    "set_property(TARGET \${__qt_core_target} "
+                    "APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS QT_NAMESPACE=${QT_NAMESPACE})"
+                )
+            endif()
+
             set(extra_cmake_code "")
             # Add some variables for compatibility with Qt5 config files.
             if(QT_FEATURE_reduce_exports)
@@ -714,6 +729,9 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
         get_filename_component(basename ${cmake_file} NAME)
         file(COPY ${cmake_file} DESTINATION ${config_build_dir})
         list(APPEND extra_cmake_files "${config_build_dir}/${basename}")
+
+        # Make sure touched extra cmake files cause a reconfigure, so they get re-copied.
+        set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${cmake_file}")
     endforeach()
     list(APPEND extra_cmake_includes ${arg_EXTRA_CMAKE_INCLUDES})
 
@@ -819,7 +837,9 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
     qt_internal_export_modern_cmake_config_targets_file(
         TARGETS ${exported_targets}
         EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
-        CONFIG_INSTALL_DIR "${config_install_dir}")
+        CONFIG_BUILD_DIR "${config_build_dir}"
+        CONFIG_INSTALL_DIR "${config_install_dir}"
+    )
 
     qt_internal_export_genex_properties(TARGETS ${target}
         EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
@@ -896,6 +916,22 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
     qt_add_list_file_finalizer(qt_finalize_module ${target} ${arg_INTERNAL_MODULE} ${arg_NO_PRIVATE_MODULE})
 endfunction()
 
+function(qt_internal_apply_apple_privacy_manifest target)
+    if(APPLE)
+        # Privacy manifest
+        get_target_property(is_framework ${target} FRAMEWORK)
+        if(is_framework)
+            get_target_property(privacy_manifest ${target} _qt_privacy_manifest)
+            if(NOT privacy_manifest)
+                 set(privacy_manifest
+                    "${__qt_internal_cmake_apple_support_files_path}/PrivacyInfo.xcprivacy")
+            endif()
+            target_sources("${target}" PRIVATE "${privacy_manifest}")
+            set_property(TARGET "${target}" APPEND PROPERTY RESOURCE "${privacy_manifest}")
+        endif()
+    endif()
+endfunction()
+
 function(qt_finalize_module target)
     qt_internal_collect_module_headers(module_headers ${target})
 
@@ -919,6 +955,7 @@ function(qt_finalize_module target)
     qt_generate_prl_file(${target} "${INSTALL_LIBDIR}")
     qt_generate_module_pri_file("${target}" ${ARGN})
     qt_internal_generate_pkg_config_file(${target})
+    qt_internal_apply_apple_privacy_manifest(${target})
 endfunction()
 
 # Get a set of Qt module related values based on the target.

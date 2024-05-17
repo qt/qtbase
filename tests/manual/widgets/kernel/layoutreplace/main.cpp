@@ -1,5 +1,5 @@
 // Copyright (C) 2013 Thorbjørn Martsum - tmartsum[at]gmail.com
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QGridLayout>
 #include <QFormLayout>

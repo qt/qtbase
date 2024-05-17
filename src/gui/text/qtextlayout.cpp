@@ -1652,7 +1652,7 @@ void QTextLine::setNumColumns(int numColumns)
 void QTextLine::setNumColumns(int numColumns, qreal alignmentWidth)
 {
     QScriptLine &line = eng->lines[index];
-    line.width = QFixed::fromReal(alignmentWidth);
+    line.width = QFixed::fromReal(qBound(0.0, alignmentWidth, qreal(QFIXED_MAX)));
     line.length = 0;
     line.textWidth = 0;
     layout_helper(numColumns);
@@ -1668,23 +1668,18 @@ namespace {
 
     struct LineBreakHelper
     {
-        LineBreakHelper()
-            : glyphCount(0), maxGlyphs(0), currentPosition(0), fontEngine(nullptr), logClusters(nullptr),
-              manualWrap(false), whiteSpaceOrObject(true)
-        {
-        }
-
+        LineBreakHelper() = default;
 
         QScriptLine tmpData;
         QScriptLine spaceData;
 
         QGlyphLayout glyphs;
 
-        int glyphCount;
-        int maxGlyphs;
-        int currentPosition;
-        glyph_t previousGlyph;
-        QFontEngine *previousGlyphFontEngine;
+        int glyphCount = 0;
+        int maxGlyphs = 0;
+        int currentPosition = 0;
+        glyph_t previousGlyph = 0;
+        QExplicitlySharedDataPointer<QFontEngine> previousGlyphFontEngine;
 
         QFixed minw;
         QFixed currentSoftHyphenWidth;
@@ -1692,11 +1687,11 @@ namespace {
         QFixed rightBearing;
         QFixed minimumRightBearing;
 
-        QFontEngine *fontEngine;
-        const unsigned short *logClusters;
+        QExplicitlySharedDataPointer<QFontEngine> fontEngine;
+        const unsigned short *logClusters = nullptr;
 
-        bool manualWrap;
-        bool whiteSpaceOrObject;
+        bool manualWrap = false;
+        bool whiteSpaceOrObject = true;
 
         bool checkFullOtherwiseExtend(QScriptLine &line);
 
@@ -1740,13 +1735,13 @@ namespace {
         {
             if (currentPosition <= 0)
                 return;
-            calculateRightBearing(fontEngine, currentGlyph());
+            calculateRightBearing(fontEngine.data(), currentGlyph());
         }
 
         inline void calculateRightBearingForPreviousGlyph()
         {
             if (previousGlyph > 0)
-                calculateRightBearing(previousGlyphFontEngine, previousGlyph);
+                calculateRightBearing(previousGlyphFontEngine.data(), previousGlyph);
         }
 
         static const QFixed RightBearingNotCalculated;

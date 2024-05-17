@@ -129,12 +129,12 @@ bool QConfFile::isWritable() const
 {
     QFileInfo fileInfo(name);
 
-#ifndef QT_NO_TEMPORARYFILE
+#if QT_CONFIG(temporaryfile)
     if (fileInfo.exists()) {
 #endif
         QFile file(name);
         return file.open(QFile::ReadWrite);
-#ifndef QT_NO_TEMPORARYFILE
+#if QT_CONFIG(temporaryfile)
     } else {
         // Create the directories to the file.
         QDir dir(fileInfo.absolutePath());
@@ -1518,6 +1518,8 @@ void QConfFileSettingsPrivate::syncConfFile(QConfFile *confFile)
     }
 }
 
+namespace SettingsImpl {
+
 enum { Space = 0x1, Special = 0x2 };
 
 static const char charTraits[256] =
@@ -1544,10 +1546,15 @@ static const char charTraits[256] =
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
+} // namespace SettingsImpl
+
+using SettingsImpl::charTraits;
+
 bool QConfFileSettingsPrivate::readIniLine(QByteArrayView data, qsizetype &dataPos,
                                            qsizetype &lineStart, qsizetype &lineLen,
                                            qsizetype &equalsPos)
 {
+    using namespace SettingsImpl;
     qsizetype dataLen = data.size();
     bool inQuotes = false;
 

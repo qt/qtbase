@@ -30,6 +30,10 @@ directory. The paths of the generated header files are added to \c{<VAR>}.
 \note This is a low-level macro. See the \l{CMake AUTOUIC Documentation} for a
 more convenient way to process \c{.ui} files with \c{uic}.
 
+Since 6.8:
+\note \l{qt6_add_ui}{qt_add_ui} is the recommended way to process \c{.ui}
+files.
+
 \section1 Options
 
 You can set additional \c{OPTIONS} that should be added to the \c{uic} calls.
@@ -38,4 +42,133 @@ You can find possible options in the \l{uic}{uic documentation}.
 \section1 Examples
 
 \snippet cmake-macros/examples.cmake qt_wrap_ui
+*/
+
+/*!
+\page qt-add-ui.html
+\ingroup cmake-macros-qtwidgets
+
+\title qt_add_ui
+\keyword qt6_add_ui
+
+\summary {Adds .ui files to a target.}
+
+\include cmake-find-package-widgets.qdocinc
+
+\section1 Synopsis
+
+\badcode
+qt_add_ui(<TARGET>
+          SOURCES file1.ui [file2.ui ...]
+          [INCLUDE_PREFIX <PREFIX>]
+          [OPTIONS ...])
+\endcode
+
+\versionlessCMakeCommandsNote qt6_add_ui()
+
+\cmakecommandsince 6.8
+
+\section1 Description
+
+Creates rules for calling the \l{uic}{User Interface Compiler (uic)} on the
+\c{.ui} files. For each input file, a header file is generated in the build
+directory. The generated header files are added to sources of the target.
+
+\section1 Arguments
+
+\section2 TARGET
+
+The \c{TARGET} argument specifies the CMake target to which the generated header
+files will be added.
+
+\section2 SOURCES
+
+The \c{SOURCES} argument specifies the list of \c{.ui} files to process.
+
+\section2 INCLUDE_PREFIX
+
+\c INCLUDE_PREFIX specifies the include prefix for the generated header files.
+Use the same include prefix as in the \c{#include} directive in the source
+files. If \c{ui_<basename>.h} is included without a prefix, then this argument
+can be omitted.
+
+\section2 OPTIONS
+
+You can set additional \c{OPTIONS} that should be added to the \c{uic} calls.
+You can find possible options in the \l{uic}{uic documentation}.
+
+\section1 Examples
+
+\section2 Without INCLUDE_PREFIX
+
+In the following snippet, the \c{mainwindow.cpp} file includes
+\c{ui_mainwindow.h} and \c{mainwindow.h}.
+
+\snippet cmake-macros/examples.cpp qt6_add_ui_1
+
+\c{CMakeLists.txt} is implemented as follows and it calls
+\l{qt6_add_ui}{qt_add_ui} to add \c{ui_mainwindow.h} to the \c{myapp} target.
+
+\snippet cmake-macros/examples.cmake qt6_add_ui_1
+
+In the above example, \c{ui_mainwindow.h} is included without a prefix. So the
+\c{INCLUDE_PREFIX} argument is not specified.
+
+\section2 With INCLUDE_PREFIX
+
+\snippet cmake-macros/examples.cpp qt6_add_ui_2
+
+In the above snippet, \c{mainwindow.cpp} includes \c{ui_mainwindow.h} with a
+prefix.
+
+\snippet cmake-macros/examples.cmake qt6_add_ui_2
+
+Since \c{ui_mainwindow.h} is included with a prefix, the \c{INCLUDE_PREFIX}
+argument is specified as \c{src/files} in the above example.
+
+\section2 Multiple .ui files
+
+In the following snippets, both \c{widget1.cpp} and \c{widget2.cpp} include
+\c{ui_widget1.h} and \c{ui_widget2.h} respectively.
+
+\c{widget1.cpp}:
+
+\snippet cmake-macros/examples.cpp qt6_add_ui_3_1
+
+\c{widget2.cpp}:
+
+\snippet cmake-macros/examples.cpp qt6_add_ui_3_2
+
+Both \c{ui_widget1.h} and \c{ui_widget2.h} are included with the same prefix
+
+\snippet cmake-macros/examples.cmake qt6_add_ui_3
+
+In this case, the \c{INCLUDE_PREFIX} argument can be specified as \c{src/files}
+for both files in the above snippet.
+
+\section1 When to prefer \l{qt6_add_ui}{qt_add_ui} over \c{AUTOUIC}?
+
+\l{qt6_add_ui}{qt_add_ui} has some advantages over \c{AUTOUIC}:
+
+\list
+\li \l{qt6_add_ui}{qt_add_ui} ensures that the \c{.ui} files are generated
+correctly during the first build, for the \c{Ninja} and \c{Ninja Multi-Config}
+generators.
+
+\li \l{qt6_add_ui}{qt_add_ui} guarantees that the generated \c{.h} files are
+not leaked outside the build directory.
+
+\li Since \l{qt6_add_ui}{qt_add_ui} does not scan source files, it provides a
+faster build than \c{AUTOUIC}.
+
+\endlist
+
+\section1 When to prefer \l{qt6_add_ui}{qt_add_ui} over \c{qt_wrap_ui}?
+
+\l{qt6_add_ui}{qt_add_ui} has the \c{INCLUDE_PREFIX} argument, which can be used to
+specify the include prefix for the generated header files.
+
+\note It is not recommended to use both \l{qt6_add_ui}{qt_add_ui} and
+\c{AUTOUIC} for the same target.
+
 */

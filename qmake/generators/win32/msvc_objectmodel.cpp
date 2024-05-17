@@ -862,7 +862,7 @@ bool VCCLCompilerTool::parseOption(const char* option)
                 }
                 break;
             }
-            // Fallthrough
+            [[fallthrough]];
         default:
             found = false; break;
         }

@@ -103,10 +103,15 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \variable QRhiMetalNativeHandles::dev
+
+    Set to a valid MTLDevice to import an existing device.
 */
 
 /*!
     \variable QRhiMetalNativeHandles::cmdQueue
+
+    Set to a valid MTLCommandQueue when importing an existing command queue.
+    When \nullptr, QRhi will create a new command queue.
 */
 
 /*!
@@ -363,8 +368,11 @@ struct QMetalRenderTargetData
     struct {
         ColorAtt colorAtt[QMetalRenderPassDescriptor::MAX_COLOR_ATTACHMENTS];
         id<MTLTexture> dsTex = nil;
+        id<MTLTexture> dsResolveTex = nil;
         bool hasStencil = false;
         bool depthNeedsStore = false;
+        bool preserveColor = false;
+        bool preserveDs = false;
     } fb;
 
     QRhiRenderTargetAttachmentTracker::ResIdList currentResIdList;
@@ -559,9 +567,7 @@ bool QRhiMetal::create(QRhi::Flags flags)
     // suitable as deviceId because it does not seem stable on macOS and can
     // apparently change when the system is rebooted.
 
-#ifdef Q_OS_IOS
-    driverInfoStruct.deviceType = QRhiDriverInfo::IntegratedDevice;
-#else
+#ifdef Q_OS_MACOS
     if (@available(macOS 10.15, *)) {
         const MTLDeviceLocation deviceLocation = [d->dev location];
         switch (deviceLocation) {
@@ -578,6 +584,8 @@ bool QRhiMetal::create(QRhi::Flags flags)
             break;
         }
     }
+#else
+    driverInfoStruct.deviceType = QRhiDriverInfo::IntegratedDevice;
 #endif
 
     const QOperatingSystemVersion ver = QOperatingSystemVersion::current();
@@ -850,6 +858,10 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::MultiView:
         return caps.multiView;
+    case QRhi::TextureViewFormat:
+        return false;
+    case QRhi::ResolveDepthStencil:
+        return true;
     default:
         Q_UNREACHABLE();
         return false;
@@ -2364,6 +2376,7 @@ QRhi::FrameOpResult QRhiMetal::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginF
 
     swapChainD->rtWrapper.d->fb.colorAtt[0] = colorAtt;
     swapChainD->rtWrapper.d->fb.dsTex = swapChainD->ds ? swapChainD->ds->d->tex : nil;
+    swapChainD->rtWrapper.d->fb.dsResolveTex = nil;
     swapChainD->rtWrapper.d->fb.hasStencil = swapChainD->ds ? true : false;
     swapChainD->rtWrapper.d->fb.depthNeedsStore = false;
 
@@ -2388,6 +2401,16 @@ QRhi::FrameOpResult QRhiMetal::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
         swapChainD->d->lastGpuTime[thisFrameSlot] += cb.GPUEndTime - cb.GPUStartTime;
         dispatch_semaphore_signal(swapChainD->d->sem[thisFrameSlot]);
     }];
+
+#ifdef QRHI_METAL_COMMAND_BUFFERS_WITH_UNRETAINED_REFERENCES
+    // When Metal API validation diagnostics is enabled in Xcode the texture is
+    // released before the command buffer is done with it. Manually keep it alive
+    // to work around this.
+    id<MTLTexture> drawableTexture = [swapChainD->d->curDrawable.texture retain];
+    [swapChainD->cbWrapper.d->cb addCompletedHandler:^(id<MTLCommandBuffer>) {
+        [drawableTexture release];
+    }];
+#endif
 
     const bool needsPresent = !flags.testFlag(QRhi::SkipPresent);
     const bool presentsWithTransaction = swapChainD->d->layer.presentsWithTransaction;
@@ -2566,7 +2589,6 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
         int w = img.width();
         int h = img.height();
         int bpl = img.bytesPerLine();
-        int srcOffset = 0;
 
         if (!subresDesc.sourceSize().isEmpty() || !subresDesc.sourceTopLeft().isNull()) {
             const int sx = subresDesc.sourceTopLeft().x();
@@ -2575,10 +2597,12 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
                 w = subresDesc.sourceSize().width();
                 h = subresDesc.sourceSize().height();
             }
-            if (img.depth() == 32) {
-                memcpy(reinterpret_cast<char *>(mp) + *curOfs, img.constBits(), size_t(fullImageSizeBytes));
-                srcOffset = sy * bpl + sx * 4;
-                // bpl remains set to the original image's row stride
+            if (w == img.width()) {
+                const int bpc = qMax(1, img.depth() / 8);
+                Q_ASSERT(h * img.bytesPerLine() <= fullImageSizeBytes);
+                memcpy(reinterpret_cast<char *>(mp) + *curOfs,
+                       img.constBits() + sy * img.bytesPerLine() + sx * bpc,
+                       h * img.bytesPerLine());
             } else {
                 img = img.copy(sx, sy, w, h);
                 bpl = img.bytesPerLine();
@@ -2590,7 +2614,7 @@ void QRhiMetal::enqueueSubresUpload(QMetalTexture *texD, void *mp, void *blitEnc
         }
 
         [blitEnc copyFromBuffer: texD->d->stagingBuf[currentFrameSlot]
-                                 sourceOffset: NSUInteger(*curOfs + srcOffset)
+                                 sourceOffset: NSUInteger(*curOfs)
                                  sourceBytesPerRow: NSUInteger(bpl)
                                  sourceBytesPerImage: 0
                                  sourceSize: MTLSizeMake(NSUInteger(w), NSUInteger(h), 1)
@@ -2682,6 +2706,15 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
     QMetalCommandBuffer *cbD = QRHI_RES(QMetalCommandBuffer, cb);
     QRhiResourceUpdateBatchPrivate *ud = QRhiResourceUpdateBatchPrivate::get(resourceUpdates);
 
+    id<MTLBlitCommandEncoder> blitEnc = nil;
+    auto ensureBlit = [&blitEnc, cbD, this]() {
+        if (!blitEnc) {
+            blitEnc = [cbD->d->cb blitCommandEncoder];
+            if (debugMarkers)
+                [blitEnc pushDebugGroup: @"Texture upload/copy"];
+        }
+    };
+
     for (int opIdx = 0; opIdx < ud->activeBufferOpCount; ++opIdx) {
         const QRhiResourceUpdateBatchPrivate::BufferOp &u(ud->bufferOps[opIdx]);
         if (u.type == QRhiResourceUpdateBatchPrivate::BufferOp::DynamicUpdate) {
@@ -2720,18 +2753,16 @@ void QRhiMetal::enqueueResourceUpdates(QRhiCommandBuffer *cb, QRhiResourceUpdate
                 readback.readSize = u.readSize;
                 readback.result = u.result;
                 d->activeBufferReadbacks.append(readback);
+#ifdef Q_OS_MACOS
+                if (bufD->d->managed) {
+                    // On non-Apple Silicon, manually synchronize memory from GPU to CPU
+                    ensureBlit();
+                    [blitEnc synchronizeResource:readback.buf];
+                }
+#endif
             }
         }
     }
-
-    id<MTLBlitCommandEncoder> blitEnc = nil;
-    auto ensureBlit = [&blitEnc, cbD, this] {
-        if (!blitEnc) {
-            blitEnc = [cbD->d->cb blitCommandEncoder];
-            if (debugMarkers)
-                [blitEnc pushDebugGroup: @"Texture upload/copy"];
-        }
-    };
 
     for (int opIdx = 0; opIdx < ud->activeTextureOpCount; ++opIdx) {
         const QRhiResourceUpdateBatchPrivate::TextureOp &u(ud->textureOps[opIdx]);
@@ -2943,17 +2974,19 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         if (!QRhiRenderTargetAttachmentTracker::isUpToDate<QMetalTexture, QMetalRenderBuffer>(rtTex->description(), rtD->currentResIdList))
             rtTex->create();
         cbD->d->currentPassRpDesc = d->createDefaultRenderPass(rtD->dsAttCount, colorClearValue, depthStencilClearValue, rtD->colorAttCount);
-        if (rtTex->m_flags.testFlag(QRhiTextureRenderTarget::PreserveColorContents)) {
+        if (rtD->fb.preserveColor) {
             for (uint i = 0; i < uint(rtD->colorAttCount); ++i)
                 cbD->d->currentPassRpDesc.colorAttachments[i].loadAction = MTLLoadActionLoad;
         }
-        if (rtD->dsAttCount && rtTex->m_flags.testFlag(QRhiTextureRenderTarget::PreserveDepthStencilContents)) {
+        if (rtD->dsAttCount && rtD->fb.preserveDs) {
             cbD->d->currentPassRpDesc.depthAttachment.loadAction = MTLLoadActionLoad;
             cbD->d->currentPassRpDesc.stencilAttachment.loadAction = MTLLoadActionLoad;
         }
+        int colorAttCount = 0;
         for (auto it = rtTex->m_desc.cbeginColorAttachments(), itEnd = rtTex->m_desc.cendColorAttachments();
              it != itEnd; ++it)
         {
+            colorAttCount += 1;
             if (it->texture()) {
                 QRHI_RES(QMetalTexture, it->texture())->lastActiveFrameSlot = currentFrameSlot;
                 if (it->multiViewCount() >= 2)
@@ -2966,8 +2999,14 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         }
         if (rtTex->m_desc.depthStencilBuffer())
             QRHI_RES(QMetalRenderBuffer, rtTex->m_desc.depthStencilBuffer())->lastActiveFrameSlot = currentFrameSlot;
-        if (rtTex->m_desc.depthTexture())
-            QRHI_RES(QMetalTexture, rtTex->m_desc.depthTexture())->lastActiveFrameSlot = currentFrameSlot;
+        if (rtTex->m_desc.depthTexture()) {
+            QMetalTexture *depthTexture = QRHI_RES(QMetalTexture, rtTex->m_desc.depthTexture());
+            depthTexture->lastActiveFrameSlot = currentFrameSlot;
+            if (colorAttCount == 0 && depthTexture->arraySize() >= 2)
+                cbD->d->currentPassRpDesc.renderTargetArrayLength = NSUInteger(depthTexture->arraySize());
+        }
+        if (rtTex->m_desc.depthResolveTexture())
+            QRHI_RES(QMetalTexture, rtTex->m_desc.depthResolveTexture())->lastActiveFrameSlot = currentFrameSlot;
     }
         break;
     default:
@@ -2981,7 +3020,8 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         cbD->d->currentPassRpDesc.colorAttachments[i].depthPlane = NSUInteger(rtD->fb.colorAtt[i].slice);
         cbD->d->currentPassRpDesc.colorAttachments[i].level = NSUInteger(rtD->fb.colorAtt[i].level);
         if (rtD->fb.colorAtt[i].resolveTex) {
-            cbD->d->currentPassRpDesc.colorAttachments[i].storeAction = MTLStoreActionMultisampleResolve;
+            cbD->d->currentPassRpDesc.colorAttachments[i].storeAction = rtD->fb.preserveColor ? MTLStoreActionStoreAndMultisampleResolve
+                                                                                              : MTLStoreActionMultisampleResolve;
             cbD->d->currentPassRpDesc.colorAttachments[i].resolveTexture = rtD->fb.colorAtt[i].resolveTex;
             cbD->d->currentPassRpDesc.colorAttachments[i].resolveSlice = NSUInteger(rtD->fb.colorAtt[i].resolveLayer);
             cbD->d->currentPassRpDesc.colorAttachments[i].resolveLevel = NSUInteger(rtD->fb.colorAtt[i].resolveLevel);
@@ -2994,6 +3034,15 @@ void QRhiMetal::beginPass(QRhiCommandBuffer *cb,
         cbD->d->currentPassRpDesc.stencilAttachment.texture = rtD->fb.hasStencil ? rtD->fb.dsTex : nil;
         if (rtD->fb.depthNeedsStore) // Depth/Stencil is set to DontCare by default, override if  needed
             cbD->d->currentPassRpDesc.depthAttachment.storeAction = MTLStoreActionStore;
+        if (rtD->fb.dsResolveTex) {
+            cbD->d->currentPassRpDesc.depthAttachment.storeAction = rtD->fb.depthNeedsStore ? MTLStoreActionStoreAndMultisampleResolve
+                                                                                            : MTLStoreActionMultisampleResolve;
+            cbD->d->currentPassRpDesc.depthAttachment.resolveTexture = rtD->fb.dsResolveTex;
+            if (rtD->fb.hasStencil) {
+                cbD->d->currentPassRpDesc.stencilAttachment.resolveTexture = rtD->fb.dsResolveTex;
+                cbD->d->currentPassRpDesc.stencilAttachment.storeAction = cbD->d->currentPassRpDesc.depthAttachment.storeAction;
+            }
+        }
     }
 
     cbD->d->currentRenderPassEncoder = [cbD->d->cb renderCommandEncoderWithDescriptor: cbD->d->currentPassRpDesc];
@@ -4217,7 +4266,8 @@ bool QMetalTextureRenderTarget::create()
             QMetalTexture *depthTexD = QRHI_RES(QMetalTexture, m_desc.depthTexture());
             d->fb.dsTex = depthTexD->d->tex;
             d->fb.hasStencil = rhiD->isStencilSupportingFormat(depthTexD->format());
-            d->fb.depthNeedsStore = true;
+            d->fb.depthNeedsStore = !m_flags.testFlag(DoNotStoreDepthStencilContents) && !m_desc.depthResolveTexture();
+            d->fb.preserveDs = m_flags.testFlag(QRhiTextureRenderTarget::PreserveDepthStencilContents);
             if (d->colorAttCount == 0) {
                 d->pixelSize = depthTexD->pixelSize();
                 d->sampleCount = depthTexD->samples;
@@ -4227,15 +4277,23 @@ bool QMetalTextureRenderTarget::create()
             d->fb.dsTex = depthRbD->d->tex;
             d->fb.hasStencil = true;
             d->fb.depthNeedsStore = false;
+            d->fb.preserveDs = false;
             if (d->colorAttCount == 0) {
                 d->pixelSize = depthRbD->pixelSize();
                 d->sampleCount = depthRbD->samples;
             }
         }
+        if (m_desc.depthResolveTexture()) {
+            QMetalTexture *depthResolveTexD = QRHI_RES(QMetalTexture, m_desc.depthResolveTexture());
+            d->fb.dsResolveTex = depthResolveTexD->d->tex;
+        }
         d->dsAttCount = 1;
     } else {
         d->dsAttCount = 0;
     }
+
+    if (d->colorAttCount > 0)
+        d->fb.preserveColor = m_flags.testFlag(QRhiTextureRenderTarget::PreserveColorContents);
 
     QRhiRenderTargetAttachmentTracker::updateResIdList<QMetalTexture, QMetalRenderBuffer>(m_desc, &d->currentResIdList);
 
@@ -4423,6 +4481,22 @@ static inline MTLVertexFormat toMetalAttributeFormat(QRhiVertexInputAttribute::F
         return MTLVertexFormatHalf2;
     case QRhiVertexInputAttribute::Half:
         return MTLVertexFormatHalf;
+    case QRhiVertexInputAttribute::UShort4:
+        return MTLVertexFormatUShort4;
+    case QRhiVertexInputAttribute::UShort3:
+        return MTLVertexFormatUShort3;
+    case QRhiVertexInputAttribute::UShort2:
+        return MTLVertexFormatUShort2;
+    case QRhiVertexInputAttribute::UShort:
+        return MTLVertexFormatUShort;
+    case QRhiVertexInputAttribute::SShort4:
+        return MTLVertexFormatShort4;
+    case QRhiVertexInputAttribute::SShort3:
+        return MTLVertexFormatShort3;
+    case QRhiVertexInputAttribute::SShort2:
+        return MTLVertexFormatShort2;
+    case QRhiVertexInputAttribute::SShort:
+        return MTLVertexFormatShort;
     default:
         Q_UNREACHABLE();
         return MTLVertexFormatFloat4;
@@ -4783,7 +4857,7 @@ void QMetalGraphicsPipeline::setupAttachmentsInMetalRenderPassDescriptor(void *m
     }
 
     QRHI_RES_RHI(QRhiMetal);
-    rpDesc.sampleCount = NSUInteger(rhiD->effectiveSampleCount(m_sampleCount));
+    rpDesc.rasterSampleCount = NSUInteger(rhiD->effectiveSampleCount(m_sampleCount));
 }
 
 void QMetalGraphicsPipeline::setupMetalDepthStencilDescriptor(void *metalDsDesc)
@@ -6408,12 +6482,12 @@ QRhiSwapChainHdrInfo QMetalSwapChain::hdrInfo()
 
     if (m_window) {
         // Must use m_window, not window, given this may be called before createOrResize().
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS)
         NSView *view = reinterpret_cast<NSView *>(m_window->winId());
         NSScreen *screen = view.window.screen;
         info.limits.colorComponentValue.maxColorComponentValue = screen.maximumExtendedDynamicRangeColorComponentValue;
         info.limits.colorComponentValue.maxPotentialColorComponentValue = screen.maximumPotentialExtendedDynamicRangeColorComponentValue;
-#else
+#elif defined(Q_OS_IOS)
         if (@available(iOS 16.0, *)) {
             UIView *view = reinterpret_cast<UIView *>(m_window->winId());
             UIScreen *screen = view.window.windowScene.screen;

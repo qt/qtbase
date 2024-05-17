@@ -1,5 +1,5 @@
 // Copyright (C) 2020 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 // An advanced version of floattexture. Instead of RGBA32F, we use RGBA16F, and
 // also generate the floating point data from rgba with compute. Then there's a

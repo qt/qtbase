@@ -1,5 +1,5 @@
 // Copyright (C) 2022 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QSize>
 #ifdef QVARIANT_H
@@ -24,6 +24,7 @@ CHECK(const &&);
 #undef CHECK
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <qsize.h>
 
 #include <array>
@@ -34,6 +35,10 @@ class tst_QSize : public QObject
 {
     Q_OBJECT
 private slots:
+    void compareCompiles();
+    void compare_data();
+    void compare();
+
     void getSetCheck();
     void scale();
 
@@ -54,6 +59,38 @@ private slots:
 
     void structuredBinding();
 };
+
+void tst_QSize::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QSize>();
+}
+
+void tst_QSize::compare_data()
+{
+    QTest::addColumn<QSize>("lhs");
+    QTest::addColumn<QSize>("rhs");
+    QTest::addColumn<bool>("result");
+
+    auto row = [](QSize lhs, QSize rhs, bool res) {
+        QTest::addRow("(%d, %d) vs (%d, %d)", lhs.width(), lhs.height(), rhs.width(), rhs.height())
+                << lhs << rhs << res;
+    };
+
+    row(QSize(0, 0), QSize(0, 0), true);
+    row(QSize(1, 0), QSize(0, 1), false);
+    row(QSize(-1, -1), QSize(-1, -1), true);
+    row(QSize(-1, -1), QSize(1, 1), false);
+    row(QSize(INT_MIN, INT_MAX), QSize(INT_MAX, INT_MIN), false);
+}
+
+void tst_QSize::compare()
+{
+    QFETCH(QSize, lhs);
+    QFETCH(QSize, rhs);
+    QFETCH(bool, result);
+
+    QT_TEST_EQUALITY_OPS(lhs, rhs, result);
+}
 
 // Testing get/set functions
 void tst_QSize::getSetCheck()

@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -36,6 +36,7 @@ private slots:
     void playMovie();
     void jumpToFrame_data();
     void jumpToFrame();
+    void frameDelay();
     void changeMovieFile();
 #ifndef QT_NO_WIDGETS
     void infiniteLoop();
@@ -43,6 +44,12 @@ private slots:
     void emptyMovie();
     void bindings();
     void automatedBindings();
+#ifndef QT_NO_ICO
+    void multiFrameImage();
+#endif
+
+    void setScaledSize_data();
+    void setScaledSize();
 };
 
 // Testing get/set functions
@@ -178,6 +185,17 @@ void tst_QMovie::jumpToFrame()
     QCOMPARE(movie.currentFrameNumber(), 0);
 }
 
+void tst_QMovie::frameDelay()
+{
+    QMovie movie(QFINDTESTDATA("animations/comicsecard.gif"));
+    QList<int> frameDelays{ 200, 800, 800, 2000, 2600 };
+    for (int i = 0; i < movie.frameCount(); i++) {
+        movie.jumpToFrame(i);
+        // Processing may have taken a little time, so round to nearest 100ms
+        QCOMPARE(100 * qRound(movie.nextFrameDelay() / 100.0f), frameDelays[i]);
+    }
+}
+
 void tst_QMovie::changeMovieFile()
 {
     QMovie movie(QFINDTESTDATA("animations/comicsecard.gif"));
@@ -257,6 +275,61 @@ void tst_QMovie::automatedBindings()
         qDebug("Failed property test for QMovie::cacheMode");
         return;
     }
+}
+
+#ifndef QT_NO_ICO
+/*! \internal
+    Test behavior of QMovie with image formats that are multi-frame,
+    but not normally intended as animation formats (such as tiff and ico).
+*/
+void tst_QMovie::multiFrameImage()
+{
+    QMovie movie(QFINDTESTDATA("multiframe/Obj_N2_Internal_Mem.ico"));
+    const int expectedFrameCount = 9;
+
+    QCOMPARE(movie.frameCount(), expectedFrameCount);
+    QVERIFY(movie.isValid());
+    movie.setSpeed(1000); // speed up the test: play at 10 FPS (1000% of normal)
+    QElapsedTimer playTimer;
+    QSignalSpy frameChangedSpy(&movie, &QMovie::frameChanged);
+    QSignalSpy errorSpy(&movie, &QMovie::error);
+    QSignalSpy finishedSpy(&movie, &QMovie::finished);
+    playTimer.start();
+    movie.start();
+    QTRY_COMPARE(finishedSpy.size(), 1);
+    QCOMPARE_GE(playTimer.elapsed(), 100 * expectedFrameCount);
+    QCOMPARE(movie.nextFrameDelay(), 100);
+    QCOMPARE(errorSpy.size(), 0);
+    QCOMPARE(frameChangedSpy.size(), expectedFrameCount);
+}
+#endif
+
+void tst_QMovie::setScaledSize_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QSize>("scaledSize");
+    QTest::addColumn<QSize>("expectedSize");
+
+    QTest::newRow("trolltech (50, 50)") << QString("animations/trolltech.gif") << QSize(50, 50) << QSize(50, 50);
+    QTest::newRow("trolltech (400, 400)") << QString("animations/trolltech.gif") << QSize(400, 400) << QSize(400, 400);
+    QTest::newRow("trolltech (50, 0)") << QString("animations/trolltech.gif") << QSize(50, 0) << QSize(50, 25);
+    QTest::newRow("trolltech (50, -1)") << QString("animations/trolltech.gif") << QSize(50, -1) << QSize(50, 25);
+    QTest::newRow("trolltech (0, 50)") << QString("animations/trolltech.gif") << QSize(0, 50) << QSize(100, 50);
+    QTest::newRow("trolltech (-1, 50)") << QString("animations/trolltech.gif") << QSize(-1, 50) << QSize(100, 50);
+}
+
+void tst_QMovie::setScaledSize()
+{
+    QFETCH(QString, fileName);
+    QFETCH(QSize, scaledSize);
+    QFETCH(QSize, expectedSize);
+
+    QMovie movie(QFINDTESTDATA(fileName));
+    movie.setScaledSize(scaledSize);
+
+    movie.start();
+    QCOMPARE(movie.currentFrameNumber(), 0);
+    QCOMPARE(movie.currentImage().size(), expectedSize);
 }
 
 QTEST_MAIN(tst_QMovie)

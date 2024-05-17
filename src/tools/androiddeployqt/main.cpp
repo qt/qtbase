@@ -13,7 +13,7 @@
 #include <QXmlStreamReader>
 #include <QStandardPaths>
 #include <QUuid>
-#include <QDirIterator>
+#include <QDirListing>
 #include <QElapsedTimer>
 #include <QRegularExpression>
 #include <QSettings>
@@ -44,15 +44,16 @@ static const bool mustReadOutputAnyway = true; // pclose seems to return the wro
 
 static QStringList dependenciesForDepfile;
 
-FILE *openProcess(const QString &command)
+auto openProcess(const QString &command)
 {
 #if defined(Q_OS_WIN32)
     QString processedCommand = u'\"' + command + u'\"';
 #else
     const QString& processedCommand = command;
 #endif
-
-    return popen(processedCommand.toLocal8Bit().constData(), QT_POPEN_READ);
+    struct Closer { void operator()(FILE *proc) const { if (proc) (void)pclose(proc); } };
+    using UP = std::unique_ptr<FILE, Closer>;
+    return UP{popen(processedCommand.toLocal8Bit().constData(), QT_POPEN_READ)};
 }
 
 struct QtDependency
@@ -104,6 +105,7 @@ struct Options
         , installApk(false)
         , uninstallApk(false)
         , qmlImportScannerBinaryPath()
+        , buildAar(false)
     {}
 
     enum DeploymentMechanism
@@ -239,6 +241,7 @@ struct Options
     // Override qml import scanner path
     QString qmlImportScannerBinaryPath;
     bool qmlSkipImportScanning = false;
+    bool buildAar;
 };
 
 static const QHash<QByteArray, QByteArray> elfArchitectures = {
@@ -310,23 +313,21 @@ QString fileArchitecture(const Options &options, const QString &path)
 
     readElf = "%1 --needed-libs %2"_L1.arg(shellQuote(readElf), shellQuote(path));
 
-    FILE *readElfCommand = openProcess(readElf);
+    auto readElfCommand = openProcess(readElf);
     if (!readElfCommand) {
         fprintf(stderr, "Cannot execute command %s\n", qPrintable(readElf));
         return {};
     }
 
     char buffer[512];
-    while (fgets(buffer, sizeof(buffer), readElfCommand) != nullptr) {
+    while (fgets(buffer, sizeof(buffer), readElfCommand.get()) != nullptr) {
         QByteArray line = QByteArray::fromRawData(buffer, qstrlen(buffer));
         line = line.trimmed();
         if (line.startsWith("Arch: ")) {
             auto it = elfArchitectures.find(line.mid(6));
-            pclose(readElfCommand);
             return it != elfArchitectures.constEnd() ? QString::fromLatin1(it.value()) : QString{};
         }
     }
-    pclose(readElfCommand);
     return {};
 }
 
@@ -527,6 +528,8 @@ Options parseOptions()
             options.protectedAuthenticationPath = true;
         } else if (argument.compare("--aux-mode"_L1, Qt::CaseInsensitive) == 0) {
             options.auxMode = true;
+        } else if (argument.compare("--build-aar"_L1, Qt::CaseInsensitive) == 0) {
+            options.buildAar = true;
         } else if (argument.compare("--qml-importscanner-binary"_L1, Qt::CaseInsensitive) == 0) {
             options.qmlImportScannerBinaryPath = arguments.at(++i).trimmed();
         } else if (argument.compare("--no-rcc-bundle-cleanup"_L1,
@@ -535,6 +538,23 @@ Options parseOptions()
         } else if (argument.compare("--copy-dependencies-only"_L1,
                                     Qt::CaseInsensitive) == 0) {
             options.copyDependenciesOnly = true;
+        }
+    }
+
+    if (options.buildAar) {
+        if (options.installApk || options.uninstallApk) {
+            fprintf(stderr, "Warning: Skipping %s, AAR packages are not installable.\n",
+                    options.uninstallApk ? "--reinstall" : "--install");
+            options.installApk = false;
+            options.uninstallApk = false;
+        }
+        if (options.buildAAB) {
+            fprintf(stderr, "Warning: Skipping -aab as --build-aar is present.\n");
+            options.buildAAB = false;
+        }
+        if (!options.keyStore.isEmpty()) {
+            fprintf(stderr, "Warning: Skipping --sign, signing AAR packages is not supported.\n");
+            options.keyStore.clear();
         }
     }
 
@@ -609,9 +629,9 @@ Optional arguments:
            from keystore password.)
          --sigfile <file>: Name of .SF/.DSA file.
          --digestalg <name>: Name of digest algorithm. Default is
-           "SHA1".
+           "SHA-256".
          --sigalg <name>: Name of signature algorithm. Default is
-           "SHA1withRSA".
+           "SHA256withRSA".
          --tsa <url>: Location of the Time Stamping Authority.
          --tsacert <alias>: Public key certificate for TSA.
          --internalsf: Include the .SF file inside the signature block.
@@ -644,6 +664,9 @@ Optional arguments:
        The project will not be built or installed.
 
     --apk <path/where/to/copy/the/apk>: Path where to copy the built apk.
+
+    --build-aar: Build an AAR package. This option skips --aab, --install,
+       --reinstall, and --sign options if they are provided.
 
     --qml-importscanner-binary <path/to/qmlimportscanner>: Override the
        default qmlimportscanner binary path. By default the
@@ -732,18 +755,72 @@ bool copyFileIfNewer(const QString &sourceFileName,
     return true;
 }
 
-QString cleanPackageName(QString packageName)
+struct GradleBuildConfigs {
+    QString appNamespace;
+    bool setsLegacyPackaging = false;
+    bool usesIntegerCompileSdkVersion = false;
+};
+
+GradleBuildConfigs gradleBuildConfigs(const QString &path)
+{
+    GradleBuildConfigs configs;
+
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly))
+        return configs;
+
+    auto isComment = [](const QByteArray &trimmed) {
+        return trimmed.startsWith("//") || trimmed.startsWith('*') || trimmed.startsWith("/*");
+    };
+
+    auto extractValue = [](const QByteArray &trimmed) {
+        int idx = trimmed.indexOf('=');
+
+        if (idx == -1)
+            idx = trimmed.indexOf(' ');
+
+        if (idx > -1)
+            return trimmed.mid(idx + 1).trimmed();
+
+        return QByteArray();
+    };
+
+    const auto lines = file.readAll().split('\n');
+    for (const auto &line : lines) {
+        const QByteArray trimmedLine = line.trimmed();
+        if (isComment(trimmedLine))
+            continue;
+        if (trimmedLine.contains("useLegacyPackaging")) {
+            configs.setsLegacyPackaging = true;
+        } else if (trimmedLine.contains("compileSdkVersion androidCompileSdkVersion.toInteger()")) {
+            configs.usesIntegerCompileSdkVersion = true;
+        } else if (trimmedLine.contains("namespace")) {
+            configs.appNamespace = QString::fromUtf8(extractValue(trimmedLine));
+        }
+    }
+
+    return configs;
+}
+
+QString cleanPackageName(QString packageName, bool *cleaned = nullptr)
 {
     auto isLegalChar = [] (QChar c) -> bool {
         ushort ch = c.unicode();
         return (ch >= '0' && ch <= '9') ||
                 (ch >= 'A' && ch <= 'Z') ||
                 (ch >= 'a' && ch <= 'z') ||
-                ch == '.';
+                ch == '.' || ch == '_';
     };
+
+    if (cleaned)
+        *cleaned = false;
+
     for (QChar &c : packageName) {
-        if (!isLegalChar(c))
+        if (!isLegalChar(c)) {
             c = u'_';
+            if (cleaned)
+                *cleaned = true;
+        }
     }
 
     static QStringList keywords;
@@ -778,12 +855,16 @@ QString cleanPackageName(QString packageName)
             QChar c = word[0];
             if ((c >= u'0' && c <= u'9') || c == u'_') {
                 packageName.insert(index + 1, u'a');
+                if (cleaned)
+                    *cleaned = true;
                 index = next + 1;
                 continue;
             }
         }
         if (keywords.contains(word)) {
             packageName.insert(next, "_"_L1);
+            if (cleaned)
+                *cleaned = true;
             index = next + 1;
         } else {
             index = next;
@@ -813,18 +894,31 @@ QString detectLatestAndroidPlatform(const QString &sdkPath)
     return latestPlatform.baseName();
 }
 
-QString packageNameFromAndroidManifest(const QString &androidManifestPath)
+QString extractPackageName(Options *options)
 {
-    QFile androidManifestXml(androidManifestPath);
+    {
+        const QString gradleBuildFile = options->androidSourceDirectory + "/build.gradle"_L1;
+        QString packageName = gradleBuildConfigs(gradleBuildFile).appNamespace;
+
+        if (!packageName.isEmpty() && packageName != "androidPackageName"_L1)
+            return packageName;
+    }
+
+    QFile androidManifestXml(options->androidSourceDirectory + "/AndroidManifest.xml"_L1);
     if (androidManifestXml.open(QIODevice::ReadOnly)) {
         QXmlStreamReader reader(&androidManifestXml);
         while (!reader.atEnd()) {
             reader.readNext();
-            if (reader.isStartElement() && reader.name() == "manifest"_L1)
-                return cleanPackageName(reader.attributes().value("package"_L1).toString());
+            if (reader.isStartElement() && reader.name() == "manifest"_L1) {
+                QString packageName = reader.attributes().value("package"_L1).toString();
+                if (!packageName.isEmpty() && packageName != "org.qtproject.example"_L1)
+                    return packageName;
+                break;
+            }
         }
     }
-    return {};
+
+    return QString();
 }
 
 bool parseCmakeBoolean(const QJsonValue &value)
@@ -1222,6 +1316,25 @@ bool readInputFile(Options *options)
     }
 
     {
+        const QJsonValue androidPackageName = jsonObject.value("android-package-name"_L1);
+        const QString extractedPackageName = extractPackageName(options);
+        if (!extractedPackageName.isEmpty())
+            options->packageName = extractedPackageName;
+        else if (!androidPackageName.isUndefined())
+            options->packageName = androidPackageName.toString();
+        else
+            options->packageName = "org.qtproject.example.%1"_L1.arg(options->applicationBinary);
+
+        bool cleaned;
+        options->packageName = cleanPackageName(options->packageName, &cleaned);
+        if (cleaned) {
+            fprintf(stderr, "Warning: Package name contained illegal characters and was cleaned "
+                            "to \"%s\"\n", qPrintable(options->packageName));
+        }
+    }
+
+    {
+        using ItFlag = QDirListing::IteratorFlag;
         const QJsonValue deploymentDependencies = jsonObject.value("deployment-dependencies"_L1);
         if (!deploymentDependencies.isUndefined()) {
             QString deploymentDependenciesString = deploymentDependencies.toString();
@@ -1230,11 +1343,9 @@ bool readInputFile(Options *options)
                 QString path = options->qtInstallDirectory + QChar::fromLatin1('/');
                 path += dependency;
                 if (QFileInfo(path).isDir()) {
-                    QDirIterator iterator(path, QDirIterator::Subdirectories);
-                    while (iterator.hasNext()) {
-                        iterator.next();
-                        if (iterator.fileInfo().isFile()) {
-                            QString subPath = iterator.filePath();
+                    for (const auto &dirEntry : QDirListing(path, ItFlag::Recursive)) {
+                        if (dirEntry.isFile()) {
+                            const QString subPath = dirEntry.filePath();
                             auto arch = fileArchitecture(*options, subPath);
                             if (!arch.isEmpty()) {
                                 options->qtDependencies[arch].append(QtDependency(subPath.mid(options->qtInstallDirectory.size() + 1),
@@ -1279,9 +1390,6 @@ bool readInputFile(Options *options)
             options->isZstdCompressionEnabled = zstdCompressionFlag.toBool();
         }
     }
-    options->packageName = packageNameFromAndroidManifest(options->androidSourceDirectory + "/AndroidManifest.xml"_L1);
-    if (options->packageName.isEmpty())
-        options->packageName = cleanPackageName("org.qtproject.example.%1"_L1.arg(options->applicationBinary));
 
     return true;
 }
@@ -1380,6 +1488,9 @@ bool copyAndroidTemplate(const Options &options)
 
     if (!copyAndroidTemplate(options, "/src/android/templates"_L1))
         return false;
+
+    if (options.buildAar)
+        return copyAndroidTemplate(options, "/src/android/templates_aar"_L1);
 
     return true;
 }
@@ -1736,13 +1847,7 @@ bool updateAndroidManifest(Options &options)
             reader.readNext();
 
             if (reader.isStartElement()) {
-                if (reader.name() == "manifest"_L1) {
-                    if (!reader.attributes().hasAttribute("package"_L1)) {
-                        fprintf(stderr, "Invalid android manifest file: %s\n", qPrintable(androidManifestPath));
-                        return false;
-                    }
-                    options.packageName = reader.attributes().value("package"_L1).toString();
-                } else if (reader.name() == "uses-sdk"_L1) {
+                if (reader.name() == "uses-sdk"_L1) {
                     if (reader.attributes().hasAttribute("android:minSdkVersion"_L1))
                         if (reader.attributes().value("android:minSdkVersion"_L1).toInt() < 23) {
                             fprintf(stderr, "Invalid minSdkVersion version, minSdkVersion must be >= 23\n");
@@ -2015,7 +2120,7 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
 
     readElf = "%1 --needed-libs %2"_L1.arg(shellQuote(readElf), shellQuote(fileName));
 
-    FILE *readElfCommand = openProcess(readElf);
+    auto readElfCommand = openProcess(readElf);
     if (!readElfCommand) {
         fprintf(stderr, "Cannot execute command %s\n", qPrintable(readElf));
         return QStringList();
@@ -2025,7 +2130,7 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
 
     bool readLibs = false;
     char buffer[512];
-    while (fgets(buffer, sizeof(buffer), readElfCommand) != nullptr) {
+    while (fgets(buffer, sizeof(buffer), readElfCommand.get()) != nullptr) {
         QByteArray line = QByteArray::fromRawData(buffer, qstrlen(buffer));
         QString library;
         line = line.trimmed();
@@ -2048,8 +2153,6 @@ QStringList getQtLibsFromElf(const Options &options, const QString &fileName)
         if (QFile::exists(absoluteFilePath(&options, libraryName)))
             ret += libraryName;
     }
-
-    pclose(readElfCommand);
 
     return ret;
 }
@@ -2188,7 +2291,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
             qmlImportScanner.toLocal8Bit().constData());
     }
 
-    FILE *qmlImportScannerCommand = popen(qmlImportScanner.toLocal8Bit().constData(), QT_POPEN_READ);
+    auto qmlImportScannerCommand = openProcess(qmlImportScanner);
     if (qmlImportScannerCommand == 0) {
         fprintf(stderr, "Couldn't run qmlimportscanner.\n");
         return false;
@@ -2196,7 +2299,7 @@ bool scanImports(Options *options, QSet<QString> *usedDependencies)
 
     QByteArray output;
     char buffer[512];
-    while (fgets(buffer, sizeof(buffer), qmlImportScannerCommand) != 0)
+    while (fgets(buffer, sizeof(buffer), qmlImportScannerCommand.get()) != nullptr)
         output += QByteArray(buffer, qstrlen(buffer));
 
     QJsonDocument jsonDocument = QJsonDocument::fromJson(output);
@@ -2340,17 +2443,17 @@ bool runCommand(const Options &options, const QString &command)
     if (options.verbose)
         fprintf(stdout, "Running command '%s'\n", qPrintable(command));
 
-    FILE *runCommand = openProcess(command);
+    auto runCommand = openProcess(command);
     if (runCommand == nullptr) {
         fprintf(stderr, "Cannot run command '%s'\n", qPrintable(command));
         return false;
     }
     char buffer[4096];
-    while (fgets(buffer, sizeof(buffer), runCommand) != nullptr) {
+    while (fgets(buffer, sizeof(buffer), runCommand.get()) != nullptr) {
         if (options.verbose)
             fprintf(stdout, "%s", buffer);
     }
-    pclose(runCommand);
+    runCommand.reset();
     fflush(stdout);
     fflush(stderr);
     return true;
@@ -2501,7 +2604,8 @@ bool containsApplicationBinary(Options *options)
     return true;
 }
 
-FILE *runAdb(const Options &options, const QString &arguments)
+auto runAdb(const Options &options, const QString &arguments)
+    -> decltype(openProcess({}))
 {
     QString adb = execSuffixAppended(options.sdkPath + "/platform-tools/adb"_L1);
     if (!QFile::exists(adb)) {
@@ -2517,7 +2621,7 @@ FILE *runAdb(const Options &options, const QString &arguments)
     if (options.verbose)
         fprintf(stdout, "Running command \"%s\"\n", adb.toLocal8Bit().constData());
 
-    FILE *adbCommand = openProcess(adb);
+    auto adbCommand = openProcess(adb);
     if (adbCommand == 0) {
         fprintf(stderr, "Cannot start adb: %s\n", qPrintable(adb));
         return 0;
@@ -2724,11 +2828,11 @@ static bool mergeGradleProperties(const QString &path, GradleProperties properti
 void checkAndWarnGradleLongPaths(const QString &outputDirectory)
 {
     QStringList longFileNames;
-    QDirIterator it(outputDirectory, QStringList(QStringLiteral("*.java")), QDir::Files,
-                    QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        if (it.next().size() >= MAX_PATH)
-            longFileNames.append(it.next());
+    using F = QDirListing::IteratorFlag;
+    for (const auto &dirEntry : QDirListing(outputDirectory, QStringList(u"*.java"_s),
+                                            QDir::Files, F::Recursive)) {
+        if (dirEntry.size() >= MAX_PATH)
+            longFileNames.append(dirEntry.filePath());
     }
 
     if (!longFileNames.isEmpty()) {
@@ -2740,38 +2844,6 @@ void checkAndWarnGradleLongPaths(const QString &outputDirectory)
     }
 }
 #endif
-
-struct GradleFlags {
-    bool setsLegacyPackaging = false;
-    bool usesIntegerCompileSdkVersion = false;
-};
-
-GradleFlags gradleBuildFlags(const QString &path)
-{
-    GradleFlags flags;
-
-    QFile file(path);
-    if (!file.open(QIODevice::ReadOnly))
-        return flags;
-
-    auto isComment = [](const QByteArray &line) {
-        const auto trimmed = line.trimmed();
-        return trimmed.startsWith("//") || trimmed.startsWith('*') || trimmed.startsWith("/*");
-    };
-
-    const auto lines = file.readAll().split('\n');
-    for (const auto &line : lines) {
-        if (isComment(line))
-            continue;
-        if (line.contains("useLegacyPackaging")) {
-            flags.setsLegacyPackaging = true;
-        } else if (line.contains("compileSdkVersion androidCompileSdkVersion.toInteger()")) {
-            flags.usesIntegerCompileSdkVersion = true;
-        }
-    }
-
-    return flags;
-}
 
 bool buildAndroidProject(const Options &options)
 {
@@ -2785,8 +2857,8 @@ bool buildAndroidProject(const Options &options)
     GradleProperties gradleProperties = readGradleProperties(gradlePropertiesPath);
 
     const QString gradleBuildFilePath = options.outputDirectory + "build.gradle"_L1;
-    GradleFlags gradleFlags = gradleBuildFlags(gradleBuildFilePath);
-    if (!gradleFlags.setsLegacyPackaging)
+    GradleBuildConfigs gradleConfigs = gradleBuildConfigs(gradleBuildFilePath);
+    if (!gradleConfigs.setsLegacyPackaging)
         gradleProperties["android.bundle.enableUncompressedNativeLibs"] = "false";
 
     gradleProperties["buildDir"] = "build";
@@ -2805,7 +2877,7 @@ bool buildAndroidProject(const Options &options)
     QByteArray sdkPlatformVersion;
     // Provide the integer version only if build.gradle explicitly converts to Integer,
     // to avoid regression to existing projects that build for sdk platform of form android-xx.
-    if (gradleFlags.usesIntegerCompileSdkVersion) {
+    if (gradleConfigs.usesIntegerCompileSdkVersion) {
         const QByteArray tmp = options.androidPlatform.split(u'-').last().toLocal8Bit();
         bool ok;
         tmp.toInt(&ok);
@@ -2820,6 +2892,7 @@ bool buildAndroidProject(const Options &options)
     if (sdkPlatformVersion.isEmpty())
         sdkPlatformVersion = options.androidPlatform.toLocal8Bit();
 
+    gradleProperties["androidPackageName"] = options.packageName.toLocal8Bit();
     gradleProperties["androidCompileSdkVersion"] = sdkPlatformVersion;
     gradleProperties["qtMinSdkVersion"] = options.minSdkVersion;
     gradleProperties["qtTargetSdkVersion"] = options.targetSdkVersion;
@@ -2835,6 +2908,9 @@ bool buildAndroidProject(const Options &options)
         abiList.append(it.key());
     }
     gradleProperties["qtTargetAbiList"] = abiList.toLocal8Bit();// armeabi-v7a or arm64-v8a or ...
+    gradleProperties["qtGradlePluginType"] = options.buildAar
+                                           ? "com.android.library"
+                                           : "com.android.application";
     if (!mergeGradleProperties(gradlePropertiesPath, gradleProperties))
         return false;
 
@@ -2860,19 +2936,19 @@ bool buildAndroidProject(const Options &options)
     if (options.verbose)
         commandLine += " --info"_L1;
 
-    FILE *gradleCommand = openProcess(commandLine);
+    auto gradleCommand = openProcess(commandLine);
     if (gradleCommand == 0) {
         fprintf(stderr, "Cannot run gradle command: %s\n.", qPrintable(commandLine));
         return false;
     }
 
     char buffer[512];
-    while (fgets(buffer, sizeof(buffer), gradleCommand) != 0) {
+    while (fgets(buffer, sizeof(buffer), gradleCommand.get()) != nullptr) {
         fprintf(stdout, "%s", buffer);
         fflush(stdout);
     }
 
-    int errorCode = pclose(gradleCommand);
+    const int errorCode = pclose(gradleCommand.release());
     if (errorCode != 0) {
         fprintf(stderr, "Building the android package failed!\n");
         if (!options.verbose)
@@ -2898,18 +2974,18 @@ bool uninstallApk(const Options &options)
         fprintf(stdout, "Uninstalling old Android package %s if present.\n", qPrintable(options.packageName));
 
 
-    FILE *adbCommand = runAdb(options, " uninstall "_L1 + shellQuote(options.packageName));
+    auto adbCommand = runAdb(options, " uninstall "_L1 + shellQuote(options.packageName));
     if (adbCommand == 0)
         return false;
 
     if (options.verbose || mustReadOutputAnyway) {
         char buffer[512];
-        while (fgets(buffer, sizeof(buffer), adbCommand) != 0)
+        while (fgets(buffer, sizeof(buffer), adbCommand.get()) != nullptr)
             if (options.verbose)
                 fprintf(stdout, "%s", buffer);
     }
 
-    int returnCode = pclose(adbCommand);
+    const int returnCode = pclose(adbCommand.release());
     if (returnCode != 0) {
         fprintf(stderr, "Warning: Uninstall failed!\n");
         if (!options.verbose)
@@ -2922,39 +2998,43 @@ bool uninstallApk(const Options &options)
 
 enum PackageType {
     AAB,
+    AAR,
     UnsignedAPK,
     SignedAPK
 };
 
-QString packagePath(const Options &options, PackageType pt)
+QString packagePath(const Options &options, PackageType packageType)
 {
-    QString path(options.outputDirectory);
-    path += "/build/outputs/%1/"_L1.arg(pt >= UnsignedAPK ? QStringLiteral("apk") : QStringLiteral("bundle"));
-    QString buildType(options.releasePackage ? "release/"_L1 : "debug/"_L1);
-    if (QDir(path + buildType).exists())
-        path += buildType;
-    path += QDir(options.outputDirectory).dirName() + u'-';
-    if (options.releasePackage) {
-        path += "release-"_L1;
-        if (pt >= UnsignedAPK) {
-            if (pt == UnsignedAPK)
-                path += "un"_L1;
-            path += "signed.apk"_L1;
-        } else {
-            path.chop(1);
-            path += ".aab"_L1;
-        }
-    } else {
-        path += "debug"_L1;
-        if (pt >= UnsignedAPK) {
-            if (pt == SignedAPK)
-                path += "-signed"_L1;
-            path += ".apk"_L1;
-        } else {
-            path += ".aab"_L1;
-        }
-    }
-    return path;
+    // The package type is always AAR if option.buildAar has been set
+    if (options.buildAar)
+        packageType = AAR;
+
+    static const QHash<PackageType, QLatin1StringView> packageTypeToPath{
+        { AAB, "bundle"_L1 }, { AAR, "aar"_L1 }, { UnsignedAPK, "apk"_L1 }, { SignedAPK, "apk"_L1 }
+    };
+    static const QHash<PackageType, QLatin1StringView> packageTypeToExtension{
+        { AAB, "aab"_L1 }, { AAR, "aar"_L1 }, { UnsignedAPK, "apk"_L1 }, { SignedAPK, "apk"_L1 }
+    };
+
+    const QString buildType(options.releasePackage ? "release"_L1 : "debug"_L1);
+    QString signedSuffix;
+    if (packageType == SignedAPK)
+        signedSuffix = "-signed"_L1;
+    else if (packageType == UnsignedAPK && options.releasePackage)
+        signedSuffix = "-unsigned"_L1;
+
+    QString dirPath(options.outputDirectory);
+    dirPath += "/build/outputs/%1/"_L1.arg(packageTypeToPath[packageType]);
+    if (QDir(dirPath + buildType).exists())
+        dirPath += buildType;
+
+    const QString fileName = "/%1-%2%3.%4"_L1.arg(
+            QDir(options.outputDirectory).dirName(),
+            buildType,
+            signedSuffix,
+            packageTypeToExtension[packageType]);
+
+    return dirPath + fileName;
 }
 
 bool installApk(const Options &options)
@@ -2967,20 +3047,20 @@ bool installApk(const Options &options)
     if (options.verbose)
         fprintf(stdout, "Installing Android package to device.\n");
 
-    FILE *adbCommand = runAdb(options, " install -r "_L1
-                              + packagePath(options, options.keyStore.isEmpty() ? UnsignedAPK
-                                                                                : SignedAPK));
+    auto adbCommand = runAdb(options, " install -r "_L1
+                             + packagePath(options, options.keyStore.isEmpty() ? UnsignedAPK
+                                                                               : SignedAPK));
     if (adbCommand == 0)
         return false;
 
     if (options.verbose || mustReadOutputAnyway) {
         char buffer[512];
-        while (fgets(buffer, sizeof(buffer), adbCommand) != 0)
+        while (fgets(buffer, sizeof(buffer), adbCommand.get()) != nullptr)
             if (options.verbose)
                 fprintf(stdout, "%s", buffer);
     }
 
-    int returnCode = pclose(adbCommand);
+    const int returnCode = pclose(adbCommand.release());
     if (returnCode != 0) {
         fprintf(stderr, "Installing to device failed!\n");
         if (!options.verbose)
@@ -3098,7 +3178,7 @@ bool signAAB(const Options &options)
         QString command = jarSignerTool + " %1 %2"_L1.arg(shellQuote(file))
                                                      .arg(shellQuote(options.keyStoreAlias));
 
-        FILE *jarSignerCommand = openProcess(command);
+        auto jarSignerCommand = openProcess(command);
         if (jarSignerCommand == 0) {
             fprintf(stderr, "Couldn't run jarsigner.\n");
             return false;
@@ -3106,11 +3186,11 @@ bool signAAB(const Options &options)
 
         if (options.verbose) {
             char buffer[512];
-            while (fgets(buffer, sizeof(buffer), jarSignerCommand) != 0)
+            while (fgets(buffer, sizeof(buffer), jarSignerCommand.get()) != nullptr)
                 fprintf(stdout, "%s", buffer);
         }
 
-        int errorCode = pclose(jarSignerCommand);
+        const int errorCode = pclose(jarSignerCommand.release());
         if (errorCode != 0) {
             fprintf(stderr, "jarsigner command failed.\n");
             if (!options.verbose)
@@ -3138,17 +3218,17 @@ bool signPackage(const Options &options)
         return false;
 
     auto zipalignRunner = [](const QString &zipAlignCommandLine) {
-        FILE *zipAlignCommand = openProcess(zipAlignCommandLine);
+        auto zipAlignCommand = openProcess(zipAlignCommandLine);
         if (zipAlignCommand == 0) {
             fprintf(stderr, "Couldn't run zipalign.\n");
             return false;
         }
 
         char buffer[512];
-        while (fgets(buffer, sizeof(buffer), zipAlignCommand) != 0)
+        while (fgets(buffer, sizeof(buffer), zipAlignCommand.get()) != nullptr)
             fprintf(stdout, "%s", buffer);
 
-        return pclose(zipAlignCommand) == 0;
+        return pclose(zipAlignCommand.release()) == 0;
     };
 
     const QString verifyZipAlignCommandLine =
@@ -3205,17 +3285,17 @@ bool signPackage(const Options &options)
     apkSignCommand += " %1"_L1.arg(shellQuote(packagePath(options, SignedAPK)));
 
     auto apkSignerRunner = [](const QString &command, bool verbose) {
-        FILE *apkSigner = openProcess(command);
+        auto apkSigner = openProcess(command);
         if (apkSigner == 0) {
             fprintf(stderr, "Couldn't run apksigner.\n");
             return false;
         }
 
         char buffer[512];
-        while (fgets(buffer, sizeof(buffer), apkSigner) != 0)
+        while (fgets(buffer, sizeof(buffer), apkSigner.get()) != nullptr)
             fprintf(stdout, "%s", buffer);
 
-        int errorCode = pclose(apkSigner);
+        const int errorCode = pclose(apkSigner.release());
         if (errorCode != 0) {
             fprintf(stderr, "apksigner command failed.\n");
             if (!verbose)

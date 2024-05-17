@@ -113,6 +113,9 @@ KeyEvent::KeyEvent(EventType type, emscripten::val event) : Event(type, event)
     text = QString::fromUtf8(webKey);
     if (text.size() > 1)
         text.clear();
+
+    if (key == Qt::Key_Tab)
+        text = "\t";
 }
 
 KeyEvent::~KeyEvent() = default;

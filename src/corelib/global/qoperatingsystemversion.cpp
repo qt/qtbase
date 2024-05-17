@@ -34,7 +34,7 @@ QT_BEGIN_NAMESPACE
     operating system version (as opposed to the kernel version number or
     marketing version).
 
-    Presently, Android, Apple Platforms (iOS, macOS, tvOS, and watchOS),
+    Presently, Android, Apple Platforms (iOS, macOS, tvOS, watchOS, and visionOS),
     and Windows are supported.
 
     The \a majorVersion(), \a minorVersion(), and \a microVersion() functions
@@ -98,6 +98,7 @@ QT_BEGIN_NAMESPACE
     \value MacOS        The Apple macOS operating system.
     \value TvOS         The Apple tvOS operating system.
     \value WatchOS      The Apple watchOS operating system.
+    \value VisionOS     The Apple visionOS operating system.
     \value Windows      The Microsoft Windows operating system.
 
     \value Unknown      An unknown or unsupported operating system.
@@ -111,15 +112,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QOperatingSystemVersion::current()
     Returns a QOperatingSystemVersion indicating the current OS and its version number.
 
     \sa currentType()
 */
-QOperatingSystemVersion QOperatingSystemVersion::current()
-{
-    return QOperatingSystemVersionBase::current();
-}
-
 QOperatingSystemVersionBase QOperatingSystemVersionBase::current()
 {
     static const QOperatingSystemVersionBase v = current_impl();
@@ -203,13 +200,13 @@ QOperatingSystemVersionBase QOperatingSystemVersionBase::current_impl()
 }
 #endif
 
-static inline int compareVersionComponents(int lhs, int rhs)
+static inline int compareVersionComponents(int lhs, int rhs) noexcept
 {
     return lhs >= 0 && rhs >= 0 ? lhs - rhs : 0;
 }
 
 int QOperatingSystemVersionBase::compare(QOperatingSystemVersionBase v1,
-                                         QOperatingSystemVersionBase v2)
+                                         QOperatingSystemVersionBase v2) noexcept
 {
     if (v1.m_major == v2.m_major) {
         if (v1.m_minor == v2.m_minor) {
@@ -306,11 +303,6 @@ int QOperatingSystemVersionBase::compare(QOperatingSystemVersionBase v1,
 
     \sa type()
 */
-QString QOperatingSystemVersion::name() const
-{
-    return QOperatingSystemVersionBase::name();
-}
-
 QString QOperatingSystemVersionBase::name(QOperatingSystemVersionBase osversion)
 {
     switch (osversion.type()) {
@@ -334,6 +326,8 @@ QString QOperatingSystemVersionBase::name(QOperatingSystemVersionBase osversion)
         return QStringLiteral("tvOS");
     case QOperatingSystemVersionBase::WatchOS:
         return QStringLiteral("watchOS");
+    case QOperatingSystemVersionBase::VisionOS:
+        return QStringLiteral("visionOS");
     case QOperatingSystemVersionBase::Android:
         return QStringLiteral("Android");
     case QOperatingSystemVersionBase::Unknown:

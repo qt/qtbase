@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>122</width>
-    <height>117</height>
+    <width>343</width>
+    <height>478</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -42,9 +42,28 @@
       <string>PushButton</string>
      </property>
      <property name="icon">
-      <iconset theme="edit-copy">
-       <normaloff/>
-      </iconset>
+      <iconset theme="edit-copy"/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="themeenum">
+     <property name="text">
+      <string>PushButton</string>
+     </property>
+     <property name="icon">
+      <iconset theme="QIcon::ThemeIcon::EditCopy"/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="fileandthemeenum">
+     <property name="text">
+      <string>PushButton</string>
+     </property>
+     <property name="icon">
+      <iconset theme="QIcon::ThemeIcon::EditCopy">
+       <normaloff>image7.png</normaloff>image7.png</iconset>
      </property>
     </widget>
    </item>

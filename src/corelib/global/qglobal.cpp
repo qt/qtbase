@@ -12,15 +12,6 @@
 #include "qnativeinterface.h"
 #include "qnativeinterface_p.h"
 
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-
-#include <errno.h>
-#if defined(Q_CC_MSVC)
-#  include <crtdbg.h>
-#endif
-
 #ifdef Q_OS_WIN
 #  include <qt_windows.h>
 #endif
@@ -40,12 +31,6 @@ extern "C" {
     char shm_area_password[] = "dummy";
     char shm_area_name[] = "dummy";
 }
-#endif
-
-#ifdef qFatal
-// the qFatal in this file are just redirections from elsewhere, so
-// don't capture any context again
-#  undef qFatal
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -107,8 +92,8 @@ using namespace Qt::StringLiterals;
 
 /*
     Dijkstra's bisection algorithm to find the square root of an integer.
-    Deliberately not exported as part of the Qt API, but used in both
-    qsimplerichtext.cpp and qgfxraster_qws.cpp
+    Deliberately not exported as part of the Qt API, but used in
+    qtextdocument.cpp.
 */
 Q_CORE_EXPORT Q_DECL_CONST_FUNCTION unsigned int qt_int_sqrt(unsigned int n)
 {
@@ -131,35 +116,6 @@ Q_CORE_EXPORT Q_DECL_CONST_FUNCTION unsigned int qt_int_sqrt(unsigned int n)
         }
     }
     return p;
-}
-
-void qAbort()
-{
-#ifdef Q_OS_WIN
-    // std::abort() in the MSVC runtime will call _exit(3) if the abort
-    // behavior is _WRITE_ABORT_MSG - see also _set_abort_behavior(). This is
-    // the default for a debug-mode build of the runtime. Worse, MinGW's
-    // std::abort() implementation (in msvcrt.dll) is basically a call to
-    // _exit(3) too. Unfortunately, _exit() and _Exit() *do* run the static
-    // destructors of objects in DLLs, a violation of the C++ standard (see
-    // [support.start.term]). So we bypass std::abort() and directly
-    // terminate the application.
-
-#  if defined(Q_CC_MSVC)
-    if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE))
-        __fastfail(FAST_FAIL_FATAL_APP_EXIT);
-#  else
-    RaiseFailFastException(nullptr, nullptr, 0);
-#  endif
-
-    // Fallback
-    TerminateProcess(GetCurrentProcess(), STATUS_FATAL_APP_EXIT);
-
-    // Tell the compiler the application has stopped.
-    Q_UNREACHABLE_IMPL();
-#else // !Q_OS_WIN
-    std::abort();
-#endif
 }
 
 // Also specified to behave as if they call tzset():
@@ -212,6 +168,19 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
     }
     return false;
 }
+
+/*!
+    \macro QT_NO_KEYWORDS
+    \relates <QtGlobal>
+
+    Define this macro to disable the Qt-specific keywords that are usually enabled,
+    such as \c signals and \c slots. Use \c Q_SIGNALS and \c Q_SLOTS instead.
+
+    Libraries should define this macro to make sure that they don't use the generic
+    keywords without the \c Q_ prefix in their public headers.
+
+    \sa QT_NO_FOREACH
+*/
 
 /*!
     \macro QT_NAMESPACE
@@ -355,33 +324,49 @@ bool QInternal::activateCallbacks(Callback cb, void **parameters)
 */
 
 /*!
-    \macro QT_TERMINATE_ON_EXCEPTION(expr)
+    \macro QT_ENABLE_STRICT_MODE_UP_TO
     \relates <QtGlobal>
-    \internal
+    \since 6.8
 
-    In general, use of the Q_DECL_NOEXCEPT macro is preferred over
-    Q_DECL_NOTHROW, because it exhibits well-defined behavior and
-    supports the more powerful Q_DECL_NOEXCEPT_EXPR variant. However,
-    use of Q_DECL_NOTHROW has the advantage that Windows builds
-    benefit on a wide range or compiler versions that do not yet
-    support the C++11 noexcept feature.
+    Defining this macro will disable a number of Qt APIs that are
+    deemed suboptimal or dangerous.
 
-    It may therefore be beneficial to use Q_DECL_NOTHROW and emulate
-    the C++11 behavior manually with an embedded try/catch.
+    This macro's value must be set to a Qt version, using
+    \l{QT_VERSION_CHECK}'s encoding. For instance, in order to set it
+    to Qt 6.6, define \c{QT_ENABLE_STRICT_MODE_UP_TO=0x060600}.
+    This will disable only the APIs introduced in versions up to (and
+    including) the specified Qt version.
 
-    Qt provides the QT_TERMINATE_ON_EXCEPTION(expr) macro for this
-    purpose. It either expands to \c expr (if Qt is compiled without
-    exception support or the compiler supports C++11 noexcept
-    semantics) or to
-    \snippet code/src_corelib_global_qglobal.cpp qterminate
-    otherwise.
+    If the \l QT_DISABLE_DEPRECATED_UP_TO macro is \e not defined,
+    then QT_ENABLE_STRICT_MODE_UP_TO will define it as well,
+    to the same value.
 
-    Since this macro expands to just \c expr if the compiler supports
-    C++11 noexcept, expecting the compiler to take over responsibility
-    of calling std::terminate() in that case, it should not be used
-    outside Q_DECL_NOTHROW functions.
+    This macro should always be set to the minimum Qt version that
+    your project wants to support.
 
-    \sa Q_DECL_NOEXCEPT, Q_DECL_NOTHROW, qTerminate()
+    The APIs disabled by this macro are listed in the table below,
+    together with the minimum value to use in order to disable them.
+
+    \table
+    \header \li Version \li Disabled APIs
+    \row \li 6.0.0 \li \l{foreach-keyword}{foreach} (see \l{QT_NO_FOREACH})
+    \row \li 6.0.0 \li QString constructors from \c{const char *} (see \l{QT_NO_CAST_FROM_ASCII})
+    \row \li 6.0.0 \li QString conversions towards \c{const char *} / QByteArray (see \l{QT_NO_CAST_TO_ASCII})
+    \row \li 6.0.0 \li QByteArray implicit conversions towards \c{const char *} (see \l{QT_NO_CAST_FROM_BYTEARRAY})
+    \row \li 6.0.0 \li QUrl implicit conversions from QString (see \l{QT_NO_URL_CAST_FROM_STRING})
+    \row \li 6.0.0 \li Allowing narrowing conversions in signal-slot connections (see \l{QT_NO_NARROWING_CONVERSIONS_IN_CONNECT})
+    \row \li 6.0.0 \li Java-style iterators for Qt containers
+    \row \li 6.6.0 \li The qExchange() function (see \l{QT_NO_QEXCHANGE})
+    \row \li 6.7.0 \li Overloads of QObject::connect that do not take a context object (see \l{QT_NO_CONTEXTLESS_CONNECT})
+    \row \li 6.8.0 \li The qAsConst() function (see \l{QT_NO_QASCONST})
+    \row \li 6.8.0 \li File-related I/O classes have their \c{open()} functions marked \c{[[nodiscard]]} (see \l{QT_USE_NODISCARD_FILE_OPEN})
+    \endtable
+
+    Moreover, individual APIs may also get disabled as part of the
+    setting of QT_DISABLE_DEPRECATED_UP_TO. Please refer to each class'
+    documentation for more details.
+
+    \sa QT_DISABLE_DEPRECATED_UP_TO, QT_NO_KEYWORDS, QT_VERSION_CHECK
 */
 
 namespace QtPrivate {

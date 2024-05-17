@@ -229,21 +229,16 @@ QIcon QAbstractFileIconProvider::icon(const QFileInfo &info) const
     return result.isNull() ? d->getPlatformThemeIcon(info) : result;
 }
 
-/*!
-  Returns the type of the file described by \a info.
-*/
 
-QString QAbstractFileIconProvider::type(const QFileInfo &info) const
+QString QAbstractFileIconProviderPrivate::getFileType(const QFileInfo &info)
 {
-    Q_D(const QAbstractFileIconProvider);
     if (QFileSystemEntry::isRootPath(info.absoluteFilePath()))
         return QGuiApplication::translate("QAbstractFileIconProvider", "Drive");
     if (info.isFile()) {
 #if QT_CONFIG(mimetype)
-        const QMimeType mimeType = d->mimeDatabase.mimeTypeForFile(info);
+        const QMimeType mimeType = QMimeDatabase().mimeTypeForFile(info);
         return mimeType.comment().isEmpty() ? mimeType.name() : mimeType.comment();
 #else
-        Q_UNUSED(d);
         return QGuiApplication::translate("QAbstractFileIconProvider", "File");
 #endif
     }
@@ -271,6 +266,15 @@ QString QAbstractFileIconProvider::type(const QFileInfo &info) const
     // Nautilus  - "link to folder" or "link to object file", same as Konqueror
 
     return QGuiApplication::translate("QAbstractFileIconProvider", "Unknown");
+}
+
+/*!
+  Returns the type of the file described by \a info.
+*/
+
+QString QAbstractFileIconProvider::type(const QFileInfo &info) const
+{
+    return QAbstractFileIconProviderPrivate::getFileType(info);
 }
 
 QT_END_NAMESPACE

@@ -16,6 +16,8 @@ class QJniObjectPrivate;
 
 class Q_CORE_EXPORT QJniObject
 {
+    friend class QJniArrayBase;
+
     template <typename ...Args>
     struct LocalFrame {
         mutable JNIEnv *env;
@@ -40,7 +42,7 @@ class Q_CORE_EXPORT QJniObject
             return static_cast<T>(jniEnv()->NewLocalRef(object));
         }
         template <typename T>
-        auto newLocalRef(QJniObject &&object)
+        auto newLocalRef(const QJniObject &object)
         {
             return newLocalRef<T>(object.template object<T>());
         }
@@ -69,12 +71,17 @@ public:
 #endif
         >
     explicit QJniObject(const char *className, Args &&...args)
-        : QJniObject(Qt::Uninitialized)
+        : QJniObject(LocalFrame<Args...>{}, className, std::forward<Args>(args)...)
     {
-        LocalFrame<Args...> localFrame;
-        *this = QJniObject(className, QtJniTypes::constructorSignature<Args...>().data(),
-                           localFrame.convertToJni(std::forward<Args>(args))...);
     }
+private:
+    template<typename ...Args>
+    explicit QJniObject(LocalFrame<Args...> localFrame, const char *className, Args &&...args)
+        : QJniObject(className, QtJniTypes::constructorSignature<Args...>().data(),
+                     localFrame.convertToJni(std::forward<Args>(args))...)
+    {
+    }
+public:
     explicit QJniObject(jclass clazz);
     explicit QJniObject(jclass clazz, const char *signature, ...);
     template<typename ...Args
@@ -663,7 +670,7 @@ inline bool operator!=(const QJniObject &obj1, const QJniObject &obj2)
 }
 
 namespace QtJniTypes {
-struct JObjectBase
+struct QT_TECH_PREVIEW_API JObjectBase
 {
     operator QJniObject() const { return m_object; }
 
@@ -688,7 +695,7 @@ protected:
 };
 
 template<typename Type>
-class JObject : public JObjectBase
+class QT_TECH_PREVIEW_API JObject : public JObjectBase
 {
 public:
     using Class = Type;
@@ -835,7 +842,7 @@ auto QJniObject::LocalFrame<Args...>::convertFromJni(QJniObject &&object)
     if constexpr (std::is_same_v<Type, QString>) {
         return object.toString();
     } else if constexpr (QtJniTypes::IsJniArray<Type>::value) {
-        return T{object};
+        return T(std::move(object));
     } else if constexpr (QJniArrayBase::canConvert<Type>) {
         // if we were to create a QJniArray from Type...
         using QJniArrayType = decltype(QJniArrayBase::fromContainer(std::declval<Type>()));
@@ -845,7 +852,7 @@ auto QJniObject::LocalFrame<Args...>::convertFromJni(QJniObject &&object)
         return QJniArray<ElementType>(object.template object<jarray>()).toContainer();
     } else if constexpr (std::is_array_v<Type>) {
         using ElementType = std::remove_extent_t<Type>;
-        return QJniArray<ElementType>{object};
+        return QJniArray<ElementType>(std::move(object));
     } else if constexpr (std::is_base_of_v<QJniObject, Type>
                         && !std::is_same_v<QJniObject, Type>) {
         return T{std::move(object)};

@@ -1,5 +1,5 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "window.h"
 #include <QPlatformSurfaceEvent>
@@ -9,7 +9,7 @@ Window::Window(QRhi::Implementation graphicsApi)
     : m_graphicsApi(graphicsApi)
 {
     m_capturer.reset(new QGraphicsFrameCapture);
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
     qDebug("This example uses Metal Capture Manager In App API to capture frames. Press F9 to capture a frame and F10 to open it for analysis");
 #else
     qDebug("This example uses RenderDoc In App API to capture frames. Press F9 to capture a frame and F10 to open it for analysis");
@@ -142,7 +142,7 @@ void Window::init()
     }
 #endif
 
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
     if (m_graphicsApi == QRhi::Metal) {
         QRhiMetalInitParams params;
         m_rhi.reset(QRhi::create(QRhi::Metal, &params, rhiFlags));

@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QCompleter>
 #include <QHBoxLayout>
@@ -1810,7 +1810,6 @@ void tst_QListWidget::QTBUG14363_completerWithAnyKeyPressedEditTriggers()
     new QListWidgetItem(QLatin1String("completer"), &listWidget);
     listWidget.show();
     listWidget.setCurrentItem(item);
-    QApplicationPrivate::setActiveWindow(&listWidget);
     QVERIFY(QTest::qWaitForWindowActive(&listWidget));
     listWidget.setFocus();
     QCOMPARE(QApplication::focusWidget(), &listWidget);

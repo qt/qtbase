@@ -15,27 +15,24 @@
 // We mean it.
 //
 
-#include "private/qobject_p.h"
-#include <QtNetwork/qnetworkreply.h>
-#include <QtCore/qjsondocument.h>
+#include <QtCore/private/qstringconverter_p.h>
 
 #include <optional>
 
 QT_BEGIN_NAMESPACE
 
-class QStringDecoder;
+class QByteArray;
+class QNetworkReply;
 
-class QRestReplyPrivate : public QObjectPrivate
+class QRestReplyPrivate
 {
 public:
     QRestReplyPrivate();
-    ~QRestReplyPrivate() override;
+    ~QRestReplyPrivate();
 
-    QNetworkReply *networkReply = nullptr;
     std::optional<QStringDecoder> decoder;
 
-    QByteArray contentCharset() const;
-    bool hasNonHttpError() const;
+    static QByteArray contentCharset(const QNetworkReply *reply);
 };
 
 QT_END_NAMESPACE

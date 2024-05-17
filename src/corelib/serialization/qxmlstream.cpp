@@ -22,6 +22,7 @@
 #include "qxmlstream_p.h"
 #include "qxmlstreamparser_p.h"
 #include <private/qstringconverter_p.h>
+#include <private/qstringiterator_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -2331,6 +2332,8 @@ QXmlStreamAttributes QXmlStreamReader::attributes() const
 
     \ingroup xml-tools
 
+    \compares equality
+
     An attribute consists of an optionally empty namespaceUri(), a
     name(), a value(), and an isDefault() attribute.
 
@@ -2405,14 +2408,14 @@ QXmlStreamAttribute::QXmlStreamAttribute(const QString &qualifiedName, const QSt
    value following an ATTLIST declaration in the DTD; otherwise
    returns \c false.
 */
-/*! \fn bool QXmlStreamAttribute::operator==(const QXmlStreamAttribute &other) const
+/*! \fn bool QXmlStreamAttribute::operator==(const QXmlStreamAttribute &lhs, const QXmlStreamAttribute &rhs)
 
-    Compares this attribute with \a other and returns \c true if they are
+    Compares \a lhs attribute with \a rhs and returns \c true if they are
     equal; otherwise returns \c false.
  */
-/*! \fn bool QXmlStreamAttribute::operator!=(const QXmlStreamAttribute &other) const
+/*! \fn bool QXmlStreamAttribute::operator!=(const QXmlStreamAttribute &lhs, const QXmlStreamAttribute &rhs)
 
-    Compares this attribute with \a other and returns \c true if they are
+    Compares \a lhs attribute with \a rhs and returns \c true if they are
     not equal; otherwise returns \c false.
  */
 
@@ -2461,6 +2464,8 @@ QXmlStreamAttribute::QXmlStreamAttribute(const QString &qualifiedName, const QSt
 
     \ingroup xml-tools
 
+    \compares equality
+
     An notation declaration consists of a name(), a systemId(), and a publicId().
 */
 
@@ -2484,14 +2489,14 @@ Returns the system identifier.
 Returns the public identifier.
 */
 
-/*! \fn inline bool QXmlStreamNotationDeclaration::operator==(const QXmlStreamNotationDeclaration &other) const
+/*! \fn inline bool QXmlStreamNotationDeclaration::operator==(const QXmlStreamNotationDeclaration &lhs, const QXmlStreamNotationDeclaration &rhs)
 
-    Compares this notation declaration with \a other and returns \c true
+    Compares \a lhs notation declaration with \a rhs and returns \c true
     if they are equal; otherwise returns \c false.
  */
-/*! \fn inline bool QXmlStreamNotationDeclaration::operator!=(const QXmlStreamNotationDeclaration &other) const
+/*! \fn inline bool QXmlStreamNotationDeclaration::operator!=(const QXmlStreamNotationDeclaration &lhs, const QXmlStreamNotationDeclaration &rhs)
 
-    Compares this notation declaration with \a other and returns \c true
+    Compares \a lhs notation declaration with \a rhs and returns \c true
     if they are not equal; otherwise returns \c false.
  */
 
@@ -2511,16 +2516,18 @@ Returns the public identifier.
 
     \ingroup xml-tools
 
+    \compares equality
+
     An namespace declaration consists of a prefix() and a namespaceUri().
 */
-/*! \fn inline bool QXmlStreamNamespaceDeclaration::operator==(const QXmlStreamNamespaceDeclaration &other) const
+/*! \fn inline bool QXmlStreamNamespaceDeclaration::operator==(const QXmlStreamNamespaceDeclaration &lhs, const QXmlStreamNamespaceDeclaration &rhs)
 
-    Compares this namespace declaration with \a other and returns \c true
+    Compares \a lhs namespace declaration with \a rhs and returns \c true
     if they are equal; otherwise returns \c false.
  */
-/*! \fn inline bool QXmlStreamNamespaceDeclaration::operator!=(const QXmlStreamNamespaceDeclaration &other) const
+/*! \fn inline bool QXmlStreamNamespaceDeclaration::operator!=(const QXmlStreamNamespaceDeclaration &lhs, const QXmlStreamNamespaceDeclaration &rhs)
 
-    Compares this namespace declaration with \a other and returns \c true
+    Compares \a lhs namespace declaration with \a rhs and returns \c true
     if they are not equal; otherwise returns \c false.
  */
 
@@ -2577,6 +2584,7 @@ Returns the namespaceUri.
 
     \ingroup xml-tools
 
+    \compares equality
     An entity declaration consists of a name(), a notationName(), a
     systemId(), a publicId(), and a value().
 */
@@ -2609,14 +2617,14 @@ Returns the public identifier.
 Returns the entity's value.
 */
 
-/*! \fn bool QXmlStreamEntityDeclaration::operator==(const QXmlStreamEntityDeclaration &other) const
+/*! \fn bool QXmlStreamEntityDeclaration::operator==(const QXmlStreamEntityDeclaration &lhs, const QXmlStreamEntityDeclaration &rhs)
 
-    Compares this entity declaration with \a other and returns \c true if
+    Compares \a lhs entity declaration with \a rhs and returns \c true if
     they are equal; otherwise returns \c false.
  */
-/*! \fn bool QXmlStreamEntityDeclaration::operator!=(const QXmlStreamEntityDeclaration &other) const
+/*! \fn bool QXmlStreamEntityDeclaration::operator!=(const QXmlStreamEntityDeclaration &lhs, const QXmlStreamEntityDeclaration &rhs)
 
-    Compares this entity declaration with \a other and returns \c true if
+    Compares \a lhs entity declaration with \a rhs and returns \c true if
     they are not equal; otherwise returns \c false.
  */
 
@@ -2956,54 +2964,83 @@ void QXmlStreamWriterPrivate::write(QAnyStringView s)
 
 void QXmlStreamWriterPrivate::writeEscaped(QAnyStringView s, bool escapeWhitespace)
 {
+    struct NextLatin1 {
+        char32_t operator()(const char *&it, const char *) const
+        { return uchar(*it++); }
+    };
+    struct NextUtf8 {
+        char32_t operator()(const char *&it, const char *end) const
+        {
+            uchar uc = *it++;
+            char32_t utf32 = 0;
+            char32_t *output = &utf32;
+            qsizetype n = QUtf8Functions::fromUtf8<QUtf8BaseTraits>(uc, output, it, end);
+            return n < 0 ? 0 : utf32;
+        }
+    };
+    struct NextUtf16 {
+        char32_t operator()(const QChar *&it, const QChar *end) const
+        {
+            QStringIterator decoder(it, end);
+            char32_t result = decoder.next(u'\0');
+            it = decoder.position();
+            return result;
+        }
+    };
+
     QString escaped;
     escaped.reserve(s.size());
     s.visit([&] (auto s) {
         using View = decltype(s);
+        using Decoder = std::conditional_t<std::is_same_v<View, QLatin1StringView>, NextLatin1,
+                            std::conditional_t<std::is_same_v<View, QUtf8StringView>, NextUtf8, NextUtf16>>;
 
         auto it = s.begin();
         const auto end = s.end();
+        Decoder decoder;
 
         while (it != end) {
             QLatin1StringView replacement;
             auto mark = it;
 
             while (it != end) {
-                if (*it == u'<') {
+                auto next_it = it;
+                char32_t uc = decoder(next_it, end);
+                if (uc == u'<') {
                     replacement = "&lt;"_L1;
                     break;
-                } else if (*it == u'>') {
+                } else if (uc == u'>') {
                     replacement = "&gt;"_L1;
                     break;
-                } else if (*it == u'&') {
+                } else if (uc == u'&') {
                     replacement = "&amp;"_L1;
                     break;
-                } else if (*it == u'\"') {
+                } else if (uc == u'\"') {
                     replacement = "&quot;"_L1;
                     break;
-                } else if (*it == u'\t') {
+                } else if (uc == u'\t') {
                     if (escapeWhitespace) {
                         replacement = "&#9;"_L1;
                         break;
                     }
-                } else if (*it == u'\n') {
+                } else if (uc == u'\n') {
                     if (escapeWhitespace) {
                         replacement = "&#10;"_L1;
                         break;
                     }
-                } else if (*it == u'\v' || *it == u'\f') {
+                } else if (uc == u'\v' || uc == u'\f') {
                     hasEncodingError = true;
                     break;
-                } else if (*it == u'\r') {
+                } else if (uc == u'\r') {
                     if (escapeWhitespace) {
                         replacement = "&#13;"_L1;
                         break;
                     }
-                } else if (*it <= u'\x1F' || *it >= u'\uFFFE') {
+                } else if (uc <= u'\x1F' || uc == u'\uFFFE' || uc == u'\uFFFF') {
                     hasEncodingError = true;
                     break;
                 }
-                ++it;
+                it = next_it;
             }
 
             escaped.append(View{mark, it});

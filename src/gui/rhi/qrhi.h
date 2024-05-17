@@ -250,7 +250,15 @@ public:
         Half4,
         Half3,
         Half2,
-        Half
+        Half,
+        UShort4,
+        UShort3,
+        UShort2,
+        UShort,
+        SShort4,
+        SShort3,
+        SShort2,
+        SShort,
     };
 
     QRhiVertexInputAttribute() = default;
@@ -634,10 +642,14 @@ public:
     QRhiTexture *depthTexture() const { return m_depthTexture; }
     void setDepthTexture(QRhiTexture *texture) { m_depthTexture = texture; }
 
+    QRhiTexture *depthResolveTexture() const { return m_depthResolveTexture; }
+    void setDepthResolveTexture(QRhiTexture *tex) { m_depthResolveTexture = tex; }
+
 private:
     QVarLengthArray<QRhiColorAttachment, 8> m_colorAttachments;
     QRhiRenderBuffer *m_depthStencilBuffer = nullptr;
     QRhiTexture *m_depthTexture = nullptr;
+    QRhiTexture *m_depthResolveTexture = nullptr;
 };
 
 class Q_GUI_EXPORT QRhiTextureSubresourceUploadDescription
@@ -983,6 +995,15 @@ public:
     int sampleCount() const { return m_sampleCount; }
     void setSampleCount(int s) { m_sampleCount = s; }
 
+    struct ViewFormat {
+        QRhiTexture::Format format;
+        bool srgb;
+    };
+    ViewFormat readViewFormat() const { return m_readViewFormat; }
+    void setReadViewFormat(const ViewFormat &fmt) { m_readViewFormat = fmt; }
+    ViewFormat writeViewFormat() const { return m_writeViewFormat; }
+    void setWriteViewFormat(const ViewFormat &fmt) { m_writeViewFormat = fmt; }
+
     virtual bool create() = 0;
     virtual NativeTexture nativeTexture();
     virtual bool createFrom(NativeTexture src);
@@ -999,6 +1020,8 @@ protected:
     Flags m_flags;
     int m_arrayRangeStart = -1;
     int m_arrayRangeLength = -1;
+    ViewFormat m_readViewFormat = { UnknownFormat, false };
+    ViewFormat m_writeViewFormat = { UnknownFormat, false };
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiTexture::Flags)
@@ -1162,7 +1185,8 @@ class Q_GUI_EXPORT QRhiTextureRenderTarget : public QRhiRenderTarget
 public:
     enum Flag {
         PreserveColorContents = 1 << 0,
-        PreserveDepthStencilContents = 1 << 1
+        PreserveDepthStencilContents = 1 << 1,
+        DoNotStoreDepthStencilContents = 1 << 2
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -1845,7 +1869,9 @@ public:
         HalfAttributes,
         RenderToOneDimensionalTexture,
         ThreeDimensionalTextureMipmaps,
-        MultiView
+        MultiView,
+        TextureViewFormat,
+        ResolveDepthStencil
     };
 
     enum BeginFrameFlag {

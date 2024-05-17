@@ -98,8 +98,8 @@ bool isMeteredFromNMMetered(QNetworkManagerInterface::NMMetered metered)
 
 static QString backendName()
 {
-    return QString::fromUtf16(QNetworkInformationBackend::PluginNames
-                                      [QNetworkInformationBackend::PluginNamesLinuxIndex]);
+    return QStringView(QNetworkInformationBackend::PluginNames
+                       [QNetworkInformationBackend::PluginNamesLinuxIndex]).toString();
 }
 
 QString QNetworkManagerNetworkInformationBackend::name() const
@@ -178,3 +178,4 @@ void QNetworkManagerNetworkInformationBackend::onMeteredChanged(
 QT_END_NAMESPACE
 
 #include "qnetworkmanagernetworkinformationbackend.moc"
+#include "moc_qnetworkmanagernetworkinformationbackend.cpp"

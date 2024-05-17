@@ -1,6 +1,6 @@
 // Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Giuseppe D'Angelo <giuseppe.dangelo@kdab.com>
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qcompare.h"
 
@@ -1129,6 +1129,29 @@ CHECK(strong, equivalent);
 
     \sa Q_DECLARE_PARTIALLY_ORDERED, Q_DECLARE_WEAKLY_ORDERED,
         Q_DECLARE_EQUALITY_COMPARABLE
+*/
+
+/*!
+    \internal
+    \macro Q_DECLARE_EQUALITY_COMPARABLE(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_PARTIALLY_ORDERED(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_PARTIALLY_ORDERED_LITERAL_TYPE(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_WEAKLY_ORDERED(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_WEAKLY_ORDERED_LITERAL_TYPE(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_STRONGLY_ORDERED(LeftType, RightType, Attributes)
+    \macro Q_DECLARE_STRONGLY_ORDERED_LITERAL_TYPE(LeftType, RightType, Attributes)
+    \since 6.8
+    \relates <QtCompare>
+
+    These macros behave like their two-argument versions, but allow
+    specification of C++ attributes to add before every generated relational
+    operator.
+
+    As an example, the \c Attributes parameter can be used in Qt to pass
+    the \c QT_ASCII_CAST_WARN marco (whose expansion can mark the function as
+    deprecated) when implementing comparison of encoding-aware string types
+    with C-style strings or byte arrays.
 */
 
 /*!

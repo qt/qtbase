@@ -11,8 +11,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QWindowsUiaWindowProvider : public QWindowsUiaBaseProvider,
-                                  public QWindowsComBase<IWindowProvider>
+class QWindowsUiaWindowProvider : public QWindowsUiaBaseProvider, public QComObject<IWindowProvider>
 {
     Q_DISABLE_COPY(QWindowsUiaWindowProvider)
 public:

@@ -8,10 +8,25 @@ macro(qt_examples_build_begin)
 
     cmake_parse_arguments(arg "${options}" "${singleOpts}" "${multiOpts}" ${ARGN})
 
+    # Examples are not unity-ready.
     set(CMAKE_UNITY_BUILD OFF)
+
+    # Skip running deployment steps when the developer asked to deploy a minimal subset of examples.
+    # Each example can then decide whether it wants to be deployed as part of the minimal subset
+    # by unsetting the QT_INTERNAL_SKIP_DEPLOYMENT variable before its qt_internal_add_example call.
+    # This will be used by our CI.
+    if(NOT DEFINED QT_INTERNAL_SKIP_DEPLOYMENT AND QT_DEPLOY_MINIMAL_EXAMPLES)
+        set(QT_INTERNAL_SKIP_DEPLOYMENT TRUE)
+    endif()
 
     # Use by qt_internal_add_example.
     set(QT_EXAMPLE_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+
+    if(QT_BUILD_STANDALONE_EXAMPLES)
+        # Find all qt packages, so that the various if(QT_FEATURE_foo) add_subdirectory()
+        # conditions have correct values, regardless whether we will use ExternalProjects or not.
+        qt_internal_find_standalone_parts_config_files()
+    endif()
 
     if(arg_EXTERNAL_BUILD AND QT_BUILD_EXAMPLES_AS_EXTERNAL)
         # Examples will be built using ExternalProject.
@@ -135,6 +150,13 @@ endmacro()
 # Allows building an example either as an ExternalProject or in-tree with the Qt build.
 # Also allows installing the example sources.
 function(qt_internal_add_example subdir)
+    # Don't show warnings for examples that were added via qt_internal_add_example.
+    # Those that are added via add_subdirectory will see the warning, due to the parent scope
+    # having the variable set to TRUE.
+    if(QT_FEATURE_developer_build AND NOT QT_NO_WARN_ABOUT_EXAMPLE_ADD_SUBDIRECTORY_WARNING)
+        set(QT_WARN_ABOUT_EXAMPLE_ADD_SUBDIRECTORY FALSE)
+    endif()
+
     # Pre-compute unique example name based on the subdir, in case of target name clashes.
     qt_internal_get_example_unique_name(unique_example_name "${subdir}")
 
@@ -164,6 +186,11 @@ function(qt_internal_get_example_install_prefix out_var)
     # Allow customizing the installation path of the examples. Will be used in CI.
     if(QT_INTERNAL_EXAMPLES_INSTALL_PREFIX)
         set(qt_example_install_prefix "${QT_INTERNAL_EXAMPLES_INSTALL_PREFIX}")
+    elseif(QT_BUILD_STANDALONE_EXAMPLES)
+        # TODO: We might need to reset and pipe through an empty CMAKE_STAGING_PREFIX if we ever
+        # try to run standalone examples in the CI when cross-compiling, similar how it's done in
+        # qt_internal_set_up_fake_standalone_parts_install_prefix.
+        qt_internal_get_fake_standalone_install_prefix(qt_example_install_prefix)
     else()
         set(qt_example_install_prefix "${CMAKE_INSTALL_PREFIX}/${INSTALL_EXAMPLESDIR}")
     endif()
@@ -252,7 +279,9 @@ function(qt_internal_add_example_in_tree subdir)
     install(CODE "
 # Unset the CMAKE_INSTALL_PREFIX in the current cmake_install.cmake file so that it can be
 # overridden in the included add_subdirectory-specific cmake_install.cmake files instead.
+# Also unset the deployment prefix, so it can be recomputed for each example subdirectory.
 unset(CMAKE_INSTALL_PREFIX)
+unset(QT_DEPLOY_PREFIX)
 ")
 
     # Override the install prefix in the subdir cmake_install.cmake, so that
@@ -302,6 +331,28 @@ function(qt_internal_add_example_external_project subdir)
            NOT CMAKE_SYSTEM_NAME STREQUAL CMAKE_HOST_SYSTEM_NAME)
             list(APPEND vars_to_pass_if_defined CMAKE_SYSTEM_NAME:STRING)
         endif()
+    endif()
+
+    # We we need to augment the CMAKE_MODULE_PATH with the current repo cmake build dir, to find
+    # files like FindWrapBundledFooConfigExtra.cmake.
+    set(module_paths "${qt_prefixes}")
+    list(TRANSFORM module_paths APPEND "/${INSTALL_LIBDIR}/cmake/${QT_CMAKE_EXPORT_NAMESPACE}")
+    list(APPEND CMAKE_MODULE_PATH ${module_paths})
+
+    # Pass additional paths where qml plugin config files should be included by Qt6QmlPlugins.cmake.
+    # This is needed in prefix builds, where the cmake files are not installed yet.
+    set(glob_prefixes "${qt_prefixes}")
+    list(TRANSFORM glob_prefixes APPEND "/${INSTALL_LIBDIR}/cmake/${QT_CMAKE_EXPORT_NAMESPACE}Qml")
+
+    set(qml_plugin_cmake_config_file_glob_prefixes "")
+    foreach(glob_prefix IN LISTS glob_prefix)
+        if(EXISTS "${glob_prefix}")
+            list(APPEND qml_plugin_cmake_config_file_glob_prefixes "${glob_prefix}")
+        endif()
+    endforeach()
+
+    if(qml_plugin_cmake_config_file_glob_prefixes)
+        set(QT_ADDITIONAL_QML_PLUGIN_GLOB_PREFIXES ${qml_plugin_cmake_config_file_glob_prefixes})
     endif()
 
     # In multi-config mode by default we exclude building tools for configs other than the main one.
@@ -370,7 +421,10 @@ function(qt_internal_add_example_external_project subdir)
         CMAKE_PREFIX_PATH:STRING
         QT_BUILD_CMAKE_PREFIX_PATH:STRING
         QT_ADDITIONAL_PACKAGES_PREFIX_PATH:STRING
+        QT_ADDITIONAL_QML_PLUGIN_GLOB_PREFIXES:STRING
+        QT_INTERNAL_SKIP_DEPLOYMENT:BOOL
         CMAKE_FIND_ROOT_PATH:STRING
+        CMAKE_MODULE_PATH:STRING
         BUILD_SHARED_LIBS:BOOL
         CMAKE_OSX_ARCHITECTURES:STRING
         CMAKE_OSX_DEPLOYMENT_TARGET:STRING
@@ -382,7 +436,15 @@ function(qt_internal_add_example_external_project subdir)
         CMAKE_OBJCXX_COMPILER_LAUNCHER:STRING
     )
 
-    foreach(var_with_type IN LISTS vars_to_pass_if_defined)
+    # QT_EXAMPLE_CMAKE_VARS_TO_PASS can be set by specific repos to pass any additional required
+    # CMake cache variables.
+    # One use case is passing locations of 3rd party package locations like Protobuf via _ROOT
+    # variables.
+    set(extra_vars_var_name "")
+    if(QT_EXAMPLE_CMAKE_VARS_TO_PASS)
+        set(extra_vars_var_name "QT_EXAMPLE_CMAKE_VARS_TO_PASS")
+    endif()
+    foreach(var_with_type IN LISTS vars_to_pass_if_defined ${extra_vars_var_name})
         string(REPLACE ":" ";" key_as_list "${var_with_type}")
         list(GET key_as_list 0 var)
         if(NOT DEFINED ${var})

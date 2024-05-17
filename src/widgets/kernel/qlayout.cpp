@@ -520,10 +520,11 @@ void QLayoutPrivate::doResize()
 void QLayout::widgetEvent(QEvent *e)
 {
     Q_D(QLayout);
-    if (!d->enabled)
+    const QEvent::Type type = e->type();
+    if (!d->enabled && type != QEvent::ChildRemoved)
         return;
 
-    switch (e->type()) {
+    switch (type) {
     case QEvent::Resize:
         if (d->activated)
             d->doResize();
@@ -772,7 +773,7 @@ void QLayoutPrivate::reparentChildWidgets(QWidget *mw)
                          w->metaObject()->className(), qUtf16Printable(w->objectName()));
             }
 #endif
-            bool needShow = mwVisible && !(w->isHidden() && w->testAttribute(Qt::WA_WState_ExplicitShowHide));
+            bool needShow = mwVisible && !QWidgetPrivate::get(w)->isExplicitlyHidden();
             if (pw != mw)
                 w->setParent(mw);
             if (needShow)
@@ -858,7 +859,7 @@ void QLayout::addChildWidget(QWidget *w)
 #endif
         pw = nullptr;
     }
-    bool needShow = mw && mw->isVisible() && !(w->isHidden() && w->testAttribute(Qt::WA_WState_ExplicitShowHide));
+    bool needShow = mw && mw->isVisible() && !QWidgetPrivate::get(w)->isExplicitlyHidden();
     if (!pw && mw)
         w->setParent(mw);
     w->setAttribute(Qt::WA_LaidOut);

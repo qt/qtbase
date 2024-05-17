@@ -1,5 +1,5 @@
 // Copyright (C) 2017 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtCore/QTimeZone>
 #include <QTest>
@@ -9,7 +9,7 @@
 
 void tst_QTimeZone_darwinTypes()
 {
-#if !defined(QT_NO_SYSTEMLOCALE)
+#if QT_CONFIG(timezone)
     // QTimeZone <-> CFTimeZone
     {
         QTimeZone qtTimeZone("America/Los_Angeles");
@@ -39,5 +39,5 @@ void tst_QTimeZone_darwinTypes()
         QVERIFY([qtTimeZone.toNSTimeZone() isEqual:nsTimeZone]);
         [autoreleasepool release];
     }
-#endif
+#endif // feature timezone
 }

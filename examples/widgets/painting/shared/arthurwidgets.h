@@ -46,7 +46,7 @@ protected:
 
     bool m_showDoc = false;
     bool m_preferImage = false;
-    QTextDocument *m_document = nullptr;;
+    QTextDocument *m_document = nullptr;
 
     QString m_sourceFileName;
 };

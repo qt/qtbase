@@ -12,7 +12,7 @@ exec(somewidget.mapToGlobal(QPoint(0,0)));
 
 
 //! [2]
-exec(e->globalPos());
+exec(e->globalPosition().toPoint());
 //! [2]
 
 
@@ -27,7 +27,7 @@ exec(somewidget.mapToGlobal(QPoint(0, 0)));
 
 
 //! [5]
-exec(e->globalPos());
+exec(e->globalPosition().toPoint());
 //! [5]
 
 

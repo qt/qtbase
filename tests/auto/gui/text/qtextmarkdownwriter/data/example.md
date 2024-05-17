@@ -40,7 +40,7 @@ numerals in the same list structure:
 1.  Introduction
 2.  Qt Tools
     1)  Qt Assistant
-    2)  Qt Designer
+    2)  Qt Widgets Designer
         1.  Form Editor
         2.  Component Architecture
     3)  Qt Linguist
@@ -70,7 +70,7 @@ column spans, text formatting within cells, and size constraints for columns.
 |-------------|------------------------------------|---------------------------|-------------------------|
 |9:00 - 11:00 |Introduction to Qt                                                                      |||
 |11:00 - 13:00|Using qmake                         |Object-oriented Programming|Layouts in Qt            |
-|13:00 - 15:00|Qt Designer Tutorial                |Extreme Programming        |Writing Custom Styles    |
+|13:00 - 15:00|Qt Widgets Designer Tutorial        |Extreme Programming        |Writing Custom Styles    |
 |15:00 - 17:00|Qt Linguist and Internationalization|Test-Driven Development    |                         |
 
 *Try adding text to the cells in the table and experiment with the alignment of

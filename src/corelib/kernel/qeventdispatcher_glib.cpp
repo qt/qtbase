@@ -14,6 +14,7 @@
 
 #include <glib.h>
 
+using namespace std::chrono;
 using namespace std::chrono_literals;
 
 QT_BEGIN_NAMESPACE
@@ -102,8 +103,8 @@ static gboolean timerSourcePrepareHelper(GTimerSource *src, gint *timeout)
         return true;
     }
 
-    auto msecs = src->timerList.timerWait().value_or(-1ms);
-    *timeout = qt_saturate<gint>(msecs.count());
+    auto remaining = src->timerList.timerWait().value_or(-1ms);
+    *timeout = qt_saturate<gint>(ceil<milliseconds>(remaining).count());
 
     return (*timeout == 0);
 }
@@ -326,12 +327,12 @@ void QEventDispatcherGlibPrivate::runTimersOnceWithNormalPriority()
 }
 
 QEventDispatcherGlib::QEventDispatcherGlib(QObject *parent)
-    : QAbstractEventDispatcher(*(new QEventDispatcherGlibPrivate), parent)
+    : QAbstractEventDispatcherV2(*(new QEventDispatcherGlibPrivate), parent)
 {
 }
 
 QEventDispatcherGlib::QEventDispatcherGlib(GMainContext *mainContext, QObject *parent)
-    : QAbstractEventDispatcher(*(new QEventDispatcherGlibPrivate(mainContext)), parent)
+    : QAbstractEventDispatcherV2(*(new QEventDispatcherGlibPrivate(mainContext)), parent)
 { }
 
 QEventDispatcherGlib::~QEventDispatcherGlib()
@@ -476,10 +477,11 @@ void QEventDispatcherGlib::unregisterSocketNotifier(QSocketNotifier *notifier)
     }
 }
 
-void QEventDispatcherGlib::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object)
+void QEventDispatcherGlib::registerTimer(Qt::TimerId timerId, Duration interval,
+                                         Qt::TimerType timerType, QObject *object)
 {
 #ifndef QT_NO_DEBUG
-    if (timerId < 1 || interval < 0 || !object) {
+    if (qToUnderlying(timerId) < 1 || interval < 0ns || !object) {
         qWarning("QEventDispatcherGlib::registerTimer: invalid arguments");
         return;
     } else if (object->thread() != thread() || thread() != QThread::currentThread()) {
@@ -489,14 +491,13 @@ void QEventDispatcherGlib::registerTimer(int timerId, qint64 interval, Qt::Timer
 #endif
 
     Q_D(QEventDispatcherGlib);
-    d->timerSource->timerList.registerTimer(timerId, std::chrono::milliseconds{ interval },
-                                            timerType, object);
+    d->timerSource->timerList.registerTimer(timerId, interval, timerType, object);
 }
 
-bool QEventDispatcherGlib::unregisterTimer(int timerId)
+bool QEventDispatcherGlib::unregisterTimer(Qt::TimerId timerId)
 {
 #ifndef QT_NO_DEBUG
-    if (timerId < 1) {
+    if (qToUnderlying(timerId) < 1) {
         qWarning("QEventDispatcherGlib::unregisterTimer: invalid argument");
         return false;
     } else if (thread() != QThread::currentThread()) {
@@ -525,28 +526,30 @@ bool QEventDispatcherGlib::unregisterTimers(QObject *object)
     return d->timerSource->timerList.unregisterTimers(object);
 }
 
-QList<QEventDispatcherGlib::TimerInfo> QEventDispatcherGlib::registeredTimers(QObject *object) const
+QList<QEventDispatcherGlib::TimerInfoV2> QEventDispatcherGlib::timersForObject(QObject *object) const
 {
+#ifndef QT_NO_DEBUG
     if (!object) {
-        qWarning("QEventDispatcherUNIX:registeredTimers: invalid argument");
-        return QList<TimerInfo>();
+        qWarning("QEventDispatcherGlib:timersForObject: invalid argument");
+        return {};
     }
+#endif
 
     Q_D(const QEventDispatcherGlib);
     return d->timerSource->timerList.registeredTimers(object);
 }
 
-int QEventDispatcherGlib::remainingTime(int timerId)
+QEventDispatcherGlib::Duration QEventDispatcherGlib::remainingTime(Qt::TimerId timerId) const
 {
 #ifndef QT_NO_DEBUG
-    if (timerId < 1) {
+    if (qToUnderlying(timerId) < 1) {
         qWarning("QEventDispatcherGlib::remainingTimeTime: invalid argument");
-        return -1;
+        return Duration::min();
     }
 #endif
 
-    Q_D(QEventDispatcherGlib);
-    return d->timerSource->timerList.timerRemainingTime(timerId);
+    Q_D(const QEventDispatcherGlib);
+    return d->timerSource->timerList.remainingDuration(timerId);
 }
 
 void QEventDispatcherGlib::interrupt()
@@ -571,7 +574,7 @@ bool QEventDispatcherGlib::versionSupported()
 }
 
 QEventDispatcherGlib::QEventDispatcherGlib(QEventDispatcherGlibPrivate &dd, QObject *parent)
-    : QAbstractEventDispatcher(dd, parent)
+    : QAbstractEventDispatcherV2(dd, parent)
 {
 }
 

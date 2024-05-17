@@ -28,7 +28,7 @@
     \list
     \li \l{Overview}
     \li \l{The Style Sheet Syntax}
-    \li \l{Qt Designer Integration}
+    \li \l{Qt Widgets Designer Integration}
     \li \l{Customizing Qt Widgets Using Style Sheets}
     \li \l{Qt Style Sheets Reference}
     \li \l{Qt Style Sheets Examples}
@@ -75,7 +75,7 @@
     consideration. Unlike palette fiddling, style sheets offer
     guarantees: If you set the background color of a QPushButton to be
     red, you can be assured that the button will have a red background
-    in all styles, on all platforms. In addition, Qt Designer
+    in all styles, on all platforms. In addition, \QD
     provides style sheet integration, making it easy to view the effects
     of a style sheet in different \l{QStyle}{widget styles}.
 
@@ -100,7 +100,7 @@
 /*!
     \page stylesheet-syntax.html
     \previouspage Qt Style Sheets
-    \nextpage Qt Designer Integration
+    \nextpage Qt Widgets Designer Integration
     \title The Style Sheet Syntax
 
     Qt Style Sheet terminology and syntactic rules are almost
@@ -480,11 +480,20 @@
     \snippet code/doc_src_stylesheet.cpp 96
 
     When the widget-style font and palette propagation is enabled, font and
-    palette changes made through Qt Style Sheets will behave as though the
-    user had manually called the corresponding QWidget::setPalette() and
+    palette changes made through Qt Style Sheets will behave as if the user
+    had manually called the corresponding QWidget::setPalette() and
     QWidget::setFont() methods on all of the QWidgets targeted by the style
-    sheet.  If this would have caused propagation in C++, it will cause
-    propagation in style sheets and vice versa.
+    sheet.
+
+    \list
+    \li Changes made by a style sheet are propagated.
+    They are pushed to all widgets matching the style sheet once, at the time
+    the change is made.
+    \li Changes made by calling QWidget::setPalette() or QWidget::setFont() are
+    inherited.
+    They are inherited by all existing and future children, where the respective
+    brush or font hasn't been explicitly set.
+    \endlist
 
     \section1 Widgets Inside C++ Namespaces
 
@@ -523,22 +532,22 @@
     \page stylesheet-designer.html
     \previouspage The Style Sheet Syntax
     \nextpage Customizing Qt Widgets Using Style Sheets
-    \title Qt Designer Integration
+    \title Qt Widgets Designer Integration
 
-    Qt Designer{Qt Designer} is an excellent tool
+    \l{Qt Widgets Designer Manual}{\QD} is an excellent tool
     to preview style sheets. You can right-click on any widget in Designer
     and select \uicontrol{Change styleSheet...} to set the style sheet.
 
     \image designer-stylesheet-options.png
 
-    In Qt 4.2 and later, Qt Designer also includes a
+    In Qt 4.2 and later, \QD also includes a
     style sheet syntax highlighter and validator. The validator indicates
     if the syntax is valid or invalid, at the bottom left of the \uicontrol{Edit
     Style Sheet} dialog.
 
     \image designer-validator-highlighter.png
 
-    When you click \uicontrol{OK} or \uicontrol{Apply}, Qt Designer will automatically display
+    When you click \uicontrol{OK} or \uicontrol{Apply}, \QD will automatically display
     the widget with its new stylesheet.
 
     \image designer-stylesheet-usage.png
@@ -546,7 +555,7 @@
 
 /*!
     \page stylesheet-customizing.html
-    \previouspage Qt Designer Integration
+    \previouspage Qt Widgets Designer Integration
     \nextpage Qt Style Sheets Reference
     \title Customizing Qt Widgets Using Style Sheets
 

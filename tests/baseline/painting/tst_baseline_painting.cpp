@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
 
@@ -54,7 +54,7 @@ private:
 
 private slots:
     void initTestCase();
-    void cleanupTestCase() {}
+    void init();
 
     void testRasterARGB32PM_data();
     void testRasterARGB32PM();
@@ -122,7 +122,7 @@ void tst_Lancelot::initTestCase()
     std::sort(qpsFiles.begin(), qpsFiles.end());
     foreach (const QString& fileName, qpsFiles) {
         QFile file(scriptsDir + fileName);
-        file.open(QFile::ReadOnly);
+        QVERIFY(file.open(QFile::ReadOnly));
         QByteArray cont = file.readAll();
         scripts.insert(fileName, QString::fromUtf8(cont).split(QLatin1Char('\n'), Qt::SkipEmptyParts));
         scriptChecksums.insert(fileName, qChecksum(cont));
@@ -133,6 +133,11 @@ void tst_Lancelot::initTestCase()
 #endif
 }
 
+void tst_Lancelot::init()
+{
+    // This gets called for every row. QSKIP if current item is blacklisted on the baseline server:
+    QBASELINE_SKIP_IF_BLACKLISTED;
+}
 
 void tst_Lancelot::testRasterARGB32PM_data()
 {
@@ -418,7 +423,7 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format, co
         QString tempStem(QDir::tempPath() + QLatin1String("/lancelot_XXXXXX_") + qpsFile.chopped(4));
 
         QTemporaryFile pdfFile(tempStem + QLatin1String(".pdf"));
-        pdfFile.open();
+        QVERIFY(pdfFile.open());
         QPdfWriter writer(&pdfFile);
         writer.setPdfVersion(QPdfWriter::PdfVersion_1_6);
         QPageSize pageSize(QSize(800, 800), QStringLiteral("LancePage"), QPageSize::ExactMatch);
@@ -430,7 +435,7 @@ void tst_Lancelot::runTestSuite(GraphicsEngine engine, QImage::Format format, co
 
         // Convert pdf to something we can read into a QImage, using macOS' sips utility
         QTemporaryFile pngFile(tempStem + QLatin1String(".png"));
-        pngFile.open(); // Just create the file name
+        QVERIFY(pngFile.open()); // Just create the file name
         pngFile.close();
         QProcess proc;
         const char *rawArgs = "-s format png -o";

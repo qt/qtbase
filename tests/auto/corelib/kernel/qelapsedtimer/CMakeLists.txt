@@ -14,4 +14,6 @@ endif()
 qt_internal_add_test(tst_qelapsedtimer
     SOURCES
         tst_qelapsedtimer.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )

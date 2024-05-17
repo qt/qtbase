@@ -14,4 +14,6 @@ endif()
 qt_internal_add_test(tst_qprocessenvironment
     SOURCES
         tst_qprocessenvironment.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )

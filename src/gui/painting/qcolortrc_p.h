@@ -21,17 +21,15 @@
 
 QT_BEGIN_NAMESPACE
 
-
-// Defines an ICC TRC (Tone Reproduction Curve)
+// Defines a TRC (Tone Reproduction Curve)
 class Q_GUI_EXPORT QColorTrc
 {
 public:
-    QColorTrc() noexcept : m_type(Type::Uninitialized)
-    { }
-    QColorTrc(const QColorTransferFunction &fun) : m_type(Type::Function), m_fun(fun)
-    { }
-    QColorTrc(const QColorTransferTable &table) : m_type(Type::Table), m_table(table)
-    { }
+    QColorTrc() noexcept : m_type(Type::Uninitialized) { }
+    QColorTrc(const QColorTransferFunction &fun) : m_type(Type::Function), m_fun(fun) { }
+    QColorTrc(const QColorTransferTable &table) : m_type(Type::Table), m_table(table) { }
+    QColorTrc(QColorTransferFunction &&fun) noexcept : m_type(Type::Function), m_fun(std::move(fun)) { }
+    QColorTrc(QColorTransferTable &&table) noexcept : m_type(Type::Table), m_table(std::move(table)) { }
 
     enum class Type {
         Uninitialized,
@@ -39,9 +37,10 @@ public:
         Table
     };
 
-    bool isLinear() const
+    bool isIdentity() const
     {
-        return m_type == Type::Uninitialized || (m_type == Type::Function && m_fun.isLinear());
+        return (m_type == Type::Function && m_fun.isIdentity())
+            || (m_type == Type::Table && m_table.isIdentity());
     }
     bool isValid() const
     {

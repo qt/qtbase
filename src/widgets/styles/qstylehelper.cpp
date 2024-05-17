@@ -32,7 +32,7 @@ static inline bool usePixmapCache(const QStyleOption *opt)
     return true;
 }
 
-QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size)
+QString uniqueName(const QString &key, const QStyleOption *option, const QSize &size, qreal dpr)
 {
     if (!usePixmapCache(option))
         return {};
@@ -43,7 +43,8 @@ QString uniqueName(const QString &key, const QStyleOption *option, const QSize &
                       % HexString<uint>(complexOption ? uint(complexOption->activeSubControls) : 0u)
                       % HexString<quint64>(option->palette.cacheKey())
                       % HexString<uint>(size.width())
-                      % HexString<uint>(size.height());
+                      % HexString<uint>(size.height())
+                      % HexString<qreal>(dpr);
 
 #if QT_CONFIG(spinbox)
     if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
@@ -201,7 +202,7 @@ QPolygonF calcLines(const QStyleOptionSlider *dial)
     qreal xc = width / 2 + 0.5;
     qreal yc = height / 2 + 0.5;
     const int ns = dial->tickInterval;
-    if (!ns) // Invalid values may be set by Qt Designer.
+    if (!ns) // Invalid values may be set by Qt Widgets Designer.
         return poly;
     int notches = (dial->maximum + ns - 1 - dial->minimum) / ns;
     if (notches <= 0)

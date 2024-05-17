@@ -1,6 +1,6 @@
 // Copyright (C) 2020 The Qt Company Ltd.
 // Copyright (C) 2021 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <QSignalSpy>
@@ -474,7 +474,7 @@ static void loadCorruptElfCommonRows()
         memcpy(h, &o, sizeof(o));
     });
     newRow("invalid-word-size", "file is for a different word size", [](H h) {
-        h->e_ident[EI_CLASS] = ELFCLASSNONE;;
+        h->e_ident[EI_CLASS] = ELFCLASSNONE;
     });
     newRow("unknown-word-size", "file is for a different word size", [](H h) {
         h->e_ident[EI_CLASS] |= 0x40;

@@ -1,6 +1,6 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtCore/QCoreApplication>
 
@@ -931,6 +931,7 @@ static QProcessEnvironment testEnvironment()
         const auto envKeys = systemEnvironment.keys();
         for (const QString &key : envKeys) {
             const bool useVariable = key == "PATH" || key == "QT_QPA_PLATFORM"
+                || key == "QTEST_THROW_ON_FAIL"_L1 || key == "QTEST_THROW_ON_SKIP"_L1
                 || key == "ASAN_OPTIONS"
 #if defined(Q_OS_QNX)
                 || key == "GRAPHICS_ROOT" || key == "TZ"
@@ -1013,10 +1014,12 @@ TestProcessResult runTestProcess(const QString &test, const QStringList &argumen
     return { process.exitCode(), standardOutput, standardError };
 }
 
+enum class Throw { OnFail = 1 };
+
 /*
     Runs a single test and verifies the output against the expected results.
 */
-void runTest(const QString &test, const TestLoggers &requestedLoggers)
+void runTest(const QString &test, const TestLoggers &requestedLoggers, Throw throwing = {})
 {
     TestLoggers loggers;
     for (auto logger : requestedLoggers) {
@@ -1030,6 +1033,10 @@ void runTest(const QString &test, const TestLoggers &requestedLoggers)
     QStringList arguments;
     for (auto logger : loggers)
         arguments += logger.arguments(test);
+    if (throwing == Throw::OnFail) // don't distinguish between throwonfail/throwonskip
+        arguments += {"-throwonfail", "-throwonskip"};
+    else
+        arguments += {"-nothrowonfail", "-nothrowonskip"};
 
     CAPTURE(test);
     CAPTURE(arguments);
@@ -1056,9 +1063,9 @@ void runTest(const QString &test, const TestLoggers &requestedLoggers)
 /*
     Runs a single test and verifies the output against the expected result.
 */
-void runTest(const QString &test, const TestLogger &logger)
+void runTest(const QString &test, const TestLogger &logger, Throw t = {})
 {
-    runTest(test, TestLoggers{logger});
+    runTest(test, TestLoggers{logger}, t);
 }
 
 // ----------------------- Catch helpers -----------------------
@@ -1201,7 +1208,12 @@ SCENARIO("Test output of the loggers is as expected")
     GIVEN("The " << logger << " logger") {
         for (QString test : tests) {
             AND_GIVEN("The " << test << " subtest") {
-                runTest(test, TestLogger(logger, StdoutOutput));
+                WHEN("Throwing on failure or skip") {
+                    runTest(test, TestLogger(logger, StdoutOutput), Throw::OnFail);
+                }
+                WHEN("Returning on failure or skip") {
+                    runTest(test, TestLogger(logger, StdoutOutput));
+                }
             }
         }
     }

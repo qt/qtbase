@@ -6,7 +6,10 @@
 
 #include <QtNetwork/qnetworkreply.h>
 
+#include <QtCore/qpointer.h>
+
 #include <optional>
+#include <utility>
 
 QT_BEGIN_NAMESPACE
 
@@ -17,52 +20,51 @@ class QJsonDocument;
 class QString;
 
 class QRestReplyPrivate;
-class Q_NETWORK_EXPORT QRestReply : public QObject
+class QT_TECH_PREVIEW_API QRestReply
 {
-    Q_OBJECT
-
 public:
-    ~QRestReply() override;
+    Q_NETWORK_EXPORT explicit QRestReply(QNetworkReply *reply);
+    Q_NETWORK_EXPORT ~QRestReply();
 
-    QNetworkReply *networkReply() const;
+    QRestReply(QRestReply &&other) noexcept
+        : wrapped(std::move(other.wrapped)),
+          d(std::exchange(other.d, nullptr))
+    {
+    }
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QRestReply)
+    void swap(QRestReply &other) noexcept
+    {
+        wrapped.swap(other.wrapped);
+        qt_ptr_swap(d, other.d);
+    }
 
-    std::optional<QJsonDocument> json(QJsonParseError *error = nullptr);
-    QByteArray body();
-    QString text();
+    Q_NETWORK_EXPORT QNetworkReply *networkReply() const;
+
+    Q_NETWORK_EXPORT std::optional<QJsonDocument> readJson(QJsonParseError *error = nullptr);
+    Q_NETWORK_EXPORT QByteArray readBody();
+    Q_NETWORK_EXPORT QString readText();
 
     bool isSuccess() const
     {
         return !hasError() && isHttpStatusSuccess();
     }
-    int httpStatus() const;
-    bool isHttpStatusSuccess() const;
+    Q_NETWORK_EXPORT int httpStatus() const;
+    Q_NETWORK_EXPORT bool isHttpStatusSuccess() const;
 
-    bool hasError() const;
-    QNetworkReply::NetworkError error() const;
-    QString errorString() const;
-
-    bool isFinished() const;
-    qint64 bytesAvailable() const;
-
-public Q_SLOTS:
-    void abort();
-
-Q_SIGNALS:
-    void finished(QRestReply *reply);
-    void errorOccurred(QRestReply *reply);
-    void readyRead(QRestReply *reply);
-    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal, QRestReply *reply);
-    void uploadProgress(qint64 bytesSent, qint64 bytesTotal, QRestReply* reply);
+    Q_NETWORK_EXPORT bool hasError() const;
+    Q_NETWORK_EXPORT QNetworkReply::NetworkError error() const;
+    Q_NETWORK_EXPORT QString errorString() const;
 
 private:
-    friend class QRestAccessManagerPrivate;
 #ifndef QT_NO_DEBUG_STREAM
-    friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QRestReply *reply);
+    friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QRestReply &reply);
 #endif
-    explicit QRestReply(QNetworkReply *reply, QObject *parent = nullptr);
-    Q_DECLARE_PRIVATE(QRestReply)
-    Q_DISABLE_COPY_MOVE(QRestReply)
+    QPointer<QNetworkReply> wrapped;
+    QRestReplyPrivate *d = nullptr;
+    Q_DISABLE_COPY(QRestReply)
 };
+
+Q_DECLARE_SHARED(QRestReply)
 
 QT_END_NAMESPACE
 

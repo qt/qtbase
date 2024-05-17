@@ -43,7 +43,7 @@ private:
 
     static void destroyWebGLContext(EMSCRIPTEN_WEBGL_CONTEXT_HANDLE contextHandle);
 
-    QSurfaceFormat m_requestedFormat;
+    QSurfaceFormat m_actualFormat;
     QOpenGLContext *m_qGlContext;
     QOpenGLContextData m_ownedWebGLContext;
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE m_usedWebGLContextHandle = 0;

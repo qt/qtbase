@@ -214,7 +214,9 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                     data -= 2;
                     break;
                 case DIGIT:
-                    while (isAsciiDigit(*data) || *data == '\'')
+                    {
+                    bool hasSeenTokenSeparator = false;;
+                    while (isAsciiDigit(*data) || (hasSeenTokenSeparator = *data == '\''))
                         ++data;
                     if (!*data || *data != '.') {
                         token = INTEGER_LITERAL;
@@ -223,15 +225,22 @@ Symbols Preprocessor::tokenize(const QByteArray& input, int lineNum, Preprocesso
                              || *data == 'b' || *data == 'B')
                             && *lexem == '0') {
                             ++data;
-                            while (isHexDigit(*data) || *data == '\'')
+                            while (isHexDigit(*data) || (hasSeenTokenSeparator = *data == '\''))
                                 ++data;
                         } else if (*data == 'L') // TODO: handle other suffixes
                             ++data;
+                        if (!hasSeenTokenSeparator) {
+                            while (is_ident_char(*data)) {
+                                ++data;
+                                token = IDENTIFIER;
+                            }
+                        }
                         break;
                     }
                     token = FLOATING_LITERAL;
                     ++data;
                     Q_FALLTHROUGH();
+                    }
                 case FLOATING_LITERAL:
                     while (isAsciiDigit(*data) || *data == '\'')
                         ++data;

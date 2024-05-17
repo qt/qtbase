@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QIdentityProxyModel>
 #include <QLabel>
@@ -391,6 +391,7 @@ private slots:
 
     void resizeToContents();
     void resizeToContentsSpans();
+    void resizeToContentsEarly();
 
     void tabFocus();
     void bigModel();
@@ -609,7 +610,6 @@ void tst_QTableView::keyboardNavigation()
     view.setCurrentIndex(index);
 
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     int row = rowCount - 1;
@@ -3777,6 +3777,35 @@ void tst_QTableView::resizeToContentsSpans()
     QCOMPARE(view2.columnWidth(0), view3.columnWidth(0) - view2.columnWidth(1));
 }
 
+void tst_QTableView::resizeToContentsEarly()
+{
+    QStringListModel model;
+    QTableView view;
+
+    // connect to the model before setting it on the view
+    connect(&model, &QStringListModel::modelReset, &model, [&view]{
+        view.resizeColumnsToContents();
+    });
+    connect(&model, &QStringListModel::modelReset, &model, [&view]{
+        view.resizeRowsToContents();
+    });
+
+    // the view only connects now to the model's signals, so responds to the
+    // reset signal *after* the lambdas above
+    view.setModel(&model);
+
+    QStringList data(200, QString("Hello World"));
+    model.setStringList(data);
+
+    view.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&view));
+
+    view.verticalScrollBar()->setValue(view.verticalScrollBar()->maximum());
+
+    data = data.sliced(data.size() / 2);
+    model.setStringList(data);
+}
+
 QT_BEGIN_NAMESPACE
 extern bool Q_WIDGETS_EXPORT qt_tab_all_widgets(); // qapplication.cpp
 QT_END_NAMESPACE
@@ -3799,7 +3828,6 @@ void tst_QTableView::tabFocus()
     QLineEdit *edit = new QLineEdit(&window);
 
     window.show();
-    QApplicationPrivate::setActiveWindow(&window);
     window.setFocus();
     window.activateWindow();
     QVERIFY(QTest::qWaitForWindowActive(&window));
@@ -4922,6 +4950,7 @@ void tst_QTableView::resetDefaultSectionSize()
     view.verticalHeader()->resetDefaultSectionSize();
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
+    QEXPECT_FAIL("", "Reverted fix for QTBUG-116013 due to QTBUG-122109", Continue);
     QCOMPARE(view.verticalHeader()->logicalIndexAt(9, 45), 1);
 }
 

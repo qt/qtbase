@@ -30,6 +30,7 @@ QT_IMPL_METATYPE_EXTERN(QVersionNumber)
     \brief The QVersionNumber class contains a version number with an arbitrary
            number of segments.
 
+    \compares strong
     \snippet qversionnumber/main.cpp 0
 */
 
@@ -81,10 +82,13 @@ QT_IMPL_METATYPE_EXTERN(QVersionNumber)
 */
 
 /*!
-    \fn template <qsizetype N> QVersionNumber::QVersionNumber(const QVarLengthArray<int, N> &seg)
-    \since 6.4
+    \fn QVersionNumber::QVersionNumber(QSpan<const int> args)
+    \since 6.8
 
-    Constructs a version number from the list of numbers contained in \a seg.
+    Constructs a version number from the span specified by \a args.
+
+    \note In Qt versions prior to 6.8, QVersionNumber could only be constructed
+    from QList, QVarLenthArray or std::initializer_list.
 */
 
 /*!
@@ -169,6 +173,55 @@ QList<int> QVersionNumber::segments() const
     Returns the number of integers stored in segments().
 
     \sa segments()
+*/
+
+/*!
+    \typedef QVersionNumber::const_iterator
+    \typedef QVersionNumber::const_reverse_iterator
+    \since 6.8
+
+    Typedefs for an opaque class that implements a (reverse) random-access
+    iterator over QVersionNumber segments.
+
+    \note QVersionNumber does not support modifying segments in-place, so
+    there is no mutable iterator.
+*/
+
+/*!
+    \typedef QVersionNumber::value_type
+    \typedef QVersionNumber::difference_type
+    \typedef QVersionNumber::size_type
+    \typedef QVersionNumber::reference
+    \typedef QVersionNumber::const_reference
+    \typedef QVersionNumber::pointer
+    \typedef QVersionNumber::const_pointer
+    \since 6.8
+
+    Provided for STL-compatibility.
+
+    \note QVersionNumber does not support modifying segments in-place, so
+    reference and const_reference, as well as pointer and const_pointer are
+    pairwise the same types.
+*/
+
+/*!
+    \fn QVersionNumber::begin() const
+    \fn QVersionNumber::end() const;
+    \fn QVersionNumber::rbegin() const
+    \fn QVersionNumber::rend() const;
+    \fn QVersionNumber::cbegin() const
+    \fn QVersionNumber::cend() const;
+    \fn QVersionNumber::crbegin() const
+    \fn QVersionNumber::crend() const;
+    \fn QVersionNumber::constBegin() const;
+    \fn QVersionNumber::constEnd() const;
+    \since 6.8
+
+    Returns a const_iterator or const_reverse_iterator, respectively, pointing
+    to the first or one past the last segment of this version number.
+
+    \note QVersionNumber does not support modifying segments in-place, so
+    there is no mutable iterator.
 */
 
 /*!

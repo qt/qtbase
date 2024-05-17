@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QDirIterator>
@@ -8,6 +8,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QUrl>
 #include <QXmlStreamReader>
 #include <QBuffer>
@@ -94,8 +95,8 @@ static QByteArray makeCanonical(const QString &filename,
                                 bool testIncremental = false)
 {
     QFile file(filename);
-    file.open(QIODevice::ReadOnly);
-
+    if (!file.open(QIODevice::ReadOnly))
+        qFatal("Could not open file %s", qPrintable(filename));
     QXmlStreamReader reader;
 
     QByteArray buffer;
@@ -542,6 +543,7 @@ public:
 private slots:
     void initTestCase();
     void cleanupTestCase();
+    void compareCompiles();
     void runTestSuite();
     void reportFailures() const;
     void reportFailures_data();
@@ -570,6 +572,14 @@ private slots:
     void hasAttribute() const;
     void writeWithUtf8Codec() const;
     void writeWithStandalone() const;
+    void writeCharacters_data() const;
+    void writeCharacters() const;
+    void writeAttribute_data() const;
+    void writeAttribute() const;
+    void writeBadCharactersUtf8_data() const;
+    void writeBadCharactersUtf8() const;
+    void writeBadCharactersUtf16_data() const;
+    void writeBadCharactersUtf16() const;
     void entitiesAndWhitespace_1() const;
     void entitiesAndWhitespace_2() const;
     void testFalsePrematureError() const;
@@ -593,6 +603,8 @@ private slots:
 
     void tokenErrorHandling_data() const;
     void tokenErrorHandling() const;
+    void checkStreamNotationDeclarations() const;
+    void checkStreamEntityDeclarations() const;
 
 private:
     static QByteArray readFile(const QString &filename);
@@ -634,6 +646,14 @@ void tst_QXmlStream::initTestCase()
 
 void tst_QXmlStream::cleanupTestCase()
 {
+}
+
+void tst_QXmlStream::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QXmlStreamAttribute>();
+    QTestPrivate::testEqualityOperatorsCompile<QXmlStreamNamespaceDeclaration>();
+    QTestPrivate::testEqualityOperatorsCompile<QXmlStreamNotationDeclaration>();
+    QTestPrivate::testEqualityOperatorsCompile<QXmlStreamEntityDeclaration>();
 }
 
 void tst_QXmlStream::runTestSuite()
@@ -735,7 +755,8 @@ void tst_QXmlStream::reportSuccess_data() const
 QByteArray tst_QXmlStream::readFile(const QString &filename)
 {
     QFile file(filename);
-    file.open(QIODevice::ReadOnly);
+    if (!file.open(QIODevice::ReadOnly))
+        qFatal("Could not open file %s", qPrintable(filename));
 
     QXmlStreamReader reader;
 
@@ -886,12 +907,17 @@ void tst_QXmlStream::addExtraNamespaceDeclarations()
     }
     {
         QXmlStreamReader xml(data);
-        xml.addExtraNamespaceDeclaration(QXmlStreamNamespaceDeclaration("undeclared", "blabla"));
-        xml.addExtraNamespaceDeclaration(QXmlStreamNamespaceDeclaration("undeclared_too", "foofoo"));
+        QXmlStreamNamespaceDeclaration undeclared("undeclared", "blabla");
+        QXmlStreamNamespaceDeclaration undeclared_too("undeclared_too", "blabla");
+        xml.addExtraNamespaceDeclaration(undeclared);
+        xml.addExtraNamespaceDeclaration(undeclared_too);
         while (!xml.atEnd()) {
             xml.readNext();
         }
         QVERIFY2(!xml.hasError(), xml.errorString().toLatin1().constData());
+        QT_TEST_EQUALITY_OPS(undeclared, undeclared_too, false);
+        undeclared = undeclared_too;
+        QT_TEST_EQUALITY_OPS(undeclared, undeclared_too, true);
     }
 }
 
@@ -1346,6 +1372,15 @@ void tst_QXmlStream::hasAttribute() const
         reader.readNext();
 
     QVERIFY(!reader.hasError());
+
+    QXmlStreamAttribute attrValue1(QLatin1String("http://example.com/"), QString::fromLatin1("attr1"));
+    QXmlStreamAttribute attrValue2 = atts.at(0);
+    QT_TEST_EQUALITY_OPS(atts.at(0), QXmlStreamAttribute(), false);
+    QT_TEST_EQUALITY_OPS(atts.at(0), attrValue1, false);
+    QT_TEST_EQUALITY_OPS(atts.at(0), attrValue2, true);
+    QT_TEST_EQUALITY_OPS(attrValue1, attrValue2, false);
+    attrValue1 = attrValue2;
+    QT_TEST_EQUALITY_OPS(attrValue1, attrValue2, true);
 }
 
 void tst_QXmlStream::writeWithUtf8Codec() const
@@ -1378,6 +1413,143 @@ void tst_QXmlStream::writeWithStandalone() const
         const char *ref = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n";
         QCOMPARE(outarray.constData(), ref);
     }
+}
+
+static void writeCharacters_data_common()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("output");
+
+    QTest::newRow("empty") << QString() << QString();
+
+    // invalid content
+    QTest::newRow("null-character") << u"\0"_s << QString();
+    QTest::newRow("vertical-tab") << "\v" << QString();
+    QTest::newRow("form-feed") << "\f" << QString();
+    QTest::newRow("esc") << "\x1f" << QString();
+    QTest::newRow("U+FFFE") << u"\xfffe"_s << QString();
+    QTest::newRow("U+FFFF") << u"\xffff"_s << QString();
+
+    // simple strings
+    QTest::newRow("us-ascii") << "Hello, world" << "Hello, world";
+    QTest::newRow("latin1") << "Bokmål" << "Bokmål";
+    QTest::newRow("nonlatin1") << "Ελληνικά" << "Ελληνικά";
+    QTest::newRow("nonbmp") << u"\U00010000"_s << u"\U00010000"_s;
+
+    // escaped content
+    QTest::newRow("less-than") << "<" << "&lt;";
+    QTest::newRow("greater-than") << ">" << "&gt;";
+    QTest::newRow("ampersand") << "&" << "&amp;";
+    QTest::newRow("quote") << "\"" << "&quot;";
+}
+
+template <typename Execute, typename Transform>
+static void writeCharacters_common(Execute &&exec, Transform &&transform)
+{
+    QFETCH(QString, input);
+    QFETCH(QString, output);
+    QStringView utf16 = input;
+    QByteArray utf8ba = input.toUtf8();
+    QUtf8StringView utf8(utf8ba);
+
+    // may be invalid if input is not Latin1
+    QByteArray l1ba = input.toLatin1();
+    QLatin1StringView l1(l1ba);
+    if (l1 != input)
+        l1 = {};
+
+    auto write = [&](auto input) -> std::optional<QString> {
+        QString result;
+        QXmlStreamWriter writer(&result);
+        writer.writeStartElement("a");
+        exec(writer, input);
+        writer.writeEndElement();
+        if (writer.hasError())
+            return std::nullopt;
+        return result;
+    };
+
+    if (input.isNull() != output.isNull()) {
+        // error
+        QCOMPARE(write(utf16), std::nullopt);
+        QCOMPARE(write(utf8), std::nullopt);
+        if (!l1.isEmpty())
+            QCOMPARE(write(l1), std::nullopt);
+    } else {
+        output = transform(output);
+        QCOMPARE(write(utf16), output);
+        QCOMPARE(write(utf8), output);
+        if (!l1.isEmpty())
+            QCOMPARE(write(l1), output);
+    }
+}
+
+void tst_QXmlStream::writeCharacters_data() const
+{
+    writeCharacters_data_common();
+    QTest::newRow("tab") << "\t" << "\t";
+    QTest::newRow("newline") << "\n" << "\n";
+    QTest::newRow("carriage-return") << "\r" << "\r";
+}
+
+void tst_QXmlStream::writeCharacters() const
+{
+    auto exec = [](QXmlStreamWriter &writer, auto input) {
+        writer.writeCharacters(input);
+    };
+    auto transform = [](auto output) { return "<a>" + output + "</a>"; };
+    writeCharacters_common(exec, transform);
+}
+
+void tst_QXmlStream::writeAttribute_data() const
+{
+    writeCharacters_data_common();
+    QTest::newRow("tab") << "\t" << "&#9;";
+    QTest::newRow("newline") << "\n" << "&#10;";
+    QTest::newRow("carriage-return") << "\r" << "&#13;";
+}
+
+void tst_QXmlStream::writeAttribute() const
+{
+    auto exec = [](QXmlStreamWriter &writer, auto input) {
+        writer.writeAttribute("b", input);
+    };
+    auto transform = [](auto output) { return "<a b=\"" + output + "\"/>"; };
+    writeCharacters_common(exec, transform);
+}
+
+#include "../../io/qurlinternal/utf8data.cpp"
+void tst_QXmlStream::writeBadCharactersUtf8_data() const
+{
+    QTest::addColumn<QByteArray>("input");
+    loadInvalidUtf8Rows();
+}
+
+void tst_QXmlStream::writeBadCharactersUtf8() const
+{
+    QFETCH(QByteArray, input);
+    QString target;
+    QXmlStreamWriter writer(&target);
+    writer.writeTextElement("a", QUtf8StringView(input));
+    QVERIFY(writer.hasError());
+}
+
+void tst_QXmlStream::writeBadCharactersUtf16_data() const
+{
+    QTest::addColumn<QString>("input");
+    QTest::addRow("low-surrogate") << u"\xdc00"_s;
+    QTest::addRow("high-surrogate") << u"\xd800"_s;
+    QTest::addRow("inverted-surrogate-pair") << u"\xdc00\xd800"_s;
+    QTest::addRow("high-surrogate+non-surrogate") << u"\xd800z"_s;
+}
+
+void tst_QXmlStream::writeBadCharactersUtf16() const
+{
+    QFETCH(QString, input);
+    QString target;
+    QXmlStreamWriter writer(&target);
+    writer.writeTextElement("a", input);
+    QVERIFY(writer.hasError());
 }
 
 void tst_QXmlStream::entitiesAndWhitespace_1() const
@@ -1917,7 +2089,7 @@ void tst_QXmlStream::tokenErrorHandling() const
     if (!file.exists())
         QSKIP(QObject::tr("Testfile %1 not found.").arg(fileName).toUtf8().constData());
 
-    file.open(QIODevice::ReadOnly);
+    QVERIFY(file.open(QIODevice::ReadOnly));
     QXmlStreamReader reader(&file);
     while (!reader.atEnd())
         reader.readNext();
@@ -1927,4 +2099,52 @@ void tst_QXmlStream::tokenErrorHandling() const
         QVERIFY(reader.errorString().contains(errorKeyWord));
 }
 
+void tst_QXmlStream::checkStreamNotationDeclarations() const
+{
+    QString fileName("12.xml");
+    const QDir dir(QFINDTESTDATA("data"));
+    QFile file(dir.absoluteFilePath(fileName));
+    if (!file.exists())
+        QSKIP(QObject::tr("Testfile %1 not found.").arg(fileName).toUtf8().constData());
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QXmlStreamReader reader(&file);
+    while (!reader.atEnd())
+        reader.readNext();
+
+    QVERIFY(!reader.hasError());
+    QXmlStreamNotationDeclaration notation1, notation2, notation3;
+    QT_TEST_EQUALITY_OPS(notation1, notation2, true);
+    const auto notationDeclarations = reader.notationDeclarations();
+    if (notationDeclarations.count() >= 2) {
+        notation1 = notationDeclarations.at(0);
+        notation2 = notationDeclarations.at(1);
+        notation3 = notationDeclarations.at(1);
+    }
+    QT_TEST_EQUALITY_OPS(notation1, notation2, false);
+    QT_TEST_EQUALITY_OPS(notation3, notation2, true);
+}
+
+void tst_QXmlStream::checkStreamEntityDeclarations() const
+{
+    QString fileName("5.xml");
+    const QDir dir(QFINDTESTDATA("data"));
+    QFile file(dir.absoluteFilePath(fileName));
+    if (!file.exists())
+        QSKIP(QObject::tr("Testfile %1 not found.").arg(fileName).toUtf8().constData());
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    QXmlStreamReader reader(&file);
+    while (!reader.atEnd())
+        reader.readNext();
+
+    QVERIFY(!reader.hasError());
+    QXmlStreamEntityDeclaration entity;
+    QT_TEST_EQUALITY_OPS(entity, QXmlStreamEntityDeclaration(), true);
+
+    const auto entityDeclarations = reader.entityDeclarations();
+    if (entityDeclarations.count() >= 2) {
+        entity = entityDeclarations.at(1);
+        QT_TEST_EQUALITY_OPS(entityDeclarations.at(0), entityDeclarations.at(1), false);
+        QT_TEST_EQUALITY_OPS(entity, entityDeclarations.at(1), true);
+    }
+}
 #include "tst_qxmlstream.moc"

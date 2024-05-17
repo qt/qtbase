@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtCore/private/qabstractfileengine_p.h>
 #include <QtCore/private/qfsfileengine_p.h>
@@ -16,6 +16,8 @@
 
 #include <QtCore/QDebug>
 #include "../../../../shared/filesystem.h"
+
+using namespace Qt::StringLiterals;
 
 class tst_QAbstractFileEngine
     : public QObject
@@ -285,19 +287,19 @@ public:
         return QString();
     }
 
-    QDateTime fileTime(FileTime time) const override
+    QDateTime fileTime(QFile::FileTime time) const override
     {
         QSharedPointer<File> file = resolveFile(false);
         if (file) {
             QMutexLocker lock(&file->mutex);
             switch (time) {
-                case BirthTime:
+                case QFile::FileBirthTime:
                     return file->birth;
-                case MetadataChangeTime:
+                case QFile::FileMetadataChangeTime:
                     return file->change;
-                case ModificationTime:
+                case QFile::FileModificationTime:
                     return file->modification;
-                case AccessTime:
+                case QFile::FileAccessTime:
                     return file->access;
             }
         }
@@ -430,8 +432,8 @@ public:
     class Iterator : public QAbstractFileEngineIterator
     {
     public:
-        Iterator(QDir::Filters filters, const QStringList &filterNames)
-            : QAbstractFileEngineIterator(filters, filterNames)
+        Iterator(const QString &path, QDir::Filters filters, const QStringList &filterNames)
+            : QAbstractFileEngineIterator(path, filters, filterNames)
         {
             names.append("foo");
             names.append("bar");
@@ -439,18 +441,19 @@ public:
         }
         QString currentFileName() const override
         {
-            return names.at(index);
+            if (!names.isEmpty() && index < names.size())
+                return names.at(index);
+            return {};
         }
-        bool hasNext() const override
+        bool advance() override
         {
-            return index < names.size() - 1;
-        }
-        QString next() override
-        {
-            if (!hasNext())
-                return QString();
-            ++index;
-            return currentFilePath();
+            if (names.isEmpty())
+                return false;
+            if (index < names.size() - 1) {
+                ++index;
+                return true;
+            }
+            return false;
         }
         QStringList names;
         int index;
@@ -459,9 +462,11 @@ public:
         : QFSFileEngine(fileName)
     {
     }
-    Iterator *beginEntryList(QDir::Filters filters, const QStringList &filterNames) override
+
+    IteratorUniquePtr
+    beginEntryList(const QString &path, QDir::Filters filters, const QStringList &filterNames) override
     {
-        return new Iterator(filters, filterNames);
+        return std::make_unique<Iterator>(path, filters, filterNames);
     }
     FileFlags fileFlags(FileFlags type) const override
     {
@@ -485,18 +490,27 @@ QHash<QString, QSharedPointer<ReferenceFileEngine::File> > ReferenceFileEngine::
 class FileEngineHandler
     : QAbstractFileEngineHandler
 {
-    QAbstractFileEngine *create(const QString &fileName) const override
+    Q_DISABLE_COPY_MOVE(FileEngineHandler)
+    std::unique_ptr<QAbstractFileEngine> create(const QString &fileName) const override
     {
         if (fileName.endsWith(".tar") || fileName.contains(".tar/"))
-            return new MountingFileEngine(fileName);
-        if (fileName.startsWith("QFSFileEngine:"))
-            return new QFSFileEngine(fileName.mid(14));
-        if (fileName.startsWith("reference-file-engine:"))
-            return new ReferenceFileEngine(fileName.mid(22));
-        if (fileName.startsWith("resource:"))
-            return QAbstractFileEngine::create(QLatin1String(":/tst_qabstractfileengine/resources/") + fileName.mid(9));
-        return 0;
+            return std::make_unique<MountingFileEngine>(fileName);
+
+        if (auto l1 = "QFSFileEngine:"_L1; fileName.startsWith(l1))
+            return std::make_unique<QFSFileEngine>(fileName.sliced(l1.size()));
+
+        if (auto l1 = "reference-file-engine:"_L1; fileName.startsWith(l1))
+            return std::make_unique<ReferenceFileEngine>(fileName.sliced(l1.size()));
+
+        if (auto l1 = "resource:"_L1; fileName.startsWith(l1)) {
+            const auto p = ":/tst_qabstractfileengine/resources/"_L1 + fileName.sliced(l1.size());
+            return QAbstractFileEngine::create(p);
+        }
+
+        return nullptr;
     }
+public:
+    FileEngineHandler() = default;
 };
 
 void tst_QAbstractFileEngine::initTestCase()
@@ -527,9 +541,9 @@ void tst_QAbstractFileEngine::cleanupTestCase()
 
 void tst_QAbstractFileEngine::customHandler()
 {
-    QScopedPointer<QAbstractFileEngine> file;
+    std::unique_ptr<QAbstractFileEngine> file;
     {
-        file.reset(QAbstractFileEngine::create("resource:file.txt"));
+        file = QAbstractFileEngine::create(u"resource:file.txt"_s);
 
         QVERIFY(file);
     }
@@ -607,12 +621,12 @@ void tst_QAbstractFileEngine::fileIO()
          * the original size + the '\r' characters added by autocrlf. */
 
         QFile::OpenMode openMode = QIODevice::ReadOnly | QIODevice::Unbuffered;
-#ifdef Q_OS_WIN
+#if defined (Q_OS_WIN) || defined(Q_OS_WASM)
         openMode |= QIODevice::Text;
 #endif
         QVERIFY(file.open(openMode));
         QVERIFY(file.isOpen());
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_WASM)
         const qint64 convertedSize = fileSize + readContent.count('\n');
         if (file.size() == convertedSize)
             fileSize = convertedSize;

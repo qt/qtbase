@@ -36,7 +36,7 @@ QCocoaMenuBar::QCocoaMenuBar()
 
 QCocoaMenuBar::~QCocoaMenuBar()
 {
-    qCDebug(lcQpaMenus) << "Destructing" << this << "with" << m_nativeMenu;;
+    qCDebug(lcQpaMenus) << "Destructing" << this << "with" << m_nativeMenu;
     for (auto menu : std::as_const(m_menus)) {
         if (!menu)
             continue;

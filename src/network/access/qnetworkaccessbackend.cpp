@@ -568,6 +568,43 @@ void QNetworkAccessBackend::setRawHeader(const QByteArray &header, const QByteAr
 }
 
 /*!
+    \since 6.8
+
+    Returns headers that are set in this QNetworkAccessBackend instance.
+
+    \sa setHeaders()
+*/
+QHttpHeaders QNetworkAccessBackend::headers() const
+{
+    return d_func()->m_reply->headers();
+}
+
+/*!
+    \since 6.8
+
+    Sets \a newHeaders as headers, overriding any previously set headers.
+
+    These headers are accessible on the QNetworkReply instance which was
+    returned when calling one of the appropriate functions on
+    QNetworkAccessManager.
+
+    \sa headers()
+*/
+void QNetworkAccessBackend::setHeaders(QHttpHeaders &&newHeaders)
+{
+    d_func()->m_reply->setHeaders(std::move(newHeaders));
+}
+
+/*!
+    \overload
+    \since 6.8
+*/
+void QNetworkAccessBackend::setHeaders(const QHttpHeaders &newHeaders)
+{
+    d_func()->m_reply->setHeaders(newHeaders);
+}
+
+/*!
     Returns the operation which was requested when calling
     QNetworkAccessManager.
 */

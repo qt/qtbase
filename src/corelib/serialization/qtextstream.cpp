@@ -196,6 +196,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 #include "qnumeric.h"
 #include "qvarlengtharray.h"
 #include <private/qdebug_p.h>
+#include <private/qnumeric_p.h>
 #include <private/qtools_p.h>
 
 #include <locale.h>
@@ -359,6 +360,7 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
     if (bytesRead <= 0)
         return false;
 
+#ifndef QT_BOOTSTRAPPED
     if (autoDetectUnicode) {
         autoDetectUnicode = false;
 
@@ -372,6 +374,7 @@ bool QTextStreamPrivate::fillReadBuffer(qint64 maxBytes)
     }
 #if defined (QTEXTSTREAM_DEBUG)
     qDebug("QTextStreamPrivate::fillReadBuffer(), using %s encoding", QStringConverter::nameForEncoding(encoding));
+#endif
 #endif
 
 #if defined (QTEXTSTREAM_DEBUG)
@@ -999,7 +1002,10 @@ QTextStream::QTextStream(FILE *fileHandle, OpenMode openMode)
            fileHandle, int(openMode));
 #endif
     QFile *file = new QFile;
-    file->open(fileHandle, openMode);
+    // Discarding the return value of open; even if it failed
+    // (and the file is not open), QTextStream still reports `Ok`
+    // for closed QIODevices, so there's nothing really to do here.
+    (void)file->open(fileHandle, openMode);
 
     Q_D(QTextStream);
     d->device = file;
@@ -1911,13 +1917,13 @@ bool QTextStreamPrivate::getReal(double *f)
     // nan/+inf/-inf, so here we also check for uppercase and mixed
     // case versions.
     if (!qstricmp(buf, "nan") || !qstricmp(buf, "+nan") || !qstricmp(buf, "-nan")) {
-        *f = qQNaN();
+        *f = qt_qnan();
         return true;
     } else if (!qstricmp(buf, "+inf") || !qstricmp(buf, "inf")) {
-        *f = qInf();
+        *f = qt_inf();
         return true;
     } else if (!qstricmp(buf, "-inf")) {
-        *f = -qInf();
+        *f = -qt_inf();
         return true;
     }
     bool ok;

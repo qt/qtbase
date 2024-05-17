@@ -144,8 +144,6 @@ public:
 
 private:
     QModelIndex indexFromLogical(int row, int column = 0) const;
-
-    inline int logicalIndex(const QModelIndex &index) const;
 };
 #endif
 

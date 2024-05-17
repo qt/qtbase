@@ -14,4 +14,6 @@ endif()
 qt_internal_add_test(tst_qeasingcurve
     SOURCES
         tst_qeasingcurve.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )

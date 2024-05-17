@@ -55,6 +55,7 @@ qt_internal_add_module(Widgets
         QT_NO_CONTEXTLESS_CONNECT
         QT_NO_USING_NAMESPACE
         QT_NO_FOREACH
+        QT_USE_NODISCARD_FILE_OPEN
     INCLUDE_DIRECTORIES
         dialogs
     LIBRARIES
@@ -910,6 +911,11 @@ qt_internal_generate_tracepoints(Widgets widgets
 qt_internal_add_docs(Widgets
     doc/qtwidgets.qdocconf
 )
+
+if(IOS)
+    qt_internal_set_apple_privacy_manifest(Widgets
+        "${CMAKE_CURRENT_SOURCE_DIR}/platform/ios/PrivacyInfo.xcprivacy")
+endif()
 
 # include the snippet projects for developer-builds
 if(QT_FEATURE_private_tests)

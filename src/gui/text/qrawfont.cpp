@@ -498,7 +498,7 @@ QList<quint32> QRawFont::glyphIndexesForString(const QString &text) const
     QGlyphLayout glyphs;
     glyphs.numGlyphs = numGlyphs;
     glyphs.glyphs = glyphIndexes.data();
-    if (!d->fontEngine->stringToCMap(text.data(), text.size(), &glyphs, &numGlyphs, QFontEngine::GlyphIndicesOnly))
+    if (d->fontEngine->stringToCMap(text.data(), text.size(), &glyphs, &numGlyphs, QFontEngine::GlyphIndicesOnly) < 0)
         Q_UNREACHABLE();
 
     glyphIndexes.resize(numGlyphs);
@@ -531,7 +531,7 @@ bool QRawFont::glyphIndexesForChars(const QChar *chars, int numChars, quint32 *g
     QGlyphLayout glyphs;
     glyphs.numGlyphs = *numGlyphs;
     glyphs.glyphs = glyphIndexes;
-    return d->fontEngine->stringToCMap(chars, numChars, &glyphs, numGlyphs, QFontEngine::GlyphIndicesOnly);
+    return d->fontEngine->stringToCMap(chars, numChars, &glyphs, numGlyphs, QFontEngine::GlyphIndicesOnly) >= 0;
 }
 
 /*!

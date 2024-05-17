@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <QtTest/private/qtesthelpers_p.h>
@@ -531,7 +531,6 @@ void tst_QMenu::overrideMenuAction()
     m->addAction(aQuit);
 
     w.show();
-    QApplicationPrivate::setActiveWindow(&w);
     w.setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&w));
     QVERIFY(w.hasFocus());
@@ -1613,7 +1612,6 @@ void tst_QMenu::transientParent()
     QWindow *topLevel = window.windowHandle();
     QVERIFY(topLevel);
 
-    QApplicationPrivate::setActiveWindow(&window);
     window.setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&window));
     QVERIFY(window.hasFocus());

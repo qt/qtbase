@@ -36,6 +36,8 @@ quint64 spiStatesFromQState(QAccessible::State state)
         setSpiStateBit(&spiState, ATSPI_STATE_FOCUSED);
     if (state.pressed)
         setSpiStateBit(&spiState, ATSPI_STATE_PRESSED);
+    if (state.checkable)
+        setSpiStateBit(&spiState, ATSPI_STATE_CHECKABLE);
     if (state.checked)
         setSpiStateBit(&spiState, ATSPI_STATE_CHECKED);
     if (state.checkStateMixed)
@@ -75,7 +77,8 @@ quint64 spiStatesFromQState(QAccessible::State state)
     if (state.extSelectable)
         setSpiStateBit(&spiState, ATSPI_STATE_SELECTABLE);
     //        if (state.Protected)
-    //        if (state.HasPopup)
+    if (state.hasPopup)
+        setSpiStateBit(&spiState, ATSPI_STATE_HAS_POPUP);
     if (state.modal)
         setSpiStateBit(&spiState, ATSPI_STATE_MODAL);
     if (state.multiLine)

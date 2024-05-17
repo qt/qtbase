@@ -245,9 +245,10 @@ bool Driver::uic(const QString &fileName, DomUI *ui, QTextStream *out)
 bool Driver::uic(const QString &fileName, QTextStream *out)
 {
     QFile f;
-    if (fileName.isEmpty())
-        f.open(stdin, QIODevice::ReadOnly);
-    else {
+    if (fileName.isEmpty()) {
+        if (!f.open(stdin, QIODevice::ReadOnly))
+            return false;
+    } else {
         f.setFileName(fileName);
         if (!f.open(QIODevice::ReadOnly))
             return false;

@@ -36,8 +36,11 @@ QNetworkReplyDataImpl::QNetworkReplyDataImpl(QObject *parent, const QNetworkRequ
     QByteArray payload;
     if (qDecodeDataUrl(url, mimeType, payload)) {
         qint64 size = payload.size();
-        setHeader(QNetworkRequest::ContentTypeHeader, mimeType);
-        setHeader(QNetworkRequest::ContentLengthHeader, size);
+        auto h = headers();
+        h.replaceOrAppend(QHttpHeaders::WellKnownHeader::ContentType, mimeType);
+        h.replaceOrAppend(QHttpHeaders::WellKnownHeader::ContentLength, QByteArray::number(size));
+        setHeaders(std::move(h));
+
         QMetaObject::invokeMethod(this, "metaDataChanged", Qt::QueuedConnection);
 
         d->decodedData.setData(payload);

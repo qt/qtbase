@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/resource.h>
+#include <termios.h>
 #include <unistd.h>
 
 #if __has_include(<paths.h>)
@@ -256,15 +257,6 @@ struct QChildProcess
         : d(d), argv(resolveExecutable(d->program), d->arguments),
           envp(d->environmentPrivate())
     {
-        if (!d->workingDirectory.isEmpty()) {
-            workingDirectory = opendirfd(QFile::encodeName(d->workingDirectory));
-            if (workingDirectory < 0) {
-                d->setErrorAndEmit(QProcess::FailedToStart, "chdir: "_L1 + qt_error_string());
-                d->cleanup();
-                return;
-            }
-        }
-
         // Block Unix signals, to ensure the user's handlers aren't run in the
         // child side and do something weird, especially if the handler and the
         // user of QProcess are completely different codebases.
@@ -276,6 +268,15 @@ struct QChildProcess
         // would be bad enough with regular fork(), but it's likely fatal with
         // vfork().
         disableThreadCancellations();
+
+        if (!d->workingDirectory.isEmpty()) {
+            workingDirectory = opendirfd(QFile::encodeName(d->workingDirectory));
+            if (workingDirectory < 0) {
+                d->setErrorAndEmit(QProcess::FailedToStart, "chdir: "_L1 + qt_error_string());
+                d->cleanup();
+            }
+        }
+
     }
     ~QChildProcess() noexcept(false)
     {
@@ -423,7 +424,8 @@ static int qt_create_pipe(int *pipe)
         qt_safe_close(pipe[1]);
     int pipe_ret = qt_safe_pipe(pipe);
     if (pipe_ret != 0) {
-        qErrnoWarning("QProcessPrivate::createPipe: Cannot create pipe %p", pipe);
+        QScopedValueRollback rollback(errno);
+        qErrnoWarning("QProcess: Cannot create pipe");
     }
     return pipe_ret;
 }
@@ -472,8 +474,10 @@ bool QProcessPrivate::openChannel(Channel &channel)
 
     if (channel.type == Channel::Normal) {
         // we're piping this channel to our own process
-        if (qt_create_pipe(channel.pipe) != 0)
+        if (qt_create_pipe(channel.pipe) != 0) {
+            setErrorAndEmit(QProcess::FailedToStart, "pipe: "_L1 + qt_error_string(errno));
             return false;
+        }
 
         // create the socket notifiers
         if (threadData.loadRelaxed()->hasEventDispatcher()) {
@@ -552,8 +556,10 @@ bool QProcessPrivate::openChannel(Channel &channel)
             Q_ASSERT(sink->pipe[0] == INVALID_Q_PIPE && sink->pipe[1] == INVALID_Q_PIPE);
 
             Q_PIPE pipe[2] = { -1, -1 };
-            if (qt_create_pipe(pipe) != 0)
+            if (qt_create_pipe(pipe) != 0) {
+                setErrorAndEmit(QProcess::FailedToStart, "pipe: "_L1 + qt_error_string(errno));
                 return false;
+            }
             sink->pipe[0] = pipe[0];
             source->pipe[1] = pipe[1];
 
@@ -1285,7 +1291,6 @@ void QProcessPrivate::waitForDeadChild()
 bool QProcessPrivate::startDetached(qint64 *pid)
 {
     AutoPipe startedPipe, pidPipe;
-    childStartedPipe[1] = startedPipe[1];
     if (!startedPipe || !pidPipe) {
         setErrorAndEmit(QProcess::FailedToStart, "pipe: "_L1 + qt_error_string(errno));
         return false;
@@ -1304,6 +1309,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         return false;
     }
 
+    childStartedPipe[1] = startedPipe[1];   // for failChildProcess()
     pid_t childPid = childProcess.doFork([&] {
         ::setsid();
 
@@ -1318,6 +1324,7 @@ bool QProcessPrivate::startDetached(qint64 *pid)
         qt_safe_write(pidPipe[1], &doubleForkPid, sizeof(pid_t));
         return 0;
     });
+    childStartedPipe[1] = -1;
 
     int savedErrno = errno;
     closeChannels();

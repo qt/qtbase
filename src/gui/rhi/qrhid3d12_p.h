@@ -731,6 +731,8 @@ struct QD3D12Texture : public QRhiTexture
     QD3D12ObjectHandle handle;
     QD3D12Descriptor srv;
     DXGI_FORMAT dxgiFormat;
+    DXGI_FORMAT srvFormat;
+    DXGI_FORMAT rtFormat; // RTV/DSV/UAV
     uint mipLevelCount;
     DXGI_SAMPLE_DESC sampleDesc;
     uint generation = 0;
@@ -1235,6 +1237,7 @@ public:
 
     struct {
         bool multiView = false;
+        bool textureViewFormat = false;
     } caps;
 };
 

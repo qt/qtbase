@@ -14,12 +14,6 @@
 
 #include <cctype>
 
-#if defined(QQNXSCREENEVENTTHREAD_DEBUG)
-#define qScreenEventThreadDebug qDebug
-#else
-#define qScreenEventThreadDebug QT_NO_QDEBUG_MACRO
-#endif
-
 static const int c_screenCode = _PULSE_CODE_MINAVAIL + 0;
 static const int c_armCode = _PULSE_CODE_MINAVAIL + 1;
 static const int c_quitCode = _PULSE_CODE_MINAVAIL + 2;
@@ -74,7 +68,7 @@ QQnxScreenEventThread::~QQnxScreenEventThread()
 
 void QQnxScreenEventThread::run()
 {
-    qScreenEventThreadDebug("screen event thread started");
+    qCDebug(lcQpaScreenEvents) << "Screen event thread started";
 
     while (1) {
         struct _pulse msg;
@@ -90,7 +84,7 @@ void QQnxScreenEventThread::run()
             qWarning() << "MsgReceive error" << strerror(errno);
     }
 
-    qScreenEventThreadDebug("screen event thread stopped");
+    qCDebug(lcQpaScreenEvents) << "Screen event thread stopped";
 }
 
 void QQnxScreenEventThread::armEventsPending(int count)
@@ -134,10 +128,10 @@ void QQnxScreenEventThread::shutdown()
 {
     MsgSendPulse(m_connectionId, SIGEV_PULSE_PRIO_INHERIT, c_quitCode, 0);
 
-    qScreenEventThreadDebug("screen event thread shutdown begin");
+    qCDebug(lcQpaScreenEvents) << "Screen event thread shutdown begin";
 
     // block until thread terminates
     wait();
 
-    qScreenEventThreadDebug("screen event thread shutdown end");
+    qCDebug(lcQpaScreenEvents) << "Screen event thread shutdown end";
 }

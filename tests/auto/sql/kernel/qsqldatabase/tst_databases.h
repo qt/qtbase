@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 /* possible connection parameters */
 
 #ifndef TST_DATABASES_H
@@ -518,7 +518,10 @@ protected:
     void cleanup()
     {
         QSqlQuery q(m_db);
-        q.exec("DROP PROCEDURE IF EXISTS " + m_procName);
+        if (m_db.driverName() == "QIBASE")
+            q.exec("DROP PROCEDURE " + m_procName);
+        else
+            q.exec("DROP PROCEDURE IF EXISTS " + m_procName);
     }
 private:
     QSqlDatabase m_db;

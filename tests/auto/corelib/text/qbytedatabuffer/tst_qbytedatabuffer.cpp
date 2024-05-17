@@ -1,5 +1,5 @@
 // Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <private/qbytedata_p.h>

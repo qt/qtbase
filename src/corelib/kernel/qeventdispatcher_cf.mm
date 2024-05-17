@@ -169,7 +169,7 @@ static const CFTimeInterval kCFTimeIntervalDistantFuture = std::numeric_limits<C
 #pragma mark - Class definition
 
 QEventDispatcherCoreFoundation::QEventDispatcherCoreFoundation(QObject *parent)
-    : QAbstractEventDispatcher(parent)
+    : QAbstractEventDispatcherV2(parent)
     , m_processEvents(QEventLoop::EventLoopExec)
     , m_postedEventsRunLoopSource(this, &QEventDispatcherCoreFoundation::processPostedEvents)
     , m_runLoopActivityObserver(this, &QEventDispatcherCoreFoundation::handleRunLoopActivity, kCFRunLoopAllActivities)
@@ -506,26 +506,28 @@ void QEventDispatcherCoreFoundation::unregisterSocketNotifier(QSocketNotifier *n
 
 #pragma mark - Timers
 
-void QEventDispatcherCoreFoundation::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object)
+void QEventDispatcherCoreFoundation::registerTimer(Qt::TimerId timerId, Duration interval,
+                                                   Qt::TimerType timerType, QObject *object)
 {
-    qCDebug(lcEventDispatcherTimers) << "Registering timer with id =" << timerId << "interval =" << interval
+    qCDebug(lcEventDispatcherTimers) << "Registering timer with id =" << int(timerId) << "interval =" << interval
         << "type =" << timerType << "object =" << object;
 
-    Q_ASSERT(timerId > 0 && interval >= 0 && object);
+    Q_ASSERT(qToUnderlying(timerId) > 0 && interval.count() >= 0 && object);
     Q_ASSERT(object->thread() == thread() && thread() == QThread::currentThread());
 
     m_timerInfoList.registerTimer(timerId, interval, timerType, object);
     updateTimers();
 }
 
-bool QEventDispatcherCoreFoundation::unregisterTimer(int timerId)
+bool QEventDispatcherCoreFoundation::unregisterTimer(Qt::TimerId timerId)
 {
-    Q_ASSERT(timerId > 0);
+    Q_ASSERT(qToUnderlying(timerId) > 0);
     Q_ASSERT(thread() == QThread::currentThread());
 
     bool returnValue = m_timerInfoList.unregisterTimer(timerId);
 
-    qCDebug(lcEventDispatcherTimers) << "Unegistered timer with id =" << timerId << "Timers left:" << m_timerInfoList.size();
+    qCDebug(lcEventDispatcherTimers) << "Unegistered timer with id =" << qToUnderlying(timerId)
+                                     << "Timers left:" << m_timerInfoList.size();
 
     updateTimers();
     return returnValue;
@@ -543,16 +545,18 @@ bool QEventDispatcherCoreFoundation::unregisterTimers(QObject *object)
     return returnValue;
 }
 
-QList<QAbstractEventDispatcher::TimerInfo> QEventDispatcherCoreFoundation::registeredTimers(QObject *object) const
+QList<QAbstractEventDispatcher::TimerInfoV2>
+QEventDispatcherCoreFoundation::timersForObject(QObject *object) const
 {
     Q_ASSERT(object);
     return m_timerInfoList.registeredTimers(object);
 }
 
-int QEventDispatcherCoreFoundation::remainingTime(int timerId)
+QEventDispatcherCoreFoundation::Duration
+QEventDispatcherCoreFoundation::remainingTime(Qt::TimerId timerId) const
 {
-    Q_ASSERT(timerId > 0);
-    return m_timerInfoList.timerRemainingTime(timerId);
+    Q_ASSERT(qToUnderlying(timerId) > 0);
+    return m_timerInfoList.remainingDuration(timerId);
 }
 
 void QEventDispatcherCoreFoundation::updateTimers()

@@ -11,18 +11,6 @@
 #include <QtCore/QMimeData>
 #include <QtGui/QGuiApplication>
 
-@interface UIPasteboard (QUIPasteboard)
-+ (instancetype)pasteboardWithQClipboardMode:(QClipboard::Mode)mode;
-@end
-
-@implementation UIPasteboard (QUIPasteboard)
-+ (instancetype)pasteboardWithQClipboardMode:(QClipboard::Mode)mode
-{
-    NSString *name = (mode == QClipboard::Clipboard) ? UIPasteboardNameGeneral : UIPasteboardNameFind;
-    return [UIPasteboard pasteboardWithName:name create:NO];
-}
-@end
-
 // --------------------------------------------------------------------
 
 @interface QUIClipboard : NSObject
@@ -31,7 +19,6 @@
 @implementation QUIClipboard {
     QIOSClipboard *m_qiosClipboard;
     NSInteger m_changeCountClipboard;
-    NSInteger m_changeCountFindBuffer;
 }
 
 - (instancetype)initWithQIOSClipboard:(QIOSClipboard *)qiosClipboard
@@ -39,8 +26,7 @@
     self = [super init];
     if (self) {
         m_qiosClipboard = qiosClipboard;
-        m_changeCountClipboard = [UIPasteboard pasteboardWithQClipboardMode:QClipboard::Clipboard].changeCount;
-        m_changeCountFindBuffer = [UIPasteboard pasteboardWithQClipboardMode:QClipboard::FindBuffer].changeCount;
+        m_changeCountClipboard = UIPasteboard.generalPasteboard.changeCount;
 
         [[NSNotificationCenter defaultCenter]
             addObserver:self
@@ -77,17 +63,11 @@
 - (void)updatePasteboardChanged:(NSNotification *)notification
 {
     Q_UNUSED(notification);
-    NSInteger changeCountClipboard = [UIPasteboard pasteboardWithQClipboardMode:QClipboard::Clipboard].changeCount;
-    NSInteger changeCountFindBuffer = [UIPasteboard pasteboardWithQClipboardMode:QClipboard::FindBuffer].changeCount;
+    NSInteger changeCountClipboard = UIPasteboard.generalPasteboard.changeCount;
 
     if (m_changeCountClipboard != changeCountClipboard) {
         m_changeCountClipboard = changeCountClipboard;
         m_qiosClipboard->emitChanged(QClipboard::Clipboard);
-    }
-
-    if (m_changeCountFindBuffer != changeCountFindBuffer) {
-        m_changeCountFindBuffer = changeCountFindBuffer;
-        m_qiosClipboard->emitChanged(QClipboard::FindBuffer);
     }
 }
 
@@ -99,20 +79,17 @@ QT_BEGIN_NAMESPACE
 
 class QIOSMimeData : public QMimeData {
 public:
-    QIOSMimeData(QClipboard::Mode mode) : QMimeData(), m_mode(mode) { }
+    QIOSMimeData() : QMimeData() { }
     ~QIOSMimeData() { }
 
     QStringList formats() const override;
     QVariant retrieveData(const QString &mimeType, QMetaType type) const override;
-
-private:
-    const QClipboard::Mode m_mode;
 };
 
 QStringList QIOSMimeData::formats() const
 {
     QStringList foundMimeTypes;
-    UIPasteboard *pb = [UIPasteboard pasteboardWithQClipboardMode:m_mode];
+    UIPasteboard *pb = UIPasteboard.generalPasteboard;
     NSArray<NSString *> *pasteboardTypes = [pb pasteboardTypes];
 
     for (NSUInteger i = 0; i < [pasteboardTypes count]; ++i) {
@@ -127,7 +104,7 @@ QStringList QIOSMimeData::formats() const
 
 QVariant QIOSMimeData::retrieveData(const QString &mimeType, QMetaType) const
 {
-    UIPasteboard *pb = [UIPasteboard pasteboardWithQClipboardMode:m_mode];
+    UIPasteboard *pb = UIPasteboard.generalPasteboard;
     NSArray<NSString *> *pasteboardTypes = [pb pasteboardTypes];
 
     const auto converters = QMacMimeRegistry::all(QUtiMimeConverter::HandlerScopeFlag::All);
@@ -164,7 +141,7 @@ QMimeData *QIOSClipboard::mimeData(QClipboard::Mode mode)
 {
     Q_ASSERT(supportsMode(mode));
     if (!m_mimeData.contains(mode))
-        return *m_mimeData.insert(mode, new QIOSMimeData(mode));
+        return *m_mimeData.insert(mode, new QIOSMimeData);
     return m_mimeData[mode];
 }
 
@@ -172,7 +149,7 @@ void QIOSClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 {
     Q_ASSERT(supportsMode(mode));
 
-    UIPasteboard *pb = [UIPasteboard pasteboardWithQClipboardMode:mode];
+    UIPasteboard *pb = UIPasteboard.generalPasteboard;
     if (!mimeData) {
         pb.items = [NSArray<NSDictionary<NSString *, id> *> array];
         return;
@@ -215,7 +192,7 @@ void QIOSClipboard::setMimeData(QMimeData *mimeData, QClipboard::Mode mode)
 
 bool QIOSClipboard::supportsMode(QClipboard::Mode mode) const
 {
-    return (mode == QClipboard::Clipboard || mode == QClipboard::FindBuffer);
+    return mode == QClipboard::Clipboard;
 }
 
 bool QIOSClipboard::ownsMode(QClipboard::Mode mode) const

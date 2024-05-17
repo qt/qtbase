@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "private/qringbuffer_p.h"
-#include "private/qbytearray_p.h"
 
 #include <type_traits>
 
@@ -91,7 +90,7 @@ void QRingBuffer::free(qint64 bytes)
                     clear(); // try to minify/squeeze us
                 }
             } else {
-                Q_ASSERT(bytes < MaxByteArraySize);
+                Q_ASSERT(bytes < QByteArray::max_size());
                 chunk.advance(bytes);
                 bufferSize -= bytes;
             }
@@ -106,7 +105,7 @@ void QRingBuffer::free(qint64 bytes)
 
 char *QRingBuffer::reserve(qint64 bytes)
 {
-    Q_ASSERT(bytes > 0 && bytes < MaxByteArraySize);
+    Q_ASSERT(bytes > 0 && bytes < QByteArray::max_size());
 
     const qsizetype chunkSize = qMax(qint64(basicBlockSize), bytes);
     qsizetype tail = 0;
@@ -136,7 +135,7 @@ char *QRingBuffer::reserve(qint64 bytes)
 */
 char *QRingBuffer::reserveFront(qint64 bytes)
 {
-    Q_ASSERT(bytes > 0 && bytes < MaxByteArraySize);
+    Q_ASSERT(bytes > 0 && bytes < QByteArray::max_size());
 
     const qsizetype chunkSize = qMax(qint64(basicBlockSize), bytes);
     if (bufferSize == 0) {
@@ -182,7 +181,7 @@ void QRingBuffer::chop(qint64 bytes)
                     clear(); // try to minify/squeeze us
                 }
             } else {
-                Q_ASSERT(bytes < MaxByteArraySize);
+                Q_ASSERT(bytes < QByteArray::max_size());
                 chunk.grow(-bytes);
                 bufferSize -= bytes;
             }

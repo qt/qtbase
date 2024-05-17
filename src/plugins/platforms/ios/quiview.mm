@@ -10,6 +10,7 @@
 #include "qiosscreen.h"
 #include "qioswindow.h"
 #include "qiosinputcontext.h"
+#include "quiwindow.h"
 #ifndef Q_OS_TVOS
 #include "qiosmenu.h"
 #endif
@@ -61,7 +62,7 @@ inline ulong getTimeStamp(UIEvent *event)
 
 + (void)load
 {
-#ifndef Q_OS_TVOS
+#if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
     if (QOperatingSystemVersion::current() < QOperatingSystemVersion(QOperatingSystemVersion::IOS, 11)) {
         // iOS 11 handles this though [UIView safeAreaInsetsDidChange], but there's no signal for
         // the corresponding top and bottom layout guides that we use on earlier versions. Note
@@ -197,6 +198,7 @@ inline ulong getTimeStamp(UIEvent *event)
     return description;
 }
 
+#if !defined(Q_OS_VISIONOS)
 - (void)willMoveToWindow:(UIWindow *)newWindow
 {
     // UIKIt will normally set the scale factor of a view to match the corresponding
@@ -206,6 +208,7 @@ inline ulong getTimeStamp(UIEvent *event)
 
     // FIXME: Allow the scale factor to be customized through QSurfaceFormat.
 }
+#endif
 
 - (void)didAddSubview:(UIView *)subview
 {
@@ -262,6 +265,9 @@ inline ulong getTimeStamp(UIEvent *event)
 {
     Q_UNUSED(layer);
     Q_ASSERT(layer == self.layer);
+
+    if (!self.platformWindow)
+        return;
 
     [self sendUpdatedExposeEvent];
 }
@@ -697,7 +703,7 @@ inline ulong getTimeStamp(UIEvent *event)
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
-#ifndef Q_OS_TVOS
+#if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
     // Check first if QIOSMenu should handle the action before continuing up the responder chain
     return [QIOSMenu::menuActionTarget() targetForAction:action withSender:sender] != 0;
 #else
@@ -710,7 +716,7 @@ inline ulong getTimeStamp(UIEvent *event)
 - (id)forwardingTargetForSelector:(SEL)selector
 {
     Q_UNUSED(selector);
-#ifndef Q_OS_TVOS
+#if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
     return QIOSMenu::menuActionTarget();
 #else
     return nil;
@@ -826,14 +832,9 @@ inline ulong getTimeStamp(UIEvent *event)
     return nil;
 }
 
-- (UIEdgeInsets)qt_safeAreaInsets
-{
-    return self.safeAreaInsets;
-}
-
 @end
 
-#ifdef Q_OS_IOS
+#if QT_CONFIG(metal)
 @implementation QUIMetalView
 
 + (Class)layerClass

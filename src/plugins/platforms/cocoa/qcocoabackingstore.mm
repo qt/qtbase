@@ -23,8 +23,9 @@ QCocoaBackingStore::QCocoaBackingStore(QWindow *window)
 
 QCFType<CGColorSpaceRef> QCocoaBackingStore::colorSpace() const
 {
-    NSView *view = static_cast<QCocoaWindow *>(window()->handle())->view();
-    return QCFType<CGColorSpaceRef>::constructFromGet(view.window.colorSpace.CGColorSpace);
+    const auto *platformWindow = static_cast<QCocoaWindow *>(window()->handle());
+    const QNSView *view = qnsview_cast(platformWindow->view());
+    return QCFType<CGColorSpaceRef>::constructFromGet(view.colorSpace.CGColorSpace);
 }
 
 // ----------------------------------------------------------------------------
@@ -72,12 +73,11 @@ bool QCALayerBackingStore::eventFilter(QObject *watched, QEvent *event)
 
 void QCALayerBackingStore::resize(const QSize &size, const QRegion &staticContents)
 {
-    qCDebug(lcQpaBackingStore) << "Resize requested to" << size;
-
-    if (!staticContents.isNull())
-        qCWarning(lcQpaBackingStore) << "QCALayerBackingStore does not support static contents";
+    qCDebug(lcQpaBackingStore) << "Resize requested to" << size
+                               << "with static contents" << staticContents;
 
     m_requestedSize = size;
+    m_staticContents = staticContents;
 }
 
 void QCALayerBackingStore::beginPaint(const QRegion &region)
@@ -189,11 +189,50 @@ bool QCALayerBackingStore::recreateBackBufferIfNeeded()
         }
 #endif
 
-        qCInfo(lcQpaBackingStore) << "Creating surface of" << requestedBufferSize
-            << "based on requested" << m_requestedSize << "and dpr =" << devicePixelRatio;
+        qCInfo(lcQpaBackingStore)<< "Creating surface of" << requestedBufferSize
+            << "for" << window() << "based on requested" << m_requestedSize
+            << "dpr =" << devicePixelRatio << "and color space" << colorSpace();
 
         static auto pixelFormat = QImage::toPixelFormat(QImage::Format_ARGB32_Premultiplied);
-        m_buffers.back().reset(new GraphicsBuffer(requestedBufferSize, devicePixelRatio, pixelFormat, colorSpace()));
+        auto *newBackBuffer = new GraphicsBuffer(requestedBufferSize, devicePixelRatio, pixelFormat, colorSpace());
+
+        if (!m_staticContents.isEmpty() && m_buffers.back()) {
+            // We implicitly support static backingstore content as a result of
+            // finalizing the back buffer on flush, where we copy any non-painted
+            // areas from the front buffer. But there is no guarantee that a resize
+            // will always come after a flush, where we have a pristine front buffer
+            // to copy from. It may come after a few begin/endPaints, where the back
+            // buffer then contains (part of) the latest state. We also have the case
+            // of single-buffered backingstore, where the front and back buffer is
+            // the same, which means we must do the copy from the old back buffer
+            // to the newly resized buffer now, before we replace it below.
+
+            // If the back buffer has been partially filled already, we need to
+            // copy parts of the static content from that. The rest we copy from
+            // the front buffer.
+            const QRegion backBufferRegion = m_staticContents - m_buffers.back()->dirtyRegion;
+            const QRegion frontBufferRegion = m_staticContents - backBufferRegion;
+
+            qCInfo(lcQpaBackingStore) << "Preserving static content" << backBufferRegion
+                << "from back buffer, and" << frontBufferRegion << "from front buffer";
+
+            newBackBuffer->lock(QPlatformGraphicsBuffer::SWWriteAccess);
+            blitBuffer(m_buffers.back().get(), backBufferRegion, newBackBuffer);
+            Q_ASSERT(frontBufferRegion.isEmpty() || m_buffers.front());
+            blitBuffer(m_buffers.front().get(), frontBufferRegion, newBackBuffer);
+            newBackBuffer->unlock();
+
+            // The new back buffer now is valid for the static contents region.
+            // We don't need to maintain the static contents region for resizes
+            // of any other buffers in the swap chain, as these will finalize
+            // their content on flush from the buffer we just filled, and we
+            // don't need to mark them dirty for the area we just filled, as
+            // new buffers are fully dirty when created.
+            newBackBuffer->dirtyRegion -= m_staticContents;
+            m_staticContents = {};
+        }
+
+        m_buffers.back().reset(newBackBuffer);
         return true;
     }
 
@@ -256,7 +295,7 @@ bool QCALayerBackingStore::scroll(const QRegion &region, int dx, int dy)
 
     if (!frontBufferRegion.isEmpty()) {
         qCDebug(lcQpaBackingStore) << "Scrolling" << frontBufferRegion << "by copying from front buffer";
-        preserveFromFrontBuffer(frontBufferRegion, scrollDelta);
+        blitBuffer(m_buffers.front().get(), frontBufferRegion, m_buffers.back().get(), scrollDelta);
     }
 
     m_buffers.back()->unlock();
@@ -440,10 +479,11 @@ void QCALayerBackingStore::backingPropertiesChanged()
 
     qCDebug(lcQpaBackingStore) << "Backing properties for" << window() << "did change";
 
-    qCDebug(lcQpaBackingStore) << "Updating color space of existing buffers";
+    const auto newColorSpace = colorSpace();
+    qCDebug(lcQpaBackingStore) << "Updating color space of existing buffers to" << newColorSpace;
     for (auto &buffer : m_buffers) {
         if (buffer)
-            buffer->setColorSpace(colorSpace());
+            buffer->setColorSpace(newColorSpace);
     }
 }
 
@@ -475,54 +515,76 @@ void QCALayerBackingStore::finalizeBackBuffer()
     if (!m_buffers.back()->isDirty())
         return;
 
-    m_buffers.back()->lock(QPlatformGraphicsBuffer::SWWriteAccess);
-    preserveFromFrontBuffer(m_buffers.back()->dirtyRegion);
-    m_buffers.back()->unlock();
+    qCDebug(lcQpaBackingStore) << "Finalizing back buffer with dirty region" << m_buffers.back()->dirtyRegion;
+
+    if (m_buffers.back() != m_buffers.front()) {
+        m_buffers.back()->lock(QPlatformGraphicsBuffer::SWWriteAccess);
+        blitBuffer(m_buffers.front().get(), m_buffers.back()->dirtyRegion, m_buffers.back().get());
+        m_buffers.back()->unlock();
+    } else {
+        qCDebug(lcQpaBackingStore) << "Front and back buffer is the same. Can not finalize back buffer.";
+    }
 
     // The back buffer is now completely in sync, ready to be presented
     m_buffers.back()->dirtyRegion = QRegion();
 }
 
-void QCALayerBackingStore::preserveFromFrontBuffer(const QRegion &region, const QPoint &offset)
+/*
+    \internal
+
+    Blits \a sourceRegion from \a sourceBuffer to \a destinationBuffer,
+    at offset \a destinationOffset.
+
+    The source buffer is automatically locked for read only access
+    during the blit.
+
+    The destination buffer has to be locked for write access by the
+    caller.
+*/
+
+void QCALayerBackingStore::blitBuffer(GraphicsBuffer *sourceBuffer, const QRegion &sourceRegion,
+                                      GraphicsBuffer *destinationBuffer, const QPoint &destinationOffset)
 {
+    Q_ASSERT(sourceBuffer && destinationBuffer);
+    Q_ASSERT(sourceBuffer != destinationBuffer);
 
-    if (m_buffers.front() == m_buffers.back())
-        return; // Nothing to preserve from
+    if (sourceRegion.isEmpty())
+        return;
 
-    qCDebug(lcQpaBackingStore) << "Preserving" << region << "of front buffer to"
-        << region.translated(offset) << "of back buffer";
+    qCDebug(lcQpaBackingStore) << "Blitting" << sourceRegion << "of" << sourceBuffer
+        << "to" << sourceRegion.translated(destinationOffset) << "of" << destinationBuffer;
 
-    Q_ASSERT(m_buffers.back()->isLocked() == QPlatformGraphicsBuffer::SWWriteAccess);
+    Q_ASSERT(destinationBuffer->isLocked() == QPlatformGraphicsBuffer::SWWriteAccess);
 
-    m_buffers.front()->lock(QPlatformGraphicsBuffer::SWReadAccess);
-    const QImage *frontBuffer = m_buffers.front()->asImage();
+    sourceBuffer->lock(QPlatformGraphicsBuffer::SWReadAccess);
+    const QImage *sourceImage = sourceBuffer->asImage();
 
-    const QRect frontSurfaceBounds(QPoint(0, 0), m_buffers.front()->size());
-    const qreal sourceDevicePixelRatio = frontBuffer->devicePixelRatio();
+    const QRect sourceBufferBounds(QPoint(0, 0), sourceBuffer->size());
+    const qreal sourceDevicePixelRatio = sourceImage->devicePixelRatio();
 
-    QPainter painter(m_buffers.back()->asImage());
+    QPainter painter(destinationBuffer->asImage());
     painter.setCompositionMode(QPainter::CompositionMode_Source);
 
     // Let painter operate in device pixels, to make it easier to compare coordinates
-    const qreal targetDevicePixelRatio = painter.device()->devicePixelRatio();
-    painter.scale(1.0 / targetDevicePixelRatio, 1.0 / targetDevicePixelRatio);
+    const qreal destinationDevicePixelRatio = painter.device()->devicePixelRatio();
+    painter.scale(1.0 / destinationDevicePixelRatio, 1.0 / destinationDevicePixelRatio);
 
-    for (const QRect &rect : region) {
+    for (const QRect &rect : sourceRegion) {
         QRect sourceRect(rect.topLeft() * sourceDevicePixelRatio,
                          rect.size() * sourceDevicePixelRatio);
-        QRect targetRect((rect.topLeft() + offset) * targetDevicePixelRatio,
-                          rect.size() * targetDevicePixelRatio);
+        QRect destinationRect((rect.topLeft() + destinationOffset) * destinationDevicePixelRatio,
+                               rect.size() * destinationDevicePixelRatio);
 
 #ifdef QT_DEBUG
-        if (Q_UNLIKELY(!frontSurfaceBounds.contains(sourceRect.bottomRight()))) {
-            qCWarning(lcQpaBackingStore) << "Front buffer too small to preserve"
-                << QRegion(sourceRect).subtracted(frontSurfaceBounds);
+        if (Q_UNLIKELY(!sourceBufferBounds.contains(sourceRect.bottomRight()))) {
+            qCWarning(lcQpaBackingStore) << "Source buffer of size" << sourceBuffer->size()
+                                         << "is too small to blit" << sourceRect;
         }
 #endif
-        painter.drawImage(targetRect, *frontBuffer, sourceRect);
+        painter.drawImage(destinationRect, *sourceImage, sourceRect);
     }
 
-    m_buffers.front()->unlock();
+    sourceBuffer->unlock();
 }
 
 // ----------------------------------------------------------------------------

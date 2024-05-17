@@ -154,11 +154,9 @@ struct QWindowsContextPrivate {
     bool m_asyncExpose = false;
     HPOWERNOTIFY m_powerNotification = nullptr;
     HWND m_powerDummyWindow = nullptr;
-    static bool m_darkMode;
     static bool m_v2DpiAware;
 };
 
-bool QWindowsContextPrivate::m_darkMode = false;
 bool QWindowsContextPrivate::m_v2DpiAware = false;
 
 QWindowsContextPrivate::QWindowsContextPrivate()
@@ -172,7 +170,6 @@ QWindowsContextPrivate::QWindowsContextPrivate()
         m_systemInfo |= QWindowsContext::SI_RTL_Extensions;
         m_keyMapper.setUseRTLExtensions(true);
     }
-    m_darkMode = QWindowsTheme::queryDarkMode();
     if (FAILED(m_oleInitializeResult)) {
        qWarning() << "QWindowsContext: OleInitialize() failed: "
            << QSystemError::windowsComString(m_oleInitializeResult);
@@ -203,6 +200,8 @@ QWindowsContext::~QWindowsContext()
 
     if (d->m_powerDummyWindow)
         DestroyWindow(d->m_powerDummyWindow);
+
+    d->m_screenManager.destroyWindow();
 
     unregisterWindowClasses();
     if (d->m_oleInitializeResult == S_OK || d->m_oleInitializeResult == S_FALSE) {
@@ -464,11 +463,6 @@ bool QWindowsContext::setProcessDpiAwareness(QtWindows::DpiAwareness dpiAwarenes
     return true;
 }
 
-bool QWindowsContext::isDarkMode()
-{
-    return QWindowsContextPrivate::m_darkMode;
-}
-
 QWindowsContext *QWindowsContext::instance()
 {
     return m_instance;
@@ -538,6 +532,8 @@ QString QWindowsContext::classNamePrefix()
 #  define xstr(s) str(s)
 #  define str(s) #s
         str << xstr(QT_NAMESPACE);
+#  undef str
+#  undef xstr
 #endif
     }
     return result;
@@ -1004,9 +1000,10 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 
     MSG msg;
     msg.hwnd = hwnd;         // re-create MSG structure
-    msg.message = message;   // time and pt fields ignored
+    msg.message = message;
     msg.wParam = wParam;
     msg.lParam = lParam;
+    msg.time = GetMessageTime();
     msg.pt.x = msg.pt.y = 0;
     if (et != QtWindows::CursorEvent && (et & (QtWindows::MouseEventFlag | QtWindows::NonClientEventFlag))) {
         msg.pt.x = GET_X_LPARAM(lParam);
@@ -1090,21 +1087,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
         // Only refresh the window theme if the user changes the personalize settings.
         if ((wParam == 0) && (lParam != 0) // lParam sometimes may be NULL.
             && (wcscmp(reinterpret_cast<LPCWSTR>(lParam), L"ImmersiveColorSet") == 0)) {
-            const bool darkMode = QWindowsTheme::queryDarkMode();
-            const bool darkModeChanged = darkMode != QWindowsContextPrivate::m_darkMode;
-            QWindowsContextPrivate::m_darkMode = darkMode;
-            auto integration = QWindowsIntegration::instance();
-            integration->updateApplicationBadge();
-            if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeStyle)) {
-                QWindowsTheme::instance()->refresh();
-                QWindowSystemInterface::handleThemeChange();
-            }
-            if (darkModeChanged) {
-                if (integration->darkModeHandling().testFlag(QWindowsApplication::DarkModeWindowFrames)) {
-                    for (QWindowsWindow *w : d->m_windows)
-                        w->setDarkBorder(QWindowsContextPrivate::m_darkMode);
-                }
-            }
+            QWindowsTheme::handleSettingsChanged();
         }
         return d->m_screenManager.handleScreenChanges();
     }

@@ -12,8 +12,7 @@
 QT_BEGIN_NAMESPACE
 
 // Implements the Invoke control pattern provider.
-class QWindowsUiaInvokeProvider : public QWindowsUiaBaseProvider,
-                                  public QWindowsComBase<IInvokeProvider>
+class QWindowsUiaInvokeProvider : public QWindowsUiaBaseProvider, public QComObject<IInvokeProvider>
 {
     Q_DISABLE_COPY_MOVE(QWindowsUiaInvokeProvider)
 public:

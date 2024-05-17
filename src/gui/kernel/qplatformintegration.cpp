@@ -229,6 +229,11 @@ QPlatformServices *QPlatformIntegration::services() const
     \value ScreenWindowGrabbing The platform supports grabbing window on screen.
     On Wayland, this capability can be reported as \c false. The default implementation
     of hasCapability() returns \c true.
+
+    \value BackingStoreStaticContents The platform backingstore supports static contents.
+    On resize of the backingstore the static contents region is provided, and the backing
+    store is expected to propagate the static content to the resized backing store, without
+    clients needing to repaint the static content region.
  */
 
 /*!

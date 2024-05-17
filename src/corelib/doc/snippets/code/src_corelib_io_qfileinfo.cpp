@@ -126,4 +126,22 @@ if (fi.permission(QFile::WriteGroup | QFile::WriteOther))
 //! [10]
 }
 
+{
+//! [11]
+// Given a current working directory of "/home/user/Documents/memos/"
+QFileInfo info1(u"relativeFile"_s);
+qDebug() << info1.absolutePath(); // "/home/user/Documents/memos/"
+qDebug() << info1.baseName(); // "relativeFile"
+qDebug() << info1.absoluteDir(); // QDir(u"/home/user/Documents/memos"_s)
+qDebug() << info1.absoluteDir().path(); // "/home/user/Documents/memos"
+
+// A QFileInfo on a dir
+QFileInfo info2(u"/home/user/Documents/memos"_s);
+qDebug() << info2.absolutePath(); // "/home/user/Documents"
+qDebug() << info2.baseName(); // "memos"
+qDebug() << info2.absoluteDir(); // QDir(u"/home/user/Documents"_s)
+qDebug() << info2.absoluteDir().path(); // "/home/user/Documents"
+//! [11]
+}
+
 }

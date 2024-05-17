@@ -244,6 +244,8 @@ QNativeIpcKey QtIpcCommon::platformSafeKey(const QString &key, QtIpcCommon::IpcT
     \since 6.6
     \brief The QNativeIpcKey class holds a native key used by QSystemSemaphore and QSharedMemory.
 
+    \compares equality
+
     The \l QSharedMemory and \l QSystemSemaphore classes identify their
     resource using a system-wide identifier known as a "key". The low-level key
     value as well as the key type are encapsulated in Qt using the \l

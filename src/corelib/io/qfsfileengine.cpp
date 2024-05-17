@@ -6,7 +6,6 @@
 #include "qfsfileengine_iterator_p.h"
 #include "qfilesystemengine_p.h"
 #include "qdatetime.h"
-#include "qdiriterator.h"
 #include "qset.h"
 #include <QtCore/qdebug.h>
 
@@ -521,11 +520,11 @@ bool QFSFileEngine::seek(qint64 pos)
 /*!
     \reimp
 */
-QDateTime QFSFileEngine::fileTime(FileTime time) const
+QDateTime QFSFileEngine::fileTime(QFile::FileTime time) const
 {
     Q_D(const QFSFileEngine);
 
-    if (time == AccessTime) {
+    if (time == QFile::FileAccessTime) {
         // always refresh for the access time
         d->metaData.clearFlags(QFileSystemMetaData::AccessTime);
     }
@@ -792,18 +791,13 @@ qint64 QFSFileEnginePrivate::writeFdFh(const char *data, qint64 len)
 /*!
     \internal
 */
-QAbstractFileEngine::Iterator *QFSFileEngine::beginEntryList(QDir::Filters filters, const QStringList &filterNames)
+QAbstractFileEngine::IteratorUniquePtr
+QFSFileEngine::beginEntryList(const QString &path, QDir::Filters filters,
+                              const QStringList &filterNames)
 {
-    return new QFSFileEngineIterator(filters, filterNames);
+    return std::make_unique<QFSFileEngineIterator>(path, filters, filterNames);
 }
 
-/*!
-    \internal
-*/
-QAbstractFileEngine::Iterator *QFSFileEngine::endEntryList()
-{
-    return nullptr;
-}
 #endif // QT_NO_FILESYSTEMITERATOR
 
 /*!
@@ -906,7 +900,7 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
   \reimp
 */
 
-/*! \fn bool QFSFileEngine::setFileTime(const QDateTime &newDate, QAbstractFileEngine::FileTime time)
+/*! \fn bool QFSFileEngine::setFileTime(const QDateTime &newDate, QFile::FileTime time)
   \reimp
 */
 
@@ -996,29 +990,32 @@ bool QFSFileEngine::remove()
     return ret;
 }
 
-/*!
-  \reimp
+/*
+    An alternative to setFileName() when you have already constructed
+    a QFileSystemEntry.
 */
-bool QFSFileEngine::rename(const QString &newName)
+void QFSFileEngine::setFileEntry(QFileSystemEntry &&entry)
 {
     Q_D(QFSFileEngine);
-    QSystemError error;
-    bool ret = QFileSystemEngine::renameFile(d->fileEntry, QFileSystemEntry(newName), error);
-    if (!ret)
-        setError(QFile::RenameError, error.toString());
-    return ret;
+    d->init();
+    d->fileEntry = std::move(entry);
 }
-/*!
-  \reimp
-*/
-bool QFSFileEngine::renameOverwrite(const QString &newName)
+
+bool QFSFileEngine::rename_helper(const QString &newName, RenameMode mode)
 {
     Q_D(QFSFileEngine);
+
+    auto func = mode == Rename ? QFileSystemEngine::renameFile
+                               : QFileSystemEngine::renameOverwriteFile;
     QSystemError error;
-    bool ret = QFileSystemEngine::renameOverwriteFile(d->fileEntry, QFileSystemEntry(newName), error);
-    if (!ret)
+    auto newEntry = QFileSystemEntry(newName);
+    const bool ret = func(d->fileEntry, newEntry, error);
+    if (!ret) {
         setError(QFile::RenameError, error.toString());
-    return ret;
+        return false;
+    }
+    setFileEntry(std::move(newEntry));
+    return true;
 }
 
 /*!

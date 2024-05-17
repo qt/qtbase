@@ -137,7 +137,12 @@ static Platform platformFromMkSpec(const QString &xSpec)
             return WindowsDesktopClangMinGW;
         if (xSpec.contains("clang-msvc++"_L1))
             return WindowsDesktopClangMsvc;
-        return xSpec.contains("g++"_L1) ? WindowsDesktopMinGW : WindowsDesktopMsvc;
+        if (xSpec.contains("arm"_L1))
+            return WindowsDesktopMsvcArm;
+        if (xSpec.contains("G++"_L1))
+            return WindowsDesktopMinGW;
+
+        return WindowsDesktopMsvc;
     }
     return UnknownPlatform;
 }
@@ -182,8 +187,8 @@ struct Options {
     bool compilerRunTime = false;
     bool softwareRasterizer = true;
     bool ffmpeg = true;
-    PluginLists pluginSelections;
-    Platform platform = WindowsDesktopMsvc;
+    PluginSelections pluginSelections;
+    Platform platform = WindowsDesktopMsvcIntel;
     ModuleBitset additionalLibraries;
     ModuleBitset disabledLibraries;
     unsigned updateFileFlags = 0;
@@ -195,6 +200,7 @@ struct Options {
     QStringList languages;
     QString libraryDirectory;
     QString pluginDirectory;
+    QString openSslRootDirectory;
     QString qmlDirectory;
     QStringList binaries;
     JsonOutput *json = nullptr;
@@ -205,6 +211,7 @@ struct Options {
     bool patchQt = true;
     bool ignoreLibraryErrors = false;
     bool deployInsightTrackerPlugin = false;
+    bool forceOpenSslPlugin = false;
 };
 
 // Return binary to be deployed from folder, ignore pre-existing web engine process.
@@ -399,6 +406,10 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
                                        QStringLiteral("Skip plugin deployment."));
     parser->addOption(noPluginsOption);
 
+    QCommandLineOption includeSoftPluginsOption(QStringLiteral("include-soft-plugins"),
+                                                QStringLiteral("Include in the deployment all relevant plugins by taking into account all soft dependencies."));
+    parser->addOption(includeSoftPluginsOption);
+
     QCommandLineOption skipPluginTypesOption(QStringLiteral("skip-plugin-types"),
                                          QStringLiteral("A comma-separated list of plugin types that are not deployed (qmltooling,generic)."),
                                          QStringLiteral("plugin types"));
@@ -473,8 +484,17 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     parser->addOption(suppressSoftwareRasterizerOption);
 
     QCommandLineOption noFFmpegOption(QStringLiteral("no-ffmpeg"),
-                                      QStringLiteral("Do not deploy the ffmpeg libraries."));
+                                      QStringLiteral("Do not deploy the FFmpeg libraries."));
     parser->addOption(noFFmpegOption);
+
+    QCommandLineOption forceOpenSslOption(QStringLiteral("force-openssl"),
+                                      QStringLiteral("Deploy openssl plugin but ignore openssl library dependency"));
+    parser->addOption(forceOpenSslOption);
+
+    QCommandLineOption openSslRootOption(QStringLiteral("openssl-root"),
+                                 QStringLiteral("Directory containing openSSL libraries."),
+                                 QStringLiteral("directory"));
+    parser->addOption(openSslRootOption);
 
 
     QCommandLineOption listOption(QStringLiteral("list"),
@@ -548,16 +568,19 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
     options->quickImports = !parser->isSet(noQuickImportOption);
 
     // default to deployment of compiler runtime for windows desktop configurations
-    if (options->platform == WindowsDesktopMinGW || options->platform == WindowsDesktopMsvc
+    if (options->platform == WindowsDesktopMinGW || options->platform.testFlags(WindowsDesktopMsvc)
             || parser->isSet(compilerRunTimeOption))
         options->compilerRunTime = true;
     if (parser->isSet(noCompilerRunTimeOption))
         options->compilerRunTime = false;
 
-    if (options->compilerRunTime && options->platform != WindowsDesktopMinGW && options->platform != WindowsDesktopMsvc) {
+    if (options->compilerRunTime && options->platform != WindowsDesktopMinGW
+        && !options->platform.testFlags(WindowsDesktopMsvc)) {
         *errorMessage = QStringLiteral("Deployment of the compiler runtime is implemented for Desktop MSVC/g++ only.");
         return CommandLineParseError;
     }
+
+    options->pluginSelections.includeSoftPlugins = parser->isSet(includeSoftPluginsOption);
 
     if (parser->isSet(skipPluginTypesOption))
         options->pluginSelections.disabledPluginTypes = parser->value(skipPluginTypesOption).split(u',');
@@ -597,6 +620,17 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
 
     if (parser->isSet(noFFmpegOption))
         options->ffmpeg = false;
+
+    if (parser->isSet(forceOpenSslOption))
+        options->forceOpenSslPlugin = true;
+
+    if (parser->isSet(openSslRootOption))
+        options->openSslRootDirectory = parser->value(openSslRootOption);
+
+    if (options->forceOpenSslPlugin && !options->openSslRootDirectory.isEmpty()) {
+        *errorMessage = QStringLiteral("force-openssl and openssl-root are mutually exclusive");
+        return CommandLineParseError;
+    }
 
     if (parser->isSet(forceOption))
         options->updateFileFlags |= ForceUpdateFile;
@@ -700,13 +734,15 @@ static inline int parseArguments(const QStringList &arguments, QCommandLineParse
             for (const QString &library : libraries)
                 options->binaries.append(path + u'/' + library);
         } else {
-            if (fi.absolutePath() != options->directory)
+            if (!parser->isSet(dirOption) && fi.absolutePath() != options->directory)
                 multipleDirs = true;
             options->binaries.append(path);
         }
     }
-    if (multipleDirs)
-        std::wcerr << "Warning: using binaries from different directories\n";
+    if (multipleDirs) {
+        std::wcerr << "Warning: using binaries from different directories, deploying to following path: "
+        << options->directory << '\n' << "To disable this warning, use the --dir option\n";
+    }
     if (options->translationsDirectory.isEmpty())
         options->translationsDirectory = options->directory + "/translations"_L1;
     return 0;
@@ -930,22 +966,28 @@ static qint64 qtModule(QString module, const QString &infix)
 
 // Return the path if a plugin is to be deployed
 static QString deployPlugin(const QString &plugin, const QDir &subDir, const bool dueToModule,
-                            const DebugMatchMode &debugMatchMode, ModuleBitset *usedQtModules,
+                            const DebugMatchMode &debugMatchMode, ModuleBitset *pluginNeededQtModules,
                             const ModuleBitset &disabledQtModules,
-                            const PluginLists &pluginSelections, const QString &libraryLocation,
+                            const PluginSelections &pluginSelections, const QString &libraryLocation,
                             const QString &infix, Platform platform,
-                            bool deployInsightTrackerPlugin)
+                            bool deployInsightTrackerPlugin, bool deployOpenSslPlugin)
 {
     const QString subDirName = subDir.dirName();
     // Filter out disabled plugins
-    if (pluginSelections.disabledPluginTypes.contains(subDirName)) {
+    if (optVerboseLevel && pluginSelections.disabledPluginTypes.contains(subDirName)) {
         std::wcout << "Skipping plugin " << plugin << " due to skipped plugin type " << subDirName << '\n';
         return {};
     }
-    if (subDirName == u"generic" && plugin.contains(u"qinsighttracker")
+    if (optVerboseLevel && subDirName == u"generic" && plugin.contains(u"qinsighttracker")
         && !deployInsightTrackerPlugin) {
         std::wcout << "Skipping plugin " << plugin
                    << ". Use -deploy-insighttracker if you want to use it.\n";
+        return {};
+    }
+    if (optVerboseLevel && subDirName == u"tls" && plugin.contains(u"qopensslbackend")
+        && !deployOpenSslPlugin) {
+        std::wcout << "Skipping plugin " << plugin
+                   << ". Use -force_openssl or specify -openssl-root if you want to use it.\n";
         return {};
     }
 
@@ -957,7 +999,7 @@ static QString deployPlugin(const QString &plugin, const QDir &subDir, const boo
             : dotIndex;
     const QString pluginName = plugin.first(stripIndex);
 
-    if (pluginSelections.excludedPlugins.contains(pluginName)) {
+    if (optVerboseLevel && pluginSelections.excludedPlugins.contains(pluginName)) {
         std::wcout << "Skipping plugin " << plugin << " due to exclusion option" << '\n';
         return {};
     }
@@ -986,44 +1028,35 @@ static QString deployPlugin(const QString &plugin, const QDir &subDir, const boo
         return pluginPath;
 
     QStringList dependentQtLibs;
-    ModuleBitset neededModules;
     QString errorMessage;
     if (findDependentQtLibraries(libraryLocation, pluginPath, platform,
                                  &errorMessage, &dependentQtLibs)) {
         for (int d = 0; d < dependentQtLibs.size(); ++d) {
             const qint64 module = qtModule(dependentQtLibs.at(d), infix);
             if (module >= 0)
-                neededModules[module] = 1;
+                (*pluginNeededQtModules)[module] = 1;
         }
     } else {
         std::wcerr << "Warning: Cannot determine dependencies of "
             << QDir::toNativeSeparators(pluginPath) << ": " << errorMessage << '\n';
     }
 
-    ModuleBitset missingModules;
-    missingModules = neededModules & disabledQtModules;
-    if (missingModules.any()) {
+    ModuleBitset disabledNeededQtModules;
+    disabledNeededQtModules = *pluginNeededQtModules & disabledQtModules;
+    if (disabledNeededQtModules.any()) {
         if (optVerboseLevel) {
             std::wcout << "Skipping plugin " << plugin
                 << " due to disabled dependencies ("
-                << formatQtModules(missingModules).constData() << ").\n";
+                << formatQtModules(disabledNeededQtModules).constData() << ").\n";
         }
         return {};
     }
 
-    missingModules = (neededModules & ~*usedQtModules);
-    if (missingModules.any()) {
-        *usedQtModules |= missingModules;
-        if (optVerboseLevel) {
-            std::wcout << "Adding " << formatQtModules(missingModules).constData()
-                << " for " << plugin << " from plugin type: " << subDirName << '\n';
-        }
-    }
     return pluginPath;
 }
 
 static bool needsPluginType(const QString &subDirName, const PluginInformation &pluginInfo,
-                            const PluginLists &pluginSelections)
+                            const PluginSelections &pluginSelections)
 {
     bool needsTypeForPlugin = false;
     for (const QString &plugin: pluginSelections.includedPlugins) {
@@ -1034,15 +1067,17 @@ static bool needsPluginType(const QString &subDirName, const PluginInformation &
 }
 
 QStringList findQtPlugins(ModuleBitset *usedQtModules, const ModuleBitset &disabledQtModules,
-                          const PluginInformation &pluginInfo, const PluginLists &pluginSelections,
+                          const PluginInformation &pluginInfo, const PluginSelections &pluginSelections,
                           const QString &qtPluginsDirName, const QString &libraryLocation,
                           const QString &infix, DebugMatchMode debugMatchModeIn, Platform platform,
-                          QString *platformPlugin, bool deployInsightTrackerPlugin)
+                          QString *platformPlugin, bool deployInsightTrackerPlugin,
+                          bool deployOpenSslPlugin)
 {
     if (qtPluginsDirName.isEmpty())
         return QStringList();
     QDir pluginsDir(qtPluginsDirName);
     QStringList result;
+    bool missingQtModulesAdded = false;
     const QFileInfoList &pluginDirs = pluginsDir.entryInfoList(QStringList(u"*"_s), QDir::Dirs | QDir::NoDotAndDotDot);
     for (const QFileInfo &subDirFi : pluginDirs) {
         const QString subDirName = subDirFi.fileName();
@@ -1059,24 +1094,49 @@ QStringList findQtPlugins(ModuleBitset *usedQtModules, const ModuleBitset &disab
                 ? MatchDebugOrRelease // QTBUG-44331: Debug detection does not work for webengine, deploy all.
                 : debugMatchModeIn;
             QDir subDir(subDirFi.absoluteFilePath());
-            std::wcout << "Adding in plugin type " << subDirFi.baseName() << " for module: " << qtModuleEntries.moduleById(module).name << '\n';
+            if (optVerboseLevel)
+                std::wcout << "Adding in plugin type " << subDirFi.baseName() << " for module: " << qtModuleEntries.moduleById(module).name << '\n';
 
             const bool isPlatformPlugin = subDirName == "platforms"_L1;
             const QStringList plugins =
                     findSharedLibraries(subDir, platform, debugMatchMode, QString());
             for (const QString &plugin : plugins) {
+                ModuleBitset pluginNeededQtModules;
                 const QString pluginPath =
-                        deployPlugin(plugin, subDir, dueToModule, debugMatchMode, usedQtModules,
+                        deployPlugin(plugin, subDir, dueToModule, debugMatchMode, &pluginNeededQtModules,
                                      disabledQtModules, pluginSelections, libraryLocation, infix,
-                                     platform, deployInsightTrackerPlugin);
+                                     platform, deployInsightTrackerPlugin, deployOpenSslPlugin);
                 if (!pluginPath.isEmpty()) {
                     if (isPlatformPlugin && plugin.startsWith(u"qwindows"))
                         *platformPlugin = subDir.absoluteFilePath(plugin);
                     result.append(pluginPath);
+
+                    const ModuleBitset missingModules = (pluginNeededQtModules & ~*usedQtModules);
+                    if (missingModules.any()) {
+                        *usedQtModules |= missingModules;
+                        missingQtModulesAdded = true;
+                        if (optVerboseLevel) {
+                            std::wcout << "Adding " << formatQtModules(missingModules).constData()
+                                       << " for " << plugin << " from plugin type: " << subDirName << '\n';
+                        }
+                    }
                 }
             } // for filter
         } // type matches
     } // for plugin folder
+
+    // If missing Qt modules were added during plugin deployment make additional pass, because we may need
+    // additional plugins.
+    if (pluginSelections.includeSoftPlugins && missingQtModulesAdded) {
+        if (optVerboseLevel) {
+            std::wcout << "Performing additional pass of finding Qt plugins due to updated Qt module list: "
+                       << formatQtModules(*usedQtModules).constData() << "\n";
+        }
+        return findQtPlugins(usedQtModules, disabledQtModules, pluginInfo, pluginSelections, qtPluginsDirName,
+                             libraryLocation, infix, debugMatchModeIn, platform, platformPlugin,
+                             deployInsightTrackerPlugin, deployOpenSslPlugin);
+    }
+
     return result;
 }
 
@@ -1177,6 +1237,35 @@ static QStringList findFFmpegLibs(const QString &qtBinDir, Platform platform)
     return ffmpegLibs;
 }
 
+// Find the openssl libraries Qt executables depend on.
+static QStringList findOpenSslLibraries(const QString &openSslRootDir, Platform platform)
+{
+    const std::vector<QLatin1StringView> libHints = { "libcrypto"_L1, "libssl"_L1 };
+    const QChar slash(u'/');
+    const QString openSslBinDir = openSslRootDir + slash + "bin"_L1;
+    const QStringList openSslRootLibs =
+            findSharedLibraries(openSslBinDir, platform, MatchDebugOrRelease, {});
+
+    QStringList result;
+    for (const QLatin1StringView &libHint : libHints) {
+        const QStringList lib = openSslRootLibs.filter(libHint, Qt::CaseInsensitive);
+
+        if (lib.empty()) {
+            std::wcerr << "Warning: Cannot find openssl libraries.\n";
+            return {};
+        } else if (lib.size() != 1u) {
+            std::wcerr << "Warning: Multiple versions of openssl libraries found.\n";
+            return {};
+        }
+
+        QFileInfo libPath{ openSslBinDir + slash + lib.front() };
+        result.append(libPath.absoluteFilePath());
+    }
+
+    return result;
+}
+
+
 struct DeployResult
 {
     operator bool() const { return success; }
@@ -1184,6 +1273,7 @@ struct DeployResult
     bool success = false;
     bool isDebug = false;
     ModuleBitset directlyUsedQtLibraries;
+    ModuleBitset usedQtLibraries;
     ModuleBitset deployedQtLibraries;
 };
 
@@ -1279,7 +1369,8 @@ static QStringList compilerRunTimeLibs(const QString &qtBinDir, Platform platfor
         break;
     }
 #ifdef Q_OS_WIN
-    case WindowsDesktopMsvc: { // MSVC/Desktop: Add redistributable packages.
+    case WindowsDesktopMsvcIntel:
+    case WindowsDesktopMsvcArm: { // MSVC/Desktop: Add redistributable packages.
         QString vcRedistDirName = vcRedistDir();
         if (vcRedistDirName.isEmpty())
              break;
@@ -1462,7 +1553,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
                     if (optVerboseLevel > 1)
                         std::wcout << "Adding ICU version " << icuVersion << '\n';
                     QString icuLib = QStringLiteral("icudt") + icuVersion
-                            + QLatin1StringView(windowsSharedLibrarySuffix);;
+                            + QLatin1StringView(windowsSharedLibrarySuffix);
                     // Some packages contain debug dlls of ICU libraries even though it's a C
                     // library and the official packages do not differentiate (QTBUG-87677)
                     if (result.isDebug) {
@@ -1531,14 +1622,37 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
     }
 
     QString platformPlugin;
+    // Sort apart Qt 5 libraries in the ones that are represented by the
+    // QtModule enumeration (and thus controlled by flags) and others.
     QStringList deployedQtLibraries;
-    result.deployedQtLibraries = (result.directlyUsedQtLibraries | options.additionalLibraries) & ~options.disabledLibraries;
+    for (int i = 0 ; i < dependentQtLibs.size(); ++i)  {
+        const qint64 module = qtModule(dependentQtLibs.at(i), infix);
+        if (module >= 0)
+            result.usedQtLibraries[module] = 1;
+        else
+            deployedQtLibraries.push_back(dependentQtLibs.at(i)); // Not represented by flag.
+    }
+    result.deployedQtLibraries = (result.usedQtLibraries | options.additionalLibraries) & ~options.disabledLibraries;
 
     ModuleBitset disabled = options.disabledLibraries;
     if (!usesQml2) {
         disabled[QtQmlModuleId] = 1;
         disabled[QtQuickModuleId] = 1;
     }
+
+    QStringList openSslLibs;
+    if (!options.openSslRootDirectory.isEmpty()) {
+        openSslLibs = findOpenSslLibraries(options.openSslRootDirectory, options.platform);
+        if (openSslLibs.isEmpty()) {
+            *errorMessage = QStringLiteral("Unable to find openSSL libraries in ")
+                    + options.openSslRootDirectory;
+            return result;
+        }
+
+        deployedQtLibraries.append(openSslLibs);
+    }
+    const bool deployOpenSslPlugin = options.forceOpenSslPlugin || !openSslLibs.isEmpty();
+
     const QStringList plugins = findQtPlugins(
             &result.deployedQtLibraries,
             // For non-QML applications, disable QML to prevent it from being pulled in by the
@@ -1546,7 +1660,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
             disabled, pluginInfo,
             options.pluginSelections, qtpathsVariables.value(QStringLiteral("QT_INSTALL_PLUGINS")),
             libraryLocation, infix, debugMatchMode, options.platform, &platformPlugin,
-            options.deployInsightTrackerPlugin);
+            options.deployInsightTrackerPlugin, deployOpenSslPlugin);
 
     // Apply options flags and re-add library names.
     QString qtGuiLibrary;
@@ -1562,6 +1676,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
 
     if (optVerboseLevel >= 1) {
         std::wcout << "Direct dependencies: " << formatQtModules(result.directlyUsedQtLibraries).constData()
+                   << "\nAll dependencies   : " << formatQtModules(result.usedQtLibraries).constData()
                    << "\nTo be deployed     : " << formatQtModules(result.deployedQtLibraries).constData() << '\n';
     }
 
@@ -1598,7 +1713,7 @@ static DeployResult deploy(const Options &options, const QMap<QString, QString> 
         }
     } // Windows
 
-    // Add ffmpeg if we deploy the ffmpeg backend
+    // Add FFmpeg if we deploy the FFmpeg backend
     if (options.ffmpeg
         && !plugins.filter(QStringLiteral("ffmpegmediaplugin"), Qt::CaseInsensitive).empty()) {
         deployedQtLibraries.append(findFFmpegLibs(qtBinDir, options.platform));
@@ -1815,6 +1930,24 @@ int main(int argc, char **argv)
     }
 
     options.platform = platformFromMkSpec(xSpec);
+    // We are on MSVC and not crosscompiling. We need the host arch
+    if (options.platform == WindowsDesktopMsvc) {
+        SYSTEM_INFO si;
+        GetSystemInfo(&si);
+        switch (si.wProcessorArchitecture) {
+        case PROCESSOR_ARCHITECTURE_INTEL:
+        case PROCESSOR_ARCHITECTURE_IA64:
+        case PROCESSOR_ARCHITECTURE_AMD64:
+            options.platform |= IntelBased;
+            break;
+        case PROCESSOR_ARCHITECTURE_ARM:
+        case PROCESSOR_ARCHITECTURE_ARM64:
+            options.platform |= ArmBased;
+            break;
+        default:
+            options.platform = UnknownPlatform;
+        }
+    }
     if (options.platform == UnknownPlatform) {
         std::wcerr << "Unsupported platform " << xSpec << '\n';
         return 1;

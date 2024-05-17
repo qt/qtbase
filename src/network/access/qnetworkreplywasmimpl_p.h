@@ -28,6 +28,7 @@
 #include <emscripten/fetch.h>
 
 #include <memory>
+#include <mutex>
 
 QT_BEGIN_NAMESPACE
 
@@ -57,10 +58,33 @@ public:
 
     Q_PRIVATE_SLOT(d_func(), void emitReplyError(QNetworkReply::NetworkError errorCode, const QString &errorString))
     Q_PRIVATE_SLOT(d_func(), void emitDataReadProgress(qint64 done, qint64 total))
-    Q_PRIVATE_SLOT(d_func(), void dataReceived(char *buffer, int bufferSize))
+    Q_PRIVATE_SLOT(d_func(), void dataReceived(const QByteArray &buffer))
 
 private:
     QByteArray methodName() const;
+};
+
+class QNetworkReplyWasmImplPrivate;
+
+/*!
+    The FetchContext class ensures the requestData object remains valid
+    while a fetch operation is pending. Since Emscripten fetch is asynchronous,
+    requestData must persist until one of the final callbacks is invoked.
+    Additionally, there's a potential race condition between the thread
+    scheduling the fetch operation and the one executing it. Since fetch must
+    occur on the main thread due to browser limitations,
+    a mutex safeguards the FetchContext to ensure atomic state transitions.
+*/
+struct FetchContext
+{
+    enum class State { SCHEDULED, SENT, FINISHED, CANCELED, TO_BE_DESTROYED };
+
+    FetchContext(QNetworkReplyWasmImplPrivate *networkReply) : reply(networkReply) { }
+
+    QNetworkReplyWasmImplPrivate *reply{ nullptr };
+    std::mutex mutex;
+    QByteArray requestData;
+    State state{ State::SCHEDULED };
 };
 
 class QNetworkReplyWasmImplPrivate: public QNetworkReplyPrivate
@@ -75,7 +99,7 @@ public:
 
     void emitReplyError(QNetworkReply::NetworkError errorCode, const QString &);
     void emitDataReadProgress(qint64 done, qint64 total);
-    void dataReceived(const QByteArray &buffer, int bufferSize);
+    void dataReceived(const QByteArray &buffer);
     void headersReceived(const QByteArray &buffer);
 
     void setStatusCode(int status, const QByteArray &statusText);
@@ -101,7 +125,6 @@ public:
 
     QIODevice *outgoingData;
     std::shared_ptr<QRingBuffer> outgoingDataBuffer;
-    QByteArray requestData;
 
     static void downloadProgress(emscripten_fetch_t *fetch);
     static void downloadFailed(emscripten_fetch_t *fetch);
@@ -111,6 +134,7 @@ public:
     static QNetworkReply::NetworkError statusCodeFromHttp(int httpStatusCode, const QUrl &url);
 
     emscripten_fetch_t *m_fetch;
+    FetchContext *m_fetchContext;
     void setReplyFinished();
     void setCanceled();
 

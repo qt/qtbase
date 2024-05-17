@@ -292,6 +292,13 @@ inline bool QMenuPrivate::useFullScreenForPopup() const
 QRect QMenuPrivate::popupGeometry(QScreen *screen) const
 {
     Q_Q(const QMenu);
+    if (screen == nullptr
+#if QT_CONFIG(graphicsview)
+        && q->graphicsProxyWidget() == nullptr
+#endif
+        ) {
+        screen = q->isVisible() ? q->screen() : popupScreen.data();
+    }
     if (useFullScreenForPopup())
         return screen ? screen->geometry()
                       : QWidgetPrivate::screenGeometry(q);
@@ -2309,6 +2316,9 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction positionFunction)
 {
     Q_Q(QMenu);
+    popupScreen = QGuiApplication::screenAt(p);
+    QScopeGuard popupScreenGuard([this](){ popupScreen.clear(); });
+
     if (scroll) { // reset scroll state from last popup
         if (scroll->scrollOffset)
             itemsDirty = 1; // sizeHint will be incorrect if there is previous scroll
@@ -2384,6 +2394,7 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
         pos = QPushButtonPrivate::get(causedButton)->adjustedMenuPosition();
     else
         pos = p;
+    popupScreen = QGuiApplication::screenAt(pos);
 
     const QSize menuSizeHint(q->sizeHint());
     QSize size = menuSizeHint;
@@ -2522,6 +2533,7 @@ void QMenuPrivate::popup(const QPoint &p, QAction *atAction, PositionFunction po
             }
         }
     }
+    popupScreen = QGuiApplication::screenAt(pos);
     q->setGeometry(QRect(pos, size));
 #if QT_CONFIG(effects)
     int hGuess = q->isRightToLeft() ? QEffects::LeftScroll : QEffects::RightScroll;
@@ -2662,6 +2674,7 @@ QAction *QMenuPrivate::exec(const QPoint &p, QAction *action, PositionFunction p
     action = syncAction;
     syncAction = nullptr;
     eventLoop = nullptr;
+    popupScreen.clear();
     return action;
 }
 

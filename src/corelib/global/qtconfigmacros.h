@@ -9,6 +9,7 @@
 #endif
 
 #include <QtCore/qtconfiginclude.h>
+#include <QtCore/qtversionchecks.h>
 
 #include <assert.h>
 
@@ -105,6 +106,22 @@
 # define QT_FORWARD_DECLARE_CLASS(name) class name;
 # define QT_FORWARD_DECLARE_STRUCT(name) struct name;
 
+#elif defined(QT_INLINE_NAMESPACE) /* user inline namespace FIXME in Qt 7: Default */
+
+# define QT_PREPEND_NAMESPACE(name) ::QT_NAMESPACE::name
+# define QT_USE_NAMESPACE
+# define QT_BEGIN_NAMESPACE inline namespace QT_NAMESPACE {
+# define QT_END_NAMESPACE }
+# define QT_BEGIN_INCLUDE_NAMESPACE }
+# define QT_END_INCLUDE_NAMESPACE inline namespace QT_NAMESPACE {
+# define QT_FORWARD_DECLARE_CLASS(name) \
+QT_BEGIN_NAMESPACE class name; QT_END_NAMESPACE
+
+# define QT_FORWARD_DECLARE_STRUCT(name) \
+QT_BEGIN_NAMESPACE struct name; QT_END_NAMESPACE
+
+inline namespace QT_NAMESPACE {}
+
 #else /* user namespace */
 
 # define QT_PREPEND_NAMESPACE(name) ::QT_NAMESPACE::name
@@ -154,5 +171,39 @@ namespace QT_NAMESPACE {}
 #ifndef QT_END_MOC_NAMESPACE
 # define QT_END_MOC_NAMESPACE
 #endif
+
+/*
+    Strict mode
+*/
+#ifdef QT_ENABLE_STRICT_MODE_UP_TO
+#ifndef QT_DISABLE_DEPRECATED_UP_TO
+#  define QT_DISABLE_DEPRECATED_UP_TO QT_ENABLE_STRICT_MODE_UP_TO
+#endif
+
+#if QT_ENABLE_STRICT_MODE_UP_TO >= QT_VERSION_CHECK(6, 0, 0)
+#  define QT_NO_FOREACH
+#  define QT_NO_CAST_FROM_ASCII
+#  define QT_NO_CAST_TO_ASCII
+#  define QT_NO_CAST_FROM_BYTEARRAY
+#  define QT_NO_URL_CAST_FROM_STRING
+#  define QT_NO_NARROWING_CONVERSIONS_IN_CONNECT
+#  define QT_NO_JAVA_STYLE_ITERATORS
+#endif // 6.0.0
+
+#if QT_ENABLE_STRICT_MODE_UP_TO >= QT_VERSION_CHECK(6, 6, 0)
+#  define QT_NO_QEXCHANGE
+#endif // 6.6.0
+
+#if QT_ENABLE_STRICT_MODE_UP_TO >= QT_VERSION_CHECK(6, 7, 0)
+#  define QT_NO_CONTEXTLESS_CONNECT
+#endif // 6.7.0
+
+#if QT_ENABLE_STRICT_MODE_UP_TO >= QT_VERSION_CHECK(6, 8, 0)
+#  define QT_NO_QASCONST
+#  if !defined(QT_USE_NODISCARD_FILE_OPEN) && !defined(QT_NO_USE_NODISCARD_FILE_OPEN)
+#    define QT_USE_NODISCARD_FILE_OPEN
+#  endif
+#endif // 6.8.0
+#endif // QT_ENABLE_STRICT_MODE_UP_TO
 
 #endif /* QTCONFIGMACROS_H */

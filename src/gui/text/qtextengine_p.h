@@ -159,10 +159,8 @@ Q_DECLARE_TYPEINFO(QGlyphAttributes, Q_PRIMITIVE_TYPE);
 
 struct QGlyphLayout
 {
-    enum {
-        SpaceNeeded = sizeof(glyph_t) + sizeof(QFixed) + sizeof(QFixedPoint)
-                    + sizeof(QGlyphAttributes) + sizeof(QGlyphJustification)
-    };
+    static constexpr qsizetype SpaceNeeded = sizeof(glyph_t) + sizeof(QFixed) + sizeof(QFixedPoint)
+            + sizeof(QGlyphAttributes) + sizeof(QGlyphJustification);
 
     // init to 0 not needed, done when shaping
     QFixedPoint *offsets; // 8 bytes per element
@@ -178,7 +176,7 @@ struct QGlyphLayout
     inline explicit QGlyphLayout(char *address, int totalGlyphs)
     {
         offsets = reinterpret_cast<QFixedPoint *>(address);
-        int offset = totalGlyphs * sizeof(QFixedPoint);
+        qsizetype offset = totalGlyphs * sizeof(QFixedPoint);
         glyphs = reinterpret_cast<glyph_t *>(address + offset);
         offset += totalGlyphs * sizeof(glyph_t);
         advances = reinterpret_cast<QFixed *>(address + offset);
@@ -211,7 +209,7 @@ struct QGlyphLayout
             last = numGlyphs;
         if (first == 0 && last == numGlyphs
             && reinterpret_cast<char *>(offsets + numGlyphs) == reinterpret_cast<char *>(glyphs)) {
-            memset(static_cast<void *>(offsets), 0, (numGlyphs * SpaceNeeded));
+            memset(static_cast<void *>(offsets), 0, qsizetype(numGlyphs) * SpaceNeeded);
         } else {
             const int num = last - first;
             memset(static_cast<void *>(offsets + first), 0, num * sizeof(QFixedPoint));
@@ -226,6 +224,7 @@ struct QGlyphLayout
         return reinterpret_cast<char *>(offsets);
     }
 
+    void copy(QGlyphLayout *other);
     void grow(char *address, int totalGlyphs);
 };
 
@@ -372,12 +371,12 @@ public:
         LayoutFailed
     };
     struct Q_GUI_EXPORT LayoutData {
-        LayoutData(const QString &str, void **stack_memory, int mem_size);
+        LayoutData(const QString &str, void **stack_memory, qsizetype mem_size);
         LayoutData();
         ~LayoutData();
         mutable QScriptItemArray items;
-        int allocated;
-        int available_glyphs;
+        qsizetype allocated;
+        qsizetype available_glyphs;
         void **memory;
         unsigned short *logClustersPtr;
         QGlyphLayout glyphLayout;

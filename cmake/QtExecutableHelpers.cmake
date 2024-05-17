@@ -146,12 +146,7 @@ function(qt_internal_add_executable name)
         MACOSX_BUNDLE "${arg_GUI}"
     )
 
-    if(WASM)
-        # WASM unconditionally sets DISABLE_EXCEPTION_CATCHING=1
-        qt_internal_set_exceptions_flags("${name}" FALSE)
-    else()
-        qt_internal_set_exceptions_flags("${name}" ${arg_EXCEPTIONS})
-    endif()
+    qt_internal_set_exceptions_flags("${name}" ${arg_EXCEPTIONS})
 
     if(WASM)
         qt_internal_wasm_add_finalizers("${name}")
@@ -212,103 +207,6 @@ function(qt_internal_add_executable name)
                                       ADDITIONAL_INSTALL_ARGS ${additional_install_args})
         qt_internal_install_pdb_files(${name} "${arg_INSTALL_DIRECTORY}")
     endif()
-
-    # If linking against Gui, make sure to also build the default QPA plugin.
-    # This makes the experience of an initial Qt configuration to build and run one single
-    # test / executable nicer.
-    get_target_property(linked_libs "${name}" LINK_LIBRARIES)
-    if("Qt::Gui" IN_LIST linked_libs AND TARGET qpa_default_plugins)
-        add_dependencies("${name}" qpa_default_plugins)
-    endif()
-
-    # For static plugins, we need to explicitly link to plugins we want to be
-    # loaded with the executable. User projects get that automatically, but
-    # for tools built as part of Qt, we can't use that mechanism because it
-    # would pollute the targets we export as part of an install and lead to
-    # circular dependencies. The logic here is a simpler equivalent of the
-    # more dynamic logic in QtPlugins.cmake.in, but restricted to only
-    # adding plugins that are provided by the same module as the module
-    # libraries the executable links to.
-    set(libs
-        ${arg_LIBRARIES}
-        ${arg_PUBLIC_LIBRARIES}
-        ${extra_libraries}
-        Qt::PlatformCommonInternal
-    )
-
-    set(deduped_libs "")
-    foreach(lib IN LISTS libs)
-        if(NOT TARGET "${lib}")
-            continue()
-        endif()
-
-        # Normalize module by stripping any leading "Qt::", because properties are set on the
-        # versioned target (either Gui when building the module, or Qt6::Gui when it's
-        # imported).
-        if(lib MATCHES "Qt::([-_A-Za-z0-9]+)")
-            set(new_lib "${QT_CMAKE_EXPORT_NAMESPACE}::${CMAKE_MATCH_1}")
-            if(TARGET "${new_lib}")
-                set(lib "${new_lib}")
-            endif()
-        endif()
-
-        # Unalias the target.
-        get_target_property(aliased_target ${lib} ALIASED_TARGET)
-        if(aliased_target)
-            set(lib ${aliased_target})
-        endif()
-
-        list(APPEND deduped_libs "${lib}")
-    endforeach()
-
-    list(REMOVE_DUPLICATES deduped_libs)
-
-    foreach(lib IN LISTS deduped_libs)
-        string(MAKE_C_IDENTIFIER "${name}_plugin_imports_${lib}" out_file)
-        string(APPEND out_file .cpp)
-
-        # Initialize plugins that are built in the same repository as the Qt module 'lib'.
-        set(class_names_regular
-            "$<GENEX_EVAL:$<TARGET_PROPERTY:${lib},_qt_initial_repo_plugin_class_names>>")
-
-        # Initialize plugins that are built in the current Qt repository, but are associated
-        # with a Qt module from a different repository (qtsvg's QSvgPlugin associated with
-        # qtbase's QtGui).
-        string(MAKE_C_IDENTIFIER "${PROJECT_NAME}" current_project_name)
-        set(prop_prefix "_qt_repo_${current_project_name}")
-        set(class_names_current_project
-            "$<GENEX_EVAL:$<TARGET_PROPERTY:${lib},${prop_prefix}_plugin_class_names>>")
-
-        # Only add separator if first list is not empty, so we don't trigger the file generation
-        # when all lists are empty.
-        set(class_names_separator "$<$<NOT:$<STREQUAL:${class_names_regular},>>:;>" )
-        set(class_names
-            "${class_names_regular}${class_names_separator}${class_names_current_project}")
-
-        set(out_file_path "${CMAKE_CURRENT_BINARY_DIR}/${out_file}")
-
-        file(GENERATE OUTPUT "${out_file_path}" CONTENT
-"// This file is auto-generated. Do not edit.
-#include <QtPlugin>
-
-Q_IMPORT_PLUGIN($<JOIN:${class_names},)\nQ_IMPORT_PLUGIN(>)
-"
-            CONDITION "$<NOT:$<STREQUAL:${class_names},>>"
-        )
-
-        # CMake versions earlier than 3.18.0 can't find the generated file for some reason,
-        # failing at generation phase.
-        # Explicitly marking the file as GENERATED fixes the issue.
-        set_source_files_properties("${out_file_path}" PROPERTIES GENERATED TRUE)
-
-        target_sources(${name} PRIVATE
-            "$<$<NOT:$<STREQUAL:${class_names},>>:${out_file_path}>"
-        )
-        target_link_libraries(${name} PRIVATE
-            "$<TARGET_PROPERTY:${lib},_qt_initial_repo_plugins>"
-            "$<TARGET_PROPERTY:${lib},${prop_prefix}_plugins>")
-    endforeach()
-
 endfunction()
 
 # This function compiles the target at configure time the very first time and creates the custom
@@ -390,9 +288,15 @@ function(qt_internal_add_configure_time_executable target)
     if(arg_INSTALL_DIRECTORY)
         set(install_dir "${arg_INSTALL_DIRECTORY}")
     endif()
+
+    set(output_directory_relative "${install_dir}")
     set(output_directory "${QT_BUILD_DIR}/${install_dir}")
+
+    set(target_binary_path_relative
+        "${output_directory_relative}/${configuration_path}${target_binary}")
     set(target_binary_path
         "${output_directory}/${configuration_path}${target_binary}")
+
     get_filename_component(target_binary_path "${target_binary_path}" ABSOLUTE)
 
     if(NOT DEFINED arg_SOURCES)
@@ -521,7 +425,9 @@ function(qt_internal_add_configure_time_executable target)
     add_executable(${QT_CMAKE_EXPORT_NAMESPACE}::${target} ALIAS ${target})
     set_target_properties(${target} PROPERTIES
         _qt_internal_configure_time_target TRUE
-        IMPORTED_LOCATION "${target_binary_path}")
+        _qt_internal_configure_time_target_build_location "${target_binary_path_relative}"
+        IMPORTED_LOCATION "${target_binary_path}"
+    )
 
     if(NOT arg_NO_INSTALL)
         set_target_properties(${target} PROPERTIES

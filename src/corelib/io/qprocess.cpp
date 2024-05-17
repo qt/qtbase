@@ -35,6 +35,8 @@ QT_BEGIN_NAMESPACE
     \reentrant
     \since 4.6
 
+    \compares equality
+
     A process's environment is composed of a set of key=value pairs known as
     environment variables. The QProcessEnvironment class wraps that concept
     and allows easy manipulation of those variables. It's meant to be used
@@ -184,15 +186,17 @@ QProcessEnvironment &QProcessEnvironment::operator=(const QProcessEnvironment &o
 */
 
 /*!
-    \fn bool QProcessEnvironment::operator !=(const QProcessEnvironment &other) const
+    \fn bool QProcessEnvironment::operator!=(const QProcessEnvironment &lhs, const QProcessEnvironment &rhs)
 
-    Returns \c true if this and the \a other QProcessEnvironment objects are different.
+    Returns \c true if the process environment objects \a lhs and \a rhs are different.
 
     \sa operator==()
 */
 
 /*!
-    Returns \c true if this and the \a other QProcessEnvironment objects are equal.
+   \fn bool QProcessEnvironment::operator==(const QProcessEnvironment &lhs, const QProcessEnvironment &rhs)
+
+    Returns \c true if the process environment objects \a lhs and \a rhs are equal.
 
     Two QProcessEnvironment objects are considered equal if they have the same
     set of key=value pairs. The comparison of keys is done case-sensitive on
@@ -200,12 +204,12 @@ QProcessEnvironment &QProcessEnvironment::operator=(const QProcessEnvironment &o
 
     \sa operator!=(), contains()
 */
-bool QProcessEnvironment::operator==(const QProcessEnvironment &other) const
+bool comparesEqual(const QProcessEnvironment &lhs, const QProcessEnvironment &rhs)
 {
-    if (d == other.d)
+    if (lhs.d == rhs.d)
         return true;
 
-    return d && other.d && d->vars == other.d->vars;
+    return lhs.d && rhs.d && lhs.d->vars == rhs.d->vars;
 }
 
 /*!
@@ -1997,9 +2001,6 @@ QProcessEnvironment QProcess::processEnvironment() const
 
     If msecs is -1, this function will not time out.
 
-    \note On some UNIX operating systems, this function may return true but
-    the process may later report a QProcess::FailedToStart error.
-
     \sa started(), waitForReadyRead(), waitForBytesWritten(), waitForFinished()
 */
 bool QProcess::waitForStarted(int msecs)
@@ -2280,6 +2281,10 @@ void QProcess::start(OpenMode mode)
 void QProcess::startCommand(const QString &command, OpenMode mode)
 {
     QStringList args = splitCommand(command);
+    if (args.isEmpty()) {
+        qWarning("QProcess::startCommand: empty or whitespace-only command was provided");
+        return;
+    }
     const QString program = args.takeFirst();
     start(program, args, mode);
 }

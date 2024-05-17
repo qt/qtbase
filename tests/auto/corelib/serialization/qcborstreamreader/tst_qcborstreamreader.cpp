@@ -1,11 +1,9 @@
 // Copyright (C) 2020 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtCore/qcborstream.h>
 #include <QTest>
 #include <QBuffer>
-
-#include <QtCore/private/qbytearray_p.h>
 
 class tst_QCborStreamReader : public QObject
 {
@@ -699,12 +697,12 @@ void tst_QCborStreamReader::strings()
     if (reader.isByteArray()) {
         QByteArray prefix("some prefix");
         QByteArray ba = prefix;
-        QVERIFY(reader.toByteArray(ba));
+        QVERIFY(reader.readAndAppendToByteArray(ba));
         QCOMPARE(ba, prefix + fullString);
     } else {
         QString prefix("some prefix");
         QString str = prefix;
-        QVERIFY(reader.toString(str));
+        QVERIFY(reader.readAndAppendToString(str));
         QCOMPARE(str, prefix + QString::fromUtf8(fullString));
     }
 
@@ -714,7 +712,7 @@ void tst_QCborStreamReader::strings()
     if (reader.isString()) {
         QByteArray prefix("some prefix");
         QByteArray utf8 = prefix;
-        QVERIFY(reader.toUtf8String(utf8));
+        QVERIFY(reader.readAndAppendToUtf8String(utf8));
         QCOMPARE(utf8, prefix + fullString);
 
         reader.reset();
@@ -920,7 +918,7 @@ void tst_QCborStreamReader::validation_data()
     // Add QCborStreamReader-specific limitations due to use of QByteArray and
     // QString, which are allocated by QArrayData::allocate().
     const qsizetype MaxInvalid = std::numeric_limits<QByteArray::size_type>::max();
-    const qsizetype MinInvalid = MaxByteArraySize + 1;
+    const qsizetype MinInvalid = QByteArray::max_size() + 1;
 
     addValidationColumns();
     addValidationData(MinInvalid);
@@ -954,21 +952,21 @@ void tst_QCborStreamReader::validation()
         if (reader.isString()) {
             QString prefix = "some prefix";
             QString str = prefix;
-            QVERIFY(!reader.toString(str));
+            QVERIFY(!reader.readAndAppendToString(str));
             QVERIFY(str.startsWith(prefix));    // but may have decoded some
         } else if (reader.isByteArray()) {
             QByteArray prefix = "some prefix";
             QByteArray ba = prefix;
-            QVERIFY(!reader.toByteArray(ba));
+            QVERIFY(!reader.readAndAppendToByteArray(ba));
             QVERIFY(ba.startsWith(prefix));     // but may have decoded some
         }
         QCOMPARE(reader.lastError(), error);
 
         reader.reset();
         if (reader.isString())
-            QVERIFY(reader.toString().isNull());
+            QVERIFY(reader.readAllString().isNull());
         else
-            QVERIFY(reader.toByteArray().isNull());
+            QVERIFY(reader.readAllByteArray().isNull());
     }
 
     reader.reset();
@@ -977,12 +975,12 @@ void tst_QCborStreamReader::validation()
     if (reader.isString()) {
         QByteArray prefix = "some prefix";
         QByteArray ba = prefix;
-        QVERIFY(!reader.toUtf8String(ba));
+        QVERIFY(!reader.readAndAppendToUtf8String(ba));
         QVERIFY(ba.startsWith(prefix));     // but may have decoded some
         QCOMPARE(reader.lastError(), error);
 
         reader.reset();
-        QVERIFY(reader.toUtf8String().isNull());
+        QVERIFY(reader.readAllUtf8String().isNull());
 
         reader.reset();
         auto r = reader.readUtf8String();
@@ -997,7 +995,7 @@ void tst_QCborStreamReader::validation()
 
 void tst_QCborStreamReader::hugeDeviceValidation_data()
 {
-    addValidationHugeDevice(MaxByteArraySize + 1, MaxStringSize + 1);
+    addValidationHugeDevice(QByteArray::max_size() + 1, QString::max_size() + 1);
 }
 
 void tst_QCborStreamReader::hugeDeviceValidation()

@@ -5,6 +5,7 @@
 #include <private/qhttpprotocolhandler_p.h>
 #include <private/qnoncontiguousbytedevice_p.h>
 #include <private/qhttpnetworkconnectionchannel_p.h>
+#include <private/qsocketabstraction_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -34,10 +35,8 @@ void QHttpProtocolHandler::_q_receiveReply()
         return;
     }
 
-    QAbstractSocket::SocketState socketState = m_socket->state();
-
     // connection might be closed to signal the end of data
-    if (socketState == QAbstractSocket::UnconnectedState) {
+    if (QSocketAbstraction::socketState(m_socket) == QAbstractSocket::UnconnectedState) {
         if (m_socket->bytesAvailable() <= 0) {
             if (m_reply->d_func()->state == QHttpNetworkReplyPrivate::ReadingDataState) {
                 // finish this reply. this case happens when the server did not send a content length
@@ -93,7 +92,8 @@ void QHttpProtocolHandler::_q_receiveReply()
                 } else {
                     replyPrivate->autoDecompress = false;
                 }
-                if (m_reply->statusCode() == 100) {
+                const int statusCode = m_reply->statusCode();
+                if (statusCode == 100 || (102 <= statusCode && statusCode <= 199)) {
                     replyPrivate->clearHttpLayerInformation();
                     replyPrivate->state = QHttpNetworkReplyPrivate::ReadingStatusState;
                     break; // ignore
@@ -114,7 +114,7 @@ void QHttpProtocolHandler::_q_receiveReply()
         }
         case QHttpNetworkReplyPrivate::ReadingDataState: {
            QHttpNetworkReplyPrivate *replyPrivate = m_reply->d_func();
-           if (m_socket->state() == QAbstractSocket::ConnectedState &&
+           if (QSocketAbstraction::socketState(m_socket) == QAbstractSocket::ConnectedState &&
                replyPrivate->downstreamLimited && !replyPrivate->responseData.isEmpty() && replyPrivate->shouldEmitSignals()) {
                // (only do the following when still connected, not when we have already been disconnected and there is still data)
                // We already have some HTTP body data. We don't read more from the socket until
@@ -192,7 +192,8 @@ void QHttpProtocolHandler::_q_receiveReply()
 
 void QHttpProtocolHandler::_q_readyRead()
 {
-    if (m_socket->state() == QAbstractSocket::ConnectedState && m_socket->bytesAvailable() == 0) {
+    if (QSocketAbstraction::socketState(m_socket) == QAbstractSocket::ConnectedState
+        && m_socket->bytesAvailable() == 0) {
         // We got a readyRead but no bytes are available..
         // This happens for the Unbuffered QTcpSocket
         // Also check if socket is in ConnectedState since
@@ -200,7 +201,7 @@ void QHttpProtocolHandler::_q_readyRead()
         char c;
         qint64  ret = m_socket->peek(&c, 1);
         if (ret < 0) {
-            m_channel->_q_error(m_socket->error());
+            m_channel->_q_error(QSocketAbstraction::socketError(m_socket));
             // We still need to handle the reply so it emits its signals etc.
             if (m_reply)
                 _q_receiveReply();

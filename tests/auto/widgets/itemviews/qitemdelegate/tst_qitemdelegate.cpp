@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "../../../shared/highdpi.h"
 
@@ -747,7 +747,6 @@ void tst_QItemDelegate::dateTimeEditor()
     widget.setItem(0, 2, item3);
     widget.show();
     QVERIFY(QTest::qWaitForWindowExposed(&widget));
-    QApplicationPrivate::setActiveWindow(&widget);
 
     widget.editItem(item1);
 
@@ -763,7 +762,6 @@ void tst_QItemDelegate::dateTimeEditor()
     timeEditor->setTime(time.addSecs(60));
 
     widget.clearFocus();
-    QApplicationPrivate::setActiveWindow(&widget);
     widget.setFocus();
     widget.editItem(item2);
 
@@ -1027,7 +1025,6 @@ void tst_QItemDelegate::decoration()
     TestItemDelegate delegate;
     table.setItemDelegate(&delegate);
     table.show();
-    QApplicationPrivate::setActiveWindow(&table);
     QVERIFY(QTest::qWaitForWindowActive(&table));
 
     QVariant value;
@@ -1282,7 +1279,6 @@ void tst_QItemDelegate::enterKey()
     QListView view;
     view.setModel(&model);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     view.setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
@@ -1342,7 +1338,6 @@ void tst_QItemDelegate::task257859_finalizeEdit()
     QListView view;
     view.setModel(&model);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     view.setFocus();
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
@@ -1469,7 +1464,6 @@ void tst_QItemDelegate::testLineEditValidation()
     view.setItemDelegate(&delegate);
     view.show();
     view.setFocus();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
     QPointer<QLineEdit> editor;

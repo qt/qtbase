@@ -99,7 +99,8 @@ public:
         MaximizeUsingFullscreenGeometry,
         PaintEvents,
         RhiBasedRendering,
-        ScreenWindowGrabbing // whether QScreen::grabWindow() is supported
+        ScreenWindowGrabbing, // whether QScreen::grabWindow() is supported
+        BackingStoreStaticContents
     };
 
     virtual ~QPlatformIntegration() { }

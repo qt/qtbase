@@ -16,6 +16,7 @@ qt_internal_add_test(tst_qanystringview
         tst_qanystringview.cpp
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
 )
 
 ## Scopes:

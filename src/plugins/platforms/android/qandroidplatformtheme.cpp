@@ -23,6 +23,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcQpaMenus, "qt.qpa.menus")
+
 using namespace Qt::StringLiterals;
 
 namespace {
@@ -159,7 +161,10 @@ QJsonObject AndroidStyle::loadStyleData()
     if (!stylePath.isEmpty() && !stylePath.endsWith(slashChar))
         stylePath += slashChar;
 
-    if (QAndroidPlatformIntegration::colorScheme() == Qt::ColorScheme::Dark)
+    const Qt::ColorScheme colorScheme = QAndroidPlatformTheme::instance()
+                                      ? QAndroidPlatformTheme::instance()->colorScheme()
+                                      : QAndroidPlatformIntegration::colorScheme();
+    if (colorScheme == Qt::ColorScheme::Dark)
         stylePath += "darkUiMode/"_L1;
 
     Q_ASSERT(!stylePath.isEmpty());
@@ -394,27 +399,44 @@ void QAndroidPlatformTheme::updateStyle()
 
 QPlatformMenuBar *QAndroidPlatformTheme::createPlatformMenuBar() const
 {
-    return new QAndroidPlatformMenuBar;
+    auto *menuBar = new QAndroidPlatformMenuBar;
+    qCDebug(lcQpaMenus) << "Created" << menuBar;
+    return menuBar;
 }
 
 QPlatformMenu *QAndroidPlatformTheme::createPlatformMenu() const
 {
-    return new QAndroidPlatformMenu;
+    auto *menu = new QAndroidPlatformMenu;
+    qCDebug(lcQpaMenus) << "Created" << menu;
+    return menu;
 }
 
 QPlatformMenuItem *QAndroidPlatformTheme::createPlatformMenuItem() const
 {
-    return new QAndroidPlatformMenuItem;
+    auto *menuItem = new QAndroidPlatformMenuItem;
+    qCDebug(lcQpaMenus) << "Created" << menuItem;
+    return menuItem;
 }
 
 void QAndroidPlatformTheme::showPlatformMenuBar()
 {
+    qCDebug(lcQpaMenus) << "Showing platform menu bar";
     QtAndroidMenu::openOptionsMenu();
 }
 
 Qt::ColorScheme QAndroidPlatformTheme::colorScheme() const
 {
+    if (m_colorSchemeOverride != Qt::ColorScheme::Unknown)
+        return m_colorSchemeOverride;
     return QAndroidPlatformIntegration::colorScheme();
+}
+
+void QAndroidPlatformTheme::requestColorScheme(Qt::ColorScheme scheme)
+{
+    m_colorSchemeOverride = scheme;
+    QMetaObject::invokeMethod(qGuiApp, [this]{
+        updateColorScheme();
+    });
 }
 
 static inline int paletteType(QPlatformTheme::Palette type)

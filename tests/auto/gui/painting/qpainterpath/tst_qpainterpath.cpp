@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -81,6 +81,8 @@ private slots:
 
     void intersectionEquality();
     void intersectionPointOnEdge();
+
+    void boundsAtStartPoint();
 };
 
 void tst_QPainterPath::cleanupTestCase()
@@ -763,6 +765,21 @@ void tst_QPainterPath::testOperatorDatastream()
     }
 
     QCOMPARE(other, path);
+
+    // Check reset & detach
+    QPainterPath p3;
+    p3.lineTo(1, 1);
+    QCOMPARE(p3.elementCount(), 2);
+    QPainterPath p4 = p3;
+    QCOMPARE(p4.elementCount(), 2);
+    {
+        QFile data(tempDir.path() + "/data");
+        QVERIFY(data.open(QFile::ReadOnly));
+        QDataStream stream(&data);
+        stream >> p3;
+    }
+    QCOMPARE(p3.elementCount(), path.elementCount());
+    QCOMPARE(p4.elementCount(), 2);
 }
 
 void tst_QPainterPath::closing()
@@ -1440,6 +1457,32 @@ void tst_QPainterPath::intersectionPointOnEdge()
     QVERIFY(!p.intersected(rp).isEmpty());
     QVERIFY(p.intersects(rp));
     QVERIFY(p.intersects(r));
+}
+
+void tst_QPainterPath::boundsAtStartPoint()
+{
+    const QPointF startPoint(10, 10);
+    const QPainterPath constructedPath(startPoint);
+    {
+        const auto boundingRect = constructedPath.boundingRect();
+        const auto topLeft = boundingRect.topLeft();
+        QCOMPARE(topLeft, startPoint);
+        QCOMPARE(topLeft, constructedPath.elementAt(0));
+        QCOMPARE(boundingRect, constructedPath.controlPointRect());
+    }
+
+    QPainterPath defaultPath;
+    defaultPath.moveTo(startPoint);
+    {
+        const auto boundingRect = defaultPath.boundingRect();
+        const auto topLeft = boundingRect.topLeft();
+        QCOMPARE(topLeft, startPoint);
+        QCOMPARE(topLeft, defaultPath.elementAt(0));
+        QCOMPARE(boundingRect, defaultPath.controlPointRect());
+    }
+
+    QCOMPARE(constructedPath.boundingRect(), defaultPath.boundingRect());
+    QCOMPARE(constructedPath.controlPointRect(), defaultPath.controlPointRect());
 }
 
 QTEST_APPLESS_MAIN(tst_QPainterPath)

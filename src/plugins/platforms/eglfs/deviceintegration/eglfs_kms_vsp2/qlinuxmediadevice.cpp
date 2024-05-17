@@ -200,7 +200,7 @@ bool QLinuxMediaDevice::resetLinks()
 
 struct media_link *QLinuxMediaDevice::parseLink(const QString &link)
 {
-    char *endp = nullptr;;
+    char *endp = nullptr;
     struct media_link *mediaLink = media_parse_link(m_mediaDevice, link.toStdString().c_str(), &endp);
 
     if (!mediaLink)

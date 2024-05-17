@@ -1,34 +1,60 @@
 # Copyright (C) 2021 The Qt Company Ltd.
 # SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
-# A run of cldr2qlocalexml.py will produce output reporting any
-# language, script and territory codes it sees, in data, for which it
-# can find a name (taken always from en.xml) that could potentially be
-# used. There is no point adding a mapping for such a code unless the
-# CLDR's common/main/ contains an XML file for at least one locale
-# that exercises it (and little point absent substantial data).
+"""Assorted enumerations implicated in public API.
 
-# Each *_map reflects the current values of its enums in qlocale.h; if
-# new xml language files are available in CLDR, these languages and
-# territories need to be *appended* to this list (for compatibility
-# between versions). Include any spaces and dashes present in names
-# (they'll be squished them out for the enum entries) in *_map, but
-# use the squished forms of names in the *_aliases mappings. The
-# squishing also turns the first letter of each word into a capital so
-# you can safely preserve the case of en.xml's name; but omit (or
-# replace with space) any punctuation aside from dashes and map any
-# accented letters to their un-accented plain ASCII.
+The numberings of these enumerations can only change at major
+versions. When new CLDR data implies adding entries, the new ones must
+go after all existing ones. See also zonedata.py for enumerations
+related to timezones and CLDR, which can more freely be changed
+between versions.
 
-# For a new major version (and only then), we can change the
-# numbering, so re-sort each list into alphabetic order (e.g. using
-# sort -k2); but keep the Any and C entries first. That's why those
-# are offset with a blank line, below. After doing that, regenerate
-# locale data as usual; this will cause a binary-incompatible change.
+A run of cldr2qlocalexml.py will produce output reporting any
+language, script and territory codes it sees, in data, for which it
+can find a name (taken always from en.xml) that could potentially be
+used. There is no point adding a mapping for such a code unless the
+CLDR's common/main/ contains an XML file for at least one locale that
+exercises it (and little point, even then, absent substantial data,
+ignoring draft='unconfirmed' entries).
 
-# Note on "macrolanguage" comments: see QTBUG-107781 and "ISO 639
-# macrolanguage" on Wikipedia. A "macrolanguage" is (loosely-speaking)
-# a group of languages so closely related to one another that they
-# could also be regarded as divergent dialects of the macrolanguage.
+Each *_map reflects the current values of its enums in qlocale.h; if
+new xml language files are available in CLDR, these languages and
+territories need to be *appended* to this list (for compatibility
+between versions). Include any spaces and dashes present in names
+(they'll be squished out for the enum entries) in *_map, but use the
+squished forms of names in the *_aliases mappings. The squishing also
+turns the first letter of each word into a capital so you can safely
+preserve the case of en.xml's name; but omit (or replace with space)
+any punctuation aside from dashes and map any accented letters to
+their un-accented plain ASCII. The two tables, for each enum, have
+the forms:
+* map { Numeric value: ("Proper name", "ISO code") }
+* alias { "OldName": "CurrentName" }
+
+TODO: add support for marking entries as deprecated from a specified
+version. For aliases that merely deprecates the name. Where we have a
+name for which CLDR offers no data, we may also want to deprecate
+entries in the map - although they may be worth keeping for the
+benefit of QLocaleSelector (see QTBUG-112765), if other
+locale-specific resources might have use of them.
+
+For a new major version (and only then), we can change the numbering,
+so re-sort each list into alphabetic order (e.g. using sort -k2); but
+keep the Any and C entries first. That's why those are offset with a
+blank line, below. After doing that, regenerate locale data as usual;
+this will cause a binary-incompatible change.
+
+Note on 'macrolanguage' comments: see QTBUG-107781 and 'ISO 639
+macrolanguage' on Wikipedia. A 'macrolanguage' is (loosely-speaking) a
+group of languages so closely related to one another that they could
+also be regarded as divergent dialects of the macrolanguage.  In some
+cases this may mean a resource (such as translation or text-to-speech
+data) may describe itself as pertaining to the macrolanguage, implying
+its suitability for use in any of the languages within the
+macrolanguage. For example, no_NO might be used for a generic
+Norwegian resource, embracing both nb_NO and nn_NO.
+
+"""
 
 language_map = {
       0: ("AnyLanguage",                 "  "),
@@ -376,10 +402,15 @@ language_map = {
     338: ("Ligurian",                    "lij"),
     339: ("Rohingya",                    "rhg"),
     340: ("Torwali",                     "trw"),
+    # added in CLDR v44
+    341: ("Anii",                        "blo"),
+    342: ("Kangri",                      "xnr"),
+    343: ("Venetian",                    "vec"),
 }
 # Don't add languages just because they exist; check CLDR does provide
 # substantial data for locales using it; and check, once added, they
-# don't show up in cldr2qlocalexmo.py's unused listing.
+# don't show up in cldr2qlocalexmo.py's unused listing. Do also check
+# the data's draft status; if it's (nearly) all unconfirmed, leave it.
 
 language_aliases = {
     # Renamings prior to Qt 6.0 (CLDR v37):
@@ -403,7 +434,7 @@ language_aliases = {
     'Navaho': 'Navajo',
     'Oriya': 'Odia',
     'Kirghiz': 'Kyrgyz'
-    }
+}
 
 territory_map = {
       0: ("AnyTerritory",                                 "ZZ"),
@@ -525,9 +556,9 @@ territory_map = {
     115: ("Isle of Man",                                  "IM"),
     116: ("Israel",                                       "IL"),
     117: ("Italy",                                        "IT"),
-      # Officially Côte d’Ivoire, which we'd ned to map to CotedIvoire
-      # or CoteDIvoire, either failing to make the d' separate from
-      # Cote or messing with its case. So stick with Ivory Coast:
+    # Officially Côte d’Ivoire, which we'd need to map to CotedIvoire
+    # or CoteDIvoire, either failing to make the d' separate from Cote
+    # or messing with its case. So stick with Ivory Coast:
     118: ("Ivory Coast",                                  "CI"),
     119: ("Jamaica",                                      "JM"),
     120: ("Japan",                                        "JP"),

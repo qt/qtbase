@@ -118,7 +118,7 @@ QList<QSslCertificate> X509CertificateGeneric::certificatesFromPem(const QByteAr
 
         QByteArray decoded = QByteArray::fromBase64(
             QByteArray::fromRawData(pem.data() + startPos, endPos - startPos));
-        certificates << certificatesFromDer(decoded, 1);;
+        certificates << certificatesFromDer(decoded, 1);
     }
 
     return certificates;

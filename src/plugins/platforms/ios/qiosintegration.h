@@ -11,15 +11,29 @@
 #include <QtCore/private/qfactoryloader_p.h>
 
 #include "qiosapplicationstate.h"
-#ifndef Q_OS_TVOS
+
+#if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
 #include "qiostextinputoverlay.h"
+#endif
+
+#if defined(Q_OS_VISIONOS)
+#include <swift/bridging>
 #endif
 
 QT_BEGIN_NAMESPACE
 
+using namespace QNativeInterface;
+
 class QIOSServices;
 
-class QIOSIntegration : public QPlatformNativeInterface, public QPlatformIntegration
+class
+#if defined(Q_OS_VISIONOS)
+    SWIFT_IMMORTAL_REFERENCE
+#endif
+QIOSIntegration : public QPlatformNativeInterface, public QPlatformIntegration
+#if defined(Q_OS_VISIONOS)
+    , public QVisionOSApplication
+#endif
 {
     Q_OBJECT
 public:
@@ -41,9 +55,11 @@ public:
     QPlatformOffscreenSurface *createPlatformOffscreenSurface(QOffscreenSurface *surface) const override;
 
     QPlatformFontDatabase *fontDatabase() const override;
-#ifndef QT_NO_CLIPBOARD
+
+#if QT_CONFIG(clipboard)
     QPlatformClipboard *clipboard() const override;
 #endif
+
     QPlatformInputContext *inputContext() const override;
     QPlatformServices *services() const override;
 
@@ -74,9 +90,20 @@ public:
 
     QIOSApplicationState applicationState;
 
+#if defined(Q_OS_VISIONOS)
+    void openImmersiveSpace() override;
+    void dismissImmersiveSpace() override;
+
+    using CompositorLayer = QVisionOSApplication::ImmersiveSpaceCompositorLayer;
+    void setImmersiveSpaceCompositorLayer(CompositorLayer *layer) override;
+
+    void configureCompositorLayer(cp_layer_renderer_capabilities_t, cp_layer_renderer_configuration_t);
+    void renderCompositorLayer(cp_layer_renderer_t);
+#endif
+
 private:
     QPlatformFontDatabase *m_fontDatabase;
-#ifndef Q_OS_TVOS
+#if QT_CONFIG(clipboard)
     QPlatformClipboard *m_clipboard;
 #endif
     QPlatformInputContext *m_inputContext;
@@ -84,8 +111,12 @@ private:
     QIOSServices *m_platformServices;
     mutable QPlatformAccessibility *m_accessibility;
     QFactoryLoader *m_optionalPlugins;
-#ifndef Q_OS_TVOS
+#if !defined(Q_OS_TVOS) && !defined(Q_OS_VISIONOS)
     QIOSTextInputOverlay m_textInputOverlay;
+#endif
+
+#if defined(Q_OS_VISIONOS)
+    CompositorLayer *m_immersiveSpaceCompositorLayer = nullptr;
 #endif
 };
 

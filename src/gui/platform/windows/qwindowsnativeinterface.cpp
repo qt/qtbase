@@ -181,15 +181,7 @@ QT_DEFINE_NATIVE_INTERFACE(QWindowsScreen);
     \value DarkModeStyle        The Windows Vista style will be turned off and
                                 a simple dark style will be used.
 
-    \sa isDarkMode(), setDarkModeHandling()
-*/
-
-/*!
-    \fn bool QNativeInterface::Private::QWindowsApplication::isDarkMode() const = 0
-    \internal
-
-    Returns \c true if Windows 10 is configured to use dark mode for
-    applications.
+    \sa setDarkModeHandling()
 */
 
 /*!

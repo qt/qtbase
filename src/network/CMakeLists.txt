@@ -22,6 +22,7 @@ qt_internal_add_module(Network
         access/qnetworkfile.cpp access/qnetworkfile_p.h
         access/qhttpheaders.cpp access/qhttpheaders.h
         access/qhttpheaderparser.cpp access/qhttpheaderparser_p.h
+        access/qhttpheadershelper.cpp access/qhttpheadershelper_p.h
         access/qnetworkreply.cpp access/qnetworkreply.h access/qnetworkreply_p.h
         access/qnetworkreplydataimpl.cpp access/qnetworkreplydataimpl_p.h
         access/qnetworkreplyfileimpl.cpp access/qnetworkreplyfileimpl_p.h
@@ -59,6 +60,10 @@ qt_internal_add_module(Network
         QT_NO_FOREACH
         QT_NO_USING_NAMESPACE
         QT_NO_CAST_FROM_ASCII
+        QT_NO_CAST_TO_ASCII
+        QT_NO_CAST_FROM_BYTEARRAY
+        QT_NO_URL_CAST_FROM_STRING
+        QT_USE_NODISCARD_FILE_OPEN
     INCLUDE_DIRECTORIES
         kernel
     LIBRARIES
@@ -138,6 +143,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_http
         access/qnetworkrequestfactory.h
         access/qrestaccessmanager.cpp access/qrestaccessmanager.h access/qrestaccessmanager_p.h
         access/qrestreply.cpp access/qrestreply.h access/qrestreply_p.h
+        access/qsocketabstraction_p.h
         socket/qhttpsocketengine.cpp socket/qhttpsocketengine_p.h
 )
 
@@ -240,7 +246,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_dnslookup AND NOT QT_FEAT
         kernel/qdnslookup_dummy.cpp
 )
 
-qt_internal_extend_target(Network CONDITION IOS OR MACOS
+qt_internal_extend_target(Network CONDITION APPLE
     SOURCES
         kernel/qnetconmonitor_darwin.mm
     LIBRARIES
@@ -252,7 +258,7 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_networklistmanager AND NO
         kernel/qnetconmonitor_win.cpp
 )
 
-qt_internal_extend_target(Network CONDITION NOT IOS AND NOT MACOS AND NOT QT_FEATURE_networklistmanager
+qt_internal_extend_target(Network CONDITION NOT APPLE AND NOT QT_FEATURE_networklistmanager
     SOURCES
         kernel/qnetconmonitor_stub.cpp
 )
@@ -267,7 +273,7 @@ qt_internal_extend_target(Network CONDITION UIKIT
         kernel/qnetworkinterface_uikit_p.h
 )
 
-qt_internal_extend_target(Network CONDITION APPLE
+qt_internal_extend_target(Network CONDITION APPLE AND NOT VISIONOS
     SOURCES
         kernel/qnetworkproxy_darwin.cpp
 )
@@ -285,7 +291,7 @@ qt_internal_extend_target(Network CONDITION ANDROID
         kernel/qnetworkproxy_android.cpp
 )
 
-qt_internal_extend_target(Network CONDITION UNIX AND NOT ANDROID AND NOT APPLE AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT)
+qt_internal_extend_target(Network CONDITION UNIX AND NOT ANDROID AND NOT (APPLE AND NOT VISIONOS) AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT)
     SOURCES
         kernel/qnetworkproxy_generic.cpp
 )

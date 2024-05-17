@@ -1,0 +1,80 @@
+<!doctype html>
+
+<head>
+    <script type="text/javascript" src="tst_qwasmwindow_harness.js"></script>
+    <script>
+        (async () => {
+            const instance = await tst_qwasmwindow_harness_entry({});
+            window.instance = instance;
+
+            const testSandbox = document.createElement('div');
+            testSandbox.id = 'test-sandbox';
+            let nextScreenId = 1;
+            document.body.appendChild(testSandbox);
+
+            const eventList = [];
+
+            const makeSizedDiv = (left, top, width, height) => {
+                const screenDiv = document.createElement('div');
+
+                screenDiv.style.left = `${left}px`;
+                screenDiv.style.top = `${top}px`;
+                screenDiv.style.width = `${width}px`;
+                screenDiv.style.height = `${height}px`;
+                screenDiv.style.backgroundColor = 'lightblue';
+                screenDiv.id = `test-screen-${nextScreenId++}`;
+
+                return screenDiv;
+            };
+
+            window.testSupport = {
+                initializeScreenWithFixedPosition: (left, top, width, height) => {
+                    const screenDiv = makeSizedDiv(left, top, width, height);
+                    testSandbox.appendChild(screenDiv);
+
+                    screenDiv.style.position = 'fixed';
+                    instance.qtAddContainerElement(screenDiv);
+
+                    return screenDiv;
+                },
+                initializeScreenWithRelativePosition: (left, top, width, height) => {
+                    const screenDiv = makeSizedDiv(left, top, width, height);
+                    testSandbox.appendChild(screenDiv);
+
+                    screenDiv.style.position = 'relative';
+                    instance.qtAddContainerElement(screenDiv);
+
+                    return screenDiv;
+                },
+                initializeScreenInScrollContainer:
+                    (scrollWidth, scrollHeight, left, top, width, height) => {
+                        const scrollContainer = document.createElement('div');
+                        scrollContainer.style.height = `${scrollHeight}px`;
+                        scrollContainer.style.width = `${scrollWidth}px`;
+                        testSandbox.appendChild(scrollContainer);
+
+                        const screenDiv = makeSizedDiv(left, top, width, height);
+                        scrollContainer.appendChild(screenDiv);
+                        screenDiv.style.position = 'relative';
+
+                        instance.qtAddContainerElement(screenDiv);
+
+                        return [scrollContainer, screenDiv];
+                    },
+                reportEvent: event => {
+                    eventList.push(event);
+                },
+                events: () => eventList,
+                hitTestPoint: (x, y, screenId) => {
+                    return document
+                        .querySelector(`#${screenId}`)
+                        .querySelector('#qt-shadow-container')
+                        .shadowRoot.elementsFromPoint(x, y);
+                }
+            };
+        })();
+    </script>
+</head>
+
+<body>
+</body>

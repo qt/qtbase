@@ -13,12 +13,14 @@ QT_BEGIN_NAMESPACE
 
 class QCollatorPrivate;
 class QCollatorSortKeyPrivate;
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QCollatorSortKeyPrivate, Q_CORE_EXPORT)
 
 class Q_CORE_EXPORT QCollatorSortKey
 {
     friend class QCollator;
 public:
     QCollatorSortKey(const QCollatorSortKey &other);
+    QCollatorSortKey(QCollatorSortKey &&other) noexcept = default;
     ~QCollatorSortKey();
     QCollatorSortKey &operator=(const QCollatorSortKey &other);
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QCollatorSortKey)

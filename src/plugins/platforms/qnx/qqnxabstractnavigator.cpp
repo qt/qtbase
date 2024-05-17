@@ -6,13 +6,9 @@
 #include <QDebug>
 #include <QUrl>
 
-#if defined(QQNXNAVIGATOR_DEBUG)
-#define qNavigatorDebug qDebug
-#else
-#define qNavigatorDebug QT_NO_QDEBUG_MACRO
-#endif
-
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(lcQpaQnxNavigator, "qt.qpa.qnx.navigator");
 
 QQnxAbstractNavigator::QQnxAbstractNavigator(QObject *parent)
     : QObject(parent)
@@ -32,7 +28,7 @@ bool QQnxAbstractNavigator::invokeUrl(const QUrl &url)
     // which is not recognized by the navigator anymore
     const bool result = requestInvokeUrl(url.toString().toUtf8());
 
-    qNavigatorDebug() << "url=" << url << "result=" << result;
+    qCDebug(lcQpaQnxNavigator) << Q_FUNC_INFO << "url =" << url << "result =" << result;
 
     return result;
 }

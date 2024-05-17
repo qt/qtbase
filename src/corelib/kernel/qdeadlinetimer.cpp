@@ -51,6 +51,8 @@ static qint64 add_saturate(qint64 t1, Duration1 dur, Durations... extra)
     \reentrant
     \ingroup tools
 
+    \compares strong
+
     The QDeadlineTimer class is usually used to calculate future deadlines and
     verify whether the deadline has expired. QDeadlineTimer can also be used
     for deadlines without expiration ("forever"). It forms a counterpart to
@@ -84,11 +86,12 @@ static qint64 add_saturate(qint64 t1, Duration1 dur, Durations... extra)
 
     \section1 Timer types
 
-    Like QTimer, QDeadlineTimer can select among different levels of coarseness
-    on the timers. You can select precise timing by passing Qt::PreciseTimer to
-    the functions that set of change the timer, or you can select coarse timing
-    by passing Qt::CoarseTimer. Qt::VeryCoarseTimer is currently interpreted
-    the same way as Qt::CoarseTimer.
+    Like QTimer and QChronoTimer, QDeadlineTimer can select among
+    different levels of coarseness on the timers. You can select
+    precise timing by passing Qt::PreciseTimer to the functions that
+    set of change the timer, or you can select coarse timing by passing
+    Qt::CoarseTimer. Qt::VeryCoarseTimer is currently interpreted the same
+    way as Qt::CoarseTimer.
 
     This feature is dependent on support from the operating system: if the OS
     does not support a coarse timer functionality, then QDeadlineTimer will
@@ -120,7 +123,7 @@ static qint64 add_saturate(qint64 t1, Duration1 dur, Durations... extra)
 
     \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 2
 
-    \sa QTime, QTimer, QDeadlineTimer, Qt::TimerType
+    \sa QTime, QChronoTimer, QDeadlineTimer, Qt::TimerType
 */
 
 /*!
@@ -590,9 +593,9 @@ QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) noexcept
 }
 
 /*!
-    \fn bool QDeadlineTimer::operator==(QDeadlineTimer d1, QDeadlineTimer d2)
+    \fn bool QDeadlineTimer::operator==(const QDeadlineTimer &lhs, const QDeadlineTimer &rhs)
 
-    Returns true if the deadline on \a d1 and the deadline in \a d2 are the
+    Returns true if the deadline on \a lhs and the deadline in \a rhs are the
     same, false otherwise. The timer type used to create the two deadlines is
     ignored. This function is equivalent to:
 
@@ -603,9 +606,9 @@ QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) noexcept
 */
 
 /*!
-    \fn bool QDeadlineTimer::operator!=(QDeadlineTimer d1, QDeadlineTimer d2)
+    \fn bool QDeadlineTimer::operator!=(const QDeadlineTimer &lhs, const QDeadlineTimer &rhs)
 
-    Returns true if the deadline on \a d1 and the deadline in \a d2 are
+    Returns true if the deadline on \a lhs and the deadline in \a rhs are
     different, false otherwise. The timer type used to create the two deadlines
     is ignored. This function is equivalent to:
 
@@ -616,10 +619,10 @@ QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) noexcept
 */
 
 /*!
-    \fn bool QDeadlineTimer::operator<(QDeadlineTimer d1, QDeadlineTimer d2)
+    \fn bool QDeadlineTimer::operator<(const QDeadlineTimer &lhs, const QDeadlineTimer &rhs)
 
-    Returns true if the deadline on \a d1 is earlier than the deadline in \a
-    d2, false otherwise. The timer type used to create the two deadlines is
+    Returns true if the deadline on \a lhs is earlier than the deadline in \a
+    rhs, false otherwise. The timer type used to create the two deadlines is
     ignored. This function is equivalent to:
 
     \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 10
@@ -629,10 +632,10 @@ QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) noexcept
 */
 
 /*!
-    \fn bool QDeadlineTimer::operator<=(QDeadlineTimer d1, QDeadlineTimer d2)
+    \fn bool QDeadlineTimer::operator<=(const QDeadlineTimer &lhs, const QDeadlineTimer &rhs)
 
-    Returns true if the deadline on \a d1 is earlier than or the same as the
-    deadline in \a d2, false otherwise. The timer type used to create the two
+    Returns true if the deadline on \a lhs is earlier than or the same as the
+    deadline in \a rhs, false otherwise. The timer type used to create the two
     deadlines is ignored. This function is equivalent to:
 
     \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 11
@@ -642,10 +645,10 @@ QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) noexcept
 */
 
 /*!
-    \fn bool QDeadlineTimer::operator>(QDeadlineTimer d1, QDeadlineTimer d2)
+    \fn bool QDeadlineTimer::operator>(const QDeadlineTimer &lhs, const QDeadlineTimer &rhs)
 
-    Returns true if the deadline on \a d1 is later than the deadline in \a
-    d2, false otherwise. The timer type used to create the two deadlines is
+    Returns true if the deadline on \a lhs is later than the deadline in \a
+    rhs, false otherwise. The timer type used to create the two deadlines is
     ignored. This function is equivalent to:
 
     \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 12
@@ -655,10 +658,10 @@ QDeadlineTimer QDeadlineTimer::current(Qt::TimerType timerType) noexcept
 */
 
 /*!
-    \fn bool QDeadlineTimer::operator>=(QDeadlineTimer d1, QDeadlineTimer d2)
+    \fn bool QDeadlineTimer::operator>=(const QDeadlineTimer &lhs, const QDeadlineTimer &rhs)
 
-    Returns true if the deadline on \a d1 is later than or the same as the
-    deadline in \a d2, false otherwise. The timer type used to create the two
+    Returns true if the deadline on \a lhs is later than or the same as the
+    deadline in \a rhs, false otherwise. The timer type used to create the two
     deadlines is ignored. This function is equivalent to:
 
     \snippet code/src_corelib_kernel_qdeadlinetimer.cpp 13

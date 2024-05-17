@@ -697,13 +697,7 @@ QDataStream &operator>>(QDataStream &s, QPolygon &a)
 
 QDataStream &operator<<(QDataStream &s, const QPolygonF &a)
 {
-    quint32 len = a.size();
-    uint i;
-
-    s << len;
-    for (i = 0; i < len; ++i)
-        s << a.at(i);
-    return s;
+    return s << static_cast<const QList<QPointF> &>(a);
 }
 
 /*!
@@ -718,17 +712,7 @@ QDataStream &operator<<(QDataStream &s, const QPolygonF &a)
 
 QDataStream &operator>>(QDataStream &s, QPolygonF &a)
 {
-    quint32 len;
-    uint i;
-
-    s >> len;
-    a.reserve(a.size() + (int)len);
-    QPointF p;
-    for (i = 0; i < len; ++i) {
-        s >> p;
-        a.insert(i, p);
-    }
-    return s;
+    return s >> static_cast<QList<QPointF> &>(a);
 }
 #endif //QT_NO_DATASTREAM
 

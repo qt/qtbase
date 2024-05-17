@@ -1,6 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <qhostaddress.h>
 #include <private/qhostaddress_p.h>
@@ -15,7 +15,7 @@
 #  include <qt_windows.h>
 #endif
 
-#if defined(Q_OS_ANDROID) || defined(Q_OS_WASM)
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WASM) || defined(Q_OS_VXWORKS)
 #  include <netinet/in.h>
 #endif
 

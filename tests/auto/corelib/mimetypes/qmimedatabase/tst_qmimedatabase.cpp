@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "tst_qmimedatabase.h"
 #include <qmimedatabase.h>
@@ -1186,6 +1186,9 @@ void tst_QMimeDatabase::installNewLocalMimeType_data()
 
 void tst_QMimeDatabase::installNewLocalMimeType()
 {
+#if !QT_CONFIG(process)
+    QSKIP("This test requires QProcess support");
+#else
     QFETCH(bool, useLocalBinaryCache);
 
     qmime_secondsBetweenChecks = 0;
@@ -1298,6 +1301,7 @@ void tst_QMimeDatabase::installNewLocalMimeType()
     QCOMPARE(db.mimeTypeForFile(QLatin1String("foo.ymu"), QMimeDatabase::MatchExtension).name(),
              QString::fromLatin1("application/octet-stream"));
     QVERIFY(!db.mimeTypeForName(QLatin1String("text/x-suse-ymp")).isValid());
+#endif
 }
 
 QTEST_GUILESS_MAIN(tst_QMimeDatabase)

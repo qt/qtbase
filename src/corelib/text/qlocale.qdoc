@@ -7,6 +7,7 @@
     \brief The QLocale class converts between numbers and their
     string representations in various languages.
 
+    \compares equality
     \reentrant
     \ingroup i18n
     \ingroup string-processing
@@ -50,7 +51,7 @@
     \note For the current keyboard input locale take a look at
     QInputMethod::locale().
 
-    QLocale's data is based on Common Locale Data Repository v43.
+    QLocale's data is based on Common Locale Data Repository v44.1.
 
     \section1 Matching combinations of language, script and territory
 
@@ -102,6 +103,7 @@
     \value Amharic
     \value [since 5.1] AncientEgyptian
     \value [since 5.1] AncientGreek
+    \value [since 6.7] Anii
     \value Arabic
     \value [since 5.1] Aragonese
     \value [since 5.1] Aramaic
@@ -230,6 +232,7 @@
     \value [since 6.0] Kalaallisut
     \value Kalenjin
     \value Kamba
+    \value [since 6.7] Kangri
     \value Kannada
     \value Kanuri
     \value Kashmiri
@@ -428,6 +431,7 @@
     \value Uzbek
     \value Vai
     \value Venda
+    \value [since 6.7] Venetian
     \value Vietnamese
     \value Volapuk
     \value Vunjo
@@ -1150,7 +1154,7 @@
 */
 
 /*!
-    \fn QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
+    \fn QVariant QSystemLocale::query(QueryType type, QVariant &&in = QVariant()) const
 
     Generic query method for locale data. Provides indirection.
     Denotes the \a type of the query

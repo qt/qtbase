@@ -27,7 +27,8 @@ class Q_GUI_EXPORT QPlatformInputContextFactory
 {
 public:
     static QStringList keys();
-    static QString requested();
+    static QStringList requested();
+    static QPlatformInputContext *create(const QStringList &keys);
     static QPlatformInputContext *create(const QString &key);
     static QPlatformInputContext *create();
 };

@@ -4,7 +4,8 @@
 #ifndef QHTTPHEADERS_H
 #define QHTTPHEADERS_H
 
-#include <QtNetwork/qnetworkrequest.h>
+#include <QtNetwork/qtnetworkglobal.h>
+#include <QtCore/qmetaobject.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qcontainerfwd.h>
 
@@ -201,7 +202,7 @@ public:
     };
     Q_ENUM(WellKnownHeader)
 
-    Q_NETWORK_EXPORT QHttpHeaders();
+    Q_NETWORK_EXPORT QHttpHeaders() noexcept;
     Q_NETWORK_EXPORT ~QHttpHeaders();
 
     Q_NETWORK_EXPORT QHttpHeaders(const QHttpHeaders &other);
@@ -218,6 +219,9 @@ public:
 
     Q_NETWORK_EXPORT bool replace(qsizetype i, QAnyStringView name, QAnyStringView newValue);
     Q_NETWORK_EXPORT bool replace(qsizetype i, WellKnownHeader name, QAnyStringView newValue);
+
+    Q_NETWORK_EXPORT bool replaceOrAppend(QAnyStringView name, QAnyStringView newValue);
+    Q_NETWORK_EXPORT bool replaceOrAppend(WellKnownHeader name, QAnyStringView newValue);
 
     Q_NETWORK_EXPORT bool contains(QAnyStringView name) const;
     Q_NETWORK_EXPORT bool contains(WellKnownHeader name) const;
@@ -260,6 +264,14 @@ private:
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_NETWORK_EXPORT QDebug operator<<(QDebug debug, const QHttpHeaders &headers);
 #endif
+    Q_ALWAYS_INLINE void verify([[maybe_unused]] qsizetype pos = 0,
+                                [[maybe_unused]] qsizetype n = 1) const
+    {
+        Q_ASSERT(pos >= 0);
+        Q_ASSERT(pos <= size());
+        Q_ASSERT(n >= 0);
+        Q_ASSERT(n <= size() - pos);
+    }
     QExplicitlySharedDataPointer<QHttpHeadersPrivate> d;
 };
 

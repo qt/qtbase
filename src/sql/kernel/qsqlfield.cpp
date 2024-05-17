@@ -208,6 +208,8 @@ void QSqlField::setPrecision(int precision)
     \since 6.8
 
     This property holds the default value for this field.
+    Only some database drivers supports this property. Currently
+    those are SQLite, PostgreSQL, Oracle and MySQL/MariaDB.
 */
 
 /*!
@@ -219,14 +221,17 @@ void QSqlField::setDefaultValue(const QVariant &value)
     d->def = value;
 }
 
+#if QT_DEPRECATED_SINCE(6, 8)
 /*!
     \internal
+    \deprecated [6.8] This internal value is no longer used.
 */
 void QSqlField::setSqlType(int type)
 {
     detach();
     d->tp = type;
 }
+#endif
 
 /*!
     Sets \l generated to \a gen.
@@ -467,8 +472,10 @@ QVariant QSqlField::defaultValue() const
     return d->def;
 }
 
+#if QT_DEPRECATED_SINCE(6, 8)
 /*!
     \internal
+    \deprecated [6.8] This internal value is no longer used.
 
     Returns the type ID for the field.
 
@@ -479,6 +486,7 @@ int QSqlField::typeID() const
 {
     return d->tp;
 }
+#endif
 
 /*!
     \property QSqlField::generated
@@ -521,8 +529,6 @@ QDebug operator<<(QDebug dbg, const QSqlField &f)
         dbg << ", required: "
             << (f.requiredStatus() == QSqlField::Required ? "yes" : "no");
     dbg  << ", generated: " << (f.isGenerated() ? "yes" : "no");
-    if (f.typeID() >= 0)
-        dbg << ", typeID: " << f.typeID();
     if (!f.defaultValue().isNull())
         dbg << ", defaultValue: \"" << f.defaultValue() << '\"';
     dbg << ", autoValue: " << f.isAutoValue()

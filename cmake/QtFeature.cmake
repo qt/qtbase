@@ -347,7 +347,7 @@ endmacro()
 #
 #
 # `FEATURE_foo` stores the user provided feature value for the current configuration run.
-# It can be set directly by the user, or derived from INPUT_foo (also set by the user).
+# It can be set directly by the user.
 #
 # If a value is not provided on initial configuration, the value will be auto-computed based on the
 # various conditions of the feature.
@@ -413,8 +413,6 @@ function(qt_evaluate_feature feature)
     else()
         qt_evaluate_config_expression(emit_if ${arg_EMIT_IF})
     endif()
-
-    qt_internal_compute_feature_value_from_possible_input("${feature}")
 
     # Warn about a feature which is not emitted, but the user explicitly provided a value for it.
     if(NOT emit_if AND DEFINED FEATURE_${feature})
@@ -879,26 +877,12 @@ function(qt_internal_detect_dirty_features)
         message(STATUS "Checking for feature set changes")
         set_property(GLOBAL PROPERTY _qt_feature_clean TRUE)
         foreach(feature ${QT_KNOWN_FEATURES})
-            qt_internal_compute_feature_value_from_possible_input("${feature}")
-
             if(DEFINED "FEATURE_${feature}" AND
                 NOT "${QT_FEATURE_${feature}}" STREQUAL "${FEATURE_${feature}}")
                 message("    '${feature}' was changed from ${QT_FEATURE_${feature}} "
                     "to ${FEATURE_${feature}}")
                 set(dirty_build TRUE)
                 set_property(GLOBAL APPEND PROPERTY _qt_dirty_features "${feature}")
-
-                # If the user changed the value of the feature directly (e.g by editing
-                # CMakeCache.txt), and not via its associated INPUT variable, unset the INPUT cache
-                # variable before it is used in feature evaluation, to ensure a stale value doesn't
-                # influence other feature values, especially when QT_INTERNAL_CALLED_FROM_CONFIGURE
-                # is TRUE and the INPUT_foo variable is not passed.
-                # e.g. first configure -no-gui, then manually toggle FEATURE_gui to ON in
-                # CMakeCache.txt, then reconfigure (with the configure script) without -no-gui.
-                # Without this unset(), we'd have switched FEATURE_gui to OFF again.
-                if(NOT FEATURE_${feature}_computed_from_input)
-                    unset("INPUT_${feature}" CACHE)
-                endif()
             endif()
             unset("QT_FEATURE_${feature}" CACHE)
         endforeach()
@@ -915,18 +899,11 @@ function(qt_internal_detect_dirty_features)
     endif()
 endfunction()
 
-macro(qt_internal_compute_features_from_possible_inputs)
-    # Pre-calculate the developer_build feature if it's set by the user via the I
-    # NPUT_developer_build variable when using the configure script. When not using configure, don't
-    # take the INPUT variable into account, so that users can toggle the feature directly in the
-    # cache or via IDE.
-    qt_internal_compute_feature_value_from_possible_input(developer_build)
-
-    # Pre-calculate the no_prefix feature if it's set by configure via INPUT_no_prefix.
-    # This needs to be done before qtbase/configure.cmake is processed.
-    qt_internal_compute_feature_value_from_possible_input(no_prefix)
-endmacro()
-
+# Builds either a string of source code or a whole project to determine whether the build is
+# successful.
+#
+# Sets a TEST_${name}_OUTPUT variable with the build output, to the scope of the calling function.
+# Sets a TEST_${name} cache variable to either TRUE or FALSE if the build is successful or not.
 function(qt_config_compile_test name)
     if(DEFINED "TEST_${name}")
         return()
@@ -1049,8 +1026,11 @@ function(qt_config_compile_test name)
             get_filename_component(arg_PROJECT_PATH "${arg_PROJECT_PATH}" REALPATH)
         endif()
 
-        try_compile(HAVE_${name} "${CMAKE_BINARY_DIR}/config.tests/${name}" "${arg_PROJECT_PATH}"
-                    "${name}" CMAKE_FLAGS ${flags} ${arg_CMAKE_FLAGS})
+        try_compile(
+            HAVE_${name} "${CMAKE_BINARY_DIR}/config.tests/${name}" "${arg_PROJECT_PATH}" "${name}"
+            CMAKE_FLAGS ${flags} ${arg_CMAKE_FLAGS}
+            OUTPUT_VARIABLE try_compile_output
+        )
 
         if(${HAVE_${name}})
             set(status_label "Success")
@@ -1095,7 +1075,7 @@ function(qt_config_compile_test name)
             set(CMAKE_REQUIRED_FLAGS ${arg_COMPILE_OPTIONS})
 
             # Pass -stdlib=libc++ on if necessary
-            if (INPUT_stdlib_libcpp OR QT_FEATURE_stdlib_libcpp)
+            if (QT_FEATURE_stdlib_libcpp)
                 list(APPEND CMAKE_REQUIRED_FLAGS "-stdlib=libc++")
             endif()
 
@@ -1116,7 +1096,19 @@ function(qt_config_compile_test name)
 
             set(_save_CMAKE_REQUIRED_LIBRARIES "${CMAKE_REQUIRED_LIBRARIES}")
             set(CMAKE_REQUIRED_LIBRARIES "${arg_LIBRARIES}")
-            check_cxx_source_compiles("${arg_UNPARSED_ARGUMENTS} ${arg_CODE}" HAVE_${name})
+
+            # OUTPUT_VARIABLE is an internal undocumented variable of check_cxx_source_compiles
+            # since 3.23. Allow an opt out in case this breaks in the future.
+            set(try_compile_output "")
+            set(output_var "")
+            if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.23"
+                    AND NOT QT_INTERNAL_NO_TRY_COMPILE_OUTPUT_VARIABLE)
+                set(output_var OUTPUT_VARIABLE try_compile_output)
+            endif()
+
+            check_cxx_source_compiles(
+                "${arg_UNPARSED_ARGUMENTS} ${arg_CODE}" HAVE_${name} ${output_var}
+            )
             set(CMAKE_REQUIRED_LIBRARIES "${_save_CMAKE_REQUIRED_LIBRARIES}")
 
             set(CMAKE_C_STANDARD "${_save_CMAKE_C_STANDARD}")
@@ -1128,6 +1120,7 @@ function(qt_config_compile_test name)
         endif()
     endif()
 
+    set(TEST_${name}_OUTPUT "${try_compile_output}" PARENT_SCOPE)
     set(TEST_${name} "${HAVE_${name}}" CACHE INTERNAL "${arg_LABEL}")
 endfunction()
 
@@ -1165,7 +1158,7 @@ function(qt_get_platform_try_compile_vars out_var)
     list(APPEND flags "CMAKE_CXX_STANDARD_REQUIRED")
 
     # Pass -stdlib=libc++ on if necessary
-    if (INPUT_stdlib_libcpp OR QT_FEATURE_stdlib_libcpp)
+    if (QT_FEATURE_stdlib_libcpp)
         if(CMAKE_CXX_FLAGS)
             string(APPEND CMAKE_CXX_FLAGS " -stdlib=libc++")
         else()
@@ -1199,8 +1192,8 @@ function(qt_get_platform_try_compile_vars out_var)
     if(UIKIT)
         # Specify the sysroot, but only if not doing a simulator_and_device build.
         # So keep the sysroot empty for simulator_and_device builds.
-        if(QT_UIKIT_SDK)
-            list(APPEND flags_cmd_line "-DCMAKE_OSX_SYSROOT:STRING=${QT_UIKIT_SDK}")
+        if(QT_APPLE_SDK)
+            list(APPEND flags_cmd_line "-DCMAKE_OSX_SYSROOT:STRING=${QT_APPLE_SDK}")
         endif()
     endif()
     if(QT_NO_USE_FIND_PACKAGE_SYSTEM_ENVIRONMENT_PATH)
@@ -1366,7 +1359,16 @@ function(qt_config_linker_supports_flag_test name)
     endif()
 
     cmake_parse_arguments(arg "" "LABEL;FLAG" "" ${ARGN})
-    set(flags "-Wl,${arg_FLAG}")
+    if(GCC OR CLANG)
+        set(flags "-Wl,--fatal-warnings,${arg_FLAG}")
+    elseif(MSVC)
+        set(flags "${arg_FLAG}")
+    else()
+        # We don't know how to pass linker options in a way that
+        # it reliably fails, so assume the detection failed.
+        set(TEST_${name} "0" CACHE INTERNAL "${label}")
+        return()
+    endif()
 
     # Pass the linker that the main project uses to the compile test.
     qt_internal_get_active_linker_flags(linker_flags)

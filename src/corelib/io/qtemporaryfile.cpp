@@ -156,7 +156,7 @@ QFileSystemEntry::NativePath QTemporaryFileName::generateNext()
     return path;
 }
 
-#ifndef QT_NO_TEMPORARYFILE
+#if QT_CONFIG(temporaryfile)
 
 /*!
     \internal
@@ -184,8 +184,9 @@ static bool createFileFromTemplate(NativeFileHandle &file, QTemporaryFileName &t
         const DWORD shareMode = (flags & QTemporaryFileEngine::Win32NonShared)
                                 ? 0u : (FILE_SHARE_READ | FILE_SHARE_WRITE);
 
+        const DWORD extraAccessFlags = (flags & QTemporaryFileEngine::Win32NonShared) ? DELETE : 0;
         file = CreateFile((const wchar_t *)path.constData(),
-                GENERIC_READ | GENERIC_WRITE,
+                GENERIC_READ | GENERIC_WRITE | extraAccessFlags,
                 shareMode, NULL, CREATE_NEW,
                 FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -390,6 +391,18 @@ bool QTemporaryFileEngine::renameOverwrite(const QString &newName)
         QFSFileEngine::close();
         return ok;
     }
+#ifdef Q_OS_WIN
+    if (flags & Win32NonShared) {
+        QFileSystemEntry newEntry(newName, QFileSystemEntry::FromInternalPath());
+        bool ok = d_func()->nativeRenameOverwrite(newEntry);
+        QFSFileEngine::close();
+        if (ok) {
+            // Match what QFSFileEngine::renameOverwrite() does
+            setFileEntry(std::move(newEntry));
+        }
+        return ok;
+    }
+#endif
     QFSFileEngine::close();
     return QFSFileEngine::renameOverwrite(newName);
 }
@@ -718,7 +731,7 @@ QTemporaryFile::~QTemporaryFile()
   return true upon success and will set the fileName() to the unique
   filename used.
 
-  \sa fileName()
+  \sa fileName(), QT_USE_NODISCARD_FILE_OPEN
 */
 
 /*!
@@ -860,7 +873,6 @@ bool QTemporaryFile::rename(const QString &newName)
         if (tef->rename(newName)) {
             unsetError();
             // engine was able to handle the new name so we just reset it
-            tef->setFileName(newName);
             d->fileName = newName;
             return true;
         }
@@ -969,7 +981,7 @@ bool QTemporaryFile::open(OpenMode flags)
     return false;
 }
 
-#endif // QT_NO_TEMPORARYFILE
+#endif // QT_CONFIG(temporaryfile)
 
 QT_END_NAMESPACE
 

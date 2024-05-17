@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "wizardpanel.h"
 
@@ -229,7 +229,7 @@ Wizard::Wizard(QWidget *parent, Qt::WindowFlags flags)
     addPage(new WizardPage(tr("Page 3"), this));
 }
 
-// A dialog using a Wizard as child widget (emulating Qt Designer).
+// A dialog using a Wizard as child widget (emulating Qt Widgets Designer).
 class WizardEmbeddingDialog : public QDialog {
 public:
     explicit WizardEmbeddingDialog(QWidget *parent = nullptr);

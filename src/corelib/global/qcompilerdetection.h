@@ -2,8 +2,6 @@
 // Copyright (C) 2016 Intel Corporation.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtCore/qsystemdetection.h>
-
 #if 0
 #pragma qt_class(QtCompilerDetection)
 #pragma qt_sync_skip_header_check
@@ -14,6 +12,7 @@
 #define QCOMPILERDETECTION_H
 
 #include <QtCore/qprocessordetection.h>
+#include <QtCore/qsystemdetection.h>
 #include <QtCore/qtconfiginclude.h>
 
 /*
@@ -858,6 +857,8 @@
 #    if _MSC_VER < 1936
 #      define Q_COMPILER_LACKS_THREE_WAY_COMPARE_SYMMETRY
 #    endif
+// QTBUG-124376: MSVC is slow at compiling qstrnlen()
+#    define Q_COMPILER_SLOW_QSTRNLEN_COMPILATION
 #  endif /* __cplusplus */
 #endif // defined(Q_CC_MSVC) && !defined(Q_CC_CLANG)
 
@@ -1222,11 +1223,11 @@
 #endif
 #endif
 #ifndef Q_FALLTHROUGH
-#  if defined(Q_CC_GNU_ONLY) && Q_CC_GNU >= 700
+#  ifdef Q_CC_GNU
 #    define Q_FALLTHROUGH() __attribute__((fallthrough))
 #  else
 #    define Q_FALLTHROUGH() (void)0
-#endif
+#  endif
 #endif
 
 
@@ -1399,8 +1400,17 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 #  endif
 #endif
 
+// libstdc++ shipped with gcc < 11 does not have a fix for defect LWG 3346
+#if __cplusplus >= 202002L && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 11)
+#  define QT_COMPILER_HAS_LWG3346
+#endif
+
 #if defined(__cplusplus) && __cplusplus >= 202002L // P0846 doesn't have a feature macro :/
+# if !defined(Q_CC_MSVC_ONLY) || Q_CC_MSVC < 1939 // claims C++20 support but lacks P0846
+                                                  // 1939 is known to work
+                                                  // 1936 is known to fail
 #  define QT_COMPILER_HAS_P0846
+# endif
 #endif
 
 #ifdef QT_COMPILER_HAS_P0846

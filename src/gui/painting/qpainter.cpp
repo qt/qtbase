@@ -1765,9 +1765,12 @@ bool QPainter::begin(QPaintDevice *pd)
                 qWarning("QPainter::begin: Cannot paint on a null image");
                 qt_cleanup_painter_state(d);
                 return false;
-            } else if (img->format() == QImage::Format_Indexed8) {
-                // Painting on indexed8 images is not supported.
-                qWarning("QPainter::begin: Cannot paint on an image with the QImage::Format_Indexed8 format");
+            } else if (img->format() == QImage::Format_Indexed8 ||
+                       img->format() == QImage::Format_CMYK8888) {
+                // Painting on these formats is not supported.
+                qWarning() << "QPainter::begin: Cannot paint on an image with the"
+                           << img->format()
+                           << "format";
                 qt_cleanup_painter_state(d);
                 return false;
             }

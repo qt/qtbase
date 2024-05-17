@@ -40,7 +40,7 @@
    inkscape:pageopacity="0"
    inkscape:pageshadow="2"
    inkscape:window-width="1920"
-   inkscape:window-height="918"
+   inkscape:window-height="917"
    id="namedview116"
    showgrid="false"
    inkscape:zoom="63.727999"
@@ -49,7 +49,7 @@
    inkscape:window-x="0"
    inkscape:window-y="0"
    inkscape:window-maximized="1"
-   inkscape:current-layer="Layer_1"
+   inkscape:current-layer="g1123"
    inkscape:document-rotation="0" />
 <style
    type="text/css"
@@ -57,16 +57,7 @@
 	.st0{fill:none;}
 	.st1{fill:#353637;}
 </style>
-<g
-   id="g105">
-		<rect
-   class="st0"
-   width="8"
-   height="8"
-   id="rect103"
-   x="0"
-   y="0" />
-	</g>
+
 <rect
    style="fill:none;stroke:#6c6a67;stroke-width:0.469731;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
    id="rect151"

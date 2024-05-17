@@ -13,6 +13,7 @@
 #include "androidjniinput.h"
 #include "androidjnimain.h"
 #include "androidjnimenu.h"
+#include "androidwindowembedding.h"
 #include "qandroidassetsfileenginehandler.h"
 #include "qandroideventdispatcher.h"
 #include "qandroidplatformdialoghelpers.h"
@@ -91,6 +92,8 @@ static const char m_classErrorMsg[] = "Can't find class \"%s\"";
 static const char m_methodErrorMsg[] = "Can't find method \"%s%s\"";
 
 Q_CONSTINIT static QBasicAtomicInt startQtAndroidPluginCalled = Q_BASIC_ATOMIC_INITIALIZER(0);
+
+Q_DECLARE_JNI_CLASS(QtEmbeddedDelegateFactory, "org/qtproject/qt/android/QtEmbeddedDelegateFactory")
 
 namespace QtAndroid
 {
@@ -187,10 +190,17 @@ namespace QtAndroid
     // FIXME: avoid direct access to QtActivityDelegate
     QtJniTypes::QtActivityDelegateBase qtActivityDelegate()
     {
+        using namespace QtJniTypes;
         if (!m_activityDelegate.isValid()) {
-            auto activity = QtAndroidPrivate::activity();
-            m_activityDelegate = activity.callMethod<QtJniTypes::QtActivityDelegateBase>(
-                    "getActivityDelegate");
+            if (isQtApplication()) {
+                auto context = QtAndroidPrivate::activity();
+                m_activityDelegate = context.callMethod<QtActivityDelegateBase>("getActivityDelegate");
+            } else {
+                m_activityDelegate = QJniObject::callStaticMethod<QtActivityDelegateBase>(
+                                                    Traits<QtEmbeddedDelegateFactory>::className(),
+                                                    "getActivityDelegate",
+                                                    QtAndroidPrivate::activity());
+            }
         }
 
         return m_activityDelegate;
@@ -213,11 +223,15 @@ namespace QtAndroid
         // embedded into a native Android app, where the Activity/Service is created
         // by the user, outside of Qt, and Qt content is added as a view.
         JNIEnv *env = QJniEnvironment::getJniEnv();
-        static const jint isQtActivity = env->IsInstanceOf(QtAndroidPrivate::activity().object(),
-                                                           m_qtActivityClass);
-        static const jint isQtService = env->IsInstanceOf(QtAndroidPrivate::service().object(),
-                                                          m_qtServiceClass);
-        return isQtActivity || isQtService;
+        auto activity = QtAndroidPrivate::activity();
+        if (activity.isValid())
+            return env->IsInstanceOf(activity.object(), m_qtActivityClass);
+        auto service = QtAndroidPrivate::service();
+        if (service.isValid())
+            return env->IsInstanceOf(QtAndroidPrivate::service().object(), m_qtServiceClass);
+        // return true as default as Qt application is our default use case.
+        // famous last words: we should not end up here
+        return true;
     }
 
     void notifyAccessibilityLocationChange(uint accessibilityObjectId)
@@ -229,6 +243,12 @@ namespace QtAndroid
     {
         qtActivityDelegate().callMethod<void>("notifyObjectHide",
                                               accessibilityObjectId, parentObjectId);
+    }
+
+    void notifyObjectShow(uint parentObjectId)
+    {
+        qtActivityDelegate().callMethod<void>("notifyObjectShow",
+                                              parentObjectId);
     }
 
     void notifyObjectFocus(uint accessibilityObjectId)
@@ -421,7 +441,7 @@ static void waitForServiceSetup(JNIEnv *env, jclass /*clazz*/)
     Q_UNUSED(env);
     // The service must wait until the QCoreApplication starts otherwise onBind will be
     // called too early
-    if (QtAndroidPrivate::service().isValid())
+    if (QtAndroidPrivate::service().isValid() && QtAndroid::isQtApplication())
         QtAndroidPrivate::waitForServiceSetup();
 }
 
@@ -689,7 +709,7 @@ Q_DECLARE_JNI_NATIVE_METHOD(handleScreenRemoved)
 
 static void handleUiDarkModeChanged(JNIEnv */*env*/, jobject /*thiz*/, jint newUiMode)
 {
-    QAndroidPlatformIntegration::setColorScheme(
+    QAndroidPlatformIntegration::updateColorScheme(
         (newUiMode == 1 ) ? Qt::ColorScheme::Dark : Qt::ColorScheme::Light);
 }
 Q_DECLARE_JNI_NATIVE_METHOD(handleUiDarkModeChanged)
@@ -870,7 +890,8 @@ Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void */*reserved*/)
             || !QtAndroidAccessibility::registerNatives(env)
             || !QtAndroidDialogHelpers::registerNatives(env)
             || !QAndroidPlatformClipboard::registerNatives(env)
-            || !QAndroidPlatformWindow::registerNatives(env)) {
+            || !QAndroidPlatformWindow::registerNatives(env)
+            || !QtAndroidWindowEmbedding::registerNatives(env)) {
         __android_log_print(ANDROID_LOG_FATAL, "Qt", "registerNatives failed");
         return -1;
     }

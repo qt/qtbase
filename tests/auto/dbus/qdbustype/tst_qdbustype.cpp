@@ -1,6 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <QtCore/QCoreApplication>
@@ -206,6 +206,7 @@ void tst_QDBusType::isValidBasicType()
 void tst_QDBusType::isValidSingleSignature_data()
 {
     addColumns();
+    QTest::newRow("empty") << "" << false;
     addSingleSignatures();
     addNakedDictEntry();
 }
@@ -222,6 +223,7 @@ void tst_QDBusType::isValidSingleSignature()
 void tst_QDBusType::isValidArray_data()
 {
     addColumns();
+    QTest::newRow("empty") << "" << false;
     addSingleSignatures();
 }
 
@@ -241,7 +243,10 @@ void tst_QDBusType::isValidArray()
 
 void tst_QDBusType::isValidSignature_data()
 {
-    isValidSingleSignature_data();
+    addColumns();
+    QTest::newRow("empty") << "" << true;
+    addSingleSignatures();
+    addNakedDictEntry();
 }
 
 void tst_QDBusType::isValidSignature()
@@ -250,8 +255,10 @@ void tst_QDBusType::isValidSignature()
     QFETCH(bool, result);
 
     data.append(data);
-    if (data.at(0).unicode())
-        QCOMPARE(bool(q_dbus_signature_validate(data.toLatin1(), 0)), result);
+    if (!data.isEmpty() && data.at(0).unicode()) {
+        // libdbus-1 API can't deal with string containing NULs
+        QCOMPARE(bool(q_dbus_signature_validate(data.toLatin1(), nullptr)), result);
+    }
     QCOMPARE(QDBusUtil::isValidSignature(data), result);
 }
 

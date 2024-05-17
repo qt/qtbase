@@ -1,5 +1,5 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "rhiwidget_p.h"
 
@@ -155,14 +155,7 @@ QPlatformBackingStoreRhiConfig QRhiWidgetPrivate::rhiConfig() const
 void QRhiWidgetPrivate::ensureRhi()
 {
     Q_Q(QRhiWidget);
-    // the QRhi and infrastructure belongs to the top-level widget, not to this widget
-    QWidget *tlw = q->window();
-    QWidgetPrivate *wd = get(tlw);
-
-    QRhi *currentRhi = nullptr;
-    if (QWidgetRepaintManager *repaintManager = wd->maybeRepaintManager())
-        currentRhi = repaintManager->rhi();
-
+    QRhi *currentRhi = QWidgetPrivate::rhi();
     if (currentRhi && currentRhi->backend() != QBackingStoreRhiSupport::apiToRhiBackend(config.api())) {
         qWarning("The top-level window is already using another graphics API for composition, "
                  "'%s' is not compatible with this widget",

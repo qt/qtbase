@@ -20,17 +20,18 @@
 
 QT_REQUIRE_CONFIG(directwrite3);
 
-#include "qwindowsfontdatabasebase_p.h"
+#include "qwindowsfontdatabase_p.h"
 #include <QtCore/qloggingcategory.h>
 
 struct IDWriteFactory;
 struct IDWriteFont;
+struct IDWriteFont1;
 struct IDWriteFontFamily;
 struct IDWriteLocalizedStrings;
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QWindowsDirectWriteFontDatabase : public QWindowsFontDatabaseBase
+class Q_GUI_EXPORT QWindowsDirectWriteFontDatabase : public QWindowsFontDatabase
 {
     Q_DISABLE_COPY_MOVE(QWindowsDirectWriteFontDatabase)
 public:
@@ -39,21 +40,34 @@ public:
 
     void populateFontDatabase() override;
     void populateFamily(const QString &familyName) override;
+    bool populateFamilyAliases(const QString &missingFamily) override;
     QFontEngine *fontEngine(const QFontDef &fontDef, void *handle) override;
+    QFontEngine *fontEngine(const QByteArray &fontData, qreal pixelSize, QFont::HintingPreference hintingPreference) override;
     QStringList fallbacksForFamily(const QString &family, QFont::Style style, QFont::StyleHint styleHint, QChar::Script script) const override;
     QStringList addApplicationFont(const QByteArray &fontData, const QString &fileName, QFontDatabasePrivate::ApplicationFont *font = nullptr) override;
-    void releaseHandle(void *handle) override;
     QFont defaultFont() const override;
 
-    bool fontsAlwaysScalable() const override;
     bool isPrivateFontFamily(const QString &family) const override;
     bool supportsVariableApplicationFonts() const override;
+
+    void registerBitmapFont(const QString &bitmapFont)
+    {
+        m_populatedBitmapFonts.insert(bitmapFont);
+    }
+
+    bool hasPopulatedFont(const QString &fontFamily) const
+    {
+        return m_populatedFonts.contains(fontFamily);
+    }
 
 private:
     friend class QWindowsFontEngineDirectWrite;
     static QString localeString(IDWriteLocalizedStrings *names, wchar_t localeName[]);
 
+    QSupportedWritingSystems supportedWritingSystems(IDWriteFontFace *face) const;
+
     QHash<QString, IDWriteFontFamily *> m_populatedFonts;
+    QSet<QString> m_populatedBitmapFonts;
 };
 
 QT_END_NAMESPACE

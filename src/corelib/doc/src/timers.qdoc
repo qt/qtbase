@@ -11,12 +11,12 @@
     QObject, the base class of all Qt objects, provides the basic
     timer support in Qt. With QObject::startTimer(), you start a
     timer with an interval in milliseconds as argument. The function
-    returns a unique integer timer ID. The timer will now fire at
+    returns a unique integral timer ID. The timer will then fire at
     regular intervals until you explicitly call QObject::killTimer()
-    with the timer ID.
+    with that timer ID.
 
     For this mechanism to work, the application must run in an event
-    loop. You start an event loop with QApplication::exec(). When a
+    loop. You cat start an event loop with QApplication::exec(). When a
     timer fires, the application sends a QTimerEvent, and the flow of
     control leaves the event loop until the timer event is processed.
     This implies that a timer cannot fire while your application is
@@ -31,63 +31,60 @@
     stop all timers in the object's thread; it is not possible to
     start timers for objects in another thread.
 
-    The upper limit for the interval value is determined by the number
-    of milliseconds that can be specified in a signed integer
-    (in practice, this is a period of just over 24 days). The accuracy
-    depends on the underlying operating system. Windows 2000 has 15
-    millisecond accuracy; other systems that we have tested can handle
-    1 millisecond intervals.
+    The main API for the timer functionality was \l QTimer. QTimer stores
+    the interval in a signed integer, which limits the maximum interval it
+    supports to the number of milliseconds that can fit in a signed integer
+    (in practice, this is a period of around 24 days).
 
-    The main API for the timer functionality is QTimer. That class
-    provides regular timers that emit a signal when the timer fires, and
-    inherits QObject so that it fits well into the ownership structure
-    of most Qt programs. The normal way of using it is like this:
+    Qt 6.8 introduced the \l QChronoTimer class to replace QTimer. QChronoTimer
+    stores the interval as \c std::chrono::nanoseconds, which means that
+    the maximum interval it supports is around 292 years. This mitigates
+    the chances of integer overflow that QTimer had if the interval was more
+    than \c{std::numeric_limits<int>::max()}.
 
-    \snippet timers/timers.cpp 0
-    \snippet timers/timers.cpp 1
-    \snippet timers/timers.cpp 2
+    The accuracy of the timers depends on the underlying operating system.
+    Windows 2000 has 15ms accuracy; other systems that we have tested can
+    handle 1ms intervals.
 
-    The QTimer object is made into a child of \c this object so that,
-    when \c this object is deleted, the timer is deleted too.
-    Next, its \l{QTimer::}{timeout()} signal is connected to the slot
-    that will do the work, it is started with a value of 1000
-    milliseconds, indicating that it will time out every second.
+    QChronoTimer provides regular timers that emit a signal when the timer
+    fires, and inherits from QObject so that it fits well into the ownership
+    structure of most Qt programs. The normal way of using it is like this:
 
-    QTimer also provides a static function for single-shot timers.
+    \snippet timers/timers.cpp timer-interval-in-ctor
+    \snippet timers/timers.cpp timer-setinterval
+
+    The QChronoTimer object is made into a child of the \c this object so
+    that, when \c this is destroyed, the timer is destroyed too. Next, the
+    \l{QChronoTimer::}{timeout()} signal is connected to the slot that will
+    do the work, the timer interval can be either passed to the constructor,
+    or set later on with setInterval().
+
+    QChronoTimer also provides static functions for single-shot timers.
     For example:
 
-    \snippet timers/timers.cpp 3
+    \snippet timers/timers.cpp qchronotimer-singleshot
 
-    200 milliseconds (0.2 seconds) after this line of code is
-    executed, the \c updateCaption() slot will be called.
+    200ms after this line of code is executed, the \c updateCaption() slot
+    will be called.
 
-    For QTimer to work, you must have an event loop in your
-    application; that is, you must call QCoreApplication::exec()
-    somewhere. Timer events will be delivered only while the event
-    loop is running.
+    For QChronoTimer to work, you must have an event loop in your application;
+    that is, you must call QCoreApplication::exec() somewhere. Timer events
+    will be delivered only while the event loop is running.
 
-    In multithreaded applications, you can use QTimer in any thread
-    that has an event loop. To start an event loop from a non-GUI
-    thread, use QThread::exec(). Qt uses the timer's
-    \l{QObject::thread()}{thread affinity} to determine which thread
-    will emit the \l{QTimer::}{timeout()} signal. Because of this, you
-    must start and stop the timer in its thread; it is not possible to
-    start a timer from another thread.
+    In multithreaded applications, you can use QChronoTimer in any thread
+    that has an event loop. To start an event loop from a non-GUI thread, use
+    QThread::exec(). Qt uses the timer's \l{QObject::thread()}{thread affinity}
+    to determine which thread will emit the \l{QChronoTimer::}{timeout()}
+    signal. Because of this, you must start and stop the timer in its thread;
+    it is not possible to start a timer from another thread.
 
-    The \l{widgets/analogclock}{Analog Clock} example shows how to use
-    QTimer to redraw a widget at regular intervals. From \c{AnalogClock}'s
-    implementation:
+    The \l{widgets/analogclock}{Analog Clock} example shows how to
+    use QChronoTimer to redraw a widget at regular intervals. From
+    \c{AnalogClock}'s implementation:
 
-    \snippet timers/analogclock.cpp 0
-    \snippet timers/analogclock.cpp 2
-    \snippet timers/analogclock.cpp 3
-    \snippet timers/analogclock.cpp 4
-    \snippet timers/analogclock.cpp 5
-    \snippet timers/analogclock.cpp 6
-    \dots
-    \snippet timers/analogclock.cpp 7
+    \snippet timers/analogclock.cpp analogclock-qchronotimer
 
-    Every second, QTimer will call the QWidget::update() slot to
+    Every second, QChronoTimer will call the QWidget::update() slot to
     refresh the clock's display.
 
     If you already have a QObject subclass and want an easy

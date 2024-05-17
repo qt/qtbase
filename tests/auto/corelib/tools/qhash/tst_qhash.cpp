@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 
@@ -38,6 +38,12 @@ private slots:
     void qhash();
     void take(); // copied from tst_QMap
     void operator_eq(); // slightly modified from tst_QMap
+    void heterogeneousSearch();
+    void heterogeneousSearchConstKey();
+    void heterogeneousSearchByteArray();
+    void heterogeneousSearchString();
+    void heterogeneousSearchLatin1String();
+
     void rehash_isnt_quadratic();
     void dont_need_default_constructor();
     void qmultihash_specific();
@@ -45,6 +51,11 @@ private slots:
     void qmultihash_qhash_rvalue_ref_unite();
     void qmultihashUnite();
     void qmultihashSize();
+    void qmultihashHeterogeneousSearch();
+    void qmultihashHeterogeneousSearchConstKey();
+    void qmultihashHeterogeneousSearchByteArray();
+    void qmultihashHeterogeneousSearchString();
+    void qmultihashHeterogeneousSearchLatin1String();
 
     void compare();
     void compare2();
@@ -1158,6 +1169,222 @@ void tst_QHash::operator_eq()
     }
 }
 
+#ifdef __cpp_concepts
+struct HeterogeneousHashingType
+{
+    inline static int conversionCount = 0;
+    QString s;
+
+    Q_IMPLICIT operator QString() const
+    {
+        ++conversionCount;
+        return s;
+    }
+
+    // std::equality_comparable_with requires we be self-comparable too
+    friend bool operator==(const HeterogeneousHashingType &t1, const HeterogeneousHashingType &t2) = default;
+
+    friend bool operator==(const QString &string, const HeterogeneousHashingType &tester)
+    { return tester.s == string; }
+    friend bool operator!=(const QString &string, const HeterogeneousHashingType &tester)
+    { return !(tester.s == string); }
+
+    friend size_t qHash(const HeterogeneousHashingType &tester, size_t seed)
+    { return qHash(tester.s, seed); }
+};
+QT_BEGIN_NAMESPACE
+template <> struct QHashHeterogeneousSearch<QString, HeterogeneousHashingType> : std::true_type {};
+template <> struct QHashHeterogeneousSearch<HeterogeneousHashingType, QString> : std::true_type {};
+QT_END_NAMESPACE
+static_assert(std::is_same_v<QString, std::common_type_t<QString, HeterogeneousHashingType>>);
+static_assert(std::equality_comparable_with<QString, HeterogeneousHashingType>);
+static_assert(QHashPrivate::HeterogeneouslySearchableWith<QString, HeterogeneousHashingType>);
+static_assert(QHashPrivate::HeterogeneouslySearchableWith<HeterogeneousHashingType, QString>);
+
+template <typename T> struct HeterogeneousSearchTestHelper
+{
+    static void resetCounter() {}
+    static void checkCounter() {}
+};
+template <> struct HeterogeneousSearchTestHelper<HeterogeneousHashingType>
+{
+    static void resetCounter()
+    {
+        HeterogeneousHashingType::conversionCount = 0;
+    }
+    static void checkCounter()
+    {
+        QTest::setThrowOnFail(true);
+        auto scopeExit = qScopeGuard([] { QTest::setThrowOnFail(false); });
+        QCOMPARE(HeterogeneousHashingType::conversionCount, 0);
+    }
+};
+#else
+using HeterogeneousHashingType = QString;
+#endif
+
+template <template <typename, typename> class Hash, typename String, typename View, typename Converter>
+static void heterogeneousSearchTest(const QList<std::remove_const_t<String>> &keys, Converter conv)
+{
+#ifdef __cpp_concepts
+    using Helper = HeterogeneousSearchTestHelper<View>;
+    String key = keys.last();
+    String otherKey = keys.first();
+    auto keyHolder = conv(key);
+    auto otherKeyHolder = conv(otherKey);
+    View keyView(keyHolder);
+    View otherKeyView(otherKeyHolder);
+
+    Hash<String, qsizetype> hash;
+    static constexpr bool IsMultiHash = !std::is_same_v<decltype(hash.remove(String())), bool>;
+    hash[key] = keys.size();
+
+    Helper::resetCounter();
+    QVERIFY(hash.contains(keyView));
+    QCOMPARE_EQ(hash.count(keyView), 1);
+    QCOMPARE_EQ(hash.value(keyView), keys.size());
+    QCOMPARE_EQ(hash.value(keyView, -1), keys.size());
+    QCOMPARE_EQ(std::as_const(hash)[keyView], keys.size());
+    QCOMPARE_EQ(hash.find(keyView), hash.begin());
+    QCOMPARE_EQ(std::as_const(hash).find(keyView), hash.constBegin());
+    QCOMPARE_EQ(hash.constFind(keyView), hash.constBegin());
+    QCOMPARE_EQ(hash.equal_range(keyView), std::make_pair(hash.begin(), hash.end()));
+    QCOMPARE_EQ(std::as_const(hash).equal_range(keyView),
+                std::make_pair(hash.constBegin(), hash.constEnd()));
+    Helper::checkCounter();
+
+    QVERIFY(!hash.contains(otherKeyView));
+    QCOMPARE_EQ(hash.count(otherKeyView), 0);
+    QCOMPARE_EQ(hash.value(otherKeyView), 0);
+    QCOMPARE_EQ(hash.value(otherKeyView, -1), -1);
+    QCOMPARE_EQ(std::as_const(hash)[otherKeyView], 0);
+    QCOMPARE_EQ(hash.find(otherKeyView), hash.end());
+    QCOMPARE_EQ(std::as_const(hash).find(otherKeyView), hash.constEnd());
+    QCOMPARE_EQ(hash.constFind(otherKeyView), hash.constEnd());
+    QCOMPARE_EQ(hash.equal_range(otherKeyView), std::make_pair(hash.end(), hash.end()));
+    QCOMPARE_EQ(std::as_const(hash).equal_range(otherKeyView),
+                std::make_pair(hash.constEnd(), hash.constEnd()));
+    Helper::checkCounter();
+
+    // non-const versions
+    QCOMPARE_EQ(hash[keyView], keys.size());    // already there
+    Helper::checkCounter();
+
+    QCOMPARE_EQ(hash[otherKeyView], 0);         // inserts
+    Helper::resetCounter();
+    hash[otherKeyView] = INT_MAX;
+    Helper::checkCounter();
+
+    if constexpr (IsMultiHash) {
+        hash.insert(key, keys.size());
+        QCOMPARE_EQ(hash.count(keyView), 2);
+
+        // not depending on which of the two the current implementation finds
+        QCOMPARE_NE(hash.value(keyView), 0);
+        QCOMPARE_NE(hash.value(keyView, -1000), -1000);
+        QCOMPARE_NE(std::as_const(hash)[keyView], 0);
+        QCOMPARE_NE(hash.find(keyView), hash.end());
+        QCOMPARE_NE(std::as_const(hash).find(keyView), hash.constEnd());
+        QCOMPARE_NE(hash.constFind(keyView), hash.constEnd());
+        QCOMPARE_NE(hash.equal_range(keyView), std::make_pair(hash.end(), hash.end()));
+        QCOMPARE_NE(std::as_const(hash).equal_range(keyView),
+                    std::make_pair(hash.constEnd(), hash.constEnd()));
+
+        // QMultiHash-specific functions
+        QVERIFY(hash.contains(keyView, keys.size()));
+        QCOMPARE_EQ(hash.count(keyView, 0), 0);
+        QCOMPARE_EQ(hash.count(keyView, keys.size()), 2);
+        QCOMPARE_EQ(hash.values(keyView), QList<qsizetype>({ keys.size(), keys.size() }));
+
+        hash.insert(key, -keys.size());
+        QCOMPARE_EQ(hash.count(keyView), 3);
+        QCOMPARE_EQ(hash.find(keyView, 0), hash.end());
+        QCOMPARE_NE(hash.find(keyView, keys.size()), hash.end());
+        QCOMPARE_NE(hash.find(keyView, -keys.size()), hash.end());
+        QCOMPARE_EQ(std::as_const(hash).find(keyView, 0), hash.constEnd());
+        QCOMPARE_NE(std::as_const(hash).find(keyView, keys.size()), hash.constEnd());
+        QCOMPARE_NE(std::as_const(hash).find(keyView, -keys.size()), hash.constEnd());
+        QCOMPARE_EQ(hash.constFind(keyView, 0), hash.constEnd());
+        QCOMPARE_NE(hash.constFind(keyView, keys.size()), hash.constEnd());
+        QCOMPARE_NE(hash.constFind(keyView, -keys.size()), hash.constEnd());
+
+        // removals
+        QCOMPARE_EQ(hash.remove(keyView, -keys.size()), 1);
+        QCOMPARE_EQ(hash.remove(keyView), 2);
+    } else {
+        // removals
+        QCOMPARE_EQ(hash.remove(keyView), true);
+    }
+
+    QCOMPARE_EQ(hash.take(otherKeyView), INT_MAX);
+    QVERIFY(hash.isEmpty());
+    Helper::checkCounter();
+
+    // repeat with more keys
+    for (qsizetype i = 0; i < keys.size() - 1; ++i) {
+        hash.insert(keys[i], -(i + 1));
+        hash.insert(keys[i], i + 1);
+    }
+
+    QVERIFY(!hash.contains(keyView));
+    QCOMPARE_EQ(hash.count(keyView), 0);
+    QCOMPARE_EQ(hash.value(keyView), 0);
+    QCOMPARE_EQ(hash.value(keyView, -1), -1);
+    QCOMPARE_EQ(std::as_const(hash)[keyView], 0);
+    QCOMPARE_EQ(hash.find(keyView), hash.end());
+    QCOMPARE_EQ(hash.constFind(keyView), hash.constEnd());
+    Helper::checkCounter();
+#else
+    Q_UNUSED(keys);
+    Q_UNUSED(conv);
+    QSKIP("This feature requires C++20 (concepts)");
+#endif
+}
+
+template <template <typename, typename> class Hash, typename String, typename View>
+static void heterogeneousSearchTest(const QList<std::remove_const_t<String>> &keys)
+{
+    heterogeneousSearchTest<Hash, String, View>(keys, [](const String &s) { return View(s); });
+}
+
+template <template <typename, typename> class Hash, typename T>
+static void heterogeneousSearchLatin1String(T)
+{
+    if constexpr (!T::value) {
+        QSKIP("QLatin1StringView and QString do not have the same hash on this platform");
+    } else {
+        // similar to the above
+        auto toLatin1 = [](const QString &s) { return s.toLatin1(); };
+        heterogeneousSearchTest<Hash, QString, QLatin1StringView>({ "Hello", {}, "World" }, toLatin1);
+    }
+}
+
+void tst_QHash::heterogeneousSearch()
+{
+    heterogeneousSearchTest<QHash, QString, HeterogeneousHashingType>({ "Hello", {}, "World" });
+}
+
+void tst_QHash::heterogeneousSearchConstKey()
+{
+    // QHash<const QString, X> seen in the wild (e.g. Qt Creator)
+    heterogeneousSearchTest<QHash, const QString, HeterogeneousHashingType>({ "Hello", {}, "World" });
+}
+
+void tst_QHash::heterogeneousSearchByteArray()
+{
+    heterogeneousSearchTest<QHash, QByteArray, QByteArrayView>({ "Hello", {}, "World" });
+}
+
+void tst_QHash::heterogeneousSearchString()
+{
+    heterogeneousSearchTest<QHash, QString, QStringView>({ "Hello", {}, "World" });
+}
+
+void tst_QHash::heterogeneousSearchLatin1String()
+{
+    ::heterogeneousSearchLatin1String<QHash>(QHashHeterogeneousSearch<QString, QLatin1StringView>{});
+}
+
 void tst_QHash::compare()
 {
     QHash<int, QString> hash1,hash2;
@@ -2125,6 +2352,31 @@ void tst_QHash::qmultihashSize()
         QCOMPARE(hash.size(), 0);
         QVERIFY(hash.isEmpty());
     }
+}
+
+void tst_QHash::qmultihashHeterogeneousSearch()
+{
+    heterogeneousSearchTest<QMultiHash, QString, HeterogeneousHashingType>({ "Hello", {}, "World" });
+}
+
+void tst_QHash::qmultihashHeterogeneousSearchConstKey()
+{
+    heterogeneousSearchTest<QMultiHash, const QString, HeterogeneousHashingType>({ "Hello", {}, "World" });
+}
+
+void tst_QHash::qmultihashHeterogeneousSearchByteArray()
+{
+    heterogeneousSearchTest<QMultiHash, QByteArray, QByteArrayView>({ "Hello", {}, "World" });
+}
+
+void tst_QHash::qmultihashHeterogeneousSearchString()
+{
+    heterogeneousSearchTest<QMultiHash, QString, QStringView>({ "Hello", {}, "World" });
+}
+
+void tst_QHash::qmultihashHeterogeneousSearchLatin1String()
+{
+    ::heterogeneousSearchLatin1String<QMultiHash>(QHashHeterogeneousSearch<QString, QLatin1StringView>{});
 }
 
 void tst_QHash::keys_values_uniqueKeys()

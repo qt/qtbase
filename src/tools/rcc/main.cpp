@@ -303,7 +303,8 @@ int runRcc(int argc, char *argv[])
         return 1;
     }
     QFile errorDevice;
-    errorDevice.open(stderr, QIODevice::WriteOnly|QIODevice::Text);
+    if (!errorDevice.open(stderr, QIODevice::WriteOnly|QIODevice::Text))
+        return 1;
 
     if (library.verbose())
         errorDevice.write("Qt resource compiler\n");
@@ -341,7 +342,12 @@ int runRcc(int argc, char *argv[])
         mode &= ~QIODevice::Text;
 #endif // Q_OS_WIN
         // using this overload close() only flushes.
-        out.open(stdout, mode);
+        if (!out.open(stdout, mode)) {
+            const QString msg = QString::fromLatin1("Unable to open standard output for writing: %1\n")
+                                    .arg(out.errorString());
+            errorDevice.write(msg.toUtf8());
+            return 1;
+        }
     } else {
         out.setFileName(outFilename);
         if (!out.open(mode)) {

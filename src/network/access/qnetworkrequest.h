@@ -5,6 +5,7 @@
 #define QNETWORKREQUEST_H
 
 #include <QtNetwork/qtnetworkglobal.h>
+#include <QtNetwork/qhttpheaders.h>
 #include <QtCore/QSharedDataPointer>
 #include <QtCore/QString>
 #include <QtCore/QUrl>
@@ -34,7 +35,8 @@ public:
         IfModifiedSinceHeader,
         ETagHeader,
         IfMatchHeader,
-        IfNoneMatchHeader
+        IfNoneMatchHeader,
+        NumKnownHeaders
     };
     Q_ENUM(KnownHeaders)
 
@@ -119,6 +121,10 @@ public:
     QUrl url() const;
     void setUrl(const QUrl &url);
 
+    QHttpHeaders headers() const;
+    void setHeaders(const QHttpHeaders &newHeaders);
+    void setHeaders(QHttpHeaders &&newHeaders);
+
     // "cooked" headers
     QVariant header(KnownHeaders header) const;
     void setHeader(KnownHeaders header, const QVariant &value);
@@ -127,12 +133,12 @@ public:
 #if QT_NETWORK_REMOVED_SINCE(6, 7)
     bool hasRawHeader(const QByteArray &headerName) const;
 #endif
-    bool hasRawHeader(QByteArrayView headerName) const;
+    bool hasRawHeader(QAnyStringView headerName) const;
     QList<QByteArray> rawHeaderList() const;
 #if QT_NETWORK_REMOVED_SINCE(6, 7)
     QByteArray rawHeader(const QByteArray &headerName) const;
 #endif
-    QByteArray rawHeader(QByteArrayView headerName) const;
+    QByteArray rawHeader(QAnyStringView headerName) const;
     void setRawHeader(const QByteArray &headerName, const QByteArray &value);
 
     // attributes
@@ -168,8 +174,11 @@ public:
 #endif // QT_CONFIG(http)
 
 #if QT_CONFIG(http) || defined (Q_OS_WASM)
+    QT_NETWORK_INLINE_SINCE(6, 8)
     int transferTimeout() const;
+    QT_NETWORK_INLINE_SINCE(6, 8)
     void setTransferTimeout(int timeout);
+
     std::chrono::milliseconds transferTimeoutAsDuration() const;
     void setTransferTimeout(std::chrono::milliseconds duration = DefaultTransferTimeout);
 #endif // QT_CONFIG(http) || defined (Q_OS_WASM)
@@ -179,6 +188,20 @@ private:
 };
 
 Q_DECLARE_SHARED(QNetworkRequest)
+
+#if QT_NETWORK_INLINE_IMPL_SINCE(6, 8)
+#if QT_CONFIG(http) || defined (Q_OS_WASM)
+int QNetworkRequest::transferTimeout() const
+{
+    return int(transferTimeoutAsDuration().count());
+}
+
+void QNetworkRequest::setTransferTimeout(int timeout)
+{
+    setTransferTimeout(std::chrono::milliseconds(timeout));
+}
+#endif // QT_CONFIG(http) || defined (Q_OS_WASM)
+#endif // INLINE_SINCE 6.8
 
 QT_END_NAMESPACE
 

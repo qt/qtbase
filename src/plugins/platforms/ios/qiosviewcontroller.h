@@ -12,14 +12,12 @@ QT_END_NAMESPACE
 
 @interface QIOSViewController : UIViewController
 
-- (instancetype)initWithQIOSScreen:(QT_PREPEND_NAMESPACE(QIOSScreen) *)screen;
+- (instancetype)initWithWindow:(UIWindow*)window andScreen:(QT_PREPEND_NAMESPACE(QIOSScreen) *)screen;
 - (void)updateProperties;
 - (NSArray*)keyCommands;
 - (void)handleShortcut:(UIKeyCommand*)keyCommand;
 
 #ifndef Q_OS_TVOS
-@property (nonatomic, assign) UIInterfaceOrientation lockedOrientation;
-
 // UIViewController
 @property (nonatomic, assign) BOOL prefersStatusBarHidden;
 @property (nonatomic, assign) UIStatusBarAnimation preferredStatusBarUpdateAnimation;

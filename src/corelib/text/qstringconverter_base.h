@@ -89,12 +89,14 @@ public:
 
     enum Encoding {
         Utf8,
+#ifndef QT_BOOTSTRAPPED
         Utf16,
         Utf16LE,
         Utf16BE,
         Utf32,
         Utf32LE,
         Utf32BE,
+#endif
         Latin1,
         System,
         LastEncoding = System

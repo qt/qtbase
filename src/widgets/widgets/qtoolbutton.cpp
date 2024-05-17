@@ -584,8 +584,10 @@ void QToolButton::mousePressEvent(QMouseEvent *e)
 void QToolButton::mouseReleaseEvent(QMouseEvent *e)
 {
     Q_D(QToolButton);
+    QPointer<QAbstractButton> guard(this);
     QAbstractButton::mouseReleaseEvent(e);
-    d->buttonPressed = QToolButtonPrivate::NoButtonPressed;
+    if (guard)
+        d->buttonPressed = QToolButtonPrivate::NoButtonPressed;
 }
 
 /*!

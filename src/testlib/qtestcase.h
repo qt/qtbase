@@ -5,6 +5,7 @@
 #define QTESTCASE_H
 
 #include <QtTest/qttestglobal.h>
+#include <QtTest/qtesttostring.h>
 
 #include <QtCore/qstring.h>
 #include <QtCore/qnamespace.h>
@@ -22,6 +23,26 @@
 #endif // QT_NO_EXCEPTIONS
 
 QT_BEGIN_NAMESPACE
+
+#ifndef QT_NO_EXCEPTIONS
+
+#ifdef QTEST_THROW_ON_FAILURE
+# define QTEST_FAIL_ACTION QTest::Internal::throwOnFail()
+#else
+# define QTEST_FAIL_ACTION do { QTest::Internal::maybeThrowOnFail(); return; } while (false)
+#endif
+
+#ifdef QTEST_THROW_ON_SKIP
+# define QTEST_SKIP_ACTION QTest::Internal::throwOnSkip()
+#else
+# define QTEST_SKIP_ACTION do { QTest::Internal::maybeThrowOnSkip(); return; } while (false)
+#endif
+
+#else
+# if defined(QTEST_THROW_ON_FAILURE) || defined(QTEST_THROW_ON_SKIP)
+#  error QTEST_THROW_ON_FAILURE/SKIP require exception support enabled.
+# endif
+#endif // QT_NO_EXCEPTIONS
 
 #ifndef QTEST_FAIL_ACTION
 # define QTEST_FAIL_ACTION return
@@ -63,24 +84,10 @@ do {\
         QTEST_FAIL_ACTION; \
 } while (false)
 
-// A wrapper lambda is introduced to extend the lifetime of lhs and rhs in
-// case they are temporary objects.
-// We also use IILE to prevent potential name clashes and shadowing of variables
-// from user code. A drawback of the approach is that it looks ugly :(
 #define QCOMPARE_OP_IMPL(lhs, rhs, op, opId) \
 do { \
-    if (![](auto &&qt_lhs_arg, auto &&qt_rhs_arg) { \
-        /* assumes that op does not actually move from qt_{lhs, rhs}_arg */ \
-        return QTest::reportResult(std::forward<decltype(qt_lhs_arg)>(qt_lhs_arg) \
-                                   op \
-                                   std::forward<decltype(qt_rhs_arg)>(qt_rhs_arg), \
-                                   [&qt_lhs_arg] { return QTest::toString(qt_lhs_arg); }, \
-                                   [&qt_rhs_arg] { return QTest::toString(qt_rhs_arg); }, \
-                                   #lhs, #rhs, QTest::ComparisonOperation::opId, \
-                                   __FILE__, __LINE__); \
-    }(lhs, rhs)) { \
+    if (!QTest::qCompareOp<QTest::ComparisonOperation::opId>(lhs, rhs, #lhs, #rhs, __FILE__, __LINE__)) \
         QTEST_FAIL_ACTION; \
-    } \
 } while (false)
 
 #define QCOMPARE_EQ(computed, baseline) QCOMPARE_OP_IMPL(computed, baseline, ==, Equal)
@@ -178,9 +185,14 @@ inline void useVerifyThrowsException() {}
         } \
     }
 
-#define QTRY_IMPL(expr, timeout)\
-    const int qt_test_step = timeout < 350 ? timeout / 7 + 1 : 50; \
-    const int qt_test_timeoutValue = timeout; \
+#define QTRY_IMPL(expr, timeoutAsGiven)\
+    const auto qt_test_timeoutAsMs = [&] { \
+            /* make 5s work w/o user action: */ \
+            using namespace std::chrono_literals; \
+            return std::chrono::milliseconds{timeoutAsGiven}; \
+        }(); \
+    const int qt_test_step = qt_test_timeoutAsMs.count() < 350 ? qt_test_timeoutAsMs.count() / 7 + 1 : 50; \
+    const int qt_test_timeoutValue = qt_test_timeoutAsMs.count(); \
     { QTRY_LOOP_IMPL(expr, qt_test_timeoutValue, qt_test_step) } \
     QTRY_TIMEOUT_DEBUG_IMPL(expr, qt_test_timeoutValue, qt_test_step)
 // Ends with an if-block, so doesn't want a following semicolon.
@@ -192,7 +204,7 @@ do { \
     QVERIFY(expr); \
 } while (false)
 
-#define QTRY_VERIFY(expr) QTRY_VERIFY_WITH_TIMEOUT(expr, 5000)
+#define QTRY_VERIFY(expr) QTRY_VERIFY_WITH_TIMEOUT(expr, 5s)
 
 // Will try to wait for the expression to become true while allowing event processing
 #define QTRY_VERIFY2_WITH_TIMEOUT(expr, messageExpression, timeout) \
@@ -201,7 +213,7 @@ do { \
     QVERIFY2(expr, messageExpression); \
 } while (false)
 
-#define QTRY_VERIFY2(expr, messageExpression) QTRY_VERIFY2_WITH_TIMEOUT(expr, messageExpression, 5000)
+#define QTRY_VERIFY2(expr, messageExpression) QTRY_VERIFY2_WITH_TIMEOUT(expr, messageExpression, 5s)
 
 // Will try to wait for the comparison to become successful while allowing event processing
 #define QTRY_COMPARE_WITH_TIMEOUT(expr, expected, timeout) \
@@ -210,43 +222,44 @@ do { \
     QCOMPARE(expr, expected); \
 } while (false)
 
-#define QTRY_COMPARE(expr, expected) QTRY_COMPARE_WITH_TIMEOUT(expr, expected, 5000)
+#define QTRY_COMPARE(expr, expected) QTRY_COMPARE_WITH_TIMEOUT(expr, expected, 5s)
 
 #define QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, op, opId, timeout) \
 do { \
-    QTRY_IMPL(((computed) op (baseline)), timeout) \
+    using Q_Cmp = QTest::Internal::Compare<QTest::ComparisonOperation::opId>; \
+    QTRY_IMPL(Q_Cmp::compare((computed), (baseline)), timeout) \
     QCOMPARE_OP_IMPL(computed, baseline, op, opId); \
 } while (false)
 
 #define QTRY_COMPARE_EQ_WITH_TIMEOUT(computed, baseline, timeout) \
     QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, ==, Equal, timeout)
 
-#define QTRY_COMPARE_EQ(computed, baseline) QTRY_COMPARE_EQ_WITH_TIMEOUT(computed, baseline, 5000)
+#define QTRY_COMPARE_EQ(computed, baseline) QTRY_COMPARE_EQ_WITH_TIMEOUT(computed, baseline, 5s)
 
 #define QTRY_COMPARE_NE_WITH_TIMEOUT(computed, baseline, timeout) \
     QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, !=, NotEqual, timeout)
 
-#define QTRY_COMPARE_NE(computed, baseline) QTRY_COMPARE_NE_WITH_TIMEOUT(computed, baseline, 5000)
+#define QTRY_COMPARE_NE(computed, baseline) QTRY_COMPARE_NE_WITH_TIMEOUT(computed, baseline, 5s)
 
 #define QTRY_COMPARE_LT_WITH_TIMEOUT(computed, baseline, timeout) \
     QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, <, LessThan, timeout)
 
-#define QTRY_COMPARE_LT(computed, baseline) QTRY_COMPARE_LT_WITH_TIMEOUT(computed, baseline, 5000)
+#define QTRY_COMPARE_LT(computed, baseline) QTRY_COMPARE_LT_WITH_TIMEOUT(computed, baseline, 5s)
 
 #define QTRY_COMPARE_LE_WITH_TIMEOUT(computed, baseline, timeout) \
     QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, <=, LessThanOrEqual, timeout)
 
-#define QTRY_COMPARE_LE(computed, baseline) QTRY_COMPARE_LE_WITH_TIMEOUT(computed, baseline, 5000)
+#define QTRY_COMPARE_LE(computed, baseline) QTRY_COMPARE_LE_WITH_TIMEOUT(computed, baseline, 5s)
 
 #define QTRY_COMPARE_GT_WITH_TIMEOUT(computed, baseline, timeout) \
     QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, >, GreaterThan, timeout)
 
-#define QTRY_COMPARE_GT(computed, baseline) QTRY_COMPARE_GT_WITH_TIMEOUT(computed, baseline, 5000)
+#define QTRY_COMPARE_GT(computed, baseline) QTRY_COMPARE_GT_WITH_TIMEOUT(computed, baseline, 5s)
 
 #define QTRY_COMPARE_GE_WITH_TIMEOUT(computed, baseline, timeout) \
     QTRY_COMPARE_OP_WITH_TIMEOUT_IMPL(computed, baseline, >=, GreaterThanOrEqual, timeout)
 
-#define QTRY_COMPARE_GE(computed, baseline) QTRY_COMPARE_GE_WITH_TIMEOUT(computed, baseline, 5000)
+#define QTRY_COMPARE_GE(computed, baseline) QTRY_COMPARE_GE_WITH_TIMEOUT(computed, baseline, 5s)
 
 #define QSKIP_INTERNAL(statement) \
 do {\
@@ -293,84 +306,71 @@ do {\
 class QObject;
 class QTestData;
 
-#define QTEST_COMPARE_DECL(KLASS)\
-    template<> Q_TESTLIB_EXPORT char *toString<KLASS >(const KLASS &);
-
 namespace QTest
 {
     namespace Internal {
 
+    [[noreturn]] Q_TESTLIB_EXPORT void throwOnFail();
+    [[noreturn]] Q_TESTLIB_EXPORT void throwOnSkip();
+    Q_TESTLIB_EXPORT void maybeThrowOnFail();
+    Q_TESTLIB_EXPORT void maybeThrowOnSkip();
+
     Q_TESTLIB_EXPORT QString formatTryTimeoutDebugMessage(q_no_char8_t::QUtf8StringView expr, int timeout, int actual);
 
-    template<typename T> // Output registered enums
-    inline typename std::enable_if<QtPrivate::IsQEnumHelper<T>::Value, char*>::type toString(T e)
+    template <ComparisonOperation> struct Compare;
+    template <> struct Compare<ComparisonOperation::Equal>
     {
-        QMetaEnum me = QMetaEnum::fromType<T>();
-        return qstrdup(me.valueToKey(int(e))); // int cast is necessary to support enum classes
+        template <typename T1, typename T2> static bool compare(T1 &&lhs, T2 &&rhs)
+        { return std::forward<T1>(lhs) == std::forward<T2>(rhs); }
+    };
+    template <> struct Compare<ComparisonOperation::NotEqual>
+    {
+        template <typename T1, typename T2> static bool compare(T1 &&lhs, T2 &&rhs)
+        { return std::forward<T1>(lhs) != std::forward<T2>(rhs); }
+    };
+    template <> struct Compare<ComparisonOperation::LessThan>
+    {
+        template <typename T1, typename T2> static bool compare(T1 &&lhs, T2 &&rhs)
+        { return std::forward<T1>(lhs) < std::forward<T2>(rhs); }
+    };
+    template <> struct Compare<ComparisonOperation::LessThanOrEqual>
+    {
+        template <typename T1, typename T2> static bool compare(T1 &&lhs, T2 &&rhs)
+        { return std::forward<T1>(lhs) <= std::forward<T2>(rhs); }
+    };
+    template <> struct Compare<ComparisonOperation::GreaterThan>
+    {
+        template <typename T1, typename T2> static bool compare(T1 &&lhs, T2 &&rhs)
+        { return std::forward<T1>(lhs) > std::forward<T2>(rhs); }
+    };
+    template <> struct Compare<ComparisonOperation::GreaterThanOrEqual>
+    {
+        template <typename T1, typename T2> static bool compare(T1 &&lhs, T2 &&rhs)
+        { return std::forward<T1>(lhs) >= std::forward<T2>(rhs); }
+    };
+
+    template <typename T1> const char *genericToString(const void *arg)
+    {
+        using QTest::toString;
+        return toString(*static_cast<const T1 *>(arg));
     }
 
-    template <typename T>
-    inline typename std::enable_if<!QtPrivate::IsQEnumHelper<T>::Value && std::is_enum_v<T>, char*>::type toString(const T &e)
+    template <> inline const char *genericToString<char *>(const void *arg)
     {
-        return qstrdup(QByteArray::number(static_cast<std::underlying_type_t<T>>(e)).constData());
+        using QTest::toString;
+        return toString(static_cast<const char *>(arg));
     }
 
-    template <typename T> // Fallback; for built-in types debug streaming must be possible
-    inline typename std::enable_if<!QtPrivate::IsQEnumHelper<T>::Value && !std::is_enum_v<T>, char *>::type toString(const T &t)
+    template <typename T> const char *pointerToString(const void *arg)
     {
-        char *result = nullptr;
-#ifndef QT_NO_DEBUG_STREAM
-        if constexpr (QTypeTraits::has_ostream_operator_v<QDebug, T>) {
-            result = qstrdup(QDebug::toString(t).toUtf8().constData());
-        } else {
-            static_assert(!QMetaTypeId2<T>::IsBuiltIn,
-                        "Built-in type must implement debug streaming operator "
-                        "or provide QTest::toString specialization");
-        }
-#endif
-        return result;
+        using QTest::toString;
+        return toString(static_cast<const T *>(arg));
     }
 
-    template<typename F> // Output QFlags of registered enumerations
-    inline typename std::enable_if<QtPrivate::IsQEnumHelper<F>::Value, char*>::type toString(QFlags<F> f)
-    {
-        const QMetaEnum me = QMetaEnum::fromType<F>();
-        return qstrdup(me.valueToKeys(int(f.toInt())).constData());
-    }
-
-    template <typename F> // Fallback: Output hex value
-    inline typename std::enable_if<!QtPrivate::IsQEnumHelper<F>::Value, char*>::type toString(QFlags<F> f)
-    {
-        const size_t space = 3 + 2 * sizeof(unsigned); // 2 for 0x, two hex digits per byte, 1 for '\0'
-        char *msg = new char[space];
-        qsnprintf(msg, space, "0x%x", unsigned(f.toInt()));
-        return msg;
-    }
+    // Exported so Qt Quick Test can also use it for generating backtraces upon crashes.
+    Q_TESTLIB_EXPORT extern bool noCrashHandler;
 
     } // namespace Internal
-
-    template<typename T>
-    inline char *toString(const T &t)
-    {
-        return Internal::toString(t);
-    }
-
-    template <typename T1, typename T2>
-    inline char *toString(const std::pair<T1, T2> &pair);
-
-    template <class... Types>
-    inline char *toString(const std::tuple<Types...> &tuple);
-
-    template <typename Rep, typename Period>
-    inline char *toString(std::chrono::duration<Rep, Period> duration);
-
-    Q_TESTLIB_EXPORT char *toHexRepresentation(const char *ba, qsizetype length);
-    Q_TESTLIB_EXPORT char *toPrettyCString(const char *unicode, qsizetype length);
-    Q_TESTLIB_EXPORT char *toPrettyUnicode(QStringView string);
-    Q_TESTLIB_EXPORT char *toString(const char *);
-    Q_TESTLIB_EXPORT char *toString(const volatile void *);
-    Q_TESTLIB_EXPORT char *toString(const void *); // ### FIXME: Qt 7: Remove
-    Q_TESTLIB_EXPORT char *toString(const volatile QObject *);
 
     Q_TESTLIB_EXPORT void qInit(QObject *testObject, int argc = 0, char **argv = nullptr);
     Q_TESTLIB_EXPORT int qRun();
@@ -385,6 +385,36 @@ namespace QTest
 #endif  // QT_CONFIG(batch_test_support)
 
     Q_TESTLIB_EXPORT void setMainSourcePath(const char *file, const char *builddir = nullptr);
+    Q_TESTLIB_EXPORT void setThrowOnFail(bool enable) noexcept;
+    Q_TESTLIB_EXPORT void setThrowOnSkip(bool enable) noexcept;
+
+    class ThrowOnFailEnabler {
+        Q_DISABLE_COPY_MOVE(ThrowOnFailEnabler)
+    public:
+        ThrowOnFailEnabler() { setThrowOnFail(true); }
+        ~ThrowOnFailEnabler() { setThrowOnFail(false); }
+    };
+
+    class ThrowOnSkipEnabler {
+        Q_DISABLE_COPY_MOVE(ThrowOnSkipEnabler)
+    public:
+        ThrowOnSkipEnabler() { setThrowOnSkip(true); }
+        ~ThrowOnSkipEnabler() { setThrowOnSkip(false); }
+    };
+
+    class ThrowOnFailDisabler {
+        Q_DISABLE_COPY_MOVE(ThrowOnFailDisabler)
+    public:
+        ThrowOnFailDisabler() { setThrowOnFail(false); }
+        ~ThrowOnFailDisabler() { setThrowOnFail(true); }
+    };
+
+    class ThrowOnSkipDisabler {
+        Q_DISABLE_COPY_MOVE(ThrowOnSkipDisabler)
+    public:
+        ThrowOnSkipDisabler() { setThrowOnSkip(false); }
+        ~ThrowOnSkipDisabler() { setThrowOnSkip(true); }
+    };
 
     Q_TESTLIB_EXPORT bool qVerify(bool statement, const char *statementStr, const char *description,
                                  const char *file, int line);
@@ -405,6 +435,7 @@ namespace QTest
 #if QT_CONFIG(regularexpression)
     Q_TESTLIB_EXPORT void ignoreMessage(QtMsgType type, const QRegularExpression &messagePattern);
 #endif
+    Q_TESTLIB_EXPORT void failOnWarning();
     Q_TESTLIB_EXPORT void failOnWarning(const char *message);
 #if QT_CONFIG(regularexpression)
     Q_TESTLIB_EXPORT void failOnWarning(const QRegularExpression &messagePattern);
@@ -432,10 +463,8 @@ namespace QTest
     Q_TESTLIB_EXPORT Qt::Key asciiToKey(char ascii);
     Q_TESTLIB_EXPORT char keyToAscii(Qt::Key key);
 
-    // ### TODO: remove QTestResult::compare() overload that takes char * values
-    // when this overload is removed.
 #if QT_DEPRECATED_SINCE(6, 4)
-    QT_DEPRECATED_VERSION_X_6_4("use an overload that takes function_ref as parameters, "
+    QT_DEPRECATED_VERSION_X_6_4("use an overload that takes a formatter callback, "
                                 "or an overload that takes only failure message, if you "
                                 "do not need to stringify the values")
     Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *failureMsg,
@@ -443,9 +472,20 @@ namespace QTest
                                          const char *actual, const char *expected,
                                          const char *file, int line);
 #endif // QT_DEPRECATED_SINCE(6, 4)
+#if QT_DEPRECATED_SINCE(6, 8)
+    QT_DEPRECATED_VERSION_X_6_8("use an overload that takes a formatter callback, "
+                                "or an overload that takes only failure message, if you "
+                                "do not need to stringify the values")
     Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *failureMsg,
                                          qxp::function_ref<const char*()> actualVal,
                                          qxp::function_ref<const char*()> expectedVal,
+                                         const char *actual, const char *expected,
+                                         const char *file, int line);
+#endif // QT_DEPRECATED_SINCE(6, 8)
+    Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *failureMsg,
+                                         const void *actualPtr, const void *expectedPtr,
+                                         const char *(*actualFormatter)(const void *),
+                                         const char *(*expectedFormatter)(const void *),
                                          const char *actual, const char *expected,
                                          const char *file, int line);
     Q_TESTLIB_EXPORT bool compare_helper(bool success, const char *failureMsg,
@@ -515,81 +555,71 @@ namespace QTest
     inline bool compare_ptr_helper(const volatile void *t1, const volatile void *t2, const char *actual,
                                    const char *expected, const char *file, int line)
     {
+        auto formatter = Internal::pointerToString<void>;
         return compare_helper(t1 == t2, "Compared pointers are not the same",
-                              [t1] { return toString(t1); }, [t2] { return toString(t2); },
-                              actual, expected, file, line);
+                              const_cast<const void *>(t1), const_cast<const void *>(t2),
+                              formatter, formatter, actual, expected, file, line);
     }
 
     inline bool compare_ptr_helper(const volatile QObject *t1, const volatile QObject *t2, const char *actual,
                                    const char *expected, const char *file, int line)
     {
+        auto formatter = Internal::pointerToString<QObject>;
         return compare_helper(t1 == t2, "Compared QObject pointers are not the same",
-                              [t1] { return toString(t1); }, [t2] { return toString(t2); },
-                              actual, expected, file, line);
+                              const_cast<const QObject *>(t1), const_cast<const QObject *>(t2),
+                              formatter, formatter, actual, expected, file, line);
     }
 
     inline bool compare_ptr_helper(const volatile QObject *t1, std::nullptr_t, const char *actual,
                                    const char *expected, const char *file, int line)
     {
+        auto lhsFormatter = Internal::pointerToString<QObject>;
+        auto rhsFormatter = Internal::genericToString<std::nullptr_t>;
         return compare_helper(t1 == nullptr, "Compared QObject pointers are not the same",
-                              [t1] { return toString(t1); }, [] { return toString(nullptr); },
-                              actual, expected, file, line);
+                              const_cast<const QObject *>(t1), nullptr,
+                              lhsFormatter, rhsFormatter, actual, expected, file, line);
     }
 
     inline bool compare_ptr_helper(std::nullptr_t, const volatile QObject *t2, const char *actual,
                                    const char *expected, const char *file, int line)
     {
+        auto lhsFormatter = Internal::genericToString<std::nullptr_t>;
+        auto rhsFormatter = Internal::pointerToString<QObject>;
         return compare_helper(nullptr == t2, "Compared QObject pointers are not the same",
-                              [] { return toString(nullptr); }, [t2] { return toString(t2); },
-                              actual, expected, file, line);
+                              nullptr, const_cast<const QObject *>(t2),
+                              lhsFormatter, rhsFormatter, actual, expected, file, line);
     }
 
     inline bool compare_ptr_helper(const volatile void *t1, std::nullptr_t, const char *actual,
                                    const char *expected, const char *file, int line)
     {
+        auto lhsFormatter = Internal::pointerToString<void>;
+        auto rhsFormatter = Internal::genericToString<std::nullptr_t>;
         return compare_helper(t1 == nullptr, "Compared pointers are not the same",
-                              [t1] { return toString(t1); }, [] { return toString(nullptr); },
-                              actual, expected, file, line);
+                              const_cast<const void *>(t1), nullptr,
+                              lhsFormatter, rhsFormatter, actual, expected, file, line);
     }
 
     inline bool compare_ptr_helper(std::nullptr_t, const volatile void *t2, const char *actual,
                                    const char *expected, const char *file, int line)
     {
+        auto lhsFormatter = Internal::genericToString<std::nullptr_t>;
+        auto rhsFormatter = Internal::pointerToString<void>;
         return compare_helper(nullptr == t2, "Compared pointers are not the same",
-                              [] { return toString(nullptr); }, [t2] { return toString(t2); },
-                              actual, expected, file, line);
+                              nullptr, const_cast<const void *>(t2),
+                              lhsFormatter, rhsFormatter, actual, expected, file, line);
     }
-
-    Q_TESTLIB_EXPORT bool compare_string_helper(const char *t1, const char *t2, const char *actual,
-                                      const char *expected, const char *file, int line);
-
-    Q_TESTLIB_EXPORT char *formatString(const char *prefix, const char *suffix, size_t numArguments, ...);
-
-#ifndef Q_QDOC
-    QTEST_COMPARE_DECL(short)
-    QTEST_COMPARE_DECL(ushort)
-    QTEST_COMPARE_DECL(int)
-    QTEST_COMPARE_DECL(uint)
-    QTEST_COMPARE_DECL(long)
-    QTEST_COMPARE_DECL(ulong)
-    QTEST_COMPARE_DECL(qint64)
-    QTEST_COMPARE_DECL(quint64)
-
-    QTEST_COMPARE_DECL(float)
-    QTEST_COMPARE_DECL(double)
-    QTEST_COMPARE_DECL(qfloat16)
-    QTEST_COMPARE_DECL(char)
-    QTEST_COMPARE_DECL(signed char)
-    QTEST_COMPARE_DECL(unsigned char)
-    QTEST_COMPARE_DECL(bool)
-#endif
 
     template <typename T1, typename T2 = T1>
     inline bool qCompare(const T1 &t1, const T2 &t2, const char *actual, const char *expected,
                          const char *file, int line)
     {
+        using D1 = std::decay_t<T1>;
+        using D2 = std::decay_t<T2>;
+        using Internal::genericToString;
         return compare_helper(t1 == t2, "Compared values are not the same",
-                              [&t1] { return toString(t1); }, [&t2] { return toString(t2); },
+                              std::addressof(t1), std::addressof(t2),
+                              genericToString<D1>, genericToString<D2>,
                               actual, expected, file, line);
     }
 
@@ -677,13 +707,38 @@ namespace QTest
                        qMetaTypeId<T>())), actualStr, expected, file, line);
     }
 
+#if QT_DEPRECATED_SINCE(6, 8)
+    QT_DEPRECATED_VERSION_X_6_8("use the overload without qxp::function_ref")
     Q_TESTLIB_EXPORT bool reportResult(bool success, qxp::function_ref<const char*()> lhs,
                                        qxp::function_ref<const char*()> rhs,
                                        const char *lhsExpr, const char *rhsExpr,
                                        ComparisonOperation op, const char *file, int line);
+#endif // QT_DEPRECATED_SINCE(6, 8)
+
+    Q_TESTLIB_EXPORT bool reportResult(bool success, const void *lhs, const void *rhs,
+                                       const char *(*lhsFormatter)(const void*),
+                                       const char *(*rhsFormatter)(const void*),
+                                       const char *lhsExpr, const char *rhsExpr,
+                                       ComparisonOperation op, const char *file, int line);
+
+    template <ComparisonOperation op, typename T1, typename T2 = T1>
+    inline bool qCompareOp(T1 &&lhs, T2 &&rhs, const char *lhsExpr, const char *rhsExpr,
+                           const char *file, int line)
+    {
+        using D1 = std::decay_t<T1>;
+        using D2 = std::decay_t<T2>;
+        using Internal::genericToString;
+        using Comparator = Internal::Compare<op>;
+
+        /* assumes that op does not actually move from lhs and rhs */
+        bool result = Comparator::compare(std::forward<T1>(lhs), std::forward<T2>(rhs));
+        return reportResult(result, std::addressof(lhs), std::addressof(rhs),
+                            genericToString<D1>, genericToString<D2>,
+                            lhsExpr, rhsExpr, op, file, line);
+
+    }
 }
 
-#undef QTEST_COMPARE_DECL
 
 #define QWARN(msg) QTest::qWarn(static_cast<const char *>(msg), __FILE__, __LINE__)
 

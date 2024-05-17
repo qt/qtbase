@@ -27,6 +27,8 @@ Q_LOGGING_CATEGORY(lcMD, "qt.text.markdown")
 static const QChar qtmi_Newline = u'\n';
 static const QChar qtmi_Space = u' ';
 
+static constexpr auto markerString() noexcept { return "---"_L1; }
+
 // TODO maybe eliminate the margins after all views recognize BlockQuoteLevel, CSS can format it, etc.
 static const int qtmi_BlockQuoteIndent =
         40; // pixels, same as in QTextHtmlParserNode::initializeProperties
@@ -46,7 +48,8 @@ static_assert(int(QTextMarkdownImporter::FeaturePermissiveAutoLinks) == MD_FLAG_
 static_assert(int(QTextMarkdownImporter::FeatureTasklists) == MD_FLAG_TASKLISTS);
 static_assert(int(QTextMarkdownImporter::FeatureNoHTML) == MD_FLAG_NOHTML);
 static_assert(int(QTextMarkdownImporter::DialectCommonMark) == MD_DIALECT_COMMONMARK);
-static_assert(int(QTextMarkdownImporter::DialectGitHub) == (MD_DIALECT_GITHUB | MD_FLAG_UNDERLINE));
+static_assert(int(QTextMarkdownImporter::DialectGitHub) ==
+              (MD_DIALECT_GITHUB | MD_FLAG_UNDERLINE | QTextMarkdownImporter::FeatureFrontMatter));
 
 // --------------------------------------------------------
 // MD4C callback function wrappers
@@ -138,9 +141,26 @@ void QTextMarkdownImporter::import(const QString &markdown)
     else
         m_monoFont.setPixelSize(defaultFont.pixelSize());
     qCDebug(lcMD) << "default font" << defaultFont << "mono font" << m_monoFont;
-    QByteArray md = markdown.toUtf8();
+    QStringView md = markdown;
+
+    if (m_features.testFlag(QTextMarkdownImporter::FeatureFrontMatter) && md.startsWith(markerString())) {
+        qsizetype endMarkerPos = md.indexOf(markerString(), markerString().size() + 1);
+        if (endMarkerPos > 4) {
+            qsizetype firstLinePos = 4; // first line of yaml
+            while (md.at(firstLinePos) == '\n'_L1 || md.at(firstLinePos) == '\r'_L1)
+                ++firstLinePos;
+            auto frontMatter = md.sliced(firstLinePos, endMarkerPos - firstLinePos);
+            firstLinePos = endMarkerPos + 4; // first line of markdown after yaml
+            while (md.size() > firstLinePos && (md.at(firstLinePos) == '\n'_L1 || md.at(firstLinePos) == '\r'_L1))
+                ++firstLinePos;
+            md = md.sliced(firstLinePos);
+            doc->setMetaInformation(QTextDocument::FrontMatter, frontMatter.toString());
+            qCDebug(lcMD) << "extracted FrontMatter: size" << frontMatter.size();
+        }
+    }
+    const auto mdUtf8 = md.toUtf8();
     m_cursor.beginEditBlock();
-    md_parse(md.constData(), MD_SIZE(md.size()), &callbacks, this);
+    md_parse(mdUtf8.constData(), MD_SIZE(mdUtf8.size()), &callbacks, this);
     m_cursor.endEditBlock();
 }
 

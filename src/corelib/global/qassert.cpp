@@ -5,13 +5,50 @@
 
 #include <QtCore/qlogging.h>
 
+#include <cstdlib>
 #include <cstdio>
 #include <exception>
 #ifndef QT_NO_EXCEPTIONS
 #include <new>
 #endif
 
+#if defined(Q_CC_MSVC)
+#  include <crtdbg.h>
+#endif
+#ifdef Q_OS_WIN
+#  include <qt_windows.h>
+#endif
+
 QT_BEGIN_NAMESPACE
+
+void qAbort()
+{
+#ifdef Q_OS_WIN
+    // std::abort() in the MSVC runtime will call _exit(3) if the abort
+    // behavior is _WRITE_ABORT_MSG - see also _set_abort_behavior(). This is
+    // the default for a debug-mode build of the runtime. Worse, MinGW's
+    // std::abort() implementation (in msvcrt.dll) is basically a call to
+    // _exit(3) too. Unfortunately, _exit() and _Exit() *do* run the static
+    // destructors of objects in DLLs, a violation of the C++ standard (see
+    // [support.start.term]). So we bypass std::abort() and directly
+    // terminate the application.
+
+#  if defined(Q_CC_MSVC)
+    if (IsProcessorFeaturePresent(PF_FASTFAIL_AVAILABLE))
+        __fastfail(FAST_FAIL_FATAL_APP_EXIT);
+#  else
+    RaiseFailFastException(nullptr, nullptr, 0);
+#  endif
+
+    // Fallback
+    TerminateProcess(GetCurrentProcess(), STATUS_FATAL_APP_EXIT);
+
+    // Tell the compiler the application has stopped.
+    Q_UNREACHABLE_IMPL();
+#else // !Q_OS_WIN
+    std::abort();
+#endif
+}
 
 /*!
     \macro void Q_ASSERT(bool test)
@@ -155,6 +192,36 @@ void qBadAlloc()
     code and will likely be removed in the next major version Qt.
 
     \sa Q_ASSERT(), Q_UNREACHABLE(), Q_LIKELY()
+*/
+
+/*!
+    \macro QT_TERMINATE_ON_EXCEPTION(expr)
+    \relates <QtGlobal>
+    \internal
+
+    In general, use of the Q_DECL_NOEXCEPT macro is preferred over
+    Q_DECL_NOTHROW, because it exhibits well-defined behavior and
+    supports the more powerful Q_DECL_NOEXCEPT_EXPR variant. However,
+    use of Q_DECL_NOTHROW has the advantage that Windows builds
+    benefit on a wide range or compiler versions that do not yet
+    support the C++11 noexcept feature.
+
+    It may therefore be beneficial to use Q_DECL_NOTHROW and emulate
+    the C++11 behavior manually with an embedded try/catch.
+
+    Qt provides the QT_TERMINATE_ON_EXCEPTION(expr) macro for this
+    purpose. It either expands to \c expr (if Qt is compiled without
+    exception support or the compiler supports C++11 noexcept
+    semantics) or to
+    \snippet code/src_corelib_global_qglobal.cpp qterminate
+    otherwise.
+
+    Since this macro expands to just \c expr if the compiler supports
+    C++11 noexcept, expecting the compiler to take over responsibility
+    of calling std::terminate() in that case, it should not be used
+    outside Q_DECL_NOTHROW functions.
+
+    \sa Q_DECL_NOEXCEPT, Q_DECL_NOTHROW, qTerminate()
 */
 
 /*!

@@ -66,7 +66,7 @@ public:
     void updateSiblingPosition(SiblingPosition);
 
     bool windowRecreationRequired(QScreen *newScreen) const;
-    void create(bool recursive, WId nativeHandle = 0);
+    void create(bool recursive);
     void destroy();
     void setTopLevelScreen(QScreen *newScreen, bool recreate);
     void connectToScreen(QScreen *topLevelScreen);
@@ -76,6 +76,16 @@ public:
     void setTransientParent(QWindow *parent);
 
     virtual void clearFocusObject();
+
+    enum class FocusTarget {
+        First,
+        Last,
+        Current,
+        Next,
+        Prev
+    };
+    virtual void setFocusToTarget(FocusTarget, Qt::FocusReason) {}
+
     virtual QRectF closestAcceptableGeometry(const QRectF &rect) const;
 
     void setMinOrMaxSize(QSize *oldSizeMember, const QSize &size,
@@ -145,7 +155,6 @@ public:
     bool hasCursor = false;
 #endif
 
-    bool compositing = false;
     QElapsedTimer lastComposeTime;
 
 #if QT_CONFIG(vulkan)

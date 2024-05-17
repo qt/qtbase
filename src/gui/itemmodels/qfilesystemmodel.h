@@ -9,7 +9,6 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qdir.h>
 #include <QtGui/qicon.h>
-#include <QtCore/qdiriterator.h>
 
 QT_REQUIRE_CONFIG(filesystemmodel);
 
@@ -33,11 +32,13 @@ Q_SIGNALS:
     void directoryLoaded(const QString &path);
 
 public:
+    // ### Qt 7: renumber these values to be before Qt::UserRole comment.
     enum Roles {
         FileIconRole = Qt::DecorationRole,
+        FileInfoRole = Qt::UserRole - 1,
         FilePathRole = Qt::UserRole + 1,
         FileNameRole = Qt::UserRole + 2,
-        FilePermissions = Qt::UserRole + 3
+        FilePermissions = Qt::UserRole + 3,
     };
 
     enum Option

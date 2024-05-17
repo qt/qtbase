@@ -82,7 +82,6 @@ public:
     void setLength(int fieldLength);
     void setPrecision(int precision);
     void setDefaultValue(const QVariant &value);
-    void setSqlType(int type);
     void setGenerated(bool gen);
     void setAutoValue(bool autoVal);
 
@@ -90,10 +89,15 @@ public:
     int length() const;
     int precision() const;
     QVariant defaultValue() const;
-    int typeID() const;
     bool isGenerated() const;
     bool isValid() const;
 
+#if QT_DEPRECATED_SINCE(6, 8)
+    QT_DEPRECATED_VERSION_X_6_8("This internal value is no longer used.")
+    void setSqlType(int type);
+    QT_DEPRECATED_VERSION_X_6_8("This internal value is no longer used.")
+    int typeID() const;
+#endif
 private:
     void detach();
     // ### Qt7: move to private class

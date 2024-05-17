@@ -324,6 +324,7 @@ static QVariant::Private clonePrivate(const QVariant::Private &other)
     \ingroup objectmodel
     \ingroup shared
 
+    \compares equality
 
     Because C++ forbids unions from including types that have
     non-default constructors or destructors, most interesting Qt
@@ -942,7 +943,9 @@ QVariant::QVariant(double val) noexcept : d(std::piecewise_construct_t{}, val) {
 QVariant::QVariant(float val) noexcept : d(std::piecewise_construct_t{}, val) {}
 
 QVariant::QVariant(const QByteArray &val) noexcept : d(std::piecewise_construct_t{}, val) {}
+#ifndef QT_BOOTSTRAPPED
 QVariant::QVariant(const QBitArray &val) noexcept : d(std::piecewise_construct_t{}, val) {}
+#endif
 QVariant::QVariant(const QString &val) noexcept : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(QChar val) noexcept : d(std::piecewise_construct_t{}, val) {}
 QVariant::QVariant(const QStringList &val) noexcept : d(std::piecewise_construct_t{}, val) {}
@@ -1843,6 +1846,7 @@ QChar QVariant::toChar() const
     return qvariant_cast<QChar>(*this);
 }
 
+#ifndef QT_BOOTSTRAPPED
 /*!
     Returns the variant as a QBitArray if the variant has userType()
     \l QMetaType::QBitArray; otherwise returns an empty bit array.
@@ -1853,6 +1857,7 @@ QBitArray QVariant::toBitArray() const
 {
     return qvariant_cast<QBitArray>(*this);
 }
+#endif // QT_BOOTSTRAPPED
 
 template <typename T>
 inline T qNumVariantToHelper(const QVariant::Private &d, bool *ok)
@@ -2148,9 +2153,9 @@ bool QVariant::view(int type, void *ptr)
 }
 
 /*!
-    \fn bool QVariant::operator==(const QVariant &v1, const QVariant &v2)
+    \fn bool QVariant::operator==(const QVariant &lhs, const QVariant &rhs)
 
-    Returns \c true if \a v1 and \a v2 are equal; otherwise returns \c false.
+    Returns \c true if \a lhs and \a rhs are equal; otherwise returns \c false.
 
     QVariant uses the equality operator of the type() contained to check for
     equality.
@@ -2174,9 +2179,9 @@ bool QVariant::view(int type, void *ptr)
 */
 
 /*!
-    \fn bool QVariant::operator!=(const QVariant &v1, const QVariant &v2)
+    \fn bool QVariant::operator!=(const QVariant &lhs, const QVariant &rhs)
 
-    Returns \c false if \a v1 and \a v2 are equal; otherwise returns \c true.
+    Returns \c false if \a lhs and \a rhs are equal; otherwise returns \c true.
 
     QVariant uses the equality operator of the type() contained to check for
     equality.

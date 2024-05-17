@@ -1,7 +1,8 @@
 // Copyright (C) 2014 Ivan Komissarov <ABBAPOH@gmail.com>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
+#include <QtTest/private/qcomparisontesthelper_p.h>
 #include <QSet>
 #include <QStandardPaths>
 #include <QStorageInfo>
@@ -9,6 +10,13 @@
 #include "private/qemulationdetector_p.h"
 
 #include <stdarg.h>
+
+#ifdef Q_OS_WIN
+#  include <io.h>       // _get_osfhandle
+#  include <windows.h>
+#else
+#  include <unistd.h>
+#endif
 
 #include "../../../../manual/qstorageinfo/printvolumes.cpp"
 
@@ -22,14 +30,14 @@ class tst_QStorageInfo : public QObject
 private slots:
     void defaultValues();
     void dump();
+    void compareCompiles();
     void operatorEqual();
     void operatorNotEqual();
     void root();
     void currentStorage();
     void storageList_data();
     void storageList();
-    void tempFile();
-    void caching();
+    void freeSpaceUpdate();
 
 #if defined(Q_OS_LINUX) && defined(QT_BUILD_INTERNAL)
     void testParseMountInfo_data();
@@ -81,31 +89,36 @@ void tst_QStorageInfo::dump()
     printVolumes(QStorageInfo::mountedVolumes(), qInfoPrinter);
 }
 
+void tst_QStorageInfo::compareCompiles()
+{
+    QTestPrivate::testEqualityOperatorsCompile<QStorageInfo>();
+}
+
 void tst_QStorageInfo::operatorEqual()
 {
     {
         QStorageInfo storage1 = QStorageInfo::root();
         QStorageInfo storage2(QDir::rootPath());
-        QCOMPARE(storage1, storage2);
+        QT_TEST_EQUALITY_OPS(storage1, storage2, true);
     }
 
     {
         QStorageInfo storage1(QCoreApplication::applicationDirPath());
         QStorageInfo storage2(QCoreApplication::applicationFilePath());
-        QCOMPARE(storage1, storage2);
+        QT_TEST_EQUALITY_OPS(storage1, storage2, true);
     }
 
     {
         QStorageInfo storage1;
         QStorageInfo storage2;
-        QCOMPARE(storage1, storage2);
+        QT_TEST_EQUALITY_OPS(storage1, storage2, true);
     }
 
     // Test copy ctor
     {
         QStorageInfo storage1 = QStorageInfo::root();
         QStorageInfo storage2(storage1);
-        QCOMPARE(storage1, storage2);
+        QT_TEST_EQUALITY_OPS(storage1, storage2, true);
     }
 }
 
@@ -113,7 +126,7 @@ void tst_QStorageInfo::operatorNotEqual()
 {
     QStorageInfo storage1 = QStorageInfo::root();
     QStorageInfo storage2;
-    QCOMPARE_NE(storage1, storage2);
+    QT_TEST_EQUALITY_OPS(storage1, storage2, false);
 }
 
 void tst_QStorageInfo::root()
@@ -207,80 +220,90 @@ void tst_QStorageInfo::storageList()
         QCOMPARE(other.isReady(), storage.isReady());
 }
 
-static bool checkFilesystemGoodForWriting(QTemporaryFile &file, QStorageInfo &storage)
+static QString suitableDirectoryForWriting()
 {
+    std::initializer_list<const char *> inadvisableFs = {
 #ifdef Q_OS_LINUX
-    auto reconstructAt = [](auto *where, auto &&... how) {
-        // it's very difficult to convince QTemporaryFile to change the path...
-        std::destroy_at(where);
-        q20::construct_at(where, std::forward<decltype(how)>(how)...);
-    };
-    if (storage.fileSystemType() == "btrfs") {
-        // let's see if we can find another, writable FS
-        QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-        if (!runtimeDir.isEmpty()) {
-            reconstructAt(&file, runtimeDir + "/XXXXXX");
-            if (file.open()) {
-                storage.setPath(file.fileName());
-                if (storage.fileSystemType() != "btrfs")
-                    return true;
-            }
-        }
-        QTest::qSkip("btrfs does not synchronously update free space; this test would fail",
-                     __FILE__, __LINE__);
-        return false;
-    }
-#elif defined(Q_OS_DARWIN)
-    Q_UNUSED(file);
-    if (storage.fileSystemType() == "apfs") {
-        QTest::qSkip("APFS does not synchronously update free space; this test would fail",
-                     __FILE__, __LINE__);
-        return false;
-    }
-#else
-    Q_UNUSED(file);
-    Q_UNUSED(storage);
+        // See comment below. If we can get a tmpfs, let's try it.
+        "btrfs",
+        "xfs",
 #endif
-    return true;
+    };
+
+    QString tempDir = QDir::tempPath();
+    QString fsType = QStorageInfo(tempDir).fileSystemType();
+    if (std::find(std::begin(inadvisableFs), std::end(inadvisableFs), fsType)
+            != std::end(inadvisableFs)) {
+        // the RuntimeLocation on Linux is almost always a tmpfs
+        QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+        if (!runtimeDir.isEmpty())
+            return runtimeDir;
+    }
+
+    return tempDir;
 }
 
-void tst_QStorageInfo::tempFile()
+void tst_QStorageInfo::freeSpaceUpdate()
 {
-    QTemporaryFile file;
+    // Some filesystems don't update the free space unless we ask that the OS
+    // flush its buffers to disk and even then the update may not be entirely
+    // synchronous. So we always ask the OS to flush them and we may keep
+    // trying to write until the free space changes (with a maximum so we don't
+    // exhaust and cause other problems).
+    //
+    // In the past, we had this issue with APFS (Apple systems), BTRFS and XFS
+    // (Linux). Current testing is that APFS and XFS always succeed after the
+    // first block is written and BTRFS almost always by the second block.
+
+    auto flushAndSync = [](QFile &file) {
+        file.flush();
+
+#ifdef Q_OS_WIN
+        FlushFileBuffers(HANDLE(_get_osfhandle(file.handle())));
+#elif _POSIX_VERSION >= 200112L
+        fsync(file.handle());
+# ifndef Q_OS_VXWORKS
+        sync();
+# endif // Q_OS_VXWORKS
+#endif
+    };
+
+    QTemporaryFile file(suitableDirectoryForWriting() + "/tst_qstorageinfo.XXXXXX");
     QVERIFY2(file.open(), qPrintable(file.errorString()));
 
     QStorageInfo storage1(file.fileName());
-    if (!checkFilesystemGoodForWriting(file, storage1))
-        return;
-
-    qint64 free = storage1.bytesFree();
-    QCOMPARE_NE(free, -1);
-
-    file.write(QByteArray(1024*1024, '1'));
-    file.flush();
-    file.close();
-
-    QStorageInfo storage2(file.fileName());
-    QCOMPARE_NE(free, storage2.bytesFree());
-}
-
-void tst_QStorageInfo::caching()
-{
-    QTemporaryFile file;
-    QVERIFY2(file.open(), qPrintable(file.errorString()));
-
-    QStorageInfo storage1(file.fileName());
-    if (!checkFilesystemGoodForWriting(file, storage1))
-        return;
+    qInfo() << "Testing on" << storage1;
 
     qint64 free = storage1.bytesFree();
     QStorageInfo storage2(storage1);
     QCOMPARE(free, storage2.bytesFree());
     QCOMPARE_NE(free, -1);
 
-    file.write(QByteArray(1024*1024, '\0'));
-    file.flush();
+    // let's see if we can make it change
+    QByteArray block(1024 * 1024 / 2, '\0');
 
+    // let's try and keep to less than ~10% of the free disk space
+    int maxIterations = 25;
+    if (free < 256 * block.size())
+        maxIterations = free / 10 / block.size();
+    if (maxIterations == 0)
+        QSKIP("Not enough free disk space to continue");
+
+    file.write(block);
+    flushAndSync(file);
+    for (int i = 0; i < maxIterations; ++i) {
+        QStorageInfo storage3(file.fileName());
+        qint64 nowFree = storage3.bytesFree();
+        if (nowFree != free)
+            break;
+
+        // grow some more
+        file.write(block);
+        flushAndSync(file);
+    }
+    // qDebug() << "Needed to grow" << file.fileName() << "to" << file.size();
+
+    QCOMPARE(storage1, storage2);
     QCOMPARE(free, storage1.bytesFree());
     QCOMPARE(free, storage2.bytesFree());
     storage2.refresh();

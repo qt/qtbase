@@ -40,6 +40,18 @@ macx-xcode {
         }
         QMAKE_BUNDLE_DATA += qmake_launch_screens
     }
+
+    !qtConfig(simulator_and_device) {
+        # Single SDK builds only support the target we built
+        supported_platforms.name = SUPPORTED_PLATFORMS
+        supported_platforms.value = $$QMAKE_MAC_SDK
+        QMAKE_MAC_XCODE_SETTINGS += supported_platforms
+    }
+
+    # In a simulator specific build the device config will set the SDK
+    # to the simulator SDK, but for Xcode we always want the SDKROOT
+    # to be the device SDK.
+    QMAKE_MAC_SDK = $$device.sdk
 }
 
 !xcodebuild:equals(TEMPLATE, app):!isEmpty(QMAKE_INFO_PLIST) {

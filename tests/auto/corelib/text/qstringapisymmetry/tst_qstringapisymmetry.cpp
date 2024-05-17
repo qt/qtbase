@@ -1,6 +1,6 @@
 // Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Marc Mutz <marc.mutz@kdab.com>
 // Copyright (C) 2019 Mail.ru Group.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #undef QT_NO_CAST_FROM_ASCII
 #undef QT_NO_CAST_TO_ASCII
@@ -32,7 +32,6 @@ struct QAnyStringViewUsingU16 : QAnyStringView {};  // QAnyStringView with Utf-1
 template <typename T>
 QString toQString(const T &t) { return QString(t); }
 QString toQString(QStringView view) { return view.toString(); }
-QString toQString(QUtf8StringView view) { return view.toString(); }
 
 template <typename Iterable>
 QStringList toQStringList(const Iterable &i) {
@@ -44,45 +43,6 @@ QStringList toQStringList(const Iterable &i) {
 
 template <typename LHS, typename RHS>
 constexpr bool is_fake_comparator_v = false;
-
-// FIXME: these are missing at the time of writing, add them, then remove the dummies here:
-#define MAKE_RELOP(op, A1, A2) \
-    static bool operator op (A1 lhs, A2 rhs) \
-    { return toQString(lhs) op toQString(rhs); } \
-    /*end*/
-#define MAKE_ALL(A1, A2) \
-    template <> constexpr bool is_fake_comparator_v<A1, A2> = true; \
-    MAKE_RELOP(==, A1, A2) \
-    MAKE_RELOP(!=, A1, A2) \
-    MAKE_RELOP(<,  A1, A2) \
-    MAKE_RELOP(>,  A1, A2) \
-    MAKE_RELOP(<=, A1, A2) \
-    MAKE_RELOP(>=, A1, A2) \
-    /*end*/
-
-MAKE_ALL(QByteArray, QChar)
-MAKE_ALL(QByteArray, QLatin1String)
-MAKE_ALL(QByteArray, char16_t)
-MAKE_ALL(char16_t, QByteArray)
-
-MAKE_ALL(const char*, QChar)
-
-MAKE_ALL(QChar, QByteArray)
-MAKE_ALL(QChar, const char*)
-MAKE_ALL(QChar, QUtf8StringView)
-
-MAKE_ALL(QString, QUtf8StringView)
-MAKE_ALL(QByteArray, QUtf8StringView)
-MAKE_ALL(const char*, QUtf8StringView)
-
-MAKE_ALL(QUtf8StringView, QChar)
-MAKE_ALL(QUtf8StringView, char16_t)
-MAKE_ALL(QUtf8StringView, QStringView)
-MAKE_ALL(QUtf8StringView, QLatin1String)
-
-#undef MAKE_ALL
-#undef MAKE_RELOP
-// END FIXME
 
 } // namespace
 
@@ -231,20 +191,16 @@ private Q_SLOTS:
     void compare_QStringView_QString() { compare_impl<QStringView, QString>(); }
     void compare_QStringView_QStringView_data() { compare_data(); }
     void compare_QStringView_QStringView() { compare_impl<QStringView, QStringView>(); }
-#ifdef NOT_YET_IMPLEMENTED
     void compare_QStringView_QUtf8StringView_data() { compare_data(); }
     void compare_QStringView_QUtf8StringView() { compare_impl<QStringView, QUtf8StringView>(); }
-#endif
     void compare_QStringView_QLatin1String_data() { compare_data(); }
     void compare_QStringView_QLatin1String() { compare_impl<QStringView, QLatin1String>(); }
-#ifdef NOT_YET_IMPLMENTED
     void compare_QStringView_QByteArray_data() { compare_data(); }
     void compare_QStringView_QByteArray() { compare_impl<QStringView, QByteArray>(); }
     void compare_QStringView_QByteArrayView_data() { compare_data(); }
     void compare_QStringView_QByteArrayView() { compare_impl<QStringView, QByteArrayView>(); }
     void compare_QStringView_const_char_star_data() { compare_data(); }
     void compare_QStringView_const_char_star() { compare_impl<QStringView, const char *>(); }
-#endif
 
     void compare_QUtf8StringView_QChar_data() { compare_data(false); }
     void compare_QUtf8StringView_QChar() { compare_impl<QUtf8StringView, QChar>(); }
@@ -258,14 +214,12 @@ private Q_SLOTS:
     void compare_QUtf8StringView_QUtf8StringView() { compare_impl<QUtf8StringView, QUtf8StringView>(); }
     void compare_QUtf8StringView_QLatin1String_data() { compare_data(); }
     void compare_QUtf8StringView_QLatin1String() { compare_impl<QUtf8StringView, QLatin1String>(); }
-#ifdef NOT_YET_IMPLMENTED
     void compare_QUtf8StringView_QByteArray_data() { compare_data(); }
     void compare_QUtf8StringView_QByteArray() { compare_impl<QUtf8StringView, QByteArray>(); }
     void compare_QUtf8StringView_QByteArrayView_data() { compare_data(); }
     void compare_QUtf8StringView_QByteArrayView() { compare_impl<QUtf8StringView, QByteArrayView>(); }
     void compare_QUtf8StringView_const_char_star_data() { compare_data(); }
     void compare_QUtf8StringView_const_char_star() { compare_impl<QUtf8StringView, const char *>(); }
-#endif
 
     void compare_QLatin1String_QChar_data() { compare_data(false); }
     void compare_QLatin1String_QChar() { compare_impl<QLatin1String, QChar>(); }
@@ -281,10 +235,8 @@ private Q_SLOTS:
     void compare_QLatin1String_QLatin1String() { compare_impl<QLatin1String, QLatin1String>(); }
     void compare_QLatin1String_QByteArray_data() { compare_data(); }
     void compare_QLatin1String_QByteArray() { compare_impl<QLatin1String, QByteArray>(); }
-#ifdef AMBIGUOUS_CALL
     void compare_QLatin1String_QByteArrayView_data() { compare_data(); }
     void compare_QLatin1String_QByteArrayView() { compare_impl<QLatin1String, QByteArrayView>(); }
-#endif
     void compare_QLatin1String_const_char_star_data() { compare_data(); }
     void compare_QLatin1String_const_char_star() { compare_impl<QLatin1String, const char *>(); }
 
@@ -294,20 +246,16 @@ private Q_SLOTS:
     void compare_QByteArray_char16_t() { compare_impl<QByteArray, char16_t>(); }
     void compare_QByteArray_QString_data() { compare_data(); }
     void compare_QByteArray_QString() { compare_impl<QByteArray, QString>(); }
-#ifdef NOT_YET_IMPLEMENTED
     void compare_QByteArray_QStringView_data() { compare_data(); }
     void compare_QByteArray_QStringView() { compare_impl<QByteArray, QStringView>(); }
-#endif
     void compare_QByteArray_QUtf8StringView_data() { compare_data(); }
     void compare_QByteArray_QUtf8StringView() { compare_impl<QByteArray, QUtf8StringView>(); }
     void compare_QByteArray_QLatin1String_data() { compare_data(); }
     void compare_QByteArray_QLatin1String() { compare_impl<QByteArray, QLatin1String>(); }
     void compare_QByteArray_QByteArray_data() { compare_data(); }
     void compare_QByteArray_QByteArray() { compare_impl<QByteArray, QByteArray>(); }
-#ifdef AMBIGUOUS_CALL
     void compare_QByteArray_QByteArrayView_data() { compare_data(); }
     void compare_QByteArray_QByteArrayView() { compare_impl<QByteArray, QByteArrayView>(); }
-#endif
     void compare_QByteArray_const_char_star_data() { compare_data(); }
     void compare_QByteArray_const_char_star() { compare_impl<QByteArray, const char *>(); }
 
@@ -317,24 +265,18 @@ private Q_SLOTS:
     void compare_QByteArrayView_char16_t() { compare_impl<QByteArrayView, char16_t>(); }
     void compare_QByteArrayView_QString_data() { compare_data(); }
     void compare_QByteArrayView_QString() { compare_impl<QByteArrayView, QString>(); }
-#ifdef NOT_YET_IMPLEMENTED
     void compare_QByteArrayView_QStringView_data() { compare_data(); }
     void compare_QByteArrayView_QStringView() { compare_impl<QByteArrayView, QStringView>(); }
-#endif
-#ifdef AMBIGUOUS_CALL
     void compare_QByteArrayView_QUtf8StringView_data() { compare_data(); }
     void compare_QByteArrayView_QUtf8StringView() { compare_impl<QByteArrayView, QUtf8StringView>(); }
     void compare_QByteArrayView_QLatin1String_data() { compare_data(); }
     void compare_QByteArrayView_QLatin1String() { compare_impl<QByteArrayView, QLatin1String>(); }
     void compare_QByteArrayView_QByteArray_data() { compare_data(); }
     void compare_QByteArrayView_QByteArray() { compare_impl<QByteArrayView, QByteArray>(); }
-#endif
     void compare_QByteArrayView_QByteArrayView_data() { compare_data(); }
     void compare_QByteArrayView_QByteArrayView() { compare_impl<QByteArrayView, QByteArrayView>(); }
-#ifdef AMBIGUOUS_CALL
     void compare_QByteArrayView_const_char_star_data() { compare_data(); }
     void compare_QByteArrayView_const_char_star() { compare_impl<QByteArrayView, const char *>(); }
-#endif
 
     void compare_const_char_star_QChar_data() { compare_data(false); }
     void compare_const_char_star_QChar() { compare_impl<const char *, QChar>(); }
@@ -342,16 +284,16 @@ private Q_SLOTS:
     //void compare_const_char_star_char16_t() { compare_impl<const char *, char16_t>(); }
     void compare_const_char_star_QString_data() { compare_data(); }
     void compare_const_char_star_QString() { compare_impl<const char *, QString>(); }
+    void compare_const_char_star_QStringView_data() { compare_data(); }
+    void compare_const_char_star_QStringView() { compare_impl<const char *, QStringView>(); }
     void compare_const_char_star_QUtf8StringView_data() { compare_data(); }
     void compare_const_char_star_QUtf8StringView() { compare_impl<const char *, QUtf8StringView>(); }
     void compare_const_char_star_QLatin1String_data() { compare_data(false); }
     void compare_const_char_star_QLatin1String() { compare_impl<const char *, QLatin1String>(); }
     void compare_const_char_star_QByteArray_data() { compare_data(); }
     void compare_const_char_star_QByteArray() { compare_impl<const char *, QByteArray>(); }
-#ifdef AMBIGUOUS_CALL
     void compare_const_char_star_QByteArrayView_data() { compare_data(); }
     void compare_const_char_star_QByteArrayView() { compare_impl<const char *, QByteArrayView>(); }
-#endif
     //void compare_const_char_star_const_char_star_data() { compare_data(); }
     //void compare_const_char_star_const_char_star() { compare_impl<const char *, const char *>(); }
 
@@ -714,6 +656,7 @@ private:
 
     void sliced_data();
     template <typename String> void sliced_impl();
+    template <typename String> void slice_impl();
 
     void first_data();
     template <typename String> void first_impl();
@@ -801,6 +744,11 @@ private Q_SLOTS:
     void sliced_QByteArray() { sliced_impl<QByteArray>(); }
     void sliced_QByteArrayView_data() { sliced_data(); }
     void sliced_QByteArrayView() { sliced_impl<QByteArrayView>(); }
+
+    void slice_QString_data() { sliced_data(); }
+    void slice_QString() { slice_impl<QString>(); }
+    void slice_QByteArray_data() { sliced_data(); }
+    void slice_QByteArray() { slice_impl<QByteArray>(); }
 
     void first_truncate_QString_data() { first_data(); }
     void first_truncate_QString() { first_impl<QString>(); }
@@ -1412,6 +1360,11 @@ void tst_QStringApiSymmetry::compare_impl() const
     CHECK(<=);
     CHECK(>=);
 #undef CHECK
+    // Test that all string-like types implemente compareThreeWay() as a friend
+    // function.
+    const Qt::strong_ordering expectedOrdering =
+            Qt::compareThreeWay(caseSensitiveCompareResult, 0);
+    QCOMPARE_EQ(qCompareThreeWay(lhs, rhs), expectedOrdering);
 }
 
 template <typename LHS, typename RHS>
@@ -2446,6 +2399,27 @@ void tst_QStringApiSymmetry::sliced_impl()
     }
 }
 
+template <typename String>
+void tst_QStringApiSymmetry::slice_impl()
+{
+    QFETCH(const QStringView, unicode);
+    QFETCH(const QLatin1String, latin1);
+    QFETCH(const int, pos);
+    QFETCH(const int, n);
+    QFETCH(const QAnyStringView, result);
+    QFETCH(const QAnyStringView, result2);
+
+    const auto str = make<String>(unicode, latin1, unicode.toUtf8());
+
+    auto s = str;
+    s.slice(pos);
+    QCOMPARE_EQ(s, result);
+
+    s = str;
+    s.slice(pos, n);
+    QCOMPARE_EQ(s, result2);
+}
+
 void tst_QStringApiSymmetry::first_data()
 {
     QTest::addColumn<QStringView>("unicode");
@@ -3206,7 +3180,7 @@ void tst_QStringApiSymmetry::contains_data(bool rhsHasVariableLength)
         QTest::addRow("haystack: null, needle: empty") << null << QLatin1String()
                                      << empty << QLatin1String("") << true << true;
         QTest::addRow("haystack: a, needle: empty") << a << QLatin1String("a")
-                                     << empty << QLatin1String("") << true << true;;
+                                     << empty << QLatin1String("") << true << true;
         QTest::addRow("haystack: empty, needle: empty") << empty << QLatin1String("")
                                      << empty << QLatin1String("") << true << true;
     }

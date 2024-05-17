@@ -8,6 +8,7 @@
 #include <QtCore/qdeadlinetimer.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qvariant.h>
@@ -24,6 +25,8 @@
 #include <mutex>
 
 QT_BEGIN_NAMESPACE
+
+static Q_LOGGING_CATEGORY(lcIbase, "qt.sql.ibase")
 
 using namespace Qt::StringLiterals;
 
@@ -115,6 +118,7 @@ static void initDA(XSQLDA *sqlda)
         default:
             // not supported - do not bind.
             sqlda->sqlvar[i].sqldata = 0;
+            qCWarning(lcIbase, "initDA: unknown sqltype: %d", sqlda->sqlvar[i].sqltype & ~1);
             break;
         }
         if (sqlda->sqlvar[i].sqltype & 1) {
@@ -171,7 +175,7 @@ static QMetaType::Type qIBaseTypeName(int iType, bool hasScale)
     case blr_boolean_dtype:
         return QMetaType::Bool;
     }
-    qWarning("qIBaseTypeName: unknown datatype: %d", iType);
+    qCWarning(lcIbase, "qIBaseTypeName: unknown datatype: %d", iType);
     return QMetaType::UnknownType;
 }
 
@@ -205,8 +209,10 @@ static QMetaType::Type qIBaseTypeName2(int iType, bool hasScale)
     case SQL_BOOLEAN:
         return QMetaType::Bool;
     default:
-        return QMetaType::UnknownType;
+        break;
     }
+    qCWarning(lcIbase, "qIBaseTypeName: unknown datatype: %d", iType);
+    return QMetaType::UnknownType;
 }
 
 static ISC_TIMESTAMP toTimeStamp(const QDateTime &dt)
@@ -400,6 +406,42 @@ protected:
     int size() override;
     int numRowsAffected() override;
     QSqlRecord record() const override;
+
+    template<typename T>
+    QVariant applyScale(T val, int scale) const
+    {
+        if (scale >= 0)
+            return QVariant(val);
+
+        switch (numericalPrecisionPolicy()) {
+        case QSql::LowPrecisionInt32:
+            return QVariant(qint32(val * pow(10.0, scale)));
+        case QSql::LowPrecisionInt64:
+            return QVariant(qint64(val * pow(10.0, scale)));
+        case QSql::LowPrecisionDouble:
+            return QVariant(double(val * pow(10.0, scale)));
+        case QSql::HighPrecision: {
+            const bool negative = val < 0;
+            QString number;
+            if constexpr (std::is_signed_v<T> || negative)
+                number = QString::number(qAbs(val));
+            else
+                number = QString::number(val);
+            auto len = number.size();
+            scale *= -1;
+            if (scale >= len) {
+                number = QString(scale - len + 1, u'0') + number;
+                len = number.size();
+            }
+            const auto sepPos = len - scale;
+            number = number.left(sepPos) + u'.' + number.mid(sepPos);
+            if (negative)
+                number = u'-' + number;
+            return QVariant(number);
+        }
+        }
+        return QVariant(val);
+    }
 };
 
 class QIBaseResultPrivate: public QSqlCachedResultPrivate
@@ -950,13 +992,13 @@ bool QIBaseResult::prepare(const QString& query)
 
     createDA(d->sqlda);
     if (d->sqlda == (XSQLDA*)0) {
-        qWarning()<<"QIOBaseResult: createDA(): failed to allocate memory";
+        qCWarning(lcIbase) << "QIOBaseResult: createDA(): failed to allocate memory";
         return false;
     }
 
     createDA(d->inda);
     if (d->inda == (XSQLDA*)0){
-        qWarning()<<"QIOBaseResult: createDA():  failed to allocate memory";
+        qCWarning(lcIbase) << "QIOBaseResult: createDA():  failed to allocate memory";
         return false;
     }
 
@@ -980,7 +1022,7 @@ bool QIBaseResult::prepare(const QString& query)
     if (d->inda->sqld > d->inda->sqln) {
         enlargeDA(d->inda, d->inda->sqld);
         if (d->inda == (XSQLDA*)0) {
-            qWarning()<<"QIOBaseResult: enlargeDA(): failed to allocate memory";
+            qCWarning(lcIbase) << "QIOBaseResult: enlargeDA(): failed to allocate memory";
             return false;
         }
 
@@ -994,7 +1036,7 @@ bool QIBaseResult::prepare(const QString& query)
         // need more field descriptors
         enlargeDA(d->sqlda, d->sqlda->sqld);
         if (d->sqlda == (XSQLDA*)0) {
-            qWarning()<<"QIOBaseResult: enlargeDA(): failed to allocate memory";
+            qCWarning(lcIbase) << "QIOBaseResult: enlargeDA(): failed to allocate memory";
             return false;
         }
 
@@ -1030,9 +1072,9 @@ bool QIBaseResult::exec()
     if (d->inda) {
         const QList<QVariant> &values = boundValues();
         if (values.count() > d->inda->sqld) {
-            qWarning() << "QIBaseResult::exec: Parameter mismatch, expected"_L1 <<
-                          d->inda->sqld << ", got"_L1 << values.count() <<
-                          "parameters"_L1;
+            qCWarning(lcIbase) << "QIBaseResult::exec: Parameter mismatch, expected"_L1
+                               << d->inda->sqld << ", got"_L1 << values.count()
+                               << "parameters"_L1;
             return false;
         }
         for (qsizetype para = 0; para < values.count(); ++para) {
@@ -1053,9 +1095,9 @@ bool QIBaseResult::exec()
                 *(d->inda->sqlvar[para].sqlind) = 0;
             } else {
                 if (QSqlResultPrivate::isVariantNull(val)) {
-                    qWarning() << "QIBaseResult::exec: Null value replaced by default (zero)"_L1
-                               << "value for type of column"_L1 << d->inda->sqlvar[para].ownname
-                               << ", which is not nullable."_L1;
+                    qCWarning(lcIbase) << "QIBaseResult::exec: Null value replaced by default (zero)"_L1
+                                       << "value for type of column"_L1 << d->inda->sqlvar[para].ownname
+                                       << ", which is not nullable."_L1;
                 }
             }
             switch(d->inda->sqlvar[para].sqltype & ~1) {
@@ -1120,8 +1162,8 @@ bool QIBaseResult::exec()
                 *((bool*)d->inda->sqlvar[para].sqldata) = val.toBool();
                 break;
             default:
-                    qWarning("QIBaseResult::exec: Unknown datatype %d",
-                             d->inda->sqlvar[para].sqltype & ~1);
+                    qCWarning(lcIbase, "QIBaseResult::exec: Unknown datatype %d",
+                              d->inda->sqlvar[para].sqltype & ~1);
                     break;
             }
         }
@@ -1233,27 +1275,27 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             // pascal strings - a short with a length information followed by the data
             row[idx] = QString::fromUtf8(buf + sizeof(short), *(short*)buf);
             break;
-        case SQL_INT64:
-            if (d->sqlda->sqlvar[i].sqlscale < 0)
-                row[idx] = *(qint64*)buf * pow(10.0, d->sqlda->sqlvar[i].sqlscale);
-            else
-                row[idx] = QVariant(*(qint64*)buf);
+        case SQL_INT64: {
+            Q_ASSERT(d->sqlda->sqlvar[i].sqllen == sizeof(qint64));
+            const auto val = *(qint64 *)buf;
+            const auto scale = d->sqlda->sqlvar[i].sqlscale;
+            row[idx] = applyScale(val, scale);
             break;
+        }
         case SQL_LONG:
-            if (d->sqlda->sqlvar[i].sqllen == 4)
-                if (d->sqlda->sqlvar[i].sqlscale < 0)
-                    row[idx] = QVariant(*(qint32*)buf * pow(10.0, d->sqlda->sqlvar[i].sqlscale));
-                else
-                    row[idx] = QVariant(*(qint32*)buf);
-            else
+            if (d->sqlda->sqlvar[i].sqllen == 4) {
+                const auto val = *(qint32 *)buf;
+                const auto scale = d->sqlda->sqlvar[i].sqlscale;
+                row[idx] = applyScale(val, scale);
+            } else
                 row[idx] = QVariant(*(qint64*)buf);
             break;
-        case SQL_SHORT:
-            if (d->sqlda->sqlvar[i].sqlscale < 0)
-                row[idx] = QVariant(long((*(short*)buf)) * pow(10.0, d->sqlda->sqlvar[i].sqlscale));
-            else
-                row[idx] = QVariant(int((*(short*)buf)));
+        case SQL_SHORT: {
+            const auto val = *(short *)buf;
+            const auto scale = d->sqlda->sqlvar[i].sqlscale;
+            row[idx] = applyScale(val, scale);
             break;
+        }
         case SQL_FLOAT:
             row[idx] = QVariant(double((*(float*)buf)));
             break;
@@ -1288,29 +1330,10 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
 #endif
         default:
             // unknown type - don't even try to fetch
+            qCWarning(lcIbase, "gotoNext: unknown sqltype: %d",
+                      d->sqlda->sqlvar[i].sqltype & ~1);
             row[idx] = QVariant();
             break;
-        }
-        if (d->sqlda->sqlvar[i].sqlscale < 0) {
-            QVariant v = row[idx];
-            switch(numericalPrecisionPolicy()) {
-            case QSql::LowPrecisionInt32:
-                if (v.convert(QMetaType(QMetaType::Int)))
-                    row[idx]=v;
-                break;
-            case QSql::LowPrecisionInt64:
-                if (v.convert(QMetaType(QMetaType::LongLong)))
-                    row[idx]=v;
-                break;
-            case QSql::LowPrecisionDouble:
-                if (v.convert(QMetaType(QMetaType::Double)))
-                    row[idx]=v;
-                break;
-            case QSql::HighPrecision:
-                if (v.convert(QMetaType(QMetaType::QString)))
-                    row[idx]=v;
-                break;
-            }
         }
     }
 
@@ -1392,7 +1415,7 @@ int QIBaseResult::numRowsAffected()
         bIsProcedure = true; // will sum all changes
         break;
     default:
-        qWarning() << "numRowsAffected: Unknown statement type (" << d->queryType << ")";
+        qCWarning(lcIbase) << "numRowsAffected: Unknown statement type (" << d->queryType << ")";
         return -1;
     }
 
@@ -1458,7 +1481,6 @@ QSqlRecord QIBaseResult::record() const
                 f.setRequiredStatus(q.value(3).toBool() ? QSqlField::Required : QSqlField::Optional);
             }
         }
-        f.setSqlType(v.sqltype);
         rec.append(f);
     }
     return rec;
@@ -1728,7 +1750,6 @@ QSqlRecord QIBaseDriver::record(const QString& tablename) const
             f.setPrecision(0);
         }
         f.setRequired(q.value(5).toInt() > 0);
-        f.setSqlType(type);
 
         rec.append(f);
     }
@@ -1836,13 +1857,13 @@ bool QIBaseDriver::subscribeToNotification(const QString &name)
 {
     Q_D(QIBaseDriver);
     if (!isOpen()) {
-        qWarning("QIBaseDriver::subscribeFromNotificationImplementation: database not open.");
+        qCWarning(lcIbase, "QIBaseDriver::subscribeFromNotificationImplementation: database not open.");
         return false;
     }
 
     if (d->eventBuffers.contains(name)) {
-        qWarning("QIBaseDriver::subscribeToNotificationImplementation: already subscribing to '%ls'.",
-            qUtf16Printable(name));
+        qCWarning(lcIbase, "QIBaseDriver::subscribeToNotificationImplementation: already subscribing to '%ls'.",
+                  qUtf16Printable(name));
         return false;
     }
 
@@ -1883,13 +1904,13 @@ bool QIBaseDriver::unsubscribeFromNotification(const QString &name)
 {
     Q_D(QIBaseDriver);
     if (!isOpen()) {
-        qWarning("QIBaseDriver::unsubscribeFromNotificationImplementation: database not open.");
+        qCWarning(lcIbase, "QIBaseDriver::unsubscribeFromNotificationImplementation: database not open.");
         return false;
     }
 
     if (!d->eventBuffers.contains(name)) {
-        qWarning("QIBaseDriver::QIBaseSubscriptionState not subscribed to '%ls'.",
-            qUtf16Printable(name));
+        qCWarning(lcIbase, "QIBaseDriver::QIBaseSubscriptionState not subscribed to '%ls'.",
+                  qUtf16Printable(name));
         return false;
     }
 

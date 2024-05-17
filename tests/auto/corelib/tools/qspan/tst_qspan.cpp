@@ -1,5 +1,5 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QSpan>
 
@@ -96,6 +96,18 @@ static_assert(!std::is_convertible_v<QSpan<const int, 42>, std::span<int, 42>>);
 static_assert(!std::is_convertible_v<QSpan<const int, 0>, std::span<int, 0>>);
 #endif // __cpp_lib_span
 
+// Spans don't convert from nonsense:
+static_assert(!std::is_constructible_v<QSpan<const int>, int&&>);
+
+// Span is constructible from initializer_list
+static_assert( std::is_convertible_v<std::initializer_list<int>, QSpan<const int>>);
+static_assert(!std::is_convertible_v<std::initializer_list<int>, QSpan<      int>>);
+static_assert(!std::is_constructible_v<QSpan<int>, std::initializer_list<int>>);
+
+static_assert( std::is_convertible_v<std::initializer_list<int>, QSpan<const int, 4>>); // non-standard, but QSpan considers initializer_list a range
+static_assert( std::is_constructible_v<QSpan<const int, 4>, std::initializer_list<int>>);
+static_assert(!std::is_constructible_v<QSpan<      int, 4>, std::initializer_list<int>>);
+
 class tst_QSpan : public QObject
 {
     Q_OBJECT
@@ -111,6 +123,7 @@ private Q_SLOTS:
     void fromZeroSizeStdArray() const;
     void fromStdVector() const;
     void fromQList() const;
+    void fromInitList() const;
 
 private:
     template <typename T, std::size_t N>
@@ -319,9 +332,11 @@ void tst_QSpan::from_container_impl(C &&c) const
 {
     const auto c_size = qsizetype(QSpanPrivate::adl_size(c));
     const auto c_data = QSpanPrivate::adl_data(c);
+
+    using V = std::remove_reference_t<QSpanPrivate::range_reference_t<C>>;
     {
         QSpan si = c; // CTAD
-        static_assert(std::is_same_v<decltype(si), QSpan<int, ExpectedExtent>>);
+        static_assert(std::is_same_v<decltype(si), QSpan<V, ExpectedExtent>>);
 
         QCOMPARE_EQ(si.size(), c_size);
         QCOMPARE_EQ(si.data(), c_data);
@@ -416,6 +431,17 @@ void tst_QSpan::fromQList() const
 {
     QList<int> li = {42, 84, 168, 336};
     from_variable_size_container_impl(li);
+}
+
+void tst_QSpan::fromInitList() const
+{
+    from_variable_size_container_impl(std::initializer_list<int>{42, 84, 168, 336});
+
+    auto l1 = [](QSpan<const int>){};
+    l1({1, 2, 3});
+
+    auto l2 = [](QSpan<const int, 3>){};
+    l2({4, 5, 6});
 }
 
 #undef RETURN_IF_FAILED

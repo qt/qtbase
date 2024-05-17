@@ -1,6 +1,6 @@
 :: Copyright (C) 2016 The Qt Company Ltd.
 :: Copyright (C) 2016 Intel Corporation.
-:: SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+:: SPDX-License-Identifier: BSD-3-Clause
 
 @echo off
 setlocal ENABLEDELAYEDEXPANSION ENABLEEXTENSIONS
@@ -83,7 +83,12 @@ set REDO_FILE_PATH=%TOPQTDIR%\config.redo.last
 set REDO_TMP_FILE_PATH=%TOPQTDIR%\config.redo.in
 set FRESH_REQUESTED_ARG=
 if not defined redoing (
-    echo.%*>"%OPT_TMP_FILE_PATH%"
+    rem "The '.' in 'echo.%*' ensures we don't print "echo is off" when no arguments are passed"
+    rem "https://devblogs.microsoft.com/oldnewthing/20170802-00/?p=96735"
+    rem "The space before the '>' makes sure that when we have a digit at the end of the args, we"
+    rem "don't accidentally concatenate it with the '>' resulting in '0>' or '2>' which redirects"
+    rem "into the file from a stream different than stdout, leading to broken or empty content."
+    echo.%* >"%OPT_TMP_FILE_PATH%"
 
     cmake -DIN_FILE="%OPT_TMP_FILE_PATH%" -DOUT_FILE="%OPT_FILE_PATH%" -DIGNORE_ARGS=-top-level -P "%QTSRC%\cmake\QtWriteArgsFile.cmake"
 ) else (

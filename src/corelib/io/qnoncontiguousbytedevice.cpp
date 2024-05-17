@@ -380,7 +380,7 @@ qint64 QNonContiguousByteDeviceIoDeviceImpl::pos() const
 QByteDeviceWrappingIoDevice::QByteDeviceWrappingIoDevice(QNonContiguousByteDevice *bd)
     : QIODevice(nullptr), byteDevice(bd)
 {
-    connect(bd, SIGNAL(readyRead()), SIGNAL(readyRead()));
+    connect(bd, &QNonContiguousByteDevice::readyRead, this, &QIODevice::readyRead);
 
     open(ReadOnly);
 }

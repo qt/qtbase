@@ -25,15 +25,77 @@ endfunction()
 # The function checks if add_custom_command has the support of the DEPFILE argument.
 function(_qt_internal_check_depfile_support out_var)
     if(CMAKE_GENERATOR MATCHES "Ninja" OR
-        CMAKE_VERSION VERSION_GREATER_EQUAL 3.20 AND CMAKE_GENERATOR MATCHES "Makefiles"
-        OR CMAKE_VERSION VERSION_GREATER_EQUAL 3.21
+        (CMAKE_VERSION VERSION_GREATER_EQUAL 3.20 AND CMAKE_GENERATOR MATCHES "Makefiles")
+        OR (CMAKE_VERSION VERSION_GREATER_EQUAL 3.21
         AND (CMAKE_GENERATOR MATCHES "Xcode"
-            OR CMAKE_GENERATOR MATCHES "Visual Studio ([0-9]+)" AND CMAKE_MATCH_1 GREATER_EQUAL 12))
+            OR (CMAKE_GENERATOR MATCHES "Visual Studio ([0-9]+)" AND CMAKE_MATCH_1 GREATER_EQUAL 12)
+            )
+        )
+    )
         set(${out_var} TRUE)
     else()
         set(${out_var} FALSE)
     endif()
     set(${out_var} "${${out_var}}" PARENT_SCOPE)
+endfunction()
+
+# Checks if the path points to the cmake directory, like lib/cmake.
+function(__qt_internal_check_path_points_to_cmake_dir result path)
+    string(TOUPPER "${QT_CMAKE_EXPORT_NAMESPACE}" export_namespace_upper)
+    if((INSTALL_LIBDIR AND path MATCHES "/${INSTALL_LIBDIR}/cmake$") OR
+        (${export_namespace_upper}_INSTALL_LIBS AND
+            path MATCHES "/${${export_namespace_upper}_INSTALL_LIBS}/cmake$") OR
+        path MATCHES "/lib/cmake$"
+    )
+        set(${result} TRUE PARENT_SCOPE)
+    else()
+        set(${result} FALSE PARENT_SCOPE)
+    endif()
+endfunction()
+
+# Creates a reverse path to prefix from possible cmake directories. Returns the unchanged path
+# if it doesn't point to cmake directory.
+function(__qt_internal_reverse_prefix_path_from_cmake_dir result cmake_path)
+    string(TOUPPER "${QT_CMAKE_EXPORT_NAMESPACE}" export_namespace_upper)
+    if(INSTALL_LIBDIR AND cmake_path MATCHES "(.+)/${INSTALL_LIBDIR}/cmake$")
+        if(CMAKE_MATCH_1)
+            set(${result} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+        endif()
+    elseif(${export_namespace_upper}_INSTALL_LIBS AND
+        cmake_path MATCHES "(.+)/${${export_namespace_upper}_INSTALL_LIBS}/cmake$")
+        if(CMAKE_MATCH_1)
+            set(${result} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+        endif()
+    elseif(result MATCHES "(.+)/lib/cmake$")
+        if(CMAKE_MATCH_1)
+            set(${result} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+        endif()
+    else()
+        set(${result} "${cmake_path}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+# Returns the possible cmake directories based on prefix_path.
+function(__qt_internal_get_possible_cmake_dirs out_paths prefix_path)
+    set(${out_paths} "")
+
+    if(EXISTS "${prefix_path}/lib/cmake")
+        list(APPEND ${out_paths} "${prefix_path}/lib/cmake")
+    endif()
+
+    string(TOUPPER "${QT_CMAKE_EXPORT_NAMESPACE}" export_namespace_upper)
+    set(next_path "${prefix_path}/${${export_namespace_upper}_INSTALL_LIBS}/cmake")
+    if(${export_namespace_upper}_INSTALL_LIBS AND EXISTS "${next_path}")
+        list(APPEND ${out_paths} "${next_path}")
+    endif()
+
+    set(next_path "${prefix_path}/${INSTALL_LIBDIR}/cmake")
+    if(INSTALL_LIBDIR AND EXISTS "${next_path}")
+        list(APPEND ${out_paths} "${next_path}")
+    endif()
+
+    list(REMOVE_DUPLICATES ${out_paths})
+    set(${out_paths} "${${out_paths}}" PARENT_SCOPE)
 endfunction()
 
 # Collect additional package prefix paths to look for Qt packages, both from command line and the
@@ -69,13 +131,36 @@ function(__qt_internal_collect_additional_prefix_paths out_var prefixes_var)
         # NO_DEFAULT_PATH, and thus CMAKE_PREFIX_PATH values are discarded.
         # CMAKE_FIND_ROOT_PATH values are not discarded and togegher with the PATHS option, it
         # ensures packages from additional prefixes are found.
-        if(NOT additional_path MATCHES "/lib/cmake$")
-            string(APPEND additional_path "/lib/cmake")
+        __qt_internal_check_path_points_to_cmake_dir(is_path_to_cmake "${additional_path}")
+        if(is_path_to_cmake)
+            list(APPEND additional_packages_prefix_paths "${additional_path}")
+        else()
+            __qt_internal_get_possible_cmake_dirs(additional_cmake_dirs "${additional_path}")
+            list(APPEND additional_packages_prefix_paths ${additional_cmake_dirs})
         endif()
-        list(APPEND additional_packages_prefix_paths "${additional_path}")
     endforeach()
 
     set("${out_var}" "${additional_packages_prefix_paths}" PARENT_SCOPE)
+endfunction()
+
+# Collects CMAKE_MODULE_PATH from QT_ADDITIONAL_PACKAGES_PREFIX_PATH
+function(__qt_internal_collect_additional_module_paths)
+    if(__qt_additional_module_paths_set)
+        return()
+    endif()
+    foreach(prefix_path IN LISTS QT_ADDITIONAL_PACKAGES_PREFIX_PATH)
+        __qt_internal_check_path_points_to_cmake_dir(is_path_to_cmake "${prefix_path}")
+        if(is_path_to_cmake)
+            list(APPEND CMAKE_MODULE_PATH "${prefix_path}/${QT_CMAKE_EXPORT_NAMESPACE}")
+        else()
+            __qt_internal_get_possible_cmake_dirs(additional_cmake_dirs "${additional_path}")
+            list(TRANSFORM additional_cmake_dirs APPEND "/${QT_CMAKE_EXPORT_NAMESPACE}")
+            list(APPEND CMAKE_MODULE_PATH ${additional_cmake_dirs})
+        endif()
+    endforeach()
+    list(REMOVE_DUPLICATES CMAKE_MODULE_PATH)
+    set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" PARENT_SCOPE)
+    set(__qt_additional_module_paths_set TRUE PARENT_SCOPE)
 endfunction()
 
 # Take a list of prefix paths ending with "/lib/cmake", and return a list of absolute paths with
@@ -83,10 +168,7 @@ endfunction()
 function(__qt_internal_prefix_paths_to_roots out_var prefix_paths)
     set(result "")
     foreach(path IN LISTS prefix_paths)
-        if(path MATCHES "/lib/cmake$")
-            string(APPEND path "/../..")
-        endif()
-        get_filename_component(path "${path}" ABSOLUTE)
+        __qt_internal_reverse_prefix_path_from_cmake_dir(path "${path}")
         list(APPEND result "${path}")
     endforeach()
     set("${out_var}" "${result}" PARENT_SCOPE)
@@ -144,4 +226,285 @@ function(_qt_internal_collect_buildsystem_targets result dir)
         endforeach()
     endif()
     set(${result} ${${result}} ${real_targets} PARENT_SCOPE)
+endfunction()
+
+# Add a custom target ${target} that is *not* added to the default build target in a safe way.
+# Dependencies must then be added with _qt_internal_add_phony_target_dependencies.
+#
+# What's "safe" in this context? For the Visual Studio generators, we cannot use add_dependencies,
+# because this would enable the dependencies in the default build of the solution. See QTBUG-115166
+# and upstream CMake issue #16668 for details. Instead, we record the dependencies (added with
+# _qt_internal_add_phony_target_dependencies) and create the target at the end of the top-level
+# directory scope.
+#
+# This only works if at least CMake 3.19 is used. Older CMake versions will trigger a warning that
+# can be turned off with the variable ${WARNING_VARIABLE}.
+#
+# For other generators, this is just a call to add_custom_target, unless the target already exists,
+# followed by add_dependencies.
+#
+# Use this function for targets that are not part of the default build, i.e. that should be
+# triggered by the user.
+#
+# TARGET_CREATED_HOOK is the name of a function that is called after the target has been created.
+# It takes the target's name as first and only argument.
+#
+# Example:
+#     _qt_internal_add_phony_target(update_translations
+#          WARNING_VARIABLE QT_NO_GLOBAL_LUPDATE_TARGET_CREATED_WARNING
+#     )
+#     _qt_internal_add_phony_target_dependencies(update_translations
+#          narf_lupdate_zort_lupdate
+#     )
+#
+function(_qt_internal_add_phony_target target)
+    set(no_value_options "")
+    set(single_value_options
+        TARGET_CREATED_HOOK
+        WARNING_VARIABLE
+    )
+    set(multi_value_options "")
+    cmake_parse_arguments(PARSE_ARGV 0 arg
+        "${no_value_options}" "${single_value_options}" "${multi_value_options}"
+    )
+    if("${arg_WARNING_VARIABLE}" STREQUAL "")
+        message(FATAL_ERROR "WARNING_VARIABLE must be provided.")
+    endif()
+    if(CMAKE_GENERATOR MATCHES "^Visual Studio ")
+        if(${CMAKE_VERSION} VERSION_LESS "3.19.0")
+            if(NOT ${${arg_WARNING_VARIABLE}})
+                message(WARNING
+                    "Cannot create target ${target} with this CMake version. "
+                    "Please upgrade to CMake 3.19.0 or newer. "
+                    "Set ${WARNING_VARIABLE} to ON to disable this warning."
+                )
+            endif()
+            return()
+        endif()
+
+        get_property(already_deferred GLOBAL PROPERTY _qt_target_${target}_creation_deferred)
+        if(NOT already_deferred)
+            cmake_language(EVAL CODE
+                "cmake_language(DEFER DIRECTORY \"${CMAKE_SOURCE_DIR}\" CALL _qt_internal_add_phony_target_deferred \"${target}\")"
+            )
+            if(DEFINED arg_TARGET_CREATED_HOOK)
+                set_property(GLOBAL
+                    PROPERTY _qt_target_${target}_creation_hook ${arg_TARGET_CREATED_HOOK}
+                )
+            endif()
+        endif()
+        set_property(GLOBAL APPEND PROPERTY _qt_target_${target}_creation_deferred ON)
+    else()
+        if(NOT TARGET ${target})
+            add_custom_target(${target})
+            if(DEFINED arg_TARGET_CREATED_HOOK)
+                if(CMAKE_VERSION VERSION_LESS "3.19")
+                    set(incfile
+                        "${CMAKE_CURRENT_BINARY_DIR}/.qt_internal_add_phony_target.cmake"
+                    )
+                    file(WRITE "${incfile}" "${arg_TARGET_CREATED_HOOK}(${target})")
+                    include("${incfile}")
+                    file(REMOVE "${incfile}")
+                else()
+                    cmake_language(CALL "${arg_TARGET_CREATED_HOOK}" "${target}")
+                endif()
+            endif()
+        endif()
+    endif()
+endfunction()
+
+# Adds dependencies to a custom target that has been created with
+# _qt_internal_add_phony_target. See the docstring at _qt_internal_add_phony_target for
+# more details.
+function(_qt_internal_add_phony_target_dependencies target)
+    set(dependencies ${ARGN})
+    if(CMAKE_GENERATOR MATCHES "^Visual Studio ")
+        set_property(GLOBAL APPEND PROPERTY _qt_target_${target}_dependencies ${dependencies})
+
+        # Exclude the dependencies from the solution's default build to avoid them being enabled
+        # accidentally should the user add another dependency to them.
+        set_target_properties(${dependencies} PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD ON)
+    else()
+        add_dependencies(${target} ${dependencies})
+    endif()
+endfunction()
+
+# Hack for the Visual Studio generator. Create the custom target named ${target} and work
+# around the lack of a working add_dependencies by calling 'cmake --build' for every dependency.
+function(_qt_internal_add_phony_target_deferred target)
+    get_property(target_dependencies GLOBAL PROPERTY _qt_target_${target}_dependencies)
+    set(target_commands "")
+    foreach(dependency IN LISTS target_dependencies)
+        list(APPEND target_commands
+            COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" -t ${dependency}
+        )
+    endforeach()
+    add_custom_target(${target} ${target_commands})
+    get_property(creation_hook GLOBAL PROPERTY _qt_target_${target}_creation_hook)
+    if(creation_hook)
+        cmake_language(CALL ${creation_hook} ${target})
+    endif()
+endfunction()
+
+# The helper function that checks if module was included multiple times, and has the inconsistent
+# set of targets that belong to the module. It's expected that either all 'targets' or none of them
+# will be written to the 'targets_not_defined' variable, if the module was not or was
+# searched before accordingly.
+function(_qt_internal_check_multiple_inclusion targets_not_defined targets)
+    set(targets_defined "")
+    set(${targets_not_defined} "")
+    set(expected_targets "")
+    foreach(expected_target ${targets})
+        list(APPEND expected_targets ${expected_target})
+        if(NOT TARGET Qt::${expected_target})
+            list(APPEND ${targets_not_defined} ${expected_target})
+        endif()
+        if(TARGET Qt::${expected_target})
+            list(APPEND targets_defined ${expected_target})
+        endif()
+    endforeach()
+    if("${targets_defined}" STREQUAL "${expected_targets}")
+        set(${targets_not_defined} "" PARENT_SCOPE)
+        return()
+    endif()
+    if(NOT "${targets_defined}" STREQUAL "")
+        message(FATAL_ERROR "Some (but not all) targets in this export set were already defined."
+            "\nTargets Defined: ${targets_defined}\nTargets not yet defined: "
+            "${${targets_not_defined}}\n"
+        )
+    endif()
+    set(${targets_not_defined} "${${targets_not_defined}}" PARENT_SCOPE)
+endfunction()
+
+# The function is used when creating version less targets using ALIASes.
+function(_qt_internal_create_versionless_alias_targets targets install_namespace)
+    foreach(target IN LISTS targets)
+        add_library(Qt::${target} ALIAS ${install_namespace}::${target})
+    endforeach()
+endfunction()
+
+# The function is used when creating version less targets from scratch but not using ALIASes.
+# It assigns the known properties from the versioned targets to the versionless created in this
+# function. This allows versionless targets mimic the versioned.
+function(_qt_internal_create_versionless_targets targets install_namespace)
+    set(known_interface_properties
+        QT_MAJOR_VERSION
+        AUTOMOC_MACRO_NAMES
+        AUTOUIC_OPTIONS
+        COMPILE_DEFINITIONS
+        COMPILE_FEATURES
+        COMPILE_OPTIONS
+        CXX_MODULE_SETS
+        HEADER_SETS
+        HEADER_SETS_TO_VERIFY
+        INCLUDE_DIRECTORIES
+        LINK_DEPENDS
+        LINK_DIRECTORIES
+        LINK_LIBRARIES
+        LINK_LIBRARIES_DIRECT
+        LINK_LIBRARIES_DIRECT_EXCLUDE
+        LINK_OPTIONS
+        POSITION_INDEPENDENT_CODE
+        PRECOMPILE_HEADERS
+        SOURCES
+        SYSTEM_INCLUDE_DIRECTORIES
+    )
+
+    set(known_qt_exported_properties
+        MODULE_PLUGIN_TYPES
+        QT_DISABLED_PRIVATE_FEATURES
+        QT_DISABLED_PUBLIC_FEATURES
+        QT_ENABLED_PRIVATE_FEATURES
+        QT_ENABLED_PUBLIC_FEATURES
+        QT_QMAKE_PRIVATE_CONFIG
+        QT_QMAKE_PUBLIC_CONFIG
+        QT_QMAKE_PUBLIC_QT_CONFIG
+    )
+
+    set(known_qt_exported_properties_interface_allowed
+        _qt_config_module_name
+        _qt_is_public_module
+        _qt_module_has_headers
+        _qt_module_has_private_headers
+        _qt_module_has_public_headers
+        _qt_module_has_qpa_headers
+        _qt_module_has_rhi_headers
+        _qt_module_include_name
+        _qt_module_interface_name
+        _qt_package_name
+        _qt_package_version
+        _qt_private_module_target_name
+    )
+
+    set(supported_target_types STATIC_LIBRARY MODULE_LIBRARY SHARED_LIBRARY OBJECT_LIBRARY
+        INTERFACE_LIBRARY)
+
+    foreach(target IN LISTS targets)
+        if(NOT TARGET ${install_namespace}::${target})
+            message(FATAL_ERROR "${install_namespace}::${target} is not a target, can not extend"
+                " an alias target")
+        endif()
+
+        get_target_property(type ${install_namespace}::${target} TYPE)
+        if(NOT type)
+            message(FATAL_ERROR "Cannot get the ${install_namespace}::${target} target type.")
+        endif()
+
+        if(NOT "${type}" IN_LIST supported_target_types)
+            message(AUTHOR_WARNING "${install_namespace}::${target} requires the versionless"
+                " target creation, but it has incompatible type ${type}.")
+            continue()
+        endif()
+
+        string(REPLACE "_LIBRARY" "" creation_type "${type}")
+        add_library(Qt::${target} ${creation_type} IMPORTED)
+
+        if(NOT "${type}" STREQUAL "INTERFACE_LIBRARY")
+            foreach(config "" _RELEASE _DEBUG _RELWITHDEBINFO _MINSIZEREL)
+                get_target_property(target_imported_location
+                        ${install_namespace}::${target} IMPORTED_LOCATION${config})
+                if(NOT target_imported_location)
+                    if("${config}" STREQUAL "")
+                        message(FATAL_ERROR "Cannot create versionless target for"
+                            " ${install_namespace}::${target}. IMPORTED_LOCATION property is "
+                            "missing."
+                        )
+                    else()
+                        continue()
+                    endif()
+                endif()
+                set_property(TARGET Qt::${target} PROPERTY
+                    IMPORTED_LOCATION${config} "${target_imported_location}")
+            endforeach()
+
+            foreach(property IN LISTS known_qt_exported_properties)
+                get_target_property(exported_property_value
+                    ${install_namespace}::${target} ${property})
+                if(exported_property_value)
+                    set_property(TARGET Qt::${target} APPEND PROPERTY
+                        ${property} "${exported_property_value}")
+                endif()
+            endforeach()
+        endif()
+
+        foreach(property IN LISTS known_interface_properties)
+            get_target_property(interface_property_value
+                ${install_namespace}::${target} INTERFACE_${property})
+            if(interface_property_value)
+                set_property(TARGET Qt::${target} APPEND PROPERTY
+                    INTERFACE_${property} "${interface_property_value}")
+            endif()
+        endforeach()
+
+        foreach(property IN LISTS known_qt_exported_properties_interface_allowed)
+            get_target_property(exported_property_value
+                ${install_namespace}::${target} ${property})
+            if(exported_property_value)
+                set_property(TARGET Qt::${target} APPEND PROPERTY
+                    ${property} "${exported_property_value}")
+            endif()
+        endforeach()
+
+        set_property(TARGET Qt::${target} PROPERTY _qt_is_versionless_target TRUE)
+    endforeach()
 endfunction()

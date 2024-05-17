@@ -23,7 +23,8 @@ QT_REQUIRE_CONFIG(mimetype);
 #include "qmimeglobpattern_p.h"
 #include <QtCore/qdatetime.h>
 #include <QtCore/qset.h>
-#include <QtCore/qmap.h>
+
+#include <map>
 
 QT_BEGIN_NAMESPACE
 
@@ -123,7 +124,7 @@ private:
         QStringList globPatterns;
         bool hasGlobDeleteAll = false;
     };
-    using MimeTypeExtraMap = QMap<QString, MimeTypeExtra>;
+    using MimeTypeExtraMap = std::map<QString, MimeTypeExtra>;
     MimeTypeExtraMap m_mimetypeExtra;
 
     MimeTypeExtraMap::const_iterator loadMimeTypeExtra(const QString &mimeName);

@@ -1,6 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #ifndef TST_QCOREAPPLICATION_H
 #define TST_QCOREAPPLICATION_H
@@ -46,6 +46,9 @@ private slots:
 #endif
     void theMainThread();
     void testDeleteLaterFromBeforeOutermostEventLoop();
+    void setIndividualAttributes_data();
+    void setIndividualAttributes();
+    void setMultipleAttributes();
 };
 
 #endif // TST_QCOREAPPLICATION_H

@@ -36,7 +36,6 @@ class QPlatformGraphicsBuffer;
 class QRhi;
 class QRhiTexture;
 class QRhiResourceUpdateBatch;
-class QRhiSwapChain;
 
 struct Q_GUI_EXPORT QPlatformBackingStoreRhiConfig
 {
@@ -174,7 +173,6 @@ public:
 
     void setRhiConfig(const QPlatformBackingStoreRhiConfig &config);
     QRhi *rhi() const;
-    QRhiSwapChain *rhiSwapChain() const;
     void surfaceAboutToBeDestroyed();
     void graphicsDeviceReportedLost();
 

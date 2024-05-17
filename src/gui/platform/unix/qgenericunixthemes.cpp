@@ -957,7 +957,7 @@ Qt::ColorScheme QKdeTheme::colorScheme() const
 
 /*!
    \internal
-   \brief QKdeTheme::setColorScheme - guess and set appearance for unix themes.
+   \brief QKdeTheme::updateColorScheme - guess and set appearance for unix themes.
    KDE themes do not have an appearance property.
    The key words "dark" or "light" should be part of the theme name.
    This is, however, not a mandatory convention.

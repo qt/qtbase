@@ -451,7 +451,28 @@ if(NOT DEFINED QT_SKIP_AUTO_QML_PLUGIN_INCLUSION)
     set(QT_SKIP_AUTO_QML_PLUGIN_INCLUSION OFF)
 endif()
 
-file(GLOB __qt_qml_plugins_config_file_list \"\${CMAKE_CURRENT_LIST_DIR}/QmlPlugins/${INSTALL_CMAKE_NAMESPACE}*Config.cmake\")
+set(__qt_qml_plugins_config_file_list \"\")
+set(__qt_qml_plugins_glob_prefixes \"\${CMAKE_CURRENT_LIST_DIR}\")
+
+# Allow passing additional prefixes where we will glob for PluginConfig.cmake files.
+if(QT_ADDITIONAL_QML_PLUGIN_GLOB_PREFIXES)
+    foreach(__qt_qml_plugin_glob_prefix IN LISTS QT_ADDITIONAL_QML_PLUGIN_GLOB_PREFIXES)
+        if(__qt_qml_plugin_glob_prefix)
+            list(APPEND __qt_qml_plugins_glob_prefixes \"\${__qt_qml_plugin_glob_prefix}\")
+        endif()
+    endforeach()
+endif()
+
+list(REMOVE_DUPLICATES __qt_qml_plugins_glob_prefixes)
+
+foreach(__qt_qml_plugin_glob_prefix IN LISTS __qt_qml_plugins_glob_prefixes)
+    file(GLOB __qt_qml_plugins_glob_config_file_list
+        \"\${__qt_qml_plugin_glob_prefix}/QmlPlugins/${INSTALL_CMAKE_NAMESPACE}*Config.cmake\")
+    if(__qt_qml_plugins_glob_config_file_list)
+        list(APPEND __qt_qml_plugins_config_file_list \${__qt_qml_plugins_glob_config_file_list})
+    endif()
+endforeach()
+
 if (__qt_qml_plugins_config_file_list AND NOT QT_SKIP_AUTO_QML_PLUGIN_INCLUSION)
     # First round of inclusions ensure all qml plugin targets are brought into scope.
     foreach(__qt_qml_plugin_config_file \${__qt_qml_plugins_config_file_list})
@@ -477,8 +498,8 @@ if (__qt_qml_plugins_config_file_list AND NOT QT_SKIP_AUTO_QML_PLUGIN_INCLUSION)
 endif()")
         endif()
 
-        get_target_property(qt_plugins "${QT_MODULE}" QT_PLUGINS)
-        if(qt_plugins OR QT_MODULE_PLUGIN_INCLUDES)
+        get_target_property(module_plugin_types "${QT_MODULE}" MODULE_PLUGIN_TYPES)
+        if(module_plugin_types OR QT_MODULE_PLUGIN_INCLUDES)
             list(APPEND modules_with_plugins "${QT_MODULE}")
             configure_file(
                 "${QT_CMAKE_DIR}/QtPlugins.cmake.in"
@@ -556,9 +577,8 @@ function(qt_generate_build_internals_extra_cmake_code)
         if(CMAKE_BUILD_TYPE)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "
+# Used by qt_internal_set_cmake_build_type.
 set(__qt_internal_initial_qt_cmake_build_type \"${CMAKE_BUILD_TYPE}\")
-qt_internal_force_set_cmake_build_type_conditionally(
-    \"\${__qt_internal_initial_qt_cmake_build_type}\")
 ")
         endif()
         if(CMAKE_CONFIGURATION_TYPES)
@@ -579,17 +599,6 @@ qt_internal_force_set_cmake_build_type_conditionally(
         if(QT_MULTI_CONFIG_FIRST_CONFIG)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "\nset(QT_MULTI_CONFIG_FIRST_CONFIG \"${QT_MULTI_CONFIG_FIRST_CONFIG}\")\n")
-        endif()
-        # When building standalone tests against a multi-config Qt, we want to choose the first
-        # configuration, rather than use CMake's default value.
-        # In the case of Windows, we definitely don't it to default to Debug, because that causes
-        # issues in the CI.
-        if(multi_config_specific)
-            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "
-if(QT_BUILD_STANDALONE_TESTS)
-    qt_internal_force_set_cmake_build_type_conditionally(
-        \"\${QT_MULTI_CONFIG_FIRST_CONFIG}\")
-endif()\n")
         endif()
 
         if(CMAKE_CROSS_CONFIGS)
@@ -621,9 +630,9 @@ endif()\n")
                 "set(QT_IS_MACOS_UNIVERSAL \"${QT_IS_MACOS_UNIVERSAL}\" CACHE BOOL \"\")\n")
         endif()
 
-        if(DEFINED QT_UIKIT_SDK)
+        if(DEFINED QT_APPLE_SDK)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
-                "set(QT_UIKIT_SDK \"${QT_UIKIT_SDK}\" CACHE BOOL \"\")\n")
+                "set(QT_APPLE_SDK \"${QT_APPLE_SDK}\" CACHE BOOL \"\")\n")
         endif()
 
         if(QT_FORCE_FIND_TOOLS)
@@ -644,11 +653,17 @@ endif()\n")
         endif()
 
         # Save the default qpa platform.
-        # Used by qtwayland/src/plugins/platforms/qwayland-generic/CMakeLists.txt. Otherwise
-        # the DEFAULT_IF condition is evaluated incorrectly.
         if(DEFINED QT_QPA_DEFAULT_PLATFORM)
             string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
                 "set(QT_QPA_DEFAULT_PLATFORM \"${QT_QPA_DEFAULT_PLATFORM}\" CACHE STRING \"\")\n")
+        endif()
+
+        # Save the list of default qpa platforms.
+        # Used by qtwayland/src/plugins/platforms/qwayland-generic/CMakeLists.txt. Otherwise
+        # the DEFAULT_IF condition is evaluated incorrectly.
+        if(DEFINED QT_QPA_PLATFORMS)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
+                "set(QT_QPA_PLATFORMS \"${QT_QPA_PLATFORMS}\" CACHE STRING \"\")\n")
         endif()
 
         # Save minimum and policy-related CMake versions to ensure the same minimum is
@@ -728,9 +743,21 @@ set(OpenGL_GL_PREFERENCE \"${OpenGL_GL_PREFERENCE}\" CACHE STRING \"\")
 
         string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS
             "
-set(QT_COPYRIGHT_YEAR \"${QT_COPYRIGHT_YEAR}\" CACHE STRING \"\")
 set(QT_COPYRIGHT \"${QT_COPYRIGHT}\" CACHE STRING \"\")
 ")
+
+        # Add the apple version requirements to the BuildInternals extra code, so the info is
+        # available when configuring a standalone test.
+        # Otherwise when QtSetup is included after a
+        #   find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
+        # call, Qt6ConfigExtras.cmake is not included yet, the requirements are not available and
+        # _qt_internal_check_apple_sdk_and_xcode_versions() would fail.
+        _qt_internal_export_apple_sdk_and_xcode_version_requirements(apple_requirements)
+        if(apple_requirements)
+            string(APPEND QT_EXTRA_BUILD_INTERNALS_VARS "
+${apple_requirements}
+")
+        endif()
 
         qt_compute_relative_path_from_cmake_config_dir_to_prefix()
         configure_file(
@@ -798,7 +825,7 @@ function(qt_internal_create_config_file_for_standalone_tests)
 
     # Create a Config file that calls find_package on the modules that were built as part
     # of the current repo. This is used for standalone tests.
-    qt_internal_get_standalone_tests_config_file_name(tests_config_file_name)
+    qt_internal_get_standalone_parts_config_file_name(tests_config_file_name)
 
     # Standalone tests Config files should follow the main versioning scheme.
     qt_internal_get_package_version_of_target(Platform main_qt_package_version)

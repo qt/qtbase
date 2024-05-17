@@ -11,6 +11,7 @@
 #include "qthreadstorage.h"
 
 QT_BEGIN_NAMESPACE
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QCollatorSortKeyPrivate)
 
 namespace {
 struct GenerationalCollator
@@ -150,19 +151,19 @@ QCollator &QCollator::operator=(const QCollator &other)
 
     Move constructor. Moves from \a other into this collator.
 
-    Note that a moved-from QCollator can only be destroyed or assigned to.
-    The effect of calling other functions than the destructor or one of the
-    assignment operators is undefined.
+//! [partially-formed]
+    \note The moved-from object \a other is placed in a partially-formed state,
+    in which the only valid operations are destruction and assignment of a new
+    value.
+//! [partially-formed]
 */
 
 /*!
     \fn QCollator & QCollator::operator=(QCollator && other)
 
-    Move-assigns from \a other to this collator.
+    Move-assigns \a other to this QCollator instance.
 
-    Note that a moved-from QCollator can only be destroyed or assigned to.
-    The effect of calling other functions than the destructor or one of the
-    assignment operators is undefined.
+    \include qcollator.cpp partially-formed
 */
 
 /*!
@@ -424,6 +425,14 @@ QCollatorSortKey::QCollatorSortKey(const QCollatorSortKey &other)
 }
 
 /*!
+    \since 6.8
+    \fn QCollatorSortKey::QCollatorSortKey(QCollatorSortKey &&other)
+    Move-constructs a new QCollatorSortKey from \a other.
+
+    \include qcollator.cpp partially-formed
+*/
+
+/*!
     Destroys the collator key.
 */
 QCollatorSortKey::~QCollatorSortKey()
@@ -444,7 +453,9 @@ QCollatorSortKey& QCollatorSortKey::operator=(const QCollatorSortKey &other)
 /*!
     \fn QCollatorSortKey &QCollatorSortKey::operator=(QCollatorSortKey && other)
 
-    Move-assigns \a other to this collator key.
+    Move-assigns \a other to this QCollatorSortKey instance.
+
+    \include qcollator.cpp partially-formed
 */
 
 /*!

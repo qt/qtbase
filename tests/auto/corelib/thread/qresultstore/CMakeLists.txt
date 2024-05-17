@@ -16,4 +16,5 @@ qt_internal_add_test(tst_qresultstore
         tst_qresultstore.cpp
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
 )

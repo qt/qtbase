@@ -14,4 +14,6 @@ endif()
 qt_internal_add_test(tst_qbitarray
     SOURCES
         tst_qbitarray.cpp
+    LIBRARIES
+        Qt::TestPrivate
 )

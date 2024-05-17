@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtGlobal>
 #include <QMap>
@@ -152,7 +152,9 @@ void commonInit()
     qDBusRegisterMetaType<QMap<QDBusObjectPath, QString> >();
     qDBusRegisterMetaType<QMap<qlonglong, QDateTime> >();
     qDBusRegisterMetaType<QMap<QDBusSignature, QString> >();
+    qDBusRegisterMetaType<QMap<QString, std::pair<int, int>>>();
 
+    qDBusRegisterMetaType<std::pair<int, int>>();
     qDBusRegisterMetaType<MyStruct>();
     qDBusRegisterMetaType<MyVariantMapStruct>();
     qDBusRegisterMetaType<QList<MyVariantMapStruct> >();
@@ -471,6 +473,8 @@ bool compareToArgument(const QDBusArgument &arg, const QVariant &v2)
             return compare<QMap<qlonglong, QDateTime> >(arg, v2);
         else if (id == qMetaTypeId<QMap<QDBusSignature, QString> >())
             return compare<QMap<QDBusSignature, QString> >(arg, v2);
+        else if (id == qMetaTypeId<QMap<QString, std::pair<int, int>>>())
+            return compare<QMap<QString, std::pair<int, int>>>(arg, v2);
 
         else if (id == qMetaTypeId<QList<QByteArray> >())
             return compare<QList<QByteArray> >(arg, v2);

@@ -6,6 +6,7 @@
 #define QMETAOBJECT_H
 
 #include <QtCore/qobjectdefs.h>
+#include <QtCore/qcompare.h>
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
@@ -251,10 +252,11 @@ protected:
     friend struct QMetaObject;
     friend struct QMetaObjectPrivate;
     friend class QObject;
-    friend bool operator==(const QMetaMethod &m1, const QMetaMethod &m2) noexcept
-    { return m1.data == m2.data; }
-    friend bool operator!=(const QMetaMethod &m1, const QMetaMethod &m2) noexcept
-    { return !(m1 == m2); }
+
+private:
+    friend bool comparesEqual(const QMetaMethod &lhs, const QMetaMethod &rhs) noexcept
+    { return lhs.data == rhs.data; }
+    Q_DECLARE_EQUALITY_COMPARABLE(QMetaMethod)
 };
 Q_DECLARE_TYPEINFO(QMetaMethod, Q_RELOCATABLE_TYPE);
 

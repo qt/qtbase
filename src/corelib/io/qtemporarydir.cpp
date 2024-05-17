@@ -4,10 +4,9 @@
 
 #include "qtemporarydir.h"
 
-#ifndef QT_NO_TEMPORARYFILE
+#if QT_CONFIG(temporaryfile)
 
 #include "qdebug.h"
-#include "qdiriterator.h"
 #include "qplatformdefs.h"
 #include "qrandom.h"
 #include "private/qtemporaryfile_p.h"
@@ -325,4 +324,4 @@ bool QTemporaryDir::remove()
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_TEMPORARYFILE
+#endif // QT_CONFIG(temporaryfile)

@@ -4,11 +4,15 @@
 #include "qwasmcompositor.h"
 #include "qwasmwindow.h"
 
+#include <private/qeventdispatcher_wasm_p.h>
+
 #include <qpa/qwindowsysteminterface.h>
 
 #include <emscripten/html5.h>
 
 using namespace emscripten;
+
+bool QWasmCompositor::m_requestUpdateHoldEnabled = true;
 
 QWasmCompositor::QWasmCompositor(QWasmScreen *screen) : QObject(screen)
 {
@@ -41,6 +45,16 @@ void QWasmCompositor::setEnabled(bool enabled)
     m_isEnabled = enabled;
 }
 
+// requestUpdate delivery is initially disabled at startup, while Qt completes
+// startup tasks such as font loading. This function enables requestUpdate delivery
+// again.
+bool QWasmCompositor::releaseRequestUpdateHold()
+{
+    const bool wasEnabled = m_requestUpdateHoldEnabled;
+    m_requestUpdateHoldEnabled = false;
+    return wasEnabled;
+}
+
 void QWasmCompositor::requestUpdateWindow(QWasmWindow *window, UpdateRequestDeliveryType updateType)
 {
     auto it = m_requestUpdateWindows.find(window);
@@ -60,6 +74,9 @@ void QWasmCompositor::requestUpdateWindow(QWasmWindow *window, UpdateRequestDeli
 void QWasmCompositor::requestUpdate()
 {
     if (m_requestAnimationFrameId != -1)
+        return;
+
+    if (m_requestUpdateHoldEnabled)
         return;
 
     static auto frame = [](double frameTime, void *context) -> int {
@@ -99,11 +116,16 @@ void QWasmCompositor::deliverUpdateRequests()
 
 void QWasmCompositor::deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType)
 {
+    QWindow *qwindow = window->window();
+
+    // Make sure the DPR value for the window is up to date on expose/repaint.
+    // FIXME: listen to native DPR change events instead, if/when available.
+    QWindowSystemInterface::handleWindowDevicePixelRatioChanged(qwindow);
+
     // Update by deliverUpdateRequest and expose event according to requested update
     // type. If the window has not yet been exposed then we must expose it first regardless
     // of update type. The deliverUpdateRequest must still be sent in this case in order
     // to maintain correct window update state.
-    QWindow *qwindow = window->window();
     QRect updateRect(QPoint(0, 0), qwindow->geometry().size());
     if (updateType == UpdateRequestDelivery) {
         if (qwindow->isExposed() == false)

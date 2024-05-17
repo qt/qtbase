@@ -2145,6 +2145,7 @@ void QTreeView::doItemsLayout()
     }
     QAbstractItemView::doItemsLayout();
     d->header->doItemsLayout();
+    d->updateAccessibility();
 }
 
 /*!
@@ -2708,6 +2709,7 @@ void QTreeView::expandAll()
     d->layout(-1, true);
     updateGeometries();
     d->viewport->update();
+    d->updateAccessibility();
 }
 
 /*!
@@ -2831,6 +2833,7 @@ void QTreeView::expandToDepth(int depth)
 
     updateGeometries();
     d->viewport->update();
+    d->updateAccessibility();
 }
 
 /*!
@@ -3142,6 +3145,7 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
             beginAnimatedOperation();
 #endif // animation
     }
+    updateAccessibility();
 }
 
 void QTreeViewPrivate::insertViewItems(int pos, int count, const QTreeViewItem &viewItem)
@@ -3350,6 +3354,21 @@ void QTreeViewPrivate::columnsRemoved(const QModelIndex &parent, int start, int 
     QAbstractItemViewPrivate::columnsRemoved(parent, start, end);
 }
 
+void QTreeViewPrivate::updateAccessibility()
+{
+#if QT_CONFIG(accessibility)
+    Q_Q(QTreeView);
+    if (pendingAccessibilityUpdate) {
+        pendingAccessibilityUpdate = false;
+        if (QAccessible::isActive()) {
+            QAccessibleTableModelChangeEvent event(q, QAccessibleTableModelChangeEvent::ModelReset);
+            QAccessible::updateAccessibility(&event);
+        }
+    }
+#endif
+}
+
+
 /** \internal
     creates and initialize the viewItem structure of the children of the element \li
 
@@ -3374,11 +3393,8 @@ void QTreeViewPrivate::layout(int i, bool recursiveExpanding, bool afterIsUninit
     // QAccessibleTree's rowCount implementation uses viewItems.size(), so
     // we need to invalidate any cached accessibility data structures if
     // that value changes during the run of this function.
-    const auto resetModelIfNeeded = qScopeGuard([oldViewItemsSize = viewItems.size(), this, q]{
-        if (oldViewItemsSize != viewItems.size() && QAccessible::isActive()) {
-            QAccessibleTableModelChangeEvent event(q, QAccessibleTableModelChangeEvent::ModelReset);
-            QAccessible::updateAccessibility(&event);
-        }
+    const auto resetModelIfNeeded = qScopeGuard([oldViewItemsSize = viewItems.size(), this]{
+        pendingAccessibilityUpdate |= oldViewItemsSize != viewItems.size();
     });
 #endif
 

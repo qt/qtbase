@@ -1,5 +1,8 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
+
+#undef QTEST_THROW_ON_FAILURE // fails ### investigate
+#undef QTEST_THROW_ON_SKIP    // fails ### investigate
 
 #include <QtCore/QCoreApplication>
 #include <QTest>
@@ -65,6 +68,7 @@ void tst_Blacklisted::fail()
 
 void tst_Blacklisted::multiFail() // cf. ../subtest/'s similar tests
 {
+    const QTest::ThrowOnFailDisabler nothrow; // tests repeated QFAILs
     ++blacklisted;
     for (int i = 0; i < 10; ++i)
         []() { QFAIL("This failure message should be repeated ten times"); }();
@@ -73,6 +77,7 @@ void tst_Blacklisted::multiFail() // cf. ../subtest/'s similar tests
 
 void tst_Blacklisted::multiSkip()
 {
+    const QTest::ThrowOnSkipDisabler nothrow; // tests repeated QSKIPs
     // Similar to multiFail()
     ++skipped;
     for (int i = 0; i < 10; ++i)

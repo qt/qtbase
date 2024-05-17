@@ -83,22 +83,48 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \variable QRhiD3D12NativeHandles::dev
+
+    Points to a
+    \l{https://learn.microsoft.com/en-us/windows/win32/api/d3d12/nn-d3d12-id3d12device}{ID3D12Device}
+    or left set to \nullptr if no existing device is to be imported.
 */
 
 /*!
     \variable QRhiD3D12NativeHandles::minimumFeatureLevel
+
+    Specifies the \b minimum feature level passed to
+    \l{https://learn.microsoft.com/en-us/windows/win32/api/d3d12/nf-d3d12-d3d12createdevice}{D3D12CreateDevice()}.
+    When not set, \c{D3D_FEATURE_LEVEL_11_0} is used. See
+    \l{https://learn.microsoft.com/en-us/windows/win32/direct3d12/hardware-feature-levels}{this
+    page} for details.
+
+    Relevant only when QRhi creates the device, ignored when importing a device
+    and device context.
 */
 
 /*!
     \variable QRhiD3D12NativeHandles::adapterLuidLow
+
+    The low part of the local identifier (LUID) of the DXGI adapter to use.
+    Relevant only when QRhi creates the device, ignored when importing a device
+    and device context.
 */
 
 /*!
     \variable QRhiD3D12NativeHandles::adapterLuidHigh
+
+    The high part of the local identifier (LUID) of the DXGI adapter to use.
+    Relevant only when QRhi creates the device, ignored when importing a device
+    and device context.
 */
 
 /*!
     \variable QRhiD3D12NativeHandles::commandQueue
+
+    When set, must point to a
+    \l{https://learn.microsoft.com/en-us/windows/win32/api/d3d12/nn-d3d12-id3d12commandqueue}{ID3D12CommandQueue}.
+    It allows to optionally import a command queue as well, in addition to a
+    device.
 */
 
 /*!
@@ -292,13 +318,19 @@ bool QRhiD3D12::create(QRhi::Flags flags)
         for (int adapterIndex = 0; dxgiFactory->EnumAdapters1(UINT(adapterIndex), &adapter) != DXGI_ERROR_NOT_FOUND; ++adapterIndex) {
             DXGI_ADAPTER_DESC1 desc;
             adapter->GetDesc1(&desc);
-            adapter->Release();
             if (desc.AdapterLuid.LowPart == adapterLuid.LowPart
                     && desc.AdapterLuid.HighPart == adapterLuid.HighPart)
             {
+                activeAdapter = adapter;
                 QRhiD3D::fillDriverInfo(&driverInfoStruct, desc);
                 break;
+            } else {
+                adapter->Release();
             }
+        }
+        if (!activeAdapter) {
+            qWarning("No adapter");
+            return false;
         }
         qCDebug(QRHI_LOG_INFO, "Using imported device %p", dev);
     }
@@ -453,9 +485,13 @@ bool QRhiD3D12::create(QRhi::Flags flags)
         memset(timestampReadbackArea.mem.p, 0, readbackBufSize);
     }
 
+    caps = {};
     D3D12_FEATURE_DATA_D3D12_OPTIONS3 options3 = {};
-    if (SUCCEEDED(dev->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &options3, sizeof(options3))))
+    if (SUCCEEDED(dev->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &options3, sizeof(options3)))) {
         caps.multiView = options3.ViewInstancingTier != D3D12_VIEW_INSTANCING_TIER_NOT_SUPPORTED;
+        // https://microsoft.github.io/DirectX-Specs/d3d/RelaxedCasting.html
+        caps.textureViewFormat = options3.CastingFullyTypedFormatSupported;
+    }
 
     deviceLost = false;
     offscreenActive = false;
@@ -503,8 +539,10 @@ void QRhiD3D12::destroy()
     cbvSrvUavPool.destroy();
 
     for (int i = 0; i < QD3D12_FRAMES_IN_FLIGHT; ++i) {
-        cmdAllocators[i]->Release();
-        cmdAllocators[i] = nullptr;
+        if (cmdAllocators[i]) {
+            cmdAllocators[i]->Release();
+            cmdAllocators[i] = nullptr;
+        }
     }
 
     if (fullFenceEvent) {
@@ -698,6 +736,12 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
         return false; // we generate mipmaps ourselves with compute and this is not implemented
     case QRhi::MultiView:
         return caps.multiView;
+    case QRhi::TextureViewFormat:
+        return caps.textureViewFormat;
+    case QRhi::ResolveDepthStencil:
+        // there is no Multisample Resolve support for depth/stencil formats
+        // https://learn.microsoft.com/en-us/windows/win32/direct3ddxgi/hardware-support-for-direct3d-12-1-formats
+        return false;
     }
     return false;
 }
@@ -924,7 +968,7 @@ void QD3D12CommandBuffer::visitStorageImage(QD3D12Stage s,
     const bool isArray = texD->m_flags.testFlag(QRhiTexture::TextureArray);
     const bool is3D = texD->m_flags.testFlag(QRhiTexture::ThreeDimensional);
     D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-    uavDesc.Format = texD->dxgiFormat;
+    uavDesc.Format = texD->rtFormat;
     if (isCube) {
         uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
         uavDesc.Texture2DArray.MipSlice = UINT(d.level);
@@ -1599,6 +1643,10 @@ QRhi::FrameOpResult QRhiD3D12::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
         {
             presentFlags |= DXGI_PRESENT_ALLOW_TEARING;
         }
+        if (!swapChainD->swapChain) {
+            qWarning("Failed to present, no swapchain");
+            return QRhi::FrameOpError;
+        }
         HRESULT hr = swapChainD->swapChain->Present(swapChainD->swapInterval, presentFlags);
         if (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET) {
             qWarning("Device loss detected in Present()");
@@ -1942,7 +1990,8 @@ void QRhiD3D12::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
                                                  dstTexD->dxgiFormat);
             }
         }
-
+        if (rtTex->m_desc.depthResolveTexture())
+            qWarning("Resolving multisample depth-stencil buffers is not supported with D3D");
     }
 
     cbD->recordingPass = QD3D12CommandBuffer::NoPass;
@@ -4134,8 +4183,28 @@ bool QD3D12Texture::prepareCreate(QSize *adjustedSize)
     const QSize size = is1D ? QSize(qMax(1, m_pixelSize.width()), 1)
                             : (m_pixelSize.isEmpty() ? QSize(1, 1) : m_pixelSize);
 
-    QRHI_RES_RHI(QRhiD3D12);
     dxgiFormat = toD3DTextureFormat(m_format, m_flags);
+    if (isDepth) {
+        srvFormat = toD3DDepthTextureSRVFormat(m_format);
+        rtFormat = toD3DDepthTextureDSVFormat(m_format);
+    } else {
+        srvFormat = dxgiFormat;
+        rtFormat = dxgiFormat;
+    }
+    if (m_writeViewFormat.format != UnknownFormat) {
+        if (isDepth)
+            rtFormat = toD3DDepthTextureDSVFormat(m_writeViewFormat.format);
+        else
+            rtFormat = toD3DTextureFormat(m_writeViewFormat.format, m_writeViewFormat.srgb ? sRGB : Flags());
+    }
+    if (m_readViewFormat.format != UnknownFormat) {
+        if (isDepth)
+            srvFormat = toD3DDepthTextureSRVFormat(m_readViewFormat.format);
+        else
+            srvFormat = toD3DTextureFormat(m_readViewFormat.format, m_readViewFormat.srgb ? sRGB : Flags());
+    }
+
+    QRHI_RES_RHI(QRhiD3D12);
     mipLevelCount = uint(hasMipMaps ? rhiD->q->mipLevelsForSize(size) : 1);
     sampleDesc = rhiD->effectiveSampleDesc(m_sampleCount, dxgiFormat);
     if (sampleDesc.Count > 1) {
@@ -4194,14 +4263,13 @@ bool QD3D12Texture::prepareCreate(QSize *adjustedSize)
 bool QD3D12Texture::finishCreate()
 {
     QRHI_RES_RHI(QRhiD3D12);
-    const bool isDepth = isDepthTextureFormat(m_format);
     const bool isCube = m_flags.testFlag(CubeMap);
     const bool is3D = m_flags.testFlag(ThreeDimensional);
     const bool isArray = m_flags.testFlag(TextureArray);
     const bool is1D = m_flags.testFlag(OneDimensional);
 
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.Format = isDepth ? toD3DDepthTextureSRVFormat(m_format) : dxgiFormat;
+    srvDesc.Format = srvFormat;
     srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
     if (isCube) {
@@ -4560,7 +4628,7 @@ QRhiRenderPassDescriptor *QD3D12TextureRenderTarget::newCompatibleRenderPassDesc
         QD3D12Texture *texD = QRHI_RES(QD3D12Texture, it->texture());
         QD3D12RenderBuffer *rbD = QRHI_RES(QD3D12RenderBuffer, it->renderBuffer());
         if (texD)
-            rpD->colorFormat[rpD->colorAttachmentCount] = texD->dxgiFormat;
+            rpD->colorFormat[rpD->colorAttachmentCount] = texD->rtFormat;
         else if (rbD)
             rpD->colorFormat[rpD->colorAttachmentCount] = rbD->dxgiFormat;
         rpD->colorAttachmentCount += 1;
@@ -4611,7 +4679,7 @@ bool QD3D12TextureRenderTarget::create()
             const bool isMultiView = it->multiViewCount() >= 2;
             UINT layerCount = isMultiView ? UINT(it->multiViewCount()) : 1;
             D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-            rtvDesc.Format = toD3DTextureFormat(texD->format(), texD->flags());
+            rtvDesc.Format = texD->rtFormat;
             if (texD->flags().testFlag(QRhiTexture::CubeMap)) {
                 rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
                 rtvDesc.Texture2DArray.MipSlice = UINT(colorAtt.level());
@@ -4685,7 +4753,7 @@ bool QD3D12TextureRenderTarget::create()
                 return false;
             }
             D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-            dsvDesc.Format = toD3DDepthTextureDSVFormat(depthTexD->format());
+            dsvDesc.Format = depthTexD->rtFormat;
             dsvDesc.ViewDimension = depthTexD->sampleDesc.Count > 1 ? D3D12_DSV_DIMENSION_TEXTURE2DMS
                                                                     : D3D12_DSV_DIMENSION_TEXTURE2D;
             if (depthTexD->flags().testFlag(QRhiTexture::TextureArray)) {
@@ -5478,6 +5546,22 @@ static inline DXGI_FORMAT toD3DAttributeFormat(QRhiVertexInputAttribute::Format 
         return DXGI_FORMAT_R16G16_FLOAT;
     case QRhiVertexInputAttribute::Half:
          return DXGI_FORMAT_R16_FLOAT;
+    case QRhiVertexInputAttribute::UShort4:
+    // Note: D3D does not support UShort3.  Pass through UShort3 as UShort4.
+    case QRhiVertexInputAttribute::UShort3:
+        return DXGI_FORMAT_R16G16B16A16_UINT;
+    case QRhiVertexInputAttribute::UShort2:
+        return DXGI_FORMAT_R16G16_UINT;
+    case QRhiVertexInputAttribute::UShort:
+        return DXGI_FORMAT_R16_UINT;
+    case QRhiVertexInputAttribute::SShort4:
+    // Note: D3D does not support SShort3.  Pass through SShort3 as SShort4.
+    case QRhiVertexInputAttribute::SShort3:
+        return DXGI_FORMAT_R16G16B16A16_SINT;
+    case QRhiVertexInputAttribute::SShort2:
+        return DXGI_FORMAT_R16G16_SINT;
+    case QRhiVertexInputAttribute::SShort:
+        return DXGI_FORMAT_R16_SINT;
     }
     Q_UNREACHABLE_RETURN(DXGI_FORMAT_R32G32B32A32_FLOAT);
 }
@@ -6229,9 +6313,9 @@ bool QD3D12SwapChain::createOrResize()
     if (m_flags.testFlag(SurfaceHasPreMulAlpha) || m_flags.testFlag(SurfaceHasNonPreMulAlpha)) {
         if (rhiD->ensureDirectCompositionDevice()) {
             if (!dcompTarget) {
-                hr = rhiD->dcompDevice->CreateTargetForHwnd(hwnd, true, &dcompTarget);
+                hr = rhiD->dcompDevice->CreateTargetForHwnd(hwnd, false, &dcompTarget);
                 if (FAILED(hr)) {
-                    qWarning("Failed to create Direct Compsition target for the window: %s",
+                    qWarning("Failed to create Direct Composition target for the window: %s",
                              qPrintable(QSystemError::windowsComString(hr)));
                 }
             }
@@ -6328,7 +6412,11 @@ bool QD3D12SwapChain::createOrResize()
             }
         }
         if (FAILED(hr)) {
-            qWarning("Failed to create D3D12 swapchain: %s", qPrintable(QSystemError::windowsComString(hr)));
+            qWarning("Failed to create D3D12 swapchain: %s"
+                     " (Width=%u Height=%u Format=%u SampleCount=%u BufferCount=%u Scaling=%u SwapEffect=%u Stereo=%u)",
+                     qPrintable(QSystemError::windowsComString(hr)),
+                     desc.Width, desc.Height, UINT(desc.Format), desc.SampleDesc.Count,
+                     desc.BufferCount, UINT(desc.Scaling), UINT(desc.SwapEffect), UINT(desc.Stereo));
             return false;
         }
 

@@ -49,12 +49,14 @@ private:
     void ensureCleanup();
     bool sendTrayMessage(DWORD msg);
     bool setIconVisible(bool visible);
+    bool isIconVisible() const;
     HICON createIcon(const QIcon &icon);
 
     QIcon m_icon;
     QString m_toolTip;
     HWND m_hwnd = nullptr;
     HICON m_hIcon = nullptr;
+    HICON m_hMessageIcon = nullptr;
     mutable QPointer<QWindowsPopupMenu> m_menu;
     bool m_ignoreNextMouseRelease = false;
     bool m_visible = false;

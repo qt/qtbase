@@ -24,6 +24,7 @@ qt_internal_add_module(EglFsKmsGbmSupportPrivate
         Qt::GuiPrivate
         Qt::KmsSupportPrivate
         gbm::gbm
+    NO_GENERATE_CPP_EXPORTS
 )
 #####################################################################
 ## QEglFSKmsGbmIntegrationPlugin Plugin:

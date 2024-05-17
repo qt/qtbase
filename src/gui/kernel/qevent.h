@@ -71,6 +71,7 @@ protected:
 
 class Q_GUI_EXPORT QPointerEvent : public QInputEvent
 {
+    Q_GADGET
     Q_DECL_EVENT_COMMON(QPointerEvent)
 public:
     explicit QPointerEvent(Type type, const QPointingDevice *dev,

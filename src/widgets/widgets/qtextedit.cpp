@@ -1080,30 +1080,38 @@ void QTextEdit::selectAll()
 bool QTextEdit::event(QEvent *e)
 {
     Q_D(QTextEdit);
-#ifndef QT_NO_CONTEXTMENU
-    if (e->type() == QEvent::ContextMenu
-        && static_cast<QContextMenuEvent *>(e)->reason() == QContextMenuEvent::Keyboard) {
-        Q_D(QTextEdit);
-        ensureCursorVisible();
-        const QPoint cursorPos = cursorRect().center();
-        QContextMenuEvent ce(QContextMenuEvent::Keyboard, cursorPos, d->viewport->mapToGlobal(cursorPos));
-        ce.setAccepted(e->isAccepted());
-        const bool result = QAbstractScrollArea::event(&ce);
-        e->setAccepted(ce.isAccepted());
-        return result;
-    } else if (e->type() == QEvent::ShortcutOverride
-               || e->type() == QEvent::ToolTip) {
+    switch (e->type()) {
+    case QEvent::ShortcutOverride:
+    case QEvent::ToolTip:
         d->sendControlEvent(e);
-    }
-#else
-    Q_UNUSED(d);
+        break;
+    case QEvent::WindowActivate:
+    case QEvent::WindowDeactivate:
+        d->control->setPalette(palette());
+        break;
+#ifndef QT_NO_CONTEXTMENU
+    case QEvent::ContextMenu:
+        if (static_cast<QContextMenuEvent *>(e)->reason() == QContextMenuEvent::Keyboard) {
+            ensureCursorVisible();
+            const QPoint cursorPos = cursorRect().center();
+            QContextMenuEvent ce(QContextMenuEvent::Keyboard, cursorPos, d->viewport->mapToGlobal(cursorPos));
+            ce.setAccepted(e->isAccepted());
+            const bool result = QAbstractScrollArea::event(&ce);
+            e->setAccepted(ce.isAccepted());
+            return result;
+        }
+        break;
 #endif // QT_NO_CONTEXTMENU
 #ifdef QT_KEYPAD_NAVIGATION
-    if (e->type() == QEvent::EnterEditFocus || e->type() == QEvent::LeaveEditFocus) {
+    case QEvent::EnterEditFocus:
+    case QEvent::LeaveEditFocus:
         if (QApplicationPrivate::keypadNavigationEnabled())
             d->sendControlEvent(e);
-    }
+        break;
 #endif
+    default:
+        break;
+    }
     return QAbstractScrollArea::event(e);
 }
 
@@ -1816,7 +1824,7 @@ QVariant QTextEdit::inputMethodQuery(Qt::InputMethodQuery query, QVariant argume
     Q_D(const QTextEdit);
     switch (query) {
     case Qt::ImEnabled:
-        return isEnabled();
+        return isEnabled() && !isReadOnly();
     case Qt::ImHints:
     case Qt::ImInputItemClipRectangle:
         return QWidget::inputMethodQuery(query);
@@ -1906,7 +1914,6 @@ void QTextEdit::changeEvent(QEvent *e)
         || e->type() == QEvent::FontChange) {
         d->control->document()->setDefaultFont(font());
     }  else if (e->type() == QEvent::ActivationChange) {
-        d->control->setPalette(palette());
         if (!isActiveWindow())
             d->autoScrollTimer.stop();
     } else if (e->type() == QEvent::EnabledChange) {
@@ -2222,7 +2229,7 @@ void QTextEdit::insertFromMimeData(const QMimeData *source)
 bool QTextEdit::isReadOnly() const
 {
     Q_D(const QTextEdit);
-    return !(d->control->textInteractionFlags() & Qt::TextEditable);
+    return !d->control || !(d->control->textInteractionFlags() & Qt::TextEditable);
 }
 
 void QTextEdit::setReadOnly(bool ro)
@@ -2593,11 +2600,14 @@ bool QTextEdit::find(const QString &exp, QTextDocument::FindFlags options)
     \overload
 
     Finds the next occurrence, matching the regular expression, \a exp, using the given
-    \a options. The QTextDocument::FindCaseSensitively option is ignored for this overload,
-    use QRegularExpression::CaseInsensitiveOption instead.
+    \a options.
 
     Returns \c true if a match was found and changes the cursor to select the match;
     otherwise returns \c false.
+
+    \warning For historical reasons, the case sensitivity option set on
+    \a exp is ignored. Instead, the \a options are used to determine
+    if the search is case sensitive or not.
 */
 #if QT_CONFIG(regularexpression)
 bool QTextEdit::find(const QRegularExpression &exp, QTextDocument::FindFlags options)

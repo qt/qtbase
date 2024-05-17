@@ -13,8 +13,7 @@ QT_BEGIN_NAMESPACE
 
 // Implements the Value control pattern provider.
 // Supported for all controls that can return text(QAccessible::Value).
-class QWindowsUiaValueProvider : public QWindowsUiaBaseProvider,
-                                 public QWindowsComBase<IValueProvider>
+class QWindowsUiaValueProvider : public QWindowsUiaBaseProvider, public QComObject<IValueProvider>
 {
     Q_DISABLE_COPY_MOVE(QWindowsUiaValueProvider)
 public:

@@ -1,5 +1,16 @@
 # Copyright (C) 2022 The Qt Company Ltd.
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+
+if(QT_BUILD_STANDALONE_EXAMPLES)
+    # Needed for early feature values, despite it being found later on in qt_build_tests().
+    # Needs to be find_package, not qt_find_package, because qt_find_package doesn't handle finding
+    # component for a super-package that has already been found.
+    find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS Core)
+
+    # Modify the optimization flags specifically for qtbase standalone examples. Other projects
+    # are handled by qt_enable_cmake_languages().
+    qt_internal_set_up_config_optimizations_like_in_qmake()
+endif()
 
 qt_examples_build_begin(EXTERNAL_BUILD)
 

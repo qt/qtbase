@@ -120,8 +120,6 @@ public:
     static QtWindows::DpiAwareness processDpiAwareness();
     static QtWindows::DpiAwareness windowDpiAwareness(HWND hwnd);
 
-    static bool isDarkMode();
-
     void setDetectAltGrModifier(bool a);
 
     // Returns a combination of SystemInfoFlags

@@ -93,22 +93,47 @@ using namespace Qt::StringLiterals;
 
 /*!
     \variable QRhiD3D11NativeHandles::dev
+
+    Points to a
+    \l{https://learn.microsoft.com/en-us/windows/win32/api/d3d11/nn-d3d11-id3d11device}{ID3D11Device}
+    or left set to \nullptr if no existing device is to be imported.
+
+    \note When importing a device, both the device and the device context must be set to valid objects.
 */
 
 /*!
     \variable QRhiD3D11NativeHandles::context
+
+    Points to a \l{https://learn.microsoft.com/en-us/windows/win32/api/d3d11/nn-d3d11-id3d11devicecontext}{ID3D11DeviceContext}
+    or left set to \nullptr if no existing device context is to be imported.
+
+    \note When importing a device, both the device and the device context must be set to valid objects.
 */
 
 /*!
     \variable QRhiD3D11NativeHandles::featureLevel
+
+    Specifies the feature level passed to
+    \l{https://learn.microsoft.com/en-us/windows/win32/api/d3d11/nf-d3d11-d3d11createdevice}{D3D11CreateDevice()}.
+    Relevant only when QRhi creates the device, ignored when importing a device
+    and device context. When not set, the default rules outlined in the D3D
+    documentation apply.
 */
 
 /*!
     \variable QRhiD3D11NativeHandles::adapterLuidLow
+
+    The low part of the local identifier (LUID) of the DXGI adapter to use.
+    Relevant only when QRhi creates the device, ignored when importing a device
+    and device context.
 */
 
 /*!
     \variable QRhiD3D11NativeHandles::adapterLuidHigh
+
+    The high part of the local identifier (LUID) of the DXGI adapter to use.
+    Relevant only when QRhi creates the device, ignored when importing a device
+    and device context.
 */
 
 // help mingw with its ancient sdk headers
@@ -597,6 +622,10 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::ThreeDimensionalTextureMipmaps:
         return true;
     case QRhi::MultiView:
+        return false;
+    case QRhi::TextureViewFormat:
+        return false; // because we use fully typed formats for textures and relaxed casting is a D3D12 thing
+    case QRhi::ResolveDepthStencil:
         return false;
     default:
         Q_UNREACHABLE();
@@ -1521,9 +1550,9 @@ static inline DXGI_FORMAT toD3DTextureFormat(QRhiTexture::Format format, QRhiTex
     case QRhiTexture::D16:
         return DXGI_FORMAT_R16_TYPELESS;
     case QRhiTexture::D24:
-        return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+        return DXGI_FORMAT_R24G8_TYPELESS;
     case QRhiTexture::D24S8:
-        return DXGI_FORMAT_D24_UNORM_S8_UINT;
+        return DXGI_FORMAT_R24G8_TYPELESS;
     case QRhiTexture::D32F:
         return DXGI_FORMAT_R32_TYPELESS;
 
@@ -2117,6 +2146,8 @@ void QRhiD3D11::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resource
             cmd.args.resolveSubRes.srcSubRes = D3D11CalcSubresource(0, UINT(colorAtt.layer()), 1);
             cmd.args.resolveSubRes.format = dstTexD->dxgiFormat;
         }
+        if (rtTex->m_desc.depthResolveTexture())
+            qWarning("Resolving multisample depth-stencil buffers is not supported with D3D");
     }
 
     cbD->recordingPass = QD3D11CommandBuffer::NoPass;
@@ -3236,7 +3267,7 @@ static inline DXGI_FORMAT toD3DDepthTextureDSVFormat(QRhiTexture::Format format)
     case QRhiTexture::Format::D16:
         return DXGI_FORMAT_D16_UNORM;
     case QRhiTexture::Format::D24:
-        return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+        return DXGI_FORMAT_D24_UNORM_S8_UINT;
     case QRhiTexture::Format::D24S8:
         return DXGI_FORMAT_D24_UNORM_S8_UINT;
     case QRhiTexture::Format::D32F:
@@ -4214,6 +4245,22 @@ static inline DXGI_FORMAT toD3DAttributeFormat(QRhiVertexInputAttribute::Format 
         return DXGI_FORMAT_R16G16_FLOAT;
     case QRhiVertexInputAttribute::Half:
          return DXGI_FORMAT_R16_FLOAT;
+    case QRhiVertexInputAttribute::UShort4:
+    // Note: D3D does not support UShort3.  Pass through UShort3 as UShort4.
+    case QRhiVertexInputAttribute::UShort3:
+        return DXGI_FORMAT_R16G16B16A16_UINT;
+    case QRhiVertexInputAttribute::UShort2:
+        return DXGI_FORMAT_R16G16_UINT;
+    case QRhiVertexInputAttribute::UShort:
+        return DXGI_FORMAT_R16_UINT;
+    case QRhiVertexInputAttribute::SShort4:
+    // Note: D3D does not support SShort3.  Pass through SShort3 as SShort4.
+    case QRhiVertexInputAttribute::SShort3:
+        return DXGI_FORMAT_R16G16B16A16_SINT;
+    case QRhiVertexInputAttribute::SShort2:
+        return DXGI_FORMAT_R16G16_SINT;
+    case QRhiVertexInputAttribute::SShort:
+        return DXGI_FORMAT_R16_SINT;
     default:
         Q_UNREACHABLE();
         return DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -4903,8 +4950,12 @@ void QD3D11SwapChain::destroy()
     }
 
     QRHI_RES_RHI(QRhiD3D11);
-    if (rhiD)
+    if (rhiD) {
         rhiD->unregisterResource(this);
+        // See Deferred Destruction Issues with Flip Presentation Swap Chains in
+        // https://learn.microsoft.com/en-us/windows/win32/api/d3d11/nf-d3d11-id3d11devicecontext-flush
+        rhiD->context->Flush();
+    }
 }
 
 QRhiCommandBuffer *QD3D11SwapChain::currentFrameCommandBuffer()
@@ -5051,7 +5102,7 @@ bool QD3D11SwapChain::createOrResize()
     if (m_flags.testFlag(SurfaceHasPreMulAlpha) || m_flags.testFlag(SurfaceHasNonPreMulAlpha)) {
         if (!rhiD->useLegacySwapchainModel && rhiD->ensureDirectCompositionDevice()) {
             if (!dcompTarget) {
-                hr = rhiD->dcompDevice->CreateTargetForHwnd(hwnd, true, &dcompTarget);
+                hr = rhiD->dcompDevice->CreateTargetForHwnd(hwnd, false, &dcompTarget);
                 if (FAILED(hr)) {
                     qWarning("Failed to create Direct Compsition target for the window: %s",
                              qPrintable(QSystemError::windowsComString(hr)));
@@ -5196,8 +5247,11 @@ bool QD3D11SwapChain::createOrResize()
             }
         }
         if (FAILED(hr)) {
-            qWarning("Failed to create D3D11 swapchain: %s",
-                qPrintable(QSystemError::windowsComString(hr)));
+            qWarning("Failed to create D3D11 swapchain: %s"
+                     " (Width=%u Height=%u Format=%u SampleCount=%u BufferCount=%u Scaling=%u SwapEffect=%u Stereo=%u)",
+                     qPrintable(QSystemError::windowsComString(hr)),
+                     desc.Width, desc.Height, UINT(desc.Format), desc.SampleDesc.Count,
+                     desc.BufferCount, UINT(desc.Scaling), UINT(desc.SwapEffect), UINT(desc.Stereo));
             return false;
         }
     } else {

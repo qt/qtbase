@@ -144,7 +144,20 @@ bool QCupsPrintEnginePrivate::openPrintDevice()
         }
         cupsTempFile = QString::fromLocal8Bit(filename);
         outDevice = new QFile();
-        static_cast<QFile *>(outDevice)->open(fd, QIODevice::WriteOnly);
+        if (!static_cast<QFile *>(outDevice)->open(fd, QIODevice::WriteOnly)) {
+            qWarning("QPdfPrinter: Could not open CUPS temporary file descriptor: %s",
+                     qPrintable(outDevice->errorString()));
+            delete outDevice;
+            outDevice = nullptr;
+
+#if defined(Q_OS_WIN) && defined(Q_CC_MSVC)
+            ::_close(fd);
+#else
+            ::close(fd);
+#endif
+            fd = -1;
+            return false;
+        }
     }
 
     return true;
@@ -249,9 +262,12 @@ void QCupsPrintEnginePrivate::changePrinter(const QString &newPrinter)
         duplex = m_printDevice.defaultDuplexMode();
         duplexRequestedExplicitly = false;
     }
-    QPrint::ColorMode colorMode = grayscale ? QPrint::GrayScale : QPrint::Color;
-    if (!m_printDevice.supportedColorModes().contains(colorMode))
-        grayscale = m_printDevice.defaultColorMode() == QPrint::GrayScale;
+    QPrint::ColorMode colorMode = static_cast<QPrint::ColorMode>(printerColorMode());
+    if (!m_printDevice.supportedColorModes().contains(colorMode)) {
+        colorModel = (m_printDevice.defaultColorMode() == QPrint::GrayScale)
+                         ? QPdfEngine::ColorModel::Grayscale
+                         : QPdfEngine::ColorModel::RGB;
+    }
 
     // Get the equivalent page size for this printer as supported names may be different
     if (m_printDevice.supportedPageSize(m_pageLayout.pageSize()).isValid())

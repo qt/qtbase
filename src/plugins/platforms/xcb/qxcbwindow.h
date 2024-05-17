@@ -230,6 +230,7 @@ protected:
     bool m_alertState = false;
     bool m_minimized = false;
     bool m_trayIconWindow = false;
+    bool m_ignorePressedWindowOnMouseLeave = false;
     xcb_window_t m_netWmUserTimeWindow = XCB_NONE;
 
     QSurfaceFormat m_format;

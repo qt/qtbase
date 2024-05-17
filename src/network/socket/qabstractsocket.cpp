@@ -173,8 +173,9 @@
     parameter describes the type of error that occurred.
 
     When this signal is emitted, the socket may not be ready for a reconnect
-    attempt. In that case, attempts to reconnect should be done from the event
-    loop. For example, use a QTimer::singleShot() with 0 as the timeout.
+    attempt. In that case, attempts to reconnect should be done from the
+    event loop. For example, use QChronoTimer::singleShot() with 0ns as
+    the timeout.
 
     QAbstractSocket::SocketError is not a registered metatype, so for queued
     connections, you will have to register it with Q_DECLARE_METATYPE() and
@@ -637,11 +638,19 @@ bool QAbstractSocketPrivate::canReadNotification()
             return !q->isReadable();
         }
     } else {
-        if (hasPendingData) {
+        const bool isUdpSocket = (socketType == QAbstractSocket::UdpSocket);
+        if (hasPendingData && (!isUdpSocket || hasPendingDatagram)) {
             socketEngine->setReadNotificationEnabled(false);
             return true;
         }
-        hasPendingData = true;
+        if (!isUdpSocket
+#if QT_CONFIG(udpsocket)
+            || socketEngine->hasPendingDatagrams()
+#endif
+        ) {
+            hasPendingData = true;
+            hasPendingDatagram = isUdpSocket;
+        }
     }
 
     emitReadyRead();

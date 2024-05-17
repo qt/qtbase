@@ -289,14 +289,14 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
             && (m_lastEventButton & buttons) == 0) {
             auto releaseType = mouseEvent.type == QEvent::NonClientAreaMouseMove ?
                 QEvent::NonClientAreaMouseButtonRelease : QEvent::MouseButtonRelease;
-            QWindowSystemInterface::handleMouseEvent(window, device, clientPosition, globalPosition, buttons, m_lastEventButton,
+            QWindowSystemInterface::handleMouseEvent(window, msg.time, device, clientPosition, globalPosition, buttons, m_lastEventButton,
                                                      releaseType, keyModifiers, source);
     }
     m_lastEventType = mouseEvent.type;
     m_lastEventButton = mouseEvent.button;
 
     if (mouseEvent.type >= QEvent::NonClientAreaMouseMove && mouseEvent.type <= QEvent::NonClientAreaMouseButtonDblClick) {
-        QWindowSystemInterface::handleMouseEvent(window, device, clientPosition,
+        QWindowSystemInterface::handleMouseEvent(window, msg.time, device, clientPosition,
                                                            globalPosition, buttons,
                                                            mouseEvent.button, mouseEvent.type,
                                                            keyModifiers, source);
@@ -446,7 +446,7 @@ bool QWindowsMouseHandler::translateMouseEvent(QWindow *window, HWND hwnd,
     }
 
     if (!discardEvent && mouseEvent.type != QEvent::None) {
-        QWindowSystemInterface::handleMouseEvent(window, device, clientPosition, globalPosition, buttons,
+        QWindowSystemInterface::handleMouseEvent(window, msg.time, device, clientPosition, globalPosition, buttons,
                                                  mouseEvent.button, mouseEvent.type,
                                                  keyModifiers, source);
     }
@@ -470,7 +470,7 @@ static bool isValidWheelReceiver(QWindow *candidate)
     return false;
 }
 
-static void redirectWheelEvent(QWindow *window, const QPoint &globalPos, int delta,
+static void redirectWheelEvent(QWindow *window, unsigned long timestamp, const QPoint &globalPos, int delta,
                                Qt::Orientation orientation, Qt::KeyboardModifiers mods)
 {
     // Redirect wheel event to one of the following, in order of preference:
@@ -491,6 +491,7 @@ static void redirectWheelEvent(QWindow *window, const QPoint &globalPos, int del
     if (handleEvent) {
         const QPoint point = (orientation == Qt::Vertical) ? QPoint(0, delta) : QPoint(delta, 0);
         QWindowSystemInterface::handleWheelEvent(receiver,
+                                                 timestamp,
                                                  QWindowsGeometryHint::mapFromGlobal(receiver, globalPos),
                                                  globalPos, QPoint(), point, mods);
     }
@@ -519,7 +520,7 @@ bool QWindowsMouseHandler::translateMouseWheelEvent(QWindow *window, HWND,
         delta = -delta;
 
     const QPoint globalPos(GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
-    redirectWheelEvent(window, globalPos, delta, orientation, mods);
+    redirectWheelEvent(window, msg.time, globalPos, delta, orientation, mods);
 
     return true;
 }
@@ -550,7 +551,7 @@ bool QWindowsMouseHandler::translateScrollEvent(QWindow *window, HWND,
         return false;
     }
 
-    redirectWheelEvent(window, QCursor::pos(), delta, Qt::Horizontal, Qt::NoModifier);
+    redirectWheelEvent(window, msg.time, QCursor::pos(), delta, Qt::Horizontal, Qt::NoModifier);
 
     return true;
 }
@@ -632,6 +633,7 @@ bool QWindowsMouseHandler::translateTouchEvent(QWindow *window, HWND,
 
     const auto *keyMapper = QWindowsContext::instance()->keyMapper();
     QWindowSystemInterface::handleTouchEvent(window,
+                                             msg.time,
                                              m_touchDevice.data(),
                                              touchPoints,
                                              keyMapper->queryKeyboardModifiers());

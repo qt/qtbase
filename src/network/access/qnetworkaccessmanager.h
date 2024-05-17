@@ -84,8 +84,10 @@ public:
     QNetworkReply *get(const QNetworkRequest &request, const QByteArray &data);
     QNetworkReply *post(const QNetworkRequest &request, QIODevice *data);
     QNetworkReply *post(const QNetworkRequest &request, const QByteArray &data);
+    QNetworkReply *post(const QNetworkRequest &request, std::nullptr_t nptr);
     QNetworkReply *put(const QNetworkRequest &request, QIODevice *data);
     QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data);
+    QNetworkReply *put(const QNetworkRequest &request, std::nullptr_t nptr);
     QNetworkReply *deleteResource(const QNetworkRequest &request);
     QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = nullptr);
     QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, const QByteArray &data);
@@ -111,7 +113,9 @@ public:
     bool autoDeleteReplies() const;
     void setAutoDeleteReplies(bool autoDelete);
 
+    QT_NETWORK_INLINE_SINCE(6, 8)
     int transferTimeout() const;
+    QT_NETWORK_INLINE_SINCE(6, 8)
     void setTransferTimeout(int timeout);
 
     std::chrono::milliseconds transferTimeoutAsDuration() const;
@@ -152,6 +156,18 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_replyPreSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*))
 #endif
 };
+
+#if QT_NETWORK_INLINE_IMPL_SINCE(6, 8)
+int QNetworkAccessManager::transferTimeout() const
+{
+    return int(transferTimeoutAsDuration().count());
+}
+
+void QNetworkAccessManager::setTransferTimeout(int timeout)
+{
+    setTransferTimeout(std::chrono::milliseconds(timeout));
+}
+#endif // INLINE_SINCE 6.8
 
 QT_END_NAMESPACE
 

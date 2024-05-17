@@ -187,6 +187,15 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         });
     }
 
+    public void notifyObjectShow(int parentId)
+    {
+        QtNative.runAction(() -> {
+            // When the object is shown, we need to notify its parent about
+            // content change, not the shown object itself
+            invalidateVirtualViewId(parentId);
+        });
+    }
+
     public void notifyObjectFocus(int viewId)
     {
         QtNative.runAction(() -> {
@@ -353,7 +362,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         // Spit out the entire hierarchy for debugging purposes
         // dumpNodes(-1);
 
-        if (m_layout.getChildCount() == 0) {
+        if (m_layout.getChildCount() != 0) {
             int[] ids = QtNativeAccessibility.childIdListForAccessibleObject(-1);
             for (int id : ids)
                 result.addChild(m_view, id);

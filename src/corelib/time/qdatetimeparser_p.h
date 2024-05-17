@@ -46,7 +46,7 @@ public:
         FromString,
         DateTimeEdit
     };
-    QDateTimeParser(QMetaType::Type t, Context ctx, const QCalendar &cal = QCalendar())
+    QDateTimeParser(QMetaType::Type t, Context ctx, QCalendar cal = QCalendar())
         : parserType(t), context(ctx), calendar(cal)
     {
         defaultLocale = QLocale::system();
@@ -153,7 +153,7 @@ public:
 
     void setDefaultLocale(const QLocale &loc) { defaultLocale = loc; }
     virtual QString displayText() const { return m_text; }
-    void setCalendar(const QCalendar &calendar);
+    void setCalendar(QCalendar calendar);
 
 private:
     int sectionMaxSize(Section s, int count) const;
@@ -170,9 +170,9 @@ private:
             {}
     };
     ParsedSection parseSection(const QDateTime &currentValue, int sectionIndex, int offset) const;
-    int findMonth(const QString &str1, int monthstart, int sectionIndex,
+    int findMonth(QStringView str, int monthstart, int sectionIndex,
                   int year, QString *monthName = nullptr, int *used = nullptr) const;
-    int findDay(const QString &str1, int intDaystart, int sectionIndex,
+    int findDay(QStringView str, int intDaystart, int sectionIndex,
                 QString *dayName = nullptr, int *used = nullptr) const;
     ParsedSection findUtcOffset(QStringView str, int mode) const;
     ParsedSection findTimeZoneName(QStringView str, const QDateTime &when) const;
@@ -212,7 +212,7 @@ protected: // for the benefit of QDateTimeEditPrivate
     int sectionSize(int index) const;
     int sectionMaxSize(int index) const;
     int sectionPos(int index) const;
-    int sectionPos(const SectionNode &sn) const;
+    int sectionPos(SectionNode sn) const;
 
     const SectionNode &sectionNode(int index) const;
     Section sectionType(int index) const;
@@ -265,7 +265,7 @@ protected: // for the benefit of QDateTimeEditPrivate
 };
 Q_DECLARE_TYPEINFO(QDateTimeParser::SectionNode, Q_PRIMITIVE_TYPE);
 
-Q_CORE_EXPORT bool operator==(const QDateTimeParser::SectionNode &s1, const QDateTimeParser::SectionNode &s2);
+Q_CORE_EXPORT bool operator==(QDateTimeParser::SectionNode s1, QDateTimeParser::SectionNode s2);
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimeParser::Sections)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDateTimeParser::FieldInfo)

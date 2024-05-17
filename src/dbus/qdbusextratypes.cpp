@@ -12,6 +12,15 @@ QT_IMPL_METATYPE_EXTERN(QDBusVariant)
 QT_IMPL_METATYPE_EXTERN(QDBusObjectPath)
 QT_IMPL_METATYPE_EXTERN(QDBusSignature)
 
+#ifndef QT_NO_DEBUG_STREAM
+QDebug operator<<(QDebug dbg, const QDBusObjectPath &path)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "QDBusObjectPath(" << path.path() << ')';
+    return dbg;
+}
+#endif
+
 void QDBusObjectPath::doCheck()
 {
     if (!QDBusUtil::isValidObjectPath(m_path)) {
@@ -25,6 +34,8 @@ void QDBusSignature::doCheck()
     if (!QDBusUtil::isValidSignature(m_signature)) {
         qWarning("QDBusSignature: invalid signature \"%s\"", qPrintable(m_signature));
         m_signature.clear();
+    } else if (m_signature.isEmpty()) {
+        m_signature.detach();       // we need it to not be null
     }
 }
 

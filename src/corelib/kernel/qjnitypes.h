@@ -11,6 +11,7 @@
 
 QT_BEGIN_NAMESPACE
 
+// QT_TECH_PREVIEW_API
 #define Q_DECLARE_JNI_TYPE_HELPER(Type)                         \
 namespace QtJniTypes {                                          \
 struct Type : JObject<Type>                                     \
@@ -19,7 +20,7 @@ struct Type : JObject<Type>                                     \
 };                                                              \
 }                                                               \
 
-
+// QT_TECH_PREVIEW_API
 #define Q_DECLARE_JNI_TYPE(Type, Signature)                     \
 Q_DECLARE_JNI_TYPE_HELPER(Type)                                 \
 template<>                                                      \
@@ -35,6 +36,7 @@ struct QtJniTypes::Traits<QtJniTypes::Type> {                   \
     }                                                           \
 };                                                              \
 
+// QT_TECH_PREVIEW_API
 #define Q_DECLARE_JNI_CLASS(Type, Signature)                    \
 Q_DECLARE_JNI_TYPE_HELPER(Type)                                 \
 template<>                                                      \
@@ -78,7 +80,7 @@ struct JNITypeForArgImpl
     using Type = std::conditional_t<std::disjunction_v<std::is_base_of<QJniObject, Arg>,
                                                        std::is_base_of<QtJniTypes::JObjectBase, Arg>>,
                                     jobject, typename PromotedType<Arg>::Type>;
-    static Arg fromVarArg(Type &&t)
+    static Arg fromVarArg(Type t)
     {
         return static_cast<Arg>(t);
     }
@@ -89,27 +91,52 @@ struct JNITypeForArgImpl<QString>
 {
     using Type = jstring;
 
-    static QString fromVarArg(Type &&t)
+    static QString fromVarArg(Type t)
     {
         return QJniObject(t).toString();
     }
 };
 
-template <typename Arg>
-using JNITypeForArg = typename JNITypeForArgImpl<q20::remove_cvref_t<Arg>>::Type;
-template <typename Arg, typename Type>
-static inline auto methodArgFromVarArg(Type &&t)
+template <typename T>
+struct JNITypeForArgImpl<QJniArray<T>>
 {
-    return JNITypeForArgImpl<q20::remove_cvref_t<Arg>>::fromVarArg(std::move(t));
+    using Type = jobject;
+
+    static QJniArray<T> fromVarArg(Type t)
+    {
+        return QJniArray<T>(t);
+    }
+};
+
+template <typename T>
+struct JNITypeForArgImpl<QList<T>>
+{
+private:
+    using ArrayType = decltype(QJniArrayBase::fromContainer(std::declval<QList<T>>()));
+    using ArrayObjectType = decltype(std::declval<ArrayType>().arrayObject());
+    using ElementType = typename ArrayType::value_type;
+public:
+    using Type = ArrayObjectType;
+
+    static QList<T> fromVarArg(Type t)
+    {
+        return QJniArray<ElementType>(t).toContainer();
+    }
+};
+
+template <typename Arg>
+using JNITypeForArg = typename JNITypeForArgImpl<std::decay_t<Arg>>::Type;
+template <typename Arg, typename Type>
+static inline auto methodArgFromVarArg(Type t) // Type comes from a va_arg, so is always POD
+{
+    return JNITypeForArgImpl<std::decay_t<Arg>>::fromVarArg(t);
 }
 
 // Turn a va_list into a tuple of typed arguments
 template <typename ...Args>
 static constexpr auto makeTupleFromArgsHelper(va_list args)
 {
-    return std::tuple<q20::remove_cvref_t<Args>...>{
-        methodArgFromVarArg<q20::remove_cvref_t<Args>>(va_arg(args, JNITypeForArg<Args>))...
-    };
+    return std::tuple(methodArgFromVarArg<Args>(va_arg(args, JNITypeForArg<Args>))...);
 }
 
 template <typename Ret, typename ...Args>
@@ -151,7 +178,7 @@ va_##Method(JNIEnv *env, jclass thiz, ...)                                      
     }, argTuple);                                                               \
 }                                                                               \
 
-
+// QT_TECH_PREVIEW_API
 #define Q_DECLARE_JNI_NATIVE_METHOD(...)                        \
     QT_OVERLOADED_MACRO(QT_DECLARE_JNI_NATIVE_METHOD, __VA_ARGS__) \
 
@@ -169,8 +196,10 @@ static const JNINativeMethod Method##_method = {                \
 #define QT_DECLARE_JNI_NATIVE_METHOD_1(Method)                  \
     QT_DECLARE_JNI_NATIVE_METHOD_2(Method, Method)              \
 
+// QT_TECH_PREVIEW_API
 #define Q_JNI_NATIVE_METHOD(Method) QtJniMethods::Method##_method
 
+// QT_TECH_PREVIEW_API
 #define Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(...)                                        \
     QT_OVERLOADED_MACRO(QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE, __VA_ARGS__)              \
 
@@ -184,6 +213,7 @@ static const JNINativeMethod Method##_method = {                \
 #define QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_1(Method)                                  \
     QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_2(Method, Method)                              \
 
+// QT_TECH_PREVIEW_API
 #define Q_JNI_NATIVE_SCOPED_METHOD(Method, Scope) Scope::Method##_method
 
 QT_END_NAMESPACE

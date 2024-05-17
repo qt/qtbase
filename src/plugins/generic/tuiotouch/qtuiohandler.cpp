@@ -59,6 +59,7 @@ QTuioHandler::QTuioHandler(const QString &specification)
             case 180:
             case 270:
                 rotationAngle = argValue;
+                break;
             default:
                 break;
             }

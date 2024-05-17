@@ -18,7 +18,7 @@ int main(int argc, char **argv)
 #if defined(Q_OS_WIN)
     QRhiD3D12InitParams params;
     rhi.reset(QRhi::create(QRhi::D3D12, &params));
-#elif defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#elif QT_CONFIG(metal)
     QRhiMetalInitParams params;
     rhi.reset(QRhi::create(QRhi::Metal, &params));
 #elif QT_CONFIG(vulkan)

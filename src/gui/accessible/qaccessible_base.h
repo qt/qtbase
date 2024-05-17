@@ -101,6 +101,7 @@ public:
         HelpChanged          = 0x80A0,
         DefaultActionChanged = 0x80B0,
         AcceleratorChanged   = 0x80C0,
+        Announcement         = 0x80D0,
 
         InvalidEvent
     };
@@ -349,7 +350,8 @@ public:
         TableInterface,
         TableCellInterface,
         HyperlinkInterface,
-        SelectionInterface
+        SelectionInterface,
+        AttributesInterface,
     };
 
     enum TextBoundaryType {
@@ -359,6 +361,16 @@ public:
         ParagraphBoundary,
         LineBoundary,
         NoBoundary
+    };
+
+    enum class Attribute {
+        Custom,
+        Level,
+    };
+
+    enum class AnnouncementPriority {
+        Polite,
+        Assertive
     };
 
     typedef QAccessibleInterface*(*InterfaceFactory)(const QString &key, QObject*);

@@ -6,7 +6,7 @@ set -ex
 
 qmake
 make
-cat licenseheader.txt > ../keywords.cpp
-cat licenseheader.txt > ../ppkeywords.cpp
+cat licenseheader.cpp.in > ../keywords.cpp
+cat licenseheader.cpp.in > ../ppkeywords.cpp
 ./generate_keywords >> ../keywords.cpp
 ./generate_keywords preprocessor >> ../ppkeywords.cpp

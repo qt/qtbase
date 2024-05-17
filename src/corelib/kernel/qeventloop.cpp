@@ -116,10 +116,10 @@ bool QEventLoop::processEvents(ProcessEventsFlags flags)
     can be used before calling exec(), because modal widgets
     use their own local event loop.
 
-    To make your application perform idle processing (i.e. executing a
-    special function whenever there are no pending events), use a
-    QTimer with 0 timeout. More sophisticated idle processing schemes
-    can be achieved using processEvents().
+    To make your application perform idle processing (i.e. executing a special
+    function whenever there are no pending events), use a QChronoTimer with
+    0ns timeout. More sophisticated idle processing schemes can be achieved
+    using processEvents().
 
     \sa QCoreApplication::quit(), exit(), processEvents()
 */
@@ -346,7 +346,11 @@ static_assert(alignof(QCoreApplication) >= 4);
 /*!
     Creates an event locker operating on the QCoreApplication.
 
-    The application will quit when there are no more QEventLoopLockers operating on it.
+    The application will attempt to quit when there are no more QEventLoopLockers
+    operating on it, as long as QCoreApplication::isQuitLockEnabled() is \c true.
+
+    Note that attempting a quit may not necessarily result in the application quitting,
+    if there for example are open windows, or the QEvent::Quit event is ignored.
 
     \sa QCoreApplication::quit(), QCoreApplication::isQuitLockEnabled()
  */

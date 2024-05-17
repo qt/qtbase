@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -133,6 +133,7 @@ private slots:
     void placeholderVisibility_data();
     void placeholderVisibility();
     void scrollBarSignals();
+    void dontCrashWithCss();
 
 private:
     void createSelection();
@@ -1943,6 +1944,15 @@ void tst_QPlainTextEdit::scrollBarSignals()
     QTest::keyClick(vbar, Qt::Key_PageUp);
     QTRY_COMPARE(spy.count(), 5);
 }
+
+void tst_QPlainTextEdit::dontCrashWithCss()
+{
+    qApp->setStyleSheet("QWidget { font: 10pt; }");
+    QPlainTextEdit edit;
+    edit.show();
+    qApp->setStyleSheet(QString());
+}
+
 
 QTEST_MAIN(tst_QPlainTextEdit)
 #include "tst_qplaintextedit.moc"

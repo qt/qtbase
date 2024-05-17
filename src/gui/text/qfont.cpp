@@ -1462,6 +1462,14 @@ QFont::StyleHint QFont::styleHint() const
     \value NoAntialias don't antialias the fonts.
     \value NoSubpixelAntialias avoid subpixel antialiasing on the fonts if possible.
     \value PreferAntialias antialias if possible.
+    \value [since 6.8] ContextFontMerging If the selected font does not contain a certain character,
+           then Qt automatically chooses a similar-looking fallback font that contains the
+           character. By default this is done on a character-by-character basis. This means that in
+           certain uncommon cases, multiple fonts may be used to represent one string of text even
+           if it's in the same script. Setting \c ContextFontMerging will try finding the fallback
+           font that matches the largest subset of the input string instead. This will be more
+           expensive for strings where missing glyphs occur, but may give more consistent results.
+           If \c NoFontMerging is set, then \c ContextFontMerging will have no effect.
     \value NoFontMerging If the font selected for a certain writing system
            does not contain a character requested to draw, then Qt automatically chooses a similar
            looking font that contains the character. The NoFontMerging flag disables this feature.
@@ -1534,7 +1542,7 @@ void QFont::setStyleStrategy(StyleStrategy s)
     Predefined stretch values that follow the CSS naming convention. The higher
     the value, the more stretched the text is.
 
-    \value AnyStretch 0 Accept any stretch matched using the other QFont properties (added in Qt 5.8)
+    \value [since 5.8]  AnyStretch 0 Accept any stretch matched using the other QFont properties
     \value UltraCondensed 50
     \value ExtraCondensed 62
     \value Condensed 75
@@ -2427,9 +2435,7 @@ std::optional<QFont::Tag> QFont::Tag::fromString(QAnyStringView view) noexcept
 
     By default, no variable axes are set.
 
-    \note In order to use variable axes on Windows, the application has to run with either the
-    FreeType or DirectWrite font databases. See the documentation for
-    QGuiApplication::QGuiApplication() for more information on how to select these technologies.
+    \note On Windows, variable axes are not supported if the optional GDI font backend is in use.
 
     \sa unsetVariableAxis
  */
@@ -2993,6 +2999,35 @@ QDataStream &operator>>(QDataStream &stream, QFont::Tag &tag)
     info object is \e not updated.
     \endlist
 
+    \section1 Checking for the existence of a font
+
+    Sometimes it can be useful to check if a font exists before attempting
+    to use it. The most thorough way of doing so is by using \l {exactMatch()}:
+
+    \code
+    const QFont segoeFont(QLatin1String("Segoe UI"));
+    if (QFontInfo(segoeFont).exactMatch()) {
+        // Use the font...
+    }
+    \endcode
+
+    However, this deep search of families can be expensive on some platforms.
+    \c QFontDatabase::families().contains() is a faster, but less thorough
+    alternative:
+
+    \code
+    const QLatin1String segoeUiFamilyName("Segoe UI");
+    if (QFontDatabase::families().contains(segoeUiFamilyName)) {
+        const QFont segoeFont(segoeUiFamilyName);
+        // Use the font...
+    }
+    \endcode
+
+    It's less thorough because it's not a complete search: some font family
+    aliases may be missing from the list. However, this approach results in
+    faster application startup times, and so should always be preferred if
+    possible.
+
     \sa QFont, QFontMetrics, QFontDatabase
 */
 
@@ -3009,6 +3044,8 @@ QDataStream &operator>>(QDataStream &stream, QFont::Tag &tag)
     Use QPainter::fontInfo() to get the font info when painting.
     This will give correct results also when painting on paint device
     that is not screen-compatible.
+
+    \sa {Checking for the existence of a font}
 */
 QFontInfo::QFontInfo(const QFont &font)
     : d(font.d)
@@ -3050,7 +3087,7 @@ QFontInfo &QFontInfo::operator=(const QFontInfo &fi)
 /*!
     Returns the family name of the matched window system font.
 
-    \sa QFont::family()
+    \sa QFont::family(), {Checking for the existence of a font}
 */
 QString QFontInfo::family() const
 {
@@ -3235,7 +3272,7 @@ bool QFontInfo::fixedPitch() const
         QChar ch[2] = { u'i', u'm' };
         QGlyphLayoutArray<2> g;
         int l = 2;
-        if (!engine->stringToCMap(ch, 2, &g, &l, {}))
+        if (engine->stringToCMap(ch, 2, &g, &l, {}) < 0)
             Q_UNREACHABLE();
         Q_ASSERT(l == 2);
         engine->fontDef.fixedPitch = g.advances[0] == g.advances[1];

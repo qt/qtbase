@@ -145,6 +145,7 @@ static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QS
         return;
 
     const qreal dpi = QStyleHelper::dpi(option);
+    const qreal dpr = painter->device()->devicePixelRatio();
     const int arrowWidth = int(QStyleHelper::dpiScaled(14, dpi));
     const int arrowHeight = int(QStyleHelper::dpiScaled(8, dpi));
 
@@ -156,10 +157,9 @@ static void qt_fusion_draw_arrow(Qt::ArrowType type, QPainter *painter, const QS
     const QString cacheKey = QStyleHelper::uniqueName("fusion-arrow"_L1
                                                           % HexString<uint>(type)
                                                           % HexString<uint>(color.rgba()),
-                                                      option, rect.size());
+                                                      option, rect.size(), dpr);
     if (!QPixmapCache::find(cacheKey, &cachePixmap)) {
-        cachePixmap = styleCachePixmap(rect.size());
-        cachePixmap.fill(Qt::transparent);
+        cachePixmap = styleCachePixmap(rect.size(), dpr);
         QPainter cachePainter(&cachePixmap);
 
         QRectF arrowRect;
@@ -346,16 +346,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
     case PE_FrameGroupBox:
     {
         QPixmap pixmap(":/qt-project.org/styles/commonstyle/images/fusion_groupbox.png"_L1);
-        int topMargin = 0;
-        auto control = qobject_cast<const QGroupBox *>(widget);
-        if (control && !control->isCheckable() && control->title().isEmpty()) {
-            // Shrinking the topMargin if Not checkable AND title is empty
-            topMargin = groupBoxTopMargin;
-        } else {
-            topMargin = qMax(pixelMetric(PM_IndicatorHeight, option, widget), option->fontMetrics.height()) + groupBoxTopMargin;
-        }
-        QRect frame = option->rect.adjusted(0, topMargin, 0, 0);
-        qDrawBorderPixmap(painter, frame, QMargins(6, 6, 6, 6), pixmap);
+        qDrawBorderPixmap(painter, option->rect, QMargins(6, 6, 6, 6), pixmap);
         break;
     }
 #endif // QT_CONFIG(groupbox)
@@ -809,7 +800,7 @@ void QFusionStyle::drawPrimitive(PrimitiveElement elem,
         if (isDefault)
             buttonColor = mergedColors(buttonColor, highlightedOutline.lighter(130), 90);
 
-        BEGIN_STYLE_PIXMAPCACHE(QStringLiteral("pushbutton-") + buttonColor.name(QColor::HexArgb))
+        BEGIN_STYLE_PIXMAPCACHE(u"pushbutton-" + buttonColor.name(QColor::HexArgb))
         r = rect.adjusted(0, 1, -1, 0);
 
         p->setRenderHint(QPainter::Antialiasing, true);
@@ -1147,15 +1138,15 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             const QStyleOptionHeaderV2 *headerV2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(option);
             const bool isSectionDragTarget = headerV2 ? headerV2->isSectionDragTarget : false;
+            const qreal dpr = painter->device()->devicePixelRatio();
             const QString pixmapName = QStyleHelper::uniqueName("headersection-"_L1
                                                                     % HexString(header->position)
                                                                     % HexString(header->orientation)
                                                                     % QLatin1Char(isSectionDragTarget ? '1' : '0'),
-                                                                option, option->rect.size());
+                                                                option, option->rect.size(), dpr);
             QPixmap cache;
             if (!QPixmapCache::find(pixmapName, &cache)) {
-                cache = styleCachePixmap(rect.size());
-                cache.fill(Qt::transparent);
+                cache = styleCachePixmap(rect.size(), dpr);
                 QRect pixmapRect(0, 0, rect.width(), rect.height());
                 QPainter cachePainter(&cache);
                 QColor buttonColor = d->buttonColor(option->palette);
@@ -1888,12 +1879,12 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 #if QT_CONFIG(spinbox)
     case CC_SpinBox:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
+            const qreal dpr = painter->device()->devicePixelRatio();
             QPixmap cache;
-            QString pixmapName = QStyleHelper::uniqueName("spinbox"_L1, spinBox, spinBox->rect.size());
+            QString pixmapName = QStyleHelper::uniqueName("spinbox"_L1, spinBox, spinBox->rect.size(), dpr);
             if (!QPixmapCache::find(pixmapName, &cache)) {
 
-                cache = styleCachePixmap(spinBox->rect.size());
-                cache.fill(Qt::transparent);
+                cache = styleCachePixmap(spinBox->rect.size(), dpr);
 
                 QRect pixmapRect(0, 0, spinBox->rect.width(), spinBox->rect.height());
                 QRect rect = pixmapRect;
@@ -2577,7 +2568,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 
         }
         painter->restore();
-        break;;
+        break;
 #endif // QT_CONFIG(slider)
     case CC_ComboBox:
         painter->save();
@@ -2585,16 +2576,16 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             bool hasFocus = option->state & State_HasFocus && option->state & State_KeyboardFocusChange;
             bool sunken = comboBox->state & State_On; // play dead, if combobox has no items
             bool isEnabled = (comboBox->state & State_Enabled);
+            const qreal dpr = painter->device()->devicePixelRatio();
             QPixmap cache;
             const QString pixmapName = QStyleHelper::uniqueName("combobox"_L1
                                                                     % QLatin1StringView(sunken ? "-sunken" : "")
                                                                     % QLatin1StringView(comboBox->editable ? "-editable" : "")
                                                                     % QLatin1StringView(isEnabled ? "-enabled" : "")
                                                                     % QLatin1StringView(!comboBox->frame ? "-frameless" : ""),
-                                                                option, comboBox->rect.size());
+                                                                option, comboBox->rect.size(), dpr);
             if (!QPixmapCache::find(pixmapName, &cache)) {
-                cache = styleCachePixmap(comboBox->rect.size());
-                cache.fill(Qt::transparent);
+                cache = styleCachePixmap(comboBox->rect.size(), dpr);
                 QPainter cachePainter(&cache);
                 QRect pixmapRect(0, 0, comboBox->rect.width(), comboBox->rect.height());
                 QStyleOptionComboBox comboBoxCopy = *comboBox;
@@ -2682,6 +2673,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
 #if QT_CONFIG(slider)
     case CC_Slider:
         if (const QStyleOptionSlider *slider = qstyleoption_cast<const QStyleOptionSlider *>(option)) {
+            const qreal dpr = painter->device()->devicePixelRatio();
             QRect groove = proxy()->subControlRect(CC_Slider, option, SC_SliderGroove, widget);
             QRect handle = proxy()->subControlRect(CC_Slider, option, SC_SliderHandle, widget);
 
@@ -2703,13 +2695,13 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 grooveColor.setHsv(buttonColor.hue(),
                                    qMin(255, (int)(buttonColor.saturation())),
                                    qMin(255, (int)(buttonColor.value()*0.9)));
-                QString groovePixmapName = QStyleHelper::uniqueName("slider_groove"_L1, option, groove.size());
+                QString groovePixmapName = QStyleHelper::uniqueName("slider_groove"_L1, option,
+                                                                    groove.size(), dpr);
                 QRect pixmapRect(0, 0, groove.width(), groove.height());
 
                 // draw background groove
                 if (!QPixmapCache::find(groovePixmapName, &cache)) {
-                    cache = styleCachePixmap(pixmapRect.size());
-                    cache.fill(Qt::transparent);
+                    cache = styleCachePixmap(pixmapRect.size(), dpr);
                     QPainter groovePainter(&cache);
                     groovePainter.setRenderHint(QPainter::Antialiasing, true);
                     groovePainter.translate(0.5, 0.5);
@@ -2737,8 +2729,7 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
                 if (!groovePixmapName.isEmpty())
                     groovePixmapName += "_blue"_L1;
                 if (!QPixmapCache::find(groovePixmapName, &cache)) {
-                    cache = styleCachePixmap(pixmapRect.size());
-                    cache.fill(Qt::transparent);
+                    cache = styleCachePixmap(pixmapRect.size(), dpr);
                     QPainter groovePainter(&cache);
                     QLinearGradient gradient;
                     if (horizontal) {
@@ -2848,10 +2839,10 @@ void QFusionStyle::drawComplexControl(ComplexControl control, const QStyleOption
             }
             // draw handle
             if ((option->subControls & SC_SliderHandle) ) {
-                QString handlePixmapName = QStyleHelper::uniqueName("slider_handle"_L1, option, handle.size());
+                QString handlePixmapName = QStyleHelper::uniqueName("slider_handle"_L1, option,
+                                                                    handle.size(), dpr);
                 if (!QPixmapCache::find(handlePixmapName, &cache)) {
-                    cache = styleCachePixmap(handle.size());
-                    cache.fill(Qt::transparent);
+                    cache = styleCachePixmap(handle.size(), dpr);
                     QRect pixmapRect(0, 0, handle.width(), handle.height());
                     QPainter handlePainter(&cache);
                     QRect gradRect = pixmapRect.adjusted(2, 2, -2, -2);
@@ -2935,7 +2926,6 @@ int QFusionStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, co
     case PM_ListViewIconSize:
         val = 24;
         break;
-    case PM_DialogButtonsSeparator:
     case PM_ScrollBarSliderMin:
         val = 26;
         break;
@@ -3320,6 +3310,7 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
                 break;
             case SC_SpinBoxFrame:
                 rect = spinbox->rect;
+                break;
             default:
                 break;
             }
@@ -3330,14 +3321,11 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
     case CC_GroupBox:
         if (const QStyleOptionGroupBox *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
             const int groupBoxTextAlignment = groupBox->textAlignment;
+            const bool hasVerticalAlignment = (groupBoxTextAlignment & Qt::AlignVertical_Mask) == Qt::AlignVCenter;
             const int fontMetricsHeight = groupBox->text.isEmpty() ? 0 : groupBox->fontMetrics.height();
 
-            rect = option->rect;
             if (subControl == SC_GroupBoxFrame)
-                if ((groupBoxTextAlignment & Qt::AlignVertical_Mask) == Qt::AlignVCenter)
-                    return rect.adjusted(0, -(fontMetricsHeight + 4) / 2, 0, 0);
-                else
-                    return rect;
+                return rect;
             else if (subControl == SC_GroupBoxContents) {
                 QRect frameRect = option->rect.adjusted(0, 0, 0, -groupBoxBottomMargin);
                 int margin = 3;
@@ -3364,7 +3352,12 @@ QRect QFusionStyle::subControlRect(ComplexControl control, const QStyleOptionCom
                     rect.moveLeft((option->rect.width() - width) / 2);
                     break;
                 case Qt::AlignRight:
-                    rect.moveLeft(option->rect.width() - width);
+                    rect.moveLeft(option->rect.width() - width
+                                  - (hasVerticalAlignment ? proxy()->pixelMetric(PM_LayoutRightMargin, groupBox, widget) : 0));
+                    break;
+                case Qt::AlignLeft:
+                    if (hasVerticalAlignment)
+                        rect.moveLeft(proxy()->pixelMetric(PM_LayoutLeftMargin, option, widget));
                     break;
                 }
             }
@@ -3616,6 +3609,17 @@ int QFusionStyle::styleHint(StyleHint hint, const QStyleOption *option, const QW
             mask->region -= QRect(option->rect.right() , option->rect.top() + 3, 1, 2);
             return 1;
         }
+        break;
+    case SH_GroupBox_TextLabelVerticalAlignment: {
+        if (const auto *groupBox = qstyleoption_cast<const QStyleOptionGroupBox *>(option)) {
+            if (groupBox) {
+                const auto vAlign = groupBox->textAlignment & Qt::AlignVertical_Mask;
+                // default fusion style is AlignTop
+                return vAlign == 0 ? Qt::AlignTop : vAlign;
+            }
+        }
+        break;
+    }
     default:
         break;
     }
@@ -3656,7 +3660,7 @@ QRect QFusionStyle::subElementRect(SubElement sr, const QStyleOption *opt, const
 }
 
 /*!
-    \reimp
+    \internal
 */
 QIcon QFusionStyle::iconFromTheme(StandardPixmap standardIcon) const
 {

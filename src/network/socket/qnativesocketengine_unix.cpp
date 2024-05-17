@@ -436,6 +436,7 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
         case EFAULT:
         case ENOTSOCK:
             socketState = QAbstractSocket::UnconnectedState;
+            break;
         default:
             break;
         }
@@ -1275,6 +1276,9 @@ qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
             setError(QAbstractSocket::RemoteHostClosedError, RemoteHostClosedErrorString);
             q->close();
             break;
+#if EWOULDBLOCK != EAGAIN
+        case EWOULDBLOCK:
+#endif
         case EAGAIN:
             writtenBytes = 0;
             break;

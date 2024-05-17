@@ -23,6 +23,15 @@ QT_IMPL_METATYPE_EXTERN(qfloat16)
     \inheaderfile QFloat16
     \brief Provides 16-bit floating point support.
 
+    \compares partial
+    \compareswith partial float double {long double} qint8 quint8 qint16 quint16 \
+                  qint32 quint32 long {unsigned long} qint64 quint64
+    \endcompareswith
+    \compareswith partial qint128 quint128
+    Comparison with 128-bit integral types is only supported if Qt provides
+    these types.
+    \endcompareswith
+
     The \c qfloat16 class provides support for half-precision (16-bit) floating
     point data.  It is fully compliant with IEEE 754 as a storage type.  This
     implies that any arithmetic operation on a \c qfloat16 instance results in

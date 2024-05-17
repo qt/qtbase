@@ -1,5 +1,5 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QAnyStringView>
 #include <QChar>
@@ -12,6 +12,7 @@
 #  include <private/qt_winrtbase_p.h>
 #endif
 #include <private/qxmlstream_p.h>
+#include <private/qcomparisontesthelper_p.h>
 
 #include <QTest>
 
@@ -378,8 +379,9 @@ private Q_SLOTS:
 
     void fromQStringBuilder_QString_QString() const { fromQStringBuilder(u"1"_s % u"2"_s, u"12"); }
 
+    void comparisonCompiles();
+    void comparison_data();
     void comparison();
-    void compare3way();
 
 private:
     template <typename StringBuilder>
@@ -570,8 +572,7 @@ void tst_QAnyStringView::debug() const
 
 void tst_QAnyStringView::asciiLiteralIsLatin1() const
 {
-#ifdef QT_SUPPORTS_IS_CONSTANT_EVALUATED
-    if constexpr (true) {
+    if constexpr (QAnyStringView::detects_US_ASCII_at_compile_time) {
         constexpr bool asciiCstringIsLatin1 = QAnyStringView("Hello, World").isLatin1();
         QVERIFY(asciiCstringIsLatin1);
         constexpr bool asciiUtf8stringIsLatin1 = QAnyStringView(u8"Hello, World").isLatin1();
@@ -587,10 +588,9 @@ void tst_QAnyStringView::asciiLiteralIsLatin1() const
         constexpr bool utf8StringArrayIsNotLatin1 =
                 !QAnyStringView::fromArray(u8"Tørrfisk").isLatin1();
         QVERIFY(utf8StringArrayIsNotLatin1);
+    } else {
+        QSKIP("Compile-detection of US-ASCII strings not possible with this compiler");
     }
-#else
-    QSKIP("Compile-detection of US-ASCII strings not possible with this compiler");
-#endif
 }
 
 template <typename StringBuilder>
@@ -821,46 +821,97 @@ void tst_QAnyStringView::conversion_tests(String string) const
     }
 }
 
-void tst_QAnyStringView::comparison()
+void tst_QAnyStringView::comparisonCompiles()
 {
-    const QAnyStringView aa = u"aa";
-    const QAnyStringView upperAa = u"AA";
-    const QAnyStringView bb = u"bb";
-
-    QVERIFY(aa == aa);
-    QVERIFY(aa != bb);
-    QVERIFY(aa < bb);
-    QVERIFY(bb > aa);
-
-    QCOMPARE(QAnyStringView::compare(aa, aa), 0);
-    QVERIFY(QAnyStringView::compare(aa, upperAa) != 0);
-    QCOMPARE(QAnyStringView::compare(aa, upperAa, Qt::CaseInsensitive), 0);
-    QVERIFY(QAnyStringView::compare(aa, bb) < 0);
-    QVERIFY(QAnyStringView::compare(bb, aa) > 0);
+    QTestPrivate::testAllComparisonOperatorsCompile<QAnyStringView>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QAnyStringView, char16_t>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QAnyStringView, QChar>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QAnyStringView, const char16_t *>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QAnyStringView, const char *>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QAnyStringView, QByteArray>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QAnyStringView, QByteArrayView>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QAnyStringView, QString>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QAnyStringView, QStringView>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QAnyStringView, QUtf8StringView>();
+    QTestPrivate::testAllComparisonOperatorsCompile<QAnyStringView, QLatin1StringView>();
 }
 
-void tst_QAnyStringView::compare3way()
+void tst_QAnyStringView::comparison_data()
 {
-#define COMPARE_3WAY(lhs, rhs, res) \
-    do { \
-        const auto qt_3way_cmp_res = (lhs) <=> (rhs); \
-        static_assert(std::is_same_v<decltype(qt_3way_cmp_res), decltype(res)>); \
-        QCOMPARE(std::is_eq(qt_3way_cmp_res), std::is_eq(res)); \
-        QCOMPARE(std::is_lt(qt_3way_cmp_res), std::is_lt(res)); \
-        QCOMPARE(std::is_gt(qt_3way_cmp_res), std::is_gt(res)); \
-    } while (false)
+    QTest::addColumn<QAnyStringView>("lhs");
+    QTest::addColumn<QAnyStringView>("rhs");
+    QTest::addColumn<int>("csr"); // case sensitive result
+    QTest::addColumn<int>("cir"); // case insensitive result
 
-    ONLY_3WAY(
-    const QAnyStringView aa = u"aa";
-    const QAnyStringView upperAa = u"AA";
-    const QAnyStringView bb = u"bb";
-    COMPARE_3WAY(aa, aa, std::strong_ordering::equal);
-    COMPARE_3WAY(aa, bb, std::strong_ordering::less);
-    COMPARE_3WAY(bb, aa, std::strong_ordering::greater);
-    COMPARE_3WAY(upperAa, aa, std::strong_ordering::less);
-    COMPARE_3WAY(aa, upperAa, std::strong_ordering::greater);
-    );
-#undef COMPARE_3WAY
+    auto row = [&](QAnyStringView l, QAnyStringView r, int csr, int cir) {
+        QTest::addRow("%s_vs_%s", qPrintable(l.toString()), qPrintable(r.toString()))
+                << l << r << csr << cir;
+    };
+    row(u"aa", u"aa", 0, 0);
+    row(u"aa", u"AA", 1, 0);
+    row(u"ab", u"b", -1, -1);
+    row(u"ab", u"aBb", 1, -1);
+    row(u"ab", u"B", 1, -1);
+}
+
+static int sign(int x)
+{
+    return x == 0 ? 0 : (x < 0 ? -1 : 1);
+}
+
+void tst_QAnyStringView::comparison()
+{
+    QFETCH(const QAnyStringView, lhs);
+    QFETCH(const QAnyStringView, rhs);
+    QFETCH(const int, csr);
+    QFETCH(const int, cir);
+
+    QCOMPARE(sign(QAnyStringView::compare(lhs, rhs)), csr);
+    QCOMPARE(sign(QAnyStringView::compare(lhs, rhs, Qt::CaseInsensitive)), cir);
+
+    const Qt::strong_ordering ordering = [&csr] {
+        if (csr == 0)
+            return Qt::strong_ordering::equal;
+        else if (csr < 0)
+            return Qt::strong_ordering::less;
+        else
+            return Qt::strong_ordering::greater;
+    }();
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, ordering);
+
+    const QString rhs_str = rhs.toString();
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs_str, ordering);
+
+    const QStringView rhs_sv(rhs_str);
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs_sv, ordering);
+
+    if (!rhs_str.contains(QChar(u'\0'))) {
+        const char16_t *utfData = reinterpret_cast<const char16_t*>(rhs_str.constData());
+        QT_TEST_ALL_COMPARISON_OPS(lhs, utfData, ordering);
+    }
+
+    if (rhs_str.size() == 1) {
+        const QChar ch = rhs_str.front();
+        QT_TEST_ALL_COMPARISON_OPS(lhs, ch, ordering);
+    }
+
+    if (rhs.isLatin1()) {
+        const QLatin1StringView rhs_l1 = rhs.asLatin1StringView();
+        QT_TEST_ALL_COMPARISON_OPS(lhs, rhs_l1, ordering);
+    }
+
+    const QByteArray rhs_u8 = rhs_str.toUtf8();
+
+    const QUtf8StringView rhs_u8sv(rhs_u8.data(), rhs_u8.size());
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs_u8sv, ordering);
+
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs_u8, ordering);
+    const QByteArrayView rhs_u8view{rhs_u8.begin(), rhs_u8.size()};
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs_u8view, ordering);
+    if (!rhs_str.contains(QChar(u'\0'))) {
+        const char *rhs_u8data = rhs_u8.constData();
+        QT_TEST_ALL_COMPARISON_OPS(lhs, rhs_u8data, ordering);
+    }
 }
 
 QTEST_APPLESS_MAIN(tst_QAnyStringView)

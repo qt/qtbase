@@ -1,5 +1,5 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #ifndef NATIVEWINDOW_H
 #define NATIVEWINDOW_H
@@ -28,14 +28,14 @@ class NativeWindow
 public:
 #if defined(Q_OS_MACOS)
     using Handle = NSView*;
-#elif defined(Q_OS_IOS)
+#elif defined(QT_PLATFORM_UIKIT)
     using Handle = UIView*;
 #elif defined(Q_OS_WIN)
     using Handle = HWND;
 #elif QT_CONFIG(xcb)
     using Handle = xcb_window_t;
 #elif defined(ANDROID)
-    using Handle = QtJniTypes::View;;
+    using Handle = QtJniTypes::View;
 #endif
 
     NativeWindow();
@@ -53,7 +53,7 @@ private:
     Handle m_handle = {};
 };
 
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if defined(Q_OS_MACOS) || defined(QT_PLATFORM_UIKIT)
 
 @interface View : VIEW_BASE
 @end
@@ -238,7 +238,7 @@ WId NativeWindow::parentWinId() const
     xcb_query_tree_reply_t *tree = xcb_query_tree_reply(
         connection, xcb_query_tree(connection, m_handle), nullptr);
     const auto cleanup = qScopeGuard([&]{ free(tree); });
-    return tree->parent;
+    return tree ? tree->parent : 0;
 }
 
 bool NativeWindow::isParentOf(WId childWinId)

@@ -51,7 +51,7 @@
 */
 
 /*!
-    \typedef InvokeResultType
+    \typedef QtConcurrent::InvokeResultType
     \relates QtConcurrent::QTaskBuilder
 
     The simplified definition of this type looks like this:

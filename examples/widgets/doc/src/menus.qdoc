@@ -120,7 +120,8 @@
     using the provided convenience functions.
 
     In the \c createActions() function, we first create a \c newAct
-    action. We make \uicontrol Ctrl+N its shortcut using the
+    action, passing the text and and an icon using one of the theme
+    icon constants. We make \uicontrol Ctrl+N its shortcut using the
     QAction::setShortcut() function, and we set its status tip using the
     QAction::setStatusTip() function (the status tip is displayed on all
     status bars provided by the action's top-level parent widget). We

@@ -16,4 +16,5 @@ qt_internal_add_test(tst_qmimetype
         tst_qmimetype.cpp
     LIBRARIES
         Qt::CorePrivate
+        Qt::TestPrivate
 )

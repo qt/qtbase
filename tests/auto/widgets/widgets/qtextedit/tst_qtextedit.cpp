@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -197,6 +197,8 @@ private slots:
 
     void nextFormatAfterEnterPressed_data();
     void nextFormatAfterEnterPressed();
+
+    void dontCrashWithCss();
 
 private:
     void createSelection();
@@ -2543,7 +2545,6 @@ void tst_QTextEdit::inputMethodEvent()
 
     // test that input method gets chance to commit preedit when removing focus
     ed->setText("");
-    QApplicationPrivate::setActiveWindow(ed);
     QTRY_VERIFY(QApplication::focusWindow());
     QCOMPARE(qApp->focusObject(), ed);
 
@@ -3063,6 +3064,15 @@ void tst_QTextEdit::nextFormatAfterEnterPressed()
     for (auto it = expectedPrevCharProps.constBegin(); it != expectedPrevCharProps.constEnd(); ++it)
         QCOMPARE(prevBlockCursor.charFormat().property(it.key()), it.value());
 }
+
+void tst_QTextEdit::dontCrashWithCss()
+{
+    qApp->setStyleSheet("QWidget { font: 10pt; }");
+    QTextEdit edit;
+    edit.show();
+    qApp->setStyleSheet(QString());
+}
+
 
 QTEST_MAIN(tst_QTextEdit)
 #include "tst_qtextedit.moc"

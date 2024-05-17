@@ -7,6 +7,7 @@
 #include <qdatetime.h>
 #include <qdebug.h>
 #include <qlist.h>
+#include <qloggingcategory.h>
 #include <qsqlerror.h>
 #include <qsqlfield.h>
 #include <qsqlindex.h>
@@ -37,6 +38,8 @@ Q_DECLARE_OPAQUE_POINTER(sqlite3_stmt*)
 Q_DECLARE_METATYPE(sqlite3_stmt*)
 
 QT_BEGIN_NAMESPACE
+
+static Q_LOGGING_CATEGORY(lcSqlite, "qt.sql.sqlite")
 
 using namespace Qt::StringLiterals;
 
@@ -247,7 +250,6 @@ void QSQLiteResultPrivate::initColumns(bool emptyResultset)
         }
 
         QSqlField fld(colName, QMetaType(fieldType), tableName);
-        fld.setSqlType(stp);
         rInf.append(fld);
     }
 }
@@ -754,13 +756,14 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     bool useExtendedResultCodes = true;
     bool useQtVfs = false;
     bool useQtCaseFolding = false;
+    bool openNoFollow = false;
 #if QT_CONFIG(regularexpression)
     static const auto regexpConnectOption = "QSQLITE_ENABLE_REGEXP"_L1;
     bool defineRegexp = false;
     int regexpCacheSize = 25;
 #endif
 
-    const auto opts = QStringView{conOpts}.split(u';');
+    const auto opts = QStringView{conOpts}.split(u';', Qt::SkipEmptyParts);
     for (auto option : opts) {
         option = option.trimmed();
         if (option.startsWith("QSQLITE_BUSY_TIMEOUT"_L1)) {
@@ -783,6 +786,8 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
             useExtendedResultCodes = false;
         } else if (option == "QSQLITE_ENABLE_NON_ASCII_CASE_FOLDING"_L1) {
             useQtCaseFolding = true;
+        } else if (option == "QSQLITE_OPEN_NOFOLLOW"_L1) {
+            openNoFollow = true;
         }
 #if QT_CONFIG(regularexpression)
         else if (option.startsWith(regexpConnectOption)) {
@@ -800,12 +805,21 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
             }
         }
 #endif
+        else
+            qCWarning(lcSqlite, "Unsupported option '%ls'", qUtf16Printable(option.toString()));
     }
 
     int openMode = (openReadOnlyOption ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE));
     openMode |= (sharedCache ? SQLITE_OPEN_SHAREDCACHE : SQLITE_OPEN_PRIVATECACHE);
     if (openUriOption)
         openMode |= SQLITE_OPEN_URI;
+    if (openNoFollow) {
+#if defined(SQLITE_OPEN_NOFOLLOW)
+        openMode |= SQLITE_OPEN_NOFOLLOW;
+#else
+        qCWarning(lcSqlite, "SQLITE_OPEN_NOFOLLOW not supported with the SQLite version %s", sqlite3_libversion());
+#endif
+    }
 
     openMode |= SQLITE_OPEN_NOMUTEX;
 
@@ -1044,12 +1058,13 @@ bool QSQLiteDriver::subscribeToNotification(const QString &name)
 {
     Q_D(QSQLiteDriver);
     if (!isOpen()) {
-        qWarning("Database not open.");
+        qCWarning(lcSqlite, "QSQLiteDriver::subscribeToNotification: Database not open.");
         return false;
     }
 
     if (d->notificationid.contains(name)) {
-        qWarning("Already subscribing to '%ls'.", qUtf16Printable(name));
+        qCWarning(lcSqlite, "QSQLiteDriver::subscribeToNotification: Already subscribing to '%ls'.",
+                  qUtf16Printable(name));
         return false;
     }
 
@@ -1065,12 +1080,13 @@ bool QSQLiteDriver::unsubscribeFromNotification(const QString &name)
 {
     Q_D(QSQLiteDriver);
     if (!isOpen()) {
-        qWarning("Database not open.");
+        qCWarning(lcSqlite, "QSQLiteDriver::unsubscribeFromNotification: Database not open.");
         return false;
     }
 
     if (!d->notificationid.contains(name)) {
-        qWarning("Not subscribed to '%ls'.", qUtf16Printable(name));
+        qCWarning(lcSqlite, "QSQLiteDriver::unsubscribeFromNotification: Not subscribed to '%ls'.",
+                  qUtf16Printable(name));
         return false;
     }
 

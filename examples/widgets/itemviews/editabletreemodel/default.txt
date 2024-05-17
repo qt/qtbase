@@ -1,6 +1,6 @@
-Getting Started				How to familiarize yourself with Qt Designer
-    Launching Designer			Running the Qt Designer application
-    The User Interface			How to interact with Qt Designer
+Getting Started				How to familiarize yourself with Qt Widgets Designer
+    Launching Designer			Running the Qt Widgets Designer application
+    The User Interface			How to interact with Qt Widgets Designer
 
 Designing a Component			Creating a GUI for your application
     Creating a Dialog			How to create a dialog
@@ -16,7 +16,7 @@ Using a Component in Your Application	Generating code from forms
         A Dialog Without Auto-Connect	How to connect widgets without a naming scheme
         A Dialog With Auto-Connect	Using automatic connections
 
-Form Editing Mode			How to edit a form in Qt Designer
+Form Editing Mode			How to edit a form in Qt Widgets Designer
     Managing Forms			Loading and saving forms
     Editing a Form			Basic editing techniques
     The Property Editor			Changing widget properties
@@ -36,5 +36,5 @@ Using Containers			How to group widgets together
     Toolbox Widgets			QToolBox
 
 Connection Editing Mode			Connecting widgets together with signals and slots
-    Connecting Objects			Making connections in Qt Designer
+    Connecting Objects			Making connections in Qt Widgets Designer
     Editing Connections			Changing existing connections

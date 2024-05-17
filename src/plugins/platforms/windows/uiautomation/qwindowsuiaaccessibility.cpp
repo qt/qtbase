@@ -5,6 +5,7 @@
 #if QT_CONFIG(accessibility)
 
 #include "qwindowsuiaaccessibility.h"
+#include "qwindowsuiautomation.h"
 #include "qwindowsuiamainprovider.h"
 #include "qwindowsuiautils.h"
 
@@ -14,7 +15,6 @@
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtCore/qt_windows.h>
 #include <qpa/qplatformintegration.h>
-#include <QtGui/private/qwindowsuiawrapper_p.h>
 
 #include <QtCore/private/qwinregistry_p.h>
 
@@ -47,7 +47,7 @@ bool QWindowsUiaAccessibility::handleWmGetObject(HWND hwnd, WPARAM wParam, LPARA
     if (QWindow *window = QWindowsContext::instance()->findWindow(hwnd)) {
         if (QAccessibleInterface *accessible = window->accessibleRoot()) {
             QWindowsUiaMainProvider *provider = QWindowsUiaMainProvider::providerForAccessible(accessible);
-            *lResult = QWindowsUiaWrapper::instance()->returnRawElementProvider(hwnd, wParam, lParam, provider);
+            *lResult = UiaReturnRawElementProvider(hwnd, wParam, lParam, provider);
             return true;
         }
     }
@@ -122,15 +122,14 @@ void QWindowsUiaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event
     if (!isActive() || !accessible || !accessible->isValid())
         return;
 
-    // Ensures QWindowsUiaWrapper is properly initialized.
-    if (!QWindowsUiaWrapper::instance()->ready())
-        return;
-
     // No need to do anything when nobody is listening.
-    if (!QWindowsUiaWrapper::instance()->clientsAreListening())
+    if (!UiaClientsAreListening())
         return;
 
     switch (event->type()) {
+    case QAccessible::Announcement:
+        QWindowsUiaMainProvider::raiseNotification(static_cast<QAccessibleAnnouncementEvent *>(event));
+        break;
     case QAccessible::Focus:
         QWindowsUiaMainProvider::notifyFocusChange(event);
         break;

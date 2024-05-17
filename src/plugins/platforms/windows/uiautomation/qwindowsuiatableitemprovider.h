@@ -13,7 +13,7 @@ QT_BEGIN_NAMESPACE
 
 // Implements the Table Item control pattern provider. Used by items within a table/tree.
 class QWindowsUiaTableItemProvider : public QWindowsUiaBaseProvider,
-                                     public QWindowsComBase<ITableItemProvider>
+                                     public QComObject<ITableItemProvider>
 {
     Q_DISABLE_COPY_MOVE(QWindowsUiaTableItemProvider)
 public:

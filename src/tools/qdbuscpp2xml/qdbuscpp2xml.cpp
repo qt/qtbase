@@ -443,15 +443,19 @@ int main(int argc, char **argv)
             continue;
 
         QFile f;
+        bool fileIsOpen;
+        QString fileName;
         if (arg == u'-') {
-            f.open(stdin, QIODevice::ReadOnly | QIODevice::Text);
+            fileName = "stdin"_L1;
+            fileIsOpen = f.open(stdin, QIODevice::ReadOnly | QIODevice::Text);
         } else {
+            fileName = arg;
             f.setFileName(arg);
-            f.open(QIODevice::ReadOnly | QIODevice::Text);
+            fileIsOpen = f.open(QIODevice::ReadOnly | QIODevice::Text);
         }
-        if (!f.isOpen()) {
+        if (!fileIsOpen) {
             fprintf(stderr, PROGRAMNAME ": could not open '%s': %s\n",
-                    qPrintable(arg), qPrintable(f.errorString()));
+                    qPrintable(fileName), qPrintable(f.errorString()));
             return 1;
         }
 
@@ -477,11 +481,15 @@ int main(int argc, char **argv)
 
     QFile output;
     if (outputFile.isEmpty()) {
-        output.open(stdout, QIODevice::WriteOnly);
+        if (!output.open(stdout, QIODevice::WriteOnly)) {
+            fprintf(stderr, PROGRAMNAME ": could not open standard output: %s\n",
+                    qPrintable(output.errorString()));
+            return 1;
+        }
     } else {
         output.setFileName(outputFile);
         if (!output.open(QIODevice::WriteOnly)) {
-            fprintf(stderr, PROGRAMNAME ": could not open output file '%s': %s",
+            fprintf(stderr, PROGRAMNAME ": could not open output file '%s': %s\n",
                     qPrintable(outputFile), qPrintable(output.errorString()));
             return 1;
         }

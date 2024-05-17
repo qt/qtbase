@@ -19,6 +19,8 @@ class Q_WIDGETS_EXPORT QHeaderView : public QAbstractItemView
     Q_OBJECT
     Q_PROPERTY(bool firstSectionMovable READ isFirstSectionMovable WRITE setFirstSectionMovable)
     Q_PROPERTY(bool showSortIndicator READ isSortIndicatorShown WRITE setSortIndicatorShown)
+    Q_PROPERTY(bool sectionsMovable READ sectionsMovable WRITE setSectionsMovable)
+    Q_PROPERTY(bool sectionsClickable READ sectionsClickable WRITE setSectionsClickable)
     Q_PROPERTY(bool highlightSections READ highlightSections WRITE setHighlightSections)
     Q_PROPERTY(bool stretchLastSection READ stretchLastSection WRITE setStretchLastSection)
     Q_PROPERTY(bool cascadingSectionResizes READ cascadingSectionResizes

@@ -1,6 +1,6 @@
 // Copyright (C) 2016 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include "tst_qdbusconnection.h"
 
@@ -1422,7 +1422,7 @@ void tst_QDBusConnection::connectionLimit()
 
     QProcess daemon;
     daemon.start("dbus-daemon",
-                 QStringList() << "--config-file" << QFINDTESTDATA("tst_qdbusconnection.conf")
+                 QStringList() << "--config-file" << QFINDTESTDATA("../qdbusconnection/tst_qdbusconnection.conf")
                                << "--nofork"
                                << "--print-address");
     QVERIFY2(daemon.waitForReadyRead(2000),

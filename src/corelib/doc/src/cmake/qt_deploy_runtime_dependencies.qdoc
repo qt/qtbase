@@ -104,13 +104,41 @@ directory structure. If the \c{GENERATE_QT_CONF} option is given, an appropriate
 \c{qt.conf} file will be written to the same directory as the \c{executable}.
 The paths in that \c{qt.conf} file will be based on the \c{CMAKE_INSTALL_xxxDIR}
 variables, whose defaults are provided by CMake's \l{GNUInstallDirs} module.
-You can override some of those defaults with the \c{BIN_DIR}, \c{LIBEXEC_DIR},
-\c{LIB_DIR}, \c{PLUGINS_DIR}, and \c{QML_DIR} options, all of which are expected
-to be relative to the base install location. A \c{qt.conf} file is always
-written if \c{executable} is a macOS app bundle, regardless of whether or not
-\c{GENERATE_QT_CONF} is provided. The \c{..._DIR} options are also ignored in
-that case, since the directory layout of an app bundle is dictated by Apple's
-requirements.
+
+You can override some of those defaults with the parameters in the following
+table, all of which are expected to be relative to the base install location.
+
+\table
+\header
+    \li parameter
+    \li affected variable
+    \li notes
+\row
+    \li \c BIN_DIR
+    \li \l QT_DEPLOY_BIN_DIR
+    \li
+\row
+    \li \c LIBEXEC_DIR
+    \li \l QT_DEPLOY_LIBEXEC_DIR
+    \li since Qt 6.7
+\row
+    \li \c LIB_DIR
+    \li \l QT_DEPLOY_LIB_DIR
+    \li
+\row
+    \li \c PLUGINS_DIR
+    \li \l QT_DEPLOY_PLUGINS_DIR
+    \li
+\row
+    \li \c QML_DIR
+    \li \l QT_DEPLOY_QML_DIR
+    \li
+\endtable
+
+A \c{qt.conf} file is always written if \c{executable} is a macOS app bundle,
+regardless of whether or not \c{GENERATE_QT_CONF} is provided. The \c{..._DIR}
+options are also ignored in that case, since the directory layout of an app
+bundle is dictated by Apple's requirements.
 
 More verbose output about the deployment steps can be enabled by providing the
 \c{VERBOSE} option. Alternatively, the \l{QT_ENABLE_VERBOSE_DEPLOYMENT}
@@ -134,8 +162,9 @@ in a customized way.
 For Windows desktop applications, the required runtime files for the compiler
 are also installed by default. To prevent this, specify \c{NO_COMPILER_RUNTIME}.
 
-You can use \c{DEPLOY_TOOL_OPTIONS} to pass additional options to the underlying
-deployment tool.
+Since Qt 6.7, you can use \c{DEPLOY_TOOL_OPTIONS} to pass additional options to
+the underlying deployment tool. This only has an effect if the underlying
+deployment tool is either macdeployqt or windeployqt.
 
 On Linux, deploying runtime dependencies is based on CMake's
 \c{file(GET_RUNTIME_DEPENDENCIES)} command. The options \c{PRE_INCLUDE_REGEXES},
@@ -157,5 +186,13 @@ The default value of \c{POST_EXCLUDE_REGEXES} is constructed from the value of
 
 \section1 Example
 
+The following example shows how to deploy an application \c{MyApp}.
+
 \include cmake-deploy-runtime-dependencies.qdocinc
+
+The following example shows how to use the \c{DEPLOY_TOOL_OPTIONS} parameter to
+pass different options to macdeployqt and windeployqt.
+
+\include cmake-deploy-runtime-dependencies-deploy-tool-options.qdocinc
+
 */

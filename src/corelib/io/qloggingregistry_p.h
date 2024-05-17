@@ -19,10 +19,11 @@
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qhash.h>
-#include <QtCore/qmap.h>
 #include <QtCore/qmutex.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qtextstream.h>
+
+#include <map>
 
 class tst_QLoggingRegistry;
 
@@ -54,9 +55,9 @@ public:
     Q_DECLARE_FLAGS(PatternFlags, PatternFlag)
 
     QString category;
-    int messageType;
+    int messageType = -1;
     PatternFlags flags;
-    bool enabled;
+    bool enabled = false;
 
 private:
     void parse(QStringView pattern);
@@ -85,6 +86,7 @@ private:
 
 class Q_AUTOTEST_EXPORT QLoggingRegistry
 {
+    Q_DISABLE_COPY_MOVE(QLoggingRegistry)
 public:
     QLoggingRegistry();
 
@@ -96,7 +98,7 @@ public:
 #ifndef QT_BUILD_INTERNAL
     Q_CORE_EXPORT   // always export from QtCore
 #endif
-    void registerEnvironmentOverrideForCategory(QByteArrayView categoryName, QByteArrayView environment);
+    void registerEnvironmentOverrideForCategory(const char *categoryName, const char *environment);
 
     void setApiRules(const QString &content);
 
@@ -126,7 +128,7 @@ private:
     QList<QLoggingRule> ruleSets[NumRuleSets];
     QHash<QLoggingCategory *, QtMsgType> categories;
     QLoggingCategory::CategoryFilter categoryFilter;
-    QMap<QByteArrayView, QByteArrayView> qtCategoryEnvironmentOverrides;
+    std::map<QByteArrayView, const char *> qtCategoryEnvironmentOverrides;
 
     friend class ::tst_QLoggingRegistry;
 };
@@ -139,12 +141,12 @@ public:
     {}
 
 private:
-    static const char *registerOverride(QByteArrayView categoryName, QByteArrayView environment)
+    static const char *registerOverride(const char *categoryName, const char *environment)
     {
         QLoggingRegistry *c = QLoggingRegistry::instance();
         if (c)
             c->registerEnvironmentOverrideForCategory(categoryName, environment);
-        return categoryName.data();
+        return categoryName;
     }
 };
 

@@ -3,6 +3,7 @@
 
 #include "qfilesystemwatcher_polling_p.h"
 
+#include <QtCore/qlatin1stringview.h>
 #include <QtCore/qscopeguard.h>
 #include <QtCore/qtimer.h>
 
@@ -11,6 +12,8 @@
 using namespace std::chrono_literals;
 
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::StringLiterals;
 
 static constexpr auto PollingInterval = 1s;
 
@@ -45,10 +48,17 @@ QStringList QPollingFileSystemWatcherEngine::addPaths(const QStringList &paths,
         sg.dismiss();
     }
 
+    std::chrono::milliseconds interval = PollingInterval;
+#ifdef QT_BUILD_INTERNAL
+    if (Q_UNLIKELY(parent()->objectName().startsWith("_qt_autotest_force_engine_"_L1))) {
+        interval = 10ms; // Special case to speed up the unittests
+    }
+#endif
+
     if ((!this->files.isEmpty() ||
          !this->directories.isEmpty()) &&
         !timer.isActive()) {
-        timer.start(PollingInterval, this);
+            timer.start(interval, this);
     }
 
     return unhandled;

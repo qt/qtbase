@@ -1,5 +1,5 @@
 // Copyright (C) 2017 Samuel Gaist <samuel.gaist@edeltech.ch>
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 // Make sure we get a real Q_ASSERT even in release builds
 #ifdef QT_NO_DEBUG

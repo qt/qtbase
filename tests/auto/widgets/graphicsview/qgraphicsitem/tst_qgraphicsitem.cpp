@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 
 #include <QTest>
@@ -993,7 +993,6 @@ void tst_QGraphicsItem::inputMethodHints()
     scene.addItem(item);
     scene.addItem(item2);
     QGraphicsView view(&scene);
-    QApplicationPrivate::setActiveWindow(&view);
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
@@ -1050,7 +1049,6 @@ void tst_QGraphicsItem::toolTip()
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view.setFixedSize(200, 200);
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
     {
@@ -3376,7 +3374,7 @@ void tst_QGraphicsItem::childrenBoundingRect()
     childChild->setPos(500, 500);
     child->setTransform(QTransform().rotate(90), true);
 
-    scene.addPolygon(parent->mapToScene(parent->boundingRect() | parent->childrenBoundingRect()))->setPen(QPen(Qt::red));;
+    scene.addPolygon(parent->mapToScene(parent->boundingRect() | parent->childrenBoundingRect()))->setPen(QPen(Qt::red));
 
     QGraphicsView view(&scene);
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
@@ -4946,7 +4944,6 @@ void tst_QGraphicsItem::sceneEventFilter()
     QGraphicsView view(&scene);
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view.show();
-    QApplicationPrivate::setActiveWindow(&view);
     QVERIFY(QTest::qWaitForWindowExposed(&view));
     QVERIFY(QTest::qWaitForWindowActive(&view));
 
@@ -5567,7 +5564,6 @@ void tst_QGraphicsItem::itemClipsChildrenToShape4()
     scene.addEllipse( 100, 100, 100, 50 );   // <-- this is important to trigger the right codepath*
     //now the label is shown
     outerWidget->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false );
-    QApplicationPrivate::setActiveWindow(&view);
     view.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
     view.show();
     QTRY_COMPARE(QApplication::activeWindow(), &view);
@@ -10931,7 +10927,6 @@ void tst_QGraphicsItem::focusHandling()
     view.show();
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QApplicationPrivate::setActiveWindow(&view);
     QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&view));
     QVERIFY(itemWithFocus->hasFocus());
 

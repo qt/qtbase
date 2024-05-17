@@ -27,6 +27,10 @@
 #include "private/qobject_p.h"
 #include "private/qurl_p.h"
 
+#if QT_CONFIG(ssl)
+#  include "qsslconfiguration.h"
+#endif
+
 QT_REQUIRE_CONFIG(dnslookup);
 
 QT_BEGIN_NAMESPACE
@@ -35,6 +39,7 @@ QT_BEGIN_NAMESPACE
 
 constexpr qsizetype MaxDomainNameLength = 255;
 constexpr quint16 DnsPort = 53;
+constexpr quint16 DnsOverTlsPort = 853;
 
 class QDnsLookupRunnable;
 QDebug operator<<(QDebug &, QDnsLookupRunnable *);
@@ -43,6 +48,7 @@ class QDnsLookupReply
 {
 public:
     QDnsLookup::Error error = QDnsLookup::NoError;
+    bool authenticData = false;
     QString errorString;
 
     QList<QDnsDomainNameRecord> canonicalNameRecords;
@@ -51,7 +57,12 @@ public:
     QList<QDnsDomainNameRecord> nameServerRecords;
     QList<QDnsDomainNameRecord> pointerRecords;
     QList<QDnsServiceRecord> serviceRecords;
+    QList<QDnsTlsAssociationRecord> tlsAssociationRecords;
     QList<QDnsTextRecord> textRecords;
+
+#if QT_CONFIG(ssl)
+    std::optional<QSslConfiguration> sslConfiguration;
+#endif
 
     // helper methods
     void setError(QDnsLookup::Error err, QString &&msg)
@@ -120,6 +131,7 @@ private:
                 && nameServerRecords.isEmpty()
                 && pointerRecords.isEmpty()
                 && serviceRecords.isEmpty()
+                && tlsAssociationRecords.isEmpty()
                 && textRecords.isEmpty();
     }
 };
@@ -129,7 +141,8 @@ class QDnsLookupPrivate : public QObjectPrivate
 public:
     QDnsLookupPrivate()
         : type(QDnsLookup::A)
-        , port(DnsPort)
+        , port(0)
+        , protocol(QDnsLookup::Standard)
     { }
 
     void nameChanged()
@@ -162,10 +175,21 @@ public:
     Q_OBJECT_BINDABLE_PROPERTY(QDnsLookupPrivate, quint16,
                                port, &QDnsLookupPrivate::nameserverPortChanged);
 
+    void nameserverProtocolChanged()
+    {
+        emit q_func()->nameserverProtocolChanged(protocol);
+    }
+
+    Q_OBJECT_BINDABLE_PROPERTY(QDnsLookupPrivate, QDnsLookup::Protocol,
+                               protocol, &QDnsLookupPrivate::nameserverProtocolChanged);
 
     QDnsLookupReply reply;
     QDnsLookupRunnable *runnable = nullptr;
     bool isFinished = false;
+
+#if QT_CONFIG(ssl)
+    std::optional<QSslConfiguration> sslConfiguration;
+#endif
 
     Q_DECLARE_PUBLIC(QDnsLookup)
 };
@@ -180,9 +204,13 @@ public:
 #else
     using EncodedLabel = QByteArray;
 #endif
+    // minimum IPv6 MTU (1280) minus the IPv6 (40) and UDP headers (8)
+    static constexpr qsizetype ReplyBufferSize = 1280 - 40 - 8;
+    using ReplyBuffer = QVarLengthArray<unsigned char, ReplyBufferSize>;
 
     QDnsLookupRunnable(const QDnsLookupPrivate *d);
     void run() override;
+    bool sendDnsOverTls(QDnsLookupReply *reply, QSpan<unsigned char> query, ReplyBuffer &response);
 
 signals:
     void finished(const QDnsLookupReply &reply);
@@ -198,6 +226,11 @@ private:
     QHostAddress nameserver;
     QDnsLookup::Type requestType;
     quint16 port;
+    QDnsLookup::Protocol protocol;
+
+#if QT_CONFIG(ssl)
+    std::optional<QSslConfiguration> sslConfiguration;
+#endif
     friend QDebug operator<<(QDebug &, QDnsLookupRunnable *);
 };
 
@@ -263,6 +296,15 @@ public:
     { }
 
     QList<QByteArray> values;
+};
+
+class QDnsTlsAssociationRecordPrivate : public QDnsRecordPrivate
+{
+public:
+    QDnsTlsAssociationRecord::CertificateUsage usage;
+    QDnsTlsAssociationRecord::Selector selector;
+    QDnsTlsAssociationRecord::MatchingType matchType;
+    QByteArray value;
 };
 
 QT_END_NAMESPACE

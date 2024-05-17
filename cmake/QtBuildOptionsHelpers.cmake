@@ -1,34 +1,130 @@
 # Copyright (C) 2023 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-macro(qt_internal_set_default_build_type)
+# Try to detect if CMAKE_BUILD_TYPE is default initialized by CMake, or it was set by the user.
+#
+# CMake initializes CMAKE_BUILD_TYPE to the value of CMAKE_BUILD_TYPE_INIT during the first
+# project() call if CMAKE_BUILD_TYPE is empty.
+#
+# Unfortunately on most Windows platforms, it defaults to 'Debug', so we can't differentiate
+# between a 'Debug' value set on the command line by the user, a value set by the project, or if it
+# was default initialized.
+# We need to rely on heuristics to determine that.
+#
+# We try to check the value of CMAKE_BUILD_TYPE before the first project() call by inspecting
+# various variables:
+# 1) When using a qt.toolchain.cmake file, we rely on the toolchain file to tell us
+#    if a value was set by the user at initial configure time via the
+#    __qt_toolchain_cmake_build_type_before_project_call variable. On a 2nd run there will
+#    always be a value in the cache, but at that point we've already set it to whatever it needs
+#    to be.
+# 2) Whe configuring qtbase, a top-level qt, or a standalone project we rely on one of the following
+#    variables being set:
+#    - __qt_auto_detect_cmake_build_type_before_project_call (e.g for qtbase)
+#    - __qt_internal_standalone_project_cmake_build_type_before_project_call (e.g for sqldrivers)
+# 3) When using a multi-config generator, we assume that the CMAKE_BUILD_TYPE is not default
+#    initialized.
+# 4) The user can also force the build type to be considered non-default-initialized by setting
+#    QT_NO_FORCE_SET_CMAKE_BUILD_TYPE to TRUE. It has weird naming that doesn't quite correspond
+#    to the meaning, but it's been called like that for a while now and I'm hesitant to change
+#    the name in case it's used by various projects.
+#
+# The code doesn't handle an empty "" config set by the user, but we claim that's an
+# unsupported config when building Qt.
+function(qt_internal_is_cmake_build_type_default_initialized_heuristic out_var)
+    get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    get_cmake_property(aready_force_set _qt_build_internals_cmake_build_type_set)
+
+    if(
+        # Set by CMake's Platform/Windows-MSVC.cmake when CMAKE_BUILD_TYPE is empty
+        # The STREQUAL check needs to have expanded variables because an undefined var is not equal
+        # to an empty defined var.
+        "${CMAKE_BUILD_TYPE}" STREQUAL "${CMAKE_BUILD_TYPE_INIT}"
+
+        # Set by qt_internal_force_set_cmake_build_type()
+        AND aready_force_set MATCHES "NOTFOUND"
+
+        # Set by qt_auto_detect_cmake_build_type()
+        AND NOT __qt_auto_detect_cmake_build_type_before_project_call
+
+        # Set by sqldrivers project
+        AND NOT __qt_internal_standalone_project_cmake_build_type_before_project_call
+
+        # Set by qt.toolchain.cmake
+        AND NOT __qt_toolchain_cmake_build_type_before_project_call
+
+        # Set by user explicitily
+        AND NOT QT_NO_FORCE_SET_CMAKE_BUILD_TYPE
+
+        # Set in multi-config builds
+        AND NOT is_multi_config)
+
+        set(${out_var} TRUE PARENT_SCOPE)
+    else()
+        set(${out_var} FALSE PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(qt_internal_force_set_cmake_build_type value)
+    cmake_parse_arguments(PARSE_ARGV 1 arg
+        "SHOW_MESSAGE"
+        ""
+        ""
+    )
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    set(CMAKE_BUILD_TYPE "${value}" CACHE STRING "Choose the type of build." FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE
+        PROPERTY STRINGS
+        "Debug" "Release" "MinSizeRel" "RelWithDebInfo") # Set the possible values for cmake-gui.
+    if(arg_SHOW_MESSAGE)
+        message(STATUS "Force setting build type to '${value}'.")
+    endif()
+    set_property(GLOBAL PROPERTY _qt_build_internals_cmake_build_type_set "${value}")
+endfunction()
+
+# Only override the build type if it was default initialized by CMake.
+function(qt_internal_force_set_cmake_build_type_if_cmake_default_initialized value)
+    qt_internal_is_cmake_build_type_default_initialized_heuristic(is_default_cmake_build_type)
+    if(is_default_cmake_build_type)
+        qt_internal_force_set_cmake_build_type("${value}" SHOW_MESSAGE)
+    endif()
+endfunction()
+
+function(qt_internal_set_cmake_build_type)
+    # When building standalone tests against a multi-config Qt, we want to configure the
+    # tests / examples with
+    # the first multi-config configuration, rather than use CMake's default configuration.
+    # In the case of Windows, we definitely don't want it to default to Debug, because that causes
+    # issues in the CI.
+    if(QT_INTERNAL_BUILD_STANDALONE_PARTS AND QT_MULTI_CONFIG_FIRST_CONFIG)
+        qt_internal_force_set_cmake_build_type_if_cmake_default_initialized(
+            "${QT_MULTI_CONFIG_FIRST_CONFIG}")
+
+    # We want the same build type to be used when configuring all Qt repos or standalone
+    # tests or single tests, so we reuse the initial build type set by qtbase.
+    # __qt_internal_initial_qt_cmake_build_type is saved in QtBuildInternalsExtra.cmake.in.
+    elseif(__qt_internal_initial_qt_cmake_build_type)
+        qt_internal_force_set_cmake_build_type_if_cmake_default_initialized(
+            "${__qt_internal_initial_qt_cmake_build_type}")
+
+    # Default to something sensible when configuring qtbase / top-level.
+    else()
+        qt_internal_set_qt_appropriate_default_cmake_build_type()
+    endif()
+endfunction()
+
+# Sets a default cmake build type for qtbase / top-level.
+macro(qt_internal_set_qt_appropriate_default_cmake_build_type)
     set(_default_build_type "Release")
     if(FEATURE_developer_build)
         set(_default_build_type "Debug")
     endif()
 
-    # Try to detect if an explicit CMAKE_BUILD_TYPE was set by the user.
-    # CMake sets CMAKE_BUILD_TYPE_INIT to Debug on most Windows platforms and doesn't set
-    # anything for UNIXes. CMake assigns CMAKE_BUILD_TYPE_INIT to CMAKE_BUILD_TYPE during
-    # the first project() call, if CMAKE_BUILD_TYPE had no previous value.
-    # We use extra information about the state of CMAKE_BUILD_TYPE before the first
-    # project() call that's set in QtAutoDetect.cmake or manually in a project via the
-    # __qt_internal_standalone_project_cmake_build_type_before_project_call variable (as done
-    # for the qtbase sqldrivers project).
-    # STREQUAL check needs to have expanded variables because an undefined var is not equal
-    # to an empty defined var.
-    # See also qt_internal_force_set_cmake_build_type_conditionally which is used
-    # to set the build type when building other repos or tests.
-    if("${CMAKE_BUILD_TYPE}" STREQUAL "${CMAKE_BUILD_TYPE_INIT}"
-        AND NOT __qt_auto_detect_cmake_build_type_before_project_call
-        AND NOT __qt_build_internals_cmake_build_type
-        AND NOT __qt_internal_standalone_project_cmake_build_type_before_project_call
-        AND NOT CMAKE_CONFIGURATION_TYPES)
-      message(STATUS "Setting build type to '${_default_build_type}' as none was specified.")
-      set(CMAKE_BUILD_TYPE "${_default_build_type}" CACHE STRING "Choose the type of build." FORCE)
-      set_property(CACHE CMAKE_BUILD_TYPE
-          PROPERTY STRINGS
-          "Debug" "Release" "MinSizeRel" "RelWithDebInfo") # Set the possible values for cmake-gui.
+    qt_internal_is_cmake_build_type_default_initialized_heuristic(is_default_cmake_build_type)
+    if(is_default_cmake_build_type)
+        qt_internal_force_set_cmake_build_type("${_default_build_type}")
+        message(STATUS "Setting build type to '${_default_build_type}' as none was specified.")
     elseif(CMAKE_CONFIGURATION_TYPES)
         message(STATUS "Building for multiple configurations: ${CMAKE_CONFIGURATION_TYPES}.")
         message(STATUS "Main configuration is: ${QT_MULTI_CONFIG_FIRST_CONFIG}.")
@@ -43,7 +139,7 @@ macro(qt_internal_set_default_build_type)
             )
         endif()
     else()
-        message(STATUS "CMAKE_BUILD_TYPE was set to: '${CMAKE_BUILD_TYPE}'")
+        message(STATUS "CMAKE_BUILD_TYPE was already explicitly set to: '${CMAKE_BUILD_TYPE}'")
     endif()
 endmacro()
 
@@ -166,13 +262,15 @@ macro(qt_internal_setup_build_tests)
 
     option(QT_BUILD_MANUAL_TESTS "Build Qt manual tests" OFF)
 
-    if(WASM)
-        option(QT_BUILD_MINIMAL_STATIC_TESTS "Build minimal subset of tests for static Qt builds"
-            ON)
+    if(WASM AND _qt_batch_tests)
+        set(_qt_wasm_and_batch_tests ON)
     else()
-        option(QT_BUILD_MINIMAL_STATIC_TESTS "Build minimal subset of tests for static Qt builds"
-            OFF)
+        set(_qt_wasm_and_batch_tests OFF)
     endif()
+
+    option(QT_BUILD_MINIMAL_STATIC_TESTS "Build minimal subset of tests for static Qt builds" ${_qt_wasm_and_batch_tests})
+
+    option(QT_BUILD_WASM_BATCHED_TESTS "Build subset of tests for wasm batched tests" ${_qt_wasm_and_batch_tests})
 
     option(QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS
         "Build minimal subset of tests for Android multi-ABI Qt builds" OFF)
@@ -210,8 +308,32 @@ macro(qt_internal_setup_build_examples)
     option(QT_INSTALL_EXAMPLES_SOURCES_BY_DEFAULT
         "Install example sources as part of the default 'install' target" ON)
 
+    # We need a way to force disable building in-tree examples in the CI, so that we instead build
+    # standalone examples. Because the Coin yaml instructions don't allow us to remove
+    # -make examples from from the configure args, we instead read a variable that only Coin sets.
+    if(QT_INTERNAL_CI_NO_BUILD_IN_TREE_EXAMPLES)
+        set(QT_BUILD_EXAMPLES OFF CACHE BOOL "Build Qt examples" FORCE)
+    endif()
+
+    if(QT_BUILD_STANDALONE_EXAMPLES)
+        # BuildInternals might have set it to OFF on initial configuration. So force it to ON when
+        # building standalone examples.
+        set(QT_BUILD_EXAMPLES ON CACHE BOOL "Build Qt examples" FORCE)
+
+        # Also force the examples to be built as part of the default build target.
+        set(QT_BUILD_EXAMPLES_BY_DEFAULT ON CACHE BOOL
+            "Should examples be built as part of the default 'all' target." FORCE)
+    endif()
+
+    option(QT_DEPLOY_MINIMAL_EXAMPLES
+        "Deploy minimal subset of examples to save time and space" OFF)
+
     # FIXME: Support prefix builds as well QTBUG-96232
-    if(QT_WILL_INSTALL)
+    # We don't want to enable EP examples with -debug-and-release because starting with CMake 3.24
+    # ExternalProject_Add ends up creating build rules twice, once for each configuration, in the
+    # same build dir, which ends up causing various issues due to concurrent builds as well as
+    # clobbered CMakeCache.txt and ninja files.
+    if(QT_WILL_INSTALL OR QT_FEATURE_debug_and_release)
         set(_qt_build_examples_as_external OFF)
     else()
         set(_qt_build_examples_as_external ON)

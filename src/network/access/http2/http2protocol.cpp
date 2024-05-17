@@ -200,9 +200,9 @@ std::vector<uchar> assemble_hpack_block(const std::vector<Frame> &frames)
 {
     std::vector<uchar> hpackBlock;
 
-    quint32 total = 0;
+    size_t total = 0;
     for (const auto &frame : frames) {
-        if (qAddOverflow(total, frame.hpackBlockSize(), &total))
+        if (qAddOverflow(total, size_t{frame.hpackBlockSize()}, &total))
             return hpackBlock;
     }
 

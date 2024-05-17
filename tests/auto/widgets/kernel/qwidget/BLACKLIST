@@ -1,7 +1,5 @@
 [raise]
 opensuse-leap
-[optimizedResizeMove]
-osx
 [optimizedResize_topLevel]
 osx
 [render_windowOpacity]
@@ -44,8 +42,8 @@ android
 android
 [optimizedResize_topLevel]
 android
-[render]
-wayland
 [hoverPosition]
 macos-14 x86
-
+# QTBUG-124291
+[setParentChangesFocus:make dialog parentless, after]
+android

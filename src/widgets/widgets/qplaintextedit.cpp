@@ -1557,6 +1557,10 @@ bool QPlainTextEdit::event(QEvent *e)
         }
         return true;
 #endif // QT_NO_GESTURES
+    case QEvent::WindowActivate:
+    case QEvent::WindowDeactivate:
+        d->control->setPalette(palette());
+        break;
     default:
         break;
     }
@@ -2208,7 +2212,7 @@ QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery query, QVariant a
     Q_D(const QPlainTextEdit);
     switch (query) {
     case Qt::ImEnabled:
-        return isEnabled();
+        return isEnabled() && !isReadOnly();
     case Qt::ImHints:
     case Qt::ImInputItemClipRectangle:
         return QWidget::inputMethodQuery(query);
@@ -2298,7 +2302,6 @@ void QPlainTextEdit::changeEvent(QEvent *e)
         d->control->document()->setDefaultFont(font());
         break;
     case QEvent::ActivationChange:
-        d->control->setPalette(palette());
         if (!isActiveWindow())
             d->autoScrollTimer.stop();
         break;
@@ -2600,7 +2603,7 @@ void QPlainTextEdit::insertFromMimeData(const QMimeData *source)
 bool QPlainTextEdit::isReadOnly() const
 {
     Q_D(const QPlainTextEdit);
-    return !(d->control->textInteractionFlags() & Qt::TextEditable);
+    return !d->control || !(d->control->textInteractionFlags() & Qt::TextEditable);
 }
 
 void QPlainTextEdit::setReadOnly(bool ro)
@@ -2894,11 +2897,14 @@ bool QPlainTextEdit::find(const QString &exp, QTextDocument::FindFlags options)
     \overload
 
     Finds the next occurrence, matching the regular expression, \a exp, using the given
-    \a options. The QTextDocument::FindCaseSensitively option is ignored for this overload,
-    use QRegularExpression::CaseInsensitiveOption instead.
+    \a options.
 
     Returns \c true if a match was found and changes the cursor to select the match;
     otherwise returns \c false.
+
+    \warning For historical reasons, the case sensitivity option set on
+    \a exp is ignored. Instead, the \a options are used to determine
+    if the search is case sensitive or not.
 */
 #if QT_CONFIG(regularexpression)
 bool QPlainTextEdit::find(const QRegularExpression &exp, QTextDocument::FindFlags options)

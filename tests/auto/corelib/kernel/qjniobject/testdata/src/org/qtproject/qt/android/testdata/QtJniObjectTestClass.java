@@ -1,5 +1,5 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 package org.qtproject.qt.android.testdatapackage;
 
@@ -126,6 +126,9 @@ public class QtJniObjectTestClass
     // --------------------------------------------------------------------------------------------
     public static String staticStringMethod() { return A_STRING_OBJECT; }
     public String stringMethod() { return staticStringMethod(); }
+
+    // --------------------------------------------------------------------------------------------
+    public static String staticEchoMethod(String value) { return value; }
 
     // --------------------------------------------------------------------------------------------
     public static Throwable staticThrowableMethod() { return A_THROWABLE_OBJECT; }
@@ -281,6 +284,9 @@ public class QtJniObjectTestClass
     native public int callbackWithBoolean(boolean value);
     native public int callbackWithInt(int value);
     native public int callbackWithDouble(double value);
+    native public int callbackWithJniArray(double[] value);
+    native public int callbackWithQList(double[] value);
+    native public int callbackWithStringList(String[] value);
 
     public int callMeBackWithObject(QtJniObjectTestClass that)
     {
@@ -315,5 +321,25 @@ public class QtJniObjectTestClass
     public int callMeBackWithDouble(double value)
     {
         return callbackWithDouble(value);
+    }
+    public int callMeBackWithJniArray(double[] value)
+    {
+        return callbackWithJniArray(value);
+    }
+    public int callMeBackWithQList(double[] value)
+    {
+        return callbackWithQList(value);
+    }
+    public int callMeBackWithStringList(String[] value)
+    {
+        return callbackWithStringList(value);
+    }
+
+    public Object callMethodThrowsException() throws Exception {
+        throw new Exception();
+    }
+
+    public static Object callStaticMethodThrowsException() throws Exception {
+        throw new Exception();
     }
 }

@@ -19,6 +19,7 @@
 #include "qabstracteventdispatcher.h"
 #include "qcoreapplication.h"
 #include "qmetaobject_p.h"
+#include "private/qnumeric_p.h"
 
 #include <chrono>
 
@@ -27,18 +28,36 @@ QT_BEGIN_NAMESPACE
 class QSingleShotTimer : public QObject
 {
     Q_OBJECT
-    int timerId = -1;
+
+    Qt::TimerId timerId = Qt::TimerId::Invalid;
 
 public:
-    inline ~QSingleShotTimer();
-    inline QSingleShotTimer(std::chrono::milliseconds msec, Qt::TimerType timerType, const QObject *r,
-                            const char *member);
-    inline QSingleShotTimer(std::chrono::milliseconds msec, Qt::TimerType timerType, const QObject *r,
-                            QtPrivate::QSlotObjectBase *slotObj);
+    // use the same duration type
+    using Duration = QAbstractEventDispatcher::Duration;
 
-    inline void startTimerForReceiver(std::chrono::milliseconds msec, Qt::TimerType timerType,
+    inline ~QSingleShotTimer();
+    inline QSingleShotTimer(Duration interval, Qt::TimerType timerType,
+                            const QObject *r, const char *member);
+    inline QSingleShotTimer(Duration interval, Qt::TimerType timerType,
+                            const QObject *r, QtPrivate::QSlotObjectBase *slotObj);
+
+    inline void startTimerForReceiver(Duration interval, Qt::TimerType timerType,
                                       const QObject *receiver);
 
+    static Duration fromMsecs(std::chrono::milliseconds ms)
+    {
+        using namespace std::chrono;
+        using ratio = std::ratio_divide<std::milli, Duration::period>;
+        static_assert(ratio::den == 1);
+
+        Duration::rep r;
+        if (qMulOverflow<ratio::num>(ms.count(), &r)) {
+            qWarning("QTimer::singleShot(std::chrono::milliseconds, ...): "
+                     "interval argument overflowed when converted to nanoseconds.");
+            return Duration::max();
+        }
+        return Duration{r};
+    }
 Q_SIGNALS:
     void timeout();
 
@@ -46,15 +65,15 @@ private:
     inline void timerEvent(QTimerEvent *) override;
 };
 
-QSingleShotTimer::QSingleShotTimer(std::chrono::milliseconds msec, Qt::TimerType timerType,
+QSingleShotTimer::QSingleShotTimer(Duration interval, Qt::TimerType timerType,
                                    const QObject *r, const char *member)
     : QObject(QAbstractEventDispatcher::instance())
 {
     connect(this, SIGNAL(timeout()), r, member);
-    startTimerForReceiver(msec, timerType, r);
+    startTimerForReceiver(interval, timerType, r);
 }
 
-QSingleShotTimer::QSingleShotTimer(std::chrono::milliseconds msec, Qt::TimerType timerType,
+QSingleShotTimer::QSingleShotTimer(Duration interval, Qt::TimerType timerType,
                                    const QObject *r, QtPrivate::QSlotObjectBase *slotObj)
     : QObject(QAbstractEventDispatcher::instance())
 {
@@ -63,12 +82,12 @@ QSingleShotTimer::QSingleShotTimer(std::chrono::milliseconds msec, Qt::TimerType
     QObjectPrivate::connectImpl(this, signal_index, r ? r : this, nullptr, slotObj,
                                 Qt::AutoConnection, nullptr, &staticMetaObject);
 
-    startTimerForReceiver(msec, timerType, r);
+    startTimerForReceiver(interval, timerType, r);
 }
 
 QSingleShotTimer::~QSingleShotTimer()
 {
-    if (timerId > 0)
+    if (timerId > Qt::TimerId::Invalid)
         killTimer(timerId);
 }
 
@@ -77,8 +96,8 @@ QSingleShotTimer::~QSingleShotTimer()
     the same thread as where it will be handled, so that it fires reliably even
     if the thread that set up the timer is busy.
 */
-void QSingleShotTimer::startTimerForReceiver(std::chrono::milliseconds msec,
-                                             Qt::TimerType timerType, const QObject *receiver)
+void QSingleShotTimer::startTimerForReceiver(Duration interval, Qt::TimerType timerType,
+                                             const QObject *receiver)
 {
     if (receiver && receiver->thread() != thread()) {
         // Avoid leaking the QSingleShotTimer instance in case the application exits before the
@@ -88,20 +107,17 @@ void QSingleShotTimer::startTimerForReceiver(std::chrono::milliseconds msec,
         setParent(nullptr);
         moveToThread(receiver->thread());
 
-        QDeadlineTimer deadline(msec, timerType);
+        QDeadlineTimer deadline(interval, timerType);
         auto invokable = [this, deadline, timerType] {
             if (deadline.hasExpired()) {
                 Q_EMIT timeout();
             } else {
-                auto nsecs = deadline.remainingTimeAsDuration();
-                // Use std::chrono::ceil<milliseconds> to match what
-                // QDeadlineTimer::remainingTime() did
-                timerId = startTimer(std::chrono::ceil<std::chrono::milliseconds>(nsecs), timerType);
+                timerId = Qt::TimerId{startTimer(deadline.remainingTimeAsDuration(), timerType)};
             }
         };
         QMetaObject::invokeMethod(this, invokable, Qt::QueuedConnection);
     } else {
-        timerId = startTimer(msec, timerType);
+        timerId = Qt::TimerId{startTimer(interval, timerType)};
     }
 }
 
@@ -109,9 +125,8 @@ void QSingleShotTimer::timerEvent(QTimerEvent *)
 {
     // need to kill the timer _before_ we emit timeout() in case the
     // slot connected to timeout calls processEvents()
-    if (timerId > 0)
-        killTimer(timerId);
-    timerId = -1;
+    if (timerId > Qt::TimerId::Invalid)
+        killTimer(std::exchange(timerId, Qt::TimerId::Invalid));
 
     Q_EMIT timeout();
 

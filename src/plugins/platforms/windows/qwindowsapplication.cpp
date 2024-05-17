@@ -72,11 +72,6 @@ bool QWindowsApplication::setWinTabEnabled(bool enabled)
     return enabled ? ctx->initTablet() : ctx->disposeTablet();
 }
 
-bool QWindowsApplication::isDarkMode() const
-{
-    return QWindowsContext::isDarkMode();
-}
-
 QWindowsApplication::DarkModeHandling QWindowsApplication::darkModeHandling() const
 {
     return m_darkModeHandling;

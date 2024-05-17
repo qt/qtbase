@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
 
@@ -33,7 +33,6 @@ public:
 private slots:
     void turnNative();
     void hideShowAllGL();
-    void dumpCompositingStatus();
 
 signals:
     void aboutToShowGLWidgets();
@@ -83,12 +82,6 @@ void Tools::dumpWidget(QWidget *w, int indent)
         if (QWidget *cw = qobject_cast<QWidget *>(obj))
             dumpWidget(cw, indent + 4);
     }
-}
-
-void Tools::dumpCompositingStatus()
-{
-    QWindow *w = m_root->window()->windowHandle();
-    qDebug() << "Compositing status for" << w << m_root->window() << "is" << QWindowPrivate::get(w)->compositing;
 }
 
 class TabWidgetResetter : public QObject
@@ -194,10 +187,6 @@ int main(int argc, char *argv[])
     QMenu *toolsMenu = wnd.menuBar()->addMenu("&Tools");
     toolsMenu->addAction("&Turn widgets (or some parent) into native", &t, SLOT(turnNative()));
     toolsMenu->addAction("&Hide/show all OpenGL widgets", &t, SLOT(hideShowAllGL()));
-
-    QTimer compStatusDumpTimer;
-    QObject::connect(&compStatusDumpTimer, SIGNAL(timeout()), &t, SLOT(dumpCompositingStatus()));
-    compStatusDumpTimer.start(5000);
 
     wnd.show();
 

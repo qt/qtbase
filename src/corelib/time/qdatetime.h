@@ -102,9 +102,11 @@ public:
 
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat format = Qt::TextDate) const;
-    QString toString(const QString &format, QCalendar cal = QCalendar()) const
+    QString toString(const QString &format) const;
+    QString toString(const QString &format, QCalendar cal) const
     { return toString(qToStringViewIgnoringNull(format), cal); }
-    QString toString(QStringView format, QCalendar cal = QCalendar()) const;
+    QString toString(QStringView format) const;
+    QString toString(QStringView format, QCalendar cal) const;
 #endif
     bool setDate(int year, int month, int day); // Gregorian-optimized
     bool setDate(int year, int month, int day, QCalendar cal);
@@ -144,15 +146,20 @@ public:
     // Overriding base year is likely more common than overriding calendar (and
     // likely to get more so, as the legacy base drops ever further behind us).
     static QDate fromString(QStringView string, QStringView format,
-                            int baseYear = QLocale::DefaultTwoDigitBaseYear,
-                            QCalendar cal = QCalendar())
+                            int baseYear = QLocale::DefaultTwoDigitBaseYear)
+    { return fromString(string.toString(), format, baseYear); }
+    static QDate fromString(QStringView string, QStringView format,
+                            int baseYear, QCalendar cal)
     { return fromString(string.toString(), format, baseYear, cal); }
     static QDate fromString(const QString &string, QStringView format,
-                            int baseYear = QLocale::DefaultTwoDigitBaseYear,
-                            QCalendar cal = QCalendar());
+                            int baseYear = QLocale::DefaultTwoDigitBaseYear);
+    static QDate fromString(const QString &string, QStringView format,
+                            int baseYear, QCalendar cal);
     static QDate fromString(const QString &string, const QString &format,
-                            int baseYear = QLocale::DefaultTwoDigitBaseYear,
-                            QCalendar cal = QCalendar())
+                            int baseYear = QLocale::DefaultTwoDigitBaseYear)
+    { return fromString(string, qToStringViewIgnoringNull(format), baseYear); }
+    static QDate fromString(const QString &string, const QString &format,
+                            int baseYear, QCalendar cal)
     { return fromString(string, qToStringViewIgnoringNull(format), baseYear, cal); }
 #endif
     static bool isValid(int y, int m, int d);
@@ -295,7 +302,7 @@ class Q_CORE_EXPORT QDateTime
         quintptr status : 8;
 #  endif
 #endif
-        friend constexpr bool operator==(const ShortData &lhs, const ShortData &rhs)
+        friend constexpr bool operator==(ShortData lhs, ShortData rhs)
         { return lhs.status == rhs.status && lhs.msecs == rhs.msecs; }
     };
 
@@ -404,9 +411,11 @@ public:
 
 #if QT_CONFIG(datestring)
     QString toString(Qt::DateFormat format = Qt::TextDate) const;
-    QString toString(const QString &format, QCalendar cal = QCalendar()) const
+    QString toString(const QString &format) const;
+    QString toString(const QString &format, QCalendar cal) const
     { return toString(qToStringViewIgnoringNull(format), cal); }
-    QString toString(QStringView format, QCalendar cal = QCalendar()) const;
+    QString toString(QStringView format) const;
+    QString toString(QStringView format, QCalendar cal) const;
 #endif
     [[nodiscard]] QDateTime addDays(qint64 days) const;
     [[nodiscard]] QDateTime addMonths(int months) const;
@@ -451,15 +460,20 @@ public:
     // Overriding base year is likely more common than overriding calendar (and
     // likely to get more so, as the legacy base drops ever further behind us).
     static QDateTime fromString(QStringView string, QStringView format,
-                                int baseYear = QLocale::DefaultTwoDigitBaseYear,
-                                QCalendar cal = QCalendar())
+                                int baseYear = QLocale::DefaultTwoDigitBaseYear)
+    { return fromString(string.toString(), format, baseYear); }
+    static QDateTime fromString(QStringView string, QStringView format,
+                                int baseYear, QCalendar cal)
     { return fromString(string.toString(), format, baseYear, cal); }
     static QDateTime fromString(const QString &string, QStringView format,
-                                int baseYear = QLocale::DefaultTwoDigitBaseYear,
-                                QCalendar cal = QCalendar());
+                                int baseYear = QLocale::DefaultTwoDigitBaseYear);
+    static QDateTime fromString(const QString &string, QStringView format,
+                                int baseYear, QCalendar cal);
     static QDateTime fromString(const QString &string, const QString &format,
-                                int baseYear = QLocale::DefaultTwoDigitBaseYear,
-                                QCalendar cal = QCalendar())
+                                int baseYear = QLocale::DefaultTwoDigitBaseYear)
+    { return fromString(string, qToStringViewIgnoringNull(format), baseYear); }
+    static QDateTime fromString(const QString &string, const QString &format,
+                                int baseYear, QCalendar cal)
     { return fromString(string, qToStringViewIgnoringNull(format), baseYear, cal); }
 #endif
 
@@ -515,7 +529,7 @@ public:
     QT_POST_CXX17_API_IN_EXPORTED_CLASS
     static QDateTime fromStdLocalTime(const std::chrono::local_time<std::chrono::milliseconds> &time)
     {
-        QDateTime result(QDate(1970, 1, 1), QTime(0, 0, 0));
+        QDateTime result(QDate(1970, 1, 1), QTime(0, 0, 0), TransitionResolution::LegacyBehavior);
         return result.addMSecs(time.time_since_epoch().count());
     }
 
@@ -626,7 +640,7 @@ Q_CORE_EXPORT size_t qHash(const QDateTime &key, size_t seed = 0);
 Q_CORE_EXPORT size_t qHash(QDate key, size_t seed = 0) noexcept;
 Q_CORE_EXPORT size_t qHash(QTime key, size_t seed = 0) noexcept;
 
-#if QT_CORE_INLINE_IMPL_SINCE(6, 7)
+#if QT_CONFIG(datestring) && QT_CORE_INLINE_IMPL_SINCE(6, 7)
 QDate QDate::fromString(const QString &string, QStringView format, QCalendar cal)
 {
     return fromString(string, format, QLocale::DefaultTwoDigitBaseYear, cal);

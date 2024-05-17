@@ -29,6 +29,7 @@ static constexpr bool UsingEventfd = false;
 #  include <pipeDrv.h>
 #endif
 
+using namespace std::chrono;
 using namespace std::chrono_literals;
 
 QT_BEGIN_NAMESPACE
@@ -256,11 +257,11 @@ int QEventDispatcherUNIXPrivate::activateSocketNotifiers()
 }
 
 QEventDispatcherUNIX::QEventDispatcherUNIX(QObject *parent)
-    : QAbstractEventDispatcher(*new QEventDispatcherUNIXPrivate, parent)
+    : QAbstractEventDispatcherV2(*new QEventDispatcherUNIXPrivate, parent)
 { }
 
 QEventDispatcherUNIX::QEventDispatcherUNIX(QEventDispatcherUNIXPrivate &dd, QObject *parent)
-    : QAbstractEventDispatcher(dd, parent)
+    : QAbstractEventDispatcherV2(dd, parent)
 { }
 
 QEventDispatcherUNIX::~QEventDispatcherUNIX()
@@ -269,10 +270,10 @@ QEventDispatcherUNIX::~QEventDispatcherUNIX()
 /*!
     \internal
 */
-void QEventDispatcherUNIX::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *obj)
+void QEventDispatcherUNIX::registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType, QObject *obj)
 {
 #ifndef QT_NO_DEBUG
-    if (timerId < 1 || interval < 0 || !obj) {
+    if (qToUnderlying(timerId) < 1 || interval.count() < 0 || !obj) {
         qWarning("QEventDispatcherUNIX::registerTimer: invalid arguments");
         return;
     } else if (obj->thread() != thread() || thread() != QThread::currentThread()) {
@@ -282,16 +283,16 @@ void QEventDispatcherUNIX::registerTimer(int timerId, qint64 interval, Qt::Timer
 #endif
 
     Q_D(QEventDispatcherUNIX);
-    d->timerList.registerTimer(timerId, std::chrono::milliseconds{ interval }, timerType, obj);
+    d->timerList.registerTimer(timerId, interval, timerType, obj);
 }
 
 /*!
     \internal
 */
-bool QEventDispatcherUNIX::unregisterTimer(int timerId)
+bool QEventDispatcherUNIX::unregisterTimer(Qt::TimerId timerId)
 {
 #ifndef QT_NO_DEBUG
-    if (timerId < 1) {
+    if (qToUnderlying(timerId) < 1) {
         qWarning("QEventDispatcherUNIX::unregisterTimer: invalid argument");
         return false;
     } else if (thread() != QThread::currentThread()) {
@@ -323,12 +324,12 @@ bool QEventDispatcherUNIX::unregisterTimers(QObject *object)
     return d->timerList.unregisterTimers(object);
 }
 
-QList<QEventDispatcherUNIX::TimerInfo>
-QEventDispatcherUNIX::registeredTimers(QObject *object) const
+QList<QEventDispatcherUNIX::TimerInfoV2>
+QEventDispatcherUNIX::timersForObject(QObject *object) const
 {
     if (!object) {
         qWarning("QEventDispatcherUNIX:registeredTimers: invalid argument");
-        return QList<TimerInfo>();
+        return QList<TimerInfoV2>();
     }
 
     Q_D(const QEventDispatcherUNIX);
@@ -431,8 +432,8 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     QDeadlineTimer deadline;
     if (canWait) {
         if (include_timers) {
-            std::optional<std::chrono::milliseconds> msecs = d->timerList.timerWait();
-            deadline = msecs ? QDeadlineTimer{*msecs}
+            std::optional<nanoseconds> remaining = d->timerList.timerWait();
+            deadline = remaining ? QDeadlineTimer{*remaining}
                              : QDeadlineTimer(QDeadlineTimer::Forever);
         } else {
             deadline = QDeadlineTimer(QDeadlineTimer::Forever);
@@ -475,17 +476,17 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     return (nevents > 0);
 }
 
-int QEventDispatcherUNIX::remainingTime(int timerId)
+auto QEventDispatcherUNIX::remainingTime(Qt::TimerId timerId) const -> Duration
 {
 #ifndef QT_NO_DEBUG
-    if (timerId < 1) {
+    if (int(timerId) < 1) {
         qWarning("QEventDispatcherUNIX::remainingTime: invalid argument");
-        return -1;
+        return Duration::min();
     }
 #endif
 
-    Q_D(QEventDispatcherUNIX);
-    return d->timerList.timerRemainingTime(timerId);
+    Q_D(const QEventDispatcherUNIX);
+    return d->timerList.remainingDuration(timerId);
 }
 
 void QEventDispatcherUNIX::wakeUp()

@@ -44,59 +44,6 @@ def startCount(c, text): # strspn
     except StopIteration:
         return len(text)
 
-def convertFormat(format):
-    """Convert date/time format-specier from CLDR to Qt
-
-    Match up (as best we can) the differences between:
-    * https://www.unicode.org/reports/tr35/tr35-dates.html#Date_Field_Symbol_Table
-    * QDateTimeParser::parseFormat() and QLocalePrivate::dateTimeToString()
-    """
-    # Compare and contrast dateconverter.py's convert_date().
-    # Need to (check consistency and) reduce redundancy !
-    result = ""
-    i = 0
-    while i < len(format):
-        if format[i] == "'":
-            result += "'"
-            i += 1
-            while i < len(format) and format[i] != "'":
-                result += format[i]
-                i += 1
-            if i < len(format):
-                result += "'"
-                i += 1
-        else:
-            s = format[i:]
-            if s.startswith('E'): # week-day
-                n = startCount('E', s)
-                if n < 3:
-                    result += 'ddd'
-                elif n == 4:
-                    result += 'dddd'
-                else: # 5: narrow, 6 short; but should be name, not number :-(
-                    result += 'd' if n < 6 else 'dd'
-                i += n
-            elif s[0] in 'ab': # am/pm
-                # 'b' should distinguish noon/midnight, too :-(
-                result += "AP"
-                i += startCount('ab', s)
-            elif s.startswith('S'): # fractions of seconds: count('S') == number of decimals to show
-                result += 'z'
-                i += startCount('S', s)
-            elif s.startswith('V'): # long time zone specifiers (and a deprecated short ID)
-                result += 't'
-                i += startCount('V', s)
-            elif s[0] in 'zv': # zone
-                # Should use full name, e.g. "Central European Time", if 'zzzz' :-(
-                # 'v' should get generic non-location format, e.g. PT for "Pacific Time", no DST indicator
-                result += "t"
-                i += startCount('zv', s)
-            else:
-                result += format[i]
-                i += 1
-
-    return result
-
 class QLocaleXmlReader (object):
     def __init__(self, filename):
         self.root = self.__parse(filename)
@@ -109,14 +56,14 @@ class QLocaleXmlReader (object):
         self.__likely = tuple(self.__likelySubtagsMap())
 
         # Mappings {ID: (enum name, code, en.xml name)}
-        self.languages = dict((v[0], v[1:]) for v in languages)
-        self.scripts = dict((v[0], v[1:]) for v in scripts)
-        self.territories = dict((v[0], v[1:]) for v in territories)
+        self.languages = {v[0]: v[1:] for v in languages}
+        self.scripts = {v[0]: v[1:] for v in scripts}
+        self.territories = {v[0]: v[1:] for v in territories}
 
         # Private mappings {enum name: (ID, code)}
-        self.__langByName = dict((v[1], (v[0], v[2])) for v in languages)
-        self.__textByName = dict((v[1], (v[0], v[2])) for v in scripts)
-        self.__landByName = dict((v[1], (v[0], v[2])) for v in territories)
+        self.__langByName = {v[1]: (v[0], v[2]) for v in languages}
+        self.__textByName = {v[1]: (v[0], v[2]) for v in scripts}
+        self.__landByName = {v[1]: (v[0], v[2]) for v in territories}
         # Other properties:
         self.__dupes = set(v[1] for v in languages) & set(v[1] for v in territories)
         self.cldrVersion = self.__firstChildText(self.root, "version")
@@ -396,7 +343,7 @@ class QLocaleXmlWriter (object):
         self.__write(f'<{tag}>{text}</{tag}>')
 
     def close(self, grumble):
-        """Finish writing and grumble any issues discovered."""
+        """Finish writing and grumble about any issues discovered."""
         if self.__rawOutput != self.__complain:
             self.__write('</localeDatabase>')
         self.__rawOutput = self.__complain
@@ -486,8 +433,6 @@ class Locale (object):
     __asint = ("currencyDigits", "currencyRounding")
     # Convert day-name to Qt day-of-week number:
     __asdow = ("firstDayOfWeek", "weekendStart", "weekendEnd")
-    # Convert from CLDR format-strings to QDateTimeParser ones:
-    __asfmt = ("longDateFormat", "shortDateFormat", "longTimeFormat", "shortTimeFormat")
     # Just use the raw text:
     __astxt = ("language", "languageEndonym", "script", "territory", "territoryEndonym",
                "decimal", "group", "zero",
@@ -496,6 +441,8 @@ class Locale (object):
                "alternateQuotationStart", "alternateQuotationEnd",
                "listPatternPartStart", "listPatternPartMiddle",
                "listPatternPartEnd", "listPatternPartTwo", "am", "pm",
+               "longDateFormat", "shortDateFormat",
+               "longTimeFormat", "shortTimeFormat",
                'byte_unit', 'byte_si_quantified', 'byte_iec_quantified',
                "currencyIsoCode", "currencySymbol", "currencyDisplayName",
                "currencyFormat", "currencyNegativeFormat")
@@ -520,14 +467,11 @@ class Locale (object):
         for k in cls.__asdow:
             data[k] = cls.__qDoW[lookup(k)]
 
-        for k in cls.__asfmt:
-            data[k] = convertFormat(lookup(k))
-
         for k in cls.__astxt + tuple(cls.propsMonthDay('days')):
             data['listDelim' if k == 'list' else k] = lookup(k)
 
         for k in cls.propsMonthDay('months'):
-            data[k] = dict((cal, lookup('_'.join((k, cal)))) for cal in calendars)
+            data[k] = {cal: lookup('_'.join((k, cal))) for cal in calendars}
 
         grouping = lookup('groupSizes').split(';')
         data.update(groupLeast = int(grouping[0]),
@@ -619,7 +563,7 @@ class Locale (object):
                        (fullName, fullName),
                        (fullName, fullName),
                        (number, number)),
-            },
+                     },
                      sizes=('long', 'short', 'narrow')):
         for cal in calendars:
             try:
@@ -659,8 +603,8 @@ class Locale (object):
                    byte_iec_quantified=';'.join(q.upper() + 'iB' for q in quantifiers),
                    am='AM', pm='PM', firstDayOfWeek='mon',
                    weekendStart='sat', weekendEnd='sun',
-                   longDateFormat='EEEE, d MMMM yyyy', shortDateFormat='d MMM yyyy',
-                   longTimeFormat='HH:mm:ss z', shortTimeFormat='HH:mm:ss',
+                   longDateFormat='dddd, d MMMM yyyy', shortDateFormat='d MMM yyyy',
+                   longTimeFormat='HH:mm:ss t', shortTimeFormat='HH:mm:ss',
                    longDays=';'.join(days),
                    shortDays=';'.join(d[:3] for d in days),
                    narrowDays='7;1;2;3;4;5;6',

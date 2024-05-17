@@ -25,6 +25,7 @@ qt_internal_add_test(tst_qvariant
     LIBRARIES
         Qt::CorePrivate
         Qt::Gui
+        Qt::TestPrivate
     TESTDATA ${qvariant_resource_files}
     BUILTIN_TESTDATA
 )

@@ -628,8 +628,9 @@ static const char *failureMessageForOp(QTest::ComparisonOperation op)
     Q_UNREACHABLE_RETURN("");
 }
 
-bool QTestResult::reportResult(bool success, qxp::function_ref<const char *()> lhs,
-                               qxp::function_ref<const char *()> rhs,
+bool QTestResult::reportResult(bool success, const void *lhs, const void *rhs,
+                               const char *(*lhsFormatter)(const void*),
+                               const char *(*rhsFormatter)(const void*),
                                const char *lhsExpr, const char *rhsExpr,
                                QTest::ComparisonOperation op, const char *file, int line,
                                const char *failureMessage)
@@ -653,8 +654,8 @@ bool QTestResult::reportResult(bool success, qxp::function_ref<const char *()> l
         return checkStatement(success, msg, file, line);
     }
 
-    const std::unique_ptr<const char[]> lhsPtr{ lhs() };
-    const std::unique_ptr<const char[]> rhsPtr{ rhs() };
+    const std::unique_ptr<const char[]> lhsPtr{ lhsFormatter(lhs) };
+    const std::unique_ptr<const char[]> rhsPtr{ rhsFormatter(rhs) };
 
     if (!failureMessage)
         failureMessage = failureMessageForOp(op);

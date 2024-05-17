@@ -118,6 +118,9 @@ static QSet<QByteArray> keywords()
 #ifdef Q_OS_WATCHOS
             << "watchos"
 #endif
+#ifdef Q_OS_VISIONOS
+            << "visionos"
+#endif
 #ifdef Q_OS_ANDROID
             << "android"
 #endif

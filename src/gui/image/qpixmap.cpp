@@ -289,7 +289,6 @@ QPixmap QPixmap::copy(const QRect &rect) const
 
 /*!
     \fn QPixmap::scroll(int dx, int dy, int x, int y, int width, int height, QRegion *exposed)
-    \since 4.6
 
     This convenience function is equivalent to calling QPixmap::scroll(\a dx,
     \a dy, QRect(\a x, \a y, \a width, \a height), \a exposed).
@@ -298,8 +297,6 @@ QPixmap QPixmap::copy(const QRect &rect) const
 */
 
 /*!
-    \since 4.6
-
     Scrolls the area \a rect of this pixmap by (\a dx, \a dy). The exposed
     region is left unchanged. You can optionally pass a pointer to an empty
     QRegion to get the region that is \a exposed by the scroll operation.
@@ -371,7 +368,6 @@ QPixmap &QPixmap::operator=(const QPixmap &pixmap)
 
 /*!
     \fn void QPixmap::swap(QPixmap &other)
-    \since 4.8
 
     Swaps pixmap \a other with this pixmap. This operation is very
     fast and never fails.
@@ -970,12 +966,7 @@ bool QPixmap::isDetached() const
     Passing 0 for \a flags sets all the default options. Returns \c true
     if the result is that this pixmap is not null.
 
-    Note: this function was part of Qt 3 support in Qt 4.6 and earlier.
-    It has been promoted to official API status in 4.7 to support updating
-    the pixmap's image without creating a new QPixmap as fromImage() would.
-
     \sa fromImage()
-    \since 4.7
 */
 bool QPixmap::convertFromImage(const QImage &image, Qt::ImageConversionFlags flags)
 {
@@ -1280,8 +1271,9 @@ QPixmap QPixmap::transformed(const QTransform &transform,
     QPixmap using the fromImage(). If this is too expensive an
     operation, you can use QBitmap::fromImage() instead.
 
-    To convert a QPixmap to and from HICON you can use the QtWinExtras
-    functions QtWin::toHICON() and QtWin::fromHICON() respectively.
+    To convert a QPixmap to and from HICON you can use the
+    QImage::toHICON() and QImage::fromHICON() functions respectively
+    (after converting the QPixmap to a QImage, as explained above).
 
     \section1 Pixmap Transformations
 

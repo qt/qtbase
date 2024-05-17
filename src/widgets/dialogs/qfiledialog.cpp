@@ -138,8 +138,9 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
   dialog are not instantiated, so related accessors such as layout() and
   itemDelegate() return null. Also, not all platforms show file dialogs
   with a title bar, so be aware that the caption text might not be visible to
-  the user. You can set the \l DontUseNativeDialog option to ensure that the
-  widget-based implementation is used instead of the native dialog.
+  the user. You can set the \l DontUseNativeDialog option or set the
+  \l{Qt::AA_DontUseNativeDialogs}{AA_DontUseNativeDialogs} application attribute
+  to ensure that the widget-based implementation is used instead of the native dialog.
 
   \sa QDir, QFileInfo, QFile, QColorDialog, QFontDialog, {Standard Dialogs Example}
 */
@@ -202,7 +203,8 @@ Q_GLOBAL_STATIC(QUrl, lastVisitedDir)
     \value DontUseNativeDialog Don't use a platform-native file dialog,
     but the widget-based one provided by Qt.\br
     By default, a native file dialog is shown unless you use a subclass
-    of QFileDialog that contains the Q_OBJECT macro or the platform
+    of QFileDialog that contains the Q_OBJECT macro, the global
+    \l{Qt::}{AA_DontUseNativeDialogs} application attribute is set, or the platform
     does not have a native dialog of the type that you require.\br
     For the option to be effective, you must set it before changing
     other properties of the dialog, or showing the dialog.
@@ -2538,7 +2540,8 @@ QUrl QFileDialog::getSaveFileUrl(QWidget *parent,
     On Windows and \macos, this static function uses the
     native file dialog and not a QFileDialog. However, the native Windows file
     dialog does not support displaying files in the directory chooser. You need
-    to pass \l{QFileDialog::}{DontUseNativeDialog} to display files using a
+    to pass the \l{QFileDialog::}{DontUseNativeDialog} option, or set the global
+    \\l{Qt::}{AA_DontUseNativeDialogs} application attribute to display files using a
     QFileDialog.
 
     Note that the \macos native file dialog does not show a title bar.
@@ -3791,8 +3794,9 @@ void QFileDialogPrivate::enterDirectory(const QModelIndex &index)
         }
     } else {
         // Do not accept when shift-clicking to multi-select a file in environments with single-click-activation (KDE)
-        if (!q->style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, nullptr, qFileDialogUi->treeView)
-            || q->fileMode() != QFileDialog::ExistingFiles || !(QGuiApplication::keyboardModifiers() & Qt::CTRL)) {
+        if ((!q->style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick, nullptr, qFileDialogUi->treeView)
+             || q->fileMode() != QFileDialog::ExistingFiles || !(QGuiApplication::keyboardModifiers() & Qt::CTRL))
+            && index.model()->flags(index) & Qt::ItemIsEnabled) {
             q->accept();
         }
     }

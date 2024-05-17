@@ -1,5 +1,5 @@
 // Copyright (C) 2022 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QtTest>
 
@@ -22,6 +22,7 @@ private slots:
     void initTestCase();
     void nativeMethod();
     void construct();
+    void stringTypeCantBeArgument();
 };
 
 struct QtJavaWrapper {};
@@ -225,6 +226,57 @@ void tst_QJniTypes::construct()
     QCOMPARE(str.toString(), text);
     String str3 = std::move(str2);
     QCOMPARE(str3.toString(), text);
+}
+
+template <typename ...Arg>
+static constexpr bool isValidArgument(Arg &&...) noexcept
+{
+    return QtJniTypes::ValidSignatureTypesDetail<q20::remove_cvref_t<Arg>...>;
+}
+
+enum class Overload
+{
+    ClassNameAndMethod,
+    OnlyMethod,
+};
+
+template <typename Ret, typename ...Args
+#ifndef Q_QDOC
+    , QtJniTypes::IfValidSignatureTypes<Ret, Args...> = true
+#endif
+>
+static constexpr auto callStaticMethod(const char *className, const char *methodName, Args &&...)
+{
+    Q_UNUSED(className);
+    Q_UNUSED(methodName);
+    return Overload::ClassNameAndMethod;
+}
+
+template <typename Klass, typename Ret, typename ...Args
+#ifndef Q_QDOC
+    , QtJniTypes::IfValidSignatureTypes<Ret, Args...> = true
+#endif
+>
+static constexpr auto callStaticMethod(const char *methodName, Args &&...)
+{
+    Q_UNUSED(methodName);
+    return Overload::OnlyMethod;
+}
+
+void tst_QJniTypes::stringTypeCantBeArgument()
+{
+    const char *methodName = "staticEchoMethod";
+
+    static_assert(!isValidArgument(QtJniTypes::Traits<QtJniTypes::JavaType>::className()));
+    static_assert(!isValidArgument("someFunctionName"));
+    static_assert(!isValidArgument(methodName));
+    static_assert(!isValidArgument(QtJniTypes::Traits<QtJniTypes::JavaType>::className(),
+                                   "someFunctionName", methodName, 42));
+
+    static_assert(callStaticMethod<jstring, jint>("class name", "method name", 42)
+                  == Overload::ClassNameAndMethod);
+    static_assert(callStaticMethod<QtJniTypes::JavaType, jint>("method name", 42)
+                  == Overload::OnlyMethod);
 }
 
 QTEST_MAIN(tst_QJniTypes)

@@ -1,198 +1,20 @@
 // Copyright (C) 2023 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#include <QtCore/qcompare.h>
-#include <QtTest/qtest.h>
-#include <QtTest/private/qcomparisontesthelper_p.h>
+#include "tst_qcomparehelpers.h"
+#include "wrappertypes.h"
 
 #if defined(__STDCPP_FLOAT16_T__) && __has_include(<stdfloat>)
 #include <stdfloat>
 #endif
 
-class IntWrapper
-{
-public:
-    // implicit constructor and operator int() to simulate the case that
-    // triggers a bug on MSVC < 19.36.
-    IntWrapper(int val) : m_val(val) {}
-    operator int() const noexcept { return m_val; }
+/*
+    NOTE: Do not add any other test cases to this cpp file!
+    minGW already complains about a too large tst_qcomparehelpers.cpp.obj
+    object file.
 
-    int value() const { return m_val; }
-
-private:
-    friend bool comparesEqual(const IntWrapper &lhs, const IntWrapper &rhs) noexcept
-    { return lhs.m_val == rhs.m_val; }
-    friend Qt::strong_ordering
-    compareThreeWay(const IntWrapper &lhs, const IntWrapper &rhs) noexcept
-    {
-        return Qt::compareThreeWay(lhs.m_val, rhs.m_val);
-    }
-    friend bool comparesEqual(const IntWrapper &lhs, int rhs) noexcept
-    { return lhs.m_val == rhs; }
-    friend Qt::strong_ordering compareThreeWay(const IntWrapper &lhs, int rhs) noexcept
-    { return compareThreeWay(lhs, IntWrapper(rhs)); }
-
-    Q_DECLARE_STRONGLY_ORDERED(IntWrapper)
-    Q_DECLARE_STRONGLY_ORDERED(IntWrapper, int)
-
-    int m_val = 0;
-};
-
-class DoubleWrapper
-{
-public:
-    explicit DoubleWrapper(double val) : m_val(val) {}
-    double value() const { return m_val; }
-
-private:
-    friend bool comparesEqual(const DoubleWrapper &lhs, const DoubleWrapper &rhs) noexcept
-    { return lhs.m_val == rhs.m_val; }
-    friend Qt::partial_ordering
-    compareThreeWay(const DoubleWrapper &lhs, const DoubleWrapper &rhs) noexcept
-    {
-        return Qt::compareThreeWay(lhs.m_val, rhs.m_val);
-    }
-    friend bool comparesEqual(const DoubleWrapper &lhs, const IntWrapper &rhs) noexcept
-    { return comparesEqual(lhs, DoubleWrapper(rhs.value())); }
-    friend Qt::partial_ordering
-    compareThreeWay(const DoubleWrapper &lhs, const IntWrapper &rhs) noexcept
-    { return compareThreeWay(lhs, DoubleWrapper(rhs.value())); }
-    friend bool comparesEqual(const DoubleWrapper &lhs, double rhs) noexcept
-    { return lhs.m_val == rhs; }
-    friend Qt::partial_ordering compareThreeWay(const DoubleWrapper &lhs, double rhs) noexcept
-    {
-        return Qt::compareThreeWay(lhs.m_val, rhs);
-    }
-
-    Q_DECLARE_PARTIALLY_ORDERED(DoubleWrapper)
-    Q_DECLARE_PARTIALLY_ORDERED(DoubleWrapper, IntWrapper)
-    Q_DECLARE_PARTIALLY_ORDERED(DoubleWrapper, double)
-
-    double m_val = 0.0;
-};
-
-template <typename String>
-class StringWrapper
-{
-public:
-    explicit StringWrapper(String val) : m_val(val) {}
-    String value() const { return m_val; }
-
-private:
-    // Some of the helper functions are intentionally NOT marked as noexcept
-    // to test the conditional noexcept in the macros.
-    template <typename T>
-    friend bool comparesEqual(const StringWrapper<T> &, const StringWrapper<T> &) noexcept;
-    template <typename T>
-    friend Qt::weak_ordering
-    compareThreeWay(const StringWrapper<T> &, const StringWrapper<T> &) noexcept;
-    template <typename T>
-    friend bool comparesEqual(const StringWrapper<T> &, QAnyStringView);
-    template <typename T>
-    friend Qt::weak_ordering compareThreeWay(const StringWrapper<T> &, QAnyStringView);
-
-    Q_DECLARE_WEAKLY_ORDERED(StringWrapper)
-    Q_DECLARE_WEAKLY_ORDERED(StringWrapper, QAnyStringView)
-
-    String m_val;
-};
-
-// StringWrapper comparison helper functions
-
-bool equalsHelper(QAnyStringView lhs, QAnyStringView rhs) noexcept
-{
-    return QAnyStringView::compare(lhs, rhs, Qt::CaseInsensitive) == 0;
-}
-
-template <typename T>
-bool comparesEqual(const StringWrapper<T> &lhs, const StringWrapper<T> &rhs) noexcept
-{
-    return equalsHelper(lhs.m_val, rhs.m_val);
-}
-
-Qt::weak_ordering compareHelper(QAnyStringView lhs, QAnyStringView rhs) noexcept
-{
-    const int res = QAnyStringView::compare(lhs, rhs, Qt::CaseInsensitive);
-    if (res < 0)
-        return Qt::weak_ordering::less;
-    else if (res > 0)
-        return Qt::weak_ordering::greater;
-    else
-        return Qt::weak_ordering::equivalent;
-}
-
-template <typename T>
-Qt::weak_ordering compareThreeWay(const StringWrapper<T> &lhs, const StringWrapper<T> &rhs) noexcept
-{
-    return compareHelper(lhs.m_val, rhs.m_val);
-}
-
-template <typename T>
-bool comparesEqual(const StringWrapper<T> &lhs, QAnyStringView rhs)
-{
-    return equalsHelper(lhs.m_val, rhs);
-}
-
-template <typename T>
-Qt::weak_ordering compareThreeWay(const StringWrapper<T> &lhs, QAnyStringView rhs)
-{
-    return compareHelper(lhs.m_val, rhs);
-}
-
-// Test class
-
-class tst_QCompareHelpers : public QObject
-{
-    Q_OBJECT
-
-private:
-    template <typename LeftType, typename RightType, typename OrderingType>
-    void compareImpl();
-
-    template <typename LeftType, typename RightType>
-    void compareIntData();
-
-    template <typename LeftType, typename RightType>
-    void compareFloatData();
-
-    template <typename LeftType, typename RightType>
-    void compareStringData();
-
-private slots:
-    void comparisonCompiles();
-
-    void compare_IntWrapper_data() { compareIntData<IntWrapper, IntWrapper>(); }
-    void compare_IntWrapper() { compareImpl<IntWrapper, IntWrapper, Qt::strong_ordering>(); }
-
-    void compare_IntWrapper_int_data() { compareIntData<IntWrapper, int>(); }
-    void compare_IntWrapper_int() { compareImpl<IntWrapper, int, Qt::strong_ordering>(); }
-
-    void compare_DoubleWrapper_data() { compareFloatData<DoubleWrapper, DoubleWrapper>(); }
-    void compare_DoubleWrapper()
-    { compareImpl<DoubleWrapper, DoubleWrapper, Qt::partial_ordering>(); }
-
-    void compare_DoubleWrapper_double_data() { compareFloatData<DoubleWrapper, double>(); }
-    void compare_DoubleWrapper_double()
-    { compareImpl<DoubleWrapper, double, Qt::partial_ordering>(); }
-
-    void compare_IntWrapper_DoubleWrapper_data();
-    void compare_IntWrapper_DoubleWrapper()
-    { compareImpl<IntWrapper, DoubleWrapper, Qt::partial_ordering>(); }
-
-    void compare_StringWrapper_data()
-    { compareStringData<StringWrapper<QString>, StringWrapper<QString>>(); }
-    void compare_StringWrapper()
-    { compareImpl<StringWrapper<QString>, StringWrapper<QString>, Qt::weak_ordering>(); }
-
-    void compare_StringWrapper_AnyStringView_data()
-    { compareStringData<StringWrapper<QString>, QAnyStringView>(); }
-    void compare_StringWrapper_AnyStringView()
-    { compareImpl<StringWrapper<QString>, QAnyStringView, Qt::weak_ordering>(); }
-
-    void generatedClasses();
-
-    void builtinOrder();
-};
+    Create a new cpp file and add new tests there.
+*/
 
 template<typename LeftType, typename RightType, typename OrderingType>
 void tst_QCompareHelpers::compareImpl()
@@ -315,6 +137,46 @@ void tst_QCompareHelpers::comparisonCompiles()
         return;
 }
 
+void tst_QCompareHelpers::compare_IntWrapper_data()
+{
+    compareIntData<IntWrapper, IntWrapper>();
+}
+
+void tst_QCompareHelpers::compare_IntWrapper()
+{
+    compareImpl<IntWrapper, IntWrapper, Qt::strong_ordering>();
+}
+
+void tst_QCompareHelpers::compare_IntWrapper_int_data()
+{
+    compareIntData<IntWrapper, int>();
+}
+
+void tst_QCompareHelpers::compare_IntWrapper_int()
+{
+    compareImpl<IntWrapper, int, Qt::strong_ordering>();
+}
+
+void tst_QCompareHelpers::compare_DoubleWrapper_data()
+{
+    compareFloatData<DoubleWrapper, DoubleWrapper>();
+}
+
+void tst_QCompareHelpers::compare_DoubleWrapper()
+{
+    compareImpl<DoubleWrapper, DoubleWrapper, Qt::partial_ordering>();
+}
+
+void tst_QCompareHelpers::compare_DoubleWrapper_double_data()
+{
+    compareFloatData<DoubleWrapper, double>();
+}
+
+void tst_QCompareHelpers::compare_DoubleWrapper_double()
+{
+    compareImpl<DoubleWrapper, double, Qt::partial_ordering>();
+}
+
 void tst_QCompareHelpers::compare_IntWrapper_DoubleWrapper_data()
 {
     QTest::addColumn<IntWrapper>("lhs");
@@ -345,6 +207,31 @@ void tst_QCompareHelpers::compare_IntWrapper_DoubleWrapper_data()
     createRow(max, -inf, Qt::partial_ordering::greater);
     createRow(min, inf, Qt::partial_ordering::less);
     createRow(min, -inf, Qt::partial_ordering::greater);
+}
+
+void tst_QCompareHelpers::compare_IntWrapper_DoubleWrapper()
+{
+    compareImpl<IntWrapper, DoubleWrapper, Qt::partial_ordering>();
+}
+
+void tst_QCompareHelpers::compare_StringWrapper_data()
+{
+    compareStringData<StringWrapper<QString>, StringWrapper<QString>>();
+}
+
+void tst_QCompareHelpers::compare_StringWrapper()
+{
+    compareImpl<StringWrapper<QString>, StringWrapper<QString>, Qt::weak_ordering>();
+}
+
+void tst_QCompareHelpers::compare_StringWrapper_AnyStringView_data()
+{
+    compareStringData<StringWrapper<QString>, QAnyStringView>();
+}
+
+void tst_QCompareHelpers::compare_StringWrapper_AnyStringView()
+{
+    compareImpl<StringWrapper<QString>, QAnyStringView, Qt::weak_ordering>();
 }
 
 #define DECLARE_TYPE(Name, Type, Attrs, RetType, Constexpr, Suffix) \
@@ -710,4 +597,4 @@ void tst_QCompareHelpers::builtinOrder()
 }
 
 QTEST_MAIN(tst_QCompareHelpers)
-#include "tst_qcomparehelpers.moc"
+#include "moc_tst_qcomparehelpers.cpp"

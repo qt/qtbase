@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <qpainter.h>
@@ -61,6 +61,7 @@ private slots:
 #endif
     void drawPixmapFragments();
     void drawPixmapNegativeScale();
+    void drawPixmapRounding();
 
     void drawLine_data();
     void drawLine();
@@ -745,6 +746,16 @@ void tst_QPainter::drawPixmapNegativeScale()
     QImage resultImage = resultPixmap.toImage().convertToFormat(QImage::Format_ARGB32);
     QVERIFY(resultImage.pixel(4, 8) == qRgba(255, 255, 255, 255)); // left strip is now white
     QVERIFY(resultImage.pixel(12, 8) == qRgba(0, 0, 0, 255)); // and right strip is now black
+}
+
+void tst_QPainter::drawPixmapRounding()
+{
+    // Just test that we don't assert
+    QBitmap bm(8, 8);
+    QImage out(64, 64, QImage::Format_RGB32);
+    QPainter p(&out);
+    qreal y = 26.499999999999996;
+    p.drawPixmap(QPointF(0, y), bm);
 }
 
 void tst_QPainter::drawLine_data()
@@ -2773,7 +2784,7 @@ void tst_QPainter::monoImages()
     for (int i = 1; i < QImage::NImageFormats; ++i) {
         for (int j = 0; j < numColorPairs; ++j) {
             const QImage::Format format = QImage::Format(i);
-            if (format == QImage::Format_Indexed8)
+            if (format == QImage::Format_Indexed8 || format == QImage::Format_CMYK8888)
                 continue;
 
             QImage img(2, 2, format);
@@ -3543,9 +3554,13 @@ void tst_QPainter::drawImage_data()
 
     for (int srcFormat = QImage::Format_Mono; srcFormat < QImage::NImageFormats; ++srcFormat) {
         for (int dstFormat = QImage::Format_Mono; dstFormat < QImage::NImageFormats; ++dstFormat) {
-            // Indexed8 can't be painted to, and Alpha8 can't hold a color.
-            if (dstFormat == QImage::Format_Indexed8 || dstFormat == QImage::Format_Alpha8)
+            // Indexed8 and CMYK8888 can't be painted to, and Alpha8 can't hold a color.
+            if (dstFormat == QImage::Format_Indexed8 ||
+                dstFormat == QImage::Format_CMYK8888 ||
+                dstFormat == QImage::Format_Alpha8) {
                 continue;
+            }
+
             for (int odd_x = 0; odd_x <= 1; ++odd_x) {
                 for (int odd_width = 0; odd_width <= 1; ++odd_width) {
                     QTest::addRow("srcFormat %d, dstFormat %d, odd x: %d, odd width: %d",

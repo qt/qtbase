@@ -78,6 +78,7 @@ public:
     void resizeAllScreens();
     void loadLocalFontFamilies(emscripten::val families);
     void removeBackingStore(QWindow* window);
+    void releaseRequesetUpdateHold();
     static quint64 getTimestamp();
 
     int touchPoints;

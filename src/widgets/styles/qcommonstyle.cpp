@@ -750,70 +750,75 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
     case PE_IndicatorArrowRight:
     case PE_IndicatorArrowLeft:
         {
-            if (opt->rect.width() <= 1 || opt->rect.height() <= 1)
+            const QRect &r = opt->rect;
+            if (r.width() <= 1 || r.height() <= 1)
                 break;
-            QRect r = opt->rect;
             int size = qMin(r.height(), r.width());
             QPixmap pixmap;
+            const qreal dpr = p->device()->devicePixelRatio();
             const QString pixmapName = QStyleHelper::uniqueName("$qt_ia-"_L1
                                                      % QLatin1StringView(metaObject()->className())
                                                      % HexString<uint>(pe),
-                                             opt, QSize(size, size));
+                                             opt, QSize(size, size), dpr);
             if (!QPixmapCache::find(pixmapName, &pixmap)) {
-                const qreal pixelRatio = p->device()->devicePixelRatio();
-                const qreal border = pixelRatio * (size / 5.);
-                const qreal sqsize = pixelRatio * size;
-                QImage image(sqsize, sqsize, QImage::Format_ARGB32_Premultiplied);
-                image.fill(Qt::transparent);
-                QPainter imagePainter(&image);
+                // dpr scaling does not work well on such small pixel sizes, do it on our own
+                const int border = 1 * dpr;
+                const int sizeDpr = size * dpr;
+                int width = sizeDpr - 2 * border - 1;
+                int height = width / 2;
+                const int add = ((width & 1) == 1);
+                if (pe == PE_IndicatorArrowRight || pe == PE_IndicatorArrowLeft)
+                    std::swap(width, height);
+                pixmap = styleCachePixmap(QSize(sizeDpr, sizeDpr), 1);
 
-                QPolygonF poly;
+                std::array<QPointF, 4> poly;
                 switch (pe) {
                     case PE_IndicatorArrowUp:
-                        poly = {QPointF(border, sqsize / 2), QPointF(sqsize / 2, border),  QPointF(sqsize - border, sqsize / 2)};
+                        poly = {QPointF(0, height), QPointF(width, height),
+                                QPointF(width / 2 + add, 0), QPointF(width / 2, 0)};
                         break;
                     case PE_IndicatorArrowDown:
-                        poly = {QPointF(border, sqsize / 2), QPointF(sqsize / 2, sqsize - border), QPointF(sqsize - border, sqsize / 2)};
+                        poly = {QPointF(0, 0), QPointF(width, 0),
+                                QPointF(width / 2 + add, height), QPointF(width / 2, height)};
                         break;
                     case PE_IndicatorArrowRight:
-                        poly = {QPointF(sqsize - border, sqsize / 2), QPointF(sqsize / 2, border), QPointF(sqsize / 2, sqsize - border)};
+                        poly = {QPointF(0, 0), QPointF(0, height),
+                                QPointF(width, height / 2 + add), QPointF(width, height / 2)};
                         break;
                     case PE_IndicatorArrowLeft:
-                        poly = {QPointF(border, sqsize / 2), QPointF(sqsize / 2, border), QPointF(sqsize / 2, sqsize - border)};
+                        poly = {QPointF(width, 0), QPointF(width, height),
+                                QPointF(0, height / 2 + add), QPointF(0, height / 2)};
                         break;
                     default:
                         break;
                 }
 
-                int bsx = 0;
-                int bsy = 0;
-
+                QPainter imagePainter(&pixmap);
+                imagePainter.translate((sizeDpr - width) / 2, (sizeDpr - height) / 2);
                 if (opt->state & State_Sunken) {
-                    bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt, widget);
-                    bsy = proxy()->pixelMetric(PM_ButtonShiftVertical, opt, widget);
+                    const auto bsx = proxy()->pixelMetric(PM_ButtonShiftHorizontal, opt, widget);
+                    const auto bsy = proxy()->pixelMetric(PM_ButtonShiftVertical, opt, widget);
+                    imagePainter.translate(bsx, bsy);
                 }
-
-                const QRectF bounds = poly.boundingRect();
-                const qreal sx = sqsize / 2 - bounds.center().x() - 1;
-                const qreal sy = sqsize / 2 - bounds.center().y() - 1;
-                imagePainter.translate(sx + bsx, sy + bsy);
                 imagePainter.setPen(opt->palette.buttonText().color());
                 imagePainter.setBrush(opt->palette.buttonText());
 
                 if (!(opt->state & State_Enabled)) {
-                    imagePainter.translate(1, 1);
+                    const int ofs = qRound(1 * dpr);
+                    imagePainter.translate(ofs, ofs);
                     imagePainter.setBrush(opt->palette.light().color());
                     imagePainter.setPen(opt->palette.light().color());
-                    imagePainter.drawPolygon(poly);
-                    imagePainter.translate(-1, -1);
+                    imagePainter.drawPolygon(poly.data(), int(poly.size()));
+                    imagePainter.drawPoints(poly.data(), int(poly.size()));
+                    imagePainter.translate(-ofs, -ofs);
                     imagePainter.setBrush(opt->palette.mid().color());
                     imagePainter.setPen(opt->palette.mid().color());
                 }
-
-                imagePainter.drawPolygon(poly);
+                imagePainter.drawPolygon(poly.data(), int(poly.size()));
+                // sometimes the corners are not drawn by drawPolygon for unknown reaons, so re-draw them again
+                imagePainter.drawPoints(poly.data(), int(poly.size()));
                 imagePainter.end();
-                pixmap = QPixmap::fromImage(image);
-                pixmap.setDevicePixelRatio(pixelRatio);
+                pixmap.setDevicePixelRatio(dpr);
                 QPixmapCache::insert(pixmapName, pixmap);
             }
             int xOffset = r.x() + (r.width() - size)/2;
@@ -1679,9 +1684,12 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             QFontMetrics fm(header->fontMetrics);
             if (header->state & QStyle::State_On) {
                 QFont fnt = p->font();
-                fnt.setBold(true);
-                p->setFont(fnt);
-                fm = QFontMetrics((p->font()));
+                // the font already has a weight set; don't override that
+                if (!(fnt.resolveMask() & QFont::WeightResolved)) {
+                    fnt.setBold(true);
+                    p->setFont(fnt);
+                    fm = QFontMetrics((p->font()));
+                }
             }
             QString text = header->text;
             if (const QStyleOptionHeaderV2 *headerV2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(header)) {
@@ -4224,6 +4232,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
                 break;
             case SC_SpinBoxFrame:
                 ret = spinbox->rect;
+                break;
             default:
                 break;
             }
@@ -4384,7 +4393,7 @@ QRect QCommonStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex 
                     if (verticalAlignment & Qt::AlignVCenter)
                         topMargin = topHeight / 2;
                     else if (verticalAlignment & Qt::AlignTop)
-                        topMargin = topHeight;
+                        topMargin = topHeight + proxy()->pixelMetric(PM_FocusFrameVMargin, groupBox, widget);
                 }
 
                 QRect frameRect = groupBox->rect;
@@ -4516,15 +4525,6 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_MenuBarVMargin:
     case PM_MenuBarHMargin:
         ret = 0;
-        break;
-    case PM_DialogButtonsSeparator:
-        ret = int(QStyleHelper::dpiScaled(5, opt));
-        break;
-    case PM_DialogButtonsButtonWidth:
-        ret = int(QStyleHelper::dpiScaled(70, opt));
-        break;
-    case PM_DialogButtonsButtonHeight:
-        ret = int(QStyleHelper::dpiScaled(30, opt));
         break;
     case PM_TitleBarHeight:
     {
@@ -5500,8 +5500,8 @@ static inline QPixmap titleBarMenuCachedPixmapFromXPM() { return cachedPixmapFro
 #endif // QT_CONFIG(imageformat_xpm)
 
 #if QT_CONFIG(imageformat_png)
-static inline QString iconResourcePrefix() { return QStringLiteral(":/qt-project.org/styles/commonstyle/images/"); }
-static inline QString iconPngSuffix() { return QStringLiteral(".png"); }
+static constexpr QLatin1StringView iconResourcePrefix() noexcept { return ":/qt-project.org/styles/commonstyle/images/"_L1; }
+static constexpr QLatin1StringView iconPngSuffix() noexcept { return ".png"_L1; }
 
 template <typename T>
 static void addIconFiles(QStringView prefix, std::initializer_list<T> sizes, QIcon &icon,
@@ -5597,7 +5597,7 @@ QIcon QCommonStylePrivate::iconFromWindowsTheme(QCommonStyle::StandardPixmap sta
 {
     Q_UNUSED(option);
     Q_UNUSED(widget);
-    QIcon icon;;
+    QIcon icon;
 #ifdef Q_OS_WIN
     switch (standardIcon) {
     case QStyle::SP_DriveCDIcon:
@@ -5816,14 +5816,15 @@ QIcon QCommonStylePrivate::iconFromMacTheme(QCommonStyle::StandardPixmap standar
         case QStyle::SP_TitleBarNormalButton:
         case QStyle::SP_TitleBarCloseButton: {
             QIcon titleBarIcon;
-            QString prefix = standardIcon == QStyle::SP_TitleBarCloseButton
-                            ? QStringLiteral(":/qt-project.org/styles/macstyle/images/closedock-")
-                            : QStringLiteral(":/qt-project.org/styles/macstyle/images/dockdock-");
+            constexpr auto imagesPrefix = ":/qt-project.org/styles/macstyle/images/"_L1;
+            const auto namePrefix = standardIcon == QStyle::SP_TitleBarCloseButton
+                              ? "closedock-"_L1
+                              : "dockdock-"_L1;
             for (const auto size : dockTitleIconSizes) {
-                titleBarIcon.addFile(prefix + QStringLiteral("macstyle-") + QString::number(size) + iconPngSuffix(),
-                                     QSize(size, size), QIcon::Normal, QIcon::Off);
-                titleBarIcon.addFile(prefix + QStringLiteral("down-macstyle-") + QString::number(size) + iconPngSuffix(),
-                                     QSize(size, size), QIcon::Normal, QIcon::On);
+                titleBarIcon.addFile(imagesPrefix + namePrefix + "macstyle-"_L1 + QString::number(size)
+                                     + iconPngSuffix(), QSize(size, size), QIcon::Normal, QIcon::Off);
+                titleBarIcon.addFile(imagesPrefix + namePrefix + "down-macstyle-"_L1 + QString::number(size)
+                                     + iconPngSuffix(), QSize(size, size), QIcon::Normal, QIcon::On);
             }
             return titleBarIcon;
         }

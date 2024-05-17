@@ -612,8 +612,8 @@ function(_qt_internal_set_apple_localizations target)
         return()
     endif()
 
-    set(supported_languages "${QT_I18N_LANGUAGES}")
-    if("${QT_I18N_LANGUAGES}" STREQUAL "")
+    set(supported_languages "${QT_I18N_TRANSLATED_LANGUAGES}")
+    if("${QT_I18N_TRANSLATED_LANGUAGES}" STREQUAL "")
         get_target_property(supported_languages "${target}" _qt_apple_supported_languages)
         if("${supported_languages}" STREQUAL "supported_languages-NOTFOUND")
             return()
@@ -681,6 +681,12 @@ function(_qt_internal_export_apple_sdk_and_xcode_version_requirements out_var)
             QT_SUPPORTED_MAX_IOS_SDK_VERSION
             QT_SUPPORTED_MIN_IOS_XCODE_VERSION
         )
+    elseif(VISIONOS)
+        set(vars_to_assign
+            QT_SUPPORTED_MIN_VISIONOS_SDK_VERSION
+            QT_SUPPORTED_MAX_VISIONOS_SDK_VERSION
+            QT_SUPPORTED_MIN_VISIONOS_XCODE_VERSION
+        )
     else()
         set(vars_to_assign
             QT_SUPPORTED_MIN_MACOS_SDK_VERSION
@@ -692,7 +698,11 @@ function(_qt_internal_export_apple_sdk_and_xcode_version_requirements out_var)
     set(assignments "")
     foreach(var IN LISTS vars_to_assign)
         set(value "${${var}}")
-        list(APPEND assignments "set(${var} \"${value}\")")
+        list(APPEND assignments
+            "
+if(NOT ${var})
+    set(${var} \"${value}\")
+endif()")
     endforeach()
 
     list(JOIN assignments "\n" assignments)
@@ -703,6 +713,8 @@ function(_qt_internal_get_apple_sdk_version out_var)
     if(APPLE)
         if(CMAKE_SYSTEM_NAME STREQUAL iOS)
             set(sdk_name "iphoneos")
+        elseif(CMAKE_SYSTEM_NAME STREQUAL visionOS)
+            set(sdk_name "xros")
         else()
             # Default to macOS
             set(sdk_name "macosx")
@@ -800,6 +812,10 @@ function(_qt_internal_check_apple_sdk_and_xcode_versions)
         set(min_sdk_version "${QT_SUPPORTED_MIN_IOS_SDK_VERSION}")
         set(max_sdk_version "${QT_SUPPORTED_MAX_IOS_SDK_VERSION}")
         set(min_xcode_version "${QT_SUPPORTED_MIN_IOS_XCODE_VERSION}")
+    elseif(VISIONOS)
+        set(min_sdk_version "${QT_SUPPORTED_MIN_VISIONOS_SDK_VERSION}")
+        set(max_sdk_version "${QT_SUPPORTED_MAX_VISIONOS_SDK_VERSION}")
+        set(min_xcode_version "${QT_SUPPORTED_MIN_VISIONOS_XCODE_VERSION}")
     else()
         set(min_sdk_version "${QT_SUPPORTED_MIN_MACOS_SDK_VERSION}")
         set(max_sdk_version "${QT_SUPPORTED_MAX_MACOS_SDK_VERSION}")
@@ -881,7 +897,7 @@ function(_qt_internal_check_apple_sdk_and_xcode_versions)
 endfunction()
 
 function(_qt_internal_finalize_apple_app target)
-    # Shared between macOS and iOS apps
+    # Shared between macOS and UIKit apps
 
     _qt_internal_copy_info_plist("${target}")
     _qt_internal_set_apple_localizations("${target}")
@@ -899,6 +915,14 @@ function(_qt_internal_finalize_apple_app target)
     _qt_internal_set_xcode_bundle_name("${target}")
     _qt_internal_set_apple_bundle_identifier("${target}")
     _qt_internal_set_placeholder_apple_bundle_version("${target}")
+endfunction()
+
+function(_qt_internal_finalize_uikit_app target)
+    if(CMAKE_SYSTEM_NAME STREQUAL iOS)
+        _qt_internal_finalize_ios_app("${target}")
+    else()
+        _qt_internal_finalize_apple_app("${target}")
+    endif()
 endfunction()
 
 function(_qt_internal_finalize_ios_app target)

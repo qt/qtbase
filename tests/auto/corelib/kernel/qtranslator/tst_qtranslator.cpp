@@ -1,5 +1,5 @@
 // Copyright (C) 2021 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <QWaitCondition>
@@ -95,7 +95,7 @@ void tst_QTranslator::load()
 
     {
         QFile file(filepath);
-        file.open(QFile::ReadOnly);
+        QVERIFY(file.open(QFile::ReadOnly));
         QByteArray data = file.readAll();
         QTranslator tor;
         QVERIFY(tor.load((const uchar *)data.constData(), data.length()));
@@ -329,7 +329,7 @@ void tst_QTranslator::dependencies()
     {
         QTranslator tor( 0 );
         QFile file("dependencies_la.qm");
-        file.open(QFile::ReadOnly);
+        QVERIFY(file.open(QFile::ReadOnly));
         QByteArray data = file.readAll();
         QVERIFY(tor.load((const uchar *)data.constData(), data.length()));
         QVERIFY(!tor.isEmpty());

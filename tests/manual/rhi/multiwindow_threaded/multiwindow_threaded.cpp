@@ -1,5 +1,5 @@
 // Copyright (C) 2018 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QApplication>
 #include <QWidget>
@@ -321,7 +321,7 @@ void Renderer::createRhi()
     }
 #endif
 
-#if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#if QT_CONFIG(metal)
     if (graphicsApi == Metal) {
         QRhiMetalInitParams params;
         r = QRhi::create(QRhi::Metal, &params, rhiFlags);
@@ -623,7 +623,7 @@ void createWindow()
     static QColor colors[] = { Qt::red, Qt::green, Qt::blue, Qt::yellow, Qt::cyan, Qt::gray };
     const int n = windows.count();
     Window *w = new Window(QString::asprintf("Window+Thread #%d (%s)", n, qPrintable(graphicsApiName())), graphicsApi);
-    Renderer *renderer = new Renderer(w, colors[n % 6], n % 3);;
+    Renderer *renderer = new Renderer(w, colors[n % 6], n % 3);
     QObject::connect(w, &Window::initRequested, w, [renderer] {
         renderer->sendInit();
     });
@@ -654,7 +654,7 @@ int main(int argc, char **argv)
 
 #if defined(Q_OS_WIN)
     graphicsApi = D3D11;
-#elif defined(Q_OS_MACOS) || defined(Q_OS_IOS)
+#elif QT_CONFIG(metal)
     graphicsApi = Metal;
 #elif QT_CONFIG(vulkan)
     graphicsApi = Vulkan;

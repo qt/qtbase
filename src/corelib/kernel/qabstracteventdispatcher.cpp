@@ -9,8 +9,11 @@
 #include <private/qthread_p.h>
 #include <private/qcoreapplication_p.h>
 #include <private/qfreelist_p.h>
+#include <private/qnumeric_p.h>
 
 QT_BEGIN_NAMESPACE
+
+using namespace std::chrono_literals;
 
 // we allow for 2^24 = 8^8 = 16777216 simultaneously running timers
 struct QtTimerIdFreeListConstants : public QFreeListDefaultConstants
@@ -51,6 +54,29 @@ Q_CONSTINIT const int QtTimerIdFreeListConstants::Sizes[QtTimerIdFreeListConstan
 
 typedef QFreeList<void, QtTimerIdFreeListConstants> QtTimerIdFreeList;
 Q_GLOBAL_STATIC(QtTimerIdFreeList, timerIdFreeList)
+
+template <typename T> static T fromDuration(std::chrono::nanoseconds interval)
+{
+    using namespace std::chrono;
+    qint64 value = ceil<milliseconds>(interval).count();
+    return qt_saturate<T>(value);
+}
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+static inline QAbstractEventDispatcherV2 *v2(QAbstractEventDispatcher *self)
+{
+    if (QAbstractEventDispatcherPrivate::get(self)->isV2)
+        return static_cast<QAbstractEventDispatcherV2 *>(self);
+    return nullptr;
+}
+
+static inline const QAbstractEventDispatcherV2 *v2(const QAbstractEventDispatcher *self)
+{
+    if (QAbstractEventDispatcherPrivate::get(self)->isV2)
+        return static_cast<const QAbstractEventDispatcherV2 *>(self);
+    return nullptr;
+}
+#endif // Qt 7
 
 QAbstractEventDispatcherPrivate::QAbstractEventDispatcherPrivate()
 {
@@ -120,6 +146,15 @@ void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
     external event loop with the Qt event loop.
 
     \sa QEventLoop, QCoreApplication, QThread
+*/
+/*!
+    \typedef QAbstractEventDispatcher::Duration
+
+    A \c{std::chrono::duration} type that is used in various API in this class.
+    This type exists to facilitate a possible transition to a higher or lower
+    granularity.
+
+    In all current platforms, it is \c nanoseconds.
 */
 
 /*!
@@ -214,16 +249,39 @@ QAbstractEventDispatcher *QAbstractEventDispatcher::instance(QThread *thread)
 */
 
 /*!
+    \obsolete [6.8] This function will be removed in Qt 7. Use the overload taking \l Duration.
+
     Registers a timer with the specified \a interval and \a timerType for the
     given \a object and returns the timer id.
 */
 int QAbstractEventDispatcher::registerTimer(qint64 interval, Qt::TimerType timerType, QObject *object)
 {
-    int id = QAbstractEventDispatcherPrivate::allocateTimerId();
+    return int(registerTimer(interval * 1ms, timerType, object));
+}
+
+/*!
+    \since 6.8
+    \overload
+
+    Registers a timer with the specified \a interval and \a timerType for the
+    given \a object and returns the timer id.
+*/
+Qt::TimerId QAbstractEventDispatcher::registerTimer(Duration interval, Qt::TimerType timerType,
+                                                    QObject *object)
+{
+    auto id = Qt::TimerId(QAbstractEventDispatcherPrivate::allocateTimerId());
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+    if (QAbstractEventDispatcherV2 *self = v2(this))
+        self->registerTimer(id, interval, timerType, object);
+    else
+        registerTimer(qToUnderlying(id), fromDuration<qint64>(interval), timerType, object);
+#else
     registerTimer(id, interval, timerType, object);
+#endif
     return id;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 /*!
     \fn void QAbstractEventDispatcher::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object)
 
@@ -238,15 +296,6 @@ int QAbstractEventDispatcher::registerTimer(qint64 interval, Qt::TimerType timer
     Returns \c true if successful; otherwise returns \c false.
 
     \sa registerTimer(), unregisterTimers()
-*/
-
-/*!
-    \fn bool QAbstractEventDispatcher::unregisterTimers(QObject *object)
-
-    Unregisters all the timers associated with the given \a object.
-    Returns \c true if all timers were successful removed; otherwise returns \c false.
-
-    \sa unregisterTimer(), registeredTimers()
 */
 
 /*!
@@ -267,6 +316,57 @@ int QAbstractEventDispatcher::registerTimer(qint64 interval, Qt::TimerType timer
 
     \sa Qt::TimerType
 */
+#else // Qt 7
+/*!
+    \fn void QAbstractEventDispatcher::registerTimer(Qt::TimerId timerId, Duration interval, Qt::TimerType timerType, QObject *object)
+    \since 6.8
+
+    Register a timer with the specified \a timerId, \a interval, and \a
+    timerType for the given \a object.
+
+    \sa unregisterTimer(), timersForObject()
+*/
+
+/*!
+    \fn bool QAbstractEventDispatcher::unregisterTimer(Qt::TimerId timerId)
+    \since 6.8
+
+    Unregisters the timer with the given \a timerId.
+    Returns \c true if successful; otherwise returns \c false.
+
+    \sa registerTimer(), unregisterTimers()
+*/
+
+/*!
+    \fn QList<TimerInfoV2> QAbstractEventDispatcher::timersForObject(QObject *object) const
+    \since 6.8
+
+    Returns a list of registered timers for \a object. The TimerInfoV2 struct has
+    \c timerId, \c interval, and \c timerType members.
+
+    \sa Qt::TimerType, registerTimer(), unregisterTimer()
+*/
+
+/*!
+    \fn QAbstractEventDispatcher::remainingTime(Qt::TimerId timerId) const
+
+    Returns the remaining time of the timer with the given \a timerId.
+    If the timer is inactive, the returned value will be negative. If the timer
+    is overdue, the returned value will be 0.
+
+    \sa Qt::TimerType, registerTimer(), unregisterTimer()
+*/
+#endif
+
+/*!
+    \fn bool QAbstractEventDispatcher::unregisterTimers(QObject *object)
+
+    Unregisters all the timers associated with the given \a object. Returns \c
+    true if all timers were successfully removed; otherwise returns \c false.
+
+    \sa unregisterTimer(), registeredTimers()
+*/
+
 
 /*! \fn void QAbstractEventDispatcher::wakeUp()
     \threadsafe
@@ -308,6 +408,7 @@ void QAbstractEventDispatcher::closingDown()
 
 /*!
     \class QAbstractEventDispatcher::TimerInfo
+    \deprecated [6.8] Use TimerInfoV2
     \inmodule QtCore
 
     This struct represents information about a timer:
@@ -315,7 +416,7 @@ void QAbstractEventDispatcher::closingDown()
     \l{QAbstractEventDispatcher::TimerInfo::interval}{interval}, and
     \l{QAbstractEventDispatcher::TimerInfo::timerType}{timerType}.
 
-    \sa registeredTimers()
+    \sa registeredTimers(), QAbstractEventDispatcher::TimerInfoV2, timersForObject()
 */
 /*! \fn QAbstractEventDispatcher::TimerInfo::TimerInfo(int timerId, int interval, Qt::TimerType timerType)
 
@@ -334,6 +435,37 @@ void QAbstractEventDispatcher::closingDown()
 */
 /*!
     \variable QAbstractEventDispatcher::TimerInfo::timerType
+
+    The timer's type
+
+    \sa Qt::TimerType
+*/
+
+/*!
+    \class QAbstractEventDispatcher::TimerInfoV2
+    \inmodule QtCore
+
+    This struct represents information about a timer:
+    \l{QAbstractEventDispatcher::TimerInfoV2::timerId}{timerId},
+    \l{QAbstractEventDispatcher::TimerInfoV2::interval}{interval}, and
+    \l{QAbstractEventDispatcher::TimerInfoV2::timerType}{timerType}.
+
+    \sa timersForObject()
+*/
+/*!
+    \variable QAbstractEventDispatcher::TimerInfoV2::timerId
+
+    The timer's unique id. This is created by registerTimer() upon creation and
+    uniquely identifies a timer while it is active. It is also used by
+    QTimer::id() and returned by QObject::startTimer().
+*/
+/*!
+    \variable QAbstractEventDispatcher::TimerInfoV2::interval
+
+    The timer's interval.
+*/
+/*!
+    \variable QAbstractEventDispatcher::TimerInfoV2::timerType
 
     The timer's type
 
@@ -451,6 +583,126 @@ bool QAbstractEventDispatcher::filterNativeEvent(const QByteArray &eventType, vo
 
     \sa awake()
 */
+
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+void QAbstractEventDispatcher::registerTimer(Qt::TimerId timerId, Duration interval,
+                                             Qt::TimerType timerType, QObject *object)
+{
+    if (QAbstractEventDispatcherV2 *self = v2(this))
+        self->registerTimer(timerId, interval, timerType, object);
+    else
+        registerTimer(int(timerId), fromDuration<qint64>(interval), timerType, object);
+}
+
+bool QAbstractEventDispatcher::unregisterTimer(Qt::TimerId timerId)
+{
+    if (QAbstractEventDispatcherV2 *self = v2(this))
+        return self->unregisterTimer(timerId);
+    return unregisterTimer(int(timerId));
+}
+
+QList<QAbstractEventDispatcher::TimerInfoV2>
+QAbstractEventDispatcher::timersForObject(QObject *object) const
+{
+    if (const QAbstractEventDispatcherV2 *self = v2(this))
+        return self->timersForObject(object);
+    QList<TimerInfo> timers = registeredTimers(object);
+    QList<TimerInfoV2> result;
+    result.reserve(timers.size());
+    for (const TimerInfo &t : timers)
+        result.emplaceBack(TimerInfoV2{ t.interval * 1ms, Qt::TimerId(t.timerId), t.timerType });
+    return result;
+}
+
+QAbstractEventDispatcher::Duration
+QAbstractEventDispatcher::remainingTime(Qt::TimerId timerId) const
+{
+    if (const QAbstractEventDispatcherV2 *self = v2(this))
+        return self->remainingTime(timerId);
+    return const_cast<QAbstractEventDispatcher *>(this)->remainingTime(int(timerId)) * 1ms;
+}
+
+/*!
+    \class QAbstractEventDispatcherV2
+    \inmodule QtCore
+
+    This class is a temporary hack to enable transition to an API based on
+    \c{std::chrono} for the Qt event dispatcher. In Qt 7, it will be merged
+    with QAbstractEventDispatcher, replacing the pure virtuals there with the
+    ones defined here.
+
+    It is recommended applications and libraries port to the new API before
+    that future release to simplify work when the time comes.
+*/
+
+/*!
+    Constructs a new event dispatcher with the given \a parent.
+*/
+QAbstractEventDispatcherV2::QAbstractEventDispatcherV2(QObject *parent)
+    : QAbstractEventDispatcherV2(*new QAbstractEventDispatcherPrivate, parent)
+{
+}
+
+/*!
+    \internal
+*/
+QAbstractEventDispatcherV2::QAbstractEventDispatcherV2(QAbstractEventDispatcherPrivate &dd,
+                                                       QObject *parent)
+    : QAbstractEventDispatcher((dd.isV2 = true, dd), parent)
+{
+}
+
+/*!
+    Destroys the event dispatcher.
+*/
+QAbstractEventDispatcherV2::~QAbstractEventDispatcherV2() = default;
+
+/*!
+    \internal
+    Temporary compatibility override.
+*/
+void QAbstractEventDispatcherV2::registerTimer(int timerId, qint64 interval,
+                                               Qt::TimerType timerType, QObject *object)
+{
+    auto self = static_cast<QAbstractEventDispatcherV2 *>(this);
+    self->registerTimer(Qt::TimerId(timerId), interval * 1ms, timerType, object);
+}
+
+/*!
+    \internal
+    Temporary compatibility override.
+*/
+bool QAbstractEventDispatcherV2::unregisterTimer(int timerId)
+{
+    auto self = static_cast<QAbstractEventDispatcherV2 *>(this);
+    return self->unregisterTimer(Qt::TimerId(timerId));
+}
+
+/*!
+    \internal
+    Temporary compatibility override.
+*/
+auto QAbstractEventDispatcherV2::registeredTimers(QObject *object) const -> QList<TimerInfo>
+{
+    auto self = static_cast<const QAbstractEventDispatcherV2 *>(this);
+    QList<TimerInfoV2> timers = self->timersForObject(object);
+    QList<TimerInfo> result;
+    result.reserve(timers.size());
+    for (const TimerInfoV2 &t : timers)
+        result.emplaceBack(qToUnderlying(t.timerId), fromDuration<int>(t.interval), t.timerType);
+    return result;
+}
+
+/*!
+    \internal
+    Temporary compatibility override.
+*/
+int QAbstractEventDispatcherV2::remainingTime(int timerId)
+{
+    auto self = static_cast<QAbstractEventDispatcherV2 *>(this);
+    return fromDuration<int>(self->remainingTime(Qt::TimerId(timerId)));
+}
+#endif // ! Qt 7
 
 QT_END_NAMESPACE
 

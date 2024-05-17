@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 
@@ -61,6 +61,9 @@ private slots:
 
     void setScaledSize_data();
     void setScaledSize();
+
+    void setScaledSizeOneDimension_data();
+    void setScaledSizeOneDimension();
 
     void setClipRect_data();
     void setClipRect();
@@ -300,25 +303,52 @@ void tst_QImageReader::jpegRgbCmyk()
     QImage image1(prefix + QLatin1String("YCbCr_cmyk.jpg"));
     QImage image2(prefix + QLatin1String("YCbCr_cmyk.png"));
 
-    if (image1 != image2) {
-        // first, do some obvious tests
-        QCOMPARE(image1.height(), image2.height());
-        QCOMPARE(image1.width(), image2.width());
-        QCOMPARE(image1.format(), image2.format());
-        QCOMPARE(image1.format(), QImage::Format_RGB32);
+    QVERIFY(!image1.isNull());
+    QVERIFY(!image2.isNull());
 
-        // compare all the pixels with a slack of 3. This ignores rounding errors
-        // in libjpeg/libpng, where some versions sacrifice accuracy for speed.
-        for (int h = 0; h < image1.height(); ++h) {
-            const uchar *s1 = image1.constScanLine(h);
-            const uchar *s2 = image2.constScanLine(h);
-            for (int w = 0; w < image1.width() * 4; ++w) {
-                if (*s1 != *s2) {
-                    QVERIFY2(qAbs(*s1 - *s2) <= 3, qPrintable(QString("images differ in line %1, col %2 (image1: %3, image2: %4)").arg(h).arg(w).arg(*s1, 0, 16).arg(*s2, 0, 16)));
-                }
-                s1++;
-                s2++;
-            }
+    QCOMPARE(image1.height(), image2.height());
+    QCOMPARE(image1.width(), image2.width());
+
+    QCOMPARE(image1.format(), QImage::Format_CMYK8888);
+    QCOMPARE(image2.format(), QImage::Format_RGB32);
+
+    // compare all the pixels with a slack of 3. This ignores rounding errors
+    // in libjpeg/libpng, where some versions sacrifice accuracy for speed.
+    const auto fuzzyCompareColors = [](const QColor &c1, const QColor &c2) {
+        int c1rgba[4];
+        int c2rgba[4];
+
+        c1.getRgb(c1rgba + 0,
+                  c1rgba + 1,
+                  c1rgba + 2,
+                  c1rgba + 3);
+
+        c2.getRgb(c2rgba + 0,
+                  c2rgba + 1,
+                  c2rgba + 2,
+                  c2rgba + 3);
+
+        const auto fuzzyCompare = [](int a, int b) {
+            return qAbs(a - b) <= 3;
+        };
+
+        return fuzzyCompare(c1rgba[0], c2rgba[0]) &&
+               fuzzyCompare(c1rgba[1], c2rgba[1]) &&
+               fuzzyCompare(c1rgba[2], c2rgba[2]) &&
+               fuzzyCompare(c1rgba[3], c2rgba[3]);
+    };
+
+    for (int h = 0; h < image1.height(); ++h) {
+        const uchar *sl1 = image1.constScanLine(h);
+        const uchar *sl2 = image2.constScanLine(h);
+        for (int w = 0; w < image1.width(); ++w) {
+            const uchar *s1 = sl1 + w * 4;
+            const uchar *s2 = sl2 + w * 4;
+
+            QColor c1 = QColor::fromCmyk(s1[0], s1[1], s1[2], s1[3]);
+            QColor c2 = QColor::fromRgb(s2[2], s2[1], s2[0]);
+            QVERIFY2(fuzzyCompareColors(c1, c2),
+                     qPrintable(QString("images differ in line %1, col %2").arg(h).arg(w)));
         }
     }
 }
@@ -369,6 +399,60 @@ void tst_QImageReader::setScaledSize()
     QVERIFY(!image.isNull());
 
     QCOMPARE(image.size(), newSize);
+}
+
+void tst_QImageReader::setScaledSizeOneDimension_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QByteArray>("format");
+
+    QTest::newRow("PNG: kollada") << QString("kollada") << QByteArray("png");
+    QTest::newRow("JPEG: beavis") << QString("beavis") << QByteArray("jpeg");
+    QTest::newRow("GIF: earth") << QString("earth") << QByteArray("gif");
+    QTest::newRow("SVG: rect") << QString("rect") << QByteArray("svg");
+    QTest::newRow("BMP: colorful") << QString("colorful") << QByteArray("bmp");
+    QTest::newRow("XPM: marble") << QString("marble") << QByteArray("xpm");
+    QTest::newRow("PPM: teapot") << QString("teapot") << QByteArray("ppm");
+    QTest::newRow("XBM: gnus") << QString("gnus") << QByteArray("xbm");
+}
+
+void tst_QImageReader::setScaledSizeOneDimension()
+{
+    QFETCH(QString, fileName);
+    QFETCH(QByteArray, format);
+
+    SKIP_IF_UNSUPPORTED(format);
+
+    const QSize originalSize = QImageReader(prefix + fileName).size();
+    QVERIFY(!originalSize.isEmpty());
+
+    auto testScaledSize = [&] (const QSize &scaledSize) {
+        QSize expectedSize = scaledSize;
+        if (scaledSize.width() <= 0)
+            expectedSize.setWidth(qRound(originalSize.width() *
+                                         (qreal(scaledSize.height()) / originalSize.height())));
+        else if (scaledSize.height() <= 0)
+            expectedSize.setHeight(qRound(originalSize.height() *
+                                          (qreal(scaledSize.width()) / originalSize.width())));
+
+        QImageReader reader(prefix + fileName);
+        reader.setScaledSize(scaledSize);
+        QImage image = reader.read();
+        QVERIFY(!image.isNull());
+        QCOMPARE(image.size(), expectedSize);
+    };
+
+    // downscale
+    testScaledSize(QSize(originalSize.width() / 2, 0));
+    testScaledSize(QSize(originalSize.width() / 2, -1));
+    testScaledSize(QSize(0, originalSize.height() / 2));
+    testScaledSize(QSize(-1, originalSize.height() / 2));
+
+    // upscale
+    testScaledSize(QSize(originalSize.width() * 2, 0));
+    testScaledSize(QSize(originalSize.width() * 2, -1));
+    testScaledSize(QSize(0, originalSize.height() * 2));
+    testScaledSize(QSize(-1, originalSize.height() * 2));
 }
 
 void tst_QImageReader::task255627_setNullScaledSize_data()
@@ -532,7 +616,7 @@ void tst_QImageReader::imageFormat_data()
     QTest::newRow("ppm-4") << QString("test.ppm") << QByteArray("ppm") << QImage::Format_RGB32;
 
     QTest::newRow("jpeg-1") << QString("beavis.jpg") << QByteArray("jpeg") << QImage::Format_Grayscale8;
-    QTest::newRow("jpeg-2") << QString("YCbCr_cmyk.jpg") << QByteArray("jpeg") << QImage::Format_RGB32;
+    QTest::newRow("jpeg-2") << QString("YCbCr_cmyk.jpg") << QByteArray("jpeg") << QImage::Format_CMYK8888;
     QTest::newRow("jpeg-3") << QString("YCbCr_rgb.jpg") << QByteArray("jpeg") << QImage::Format_RGB32;
 
     QTest::newRow("gif-1") << QString("earth.gif") << QByteArray("gif") << QImage::Format_Invalid;
@@ -662,7 +746,7 @@ void tst_QImageReader::supportsAnimation_data()
     QTest::newRow("BMP: colorful") << QString("colorful.bmp") << false;
     QTest::newRow("BMP: font") << QString("font.bmp") << false;
     QTest::newRow("BMP: signed char") << QString("crash-signed-char.bmp") << false;
-    QTest::newRow("BMP: test32bfv4") << QString("test32bfv4.bmp") << false;;
+    QTest::newRow("BMP: test32bfv4") << QString("test32bfv4.bmp") << false;
     QTest::newRow("BMP: test32v5") << QString("test32v5.bmp") << false;
     QTest::newRow("XPM: marble") << QString("marble.xpm") << false;
     QTest::newRow("PNG: kollada") << QString("kollada.png") << false;

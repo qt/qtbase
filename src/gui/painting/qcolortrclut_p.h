@@ -36,9 +36,22 @@ class QColorTransferTable;
 class Q_GUI_EXPORT QColorTrcLut
 {
 public:
-    static std::shared_ptr<QColorTrcLut> fromGamma(qreal gamma);
-    static std::shared_ptr<QColorTrcLut> fromTransferFunction(const QColorTransferFunction &transfn);
-    static std::shared_ptr<QColorTrcLut> fromTransferTable(const QColorTransferTable &transTable);
+    static constexpr uint32_t ShiftUp = 4;                         // Amount to shift up from 1->255
+    static constexpr uint32_t ShiftDown = (8 - ShiftUp);           // Amount to shift down from 1->65280
+    static constexpr qsizetype Resolution = (1 << ShiftUp) * 255;  // Number of entries in table
+
+    enum Direction {
+        ToLinear = 1,
+        FromLinear = 2,
+        BiLinear = ToLinear | FromLinear
+    };
+
+    static std::shared_ptr<QColorTrcLut> fromGamma(qreal gamma, Direction dir = BiLinear);
+    static std::shared_ptr<QColorTrcLut> fromTransferFunction(const QColorTransferFunction &transFn, Direction dir = BiLinear);
+    static std::shared_ptr<QColorTrcLut> fromTransferTable(const QColorTransferTable &transTable, Direction dir = BiLinear);
+    void setFromGamma(qreal gamma, Direction dir = BiLinear);
+    void setFromTransferFunction(const QColorTransferFunction &transFn, Direction dir = BiLinear);
+    void setFromTransferTable(const QColorTransferTable &transTable, Direction dir = BiLinear);
 
     // The following methods all convert opaque or unpremultiplied colors:
 
@@ -47,7 +60,7 @@ public:
 #if defined(__SSE2__)
         __m128i v = _mm_cvtsi32_si128(rgb32);
         v = _mm_unpacklo_epi8(v, _mm_setzero_si128());
-        const __m128i vidx = _mm_slli_epi16(v, 4);
+        const __m128i vidx = _mm_slli_epi16(v, ShiftUp);
         const int ridx = _mm_extract_epi16(vidx, 2);
         const int gidx = _mm_extract_epi16(vidx, 1);
         const int bidx = _mm_extract_epi16(vidx, 0);
@@ -62,7 +75,7 @@ public:
 #elif (defined(__ARM_NEON__) || defined(__ARM_NEON)) && Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         uint8x8_t v8 = vreinterpret_u8_u32(vmov_n_u32(rgb32));
         uint16x4_t v16 = vget_low_u16(vmovl_u8(v8));
-        const uint16x4_t vidx = vshl_n_u16(v16, 4);
+        const uint16x4_t vidx = vshl_n_u16(v16, ShiftUp);
         const int ridx = vget_lane_u16(vidx, 2);
         const int gidx = vget_lane_u16(vidx, 1);
         const int bidx = vget_lane_u16(vidx, 0);
@@ -73,9 +86,9 @@ public:
         v16 = vadd_u16(v16, vshr_n_u16(v16, 8));
         return QRgba64::fromRgba64(vget_lane_u64(vreinterpret_u64_u16(v16), 0));
 #else
-        uint r = m_toLinear[qRed(rgb32) << 4];
-        uint g = m_toLinear[qGreen(rgb32) << 4];
-        uint b = m_toLinear[qBlue(rgb32) << 4];
+        uint r = m_toLinear[qRed(rgb32) << ShiftUp];
+        uint g = m_toLinear[qGreen(rgb32) << ShiftUp];
+        uint b = m_toLinear[qBlue(rgb32) << ShiftUp];
         r = r + (r >> 8);
         g = g + (g >> 8);
         b = b + (b >> 8);
@@ -86,30 +99,30 @@ public:
 
     QRgb toLinear(QRgb rgb32) const
     {
-        return convertWithTable(rgb32, m_toLinear);
+        return convertWithTable(rgb32, m_toLinear.get());
     }
 
     QRgba64 toLinear(QRgba64 rgb64) const
     {
-        return convertWithTable(rgb64, m_toLinear);
+        return convertWithTable(rgb64, m_toLinear.get());
     }
 
     float u8ToLinearF32(int c) const
     {
-        ushort v = m_toLinear[c << 4];
+        ushort v = m_toLinear[c << ShiftUp];
         return v * (1.0f / (255*256));
     }
 
     float u16ToLinearF32(int c) const
     {
         c -= (c >> 8);
-        ushort v = m_toLinear[c >> 4];
+        ushort v = m_toLinear[c >> ShiftDown];
         return v * (1.0f / (255*256));
     }
 
     float toLinear(float f) const
     {
-        ushort v = m_toLinear[(int)(f * (255 * 16) + 0.5f)];
+        ushort v = m_toLinear[(int)(f * Resolution + 0.5f)];
         return v * (1.0f / (255*256));
     }
 
@@ -118,7 +131,7 @@ public:
 #if defined(__SSE2__)
         __m128i v = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&rgb64));
         v = _mm_sub_epi16(v, _mm_srli_epi16(v, 8));
-        const __m128i vidx = _mm_srli_epi16(v, 4);
+        const __m128i vidx = _mm_srli_epi16(v, ShiftDown);
         const int ridx = _mm_extract_epi16(vidx, 0);
         const int gidx = _mm_extract_epi16(vidx, 1);
         const int bidx = _mm_extract_epi16(vidx, 2);
@@ -132,7 +145,7 @@ public:
 #elif (defined(__ARM_NEON__) || defined(__ARM_NEON)) && Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         uint16x4_t v = vreinterpret_u16_u64(vmov_n_u64(rgb64));
         v = vsub_u16(v, vshr_n_u16(v, 8));
-        const uint16x4_t vidx = vshr_n_u16(v, 4);
+        const uint16x4_t vidx = vshr_n_u16(v, ShiftDown);
         const int ridx = vget_lane_u16(vidx, 0);
         const int gidx = vget_lane_u16(vidx, 1);
         const int bidx = vget_lane_u16(vidx, 2);
@@ -151,56 +164,56 @@ public:
         g = g - (g >> 8);
         b = b - (b >> 8);
         a = (a + 0x80) >> 8;
-        r = (m_fromLinear[r >> 4] + 0x80) >> 8;
-        g = (m_fromLinear[g >> 4] + 0x80) >> 8;
-        b = (m_fromLinear[b >> 4] + 0x80) >> 8;
+        r = (m_fromLinear[r >> ShiftDown] + 0x80) >> 8;
+        g = (m_fromLinear[g >> ShiftDown] + 0x80) >> 8;
+        b = (m_fromLinear[b >> ShiftDown] + 0x80) >> 8;
         return (a << 24) | (r << 16) | (g << 8) | b;
 #endif
     }
 
     QRgb fromLinear(QRgb rgb32) const
     {
-        return convertWithTable(rgb32, m_fromLinear);
+        return convertWithTable(rgb32, m_fromLinear.get());
     }
 
     QRgba64 fromLinear(QRgba64 rgb64) const
     {
-        return convertWithTable(rgb64, m_fromLinear);
+        return convertWithTable(rgb64, m_fromLinear.get());
     }
 
     int u8FromLinearF32(float f) const
     {
-        ushort v = m_fromLinear[(int)(f * (255 * 16) + 0.5f)];
+        ushort v = m_fromLinear[(int)(f * Resolution + 0.5f)];
         return (v + 0x80) >> 8;
     }
     int u16FromLinearF32(float f) const
     {
-        ushort v = m_fromLinear[(int)(f * (255 * 16) + 0.5f)];
+        ushort v = m_fromLinear[(int)(f * Resolution + 0.5f)];
         return v + (v >> 8);
     }
     float fromLinear(float f) const
     {
-        ushort v = m_fromLinear[(int)(f * (255 * 16) + 0.5f)];
+        ushort v = m_fromLinear[(int)(f * Resolution + 0.5f)];
         return v * (1.0f / (255*256));
     }
 
     // We translate to 0-65280 (255*256) instead to 0-65535 to make simple
     // shifting an accurate conversion.
-    // We translate from 0-4080 (255*16) for the same speed up, and to keep
-    // the tables small enough to fit in most inner caches.
-    ushort m_toLinear[(255 * 16) + 1]; // [0-4080] -> [0-65280]
-    ushort m_fromLinear[(255 * 16) + 1]; // [0-4080] -> [0-65280]
+    // We translate from 0->Resolution (4080 = 255*16) for the same speed up,
+    // and to keep the tables small enough to fit in most inner caches.
+    std::unique_ptr<ushort[]> m_toLinear; // [0->Resolution] -> [0-65280]
+    std::unique_ptr<ushort[]> m_fromLinear; // [0->Resolution] -> [0-65280]
 
 private:
-    QColorTrcLut() { } // force uninitialized members
+    QColorTrcLut() = default;
 
     static std::shared_ptr<QColorTrcLut> create();
 
     Q_ALWAYS_INLINE static QRgb convertWithTable(QRgb rgb32, const ushort *table)
     {
-        const int r = (table[qRed(rgb32) << 4] + 0x80) >> 8;
-        const int g = (table[qGreen(rgb32) << 4] + 0x80) >> 8;
-        const int b = (table[qBlue(rgb32) << 4] + 0x80) >> 8;
+        const int r = (table[qRed(rgb32) << ShiftUp] + 0x80) >> 8;
+        const int g = (table[qGreen(rgb32) << ShiftUp] + 0x80) >> 8;
+        const int b = (table[qBlue(rgb32) << ShiftUp] + 0x80) >> 8;
         return (rgb32 & 0xff000000) | (r << 16) | (g << 8) | b;
     }
     Q_ALWAYS_INLINE static QRgba64 convertWithTable(QRgba64 rgb64, const ushort *table)
@@ -208,7 +221,7 @@ private:
 #if defined(__SSE2__)
         __m128i v = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(&rgb64));
         v = _mm_sub_epi16(v, _mm_srli_epi16(v, 8));
-        const __m128i vidx = _mm_srli_epi16(v, 4);
+        const __m128i vidx = _mm_srli_epi16(v, ShiftDown);
         const int ridx = _mm_extract_epi16(vidx, 2);
         const int gidx = _mm_extract_epi16(vidx, 1);
         const int bidx = _mm_extract_epi16(vidx, 0);
@@ -222,7 +235,7 @@ private:
 #elif (defined(__ARM_NEON__) || defined(__ARM_NEON)) && Q_BYTE_ORDER == Q_LITTLE_ENDIAN
         uint16x4_t v = vreinterpret_u16_u64(vmov_n_u64(rgb64));
         v = vsub_u16(v, vshr_n_u16(v, 8));
-        const uint16x4_t vidx = vshr_n_u16(v, 4);
+        const uint16x4_t vidx = vshr_n_u16(v, ShiftDown);
         const int ridx = vget_lane_u16(vidx, 2);
         const int gidx = vget_lane_u16(vidx, 1);
         const int bidx = vget_lane_u16(vidx, 0);
@@ -238,9 +251,9 @@ private:
         r = r - (r >> 8);
         g = g - (g >> 8);
         b = b - (b >> 8);
-        r = table[r >> 4];
-        g = table[g >> 4];
-        b = table[b >> 4];
+        r = table[r >> ShiftDown];
+        g = table[g >> ShiftDown];
+        b = table[b >> ShiftDown];
         r = r + (r >> 8);
         g = g + (g >> 8);
         b = b + (b >> 8);

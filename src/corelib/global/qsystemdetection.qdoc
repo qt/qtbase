@@ -78,6 +78,13 @@
 */
 
 /*!
+    \macro Q_OS_VISIONOS
+    \relates <QtSystemDetection>
+
+    Defined on visionOS.
+*/
+
+/*!
     \macro Q_OS_WIN
     \relates <QtSystemDetection>
 

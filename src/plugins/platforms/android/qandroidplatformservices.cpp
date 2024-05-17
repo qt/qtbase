@@ -24,15 +24,18 @@ QAndroidPlatformServices::QAndroidPlatformServices()
 
     QtAndroidPrivate::registerNewIntentListener(this);
 
-    QMetaObject::invokeMethod(
-            this,
-            [this] {
-                QJniObject context = QJniObject(QtAndroidPrivate::context());
-                QJniObject intent =
-                        context.callObjectMethod("getIntent", "()Landroid/content/Intent;");
-                handleNewIntent(nullptr, intent.object());
-            },
-            Qt::QueuedConnection);
+    // Qt applications without Activity contexts cannot retrieve intents from the Activity.
+    if (QNativeInterface::QAndroidApplication::isActivityContext()) {
+        QMetaObject::invokeMethod(
+                this,
+                [this] {
+                    QJniObject context = QJniObject(QtAndroidPrivate::context());
+                    QJniObject intent =
+                            context.callObjectMethod("getIntent", "()Landroid/content/Intent;");
+                    handleNewIntent(nullptr, intent.object());
+                },
+                Qt::QueuedConnection);
+    }
 }
 
 Q_DECLARE_JNI_CLASS(UriType, "android/net/Uri")

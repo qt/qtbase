@@ -208,23 +208,9 @@ bool QWasmWindow::onNonClientEvent(const PointerEvent &event)
 
 void QWasmWindow::initialize()
 {
-    QRect rect = windowGeometry();
-
-    const auto windowFlags = window()->flags();
-    const bool shouldRestrictMinSize =
-            !windowFlags.testFlag(Qt::FramelessWindowHint) && !windowIsPopupType(windowFlags);
-    const bool isMinSizeUninitialized = window()->minimumSize() == QSize(0, 0);
-
-    if (shouldRestrictMinSize && isMinSizeUninitialized)
-        window()->setMinimumSize(QSize(minSizeForRegularWindows, minSizeForRegularWindows));
-
-
-    const QSize minimumSize = windowMinimumSize();
-    const QSize maximumSize = windowMaximumSize();
-    const QSize targetSize = !rect.isEmpty() ? rect.size() : minimumSize;
-
-    rect.setWidth(qBound(minimumSize.width(), targetSize.width(), maximumSize.width()));
-    rect.setHeight(qBound(minimumSize.height(), targetSize.height(), maximumSize.height()));
+    auto initialGeometry = QPlatformWindow::initialGeometry(window(),
+            windowGeometry(), defaultWindowSize, defaultWindowSize);
+    m_normalGeometry = initialGeometry;
 
     setWindowState(window()->windowStates());
     setWindowFlags(window()->flags());
@@ -233,7 +219,6 @@ void QWasmWindow::initialize()
 
     if (window()->isTopLevel())
         setWindowIcon(window()->icon());
-    m_normalGeometry = rect;
     QPlatformWindow::setGeometry(m_normalGeometry);
 
 #if QT_CONFIG(accessibility)

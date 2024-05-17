@@ -3,25 +3,22 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qmetaobject.h"
-#include "qmetatype.h"
-#include "qobject.h"
 #include "qmetaobject_p.h"
+#include "qmetatype.h"
 #include "qmetatype_p.h"
+#include "qobject.h"
+#include "qobject_p.h"
 
 #include <qcoreapplication.h>
-#include <qcoreevent.h>
-#include <qdatastream.h>
-#include <qstringlist.h>
-#include <qthread.h>
 #include <qvariant.h>
-#include <qdebug.h>
+
+// qthread(_p).h uses QT_CONFIG(thread) internally and has a dummy
+// interface for the non-thread support case
+#include <qthread.h>
+#include "private/qthread_p.h"
 #if QT_CONFIG(thread)
 #include <qsemaphore.h>
 #endif
-
-#include "private/qobject_p.h"
-#include "private/qmetaobject_p.h"
-#include "private/qthread_p.h"
 
 // for normalizeTypeInternal
 #include "private/qmetaobject_moc_p.h"
@@ -130,7 +127,7 @@ static inline const char *rawStringData(const QMetaObject *mo, int index)
     return reinterpret_cast<const char *>(mo->d.stringdata) + offset;
 }
 
-static inline QLatin1StringView stringDataView(const QMetaObject *mo, int index)
+static inline QByteArrayView stringDataView(const QMetaObject *mo, int index)
 {
     Q_ASSERT(priv(mo->d.data)->revision >= 7);
     uint offset = mo->d.stringdata[2*index];
@@ -1061,16 +1058,17 @@ static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, QB
     -1.
 
     \sa enumerator(), enumeratorCount(), enumeratorOffset()
-
-    \note Starting from Qt 6.7 this method takes a \c QByteArrayView, before
-    that it took a \c {const char *}. This change is source compatible i.e.
-    calling this method on a \c {const char *} should still work.
 */
-int QMetaObject::indexOfEnumerator(QByteArrayView name) const
+int QMetaObject::indexOfEnumerator(const char *name) const
+{
+    return QMetaObjectPrivate::indexOfEnumerator(this, name);
+}
+
+int QMetaObjectPrivate::indexOfEnumerator(const QMetaObject *m, QByteArrayView name)
 {
     using W = QMetaObjectPrivate::Which;
     for (auto which : { W::Name, W::Alias }) {
-        if (int index = QMetaObjectPrivate::indexOfEnumerator(this, name, which); index != -1)
+        if (int index = indexOfEnumerator(m, name, which); index != -1)
             return index;
     }
     return -1;
@@ -1083,7 +1081,7 @@ int QMetaObjectPrivate::indexOfEnumerator(const QMetaObject *m, QByteArrayView n
         for (int i = 0; i < d->enumeratorCount; ++i) {
             const QMetaEnum e(m, i);
             const quint32 id = which == Which::Name ? e.data.name() : e.data.alias();
-            QLatin1StringView prop = stringDataView(m, id);
+            QByteArrayView prop = stringDataView(m, id);
             if (name == prop) {
                 i += m->enumeratorOffset();
                 return i;
@@ -1394,7 +1392,7 @@ QByteArray QMetaObject::normalizedSignature(const char *method)
 }
 
 Q_DECL_COLD_FUNCTION static inline bool
-printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsizetype paramCount,
+printMethodNotFoundWarning(const QMetaObject *meta, QByteArrayView name, qsizetype paramCount,
                            const char *const *names,
                            const QtPrivate::QMetaTypeInterface * const *metaTypes)
 {
@@ -1402,7 +1400,7 @@ printMethodNotFoundWarning(const QMetaObject *meta, QLatin1StringView name, qsiz
     QByteArray candidateMessage;
     for (int i = 0; i < meta->methodCount(); ++i) {
         const QMetaMethod method = meta->method(i);
-        if (method.name() == QByteArrayView(name))
+        if (method.name() == name)
             candidateMessage += "    " + method.methodSignature() + '\n';
     }
     if (!candidateMessage.isEmpty()) {
@@ -1588,7 +1586,7 @@ bool QMetaObject::invokeMethodImpl(QObject *obj, const char *member, Qt::Connect
     Q_ASSERT(typeNames);
 
     // find the method
-    QLatin1StringView name(member);
+    QByteArrayView name(member);
     if (name.isEmpty())
         return false;
 
@@ -1800,6 +1798,7 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
     function.
 
     \ingroup objectmodel
+    \compares equality
 
     A QMetaMethod has a methodType(), a methodSignature(), a list of
     parameterTypes() and parameterNames(), a return typeName(), a
@@ -1827,19 +1826,19 @@ bool QMetaObject::invokeMethodImpl(QObject *object, QtPrivate::QSlotObjectBase *
     invoked), otherwise returns \c false.
 */
 
-/*! \fn bool QMetaMethod::operator==(const QMetaMethod &m1, const QMetaMethod &m2)
+/*! \fn bool QMetaMethod::operator==(const QMetaMethod &lhs, const QMetaMethod &rhs)
     \since 5.0
     \overload
 
-    Returns \c true if method \a m1 is equal to method \a m2,
+    Returns \c true if method \a lhs is equal to method \a rhs,
     otherwise returns \c false.
 */
 
-/*! \fn bool QMetaMethod::operator!=(const QMetaMethod &m1, const QMetaMethod &m2)
+/*! \fn bool QMetaMethod::operator!=(const QMetaMethod &lhs, const QMetaMethod &rhs)
     \since 5.0
     \overload
 
-    Returns \c true if method \a m1 is not equal to method \a m2,
+    Returns \c true if method \a lhs is not equal to method \a rhs,
     otherwise returns \c false.
 */
 
@@ -2392,7 +2391,7 @@ QMetaMethod::MethodType QMetaMethod::methodType() const
     \since 5.0
 
     Returns the meta-method that corresponds to the given \a signal, or an
-    invalid QMetaMethod if \a signal is not a signal of the class.
+    invalid QMetaMethod if \a signal is \c{nullptr} or not a signal of the class.
 
     Example:
 
@@ -2637,7 +2636,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
     // 0 is the return type, 1 is the first formal parameter
     auto checkTypesAreCompatible = [=](int idx) {
         uint typeInfo = priv->parameterTypeInfo(idx - 1);
-        QLatin1StringView userTypeName(typeNames[idx] ? typeNames[idx] : metaTypes[idx]->name);
+        QByteArrayView userTypeName(typeNames[idx] ? typeNames[idx] : metaTypes[idx]->name);
 
         if ((typeInfo & IsUnresolvedType) == 0) {
             // this is a built-in type
@@ -2646,7 +2645,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
             return int(typeInfo) == metaTypes[idx]->typeId;
         }
 
-        QLatin1StringView methodTypeName = stringDataView(priv->mobj, typeInfo & TypeNameIndexMask);
+        QByteArrayView methodTypeName = stringDataView(priv->mobj, typeInfo & TypeNameIndexMask);
         if ((MetaTypesAreOptional && !metaTypes) || !metaTypes[idx]) {
             // compatibility call, compare strings
             if (methodTypeName == userTypeName)
@@ -2654,7 +2653,7 @@ auto QMetaMethodInvoker::invokeImpl(QMetaMethod self, void *target,
 
             // maybe the user type needs normalization
             QByteArray normalized = normalizeTypeInternal(userTypeName.begin(), userTypeName.end());
-            return methodTypeName == QLatin1StringView(normalized);
+            return methodTypeName == normalized;
         }
 
         QMetaType userType(metaTypes[idx]);
@@ -3389,7 +3388,7 @@ QByteArray QMetaEnum::valueToKeys(int value) const
     QByteArray keys;
     if (!mobj)
         return keys;
-    QVarLengthArray<QLatin1StringView, sizeof(int) * CHAR_BIT> parts;
+    QVarLengthArray<QByteArrayView, sizeof(int) * CHAR_BIT> parts;
     int v = value;
     // reverse iterate to ensure values like Qt::Dialog=0x2|Qt::Window are processed first.
     for (int i = data.keyCount() - 1; i >= 0; --i) {
@@ -3657,11 +3656,11 @@ QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
       data(getMetaPropertyData(mobj, index))
 {
     Q_ASSERT(index >= 0 && index < priv(mobj->d.data)->propertyCount);
-
-    if (!(data.flags() & EnumOrFlag))
+    // The code below here just resolves menum if the property is an enum type:
+    if (!(data.flags() & EnumOrFlag) || !metaType().flags().testFlag(QMetaType::IsEnumeration))
         return;
     QByteArrayView enum_name = typeNameFromTypeInfo(mobj, data.type());
-    menum = mobj->enumerator(mobj->indexOfEnumerator(enum_name));
+    menum = mobj->enumerator(QMetaObjectPrivate::indexOfEnumerator(mobj, enum_name));
     if (menum.isValid())
         return;
 
@@ -3681,7 +3680,7 @@ QMetaProperty::QMetaProperty(const QMetaObject *mobj, int index)
         scope = QMetaObject_findMetaObject(mobj, QByteArrayView(scope_name));
 
     if (scope)
-        menum = scope->enumerator(scope->indexOfEnumerator(enum_name));
+        menum = scope->enumerator(QMetaObjectPrivate::indexOfEnumerator(scope, enum_name));
 }
 
 /*!
@@ -3973,20 +3972,23 @@ int QMetaProperty::notifySignalIndex() const
     if (!mobj || data.notifyIndex() == std::numeric_limits<uint>::max())
         return -1;
     uint methodIndex = data.notifyIndex();
-    if (methodIndex & IsUnresolvedSignal) {
-        methodIndex &= ~IsUnresolvedSignal;
-        const QByteArray signalName = stringData(mobj, methodIndex);
-        const QMetaObject *m = mobj;
-        const int idx = QMetaObjectPrivate::indexOfMethodRelative<MethodSignal>(&m, signalName, 0, nullptr);
-        if (idx >= 0) {
-            return idx + m->methodOffset();
-        } else {
-            qWarning("QMetaProperty::notifySignal: cannot find the NOTIFY signal %s in class %s for property '%s'",
-                     signalName.constData(), mobj->className(), name());
-            return -1;
-        }
-    }
-    return methodIndex + mobj->methodOffset();
+    if (!(methodIndex & IsUnresolvedSignal))
+        return methodIndex + mobj->methodOffset();
+    methodIndex &= ~IsUnresolvedSignal;
+    const QByteArray signalName = stringData(mobj, methodIndex);
+    const QMetaObject *m = mobj;
+    // try 0-arg signal
+    int idx = QMetaObjectPrivate::indexOfMethodRelative<MethodSignal>(&m, signalName, 0, nullptr);
+    if (idx >= 0)
+        return idx + m->methodOffset();
+    // try 1-arg signal
+    QArgumentType argType(typeId());
+    idx = QMetaObjectPrivate::indexOfMethodRelative<MethodSignal>(&m, signalName, 1, &argType);
+    if (idx >= 0)
+        return idx + m->methodOffset();
+    qWarning("QMetaProperty::notifySignal: cannot find the NOTIFY signal %s in class %s for property '%s'",
+             signalName.constData(), mobj->className(), name());
+    return -1;
 }
 
 // This method has been around for a while, but the documentation was marked \internal until 5.1

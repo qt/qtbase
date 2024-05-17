@@ -2,16 +2,6 @@ if(NOT DEFINED QT_DEFAULT_MAJOR_VERSION)
     set(QT_DEFAULT_MAJOR_VERSION 6)
 endif()
 
-# include(\"${CMAKE_CURRENT_LIST_DIR}/Qt5CoreConfigExtrasMkspecDir.cmake\")
-#
-# foreach(_dir ${_qt5_corelib_extra_includes})
-#     _qt5_Core_check_file_exists(${_dir})
-# endforeach()
-
-# list(APPEND Qt5Core_INCLUDE_DIRS ${_qt5_corelib_extra_includes})
-# set_property(TARGET @QT_CMAKE_EXPORT_NAMESPACE@::Core APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${_qt5_corelib_extra_includes})
-# set(_qt5_corelib_extra_includes)
-
 if (NOT QT_NO_CREATE_TARGETS)
     set(__qt_core_target @QT_CMAKE_EXPORT_NAMESPACE@::Core)
     get_property(__qt_core_aliased_target TARGET ${__qt_core_target} PROPERTY ALIASED_TARGET)
@@ -19,9 +9,7 @@ if (NOT QT_NO_CREATE_TARGETS)
         set(__qt_core_target "${__qt_core_aliased_target}")
     endif()
     unset(__qt_core_aliased_target)
-    if (NOT "@QT_NAMESPACE@" STREQUAL "")
-        set_property(TARGET ${__qt_core_target} APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS QT_NAMESPACE=@QT_NAMESPACE@)
-    endif()
+    @qtcore_namespace_definition@
     set_property(TARGET ${__qt_core_target} APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS $<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
     set_property(TARGET ${__qt_core_target} PROPERTY INTERFACE_COMPILE_FEATURES cxx_decltype)
 endif()
@@ -29,8 +17,6 @@ endif()
 # note: all the other AUTOMOC_MACRO_NAMES are already set by upstream CMake
 list(APPEND CMAKE_AUTOMOC_MACRO_NAMES Q_GADGET_EXPORT Q_ENUM_NS)
 list(REMOVE_DUPLICATES CMAKE_AUTOMOC_MACRO_NAMES)
-
-include("${CMAKE_CURRENT_LIST_DIR}/QtInstallPaths.cmake")
 
 set(QT@PROJECT_VERSION_MAJOR@_IS_SHARED_LIBS_BUILD "@BUILD_SHARED_LIBS@")
 set(QT@PROJECT_VERSION_MAJOR@_DEBUG_POSTFIX "@CMAKE_DEBUG_POSTFIX@")

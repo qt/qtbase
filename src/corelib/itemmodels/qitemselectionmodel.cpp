@@ -27,6 +27,8 @@ QT_IMPL_METATYPE_EXTERN(QItemSelection)
 
     \ingroup model-view
 
+    \compares equality
+
     A QItemSelectionRange contains information about a range of
     selected items in a model. A range of items is a contiguous array
     of model items, extending to cover a number of adjacent rows and
@@ -216,17 +218,17 @@ QItemSelectionRange QItemSelectionRange::intersected(const QItemSelectionRange &
 }
 
 /*!
-    \fn bool QItemSelectionRange::operator==(const QItemSelectionRange &other) const
+    \fn bool QItemSelectionRange::operator==(const QItemSelectionRange &lhs, const QItemSelectionRange &rhs)
 
-    Returns \c true if the selection range is exactly the same as the \a other
+    Returns \c true if \a lhs selection range is exactly the same as the \a rhs
     range given; otherwise returns \c false.
 
 */
 
 /*!
-    \fn bool QItemSelectionRange::operator!=(const QItemSelectionRange &other) const
+    \fn bool QItemSelectionRange::operator!=(const QItemSelectionRange &lhs, const QItemSelectionRange &rhs)
 
-    Returns \c true if the selection range differs from the \a other range given;
+    Returns \c true if \a lhs selection range differs from the \a rhs range given;
     otherwise returns \c false.
 
 */

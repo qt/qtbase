@@ -10,6 +10,7 @@
 #include <QtCore/qhashfunctions.h>
 #include <QtCore/qiterator.h>
 #include <QtCore/qcontainertools_impl.h>
+#include <QtCore/qnamespace.h>
 
 #include <functional>
 #include <limits>
@@ -116,8 +117,7 @@ public:
     public:
         using difference_type = qsizetype;
         using value_type = T;
-        // libstdc++ shipped with gcc < 11 does not have a fix for defect LWG 3346
-#if __cplusplus >= 202002L && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 11)
+#ifdef QT_COMPILER_HAS_LWG3346
         using iterator_concept = std::contiguous_iterator_tag;
         using element_type = value_type;
 #endif
@@ -187,8 +187,7 @@ public:
     public:
         using difference_type = qsizetype;
         using value_type = T;
-        // libstdc++ shipped with gcc < 11 does not have a fix for defect LWG 3346
-#if __cplusplus >= 202002L && (!defined(_GLIBCXX_RELEASE) || _GLIBCXX_RELEASE >= 11)
+#ifdef QT_COMPILER_HAS_LWG3346
         using iterator_concept = std::contiguous_iterator_tag;
         using element_type = const value_type;
 #endif
@@ -326,6 +325,13 @@ public:
     inline explicit QList(const String &str)
     { append(str); }
 
+    QList(qsizetype size, Qt::Initialization)
+        : d(size)
+    {
+        if (size)
+            d->appendUninitialized(size);
+    }
+
     // compiler-generated special member functions are fine!
 
     void swap(QList &other) noexcept { d.swap(other.d); }
@@ -405,6 +411,12 @@ public:
         resize_internal(size);
         if (size > this->size())
             d->copyAppend(size - this->size(), c);
+    }
+    void resizeForOverwrite(qsizetype size)
+    {
+        resize_internal(size);
+        if (size > this->size())
+            d->appendUninitialized(size);
     }
 
     inline qsizetype capacity() const { return qsizetype(d->constAllocatedCapacity()); }
@@ -677,6 +689,10 @@ public:
     inline reference back() { return last(); }
     inline const_reference back() const noexcept { return last(); }
     void shrink_to_fit() { squeeze(); }
+    static qsizetype max_size() noexcept
+    {
+        return Data::max_size();
+    }
 
     // comfort
     QList<T> &operator+=(const QList<T> &l) { append(l); return *this; }

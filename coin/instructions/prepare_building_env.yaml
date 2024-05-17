@@ -484,6 +484,9 @@ instructions:
       - type: AppendToEnvironmentVariable
         variableName: COMMON_TEST_CMAKE_ARGS
         variableValue: " -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_EXAMPLES_CMAKE_ARGS
+        variableValue: " -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
 
       - type: AppendToEnvironmentVariable
         variableName: COMMON_TARGET_CMAKE_ARGS
@@ -493,6 +496,9 @@ instructions:
         variableValue: " -DQT_BUILD_TESTS=OFF -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
       - type: AppendToEnvironmentVariable
         variableName: COMMON_TARGET_TEST_CMAKE_ARGS
+        variableValue: " -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_TARGET_EXAMPLES_CMAKE_ARGS
         variableValue: " -DCMAKE_AUTOGEN_VERBOSE=ON -DCMAKE_MESSAGE_LOG_LEVEL=STATUS"
 
   # Sccache
@@ -507,6 +513,9 @@ instructions:
       - type: AppendToEnvironmentVariable
         variableName: COMMON_TEST_CMAKE_ARGS
         variableValue: " -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_EXAMPLES_CMAKE_ARGS
+        variableValue: " -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
 
       - type: AppendToEnvironmentVariable
         variableName: COMMON_TARGET_CMAKE_ARGS
@@ -517,6 +526,9 @@ instructions:
       - type: AppendToEnvironmentVariable
         variableName: COMMON_TARGET_TEST_CMAKE_ARGS
         variableValue: " -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_TARGET_EXAMPLES_CMAKE_ARGS
+        variableValue: " -DCMAKE_C_COMPILER_LAUNCHER=sccache -DCMAKE_CXX_COMPILER_LAUNCHER=sccache"
     enable_if:
       condition: property
       property: features
@@ -524,6 +536,8 @@ instructions:
 
   # Specify a custom examples installation directory, so that the built example binaries are not
   # packaged into the artifact archive together with the Qt libraries.
+  # Also specify that during examples deployment, only a subset of examples should be deployed, to
+  # save time and space.
   - type: Group
     instructions:
       - type: AppendToEnvironmentVariable
@@ -532,6 +546,24 @@ instructions:
       - type: AppendToEnvironmentVariable
         variableName: COMMON_TARGET_CMAKE_ARGS
         variableValue: " -DQT_INTERNAL_EXAMPLES_INSTALL_PREFIX={{unixPathSeparators .BuildDir}}/installed_examples"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_CMAKE_ARGS
+        variableValue: " -DQT_DEPLOY_MINIMAL_EXAMPLES=ON"
+      - type: AppendToEnvironmentVariable
+        variableName: COMMON_TARGET_CMAKE_ARGS
+        variableValue: " -DQT_DEPLOY_MINIMAL_EXAMPLES=ON"
+      - type: Group
+        instructions:
+          - type: AppendToEnvironmentVariable
+            variableName: COMMON_CMAKE_ARGS
+            variableValue: " -DQT_INTERNAL_CI_NO_BUILD_IN_TREE_EXAMPLES=ON"
+          - type: AppendToEnvironmentVariable
+            variableName: COMMON_TARGET_CMAKE_ARGS
+            variableValue: " -DQT_INTERNAL_CI_NO_BUILD_IN_TREE_EXAMPLES=ON"
+        enable_if:
+          condition: property
+          property: features
+          contains_value: StandaloneExamples
     enable_if:
       # Only set the custom installation dir if examples are built.
       condition: or

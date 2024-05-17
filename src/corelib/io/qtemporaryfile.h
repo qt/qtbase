@@ -14,7 +14,7 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifndef QT_NO_TEMPORARYFILE
+#if QT_CONFIG(temporaryfile)
 
 class QTemporaryFilePrivate;
 class QLockFilePrivate;
@@ -48,7 +48,7 @@ public:
     void setAutoRemove(bool b);
 
     // ### Hides open(flags)
-    bool open() { return open(QIODevice::ReadWrite); }
+    QFILE_MAYBE_NODISCARD bool open() { return open(QIODevice::ReadWrite); }
 
     QString fileName() const override;
     QString fileTemplate() const;
@@ -94,7 +94,7 @@ private:
     Q_DISABLE_COPY(QTemporaryFile)
 };
 
-#endif // QT_NO_TEMPORARYFILE
+#endif // QT_CONFIG(temporaryfile)
 
 QT_END_NAMESPACE
 

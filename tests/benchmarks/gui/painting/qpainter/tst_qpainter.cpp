@@ -1,5 +1,5 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #undef QT_NO_FOREACH // this file contains unported legacy Q_FOREACH uses
 
@@ -196,6 +196,9 @@ private slots:
     void drawTransformedTransparentImage();
     void drawTransformedSemiTransparentImage();
     void drawTransformedFilledImage();
+
+    void drawPathExceedingDevice_data();
+    void drawPathExceedingDevice();
 
 private:
     void setupBrushes();
@@ -1661,6 +1664,56 @@ void tst_QPainter::drawTransformedFilledImage()
     }
 }
 
+void tst_QPainter::drawPathExceedingDevice_data()
+{
+    QTest::addColumn<int>("dim");
+    QTest::addColumn<QPainterPath>("path");
+
+    const int dim = 512;
+    QPainterPath p;
+    const int ext = 10 * dim;
+    for (int i = 0; i < ext; i += (ext / 50)) {
+        p.lineTo(ext, i);
+        p.lineTo(0,  dim);
+        p.moveTo(0, 0);
+    }
+
+    {
+        QPainterPath preClip;
+        preClip.addRect(0, 0, dim, dim);
+        QTest::newRow("devicesize") << dim << p.intersected(preClip);
+    }
+
+    {
+        QPainterPath preClip;
+        preClip.addRect(0, 0, 2*dim, 2*dim);
+        QTest::newRow("devicesizex2") << dim << p.intersected(preClip);
+    }
+
+    {
+        QPainterPath preClip;
+        preClip.addRect(0, 0, 5*dim, 5*dim);
+        QTest::newRow("devicesizex5") << dim << p.intersected(preClip);
+    }
+
+    QTest::newRow("devicesizex10") << dim << p;
+}
+
+void tst_QPainter::drawPathExceedingDevice()
+{
+    QFETCH(int, dim);
+    QFETCH(QPainterPath, path);
+
+    QImage img(dim, dim, QImage::Format_RGB32);
+    QPainter p(&img);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setPen(QPen(Qt::black, 3));
+    p.setBrush(Qt::NoBrush);
+
+    QBENCHMARK {
+        p.drawPath(path);
+    }
+}
 
 QTEST_MAIN(tst_QPainter)
 

@@ -29,38 +29,26 @@ class QStylePrivate: public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QStyle)
 public:
-    inline QStylePrivate()
-        : layoutSpacingIndex(-1), proxyStyle(nullptr) {}
-
     static bool useFullScreenForPopup();
 
-    mutable int layoutSpacingIndex;
     QStyle *proxyStyle;
     QString name;
 };
 
-inline QImage styleCacheImage(const QSize &size)
+inline QPixmap styleCachePixmap(const QSize &size, qreal pixelRatio)
 {
-    const qreal pixelRatio = qApp->devicePixelRatio();
-    QImage cacheImage = QImage(size * pixelRatio, QImage::Format_ARGB32_Premultiplied);
-    cacheImage.setDevicePixelRatio(pixelRatio);
-    return cacheImage;
-}
-
-inline QPixmap styleCachePixmap(const QSize &size)
-{
-    const qreal pixelRatio = qApp->devicePixelRatio();
     QPixmap cachePixmap = QPixmap(size * pixelRatio);
     cachePixmap.setDevicePixelRatio(pixelRatio);
+    cachePixmap.fill(Qt::transparent);
     return cachePixmap;
 }
 
 #define BEGIN_STYLE_PIXMAPCACHE(a) \
     QRect rect = option->rect; \
     QPixmap internalPixmapCache; \
-    QImage imageCache; \
     QPainter *p = painter; \
-    const QString unique = QStyleHelper::uniqueName((a), option, option->rect.size()); \
+    const auto dpr = p->device()->devicePixelRatio(); \
+    const QString unique = QStyleHelper::uniqueName((a), option, option->rect.size(), dpr); \
     int txType = painter->deviceTransform().type() | painter->worldTransform().type(); \
     const bool doPixmapCache = (!option->rect.isEmpty()) \
             && ((txType <= QTransform::TxTranslate) || (painter->deviceTransform().type() == QTransform::TxScale)); \
@@ -69,9 +57,8 @@ inline QPixmap styleCachePixmap(const QSize &size)
     } else { \
         if (doPixmapCache) { \
             rect.setRect(0, 0, option->rect.width(), option->rect.height()); \
-            imageCache = styleCacheImage(option->rect.size()); \
-            imageCache.fill(0); \
-            p = new QPainter(&imageCache); \
+            internalPixmapCache = styleCachePixmap(option->rect.size(), dpr); \
+            p = new QPainter(&internalPixmapCache); \
         }
 
 
@@ -80,7 +67,6 @@ inline QPixmap styleCachePixmap(const QSize &size)
         if (doPixmapCache) { \
             p->end(); \
             delete p; \
-            internalPixmapCache = QPixmap::fromImage(imageCache); \
             painter->drawPixmap(option->rect.topLeft(), internalPixmapCache); \
             QPixmapCache::insert(unique, internalPixmapCache); \
         } \

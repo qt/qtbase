@@ -12,7 +12,6 @@ qt_internal_add_plugin(QWindowsDirect2DIntegrationPlugin
         ../windows/qtwindowsglobal.h
         ../windows/qwin10helpers.cpp ../windows/qwin10helpers.h
         ../windows/qwindowsapplication.cpp ../windows/qwindowsapplication.h
-        ../windows/qwindowscombase.h
         ../windows/qwindowscontext.cpp ../windows/qwindowscontext.h
         ../windows/qwindowscursor.cpp ../windows/qwindowscursor.h
         ../windows/qwindowsdialoghelpers.cpp ../windows/qwindowsdialoghelpers.h
@@ -189,6 +188,7 @@ endif()
 
 qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION QT_FEATURE_accessibility
     SOURCES
+        ../windows/uiautomation/qwindowsuiautomation.cpp ../windows/uiautomation/qwindowsuiautomation.h
         ../windows/uiautomation/qwindowsuiaaccessibility.cpp ../windows/uiautomation/qwindowsuiaaccessibility.h
         ../windows/uiautomation/qwindowsuiabaseprovider.cpp ../windows/uiautomation/qwindowsuiabaseprovider.h
         ../windows/uiautomation/qwindowsuiaexpandcollapseprovider.cpp ../windows/uiautomation/qwindowsuiaexpandcollapseprovider.h
@@ -209,6 +209,16 @@ qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION QT_FEATURE
         ../windows/uiautomation/qwindowsuiavalueprovider.cpp ../windows/uiautomation/qwindowsuiavalueprovider.h
         ../windows/uiautomation/qwindowsuiawindowprovider.cpp ../windows/uiautomation/qwindowsuiawindowprovider.h
 )
+
+if(QT_FEATURE_accessibility)
+    find_library(UI_AUTOMATION_LIBRARY uiautomationcore)
+    if(UI_AUTOMATION_LIBRARY)
+        qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin
+            LIBRARIES
+                ${UI_AUTOMATION_LIBRARY}
+        )
+    endif()
+endif()
 
 qt_internal_extend_target(QWindowsDirect2DIntegrationPlugin CONDITION MINGW AND QT_FEATURE_accessibility
     LIBRARIES

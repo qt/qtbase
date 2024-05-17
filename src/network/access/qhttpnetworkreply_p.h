@@ -172,20 +172,20 @@ class Q_AUTOTEST_EXPORT QHttpNetworkReplyPrivate : public QObjectPrivate, public
 public:
     QHttpNetworkReplyPrivate(const QUrl &newUrl = QUrl());
     ~QHttpNetworkReplyPrivate();
-    qint64 readStatus(QAbstractSocket *socket);
+    qint64 readStatus(QIODevice *socket);
     bool parseStatus(QByteArrayView status);
-    qint64 readHeader(QAbstractSocket *socket);
+    qint64 readHeader(QIODevice *socket);
     void parseHeader(QByteArrayView header);
     void appendHeaderField(const QByteArray &name, const QByteArray &data);
-    qint64 readBody(QAbstractSocket *socket, QByteDataBuffer *out);
-    qint64 readBodyVeryFast(QAbstractSocket *socket, char *b);
-    qint64 readBodyFast(QAbstractSocket *socket, QByteDataBuffer *rb);
+    qint64 readBody(QIODevice *socket, QByteDataBuffer *out);
+    qint64 readBodyVeryFast(QIODevice *socket, char *b);
+    qint64 readBodyFast(QIODevice *socket, QByteDataBuffer *rb);
     void clear();
     void clearHttpLayerInformation();
 
-    qint64 readReplyBodyRaw(QAbstractSocket *in, QByteDataBuffer *out, qint64 size);
-    qint64 readReplyBodyChunked(QAbstractSocket *in, QByteDataBuffer *out);
-    qint64 getChunkSize(QAbstractSocket *in, qint64 *chunkSize);
+    qint64 readReplyBodyRaw(QIODevice *in, QByteDataBuffer *out, qint64 size);
+    qint64 readReplyBodyChunked(QIODevice *in, QByteDataBuffer *out);
+    qint64 getChunkSize(QIODevice *in, qint64 *chunkSize);
 
     bool isRedirecting() const;
     bool shouldEmitSignals();

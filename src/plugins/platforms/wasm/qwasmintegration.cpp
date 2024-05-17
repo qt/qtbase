@@ -206,6 +206,16 @@ void QWasmIntegration::removeBackingStore(QWindow* window)
     m_backingStores.remove(window);
 }
 
+void QWasmIntegration::releaseRequesetUpdateHold()
+{
+    if (QWasmCompositor::releaseRequestUpdateHold())
+    {
+        for (const auto &elementAndScreen : m_screens) {
+            elementAndScreen.wasmScreen->compositor()->requestUpdate();
+        }
+    }
+}
+
 #ifndef QT_NO_OPENGL
 QPlatformOpenGLContext *QWasmIntegration::createPlatformOpenGLContext(QOpenGLContext *context) const
 {
@@ -215,12 +225,12 @@ QPlatformOpenGLContext *QWasmIntegration::createPlatformOpenGLContext(QOpenGLCon
 
 void QWasmIntegration::initialize()
 {
-    if (qgetenv("QT_IM_MODULE").isEmpty() && touchPoints < 1)
+    auto icStrs = QPlatformInputContextFactory::requested();
+    if (icStrs.isEmpty() && touchPoints < 1)
         return;
 
-    QString icStr = QPlatformInputContextFactory::requested();
-    if (!icStr.isNull())
-        m_inputContext.reset(QPlatformInputContextFactory::create(icStr));
+    if (!icStrs.isEmpty())
+        m_inputContext.reset(QPlatformInputContextFactory::create(icStrs));
     else
         m_inputContext.reset(new QWasmInputContext());
 }

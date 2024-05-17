@@ -12,6 +12,7 @@
 #include <private/qhttp2protocolhandler_p.h>
 #include <private/qhttpprotocolhandler_p.h>
 #include <private/http2protocol_p.h>
+#include <private/qsocketabstraction_p.h>
 
 #ifndef QT_NO_SSL
 #    include <private/qsslsocket_p.h>
@@ -78,6 +79,8 @@ void QHttpNetworkConnectionChannel::init()
 #ifndef QT_NO_SSL
     if (connection->d_func()->encrypt)
         socket = new QSslSocket;
+    else if (connection->d_func()->isLocalSocket)
+        socket = new QLocalSocket;
     else
         socket = new QTcpSocket;
 #else
@@ -85,58 +88,75 @@ void QHttpNetworkConnectionChannel::init()
 #endif
 #ifndef QT_NO_NETWORKPROXY
     // Set by QNAM anyway, but let's be safe here
-    socket->setProxy(QNetworkProxy::NoProxy);
+    if (auto s = qobject_cast<QAbstractSocket *>(socket))
+        s->setProxy(QNetworkProxy::NoProxy);
 #endif
 
     // After some back and forth in all the last years, this is now a DirectConnection because otherwise
     // the state inside the *Socket classes gets messed up, also in conjunction with the socket notifiers
     // which behave slightly differently on Windows vs Linux
-    QObject::connect(socket, SIGNAL(bytesWritten(qint64)),
-                     this, SLOT(_q_bytesWritten(qint64)),
+    QObject::connect(socket, &QIODevice::bytesWritten,
+                     this, &QHttpNetworkConnectionChannel::_q_bytesWritten,
                      Qt::DirectConnection);
-    QObject::connect(socket, SIGNAL(connected()),
-                     this, SLOT(_q_connected()),
-                     Qt::DirectConnection);
-    QObject::connect(socket, SIGNAL(readyRead()),
-                     this, SLOT(_q_readyRead()),
+    QObject::connect(socket, &QIODevice::readyRead,
+                     this, &QHttpNetworkConnectionChannel::_q_readyRead,
                      Qt::DirectConnection);
 
-    // The disconnected() and error() signals may already come
-    // while calling connectToHost().
-    // In case of a cached hostname or an IP this
-    // will then emit a signal to the user of QNetworkReply
-    // but cannot be caught because the user did not have a chance yet
-    // to connect to QNetworkReply's signals.
-    qRegisterMetaType<QAbstractSocket::SocketError>();
-    QObject::connect(socket, SIGNAL(disconnected()),
-                     this, SLOT(_q_disconnected()),
-                     Qt::DirectConnection);
-    QObject::connect(socket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
-                     this, SLOT(_q_error(QAbstractSocket::SocketError)),
-                     Qt::DirectConnection);
+
+    QSocketAbstraction::visit([this](auto *socket){
+        using SocketType = std::remove_pointer_t<decltype(socket)>;
+        QObject::connect(socket, &SocketType::connected,
+                        this, &QHttpNetworkConnectionChannel::_q_connected,
+                        Qt::DirectConnection);
+
+        // The disconnected() and error() signals may already come
+        // while calling connectToHost().
+        // In case of a cached hostname or an IP this
+        // will then emit a signal to the user of QNetworkReply
+        // but cannot be caught because the user did not have a chance yet
+        // to connect to QNetworkReply's signals.
+        QObject::connect(socket, &SocketType::disconnected,
+                        this, &QHttpNetworkConnectionChannel::_q_disconnected,
+                        Qt::DirectConnection);
+        if constexpr (std::is_same_v<SocketType, QAbstractSocket>) {
+            QObject::connect(socket, &QAbstractSocket::errorOccurred,
+                            this, &QHttpNetworkConnectionChannel::_q_error,
+                            Qt::DirectConnection);
+        } else if constexpr (std::is_same_v<SocketType, QLocalSocket>) {
+            auto convertAndForward = [this](QLocalSocket::LocalSocketError error) {
+                _q_error(static_cast<QAbstractSocket::SocketError>(error));
+            };
+            QObject::connect(socket, &SocketType::errorOccurred,
+                            this, std::move(convertAndForward),
+                            Qt::DirectConnection);
+        }
+    }, socket);
+
 
 
 #ifndef QT_NO_NETWORKPROXY
-    QObject::connect(socket, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
-                     this, SLOT(_q_proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
-                     Qt::DirectConnection);
+    if (auto *s = qobject_cast<QAbstractSocket *>(socket)) {
+        QObject::connect(s, &QAbstractSocket::proxyAuthenticationRequired,
+                        this, &QHttpNetworkConnectionChannel::_q_proxyAuthenticationRequired,
+                        Qt::DirectConnection);
+    }
 #endif
 
 #ifndef QT_NO_SSL
     QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
     if (sslSocket) {
         // won't be a sslSocket if encrypt is false
-        QObject::connect(sslSocket, SIGNAL(encrypted()),
-                         this, SLOT(_q_encrypted()),
+        QObject::connect(sslSocket, &QSslSocket::encrypted,
+                         this, &QHttpNetworkConnectionChannel::_q_encrypted,
                          Qt::DirectConnection);
-        QObject::connect(sslSocket, SIGNAL(sslErrors(QList<QSslError>)),
-                         this, SLOT(_q_sslErrors(QList<QSslError>)),
+        QObject::connect(sslSocket, &QSslSocket::sslErrors,
+                         this, &QHttpNetworkConnectionChannel::_q_sslErrors,
                          Qt::DirectConnection);
-        QObject::connect(sslSocket, SIGNAL(preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)),
-                         this, SLOT(_q_preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)),
+        QObject::connect(sslSocket, &QSslSocket::preSharedKeyAuthenticationRequired,
+                         this, &QHttpNetworkConnectionChannel::_q_preSharedKeyAuthenticationRequired,
                          Qt::DirectConnection);
-        QObject::connect(sslSocket, SIGNAL(encryptedBytesWritten(qint64)),
-                         this, SLOT(_q_encryptedBytesWritten(qint64)),
+        QObject::connect(sslSocket, &QSslSocket::encryptedBytesWritten,
+                         this, &QHttpNetworkConnectionChannel::_q_encryptedBytesWritten,
                          Qt::DirectConnection);
 
         if (ignoreAllSslErrors)
@@ -156,8 +176,10 @@ void QHttpNetworkConnectionChannel::init()
 #endif
 
 #ifndef QT_NO_NETWORKPROXY
-    if (proxy.type() != QNetworkProxy::NoProxy)
-        socket->setProxy(proxy);
+    if (auto *s = qobject_cast<QAbstractSocket *>(socket);
+        s && proxy.type() != QNetworkProxy::NoProxy) {
+        s->setProxy(proxy);
+    }
 #endif
     isInitialized = true;
 }
@@ -170,7 +192,7 @@ void QHttpNetworkConnectionChannel::close()
 
     if (!socket)
         state = QHttpNetworkConnectionChannel::IdleState;
-    else if (socket->state() == QAbstractSocket::UnconnectedState)
+    else if (QSocketAbstraction::socketState(socket) == QAbstractSocket::UnconnectedState)
         state = QHttpNetworkConnectionChannel::IdleState;
     else
         state = QHttpNetworkConnectionChannel::ClosingState;
@@ -190,7 +212,7 @@ void QHttpNetworkConnectionChannel::abort()
 {
     if (!socket)
         state = QHttpNetworkConnectionChannel::IdleState;
-    else if (socket->state() == QAbstractSocket::UnconnectedState)
+    else if (QSocketAbstraction::socketState(socket) == QAbstractSocket::UnconnectedState)
         state = QHttpNetworkConnectionChannel::IdleState;
     else
         state = QHttpNetworkConnectionChannel::ClosingState;
@@ -201,7 +223,10 @@ void QHttpNetworkConnectionChannel::abort()
     if (socket) {
         // socket can be 0 since the host lookup is done from qhttpnetworkconnection.cpp while
         // there is no socket yet.
-        socket->abort();
+        auto callAbort = [](auto *s) {
+            s->abort();
+        };
+        QSocketAbstraction::visit(callAbort, socket);
     }
 }
 
@@ -268,7 +293,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
     if (!isInitialized)
         init();
 
-    QAbstractSocket::SocketState socketState = socket->state();
+    QAbstractSocket::SocketState socketState = QSocketAbstraction::socketState(socket);
 
     // resend this request after we receive the disconnected signal
     // If !socket->isOpen() then we have already called close() on the socket, but there was still a
@@ -335,7 +360,8 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
             connectHost = connection->d_func()->networkProxy.hostName();
             connectPort = connection->d_func()->networkProxy.port();
         }
-        if (socket->proxy().type() == QNetworkProxy::HttpProxy) {
+        if (auto *abSocket = qobject_cast<QAbstractSocket *>(socket);
+            abSocket && abSocket->proxy().type() == QNetworkProxy::HttpProxy) {
             // Make user-agent field available to HTTP proxy socket engine (QTBUG-17223)
             QByteArray value;
             // ensureConnection is called before any request has been assigned, but can also be
@@ -353,9 +379,11 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
                 value = request.headerField("user-agent");
             }
             if (!value.isEmpty()) {
-                QNetworkProxy proxy(socket->proxy());
-                proxy.setRawHeader("User-Agent", value); //detaches
-                socket->setProxy(proxy);
+                QNetworkProxy proxy(abSocket->proxy());
+                auto h = proxy.headers();
+                h.replaceOrAppend(QHttpHeaders::WellKnownHeader::UserAgent, value);
+                proxy.setHeaders(std::move(h));
+                abSocket->setProxy(proxy);
             }
         }
 #endif
@@ -378,7 +406,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
             // limit the socket read buffer size. we will read everything into
             // the QHttpNetworkReply anyway, so let's grow only that and not
             // here and there.
-            socket->setReadBufferSize(64*1024);
+            sslSocket->setReadBufferSize(64*1024);
 #else
             // Need to dequeue the request so that we can emit the error.
             if (!reply)
@@ -392,17 +420,24 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
                     && connection->cacheProxy().type() == QNetworkProxy::NoProxy
                     && connection->transparentProxy().type() == QNetworkProxy::NoProxy) {
 #endif
-                socket->connectToHost(connectHost, connectPort, QIODevice::ReadWrite | QIODevice::Unbuffered, networkLayerPreference);
-                // For an Unbuffered QTcpSocket, the read buffer size has a special meaning.
-                socket->setReadBufferSize(1*1024);
+                if (auto *s = qobject_cast<QAbstractSocket *>(socket)) {
+                    s->connectToHost(connectHost, connectPort,
+                                     QIODevice::ReadWrite | QIODevice::Unbuffered,
+                                     networkLayerPreference);
+                    // For an Unbuffered QTcpSocket, the read buffer size has a special meaning.
+                    s->setReadBufferSize(1 * 1024);
+                } else if (auto *s = qobject_cast<QLocalSocket *>(socket)) {
+                    s->connectToServer(connectHost);
+                }
 #ifndef QT_NO_NETWORKPROXY
             } else {
-                socket->connectToHost(connectHost, connectPort, QIODevice::ReadWrite, networkLayerPreference);
-
+                auto *s = qobject_cast<QAbstractSocket *>(socket);
+                Q_ASSERT(s);
                 // limit the socket read buffer size. we will read everything into
                 // the QHttpNetworkReply anyway, so let's grow only that and not
                 // here and there.
-                socket->setReadBufferSize(64*1024);
+                s->connectToHost(connectHost, connectPort, QIODevice::ReadWrite, networkLayerPreference);
+                s->setReadBufferSize(64 * 1024);
             }
 #endif
         }
@@ -505,7 +540,7 @@ void QHttpNetworkConnectionChannel::allDone()
 
     // move next from pipeline to current request
     if (!alreadyPipelinedRequests.isEmpty()) {
-        if (resendCurrent || connectionCloseEnabled || socket->state() != QAbstractSocket::ConnectedState) {
+        if (resendCurrent || connectionCloseEnabled || QSocketAbstraction::socketState(socket) != QAbstractSocket::ConnectedState) {
             // move the pipelined ones back to the main queue
             requeueCurrentlyPipelinedRequests();
             close();
@@ -536,7 +571,7 @@ void QHttpNetworkConnectionChannel::allDone()
         QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
     } else if (alreadyPipelinedRequests.isEmpty()) {
         if (connectionCloseEnabled)
-            if (socket->state() != QAbstractSocket::UnconnectedState)
+            if (QSocketAbstraction::socketState(socket) != QAbstractSocket::UnconnectedState)
                 close();
         if (qobject_cast<QHttpNetworkConnection*>(connection))
             QMetaObject::invokeMethod(connection, "_q_startNextRequest", Qt::QueuedConnection);
@@ -554,7 +589,7 @@ void QHttpNetworkConnectionChannel::detectPipeliningSupport()
             // check for not having connection close
             && (!reply->d_func()->isConnectionCloseEnabled())
             // check if it is still connected
-            && (socket->state() == QAbstractSocket::ConnectedState)
+            && (QSocketAbstraction::socketState(socket) == QAbstractSocket::ConnectedState)
             // check for broken servers in server reply header
             // this is adapted from http://mxr.mozilla.org/firefox/ident?i=SupportsPipelining
             && (serverHeaderField = reply->headerField("Server"), !serverHeaderField.contains("Microsoft-IIS/4."))
@@ -677,8 +712,8 @@ bool QHttpNetworkConnectionChannel::resetUploadData()
 
 void QHttpNetworkConnectionChannel::setProxy(const QNetworkProxy &networkProxy)
 {
-    if (socket)
-        socket->setProxy(networkProxy);
+    if (auto *s = qobject_cast<QAbstractSocket *>(socket))
+        s->setProxy(networkProxy);
 
     proxy = networkProxy;
 }
@@ -839,7 +874,7 @@ void QHttpNetworkConnectionChannel::_q_disconnected()
 }
 
 
-void QHttpNetworkConnectionChannel::_q_connected()
+void QHttpNetworkConnectionChannel::_q_connected_abstract_socket(QAbstractSocket *absSocket)
 {
     // For the Happy Eyeballs we need to check if this is the first channel to connect.
     if (connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::HostLookupPending || connection->d_func()->networkLayerState == QHttpNetworkConnectionPrivate::IPv4or6) {
@@ -850,7 +885,7 @@ void QHttpNetworkConnectionChannel::_q_connected()
         else if (networkLayerPreference == QAbstractSocket::IPv6Protocol)
             connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv6;
         else {
-            if (socket->peerAddress().protocol() == QAbstractSocket::IPv4Protocol)
+            if (absSocket->peerAddress().protocol() == QAbstractSocket::IPv4Protocol)
                 connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv4;
             else
                 connection->d_func()->networkLayerState = QHttpNetworkConnectionPrivate::IPv6;
@@ -873,7 +908,7 @@ void QHttpNetworkConnectionChannel::_q_connected()
     }
 
     // improve performance since we get the request sent by the kernel ASAP
-    //socket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    //absSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     // We have this commented out now. It did not have the effect we wanted. If we want to
     // do this properly, Qt has to combine multiple HTTP requests into one buffer
     // and send this to the kernel in one syscall and then the kernel immediately sends
@@ -882,7 +917,7 @@ void QHttpNetworkConnectionChannel::_q_connected()
     // the requests into one TCP packet.
 
     // not sure yet if it helps, but it makes sense
-    socket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+    absSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
     pipeliningSupported = QHttpNetworkConnectionChannel::PipeliningSupportUnknown;
 
@@ -891,7 +926,7 @@ void QHttpNetworkConnectionChannel::_q_connected()
         if (!connectionPrivate->connectionMonitor.isMonitoring()) {
             // Now that we have a pair of addresses, we can start monitoring the
             // connection status to handle its loss properly.
-            if (connectionPrivate->connectionMonitor.setTargets(socket->localAddress(), socket->peerAddress()))
+            if (connectionPrivate->connectionMonitor.setTargets(absSocket->localAddress(), absSocket->peerAddress()))
                 connectionPrivate->connectionMonitor.startMonitoring();
         }
     }
@@ -903,7 +938,7 @@ void QHttpNetworkConnectionChannel::_q_connected()
         if (!connection->sslContext()) {
             // this socket is making the 1st handshake for this connection,
             // we need to set the SSL context so new sockets can reuse it
-            if (auto socketSslContext = QSslSocketPrivate::sslContext(static_cast<QSslSocket*>(socket)))
+            if (auto socketSslContext = QSslSocketPrivate::sslContext(static_cast<QSslSocket*>(absSocket)))
                 connection->setSslContext(std::move(socketSslContext));
         }
 #endif
@@ -925,7 +960,7 @@ void QHttpNetworkConnectionChannel::_q_connected()
         switchedToHttp2 = false;
 
         if (!reply)
-            connection->d_func()->dequeueRequest(socket);
+            connection->d_func()->dequeueRequest(absSocket);
 
         if (reply) {
             if (tryProtocolUpgrade) {
@@ -938,6 +973,22 @@ void QHttpNetworkConnectionChannel::_q_connected()
     }
 }
 
+void QHttpNetworkConnectionChannel::_q_connected_local_socket(QLocalSocket *localSocket)
+{
+    state = QHttpNetworkConnectionChannel::IdleState;
+    if (!reply) // No reply object, try to dequeue a request (which is paired with a reply):
+        connection->d_func()->dequeueRequest(localSocket);
+    if (reply)
+        sendRequest();
+}
+
+void QHttpNetworkConnectionChannel::_q_connected()
+{
+    if (auto *s = qobject_cast<QAbstractSocket *>(socket))
+        _q_connected_abstract_socket(s);
+    else if (auto *s = qobject_cast<QLocalSocket *>(socket))
+        _q_connected_local_socket(s);
+}
 
 void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socketError)
 {
@@ -1114,7 +1165,7 @@ void QHttpNetworkConnectionChannel::_q_error(QAbstractSocket::SocketError socket
         //signal emission triggered event loop
         if (!socket)
             state = QHttpNetworkConnectionChannel::IdleState;
-        else if (socket->state() == QAbstractSocket::UnconnectedState)
+        else if (QSocketAbstraction::socketState(socket) == QAbstractSocket::UnconnectedState)
             state = QHttpNetworkConnectionChannel::IdleState;
         else
             state = QHttpNetworkConnectionChannel::ClosingState;

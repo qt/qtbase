@@ -423,13 +423,19 @@ static QString mapDomainName(const QString &in, QUrl::AceProcessingOptions optio
             if (uc >= U'A' && uc <= U'Z')
                 uc |= 0x20; // lower-case it
 
-            if (!isValidInNormalizedAsciiName(uc))
-                return {};
+            if (isValidInNormalizedAsciiName(uc)) {
+                result.append(static_cast<char16_t>(uc));
+                continue;
+            }
+        }
 
-            result.append(static_cast<char16_t>(uc));
+        allAscii = false;
+
+        // Capital sharp S is a special case since UTR #46 revision 31 (Unicode 15.1)
+        if (uc == 0x1E9E && options.testFlag(QUrl::AceTransitionalProcessing)) {
+            result.append(u"ss"_s);
             continue;
         }
-        allAscii = false;
 
         QUnicodeTables::IdnaStatus status = QUnicodeTables::idnaStatus(uc);
 
@@ -442,14 +448,13 @@ static QString mapDomainName(const QString &in, QUrl::AceProcessingOptions optio
         case QUnicodeTables::IdnaStatus::Ignored:
             continue;
         case QUnicodeTables::IdnaStatus::Valid:
+        case QUnicodeTables::IdnaStatus::Disallowed:
             for (auto c : QChar::fromUcs4(uc))
                 result.append(c);
             break;
         case QUnicodeTables::IdnaStatus::Mapped:
             result.append(QUnicodeTables::idnaMapping(uc));
             break;
-        case QUnicodeTables::IdnaStatus::Disallowed:
-            return {};
         default:
             Q_UNREACHABLE();
         }
@@ -483,12 +488,13 @@ class DomainValidityChecker
 {
     bool domainNameIsBidi = false;
     bool hadBidiErrors = false;
+    bool ignoreBidiErrors;
 
     static constexpr char32_t ZWNJ = U'\u200C';
     static constexpr char32_t ZWJ = U'\u200D';
 
 public:
-    DomainValidityChecker() { }
+    DomainValidityChecker(bool ignoreBidiErrors = false) : ignoreBidiErrors(ignoreBidiErrors) { }
     bool checkLabel(const QString &label, QUrl::AceProcessingOptions options);
 
 private:
@@ -714,7 +720,7 @@ bool DomainValidityChecker::checkLabel(const QString &label, QUrl::AceProcessing
         // because non-BMP characters are unlikely to be used for specifying
         // future extensions.
         if (label[2] == u'-' && label[3] == u'-')
-            return false;
+            return ignoreBidiErrors && label.startsWith(u"xn") && validateAsciiLabel(label);
     }
 
     if (label.startsWith(u'-') || label.endsWith(u'-'))
@@ -736,7 +742,7 @@ bool DomainValidityChecker::checkLabel(const QString &label, QUrl::AceProcessing
     for (;;) {
         hasJoiners = hasJoiners || c == ZWNJ || c == ZWJ;
 
-        if (!domainNameIsBidi) {
+        if (!ignoreBidiErrors && !domainNameIsBidi) {
             switch (QChar::direction(c)) {
             case QChar::DirR:
             case QChar::DirAL:
@@ -784,17 +790,12 @@ static QString convertToAscii(QStringView normalizedDomain, AceLeadingDot dot)
     QString aceResult;
 
     while (true) {
-        auto idx = normalizedDomain.indexOf(u'.', lastIdx);
+        qsizetype idx = normalizedDomain.indexOf(u'.', lastIdx);
         if (idx == -1)
             idx = normalizedDomain.size();
 
-        const auto labelLength = idx - lastIdx;
-        if (labelLength == 0) {
-            if (idx == normalizedDomain.size())
-                break;
-            if (dot == ForbidLeadingDot || idx > 0)
-                return {}; // two delimiters in a row -- empty label not allowed
-        } else {
+        const qsizetype labelLength = idx - lastIdx;
+        if (labelLength) {
             const auto label = normalizedDomain.sliced(lastIdx, labelLength);
             aceForm.clear();
             qt_punycodeEncoder(label, &aceForm);
@@ -806,6 +807,9 @@ static QString convertToAscii(QStringView normalizedDomain, AceLeadingDot dot)
 
         if (idx == normalizedDomain.size())
             break;
+
+        if (labelLength == 0 && (dot == ForbidLeadingDot || idx > 0))
+            return {}; // two delimiters in a row -- empty label not allowed
 
         lastIdx = idx + 1;
         aceResult += u'.';
@@ -886,6 +890,33 @@ static QString convertToUnicode(const QString &asciiDomain, QUrl::AceProcessingO
     return result;
 }
 
+static bool checkUnicodeName(const QString &domainName, QUrl::AceProcessingOptions options)
+{
+    qsizetype lastIdx = 0;
+
+    DomainValidityChecker checker(true);
+
+    while (true) {
+        qsizetype idx = domainName.indexOf(u'.', lastIdx);
+        if (idx == -1)
+            idx = domainName.size();
+
+        const qsizetype labelLength = idx - lastIdx;
+        if (labelLength) {
+            const auto label = domainName.sliced(lastIdx, labelLength);
+
+            if (!checker.checkLabel(label, options))
+                return false;
+        }
+
+        if (idx == domainName.size())
+            break;
+
+        lastIdx = idx + 1;
+    }
+    return true;
+}
+
 QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot,
                   QUrl::AceProcessingOptions options)
 {
@@ -900,12 +931,15 @@ QString qt_ACE_do(const QString &domain, AceOperation op, AceLeadingDot dot,
     if (normalized.isEmpty())
         return {};
 
-    bool needsCoversionToUnicode;
-    const QString aceResult = mappedToAscii ? normalized : convertToAscii(normalized, dot);
-    if (aceResult.isEmpty() || !checkAsciiDomainName(aceResult, dot, &needsCoversionToUnicode))
+    if (!mappedToAscii && !checkUnicodeName(normalized, options))
         return {};
 
-    if (op == ToAceOnly || !needsCoversionToUnicode
+    bool needsConversionToUnicode;
+    const QString aceResult = mappedToAscii ? normalized : convertToAscii(normalized, dot);
+    if (aceResult.isEmpty() || !checkAsciiDomainName(aceResult, dot, &needsConversionToUnicode))
+        return {};
+
+    if (op == ToAceOnly || !needsConversionToUnicode
         || (!options.testFlag(QUrl::IgnoreIDNWhitelist) && !qt_is_idn_enabled(aceResult))) {
         return aceResult;
     }

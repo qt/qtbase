@@ -481,6 +481,8 @@ void QPaintEngine::drawEllipse(const QRectF &rect)
 }
 
 /*!
+    \overload
+
     The default implementation of this function calls the floating
     point version of this function
 */

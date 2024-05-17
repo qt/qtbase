@@ -1,5 +1,5 @@
 // Copyright (C) 2020 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QTest>
 #include <qoperatingsystemversion.h>
@@ -114,47 +114,44 @@ void tst_QOperatingSystemVersion::comparison_data()
     QTest::addColumn<int>("rhsMinor");
     QTest::addColumn<int>("rhsMicro");
 
-    QTest::addColumn<bool>("lessResult");
-    QTest::addColumn<bool>("lessEqualResult");
-    QTest::addColumn<bool>("moreResult");
-    QTest::addColumn<bool>("moreEqualResult");
+    QTest::addColumn<Qt::partial_ordering>("expectedResult");
 
     QTest::addRow("mismatching types") << QOperatingSystemVersion::OSType::Windows << 1 << 2 << 3
                                        << QOperatingSystemVersion::OSType::MacOS << 1 << 2 << 3
-                                       << false << false << false << false;
+                                       << Qt::partial_ordering::unordered;
 
     QTest::addRow("equal versions") << QOperatingSystemVersion::OSType::Windows << 1 << 2 << 3
                                     << QOperatingSystemVersion::OSType::Windows << 1 << 2 << 3
-                                    << false << true << false << true;
+                                    << Qt::partial_ordering::equivalent;
 
     QTest::addRow("lhs micro less") << QOperatingSystemVersion::OSType::Windows << 1 << 2 << 2
                                     << QOperatingSystemVersion::OSType::Windows << 1 << 2 << 3
-                                    << true << true << false << false;
+                                    << Qt::partial_ordering::less;
 
     QTest::addRow("rhs micro less") << QOperatingSystemVersion::OSType::Windows << 1 << 2 << 2
                                     << QOperatingSystemVersion::OSType::Windows << 1 << 2 << 1
-                                    << false << false << true << true;
+                                    << Qt::partial_ordering::greater;
 
     QTest::addRow("lhs minor less") << QOperatingSystemVersion::OSType::Windows << 1 << 2 << 3
                                     << QOperatingSystemVersion::OSType::Windows << 1 << 3 << 3
-                                    << true << true << false << false;
+                                    << Qt::partial_ordering::less;
 
     QTest::addRow("rhs minor less") << QOperatingSystemVersion::OSType::Windows << 1 << 2 << 2
                                     << QOperatingSystemVersion::OSType::Windows << 1 << 1 << 3
-                                    << false << false << true << true;
+                                    << Qt::partial_ordering::greater;
 
     QTest::addRow("lhs major less") << QOperatingSystemVersion::OSType::Windows << 0 << 5 << 6
                                     << QOperatingSystemVersion::OSType::Windows << 1 << 2 << 3
-                                    << true << true << false << false;
+                                    << Qt::partial_ordering::less;
 
     QTest::addRow("rhs major less") << QOperatingSystemVersion::OSType::Windows << 1 << 2 << 3
                                     << QOperatingSystemVersion::OSType::Windows << 0 << 2 << 3
-                                    << false << false << true << true;
+                                    << Qt::partial_ordering::greater;
 
     QTest::addRow("different segmentCount")
             << QOperatingSystemVersion::OSType::Windows << 1 << 2 << 3
             << QOperatingSystemVersion::OSType::Windows << 1 << 2 << -1
-            << false << true << false << true;
+            << Qt::partial_ordering::equivalent;
 }
 
 void tst_QOperatingSystemVersion::comparison()
@@ -173,56 +170,54 @@ void tst_QOperatingSystemVersion::comparison()
 
     const QOperatingSystemVersion rhsSystemInfo(rhsType, rhsMajor, rhsMinor, rhsMicro);
 
-    QFETCH(bool, lessResult);
-    QCOMPARE(lhsSystemInfo < rhsSystemInfo, lessResult);
+    QFETCH(const Qt::partial_ordering, expectedResult);
 
-    QFETCH(bool, lessEqualResult);
-    QCOMPARE(lhsSystemInfo <= rhsSystemInfo, lessEqualResult);
-
-    QFETCH(bool, moreResult);
-    QCOMPARE(lhsSystemInfo > rhsSystemInfo, moreResult);
-
-    QFETCH(bool, moreEqualResult);
-    QCOMPARE(lhsSystemInfo >= rhsSystemInfo, moreEqualResult);
+    QCOMPARE_EQ(lhsSystemInfo < rhsSystemInfo, is_lt(expectedResult));
+    QCOMPARE_EQ(lhsSystemInfo <= rhsSystemInfo, is_lteq(expectedResult));
+    QCOMPARE_EQ(lhsSystemInfo > rhsSystemInfo, is_gt(expectedResult));
+    QCOMPARE_EQ(lhsSystemInfo >= rhsSystemInfo, is_gteq(expectedResult));
+#ifdef __cpp_lib_three_way_comparison
+    QCOMPARE_EQ(lhsSystemInfo <=> rhsSystemInfo, expectedResult);
+#endif
 }
 
 void tst_QOperatingSystemVersion::comparison2_data()
 {
     QTest::addColumn<QOperatingSystemVersion>("lhs");
     QTest::addColumn<QOperatingSystemVersion>("rhs");
-    QTest::addColumn<int>("result");
+    QTest::addColumn<Qt::partial_ordering>("result");
 
 #define ADDROW(os1, os2)    \
     QTest::newRow(#os1 "-vs-" #os2) << QOperatingSystemVersion(QOperatingSystemVersion::os1) \
                                     << QOperatingSystemVersion(QOperatingSystemVersion::os2)
 
     // Cross-OS testing: not comparables.
-    ADDROW(Windows10, MacOSMonterey) << -128;
-    ADDROW(Windows11, MacOSMonterey) << -128;
-    ADDROW(MacOSMonterey, Windows10) << -128;
-    ADDROW(MacOSMonterey, Windows11) << -128;
-    ADDROW(Windows10, MacOSVentura) << -128;
-    ADDROW(Windows11, MacOSVentura) << -128;
-    ADDROW(MacOSVentura, Windows10) << -128;
-    ADDROW(MacOSVentura, Windows11) << -128;
-    ADDROW(Windows10, Android10) << -128;
-    ADDROW(Windows11, Android11) << -128;
+    ADDROW(Windows10, MacOSMonterey) << Qt::partial_ordering::unordered;
+    ADDROW(Windows11, MacOSMonterey) << Qt::partial_ordering::unordered;
+    ADDROW(MacOSMonterey, Windows10) << Qt::partial_ordering::unordered;
+    ADDROW(MacOSMonterey, Windows11) << Qt::partial_ordering::unordered;
+    ADDROW(Windows10, MacOSVentura) << Qt::partial_ordering::unordered;
+    ADDROW(Windows11, MacOSVentura) << Qt::partial_ordering::unordered;
+    ADDROW(MacOSVentura, Windows10) << Qt::partial_ordering::unordered;
+    ADDROW(MacOSVentura, Windows11) << Qt::partial_ordering::unordered;
+    ADDROW(Windows10, Android10) << Qt::partial_ordering::unordered;
+    ADDROW(Windows11, Android11) << Qt::partial_ordering::unordered;
 
     // Same-OS tests. This list does not have to be exhaustive.
-    ADDROW(Windows7, Windows7) << 0;
-    ADDROW(Windows7, Windows8) << -1;
-    ADDROW(Windows8, Windows7) << 1;
-    ADDROW(Windows8, Windows10) << -1;
-    ADDROW(Windows10, Windows8) << 1;
-    ADDROW(Windows10, Windows10_21H1) << -1;
-    ADDROW(Windows10_21H1, Windows10) << 1;
-    ADDROW(Windows10, Windows11) << -1;
-    ADDROW(MacOSCatalina, MacOSCatalina) << 0;
-    ADDROW(MacOSCatalina, MacOSBigSur) << -1;
-    ADDROW(MacOSBigSur, MacOSCatalina) << 1;
-    ADDROW(MacOSMonterey, MacOSVentura) << -1;
-    ADDROW(MacOSVentura, MacOSVentura) << 0;
-    ADDROW(MacOSVentura, MacOSMonterey) << 1;
+    ADDROW(Windows7, Windows7) << Qt::partial_ordering::equivalent;
+    ADDROW(Windows7, Windows8) << Qt::partial_ordering::less;
+    ADDROW(Windows8, Windows7) << Qt::partial_ordering::greater;
+    ADDROW(Windows8, Windows10) << Qt::partial_ordering::less;
+    ADDROW(Windows10, Windows8) << Qt::partial_ordering::greater;
+    ADDROW(Windows10, Windows10_21H1) << Qt::partial_ordering::less;
+    ADDROW(Windows10_21H1, Windows10) << Qt::partial_ordering::greater;
+    ADDROW(Windows10, Windows11) << Qt::partial_ordering::less;
+    ADDROW(MacOSCatalina, MacOSCatalina) << Qt::partial_ordering::equivalent;
+    ADDROW(MacOSCatalina, MacOSBigSur) << Qt::partial_ordering::less;
+    ADDROW(MacOSBigSur, MacOSCatalina) << Qt::partial_ordering::greater;
+    ADDROW(MacOSMonterey, MacOSVentura) << Qt::partial_ordering::less;
+    ADDROW(MacOSVentura, MacOSVentura) << Qt::partial_ordering::equivalent;
+    ADDROW(MacOSVentura, MacOSMonterey) << Qt::partial_ordering::greater;
 #undef ADDROW
 }
 
@@ -230,18 +225,20 @@ void tst_QOperatingSystemVersion::comparison2()
 {
     QFETCH(QOperatingSystemVersion, lhs);
     QFETCH(QOperatingSystemVersion, rhs);
-    QFETCH(int, result);
+    QFETCH(const Qt::partial_ordering, result);
 
     QEXPECT_FAIL("Windows10-vs-Windows10_21H1", "QTBUG-107907: Unexpected behavior", Abort);
     QEXPECT_FAIL("Windows10-vs-Windows11", "QTBUG-107907: Unexpected behavior", Abort);
 
-    // value -128 indicates "not comparable"
-    bool comparable = (result != -128);
-    QCOMPARE(lhs < rhs, result < 0 && comparable);
+    const bool comparable = (result != Qt::partial_ordering::unordered);
+    QCOMPARE_EQ(lhs < rhs, is_lt(result) && comparable);
     QEXPECT_FAIL("Windows10_21H1-vs-Windows10", "QTBUG-107907: Unexpected behavior", Abort);
-    QCOMPARE(lhs <= rhs, result <= 0 && comparable);
-    QCOMPARE(lhs > rhs, result > 0 && comparable);
-    QCOMPARE(lhs >= rhs, result >= 0 && comparable);
+    QCOMPARE_EQ(lhs <= rhs, is_lteq(result) && comparable);
+    QCOMPARE_EQ(lhs > rhs, is_gt(result) && comparable);
+    QCOMPARE_EQ(lhs >= rhs, is_gteq(result) && comparable);
+#ifdef __cpp_lib_three_way_comparison
+    QCOMPARE_EQ(lhs <=> rhs, result);
+#endif
 }
 
 void tst_QOperatingSystemVersion::mixedComparison()

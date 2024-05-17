@@ -1,6 +1,6 @@
 // Copyright (C) 2022 The Qt Company Ltd.
 // Copyright (C) 2016 Intel Corporation.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
 #include <QDateTime>
 #include <QTest>
@@ -1179,7 +1179,7 @@ void tst_QDate::operator_insert_extract()
     QCOMPARE(deserialised, date);
 }
 
-#if QT_CONFIG(datetimeparser)
+#if QT_CONFIG(datestring)
 void tst_QDate::fromStringDateFormat_data()
 {
     QTest::addColumn<QString>("dateStr");
@@ -1303,6 +1303,7 @@ void tst_QDate::fromStringDateFormat()
     QCOMPARE(QDate::fromString(dateStr, dateFormat), expectedDate);
 }
 
+# if QT_CONFIG(datetimeparser)
 void tst_QDate::fromStringFormat_data()
 {
     QTest::addColumn<QString>("string");
@@ -1334,7 +1335,7 @@ void tst_QDate::fromStringFormat_data()
     QTest::newRow("year-match-1999") << u"1999:99"_s << u"yyyy:yy"_s << 1900 << QDate(1999, 1, 1);
     QTest::newRow("year-match-2099") << u"2099:99"_s << u"yyyy:yy"_s << 1900 << QDate(2099, 1, 1);
     QTest::newRow("year-match-2001") << u"2001:01"_s << u"yyyy:yy"_s << 1900 << QDate(2001, 1, 1);
-    QTest::newRow("year-match-1999") << u"99"_s << u"yy"_s << 1900 << QDate(1999, 1, 1);
+    QTest::newRow("just-yy-1999") << u"99"_s << u"yy"_s << 1900 << QDate(1999, 1, 1);
     QTest::newRow("just-yy-1901") << u"01"_s << u"yy"_s << 1900 << QDate(1901, 1, 1);
     QTest::newRow("just-yy-2001") << u"01"_s << u"yy"_s << 1970 << QDate(2001, 1, 1);
 
@@ -1490,7 +1491,6 @@ void tst_QDate::fromStringFormat()
 }
 #endif // datetimeparser
 
-#if QT_CONFIG(datestring)
 void tst_QDate::toStringFormat_data()
 {
     QTest::addColumn<QDate>("t");
