@@ -28,10 +28,11 @@ class QNoDebug;
 
 enum QtMsgType {
     QtDebugMsg,
+    QT7_ONLY(QtInfoMsg,)
     QtWarningMsg,
     QtCriticalMsg,
     QtFatalMsg,
-    QtInfoMsg,
+    QT6_ONLY(QtInfoMsg,)
 #if QT_DEPRECATED_SINCE(6, 7)
     QtSystemMsg Q_DECL_ENUMERATOR_DEPRECATED_X("Use QtCriticalMsg instead.") = QtCriticalMsg
 #endif
