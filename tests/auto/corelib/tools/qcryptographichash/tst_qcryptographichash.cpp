@@ -20,6 +20,8 @@ private slots:
     void repeated_result();
     void intermediary_result_data();
     void intermediary_result();
+    void static_hash_data() { intermediary_result_data(); }
+    void static_hash();
     void sha1();
     void sha3_data();
     void sha3();
@@ -196,6 +198,17 @@ void tst_QCryptographicHash::intermediary_result()
     QCOMPARE(hash.resultView(), hash_firstsecond);
 
     hash.reset();
+}
+
+void tst_QCryptographicHash::static_hash()
+{
+    QFETCH(const int, algo);
+    QFETCH(const QByteArray, first);
+    QFETCH(const QByteArray, hash_first);
+
+    const auto _algo = QCryptographicHash::Algorithm(algo);
+
+    QCOMPARE(QCryptographicHash::hash(first, _algo), hash_first);
 }
 
 
