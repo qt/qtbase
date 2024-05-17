@@ -173,7 +173,7 @@ void tst_QSpan::onlyZeroExtentSpansHaveDefaultCtors() const
 
 void tst_QSpan::zeroExtentSpansMaintainADataPointer() const
 {
-    int i;
+    int i = 0;
     QSpan<int, 0> si{&i, 0};
     QCOMPARE(si.data(), &i);
     check_empty_span_incl_subspans(si);
