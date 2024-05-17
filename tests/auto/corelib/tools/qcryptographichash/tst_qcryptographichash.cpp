@@ -31,9 +31,9 @@ private slots:
     void blake2();
     void files_data();
     void files();
-    void hashLength_data();
+    void hashLength_data() { all_methods(true); }
     void hashLength();
-    void addDataAcceptsNullByteArrayView_data() { hashLength_data(); }
+    void addDataAcceptsNullByteArrayView_data() { all_methods(false); }
     void addDataAcceptsNullByteArrayView();
     void move();
     void swap();
@@ -42,6 +42,7 @@ private slots:
     void moreThan4GiBOfData();
     void keccakBufferOverflow();
 private:
+    void all_methods(bool includingNumAlgorithms) const;
     void ensureLargeData();
     std::vector<char> large;
 };
@@ -487,12 +488,14 @@ void tst_QCryptographicHash::files()
     }
 }
 
-void tst_QCryptographicHash::hashLength_data()
+void tst_QCryptographicHash::all_methods(bool inclNumAlgos) const
 {
     QTest::addColumn<QCryptographicHash::Algorithm>("algorithm");
     auto metaEnum = QMetaEnum::fromType<QCryptographicHash::Algorithm>();
     for (int i = 0, value = metaEnum.value(i); value != -1; value = metaEnum.value(++i)) {
         auto algorithm = QCryptographicHash::Algorithm(value);
+        if (!inclNumAlgos && algorithm == QCryptographicHash::Algorithm::NumAlgorithms)
+            continue;
         QTest::addRow("%s", metaEnum.key(i)) << algorithm;
     }
 }
