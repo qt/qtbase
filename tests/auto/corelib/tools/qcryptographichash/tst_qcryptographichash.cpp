@@ -209,6 +209,9 @@ void tst_QCryptographicHash::static_hash()
     const auto _algo = QCryptographicHash::Algorithm(algo);
 
     QCOMPARE(QCryptographicHash::hash(first, _algo), hash_first);
+
+    std::byte buffer[1024];
+    QCOMPARE(QCryptographicHash::hashInto(buffer, first, _algo), hash_first);
 }
 
 
@@ -511,6 +514,9 @@ void tst_QCryptographicHash::hashLength()
         expectedSize = 0;
     } else {
         expectedSize = QCryptographicHash::hash("test", algorithm).size();
+
+        std::byte buffer[1024];
+        QCOMPARE(QCryptographicHash::hashInto(buffer, "foo", algorithm).size(), expectedSize);
     }
     QCOMPARE(QCryptographicHash::hashLength(algorithm), expectedSize);
 }

@@ -1153,13 +1153,42 @@ void QCryptographicHashPrivate::State::finalizeUnchecked(QCryptographicHash::Alg
 
   \note In Qt versions prior to 6.3, this function took QByteArray,
   not QByteArrayView.
+
+  \sa hashInto()
 */
 QByteArray QCryptographicHash::hash(QByteArrayView data, Algorithm method)
+{
+    QByteArray ba(hashLengthInternal(method), Qt::Uninitialized);
+    [[maybe_unused]] const auto r = hashInto(ba, data, method);
+    Q_ASSERT(r.size() == ba.size());
+    return ba;
+}
+
+/*!
+    \since 6.8
+    \fn QCryptographicHash::hashInto(QSpan<char> buffer, QByteArrayView data, Algorithm method);
+    \fn QCryptographicHash::hashInto(QSpan<uchar> buffer, QByteArrayView data, Algorithm method);
+    \fn QCryptographicHash::hashInto(QSpan<std::byte> buffer, QByteArrayView data, Algorithm method);
+
+    Returns the hash of \a data using \a method, using \a buffer to store the result.
+
+    The return value will be a sub-span of \a buffer, unless \a buffer is of
+    insufficient size, in which case a null QByteArrayView is returned.
+
+    \sa hash()
+*/
+QByteArrayView QCryptographicHash::hashInto(QSpan<std::byte> buffer, QByteArrayView data,
+                                            Algorithm method) noexcept
 {
     QCryptographicHashPrivate hash(method);
     hash.addData(data);
     hash.finalizeUnchecked(); // no mutex needed: no-one but us has access to 'hash'
-    return hash.resultView().toByteArray();
+    auto result = hash.resultView();
+    if (buffer.size() < result.size())
+        return {}; // buffer too small
+    // ### optimize: have the method directly write into `buffer`
+    memcpy(buffer.data(), result.data(), result.size());
+    return buffer.first(result.size());
 }
 
 /*!
