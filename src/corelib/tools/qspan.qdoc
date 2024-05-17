@@ -556,7 +556,6 @@
     \sa subspan(QSpan<T,E>::size_type), subspan(), first(), last()
 */
 
-#if 0 // needs fix for QTBUG-118080 integrated into qt5.git
 /*!
     \fn template <typename T, size_t E> template <std::size_t Offset, std::size_t Count> auto QSpan<T, E>::subspan() const
     \keyword subspan-t2
@@ -573,7 +572,6 @@
 
     \sa subspan(QSpan<T,E>::size_type, QSpan<T,E>::size_type), subspan(), first(), last()
 */
-#endif
 
 //
 // runtime subspans:
