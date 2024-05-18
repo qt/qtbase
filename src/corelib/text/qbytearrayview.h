@@ -401,6 +401,18 @@ qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, char
     return -1;
 }
 
+qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, uchar needle) noexcept
+{
+    if (from < 0)
+        from = qMax(from + haystack.size(), qsizetype(0));
+    else
+        from = qMin(from, haystack.size() - 1);
+
+    const char *const b = haystack.data();
+    const void *n = b ? qmemrchr(b, needle, from + 1) : nullptr;
+    return n ? static_cast<const char *>(n) - b : -1;
+}
+
 QT_END_NAMESPACE
 
 #endif // QBYTEARRAYVIEW_H

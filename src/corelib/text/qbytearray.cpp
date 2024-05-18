@@ -61,6 +61,30 @@ static constexpr inline uchar asciiLower(uchar c)
  *****************************************************************************/
 
 /*! \relates QByteArray
+    \internal
+
+    Wrapper around memrchr() for systems that don't have it. It's provided in
+    every system because, as a GNU extension, memrchr() may not be declared in
+    string.h depending on how strict the compiler was asked to be.
+
+    Used in QByteArrayView::lastIndexOf() overload for a single char.
+*/
+const void *qmemrchr(const void *s, int needle, size_t size) noexcept
+{
+#if QT_CONFIG(memrchr)
+    return memrchr(s, needle, size);
+#endif
+    auto b = static_cast<const char *>(s);
+    const char *n = b + size;
+    while (n-- != b) {
+        if (*n == needle)
+            return n;
+    }
+    return nullptr;
+}
+
+
+/*! \relates QByteArray
 
     Returns a duplicate string.
 
@@ -2738,30 +2762,6 @@ static qsizetype lastIndexOfHelper(const char *haystack, qsizetype l, const char
     return -1;
 }
 
-static inline qsizetype lastIndexOfCharHelper(QByteArrayView haystack, qsizetype from, char needle) noexcept
-{
-    if (haystack.size() == 0)
-        return -1;
-    if (from < 0)
-        from += haystack.size();
-    else if (from > haystack.size())
-        from = haystack.size() - 1;
-    if (from >= 0) {
-        const char *b = haystack.data();
-        const char *n = b + from + 1;
-        while (n-- != b) {
-            if (*n == needle)
-                return n - b;
-        }
-    }
-    return -1;
-}
-
-qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, char needle) noexcept
-{
-    return lastIndexOfCharHelper(haystack, from, needle);
-}
-
 qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, QByteArrayView needle) noexcept
 {
     if (haystack.isEmpty()) {
@@ -2771,7 +2771,7 @@ qsizetype QtPrivate::lastIndexOf(QByteArrayView haystack, qsizetype from, QByteA
     }
     const auto ol = needle.size();
     if (ol == 1)
-        return lastIndexOfCharHelper(haystack, from, needle.front());
+        return QtPrivate::lastIndexOf(haystack, from, needle.front());
 
     return lastIndexOfHelper(haystack.data(), haystack.size(), needle.data(), ol, from);
 }

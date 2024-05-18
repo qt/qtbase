@@ -954,6 +954,15 @@ bool QPersistentModelIndex::operator!=(const QModelIndex &other) const noexcept
 
 #include "qbytearray.h" // inlined API
 
+QT_BEGIN_NAMESPACE
+namespace QtPrivate {
+Q_CORE_EXPORT qsizetype lastIndexOf(QByteArrayView haystack, qsizetype from, char needle) noexcept
+{
+    return lastIndexOf(haystack, from, uchar(needle));
+}
+}
+QT_END_NAMESPACE
+
 #include "qcborarray.h" // inlined API
 
 #include "qcbormap.h" // inlined API

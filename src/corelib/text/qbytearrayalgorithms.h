@@ -31,8 +31,8 @@ qsizetype findByteArray(QByteArrayView haystack, qsizetype from, char needle) no
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION
 qsizetype findByteArray(QByteArrayView haystack, qsizetype from, QByteArrayView needle) noexcept;
 
-[[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION
-qsizetype lastIndexOf(QByteArrayView haystack, qsizetype from, char needle) noexcept;
+[[nodiscard]] inline Q_DECL_PURE_FUNCTION
+qsizetype lastIndexOf(QByteArrayView haystack, qsizetype from, uchar needle) noexcept;
 
 [[nodiscard]] Q_CORE_EXPORT Q_DECL_PURE_FUNCTION
 qsizetype lastIndexOf(QByteArrayView haystack, qsizetype from, QByteArrayView needle) noexcept;
@@ -99,6 +99,8 @@ static inline T toIntegral(ByteArrayView data, bool *ok, int base)
   Safe and portable C string functions; extensions to standard string.h
  *****************************************************************************/
 
+[[nodiscard]] Q_DECL_PURE_FUNCTION Q_CORE_EXPORT
+const void *qmemrchr(const void *s, int needle, size_t n) noexcept;
 Q_CORE_EXPORT char *qstrdup(const char *);
 
 inline size_t qstrlen(const char *str)
