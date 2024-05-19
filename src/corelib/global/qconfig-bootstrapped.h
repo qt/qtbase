@@ -72,6 +72,7 @@
 # define QT_FEATURE_linkat -1
 #endif
 #define QT_FEATURE_lttng -1
+#define QT_FEATURE_memmem -1
 #define QT_FEATURE_memrchr -1
 #define QT_NO_QOBJECT
 #define QT_FEATURE_process -1

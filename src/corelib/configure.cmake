@@ -324,6 +324,22 @@ linkat(AT_FDCWD, \"foo\", AT_FDCWD, \"bar\", AT_SYMLINK_FOLLOW);
 }
 ")
 
+# memmem
+qt_config_compile_test(memmem
+    LABEL "memmem()"
+    CODE
+#define _APPLE_SAUCE 1  /* Apple doesn't require anything */
+"#define _BSD_SOURCE 1   /* For FreeBSD */
+#define _GNU_SOURCE 1   /* For glibc, Bionic */
+#include <string.h>
+
+int main(void)
+{
+    const void *r = memmem(\"abc\", 3, \"bc\", 2);
+    (void)r;
+    return 0;
+}")
+
 # memrchr
 qt_config_compile_test(memrchr
     LABEL "memrchr()"
@@ -568,6 +584,10 @@ qt_feature("linkat" PRIVATE
 qt_feature("std-atomic64" PUBLIC
     LABEL "64 bit atomic operations"
     CONDITION WrapAtomic_FOUND
+)
+qt_feature("memmem" PRIVATE
+    LABEL "C library function memmem()"
+    CONDITION TEST_memmem
 )
 qt_feature("memrchr" PRIVATE
     LABEL "C library function memrchr()"

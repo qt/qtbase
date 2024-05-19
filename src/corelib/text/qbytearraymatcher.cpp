@@ -3,6 +3,11 @@
 
 #include "qbytearraymatcher.h"
 
+#include <qtconfiginclude.h>
+#ifndef QT_BOOTSTRAPPED
+#  include <private/qtcore-config_p.h>
+#endif
+
 #include <limits.h>
 
 QT_BEGIN_NAMESPACE
@@ -238,8 +243,10 @@ qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, QByt
     const auto haystack0 = haystack.data();
     const auto l = haystack.size();
     const auto sl = needle.size();
+#if !QT_CONFIG(memmem)
     if (sl == 1)
         return findByteArray(haystack, from, needle.front());
+#endif
 
     if (from < 0)
         from += l;
@@ -249,6 +256,11 @@ qsizetype QtPrivate::findByteArray(QByteArrayView haystack, qsizetype from, QByt
         return from;
     if (!l)
         return -1;
+
+#if QT_CONFIG(memmem)
+    auto where = memmem(haystack0 + from, l - from, needle.data(), sl);
+    return where ? static_cast<const char *>(where) - haystack0 : -1;
+#endif
 
     /*
       We use the Boyer-Moore algorithm in cases where the overhead
