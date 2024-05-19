@@ -372,6 +372,7 @@ public:
         Polite,
         Assertive
     };
+    Q_ENUM(AnnouncementPriority)
 
     typedef QAccessibleInterface*(*InterfaceFactory)(const QString &key, QObject*);
     typedef void(*UpdateHandler)(QAccessibleEvent *event);
