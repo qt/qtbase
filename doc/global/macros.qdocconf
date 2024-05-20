@@ -75,7 +75,7 @@ macro.QtTAS               = "Qt Tools for Android Studio"
 
 # The following macros are used for various Android docs. The purpose is to keep
 # it as simple as updating these instead of updating multiple lines in scattered locations.
-macro.AndroidAbis         = "\\c{arm64-v8}, \\c{x86_64}, \\c{x86}, and \\c{armeabi-v7a}"
+macro.AndroidAbis         = "\\c{arm64-v8a}, \\c{x86_64}, \\c{x86}, and \\c{armeabi-v7a}"
 macro.NdkVer              = "r26b"
 macro.NdkFullVer          = "26.1.10909125"
 macro.NdkCompilerVer      = "Clang 17.0.2"
