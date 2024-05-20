@@ -544,6 +544,9 @@ void tst_QVariant::isNull()
     var3 = QVariant(QMetaType::fromType<QString>());
     QVERIFY( var3.isNull() );
 
+    var3.setValue(QString());
+    QVERIFY( !var3.isNull() );
+
     QVariant var4( 0 );
     QVERIFY( !var4.isNull() );
 
