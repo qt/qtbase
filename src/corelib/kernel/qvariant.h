@@ -496,6 +496,7 @@ public:
         // If possible we reuse the current QVariant private.
         if (isDetached() && d.type() == metaType) {
             *reinterpret_cast<VT *>(const_cast<void *>(constData())) = std::forward<T>(avalue);
+            d.is_null = false;
         } else {
             *this = QVariant::fromValue<VT>(std::forward<T>(avalue));
         }
