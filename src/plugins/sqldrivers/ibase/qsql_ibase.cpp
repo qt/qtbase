@@ -347,21 +347,14 @@ public:
         QSqlQuery qry(q->createResult());
         qry.setForwardOnly(true);
         qry.exec(QString("select * from RDB$TIME_ZONES"_L1));
-        if (qry.lastError().type()) {
-            q->setLastError(QSqlError(
-                                QCoreApplication::translate("QIBaseDriver",
-                                    "failed to query time zone mapping from system table"),
-                                qry.lastError().databaseText(),
-                                QSqlError::StatementError,
-                                qry.lastError().nativeErrorCode()));
-
+        if (qry.lastError().isValid()) {
+            qCInfo(lcIbase) << "Table 'RDB$TIME_ZONES' not found - not timezone support available";
             return;
         }
 
         while (qry.next()) {
-            auto record = qry.record();
-            quint16 fbTzId = record.value(0).value<quint16>();
-            QByteArray ianaId = record.value(1).toByteArray().simplified();
+            quint16 fbTzId = qry.value(0).value<quint16>();
+            QByteArray ianaId = qry.value(1).toByteArray().simplified();
             qFbTzIdToIanaIdMap()->insert(fbTzId, ianaId);
             qIanaIdToFbTzIdMap()->insert(ianaId, fbTzId);
         }
