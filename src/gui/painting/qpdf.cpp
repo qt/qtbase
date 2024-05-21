@@ -1035,6 +1035,7 @@ void QPdfEngine::drawTextItem(const QPointF &p, const QTextItem &textItem)
     *d->currentPage << "Q\n";
 }
 
+// Used by QtWebKit
 void QPdfEngine::drawHyperlink(const QRectF &r, const QUrl &url)
 {
     Q_D(QPdfEngine);
