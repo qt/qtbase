@@ -33,7 +33,6 @@ public:
 
     Qt::ColorScheme colorScheme() const override;
     void requestColorScheme(Qt::ColorScheme scheme) override;
-    Qt::ColorScheme requestedColorScheme() const { return s_colorSchemeOverride; }
 
     static void handleSettingsChanged();
 
