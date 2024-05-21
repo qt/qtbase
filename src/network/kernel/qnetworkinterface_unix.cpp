@@ -310,12 +310,20 @@ QT_BEGIN_INCLUDE_NAMESPACE
 QT_END_INCLUDE_NAMESPACE
 # endif
 
+static int openSocket(int &socket)
+{
+    if (socket == -1)
+        socket = qt_safe_socket(AF_INET, SOCK_DGRAM, 0);
+    return socket;
+}
+
 # if defined(Q_OS_LINUX) &&  __GLIBC__ - 0 >= 2 && __GLIBC_MINOR__ - 0 >= 1 && !defined(QT_LINUXBASE)
 #  include <netpacket/packet.h>
 
 static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 {
     Q_UNUSED(getMtu);
+    Q_UNUSED(openSocket);
     QList<QNetworkInterfacePrivate *> interfaces;
     QDuplicateTracker<QString> seenInterfaces;
     QDuplicateTracker<int> seenIndexes;
@@ -386,13 +394,6 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #  include <netinet/in_var.h>
 #endif // QT_PLATFORM_UIKIT
 QT_END_INCLUDE_NAMESPACE
-
-static int openSocket(int &socket)
-{
-    if (socket == -1)
-        socket = qt_safe_socket(AF_INET, SOCK_DGRAM, 0);
-    return socket;
-}
 
 static QNetworkInterface::InterfaceType probeIfType(int socket, int iftype, struct ifmediareq *req)
 {
@@ -537,8 +538,8 @@ static void getAddressExtraInfo(QNetworkAddressEntry *entry, struct sockaddr *sa
 
 static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
 {
-    Q_UNUSED(getMtu);
     QList<QNetworkInterfacePrivate *> interfaces;
+    int socket = -1;
 
     // make sure there's one entry for each interface
     for (ifaddrs *ptr = rawList; ptr; ptr = ptr->ifa_next) {
@@ -559,8 +560,17 @@ static QList<QNetworkInterfacePrivate *> createInterfaces(ifaddrs *rawList)
             iface->index = ifindex;
             iface->name = QString::fromLatin1(ptr->ifa_name);
             iface->flags = convertFlags(ptr->ifa_flags);
+
+            if ((socket = openSocket(socket)) >= 0) {
+                struct ifreq ifr;
+                qstrncpy(ifr.ifr_name, ptr->ifa_name, sizeof(ifr.ifr_name));
+                iface->mtu = getMtu(socket, &ifr);
+            }
         }
     }
+
+    if (socket != -1)
+        qt_safe_close(socket);
 
     return interfaces;
 }
