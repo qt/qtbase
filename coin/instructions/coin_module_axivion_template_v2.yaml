@@ -7,6 +7,9 @@ analysis_instructions_axivion: &analysis_instructions_axivion
         variableName: AXIVION_CHAINLOAD_TOOLCHAIN_FILE
         variableValue: "{{.AgentWorkingDir}}/install/lib/cmake/Qt6/qt.toolchain.cmake"
       - type: EnvironmentVariable
+        variableName: AXIVION_DIVIDED_MODULES
+        variableValue: "qtbase_qtdeclarative_qtconnectivity_qtgrpc_qttools_qtwayland"
+      - type: EnvironmentVariable
         variableName: CMAKE_PREFIX_PATH
         variableValue: "{{.AgentWorkingDir}}/install/lib/cmake"
         enable_if:
@@ -19,6 +22,14 @@ analysis_instructions_axivion: &analysis_instructions_axivion
         sourcePath: "{{.SourceDir}}/coin/axivion/ci_config_{{.Env.TARGET_OS_COIN}}.json"
         targetPath: "{{.Env.HOME}}/axivion/ci_config.json"
         userMessageOnFailure: "Moving ci_config.json failed. Make sure you have included the file in coin/axivion/ -folder"
+      - type: Rename
+        sourcePath: "{{.SourceDir}}/coin/axivion/start_analysis.sh"
+        targetPath: "{{.Env.HOME}}/axivion/start_analysis.sh"
+        userMessageOnFailure: "Moving start_analysis.sh failed. Make sure you have included the file in coin/axivion/ -folder"
+        enable_if:
+          condition: runtime
+          env_var: AXIVION_DIVIDED_MODULES
+          contains_value: "{{.Env.TESTED_MODULE_COIN}}"
       - type: SetBuildDirectory
         directory: "{{.SourceDir}}"
       - type: ChangeDirectory
