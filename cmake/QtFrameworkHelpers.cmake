@@ -185,6 +185,8 @@ endfunction()
 #    <out_var>_version framework version, e.g. 'A', 'B' etc.
 #    <out_var>_bundle_version framework bundle version, same as the PROJECT_VERSION, e.g. '6.0.0'.
 #    <out_var>_header_dir top-level header directory, e.g. 'QtCore.framework/Headers'.
+#    <out_var>_versioned_binary_dir versioned directory that contains the framework binary,
+#        e.g. 'QtCore.framework/Versions/A'
 #    <out_var>_versioned_header_dir header directory for specific framework version,
 #        e.g. 'QtCore.framework/Versions/A/Headers'
 #    <out_var>_private_header_dir header directory for the specific framework version and
@@ -208,11 +210,14 @@ function(qt_internal_get_framework_info out_var target)
     set(${out_var}_name "${module}")
     set(${out_var}_dir "${${out_var}_name}.framework")
     set(${out_var}_header_dir "${${out_var}_dir}/Headers")
+
     if(UIKIT)
-        # iOS frameworks do not version their headers
+        # iOS frameworks do not have a Versions sub-directory
+        set(${out_var}_versioned_binary_dir "${${out_var}_dir}}")
         set(${out_var}_versioned_header_dir "${${out_var}_header_dir}")
     else()
-        set(${out_var}_versioned_header_dir "${${out_var}_dir}/Versions/${${out_var}_version}/Headers")
+        set(${out_var}_versioned_binary_dir "${${out_var}_dir}/Versions/${${out_var}_version}")
+        set(${out_var}_versioned_header_dir "${${out_var}_versioned_binary_dir}/Headers")
     endif()
     set(${out_var}_private_header_dir "${${out_var}_versioned_header_dir}/${${out_var}_bundle_version}")
     set(${out_var}_private_module_header_dir "${${out_var}_private_header_dir}/${module}")
@@ -222,6 +227,7 @@ function(qt_internal_get_framework_info out_var target)
     set(${out_var}_header_dir "${${out_var}_header_dir}" PARENT_SCOPE)
     set(${out_var}_version "${${out_var}_version}" PARENT_SCOPE)
     set(${out_var}_bundle_version "${${out_var}_bundle_version}" PARENT_SCOPE)
+    set(${out_var}_versioned_binary_dir "${${out_var}_versioned_binary_dir}" PARENT_SCOPE)
     set(${out_var}_versioned_header_dir "${${out_var}_versioned_header_dir}" PARENT_SCOPE)
     set(${out_var}_private_header_dir "${${out_var}_private_header_dir}" PARENT_SCOPE)
     set(${out_var}_private_module_header_dir "${${out_var}_private_module_header_dir}" PARENT_SCOPE)
