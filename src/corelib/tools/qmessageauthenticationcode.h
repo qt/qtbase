@@ -55,6 +55,30 @@ public:
     static QByteArray hash(QByteArrayView message, QByteArrayView key,
                            QCryptographicHash::Algorithm method);
 
+    static QByteArrayView
+    hashInto(QSpan<char> buffer, QByteArrayView message, QByteArrayView key,
+             QCryptographicHash::Algorithm method) noexcept
+    { return hashInto(as_writable_bytes(buffer), {&message, 1}, key, method); }
+    static QByteArrayView
+    hashInto(QSpan<uchar> buffer, QByteArrayView message, QByteArrayView key,
+             QCryptographicHash::Algorithm method) noexcept
+    { return hashInto(as_writable_bytes(buffer), {&message, 1}, key, method); }
+    static QByteArrayView
+    hashInto(QSpan<std::byte> buffer, QByteArrayView message,
+             QByteArrayView key, QCryptographicHash::Algorithm method) noexcept
+    { return hashInto(buffer, {&message, 1}, key, method); }
+    static QByteArrayView
+    hashInto(QSpan<char> buffer, QSpan<const QByteArrayView> messageParts,
+             QByteArrayView key, QCryptographicHash::Algorithm method) noexcept
+    { return hashInto(as_writable_bytes(buffer), messageParts, key, method); }
+    static QByteArrayView
+    hashInto(QSpan<uchar> buffer, QSpan<const QByteArrayView> messageParts,
+             QByteArrayView key, QCryptographicHash::Algorithm method) noexcept
+    { return hashInto(as_writable_bytes(buffer), messageParts, key, method); }
+    static QByteArrayView
+    hashInto(QSpan<std::byte> buffer, QSpan<const QByteArrayView> message,
+             QByteArrayView key, QCryptographicHash::Algorithm method) noexcept;
+
 private:
     Q_DISABLE_COPY(QMessageAuthenticationCode)
     QMessageAuthenticationCodePrivate *d;
