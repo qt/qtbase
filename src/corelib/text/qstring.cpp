@@ -9241,9 +9241,6 @@ static qsizetype resolveStringRefsAndReturnTotalSize(ParseResult &parts, const A
 
 } // unnamed namespace
 
-Q_ALWAYS_INLINE QString to_string(QLatin1StringView s) noexcept { return s; }
-Q_ALWAYS_INLINE QString to_string(QStringView s) noexcept { return s.toString(); }
-
 template <typename StringView>
 static QString argToQStringImpl(StringView pattern, size_t numArgs, const QtPrivate::ArgBase **args)
 {
@@ -9257,7 +9254,7 @@ static QString argToQStringImpl(StringView pattern, size_t numArgs, const QtPriv
         argIndexToPlaceholderMap.resize(qsizetype(numArgs));
     else if (Q_UNLIKELY(static_cast<size_t>(argIndexToPlaceholderMap.size()) < numArgs)) // 3b
         qWarning("QString::arg: %d argument(s) missing in %ls",
-                 int(numArgs - argIndexToPlaceholderMap.size()), qUtf16Printable(to_string(pattern)));
+                 int(numArgs - argIndexToPlaceholderMap.size()), qUtf16Printable(pattern.toString()));
 
     // 5
     const qsizetype totalSize = resolveStringRefsAndReturnTotalSize(parts, argIndexToPlaceholderMap, args);
