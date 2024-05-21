@@ -53,7 +53,7 @@ Qt sets the following manifest configuration by default:
         \warning This field is deprecated and moved to \c build.gradle. It will be removed
         in an upcoming release.
 \row
-    \li \c {android:installLocation}
+    \li android:installLocation
     \li Sets the app's installation location, whether internal or external storage.
         The default value is \c auto.
 \row
@@ -65,7 +65,7 @@ Qt sets the following manifest configuration by default:
     \li Sets the public version name. Populated from \c ANDROID_VERSION_NAME (qmake)
         and \c QT_ANDROID_VERSION_NAME (CMake). The default value is \c {1.0}.
 \row
-    \li \c {<supports-screens>}
+    \li <supports-screens>
     \li Sets the screen sizes that the app supports,
         default values are \c anyDensity, \c largeScreens,
         \c normalScreens, and \c smallScreens.
