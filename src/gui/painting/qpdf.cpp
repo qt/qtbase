@@ -1565,7 +1565,7 @@ void QPdfEnginePrivate::writeHeader()
     int metaDataObj = -1;
     int outputIntentObj = -1;
     if (pdfVersion == QPdfEngine::Version_A1b || !xmpDocumentMetadata.isEmpty()) {
-        metaDataObj = writeXmpDcumentMetaData();
+        metaDataObj = writeXmpDocumentMetaData();
     }
     if (pdfVersion == QPdfEngine::Version_A1b) {
         outputIntentObj = writeOutputIntent();
@@ -1745,7 +1745,7 @@ void QPdfEnginePrivate::writeInfo()
             "endobj\n");
 }
 
-int QPdfEnginePrivate::writeXmpDcumentMetaData()
+int QPdfEnginePrivate::writeXmpDocumentMetaData()
 {
     const int metaDataObj = addXrefEntry(-1);
     QByteArray metaDataContent;

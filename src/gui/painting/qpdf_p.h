@@ -290,7 +290,7 @@ private:
     QPdfEngine::ColorModel colorModelForColor(const QColor &color) const;
     void writeColor(ColorDomain domain, const QColor &color);
     void writeInfo();
-    int writeXmpDcumentMetaData();
+    int writeXmpDocumentMetaData();
     int writeOutputIntent();
     void writePageRoot();
     void writeDestsRoot();
