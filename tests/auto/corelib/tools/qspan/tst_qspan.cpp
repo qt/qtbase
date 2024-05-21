@@ -141,6 +141,9 @@ private:
     void from_variable_size_container_impl(C &&c) const;
 };
 
+template <typename T>
+const void *as_const_void(T *p) noexcept { return static_cast<const void *>(p); }
+
 #define RETURN_IF_FAILED() \
     do { if (QTest::currentTestFailed()) return; } while (false)
 
@@ -334,6 +337,8 @@ void tst_QSpan::from_container_impl(C &&c) const
     const auto c_data = QSpanPrivate::adl_data(c);
 
     using V = std::remove_reference_t<QSpanPrivate::range_reference_t<C>>;
+    constexpr auto ExpectedBytesExtent
+        = ExpectedExtent == q20::dynamic_extent ? q20::dynamic_extent : ExpectedExtent * sizeof(V);
     {
         QSpan si = c; // CTAD
         static_assert(std::is_same_v<decltype(si), QSpan<V, ExpectedExtent>>);
@@ -344,6 +349,20 @@ void tst_QSpan::from_container_impl(C &&c) const
         check_nonempty_span(si, c_size);
         RETURN_IF_FAILED();
 
+        auto bi = as_bytes(si);
+        static_assert(std::is_same_v<decltype(bi), QSpan<const std::byte, ExpectedBytesExtent>>);
+        QCOMPARE_EQ(bi.size(), si.size_bytes());
+        QCOMPARE_EQ(as_const_void(bi.data()),
+                    as_const_void(si.data()));
+
+        if constexpr (!std::is_const_v<V>) { // e.g. std::initializer_list<int>
+            auto wbi = as_writable_bytes(si);
+            static_assert(std::is_same_v<decltype(wbi), QSpan<std::byte, ExpectedBytesExtent>>);
+            QCOMPARE_EQ(wbi.size(), si.size_bytes());
+            QCOMPARE_EQ(as_const_void(wbi.data()),
+                        as_const_void(si.data()));
+        }
+
         QSpan<const int> sci = c;
 
         QCOMPARE_EQ(sci.size(), c_size);
@@ -351,6 +370,12 @@ void tst_QSpan::from_container_impl(C &&c) const
 
         check_nonempty_span(sci, c_size);
         RETURN_IF_FAILED();
+
+        auto bci = as_bytes(sci);
+        static_assert(std::is_same_v<decltype(bci), QSpan<const std::byte>>);
+        QCOMPARE_EQ(bci.size(), sci.size_bytes());
+        QCOMPARE_EQ(as_const_void(bci.data()),
+                    as_const_void(sci.data()));
     }
     {
         QSpan sci = std::as_const(c); // CTAD
@@ -361,6 +386,12 @@ void tst_QSpan::from_container_impl(C &&c) const
 
         check_nonempty_span(sci, c_size);
         RETURN_IF_FAILED();
+
+        auto bci = as_bytes(sci);
+        static_assert(std::is_same_v<decltype(bci), QSpan<const std::byte, ExpectedBytesExtent>>);
+        QCOMPARE_EQ(bci.size(), sci.size_bytes());
+        QCOMPARE_EQ(as_const_void(bci.data()),
+                    as_const_void(sci.data()));
     }
 }
 

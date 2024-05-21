@@ -433,6 +433,29 @@ public:
     [[nodiscard]] constexpr QSpan<T> sliced(size_type pos) const { return subspan(pos); }
     [[nodiscard]] constexpr QSpan<T> sliced(size_type pos, size_type n) const { return subspan(pos, n); }
 
+private:
+    // [span.objectrep]
+    [[nodiscard]] friend
+    QSpan<const std::byte, E == q20::dynamic_extent ? q20::dynamic_extent : E * sizeof(T)>
+    as_bytes(QSpan s) noexcept
+    {
+        using R = QSpan<const std::byte, E == q20::dynamic_extent ? q20::dynamic_extent : E * sizeof(T)>;
+        return R{reinterpret_cast<const std::byte *>(s.data()), s.size_bytes()};
+    }
+
+    template <typename U>
+    using if_mutable = std::enable_if_t<!std::is_const_v<U>, bool>;
+
+#ifndef Q_QDOC
+    template <typename T2 = T, if_mutable<T2> = true>
+#endif
+    [[nodiscard]] friend
+    QSpan<std::byte, E == q20::dynamic_extent ? q20::dynamic_extent : E * sizeof(T)>
+    as_writable_bytes(QSpan s) noexcept
+    {
+        using R = QSpan<std::byte, E == q20::dynamic_extent ? q20::dynamic_extent : E * sizeof(T)>;
+        return R{reinterpret_cast<std::byte *>(s.data()), s.size_bytes()};
+    }
 }; // class QSpan
 
 // [span.deduct]

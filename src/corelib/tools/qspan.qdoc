@@ -647,3 +647,37 @@
     \sa subspan(), first(QSpan<T,E>::size_type), last(QSpan<T,E>::size_type)
 */
 
+/*!
+    \fn template <typename T, size_t E> auto QSpan<T, E>::as_bytes(QSpan s)
+    \since 6.8
+
+    Returns \a s as a \c{QSpan<const std::byte, E'>} whose size() is equal to
+    \c{s.size_bytes()}.
+
+    If \c{E} is \c{std::dynamic_extent} then so is \c{E'}.
+    Otherwise, \c{E' = E * sizeof(T)}.
+
+    \note \c{q20::dynamic_extent} is a C++17 backport of C++20's
+    \l{https://en.cppreference.com/w/cpp/container/span/dynamic_extent}{\c{std::dynamic_extent}}.
+
+    \sa as_writable_bytes(), size_bytes()
+*/
+
+/*!
+    \fn template <typename T, size_t E> auto QSpan<T, E>::as_writable_bytes(QSpan s)
+    \since 6.8
+
+    Returns \a s as a \c{QSpan<std::byte, E'>} whose size() is equal to
+    \c{s.size_bytes()}.
+
+    If \c{E} is \c{std::dynamic_extent} then so is \c{E'}.
+    Otherwise, \c{E' = E * sizeof(T)}.
+
+    \note This function participates in overload resolution only if
+    \c{!std::is_const_v<T>}.
+
+    \note \c{q20::dynamic_extent} is a C++17 backport of C++20's
+    \l{https://en.cppreference.com/w/cpp/container/span/dynamic_extent}{\c{std::dynamic_extent}}.
+
+    \sa as_bytes(), size_bytes()
+*/
