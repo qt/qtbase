@@ -119,7 +119,7 @@ static QUuid _q_uuidFromHex(const char *src)
 static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCryptographicHash::Algorithm algorithm, int version)
 {
     QCryptographicHash hash(algorithm);
-    hash.addData(ns.toRfc4122());
+    hash.addData(QByteArrayView{ns.toBytes()});
     hash.addData(baseData);
     QByteArrayView hashResult = hash.resultView();
     Q_ASSERT(hashResult.size() >= 16);
