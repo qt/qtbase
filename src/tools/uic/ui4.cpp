@@ -77,7 +77,8 @@ void DomUI::read(QXmlStreamReader &reader)
                 setElementAuthor(reader.readElementText());
                 continue;
             }
-            if (!tag.compare(u"comment"_s, Qt::CaseInsensitive)) {
+            if (!tag.compare(u"comment"_s, Qt::CaseInsensitive)
+                    || !tag.compare(u"legal"_s, Qt::CaseInsensitive)) {
                 setElementComment(reader.readElementText());
                 continue;
             }
