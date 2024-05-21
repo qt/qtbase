@@ -1338,7 +1338,7 @@ static HashBlock xored(const HashBlock &block, quint8 val) noexcept
 class QMessageAuthenticationCodePrivate
 {
 public:
-    QMessageAuthenticationCodePrivate(QCryptographicHash::Algorithm m)
+    explicit QMessageAuthenticationCodePrivate(QCryptographicHash::Algorithm m) noexcept
         : messageHash(m)
     {
     }
