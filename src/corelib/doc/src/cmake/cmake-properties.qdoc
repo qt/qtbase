@@ -248,6 +248,7 @@ CMake will attempt to use the latest installed version.
 \page cmake-target-property-qt-android-package-name.html
 \ingroup cmake-properties-qtcore
 \ingroup cmake-target-properties-qtcore
+\ingroup cmake-android-build-properties
 
 \title QT_ANDROID_PACKAGE_NAME
 \target cmake-target-property-QT_ANDROID_PACKAGE_NAME
