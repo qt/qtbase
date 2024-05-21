@@ -1741,6 +1741,7 @@ void QPdfEnginePrivate::writeInfo()
         xprintf("+%02d'%02d')\n", hours , mins);
     else
         xprintf("Z)\n");
+    xprintf("/Trapped /False\n");
     xprintf(">>\n"
             "endobj\n");
 }
