@@ -9142,18 +9142,13 @@ namespace {
 struct Part
 {
     Part() = default; // for QVarLengthArray; do not use
-    constexpr Part(QStringView s, int num = -1)
-        : tag{QtPrivate::ArgBase::U16}, number{num}, data{s.utf16()}, size{s.size()} {}
-    constexpr Part(QLatin1StringView s, int num = -1)
-        : tag{QtPrivate::ArgBase::L1}, number{num}, data{s.data()}, size{s.size()} {}
+    constexpr Part(QAnyStringView s, int num = -1)
+        : string{s}, number{num} {}
 
-    void reset(QStringView s) noexcept { *this = {s, number}; }
-    void reset(QLatin1StringView s) noexcept { *this = {s, number}; }
+    void reset(QAnyStringView s) noexcept { *this = {s, number}; }
 
-    QtPrivate::ArgBase::Tag tag;
+    QAnyStringView string;
     int number;
-    const void *data;
-    qsizetype size;
 };
 } // unnamed namespace
 
@@ -9236,7 +9231,7 @@ static qsizetype resolveStringRefsAndReturnTotalSize(ParseResult &parts, const A
                 }
             }
         }
-        totalSize += part.size;
+        totalSize += part.string.size();
     }
     return totalSize;
 }
@@ -9265,24 +9260,33 @@ static QString argToQStringImpl(StringView pattern, size_t numArgs, const QtPriv
     QString result(totalSize, Qt::Uninitialized);
     auto out = const_cast<QChar*>(result.constData());
 
-    for (const Part &part : parts) {
-        switch (part.tag) {
-        case QtPrivate::ArgBase::L1:
-            if (part.size) {
+    struct Concatenate {
+        QChar *out;
+        QChar *operator()(QLatin1String part) noexcept
+        {
+            if (part.size()) {
                 qt_from_latin1(reinterpret_cast<char16_t*>(out),
-                               reinterpret_cast<const char*>(part.data), part.size);
+                               part.data(), part.size());
             }
-            break;
-        case QtPrivate::ArgBase::U8:
-            Q_UNREACHABLE(); // waiting for QUtf8String
-            break;
-        case QtPrivate::ArgBase::U16:
-            if (part.size)
-                memcpy(out, part.data, part.size * sizeof(QChar));
-            break;
+            return out + part.size();
         }
-        out += part.size;
-    }
+        QChar *operator()(QUtf8StringView part) noexcept
+        {
+            return QUtf8::convertToUnicode(out, part);
+        }
+        QChar *operator()(QStringView part) noexcept
+        {
+            if (part.size())
+                memcpy(out, part.data(), part.size() * sizeof(QChar));
+            return out + part.size();
+        }
+    };
+
+    for (const Part &part : parts)
+        out = part.string.visit(Concatenate{out});
+
+    // UTF-8 decoding may have caused an overestimate of totalSize - correct it:
+    result.truncate(out - result.cbegin());
 
     return result;
 }
