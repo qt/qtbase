@@ -459,6 +459,7 @@ function(qt_internal_setup_cmake_config_postfix)
         # If postfix is set by user avoid changing it, but save postfix variable that has
         # a non-default value for further warning.
         if("${${postfix_var}}" STREQUAL "")
+            set(${postfix_var} "${${default_postfix_var}}")
             set(${postfix_var} "${${default_postfix_var}}" PARENT_SCOPE)
         elseif(NOT "${${postfix_var}}" STREQUAL "${${default_postfix_var}}")
             list(APPEND custom_postfix_vars ${postfix_var})
