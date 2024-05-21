@@ -300,8 +300,8 @@ QUuid QUuid::fromCFUUID(CFUUIDRef uuid)
 */
 CFUUIDRef QUuid::toCFUUID() const
 {
-    const QByteArray bytes = toRfc4122();
-    return CFUUIDCreateFromUUIDBytes(0, *reinterpret_cast<const CFUUIDBytes *>(bytes.constData()));
+    const auto bytes = toBytes();
+    return CFUUIDCreateFromUUIDBytes(0, *reinterpret_cast<const CFUUIDBytes *>(&bytes));
 }
 
 /*!
@@ -333,8 +333,11 @@ QUuid QUuid::fromNSUUID(const NSUUID *uuid)
 */
 NSUUID *QUuid::toNSUUID() const
 {
-    const QByteArray bytes = toRfc4122();
-    return [[[NSUUID alloc] initWithUUIDBytes:*reinterpret_cast<const uuid_t *>(bytes.constData())] autorelease];
+    const auto bytes = toBytes();
+    static_assert(sizeof bytes == sizeof(uuid_t));
+    uuid_t u;
+    memcpy(&u, &bytes, sizeof(uuid_t));
+    return [[[NSUUID alloc] initWithUUIDBytes:u] autorelease];
 }
 
 // ----------------------------------------------------------------------------
