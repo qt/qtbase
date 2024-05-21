@@ -149,7 +149,7 @@ void tst_QSpan::onlyZeroExtentSpansHaveDefaultCtors() const
     static_assert(std::is_nothrow_default_constructible_v<QSpan<int, 0>>);
     static_assert(std::is_nothrow_default_constructible_v<QSpan<const int, 0>>);
     static_assert(std::is_nothrow_default_constructible_v<QSpan<int>>);
-    static_assert(std::is_nothrow_default_constructible_v<QSpan<const int, 0>>);
+    static_assert(std::is_nothrow_default_constructible_v<QSpan<const int>>);
 
     QSpan<int, 0> si;
     check_null_span(si);
