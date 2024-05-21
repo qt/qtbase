@@ -473,6 +473,26 @@ instructions:
         property: features
         contains_value: UseConfigure
 
+  # SBOM
+  - type: Group
+    enable_if:
+      condition: property
+      property: features
+      contains_value: GenerateSBOM
+    instructions:
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_CMAKE_ARGS
+      variableValue: " -DQT_GENERATE_SBOM=ON"
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_NON_QTBASE_CMAKE_ARGS
+      variableValue: " -DQT_GENERATE_SBOM=ON"
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_TARGET_CMAKE_ARGS
+      variableValue: " -DQT_GENERATE_SBOM=ON"
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_NON_QTBASE_TARGET_CMAKE_ARGS
+      variableValue: " -DQT_GENERATE_SBOM=ON"
+
   - type: Group
     instructions:
       - type: AppendToEnvironmentVariable
