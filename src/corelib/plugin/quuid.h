@@ -220,20 +220,27 @@ public:
 #endif
 public:
     static QUuid createUuid();
-#ifndef QT_BOOTSTRAPPED
+#if QT_CORE_REMOVED_SINCE(6, 8)
     static QUuid createUuidV3(const QUuid &ns, const QByteArray &baseData) noexcept;
-#endif
     static QUuid createUuidV5(const QUuid &ns, const QByteArray &baseData) noexcept;
+#endif
+    static QUuid createUuidV5(QUuid ns, QByteArrayView baseData) noexcept;
 #ifndef QT_BOOTSTRAPPED
+    static QUuid createUuidV3(QUuid ns, QByteArrayView baseData) noexcept;
+#if !QT_CORE_REMOVED_SINCE(6, 8)
+    Q_WEAK_OVERLOAD
+#endif
     static inline QUuid createUuidV3(const QUuid &ns, const QString &baseData)
     {
-        return QUuid::createUuidV3(ns, baseData.toUtf8());
+        return QUuid::createUuidV3(ns, qToByteArrayViewIgnoringNull(baseData.toUtf8()));
     }
 #endif
-
+#if !QT_CORE_REMOVED_SINCE(6, 8)
+    Q_WEAK_OVERLOAD
+#endif
     static inline QUuid createUuidV5(const QUuid &ns, const QString &baseData)
     {
-        return QUuid::createUuidV5(ns, baseData.toUtf8());
+        return QUuid::createUuidV5(ns, qToByteArrayViewIgnoringNull(baseData.toUtf8()));
     }
 
     QUuid::Variant variant() const noexcept;

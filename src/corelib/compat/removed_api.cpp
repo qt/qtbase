@@ -1167,6 +1167,16 @@ bool QUuid::operator>(const QUuid &other) const noexcept
     return is_gt(compareThreeWay(*this, other));
 }
 
+QUuid QUuid::createUuidV3(const QUuid &ns, const QByteArray &baseData) noexcept
+{
+    return createUuidV3(ns, qToByteArrayViewIgnoringNull(baseData));
+}
+
+QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData) noexcept
+{
+    return createUuidV5(ns, qToByteArrayViewIgnoringNull(baseData));
+}
+
 #include "qxmlstream.h" // inlined API
 
 // #include "qotherheader.h"

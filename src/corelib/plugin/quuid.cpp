@@ -532,10 +532,13 @@ QUuid QUuid::fromString(QAnyStringView text) noexcept
 
 /*!
   \since 5.0
-  \fn QUuid QUuid::createUuidV3(const QUuid &ns, const QByteArray &baseData);
+  \fn QUuid QUuid::createUuidV3(QUuid ns, QByteArrayView baseData);
 
   This function returns a new UUID with variant QUuid::DCE and version QUuid::Md5.
   \a ns is the namespace and \a baseData is the basic data as described by RFC 4122.
+
+  \note In Qt versions prior to 6.8, this function took QByteArray, not
+  QByteArrayView.
 
   \sa variant(), version(), createUuidV5()
 */
@@ -552,10 +555,13 @@ QUuid QUuid::fromString(QAnyStringView text) noexcept
 
 /*!
   \since 5.0
-  \fn QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData);
+  \fn QUuid QUuid::createUuidV5(QUuid ns, QByteArrayView baseData);
 
   This function returns a new UUID with variant QUuid::DCE and version QUuid::Sha1.
   \a ns is the namespace and \a baseData is the basic data as described by RFC 4122.
+
+  \note In Qt versions prior to 6.8, this function took QByteArray, not
+  QByteArrayView.
 
   \sa variant(), version(), createUuidV3()
 */
@@ -570,13 +576,13 @@ QUuid QUuid::fromString(QAnyStringView text) noexcept
   \sa variant(), version(), createUuidV3()
 */
 #ifndef QT_BOOTSTRAPPED
-QUuid QUuid::createUuidV3(const QUuid &ns, const QByteArray &baseData) noexcept
+QUuid QUuid::createUuidV3(QUuid ns, QByteArrayView baseData) noexcept
 {
     return createFromName(ns, baseData, QCryptographicHash::Md5, 3);
 }
 #endif
 
-QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData) noexcept
+QUuid QUuid::createUuidV5(QUuid ns, QByteArrayView baseData) noexcept
 {
     return createFromName(ns, baseData, QCryptographicHash::Sha1, 5);
 }
