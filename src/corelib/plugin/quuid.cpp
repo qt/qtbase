@@ -116,12 +116,12 @@ static QUuid _q_uuidFromHex(const char *src)
     return QUuid();
 }
 
-static QUuid createFromName(const QUuid &ns, const QByteArray &baseData, QCryptographicHash::Algorithm algorithm, int version)
+static QUuid createFromName(QUuid ns, QByteArrayView baseData, QCryptographicHash::Algorithm algorithm, int version) noexcept
 {
-    QCryptographicHash hash(algorithm);
-    hash.addData(QByteArrayView{ns.toBytes()});
-    hash.addData(baseData);
-    QByteArrayView hashResult = hash.resultView();
+    std::byte buffer[20];
+    Q_ASSERT(sizeof buffer >= size_t(QCryptographicHash::hashLength(algorithm)));
+    QByteArrayView hashResult
+        = QCryptographicHash::hashInto(buffer, {QByteArrayView{ns.toBytes()}, baseData}, algorithm);
     Q_ASSERT(hashResult.size() >= 16);
     hashResult.truncate(16); // Sha1 will be too long
 
@@ -570,13 +570,13 @@ QUuid QUuid::fromString(QAnyStringView text) noexcept
   \sa variant(), version(), createUuidV3()
 */
 #ifndef QT_BOOTSTRAPPED
-QUuid QUuid::createUuidV3(const QUuid &ns, const QByteArray &baseData)
+QUuid QUuid::createUuidV3(const QUuid &ns, const QByteArray &baseData) noexcept
 {
     return createFromName(ns, baseData, QCryptographicHash::Md5, 3);
 }
 #endif
 
-QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData)
+QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData) noexcept
 {
     return createFromName(ns, baseData, QCryptographicHash::Sha1, 5);
 }

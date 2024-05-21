@@ -1166,22 +1166,29 @@ QByteArray QCryptographicHash::hash(QByteArrayView data, Algorithm method)
 
 /*!
     \since 6.8
+    \fn QCryptographicHash::hashInto(QSpan<char> buffer, QSpan<const QByteArrayView> data, Algorithm method);
+    \fn QCryptographicHash::hashInto(QSpan<uchar> buffer, QSpan<const QByteArrayView> data, Algorithm method);
+    \fn QCryptographicHash::hashInto(QSpan<std::byte> buffer, QSpan<const QByteArrayView> data, Algorithm method);
     \fn QCryptographicHash::hashInto(QSpan<char> buffer, QByteArrayView data, Algorithm method);
     \fn QCryptographicHash::hashInto(QSpan<uchar> buffer, QByteArrayView data, Algorithm method);
     \fn QCryptographicHash::hashInto(QSpan<std::byte> buffer, QByteArrayView data, Algorithm method);
 
     Returns the hash of \a data using \a method, using \a buffer to store the result.
 
+    If \a data is a span, adds all the byte array views to the hash, in the order given.
+
     The return value will be a sub-span of \a buffer, unless \a buffer is of
     insufficient size, in which case a null QByteArrayView is returned.
 
     \sa hash()
 */
-QByteArrayView QCryptographicHash::hashInto(QSpan<std::byte> buffer, QByteArrayView data,
+QByteArrayView QCryptographicHash::hashInto(QSpan<std::byte> buffer,
+                                            QSpan<const QByteArrayView> data,
                                             Algorithm method) noexcept
 {
     QCryptographicHashPrivate hash(method);
-    hash.addData(data);
+    for (QByteArrayView part : data)
+        hash.addData(part);
     hash.finalizeUnchecked(); // no mutex needed: no-one but us has access to 'hash'
     auto result = hash.resultView();
     if (buffer.size() < result.size())
