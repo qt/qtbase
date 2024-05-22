@@ -1459,3 +1459,9 @@ E.g., When building QtWebEngine, enabling this option may result in build issues
 See https://bugreports.qt.io/browse/QTBUG-59769."
     CONDITION QT_ALLOW_SYMLINK_IN_PATHS
 )
+
+# QtGuiTest interface
+qt_feature_definition("test_gui" "QT_GUI_TEST" VALUE "1")
+qt_feature("test_gui" PUBLIC
+    LABEL "Build QtGuiTest namespace"
+)
