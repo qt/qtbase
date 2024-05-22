@@ -193,6 +193,26 @@
                 "comment" : "Exception, for file generation",
                 "file type" : "util",
                 "spdx"      : ["LicenseRef-Qt-Commercial OR BSD-3-Clause"]
+            },
+            "src/gui/painting/qimagescale.cpp" : {
+                "comment" : "Info from qt_attribution.json",
+                "file type" : "module and plugin",
+                "spdx" : ["BSD-2-Clause AND Imlib2"]
+            },
+            "src/gui/painting/qgrayraster.c" : {
+                "comment" : "Info from qt_attribution.json",
+                "file type" : "module and plugin",
+                "spdx" : ["FTL OR GPL-2.0-only"]
+            },
+            "src/corelib/kernel/qeventdispatcher_cf_p.h" : {
+                "comment" : "Info from qt_attribution.json",
+                "file type" : "module and plugin",
+                "spdx" : ["BSD-3-Clause"]
+            },
+            "src/plugins/platforms/cocoa/qcocoa(application|eventdispatcher|introspection|systemtrayicon.mm)" : {
+                "comment" : "Info from qt_attribution.json",
+                "file type" : "module and plugin",
+                "spdx" : ["BSD-3-Clause"]
             }
         }
     }
