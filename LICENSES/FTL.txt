@@ -1,0 +1,1 @@
+../src/3rdparty/freetype/docs/FTL.TXT

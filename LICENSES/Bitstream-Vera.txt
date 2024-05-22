@@ -1,0 +1,1 @@
+../src/3rdparty/wasm/DEJAVU-LICENSE
