@@ -545,6 +545,93 @@ private Q_SLOTS:
     void endsWith_QLatin1String_QLatin1Char() { endsWith_impl<QLatin1String, QLatin1Char>(); }
 
 private:
+    void arg1_data(bool argHasVariableLength = true) const;
+    template <typename Format, typename Argument> void arg1_impl() const;
+
+private Q_SLOTS:
+    // let Formats = {QString, QStringView, QLatin1String}
+    // let Arguments = Formats ∪ {QByteArray, const char*, const char8_t*. const char16_t*, std::u16string, char, QChar, QLatin1Char, char16_t}
+    // test Formats × Arguments:
+    void arg1_QString_QString_data() { arg1_data(); }
+    void arg1_QString_QString() { arg1_impl<QString, QString>(); }
+    void arg1_QString_QStringView_data() { arg1_data(); }
+    void arg1_QString_QStringView() { arg1_impl<QString, QStringView>(); }
+    void arg1_QString_QLatin1StringView_data() { arg1_data(); }
+    void arg1_QString_QLatin1StringView() { arg1_impl<QString, QLatin1StringView>(); }
+    void arg1_QString_QByteArray_data() { arg1_data(); }
+    void arg1_QString_QByteArray() { arg1_impl<QString, QByteArray>(); }
+    void arg1_QString_const_char_star_data() { arg1_data(); }
+    void arg1_QString_const_char_star() { arg1_impl<QString, const char*>(); }
+    void arg1_QString_const_char8_t_star_data() { arg1_data(); }
+    void arg1_QString_const_char8_t_star() { IF_CHAR8T((arg1_impl<QString, const char8_t*>())); }
+    void arg1_QString_const_char16_t_star_data() { arg1_data(); }
+    void arg1_QString_const_char16_t_star() { arg1_impl<QString, const char16_t*>(); }
+    void arg1_QString_stdu16string_data() { arg1_data(); }
+    void arg1_QString_stdu16string() { arg1_impl<QString, std::u16string>(); }
+    void arg1_QString_char_data() { arg1_data(false); }
+    void arg1_QString_char() { arg1_impl<QString, char>(); }
+    void arg1_QString_QChar_data() { arg1_data(false); }
+    void arg1_QString_QChar() { arg1_impl<QString, QChar>(); }
+    void arg1_QString_QLatin1Char_data() { arg1_data(false); }
+    void arg1_QString_QLatin1Char() { arg1_impl<QString, QLatin1Char>(); }
+    void arg1_QString_char16_t_data() { arg1_data(false); }
+    void arg1_QString_char16_t() {
+        QEXPECT_FAIL("%1/a", "QTBUG-125588", Continue);
+        QEXPECT_FAIL("%1/ä", "QTBUG-125588", Continue);
+        arg1_impl<QString, char16_t>();
+    }
+
+    void arg1_QStringView_QString_data() { arg1_data(); }
+    void arg1_QStringView_QString() { arg1_impl<QStringView, QString>(); }
+    void arg1_QStringView_QStringView_data() { arg1_data(); }
+    void arg1_QStringView_QStringView() { arg1_impl<QStringView, QStringView>(); }
+    void arg1_QStringView_QLatin1StringView_data() { arg1_data(); }
+    void arg1_QStringView_QLatin1StringView() { arg1_impl<QStringView, QLatin1StringView>(); }
+    void arg1_QStringView_QByteArray_data() { arg1_data(); }
+    void arg1_QStringView_QByteArray() { arg1_impl<QStringView, QByteArray>(); }
+    void arg1_QStringView_const_char_star_data() { arg1_data(); }
+    void arg1_QStringView_const_char_star() { arg1_impl<QStringView, const char*>(); }
+    void arg1_QStringView_const_char8_t_star_data() { arg1_data(); }
+    void arg1_QStringView_const_char8_t_star() { IF_CHAR8T((arg1_impl<QStringView, const char8_t*>())); }
+    void arg1_QStringView_const_char16_t_star_data() { arg1_data(); }
+    void arg1_QStringView_const_char16_t_star() { arg1_impl<QStringView, const char16_t*>(); }
+    void arg1_QStringView_stdu16string_data() { arg1_data(); }
+    void arg1_QStringView_stdu16string() { arg1_impl<QStringView, std::u16string>(); }
+    void arg1_QStringView_char_data() { arg1_data(false); }
+    void arg1_QStringView_char() { arg1_impl<QStringView, char>(); }
+    void arg1_QStringView_QChar_data() { arg1_data(false); }
+    void arg1_QStringView_QChar() { arg1_impl<QStringView, QChar>(); }
+    void arg1_QStringView_QLatin1Char_data() { arg1_data(false); }
+    void arg1_QStringView_QLatin1Char() { arg1_impl<QStringView, QLatin1Char>(); }
+    void arg1_QStringView_char16_t_data() { arg1_data(false); }
+    void arg1_QStringView_char16_t() { arg1_impl<QStringView, char16_t>(); }
+
+    void arg1_QLatin1StringView_QString_data() { arg1_data(); }
+    void arg1_QLatin1StringView_QString() { arg1_impl<QLatin1StringView, QString>(); }
+    void arg1_QLatin1StringView_QStringView_data() { arg1_data(); }
+    void arg1_QLatin1StringView_QStringView() { arg1_impl<QLatin1StringView, QStringView>(); }
+    void arg1_QLatin1StringView_QLatin1StringView_data() { arg1_data(); }
+    void arg1_QLatin1StringView_QLatin1StringView() { arg1_impl<QLatin1StringView, QLatin1StringView>(); }
+    void arg1_QLatin1StringView_QByteArray_data() { arg1_data(); }
+    void arg1_QLatin1StringView_QByteArray() { arg1_impl<QLatin1StringView, QByteArray>(); }
+    void arg1_QLatin1StringView_const_char_star_data() { arg1_data(); }
+    void arg1_QLatin1StringView_const_char_star() { arg1_impl<QLatin1StringView, const char*>(); }
+    void arg1_QLatin1StringView_const_char8_t_star_data() { arg1_data(); }
+    void arg1_QLatin1StringView_const_char8_t_star() { IF_CHAR8T((arg1_impl<QLatin1StringView, const char8_t*>())); }
+    void arg1_QLatin1StringView_const_char16_t_star_data() { arg1_data(); }
+    void arg1_QLatin1StringView_const_char16_t_star() { arg1_impl<QLatin1StringView, const char16_t*>(); }
+    void arg1_QLatin1StringView_stdu16string_data() { arg1_data(); }
+    void arg1_QLatin1StringView_stdu16string() { arg1_impl<QLatin1StringView, std::u16string>(); }
+    void arg1_QLatin1StringView_char_data() { arg1_data(false); }
+    void arg1_QLatin1StringView_char() { arg1_impl<QLatin1StringView, char>(); }
+    void arg1_QLatin1StringView_QChar_data() { arg1_data(false); }
+    void arg1_QLatin1StringView_QChar() { arg1_impl<QLatin1StringView, QChar>(); }
+    void arg1_QLatin1StringView_QLatin1Char_data() { arg1_data(false); }
+    void arg1_QLatin1StringView_QLatin1Char() { arg1_impl<QLatin1StringView, QLatin1Char>(); }
+    void arg1_QLatin1StringView_char16_t_data() { arg1_data(false); }
+    void arg1_QLatin1StringView_char16_t() { arg1_impl<QLatin1StringView, char16_t>(); }
+
+private:
     void split_data(bool rhsHasVariableLength = true);
     template <typename Haystack, typename Needle> void split_impl() const;
 
@@ -1303,6 +1390,7 @@ template <class Str> Str  make(QStringView sf, QLatin1String l1, const QByteArra
                            [[maybe_unused]] const QByteArray &u8) \
     /*end*/
 MAKE(QChar)                  { return sv.isEmpty() ? QChar() : sv.at(0); }
+MAKE(char)                   { return sv.isEmpty() ? char() : char(sv.at(0).unicode()); }
 MAKE(char16_t)               { return sv.isEmpty() ? char16_t() : char16_t{sv.at(0).unicode()}; }
 MAKE(QLatin1Char)            { return l1.isEmpty() ? QLatin1Char('\0') : l1.at(0); }
 MAKE(QString)                { return sv.toString(); }
@@ -1311,6 +1399,9 @@ MAKE(QLatin1String)          { return l1; }
 MAKE(QByteArray)             { return u8; }
 MAKE(QByteArrayView)         { return u8; }
 MAKE(const char *)           { return u8.data(); }
+#ifdef __cpp_char8_t
+MAKE(const char8_t *)        { return q_has_char8_t::QUtf8StringView(u8).data(); }
+#endif
 MAKE(const char16_t *)       { return sv.utf16(); } // assumes `sv` doesn't represent a substring
 MAKE(std::u16string)         { return sv.toString().toStdU16String(); }
 MAKE(QUtf8StringView)        { return u8; }
@@ -1937,6 +2028,69 @@ void tst_QStringApiSymmetry::endsWith_impl() const
     QCOMPARE_EQ(haystack.endsWith(needle), resultCS);
     QCOMPARE_EQ(haystack.endsWith(needle, Qt::CaseSensitive), resultCS);
     QCOMPARE_EQ(haystack.endsWith(needle, Qt::CaseInsensitive), resultCIS);
+}
+
+void tst_QStringApiSymmetry::arg1_data(bool argHasVariableLength) const
+{
+    QTest::addColumn<QString>("formatU16");
+    QTest::addColumn<QString>("argumentU16");
+    QTest::addColumn<QString>("expected");
+
+    const char *null = nullptr;
+    const char *empty = "";
+
+    auto row = [](const char *fmt, const char *arg, const char *res) {
+        auto protect = [](const char *s) { return s ? *s ? s : "<empty>" : "<null>"; };
+        QTest::addRow("%s/%s", protect(fmt), protect(arg))
+                << QString::fromUtf8(fmt) << QString::fromUtf8(arg) << QString::fromUtf8(res);
+    };
+
+    for (auto fmt : {null, empty}) {
+        if (argHasVariableLength) {
+            for (auto arg : {null, empty})
+                row(fmt, arg, "");
+        }
+        for (auto arg : {"a", "ä"})
+            row(fmt, arg, "");
+        if (argHasVariableLength) {
+            for (auto arg : {"äá", "Øåß"})
+                row(fmt, arg, "");
+        }
+    }
+
+    for (auto fmt : {"%1"}) {
+        if (argHasVariableLength) {
+            for (auto arg : {null, empty})
+                row(fmt, arg, arg);
+        }
+        for (auto arg : {"a", "ä"})
+            row(fmt, arg, arg);
+        if (argHasVariableLength) {
+            for (auto arg : {"äá", "Øåß"})
+                row(fmt, arg, arg);
+        }
+    }
+}
+
+template <typename Format, typename Argument>
+void tst_QStringApiSymmetry::arg1_impl() const
+{
+    QFETCH(const QString, formatU16);
+    QFETCH(const QString, argumentU16);
+    QFETCH(const QString, expected);
+
+    const auto formatL1Pinned = formatU16.toLatin1();
+    const auto formatL1 = QLatin1StringView{formatL1Pinned};
+    const auto formatU8 = formatU16.toUtf8();
+
+    const auto argumentL1Pinned = argumentU16.toLatin1();
+    const auto argumentL1= QLatin1StringView{argumentL1Pinned};
+    const auto argumentU8 = argumentU16.toUtf8();
+
+    const auto format = make<Format>(formatU16, formatL1, formatU8);
+    const auto argument = make<Argument>(argumentU16, argumentL1, argumentU8);
+
+    QCOMPARE(format.arg(argument), expected);
 }
 
 void tst_QStringApiSymmetry::split_data(bool rhsHasVariableLength)
