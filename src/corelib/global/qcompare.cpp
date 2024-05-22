@@ -1354,4 +1354,57 @@ CHECK(strong, equivalent);
     \sa Qt::partial_ordering, Qt::weak_ordering, Qt::strong_ordering
 */
 
+/*!
+    \class Qt::totally_ordered_wrapper
+    \inmodule QtCore
+    \inheaderfile QtCompare
+    \brief Qt::totally_ordered_wrapper is a wrapper type that provides strict
+    total order for the wrapped types.
+    \since 6.8
+
+    One of its primary usecases is to prevent \e {Undefined Behavior} (UB) when
+    comparing pointers.
+
+    Consider the following simple class:
+
+    \code
+    template <typename T>
+    struct PointerWrapperBad {
+        int val;
+        T *ptr;
+    };
+    \endcode
+
+    Lexicographical comparison of the two instances of the \c PointerWrapperBad
+    type would result in UB, because it will call \c {operator<()} or
+    \c {operator<=>()} on the \c {ptr} members.
+
+    To fix it, use the new wrapper type:
+
+    \code
+    template <typename T>
+    struct PointerWrapperGood {
+        int val;
+        Qt::totally_ordered_wrapper<T *> ptr;
+
+        friend bool
+        operator==(PointerWrapperGood lhs, PointerWrapperGood rhs) noexcept = default;
+        friend auto
+        operator<=>(PointerWrapperGood lhs, PointerWrapperGood rhs) noexecpt = default;
+    };
+    \endcode
+
+    The \c {operator<()} and (if available) \c {operator<=>()} operators for
+    the \c {Qt::totally_ordered_wrapper} type use the
+    \l {https://en.cppreference.com/w/cpp/utility/functional/less}{std::less}
+    and \l {https://en.cppreference.com/w/cpp/utility/compare/compare_three_way}
+    {std::compare_three_way} function objects respectively, providing
+    \l {https://en.cppreference.com/w/cpp/language/operator_comparison#Pointer_total_order}
+    {strict total order over pointers} when doing the comparison.
+
+    As a result, the relational operators for \c {PointerWrapperGood::ptr}
+    member will be well-defined, and we can even \c {=default} the relational
+    operators for the \c {PointerWrapperGood} class, like it's shown above.
+*/
+
 QT_END_NAMESPACE
