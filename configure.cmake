@@ -416,55 +416,6 @@ int main(void)
 }
 ")
 
-# alloca_stdlib_h
-qt_config_compile_test(alloca_stdlib_h
-    LABEL "alloca() in stdlib.h"
-    CODE
-"#include <stdlib.h>
-
-int main(void)
-{
-    /* BEGIN TEST: */
-alloca(1);
-    /* END TEST: */
-    return 0;
-}
-")
-
-# alloca_h
-qt_config_compile_test(alloca_h
-    LABEL "alloca() in alloca.h"
-    CODE
-"#include <alloca.h>
-#ifdef __QNXNTO__
-// extra include needed in QNX7 to define NULL for the alloca() macro
-#  include <stddef.h>
-#endif
-
-int main(void)
-{
-    /* BEGIN TEST: */
-alloca(1);
-    /* END TEST: */
-    return 0;
-}
-")
-
-# alloca_malloc_h
-qt_config_compile_test(alloca_malloc_h
-    LABEL "alloca() in malloc.h"
-    CODE
-"#include <malloc.h>
-
-int main(void)
-{
-    /* BEGIN TEST: */
-alloca(1);
-    /* END TEST: */
-    return 0;
-}
-")
-
 # stack_protector
 if(NOT WASM AND NOT VXWORKS)
     # emcc doesn't support this, but the detection accidentally succeeds
@@ -1004,18 +955,6 @@ qt_feature("localtime_s" PRIVATE
 qt_feature("posix_fallocate" PRIVATE
     LABEL "POSIX fallocate()"
     CONDITION TEST_posix_fallocate
-)
-qt_feature("alloca_h" PRIVATE
-    LABEL "alloca.h"
-    CONDITION TEST_alloca_h
-)
-qt_feature("alloca_malloc_h" PRIVATE
-    LABEL "alloca() in malloc.h"
-    CONDITION NOT QT_FEATURE_alloca_h AND TEST_alloca_malloc_h
-)
-qt_feature("alloca" PRIVATE
-    LABEL "alloca()"
-    CONDITION QT_FEATURE_alloca_h OR QT_FEATURE_alloca_malloc_h OR TEST_alloca_stdlib_h
 )
 qt_feature("force-system-libs" PRIVATE
     LABEL "Force the usage of system libraries"
