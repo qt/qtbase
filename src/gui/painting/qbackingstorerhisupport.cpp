@@ -114,8 +114,8 @@ bool QBackingStoreRhiSupport::create()
         if (QRhi::probe(QRhi::Metal, &params)) {
             rhi = QRhi::create(QRhi::Metal, &params, flags);
         } else {
-            qCDebug(lcQpaBackingStore, "Metal does not seem to be supported. Falling back to OpenGL.");
-            rhi = QRhi::create(QRhi::OpenGLES2, &params, flags);
+            qCDebug(lcQpaBackingStore, "Metal does not seem to be supported");
+            return false;
         }
     }
 #endif
