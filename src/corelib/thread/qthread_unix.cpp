@@ -43,11 +43,8 @@
 #  include <sys/sysctl.h>
 #endif
 #ifdef Q_OS_VXWORKS
-#  if (_WRS_VXWORKS_MAJOR > 6) || ((_WRS_VXWORKS_MAJOR == 6) && (_WRS_VXWORKS_MINOR >= 6))
-#    include <vxCpuLib.h>
-#    include <cpuset.h>
-#    define QT_VXWORKS_HAS_CPUSET
-#  endif
+#  include <vxCpuLib.h>
+#  include <cpuset.h>
 #endif
 
 #ifdef Q_OS_HPUX
@@ -459,8 +456,6 @@ int QThread::idealThreadCount() noexcept
     // as of aug 2008 Integrity only supports one single core CPU
     cores = 1;
 #elif defined(Q_OS_VXWORKS)
-    // VxWorks
-#  if defined(QT_VXWORKS_HAS_CPUSET)
     cpuset_t cpus = vxCpuEnabledGet();
     cores = 0;
 
@@ -471,10 +466,6 @@ int QThread::idealThreadCount() noexcept
             cores++;
         }
     }
-#  else
-    // as of aug 2008 VxWorks < 6.6 only supports one single core CPU
-    cores = 1;
-#  endif
 #elif defined(Q_OS_WASM)
     cores = QThreadPrivate::idealThreadCount;
 #else
