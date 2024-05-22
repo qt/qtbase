@@ -1428,13 +1428,12 @@ public:
         //     - <class|stuct> StructName
         //     - template <> class ClassName
         //     - class ClassName : [public|protected|private] BaseClassName
-        //     - class ClassName [final|Q_DECL_FINAL|sealed]
+        //     - class ClassName [QT_TEXT_STREAM_FINAL|Q_DECL_FINAL|final|sealed]
         // And possible combinations of the above variants.
         static const std::regex ClassRegex(
-                "^ *(template *<.*> *)?(class|struct) +([^ <>]* "
-                "+)?((?!Q_DECL_FINAL|final|sealed)[^<\\s\\:]+) ?(<[^>\\:]*> "
-                "?)?\\s*(?:Q_DECL_FINAL|final|sealed)?\\s*((,|:)\\s*(public|protected|private)? "
-                "*.*)? *$");
+                "^ *(template *<.*> *)?(class|struct +)([^<>:]*\\s+)?"       // Preceding part
+                "((?!Q[A-Z_0-9]*_FINAL|final|sealed)Q[a-zA-Z0-9_]+)"         // Actual symbol
+                "(\\s+Q[A-Z_0-9]*_FINAL|\\s+final|\\s+sealed)?\\s*(:|$).*"); // Trailing part
 
         // This regex checks if line contains function pointer typedef declaration like:
         //     - typedef void (* QFunctionPointerType)(int, char);
@@ -1445,10 +1444,6 @@ public:
         //     - typedef AnySymbol<char> QAnySymbolType;
         static const std::regex TypedefRegex("^ *typedef\\s+(.*)\\s+(Q\\w+); *$");
 
-        // This regex checks if symbols is the Qt public symbol. Assume that Qt public symbols start
-        // with the capital 'Q'.
-        static const std::regex QtClassRegex("^Q\\w+$");
-
         std::smatch match;
         if (std::regex_match(line, match, FunctionPointerRegex)) {
             symbol = match[1].str();
@@ -1456,8 +1451,6 @@ public:
             symbol = match[2].str();
         } else if (std::regex_match(line, match, ClassRegex)) {
             symbol = match[4].str();
-            if (!std::regex_match(symbol, QtClassRegex))
-                symbol.clear();
         } else {
             return false;
         }
