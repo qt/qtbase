@@ -197,6 +197,14 @@ void tst_QNetworkInterface::localAddress_data()
             } else if (!ipv6 || entry.prefixLength() != 64) {
                 continue;
             } else {
+#ifdef Q_OS_ANDROID
+                // Android seem to not allow IPv6 connection from interfaces other than wlan,
+                // if it's connected, and wlan is connected by default on Android emulators,
+                // so prefer selecting wlan in this test.
+                const QString scopeId = addr.scopeId();
+                if (!scopeId.isEmpty() && !scopeId.startsWith("wlan"))
+                    continue;
+#endif
                 // add a random node in this IPv6 network
                 quint64 randomid = qFromBigEndian(Q_UINT64_C(0x8f41f072e5733caa));
                 QIPv6Address ip6 = addr.toIPv6Address();
