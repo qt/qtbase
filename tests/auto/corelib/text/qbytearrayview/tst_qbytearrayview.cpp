@@ -371,7 +371,7 @@ void tst_QByteArrayView::fromArray() const
 {
     static constexpr char hello[] = "Hello\0abc\0\0.";
 
-    constexpr QByteArrayView bv = QByteArrayView::fromArray(hello);
+    const QByteArrayView bv = QByteArrayView::fromArray(hello);
     QCOMPARE(bv.size(), 13);
     QVERIFY(!bv.empty());
     QVERIFY(!bv.isEmpty());
