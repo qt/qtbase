@@ -21,6 +21,7 @@
 
 #include "QtCore/qlist.h"
 #include "QtCore/qstring.h"
+#include "QtCore/quuid.h"
 #include "private/qfontengine_p.h"
 #include "private/qfontsubset_p.h"
 #include "private/qpaintengine_p.h"
@@ -134,7 +135,8 @@ public:
     {
         Version_1_4,
         Version_A1b,
-        Version_1_6
+        Version_1_6,
+        Version_X4,
     };
 
     QPdfEngine();
@@ -262,6 +264,7 @@ public:
     QString outputFileName;
     QString title;
     QString creator;
+    QUuid documentId = QUuid::createUuid();
     bool embedFonts;
     int resolution;
 
@@ -289,8 +292,8 @@ private:
 
     QPdfEngine::ColorModel colorModelForColor(const QColor &color) const;
     void writeColor(ColorDomain domain, const QColor &color);
-    void writeInfo();
-    int writeXmpDocumentMetaData();
+    void writeInfo(const QDateTime &date);
+    int writeXmpDocumentMetaData(const QDateTime &date);
     int writeOutputIntent();
     void writePageRoot();
     void writeDestsRoot();

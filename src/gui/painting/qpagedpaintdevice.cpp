@@ -67,6 +67,9 @@ QPagedPaintDevicePrivate *QPagedPaintDevice::dd()
 
     \value PdfVersion_1_6 A PDF 1.6 compatible document is produced.
            This value was added in Qt 5.12.
+
+    \value [since 6.8] PdfVersion_X4 A PDF/X-4 compatible document is
+           produced.
 */
 
 /*!
