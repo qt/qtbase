@@ -8,6 +8,10 @@
 #include <QtGui/qevent.h>
 #include <QtCore/qmap.h>
 
+#if QT_CONFIG(test_gui)
+#include <QtCore/qloggingcategory.h>
+#endif // #if QT_CONFIG(test_gui)
+
 QT_BEGIN_NAMESPACE
 
 class QWindow;
@@ -59,6 +63,57 @@ protected:
 
 } // namespace QTest
 
+//
+//  W A R N I N G
+//  -------------
+//
+// The QtGuiTest namespace is not part of the Qt API.  It exists purely as an
+// implementation detail.  It may change from version to version without notice,
+// or even be removed.
+//
+// We mean it.
+//
+
+#if QT_CONFIG(test_gui)
+Q_DECLARE_LOGGING_CATEGORY(lcQtGuiTest)
+namespace QtGuiTest
+{
+    Q_NAMESPACE_EXPORT(Q_GUI_EXPORT)
+
+    void setKeyboardModifiers(Qt::KeyboardModifiers modifiers);
+    void setCursorPosition(const QPoint &position);
+    void synthesizeExtendedKeyEvent(QEvent::Type type, int key, Qt::KeyboardModifiers modifiers,
+                                    quint32 nativeScanCode, quint32 nativeVirtualKey,
+                                    const QString &text);
+    bool synthesizeKeyEvent(QWindow *window, QEvent::Type t, int k, Qt::KeyboardModifiers mods,
+                            const QString & text = QString(), bool autorep = false,
+                            ushort count = 1);
+
+    void synthesizeMouseEvent(const QPointF &position, Qt::MouseButtons state,
+                              Qt::MouseButton button, QEvent::Type type,
+                              Qt::KeyboardModifiers modifiers);
+
+    void synthesizeWheelEvent(int rollCount, Qt::KeyboardModifiers modifiers);
+
+    qint64 eventTimeElapsed();
+
+    void postFakeWindowActivation(QWindow *window);
+
+    QPoint toNativePixels(const QPoint &value, const QWindow *window);
+    QRect toNativePixels(const QRect &value, const QWindow *window);
+    qreal factor(const QWindow *window);
+
+    void setEventPointId(QEventPoint &p, int arg);
+    void setEventPointPressure(QEventPoint &p, qreal arg);
+    void setEventPointState(QEventPoint &p, QEventPoint::State arg);
+    void setEventPointPosition(QEventPoint &p, QPointF arg);
+    void setEventPointGlobalPosition(QEventPoint &p, QPointF arg);
+    void setEventPointScenePosition(QEventPoint &p, QPointF arg);
+    void setEventPointEllipseDiameters(QEventPoint &p, QSizeF arg);
+} // namespace QtGuiTest
+
+#endif // #if QT_CONFIG(test_gui)
+
 QT_END_NAMESPACE
 
-#endif
+#endif // #ifndef QTESTSUPPORT_GUI_H
