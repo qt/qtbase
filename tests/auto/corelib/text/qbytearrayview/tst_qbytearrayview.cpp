@@ -304,6 +304,9 @@ void tst_QByteArrayView::constExpr() const
         static_assert(bv.at(4)   == 'o');
         static_assert(bv.back()  == 'o');
         static_assert(bv.last()  == 'o');
+
+        constexpr auto bv2 = QByteArrayView::fromArray(hello);
+        QCOMPARE(bv, bv2);
     }
 #endif
     {
