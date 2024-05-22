@@ -22,6 +22,7 @@
 #include <qtemporaryfile.h>
 #include <qtimezone.h>
 #include <quuid.h>
+#include <qxmlstream.h>
 
 #include <map>
 
@@ -1043,6 +1044,12 @@ void QPdfEngine::drawHyperlink(const QRectF &r, const QUrl &url)
 {
     Q_D(QPdfEngine);
 
+    // PDF/X-4 (§ 6.17) does not allow annotations that don't lie
+    // outside the BleedBox/TrimBox, so don't emit an hyperlink
+    // annotation at all.
+    if (d->pdfVersion == QPdfEngine::Version_X4)
+        return;
+
     const uint annot = d->addXrefEntry(-1);
     const QByteArray urlascii = url.toEncoded();
     int len = urlascii.size();
@@ -1556,6 +1563,7 @@ void QPdfEnginePrivate::writeHeader()
         "1.4", // Version_1_4
         "1.4", // Version_A1b
         "1.6", // Version_1_6
+        "1.6", // Version_X4
     };
     static const size_t numMappings = sizeof mapping / sizeof *mapping;
     const char *verStr = mapping[size_t(pdfVersion) < numMappings ? pdfVersion : 0];
@@ -1563,16 +1571,27 @@ void QPdfEnginePrivate::writeHeader()
     xprintf("%%PDF-%s\n", verStr);
     xprintf("%%\303\242\303\243\n");
 
-    writeInfo();
+#if QT_CONFIG(timezone)
+    const QDateTime now = QDateTime::currentDateTime(QTimeZone::systemTimeZone());
+#else
+    const QDateTime now = QDateTime::currentDateTimeUtc();
+#endif
 
-    int metaDataObj = -1;
-    int outputIntentObj = -1;
-    if (pdfVersion == QPdfEngine::Version_A1b || !xmpDocumentMetadata.isEmpty()) {
-        metaDataObj = writeXmpDocumentMetaData();
-    }
-    if (pdfVersion == QPdfEngine::Version_A1b) {
-        outputIntentObj = writeOutputIntent();
-    }
+    writeInfo(now);
+
+    const int metaDataObj = writeXmpDocumentMetaData(now);
+    const int outputIntentObj = [&]() {
+        switch (pdfVersion) {
+        case QPdfEngine::Version_1_4:
+        case QPdfEngine::Version_1_6:
+            break;
+        case QPdfEngine::Version_A1b:
+        case QPdfEngine::Version_X4:
+            return writeOutputIntent();
+        }
+
+        return -1;
+    }();
 
     catalog = addXrefEntry(-1);
     pageRoot = requestObject();
@@ -1587,10 +1606,9 @@ void QPdfEnginePrivate::writeHeader()
           << "/Pages " << pageRoot << "0 R\n"
           << "/Names " << namesRoot << "0 R\n";
 
-        if (pdfVersion == QPdfEngine::Version_A1b || !xmpDocumentMetadata.isEmpty())
-            s << "/Metadata " << metaDataObj << "0 R\n";
+        s << "/Metadata " << metaDataObj << "0 R\n";
 
-        if (pdfVersion == QPdfEngine::Version_A1b)
+        if (outputIntentObj >= 0)
             s << "/OutputIntents [" << outputIntentObj << "0 R]\n";
 
         s << ">>\n"
@@ -1716,64 +1734,171 @@ void QPdfEnginePrivate::writeColor(ColorDomain domain, const QColor &color)
     }
 }
 
-void QPdfEnginePrivate::writeInfo()
+void QPdfEnginePrivate::writeInfo(const QDateTime &date)
 {
     info = addXrefEntry(-1);
-    xprintf("<<\n/Title ");
+    write("<<\n/Title ");
     printString(title);
-    xprintf("\n/Creator ");
+    write("\n/Creator ");
     printString(creator);
-    xprintf("\n/Producer ");
+    write("\n/Producer ");
     printString(QString::fromLatin1("Qt " QT_VERSION_STR));
-    QDateTime now = QDateTime::currentDateTime();
-    QTime t = now.time();
-    QDate d = now.date();
-    xprintf("\n/CreationDate (D:%d%02d%02d%02d%02d%02d",
-            d.year(),
-            d.month(),
-            d.day(),
-            t.hour(),
-            t.minute(),
-            t.second());
-    int offset = now.offsetFromUtc();
-    int hours  = (offset / 60) / 60;
-    int mins   = (offset / 60) % 60;
-    if (offset < 0)
-        xprintf("-%02d'%02d')\n", -hours, -mins);
-    else if (offset > 0)
-        xprintf("+%02d'%02d')\n", hours , mins);
-    else
-        xprintf("Z)\n");
-    xprintf("/Trapped /False\n");
-    xprintf(">>\n"
-            "endobj\n");
+
+    const QTime t = date.time();
+    const QDate d = date.date();
+    // (D:YYYYMMDDHHmmSSOHH'mm')
+    constexpr size_t formattedDateSize = 26;
+    char formattedDate[formattedDateSize];
+    const int year = qBound(0, d.year(), 9999); // ASN.1, max 4 digits
+    auto printedSize = qsnprintf(formattedDate,
+                                 formattedDateSize,
+                                 "(D:%04d%02d%02d%02d%02d%02d",
+                                 year,
+                                 d.month(),
+                                 d.day(),
+                                 t.hour(),
+                                 t.minute(),
+                                 t.second());
+    const int offset = date.offsetFromUtc();
+    const int hours  = (offset / 60) / 60;
+    const int mins   = (offset / 60) % 60;
+    if (offset < 0) {
+        qsnprintf(formattedDate + printedSize,
+                  formattedDateSize - printedSize,
+                  "-%02d'%02d')", -hours, -mins);
+    } else if (offset > 0) {
+        qsnprintf(formattedDate + printedSize,
+                  formattedDateSize - printedSize,
+                  "+%02d'%02d')", hours, mins);
+    } else {
+        qsnprintf(formattedDate + printedSize,
+                  formattedDateSize - printedSize,
+                  "Z)");
+    }
+
+    write("\n/CreationDate ");
+    write(formattedDate);
+    write("\n/ModDate ");
+    write(formattedDate);
+
+    write("\n/Trapped /False\n"
+          "2\n"
+          "endobj\n");
 }
 
-int QPdfEnginePrivate::writeXmpDocumentMetaData()
+int QPdfEnginePrivate::writeXmpDocumentMetaData(const QDateTime &date)
 {
     const int metaDataObj = addXrefEntry(-1);
     QByteArray metaDataContent;
 
-    if (xmpDocumentMetadata.isEmpty()) {
-        const QString producer(QString::fromLatin1("Qt " QT_VERSION_STR));
-
-#if QT_CONFIG(timezone)
-        const QDateTime now = QDateTime::currentDateTime(QTimeZone::systemTimeZone());
-#else
-        const QDateTime now = QDateTime::currentDateTimeUtc();
-#endif
-        const QString metaDataDate = now.toString(Qt::ISODate);
-
-        QFile metaDataFile(":/qpdf/qpdfa_metadata.xml"_L1);
-        bool ok = metaDataFile.open(QIODevice::ReadOnly);
-        Q_ASSERT(ok);
-        metaDataContent = QString::fromUtf8(metaDataFile.readAll()).arg(producer.toHtmlEscaped(),
-                                                                        title.toHtmlEscaped(),
-                                                                        creator.toHtmlEscaped(),
-                                                                        metaDataDate).toUtf8();
-    }
-    else
+    if (!xmpDocumentMetadata.isEmpty()) {
         metaDataContent = xmpDocumentMetadata;
+    } else {
+        const QString producer(QString::fromLatin1("Qt " QT_VERSION_STR));
+        const QString metaDataDate = date.toString(Qt::ISODate);
+
+        using namespace Qt::Literals;
+        constexpr QLatin1String xmlNS = "http://www.w3.org/XML/1998/namespace"_L1;
+
+        constexpr QLatin1String adobeNS = "adobe:ns:meta/"_L1;
+        constexpr QLatin1String rdfNS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"_L1;
+        constexpr QLatin1String dcNS = "http://purl.org/dc/elements/1.1/"_L1;
+        constexpr QLatin1String xmpNS = "http://ns.adobe.com/xap/1.0/"_L1;
+        constexpr QLatin1String xmpMMNS = "http://ns.adobe.com/xap/1.0/mm/"_L1;
+        constexpr QLatin1String pdfNS = "http://ns.adobe.com/pdf/1.3/"_L1;
+        constexpr QLatin1String pdfaidNS = "http://www.aiim.org/pdfa/ns/id/"_L1;
+        constexpr QLatin1String pdfxidNS = "http://www.npes.org/pdfx/ns/id/"_L1;
+
+        QBuffer output(&metaDataContent);
+        output.open(QIODevice::WriteOnly);
+        output.write("<?xpacket begin='' id='W5M0MpCehiHzreSzNTczkc9d'?>");
+
+        QXmlStreamWriter w(&output);
+        w.setAutoFormatting(true);
+        w.writeNamespace(adobeNS, "x");
+        w.writeNamespace(rdfNS, "rdf");
+        w.writeNamespace(dcNS, "dc");
+        w.writeNamespace(xmpNS, "xmp");
+        w.writeNamespace(xmpMMNS, "xmpMM");
+        w.writeNamespace(pdfNS, "pdf");
+        w.writeNamespace(pdfaidNS, "pdfaid");
+        w.writeNamespace(pdfxidNS, "pdfxid");
+
+        w.writeStartElement(adobeNS, "xmpmeta");
+        w.writeStartElement(rdfNS, "RDF");
+
+        /*
+            XMP says: "The recommended approach is to have either a
+            single rdf:Description element containing all XMP
+            properties or a separate rdf:Description element for each
+            XMP property namespace."
+            We do the the latter.
+        */
+
+        // DC
+        w.writeStartElement(rdfNS, "Description");
+        w.writeAttribute(rdfNS, "about", "");
+            w.writeStartElement(dcNS, "title");
+                w.writeStartElement(rdfNS, "Alt");
+                    w.writeStartElement(rdfNS, "li");
+                    w.writeAttribute(xmlNS, "lang", "x-default");
+                        w.writeCharacters(title);
+                    w.writeEndElement();
+                w.writeEndElement();
+            w.writeEndElement();
+        w.writeEndElement();
+
+        // PDF
+        w.writeStartElement(rdfNS, "Description");
+        w.writeAttribute(rdfNS, "about", "");
+        w.writeAttribute(pdfNS, "Producer", producer);
+        w.writeAttribute(pdfNS, "Trapped", "false");
+        w.writeEndElement();
+
+        // XMP
+        w.writeStartElement(rdfNS, "Description");
+        w.writeAttribute(rdfNS, "about", "");
+        w.writeAttribute(xmpNS, "CreatorTool", creator);
+        w.writeAttribute(xmpNS, "CreateDate", metaDataDate);
+        w.writeAttribute(xmpNS, "ModifyDate", metaDataDate);
+        w.writeAttribute(xmpNS, "MetadataDate", metaDataDate);
+        w.writeEndElement();
+
+        // XMPMM
+        w.writeStartElement(rdfNS, "Description");
+        w.writeAttribute(rdfNS, "about", "");
+        w.writeAttribute(xmpMMNS, "DocumentID", "uuid:"_L1 + documentId.toString(QUuid::WithoutBraces));
+        w.writeAttribute(xmpMMNS, "VersionID", "1");
+        w.writeAttribute(xmpMMNS, "RenditionClass", "default");
+        w.writeEndElement();
+
+        // Version-specific
+        switch (pdfVersion) {
+        case QPdfEngine::Version_1_4:
+            break;
+        case QPdfEngine::Version_A1b:
+            w.writeStartElement(rdfNS, "Description");
+            w.writeAttribute(rdfNS, "about", "");
+            w.writeAttribute(pdfaidNS, "part", "1");
+            w.writeAttribute(pdfaidNS, "conformance", "B");
+            w.writeEndElement();
+            break;
+        case QPdfEngine::Version_1_6:
+            break;
+        case QPdfEngine::Version_X4:
+            w.writeStartElement(rdfNS, "Description");
+            w.writeAttribute(rdfNS, "about", "");
+            w.writeAttribute(pdfxidNS, "GTS_PDFXVersion", "PDF/X-4");
+            w.writeEndElement();
+            break;
+        }
+
+        w.writeEndElement(); // </RDF>
+        w.writeEndElement(); // </xmpmeta>
+
+        w.writeEndDocument();
+        output.write("<?xpacket end='w'?>");
+    }
 
     xprintf("<<\n"
             "/Type /Metadata /Subtype /XML\n"
@@ -1821,7 +1946,20 @@ int QPdfEnginePrivate::writeOutputIntent()
     {
         xprintf("<<\n");
         xprintf("/Type /OutputIntent\n");
-        xprintf("/S/GTS_PDFA1\n");
+
+        switch (pdfVersion) {
+        case QPdfEngine::Version_1_4:
+        case QPdfEngine::Version_1_6:
+            Q_UNREACHABLE(); // no output intent for these versions
+            break;
+        case QPdfEngine::Version_A1b:
+            xprintf("/S/GTS_PDFA1\n");
+            break;
+        case QPdfEngine::Version_X4:
+            xprintf("/S/GTS_PDFX\n");
+            break;
+        }
+
         xprintf("/OutputConditionIdentifier (sRGB_IEC61966-2-1_black_scaled)\n");
         xprintf("/DestOutputProfile %d 0 R\n", colorProfile);
         xprintf("/Info(sRGB IEC61966 v2.1 with black scaling)\n");
@@ -2242,11 +2380,8 @@ void QPdfEnginePrivate::writeTail()
           << "/Info " << info << "0 R\n"
           << "/Root " << catalog << "0 R\n";
 
-        if (pdfVersion == QPdfEngine::Version_A1b) {
-            const QString uniqueId = QUuid::createUuid().toString();
-            const QByteArray fileIdentifier = QCryptographicHash::hash(uniqueId.toLatin1(), QCryptographicHash::Md5).toHex();
-            s << "/ID [ <" << fileIdentifier << "> <" << fileIdentifier << "> ]\n";
-        }
+        const QByteArray id = documentId.toString(QUuid::WithoutBraces).toUtf8().toHex();
+        s << "/ID [ <" << id << "> <" << id << "> ]\n";
 
         s << ">>\n"
           << "startxref\n" << xrefPositions.constLast() << "\n"
@@ -3198,7 +3333,11 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
 
     const bool isLink = ti.charFormat.hasProperty(QTextFormat::AnchorHref);
     const bool isAnchor = ti.charFormat.hasProperty(QTextFormat::AnchorName);
-    if (isLink || isAnchor) {
+    // PDF/X-4 (§ 6.17) does not allow annotations that don't lie
+    // outside the BleedBox/TrimBox, so don't emit an hyperlink
+    // annotation at all.
+    const bool isX4 = pdfVersion == QPdfEngine::Version_X4;
+    if ((isLink && !isX4) || isAnchor) {
         qreal size = ti.fontEngine->fontDef.pixelSize;
         int synthesized = ti.fontEngine->synthesized();
         qreal stretch = synthesized & QFontEngine::SynthesizedStretch ? ti.fontEngine->fontDef.stretch/100. : 1.;

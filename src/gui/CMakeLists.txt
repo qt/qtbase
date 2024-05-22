@@ -309,7 +309,6 @@ if(QT_FEATURE_pdf)
     )
     set(qpdf_resource_files
         "../3rdparty/icc/sRGB2014.icc"
-        "painting/qpdfa_metadata.xml"
     )
     qt_internal_extend_target(Gui
         ATTRIBUTION_FILE_DIR_PATHS

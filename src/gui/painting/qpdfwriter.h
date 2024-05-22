@@ -16,6 +16,7 @@ QT_BEGIN_NAMESPACE
 
 class QIODevice;
 class QPdfWriterPrivate;
+class QUuid;
 
 class Q_GUI_EXPORT QPdfWriter : public QObject, public QPagedPaintDevice
 {
@@ -33,6 +34,9 @@ public:
 
     QString creator() const;
     void setCreator(const QString &creator);
+
+    QUuid documentId() const;
+    void setDocumentId(const QUuid &documentId);
 
     bool newPage() override;
 

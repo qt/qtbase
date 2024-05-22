@@ -189,6 +189,27 @@ void QPdfWriter::setCreator(const QString &creator)
 }
 
 /*!
+  \since 6.8
+  Returns the ID of the document. By default, the ID is a
+  randomly generated UUID.
+  */
+QUuid QPdfWriter::documentId() const
+{
+    Q_D(const QPdfWriter);
+    return d->engine->d_func()->documentId;
+}
+
+/*!
+  \since 6.8
+  Sets the ID of the document to \a documentId.
+  */
+void QPdfWriter::setDocumentId(const QUuid &documentId)
+{
+    Q_D(QPdfWriter);
+    d->engine->d_func()->documentId = documentId;
+}
+
+/*!
   \reimp
   */
 QPaintEngine *QPdfWriter::paintEngine() const

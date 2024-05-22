@@ -25,7 +25,12 @@ public:
     virtual bool newPage() = 0;
 
     // keep in sync with QPdfEngine::PdfVersion!
-    enum PdfVersion { PdfVersion_1_4, PdfVersion_A1b, PdfVersion_1_6 };
+    enum PdfVersion {
+        PdfVersion_1_4,
+        PdfVersion_A1b,
+        PdfVersion_1_6,
+        PdfVersion_X4,
+    };
 
     virtual bool setPageLayout(const QPageLayout &pageLayout);
     virtual bool setPageSize(const QPageSize &pageSize);
