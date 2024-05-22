@@ -22,6 +22,10 @@
 #include "private/qlocale_p.h"
 #include "private/qdatetime_p.h"
 
+#if QT_CONFIG(timezone_tzdb)
+#include <chrono>
+#endif
+
 #if QT_CONFIG(icu)
 #include <unicode/ucal.h>
 #endif
@@ -229,7 +233,33 @@ private:
 };
 
 // Platform backend cascade: match newBackendTimeZone() in qtimezone.cpp
-#ifdef Q_OS_DARWIN
+#if QT_CONFIG(timezone_tzdb)
+class QChronoTimeZonePrivate final : public QTimeZonePrivate
+{
+public:
+    QChronoTimeZonePrivate();
+    QChronoTimeZonePrivate(QByteArrayView id);
+    ~QChronoTimeZonePrivate() override;
+
+    QString abbreviation(qint64 atMSecsSinceEpoch) const override;
+    int offsetFromUtc(qint64 atMSecsSinceEpoch) const override;
+    int standardTimeOffset(qint64 atMSecsSinceEpoch) const override;
+    int daylightTimeOffset(qint64 atMSecsSinceEpoch) const override;
+
+    bool hasDaylightTime() const override;
+    bool isDaylightTime(qint64 atMSecsSinceEpoch) const override;
+
+    Data data(qint64 forMSecsSinceEpoch) const override;
+
+    bool hasTransitions() const override;
+    Data nextTransition(qint64 afterMSecsSinceEpoch) const override;
+    Data previousTransition(qint64 beforeMSecsSinceEpoch) const override;
+
+private:
+    const std::chrono::time_zone *const m_timeZone;
+    Q_DISABLE_COPY_MOVE(QChronoTimeZonePrivate)
+};
+#elif defined(Q_OS_DARWIN)
 class Q_AUTOTEST_EXPORT QMacTimeZonePrivate final : public QTimeZonePrivate
 {
 public:
@@ -495,7 +525,7 @@ private:
     QString m_daylightName;
     QList<QWinTransitionRule> m_tranRules;
 };
-#endif // Darwin, Android, Unix, ICU, Win.
+#endif // C++20, Darwin, Android, Unix, ICU, Win.
 
 QT_END_NAMESPACE
 

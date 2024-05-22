@@ -19,8 +19,19 @@
 using namespace QtPrivate::DateTimeConstants;
 using namespace Qt::StringLiterals;
 
-#if defined(Q_OS_WIN) && !QT_CONFIG(icu)
-#  define USING_WIN_TZ
+#undef USING_MS_TZDB
+#undef USING_WIN_TZ
+#ifdef Q_OS_WIN
+#  if QT_CONFIG(timezone_tzdb)
+#    define USING_MS_TZDB
+#  elif !QT_CONFIG(icu)
+#    define USING_WIN_TZ
+#  endif
+#endif
+
+#undef GLIBC_TZDB_MISPARSE
+#if QT_CONFIG(timezone_tzdb) && defined(__GLIBCXX__) // && _GLIBCXX_RELEASE <= 14
+#  define GLIBC_TZDB_MISPARSE // QTBUG-127598
 #endif
 
 class tst_QDate : public QObject
@@ -509,6 +520,7 @@ void tst_QDate::weekNumber_invalid()
 enum BackendKludge { IgnoreStart = 1, IgnoreEnd = 2, };
 Q_DECLARE_FLAGS(BackendKludges, BackendKludge)
 Q_DECLARE_OPERATORS_FOR_FLAGS(BackendKludges)
+#undef KLUDGING
 
 void tst_QDate::startOfDay_endOfDay_data()
 {
@@ -524,13 +536,28 @@ void tst_QDate::startOfDay_endOfDay_data()
     const QTime early(0, 0), late(23, 59, 59, 999), invalid(QDateTime().time());
     constexpr BackendKludges Clean = {};
     constexpr BackendKludges IgnoreBoth = IgnoreStart | IgnoreEnd;
+    // Use IgnoreBoth directly for the one transition Android lacks; the other
+    // two that need kludges also fail this one.
+#ifdef Q_OS_ANDROID
+#define KLUDGING
+#endif
 #ifdef USING_WIN_TZ
     constexpr BackendKludges MsNoStart = IgnoreStart;
     constexpr BackendKludges MsNoBoth = IgnoreBoth;
+#define KLUDGING
 #else
     constexpr BackendKludges MsNoStart = Clean;
     constexpr BackendKludges MsNoBoth = Clean;
-    // And use IgnoreBoth directly for the one transition Android lacks.
+#endif
+#if QT_CONFIG(timezone) && QT_CONFIG(timezone_tzdb) && defined(__GLIBCXX__)
+    // The IANA-DB parser in libstdc++ (at least up to _GLIBCXX_RELEASE == 14) gets
+    // a lot of zone-transitions wrong in C++20's tzdb :-(
+    constexpr BackendKludges GlibCxxNoStart = IgnoreStart;
+    constexpr BackendKludges GlibCxxNoBoth = IgnoreBoth;
+#define KLUDGING
+#else
+    constexpr BackendKludges GlibCxxNoStart = Clean;
+    constexpr BackendKludges GlibCxxNoBoth = Clean;
 #endif
     const QTimeZone UTC(QTimeZone::UTC);
 
@@ -557,7 +584,8 @@ void tst_QDate::startOfDay_endOfDay_data()
         const BackendKludges msOpt;
     } transitions[] = {
         // The western Mexico time-zones skipped the first hour of 1970.
-        { "BajaMexico", "America/Hermosillo", QDate(1970, 1, 1), QTime(1, 0), late, MsNoStart },
+        { "BajaMexico", "America/Hermosillo", QDate(1970, 1, 1), QTime(1, 0), late,
+          MsNoStart | GlibCxxNoStart },
 
         // Compare tst_QDateTime::fromStringDateFormat(ISO 24:00 in DST).
         { "Brazil", "America/Sao_Paulo", QDate(2008, 10, 19), QTime(1, 0), late, Clean },
@@ -569,7 +597,8 @@ void tst_QDate::startOfDay_endOfDay_data()
         // Two Pacific zones skipped days to get on the west of the
         // International Date Line; those days have neither start nor end.
         { "Kiritimati", "Pacific/Kiritimati", QDate(1994, 12, 31), invalid, invalid, IgnoreBoth },
-        { "Samoa", "Pacific/Apia", QDate(2011, 12, 30), invalid, invalid, MsNoBoth },
+        { "Samoa", "Pacific/Apia", QDate(2011, 12, 30), invalid, invalid,
+          MsNoBoth | GlibCxxNoBoth },
 
         // TODO: find other zones with transitions at/crossing midnight.
     };
@@ -612,7 +641,7 @@ void tst_QDate::startOfDay_endOfDay()
     QFETCH(const QTimeZone, zone);
     QFETCH(const QTime, start);
     QFETCH(const QTime, end);
-#if defined(USING_WIN_TZ) || defined(Q_OS_ANDROID) // Coping with backend limitations.
+#ifdef KLUDGING // Cope with backend limitations:
     QFETCH(const BackendKludges, kludge);
 #define UNLESSKLUDGE(flag) if (!kludge.testFlag(flag))
 #else
@@ -629,6 +658,9 @@ void tst_QDate::startOfDay_endOfDay()
     if (start.isValid()) {
         QVERIFY(front.isValid());
         QCOMPARE(front.date(), date);
+#ifdef USING_MS_TZDB
+        QEXPECT_FAIL("Brazil", "MS misreads the IANA DB", Continue);
+#endif
         UNLESSKLUDGE(IgnoreStart) QCOMPARE(front.time(), start);
     } else UNLESSKLUDGE(IgnoreStart) {
         auto report = qScopeGuard([front]() { qDebug() << "Start of day:" << front; });
@@ -646,6 +678,7 @@ void tst_QDate::startOfDay_endOfDay()
     }
 #undef UNLESSKLUDGE
 }
+#undef KLUDGING
 
 void tst_QDate::startOfDay_endOfDay_fixed_data()
 {
@@ -700,7 +733,7 @@ void tst_QDate::startOfDay_endOfDay_fixed()
     // Minimal testing for LocalTime and TimeZone
     QCOMPARE(date.startOfDay().date(), date);
     QCOMPARE(date.endOfDay().date(), date);
-#if QT_CONFIG(timezone)
+#if QT_CONFIG(timezone) && !defined(GLIBC_TZDB_MISPARSE)
     const QTimeZone cet("Europe/Oslo");
     if (cet.isValid()) {
         QCOMPARE(date.startOfDay(cet).date(), date);

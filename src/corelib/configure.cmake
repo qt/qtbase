@@ -495,6 +495,28 @@ int main(int argc, char** argv) {
 }
 ")
 
+# <chrono>
+qt_config_compile_test(chrono_tzdb
+    LABEL "Support for timezones in C++20 <chrono>"
+    CODE
+"#include <chrono>
+#if __cpp_lib_chrono < 201907L
+#error
+#endif
+
+int main(void)
+{
+    /* BEGIN TEST: */
+    const std::chrono::tzdb &tzdb = std::chrono::get_tzdb();
+    auto when = std::chrono::system_clock::now();
+    const std::chrono::time_zone *currentZone = tzdb.current_zone();
+    auto zoneInfo = currentZone->get_info(when);
+    /* END TEST: */
+    return 0;
+}
+"
+)
+
 #### Features
 
 qt_feature("clock-gettime" PRIVATE
@@ -908,6 +930,13 @@ qt_feature("timezone_locale" PRIVATE
     CONDITION
         QT_FEATURE_timezone AND NOT APPLE AND NOT ANDROID
 )
+qt_feature("timezone_tzdb" PUBLIC
+    SECTION "Utilities"
+    LABEL "std::chrono::tzdb QTZ backend"
+    PURPOSE "Provides support for a timezone backend using std::chrono."
+    CONDITION TEST_chrono_tzdb
+    AUTODETECT OFF
+)
 qt_feature("datetimeparser" PRIVATE
     SECTION "Utilities"
     LABEL "QDateTimeParser"
@@ -979,6 +1008,7 @@ qt_configure_add_summary_entry(ARGS "system-doubleconversion")
 qt_configure_add_summary_entry(ARGS "forkfd_pidfd" CONDITION LINUX)
 qt_configure_add_summary_entry(ARGS "glib")
 qt_configure_add_summary_entry(ARGS "icu")
+qt_configure_add_summary_entry(ARGS "timezone_tzdb")
 qt_configure_add_summary_entry(ARGS "system-libb2")
 qt_configure_add_summary_entry(ARGS "mimetype-database")
 qt_configure_add_summary_entry(ARGS "permissions")

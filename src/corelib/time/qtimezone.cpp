@@ -22,7 +22,9 @@ using namespace Qt::StringLiterals;
 // Create default time zone using appropriate backend
 static QTimeZonePrivate *newBackendTimeZone()
 {
-#if defined(Q_OS_DARWIN)
+#if QT_CONFIG(timezone_tzdb)
+    return new QChronoTimeZonePrivate();
+#elif defined(Q_OS_DARWIN)
     return new QMacTimeZonePrivate();
 #elif defined(Q_OS_ANDROID)
     return new QAndroidTimeZonePrivate();
@@ -41,7 +43,9 @@ static QTimeZonePrivate *newBackendTimeZone()
 static QTimeZonePrivate *newBackendTimeZone(const QByteArray &ianaId)
 {
     Q_ASSERT(!ianaId.isEmpty());
-#if defined(Q_OS_DARWIN)
+#if QT_CONFIG(timezone_tzdb)
+    return new QChronoTimeZonePrivate(ianaId);
+#elif defined(Q_OS_DARWIN)
     return new QMacTimeZonePrivate(ianaId);
 #elif defined(Q_OS_ANDROID)
     return new QAndroidTimeZonePrivate(ianaId);

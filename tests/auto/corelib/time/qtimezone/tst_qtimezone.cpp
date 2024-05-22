@@ -13,7 +13,7 @@
 #include <QOperatingSystemVersion>
 #endif
 
-#if defined(Q_OS_WIN) && !QT_CONFIG(icu)
+#if defined(Q_OS_WIN) && !QT_CONFIG(icu) && !QT_CONFIG(timezone_tzdb)
 #  define USING_WIN_TZ
 #endif
 
@@ -762,6 +762,13 @@ void tst_QTimeZone::hasAlternativeName()
 
 void tst_QTimeZone::specificTransition_data()
 {
+#if QT_CONFIG(timezone) && QT_CONFIG(timezone_tzdb) && defined(__GLIBCXX__)
+    QSKIP("libstdc++'s C++20 misreads the IANA DB for Moscow's transitions (among others).");
+#endif
+#if defined Q_OS_ANDROID && !QT_CONFIG(timezone_tzdb)
+    if (!QTimeZone("Europe/Moscow").hasTransitions())
+        QSKIP("Android time-zone back-end has no transition data");
+#endif
     QTest::addColumn<QByteArray>("zone");
     QTest::addColumn<QDate>("start");
     QTest::addColumn<QDate>("stop");
@@ -771,10 +778,6 @@ void tst_QTimeZone::specificTransition_data()
     QTest::addColumn<int>("offset");
     QTest::addColumn<int>("stdoff");
     QTest::addColumn<int>("dstoff");
-#ifdef Q_OS_ANDROID
-    if (!QTimeZone("Europe/Moscow").hasTransitions())
-        QSKIP("Android time-zone back-end has no transition data");
-#endif
 
     // Moscow ditched DST on 2010-10-31 but has since changed standard offset twice.
 #ifdef USING_WIN_TZ
@@ -1128,7 +1131,7 @@ void tst_QTimeZone::isValidId_data()
     // Parts separated by '/', each part min 1 and max of 14 chars
     TESTSET("empty", "", false);
     TESTSET("minimal", "m", true);
-#if defined(Q_OS_ANDROID) || QT_CONFIG(icu)
+#if (defined(Q_OS_ANDROID) || QT_CONFIG(icu)) && !QT_CONFIG(timezone_tzdb)
     TESTSET("maximal", "East-Saskatchewan", true); // Android actually uses this
     TESTSET("too long", "North-Saskatchewan", false); // ... but thankfully not this.
 #else
@@ -1199,7 +1202,7 @@ void tst_QTimeZone::isValidId_data()
     QTest::newRow("a,z alone") << QByteArray("a,z") << false;
     QTest::newRow("/z alone") << QByteArray("/z") << false;
     QTest::newRow("-z alone") << QByteArray("-z") << false;
-#if defined(Q_OS_ANDROID) || QT_CONFIG(icu)
+#if (defined(Q_OS_ANDROID) || QT_CONFIG(icu)) && !QT_CONFIG(timezone_tzdb)
     QTest::newRow("long alone") << QByteArray("12345678901234567") << true;
     QTest::newRow("over-long alone") << QByteArray("123456789012345678") << false;
 #else
@@ -1340,7 +1343,7 @@ void tst_QTimeZone::utcTest()
 
 void tst_QTimeZone::icuTest()
 {
-#if defined(QT_BUILD_INTERNAL) && QT_CONFIG(icu) && !defined(Q_OS_UNIX)
+#if defined(QT_BUILD_INTERNAL) && QT_CONFIG(icu) && !QT_CONFIG(timezone_tzdb) && !defined(Q_OS_UNIX)
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0), QTimeZone::UTC).toMSecsSinceEpoch();
     qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0), QTimeZone::UTC).toMSecsSinceEpoch();
@@ -1383,12 +1386,13 @@ void tst_QTimeZone::icuTest()
     if (QTest::currentTestFailed())
         return;
     testEpochTranPrivate(QIcuTimeZonePrivate("America/Toronto"));
-#endif // ICU not on Unix
+#endif // ICU not on Unix, without tzdb
 }
 
 void tst_QTimeZone::tzTest()
 {
-#if defined QT_BUILD_INTERNAL && defined Q_OS_UNIX && !defined Q_OS_DARWIN && !defined Q_OS_ANDROID
+#if defined QT_BUILD_INTERNAL && defined Q_OS_UNIX \
+        && !QT_CONFIG(timezone_tzdb) && !defined Q_OS_DARWIN && !defined Q_OS_ANDROID
     const auto UTC = QTimeZone::UTC;
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0), UTC).toMSecsSinceEpoch();
@@ -1587,12 +1591,12 @@ void tst_QTimeZone::tzTest()
         QDateTime dt(QDate(2016, 3, 28), QTime(0, 0), UTC);
         QCOMPARE(tzBarnaul.data(dt.toMSecsSinceEpoch()).abbreviation, QString("+07"));
     }
-#endif // QT_BUILD_INTERNAL && Q_OS_UNIX && !Q_OS_DARWIN && !Q_OS_ANDROID
+#endif // QT_BUILD_INTERNAL && Q_OS_UNIX && !timezone_tzdb && !Q_OS_DARWIN && !Q_OS_ANDROID
 }
 
 void tst_QTimeZone::macTest()
 {
-#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_DARWIN)
+#if defined(QT_BUILD_INTERNAL) && defined(Q_OS_DARWIN) && !QT_CONFIG(timezone_tzdb)
     // Known datetimes
     qint64 std = QDateTime(QDate(2012, 1, 1), QTime(0, 0), QTimeZone::UTC).toMSecsSinceEpoch();
     qint64 dst = QDateTime(QDate(2012, 6, 1), QTime(0, 0), QTimeZone::UTC).toMSecsSinceEpoch();
@@ -1633,7 +1637,7 @@ void tst_QTimeZone::macTest()
     if (QTest::currentTestFailed())
         return;
     testEpochTranPrivate(QMacTimeZonePrivate("America/Toronto"));
-#endif // QT_BUILD_INTERNAL && Q_OS_DARWIN
+#endif // QT_BUILD_INTERNAL && Q_OS_DARWIN without tzdb
 }
 
 void tst_QTimeZone::darwinTypes()
