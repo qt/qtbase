@@ -6,9 +6,10 @@
 #ifndef QT_NO_PDF
 
 #include "qpagedpaintdevice_p.h"
-#include <QtCore/private/qobject_p.h>
-#include "private/qpdf_p.h"
+#include "qpdf_p.h"
+
 #include <QtCore/qfile.h>
+#include <QtCore/private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
