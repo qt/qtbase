@@ -306,6 +306,9 @@ void tst_QByteArrayView::constExpr() const
         static_assert(bv.back()  == 'o');
         static_assert(bv.last()  == 'o');
 
+        constexpr auto bv2 = QByteArrayView::fromArray(hello);
+        QCOMPARE_EQ(bv, bv2);
+
         constexpr std::string_view sv = bv;
         static_assert(bv.size() == sv.size());
 #ifdef AMBIGUOUS_CALL // QTBUG-108805
@@ -383,7 +386,7 @@ void tst_QByteArrayView::fromArray() const
 {
     static constexpr char hello[] = "Hello\0abc\0\0.";
 
-    constexpr QByteArrayView bv = QByteArrayView::fromArray(hello);
+    const QByteArrayView bv = QByteArrayView::fromArray(hello);
     QCOMPARE(bv.size(), 13);
     QVERIFY(!bv.empty());
     QVERIFY(!bv.isEmpty());
