@@ -1685,6 +1685,8 @@ void tst_QTimeZone::localeSpecificDisplayName()
     QVERIFY(zone.isValid());
 
     const QString localeName = zone.displayName(timeType, QTimeZone::LongName, locale);
+    if (localeName.isEmpty()) // Backend doesn't know how to localize this zone's name
+        QEXPECT_FAIL("", "QTBUG-115158 zone name localization unknown", Continue);
     QCOMPARE(localeName, expectedName);
 }
 
