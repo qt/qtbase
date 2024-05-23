@@ -149,6 +149,7 @@ CHECK(strong, equivalent);
 /*!
     \class Qt::strong_ordering
     \inmodule QtCore
+    \inheaderfile QtCompare
     \brief Qt::strong_ordering represents a comparison where equivalent values are
     indistinguishable.
     \sa Qt::weak_ordering, Qt::partial_ordering, {Comparison types overview}
@@ -334,6 +335,7 @@ CHECK(strong, equivalent);
 /*!
     \class Qt::weak_ordering
     \inmodule QtCore
+    \inheaderfile QtCompare
     \brief Qt::weak_ordering represents a comparison where equivalent values are
     still distinguishable.
     \sa Qt::strong_ordering, Qt::partial_ordering, {Comparison types overview}
@@ -484,6 +486,7 @@ CHECK(strong, equivalent);
 /*!
     \class Qt::partial_ordering
     \inmodule QtCore
+    \inheaderfile QtCompare
     \brief Qt::partial_ordering represents the result of a comparison that allows
     for unordered results.
     \sa Qt::strong_ordering, Qt::weak_ordering, {Comparison types overview}
