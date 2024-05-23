@@ -5352,8 +5352,17 @@ QDateTime QDateTime::currentDateTimeUtc()
     Constructs a datetime representing the same point in time as \a time,
     using Qt::UTC as its specification.
 
-    The clock of \a time must be compatible with \c{std::chrono::system_clock},
-    and the duration type must be convertible to \c{std::chrono::milliseconds}.
+    The clock of \a time must be compatible with
+    \c{std::chrono::system_clock}; in particular, a conversion
+    supported by \c{std::chrono::clock_cast} must exist. After the
+    conversion, the duration type of the result must be convertible to
+    \c{std::chrono::milliseconds}.
+
+    If this is not the case, the caller must perform the necessary
+    clock conversion towards \c{std::chrono::system_clock} and the
+    necessary conversion of the duration type
+    (cast/round/floor/ceil/...) so that the input to this function
+    satisfies the constraints above.
 
     \note This function requires C++20.
 

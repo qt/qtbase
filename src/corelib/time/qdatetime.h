@@ -510,6 +510,17 @@ public:
 
 #if __cpp_lib_chrono >= 201907L || defined(Q_QDOC)
 #if __cpp_concepts >= 201907L || defined(Q_QDOC)
+private:
+    // The duration type of the result of a clock_cast<system_clock>.
+    // This duration may differ from the duration of the input.
+    template <typename Clock, typename Duration>
+    using system_clock_cast_duration = decltype(
+        std::chrono::clock_cast<std::chrono::system_clock>(
+            std::declval<const std::chrono::time_point<Clock, Duration> &>()
+        ).time_since_epoch()
+    );
+
+public:
     // Generic clock, as long as it's compatible with us (= system_clock)
     template <typename Clock, typename Duration>
     static QDateTime fromStdTimePoint(const std::chrono::time_point<Clock, Duration> &time)
@@ -517,8 +528,12 @@ public:
             requires(const std::chrono::time_point<Clock, Duration> &t) {
                 // the clock can be converted to system_clock
                 std::chrono::clock_cast<std::chrono::system_clock>(t);
-                // the duration can be converted to milliseconds
-                requires std::is_convertible_v<Duration, std::chrono::milliseconds>;
+                // after the conversion to system_clock, the duration type
+                // we get is convertible to milliseconds
+                requires std::is_convertible_v<
+                    system_clock_cast_duration<Clock, Duration>,
+                    std::chrono::milliseconds
+                >;
             }
     {
         const auto sysTime = std::chrono::clock_cast<std::chrono::system_clock>(time);
