@@ -213,7 +213,7 @@ function(qt_internal_get_framework_info out_var target)
 
     if(UIKIT)
         # iOS frameworks do not have a Versions sub-directory
-        set(${out_var}_versioned_binary_dir "${${out_var}_dir}}")
+        set(${out_var}_versioned_binary_dir "${${out_var}_dir}")
         set(${out_var}_versioned_header_dir "${${out_var}_header_dir}")
     else()
         set(${out_var}_versioned_binary_dir "${${out_var}_dir}/Versions/${${out_var}_version}")
