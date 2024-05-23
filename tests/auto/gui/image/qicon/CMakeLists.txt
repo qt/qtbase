@@ -37,11 +37,14 @@ file(GLOB_RECURSE test_data_glob
     *.svgz)
 list(APPEND test_data ${test_data_glob})
 
+add_subdirectory(plugin)
+
 qt_internal_add_test(tst_qicon
     SOURCES
         tst_qicon.cpp
     LIBRARIES
         Qt::Gui
+        TestIconPlugin
     TESTDATA ${test_data}
 )
 
@@ -105,3 +108,5 @@ qt_internal_extend_target(tst_qicon CONDITION TARGET Qt::Widgets
     LIBRARIES
         Qt::Widgets
 )
+
+add_dependencies(tst_qicon TestIconPlugin)

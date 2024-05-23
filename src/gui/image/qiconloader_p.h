@@ -30,6 +30,7 @@
 
 #include <vector>
 #include <memory>
+#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -161,6 +162,8 @@ public:
     QList<QSharedPointer<QIconCacheGtkReader>> m_gtkCaches;
 };
 
+class QIconEnginePlugin;
+
 class Q_GUI_EXPORT QIconLoader
 {
 public:
@@ -195,6 +198,7 @@ private:
     QThemeIconInfo lookupFallbackIcon(const QString &iconName) const;
 
     uint m_themeKey;
+    mutable std::optional<QIconEnginePlugin *> m_factory;
     bool m_supportsSvg;
     bool m_initialized;
 

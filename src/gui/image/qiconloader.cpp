@@ -137,6 +137,10 @@ void QIconLoader::invalidateKey()
     // recreating the actual engine the next time the icon is used.
     // We don't need to clear the QIcon cache itself.
     m_themeKey++;
+
+    // invalidating the factory results in us looking once for
+    // a plugin that provides icon for the new themeName()
+    m_factory = std::nullopt;
 }
 
 QString QIconLoader::themeName() const
@@ -650,7 +654,18 @@ QIconEngine *QIconLoader::iconEngine(const QString &iconName) const
     qCDebug(lcIconLoader) << "Resolving icon engine for icon" << iconName;
 
     std::unique_ptr<QIconEngine> iconEngine;
-    if (hasUserTheme())
+
+    if (!m_factory) {
+        qCDebug(lcIconLoader) << "Finding a plugin for theme" << themeName();
+        // try to find a plugin that supports the current theme
+        const int factoryIndex = qt_iconEngineFactoryLoader()->indexOf(themeName());
+        if (factoryIndex >= 0)
+            m_factory = qobject_cast<QIconEnginePlugin *>(qt_iconEngineFactoryLoader()->instance(factoryIndex));
+    }
+    if (m_factory && *m_factory)
+        iconEngine.reset(m_factory.value()->create(iconName));
+
+    if (hasUserTheme() && (!iconEngine || iconEngine->isNull()))
         iconEngine.reset(new QIconLoaderEngine(iconName));
     if (!iconEngine || iconEngine->isNull()) {
         qCDebug(lcIconLoader) << "Icon is not available from theme or fallback theme.";
