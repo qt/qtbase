@@ -547,8 +547,11 @@ constexpr Qt::partial_ordering compareThreeWay(FloatType lhs, IntType rhs) noexc
     return compareThreeWay(lhs, FloatType(rhs));
 }
 
+#if QT_DEPRECATED_SINCE(6, 8)
+
 template <typename LeftType, typename RightType,
           if_compatible_pointers<LeftType, RightType> = true>
+QT_DEPRECATED_VERSION_X_6_8("Wrap the pointers into Qt::totally_ordered_wrapper and use the respective overload instead.")
 constexpr Qt::strong_ordering compareThreeWay(const LeftType *lhs, const RightType *rhs) noexcept
 {
 #ifdef __cpp_lib_three_way_comparison
@@ -564,16 +567,20 @@ constexpr Qt::strong_ordering compareThreeWay(const LeftType *lhs, const RightTy
 }
 
 template <typename T>
+QT_DEPRECATED_VERSION_X_6_8("Wrap the pointer into Qt::totally_ordered_wrapper and use the respective overload instead.")
 constexpr Qt::strong_ordering compareThreeWay(const T *lhs, std::nullptr_t rhs) noexcept
 {
     return compareThreeWay(lhs, static_cast<const T *>(rhs));
 }
 
 template <typename T>
+QT_DEPRECATED_VERSION_X_6_8("Wrap the pointer into Qt::totally_ordered_wrapper and use the respective overload instead.")
 constexpr Qt::strong_ordering compareThreeWay(std::nullptr_t lhs, const T *rhs) noexcept
 {
     return compareThreeWay(static_cast<const T *>(lhs), rhs);
 }
+
+#endif // QT_DEPRECATED_SINCE(6, 8)
 
 template <class Enum, if_enum<Enum> = true>
 constexpr Qt::strong_ordering compareThreeWay(Enum lhs, Enum rhs) noexcept

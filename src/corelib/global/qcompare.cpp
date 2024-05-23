@@ -1274,9 +1274,12 @@ CHECK(strong, equivalent);
     \l Qt::partial_ordering::unordered is returned.
 */
 
+#if QT_DEPRECATED_SINCE(6, 8)
 /*!
     \fn template <typename LeftType, typename RightType, Qt::if_compatible_pointers<LeftType, RightType> = true> Qt::compareThreeWay(const LeftType *lhs, const RightType *rhs)
     \since 6.7
+    \deprecated [6.8] Wrap the pointers into Qt::totally_ordered_wrapper and
+    use the respective Qt::compareThreeWay() overload instead.
     \relates <QtCompare>
     \overload
 
@@ -1289,6 +1292,7 @@ CHECK(strong, equivalent);
     Returns an instance of \l Qt::strong_ordering that represents the relation
     between \a lhs and \a rhs.
 */
+#endif // QT_DEPRECATED_SINCE(6, 8)
 
 /*!
     \fn template <class Enum, Qt::if_enum<Enum> = true> Qt::compareThreeWay(Enum lhs, Enum rhs)
