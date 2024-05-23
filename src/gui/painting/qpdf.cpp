@@ -1843,7 +1843,8 @@ void QPdfEnginePrivate::writeAttachmentRoot()
 
         attachments.push_back(addXrefEntry(-1));
         xprintf("<<\n"
-                "/F (%s)", attachment.fileName.toLatin1().constData());
+                "/F ");
+        printString(attachment.fileName);
 
         xprintf("\n/EF <</F %d 0 R>>\n"
                 "/Type/Filespec\n"
