@@ -593,6 +593,18 @@ void tst_QCompareHelpers::builtinOrder()
     QCOMPARE_EQ(Qt::compareThreeWay(b.get(), nullptr), Qt::strong_ordering::greater);
     QCOMPARE_EQ(Qt::compareThreeWay(nullptr, d.get()), Qt::strong_ordering::less);
 
+    // Check Qt::totally_ordered_wrapper
+    auto a0 = Qt::totally_ordered_wrapper(&arr[0]);
+    auto a1 = Qt::totally_ordered_wrapper(&arr[1]);
+    QCOMPARE_EQ(Qt::compareThreeWay(a0, a1), Qt::strong_ordering::less);
+    QCOMPARE_EQ(Qt::compareThreeWay(arr.data(), a0), Qt::strong_ordering::equivalent);
+
+    auto bWrapper = Qt::totally_ordered_wrapper(b.get());
+    auto dWrapper = Qt::totally_ordered_wrapper<Base*>(d.get());
+    QCOMPARE_NE(Qt::compareThreeWay(bWrapper, dWrapper), Qt::strong_ordering::equivalent);
+    QCOMPARE_EQ(Qt::compareThreeWay(bWrapper, nullptr), Qt::strong_ordering::greater);
+    QCOMPARE_EQ(Qt::compareThreeWay(nullptr, dWrapper), Qt::strong_ordering::less);
+
 #undef TEST_BUILTIN
 }
 
