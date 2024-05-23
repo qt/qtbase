@@ -581,17 +581,27 @@ void tst_QCompareHelpers::builtinOrder()
                 Qt::strong_ordering::equivalent);
 
     std::array<int, 2> arr{1, 0};
+#if QT_DEPRECATED_SINCE(6, 8)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QCOMPARE_EQ(Qt::compareThreeWay(&arr[0], &arr[1]), Qt::strong_ordering::less);
     QCOMPARE_EQ(Qt::compareThreeWay(arr.data(), &arr[0]), Qt::strong_ordering::equivalent);
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 8)
 
     class Base {};
     class Derived : public Base {};
 
     auto b = std::make_unique<Base>();
     auto d = std::make_unique<Derived>();
+#if QT_DEPRECATED_SINCE(6, 8)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
     QCOMPARE_NE(Qt::compareThreeWay(b.get(), d.get()), Qt::strong_ordering::equivalent);
     QCOMPARE_EQ(Qt::compareThreeWay(b.get(), nullptr), Qt::strong_ordering::greater);
     QCOMPARE_EQ(Qt::compareThreeWay(nullptr, d.get()), Qt::strong_ordering::less);
+QT_WARNING_POP
+#endif // QT_DEPRECATED_SINCE(6, 8)
 
     // Check Qt::totally_ordered_wrapper
     auto a0 = Qt::totally_ordered_wrapper(&arr[0]);
