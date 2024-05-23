@@ -65,47 +65,11 @@ QFormDataPartBuilder::QFormDataPartBuilder(QLatin1StringView name, PrivateConstr
 QFormDataPartBuilder::~QFormDataPartBuilder()
     = default;
 
-static QByteArray buildFileName(QLatin1StringView view)
+
+static auto encodeFileName(QStringView view)
 {
-    QByteArray fileName;
-    fileName += "; filename";
-    QByteArrayView encoding = "=";
+    struct R { QByteArrayView encoding; QByteArray encoded; };
 
-    for (uchar c : view) {
-        if (c > 127) {
-            encoding = "*=ISO-8859-1''";
-            break;
-        }
-    }
-
-    fileName += encoding;
-    fileName += QByteArray::fromRawData(view.data(), view.size()).toPercentEncoding();
-    return fileName;
-}
-
-static QByteArray buildFileName(QUtf8StringView view)
-{
-    QByteArrayView bv = view;
-    QByteArray fileName;
-    fileName += "; filename";
-    QByteArrayView encoding = "=";
-
-    for (uchar c : bv) {
-        if (c > 127) {
-            encoding = "*=UTF-8''";
-            break;
-        }
-    }
-
-    fileName += encoding;
-    fileName += QByteArray::fromRawData(bv.data(), bv.size()).toPercentEncoding();
-    return fileName;
-}
-
-static QByteArray buildFileName(QStringView view)
-{
-    QByteArray fileName;
-    fileName += "; filename";
     QByteArrayView encoding = "=";
     bool needsUtf8 = false;
 
@@ -119,24 +83,12 @@ static QByteArray buildFileName(QStringView view)
         }
     }
 
-    fileName += encoding;
-
-    if (needsUtf8)
-        fileName += view.toUtf8().toPercentEncoding();
-    else
-        fileName += view.toLatin1().toPercentEncoding();
-
-    return fileName;
+    return R{encoding, needsUtf8 ? view.toUtf8() : view.toLatin1()};
 }
 
 QFormDataPartBuilder &QFormDataPartBuilder::setBodyHelper(const QByteArray &data,
                                                           QAnyStringView fileName)
 {
-    if (fileName.isEmpty())
-        m_bodyName = QByteArray();
-    else
-        m_bodyName = fileName.visit([&](auto name) { return buildFileName(name); });
-
     m_originalBodyName = fileName.toString();
     m_body = data;
     return *this;
@@ -181,11 +133,6 @@ QFormDataPartBuilder &QFormDataPartBuilder::setBody(QByteArrayView data,
 
 QFormDataPartBuilder &QFormDataPartBuilder::setBodyDevice(QIODevice *body, QAnyStringView fileName)
 {
-    if (fileName.isEmpty())
-        m_bodyName = QByteArray();
-    else
-        m_bodyName = fileName.visit([&](auto name) { return buildFileName(name); });
-
     m_originalBodyName = fileName.toString();
     m_body = body;
     return *this;
@@ -216,8 +163,11 @@ QHttpPart QFormDataPartBuilder::build()
 {
     QHttpPart httpPart;
 
-    if (!m_bodyName.isEmpty())
-        m_headerValue += m_bodyName;     // RFC 5987 Section 3.2.1
+    if (!m_originalBodyName.isNull()) {
+        const auto enc = encodeFileName(m_originalBodyName);
+        m_headerValue += "; filename" + enc.encoding
+                                      + enc.encoded.toPercentEncoding(); // RFC 5987 Section 3.2.1
+    }
 
 #if QT_CONFIG(mimetype)
     QMimeDatabase db;
@@ -233,7 +183,6 @@ QHttpPart QFormDataPartBuilder::build()
     httpPart.setHeader(QNetworkRequest::ContentTypeHeader, mimeType.name());
 #endif
     httpPart.setHeader(QNetworkRequest::ContentDispositionHeader, m_headerValue);
-
 
     if (auto d = std::get_if<QIODevice*>(&m_body))
         httpPart.setBodyDevice(*d);

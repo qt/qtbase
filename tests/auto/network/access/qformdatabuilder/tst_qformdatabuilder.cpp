@@ -195,7 +195,6 @@ void tst_QFormDataBuilder::picksUtf8EncodingOnlyIfL1OrAsciiDontSuffice()
     }
 
     QVERIFY(msg.contains(expected_content_type_data));
-    QEXPECT_FAIL("u8-latin", "will be fixed in subsequent patch", Continue);
     QVERIFY(msg.contains(expected_content_disposition_data));
 }
 

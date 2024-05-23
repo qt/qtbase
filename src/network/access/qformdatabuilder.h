@@ -36,7 +36,6 @@ public:
 
     QFormDataPartBuilder(QFormDataPartBuilder &&other) noexcept
         : m_headerValue(std::move(other.m_headerValue)),
-          m_bodyName(std::move(other.m_bodyName)),
           m_originalBodyName(std::move(other.m_originalBodyName)),
           m_httpHeaders(std::move(other.m_httpHeaders)),
           m_body(std::move(other.m_body)),
@@ -49,7 +48,6 @@ public:
     void swap(QFormDataPartBuilder &other) noexcept
     {
         m_headerValue.swap(other.m_headerValue);
-        m_bodyName.swap(other.m_bodyName);
         m_originalBodyName.swap(other.m_originalBodyName);
         m_httpHeaders.swap(other.m_httpHeaders);
         m_body.swap(other.m_body);
@@ -75,7 +73,6 @@ private:
     Q_NETWORK_EXPORT QHttpPart build();
 
     QByteArray m_headerValue;
-    QByteArray m_bodyName;
     QString m_originalBodyName;
     QHttpHeaders m_httpHeaders;
     std::variant<QIODevice*, QByteArray> m_body;
