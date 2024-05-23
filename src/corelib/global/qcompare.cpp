@@ -1309,6 +1309,77 @@ CHECK(strong, equivalent);
 */
 
 /*!
+    \fn template <typename T> Qt::compareThreeWay(Qt::totally_ordered_wrapper<T*> lhs, Qt::totally_ordered_wrapper<T*> rhs)
+    \since 6.8
+    \relates <QtCompare>
+    \overload
+
+    Implements three-way comparison of pointers that are wrapped into
+    \l Qt::totally_ordered_wrapper. Uses
+    \l {https://en.cppreference.com/w/cpp/language/operator_comparison#Pointer_total_order}
+    {strict total order over pointers} when doing the comparison.
+
+    Returns an instance of \l Qt::strong_ordering that represents the relation
+    between \a lhs and \a rhs.
+*/
+
+/*!
+    \fn template <typename T> Qt::compareThreeWay(Qt::totally_ordered_wrapper<T*> lhs, T *rhs)
+    \since 6.8
+    \relates <QtCompare>
+    \overload
+
+    Implements three-way comparison of a pointer wrapped into
+    \l Qt::totally_ordered_wrapper with a normal pointer. Uses
+    \l {https://en.cppreference.com/w/cpp/language/operator_comparison#Pointer_total_order}
+    {strict total order over pointers} when doing the comparison.
+
+    Returns an instance of \l Qt::strong_ordering that represents the relation
+    between \a lhs and \a rhs.
+*/
+
+/*!
+    \fn template <typename T> Qt::compareThreeWay(T *lhs, Qt::totally_ordered_wrapper<T*> rhs)
+    \since 6.8
+    \relates <QtCompare>
+    \overload
+
+    Implements three-way comparison of a normal pointer with a pointer wrapped
+    into \l Qt::totally_ordered_wrapper. Uses
+    \l {https://en.cppreference.com/w/cpp/language/operator_comparison#Pointer_total_order}
+    {strict total order over pointers} when doing the comparison.
+
+    Returns an instance of \l Qt::strong_ordering that represents the relation
+    between \a lhs and \a rhs.
+*/
+
+/*!
+    \fn template <typename T> Qt::compareThreeWay(Qt::totally_ordered_wrapper<T*> lhs, std::nullptr_t rhs)
+    \since 6.8
+    \relates <QtCompare>
+    \overload
+
+    Implements three-way comparison of a pointer wrapped into
+    \l Qt::totally_ordered_wrapper with \c {std::nullptr_t}.
+
+    Returns an instance of \l Qt::strong_ordering that represents the relation
+    between \a lhs and \a rhs.
+*/
+
+/*!
+    \fn template <typename T> Qt::compareThreeWay(std::nullptr_t lhs, Qt::totally_ordered_wrapper<T*> rhs)
+    \since 6.8
+    \relates <QtCompare>
+    \overload
+
+    Implements three-way comparison of \c {std::nullptr_t} with a pointer
+    wrapped into \l Qt::totally_ordered_wrapper.
+
+    Returns an instance of \l Qt::strong_ordering that represents the relation
+    between \a lhs and \a rhs.
+*/
+
+/*!
     \fn template <typename LeftType, typename RightType> qCompareThreeWay(const LeftType &lhs, const RightType &rhs)
     \since 6.7
     \relates <QtCompare>

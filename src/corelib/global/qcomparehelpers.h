@@ -451,6 +451,26 @@ constexpr bool IsFloatType_v<QtPrivate::NativeFloat16Type> = true;
 
 } // namespace QtPrivate
 
+namespace QtOrderingPrivate {
+
+template <typename T, typename U>
+constexpr Qt::strong_ordering
+strongOrderingCompareDefaultImpl(T lhs, U rhs) noexcept
+{
+#ifdef __cpp_lib_three_way_comparison
+    return lhs <=> rhs;
+#else
+    if (lhs == rhs)
+        return Qt::strong_ordering::equivalent;
+    else if (lhs < rhs)
+        return Qt::strong_ordering::less;
+    else
+        return Qt::strong_ordering::greater;
+#endif // __cpp_lib_three_way_comparison
+}
+
+} // namespace QtOrderingPrivate
+
 namespace Qt {
 
 template <typename T>
@@ -630,8 +650,6 @@ public:
     explicit constexpr operator bool() const noexcept { return get(); }
 
 private:
-    friend constexpr auto compareThreeWay(const totally_ordered_wrapper &lhs, const totally_ordered_wrapper &rhs) noexcept
-    { return Qt::compareThreeWay(lhs.ptr, rhs.ptr); }
 #define MAKE_RELOP(Ret, op, Op) \
     friend constexpr Ret operator op (const totally_ordered_wrapper &lhs, const totally_ordered_wrapper &rhs) noexcept \
     { return std:: Op {}(lhs.ptr, rhs.ptr); } \
@@ -640,9 +658,9 @@ private:
     friend constexpr Ret operator op (const P &lhs, const totally_ordered_wrapper &rhs) noexcept \
     { return std:: Op {}(lhs,     rhs.ptr); } \
     friend constexpr Ret operator op (const totally_ordered_wrapper &lhs, std::nullptr_t) noexcept \
-    { return std:: Op {}(lhs.ptr, nullptr); } \
+    { return std:: Op {}(lhs.ptr, P(nullptr)); } \
     friend constexpr Ret operator op (std::nullptr_t, const totally_ordered_wrapper &rhs) noexcept \
-    { return std:: Op {}(nullptr, rhs.ptr); } \
+    { return std:: Op {}(P(nullptr), rhs.ptr); } \
     /* end */
     MAKE_RELOP(bool, ==, equal_to<P>)
     MAKE_RELOP(bool, !=, not_equal_to<P>)
@@ -661,6 +679,41 @@ private:
     friend size_t qHash(totally_ordered_wrapper key, size_t seed = 0) noexcept
     { return qHash(key.ptr, seed); }
 };
+
+template <typename T>
+constexpr Qt::strong_ordering
+compareThreeWay(Qt::totally_ordered_wrapper<T*> lhs, Qt::totally_ordered_wrapper<T*> rhs) noexcept
+{
+    return QtOrderingPrivate::strongOrderingCompareDefaultImpl(lhs, rhs);
+}
+
+template <typename T>
+constexpr Qt::strong_ordering
+compareThreeWay(Qt::totally_ordered_wrapper<T*> lhs, T *rhs) noexcept
+{
+    return QtOrderingPrivate::strongOrderingCompareDefaultImpl(lhs, rhs);
+}
+
+template <typename T>
+constexpr Qt::strong_ordering
+compareThreeWay(T *lhs, Qt::totally_ordered_wrapper<T*> rhs) noexcept
+{
+    return QtOrderingPrivate::strongOrderingCompareDefaultImpl(lhs, rhs);
+}
+
+template <typename T>
+constexpr Qt::strong_ordering
+compareThreeWay(Qt::totally_ordered_wrapper<T*> lhs, std::nullptr_t rhs) noexcept
+{
+    return QtOrderingPrivate::strongOrderingCompareDefaultImpl(lhs, rhs);
+}
+
+template <typename T>
+constexpr Qt::strong_ordering
+compareThreeWay(std::nullptr_t lhs, Qt::totally_ordered_wrapper<T*> rhs) noexcept
+{
+    return QtOrderingPrivate::strongOrderingCompareDefaultImpl(lhs, rhs);
+}
 
 } //Qt
 
