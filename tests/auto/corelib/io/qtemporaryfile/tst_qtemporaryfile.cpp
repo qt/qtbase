@@ -592,7 +592,9 @@ void tst_QTemporaryFile::rename()
 void tst_QTemporaryFile::renameFdLeak()
 {
 #if defined(Q_OS_UNIX) && !defined(Q_OS_ANDROID)
-    const QByteArray sourceFile = QFile::encodeName(QFINDTESTDATA("CMakeLists.txt"));
+    QTemporaryFile file;
+    QVERIFY(file.open());
+    const QByteArray sourceFile = QFile::encodeName(file.fileName());
     QVERIFY(!sourceFile.isEmpty());
     // Test this on Unix only
 
