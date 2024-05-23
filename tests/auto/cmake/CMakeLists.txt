@@ -146,6 +146,21 @@ if(QT_BUILD_MINIMAL_ANDROID_MULTI_ABI_TESTS AND NOT NO_GUI)
             "-DTEST_ESCAPING_VALUE_ARG=${escaping_value}"
             "-DTEST_SPACES_VALUE_ARG=${spaces_value}"
     )
+
+    #Run test_android_aar only if the host is Unix and zipinfo is available
+    find_program(ZIPINFO_EXECUTABLE zipinfo)
+    if(CMAKE_HOST_UNIX AND ZIPINFO_EXECUTABLE)
+        _qt_internal_test_expect_pass(test_android_aar
+            BUILD_OPTIONS
+                ${multi_abi_vars}
+                --build-target verify_aar
+        )
+    else()
+        message(WARNING
+            "Skipping test_android_aar CMake build test because \
+            the host is not Unix or zipinfo is not found")
+    endif()
+
     return()
 endif()
 
