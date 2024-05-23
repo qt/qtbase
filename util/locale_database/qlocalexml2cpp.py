@@ -212,9 +212,9 @@ class TimeZoneDataWriter (LocaleSourceEditor):
         out('// Alias ID Index, Alias ID Index\n')
         out('static constexpr AliasData aliasMappingTable[] = {\n')
         for name, iana in pairs: # They're ready-sorted
-            if name != iana:
-                out(f'    {{ {store(name):6d},{store(iana):6d} }},'
-                    f' // {name} -> {iana}\n')
+            assert name != iana, (alias, iana) # Filtered out in QLocaleXmlWriter
+            out(f'    {{ {store(name):6d},{store(iana):6d} }},'
+                f' // {name} -> {iana}\n')
         out('};\n\n')
 
     def msToIana(self, pairs):

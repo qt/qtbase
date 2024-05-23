@@ -350,6 +350,8 @@ class QLocaleXmlWriter (object):
         # iana is a single IANA ID
         # name has the same form, but has been made redundant
         for name, iana in sorted(alias.items()):
+            if name == iana:
+                continue
             self.__openTag('zoneAlias')
             self.inTag('alias', name)
             self.inTag('iana', iana)
