@@ -27,6 +27,7 @@
 #include "private/qpaintengine_p.h"
 #include "private/qstroker_p.h"
 #include "qpagelayout.h"
+#include "qpdfoutputintent.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -267,6 +268,7 @@ public:
     QUuid documentId = QUuid::createUuid();
     bool embedFonts;
     int resolution;
+    QPdfOutputIntent outputIntent;
 
     // Page layout: size, orientation and margins
     QPageLayout m_pageLayout;

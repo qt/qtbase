@@ -206,6 +206,7 @@ qt_internal_add_module(Gui
         painting/qpathclipper.cpp painting/qpathclipper_p.h
         painting/qpathsimplifier.cpp painting/qpathsimplifier_p.h
         painting/qpdf.cpp painting/qpdf_p.h
+        painting/qpdfoutputintent.cpp painting/qpdfoutputintent.h
         painting/qpdfwriter.cpp painting/qpdfwriter.h
         painting/qpen.cpp painting/qpen.h painting/qpen_p.h
         painting/qpixellayout.cpp painting/qpixellayout_p.h

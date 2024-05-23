@@ -15,6 +15,7 @@
 QT_BEGIN_NAMESPACE
 
 class QIODevice;
+class QPdfOutputIntent;
 class QPdfWriterPrivate;
 class QUuid;
 
@@ -59,6 +60,9 @@ public:
 
     ColorModel colorModel() const;
     void setColorModel(ColorModel model);
+
+    QPdfOutputIntent outputIntent() const;
+    void setOutputIntent(const QPdfOutputIntent &intent);
 
 protected:
     QPaintEngine *paintEngine() const override;

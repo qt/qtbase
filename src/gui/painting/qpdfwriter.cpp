@@ -7,6 +7,7 @@
 
 #include "qpagedpaintdevice_p.h"
 #include "qpdf_p.h"
+#include "qpdfoutputintent.h"
 
 #include <QtCore/qfile.h>
 #include <QtCore/private/qobject_p.h>
@@ -362,6 +363,28 @@ void QPdfWriter::setColorModel(ColorModel model)
 {
     Q_D(QPdfWriter);
     d->engine->d_func()->colorModel = static_cast<QPdfEngine::ColorModel>(model);
+}
+
+/*!
+  \since 6.8
+
+  Returns the output intent used by this PDF writer.
+*/
+QPdfOutputIntent QPdfWriter::outputIntent() const
+{
+    Q_D(const QPdfWriter);
+    return d->engine->d_func()->outputIntent;
+}
+
+/*!
+  \since 6.8
+
+  Sets the output intent used by this PDF writer to \a intent.
+*/
+void QPdfWriter::setOutputIntent(const QPdfOutputIntent &intent)
+{
+    Q_D(QPdfWriter);
+    d->engine->d_func()->outputIntent = intent;
 }
 
 QT_END_NAMESPACE

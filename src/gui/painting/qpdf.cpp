@@ -1914,20 +1914,35 @@ int QPdfEnginePrivate::writeXmpDocumentMetaData(const QDateTime &date)
 
 int QPdfEnginePrivate::writeOutputIntent()
 {
-    const int colorProfile = addXrefEntry(-1);
+    const int colorProfileEntry = addXrefEntry(-1);
     {
-        QFile colorProfileFile(":/qpdf/sRGB2014.icc"_L1);
-        bool ok = colorProfileFile.open(QIODevice::ReadOnly);
-        Q_ASSERT(ok);
-        const QByteArray colorProfileData = colorProfileFile.readAll();
+        const QColorSpace profile = outputIntent.outputProfile();
+        const QByteArray colorProfileData = profile.iccProfile();
 
         QByteArray data;
         QPdf::ByteStream s(&data);
         int length_object = requestObject();
 
         s << "<<\n";
-        s << "/N 3\n";
-        s << "/Alternate /DeviceRGB\n";
+
+        switch (profile.colorModel()) {
+        case QColorSpace::ColorModel::Undefined:
+            qWarning("QPdfEngine: undefined color model in the output intent profile, assuming RGB");
+            [[fallthrough]];
+        case QColorSpace::ColorModel::Rgb:
+            s << "/N 3\n";
+            s << "/Alternate /DeviceRGB\n";
+            break;
+        case QColorSpace::ColorModel::Gray:
+            s << "/N 1\n";
+            s << "/Alternate /DeviceGray\n";
+            break;
+        case QColorSpace::ColorModel::Cmyk:
+            s << "/N 4\n";
+            s << "/Alternate /DeviceCMYK\n";
+            break;
+        }
+
         s << "/Length " << length_object << "0 R\n";
         if (do_compress)
             s << "/Filter /FlateDecode\n";
@@ -1942,10 +1957,10 @@ int QPdfEnginePrivate::writeOutputIntent()
                 "endobj\n", len);
     }
 
-    const int outputIntent = addXrefEntry(-1);
+    const int outputIntentEntry = addXrefEntry(-1);
     {
-        xprintf("<<\n");
-        xprintf("/Type /OutputIntent\n");
+        write("<<\n");
+        write("/Type /OutputIntent\n");
 
         switch (pdfVersion) {
         case QPdfEngine::Version_1_4:
@@ -1953,22 +1968,37 @@ int QPdfEnginePrivate::writeOutputIntent()
             Q_UNREACHABLE(); // no output intent for these versions
             break;
         case QPdfEngine::Version_A1b:
-            xprintf("/S/GTS_PDFA1\n");
+            write("/S/GTS_PDFA1\n");
             break;
         case QPdfEngine::Version_X4:
-            xprintf("/S/GTS_PDFX\n");
+            write("/S/GTS_PDFX\n");
             break;
         }
 
-        xprintf("/OutputConditionIdentifier (sRGB_IEC61966-2-1_black_scaled)\n");
-        xprintf("/DestOutputProfile %d 0 R\n", colorProfile);
-        xprintf("/Info(sRGB IEC61966 v2.1 with black scaling)\n");
-        xprintf("/RegistryName(http://www.color.org)\n");
-        xprintf(">>\n");
-        xprintf("endobj\n");
+        xprintf("/DestOutputProfile %d 0 R\n", colorProfileEntry);
+        write("/OutputConditionIdentifier ");
+        printString(outputIntent.outputConditionIdentifier());
+        write("\n");
+
+        write("/Info ");
+        printString(outputIntent.outputCondition());
+        write("\n");
+
+        write("/OutputCondition ");
+        printString(outputIntent.outputCondition());
+        write("\n");
+
+        if (const auto registryName = outputIntent.registryName(); !registryName.isEmpty()) {
+            write("/RegistryName ");
+            printString(registryName.toString());
+            write("\n");
+        }
+
+        write(">>\n");
+        write("endobj\n");
     }
 
-    return outputIntent;
+    return outputIntentEntry;
 }
 
 void QPdfEnginePrivate::writePageRoot()
