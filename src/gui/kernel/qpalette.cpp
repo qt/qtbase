@@ -958,7 +958,10 @@ static constexpr QPalette::ResolveMask allResolveMask()
 
 /*!
     Returns a new QPalette that is a union of this instance and \a other.
-    Color roles set in this instance take precedence.
+    Color roles set in this instance take precedence. Roles that are not
+    set in this instance will be taken from \a other.
+
+    \sa isBrushSet
 */
 QPalette QPalette::resolve(const QPalette &other) const
 {
