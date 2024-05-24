@@ -15,6 +15,7 @@
 #include <stdio.h>
 
 #include <qpainter.h>
+#include <private/qcmyk_p.h>
 #include <private/qimage_p.h>
 #include <private/qdrawhelper_p.h>
 
@@ -110,6 +111,8 @@ private slots:
     void smoothScaleFormats();
     void smoothScaleNoConversion_data();
     void smoothScaleNoConversion();
+    void smoothScale_CMYK_data();
+    void smoothScale_CMYK();
 
     void transformed_data();
     void transformed();
@@ -2089,6 +2092,76 @@ void tst_QImage::smoothScaleNoConversion()
     img.setColorTable(QList<QRgb>() << qRgba(255,0,0,255) << qRgba(0,0,0,0));
     img = img.scaled(QSize(48, 48), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     QVERIFY(img.hasAlphaChannel());
+}
+
+void tst_QImage::smoothScale_CMYK_data()
+{
+    QTest::addColumn<int>("size");
+
+    const int sizes[] = { 2, 3, 4, 6, 7, 8, 10, 16, 20, 32, 40, 64, 100, 101, 128 };
+    for (int size : sizes)
+        QTest::addRow("%d x %d", size, size) << size;
+}
+
+void tst_QImage::smoothScale_CMYK()
+{
+    QFETCH(int, size);
+    QImage img(size, size, QImage::Format_CMYK8888);
+    QCmyk32 expected(31, 63, 127, 127);
+    img.fill(expected.toUint());
+
+    auto getCmykPixel = [](const QImage &image, int x, int y) {
+        Q_ASSERT(image.format() == QImage::Format_CMYK8888);
+        const uint *line = reinterpret_cast<const uint *>(image.scanLine(y));
+        const uint pixel = line[x];
+        return QCmyk32::fromCmyk32(pixel);
+    };
+
+    // scale x down, y down
+    QImage scaled = img.scaled(QSize(1, 1), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    QCmyk32 pixel = getCmykPixel(scaled, 0, 0);
+    QCOMPARE(pixel, expected);
+
+    // scale x down, y up
+    scaled = img.scaled(QSize(1, size * 2), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    for (int y = 0; y < scaled.height(); ++y) {
+        pixel = getCmykPixel(scaled, 0, y);
+        QCOMPARE(pixel, expected);
+    }
+
+    // scale x up, y down
+    scaled = img.scaled(QSize(size * 2, 1), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    for (int x = 0; x < scaled.width(); ++x) {
+        pixel = getCmykPixel(scaled, x, 0);
+        QCOMPARE(pixel, expected);
+    }
+
+    // scale x up
+    scaled = img.scaled(QSize(size, size * 2), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    for (int y = 0; y < scaled.height(); ++y) {
+        for (int x = 0; x < scaled.width(); ++x) {
+            pixel = getCmykPixel(scaled, x, y);
+            QCOMPARE(pixel, expected);
+        }
+    }
+
+    // scale y up
+    scaled = img.scaled(QSize(size * 2, size), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    for (int y = 0; y < scaled.height(); ++y) {
+        for (int x = 0; x < scaled.width(); ++x) {
+            pixel = getCmykPixel(scaled, x, y);
+            QCOMPARE(pixel, expected);
+        }
+    }
+
+    // scale x up, y up
+    scaled = img.scaled(QSize(size * 2, size * 2), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    for (int y = 0; y < scaled.height(); ++y) {
+        for (int x = 0; x < scaled.width(); ++x) {
+            pixel = getCmykPixel(scaled, x, y);
+            QCOMPARE(pixel, expected);
+        }
+    }
 }
 
 static int count(const QImage &img, int x, int y, int dx, int dy, QRgb pixel)

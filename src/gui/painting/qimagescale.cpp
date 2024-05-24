@@ -1208,7 +1208,7 @@ QImage qSmoothScaleImage(const QImage &src, int dw, int dh)
                              dw, dh, dw, src.bytesPerLine() / 8);
     else
 #endif
-    if (src.hasAlphaChannel())
+    if (src.hasAlphaChannel() || src.format() == QImage::Format_CMYK8888)
         qt_qimageScaleAARGBA(scaleinfo, (unsigned int *)buffer.scanLine(0),
                              dw, dh, dw, src.bytesPerLine() / 4);
     else

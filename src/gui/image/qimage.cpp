@@ -4693,6 +4693,8 @@ QImage QImage::smoothScaled(int w, int h) const
         src.convertTo(QImage::Format_RGBA32FPx4_Premultiplied);
         break;
 #endif
+    case QImage::Format_CMYK8888:
+        break;
     default:
         if (src.hasAlphaChannel())
             src.convertTo(QImage::Format_ARGB32_Premultiplied);
@@ -4835,6 +4837,9 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::transformed(const QTransform &matrix, Q
         // with scaling smoothly more than 2x down.
         if (hd * 2 < hs || wd * 2 < ws)
             nonpaintable_scale_xform = true;
+        // We cannot paint on a CMYK image, so don't try to do so
+        if (format() == QImage::Format_CMYK8888)
+            nonpaintable_scale_xform = true;
     } else {
         if (mat.type() <= QTransform::TxRotate && mat.m11() == 0 && mat.m22() == 0) {
             if (mat.m12() == 1. && mat.m21() == -1.)
@@ -4866,6 +4871,7 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::transformed(const QTransform &matrix, Q
         case QImage::Format_RGBX64:
         case QImage::Format_RGBA64_Premultiplied:
 #endif
+        case QImage::Format_CMYK8888:
             // Use smoothScaled for scaling when we can do so without conversion.
             if (mat.m11() > 0.0F && mat.m22() > 0.0F)
                 return smoothScaled(wd, hd);
@@ -4936,7 +4942,7 @@ QImage Q_TRACE_INSTRUMENT(qtgui) QImage::transformed(const QTransform &matrix, Q
     } else
         memset(dImage.bits(), 0x00, dImage.d->nbytes);
 
-    if (target_format >= QImage::Format_RGB32) {
+    if (target_format >= QImage::Format_RGB32 && target_format != QImage::Format_CMYK8888) {
         // Prevent QPainter from applying devicePixelRatio corrections
         QImage sImage = (devicePixelRatio() != 1) ? QImage(constBits(), width(), height(), format()) : *this;
         if (sImage.d != d
