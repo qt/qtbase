@@ -4209,9 +4209,7 @@ QByteArray &QByteArray::setNum(qlonglong n, int base)
         p = qulltoa2(buff + buffsize, qulonglong(n), base);
     }
 
-    clear();
-    append(p, buffsize - (p - buff));
-    return *this;
+    return assign(QByteArrayView{p, buff + buffsize});
 }
 
 /*!
@@ -4226,9 +4224,7 @@ QByteArray &QByteArray::setNum(qulonglong n, int base)
     char buff[buffsize];
     char *p = qulltoa2(buff + buffsize, n, base);
 
-    clear();
-    append(p, buffsize - (p - buff));
-    return *this;
+    return assign(QByteArrayView{p, buff + buffsize});
 }
 
 /*!
