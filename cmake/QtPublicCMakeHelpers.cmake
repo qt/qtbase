@@ -602,3 +602,59 @@ function(_qt_internal_append_to_cmake_property_without_duplicates property_name)
     set_property(GLOBAL PROPERTY "${property_name}" "${property}")
 endfunction()
 
+# Helper function to forward options from one function to another.
+#
+# This is somewhat the opposite of _qt_internal_remove_args.
+#
+# Parameters:
+# FORWARD_PREFIX is usually arg because we pass cmake_parse_arguments(PARSE_ARGV 0 arg) in most code
+# FORWARD_OPTIONS, FORWARD_SINGLE, FORWARD_MULTI are the options that should be forwarded.
+#
+# The forwarded args will be either set in arg_FORWARD_OUT_VAR or appended if FORWARD_APPEND is set.
+#
+# The function reads the options like ${arg_FORWARD_PREFIX}_${option} in the parent scope.
+function(_qt_internal_forward_function_args)
+    set(opt_args
+        FORWARD_APPEND
+    )
+    set(single_args
+        FORWARD_PREFIX
+    )
+    set(multi_args
+        FORWARD_OPTIONS
+        FORWARD_SINGLE
+        FORWARD_MULTI
+        FORWARD_OUT_VAR
+    )
+    cmake_parse_arguments(PARSE_ARGV 0 arg "${opt_args}" "${single_args}" "${multi_args}")
+    _qt_internal_validate_all_args_are_parsed(arg)
+
+    if(NOT arg_FORWARD_OUT_VAR)
+        message(FATAL_ERROR "FORWARD_OUT_VAR must be provided.")
+    endif()
+
+    set(forward_args "")
+    foreach(option_name IN LISTS arg_FORWARD_OPTIONS)
+        if(${arg_FORWARD_PREFIX}_${option_name})
+            list(APPEND forward_args "${option_name}")
+        endif()
+    endforeach()
+
+    foreach(option_name IN LISTS arg_FORWARD_SINGLE)
+        if(${arg_FORWARD_PREFIX}_${option_name})
+            list(APPEND forward_args "${option_name}" "${${arg_FORWARD_PREFIX}_${option_name}}")
+        endif()
+    endforeach()
+
+    foreach(option_name IN LISTS arg_FORWARD_MULTI)
+        if(${arg_FORWARD_PREFIX}_${option_name})
+            list(APPEND forward_args "${option_name}" ${${arg_FORWARD_PREFIX}_${option_name}})
+        endif()
+    endforeach()
+
+    if(arg_FORWARD_APPEND)
+        set(forward_args ${${arg_FORWARD_OUT_VAR}} "${forward_args}")
+    endif()
+
+    set(${arg_FORWARD_OUT_VAR} "${forward_args}" PARENT_SCOPE)
+endfunction()
