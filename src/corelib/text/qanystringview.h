@@ -62,10 +62,13 @@ private:
     };
 
     template <typename Char>
-    using if_compatible_char = std::enable_if_t<std::disjunction_v<
+    using is_compatible_char = std::disjunction<
         QtPrivate::IsCompatibleCharType<Char>,
         QtPrivate::IsCompatibleChar8Type<Char>
-    >, bool>;
+    >;
+
+    template <typename Char>
+    using if_compatible_char = std::enable_if_t<is_compatible_char<Char>::value, bool>;
 
     template <typename Pointer>
     using if_compatible_pointer = std::enable_if_t<std::disjunction_v<
@@ -87,6 +90,7 @@ private:
             std::is_same<q20::remove_cvref_t<T>, QAnyStringView::Tag>,
             std::is_same<q20::remove_cvref_t<T>, QAnyStringView>, // don't make a copy/move ctor
             std::is_pointer<std::decay_t<T>>, // const char*, etc
+            is_compatible_char<T>, // don't create a QString/QByteArray, we have a ctor
             std::is_same<q20::remove_cvref_t<T>, QByteArray>,
             std::is_same<q20::remove_cvref_t<T>, QString>
         >>,
@@ -144,6 +148,11 @@ private:
     static QChar toQChar(QChar ch) noexcept { return ch; }
     static QChar toQChar(QLatin1Char ch) noexcept { return ch; }
 
+    struct QCharContainer { // private, so users can't pass their own
+        explicit QCharContainer() = default;
+        QChar ch;
+    };
+
     explicit constexpr QAnyStringView(const void *d, qsizetype n, std::size_t sizeAndType) noexcept
         : m_data{d}, m_size{std::size_t(n) | (sizeAndType & TypeMask)} {}
 public:
@@ -193,16 +202,16 @@ public:
     constexpr QAnyStringView(Container &&c, QtPrivate::wrapped_t<Container, QByteArray> &&capacity = {})
             //noexcept(std::is_nothrow_constructible_v<QByteArray, Container>)
         : QAnyStringView(capacity = std::forward<Container>(c)) {}
-
     template <typename Char, if_compatible_char<Char> = true>
     constexpr QAnyStringView(const Char &c) noexcept
         : QAnyStringView{&c, 1} {}
-    constexpr QAnyStringView(const QChar &c) noexcept
-        : QAnyStringView{&c, 1} {}
+    template <typename Char, if_convertible_to<QChar, Char> = true>
+    constexpr QAnyStringView(Char ch, QCharContainer &&capacity = QCharContainer()) noexcept
+        : QAnyStringView{&(capacity.ch = ch), 1} {}
 
     template <typename Char, typename Container = decltype(QChar::fromUcs4(U'x')),
               std::enable_if_t<std::is_same_v<Char, char32_t>, bool> = true>
-    constexpr QAnyStringView(Char c, Container &&capacity = {})
+    constexpr QAnyStringView(Char c, Container &&capacity = {}) noexcept
         : QAnyStringView(capacity = QChar::fromUcs4(c)) {}
 
     constexpr QAnyStringView(QStringView v) noexcept

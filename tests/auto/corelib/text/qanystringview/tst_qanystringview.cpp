@@ -704,13 +704,17 @@ void tst_QAnyStringView::fromCharacter(Char arg, qsizetype expectedSize) const
     // Need to re-create a new QASV(arg) each time, QASV(Char).data() dangles
     // after the end of the Full Expression:
 
+    static_assert(noexcept(QAnyStringView(arg)),
+                  "If this fails, we may be creating a temporary QString/QByteArray");
+
     QCOMPARE(QAnyStringView(arg).size(), expectedSize);
 
     // QCOMPARE(QAnyStringView(arg), arg); // not all pairs compile, so do it manually:
 
+    // Check implicit conversion:
     const QChar chars[] = {
-        QAnyStringView(arg).front(),
-        QAnyStringView(arg).back(),
+        [](QAnyStringView v) { return v.front(); }(arg),
+        [](QAnyStringView v) { return v.back();  }(arg),
     };
 
     switch (expectedSize) {
