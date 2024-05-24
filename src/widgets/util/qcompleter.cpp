@@ -1308,6 +1308,7 @@ bool QCompleter::eventFilter(QObject *o, QEvent *e)
         case QEvent::Hide:
             if (d->popup)
                 d->popup->hide();
+            break;
         default:
             break;
         }
