@@ -23,6 +23,7 @@ QXcbVirtualDesktop::QXcbVirtualDesktop(QXcbConnection *connection, xcb_screen_t 
     : QXcbObject(connection)
     , m_screen(screen)
     , m_number(number)
+    , m_xSettings(new QXcbXSettings(this))
 {
     const QByteArray cmAtomName =  "_NET_WM_CM_S" + QByteArray::number(m_number);
     m_net_wm_cm_atom = connection->internAtom(cmAtomName.constData());
@@ -129,10 +130,6 @@ void QXcbVirtualDesktop::setPrimaryScreen(QPlatformScreen *s)
 
 QXcbXSettings *QXcbVirtualDesktop::xSettings() const
 {
-    if (!m_xSettings) {
-        QXcbVirtualDesktop *self = const_cast<QXcbVirtualDesktop *>(this);
-        self->m_xSettings = new QXcbXSettings(self);
-    }
     return m_xSettings;
 }
 
