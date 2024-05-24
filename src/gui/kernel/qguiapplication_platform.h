@@ -84,6 +84,7 @@ struct Q_GUI_EXPORT QVisionOSApplication
     struct ImmersiveSpaceCompositorLayer {
         virtual void configure(cp_layer_renderer_capabilities_t, cp_layer_renderer_configuration_t) const {}
         virtual void render(cp_layer_renderer_t) = 0;
+        virtual void handleSpatialEvents(const QJsonObject &) {};
     };
     virtual void setImmersiveSpaceCompositorLayer(ImmersiveSpaceCompositorLayer *layer) = 0;
     virtual void openImmersiveSpace() = 0;

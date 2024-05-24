@@ -329,6 +329,19 @@ void QIOSIntegration::renderCompositorLayer(cp_layer_renderer_t renderer)
         m_immersiveSpaceCompositorLayer->render(renderer);
 }
 
+void QIOSIntegration::handleSpatialEvents(const char *jsonString)
+{
+    if (m_immersiveSpaceCompositorLayer) {
+        QJsonParseError error;
+        QJsonDocument doc = QJsonDocument::fromJson(QByteArray(jsonString), &error);
+        if (error.error != QJsonParseError::NoError) {
+            qWarning() << "Error parsing JSON: " << error.errorString();
+            return;
+        }
+        m_immersiveSpaceCompositorLayer->handleSpatialEvents(doc.object());
+    }
+}
+
 #endif
 
 // ---------------------------------------------------------

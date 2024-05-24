@@ -99,6 +99,7 @@ public:
 
     void configureCompositorLayer(cp_layer_renderer_capabilities_t, cp_layer_renderer_configuration_t);
     void renderCompositorLayer(cp_layer_renderer_t);
+    void handleSpatialEvents(const char *jsonString);
 #endif
 
 private:
