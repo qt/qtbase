@@ -5350,7 +5350,7 @@ QDateTime QDateTime::currentDateTimeUtc()
     \since 6.4
 
     Constructs a datetime representing the same point in time as \a time,
-    using Qt::UTC as its specification.
+    using Qt::UTC as its time representation.
 
     The clock of \a time must be compatible with
     \c{std::chrono::system_clock}; in particular, a conversion
@@ -5368,6 +5368,22 @@ QDateTime QDateTime::currentDateTimeUtc()
 
     \sa toStdSysMilliseconds(), fromMSecsSinceEpoch()
 */
+
+/*!
+    \since 6.4
+    \overload
+
+    Constructs a datetime representing the same point in time as \a time,
+    using Qt::UTC as its time representation.
+*/
+QDateTime QDateTime::fromStdTimePoint(
+    std::chrono::time_point<
+        std::chrono::system_clock,
+        std::chrono::milliseconds
+    > time)
+{
+    return fromMSecsSinceEpoch(time.time_since_epoch().count(), QTimeZone::UTC);
+}
 
 /*!
     \fn QDateTime QDateTime::fromStdTimePoint(const std::chrono::local_time<std::chrono::milliseconds> &time)

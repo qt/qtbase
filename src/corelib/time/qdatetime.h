@@ -508,6 +508,13 @@ public:
     NSDate *toNSDate() const Q_DECL_NS_RETURNS_AUTORELEASED;
 #endif
 
+    static QDateTime fromStdTimePoint(
+        std::chrono::time_point<
+            std::chrono::system_clock,
+            std::chrono::milliseconds
+        > time
+    );
+
 #if __cpp_lib_chrono >= 201907L || defined(Q_QDOC)
 #if __cpp_concepts >= 201907L || defined(Q_QDOC)
 private:
@@ -539,7 +546,7 @@ public:
         const auto sysTime = std::chrono::clock_cast<std::chrono::system_clock>(time);
         // clock_cast can change the duration, so convert it again to milliseconds
         const auto timeInMSec = std::chrono::time_point_cast<std::chrono::milliseconds>(sysTime);
-        return fromMSecsSinceEpoch(timeInMSec.time_since_epoch().count(), Qt::UTC);
+        return fromStdTimePoint(timeInMSec);
     }
 #endif // __cpp_concepts
 
