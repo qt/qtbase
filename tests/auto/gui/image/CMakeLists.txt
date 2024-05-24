@@ -23,7 +23,4 @@ if(QT_FEATURE_private_tests)
     add_subdirectory(qpixmapcache)
 endif()
 
-# QTBUG-87669
-if(NOT ANDROID)
-    add_subdirectory(qicon)
-endif()
+add_subdirectory(qicon)
