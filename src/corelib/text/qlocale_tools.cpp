@@ -552,6 +552,18 @@ QString qulltoa(qulonglong number, int base, const QStringView zero)
     return QString(reinterpret_cast<QChar *>(p), end - p);
 }
 
+char *qulltoa2(char *p, qulonglong n, int base)
+{
+#if defined(QT_CHECK_RANGE)
+    if (base < 2 || base > 36) {
+        qWarning("QByteArray::setNum: Invalid base %d", base);
+        base = 10;
+    }
+#endif
+    qulltoString_helper(n, base, p);
+    return p;
+}
+
 /*!
   \internal
 

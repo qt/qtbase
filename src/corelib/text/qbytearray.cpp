@@ -4190,24 +4190,6 @@ QByteArray QByteArray::toBase64(Base64Options options) const
     \sa toUShort()
 */
 
-static char *qulltoa2(char *p, qulonglong n, int base)
-{
-#if defined(QT_CHECK_RANGE)
-    if (base < 2 || base > 36) {
-        qWarning("QByteArray::setNum: Invalid base %d", base);
-        base = 10;
-    }
-#endif
-    constexpr char b = 'a' - 10;
-    do {
-        const int c = n % base;
-        n /= base;
-        *--p = c + (c < 10 ? '0' : b);
-    } while (n);
-
-    return p;
-}
-
 /*!
     \overload
 

@@ -36,6 +36,7 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision,
 
 [[nodiscard]] QString qulltoBasicLatin(qulonglong l, int base, bool negative);
 [[nodiscard]] QString qulltoa(qulonglong l, int base, const QStringView zero);
+[[nodiscard]] char *qulltoa2(char *p, qulonglong n, int base);
 [[nodiscard]] Q_CORE_EXPORT QString qdtoa(qreal d, int *decpt, int *sign);
 [[nodiscard]] QString qdtoBasicLatin(double d, QLocaleData::DoubleForm form,
                                      int precision, bool uppercase);
