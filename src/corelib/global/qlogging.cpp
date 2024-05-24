@@ -834,7 +834,7 @@ void QMessageLogger::fatal(const QLoggingCategory &cat, const char *msg, ...) co
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    QT_TERMINATE_ON_EXCEPTION(qt_message(QtFatalMsg, ctxt, msg, ap));
+    qt_message(QtFatalMsg, ctxt, msg, ap);
     va_end(ap);
 
 #ifndef Q_CC_MSVC_ONLY
@@ -858,7 +858,7 @@ void QMessageLogger::fatal(QMessageLogger::CategoryFunction catFunc,
 
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    QT_TERMINATE_ON_EXCEPTION(qt_message(QtFatalMsg, ctxt, msg, ap));
+    qt_message(QtFatalMsg, ctxt, msg, ap);
     va_end(ap);
 
 #ifndef Q_CC_MSVC_ONLY
@@ -877,7 +877,7 @@ void QMessageLogger::fatal(const char *msg, ...) const noexcept
     QInternalMessageLogContext ctxt(context);
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    QT_TERMINATE_ON_EXCEPTION(qt_message(QtFatalMsg, ctxt, msg, ap));
+    qt_message(QtFatalMsg, ctxt, msg, ap);
     va_end(ap);
 
 #ifndef Q_CC_MSVC_ONLY

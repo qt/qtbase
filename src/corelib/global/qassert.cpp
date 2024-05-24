@@ -195,36 +195,6 @@ void qBadAlloc()
 */
 
 /*!
-    \macro QT_TERMINATE_ON_EXCEPTION(expr)
-    \relates <QtGlobal>
-    \internal
-
-    In general, use of the Q_DECL_NOEXCEPT macro is preferred over
-    Q_DECL_NOTHROW, because it exhibits well-defined behavior and
-    supports the more powerful Q_DECL_NOEXCEPT_EXPR variant. However,
-    use of Q_DECL_NOTHROW has the advantage that Windows builds
-    benefit on a wide range or compiler versions that do not yet
-    support the C++11 noexcept feature.
-
-    It may therefore be beneficial to use Q_DECL_NOTHROW and emulate
-    the C++11 behavior manually with an embedded try/catch.
-
-    Qt provides the QT_TERMINATE_ON_EXCEPTION(expr) macro for this
-    purpose. It either expands to \c expr (if Qt is compiled without
-    exception support or the compiler supports C++11 noexcept
-    semantics) or to
-    \snippet code/src_corelib_global_qglobal.cpp qterminate
-    otherwise.
-
-    Since this macro expands to just \c expr if the compiler supports
-    C++11 noexcept, expecting the compiler to take over responsibility
-    of calling std::terminate() in that case, it should not be used
-    outside Q_DECL_NOTHROW functions.
-
-    \sa Q_DECL_NOEXCEPT, Q_DECL_NOTHROW, qTerminate()
-*/
-
-/*!
     \macro void Q_UNREACHABLE()
     \relates <QtAssert>
     \since 5.0
