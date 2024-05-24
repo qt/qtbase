@@ -140,12 +140,13 @@ private:
     {
         if (lhs.variant() != rhs.variant())
             return Qt::compareThreeWay(lhs.variant(), rhs.variant());
+        if (lhs.data1 != rhs.data1)
+            return Qt::compareThreeWay(lhs.data1, rhs.data1);
+        if (lhs.data2 != rhs.data2)
+            return Qt::compareThreeWay(lhs.data2, rhs.data2);
+        if (lhs.data3 != rhs.data3)
+            return Qt::compareThreeWay(lhs.data3, rhs.data3);
 
-#define CHECK(f1, f2) if ((f1) != (f2)) return Qt::compareThreeWay(f1, f2)
-        CHECK(lhs.data1, rhs.data1);
-        CHECK(lhs.data2, rhs.data2);
-        CHECK(lhs.data3, rhs.data3);
-#undef CHECK
         int c = std::memcmp(lhs.data4, rhs.data4, sizeof(lhs.data4));
         return Qt::compareThreeWay(c, 0);
     }
