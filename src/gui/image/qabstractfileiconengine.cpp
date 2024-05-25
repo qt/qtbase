@@ -29,6 +29,11 @@ using namespace Qt::StringLiterals;
 QPixmap QAbstractFileIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
                                         QIcon::State state)
 {
+    return scaledPixmap(size, mode, state, 1.0);
+}
+
+QPixmap QAbstractFileIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
+{
     Q_UNUSED(mode);
     Q_UNUSED(state);
 
@@ -37,24 +42,18 @@ QPixmap QAbstractFileIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
 
     QString key = cacheKey();
     if (key.isEmpty())
-        return filePixmap(size, mode, state);
+        return filePixmap(size * scale, mode, state);
 
     key += u'_' + QString::number(size.width());
 
     QPixmap result;
     if (!QPixmapCache::find(key, &result)) {
-        result = filePixmap(size, mode, state);
+        result = filePixmap(size * scale, mode, state);
         if (!result.isNull())
             QPixmapCache::insert(key, result);
     }
 
     return result;
-}
-
-QPixmap QAbstractFileIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
-{
-    Q_UNUSED(scale); // (size is pre-multiplied by scale)
-    return pixmap(size, mode, state);
 }
 
 QSize QAbstractFileIconEngine::actualSize(const QSize &size, QIcon::Mode mode,

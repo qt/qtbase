@@ -209,7 +209,7 @@ static QPixmapIconEngineEntry *bestSizeScaleMatch(const QSize &size, qreal scale
         return (qAbs(ascore) < qAbs(bscore)) ? pa : pb;
     }
 
-    qint64 s = area(size);
+    qint64 s = area(size * scale);
     if (pa->size == QSize() && pa->pixmap.isNull()) {
         pa->pixmap = QPixmap(pa->fileName);
         pa->size = pa->pixmap.size();
@@ -346,13 +346,15 @@ QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIc
         return scaledPixmap(size, mode, state, scale);
     }
 
-    const auto actualSize = adjustSize(size, pm.size());
+    const auto actualSize = adjustSize(size * scale, pm.size());
+    const auto calculatedDpr = QIconPrivate::pixmapDevicePixelRatio(scale, size, actualSize);
     QString key = "qt_"_L1
                   % HexString<quint64>(pm.cacheKey())
                   % HexString<quint8>(pe->mode)
                   % HexString<quint64>(QGuiApplication::palette().cacheKey())
                   % HexString<uint>(actualSize.width())
-                  % HexString<uint>(actualSize.height());
+                  % HexString<uint>(actualSize.height())
+                  % HexString<quint16>(qRound(calculatedDpr * 1000));
 
     if (mode == QIcon::Active) {
         if (QPixmapCache::find(key % HexString<quint8>(mode), &pm))
@@ -376,6 +378,7 @@ QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIc
             if (!generated.isNull())
                 pm = generated;
         }
+        pm.setDevicePixelRatio(calculatedDpr);
         QPixmapCache::insert(key % HexString<quint8>(mode), pm);
     }
     return pm;
@@ -415,7 +418,8 @@ QList<QSize> QPixmapIconEngine::availableSizes(QIcon::Mode mode, QIcon::State st
 void QPixmapIconEngine::addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon::State state)
 {
     if (!pixmap.isNull()) {
-        QPixmapIconEngineEntry *pe = tryMatch(pixmap.size(), pixmap.devicePixelRatio(), mode, state);
+        QPixmapIconEngineEntry *pe = tryMatch(pixmap.size() / pixmap.devicePixelRatio(),
+                                              pixmap.devicePixelRatio(), mode, state);
         if (pe && pe->size == pixmap.size() && pe->pixmap.devicePixelRatio() == pixmap.devicePixelRatio()) {
             pe->pixmap = pixmap;
             pe->fileName.clear();
@@ -905,7 +909,7 @@ QPixmap QIcon::pixmap(const QSize &size, qreal devicePixelRatio, Mode mode, Stat
     }
 
     // Try get a pixmap that is big enough to be displayed at device pixel resolution.
-    QPixmap pixmap = d->engine->scaledPixmap(size * devicePixelRatio, mode, state, devicePixelRatio);
+    QPixmap pixmap = d->engine->scaledPixmap(size, mode, state, devicePixelRatio);
     pixmap.setDevicePixelRatio(d->pixmapDevicePixelRatio(devicePixelRatio, size, pixmap.size()));
     return pixmap;
 }
