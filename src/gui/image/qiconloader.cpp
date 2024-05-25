@@ -900,7 +900,7 @@ QSize QIconLoaderEngine::actualSize(const QSize &size, QIcon::Mode mode,
     return QSize(0, 0);
 }
 
-QPixmap PixmapEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
+QPixmap PixmapEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
 {
     Q_UNUSED(state);
 
@@ -911,13 +911,15 @@ QPixmap PixmapEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State st
 
     // If the size of the best match we have (basePixmap) is larger than the
     // requested size, we downscale it to match.
-    const auto actualSize = QPixmapIconEngine::adjustSize(size, basePixmap.size());
+    const auto actualSize = QPixmapIconEngine::adjustSize(size * scale, basePixmap.size());
+    const auto calculatedDpr = QIconPrivate::pixmapDevicePixelRatio(scale, size, actualSize);
     QString key = "$qt_theme_"_L1
                   % HexString<quint64>(basePixmap.cacheKey())
                   % HexString<quint8>(mode)
                   % HexString<quint64>(QGuiApplication::palette().cacheKey())
                   % HexString<uint>(actualSize.width())
-                  % HexString<uint>(actualSize.height());
+                  % HexString<uint>(actualSize.height())
+                  % HexString<quint16>(qRound(calculatedDpr * 1000));
 
     QPixmap cachedPixmap;
     if (QPixmapCache::find(key, &cachedPixmap)) {
@@ -929,32 +931,24 @@ QPixmap PixmapEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State st
             cachedPixmap = basePixmap;
         if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
             cachedPixmap = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(guiApp))->applyQIconStyleHelper(mode, cachedPixmap);
+        cachedPixmap.setDevicePixelRatio(calculatedDpr);
         QPixmapCache::insert(key, cachedPixmap);
     }
     return cachedPixmap;
 }
 
-QPixmap ScalableEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state)
+QPixmap ScalableEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
 {
     if (svgIcon.isNull())
         svgIcon = QIcon(filename);
 
-    // Bypass QIcon API, as that will scale by device pixel ratio of the
-    // highest DPR screen since we're not passing on any QWindow.
-    if (QIconEngine *engine = svgIcon.data_ptr() ? svgIcon.data_ptr()->engine : nullptr)
-        return engine->pixmap(size, mode, state);
-
-    return QPixmap();
+    return svgIcon.pixmap(size, scale, mode, state);
 }
 
 QPixmap QIconLoaderEngine::pixmap(const QSize &size, QIcon::Mode mode,
                                  QIcon::State state)
 {
-    QIconLoaderEngineEntry *entry = entryForSize(m_info, size);
-    if (entry)
-        return entry->pixmap(size, mode, state);
-
-    return QPixmap();
+    return scaledPixmap(size, mode, state, 1.0);
 }
 
 QString QIconLoaderEngine::key() const
@@ -975,8 +969,8 @@ bool QIconLoaderEngine::isNull()
 QPixmap QIconLoaderEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
 {
     const int integerScale = qCeil(scale);
-    QIconLoaderEngineEntry *entry = entryForSize(m_info, size / integerScale, integerScale);
-    return entry ? entry->pixmap(size, mode, state) : QPixmap();
+    QIconLoaderEngineEntry *entry = entryForSize(m_info, size, integerScale);
+    return entry ? entry->pixmap(size, mode, state, scale) : QPixmap();
 }
 
 QList<QSize> QIconLoaderEngine::availableSizes(QIcon::Mode mode, QIcon::State state)

@@ -66,20 +66,21 @@ public:
     virtual ~QIconLoaderEngineEntry() {}
     virtual QPixmap pixmap(const QSize &size,
                            QIcon::Mode mode,
-                           QIcon::State state) = 0;
+                           QIcon::State state,
+                           qreal scale) = 0;
     QString filename;
     QIconDirInfo dir;
 };
 
 struct ScalableEntry : public QIconLoaderEngineEntry
 {
-    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
+    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale) override;
     QIcon svgIcon;
 };
 
 struct PixmapEntry : public QIconLoaderEngineEntry
 {
-    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
+    QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale) override;
     QPixmap basePixmap;
 };
 
