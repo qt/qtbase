@@ -41,7 +41,7 @@ public:
     QAccessible::Id insert(QObject *object, QAccessibleInterface *iface) const;
     void deleteInterface(QAccessible::Id id, QObject *obj = nullptr);
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_APPLE
     QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *elementForId(QAccessible::Id axid) const;
     void insertElement(QAccessible::Id axid, QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *element) const;
 #endif
@@ -56,9 +56,9 @@ private:
     mutable QHash<QAccessibleInterface *, QAccessible::Id> interfaceToId;
     mutable QMultiHash<QObject *, QPair<QAccessible::Id, const QMetaObject*>> objectToId;
 
-#ifdef Q_OS_MAC
-    void removeCocoaElement(QAccessible::Id axid);
-    mutable QHash<QAccessible::Id, QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *> cocoaElements;
+#ifdef Q_OS_APPLE
+    void removeAccessibleElement(QAccessible::Id axid);
+    mutable QHash<QAccessible::Id, QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *> accessibleElements;
 #endif
 
     friend class QAccessible;

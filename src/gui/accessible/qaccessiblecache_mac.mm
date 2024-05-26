@@ -3,7 +3,7 @@
 
 #include "qaccessiblecache_p.h"
 
-// qcocoaaccessibilityelement.h in Cocoa platform plugin
+// qcocoaaccessibilityelement.h in platform plugin
 @interface QT_MANGLE_NAMESPACE(QMacAccessibilityElement)
 - (void)invalidate;
 @end
@@ -12,19 +12,19 @@ QT_BEGIN_NAMESPACE
 
 void QAccessibleCache::insertElement(QAccessible::Id axid, QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *element) const
 {
-    cocoaElements[axid] = element;
+    accessibleElements[axid] = element;
 }
 
-void QAccessibleCache::removeCocoaElement(QAccessible::Id axid)
+void QAccessibleCache::removeAccessibleElement(QAccessible::Id axid)
 {
     QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *element = elementForId(axid);
     [element invalidate];
-    cocoaElements.remove(axid);
+    accessibleElements.remove(axid);
 }
 
 QT_MANGLE_NAMESPACE(QMacAccessibilityElement) *QAccessibleCache::elementForId(QAccessible::Id axid) const
 {
-    return cocoaElements.value(axid);
+    return accessibleElements.value(axid);
 }
 
 QT_END_NAMESPACE
