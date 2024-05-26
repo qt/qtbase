@@ -1100,6 +1100,7 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
     if (fileName.isEmpty())
         return;
     detach();
+    bool alreadyAdded = false;
     if (!d) {
 
         QFileInfo info(fileName);
@@ -1109,10 +1110,12 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
             suffix = QMimeDatabase().mimeTypeForFile(info).preferredSuffix(); // determination from contents
 #endif // mimetype
         QIconEngine *engine = iconEngineFromSuffix(fileName, suffix);
+        if (engine)
+            alreadyAdded = !engine->isNull();
         d = new QIconPrivate(engine ? engine : new QPixmapIconEngine);
     }
-
-    d->engine->addFile(fileName, size, mode, state);
+    if (!alreadyAdded)
+        d->engine->addFile(fileName, size, mode, state);
 
     // Check if a "@Nx" file exists and add it.
     QString atNxFileName = qt_findAtNxFile(fileName, qApp->devicePixelRatio());
