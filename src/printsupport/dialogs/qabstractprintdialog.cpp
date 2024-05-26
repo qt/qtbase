@@ -365,9 +365,15 @@ void QAbstractPrintDialog::setOptionTabs(const QList<QWidget*> &tabs)
 void QPrintDialog::done(int result)
 {
     auto *d = static_cast<QAbstractPrintDialogPrivate *>(d_ptr.data());
+    if (result == Accepted) {
+        // Emit accepted(QPrinter*) at the same time as the dialog
+        // is accepted. Doing it here is too late, as done() will
+        // also emit finished().
+        QObject::connect(this, &QDialog::accepted, this, [this]{
+            emit accepted(printer());
+        }, Qt::SingleShotConnection);
+    }
     QDialog::done(result);
-    if (result == Accepted)
-        emit accepted(printer());
     if (d->receiverToDisconnectOnClose) {
         disconnect(this, SIGNAL(accepted(QPrinter*)),
                    d->receiverToDisconnectOnClose, d->memberToDisconnectOnClose);
