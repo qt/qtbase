@@ -944,7 +944,7 @@ QVariant QWindowsMimeImage::convertToMime(const QString &mimeType, IDataObject *
     if (canGetData(CF_DIB, pDataObj)) {
         qCDebug(lcQpaMime) << "Decoding DIB";
         QImage img;
-        QByteArray data = getData(CF_DIBV5, pDataObj);
+        QByteArray data = getData(CF_DIB, pDataObj);
         QBuffer buffer(&data);
         if (readDib(buffer, img))
             return img;
