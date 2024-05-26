@@ -77,7 +77,7 @@ public:
     void paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state) override;
     QPixmap pixmap(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
     QPixmap scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale) override;
-    QPixmapIconEngineEntry *bestMatch(const QSize &size, qreal scale, QIcon::Mode mode, QIcon::State state, bool sizeOnly);
+    QPixmapIconEngineEntry *bestMatch(const QSize &size, qreal scale, QIcon::Mode mode, QIcon::State state);
     QSize actualSize(const QSize &size, QIcon::Mode mode, QIcon::State state) override;
     QList<QSize> availableSizes(QIcon::Mode mode, QIcon::State state) override;
     void addPixmap(const QPixmap &pixmap, QIcon::Mode mode, QIcon::State state) override;

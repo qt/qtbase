@@ -43,6 +43,7 @@ public:
     bool supportsReadSize() const { return m_reader.supportsOption(QImageIOHandler::Size); }
     QSize size() const { return m_reader.size(); }
     bool jumpToNextImage() { return m_reader.jumpToNextImage(); }
+    void jumpToImage(int index) { m_reader.jumpToImage(index); }
 
     bool read(QImage *image)
     {
@@ -244,7 +245,7 @@ QPixmapIconEngineEntry *QPixmapIconEngine::tryMatch(const QSize &size, qreal sca
 }
 
 
-QPixmapIconEngineEntry *QPixmapIconEngine::bestMatch(const QSize &size, qreal scale, QIcon::Mode mode, QIcon::State state, bool sizeOnly)
+QPixmapIconEngineEntry *QPixmapIconEngine::bestMatch(const QSize &size, qreal scale, QIcon::Mode mode, QIcon::State state)
 {
     QPixmapIconEngineEntry *pe = tryMatch(size, scale, mode, state);
     while (!pe){
@@ -287,10 +288,38 @@ QPixmapIconEngineEntry *QPixmapIconEngine::bestMatch(const QSize &size, qreal sc
             return pe;
     }
 
-    if (sizeOnly ? (pe->size.isNull() || !pe->size.isValid()) : pe->pixmap.isNull()) {
-        pe->pixmap = QPixmap(pe->fileName);
-        if (!pe->pixmap.isNull())
-            pe->size = pe->pixmap.size();
+    if (pe->pixmap.isNull()) {
+        // delay-load the image
+        ImageReader imageReader(pe->fileName);
+        QImage image, prevImage;
+        const QSize realSize = size * scale;
+        bool fittingImageFound = false;
+        if (imageReader.supportsReadSize()) {
+            // find the image with the best size without loading the entire image
+            do {
+                fittingImageFound = imageReader.size() == realSize;
+            } while (!fittingImageFound && imageReader.jumpToNextImage());
+        }
+        if (!fittingImageFound) {
+            imageReader.jumpToImage(0);
+            while (imageReader.read(&image) && image.size() != realSize)
+                prevImage = image;
+            if (image.isNull())
+                image = prevImage;
+        } else {
+            imageReader.read(&image);
+        }
+        if (!image.isNull()) {
+            pe->pixmap.convertFromImage(image);
+            if (!pe->pixmap.isNull()) {
+                pe->size = pe->pixmap.size();
+                pe->pixmap.setDevicePixelRatio(scale);
+            }
+        }
+        if (!pe->size.isValid()) {
+            removePixmapEntry(pe);
+            pe = nullptr;
+        }
     }
 
     return pe;
@@ -304,7 +333,7 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
 QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
 {
     QPixmap pm;
-    QPixmapIconEngineEntry *pe = bestMatch(size, scale, mode, state, false);
+    QPixmapIconEngineEntry *pe = bestMatch(size, scale, mode, state);
     if (pe)
         pm = pe->pixmap;
     else
@@ -361,7 +390,7 @@ QSize QPixmapIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::
     // does not proviode extra actual sizes not also provided by the 1x versions.
     qreal scale = 1;
 
-    if (QPixmapIconEngineEntry *pe = bestMatch(size, scale, mode, state, true))
+    if (QPixmapIconEngineEntry *pe = bestMatch(size, scale, mode, state))
         actualSize = pe->size;
 
     return adjustSize(size, actualSize);
@@ -434,10 +463,7 @@ void QPixmapIconEngine::addFile(const QString &fileName, const QSize &size, QIco
                     pixmaps += QPixmapIconEngineEntry(abs, image, mode, state);
             }
         } else {
-            // Try to match size. If that fails, add a placeholder with the filename and empty pixmap for the size.
-            while (imageReader.read(&image) && image.size() != size) {}
-            pixmaps += image.size() == size ?
-                QPixmapIconEngineEntry(abs, image, mode, state) : QPixmapIconEngineEntry(abs, size, mode, state);
+            pixmaps += QPixmapIconEngineEntry(abs, size, mode, state);
         }
         return;
     }
