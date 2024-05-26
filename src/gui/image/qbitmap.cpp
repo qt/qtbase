@@ -129,7 +129,6 @@ QBitmap::QBitmap(const QString& fileName, const char *format)
 
 /*!
     \fn void QBitmap::swap(QBitmap &other)
-    \since 4.8
 
     Swaps bitmap \a other with this bitmap. This operation is very
     fast and never fails.

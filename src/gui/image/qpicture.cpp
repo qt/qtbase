@@ -925,7 +925,6 @@ QPicture& QPicture::operator=(const QPicture &p)
 
 /*!
     \fn void QPicture::swap(QPicture &other)
-    \since 4.8
 
     Swaps picture \a other with this picture. This operation is very
     fast and never fails.

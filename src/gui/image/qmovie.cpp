@@ -103,7 +103,6 @@
 */
 
 /*! \fn void QMovie::frameChanged(int frameNumber)
-    \since 4.1
 
     This signal is emitted when the frame number has changed to
     \a frameNumber.  You can call currentImage() or currentPixmap() to get a
@@ -973,8 +972,6 @@ void QMovie::stop()
 }
 
 /*!
-    \since 4.1
-
     Returns the scaled size of frames.
 
     \sa QImageReader::scaledSize()
@@ -986,8 +983,6 @@ QSize QMovie::scaledSize()
 }
 
 /*!
-    \since 4.1
-
     Sets the scaled frame size to \a size.
 
     \sa QImageReader::setScaledSize()
@@ -999,8 +994,6 @@ void QMovie::setScaledSize(const QSize &size)
 }
 
 /*!
-    \since 4.1
-
     Returns the list of image formats supported by QMovie.
 
     \sa QImageReader::supportedImageFormats()

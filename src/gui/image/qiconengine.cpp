@@ -114,7 +114,6 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
 
 /*!
     \enum QIconEngine::IconEngineHook
-    \since 4.5
 
     These enum values are used for virtual_hook() to allow additional
     queries to icon engine without breaking binary compatibility.
@@ -224,8 +223,6 @@ bool QIconEngine::write(QDataStream &) const
 }
 
 /*!
-    \since 4.5
-
     Additional method to allow extending QIconEngine without
     adding new virtual methods (and without breaking binary compatibility).
     The actual action and format of \a data depends on \a id argument
@@ -249,8 +246,6 @@ void QIconEngine::virtual_hook(int id, void *data)
 }
 
 /*!
-    \since 4.5
-
     Returns sizes of all images that are contained in the engine for the
     specific \a mode and \a state.
  */
@@ -260,8 +255,6 @@ QList<QSize> QIconEngine::availableSizes(QIcon::Mode /*mode*/, QIcon::State /*st
 }
 
 /*!
-    \since 4.7
-
     Returns the name used to create the engine, if available.
  */
 QString QIconEngine::iconName()

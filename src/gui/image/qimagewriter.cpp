@@ -588,8 +588,6 @@ QImageIOHandler::Transformations QImageWriter::transformation() const
 }
 
 /*!
-    \since 4.1
-
     Sets the image text associated with the key \a key to
     \a text. This is useful for storing copyright information
     or other information about the image. Example:
@@ -710,8 +708,6 @@ QString QImageWriter::errorString() const
 }
 
 /*!
-    \since 4.2
-
     Returns \c true if the writer supports \a option; otherwise returns
     false.
 

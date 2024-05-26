@@ -789,7 +789,6 @@ QIcon &QIcon::operator=(const QIcon &other)
 
 /*!
     \fn void QIcon::swap(QIcon &other)
-    \since 4.8
 
     Swaps icon \a other with this icon. This operation is very
     fast and never fails.
@@ -807,7 +806,6 @@ QIcon::operator QVariant() const
     Returns a number that identifies the contents of this QIcon
     object. Distinct QIcon objects can have the same key if
     they refer to the same contents.
-    \since 4.3
 
     The cacheKey() will change when the icon is altered via
     addPixmap() or addFile().
@@ -1138,8 +1136,6 @@ void QIcon::addFile(const QString &fileName, const QSize &size, Mode mode, State
 }
 
 /*!
-    \since 4.5
-
     Returns a list of available icon sizes for the specified \a mode and
     \a state.
 */
@@ -1151,8 +1147,6 @@ QList<QSize> QIcon::availableSizes(Mode mode, State state) const
 }
 
 /*!
-    \since 4.7
-
     Returns the name used to create the icon, if available.
 
     Depending on the way the icon was created, it may have an associated
@@ -1168,8 +1162,6 @@ QString QIcon::name() const
 }
 
 /*!
-    \since 4.6
-
     Sets the search paths for icon themes to \a paths.
 
     The content of \a paths should follow the theme format
@@ -1183,8 +1175,6 @@ void QIcon::setThemeSearchPaths(const QStringList &paths)
 }
 
 /*!
-    \since 4.6
-
     Returns the search paths for icon themes.
 
     The default search paths will be defined by the platform.
@@ -1239,8 +1229,6 @@ void QIcon::setFallbackSearchPaths(const QStringList &paths)
 }
 
 /*!
-    \since 4.6
-
     Sets the current icon theme to \a name.
 
     The theme will be will be looked up in themeSearchPaths().
@@ -1259,8 +1247,6 @@ void QIcon::setThemeName(const QString &name)
 }
 
 /*!
-    \since 4.6
-
     Returns the name of the current icon theme.
 
     If not set, the current icon theme will be defined by the
@@ -1321,8 +1307,6 @@ void QIcon::setFallbackThemeName(const QString &name)
 }
 
 /*!
-    \since 4.6
-
     Returns the QIcon corresponding to \a name in the
     \l{themeName()}{current icon theme}.
 
@@ -1392,8 +1376,6 @@ QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
 }
 
 /*!
-    \since 4.6
-
     Returns \c true if there is an icon available for \a name in the
     current icon theme or any of the fallbacks, as described by
     fromTheme(), otherwise returns \c false.
@@ -1840,7 +1822,6 @@ bool QIcon::isMask() const
 /*!
     \fn QDataStream &operator<<(QDataStream &stream, const QIcon &icon)
     \relates QIcon
-    \since 4.2
 
     Writes the given \a icon to the given \a stream as a PNG
     image. If the icon contains more than one image, all images will
@@ -1881,7 +1862,6 @@ QDataStream &operator<<(QDataStream &s, const QIcon &icon)
 /*!
     \fn QDataStream &operator>>(QDataStream &stream, QIcon &icon)
     \relates QIcon
-    \since 4.2
 
     Reads an image, or a set of images, from the given \a stream into
     the given \a icon.

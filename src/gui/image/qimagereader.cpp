@@ -800,8 +800,6 @@ QString QImageReader::fileName() const
 }
 
 /*!
-    \since 4.2
-
     Sets the quality setting of the image format to \a quality.
 
     Some image formats, in particular lossy ones, entail a tradeoff between a)
@@ -825,8 +823,6 @@ void QImageReader::setQuality(int quality)
 }
 
 /*!
-    \since 4.2
-
     Returns the quality setting of the image format.
 
     \sa setQuality()
@@ -856,8 +852,6 @@ QSize QImageReader::size() const
 }
 
 /*!
-    \since 4.5
-
     Returns the format of the image, without actually reading the image
     contents. The format describes the image format \l QImageReader::read()
     returns, not the format of the actual image.
@@ -876,8 +870,6 @@ QImage::Format QImageReader::imageFormat() const
 }
 
 /*!
-    \since 4.1
-
     Returns the text keys for this image. You can use
     these keys with text() to list the image text for
     a certain key.
@@ -894,8 +886,6 @@ QStringList QImageReader::textKeys() const
 }
 
 /*!
-    \since 4.1
-
     Returns the image text associated with \a key.
 
     Support for this option is implemented through
@@ -985,8 +975,6 @@ QRect QImageReader::scaledClipRect() const
 }
 
 /*!
-    \since 4.1
-
     Sets the background color to \a color.
     Image formats that support this operation are expected to
     initialize the background to \a color before reading an image.
@@ -1000,8 +988,6 @@ void QImageReader::setBackgroundColor(const QColor &color)
 }
 
 /*!
-    \since 4.1
-
     Returns the background color that's used when reading an image.
     If the image format does not support setting the background color
     an invalid color is returned.
@@ -1016,8 +1002,6 @@ QColor QImageReader::backgroundColor() const
 }
 
 /*!
-    \since 4.1
-
     Returns \c true if the image format supports animation;
     otherwise, false is returned.
 
@@ -1432,8 +1416,6 @@ QString QImageReader::errorString() const
 }
 
 /*!
-    \since 4.2
-
     Returns \c true if the reader supports \a option; otherwise returns
     false.
 
