@@ -250,7 +250,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     QWidget *pageEdit = new QWidget(toolbar);
     QVBoxLayout *vboxLayout = new QVBoxLayout;
     vboxLayout->setContentsMargins(0, 0, 0, 0);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     // We query the widgets about their size and then we fix the size.
     // This should do the trick for the laying out part...
     QSize pageNumEditSize, pageNumLabelSize;
@@ -260,7 +260,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     pageNumLabel->resize(pageNumLabelSize);
 #endif
     QFormLayout *formLayout = new QFormLayout;
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     // We have to change the growth policy in Mac.
     formLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
 #endif
@@ -310,7 +310,7 @@ void QPrintPreviewDialogPrivate::init(QPrinter *_printer)
     q->setWindowTitle(caption);
 
     if (!printer->isValid()
-#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_OS_APPLE)
         || printer->outputFormat() != QPrinter::NativeFormat
 #endif
         )
@@ -539,7 +539,7 @@ void QPrintPreviewDialogPrivate::_q_print()
 {
     Q_Q(QPrintPreviewDialog);
 
-#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
+#if defined(Q_OS_WIN) || defined(Q_OS_APPLE)
     if (printer->outputFormat() != QPrinter::NativeFormat) {
         QString title = QCoreApplication::translate("QPrintPreviewDialog", "Export to PDF");
         QString suffix = ".pdf"_L1;

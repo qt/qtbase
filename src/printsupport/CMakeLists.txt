@@ -179,7 +179,7 @@ qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printdialog AND WIN3
         dialogs/qprintdialog_win.cpp
 )
 
-qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printdialog AND UNIX AND NOT APPLE
+qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_printdialog AND UNIX AND NOT MACOS
     SOURCES
         dialogs/qpagesetupdialog_unix.cpp dialogs/qpagesetupdialog_unix_p.h
         dialogs/qprintdialog_unix.cpp

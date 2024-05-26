@@ -40,7 +40,7 @@ qt_feature("printer" PUBLIC
     SECTION "Painting"
     LABEL "QPrinter"
     PURPOSE "Provides a printer backend of QPainter."
-    CONDITION NOT UIKIT AND QT_FEATURE_picture AND QT_FEATURE_temporaryfile AND QT_FEATURE_pdf
+    CONDITION QT_FEATURE_picture AND QT_FEATURE_temporaryfile AND QT_FEATURE_pdf
 )
 qt_feature_definition("printer" "QT_NO_PRINTER" NEGATE VALUE "1")
 qt_feature("printpreviewwidget" PUBLIC

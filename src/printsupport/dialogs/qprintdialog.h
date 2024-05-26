@@ -28,7 +28,7 @@ public:
     ~QPrintDialog();
 
     int exec() override;
-#if defined (Q_OS_UNIX) && !defined(Q_OS_MAC)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACOS)
     virtual void accept() override;
 #endif
     void done(int result) override;
@@ -55,7 +55,7 @@ Q_SIGNALS:
     void accepted(QPrinter *printer);
 
 private:
-#if defined (Q_OS_UNIX) && !defined(Q_OS_MAC)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACOS)
     Q_PRIVATE_SLOT(d_func(), void _q_togglePageSetCombo(bool))
     Q_PRIVATE_SLOT(d_func(), void _q_collapseOrExpandDialog())
 #if QT_CONFIG(messagebox)

@@ -25,7 +25,7 @@ public:
     explicit QPageSetupDialog(QWidget *parent = nullptr);
     ~QPageSetupDialog();
 
-#if defined(Q_OS_MAC) || defined(Q_OS_WIN) || defined(Q_QDOC)
+#if defined(Q_OS_MACOS) || defined(Q_OS_WIN) || defined(Q_QDOC)
     void setVisible(bool visible) override;
 #endif
     int exec() override;

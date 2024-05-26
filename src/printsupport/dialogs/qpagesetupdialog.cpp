@@ -100,7 +100,7 @@ void QPageSetupDialog::open(QObject *receiver, const char *member)
     QDialog::open();
 }
 
-#if defined(Q_OS_MAC) || defined(Q_OS_WIN)
+#if defined(Q_OS_MACOS) || defined(Q_OS_WIN)
 /*! \fn void QPageSetupDialog::setVisible(bool visible)
     \reimp
 */
