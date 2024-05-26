@@ -810,10 +810,10 @@ QByteArray qdtoAscii(double d, QLocaleData::DoubleForm form, int precision, bool
 #if defined(QT_SUPPORTS_INT128) || (defined(Q_CC_MSVC) && (_MSC_VER >= 1930))
 static inline quint64 toUInt64(qinternaluint128 v)
 {
-#ifdef Q_CC_MSVC
-    return quint64(v._Word[0]);
-#else
+#ifdef QT_SUPPORTS_INT128
     return quint64(v);
+#elif defined(Q_CC_MSVC)
+    return quint64(v._Word[0]);
 #endif
 }
 QString quint128toBasicLatin(qinternaluint128 number, int base)

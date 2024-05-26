@@ -18,13 +18,16 @@
 #include "qlocale_p.h"
 #include "qstring.h"
 
+#if !defined(QT_SUPPORTS_INT128) && defined(Q_CC_MSVC) && (_MSC_VER >= 1930)
+#include <__msvc_int128.hpp>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if defined(QT_SUPPORTS_INT128)
 using qinternalint128 = qint128;
 using qinternaluint128 = quint128;
 #elif defined(Q_CC_MSVC) && (_MSC_VER >= 1930)
-#include <__msvc_int128.hpp>
 using qinternalint128 = std::_Signed128;
 using qinternaluint128 = std::_Unsigned128;
 #endif
