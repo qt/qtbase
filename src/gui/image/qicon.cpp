@@ -32,6 +32,33 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+// Convenience class providing a bool read() function.
+namespace {
+class ImageReader
+{
+public:
+    ImageReader(const QString &fileName) : m_reader(fileName), m_atEnd(false) { }
+
+    QByteArray format() const { return m_reader.format(); }
+
+    bool read(QImage *image)
+    {
+        if (m_atEnd)
+            return false;
+        *image = m_reader.read();
+        if (!image->size().isValid()) {
+            m_atEnd = true;
+            return false;
+        }
+        m_atEnd = !m_reader.jumpToNextImage();
+        return true;
+    }
+
+private:
+    QImageReader m_reader;
+    bool m_atEnd;
+};
+} // namespace
 
 /*!
     \enum QIcon::Mode
@@ -150,7 +177,7 @@ void QPixmapIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode 
     painter->drawPixmap(rect, px);
 }
 
-static inline int area(const QSize &s) { return s.width() * s.height(); }
+static inline qint64 area(const QSize &s) { return qint64(s.width()) * s.height(); }
 
 // Returns the smallest of the two that is still larger than or equal to size.
 // Pixmaps at the correct scale are preferred, pixmaps at lower scale are
@@ -178,18 +205,18 @@ static QPixmapIconEngineEntry *bestSizeScaleMatch(const QSize &size, qreal scale
         return (qAbs(ascore) < qAbs(bscore)) ? pa : pb;
     }
 
-    int s = area(size);
+    qint64 s = area(size);
     if (pa->size == QSize() && pa->pixmap.isNull()) {
         pa->pixmap = QPixmap(pa->fileName);
         pa->size = pa->pixmap.size();
     }
-    int a = area(pa->size);
+    qint64 a = area(pa->size);
     if (pb->size == QSize() && pb->pixmap.isNull()) {
         pb->pixmap = QPixmap(pb->fileName);
         pb->size = pb->pixmap.size();
     }
-    int b = area(pb->size);
-    int res = a;
+    qint64 b = area(pb->size);
+    qint64 res = a;
     if (qMin(a,b) >= s)
         res = qMin(a,b);
     else
@@ -273,41 +300,30 @@ QPixmap QPixmapIconEngine::pixmap(const QSize &size, QIcon::Mode mode, QIcon::St
 
 QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state, qreal scale)
 {
-
     QPixmap pm;
     QPixmapIconEngineEntry *pe = bestMatch(size, scale, mode, state, false);
     if (pe)
         pm = pe->pixmap;
 
     if (pm.isNull()) {
-        auto idx = pixmaps.size();
-        while (--idx >= 0) {
-            if (pe == &pixmaps.at(idx)) {
-                pixmaps.remove(idx);
-                break;
-            }
-        }
+        removePixmapEntry(pe);
         if (pixmaps.isEmpty())
             return pm;
-        else
-            return pixmap(size, mode, state);
+        return scaledPixmap(size, mode, state, scale);
     }
 
-    QSize actualSize = pm.size();
-    if (!actualSize.isNull() && (actualSize.width() > size.width() || actualSize.height() > size.height()))
-        actualSize.scale(size, Qt::KeepAspectRatio);
-
+    const auto actualSize = adjustSize(size, pm.size());
     QString key = "qt_"_L1
                   % HexString<quint64>(pm.cacheKey())
-                  % HexString<uint>(pe ? pe->mode : QIcon::Normal)
+                  % HexString<quint8>(pe ? pe->mode : QIcon::Normal)
                   % HexString<quint64>(QGuiApplication::palette().cacheKey())
                   % HexString<uint>(actualSize.width())
                   % HexString<uint>(actualSize.height());
 
     if (mode == QIcon::Active) {
-        if (QPixmapCache::find(key % HexString<uint>(mode), &pm))
+        if (QPixmapCache::find(key % HexString<quint8>(mode), &pm))
             return pm; // horray
-        if (QPixmapCache::find(key % HexString<uint>(QIcon::Normal), &pm)) {
+        if (QPixmapCache::find(key % HexString<quint8>(QIcon::Normal), &pm)) {
             QPixmap active = pm;
             if (QGuiApplication *guiApp = qobject_cast<QGuiApplication *>(qApp))
                 active = static_cast<QGuiApplicationPrivate*>(QObjectPrivate::get(guiApp))->applyQIconStyleHelper(QIcon::Active, pm);
@@ -316,7 +332,7 @@ QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIc
         }
     }
 
-    if (!QPixmapCache::find(key % HexString<uint>(mode), &pm)) {
+    if (!QPixmapCache::find(key % HexString<quint8>(mode), &pm)) {
         if (pm.size() != actualSize)
             pm = pm.scaled(actualSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         if (pe->mode != mode && mode != QIcon::Normal) {
@@ -326,7 +342,7 @@ QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIc
             if (!generated.isNull())
                 pm = generated;
         }
-        QPixmapCache::insert(key % HexString<uint>(mode), pm);
+        QPixmapCache::insert(key % HexString<quint8>(mode), pm);
     }
     return pm;
 }
@@ -343,12 +359,7 @@ QSize QPixmapIconEngine::actualSize(const QSize &size, QIcon::Mode mode, QIcon::
     if (QPixmapIconEngineEntry *pe = bestMatch(size, scale, mode, state, true))
         actualSize = pe->size;
 
-    if (actualSize.isNull())
-        return actualSize;
-
-    if (!actualSize.isNull() && (actualSize.width() > size.width() || actualSize.height() > size.height()))
-        actualSize.scale(size, Qt::KeepAspectRatio);
-    return actualSize;
+    return adjustSize(size, actualSize);
 }
 
 QList<QSize> QPixmapIconEngine::availableSizes(QIcon::Mode mode, QIcon::State state)
@@ -395,34 +406,6 @@ static inline int findBySize(const QList<QImage> &images, const QSize &size)
     }
     return -1;
 }
-
-// Convenience class providing a bool read() function.
-namespace {
-class ImageReader
-{
-public:
-    ImageReader(const QString &fileName) : m_reader(fileName), m_atEnd(false) {}
-
-    QByteArray format() const { return m_reader.format(); }
-
-    bool read(QImage *image)
-    {
-        if (m_atEnd)
-            return false;
-        *image = m_reader.read();
-        if (!image->size().isValid()) {
-            m_atEnd = true;
-            return false;
-        }
-        m_atEnd = !m_reader.jumpToNextImage();
-        return true;
-    }
-
-private:
-    QImageReader m_reader;
-    bool m_atEnd;
-};
-} // namespace
 
 void QPixmapIconEngine::addFile(const QString &fileName, const QSize &size, QIcon::Mode mode, QIcon::State state)
 {

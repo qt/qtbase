@@ -34,7 +34,7 @@ public:
         delete engine;
     }
 
-    qreal pixmapDevicePixelRatio(qreal displayDevicePixelRatio, const QSize &requestedSize, const QSize &actualSize);
+    static qreal pixmapDevicePixelRatio(qreal displayDevicePixelRatio, const QSize &requestedSize, const QSize &actualSize);
 
     QIconEngine *engine;
 
@@ -89,7 +89,24 @@ public:
     bool read(QDataStream &in) override;
     bool write(QDataStream &out) const override;
 
+    static inline QSize adjustSize(const QSize &expectedSize, QSize size)
+    {
+        if (!size.isNull() && (size.width() > expectedSize.width() || size.height() > expectedSize.height()))
+            size.scale(expectedSize, Qt::KeepAspectRatio);
+        return size;
+    }
+
 private:
+    void removePixmapEntry(QPixmapIconEngineEntry *pe)
+    {
+        auto idx = pixmaps.size();
+        while (--idx >= 0) {
+            if (pe == &pixmaps.at(idx)) {
+                pixmaps.remove(idx);
+                return;
+            }
+        }
+    }
     QPixmapIconEngineEntry *tryMatch(const QSize &size, qreal scale, QIcon::Mode mode, QIcon::State state);
     QList<QPixmapIconEngineEntry> pixmaps;
 

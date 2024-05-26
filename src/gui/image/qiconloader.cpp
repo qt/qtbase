@@ -894,18 +894,15 @@ QPixmap PixmapEntry::pixmap(const QSize &size, QIcon::Mode mode, QIcon::State st
     if (basePixmap.isNull())
         basePixmap.load(filename);
 
-    QSize actualSize = basePixmap.size();
     // If the size of the best match we have (basePixmap) is larger than the
     // requested size, we downscale it to match.
-    if (!actualSize.isNull() && (actualSize.width() > size.width() || actualSize.height() > size.height()))
-        actualSize.scale(size, Qt::KeepAspectRatio);
-
+    const auto actualSize = QPixmapIconEngine::adjustSize(size, basePixmap.size());
     QString key = "$qt_theme_"_L1
-                  % HexString<qint64>(basePixmap.cacheKey())
-                  % HexString<int>(mode)
-                  % HexString<qint64>(QGuiApplication::palette().cacheKey())
-                  % HexString<int>(actualSize.width())
-                  % HexString<int>(actualSize.height());
+                  % HexString<quint64>(basePixmap.cacheKey())
+                  % HexString<quint8>(mode)
+                  % HexString<quint64>(QGuiApplication::palette().cacheKey())
+                  % HexString<uint>(actualSize.width())
+                  % HexString<uint>(actualSize.height());
 
     QPixmap cachedPixmap;
     if (QPixmapCache::find(key, &cachedPixmap)) {
