@@ -1040,12 +1040,14 @@ bool QJsonValue::operator!=(const QJsonValue &other) const
 
 #include "qline.h" // inlined API
 
+#if QT_CONFIG(mimetype)
 #include "qmimetype.h"
 
 bool QMimeType::operator==(const QMimeType &other) const
 {
     return comparesEqual(*this, other);
 }
+#endif // QT_CONFIG(mimetype)
 
 #include "qobject.h"
 #include "qnumeric.h"
