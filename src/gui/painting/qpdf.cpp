@@ -1902,7 +1902,7 @@ int QPdfEnginePrivate::writeXmpDocumentMetaData(const QDateTime &date)
 
     xprintf("<<\n"
             "/Type /Metadata /Subtype /XML\n"
-            "/Length %d\n"
+            "/Length %" PRIdQSIZETYPE "\n"
             ">>\n"
             "stream\n", metaDataContent.size());
     write(metaDataContent);
@@ -2015,7 +2015,7 @@ void QPdfEnginePrivate::writePageRoot()
     xprintf("]\n");
 
     //xprintf("/Group <</S /Transparency /I true /K false>>\n");
-    xprintf("/Count %d\n", pages.size());
+    xprintf("/Count %" PRIdQSIZETYPE "\n", pages.size());
 
     xprintf("/ProcSet [/PDF /Text /ImageB /ImageC]\n"
             ">>\n"
@@ -2211,7 +2211,7 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
     {
         addXrefEntry(toUnicode);
         QByteArray touc = font->createToUnicodeMap();
-        xprintf("<< /Length %d >>\n"
+        xprintf("<< /Length %" PRIdQSIZETYPE " >>\n"
                 "stream\n", touc.size());
         write(touc);
         write("\nendstream\n"
@@ -2247,7 +2247,7 @@ void QPdfEnginePrivate::embedFont(QFontSubset *font)
 
         addXrefEntry(cidset);
         xprintf("<<\n");
-        xprintf("/Length %d\n", cidSetStream.size());
+        xprintf("/Length %" PRIdQSIZETYPE "\n", cidSetStream.size());
         xprintf(">>\n");
         xprintf("stream\n");
         write(cidSetStream);
@@ -2394,7 +2394,7 @@ void QPdfEnginePrivate::writeTail()
 
     addXrefEntry(xrefPositions.size(),false);
     xprintf("xref\n"
-            "0 %d\n"
+            "0 %" PRIdQSIZETYPE "\n"
             "%010d 65535 f \n", xrefPositions.size()-1, xrefPositions[0]);
 
     for (int i = 1; i < xrefPositions.size()-1; ++i)
@@ -3401,7 +3401,7 @@ void QPdfEnginePrivate::drawTextItem(const QPointF &p, const QTextItemInt &ti)
                 xprintf("/F 4\n"); // enable print flag, disable all other
 
             xprintf("/Rect [");
-            xprintf(rectData.constData());
+            write(rectData.constData());
 #ifdef Q_DEBUG_PDF_LINKS
             xprintf("]\n/Border [16 16 1]\n");
 #else

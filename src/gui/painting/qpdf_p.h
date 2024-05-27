@@ -323,7 +323,7 @@ private:
 
     int addXrefEntry(int object, bool printostr = true);
     void printString(QStringView string);
-    void xprintf(const char* fmt, ...);
+    void xprintf(const char* fmt, ...) Q_ATTRIBUTE_FORMAT_PRINTF(2, 3);
     inline void write(QByteArrayView data) {
         stream->writeRawData(data.constData(), data.size());
         streampos += data.size();
