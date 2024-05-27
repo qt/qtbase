@@ -1306,32 +1306,33 @@ QVariant QXcbDropData::retrieveData_sys(const QString &mimetype, QMetaType reque
 
 QVariant QXcbDropData::xdndObtainData(const QByteArray &format, QMetaType requestedType) const
 {
-    QByteArray result;
-
     QXcbConnection *c = drag->connection();
     QXcbWindow *xcb_window = c->platformWindowFromId(drag->xdnd_dragsource);
     if (xcb_window && drag->currentDrag() && xcb_window->window()->type() != Qt::Desktop) {
         QMimeData *data = drag->currentDrag()->mimeData();
         if (data->hasFormat(QLatin1StringView(format)))
-            result = data->data(QLatin1StringView(format));
-        return result;
+            return data->data(QLatin1StringView(format));
+        return QVariant();
     }
 
     QList<xcb_atom_t> atoms = drag->xdnd_types;
     bool hasUtf8 = false;
     xcb_atom_t a = mimeAtomForFormat(c, QLatin1StringView(format), requestedType, atoms, &hasUtf8);
     if (a == XCB_NONE)
-        return result;
+        return QVariant();
 
 #ifndef QT_NO_CLIPBOARD
     if (c->selectionOwner(c->atom(QXcbAtom::AtomXdndSelection)) == XCB_NONE)
-        return result; // should never happen?
+        return QVariant(); // should never happen?
 
     xcb_atom_t xdnd_selection = c->atom(QXcbAtom::AtomXdndSelection);
-    result = c->clipboard()->getSelection(xdnd_selection, a, xdnd_selection, drag->targetTime());
+    const std::optional<QByteArray> result = c->clipboard()->getSelection(xdnd_selection, a, xdnd_selection, drag->targetTime());
+    if (!result.has_value())
+        return QVariant();
+    return mimeConvertToFormat(c, a, result.value(), QLatin1StringView(format), requestedType, hasUtf8);
+#else
+    return QVariant();
 #endif
-
-    return mimeConvertToFormat(c, a, result, QLatin1StringView(format), requestedType, hasUtf8);
 }
 
 bool QXcbDropData::hasFormat_sys(const QString &format) const
