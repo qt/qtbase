@@ -974,12 +974,14 @@ bool QDir::operator==(const QDir &dir) const
     return comparesEqual(*this, dir);
 }
 
+#if QT_CONFIG(easingcurve)
 #include "qeasingcurve.h"
 
 bool QEasingCurve::operator==(const QEasingCurve &other) const
 {
     return comparesEqual(*this, other);
 }
+#endif // QT_CONFIG(easingcurve)
 
 #include "qfileinfo.h" // inlined API
 
