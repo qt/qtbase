@@ -40,6 +40,9 @@ public:
     ImageReader(const QString &fileName) : m_reader(fileName), m_atEnd(false) { }
 
     QByteArray format() const { return m_reader.format(); }
+    bool supportsReadSize() const { return m_reader.supportsOption(QImageIOHandler::Size); }
+    QSize size() const { return m_reader.size(); }
+    bool jumpToNextImage() { return m_reader.jumpToNextImage(); }
 
     bool read(QImage *image)
     {
@@ -422,8 +425,14 @@ void QPixmapIconEngine::addFile(const QString &fileName, const QSize &size, QIco
     QImage image;
     if (format != "ico") {
         if (ignoreSize) { // No size specified: Add all images.
-            while (imageReader.read(&image))
-                pixmaps += QPixmapIconEngineEntry(abs, image, mode, state);
+            if (imageReader.supportsReadSize()) {
+                do {
+                    pixmaps += QPixmapIconEngineEntry(abs, imageReader.size(), mode, state);
+                } while (imageReader.jumpToNextImage());
+            } else {
+                while (imageReader.read(&image))
+                    pixmaps += QPixmapIconEngineEntry(abs, image, mode, state);
+            }
         } else {
             // Try to match size. If that fails, add a placeholder with the filename and empty pixmap for the size.
             while (imageReader.read(&image) && image.size() != size) {}
