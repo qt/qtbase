@@ -104,14 +104,14 @@ public:
     void handleXFixesSelectionRequest(xcb_xfixes_selection_notify_event_t *event);
 
     bool clipboardReadProperty(xcb_window_t win, xcb_atom_t property, bool deleteProperty, QByteArray *buffer, int *size, xcb_atom_t *type, int *format);
-    QByteArray clipboardReadIncrementalProperty(xcb_window_t win, xcb_atom_t property, int nbytes, bool nullterm);
+    std::optional<QByteArray> clipboardReadIncrementalProperty(xcb_window_t win, xcb_atom_t property, int nbytes, bool nullterm);
 
-    QByteArray getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtatom);
+    std::optional<QByteArray> getDataInFormat(xcb_atom_t modeAtom, xcb_atom_t fmtatom);
 
     bool handlePropertyNotify(const xcb_generic_event_t *event);
 
     xcb_window_t getSelectionOwner(xcb_atom_t atom) const;
-    QByteArray getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property, xcb_timestamp_t t = 0);
+    std::optional<QByteArray> getSelection(xcb_atom_t selection, xcb_atom_t target, xcb_atom_t property, xcb_timestamp_t t = 0);
 
     int increment() const { return m_maxPropertyRequestDataBytes; }
     int clipboardTimeout() const { return clipboard_timeout; }
