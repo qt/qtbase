@@ -3,8 +3,10 @@
 
 #include <QTest>
 
+#if QT_CONFIG(http)
 #include <QtNetwork/QHttp1Configuration>
 #include <QtNetwork/QHttp2Configuration>
+#endif
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkCookie>
 
