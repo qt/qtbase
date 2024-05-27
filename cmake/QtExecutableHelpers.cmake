@@ -182,7 +182,7 @@ function(qt_internal_add_executable name)
             qt_get_install_target_default_args(
                 OUT_VAR install_targets_default_args
                 CMAKE_CONFIG "${cmake_config}"
-                ALL_CMAKE_CONFIGS "${cmake_configs}"
+                ALL_CMAKE_CONFIGS ${cmake_configs}
                 RUNTIME "${arg_INSTALL_DIRECTORY}"
                 LIBRARY "${arg_INSTALL_DIRECTORY}"
                 BUNDLE "${arg_INSTALL_DIRECTORY}")
