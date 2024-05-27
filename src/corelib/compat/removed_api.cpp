@@ -1179,7 +1179,9 @@ QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData) noexcept
     return createUuidV5(ns, qToByteArrayViewIgnoringNull(baseData));
 }
 
+#if QT_CONFIG(xmlstream)
 #include "qxmlstream.h" // inlined API
+#endif // QT_CONFIG(xmlstream)
 
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
