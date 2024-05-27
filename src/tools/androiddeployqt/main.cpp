@@ -635,7 +635,7 @@ Optional arguments:
          --tsa <url>: Location of the Time Stamping Authority.
          --tsacert <alias>: Public key certificate for TSA.
          --internalsf: Include the .SF file inside the signature block.
-         --sectionsonly: Don't compute hash of entire manifest.
+         --sectionsonly: Do not compute hash of entire manifest.
          --protected: Keystore has protected authentication path.
          --jarsigner: Deprecated, ignored.
 
@@ -681,7 +681,7 @@ Optional arguments:
     --no-rcc-bundle-cleanup: skip cleaning rcc bundle directory after
        running androiddeployqt. This option simplifies debugging of
        the resource bundle content, but it should not be used when deploying
-       a project, since it litters the 'assets' directory.
+       a project, since it litters the "assets" directory.
 
     --copy-dependencies-only: resolve application dependencies and stop
        deploying process after all libraries and resources that the
