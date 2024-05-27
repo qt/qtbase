@@ -36,6 +36,7 @@ private slots:
     void verticalMetrics();
     void largeText_data();
     void largeText(); // QTBUG-123339
+    void typoLineMetrics();
 };
 
 void tst_QFontMetrics::same()
@@ -408,6 +409,49 @@ void tst_QFontMetrics::largeText()
     QString string(size, QLatin1Char('A'));
     QRect boundingRect = fm.boundingRect(string);
     QVERIFY(boundingRect.isValid());
+}
+
+void tst_QFontMetrics::typoLineMetrics()
+{
+    QString testFont = QFINDTESTDATA("fonts/testfont_linemetrics.otf");
+    QVERIFY(!testFont.isEmpty());
+
+    int id = QFontDatabase::addApplicationFont(testFont);
+    QVERIFY(id >= 0);
+
+    {
+        auto cleanup = qScopeGuard([&id] {
+            if (id >= 0)
+                QFontDatabase::removeApplicationFont(id);
+        });
+
+        QImage img(100, 100, QImage::Format_ARGB32);
+        img.setDevicePixelRatio(1.0);
+        QFont font(QFontDatabase::applicationFontFamilies(id).at(0), &img);
+        font.setPixelSize(18);
+
+        const qreal unitsPerEm = 1000.0;
+
+        QFontMetrics defaultFm(font);
+        const int defaultAscent = defaultFm.ascent();
+        const int defaultDescent = defaultFm.descent();
+        const int defaultLeading = defaultFm.leading();
+
+        QCOMPARE(defaultAscent, qRound(1234.0 / unitsPerEm * font.pixelSize()));
+        QCOMPARE(defaultDescent, qRound(5678.0 / unitsPerEm * font.pixelSize()));
+        QCOMPARE(defaultLeading, 0.0);
+
+        font.setStyleStrategy(QFont::PreferTypoLineMetrics);
+        const QFontMetrics typoFm(font);
+
+        const int typoAscent = typoFm.ascent();
+        const int typoDescent = typoFm.descent();
+        const int typoLeading = typoFm.leading();
+
+        QCOMPARE(typoAscent, qRound(2000.0 / unitsPerEm * font.pixelSize()));
+        QCOMPARE(typoDescent, qRound(3000.0 / unitsPerEm * font.pixelSize()));
+        QCOMPARE(typoLeading, qRound(1000.0 / unitsPerEm * font.pixelSize()));
+    }
 }
 
 QTEST_MAIN(tst_QFontMetrics)

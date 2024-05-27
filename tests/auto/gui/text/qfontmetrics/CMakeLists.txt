@@ -24,8 +24,12 @@ qt_internal_add_test(tst_qfontmetrics
 set_source_files_properties("../../../shared/resources/testfont.ttf"
     PROPERTIES QT_RESOURCE_ALIAS "testfont.ttf"
 )
+set_source_files_properties("../../../shared/resources/testfont_linemetrics.otf"
+    PROPERTIES QT_RESOURCE_ALIAS "testfont_linemetrics.otf"
+)
 set(testfont_resource_files
     "../../../shared/resources/testfont.ttf"
+    "../../../shared/resources/testfont_linemetrics.otf"
     "ucs4font.ttf"
 )
 

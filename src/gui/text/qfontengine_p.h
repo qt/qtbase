@@ -148,6 +148,7 @@ public:
         return subPixelPositionFor(QFixedPoint(x, 0)).x;
     }
 
+    bool preferTypoLineMetrics() const;
     bool isColorFont() const { return glyphFormat == Format_ARGB; }
     static bool isIgnorableChar(char32_t ucs4)
     {

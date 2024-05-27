@@ -1470,6 +1470,23 @@ QFont::StyleHint QFont::styleHint() const
            font that matches the largest subset of the input string instead. This will be more
            expensive for strings where missing glyphs occur, but may give more consistent results.
            If \c NoFontMerging is set, then \c ContextFontMerging will have no effect.
+    \value [since 6.8] PreferTypoLineMetrics For compatibility reasons, OpenType fonts contain
+           two competing sets of the vertical line metrics that provide the
+           \l{QFontMetricsF::ascent()}{ascent}, \l{QFontMetricsF::descent()}{descent} and
+           \l{QFontMetricsF::leading()}{leading} of the font. These are often referred to as the
+           \l{https://learn.microsoft.com/en-us/typography/opentype/spec/os2#uswinascent}{win}
+           (Windows) metrics and the
+           \l{https://learn.microsoft.com/en-us/typography/opentype/spec/os2#sta}{typo}
+           (typographical) metrics. While the specification recommends using the \c typo metrics for
+           line spacing, many applications prefer the \c win metrics unless the \c{USE_TYPO_METRICS}
+           flag is set in the
+           \l{https://learn.microsoft.com/en-us/typography/opentype/spec/os2#fsselection}{fsSelection}
+           field of the font. For backwards-compatibility reasons, this is also the case for Qt
+           applications. This is not an issue for fonts that set the \c{USE_TYPO_METRICS} flag to
+           indicate that the \c{typo} metrics are valid, nor for fonts where the \c{win} metrics
+           and \c{typo} metrics match up. However, for certain fonts the \c{win} metrics may be
+           larger than the preferable line spacing and the \c{USE_TYPO_METRICS} flag may be unset
+           by mistake. For such fonts, setting \c{PreferTypoLineMetrics} may give superior results.
     \value NoFontMerging If the font selected for a certain writing system
            does not contain a character requested to draw, then Qt automatically chooses a similar
            looking font that contains the character. The NoFontMerging flag disables this feature.

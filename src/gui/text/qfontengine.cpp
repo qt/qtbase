@@ -430,6 +430,11 @@ void QFontEngine::initializeHeightMetrics() const
     m_heightMetricsQueried = true;
 }
 
+bool QFontEngine::preferTypoLineMetrics() const
+{
+    return (fontDef.styleStrategy & QFont::PreferTypoLineMetrics) != 0;
+}
+
 bool QFontEngine::processOS2Table() const
 {
     QByteArray os2 = getSfntTable(QFont::Tag("OS/2").value());
@@ -444,7 +449,7 @@ bool QFontEngine::processOS2Table() const
 
         enum { USE_TYPO_METRICS = 0x80 };
         QFixed unitsPerEm = emSquareSize();
-        if (fsSelection & USE_TYPO_METRICS) {
+        if (preferTypoLineMetrics() || fsSelection & USE_TYPO_METRICS) {
             // Some fonts may have invalid OS/2 data. We detect this and bail out.
             if (typoAscent == 0 && typoDescent == 0)
                 return false;

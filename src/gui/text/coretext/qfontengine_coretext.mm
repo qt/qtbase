@@ -336,7 +336,10 @@ void QCoreTextFontEngine::initializeHeightMetrics() const
     m_descent = QFixed::fromReal(CTFontGetDescent(ctfont));
     m_leading = QFixed::fromReal(CTFontGetLeading(ctfont));
 
-    m_heightMetricsQueried = true;
+    if (preferTypoLineMetrics())
+        QFontEngine::initializeHeightMetrics();
+    else
+        m_heightMetricsQueried = true;
 }
 
 QFixed QCoreTextFontEngine::capHeight() const

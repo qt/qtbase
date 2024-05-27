@@ -36,19 +36,20 @@ public:
     Q_ENUM(StyleHint)
 
     enum StyleStrategy {
-        PreferDefault       = 0x0001,
-        PreferBitmap        = 0x0002,
-        PreferDevice        = 0x0004,
-        PreferOutline       = 0x0008,
-        ForceOutline        = 0x0010,
-        PreferMatch         = 0x0020,
-        PreferQuality       = 0x0040,
-        PreferAntialias     = 0x0080,
-        NoAntialias         = 0x0100,
-        NoSubpixelAntialias = 0x0800,
-        PreferNoShaping     = 0x1000,
-        ContextFontMerging  = 0x2000,
-        NoFontMerging       = 0x8000
+        PreferDefault           = 0x0001,
+        PreferBitmap            = 0x0002,
+        PreferDevice            = 0x0004,
+        PreferOutline           = 0x0008,
+        ForceOutline            = 0x0010,
+        PreferMatch             = 0x0020,
+        PreferQuality           = 0x0040,
+        PreferAntialias         = 0x0080,
+        NoAntialias             = 0x0100,
+        NoSubpixelAntialias     = 0x0800,
+        PreferNoShaping         = 0x1000,
+        ContextFontMerging      = 0x2000,
+        PreferTypoLineMetrics   = 0x4000,
+        NoFontMerging           = 0x8000
     };
     Q_ENUM(StyleStrategy)
 
