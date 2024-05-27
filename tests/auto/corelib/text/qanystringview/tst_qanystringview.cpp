@@ -370,6 +370,7 @@ private Q_SLOTS:
         fromCharacter(QChar::ReplacementCharacter, 1);
         fromCharacter(QChar::LastValidCodePoint, 1);
     }
+    void fromCharacterSpecial() const;
 
     void fromChar16TStar() const { fromLiteral(u"Hello, World!"); }
     void fromWCharTStar() const { ONLY_WIN(fromLiteral(L"Hello, World!")); }
@@ -608,6 +609,14 @@ void tst_QAnyStringView::asciiLiteralIsLatin1() const
     } else {
         QSKIP("Compile-detection of US-ASCII strings not possible with this compiler");
     }
+}
+
+void tst_QAnyStringView::fromCharacterSpecial() const
+{
+    QEXPECT_FAIL("", "QTBUG-125730", Continue);
+    // Treating 'ä' as a UTF-8 sequence doesn't make sense, as it would be
+    // invalid. And this is not how legacy Qt APIs handled it, either:
+    QCOMPARE_NE(QAnyStringView('\xE4').tag(), QAnyStringView::Tag::Utf8);
 }
 
 template <typename StringBuilder>
