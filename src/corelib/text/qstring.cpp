@@ -1548,6 +1548,8 @@ int QtPrivate::compareStrings(QLatin1StringView lhs, QLatin1StringView rhs, Qt::
 {
     if (lhs.isEmpty())
         return qt_lencmp(qsizetype(0), rhs.size());
+    if (rhs.isEmpty())
+        return qt_lencmp(lhs.size(), qsizetype(0));
     if (cs == Qt::CaseInsensitive)
         return latin1nicmp(lhs.data(), lhs.size(), rhs.data(), rhs.size());
     const auto l = std::min(lhs.size(), rhs.size());
