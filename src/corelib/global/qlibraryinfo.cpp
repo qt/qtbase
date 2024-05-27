@@ -537,7 +537,18 @@ QStringList QLibraryInfo::paths(LibraryPath p)
     return QLibraryInfoPrivate::paths(p);
 }
 
+static bool keepQtBuildDefaults()
+{
+#if QT_CONFIG(settings)
+    QSettings *config = QLibraryInfoPrivate::configuration();
+    Q_ASSERT(config != nullptr);
+    return config->value("Config/MergeQtConf", false).toBool();
+#else
+    return false;
+#endif
+}
 
+#if QT_CONFIG(settings)
 static QString normalizePath(QString ret)
 {
     qsizetype startIndex = 0;
@@ -566,18 +577,6 @@ static QString normalizePath(QString ret)
     return QDir::fromNativeSeparators(ret);
 };
 
-static bool keepQtBuildDefaults()
-{
-#if QT_CONFIG(settings)
-    QSettings *config = QLibraryInfoPrivate::configuration();
-    Q_ASSERT(config != nullptr);
-    return config->value("Config/MergeQtConf", false).toBool();
-#else
-    return false;
-#endif
-}
-
-#if QT_CONFIG(settings)
 static QVariant libraryPathToValue(QLibraryInfo::LibraryPath loc)
 {
     QVariant value;
