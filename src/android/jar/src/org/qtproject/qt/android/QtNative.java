@@ -30,15 +30,16 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-class QtNative
+// ### Qt7: make private and find new API for onNewIntent()
+public class QtNative
 {
     private static WeakReference<Activity> m_activity = null;
     private static WeakReference<Service> m_service = null;
-    public static final Object m_mainActivityMutex = new Object(); // mutex used to synchronize runnable operations
+    private static final Object m_mainActivityMutex = new Object(); // mutex used to synchronize runnable operations
 
     private static final ApplicationStateDetails m_stateDetails = new ApplicationStateDetails();
 
-    public static final String QtTAG = "Qt JAVA";
+    static final String QtTAG = "Qt JAVA";
 
     // a list containing all actions which could not be performed (e.g. the main activity is destroyed, etc.)
     private static final ArrayList<Runnable> m_lostActions = new ArrayList<>();
@@ -51,24 +52,24 @@ class QtNative
     private static final Object m_appStateListenersLock = new Object();
 
     @UsedFromNativeCode
-    public static ClassLoader classLoader()
+    static ClassLoader classLoader()
     {
         return m_classLoader;
     }
 
-    public static void setClassLoader(ClassLoader classLoader)
+    static void setClassLoader(ClassLoader classLoader)
     {
             m_classLoader = classLoader;
     }
 
-    public static void setActivity(Activity qtMainActivity)
+    static void setActivity(Activity qtMainActivity)
     {
         synchronized (m_mainActivityMutex) {
             m_activity = new WeakReference<>(qtMainActivity);
         }
     }
 
-    public static void setService(Service qtMainService)
+    static void setService(Service qtMainService)
     {
         synchronized (m_mainActivityMutex) {
             m_service = new WeakReference<>(qtMainService);
@@ -76,40 +77,40 @@ class QtNative
     }
 
     @UsedFromNativeCode
-    public static Activity activity()
+    static Activity activity()
     {
         synchronized (m_mainActivityMutex) {
             return m_activity != null ? m_activity.get() : null;
         }
     }
 
-    public static boolean isActivityValid()
+    static boolean isActivityValid()
     {
         return m_activity != null && m_activity.get() != null;
     }
 
     @UsedFromNativeCode
-    public static Service service()
+    static Service service()
     {
         synchronized (m_mainActivityMutex) {
             return m_service != null ? m_service.get() : null;
         }
     }
 
-    public static boolean isServiceValid()
+    static boolean isServiceValid()
     {
         return m_service != null && m_service.get() != null;
     }
 
     @UsedFromNativeCode
-    public static Context getContext() {
+    static Context getContext() {
         if (isActivityValid())
             return m_activity.get();
         return service();
     }
 
     @UsedFromNativeCode
-    public static String[] getStringArray(String joinedString)
+    static String[] getStringArray(String joinedString)
     {
         return joinedString.split(",");
     }
@@ -162,7 +163,7 @@ class QtNative
     }
 
     @UsedFromNativeCode
-    public static boolean openURL(Context context, String url, String mime)
+    static boolean openURL(Context context, String url, String mime)
     {
         final Uri uri = getUriWithValidPermission(context, url, "r");
         if (uri == null) {
@@ -201,39 +202,39 @@ class QtNative
     }
 
     // Keep in sync with src/corelib/global/qnamespace.h
-    public static class ApplicationState {
+    static class ApplicationState {
         static final int ApplicationSuspended = 0x0;
         static final int ApplicationHidden = 0x1;
         static final int ApplicationInactive = 0x2;
         static final int ApplicationActive = 0x4;
     }
 
-    public static class ApplicationStateDetails {
+    static class ApplicationStateDetails {
         int state = ApplicationState.ApplicationSuspended;
         boolean nativePluginIntegrationReady = false;
         boolean isStarted = false;
     }
 
-    public static ApplicationStateDetails getStateDetails()
+    static ApplicationStateDetails getStateDetails()
     {
         return m_stateDetails;
     }
 
-    public static void setStarted(boolean started)
+    static void setStarted(boolean started)
     {
         m_stateDetails.isStarted = started;
         notifyAppStateDetailsChanged(m_stateDetails);
     }
 
     @UsedFromNativeCode
-    public static void notifyNativePluginIntegrationReady(boolean ready)
+    static void notifyNativePluginIntegrationReady(boolean ready)
     {
         m_stateDetails.nativePluginIntegrationReady = ready;
         notifyNativePluginIntegrationReadyChanged(ready);
         notifyAppStateDetailsChanged(m_stateDetails);
     }
 
-    public static void setApplicationState(int state)
+    static void setApplicationState(int state)
     {
         synchronized (m_mainActivityMutex) {
             m_stateDetails.state = state;
@@ -276,12 +277,12 @@ class QtNative
 
     // Post a runnable to Main (UI) Thread if the app is active,
     // otherwise, queue it to be posted when the the app is active again
-    public static void runAction(Runnable action)
+    static void runAction(Runnable action)
     {
         runAction(action, true);
     }
 
-    public static void runAction(Runnable action, boolean queueWhenInactive)
+    static void runAction(Runnable action, boolean queueWhenInactive)
     {
         synchronized (m_mainActivityMutex) {
             final Looper mainLooper = Looper.getMainLooper();
@@ -328,7 +329,7 @@ class QtNative
         runAction(() -> view.setVisibility(visible ? View.VISIBLE : View.GONE));
     }
 
-    public static void startApplication(String params, String mainLib)
+    static void startApplication(String params, String mainLib)
     {
         synchronized (m_mainActivityMutex) {
             m_qtThread.run(() -> {
@@ -343,7 +344,7 @@ class QtNative
         }
     }
 
-    public static void quitApp()
+    static void quitApp()
     {
         runAction(() -> {
             quitQtAndroidPlugin();
@@ -357,7 +358,7 @@ class QtNative
     }
 
     @UsedFromNativeCode
-    public static int checkSelfPermission(String permission)
+    static int checkSelfPermission(String permission)
     {
         synchronized (m_mainActivityMutex) {
             Context context = getContext();
@@ -419,43 +420,43 @@ class QtNative
     }
 
     // application methods
-    public static native boolean startQtAndroidPlugin(String params);
-    public static native void startQtApplication();
-    public static native void waitForServiceSetup();
-    public static native void quitQtCoreApplication();
-    public static native void quitQtAndroidPlugin();
-    public static native void terminateQt();
-    public static native boolean updateNativeActivity();
+    static native boolean startQtAndroidPlugin(String params);
+    static native void startQtApplication();
+    static native void waitForServiceSetup();
+    static native void quitQtCoreApplication();
+    static native void quitQtAndroidPlugin();
+    static native void terminateQt();
+    static native boolean updateNativeActivity();
     // application methods
 
     // window methods
-    public static native void updateWindow();
+    static native void updateWindow();
     // window methods
 
     // application methods
-    public static native void updateApplicationState(int state);
+    static native void updateApplicationState(int state);
 
     // menu methods
-    public static native boolean onPrepareOptionsMenu(Menu menu);
-    public static native boolean onOptionsItemSelected(int itemId, boolean checked);
-    public static native void onOptionsMenuClosed(Menu menu);
+    static native boolean onPrepareOptionsMenu(Menu menu);
+    static native boolean onOptionsItemSelected(int itemId, boolean checked);
+    static native void onOptionsMenuClosed(Menu menu);
 
-    public static native void onCreateContextMenu(ContextMenu menu);
-    public static native void fillContextMenu(Menu menu);
-    public static native boolean onContextItemSelected(int itemId, boolean checked);
-    public static native void onContextMenuClosed(Menu menu);
+    static native void onCreateContextMenu(ContextMenu menu);
+    static native void fillContextMenu(Menu menu);
+    static native boolean onContextItemSelected(int itemId, boolean checked);
+    static native void onContextMenuClosed(Menu menu);
     // menu methods
 
     // activity methods
-    public static native void onActivityResult(int requestCode, int resultCode, Intent data);
+    static native void onActivityResult(int requestCode, int resultCode, Intent data);
     public static native void onNewIntent(Intent data);
 
-    public static native void runPendingCppRunnables();
+    static native void runPendingCppRunnables();
 
-    public static native void sendRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
+    static native void sendRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults);
     // activity methods
 
     // service methods
-    public static native IBinder onBind(Intent intent);
+    static native IBinder onBind(Intent intent);
     // service methods
 }
