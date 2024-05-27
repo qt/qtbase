@@ -990,7 +990,9 @@ bool QFileInfo::operator==(const QFileInfo &fileinfo) const
     return comparesEqual(*this, fileinfo);
 }
 
+#if QT_CONFIG(itemmodel)
 #include "qitemselectionmodel.h" // inlined API
+#endif // itemmodel
 
 #include "qjsonarray.h"
 
