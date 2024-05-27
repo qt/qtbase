@@ -153,6 +153,15 @@ private:
         QChar ch;
     };
 
+    template <typename Char>
+    static constexpr QAnyStringView fromCharInternal(const Char &ch) noexcept
+    {
+        if constexpr (sizeof ch == 1) // even char8_t is Latin-1 as single octet
+            return QtPrivate::wrapped_t<Char, QLatin1StringView>{QByteArrayView{&ch, 1}};
+        else // sizeof ch == 2
+            return {&ch, 1};
+    }
+
     explicit constexpr QAnyStringView(const void *d, qsizetype n, std::size_t sizeAndType) noexcept
         : m_data{d}, m_size{std::size_t(n) | (sizeAndType & TypeMask)} {}
 public:
@@ -204,7 +213,7 @@ public:
         : QAnyStringView(capacity = std::forward<Container>(c)) {}
     template <typename Char, if_compatible_char<Char> = true>
     constexpr QAnyStringView(const Char &c) noexcept
-        : QAnyStringView{&c, 1} {}
+        : QAnyStringView{fromCharInternal(c)} {}
     template <typename Char, if_convertible_to<QChar, Char> = true>
     constexpr QAnyStringView(Char ch, QCharContainer &&capacity = QCharContainer()) noexcept
         : QAnyStringView{&(capacity.ch = ch), 1} {}

@@ -613,10 +613,13 @@ void tst_QAnyStringView::asciiLiteralIsLatin1() const
 
 void tst_QAnyStringView::fromCharacterSpecial() const
 {
-    QEXPECT_FAIL("", "QTBUG-125730", Continue);
     // Treating 'ä' as a UTF-8 sequence doesn't make sense, as it would be
     // invalid. And this is not how legacy Qt APIs handled it, either:
     QCOMPARE_NE(QAnyStringView('\xE4').tag(), QAnyStringView::Tag::Utf8);
+
+    // Latin1 is expected, but UTF-16 is harmless (atm, QL1C is converted to
+    // QChar, thus UTF-16). We only care that it's not UTF-8, anyway:
+    QCOMPARE_NE(QAnyStringView(QLatin1Char('\xE4')).tag(), QAnyStringView::Tag::Utf8);
 }
 
 template <typename StringBuilder>
