@@ -1,3 +1,5 @@
+# Copyright (C) 2024 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
 set(gradle_programs
     "${CMAKE_CURRENT_SOURCE_DIR}/gradlew"
 )

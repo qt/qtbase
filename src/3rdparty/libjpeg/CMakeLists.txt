@@ -1,3 +1,5 @@
+# Copyright (C) 2024 The Qt Company Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
 set(jpeg16_original_sources
     src/jcapistd.c
     src/jccolor.c
@@ -149,4 +151,3 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU"
     OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     target_compile_options(BundledLibjpeg PRIVATE "-Wno-unused-parameter")
 endif()
-
