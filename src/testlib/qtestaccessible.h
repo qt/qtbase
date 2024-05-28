@@ -228,6 +228,17 @@ private:
             newEvent->setLastRow(oldEvent->lastRow());
             newEvent->setLastColumn(oldEvent->lastColumn());
             ev = newEvent;
+        } else if (event->type() == QAccessible::Announcement) {
+            QAccessibleAnnouncementEvent *oldEvent =
+                    static_cast<QAccessibleAnnouncementEvent *>(event);
+            QAccessibleAnnouncementEvent *newEvent;
+            if (event->object())
+                newEvent = new QAccessibleAnnouncementEvent(event->object(), oldEvent->message());
+            else
+                newEvent = new QAccessibleAnnouncementEvent(event->accessibleInterface(),
+                                                            oldEvent->message());
+            newEvent->setPriority(oldEvent->priority());
+            ev = newEvent;
         } else {
             if (event->object())
                 ev = new QAccessibleEvent(event->object(), event->type());
