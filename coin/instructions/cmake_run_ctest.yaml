@@ -104,14 +104,37 @@ instructions:
           property: features
           contains_value: TestOnly
 
-  - type: ExecuteCommand
-    command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
-    executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
-    ignoreExitCode: false
-    maxTimeInSeconds: 10800
-    maxTimeBetweenOutput: "{{.Env.COIN_COMMAND_OUTPUT_TIMEOUT}}"
-    userMessageOnFailure: >
-      Failed to run tests.
+  # Run CTest, with or without ignoring exit code
+  # FIXME: De-duplicate the CTest instruction when
+  # ignoreExitCode expands environment variables.
+  - type: Group
+    enable_if:
+      condition: runtime
+      env_var: COIN_CTEST_IGNORE_EXIT_CODE
+      not_equals_value: "1"
+    instructions:
+      - type: ExecuteCommand
+        command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
+        executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+        ignoreExitCode: false
+        maxTimeInSeconds: 10800
+        maxTimeBetweenOutput: "{{.Env.COIN_COMMAND_OUTPUT_TIMEOUT}}"
+        userMessageOnFailure: >
+          Failed to run tests.
+  - type: Group
+    enable_if:
+      condition: runtime
+      env_var: COIN_CTEST_IGNORE_EXIT_CODE
+      equals_value: "1"
+    instructions:
+      - type: ExecuteCommand
+        command: "{{.Env.TESTS_ENV_PREFIX}} ctest {{.Env.CTEST_ARGS}}"
+        executeCommandArgumentSplitingBehavior: SplitAfterVariableSubstitution
+        ignoreExitCode: true
+        maxTimeInSeconds: 10800
+        maxTimeBetweenOutput: "{{.Env.COIN_COMMAND_OUTPUT_TIMEOUT}}"
+        userMessageOnFailure: >
+          Failed to run tests.
 
   - type: Group
     instructions:

@@ -5,6 +5,9 @@ instructions:
       - !include "{{qt/qtbase}}/coin_module_test_template_common.yaml"
       - type: Group
         instructions:
+          - type: EnvironmentVariable
+            variableName: COIN_CTEST_IGNORE_EXIT_CODE
+            variableValue: "1"
           - !include "{{qt/qtbase}}/cmake_regular_test_instructions.yaml"
         enable_if:
           condition: or
