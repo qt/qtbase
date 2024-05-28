@@ -406,6 +406,14 @@ QHttpMultiPartPrivate::QHttpMultiPartPrivate() : contentType(QHttpMultiPart::Mix
     Q_ASSERT(boundary.size() <= 70);
 }
 
+QHttpMultiPartPrivate::~QHttpMultiPartPrivate()
+{
+    delete device;
+}
+
+QHttpMultiPartIODevice::~QHttpMultiPartIODevice()
+    = default;
+
 qint64 QHttpMultiPartIODevice::size() const
 {
     // if not done yet, we calculate the size and the offsets of each part,
