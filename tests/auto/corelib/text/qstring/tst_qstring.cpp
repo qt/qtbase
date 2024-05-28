@@ -6642,9 +6642,18 @@ void tst_QString::arg()
     // number overloads
     QCOMPARE( s4.arg(0), QLatin1String("[0]") );
     QCOMPARE( s4.arg(-1), QLatin1String("[-1]") );
+    QCOMPARE( s4.arg(0U), QLatin1String("[0]"));
+    QCOMPARE( s4.arg(short(-4200)), QLatin1String("[-4200]"));
+    QCOMPARE( s4.arg(ushort(42000)), QLatin1String("[42000]"));
     QCOMPARE( s4.arg(4294967295UL), QLatin1String("[4294967295]") ); // ULONG_MAX 32
     QCOMPARE( s4.arg(Q_INT64_C(9223372036854775807)), // LLONG_MAX
              QLatin1String("[9223372036854775807]") );
+
+    // char-ish overloads
+    QCOMPARE(s4.arg('\xE4'), QStringView(u"[ä]"));
+    QEXPECT_FAIL("", "QTBUG-125588", Continue);
+    QCOMPARE(s4.arg(u'ø'), QStringView(u"[ø]"));
+    //QCOMPARE(s4.arg(u8'a'), QLatin1String("[a]"));
 
     QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: , foo");
     QCOMPARE(QString().arg(foo), QString());
