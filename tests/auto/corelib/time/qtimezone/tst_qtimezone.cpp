@@ -1849,18 +1849,10 @@ void tst_QTimeZone::stdCompatibility()
     QFETCH(const std::chrono::time_zone *, timeZone);
     QByteArrayView zoneName = QByteArrayView(timeZone->name());
     QTimeZone tz = QTimeZone::fromStdTimeZonePtr(timeZone);
-    if (tz.isValid()) {
+    if (tz.isValid())
         QCOMPARE(tz.id(), zoneName);
-    } else {
-        // QTBUG-102187: a few timezones reported by tzdb might not be
-        // recognized by QTimeZone. This happens for instance on Windows, where
-        // tzdb is using ICU, whose database does not match QTimeZone's.
-        const bool isKnownUnknown =
-                !zoneName.contains('/')
-                || zoneName == "Antarctica/Troll"
-                || zoneName.startsWith("SystemV/");
-        QVERIFY(isKnownUnknown);
-    }
+    else
+        QVERIFY(!QTimeZone::isTimeZoneIdAvailable(zoneName.toByteArray()));
 #else
     QSKIP("This test requires C++20's <chrono>.");
 #endif
