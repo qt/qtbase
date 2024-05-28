@@ -4698,16 +4698,25 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     \sa {Qt's Property System}
 */
 
-
 /*!
     \macro Q_OBJECT
     \relates QObject
 
-    The Q_OBJECT macro must appear in the private section of a class
-    definition that declares its own signals and slots or that uses
-    other services provided by Qt's meta-object system.
+    The Q_OBJECT macro is used to enable meta-object features, such as dynamic
+    properties, signals, and slots.
 
-    For example:
+    You can add the Q_OBJECT macro to any section of a class definition that
+    declares its own signals and slots or that uses other services provided by
+    Qt's meta-object system.
+
+//! [qobject-macros-private-access-specifier]
+    \note This macro expansion ends with a \c private: access specifier. If you
+    declare members immediately after this macro, those members will also be
+    private. To add public (or protected) members right after the macro, use a
+    \c {public:} (or \c {protected:}) access specifier.
+//! [qobject-macros-private-access-specifier]
+
+    Example:
 
     \snippet signalsandslots/signalsandslots.h 1
     \codeline
@@ -4715,15 +4724,8 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     \snippet signalsandslots/signalsandslots.h 3
 
     \note This macro requires the class to be a subclass of QObject. Use
-    Q_GADGET or Q_GADGET_EXPORT instead of Q_OBJECT to enable the meta object system's support
-    for enums in a class that is not a QObject subclass.
-
-//! [qobject-macros-private-access-specifier]
-    \note This macro expansion ends with a \c private: access specifier, which makes member
-    declarations immediately after the macro private, too. If you want add public (or protected)
-    members immediately after the macro, you need to use a \c public: (or \c protected:)
-    access specifier.
-//! [qobject-macros-private-access-specifier]
+    Q_GADGET or Q_GADGET_EXPORT instead of Q_OBJECT to enable the meta object
+    system's support for enums in a class that is not a QObject subclass.
 
     \sa {Meta-Object System}, {Signals and Slots}, {Qt's Property System}
 */
@@ -4734,8 +4736,9 @@ QDebug operator<<(QDebug dbg, const QObject *o)
 
     The Q_GADGET macro is a lighter version of the Q_OBJECT macro for classes
     that do not inherit from QObject but still want to use some of the
-    reflection capabilities offered by QMetaObject. Just like the Q_OBJECT
-    macro, it must appear in the private section of a class definition.
+    reflection capabilities offered by QMetaObject.
+
+    \include qobject.cpp qobject-macros-private-access-specifier
 
     Q_GADGETs can have Q_ENUM, Q_PROPERTY and Q_INVOKABLE, but they cannot have
     signals or slots.
@@ -4743,8 +4746,6 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     Q_GADGET makes a class member, \c{staticMetaObject}, available.
     \c{staticMetaObject} is of type QMetaObject and provides access to the
     enums declared with Q_ENUM.
-
-    \include qobject.cpp qobject-macros-private-access-specifier
 
     \sa Q_GADGET_EXPORT
 */
@@ -4761,6 +4762,8 @@ QDebug operator<<(QDebug dbg, const QObject *o)
     enclosing class as a whole should not be (e.g. because it consists of mostly
     inline functions).
 
+    \include qobject.cpp qobject-macros-private-access-specifier
+
     For example:
 
     \code
@@ -4770,8 +4773,6 @@ QDebug operator<<(QDebug dbg, const QObject *o)
         Q_PROPERTY(int y MEMBER y)
         ~~~
     \endcode
-
-    \include qobject.cpp qobject-macros-private-access-specifier
 
     \sa Q_GADGET, {Creating Shared Libraries}
 */

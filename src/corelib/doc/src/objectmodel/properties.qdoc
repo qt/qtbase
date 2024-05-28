@@ -186,12 +186,11 @@
 
     \section1 A Simple Example
 
-    Suppose we have a class MyClass, which is derived from QObject and
-    which uses the Q_OBJECT macro in its private section. We want to
-    declare a property in MyClass to keep track of a priority
-    value. The name of the property will be \e priority, and its type
-    will be an enumeration type named \e Priority, which is defined in
-    MyClass.
+    Suppose we have a class \c MyClass, which is derived from QObject and which
+    uses the Q_OBJECT macro. We want to declare a property in \c MyClass to keep
+    track of a priority value. The name of the property will be \c priority, and
+    its type will be an enumeration type named \c Priority, which is defined in
+    \c MyClass.
 
     We declare the property with the Q_PROPERTY() macro in the private
     section of the class. The required \c READ function is named \c
@@ -200,7 +199,7 @@
     System} using the Q_ENUM() macro. Registering an enumeration type
     makes the enumerator names available for use in calls to
     QObject::setProperty(). We must also provide our own declarations
-    for the \c READ and \c WRITE functions. The declaration of MyClass
+    for the \c READ and \c WRITE functions. The declaration of \c MyClass
     then might look like this:
 
     \snippet code/doc_src_properties.cpp 5
@@ -213,24 +212,24 @@
     potentially forcing re-evaluation in other places if nothing has
     changed.
 
-    Given a pointer to an instance of MyClass or a pointer to a
-    QObject that is an instance of MyClass, we have two ways to set
+    Given a pointer to an instance of \c MyClass or a pointer to a
+    QObject that is an instance of \c MyClass, we have two ways to set
     its priority property:
 
     \snippet code/doc_src_properties.cpp 6
 
     In the example, the enumeration type that is the property type is
-    declared in MyClass and registered with the \l{Meta-Object System}
+    declared in \c MyClass and registered with the \l{Meta-Object System}
     using the Q_ENUM() macro. This makes the enumeration values
-    available as strings for use as in the call to \l{QObject::}{setProperty()}. Had
-    the enumeration type been declared in another class, its fully
+    available as strings for use as in the call to \l{QObject::}{setProperty()}.
+    Had the enumeration type been declared in another class, its fully
     qualified name (i.e., OtherClass::Priority) would be required, and
     that other class would also have to inherit QObject and register
     the enumeration type there using the Q_ENUM() macro.
 
     A similar macro, Q_FLAG(), is also available. Like Q_ENUM(), it
     registers an enumeration type, but it marks the type as being a
-    set of \e flags, i.e. values that can be OR'd together. An I/O
+    set of \e flags, i.e., values that can be OR'd together. An I/O
     class might have enumeration values \c Read and \c Write and then
     QObject::setProperty() could accept \c{Read | Write}. Q_FLAG()
     should be used to register this enumeration type.
