@@ -63,17 +63,15 @@ public:
     };
 
 #ifdef QT_IMPLICIT_QCHAR_CONSTRUCTION
-#define QCHAR_MAYBE_IMPLICIT Q_IMPLICIT
-#else
-#define QCHAR_MAYBE_IMPLICIT explicit
+#error This macro has been removed in Qt 6.8.
 #endif
 
     constexpr Q_IMPLICIT QChar() noexcept : ucs(0) {}
     constexpr Q_IMPLICIT QChar(ushort rc) noexcept : ucs(rc) {}
-    constexpr QCHAR_MAYBE_IMPLICIT QChar(uchar c, uchar r) noexcept : ucs(char16_t((r << 8) | c)) {}
+    constexpr explicit QChar(uchar c, uchar r) noexcept : ucs(char16_t((r << 8) | c)) {}
     constexpr Q_IMPLICIT QChar(short rc) noexcept : ucs(char16_t(rc)) {}
-    constexpr QCHAR_MAYBE_IMPLICIT QChar(uint rc) noexcept : ucs((Q_ASSERT(rc <= 0xffff), char16_t(rc))) {}
-    constexpr QCHAR_MAYBE_IMPLICIT QChar(int rc) noexcept : QChar(uint(rc)) {}
+    constexpr explicit QChar(uint rc) noexcept : ucs((Q_ASSERT(rc <= 0xffff), char16_t(rc))) {}
+    constexpr explicit QChar(int rc) noexcept : QChar(uint(rc)) {}
     constexpr Q_IMPLICIT QChar(SpecialCharacter s) noexcept : ucs(char16_t(s)) {}
     constexpr Q_IMPLICIT QChar(QLatin1Char ch) noexcept : ucs(ch.unicode()) {}
     constexpr Q_IMPLICIT QChar(char16_t ch) noexcept : ucs(ch) {}
@@ -85,11 +83,9 @@ public:
     // Always implicit -- allow for 'x' => QChar conversions
     QT_ASCII_CAST_WARN constexpr Q_IMPLICIT QChar(char c) noexcept : ucs(uchar(c)) { }
 #ifndef QT_RESTRICTED_CAST_FROM_ASCII
-    QT_ASCII_CAST_WARN constexpr QCHAR_MAYBE_IMPLICIT QChar(uchar c) noexcept : ucs(c) { }
+    QT_ASCII_CAST_WARN constexpr explicit QChar(uchar c) noexcept : ucs(c) { }
 #endif
 #endif
-
-#undef QCHAR_MAYBE_IMPLICIT
 
     static constexpr QChar fromUcs2(char16_t c) noexcept { return QChar{c}; }
     static constexpr inline auto fromUcs4(char32_t c) noexcept;
