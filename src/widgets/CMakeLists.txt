@@ -906,6 +906,12 @@ qt_internal_extend_target(Widgets CONDITION NOT QT_FEATURE_xcb
         util/qsystemtrayicon_qpa.cpp
 )
 
+qt_internal_extend_target(Widgets CONDITION QT_FEATURE_style_stylesheet
+    SOURCES
+        styles/qstylesheetstyle.cpp styles/qstylesheetstyle_p.h
+        styles/qstylesheetstyle_default.cpp
+
+)
 
 qt_internal_generate_tracepoints(Widgets widgets
     SOURCES
