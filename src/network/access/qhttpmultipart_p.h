@@ -18,7 +18,9 @@
 #include <QtNetwork/private/qtnetworkglobal_p.h>
 #include "QtCore/qshareddata.h"
 #include "qnetworkrequest_p.h" // for deriving QHttpPartPrivate from QNetworkHeadersPrivate
+
 #include "private/qobject_p.h"
+#include <QtCore/qiodevice.h>
 
 #ifndef Q_OS_WASM
 QT_REQUIRE_CONFIG(http);
