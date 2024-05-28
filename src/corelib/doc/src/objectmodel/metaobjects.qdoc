@@ -19,8 +19,7 @@
     \list 1
     \li The \l QObject class provides a base class for objects that can
        take advantage of the meta-object system.
-    \li The Q_OBJECT macro inside the private section of the class
-       declaration is used to enable meta-object features, such as
+    \li The Q_OBJECT macro is used to enable meta-object features, such as
        dynamic properties, signals, and slots.
     \li The \l{moc}{Meta-Object Compiler} (\c moc) supplies each
        QObject subclass with the necessary code to implement
