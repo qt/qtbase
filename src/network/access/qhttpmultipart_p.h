@@ -91,8 +91,7 @@ public:
             QIODevice(), multiPart(parentMultiPart), readPointer(0), deviceSize(-1) {
     }
 
-    ~QHttpMultiPartIODevice() {
-    }
+    ~QHttpMultiPartIODevice() override;
 
     virtual bool atEnd() const override {
         return readPointer == size();
@@ -132,11 +131,7 @@ class QHttpMultiPartPrivate: public QObjectPrivate
 public:
 
     QHttpMultiPartPrivate();
-
-    ~QHttpMultiPartPrivate()
-    {
-        delete device;
-    }
+    ~QHttpMultiPartPrivate() override;
 
     QList<QHttpPart> parts;
     QByteArray boundary;
