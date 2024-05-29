@@ -3786,6 +3786,9 @@ static void replace_helper(QString &str, QSpan<size_t> indices, qsizetype blen, 
   but \a position + \a n goes outside the strings range,
   then \a n will be adjusted to stop at the end of the string.
 
+  \note If you use an empty \a before argument, the \a after argument will be
+  inserted \e {before and after} each character of the string.
+
   Example:
 
   \snippet qstring/main.cpp 40
