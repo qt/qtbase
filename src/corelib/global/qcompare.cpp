@@ -1313,7 +1313,7 @@ CHECK(strong, equivalent);
 */
 
 /*!
-    \fn template <typename T> Qt::compareThreeWay(Qt::totally_ordered_wrapper<T*> lhs, Qt::totally_ordered_wrapper<T*> rhs)
+    \fn template <typename T, typename U, Qt::if_compatible_pointers<T, U> = true> Qt::compareThreeWay(Qt::totally_ordered_wrapper<T*> lhs, Qt::totally_ordered_wrapper<U*> rhs)
     \since 6.8
     \relates <QtCompare>
     \overload
@@ -1323,12 +1323,15 @@ CHECK(strong, equivalent);
     \l {https://en.cppreference.com/w/cpp/language/operator_comparison#Pointer_total_order}
     {strict total order over pointers} when doing the comparison.
 
+    \note This function participates in overload resolution if \c T and \c U
+    are the same type, or base and derived types.
+
     Returns an instance of \l Qt::strong_ordering that represents the relation
     between \a lhs and \a rhs.
 */
 
 /*!
-    \fn template <typename T> Qt::compareThreeWay(Qt::totally_ordered_wrapper<T*> lhs, T *rhs)
+    \fn template <typename T, typename U, Qt::if_compatible_pointers<T, U> = true> Qt::compareThreeWay(Qt::totally_ordered_wrapper<T*> lhs, U *rhs)
     \since 6.8
     \relates <QtCompare>
     \overload
@@ -1338,12 +1341,15 @@ CHECK(strong, equivalent);
     \l {https://en.cppreference.com/w/cpp/language/operator_comparison#Pointer_total_order}
     {strict total order over pointers} when doing the comparison.
 
+    \note This function participates in overload resolution if \c T and \c U
+    are the same type, or base and derived types.
+
     Returns an instance of \l Qt::strong_ordering that represents the relation
     between \a lhs and \a rhs.
 */
 
 /*!
-    \fn template <typename T> Qt::compareThreeWay(T *lhs, Qt::totally_ordered_wrapper<T*> rhs)
+    \fn template <typename T, typename U, Qt::if_compatible_pointers<T, U> = true> Qt::compareThreeWay(U *lhs, Qt::totally_ordered_wrapper<T*> rhs)
     \since 6.8
     \relates <QtCompare>
     \overload
@@ -1352,6 +1358,9 @@ CHECK(strong, equivalent);
     into \l Qt::totally_ordered_wrapper. Uses
     \l {https://en.cppreference.com/w/cpp/language/operator_comparison#Pointer_total_order}
     {strict total order over pointers} when doing the comparison.
+
+    \note This function participates in overload resolution if \c T and \c U
+    are the same type, or base and derived types.
 
     Returns an instance of \l Qt::strong_ordering that represents the relation
     between \a lhs and \a rhs.

@@ -657,24 +657,37 @@ public:
     explicit constexpr operator bool() const noexcept { return get(); }
 
 private:
+    // TODO: Replace the constraints with std::common_type_t<P, U> when
+    // a bug in VxWorks is fixed!
+    template <typename T, typename U>
+    using if_compatible_types =
+            std::enable_if_t<std::conjunction_v<std::is_pointer<T>,
+                                                std::is_pointer<U>,
+                                                std::disjunction<std::is_convertible<T, U>,
+                                                                 std::is_convertible<U, T>>>,
+                             bool>;
+
 #define MAKE_RELOP(Ret, op, Op) \
-    friend constexpr Ret operator op (const totally_ordered_wrapper &lhs, const totally_ordered_wrapper &rhs) noexcept \
-    { return std:: Op {}(lhs.ptr, rhs.ptr); } \
-    friend constexpr Ret operator op (const totally_ordered_wrapper &lhs, const P &rhs) noexcept \
+    template <typename U = P, if_compatible_types<P, U> = true> \
+    friend constexpr Ret operator op (const totally_ordered_wrapper<P> &lhs, const totally_ordered_wrapper<U> &rhs) noexcept \
+    { return std:: Op {}(lhs.ptr, rhs.get()); } \
+    template <typename U = P, if_compatible_types<P, U> = true> \
+    friend constexpr Ret operator op (const totally_ordered_wrapper<P> &lhs, const U &rhs) noexcept \
     { return std:: Op {}(lhs.ptr, rhs    ); } \
-    friend constexpr Ret operator op (const P &lhs, const totally_ordered_wrapper &rhs) noexcept \
+    template <typename U = P, if_compatible_types<P, U> = true> \
+    friend constexpr Ret operator op (const U &lhs, const totally_ordered_wrapper<P> &rhs) noexcept \
     { return std:: Op {}(lhs,     rhs.ptr); } \
     friend constexpr Ret operator op (const totally_ordered_wrapper &lhs, std::nullptr_t) noexcept \
     { return std:: Op {}(lhs.ptr, P(nullptr)); } \
     friend constexpr Ret operator op (std::nullptr_t, const totally_ordered_wrapper &rhs) noexcept \
     { return std:: Op {}(P(nullptr), rhs.ptr); } \
     /* end */
-    MAKE_RELOP(bool, ==, equal_to<P>)
-    MAKE_RELOP(bool, !=, not_equal_to<P>)
-    MAKE_RELOP(bool, < , less<P>)
-    MAKE_RELOP(bool, <=, less_equal<P>)
-    MAKE_RELOP(bool, > , greater<P>)
-    MAKE_RELOP(bool, >=, greater_equal<P>)
+    MAKE_RELOP(bool, ==, equal_to<>)
+    MAKE_RELOP(bool, !=, not_equal_to<>)
+    MAKE_RELOP(bool, < , less<>)
+    MAKE_RELOP(bool, <=, less_equal<>)
+    MAKE_RELOP(bool, > , greater<>)
+    MAKE_RELOP(bool, >=, greater_equal<>)
 #ifdef __cpp_lib_three_way_comparison
     MAKE_RELOP(auto, <=>, compare_three_way)
 #endif
@@ -687,23 +700,23 @@ private:
     { return qHash(key.ptr, seed); }
 };
 
-template <typename T>
+template <typename T, typename U, if_compatible_pointers<T, U> = true>
 constexpr Qt::strong_ordering
-compareThreeWay(Qt::totally_ordered_wrapper<T*> lhs, Qt::totally_ordered_wrapper<T*> rhs) noexcept
+compareThreeWay(Qt::totally_ordered_wrapper<T*> lhs, Qt::totally_ordered_wrapper<U*> rhs) noexcept
 {
     return QtOrderingPrivate::strongOrderingCompareDefaultImpl(lhs, rhs);
 }
 
-template <typename T>
+template <typename T, typename U, if_compatible_pointers<T, U> = true>
 constexpr Qt::strong_ordering
-compareThreeWay(Qt::totally_ordered_wrapper<T*> lhs, T *rhs) noexcept
+compareThreeWay(Qt::totally_ordered_wrapper<T*> lhs, U *rhs) noexcept
 {
     return QtOrderingPrivate::strongOrderingCompareDefaultImpl(lhs, rhs);
 }
 
-template <typename T>
+template <typename T, typename U, if_compatible_pointers<T, U> = true>
 constexpr Qt::strong_ordering
-compareThreeWay(T *lhs, Qt::totally_ordered_wrapper<T*> rhs) noexcept
+compareThreeWay(U *lhs, Qt::totally_ordered_wrapper<T*> rhs) noexcept
 {
     return QtOrderingPrivate::strongOrderingCompareDefaultImpl(lhs, rhs);
 }

@@ -610,8 +610,10 @@ QT_WARNING_POP
     QCOMPARE_EQ(Qt::compareThreeWay(arr.data(), a0), Qt::strong_ordering::equivalent);
 
     auto bWrapper = Qt::totally_ordered_wrapper(b.get());
-    auto dWrapper = Qt::totally_ordered_wrapper<Base*>(d.get());
+    auto dWrapper = Qt::totally_ordered_wrapper(d.get());
     QCOMPARE_NE(Qt::compareThreeWay(bWrapper, dWrapper), Qt::strong_ordering::equivalent);
+    QCOMPARE_NE(Qt::compareThreeWay(bWrapper, d.get()), Qt::strong_ordering::equivalent);
+    QCOMPARE_NE(Qt::compareThreeWay(b.get(), dWrapper), Qt::strong_ordering::equivalent);
     QCOMPARE_EQ(Qt::compareThreeWay(bWrapper, nullptr), Qt::strong_ordering::greater);
     QCOMPARE_EQ(Qt::compareThreeWay(nullptr, dWrapper), Qt::strong_ordering::less);
 
