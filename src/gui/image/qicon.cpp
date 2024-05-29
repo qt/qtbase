@@ -304,6 +304,8 @@ QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIc
     QPixmapIconEngineEntry *pe = bestMatch(size, scale, mode, state, false);
     if (pe)
         pm = pe->pixmap;
+    else
+        return pm;
 
     if (pm.isNull()) {
         removePixmapEntry(pe);
@@ -315,7 +317,7 @@ QPixmap QPixmapIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIc
     const auto actualSize = adjustSize(size, pm.size());
     QString key = "qt_"_L1
                   % HexString<quint64>(pm.cacheKey())
-                  % HexString<quint8>(pe ? pe->mode : QIcon::Normal)
+                  % HexString<quint8>(pe->mode)
                   % HexString<quint64>(QGuiApplication::palette().cacheKey())
                   % HexString<uint>(actualSize.width())
                   % HexString<uint>(actualSize.height());
