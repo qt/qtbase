@@ -127,7 +127,7 @@ protected:
     {
         auto requestedType = QMetaType::Type(type);
         if (fmt.isEmpty() || isEmpty())
-            return QByteArray();
+            return QVariant();
 
         (void)formats(); // trigger update of format list
 
@@ -144,7 +144,11 @@ protected:
         if (fmtatom == 0)
             return QVariant();
 
-        return mimeConvertToFormat(m_clipboard->connection(), fmtatom, m_clipboard->getDataInFormat(modeAtom, fmtatom), fmt, requestedType, encoding);
+        const QByteArray result = m_clipboard->getDataInFormat(modeAtom, fmtatom);
+        if (result.isNull())
+            return QVariant();
+
+        return mimeConvertToFormat(m_clipboard->connection(), fmtatom, result, fmt, requestedType, encoding);
     }
 private:
 
