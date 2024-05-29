@@ -16,6 +16,7 @@
 
 #include <QtCore/qoverload.h>
 #include <QtCore/qttypetraits.h>
+#include <QtCore/qtypeinfo.h>
 #include <QtCore/qtypes.h>
 
 #ifdef __cpp_lib_three_way_comparison
@@ -662,6 +663,9 @@ private:
 };
 
 } //Qt
+
+template <typename P>
+class QTypeInfo<Qt::totally_ordered_wrapper<P>> : public QTypeInfo<P> {};
 
 QT_END_NAMESPACE
 
