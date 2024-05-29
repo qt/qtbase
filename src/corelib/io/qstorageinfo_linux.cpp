@@ -13,6 +13,7 @@
 #include <q20memory.h>
 
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <sys/statfs.h>
 
 // so we don't have to #include <linux/fs.h>, which is known to cause conflicts
@@ -28,9 +29,28 @@
 #  define ST_RDONLY             0x0001  /* mount read-only */
 #endif
 
+#if defined(Q_OS_ANDROID)
+// statx() is disabled on Android because quite a few systems
+// come with sandboxes that kill applications that make system calls outside a
+// whitelist and several Android vendors can't be bothered to update the list.
+#  undef STATX_BASIC_STATS
+#endif
+
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
+
+namespace {
+struct AutoFileDescriptor
+{
+    int fd = -1;
+    AutoFileDescriptor(const QString &path, int mode = QT_OPEN_RDONLY)
+        : fd(qt_safe_open(QFile::encodeName(path), mode))
+    {}
+    ~AutoFileDescriptor() { if (fd >= 0) qt_safe_close(fd); }
+    operator int() const noexcept { return fd; }
+};
+}
 
 // udev encodes the labels with ID_LABEL_FS_ENC which is done with
 // blkid_encode_string(). Within this function some 1-byte utf-8
@@ -77,6 +97,20 @@ static inline dev_t deviceIdForPath(const QString &device)
     if (QT_STAT(QFile::encodeName(device), &st) < 0)
         return 0;
     return st.st_dev;
+}
+
+static inline quint64 mountIdForPath(int fd)
+{
+    if (fd < 0)
+        return 0;
+#if defined(STATX_BASIC_STATS) && defined(STATX_MNT_ID)
+    // STATX_MNT_ID was added in kernel v5.8
+    struct statx st;
+    int r = statx(fd, "", AT_EMPTY_PATH | AT_NO_AUTOMOUNT, STATX_MNT_ID, &st);
+    if (r == 0 && (st.stx_mask & STATX_MNT_ID))
+        return st.stx_mnt_id;
+#endif
+    return 0;
 }
 
 static inline quint64 retrieveDeviceId(const QByteArray &device, quint64 deviceId = 0)
@@ -207,33 +241,45 @@ void QStorageInfoPrivate::doStat()
         return;
     }
 
-    // We iterate over the /proc/self/mountinfo list backwards because then any
-    // matching isParentOf must be the actual mount point because it's the most
-    // recent mount on that path. Linux does allow mounting over non-empty
-    // directories, such as in:
-    //   # mount | tail -2
-    //   tmpfs on /tmp/foo/bar type tmpfs (rw,relatime,inode64)
-    //   tmpfs on /tmp/foo type tmpfs (rw,relatime,inode64)
-    //
-    // We try to match the device ID in case there's a mount --move.
-    // We can't *rely* on it because some filesystems like btrfs will assign
-    // device IDs to subvolumes that aren't listed in /proc/self/mountinfo.
-
-    const QString oldRootPath = std::exchange(rootPath, QString());
-    const dev_t rootPathDevId = deviceIdForPath(oldRootPath);
     MountInfo *best = nullptr;
-    for (auto it = infos.rbegin(); it != infos.rend(); ++it) {
-        if (!isParentOf(it->mountPoint, oldRootPath))
-            continue;
-        if (rootPathDevId == it->stDev) {
-            // device ID matches; this is definitely the best option
+    AutoFileDescriptor fd(rootPath);
+    if (quint64 mntid = mountIdForPath(fd)) {
+        // We have the mount ID for this path, so find the matching line.
+        auto it = std::find_if(infos.begin(), infos.end(),
+                               [mntid](const MountInfo &info) { return info.mntid == mntid; });
+        if (it != infos.end())
             best = q20::to_address(it);
-            break;
-        }
-        if (!best) {
-            // if we can't find a device ID match, this parent path is probably
-            // the correct one
-            best = q20::to_address(it);
+    } else {
+        // We have failed to get the mount ID for this path, usually because
+        // the path cannot be open()ed by this user (e.g., /root), so we fall
+        // back to a string search.
+        // We iterate over the /proc/self/mountinfo list backwards because then any
+        // matching isParentOf must be the actual mount point because it's the most
+        // recent mount on that path. Linux does allow mounting over non-empty
+        // directories, such as in:
+        //   # mount | tail -2
+        //   tmpfs on /tmp/foo/bar type tmpfs (rw,relatime,inode64)
+        //   tmpfs on /tmp/foo type tmpfs (rw,relatime,inode64)
+        //
+        // We try to match the device ID in case there's a mount --move.
+        // We can't *rely* on it because some filesystems like btrfs will assign
+        // device IDs to subvolumes that aren't listed in /proc/self/mountinfo.
+
+        const QString oldRootPath = std::exchange(rootPath, QString());
+        const dev_t rootPathDevId = deviceIdForPath(oldRootPath);
+        for (auto it = infos.rbegin(); it != infos.rend(); ++it) {
+            if (!isParentOf(it->mountPoint, oldRootPath))
+                continue;
+            if (rootPathDevId == it->stDev) {
+                // device ID matches; this is definitely the best option
+                best = q20::to_address(it);
+                break;
+            }
+            if (!best) {
+                // if we can't find a device ID match, this parent path is probably
+                // the correct one
+                best = q20::to_address(it);
+            }
         }
     }
     if (best) {
@@ -274,12 +320,21 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     volumes.reserve(infos.size());
     for (auto it = infos.begin(); it != infos.end(); ++it) {
         MountInfo &info = *it;
-        // Scan the later lines to see if any is a parent to this
-        auto isParent = [&info](const MountInfo &maybeParent) {
-            return isParentOf(maybeParent.mountPoint, info.mountPoint);
-        };
-        if (std::find_if(it + 1, infos.end(), isParent) != infos.end())
+        AutoFileDescriptor fd(info.mountPoint);
+
+        // find out if the path as we see it matches this line from mountinfo
+        quint64 mntid = mountIdForPath(fd);
+        if (mntid == 0) {
+            // statx failed, so scan the later lines to see if any is a parent
+            // to this
+            auto isParent = [&info](const MountInfo &maybeParent) {
+                return isParentOf(maybeParent.mountPoint, info.mountPoint);
+            };
+            if (std::find_if(it + 1, infos.end(), isParent) != infos.end())
+                continue;
+        } else if (mntid != info.mntid) {
             continue;
+        }
 
         const auto infoStDev = info.stDev;
         QStorageInfoPrivate d(std::move(info));
