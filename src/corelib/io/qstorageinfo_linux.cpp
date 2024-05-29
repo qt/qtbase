@@ -271,14 +271,21 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     };
 
     QList<QStorageInfo> volumes;
-    for (MountInfo &info : infos) {
+    volumes.reserve(infos.size());
+    for (auto it = infos.begin(); it != infos.end(); ++it) {
+        MountInfo &info = *it;
+        // Scan the later lines to see if any is a parent to this
+        auto isParent = [&info](const MountInfo &maybeParent) {
+            return isParentOf(maybeParent.mountPoint, info.mountPoint);
+        };
+        if (std::find_if(it + 1, infos.end(), isParent) != infos.end())
+            continue;
+
         const auto infoStDev = info.stDev;
         QStorageInfoPrivate d(std::move(info));
         d.retrieveVolumeInfo();
         if (d.bytesTotal <= 0 && d.rootPath != u'/')
             continue;
-        if (infoStDev != deviceIdForPath(d.rootPath))
-            continue;       // probably something mounted over this mountpoint
         d.name = labelForDevice(d, infoStDev);
         volumes.emplace_back(QStorageInfo(*new QStorageInfoPrivate(std::move(d))));
     }
