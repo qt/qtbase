@@ -6,6 +6,7 @@
 
 #include <QtCore/qhash.h>
 #include <QtCore/qcontainertools_impl.h>
+#include <QtCore/qttypetraits.h>
 
 #include <initializer_list>
 #include <iterator>

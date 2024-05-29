@@ -18,6 +18,7 @@
 #include <QtCore/qobjectdefs.h>
 #endif
 #include <QtCore/qscopeguard.h>
+#include <QtCore/qttypetraits.h>
 
 #include <array>
 #include <new>

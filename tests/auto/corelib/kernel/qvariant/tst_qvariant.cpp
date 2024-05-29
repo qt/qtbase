@@ -5,6 +5,8 @@
 
 #include <qvariant.h>
 
+#include <QtCore/qttypetraits.h>
+
 // don't assume <type_traits>
 template <typename T, typename U>
 constexpr inline bool my_is_same_v = false;

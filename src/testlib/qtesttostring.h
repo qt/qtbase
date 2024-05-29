@@ -7,6 +7,8 @@
 
 #include <QtTest/qttestglobal.h>
 
+#include <QtCore/qttypetraits.h>
+
 #if QT_CONFIG(itemmodel)
 #  include <QtCore/qabstractitemmodel.h>
 #endif

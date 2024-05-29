@@ -7,6 +7,7 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qttypetraits.h>
 #include <QtCore/qbindingstorage.h>
 
 #include <type_traits>
