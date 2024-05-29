@@ -69,6 +69,7 @@ public:
         QByteArray device;
         QByteArray fsRoot;
         dev_t stDev = 0;
+        quint64 mntid = 0;
     };
 
     void setFromMountInfo(MountInfo &&info)

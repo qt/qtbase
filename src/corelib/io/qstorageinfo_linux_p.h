@@ -93,7 +93,7 @@ static QByteArray parseMangledPath(QByteArrayView path)
 }
 
 // Indexes into the "fields" std::array in parseMountInfo()
-// static constexpr short MountId = 0;
+static constexpr short MountId = 0;
 // static constexpr short ParentId = 1;
 static constexpr short DevNo = 2;
 static constexpr short FsRoot = 3;
@@ -199,6 +199,13 @@ doParseMountInfo(const QByteArray &mountinfo, FilterMountInfo filter = FilterMou
         tokenizeLine(fields, line);
 
         MountInfo info;
+        if (auto r = qstrntoll(fields[MountId].data(), fields[MountId].size(), 10); r.ok()) {
+            info.mntid = r.result;
+        } else {
+            checkField({});
+            continue;
+        }
+
         QByteArray mountP = parseMangledPath(fields[MountPoint]);
         if (!checkField(mountP))
             continue;
