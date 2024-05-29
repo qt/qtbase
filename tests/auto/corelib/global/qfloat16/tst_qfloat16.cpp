@@ -155,6 +155,7 @@ void tst_qfloat16::ordering_data()
     row(2.0f, -inf);
     row(-2.0f, nan);
     row(-inf, -2.0f);
+
     // testing with values outside qfloat16 range
     row(0.0f, 13e5f);
     // generateRow(inf, 13e5f); // fails qfloat16 vs qfloat16 and qfloat16 vs int (QTBUG-118193)
@@ -187,11 +188,21 @@ void tst_qfloat16::ordering()
 
 #undef CHECK_FP
 
+    auto check_int = [=](auto rhs) {
+        // check that we're in range before converting, otherwise
+        // [conv.fpint]/1 says it would be UB
+        using RHS = decltype(rhs);
+        if (right > double(std::numeric_limits<RHS>::max()))
+            return;
+        if (auto min = std::numeric_limits<RHS>::min(); min != 0 && right < double(min))
+            return;
+        rhs = RHS(right);
+        const auto expectedRes = Qt::compareThreeWay(left, rhs);
+        QTestPrivate::testAllComparisonOperators(lhs, rhs, expectedRes);
+    };
 #define CHECK_INT(RHS) \
     do { \
-        const auto rhs = static_cast<RHS>(right); \
-        const auto expectedRes = Qt::compareThreeWay(left, rhs); \
-        QTestPrivate::testAllComparisonOperators(lhs, rhs, expectedRes); \
+        check_int(static_cast<RHS>(0)); \
         POSTCHECK("qfloat16 vs " #RHS " comparison failed") \
     } while (false) \
     /* END */
