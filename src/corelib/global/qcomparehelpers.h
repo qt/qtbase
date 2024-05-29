@@ -619,6 +619,7 @@ class totally_ordered_wrapper
 
     P ptr;
 public:
+    totally_ordered_wrapper() noexcept = default;
     explicit constexpr totally_ordered_wrapper(P p) noexcept : ptr(p) {}
 
     constexpr P get() const noexcept { return ptr; }
