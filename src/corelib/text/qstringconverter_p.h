@@ -52,6 +52,7 @@ struct QLatin1
     static char *convertFromUnicode(char *out, QStringView in, QStringConverter::State *state) noexcept;
 
     // Defined in qstring.cpp
+    Q_CORE_EXPORT
     static char *convertFromUnicode(char *out, QStringView in) noexcept;
 };
 
