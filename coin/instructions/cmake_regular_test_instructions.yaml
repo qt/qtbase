@@ -12,4 +12,21 @@ instructions:
   - type: ChangeDirectory
     directory: "{{.SourceDir}}_standalone_tests"
 
+  # Ignore CTest exit code for Tart configs, unless
+  # the module declares that it should be significant.
+  - type: Group
+    enable_if:
+      condition: and
+      conditions:
+        - condition: property
+          property: id
+          contains_value: tart
+        - condition: runtime
+          env_var: TART_SIGNIFICANT_TARGET_OSVERSIONS
+          not_contains_value: "{{.Env.TARGET_OSVERSION_COIN}}"
+    instructions:
+      - type: EnvironmentVariable
+        variableName: COIN_CTEST_IGNORE_EXIT_CODE
+        variableValue: "1"
+
   - !include "{{qt/qtbase}}/cmake_run_ctest.yaml"
