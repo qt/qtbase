@@ -163,10 +163,9 @@ static inline auto retrieveLabels()
     return result;
 }
 
-static std::optional<QString> retrieveLabelViaIoctl(const QString &path)
+static std::optional<QString> retrieveLabelViaIoctl(int fd)
 {
     // FS_IOC_GETFSLABEL was introduced in v4.18; previously it was btrfs-specific.
-    int fd = qt_safe_open(QFile::encodeName(path).constData(), QT_OPEN_RDONLY);
     if (fd < 0)
         return std::nullopt;
 
@@ -174,15 +173,14 @@ static std::optional<QString> retrieveLabelViaIoctl(const QString &path)
     // says) and the return code on success (0) does not indicate the length.
     char label[FSLABEL_MAX] = {};
     int r = ioctl(fd, FS_IOC_GETFSLABEL, &label);
-    close(fd);
     if (r < 0)
         return std::nullopt;
     return QString::fromUtf8(label);
 }
 
-static inline QString retrieveLabel(const QStorageInfoPrivate &d, quint64 deviceId)
+static inline QString retrieveLabel(const QStorageInfoPrivate &d, int fd, quint64 deviceId)
 {
-    if (auto label = retrieveLabelViaIoctl(d.rootPath))
+    if (auto label = retrieveLabelViaIoctl(fd))
         return *label;
 
     deviceId = retrieveDeviceId(d.device, deviceId);
@@ -285,7 +283,7 @@ void QStorageInfoPrivate::doStat()
     if (best) {
         auto stDev = best->stDev;
         setFromMountInfo(std::move(*best));
-        name = retrieveLabel(*this, stDev);
+        name = retrieveLabel(*this, fd, stDev);
     }
 }
 
@@ -296,11 +294,11 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
         return QList{root()};
 
     std::optional<decltype(retrieveLabels())> labelMap;
-    auto labelForDevice = [&labelMap](const QStorageInfoPrivate &d, quint64 devid) {
+    auto labelForDevice = [&labelMap](const QStorageInfoPrivate &d, int fd, quint64 devid) {
         if (d.fileSystemType == "tmpfs")
             return QString();
 
-        if (auto label = retrieveLabelViaIoctl(d.rootPath))
+        if (auto label = retrieveLabelViaIoctl(fd))
             return *label;
 
         devid = retrieveDeviceId(d.device, devid);
@@ -341,7 +339,7 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
         d.retrieveVolumeInfo();
         if (d.bytesTotal <= 0 && d.rootPath != u'/')
             continue;
-        d.name = labelForDevice(d, infoStDev);
+        d.name = labelForDevice(d, fd, infoStDev);
         volumes.emplace_back(QStorageInfo(*new QStorageInfoPrivate(std::move(d))));
     }
     return volumes;
