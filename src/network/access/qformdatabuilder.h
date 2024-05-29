@@ -57,22 +57,27 @@ public:
     Q_NETWORK_EXPORT ~QFormDataPartBuilder();
 
     Q_WEAK_OVERLOAD QFormDataPartBuilder &setBody(const QByteArray &data,
-                                                  QAnyStringView fileName = {})
-    { return setBodyHelper(data, fileName); }
+                                                  QAnyStringView fileName = {},
+                                                  QAnyStringView mimeType = {})
+    { return setBodyHelper(data, fileName, mimeType); }
 
     Q_NETWORK_EXPORT QFormDataPartBuilder &setBody(QByteArrayView data,
-                                                   QAnyStringView fileName = {});
+                                                   QAnyStringView fileName = {},
+                                                   QAnyStringView mimeType = {});
     Q_NETWORK_EXPORT QFormDataPartBuilder &setBodyDevice(QIODevice *body,
-                                                         QAnyStringView fileName = {});
+                                                         QAnyStringView fileName = {},
+                                                         QAnyStringView mimeType = {});
     Q_NETWORK_EXPORT QFormDataPartBuilder &setHeaders(const QHttpHeaders &headers);
 private:
     Q_DISABLE_COPY(QFormDataPartBuilder)
 
     Q_NETWORK_EXPORT QFormDataPartBuilder &setBodyHelper(const QByteArray &data,
-                                                         QAnyStringView fileName = {});
+                                                         QAnyStringView fileName,
+                                                         QAnyStringView mimeType);
     Q_NETWORK_EXPORT QHttpPart build();
 
     QByteArray m_headerValue;
+    QByteArray m_mimeType;
     QString m_originalBodyName;
     QHttpHeaders m_httpHeaders;
     std::variant<QIODevice*, QByteArray> m_body;

@@ -3,6 +3,7 @@
 
 #include "qformdatabuilder.h"
 
+#include <QtCore/private/qstringconverter_p.h>
 #if QT_CONFIG(mimetype)
 #include "QtCore/qmimedatabase.h"
 #endif
@@ -86,10 +87,35 @@ static auto encodeFileName(QStringView view)
     return R{encoding, needsUtf8 ? view.toUtf8() : view.toLatin1()};
 }
 
-QFormDataPartBuilder &QFormDataPartBuilder::setBodyHelper(const QByteArray &data,
-                                                          QAnyStringView fileName)
+static void convertInto_impl(QByteArray &dst, QUtf8StringView in)
 {
-    m_originalBodyName = fileName.toString();
+    dst.clear();
+    dst += QByteArrayView{in}; // it's ASCII, anyway
+}
+
+static void convertInto_impl(QByteArray &dst, QLatin1StringView in)
+{
+    dst.clear();
+    dst += QByteArrayView{in}; // it's ASCII, anyway
+}
+
+static void convertInto_impl(QByteArray &dst, QStringView in)
+{
+    dst.resize(in.size());
+    (void)QLatin1::convertFromUnicode(dst.data(), in);
+}
+
+static void convertInto(QByteArray &dst, QAnyStringView in)
+{
+    in.visit([&dst](auto in) { convertInto_impl(dst, in); });
+}
+
+QFormDataPartBuilder &QFormDataPartBuilder::setBodyHelper(const QByteArray &data,
+                                                          QAnyStringView name,
+                                                          QAnyStringView mimeType)
+{
+    m_originalBodyName = name.toString();
+    convertInto(m_mimeType, mimeType);
     m_body = data;
     return *this;
 }
@@ -97,6 +123,9 @@ QFormDataPartBuilder &QFormDataPartBuilder::setBodyHelper(const QByteArray &data
 /*!
     Sets \a data as the body of this MIME part and, if given, \a fileName as the
     file name parameter in the content disposition header.
+
+    If \a mimeType is not given (is empty), then QFormDataPartBuilder tries to
+    auto-detect the mime-type of \a data using QMimeDatabase.
 
     A subsequent call to setBodyDevice() discards the body and the device will
     be used instead.
@@ -108,14 +137,18 @@ QFormDataPartBuilder &QFormDataPartBuilder::setBodyHelper(const QByteArray &data
 */
 
 QFormDataPartBuilder &QFormDataPartBuilder::setBody(QByteArrayView data,
-                                                    QAnyStringView fileName)
+                                                    QAnyStringView fileName,
+                                                    QAnyStringView mimeType)
 {
-    return setBody(data.toByteArray(), fileName);
+    return setBody(data.toByteArray(), fileName, mimeType);
 }
 
 /*!
     Sets \a body as the body device of this part and \a fileName as the file
     name parameter in the content disposition header.
+
+    If \a mimeType is not given (is empty), then QFormDataPartBuilder tries to
+    auto-detect the mime-type of \a body using QMimeDatabase.
 
     A subsequent call to setBody() discards the body device and the data set by
     setBody() will be used instead.
@@ -131,9 +164,11 @@ QFormDataPartBuilder &QFormDataPartBuilder::setBody(QByteArrayView data,
     \sa setBody(), QHttpPart::setBodyDevice()
   */
 
-QFormDataPartBuilder &QFormDataPartBuilder::setBodyDevice(QIODevice *body, QAnyStringView fileName)
+QFormDataPartBuilder &QFormDataPartBuilder::setBodyDevice(QIODevice *body, QAnyStringView fileName,
+                                                          QAnyStringView mimeType)
 {
     m_originalBodyName = fileName.toString();
+    convertInto(m_mimeType, mimeType);
     m_body = body;
     return *this;
 }
@@ -170,18 +205,23 @@ QHttpPart QFormDataPartBuilder::build()
     }
 
 #if QT_CONFIG(mimetype)
-    QMimeDatabase db;
-    QMimeType mimeType = std::visit([&](auto &arg) {
-        return db.mimeTypeForFileNameAndData(m_originalBodyName, arg);
-    }, m_body);
+    if (m_mimeType.isEmpty()) {
+        // auto-detect
+        QMimeDatabase db;
+        convertInto(m_mimeType, std::visit([&](auto &arg) {
+                return db.mimeTypeForFileNameAndData(m_originalBodyName, arg);
+            }, m_body).name());
+    }
 #endif
+
     for (qsizetype i = 0; i < m_httpHeaders.size(); i++) {
         httpPart.setRawHeader(QByteArrayView(m_httpHeaders.nameAt(i)).toByteArray(),
                                              m_httpHeaders.valueAt(i).toByteArray());
     }
-#if QT_CONFIG(mimetype)
-    httpPart.setHeader(QNetworkRequest::ContentTypeHeader, mimeType.name());
-#endif
+
+    if (!m_mimeType.isEmpty())
+        httpPart.setHeader(QNetworkRequest::ContentTypeHeader, m_mimeType);
+
     httpPart.setHeader(QNetworkRequest::ContentDispositionHeader, m_headerValue);
 
     if (auto d = std::get_if<QIODevice*>(&m_body))
