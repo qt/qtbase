@@ -382,6 +382,9 @@ QStringList QtPrivate::QStringList_filter(const QStringList *that, const QRegula
     text replaced with the \a after text wherever the \a before text
     is found.
 
+    \note If you use an empty \a before argument, the \a after argument will be
+    inserted \e {before and after} each character of the string.
+
     \include qstringlist.cpp comparison-case-sensitivity
 
     For example:
