@@ -23,7 +23,7 @@
 #endif
 #include <QtCore/q20type_traits.h>
 
-#include <functional> // std::less
+#include <functional> // std::less, std::hash
 
 QT_BEGIN_NAMESPACE
 
@@ -653,10 +653,27 @@ private:
     MAKE_RELOP(auto, <=>, compare_three_way)
 #endif
 #undef MAKE_RELOP
+    friend void qt_ptr_swap(totally_ordered_wrapper &lhs, totally_ordered_wrapper &rhs) noexcept
+    { qt_ptr_swap(lhs.ptr, rhs.ptr); }
+    friend void swap(totally_ordered_wrapper &lhs, totally_ordered_wrapper &rhs) noexcept
+    { qt_ptr_swap(lhs, rhs); }
+    friend size_t qHash(totally_ordered_wrapper key, size_t seed = 0) noexcept
+    { return qHash(key.ptr, seed); }
 };
 
 } //Qt
 
 QT_END_NAMESPACE
+
+namespace std {
+    template <typename P>
+    struct hash<QT_PREPEND_NAMESPACE(Qt::totally_ordered_wrapper)<P>>
+    {
+        using argument_type = QT_PREPEND_NAMESPACE(Qt::totally_ordered_wrapper)<P>;
+        using result_type = size_t;
+        constexpr result_type operator()(argument_type w) const noexcept
+        { return std::hash<P>{}(w.get()); }
+    };
+}
 
 #endif // QCOMPAREHELPERS_H
