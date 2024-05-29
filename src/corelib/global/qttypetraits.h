@@ -60,6 +60,26 @@ template <typename T> struct type_dependent_false : std::false_type {};
 template <auto T> struct value_dependent_false : std::false_type {};
 }
 
+namespace QTypeTraits {
+
+namespace detail {
+template<typename T, typename U,
+         typename = std::enable_if_t<std::is_arithmetic_v<T> && std::is_arithmetic_v<U> &&
+                                     std::is_floating_point_v<T> == std::is_floating_point_v<U> &&
+                                     std::is_signed_v<T> == std::is_signed_v<U> &&
+                                     !std::is_same_v<T, bool> && !std::is_same_v<U, bool> &&
+                                     !std::is_same_v<T, char> && !std::is_same_v<U, char>>>
+struct Promoted
+{
+    using type = decltype(T() + U());
+};
+}
+
+template <typename T, typename U>
+using Promoted = typename detail::Promoted<T, U>::type;
+
+} // namespace QTypeTraits
+
 QT_END_NAMESPACE
 
 #endif // QTTYPETRAITS_H
