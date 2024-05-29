@@ -201,7 +201,6 @@ void tst_QResourceEngine::checkStructure_data()
                                        << (QStringList()
 #if defined(BUILTIN_TESTDATA)
                                            << "parentdir.txt"
-                                           << "runtime_resource.rcc"
 #endif
                                            << "search_file.txt"
 #if defined(BUILTIN_TESTDATA)
