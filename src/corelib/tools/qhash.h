@@ -11,6 +11,7 @@
 #include <QtCore/qiterator.h>
 #include <QtCore/qlist.h>
 #include <QtCore/qrefcount.h>
+#include <QtCore/qttypetraits.h>
 
 #include <initializer_list>
 #include <functional> // for std::hash

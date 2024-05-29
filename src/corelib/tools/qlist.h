@@ -11,6 +11,7 @@
 #include <QtCore/qiterator.h>
 #include <QtCore/qcontainertools_impl.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qttypetraits.h>
 
 #include <functional>
 #include <limits>

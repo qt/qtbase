@@ -19,6 +19,7 @@
 #include <QtCore/qtaggedpointer.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qcontainerfwd.h>
+#include <QtCore/qttypetraits.h>
 
 #include <functional>
 

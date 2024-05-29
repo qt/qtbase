@@ -12,6 +12,7 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qshareddata.h>
 #include <QtCore/qshareddata_impl.h>
+#include <QtCore/qttypetraits.h>
 
 #include <functional>
 #include <initializer_list>

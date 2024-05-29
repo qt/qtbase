@@ -11,6 +11,7 @@
 
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qtextstream.h>
+#include <QtCore/qttypetraits.h>
 #include <QtCore/qtypes.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qcontiguouscache.h>

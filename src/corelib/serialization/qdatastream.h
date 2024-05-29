@@ -8,6 +8,7 @@
 #include <QtCore/qiodevicebase.h>
 #include <QtCore/qcontainerfwd.h>
 #include <QtCore/qnamespace.h>
+#include <QtCore/qttypetraits.h>
 
 #include <iterator>         // std::distance(), std::next()
 

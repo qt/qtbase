@@ -14,6 +14,7 @@
 #include <QtCore/qalgorithms.h>
 #include <QtCore/qcontainertools_impl.h>
 #include <QtCore/qhashfunctions.h>
+#include <QtCore/qttypetraits.h>
 
 #include <algorithm>
 #include <initializer_list>
