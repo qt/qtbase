@@ -18,9 +18,6 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
         target_compile_options("${wasmTarget}" INTERFACE "SHELL:-s MEMORY64=1" )
         target_link_options("${wasmTarget}" INTERFACE   "SHELL:-s MEMORY64=1" -mwasm64)
     endif()
-    # Enable MODULARIZE so that we are able to set EXPORT_NAME later and instantiate on demand (with
-    # MODULARIZE=0, emscripten creates a global app instance object at Javascript eval time)
-    target_link_options("${wasmTarget}" INTERFACE "SHELL:-s MODULARIZE=1")
 
     #simd
     if (QT_FEATURE_wasm_simd128)

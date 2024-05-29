@@ -126,6 +126,7 @@ endfunction()
 
 function(_qt_internal_set_wasm_export_name target)
     _qt_internal_wasm_export_name_for_target(export_name ${target})
+    target_link_options("${target}" PRIVATE "SHELL:-s MODULARIZE=1")
     target_link_options("${target}" PRIVATE "SHELL:-s EXPORT_NAME=${export_name}")
 endfunction()
 
