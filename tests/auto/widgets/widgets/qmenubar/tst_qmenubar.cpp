@@ -124,6 +124,9 @@ private slots:
     void platformMenu();
     void addActionQt5connect();
     void QTBUG_65488_hiddenActionTriggered();
+    void pressDragRelease_data();
+    void pressDragRelease();
+
 protected slots:
     void onSimpleActivated( QAction*);
     void onComplexActionTriggered();
@@ -141,6 +144,7 @@ private:
     int m_simpleActivatedCount;
     int m_complexTriggerCount[int('k')];
     QMenuBar* taskQTBUG53205MenuBar;
+    QScopedPointer<QPointingDevice> m_touchScreen = QScopedPointer<QPointingDevice>(QTest::createTouchDevice());
 };
 
 // Testing get/set functions
@@ -1418,6 +1422,70 @@ void tst_QMenuBar::QTBUG_65488_hiddenActionTriggered()
     QTest::mouseClick(win.windowHandle(), Qt::LeftButton, Qt::NoModifier, win.menuBar()->geometry().center());
     QCoreApplication::sendPostedEvents(); // make sure all queued events also dispatched
     QCOMPARE(spy.size(), 0);
+}
+
+void tst_QMenuBar::pressDragRelease_data()
+{
+    QTest::addColumn<QPointingDevice *>("device");
+
+    QTest::newRow("mouse") << const_cast<QPointingDevice *>(QPointingDevice::primaryPointingDevice());
+    QTest::newRow("touchscreen") << m_touchScreen.get();
+}
+
+void tst_QMenuBar::pressDragRelease()
+{
+    QFETCH(QPointingDevice *, device);
+
+    QMainWindow w;
+    const TestMenu menu = initWindowWithComplexMenuBar(w);
+    const QMenu *firstMenu = menu.menus.first();
+    QAction *hoveredAction = nullptr;
+    connect(firstMenu, &QMenu::hovered, firstMenu, [&hoveredAction](QAction *hov) { hoveredAction = hov; });
+    w.show();
+    QVERIFY(QTest::qWaitForWindowActive(&w));
+    QWindow *win = w.windowHandle();
+    const QPoint p1(50, w.menuBar()->geometry().height() / 2);
+    switch (device->type()) {
+    case QInputDevice::DeviceType::Mouse:
+    case QInputDevice::DeviceType::TouchPad:
+        QTest::mousePress(win, Qt::LeftButton, {}, p1);
+       break;
+    case QInputDevice::DeviceType::TouchScreen:
+        QTest::touchEvent(win, device).press(0, p1);
+      break;
+    default:
+        break;
+    }
+
+    QTRY_VERIFY(firstMenu->isVisible());
+    const QPoint firstMenuItemPos = firstMenu->geometry().center() - QPoint(0, 2);
+    const QPoint firstMenuItemPosInWin = w.mapFromGlobal(firstMenuItemPos);
+    switch (device->type()) {
+    case QInputDevice::DeviceType::Mouse:
+    case QInputDevice::DeviceType::TouchPad:
+        QTest::mouseMove(win, firstMenuItemPosInWin);
+        break;
+    case QInputDevice::DeviceType::TouchScreen:
+        QTest::touchEvent(win, device).move(0, firstMenuItemPosInWin);
+        break;
+    default:
+        break;
+    }
+    QVERIFY(hoveredAction);
+    QCOMPARE(hoveredAction, firstMenu->actionAt(firstMenu->mapFromGlobal(firstMenuItemPos)));
+    QSignalSpy triggeredSpy(hoveredAction, &QAction::triggered);
+    switch (device->type()) {
+    case QInputDevice::DeviceType::Mouse:
+    case QInputDevice::DeviceType::TouchPad:
+        QTest::mouseRelease(win, Qt::LeftButton, {}, firstMenuItemPosInWin);
+        break;
+    case QInputDevice::DeviceType::TouchScreen:
+        QTest::touchEvent(win, device).release(0, firstMenuItemPosInWin);
+        break;
+    default:
+        break;
+    }
+    QTRY_COMPARE(triggeredSpy.size(), 1);
 }
 
 // QTBUG-56526
