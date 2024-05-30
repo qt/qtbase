@@ -1347,7 +1347,7 @@ QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QDnsTlsAssociationRecordPrivate)
     standards. This enumeration can be used for those values even if no
     enumerator is provided.
 
-    \sa certificateUsage()
+    \sa usage()
 */
 
 /*!
@@ -1415,7 +1415,7 @@ QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QDnsTlsAssociationRecordPrivate)
     standards. This enumeration can be used for those values even if no
     enumerator is provided.
 
-    \sa matchingType()
+    \sa matchType()
 */
 
 /*!

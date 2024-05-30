@@ -277,10 +277,10 @@ void QLocalServer::incomingConnection(quintptr socketDescriptor)
     \note Don't forget to call this member from reimplemented
     incomingConnection() if you do not want to break the
     Pending Connections mechanism. This function emits the
-    pendingConnectionAvailable() signal after the socket has been
+    newConnection() signal after the socket has been
     added.
 
-    \sa incomingConnection(), pendingConnectionAvailable()
+    \sa incomingConnection(), newConnection()
     \since 6.8
 */
 void QLocalServer::addPendingConnection(QLocalSocket *socket)
