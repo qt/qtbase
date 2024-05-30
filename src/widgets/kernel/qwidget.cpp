@@ -2725,8 +2725,10 @@ void QWidgetPrivate::inheritStyle()
     // to be running a proxy
     if (!qApp->styleSheet().isEmpty() || qt_styleSheet(parentStyle)) {
         QStyle *newStyle = parentStyle;
-        if (q->testAttribute(Qt::WA_SetStyle))
+        if (q->testAttribute(Qt::WA_SetStyle) && qt_styleSheet(origStyle) == nullptr)
             newStyle = new QStyleSheetStyle(origStyle);
+        else if (auto *styleSheetStyle = qt_styleSheet(origStyle))
+            newStyle = styleSheetStyle;
         else if (QStyleSheetStyle *newProxy = qt_styleSheet(parentStyle))
             newProxy->ref();
 
