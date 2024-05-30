@@ -89,6 +89,8 @@ private slots:
     void hiddenDirs();
 #endif
 
+    void withStdAlgorithms();
+
 private:
     QSharedPointer<QTemporaryDir> m_dataDir;
 };
@@ -626,6 +628,22 @@ void tst_QDirListing::hiddenDirs()
 }
 
 #endif // Q_OS_WIN
+
+void tst_QDirListing::withStdAlgorithms()
+{
+    QDirListing dirList(u"entrylist"_s, QDir::AllEntries | QDir::NoDotAndDotDot, ItFlag::Recursive);
+
+    std::for_each(dirList.cbegin(), dirList.cend(), [](const auto &dirEntry) {
+        QVERIFY(dirEntry.absoluteFilePath().contains("entrylist"));
+    });
+
+    const auto fileName = "dummy"_L1;
+    auto it = std::find_if(dirList.cbegin(), dirList.cend(), [fileName](const auto &dirEntry) {
+        return dirEntry.fileName() == fileName;
+    });
+    QVERIFY(it != dirList.cend());
+    QCOMPARE(it->fileName(), fileName);
+}
 
 QTEST_MAIN(tst_QDirListing)
 
