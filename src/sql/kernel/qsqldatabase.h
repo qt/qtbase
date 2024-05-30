@@ -82,7 +82,7 @@ public:
     void setNumericalPrecisionPolicy(QSql::NumericalPrecisionPolicy precisionPolicy);
     QSql::NumericalPrecisionPolicy numericalPrecisionPolicy() const;
     bool moveToThread(QThread *targetThread);
-    QThread *currentThread() const;
+    QThread *thread() const;
 
     QSqlDriver* driver() const;
 

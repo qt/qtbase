@@ -2344,20 +2344,20 @@ void tst_QSqlDatabase::moveToThread()
     auto clonedDb = QSqlDatabase::cloneDatabase(db, "clonedDb");
     auto mainThread = QThread::currentThread();
     CHECK_DATABASE(db);
-    QCOMPARE(db.currentThread(), mainThread);
-    QCOMPARE(clonedDb.currentThread(), mainThread);
+    QCOMPARE(db.thread(), mainThread);
+    QCOMPARE(clonedDb.thread(), mainThread);
     std::unique_ptr<QThread> t(QThread::create([&] {
         db.moveToThread(mainThread);
         QThread::currentThread()->exit();
     }));
     db.moveToThread(t.get());
-    QCOMPARE(db.currentThread(), t.get());
-    QCOMPARE(clonedDb.currentThread(), mainThread);
+    QCOMPARE(db.thread(), t.get());
+    QCOMPARE(clonedDb.thread(), mainThread);
     t->start();
     QTRY_VERIFY(t->isRunning());
     QTRY_VERIFY(t->wait(30000));
-    QCOMPARE(db.currentThread(), mainThread);
-    QCOMPARE(clonedDb.currentThread(), mainThread);
+    QCOMPARE(db.thread(), mainThread);
+    QCOMPARE(clonedDb.thread(), mainThread);
     db = QSqlDatabase();
     clonedDb = QSqlDatabase();
     QSqlDatabase::removeDatabase("clonedDb");

@@ -1377,7 +1377,7 @@ bool QSqlDatabase::moveToThread(QThread *targetThread)
 
     Returns a pointer to the associated QThread instance.
 */
-QThread *QSqlDatabase::currentThread() const
+QThread *QSqlDatabase::thread() const
 {
     if (auto drv = driver())
         return drv->thread();
