@@ -363,10 +363,6 @@ void QDirListingPrivate::checkAndPushDirectory(QDirEntryInfo &entryInfo)
     if (!iteratorFlags.testAnyFlags(F::Recursive))
         return;
 
-    // Never follow non-directory entries
-    if (!entryInfo.isDir())
-        return;
-
     // Follow symlinks only when asked
     if (!iteratorFlags.testAnyFlags(F::FollowDirSymlinks) && entryInfo.isSymLink())
         return;
@@ -382,6 +378,10 @@ void QDirListingPrivate::checkAndPushDirectory(QDirEntryInfo &entryInfo)
         return iteratorFlags.testAnyFlags(QDirListing::IteratorFlag::IncludeHidden);
     }();
     if (!includeHidden && entryInfo.isHidden())
+        return;
+
+    // Never follow non-directory entries
+    if (!entryInfo.isDir())
         return;
 
     pushDirectory(entryInfo);
