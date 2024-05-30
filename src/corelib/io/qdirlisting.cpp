@@ -25,12 +25,11 @@
     \snippet code/src_corelib_io_qdirlisting.cpp 1
 
     Iterators constructed by QDirListing (QDirListing::const_iterator) are
-    forward-only (you cannot iterate directories in reverse order) and don't
-    allow random access. They can be used in ranged-for loops (or with STL
-    alogrithms that don't require random access iterators). Dereferencing
-    a valid iterator returns a QDirListing::DirEntry object. The (c)end()
-    iterator marks the end of the iteration. Dereferencing the end iterator
-    is undefiend behavior.
+    forward-only, single-pass iterators, that don't allow random access. They
+    can be used in ranged-for loops (or with STL alogrithms that don't
+    require random access iterators). Dereferencing a valid iterator returns
+    a QDirListing::DirEntry object. The (c)end() iterator marks the end of
+    the iteration. Dereferencing the end iterator is undefined behavior.
 
     QDirListing::DirEntry offers a subset of QFileInfo's API (for example,
     fileName(), filePath(), exists()). Internally, DirEntry only constructs
@@ -499,22 +498,31 @@ QString QDirListing::iteratorPath() const
     \fn QDirListing::const_iterator QDirListing::end() const
     \fn QDirListing::const_iterator QDirListing::cend() const
 
-    begin()/cbegin() returns a QDirListing::const_iterator that enables
-    iterating over directory entries using a ranged-for loop; dereferencing
-    this iterator returns a \c{const QFileInfo &}.
+    (c)begin() returns a QDirListing::const_iterator that can be used to
+    iterate over directory entries.
 
-    end()/cend() return a sentinel const_iterator that signals the end of
-    the iteration. Dereferencing this iterator is undefined behavior.
+    \list
+    \li This is a forward-only, single-pass iterator (you cannot iterate
+        directory entries in reverse order)
+    \li Doesn't allow random access
+    \li Can be used in ranged-for loops; or with STL algorithms that don't
+        require random access iterators
+    \li Dereferencing a valid iterator returns a \c{const DirEntry &}
+    \li (c)end() returns a sentinel-like const_iterator that signals the
+        end of the iteration. Dereferencing the end() iterator is undefined
+        behavior
+    \li Each time (c)begin() is called on the same QDirListing object,
+        the internal state is reset and the iteration starts anew
+    \endlist
+
+    (Some of the above restrictions are dictated by the underlying system
+    library functions' implementation).
 
     For example:
     \snippet code/src_corelib_io_qdirlisting.cpp 0
 
     Here's how to find and read all files filtered by name, recursively:
     \snippet code/src_corelib_io_qdirlisting.cpp 1
-
-    \note This is a forward-only iterator, every time begin()/cbegin() is
-    called (on the same QDirListing object), the internal state is reset and
-    the iteration starts anew.
 
     \sa fileInfo(), fileName(), filePath()
 */
