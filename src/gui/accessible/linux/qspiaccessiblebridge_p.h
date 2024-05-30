@@ -27,7 +27,7 @@ QT_REQUIRE_CONFIG(accessibility);
 
 QT_BEGIN_NAMESPACE
 
-class DBusConnection;
+class QAtSpiDBusConnection;
 class QSpiDBusCache;
 class AtSpiAdaptor;
 struct RoleNames;
@@ -60,7 +60,7 @@ private:
     QSpiDBusCache *cache;
     DeviceEventControllerAdaptor *dec;
     AtSpiAdaptor *dbusAdaptor;
-    DBusConnection* dbusConnection;
+    QAtSpiDBusConnection* dbusConnection;
     SpiRoleMapping m_spiRoleMapping;
 };
 

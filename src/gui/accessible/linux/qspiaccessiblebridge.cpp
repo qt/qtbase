@@ -31,7 +31,7 @@ using namespace Qt::StringLiterals;
 QSpiAccessibleBridge::QSpiAccessibleBridge()
     : cache(nullptr), dec(nullptr), dbusAdaptor(nullptr)
 {
-    dbusConnection = new DBusConnection();
+    dbusConnection = new QAtSpiDBusConnection();
     connect(dbusConnection, SIGNAL(enabledChanged(bool)), this, SLOT(enabledChanged(bool)));
     // Now that we have connected the signal, make sure we didn't miss a change,
     // e.g. when running as root or when AT_SPI_BUS_ADDRESS is set by hand.

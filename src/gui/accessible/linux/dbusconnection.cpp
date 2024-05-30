@@ -26,13 +26,13 @@ using namespace Qt::StringLiterals;
 #define A11Y_PATH "/org/a11y/bus"_L1
 
 /*!
-    \class DBusConnection
+    \class QAtSpiDBusConnection
     \internal
     \brief Connects to the accessibility dbus.
 
     This is usually a different bus from the session bus.
 */
-DBusConnection::DBusConnection(QObject *parent)
+QAtSpiDBusConnection::QAtSpiDBusConnection(QObject *parent)
     : QObject(parent), m_a11yConnection(QString()), m_enabled(false)
 {
     // If the bus is explicitly set via env var it overrides everything else.
@@ -66,7 +66,7 @@ DBusConnection::DBusConnection(QObject *parent)
     }
 }
 
-QString DBusConnection::getAddressFromXCB()
+QString QAtSpiDBusConnection::getAddressFromXCB()
 {
     QGuiApplication *app = qobject_cast<QGuiApplication *>(QCoreApplication::instance());
     if (!app)
@@ -85,7 +85,7 @@ QString DBusConnection::getAddressFromXCB()
 // We have the a11y registry on the session bus.
 // Subscribe to updates about a11y enabled state.
 // Find out the bus address
-void DBusConnection::serviceRegistered()
+void QAtSpiDBusConnection::serviceRegistered()
 {
     // listen to enabled changes
     QDBusConnection c = QDBusConnection::sessionBus();
@@ -113,12 +113,12 @@ void DBusConnection::serviceRegistered()
     //    connect(a11yStatus, ); QtDbus doesn't support notifications for property changes yet
 }
 
-void DBusConnection::serviceUnregistered()
+void QAtSpiDBusConnection::serviceUnregistered()
 {
     emit enabledChanged(false);
 }
 
-void DBusConnection::connectA11yBus(const QString &address)
+void QAtSpiDBusConnection::connectA11yBus(const QString &address)
 {
     if (address.isEmpty()) {
         qWarning("Could not find Accessibility DBus address.");
@@ -130,7 +130,7 @@ void DBusConnection::connectA11yBus(const QString &address)
         emit enabledChanged(true);
 }
 
-void DBusConnection::dbusError(const QDBusError &error)
+void QAtSpiDBusConnection::dbusError(const QDBusError &error)
 {
     qWarning() << "Accessibility encountered a DBus error:" << error;
 }
@@ -139,7 +139,7 @@ void DBusConnection::dbusError(const QDBusError &error)
   Returns the DBus connection that got established.
   Or an invalid connection if not yet connected.
 */
-QDBusConnection DBusConnection::connection() const
+QDBusConnection QAtSpiDBusConnection::connection() const
 {
     return m_a11yConnection;
 }

@@ -27,12 +27,12 @@ QT_BEGIN_NAMESPACE
 
 class QDBusServiceWatcher;
 
-class DBusConnection : public QObject
+class QAtSpiDBusConnection : public QObject
 {
     Q_OBJECT
 
 public:
-    DBusConnection(QObject *parent = nullptr);
+    QAtSpiDBusConnection(QObject *parent = nullptr);
     QDBusConnection connection() const;
     bool isEnabled() const { return m_enabled; }
 
