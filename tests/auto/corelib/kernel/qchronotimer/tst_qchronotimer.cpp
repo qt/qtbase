@@ -20,6 +20,10 @@
 #include <qelapsedtimer.h>
 #include <qproperty.h>
 
+#if defined(Q_OS_WIN32)
+#include <qt_windows.h>
+#endif
+
 #if defined Q_OS_UNIX
 #include <unistd.h>
 #endif
@@ -57,6 +61,7 @@ private slots:
     void recurringTimer();
     void deleteLaterOnQChronoTimer(); // long name, don't want to shadow QObject::deleteLater()
     void moveToThread();
+    void newTimerFiresTooSoon();
     void restartedTimerFiresTooSoon();
     void timerFiresOnlyOncePerProcessEvents_data();
     void timerFiresOnlyOncePerProcessEvents();
@@ -617,6 +622,51 @@ void tst_QChronoTimer::moveToThread()
     QVERIFY((ti4.id() & 0xffffff) != (timer2.id() & 0xffffff));
     QVERIFY((ti3.id() & 0xffffff) != (timer2.id() & 0xffffff));
     QVERIFY((ti3.id() & 0xffffff) != (timer1.id() & 0xffffff));
+}
+
+class TimerListener : public QObject
+{
+    Q_OBJECT
+public:
+    void timerEvent(QTimerEvent *) override
+    {
+        m_timerElapsed = true;
+    }
+
+    bool m_timerElapsed = false;
+};
+
+void tst_QChronoTimer::newTimerFiresTooSoon()
+{
+#ifndef Q_OS_WIN32
+    QSKIP("Only relevant on Windows");
+#else
+    // Arrange - Create timer and make sure it ticked
+    {
+        QTest::qWait(0 /*ms*/); // Clean up event queue from previous tests
+
+        TimerListener listener;
+        const int timerId = listener.startTimer(50ms, Qt::CoarseTimer);
+        QThread::sleep(100ms);
+
+        // Force WM_TIMER events on Windows event queue
+        MSG msg{};
+        PeekMessage(&msg, nullptr, WM_TIMER, WM_TIMER, PM_NOREMOVE);
+
+        listener.killTimer(timerId);
+    }
+
+    // Act - Create new timer with long interval and make sure it does not immediately tick
+    TimerListener listener;
+    const int timerId = listener.startTimer(60s, Qt::CoarseTimer);
+
+    QTest::qWait(0 /*ms*/); // Process event queue - Should not call timerEvent
+    listener.killTimer(timerId);
+
+    // Assert
+    QEXPECT_FAIL("", "QTBUG-124496 - QObject::timerEvent may be called before the timer elapsed", Continue);
+    QVERIFY(!listener.m_timerElapsed);
+#endif
 }
 
 class RestartedTimerFiresTooSoonObject : public QObject
