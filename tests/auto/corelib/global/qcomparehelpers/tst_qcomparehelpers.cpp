@@ -616,6 +616,8 @@ QT_WARNING_POP
     QCOMPARE_NE(Qt::compareThreeWay(b.get(), dWrapper), Qt::strong_ordering::equivalent);
     QCOMPARE_EQ(Qt::compareThreeWay(bWrapper, nullptr), Qt::strong_ordering::greater);
     QCOMPARE_EQ(Qt::compareThreeWay(nullptr, dWrapper), Qt::strong_ordering::less);
+    dWrapper.reset(nullptr);
+    QCOMPARE_EQ(Qt::compareThreeWay(nullptr, dWrapper), Qt::strong_ordering::equivalent);
 
 #undef TEST_BUILTIN
 }
