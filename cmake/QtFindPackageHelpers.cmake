@@ -212,14 +212,17 @@ macro(qt_find_package)
                                  ${components_as_string})
                 endif()
 
-                # Record the package + component + optional component provided targets.
-                qt_internal_record_package_component_provided_targets(
-                    PACKAGE_NAME "${ARGV0}"
-                    ON_TARGET ${qt_find_package_target_name}
-                    PROVIDED_TARGETS ${arg_PROVIDED_TARGETS}
-                    COMPONENTS ${arg_COMPONENTS}
-                    OPTIONAL_COMPONENTS ${arg_OPTIONAL_COMPONENTS}
-                )
+                # Work around: QTBUG-125371
+                if(NOT "${ARGV0}" STREQUAL "Qt6")
+                    # Record the package + component + optional component provided targets.
+                    qt_internal_record_package_component_provided_targets(
+                        PACKAGE_NAME "${ARGV0}"
+                        ON_TARGET ${qt_find_package_target_name}
+                        PROVIDED_TARGETS ${arg_PROVIDED_TARGETS}
+                        COMPONENTS ${arg_COMPONENTS}
+                        OPTIONAL_COMPONENTS ${arg_OPTIONAL_COMPONENTS}
+                    )
+                endif()
 
                 get_property(is_global TARGET ${qt_find_package_target_name} PROPERTY
                                                                              IMPORTED_GLOBAL)
