@@ -23,6 +23,12 @@ private Q_SLOTS:
 
     void picksUtf8EncodingOnlyIfL1OrAsciiDontSuffice_data();
     void picksUtf8EncodingOnlyIfL1OrAsciiDontSuffice();
+
+    void setHeadersDoesNotAffectHeaderFieldsManagedByBuilder_data();
+    void setHeadersDoesNotAffectHeaderFieldsManagedByBuilder();
+
+    void specifyMimeType_data();
+    void specifyMimeType();
 };
 
 void tst_QFormDataBuilder::generateQHttpPartWithDevice_data()
@@ -196,6 +202,118 @@ void tst_QFormDataBuilder::picksUtf8EncodingOnlyIfL1OrAsciiDontSuffice()
 
     QVERIFY(msg.contains(expected_content_type_data));
     QVERIFY(msg.contains(expected_content_disposition_data));
+}
+
+void tst_QFormDataBuilder::setHeadersDoesNotAffectHeaderFieldsManagedByBuilder_data()
+{
+    QTest::addColumn<QLatin1StringView>("name_data");
+    QTest::addColumn<QAnyStringView>("body_name_data");
+    QTest::addColumn<bool>("overwrite");
+    QTest::addColumn<bool>("extra_headers");
+    QTest::addColumn<QStringList>("expected_headers");
+
+    QTest::newRow("content-disposition-is-set-by-default")
+            << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
+            << false << false
+            << QStringList{
+                uR"("content-disposition":"form-data; name=\"text\"; filename=rfc3252.txt")"_s,
+                uR"("content-type":"text/plain")"_s};
+
+    QTest::newRow("default-overwrites-preset-content-disposition")
+            << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
+            << true << false
+            << QStringList{
+                uR"("content-disposition":"form-data; name=\"text\"; filename=rfc3252.txt")"_s,
+                uR"("content-type":"text/plain")"_s};
+
+    QTest::newRow("added-extra-header")
+            << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
+            << false << true
+            << QStringList{
+                uR"("content-disposition":"form-data; name=\"text\"; filename=rfc3252.txt")"_s,
+                uR"("content-type":"text/plain")"_s,
+                uR"("content-length":"70")"_s};
+
+    QTest::newRow("extra-header-and-overwrite")
+            << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
+            << true << true
+            << QStringList{
+                uR"("content-disposition":"form-data; name=\"text\"; filename=rfc3252.txt")"_s,
+                uR"("content-type":"text/plain")"_s,
+                uR"("content-length":"70")"_s};
+}
+
+void tst_QFormDataBuilder::setHeadersDoesNotAffectHeaderFieldsManagedByBuilder()
+{
+    QFETCH(const QLatin1StringView, name_data);
+    QFETCH(const QAnyStringView, body_name_data);
+    QFETCH(const bool, overwrite);
+    QFETCH(const bool, extra_headers);
+    QFETCH(const QStringList, expected_headers);
+
+    QBuffer buff;
+
+    QFormDataBuilder qfdb;
+    QFormDataPartBuilder &qfdpb = qfdb.part(name_data).setBodyDevice(&buff, body_name_data);
+
+    if (overwrite || extra_headers) {
+        QHttpHeaders headers;
+
+        if (overwrite) {
+            headers.append(QHttpHeaders::WellKnownHeader::ContentType, "attachment");
+            qfdpb.setHeaders(headers);
+        }
+
+        if (extra_headers) {
+            headers.append(QHttpHeaders::WellKnownHeader::ContentLength, "70");
+            qfdpb.setHeaders(std::move(headers));
+        }
+    }
+
+    const QHttpPart httpPart = qfdpb.build();
+
+    const auto msg = QDebug::toString(httpPart);
+    for (const auto &header : expected_headers)
+        QVERIFY2(msg.contains(header), qPrintable(header));
+}
+
+void tst_QFormDataBuilder::specifyMimeType_data()
+{
+    QTest::addColumn<QLatin1StringView>("name_data");
+    QTest::addColumn<QAnyStringView>("body_name_data");
+    QTest::addColumn<QAnyStringView>("mime_type");
+    QTest::addColumn<QString>("expected_content_type_data");
+
+    QTest::newRow("not-specified") << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
+        << QAnyStringView("text/plain"_L1) << uR"("content-type":"text/plain")"_s;
+    QTest::newRow("mime-specified") << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
+        << QAnyStringView("text/plain"_L1) << uR"("content-type":"text/plain")"_s;
+    // wrong mime type specified but it is not overridden by the deduction
+    QTest::newRow("wrong-mime-specified") << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
+        << QAnyStringView("image/jpeg"_L1) << uR"("content-type":"image/jpeg)"_s;
+}
+
+void tst_QFormDataBuilder::specifyMimeType()
+{
+    QFETCH(const QLatin1StringView, name_data);
+    QFETCH(const QAnyStringView, body_name_data);
+    QFETCH(const QAnyStringView, mime_type);
+    QFETCH(const QString, expected_content_type_data);
+
+    QBuffer buff;
+
+    QFormDataBuilder qfdb;
+    QFormDataPartBuilder &qfdpb = qfdb.part(name_data).setBodyDevice(&buff, body_name_data);
+
+    if (!mime_type.empty())
+        qfdpb.setBodyDevice(&buff, body_name_data, mime_type);
+    else
+        qfdpb.setBodyDevice(&buff, body_name_data);
+
+    const QHttpPart httpPart = qfdpb.build();
+
+    const auto msg = QDebug::toString(httpPart);
+    QVERIFY(msg.contains(expected_content_type_data));
 }
 
 
