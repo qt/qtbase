@@ -306,6 +306,7 @@ public class QtActivityBase extends Activity implements QtNative.AppStateDetails
     @Override
     protected void onNewIntent(Intent intent)
     {
+        addReferrer(intent);
         QtNative.onNewIntent(intent);
     }
 
