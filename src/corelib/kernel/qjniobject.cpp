@@ -34,19 +34,10 @@ using namespace Qt::StringLiterals;
 
     \sa QJniEnvironment
 
-    \section1 General Notes
-
-    \list
-        \li Class names need to be fully-qualified, for example: \c "java/lang/String".
-        \li Method signatures are written as \c "(ArgumentsTypes)ReturnType", see \l {JNI Types}.
-        \li All object types are returned as a QJniObject.
-    \endlist
-
     \section1 Method Signatures
 
     QJniObject provides convenience functions that will use the correct signature based on the
-    provided template types. For functions that only return and take \l {JNI types}, the
-    signature can be generate at compile time:
+    provided or deduced template arguments.
 
     \code
     jint x = QJniObject::callMethod<jint>("getSize");
@@ -54,13 +45,11 @@ using namespace Qt::StringLiterals;
     jint ret = jString1.callMethod<jint>("compareToIgnoreCase", jString2.object<jstring>());
     \endcode
 
-    These functions are variadic templates, and the compiler will deduce the template arguments
-    from the actual argument types. In many situations, only the return type needs to be provided
-    explicitly.
-
-    For functions that take other argument types, you need to supply the signature yourself. It is
-    important that the signature matches the function you want to call. The example below
-    demonstrates how to call different static functions:
+    These functions are variadic templates, and the compiler will deduce the
+    signature from the actual argument types. Only the return type needs to be
+    provided explicitly. QJniObject can deduce the signature string for
+    functions that take \l {JNI types}, and for types that have been declared
+    with the QtJniTypes type mapping.
 
     \code
     // Java class
@@ -72,6 +61,31 @@ using namespace Qt::StringLiterals;
         static String[] stringArray(String s1, String s2) { ... }
     }
     \endcode
+
+    \code
+    // C++ code
+    Q_DECLARE_JNI_CLASS(TestClass, "org/qtproject/qt/TestClass")
+
+    // ...
+    using namespace QtJniTypes;
+    TestClass testClass = TestClass::callStaticMethod<TestClass>("create");
+    \endcode
+
+    This allows working with arbitrary Java and Android types in C++ code, without having to
+    create JNI signature strings explicitly.
+
+    \section2 Explicit JNI Signatures
+
+    It is possible to supply the signature yourself. In that case, it is important
+    that the signature matches the function you want to call.
+
+    \list
+        \li Class names need to be fully-qualified, for example: \c "java/lang/String".
+        \li Method signatures are written as \c "(ArgumentsTypes)ReturnType", see \l {JNI Types}.
+        \li All object types are returned as a QJniObject.
+    \endlist
+
+    The example below demonstrates how to call different static functions:
 
     The signature structure is \c "(ArgumentsTypes)ReturnType". Array types in the signature
     must have the \c {[} prefix, and the fully-qualified \c Object type names must have the
