@@ -79,6 +79,17 @@
         writer.callMethod("write", 42);
     }
     \endcode
+
+    In addition to the QJniObject API, those C++ classes also have a static
+    \c{registerNativeMethods} member function that can be used like this:
+
+    \code
+    QtJniTypes::File::registerNativeMethods({
+        Q_JNI_NATIVE_METHOD(freeFunction)
+    });
+    \endcode
+
+    \sa Q_DECLARE_JNI_NATIVE_METHOD, Q_JNI_NATIVE_METHOD
 */
 
 /*!
@@ -91,6 +102,7 @@
     QJniEnvironment::registerNativeMethod() with the help of the
     Q_JNI_NATIVE_METHOD macro.
 
+//! [register-free-function]
     \code
     // C++ side
 
@@ -116,6 +128,7 @@
         native public nativeFunction(long id);
     }
     \endcode
+//! [register-free-function]
 
     \sa Q_JNI_NATIVE_METHOD, Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE
 */
@@ -144,12 +157,13 @@
     QJniEnvironment::registerNativeMethod() with the help of the
     Q_JNI_NATIVE_SCOPED_METHOD macro.
 
+//! [register-scoped-function]
     \code
     class NativeHandler
     {
         // ...
     private:
-        static void handleChange((JNIEnv*, jobject, jlong id);
+        static void handleChange(JNIEnv*, jobject, jlong id);
         Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(handleChange)
     };
 
@@ -159,6 +173,7 @@
         Q_JNI_NATIVE_SCOPED_METHOD(handleChange, NativeHandler)
     });
     \endcode
+//! [register-scoped-function]
 
     \sa Q_DECLARE_JNI_NATIVE_METHOD, Q_JNI_NATIVE_SCOPED_METHOD
 */
