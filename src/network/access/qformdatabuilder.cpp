@@ -247,6 +247,23 @@ QHttpPart QFormDataPartBuilder::build()
     The QFormDataBuilder class can be used to build a QHttpMultiPart object
     with the content type set to be FormDataType by default.
 
+    The snippet below demonstrates how to build a multipart message with
+    QFormDataBuilder:
+
+    \code
+        QFormDataBuilder builder;
+        QFile image(u"../../pic.png"_s); image.open(QFile::ReadOnly);
+        QFile mask(u"../../mask.png"_s); mask.open(QFile::ReadOnly);
+
+        builder.part("image"_L1).setBodyDevice(&image, "the actual image");
+        builder.part("mask"_L1).setBodyDevice(&mask, "the mask image");
+        builder.part("prompt"_L1).setBody("Lobster wearing a beret");
+        builder.part("n"_L1).setBody("2");
+        builder.part("size"_L1).setBody("512x512");
+
+        std::unique_ptr<QHttpMultiPart> = builder.buildMultiPart();
+    \endcode
+
     \sa QHttpPart, QHttpMultiPart, QFormDataPartBuilder
 */
 
