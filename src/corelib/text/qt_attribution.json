@@ -30,13 +30,14 @@
     "Comment": { "Files": "For update, see qtbase/util/locale_database/cldr2qlocalexml.py" },
     "Files": [ "qlocale_data_p.h",
                "../time/qtimezoneprivate_data_p.h", "../time/qhijricalendar_data_p.h",
-               "../time/qjalalicalendar_data_p.h", "../time/qromancalendar_data_p.h" ],
+               "../time/qjalalicalendar_data_p.h", "../time/qromancalendar_data_p.h",
+               "../../../util/locale_database/testlocales/localemodel.cpp" ],
 
     "Description": "The Unicode CLDR provides key building blocks for software to support the
  world's languages, with the largest and most extensive standard repository of locale data
  available.",
     "Homepage": "https://cldr.unicode.org/",
-    "Version": "v44.1",
+    "Version": "v45",
     "License": "Unicode License v3",
     "LicenseId": "Unicode-3.0",
     "Copyright": "Copyright (C) 2004-2023 Unicode, Inc."

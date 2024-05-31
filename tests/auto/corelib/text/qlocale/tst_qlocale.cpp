@@ -3270,8 +3270,7 @@ void tst_QLocale::ampm_data()
     QTest::newRow("tr_TR") << QString::fromUtf8("\303\226\303\226")
                            << QString::fromUtf8("\303\226\123");
     QTest::newRow("id_ID") << QStringLiteral("AM") << QStringLiteral("PM");
-    // CLDR v44 made Tamil's AM/PM inconsistent; AM was "முற்பகல்" before.
-    QTest::newRow("ta_LK") << QString::fromUtf8("AM") << QString::fromUtf8("பிற்பகல்");
+    QTest::newRow("ta_LK") << QString::fromUtf8("AM") << QString::fromUtf8("PM");
 }
 
 void tst_QLocale::ampm()
