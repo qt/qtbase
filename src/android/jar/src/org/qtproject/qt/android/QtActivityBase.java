@@ -295,6 +295,7 @@ public class QtActivityBase extends Activity
     @Override
     protected void onNewIntent(Intent intent)
     {
+        addReferrer(intent);
         QtNative.onNewIntent(intent);
     }
 
