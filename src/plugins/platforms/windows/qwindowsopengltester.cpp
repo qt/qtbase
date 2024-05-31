@@ -65,7 +65,9 @@ private:
 
 QDirect3D9Handle::QDirect3D9Handle()
 {
+#ifndef QT_NO_OPENGL
     m_direct3D9 = Direct3DCreate9(D3D_SDK_VERSION);
+#endif
 }
 
 QDirect3D9Handle::~QDirect3D9Handle()
