@@ -969,10 +969,10 @@ void tst_QTimeZone::stressTest()
 void tst_QTimeZone::windowsId()
 {
 /*
-    Current Windows zones for "Central Standard Time":
+    Current (CLDR v45) Windows zones for "Central Standard Time":
     Region      IANA Id(s)
     Default     "America/Chicago"
-    Canada      "America/Winnipeg America/Rainy_River America/Rankin_Inlet America/Resolute"
+    Canada      "America/Winnipeg America/Rankin_Inlet America/Resolute"
     Mexico      "America/Matamoros"
     USA         "America/Chicago America/Indiana/Knox America/Indiana/Tell_City America/Menominee"
                 "America/North_Dakota/Beulah America/North_Dakota/Center"
@@ -1003,7 +1003,7 @@ void tst_QTimeZone::windowsId()
     list << "America/Chicago" << "America/Indiana/Knox" << "America/Indiana/Tell_City"
          << "America/Matamoros" << "America/Menominee" << "America/North_Dakota/Beulah"
          << "America/North_Dakota/Center" << "America/North_Dakota/New_Salem"
-         << "America/Ojinaga" << "America/Rainy_River" << "America/Rankin_Inlet"
+         << "America/Ojinaga" << "America/Rankin_Inlet"
          << "America/Resolute" << "America/Winnipeg" << "CST6CDT";
     QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time"), list);
 
@@ -1014,7 +1014,7 @@ void tst_QTimeZone::windowsId()
 
     // Check valid country returns list in preference order
     list.clear();
-    list << "America/Winnipeg" << "America/Rainy_River" << "America/Rankin_Inlet"
+    list << "America/Winnipeg" << "America/Rankin_Inlet"
          << "America/Resolute";
     QCOMPARE(QTimeZone::windowsIdToIanaIds("Central Standard Time", QLocale::Canada), list);
 

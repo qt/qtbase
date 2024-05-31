@@ -25,8 +25,8 @@ namespace QtPrivate::Jalali {
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2024-01-09 from the
-    Common Locale Data Repository v44.1
+    This part of the file was generated on 2024-05-31 from the
+    Common Locale Data Repository v45
 
     http://www.unicode.org/cldr/
 
@@ -706,6 +706,10 @@ static constexpr QCalendarLocale locale_data[] = {
       {   341,    66,    25,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Anii/Latin/Benin
       {   342,    29,   110,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Kangri/Devanagari/India
       {   343,    66,   117,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Venetian/Latin/Italy
+      {   344,    66,   110,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Kuvi/Latin/India
+      {   344,    29,   110,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Kuvi/Devanagari/India
+      {   344,    91,   110,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Kuvi/Odia/India
+      {   344,   131,   110,    0,    0,    0,    0,  153,  153, 83, 83, 83, 83, 26, 26 },// Kuvi/Telugu/India
       {     0,     0,     0,    0,    0,    0,    0,    0,    0,  0,  0,  0,  0,  0,  0 },// trailing zeros
 };
 

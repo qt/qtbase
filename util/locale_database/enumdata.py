@@ -380,6 +380,8 @@ language_map = {
     341: ("Anii",                        "blo"),
     342: ("Kangri",                      "xnr"),
     343: ("Venetian",                    "vec"),
+    # added in CLDR v45
+    344: ("Kuvi",                        "kxv"),
 }
 # Don't add languages just because they exist; check CLDR does provide
 # substantial data for locales using it; and check, once added, they
