@@ -2446,8 +2446,11 @@ const QWindow *QWindowPrivate::forwardToPopup(QEvent *event, const QWindow */*ac
             /*  Popups are expected to be able to directly handle the
                 drag-release sequence after pressing to open, as well as
                 any other mouse events that occur within the popup's bounds. */
-            if (QCoreApplication::sendEvent(popupWindow, pointerEvent.get()))
-                ret = popupWindow;
+            if (QCoreApplication::sendEvent(popupWindow, pointerEvent.get())) {
+                event->setAccepted(pointerEvent->isAccepted());
+                if (pointerEvent->isAccepted())
+                    ret = popupWindow;
+            }
             qCDebug(lcPopup) << q << "forwarded" << event->type() <<  "to popup" << popupWindow
                              << "handled?" << (ret != nullptr) << event->isAccepted();
             return ret;
