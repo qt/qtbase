@@ -27,12 +27,12 @@ template<>                                                      \
 struct QtJniTypes::Traits<QtJniTypes::Type> {                   \
     static constexpr auto signature()                           \
     {                                                           \
-        static_assert((Signature[0] == 'L'                      \
-                    || Signature[0] == '[')                     \
-                    && Signature[sizeof(Signature) - 2] == ';', \
+        constexpr QtJniTypes::CTString sig(Signature);          \
+        static_assert((sig.startsWith('L') || sig.startsWith("[L"))    \
+                    && sig.endsWith(';'),                       \
                     "Type signature needs to start with 'L' or" \
-                    " '[' and end with ';'");                   \
-        return QtJniTypes::CTString(Signature);                 \
+                    " '[L', and end with ';'");                 \
+        return sig;                                             \
     }                                                           \
 };                                                              \
 
