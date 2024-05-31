@@ -55,7 +55,7 @@ int qtKeyForPrivateUseQnxKey( int key )
     case KEYCODE_KP_UP:       return Qt::Key_Up;
     case KEYCODE_KP_PG_UP:    return Qt::Key_PageUp;
     case KEYCODE_KP_LEFT:     return Qt::Key_Left;
-    case KEYCODE_KP_FIVE:     return Qt::Key_5;
+    case KEYCODE_KP_FIVE:     return Qt::Key_Clear;
     case KEYCODE_KP_RIGHT:    return Qt::Key_Right;
     case KEYCODE_KP_END:      return Qt::Key_End;
     case KEYCODE_KP_DOWN:     return Qt::Key_Down;
