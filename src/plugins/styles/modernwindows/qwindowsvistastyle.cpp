@@ -2836,6 +2836,11 @@ void QWindowsVistaStyle::drawControl(ControlElement element, const QStyleOption 
             }
             QRect rect = option->rect;
 
+            //fill popup background
+            QWindowsThemeData popupbackgroundTheme(widget, painter, QWindowsVistaStylePrivate::MenuTheme,
+                             MENU_POPUPBACKGROUND, stateId, option->rect);
+            d->drawBackground(popupbackgroundTheme);
+
             //draw vertical menu line
             if (option->direction == Qt::LeftToRight)
                 checkcol += rect.x();
