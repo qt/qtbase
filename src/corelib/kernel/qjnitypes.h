@@ -36,7 +36,6 @@ struct QtJniTypes::Traits<QtJniTypes::Type> {                   \
     }                                                           \
 };                                                              \
 
-// QT_TECH_PREVIEW_API
 #define Q_DECLARE_JNI_CLASS(Type, Signature)                    \
 Q_DECLARE_JNI_TYPE_HELPER(Type)                                 \
 template<>                                                      \
@@ -178,7 +177,6 @@ va_##Method(JNIEnv *env, jclass thiz, ...)                                      
     }, argTuple);                                                               \
 }                                                                               \
 
-// QT_TECH_PREVIEW_API
 #define Q_DECLARE_JNI_NATIVE_METHOD(...)                        \
     QT_OVERLOADED_MACRO(QT_DECLARE_JNI_NATIVE_METHOD, __VA_ARGS__) \
 
@@ -196,10 +194,8 @@ static const JNINativeMethod Method##_method = {                \
 #define QT_DECLARE_JNI_NATIVE_METHOD_1(Method)                  \
     QT_DECLARE_JNI_NATIVE_METHOD_2(Method, Method)              \
 
-// QT_TECH_PREVIEW_API
 #define Q_JNI_NATIVE_METHOD(Method) QtJniMethods::Method##_method
 
-// QT_TECH_PREVIEW_API
 #define Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(...)                                        \
     QT_OVERLOADED_MACRO(QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE, __VA_ARGS__)              \
 
@@ -213,7 +209,6 @@ static const JNINativeMethod Method##_method = {                \
 #define QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_1(Method)                                  \
     QT_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE_2(Method, Method)                              \
 
-// QT_TECH_PREVIEW_API
 #define Q_JNI_NATIVE_SCOPED_METHOD(Method, Scope) Scope::Method##_method
 
 QT_END_NAMESPACE

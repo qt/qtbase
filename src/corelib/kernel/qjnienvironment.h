@@ -69,7 +69,6 @@ public:
              , std::enable_if_t<QtJniTypes::isObjectType<Class>(), bool> = true
 #endif
     >
-    QT_TECH_PREVIEW_API
     bool registerNativeMethods(std::initializer_list<JNINativeMethod> methods)
     {
         return registerNativeMethods(QtJniTypes::Traits<Class>::className().data(), methods);
