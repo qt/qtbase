@@ -320,6 +320,30 @@ JavaVM *QJniEnvironment::javaVM()
 }
 
 /*!
+    \fn template <typename Class> bool QJniEnvironment::registerNativeMethods(std::initializer_list<JNINativeMethods> methods)
+    \overload
+
+    Registers the Java methods in \a methods with the Java class represented by
+    \c Class, and returns whether the registration was successful.
+
+    The \c Class type has to be declared within the QtJniTypes namespace using
+    the Q_DECLARE_JNI_CLASS macro. Functions that are implemented as free C or
+    C++ functions have to be declared using one of the
+    Q_DECLARE_JNI_NATIVE_METHOD macros, and passed into the registration using
+    the Q_JNI_NATIVE_METHOD macro.
+
+    \include jni.qdoc register-free-function
+
+    For functions that are implemented as static class member functions, use
+    the \l{Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE}{macros for scoped
+    functions} instead.
+
+    \include jni.qdoc register-scoped-function
+*/
+
+/*!
+    \overload
+
     Registers the Java methods in the array \a methods of size \a size, each of
     which can call native C++ functions from class \a className. These methods
     must be registered before any attempt to call them.
