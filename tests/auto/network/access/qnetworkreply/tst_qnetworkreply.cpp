@@ -6682,7 +6682,6 @@ void tst_QNetworkReply::httpConnectionCount()
 
     int pendingConnectionCount = 0;
 
-    using namespace std::chrono_literals;
     const auto newPendingConnection = [&server]() { return server->hasPendingConnections(); };
     // If we have http2 enabled then the second connection will take a little
     // longer to be established because we will wait for the first one to finish
