@@ -17,8 +17,8 @@ struct LocaleListItem
 // GENERATED PART STARTS HERE
 
 /*
-    This part of the file was generated on 2024-04-22 from the
-    Common Locale Data Repository v44.1
+    This part of the file was generated on 2024-05-31 from the
+    Common Locale Data Repository v45
 
     http://www.unicode.org/cldr/
 
@@ -661,6 +661,7 @@ const LocaleListItem g_locale_list[] = {
     {    341,    25 }, // Anii/Benin
     {    342,   110 }, // Kangri/India
     {    343,   117 }, // Venetian/Italy
+    {    344,   110 }, // Kuvi/India
 };
 
 // GENERATED PART ENDS HERE
