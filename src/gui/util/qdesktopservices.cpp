@@ -210,6 +210,7 @@ bool QDesktopServices::openUrl(const QUrl &url)
     the destruction of the handler object does not overlap with concurrent
     invocations of openUrl() using it.
 
+    \target configuring qdesktopservices url handler on ios and macos
     \section1 iOS and \macos
 
     To use this function for receiving data from other apps on iOS/\macos
@@ -239,6 +240,7 @@ bool QDesktopServices::openUrl(const QUrl &url)
     For more information, see the Apple Developer Documentation for
     \l {iOS: Supporting Associated Domains}{Supporting Associated Domains}.
 
+    \target configuring qdesktopservices url handler on android
     \section1 Android
 
     To use this function for receiving data from other apps on Android, you
