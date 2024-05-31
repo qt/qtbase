@@ -1,0 +1,215 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \namespace QtJniTypes
+    \inmodule QtCore
+    \ingroup frameworks-technologies
+    \keyword JNI
+    \since 6.8
+
+    \brief The QtJniTypes namespace declares C++ types that correspond to Java types.
+
+    The \l{Java Native Interface Specification}{Java Native Interface}
+    framework enables native C or C++ code to call Java APIs, and to register
+    native C or C++ functions that Java code should be able to call with the
+    JVM. In Qt, the QJniObject and QJniEnvironment types provide convenient
+    wrappers for using JNI.
+
+    Since the Java language, similar to C++, supports overloading, functions
+    need to be specified including their entire signature string. This is
+    complex, repetitive, and error prone, especially when functions take
+    several parameters. QJniObject provides variadic template APIs that can
+    deduce the signature string for a function call at compile time, based on
+    the C++ types passed into the template. For this to work, the mapping of
+    those C++ types to their corresponding JNI string needs to be known at
+    compile time.
+
+    Qt implements this mapping for the standard \l {QJniObject::JNI Types}{JNI types}.
+    By using the Q_DECLARE_JNI_CLASS macro, the mapping can be extended for
+    arbitrary Java types.
+
+    \sa Q_DECLARE_JNI_CLASS, Q_DECLARE_JNI_NATIVE_METHOD, Q_JNI_NATIVE_METHOD
+*/
+
+/*!
+    \macro Q_DECLARE_JNI_TYPE(Type, JavaSignature)
+    \internal
+    \relates QtJniTypes
+    \since 6.8
+
+    Declares a C++ type \a Type in the QtJniTypes namespace that wraps the Java
+    type \a JavaSignature. The signature needs to start with \c{[L} to indicate
+    an array of a class, or with \c{L} for classes, and end with a semicolon
+    \c{;}.
+
+    \code
+    Q_DECLARE_JNI_TYPE(StringArray, "[Ljava/lang/String;")
+    \endcode
+
+    \sa Q_DECLARE_JNI_CLASS
+*/
+
+/*!
+    \macro Q_DECLARE_JNI_CLASS(Type, JavaSignature)
+    \relates QtJniTypes
+    \since 6.8
+
+    Declares a C++ type \a Type in the QtJniTypes namespace that wraps the Java
+    class \a JavaSignature. The Java class name in \a JavaSignature needs to be
+    fully qualified, using \c{/} as the separator.
+
+    \code
+    Q_DECLARE_JNI_CLASS(File, "java/io/File")
+    Q_DECLARE_JNI_CLASS(FileWriter, "java/io/FileWriter")
+    \endcode
+
+    The C++ classes \c{QtJniTypes::File} and \c{QtJniTypes::FileWriter} are
+    then QJniObject-like types that can be used to instantiate the
+    corresponding Java class, to call methods, and to pass such instances
+    through QJniObject variadic template methods with automatic, compile-time
+    signature deduction.
+
+    \code
+    using namespace QtJniTypes;
+
+    File file("path/to/file"); // instantiates the java.io.File type in Java
+    if (file.callMethod<bool>("createNewFile")) {
+        FileWriter writer(file); // instantiates a java.io.FileWriter that operates on file
+        writer.callMethod("write", 42);
+    }
+    \endcode
+*/
+
+/*!
+    \macro Q_DECLARE_JNI_NATIVE_METHOD(Method)
+    \relates QtJniTypes
+    \since 6.8
+
+    Declares the free C or C++ function \a Method as a native method. The
+    method can later be registered with the JNI framework using
+    QJniEnvironment::registerNativeMethod() with the help of the
+    Q_JNI_NATIVE_METHOD macro.
+
+    \code
+    // C++ side
+
+    Q_DECLARE_JNI_CLASS(MyJavaType, "my/java/Type")
+
+    static void nativeFunction(JNIEnv *env, jobject thiz, jlong id)
+    {
+        // ...
+    }
+    Q_DECLARE_JNI_NATIVE_METHOD(nativeFunction)
+
+    Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
+    {
+        QJniEnvironment env;
+        env.registerNativeMethods<QtJniTypes::MyJavaType>({
+            Q_JNI_NATIVE_METHOD(nativeFunction)
+        });
+    }
+
+    // Java side
+    public class MyJavaType
+    {
+        native public nativeFunction(long id);
+    }
+    \endcode
+
+    \sa Q_JNI_NATIVE_METHOD, Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE
+*/
+
+/*!
+    \macro Q_DECLARE_JNI_NATIVE_METHOD(Method, JavaName)
+    \relates QtJniTypes
+    \overload
+    \since 6.8
+
+    Declares the free C or C++ function \a Method as a native method that's
+    available in Java as \a JavaName. The method can later be registered with
+    the JNI framework using QJniEnvironment::registerNativeMethod() with the
+    help of the Q_JNI_NATIVE_METHOD macro.
+
+    \sa Q_JNI_NATIVE_METHOD, Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE
+*/
+
+/*!
+    \macro Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(Method)
+    \relates QtJniTypes
+    \since 6.8
+
+    Declares the C++ static class member function \a Method as a native method.
+    The method can later be registered with the JNI framework using
+    QJniEnvironment::registerNativeMethod() with the help of the
+    Q_JNI_NATIVE_SCOPED_METHOD macro.
+
+    \code
+    class NativeHandler
+    {
+        // ...
+    private:
+        static void handleChange((JNIEnv*, jobject, jlong id);
+        Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(handleChange)
+    };
+
+    \dots
+    QJniEnvironment env;
+    env.registerNativeMethods<QtJniTypes::MyJavaType>({
+        Q_JNI_NATIVE_SCOPED_METHOD(handleChange, NativeHandler)
+    });
+    \endcode
+
+    \sa Q_DECLARE_JNI_NATIVE_METHOD, Q_JNI_NATIVE_SCOPED_METHOD
+*/
+
+/*!
+    \macro Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE(Method, JavaName)
+    \relates QtJniTypes
+    \overload
+    \since 6.8
+
+    Declares the C++ static class member function \a Method as a native method
+    that's available in Java as \a JavaName. The method can later be registered
+    with the JNI framework using QJniEnvironment::registerNativeMethod() with
+    the help of the Q_JNI_NATIVE_METHOD macro.
+
+    \sa Q_DECLARE_JNI_NATIVE_METHOD, Q_JNI_NATIVE_SCOPED_METHOD
+*/
+
+/*!
+    \macro Q_JNI_NATIVE_METHOD(Method)
+    \relates QtJniTypes
+    \since 6.8
+
+    Makes the previously \l{Q_DECLARE_JNI_NATIVE_METHOD}{declared} native
+    method \a Method available for registration with the JNI framework. Use
+    this macro when registering the method with JNI using
+    QJniEnvironment::registerNativeMethod().
+
+    \code
+    Q_DECL_EXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
+    {
+        QJniEnvironment env;
+        env.registerNativeMethods<QtJniTypes::MyJavaType>({
+            Q_JNI_NATIVE_METHOD(nativeFunction)
+        });
+    }
+    \endcode
+
+    \sa Q_DECLARE_JNI_NATIVE_METHOD
+*/
+
+/*!
+    \macro Q_JNI_NATIVE_SCOPED_METHOD(Method, Scope)
+    \relates QtJniTypes
+    \since 6.8
+
+    Makes the previously
+    \l{Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE}{declared} native method
+    \a Method in scope \a Scope available for registration with the JNI framework.
+    Use this macro when registering the method with JNI using
+    QJniEnvironment::registerNativeMethod().
+
+    \sa Q_JNI_NATIVE_METHOD, Q_DECLARE_JNI_NATIVE_METHOD_IN_CURRENT_SCOPE
+*/
