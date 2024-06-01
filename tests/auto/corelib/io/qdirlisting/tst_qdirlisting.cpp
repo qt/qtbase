@@ -377,9 +377,19 @@ void tst_QDirListing::iterateRelativeDirectory()
     QFETCH(QStringList, nameFilters);
     QFETCH(const QStringList, entries);
 
+    const QDirListing lister(dirName, nameFilters, flags);
+
+    if (nameFilters.isEmpty() || nameFilters == QStringList("*"_L1))
+        QVERIFY(lister.nameFilters().isEmpty());
+    else
+        QCOMPARE_EQ(lister.nameFilters(), nameFilters);
+
+    QCOMPARE(lister.iteratorFlags(), flags);
+    QCOMPARE(lister.iteratorPath(), dirName);
+
     // If canonicalFilePath is empty (e.g. for broken symlinks), use absoluteFilePath()
     QStringList list;
-    for (const auto &dirEntry : QDirListing(dirName, nameFilters, flags)) {
+    for (const auto &dirEntry : lister) {
         QString filePath = dirEntry.canonicalFilePath();
         list.emplace_back(!filePath.isEmpty()? filePath : dirEntry.absoluteFilePath());
     }
