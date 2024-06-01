@@ -84,7 +84,13 @@ void QtPrivate::watchContinuationImpl(const QObject *context, QSlotObjectBase *s
                          void *args[] = { nullptr }; // for `void` return value
                          slot->call(nullptr, args);
                      });
-    QObject::connect(watcher, &QObjectContinuationWrapper::run, watcher, &QObject::deleteLater);
+    QObject::connect(watcher, &QObjectContinuationWrapper::run, watcher, destroyWatcher);
+
+    // We need to connect to destroyWatcher here, instead of delete or deleteLater().
+    // If the continuation is called from a separate thread, emit watcher->run() can't detect that
+    // the watcher has been deleted in the separate thread, causing a race condition and potential
+    // heap-use-after-free issue inside QObject::doActivate. destroyWatcher forces the deletion of
+    // the watcher to occur after emit watcher->run() completes and prevents the race condition.
     QObject::connect(context, &QObject::destroyed, watcher, destroyWatcher);
 
     fi.setContinuation([watcherMutex, watcher = QPointer(watcher)]
