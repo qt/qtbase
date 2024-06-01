@@ -636,6 +636,23 @@ QString QDirListing::iteratorPath() const
 }
 
 /*!
+    Returns the set of IteratorFlags used to construct this QDirListing.
+*/
+QDirListing::IteratorFlags QDirListing::iteratorFlags() const
+{
+    return d->iteratorFlags;
+}
+
+/*!
+    Returns the list of file name glob filters used to construct this
+    QDirListing.
+*/
+QStringList QDirListing::nameFilters() const
+{
+    return d->nameFilters;
+}
+
+/*!
     \fn QDirListing::const_iterator QDirListing::begin() const
     \fn QDirListing::const_iterator QDirListing::cbegin() const
     \fn QDirListing::const_iterator QDirListing::end() const

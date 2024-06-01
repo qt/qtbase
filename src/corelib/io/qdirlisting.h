@@ -50,6 +50,8 @@ public:
     ~QDirListing();
 
     QString iteratorPath() const;
+    IteratorFlags iteratorFlags() const;
+    QStringList nameFilters() const;
 
     class Q_CORE_EXPORT DirEntry
     {
