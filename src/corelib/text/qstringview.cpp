@@ -302,17 +302,17 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn template <typename Container, if_compatible_container<Container>> QStringView::QStringView(const Container &str)
 
-    Constructs a string view on \a str. The length is taken from \c{str.size()}.
+    Constructs a string view on \a str. The length is taken from \c{std::size(str)}.
 
-    \c{str.data()} must remain valid for the lifetime of this string view object.
+    \c{std::data(str)} must remain valid for the lifetime of this string view object.
 
-    This constructor only participates in overload resolution if \c StdBasicString is an
-    instantiation of \c std::basic_string with a compatible character type. The
+    This constructor only participates in overload resolution if \c Container is a
+    container with a compatible character type as \c{value_type}. The
     compatible character types are: \c QChar, \c ushort, \c char16_t and
     (on platforms, such as Windows, where it is a 16-bit type) \c wchar_t.
 
-    The string view will be empty if and only if \c{str.empty()}. It is unspecified
-    whether this constructor can result in a null string view (\c{str.data()} would
+    The string view will be empty if and only if \c{std::size(str) == 0}. It is unspecified
+    whether this constructor can result in a null string view (\c{std::data(str)} would
     have to return \nullptr for this).
 
     \sa isNull(), isEmpty()

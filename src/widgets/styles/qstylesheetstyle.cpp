@@ -4133,7 +4133,12 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
 
     case CE_HeaderLabel:
         if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(opt)) {
-            QStyleOptionHeader hdr(*header);
+          QStyleOptionHeaderV2 hdr;
+          QStyleOptionHeader &v1Copy = hdr;
+          if (auto v2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(opt))
+              hdr = *v2;
+          else
+              v1Copy = *header;
             QRenderRule subRule = renderRule(w, opt, PseudoElement_HeaderViewSection);
             if (hasStyleRule(w, PseudoElement_HeaderViewUpArrow)
              || hasStyleRule(w, PseudoElement_HeaderViewDownArrow)) {
@@ -6494,6 +6499,8 @@ QPixmap QStyleSheetStyle::loadPixmap(const QString &fileName, const QObject *con
     pixmap.setDevicePixelRatio(sourceDevicePixelRatio);
     return pixmap;
 }
+
+#undef ceil
 
 QT_END_NAMESPACE
 

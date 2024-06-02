@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2023 The Qt Company Ltd.
 ** Copyright (C) 2013 Ruslan Nigmatullin <euroelessar@yandex.ru>
 ** Contact: https://www.qt.io/licensing/
 **
@@ -39,6 +40,8 @@
 
 #include "qmessageauthenticationcode.h"
 #include "qvarlengtharray.h"
+#include "qmutex.h"
+#include "private/qlocking_p.h"
 
 #include "qtcore-config_p.h"
 
@@ -106,11 +109,18 @@ public:
 
     QByteArray key;
     QByteArray result;
+    QBasicMutex finalizeMutex;
     QCryptographicHash messageHash;
     QCryptographicHash::Algorithm method;
     bool messageHashInited;
 
     void initMessageHash();
+    void finalize();
+
+    // when not called from the static hash() function, this function needs to be
+    // called with finalizeMutex held:
+    void finalizeUnchecked();
+    // END functions that need to be called with finalizeMutex held
 };
 
 void QMessageAuthenticationCodePrivate::initMessageHash()
@@ -247,27 +257,36 @@ bool QMessageAuthenticationCode::addData(QIODevice *device)
 */
 QByteArray QMessageAuthenticationCode::result() const
 {
-    if (!d->result.isEmpty())
-        return d->result;
+    d->finalize();
+    return d->result;
+}
 
-    d->initMessageHash();
+void QMessageAuthenticationCodePrivate::finalize()
+{
+    const auto lock = qt_scoped_lock(finalizeMutex);
+    if (!result.isEmpty())
+        return;
+    initMessageHash();
+    finalizeUnchecked();
+}
 
-    const int blockSize = qt_hash_block_size(d->method);
+void QMessageAuthenticationCodePrivate::finalizeUnchecked()
+{
+    const int blockSize = qt_hash_block_size(method);
 
-    QByteArray hashedMessage = d->messageHash.result();
+    QByteArray hashedMessage = messageHash.result();
 
     QVarLengthArray<char> oKeyPad(blockSize);
-    const char * const keyData = d->key.constData();
+    const char * const keyData = key.constData();
 
     for (int i = 0; i < blockSize; ++i)
         oKeyPad[i] = keyData[i] ^ 0x5c;
 
-    QCryptographicHash hash(d->method);
+    QCryptographicHash hash(method);
     hash.addData(oKeyPad.data(), oKeyPad.size());
     hash.addData(hashedMessage);
 
-    d->result = hash.result();
-    return d->result;
+    result = hash.result();
 }
 
 /*!

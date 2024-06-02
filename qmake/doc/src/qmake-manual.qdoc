@@ -1126,7 +1126,7 @@
     \note This variable applies only to Android targets.
 
     Specifies the target Android API level for the project. By default, this
-    variable is set to API level 30.
+    variable is set to API level 31.
 
     \target ANDROID_VERSION_CODE
     \section1 ANDROID_VERSION_CODE

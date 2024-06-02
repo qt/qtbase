@@ -220,15 +220,16 @@ for(ever) {
             } else {
                 lib_bases = $$MODULE_MODULE$$qtPlatformTargetSuffix()
                 darwin: lib_bases *= $$MODULE_MODULE
+                add_lib_to_pretargetdeps = false
                 win32|contains(MODULE_CONFIG, staticlib) {
                     lib_prefix = $$MODULE_LIBS/$$QMAKE_PREFIX_STATICLIB
                     lib_suffixes = $$QMAKE_EXTENSION_STATICLIB
                     lib_suffixes *= $$QMAKE_LIB_EXTENSIONS
-                    add_lib_to_pretargetdeps = true
+                    !xcodebuild: \
+                        add_lib_to_pretargetdeps = true
                 } else {
                     lib_prefix = $$MODULE_LIBS/$$QMAKE_PREFIX_SHLIB
                     lib_suffixes = $$QMAKE_EXTENSION_SHLIB
-                    add_lib_to_pretargetdeps = false
                 }
                 candidates =
                 for(lib_base, lib_bases) {

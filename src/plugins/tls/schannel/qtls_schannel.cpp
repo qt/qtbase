@@ -2122,6 +2122,27 @@ bool TlsCryptographSchannel::verifyCertContext(CERT_CONTEXT *certContext)
         verifyDepth = DWORD(q->peerVerifyDepth());
 
     const auto &caCertificates = q->sslConfiguration().caCertificates();
+
+    if (!rootCertOnDemandLoadingAllowed()
+            && !(chain->TrustStatus.dwErrorStatus & CERT_TRUST_IS_PARTIAL_CHAIN)
+            && (q->peerVerifyMode() == QSslSocket::VerifyPeer
+                    || (isClient && q->peerVerifyMode() == QSslSocket::AutoVerifyPeer))) {
+        // When verifying a peer Windows "helpfully" builds a chain that
+        // may include roots from the system store. But we don't want that if
+        // the user has set their own CA certificates.
+        // Since Windows claims this is not a partial chain the root is included
+        // and we have to check that it is one of our configured CAs.
+        CERT_CHAIN_ELEMENT *element = chain->rgpElement[chain->cElement - 1];
+        QSslCertificate certificate = getCertificateFromChainElement(element);
+        if (!caCertificates.contains(certificate)) {
+            auto error = QSslError(QSslError::CertificateUntrusted, certificate);
+            sslErrors += error;
+            emit q->peerVerifyError(error);
+            if (q->state() != QAbstractSocket::ConnectedState)
+                return false;
+        }
+    }
+
     QList<QSslCertificate> peerCertificateChain;
     for (DWORD i = 0; i < verifyDepth; i++) {
         CERT_CHAIN_ELEMENT *element = chain->rgpElement[i];

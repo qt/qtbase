@@ -95,35 +95,41 @@ void Character::setClassType(Character::ClassType classType)
     mClassType = classType;
 }
 
-//! [0]
-void Character::read(const QJsonObject &json)
+//! [fromJson]
+Character Character::fromJson(const QJsonObject &json)
 {
-    if (json.contains("name") && json["name"].isString())
-        mName = json["name"].toString();
+    Character result;
 
-    if (json.contains("level") && json["level"].isDouble())
-        mLevel = json["level"].toInt();
+    if (const QJsonValue v = json["name"]; v.isString())
+        result.mName = v.toString();
 
-    if (json.contains("classType") && json["classType"].isDouble())
-        mClassType = ClassType(json["classType"].toInt());
+    if (const QJsonValue v = json["level"]; v.isDouble())
+        result.mLevel = v.toInt();
+
+    if (const QJsonValue v = json["classType"]; v.isDouble())
+        result.mClassType = ClassType(v.toInt());
+
+    return result;
 }
-//! [0]
+//! [fromJson]
 
-//! [1]
-void Character::write(QJsonObject &json) const
+//! [toJson]
+QJsonObject Character::toJson() const
 {
+    QJsonObject json;
     json["name"] = mName;
     json["level"] = mLevel;
     json["classType"] = mClassType;
+    return json;
 }
-//! [1]
+//! [toJson]
 
-void Character::print(int indentation) const
+void Character::print(QTextStream &s, int indentation) const
 {
     const QString indent(indentation * 2, ' ');
-    QTextStream(stdout) << indent << "Name:\t" << mName << "\n";
-    QTextStream(stdout) << indent << "Level:\t" << mLevel << "\n";
+    const QString className = QMetaEnum::fromType<ClassType>().valueToKey(mClassType);
 
-    QString className = QMetaEnum::fromType<ClassType>().valueToKey(mClassType);
-    QTextStream(stdout) << indent << "Class:\t" << className << "\n";
+    s << indent << "Name:\t" << mName << "\n"
+      << indent << "Level:\t" << mLevel << "\n"
+      << indent << "Class:\t" << className << "\n";
 }

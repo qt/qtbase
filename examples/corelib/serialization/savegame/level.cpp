@@ -72,46 +72,44 @@ void Level::setNpcs(const QList<Character> &npcs)
     mNpcs = npcs;
 }
 
-//! [0]
-void Level::read(const QJsonObject &json)
+//! [fromJson]
+Level Level::fromJson(const QJsonObject &json)
 {
-    if (json.contains("name") && json["name"].isString())
-        mName = json["name"].toString();
+    Level result;
 
-    if (json.contains("npcs") && json["npcs"].isArray()) {
-        QJsonArray npcArray = json["npcs"].toArray();
-        mNpcs.clear();
-        mNpcs.reserve(npcArray.size());
-        for (const QJsonValue &v : npcArray) {
-            QJsonObject npcObject = v.toObject();
-            Character npc;
-            npc.read(npcObject);
-            mNpcs.append(npc);
-        }
+    if (const QJsonValue v = json["name"]; v.isString())
+        result.mName = v.toString();
+
+    if (const QJsonValue v = json["npcs"]; v.isArray()) {
+        const QJsonArray npcs = v.toArray();
+        result.mNpcs.reserve(npcs.size());
+        for (const QJsonValue &npc : npcs)
+            result.mNpcs.append(Character::fromJson(npc.toObject()));
     }
-}
-//! [0]
 
-//! [1]
-void Level::write(QJsonObject &json) const
+    return result;
+}
+//! [fromJson]
+
+//! [toJson]
+QJsonObject Level::toJson() const
 {
+    QJsonObject json;
     json["name"] = mName;
     QJsonArray npcArray;
-    for (const Character &npc : mNpcs) {
-        QJsonObject npcObject;
-        npc.write(npcObject);
-        npcArray.append(npcObject);
-    }
+    for (const Character &npc : mNpcs)
+        npcArray.append(npc.toJson());
     json["npcs"] = npcArray;
+    return json;
 }
-//! [1]
+//! [toJson]
 
-void Level::print(int indentation) const
+void Level::print(QTextStream &s, int indentation) const
 {
     const QString indent(indentation * 2, ' ');
-    QTextStream(stdout) << indent << "Name:\t" << mName << "\n";
 
-    QTextStream(stdout) << indent << "NPCs:\n";
+    s << indent << "Name:\t" << mName << "\n"
+      << indent << "NPCs:\n";
     for (const Character &character : mNpcs)
-        character.print(2);
+        character.print(s, indentation + 1);
 }

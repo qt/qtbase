@@ -186,6 +186,9 @@ QNetworkReplyHttpImpl::QNetworkReplyHttpImpl(QNetworkAccessManager* const manage
         d->sslConfiguration.reset(new QSslConfiguration(request.sslConfiguration()));
 #endif
 
+    QObjectPrivate::connect(this, &QNetworkReplyHttpImpl::redirectAllowed, d,
+            &QNetworkReplyHttpImplPrivate::followRedirect, Qt::QueuedConnection);
+
     // FIXME Later maybe set to Unbuffered, especially if it is zerocopy or from cache?
     QIODevice::open(QIODevice::ReadOnly);
 
@@ -863,9 +866,6 @@ void QNetworkReplyHttpImplPrivate::postRequest(const QNetworkRequest &newHttpReq
         QObject::connect(delegate, SIGNAL(redirected(QUrl,int,int)),
                 q, SLOT(onRedirected(QUrl,int,int)),
                 Qt::QueuedConnection);
-
-        QObject::connect(q, SIGNAL(redirectAllowed()), q, SLOT(followRedirect()),
-                         Qt::QueuedConnection);
 
 #ifndef QT_NO_SSL
         QObject::connect(delegate, SIGNAL(sslConfigurationChanged(QSslConfiguration)),

@@ -63,7 +63,7 @@ class QVarLengthArray
     static_assert(std::is_nothrow_destructible_v<T>, "Types with throwing destructors are not supported in Qt containers.");
 
 public:
-    QVarLengthArray() : QVarLengthArray(0) {}
+    QVarLengthArray() : a(Prealloc), s(0), ptr(reinterpret_cast<T *>(array)) {}
 
     inline explicit QVarLengthArray(qsizetype size);
 
@@ -416,22 +416,22 @@ QVarLengthArray(InputIterator, InputIterator) -> QVarLengthArray<ValueType>;
 
 template <class T, qsizetype Prealloc>
 Q_INLINE_TEMPLATE QVarLengthArray<T, Prealloc>::QVarLengthArray(qsizetype asize)
-    : s(asize) {
-    static_assert(Prealloc > 0, "QVarLengthArray Prealloc must be greater than 0.");
-    Q_ASSERT_X(s >= 0, "QVarLengthArray::QVarLengthArray()", "Size must be greater than or equal to 0.");
-    if (s > Prealloc) {
-        ptr = reinterpret_cast<T *>(malloc(s * sizeof(T)));
-        Q_CHECK_PTR(ptr);
-        a = s;
-    } else {
-        ptr = reinterpret_cast<T *>(array);
-        a = Prealloc;
+    : QVarLengthArray()
+{
+    Q_ASSERT_X(asize >= 0, "QVarLengthArray::QVarLengthArray(qsizetype)",
+               "Size must be greater than or equal to 0.");
+
+    // historically, this ctor worked for non-copyable/non-movable T, so keep it working, why not?
+    // resize(asize) // this requires a movable or copyable T, can't use, need to do it by hand
+
+    if (asize > Prealloc) {
+        this->ptr = static_cast<T *>(malloc(asize * sizeof(T)));
+        Q_CHECK_PTR(this->ptr);
+        this->a = asize;
     }
-    if (QTypeInfo<T>::isComplex) {
-        T *i = ptr + s;
-        while (i != ptr)
-            new (--i) T;
-    }
+    if constexpr (QTypeInfo<T>::isComplex)
+        std::uninitialized_default_construct_n(data(), asize);
+    this->s = asize;
 }
 
 template <class T, qsizetype Prealloc>

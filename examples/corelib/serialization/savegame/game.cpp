@@ -68,7 +68,7 @@ QList<Level> Game::levels() const
     return mLevels;
 }
 
-//! [0]
+//! [newGame]
 void Game::newGame()
 {
     mPlayer = Character();
@@ -106,9 +106,9 @@ void Game::newGame()
     dungeon.setNpcs(dungeonNpcs);
     mLevels.append(dungeon);
 }
-//! [0]
+//! [newGame]
 
-//! [3]
+//! [loadGame]
 bool Game::loadGame(Game::SaveFormat saveFormat)
 {
     QFile loadFile(saveFormat == Json
@@ -134,9 +134,9 @@ bool Game::loadGame(Game::SaveFormat saveFormat)
                         << (saveFormat != Json ? "CBOR" : "JSON") << "...\n";
     return true;
 }
-//! [3]
+//! [loadGame]
 
-//! [4]
+//! [saveGame]
 bool Game::saveGame(Game::SaveFormat saveFormat) const
 {
     QFile saveFile(saveFormat == Json
@@ -148,60 +148,52 @@ bool Game::saveGame(Game::SaveFormat saveFormat) const
         return false;
     }
 
-    QJsonObject gameObject;
-    write(gameObject);
+    QJsonObject gameObject = toJson();
     saveFile.write(saveFormat == Json
         ? QJsonDocument(gameObject).toJson()
         : QCborValue::fromJsonValue(gameObject).toCbor());
 
     return true;
 }
-//! [4]
+//! [saveGame]
 
-//! [1]
+//! [read]
 void Game::read(const QJsonObject &json)
 {
-    if (json.contains("player") && json["player"].isObject())
-        mPlayer.read(json["player"].toObject());
+    if (const QJsonValue v = json["player"]; v.isObject())
+        mPlayer = Character::fromJson(v.toObject());
 
-    if (json.contains("levels") && json["levels"].isArray()) {
-        QJsonArray levelArray = json["levels"].toArray();
+    if (const QJsonValue v = json["levels"]; v.isArray()) {
+        const QJsonArray levels = v.toArray();
         mLevels.clear();
-        mLevels.reserve(levelArray.size());
-        for (const QJsonValue &v : levelArray) {
-            QJsonObject levelObject = v.toObject();
-            Level level;
-            level.read(levelObject);
-            mLevels.append(level);
-        }
+        mLevels.reserve(levels.size());
+        for (const QJsonValue &level : levels)
+            mLevels.append(Level::fromJson(level.toObject()));
     }
 }
-//! [1]
+//! [read]
 
-//! [2]
-void Game::write(QJsonObject &json) const
+//! [toJson]
+QJsonObject Game::toJson() const
 {
-    QJsonObject playerObject;
-    mPlayer.write(playerObject);
-    json["player"] = playerObject;
+    QJsonObject json;
+    json["player"] = mPlayer.toJson();
 
-    QJsonArray levelArray;
-    for (const Level &level : mLevels) {
-        QJsonObject levelObject;
-        level.write(levelObject);
-        levelArray.append(levelObject);
-    }
-    json["levels"] = levelArray;
+    QJsonArray levels;
+    for (const Level &level : mLevels)
+        levels.append(level.toJson());
+    json["levels"] = levels;
+    return json;
 }
-//! [2]
+//! [toJson]
 
-void Game::print(int indentation) const
+void Game::print(QTextStream &s, int indentation) const
 {
     const QString indent(indentation * 2, ' ');
-    QTextStream(stdout) << indent << "Player\n";
-    mPlayer.print(indentation + 1);
+    s << indent << "Player\n";
+    mPlayer.print(s, indentation + 1);
 
-    QTextStream(stdout) << indent << "Levels\n";
-    for (Level level : mLevels)
-        level.print(indentation + 1);
+    s << indent << "Levels\n";
+    for (const Level &level : mLevels)
+        level.print(s, indentation + 1);
 }

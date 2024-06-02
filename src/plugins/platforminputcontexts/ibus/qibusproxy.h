@@ -110,7 +110,7 @@ public Q_SLOTS: // METHODS
 #endif
     QIBusEngineDesc getGlobalEngine();
 
-private:
+private Q_SLOTS:
     void globalEngineChanged(const QString &engine_name);
 
 Q_SIGNALS: // SIGNALS

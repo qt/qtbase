@@ -418,7 +418,19 @@ Q_GLOBAL_STATIC(StaticPluginList, staticPluginList)
 */
 void Q_CORE_EXPORT qRegisterStaticPluginFunction(QStaticPlugin plugin)
 {
-    staticPluginList()->append(plugin);
+    // using operator* because we shouldn't be registering plugins while
+    // unloading the application!
+    StaticPluginList &plugins = *staticPluginList;
+
+    // insert the plugin in the list, sorted by address, so we can detect
+    // duplicate registrations
+    auto comparator = [=](const QStaticPlugin &p1, const QStaticPlugin &p2) {
+        using Less = std::less<decltype(plugin.instance)>;
+        return Less{}(p1.instance, p2.instance);
+    };
+    auto pos = std::lower_bound(plugins.constBegin(), plugins.constEnd(), plugin, comparator);
+    if (pos == plugins.constEnd() || pos->instance != plugin.instance)
+        plugins.insert(pos, plugin);
 }
 
 /*!

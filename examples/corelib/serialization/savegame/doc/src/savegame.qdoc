@@ -48,45 +48,83 @@
     The Character class represents a non-player character (NPC) in our game, and
     stores the player's name, level, and class type.
 
-    It provides read() and write() functions to serialise its member variables.
+    It provides static fromJson() and non-static toJson() functions to
+    serialise itself.
+
+    \note This pattern (fromJson()/toJson()) works because QJsonObjects can be
+    constructed independent of an owning QJsonDocument, and because the data
+    types being (de)serialized here are value types, so can be copied. When
+    serializing to another format — for example XML or QDataStream, which require passing
+    a document-like object — or when the object identity is important (QObject
+    subclasses, for example), other patterns may be more suitable. See the
+    \l{xml/dombookmarks} and \l{xml/streambookmarks} examples for XML, and the
+    implementation of \l QListWidgetItem::read() and \l QListWidgetItem::write()
+    for idiomatic QDataStream serialization. The \c{print()} functions in this example
+    are good examples of QTextStream serialization, even though they, of course, lack
+    the deserialization side.
 
     \snippet serialization/savegame/character.h 0
 
-    Of particular interest to us are the read and write function
+    Of particular interest to us are the fromJson() and toJson() function
     implementations:
 
-    \snippet serialization/savegame/character.cpp 0
+    \snippet serialization/savegame/character.cpp fromJson
 
-    In the read() function, we assign Character's members values from the
-    QJsonObject argument. You can use either \l QJsonObject::operator[]() or
-    QJsonObject::value() to access values within the JSON object; both are
-    const functions and return QJsonValue::Undefined if the key is invalid. We
-    check if the keys are valid before attempting to read them with
-    QJsonObject::contains().
+    In the fromJson() function, we construct a local \c result Character object
+    and assign \c{result}'s members values from the QJsonObject argument. You
+    can use either \l QJsonObject::operator[]() or QJsonObject::value() to
+    access values within the JSON object; both are const functions and return
+    QJsonValue::Undefined if the key is invalid. In particular, the \c{is...}
+    functions (for example \l QJsonValue::isString(), \l
+    QJsonValue::isDouble()) return \c false for QJsonValue::Undefined, so we
+    can check for existence as well as the correct type in a single lookup.
 
-    \snippet serialization/savegame/character.cpp 1
+    If a value does not exist in the JSON object, or has the wrong type, we
+    don't write to the corresponding \c result member, either, thereby
+    preserving any values the default constructor may have set. This means
+    default values are centrally defined in one location (the default
+    constructor) and need not be repeated in serialisation code
+    (\l{https://en.wikipedia.org/wiki/Don%27t_repeat_yourself}{DRY}).
 
-    In the write() function, we do the reverse of the read() function; assign
-    values from the Character object to the JSON object. As with accessing
-    values, there are two ways to set values on a QJsonObject:
-    \l QJsonObject::operator[]() and QJsonObject::insert(). Both will override
-    any existing value at the given key.
+    Observe the use of
+    \l{https://en.cppreference.com/w/cpp/language/if#If_statements_with_initializer}
+    {C++17 if-with-initializer} to separate scoping and checking of the variable \c v.
+    This means we can keep the variable name short, because its scope is limited.
 
-    Next up is the Level class:
+    Compare that to the naïve approach using \c QJsonObject::contains():
+
+    \badcode
+    if (json.contains("name") && json["name"].isString())
+        result.mName = json["name"].toString();
+    \endcode
+
+    which, beside being less readable, requires a total of three lookups (no,
+    the compiler will \e not optimize these into one), so is three times
+    slower and repeats \c{"name"} three times (violating the DRY principle).
+
+    \snippet serialization/savegame/character.cpp toJson
+
+    In the toJson() function, we do the reverse of the fromJson() function;
+    assign values from the Character object to a new JSON object we then
+    return. As with accessing values, there are two ways to set values on a
+    QJsonObject: \l QJsonObject::operator[]() and \l QJsonObject::insert().
+    Both will override any existing value at the given key.
+
+    \section1 The Level Class
 
     \snippet serialization/savegame/level.h 0
 
-    We want to have several levels in our game, each with several NPCs, so we
-    keep a QList of Character objects. We also provide the familiar read() and
-    write() functions.
+    We want the levels in our game to each each have several NPCs, so we keep a QList
+    of Character objects. We also provide the familiar fromJson() and toJson()
+    functions.
 
-    \snippet serialization/savegame/level.cpp 0
+    \snippet serialization/savegame/level.cpp fromJson
 
-    Containers can be written and read to and from JSON using QJsonArray. In our
+    Containers can be written to and read from JSON using QJsonArray. In our
     case, we construct a QJsonArray from the value associated with the key
     \c "npcs". Then, for each QJsonValue element in the array, we call
-    toObject() to get the Character's JSON object. The Character object can then
-    read their JSON and be appended to our NPC array.
+    toObject() to get the Character's JSON object. Character::fromJson() can
+    then turn that QJSonObject into a Character object to append to our NPC array.
 
     \note \l{Container Classes}{Associate containers} can be written by storing
     the key in each value object (if it's not already). With this approach, the
@@ -94,10 +132,12 @@
     element is used as the key to construct the container when reading it back
     in.
 
-    \snippet serialization/savegame/level.cpp 1
+    \snippet serialization/savegame/level.cpp toJson
 
-    Again, the write() function is similar to the read() function, except
+    Again, the toJson() function is similar to the fromJson() function, except
     reversed.
+
+    \section1 The Game Class
 
     Having established the Character and Level classes, we can move on to
     the Game class:
@@ -110,26 +150,43 @@
     Next, we provide accessors for the player and levels. We then expose three
     functions: newGame(), saveGame() and loadGame().
 
-    The read() and write() functions are used by saveGame() and loadGame().
+    The read() and toJson() functions are used by saveGame() and loadGame().
 
-    \snippet serialization/savegame/game.cpp 0
+    \div{class="admonition note"}\b{Note:}
+        Despite \c Game being a value class, we assume that the author wants a game to have
+        identity, much like your main window would have. We therefore don't use a
+        static fromJson() function, which would create a new object, but a read()
+        function we can call on existing objects. There's a 1:1 correspondence
+        between read() and fromJson(), in that one can be implemented in terms of
+        the other:
+
+        \code
+        void read(const QJsonObject &json) { *this = fromJson(json); }
+        static Game fromObject(const QJsonObject &json) { Game g; g.read(json); return g; }
+        \endcode
+
+        We just use what's more convenient for callers of the functions.
+    \enddiv
+
+    \snippet serialization/savegame/game.cpp newGame
 
     To setup a new game, we create the player and populate the levels and their
     NPCs.
 
-    \snippet serialization/savegame/game.cpp 1
+    \snippet serialization/savegame/game.cpp read
 
-    The first thing we do in the read() function is tell the player to read
-    itself. We then clear the level array so that calling loadGame() on the
-    same Game object twice doesn't result in old levels hanging around.
+    The read() function starts by replacing the player with the
+    one read from JSON. We then clear() the level array so that calling
+    loadGame() on the same Game object twice doesn't result in old levels
+    hanging around.
 
     We then populate the level array by reading each Level from a QJsonArray.
 
-    \snippet serialization/savegame/game.cpp 2
+    \snippet serialization/savegame/game.cpp toJson
 
-    We write the game to JSON similarly to how we write Level.
+    Writing the game to JSON is similar to writing a level.
 
-    \snippet serialization/savegame/game.cpp 3
+    \snippet serialization/savegame/game.cpp loadGame
 
     When loading a saved game in loadGame(), the first thing we do is open the
     save file based on which format it was saved to; \c "save.json" for JSON,
@@ -143,14 +200,16 @@
     After constructing the QJsonDocument, we instruct the Game object to read
     itself and then return \c true to indicate success.
 
-    \snippet serialization/savegame/game.cpp 4
+    \snippet serialization/savegame/game.cpp saveGame
 
     Not surprisingly, saveGame() looks very much like loadGame(). We determine
     the file extension based on the format, print a warning and return \c false
     if the opening of the file fails. We then write the Game object to a
-    QJsonDocument, and call either QJsonDocument::toJson() or to
-    QJsonDocument::toBinaryData() to save the game, depending on which format
-    was specified.
+    QJsonObject. To save the game in the format that was specified, we
+    convert the JSON object into either a QJsonDocument for a subsequent
+    QJsonDocument::toJson() call, or a QCborValue for QCborValue::toCbor().
+
+    \section1 Tying It All Together
 
     We are now ready to enter main():
 

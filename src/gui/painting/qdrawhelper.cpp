@@ -6227,7 +6227,7 @@ static void qInitDrawhelperFunctions()
     qInitBlendFunctions();
 
 #ifdef __SSE2__
-#  ifndef __AVX2__
+#  ifndef __haswell__
     qt_memfill32 = qt_memfill32_sse2;
     qt_memfill64 = qt_memfill64_sse2;
 #  endif
@@ -6334,7 +6334,7 @@ static void qInitDrawhelperFunctions()
         extern void QT_FASTCALL storeRGBx64FromRGBA64PM_sse4(uchar *, const QRgba64 *, int, int, const QList<QRgb> *, QDitherInfo *);
         extern void QT_FASTCALL destStore64ARGB32_sse4(QRasterBuffer *rasterBuffer, int x, int y, const QRgba64 *buffer, int length);
         extern void QT_FASTCALL destStore64RGBA8888_sse4(QRasterBuffer *rasterBuffer, int x, int y, const QRgba64 *buffer, int length);
-#  ifndef __AVX2__
+#  ifndef __haswell__
         qPixelLayouts[QImage::Format_ARGB32].fetchToARGB32PM = fetchARGB32ToARGB32PM_sse4;
         qPixelLayouts[QImage::Format_ARGB32].convertToARGB32PM = convertARGB32ToARGB32PM_sse4;
         qPixelLayouts[QImage::Format_RGBA8888].fetchToARGB32PM = fetchRGBA8888ToARGB32PM_sse4;

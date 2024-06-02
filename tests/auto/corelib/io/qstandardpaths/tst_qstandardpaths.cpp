@@ -749,6 +749,31 @@ void tst_qstandardpaths::testXdgPathCleanup()
     QVERIFY(!appsDirs.contains("/applications"));
     QVERIFY(!appsDirs.contains(uncleanGlobalAppDir + "/applications"));
     QVERIFY(!appsDirs.contains("relative/path/applications"));
+
+    const QString uncleanGlobalConfigDir = "/./" + QFile::encodeName(m_globalConfigDir);
+    qputenv("XDG_CONFIG_DIRS", QFile::encodeName(uncleanGlobalConfigDir) + "::relative/path");
+    const QStringList configDirs = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation);
+    QVERIFY(!configDirs.contains(QLatin1String("relative/path")));
+    QVERIFY(!configDirs.contains(QLatin1String("")));
+
+    // Relative paths in XDG_* env vars are ignored
+    const QString relative("./someRelativeDir");
+
+    qputenv("XDG_CACHE_HOME", relative.toLatin1());
+    const QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    QVERIFY(cacheDir != relative);
+
+    qputenv("XDG_DATA_HOME", relative.toLatin1());
+    const QString localDataDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    QVERIFY(localDataDir != relative);
+
+    qputenv("XDG_CONFIG_HOME", relative.toLatin1());
+    const QString localConfig = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    QVERIFY(localConfig != relative);
+
+    qputenv("XDG_RUNTIME_DIR", relative.toLatin1());
+    const QString runtimeDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+    QVERIFY(runtimeDir != relative);
 #endif
 }
 

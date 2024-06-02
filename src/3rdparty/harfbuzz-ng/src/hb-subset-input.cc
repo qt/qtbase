@@ -71,7 +71,6 @@ hb_subset_input_t::hb_subset_input_t ()
   hb_tag_t default_no_subset_tables[] = {
     HB_TAG ('a', 'v', 'a', 'r'),
     HB_TAG ('g', 'a', 's', 'p'),
-    HB_TAG ('c', 'v', 't', ' '),
     HB_TAG ('f', 'p', 'g', 'm'),
     HB_TAG ('p', 'r', 'e', 'p'),
     HB_TAG ('V', 'D', 'M', 'X'),
@@ -519,6 +518,37 @@ hb_subset_preprocess (hb_face_t *source)
   }
 
   return new_source;
+}
+
+/**
+ * hb_subset_input_old_to_new_glyph_mapping:
+ * @input: a #hb_subset_input_t object.
+ *
+ * Returns a map which can be used to provide an explicit mapping from old to new glyph
+ * id's in the produced subset. The caller should populate the map as desired.
+ * If this map is left empty then glyph ids will be automatically mapped to new
+ * values by the subsetter. If populated, the mapping must be unique. That
+ * is no two original glyph ids can be mapped to the same new id.
+ * Additionally, if a mapping is provided then the retain gids option cannot
+ * be enabled.
+ *
+ * Any glyphs that are retained in the subset which are not specified
+ * in this mapping will be assigned glyph ids after the highest glyph
+ * id in the mapping.
+ *
+ * Note: this will accept and apply non-monotonic mappings, however this
+ * may result in unsorted Coverage tables. Such fonts may not work for all
+ * use cases (for example ots will reject unsorted coverage tables). So it's
+ * recommended, if possible, to supply a monotonic mapping.
+ *
+ * Return value: (transfer none): pointer to the #hb_map_t of the custom glyphs ID map.
+ *
+ * Since: 7.3.0
+ **/
+HB_EXTERN hb_map_t*
+hb_subset_input_old_to_new_glyph_mapping (hb_subset_input_t *input)
+{
+  return &input->glyph_map;
 }
 
 #ifdef HB_EXPERIMENTAL_API

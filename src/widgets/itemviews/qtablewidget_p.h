@@ -89,10 +89,6 @@ class QTableModel : public QAbstractTableModel
     friend class QTableWidget;
 
 public:
-    enum ItemFlagsExtension {
-        ItemIsHeaderItem = 128
-    }; // we need this to separate header items from other items
-
     QTableModel(int rows, int columns, QTableWidget *parent);
     ~QTableModel();
 
@@ -209,9 +205,10 @@ public:
 class QTableWidgetItemPrivate
 {
 public:
-    QTableWidgetItemPrivate(QTableWidgetItem *item) : q(item), id(-1) {}
+    QTableWidgetItemPrivate(QTableWidgetItem *item) : q(item), id(-1), headerItem(false) {}
     QTableWidgetItem *q;
     int id;
+    bool headerItem; // Qt 7 TODO: inline this stuff in the public class.
 };
 
 QT_END_NAMESPACE

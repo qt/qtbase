@@ -310,6 +310,20 @@ bool QRhiD3D11::create(QRhi::Flags flags)
             qWarning("ID3D11DeviceContext1 not supported");
             return false;
         }
+
+        D3D11_FEATURE_DATA_D3D11_OPTIONS features = {};
+        if (SUCCEEDED(dev->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS, &features, sizeof(features)))) {
+            // The D3D _runtime_ may be 11.1, but the underlying _driver_ may
+            // still not support this D3D_FEATURE_LEVEL_11_1 feature. (e.g.
+            // because it only does 11_0)
+            if (!features.ConstantBufferOffsetting) {
+                qWarning("Constant buffer offsetting is not supported by the driver");
+                return false;
+            }
+        } else {
+            qWarning("Failed to query D3D11_FEATURE_D3D11_OPTIONS");
+            return false;
+        }
     } else {
         Q_ASSERT(dev && context);
         featureLevel = dev->GetFeatureLevel();

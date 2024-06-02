@@ -284,7 +284,7 @@ void QTableModel::setHorizontalHeaderItem(int section, QTableWidgetItem *item)
 
     if (item) {
         item->view = view;
-        item->itemFlags = Qt::ItemFlags(int(item->itemFlags)|ItemIsHeaderItem);
+        item->d->headerItem = true;
     }
     horizontalHeaderItems[section] = item;
     emit headerDataChanged(Qt::Horizontal, section, section);
@@ -306,7 +306,7 @@ void QTableModel::setVerticalHeaderItem(int section, QTableWidgetItem *item)
 
     if (item) {
         item->view = view;
-        item->itemFlags = Qt::ItemFlags(int(item->itemFlags)|ItemIsHeaderItem);
+        item->d->headerItem = true;
     }
     verticalHeaderItems[section] = item;
     emit headerDataChanged(Qt::Vertical, section, section);
@@ -319,7 +319,7 @@ QTableWidgetItem *QTableModel::takeHorizontalHeaderItem(int section)
     QTableWidgetItem *itm = horizontalHeaderItems.at(section);
     if (itm) {
         itm->view = nullptr;
-        itm->itemFlags &= ~ItemIsHeaderItem;
+        itm->d->headerItem = false;
         horizontalHeaderItems[section] = 0;
     }
     return itm;
@@ -332,7 +332,7 @@ QTableWidgetItem *QTableModel::takeVerticalHeaderItem(int section)
     QTableWidgetItem *itm = verticalHeaderItems.at(section);
     if (itm) {
         itm->view = nullptr;
-        itm->itemFlags &= ~ItemIsHeaderItem;
+        itm->d->headerItem = false;
         verticalHeaderItems[section] = 0;
     }
     return itm;
@@ -797,7 +797,7 @@ void QTableModel::itemChanged(QTableWidgetItem *item, const QList<int> &roles)
 {
     if (!item)
         return;
-    if (item->flags() & ItemIsHeaderItem) {
+    if (item->d->headerItem) {
         int row = verticalHeaderItems.indexOf(item);
         if (row >= 0) {
             emit headerDataChanged(Qt::Vertical, row, row);

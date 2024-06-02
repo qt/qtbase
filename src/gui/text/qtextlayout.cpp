@@ -753,7 +753,7 @@ int QTextLayout::leftCursorPosition(int oldPos) const
     return newPos;
 }
 
-/*!/
+/*!
     Returns \c true if position \a pos is a valid cursor position.
 
     In a Unicode context some positions in the text are not valid
@@ -2141,11 +2141,14 @@ found:
         eng->maxWidth = qMax(eng->maxWidth, line.textWidth);
     } else {
         eng->minWidth = qMax(eng->minWidth, lbh.minw);
-        eng->maxWidth += line.textWidth;
+        if (qAddOverflow(eng->maxWidth, line.textWidth, &eng->maxWidth))
+            eng->maxWidth = QFIXED_MAX;
     }
 
-    if (line.textWidth > 0 && item < eng->layoutData->items.size())
-        eng->maxWidth += lbh.spaceData.textWidth;
+    if (line.textWidth > 0 && item < eng->layoutData->items.size()) {
+        if (qAddOverflow(eng->maxWidth, lbh.spaceData.textWidth, &eng->maxWidth))
+            eng->maxWidth = QFIXED_MAX;
+    }
 
     line.textWidth += trailingSpace;
     if (lbh.spaceData.length) {

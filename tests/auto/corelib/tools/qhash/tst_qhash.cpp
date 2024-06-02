@@ -64,6 +64,7 @@ private slots:
     void qmultihash_qhash_rvalue_ref_ctor();
     void qmultihash_qhash_rvalue_ref_unite();
     void qmultihashUnite();
+    void qmultihashSize();
 
     void compare();
     void compare2();
@@ -2027,6 +2028,78 @@ void tst_QHash::qmultihashUnite()
         QCOMPARE(MyClass::copies, 4);
         QCOMPARE(MyClass::moves, 0);
         QCOMPARE(MyClass::count, 8);
+    }
+}
+
+void tst_QHash::qmultihashSize()
+{
+    // QMultiHash has an extra m_size member that counts the number of values,
+    // while d->size (shared with QHash) counts the number of distinct keys.
+    {
+        QMultiHash<int, int> hash;
+        QCOMPARE(hash.size(), 0);
+        QVERIFY(hash.isEmpty());
+
+        hash.insert(0, 42);
+        QCOMPARE(hash.size(), 1);
+        QVERIFY(!hash.isEmpty());
+
+        hash.insert(0, 42);
+        QCOMPARE(hash.size(), 2);
+        QVERIFY(!hash.isEmpty());
+
+        hash.emplace(0, 42);
+        QCOMPARE(hash.size(), 3);
+        QVERIFY(!hash.isEmpty());
+
+        QCOMPARE(hash.take(0), 42);
+        QCOMPARE(hash.size(), 2);
+        QVERIFY(!hash.isEmpty());
+
+        QCOMPARE(hash.remove(0), 2);
+        QCOMPARE(hash.size(), 0);
+        QVERIFY(hash.isEmpty());
+    }
+
+    {
+        QMultiHash<int, int> hash;
+        hash.emplace(0, 0);
+        hash.emplace(0, 0);
+        QCOMPARE(hash.size(), 2);
+        QVERIFY(!hash.isEmpty());
+
+        hash.emplace(0, 1);
+        QCOMPARE(hash.size(), 3);
+        QVERIFY(!hash.isEmpty());
+
+        QCOMPARE(hash.remove(0, 0), 2);
+        QCOMPARE(hash.size(), 1);
+        QVERIFY(!hash.isEmpty());
+
+        hash.remove(0);
+        QCOMPARE(hash.size(), 0);
+        QVERIFY(hash.isEmpty());
+    }
+
+    {
+        QMultiHash<int, int> hash;
+
+        hash[0] = 0;
+        QCOMPARE(hash.size(), 1);
+        QVERIFY(!hash.isEmpty());
+
+        hash.replace(0, 1);
+        QCOMPARE(hash.size(), 1);
+        QVERIFY(!hash.isEmpty());
+
+        hash.insert(0, 1);
+        hash.erase(hash.cbegin());
+        QCOMPARE(hash.size(), 1);
+        QVERIFY(!hash.isEmpty());
+
+        hash.erase(hash.cbegin());
+        QCOMPARE(hash.size(), 0);
+        QVERIFY(hash.isEmpty());
     }
 }
 

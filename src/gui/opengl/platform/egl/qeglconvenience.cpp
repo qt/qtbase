@@ -252,14 +252,17 @@ EGLConfig QEglConfigChooser::chooseConfig()
         configureAttributes.append(EGL_OPENVG_BIT);
         break;
 #ifdef EGL_VERSION_1_4
-    case QSurfaceFormat::DefaultRenderableType:
+    case QSurfaceFormat::DefaultRenderableType: {
 #ifndef QT_NO_OPENGL
-        if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL)
+        // NVIDIA EGL only provides desktop GL for development purposes, and recommends against using it.
+        const char *vendor = eglQueryString(display(), EGL_VENDOR);
+        if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL && (!vendor || !strstr(vendor, "NVIDIA")))
             configureAttributes.append(EGL_OPENGL_BIT);
         else
 #endif // QT_NO_OPENGL
             needsES2Plus = true;
         break;
+    }
     case QSurfaceFormat::OpenGL:
          configureAttributes.append(EGL_OPENGL_BIT);
          break;
@@ -389,6 +392,7 @@ QSurfaceFormat q_glFormatFromConfig(EGLDisplay display, const EGLConfig config, 
     else if (referenceFormat.renderableType() == QSurfaceFormat::DefaultRenderableType
 #ifndef QT_NO_OPENGL
              && QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL
+             && !strstr(eglQueryString(display, EGL_VENDOR), "NVIDIA")
 #endif
              && (renderableType & EGL_OPENGL_BIT))
         format.setRenderableType(QSurfaceFormat::OpenGL);

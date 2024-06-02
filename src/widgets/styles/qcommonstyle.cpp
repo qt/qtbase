@@ -2191,7 +2191,13 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             QRegion clipRegion = p->clipRegion();
             p->setClipRect(opt->rect);
             proxy()->drawControl(CE_HeaderSection, header, p, widget);
-            QStyleOptionHeader subopt = *header;
+            // opt can be a QStyleOptionHeaderV2 and we must pass it to the subcontrol drawings
+            QStyleOptionHeaderV2 subopt;
+            QStyleOptionHeader &v1Copy = subopt;
+            if (auto v2 = qstyleoption_cast<const QStyleOptionHeaderV2 *>(opt))
+                subopt = *v2;
+            else
+                v1Copy = *header;
             subopt.rect = subElementRect(SE_HeaderLabel, header, widget);
             if (subopt.rect.isValid())
                 proxy()->drawControl(CE_HeaderLabel, &subopt, p, widget);

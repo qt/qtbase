@@ -145,6 +145,8 @@ private slots:
     void QTBUG_14292_filesystem();
     void QTBUG_52028_tabAutoCompletes();
     void QTBUG_51889_activatedSentTwice();
+    
+    void inheritedEventFilter();
 
 private:
     void filter(bool assync = false);
@@ -1849,6 +1851,43 @@ void tst_QCompleter::QTBUG_51889_activatedSentTwice()
     QTRY_VERIFY(cbox.completer()->popup()->isVisible());
     QTest::keyClick(&cbox, Qt::Key_Return);
     QTRY_COMPARE(activatedSpy.count(), 1);
+}
+
+void tst_QCompleter::inheritedEventFilter()
+{
+    class Completer : public QCompleter
+    {
+    public:
+        explicit Completer(QWidget *parent) : QCompleter(parent)
+        {
+            Q_ASSERT(parent);
+            setPopup(new QListView());
+            popup()->installEventFilter(this);
+        }
+
+        bool m_popupChildAdded = false;
+
+    protected:
+        bool eventFilter(QObject *watched, QEvent *event) override
+        {
+            if (watched == popup() && event->type() == QEvent::ChildAdded)
+                m_popupChildAdded = true;
+
+            return QCompleter::eventFilter(watched, event);
+        }
+    };
+
+    QComboBox comboBox;
+    comboBox.setEditable(true);
+    Completer *completer = new Completer(&comboBox);
+    comboBox.setCompleter(completer);
+
+    // comboBox.show() must not crash with an infinite loop in the event filter
+    comboBox.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&comboBox));
+
+    // Since event orders are platform dependent, only the the ChildAdded event is checked.
+    QVERIFY(QTest::qWaitFor([completer](){return completer->m_popupChildAdded; }));
 }
 
 QTEST_MAIN(tst_QCompleter)

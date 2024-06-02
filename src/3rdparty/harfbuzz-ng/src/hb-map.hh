@@ -317,16 +317,6 @@ struct hb_hashmap_t
     hb_copy (other, *this);
   }
 
-  void keys (hb_set_t &keys_) const
-  {
-    hb_copy (keys() , keys_);
-  }
-
-  void values (hb_set_t &values_) const
-  {
-    hb_copy (values() , values_);
-  }
-
   /*
    * Iterator
    */
@@ -353,7 +343,8 @@ struct hb_hashmap_t
   )
   auto keys () const HB_AUTO_RETURN
   (
-    + keys_ref ()
+    + iter_items ()
+    | hb_map (&item_t::key)
     | hb_map (hb_ridentity)
   )
   auto values_ref () const HB_AUTO_RETURN
@@ -363,7 +354,8 @@ struct hb_hashmap_t
   )
   auto values () const HB_AUTO_RETURN
   (
-    + values_ref ()
+    + iter_items ()
+    | hb_map (&item_t::value)
     | hb_map (hb_ridentity)
   )
 
@@ -409,7 +401,8 @@ struct hb_hashmap_t
     unsigned int tombstone = (unsigned) -1;
     while (items[i].is_used ())
     {
-      if (items[i].hash == hash && items[i] == key)
+      if ((hb_is_same (K, hb_codepoint_t) || items[i].hash == hash) &&
+	  items[i] == key)
 	return items[i];
       if (tombstone == (unsigned) -1 && items[i].is_tombstone ())
 	tombstone = i;

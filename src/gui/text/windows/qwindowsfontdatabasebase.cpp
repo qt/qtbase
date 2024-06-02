@@ -840,7 +840,7 @@ QString QWindowsFontDatabaseBase::familyForStyleHint(QFont::StyleHint styleHint)
     default:
         break;
     }
-    return QStringLiteral("MS Shell Dlg 2");
+    return QStringLiteral("Tahoma");
 }
 
 // Creation functions
