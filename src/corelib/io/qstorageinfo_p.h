@@ -63,6 +63,9 @@ protected:
 #elif defined(Q_OS_LINUX)
     void retrieveVolumeInfo();
 
+    // used with the Linux 6.8+ API
+    static QList<QStorageInfo> listMounts();
+
 public:
     struct MountInfo {
         QString mountPoint;

@@ -111,6 +111,7 @@ void tst_QStorageInfo::operatorEqual()
     {
         QStorageInfo storage1(QCoreApplication::applicationDirPath());
         QStorageInfo storage2(QCoreApplication::applicationFilePath());
+        QCOMPARE(storage1, storage2);
         QT_TEST_EQUALITY_OPS(storage1, storage2, true);
     }
 

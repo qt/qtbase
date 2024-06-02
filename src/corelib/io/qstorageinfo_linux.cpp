@@ -19,6 +19,10 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/statfs.h>
+#include <sys/syscall.h>
+
+#include <linux/types.h>
+#include <linux/mount.h>
 
 // so we don't have to #include <linux/fs.h>, which is known to cause conflicts
 #ifndef FSLABEL_MAX
@@ -26,6 +30,10 @@
 #endif
 #ifndef FS_IOC_GETFSLABEL
 #  define FS_IOC_GETFSLABEL     _IOR(0x94, 49, char[FSLABEL_MAX])
+#endif
+
+#ifndef STATX_MNT_ID_UNIQUE
+#  define STATX_MNT_ID_UNIQUE   0x4000U
 #endif
 
 // or <linux/statfs.h>
@@ -38,10 +46,49 @@
 // come with sandboxes that kill applications that make system calls outside a
 // whitelist and several Android vendors can't be bothered to update the list.
 #  undef STATX_BASIC_STATS
+// Likewise for listmount() and statmount() (disabling statx() and listmount()
+// disables statmount()).
+#  undef LSMT_ROOT
+
 #include <private/qjnihelpers_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
+
+// So we don't depend on linux/mount.h defining the version we need (we need at
+// least 6.13, with sb_source).
+namespace QtPrivate {
+struct statmount {
+        __u32 size;             /* Total size, including strings */
+        __u32 mnt_opts;         /* [str] Options (comma separated, escaped) */
+        __u64 mask;             /* What results were written */
+        __u32 sb_dev_major;     /* Device ID */
+        __u32 sb_dev_minor;
+        __u64 sb_magic;         /* ..._SUPER_MAGIC */
+        __u32 sb_flags;         /* SB_{RDONLY,SYNCHRONOUS,DIRSYNC,LAZYTIME} */
+        __u32 fs_type;          /* [str] Filesystem type */
+        __u64 mnt_id;           /* Unique ID of mount */
+        __u64 mnt_parent_id;    /* Unique ID of parent (for root == mnt_id) */
+        __u32 mnt_id_old;       /* Reused IDs used in proc/.../mountinfo */
+        __u32 mnt_parent_id_old;
+        __u64 mnt_attr;         /* MOUNT_ATTR_... */
+        __u64 mnt_propagation;  /* MS_{SHARED,SLAVE,PRIVATE,UNBINDABLE} */
+        __u64 mnt_peer_group;   /* ID of shared peer group */
+        __u64 mnt_master;       /* Mount receives propagation from this ID */
+        __u64 propagate_from;   /* Propagation from in current namespace */
+        __u32 mnt_root;         /* [str] Root of mount relative to root of fs */
+        __u32 mnt_point;        /* [str] Mountpoint relative to current root */
+        __u64 mnt_ns_id;        /* ID of the mount namespace */
+        __u32 fs_subtype;       /* [str] Subtype of fs_type (if any) */
+        __u32 sb_source;        /* [str] Source string of the mount */
+        __u32 opt_num;          /* Number of fs options */
+        __u32 opt_array;        /* [str] Array of nul terminated fs options */
+        __u32 opt_sec_num;      /* Number of security options */
+        __u32 opt_sec_array;    /* [str] Array of nul terminated security options */
+        __u64 __spare2[46];
+        char str[];             /* Variable size part containing strings */
+};
+} // namespace QtPrivate
 
 using namespace Qt::StringLiterals;
 
@@ -256,6 +303,7 @@ namespace {
 struct AutoFileDescriptor
 {
     int fd = -1;
+    explicit AutoFileDescriptor() = default;
     AutoFileDescriptor(const QString &path, int mode = QT_OPEN_RDONLY)
         : fd(qt_safe_open(QFile::encodeName(path), mode))
     {}
@@ -325,16 +373,20 @@ static inline dev_t deviceIdForPath(const QString &device)
     return st.st_dev;
 }
 
-static inline quint64 mountIdForPath(int fd)
+static inline quint64 mountIdForPath(int fd, unsigned mountIdType = 0)
 {
     if (fd < 0)
         return 0;
 #if defined(STATX_BASIC_STATS) && defined(STATX_MNT_ID)
     // STATX_MNT_ID was added in kernel v5.8
     struct statx st;
-    int r = statx(fd, "", AT_EMPTY_PATH | AT_NO_AUTOMOUNT, STATX_MNT_ID, &st);
-    if (r == 0 && (st.stx_mask & STATX_MNT_ID))
+    if (mountIdType == 0)
+        mountIdType = STATX_MNT_ID;
+    int r = statx(fd, "", AT_EMPTY_PATH | AT_NO_AUTOMOUNT, mountIdType, &st);
+    if (r == 0 && (st.stx_mask & mountIdType))
         return st.stx_mnt_id;
+#else
+    Q_UNUSED(mountIdType);
 #endif
     return 0;
 }
@@ -452,6 +504,130 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
     }
 }
 
+static auto
+doStatMount(QStorageInfoPrivate *d, const AutoFileDescriptor &fd, quint64 mountid,
+            QStorageLabelRetriever &labelRetriever)
+{
+    enum TriStateResult : qint8 {
+        NotSupported = -1,
+        Skip = 0,
+        Add = 1,
+    };
+
+#ifdef __NR_statmount
+    using QtPrivate::statmount;
+    constexpr int NumStringsInRequest = 4; // mnt_point, sb_type, sb_source, mnt_root
+    // the parameters we'll request
+    static constexpr quint64 StatMountRequestParams = 0x23b;
+    // the minimum set of parameters we need
+    static constexpr quint64 StatMountMinParams = StatMountRequestParams;
+#  ifdef STATMOUNT_SB_SOURCE        // added in 6.13
+    // confirm our numeric value above is correct
+    constexpr quint64 SymbolicStatMountParams = STATMOUNT_SB_BASIC | STATMOUNT_MNT_BASIC
+            | STATMOUNT_MNT_POINT | STATMOUNT_MNT_ROOT | STATMOUNT_FS_TYPE
+            | STATMOUNT_SB_SOURCE;
+    static_assert(SymbolicStatMountParams == StatMountRequestParams);
+#  endif
+
+    QVarLengthArray<char, 1024> smbuf(1024);
+    auto sm = new (smbuf.data()) struct statmount;
+    struct mnt_id_req req = {};
+    req.size = sizeof(req);
+    req.mnt_id = mountid;
+    req.param = StatMountRequestParams;
+
+    int r = syscall(__NR_statmount, &req, sm, smbuf.size(), 0);
+    if (r < 0 && errno == EOVERFLOW) {
+        // try with heap
+        smbuf.resize(sizeof(struct statmount) + NumStringsInRequest * PATH_MAX);
+        sm = new (smbuf.data()) struct statmount;
+        r = syscall(__NR_statmount, &req, sm, smbuf.size(), 0);
+    }
+    if (r == 0 && (sm->mask & StatMountMinParams) == StatMountMinParams) {
+        d->rootPath = QFile::decodeName(sm->str + sm->mnt_point);
+        d->fileSystemType.assign(sm->str + sm->fs_type);
+        if (!QStorageInfoPrivate::shouldIncludeFs(d->rootPath, d->fileSystemType))
+            return Skip;
+
+        d->device = QByteArray(sm->str + sm->sb_source);
+        if (QByteArrayView subv(sm->str + sm->mnt_root); subv != "/")
+            d->subvolume.assign(subv);
+        else
+            d->subvolume.clear();
+
+        quint64 devid = makedev(sm->sb_dev_major, sm->sb_dev_minor);
+        if (fd.fd >= 0)
+            d->name = labelRetriever(*d, fd, devid);    // already open
+        else
+            d->name = labelRetriever(*d, AutoFileDescriptor(d->rootPath), devid);
+        return Add;
+    }
+#else
+    Q_UNUSED(d);
+    Q_UNUSED(fd);
+    Q_UNUSED(mountid);
+    Q_UNUSED(labelRetriever);
+#endif // !__NR_statmount
+    return NotSupported;
+}
+
+static bool doStatMount(QStorageInfoPrivate *d, const AutoFileDescriptor &fd)
+{
+    quint64 mountId = mountIdForPath(fd, STATX_MNT_ID_UNIQUE);
+    if (!mountId)
+        return false;
+
+    QStorageLabelRetriever retriever;
+    return doStatMount(d, fd, mountId, retriever) > 0;
+}
+
+QList<QStorageInfo> QStorageInfoPrivate::listMounts()
+{
+    QList<QStorageInfo> volumes;
+
+#if defined(__NR_listmount) && defined(LSMT_ROOT)
+    QStorageLabelRetriever labelRetriever;
+    Q_DECL_UNINITIALIZED
+    quint64 mounts[128];
+
+    struct mnt_id_req req = {};
+    req.size = sizeof(req);
+    req.mnt_id = LSMT_ROOT;
+    int r = syscall(__NR_listmount, &req, mounts, std::size(mounts), 0);
+    if (r < 0)
+        return volumes;
+
+    std::unique_ptr<QStorageInfoPrivate> d;
+    while (r > 0) {
+        for (quint64 mntid : QSpan(mounts, r)) {
+            if (!d)
+                d = std::make_unique<QStorageInfoPrivate>();
+            auto shouldAdd = doStatMount(d.get(), AutoFileDescriptor(), mntid, labelRetriever);
+            if (shouldAdd < 0) {
+                r = -1;
+                break;          // API failure
+            }
+            if (!shouldAdd)
+                continue;
+            d->retrieveVolumeInfo();
+            if (!d->ready)
+                continue;       // mount point inaccessible
+            volumes.emplace_back(QStorageInfo(*d.release()));
+        }
+        if (r < q20::ssize(mounts))
+            break;              // done or failure
+
+        // ask for more
+        req.param = mounts[r - 1];
+        r = syscall(__NR_listmount, &req, mounts, std::size(mounts), 0);
+    }
+    if (r < 0)
+        volumes.clear();        // we've failed
+#endif // __NR_listmount
+
+    return volumes;
+}
+
 static std::vector<MountInfo> parseMountInfo(FilterMountInfo filter = FilterMountInfo::All)
 {
     QFile file(u"/proc/self/mountinfo"_s);
@@ -479,6 +655,10 @@ void QStorageInfoPrivate::doStat()
     if (!ready)
         return;
 
+    AutoFileDescriptor fd(rootPath);
+    if (doStatMount(this, fd))
+        return;
+
     QFileInfo fileInfo(rootPath);
     if (QString canonicalPath = fileInfo.canonicalFilePath(); !canonicalPath.isEmpty()) {
         rootPath = std::move(canonicalPath);
@@ -496,7 +676,6 @@ void QStorageInfoPrivate::doStat()
     }
 
     MountInfo *best = nullptr;
-    AutoFileDescriptor fd(rootPath);
     if (quint64 mntid = mountIdForPath(fd)) {
         // We have the mount ID for this path, so find the matching line.
         auto it = std::find_if(infos.begin(), infos.end(),
@@ -545,12 +724,17 @@ void QStorageInfoPrivate::doStat()
 
 QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
 {
+    QList<QStorageInfo> volumes = listMounts();
+    if (!volumes.isEmpty())
+        return volumes;
+
     std::vector<MountInfo> infos = parseMountInfo(FilterMountInfo::Filtered);
-    if (infos.empty())
-        return QList{root()};
+    if (infos.empty()) {
+        volumes.append(root());
+        return volumes;
+    }
 
     QStorageLabelRetriever labelForDevice;
-    QList<QStorageInfo> volumes;
     volumes.reserve(infos.size());
     for (auto it = infos.begin(); it != infos.end(); ++it) {
         MountInfo &info = *it;
