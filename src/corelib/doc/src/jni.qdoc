@@ -25,7 +25,7 @@
     those C++ types to their corresponding JNI string needs to be known at
     compile time.
 
-    Qt implements this mapping for the standard \l {QJniObject::JNI Types}{JNI types}.
+    Qt implements this mapping for the standard \l {JNI types}.
     By using the Q_DECLARE_JNI_CLASS macro, the mapping can be extended for
     arbitrary Java types.
 
