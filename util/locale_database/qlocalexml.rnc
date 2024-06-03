@@ -13,23 +13,20 @@
 start = element localeDatabase {
   attribute versionCldr { text },
   attribute versionQt { text },
-  element languageList { Language+ },
-  element scriptList { Script+ },
-  element territoryList { Territory+ },
+  element languageList { Naming+ },
+  element scriptList { Naming+ },
+  element territoryList { Naming+ },
   element likelySubtags { LikelySubtag+ },
   element zoneAliases { ZoneAlias+ },
   element windowsZone { MsLandZones+, MsZoneIana+ },
   element localeList { Locale+ }
 }
 
-Language = element language { TagDescriptor }
-Script = element script { TagDescriptor }
-Territory = element territory { TagDescriptor }
-TagDescriptor = (
-  element name { text },
-  element id { xsd:nonNegativeInteger },
-  element code { text }
-)
+Naming = element naming {
+  attribute id { xsd:nonNegativeInteger },
+  attribute code { text },
+  text
+}
 
 LikelySubtag = element likelySubtag {
   element from { LocaleTriplet },

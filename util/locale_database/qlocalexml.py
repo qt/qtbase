@@ -184,10 +184,18 @@ class QLocaleXmlReader (object):
 
     # Implementation details:
     def __loadMap(self, category, enum):
+        """Load the language-, script- or territory-map.
+
+        First parameter, category, names the map to load, second is the
+        enumdata.py map that corresponds to it.  Yields 4-tuples (id, enum,
+        code, name) where id and enum are the enumdata numeric index and name
+        (on which the QLocale enums are based), code is the ISO code and name
+        is CLDR's en.xml name for the language, script or territory."""
         kid = self.__firstChildText
-        for element in self.__eachEltInGroup(self.root, f'{category}List', category):
-            key = int(kid(element, 'id'))
-            yield key, enum[key][0], kid(element, 'code'), kid(element, 'name')
+        for element in self.__eachEltInGroup(self.root, f'{category}List', 'naming'):
+            name, key, code = self.__textThenAttrs(element, 'id', 'code')
+            key = int(key)
+            yield key, enum[key][0], code, name
 
     def __likelySubtagsMap(self):
         def triplet(element, keys=('language', 'script', 'territory'), kid = self.__firstChildText):
@@ -234,6 +242,17 @@ class QLocaleXmlReader (object):
     @classmethod
     def __firstChildText(cls, elt, key):
         return ' '.join(cls.__eltWords(cls.__firstChildElt(elt, key)))
+
+    @classmethod
+    def __textThenAttrs(cls, elt, *names):
+        """Read an elements text than a sequence of its attributes.
+
+        First parameter is the XML element, subsequent parameters name
+        attributes of it. Yields the text of the element, followed by the text
+        of each of the attributes in turn."""
+        yield ' '.join(cls.__eltWords(elt))
+        for name in names:
+            yield elt.attributes[name].nodeValue
 
     @classmethod
     def __eachEltInGroup(cls, parent, group, key):
@@ -404,8 +423,18 @@ class QLocaleXmlWriter (object):
             self.__closeTag('locale')
         self.__closeTag('localeList')
 
-    def inTag(self, tag, text):
-        self.__write(f'<{tag}>{text}</{tag}>')
+    def inTag(self, tag, text, **attrs):
+        """Writes an XML element with the given content.
+
+        First parameter, tag, is the element type; second, text, is the content
+        of its body. Any keyword parameters passed specify attributes to
+        include in the opening tag."""
+        if attrs:
+            head = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
+            head = f'{tag} {head}'
+        else:
+            head = tag
+        self.__write(f'<{head}>{text}</{tag}>')
 
     def close(self, grumble):
         """Finish writing and grumble about any issues discovered."""
@@ -439,14 +468,17 @@ class QLocaleXmlWriter (object):
         return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
     def __enumTable(self, tag, table, code2name):
+        """Writes a table of QLocale-enum-related data.
+
+        First parameter, tag, is 'language', 'script' or 'territory',
+        identifying the relevant table. Second, table, is the enumdata.py
+        mapping from numeric enum value to (enum name, ISO code) pairs for that
+        type. Last is the englishNaming method of the CldrAccess being used to
+        read CLDR data; it is used to map ISO codes to en.xml names."""
         self.__openTag(f'{tag}List')
         enname, safe = code2name(tag), self.__xmlSafe
         for key, (name, code) in table.items():
-            self.__openTag(tag)
-            self.inTag('name', safe(enname(code, name)))
-            self.inTag('id', key)
-            self.inTag('code', code)
-            self.__closeTag(tag)
+            self.inTag('naming', safe(enname(code, name)), id = key, code = code)
         self.__closeTag(f'{tag}List')
 
     def __likelySubTag(self, tag, likely):
