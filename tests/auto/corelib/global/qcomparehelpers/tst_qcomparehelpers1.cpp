@@ -4,23 +4,26 @@
 #include "tst_qcomparehelpers.h"
 
 #define DECLARE_TYPE(Name, Type, RetType, Constexpr, Suffix) \
-class Deprecated ## Name \
+class Templated ## Name \
 { \
 public: \
-    Constexpr Deprecated ## Name () {} \
+    Constexpr Templated ## Name () {} \
 \
 private: \
+    template <typename X> \
     friend Constexpr bool \
-    comparesEqual(const Deprecated ## Name &lhs, int rhs) noexcept; \
+    comparesEqual(const Templated ## Name &lhs, X rhs) noexcept; \
+    template <typename X> \
     friend Constexpr RetType \
-    compareThreeWay(const Deprecated ## Name &lhs, int rhs) noexcept; \
-    Q_DECLARE_ ## Type ## _ORDERED ## Suffix (Deprecated ## Name, int, \
-                                              Q_DECL_DEPRECATED_X("This op is deprecated")) \
+    compareThreeWay(const Templated ## Name &lhs, X rhs) noexcept; \
+    Q_DECLARE_ ## Type ## _ORDERED ## Suffix (Templated ## Name, X, template <typename X>) \
 }; \
 \
-Constexpr bool comparesEqual(const Deprecated ## Name &lhs, int rhs) noexcept \
+template <typename X> \
+Constexpr bool comparesEqual(const Templated ## Name &lhs, X rhs) noexcept \
 { Q_UNUSED(lhs); Q_UNUSED(rhs); return true; } \
-Constexpr RetType compareThreeWay(const Deprecated ## Name &lhs, int rhs) noexcept \
+template <typename X> \
+Constexpr RetType compareThreeWay(const Templated ## Name &lhs, X rhs) noexcept \
 { Q_UNUSED(lhs); Q_UNUSED(rhs); return RetType::equivalent; }
 
 DECLARE_TYPE(PartialConst, PARTIALLY, Qt::partial_ordering, constexpr, _LITERAL_TYPE)
@@ -34,10 +37,6 @@ DECLARE_TYPE(Strong, STRONGLY, Qt::strong_ordering, , )
 
 void tst_QCompareHelpers::compareWithAttributes()
 {
-    // All these comparisons would trigger deprecation warnings.
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-
 #define COMPARE(ClassName) \
     do { \
         ClassName c; \
@@ -46,14 +45,12 @@ QT_WARNING_DISABLE_DEPRECATED
         QCOMPARE_GE(0, c); \
     } while (false)
 
-    COMPARE(DeprecatedPartialConst);
-    COMPARE(DeprecatedPartial);
-    COMPARE(DeprecatedWeakConst);
-    COMPARE(DeprecatedWeak);
-    COMPARE(DeprecatedStrongConst);
-    COMPARE(DeprecatedStrong);
+    COMPARE(TemplatedPartialConst);
+    COMPARE(TemplatedPartial);
+    COMPARE(TemplatedWeakConst);
+    COMPARE(TemplatedWeak);
+    COMPARE(TemplatedStrongConst);
+    COMPARE(TemplatedStrong);
 
 #undef COMPARE
-
-QT_WARNING_POP
 }
