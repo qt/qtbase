@@ -27,7 +27,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static Q_LOGGING_CATEGORY(lcOdbc, "qt.sql.odbc")
+Q_STATIC_LOGGING_CATEGORY(lcOdbc, "qt.sql.odbc")
 
 using namespace Qt::StringLiterals;
 

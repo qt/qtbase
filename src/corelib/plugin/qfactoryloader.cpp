@@ -272,7 +272,7 @@ public:
 
 #if QT_CONFIG(library)
 
-static Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(lcFactoryLoader, "QT_DEBUG_PLUGINS",
+Q_STATIC_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(lcFactoryLoader, "QT_DEBUG_PLUGINS",
                                             "qt.core.plugin.factoryloader")
 
 namespace {

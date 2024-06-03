@@ -39,7 +39,7 @@ Q_DECLARE_METATYPE(sqlite3_stmt*)
 
 QT_BEGIN_NAMESPACE
 
-static Q_LOGGING_CATEGORY(lcSqlite, "qt.sql.sqlite")
+Q_STATIC_LOGGING_CATEGORY(lcSqlite, "qt.sql.sqlite")
 
 using namespace Qt::StringLiterals;
 

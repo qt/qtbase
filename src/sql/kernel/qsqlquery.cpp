@@ -20,7 +20,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static Q_LOGGING_CATEGORY(lcSqlQuery, "qt.sql.qsqlquery")
+Q_STATIC_LOGGING_CATEGORY(lcSqlQuery, "qt.sql.qsqlquery")
 
 class QSqlQueryPrivate
 {

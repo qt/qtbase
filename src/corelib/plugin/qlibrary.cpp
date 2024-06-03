@@ -55,7 +55,7 @@ static constexpr bool QtBuildIsDebug = true;
 #endif
 
 Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(qt_lcDebugPlugins, "QT_DEBUG_PLUGINS", "qt.core.plugin.loader")
-static Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(lcDebugLibrary, "QT_DEBUG_PLUGINS", "qt.core.library")
+Q_STATIC_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(lcDebugLibrary, "QT_DEBUG_PLUGINS", "qt.core.library")
 
 /*!
     \class QLibrary

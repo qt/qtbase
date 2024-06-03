@@ -24,7 +24,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-static Q_LOGGING_CATEGORY(lcDnsLookup, "qt.network.dnslookup", QtCriticalMsg)
+Q_STATIC_LOGGING_CATEGORY(lcDnsLookup, "qt.network.dnslookup", QtCriticalMsg)
 
 namespace {
 struct QDnsLookupThreadPool : QThreadPool

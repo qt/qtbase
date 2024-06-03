@@ -116,6 +116,9 @@ template <> const bool QLoggingCategoryMacroHolder<QtWarningMsg>::IsOutputEnable
         return category; \
     }
 
+#define Q_STATIC_LOGGING_CATEGORY(name, ...) \
+    static Q_LOGGING_CATEGORY(name, __VA_ARGS__)
+
 #define QT_MESSAGE_LOGGER_COMMON(category, level) \
     for (QLoggingCategoryMacroHolder<level> qt_category((category)()); qt_category; qt_category.control = false) \
         QMessageLogger(QT_MESSAGELOG_FILE, QT_MESSAGELOG_LINE, QT_MESSAGELOG_FUNC, qt_category.name())

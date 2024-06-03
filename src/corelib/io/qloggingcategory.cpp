@@ -665,4 +665,43 @@ void QLoggingCategory::setFilterRules(const QString &rules)
     This macro must be used outside of a class or method.
 */
 
+/*!
+    \macro Q_STATIC_LOGGING_CATEGORY(name, string)
+    \sa Q_LOGGING_CATEGORY()
+    \relates QLoggingCategory
+    \since 6.9
+
+    Defines a static logging category \a name, and makes it configurable under
+    the \a string identifier. By default, all message types are enabled.
+
+    The logging category is created using the \c static qualifier so that you
+    can only access it in the same translation unit. This avoids accidental
+    symbol clashes.
+
+    The implicitly-defined QLoggingCategory object is created on first use,
+    in a thread-safe manner.
+
+    This macro must be used outside of a class or method.
+*/
+
+/*!
+    \macro Q_STATIC_LOGGING_CATEGORY(name, string, msgType)
+    \sa Q_LOGGING_CATEGORY()
+    \relates QLoggingCategory
+    \since 6.9
+
+    Defines a static logging category \a name, and makes it configurable under
+    the \a string identifier. By default, messages of QtMsgType \a msgType and
+    more severe are enabled, types with a lower severity are disabled.
+
+    The logging category is created using the \c static qualifier so that you
+    can only access it in the same translation unit. This avoids accidental
+    symbol clashes.
+
+    The implicitly-defined QLoggingCategory object is created on first use, in
+    a thread-safe manner.
+
+    This macro must be used outside of a class or method.
+*/
+
 QT_END_NAMESPACE

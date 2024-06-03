@@ -39,6 +39,9 @@ QT_BEGIN_NAMESPACE
         return category;                                                            \
     }
 
+#define Q_STATIC_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(name, env, categoryName) \
+    static Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(name, env, categoryName)
+
 class Q_AUTOTEST_EXPORT QLoggingRule
 {
 public:

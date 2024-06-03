@@ -35,7 +35,7 @@ static constexpr bool IncludeValidityChecks = true;
 #  define QELFPARSER_DEBUG
 #endif
 #if defined(QELFPARSER_DEBUG)
-static Q_LOGGING_CATEGORY(lcElfParser, "qt.core.plugin.elfparser")
+Q_STATIC_LOGGING_CATEGORY(lcElfParser, "qt.core.plugin.elfparser")
 #  define qEDebug       qCDebug(lcElfParser) << reinterpret_cast<const char16_t *>(error.errMsg->constData()) << ':'
 #else
 #  define qEDebug       if (false) {} else QNoDebug()
