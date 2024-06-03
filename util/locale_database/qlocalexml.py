@@ -21,7 +21,7 @@ package manager lacks the jing package.
 
 from xml.sax.saxutils import escape
 
-from localetools import Error
+from localetools import Error, qtVersion
 
 # Tools used by Locale:
 def camel(seq):
@@ -66,7 +66,13 @@ class QLocaleXmlReader (object):
         self.__landByName = {v[1]: (v[0], v[2]) for v in territories}
         # Other properties:
         self.__dupes = set(v[1] for v in languages) & set(v[1] for v in territories)
-        self.cldrVersion = self.__firstChildText(self.root, "version")
+
+        self.cldrVersion = self.root.attributes['versionCldr'].nodeValue
+        self.qtVersion = self.root.attributes['versionQt'].nodeValue
+        assert self.qtVersion == qtVersion, (
+            'Using QLocaleXml file from incompatible Qt version',
+            self.qtVersion, qtVersion
+        )
 
     def loadLocaleMap(self, calendars, grumble = lambda text: None):
         kid = self.__firstChildText
@@ -290,27 +296,28 @@ class QLocaleXmlWriter (object):
 
     The output saved by this should conform to qlocalexml.rnc's
     schema."""
-    def __init__(self, save = None, space = Spacer(4)):
+    def __init__(self, cldrVersion, save = None, space = Spacer(4)):
         """Set up to write digested CLDR data as QLocale XML.
 
-        Arguments are both optional.
+        First argument is the version of CLDR whose data we'll be
+        writing. Other arguments are optional.
 
-        First argument, save, is None (its default) or a callable that
-        will write content to where you intend to save it. If None, it
-        is replaced with a callable that prints the given content,
-        suppressing the newline (but see the following); this is
-        equivalent to passing sys.stdout.write.
+        Second argument, save, is None (its default) or a callable that will
+        write content to where you intend to save it. If None, it is replaced
+        with a callable that prints the given content, suppressing the newline
+        (but see the following); this is equivalent to passing
+        sys.stdout.write.
 
-        Second argument, space, is an object to call on each text
-        output to prepend indentation and append newlines, or not as
-        the case may be. The default is a Spacer(4), which grows
-        indent by four spaces after each unmatched new tag and shrinks
-        back on a close-tag (its parsing is naive, but adequate to how
-        this class uses it), while adding a newline to each line.
-        """
+        Third argument, space, is an object to call on each text output to
+        prepend indentation and append newlines, or not as the case may be. The
+        default is a Spacer(4), which grows indent by four spaces after each
+        unmatched new tag and shrinks back on a close-tag (its parsing is
+        naive, but adequate to how this class uses it), while adding a newline
+        to each line."""
         self.__rawOutput = self.__printit if save is None else save
         self.__wrap = space
-        self.__write('<localeDatabase>')
+        self.__openTag('localeDatabase', versionCldr = cldrVersion,
+                       versionQt = qtVersion)
 
     # Output of various sections, in their usual order:
     def enumData(self, code2name):
@@ -394,16 +401,13 @@ class QLocaleXmlWriter (object):
             self.__closeTag('locale')
         self.__closeTag('localeList')
 
-    def version(self, cldrVersion):
-        self.inTag('version', cldrVersion)
-
     def inTag(self, tag, text):
         self.__write(f'<{tag}>{text}</{tag}>')
 
     def close(self, grumble):
         """Finish writing and grumble about any issues discovered."""
         if self.__rawOutput != self.__complain:
-            self.__write('</localeDatabase>')
+            self.__closeTag('localeDatabase')
         self.__rawOutput = self.__complain
 
         if self.__languages or self.__scripts or self.__territories:
@@ -458,7 +462,7 @@ class QLocaleXmlWriter (object):
 
     def __openTag(self, tag, **attrs):
         if attrs:
-            text = ', '.join(f'{k}="{v}"' for k, v in attrs.items())
+            text = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
             tag = f'{tag} {text}'
         self.__write(f'<{tag}>')
     def __closeTag(self, tag):

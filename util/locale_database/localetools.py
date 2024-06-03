@@ -26,6 +26,22 @@ class Error (Exception):
     def __str__(self):
         return self.message
 
+def qtVersion(root = qtbase_root, pfx = 'set(QT_REPO_MODULE_VERSION '):
+    with open(root.joinpath('.cmake.conf')) as fd:
+        for line in fd:
+            if line.startswith(pfx):
+                tail = line[len(pfx):].strip()
+                assert tail, ('No Qt version given', line)
+                if tail.startswith('"') or tail.startswith("'"):
+                    cut = tail.index(tail[0], 1) # assert: doesn't ValueError
+                    assert cut > 5, ('Truncated Qt version', tail)
+                    version = tail[1:cut].strip()
+                    assert all(x.isdigit() for x in version.split('.')), version
+                    return version
+                raise Error(f'Missing quotes on Qt version: {tail}')
+    raise Error(f'Failed to find {pfx}...) line in {root.joinpath(".cmake.conf")}')
+qtVersion = qtVersion()
+
 def unicode2hex(s):
     lst = []
     for x in s:

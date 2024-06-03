@@ -11,7 +11,8 @@
 # package manager lacks the jing package.
 
 start = element localeDatabase {
-  element version { text },
+  attribute versionCldr { text },
+  attribute versionQt { text },
   element languageList { Language+ },
   element scriptList { Script+ },
   element territoryList { Territory+ },

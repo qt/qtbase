@@ -91,9 +91,8 @@ def main(argv, out, err):
                         # Use stderr for logging if stdout is where our XML is going:
                         err.write if out is emit else out.write,
                         err.write)
-    writer = QLocaleXmlWriter(emit.write)
+    writer = QLocaleXmlWriter(reader.root.cldrVersion, emit.write)
 
-    writer.version(reader.root.cldrVersion)
     writer.enumData(reader.root.englishNaming)
     writer.likelySubTags(reader.likelySubTags())
     writer.zoneData(*reader.zoneData()) # Locale-independent zone data.
