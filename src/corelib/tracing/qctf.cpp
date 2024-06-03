@@ -7,11 +7,14 @@
 #include <qpluginloader.h>
 #include <qfileinfo.h>
 #include <qdir.h>
+#include <qtenvironmentvariables.h>
 #include <qjsonarray.h>
 
 #include "qctf_p.h"
 
 QT_BEGIN_NAMESPACE
+
+using namespace Qt::StringLiterals;
 
 static bool s_initialized = false;
 static bool s_triedLoading = false;
@@ -22,14 +25,12 @@ static QCtfLib* s_plugin = nullptr;
 #if QT_CONFIG(library) && defined(QT_SHARED)
 
 #if defined(Q_OS_ANDROID)
-static QString findPlugin(const QString &plugin)
+static QString findPlugin(QLatin1StringView plugin)
 {
-    QString pluginPath = QString::fromUtf8(qgetenv("QT_PLUGIN_PATH"));
-    QDir dir(pluginPath);
-    const QStringList files = dir.entryList(QDir::Files);
-    for (const QString &file : files) {
-        if (file.contains(plugin))
-            return QFileInfo(pluginPath + QLatin1Char('/') + file).absoluteFilePath();
+    const QString pluginPath = qEnvironmentVariable("QT_PLUGIN_PATH");
+    for (const auto &entry : QDirListing(pluginPath, QDirListing::IteratorFlag::FilesOnly)) {
+        if (entry.fileName().contains(plugin))
+            return entry.absoluteFilePath();
     }
     return {};
 }
@@ -46,7 +47,7 @@ static bool loadPlugin(bool &retry)
 #endif
 #elif defined(Q_OS_ANDROID)
 
-    QString plugin = findPlugin(QStringLiteral("QCtfTracePlugin"));
+    const QString plugin = findPlugin("QCtfTracePlugin"_L1);
     if (plugin.isEmpty()) {
         retry = true;
         return false;
