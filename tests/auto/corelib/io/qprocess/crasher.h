@@ -45,6 +45,8 @@ void crash()
 {
 #if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
     __ud2();
+#elif defined(_MSC_VER) && defined(_M_ARM64)
+    __debugbreak();
 #elif __has_builtin(__builtin_trap)
     __builtin_trap();
 #elif defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
