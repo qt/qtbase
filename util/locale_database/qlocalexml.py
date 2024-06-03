@@ -281,7 +281,7 @@ class Spacer (object):
         indent = self.current
         if line.startswith('</'):
             indent = self.current = indent[:-len(self.__each)]
-        elif line.startswith('<') and not line.startswith('<!'):
+        elif line.startswith('<') and line[1:2] not in '!?':
             cut = line.find('>')
             tag = (line[1:] if cut < 0 else line[1 : cut]).strip().split()[0]
             if f'</{tag}>' not in line:
@@ -316,6 +316,7 @@ class QLocaleXmlWriter (object):
         to each line."""
         self.__rawOutput = self.__printit if save is None else save
         self.__wrap = space
+        self.__write('<?xml version="1.0" encoding="UTF-8" ?>')
         self.__openTag('localeDatabase', versionCldr = cldrVersion,
                        versionQt = qtVersion)
 
