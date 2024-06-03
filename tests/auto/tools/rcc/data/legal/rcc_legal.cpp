@@ -3,7 +3,7 @@
 ** Copyright (C) 2024 Intel Corporation.
 ** SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 **
-** Created by: The Resource Compiler for Qt version 6.8.0
+** Created by: The Resource Compiler for Qt version 6.9.0
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
