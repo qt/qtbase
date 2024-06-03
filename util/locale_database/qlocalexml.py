@@ -296,7 +296,7 @@ class QLocaleXmlWriter (object):
 
     The output saved by this should conform to qlocalexml.rnc's
     schema."""
-    def __init__(self, cldrVersion, save = None, space = Spacer(4)):
+    def __init__(self, cldrVersion, save = None, space = Spacer('\t')):
         """Set up to write digested CLDR data as QLocale XML.
 
         First argument is the version of CLDR whose data we'll be
@@ -310,13 +310,15 @@ class QLocaleXmlWriter (object):
 
         Third argument, space, is an object to call on each text output to
         prepend indentation and append newlines, or not as the case may be. The
-        default is a Spacer(4), which grows indent by four spaces after each
+        default is a Spacer('\t'), which grows indent by a tab after each
         unmatched new tag and shrinks back on a close-tag (its parsing is
         naive, but adequate to how this class uses it), while adding a newline
         to each line."""
         self.__rawOutput = self.__printit if save is None else save
         self.__wrap = space
-        self.__write('<?xml version="1.0" encoding="UTF-8" ?>')
+        self.__write('<?xml version="1.0" encoding="UTF-8" ?>'
+                     # A hint to emacs to make display nicer:
+                     '<!--*- tab-width: 4 -*-->')
         self.__openTag('localeDatabase', versionCldr = cldrVersion,
                        versionQt = qtVersion)
 
