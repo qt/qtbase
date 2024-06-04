@@ -117,18 +117,31 @@ function(qt_copy_framework_headers target)
         "${output_dir}/${fw_versioned_header_dir}"
     )
 
+    set(copy_fw_sync_headers_marker_file
+        "${CMAKE_CURRENT_BINARY_DIR}/${target}_fw_sync_headers_marker_file"
+    )
+
+    set(copy_fw_sync_headers_marker_file_command
+        "${CMAKE_COMMAND}" -E touch "${copy_fw_sync_headers_marker_file}"
+    )
+
     if(CMAKE_GENERATOR MATCHES "^Ninja")
         add_custom_command(
-            OUTPUT "${output_dir}/${fw_versioned_header_dir}"
+            OUTPUT
+                "${output_dir}/${fw_versioned_header_dir}"
+                "${copy_fw_sync_headers_marker_file}"
             DEPENDS ${target}_sync_headers
             COMMAND ${copy_fw_sync_headers_command}
+            COMMAND ${copy_fw_sync_headers_marker_file_command}
             VERBATIM
         )
         add_custom_target(${target}_copy_fw_sync_headers
             DEPENDS "${output_dir}/${fw_versioned_header_dir}")
     else()
         add_custom_target(${target}_copy_fw_sync_headers
-            COMMAND ${copy_fw_sync_headers_command})
+            COMMAND ${copy_fw_sync_headers_command}
+            COMMAND ${copy_fw_sync_headers_marker_file_command}
+        )
     endif()
 
     if(out_files)
