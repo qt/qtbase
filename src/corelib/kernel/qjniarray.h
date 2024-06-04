@@ -14,11 +14,16 @@
 #include <utility>
 #include <QtCore/q20type_traits.h>
 
+#if defined(Q_QDOC)
+using jsize = qint32;
+using jarray = jobject;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 template <typename T> class QJniArray;
 template <typename T>
-struct QT_TECH_PREVIEW_API QJniArrayIterator
+struct QJniArrayIterator
 {
     QJniArrayIterator() = default;
 
@@ -86,7 +91,7 @@ private:
     {}
 };
 
-class QT_TECH_PREVIEW_API QJniArrayBase
+class QJniArrayBase
 {
     // for SFINAE'ing out the fromContainer named constructor
     template <typename C, typename = void> struct IsContiguousContainerHelper : std::false_type {};
@@ -193,7 +198,7 @@ private:
 };
 
 template <typename T>
-class QT_TECH_PREVIEW_API QJniArray : public QJniArrayBase
+class QJniArray : public QJniArrayBase
 {
     friend struct QJniArrayIterator<T>;
 public:

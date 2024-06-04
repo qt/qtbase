@@ -1,0 +1,404 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \class QJniArrayBase
+    \brief The QJniArrayBase class provides common, type-independent APIs for QJniArray.
+    \inmodule QtCore
+    \ingroup frameworks-technologies
+    \since 6.8
+*/
+
+/*!
+    \typedef QJniArrayBase::size_type
+
+    A 32 bit integer.
+*/
+
+/*!
+    \fn template <typename Container, QJniArrayBase::if_contiguous_container<Container>> auto QJniArrayBase::fromContainer(Container &&container)
+
+    Creates a Java array holding the data in \a container, and returns a
+    QJniArray instance that wraps it.
+
+//! [contiguous-containers]
+    This function only participates in overload resolution if \c{Container}
+    is a contiguous container storing elements of a \l{JNI types}{JNI type}
+    or equivalent C++ type.
+
+    The specialization of the constructed QJniArray depends on the value type
+    of the \a container. For a \c{Container<T>} (such as e.g. \c{QList<T>}) it
+    will typically be \c{QJniArray<T>}, with the following exceptions:
+
+    \table
+    \header
+    \li Container
+    \li Specialization
+    \row
+    \li QByteArray
+    \li QJniArray<jbyte>
+    \row
+    \li QStringList
+    \li QJniArray<jstring>
+    \header
+    \li Container::value_type
+    \li Specialization
+    \row
+    \li QJniObject
+    \li QJniArray<jobject>
+    \endtable
+//! [contiguous-containers]
+
+    \sa QJniArray::toContainer()
+*/
+
+/*!
+    \fn QJniArrayBase::operator QJniObject() const
+
+    \return a QJniObject wrapping the same \c{jobject} as this QJniArray instance.
+*/
+
+/*!
+    \fn template <typename T> T QJniArrayBase::object() const
+
+    \return the object held by the QJniArray as type T, which can be one of the
+    \l {QJniObject#Object Types}{JNI Object Types}.
+*/
+
+/*!
+    \fn bool QJniArrayBase::isValid() const
+
+    \return whether the QJniArray object wraps a valid `jobject`. For invalid
+    QJniArray instances, object() returns \nullptr. Iterating over an invalid
+    object is safe (begin() will return the same as end()), and calling
+    \l{QJniArray::}{toContainer()} on an invalid array will return an empty
+    container.
+
+    \sa QJniObject::isValid(), object(), QJniArray::toContainer()
+*/
+
+/*!
+    \fn bool QJniArrayBase::isEmpty() const
+
+    \return \c true if the array has size 0; otherwise returns \c false.
+
+    An \l{isValid}{invalid} array is always empty.
+
+    \c isValid(), size()
+*/
+
+/*!
+    \fn QJniArrayBase::size_type QJniArrayBase::size() const
+
+    \return the size of the array.
+*/
+
+/*!
+    \class QJniArray
+    \brief The QJniArray class is a template class that represents an array in Java.
+    \inmodule QtCore
+    \ingroup frameworks-technologies
+    \since 6.8
+
+    The QJniArray template makes it easy to work with arrays when interfacing
+    with Java methods that return or take a Java array.
+
+    \note \l{Java arrays} can hold primitive types and objects. The array
+    itself can be treated like a Java Object, and the JNI framework provides
+    explicit APIs to work with such arrays. In addition, the Java class library
+    provides container types such as \c{List} or \c{ArrayList}. Objects of
+    those types can not be represented by a QJniArray. Instead, use QJniObject
+    to call the class-specific member functions.
+
+    To create a QJniArray instance, either construct it from a corresponding C++
+    container:
+
+    \code
+    QList<int> intList;
+    QJniArray intArray = QJniArray(intList);
+    \endcode
+
+    or from an initializer list:
+
+    \code
+    QJniArray intArray{1, 2, 3};
+    \endcode
+
+    QJniArray will create a new Java array and copy the C++-side data into it.
+
+    When calling functions that return an array via QJniObject::callMethod,
+    such as \c{char[] toCharArray()} in the Java \c{String} class, specify the
+    return type as a C array (\c{jchar[]} in the following):
+
+    \code
+    auto charArray = stringObject.callMethod<jchar[]>("toCharArray");
+    \endcode
+
+    The \c{charArray} variable will be of type \c{QJniArray<jchar>}, and hold
+    a new global reference to the \c{jcharArray} JNI object.
+
+    Lastly, a QJniArray can be constructed from an existing \c{jarray} or
+    QJniObject. However, note that no type checking is performed to verify that
+    the \c{jarray} or QJniObject indeed represents an array holding elements of
+    the specified type, and accessing a mismatching QJniArray results in
+    undefined behavior.
+
+    The data in a QJniArray can either be accessed element by element using
+    at() or \l{QJniArray::}{operator[]()}, iterated over, or copied into a
+    suitable C++ container via the toContainer() function.
+
+    \code
+    QList<jchar> characters = charArray.toContainer();
+    \endcode
+
+    The return type of toContainer() depends on the type that QJniArray has
+    been instantiated with.
+//! [type-mapping]
+    For \c{QJniArray<T>} this will typically be \c{QList<T>}, with the
+    following exceptions:
+
+    \table
+    \header
+    \li Specialization
+    \li C++ type
+    \row
+    \li QJniArray<jbyte>
+    \li QByteArray
+    \row
+    \li QJniArray<jstring>
+    \li QStringList
+    \endtable
+//! [type-mapping]
+
+    The elements in the QJniArray cannot be modified through QJniArray APIs,
+    and there is no mutating iterator.
+
+    \note Java arrays are limited to 32 bits, and the \c{size_type} member type of
+          QJniArray is \c{jsize}, which is a 32bit integer type. Trying to construct
+          a QJniArray from a C++ container that holds more than 2^32 elements will
+          cause a runtime assertion.
+*/
+
+/*!
+    \fn template <typename T> QJniArray<T>::QJniArray()
+
+    Default constructor of QJniArray. This does not create a Java-side array,
+    and the instance will be invalid.
+
+    \sa isValid
+*/
+
+/*!
+    \fn template <typename T> QJniArray<T>::QJniArray(jarray array)
+
+    Constructs a QJniArray that wraps the Java-side array \a array,
+    creating a new global reference to \a array.
+
+//! [no-array-validation]
+    \note This constructor does not perform any validation of whether the
+          Java-side object is an array of the correct type. Accessing a
+          mismatching QJniArray results in undefined behavior.
+//! [no-array-validation]
+*/
+
+/*!
+    \fn template <typename T> QJniArray<T>::QJniArray(const QJniObject &object)
+
+    Constructs a QJniArray that wraps the same Java array as \a object,
+    creating a new global reference. To construct a QJniArray from an existing
+    local reference, use a QJniObject constructed via
+    \l{QJniObject::}{fromLocalRef()}.
+
+    \include qjniarray.qdoc no-array-validation
+*/
+
+/*!
+    \fn template <typename T> QJniArray<T>::QJniArray(QJniObject &&object)
+
+    Constructs a QJniArray by moving from \a object. The QJniObject becomes
+    \l{QJniObject::isValid}{invalid}.
+
+    \include qjniarray.qdoc no-array-validation
+*/
+
+/*!
+    \fn template <typename T> QJniArray<T>::QJniArray(const QJniArray &other)
+
+    Constructs a QJniArray that is a copy of \a other. Both QJniArray objects
+    will reference the same Java array object.
+*/
+
+/*!
+    \fn template <typename T> template <typename Other, if_convertible<Other>> QJniArray<T>::QJniArray(const QJniArray<Other> &other)
+
+    Constructs a QJniArray that is a copy of \a other, with both objects referencing
+    the same Java array object.
+
+    This constructor only participates in overload resolution if the element
+    type \c{Other} of \a other is convertible to the element type \c{T} of the
+    QJniArray being constructed. However, no actual conversion takes place.
+*/
+
+/*!
+    \fn template <typename T> QJniArray<T>::QJniArray(QJniArray &&other)
+
+    Constructs a QJniArray by moving from \a other. The \a other array becomes
+    \l{QJniArrayBase::isValid}{invalid}.
+*/
+
+/*!
+    \fn template <typename T> QJniArray<T>::operator=(const QJniArray &other)
+
+    Assigns \a other to this QJniArray. Both QJniArray objects will reference
+    the same Java array object.
+*/
+
+/*!
+    \fn template <typename T> QJniArray<T>::operator=(QJniArray &&other)
+
+    Moves \a other into this QJniArray. The \a other array becomes
+    \l{QJniArrayBase::isValid}{invalid}.
+*/
+
+/*!
+    \fn template <typename T> template <typename Container, QJniArrayBase::if_contiguous_container<Container>> QJniArray<T>::QJniArray(Container &&container)
+
+    Constructs a QJniArray that wraps a newly-created Java array for elements of
+    type \c{Container::value_type}, and populates the Java array with the data from
+    \a container.
+
+    \include qjniarray.qdoc contiguous-containers
+
+    \sa QJniArrayBase::fromContainer(), toContainer()
+*/
+
+/*!
+    \fn template <typename T> QJniArray<T>::QJniArray(std::initializer_list<T> &list)
+
+    Constructs a QJniArray that wraps a newly-created Java array for elements of
+    type \c{T}, and populates the Java array with the data from \a list.
+
+    \sa QJniArrayBase::fromContainer(), toContainer()
+*/
+
+/*!
+    \fn template <typename T> QJniArray<T>::~QJniArray()
+
+    Destroys the QJniArray object and releases any references held to the
+    wrapped Java array.
+*/
+
+/*!
+    \fn template <typename T> auto QJniArray<T>::arrayObject() const
+
+    \return the wrapped Java object as the suitable \c{jarray} type that
+    matches the element type \c{T} of this QJniArray object.
+
+    \table
+    \header
+    \li T
+    \li jarray type
+    \row
+    \li jbyte
+    \li jbyteArray
+    \row
+    \li jchar
+    \li jcharArray
+    \row
+    \li ...
+    \li ...
+    \row
+    \li jobject
+    \li jobjectArray
+    \row
+    \li QJniObject
+    \li jobjectArray
+    \row
+    \li Q_DECLARE_JNI_CLASS
+    \li jobjectArray
+    \endtable
+*/
+
+/*!
+    \typedef QJniArray::const_iterator
+
+    A bi-directional, const iterator for QJniArray.
+*/
+
+/*!
+    \typedef QJniArray::const_reverse_iterator
+
+    A reverse iterator for the QJniArray, synonym for
+    \c{std::reverse_iterator<const_iterator>}.
+*/
+
+/*!
+    \fn template <typename T> const_iterator QJniArray<T>::begin() const
+    \fn template <typename T> const_iterator QJniArray<T>::constBegin() const
+    \fn template <typename T> const_iterator QJniArray<T>::cbegin() const
+
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing to the
+    first item in the array.
+
+    If the array is \l{QJniArrayBase::isValid()}{invalid}, then this will return
+    the same iterator as the corresponding end() function.
+
+    \sa end(), rbegin()
+*/
+
+/*!
+    \fn template <typename T> const_iterator QJniArray<T>::end() const
+    \fn template <typename T> const_iterator QJniArray<T>::constEnd() const
+    \fn template <typename T> const_iterator QJniArray<T>::cend() const
+
+    Returns an \l{STL-style iterators}{STL-style iterator} pointing just
+    after the last item in the list.
+
+    \sa begin(), rend()
+*/
+
+/*!
+    \fn template <typename T> const_reverse_iterator QJniArray<T>::rbegin() const
+    \fn template <typename T> const_reverse_iterator QJniArray<T>::crbegin() const
+
+    Returns an \l{STL-style iterators}{STL-style reverse iterator} pointing to
+    the first item in the array, in reverse order.
+
+    If the array is \l{QJniArrayBase::isValid()}{invalid}, then this will return
+    the same iterator as the corresponding rend() function.
+
+    \sa rend(), begin()
+*/
+
+/*!
+    \fn template <typename T> const_reverse_iterator QJniArray<T>::rend() const
+    \fn template <typename T> const_reverse_iterator QJniArray<T>::crend() const
+
+    Returns an \l{STL-style iterators}{STL-style reverse iterator} pointing just
+    after the last item in the list, in reverse order.
+
+    \sa rbegin(), end()
+*/
+
+/*!
+    \fn template <typename T> T QJniArray<T>::operator[](size_type i) const
+    \fn template <typename T> T QJniArray<T>::at(size_type i) const
+
+    Returns the value at position \a i in the wrapped Java array.
+
+    \a i must be a valid index position in the list (i.e.,
+    0 <= \a i < size()).
+
+    \sa size()
+*/
+
+/*!
+    \fn template <typename T> auto QJniArray<T>::toContainer() const
+
+    \return the data in the wrapped Java objects as a suitable C++ container,
+    which will be empty if the array is \l{QJniArrayBase::isValid()}{invalid}.
+
+    \include qjniarray.qdoc type-mapping
+
+    \sa QJniArrayBase::fromContainer()
+*/
