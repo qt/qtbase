@@ -29,8 +29,6 @@ Q_DECLARE_LOGGING_CATEGORY(lcQrest)
     \ingroup network
     \inmodule QtNetwork
 
-    \preliminary
-
     QRestReply wraps a QNetworkReply and provides convenience methods for data
     and status handling. The methods provide convenience for typical RESTful
     client applications.
