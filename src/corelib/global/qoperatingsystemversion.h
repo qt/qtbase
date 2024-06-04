@@ -31,7 +31,7 @@ public:
         TvOS,
         WatchOS,
         Android,
-        VisionOS
+        VisionOS,
     };
 
     constexpr QOperatingSystemVersionBase(OSType osType,
@@ -163,7 +163,7 @@ public:
         TvOS,
         WatchOS,
         Android,
-        VisionOS
+        VisionOS,
     };
 #endif
 
