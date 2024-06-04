@@ -1087,7 +1087,7 @@ static bool createDirectoryWithParents(const QByteArray &nativeName, mode_t mode
         return true;
     if (errno == EISDIR)
         return true;
-    if (errno == EEXIST)
+    if (errno == EEXIST || errno == EROFS)
         return isDir(nativeName);
     if (errno != ENOENT)
         return false;
