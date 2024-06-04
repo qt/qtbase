@@ -669,6 +669,10 @@ void QAbstractItemModelTesterPrivate::data()
                 || state == Qt::Checked);
     }
 
+    QVariant sizeHintVariant = model->data(model->index(0, 0), Qt::SizeHintRole);
+    if (sizeHintVariant.isValid())
+        MODELTESTER_VERIFY(sizeHintVariant.canConvert<QSize>());
+
     Q_Q(QAbstractItemModelTester);
 
     if (!QTestPrivate::testDataGuiRoles(q))
