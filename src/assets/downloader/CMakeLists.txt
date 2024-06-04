@@ -4,7 +4,6 @@
 qt_internal_add_module(ExamplesAssetDownloaderPrivate
     CONFIG_MODULE_NAME examples_asset_downloader
     STATIC
-    EXCEPTIONS
     INTERNAL_MODULE
     SOURCES
         assetdownloader.cpp assetdownloader.h
@@ -15,11 +14,13 @@ qt_internal_add_module(ExamplesAssetDownloaderPrivate
         tasking/tasking_global.h
         tasking/tasktree.cpp tasking/tasktree.h
         tasking/tasktreerunner.cpp tasking/tasktreerunner.h
-    LIBRARIES
+    DEFINES
+        QT_NO_CAST_FROM_ASCII
+    PUBLIC_LIBRARIES
         Qt6::Concurrent
+        Qt6::Core
         Qt6::CorePrivate
         Qt6::Network
-    PUBLIC_LIBRARIES
-        Qt6::Core
+    NO_GENERATE_CPP_EXPORTS
 )
 
