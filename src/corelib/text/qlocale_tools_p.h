@@ -18,8 +18,9 @@
 #include "qlocale_p.h"
 #include "qstring.h"
 
-#if !defined(QT_SUPPORTS_INT128) && defined(Q_CC_MSVC) && (_MSC_VER >= 1930)
+#if !defined(QT_SUPPORTS_INT128) && (defined(Q_CC_MSVC) && (_MSC_VER >= 1930) && __has_include(<__msvc_int128.hpp>))
 #include <__msvc_int128.hpp>
+#define QT_USE_MSVC_INT128
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -27,7 +28,7 @@ QT_BEGIN_NAMESPACE
 #if defined(QT_SUPPORTS_INT128)
 using qinternalint128 = qint128;
 using qinternaluint128 = quint128;
-#elif defined(Q_CC_MSVC) && (_MSC_VER >= 1930)
+#elif defined(QT_USE_MSVC_INT128)
 using qinternalint128 = std::_Signed128;
 using qinternaluint128 = std::_Unsigned128;
 #endif
@@ -55,7 +56,7 @@ void qt_doubleToAscii(double d, QLocaleData::DoubleForm form, int precision,
 [[nodiscard]] QByteArray qdtoAscii(double d, QLocaleData::DoubleForm form,
                                    int precision, bool uppercase);
 
-#if defined(QT_SUPPORTS_INT128) || (defined(Q_CC_MSVC) && (_MSC_VER >= 1930))
+#if defined(QT_SUPPORTS_INT128) || defined(QT_USE_MSVC_INT128)
 [[nodiscard]] Q_CORE_EXPORT QString quint128toBasicLatin(qinternaluint128 number,
                                                          int base = 10);
 [[nodiscard]] Q_CORE_EXPORT QString qint128toBasicLatin(qinternalint128 number,
