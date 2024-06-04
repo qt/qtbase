@@ -1954,6 +1954,30 @@ QDockWidget *QMainWindowTabBar::dockAt(int index) const
     return nullptr;
 }
 
+/*!
+   \internal
+   Move \a dockWidget to its ideal unplug position.
+   \list
+   \li If \a dockWidget has a title bar widget, place its center under the mouse cursor.
+   \li Otherwise place it in the middle of the title bar's long side, with a
+       QApplication::startDragDistance() offset on the short side.
+   \endlist
+ */
+static void moveToUnplugPosition(QPoint mouse, QDockWidget *dockWidget)
+{
+    Q_ASSERT(dockWidget);
+
+    if (auto *tbWidget = dockWidget->titleBarWidget()) {
+        dockWidget->move(mouse - tbWidget->rect().center());
+        return;
+    }
+
+    const bool vertical = dockWidget->features().testFlag(QDockWidget::DockWidgetVerticalTitleBar);
+    const int deltaX = vertical ? QApplication::startDragDistance() : dockWidget->width() / 2;
+    const int deltaY = vertical ? dockWidget->height() / 2 : QApplication::startDragDistance();
+    dockWidget->move(mouse - QPoint(deltaX, deltaY));
+}
+
 void QMainWindowTabBar::mouseMoveEvent(QMouseEvent *e)
 {
     // The QTabBar handles the moving (reordering) of tabs.
@@ -1991,9 +2015,8 @@ void QMainWindowTabBar::mouseMoveEvent(QMouseEvent *e)
     if (draggingDock) {
         QDockWidgetPrivate *dockPriv = static_cast<QDockWidgetPrivate *>(QObjectPrivate::get(draggingDock));
         if (dockPriv->state && dockPriv->state->dragging) {
-            QPoint pos = e->globalPosition().toPoint() - dockPriv->state->pressPos;
-            draggingDock->move(pos);
             // move will call QMainWindowLayout::hover
+            moveToUnplugPosition(e->globalPosition().toPoint(), draggingDock);
         }
     }
     QTabBar::mouseMoveEvent(e);
