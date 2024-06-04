@@ -25,7 +25,7 @@ class QSslConfiguration;
 class QNetworkRequestFactoryPrivate;
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QNetworkRequestFactoryPrivate, Q_NETWORK_EXPORT)
 
-class QT_TECH_PREVIEW_API QNetworkRequestFactory
+class QNetworkRequestFactory
 {
 public:
     Q_NETWORK_EXPORT QNetworkRequestFactory();

@@ -28,8 +28,6 @@ Q_LOGGING_CATEGORY(lcQrequestfactory, "qt.network.access.request.factory")
     \brief Convenience class for grouping remote server endpoints that share
     common network request properties.
 
-    \preliminary
-
     REST servers often have endpoints that require the same headers and other data.
     Grouping such endpoints with a QNetworkRequestFactory makes it more
     convenient to issue requests to these endpoints; only the typically
