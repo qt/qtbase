@@ -807,15 +807,16 @@ QByteArray qdtoAscii(double d, QLocaleData::DoubleForm form, int precision, bool
     return dtoString<QByteArray>(d, form, precision, uppercase);
 }
 
-#if defined(QT_SUPPORTS_INT128) || (defined(Q_CC_MSVC) && (_MSC_VER >= 1930))
+#if defined(QT_SUPPORTS_INT128) || defined(QT_USE_MSVC_INT128)
 static inline quint64 toUInt64(qinternaluint128 v)
 {
-#ifdef QT_SUPPORTS_INT128
-    return quint64(v);
-#elif defined(Q_CC_MSVC)
+#if defined(QT_USE_MSVC_INT128)
     return quint64(v._Word[0]);
+#else
+    return quint64(v);
 #endif
 }
+
 QString quint128toBasicLatin(qinternaluint128 number, int base)
 {
     // We divide our 128-bit number into parts that we can do text
@@ -879,6 +880,6 @@ QString qint128toBasicLatin(qinternalint128 number, int base)
         result.prepend(u'-');
     return result;
 }
-#endif // defined(QT_SUPPORTS_INT128) || (defined(Q_CC_MSVC) && (_MSC_VER >= 1930))
+#endif // defined(QT_SUPPORTS_INT128) || defined(QT_USE_MSVC_INT128)
 
 QT_END_NAMESPACE
