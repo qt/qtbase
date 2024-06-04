@@ -31,7 +31,7 @@ public:
         PdmDevicePixelRatio,
         PdmDevicePixelRatioScaled,
         PdmDevicePixelRatioF_EncodedA,
-        PdmDevicePixelRatioF_EncodedB
+        PdmDevicePixelRatioF_EncodedB,
     };
 
     virtual ~QPaintDevice();
