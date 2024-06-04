@@ -31,8 +31,6 @@ Q_LOGGING_CATEGORY(lcQrest, "qt.network.access.rest")
     \inmodule QtNetwork
     \reentrant
 
-    \preliminary
-
     QRestAccessManager is a convenience wrapper on top of
     QNetworkAccessManager. It amends datatypes and HTTP methods
     that are useful for typical RESTful client applications.

@@ -74,7 +74,7 @@ QNetworkReply *customWithDataImpl(const QNetworkRequest& request, const QByteArr
 /* end */
 
 class QRestAccessManagerPrivate;
-class QT_TECH_PREVIEW_API Q_NETWORK_EXPORT QRestAccessManager : public QObject
+class Q_NETWORK_EXPORT QRestAccessManager : public QObject
 {
     Q_OBJECT
     using CallbackPrototype = void(*)(QRestReply&);
