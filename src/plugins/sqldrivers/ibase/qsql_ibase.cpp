@@ -199,6 +199,10 @@ static QMetaType::Type qIBaseTypeName2(int iType, bool hasScale)
         return (hasScale ? QMetaType::Double : QMetaType::Int);
     case SQL_INT64:
         return (hasScale ? QMetaType::Double : QMetaType::LongLong);
+#ifdef IBASE_INT128_SUPPORTED
+    case SQL_INT128:
+        return (hasScale ? QMetaType::Double : QMetaType::LongLong);
+#endif
     case SQL_FLOAT:
     case SQL_DOUBLE:
         return QMetaType::Double;

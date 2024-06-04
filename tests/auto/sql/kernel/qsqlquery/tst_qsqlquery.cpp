@@ -5063,8 +5063,8 @@ void tst_QSqlQuery::ibaseInt128()
         QCOMPARE(q2.value(0).metaType().id(), QMetaType::Double);
         QCOMPARE(q2.value(0).toDouble(), 40001.1234);
         QVERIFY_SQL(q2, next());
-        QCOMPARE(q2.value(0).metaType().id(), QMetaType::Double);
-        QCOMPARE(q2.value(0).toDouble(), 12345.6789);
+        QCOMPARE(q2.value("price").metaType().id(), QMetaType::Double);
+        QCOMPARE(q2.value("price").toDouble(), 12345.6789);
         QVERIFY_SQL(q2, exec("SELECT sum(price) FROM " + ts.tableName()));
         QVERIFY_SQL(q2, next());
         QCOMPARE(q2.value(0).metaType().id(), QMetaType::Double);
@@ -5078,8 +5078,8 @@ void tst_QSqlQuery::ibaseInt128()
         QCOMPARE(q2.value(0).metaType().id(), QMetaType::QString);
         QCOMPARE(q2.value(0).toString(), "40001.1234");
         QVERIFY_SQL(q2, next());
-        QCOMPARE(q2.value(0).metaType().id(), QMetaType::QString);
-        QCOMPARE(q2.value(0).toString(), "12345.6789");
+        QCOMPARE(q2.value("price").metaType().id(), QMetaType::QString);
+        QCOMPARE(q2.value("price").toString(), "12345.6789");
         QVERIFY_SQL(q2, exec("SELECT sum(price) FROM " + ts.tableName()));
         QVERIFY_SQL(q2, next());
         QCOMPARE(q2.value(0).metaType().id(), QMetaType::QString);
