@@ -605,7 +605,8 @@ QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds() const
     return QList<QByteArray>();
 }
 
-static QList<QByteArray> selectAvailable(QList<QByteArray>&& desired, const QList<QByteArray>& all)
+static QList<QByteArray> selectAvailable(QList<QByteArrayView> &&desired,
+                                         const QList<QByteArray> &all)
 {
     std::sort(desired.begin(), desired.end());
     const auto newEnd = std::unique(desired.begin(), desired.end());
@@ -620,13 +621,13 @@ static QList<QByteArray> selectAvailable(QList<QByteArray>&& desired, const QLis
 QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(QLocale::Territory territory) const
 {
     // Default fall-back mode, use the zoneTable to find Region of know Zones
-    QList<QByteArray> regions;
+    QList<QByteArrayView> regions;
 
     // First get all Zones in the Zones table belonging to the Region
     for (const ZoneData &data : zoneDataTable) {
         if (data.territory == territory) {
             for (auto l1 : data.ids())
-                regions << QByteArray(l1.data(), l1.size());
+                regions << QByteArrayView(l1.data(), l1.size());
         }
     }
     return selectAvailable(std::move(regions), availableTimeZoneIds());
@@ -634,16 +635,16 @@ QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(QLocale::Territory terr
 
 QList<QByteArray> QTimeZonePrivate::availableTimeZoneIds(int offsetFromUtc) const
 {
-    // Default fall-back mode, use the zoneTable to find Offset of know Zones
-    QList<QByteArray> offsets;
-    // First get all Zones in the table using the Offset
+    // Default fall-back mode: use the zoneTable to find offsets of know zones.
+    QList<QByteArrayView> offsets;
+    // First get all Zones in the table using the given offset:
     for (const WindowsData &winData : windowsDataTable) {
         if (winData.offsetFromUtc == offsetFromUtc) {
             for (auto data = zoneStartForWindowsId(winData.windowsIdKey);
                  data != std::end(zoneDataTable) && data->windowsIdKey == winData.windowsIdKey;
                  ++data) {
                 for (auto l1 : data->ids())
-                    offsets << QByteArray(l1.data(), l1.size());
+                    offsets << QByteArrayView(l1.data(), l1.size());
             }
         }
     }
