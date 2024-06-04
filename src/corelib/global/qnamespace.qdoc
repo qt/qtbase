@@ -279,11 +279,6 @@
            level windows, unless required by the implementation.
            This value was added in Qt 6.8.
 
-    \value AA_DontUsePopupWindows When this attribute is set, popups will always appear
-           as items in the scene, rather than having their own dedicated windows.
-           Setting this attribute will only affect Qt Quick applications.
-           This value was added in Qt 6.8.
-
     \omitvalue AA_AttributeCount
     \omitvalue AA_EnableHighDpiScaling
     \omitvalue AA_UseHighDpiPixmaps
