@@ -42,7 +42,7 @@ public:
 
     enum class OutOfBoundsPolicy {
         Reject,
-        Clamp
+        Clamp,
     };
 
     QPageLayout();
