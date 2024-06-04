@@ -6643,17 +6643,40 @@ void tst_QString::arg()
     QCOMPARE( s4.arg(0), QLatin1String("[0]") );
     QCOMPARE( s4.arg(-1), QLatin1String("[-1]") );
     QCOMPARE( s4.arg(0U), QLatin1String("[0]"));
+    QCOMPARE( s4.arg(qint8(-128)), QLatin1String("[-128]")); // signed char
+    QCOMPARE( s4.arg(quint8(255)), QLatin1String("[255]"));  // unsigned char
     QCOMPARE( s4.arg(short(-4200)), QLatin1String("[-4200]"));
     QCOMPARE( s4.arg(ushort(42000)), QLatin1String("[42000]"));
     QCOMPARE( s4.arg(4294967295UL), QLatin1String("[4294967295]") ); // ULONG_MAX 32
     QCOMPARE( s4.arg(Q_INT64_C(9223372036854775807)), // LLONG_MAX
              QLatin1String("[9223372036854775807]") );
+    QCOMPARE( s4.arg(Q_UINT64_C(9223372036854775808)), // LLONG_MAX + 1
+             QLatin1String("[9223372036854775808]") );
+
+    // FP overloads
+    QCOMPARE(s4.arg(2.25), QLatin1String("[2.25]"));
+    QCOMPARE(s4.arg(3.75f), QLatin1String("[3.75]"));
+#if !QFLOAT16_IS_NATIVE // QTBUG-126055
+    QCOMPARE(s4.arg(qfloat16{4.125f}), QLatin1String("[4.125]"));
+#endif
 
     // char-ish overloads
     QCOMPARE(s4.arg('\xE4'), QStringView(u"[ä]"));
     QEXPECT_FAIL("", "QTBUG-125588", Continue);
     QCOMPARE(s4.arg(u'ø'), QStringView(u"[ø]"));
-    //QCOMPARE(s4.arg(u8'a'), QLatin1String("[a]"));
+#ifdef Q_OS_WIN
+    QCOMPARE(QLatin1String("[%1]").arg(L'ø'), QStringView(u"[ø]"));
+#endif
+    QEXPECT_FAIL("", "QTBUG-126054", Continue);
+    QCOMPARE(s4.arg(L'ø'), QStringView(u"[ø]"));
+#ifndef __cpp_char8_t
+#ifndef QT_NO_CAST_FROM_ASCII
+    QCOMPARE(QLatin1String("[%1]").arg(u8'a'), QLatin1String("[a]"));
+#endif
+#else
+    QEXPECT_FAIL("", "QTBUG-126053", Continue);
+#endif
+    QCOMPARE(s4.arg(u8'a'), QLatin1String("[a]"));
 
     QTest::ignoreMessage(QtWarningMsg, "QString::arg: Argument missing: , foo");
     QCOMPARE(QString().arg(foo), QString());
