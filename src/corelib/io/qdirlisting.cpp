@@ -396,7 +396,7 @@ bool QDirListingPrivate::hasIterators() const
     \note To list symlinks that point to non existing files, QDir::System
     must be set in \a dir's QDir::Filters.
 
-    \sa hasNext(), next(), IteratorFlags
+    \sa IteratorFlags
 */
 QDirListing::QDirListing(const QDir &dir, IteratorFlags flags)
     : d(new QDirListingPrivate)
@@ -421,7 +421,7 @@ QDirListing::QDirListing(const QDir &dir, IteratorFlags flags)
     \note To list symlinks that point to non existing files, QDir::System
     must be set in \a filters.
 
-    \sa hasNext(), next(), IteratorFlags
+    \sa IteratorFlags
 */
 QDirListing::QDirListing(const QString &path, QDir::Filters filters, IteratorFlags flags)
     : d(new QDirListingPrivate)
@@ -439,7 +439,7 @@ QDirListing::QDirListing(const QString &path, QDir::Filters filters, IteratorFla
     By default, \a flags is NoIteratorFlags, which provides the same behavior
     as in QDir::entryList().
 
-    \sa hasNext(), next(), IteratorFlags
+    \sa IteratorFlags
 */
 QDirListing::QDirListing(const QString &path, IteratorFlags flags)
     : d(new QDirListingPrivate)
@@ -466,7 +466,7 @@ QDirListing::QDirListing(const QString &path, IteratorFlags flags)
     \note To list symlinks that point to non existing files, QDir::System
     must be set in \a flags.
 
-    \sa hasNext(), next(), IteratorFlags, QDir::setNameFilters()
+    \sa IteratorFlags, QDir::setNameFilters()
 */
 QDirListing::QDirListing(const QString &path, const QStringList &nameFilters, QDir::Filters filters,
                          IteratorFlags flags)
@@ -524,7 +524,7 @@ QString QDirListing::iteratorPath() const
     Here's how to find and read all files filtered by name, recursively:
     \snippet code/src_corelib_io_qdirlisting.cpp 1
 
-    \sa fileInfo(), fileName(), filePath()
+    \sa QDirListing::DirEntry
 */
 QDirListing::const_iterator QDirListing::begin() const
 {
