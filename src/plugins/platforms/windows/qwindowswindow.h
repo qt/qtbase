@@ -347,6 +347,8 @@ public:
     int savedDpi() const { return m_savedDpi; }
     qreal dpiRelativeScale(const UINT dpi) const;
 
+    bool isFrameless() const { return m_data.flags.testFlag(Qt::FramelessWindowHint); }
+
 private:
     inline void show_sys() const;
     inline QWindowsWindowData setWindowFlags_sys(Qt::WindowFlags wt, unsigned flags = 0) const;
