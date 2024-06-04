@@ -8,22 +8,24 @@
 //  W A R N I N G
 //  -------------
 //
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
 #include <QtCore/QObject>
-#include <QtCore/QScopedPointer>
 #include <QtCore/QUrl>
+
+#include <memory>
 
 QT_BEGIN_NAMESPACE
 
-namespace QtExamples {
+namespace Assets::Downloader {
 
 class AssetDownloaderPrivate;
+
 class AssetDownloader : public QObject
 {
     Q_OBJECT
@@ -35,30 +37,10 @@ class AssetDownloader : public QObject
         NOTIFY downloadBaseChanged)
 
     Q_PROPERTY(
-        int completedDownloadsCount
-        READ completedDownloadsCount
-        NOTIFY completedDownloadsCountChanged)
-
-    Q_PROPERTY(
-        int allDownloadsCount
-        READ allDownloadsCount
-        NOTIFY allDownloadsCountChanged)
-
-    Q_PROPERTY(
-        double progress
-        READ progress
-        NOTIFY progressChanged)
-
-    Q_PROPERTY(
         QUrl preferredLocalDownloadDir
         READ preferredLocalDownloadDir
         WRITE setPreferredLocalDownloadDir
         NOTIFY preferredLocalDownloadDirChanged)
-
-    Q_PROPERTY(
-        QUrl localDownloadDir
-        READ localDownloadDir
-        NOTIFY localDownloadDirChanged)
 
     Q_PROPERTY(
         QUrl offlineAssetsFilePath
@@ -78,30 +60,17 @@ class AssetDownloader : public QObject
         WRITE setZipFileName
         NOTIFY zipFileNameChanged)
 
-    Q_PROPERTY(State state READ state NOTIFY stateChanged)
+    Q_PROPERTY(
+        QUrl localDownloadDir
+        READ localDownloadDir
+        NOTIFY localDownloadDirChanged)
 
 public:
-    enum class State {
-        NotDownloadedState,
-        DownloadingZipState,
-        ExtractingZipState,
-        DownloadingFilesState,
-        MovingFilesState,
-        DownloadedState,
-        ErrorState
-    };
-    Q_ENUM(State)
-
     AssetDownloader(QObject *parent = nullptr);
     ~AssetDownloader();
 
     QUrl downloadBase() const;
     void setDownloadBase(const QUrl &downloadBase);
-
-    int allDownloadsCount() const;
-    int completedDownloadsCount() const;
-    QUrl localDownloadDir() const;
-    double progress() const;
 
     QUrl preferredLocalDownloadDir() const;
     void setPreferredLocalDownloadDir(const QUrl &localDir);
@@ -115,35 +84,28 @@ public:
     QString zipFileName() const;
     void setZipFileName(const QString &zipFileName);
 
-    State state() const;
+    QUrl localDownloadDir() const;
 
 public Q_SLOTS:
     void start();
 
-private Q_SLOTS:
-    void setProgressPercent(int);
-
 Q_SIGNALS:
-    void stateChanged(State);
-    void downloadBaseChanged(const QUrl &);
-    void allDownloadsCountChanged(int count);
-    void downloadStarted();
-    void completedDownloadsCountChanged(int count);
-    void downloadFinished();
-    void downloadingFileChanged(const QUrl &url);
-    void preferredLocalDownloadDirChanged(const QUrl &url);
+    void started();
+    void finished(bool success);
+    void progressChanged(int progressValue, int progressMaximum, const QString &progressText);
     void localDownloadDirChanged(const QUrl &url);
-    void progressChanged(double progress);
+
+    void downloadBaseChanged(const QUrl &);
+    void preferredLocalDownloadDirChanged(const QUrl &url);
     void offlineAssetsFilePathChanged(const QUrl &);
     void jsonFileNameChanged(const QString &);
     void zipFileNameChanged(const QString &);
 
 private:
-    Q_DECLARE_PRIVATE(AssetDownloader)
-    QScopedPointer<AssetDownloaderPrivate> d_ptr;
+    std::unique_ptr<AssetDownloaderPrivate> d;
 };
 
-} // namespace QtExamples
+} // namespace Assets::Downloader
 
 QT_END_NAMESPACE
 
