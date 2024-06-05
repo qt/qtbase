@@ -2,9 +2,14 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
+    \headerfile <QApplicationStatic>
+    \inmodule QtCore
+*/
+
+/*!
     \macro Q_APPLICATION_STATIC(Type, VariableName, ...)
     \since 6.3
-    \relates QGlobalStatic
+    \relates <QApplicationStatic>
 
     This macro extends Q_GLOBAL_STATIC and creates a global and static object
     of type \l QGlobalStatic, of name \a VariableName, initialized by the

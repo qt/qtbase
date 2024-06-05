@@ -63,6 +63,7 @@ using namespace Qt::StringLiterals;
     \row    \li <QFlags>                    \li Type-safe way of combining enum values
     \row    \li \l <QForeach>               \li Qt's implementation of foreach and forever loops
     \row    \li \l <QFunctionPointer>       \li Typedef for a pointer-to-function type
+    \row    \li \l <QApplicationStatic>     \li For Q_APPLICATION_STATIC
     \row    \li <QGlobalStatic>             \li Thread-safe initialization of global static objects
     \row    \li \l <QOverload>              \li Helpers for resolving member function overloads
     \row    \li <QSysInfo>                  \li A helper class to get system information
