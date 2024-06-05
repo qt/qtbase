@@ -136,12 +136,12 @@ public:
     [[nodiscard]] char back() const { return at(size() - 1); }
     [[nodiscard]] inline char &back();
 
-    QT_CORE_INLINE_SINCE(6, 7)
+    QT_CORE_INLINE_SINCE(6, 8)
     qsizetype indexOf(char c, qsizetype from = 0) const;
     qsizetype indexOf(QByteArrayView bv, qsizetype from = 0) const
     { return QtPrivate::findByteArray(qToByteArrayViewIgnoringNull(*this), from, bv); }
 
-    QT_CORE_INLINE_SINCE(6, 7)
+    QT_CORE_INLINE_SINCE(6, 8)
     qsizetype lastIndexOf(char c, qsizetype from = -1) const;
     qsizetype lastIndexOf(QByteArrayView bv) const
     { return lastIndexOf(bv, size()); }
@@ -706,7 +706,7 @@ bool QByteArray::isNull() const noexcept
     return d->isNull();
 }
 #endif
-#if QT_CORE_INLINE_IMPL_SINCE(6, 7)
+#if QT_CORE_INLINE_IMPL_SINCE(6, 8)
 qsizetype QByteArray::indexOf(char ch, qsizetype from) const
 {
     return qToByteArrayViewIgnoringNull(*this).indexOf(ch, from);
