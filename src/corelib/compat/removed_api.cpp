@@ -1148,6 +1148,10 @@ bool QtPrivate::ResultIteratorBase::operator!=(const QtPrivate::ResultIteratorBa
 
 #include "qstringconverter.h"
 
+QStringConverter::QStringConverter(const char *name, Flags f)
+    : QStringConverter(QAnyStringView{name}, f)
+{}
+
 auto QStringConverter::encodingForName(const char *name) noexcept -> std::optional<Encoding>
 {
     return encodingForName(QAnyStringView{name});

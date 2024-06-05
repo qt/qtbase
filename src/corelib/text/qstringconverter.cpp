@@ -2146,6 +2146,10 @@ struct QStringConverterICU : QStringConverter
         return conv;
     }
 
+    static const QStringConverter::Interface *
+    make_icu_converter(QStringConverterBase::State *state, QAnyStringView name)
+    { return make_icu_converter(state, name.toString().toLatin1().constData()); } // ### optimize
+
     static const QStringConverter::Interface *make_icu_converter(
             QStringConverterBase::State *state,
             const char *name)
@@ -2183,7 +2187,7 @@ struct QStringConverterICU : QStringConverter
 /*!
     \internal
 */
-QStringConverter::QStringConverter(const char *name, Flags f)
+QStringConverter::QStringConverter(QAnyStringView name, Flags f)
     : iface(nullptr), state(f)
 {
     auto e = encodingForName(name);
