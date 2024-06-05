@@ -84,10 +84,18 @@ public:
     QNetworkReply *get(const QNetworkRequest &request, const QByteArray &data);
     QNetworkReply *post(const QNetworkRequest &request, QIODevice *data);
     QNetworkReply *post(const QNetworkRequest &request, const QByteArray &data);
-    QNetworkReply *post(const QNetworkRequest &request, std::nullptr_t nptr);
+    QNetworkReply *post(const QNetworkRequest &request, std::nullptr_t)
+    {
+        return post(request, static_cast<QIODevice*>(nullptr));
+    }
+
     QNetworkReply *put(const QNetworkRequest &request, QIODevice *data);
     QNetworkReply *put(const QNetworkRequest &request, const QByteArray &data);
-    QNetworkReply *put(const QNetworkRequest &request, std::nullptr_t nptr);
+    QNetworkReply *put(const QNetworkRequest &request, std::nullptr_t)
+    {
+        return put(request, static_cast<QIODevice*>(nullptr));
+    }
+
     QNetworkReply *deleteResource(const QNetworkRequest &request);
     QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, QIODevice *data = nullptr);
     QNetworkReply *sendCustomRequest(const QNetworkRequest &request, const QByteArray &verb, const QByteArray &data);
