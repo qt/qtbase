@@ -19,8 +19,6 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_DECLARE_LOGGING_CATEGORY(qLcEvdevMouse)
-
 QEvdevMouseManager::QEvdevMouseManager(const QString &key, const QString &specification, QObject *parent)
     : QObject(parent), m_x(0), m_y(0), m_xoffset(0), m_yoffset(0)
 {

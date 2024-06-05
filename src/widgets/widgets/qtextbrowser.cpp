@@ -33,7 +33,7 @@ static inline bool shouldEnableInputMethod(QTextBrowser *texbrowser)
 #endif
 }
 
-Q_LOGGING_CATEGORY(lcBrowser, "qt.text.browser")
+Q_STATIC_LOGGING_CATEGORY(lcBrowser, "qt.text.browser")
 
 class QTextBrowserPrivate : public QTextEditPrivate
 {

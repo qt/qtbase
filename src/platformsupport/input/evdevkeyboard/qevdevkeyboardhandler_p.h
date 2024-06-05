@@ -16,12 +16,16 @@
 //
 
 #include <qobject.h>
+#include <qloggingcategory.h>
+
 #include <QDataStream>
 #include <private/qglobal_p.h>
 
 #include <memory>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(qLcEvdevKey)
 
 class QSocketNotifier;
 

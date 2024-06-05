@@ -14,7 +14,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcQPropertyBinding, "qt.qproperty.binding");
+Q_STATIC_LOGGING_CATEGORY(lcQPropertyBinding, "qt.qproperty.binding");
 
 using namespace QtPrivate;
 

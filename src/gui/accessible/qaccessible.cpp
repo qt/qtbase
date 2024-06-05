@@ -26,7 +26,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
+Q_STATIC_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
 
 /*!
     \class QAccessible

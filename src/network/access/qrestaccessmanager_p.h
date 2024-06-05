@@ -20,6 +20,7 @@
 
 #include <QtNetwork/qnetworkaccessmanager.h>
 
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qjsonarray.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qjsondocument.h>
@@ -27,6 +28,8 @@
 #include <QtCore/qxpfunctional.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcQrest)
 
 class QRestReply;
 class QRestAccessManagerPrivate : public QObjectPrivate

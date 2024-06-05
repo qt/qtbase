@@ -6,6 +6,7 @@
 #include "qtextstream.h"
 #include "qvariant.h"
 #include "qfontengine_ft_p.h"
+#include "private/qfontdatabase_p.h"
 #include "private/qimage_p.h"
 #include <private/qstringiterator_p.h>
 #include <qguiapplication.h>
@@ -54,8 +55,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-Q_DECLARE_LOGGING_CATEGORY(lcFontMatch)
 
 using namespace Qt::StringLiterals;
 

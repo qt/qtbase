@@ -18,9 +18,12 @@
 #include <QObject>
 #include <QString>
 #include <QThread>
+#include <QLoggingCategory>
 #include <QtCore/private/qthread_p.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(qLcEvdevTablet)
 
 class QSocketNotifier;
 class QEvdevTabletData;

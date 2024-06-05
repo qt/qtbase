@@ -21,7 +21,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcMDW, "qt.text.markdown.writer")
+Q_STATIC_LOGGING_CATEGORY(lcMDW, "qt.text.markdown.writer")
 
 static const QChar qtmw_Space = u' ';
 static const QChar qtmw_Tab = u'\t';

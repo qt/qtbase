@@ -5,6 +5,7 @@
 #include "qrestreply_p.h"
 
 #include <QtNetwork/private/qnetworkreply_p.h>
+#include <QtNetwork/private/qrestaccessmanager_p.h>
 
 #include <QtCore/qbytearrayview.h>
 #include <QtCore/qjsondocument.h>
@@ -18,7 +19,6 @@
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
-Q_DECLARE_LOGGING_CATEGORY(lcQrest)
 
 /*!
     \class QRestReply

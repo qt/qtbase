@@ -15,8 +15,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(qLcEvdevTablet)
-
 QEvdevTabletManager::QEvdevTabletManager(const QString &key, const QString &specification, QObject *parent)
     : QObject(parent)
 {

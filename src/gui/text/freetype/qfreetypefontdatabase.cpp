@@ -26,8 +26,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_LOGGING_CATEGORY(lcFontDb)
-
 using namespace Qt::StringLiterals;
 
 void QFreeTypeFontDatabase::populateFontDatabase()

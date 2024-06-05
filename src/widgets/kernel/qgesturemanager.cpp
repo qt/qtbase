@@ -27,7 +27,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcGestureManager, "qt.widgets.gestures")
+Q_STATIC_LOGGING_CATEGORY(lcGestureManager, "qt.widgets.gestures")
 
 #if !defined(Q_OS_MACOS)
 static inline int panTouchPoints()

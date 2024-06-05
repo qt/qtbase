@@ -55,8 +55,8 @@ Q_TRACE_POINT(qtcore, QMetaObject_activate_declarative_signal_exit);
 
 static int DIRECT_CONNECTION_ONLY = 0;
 
-Q_LOGGING_CATEGORY(lcConnectSlotsByName, "qt.core.qmetaobject.connectslotsbyname")
-Q_LOGGING_CATEGORY(lcConnect, "qt.core.qobject.connect")
+Q_STATIC_LOGGING_CATEGORY(lcConnectSlotsByName, "qt.core.qmetaobject.connectslotsbyname")
+Q_STATIC_LOGGING_CATEGORY(lcConnect, "qt.core.qobject.connect")
 
 Q_CORE_EXPORT QBasicAtomicPointer<QSignalSpyCallbackSet> qt_signal_spy_callback_set = Q_BASIC_ATOMIC_INITIALIZER(nullptr);
 

@@ -22,7 +22,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcMD, "qt.text.markdown")
+Q_STATIC_LOGGING_CATEGORY(lcMD, "qt.text.markdown")
 
 static const QChar qtmi_Newline = u'\n';
 static const QChar qtmi_Space = u' ';

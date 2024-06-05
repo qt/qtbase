@@ -16,6 +16,7 @@
 #include <private/qcolor_p.h>
 #include <private/qduplicatetracker_p.h> // for easier std::pmr detection
 #include <private/qtools_p.h>
+#include <private/qimage_p.h>
 
 #include <algorithm>
 #include <array>
@@ -23,8 +24,6 @@
 QT_BEGIN_NAMESPACE
 
 using namespace QtMiscUtils;
-
-Q_DECLARE_LOGGING_CATEGORY(lcImageIo)
 
 static quint64 xpmHash(const QString &str)
 {

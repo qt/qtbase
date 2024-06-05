@@ -15,7 +15,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcModelTest, "qt.modeltest")
+Q_STATIC_LOGGING_CATEGORY(lcModelTest, "qt.modeltest")
 
 #define MODELTESTER_VERIFY(statement) \
 do { \

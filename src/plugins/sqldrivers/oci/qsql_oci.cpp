@@ -52,7 +52,7 @@ Q_DECLARE_METATYPE(OCIStmt*)
 
 QT_BEGIN_NAMESPACE
 
-static Q_LOGGING_CATEGORY(lcOci, "qt.sql.oci")
+Q_STATIC_LOGGING_CATEGORY(lcOci, "qt.sql.oci")
 
 using namespace Qt::StringLiterals;
 

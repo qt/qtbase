@@ -46,7 +46,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(qLcEvdevTouch, "qt.qpa.input")
-Q_LOGGING_CATEGORY(qLcEvents, "qt.qpa.input.events")
+Q_STATIC_LOGGING_CATEGORY(qLcEvents, "qt.qpa.input.events")
 
 /* android (and perhaps some other linux-derived stuff) don't define everything
  * in linux/input.h, so we'll need to do that ourselves.

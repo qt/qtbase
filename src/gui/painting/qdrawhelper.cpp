@@ -37,7 +37,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcQtGuiDrawHelper, "qt.gui.drawhelper")
+Q_STATIC_LOGGING_CATEGORY(lcQtGuiDrawHelper, "qt.gui.drawhelper")
 
 #define MASK(src, a) src = BYTE_MUL(src, a)
 

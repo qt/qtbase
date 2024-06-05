@@ -53,7 +53,7 @@ struct QT_MYSQL_TIME
 
 QT_BEGIN_NAMESPACE
 
-static Q_LOGGING_CATEGORY(lcMysql, "qt.sql.mysql")
+Q_STATIC_LOGGING_CATEGORY(lcMysql, "qt.sql.mysql")
 
 using namespace Qt::StringLiterals;
 

@@ -21,8 +21,6 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_DECLARE_LOGGING_CATEGORY(qLcMenu)
-
 const QString StatusNotifierWatcherService = "org.kde.StatusNotifierWatcher"_L1;
 const QString StatusNotifierWatcherPath = "/StatusNotifierWatcher"_L1;
 const QString StatusNotifierItemPath = "/StatusNotifierItem"_L1;

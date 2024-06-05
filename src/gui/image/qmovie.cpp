@@ -148,14 +148,13 @@
 #include "qbuffer.h"
 #include "qdir.h"
 #include "qloggingcategory.h"
+#include "private/qimage_p.h"
 #include "private/qobject_p.h"
 #include "private/qproperty_p.h"
 
 #define QMOVIE_INVALID_DELAY -1
 
 QT_BEGIN_NAMESPACE
-
-Q_DECLARE_LOGGING_CATEGORY(lcImageIo)
 
 class QFrameInfo
 {

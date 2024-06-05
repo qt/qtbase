@@ -31,7 +31,7 @@ Q_DECLARE_METATYPE(MimerStatement)
 
 QT_BEGIN_NAMESPACE
 
-static Q_LOGGING_CATEGORY(lcMimer, "qt.sql.mimer")
+Q_STATIC_LOGGING_CATEGORY(lcMimer, "qt.sql.mimer")
 
 enum class MimerColumnTypes {
     Binary,

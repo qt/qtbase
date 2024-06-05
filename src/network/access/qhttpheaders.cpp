@@ -18,7 +18,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
+Q_STATIC_LOGGING_CATEGORY(lcQHttpHeaders, "qt.network.http.headers");
 
 /*!
     \class QHttpHeaders

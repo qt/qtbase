@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qlibinputkeyboard_p.h"
+#include "qlibinputhandler_p.h"
 #include <QtCore/QLoggingCategory>
 #include <QtGui/private/qguiapplication_p.h>
 #include <QtGui/private/qinputdevicemanager_p.h>
@@ -14,8 +15,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-Q_DECLARE_LOGGING_CATEGORY(qLcLibInput)
 
 const int REPEAT_DELAY = 500;
 const int REPEAT_RATE = 100;

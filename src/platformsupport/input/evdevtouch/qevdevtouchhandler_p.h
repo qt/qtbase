@@ -23,6 +23,7 @@
 #include <QList>
 #include <QHash>
 #include <QThread>
+#include <QLoggingCategory>
 #include <QtCore/private/qthread_p.h>
 #include <qpa/qwindowsysteminterface.h>
 #include "qevdevtouchfilter_p.h"
@@ -32,6 +33,8 @@ struct mtdev;
 #endif
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(qLcEvdevTouch)
 
 class QSocketNotifier;
 class QEvdevTouchScreenData;

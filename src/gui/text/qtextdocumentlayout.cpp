@@ -31,10 +31,10 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcDraw, "qt.text.drawing")
-Q_LOGGING_CATEGORY(lcHit, "qt.text.hittest")
+Q_STATIC_LOGGING_CATEGORY(lcDraw, "qt.text.drawing")
+Q_STATIC_LOGGING_CATEGORY(lcHit, "qt.text.hittest")
 Q_LOGGING_CATEGORY(lcLayout, "qt.text.layout")
-Q_LOGGING_CATEGORY(lcTable, "qt.text.layout.table")
+Q_STATIC_LOGGING_CATEGORY(lcTable, "qt.text.layout.table")
 
 // ################ should probably add frameFormatChange notification!
 

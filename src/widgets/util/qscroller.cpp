@@ -32,7 +32,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcScroller, "qt.widgets.scroller")
+Q_STATIC_LOGGING_CATEGORY(lcScroller, "qt.widgets.scroller")
 
 bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
 

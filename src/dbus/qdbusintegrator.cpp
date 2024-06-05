@@ -49,7 +49,7 @@ QT_IMPL_METATYPE_EXTERN(QDBusSlotCache)
 // used with dbus_server_allocate_data_slot
 static dbus_int32_t server_slot = -1;
 
-Q_LOGGING_CATEGORY(dbusIntegration, "qt.dbus.integration", QtWarningMsg)
+Q_STATIC_LOGGING_CATEGORY(dbusIntegration, "qt.dbus.integration", QtWarningMsg)
 
 Q_CONSTINIT static QBasicAtomicInt isDebugging = Q_BASIC_ATOMIC_INITIALIZER(-1);
 #define qDBusDebug              if (::isDebugging.loadRelaxed() == 0); else qDebug

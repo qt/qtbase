@@ -27,7 +27,7 @@ static constexpr QLatin1StringView truncatedSectionName =
 #  define QCOFFPEPARSER_DEBUG
 #endif
 #if defined(QCOFFPEPARSER_DEBUG)
-static Q_LOGGING_CATEGORY(lcCoffPeParser, "qt.core.plugin.coffpeparser")
+Q_STATIC_LOGGING_CATEGORY(lcCoffPeParser, "qt.core.plugin.coffpeparser")
 #  define peDebug       qCDebug(lcCoffPeParser) << reinterpret_cast<const char16_t *>(error.errMsg->constData()) << ':'
 #else
 #  define peDebug       if (false) {} else QNoDebug()

@@ -98,7 +98,7 @@ static void initResources()
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcWidgetPopup, "qt.widgets.popup");
+Q_STATIC_LOGGING_CATEGORY(lcWidgetPopup, "qt.widgets.popup");
 
 using namespace Qt::StringLiterals;
 

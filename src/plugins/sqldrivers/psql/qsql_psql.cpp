@@ -66,7 +66,7 @@ Q_DECLARE_METATYPE(PGresult*)
 
 QT_BEGIN_NAMESPACE
 
-static Q_LOGGING_CATEGORY(lcPsql, "qt.sql.postgresql")
+Q_STATIC_LOGGING_CATEGORY(lcPsql, "qt.sql.postgresql")
 
 using namespace Qt::StringLiterals;
 

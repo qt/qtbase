@@ -1258,9 +1258,9 @@ QString QGuiApplication::platformName()
     }
 }
 
-Q_LOGGING_CATEGORY(lcQpaPluginLoading, "qt.qpa.plugin");
-Q_LOGGING_CATEGORY(lcQpaTheme, "qt.qpa.theme");
-Q_LOGGING_CATEGORY(lcPtrDispatch, "qt.pointer.dispatch");
+Q_STATIC_LOGGING_CATEGORY(lcQpaPluginLoading, "qt.qpa.plugin");
+Q_STATIC_LOGGING_CATEGORY(lcQpaTheme, "qt.qpa.theme");
+Q_STATIC_LOGGING_CATEGORY(lcPtrDispatch, "qt.pointer.dispatch");
 
 static void init_platform(const QString &pluginNamesWithArguments, const QString &platformPluginPath, const QString &platformThemeName, int &argc, char **argv)
 {

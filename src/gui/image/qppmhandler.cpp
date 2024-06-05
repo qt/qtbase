@@ -13,10 +13,9 @@
 #include <qvariant.h>
 #include <private/qlocale_p.h>
 #include <private/qtools_p.h>
+#include <private/qimage_p.h>
 
 QT_BEGIN_NAMESPACE
-
-Q_DECLARE_LOGGING_CATEGORY(lcImageIo)
 
 /*****************************************************************************
   PBM/PGM/PPM (ASCII and RAW) image read/write functions

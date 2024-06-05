@@ -36,7 +36,7 @@ QT_BEGIN_NAMESPACE
 using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(qLcEvdevKey, "qt.qpa.input")
-Q_LOGGING_CATEGORY(qLcEvdevKeyMap, "qt.qpa.input.keymap")
+Q_STATIC_LOGGING_CATEGORY(qLcEvdevKeyMap, "qt.qpa.input.keymap")
 
 // simple builtin US keymap
 #include "qevdevkeyboard_defaultmap_p.h"

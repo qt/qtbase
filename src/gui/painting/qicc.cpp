@@ -20,7 +20,7 @@
 #include <array>
 
 QT_BEGIN_NAMESPACE
-Q_LOGGING_CATEGORY(lcIcc, "qt.gui.icc", QtWarningMsg)
+Q_STATIC_LOGGING_CATEGORY(lcIcc, "qt.gui.icc", QtWarningMsg)
 
 namespace QIcc {
 

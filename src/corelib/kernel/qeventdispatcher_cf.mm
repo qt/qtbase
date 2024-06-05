@@ -429,7 +429,7 @@ void QEventDispatcherCoreFoundation::processTimers(CFRunLoopTimerRef timer)
     updateTimers();
 }
 
-Q_LOGGING_CATEGORY(lcEventDispatcherActivity, "qt.eventdispatcher.activity")
+Q_STATIC_LOGGING_CATEGORY(lcEventDispatcherActivity, "qt.eventdispatcher.activity")
 
 void QEventDispatcherCoreFoundation::handleRunLoopActivity(CFRunLoopActivity activity)
 {

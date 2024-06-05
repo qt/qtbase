@@ -9,7 +9,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcPlatVk, "qt.vulkan")
+Q_STATIC_LOGGING_CATEGORY(lcPlatVk, "qt.vulkan")
 
 /*!
     \class QBasicPlatformVulkanInstance

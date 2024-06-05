@@ -7,6 +7,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QMap>
+#include <QtCore/QLoggingCategory>
 #include <QtCore/private/qglobal_p.h>
 
 //
@@ -25,6 +26,8 @@ struct libinput;
 struct libinput_event;
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(qLcLibInput)
 
 class QSocketNotifier;
 class QLibInputPointer;

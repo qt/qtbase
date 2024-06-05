@@ -11,7 +11,7 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcDistanceField, "qt.distanceField");
+Q_STATIC_LOGGING_CATEGORY(lcDistanceField, "qt.distanceField");
 
 namespace
 {

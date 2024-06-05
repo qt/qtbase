@@ -17,7 +17,7 @@ QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QNetworkRequestFactoryPrivate)
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcQrequestfactory, "qt.network.access.request.factory")
+Q_STATIC_LOGGING_CATEGORY(lcQrequestfactory, "qt.network.access.request.factory")
 
 /*!
     \class QNetworkRequestFactory

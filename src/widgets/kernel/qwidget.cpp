@@ -84,8 +84,8 @@ using namespace Qt::StringLiterals;
 
 Q_LOGGING_CATEGORY(lcWidgetPainting, "qt.widgets.painting", QtWarningMsg);
 Q_LOGGING_CATEGORY(lcWidgetShowHide, "qt.widgets.showhide", QtWarningMsg);
-Q_LOGGING_CATEGORY(lcWidgetWindow, "qt.widgets.window", QtWarningMsg);
-Q_LOGGING_CATEGORY(lcWidgetFocus, "qt.widgets.focus")
+Q_STATIC_LOGGING_CATEGORY(lcWidgetWindow, "qt.widgets.window", QtWarningMsg);
+Q_STATIC_LOGGING_CATEGORY(lcWidgetFocus, "qt.widgets.focus")
 
 #ifndef QT_NO_DEBUG_STREAM
 namespace {

@@ -17,7 +17,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcShortcutMap, "qt.gui.shortcutmap")
+Q_STATIC_LOGGING_CATEGORY(lcShortcutMap, "qt.gui.shortcutmap")
 
 /* \internal
     Entry data for QShortcutMap

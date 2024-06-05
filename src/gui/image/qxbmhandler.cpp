@@ -11,14 +11,12 @@
 #include <qloggingcategory.h>
 #include <qvariant.h>
 #include <private/qtools_p.h>
-
+#include <private/qimage_p.h>
 #include <stdio.h>
 
 QT_BEGIN_NAMESPACE
 
 using namespace QtMiscUtils;
-
-Q_DECLARE_LOGGING_CATEGORY(lcImageIo)
 
 /*****************************************************************************
   X bitmap image read/write functions

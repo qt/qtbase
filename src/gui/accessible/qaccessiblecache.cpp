@@ -9,7 +9,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcAccessibilityCache, "qt.accessibility.cache");
+Q_STATIC_LOGGING_CATEGORY(lcAccessibilityCache, "qt.accessibility.cache");
 
 /*!
     \class QAccessibleCache

@@ -17,7 +17,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(qHttp2ConnectionLog, "qt.network.http2.connection", QtCriticalMsg)
+Q_STATIC_LOGGING_CATEGORY(qHttp2ConnectionLog, "qt.network.http2.connection", QtCriticalMsg)
 
 using namespace Qt::StringLiterals;
 using namespace Http2;

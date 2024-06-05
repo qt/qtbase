@@ -19,8 +19,11 @@
 #include "QtGui/qabstracttextdocumentlayout.h"
 #include "QtGui/qtextoption.h"
 #include "QtGui/qtextobject.h"
+#include "QtCore/qloggingcategory.h"
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcLayout)
 
 class QTextListFormat;
 class QTextTableCell;

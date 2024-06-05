@@ -16,11 +16,15 @@
 //
 
 #include <QtCore/qcache.h>
+#include <QtCore/qloggingcategory.h>
 
 #include <QtGui/qfontdatabase.h>
 #include <QtCore/private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(lcFontDb)
+Q_DECLARE_LOGGING_CATEGORY(lcFontMatch)
 
 struct QtFontDesc;
 

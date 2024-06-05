@@ -59,8 +59,8 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
-Q_LOGGING_CATEGORY(lcQpaXcbWindow, "qt.qpa.xcb.window");
+Q_STATIC_LOGGING_CATEGORY(lcQpaWindow, "qt.qpa.window");
+Q_STATIC_LOGGING_CATEGORY(lcQpaXcbWindow, "qt.qpa.xcb.window");
 
 Q_DECLARE_TYPEINFO(xcb_rectangle_t, Q_PRIMITIVE_TYPE);
 

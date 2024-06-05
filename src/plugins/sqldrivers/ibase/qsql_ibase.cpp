@@ -28,7 +28,7 @@
 
 QT_BEGIN_NAMESPACE
 
-static Q_LOGGING_CATEGORY(lcIbase, "qt.sql.ibase")
+Q_STATIC_LOGGING_CATEGORY(lcIbase, "qt.sql.ibase")
 
 using namespace Qt::StringLiterals;
 

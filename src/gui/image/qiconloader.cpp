@@ -24,7 +24,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcIconLoader, "qt.gui.icon.loader")
+Q_STATIC_LOGGING_CATEGORY(lcIconLoader, "qt.gui.icon.loader")
 
 using namespace Qt::StringLiterals;
 
