@@ -56,6 +56,20 @@ namespace QtAndroidPrivate
         virtual jobject onBind(jobject intent) = 0;
     };
 
+    class Q_CORE_EXPORT GenericMotionEventListener
+    {
+    public:
+        virtual ~GenericMotionEventListener();
+        virtual bool handleGenericMotionEvent(jobject event) = 0;
+    };
+
+    class Q_CORE_EXPORT KeyEventListener
+    {
+    public:
+        virtual ~KeyEventListener();
+        virtual bool handleKeyEvent(jobject event) = 0;
+    };
+
     Q_CORE_EXPORT QtJniTypes::Activity activity();
     Q_CORE_EXPORT QtJniTypes::Service service();
     Q_CORE_EXPORT QtJniTypes::Context context();
@@ -76,6 +90,12 @@ namespace QtAndroidPrivate
     Q_CORE_EXPORT void handleNewIntent(JNIEnv *env, jobject intent);
     Q_CORE_EXPORT void registerNewIntentListener(NewIntentListener *listener);
     Q_CORE_EXPORT void unregisterNewIntentListener(NewIntentListener *listener);
+
+    Q_CORE_EXPORT void registerGenericMotionEventListener(GenericMotionEventListener *listener);
+    Q_CORE_EXPORT void unregisterGenericMotionEventListener(GenericMotionEventListener *listener);
+
+    Q_CORE_EXPORT void registerKeyEventListener(KeyEventListener *listener);
+    Q_CORE_EXPORT void unregisterKeyEventListener(KeyEventListener *listener);
 
     Q_CORE_EXPORT void handlePause();
     Q_CORE_EXPORT void handleResume();

@@ -38,66 +38,6 @@ namespace QtAndroidInput
 
     static QPointer<QWindow> m_mouseGrabber;
 
-    GenericMotionEventListener::~GenericMotionEventListener() {}
-    namespace {
-    struct GenericMotionEventListeners {
-        QMutex mutex;
-        QList<QtAndroidInput::GenericMotionEventListener *> listeners;
-    };
-    }
-    Q_GLOBAL_STATIC(GenericMotionEventListeners, g_genericMotionEventListeners)
-
-    static jboolean dispatchGenericMotionEvent(JNIEnv *, jclass, jobject event)
-    {
-        jboolean ret = JNI_FALSE;
-        QMutexLocker locker(&g_genericMotionEventListeners()->mutex);
-        for (auto *listener : std::as_const(g_genericMotionEventListeners()->listeners))
-            ret |= listener->handleGenericMotionEvent(event);
-        return ret;
-    }
-
-    KeyEventListener::~KeyEventListener() {}
-    namespace {
-    struct KeyEventListeners {
-        QMutex mutex;
-        QList<QtAndroidInput::KeyEventListener *> listeners;
-    };
-    }
-    Q_GLOBAL_STATIC(KeyEventListeners, g_keyEventListeners)
-
-    static jboolean dispatchKeyEvent(JNIEnv *, jclass, jobject event)
-    {
-        jboolean ret = JNI_FALSE;
-        QMutexLocker locker(&g_keyEventListeners()->mutex);
-        for (auto *listener : std::as_const(g_keyEventListeners()->listeners))
-            ret |= listener->handleKeyEvent(event);
-        return ret;
-    }
-
-    void registerGenericMotionEventListener(QtAndroidInput::GenericMotionEventListener *listener)
-    {
-        QMutexLocker locker(&g_genericMotionEventListeners()->mutex);
-        g_genericMotionEventListeners()->listeners.push_back(listener);
-    }
-
-    void unregisterGenericMotionEventListener(QtAndroidInput::GenericMotionEventListener *listener)
-    {
-        QMutexLocker locker(&g_genericMotionEventListeners()->mutex);
-        g_genericMotionEventListeners()->listeners.removeOne(listener);
-    }
-
-    void registerKeyEventListener(QtAndroidInput::KeyEventListener *listener)
-    {
-        QMutexLocker locker(&g_keyEventListeners()->mutex);
-        g_keyEventListeners()->listeners.push_back(listener);
-    }
-
-    void unregisterKeyEventListener(QtAndroidInput::KeyEventListener *listener)
-    {
-        QMutexLocker locker(&g_keyEventListeners()->mutex);
-        g_keyEventListeners()->listeners.removeOne(listener);
-    }
-
     QJniObject qtLayout()
     {
         AndroidBackendRegister *reg = QtAndroid::backendRegister();
@@ -978,8 +918,6 @@ namespace QtAndroidInput
         {"keyboardVisibilityChanged", "(Z)V", (void *)keyboardVisibilityChanged},
         {"keyboardGeometryChanged", "(IIII)V", (void *)keyboardGeometryChanged},
         {"handleLocationChanged", "(III)V", (void *)handleLocationChanged},
-        {"dispatchGenericMotionEvent", "(Landroid/view/MotionEvent;)Z", reinterpret_cast<void *>(dispatchGenericMotionEvent)},
-        {"dispatchKeyEvent", "(Landroid/view/KeyEvent;)Z", reinterpret_cast<void *>(dispatchKeyEvent)},
     };
 
     bool registerNatives(QJniEnvironment &env)

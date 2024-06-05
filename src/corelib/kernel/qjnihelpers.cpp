@@ -18,6 +18,10 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_JNI_CLASS(QtInputDelegate, "org/qtproject/qt/android/QtInputDelegate");
+Q_DECLARE_JNI_CLASS(MotionEvent, "android/view/MotionEvent");
+Q_DECLARE_JNI_CLASS(KeyEvent, "android/view/KeyEvent");
+
 namespace QtAndroidPrivate {
     // *Listener virtual function implementations.
     // Defined out-of-line to pin the vtable/type_info.
@@ -141,6 +145,68 @@ void QtAndroidPrivate::handleNewIntent(JNIEnv *env, jobject intent)
     }
 }
 
+QtAndroidPrivate::GenericMotionEventListener::~GenericMotionEventListener() {}
+namespace {
+struct GenericMotionEventListeners {
+    QMutex mutex;
+    QList<QtAndroidPrivate::GenericMotionEventListener *> listeners;
+};
+}
+Q_GLOBAL_STATIC(GenericMotionEventListeners, g_genericMotionEventListeners)
+
+static jboolean dispatchGenericMotionEvent(JNIEnv *, jclass, QtJniTypes::MotionEvent event)
+{
+    jboolean ret = JNI_FALSE;
+    QMutexLocker locker(&g_genericMotionEventListeners()->mutex);
+    for (auto *listener : std::as_const(g_genericMotionEventListeners()->listeners))
+        ret |= listener->handleGenericMotionEvent(event.object());
+    return ret;
+}
+Q_DECLARE_JNI_NATIVE_METHOD(dispatchGenericMotionEvent);
+
+QtAndroidPrivate::KeyEventListener::~KeyEventListener() {}
+namespace {
+struct KeyEventListeners {
+    QMutex mutex;
+    QList<QtAndroidPrivate::KeyEventListener *> listeners;
+};
+}
+Q_GLOBAL_STATIC(KeyEventListeners, g_keyEventListeners)
+
+static jboolean dispatchKeyEvent(JNIEnv *, jclass, QtJniTypes::KeyEvent event)
+{
+    jboolean ret = JNI_FALSE;
+    QMutexLocker locker(&g_keyEventListeners()->mutex);
+    for (auto *listener : std::as_const(g_keyEventListeners()->listeners))
+        ret |= listener->handleKeyEvent(event.object());
+    return ret;
+}
+Q_DECLARE_JNI_NATIVE_METHOD(dispatchKeyEvent);
+
+void QtAndroidPrivate::registerGenericMotionEventListener(QtAndroidPrivate::GenericMotionEventListener *listener)
+{
+    QMutexLocker locker(&g_genericMotionEventListeners()->mutex);
+    g_genericMotionEventListeners()->listeners.push_back(listener);
+}
+
+void QtAndroidPrivate::unregisterGenericMotionEventListener(QtAndroidPrivate::GenericMotionEventListener *listener)
+{
+    QMutexLocker locker(&g_genericMotionEventListeners()->mutex);
+    g_genericMotionEventListeners()->listeners.removeOne(listener);
+}
+
+void QtAndroidPrivate::registerKeyEventListener(QtAndroidPrivate::KeyEventListener *listener)
+{
+    QMutexLocker locker(&g_keyEventListeners()->mutex);
+    g_keyEventListeners()->listeners.push_back(listener);
+}
+
+void QtAndroidPrivate::unregisterKeyEventListener(QtAndroidPrivate::KeyEventListener *listener)
+{
+    QMutexLocker locker(&g_keyEventListeners()->mutex);
+    g_keyEventListeners()->listeners.removeOne(listener);
+}
+
 namespace {
     class ResumePauseListeners
     {
@@ -245,6 +311,15 @@ jint QtAndroidPrivate::initJNI(JavaVM *vm, JNIEnv *env)
         return JNI_ERR;
 
     QJniEnvironment qJniEnv;
+    using namespace QtJniTypes;
+    if (!QtInputDelegate::registerNativeMethods(
+                { Q_JNI_NATIVE_METHOD(dispatchGenericMotionEvent),
+                  Q_JNI_NATIVE_METHOD(dispatchKeyEvent) })) {
+        qCritical() << "Failed to register natives methods for"
+                    << Traits<QtInputDelegate>::className();
+        return JNI_ERR;
+    }
+
     if (!registerPermissionNatives(qJniEnv))
         return JNI_ERR;
 
