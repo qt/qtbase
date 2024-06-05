@@ -72,10 +72,9 @@ private:
     UIView *m_view;
 
     QRect m_normalGeometry;
-    int m_windowLevel;
 
     void raiseOrLower(bool raise);
-    void updateWindowLevel();
+    int windowLevel() const;
     bool blockedByModal();
 
     friend class QIOSScreen;
