@@ -13,6 +13,7 @@ qt_internal_add_module(Test
     EXCEPTIONS
     SOURCES
         3rdparty/cycle/cycle_p.h # Needed by tests, so visible to syncqt.
+        3rdparty/catch2/catch_p.h # Also needed by tests.
         removed_api.cpp     # keep first
         qabstracttestlogger.cpp qabstracttestlogger_p.h
         qasciikey.cpp
@@ -79,6 +80,7 @@ qt_internal_add_module(Test
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
     ATTRIBUTION_FILE_DIR_PATHS
+        3rdparty/catch2
         3rdparty/cycle
         3rdparty/linux
         3rdparty/valgrind

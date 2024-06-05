@@ -17,7 +17,7 @@
 
 #include <QtCore/qglobal.h>
 
-#include "catch_p_p.h"
+#include <QtTest/private/catch_p.h>
 
 QT_BEGIN_NAMESPACE
 
