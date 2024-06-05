@@ -253,7 +253,7 @@ void tst_QStringConverter::invalidConverter()
         QVERIFY(!encoder.hasError());
         char buffer[100];
         char *position = encoder.appendToBuffer(buffer, u"Even more");
-        QCOMPARE(position, buffer);
+        QCOMPARE(position - buffer, 0);
         QVERIFY(encoder.hasError());
     }
 
@@ -279,7 +279,7 @@ void tst_QStringConverter::invalidConverter()
         QVERIFY(!decoder.hasError());
         QChar buffer[100];
         QChar *position = decoder.appendToBuffer(buffer, "Even more");
-        QCOMPARE(position, buffer);
+        QCOMPARE(position - buffer, 0);
         QVERIFY(decoder.hasError());
     }
 }
