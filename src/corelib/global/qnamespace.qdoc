@@ -3258,7 +3258,7 @@
     The underlying type is \c int. You can use \l qToUnderlying() to convert
     Qt::TimerId to \c int.
 
-    \value Invalid Represents a no-op timer ID; it's usage depends on the
+    \value Invalid Represents a no-op timer ID; its usage depends on the
     context, for example, this is the value returned by QObject::startTimer()
     to indicate it failed to start a timer; whereas QChronoTimer::id() returns
     this value when the timer is inactive, that is, \c timer.isActive()
