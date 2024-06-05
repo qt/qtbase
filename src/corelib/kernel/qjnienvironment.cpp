@@ -320,7 +320,7 @@ JavaVM *QJniEnvironment::javaVM()
 }
 
 /*!
-    \fn template <typename Class> bool QJniEnvironment::registerNativeMethods(std::initializer_list<JNINativeMethods> methods)
+    \fn template <typename Class> bool QJniEnvironment::registerNativeMethods(std::initializer_list<JNINativeMethod> methods)
     \overload
 
     Registers the Java methods in \a methods with the Java class represented by
