@@ -396,6 +396,15 @@ void QIOSWindow::applicationStateChanged(Qt::ApplicationState)
 
 qreal QIOSWindow::devicePixelRatio() const
 {
+#if !defined(Q_OS_VISIONOS)
+    // If the view has not yet been added to a screen, it will not
+    // pick up its device pixel ratio, so we need to do so manually
+    // based on the screen we think the window will be added to.
+    if (!m_view.window.windowScene.screen)
+        return screen()->devicePixelRatio();
+#endif
+
+    // Otherwise we can rely on the content scale factor
     return m_view.contentScaleFactor;
 }
 
