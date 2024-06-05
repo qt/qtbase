@@ -104,8 +104,43 @@ template <> const bool QLoggingCategoryMacroHolder<QtWarningMsg>::IsOutputEnable
 } // unnamed namespace
 
 #define QT_DECLARE_EXPORTED_QT_LOGGING_CATEGORY(name, export_macro) \
-    export_macro Q_DECLARE_LOGGING_CATEGORY(name)
+    namespace QtPrivateLogging { export_macro const QLoggingCategory &name(); } \
+    using QtPrivateLogging::name;
 
+#if QT_BUILDING_QT
+#define Q_DECLARE_LOGGING_CATEGORY(name) \
+    namespace QtPrivateLogging { const QLoggingCategory &name(); } \
+    using QtPrivateLogging::name;
+
+#define Q_DECLARE_EXPORTED_LOGGING_CATEGORY(name, export_macro) \
+    namespace QtPrivateLogging { export_macro const QLoggingCategory &name(); } \
+    using QtPrivateLogging::name;
+
+#define Q_LOGGING_CATEGORY_IMPL(name, ...) \
+    const QLoggingCategory &name() \
+    { \
+        static const QLoggingCategory category(__VA_ARGS__); \
+        return category; \
+    }
+
+#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU < 1000
+// GCC <10 thinks the "using" declaration from QT_DECLARE_EXPORTED_QT_LOGGING_CATEGORY
+// or Q_DECLARE_LOGGING_CATEGORY conflicts with any weak overload created as part of the definition.
+// So let's make it happy and repeat the "using" instead.
+#define Q_LOGGING_CATEGORY(name, ...) \
+    namespace QtPrivateLogging { Q_LOGGING_CATEGORY_IMPL(name, __VA_ARGS__) } \
+    using QtPrivateLogging::name;
+#else
+#define Q_LOGGING_CATEGORY(name, ...) \
+    namespace QtPrivateLogging { Q_LOGGING_CATEGORY_IMPL(name, __VA_ARGS__) } \
+    Q_WEAK_OVERLOAD \
+    const QLoggingCategory &name() { return QtPrivateLogging::name(); }
+#endif
+
+#define Q_STATIC_LOGGING_CATEGORY(name, ...) \
+    static Q_LOGGING_CATEGORY_IMPL(name, __VA_ARGS__)
+
+#else
 #define Q_DECLARE_LOGGING_CATEGORY(name) \
     const QLoggingCategory &name();
 
@@ -121,6 +156,7 @@ template <> const bool QLoggingCategoryMacroHolder<QtWarningMsg>::IsOutputEnable
 
 #define Q_STATIC_LOGGING_CATEGORY(name, ...) \
     static Q_LOGGING_CATEGORY(name, __VA_ARGS__)
+#endif
 
 #define QT_MESSAGE_LOGGER_COMMON(category, level) \
     for (QLoggingCategoryMacroHolder<level> qt_category((category)()); qt_category; qt_category.control = false) \

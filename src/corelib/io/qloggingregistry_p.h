@@ -29,7 +29,7 @@ class tst_QLoggingRegistry;
 
 QT_BEGIN_NAMESPACE
 
-#define Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(name, env, categoryName) \
+#define Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE_IMPL(name, env, categoryName) \
     const QLoggingCategory &name() \
     { \
         static constexpr char cname[] = categoryName;                               \
@@ -39,8 +39,26 @@ QT_BEGIN_NAMESPACE
         return category;                                                            \
     }
 
+#if defined(Q_CC_GNU_ONLY) && Q_CC_GNU < 1000
+// GCC <10 thinks the "using" declaration from QT_DECLARE_EXPORTED_QT_LOGGING_CATEGORY
+// or Q_DECLARE_LOGGING_CATEGORY conflicts with any weak overload created as part of the definition.
+// So let's make it happy and repeat the "using" instead.
+#define Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(name, env, categoryName) \
+    namespace QtPrivateLogging { \
+    Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE_IMPL(name, env, categoryName) \
+    } \
+    using QtPrivateLogging::name;
+#else
+#define Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(name, env, categoryName) \
+    namespace QtPrivateLogging { \
+    Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE_IMPL(name, env, categoryName) \
+    } \
+    Q_WEAK_OVERLOAD \
+    const QLoggingCategory &name() { return QtPrivateLogging::name(); }
+#endif
+
 #define Q_STATIC_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(name, env, categoryName) \
-    static Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE(name, env, categoryName)
+    static Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE_IMPL(name, env, categoryName)
 
 class Q_AUTOTEST_EXPORT QLoggingRule
 {
