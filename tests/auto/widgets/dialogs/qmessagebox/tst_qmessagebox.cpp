@@ -63,6 +63,7 @@ private slots:
     void hideNativeByDestruction();
 
     void explicitDoneAfterButtonClicked();
+    void legacyApiReturnValue();
 
     void cleanup();
 };
@@ -511,7 +512,7 @@ QT_WARNING_DISABLE_DEPRECATED
     // the button text versions
     closeHelper.start(Qt::Key_Enter);
     ret = QMessageBox::information(nullptr, "title", "text", "Yes", "No", QString(), 1);
-    COMPARE(ret, 3); // Custom button opaque result
+    COMPARE(ret, 1);
     QVERIFY(closeHelper.done());
 #endif // QT_DEPRECATED_SINCE(6, 2)
 #undef COMPARE
@@ -861,6 +862,22 @@ void tst_QMessageBox::explicitDoneAfterButtonClicked()
     QCOMPARE(msgBox.result(), QDialog::Rejected);
     QCOMPARE(acceptedSpy.size(), 3);
     QCOMPARE(rejectedSpy.size(), 3);
+}
+
+void tst_QMessageBox::legacyApiReturnValue()
+{
+    ExecCloseHelper closeHelper;
+    for (int i = 0; i < 3; ++i) {
+        closeHelper.start(Qt::Key_Enter);
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
+        QCOMPARE(QMessageBox::warning(nullptr, "Title", "Text",
+            "Button 0", "Button 1", "Button 2", i), i);
+        closeHelper.start(Qt::Key_Escape);
+        QCOMPARE(QMessageBox::warning(nullptr, "Title", "Text",
+            "Button 0", "Button 1", "Button 2", 0, i), i);
+QT_WARNING_POP
+    }
 }
 
 QTEST_MAIN(tst_QMessageBox)

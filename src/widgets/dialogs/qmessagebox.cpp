@@ -2158,7 +2158,11 @@ int QMessageBoxPrivate::showOldMessageBox(QWidget *parent, QMessageBox::Icon ico
     messageBox.setDefaultButton(static_cast<QPushButton *>(buttonList.value(defaultButtonNumber)));
     messageBox.setEscapeButton(buttonList.value(escapeButtonNumber));
 
-    return messageBox.exec();
+    messageBox.exec();
+
+    // Ignore exec return value and use button index instead,
+    // as that's what the documentation promises.
+    return buttonList.indexOf(messageBox.clickedButton());
 }
 
 void QMessageBoxPrivate::retranslateStrings()
