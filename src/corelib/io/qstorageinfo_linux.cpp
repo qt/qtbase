@@ -262,7 +262,22 @@ struct AutoFileDescriptor
     ~AutoFileDescriptor() { if (fd >= 0) qt_safe_close(fd); }
     operator int() const noexcept { return fd; }
 };
+
+struct QStorageLabelRetriever
+{
+    struct Entry {
+        QString label;
+        quint64 deviceId;
+    };
+    QList<Entry> labelMap;
+    bool populated = false;
+    QString operator()(const QStorageInfoPrivate &d, int fd, quint64 devid);
+
+private:
+    static QList<Entry> allLabels();
+};
 }
+Q_DECLARE_TYPEINFO(QStorageLabelRetriever::Entry, Q_RELOCATABLE_TYPE);
 
 // udev encodes the labels with ID_LABEL_FS_ENC which is done with
 // blkid_encode_string(). Within this function some 1-byte utf-8
@@ -355,12 +370,8 @@ static QDirListing devicesByLabel()
     return QDirListing(QLatin1StringView(pathDiskByLabel), LabelFileFilter);
 }
 
-static inline auto retrieveLabels()
+auto QStorageLabelRetriever::allLabels() -> QList<Entry>
 {
-    struct Entry {
-        QString label;
-        quint64 deviceId;
-    };
     QList<Entry> result;
 
     for (const auto &dirEntry : devicesByLabel()) {
@@ -399,6 +410,29 @@ static inline QString retrieveLabel(const QStorageInfoPrivate &d, int fd, quint6
     for (const auto &dirEntry : devicesByLabel()) {
         if (retrieveDeviceId(QFile::encodeName(dirEntry.filePath())) == deviceId)
             return decodeFsEncString(dirEntry.fileName());
+    }
+    return QString();
+}
+
+QString QStorageLabelRetriever::operator()(const QStorageInfoPrivate &d, int fd, quint64 devid)
+{
+    if (d.fileSystemType == "tmpfs")
+        return QString();
+
+    if (auto label = retrieveLabelViaIoctl(fd))
+        return *label;
+
+    devid = retrieveDeviceId(d.device, devid);
+    if (!devid)
+        return QString();
+
+    if (!populated) {
+        labelMap = allLabels();
+        populated = true;
+    }
+    for (auto &[deviceLabel, deviceId] : std::as_const(labelMap)) {
+        if (devid == deviceId)
+            return deviceLabel;
     }
     return QString();
 }
@@ -515,27 +549,7 @@ QList<QStorageInfo> QStorageInfoPrivate::mountedVolumes()
     if (infos.empty())
         return QList{root()};
 
-    std::optional<decltype(retrieveLabels())> labelMap;
-    auto labelForDevice = [&labelMap](const QStorageInfoPrivate &d, int fd, quint64 devid) {
-        if (d.fileSystemType == "tmpfs")
-            return QString();
-
-        if (auto label = retrieveLabelViaIoctl(fd))
-            return *label;
-
-        devid = retrieveDeviceId(d.device, devid);
-        if (!devid)
-            return QString();
-
-        if (!labelMap)
-            labelMap = retrieveLabels();
-        for (auto &[deviceLabel, deviceId] : std::as_const(*labelMap)) {
-            if (devid == deviceId)
-                return deviceLabel;
-        }
-        return QString();
-    };
-
+    QStorageLabelRetriever labelForDevice;
     QList<QStorageInfo> volumes;
     volumes.reserve(infos.size());
     for (auto it = infos.begin(); it != infos.end(); ++it) {
