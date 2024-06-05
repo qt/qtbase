@@ -527,6 +527,7 @@ public:
     XSQLDA *sqlda; // output sqlda
     XSQLDA *inda; // input parameters
     int queryType;
+    mutable QSqlRecord cachedRecord;
 };
 
 
@@ -558,6 +559,7 @@ void QIBaseResultPrivate::cleanup()
     delDA(inda);
 
     queryType = -1;
+    cachedRecord.clear();
     q->cleanup();
 }
 
@@ -1493,13 +1495,14 @@ int QIBaseResult::numRowsAffected()
 QSqlRecord QIBaseResult::record() const
 {
     Q_D(const QIBaseResult);
-    QSqlRecord rec;
     if (!isActive() || !d->sqlda)
-        return rec;
+        return {};
 
-    XSQLVAR v;
+    if (!d->cachedRecord.isEmpty())
+        return d->cachedRecord;
+
     for (int i = 0; i < d->sqlda->sqld; ++i) {
-        v = d->sqlda->sqlvar[i];
+        const XSQLVAR &v = d->sqlda->sqlvar[i];
         QSqlField f(QString::fromLatin1(v.aliasname, v.aliasname_length).simplified(),
                     QMetaType(qIBaseTypeName2(v.sqltype, v.sqlscale < 0)),
                                     QString::fromLatin1(v.relname, v.relname_length));
@@ -1525,9 +1528,9 @@ QSqlRecord QIBaseResult::record() const
                 f.setRequiredStatus(q.value(3).toBool() ? QSqlField::Required : QSqlField::Optional);
             }
         }
-        rec.append(f);
+        d->cachedRecord.append(f);
     }
-    return rec;
+    return d->cachedRecord;
 }
 
 QVariant QIBaseResult::handle() const
