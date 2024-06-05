@@ -1138,6 +1138,13 @@ bool QtPrivate::ResultIteratorBase::operator!=(const QtPrivate::ResultIteratorBa
 
 #include "qstring.h" // inlined API
 
+#include "qstringconverter.h"
+
+auto QStringConverter::encodingForName(const char *name) noexcept -> std::optional<Encoding>
+{
+    return encodingForName(QAnyStringView{name});
+}
+
 #if QT_CONFIG(thread)
 #  include "qthreadpool.h" // inlined API
 #endif

@@ -14,6 +14,7 @@
 #include <QtCore/qglobal.h> // QT_{BEGIN,END}_NAMESPACE
 #include <QtCore/qflags.h> // Q_DECLARE_FLAGS
 #include <QtCore/qcontainerfwd.h>
+#include <QtCore/qstringfwd.h>
 
 #include <cstring>
 
@@ -156,7 +157,10 @@ public:
 
     Q_CORE_EXPORT const char *name() const noexcept;
 
+#if QT_CORE_REMOVED_SINCE(6, 8)
     Q_CORE_EXPORT static std::optional<Encoding> encodingForName(const char *name) noexcept;
+#endif
+    Q_CORE_EXPORT static std::optional<Encoding> encodingForName(QAnyStringView name) noexcept;
     Q_CORE_EXPORT static const char *nameForEncoding(Encoding e);
     Q_CORE_EXPORT static std::optional<Encoding>
     encodingForData(QByteArrayView data, char16_t expectedFirstCharacter = 0) noexcept;
