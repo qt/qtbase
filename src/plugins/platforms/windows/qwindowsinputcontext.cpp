@@ -5,7 +5,6 @@
 #include "qwindowscontext.h"
 #include "qwindowswindow.h"
 #include "qwindowsintegration.h"
-#include "qwindowsmousehandler.h"
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qobject.h>

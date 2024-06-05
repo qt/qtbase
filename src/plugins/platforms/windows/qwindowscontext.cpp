@@ -7,7 +7,6 @@
 #include "qwindowswindow.h"
 #include "qwindowskeymapper.h"
 #include "qwindowsnativeinterface.h"
-#include "qwindowsmousehandler.h"
 #include "qwindowspointerhandler.h"
 #include "qtwindowsglobal.h"
 #include "qwindowsmenu.h"
@@ -141,7 +140,6 @@ struct QWindowsContextPrivate {
     HDC m_displayContext = nullptr;
     int m_defaultDPI = 96;
     QWindowsKeyMapper m_keyMapper;
-    QWindowsMouseHandler m_mouseHandler;
     QWindowsPointerHandler m_pointerHandler;
     QWindowsMimeRegistry m_mimeConverter;
     QWindowsScreenManager m_screenManager;
@@ -162,7 +160,7 @@ bool QWindowsContextPrivate::m_v2DpiAware = false;
 QWindowsContextPrivate::QWindowsContextPrivate()
     : m_oleInitializeResult(OleInitialize(nullptr))
 {
-    if (m_pointerHandler.touchDevice() || m_mouseHandler.touchDevice())
+    if (m_pointerHandler.touchDevice())
         m_systemInfo |= QWindowsContext::SI_SupportsTouch;
     m_displayContext = GetDC(nullptr);
     m_defaultDPI = GetDeviceCaps(m_displayContext, LOGPIXELSY);
@@ -226,8 +224,7 @@ bool QWindowsContext::initTouch(unsigned integrationOptions)
 {
     if (d->m_systemInfo & QWindowsContext::SI_SupportsTouch)
         return true;
-    const bool usePointerHandler = (d->m_systemInfo & QWindowsContext::SI_SupportsPointer) != 0;
-    auto touchDevice = usePointerHandler ? d->m_pointerHandler.touchDevice() : d->m_mouseHandler.touchDevice();
+    auto touchDevice = d->m_pointerHandler.touchDevice();
     if (touchDevice.isNull()) {
         const bool mouseEmulation =
             (integrationOptions & QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch) == 0;
@@ -236,7 +233,6 @@ bool QWindowsContext::initTouch(unsigned integrationOptions)
     if (touchDevice.isNull())
         return false;
     d->m_pointerHandler.setTouchDevice(touchDevice);
-    d->m_mouseHandler.setTouchDevice(touchDevice);
     QWindowSystemInterface::registerInputDevice(touchDevice.data());
 
     d->m_systemInfo |= QWindowsContext::SI_SupportsTouch;
@@ -274,15 +270,6 @@ bool QWindowsContext::disposeTablet()
 #else
     return false;
 #endif
-}
-
-bool QWindowsContext::initPointer(unsigned integrationOptions)
-{
-    if (integrationOptions & QWindowsIntegration::DontUseWMPointer)
-        return false;
-
-    d->m_systemInfo |= QWindowsContext::SI_SupportsPointer;
-    return true;
 }
 
 extern "C" LRESULT QT_WIN_CALLBACK qWindowsPowerWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -730,16 +717,12 @@ QWindow *QWindowsContext::findWindow(HWND hwnd) const
 
 QWindow *QWindowsContext::windowUnderMouse() const
 {
-    return (d->m_systemInfo & QWindowsContext::SI_SupportsPointer) ?
-        d->m_pointerHandler.windowUnderMouse() : d->m_mouseHandler.windowUnderMouse();
+    return d->m_pointerHandler.windowUnderMouse();
 }
 
 void QWindowsContext::clearWindowUnderMouse()
 {
-    if (d->m_systemInfo & QWindowsContext::SI_SupportsPointer)
-        d->m_pointerHandler.clearWindowUnderMouse();
-    else
-        d->m_mouseHandler.clearWindowUnderMouse();
+    d->m_pointerHandler.clearWindowUnderMouse();
 }
 
 /*!
@@ -1052,8 +1035,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
 
     switch (et) {
     case QtWindows::GestureEvent:
-        if (!(d->m_systemInfo & QWindowsContext::SI_SupportsPointer))
-            return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateGestureEvent(platformWindow->window(), hwnd, et, msg, result);
+        // TODO???
         break;
     case QtWindows::InputMethodOpenCandidateWindowEvent:
     case QtWindows::InputMethodCloseCandidateWindowEvent:
@@ -1193,16 +1175,11 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
     case QtWindows::NonClientMouseEvent:
         if (!platformWindow->frameStrutEventsEnabled())
             break;
-        if ((d->m_systemInfo & QWindowsContext::SI_SupportsPointer))
-            return sessionManagerInteractionBlocked() || d->m_pointerHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
-        else
-            return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
+        return sessionManagerInteractionBlocked() || d->m_pointerHandler.translateMouseEvent(platformWindow->window(), hwnd, et, msg, result);
     case QtWindows::NonClientPointerEvent:
         if (!platformWindow->frameStrutEventsEnabled())
             break;
-        if ((d->m_systemInfo & QWindowsContext::SI_SupportsPointer))
-            return sessionManagerInteractionBlocked() || d->m_pointerHandler.translatePointerEvent(platformWindow->window(), hwnd, et, msg, result);
-        break;
+        return sessionManagerInteractionBlocked() || d->m_pointerHandler.translatePointerEvent(platformWindow->window(), hwnd, et, msg, result);
     case QtWindows::EnterSizeMoveEvent:
         platformWindow->setFlag(QWindowsWindow::ResizeMoveActive);
         if (!IsZoomed(hwnd))
@@ -1216,8 +1193,7 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
             platformWindow->updateRestoreGeometry();
         return true;
     case QtWindows::ScrollEvent:
-        if (!(d->m_systemInfo & QWindowsContext::SI_SupportsPointer))
-            return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateScrollEvent(platformWindow->window(), hwnd, msg, result);
+        // TODO???
         break;
     case QtWindows::MouseWheelEvent:
     case QtWindows::MouseEvent:
@@ -1228,20 +1204,14 @@ bool QWindowsContext::windowsProc(HWND hwnd, UINT message,
                 window = window->parent();
             if (!window)
                 return false;
-            if (d->m_systemInfo & QWindowsContext::SI_SupportsPointer)
-                return sessionManagerInteractionBlocked() || d->m_pointerHandler.translateMouseEvent(window, hwnd, et, msg, result);
-            else
-                return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateMouseEvent(window, hwnd, et, msg, result);
+            return sessionManagerInteractionBlocked() || d->m_pointerHandler.translateMouseEvent(window, hwnd, et, msg, result);
         }
         break;
     case QtWindows::TouchEvent:
-        if (!(d->m_systemInfo & QWindowsContext::SI_SupportsPointer))
-            return sessionManagerInteractionBlocked() || d->m_mouseHandler.translateTouchEvent(platformWindow->window(), hwnd, et, msg, result);
+        // TODO???
         break;
     case QtWindows::PointerEvent:
-        if (d->m_systemInfo & QWindowsContext::SI_SupportsPointer)
-            return sessionManagerInteractionBlocked() || d->m_pointerHandler.translatePointerEvent(platformWindow->window(), hwnd, et, msg, result);
-        break;
+        return sessionManagerInteractionBlocked() || d->m_pointerHandler.translatePointerEvent(platformWindow->window(), hwnd, et, msg, result);
     case QtWindows::FocusInEvent: // see QWindowsWindow::requestActivateWindow().
     case QtWindows::FocusOutEvent:
         handleFocusEvent(et, platformWindow);
@@ -1445,7 +1415,7 @@ void QWindowsContext::handleExitSizeMove(QWindow *window)
     //    Mouse is left in pressed state after press on size grip (inside window),
     //    no further mouse events are received
     // For cases 1,3, intercept WM_EXITSIZEMOVE to sync the buttons.
-    const Qt::MouseButtons currentButtons = QWindowsMouseHandler::queryMouseButtons();
+    const Qt::MouseButtons currentButtons = QWindowsPointerHandler::queryMouseButtons();
     const Qt::MouseButtons appButtons = QGuiApplication::mouseButtons();
     if (currentButtons == appButtons)
         return;
@@ -1461,10 +1431,7 @@ void QWindowsContext::handleExitSizeMove(QWindow *window)
                 currentButtons, button, type, keyboardModifiers);
         }
     }
-    if (d->m_systemInfo & QWindowsContext::SI_SupportsPointer)
-        d->m_pointerHandler.clearEvents();
-    else
-        d->m_mouseHandler.clearEvents();
+    d->m_pointerHandler.clearEvents();
 }
 
 bool QWindowsContext::asyncExpose() const

@@ -173,8 +173,6 @@ static inline unsigned parseOptions(const QStringList &paramList,
             options |= QWindowsIntegration::AlwaysUseNativeMenus;
         } else if (param == u"menus=none") {
             options |= QWindowsIntegration::NoNativeMenus;
-        } else if (param == u"nowmpointer") {
-            options |= QWindowsIntegration::DontUseWMPointer;
         } else if (param == u"reverse") {
             options |= QWindowsIntegration::RtlEnabled;
         } else if (param == u"darkmode=0") {
@@ -209,10 +207,7 @@ void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStr
     if (tabletAbsoluteRange >= 0)
         QWindowsContext::setTabletAbsoluteRange(tabletAbsoluteRange);
 
-    if (m_context.initPointer(m_options))
-        QCoreApplication::setAttribute(Qt::AA_CompressHighFrequencyEvents);
-    else
-        m_context.initTablet();
+    QCoreApplication::setAttribute(Qt::AA_CompressHighFrequencyEvents);
     QWindowSystemInterfacePrivate::TabletEvent::setPlatformSynthesizesMouse(false);
 
     if (!dpiAwarenessSet) { // Set only once in case of repeated instantiations of QGuiApplication.
