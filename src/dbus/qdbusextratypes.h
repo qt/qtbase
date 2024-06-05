@@ -38,6 +38,9 @@ public:
     operator QVariant() const;
 
 private:
+#ifndef QT_NO_DEBUG_STREAM
+    Q_DBUS_EXPORT friend QDebug operator<<(QDebug, const QDBusObjectPath &);
+#endif
     void doCheck();
 };
 Q_DECLARE_SHARED(QDBusObjectPath)
@@ -69,9 +72,6 @@ inline bool operator<(const QDBusObjectPath &lhs, const QDBusObjectPath &rhs)
 inline size_t qHash(const QDBusObjectPath &objectPath, size_t seed = 0)
 { return qHash(objectPath.path(), seed); }
 
-#ifndef QT_NO_DEBUG_STREAM
-Q_DBUS_EXPORT QDebug operator<<(QDebug, const QDBusObjectPath &);
-#endif
 
 class Q_DBUS_EXPORT QDBusSignature
 {
