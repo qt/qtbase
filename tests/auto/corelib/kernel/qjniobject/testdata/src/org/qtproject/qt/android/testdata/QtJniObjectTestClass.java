@@ -43,6 +43,8 @@ public class QtJniObjectTestClass
     static char S_CHAR_VAR;
     static String S_STRING_OBJECT_VAR;
 
+    static char[] S_CHAR_ARRAY = A_STRING_OBJECT.toCharArray();
+
     // --------------------------------------------------------------------------------------------
     public static void staticVoidMethod() { return; }
     public static void staticVoidMethodWithArgs(int a, boolean b, char c) { return; }
@@ -197,6 +199,18 @@ public class QtJniObjectTestClass
     }
     public char[] reverseCharArray(char[] array)
     { return staticReverseCharArray(array); }
+
+    // --------------------------------------------------------------------------------------------
+    public static char[] getStaticCharArray()
+    { return S_CHAR_ARRAY; }
+    public static void mutateStaticCharArray(char [] values)
+    {
+        for (int i = 0; i < values.length; ++i) {
+            S_CHAR_ARRAY[i] = values[i];
+        }
+    }
+    public static void replaceStaticCharArray(char[] array)
+    { S_CHAR_ARRAY = array; }
 
     // --------------------------------------------------------------------------------------------
     public static short[] staticShortArrayMethod() { short[] array = { 3, 2, 1 }; return array; }

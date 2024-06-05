@@ -116,6 +116,7 @@ private slots:
     void isClassAvailable();
     void fromLocalRef();
     void largeObjectArray();
+    void arrayLifetime();
 
     void callback_data();
     void callback();
@@ -1882,6 +1883,42 @@ void tst_QJniObject::largeObjectArray()
         QVERIFY(reverse.at(1).isValid());
         QVERIFY(reverse.at(2).isValid());
     }
+}
+
+void tst_QJniObject::arrayLifetime()
+{
+    const auto stringData = A_STRING_OBJECT();
+
+    QJniArray oldChars = TestClass::callStaticMethod<jchar[]>("getStaticCharArray");
+    QVERIFY(oldChars.isValid());
+    QCOMPARE(oldChars.size(), stringData.size());
+    QCOMPARE(QChar(oldChars.toContainer().at(0)), stringData.at(0));
+
+    QJniArray<jchar> newChars{'a', 'b', 'c'};
+    // replace the first three characters in the array
+    TestClass::callStaticMethod<void>("mutateStaticCharArray", newChars);
+    // the old jcharArray is still valid and the size is unchanged
+    QVERIFY(oldChars.isValid());
+    QCOMPARE(oldChars.size(), A_STRING_OBJECT().size());
+    QCOMPARE(oldChars.toContainer().at(0), jchar('a'));
+
+    // get a second reference to the Java array
+    QJniArray updatedChars = TestClass::getStaticField<jchar[]>("S_CHAR_ARRAY");
+    // the two QJniArrays reference the same jobject
+    QCOMPARE(updatedChars.size(), oldChars.size());
+    QCOMPARE(updatedChars, oldChars);
+
+    // replace the Java array; the old jcharArray is still valid and unchanged
+    TestClass::callStaticMethod<void>("replaceStaticCharArray", newChars);
+    // the old jcharArray is still valid and unchanged
+    QVERIFY(oldChars.isValid());
+    QCOMPARE(oldChars.size(), stringData.size());
+    QCOMPARE(oldChars, updatedChars);
+
+    // we get the same object that we set
+    updatedChars = TestClass::getStaticField<jchar[]>("S_CHAR_ARRAY");
+    QCOMPARE(updatedChars, newChars);
+    QCOMPARE_NE(updatedChars, oldChars);
 }
 
 enum class CallbackParameterType
