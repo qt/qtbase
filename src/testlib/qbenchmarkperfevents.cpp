@@ -21,7 +21,7 @@
 #include <sys/prctl.h>
 #include <sys/syscall.h>
 
-#include "3rdparty/linux_perf_event_p.h"
+#include "3rdparty/linux/perf_event_p.h"
 
 // for PERF_TYPE_HW_CACHE, the config is a bitmask
 // lowest 8 bits: cache type

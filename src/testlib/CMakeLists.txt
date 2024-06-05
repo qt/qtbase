@@ -14,7 +14,7 @@ qt_internal_add_module(Test
     QMAKE_MODULE_CONFIG console testlib_defines
     EXCEPTIONS
     SOURCES
-        3rdparty/cycle_p.h
+        3rdparty/cycle/cycle_p.h # Needed by tests, so visible to syncqt.
         removed_api.cpp     # keep first
         qabstracttestlogger.cpp qabstracttestlogger_p.h
         qasciikey.cpp
@@ -81,7 +81,9 @@ qt_internal_add_module(Test
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
     ATTRIBUTION_FILE_DIR_PATHS
-        3rdparty
+        3rdparty/cycle
+        3rdparty/linux
+        3rdparty/valgrind
     EXTRA_CMAKE_FILES
         "${CMAKE_CURRENT_SOURCE_DIR}/QtTestProperties.cmake"
     EXTRA_CMAKE_INCLUDES
@@ -106,10 +108,12 @@ qt_internal_extend_target(Test CONDITION QT_FEATURE_batch_test_support
         qtestregistry.cpp qtestregistry_p.h
 )
 
+# 3rdparty/valgrind/*_p.h deliberately omitted, so syncqt doesn't
+# mirror it in generated include/ directory - #include using "..._p.h"
+# with a relative path. Only this module's sources and Core's qsimd.h
+# should need to.
 qt_internal_extend_target(Test CONDITION QT_FEATURE_valgrind
     SOURCES
-        3rdparty/callgrind_p.h
-        3rdparty/valgrind_p.h
         qbenchmarkvalgrind.cpp qbenchmarkvalgrind_p.h
 )
 

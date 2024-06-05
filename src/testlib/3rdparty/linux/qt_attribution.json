@@ -1,0 +1,28 @@
+[
+    {
+        "Id": "linuxperf",
+        "Name": "Linux Performance Events",
+        "QDocModule": "qttestlib",
+        "QtUsage": "Used on Linux and Android in the Qt Test module.",
+        "Comment": { "UpstreamFile": "include/uapi/linux/perf_event.h",
+                     "Repository": "https://github.com/torvalds/linux",
+                     "License-note": "The SPDX's 'WITH Linux-syscall-note' is why we can use it",
+                     "Update": [
+                         "Not normally needed unless",
+                         "New feature in QtTest needs something in a newer version",
+                         "or if a Linux port to some new architecture omits old API"
+                     ]
+                   },
+        "Files": "perf_event_p.h",
+
+        "Description": "Allows access to the Linux kernel's performance events.",
+        "Homepage": "https://www.kernel.org",
+        "Version": "6.0",
+        "License": "GNU General Public License v2.0 only with Linux Syscall Note",
+        "LicenseId": "GPL-2.0-only WITH Linux-syscall-note",
+        "LicenseFile": "LICENSE.txt",
+        "Copyright": ["Copyright (C) 2008-2009, Thomas Gleixner <tglx@linutronix.de>",
+                      "Copyright (C) 2008-2011, Red Hat, Inc., Ingo Molnar",
+                      "Copyright (C) 2008-2011, Red Hat, Inc., Peter Zijlstra"]
+    }
+]
