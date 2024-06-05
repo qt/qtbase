@@ -43,7 +43,7 @@ using namespace Qt::StringLiterals;
 #define blr_boolean_dtype blr_bool
 #endif
 
-#if (defined(QT_SUPPORTS_INT128) || defined(Q_CC_MSVC)) && (FB_API_VER >= 40)
+#if (defined(QT_SUPPORTS_INT128) || defined(QT_USE_MSVC_INT128)) && (FB_API_VER >= 40)
 #define IBASE_INT128_SUPPORTED
 #endif
 
