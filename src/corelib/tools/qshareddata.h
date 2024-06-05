@@ -162,10 +162,9 @@ public:
     Q_NODISCARD_CTOR
     QExplicitlySharedDataPointer(const QExplicitlySharedDataPointer<X> &o) noexcept
 #ifdef QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST
-        : d(warnIfQExplicitlySharedDataPointerStaticCastMacroDefined(), static_cast<T *>(o.data()))
-#else
-        : d(o.data())
+#error This macro has been removed in Qt 6.9.
 #endif
+        : d(o.data())
     { if (d) d->ref.ref(); }
 
     void reset(T *ptr = nullptr) noexcept
@@ -212,11 +211,6 @@ protected:
 
 private:
     void detach_helper();
-
-#ifdef QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST
-    [[deprecated("Usage of QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST is deprecated.")]]
-    constexpr void warnIfQExplicitlySharedDataPointerStaticCastMacroDefined() {}
-#endif
 
     T *d;
 };

@@ -12,8 +12,3 @@
         return d->clone();
     }
 //! [1]
-
-//! [2]
-    QExplicitlySharedDataPointer<Base> base(new Base);
-    QExplicitlySharedDataPointer<Derived> derived(base); // !!! DANGER !!!
-//! [2]

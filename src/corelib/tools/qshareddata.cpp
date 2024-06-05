@@ -570,29 +570,6 @@ QT_BEGIN_NAMESPACE
     implicitly converted to the type \c{T *}; the result of this
     conversion is set as the \e{d pointer} of \e{this}, and the
     reference count of the shared data object is incremented.
-
-    However, if the macro
-    \c{QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST} is defined
-    before including the \c{QExplicitlySharedDataPointer} header, then
-    the \e{d pointer} of \a o undergoes a \c{static_cast} to the
-    type \c{T *}. The result of the cast is then set as the
-    \e{d pointer} of \e{this}, and the reference count of the shared data
-    object is incremented.
-
-    \warning relying on such \c{static_cast} is potentially dangerous,
-    because it allows code like this to compile:
-
-    \snippet code/src_corelib_tools_qshareddata.cpp 2
-
-    Starting from Qt 5.4 the cast is disabled by default. It is
-    possible to enable it back by defining the
-    \c{QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST} macro, and
-    therefore to allow old code (that relied on this feature) to
-    compile without modifications.
-
-    \note Usage of the
-    \c{QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST} macro is
-    deprecated. The macro will be removed in a future version of Qt.
 */
 
 /*! \fn template <class T> QExplicitlySharedDataPointer<T>& QExplicitlySharedDataPointer<T>::operator=(const QExplicitlySharedDataPointer<T>& o)
