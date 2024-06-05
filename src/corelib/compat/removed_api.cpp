@@ -635,7 +635,7 @@ QBitArray QBitArray::operator~() const
     return QBitArray(*this).inverted_inplace();
 }
 
-#include "qbytearray.h"     // also includes inlined API
+#include "qbytearray.h"
 
 QByteArray QByteArray::left(qsizetype len)  const
 {
