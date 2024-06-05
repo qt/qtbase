@@ -1910,18 +1910,35 @@ const QStringConverter::Interface QStringConverter::encodingInterfaces[QStringCo
 };
 
 // match names case insensitive and skipping '-' and '_'
-static bool nameMatch(const char *a, const char *b)
+static bool nameMatch_impl(const char *a, QLatin1StringView rhs)
 {
+    const char *b = rhs.data();
+    const char *b_end = rhs.end();
     do {
         while (*a == '-' || *a == '_')
             ++a;
-        while (*b == '-' || *b == '_')
+        while (b != b_end && (*b == '-' || *b == '_'))
             ++b;
-        if (!*a && !*b) // end of both strings
+        if (!*a && b == b_end) // end of both strings
             return true;
     } while (QtMiscUtils::toAsciiLower(*a++) == QtMiscUtils::toAsciiLower(*b++));
 
     return false;
+}
+
+static bool nameMatch_impl(const char *a, QUtf8StringView b)
+{
+    return nameMatch_impl(a, QLatin1StringView{QByteArrayView{b}});
+}
+
+static bool nameMatch_impl(const char *a, QStringView b)
+{
+    return nameMatch_impl(a, QLatin1StringView{b.toString().toLatin1()}); // ### optimize
+}
+
+static bool nameMatch(const char *a, QAnyStringView b)
+{
+    return b.visit([a](auto b) { return nameMatch_impl(a, b); });
 }
 
 
@@ -2237,11 +2254,12 @@ const char *QStringConverter::name() const noexcept
     the QStringConverter constructor when Qt is built with ICU, if ICU provides a
     converter with the given name.
 
-    \a name is expected to be UTF-8 encoded.
+    \note In Qt versions prior to 6.8, this function took only a \c{const char *},
+    which was expected to be UTF-8-encoded.
 */
-std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(const char *name) noexcept
+std::optional<QStringConverter::Encoding> QStringConverter::encodingForName(QAnyStringView name) noexcept
 {
-    if (!name)
+    if (name.isEmpty())
         return std::nullopt;
     for (qsizetype i = 0; i < LastEncoding + 1; ++i) {
         if (nameMatch(encodingInterfaces[i].name, name))
