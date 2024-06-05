@@ -31,26 +31,6 @@ namespace QtAndroidInput
                        QPoint cursor = QPoint(), QPoint anchor = QPoint(), bool rtl = false);
     int getSelectHandleWidth();
 
-    class GenericMotionEventListener
-    {
-    public:
-        virtual ~GenericMotionEventListener();
-        virtual bool handleGenericMotionEvent(jobject event) = 0;
-    };
-
-    class KeyEventListener
-    {
-    public:
-        virtual ~KeyEventListener();
-        virtual bool handleKeyEvent(jobject event) = 0;
-    };
-
-    void registerGenericMotionEventListener(GenericMotionEventListener *listener);
-    void unregisterGenericMotionEventListener(GenericMotionEventListener *listener);
-
-    void registerKeyEventListener(KeyEventListener *listener);
-    void unregisterKeyEventListener(KeyEventListener *listener);
-
     bool registerNatives(QJniEnvironment &env);
 }
 
