@@ -2523,20 +2523,13 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 */
 
 /*!
-    \fn constexpr QStringEncoder::QStringEncoder(const char *name, Flags flags = Flag::Default)
+    \fn QStringEncoder::QStringEncoder(QAnyStringView name, Flags flags = Flag::Default)
 
     Creates an encoder object using \a name and \a flags.
     If \a name is not the name of a known encoding an invalid converter will get created.
 
-    \sa isValid()
-*/
-
-/*!
-    \fn constexpr QStringEncoder::QStringEncoder(const QString &name, Flags flags = Flag::Default)
-    \since 6.8
-
-    Creates an encoder object using \a name and \a flags.
-    If \a name is not the name of a known encoding an invalid converter will get created.
+    \note In Qt versions prior to 6.8, this function took only a \c{const char *},
+    which was expected to be UTF-8-encoded.
 
     \sa isValid()
 */
@@ -2624,20 +2617,13 @@ const char *QStringConverter::nameForEncoding(QStringConverter::Encoding e)
 */
 
 /*!
-    \fn constexpr QStringDecoder::QStringDecoder(const char *name, Flags flags = Flag::Default)
+    \fn QStringDecoder::QStringDecoder(QAnyStringView name, Flags flags = Flag::Default)
 
     Creates an decoder object using \a name and \a flags.
     If \a name is not the name of a known encoding an invalid converter will get created.
 
-    \sa isValid()
-*/
-
-/*!
-    \fn constexpr QStringDecoder::QStringDecoder(const QString &name, Flags flags = Flag::Default)
-    \since 6.8
-
-    Creates an decoder object using \a name and \a flags.
-    If \a name is not the name of a known encoding an invalid converter will get created.
+    \note In Qt versions prior to 6.8, this function took only a \c{const char *},
+    which was expected to be UTF-8-encoded.
 
     \sa isValid()
 */

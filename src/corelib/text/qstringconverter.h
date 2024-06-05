@@ -30,11 +30,8 @@ public:
     constexpr explicit QStringEncoder(Encoding encoding, Flags flags = Flag::Default)
         : QStringConverter(encoding, flags)
     {}
-    explicit QStringEncoder(const char *name, Flags flags = Flag::Default)
+    explicit QStringEncoder(QAnyStringView name, Flags flags = Flag::Default)
         : QStringConverter(name, flags)
-    {}
-    Q_WEAK_OVERLOAD explicit QStringEncoder(const QString &name, Flags flags = Flag::Default)
-        : QStringEncoder(name.toLatin1().constData(), flags)
     {}
 
     template<typename T>
@@ -95,11 +92,8 @@ public:
     constexpr QStringDecoder() noexcept
         : QStringConverter()
     {}
-    explicit QStringDecoder(const char *name, Flags f = Flag::Default)
+    explicit QStringDecoder(QAnyStringView name, Flags f = Flag::Default)
         : QStringConverter(name, f)
-    {}
-    Q_WEAK_OVERLOAD explicit QStringDecoder(const QString &name, Flags f = Flag::Default)
-        : QStringDecoder(name.toLatin1().constData(), f)
     {}
 
     template<typename T>
