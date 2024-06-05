@@ -138,7 +138,10 @@ protected:
     constexpr explicit QStringConverter(const Interface *i) noexcept
         : iface(i)
     {}
+#if QT_CORE_REMOVED_SINCE(6, 8)
     Q_CORE_EXPORT explicit QStringConverter(const char *name, Flags f);
+#endif
+    Q_CORE_EXPORT explicit QStringConverter(QAnyStringView name, Flags f);
 
 
     ~QStringConverter() = default;
