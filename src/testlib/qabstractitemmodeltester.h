@@ -50,61 +50,8 @@ public:
     void setUseFetchMore(bool value);
 
 private:
-    friend inline bool QTestPrivate::testDataGuiRoles(QAbstractItemModelTester *tester);
     bool verify(bool statement, const char *statementStr, const char *description, const char *file, int line);
 };
-
-namespace QTestPrivate {
-inline bool testDataGuiRoles(QAbstractItemModelTester *tester)
-{
-#ifdef QT_GUI_LIB
-
-#define MODELTESTER_VERIFY(statement) \
-do { \
-    if (!tester->verify(static_cast<bool>(statement), #statement, "", __FILE__, __LINE__)) \
-        return false; \
-} while (false)
-
-    const auto model = tester->model();
-    Q_ASSERT(model);
-
-    if (!model->hasChildren())
-        return true;
-
-    QVariant variant;
-
-    variant = model->data(model->index(0, 0), Qt::DecorationRole);
-    if (variant.isValid()) {
-        MODELTESTER_VERIFY(variant.canConvert<QPixmap>()
-                           || variant.canConvert<QImage>()
-                           || variant.canConvert<QIcon>()
-                           || variant.canConvert<QColor>()
-                           || variant.canConvert<QBrush>());
-    }
-
-    // General Purpose roles that should return a QFont
-    variant = model->data(model->index(0, 0), Qt::FontRole);
-    if (variant.isValid())
-        MODELTESTER_VERIFY(variant.canConvert<QFont>());
-
-    // General Purpose roles that should return a QColor or a QBrush
-    variant = model->data(model->index(0, 0), Qt::BackgroundRole);
-    if (variant.isValid())
-        MODELTESTER_VERIFY(variant.canConvert<QColor>() || variant.canConvert<QBrush>());
-
-    variant = model->data(model->index(0, 0), Qt::ForegroundRole);
-    if (variant.isValid())
-        MODELTESTER_VERIFY(variant.canConvert<QColor>() || variant.canConvert<QBrush>());
-
-#undef MODELTESTER_VERIFY
-
-#else
-    Q_UNUSED(tester);
-#endif // QT_GUI_LIB
-
-    return true;
-}
-} // namespaceQTestPrivate
 
 QT_END_NAMESPACE
 

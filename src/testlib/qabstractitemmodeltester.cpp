@@ -6,6 +6,7 @@
 
 #include <private/qobject_p.h>
 #include <private/qabstractitemmodel_p.h>
+#include <QtCore/qmetatype.h>
 #include <QtCore/QPointer>
 #include <QtCore/QAbstractItemModel>
 #include <QtCore/QStack>
@@ -73,6 +74,7 @@ private:
     void checkChildren(const QModelIndex &parent, int currentDepth = 0);
 
     bool verify(bool statement, const char *statementStr, const char *description, const char *file, int line);
+    void testDataGuiRoles(QAbstractItemModelTester *tester);
 
     template<typename T1, typename T2>
     bool compare(const T1 &t1, const T2 &t2,
@@ -623,6 +625,48 @@ void QAbstractItemModelTesterPrivate::checkChildren(const QModelIndex &parent, i
     }
 }
 
+void QAbstractItemModelTesterPrivate::testDataGuiRoles(QAbstractItemModelTester *tester)
+{
+    const auto model = tester->model();
+    Q_ASSERT(model);
+
+    if (!model->hasChildren())
+        return;
+
+    static const QMetaType pixmapType = QMetaType(QMetaType::QPixmap);
+    if (!pixmapType.isValid())
+        return;
+
+    static const QMetaType imageType = QMetaType(QMetaType::QImage);
+    static const QMetaType iconType = QMetaType(QMetaType::QIcon);
+    static const QMetaType colorType = QMetaType(QMetaType::QColor);
+    static const QMetaType brushType = QMetaType(QMetaType::QBrush);
+    static const QMetaType fontType = QMetaType(QMetaType::QFont);
+
+    QVariant variant = model->data(model->index(0, 0), Qt::DecorationRole);
+    if (variant.isValid()) {
+        MODELTESTER_VERIFY(variant.canConvert(pixmapType)
+                           || variant.canConvert(imageType)
+                           || variant.canConvert(iconType)
+                           || variant.canConvert(colorType)
+                           || variant.canConvert(brushType));
+    }
+
+    // General Purpose roles that should return a QFont
+    variant = model->data(model->index(0, 0), Qt::FontRole);
+    if (variant.isValid())
+        MODELTESTER_VERIFY(variant.canConvert(fontType));
+
+    // General Purpose roles that should return a QColor or a QBrush
+    variant = model->data(model->index(0, 0), Qt::BackgroundRole);
+    if (variant.isValid())
+        MODELTESTER_VERIFY(variant.canConvert(colorType) || variant.canConvert(brushType));
+
+    variant = model->data(model->index(0, 0), Qt::ForegroundRole);
+    if (variant.isValid())
+        MODELTESTER_VERIFY(variant.canConvert(colorType) || variant.canConvert(brushType));
+}
+
 /*
     Tests model's implementation of QAbstractItemModel::data()
  */
@@ -674,9 +718,7 @@ void QAbstractItemModelTesterPrivate::data()
         MODELTESTER_VERIFY(sizeHintVariant.canConvert<QSize>());
 
     Q_Q(QAbstractItemModelTester);
-
-    if (!QTestPrivate::testDataGuiRoles(q))
-        return;
+    testDataGuiRoles(q);
 }
 
 void QAbstractItemModelTesterPrivate::columnsAboutToBeInserted(const QModelIndex &parent, int start,
