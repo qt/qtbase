@@ -363,6 +363,13 @@ public:
     }
 };
 
+// Deduction guide so that we can construct as 'QJniArray list(Container<T>)'. Since
+// fromContainer() maps several C++ types to the same JNI type (e.g. both jboolean and
+// bool become QJniArray<jboolean>), we have to deduce to what fromContainer() would
+// give us.
+template <typename Container, QJniArrayBase::if_contiguous_container<Container> = true>
+QJniArray(Container) -> QJniArray<typename decltype(QJniArrayBase::fromContainer(std::declval<Container>()))::value_type>;
+
 template <typename ElementType, typename List, typename NewFn, typename SetFn>
 auto QJniArrayBase::makeArray(List &&list, NewFn &&newArray, SetFn &&setRegion)
 {

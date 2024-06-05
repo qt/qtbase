@@ -81,6 +81,7 @@ VERIFY_RETURN_FOR_TYPE(QJniArray<List>, QJniArray<List>);
 
 void tst_QJniArray::construct()
 {
+    // explicit
     {
         QStringList strings;
         for (int i = 0; i < 10000; ++i)
@@ -89,11 +90,34 @@ void tst_QJniArray::construct()
         QCOMPARE(list.size(), 10000);
     }
     {
-        QJniArray<jint> list{1, 2, 3};
+        QJniArray bytes = QJniArrayBase::fromContainer(QByteArray("abc"));
+        static_assert(std::is_same_v<decltype(bytes)::value_type, jbyte>);
+        QCOMPARE(bytes.size(), 3);
+    }
+    {
+        QJniArray list{1, 2, 3};
+        static_assert(std::is_same_v<decltype(list), QJniArray<int>>);
         QCOMPARE(list.size(), 3);
+        list = {4, 5};
+        QCOMPARE(list.size(), 2);
     }
     {
         QJniArray<jint> list(QList<int>{1, 2, 3});
+        QCOMPARE(list.size(), 3);
+    }
+    // CTAD with deduction guide
+    {
+        QJniArray list(QList<int>{1, 2, 3});
+        QCOMPARE(list.size(), 3);
+    }
+    {
+        QJniArray bytes(QByteArray("abc"));
+        static_assert(std::is_same_v<decltype(bytes)::value_type, jbyte>);
+        QCOMPARE(bytes.size(), 3);
+    }
+    {
+        QStringList strings{"a", "b", "c"};
+        QJniArray list(strings);
         QCOMPARE(list.size(), 3);
     }
     {
@@ -110,7 +134,7 @@ void tst_QJniArray::size()
 
     QList<int> intList;
     intList.resize(10);
-    auto intArray = QJniArrayBase::fromContainer(intList);
+    auto intArray = QJniArray(intList);
     QCOMPARE(intArray.size(), 10);
 }
 

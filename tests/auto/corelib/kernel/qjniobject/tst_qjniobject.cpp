@@ -1627,7 +1627,7 @@ void tst_QJniObject::templateApiCheck()
         QCOMPARE(array.size(), 3);
         QCOMPARE(array.toContainer(), "abc");
 
-        QJniArray<jbyte> newArray = QJniArrayBase::fromContainer(QByteArray{"cba"});
+        QJniArray newArray = QJniArray(QByteArray{"cba"});
         QVERIFY(newArray.isValid());
         const auto reverse = testClass.callMethod<jbyte[]>("reverseByteArray", newArray);
         QVERIFY(reverse.isValid());
