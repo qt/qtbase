@@ -857,22 +857,15 @@ QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, const
 }
 
 /*!
-    \overload
+    \fn QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, std::nullptr_t nptr)
 
     \since 6.8
+
+    \overload
 
     Sends the POST request specified by \a request without a body and returns
     a new QNetworkReply object.
 */
-QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, std::nullptr_t nptr)
-{
-    Q_UNUSED(nptr);
-    QIODevice *dev = nullptr;
-
-    return d_func()->postProcess(createRequest(QNetworkAccessManager::PostOperation,
-                                               request,
-                                               dev));
-}
 
 #if QT_CONFIG(http) || defined(Q_OS_WASM)
 /*!
@@ -958,21 +951,15 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, const 
 }
 
 /*!
+    \since 6.8
+
     \overload
 
-    \since 6.8
+    \fn QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, std::nullptr_t nptr)
 
     Sends the PUT request specified by \a request without a body and returns
     a new QNetworkReply object.
 */
-
-QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, std::nullptr_t nptr)
-{
-    Q_UNUSED(nptr);
-    QIODevice *dev = nullptr;
-
-    return d_func()->postProcess(createRequest(QNetworkAccessManager::PutOperation, request, dev));
-}
 
 /*!
     \since 4.6
