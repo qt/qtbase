@@ -89,7 +89,7 @@
         || (__VALGRIND_MAJOR__ == 3 && __VALGRIND_MINOR__ >= 6))
 */
 #define __VALGRIND_MAJOR__    3
-#define __VALGRIND_MINOR__    20
+#define __VALGRIND_MINOR__    23
 
 
 #include <stdarg.h>
@@ -112,6 +112,7 @@
 #undef PLAT_amd64_darwin
 #undef PLAT_x86_freebsd
 #undef PLAT_amd64_freebsd
+#undef PLAT_arm64_freebsd
 #undef PLAT_x86_win32
 #undef PLAT_amd64_win64
 #undef PLAT_x86_linux
@@ -137,6 +138,8 @@
 #  define PLAT_x86_freebsd 1
 #elif defined(__FreeBSD__) && defined(__amd64__)
 #  define PLAT_amd64_freebsd 1
+#elif defined(__FreeBSD__) && defined(__aarch64__) && !defined(__arm__)
+#  define PLAT_arm64_freebsd 1
 #elif (defined(__MINGW32__) && defined(__i386__)) \
       || defined(__CYGWIN32__) \
       || (defined(_WIN32) && defined(_M_IX86))
@@ -768,9 +771,9 @@ typedef
 
 #endif /* PLAT_arm_linux */
 
-/* ------------------------ arm64-linux ------------------------- */
+/* ------------------------ arm64-{linux,freebsd} ------------------------- */
 
-#if defined(PLAT_arm64_linux)
+#if defined(PLAT_arm64_linux) || defined(PLAT_arm64_freebsd)
 
 typedef
    struct { 
@@ -835,7 +838,7 @@ typedef
                     );                                           \
  } while (0)
 
-#endif /* PLAT_arm64_linux */
+#endif /* PLAT_arm64_linux || PLAT_arm64_freebsd */
 
 /* ------------------------ s390x-linux ------------------------ */
 
@@ -4283,7 +4286,7 @@ typedef
 
 /* ------------------------ arm64-linux ------------------------ */
 
-#if defined(PLAT_arm64_linux)
+#if defined(PLAT_arm64_linux) || defined(PLAT_arm64_freebsd)
 
 /* These regs are trashed by the hidden call. */
 #define __CALLER_SAVED_REGS \
