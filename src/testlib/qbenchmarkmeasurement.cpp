@@ -41,7 +41,7 @@ int QBenchmarkTimeMeasurer::adjustMedianCount(int)
     return 1;
 }
 
-#ifdef HAVE_TICK_COUNTER // defined in 3rdparty/cycle_p.h
+#ifdef HAVE_TICK_COUNTER // defined in 3rdparty/cycle/cycle_p.h
 
 void QBenchmarkTickMeasurer::start()
 {

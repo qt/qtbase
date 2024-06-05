@@ -18,7 +18,7 @@
 #include <assert.h>
 
 #ifdef Q_OS_LINUX
-#  include "../testlib/3rdparty/valgrind_p.h"
+#  include "../testlib/3rdparty/valgrind/valgrind_p.h"
 #endif
 
 #define QT_FUNCTION_TARGET_BASELINE

@@ -1,0 +1,16 @@
+[
+    {
+        "Id": "cycle",
+        "Name": "Cycle",
+        "QDocModule": "qttestlib",
+        "QtUsage": "Used in the Qt Test module.",
+        "Files": "cycle_p.h",
+
+        "Description": "Allows to access the CPU's cycle counters.",
+        "License": "MIT License",
+        "LicenseId": "MIT",
+        "LicenseFile": "LICENSE.txt",
+        "Copyright": ["Copyright (c) 2003, 2006 Matteo Frigo",
+        "Copyright (c) 2003, 2006 Massachusetts Institute of Technology"]
+    }
+]

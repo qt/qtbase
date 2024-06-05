@@ -10,7 +10,7 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qregularexpression.h>
 #include <QtCore/qset.h>
-#include <QtTest/private/callgrind_p.h>
+#include "3rdparty/valgrind/callgrind_p.h"
 
 #include <charconv>
 #include <optional>
