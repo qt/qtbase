@@ -89,13 +89,13 @@ private:
 class QT_TECH_PREVIEW_API QJniArrayBase
 {
     // for SFINAE'ing out the fromContainer named constructor
-    template <typename Container, typename = void> struct CanConvertHelper : std::false_type {};
-    template <typename Container>
-    struct CanConvertHelper<Container, std::void_t<decltype(std::data(std::declval<Container>())),
-                                                   decltype(std::size(std::declval<Container>())),
-                                                   typename Container::value_type
-                                              >
-                           > : std::true_type {};
+    template <typename C, typename = void> struct IsContiguousContainerHelper : std::false_type {};
+    template <typename C>
+    struct IsContiguousContainerHelper<C, std::void_t<decltype(std::data(std::declval<C>())),
+                                                      decltype(std::size(std::declval<C>())),
+                                                      typename C::value_type
+                                                     >
+                                      > : std::true_type {};
 
 public:
     using size_type = jsize;
@@ -114,13 +114,12 @@ public:
         return 0;
     }
 
-    template <typename Container>
-    static constexpr bool canConvert = CanConvertHelper<q20::remove_cvref_t<Container>>::value;
-    template <typename Container>
-    using IfCanConvert = std::enable_if_t<canConvert<Container>, bool>;
-    template <typename Container
-        , IfCanConvert<Container> = true
-    >
+    template <typename C>
+    static constexpr bool isContiguousContainer = IsContiguousContainerHelper<q20::remove_cvref_t<C>>::value;
+    template <typename C>
+    using if_contiguous_container = std::enable_if_t<isContiguousContainer<C>, bool>;
+
+    template <typename Container, if_contiguous_container<Container> = true>
     static auto fromContainer(Container &&container)
     {
         Q_ASSERT_X(size_t(std::size(container)) <= size_t((std::numeric_limits<size_type>::max)()),
@@ -218,23 +217,21 @@ public:
     QJniArray &operator=(const QJniArray &other) = default;
     QJniArray &operator=(QJniArray &&other) noexcept = default;
 
-    template <typename Container
-        , IfCanConvert<Container> = true
-    >
+    template <typename Container, if_contiguous_container<Container> = true>
     explicit QJniArray(Container &&container)
         : QJniArrayBase(QJniArrayBase::fromContainer(std::forward<Container>(container)))
     {
     }
 
-    template <typename E = T
-        , IfCanConvert<std::initializer_list<E>> = true
-    >
     Q_IMPLICIT inline QJniArray(std::initializer_list<T> list)
         : QJniArrayBase(QJniArrayBase::fromContainer(list))
     {
     }
 
-    template <typename Other, std::enable_if_t<std::is_convertible_v<Other, Type>, bool> = true>
+    template <typename Other>
+    using if_convertible = std::enable_if_t<std::is_convertible_v<Other, T>, bool>;
+
+    template <typename Other, if_convertible<Other> = true>
     QJniArray(QJniArray<Other> &&other)
         : QJniArrayBase(std::forward<QJniArray<Other>>(other))
     {
