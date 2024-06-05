@@ -10,7 +10,7 @@
 
         "Description": "An instrumentation framework for building dynamic analysis tools.",
         "Homepage": "http://valgrind.org/",
-        "Version": "3.22.0",
+        "Version": "3.23.0",
         "License": "BSD 4-clause \"Original\" or \"Old\" License",
         "LicenseId": "BSD-4-Clause",
         "LicenseFile": "LICENSE.txt",
