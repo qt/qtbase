@@ -287,7 +287,7 @@ public:
     static QString vasprintf(const char *format, va_list ap) Q_ATTRIBUTE_FORMAT_PRINTF(1, 0);
     static QString asprintf(const char *format, ...) Q_ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
-    [[nodiscard]] QT_CORE_INLINE_SINCE(6, 7)
+    [[nodiscard]] QT_CORE_INLINE_SINCE(6, 8)
     qsizetype indexOf(QChar c, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     [[nodiscard]] qsizetype indexOf(QLatin1StringView s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     [[nodiscard]] qsizetype indexOf(const QString &s, qsizetype from = 0, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
@@ -295,7 +295,7 @@ public:
     { return QtPrivate::findString(*this, from, s, cs); }
     [[nodiscard]] qsizetype lastIndexOf(QChar c, Qt::CaseSensitivity cs = Qt::CaseSensitive) const noexcept
     { return lastIndexOf(c, -1, cs); }
-    [[nodiscard]] QT_CORE_INLINE_SINCE(6, 7)
+    [[nodiscard]] QT_CORE_INLINE_SINCE(6, 8)
     qsizetype lastIndexOf(QChar c, qsizetype from, Qt::CaseSensitivity cs = Qt::CaseSensitive) const;
     [[nodiscard]] qsizetype lastIndexOf(QLatin1StringView s, Qt::CaseSensitivity cs = Qt::CaseSensitive) const
     { return lastIndexOf(s, size(), cs); }
@@ -1510,7 +1510,7 @@ quint64 QString::toULongLong(bool *ok, int base) const
     return toIntegral_helper<qulonglong>(*this, ok, base);
 }
 #endif
-#if QT_CORE_INLINE_IMPL_SINCE(6, 7)
+#if QT_CORE_INLINE_IMPL_SINCE(6, 8)
 qsizetype QString::indexOf(QChar ch, qsizetype from, Qt::CaseSensitivity cs) const
 {
     return qToStringViewIgnoringNull(*this).indexOf(ch, from, cs);
