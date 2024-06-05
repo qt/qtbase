@@ -13,6 +13,11 @@ QT_IMPL_METATYPE_EXTERN(QDBusObjectPath)
 QT_IMPL_METATYPE_EXTERN(QDBusSignature)
 
 #ifndef QT_NO_DEBUG_STREAM
+/*!
+    \fn QDebug QDBusObjectPath::operator<<(QDebug dbg, const QDBusObjectPath &path)
+    \since 6.8
+    Writes the contents of \a path to \a dbg.
+*/
 QDebug operator<<(QDebug dbg, const QDBusObjectPath &path)
 {
     QDebugStateSaver saver(dbg);
