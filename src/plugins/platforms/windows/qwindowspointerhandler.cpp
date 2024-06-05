@@ -4,7 +4,6 @@
 #include <QtCore/qt_windows.h>
 
 #include "qwindowspointerhandler.h"
-#include "qwindowsmousehandler.h"
 #if QT_CONFIG(tabletevent)
 #  include "qwindowstabletsupport.h"
 #endif
@@ -38,6 +37,14 @@ enum {
 };
 
 qint64 QWindowsPointerHandler::m_nextInputDeviceId = 1;
+
+const QPointingDevice *primaryMouse()
+{
+    static QPointer<const QPointingDevice> result;
+    if (!result)
+        result = QPointingDevice::primaryPointingDevice();
+    return result;
+}
 
 QWindowsPointerHandler::~QWindowsPointerHandler()
 {
@@ -215,7 +222,7 @@ static Qt::MouseButtons mouseButtonsFromKeyState(WPARAM keyState)
     return result;
 }
 
-static Qt::MouseButtons queryMouseButtons()
+Qt::MouseButtons QWindowsPointerHandler::queryMouseButtons()
 {
     Qt::MouseButtons result = Qt::NoButton;
     const bool mouseSwapped = GetSystemMetrics(SM_SWAPBUTTON);
@@ -785,7 +792,7 @@ bool QWindowsPointerHandler::translateMouseEvent(QWindow *window,
     }
 
     Qt::MouseEventSource source = Qt::MouseEventNotSynthesized;
-    const QPointingDevice *device = QWindowsMouseHandler::primaryMouse();
+    const QPointingDevice *device = primaryMouse();
 
     // Following the logic of the old mouse handler, only events synthesized
     // for touch screen are marked as such. On some systems, using the bit 7 of

@@ -38,12 +38,15 @@ public:
     void clearWindowUnderMouse() { m_windowUnderPointer = nullptr; }
     void clearEvents();
 
+    static Qt::MouseButtons queryMouseButtons();
+
 private:
     bool translateTouchEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, PVOID vTouchInfo, unsigned int count);
     bool translatePenEvent(QWindow *window, HWND hwnd, QtWindows::WindowsEventType et, MSG msg, PVOID vPenInfo);
     bool translateMouseWheelEvent(QWindow *window, QWindow *currentWindowUnderPointer, MSG msg, QPoint globalPos, Qt::KeyboardModifiers keyModifiers);
     void handleCaptureRelease(QWindow *window, QWindow *currentWindowUnderPointer, HWND hwnd, QEvent::Type eventType, Qt::MouseButtons mouseButtons);
     void handleEnterLeave(QWindow *window, QWindow *currentWindowUnderPointer, QPoint globalPos);
+
 #if QT_CONFIG(tabletevent)
     QPointingDevicePtr findTabletDevice(QPointingDevice::PointerType pointerType) const;
 #endif
