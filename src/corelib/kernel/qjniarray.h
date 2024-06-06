@@ -201,6 +201,13 @@ template <typename T>
 class QJniArray : public QJniArrayBase
 {
     friend struct QJniArrayIterator<T>;
+
+    template <typename E> struct ToContainerHelper { using type = QList<E>; };
+    template <> struct ToContainerHelper<jstring> { using type = QStringList; };
+    template <> struct ToContainerHelper<jbyte> { using type = QByteArray; };
+    template <typename E>
+    using ToContainerType = typename ToContainerHelper<E>::type;
+
 public:
     using Type = T;
 
@@ -306,7 +313,7 @@ public:
             else if constexpr (std::is_same_v<T, jshort>)
                 env->GetShortArrayRegion(object<jshortArray>(), i, 1, &res);
             else if constexpr (std::is_same_v<T, jint>)
-                env->GetIntArrayRegion(object<jbyteArray>(), i, 1, &res);
+                env->GetIntArrayRegion(object<jintArray>(), i, 1, &res);
             else if constexpr (std::is_same_v<T, jlong>)
                 env->GetLongArrayRegion(object<jlongArray>(), i, 1, &res);
             else if constexpr (std::is_same_v<T, jfloat>)
@@ -317,60 +324,59 @@ public:
         }
     }
 
-    auto toContainer() const
+    template <typename Container = ToContainerType<T>>
+    Container toContainer(Container &&container = {}) const
     {
+        const qsizetype sz = size();
+        if (!sz)
+            return std::forward<Container>(container);
         JNIEnv *env = jniEnv();
-        if constexpr (std::is_same_v<T, jobject>) {
-            QList<jobject> res;
-            res.reserve(size());
+
+        using ContainerType = q20::remove_cvref_t<Container>;
+
+        container.reserve(sz);
+        if constexpr (std::is_same_v<typename ContainerType::value_type, QString>) {
             for (auto element : *this)
-                res.append(element);
-            return res;
-        } else if constexpr (std::is_same_v<T, jstring>) {
-            QStringList res;
-            res.reserve(size());
+                container.emplace_back(QJniObject(element).toString());
+        } else if constexpr (std::is_base_of_v<std::remove_pointer_t<jobject>, std::remove_pointer_t<T>>) {
             for (auto element : *this)
-                res.append(QJniObject(element).toString());
-            return res;
-        } else if constexpr (std::is_same_v<T, jbyte>) {
-            const qsizetype bytecount = size();
-            QByteArray res(bytecount, Qt::Initialization::Uninitialized);
-            if (!isEmpty()) {
+                container.emplace_back(element);
+        } else if constexpr (QJniArrayBase::isContiguousContainer<ContainerType>) {
+            container.resize(sz);
+            if constexpr (std::is_same_v<T, jbyte>) {
                 env->GetByteArrayRegion(object<jbyteArray>(),
-                                        0, bytecount, reinterpret_cast<jbyte *>(res.data()));
-            }
-            return res;
-        } else {
-            QList<T> res;
-            if (isEmpty())
-                return res;
-            res.resize(size());
-            if constexpr (std::is_same_v<T, jchar>) {
+                                        0, sz,
+                                        reinterpret_cast<jbyte *>(container.data()));
+            } else if constexpr (std::is_same_v<T, jchar>) {
                 env->GetCharArrayRegion(object<jcharArray>(),
-                                        0, res.size(), res.data());
+                                        0, sz, container.data());
             } else if constexpr (std::is_same_v<T, jboolean>) {
                 env->GetBooleanArrayRegion(object<jbooleanArray>(),
-                                           0, res.size(), res.data());
+                                        0, sz, container.data());
             } else if constexpr (std::is_same_v<T, jshort>) {
                 env->GetShortArrayRegion(object<jshortArray>(),
-                                         0, res.size(), res.data());
+                                        0, sz, container.data());
             } else if constexpr (std::is_same_v<T, jint>) {
                 env->GetIntArrayRegion(object<jintArray>(),
-                                       0, res.size(), res.data());
+                                        0, sz, container.data());
             } else if constexpr (std::is_same_v<T, jlong>) {
                 env->GetLongArrayRegion(object<jlongArray>(),
-                                        0, res.size(), res.data());
+                                        0, sz, container.data());
             } else if constexpr (std::is_same_v<T, jfloat>) {
                 env->GetFloatArrayRegion(object<jfloatArray>(),
-                                         0, res.size(), res.data());
+                                        0, sz, container.data());
             } else if constexpr (std::is_same_v<T, jdouble>) {
                 env->GetDoubleArrayRegion(object<jdoubleArray>(),
-                                          0, res.size(), res.data());
+                                        0, sz, container.data());
             } else {
-                res.clear();
+                static_assert(QtPrivate::type_dependent_false<T>(),
+                              "Don't know how to copy data from a QJniArray of this type");
             }
-            return res;
+        } else {
+            for (auto e : *this)
+                container.emplace_back(e);
         }
+        return std::forward<Container>(container);
     }
 };
 

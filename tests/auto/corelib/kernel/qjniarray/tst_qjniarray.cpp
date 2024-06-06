@@ -20,6 +20,7 @@ private slots:
     void invalidArraysAreEmpty();
     void size();
     void operators();
+    void toContainer();
 };
 
 using namespace QtJniTypes;
@@ -79,6 +80,17 @@ VERIFY_RETURN_FOR_TYPE(QString, QString);
 VERIFY_RETURN_FOR_TYPE(List, List);
 VERIFY_RETURN_FOR_TYPE(List[], QJniArray<List>);
 VERIFY_RETURN_FOR_TYPE(QJniArray<List>, QJniArray<List>);
+
+#define VERIFY_CONTAINER_FOR_TYPE(In, Out) \
+    static_assert(std::is_same_v<decltype(std::declval<In>().toContainer()), Out>)
+
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<jchar>, QList<jchar>);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<jfloat>, QList<jfloat>);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<jbyte>, QByteArray);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<jstring>, QStringList);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<jclass>, QList<jclass>);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<QJniObject>, QList<QJniObject>);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<List>, QList<List>);
 
 void tst_QJniArray::construct()
 {
@@ -207,6 +219,18 @@ void tst_QJniArray::operators()
         QCOMPARE(value, bytes.at(index));
         ++index;
     }
+}
+
+void tst_QJniArray::toContainer()
+{
+    std::vector<jchar> charVector{u'a', u'b', u'c'};
+    QJniArray<jchar> charArray(charVector);
+
+    std::vector<jchar> vector;
+    charArray.toContainer(vector);
+
+    QCOMPARE(vector, charVector);
+    QCOMPARE(charArray.toContainer<std::vector<jchar>>(), charVector);
 }
 
 QTEST_MAIN(tst_QJniArray)
