@@ -10,6 +10,6 @@ package org.qtproject.qt.android;
 **/
 interface QtEmbeddedViewInterface {
     void startQtApplication(String appParams, String mainLib);
-    void setView(QtView view);
-    void queueLoadWindow();
+    void addView(QtView view);
+    void removeView(QtView view);
 };

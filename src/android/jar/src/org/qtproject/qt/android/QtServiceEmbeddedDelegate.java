@@ -71,20 +71,22 @@ class QtServiceEmbeddedDelegate implements QtEmbeddedViewInterface, QtNative.App
     }
 
     @Override
-    public void setView(QtView view)
+    public void addView(QtView view)
     {
         m_view = view;
-        // If the embedded view is destroyed, do cleanup:
-        if (view == null)
-            cleanup();
+        QtNative.runAction(() -> {
+            createRootWindow();
+        });
     }
 
     @Override
-    public void queueLoadWindow()
+    public void removeView(QtView view)
     {
-        synchronized (this) {
-            if (QtNative.getStateDetails().nativePluginIntegrationReady)
-                createRootWindow();
+        if (m_view == view) {
+            m_view = null;
+            m_windowLoaded = false;
+            // If the embedded view is destroyed, do cleanup:
+            cleanup();
         }
     }
     // QtEmbeddedViewInterface implementation end
