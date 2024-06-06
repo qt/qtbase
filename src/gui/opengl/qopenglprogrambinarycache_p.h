@@ -28,7 +28,7 @@ QT_BEGIN_NAMESPACE
 // therefore stay independent from QOpenGLShader(Program). Must rely only on
 // QOpenGLContext/Functions.
 
-Q_DECLARE_EXPORTED_LOGGING_CATEGORY(lcOpenGLProgramDiskCache, Q_GUI_EXPORT)
+QT_DECLARE_EXPORTED_QT_LOGGING_CATEGORY(lcOpenGLProgramDiskCache, Q_GUI_EXPORT)
 
 class Q_GUI_EXPORT QOpenGLProgramBinaryCache
 {

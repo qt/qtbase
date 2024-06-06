@@ -27,7 +27,7 @@ QT_BEGIN_NAMESPACE
 class QKmsDevice;
 class QKmsScreenConfig;
 
-Q_DECLARE_EXPORTED_LOGGING_CATEGORY(qLcEglfsKmsDebug, Q_EGLFS_EXPORT)
+QT_DECLARE_EXPORTED_QT_LOGGING_CATEGORY(qLcEglfsKmsDebug, Q_EGLFS_EXPORT)
 
 class Q_EGLFS_EXPORT QEglFSKmsIntegration : public QEglFSDeviceIntegration
 {
