@@ -393,12 +393,22 @@
 */
 
 /*!
-    \fn template <typename T> auto QJniArray<T>::toContainer() const
+    \fn template <typename T> template <typename Container>
+        Container QJniArray<T>::toContainer(Container &&container) const
 
-    \return the data in the wrapped Java objects as a suitable C++ container,
-    which will be empty if the array is \l{QJniArrayBase::isValid()}{invalid}.
+    \return a container populated with the data in the wrapped Java array.
 
+    If no \a container is provided, then the type of the container returned
+    depends on the element type of this QJniArray.
     \include qjniarray.qdoc type-mapping
+
+    If you pass in a named container (an lvalue) for \a container, then that
+    container is filled, and a reference to it is returned. If you pass in a
+    temporary container (an rvalue, incl. the default argument), then that
+    container is filled, and returned by value.
+
+    This function returns immediately if the array is
+    \l{QJniArrayBase::isValid()}{invalid}.
 
     \sa QJniArrayBase::fromContainer()
 */
