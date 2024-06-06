@@ -14,8 +14,10 @@ qt_internal_add_test(tst_qfloat16format
         tst_qfloat16format.cpp
 )
 
-set_target_properties(tst_qfloat16format
-    PROPERTIES
-        CXX_STANDARD 20
-        CXX_STANDARD_REQUIRED OFF
-)
+if(NOT VXWORKS)
+    set_target_properties(tst_qfloat16format
+        PROPERTIES
+            CXX_STANDARD 20
+            CXX_STANDARD_REQUIRED OFF
+    )
+endif()
