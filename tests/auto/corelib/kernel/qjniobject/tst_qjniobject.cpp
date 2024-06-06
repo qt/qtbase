@@ -1563,6 +1563,26 @@ void tst_QJniObject::templateApiCheck()
         QCOMPARE(QJniObject::fromLocalRef(reverse.at(2)).toString(), u"one"_s);
     }
 
+    // jstringArray ------------------------------------------------------------------------------
+    {
+        const QStringList strings{"First", "Second", "Third"};
+        const auto array = TestClass::callStaticMethod<QJniArray<QtJniTypes::String>>("staticStringArrayMethod");
+        QVERIFY(array.isValid());
+        QCOMPARE(array.size(), 3);
+        QCOMPARE(array.at(0).toString(), strings.first());
+        QCOMPARE(array.toContainer<QStringList>(), strings);
+    }
+
+    // jstringArray via implicit QString support -------------------------------------------------
+    {
+        const QStringList strings{"First", "Second", "Third"};
+        const auto array = TestClass::callStaticMethod<QJniArray<QString>>("staticStringArrayMethod");
+        QVERIFY(array.isValid());
+        QCOMPARE(array.size(), 3);
+        QCOMPARE(array.at(0), strings.first());
+        QCOMPARE(array.toContainer(), strings);
+    }
+
     // jbooleanArray ------------------------------------------------------------------------------
     {
         QJniObject res = QJniObject::callStaticObjectMethod<jbooleanArray>(testClassName,

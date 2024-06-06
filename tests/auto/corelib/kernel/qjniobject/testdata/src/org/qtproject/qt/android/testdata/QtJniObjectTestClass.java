@@ -153,6 +153,11 @@ public class QtJniObjectTestClass
     { return staticReverseObjectArray(array); }
 
     // --------------------------------------------------------------------------------------------
+    public static String[] staticStringArrayMethod()
+    { String[] array = { "First", "Second", "Third" }; return array; }
+    public String[] stringArrayMethod() { return staticStringArrayMethod(); }
+
+    // --------------------------------------------------------------------------------------------
     public static boolean[] staticBooleanArrayMethod()
     { boolean[] array = { true, true, true }; return array; }
     public boolean[] booleanArrayMethod() { return staticBooleanArrayMethod(); }

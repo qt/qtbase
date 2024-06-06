@@ -132,42 +132,43 @@ public:
                    "QJniArray::fromContainer", "Container is too large for a Java array");
 
         using ElementType = typename std::remove_reference_t<Container>::value_type;
-        if constexpr (std::disjunction_v<std::is_same<ElementType, jobject>,
-                                         std::is_same<ElementType, QJniObject>,
-                                         std::is_same<ElementType, QString>,
-                                         std::is_base_of<QtJniTypes::JObjectBase, ElementType>
-                                        >) {
+        if constexpr (std::is_base_of_v<std::remove_pointer_t<jobject>,
+                                        std::remove_pointer_t<ElementType>>) {
             return makeObjectArray(std::forward<Container>(container));
-        } else if constexpr (std::is_same_v<ElementType, jfloat>) {
+        } else if constexpr (std::disjunction_v<std::is_same<ElementType, QJniObject>,
+                                                std::is_same<ElementType, QString>,
+                                                std::is_base_of<QtJniTypes::JObjectBase, ElementType>
+                             >) {
+            return QJniArray<ElementType>(makeObjectArray(std::forward<Container>(container)));
+        } else if constexpr (QtJniTypes::sameTypeForJni<ElementType, jfloat>) {
             return makeArray<jfloat>(std::forward<Container>(container), &JNIEnv::NewFloatArray,
                                                              &JNIEnv::SetFloatArrayRegion);
-        } else if constexpr (std::is_same_v<ElementType, jdouble>) {
+        } else if constexpr (QtJniTypes::sameTypeForJni<ElementType, jdouble>) {
             return makeArray<jdouble>(std::forward<Container>(container), &JNIEnv::NewDoubleArray,
                                                               &JNIEnv::SetDoubleArrayRegion);
-        } else if constexpr (std::disjunction_v<std::is_same<ElementType, jboolean>,
-                                                std::is_same<ElementType, bool>>) {
+        } else if constexpr (QtJniTypes::sameTypeForJni<ElementType, jboolean>) {
             return makeArray<jboolean>(std::forward<Container>(container), &JNIEnv::NewBooleanArray,
                                                                &JNIEnv::SetBooleanArrayRegion);
-        } else if constexpr (std::disjunction_v<std::is_same<ElementType, jbyte>,
-                                                std::is_same<ElementType, char>>) {
+        } else if constexpr (QtJniTypes::sameTypeForJni<ElementType, jbyte>
+                             || std::is_same_v<ElementType, char>) {
             return makeArray<jbyte>(std::forward<Container>(container), &JNIEnv::NewByteArray,
                                                             &JNIEnv::SetByteArrayRegion);
         } else if constexpr (std::disjunction_v<std::is_same<ElementType, jchar>,
                                                 std::is_same<ElementType, QChar>>) {
             return makeArray<jchar>(std::forward<Container>(container), &JNIEnv::NewCharArray,
                                                             &JNIEnv::SetCharArrayRegion);
-        } else if constexpr (std::is_same_v<ElementType, jshort>
-                          || sizeof(ElementType) == sizeof(jshort)) {
+        } else if constexpr (QtJniTypes::sameTypeForJni<ElementType, jshort>) {
             return makeArray<jshort>(std::forward<Container>(container), &JNIEnv::NewShortArray,
                                                              &JNIEnv::SetShortArrayRegion);
-        } else if constexpr (std::is_same_v<ElementType, jint>
-                          || sizeof(ElementType) == sizeof(jint)) {
+        } else if constexpr (QtJniTypes::sameTypeForJni<ElementType, jint>) {
             return makeArray<jint>(std::forward<Container>(container), &JNIEnv::NewIntArray,
                                                            &JNIEnv::SetIntArrayRegion);
-        } else if constexpr (std::is_same_v<ElementType, jlong>
-                          || sizeof(ElementType) == sizeof(jlong)) {
+        } else if constexpr (QtJniTypes::sameTypeForJni<ElementType, jlong>) {
             return makeArray<jlong>(std::forward<Container>(container), &JNIEnv::NewLongArray,
                                                             &JNIEnv::SetLongArrayRegion);
+        } else {
+            static_assert(QtPrivate::type_dependent_false<ElementType>(),
+                            "Don't know how to make QJniArray for this element type");
         }
     }
 
@@ -205,6 +206,8 @@ class QJniArray : public QJniArrayBase
     template <typename E> struct ToContainerHelper { using type = QList<E>; };
     template <> struct ToContainerHelper<jstring> { using type = QStringList; };
     template <> struct ToContainerHelper<jbyte> { using type = QByteArray; };
+    template <> struct ToContainerHelper<char> { using type = QByteArray; };
+
     template <typename E>
     using ToContainerType = typename ToContainerHelper<E>::type;
 
@@ -255,21 +258,23 @@ public:
     {
         if constexpr (std::is_convertible_v<jobject, T>)
             return object<jobjectArray>();
-        else if constexpr (std::is_same_v<T, jbyte>)
+        else if constexpr (std::is_same_v<T, QString>)
+            return object<jobjectArray>();
+        else if constexpr (QtJniTypes::sameTypeForJni<T, jbyte>)
             return object<jbyteArray>();
-        else if constexpr (std::is_same_v<T, jchar>)
+        else if constexpr (QtJniTypes::sameTypeForJni<T, jchar>)
             return object<jcharArray>();
-        else if constexpr (std::is_same_v<T, jboolean>)
+        else if constexpr (QtJniTypes::sameTypeForJni<T, jboolean>)
             return object<jbooleanArray>();
-        else if constexpr (std::is_same_v<T, jshort>)
+        else if constexpr (QtJniTypes::sameTypeForJni<T, jshort>)
             return object<jshortArray>();
-        else if constexpr (std::is_same_v<T, jint>)
+        else if constexpr (QtJniTypes::sameTypeForJni<T, jint>)
             return object<jintArray>();
-        else if constexpr (std::is_same_v<T, jlong>)
+        else if constexpr (QtJniTypes::sameTypeForJni<T, jlong>)
             return object<jlongArray>();
-        else if constexpr (std::is_same_v<T, jfloat>)
+        else if constexpr (QtJniTypes::sameTypeForJni<T, jfloat>)
             return object<jfloatArray>();
-        else if constexpr (std::is_same_v<T, jdouble>)
+        else if constexpr (QtJniTypes::sameTypeForJni<T, jdouble>)
             return object<jdoubleArray>();
         else
             return object<jarray>();
@@ -299,26 +304,33 @@ public:
                 return T::fromLocalRef(element);
             else
                 return T{element};
+        } else if constexpr (std::is_same_v<QString, T>) {
+            jstring string = static_cast<jstring>(env->GetObjectArrayElement(arrayObject(), i));
+            const auto length = env->GetStringLength(string);
+            QString res(length, Qt::Uninitialized);
+            env->GetStringRegion(string, 0, length, reinterpret_cast<jchar *>(res.data()));
+            env->DeleteLocalRef(string);
+            return res;
         } else if constexpr (std::is_base_of_v<std::remove_pointer_t<jobject>, std::remove_pointer_t<T>>) {
             // jstring, jclass etc
             return static_cast<T>(env->GetObjectArrayElement(object<jobjectArray>(), i));
         } else {
             T res = {};
-            if constexpr (std::is_same_v<T, jbyte>)
+            if constexpr (QtJniTypes::sameTypeForJni<T, jbyte>)
                 env->GetByteArrayRegion(object<jbyteArray>(), i, 1, &res);
-            else if constexpr (std::is_same_v<T, jchar>)
+            else if constexpr (QtJniTypes::sameTypeForJni<T, jchar>)
                 env->GetCharArrayRegion(object<jcharArray>(), i, 1, &res);
-            else if constexpr (std::is_same_v<T, jboolean>)
+            else if constexpr (QtJniTypes::sameTypeForJni<T, jboolean>)
                 env->GetBooleanArrayRegion(object<jbooleanArray>(), i, 1, &res);
-            else if constexpr (std::is_same_v<T, jshort>)
+            else if constexpr (QtJniTypes::sameTypeForJni<T, jshort>)
                 env->GetShortArrayRegion(object<jshortArray>(), i, 1, &res);
-            else if constexpr (std::is_same_v<T, jint>)
+            else if constexpr (QtJniTypes::sameTypeForJni<T, jint>)
                 env->GetIntArrayRegion(object<jintArray>(), i, 1, &res);
-            else if constexpr (std::is_same_v<T, jlong>)
+            else if constexpr (QtJniTypes::sameTypeForJni<T, jlong>)
                 env->GetLongArrayRegion(object<jlongArray>(), i, 1, &res);
-            else if constexpr (std::is_same_v<T, jfloat>)
+            else if constexpr (QtJniTypes::sameTypeForJni<T, jfloat>)
                 env->GetFloatArrayRegion(object<jfloatArray>(), i, 1, &res);
-            else if constexpr (std::is_same_v<T, jdouble>)
+            else if constexpr (QtJniTypes::sameTypeForJni<T, jdouble>)
                 env->GetDoubleArrayRegion(object<jdoubleArray>(), i, 1, &res);
             return res;
         }
@@ -336,36 +348,40 @@ public:
 
         container.reserve(sz);
         if constexpr (std::is_same_v<typename ContainerType::value_type, QString>) {
-            for (auto element : *this)
-                container.emplace_back(QJniObject(element).toString());
+            for (auto element : *this) {
+                if constexpr (std::is_same_v<decltype(element), QString>)
+                    container.emplace_back(element);
+                else
+                    container.emplace_back(QJniObject(element).toString());
+            }
         } else if constexpr (std::is_base_of_v<std::remove_pointer_t<jobject>, std::remove_pointer_t<T>>) {
             for (auto element : *this)
                 container.emplace_back(element);
         } else if constexpr (QJniArrayBase::isContiguousContainer<ContainerType>) {
             container.resize(sz);
-            if constexpr (std::is_same_v<T, jbyte>) {
+            if constexpr (QtJniTypes::sameTypeForJni<T, jbyte>) {
                 env->GetByteArrayRegion(object<jbyteArray>(),
                                         0, sz,
                                         reinterpret_cast<jbyte *>(container.data()));
-            } else if constexpr (std::is_same_v<T, jchar>) {
+            } else if constexpr (QtJniTypes::sameTypeForJni<T, jchar>) {
                 env->GetCharArrayRegion(object<jcharArray>(),
                                         0, sz, container.data());
-            } else if constexpr (std::is_same_v<T, jboolean>) {
+            } else if constexpr (QtJniTypes::sameTypeForJni<T, jboolean>) {
                 env->GetBooleanArrayRegion(object<jbooleanArray>(),
                                         0, sz, container.data());
-            } else if constexpr (std::is_same_v<T, jshort>) {
+            } else if constexpr (QtJniTypes::sameTypeForJni<T, jshort>) {
                 env->GetShortArrayRegion(object<jshortArray>(),
                                         0, sz, container.data());
-            } else if constexpr (std::is_same_v<T, jint>) {
+            } else if constexpr (QtJniTypes::sameTypeForJni<T, jint>) {
                 env->GetIntArrayRegion(object<jintArray>(),
                                         0, sz, container.data());
-            } else if constexpr (std::is_same_v<T, jlong>) {
+            } else if constexpr (QtJniTypes::sameTypeForJni<T, jlong>) {
                 env->GetLongArrayRegion(object<jlongArray>(),
                                         0, sz, container.data());
-            } else if constexpr (std::is_same_v<T, jfloat>) {
+            } else if constexpr (QtJniTypes::sameTypeForJni<T, jfloat>) {
                 env->GetFloatArrayRegion(object<jfloatArray>(),
                                         0, sz, container.data());
-            } else if constexpr (std::is_same_v<T, jdouble>) {
+            } else if constexpr (QtJniTypes::sameTypeForJni<T, jdouble>) {
                 env->GetDoubleArrayRegion(object<jdoubleArray>(),
                                         0, sz, container.data());
             } else {
