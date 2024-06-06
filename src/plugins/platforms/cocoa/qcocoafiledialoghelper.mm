@@ -14,8 +14,6 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qabstracteventdispatcher.h>
-#include <QtCore/qsysinfo.h>
-#include <QtCore/qoperatingsystemversion.h>
 #include <QtCore/qdir.h>
 #include <QtCore/qregularexpression.h>
 #include <QtCore/qpointer.h>

@@ -12,7 +12,6 @@
 #include "qcocoaintegration.h"
 
 #include <qpa/qwindowsysteminterface.h>
-#include <qoperatingsystemversion.h>
 
 Q_LOGGING_CATEGORY(lcQpaEvents, "qt.qpa.events");
 

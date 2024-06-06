@@ -9,7 +9,6 @@
 #include "qcocoahelpers.h"
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/qutimimeconverter.h>
-#include <QtCore/qsysinfo.h>
 #include <QtCore/private/qcore_mac_p.h>
 
 #include <vector>
@@ -136,11 +135,6 @@ bool QCocoaDrag::maybeDragMultipleItems()
 {
     Q_ASSERT(m_drag && m_drag->mimeData());
     Q_ASSERT(m_executed_drop_action == Qt::IgnoreAction);
-
-    if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSMojave) {
-        // -dragImage: stopped working in 10.14 first.
-        return false;
-    }
 
     const QMacAutoReleasePool pool;
 
