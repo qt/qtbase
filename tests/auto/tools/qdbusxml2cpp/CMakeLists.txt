@@ -15,3 +15,5 @@ qt_internal_add_test(tst_qdbusxml2cpp
     SOURCES
         tst_qdbusxml2cpp.cpp
 )
+
+add_dependencies(tst_qdbusxml2cpp ${QT_CMAKE_EXPORT_NAMESPACE}::qdbusxml2cpp)
