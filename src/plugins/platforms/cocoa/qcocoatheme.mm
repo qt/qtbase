@@ -5,7 +5,6 @@
 
 #include "qcocoatheme.h"
 
-#include <QtCore/QOperatingSystemVersion>
 #include <QtCore/QVariant>
 
 #include "qcocoasystemtrayicon.h"
@@ -214,12 +213,10 @@ const char *QCocoaTheme::name = "cocoa";
 QCocoaTheme::QCocoaTheme()
     : m_systemPalette(nullptr)
 {
-    if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSMojave) {
-        m_appearanceObserver = QMacKeyValueObserver(NSApp, @"effectiveAppearance", [this] {
-            NSAppearance.currentAppearance = NSApp.effectiveAppearance;
-            handleSystemThemeChange();
-        });
-    }
+    m_appearanceObserver = QMacKeyValueObserver(NSApp, @"effectiveAppearance", [this] {
+        NSAppearance.currentAppearance = NSApp.effectiveAppearance;
+        handleSystemThemeChange();
+    });
 
     m_systemColorObserver = QMacNotificationObserver(nil,
         NSSystemColorsDidChangeNotification, [this] {
