@@ -28,6 +28,24 @@ class WidgetTestCase(unittest.TestCase):
         self.addTypeEqualityFunc(Color, assert_colors_equal)
         self.addTypeEqualityFunc(Rect, assert_rects_equal)
 
+    #
+    #  This is a manual test
+    # The reason is that the color readback works
+    # even if the display is incorrect
+    #
+    def test_native_widgets(self):
+        screen = Screen(self._driver, ScreenPosition.FIXED,
+                    x=0, y=0, width=600, height=1200)
+
+        w0 = Widget(self._driver, "w0", 1)
+        w0.show()
+        #time.sleep(3600)
+        color = w0.color_at(100, 150)
+        self.assertEqual(color.r, 255)
+        self.assertEqual(color.g, 255)
+        self.assertEqual(color.b, 255)
+        self.assertEqual(w0.hasFocus(), True)
+
     def test_hasFocus_returnsFalse_whenSetNoFocusShowWasCalled(self):
         screen = Screen(self._driver, ScreenPosition.FIXED,
                    x=0, y=0, width=600, height=1200)
@@ -607,15 +625,30 @@ def clearWidgets(driver):
         )
 
 class Widget:
-    def __init__(self, driver, name):
+    def __init__(self, driver, name, isNative=0):
         self.name=name
         self.driver=driver
 
-        self.driver.execute_script(
-            f'''
-                instance.createWidget('{self.name}');
-            '''
-        )
+        if isNative == 0:
+            self.driver.execute_script(
+                f'''
+                    instance.createWidget('{self.name}');
+                '''
+            )
+        if isNative == 1:
+            self.driver.execute_script(
+                f'''
+                    instance.createNativeWidget('{self.name}');
+                '''
+            )
+
+        if isNative == 1:
+            information = self.__window_information()
+            self.screen = Screen(self.driver, screen_name=information['screen']['name'])
+
+            self._window_id = self.__window_information()['id']
+            self.element = self.screen.find_element(
+                    By.CSS_SELECTOR, f'#qt-window-{self._window_id}')
 
     def setNoFocusShow(self):
         self.driver.execute_script(
@@ -640,6 +673,18 @@ class Widget:
                 instance.activateWidget('{self.name}');
             '''
         )
+
+    def color_at(self, x, y):
+        raw = self.driver.execute_script(
+            f'''
+                return arguments[0].querySelector('canvas')
+                    .getContext('2d').getImageData({x}, {y}, 1, 1).data;
+            ''', self.element)
+        return Color(r=raw[0], g=raw[1], b=raw[2])
+
+    def __window_information(self):
+        information = call_instance_function(self.driver, 'windowInformation')
+        return next(filter(lambda e: e['title'] == "Dialog", information))
 
 
 class Window:

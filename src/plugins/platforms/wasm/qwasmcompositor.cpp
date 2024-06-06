@@ -55,16 +55,23 @@ bool QWasmCompositor::releaseRequestUpdateHold()
     return wasEnabled;
 }
 
-void QWasmCompositor::requestUpdateWindow(QWasmWindow *window, UpdateRequestDeliveryType updateType)
+void QWasmCompositor::requestUpdateWindow(QWasmWindow *window, const QRect &updateRect, UpdateRequestDeliveryType updateType)
 {
     auto it = m_requestUpdateWindows.find(window);
     if (it == m_requestUpdateWindows.end()) {
-        m_requestUpdateWindows.insert(window, updateType);
+        m_requestUpdateWindows.insert(window, std::make_tuple(updateRect, updateType));
     } else {
         // Already registered, but upgrade ExposeEventDeliveryType to UpdateRequestDeliveryType.
         // if needed, to make sure QWindow::updateRequest's are matched.
-        if (it.value() == ExposeEventDelivery && updateType == UpdateRequestDelivery)
-            it.value() = UpdateRequestDelivery;
+        if (std::get<0>(it.value()) != updateRect) {
+            QRegion region;
+            region |= std::get<0>(it.value());
+            region |= updateRect;
+            std::get<0>(it.value()) = region.boundingRect();
+        }
+        if (std::get<1>(it.value()) == ExposeEventDelivery &&
+            updateType == UpdateRequestDelivery)
+            std::get<1>(it.value()) = UpdateRequestDelivery;
     }
 
     requestUpdate();
@@ -106,15 +113,20 @@ void QWasmCompositor::deliverUpdateRequests()
     m_inDeliverUpdateRequest = true;
     for (auto it = requestUpdateWindows.constBegin(); it != requestUpdateWindows.constEnd(); ++it) {
         auto *window = it.key();
-        UpdateRequestDeliveryType updateType = it.value();
-        deliverUpdateRequest(window, updateType);
+
+        const QRect updateRect = std::get<0>(it.value());
+        const UpdateRequestDeliveryType updateType = std::get<1>(it.value());
+        deliverUpdateRequest(window, updateRect, updateType);
     }
 
     m_inDeliverUpdateRequest = false;
     frame(requestUpdateWindows.keys());
 }
 
-void QWasmCompositor::deliverUpdateRequest(QWasmWindow *window, UpdateRequestDeliveryType updateType)
+void QWasmCompositor::deliverUpdateRequest(
+    QWasmWindow *window,
+    const QRect &updateRect,
+    UpdateRequestDeliveryType updateType)
 {
     QWindow *qwindow = window->window();
 
@@ -126,7 +138,6 @@ void QWasmCompositor::deliverUpdateRequest(QWasmWindow *window, UpdateRequestDel
     // type. If the window has not yet been exposed then we must expose it first regardless
     // of update type. The deliverUpdateRequest must still be sent in this case in order
     // to maintain correct window update state.
-    QRect updateRect(QPoint(0, 0), qwindow->geometry().size());
     if (updateType == UpdateRequestDelivery) {
         if (qwindow->isExposed() == false)
             QWindowSystemInterface::handleExposeEvent(qwindow, updateRect);
@@ -136,12 +147,12 @@ void QWasmCompositor::deliverUpdateRequest(QWasmWindow *window, UpdateRequestDel
     }
 }
 
-void QWasmCompositor::handleBackingStoreFlush(QWindow *window)
+void QWasmCompositor::handleBackingStoreFlush(QWindow *window, const QRect &updateRect)
 {
     // Request update to flush the updated backing store content, unless we are currently
     // processing an update, in which case the new content will flushed as a part of that update.
     if (!m_inDeliverUpdateRequest)
-        requestUpdateWindow(static_cast<QWasmWindow *>(window->handle()));
+        requestUpdateWindow(static_cast<QWasmWindow *>(window->handle()), updateRect);
 }
 
 void QWasmCompositor::frame(const QList<QWasmWindow *> &windows)

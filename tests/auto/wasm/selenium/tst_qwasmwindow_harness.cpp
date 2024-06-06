@@ -16,6 +16,10 @@
 #include <QApplication>
 #include <QDialog>
 #include <QSysInfo>
+#include <QTreeView>
+#include <QFileSystemModel>
+#include <QScrollArea>
+#include <QVBoxLayout>
 
 #include <QOpenGLWindow>
 #include <QOpenGLFunctions>
@@ -389,6 +393,7 @@ public:
     void make(const std::string &name)
     {
         auto widget = std::make_shared<TestWidget>();
+        widget->setWindowTitle("Dialog");
         auto *lineEdit = new QLineEdit(widget.get());
 
         widget->setMinimumSize(200, 200);
@@ -400,6 +405,38 @@ public:
 
         m_widgets[name] = widget;
         m_lineEdits[name] = lineEdit;
+    }
+    void makeNative(const std::string &name)
+    {
+        auto widget = std::make_shared<TestWidget>();
+        widget->setWindowTitle("Dialog");
+        auto *lineEdit = new QLineEdit();
+
+        widget->setMinimumSize(200, 200);
+        widget->setMaximumSize(200, 200);
+        widget->setGeometry(0, m_widgetY, 200, 200);
+        m_widgetY += 200;
+
+        lineEdit->setText("Hello world");
+
+        m_widgets[name] = widget;
+        m_lineEdits[name] = lineEdit;
+
+        QFileSystemModel *model = new QFileSystemModel;
+        model->setRootPath(QDir::currentPath());
+
+        auto *scrollArea = new QScrollArea();
+        auto *layout = new QVBoxLayout(widget.get());
+        auto *treeView = new QTreeView(scrollArea);
+        treeView->setModel(model);
+
+        layout->addWidget(lineEdit);
+        layout->addWidget(scrollArea);
+
+        treeView->setAttribute(Qt::WA_NativeWindow);
+        scrollArea->setAttribute(Qt::WA_NativeWindow);
+        lineEdit->setAttribute(Qt::WA_NativeWindow);
+        widget->setAttribute(Qt::WA_NativeWindow);
     }
 
 private:
@@ -501,6 +538,11 @@ void screenInformation()
 void createWidget(const std::string &name)
 {
     WidgetStorage::getInstance()->make(name);
+}
+
+void createNativeWidget(const std::string &name)
+{
+    WidgetStorage::getInstance()->makeNative(name);
 }
 
 void setWidgetNoFocusShow(const std::string &name)
@@ -678,6 +720,7 @@ EMSCRIPTEN_BINDINGS(qwasmwindow)
     emscripten::function("getOpenGLColorAt_0_0", &getOpenGLColorAt_0_0);
 
     emscripten::function("createWidget", &createWidget);
+    emscripten::function("createNativeWidget", &createNativeWidget);
     emscripten::function("setWidgetNoFocusShow", &setWidgetNoFocusShow);
     emscripten::function("showWidget", &showWidget);
     emscripten::function("activateWidget", &activateWidget);

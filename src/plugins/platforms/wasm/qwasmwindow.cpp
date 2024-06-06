@@ -317,7 +317,7 @@ void QWasmWindow::setGeometry(const QRect &rect)
     if (shouldInvalidate)
         invalidate();
     else
-        m_compositor->requestUpdateWindow(this);
+        m_compositor->requestUpdateWindow(this, QRect(QPoint(0, 0), geometry().size()));
 }
 
 void QWasmWindow::setVisible(bool visible)
@@ -327,7 +327,7 @@ void QWasmWindow::setVisible(bool visible)
     if (visible == nowVisible)
         return;
 
-    m_compositor->requestUpdateWindow(this, QWasmCompositor::ExposeEventDelivery);
+    m_compositor->requestUpdateWindow(this, QRect(QPoint(0, 0), geometry().size()), QWasmCompositor::ExposeEventDelivery);
     m_qtWindow["style"].set("display", visible ? "block" : "none");
     if (window()->isActive())
         m_canvas.call<void>("focus");
@@ -385,7 +385,7 @@ void QWasmWindow::setOpacity(qreal level)
 
 void QWasmWindow::invalidate()
 {
-    m_compositor->requestUpdateWindow(this);
+    m_compositor->requestUpdateWindow(this, QRect(QPoint(0, 0), geometry().size()));
 }
 
 void QWasmWindow::onActivationChanged(bool active)
@@ -401,7 +401,7 @@ void QWasmWindow::setWindowFlags(Qt::WindowFlags flags)
         onPositionPreferenceChanged(positionPreferenceFromWindowFlags(flags));
     }
     m_flags = flags;
-    dom::syncCSSClassWith(m_qtWindow, "frameless", !hasFrame());
+    dom::syncCSSClassWith(m_qtWindow, "frameless", !hasFrame() || !window()->isTopLevel());
     dom::syncCSSClassWith(m_qtWindow, "has-border", hasBorder());
     dom::syncCSSClassWith(m_qtWindow, "has-shadow", hasShadow());
     dom::syncCSSClassWith(m_qtWindow, "has-title", hasTitleBar());
@@ -566,7 +566,7 @@ qreal QWasmWindow::devicePixelRatio() const
 
 void QWasmWindow::requestUpdate()
 {
-    m_compositor->requestUpdateWindow(this, QWasmCompositor::UpdateRequestDelivery);
+    m_compositor->requestUpdateWindow(this, QRect(QPoint(0, 0), geometry().size()), QWasmCompositor::UpdateRequestDelivery);
 }
 
 bool QWasmWindow::hasFrame() const
