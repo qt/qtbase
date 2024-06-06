@@ -20,23 +20,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 class QtEmbeddedDelegate extends QtActivityDelegateBase
         implements QtNative.AppStateDetailsListener, QtEmbeddedViewInterface, QtWindowInterface,
                    QtMenuInterface
 {
     private static final String QtTAG = "QtEmbeddedDelegate";
-    // TODO simplistic implementation with one QtView, expand to support multiple views QTBUG-117649
-    private QtView m_view;
+    private final HashSet<QtView> m_views = new HashSet<>();
     private QtNative.ApplicationStateDetails m_stateDetails;
-    private boolean m_windowLoaded = false;
     private boolean m_backendsRegistered = false;
 
     QtEmbeddedDelegate(Activity context) {
         super(context);
-
         m_stateDetails = QtNative.getStateDetails();
         QtNative.registerAppStateListener(this);
 
@@ -111,16 +108,13 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
     @Override
     public void onNativePluginIntegrationReadyChanged(boolean ready)
     {
-        synchronized (this) {
-            if (ready) {
-                QtNative.runAction(() -> {
-                    DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
-                    QtDisplayManager.setApplicationDisplayMetrics(m_activity, metrics.widthPixels,
-                                                                  metrics.heightPixels);
+        if (ready) {
+            QtNative.runAction(() -> {
+                DisplayMetrics metrics = Resources.getSystem().getDisplayMetrics();
+                QtDisplayManager.setApplicationDisplayMetrics(m_activity, metrics.widthPixels,
+                                                              metrics.heightPixels);
 
-                });
-                createRootWindow();
-            }
+            });
         }
     }
 
@@ -138,26 +132,26 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
     }
 
     @Override
-    public void queueLoadWindow()
+    public void addView(QtView view)
     {
-        synchronized (this) {
-            if (m_stateDetails.nativePluginIntegrationReady)
-                createRootWindow();
+        if (m_views.add(view)) {
+            QtNative.runAction(() -> { createRootWindow(view); });
         }
     }
 
     @Override
-    public void setView(QtView view)
+    public void removeView(QtView view)
     {
-        m_view = view;
+        m_views.remove(view.getId());
     }
     // QtEmbeddedViewInterface implementation end
 
-    private void createRootWindow() {
-        if (m_view != null && !m_windowLoaded) {
-            QtView.createRootWindow(m_view, m_view.getLeft(), m_view.getTop(), m_view.getWidth(),
-                                    m_view.getHeight());
-            m_windowLoaded = true;
+    // This gets called from Android thread
+    private void createRootWindow(QtView view) {
+        // No use in creating a QQuickView for a View that has been removed
+        if (m_views.contains(view)) {
+            QtView.createRootWindow(view, view.getLeft(), view.getTop(), view.getWidth(),
+                                view.getHeight());
         }
     }
 
@@ -174,12 +168,12 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
     @Override
     public void openContextMenu(final int x, final int y, final int w, final int h)
     {
-        m_view.postDelayed(() -> {
-            final QtEditText focusedEditText = m_inputDelegate.getCurrentQtEditText();
-            if (focusedEditText == null) {
-                Log.w(QtTAG, "No focused view when trying to open context menu");
-                return;
-            }
+        final QtEditText focusedEditText = m_inputDelegate.getCurrentQtEditText();
+        if (focusedEditText == null) {
+            Log.w(QtTAG, "No focused view when trying to open context menu");
+            return;
+        }
+        focusedEditText.postDelayed(() -> {
             PopupMenu popup = new PopupMenu(m_activity, focusedEditText);
             QtNative.fillContextMenu(popup.getMenu());
             popup.setOnMenuItemClickListener(menuItem ->
