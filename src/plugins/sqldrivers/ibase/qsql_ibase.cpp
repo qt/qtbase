@@ -98,7 +98,8 @@ static void initDA(XSQLDA *sqlda)
 {
     for (int i = 0; i < sqlda->sqld; ++i) {
         XSQLVAR &sqlvar = sqlda->sqlvar[i];
-        switch (sqlvar.sqltype & ~1) {
+        const auto sqltype = (sqlvar.sqltype & ~1);
+        switch (sqltype) {
         case SQL_INT64:
         case SQL_LONG:
         case SQL_SHORT:
@@ -128,7 +129,7 @@ static void initDA(XSQLDA *sqlda)
         default:
             // not supported - do not bind.
             sqlvar.sqldata = 0;
-            qCWarning(lcIbase, "initDA: unknown sqltype: %d", sqlvar.sqltype & ~1);
+            qCWarning(lcIbase, "initDA: unknown sqltype: %d", sqltype);
             break;
         }
         if (sqlvar.sqltype & 1) {
@@ -1146,7 +1147,8 @@ bool QIBaseResult::exec()
                                        << ", which is not nullable."_L1;
                 }
             }
-            switch(sqlvar.sqltype & ~1) {
+            const auto sqltype = sqlvar.sqltype & ~1;
+            switch (sqltype) {
             case SQL_INT64:
                 setWithScale<qint64>(val, sqlvar.sqlscale, sqlvar.sqldata);
                 break;
@@ -1188,7 +1190,7 @@ bool QIBaseResult::exec()
             case SQL_VARYING:
             case SQL_TEXT:
                 qFillBufferWithString(sqlvar.sqldata, val.toString(), sqlvar.sqllen,
-                                      (sqlvar.sqltype & ~1) == SQL_VARYING, false);
+                                      sqltype == SQL_VARYING, false);
                 break;
             case SQL_BLOB:
                     ok &= d->writeBlob(para, val.toByteArray());
@@ -1201,7 +1203,7 @@ bool QIBaseResult::exec()
                 break;
             default:
                     qCWarning(lcIbase, "QIBaseResult::exec: Unknown datatype %d",
-                              sqlvar.sqltype & ~1);
+                              sqltype);
                     break;
             }
         }
@@ -1308,7 +1310,8 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
         char *buf = sqlvar.sqldata;
         int size = sqlvar.sqllen;
         Q_ASSERT(buf);
-        switch(sqlvar.sqltype & ~1) {
+        const auto sqltype = sqlvar.sqltype & ~1;
+        switch (sqltype) {
         case SQL_VARYING:
             // pascal strings - a short with a length information followed by the data
             row[idx] = QString::fromUtf8(buf + sizeof(short), *(short*)buf);
@@ -1379,7 +1382,7 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
 #endif
         default:
             // unknown type - don't even try to fetch
-            qCWarning(lcIbase, "gotoNext: unknown sqltype: %d", sqlvar.sqltype & ~1);
+            qCWarning(lcIbase, "gotoNext: unknown sqltype: %d", sqltype);
             row[idx] = QVariant();
             break;
         }
