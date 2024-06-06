@@ -1197,3 +1197,12 @@ QUuid QUuid::createUuidV5(const QUuid &ns, const QByteArray &baseData) noexcept
 // order sections alphabetically to reduce chances of merge conflicts
 
 #endif // QT_CORE_REMOVED_SINCE(6, 8)
+
+#if QT_CORE_REMOVED_SINCE(6, 9)
+
+
+// #include "qotherheader.h"
+// // implement removed functions from qotherheader.h
+// order sections alphabetically to reduce chances of merge conflicts
+
+#endif // QT_CORE_REMOVED_SINCE(6, 9)
