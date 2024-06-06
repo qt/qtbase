@@ -823,9 +823,10 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
                     bounds[curDim].array_bound_lower + 1);
 
     if (list.size() != elements) { // size mismatch
-        error = "Expected size: %1. Supplied size: %2"_L1;
-        error = "Array size mismatch. Fieldname: %1 "_L1
-                + error.arg(elements).arg(list.size());
+        error = QCoreApplication::translate(
+                    "QIBaseResult",
+                    "Array size mismatch. Fieldname: %3, Expected size: %1. Supplied size: %2")
+                .arg(elements).arg(list.size());
         return 0;
     }
 
@@ -833,7 +834,9 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
         for (const auto &elem : list) {
 
           if (elem.typeId() != QMetaType::QVariantList) { // dimensions mismatch
-              error = "Array dimensons mismatch. Fieldname: %1"_L1;
+              error = QCoreApplication::translate(
+                          "QIBaseResult",
+                          "Array dimensons mismatch. Fieldname: %1");
               return 0;
           }
 
@@ -946,16 +949,18 @@ bool QIBaseResultPrivate::writeArray(qsizetype column, const QList<QVariant> &li
     QByteArray ba(bufLen, Qt::Uninitialized);
 
     if (list.size() > arraySize) {
-        error = "Array size mismatch: size of %1 is %2, size of provided list is %3"_L1;
+        error = QCoreApplication::translate(
+                    "QIBaseResult",
+                    "Array size mismatch: size of %1 is %2, size of provided list is %3");
         error = error.arg(QLatin1StringView(sqlname)).arg(arraySize).arg(list.size());
-        q->setLastError(QSqlError(error, ""_L1, QSqlError::StatementError));
+        q->setLastError(QSqlError(error, {}, QSqlError::StatementError));
         return false;
     }
 
     if (!createArrayBuffer(ba.data(), list,
                            qIBaseTypeName(desc.array_desc_dtype, sqlvar.sqlscale < 0),
                            0, &desc, error)) {
-        q->setLastError(QSqlError(error.arg(QLatin1StringView(sqlname)), ""_L1,
+        q->setLastError(QSqlError(error.arg(QLatin1StringView(sqlname)), {},
                         QSqlError::StatementError));
         return false;
     }
@@ -1942,7 +1947,7 @@ bool QIBaseDriver::subscribeToNotification(const QString &name)
                    eBuffer->resultBuffer);
 
     if (status[0] == 1 && status[1]) {
-        setLastError(QSqlError(QString::fromLatin1("Could not subscribe to event notifications for %1.").arg(name)));
+        setLastError(QSqlError(tr("Could not subscribe to event notifications for %1.").arg(name)));
         d->eventBuffers.remove(name);
         qFreeEventBuffer(eBuffer);
         return false;
@@ -1971,7 +1976,7 @@ bool QIBaseDriver::unsubscribeFromNotification(const QString &name)
     isc_cancel_events(status, &d->ibase, &eBuffer->eventId);
 
     if (status[0] == 1 && status[1]) {
-        setLastError(QSqlError(QString::fromLatin1("Could not unsubscribe from event notifications for %1.").arg(name)));
+        setLastError(QSqlError(tr("Could not unsubscribe from event notifications for %1.").arg(name)));
         return false;
     }
 
