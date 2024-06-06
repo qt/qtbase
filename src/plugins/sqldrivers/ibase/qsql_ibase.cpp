@@ -97,7 +97,8 @@ static void enlargeDA(XSQLDA *&sqlda, int n)
 static void initDA(XSQLDA *sqlda)
 {
     for (int i = 0; i < sqlda->sqld; ++i) {
-        switch (sqlda->sqlvar[i].sqltype & ~1) {
+        XSQLVAR &sqlvar = sqlda->sqlvar[i];
+        switch (sqlvar.sqltype & ~1) {
         case SQL_INT64:
         case SQL_LONG:
         case SQL_SHORT:
@@ -115,26 +116,26 @@ static void initDA(XSQLDA *sqlda)
         case SQL_TEXT:
         case SQL_BLOB:
         case SQL_BOOLEAN:
-            sqlda->sqlvar[i].sqldata = new char[sqlda->sqlvar[i].sqllen];
+            sqlvar.sqldata = new char[sqlvar.sqllen];
             break;
         case SQL_ARRAY:
-            sqlda->sqlvar[i].sqldata = new char[sizeof(ISC_QUAD)];
-            memset(sqlda->sqlvar[i].sqldata, 0, sizeof(ISC_QUAD));
+            sqlvar.sqldata = new char[sizeof(ISC_QUAD)];
+            memset(sqlvar.sqldata, 0, sizeof(ISC_QUAD));
             break;
         case SQL_VARYING:
-            sqlda->sqlvar[i].sqldata = new char[sqlda->sqlvar[i].sqllen + sizeof(short)];
+            sqlvar.sqldata = new char[sqlvar.sqllen + sizeof(short)];
             break;
         default:
             // not supported - do not bind.
-            sqlda->sqlvar[i].sqldata = 0;
-            qCWarning(lcIbase, "initDA: unknown sqltype: %d", sqlda->sqlvar[i].sqltype & ~1);
+            sqlvar.sqldata = 0;
+            qCWarning(lcIbase, "initDA: unknown sqltype: %d", sqlvar.sqltype & ~1);
             break;
         }
-        if (sqlda->sqlvar[i].sqltype & 1) {
-            sqlda->sqlvar[i].sqlind = new short[1];
-            *(sqlda->sqlvar[i].sqlind) = 0;
+        if (sqlvar.sqltype & 1) {
+            sqlvar.sqlind = new short[1];
+            *(sqlvar.sqlind) = 0;
         } else {
-            sqlda->sqlvar[i].sqlind = 0;
+            sqlvar.sqlind = 0;
         }
     }
 }
@@ -717,8 +718,9 @@ QVariant QIBaseResultPrivate::fetchArray(int pos, ISC_QUAD *arr)
     if (!arr)
         return list;
 
-    QByteArray relname(sqlda->sqlvar[pos].relname, sqlda->sqlvar[pos].relname_length);
-    QByteArray sqlname(sqlda->sqlvar[pos].sqlname, sqlda->sqlvar[pos].sqlname_length);
+    const XSQLVAR &sqlvar = sqlda->sqlvar[pos];
+    QByteArray relname(sqlvar.relname, sqlvar.relname_length);
+    QByteArray sqlname(sqlvar.sqlname, sqlvar.sqlname_length);
 
     isc_array_lookup_bounds(status, &ibase, &trans, relname.data(), sqlname.data(), &desc);
     if (isError(QT_TRANSLATE_NOOP("QIBaseResult", "Could not find array"),
@@ -911,11 +913,12 @@ bool QIBaseResultPrivate::writeArray(qsizetype column, const QList<QVariant> &li
 {
     Q_Q(QIBaseResult);
     QString error;
-    ISC_QUAD *arrayId = (ISC_QUAD*) inda->sqlvar[column].sqldata;
     ISC_ARRAY_DESC desc;
 
-    QByteArray relname(inda->sqlvar[column].relname, inda->sqlvar[column].relname_length);
-    QByteArray sqlname(inda->sqlvar[column].sqlname, inda->sqlvar[column].sqlname_length);
+    XSQLVAR &sqlvar = inda->sqlvar[column];
+    ISC_QUAD *arrayId = (ISC_QUAD*) sqlvar.sqldata;
+    QByteArray relname(sqlvar.relname, sqlvar.relname_length);
+    QByteArray sqlname(sqlvar.sqlname, sqlvar.sqlname_length);
 
     isc_array_lookup_bounds(status, &ibase, &trans, relname.data(), sqlname.data(), &desc);
     if (isError(QT_TRANSLATE_NOOP("QIBaseResult", "Could not find array"),
@@ -950,7 +953,7 @@ bool QIBaseResultPrivate::writeArray(qsizetype column, const QList<QVariant> &li
     }
 
     if (!createArrayBuffer(ba.data(), list,
-                           qIBaseTypeName(desc.array_desc_dtype, inda->sqlvar[column].sqlscale < 0),
+                           qIBaseTypeName(desc.array_desc_dtype, sqlvar.sqlscale < 0),
                            0, &desc, error)) {
         q->setLastError(QSqlError(error.arg(QLatin1StringView(sqlname)), ""_L1,
                         QSqlError::StatementError));
@@ -1120,72 +1123,72 @@ bool QIBaseResult::exec()
             return false;
         }
         for (qsizetype para = 0; para < values.count(); ++para) {
-            if (!d->inda->sqlvar[para].sqldata)
+            const XSQLVAR &sqlvar = d->inda->sqlvar[para];
+            if (!sqlvar.sqldata)
                 // skip unknown datatypes
                 continue;
             const QVariant &val = values[para];
-            if (d->inda->sqlvar[para].sqltype & 1) {
+            if (sqlvar.sqltype & 1) {
                 if (QSqlResultPrivate::isVariantNull(val)) {
                     // set null indicator
-                    *(d->inda->sqlvar[para].sqlind) = -1;
+                    *(sqlvar.sqlind) = -1;
                     // and set the value to 0, otherwise it would count as empty string.
                     // it seems to be working with just setting sqlind to -1
-                    //*((char*)d->inda->sqlvar[para].sqldata) = 0;
+                    //*((char*)sqlvar.sqldata) = 0;
                     continue;
                 }
                 // a value of 0 means non-null.
-                *(d->inda->sqlvar[para].sqlind) = 0;
+                *(sqlvar.sqlind) = 0;
             } else {
                 if (QSqlResultPrivate::isVariantNull(val)) {
                     qCWarning(lcIbase) << "QIBaseResult::exec: Null value replaced by default (zero)"_L1
-                                       << "value for type of column"_L1 << d->inda->sqlvar[para].ownname
+                                       << "value for type of column"_L1 << sqlvar.ownname
                                        << ", which is not nullable."_L1;
                 }
             }
-            switch(d->inda->sqlvar[para].sqltype & ~1) {
+            switch(sqlvar.sqltype & ~1) {
             case SQL_INT64:
-                setWithScale<qint64>(val, d->inda->sqlvar[para].sqlscale, d->inda->sqlvar[para].sqldata);
+                setWithScale<qint64>(val, sqlvar.sqlscale, sqlvar.sqldata);
                 break;
 #ifdef IBASE_INT128_SUPPORTED
             case SQL_INT128:
-                setWithScale<qinternalint128>(val, d->inda->sqlvar[para].sqlscale,
-                                              d->inda->sqlvar[para].sqldata);
+                setWithScale<qinternalint128>(val, sqlvar.sqlscale,
+                                              sqlvar.sqldata);
                 break;
 #endif
             case SQL_LONG:
-                if (d->inda->sqlvar[para].sqllen == 4)
-                    setWithScale<qint32>(val, d->inda->sqlvar[para].sqlscale, d->inda->sqlvar[para].sqldata);
+                if (sqlvar.sqllen == 4)
+                    setWithScale<qint32>(val, sqlvar.sqlscale, sqlvar.sqldata);
                 else
-                    setWithScale<qint64>(val, 0, d->inda->sqlvar[para].sqldata);
+                    setWithScale<qint64>(val, 0, sqlvar.sqldata);
                 break;
             case SQL_SHORT:
-                setWithScale<qint16>(val, d->inda->sqlvar[para].sqlscale, d->inda->sqlvar[para].sqldata);
+                setWithScale<qint16>(val, sqlvar.sqlscale, sqlvar.sqldata);
                 break;
             case SQL_FLOAT:
-                *((float*)d->inda->sqlvar[para].sqldata) = val.toFloat();
+                *((float*)sqlvar.sqldata) = val.toFloat();
                 break;
             case SQL_DOUBLE:
-                *((double*)d->inda->sqlvar[para].sqldata) = val.toDouble();
+                *((double*)sqlvar.sqldata) = val.toDouble();
                 break;
             case SQL_TIMESTAMP:
-                *((ISC_TIMESTAMP*)d->inda->sqlvar[para].sqldata) = toTimeStamp(val.toDateTime());
+                *((ISC_TIMESTAMP*)sqlvar.sqldata) = toTimeStamp(val.toDateTime());
                 break;
 #if (FB_API_VER >= 40)
             case SQL_TIMESTAMP_TZ:
-               *((ISC_TIMESTAMP_TZ*)d->inda->sqlvar[para].sqldata) = toTimeStampTz(val.toDateTime());
+               *((ISC_TIMESTAMP_TZ*)sqlvar.sqldata) = toTimeStampTz(val.toDateTime());
                break;
 #endif
             case SQL_TYPE_TIME:
-                *((ISC_TIME*)d->inda->sqlvar[para].sqldata) = toTime(val.toTime());
+                *((ISC_TIME*)sqlvar.sqldata) = toTime(val.toTime());
                 break;
             case SQL_TYPE_DATE:
-                *((ISC_DATE*)d->inda->sqlvar[para].sqldata) = toDate(val.toDate());
+                *((ISC_DATE*)sqlvar.sqldata) = toDate(val.toDate());
                 break;
             case SQL_VARYING:
             case SQL_TEXT:
-                qFillBufferWithString(d->inda->sqlvar[para].sqldata, val.toString(),
-                                      d->inda->sqlvar[para].sqllen,
-                                      (d->inda->sqlvar[para].sqltype & ~1) == SQL_VARYING, false);
+                qFillBufferWithString(sqlvar.sqldata, val.toString(), sqlvar.sqllen,
+                                      (sqlvar.sqltype & ~1) == SQL_VARYING, false);
                 break;
             case SQL_BLOB:
                     ok &= d->writeBlob(para, val.toByteArray());
@@ -1194,11 +1197,11 @@ bool QIBaseResult::exec()
                     ok &= d->writeArray(para, val.toList());
                     break;
             case SQL_BOOLEAN:
-                *((bool*)d->inda->sqlvar[para].sqldata) = val.toBool();
+                *((bool*)sqlvar.sqldata) = val.toBool();
                 break;
             default:
                     qCWarning(lcIbase, "QIBaseResult::exec: Unknown datatype %d",
-                              d->inda->sqlvar[para].sqltype & ~1);
+                              sqlvar.sqltype & ~1);
                     break;
             }
         }
@@ -1276,15 +1279,12 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
 
     for (int i = 0; i < d->sqlda->sqld; ++i) {
         int idx = rowIdx + i;
-        char *buf = d->sqlda->sqlvar[i].sqldata;
-        int size = d->sqlda->sqlvar[i].sqllen;
-        Q_ASSERT(buf);
+        const XSQLVAR &sqlvar = d->sqlda->sqlvar[i];
 
-        if ((d->sqlda->sqlvar[i].sqltype & 1) && *d->sqlda->sqlvar[i].sqlind) {
+        if ((sqlvar.sqltype & 1) && *sqlvar.sqlind) {
             // null value
             QVariant v;
-            v.convert(QMetaType(qIBaseTypeName2(d->sqlda->sqlvar[i].sqltype,
-                                                d->sqlda->sqlvar[i].sqlscale < 0)));
+            v.convert(QMetaType(qIBaseTypeName2(sqlvar.sqltype, sqlvar.sqlscale < 0)));
             if (v.userType() == QMetaType::Double) {
                 switch(numericalPrecisionPolicy()) {
                 case QSql::LowPrecisionInt32:
@@ -1305,23 +1305,26 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             continue;
         }
 
-        switch(d->sqlda->sqlvar[i].sqltype & ~1) {
+        char *buf = sqlvar.sqldata;
+        int size = sqlvar.sqllen;
+        Q_ASSERT(buf);
+        switch(sqlvar.sqltype & ~1) {
         case SQL_VARYING:
             // pascal strings - a short with a length information followed by the data
             row[idx] = QString::fromUtf8(buf + sizeof(short), *(short*)buf);
             break;
         case SQL_INT64: {
-            Q_ASSERT(d->sqlda->sqlvar[i].sqllen == sizeof(qint64));
+            Q_ASSERT(sqlvar.sqllen == sizeof(qint64));
             const auto val = *(qint64 *)buf;
-            const auto scale = d->sqlda->sqlvar[i].sqlscale;
+            const auto scale = sqlvar.sqlscale;
             row[idx] = applyScale(val, scale);
             break;
         }
 #ifdef IBASE_INT128_SUPPORTED
         case SQL_INT128: {
-            Q_ASSERT(d->sqlda->sqlvar[i].sqllen == sizeof(qinternalint128));
+            Q_ASSERT(sqlvar.sqllen == sizeof(qinternalint128));
             const qinternalint128 val128 = qFromUnaligned<qinternalint128>(buf);
-            const auto scale = d->sqlda->sqlvar[i].sqlscale;
+            const auto scale = sqlvar.sqlscale;
             row[idx] = numberToHighPrecision(val128, scale);
             if (numericalPrecisionPolicy() != QSql::HighPrecision)
                 row[idx] = applyScale(row[idx].toDouble(), 0);
@@ -1329,16 +1332,16 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
         }
 #endif
         case SQL_LONG:
-            if (d->sqlda->sqlvar[i].sqllen == 4) {
+            if (sqlvar.sqllen == 4) {
                 const auto val = *(qint32 *)buf;
-                const auto scale = d->sqlda->sqlvar[i].sqlscale;
+                const auto scale = sqlvar.sqlscale;
                 row[idx] = applyScale(val, scale);
             } else
                 row[idx] = QVariant(*(qint64*)buf);
             break;
         case SQL_SHORT: {
             const auto val = *(short *)buf;
-            const auto scale = d->sqlda->sqlvar[i].sqlscale;
+            const auto scale = sqlvar.sqlscale;
             row[idx] = applyScale(val, scale);
             break;
         }
@@ -1376,8 +1379,7 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
 #endif
         default:
             // unknown type - don't even try to fetch
-            qCWarning(lcIbase, "gotoNext: unknown sqltype: %d",
-                      d->sqlda->sqlvar[i].sqltype & ~1);
+            qCWarning(lcIbase, "gotoNext: unknown sqltype: %d", sqlvar.sqltype & ~1);
             row[idx] = QVariant();
             break;
         }
