@@ -50,25 +50,6 @@ public class QtRootLayout extends QtLayout
         if (activity == null)
             return;
 
-        DisplayMetrics realMetrics = new DisplayMetrics();
-        Display display = (Build.VERSION.SDK_INT < Build.VERSION_CODES.R)
-                ? activity.getWindowManager().getDefaultDisplay()
-                : activity.getDisplay();
-
-        if (display == null)
-            return;
-
-        display.getRealMetrics(realMetrics);
-        if ((realMetrics.widthPixels > realMetrics.heightPixels) != (w > h)) {
-            // This is an intermediate state during display rotation.
-            // The new size is still reported for old orientation, while
-            // realMetrics contain sizes for new orientation. Setting
-            // such parameters will produce inconsistent results, so
-            // we just skip them.
-            // We will have another onSizeChanged() with normal values
-            // a bit later.
-            return;
-        }
         QtDisplayManager.setApplicationDisplayMetrics(activity, w, h);
         QtDisplayManager.handleOrientationChanges(activity);
     }
