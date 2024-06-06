@@ -3419,7 +3419,7 @@ int generateJavaQmlComponents(const Options &options)
     // For instance, it does not discover statically linked **inner** QML modules.
     const auto getImportPaths = [](const QString &buildPath, const QString &libName,
                              QStringList &appImports, QStringList &externalImports) -> bool {
-        QFile confRspFile("/%1/.qt/qml_imports/%2_conf.rsp"_L1.arg(buildPath, libName));
+        QFile confRspFile("%1/.qt/qml_imports/%2_conf.rsp"_L1.arg(buildPath, libName));
         if (!confRspFile.exists() || !confRspFile.open(QFile::ReadOnly))
             return false;
         QTextStream rspStream(&confRspFile);
