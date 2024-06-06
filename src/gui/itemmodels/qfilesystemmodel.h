@@ -32,13 +32,19 @@ Q_SIGNALS:
     void directoryLoaded(const QString &path);
 
 public:
-    // ### Qt 7: renumber these values to be before Qt::UserRole comment.
     enum Roles {
         FileIconRole = Qt::DecorationRole,
+        QT7_ONLY(
+        FilePathRole = Qt::UserRole - 4,
+        FileNameRole = Qt::UserRole - 3,
+        FilePermissions = Qt::UserRole - 2,
+        )
         FileInfoRole = Qt::UserRole - 1,
+        QT6_ONLY(
         FilePathRole = Qt::UserRole + 1,
         FileNameRole = Qt::UserRole + 2,
         FilePermissions = Qt::UserRole + 3,
+        )
     };
 
     enum Option
