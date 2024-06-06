@@ -43,7 +43,8 @@ class QSharedMemoryLocker
 {
     Q_DISABLE_COPY(QSharedMemoryLocker)
 public:
-    Q_NODISCARD_CTOR QSharedMemoryLocker(QSharedMemory *sharedMemory) : q_sm(sharedMemory)
+    Q_NODISCARD_CTOR explicit QSharedMemoryLocker(QSharedMemory *sharedMemory)
+        : q_sm(sharedMemory)
     {
         Q_ASSERT(q_sm);
     }
