@@ -17,6 +17,7 @@ public:
 
 private slots:
     void construct();
+    void invalidArraysAreEmpty();
     void size();
     void operators();
 };
@@ -124,6 +125,30 @@ void tst_QJniArray::construct()
         QJniArray<jint> list{QList<int>{1, 2, 3}};
         QCOMPARE(list.size(), 3);
     }
+}
+
+void tst_QJniArray::invalidArraysAreEmpty()
+{
+    QJniArray<jchar> invalid;
+    QVERIFY(!invalid.isValid());
+    QCOMPARE(invalid.object(), nullptr);
+    QVERIFY(invalid.isEmpty());
+
+    QCOMPARE(invalid.begin(), invalid.end());
+    QCOMPARE(invalid.rbegin(), invalid.rend());
+
+    QList<jchar> data;
+    // safe to iterate
+    for (const auto &e : invalid)
+        data.emplace_back(e);
+    QVERIFY(data.empty());
+
+    // safe to convert
+    data = invalid.toContainer();
+    QVERIFY(data.empty());
+
+    // unsafe to access
+    // auto element = invalid.at(0);
 }
 
 void tst_QJniArray::size()

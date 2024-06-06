@@ -106,6 +106,7 @@ public:
     template <typename T = jobject>
     T object() const { return m_object.object<T>(); }
     bool isValid() const { return m_object.isValid(); }
+    bool isEmpty() const { return size() == 0; }
 
     size_type size() const
     {
@@ -310,6 +311,7 @@ public:
             return res;
         }
     }
+
     auto toContainer() const
     {
         JNIEnv *env = jniEnv();
@@ -328,11 +330,15 @@ public:
         } else if constexpr (std::is_same_v<T, jbyte>) {
             const qsizetype bytecount = size();
             QByteArray res(bytecount, Qt::Initialization::Uninitialized);
-            env->GetByteArrayRegion(object<jbyteArray>(),
-                                    0, bytecount, reinterpret_cast<jbyte *>(res.data()));
+            if (!isEmpty()) {
+                env->GetByteArrayRegion(object<jbyteArray>(),
+                                        0, bytecount, reinterpret_cast<jbyte *>(res.data()));
+            }
             return res;
         } else {
             QList<T> res;
+            if (isEmpty())
+                return res;
             res.resize(size());
             if constexpr (std::is_same_v<T, jchar>) {
                 env->GetCharArrayRegion(object<jcharArray>(),
