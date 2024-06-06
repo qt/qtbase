@@ -33,3 +33,4 @@ qt_internal_add_resource(tst_qdbuscpp2xml "qdbuscpp2xml"
         ${qdbuscpp2xml_resource_files}
 )
 
+add_dependencies(tst_qdbuscpp2xml ${QT_CMAKE_EXPORT_NAMESPACE}::qdbuscpp2xml)
