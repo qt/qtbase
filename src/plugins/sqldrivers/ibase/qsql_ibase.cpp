@@ -230,42 +230,35 @@ static QMetaType::Type qIBaseTypeName2(int iType, bool hasScale)
     return QMetaType::UnknownType;
 }
 
-static ISC_TIMESTAMP toTimeStamp(const QDateTime &dt)
+// InterBase and FireBird use the modified Julian Date with 1858-11-17 as day 0.
+static constexpr auto s_ibaseBaseDate = QDate::fromJulianDay(2400001);
+
+static inline ISC_TIMESTAMP toTimeStamp(const QDateTime &dt)
 {
-    static const QTime midnight(0, 0, 0, 0);
-    static const QDate basedate(1858, 11, 17);
     ISC_TIMESTAMP ts;
-    ts.timestamp_time = midnight.msecsTo(dt.time()) * 10;
-    ts.timestamp_date = basedate.daysTo(dt.date());
+    ts.timestamp_time = dt.time().msecsSinceStartOfDay() * 10;
+    ts.timestamp_date = s_ibaseBaseDate.daysTo(dt.date());
     return ts;
 }
 
-static QDateTime fromTimeStamp(const char *buffer)
+static inline QDateTime fromTimeStamp(const char *buffer)
 {
-    static const QDate bd(1858, 11, 17);
-    QTime t(0, 0);
-    QDate d;
-
     // have to demangle the structure ourselves because isc_decode_time
     // strips the msecs
     auto timebuf = reinterpret_cast<const ISC_TIMESTAMP *>(buffer);
-    t = t.addMSecs(static_cast<int>(timebuf->timestamp_time / 10));
-    d = bd.addDays(timebuf->timestamp_date);
+    const QTime t = QTime::fromMSecsSinceStartOfDay(timebuf->timestamp_time / 10);
+    const QDate d = s_ibaseBaseDate.addDays(timebuf->timestamp_date);
     return QDateTime(d, t);
 }
 
 #if (FB_API_VER >= 40)
-QDateTime fromTimeStampTz(const char *buffer)
+static inline QDateTime fromTimeStampTz(const char *buffer)
 {
-    static const QDate bd(1858, 11, 17);
-    QTime t(0, 0);
-    QDate d;
-
     // have to demangle the structure ourselves because isc_decode_time
     // strips the msecs
     auto timebuf = reinterpret_cast<const ISC_TIMESTAMP_TZ *>(buffer);
-    t = t.addMSecs(static_cast<int>(timebuf->utc_timestamp.timestamp_time / 10));
-    d = bd.addDays(timebuf->utc_timestamp.timestamp_date);
+    const QTime t = QTime::fromMSecsSinceStartOfDay(timebuf->utc_timestamp.timestamp_time / 10);
+    const QDate d = s_ibaseBaseDate.addDays(timebuf->utc_timestamp.timestamp_date);
     quint16 fpTzID = timebuf->time_zone;
 
     QByteArray timeZoneName = qFbTzIdToIanaIdMap()->value(fpTzID);
@@ -275,55 +268,40 @@ QDateTime fromTimeStampTz(const char *buffer)
         return {};
 }
 
-ISC_TIMESTAMP_TZ toTimeStampTz(const QDateTime &dt)
+static inline ISC_TIMESTAMP_TZ toTimeStampTz(const QDateTime &dt)
 {
-    static const QTime midnight(0, 0, 0, 0);
-    static const QDate basedate(1858, 11, 17);
     ISC_TIMESTAMP_TZ ts;
-    ts.utc_timestamp.timestamp_time = midnight.msecsTo(dt.time()) * 10;
-    ts.utc_timestamp.timestamp_date = basedate.daysTo(dt.date());
+    ts.utc_timestamp.timestamp_time = dt.time().msecsSinceStartOfDay() * 10;
+    ts.utc_timestamp.timestamp_date = s_ibaseBaseDate.daysTo(dt.date());
     ts.time_zone = qIanaIdToFbTzIdMap()->value(dt.timeZone().id().simplified(), 0);
     return ts;
 }
 #endif
 
-static ISC_TIME toTime(QTime t)
+static inline ISC_TIME toTime(QTime t)
 {
-    static const QTime midnight(0, 0, 0, 0);
-    return (ISC_TIME)midnight.msecsTo(t) * 10;
+    return t.msecsSinceStartOfDay() * 10;
 }
 
-static QTime fromTime(const char *buffer)
+static inline QTime fromTime(const char *buffer)
 {
-    QTime t(0, 0);
     // have to demangle the structure ourselves because isc_decode_time
     // strips the msecs
     const auto timebuf = reinterpret_cast<const ISC_TIME *>(buffer);
-    t = t.addMSecs(int((*timebuf) / 10));
-
-    return t;
+    return QTime::fromMSecsSinceStartOfDay(*timebuf / 10);
 }
 
-static ISC_DATE toDate(QDate t)
+static inline ISC_DATE toDate(QDate t)
 {
-    static const QDate basedate(1858, 11, 17);
-    ISC_DATE date;
+    return s_ibaseBaseDate.daysTo(t);
+ }
 
-    date = basedate.daysTo(t);
-    return date;
-}
-
-static QDate fromDate(const char *buffer)
+static inline QDate fromDate(const char *buffer)
 {
-    static const QDate bd(1858, 11, 17);
-    QDate d;
-
     // have to demangle the structure ourselves because isc_decode_time
     // strips the msecs
     const auto tsbuf = reinterpret_cast<const ISC_TIMESTAMP *>(buffer);
-    d = bd.addDays(int(tsbuf->timestamp_date));
-
-    return d;
+    return s_ibaseBaseDate.addDays(int(tsbuf->timestamp_date));
 }
 
 struct QIBaseEventBuffer {
