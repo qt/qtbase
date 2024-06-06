@@ -1295,7 +1295,7 @@ QDnsTextRecord &QDnsTextRecord::operator=(const QDnsTextRecord &other)
     \sa QDnsLookup
 */
 
-QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QDnsTlsAssociationRecordPrivate)
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QDnsTlsAssociationRecordPrivate)
 
 /*!
     \enum QDnsTlsAssociationRecord::CertificateUsage

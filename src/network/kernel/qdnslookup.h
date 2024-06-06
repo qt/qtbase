@@ -25,7 +25,7 @@ class QDnsTextRecordPrivate;
 class QDnsTlsAssociationRecordPrivate;
 class QSslConfiguration;
 
-QT_DECLARE_QSDP_SPECIALIZATION_DTOR(QDnsTlsAssociationRecordPrivate)
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR(QDnsTlsAssociationRecordPrivate)
 
 class Q_NETWORK_EXPORT QDnsDomainNameRecord
 {
@@ -206,7 +206,7 @@ public:
     QByteArray value() const;
 
 private:
-    QSharedDataPointer<QDnsTlsAssociationRecordPrivate> d;
+    QExplicitlySharedDataPointer<QDnsTlsAssociationRecordPrivate> d;
     friend class QDnsLookupRunnable;
 };
 
