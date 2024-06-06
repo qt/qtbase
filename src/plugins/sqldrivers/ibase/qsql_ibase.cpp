@@ -240,7 +240,7 @@ static ISC_TIMESTAMP toTimeStamp(const QDateTime &dt)
     return ts;
 }
 
-static QDateTime fromTimeStamp(char *buffer)
+static QDateTime fromTimeStamp(const char *buffer)
 {
     static const QDate bd(1858, 11, 17);
     QTime t(0, 0);
@@ -248,14 +248,14 @@ static QDateTime fromTimeStamp(char *buffer)
 
     // have to demangle the structure ourselves because isc_decode_time
     // strips the msecs
-    auto timebuf = reinterpret_cast<ISC_TIMESTAMP*>(buffer);
+    auto timebuf = reinterpret_cast<const ISC_TIMESTAMP *>(buffer);
     t = t.addMSecs(static_cast<int>(timebuf->timestamp_time / 10));
     d = bd.addDays(timebuf->timestamp_date);
     return QDateTime(d, t);
 }
 
 #if (FB_API_VER >= 40)
-QDateTime fromTimeStampTz(char *buffer)
+QDateTime fromTimeStampTz(const char *buffer)
 {
     static const QDate bd(1858, 11, 17);
     QTime t(0, 0);
@@ -263,7 +263,7 @@ QDateTime fromTimeStampTz(char *buffer)
 
     // have to demangle the structure ourselves because isc_decode_time
     // strips the msecs
-    auto timebuf = reinterpret_cast<ISC_TIMESTAMP_TZ*>(buffer);
+    auto timebuf = reinterpret_cast<const ISC_TIMESTAMP_TZ *>(buffer);
     t = t.addMSecs(static_cast<int>(timebuf->utc_timestamp.timestamp_time / 10));
     d = bd.addDays(timebuf->utc_timestamp.timestamp_date);
     quint16 fpTzID = timebuf->time_zone;
@@ -293,12 +293,13 @@ static ISC_TIME toTime(QTime t)
     return (ISC_TIME)midnight.msecsTo(t) * 10;
 }
 
-static QTime fromTime(char *buffer)
+static QTime fromTime(const char *buffer)
 {
     QTime t(0, 0);
     // have to demangle the structure ourselves because isc_decode_time
     // strips the msecs
-    t = t.addMSecs(int((*(ISC_TIME*)buffer) / 10));
+    const auto timebuf = reinterpret_cast<const ISC_TIME *>(buffer);
+    t = t.addMSecs(int((*timebuf) / 10));
 
     return t;
 }
@@ -312,14 +313,15 @@ static ISC_DATE toDate(QDate t)
     return date;
 }
 
-static QDate fromDate(char *buffer)
+static QDate fromDate(const char *buffer)
 {
     static const QDate bd(1858, 11, 17);
     QDate d;
 
     // have to demangle the structure ourselves because isc_decode_time
     // strips the msecs
-    d = bd.addDays(int(((ISC_TIMESTAMP*)buffer)->timestamp_date));
+    const auto tsbuf = reinterpret_cast<const ISC_TIMESTAMP *>(buffer);
+    d = bd.addDays(int(tsbuf->timestamp_date));
 
     return d;
 }
@@ -620,9 +622,10 @@ QVariant QIBaseResultPrivate::fetchBlob(ISC_QUAD *bId)
 }
 
 template<typename T>
-static QList<QVariant> toList(char** buf, int count)
+static QList<QVariant> toList(const char **buf, int count)
 {
     QList<QVariant> res;
+    res.reserve(count);
     for (int i = 0; i < count; ++i) {
         res.append(*(T*)(*buf));
         *buf += sizeof(T);
@@ -630,8 +633,8 @@ static QList<QVariant> toList(char** buf, int count)
     return res;
 }
 
-static char* readArrayBuffer(QList<QVariant>& list, char *buffer, short curDim,
-                             short* numElements, ISC_ARRAY_DESC *arrayDesc)
+static const char *readArrayBuffer(QList<QVariant>& list, const char *buffer, short curDim,
+                                   const short *numElements, ISC_ARRAY_DESC *arrayDesc)
 {
     const short dim = arrayDesc->array_desc_dimensions - 1;
     const unsigned char dataType = arrayDesc->array_desc_dtype;
@@ -1307,7 +1310,7 @@ bool QIBaseResult::gotoNext(QSqlCachedResult::ValueCache& row, int rowIdx)
             continue;
         }
 
-        char *buf = sqlvar.sqldata;
+        const char *buf = sqlvar.sqldata;
         int size = sqlvar.sqllen;
         Q_ASSERT(buf);
         const auto sqltype = sqlvar.sqltype & ~1;
