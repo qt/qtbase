@@ -76,21 +76,61 @@ VERIFY_RETURN_FOR_TYPE(QList<jdouble>, QList<jdouble>);
 VERIFY_RETURN_FOR_TYPE(QList<double>, QList<double>);
 
 VERIFY_RETURN_FOR_TYPE(QString, QString);
+VERIFY_RETURN_FOR_TYPE(QJniArray<QString>, QJniArray<QString>);
 
 VERIFY_RETURN_FOR_TYPE(List, List);
 VERIFY_RETURN_FOR_TYPE(List[], QJniArray<List>);
 VERIFY_RETURN_FOR_TYPE(QJniArray<List>, QJniArray<List>);
 
 #define VERIFY_CONTAINER_FOR_TYPE(In, Out) \
-    static_assert(std::is_same_v<decltype(std::declval<In>().toContainer()), Out>)
+    static_assert(std::is_same_v<decltype(std::declval<In>().toContainer()), Out>);
 
+#define VERIFY_ARRAY_FOR_CONTAINER(In, Out) \
+    static_assert(std::is_same_v<decltype(QJniArrayBase::fromContainer(std::declval<In>())), Out>);
+
+// primitive types, both JNI and C++ equivalent types
 VERIFY_CONTAINER_FOR_TYPE(QJniArray<jchar>, QList<jchar>);
+VERIFY_ARRAY_FOR_CONTAINER(QList<jchar>, QJniArray<jchar>);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<jint>, QList<jint>);
+VERIFY_ARRAY_FOR_CONTAINER(QList<jint>, QJniArray<jint>);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<int>, QList<int>);
+VERIFY_ARRAY_FOR_CONTAINER(QList<int>, QJniArray<int>);
 VERIFY_CONTAINER_FOR_TYPE(QJniArray<jfloat>, QList<jfloat>);
-VERIFY_CONTAINER_FOR_TYPE(QJniArray<jbyte>, QByteArray);
-VERIFY_CONTAINER_FOR_TYPE(QJniArray<jstring>, QStringList);
+VERIFY_ARRAY_FOR_CONTAINER(QList<jfloat>, QJniArray<jfloat>);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<float>, QList<float>);
+VERIFY_ARRAY_FOR_CONTAINER(QList<float>, QJniArray<float>);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<jdouble>, QList<jdouble>);
+VERIFY_ARRAY_FOR_CONTAINER(QList<jdouble>, QJniArray<jdouble>);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<double>, QList<double>);
+VERIFY_ARRAY_FOR_CONTAINER(QList<double>, QJniArray<double>);
+
+// jobject and derivatives
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<jobject>, QList<jobject>);
+VERIFY_ARRAY_FOR_CONTAINER(QList<jobject>, QJniArray<jobject>);
 VERIFY_CONTAINER_FOR_TYPE(QJniArray<jclass>, QList<jclass>);
+VERIFY_ARRAY_FOR_CONTAINER(QList<jclass>, QJniArray<jclass>);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<jthrowable>, QList<jthrowable>);
+VERIFY_ARRAY_FOR_CONTAINER(QList<jthrowable>, QJniArray<jthrowable>);
+
+// QJniObject-ish classes
 VERIFY_CONTAINER_FOR_TYPE(QJniArray<QJniObject>, QList<QJniObject>);
+VERIFY_ARRAY_FOR_CONTAINER(QList<QJniObject>, QJniArray<QJniObject>);
 VERIFY_CONTAINER_FOR_TYPE(QJniArray<List>, QList<List>);
+VERIFY_ARRAY_FOR_CONTAINER(QList<List>, QJniArray<List>);
+
+// Special case: jbyte, (u)char, and QByteArray
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<jbyte>, QByteArray);
+VERIFY_ARRAY_FOR_CONTAINER(QByteArray, QJniArray<jbyte>);
+VERIFY_ARRAY_FOR_CONTAINER(QList<jbyte>, QJniArray<jbyte>);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<char>, QByteArray);
+VERIFY_ARRAY_FOR_CONTAINER(QList<char>, QJniArray<jbyte>);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<uchar>, QList<uchar>);
+
+// Special case: jstring, QString, and QStringList
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<jstring>, QStringList);
+VERIFY_ARRAY_FOR_CONTAINER(QStringList, QJniArray<QString>);
+VERIFY_CONTAINER_FOR_TYPE(QJniArray<QString>, QStringList);
+VERIFY_ARRAY_FOR_CONTAINER(QList<jstring>, QJniArray<jstring>);
 
 void tst_QJniArray::construct()
 {
@@ -101,6 +141,8 @@ void tst_QJniArray::construct()
             strings << QString::number(i);
         QJniArray<QString> list(strings);
         QCOMPARE(list.size(), 10000);
+        QCOMPARE(list.at(500), QString::number(500));
+        QCOMPARE(list.toContainer(), strings);
     }
     {
         QJniArray bytes = QJniArrayBase::fromContainer(QByteArray("abc"));

@@ -165,7 +165,13 @@
     \li QJniArray<jbyte>
     \li QByteArray
     \row
+    \li QJniArray<char>
+    \li QByteArray
+    \row
     \li QJniArray<jstring>
+    \li QStringList
+    \row
+    \li QJniArray<QString>
     \li QStringList
     \endtable
 //! [type-mapping]
