@@ -414,7 +414,8 @@ private:
     qsizetype m_size;
 };
 
-constexpr QByteArrayView::QByteArrayView(QUtf8StringView v) noexcept
+template <bool UseChar8T>
+constexpr QByteArrayView::QByteArrayView(QBasicUtf8StringView<UseChar8T> v) noexcept
     : QByteArrayView(v.data(), v.size())
 {}
 
