@@ -597,9 +597,8 @@ QVariant QIBaseResultPrivate::fetchBlob(ISC_QUAD *bId)
         return QVariant();
 
     unsigned short len = 0;
-    QByteArray ba;
-    int chunkSize = QIBaseChunkSize;
-    ba.resize(chunkSize);
+    constexpr auto chunkSize = QIBaseChunkSize;
+    QByteArray ba(chunkSize, Qt::Uninitialized);
     qsizetype read = 0;
     while (isc_get_segment(status, &handle, &len, chunkSize, ba.data() + read) == 0 || status[1] == isc_segment) {
         read += len;
@@ -723,8 +722,8 @@ QVariant QIBaseResultPrivate::fetchArray(int pos, ISC_QUAD *arr)
         return list;
 
     const XSQLVAR &sqlvar = sqlda->sqlvar[pos];
-    QByteArray relname(sqlvar.relname, sqlvar.relname_length);
-    QByteArray sqlname(sqlvar.sqlname, sqlvar.sqlname_length);
+    const auto relname = QByteArray::fromRawData(sqlvar.relname, sqlvar.relname_length);
+    const auto sqlname = QByteArray::fromRawData(sqlvar.sqlname, sqlvar.sqlname_length);
 
     isc_array_lookup_bounds(status, &ibase, &trans, relname.data(), sqlname.data(), &desc);
     if (isError(QT_TRANSLATE_NOOP("QIBaseResult", "Could not find array"),
@@ -732,19 +731,18 @@ QVariant QIBaseResultPrivate::fetchArray(int pos, ISC_QUAD *arr)
         return list;
 
 
-    int arraySize = 1, subArraySize;
+    int arraySize = 1;
     short dimensions = desc.array_desc_dimensions;
     QVarLengthArray<short> numElements(dimensions);
 
     for(int i = 0; i < dimensions; ++i) {
-        subArraySize = (desc.array_desc_bounds[i].array_bound_upper -
-                      desc.array_desc_bounds[i].array_bound_lower + 1);
+        short subArraySize = (desc.array_desc_bounds[i].array_bound_upper -
+                              desc.array_desc_bounds[i].array_bound_lower + 1);
         numElements[i] = subArraySize;
         arraySize = subArraySize * arraySize;
     }
 
     ISC_LONG bufLen;
-    QByteArray ba;
     /* varying arrayelements are stored with 2 trailing null bytes
        indicating the length of the string
      */
@@ -756,14 +754,13 @@ QVariant QIBaseResultPrivate::fetchArray(int pos, ISC_QUAD *arr)
         bufLen = desc.array_desc_length *  arraySize;
     }
 
-
-    ba.resize(int(bufLen));
+    QByteArray ba(bufLen, Qt::Uninitialized);
     isc_array_get_slice(status, &ibase, &trans, arr, &desc, ba.data(), &bufLen);
     if (isError(QT_TRANSLATE_NOOP("QIBaseResult", "Could not get array data"),
                 QSqlError::StatementError))
         return list;
 
-    readArrayBuffer(list, ba.data(), 0, numElements.data(), &desc);
+    readArrayBuffer(list, ba.constData(), 0, numElements.constData(), &desc);
 
     return QVariant(list);
 }
@@ -800,16 +797,16 @@ static char* qFillBufferWithString(char *buffer, const QString& string,
         if (str.length() < buflen)
             buflen = str.length();
         if (array) { // interbase stores varying arrayelements different than normal varying elements
-            memcpy(buffer, str.data(), buflen);
+            memcpy(buffer, str.constData(), buflen);
             memset(buffer + buflen, 0, tmpBuflen - buflen);
         } else {
             *(short*)buffer = buflen; // first two bytes is the length
-            memcpy(buffer + sizeof(short), str.data(), buflen);
+            memcpy(buffer + sizeof(short), str.constData(), buflen);
         }
         buffer += tmpBuflen;
     } else {
         str = str.leftJustified(buflen, ' ', true);
-        memcpy(buffer, str.data(), buflen);
+        memcpy(buffer, str.constData(), buflen);
         buffer += buflen;
     }
     return buffer;
@@ -921,8 +918,8 @@ bool QIBaseResultPrivate::writeArray(qsizetype column, const QList<QVariant> &li
 
     XSQLVAR &sqlvar = inda->sqlvar[column];
     ISC_QUAD *arrayId = (ISC_QUAD*) sqlvar.sqldata;
-    QByteArray relname(sqlvar.relname, sqlvar.relname_length);
-    QByteArray sqlname(sqlvar.sqlname, sqlvar.sqlname_length);
+    const auto relname = QByteArray::fromRawData(sqlvar.relname, sqlvar.relname_length);
+    const auto sqlname = QByteArray::fromRawData(sqlvar.sqlname, sqlvar.sqlname_length);
 
     isc_array_lookup_bounds(status, &ibase, &trans, relname.data(), sqlname.data(), &desc);
     if (isError(QT_TRANSLATE_NOOP("QIBaseResult", "Could not find array"),
@@ -946,8 +943,7 @@ bool QIBaseResultPrivate::writeArray(qsizetype column, const QList<QVariant> &li
         desc.array_desc_length += 2;
 
     bufLen = desc.array_desc_length * arraySize;
-    QByteArray ba;
-    ba.resize(int(bufLen));
+    QByteArray ba(bufLen, Qt::Uninitialized);
 
     if (list.size() > arraySize) {
         error = "Array size mismatch: size of %1 is %2, size of provided list is %3"_L1;
@@ -1629,18 +1625,18 @@ bool QIBaseDriver::open(const QString &db,
     ba.append(char(isc_dpb_version1));
     ba.append(char(isc_dpb_user_name));
     ba.append(char(usr.length()));
-    ba.append(usr.data(), usr.length());
+    ba.append(usr.constData(), usr.length());
     ba.append(char(isc_dpb_password));
     ba.append(char(pass.length()));
-    ba.append(pass.data(), pass.length());
+    ba.append(pass.constData(), pass.length());
     ba.append(char(isc_dpb_lc_ctype));
     ba.append(char(enc.length()));
-    ba.append(enc.data(), enc.length());
+    ba.append(enc.constData(), enc.length());
 
     if (!role.isEmpty()) {
         ba.append(char(isc_dpb_sql_role_name));
         ba.append(char(role.length()));
-        ba.append(role.data(), role.length());
+        ba.append(role.constData(), role.length());
     }
 
     QString portString;
@@ -1652,7 +1648,7 @@ bool QIBaseDriver::open(const QString &db,
         ldb += host + portString + u':';
     ldb += db;
     isc_attach_database(d->status, 0, const_cast<char *>(ldb.toLocal8Bit().constData()),
-                        &d->ibase, ba.size(), ba.data());
+                        &d->ibase, ba.size(), ba.constData());
     if (d->isError(QT_TRANSLATE_NOOP("QIBaseDriver", "Error opening database"),
                    QSqlError::ConnectionError)) {
         setOpenError(true);
