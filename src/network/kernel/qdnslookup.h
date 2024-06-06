@@ -144,6 +144,7 @@ Q_DECLARE_SHARED(QDnsTextRecord)
 class Q_NETWORK_EXPORT QDnsTlsAssociationRecord
 {
     Q_GADGET
+    Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
 public:
     enum class CertificateUsage : quint8 {
         // https://www.iana.org/assignments/dane-parameters/dane-parameters.xhtml#certificate-usages
