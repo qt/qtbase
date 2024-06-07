@@ -92,7 +92,16 @@ inline ulong getTimeStamp(UIEvent *event)
 {
     if (self = [self initWithFrame:window->geometry().toCGRect()]) {
         self.platformWindow = window;
+
+        if (isQtApplication())
+            self.hidden = YES;
+
         m_accessibleElements = [[NSMutableArray<UIAccessibilityElement *> alloc] init];
+
+#ifndef Q_OS_TVOS
+        self.multipleTouchEnabled = YES;
+#endif
+
         m_scrollGestureRecognizer = [[UIPanGestureRecognizer alloc]
                                       initWithTarget:self
                                       action:@selector(handleScroll:)];
@@ -109,6 +118,7 @@ inline ulong getTimeStamp(UIEvent *event)
         m_lastScrollCursorPos = CGPointZero;
         [self addGestureRecognizer:m_scrollGestureRecognizer];
 
+        // Set up layer
         if ([self.layer isKindOfClass:CAMetalLayer.class]) {
             QWindow *window = self.platformWindow->window();
             if (QColorSpace colorSpace = window->format().colorSpace(); colorSpace.isValid()) {
@@ -119,17 +129,8 @@ inline ulong getTimeStamp(UIEvent *event)
                 qCDebug(lcQpaWindow) << "Set" << self << "color space to" << metalLayer.colorspace;
             }
         }
-    }
-
-    return self;
-}
-
-- (instancetype)initWithFrame:(CGRect)frame
-{
-    if ((self = [super initWithFrame:frame])) {
 #if QT_CONFIG(opengl)
-        if ([self.layer isKindOfClass:[CAEAGLLayer class]]) {
-            // Set up EAGL layer
+        else if ([self.layer isKindOfClass:[CAEAGLLayer class]]) {
             CAEAGLLayer *eaglLayer = static_cast<CAEAGLLayer *>(self.layer);
             eaglLayer.opaque = TRUE;
             eaglLayer.drawableProperties = @{
@@ -137,13 +138,6 @@ inline ulong getTimeStamp(UIEvent *event)
                 kEAGLDrawablePropertyColorFormat: kEAGLColorFormatRGBA8
             };
         }
-#endif
-
-        if (isQtApplication())
-            self.hidden = YES;
-
-#ifndef Q_OS_TVOS
-        self.multipleTouchEnabled = YES;
 #endif
     }
 
