@@ -145,31 +145,6 @@ inline ulong getTimeStamp(UIEvent *event)
 #ifndef Q_OS_TVOS
         self.multipleTouchEnabled = YES;
 #endif
-
-        if (qEnvironmentVariableIntValue("QT_IOS_DEBUG_WINDOW_MANAGEMENT")) {
-            static CGFloat hue = 0.0;
-            CGFloat lastHue = hue;
-            for (CGFloat diff = 0; diff < 0.1 || diff > 0.9; diff = fabs(hue - lastHue))
-                hue = drand48();
-
-            #define colorWithBrightness(br) \
-                [UIColor colorWithHue:hue saturation:0.5 brightness:br alpha:1.0].CGColor
-
-            self.layer.borderColor = colorWithBrightness(1.0);
-            self.layer.borderWidth = 1.0;
-        }
-
-        if (qEnvironmentVariableIsSet("QT_IOS_DEBUG_WINDOW_SAFE_AREAS")) {
-            UIView *safeAreaOverlay = [[UIView alloc] initWithFrame:CGRectZero];
-            [safeAreaOverlay setBackgroundColor:[UIColor colorWithRed:0.3 green:0.7 blue:0.9 alpha:0.3]];
-            [self addSubview:safeAreaOverlay];
-
-            safeAreaOverlay.translatesAutoresizingMaskIntoConstraints = NO;
-            [safeAreaOverlay.topAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.topAnchor].active = YES;
-            [safeAreaOverlay.leftAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.leftAnchor].active = YES;
-            [safeAreaOverlay.rightAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.rightAnchor].active = YES;
-            [safeAreaOverlay.bottomAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor].active = YES;
-        }
     }
 
     return self;
