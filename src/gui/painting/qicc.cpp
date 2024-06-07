@@ -800,6 +800,7 @@ QByteArray toIccProfile(const QColorSpace &space)
     case QColorSpace::TransferFunction::Hlg:
         writeCicp = true;
         fixedLengthTagCount++;
+        break;
     default:
         break;
     }
