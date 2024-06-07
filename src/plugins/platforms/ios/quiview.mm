@@ -139,6 +139,14 @@ inline ulong getTimeStamp(UIEvent *event)
             };
         }
 #endif
+
+#if defined(Q_OS_VISIONOS)
+        // Although the "Drawing sharp layer-based content in visionOS" docs
+        // claim that by default a CALayer rasterizes at a 2x scale this does
+        // not seem to be the case in practice. So we explicitly set the view's
+        // scale factor based on the screen, where we hard-code it to 2.0.
+        self.contentScaleFactor = self.platformWindow->screen()->devicePixelRatio();
+#endif
     }
 
     return self;
