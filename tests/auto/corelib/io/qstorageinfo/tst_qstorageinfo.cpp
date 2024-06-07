@@ -24,6 +24,8 @@
 #  include "../../../../../src/corelib/io/qstorageinfo_linux_p.h"
 #endif
 
+using namespace Qt::StringLiterals;
+
 class tst_QStorageInfo : public QObject
 {
     Q_OBJECT

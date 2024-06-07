@@ -27,7 +27,7 @@
 
 QT_BEGIN_NAMESPACE
 
-inline Q_LOGGING_CATEGORY(lcStorageInfo, "qt.core.qstorageinfo", QtWarningMsg)
+Q_DECLARE_LOGGING_CATEGORY(lcStorageInfo)
 
 class QStorageInfoPrivate : public QSharedData
 {

@@ -9,6 +9,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_LOGGING_CATEGORY(lcStorageInfo, "qt.core.qstorageinfo", QtWarningMsg)
+
 QT_IMPL_METATYPE_EXTERN(QStorageInfo)
 
 /*!
