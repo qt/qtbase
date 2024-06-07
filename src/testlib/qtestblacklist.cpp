@@ -23,7 +23,9 @@ using namespace Qt::StringLiterals;
 
   Blank lines and everything after # is simply ignored.  An initial #-line
   referring to this documentation is kind to readers.  Comments can also be used
-  to indicate the reasons for ignoring particular cases.
+  to indicate the reasons for ignoring particular cases. Please scope comments
+  to keywords if possible, to avoid confusion when additional keywords or tests
+  cases are added later.
 
   Each blacklist line is interpreted as a list of keywords in an AND-relationship.
   To blacklist a test for multiple platforms (OR-relationship), use separate lines.
@@ -53,18 +55,15 @@ using namespace Qt::StringLiterals;
         # Test doesn't work on QNX at all
         qnx
 
-        # QTBUG-12345
         [testFunction]
-        linux
-        windows 64bit
+        linux # QTBUG-12345
+        windows 64bit # QTBUG-12345
 
-        # Flaky in COIN on macOS, not reproducible by developers
         [testSlowly]
-        macos ci
+        macos ci # Flaky in COIN on macOS, not reproducible by developers
 
-        # Needs basic C++11 support
         [testfunction2:testData]
-        msvc-2010
+        msvc-2010 # Needs basic C++11 support
 
         [getFile:withProxy SSL:localhost]
         android
@@ -75,9 +74,8 @@ using namespace Qt::StringLiterals;
 
   For example, to blacklist a QML test on RHEL 7.6:
 
-        # QTBUG-12345
         [Button::test_display:TextOnly]
-        ci rhel-7.6
+        ci rhel-7.6 # QTBUG-12345
 
   Keys are lower-case.  Distribution name and version are supported if
   QSysInfo's productType() and productVersion() return them.
