@@ -431,6 +431,7 @@ private slots:
     void touchUpdateOnNewTouch();
     void touchCancel();
     void touchEventsForGesturePendingWidgets();
+    void synthMouseDoubleClick();
 
     void styleSheetPropagation();
 
@@ -12185,7 +12186,24 @@ protected:
         case QEvent::MouseMove:
         case QEvent::MouseButtonRelease:
             ++m_mouseEventCount;
-            m_lastMouseEventPos = static_cast<QMouseEvent *>(e)->position();
+            {
+                QMouseEvent *me = static_cast<QMouseEvent *>(e);
+                m_lastMouseEventPos = me->position();
+                m_lastMouseTimestamp = me->timestamp();
+            }
+            if (m_acceptMouse)
+                e->accept();
+            else
+                e->ignore();
+            return true;
+
+        case QEvent::MouseButtonDblClick:
+            ++m_mouseEventCount;
+            {
+                QMouseEvent *me = static_cast<QMouseEvent *>(e);
+                m_lastMouseEventPos = me->position();
+                m_doubleClickTimestamp = me->timestamp();
+            }
             if (m_acceptMouse)
                 e->accept();
             else
@@ -12211,6 +12229,8 @@ public:
     int m_mouseEventCount = 0;
     bool m_acceptMouse = true;
     QPointF m_lastMouseEventPos;
+    quint64 m_lastMouseTimestamp = 0;
+    quint64 m_doubleClickTimestamp = 0;
 };
 
 void tst_QWidget::touchEventSynthesizedMouseEvent()
@@ -12450,6 +12470,50 @@ void tst_QWidget::touchEventsForGesturePendingWidgets()
     QCOMPARE(parent.m_touchUpdateCount, 0);
     QCOMPARE(parent.m_touchEndCount, 0);
     QVERIFY(parent.m_gestureEventCount > 0);
+}
+
+void tst_QWidget::synthMouseDoubleClick()
+{
+    TouchMouseWidget widget;
+    widget.setWindowTitle(QLatin1String(QTest::currentTestFunction()));
+    widget.show();
+    QWindow* window = widget.windowHandle();
+    QVERIFY(QTest::qWaitForWindowExposed(window));
+
+    // tap once; move slightly from press to release
+    QPoint p(20, 20);
+    int expectedMouseEventCount = 0;
+    QTest::touchEvent(window, m_touchScreen).press(1, p, window);
+    QCOMPARE(widget.m_touchBeginCount, 0);
+    QCOMPARE(widget.m_mouseEventCount, ++expectedMouseEventCount);
+    QCOMPARE(widget.m_lastMouseEventPos.toPoint(), p);
+    quint64 mouseTimestamp = widget.m_lastMouseTimestamp;
+    p += {1, 0};
+    QTest::touchEvent(window, m_touchScreen).move(1, p, window);
+    QCOMPARE(widget.m_mouseEventCount, ++expectedMouseEventCount);
+    QCOMPARE(widget.m_lastMouseEventPos.toPoint(), p);
+    QCOMPARE_GT(widget.m_lastMouseTimestamp, mouseTimestamp);
+    mouseTimestamp = widget.m_lastMouseTimestamp;
+    QTest::touchEvent(window, m_touchScreen).release(1, p, window);
+    QCOMPARE(widget.m_mouseEventCount, ++expectedMouseEventCount);
+    QCOMPARE(widget.m_lastMouseEventPos.toPoint(), p);
+    QCOMPARE_GT(widget.m_lastMouseTimestamp, mouseTimestamp);
+    mouseTimestamp = widget.m_lastMouseTimestamp;
+
+    // tap again nearby: a double-click event should be synthesized
+    p += {0, 1};
+    QTest::touchEvent(window, m_touchScreen).press(2, p, window);
+    QCOMPARE(widget.m_touchBeginCount, 0);
+    QCOMPARE(widget.m_mouseEventCount, ++expectedMouseEventCount);
+    QCOMPARE(widget.m_lastMouseEventPos.toPoint(), p);
+    QCOMPARE_GT(widget.m_doubleClickTimestamp, mouseTimestamp);
+    mouseTimestamp = widget.m_doubleClickTimestamp;
+
+    QTest::touchEvent(window, m_touchScreen).release(2, p, window);
+    QCOMPARE(widget.m_mouseEventCount, ++expectedMouseEventCount);
+    QCOMPARE(widget.m_lastMouseEventPos.toPoint(), p);
+    QCOMPARE_GT(widget.m_lastMouseTimestamp, mouseTimestamp);
+    mouseTimestamp = widget.m_lastMouseTimestamp;
 }
 
 void tst_QWidget::styleSheetPropagation()

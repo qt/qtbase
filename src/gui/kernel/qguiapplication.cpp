@@ -2233,7 +2233,7 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
         QWindowSystemInterfacePrivate::MouseEvent moveEvent(window, e->timestamp,
             e->localPos, e->globalPos, e->buttons ^ button, e->modifiers, Qt::NoButton,
             e->nonClientArea ? QEvent::NonClientAreaMouseMove : QEvent::MouseMove,
-            e->source, e->nonClientArea);
+            e->source, e->nonClientArea, device, e->eventPointId);
         if (e->synthetic())
             moveEvent.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
         processMouseEvent(&moveEvent); // mouse move excluding state change
@@ -2252,6 +2252,9 @@ void QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::Mo
     QPointF localPoint = e->localPos;
     bool doubleClick = false;
     auto persistentEPD = devPriv->pointById(0);
+
+    if (e->synthetic(); auto *originalDeviceEPD = devPriv->queryPointById(e->eventPointId))
+        QMutableEventPoint::update(originalDeviceEPD->eventPoint, persistentEPD->eventPoint);
 
     if (mouseMove) {
         QGuiApplicationPrivate::lastCursorPosition = globalPoint;
@@ -3126,7 +3129,8 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                         }
                         // All touch events that are not accepted by the application will be translated to
                         // left mouse button events instead (see AA_SynthesizeMouseForUnhandledTouchEvents docs).
-                        // TODO why go through QPA?  Why not just send a QMouseEvent right from here?
+                        // Sending a QPA event (rather than simply sending a QMouseEvent) takes care of
+                        // side-effects such as double-click synthesis.
                         QWindowSystemInterfacePrivate::MouseEvent fake(window, e->timestamp,
                                                                        window->mapFromGlobal(touchPoint->globalPosition().toPoint()),
                                                                        touchPoint->globalPosition(),
@@ -3136,7 +3140,8 @@ void QGuiApplicationPrivate::processTouchEvent(QWindowSystemInterfacePrivate::To
                                                                        mouseEventType,
                                                                        Qt::MouseEventSynthesizedByQt,
                                                                        false,
-                                                                       device);
+                                                                       device,
+                                                                       touchPoint->id());
                         fake.flags |= QWindowSystemInterfacePrivate::WindowSystemEvent::Synthetic;
                         processMouseEvent(&fake);
                     }
