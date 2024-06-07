@@ -32,7 +32,7 @@ class QFormDataPartBuilder
 {
     struct PrivateConstructor { explicit PrivateConstructor() = default; };
 public:
-    Q_NETWORK_EXPORT explicit QFormDataPartBuilder(QLatin1StringView name, PrivateConstructor);
+    Q_NETWORK_EXPORT explicit QFormDataPartBuilder(QAnyStringView name, PrivateConstructor);
 
     QFormDataPartBuilder(QFormDataPartBuilder &&other) noexcept
         : m_headerValue(std::move(other.m_headerValue)),
@@ -109,7 +109,7 @@ public:
     }
 
     Q_NETWORK_EXPORT ~QFormDataBuilder();
-    Q_NETWORK_EXPORT QFormDataPartBuilder &part(QLatin1StringView name);
+    Q_NETWORK_EXPORT QFormDataPartBuilder &part(QAnyStringView name);
     Q_NETWORK_EXPORT std::unique_ptr<QHttpMultiPart> buildMultiPart();
 private:
     std::vector<QFormDataPartBuilder> m_parts;

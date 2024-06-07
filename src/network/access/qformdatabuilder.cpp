@@ -28,17 +28,37 @@ QT_BEGIN_NAMESPACE
     \sa QHttpPart, QHttpMultiPart, QFormDataBuilder
 */
 
+static QByteArray nameToByteArray(QStringView view)
+{
+    return view.toUtf8();
+}
+
+static QByteArray nameToByteArray(QLatin1StringView view)
+{
+    if (!QtPrivate::isAscii(view))
+        return view.toString().toUtf8(); // ### optimize
+
+    return QByteArray::fromRawData(view.data(), view.size());
+}
+
+static QByteArray nameToByteArray(QUtf8StringView view)
+{
+    return QByteArray::fromRawData(view.data(), view.size());
+}
+
 /*!
     Constructs a QFormDataPartBuilder object and sets \a name as the name
     parameter of the form-data.
 */
-QFormDataPartBuilder::QFormDataPartBuilder(QLatin1StringView name, PrivateConstructor /*unused*/)
+QFormDataPartBuilder::QFormDataPartBuilder(QAnyStringView name, PrivateConstructor /*unused*/)
 {
     static_assert(std::is_nothrow_move_constructible_v<decltype(m_body)>);
     static_assert(std::is_nothrow_move_assignable_v<decltype(m_body)>);
 
+    const auto enc = name.visit([](auto name) { return nameToByteArray(name); });
+
     m_headerValue += "form-data; name=\"";
-    for (auto c : name) {
+    for (auto c : enc) {
         if (c == '"' || c == '\\')
             m_headerValue += '\\';
         m_headerValue += c;
@@ -292,10 +312,14 @@ QFormDataBuilder::~QFormDataBuilder()
     \a name as the name parameter of the form-data. The returned reference is
     valid until the next call to this function.
 
+    Limiting \a name characters to US-ASCII is
+    \l {https://datatracker.ietf.org/doc/html/rfc7578#section-5.1.1}{strongly recommended}
+    for interoperability reasons.
+
     \sa QFormDataPartBuilder, QHttpPart
 */
 
-QFormDataPartBuilder &QFormDataBuilder::part(QLatin1StringView name)
+QFormDataPartBuilder &QFormDataBuilder::part(QAnyStringView name)
 {
     static_assert(std::is_nothrow_move_constructible_v<decltype(m_parts)>);
     static_assert(std::is_nothrow_move_assignable_v<decltype(m_parts)>);
