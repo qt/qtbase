@@ -32,6 +32,9 @@ public:
                 QDir::Filters filters = QDir::NoFilter,
                 IteratorFlags flags = IteratorFlag::NoFlag);
 
+    QDirListing(QDirListing &&);
+    QDirListing &operator=(QDirListing &&);
+
     ~QDirListing();
 
     QString iteratorPath() const;

@@ -480,6 +480,24 @@ QDirListing::QDirListing(const QString &path, const QStringList &nameFilters, QD
 }
 
 /*!
+    Move constructor. Moves \a other into this QDirListing.
+
+//! [partially-formed]
+    \note The moved-from object \a other is placed in a partially-formed state,
+    in which the only valid operations are destruction and assignment of a new
+    value.
+//! [partially-formed]
+*/
+QDirListing::QDirListing(QDirListing &&other) = default;
+
+/*!
+    Move-assigns \a other to this QDirListing.
+
+    \include qdirlisting.cpp partially-formed
+*/
+QDirListing &QDirListing::operator=(QDirListing &&other) = default;
+
+/*!
     Destroys the QDirListing.
 */
 QDirListing::~QDirListing() = default;
