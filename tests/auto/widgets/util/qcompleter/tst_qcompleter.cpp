@@ -613,6 +613,9 @@ void tst_QCompleter::fileSystemModel_data()
         const QString androidDir = androidHomePath();
         const QString tag = QStringLiteral("%1/fil").arg(androidDir);
         QTest::newRow(tag.toUtf8().data()) << tag << "" << "files" << androidDir + "/files";
+#elif defined(Q_OS_VXWORKS)
+        QTest::newRow("()") << "" << "" << "/" << "/";
+        QTest::newRow("(/tm)") << "/tm" << "" << "tmp" << "/tmp";
 #else
         QTest::newRow("()") << "" << "" << "/" << "/";
 #if !defined(Q_OS_AIX) && !defined(Q_OS_HPUX) && !defined(Q_OS_QNX)
