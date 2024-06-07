@@ -5,7 +5,9 @@
 
 #include "qeglfskmsscreen_p.h"
 #include "qeglfskmsdevice_p.h"
+
 #include <private/qeglfsintegration_p.h>
+#include <private/qeglfskmsintegration_p.h>
 
 #include <QtCore/QLoggingCategory>
 
@@ -13,8 +15,6 @@
 #include <QtFbSupport/private/qfbvthandler_p.h>
 
 QT_BEGIN_NAMESPACE
-
-Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
 
 class QEglFSKmsInterruptHandler : public QObject
 {

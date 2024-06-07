@@ -6,7 +6,9 @@
 #include "qeglfskmsgbmscreen_p.h"
 #include "qeglfskmsgbmdevice_p.h"
 #include "qeglfskmsgbmcursor_p.h"
+
 #include <private/qeglfsintegration_p.h>
+#include <private/qeglfskmsintegration_p.h>
 
 #include <QtCore/QLoggingCategory>
 
@@ -17,8 +19,6 @@
 #include <errno.h>
 
 QT_BEGIN_NAMESPACE
-
-Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
 
 QMutex QEglFSKmsGbmScreen::m_nonThreadedFlipMutex;
 

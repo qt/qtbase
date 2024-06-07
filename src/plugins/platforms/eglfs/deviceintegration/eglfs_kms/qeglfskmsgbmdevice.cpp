@@ -7,6 +7,7 @@
 #include "qeglfskmsgbmscreen_p.h"
 
 #include <private/qeglfsintegration_p.h>
+#include <private/qeglfskmsintegration_p.h>
 
 #include <QtCore/QLoggingCategory>
 #include <QtCore/private/qcore_unix_p.h>
@@ -14,8 +15,6 @@
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 QT_BEGIN_NAMESPACE
-
-Q_DECLARE_LOGGING_CATEGORY(qLcEglfsKmsDebug)
 
 QEglFSKmsGbmDevice::QEglFSKmsGbmDevice(QKmsScreenConfig *screenConfig, const QString &path)
     : QEglFSKmsDevice(screenConfig, path)
