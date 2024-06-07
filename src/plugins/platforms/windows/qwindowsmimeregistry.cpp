@@ -923,16 +923,8 @@ QVariant QWindowsMimeImage::convertToMime(const QString &mimeType, IDataObject *
     const bool canGetDibV5 = canGetData(CF_DIBV5, pDataObj);
     const bool hasOrigDibV5 = canGetDibV5 ? hasOriginalDIBV5(pDataObj) : false;
     qCDebug(lcQpaMime) << "canGetDibV5:" << canGetDibV5 << "hasOrigDibV5:" << hasOrigDibV5;
-    if (hasOrigDibV5) {
-        qCDebug(lcQpaMime) << "Decoding DIBV5";
-        QImage img;
-        QByteArray data = getData(CF_DIBV5, pDataObj);
-        QBuffer buffer(&data);
-        if (readDib(buffer, img))
-            return img;
-    }
-    //PNG, MS Office place this (undocumented)
-    if (canGetData(CF_PNG, pDataObj)) {
+    // PNG, MS Office place this (undocumented)
+    if (!hasOrigDibV5 && canGetData(CF_PNG, pDataObj)) {
         qCDebug(lcQpaMime) << "Decoding PNG";
         QImage img;
         QByteArray data = getData(CF_PNG, pDataObj);
@@ -940,11 +932,11 @@ QVariant QWindowsMimeImage::convertToMime(const QString &mimeType, IDataObject *
             return img;
         }
     }
-    //Fallback to DIB
-    if (canGetData(CF_DIB, pDataObj)) {
+
+    if (canGetDibV5 || canGetData(CF_DIB, pDataObj)) {
         qCDebug(lcQpaMime) << "Decoding DIB";
         QImage img;
-        QByteArray data = getData(CF_DIB, pDataObj);
+        QByteArray data = getData(canGetDibV5 ? CF_DIBV5 : CF_DIB, pDataObj);
         QBuffer buffer(&data);
         if (readDib(buffer, img))
             return img;
