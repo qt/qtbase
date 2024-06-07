@@ -85,7 +85,8 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
     \target apple-usage-description
 
     Each permission you request must be accompanied by a so called
-    \e {usage description} string in the application's \c Info.plist
+    \e {usage description} string in the application's
+    \l{Information Property List Files}{\c Info.plist}
     file, describing why the application needs to access the given
     permission. For example:
 
@@ -96,6 +97,10 @@ Q_LOGGING_CATEGORY(lcPermissions, "qt.permissions", QtWarningMsg);
 
     The relevant usage description keys are described in the documentation
     for each permission type.
+
+    To ensure the relevant permission backend is included with your
+    application, please \l{Information Property List Files}
+    {point the build system to your custom \c Info.plist}.
 
     \sa {Information Property List Files}.
 
