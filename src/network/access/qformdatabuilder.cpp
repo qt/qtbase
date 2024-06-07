@@ -66,27 +66,6 @@ QFormDataPartBuilder::QFormDataPartBuilder(QLatin1StringView name, PrivateConstr
 QFormDataPartBuilder::~QFormDataPartBuilder()
     = default;
 
-
-static auto encodeFileName(QStringView view)
-{
-    struct R { QByteArrayView encoding; QByteArray encoded; };
-
-    QByteArrayView encoding = "=";
-    bool needsUtf8 = false;
-
-    for (QChar c : view) {
-        if (c > u'\xff') {
-            encoding = "*=UTF-8''";
-            needsUtf8 = true;
-            break;
-        } else if (c > u'\x7f') {
-            encoding = "*=ISO-8859-1''";
-        }
-    }
-
-    return R{encoding, needsUtf8 ? view.toUtf8() : view.toLatin1()};
-}
-
 static void convertInto_impl(QByteArray &dst, QUtf8StringView in)
 {
     dst.clear();
@@ -199,9 +178,23 @@ QHttpPart QFormDataPartBuilder::build()
     QHttpPart httpPart;
 
     if (!m_originalBodyName.isNull()) {
-        const auto enc = encodeFileName(m_originalBodyName);
-        m_headerValue += "; filename" + enc.encoding
-                                      + enc.encoded.toPercentEncoding(); // RFC 5987 Section 3.2.1
+        const bool utf8 = !QtPrivate::isAscii(m_originalBodyName);
+        const auto enc = utf8 ? m_originalBodyName.toUtf8() : m_originalBodyName.toLatin1();
+        m_headerValue += "; filename=\"";
+        for (auto c : enc) {
+            if (c == '"' || c == '\\')
+                m_headerValue += '\\';
+            m_headerValue += c;
+        }
+        m_headerValue += "\"";
+        if (utf8) {
+            // For 'filename*' production see
+            // https://datatracker.ietf.org/doc/html/rfc5987#section-3.2.1
+            // For providing both filename and filename* parameters see
+            // https://datatracker.ietf.org/doc/html/rfc6266#section-4.3 and
+            // https://datatracker.ietf.org/doc/html/rfc8187#section-4.2
+            m_headerValue += "; filename*=UTF-8''" + enc.toPercentEncoding();
+        }
     }
 
 #if QT_CONFIG(mimetype)
