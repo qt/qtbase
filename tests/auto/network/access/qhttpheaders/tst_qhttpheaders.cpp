@@ -435,9 +435,6 @@ void tst_QHttpHeaders::headerValueField()
     QRegularExpression re("HTTP header value contained illegal character*");
     TEST_ILLEGAL_HEADER_VALUE_CHARACTER("foo\x08" "bar"); // BS
     TEST_ILLEGAL_HEADER_VALUE_CHARACTER("foo\x1B" "bar"); // ESC
-    // Disallowed UTF-8 characters
-    TEST_ILLEGAL_HEADER_VALUE_CHARACTER(u8"€");
-    TEST_ILLEGAL_HEADER_VALUE_CHARACTER(u8"𝒜𝒴𝟘𝟡𐎀𐎜𐒀𐒐𝓐𝓩𝔸𝔹𝕀𝕁𝕌𝕍𓂀𓂁𓃀𓃁𓇋𓇌𓉐𓉑𓋴𓋵𓎡𓎢𓎣𓏏");
     // Disallowed UTF-16 characters
     TEST_ILLEGAL_HEADER_VALUE_CHARACTER(u"€");
     TEST_ILLEGAL_HEADER_VALUE_CHARACTER(u"𝒜𝒴𝟘𝟡𐎀𐎜𐒀𐒐𝓐𝓩𝔸𝔹𝕀𝕁𝕌𝕍𓂀𓂁𓃀𓃁𓇋𓇌𓉐𓉑𓋴𓋵𓎡𓎢𓎣𓏏");

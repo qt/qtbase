@@ -970,50 +970,6 @@ QDebug operator<<(QDebug debug, const QHttpHeaders &headers)
 }
 #endif
 
-// A clarification on string encoding:
-// Setters and getters only accept names and values that are Latin-1 representable:
-// Either they are directly ASCII/Latin-1, or if they are UTF-X, they only use first 256
-// of the unicode points. For example using a '€' (U+20AC) in value would yield a warning
-// and the call is ignored.
-// Furthermore the 'name' has more strict rules than the 'value'
-
-// TODO FIXME REMOVEME once this is merged:
-// https://codereview.qt-project.org/c/qt/qtbase/+/508829
-static bool isUtf8Latin1Representable(QUtf8StringView s) noexcept
-{
-    // L1 encoded in UTF8 has at most the form
-    // - 0b0XXX'XXXX - US-ASCII
-    // - 0b1100'00XX 0b10XX'XXXX - at most 8 non-zero LSB bits allowed in L1
-    bool inMultibyte = false;
-    for (unsigned char c : s) {
-        if (c < 128) { // US-ASCII
-            if (inMultibyte)
-                return false; // invalid sequence
-        } else {
-            // decode as UTF-8:
-            if ((c & 0b1110'0000) == 0b1100'0000) { // two-octet UTF-8 leader
-                if (inMultibyte)
-                    return false; // invalid sequence
-                inMultibyte = true;
-                const auto bits_7_to_11 = c & 0b0001'1111;
-                if (bits_7_to_11 < 0b10)
-                    return false; // invalid sequence (US-ASCII encoded in two octets)
-                if (bits_7_to_11 > 0b11) // more than the two LSB
-                    return false; // outside L1
-            } else if ((c & 0b1100'0000) == 0b1000'0000) { // trailing UTF-8 octet
-                if (!inMultibyte)
-                    return false; // invalid sequence
-                inMultibyte = false; // only one continuation allowed
-            } else {
-                return false; // invalid sequence or outside of L1
-            }
-        }
-    }
-    if (inMultibyte)
-        return false; // invalid sequence: premature end
-    return true;
-}
-
 static constexpr auto isValidHttpHeaderNameChar = [](uchar c) noexcept
 {
     // RFC 9110 Chapters "5.1 Field Names" and "5.6.2 Tokens"
@@ -1088,8 +1044,10 @@ static bool headerValueValidImpl(QLatin1StringView value) noexcept
 
 static bool headerValueValidImpl(QUtf8StringView value) noexcept
 {
-    if (!isUtf8Latin1Representable(value)) // TODO FIXME see the function
-        return false;
+    // UTF-8 byte sequences are also used as values directly
+    // => allow them as such. UTF-8 byte sequences for characters
+    // outside of ASCII should all fit into obs-text (>= 0x80)
+    // (see  isValidHttpHeaderValueChar)
     return std::all_of(value.begin(), value.end(), isValidHttpHeaderValueChar);
 }
 
