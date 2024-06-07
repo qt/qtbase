@@ -322,7 +322,10 @@ QDpi QIOSScreen::logicalBaseDpi() const
 qreal QIOSScreen::devicePixelRatio() const
 {
 #if defined(Q_OS_VISIONOS)
-    return 2.0; // Based on what iPad app reports
+    // Based on what iPad app reports, and what Apple
+    // documents to be the default scale factor on
+    // visionOS, and the minimum scale for assets.
+    return 2.0;
 #else
     return [m_uiScreen scale];
 #endif
