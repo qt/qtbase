@@ -190,9 +190,7 @@ public:
 
     QDnsTlsAssociationRecord();
     QDnsTlsAssociationRecord(const QDnsTlsAssociationRecord &other);
-    QDnsTlsAssociationRecord(QDnsTlsAssociationRecord &&other)
-        : d(std::move(other.d))
-    {}
+    QDnsTlsAssociationRecord(QDnsTlsAssociationRecord &&other) noexcept = default;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QDnsTlsAssociationRecord)
     QDnsTlsAssociationRecord &operator=(const QDnsTlsAssociationRecord &other);
     ~QDnsTlsAssociationRecord();
