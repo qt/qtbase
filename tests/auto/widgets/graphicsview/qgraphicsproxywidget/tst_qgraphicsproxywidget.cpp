@@ -3872,6 +3872,7 @@ void tst_QGraphicsProxyWidget::touchEventPropagation()
                 break;
             }
             case QEvent::MouseButtonPress:
+            case QEvent::MouseButtonDblClick:
                 mousePressReceiver = qobject_cast<QWidget*>(receiver);
                 break;
             default:
