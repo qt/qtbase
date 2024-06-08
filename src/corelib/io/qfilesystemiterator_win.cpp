@@ -14,7 +14,7 @@ using namespace Qt::StringLiterals;
 
 bool done = true;
 
-QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters)
+QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry)
     : dirPath(entry.filePath())
     , nativePath(entry.nativeFilePath())
     , findFileHandle(INVALID_HANDLE_VALUE)
@@ -33,6 +33,11 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
     // In MSVC2015+ case we prepend //?/ for longer file-name support
     if (!dirPath.endsWith(u'/'))
         dirPath.append(u'/');
+}
+
+QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters)
+    : QFileSystemIterator(entry)
+{
     if ((filters & (QDir::Dirs|QDir::Drives)) && (!(filters & (QDir::Files))))
         onlyDirs = true;
 }
