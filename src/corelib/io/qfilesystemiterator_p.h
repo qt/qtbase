@@ -37,6 +37,7 @@ class QFileSystemIterator
 {
 public:
     QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters);
+    QFileSystemIterator(const QFileSystemEntry &entry);
     ~QFileSystemIterator();
 
     bool advance(QFileSystemEntry &fileEntry, QFileSystemMetaData &metaData);

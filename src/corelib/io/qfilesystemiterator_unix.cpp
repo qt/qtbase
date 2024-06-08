@@ -19,12 +19,10 @@ QT_BEGIN_NAMESPACE
     Native filesystem iterator, which uses ::opendir()/readdir()/dirent from the system
     libraries to iterate over the directory represented by \a entry.
 */
-QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters filters)
+QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry)
     : dirPath(entry.filePath()),
       toUtf16(QStringDecoder::Utf8)
 {
-    Q_UNUSED(filters);
-
     dir.reset(QT_OPENDIR(entry.nativeFilePath().constData()));
     if (!dir) {
         lastError = errno;
@@ -32,6 +30,11 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
         if (!dirPath.endsWith(u'/'))
             dirPath.append(u'/');
     }
+}
+
+QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters)
+    : QFileSystemIterator(entry)
+{
 }
 
 QFileSystemIterator::~QFileSystemIterator() = default;
