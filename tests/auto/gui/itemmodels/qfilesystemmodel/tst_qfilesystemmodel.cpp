@@ -117,8 +117,7 @@ protected:
     bool createFiles(QFileSystemModel *model, const QString &test_path,
                      const QStringList &initial_files, int existingFileCount = 0,
                      const QStringList &initial_dirs = QStringList());
-    QModelIndex prepareTestModelRoot(QFileSystemModel *model, const QString &test_path,
-                                     QSignalSpy **spy2 = nullptr, QSignalSpy **spy3 = nullptr);
+    QModelIndex prepareTestModelRoot(QFileSystemModel *model, const QString &test_path);
 
 private:
     QString flatDirTestPath;
@@ -382,16 +381,11 @@ bool tst_QFileSystemModel::createFiles(QFileSystemModel *model, const QString &t
     return true;
 }
 
-QModelIndex tst_QFileSystemModel::prepareTestModelRoot(QFileSystemModel *model, const QString &test_path,
-                                                       QSignalSpy **spy2, QSignalSpy **spy3)
+QModelIndex tst_QFileSystemModel::prepareTestModelRoot(QFileSystemModel *model,
+                                                       const QString &test_path)
 {
     if (model->rowCount(model->index(test_path)) != 0)
         return QModelIndex();
-
-    if (spy2)
-        *spy2 = new QSignalSpy(model, &QFileSystemModel::rowsInserted);
-    if (spy3)
-        *spy3 = new QSignalSpy(model, &QFileSystemModel::rowsAboutToBeInserted);
 
     QStringList files = { "b", "d", "f", "h", "j", ".a", ".c", ".e", ".g" };
 
@@ -412,16 +406,16 @@ QModelIndex tst_QFileSystemModel::prepareTestModelRoot(QFileSystemModel *model, 
 
 void tst_QFileSystemModel::rowCount()
 {
-    QSignalSpy *spy2 = nullptr;
-    QSignalSpy *spy3 = nullptr;
     QScopedPointer<QFileSystemModel> model(new QFileSystemModel);
     QAbstractItemModelTester tester(model.get());
+    QSignalSpy rowsInsertedSpy(model.get(), &QFileSystemModel::rowsInserted);
+    QSignalSpy rowsAboutToBeInsertedSpy(model.get(), &QFileSystemModel::rowsAboutToBeInserted);
     tester.setUseFetchMore(false);
-    QModelIndex root = prepareTestModelRoot(model.data(), flatDirTestPath, &spy2, &spy3);
+    QModelIndex root = prepareTestModelRoot(model.data(), flatDirTestPath);
     QVERIFY(root.isValid());
 
-    QVERIFY(spy2 && spy2->size() > 0);
-    QVERIFY(spy3 && spy3->size() > 0);
+    QCOMPARE_GT(rowsInsertedSpy.size(), 0);
+    QCOMPARE_GT(rowsAboutToBeInsertedSpy.size(), 0);
 }
 
 void tst_QFileSystemModel::rowsInserted_data()
