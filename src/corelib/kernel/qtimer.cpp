@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
     more and more platforms, we expect that zero-millisecond
     QTimer objects will gradually be replaced by \l{QThread}s.
 
-    \note Since Qt 6.7 this class is superseded by \l{QChronoTimer}.
+    \note Since Qt 6.8 this class is superseded by \l{QChronoTimer}.
     The maximum interval QTimer supports is limited by the number of
     milliseconds that would fit in an \c int (which is around 24 days);
     whereas QChronoTimer stores its interval as \c std::chrono::nanoseconds
