@@ -972,9 +972,10 @@ bool QFSFileEngine::remove()
     Q_D(QFSFileEngine);
     QSystemError error;
     bool ret = QFileSystemEngine::removeFile(d->fileEntry, error);
-    d->metaData.clear();
     if (!ret)
         setError(QFile::RemoveError, error.toString());
+    else
+        d->metaData.clear();
     return ret;
 }
 
