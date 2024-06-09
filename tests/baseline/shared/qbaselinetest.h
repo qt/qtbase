@@ -66,4 +66,9 @@ do {\
         QSKIP("Blacklisted on baseline server.");\
 } while (0)
 
+#define QBASELINETEST_MAIN(TestObject) QTEST_MAIN_WRAPPER(TestObject, \
+    QHashSeed::setDeterministicGlobalSeed(); \
+    QBaselineTest::handleCmdLineArgs(&argc, &argv); \
+    QTEST_MAIN_SETUP())
+
 #endif // BASELINETEST_H

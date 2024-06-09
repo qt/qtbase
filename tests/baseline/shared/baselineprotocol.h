@@ -115,7 +115,8 @@ public:
     // For client:
 
     // For advanced client:
-    bool connect(const QString &testCase, bool *dryrun = nullptr, const PlatformInfo& clientInfo = PlatformInfo());
+    bool connect(const QString &testCase, bool *dryrun = nullptr,
+                 const PlatformInfo &clientInfo = PlatformInfo(), const QString &server = QString());
     bool disconnect();
     bool requestBaselineChecksums(const QString &testFunction, ImageItemList *itemList);
     bool submitMatch(const ImageItem &item, QByteArray *serverMsg);

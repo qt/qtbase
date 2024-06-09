@@ -473,17 +473,6 @@ void tst_Lancelot::paint(QPaintDevice *device, GraphicsEngine engine, QImage::Fo
     p.end();
 }
 
-#define main _realmain
-QTEST_MAIN(tst_Lancelot)
-#undef main
-
-int main(int argc, char *argv[])
-{
-    // Avoid rendering variations caused by QHash randomization
-    QHashSeed::setDeterministicGlobalSeed();
-
-    QBaselineTest::handleCmdLineArgs(&argc, &argv);
-    return _realmain(argc, argv);
-}
+QBASELINETEST_MAIN(tst_Lancelot);
 
 #include "tst_baseline_painting.moc"
