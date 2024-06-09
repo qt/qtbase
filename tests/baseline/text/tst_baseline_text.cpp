@@ -103,17 +103,6 @@ void tst_Text::tst_differentScriptsBackgrounds()
 }
 
 
-#define main _realmain
-QTEST_MAIN(tst_Text)
-#undef main
-
-int main(int argc, char *argv[])
-{
-    // Avoid rendering variations caused by QHash randomization
-    QHashSeed::setDeterministicGlobalSeed();
-
-    QBaselineTest::handleCmdLineArgs(&argc, &argv);
-    return _realmain(argc, argv);
-}
+QBASELINETEST_MAIN(tst_Text)
 
 #include "tst_baseline_text.moc"

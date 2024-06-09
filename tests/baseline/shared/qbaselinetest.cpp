@@ -11,6 +11,7 @@
 namespace QBaselineTest {
 
 static char *fargv[MAXCMDLINEARGS];
+static QString server;
 static bool simfail = false;
 static PlatformInfo customInfo;
 static bool customAutoModeSet = false;
@@ -33,6 +34,7 @@ void handleCmdLineArgs(int *argcp, char ***argvp)
         return;
 
     bool showHelp = false;
+    bool abortOnHelp = true;
 
     int fargc = 0;
     int numArgs = *argcp;
@@ -41,7 +43,16 @@ void handleCmdLineArgs(int *argcp, char ***argvp)
         QByteArray arg = (*argvp)[i];
         QByteArray nextArg = (i+1 < numArgs) ? (*argvp)[i+1] : nullptr;
 
-        if (arg == "-simfail") {
+        if (arg == "-server") {
+            i++;
+            if (!nextArg.isEmpty()) {
+                server = QString::fromLocal8Bit(nextArg);
+            } else {
+                qWarning() << "-server requires parameter";
+                showHelp = true;
+                break;
+            }
+        } else if (arg == "-simfail") {
             simfail = true;
         } else if (arg == "-fuzzlevel") {
             i++;
@@ -77,10 +88,13 @@ void handleCmdLineArgs(int *argcp, char ***argvp)
             }
             customInfo.addOverride(key, value);
         } else {
-            if ( (arg == "-help") || (arg == "--help") )
+            if ( (arg == "-help") || (arg == "--help") ) {
                 showHelp = true;
+                abortOnHelp = false;
+            }
             if (fargc >= MAXCMDLINEARGS) {
                 qWarning() << "Too many command line arguments!";
+                showHelp = true;
                 break;
             }
             fargv[fargc++] = (*argvp)[i];
@@ -93,7 +107,9 @@ void handleCmdLineArgs(int *argcp, char ***argvp)
         // TBD: arrange for this to be printed *after* QTest's help
         QTextStream out(stdout);
         out << "\n Baseline testing (lancelot) options:\n";
-        out << " -simfail            : Force an image comparison mismatch. For testing purposes.\n";
+        out << " -server <host>      : Set the network baseline server to connect to.\n";
+        out << "                       The default is taken from the environment variable QT_LANCELOT_SERVER.\n";
+        out << " -simfail            : Force an image comparison mismatch. For development purposes.\n";
         out << " -fuzzlevel <int>    : Specify the percentage of fuzziness in comparison. Overrides server default. 0 means exact match.\n";
         out << " -auto               : Inform server that this run is done by a daemon, CI system or similar.\n";
         out << " -adhoc (default)    : The inverse of -auto; this run is done by human, e.g. for testing.\n";
@@ -104,6 +120,9 @@ void handleCmdLineArgs(int *argcp, char ***argvp)
         out << "                       for example: -compareto QtVersion=4.8.0\n";
         out << "                       Multiple -compareto client specifications may be given.\n";
         out << "\n";
+        out.flush();
+        if (abortOnHelp)
+            std::exit(1);
     }
 }
 
@@ -182,7 +201,7 @@ bool connect(QByteArray *msg, bool *error)
         return false;
     }
 
-    if (!proto.connect(testCase, &dryRunMode, clientInfo)) {
+    if (!proto.connect(testCase, &dryRunMode, clientInfo, server)) {
         *msg += "Failed to connect to baseline server: " + proto.errorMessage().toLatin1();
         *error = true;
         return false;
