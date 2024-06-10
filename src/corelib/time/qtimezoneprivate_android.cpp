@@ -14,7 +14,7 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_JNI_CLASS(TimeZone, "java/util/TimeZone");
 Q_DECLARE_JNI_CLASS(Locale, "java/util/Locale");
 Q_DECLARE_JNI_CLASS(Date, "java/util/Date");
-Q_DECLARE_JNI_TYPE(StringArray, "[Ljava/lang/String;")
+Q_DECLARE_JNI_CLASS(String, "java/lang/String")
 
 /*
     Private
@@ -209,23 +209,14 @@ bool QAndroidTimeZonePrivate::isTimeZoneIdAvailable(const QByteArray &ianaId) co
 
 QList<QByteArray> QAndroidTimeZonePrivate::availableTimeZoneIds() const
 {
+    using namespace QtJniTypes;
+
+    const QJniArray androidAvailableIdList = TimeZone::callStaticMethod<String[]>("getAvailableIDs");
+
     QList<QByteArray> availableTimeZoneIdList;
-    QJniObject androidAvailableIdList = QJniObject::callStaticMethod<QtJniTypes::StringArray>(
-                             QtJniTypes::Traits<QtJniTypes::TimeZone>::className(), "getAvailableIDs");
-
-    QJniEnvironment jniEnv;
-    int androidTZcount = jniEnv->GetArrayLength(androidAvailableIdList.object<jarray>());
-
-    // need separate jobject and QJniObject here so that we can delete (DeleteLocalRef) the reference to the jobject
-    // (or else the JNI reference table fills after 512 entries from GetObjectArrayElement)
-    jobject androidTZobject;
-    QJniObject androidTZ;
-    for (int i = 0; i < androidTZcount; i++) {
-        androidTZobject = jniEnv->GetObjectArrayElement(androidAvailableIdList.object<jobjectArray>(), i);
-        androidTZ = androidTZobject;
-        availableTimeZoneIdList.append(androidTZ.toString().toUtf8());
-        jniEnv->DeleteLocalRef(androidTZobject);
-    }
+    availableTimeZoneIdList.reserve(androidAvailableIdList.size());
+    for (const auto &id : androidAvailableIdList)
+        availableTimeZoneIdList.append(id.toString().toUtf8());
 
     return availableTimeZoneIdList;
 }
