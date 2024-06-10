@@ -825,7 +825,7 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
     if (list.size() != elements) { // size mismatch
         error = QCoreApplication::translate(
                     "QIBaseResult",
-                    "Array size mismatch. Fieldname: %3, Expected size: %1. Supplied size: %2")
+                    "Array size mismatch. Field name: %3, expected size: %1. Supplied size: %2")
                 .arg(elements).arg(list.size());
         return 0;
     }
@@ -836,7 +836,7 @@ static char* createArrayBuffer(char *buffer, const QList<QVariant> &list,
           if (elem.typeId() != QMetaType::QVariantList) { // dimensions mismatch
               error = QCoreApplication::translate(
                           "QIBaseResult",
-                          "Array dimensons mismatch. Fieldname: %1");
+                          "Array dimensions mismatch. Field name: %1");
               return 0;
           }
 
