@@ -34,12 +34,14 @@ Q_SIGNALS:
 public:
     enum Roles {
         FileIconRole = Qt::DecorationRole,
+
+        FileInfoRole = Qt::UserRole - 4, // New values go before, -5, -6 ..etc
         QT7_ONLY(
-        FilePathRole = Qt::UserRole - 4,
-        FileNameRole = Qt::UserRole - 3,
-        FilePermissions = Qt::UserRole - 2,
+        FilePathRole = Qt::UserRole - 3,
+        FileNameRole = Qt::UserRole - 2,
+        FilePermissions = Qt::UserRole - 1,
         )
-        FileInfoRole = Qt::UserRole - 1,
+
         QT6_ONLY(
         FilePathRole = Qt::UserRole + 1,
         FileNameRole = Qt::UserRole + 2,
