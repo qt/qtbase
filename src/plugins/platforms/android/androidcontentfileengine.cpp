@@ -21,7 +21,6 @@ Q_DECLARE_JNI_CLASS(UriType, "android/net/Uri");
 Q_DECLARE_JNI_CLASS(Uri, "android/net/Uri");
 Q_DECLARE_JNI_CLASS(ParcelFileDescriptorType, "android/os/ParcelFileDescriptor");
 Q_DECLARE_JNI_CLASS(CursorType, "android/database/Cursor");
-Q_DECLARE_JNI_TYPE(StringArray, "[Ljava/lang/String;");
 
 static QJniObject &contentResolverInstance()
 {
@@ -375,11 +374,9 @@ public:
         auto cursor = contentResolverInstance().callMethod<QtJniTypes::CursorType>(
             "query",
             uri.object<QtJniTypes::UriType>(),
-            projection.isEmpty() ?
-                        nullptr : fromStringList(projection).object<QtJniTypes::StringArray>(),
+            QJniArray(projection),
             selection.isEmpty() ? nullptr : QJniObject::fromString(selection).object<jstring>(),
-            selectionArgs.isEmpty() ?
-                        nullptr : fromStringList(selectionArgs).object<QtJniTypes::StringArray>(),
+            QJniArray(selectionArgs),
             sortOrder.isEmpty() ? nullptr : QJniObject::fromString(sortOrder).object<jstring>());
         if (!cursor.isValid())
             return {};
@@ -413,15 +410,6 @@ public:
     bool moveToNext() { return m_object.callMethod<jboolean>("moveToNext"); }
 
 private:
-    static QJniObject fromStringList(const QStringList &list)
-    {
-        QJniEnvironment env;
-        auto array = env->NewObjectArray(list.size(), env.findClass("java/lang/String"), nullptr);
-        for (int i = 0; i < list.size(); ++i)
-            env->SetObjectArrayElement(array, i, QJniObject::fromString(list[i]).object());
-        return QJniObject::fromLocalRef(array);
-    }
-
     QJniObject m_object;
 };
 
