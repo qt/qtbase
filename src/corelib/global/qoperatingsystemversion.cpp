@@ -557,6 +557,13 @@ const QOperatingSystemVersionBase QOperatingSystemVersion::MacOSVentura;
 const QOperatingSystemVersionBase QOperatingSystemVersion::MacOSSonoma;
 
 /*!
+    \variable QOperatingSystemVersion::MacOSSequoia
+    \brief a version corresponding to macOS Sequoia (version 15).
+    \since 6.8
+*/
+const QOperatingSystemVersionBase QOperatingSystemVersion::MacOSSequoia;
+
+/*!
     \variable QOperatingSystemVersion::AndroidJellyBean
     \brief a version corresponding to Android Jelly Bean (version 4.1, API level 16).
     \since 5.9
