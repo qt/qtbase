@@ -20,7 +20,6 @@ list(APPEND test_data_dirs "entrylist")
 list(APPEND test_data_dirs "types")
 list(APPEND test_data_dirs "tst_qdir.cpp")
 
-
 set(test_data_files)
 
 foreach(dir  ${test_data_dirs})

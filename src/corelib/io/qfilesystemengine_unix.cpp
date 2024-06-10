@@ -1198,15 +1198,19 @@ bool QFileSystemEngine::rmdir(const QFileSystemEntry &entry)
 
 bool QFileSystemEngine::rmpath(const QFileSystemEntry &entry)
 {
-    const QString path = QDir::cleanPath(entry.filePath());
+    QByteArray path = QFile::encodeName(QDir::cleanPath(entry.filePath()));
     Q_CHECK_FILE_NAME(path, false);
 
-    for (qsizetype oldslash = 0, slash = path.size(); slash > 0; oldslash = slash) {
-        const QByteArray chunk = QFile::encodeName(path.left(slash));
-        if (::rmdir(chunk.constData()) != 0)
-            return oldslash != 0;
+    if (::rmdir(path.constData()) != 0)
+        return false; // Only return false if `entry` couldn't be deleted
 
-        slash = path.lastIndexOf(QDir::separator(), oldslash - 1);
+    const char sep = QDir::separator().toLatin1();
+    qsizetype slash = path.lastIndexOf(sep);
+    // `slash > 0` because truncate(0) would make `path` empty
+    for (; slash > 0; slash = path.lastIndexOf(sep)) {
+        path.truncate(slash);
+        if (::rmdir(path.constData()) != 0)
+            break;
     }
 
     return true;

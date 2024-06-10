@@ -364,10 +364,11 @@ void tst_QDir::mkdirRmdir_data()
     const struct {
         const char *name; // shall have a prefix added
         const char *path; // relative
-        bool recurse;
+        bool recurse; // QDir::rmpath() vs. QDir::rmdir()
     } cases[] = {
         { "plain", "testdir/one", false },
         { "recursive", "testdir/two/three/four", true },
+        { "recursive-name-length-1", "a/b/c", true },
         { "with-..", "testdir/../testdir/three", false },
     };
 
@@ -383,6 +384,8 @@ void tst_QDir::mkdirRmdir()
     QFETCH(QString, path);
     QFETCH(bool, recurse);
 
+    QTest::ThrowOnFailEnabler thrower;
+
     QDir dir;
     dir.rmdir(path);
     if (recurse)
@@ -394,10 +397,24 @@ void tst_QDir::mkdirRmdir()
     QFileInfo fi(path);
     QVERIFY2(fi.exists() && fi.isDir(), msgDoesNotExist(path).constData());
 
-    if (recurse)
-        QVERIFY(dir.rmpath(path));
-    else
+    if (recurse) {
+        // Check that rmpath() removed all empty parent dirs
+        auto verifyRmPath = [&dir, &path](QLatin1StringView subdir) {
+            QFileInfo fi(QDir::currentPath() + subdir);
+            QVERIFY(fi.exists());
+            QVERIFY(dir.rmpath(path));
+            fi.refresh();
+            QVERIFY(!fi.exists());
+        };
+        if (path.contains("testdir/two/three/four"_L1))
+            verifyRmPath("/testdir/two"_L1);
+        else if (path.contains("a/b/c"_L1))
+            verifyRmPath("/a"_L1);
+        else
+            QVERIFY(dir.rmpath(path));
+    } else {
         QVERIFY(dir.rmdir(path));
+    }
 
     //make sure it really doesn't exist (ie that rmdir returns the right value)
     fi.refresh();
