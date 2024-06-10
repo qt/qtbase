@@ -404,7 +404,8 @@ function(qt6_android_add_apk_target target)
     # No need to use genex for the BINARY_DIR since it's read-only.
     get_target_property(target_binary_dir ${target} BINARY_DIR)
 
-    if($CACHE{QT_USE_TARGET_ANDROID_BUILD_DIR})
+    if("$CACHE{QT_USE_TARGET_ANDROID_BUILD_DIR}" AND
+       "$CACHE{QT_USE_TARGET_ANDROID_BUILD_DIR}" STREQUAL "${QT_USE_TARGET_ANDROID_BUILD_DIR}")
         set(apk_final_dir "${target_binary_dir}/android-build-${target}")
     else()
         if(QT_USE_TARGET_ANDROID_BUILD_DIR)
