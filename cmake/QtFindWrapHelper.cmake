@@ -102,8 +102,11 @@ macro(qt_find_package_system_or_bundled _unique_prefix)
         endif()
 
         if(_qfwrap_${_unique_prefix}_package_version)
+            set(Wrap${_qfwrap_${_unique_prefix}_FRIENDLY_PACKAGE_NAME}_VERSION
+                "${_qfwrap_${_unique_prefix}_package_version}"
+            )
             set(_qfwrap_${_unique_prefix}_package_version_option
-                VERSION_VAR "_qfwrap_${_unique_prefix}_package_version"
+                VERSION_VAR "Wrap${_qfwrap_${_unique_prefix}_FRIENDLY_PACKAGE_NAME}_VERSION"
             )
         endif()
 
