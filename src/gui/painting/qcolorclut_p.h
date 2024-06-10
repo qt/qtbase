@@ -42,7 +42,7 @@ public:
 
     QColorVector apply(const QColorVector &v) const
     {
-        Q_ASSERT(table.size() == gridPointsX * gridPointsY * gridPointsZ * gridPointsW);
+        Q_ASSERT(table.size() == qsizetype(gridPointsX * gridPointsY * gridPointsZ * gridPointsW));
         QColorVector frac;
         const float x = std::clamp(v.x, 0.0f, 1.0f) * (gridPointsX - 1);
         const float y = std::clamp(v.y, 0.0f, 1.0f) * (gridPointsY - 1);
