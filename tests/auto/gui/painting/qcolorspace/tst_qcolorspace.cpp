@@ -7,6 +7,7 @@
 #include <qcolorspace.h>
 #include <qimage.h>
 #include <qimagereader.h>
+#include <qrgbafloat.h>
 
 #include <private/qcolorspace_p.h>
 
@@ -73,6 +74,7 @@ private slots:
     void grayColorSpaceEffectivelySRgb();
 
     void scaleAlphaValue();
+    void hdrColorSpaces();
 };
 
 tst_QColorSpace::tst_QColorSpace()
@@ -1062,6 +1064,27 @@ void tst_QColorSpace::scaleAlphaValue()
     image.setColorSpace(QColorSpace::SRgb);
     image.convertToColorSpace(QColorSpace::SRgbLinear, QImage::Format_RGBA64);
     QCOMPARE(reinterpret_cast<const QRgba64 *>(image.constBits())->alpha(), 257 * 125);
+}
+
+void tst_QColorSpace::hdrColorSpaces()
+{
+    QColorSpace bt2020linear = QColorSpace::Bt2020;
+    bt2020linear.setTransferFunction(QColorSpace::TransferFunction::Linear);
+
+    QColorTransform pqToLinear = QColorSpace(QColorSpace::Bt2100Pq).transformationToColorSpace(bt2020linear);
+    QColorTransform hlgToLinear = QColorSpace(QColorSpace::Bt2100Hlg).transformationToColorSpace(bt2020linear);
+
+    QColor maxWhite = QColor::fromRgbF(1.0f, 1.0f, 1.0f);
+    QColor hlgWhite = QColor::fromRgbF(0.5f, 0.5f, 0.5f);
+    QCOMPARE(hlgToLinear.map(maxWhite).redF(), 12.f);
+    QCOMPARE(hlgToLinear.map(maxWhite).greenF(), 12.f);
+    QCOMPARE(hlgToLinear.map(maxWhite).blueF(), 12.f);
+    QCOMPARE(hlgToLinear.map(hlgWhite).redF(), 1.f);
+    QCOMPARE(hlgToLinear.map(hlgWhite).greenF(), 1.f);
+    QCOMPARE(hlgToLinear.map(hlgWhite).blueF(), 1.f);
+    QCOMPARE(pqToLinear.map(maxWhite).redF(), 64.f);
+    QCOMPARE(pqToLinear.map(maxWhite).greenF(), 64.f);
+    QCOMPARE(pqToLinear.map(maxWhite).blueF(), 64.f);
 }
 
 QTEST_MAIN(tst_QColorSpace)
