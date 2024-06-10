@@ -8463,7 +8463,7 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
             continue;
         qCDebug(lcWidgetShowHide) << "Considering" << widget
               << "with attributes" << WidgetAttributes{widget};
-        if (widget->isWindow() || widget->testAttribute(Qt::WA_WState_Hidden))
+        if (widget->isWindow() || !widget->isVisible())
             continue;
 
         if (spontaneous)

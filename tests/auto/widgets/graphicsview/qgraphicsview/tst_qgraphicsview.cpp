@@ -5013,9 +5013,7 @@ void tst_QGraphicsView::QTBUG_53974_mismatched_hide_show_events()
     QCOMPARE_EQ(scene->d_func()->activationRefCount, 0);
 
     lowLevel->setCurrentIndex(0);
-    QEXPECT_FAIL("", "The view was already hidden, so the refcount should still be 0", Continue);
     QCOMPARE_EQ(scene->d_func()->activationRefCount, 0);
-    scene->d_func()->activationRefCount = 0;
 
     // Make lowLevel visible.
     topLevel.setCurrentIndex(1);
@@ -5043,9 +5041,7 @@ void tst_QGraphicsView::QTBUG_53974_mismatched_hide_show_events()
     QCOMPARE_EQ(scene->d_func()->activationRefCount, 0);
 
     lowLevel->setCurrentIndex(0);
-    QEXPECT_FAIL("", "The view was already hidden, so the refcount should still be 0", Continue);
     QCOMPARE_EQ(scene->d_func()->activationRefCount, 0);
-    scene->d_func()->activationRefCount = 0;
 
     // Make lowLevel and the QGV visible.
     lowLevel->setCurrentIndex(1);
@@ -5060,9 +5056,7 @@ void tst_QGraphicsView::QTBUG_53974_mismatched_hide_show_events()
 
     // Hide the QGV:
     lowLevel->setCurrentIndex(0);
-    QEXPECT_FAIL("", "The view was already hidden, so the refcount should still be 0", Continue);
     QCOMPARE_EQ(scene->d_func()->activationRefCount, 0);
-    scene->d_func()->activationRefCount = 0;
 }
 #endif
 
