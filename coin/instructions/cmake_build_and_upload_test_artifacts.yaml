@@ -71,6 +71,11 @@ instructions:
     maxTimeBetweenOutput: 1200
     # INTEGRITY artifacts aren't used.
     disable_if:
-      condition: property
-      property: target.osVersion
-      equals_value: INTEGRITY
+      condition: or
+      conditions:
+        - condition: property
+          property: target.osVersion
+          equals_value: INTEGRITY
+        - condition: property
+          property: features
+          contains_value: DoNotUploadTests
