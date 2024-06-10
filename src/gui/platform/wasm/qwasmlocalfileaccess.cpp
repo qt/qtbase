@@ -277,9 +277,10 @@ void saveFile(const char *content, size_t size, const std::string &fileNameHint)
         return;
     }
 
+    QByteArray data(content, size);
     FileDialog::showSave(fileNameHint, {
         .thenFunc = [=](emscripten::val result) {
-            saveDataToFileInChunks(result, QByteArray(content, size));
+            saveDataToFileInChunks(result, data);
         },
     });
 }
