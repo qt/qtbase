@@ -63,40 +63,41 @@ void tst_QFloat16Format::formatCompileTime()
 
 void tst_QFloat16Format::format_data()
 {
+#ifdef QT_SUPPORTS_STD_FORMAT
     QTest::addColumn<QString>("format");
     QTest::addColumn<qfloat16>("value");
-    QTest::addColumn<QByteArray>("locName");
+    QTest::addColumn<std::locale>("locale");
     QTest::addColumn<QString>("expectedString");
 
     auto row = [](const QString &format, qfloat16 val, const QString &expected,
-                  const QByteArray &loc = QByteArray())
+                  const std::locale &loc = std::locale::classic())
     {
-        QString str;
-        QDebug dbg(&str);
-        dbg.nospace().noquote() << format;
-        if (!loc.isEmpty())
-            dbg.nospace().noquote() << "_" << loc;
-
-        QTest::newRow(qPrintable(str)) << format << val << loc << expected;
+        QTest::addRow("%s:%s", loc.name().c_str(), qPrintable(format))
+                << format << val << loc << expected;
     };
-
-    QByteArray loc;
-#if defined(Q_CC_MSVC_ONLY)
-    loc = "de-DE"_ba;
-#elif !defined(Q_CC_MINGW) // minGW has only C and POSIX locales
-    loc = "de_DE"_ba;
-#endif
 
     row(u"{}"_s, qfloat16(1.f), u"1"_s);
     row(u"{:#}"_s, qfloat16(1.f), u"1."_s);
     row(u"{:f}"_s, qfloat16(1.f), u"1.000000"_s);
     row(u"{:*>10.2a}"_s, qfloat16(-1.23f), u"**-1.3bp+0"_s);
-    if (!loc.isEmpty()) {
-        row(u"{:+Lf}"_s, qfloat16(1.f), u"+1,000000"_s, loc);
-        row(u"{:*^10.3LF}"_s, qfloat16(-0.1234f), u"**-0,123**"_s, loc);
-        row(u"{:*^#10.4Lg}"_s, qfloat16(-1.f), u"**-1,000**"_s, loc);
-        row(u"{:*<14.3LE}"_s, qfloat16(-0.1234f), u"-1,234E-01****"_s, loc);
+
+    try {
+        // check if this locale is a) valid and b) works as expected
+#if defined(Q_CC_MSVC)
+        std::locale loc("de-DE");
+#else
+        std::locale loc("de_DE");
+#endif
+        if (std::format(loc, "{:L}", 1.25) == "1,25") {
+            row(u"{:+Lf}"_s, qfloat16(1.f), u"+1,000000"_s, loc);
+            row(u"{:*^10.3LF}"_s, qfloat16(-0.1234f), u"**-0,123**"_s, loc);
+            row(u"{:*^#10.4Lg}"_s, qfloat16(-1.f), u"**-1,000**"_s, loc);
+            row(u"{:*<14.3LE}"_s, qfloat16(-0.1234f), u"-1,234E-01****"_s, loc);
+        }
+    } catch (const std::runtime_error &) {
+        // locale doesn't exist (std::locale constructor threw)
     }
+#endif // QT_SUPPORTS_STD_FORMAT
 }
 
 void tst_QFloat16Format::format()
@@ -104,21 +105,15 @@ void tst_QFloat16Format::format()
 #ifdef QT_SUPPORTS_STD_FORMAT
     QFETCH(const QString, format);
     QFETCH(const qfloat16, value);
-    QFETCH(const QByteArray, locName);
+    QFETCH(const std::locale, locale);
     QFETCH(const QString, expectedString);
 
     // char
     {
         std::string buffer;
         const auto formatStr = format.toStdString();
-        if (!locName.isEmpty()) {
-            std::locale loc(locName.constData());
-            std::vformat_to(std::back_inserter(buffer), loc, formatStr,
-                            std::make_format_args(value));
-        } else {
-            std::vformat_to(std::back_inserter(buffer), formatStr,
-                            std::make_format_args(value));
-        }
+        std::vformat_to(std::back_inserter(buffer), locale, formatStr,
+                        std::make_format_args(value));
         const QString actualString = QString::fromStdString(buffer);
         QCOMPARE_EQ(actualString, expectedString);
     }
@@ -127,14 +122,8 @@ void tst_QFloat16Format::format()
     {
         std::wstring buffer;
         const auto formatStr = format.toStdWString();
-        if (!locName.isEmpty()) {
-            std::locale loc(locName.constData());
-            std::vformat_to(std::back_inserter(buffer), loc, formatStr,
-                            std::make_wformat_args(value));
-        } else {
-            std::vformat_to(std::back_inserter(buffer), formatStr,
-                            std::make_wformat_args(value));
-        }
+        std::vformat_to(std::back_inserter(buffer), locale, formatStr,
+                        std::make_wformat_args(value));
         const QString actualString = QString::fromStdWString(buffer);
         QCOMPARE_EQ(actualString, expectedString);
     }
