@@ -560,9 +560,9 @@ qt_feature("optimize_full"
 qt_feature_config("optimize_full" QMAKE_PRIVATE_CONFIG)
 qt_feature("msvc_obj_debug_info"
     LABEL "Embed debug info in object files (MSVC)"
-    CONDITION MSVC
     ENABLE QT_USE_CCACHE
     AUTODETECT OFF
+    EMIT_IF MSVC
 )
 qt_feature_config("msvc_obj_debug_info" QMAKE_PRIVATE_CONFIG)
 qt_feature("pkg-config" PUBLIC
