@@ -953,8 +953,17 @@ macro(_qt_internal_sbom_find_python)
     endif()
 
     if(NOT Python3_EXECUTABLE)
+        if(QT_SBOM_PYTHON_INTERP)
+            set(__qt_sbom_python3_root_dir "${Python3_ROOT_DIR}")
+            set(Python3_ROOT_DIR ${QT_SBOM_PYTHON_INTERP})
+        endif()
+
         # NTIA-compliance checker requires Python 3.9 or later.
         find_package(Python3 3.9 REQUIRED COMPONENTS Interpreter)
+
+        if(QT_SBOM_PYTHON_INTERP)
+            set(Python3_ROOT_DIR ${__qt_sbom_python3_root_dir})
+        endif()
     endif()
 
     if(QT_INTERNAL_NO_SBOM_FIND_PYTHON_FRAMEWORK)
@@ -1008,8 +1017,17 @@ function(_qt_internal_sbom_find_python_dependency_program)
     string(TOUPPER "${program_name}" upper_name)
     set(cache_var "QT_SBOM_PROGRAM_${upper_name}")
 
+    set(hints "")
+
+    # The path to python installed apps is different on Windows compared to UNIX, so we use
+    # a different path than where the python interpreter might be located.
+    if(QT_SBOM_PYTHON_APPS_PATH)
+        list(APPEND hints ${QT_SBOM_PYTHON_APPS_PATH})
+    endif()
+
     find_program(${cache_var}
         NAMES ${program_name}
+        HINTS ${hints}
     )
 
     if(NOT ${cache_var})
@@ -1086,12 +1104,29 @@ endfunction()
 
 # Helper to show the main sbom document info in the form of a CLI table.
 function(_qt_internal_sbom_show_table)
+    set(extra_code_begin "")
+    if(DEFINED ENV{COIN_UNIQUE_JOB_ID})
+        # The output of the process dynamically adjusts the width of the shown table based on the
+        # console width. In the CI, the width is very short for some reason, and thus the output
+        # is truncated in the CI log. Explicitly set a bigger width to avoid this.
+        set(extra_code_begin "
+set(backup_env_columns \$ENV{COLUMNS})
+set(ENV{COLUMNS} 150)
+")
+set(extra_code_end "
+set(ENV{COLUMNS} \${backup_env_columns})
+")
+    endif()
+
     set(content "
         message(STATUS \"Showing main SBOM document info: \${QT_SBOM_OUTPUT_PATH}\")
+
+        ${extra_code_begin}
         execute_process(
-            COMMAND sbom2doc -i \"\${QT_SBOM_OUTPUT_PATH}\"
+            COMMAND ${QT_SBOM_PROGRAM_SBOM2DOC} -i \"\${QT_SBOM_OUTPUT_PATH}\"
             RESULT_VARIABLE res
         )
+        ${extra_code_end}
         if(NOT res EQUAL 0)
             message(FATAL_ERROR \"Showing SBOM document failed: \${res}\")
         endif()
@@ -1124,7 +1159,7 @@ function(_qt_internal_sbom_audit)
     set(content "
         message(STATUS \"Auditing SBOM: \${QT_SBOM_OUTPUT_PATH}\")
         execute_process(
-            COMMAND sbomaudit -i \"\${QT_SBOM_OUTPUT_PATH}\"
+            COMMAND ${QT_SBOM_PROGRAM_SBOMAUDIT} -i \"\${QT_SBOM_OUTPUT_PATH}\"
                     --disable-license-check --cpecheck --offline
             RESULT_VARIABLE res
         )

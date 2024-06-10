@@ -493,6 +493,53 @@ instructions:
       variableName: COMMON_NON_QTBASE_TARGET_CMAKE_ARGS
       variableValue: " -DQT_GENERATE_SBOM=ON"
 
+  # SBOM Python apps path. On Windows python-installed apps are
+  # in the same directory where pip is, aka Scripts sub-directory.
+  - type: EnvironmentVariable
+    variableName: SBOM_PYTHON_APPS_PATH
+    variableValue: "{{.Env.PIP3_PATH}}"
+    enable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+  - type: EnvironmentVariable
+    variableName: SBOM_PYTHON_APPS_PATH
+    variableValue: "{{.Env.PYTHON3_PATH}}"
+    disable_if:
+      condition: property
+      property: host.os
+      equals_value: Windows
+
+
+  # SBOM verification and auditing
+  - type: Group
+    enable_if:
+      condition: property
+      property: features
+      contains_value: VerifySBOM
+    instructions:
+    - type: EnvironmentVariable
+      variableName: SBOM_COMMON_ARGS
+      variableValue: >-
+        -DQT_INTERNAL_NO_SBOM_FIND_PYTHON_FRAMEWORK=ON
+        -DQT_INTERNAL_SBOM_DEFAULT_CHECKS=ON
+        -DQT_INTERNAL_SBOM_AUDIT=ON
+        -DQT_INTERNAL_SBOM_AUDIT_NO_ERROR=ON
+        -DQT_SBOM_PYTHON_INTERP={{.Env.PYTHON3_PATH}}
+        -DQT_SBOM_PYTHON_APPS_PATH={{.Env.SBOM_PYTHON_APPS_PATH}}
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_CMAKE_ARGS
+      variableValue: " {{.Env.SBOM_COMMON_ARGS}} "
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_NON_QTBASE_CMAKE_ARGS
+      variableValue: " {{.Env.SBOM_COMMON_ARGS}} "
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_TARGET_CMAKE_ARGS
+      variableValue: " {{.Env.SBOM_COMMON_ARGS}} "
+    - type: AppendToEnvironmentVariable
+      variableName: COMMON_NON_QTBASE_TARGET_CMAKE_ARGS
+      variableValue: " {{.Env.SBOM_COMMON_ARGS}} "
+
   - type: Group
     instructions:
       - type: AppendToEnvironmentVariable
