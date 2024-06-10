@@ -121,6 +121,7 @@ class QOperatingSystemVersion : public QOperatingSystemVersionBase
 
     // ### Qt7: Regroup with the rest below
     static constexpr QOperatingSystemVersionBase MacOSSonoma { QOperatingSystemVersionBase::MacOS, 14, 0 };
+    static constexpr QOperatingSystemVersionBase MacOSSequoia { QOperatingSystemVersionBase::MacOS, 15, 0 };
     static constexpr QOperatingSystemVersionBase Android14 { QOperatingSystemVersionBase::Android, 14, 0 };
     static constexpr QOperatingSystemVersionBase Windows11_23H2 { QOperatingSystemVersionBase::Windows, 10, 0, 22631 };
 
