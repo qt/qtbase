@@ -423,7 +423,7 @@ namespace Qt {
     enum ApplicationAttribute
     {
         // AA_ImmediateWidgetCreation = 0,
-        AA_QtQuickUseDefaultSizePolicy = 1 QT_TECH_PREVIEW_API,
+        AA_QtQuickUseDefaultSizePolicy = 1,
         AA_DontShowIconsInMenus = 2,
         AA_NativeWindows = 3,
         AA_DontCreateNativeWidgetSiblings = 4,

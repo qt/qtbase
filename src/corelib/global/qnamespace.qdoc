@@ -93,9 +93,6 @@
            with the layout can be overridden by explicitly setting
            \l{Layout::fillWidth}{Layout.fillWidth} or
            \l{Layout::fillHeight}{Layout.fillHeight}.
-           \b Note: This API is considered tech preview and may change or be removed in future
-           versions of Qt.
-
 
     \value AA_DontShowIconsInMenus Actions with the Icon property won't be
            shown in any menus unless specifically set by the
