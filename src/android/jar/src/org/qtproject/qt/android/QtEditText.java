@@ -61,7 +61,7 @@ class QtEditText extends View
     {
         if (m_imeOptions == imeOptions)
             return;
-        m_imeOptions = m_imeOptions;
+        m_imeOptions = imeOptions;
         m_optionsChanged = true;
     }
 
@@ -78,7 +78,7 @@ class QtEditText extends View
     {
         if (m_inputType == inputType)
             return;
-        m_inputType = m_inputType;
+        m_inputType = inputType;
         m_optionsChanged = true;
     }
 
