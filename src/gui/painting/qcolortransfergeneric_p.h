@@ -82,18 +82,18 @@ private:
     constexpr static float m_hlg_b = 1.f - (4.f * m_hlg_a);
     constexpr static float m_hlg_c = 0.55991073f; // 0.5 - a * ln(4 * a)
 
+    // PQ to linear [0-1] -> [0-64]
+    static float pqToLinear(float x)
+    {
+        x = std::pow(x, 1.f / m_pq_m2);
+        return std::pow((m_pq_c1 - x) / (m_pq_c3 * x - m_pq_c2), (1.f / m_pq_m1)) * m_pq_f;
+    }
+
     // PQ from linear [0-64] -> [0-1]
     static float pqFromLinear(float x)
     {
-        x = std::pow(x * (1.f / m_pq_f), (1.f / m_pq_m1));
-        return std::pow((m_pq_c1 - x) / (m_pq_c3 * x - m_pq_c2), (1.f / m_pq_m2));
-    }
-
-    // PQ from linear [0-1] -> [0-64]
-    static float pqToLinear(float x)
-    {
-        x = std::pow(x, m_pq_m1);
-        return std::pow((m_pq_c1 + m_pq_c2 * x) / (1.f + m_pq_c3 * x), m_pq_m2) * m_pq_f;
+        x = std::pow(x * (1.f / m_pq_f), m_pq_m1);
+        return std::pow((m_pq_c1 + m_pq_c2 * x) / (1.f + m_pq_c3 * x), m_pq_m2);
     }
 
     constexpr static float m_pq_c1 =  107.f / 128.f; // c3 - c2 + 1
