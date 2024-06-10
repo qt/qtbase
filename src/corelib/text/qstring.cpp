@@ -361,7 +361,7 @@ extern "C" void qt_toLatin1_mips_dsp_asm(uchar *dst, const char16_t *src, int le
 #if defined(__SSE2__) && defined(Q_CC_GNU)
 // We may overrun the buffer, but that's a false positive:
 // this won't crash nor produce incorrect results
-#  define ATTRIBUTE_NO_SANITIZE       __attribute__((__no_sanitize_address__))
+#  define ATTRIBUTE_NO_SANITIZE       __attribute__((__no_sanitize_address__, __no_sanitize_thread__))
 #else
 #  define ATTRIBUTE_NO_SANITIZE
 #endif
@@ -657,7 +657,7 @@ static int ucstrncmp_sse2(const char16_t *a, const Char *b, size_t l)
 Q_NEVER_INLINE
 qsizetype QtPrivate::qustrlen(const char16_t *str) noexcept
 {
-#if defined(__SSE2__) && !(defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer))
+#if defined(__SSE2__) && !(defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)) && !(defined(__SANITIZE_THREAD__) || __has_feature(thread_sanitizer))
     return qustrlen_sse2(str);
 #endif
 
