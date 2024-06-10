@@ -610,23 +610,17 @@ bool QRhiMetal::create(QRhi::Flags flags)
     caps.maxThreadGroupSize = 1024;
     caps.multiView = true;
 #elif defined(Q_OS_TVOS)
-    if ([d->dev supportsFeatureSet: MTLFeatureSet(30003)]) // MTLFeatureSet_tvOS_GPUFamily2_v1
+    if ([d->dev supportsFamily:MTLGPUFamilyApple3])
         caps.maxTextureSize = 16384;
     else
         caps.maxTextureSize = 8192;
     caps.baseVertexAndInstance = false;
     caps.isAppleGPU = true;
 #elif defined(Q_OS_IOS)
-    // welcome to feature set hell
-    if ([d->dev supportsFeatureSet: MTLFeatureSet(16)] // MTLFeatureSet_iOS_GPUFamily5_v1
-            || [d->dev supportsFeatureSet: MTLFeatureSet(11)] // MTLFeatureSet_iOS_GPUFamily4_v1
-            || [d->dev supportsFeatureSet: MTLFeatureSet(4)]) // MTLFeatureSet_iOS_GPUFamily3_v1
-    {
+    if ([d->dev supportsFamily:MTLGPUFamilyApple3]) {
         caps.maxTextureSize = 16384;
         caps.baseVertexAndInstance = true;
-    } else if ([d->dev supportsFeatureSet: MTLFeatureSet(3)] // MTLFeatureSet_iOS_GPUFamily2_v2
-            || [d->dev supportsFeatureSet: MTLFeatureSet(2)]) // MTLFeatureSet_iOS_GPUFamily1_v2
-    {
+    } else if ([d->dev supportsFamily:MTLGPUFamilyApple2]) {
         caps.maxTextureSize = 8192;
         caps.baseVertexAndInstance = false;
     } else {
@@ -635,9 +629,9 @@ bool QRhiMetal::create(QRhi::Flags flags)
     }
     caps.isAppleGPU = true;
     if (@available(iOS 13, *)) {
-        if ([d->dev supportsFamily: MTLGPUFamilyApple4])
+        if ([d->dev supportsFamily:MTLGPUFamilyApple4])
             caps.maxThreadGroupSize = 1024;
-        if ([d->dev supportsFamily: MTLGPUFamilyApple5])
+        if ([d->dev supportsFamily:MTLGPUFamilyApple5])
             caps.multiView = true;
     }
 #endif
