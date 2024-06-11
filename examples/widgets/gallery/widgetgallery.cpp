@@ -140,9 +140,7 @@ WidgetGallery::WidgetGallery(QWidget *parent)
     colorSchemeComboBox->addItem(tr("Auto"));
     colorSchemeComboBox->addItem(tr("Light"));
     colorSchemeComboBox->addItem(tr("Dark"));
-    // override the color scheme to dark
-    qApp->styleHints()->setColorScheme(Qt::ColorScheme::Dark);
-    colorSchemeComboBox->setCurrentIndex(2);
+    colorSchemeComboBox->setCurrentIndex(static_cast<int>(qApp->styleHints()->colorScheme()));
 
     auto colorSchemeLabel = createWidget1<QLabel>(tr("&Color Scheme:"), "colorSchemeLabel");
     colorSchemeLabel->setBuddy(colorSchemeComboBox);
