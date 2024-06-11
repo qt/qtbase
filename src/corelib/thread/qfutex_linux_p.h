@@ -38,14 +38,14 @@ QT_BEGIN_NAMESPACE
 namespace QtLinuxFutex {
 constexpr inline bool futexAvailable() { return true; }
 
-inline int _q_futex(int *addr, int op, int val, quintptr val2 = 0,
-                    int *addr2 = nullptr, int val3 = 0) noexcept
+inline long _q_futex(int *addr, int op, int val, quintptr val2 = 0,
+                     int *addr2 = nullptr, int val3 = 0) noexcept
 {
     QtTsan::futexRelease(addr, addr2);
 
     // we use __NR_futex because some libcs (like Android's bionic) don't
     // provide SYS_futex etc.
-    int result = syscall(__NR_futex, addr, op | FUTEX_PRIVATE_FLAG, val, val2, addr2, val3);
+    long result = syscall(__NR_futex, addr, op | FUTEX_PRIVATE_FLAG, val, val2, addr2, val3);
 
     QtTsan::futexAcquire(addr, addr2);
 
@@ -71,8 +71,8 @@ inline bool futexWait(Atomic &futex, typename Atomic::Type expectedValue, QDeadl
 {
     auto timeout = deadline.deadline<std::chrono::steady_clock>().time_since_epoch();
     struct timespec ts = durationToTimespec(timeout);
-    int r = _q_futex(addr(&futex), FUTEX_WAIT_BITSET, qintptr(expectedValue), quintptr(&ts),
-                     nullptr, FUTEX_BITSET_MATCH_ANY);
+    long r = _q_futex(addr(&futex), FUTEX_WAIT_BITSET, qintptr(expectedValue), quintptr(&ts),
+                      nullptr, FUTEX_BITSET_MATCH_ANY);
     return r == 0 || errno != ETIMEDOUT;
 }
 template <typename Atomic> inline void futexWakeOne(Atomic &futex)
