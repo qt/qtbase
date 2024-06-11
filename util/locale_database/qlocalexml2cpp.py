@@ -198,7 +198,7 @@ class TimeZoneDataWriter (LocaleSourceEditor):
             offsetMap[offset] = offsetMap.get(offset, ()) + (name,)
 
         # Write UTC ID key table
-        out('// IANA ID Index, UTC Offset\n')
+        out('// IANA List Index, UTC Offset\n')
         out('static constexpr UtcData utcDataTable[] = {\n')
         for offset in sorted(offsetMap.keys()): # Sort so C++ can binary-chop.
             names = offsetMap[offset];
@@ -209,7 +209,7 @@ class TimeZoneDataWriter (LocaleSourceEditor):
     def aliasToIana(self, pairs):
         out, store = self.writer.write, self.__ianaTable.append
 
-        out('// Alias ID Index, Alias ID Index\n')
+        out('// IANA ID indices of alias and IANA ID\n')
         out('static constexpr AliasData aliasMappingTable[] = {\n')
         for name, iana in pairs: # They're ready-sorted
             assert name != iana, (alias, iana) # Filtered out in QLocaleXmlWriter
@@ -219,8 +219,9 @@ class TimeZoneDataWriter (LocaleSourceEditor):
 
     def msToIana(self, pairs):
         out, winStore = self.writer.write, self.__windowsTable.append
-        ianaStore = self.__ianaListTable.append # TODO: Should be __ianaTable
+        ianaStore = self.__ianaTable.append
         alias = dict(pairs) # {MS name: IANA ID}
+        assert all(not any(x.isspace() for x in iana) for iana in alias.values())
 
         out('// Windows ID Key, Windows ID Index, IANA ID Index, UTC Offset\n')
         out('static constexpr WindowsData windowsDataTable[] = {\n')
@@ -238,7 +239,7 @@ class TimeZoneDataWriter (LocaleSourceEditor):
         seq = sorted((self.windowsKey[name][0], landKey[land][0], name, landKey[land][1], ianas)
                      for name, land, ianas in triples)
 
-        out('// Windows ID Key, Territory Enum, IANA ID Index\n')
+        out('// Windows ID Key, Territory Enum, IANA List Index\n')
         out('static constexpr ZoneData zoneDataTable[] = {\n')
         # Sorted by (Windows ID Key, territory enum)
         for winId, landId, name, land, ianas in seq:
@@ -248,10 +249,8 @@ class TimeZoneDataWriter (LocaleSourceEditor):
 
     def writeTables(self):
         self.__windowsTable.write(self.writer.write, 'windowsIdData')
-        # TODO: these are misnamed, entries in the first are lists,
-        # those in the next are single IANA IDs
-        self.__ianaListTable.write(self.writer.write, 'ianaIdData')
-        self.__ianaTable.write(self.writer.write, 'aliasIdData')
+        self.__ianaListTable.write(self.writer.write, 'ianaListData')
+        self.__ianaTable.write(self.writer.write, 'ianaIdData')
 
     # Implementation details:
     @staticmethod
