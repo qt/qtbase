@@ -1,0 +1,28 @@
+diff --git a/src/testlib/3rdparty/cycle/cycle_p.h b/src/testlib/3rdparty/cycle/cycle_p.h
+index 430f1be446..f281c55d48 100644
+--- a/src/testlib/3rdparty/cycle/cycle_p.h
++++ b/src/testlib/3rdparty/cycle/cycle_p.h
+@@ -361,7 +361,11 @@ static __inline__ ticks getticks(void)
+      /* no input, nothing else clobbered */
+      return ret;
+ }
+-#  else
++
++INLINE_ELAPSED(inline)
++
++#define HAVE_TICK_COUNTER
++#  elif 0 // Doesn't compile
+ #  include <machine/inline.h>
+ static inline unsigned long getticks(void)
+ {
+@@ -370,10 +374,6 @@ static inline unsigned long getticks(void)
+      return ret;
+ }
+ #  endif
+-
+-INLINE_ELAPSED(inline)
+-
+-#define HAVE_TICK_COUNTER
+ #endif
+ 
+ /*----------------------------------------------------------------*/

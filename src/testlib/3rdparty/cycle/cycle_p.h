@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2003, 2006 Matteo Frigo
- * Copyright (c) 2003, 2006 Massachusetts Institute of Technology
+ * Copyright (c) 2003, 2007-14 Matteo Frigo
+ * Copyright (c) 2003, 2007-14 Massachusetts Institute of Technology
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -23,7 +23,6 @@
  *
  */
 
-/* $Id: cycle.h,v 1.52 2006-02-08 02:36:47 athena Exp $ */
 
 /* machine-dependent cycle counters code. Needs to be inlined. */
 
@@ -96,7 +95,7 @@
 
 #define INLINE_ELAPSED(INL) static INL double elapsed(ticks t1, ticks t0) \
 {									  \
-     return (double)(t1 - t0);						  \
+     return (double)t1 - (double)t0;					  \
 }
 
 /*----------------------------------------------------------------*/
@@ -116,18 +115,19 @@ INLINE_ELAPSED(inline)
 #if defined(HAVE_READ_REAL_TIME) && defined(HAVE_TIME_BASE_TO_TIME) && !defined(HAVE_TICK_COUNTER)
 typedef timebasestruct_t ticks;
 
-static inline ticks getticks(void)
+static __inline ticks getticks(void)
 {
      ticks t;
      read_real_time(&t, TIMEBASE_SZ);
      return t;
 }
 
-static inline double elapsed(ticks t1, ticks t0) /* time in nanoseconds */
+static __inline double elapsed(ticks t1, ticks t0) /* time in nanoseconds */
 {
      time_base_to_time(&t1, TIMEBASE_SZ);
      time_base_to_time(&t0, TIMEBASE_SZ);
-     return ((t1.tb_high - t0.tb_high) * 1e9 + (t1.tb_low - t0.tb_low));
+     return (((double)t1.tb_high - (double)t0.tb_high) * 1.0e9 +
+	     ((double)t1.tb_low - (double)t0.tb_low));
 }
 
 #define HAVE_TICK_COUNTER
@@ -137,7 +137,7 @@ static inline double elapsed(ticks t1, ticks t0) /* time in nanoseconds */
 /*
  * PowerPC ``cycle'' counter using the time base register.
  */
-#if ((defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))) || (defined(__MWERKS__) && defined(macintosh)))  && !defined(HAVE_TICK_COUNTER)
+#if ((((defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))) || (defined(__MWERKS__) && defined(macintosh)))) || (defined(__IBM_GCC_ASM) && (defined(__powerpc__) || defined(__ppc__))))  && !defined(HAVE_TICK_COUNTER)
 typedef unsigned long long ticks;
 
 static __inline__ ticks getticks(void)
@@ -191,8 +191,8 @@ INLINE_ELAPSED(__inline__)
 #endif
 
 /* Visual C++ -- thanks to Morten Nissov for his help with this */
-#if defined(_MSC_VER)
-#if _MSC_VER >= 1200 && (_M_IX86 >= 500 || (defined(_WIN32_WCE) && defined(_X86_))) && !defined(HAVE_TICK_COUNTER)
+#ifdef _MSC_VER
+#if _MSC_VER >= 1200 && _M_IX86 >= 500 && !defined(HAVE_TICK_COUNTER)
 #include <windows.h>
 typedef LARGE_INTEGER ticks;
 #define RDTSC __asm __emit 0fh __asm __emit 031h /* hack for VC++ 5.0 */
@@ -202,58 +202,41 @@ static __inline ticks getticks(void)
      ticks retval;
 
      __asm {
-      RDTSC
-      mov retval.HighPart, edx
-      mov retval.LowPart, eax
+	  RDTSC
+	  mov retval.HighPart, edx
+	  mov retval.LowPart, eax
      }
      return retval;
 }
 
 static __inline double elapsed(ticks t1, ticks t0)
 {
-     return (double)(t1.QuadPart - t0.QuadPart);
+     return (double)t1.QuadPart - (double)t0.QuadPart;
 }
 
 #define HAVE_TICK_COUNTER
 #define TIME_MIN 5000.0   /* unreliable pentium IV cycle counter */
 #endif
-#endif
-
-#if _MSC_VER >= 1400 && defined(_WIN32_WCE) && !defined(HAVE_TICK_COUNTER)
-#include <windows.h>
-typedef DWORD ticks;
-
-static __inline ticks getticks(void)
-{
-    return GetTickCount();
-}
-
-static __inline double elapsed(ticks t1, ticks t0)
-{
-     return (double)(t1 - t0);
-}
-
-#define HAVE_TICK_COUNTER
-#define TIME_MIN 5000.0
-#endif
+#endif // _MSC_VER
 
 /*----------------------------------------------------------------*/
 /*
  * X86-64 cycle counter
  */
-#if (defined(__GNUC__) || defined(__ICC)) && defined(__x86_64__)  && !defined(HAVE_TICK_COUNTER)
+#if (defined(__GNUC__) || defined(__ICC) || defined(__SUNPRO_C)) && defined(__x86_64__)  && !defined(HAVE_TICK_COUNTER)
 typedef unsigned long long ticks;
 
 static __inline__ ticks getticks(void)
 {
      unsigned a, d;
-     asm volatile("rdtsc" : "=a" (a), "=d" (d));
+     __asm__ __volatile__ ("rdtsc" : "=a" (a), "=d" (d));
      return ((ticks)a) | (((ticks)d) << 32);
 }
 
 INLINE_ELAPSED(__inline__)
 
 #define HAVE_TICK_COUNTER
+#define TIME_MIN 5000.0
 #endif
 
 /* PGI compiler, courtesy Cristiano Calonaci, Andrea Tarsi, & Roberto Gori.
@@ -267,20 +250,23 @@ static ticks getticks(void)
 }
 INLINE_ELAPSED(__inline__)
 #define HAVE_TICK_COUNTER
+#define TIME_MIN 5000.0
 #endif
 
-/* Visual C++ */
+/* Visual C++, courtesy of Dirk Michaelis */
+#ifdef _MSC_VER
 #if _MSC_VER >= 1400 && (defined(_M_AMD64) || defined(_M_X64)) && !defined(HAVE_TICK_COUNTER)
+
 #include <intrin.h>
-
+#pragma intrinsic(__rdtsc)
 typedef unsigned __int64 ticks;
-
 #define getticks __rdtsc
-
 INLINE_ELAPSED(__inline)
 
 #define HAVE_TICK_COUNTER
+#define TIME_MIN 5000.0
 #endif
+#endif // _MSC_VER
 
 /*----------------------------------------------------------------*/
 /*
@@ -354,6 +340,8 @@ static __inline ticks getticks(void)
      return temp;
 }
 
+INLINE_ELAPSED(inline)
+
 #define HAVE_TICK_COUNTER
 #endif
 
@@ -377,7 +365,6 @@ static __inline__ ticks getticks(void)
 INLINE_ELAPSED(inline)
 
 #define HAVE_TICK_COUNTER
-
 #  elif 0 // Doesn't compile
 #  include <machine/inline.h>
 static inline unsigned long getticks(void)
@@ -387,7 +374,6 @@ static inline unsigned long getticks(void)
      return ret;
 }
 #  endif
-
 #endif
 
 /*----------------------------------------------------------------*/
@@ -460,7 +446,7 @@ INLINE_ELAPSED(__inline)
 #endif
 /*----------------------------------------------------------------*/
 /* SGI/Irix */
-#if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_SGI_CYCLE) && !defined(HAVE_TICK_COUNTER)
+#if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_SGI_CYCLE) && !defined(HAVE_TICK_COUNTER) && !defined(__ANDROID__)
 typedef struct timespec ticks;
 
 static inline ticks getticks(void)
@@ -472,8 +458,8 @@ static inline ticks getticks(void)
 
 static inline double elapsed(ticks t1, ticks t0)
 {
-     return (double)(t1.tv_sec - t0.tv_sec) * 1.0E9 +
-	  (double)(t1.tv_nsec - t0.tv_nsec);
+     return ((double)t1.tv_sec - (double)t0.tv_sec) * 1.0E9 +
+	  ((double)t1.tv_nsec - (double)t0.tv_nsec);
 }
 #define HAVE_TICK_COUNTER
 #endif
@@ -491,6 +477,97 @@ typedef long long ticks;
 
 INLINE_ELAPSED(inline)
 
+#define HAVE_TICK_COUNTER
+#endif
+
+/*----------------------------------------------------------------*/
+/* MIPS ZBus */
+#if HAVE_MIPS_ZBUS_TIMER
+#if defined(__mips__) && !defined(HAVE_TICK_COUNTER)
+#include <sys/mman.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+typedef uint64_t ticks;
+
+static inline ticks getticks(void)
+{
+  static uint64_t* addr = 0;
+
+  if (addr == 0)
+  {
+    uint32_t rq_addr = 0x10030000;
+    int fd;
+    int pgsize;
+
+    pgsize = getpagesize();
+    fd = open ("/dev/mem", O_RDONLY | O_SYNC, 0);
+    if (fd < 0) {
+      perror("open");
+      return NULL;
+    }
+    addr = mmap(0, pgsize, PROT_READ, MAP_SHARED, fd, rq_addr);
+    close(fd);
+    if (addr == (uint64_t *)-1) {
+      perror("mmap");
+      return NULL;
+    }
+  }
+
+  return *addr;
+}
+
+INLINE_ELAPSED(inline)
+
+#define HAVE_TICK_COUNTER
+#endif
+#endif /* HAVE_MIPS_ZBUS_TIMER */
+
+#if defined(HAVE_ARMV7A_CNTVCT)
+typedef uint64_t ticks;
+static inline ticks getticks(void)
+{
+  uint32_t Rt, Rt2 = 0;
+  asm volatile("mrrc p15, 1, %0, %1, c14" : "=r"(Rt), "=r"(Rt2));
+  return ((uint64_t)Rt) | (((uint64_t)Rt2) << 32);
+}
+INLINE_ELAPSED(inline)
+#define HAVE_TICK_COUNTER
+#endif
+
+#if defined(HAVE_ARMV7A_PMCCNTR)
+typedef uint64_t ticks;
+static inline ticks getticks(void)
+{
+  uint32_t r;
+  asm volatile("mrc p15, 0, %0, c9, c13, 0" : "=r"(r) );
+  return r;
+}
+INLINE_ELAPSED(inline)
+#define HAVE_TICK_COUNTER
+#endif
+
+#if defined(__aarch64__) && defined(HAVE_ARMV8_CNTVCT_EL0) && !defined(HAVE_ARMV8_PMCCNTR_EL0)
+typedef uint64_t ticks;
+static inline ticks getticks(void)
+{
+  uint64_t Rt;
+  asm volatile("mrs %0,  CNTVCT_EL0" : "=r" (Rt));
+  return Rt;
+}
+INLINE_ELAPSED(inline)
+#define HAVE_TICK_COUNTER
+#endif
+
+#if defined(__aarch64__) && defined(HAVE_ARMV8_PMCCNTR_EL0)
+typedef uint64_t ticks;
+static inline ticks getticks(void)
+{
+        uint64_t cc = 0;
+        asm volatile("mrs %0, PMCCNTR_EL0" : "=r"(cc));
+        return cc;
+}
+INLINE_ELAPSED(inline)
 #define HAVE_TICK_COUNTER
 #endif
 
