@@ -158,7 +158,7 @@ typedef QList<QAbstractAnimation*>::ConstIterator AnimationListConstIt;
 */
 
 /*!
-    \fn virtual int QAbstractAnimationTimer::runningAnimationCount() = 0;
+    \fn virtual qsizetype QAbstractAnimationTimer::runningAnimationCount() = 0;
     \internal
 
     This pure virtual function returns the number of animations the timer is running.
@@ -291,11 +291,11 @@ void QUnifiedTimer::updateAnimationTimers()
     }
 }
 
-int QUnifiedTimer::runningAnimationCount()
+qsizetype QUnifiedTimer::runningAnimationCount() const
 {
-    int count = 0;
-    for (int i = 0; i < animationTimers.size(); ++i)
-        count += animationTimers.at(i)->runningAnimationCount();
+    qsizetype count = 0;
+    for (const QAbstractAnimationTimer *timer : animationTimers)
+        count += timer->runningAnimationCount();
     return count;
 }
 
