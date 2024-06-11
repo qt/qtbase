@@ -101,12 +101,26 @@ static qint64 qt_write_loop(int fd, const char *data, qint64 len)
  * actually the same. Therefore, it's a very bad idea to mix them in the same
  * process.
  *
- * We therefore use only flock(2).
+ * We therefore use only flock(2), except on Android.
+ *
+ * Android Compatibility:
+ * Some versions of Android have known issues where flock does not function correctly. 
+ * As a result, on Android, we use POSIX fcntl(F_SETLK) to handle file locking.
+ * fcntl is better integrated with Android’s underlying system, avoiding 
+ * the limitations of flock.
  */
 
 static bool setNativeLocks(int fd)
 {
-#if defined(LOCK_EX) && defined(LOCK_NB)
+#if defined(Q_OS_ANDROID)
+    struct flock fl;
+    fl.l_type = F_WRLCK;
+    fl.l_whence = SEEK_SET;
+    fl.l_start = 0;
+    fl.l_len = 0;
+    if (fcntl(fd, F_SETLK, &fl) == -1)
+        return false;
+#elif defined(LOCK_EX) && defined(LOCK_NB)
     if (flock(fd, LOCK_EX | LOCK_NB) == -1) // other threads, and other processes on a local fs
         return false;
 #else
