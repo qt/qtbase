@@ -157,6 +157,15 @@ static bool isPackage(const QFileSystemMetaData &data, const QFileSystemEntry &e
 }
 #endif
 
+#ifdef Q_OS_VXWORKS
+static inline void forceRequestedPermissionsOnVxWorks(QByteArray dirName, mode_t mode)
+{
+    if (mode == 0) {
+        chmod(dirName, 0);
+    }
+}
+#endif
+
 namespace {
 namespace GetFileTimes {
 qint64 time_t_toMsecs(time_t t)
@@ -1078,8 +1087,12 @@ static bool createDirectoryWithParents(const QByteArray &nativeName, mode_t mode
         return QT_STAT(nativeName.constData(), &st) == 0 && (st.st_mode & S_IFMT) == S_IFDIR;
     };
 
-    if (shouldMkdirFirst && QT_MKDIR(nativeName, mode) == 0)
+    if (shouldMkdirFirst && QT_MKDIR(nativeName, mode) == 0) {
+#ifdef Q_OS_VXWORKS
+        forceRequestedPermissionsOnVxWorks(nativeName, mode);
+#endif
         return true;
+    }
     if (errno == EISDIR)
         return true;
     if (errno == EEXIST || errno == EROFS)
@@ -1097,8 +1110,12 @@ static bool createDirectoryWithParents(const QByteArray &nativeName, mode_t mode
         return false;
 
     // try again
-    if (QT_MKDIR(nativeName, mode) == 0)
+    if (QT_MKDIR(nativeName, mode) == 0) {
+#ifdef Q_OS_VXWORKS
+        forceRequestedPermissionsOnVxWorks(nativeName, mode);
+#endif
         return true;
+    }
     return errno == EEXIST && isDir(nativeName);
 }
 
@@ -1115,8 +1132,12 @@ bool QFileSystemEngine::createDirectory(const QFileSystemEntry &entry, bool crea
 
     // try to mkdir this directory
     mode_t mode = permissions ? QtPrivate::toMode_t(*permissions) : 0777;
-    if (QT_MKDIR(dirName, mode) == 0)
+    if (QT_MKDIR(dirName, mode) == 0) {
+#ifdef Q_OS_VXWORKS
+        forceRequestedPermissionsOnVxWorks(dirName, mode);
+#endif
         return true;
+    }
     if (!createParents)
         return false;
 
