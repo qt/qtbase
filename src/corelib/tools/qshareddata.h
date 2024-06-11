@@ -162,7 +162,7 @@ public:
     Q_NODISCARD_CTOR
     QExplicitlySharedDataPointer(const QExplicitlySharedDataPointer<X> &o) noexcept
 #ifdef QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST
-        : d(static_cast<T *>(o.data()))
+        : d(warnIfQExplicitlySharedDataPointerStaticCastMacroDefined(), static_cast<T *>(o.data()))
 #else
         : d(o.data())
 #endif
@@ -212,6 +212,11 @@ protected:
 
 private:
     void detach_helper();
+
+#ifdef QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST
+    [[deprecated("Usage of QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST is deprecated.")]]
+    constexpr void warnIfQExplicitlySharedDataPointerStaticCastMacroDefined() {}
+#endif
 
     T *d;
 };
