@@ -32,10 +32,6 @@ typedef _jobject* jobject;
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_OS_ANDROID)
-Q_DECLARE_JNI_CLASS(Context, "android/content/Context")
-#endif
-
 namespace QNativeInterface
 {
 #if defined(Q_OS_ANDROID) || defined(Q_QDOC)

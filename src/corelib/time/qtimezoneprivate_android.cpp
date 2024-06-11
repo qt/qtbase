@@ -14,7 +14,6 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_JNI_CLASS(TimeZone, "java/util/TimeZone");
 Q_DECLARE_JNI_CLASS(Locale, "java/util/Locale");
 Q_DECLARE_JNI_CLASS(Date, "java/util/Date");
-Q_DECLARE_JNI_CLASS(String, "java/lang/String")
 
 /*
     Private

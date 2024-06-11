@@ -209,6 +209,33 @@ static const JNINativeMethod Method##_method = {                \
 
 #define Q_JNI_NATIVE_SCOPED_METHOD(Method, Scope) Scope::Method##_method
 
+// Classes for value types
+Q_DECLARE_JNI_CLASS(String, "java/lang/String")
+Q_DECLARE_JNI_CLASS(Integer, "java/lang/Integer");
+Q_DECLARE_JNI_CLASS(Long, "java/lang/Long");
+Q_DECLARE_JNI_CLASS(Double, "java/lang/Double");
+Q_DECLARE_JNI_CLASS(Float, "java/lang/Float");
+Q_DECLARE_JNI_CLASS(Boolean, "java/lang/Boolean");
+Q_DECLARE_JNI_CLASS(Void, "java/lang/Void");
+
+// Utility and I/O
+Q_DECLARE_JNI_CLASS(UUID, "java/util/UUID")
+Q_DECLARE_JNI_CLASS(ArrayList, "java/util/ArrayList")
+Q_DECLARE_JNI_CLASS(HashMap, "java/util/HashMap")
+Q_DECLARE_JNI_CLASS(Set, "java/util/Set")
+Q_DECLARE_JNI_CLASS(File, "java/io/File");
+
+// Android specific types
+Q_DECLARE_JNI_CLASS(Uri, "android/net/Uri");
+Q_DECLARE_JNI_CLASS(Parcelable, "android/os/Parcelable");
+Q_DECLARE_JNI_CLASS(Context, "android/content/Context");
+Q_DECLARE_JNI_CLASS(Intent, "android/content/Intent");
+Q_DECLARE_JNI_CLASS(ContentResolver, "android/content/ContentResolver");
+Q_DECLARE_JNI_CLASS(Activity, "android/app/Activity");
+Q_DECLARE_JNI_CLASS(Service, "android/app/Service");
+
+#define QT_DECLARE_JNI_CLASS_STANDARD_TYPES
+
 QT_END_NAMESPACE
 
 #endif // defined(Q_QDOC) || defined(Q_OS_ANDROID)

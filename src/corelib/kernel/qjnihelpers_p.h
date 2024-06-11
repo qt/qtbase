@@ -22,9 +22,6 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_DECLARE_JNI_CLASS(Activity, "android/app/Activity")
-Q_DECLARE_JNI_CLASS(Service, "android/app/Service")
-
 namespace QtAndroidPrivate
 {
     class Q_CORE_EXPORT ActivityResultListener

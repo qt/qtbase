@@ -25,7 +25,6 @@ Q_GLOBAL_STATIC(ProxyInfoObject, proxyInfoInstance)
 
 Q_DECLARE_JNI_CLASS(QtNetwork, "org/qtproject/qt/android/network/QtNetwork")
 Q_DECLARE_JNI_CLASS(ProxyInfo, "android/net/ProxyInfo")
-Q_DECLARE_JNI_CLASS(String, "java/lang/String")
 
 ProxyInfoObject::ProxyInfoObject()
 {
