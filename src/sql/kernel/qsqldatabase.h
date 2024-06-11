@@ -37,8 +37,9 @@ public:
 class Q_SQL_EXPORT QSqlDatabase
 {
     Q_GADGET
-public:
     Q_PROPERTY(QSql::NumericalPrecisionPolicy numericalPrecisionPolicy READ numericalPrecisionPolicy WRITE setNumericalPrecisionPolicy)
+
+public:
 
     QSqlDatabase();
     QSqlDatabase(const QSqlDatabase &other);

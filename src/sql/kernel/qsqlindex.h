@@ -17,10 +17,10 @@ QT_BEGIN_NAMESPACE
 class Q_SQL_EXPORT QSqlIndex : public QSqlRecord
 {
     Q_GADGET
-public:
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QString cursorName READ cursorName WRITE setCursorName)
 
+public:
     explicit QSqlIndex(const QString &cursorName = QString(), const QString &name = QString());
     QSqlIndex(const QSqlIndex &other);
     QSqlIndex(QSqlIndex &&other) noexcept = default;

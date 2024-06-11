@@ -27,6 +27,7 @@ class Q_SQL_EXPORT QSqlDriver : public QObject
     friend class QSqlDatabase;
     friend class QSqlResultPrivate;
     Q_OBJECT
+    Q_PROPERTY(QSql::NumericalPrecisionPolicy numericalPrecisionPolicy READ numericalPrecisionPolicy WRITE setNumericalPrecisionPolicy)
     Q_DECLARE_PRIVATE(QSqlDriver)
 
 public:
@@ -54,8 +55,6 @@ public:
         DB2,
         MimerSQL,
     };
-
-    Q_PROPERTY(QSql::NumericalPrecisionPolicy numericalPrecisionPolicy READ numericalPrecisionPolicy WRITE setNumericalPrecisionPolicy)
 
     explicit QSqlDriver(QObject *parent = nullptr);
     ~QSqlDriver();
