@@ -65,6 +65,14 @@ private:
         Renegotiate // Renegotiating!
     } schannelState = SchannelState::InitializeHandshake;
 
+    // Close to std::optional<QBArray>, but need to also cover the case where
+    // we encrypted some data, but encountered an error later.
+    struct MessageBufferResult {
+        bool ok = false;
+        QByteArray messageBuffer;
+    };
+    MessageBufferResult getNextEncryptedMessage();
+
     void reset();
     bool acquireCredentialsHandle();
     ULONG getContextRequirements();

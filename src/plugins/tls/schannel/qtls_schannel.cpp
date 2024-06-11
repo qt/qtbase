@@ -1757,6 +1757,52 @@ void TlsCryptographSchannel::startServerEncryption()
     continueHandshake();
 }
 
+auto TlsCryptographSchannel::getNextEncryptedMessage() -> MessageBufferResult
+{
+    MessageBufferResult result;
+    QByteArray &fullMessage = result.messageBuffer;
+
+    Q_ASSERT(d);
+    auto &writeBuffer = d->tlsWriteBuffer();
+
+    const int headerSize = int(streamSizes.cbHeader);
+    const int trailerSize = int(streamSizes.cbTrailer);
+    // Try to read 'cbMaximumMessage' bytes from buffer before encrypting.
+    const int size = int(std::min(writeBuffer.size(), qint64(streamSizes.cbMaximumMessage)));
+    fullMessage.resizeForOverwrite(headerSize + trailerSize + size);
+    {
+        // Use peek() here instead of read() so we don't lose data if encryption fails.
+        qint64 copied = writeBuffer.peek(fullMessage.data() + headerSize, size);
+        Q_ASSERT(copied == size);
+    }
+
+    SecBuffer inputBuffers[] = {
+        createSecBuffer(fullMessage.data(), headerSize, SECBUFFER_STREAM_HEADER),
+        createSecBuffer(fullMessage.data() + headerSize, size, SECBUFFER_DATA),
+        createSecBuffer(fullMessage.data() + headerSize + size, trailerSize, SECBUFFER_STREAM_TRAILER),
+        createSecBuffer(nullptr, 0, SECBUFFER_EMPTY)
+    };
+    SecBufferDesc message = {
+        SECBUFFER_VERSION,
+        ARRAYSIZE(inputBuffers),
+        inputBuffers
+    };
+    if (auto status = EncryptMessage(&contextHandle, 0, &message, 0); status != SEC_E_OK) {
+        setErrorAndEmit(d, QAbstractSocket::SslInternalError,
+                        QSslSocket::tr("Schannel failed to encrypt data: %1")
+                                .arg(schannelErrorToString(status)));
+        return result;
+    }
+    // Data was encrypted successfully, so we free() what we peek()ed earlier
+    writeBuffer.free(size);
+
+    // The trailer's size is not final, so resize fullMessage to not send trailing junk
+    fullMessage.resize(inputBuffers[0].cbBuffer + inputBuffers[1].cbBuffer
+                       + inputBuffers[2].cbBuffer);
+    result.ok = true;
+    return result;
+}
+
 void TlsCryptographSchannel::transmit()
 {
     Q_ASSERT(q);
@@ -1778,50 +1824,20 @@ void TlsCryptographSchannel::transmit()
         return;
     }
 
-    auto &writeBuffer = d->tlsWriteBuffer();
     auto &buffer = d->tlsBuffer();
     if (q->isEncrypted()) { // encrypt data in writeBuffer and write it to plainSocket
         qint64 totalBytesWritten = 0;
-        qint64 writeBufferSize;
-        while ((writeBufferSize = writeBuffer.size()) > 0) {
-            const int headerSize = int(streamSizes.cbHeader);
-            const int trailerSize = int(streamSizes.cbTrailer);
-            // Try to read 'cbMaximumMessage' bytes from buffer before encrypting.
-            const int size = int(std::min(writeBufferSize, qint64(streamSizes.cbMaximumMessage)));
-            QByteArray fullMessage(headerSize + trailerSize + size, Qt::Uninitialized);
-            {
-                // Use peek() here instead of read() so we don't lose data if encryption fails.
-                qint64 copied = writeBuffer.peek(fullMessage.data() + headerSize, size);
-                Q_ASSERT(copied == size);
-            }
-
-            SecBuffer inputBuffers[4]{
-                createSecBuffer(fullMessage.data(), headerSize, SECBUFFER_STREAM_HEADER),
-                createSecBuffer(fullMessage.data() + headerSize, size, SECBUFFER_DATA),
-                createSecBuffer(fullMessage.data() + headerSize + size, trailerSize, SECBUFFER_STREAM_TRAILER),
-                createSecBuffer(nullptr, 0, SECBUFFER_EMPTY)
-            };
-            SecBufferDesc message{
-                SECBUFFER_VERSION,
-                ARRAYSIZE(inputBuffers),
-                inputBuffers
-            };
-            auto status = EncryptMessage(&contextHandle, 0, &message, 0);
-            if (status != SEC_E_OK) {
-                setErrorAndEmit(d, QAbstractSocket::SslInternalError,
-                                QSslSocket::tr("Schannel failed to encrypt data: %1")
-                                        .arg(schannelErrorToString(status)));
+        while (d->tlsWriteBuffer().size() > 0) {
+            MessageBufferResult r = getNextEncryptedMessage();
+            if (r.messageBuffer.isEmpty() && !r.ok)
                 return;
-            }
-            // Data was encrypted successfully, so we free() what we peek()ed earlier
-            writeBuffer.free(size);
-
-            // The trailer's size is not final, so resize fullMessage to not send trailing junk
-            fullMessage.resize(inputBuffers[0].cbBuffer + inputBuffers[1].cbBuffer + inputBuffers[2].cbBuffer);
+            QByteArray fullMessage = std::move(r.messageBuffer);
             const qint64 bytesWritten = plainSocket->write(fullMessage);
+            if (!r.ok && bytesWritten < 0)
+                break; // We might have to emit bytesWritten, so break instead of return
 #ifdef QSSLSOCKET_DEBUG
             qCDebug(lcTlsBackendSchannel, "Wrote %lld of total %d bytes", bytesWritten,
-                    fullMessage.length());
+                    fullMessage.size());
 #endif
             if (bytesWritten >= 0) {
                 totalBytesWritten += bytesWritten;
