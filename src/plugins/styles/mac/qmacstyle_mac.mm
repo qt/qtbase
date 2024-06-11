@@ -21,6 +21,7 @@
 #include <QtCore/private/qcore_mac_p.h>
 
 #include <QtGui/qpainterpath.h>
+#include <QtGui/qstylehints.h>
 #include <QtGui/private/qcoregraphics_p.h>
 #include <QtGui/qpa/qplatformfontdatabase.h>
 #include <QtGui/qpa/qplatformtheme.h>
@@ -160,7 +161,10 @@ const int pushButtonBevelRectOffsets[3] = {
 
 QVector<QPointer<QObject> > QMacStylePrivate::scrollBars;
 
-bool isDarkMode() { return QGuiApplicationPrivate::platformTheme()->colorScheme() == Qt::ColorScheme::Dark; }
+static inline bool isDarkMode()
+{
+    return QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark;
+}
 
 #if QT_CONFIG(tabwidget)
 /*
