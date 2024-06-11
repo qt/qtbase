@@ -438,7 +438,7 @@ QThread *QThread::currentThread()
 
     \sa currentThread(), QCoreApplication::instance()
 */
-bool QThread::isMainThread()
+bool QThread::isMainThread() noexcept
 {
     return currentThreadId() == QCoreApplicationPrivate::theMainThreadId.loadRelaxed();
 }
@@ -952,7 +952,7 @@ int QThread::loopLevel() const
     therefore give surprising results if it outlives the QThread object
     (threads claimed to be the same even if they aren't).
 */
-Qt::HANDLE QThreadPrivate::threadId() const
+Qt::HANDLE QThreadPrivate::threadId() const noexcept
 {
     return data->threadId.loadRelaxed();
 }
@@ -963,7 +963,7 @@ Qt::HANDLE QThreadPrivate::threadId() const
 
     \sa currentThreadId()
 */
-bool QThread::isCurrentThread() const
+bool QThread::isCurrentThread() const noexcept
 {
     Q_D(const QThread);
     return QThread::currentThreadId() == d->threadId();
@@ -1041,7 +1041,7 @@ QThread *QThread::currentThread()
     return QThreadData::current()->thread.loadAcquire();
 }
 
-bool QThread::isCurrentThread() const
+bool QThread::isCurrentThread() const noexcept
 {
     return true;
 }
