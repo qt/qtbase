@@ -1,10 +1,12 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // Copyright (C) 2018 Intel Corporation.
+// Copyright (C) 2024 Christoph Cullmann <christoph@cullmann.io>
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0
 
 #include "rcc.h"
 
 #include <qbytearray.h>
+#include <qcryptographichash.h>
 #include <qdatetime.h>
 #include <qdebug.h>
 #include <qdir.h>
@@ -90,8 +92,28 @@ public:
 
     QString resourceName() const;
 
+    struct DeduplicationKey {
+        RCCResourceLibrary::CompressionAlgorithm compressAlgo;
+        int compressLevel;
+        int compressThreshold;
+        QByteArray hash;
+
+        bool operator==(const DeduplicationKey &other) const
+        {
+            return compressAlgo == other.compressAlgo &&
+                   compressLevel == other.compressLevel &&
+                   compressThreshold == other.compressThreshold &&
+                   hash == other.hash;
+        }
+    };
+
+    typedef QMultiHash<DeduplicationKey, RCCFileInfo*> DeduplicationMultiHash;
+
 public:
-    qint64 writeDataBlob(RCCResourceLibrary &lib, qint64 offset, QString *errorMessage);
+    qint64 writeDataBlob(RCCResourceLibrary &lib,
+                         qint64 offset,
+                         DeduplicationMultiHash &dedupByContent,
+                         QString *errorMessage);
     qint64 writeDataName(RCCResourceLibrary &, qint64 offset);
     void writeDataInfo(RCCResourceLibrary &lib);
 
@@ -113,6 +135,11 @@ public:
     qint64 m_dataOffset = 0;
     qint64 m_childOffset = 0;
 };
+
+static size_t qHash(const RCCFileInfo::DeduplicationKey &key, size_t seed) noexcept
+{
+    return qHashMulti(seed, key.compressAlgo, key.compressLevel, key.compressThreshold, key.hash);
+}
 
 RCCFileInfo::RCCFileInfo(const QString &name, const QFileInfo &fileInfo, QLocale::Language language,
                          QLocale::Territory territory, uint flags,
@@ -217,8 +244,10 @@ void RCCFileInfo::writeDataInfo(RCCResourceLibrary &lib)
     }
 }
 
-qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
-    QString *errorMessage)
+qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib,
+                                  qint64 offset,
+                                  DeduplicationMultiHash &dedupByContent,
+                                  QString *errorMessage)
 {
     const bool text = lib.m_format == RCCResourceLibrary::C_Code;
     const bool pass1 = lib.m_format == RCCResourceLibrary::Pass1;
@@ -231,14 +260,38 @@ qint64 RCCFileInfo::writeDataBlob(RCCResourceLibrary &lib, qint64 offset,
     QByteArray data;
 
     if (!m_isEmpty) {
-        //find the data to be written
-        QFile file(m_fileInfo.absoluteFilePath());
+        // find the data to be written
+        const QString absoluteFilePath = m_fileInfo.absoluteFilePath();
+        QFile file(absoluteFilePath);
         if (!file.open(QFile::ReadOnly)) {
-            *errorMessage = msgOpenReadFailed(m_fileInfo.absoluteFilePath(), file.errorString());
+            *errorMessage = msgOpenReadFailed(absoluteFilePath, file.errorString());
             return 0;
         }
-
         data = file.readAll();
+
+        // de-duplicate the same file content, we can re-use already written data
+        // we only do that if we have the same compression settings
+        const QByteArray hash = QCryptographicHash::hash(data, QCryptographicHash::Sha256);
+        const DeduplicationKey key{m_compressAlgo, m_compressLevel, m_compressThreshold, hash};
+        const QList<RCCFileInfo *> potentialCandidates = dedupByContent.values(key);
+        for (const RCCFileInfo *candidate : potentialCandidates) {
+            // check real content, we can have collisions
+            QFile candidateFile(candidate->m_fileInfo.absoluteFilePath());
+            if (!candidateFile.open(QFile::ReadOnly)) {
+                *errorMessage = msgOpenReadFailed(candidate->m_fileInfo.absoluteFilePath(),
+                                                  candidateFile.errorString());
+                return 0;
+            }
+            if (data != candidateFile.readAll()) {
+                continue;
+            }
+            // just remember the offset & flags with final compression state
+            // of the already written data and be done
+            m_dataOffset = candidate->m_dataOffset;
+            m_flags = candidate->m_flags;
+            return offset;
+        }
+        dedupByContent.insert(key, this);
     }
 
     // Check if compression is useful for this file
@@ -1168,6 +1221,7 @@ bool RCCResourceLibrary::writeDataBlobs()
     QStack<RCCFileInfo*> pending;
     pending.push(m_root);
     qint64 offset = 0;
+    RCCFileInfo::DeduplicationMultiHash dedupByContent;
     QString errorMessage;
     while (!pending.isEmpty()) {
         RCCFileInfo *file = pending.pop();
@@ -1176,7 +1230,8 @@ bool RCCResourceLibrary::writeDataBlobs()
             if (child->m_flags & RCCFileInfo::Directory)
                 pending.push(child);
             else {
-                offset = child->writeDataBlob(*this, offset, &errorMessage);
+                offset = child->writeDataBlob(*this, offset,
+                                              dedupByContent, &errorMessage);
                 if (offset == 0) {
                     m_errorDevice->write(errorMessage.toUtf8());
                     return false;

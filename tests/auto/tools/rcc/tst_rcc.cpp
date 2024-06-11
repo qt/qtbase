@@ -152,6 +152,11 @@ void tst_rcc::rcc_data()
 
     QTest::newRow("legal") << m_dataPath + QLatin1StringView("/legal")
                                << "legal.qrc" << "rcc_legal.cpp";
+
+    if (sizeof(size_t) == 8) {
+        const QString deduplicationPath = m_dataPath + QLatin1String("/deduplication");
+        QTest::newRow("deduplication") << deduplicationPath << "deduplication.qrc" << "deduplication.expected";
+    }
 }
 
 static QStringList readLinesFromFile(const QString &fileName,

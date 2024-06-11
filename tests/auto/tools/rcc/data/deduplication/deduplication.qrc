@@ -1,0 +1,10 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+   <file>files/a.txt</file>
+   <file>files/b.txt</file>
+   <file alias="files/alias_of_b.txt">files/b.txt</file>
+   <file>files/c_with_a_content.txt</file>
+   <file alias="files/alias_of_b_compress9.txt" compress="9">files/b.txt</file>
+   <file alias="files/alias_of_b_compress9_dupe.txt" compress="9">files/b.txt</file>
+</qresource>
+</RCC>
