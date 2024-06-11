@@ -1,0 +1,20 @@
+diff --git a/src/testlib/3rdparty/cycle/cycle_p.h b/src/testlib/3rdparty/cycle/cycle_p.h
+index 6750b25d42..52d80d4b97 100644
+--- a/src/testlib/3rdparty/cycle/cycle_p.h
++++ b/src/testlib/3rdparty/cycle/cycle_p.h
+@@ -76,6 +76,9 @@
+    dnl ---------------------------------------------------------------------
+ */
+ 
++#ifndef QBENCHLIB_CYCLE_H
++#define QBENCHLIB_CYCLE_H
++
+ /***************************************************************************/
+ 
+ #if TIME_WITH_SYS_TIME
+@@ -562,3 +565,5 @@ static inline ticks getticks(void)
+ INLINE_ELAPSED(inline)
+ #define HAVE_TICK_COUNTER
+ #endif
++
++#endif // QBENCHLIB_CYCLE_H

@@ -1,0 +1,36 @@
+diff --git a/src/testlib/3rdparty/cycle/cycle_p.h b/src/testlib/3rdparty/cycle/cycle_p.h
+index eb81ca1444..617ac107b6 100644
+--- a/src/testlib/3rdparty/cycle/cycle_p.h
++++ b/src/testlib/3rdparty/cycle/cycle_p.h
+@@ -190,6 +190,7 @@ INLINE_ELAPSED(__inline__)
+ #endif
+ 
+ /* Visual C++ -- thanks to Morten Nissov for his help with this */
++#ifdef _MSC_VER
+ #if _MSC_VER >= 1200 && _M_IX86 >= 500 && !defined(HAVE_TICK_COUNTER)
+ #include <windows.h>
+ typedef LARGE_INTEGER CycleCounterTicks;
+@@ -215,6 +216,7 @@ static __inline double elapsed(CycleCounterTicks t1, CycleCounterTicks t0)
+ #define HAVE_TICK_COUNTER
+ #define TIME_MIN 5000.0   /* unreliable pentium IV cycle counter */
+ #endif
++#endif // _MSC_VER
+ 
+ /*----------------------------------------------------------------*/
+ /*
+@@ -251,6 +253,7 @@ INLINE_ELAPSED(__inline__)
+ #endif
+ 
+ /* Visual C++, courtesy of Dirk Michaelis */
++#ifdef _MSC_VER
+ #if _MSC_VER >= 1400 && (defined(_M_AMD64) || defined(_M_X64)) && !defined(HAVE_TICK_COUNTER)
+ 
+ #include <intrin.h>
+@@ -262,6 +265,7 @@ INLINE_ELAPSED(__inline)
+ #define HAVE_TICK_COUNTER
+ #define TIME_MIN 5000.0
+ #endif
++#endif // _MSC_VER
+ 
+ /*----------------------------------------------------------------*/
+ /*

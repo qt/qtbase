@@ -4,13 +4,27 @@
         "Name": "Cycle",
         "QDocModule": "qttestlib",
         "QtUsage": "Used in the Qt Test module.",
+        "Comment": { "Upstream": "https://github.com/FFTW/fftw3",
+                     "File": "kernel/cycle.h",
+                     "Prepare": "Purge dangling hspace on ends of lines",
+                     "Patches": [
+                         "00-include-guard.patch",
+                         "01-rename-ticks.patch",
+                         "02-preprocesor-checks.patch",
+                         "03-parisc-compile.patch"
+                     ]
+                   },
         "Files": "cycle_p.h",
 
         "Description": "Allows to access the CPU's cycle counters.",
+        "Homepage": "http://fftw.org/",
+        "Version": "3.3.10",
         "License": "MIT License",
         "LicenseId": "MIT",
         "LicenseFile": "LICENSE.txt",
-        "Copyright": ["Copyright (c) 2003, 2006 Matteo Frigo",
-        "Copyright (c) 2003, 2006 Massachusetts Institute of Technology"]
+        "Copyright": [
+            "Copyright (c) 2003, 2007-14 Matteo Frigo",
+            "Copyright (c) 2003, 2007-14 Massachusetts Institute of Technology"
+        ]
     }
 ]
