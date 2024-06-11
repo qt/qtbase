@@ -11,8 +11,6 @@ function (qt_internal_setup_wasm_target_properties wasmTarget)
     "SHELL:-s WASM_BIGINT=1"
     "SHELL:-s STACK_SIZE=5MB")
 
-    target_link_libraries("${wasmTarget}" INTERFACE embind)
-
     ## wasm64
     if (WASM64)
         target_compile_options("${wasmTarget}" INTERFACE "SHELL:-s MEMORY64=1" )
@@ -118,6 +116,7 @@ function(qt_internal_wasm_add_finalizers target)
     qt_add_list_file_finalizer(_qt_internal_set_wasm_export_name ${target})
     qt_add_list_file_finalizer(_qt_internal_add_wasm_extra_exported_methods ${target})
     qt_add_list_file_finalizer(_qt_internal_wasm_add_target_helpers ${target})
+    qt_add_list_file_finalizer(_qt_internal_set_wasm_embind_option ${target})
 endfunction()
 
 

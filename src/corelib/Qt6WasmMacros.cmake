@@ -139,3 +139,7 @@ function(_qt_internal_wasm_export_name_for_target out target)
         set(${out} "${target}_entry" PARENT_SCOPE)
     endif()
 endfunction()
+
+function(_qt_internal_set_wasm_embind_option target)
+    target_link_libraries("${target}" PRIVATE embind)
+endfunction()
