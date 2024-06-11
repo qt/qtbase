@@ -933,6 +933,7 @@ public:
         D24,
         D24S8,
         D32F,
+        D32FS8,
 
         BC1,
         BC2,

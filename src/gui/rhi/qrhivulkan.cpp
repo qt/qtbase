@@ -1072,6 +1072,8 @@ static inline VkFormat toVkTextureFormat(QRhiTexture::Format format, QRhiTexture
         return VK_FORMAT_D24_UNORM_S8_UINT;
     case QRhiTexture::D32F:
         return VK_FORMAT_D32_SFLOAT;
+    case QRhiTexture::D32FS8:
+        return VK_FORMAT_D32_SFLOAT_S8_UINT;
 
     case QRhiTexture::BC1:
         return srgb ? VK_FORMAT_BC1_RGB_SRGB_BLOCK : VK_FORMAT_BC1_RGB_UNORM_BLOCK;
@@ -1164,6 +1166,7 @@ static constexpr inline bool isDepthTextureFormat(QRhiTexture::Format format)
     case QRhiTexture::Format::D24:
     case QRhiTexture::Format::D24S8:
     case QRhiTexture::Format::D32F:
+    case QRhiTexture::Format::D32FS8:
         return true;
 
     default:

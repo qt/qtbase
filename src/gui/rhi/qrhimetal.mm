@@ -3460,6 +3460,8 @@ static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QR
 #endif
     case QRhiTexture::D32F:
         return MTLPixelFormatDepth32Float;
+    case QRhiTexture::D32FS8:
+        return MTLPixelFormatDepth32Float_Stencil8;
 
 #ifdef Q_OS_MACOS
     case QRhiTexture::BC1:

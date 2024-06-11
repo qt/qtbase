@@ -216,6 +216,14 @@ QT_BEGIN_NAMESPACE
 #define GL_DEPTH_COMPONENT32F             0x8CAC
 #endif
 
+#ifndef GL_DEPTH32F_STENCIL8
+#define GL_DEPTH32F_STENCIL8              0x8CAD
+#endif
+
+#ifndef GL_FLOAT_32_UNSIGNED_INT_24_8_REV
+#define GL_FLOAT_32_UNSIGNED_INT_24_8_REV 0x8DAD
+#endif
+
 #ifndef GL_UNSIGNED_INT_24_8
 #define GL_UNSIGNED_INT_24_8              0x84FA
 #endif
@@ -1313,6 +1321,12 @@ static inline void toGlTextureFormat(QRhiTexture::Format format, const QRhiGles2
         *glformat = GL_DEPTH_COMPONENT;
         *gltype = GL_FLOAT;
         break;
+    case QRhiTexture::D32FS8:
+        *glintformat = GL_DEPTH32F_STENCIL8;
+        *glsizedintformat = *glintformat;
+        *glformat = GL_DEPTH_STENCIL;
+        *gltype = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
+        break;
     default:
         Q_UNREACHABLE();
         *glintformat = GL_RGBA;
@@ -1331,6 +1345,7 @@ bool QRhiGles2::isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture
     switch (format) {
     case QRhiTexture::D16:
     case QRhiTexture::D32F:
+    case QRhiTexture::D32FS8:
         return caps.depthTexture;
 
     case QRhiTexture::D24:

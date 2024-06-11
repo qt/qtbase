@@ -4362,6 +4362,9 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
 
     \value D32F 32-bit depth (32-bit float)
 
+    \value D32FS8 32-bit depth (32-bit float), 8 bits of stencil, 24 bits unused
+    (64 bits total) This enum value is introduced in Qt 6.9.
+
     \value BC1
     \value BC2
     \value BC3
@@ -8240,6 +8243,10 @@ void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSi
         bpc = 4;
         break;
 
+    case QRhiTexture::D32FS8:
+        bpc = 8;
+        break;
+
     default:
         Q_UNREACHABLE();
         break;
@@ -8257,6 +8264,7 @@ bool QRhiImplementation::isStencilSupportingFormat(QRhiTexture::Format format) c
 {
     switch (format) {
     case QRhiTexture::D24S8:
+    case QRhiTexture::D32FS8:
         return true;
     default:
         break;
