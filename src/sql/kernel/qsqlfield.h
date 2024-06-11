@@ -18,9 +18,6 @@ QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QSqlFieldPrivate, Q_SQL_EXPORT)
 class Q_SQL_EXPORT QSqlField
 {
     Q_GADGET
-public:
-    enum RequiredStatus { Unknown = -1, Optional = 0, Required = 1 };
-
     Q_PROPERTY(QVariant value READ value WRITE setValue)
     Q_PROPERTY(QVariant defaultValue READ defaultValue WRITE setDefaultValue)
     Q_PROPERTY(QString name READ name WRITE setName)
@@ -32,6 +29,9 @@ public:
     Q_PROPERTY(bool autoValue READ isAutoValue WRITE setAutoValue)
     Q_PROPERTY(int length READ length WRITE setLength)
     Q_PROPERTY(int precision READ precision WRITE setPrecision)
+
+public:
+    enum RequiredStatus { Unknown = -1, Optional = 0, Required = 1 };
 
     explicit QSqlField(const QString& fieldName = QString(), QMetaType type = QMetaType(), const QString &tableName = QString());
 

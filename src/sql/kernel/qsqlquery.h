@@ -23,11 +23,11 @@ class QSqlQueryPrivate;
 class Q_SQL_EXPORT QSqlQuery
 {
     Q_GADGET
-public:
     Q_PROPERTY(bool forwardOnly READ isForwardOnly WRITE setForwardOnly)
     Q_PROPERTY(bool positionalBindingEnabled READ isPositionalBindingEnabled WRITE setPositionalBindingEnabled)
     Q_PROPERTY(QSql::NumericalPrecisionPolicy numericalPrecisionPolicy READ numericalPrecisionPolicy WRITE setNumericalPrecisionPolicy)
 
+public:
     explicit QSqlQuery(QSqlResult *r);
     explicit QSqlQuery(const QString& query = QString(), const QSqlDatabase &db = QSqlDatabase());
     explicit QSqlQuery(const QSqlDatabase &db);
