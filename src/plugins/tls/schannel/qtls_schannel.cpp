@@ -1765,43 +1765,64 @@ auto TlsCryptographSchannel::getNextEncryptedMessage() -> MessageBufferResult
     Q_ASSERT(d);
     auto &writeBuffer = d->tlsWriteBuffer();
 
+    auto allocateMessage = [&fullMessage](qsizetype size) -> QSpan<char> {
+        auto targetSize = fullMessage.size() + size;
+        if (fullMessage.capacity() < targetSize) {
+            qsizetype newSize = fullMessage.capacity() * 2;
+            if (newSize < targetSize)
+                newSize = targetSize;
+            fullMessage.reserve(newSize);
+        }
+        fullMessage.resizeForOverwrite(targetSize);
+        return QSpan(fullMessage).subspan(fullMessage.size() - size);
+    };
+
     const int headerSize = int(streamSizes.cbHeader);
     const int trailerSize = int(streamSizes.cbTrailer);
-    // Try to read 'cbMaximumMessage' bytes from buffer before encrypting.
-    const int size = int(std::min(writeBuffer.size(), qint64(streamSizes.cbMaximumMessage)));
-    fullMessage.resizeForOverwrite(headerSize + trailerSize + size);
-    char *header = fullMessage.data();
-    char *body = header + headerSize;
-    char *trailer = body + size;
-    {
-        // Use peek() here instead of read() so we don't lose data if encryption fails.
-        qint64 copied = writeBuffer.peek(body, size);
-        Q_ASSERT(copied == size);
-    }
+    constexpr qsizetype MessageBufferThreshold = 128 * 1024;
 
-    SecBuffer inputBuffers[] = {
-        createSecBuffer(header, headerSize, SECBUFFER_STREAM_HEADER),
-        createSecBuffer(body, size, SECBUFFER_DATA),
-        createSecBuffer(trailer, trailerSize, SECBUFFER_STREAM_TRAILER),
-        createSecBuffer(nullptr, 0, SECBUFFER_EMPTY)
-    };
-    SecBufferDesc message = {
-        SECBUFFER_VERSION,
-        ARRAYSIZE(inputBuffers),
-        inputBuffers
-    };
-    if (auto status = EncryptMessage(&contextHandle, 0, &message, 0); status != SEC_E_OK) {
-        setErrorAndEmit(d, QAbstractSocket::SslInternalError,
-                        QSslSocket::tr("Schannel failed to encrypt data: %1")
-                                .arg(schannelErrorToString(status)));
-        return result;
-    }
-    // Data was encrypted successfully, so we free() what we peek()ed earlier
-    writeBuffer.free(size);
+    qint64 writeBufferSize = 0;
+    while ((writeBufferSize = writeBuffer.size()) > 0
+           && fullMessage.size() < MessageBufferThreshold) {
+        // Try to read 'cbMaximumMessage' bytes from buffer before encrypting.
+        const int bodySize = int(std::min(writeBufferSize, qint64(streamSizes.cbMaximumMessage)));
+        auto messageSize = headerSize + bodySize + trailerSize;
+        QSpan buffer = allocateMessage(messageSize);
+        char *header = buffer.data();
+        char *body = header + headerSize;
+        char *trailer = body + bodySize;
+        {
+            // Use peek() here instead of read() so we don't lose data if encryption fails.
+            qint64 copied = writeBuffer.peek(body, bodySize);
+            Q_ASSERT(copied == bodySize);
+        }
 
-    // The trailer's size is not final, so resize fullMessage to not send trailing junk
-    fullMessage.resize(inputBuffers[0].cbBuffer + inputBuffers[1].cbBuffer
-                       + inputBuffers[2].cbBuffer);
+        SecBuffer inputBuffers[] = {
+            createSecBuffer(header, headerSize, SECBUFFER_STREAM_HEADER),
+            createSecBuffer(body, bodySize, SECBUFFER_DATA),
+            createSecBuffer(trailer, trailerSize, SECBUFFER_STREAM_TRAILER),
+            createSecBuffer(nullptr, 0, SECBUFFER_EMPTY)
+        };
+        SecBufferDesc message = {
+            SECBUFFER_VERSION,
+            ARRAYSIZE(inputBuffers),
+            inputBuffers
+        };
+
+        if (auto status = EncryptMessage(&contextHandle, 0, &message, 0); status != SEC_E_OK) {
+            setErrorAndEmit(d, QAbstractSocket::SslInternalError,
+                            QSslSocket::tr("Schannel failed to encrypt data: %1")
+                                    .arg(schannelErrorToString(status)));
+            return result;
+        }
+        // Data was encrypted successfully, so we free() what we peek()ed earlier
+        writeBuffer.free(bodySize);
+
+        // The trailer's size is not final, so resize fullMessage to not send trailing junk
+        auto finalSize = qsizetype(inputBuffers[0].cbBuffer + inputBuffers[1].cbBuffer
+                                   + inputBuffers[2].cbBuffer);
+        fullMessage.chop(messageSize - finalSize);
+    }
     result.ok = true;
     return result;
 }
