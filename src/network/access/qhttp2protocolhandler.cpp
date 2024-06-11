@@ -1341,8 +1341,8 @@ quint32 QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &message, b
     replyPrivate->connectionChannel = m_channel;
     reply->setHttp2WasUsed(true);
     streamIDs.insert(reply, newStreamID);
-    connect(reply, SIGNAL(destroyed(QObject*)),
-            this, SLOT(_q_replyDestroyed(QObject*)));
+    connect(reply, &QHttpNetworkReply::destroyed,
+            this, &QHttp2ProtocolHandler::_q_replyDestroyed);
 
     const Stream newStream(message, newStreamID,
                            streamInitialSendWindowSize,
@@ -1350,8 +1350,8 @@ quint32 QHttp2ProtocolHandler::createNewStream(const HttpMessagePair &message, b
 
     if (!uploadDone) {
         if (auto src = newStream.data()) {
-            connect(src, SIGNAL(readyRead()), this,
-                    SLOT(_q_uploadDataReadyRead()), Qt::QueuedConnection);
+            connect(src, &QNonContiguousByteDevice::readyRead, this,
+                    &QHttp2ProtocolHandler::_q_uploadDataReadyRead, Qt::QueuedConnection);
             connect(src, &QHttp2ProtocolHandler::destroyed,
                     this, &QHttp2ProtocolHandler::_q_uploadDataDestroyed);
             streamIDs.insert(src, newStreamID);
