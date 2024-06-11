@@ -38,9 +38,6 @@ QAndroidPlatformServices::QAndroidPlatformServices()
     }
 }
 
-Q_DECLARE_JNI_CLASS(UriType, "android/net/Uri")
-Q_DECLARE_JNI_CLASS(FileType, "java/io/File")
-Q_DECLARE_JNI_CLASS(File, "java/io/File")
 Q_DECLARE_JNI_CLASS(FileProvider, "androidx/core/content/FileProvider");
 
 bool QAndroidPlatformServices::openUrl(const QUrl &theUrl)
@@ -84,10 +81,10 @@ bool QAndroidPlatformServices::openUrl(const QUrl &theUrl)
     const auto urlFile = QJniObject(QtJniTypes::Traits<QtJniTypes::File>::className(),
                                     urlPath.object<jstring>());
 
-    const auto fileProviderUri = QJniObject::callStaticMethod<QtJniTypes::UriType>(
+    const auto fileProviderUri = QJniObject::callStaticMethod<QtJniTypes::Uri>(
             QtJniTypes::Traits<QtJniTypes::FileProvider>::className(), "getUriForFile",
             QAndroidApplication::context(), providerName.object<jstring>(),
-            urlFile.object<QtJniTypes::FileType>());
+            urlFile.object<QtJniTypes::File>());
 
     if (fileProviderUri.isValid())
         return openUrl(fileProviderUri.callMethod<jstring>("toString"));

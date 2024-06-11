@@ -28,12 +28,9 @@ Q_DECLARE_JNI_CLASS(FontInfo, "androidx/core/provider/FontsContractCompat$FontIn
 
 // various utility types
 Q_DECLARE_JNI_CLASS(List, "java/util/List"); // List is just an Interface
-Q_DECLARE_JNI_CLASS(ArrayList, "java/util/ArrayList");
 Q_DECLARE_JNI_CLASS(HashSet, "java/util/HashSet");
-Q_DECLARE_JNI_CLASS(Uri, "android/net/Uri")
 Q_DECLARE_JNI_CLASS(CancellationSignal, "android/os/CancellationSignal")
 Q_DECLARE_JNI_CLASS(ParcelFileDescriptor, "android/os/ParcelFileDescriptor")
-Q_DECLARE_JNI_CLASS(ContentResolver, "android/content/ContentResolver")
 Q_DECLARE_JNI_CLASS(PackageManager, "android/content/pm/PackageManager")
 Q_DECLARE_JNI_CLASS(ProviderInfo, "android/content/pm/ProviderInfo")
 Q_DECLARE_JNI_CLASS(PackageInfo, "android/content/pm/PackageInfo")

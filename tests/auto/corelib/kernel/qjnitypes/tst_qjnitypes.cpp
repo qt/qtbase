@@ -63,7 +63,6 @@ Q_DECLARE_JNI_CLASS(JavaType, "org/qtproject/qt/JavaType");
 static_assert(QtJniTypes::Traits<QtJniTypes::JavaType>::signature() == "Lorg/qtproject/qt/JavaType;");
 static_assert(QtJniTypes::Traits<QtJniTypes::JavaType[]>::signature() == "[Lorg/qtproject/qt/JavaType;");
 
-Q_DECLARE_JNI_CLASS(String, "java/lang/String");
 static_assert(QtJniTypes::Traits<jstring>::className() == "java/lang/String");
 static_assert(QtJniTypes::Traits<QtJniTypes::String>::className() == "java/lang/String");
 static_assert(QtJniTypes::Traits<QtJniTypes::String>::signature() == "Ljava/lang/String;");
