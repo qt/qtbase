@@ -589,6 +589,10 @@ QT_BEGIN_NAMESPACE
     \c{QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST} macro, and
     therefore to allow old code (that relied on this feature) to
     compile without modifications.
+
+    \note Usage of the
+    \c{QT_ENABLE_QEXPLICITLYSHAREDDATAPOINTER_STATICCAST} macro is
+    deprecated. The macro will be removed in a future version of Qt.
 */
 
 /*! \fn template <class T> QExplicitlySharedDataPointer<T>& QExplicitlySharedDataPointer<T>::operator=(const QExplicitlySharedDataPointer<T>& o)
