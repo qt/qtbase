@@ -133,14 +133,12 @@ private:
         return qsizetype(std::size(c));
     }
 
-    // Note: Do not replace with std::size(const Char (&)[N]), cause the result
+    // Note: Do not replace with std::size(const Char (&)[N]), because the result
     // will be of by one.
     template <typename Char, size_t N>
     static constexpr qsizetype lengthHelperContainer(const Char (&str)[N]) noexcept
     {
-        const auto it = std::char_traits<Char>::find(str, N, Char(0));
-        const auto end = it ? it : std::next(str, N);
-        return qsizetype(std::distance(str, end));
+        return QtPrivate::lengthHelperContainer(str);
     }
 
     template <typename Char>
@@ -173,8 +171,7 @@ public:
 #else
     template <typename Pointer, if_compatible_pointer<Pointer> = true>
     constexpr QBasicUtf8StringView(const Pointer &str) noexcept
-        : QBasicUtf8StringView(str,
-            str ? std::char_traits<std::remove_cv_t<std::remove_pointer_t<Pointer>>>::length(str) : 0) {}
+        : QBasicUtf8StringView(str, QtPrivate::lengthHelperPointer(str)) {}
 #endif
 
 #ifdef Q_QDOC

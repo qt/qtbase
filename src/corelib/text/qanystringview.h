@@ -136,7 +136,7 @@ private:
     static constexpr qsizetype lengthHelperPointer(const Char *str) noexcept
     {
         if (q20::is_constant_evaluated())
-            return qsizetype(std::char_traits<Char>::length(str));
+            return QtPrivate::lengthHelperPointer(str);
         if constexpr (sizeof(Char) == sizeof(char16_t))
             return QtPrivate::qustrlen(reinterpret_cast<const char16_t*>(str));
         else

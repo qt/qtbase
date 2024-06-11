@@ -67,7 +67,15 @@ struct IsContainerCompatibleWithQByteArrayView<T, std::enable_if_t<
 template <typename Char>
 static constexpr qsizetype lengthHelperPointer(const Char *data) noexcept
 {
-    return qsizetype(std::char_traits<Char>::length(data));
+    // std::char_traits can only be used with one of the regular char types
+    // (char, char16_t, wchar_t, but not uchar or QChar), so we roll the loop
+    // out by ourselves.
+    qsizetype i = 0;
+    if (!data)
+        return i;
+    while (data[i] != Char(0))
+        ++i;
+    return i;
 }
 
 } // namespace QtPrivate
