@@ -19,26 +19,22 @@ public:
 };
 
 using namespace QNativeInterface;
+using namespace QtJniTypes;
 
 Q_GLOBAL_STATIC(ProxyInfoObject, proxyInfoInstance)
 
-static const char networkClass[] = "org/qtproject/qt/android/network/QtNetwork";
-
+Q_DECLARE_JNI_CLASS(QtNetwork, "org/qtproject/qt/android/network/QtNetwork")
 Q_DECLARE_JNI_CLASS(ProxyInfo, "android/net/ProxyInfo")
-Q_DECLARE_JNI_TYPE(JStringArray, "[Ljava/lang/String;")
+Q_DECLARE_JNI_CLASS(String, "java/lang/String")
 
 ProxyInfoObject::ProxyInfoObject()
 {
-    QJniObject::callStaticMethod<void>(networkClass,
-                                       "registerReceiver",
-                                       QAndroidApplication::context());
+    QtNetwork::callStaticMethod<void>("registerReceiver", QAndroidApplication::context());
 }
 
 ProxyInfoObject::~ProxyInfoObject()
 {
-    QJniObject::callStaticMethod<void>(networkClass,
-                                       "unregisterReceiver",
-                                       QAndroidApplication::context());
+    QtNetwork::callStaticMethod<void>("unregisterReceiver", QAndroidApplication::context());
 }
 
 QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkProxyQuery &query)
@@ -47,20 +43,14 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
     if (!proxyInfoInstance)
         return proxyList;
 
-    QJniObject proxyInfo = QJniObject::callStaticObjectMethod<QtJniTypes::ProxyInfo>(
-            networkClass, "getProxyInfo", QAndroidApplication::context());
+    QJniObject proxyInfo = QtNetwork::callStaticMethod<ProxyInfo>("getProxyInfo",
+                                                                  QAndroidApplication::context());
     if (proxyInfo.isValid()) {
-        QJniObject exclusionList =
-                proxyInfo.callObjectMethod<QtJniTypes::JStringArray>("getExclusionList");
+        const QJniArray exclusionList = proxyInfo.callMethod<String[]>("getExclusionList");
         bool exclude = false;
         if (exclusionList.isValid()) {
-            jobjectArray listObject = exclusionList.object<jobjectArray>();
-            QJniEnvironment env;
-            QJniObject entry;
-            const int size = env->GetArrayLength(listObject);
-            QUrl host = QUrl(query.url().host());
-            for (int i = 0; i < size; ++i) {
-                entry = env->GetObjectArrayElement(listObject, i);
+            const QUrl host = QUrl(query.url().host());
+            for (const auto &entry : exclusionList) {
                 if (host.matches(QUrl(entry.toString()), QUrl::RemoveScheme)) {
                     exclude = true;
                     break;
@@ -68,9 +58,9 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
             }
         }
         if (!exclude) {
-            QJniObject hostName = proxyInfo.callObjectMethod<jstring>("getHost");
+            const QString hostName = proxyInfo.callMethod<QString>("getHost");
             const int port = proxyInfo.callMethod<jint>("getPort");
-            QNetworkProxy proxy(QNetworkProxy::HttpProxy, hostName.toString(), port);
+            QNetworkProxy proxy(QNetworkProxy::HttpProxy, hostName, port);
             proxyList << proxy;
         }
     }
