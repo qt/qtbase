@@ -15,6 +15,8 @@
 // We mean it.
 //
 
+#include <QtCore/qfuturewatcher.h>
+
 #include "qfutureinterface_p.h"
 #include <qlist.h>
 
@@ -24,7 +26,6 @@ QT_REQUIRE_CONFIG(future);
 
 QT_BEGIN_NAMESPACE
 
-class QFutureWatcherBase;
 class QFutureWatcherBasePrivate : public QObjectPrivate,
                                   public QFutureCallOutInterface
 {
