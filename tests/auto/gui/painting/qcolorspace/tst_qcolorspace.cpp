@@ -1068,9 +1068,7 @@ void tst_QColorSpace::scaleAlphaValue()
 
 void tst_QColorSpace::hdrColorSpaces()
 {
-    QColorSpace bt2020linear = QColorSpace::Bt2020;
-    bt2020linear.setTransferFunction(QColorSpace::TransferFunction::Linear);
-
+    QColorSpace bt2020linear(QColorSpace::Primaries::Bt2020, QColorSpace::TransferFunction::Linear);
     QColorTransform pqToLinear = QColorSpace(QColorSpace::Bt2100Pq).transformationToColorSpace(bt2020linear);
     QColorTransform hlgToLinear = QColorSpace(QColorSpace::Bt2100Hlg).transformationToColorSpace(bt2020linear);
 
@@ -1085,6 +1083,47 @@ void tst_QColorSpace::hdrColorSpaces()
     QCOMPARE(pqToLinear.map(maxWhite).redF(), 64.f);
     QCOMPARE(pqToLinear.map(maxWhite).greenF(), 64.f);
     QCOMPARE(pqToLinear.map(maxWhite).blueF(), 64.f);
+
+    {
+        QImage image(1, 1, QImage::Format_RGBA32FPx4);
+        image.setPixel(0, 0, qRgba(255, 255, 255, 255));
+        image.setColorSpace(QColorSpace::Bt2100Pq);
+        QImage image2 = image.convertedToColorSpace(bt2020linear);
+        QCOMPARE(image2.pixelColor(0, 0).redF(), 64.f);
+        image.setColorSpace(QColorSpace::Bt2100Hlg);
+        image2 = image.convertedToColorSpace(bt2020linear);
+        QCOMPARE(image2.pixelColor(0, 0).redF(), 12.f);
+    }
+    {
+        QImage image(1, 1, QImage::Format_RGBA32FPx4_Premultiplied);
+        image.setPixel(0, 0, qRgba(255, 255, 255, 255));
+        image.setColorSpace(QColorSpace::Bt2100Pq);
+        QImage image2 = image.convertedToColorSpace(bt2020linear);
+        QCOMPARE(image2.pixelColor(0, 0).redF(), 64.f);
+        image.setColorSpace(QColorSpace::Bt2100Hlg);
+        image2 = image.convertedToColorSpace(bt2020linear);
+        QCOMPARE(image2.pixelColor(0, 0).redF(), 12.f);
+    }
+    {
+        QImage image(1, 1, QImage::Format_ARGB32);
+        image.setPixel(0, 0, qRgba(255, 255, 255, 255));
+        image.setColorSpace(QColorSpace::Bt2100Pq);
+        QImage image2 = image.convertedToColorSpace(bt2020linear, QImage::Format_RGBA32FPx4);
+        QCOMPARE(image2.pixelColor(0, 0).redF(), 64.f);
+        image.setColorSpace(QColorSpace::Bt2100Hlg);
+        image2 = image.convertedToColorSpace(bt2020linear, QImage::Format_RGBA32FPx4);
+        QCOMPARE(image2.pixelColor(0, 0).redF(), 12.f);
+    }
+    {
+        QImage image(1, 1, QImage::Format_ARGB32_Premultiplied);
+        image.setPixel(0, 0, qRgba(255, 255, 255, 255));
+        image.setColorSpace(QColorSpace::Bt2100Pq);
+        QImage image2 = image.convertedToColorSpace(bt2020linear, QImage::Format_RGBA32FPx4);
+        QCOMPARE(image2.pixelColor(0, 0).redF(), 64.f);
+        image.setColorSpace(QColorSpace::Bt2100Hlg);
+        image2 = image.convertedToColorSpace(bt2020linear, QImage::Format_RGBA32FPx4);
+        QCOMPARE(image2.pixelColor(0, 0).redF(), 12.f);
+    }
 }
 
 QTEST_MAIN(tst_QColorSpace)

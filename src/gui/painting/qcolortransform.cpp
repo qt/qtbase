@@ -448,6 +448,12 @@ static void loadPremultiplied(QColorVector *buffer, const T *src, const qsizetyp
     const __m128 vTrcRes = _mm_set1_ps(float(QColorTrcLut::Resolution));
     const __m128 iFF00 = _mm_set1_ps(1.0f / (255 * 256));
     constexpr bool isARGB = isArgb<T>();
+    const __m128i vRangeMax = _mm_setr_epi32(isARGB ? d_ptr->colorSpaceIn->lut[2]->m_unclampedToLinear
+                                                    : d_ptr->colorSpaceIn->lut[0]->m_unclampedToLinear,
+                                             d_ptr->colorSpaceIn->lut[1]->m_unclampedToLinear,
+                                             isARGB ? d_ptr->colorSpaceIn->lut[0]->m_unclampedToLinear
+                                                    : d_ptr->colorSpaceIn->lut[2]->m_unclampedToLinear,
+                                             QColorTrcLut::Resolution);
     for (qsizetype i = 0; i < len; ++i) {
         __m128i v;
         loadP<T>(src[i], v);
@@ -468,12 +474,19 @@ static void loadPremultiplied(QColorVector *buffer, const T *src, const qsizetyp
         const int ridx = isARGB ? _mm_extract_epi16(v, 4) : _mm_extract_epi16(v, 0);
         const int gidx = _mm_extract_epi16(v, 2);
         const int bidx = isARGB ? _mm_extract_epi16(v, 0) : _mm_extract_epi16(v, 4);
-        v = _mm_insert_epi16(v, d_ptr->colorSpaceIn->lut[0]->m_toLinear[ridx], 0);
-        v = _mm_insert_epi16(v, d_ptr->colorSpaceIn->lut[1]->m_toLinear[gidx], 2);
-        v = _mm_insert_epi16(v, d_ptr->colorSpaceIn->lut[2]->m_toLinear[bidx], 4);
-        vf = _mm_mul_ps(_mm_cvtepi32_ps(v), iFF00);
+        if (_mm_movemask_epi8(_mm_cmpgt_epi32(v, vRangeMax)) == 0) {
+            v = _mm_insert_epi16(v, d_ptr->colorSpaceIn->lut[0]->m_toLinear[ridx], 0);
+            v = _mm_insert_epi16(v, d_ptr->colorSpaceIn->lut[1]->m_toLinear[gidx], 2);
+            v = _mm_insert_epi16(v, d_ptr->colorSpaceIn->lut[2]->m_toLinear[bidx], 4);
+            vf = _mm_mul_ps(_mm_cvtepi32_ps(v), iFF00);
 
-        _mm_storeu_ps(&buffer[i].x, vf);
+            _mm_storeu_ps(&buffer[i].x, vf);
+        } else {
+            constexpr float f = 1.f / QColorTrcLut::Resolution;
+            buffer[i].x = d_ptr->colorSpaceIn->trc[0].applyExtended(ridx * f);
+            buffer[i].y = d_ptr->colorSpaceIn->trc[1].applyExtended(gidx * f);
+            buffer[i].z = d_ptr->colorSpaceIn->trc[2].applyExtended(bidx * f);
+        }
     }
 }
 
@@ -483,7 +496,11 @@ void loadPremultiplied<QRgbaFloat32>(QColorVector *buffer, const QRgbaFloat32 *s
     const __m128 vTrcRes = _mm_set1_ps(float(QColorTrcLut::Resolution));
     const __m128 viFF00 = _mm_set1_ps(1.0f / (255 * 256));
     const __m128 vZero = _mm_set1_ps(0.0f);
-    const __m128 vOne  = _mm_set1_ps(1.0f);
+    const float factor = 1.f / float(QColorTrcLut::Resolution);
+    const __m128 vRangeMax = _mm_setr_ps(d_ptr->colorSpaceIn->lut[0]->m_unclampedToLinear * factor,
+                                         d_ptr->colorSpaceIn->lut[1]->m_unclampedToLinear * factor,
+                                         d_ptr->colorSpaceIn->lut[2]->m_unclampedToLinear * factor,
+                                         INFINITY);
     for (qsizetype i = 0; i < len; ++i) {
         __m128 vf = _mm_loadu_ps(&src[i].r);
         // Approximate 1/a:
@@ -499,7 +516,7 @@ void loadPremultiplied<QRgbaFloat32>(QColorVector *buffer, const QRgbaFloat32 *s
 
         // LUT
         const __m128 under = _mm_cmplt_ps(vf, vZero);
-        const __m128 over = _mm_cmpgt_ps(vf, vOne);
+        const __m128 over = _mm_cmpgt_ps(vf, vRangeMax);
         if (_mm_movemask_ps(_mm_or_ps(under, over)) == 0) {
             // Within gamut
             __m128i v = _mm_cvtps_epi32(_mm_mul_ps(vf, vTrcRes));
@@ -556,17 +573,30 @@ void loadUnpremultiplied(QColorVector *buffer, const T *src, const qsizetype len
 {
     constexpr bool isARGB = isArgb<T>();
     const __m128 iFF00 = _mm_set1_ps(1.0f / (255 * 256));
+    const __m128i vRangeMax = _mm_setr_epi32(isARGB ? d_ptr->colorSpaceIn->lut[2]->m_unclampedToLinear
+                                                    : d_ptr->colorSpaceIn->lut[0]->m_unclampedToLinear,
+                                             d_ptr->colorSpaceIn->lut[1]->m_unclampedToLinear,
+                                             isARGB ? d_ptr->colorSpaceIn->lut[0]->m_unclampedToLinear
+                                                    : d_ptr->colorSpaceIn->lut[2]->m_unclampedToLinear,
+                                             QColorTrcLut::Resolution);
     for (qsizetype i = 0; i < len; ++i) {
         __m128i v;
         loadPU<T>(src[i], v);
         const int ridx = isARGB ? _mm_extract_epi16(v, 4) : _mm_extract_epi16(v, 0);
         const int gidx = _mm_extract_epi16(v, 2);
         const int bidx = isARGB ? _mm_extract_epi16(v, 0) : _mm_extract_epi16(v, 4);
-        v = _mm_insert_epi16(v, d_ptr->colorSpaceIn->lut[0]->m_toLinear[ridx], 0);
-        v = _mm_insert_epi16(v, d_ptr->colorSpaceIn->lut[1]->m_toLinear[gidx], 2);
-        v = _mm_insert_epi16(v, d_ptr->colorSpaceIn->lut[2]->m_toLinear[bidx], 4);
-        __m128 vf = _mm_mul_ps(_mm_cvtepi32_ps(v), iFF00);
-        _mm_storeu_ps(&buffer[i].x, vf);
+        if (_mm_movemask_epi8(_mm_cmpgt_epi32(v, vRangeMax)) == 0) {
+            v = _mm_insert_epi16(v, d_ptr->colorSpaceIn->lut[0]->m_toLinear[ridx], 0);
+            v = _mm_insert_epi16(v, d_ptr->colorSpaceIn->lut[1]->m_toLinear[gidx], 2);
+            v = _mm_insert_epi16(v, d_ptr->colorSpaceIn->lut[2]->m_toLinear[bidx], 4);
+            __m128 vf = _mm_mul_ps(_mm_cvtepi32_ps(v), iFF00);
+            _mm_storeu_ps(&buffer[i].x, vf);
+        } else {
+            constexpr float f = 1.f / QColorTrcLut::Resolution;
+            buffer[i].x = d_ptr->colorSpaceIn->trc[0].applyExtended(ridx * f);
+            buffer[i].y = d_ptr->colorSpaceIn->trc[1].applyExtended(gidx * f);
+            buffer[i].z = d_ptr->colorSpaceIn->trc[2].applyExtended(bidx * f);
+        }
     }
 }
 
@@ -576,11 +606,15 @@ void loadUnpremultiplied<QRgbaFloat32>(QColorVector *buffer, const QRgbaFloat32 
     const __m128 vTrcRes = _mm_set1_ps(float(QColorTrcLut::Resolution));
     const __m128 iFF00 = _mm_set1_ps(1.0f / (255 * 256));
     const __m128 vZero = _mm_set1_ps(0.0f);
-    const __m128 vOne  = _mm_set1_ps(1.0f);
+    const float factor = 1.f / float(QColorTrcLut::Resolution);
+    const __m128 vRangeMax = _mm_setr_ps(d_ptr->colorSpaceIn->lut[0]->m_unclampedToLinear * factor,
+                                         d_ptr->colorSpaceIn->lut[1]->m_unclampedToLinear * factor,
+                                         d_ptr->colorSpaceIn->lut[2]->m_unclampedToLinear * factor,
+                                         INFINITY);
     for (qsizetype i = 0; i < len; ++i) {
         __m128 vf = _mm_loadu_ps(&src[i].r);
         const __m128 under = _mm_cmplt_ps(vf, vZero);
-        const __m128 over = _mm_cmpgt_ps(vf, vOne);
+        const __m128 over = _mm_cmpgt_ps(vf, vRangeMax);
         if (_mm_movemask_ps(_mm_or_ps(under, over)) == 0) {
             // Within gamut
             __m128i v = _mm_cvtps_epi32(_mm_mul_ps(vf, vTrcRes));
@@ -618,11 +652,28 @@ inline void loadP<QRgba64>(const QRgba64 &p, uint32x4_t &v)
     v = vmovl_u16(vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&p))));
 }
 
+static inline bool test_all_zero(uint32x4_t p)
+{
+#if defined(Q_PROCESSOR_ARM_64)
+    return vaddvq_u32(p) == 0;
+#else
+    const uint32x2_t tmp = vpadd_u32(vget_low_u32(p), vget_high_u32(p));
+    return vget_lane_u32(vpadd_u32(tmp, tmp), 0) == 0;
+#endif
+}
+
 template<typename T>
 static void loadPremultiplied(QColorVector *buffer, const T *src, const qsizetype len, const QColorTransformPrivate *d_ptr)
 {
     constexpr bool isARGB = isArgb<T>();
     const float iFF00 = 1.0f / (255 * 256);
+    const uint32x4_t vRangeMax = {
+        isARGB ? d_ptr->colorSpaceIn->lut[2]->m_unclampedToLinear
+              : d_ptr->colorSpaceIn->lut[0]->m_unclampedToLinear,
+        d_ptr->colorSpaceIn->lut[1]->m_unclampedToLinear,
+        isARGB ? d_ptr->colorSpaceIn->lut[0]->m_unclampedToLinear
+              : d_ptr->colorSpaceIn->lut[2]->m_unclampedToLinear,
+        QColorTrcLut::Resolution };
     for (qsizetype i = 0; i < len; ++i) {
         uint32x4_t v;
         loadP<T>(src[i], v);
@@ -648,12 +699,19 @@ static void loadPremultiplied(QColorVector *buffer, const T *src, const qsizetyp
         const int ridx = isARGB ? vgetq_lane_u32(v, 2) : vgetq_lane_u32(v, 0);
         const int gidx = vgetq_lane_u32(v, 1);
         const int bidx = isARGB ? vgetq_lane_u32(v, 0) : vgetq_lane_u32(v, 2);
-        v = vsetq_lane_u32(d_ptr->colorSpaceIn->lut[0]->m_toLinear[ridx], v, 0);
-        v = vsetq_lane_u32(d_ptr->colorSpaceIn->lut[1]->m_toLinear[gidx], v, 1);
-        v = vsetq_lane_u32(d_ptr->colorSpaceIn->lut[2]->m_toLinear[bidx], v, 2);
-        vf = vmulq_n_f32(vcvtq_f32_u32(v), iFF00);
+        if (test_all_zero(vcgtq_u32(v, vRangeMax))) {
+            v = vsetq_lane_u32(d_ptr->colorSpaceIn->lut[0]->m_toLinear[ridx], v, 0);
+            v = vsetq_lane_u32(d_ptr->colorSpaceIn->lut[1]->m_toLinear[gidx], v, 1);
+            v = vsetq_lane_u32(d_ptr->colorSpaceIn->lut[2]->m_toLinear[bidx], v, 2);
+            vf = vmulq_n_f32(vcvtq_f32_u32(v), iFF00);
 
-        vst1q_f32(&buffer[i].x, vf);
+            vst1q_f32(&buffer[i].x, vf);
+        } else {
+            constexpr float f = 1.f / QColorTrcLut::Resolution;
+            buffer[i].x = d_ptr->colorSpaceIn->trc[0].applyExtended(ridx * f);
+            buffer[i].y = d_ptr->colorSpaceIn->trc[1].applyExtended(gidx * f);
+            buffer[i].z = d_ptr->colorSpaceIn->trc[2].applyExtended(bidx * f);
+        }
     }
 }
 
@@ -682,17 +740,31 @@ void loadUnpremultiplied(QColorVector *buffer, const T *src, const qsizetype len
 {
     constexpr bool isARGB = isArgb<T>();
     const float iFF00 = 1.0f / (255 * 256);
+    const uint32x4_t vRangeMax = {
+        isARGB ? d_ptr->colorSpaceIn->lut[2]->m_unclampedToLinear
+               : d_ptr->colorSpaceIn->lut[0]->m_unclampedToLinear,
+        d_ptr->colorSpaceIn->lut[1]->m_unclampedToLinear,
+        isARGB ? d_ptr->colorSpaceIn->lut[0]->m_unclampedToLinear
+               : d_ptr->colorSpaceIn->lut[2]->m_unclampedToLinear,
+        QColorTrcLut::Resolution };
     for (qsizetype i = 0; i < len; ++i) {
         uint32x4_t v;
         loadPU<T>(src[i], v);
         const int ridx = isARGB ? vgetq_lane_u32(v, 2) : vgetq_lane_u32(v, 0);
         const int gidx = vgetq_lane_u32(v, 1);
         const int bidx = isARGB ? vgetq_lane_u32(v, 0) : vgetq_lane_u32(v, 2);
-        v = vsetq_lane_u32(d_ptr->colorSpaceIn->lut[0]->m_toLinear[ridx], v, 0);
-        v = vsetq_lane_u32(d_ptr->colorSpaceIn->lut[1]->m_toLinear[gidx], v, 1);
-        v = vsetq_lane_u32(d_ptr->colorSpaceIn->lut[2]->m_toLinear[bidx], v, 2);
-        float32x4_t vf = vmulq_n_f32(vcvtq_f32_u32(v), iFF00);
-        vst1q_f32(&buffer[i].x, vf);
+        if (test_all_zero(vcgtq_u32(v, vRangeMax))) {
+            v = vsetq_lane_u32(d_ptr->colorSpaceIn->lut[0]->m_toLinear[ridx], v, 0);
+            v = vsetq_lane_u32(d_ptr->colorSpaceIn->lut[1]->m_toLinear[gidx], v, 1);
+            v = vsetq_lane_u32(d_ptr->colorSpaceIn->lut[2]->m_toLinear[bidx], v, 2);
+            float32x4_t vf = vmulq_n_f32(vcvtq_f32_u32(v), iFF00);
+            vst1q_f32(&buffer[i].x, vf);
+        } else {
+            constexpr float f = 1.f / QColorTrcLut::Resolution;
+            buffer[i].x = d_ptr->colorSpaceIn->trc[0].applyExtended(ridx * f);
+            buffer[i].y = d_ptr->colorSpaceIn->trc[1].applyExtended(gidx * f);
+            buffer[i].z = d_ptr->colorSpaceIn->trc[2].applyExtended(bidx * f);
+        }
     }
 }
 #else

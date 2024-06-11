@@ -37,8 +37,10 @@ void QColorTrcLut::setFromGamma(float gamma, Direction dir)
     if (dir & ToLinear) {
         if (!m_toLinear)
             m_toLinear.reset(new ushort[Resolution + 1]);
-        for (int i = 0; i <= Resolution; ++i)
-            m_toLinear[i] = ushort(qRound(qBound(0.f, qPow(i * iRes, gamma), 1.f) * (255 * 256)));
+        for (int i = 0; i <= Resolution; ++i) {
+            const int val = qRound(qPow(i * iRes, gamma) * (255 * 256));
+            m_toLinear[i] = qBound(0, val, 65280);
+        }
     }
 
     if (dir & FromLinear) {
@@ -56,8 +58,12 @@ void QColorTrcLut::setFromTransferFunction(const QColorTransferFunction &fun, Di
     if (dir & ToLinear) {
         if (!m_toLinear)
             m_toLinear.reset(new ushort[Resolution + 1]);
-        for (int i = 0; i <= Resolution; ++i)
-            m_toLinear[i] = ushort(qRound(qBound(0.f, fun.apply(i * iRes), 1.f) * (255 * 256)));
+        for (int i = 0; i <= Resolution; ++i) {
+            const int val = qRound(fun.apply(i * iRes)* (255 * 256));
+            if (val > 65280 && i < m_unclampedToLinear)
+                m_unclampedToLinear = i;
+            m_toLinear[i] = qBound(0, val, 65280);
+        }
     }
 
     if (dir & FromLinear) {
@@ -75,8 +81,12 @@ void QColorTrcLut::setFromTransferGenericFunction(const QColorTransferGenericFun
     if (dir & ToLinear) {
         if (!m_toLinear)
             m_toLinear.reset(new ushort[Resolution + 1]);
-        for (int i = 0; i <= Resolution; ++i)
-            m_toLinear[i] = ushort(qRound(qBound(0.f, fun.apply(i * iRes), 1.f) * (255 * 256)));
+        for (int i = 0; i <= Resolution; ++i) {
+            const int val = qRound(fun.apply(i * iRes) * (255 * 256));
+            if (val > 65280 && i < m_unclampedToLinear)
+                m_unclampedToLinear = i;
+            m_toLinear[i] = qBound(0, val, 65280);
+        }
     }
 
     if (dir & FromLinear) {
