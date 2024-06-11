@@ -179,7 +179,7 @@ public:
     ~QThreadPrivate();
 
     void setPriority(QThread::Priority prio);
-    Qt::HANDLE threadId() const;
+    Qt::HANDLE threadId() const noexcept;
 
     mutable QMutex mutex;
     QAtomicInt quitLockRef;
