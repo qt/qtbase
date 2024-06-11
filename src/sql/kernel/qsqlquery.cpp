@@ -335,6 +335,9 @@ bool QSqlQuery::isNull(int field) const
     returns isNull(int index) for the corresponding field index.
 
     This overload is less efficient than \l{QSqlQuery::}{isNull()}
+
+    \note In Qt versions prior to 6.8, this function took QString, not
+    QAnyStringView.
 */
 bool QSqlQuery::isNull(QAnyStringView name) const
 {
@@ -446,6 +449,9 @@ QVariant QSqlQuery::value(int index) const
     If field \a name does not exist an invalid variant is returned.
 
     This overload is less efficient than \l{QSqlQuery::}{value()}
+
+    \note In Qt versions prior to 6.8, this function took QString, not
+    QAnyStringView.
 */
 QVariant QSqlQuery::value(QAnyStringView name) const
 {
