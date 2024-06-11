@@ -206,6 +206,7 @@ public:
     // and to keep the tables small enough to fit in most inner caches.
     std::unique_ptr<ushort[]> m_toLinear; // [0->Resolution] -> [0-65280]
     std::unique_ptr<ushort[]> m_fromLinear; // [0->Resolution] -> [0-65280]
+    ushort m_unclampedToLinear = Resolution;
 
 private:
     QColorTrcLut() = default;
