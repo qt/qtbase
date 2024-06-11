@@ -1770,16 +1770,19 @@ auto TlsCryptographSchannel::getNextEncryptedMessage() -> MessageBufferResult
     // Try to read 'cbMaximumMessage' bytes from buffer before encrypting.
     const int size = int(std::min(writeBuffer.size(), qint64(streamSizes.cbMaximumMessage)));
     fullMessage.resizeForOverwrite(headerSize + trailerSize + size);
+    char *header = fullMessage.data();
+    char *body = header + headerSize;
+    char *trailer = body + size;
     {
         // Use peek() here instead of read() so we don't lose data if encryption fails.
-        qint64 copied = writeBuffer.peek(fullMessage.data() + headerSize, size);
+        qint64 copied = writeBuffer.peek(body, size);
         Q_ASSERT(copied == size);
     }
 
     SecBuffer inputBuffers[] = {
-        createSecBuffer(fullMessage.data(), headerSize, SECBUFFER_STREAM_HEADER),
-        createSecBuffer(fullMessage.data() + headerSize, size, SECBUFFER_DATA),
-        createSecBuffer(fullMessage.data() + headerSize + size, trailerSize, SECBUFFER_STREAM_TRAILER),
+        createSecBuffer(header, headerSize, SECBUFFER_STREAM_HEADER),
+        createSecBuffer(body, size, SECBUFFER_DATA),
+        createSecBuffer(trailer, trailerSize, SECBUFFER_STREAM_TRAILER),
         createSecBuffer(nullptr, 0, SECBUFFER_EMPTY)
     };
     SecBufferDesc message = {
