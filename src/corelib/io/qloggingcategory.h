@@ -113,7 +113,10 @@ template <> const bool QLoggingCategoryMacroHolder<QtWarningMsg>::IsOutputEnable
     using QtPrivateLogging::name;
 
 #define Q_DECLARE_EXPORTED_LOGGING_CATEGORY(name, export_macro) \
-    namespace QtPrivateLogging { export_macro const QLoggingCategory &name(); } \
+    namespace QtPrivateLogging { \
+    Q_DECL_DEPRECATED_X("Use QT_DECLARE_EXPORTED_QT_LOGGING_CATEGORY in Qt") \
+    export_macro const QLoggingCategory &name(); \
+    } \
     using QtPrivateLogging::name;
 
 #define Q_LOGGING_CATEGORY_IMPL(name, ...) \
@@ -134,6 +137,9 @@ template <> const bool QLoggingCategoryMacroHolder<QtWarningMsg>::IsOutputEnable
 #define Q_LOGGING_CATEGORY(name, ...) \
     namespace QtPrivateLogging { Q_LOGGING_CATEGORY_IMPL(name, __VA_ARGS__) } \
     Q_WEAK_OVERLOAD \
+    Q_DECL_DEPRECATED_X("Use Q_STATIC_LOGGING_CATEGORY or add " \
+                        "either Q_DECLARE_LOGGING_CATEGORY or " \
+                        "QT_DECLARE_EXPORTED_QT_LOGGING_CATEGORY in a header") \
     const QLoggingCategory &name() { return QtPrivateLogging::name(); }
 #endif
 

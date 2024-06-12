@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
     Q_LOGGING_CATEGORY_WITH_ENV_OVERRIDE_IMPL(name, env, categoryName) \
     } \
     Q_WEAK_OVERLOAD \
+    Q_DECL_DEPRECATED_X("Logging categories should either be static or declared in a header") \
     const QLoggingCategory &name() { return QtPrivateLogging::name(); }
 #endif
 
