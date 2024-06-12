@@ -648,6 +648,9 @@ class totally_ordered_wrapper
     P ptr;
 public:
     totally_ordered_wrapper() noexcept = default;
+    Q_IMPLICIT constexpr totally_ordered_wrapper(std::nullptr_t)
+        // requires std::is_pointer_v<P>
+        : totally_ordered_wrapper(P{nullptr}) {}
     explicit constexpr totally_ordered_wrapper(P p) noexcept : ptr(p) {}
 
     constexpr P get() const noexcept { return ptr; }
