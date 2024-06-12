@@ -134,36 +134,24 @@ void QOpenGLCompositorBackingStore::updateTexture()
     }
 }
 
-void QOpenGLCompositorBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
+void QOpenGLCompositorBackingStore::flush(QWindow *flushedWindow, const QRegion &region, const QPoint &offset)
 {
     // Called for ordinary raster windows.
-    auto *handle = dynamic_cast<QOpenGLCompositorWindow *>(window->handle());
-    if (handle && !handle->backingStore())
-        handle->setBackingStore(this);
 
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
-    m_rhi = rhi(window);
-    Q_ASSERT(m_rhi);
+    if (!rhi(flushedWindow)) {
+        QPlatformBackingStoreRhiConfig rhiConfig;
+        rhiConfig.setApi(QPlatformBackingStoreRhiConfig::OpenGL);
+        rhiConfig.setEnabled(true);
+        createRhi(flushedWindow, rhiConfig);
+    }
 
-    QOpenGLCompositor *compositor = QOpenGLCompositor::instance();
-    QOpenGLContext *dstCtx = compositor->context();
-    if (!dstCtx)
-        return;
-
-    QWindow *dstWin = compositor->targetWindow();
-    if (!dstWin)
-        return;
-
-    if (!dstCtx->makeCurrent(dstWin))
-        return;
-
-    updateTexture();
-    m_textures->clear();
-    m_textures->appendTexture(nullptr, m_bsTextureWrapper, window->geometry());
-
-    compositor->update();
+    static QPlatformTextureList emptyTextureList;
+    bool translucentBackground = m_image.hasAlphaChannel();
+    rhiFlush(flushedWindow, flushedWindow->devicePixelRatio(),
+        region, offset, &emptyTextureList, translucentBackground);
 }
 
 QPlatformBackingStore::FlushResult QOpenGLCompositorBackingStore::rhiFlush(QWindow *window,
