@@ -951,15 +951,13 @@ void QCoreTextFontDatabase::populateThemeFonts()
             };
 
             // Try populating the font variants based on its UI design trait, if available
-            if (@available(macos 10.15, ios 13.0, *)) {
-                auto fontTraits = QCFType<CFDictionaryRef>(CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontTraitsAttribute));
-                static const NSString *kUIFontDesignTrait = @"NSCTFontUIFontDesignTrait";
-                if (id uiFontDesignTrait = fontTraits.as<NSDictionary*>()[kUIFontDesignTrait]) {
-                    QCFType<CTFontDescriptorRef> designTraitDescriptor = CTFontDescriptorCreateWithAttributes(
-                        CFDictionaryRef(@{ (id)kCTFontTraitsAttribute: @{ kUIFontDesignTrait: uiFontDesignTrait }
-                    }));
-                    addFontVariants(designTraitDescriptor);
-                }
+            auto fontTraits = QCFType<CFDictionaryRef>(CTFontDescriptorCopyAttribute(fontDescriptor, kCTFontTraitsAttribute));
+            static const NSString *kUIFontDesignTrait = @"NSCTFontUIFontDesignTrait";
+            if (id uiFontDesignTrait = fontTraits.as<NSDictionary*>()[kUIFontDesignTrait]) {
+                QCFType<CTFontDescriptorRef> designTraitDescriptor = CTFontDescriptorCreateWithAttributes(
+                    CFDictionaryRef(@{ (id)kCTFontTraitsAttribute: @{ kUIFontDesignTrait: uiFontDesignTrait }
+                }));
+                addFontVariants(designTraitDescriptor);
             }
 
             if (themeFontVariants.isEmpty()) {
