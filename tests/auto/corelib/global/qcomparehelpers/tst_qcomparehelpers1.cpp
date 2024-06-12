@@ -54,3 +54,10 @@ void tst_QCompareHelpers::compareWithAttributes()
 
 #undef COMPARE
 }
+
+void tst_QCompareHelpers::totallyOrderedWrapperBasics()
+{
+    Qt::totally_ordered_wrapper<int*> pi; // partially-formed
+    pi = nullptr;
+    QCOMPARE_EQ(pi.get(), nullptr);
+}

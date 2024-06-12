@@ -58,6 +58,8 @@ private Q_SLOTS:
     // Add new test cases to tst_qcomparehelpers1.cpp, because minGW already
     // complains about a too large tst_qcomparehelpers.cpp.obj object file
     void compareWithAttributes();
+
+    void totallyOrderedWrapperBasics();
 };
 
 #endif // TST_QCOMPAREHELPERS_H
