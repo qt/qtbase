@@ -147,3 +147,11 @@ endfunction()
 function(_qt_internal_set_wasm_embind_option target)
     target_link_libraries("${target}" PRIVATE embind)
 endfunction()
+
+function(_qt_internal_finalize_wasm_app target)
+    _qt_internal_set_wasm_export_name("${target}")
+    _qt_internal_add_wasm_extra_exported_methods("${target}")
+    _qt_internal_wasm_add_target_helpers("${target}")
+    _qt_internal_set_wasm_embind_option("${target}")
+endfunction()
+

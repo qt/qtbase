@@ -34,6 +34,9 @@ function(qt_internal_add_executable name)
     if(ANDROID)
         _qt_internal_android_executable_finalizer(${name})
     endif()
+    if(WASM)
+        qt_internal_wasm_add_finalizers(${name})
+    endif()
 
     if(arg_QT_APP AND QT_FEATURE_debug_and_release AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.19.0")
         set_property(TARGET "${name}"
@@ -147,10 +150,6 @@ function(qt_internal_add_executable name)
     )
 
     qt_internal_set_exceptions_flags("${name}" ${arg_EXCEPTIONS})
-
-    if(WASM)
-        qt_internal_wasm_add_finalizers("${name}")
-    endif()
 
     # Check if target needs to be excluded from all target. Also affects qt_install.
     # Set by qt_exclude_tool_directories_from_default_target.
