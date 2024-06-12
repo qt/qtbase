@@ -75,21 +75,6 @@ public class QtActivityDelegate extends QtActivityDelegateBase
     }
 
     @Override
-    public boolean updateActivityAfterRestart(Activity activity) {
-        boolean updated = super.updateActivityAfterRestart(activity);
-        // TODO verify whether this is even needed, the last I checked the initMembers
-        // recreates the layout anyway
-        // update the new activity content view to old layout
-        ViewGroup layoutParent = (ViewGroup)m_layout.getParent();
-        if (layoutParent != null)
-            layoutParent.removeView(m_layout);
-
-        m_activity.setContentView(m_layout);
-
-        return updated;
-    }
-
-    @Override
     void startNativeApplicationImpl(String appParams, String mainLib)
     {
         m_layout.getViewTreeObserver().addOnGlobalLayoutListener(

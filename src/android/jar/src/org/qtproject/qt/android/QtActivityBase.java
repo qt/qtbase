@@ -63,23 +63,17 @@ public class QtActivityBase extends Activity
         m_applicationParams += params;
     }
 
-    private void handleActivityRestart() {
-        if (QtNative.getStateDetails().isStarted) {
-            boolean updated = m_delegate.updateActivityAfterRestart(this);
-            if (!updated) {
-                // could not update the activity so restart the application
-                Intent intent = Intent.makeRestartActivityTask(getComponentName());
-                startActivity(intent);
-                QtNative.quitApp();
-                Runtime.getRuntime().exit(0);
-            }
-        }
-    }
-
     @Override
     public void setTheme(int resId) {
         super.setTheme(resId);
         m_isCustomThemeSet = true;
+    }
+
+    private void restartApplication() {
+        Intent intent = Intent.makeRestartActivityTask(getComponentName());
+        startActivity(intent);
+        QtNative.quitApp();
+        Runtime.getRuntime().exit(0);
     }
 
     @Override
@@ -94,9 +88,15 @@ public class QtActivityBase extends Activity
                     android.R.style.Theme_Holo_Light);
         }
 
+        if (QtNative.getStateDetails().isStarted) {
+            // We don't yet have a reliable way to keep the app
+            // running properly in case of an Activity only restart,
+            // so for now restart the whole app.
+            restartApplication();
+        }
+
         m_delegate = new QtActivityDelegate(this);
 
-        handleActivityRestart();
         addReferrer(getIntent());
 
         QtActivityLoader loader = new QtActivityLoader(this);
