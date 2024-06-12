@@ -170,8 +170,7 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
         else if ([button.keyEquivalent isEqualToString:@"\e"])
             button.keyEquivalent = @"";
 
-        if (@available(macOS 11, *))
-            button.hasDestructiveAction = role == DestructiveRole;
+        button.hasDestructiveAction = role == DestructiveRole;
 
         // The NSModalResponse of showing an NSAlert normally depends on the order of the
         // button that was clicked, starting from the right with NSAlertFirstButtonReturn (1000),

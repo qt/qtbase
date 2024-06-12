@@ -455,23 +455,21 @@ const QAppleKeyMapper::KeyMap &QAppleKeyMapper::keyMapForKey(VirtualKeyCode virt
         if (err == noErr && actualStringLength)
             carbonUnicodeKey = QChar(unicodeString[0]);
 
-        if (@available(macOS 10.15, *)) {
-            if (canMapCocoaEvent) {
-                // Until we've verified that the Cocoa API works as expected
-                // we first run the event through the Carbon APIs and then
-                // compare the results to Cocoa.
-                auto cocoaModifiers = toCocoaModifiers(qtModifiers);
-                auto *charactersWithModifiers = [NSApp.currentEvent charactersByApplyingModifiers:cocoaModifiers];
+        if (canMapCocoaEvent) {
+            // Until we've verified that the Cocoa API works as expected
+            // we first run the event through the Carbon APIs and then
+            // compare the results to Cocoa.
+            auto cocoaModifiers = toCocoaModifiers(qtModifiers);
+            auto *charactersWithModifiers = [NSApp.currentEvent charactersByApplyingModifiers:cocoaModifiers];
 
-                QChar cocoaUnicodeKey;
-                if (charactersWithModifiers.length > 0)
-                    cocoaUnicodeKey = QChar([charactersWithModifiers characterAtIndex:0]);
+            QChar cocoaUnicodeKey;
+            if (charactersWithModifiers.length > 0)
+                cocoaUnicodeKey = QChar([charactersWithModifiers characterAtIndex:0]);
 
-                if (cocoaUnicodeKey != carbonUnicodeKey) {
-                    qCWarning(lcQpaKeyMapper) << "Mismatch between Cocoa" << cocoaUnicodeKey
-                        << "and Carbon" << carbonUnicodeKey << "for virtual key" << virtualKey
-                        << "with" << qtModifiers;
-                }
+            if (cocoaUnicodeKey != carbonUnicodeKey) {
+                qCWarning(lcQpaKeyMapper) << "Mismatch between Cocoa" << cocoaUnicodeKey
+                    << "and Carbon" << carbonUnicodeKey << "for virtual key" << virtualKey
+                    << "with" << qtModifiers;
             }
         }
 
