@@ -443,7 +443,7 @@ function(qt_internal_add_module target)
         set_source_files_properties("${module_depends_header}" PROPERTIES GENERATED TRUE)
         set_target_properties(${target} PROPERTIES _qt_module_depends_header
             "${module_depends_header}")
-        if(NOT ${arg_HEADER_MODULE})
+        if(NOT arg_HEADER_MODULE)
             set(module_header "${module_build_interface_include_dir}/${module_include_name}")
             set_property(TARGET "${target}" PROPERTY MODULE_HEADER
                     "${module_header}")
