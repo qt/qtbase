@@ -323,6 +323,30 @@ bool QActionGroup::isVisible() const
     return d->visible;
 }
 
+/*!
+    \fn void QActionGroup::triggered(QAction *action)
+
+    This signal is emitted when the given \a action in the action
+    group is activated by the user; for example, when the user clicks
+    a menu option or a toolbar button, or presses an action's shortcut
+    key combination.
+
+    Connect to this signal for command actions.
+
+    \sa QAction::activate()
+*/
+
+/*!
+    \fn void QActionGroup::hovered(QAction *action)
+
+    This signal is emitted when the given \a action in the action
+    group is highlighted by the user; for example, when the user
+    pauses with the cursor over a menu option or a toolbar button,
+    or presses an action's shortcut key combination.
+
+    \sa QAction::activate()
+*/
+
 QT_END_NAMESPACE
 
 #include "moc_qactiongroup.cpp"
