@@ -464,6 +464,8 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
         return NSEvent.keyRepeatDelay * 1000;
     case QPlatformTheme::KeyboardAutoRepeatRate:
         return 1.0 / NSEvent.keyRepeatInterval;
+    case QPlatformTheme::ShowIconsInMenus:
+        return false;
     default:
         break;
     }
