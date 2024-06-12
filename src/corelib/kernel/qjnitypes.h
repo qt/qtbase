@@ -14,17 +14,15 @@ QT_BEGIN_NAMESPACE
 // QT_TECH_PREVIEW_API
 #define Q_DECLARE_JNI_TYPE_HELPER(Type)                         \
 namespace QtJniTypes {                                          \
-struct Type : JObject<Type>                                     \
-{                                                               \
-    using JObject::JObject;                                     \
-};                                                              \
+struct Type##Tag { explicit Type##Tag() = default; };           \
+using Type = JObject<Type##Tag>;                                \
 }                                                               \
 
 // QT_TECH_PREVIEW_API
 #define Q_DECLARE_JNI_TYPE(Type, Signature)                     \
 Q_DECLARE_JNI_TYPE_HELPER(Type)                                 \
 template<>                                                      \
-struct QtJniTypes::Traits<QtJniTypes::Type> {                   \
+struct QtJniTypes::Traits<QtJniTypes::Type##Tag> {              \
     static constexpr auto signature()                           \
     {                                                           \
         constexpr QtJniTypes::CTString sig(Signature);          \
@@ -39,7 +37,7 @@ struct QtJniTypes::Traits<QtJniTypes::Type> {                   \
 #define Q_DECLARE_JNI_CLASS(Type, Signature)                    \
 Q_DECLARE_JNI_TYPE_HELPER(Type)                                 \
 template<>                                                      \
-struct QtJniTypes::Traits<QtJniTypes::Type> {                   \
+struct QtJniTypes::Traits<QtJniTypes::Type##Tag> {              \
     static constexpr auto className()                           \
     {                                                           \
         return QtJniTypes::CTString(Signature);                 \

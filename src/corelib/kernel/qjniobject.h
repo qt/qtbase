@@ -720,7 +720,7 @@ public:
     ~JObject() = default;
 
     template<typename Arg, typename ...Args
-            , std::enable_if_t<!std::is_same_v<Arg, JObject>, bool> = true
+            , std::enable_if_t<!std::is_same_v<q20::remove_cvref_t<Arg>, JObject>, bool> = true
             , IfValidSignatureTypes<Arg, Args...> = true
     >
     explicit JObject(Arg && arg, Args &&...args)
@@ -729,10 +729,19 @@ public:
     {}
 
     // named constructors avoid ambiguities
-    static Type fromJObject(jobject object) { return Type(object); }
+    static JObject fromJObject(jobject object)
+    {
+        return JObject(object);
+    }
     template <typename ...Args>
-    static Type construct(Args &&...args) { return Type(std::forward<Args>(args)...); }
-    static Type fromLocalRef(jobject lref) { return Type(QJniObject::fromLocalRef(lref)); }
+    static JObject construct(Args &&...args)
+    {
+        return JObject(std::forward<Args>(args)...);
+    }
+    static JObject fromLocalRef(jobject lref)
+    {
+        return JObject(QJniObject::fromLocalRef(lref));
+    }
 
     static bool registerNativeMethods(std::initializer_list<JNINativeMethod> methods)
     {
@@ -808,6 +817,11 @@ private:
     friend bool comparesEqual(const JObject &lhs, const JObject &rhs) noexcept
     { return lhs.m_object == rhs.m_object; }
     Q_DECLARE_EQUALITY_COMPARABLE_LITERAL_TYPE(JObject);
+};
+
+template <typename T> struct Traits<JObject<T>> {
+    static constexpr auto signature() { return Traits<T>::signature(); }
+    static constexpr auto className() { return Traits<T>::className(); }
 };
 }
 
