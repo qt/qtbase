@@ -685,6 +685,10 @@ struct QT_TECH_PREVIEW_API JObjectBase
 
 protected:
     JObjectBase() = default;
+    JObjectBase(const JObjectBase &) = default;
+    JObjectBase(JObjectBase &&) = default;
+    JObjectBase &operator=(const JObjectBase &) = default;
+    JObjectBase &operator=(JObjectBase &&) = default;
     ~JObjectBase() = default;
 
     Q_IMPLICIT JObjectBase(jobject object) : m_object(object) {}
@@ -707,7 +711,7 @@ public:
     Q_IMPLICIT JObject(const QJniObject &object) : JObjectBase(object) {}
     Q_IMPLICIT JObject(QJniObject &&object) noexcept : JObjectBase(std::move(object)) {}
 
-    // base class destructor is protected, so need to provide all SMFs
+    // base class SMFs are protected, make them public:
     JObject(const JObject &other) = default;
     JObject(JObject &&other) noexcept = default;
     JObject &operator=(const JObject &other) = default;
