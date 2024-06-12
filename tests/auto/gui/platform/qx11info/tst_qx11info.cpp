@@ -7,6 +7,8 @@
 
 #include <QtGui/private/qtx11extras_p.h>
 
+using namespace Qt::StringLiterals;
+
 class tst_QX11Info : public QObject
 {
     Q_OBJECT
@@ -83,12 +85,21 @@ void initialize()
 }
 Q_CONSTRUCTOR_FUNCTION(initialize)
 
+static QString checkSkip() {
+    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
+        return "This test is only for X11, not Wayland."_L1;
+    if (QGuiApplication::platformName().startsWith(QLatin1String("offscreen"), Qt::CaseInsensitive))
+        return "This test is only for X11, not offscreen."_L1;
+    return ""_L1;
+}
+
 void tst_QX11Info::startupId()
 {
     int argc = 0;
     QGuiApplication app(argc, 0);
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("This test is only for X11, not Wayland.");
+    QString result = checkSkip();
+    if (!result.isEmpty())
+        QSKIP(result.toUtf8());
 
     // This relies on the fact that no widget was shown yet,
     // so please make sure this method is always the first test.
@@ -110,8 +121,9 @@ void tst_QX11Info::isPlatformX11()
 {
     int argc = 0;
     QGuiApplication app(argc, 0);
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("This test is only for X11, not Wayland.");
+    QString result = checkSkip();
+    if (!result.isEmpty())
+        QSKIP(result.toUtf8());
 
     QVERIFY(QX11Info::isPlatformX11());
 }
@@ -120,8 +132,9 @@ void tst_QX11Info::appTime()
 {
     int argc = 0;
     QGuiApplication app(argc, 0);
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("This test is only for X11, not Wayland.");
+    QString result = checkSkip();
+    if (!result.isEmpty())
+        QSKIP(result.toUtf8());
 
     // No X11 event received yet
     QCOMPARE(QX11Info::appTime(), 0ul);
@@ -348,8 +361,9 @@ void tst_QX11Info::peeker()
 {
     int argc = 0;
     QGuiApplication app(argc, 0);
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("This test is only for X11, not Wayland.");
+    QString result = checkSkip();
+    if (!result.isEmpty())
+        QSKIP(result.toUtf8());
 
     PeekerTest test;
     test.show();
@@ -361,8 +375,9 @@ void tst_QX11Info::isCompositingManagerRunning()
 {
     int argc = 0;
     QGuiApplication app(argc, 0);
-    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"), Qt::CaseInsensitive))
-        QSKIP("This test is only for X11, not Wayland.");
+    QString result = checkSkip();
+    if (!result.isEmpty())
+        QSKIP(result.toUtf8());
     const bool b = QX11Info::isCompositingManagerRunning();
     Q_UNUSED(b);
     const bool b2 = QX11Info::isCompositingManagerRunning(0);
