@@ -525,21 +525,18 @@ bool QRhiMetalData::setupBinaryArchive(NSURL *sourceFileUrl)
     return false;
 #endif
 
-    if (@available(macOS 11.0, iOS 14.0, *)) {
-        [binArch release];
-        MTLBinaryArchiveDescriptor *binArchDesc = [MTLBinaryArchiveDescriptor new];
-        binArchDesc.url = sourceFileUrl;
-        NSError *err = nil;
-        binArch = [dev newBinaryArchiveWithDescriptor: binArchDesc error: &err];
-        [binArchDesc release];
-        if (!binArch) {
-            const QString msg = QString::fromNSString(err.localizedDescription);
-            qWarning("newBinaryArchiveWithDescriptor failed: %s", qPrintable(msg));
-            return false;
-        }
-        return true;
+    [binArch release];
+    MTLBinaryArchiveDescriptor *binArchDesc = [MTLBinaryArchiveDescriptor new];
+    binArchDesc.url = sourceFileUrl;
+    NSError *err = nil;
+    binArch = [dev newBinaryArchiveWithDescriptor: binArchDesc error: &err];
+    [binArchDesc release];
+    if (!binArch) {
+        const QString msg = QString::fromNSString(err.localizedDescription);
+        qWarning("newBinaryArchiveWithDescriptor failed: %s", qPrintable(msg));
+        return false;
     }
-    return false;
+    return true;
 }
 
 bool QRhiMetal::create(QRhi::Flags flags)
@@ -565,21 +562,19 @@ bool QRhiMetal::create(QRhi::Flags flags)
     // apparently change when the system is rebooted.
 
 #ifdef Q_OS_MACOS
-    if (@available(macOS 10.15, *)) {
-        const MTLDeviceLocation deviceLocation = [d->dev location];
-        switch (deviceLocation) {
-        case MTLDeviceLocationBuiltIn:
-            driverInfoStruct.deviceType = QRhiDriverInfo::IntegratedDevice;
-            break;
-        case MTLDeviceLocationSlot:
-            driverInfoStruct.deviceType = QRhiDriverInfo::DiscreteDevice;
-            break;
-        case MTLDeviceLocationExternal:
-            driverInfoStruct.deviceType = QRhiDriverInfo::ExternalDevice;
-            break;
-        default:
-            break;
-        }
+    const MTLDeviceLocation deviceLocation = [d->dev location];
+    switch (deviceLocation) {
+    case MTLDeviceLocationBuiltIn:
+        driverInfoStruct.deviceType = QRhiDriverInfo::IntegratedDevice;
+        break;
+    case MTLDeviceLocationSlot:
+        driverInfoStruct.deviceType = QRhiDriverInfo::DiscreteDevice;
+        break;
+    case MTLDeviceLocationExternal:
+        driverInfoStruct.deviceType = QRhiDriverInfo::ExternalDevice;
+        break;
+    default:
+        break;
     }
 #else
     driverInfoStruct.deviceType = QRhiDriverInfo::IntegratedDevice;
@@ -605,8 +600,7 @@ bool QRhiMetal::create(QRhi::Flags flags)
 #if defined(Q_OS_MACOS)
     caps.maxTextureSize = 16384;
     caps.baseVertexAndInstance = true;
-    if (@available(macOS 10.15, *))
-        caps.isAppleGPU = [d->dev supportsFamily:MTLGPUFamilyApple7];
+    caps.isAppleGPU = [d->dev supportsFamily:MTLGPUFamilyApple7];
     caps.maxThreadGroupSize = 1024;
     caps.multiView = true;
 #elif defined(Q_OS_TVOS)
@@ -628,12 +622,10 @@ bool QRhiMetal::create(QRhi::Flags flags)
         caps.baseVertexAndInstance = false;
     }
     caps.isAppleGPU = true;
-    if (@available(iOS 13, *)) {
-        if ([d->dev supportsFamily:MTLGPUFamilyApple4])
-            caps.maxThreadGroupSize = 1024;
-        if ([d->dev supportsFamily:MTLGPUFamilyApple5])
-            caps.multiView = true;
-    }
+    if ([d->dev supportsFamily:MTLGPUFamilyApple4])
+        caps.maxThreadGroupSize = 1024;
+    if ([d->dev supportsFamily:MTLGPUFamilyApple5])
+        caps.multiView = true;
 #endif
 
     caps.supportedSampleCounts = { 1 };
@@ -663,10 +655,8 @@ void QRhiMetal::destroy()
     [d->captureScope release];
     d->captureScope = nil;
 
-    if (@available(macOS 11.0, iOS 14.0, *)) {
-        [d->binArch release];
-        d->binArch = nil;
-    }
+    [d->binArch release];
+    d->binArch = nil;
 
     [d->cmdQueue release];
     if (!importedCmdQueue)
@@ -813,12 +803,7 @@ bool QRhiMetal::isFeatureSupported(QRhi::Feature feature) const
     case QRhi::ReadBackAnyTextureFormat:
         return true;
     case QRhi::PipelineCacheDataLoadSave:
-    {
-        if (@available(macOS 11.0, iOS 14.0, *))
-            return true;
-        else
-            return false;
-    }
+        return true;
     case QRhi::ImageDataStride:
         return true;
     case QRhi::RenderBufferImport:
@@ -946,54 +931,52 @@ QByteArray QRhiMetal::pipelineCacheData()
 {
     Q_STATIC_ASSERT(sizeof(QMetalPipelineCacheDataHeader) == 256);
     QByteArray data;
-    if (@available(macOS 11.0, iOS 14.0, *)) {
-        if (!d->binArch || !rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
-            return data;
+    if (!d->binArch || !rhiFlags.testFlag(QRhi::EnablePipelineCacheDataSave))
+        return data;
 
-        QTemporaryFile tmp;
-        if (!tmp.open()) {
-            qCDebug(QRHI_LOG_INFO, "pipelineCacheData: Failed to create temporary file for Metal");
-            return data;
-        }
-        tmp.close(); // the file exists until the tmp dtor runs
-
-        const QString fn = QFileInfo(tmp.fileName()).absoluteFilePath();
-        NSURL *url = QUrl::fromLocalFile(fn).toNSURL();
-        NSError *err = nil;
-        if (![d->binArch serializeToURL: url error: &err]) {
-            const QString msg = QString::fromNSString(err.localizedDescription);
-            // Some of these "errors" are not actual errors. (think of "Nothing to serialize")
-            qCDebug(QRHI_LOG_INFO, "Failed to serialize MTLBinaryArchive: %s", qPrintable(msg));
-            return data;
-        }
-
-        QFile f(fn);
-        if (!f.open(QIODevice::ReadOnly)) {
-            qCDebug(QRHI_LOG_INFO, "pipelineCacheData: Failed to reopen temporary file");
-            return data;
-        }
-        const QByteArray blob = f.readAll();
-        f.close();
-
-        const size_t headerSize = sizeof(QMetalPipelineCacheDataHeader);
-        const quint32 dataSize = quint32(blob.size());
-
-        data.resize(headerSize + dataSize);
-
-        QMetalPipelineCacheDataHeader header = {};
-        header.rhiId = pipelineCacheRhiId();
-        header.arch = quint32(sizeof(void*));
-        header.dataSize = quint32(dataSize);
-        header.osMajor = osMajor;
-        header.osMinor = osMinor;
-        const size_t driverStrLen = qMin(sizeof(header.driver) - 1, size_t(driverInfoStruct.deviceName.length()));
-        if (driverStrLen)
-            memcpy(header.driver, driverInfoStruct.deviceName.constData(), driverStrLen);
-        header.driver[driverStrLen] = '\0';
-
-        memcpy(data.data(), &header, headerSize);
-        memcpy(data.data() + headerSize, blob.constData(), dataSize);
+    QTemporaryFile tmp;
+    if (!tmp.open()) {
+        qCDebug(QRHI_LOG_INFO, "pipelineCacheData: Failed to create temporary file for Metal");
+        return data;
     }
+    tmp.close(); // the file exists until the tmp dtor runs
+
+    const QString fn = QFileInfo(tmp.fileName()).absoluteFilePath();
+    NSURL *url = QUrl::fromLocalFile(fn).toNSURL();
+    NSError *err = nil;
+    if (![d->binArch serializeToURL: url error: &err]) {
+        const QString msg = QString::fromNSString(err.localizedDescription);
+        // Some of these "errors" are not actual errors. (think of "Nothing to serialize")
+        qCDebug(QRHI_LOG_INFO, "Failed to serialize MTLBinaryArchive: %s", qPrintable(msg));
+        return data;
+    }
+
+    QFile f(fn);
+    if (!f.open(QIODevice::ReadOnly)) {
+        qCDebug(QRHI_LOG_INFO, "pipelineCacheData: Failed to reopen temporary file");
+        return data;
+    }
+    const QByteArray blob = f.readAll();
+    f.close();
+
+    const size_t headerSize = sizeof(QMetalPipelineCacheDataHeader);
+    const quint32 dataSize = quint32(blob.size());
+
+    data.resize(headerSize + dataSize);
+
+    QMetalPipelineCacheDataHeader header = {};
+    header.rhiId = pipelineCacheRhiId();
+    header.arch = quint32(sizeof(void*));
+    header.dataSize = quint32(dataSize);
+    header.osMajor = osMajor;
+    header.osMinor = osMinor;
+    const size_t driverStrLen = qMin(sizeof(header.driver) - 1, size_t(driverInfoStruct.deviceName.length()));
+    if (driverStrLen)
+        memcpy(header.driver, driverInfoStruct.deviceName.constData(), driverStrLen);
+    header.driver[driverStrLen] = '\0';
+
+    memcpy(data.data(), &header, headerSize);
+    memcpy(data.data() + headerSize, blob.constData(), dataSize);
     return data;
 }
 
@@ -1043,22 +1026,20 @@ void QRhiMetal::setPipelineCacheData(const QByteArray &data)
         return;
     }
 
-    if (@available(macOS 11.0, iOS 14.0, *)) {
-        const char *p = data.constData() + dataOffset;
+    const char *p = data.constData() + dataOffset;
 
-        QTemporaryFile tmp;
-        if (!tmp.open()) {
-            qCDebug(QRHI_LOG_INFO, "pipelineCacheData: Failed to create temporary file for Metal");
-            return;
-        }
-        tmp.write(p, header.dataSize);
-        tmp.close(); // the file exists until the tmp dtor runs
-
-        const QString fn = QFileInfo(tmp.fileName()).absoluteFilePath();
-        NSURL *url = QUrl::fromLocalFile(fn).toNSURL();
-        if (d->setupBinaryArchive(url))
-            qCDebug(QRHI_LOG_INFO, "Created MTLBinaryArchive with initial data of %u bytes", header.dataSize);
+    QTemporaryFile tmp;
+    if (!tmp.open()) {
+        qCDebug(QRHI_LOG_INFO, "pipelineCacheData: Failed to create temporary file for Metal");
+        return;
     }
+    tmp.write(p, header.dataSize);
+    tmp.close(); // the file exists until the tmp dtor runs
+
+    const QString fn = QFileInfo(tmp.fileName()).absoluteFilePath();
+    NSURL *url = QUrl::fromLocalFile(fn).toNSURL();
+    if (d->setupBinaryArchive(url))
+        qCDebug(QRHI_LOG_INFO, "Created MTLBinaryArchive with initial data of %u bytes", header.dataSize);
 }
 
 QRhiRenderBuffer *QRhiMetal::createRenderBuffer(QRhiRenderBuffer::Type type, const QSize &pixelSize,
@@ -3523,122 +3504,88 @@ static inline MTLPixelFormat toMetalTextureFormat(QRhiTexture::Format format, QR
         return srgb ? MTLPixelFormatASTC_12x12_sRGB : MTLPixelFormatASTC_12x12_LDR;
 #else
     case QRhiTexture::ETC2_RGB8:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatETC2_RGB8_sRGB : MTLPixelFormatETC2_RGB8;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatETC2_RGB8_sRGB : MTLPixelFormatETC2_RGB8;
         qWarning("QRhiMetal: ETC2 compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ETC2_RGB8A1:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatETC2_RGB8A1_sRGB : MTLPixelFormatETC2_RGB8A1;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatETC2_RGB8A1_sRGB : MTLPixelFormatETC2_RGB8A1;
         qWarning("QRhiMetal: ETC2 compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ETC2_RGBA8:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatEAC_RGBA8_sRGB : MTLPixelFormatEAC_RGBA8;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatEAC_RGBA8_sRGB : MTLPixelFormatEAC_RGBA8;
         qWarning("QRhiMetal: ETC2 compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_4x4:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatASTC_4x4_sRGB : MTLPixelFormatASTC_4x4_LDR;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatASTC_4x4_sRGB : MTLPixelFormatASTC_4x4_LDR;
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_5x4:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatASTC_5x4_sRGB : MTLPixelFormatASTC_5x4_LDR;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatASTC_5x4_sRGB : MTLPixelFormatASTC_5x4_LDR;
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_5x5:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatASTC_5x5_sRGB : MTLPixelFormatASTC_5x5_LDR;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatASTC_5x5_sRGB : MTLPixelFormatASTC_5x5_LDR;
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_6x5:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatASTC_6x5_sRGB : MTLPixelFormatASTC_6x5_LDR;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatASTC_6x5_sRGB : MTLPixelFormatASTC_6x5_LDR;
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_6x6:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatASTC_6x6_sRGB : MTLPixelFormatASTC_6x6_LDR;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatASTC_6x6_sRGB : MTLPixelFormatASTC_6x6_LDR;
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_8x5:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatASTC_8x5_sRGB : MTLPixelFormatASTC_8x5_LDR;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatASTC_8x5_sRGB : MTLPixelFormatASTC_8x5_LDR;
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_8x6:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatASTC_8x6_sRGB : MTLPixelFormatASTC_8x6_LDR;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatASTC_8x6_sRGB : MTLPixelFormatASTC_8x6_LDR;
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_8x8:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatASTC_8x8_sRGB : MTLPixelFormatASTC_8x8_LDR;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatASTC_8x8_sRGB : MTLPixelFormatASTC_8x8_LDR;
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_10x5:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatASTC_10x5_sRGB : MTLPixelFormatASTC_10x5_LDR;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatASTC_10x5_sRGB : MTLPixelFormatASTC_10x5_LDR;
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_10x6:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatASTC_10x6_sRGB : MTLPixelFormatASTC_10x6_LDR;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatASTC_10x6_sRGB : MTLPixelFormatASTC_10x6_LDR;
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_10x8:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatASTC_10x8_sRGB : MTLPixelFormatASTC_10x8_LDR;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatASTC_10x8_sRGB : MTLPixelFormatASTC_10x8_LDR;
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_10x10:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatASTC_10x10_sRGB : MTLPixelFormatASTC_10x10_LDR;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatASTC_10x10_sRGB : MTLPixelFormatASTC_10x10_LDR;
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_12x10:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatASTC_12x10_sRGB : MTLPixelFormatASTC_12x10_LDR;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatASTC_12x10_sRGB : MTLPixelFormatASTC_12x10_LDR;
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
         return MTLPixelFormatInvalid;
     case QRhiTexture::ASTC_12x12:
-        if (d->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *))
-                return srgb ? MTLPixelFormatASTC_12x12_sRGB : MTLPixelFormatASTC_12x12_LDR;
-        }
+        if (d->caps.isAppleGPU)
+            return srgb ? MTLPixelFormatASTC_12x12_sRGB : MTLPixelFormatASTC_12x12_LDR;
         qWarning("QRhiMetal: ASTC compression not supported on this platform");
         return MTLPixelFormatInvalid;
 #endif
@@ -3706,12 +3653,8 @@ bool QMetalRenderBuffer::create()
     case DepthStencil:
 #ifdef Q_OS_MACOS
         if (rhiD->caps.isAppleGPU) {
-            if (@available(macOS 11.0, *)) {
-                desc.storageMode = MTLStorageModeMemoryless;
-                d->format = MTLPixelFormatDepth32Float_Stencil8;
-            } else {
-                Q_UNREACHABLE();
-            }
+            desc.storageMode = MTLStorageModeMemoryless;
+            d->format = MTLPixelFormatDepth32Float_Stencil8;
         } else {
             desc.storageMode = MTLStorageModePrivate;
             d->format = rhiD->d->dev.depth24Stencil8PixelFormatSupported
@@ -3889,15 +3832,7 @@ bool QMetalTexture::create()
     } else if (is1D) {
         desc.textureType = isArray ? MTLTextureType1DArray : MTLTextureType1D;
     } else if (isArray) {
-#ifdef Q_OS_IOS
-        if (@available(iOS 14, *)) {
-            desc.textureType = samples > 1 ? MTLTextureType2DMultisampleArray : MTLTextureType2DArray;
-        } else {
-            desc.textureType = MTLTextureType2DArray;
-        }
-#else
         desc.textureType = samples > 1 ? MTLTextureType2DMultisampleArray : MTLTextureType2DArray;
-#endif
     } else {
         desc.textureType = samples > 1 ? MTLTextureType2DMultisample : MTLTextureType2D;
     }
@@ -4778,13 +4713,7 @@ id<MTLLibrary> QRhiMetalData::createMetalLib(const QShader &shader, QShader::Var
         versions << 30;
     if (@available(macOS 12, iOS 15, *))
         versions << 24;
-    if (@available(macOS 11, iOS 14, *))
-        versions << 23;
-    if (@available(macOS 10.15, iOS 13, *))
-        versions << 22;
-    if (@available(macOS 10.14, iOS 12, *))
-        versions << 21;
-    versions << 20 << 12;
+    versions << 23 << 22 << 21 << 20 << 12;
 
     const QList<QShaderKey> shaders = shader.availableShaders();
 
@@ -4999,23 +4928,19 @@ void QMetalGraphicsPipelineData::setupStageInputDescriptor(MTLStageInputOutputDe
 
 void QRhiMetalData::trySeedingRenderPipelineFromBinaryArchive(MTLRenderPipelineDescriptor *rpDesc)
 {
-    if (@available(macOS 11.0, iOS 14.0, *)) {
-        if (binArch)  {
-            NSArray *binArchArray = [NSArray arrayWithObjects: binArch, nil];
-            rpDesc.binaryArchives = binArchArray;
-        }
+    if (binArch)  {
+        NSArray *binArchArray = [NSArray arrayWithObjects: binArch, nil];
+        rpDesc.binaryArchives = binArchArray;
     }
 }
 
 void QRhiMetalData::addRenderPipelineToBinaryArchive(MTLRenderPipelineDescriptor *rpDesc)
 {
-    if (@available(macOS 11.0, iOS 14.0, *)) {
-        if (binArch) {
-            NSError *err = nil;
-            if (![binArch addRenderPipelineFunctionsWithDescriptor: rpDesc error: &err]) {
-                const QString msg = QString::fromNSString(err.localizedDescription);
-                qWarning("Failed to collect render pipeline functions to binary archive: %s", qPrintable(msg));
-            }
+    if (binArch) {
+        NSError *err = nil;
+        if (![binArch addRenderPipelineFunctionsWithDescriptor: rpDesc error: &err]) {
+            const QString msg = QString::fromNSString(err.localizedDescription);
+            qWarning("Failed to collect render pipeline functions to binary archive: %s", qPrintable(msg));
         }
     }
 }
@@ -5985,23 +5910,19 @@ void QMetalComputePipeline::destroy()
 
 void QRhiMetalData::trySeedingComputePipelineFromBinaryArchive(MTLComputePipelineDescriptor *cpDesc)
 {
-    if (@available(macOS 11.0, iOS 14.0, *)) {
-        if (binArch)  {
-            NSArray *binArchArray = [NSArray arrayWithObjects: binArch, nil];
-            cpDesc.binaryArchives = binArchArray;
-        }
+    if (binArch) {
+        NSArray *binArchArray = [NSArray arrayWithObjects: binArch, nil];
+        cpDesc.binaryArchives = binArchArray;
     }
 }
 
 void QRhiMetalData::addComputePipelineToBinaryArchive(MTLComputePipelineDescriptor *cpDesc)
 {
-    if (@available(macOS 11.0, iOS 14.0, *)) {
-        if (binArch) {
-            NSError *err = nil;
-            if (![binArch addComputePipelineFunctionsWithDescriptor: cpDesc error: &err]) {
-                const QString msg = QString::fromNSString(err.localizedDescription);
-                qWarning("Failed to collect compute pipeline functions to binary archive: %s", qPrintable(msg));
-            }
+    if (binArch) {
+        NSError *err = nil;
+        if (![binArch addComputePipelineFunctionsWithDescriptor: cpDesc error: &err]) {
+            const QString msg = QString::fromNSString(err.localizedDescription);
+            qWarning("Failed to collect compute pipeline functions to binary archive: %s", qPrintable(msg));
         }
     }
 }
@@ -6272,15 +6193,12 @@ QSize QMetalSwapChain::surfacePixelSize()
 bool QMetalSwapChain::isFormatSupported(Format f)
 {
     if (f == HDRExtendedSrgbLinear) {
-        if (@available(macOS 10.11, iOS 16.0, *))
+        if (@available(iOS 16.0, *))
             return hdrInfo().limits.colorComponentValue.maxPotentialColorComponentValue > 1.0f;
         else
             return false;
     } else if (f == HDRExtendedDisplayP3Linear) {
-        if (@available(macOS 11.0, iOS 14.0, *))
-            return hdrInfo().limits.colorComponentValue.maxPotentialColorComponentValue > 1.0f;
-        else
-            return false;
+        return hdrInfo().limits.colorComponentValue.maxPotentialColorComponentValue > 1.0f;
     }
     return f == SDR;
 }
@@ -6365,12 +6283,12 @@ bool QMetalSwapChain::createOrResize()
         d->layer.pixelFormat = d->colorFormat;
 
     if (m_format == HDRExtendedSrgbLinear) {
-        if (@available(macOS 10.11, iOS 16.0, *)) {
+        if (@available(iOS 16.0, *)) {
             d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearSRGB);
             d->layer.wantsExtendedDynamicRangeContent = YES;
         }
     } else if (m_format == HDRExtendedDisplayP3Linear) {
-        if (@available(macOS 11.0, iOS 16.0, *)) {
+        if (@available(iOS 16.0, *)) {
             d->layer.colorspace = CGColorSpaceCreateWithName(kCGColorSpaceExtendedLinearDisplayP3);
             d->layer.wantsExtendedDynamicRangeContent = YES;
         }
