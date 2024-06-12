@@ -139,7 +139,8 @@ QT_IMPL_METATYPE_EXTERN_TAGGED(QNetworkRequest::RedirectPolicy, QNetworkRequest_
         server (like "Ok", "Found", "Not Found", "Access Denied",
         etc.) This is the human-readable representation of the status
         code (see above). If the connection was not HTTP-based, this
-        attribute will not be present.
+        attribute will not be present. \e{Note:} The reason phrase is
+        not used when using HTTP/2.
 
     \value RedirectionTargetAttribute
         Replies only, type: QMetaType::QUrl (no default)
