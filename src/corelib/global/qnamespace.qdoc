@@ -96,7 +96,10 @@
 
     \value AA_DontShowIconsInMenus Actions with the Icon property won't be
            shown in any menus unless specifically set by the
-           QAction::iconVisibleInMenu property.
+           QAction::iconVisibleInMenu property. The default value of this
+           attribute depends on the platform. To override the default
+           behavior, set the attribute after QGuiApplication has been
+           instantiated.
            Menus that are currently open or menus already created in the native
            \macos menubar \e{may not} pick up a change in this attribute. Changes
            in the QAction::iconVisibleInMenu property will always be picked up.
