@@ -77,21 +77,6 @@ abstract class QtActivityDelegateBase
         return m_contextMenuVisible;
     }
 
-    public boolean updateActivityAfterRestart(Activity activity) {
-        try {
-            // set new activity
-            m_activity = activity;
-            QtNative.setActivity(m_activity);
-
-            // force c++ native activity object to update
-            return QtNative.updateNativeActivity();
-        } catch (Exception e) {
-            Log.w(QtNative.QtTAG, "Failed to update the activity.");
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public void startNativeApplication(String appParams, String mainLib)
     {
         if (m_membersInitialized)
