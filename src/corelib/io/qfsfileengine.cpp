@@ -801,14 +801,6 @@ QFSFileEngine::beginEntryList(const QString &path, QDir::Filters filters,
 #endif // QT_NO_FILESYSTEMITERATOR
 
 /*!
-    \internal
-*/
-QStringList QFSFileEngine::entryList(QDir::Filters filters, const QStringList &filterNames) const
-{
-    return QAbstractFileEngine::entryList(filters, filterNames);
-}
-
-/*!
     \reimp
 */
 bool QFSFileEngine::isSequential() const
