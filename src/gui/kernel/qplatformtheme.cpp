@@ -647,6 +647,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return QVariant(QSize(16, 16));
     case UnderlineShortcut:
         return true;
+    case ShowIconsInMenus:
+        return true;
     }
 
     return QVariant();

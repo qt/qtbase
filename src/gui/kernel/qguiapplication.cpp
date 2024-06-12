@@ -1355,6 +1355,11 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     fontSmoothingGamma = platformIntegration->styleHint(QPlatformIntegration::FontSmoothingGamma).toReal();
     QCoreApplication::setAttribute(Qt::AA_DontShowShortcutsInContextMenus,
         !QGuiApplication::styleHints()->showShortcutsInContextMenus());
+
+    if (const auto *platformTheme = QGuiApplicationPrivate::platformTheme()) {
+        QCoreApplication::setAttribute(Qt::AA_DontShowIconsInMenus,
+            !platformTheme->themeHint(QPlatformTheme::ShowIconsInMenus).toBool());
+    }
 }
 
 static void init_plugins(const QList<QByteArray> &pluginList)

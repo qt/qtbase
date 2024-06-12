@@ -538,8 +538,10 @@ QList<QObject*> QAction::associatedObjects() const
     \brief the action's icon
 
     In toolbars, the icon is used as the tool button icon; in menus,
-    it is displayed to the left of the menu text. There is no default
-    icon.
+    it is displayed to the left of the menu text, as long as
+    QAction::iconVisibleInMenu returns \c true.
+
+    There is no default icon.
 
     If a null icon (QIcon::isNull()) is passed into this function,
     the icon of the action is cleared.
