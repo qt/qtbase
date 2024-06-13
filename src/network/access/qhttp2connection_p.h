@@ -114,6 +114,8 @@ public:
     HPack::HttpHeader receivedHeaders() const noexcept { return m_headers; }
 
     QByteDataBuffer downloadBuffer() const noexcept { return m_downloadBuffer; }
+    QByteDataBuffer takeDownloadBuffer() noexcept { return std::exchange(m_downloadBuffer, {}); }
+    void clearDownloadBuffer() { m_downloadBuffer.clear(); }
 
 Q_SIGNALS:
     void headersReceived(const HPack::HttpHeader &headers, bool endStream);
