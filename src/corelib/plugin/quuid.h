@@ -138,14 +138,14 @@ private:
     }
     friend Qt::strong_ordering compareThreeWay(const QUuid &lhs, const QUuid &rhs) noexcept
     {
-        if (lhs.variant() != rhs.variant())
-            return Qt::compareThreeWay(lhs.variant(), rhs.variant());
-        if (lhs.data1 != rhs.data1)
-            return Qt::compareThreeWay(lhs.data1, rhs.data1);
-        if (lhs.data2 != rhs.data2)
-            return Qt::compareThreeWay(lhs.data2, rhs.data2);
-        if (lhs.data3 != rhs.data3)
-            return Qt::compareThreeWay(lhs.data3, rhs.data3);
+        if (const auto c = Qt::compareThreeWay(lhs.variant(), rhs.variant()); !is_eq(c))
+            return c;
+        if (const auto c = Qt::compareThreeWay(lhs.data1, rhs.data1); !is_eq(c))
+            return c;
+        if (const auto c = Qt::compareThreeWay(lhs.data2, rhs.data2); !is_eq(c))
+            return c;
+        if (const auto c = Qt::compareThreeWay(lhs.data3, rhs.data3); !is_eq(c))
+            return c;
 
         int c = std::memcmp(lhs.data4, rhs.data4, sizeof(lhs.data4));
         return Qt::compareThreeWay(c, 0);
