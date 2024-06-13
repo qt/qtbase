@@ -16,6 +16,8 @@
 //
 
 #include <QtNetwork/private/qtnetworkglobal_p.h>
+#include <QtNetwork/qhttpmultipart.h>
+
 #include "QtCore/qshareddata.h"
 #include "qnetworkrequest_p.h" // for deriving QHttpPartPrivate from QNetworkHeadersPrivate
 #include "qhttpheadershelper_p.h"
@@ -135,6 +137,12 @@ public:
 
     QHttpMultiPartPrivate();
     ~QHttpMultiPartPrivate() override;
+
+    static QHttpMultiPartPrivate *get(QHttpMultiPart *message) { return message->d_func(); }
+    static const QHttpMultiPartPrivate *get(const QHttpMultiPart *message)
+    {
+        return message->d_func();
+    }
 
     QList<QHttpPart> parts;
     QByteArray boundary;
