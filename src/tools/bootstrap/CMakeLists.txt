@@ -133,6 +133,11 @@ qt_internal_extend_target(Bootstrap CONDITION WIN32
         user32
 )
 
+qt_internal_extend_target(Bootstrap CONDITION MSVC AND CLANG
+    LIBRARIES
+        clang_rt.builtins-x86_64
+)
+
 qt_internal_extend_target(Bootstrap CONDITION APPLE
     SOURCES
         ../../corelib/global/qoperatingsystemversion.cpp

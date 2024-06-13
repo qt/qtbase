@@ -843,10 +843,14 @@ qt_internal_extend_target(Core CONDITION WASM
         text/qlocale_wasm.cpp
 )
 
-# On MS-Win, clang has two flavors, one of which immitates MSVC (so claims to be it)
 qt_internal_extend_target(Core CONDITION MSVC
     LIBRARIES
         runtimeobject
+)
+
+qt_internal_extend_target(Core CONDITION MSVC AND CLANG
+    LIBRARIES
+        clang_rt.builtins-x86_64
 )
 
 qt_internal_extend_target(Core CONDITION QT_FEATURE_icu
