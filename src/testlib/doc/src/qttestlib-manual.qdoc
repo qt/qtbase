@@ -61,7 +61,7 @@
 
     You can use a Qt Creator wizard to create a project that contains Qt tests
     and build and run them directly from Qt Creator. For more information, see
-    \l {Qt Creator: Running Autotests}{Running Autotests}.
+    \l {Qt Creator: Build and Run Tests}.
 
     \section1 Creating a Test
 
