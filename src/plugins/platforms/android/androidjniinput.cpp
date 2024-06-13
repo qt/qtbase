@@ -324,7 +324,7 @@ namespace QtAndroidInput
         m_touchPoints.clear();
     }
 
-    static void touchAdd(JNIEnv */*env*/, jobject /*thiz*/, jint /*winId*/, jint id, jint action, jboolean /*primary*/, jint x, jint y,
+    static void touchAdd(JNIEnv */*env*/, jobject /*thiz*/, jint winId, jint id, jint action, jboolean /*primary*/, jint x, jint y,
         jfloat major, jfloat minor, jfloat rotation, jfloat pressure)
     {
         QEventPoint::State state = QEventPoint::State::Stationary;
@@ -345,16 +345,25 @@ namespace QtAndroidInput
 
         const int dw = availableWidthPixels();
         const int dh = availableHeightPixels();
+        QWindow *window = QtAndroid::windowFromId(winId);
+        if (!window) {
+            qCWarning(lcQpaInputMethods, "Touch event received for non-existing window %d", winId);
+            return;
+        }
+
+        QPointF mappedTouchPoint = window->mapToGlobal(QPointF(x, y));
         QWindowSystemInterface::TouchPoint touchPoint;
         touchPoint.id = id;
         touchPoint.pressure = pressure;
         touchPoint.rotation = qRadiansToDegrees(rotation);
-        touchPoint.normalPosition = QPointF(double(x / dw), double(y / dh));
+        touchPoint.normalPosition = QPointF((mappedTouchPoint.x() / dw),
+                                            (mappedTouchPoint.y() / dh));
         touchPoint.state = state;
-        touchPoint.area = QRectF(x - double(minor * 0.5f),
-                                 y - double(major * 0.5f),
+        touchPoint.area = QRectF(mappedTouchPoint.x() - double(minor * 0.5f),
+                                 mappedTouchPoint.y() - double(major * 0.5f),
                                  double(minor),
                                  double(major));
+
         m_touchPoints.push_back(touchPoint);
         if (state == QEventPoint::State::Pressed) {
             QAndroidInputContext *inputContext = QAndroidInputContext::androidInputContext();
