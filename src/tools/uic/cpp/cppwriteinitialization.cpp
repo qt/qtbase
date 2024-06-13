@@ -127,16 +127,63 @@ namespace {
         return iconHasStatePixmaps(i) || !i->attributeTheme().isEmpty();
     }
 
+    // Checks on property names
+    bool isIdentifier(QChar c) { return c.isLetterOrNumber() || c == u'_'; }
+
+    bool checkPropertyName(const QString &name)
+    {
+        return !name.isEmpty() && name.at(0).isLetter()
+               && std::all_of(name.cbegin(), name.cend(), isIdentifier);
+    }
+
+    // Basic checks on enum/flag values
+    static bool isValidEnumValue(QChar c)
+    {
+        if (c.isLetterOrNumber())
+            return true;
+        switch (c.unicode()) {
+        case '|':
+        case ' ':
+        case ':':
+        case '_':
+            return true;
+        default:
+            break;
+        }
+        return false;
+    }
+
+    bool checkEnumValue(const QString &value)
+    {
+        return std::all_of(value.cbegin(), value.cend(), isValidEnumValue);
+    }
+
+    QString msgInvalidValue(const QString &name, const QString &value)
+    {
+        return "uic: Invalid property value: \""_L1 + name + "\": \""_L1 + value + u'"';
+    }
+
     // Check on properties. Filter out empty legacy pixmap/icon properties
     // as Designer pre 4.4 used to remove missing resource references.
     // This can no longer be handled by the code as we have 'setIcon(QIcon())' as well as 'QIcon icon'
     static bool checkProperty(const CustomWidgetsInfo *customWidgetsInfo,
                               const QString &fileName, const QString &className,
                               const DomProperty *p) {
+
+        const QString &name = p->attributeName();
+        if (!checkPropertyName(name)) {
+            qWarning("uic: Invalid property name: \"%s\".", qPrintable(name));
+            return false;
+        }
+
         switch (p->kind()) {
         // ### fixme Qt 7 remove this: Exclude deprecated properties of Qt 5.
         case DomProperty::Set:
-            if (p->attributeName() == u"features"
+            if (!checkEnumValue(p->elementSet())) {
+                qWarning("%s", qPrintable(msgInvalidValue(name, p->elementSet())));
+                return false;
+            }
+            if (name == u"features"
                 && customWidgetsInfo->extends(className, "QDockWidget")
                 && p->elementSet() == u"QDockWidget::AllDockWidgetFeatures") {
                 const QString msg = fileName + ": Warning: Deprecated enum value QDockWidget::AllDockWidgetFeatures was encountered."_L1;
@@ -145,7 +192,11 @@ namespace {
             }
             break;
         case DomProperty::Enum:
-            if (p->attributeName() == u"sizeAdjustPolicy"
+            if (!checkEnumValue(p->elementEnum())) {
+                qWarning("%s", qPrintable(msgInvalidValue(name, p->elementEnum())));
+                return false;
+            }
+            if (name == u"sizeAdjustPolicy"
                 && customWidgetsInfo->extends(className, "QComboBox")
                 && p->elementEnum() == u"QComboBox::AdjustToMinimumContentsLength") {
                 const QString msg = fileName + ": Warning: Deprecated enum value QComboBox::AdjustToMinimumContentsLength was encountered."_L1;
@@ -158,7 +209,7 @@ namespace {
                 if (!isIconFormat44(dri)) {
                     if (dri->text().isEmpty())  {
                         const QString msg = QString::fromLatin1("%1: Warning: An invalid icon property '%2' was encountered.")
-                                            .arg(fileName, p->attributeName());
+                                            .arg(fileName, name);
                         qWarning("%s", qPrintable(msg));
                         return false;
                     }
@@ -169,7 +220,7 @@ namespace {
             if (const DomResourcePixmap *drp = p->elementPixmap())
                 if (drp->text().isEmpty()) {
                     const QString msg = QString::fromUtf8("%1: Warning: An invalid pixmap property '%2' was encountered.")
-                                        .arg(fileName, p->attributeName());
+                                        .arg(fileName, name);
                     qWarning("%s", qPrintable(msg));
                     return false;
                 }
