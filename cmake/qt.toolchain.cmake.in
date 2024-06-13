@@ -22,13 +22,68 @@ if($ENV{_QT_TOOLCHAIN_VARS_INITIALIZED})
 endif()
 
 @init_original_toolchain_file@
-@init_vcpkg@
-
 @init_platform@
 
 if(NOT "${QT_CHAINLOAD_TOOLCHAIN_FILE}" STREQUAL "")
     set(__qt_chainload_toolchain_file "${QT_CHAINLOAD_TOOLCHAIN_FILE}")
 endif()
+
+@init_vcpkg@
+if(QT_USE_VCPKG OR (NOT DEFINED QT_USE_VCPKG AND __qt_initially_configured_use_vcpkg)
+    AND DEFINED ENV{VCPKG_ROOT})
+
+    # Ensure QT_USE_VCPKG value persists in cache
+    set(QT_USE_VCPKG TRUE CACHE BOOL "Enable the use of vcpkg")
+
+    # Extract the toolchain file path from the VCPKG_ROOT
+    set(__qt_vcpkg_toolchain_file "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake")
+    get_filename_component(__qt_vcpkg_toolchain_file "${__qt_vcpkg_toolchain_file}" REALPATH)
+
+    # If QT_CHAINLOAD_TOOLCHAIN_FILE is already set to the vcpkg one, nothing needs to be done.
+    # The vcpkg toolchain file will be chainloaded as part of QT_CHAINLOAD_TOOLCHAIN_FILE loading
+    # procedure.
+    get_filename_component(__qt_chainload_toolchain_file_real_path
+        "${__qt_chainload_toolchain_file}" REALPATH)
+    if(NOT __qt_chainload_toolchain_file_real_path STREQUAL __qt_vcpkg_toolchain_file)
+        if(QT_CHAINLOAD_TOOLCHAIN_FILE AND VCPKG_CHANLOAD_TOOLCHAIN_FILE)
+            message(FATAL_ERROR "Both QT_CHAINLOAD_TOOLCHAIN_FILE AND "
+                " VCPKG_CHAINLOAD_TOOLCHAIN_FILE are specified. This toolchain loading scenario is"
+                " not supported."
+            )
+        endif()
+
+        if(NOT VCPKG_CHAINLOAD_TOOLCHAIN_FILE AND QT_CHAINLOAD_TOOLCHAIN_FILE)
+            set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "${QT_CHAINLOAD_TOOLCHAIN_FILE}" CACHE STRING "")
+        endif()
+
+        set(__qt_chainload_toolchain_file "${__qt_vcpkg_toolchain_file}")
+    endif()
+
+    unset(__qt_chainload_toolchain_file_real_path)
+    unset(__qt_vcpkg_toolchain_file)
+endif()
+
+if(NOT VCPKG_CHAINLOAD_TOOLCHAIN_FILE AND __qt_initially_configured_vcpkg_chainload_toolchain_file)
+    set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE
+        "${__qt_initially_configured_vcpkg_chainload_toolchain_file}" CACHE STRING "")
+endif()
+unset(__qt_initially_configured_vcpkg_chainload_toolchain_file)
+
+get_filename_component(__qt_vcpkg_chainload_toolchain_file_realpath
+    "${VCPKG_CHAINLOAD_TOOLCHAIN_FILE}" REALPATH)
+if(VCPKG_CHAINLOAD_TOOLCHAIN_FILE
+    AND NOT EXISTS "${__qt_vcpkg_chainload_toolchain_file_realpath}")
+    message(WARNING "The toolchain file to be chainloaded VCPKG_CHAINLOAD_TOOLCHAIN_FILE"
+        " ${VCPKG_CHAINLOAD_TOOLCHAIN_FILE} doesn't exists and"
+        " will be skipped.")
+    set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "")
+endif()
+
+if(NOT VCPKG_TARGET_TRIPLET AND __qt_initially_configured_vcpkg_target_triplet)
+    set(VCPKG_TARGET_TRIPLET "${__qt_initially_configured_vcpkg_target_triplet}" CACHE STRING "")
+endif()
+unset(__qt_initially_configured_vcpkg_target_triplet)
+
 if(__qt_chainload_toolchain_file)
     get_filename_component(__qt_chainload_toolchain_file_real_path
                           "${__qt_chainload_toolchain_file}" REALPATH)
