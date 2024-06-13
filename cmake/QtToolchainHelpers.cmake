@@ -14,15 +14,24 @@ set(__qt_chainload_toolchain_file \"\${__qt_initially_configured_toolchain_file}
 ")
     endif()
 
-    if(VCPKG_CHAINLOAD_TOOLCHAIN_FILE)
-        file(TO_CMAKE_PATH "${VCPKG_CHAINLOAD_TOOLCHAIN_FILE}" VCPKG_CHAINLOAD_TOOLCHAIN_FILE)
-        list(APPEND init_vcpkg
-             "set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE \"${VCPKG_CHAINLOAD_TOOLCHAIN_FILE}\")")
-    endif()
+    if(QT_USE_VCPKG)
+        set(init_vcpkg "set(__qt_initially_configured_use_vcpkg TRUE)")
+        if(VCPKG_CHAINLOAD_TOOLCHAIN_FILE)
+            file(TO_CMAKE_PATH "${VCPKG_CHAINLOAD_TOOLCHAIN_FILE}"
+                initial_vcpkg_chainload_toolchain_file)
+            get_filename_component(initial_vcpkg_chainload_toolchain_file
+                "${initial_vcpkg_chainload_toolchain_file}" REALPATH)
+            list(APPEND init_vcpkg
+                "set(__qt_initially_configured_vcpkg_chainload_toolchain_file \
+    \"${initial_vcpkg_chainload_toolchain_file}\")")
+        endif()
 
-    if(VCPKG_TARGET_TRIPLET)
-        list(APPEND init_vcpkg
-             "set(VCPKG_TARGET_TRIPLET \"${VCPKG_TARGET_TRIPLET}\" CACHE STRING \"\")")
+        if(VCPKG_TARGET_TRIPLET)
+            list(APPEND init_vcpkg
+                "set(__qt_initially_configured_vcpkg_target_triplet \"${VCPKG_TARGET_TRIPLET}\")")
+        endif()
+    else()
+        set(init_vcpkg "")
     endif()
 
     if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" AND CMAKE_SYSTEM_VERSION STREQUAL "10")
