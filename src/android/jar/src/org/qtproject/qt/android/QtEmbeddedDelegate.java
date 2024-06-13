@@ -105,6 +105,7 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
                 BackendRegister.unregisterBackend(QtMenuInterface.class);
                 BackendRegister.unregisterBackend(QtLayoutInterface.class);
             }
+            updateInputDelegate();
         }
     }
 
@@ -168,11 +169,14 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
     // QtEmbeddedViewInterface implementation end
 
     private void updateInputDelegate() {
-        if (m_view == null) {
-            m_inputDelegate.setEditPopupMenu(null);
+        // If the QtView has attached to the window before Qt libs have been loaded,
+        // the input delegate will be null
+        if (m_inputDelegate == null)
             return;
-        }
-        m_inputDelegate.setEditPopupMenu(new EditPopupMenu(m_activity, m_view));
+        if (m_view == null)
+            m_inputDelegate.setEditPopupMenu(null);
+        else
+            m_inputDelegate.setEditPopupMenu(new EditPopupMenu(m_activity, m_view));
     }
 
     private void createRootWindow() {
