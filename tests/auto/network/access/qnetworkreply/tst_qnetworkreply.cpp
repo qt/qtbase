@@ -10299,6 +10299,9 @@ void tst_QNetworkReply::contentEncoding()
 #if QT_CONFIG(http)
 void tst_QNetworkReply::contentEncodingBigPayload_data()
 {
+#if Q_PROCESSOR_WORDSIZE <= 4
+    QSKIP("Allocating 4GB leads to std::bad_alloc on a 32b architecture");
+#endif
     QTest::addColumn<QByteArray>("encoding");
     QTest::addColumn<QString>("path");
     QTest::addColumn<qint64>("expectedSize");
