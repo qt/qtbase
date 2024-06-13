@@ -4,6 +4,7 @@
 
 #include <QTest>
 #include <QtTest/private/qcomparisontesthelper_p.h>
+
 #if QT_CONFIG(process)
 #include <QProcess>
 #endif
@@ -35,6 +36,8 @@ private slots:
     void equal();
     void notEqual();
     void cpp11();
+    void ordering_data();
+    void ordering();
 
     // Only in Qt > 3.2.x
     void generate();
@@ -379,6 +382,123 @@ void tst_QUuid::cpp11() {
 #else
     QSKIP("This compiler is not in C++11 mode or it doesn't support uniform initialization");
 #endif
+}
+
+constexpr QUuid make_minimal(QUuid::Variant variant)
+{
+    using V = QUuid::Variant;
+    switch (variant) {
+    case V::VarUnknown: // special case
+        return {};
+    case V::NCS:        // special case: null would be NCS, but is treated as Unknown
+        return {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+    case V::DCE:        // special case: DCE should be 0b100, but is 0b10
+        return {0, 0, 0, 0b1000'0000, 0, 0, 0, 0, 0, 0, 0};
+    case V::Microsoft:
+    case V::Reserved:
+        return {0, 0, 0, uchar(variant << 5), 0, 0, 0, 0, 0, 0, 0};
+    }
+}
+
+void tst_QUuid::ordering_data()
+{
+    QTest::addColumn<QUuid>("lhs");
+    QTest::addColumn<QUuid>("rhs");
+    QTest::addColumn<Qt::strong_ordering>("expected");
+
+    // QUuid is sorted by variant() first, then the dataN fields, in order
+    // Exhaustive testing is pointless, so pick some strategic values
+
+    constexpr QUuid null = make_minimal(QUuid::Variant::VarUnknown);
+    QCOMPARE(null.variant(), QUuid::Variant::VarUnknown);
+
+    constexpr QUuid minNCS = make_minimal(QUuid::Variant::NCS);
+    QCOMPARE(minNCS.variant(), QUuid::Variant::NCS);
+
+    constexpr QUuid ncs000_0000_0001 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+    QCOMPARE(ncs000_0000_0001, minNCS);
+    constexpr QUuid ncs000_0000_0010 = {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0};
+    constexpr QUuid ncs000_0000_0100 = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0};
+    constexpr QUuid ncs000_0000_1000 = {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0};
+
+    constexpr QUuid ncs000_0001_0000 = {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0};
+    constexpr QUuid ncs000_0010_0000 = {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
+    constexpr QUuid ncs000_0100_0000 = {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0};
+    constexpr QUuid ncs000_1000_0000 = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0};
+
+    constexpr QUuid ncs001_0000_0000 = {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+    constexpr QUuid ncs010_0000_0000 = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    constexpr QUuid ncs100_0000_0000 = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    constexpr QUuid minDCE = make_minimal(QUuid::Variant::DCE);
+    QCOMPARE(minDCE.variant(), QUuid::Variant::DCE);
+
+    constexpr QUuid minMS = make_minimal(QUuid::Variant::Microsoft);
+    QCOMPARE(minMS.variant(), QUuid::Variant::Microsoft);
+
+    constexpr QUuid minR = make_minimal(QUuid::Variant::Reserved);
+    QCOMPARE(minR.variant(), QUuid::Variant::Reserved);
+
+    constexpr QUuid ones = {0xFFFF'FFFFU, 0xFFFFu, 0xFFFFu, 0xFFu, 0xFFu, 0xFFu, 0xFFu, 0xFFu, 0xFFu, 0xFFu, 0xFFu};
+    QCOMPARE(ones.variant(), QUuid::Variant::Reserved);
+
+#define ROW(l, r, c) \
+    QTest::addRow("%s<>%s", #l, #r) << l << r << Qt::strong_ordering:: c \
+    /* end */
+#define EQUAL(x) ROW(x, x, equal)
+    EQUAL(null);
+    EQUAL(minNCS);
+    EQUAL(minDCE);
+    EQUAL(minMS);
+    EQUAL(minR);
+    EQUAL(ones);
+#undef EQUAL
+#define AFTER_NULL(x) ROW(null, x, less)
+    AFTER_NULL(minNCS);
+    AFTER_NULL(minDCE);
+    AFTER_NULL(minMS);
+    AFTER_NULL(minR);
+    AFTER_NULL(ones);
+#undef AFTER_NULL
+#define AFTER_NCS(x) ROW(minNCS, x, less)
+    AFTER_NCS(ncs000_0000_0010);
+    AFTER_NCS(ncs000_0000_0100);
+    AFTER_NCS(ncs000_0000_1000);
+    AFTER_NCS(ncs000_0001_0000);
+    AFTER_NCS(ncs000_0010_0000);
+    AFTER_NCS(ncs000_0100_0000);
+    AFTER_NCS(ncs000_1000_0000);
+    AFTER_NCS(ncs001_0000_0000);
+    AFTER_NCS(ncs010_0000_0000);
+    AFTER_NCS(ncs100_0000_0000);
+    ROW(ncs100_0000_0000, minDCE, less);
+    AFTER_NCS(minDCE);
+    AFTER_NCS(minMS);
+    AFTER_NCS(minR);
+    AFTER_NCS(ones);
+#undef AFTER_NCS
+#define AFTER_DCE(x) ROW(minDCE, x, less)
+    AFTER_DCE(minMS);
+    AFTER_DCE(minR);
+    AFTER_DCE(ones);
+#undef AFTER_DCE
+#define AFTER_MS(x) ROW(minMS, x, less)
+    AFTER_MS(minR);
+    AFTER_MS(ones);
+#undef AFTER_MS
+#define AFTER_R(x) ROW(minR, x, less)
+    AFTER_R(ones);
+#undef AFTER_R
+#undef ROW
+}
+
+void tst_QUuid::ordering()
+{
+    QFETCH(const QUuid, lhs);
+    QFETCH(const QUuid, rhs);
+    QFETCH(const Qt::strong_ordering, expected);
+
+    QT_TEST_ALL_COMPARISON_OPS(lhs, rhs, expected);
 }
 
 void tst_QUuid::generate()
