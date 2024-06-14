@@ -66,8 +66,8 @@ public:
                        const QList<uint16_t> &redTransferFunctionTable,
                        const QList<uint16_t> &greenTransferFunctionTable,
                        const QList<uint16_t> &blueRransferFunctionTable);
-    QColorSpacePrivate(const QPointF &whitePoint, QColorSpace::TransferFunction transferFunction, float gamma);
-    QColorSpacePrivate(const QPointF &whitePoint, const QList<uint16_t> &transferFunctionTable);
+    QColorSpacePrivate(QPointF whitePoint, QColorSpace::TransferFunction transferFunction, float gamma);
+    QColorSpacePrivate(QPointF whitePoint, const QList<uint16_t> &transferFunctionTable);
     QColorSpacePrivate(const QColorSpacePrivate &other) = default;
 
     static const QColorSpacePrivate *get(const QColorSpace &colorSpace)

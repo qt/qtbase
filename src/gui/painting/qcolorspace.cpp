@@ -187,7 +187,7 @@ QColorSpacePrivate::QColorSpacePrivate(const QColorSpacePrimaries &primaries,
     setTransferFunction();
 }
 
-QColorSpacePrivate::QColorSpacePrivate(const QPointF &whitePoint,
+QColorSpacePrivate::QColorSpacePrivate(QPointF whitePoint,
                                        QColorSpace::TransferFunction transferFunction,
                                        float gamma)
         : primaries(QColorSpace::Primaries::Custom)
@@ -201,7 +201,7 @@ QColorSpacePrivate::QColorSpacePrivate(const QPointF &whitePoint,
     setTransferFunction();
 }
 
-QColorSpacePrivate::QColorSpacePrivate(const QPointF &whitePoint, const QList<uint16_t> &transferFunctionTable)
+QColorSpacePrivate::QColorSpacePrivate(QPointF whitePoint, const QList<uint16_t> &transferFunctionTable)
       : primaries(QColorSpace::Primaries::Custom)
       , transferFunction(QColorSpace::TransferFunction::Custom)
       , colorModel(QColorSpace::ColorModel::Gray)
@@ -711,7 +711,7 @@ QColorSpace::QColorSpace(QColorSpace::Primaries gamut, const QList<uint16_t> &tr
 
     \since 6.8
 */
-QColorSpace::QColorSpace(const QPointF &whitePoint, TransferFunction transferFunction, float gamma)
+QColorSpace::QColorSpace(QPointF whitePoint, TransferFunction transferFunction, float gamma)
     : d_ptr(new QColorSpacePrivate(whitePoint, transferFunction, gamma))
 {
 }
@@ -722,7 +722,7 @@ QColorSpace::QColorSpace(const QPointF &whitePoint, TransferFunction transferFun
 
     \since 6.8
 */
-QColorSpace::QColorSpace(const QPointF &whitePoint, const QList<uint16_t> &transferFunctionTable)
+QColorSpace::QColorSpace(QPointF whitePoint, const QList<uint16_t> &transferFunctionTable)
     : d_ptr(new QColorSpacePrivate(whitePoint, transferFunctionTable))
 {
 }
@@ -1037,7 +1037,7 @@ QPointF QColorSpace::whitePoint() const
 
     \since 6.8
 */
-void QColorSpace::setWhitePoint(const QPointF &whitePoint)
+void QColorSpace::setWhitePoint(QPointF whitePoint)
 {
     if (Q_UNLIKELY(!d_ptr)) {
         d_ptr = new QColorSpacePrivate(whitePoint, TransferFunction::Custom, 0.0f);

@@ -67,8 +67,8 @@ public:
 
     QColorSpace() noexcept = default;
     QColorSpace(NamedColorSpace namedColorSpace);
-    QColorSpace(const QPointF &whitePoint, TransferFunction transferFunction, float gamma = 0.0f);
-    QColorSpace(const QPointF &whitePoint, const QList<uint16_t> &transferFunctionTable);
+    explicit QColorSpace(QPointF whitePoint, TransferFunction transferFunction, float gamma = 0.0f);
+    explicit QColorSpace(QPointF whitePoint, const QList<uint16_t> &transferFunctionTable);
     QColorSpace(Primaries primaries, TransferFunction transferFunction, float gamma = 0.0f);
     QColorSpace(Primaries primaries, float gamma);
     QColorSpace(Primaries primaries, const QList<uint16_t> &transferFunctionTable);
@@ -120,7 +120,7 @@ public:
     void setPrimaries(Primaries primariesId);
     void setPrimaries(const QPointF &whitePoint, const QPointF &redPoint,
                       const QPointF &greenPoint, const QPointF &bluePoint);
-    void setWhitePoint(const QPointF &whitePoint);
+    void setWhitePoint(QPointF whitePoint);
     QPointF whitePoint() const;
 
     TransformModel transformModel() const noexcept;
