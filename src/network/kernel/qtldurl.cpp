@@ -88,13 +88,14 @@ static bool containsTLDEntry(QStringView entry, TLDMatchType match)
 
     // Find which chunk contains the tldGroupOffset
     while (tldGroupOffset >= tldChunks[chunk]) {
-        chunkIndex -= tldChunks[chunk];
-        offset += tldChunks[chunk];
         chunk++;
-
         // We can not go above the number of chunks we have, since all our
         // indices are less than the total chunks' size (see asserts above).
         Q_ASSERT(chunk < tldChunkCount);
+    }
+    if (chunk > 0) {
+        chunkIndex -= tldChunks[chunk - 1];
+        offset += tldChunks[chunk - 1];
     }
 
     // check all the entries from the given offset
