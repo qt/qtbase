@@ -63,6 +63,11 @@ bool QPageLayout::setTopMargin(qreal topMargin)
     return setTopMargin(topMargin, OutOfBoundsPolicy::Reject);
 }
 
+bool QPageLayout::setBottomMargin(qreal bottomMargin)
+{
+    return setBottomMargin(bottomMargin, OutOfBoundsPolicy::Reject);
+}
+
 // #include "qotherheader.h"
 // // implement removed functions from qotherheader.h
 // order sections alphabetically
