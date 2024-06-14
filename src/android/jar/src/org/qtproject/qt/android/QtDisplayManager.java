@@ -25,23 +25,23 @@ import java.util.List;
 class QtDisplayManager {
 
     // screen methods
-    public static native void setDisplayMetrics(int screenWidthPixels, int screenHeightPixels,
+    static native void setDisplayMetrics(int screenWidthPixels, int screenHeightPixels,
                                                 int availableLeftPixels, int availableTopPixels,
                                                 int availableWidthPixels, int availableHeightPixels,
                                                 double XDpi, double YDpi, double scaledDensity,
                                                 double density, float refreshRate);
-    public static native void handleOrientationChanged(int newRotation, int nativeOrientation);
-    public static native void handleRefreshRateChanged(float refreshRate);
-    public static native void handleUiDarkModeChanged(int newUiMode);
-    public static native void handleScreenAdded(int displayId);
-    public static native void handleScreenChanged(int displayId);
-    public static native void handleScreenRemoved(int displayId);
+    static native void handleOrientationChanged(int newRotation, int nativeOrientation);
+    static native void handleRefreshRateChanged(float refreshRate);
+    static native void handleUiDarkModeChanged(int newUiMode);
+    static native void handleScreenAdded(int displayId);
+    static native void handleScreenChanged(int displayId);
+    static native void handleScreenRemoved(int displayId);
     // screen methods
 
     // Keep in sync with QtAndroid::SystemUiVisibility in androidjnimain.h
-    public static final int SYSTEM_UI_VISIBILITY_NORMAL = 0;
-    public static final int SYSTEM_UI_VISIBILITY_FULLSCREEN = 1;
-    public static final int SYSTEM_UI_VISIBILITY_TRANSLUCENT = 2;
+    static final int SYSTEM_UI_VISIBILITY_NORMAL = 0;
+    static final int SYSTEM_UI_VISIBILITY_FULLSCREEN = 1;
+    static final int SYSTEM_UI_VISIBILITY_TRANSLUCENT = 2;
     private int m_systemUiVisibility = SYSTEM_UI_VISIBILITY_NORMAL;
 
     private static int m_previousRotation = -1;
@@ -89,7 +89,7 @@ class QtDisplayManager {
         m_previousRotation = currentRotation;
     }
 
-    public static int getDisplayRotation(Activity activity) {
+    static int getDisplayRotation(Activity activity) {
         Display display = Build.VERSION.SDK_INT < Build.VERSION_CODES.R ?
                 activity.getWindowManager().getDefaultDisplay() :
                 activity.getDisplay();
@@ -113,21 +113,21 @@ class QtDisplayManager {
         return display != null ? display.getRefreshRate() : 60.0f;
     }
 
-    public void registerDisplayListener()
+    void registerDisplayListener()
     {
         DisplayManager displayManager =
                 (DisplayManager) m_activity.getSystemService(Context.DISPLAY_SERVICE);
         displayManager.registerDisplayListener(m_displayListener, null);
     }
 
-    public void unregisterDisplayListener()
+    void unregisterDisplayListener()
     {
         DisplayManager displayManager =
                 (DisplayManager) m_activity.getSystemService(Context.DISPLAY_SERVICE);
         displayManager.unregisterDisplayListener(m_displayListener);
     }
 
-    public void setSystemUiVisibility(int systemUiVisibility)
+    void setSystemUiVisibility(int systemUiVisibility)
     {
         if (m_systemUiVisibility == systemUiVisibility)
             return;
@@ -173,12 +173,12 @@ class QtDisplayManager {
         m_activity.getWindow().getDecorView().setSystemUiVisibility(systemUiVisibilityFlags);
     }
 
-    public int systemUiVisibility()
+    int systemUiVisibility()
     {
         return m_systemUiVisibility;
     }
 
-    public void updateFullScreen()
+    void updateFullScreen()
     {
         if (m_systemUiVisibility == SYSTEM_UI_VISIBILITY_FULLSCREEN) {
             m_systemUiVisibility = SYSTEM_UI_VISIBILITY_NORMAL;
@@ -187,7 +187,7 @@ class QtDisplayManager {
     }
 
     @UsedFromNativeCode
-    public static Display getDisplay(Context context, int displayId)
+    static Display getDisplay(Context context, int displayId)
     {
         DisplayManager displayManager =
                 (DisplayManager)context.getSystemService(Context.DISPLAY_SERVICE);
@@ -198,7 +198,7 @@ class QtDisplayManager {
     }
 
     @UsedFromNativeCode
-    public static List<Display> getAvailableDisplays(Context context)
+    static List<Display> getAvailableDisplays(Context context)
     {
         DisplayManager displayManager =
                 (DisplayManager)context.getSystemService(Context.DISPLAY_SERVICE);
@@ -210,7 +210,7 @@ class QtDisplayManager {
     }
 
     @UsedFromNativeCode
-    public static Size getDisplaySize(Context displayContext, Display display)
+    static Size getDisplaySize(Context displayContext, Display display)
     {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             DisplayMetrics realMetrics = new DisplayMetrics();
@@ -227,7 +227,7 @@ class QtDisplayManager {
         return new Size(bounds.width(), bounds.height());
     }
 
-    public static void setApplicationDisplayMetrics(Activity activity, int width, int height)
+    static void setApplicationDisplayMetrics(Activity activity, int width, int height)
     {
         if (activity == null)
             return;
@@ -273,13 +273,13 @@ class QtDisplayManager {
                 scaledDensity, density, getRefreshRate(display));
     }
 
-    public static float getXDpi(final DisplayMetrics metrics) {
+    static float getXDpi(final DisplayMetrics metrics) {
         if (metrics.xdpi < android.util.DisplayMetrics.DENSITY_LOW)
             return android.util.DisplayMetrics.DENSITY_LOW;
         return metrics.xdpi;
     }
 
-    public static float getYDpi(final DisplayMetrics metrics) {
+    static float getYDpi(final DisplayMetrics metrics) {
         if (metrics.ydpi < android.util.DisplayMetrics.DENSITY_LOW)
             return android.util.DisplayMetrics.DENSITY_LOW;
         return metrics.ydpi;

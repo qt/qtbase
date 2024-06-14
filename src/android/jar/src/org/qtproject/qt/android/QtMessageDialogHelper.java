@@ -52,13 +52,13 @@ class ButtonStruct implements View.OnClickListener
 class QtMessageDialogHelper
 {
 
-    public QtMessageDialogHelper(Activity activity)
+    QtMessageDialogHelper(Activity activity)
     {
         m_activity = activity;
     }
 
     @UsedFromNativeCode
-    public void setStandardIcon(int icon)
+    void setStandardIcon(int icon)
     {
         m_standardIcon = icon;
 
@@ -89,31 +89,31 @@ class QtMessageDialogHelper
     }
 
     @UsedFromNativeCode
-    public void setTile(String title)
+    void setTile(String title)
     {
         m_title = Html.fromHtml(title);
     }
 
     @UsedFromNativeCode
-    public void setText(String text)
+    void setText(String text)
     {
         m_text = Html.fromHtml(text);
     }
 
     @UsedFromNativeCode
-    public void setInformativeText(String informativeText)
+    void setInformativeText(String informativeText)
     {
         m_informativeText = Html.fromHtml(informativeText);
     }
 
     @UsedFromNativeCode
-    public void setDetailedText(String text)
+    void setDetailedText(String text)
     {
         m_detailedText = Html.fromHtml(text);
     }
 
     @UsedFromNativeCode
-    public void addButton(int id, String text)
+    void addButton(int id, String text)
     {
         if (m_buttonsList == null)
             m_buttonsList = new ArrayList<>();
@@ -130,7 +130,7 @@ class QtMessageDialogHelper
     }
 
     @UsedFromNativeCode
-    public void show(long handler)
+    void show(long handler)
     {
         m_handler = handler;
         m_activity.runOnUiThread(() -> {
@@ -299,7 +299,7 @@ class QtMessageDialogHelper
     }
 
     @UsedFromNativeCode
-    public void hide()
+    void hide()
     {
         m_activity.runOnUiThread(() -> {
             if (m_dialog != null && m_dialog.isShowing())
@@ -308,12 +308,12 @@ class QtMessageDialogHelper
         });
     }
 
-    public long handler()
+    long handler()
     {
         return m_handler;
     }
 
-    public void reset()
+    void reset()
     {
         m_standardIcon = 0;
         m_title = null;

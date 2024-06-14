@@ -16,7 +16,7 @@ class QtSurface extends SurfaceView implements SurfaceHolder.Callback
 {
     private final QtSurfaceInterface m_surfaceCallback;
 
-    public QtSurface(Context context, QtSurfaceInterface surfaceCallback, boolean onTop, int imageDepth)
+    QtSurface(Context context, QtSurfaceInterface surfaceCallback, boolean onTop, int imageDepth)
     {
         super(context);
         setFocusable(false);

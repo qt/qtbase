@@ -33,7 +33,7 @@ class CursorView extends ImageView
     }
 
     // Called when the handle was moved programmatically , with the delta amount in pixels
-    public void adjusted(int dx, int dy) {
+    void adjusted(int dx, int dy) {
         m_offsetX += dx;
         m_offsetY += dy;
     }
@@ -83,7 +83,7 @@ class CursorHandle implements ViewTreeObserver.OnPreDrawListener
     private final boolean m_rtl;
     int m_yShift;
 
-    public CursorHandle(Activity activity, View layout, int id, int attr, boolean rtl) {
+    CursorHandle(Activity activity, View layout, int id, int attr, boolean rtl) {
         m_activity = activity;
         m_id = id;
         m_attr = attr;
@@ -123,7 +123,7 @@ class CursorHandle implements ViewTreeObserver.OnPreDrawListener
     }
 
     // Show the handle at a given position (or move it if it is already shown)
-    public void setPosition(final int x, final int y){
+    void setPosition(final int x, final int y){
         initOverlay();
 
         final int[] layoutLocation = new int[2];
@@ -157,7 +157,7 @@ class CursorHandle implements ViewTreeObserver.OnPreDrawListener
         m_posY = y;
     }
 
-    public int bottom()
+    int bottom()
     {
         initOverlay();
         final int[] location = new int[2];
@@ -165,19 +165,19 @@ class CursorHandle implements ViewTreeObserver.OnPreDrawListener
         return location[1] + m_cursorView.getHeight();
     }
 
-    public void hide() {
+    void hide() {
         if (m_popup != null) {
             m_popup.dismiss();
         }
     }
 
-    public int width()
+    int width()
     {
         return m_cursorView.getDrawable().getIntrinsicWidth();
     }
 
     // The handle was dragged by a given relative position
-    public void updatePosition(int x, int y) {
+    void updatePosition(int x, int y) {
         y -= m_yShift;
         if (Math.abs(m_lastX - x) > tolerance || Math.abs(m_lastY - y) > tolerance) {
             QtInputDelegate.handleLocationChanged(m_id, x + m_posX, y + m_posY);

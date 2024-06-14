@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 class QtActivityLoader extends QtLoader {
     private final Activity m_activity;
 
-    public QtActivityLoader(Activity activity)
+    QtActivityLoader(Activity activity)
     {
         super(new ContextWrapper(activity));
         m_activity = activity;

@@ -35,14 +35,14 @@ class QtThread {
         m_qtThread.start();
     }
 
-    public void post(final Runnable runnable) {
+    void post(final Runnable runnable) {
         synchronized (m_qtThread) {
             m_pendingRunnables.add(runnable);
             m_qtThread.notify();
         }
     }
 
-    public void sleep(int milliseconds) {
+    void sleep(int milliseconds) {
         try {
             m_qtThread.sleep(milliseconds);
         } catch (InterruptedException e) {
@@ -50,7 +50,7 @@ class QtThread {
         }
     }
 
-    public void run(final Runnable runnable) {
+    void run(final Runnable runnable) {
         final Semaphore sem = new Semaphore(0);
         synchronized (m_qtThread) {
             m_pendingRunnables.add(() -> {
@@ -66,7 +66,7 @@ class QtThread {
         }
     }
 
-    public void exit()
+    void exit()
     {
         m_exit = true;
         synchronized (m_qtThread) {

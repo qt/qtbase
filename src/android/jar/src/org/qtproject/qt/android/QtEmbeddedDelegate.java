@@ -34,7 +34,7 @@ class QtEmbeddedDelegate extends QtActivityDelegateBase
     private boolean m_windowLoaded = false;
     private boolean m_backendsRegistered = false;
 
-    public QtEmbeddedDelegate(Activity context) {
+    QtEmbeddedDelegate(Activity context) {
         super(context);
 
         m_stateDetails = QtNative.getStateDetails();

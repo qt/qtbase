@@ -13,7 +13,7 @@ class QtEmbeddedViewInterfaceFactory {
     private static final HashMap<Context, QtEmbeddedViewInterface> m_interfaces = new HashMap<>();
     private static final Object m_interfaceLock = new Object();
 
-    public static QtEmbeddedViewInterface create(Context context) {
+    static QtEmbeddedViewInterface create(Context context) {
         synchronized (m_interfaceLock) {
             if (!m_interfaces.containsKey(context)) {
                 if (context instanceof Activity)
@@ -26,7 +26,7 @@ class QtEmbeddedViewInterfaceFactory {
         }
     }
 
-    public static void remove(Context context) {
+    static void remove(Context context) {
         synchronized (m_interfaceLock) {
             m_interfaces.remove(context);
         }

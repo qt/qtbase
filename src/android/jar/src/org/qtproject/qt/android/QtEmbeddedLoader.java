@@ -34,7 +34,7 @@ import android.content.res.Resources;
 class QtEmbeddedLoader extends QtLoader {
     private static final String TAG = "QtEmbeddedLoader";
 
-    public QtEmbeddedLoader(Context context) {
+    QtEmbeddedLoader(Context context) {
         super(new ContextWrapper(context));
         // TODO Service context handling QTBUG-118874
         int displayDensity = m_context.getResources().getDisplayMetrics().densityDpi;

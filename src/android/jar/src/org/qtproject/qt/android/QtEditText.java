@@ -49,7 +49,7 @@ class QtEditText extends View
 
     private final QtInputConnectionListener m_qtInputConnectionListener;
 
-    public QtEditText(Context context, QtInputConnectionListener listener)
+    QtEditText(Context context, QtInputConnectionListener listener)
     {
         super(context);
         setFocusable(true);
@@ -115,7 +115,7 @@ class QtEditText extends View
     }
 
 
-    public void setEditTextOptions(int enterKeyType, int inputHints)
+    void setEditTextOptions(int enterKeyType, int inputHints)
     {
         int initialCapsMode = 0;
         int imeOptions = imeOptionsFromEnterKeyType(enterKeyType);

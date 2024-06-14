@@ -324,7 +324,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
 
     private boolean m_contextMenuVisible = false;
 
-    public void onCreatePopupMenu(Menu menu)
+    void onCreatePopupMenu(Menu menu)
     {
         QtNative.fillContextMenu(menu);
         m_contextMenuVisible = true;
@@ -426,7 +426,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
 
     // TODO: QTBUG-122761 To be removed after QtAndroidAutomotive does not depend on it.
     @UsedFromNativeCode
-    public void insertNativeView(int id, View view, int x, int y, int w, int h)
+    void insertNativeView(int id, View view, int x, int y, int w, int h)
     {
         QtNative.runAction(()-> {
             if (m_dummyView != null) {
@@ -452,7 +452,7 @@ class QtActivityDelegate extends QtActivityDelegateBase
 
     // TODO: QTBUG-122761 To be removed after QtAndroidAutomotive does not depend on it.
     @UsedFromNativeCode
-    public void setNativeViewGeometry(int id, int x, int y, int w, int h)
+    void setNativeViewGeometry(int id, int x, int y, int w, int h)
     {
         QtNative.runAction(() -> {
             if (m_nativeViews.containsKey(id)) {
