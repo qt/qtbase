@@ -372,11 +372,13 @@ public:
     };
     Q_ENUM(Attribute)
 
-    enum class AnnouncementPriority {
+    enum class AnnouncementPoliteness {
         Polite,
         Assertive,
     };
-    Q_ENUM(AnnouncementPriority)
+    Q_ENUM(AnnouncementPoliteness)
+    // ### remove once qtdeclarative dependencies are up-to-date
+    using AnnouncementPriority = AnnouncementPoliteness;
 
     typedef QAccessibleInterface*(*InterfaceFactory)(const QString &key, QObject*);
     typedef void(*UpdateHandler)(QAccessibleEvent *event);

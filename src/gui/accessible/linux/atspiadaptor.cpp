@@ -954,8 +954,8 @@ void AtSpiAdaptor::sendAnnouncement(QAccessibleAnnouncementEvent *event)
 
     const QString path = pathForInterface(iface);
     const QString message = event->message();
-    const QAccessible::AnnouncementPriority prio = event->priority();
-    const int politeness = (prio == QAccessible::AnnouncementPriority::Assertive) ? ATSPI_LIVE_ASSERTIVE : ATSPI_LIVE_POLITE;
+    const QAccessible::AnnouncementPoliteness prio = event->politeness();
+    const int politeness = (prio == QAccessible::AnnouncementPoliteness::Assertive) ? ATSPI_LIVE_ASSERTIVE : ATSPI_LIVE_POLITE;
 
     const QVariantList args = packDBusSignalArguments(QString(), politeness, 0, QVariant::fromValue(QDBusVariant(message)));
     sendDBusSignal(path, ATSPI_DBUS_INTERFACE_EVENT_OBJECT ""_L1, "Announcement"_L1, args);

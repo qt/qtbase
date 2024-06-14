@@ -237,7 +237,7 @@ private:
             else
                 newEvent = new QAccessibleAnnouncementEvent(event->accessibleInterface(),
                                                             oldEvent->message());
-            newEvent->setPriority(oldEvent->priority());
+            newEvent->setPoliteness(oldEvent->politeness());
             ev = newEvent;
         } else {
             if (event->object())
