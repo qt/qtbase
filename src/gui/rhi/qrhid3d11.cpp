@@ -478,6 +478,12 @@ QList<int> QRhiD3D11::supportedSampleCounts() const
     return { 1, 2, 4, 8 };
 }
 
+QList<QSize> QRhiD3D11::supportedShadingRates(int sampleCount) const
+{
+    Q_UNUSED(sampleCount);
+    return { QSize(1, 1) };
+}
+
 DXGI_SAMPLE_DESC QRhiD3D11::effectiveSampleDesc(int sampleCount) const
 {
     DXGI_SAMPLE_DESC desc;
@@ -639,6 +645,11 @@ bool QRhiD3D11::isFeatureSupported(QRhi::Feature feature) const
         return false; // because we use fully typed formats for textures and relaxed casting is a D3D12 thing
     case QRhi::ResolveDepthStencil:
         return false;
+    case QRhi::VariableRateShading:
+        return false;
+    case QRhi::VariableRateShadingMap:
+    case QRhi::VariableRateShadingMapWithTexture:
+        return false;
     default:
         Q_UNREACHABLE();
         return false;
@@ -680,6 +691,8 @@ int QRhiD3D11::resourceLimit(QRhi::ResourceLimit limit) const
         return D3D11_VS_INPUT_REGISTER_COUNT;
     case QRhi::MaxVertexOutputs:
         return D3D11_VS_OUTPUT_REGISTER_COUNT;
+    case QRhi::ShadingRateImageTileSize:
+        return 0;
     default:
         Q_UNREACHABLE();
         return 0;
@@ -900,6 +913,11 @@ QRhiTextureRenderTarget *QRhiD3D11::createTextureRenderTarget(const QRhiTextureR
                                                               QRhiTextureRenderTarget::Flags flags)
 {
     return new QD3D11TextureRenderTarget(this, desc, flags);
+}
+
+QRhiShadingRateMap *QRhiD3D11::createShadingRateMap()
+{
+    return nullptr;
 }
 
 QRhiGraphicsPipeline *QRhiD3D11::createGraphicsPipeline()
@@ -1237,6 +1255,12 @@ void QRhiD3D11::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
     cmd.args.stencilRef.ref = refValue;
 }
 
+void QRhiD3D11::setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(coarsePixelSize);
+}
+
 void QRhiD3D11::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
                      quint32 instanceCount, quint32 firstVertex, quint32 firstInstance)
 {
@@ -1542,6 +1566,8 @@ static inline DXGI_FORMAT toD3DTextureFormat(QRhiTexture::Format format, QRhiTex
         return srgb ? DXGI_FORMAT_B8G8R8A8_UNORM_SRGB : DXGI_FORMAT_B8G8R8A8_UNORM;
     case QRhiTexture::R8:
         return DXGI_FORMAT_R8_UNORM;
+    case QRhiTexture::R8UI:
+        return DXGI_FORMAT_R8_UINT;
     case QRhiTexture::RG8:
         return DXGI_FORMAT_R8G8_UNORM;
     case QRhiTexture::R16:

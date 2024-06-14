@@ -65,6 +65,8 @@ public:
     virtual QRhiTextureRenderTarget *createTextureRenderTarget(const QRhiTextureRenderTargetDescription &desc,
                                                                QRhiTextureRenderTarget::Flags flags) = 0;
 
+    virtual QRhiShadingRateMap *createShadingRateMap() = 0;
+
     virtual QRhiSwapChain *createSwapChain() = 0;
     virtual QRhi::FrameOpResult beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags) = 0;
     virtual QRhi::FrameOpResult endFrame(QRhiSwapChain *swapChain, QRhi::EndFrameFlags flags) = 0;
@@ -99,6 +101,7 @@ public:
     virtual void setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor) = 0;
     virtual void setBlendConstants(QRhiCommandBuffer *cb, const QColor &c) = 0;
     virtual void setStencilRef(QRhiCommandBuffer *cb, quint32 refValue) = 0;
+    virtual void setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize) = 0;
 
     virtual void draw(QRhiCommandBuffer *cb, quint32 vertexCount,
                       quint32 instanceCount, quint32 firstVertex, quint32 firstInstance) = 0;
@@ -124,6 +127,7 @@ public:
 
     virtual QList<int> supportedSampleCounts() const = 0;
     virtual int ubufAlignment() const = 0;
+    virtual QList<QSize> supportedShadingRates(int sampleCount) const = 0;
     virtual bool isYUpInFramebuffer() const = 0;
     virtual bool isYUpInNDC() const = 0;
     virtual bool isClipDepthZeroToOne() const = 0;
@@ -658,7 +662,8 @@ public:
         TexDepthOutput,
         TexStorageLoad,
         TexStorageStore,
-        TexStorageLoadStore
+        TexStorageLoadStore,
+        TexShadingRate
     };
 
     void registerTexture(QRhiTexture *tex, TextureAccess *access, TextureStage *stage,

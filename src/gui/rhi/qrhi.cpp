@@ -1036,6 +1036,38 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     texture becomes necessary, for example when rendering into an
     OpenXR-provided depth texture (XR_KHR_composition_layer_depth). This enum
     value has been introduced in Qt 6.8.
+
+    \value VariableRateShading Indicates that per-draw (per-pipeline) variable
+    rate shading is supported. When reported as supported, \l
+    QRhiCommandBuffer::setShadingRate() is functional and has an effect for
+    QRhiGraphicsPipeline objects that declared \l
+    QRhiGraphicsPipeline::UsesShadingRate in their flags. Call \l
+    QRhi::supportedShadingRates() to check which rates are supported. (1x1 is
+    always supported, other typical values are 2x2, 1x2, 2x1, 2x4, 4x2, 4x4).
+    This feature can be expected to be supported with Direct 3D 12 and Vulkan,
+    assuming the implementation and GPU used at run time supports VRS. This enum
+    value has been introduced in Qt 6.9.
+
+    \value VariableRateShadingMap Indicates that image-based specification of
+    the shading rate is possible. The "image" is not necessarily a texture, it
+    may be a native 3D API object, depending on the underlying backend and
+    graphics API at run time. In practice this feature can be expected to be
+    supported with Direct 3D 12, Vulkan, and Metal, assuming the GPU is modern
+    enough to support VRS. To check if D3D12/Vulkan-style image-based VRS is
+    suspported, use VariableRateShadingMapWithTexture instead. When this feature
+    is reported as supported, there are two possibilities: when
+    VariableRateShadingMapWithTexture is also true, then QRhiShadingRateMap
+    consumes QRhiTexture objects via the createFrom() overload taking a
+    QRhiTexture argument. When VariableRateShadingMapWithTexture is false, then
+    QRhiShadingRateMap consumes some other type of native objects, for example
+    an MTLRasterizationRateMap in case of Metal. Use the createFrom() overload
+    taking a NativeShadingRateMap in this case. This enum value has been
+    introduced in Qt 6.9.
+
+    \value VariableRateShadingMapWithTexture Indicates that image-based
+    specification of the shading rate is supported via regular textures. In
+    practice this may be supported with Direct 3D 12 and Vulkan. This enum value
+    has been introduced in Qt 6.9.
  */
 
 /*!
@@ -1143,6 +1175,12 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \c out variables) from the vertex shader. The value may be as low as 8 with
     OpenGL ES 2.0, and 15 with OpenGL ES 3.0 and some Metal devices. Elsewhere,
     a typical value is 32.
+
+    \value ShadingRateImageTileSize The tile size for shading rate textures. 0
+    if the QRhi::VariableRateShadingMapWithTexture feature is not supported.
+    Otherwise a value such as 16, indicating, for example, a tile size of 16x16.
+    Each byte in the (R8UI) shading rate texture defines then the shading rate
+    for a tile of 16x16 pixels. See \l QRhiShadingRateMap for details.
  */
 
 /*!
@@ -2740,6 +2778,37 @@ QRhiTextureRenderTargetDescription::QRhiTextureRenderTargetDescription(const QRh
  */
 
 /*!
+    \fn QRhiShadingRateMap *QRhiTextureRenderTargetDescription::shadingRateMap() const
+    \return the currently set QRhiShadingRateMap. By default this is \nullptr.
+    \since 6.9
+ */
+
+/*!
+    \fn void QRhiTextureRenderTargetDescription::setShadingRateMap(QRhiShadingRateMap *map)
+
+    Associates with the specified QRhiShadingRateMap \a map. This is functional
+    only when the \l QRhi::VariableRateShadingMap feature is reported as
+    supported.
+
+    When QRhiCommandBuffer::setShadingRate() is also called, the higher of two
+    the shading rates are used for each tile. There is currently no control
+    offered over the combiner behavior.
+
+    \note When the render target had already been built (create() was called
+    successfully), setting a shading rate map implies that a different, new
+    QRhiRenderPassDescriptor is needed and thus a rebuild is needed. Call
+    setRenderPassDescriptor() again (outside of a render pass) and then rebuild
+    by calling create(). This has other rolling consequences as well, for
+    example for graphics pipelines: those also need to be associated with the
+    new QRhiRenderPassDescriptor and then rebuilt. See \l
+    QRhiRenderPassDescriptor::serializedFormat() for some suggestions on how to
+    deal with this. Remember to set the QRhiGraphicsPipeline::UsesShadingRate
+    flag as well.
+
+    \since 6.9
+ */
+
+/*!
     \class QRhiTextureSubresourceUploadDescription
     \inmodule QtGui
     \since 6.6
@@ -3450,6 +3519,7 @@ QRhiReadbackDescription::QRhiReadbackDescription(QRhiTexture *texture)
     \value SwapChain
     \value ComputePipeline
     \value CommandBuffer
+    \value ShadingRateMap
  */
 
 /*!
@@ -4324,6 +4394,8 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
      mipmap-based filtering may be unsupported. This is indicated by the
      QRhi::OneDimensionalTextures and QRhi::OneDimensionalTextureMipmaps
      feature flags.
+
+     \value UsedAsShadingRateMap
  */
 
 /*!
@@ -4403,6 +4475,8 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
     \value ASTC_10x10
     \value ASTC_12x10
     \value ASTC_12x12
+
+    \value R8UI One component, unsigned 8 bit.
  */
 
 /*!
@@ -4854,6 +4928,114 @@ QRhiResource::Type QRhiSampler::resourceType() const
  */
 
 /*!
+    \class QRhiShadingRateMap
+    \inmodule QtGui
+    \since 6.9
+    \brief An object that wraps a texture or another kind of native 3D API object.
+
+    \note This is a RHI API with limited compatibility guarantees, see \l QRhi
+    for details.
+
+    For an introduction to Variable Rate Shading (VRS), see
+    \l{https://learn.microsoft.com/en-us/windows/win32/direct3d12/vrs}. Qt
+    supports a subset of the VRS features offered by Direct 3D 12 and Vulkan. In
+    addition, Metal's somewhat different mechanism is supported by making it
+    possible to set up a QRhiShadingRateMap with an existing
+    MTLRasterizationRateMap object.
+ */
+
+/*!
+    \struct QRhiShadingRateMap::NativeShadingRateMap
+    \inmodule QtGui
+    \since 6.9
+    \brief Wraps a native shading rate map.
+
+    An example is MTLRasterizationRateMap with Metal. Other 3D APIs that use
+    textures for image-based VRS do not use this struct since those can function
+    via the QRhiTexture-based overload of QRhiShadingRate::createFrom().
+ */
+
+/*!
+    \variable QRhiShadingRateMap::NativeShadingRateMap::object
+    \brief 64-bit integer containing the native object handle.
+
+    Used with QRhiShadingRateMap::createFrom(). For example, with Metal,
+    \c object is expected to be an id<MTLRasterizationRateMap>.
+ */
+
+/*!
+    \internal
+ */
+QRhiShadingRateMap::QRhiShadingRateMap(QRhiImplementation *rhi)
+    : QRhiResource(rhi)
+{
+}
+
+/*!
+    \return the resource type.
+ */
+QRhiResource::Type QRhiShadingRateMap::resourceType() const
+{
+    return ShadingRateMap;
+}
+
+/*!
+    Sets up the shading rate map to use a native 3D API shading rate object
+    \a src.
+
+    \return \c true when successful, \c false when not supported.
+
+    \note This is functional only when the QRhi::VariableRateShadingMap feature
+    is reported as supported, while QRhi::VariableShadingRateMapWithTexture
+    feature is not. Currently this is true for Metal, assuming variable rate
+    shading is supported by the GPU.
+
+    \note With Metal, the \c object field of \a src is expected to contain an
+    id<MTLRasterizationRateMap>. Note that Qt does not perform anything else
+    apart from passing the MTLRasterizationRateMap on to the
+    MTLRenderPassDescriptor. If any special scaling is required, it is up to the
+    application (or the XR compositor) to perform that.
+ */
+bool QRhiShadingRateMap::createFrom(NativeShadingRateMap src)
+{
+    Q_UNUSED(src);
+    return false;
+}
+
+/*!
+    Sets up the shading rate map to use the texture \a src as the
+    image containing the per-tile shading rates.
+
+    \return \c true when successful, \c false when not supported.
+
+    The QRhiShadingRateMap does not take ownership of \a src.
+
+    \note This is functional only when the
+    QRhi::VariableRateShadingMapWithTexture feature is reported as supported. In
+    practice may be supported on Vulkan and Direct 3D 12 when using modern
+    graphics cards. It will never be supported on OpenGL or Metal, for example.
+
+    \note \a src must have a format of QRhiTexture::R8UI.
+
+    \note \a src must have a width of \c{ceil(render_target_pixel_width /
+    (float)tile_width)} and a height of \c{ceil(render_target_pixel_height /
+    (float)tile_height)}. It is up to the application to ensure the size of the
+    texture is as expected, using the above formula, at all times. The tile size
+    can be queried via \l QRhi::resourceLimit() and
+    QRhi::ShadingRateImageTileSize.
+
+    Each byte (texel) in the texture corresponds to the shading rate value for
+    one tile. 0 indicates 1x1, while a value of 10 indicates 4x4. See
+    \l{https://learn.microsoft.com/en-us/windows/win32/api/d3d12/ne-d3d12-d3d12_shading_rate}{D3D12_SHADING_RATE}
+    for other possible values.
+ */
+bool QRhiShadingRateMap::createFrom(QRhiTexture *src)
+{
+    Q_UNUSED(src);
+    return false;
+}
+
+/*!
     \class QRhiRenderPassDescriptor
     \inmodule QtGui
     \since 6.6
@@ -4953,6 +5135,34 @@ QRhiResource::Type QRhiRenderPassDescriptor::resourceType() const
     comparisons during the lifetime of the QRhi the object belongs to. It is not
     meant for storing on disk, reusing between processes, or using with multiple
     QRhi instances with potentially different backends.
+
+    \note Calling this function is expected to be a cheap operation since the
+    backends are not supposed to calculate the data in this function, but rather
+    return an already calculated series of data.
+
+    When creating reusable components as part of a library, where graphics
+    pipelines are created and maintained while targeting a QRhiRenderTarget (be
+    it a swapchain or a texture) managed by the client of the library, the
+    components must be able to deal with a changing QRhiRenderPassDescriptor.
+    For example, because the render target changes and so invalidates the
+    previously QRhiRenderPassDescriptor (with regards to the new render target
+    at least) due to having a potentially different color format and attachments
+    now. Or because \l{QRhiShadingRateMap}{variable rate shading} is taken into
+    use dynamically. A simple pattern that helps dealing with this is performing
+    the following check on every frame, to recognize the case when the pipeline
+    needs to be associated with a new QRhiRenderPassDescriptor, because
+    something is different about the render target now, compared to earlier
+    frames:
+
+    \code
+        QRhiRenderPassDescriptor *rp = m_renderTarget->renderPassDescriptor();
+        if (m_pipeline && rp->serializedFormat() != m_renderPassFormat) {
+            m_pipeline->setRenderPassDescriptor(rp);
+            m_renderPassFormat = rp->serializedFormat();
+            m_pipeline->create();
+        }
+        // remember to store m_renderPassFormat also when creating m_pipeline the first time
+    \endcode
 
     \sa isCompatible()
  */
@@ -6507,6 +6717,11 @@ QDebug operator<<(QDebug dbg, const QRhiShaderResourceBindings &srb)
     into account. Debug information is relevant in particular with tools like
     RenderDoc since it allows seeing the original source code when investigating
     the pipeline and when performing vertex or fragment shader debugging.
+
+    \value UsesShadingRate Indicates that a per-draw (per-pipeline) shading rate
+    value will be set via QRhiCommandBuffer::setShadingRate(). Not specifying
+    this flag and still calling setShadingRate() may lead to varying, unexpected
+    results depending on the underlying graphics API.
  */
 
 /*!
@@ -7609,6 +7824,37 @@ QRhiRenderTarget *QRhiSwapChain::currentFrameRenderTarget(StereoTargetBuffer tar
  */
 
 /*!
+    \fn QRhiShadingRateMap *QRhiSwapChain::shadingRateMap() const
+    \return the currently set QRhiShadingRateMap. By default this is \nullptr.
+    \since 6.9
+ */
+
+/*!
+    \fn void QRhiSwapChain::setShadingRateMap(QRhiShadingRateMap *map)
+
+    Associates with the specified QRhiShadingRateMap \a map. This is functional
+    only when the \l QRhi::VariableRateShadingMap feature is reported as
+    supported.
+
+    When QRhiCommandBuffer::setShadingRate() is also called, the higher of two
+    the shading rates are used for each tile. There is currently no control
+    offered over the combiner behavior.
+
+    \note Setting a shading rate map implies that a different, new
+    QRhiRenderPassDescriptor is needed and some of the native swapchain objects
+    must be rebuilt. Therefore, if the swapchain is already set up, call
+    newCompatibleRenderPassDescriptor() and setRenderPassDescriptor() right
+    after setShadingRateMap(). Then, createOrResize() must also be called again.
+    This has rolling consequences, for example for graphics pipelines: those
+    also need to be associated with the new QRhiRenderPassDescriptor and then
+    rebuilt. See \l QRhiRenderPassDescriptor::serializedFormat() for some
+    suggestions on how to deal with this. Remember to set the
+    QRhiGraphicsPipeline::UsesShadingRate flag for them as well.
+
+    \since 6.9
+ */
+
+/*!
     \struct QRhiSwapChainHdrInfo
     \inmodule QtGui
     \since 6.6
@@ -8032,6 +8278,8 @@ static const char *resourceTypeStr(const QRhiResource *res)
         return "ComputePipeline";
     case QRhiResource::CommandBuffer:
         return "CommandBuffer";
+    case QRhiResource::ShadingRateMap:
+        return "ShadingRateMap";
     }
 
     Q_UNREACHABLE_RETURN("");
@@ -8258,6 +8506,10 @@ void QRhiImplementation::textureFormatInfo(QRhiTexture::Format format, const QSi
 
     case QRhiTexture::D32FS8:
         bpc = 8;
+        break;
+
+    case QRhiTexture::R8UI:
+        bpc = 1;
         break;
 
     default:
@@ -9693,6 +9945,29 @@ void QRhiCommandBuffer::setStencilRef(quint32 refValue)
 }
 
 /*!
+    Sets the shading rate for the following draw calls to \a coarsePixelSize.
+
+    The default is 1x1.
+
+    Functional only when the \l QRhi::VariableRateShading feature is reported as
+    supported and the QRhiGraphicsPipeline(s) bound on the command buffer were
+    declaring \l QRhiGraphicsPipeline::UsesShadingRate when creating them.
+
+    Call \l QRhi::supportedShadingRates() to check what shading rates are
+    supported for a given sample count.
+
+    When both a QRhiShadingRateMap and this function is in use, the higher of
+    two the shading rates are used for each tile. There is currently no control
+    offered over the combiner behavior.
+
+    \since 6.9
+ */
+void QRhiCommandBuffer::setShadingRate(const QSize &coarsePixelSize)
+{
+    m_rhi->setShadingRate(this, coarsePixelSize);
+}
+
+/*!
     Records a non-indexed draw.
 
     The number of vertices is specified in \a vertexCount. For instanced
@@ -10695,6 +10970,16 @@ QRhiSampler *QRhi::newSampler(QRhiSampler::Filter magFilter,
 }
 
 /*!
+    \return a new shading rate map object.
+
+    \since 6.9
+ */
+QRhiShadingRateMap *QRhi::newShadingRateMap()
+{
+    return d->createShadingRateMap();
+}
+
+/*!
     \return a new texture render target with color and depth/stencil
     attachments given in \a desc, and with the specified \a flags.
 
@@ -10990,6 +11275,18 @@ QList<int> QRhi::supportedSampleCounts() const
 int QRhi::ubufAlignment() const
 {
     return d->ubufAlignment();
+}
+
+/*!
+    \return The list of supported variable shading rates for the specified \a sampleCount.
+
+    1x1 is always supported.
+
+    \since 6.9
+ */
+QList<QSize> QRhi::supportedShadingRates(int sampleCount) const
+{
+    return d->supportedShadingRates(sampleCount);
 }
 
 Q_CONSTINIT static QBasicAtomicInteger<QRhiGlobalObjectIdGenerator::Type> counter = Q_BASIC_ATOMIC_INITIALIZER(0);

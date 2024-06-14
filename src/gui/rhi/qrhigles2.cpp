@@ -160,6 +160,10 @@ QT_BEGIN_NAMESPACE
 #define GL_R8                             0x8229
 #endif
 
+#ifndef GL_R8UI
+#define GL_R8UI                           0x8232
+#endif
+
 #ifndef GL_RG8
 #define GL_RG8                            0x822B
 #endif
@@ -1188,6 +1192,12 @@ QList<int> QRhiGles2::supportedSampleCounts() const
     return supportedSampleCountList;
 }
 
+QList<QSize> QRhiGles2::supportedShadingRates(int sampleCount) const
+{
+    Q_UNUSED(sampleCount);
+    return { QSize(1, 1) };
+}
+
 QRhiSwapChain *QRhiGles2::createSwapChain()
 {
     return new QGles2SwapChain(this);
@@ -1256,6 +1266,12 @@ static inline void toGlTextureFormat(QRhiTexture::Format format, const QRhiGles2
         break;
     case QRhiTexture::R8:
         *glintformat = GL_R8;
+        *glsizedintformat = *glintformat;
+        *glformat = GL_RED;
+        *gltype = GL_UNSIGNED_BYTE;
+        break;
+    case QRhiTexture::R8UI:
+        *glintformat = GL_R8UI;
         *glsizedintformat = *glintformat;
         *glformat = GL_RED;
         *gltype = GL_UNSIGNED_BYTE;
@@ -1363,6 +1379,7 @@ bool QRhiGles2::isTextureFormatSupported(QRhiTexture::Format format, QRhiTexture
         return caps.bgraExternalFormat;
 
     case QRhiTexture::R8:
+    case QRhiTexture::R8UI:
         return caps.r8Format;
 
     case QRhiTexture::RG8:
@@ -1481,6 +1498,11 @@ bool QRhiGles2::isFeatureSupported(QRhi::Feature feature) const
         return false;
     case QRhi::ResolveDepthStencil:
         return true;
+    case QRhi::VariableRateShading:
+        return false;
+    case QRhi::VariableRateShadingMap:
+    case QRhi::VariableRateShadingMapWithTexture:
+        return false;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -1519,6 +1541,8 @@ int QRhiGles2::resourceLimit(QRhi::ResourceLimit limit) const
         return caps.maxVertexInputs;
     case QRhi::MaxVertexOutputs:
         return caps.maxVertexOutputs;
+    case QRhi::ShadingRateImageTileSize:
+        return 0;
     default:
         Q_UNREACHABLE_RETURN(0);
     }
@@ -1717,6 +1741,11 @@ QRhiSampler *QRhiGles2::createSampler(QRhiSampler::Filter magFilter, QRhiSampler
                                       QRhiSampler::AddressMode u, QRhiSampler::AddressMode v, QRhiSampler::AddressMode w)
 {
     return new QGles2Sampler(this, magFilter, minFilter, mipmapMode, u, v, w);
+}
+
+QRhiShadingRateMap *QRhiGles2::createShadingRateMap()
+{
+    return nullptr;
 }
 
 QRhiTextureRenderTarget *QRhiGles2::createTextureRenderTarget(const QRhiTextureRenderTargetDescription &desc,
@@ -1990,6 +2019,12 @@ void QRhiGles2::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
     cmd.cmd = QGles2CommandBuffer::Command::StencilRef;
     cmd.args.stencilRef.ref = refValue;
     cmd.args.stencilRef.ps = cbD->currentGraphicsPipeline;
+}
+
+void QRhiGles2::setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize)
+{
+    Q_UNUSED(cb);
+    Q_UNUSED(coarsePixelSize);
 }
 
 void QRhiGles2::draw(QRhiCommandBuffer *cb, quint32 vertexCount,

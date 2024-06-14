@@ -5,7 +5,7 @@ set(imgui_sources
     ${imgui_base}/imgui/imgui_widgets.cpp
     ${imgui_base}/imgui/imgui_demo.cpp
     ${imgui_base}/qrhiimgui.cpp
-    ${imgui_base}/qrhiimgui_p.h
+    ${imgui_base}/qrhiimgui.h
 )
 
 target_sources(${imgui_target} PRIVATE

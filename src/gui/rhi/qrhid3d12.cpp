@@ -498,6 +498,20 @@ bool QRhiD3D12::create(QRhi::Flags flags)
         caps.textureViewFormat = options3.CastingFullyTypedFormatSupported;
     }
 
+#ifdef QRHI_D3D12_CL5_AVAILABLE
+    D3D12_FEATURE_DATA_D3D12_OPTIONS6 options6 = {};
+    if (SUCCEEDED(dev->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &options6, sizeof(options6)))) {
+        caps.vrs = options6.VariableShadingRateTier != D3D12_VARIABLE_SHADING_RATE_TIER_NOT_SUPPORTED;
+        caps.vrsMap = options6.VariableShadingRateTier == D3D12_VARIABLE_SHADING_RATE_TIER_2;
+        caps.vrsAdditionalRates = options6.AdditionalShadingRatesSupported;
+        shadingRateImageTileSize = options6.ShadingRateImageTileSize;
+    }
+#else
+    caps.vrs = false;
+    caps.vrsMap = false;
+    caps.vrsAdditionalRates = false;
+#endif
+
     deviceLost = false;
     offscreenActive = false;
 
@@ -595,6 +609,40 @@ void QRhiD3D12::destroy()
 QList<int> QRhiD3D12::supportedSampleCounts() const
 {
     return { 1, 2, 4, 8 };
+}
+
+QList<QSize> QRhiD3D12::supportedShadingRates(int sampleCount) const
+{
+    QList<QSize> sizes;
+    switch (sampleCount) {
+    case 0:
+    case 1:
+        if (caps.vrsAdditionalRates) {
+            sizes.append(QSize(4, 4));
+            sizes.append(QSize(4, 2));
+            sizes.append(QSize(2, 4));
+        }
+        sizes.append(QSize(2, 2));
+        sizes.append(QSize(2, 1));
+        sizes.append(QSize(1, 2));
+        break;
+    case 2:
+        if (caps.vrsAdditionalRates)
+            sizes.append(QSize(2, 4));
+        sizes.append(QSize(2, 2));
+        sizes.append(QSize(2, 1));
+        sizes.append(QSize(1, 2));
+        break;
+    case 4:
+        sizes.append(QSize(2, 2));
+        sizes.append(QSize(2, 1));
+        sizes.append(QSize(1, 2));
+        break;
+    default:
+        break;
+    }
+    sizes.append(QSize(1, 1));
+    return sizes;
 }
 
 QRhiSwapChain *QRhiD3D12::createSwapChain()
@@ -747,6 +795,11 @@ bool QRhiD3D12::isFeatureSupported(QRhi::Feature feature) const
         // there is no Multisample Resolve support for depth/stencil formats
         // https://learn.microsoft.com/en-us/windows/win32/direct3ddxgi/hardware-support-for-direct3d-12-1-formats
         return false;
+    case QRhi::VariableRateShading:
+        return caps.vrs;
+    case QRhi::VariableRateShadingMap:
+    case QRhi::VariableRateShadingMapWithTexture:
+        return caps.vrsMap;
     }
     return false;
 }
@@ -782,6 +835,8 @@ int QRhiD3D12::resourceLimit(QRhi::ResourceLimit limit) const
         return 32;
     case QRhi::MaxVertexOutputs:
         return 32;
+    case QRhi::ShadingRateImageTileSize:
+        return shadingRateImageTileSize;
     }
     return 0;
 }
@@ -866,6 +921,11 @@ QRhiTextureRenderTarget *QRhiD3D12::createTextureRenderTarget(const QRhiTextureR
                                                               QRhiTextureRenderTarget::Flags flags)
 {
     return new QD3D12TextureRenderTarget(this, desc, flags);
+}
+
+QRhiShadingRateMap *QRhiD3D12::createShadingRateMap()
+{
+    return new QD3D12ShadingRateMap(this);
 }
 
 QRhiGraphicsPipeline *QRhiD3D12::createGraphicsPipeline()
@@ -1404,6 +1464,44 @@ void QRhiD3D12::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
     cbD->cmdList->OMSetStencilRef(refValue);
 }
 
+static inline D3D12_SHADING_RATE toD3DShadingRate(const QSize &coarsePixelSize)
+{
+    if (coarsePixelSize == QSize(1, 2))
+        return D3D12_SHADING_RATE_1X2;
+    if (coarsePixelSize == QSize(2, 1))
+        return D3D12_SHADING_RATE_2X1;
+    if (coarsePixelSize == QSize(2, 2))
+        return D3D12_SHADING_RATE_2X2;
+    if (coarsePixelSize == QSize(2, 4))
+        return D3D12_SHADING_RATE_2X4;
+    if (coarsePixelSize == QSize(4, 2))
+        return D3D12_SHADING_RATE_4X2;
+    if (coarsePixelSize == QSize(4, 4))
+        return D3D12_SHADING_RATE_4X4;
+    return D3D12_SHADING_RATE_1X1;
+}
+
+void QRhiD3D12::setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize)
+{
+    QD3D12CommandBuffer *cbD = QRHI_RES(QD3D12CommandBuffer, cb);
+    cbD->hasShadingRateSet = false;
+
+#ifdef QRHI_D3D12_CL5_AVAILABLE
+    if (!caps.vrs)
+        return;
+
+    Q_ASSERT(cbD->recordingPass == QD3D12CommandBuffer::RenderPass);
+    const D3D12_SHADING_RATE_COMBINER combiners[] = { D3D12_SHADING_RATE_COMBINER_MAX, D3D12_SHADING_RATE_COMBINER_MAX };
+    cbD->cmdList->RSSetShadingRate(toD3DShadingRate(coarsePixelSize), combiners);
+    if (coarsePixelSize.width() != 1 || coarsePixelSize.height() != 1)
+        cbD->hasShadingRateSet = true;
+#else
+    Q_UNUSED(cb);
+    Q_UNUSED(coarsePixelSize);
+    qWarning("Attempted to set ShadingRate without building Qt against a sufficiently new Windows SDK and d3d12.h. This cannot work.");
+#endif
+}
+
 void QRhiD3D12::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
                      quint32 instanceCount, quint32 firstVertex, quint32 firstInstance)
 {
@@ -1633,7 +1731,7 @@ QRhi::FrameOpResult QRhiD3D12::endFrame(QRhiSwapChain *swapChain, QRhi::EndFrame
                                        timestampPairStartIndex * sizeof(quint64));
     }
 
-    ID3D12GraphicsCommandList1 *cmdList = cbD->cmdList;
+    D3D12GraphicsCommandList *cmdList = cbD->cmdList;
     HRESULT hr = cmdList->Close();
     if (FAILED(hr)) {
         qWarning("Failed to close command list: %s",
@@ -1753,7 +1851,7 @@ QRhi::FrameOpResult QRhiD3D12::endOffscreenFrame(QRhi::EndFrameFlags flags)
                                        timestampPairStartIndex * sizeof(quint64));
     }
 
-    ID3D12GraphicsCommandList1 *cmdList = cbD->cmdList;
+    D3D12GraphicsCommandList *cmdList = cbD->cmdList;
     HRESULT hr = cmdList->Close();
     if (FAILED(hr)) {
         qWarning("Failed to close command list: %s",
@@ -1802,7 +1900,7 @@ QRhi::FrameOpResult QRhiD3D12::finish()
 
     Q_ASSERT(cbD->recordingPass == QD3D12CommandBuffer::NoPass);
 
-    ID3D12GraphicsCommandList1 *cmdList = cbD->cmdList;
+    D3D12GraphicsCommandList *cmdList = cbD->cmdList;
     HRESULT hr = cmdList->Close();
     if (FAILED(hr)) {
         qWarning("Failed to close command list: %s",
@@ -1928,7 +2026,31 @@ void QRhiD3D12::beginPass(QRhiCommandBuffer *cb,
     cbD->recordingPass = QD3D12CommandBuffer::RenderPass;
     cbD->currentTarget = rt;
 
+    bool hasShadingRateMapSet = false;
+#ifdef QRHI_D3D12_CL5_AVAILABLE
+    if (rtD->rp->hasShadingRateMap) {
+        cbD->setShadingRate(QSize(1, 1));
+        QD3D12ShadingRateMap *rateMapD = rt->resourceType() == QRhiRenderTarget::TextureRenderTarget
+            ? QRHI_RES(QD3D12ShadingRateMap, QRHI_RES(QD3D12TextureRenderTarget, rt)->m_desc.shadingRateMap())
+            : QRHI_RES(QD3D12ShadingRateMap, QRHI_RES(QD3D12SwapChainRenderTarget, rt)->swapChain()->shadingRateMap());
+        if (QD3D12Resource *res = resourcePool.lookupRef(rateMapD->handle)) {
+            barrierGen.addTransitionBarrier(rateMapD->handle, D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE);
+            barrierGen.enqueueBufferedTransitionBarriers(cbD);
+            cbD->cmdList->RSSetShadingRateImage(res->resource);
+            hasShadingRateMapSet = true;
+        }
+    } else if (cbD->hasShadingRateMapSet) {
+        cbD->cmdList->RSSetShadingRateImage(nullptr);
+        cbD->setShadingRate(QSize(1, 1));
+    } else if (cbD->hasShadingRateSet) {
+        cbD->setShadingRate(QSize(1, 1));
+    }
+#endif
+
     cbD->resetPerPassState();
+
+    // shading rate tracking is reset in resetPerPassState(), sync what we did just above
+    cbD->hasShadingRateMapSet = hasShadingRateMapSet;
 }
 
 void QRhiD3D12::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
@@ -3140,7 +3262,7 @@ DXGI_SAMPLE_DESC QRhiD3D12::effectiveSampleDesc(int sampleCount, DXGI_FORMAT for
     return desc;
 }
 
-bool QRhiD3D12::startCommandListForCurrentFrameSlot(ID3D12GraphicsCommandList1 **cmdList)
+bool QRhiD3D12::startCommandListForCurrentFrameSlot(D3D12GraphicsCommandList **cmdList)
 {
     ID3D12CommandAllocator *cmdAlloc = cmdAllocators[currentFrameSlot];
     if (!*cmdList) {
@@ -3148,7 +3270,7 @@ bool QRhiD3D12::startCommandListForCurrentFrameSlot(ID3D12GraphicsCommandList1 *
                                             D3D12_COMMAND_LIST_TYPE_DIRECT,
                                             cmdAlloc,
                                             nullptr,
-                                            __uuidof(ID3D12GraphicsCommandList1),
+                                            __uuidof(D3D12GraphicsCommandList),
                                             reinterpret_cast<void **>(cmdList));
         if (FAILED(hr)) {
             qWarning("Failed to create command list: %s", qPrintable(QSystemError::windowsComString(hr)));
@@ -3873,6 +3995,8 @@ static inline DXGI_FORMAT toD3DTextureFormat(QRhiTexture::Format format, QRhiTex
         return srgb ? DXGI_FORMAT_B8G8R8A8_UNORM_SRGB : DXGI_FORMAT_B8G8R8A8_UNORM;
     case QRhiTexture::R8:
         return DXGI_FORMAT_R8_UNORM;
+    case QRhiTexture::R8UI:
+        return DXGI_FORMAT_R8_UINT;
     case QRhiTexture::RG8:
         return DXGI_FORMAT_R8G8_UNORM;
     case QRhiTexture::R16:
@@ -4595,6 +4719,34 @@ QD3D12Descriptor QD3D12Sampler::lookupOrCreateShaderVisibleDescriptor()
     return shaderVisibleDescriptor;
 }
 
+QD3D12ShadingRateMap::QD3D12ShadingRateMap(QRhiImplementation *rhi)
+    : QRhiShadingRateMap(rhi)
+{
+}
+
+QD3D12ShadingRateMap::~QD3D12ShadingRateMap()
+{
+    destroy();
+}
+
+void QD3D12ShadingRateMap::destroy()
+{
+    if (handle.isNull())
+        return;
+
+    handle = {};
+}
+
+bool QD3D12ShadingRateMap::createFrom(QRhiTexture *src)
+{
+    if (!handle.isNull())
+        destroy();
+
+    handle = QRHI_RES(QD3D12Texture, src)->handle;
+
+    return true;
+}
+
 QD3D12TextureRenderTarget::QD3D12TextureRenderTarget(QRhiImplementation *rhi,
                                                      const QRhiTextureRenderTargetDescription &desc,
                                                      Flags flags)
@@ -4658,6 +4810,8 @@ QRhiRenderPassDescriptor *QD3D12TextureRenderTarget::newCompatibleRenderPassDesc
         rpD->hasDepthStencil = true;
         rpD->dsFormat = toD3DDepthTextureDSVFormat(depthTexD->format()); // cannot be a typeless format
     }
+
+    rpD->hasShadingRateMap = m_desc.shadingRateMap() != nullptr;
 
     rpD->updateSerializedFormat();
 
@@ -6003,6 +6157,9 @@ bool QD3D12RenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *ot
             return false;
     }
 
+    if (hasShadingRateMap != o->hasShadingRateMap)
+        return false;
+
     return true;
 }
 
@@ -6025,6 +6182,7 @@ QRhiRenderPassDescriptor *QD3D12RenderPassDescriptor::newCompatibleRenderPassDes
     rpD->hasDepthStencil = hasDepthStencil;
     memcpy(rpD->colorFormat, colorFormat, sizeof(colorFormat));
     rpD->dsFormat = dsFormat;
+    rpD->hasShadingRateMap = hasShadingRateMap;
 
     rpD->updateSerializedFormat();
 
@@ -6251,6 +6409,9 @@ QRhiRenderPassDescriptor *QD3D12SwapChain::newCompatibleRenderPassDescriptor()
     rpD->hasDepthStencil = m_depthStencil != nullptr;
     rpD->colorFormat[0] = int(srgbAdjustedColorFormat);
     rpD->dsFormat = QD3D12RenderBuffer::DS_FORMAT;
+
+    rpD->hasShadingRateMap = m_shadingRateMap != nullptr;
+
     rpD->updateSerializedFormat();
 
     QRHI_RES_RHI(QRhiD3D12);

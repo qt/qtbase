@@ -39,6 +39,7 @@ class QRhiCommandBuffer;
 class QRhiResourceUpdateBatch;
 class QRhiResourceUpdateBatchPrivate;
 class QRhiSwapChain;
+class QRhiShadingRateMap;
 
 class Q_GUI_EXPORT QRhiDepthStencilClearValue
 {
@@ -645,11 +646,15 @@ public:
     QRhiTexture *depthResolveTexture() const { return m_depthResolveTexture; }
     void setDepthResolveTexture(QRhiTexture *tex) { m_depthResolveTexture = tex; }
 
+    QRhiShadingRateMap *shadingRateMap() const { return m_shadingRateMap; }
+    void setShadingRateMap(QRhiShadingRateMap *map) { m_shadingRateMap = map; }
+
 private:
     QVarLengthArray<QRhiColorAttachment, 8> m_colorAttachments;
     QRhiRenderBuffer *m_depthStencilBuffer = nullptr;
     QRhiTexture *m_depthTexture = nullptr;
     QRhiTexture *m_depthResolveTexture = nullptr;
+    QRhiShadingRateMap *m_shadingRateMap = nullptr;
 };
 
 class Q_GUI_EXPORT QRhiTextureSubresourceUploadDescription
@@ -815,7 +820,8 @@ public:
         GraphicsPipeline,
         SwapChain,
         ComputePipeline,
-        CommandBuffer
+        CommandBuffer,
+        ShadingRateMap
     };
 
     virtual ~QRhiResource();
@@ -908,7 +914,8 @@ public:
         ThreeDimensional = 1 << 10,
         TextureRectangleGL = 1 << 11,
         TextureArray = 1 << 12,
-        OneDimensional = 1 << 13
+        OneDimensional = 1 << 13,
+        UsedAsShadingRateMap = 1 << 14
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -929,6 +936,8 @@ public:
         R32F,
 
         RGB10A2,
+
+        R8UI,
 
         D16,
         D24,
@@ -1140,6 +1149,22 @@ protected:
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiRenderBuffer::Flags)
 
+class Q_GUI_EXPORT QRhiShadingRateMap : public QRhiResource
+{
+public:
+    struct NativeShadingRateMap {
+        quint64 object;
+    };
+
+    QRhiResource::Type resourceType() const override;
+
+    virtual bool createFrom(NativeShadingRateMap src);
+    virtual bool createFrom(QRhiTexture *src);
+
+protected:
+    QRhiShadingRateMap(QRhiImplementation *rhi);
+};
+
 class Q_GUI_EXPORT QRhiRenderPassDescriptor : public QRhiResource
 {
 public:
@@ -1275,7 +1300,8 @@ public:
         UsesBlendConstants = 1 << 0,
         UsesStencilRef = 1 << 1,
         UsesScissor = 1 << 2,
-        CompileShadersWithDebugInfo = 1 << 3
+        CompileShadersWithDebugInfo = 1 << 3,
+        UsesShadingRate = 1 << 4
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -1595,6 +1621,9 @@ public:
     QRhiRenderPassDescriptor *renderPassDescriptor() const { return m_renderPassDesc; }
     void setRenderPassDescriptor(QRhiRenderPassDescriptor *desc) { m_renderPassDesc = desc; }
 
+    QRhiShadingRateMap *shadingRateMap() const { return m_shadingRateMap; }
+    void setShadingRateMap(QRhiShadingRateMap *map) { m_shadingRateMap = map; }
+
     QSize currentPixelSize() const { return m_currentPixelSize; }
 
     virtual QRhiCommandBuffer *currentFrameCommandBuffer() = 0;
@@ -1616,6 +1645,7 @@ protected:
     QRhiRenderPassDescriptor *m_renderPassDesc = nullptr;
     QSize m_currentPixelSize;
     QRhiSwapChainProxyData m_proxyData;
+    QRhiShadingRateMap *m_shadingRateMap = nullptr;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiSwapChain::Flags)
@@ -1688,6 +1718,7 @@ public:
     void setScissor(const QRhiScissor &scissor);
     void setBlendConstants(const QColor &c);
     void setStencilRef(quint32 refValue);
+    void setShadingRate(const QSize &coarsePixelSize);
 
     void draw(quint32 vertexCount,
               quint32 instanceCount = 1,
@@ -1873,7 +1904,10 @@ public:
         ThreeDimensionalTextureMipmaps,
         MultiView,
         TextureViewFormat,
-        ResolveDepthStencil
+        ResolveDepthStencil,
+        VariableRateShading,
+        VariableRateShadingMap,
+        VariableRateShadingMapWithTexture
     };
 
     enum BeginFrameFlag {
@@ -1899,7 +1933,8 @@ public:
         TextureArraySizeMax,
         MaxUniformBufferRange,
         MaxVertexInputs,
-        MaxVertexOutputs
+        MaxVertexOutputs,
+        ShadingRateImageTileSize
     };
 
     ~QRhi();
@@ -1959,6 +1994,8 @@ public:
                             QRhiSampler::AddressMode addressV,
                             QRhiSampler::AddressMode addressW = QRhiSampler::Repeat);
 
+    QRhiShadingRateMap *newShadingRateMap();
+
     QRhiTextureRenderTarget *newTextureRenderTarget(const QRhiTextureRenderTargetDescription &desc,
                                                     QRhiTextureRenderTarget::Flags flags = {});
 
@@ -2008,6 +2045,8 @@ public:
     QRhiStats statistics() const;
 
     static QRhiSwapChainProxyData updateSwapChainProxyData(Implementation impl, QWindow *window);
+
+    QList<QSize> supportedShadingRates(int sampleCount) const;
 
 protected:
     QRhi();

@@ -336,7 +336,8 @@ QByteArrayList QRhiVulkanInitParams::preferredExtensionsForImportedDevice()
         QByteArrayLiteral("VK_KHR_swapchain"),
         QByteArrayLiteral("VK_EXT_vertex_attribute_divisor"),
         QByteArrayLiteral("VK_KHR_create_renderpass2"),
-        QByteArrayLiteral("VK_KHR_depth_stencil_resolve")
+        QByteArrayLiteral("VK_KHR_depth_stencil_resolve"),
+        QByteArrayLiteral("VK_KHR_fragment_shading_rate")
     };
 }
 
@@ -410,6 +411,20 @@ static inline QRhiDriverInfo::DeviceType toRhiDeviceType(VkPhysicalDeviceType ty
     default:
         return QRhiDriverInfo::UnknownDevice;
     }
+}
+
+template<typename T>
+static inline void addToChain(T *head, void *entry)
+{
+    VkBaseOutStructure *s = reinterpret_cast<VkBaseOutStructure *>(head);
+    for ( ; ; ) {
+        VkBaseOutStructure *next = reinterpret_cast<VkBaseOutStructure *>(s->pNext);
+        if (next)
+            s = next;
+        else
+            break;
+    }
+    s->pNext = reinterpret_cast<VkBaseOutStructure *>(entry);
 }
 
 bool QRhiVulkan::create(QRhi::Flags flags)
@@ -533,10 +548,29 @@ bool QRhiVulkan::create(QRhi::Flags flags)
     driverInfoStruct.vendorId = physDevProperties.vendorID;
     driverInfoStruct.deviceType = toRhiDeviceType(physDevProperties.deviceType);
 
+    QVulkanInfoVector<QVulkanExtension> devExts;
+    uint32_t devExtCount = 0;
+    f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, nullptr);
+    if (devExtCount) {
+        QList<VkExtensionProperties> extProps(devExtCount);
+        f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, extProps.data());
+        for (const VkExtensionProperties &p : std::as_const(extProps))
+            devExts.append({ p.extensionName, p.specVersion });
+    }
+    qCDebug(QRHI_LOG_INFO, "%d device extensions available", int(devExts.size()));
+
     bool featuresQueried = false;
 #ifdef VK_VERSION_1_1
     VkPhysicalDeviceFeatures2 physDevFeaturesChainable = {};
     physDevFeaturesChainable.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+
+    // Extensions (that are really extensions in 1.1-1.3, not core)
+#ifdef VK_KHR_fragment_shading_rate
+    VkPhysicalDeviceFragmentShadingRateFeaturesKHR fragmentShadingRateFeatures = {};
+    fragmentShadingRateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR;
+    if (devExts.contains("VK_KHR_fragment_shading_rate"))
+        addToChain(&physDevFeaturesChainable, &fragmentShadingRateFeatures);
+#endif
 #endif
 
     // Vulkan >=1.2 headers at build time, >=1.2 implementation at run time
@@ -552,7 +586,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             physDevFeatures13 = {};
             physDevFeatures13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
 #endif
-            physDevFeaturesChainable.pNext = &physDevFeatures11IfApi12OrNewer;
+            addToChain(&physDevFeaturesChainable, &physDevFeatures11IfApi12OrNewer);
             physDevFeatures11IfApi12OrNewer.pNext = &physDevFeatures12;
 #ifdef VK_VERSION_1_3
             if (caps.apiVersion >= QVersionNumber(1, 3))
@@ -578,7 +612,7 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         if (caps.apiVersion == QVersionNumber(1, 1)) {
             multiviewFeaturesIfApi11 = {};
             multiviewFeaturesIfApi11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
-            physDevFeaturesChainable.pNext = &multiviewFeaturesIfApi11;
+            addToChain(&physDevFeaturesChainable, &multiviewFeaturesIfApi11);
             f->vkGetPhysicalDeviceFeatures2(physDev, &physDevFeaturesChainable);
             memcpy(&physDevFeatures, &physDevFeaturesChainable.features, sizeof(VkPhysicalDeviceFeatures));
             featuresQueried = true;
@@ -637,17 +671,6 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         if (inst->layers().contains("VK_LAYER_KHRONOS_validation"))
             devLayers.append("VK_LAYER_KHRONOS_validation");
 
-        QVulkanInfoVector<QVulkanExtension> devExts;
-        uint32_t devExtCount = 0;
-        f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, nullptr);
-        if (devExtCount) {
-            QList<VkExtensionProperties> extProps(devExtCount);
-            f->vkEnumerateDeviceExtensionProperties(physDev, nullptr, &devExtCount, extProps.data());
-            for (const VkExtensionProperties &p : std::as_const(extProps))
-                devExts.append({ p.extensionName, p.specVersion });
-        }
-        qCDebug(QRHI_LOG_INFO, "%d device extensions available", int(devExts.size()));
-
         QList<const char *> requestedDevExts;
         requestedDevExts.append("VK_KHR_swapchain");
 
@@ -684,6 +707,11 @@ bool QRhiVulkan::create(QRhi::Flags flags)
             requestedDevExts.append(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME);
             caps.depthStencilResolveKHR = true;
         }
+#endif
+
+#ifdef VK_KHR_fragment_shading_rate
+        if (devExts.contains(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME))
+            requestedDevExts.append(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
 #endif
 
         for (const QByteArray &ext : requestedDeviceExtensions) {
@@ -748,10 +776,10 @@ bool QRhiVulkan::create(QRhi::Flags flags)
         if (caps.apiVersion >= QVersionNumber(1, 1)) {
             // For a >=1.2 implementation at run time, this will enable all
             // (1.0-1.3) features reported as supported, except the ones we turn
-            // off explicitly above. For a 1.1 implementation at run time, this
-            // only enables the 1.0 and multiview features reported as
-            // supported. We will not be bothering with the Vulkan 1.1
-            // individual feature struct nonsense.
+            // off explicitly above. (+extensions) For a 1.1 implementation at
+            // run time, this only enables the 1.0 and multiview features (+any
+            // extensions) reported as supported. We will not be bothering with
+            // the Vulkan 1.1 individual feature struct nonsense.
             devInfo.pNext = &physDevFeaturesChainable;
         } else
 #endif
@@ -829,6 +857,41 @@ bool QRhiVulkan::create(QRhi::Flags flags)
 #ifdef VK_VERSION_1_1
     if (caps.apiVersion == QVersionNumber(1, 1))
         caps.multiView = multiviewFeaturesIfApi11.multiview;
+#endif
+
+#ifdef VK_KHR_fragment_shading_rate
+    fragmentShadingRates.clear();
+    if (caps.apiVersion >= QVersionNumber(1, 1)) {
+        caps.perDrawShadingRate = fragmentShadingRateFeatures.pipelineFragmentShadingRate;
+        caps.imageBasedShadingRate = fragmentShadingRateFeatures.attachmentFragmentShadingRate;
+        if (caps.imageBasedShadingRate) {
+            VkPhysicalDeviceFragmentShadingRatePropertiesKHR shadingRateProps = {};
+            shadingRateProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_PROPERTIES_KHR;
+            VkPhysicalDeviceProperties2 props2 = {};
+            props2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+            props2.pNext = &shadingRateProps;
+            f->vkGetPhysicalDeviceProperties2(physDev, &props2);
+            caps.imageBasedShadingRateTileSize = int(shadingRateProps.maxFragmentShadingRateAttachmentTexelSize.width);
+            // If it's non-square, there's nothing we can do since it is not compatible with other APIs (D3D12) then.
+        }
+        if (caps.perDrawShadingRate) {
+            PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR vkGetPhysicalDeviceFragmentShadingRatesKHR =
+                reinterpret_cast<PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR>(
+                    inst->getInstanceProcAddr("vkGetPhysicalDeviceFragmentShadingRatesKHR"));
+            if (vkGetPhysicalDeviceFragmentShadingRatesKHR) {
+                uint32_t count = 0;
+                vkGetPhysicalDeviceFragmentShadingRatesKHR(physDev, &count, nullptr);
+                fragmentShadingRates.resize(count);
+                for (VkPhysicalDeviceFragmentShadingRateKHR &s : fragmentShadingRates) {
+                    s = {};
+                    s.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_KHR;
+                }
+                vkGetPhysicalDeviceFragmentShadingRatesKHR(physDev, &count, fragmentShadingRates.data());
+            }
+            vkCmdSetFragmentShadingRateKHR = reinterpret_cast<PFN_vkCmdSetFragmentShadingRateKHR>(
+                f->vkGetDeviceProcAddr(dev, "vkCmdSetFragmentShadingRateKHR"));
+        }
+    }
 #endif
 
     // With Vulkan 1.2 renderpass2 and depth_stencil_resolve are core, but we
@@ -1063,6 +1126,9 @@ static inline VkFormat toVkTextureFormat(QRhiTexture::Format format, QRhiTexture
     case QRhiTexture::RGB10A2:
         // intentionally A2B10G10R10, not A2R10G10B10
         return VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+
+    case QRhiTexture::R8UI:
+        return VK_FORMAT_R8_UINT;
 
     case QRhiTexture::D16:
         return VK_FORMAT_D16_UNORM;
@@ -1331,116 +1397,6 @@ VkFormat QRhiVulkan::optimalDepthStencilFormat()
     return optimalDsFormat;
 }
 
-static void fillRenderPassCreateInfo(VkRenderPassCreateInfo *rpInfo,
-                                     VkSubpassDescription *subpassDesc,
-                                     QVkRenderPassDescriptor *rpD)
-{
-    memset(subpassDesc, 0, sizeof(VkSubpassDescription));
-    subpassDesc->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpassDesc->colorAttachmentCount = uint32_t(rpD->colorRefs.size());
-    subpassDesc->pColorAttachments = !rpD->colorRefs.isEmpty() ? rpD->colorRefs.constData() : nullptr;
-    subpassDesc->pDepthStencilAttachment = rpD->hasDepthStencil ? &rpD->dsRef : nullptr;
-    subpassDesc->pResolveAttachments = !rpD->resolveRefs.isEmpty() ? rpD->resolveRefs.constData() : nullptr;
-
-    memset(rpInfo, 0, sizeof(VkRenderPassCreateInfo));
-    rpInfo->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    rpInfo->attachmentCount = uint32_t(rpD->attDescs.size());
-    rpInfo->pAttachments = rpD->attDescs.constData();
-    rpInfo->subpassCount = 1;
-    rpInfo->pSubpasses = subpassDesc;
-    rpInfo->dependencyCount = uint32_t(rpD->subpassDeps.size());
-    rpInfo->pDependencies = !rpD->subpassDeps.isEmpty() ? rpD->subpassDeps.constData() : nullptr;
-}
-
-bool QRhiVulkan::createDefaultRenderPass(QVkRenderPassDescriptor *rpD, bool hasDepthStencil, VkSampleCountFlagBits samples, VkFormat colorFormat)
-{
-    // attachment list layout is color (1), ds (0-1), resolve (0-1)
-
-    VkAttachmentDescription attDesc = {};
-    attDesc.format = colorFormat;
-    attDesc.samples = samples;
-    attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    attDesc.storeOp = samples > VK_SAMPLE_COUNT_1_BIT ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
-    attDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attDesc.finalLayout = samples > VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    rpD->attDescs.append(attDesc);
-
-    rpD->colorRefs.append({ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
-
-    rpD->hasDepthStencil = hasDepthStencil;
-    rpD->hasDepthStencilResolve = false;
-    rpD->multiViewCount = 0;
-
-    if (hasDepthStencil) {
-        // clear on load + no store + lazy alloc + transient image should play
-        // nicely with tiled GPUs (no physical backing necessary for ds buffer)
-        memset(&attDesc, 0, sizeof(attDesc));
-        attDesc.format = optimalDepthStencilFormat();
-        attDesc.samples = samples;
-        attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        attDesc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        attDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        rpD->attDescs.append(attDesc);
-
-        rpD->dsRef = { 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
-    }
-
-    if (samples > VK_SAMPLE_COUNT_1_BIT) {
-        memset(&attDesc, 0, sizeof(attDesc));
-        attDesc.format = colorFormat;
-        attDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-        attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        attDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        attDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        attDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        rpD->attDescs.append(attDesc);
-
-        rpD->resolveRefs.append({ 2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
-    }
-
-    // Replace the first implicit dep (TOP_OF_PIPE / ALL_COMMANDS) with our own.
-    VkSubpassDependency subpassDep = {};
-    subpassDep.srcSubpass = VK_SUBPASS_EXTERNAL;
-    subpassDep.dstSubpass = 0;
-    subpassDep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpassDep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    subpassDep.srcAccessMask = 0;
-    subpassDep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    rpD->subpassDeps.append(subpassDep);
-    if (hasDepthStencil) {
-        memset(&subpassDep, 0, sizeof(subpassDep));
-        subpassDep.srcSubpass = VK_SUBPASS_EXTERNAL;
-        subpassDep.dstSubpass = 0;
-        subpassDep.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
-            | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-        subpassDep.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
-            | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-        subpassDep.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        subpassDep.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
-            | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        rpD->subpassDeps.append(subpassDep);
-    }
-
-    VkRenderPassCreateInfo rpInfo;
-    VkSubpassDescription subpassDesc;
-    fillRenderPassCreateInfo(&rpInfo, &subpassDesc, rpD);
-
-    VkResult err = df->vkCreateRenderPass(dev, &rpInfo, nullptr, &rpD->rp);
-    if (err != VK_SUCCESS) {
-        qWarning("Failed to create renderpass: %d", err);
-        return false;
-    }
-
-    return true;
-}
-
 struct MultiViewRenderPassSetupHelper
 {
     bool prepare(VkRenderPassCreateInfo *rpInfo, int multiViewCount, bool multiViewCap)
@@ -1476,10 +1432,12 @@ struct MultiViewRenderPassSetupHelper
 
 #ifdef VK_KHR_create_renderpass2
 // Effectively converts a VkRenderPassCreateInfo into a VkRenderPassCreateInfo2,
-// adding depth-stencil resolve support. Assumes a single subpass and no subpass
-// dependencies.
+// adding depth-stencil resolve and VRS support. Incorporates multiview into the
+// info structs (no chaining needed). Assumes a single subpass.
 struct RenderPass2SetupHelper
 {
+    RenderPass2SetupHelper(QRhiVulkan *rhiD) : rhiD(rhiD) { }
+
     bool prepare(VkRenderPassCreateInfo2 *rpInfo2, const VkRenderPassCreateInfo *rpInfo, const QVkRenderPassDescriptor *rpD, int multiViewCount) {
         *rpInfo2 = {};
 
@@ -1572,9 +1530,43 @@ struct RenderPass2SetupHelper
             dsResolveDesc.depthResolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
             dsResolveDesc.stencilResolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
             dsResolveDesc.pDepthStencilResolveAttachment = attRefs2.constData() + startIndex;
-            subpass2.pNext = &dsResolveDesc;
+            addToChain(&subpass2, &dsResolveDesc);
         }
 #endif
+
+#ifdef VK_KHR_fragment_shading_rate
+        shadingRateAttInfo = {};
+        if (rpD->hasShadingRateMap) {
+            startIndex = attRefs2.count();
+            attRefs2.append({});
+            VkAttachmentReference2KHR &attref2(attRefs2.last());
+            attref2.sType = VK_STRUCTURE_TYPE_ATTACHMENT_REFERENCE_2_KHR;
+            attref2.attachment = rpD->shadingRateRef.attachment;
+            attref2.layout = rpD->shadingRateRef.layout;
+            shadingRateAttInfo.sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
+            shadingRateAttInfo.pFragmentShadingRateAttachment = attRefs2.constData() + startIndex;
+            shadingRateAttInfo.shadingRateAttachmentTexelSize.width = rhiD->caps.imageBasedShadingRateTileSize;
+            shadingRateAttInfo.shadingRateAttachmentTexelSize.height = rhiD->caps.imageBasedShadingRateTileSize;
+            addToChain(&subpass2, &shadingRateAttInfo);
+        }
+#endif
+
+        // subpass dependencies, typically 0, 1, 2 of them,
+        // depending on targeting swapchain or texture
+        subpassDeps2.clear();
+        for (uint32_t i = 0; i < rpInfo->dependencyCount; ++i) {
+            const VkSubpassDependency &dep(rpInfo->pDependencies[i]);
+            subpassDeps2.append({});
+            VkSubpassDependency2 &dep2(subpassDeps2.last());
+            dep2.sType = VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2_KHR;
+            dep2.srcSubpass = dep.srcSubpass;
+            dep2.dstSubpass = dep.dstSubpass;
+            dep2.srcStageMask = dep.srcStageMask;
+            dep2.dstStageMask = dep.dstStageMask;
+            dep2.srcAccessMask = dep.srcAccessMask;
+            dep2.dstAccessMask = dep.dstAccessMask;
+            dep2.dependencyFlags = dep.dependencyFlags;
+        }
 
         rpInfo2->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO_2_KHR;
         rpInfo2->pNext = nullptr; // the 1.1 VkRenderPassMultiviewCreateInfo is part of the '2' structs
@@ -1583,6 +1575,8 @@ struct RenderPass2SetupHelper
         rpInfo2->pAttachments = attDescs2.constData();
         rpInfo2->subpassCount = 1;
         rpInfo2->pSubpasses = &subpass2;
+        rpInfo2->dependencyCount = subpassDeps2.count();
+        rpInfo2->pDependencies = !subpassDeps2.isEmpty() ? subpassDeps2.constData() : nullptr;
         if (multiViewCount >= 2) {
             rpInfo2->correlatedViewMaskCount = 1;
             rpInfo2->pCorrelatedViewMasks = &viewMask;
@@ -1590,15 +1584,175 @@ struct RenderPass2SetupHelper
         return true;
     }
 
+    QRhiVulkan *rhiD;
     QVarLengthArray<VkAttachmentDescription2KHR, 8> attDescs2;
     QVarLengthArray<VkAttachmentReference2KHR, 8> attRefs2;
     VkSubpassDescription2KHR subpass2;
+    QVarLengthArray<VkSubpassDependency2KHR, 4> subpassDeps2;
 #ifdef VK_KHR_depth_stencil_resolve
     VkSubpassDescriptionDepthStencilResolveKHR dsResolveDesc;
+#endif
+#ifdef VK_KHR_fragment_shading_rate
+    VkFragmentShadingRateAttachmentInfoKHR shadingRateAttInfo;
 #endif
     uint32_t viewMask;
 };
 #endif // VK_KHR_create_renderpass2
+
+static void fillRenderPassCreateInfo(VkRenderPassCreateInfo *rpInfo,
+                                     VkSubpassDescription *subpassDesc,
+                                     QVkRenderPassDescriptor *rpD)
+{
+    memset(subpassDesc, 0, sizeof(VkSubpassDescription));
+    subpassDesc->pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpassDesc->colorAttachmentCount = uint32_t(rpD->colorRefs.size());
+    subpassDesc->pColorAttachments = !rpD->colorRefs.isEmpty() ? rpD->colorRefs.constData() : nullptr;
+    subpassDesc->pDepthStencilAttachment = rpD->hasDepthStencil ? &rpD->dsRef : nullptr;
+    subpassDesc->pResolveAttachments = !rpD->resolveRefs.isEmpty() ? rpD->resolveRefs.constData() : nullptr;
+
+    memset(rpInfo, 0, sizeof(VkRenderPassCreateInfo));
+    rpInfo->sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    rpInfo->attachmentCount = uint32_t(rpD->attDescs.size());
+    rpInfo->pAttachments = rpD->attDescs.constData();
+    rpInfo->subpassCount = 1;
+    rpInfo->pSubpasses = subpassDesc;
+    rpInfo->dependencyCount = uint32_t(rpD->subpassDeps.size());
+    rpInfo->pDependencies = !rpD->subpassDeps.isEmpty() ? rpD->subpassDeps.constData() : nullptr;
+}
+
+bool QRhiVulkan::createDefaultRenderPass(QVkRenderPassDescriptor *rpD,
+                                         bool hasDepthStencil,
+                                         VkSampleCountFlagBits samples,
+                                         VkFormat colorFormat,
+                                         QRhiShadingRateMap *shadingRateMap)
+{
+    // attachment list layout is color (1), ds (0-1), resolve (0-1), shading rate (0-1)
+
+    VkAttachmentDescription attDesc = {};
+    attDesc.format = colorFormat;
+    attDesc.samples = samples;
+    attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attDesc.storeOp = samples > VK_SAMPLE_COUNT_1_BIT ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
+    attDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attDesc.finalLayout = samples > VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    rpD->attDescs.append(attDesc);
+
+    rpD->colorRefs.append({ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+
+    rpD->hasDepthStencil = hasDepthStencil;
+    rpD->hasDepthStencilResolve = false;
+    rpD->hasShadingRateMap = shadingRateMap != nullptr;
+    rpD->multiViewCount = 0;
+
+    if (hasDepthStencil) {
+        // clear on load + no store + lazy alloc + transient image should play
+        // nicely with tiled GPUs (no physical backing necessary for ds buffer)
+        attDesc = {};
+        attDesc.format = optimalDepthStencilFormat();
+        attDesc.samples = samples;
+        attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attDesc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        rpD->attDescs.append(attDesc);
+
+        rpD->dsRef = { uint32_t(rpD->attDescs.size() - 1), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+    } else {
+        rpD->dsRef = {};
+    }
+
+    if (samples > VK_SAMPLE_COUNT_1_BIT) {
+        attDesc = {};
+        attDesc.format = colorFormat;
+        attDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+        attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        attDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        rpD->attDescs.append(attDesc);
+
+        rpD->resolveRefs.append({ uint32_t(rpD->attDescs.size() - 1), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+    }
+
+    rpD->dsResolveRef = {};
+
+    rpD->shadingRateRef = {};
+#ifdef VK_KHR_fragment_shading_rate
+    if (shadingRateMap) {
+        attDesc = {};
+        attDesc.format = VK_FORMAT_R8_UINT;
+        attDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+        attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        attDesc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attDesc.initialLayout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
+        attDesc.finalLayout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
+        rpD->attDescs.append(attDesc);
+
+        rpD->shadingRateRef = { uint32_t(rpD->attDescs.size() - 1), VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR };
+    }
+#endif
+
+    // Replace the first implicit dep (TOP_OF_PIPE / ALL_COMMANDS) with our own.
+    VkSubpassDependency subpassDep = {};
+    subpassDep.srcSubpass = VK_SUBPASS_EXTERNAL;
+    subpassDep.dstSubpass = 0;
+    subpassDep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    subpassDep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    subpassDep.srcAccessMask = 0;
+    subpassDep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    rpD->subpassDeps.append(subpassDep);
+    if (hasDepthStencil) {
+        memset(&subpassDep, 0, sizeof(subpassDep));
+        subpassDep.srcSubpass = VK_SUBPASS_EXTERNAL;
+        subpassDep.dstSubpass = 0;
+        subpassDep.srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+            | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        subpassDep.dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT
+            | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        subpassDep.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        subpassDep.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT
+            | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        rpD->subpassDeps.append(subpassDep);
+    }
+
+    VkRenderPassCreateInfo rpInfo;
+    VkSubpassDescription subpassDesc;
+    fillRenderPassCreateInfo(&rpInfo, &subpassDesc, rpD);
+
+#ifdef VK_KHR_create_renderpass2
+    if (caps.renderPass2KHR) {
+        // Use the KHR extension, not the 1.2 core API, in order to support Vulkan 1.1.
+        VkRenderPassCreateInfo2KHR rpInfo2;
+        RenderPass2SetupHelper rp2Helper(this);
+        if (!rp2Helper.prepare(&rpInfo2, &rpInfo, rpD, 0))
+            return false;
+        VkResult err = vkCreateRenderPass2KHR(dev, &rpInfo2, nullptr, &rpD->rp);
+        if (err != VK_SUCCESS) {
+            qWarning("Failed to create renderpass (using VkRenderPassCreateInfo2KHR): %d", err);
+            return false;
+        }
+    } else
+#endif
+    {
+        if (rpD->hasShadingRateMap)
+            qWarning("Variable rate shading with image is not supported without VK_KHR_create_renderpass2");
+        VkResult err = df->vkCreateRenderPass(dev, &rpInfo, nullptr, &rpD->rp);
+        if (err != VK_SUCCESS) {
+            qWarning("Failed to create renderpass: %d", err);
+            return false;
+        }
+    }
+
+    return true;
+}
 
 bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
                                            const QRhiColorAttachment *colorAttachmentsBegin,
@@ -1608,7 +1762,8 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
                                            bool storeDs,
                                            QRhiRenderBuffer *depthStencilBuffer,
                                            QRhiTexture *depthTexture,
-                                           QRhiTexture *depthResolveTexture)
+                                           QRhiTexture *depthResolveTexture,
+                                           QRhiShadingRateMap *shadingRateMap)
 {
     // attachment list layout is color (0-8), ds (0-1), resolve (0-8), ds resolve (0-1)
 
@@ -1669,8 +1824,10 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
             multiViewCount = depthTexture->arraySize();
             rpD->multiViewCount = multiViewCount;
         }
+        rpD->dsRef = { uint32_t(rpD->attDescs.size() - 1), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+    } else {
+        rpD->dsRef = {};
     }
-    rpD->dsRef = { uint32_t(rpD->attDescs.size() - 1), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
 
     for (auto it = colorAttachmentsBegin; it != colorAttachmentsEnd; ++it) {
         if (it->resolveTexture()) {
@@ -1732,8 +1889,28 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
         attDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         attDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         rpD->attDescs.append(attDesc);
+        rpD->dsResolveRef = { uint32_t(rpD->attDescs.size() - 1), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+    } else {
+        rpD->dsResolveRef = {};
     }
-    rpD->dsResolveRef = { uint32_t(rpD->attDescs.size() - 1), VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+
+    rpD->hasShadingRateMap = shadingRateMap != nullptr;
+    rpD->shadingRateRef = {};
+#ifdef VK_KHR_fragment_shading_rate
+    if (shadingRateMap) {
+        VkAttachmentDescription attDesc = {};
+        attDesc.format = VK_FORMAT_R8_UINT;
+        attDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+        attDesc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        attDesc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attDesc.initialLayout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
+        attDesc.finalLayout = VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
+        rpD->attDescs.append(attDesc);
+        rpD->shadingRateRef = { uint32_t(rpD->attDescs.size() - 1), VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR };
+    }
+#endif
 
     // rpD->subpassDeps stays empty: don't yet know the correct initial/final
     // access and stage stuff for the implicit deps at this point, so leave it
@@ -1749,10 +1926,10 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
         return false;
 
 #ifdef VK_KHR_create_renderpass2
-    if (rpD->hasDepthStencilResolve && caps.renderPass2KHR) {
+    if (caps.renderPass2KHR) {
         // Use the KHR extension, not the 1.2 core API, in order to support Vulkan 1.1.
         VkRenderPassCreateInfo2KHR rpInfo2;
-        RenderPass2SetupHelper rp2Helper;
+        RenderPass2SetupHelper rp2Helper(this);
         if (!rp2Helper.prepare(&rpInfo2, &rpInfo, rpD, multiViewCount))
             return false;
 
@@ -1768,6 +1945,8 @@ bool QRhiVulkan::createOffscreenRenderPass(QVkRenderPassDescriptor *rpD,
             qWarning("Resolving multisample depth-stencil buffers is not supported without "
                      "VK_KHR_depth_stencil_resolve and VK_KHR_create_renderpass2");
         }
+        if (rpD->hasShadingRateMap)
+            qWarning("Variable rate shading with image is not supported without VK_KHR_create_renderpass2");
         VkResult err = df->vkCreateRenderPass(dev, &rpInfo, nullptr, &rpD->rp);
         if (err != VK_SUCCESS) {
             qWarning("Failed to create renderpass: %d", err);
@@ -2017,6 +2196,30 @@ bool QRhiVulkan::recreateSwapChain(QRhiSwapChain *swapChain)
 
     swapChainD->currentImageIndex = 0;
 
+    if (swapChainD->shadingRateMap() && caps.renderPass2KHR && caps.imageBasedShadingRate) {
+        QVkTexture *texD = QRHI_RES(QVkShadingRateMap, swapChainD->shadingRateMap())->texture;
+        Q_ASSERT(texD->flags().testFlag(QRhiTexture::UsedAsShadingRateMap));
+        VkImageViewCreateInfo viewInfo = {};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = texD->image;
+        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = texD->viewFormat;
+        viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
+        viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
+        viewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
+        viewInfo.components.a = VK_COMPONENT_SWIZZLE_A;
+        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = 1;
+        VkResult err = df->vkCreateImageView(dev, &viewInfo, nullptr, &swapChainD->shadingRateMapView);
+        if (err != VK_SUCCESS) {
+            qWarning("Failed to create swapchain shading rate map view: %d", err);
+            return false;
+        }
+    }
+
     VkSemaphoreCreateInfo semInfo = {};
     semInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -2104,6 +2307,11 @@ void QRhiVulkan::releaseSwapChainResources(QRhiSwapChain *swapChain)
     if (swapChainD->msaaImageMem) {
         df->vkFreeMemory(dev, swapChainD->msaaImageMem, nullptr);
         swapChainD->msaaImageMem = VK_NULL_HANDLE;
+    }
+
+    if (swapChainD->shadingRateMapView) {
+        df->vkDestroyImageView(dev, swapChainD->shadingRateMapView, nullptr);
+        swapChainD->shadingRateMapView = VK_NULL_HANDLE;
     }
 
     vkDestroySwapchainKHR(dev, swapChainD->sc, nullptr);
@@ -2711,6 +2919,13 @@ void QRhiVulkan::activateTextureRenderTarget(QVkCommandBuffer *cbD, QVkTextureRe
                                QRhiPassResourceTracker::TexDepthOutputStage);
         depthResolveTexD->lastActiveFrameSlot = currentFrameSlot;
     }
+    if (rtD->m_desc.shadingRateMap()) {
+        QVkTexture *texD = QRHI_RES(QVkShadingRateMap, rtD->m_desc.shadingRateMap())->texture;
+        trackedRegisterTexture(&passResTracker, texD,
+                               QRhiPassResourceTracker::TexShadingRate,
+                               QRhiPassResourceTracker::TexColorOutputStage);
+        texD->lastActiveFrameSlot = currentFrameSlot;
+    }
 }
 
 void QRhiVulkan::resourceUpdate(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
@@ -2807,6 +3022,14 @@ void QRhiVulkan::beginPass(QRhiCommandBuffer *cb,
         Q_ASSERT(currentSwapChain);
         currentSwapChain->imageRes[currentSwapChain->currentImageIndex].lastUse =
                 QVkSwapChain::ImageResources::ScImageUseRender;
+        if (currentSwapChain->shadingRateMapView) {
+            QVkTexture *texD = QRHI_RES(QVkShadingRateMap, currentSwapChain->shadingRateMap())->texture;
+            QRhiPassResourceTracker &passResTracker(cbD->passResTrackers[cbD->currentPassResTrackerIndex]);
+            trackedRegisterTexture(&passResTracker, texD,
+                                   QRhiPassResourceTracker::TexShadingRate,
+                                   QRhiPassResourceTracker::TexColorOutputStage);
+            texD->lastActiveFrameSlot = currentFrameSlot;
+        }
         break;
     case QRhiResource::TextureRenderTarget:
     {
@@ -2857,6 +3080,11 @@ void QRhiVulkan::beginPass(QRhiCommandBuffer *cb,
         cv.depthStencil = { depthStencilClearValue.depthClearValue(), depthStencilClearValue.stencilClearValue() };
         cvs.append(cv);
     }
+    for (int i = 0; i < rtD->shadingRateAttCount; ++i) {
+        VkClearValue cv;
+        cv.color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+        cvs.append(cv);
+    }
     rpBeginInfo.clearValueCount = uint32_t(cvs.size());
 
     QVkCommandBuffer::Command &cmd(cbD->commands.get());
@@ -2869,7 +3097,14 @@ void QRhiVulkan::beginPass(QRhiCommandBuffer *cb,
     if (cbD->passUsesSecondaryCb)
         cbD->activeSecondaryCbStack.append(startSecondaryCommandBuffer(rtD));
 
-    cbD->resetCachedState();
+    if (cbD->hasShadingRateSet) {
+        QVkCommandBuffer::Command &rateCmd(cbD->commands.get());
+        rateCmd.cmd = QVkCommandBuffer::Command::SetShadingRate;
+        rateCmd.args.setShadingRate.w = 1;
+        rateCmd.args.setShadingRate.h = 1;
+    }
+
+    cbD->resetPerPassState();
 }
 
 void QRhiVulkan::endPass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
@@ -2913,7 +3148,7 @@ void QRhiVulkan::beginComputePass(QRhiCommandBuffer *cb,
     if (cbD->passUsesSecondaryCb)
         cbD->activeSecondaryCbStack.append(startSecondaryCommandBuffer());
 
-    cbD->resetCachedState();
+    cbD->resetPerPassState();
 }
 
 void QRhiVulkan::endComputePass(QRhiCommandBuffer *cb, QRhiResourceUpdateBatch *resourceUpdates)
@@ -4161,6 +4396,7 @@ void QRhiVulkan::executeDeferredReleases(bool forced)
                 }
                 df->vkDestroyImageView(dev, e.textureRenderTarget.dsv, nullptr);
                 df->vkDestroyImageView(dev, e.textureRenderTarget.resdsv, nullptr);
+                df->vkDestroyImageView(dev, e.textureRenderTarget.shadingRateMapView, nullptr);
                 break;
             case QRhiVulkan::DeferredReleaseEntry::RenderPass:
                 df->vkDestroyRenderPass(dev, e.renderPass.rp, nullptr);
@@ -4280,6 +4516,28 @@ VkSampleCountFlagBits QRhiVulkan::effectiveSampleCountBits(int sampleCount)
     }
 
     Q_UNREACHABLE_RETURN(VK_SAMPLE_COUNT_1_BIT);
+}
+
+QList<QSize> QRhiVulkan::supportedShadingRates(int sampleCount) const
+{
+    QList<QSize> result;
+#ifdef VK_KHR_fragment_shading_rate
+    sampleCount = qMax(1, sampleCount);
+    VkSampleCountFlagBits mask = VK_SAMPLE_COUNT_1_BIT;
+    for (const auto &qvk_sampleCount : qvk_sampleCounts) {
+        if (qvk_sampleCount.count == sampleCount) {
+            mask = qvk_sampleCount.mask;
+            break;
+        }
+    }
+    for (const VkPhysicalDeviceFragmentShadingRateKHR &s : fragmentShadingRates) {
+        if (s.sampleCounts & mask)
+            result.append(QSize(int(s.fragmentSize.width), int(s.fragmentSize.height)));
+    }
+#else
+    result.append(QSize(1, 1));
+#endif
+    return result;
 }
 
 void QRhiVulkan::enqueueTransitionPassResources(QVkCommandBuffer *cbD)
@@ -4419,6 +4677,18 @@ void QRhiVulkan::recordPrimaryCommandBuffer(QVkCommandBuffer *cbD)
         case QVkCommandBuffer::Command::ExecuteSecondary:
             df->vkCmdExecuteCommands(cbD->cb, 1, &cmd.args.executeSecondary.cb);
             break;
+        case QVkCommandBuffer::Command::SetShadingRate:
+        {
+#ifdef VK_KHR_fragment_shading_rate
+            VkFragmentShadingRateCombinerOpKHR op[2] = {
+                VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MAX_KHR,
+                VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MAX_KHR
+            };
+            VkExtent2D size = { cmd.args.setShadingRate.w, cmd.args.setShadingRate.h };
+            vkCmdSetFragmentShadingRateKHR(cbD->cb, &size, op);
+#endif
+        }
+            break;
         default:
             break;
         }
@@ -4492,6 +4762,12 @@ static inline VkImageLayout toVkLayout(QRhiPassResourceTracker::TextureAccess ac
     case QRhiPassResourceTracker::TexStorageStore:
     case QRhiPassResourceTracker::TexStorageLoadStore:
         return VK_IMAGE_LAYOUT_GENERAL;
+    case QRhiPassResourceTracker::TexShadingRate:
+#ifdef VK_KHR_fragment_shading_rate
+        return VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
+#else
+        return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+#endif
     default:
         Q_UNREACHABLE();
         break;
@@ -4514,6 +4790,8 @@ static inline VkAccessFlags toVkAccess(QRhiPassResourceTracker::TextureAccess ac
         return VK_ACCESS_SHADER_WRITE_BIT;
     case QRhiPassResourceTracker::TexStorageLoadStore:
         return VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+    case QRhiPassResourceTracker::TexShadingRate:
+        return 0;
     default:
         Q_UNREACHABLE();
         break;
@@ -4824,6 +5102,11 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::ResolveDepthStencil:
         return caps.renderPass2KHR && caps.depthStencilResolveKHR;
+    case QRhi::VariableRateShading:
+        return caps.renderPass2KHR && caps.perDrawShadingRate;
+    case QRhi::VariableRateShadingMap:
+    case QRhi::VariableRateShadingMapWithTexture:
+        return caps.renderPass2KHR && caps.imageBasedShadingRate;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -4862,6 +5145,8 @@ int QRhiVulkan::resourceLimit(QRhi::ResourceLimit limit) const
         return physDevProperties.limits.maxVertexInputAttributes;
     case QRhi::MaxVertexOutputs:
         return physDevProperties.limits.maxVertexOutputComponents / 4;
+    case QRhi::ShadingRateImageTileSize:
+        return caps.imageBasedShadingRateTileSize;
     default:
         Q_UNREACHABLE_RETURN(0);
     }
@@ -5056,6 +5341,11 @@ QRhiSampler *QRhiVulkan::createSampler(QRhiSampler::Filter magFilter, QRhiSample
                                        QRhiSampler::AddressMode u, QRhiSampler::AddressMode v, QRhiSampler::AddressMode w)
 {
     return new QVkSampler(this, magFilter, minFilter, mipmapMode, u, v, w);
+}
+
+QRhiShadingRateMap *QRhiVulkan::createShadingRateMap()
+{
+    return new QVkShadingRateMap(this);
 }
 
 QRhiTextureRenderTarget *QRhiVulkan::createTextureRenderTarget(const QRhiTextureRenderTargetDescription &desc,
@@ -5444,8 +5734,8 @@ void QRhiVulkan::setViewport(QRhiCommandBuffer *cb, const QRhiViewport &viewport
     }
 
     if (cbD->currentGraphicsPipeline
-        && !QRHI_RES(QVkGraphicsPipeline, cbD->currentGraphicsPipeline)
-                    ->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor)) {
+        && !QRHI_RES(QVkGraphicsPipeline, cbD->currentGraphicsPipeline)->m_flags.testFlag(QRhiGraphicsPipeline::UsesScissor))
+    {
         QVkCommandBuffer::Command &cmd(cbD->commands.get());
         VkRect2D *s = &cmd.args.setScissor.scissor;
         qrhi_toTopLeftRenderTargetRect<Bounded>(outputSize, viewport.viewport(), &x, &y, &w, &h);
@@ -5519,6 +5809,37 @@ void QRhiVulkan::setStencilRef(QRhiCommandBuffer *cb, quint32 refValue)
         cmd.cmd = QVkCommandBuffer::Command::SetStencilRef;
         cmd.args.setStencilRef.ref = refValue;
     }
+}
+
+void QRhiVulkan::setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize)
+{
+#ifdef VK_KHR_fragment_shading_rate
+    if (!vkCmdSetFragmentShadingRateKHR)
+        return;
+
+    QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
+    Q_ASSERT(cbD->recordingPass == QVkCommandBuffer::RenderPass);
+    Q_ASSERT(!cbD->currentGraphicsPipeline || QRHI_RES(QVkGraphicsPipeline, cbD->currentGraphicsPipeline)->m_flags.testFlag(QRhiGraphicsPipeline::UsesShadingRate));
+
+    VkFragmentShadingRateCombinerOpKHR ops[2] = {
+        VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MAX_KHR,
+        VK_FRAGMENT_SHADING_RATE_COMBINER_OP_MAX_KHR
+    };
+    VkExtent2D size = { uint32_t(coarsePixelSize.width()), uint32_t(coarsePixelSize.height()) };
+    if (cbD->passUsesSecondaryCb) {
+        vkCmdSetFragmentShadingRateKHR(cbD->activeSecondaryCbStack.last(), &size, ops);
+    } else {
+        QVkCommandBuffer::Command &cmd(cbD->commands.get());
+        cmd.cmd = QVkCommandBuffer::Command::SetShadingRate;
+        cmd.args.setShadingRate.w = size.width;
+        cmd.args.setShadingRate.h = size.height;
+    }
+    if (coarsePixelSize.width() != 1 || coarsePixelSize.height() != 1)
+        cbD->hasShadingRateSet = true;
+#else
+    Q_UNUSED(cb);
+    Q_UNUSED(coarsePixelSize);
+#endif
 }
 
 void QRhiVulkan::draw(QRhiCommandBuffer *cb, quint32 vertexCount,
@@ -5704,7 +6025,7 @@ void QRhiVulkan::endExternal(QRhiCommandBuffer *cb)
         cbD->activeSecondaryCbStack.append(startSecondaryCommandBuffer(maybeRenderTargetData(cbD)));
     }
 
-    cbD->resetCachedState();
+    cbD->resetPerPassState();
 }
 
 double QRhiVulkan::lastCompletedGpuTime(QRhiCommandBuffer *cb)
@@ -6654,6 +6975,10 @@ bool QVkTexture::create()
         imageInfo.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     if (m_flags.testFlag(QRhiTexture::UsedWithLoadStore))
         imageInfo.usage |= VK_IMAGE_USAGE_STORAGE_BIT;
+#ifdef VK_KHR_fragment_shading_rate
+    if (m_flags.testFlag(QRhiTexture::UsedAsShadingRateMap) && rhiD->caps.imageBasedShadingRate)
+        imageInfo.usage |= VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+#endif
 
     VmaAllocationCreateInfo allocInfo = {};
     allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -6889,6 +7214,8 @@ bool QVkRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other
         return false;
     if (multiViewCount != o->multiViewCount)
         return false;
+    if (hasShadingRateMap != o->hasShadingRateMap)
+        return false;
 
     for (int i = 0, ie = colorRefs.size(); i != ie; ++i) {
         const uint32_t attIdx = colorRefs[i].attachment;
@@ -6922,6 +7249,14 @@ bool QVkRenderPassDescriptor::isCompatible(const QRhiRenderPassDescriptor *other
             return false;
     }
 
+    if (hasShadingRateMap) {
+        const uint32_t attIdx = shadingRateRef.attachment;
+        if (attIdx != o->shadingRateRef.attachment)
+            return false;
+        if (attIdx != VK_ATTACHMENT_UNUSED && !attachmentDescriptionEquals(attDescs[attIdx], o->attDescs[attIdx]))
+            return false;
+    }
+
     // subpassDeps is not included
 
     return true;
@@ -6937,6 +7272,7 @@ void QVkRenderPassDescriptor::updateSerializedFormat()
     *p++ = resolveRefs.size();
     *p++ = hasDepthStencil;
     *p++ = hasDepthStencilResolve;
+    *p++ = hasShadingRateMap;
     *p++ = multiViewCount;
 
     auto serializeAttachmentData = [this, &p](uint32_t attIdx) {
@@ -6975,6 +7311,12 @@ void QVkRenderPassDescriptor::updateSerializedFormat()
         *p++ = attIdx;
         serializeAttachmentData(attIdx);
     }
+
+    if (hasShadingRateMap) {
+        const uint32_t attIdx = shadingRateRef.attachment;
+        *p++ = attIdx;
+        serializeAttachmentData(attIdx);
+    }
 }
 
 QRhiRenderPassDescriptor *QVkRenderPassDescriptor::newCompatibleRenderPassDescriptor() const
@@ -6988,9 +7330,11 @@ QRhiRenderPassDescriptor *QVkRenderPassDescriptor::newCompatibleRenderPassDescri
     rpD->subpassDeps = subpassDeps;
     rpD->hasDepthStencil = hasDepthStencil;
     rpD->hasDepthStencilResolve = hasDepthStencilResolve;
+    rpD->hasShadingRateMap = hasShadingRateMap;
     rpD->multiViewCount = multiViewCount;
     rpD->dsRef = dsRef;
     rpD->dsResolveRef = dsResolveRef;
+    rpD->shadingRateRef = shadingRateRef;
 
     VkRenderPassCreateInfo rpInfo;
     VkSubpassDescription subpassDesc;
@@ -7003,11 +7347,30 @@ QRhiRenderPassDescriptor *QVkRenderPassDescriptor::newCompatibleRenderPassDescri
         return nullptr;
     }
 
-    VkResult err = rhiD->df->vkCreateRenderPass(rhiD->dev, &rpInfo, nullptr, &rpD->rp);
-    if (err != VK_SUCCESS) {
-        qWarning("Failed to create renderpass: %d", err);
-        delete rpD;
-        return nullptr;
+#ifdef VK_KHR_create_renderpass2
+    if (rhiD->caps.renderPass2KHR) {
+        // Use the KHR extension, not the 1.2 core API, in order to support Vulkan 1.1.
+        VkRenderPassCreateInfo2KHR rpInfo2;
+        RenderPass2SetupHelper rp2Helper(rhiD);
+        if (!rp2Helper.prepare(&rpInfo2, &rpInfo, rpD, multiViewCount)) {
+            delete rpD;
+            return nullptr;
+        }
+        VkResult err = rhiD->vkCreateRenderPass2KHR(rhiD->dev, &rpInfo2, nullptr, &rpD->rp);
+        if (err != VK_SUCCESS) {
+            qWarning("Failed to create renderpass (using VkRenderPassCreateInfo2KHR): %d", err);
+            delete rpD;
+            return nullptr;
+        }
+    } else
+#endif
+    {
+        VkResult err = rhiD->df->vkCreateRenderPass(rhiD->dev, &rpInfo, nullptr, &rpD->rp);
+        if (err != VK_SUCCESS) {
+            qWarning("Failed to create renderpass: %d", err);
+            delete rpD;
+            return nullptr;
+        }
     }
 
     rpD->updateSerializedFormat();
@@ -7024,6 +7387,34 @@ const QRhiNativeHandles *QVkRenderPassDescriptor::nativeHandles()
 {
     nativeHandlesStruct.renderPass = rp;
     return &nativeHandlesStruct;
+}
+
+QVkShadingRateMap::QVkShadingRateMap(QRhiImplementation *rhi)
+    : QRhiShadingRateMap(rhi)
+{
+}
+
+QVkShadingRateMap::~QVkShadingRateMap()
+{
+    destroy();
+}
+
+void QVkShadingRateMap::destroy()
+{
+    if (!texture)
+        return;
+
+    texture = nullptr;
+}
+
+bool QVkShadingRateMap::createFrom(QRhiTexture *src)
+{
+    if (texture)
+        destroy();
+
+    texture = QRHI_RES(QVkTexture, src);
+
+    return true;
 }
 
 QVkSwapChainRenderTarget::QVkSwapChainRenderTarget(QRhiImplementation *rhi, QRhiSwapChain *swapchain)
@@ -7096,6 +7487,9 @@ void QVkTextureRenderTarget::destroy()
     e.textureRenderTarget.resdsv = resdsv;
     resdsv = VK_NULL_HANDLE;
 
+    e.textureRenderTarget.shadingRateMapView = shadingRateMapView;
+    shadingRateMapView = VK_NULL_HANDLE;
+
     QRHI_RES_RHI(QRhiVulkan);
     if (rhiD) {
         rhiD->releaseQueue.append(e);
@@ -7117,7 +7511,8 @@ QRhiRenderPassDescriptor *QVkTextureRenderTarget::newCompatibleRenderPassDescrip
                                          m_desc.depthTexture() && !m_flags.testFlag(DoNotStoreDepthStencilContents) && !m_desc.depthResolveTexture(),
                                          m_desc.depthStencilBuffer(),
                                          m_desc.depthTexture(),
-                                         m_desc.depthResolveTexture()))
+                                         m_desc.depthResolveTexture(),
+                                         m_desc.shadingRateMap()))
     {
         delete rp;
         return nullptr;
@@ -7294,6 +7689,36 @@ bool QVkTextureRenderTarget::create()
         d.dsResolveAttCount = 0;
     }
 
+    if (m_desc.shadingRateMap() && rhiD->caps.renderPass2KHR && rhiD->caps.imageBasedShadingRate) {
+        QVkTexture *texD = QRHI_RES(QVkShadingRateMap, m_desc.shadingRateMap())->texture;
+        Q_ASSERT(texD->flags().testFlag(QRhiTexture::UsedAsShadingRateMap));
+
+        VkImageViewCreateInfo viewInfo = {};
+        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewInfo.image = texD->image;
+        viewInfo.viewType = d.multiViewCount ? VK_IMAGE_VIEW_TYPE_2D_ARRAY
+                                             : VK_IMAGE_VIEW_TYPE_2D;
+        viewInfo.format = texD->viewFormat;
+        viewInfo.components.r = VK_COMPONENT_SWIZZLE_R;
+        viewInfo.components.g = VK_COMPONENT_SWIZZLE_G;
+        viewInfo.components.b = VK_COMPONENT_SWIZZLE_B;
+        viewInfo.components.a = VK_COMPONENT_SWIZZLE_A;
+        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.baseMipLevel = 0;
+        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.baseArrayLayer = 0;
+        viewInfo.subresourceRange.layerCount = qMax<uint32_t>(1, d.multiViewCount);
+        VkResult err = rhiD->df->vkCreateImageView(rhiD->dev, &viewInfo, nullptr, &shadingRateMapView);
+        if (err != VK_SUCCESS) {
+            qWarning("Failed to create render target shading rate map view: %d", err);
+            return false;
+        }
+        views.append(shadingRateMapView);
+        d.shadingRateAttCount = 1;
+    } else {
+        d.shadingRateAttCount = 0;
+    }
+
     if (!m_renderPassDesc)
         qWarning("QVkTextureRenderTarget: No renderpass descriptor set. See newCompatibleRenderPassDescriptor() and setRenderPassDescriptor().");
 
@@ -7303,7 +7728,7 @@ bool QVkTextureRenderTarget::create()
     VkFramebufferCreateInfo fbInfo = {};
     fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
     fbInfo.renderPass = d.rp->rp;
-    fbInfo.attachmentCount = uint32_t(d.colorAttCount + d.dsAttCount + d.resolveAttCount + d.dsResolveAttCount);
+    fbInfo.attachmentCount = uint32_t(views.count());
     fbInfo.pAttachments = views.constData();
     fbInfo.width = uint32_t(d.pixelSize.width());
     fbInfo.height = uint32_t(d.pixelSize.height());
@@ -7625,6 +8050,10 @@ bool QVkGraphicsPipeline::create()
         dynEnable << VK_DYNAMIC_STATE_BLEND_CONSTANTS;
     if (m_flags.testFlag(QRhiGraphicsPipeline::UsesStencilRef))
         dynEnable << VK_DYNAMIC_STATE_STENCIL_REFERENCE;
+#ifdef VK_KHR_fragment_shading_rate
+    if (m_flags.testFlag(QRhiGraphicsPipeline::UsesShadingRate) && rhiD->caps.perDrawShadingRate)
+        dynEnable << VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR;
+#endif
 
     VkPipelineDynamicStateCreateInfo dynamicInfo = {};
     dynamicInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -8009,7 +8438,8 @@ QRhiRenderPassDescriptor *QVkSwapChain::newCompatibleRenderPassDescriptor()
     if (!rhiD->createDefaultRenderPass(rp,
                                        m_depthStencil != nullptr,
                                        samples,
-                                       colorFormat))
+                                       colorFormat,
+                                       m_shadingRateMap))
     {
         delete rp;
         return nullptr;
@@ -8160,19 +8590,28 @@ bool QVkSwapChain::createOrResize()
     else
         rtWrapper.d.resolveAttCount = 0;
 
+    if (shadingRateMapView)
+        rtWrapper.d.shadingRateAttCount = 1;
+    else
+        rtWrapper.d.shadingRateAttCount = 0;
+
     for (int i = 0; i < bufferCount; ++i) {
         QVkSwapChain::ImageResources &image(imageRes[i]);
-        VkImageView views[3] = { // color, ds, resolve
-            samples > VK_SAMPLE_COUNT_1_BIT ? image.msaaImageView : image.imageView,
-            ds ? ds->imageView : VK_NULL_HANDLE,
-            samples > VK_SAMPLE_COUNT_1_BIT ? image.imageView : VK_NULL_HANDLE
-        };
+        // color, ds, resolve, shading rate
+        QVarLengthArray<VkImageView, 4> views;
+        views.append(samples > VK_SAMPLE_COUNT_1_BIT ? image.msaaImageView : image.imageView);
+        if (ds)
+            views.append(ds->imageView);
+        if (samples > VK_SAMPLE_COUNT_1_BIT)
+            views.append(image.imageView);
+        if (shadingRateMapView)
+            views.append(shadingRateMapView);
 
         VkFramebufferCreateInfo fbInfo = {};
         fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         fbInfo.renderPass = rtWrapper.d.rp->rp;
-        fbInfo.attachmentCount = uint32_t(rtWrapper.d.colorAttCount + rtWrapper.d.dsAttCount + rtWrapper.d.resolveAttCount + rtWrapper.d.dsResolveAttCount);
-        fbInfo.pAttachments = views;
+        fbInfo.attachmentCount = uint32_t(views.count());
+        fbInfo.pAttachments = views.constData();
         fbInfo.width = uint32_t(pixelSize.width());
         fbInfo.height = uint32_t(pixelSize.height());
         fbInfo.layers = 1;
@@ -8209,19 +8648,21 @@ bool QVkSwapChain::createOrResize()
 
         for (int i = 0; i < bufferCount; ++i) {
             QVkSwapChain::ImageResources &image(imageRes[i + bufferCount]);
-            VkImageView views[3] = {
-                // color, ds, resolve
-                samples > VK_SAMPLE_COUNT_1_BIT ? image.msaaImageView : image.imageView,
-                ds ? ds->imageView : VK_NULL_HANDLE,
-                samples > VK_SAMPLE_COUNT_1_BIT ? image.imageView : VK_NULL_HANDLE
-            };
+            // color, ds, resolve, shading rate
+            QVarLengthArray<VkImageView, 4> views;
+            views.append(samples > VK_SAMPLE_COUNT_1_BIT ? image.msaaImageView : image.imageView);
+            if (ds)
+                views.append(ds->imageView);
+            if (samples > VK_SAMPLE_COUNT_1_BIT)
+                views.append(image.imageView);
+            if (shadingRateMapView)
+                views.append(shadingRateMapView);
 
             VkFramebufferCreateInfo fbInfo = {};
             fbInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             fbInfo.renderPass = rtWrapperRight.d.rp->rp;
-            fbInfo.attachmentCount = uint32_t(rtWrapperRight.d.colorAttCount + rtWrapperRight.d.dsAttCount
-                                              + rtWrapperRight.d.resolveAttCount + rtWrapperRight.d.dsResolveAttCount);
-            fbInfo.pAttachments = views;
+            fbInfo.attachmentCount = uint32_t(views.count());
+            fbInfo.pAttachments = views.constData();
             fbInfo.width = uint32_t(pixelSize.width());
             fbInfo.height = uint32_t(pixelSize.height());
             fbInfo.layers = 1;

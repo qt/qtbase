@@ -1,7 +1,7 @@
 // Copyright (C) 2022 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include "qrhiimgui_p.h"
+#include "qrhiimgui.h"
 #include <QtCore/qfile.h>
 #include <QtGui/qguiapplication.h>
 #include <QtGui/qevent.h>
@@ -34,7 +34,8 @@ QRhiImguiRenderer::~QRhiImguiRenderer()
 void QRhiImguiRenderer::releaseResources()
 {
     for (Texture &t : m_textures) {
-        delete t.tex;
+        if (t.ownTex)
+            delete t.tex;
         delete t.srb;
     }
     m_textures.clear();
@@ -43,7 +44,8 @@ void QRhiImguiRenderer::releaseResources()
     m_ibuf.reset();
     m_ubuf.reset();
     m_ps.reset();
-    m_sampler.reset();
+    m_linearSampler.reset();
+    m_nearestSampler.reset();
 
     m_rhi = nullptr;
 }
@@ -100,41 +102,53 @@ void QRhiImguiRenderer::prepare(QRhi *rhi,
             return;
     }
 
-    if (!m_sampler) {
-        m_sampler.reset(m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
-                                          QRhiSampler::Repeat, QRhiSampler::Repeat));
-        m_sampler->setName(QByteArrayLiteral("imgui sampler"));
-        if (!m_sampler->create())
+    if (!m_linearSampler) {
+        m_linearSampler.reset(m_rhi->newSampler(QRhiSampler::Linear, QRhiSampler::Linear, QRhiSampler::None,
+                                                QRhiSampler::Repeat, QRhiSampler::Repeat));
+        m_linearSampler->setName(QByteArrayLiteral("imgui linear sampler"));
+        if (!m_linearSampler->create())
+            return;
+    }
+
+    if (!m_nearestSampler) {
+        m_nearestSampler.reset(m_rhi->newSampler(QRhiSampler::Nearest, QRhiSampler::Nearest, QRhiSampler::None,
+                                                QRhiSampler::Repeat, QRhiSampler::Repeat));
+        m_nearestSampler->setName(QByteArrayLiteral("imgui nearest sampler"));
+        if (!m_nearestSampler->create())
             return;
     }
 
     if (m_textures.isEmpty()) {
         Texture fontTex;
         fontTex.image = sf.fontTextureData;
-        m_textures.append(fontTex);
-    } else if (!sf.fontTextureData.isNull()) {
+        m_textures.insert(nullptr, fontTex);
+        sf.reset();
+    } else if (sf.isValid()) {
         Texture fontTex;
         fontTex.image = sf.fontTextureData;
-        delete m_textures[0].tex;
-        delete m_textures[0].srb;
-        m_textures[0] = fontTex;
+        Texture &fontTexEntry(m_textures[nullptr]);
+        delete fontTexEntry.tex;
+        delete fontTexEntry.srb;
+        fontTexEntry = fontTex;
+        sf.reset();
     }
 
-    QVarLengthArray<int, 8> texturesNeedUpdate;
-    for (int i = 0; i < m_textures.count(); ++i) {
-        Texture &t(m_textures[i]);
+    QVarLengthArray<void *, 8> texturesNeedUpdate;
+    for (auto it = m_textures.begin(), end = m_textures.end(); it != end; ++it) {
+        Texture &t(*it);
         if (!t.tex) {
             t.tex = m_rhi->newTexture(QRhiTexture::RGBA8, t.image.size());
-            t.tex->setName(QByteArrayLiteral("imgui texture ") + QByteArray::number(i));
+            t.tex->setName(QByteArrayLiteral("imgui texture ") + QByteArray::number(qintptr(it.key())));
             if (!t.tex->create())
                 return;
-            texturesNeedUpdate.append(i);
+            texturesNeedUpdate.append(it.key());
         }
         if (!t.srb) {
+            QRhiSampler *sampler = t.filter == QRhiSampler::Nearest ? m_nearestSampler.get() : m_linearSampler.get();
             t.srb = m_rhi->newShaderResourceBindings();
             t.srb->setBindings({
                 QRhiShaderResourceBinding::uniformBuffer(0, QRhiShaderResourceBinding::VertexStage | QRhiShaderResourceBinding::FragmentStage, m_ubuf.get()),
-                QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, t.tex, m_sampler.get())
+                QRhiShaderResourceBinding::sampledTexture(1, QRhiShaderResourceBinding::FragmentStage, t.tex, sampler)
             });
             if (!t.srb->create())
                 return;
@@ -144,6 +158,9 @@ void QRhiImguiRenderer::prepare(QRhi *rhi,
     // If layer.enabled is toggled on the item or an ancestor, the render
     // target is then suddenly different and may not be compatible.
     if (m_ps && m_rt->renderPassDescriptor()->serializedFormat() != m_renderPassFormat)
+        m_ps.reset();
+
+    if (m_ps && m_rt->sampleCount() != m_ps->sampleCount())
         m_ps.reset();
 
     if (!m_ps) {
@@ -170,7 +187,7 @@ void QRhiImguiRenderer::prepare(QRhi *rhi,
         m_ps->setDepthTest(true);
         m_ps->setDepthOp(QRhiGraphicsPipeline::LessOrEqual);
         m_ps->setDepthWrite(false);
-        m_ps->setFlags(QRhiGraphicsPipeline::UsesScissor);
+        m_ps->setFlags(QRhiGraphicsPipeline::UsesScissor | QRhiGraphicsPipeline::UsesShadingRate);
 
         m_ps->setShaderStages({
             { QRhiShaderStage::Vertex, vs },
@@ -186,8 +203,8 @@ void QRhiImguiRenderer::prepare(QRhi *rhi,
             { 0, 1, QRhiVertexInputAttribute::Float2, 2 * sizeof(float) },
             { 0, 2, QRhiVertexInputAttribute::UNormByte4, 4 * sizeof(float) }
         });
-
         m_ps->setVertexInputLayout(inputLayout);
+        m_ps->setSampleCount(rt->sampleCount());
         m_ps->setShaderResourceBindings(m_textures[0].srb);
         m_ps->setRenderPassDescriptor(m_rt->renderPassDescriptor());
         m_renderPassFormat = m_rt->renderPassDescriptor()->serializedFormat();
@@ -210,8 +227,10 @@ void QRhiImguiRenderer::prepare(QRhi *rhi,
 
     for (int i = 0; i < texturesNeedUpdate.count(); ++i) {
         Texture &t(m_textures[texturesNeedUpdate[i]]);
-        u->uploadTexture(t.tex, t.image);
-        t.image = QImage();
+        if (!t.image.isNull()) {
+            u->uploadTexture(t.tex, t.image);
+            t.image = QImage();
+        }
     }
 
     m_cb->resourceUpdate(u);
@@ -244,10 +263,29 @@ void QRhiImguiRenderer::render()
         scissorSize.setWidth(qMin(viewportSize.width(), scissorSize.width()));
         scissorSize.setHeight(qMin(viewportSize.height(), scissorSize.height()));
         m_cb->setScissor({ scissorPos.x(), scissorPos.y(), scissorSize.width(), scissorSize.height() });
-        m_cb->setShaderResources(m_textures[c.textureIndex].srb);
+        m_cb->setShaderResources(m_textures[c.textureId].srb);
         m_cb->setVertexInput(0, 1, &vbufBinding, m_ibuf.get(), c.indexOffset, QRhiCommandBuffer::IndexUInt32);
         m_cb->drawIndexed(c.elemCount);
     }
+}
+
+void QRhiImguiRenderer::registerCustomTexture(void *id,
+                                              QRhiTexture *texture,
+                                              QRhiSampler::Filter filter,
+                                              CustomTextureOwnership ownership)
+{
+    Q_ASSERT(id);
+    auto it = m_textures.constFind(id);
+    if (it != m_textures.cend()) {
+        if (it->ownTex)
+            delete it->tex;
+        delete it->srb;
+    }
+    Texture t;
+    t.tex = texture;
+    t.filter = filter;
+    t.ownTex = ownership == TakeCustomTextureOwnership;
+    m_textures[id] = t;
 }
 
 static const char *getClipboardText(void *)
@@ -264,7 +302,8 @@ static void setClipboardText(void *, const char *text)
 
 QRhiImgui::QRhiImgui()
 {
-    ImGui::CreateContext();
+    context = ImGui::CreateContext();
+    ImGui::SetCurrentContext(static_cast<ImGuiContext *>(context));
     rebuildFontAtlas();
     ImGuiIO &io(ImGui::GetIO());
     io.GetClipboardTextFn = getClipboardText;
@@ -273,22 +312,40 @@ QRhiImgui::QRhiImgui()
 
 QRhiImgui::~QRhiImgui()
 {
-    ImGui::DestroyContext();
+    ImGui::DestroyContext(static_cast<ImGuiContext *>(context));
 }
 
 void QRhiImgui::rebuildFontAtlas()
 {
+    ImGui::SetCurrentContext(static_cast<ImGuiContext *>(context));
+    ImGuiIO &io(ImGui::GetIO());
     unsigned char *pixels;
     int w, h;
-    ImGuiIO &io(ImGui::GetIO());
     io.Fonts->GetTexDataAsRGBA32(&pixels, &w, &h);
     const QImage wrapperImg(const_cast<const uchar *>(pixels), w, h, QImage::Format_RGBA8888);
     sf.fontTextureData = wrapperImg.copy();
-    io.Fonts->SetTexID(reinterpret_cast<ImTextureID>(quintptr(0)));
+    io.Fonts->SetTexID(nullptr);
+}
+
+void QRhiImgui::rebuildFontAtlasWithFont(const QString &filename)
+{
+    QFile f(filename);
+    if (!f.open(QIODevice::ReadOnly)) {
+        qWarning("Failed to open %s", qPrintable(filename));
+        return;
+    }
+    QByteArray font = f.readAll();
+    ImGui::SetCurrentContext(static_cast<ImGuiContext *>(context));
+    ImFontConfig fontCfg;
+    fontCfg.FontDataOwnedByAtlas = false;
+    ImGui::GetIO().Fonts->Clear();
+    ImGui::GetIO().Fonts->AddFontFromMemoryTTF(font.data(), font.size(), 20.0f, &fontCfg);
+    rebuildFontAtlas();
 }
 
 void QRhiImgui::nextFrame(const QSizeF &logicalOutputSize, float dpr, const QPointF &logicalOffset, FrameFunc frameFunc)
 {
+    ImGui::SetCurrentContext(static_cast<ImGuiContext *>(context));
     ImGuiIO &io(ImGui::GetIO());
 
     const QPointF itemPixelOffset = logicalOffset * dpr;
@@ -332,7 +389,7 @@ void QRhiImgui::nextFrame(const QSizeF &logicalOutputSize, float dpr, const QPoi
             if (!cmd->UserCallback) {
                 QRhiImguiRenderer::DrawCmd dc;
                 dc.cmdListBufferIdx = n;
-                dc.textureIndex = int(reinterpret_cast<qintptr>(cmd->TextureId));
+                dc.textureId = cmd->TextureId;
                 dc.indexOffset = indexOffset;
                 dc.elemCount = cmd->ElemCount;
                 dc.itemPixelOffset = itemPixelOffset;
@@ -348,8 +405,10 @@ void QRhiImgui::nextFrame(const QSizeF &logicalOutputSize, float dpr, const QPoi
 
 void QRhiImgui::syncRenderer(QRhiImguiRenderer *renderer)
 {
-    renderer->sf = sf;
-    sf.fontTextureData = QImage();
+    if (sf.isValid()) {
+        renderer->sf = sf;
+        sf.reset();
+    }
     renderer->f = std::move(f);
 }
 
@@ -540,6 +599,7 @@ static ImGuiKey mapKey(int k)
 
 bool QRhiImgui::processEvent(QEvent *event)
 {
+    ImGui::SetCurrentContext(static_cast<ImGuiContext *>(context));
     ImGuiIO &io(ImGui::GetIO());
 
     switch (event->type()) {

@@ -105,6 +105,21 @@ struct QMetalSampler : public QRhiSampler
     friend struct QMetalShaderResourceBindings;
 };
 
+struct QMetalShadingRateMapData;
+
+struct QMetalShadingRateMap : public QRhiShadingRateMap
+{
+    QMetalShadingRateMap(QRhiImplementation *rhi);
+    ~QMetalShadingRateMap();
+    void destroy() override;
+    bool createFrom(NativeShadingRateMap src) override;
+
+    QMetalShadingRateMapData *d;
+    uint generation = 0;
+    int lastActiveFrameSlot = -1;
+    friend class QRhiMetal;
+};
+
 struct QMetalRenderPassDescriptor : public QRhiRenderPassDescriptor
 {
     QMetalRenderPassDescriptor(QRhiImplementation *rhi);
@@ -124,6 +139,7 @@ struct QMetalRenderPassDescriptor : public QRhiRenderPassDescriptor
     bool hasDepthStencil = false;
     int colorFormat[MAX_COLOR_ATTACHMENTS];
     int dsFormat;
+    bool hasShadingRateMap = false;
     QVector<quint32> serializedFormatData;
 };
 
@@ -361,6 +377,8 @@ public:
     QRhiTextureRenderTarget *createTextureRenderTarget(const QRhiTextureRenderTargetDescription &desc,
                                                        QRhiTextureRenderTarget::Flags flags) override;
 
+    QRhiShadingRateMap *createShadingRateMap() override;
+
     QRhiSwapChain *createSwapChain() override;
     QRhi::FrameOpResult beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags flags) override;
     QRhi::FrameOpResult endFrame(QRhiSwapChain *swapChain, QRhi::EndFrameFlags flags) override;
@@ -395,6 +413,7 @@ public:
     void setScissor(QRhiCommandBuffer *cb, const QRhiScissor &scissor) override;
     void setBlendConstants(QRhiCommandBuffer *cb, const QColor &c) override;
     void setStencilRef(QRhiCommandBuffer *cb, quint32 refValue) override;
+    void setShadingRate(QRhiCommandBuffer *cb, const QSize &coarsePixelSize) override;
 
     void draw(QRhiCommandBuffer *cb, quint32 vertexCount,
               quint32 instanceCount, quint32 firstVertex, quint32 firstInstance) override;
@@ -420,6 +439,7 @@ public:
     double lastCompletedGpuTime(QRhiCommandBuffer *cb) override;
 
     QList<int> supportedSampleCounts() const override;
+    QList<QSize> supportedShadingRates(int sampleCount) const override;
     int ubufAlignment() const override;
     bool isYUpInFramebuffer() const override;
     bool isYUpInNDC() const override;
@@ -500,6 +520,7 @@ public:
         bool isAppleGPU = false;
         int maxThreadGroupSize = 512;
         bool multiView = false;
+        bool shadingRateMap = false;
     } caps;
 
     QRhiMetalData *d = nullptr;

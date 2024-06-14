@@ -1,8 +1,8 @@
 // Copyright (C) 2022 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#ifndef QRHIIMGUI_P_H
-#define QRHIIMGUI_P_H
+#ifndef QRHIIMGUI_H
+#define QRHIIMGUI_H
 
 #include <rhi/qrhi.h>
 
@@ -22,7 +22,7 @@ public:
 
     struct DrawCmd {
         int cmdListBufferIdx;
-        int textureIndex;
+        void *textureId;
         quint32 indexOffset;
         quint32 elemCount;
         QPointF itemPixelOffset;
@@ -31,6 +31,8 @@ public:
 
     struct StaticRenderData {
         QImage fontTextureData;
+        bool isValid() const { return !fontTextureData.isNull(); }
+        void reset() { fontTextureData = QImage(); }
     };
 
     struct FrameRenderData {
@@ -54,6 +56,15 @@ public:
     void render();
     void releaseResources();
 
+    enum CustomTextureOwnership {
+        TakeCustomTextureOwnership,
+        NoCustomTextureOwnership
+    };
+    void registerCustomTexture(void *id,
+                               QRhiTexture *texture,
+                               QRhiSampler::Filter filter,
+                               CustomTextureOwnership ownership);
+
 private:
     QRhi *m_rhi = nullptr;
     QRhiRenderTarget *m_rt = nullptr;
@@ -64,14 +75,17 @@ private:
     std::unique_ptr<QRhiBuffer> m_ubuf;
     std::unique_ptr<QRhiGraphicsPipeline> m_ps;
     QVector<quint32> m_renderPassFormat;
-    std::unique_ptr<QRhiSampler> m_sampler;
+    std::unique_ptr<QRhiSampler> m_linearSampler;
+    std::unique_ptr<QRhiSampler> m_nearestSampler;
 
     struct Texture {
         QImage image;
         QRhiTexture *tex = nullptr;
         QRhiShaderResourceBindings *srb = nullptr;
+        QRhiSampler::Filter filter = QRhiSampler::Linear;
+        bool ownTex = true;
     };
-    QVector<Texture> m_textures;
+    QHash<void *, Texture> m_textures;
 };
 
 class QRhiImgui
@@ -86,8 +100,10 @@ public:
     bool processEvent(QEvent *e);
 
     void rebuildFontAtlas();
+    void rebuildFontAtlasWithFont(const QString &filename);
 
 private:
+    void *context;
     QRhiImguiRenderer::StaticRenderData sf;
     QRhiImguiRenderer::FrameRenderData f;
     Qt::MouseButtons pressedMouseButtons;

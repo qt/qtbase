@@ -79,6 +79,7 @@
         \li QRhiRenderBuffer
         \li QRhiTexture
         \li QRhiSampler
+        \li QRhiShadingRateMap
         \li QRhiTextureRenderTarget
         \li QRhiShaderResourceBindings
         \li QRhiGraphicsPipeline

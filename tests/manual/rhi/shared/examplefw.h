@@ -18,7 +18,7 @@
 #include <rhi/qrhi.h>
 
 #ifdef EXAMPLEFW_IMGUI
-#include "qrhiimgui_p.h"
+#include "qrhiimgui.h"
 #include "imgui.h"
 #endif
 
@@ -98,6 +98,9 @@ protected:
 
     void customInit();
     void customRelease();
+#ifdef EXAMPLEFW_BEFORE_FRAME
+    void customBeforeFrame();
+#endif
     void customRender();
 #ifdef EXAMPLEFW_IMGUI
     void customGui();
@@ -359,6 +362,10 @@ void Window::render()
 {
     if (!m_hasSwapChain || m_notExposed)
         return;
+
+#ifdef EXAMPLEFW_BEFORE_FRAME
+    customBeforeFrame();
+#endif
 
     // If the window got resized or got newly exposed, resize the swapchain.
     // (the newly-exposed case is not actually required by some
