@@ -20,6 +20,7 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdir.h>
+#include <QtCore/qdirlisting.h>
 #include <QtCore/qhash.h>
 
 #include "qfilesystemwatcher_p.h"
@@ -39,6 +40,18 @@ class QPollingFileSystemWatcherEngine : public QFileSystemWatcherEngine
         QDateTime lastModified;
         QStringList entries;
 
+        static QStringList dirEntryList(const QFileInfo &fileInfo)
+        {
+            Q_ASSERT(fileInfo.isDir());
+
+            QStringList fileNames;
+            using F = QDirListing::IteratorFlag;
+            constexpr auto flags = F::ExcludeSpecial | F::IncludeDotAndDotDot;
+            for (const auto &entry : QDirListing(fileInfo.absoluteFilePath(), flags))
+                fileNames.emplace_back(entry.fileName());
+            return fileNames;
+        }
+
     public:
         FileInfo(const QFileInfo &fileInfo)
             : ownerId(fileInfo.ownerId()),
@@ -46,9 +59,8 @@ class QPollingFileSystemWatcherEngine : public QFileSystemWatcherEngine
               permissions(fileInfo.permissions()),
               lastModified(fileInfo.lastModified(QTimeZone::UTC))
         {
-            if (fileInfo.isDir()) {
-                entries = fileInfo.absoluteDir().entryList(QDir::AllEntries);
-            }
+            if (fileInfo.isDir())
+                entries = dirEntryList(fileInfo);
         }
         FileInfo &operator=(const QFileInfo &fileInfo)
         {
@@ -58,7 +70,7 @@ class QPollingFileSystemWatcherEngine : public QFileSystemWatcherEngine
 
         bool operator!=(const QFileInfo &fileInfo) const
         {
-            if (fileInfo.isDir() && entries != fileInfo.absoluteDir().entryList(QDir::AllEntries))
+            if (fileInfo.isDir() && entries != dirEntryList(fileInfo))
                 return true;
             return (ownerId != fileInfo.ownerId()
                     || groupId != fileInfo.groupId()
