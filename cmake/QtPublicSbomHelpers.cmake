@@ -267,7 +267,10 @@ endfunction()
 macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi_args)
     set(${opt_args}
         NO_CURRENT_DIR_ATTRIBUTION
+        NO_ATTRIBUTION_LICENSE_ID
         NO_DEFAULT_QT_LICENSE
+        NO_DEFAULT_QT_LICENSE_ID_LIBRARIES
+        NO_DEFAULT_QT_LICENSE_ID_EXECUTABLES
         NO_DEFAULT_DIRECTORY_QT_LICENSE
         NO_DEFAULT_QT_COPYRIGHTS
         NO_DEFAULT_QT_PACKAGE_VERSION
@@ -279,6 +282,7 @@ macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi
         CPE_VENDOR
         CPE_PRODUCT
         LICENSE_EXPRESSION
+        QT_LICENSE_ID
         DOWNLOAD_LOCATION
         ATTRIBUTION_ENTRY_INDEX
     )
@@ -392,21 +396,58 @@ function(_qt_internal_sbom_add_target target)
 
     _qt_internal_sbom_handle_qt_attribution_files(qa ${attribution_args})
 
-    # Collect license expressions, but each expression needs to be abided, so we AND them.
+    # Collect license expressions, but in most cases, each expression needs to be abided, so we
+    # AND the accumulated license expressions.
     set(license_expression "")
 
     if(arg_LICENSE_EXPRESSION)
         set(license_expression "${arg_LICENSE_EXPRESSION}")
     endif()
 
-    if(is_qt_entity_type AND NOT arg_NO_DEFAULT_QT_LICENSE)
-        _qt_internal_sbom_get_default_qt_license_id(qt_license_expression)
+    # For Qt entities, we have some special handling.
+    if(is_qt_entity_type AND NOT arg_NO_DEFAULT_QT_LICENSE AND NOT arg_QT_LICENSE_ID)
+        if(arg_TYPE STREQUAL "QT_TOOL" OR arg_TYPE STREQUAL "QT_APP")
+            if(QT_SBOM_DEFAULT_QT_LICENSE_ID_EXECUTABLES
+                    AND NOT arg_NO_DEFAULT_QT_LICENSE_ID_EXECUTABLES)
+                # A repo might contain only the "gpl3" license variant as the default for all
+                # executables, so allow setting it at the repo level to avoid having to repeat it
+                # for each target.
+                _qt_internal_sbom_get_spdx_license_expression(
+                    "${QT_SBOM_DEFAULT_QT_LICENSE_ID_EXECUTABLES}" qt_license_expression)
+            else()
+                # For tools and apps, we use the gpl exception variant by default.
+                _qt_internal_sbom_get_spdx_license_expression("QT_COMMERCIAL_OR_GPL3_WITH_EXCEPTION"
+                    qt_license_expression)
+            endif()
+
+        elseif(QT_SBOM_DEFAULT_QT_LICENSE_ID_LIBRARIES
+                AND NOT arg_NO_DEFAULT_QT_LICENSE_ID_LIBRARIES)
+            # A repo might contain only the "gpl3" license variant as the default for all modules
+            # and plugins, so allow setting it at the repo level to avoid having to repeat it
+            # for each target.
+            _qt_internal_sbom_get_spdx_license_expression(
+                "${QT_SBOM_DEFAULT_QT_LICENSE_ID_LIBRARIES}" qt_license_expression)
+
+        else()
+            # Otherwise, for modules and plugins we use the default qt license.
+            _qt_internal_sbom_get_spdx_license_expression("QT_DEFAULT" qt_license_expression)
+        endif()
+
         _qt_internal_sbom_join_two_license_ids_with_op(
             "${license_expression}" "AND" "${qt_license_expression}"
             license_expression)
     endif()
 
-    # Allow setting a license expression per directory scope via a variable.
+    # Some Qt entities might request a specific license from the subset that we usually use.
+    if(arg_QT_LICENSE_ID)
+        _qt_internal_sbom_get_spdx_license_expression("${arg_QT_LICENSE_ID}"
+            requested_license_expression)
+        _qt_internal_sbom_join_two_license_ids_with_op(
+            "${license_expression}" "AND" "${requested_license_expression}"
+            license_expression)
+    endif()
+
+    # Allow setting a license expression string per directory scope via a variable.
     if(is_qt_entity_type AND QT_SBOM_LICENSE_EXPRESSION AND NOT arg_NO_DEFAULT_DIRECTORY_QT_LICENSE)
         set(qt_license_expression "${QT_SBOM_LICENSE_EXPRESSION}")
         _qt_internal_sbom_join_two_license_ids_with_op(
@@ -414,7 +455,8 @@ function(_qt_internal_sbom_add_target target)
             license_expression)
     endif()
 
-    if(qa_license_id)
+    # Read a license expression from the attribution json file.
+    if(qa_license_id AND NOT arg_NO_ATTRIBUTION_LICENSE_ID)
         if(NOT qa_license_id MATCHES "urn:dje:license")
             _qt_internal_sbom_join_two_license_ids_with_op(
                 "${license_expression}" "AND" "${qa_license_id}"
@@ -431,6 +473,8 @@ function(_qt_internal_sbom_add_target target)
 
     if(license_expression)
         list(APPEND project_package_options LICENSE_CONCLUDED "${license_expression}")
+
+        # For qt entities we know the license we provide, so we mark it as declared as well.
         if(is_qt_entity_type)
             list(APPEND project_package_options LICENSE_DECLARED "${license_expression}")
         endif()
@@ -2332,11 +2376,45 @@ function(_qt_internal_sbom_get_package_purpose type out_purpose)
     set(${out_purpose} "${package_purpose}" PARENT_SCOPE)
 endfunction()
 
-# Get the default qt spdx license expression.
-function(_qt_internal_sbom_get_default_qt_license_id out_var)
-    set(${out_var}
-        "LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only"
-        PARENT_SCOPE)
+# Get a qt spdx license expression given the id.
+function(_qt_internal_sbom_get_spdx_license_expression id out_var)
+    set(license "")
+
+    # The default for modules / plugins
+    if(id STREQUAL "QT_DEFAULT" OR id STREQUAL "QT_COMMERCIAL_OR_LGPL3")
+        set(license "LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only")
+
+    # For commercial only entities
+    elseif(id STREQUAL "QT_COMMERCIAL")
+        set(license "LicenseRef-Qt-Commercial")
+
+    # For GPL3 only modules
+    elseif(id STREQUAL "QT_COMMERCIAL_OR_GPL3")
+        set(license "LicenseRef-Qt-Commercial OR GPL-3.0-only")
+
+    # For tools and apps
+    elseif(id STREQUAL "QT_COMMERCIAL_OR_GPL3_WITH_EXCEPTION")
+        set(license "LicenseRef-Qt-Commercial OR GPL-3.0-only WITH Qt-GPL-exception-1.0")
+
+    # For things like the qtmain library
+    elseif(id STREQUAL "QT_COMMERCIAL_OR_BSD3")
+        set(license "LicenseRef-Qt-Commercial OR BSD-3-Clause")
+
+    # For documentation
+    elseif(id STREQUAL "QT_COMMERCIAL_OR_GFDL1_3")
+        set(license "LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only")
+
+    # For examples and the like
+    elseif(id STREQUAL "BSD3")
+        set(license "BSD-3-Clause")
+
+    endif()
+
+    if(NOT license)
+        message(FATAL_ERROR "No SPDX license expression found for id: ${id}")
+    endif()
+
+    set(${out_var} "${license}" PARENT_SCOPE)
 endfunction()
 
 # Get the default qt copyright.
