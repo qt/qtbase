@@ -136,7 +136,9 @@ public:
         RasterOp_SourceOrNotDestination,
         RasterOp_ClearDestination,
         RasterOp_SetDestination,
-        RasterOp_NotDestination
+        RasterOp_NotDestination,
+
+        NCompositionModes
     };
     void setCompositionMode(CompositionMode mode);
     CompositionMode compositionMode() const;

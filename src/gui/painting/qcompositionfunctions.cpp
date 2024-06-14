@@ -4182,6 +4182,8 @@ CompositionFunctionSolid qt_functionForModeSolid_C[] = {
         rasterop_solid_NotDestination
 };
 
+static_assert(std::size(qt_functionForModeSolid_C) == QPainter::NCompositionModes);
+
 CompositionFunctionSolid64 qt_functionForModeSolid64_C[] = {
 #if QT_CONFIG(raster_64bit)
         comp_func_solid_SourceOver_rgb64,
@@ -4217,6 +4219,8 @@ CompositionFunctionSolid64 qt_functionForModeSolid64_C[] = {
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
 };
 
+static_assert(std::size(qt_functionForModeSolid64_C) == QPainter::NCompositionModes);
+
 CompositionFunctionSolidFP qt_functionForModeSolidFP_C[] = {
 #if QT_CONFIG(raster_fp)
         comp_func_solid_SourceOver_rgbafp,
@@ -4244,12 +4248,14 @@ CompositionFunctionSolidFP qt_functionForModeSolidFP_C[] = {
         comp_func_solid_Difference_rgbafp,
         comp_func_solid_Exclusion_rgbafp,
 #else
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
 #endif
-        0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
 };
+
+static_assert(std::size(qt_functionForModeSolidFP_C) == QPainter::NCompositionModes);
 
 CompositionFunction qt_functionForMode_C[] = {
         comp_func_SourceOver,
@@ -4292,6 +4298,8 @@ CompositionFunction qt_functionForMode_C[] = {
         rasterop_NotDestination
 };
 
+static_assert(std::size(qt_functionForMode_C) == QPainter::NCompositionModes);
+
 CompositionFunction64 qt_functionForMode64_C[] = {
 #if QT_CONFIG(raster_64bit)
         comp_func_SourceOver_rgb64,
@@ -4327,6 +4335,8 @@ CompositionFunction64 qt_functionForMode64_C[] = {
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
 };
 
+static_assert(std::size(qt_functionForMode64_C) == QPainter::NCompositionModes);
+
 CompositionFunctionFP qt_functionForModeFP_C[] = {
 #if QT_CONFIG(raster_fp)
         comp_func_SourceOver_rgbafp,
@@ -4354,11 +4364,13 @@ CompositionFunctionFP qt_functionForModeFP_C[] = {
         comp_func_Difference_rgbafp,
         comp_func_Exclusion_rgbafp,
 #else
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
 #endif
-        0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr
 };
+
+static_assert(std::size(qt_functionForModeFP_C) == QPainter::NCompositionModes);
 
 QT_END_NAMESPACE

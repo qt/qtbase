@@ -2310,6 +2310,8 @@ void QPainter::setBrushOrigin(const QPointF &p)
     where the source is OR'ed with the inverted destination pixels
     (src OR (NOT dst)).
 
+    \omitvalue NCompositionModes
+
     \sa compositionMode(), setCompositionMode(), {QPainter#Composition
     Modes}{Composition Modes}, {Image Composition Example}
 */
