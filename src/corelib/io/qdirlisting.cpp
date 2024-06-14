@@ -121,8 +121,6 @@
 #include "qdiriterator.h"
 #include "qabstractfileengine_p.h"
 
-#include <QtCore/qset.h>
-
 #if QT_CONFIG(regularexpression)
 #include <QtCore/qregularexpression.h>
 #endif
