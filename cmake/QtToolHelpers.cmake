@@ -50,7 +50,9 @@ function(qt_internal_add_tool target_name)
         INSTALL_VERSIONED_LINK
         EXCEPTIONS
         NO_UNITY_BUILD
-        TRY_RUN)
+        TRY_RUN
+        ${__qt_internal_sbom_optional_args}
+    )
     set(one_value_keywords
         TOOLS_TARGET
         INSTALL_DIR
@@ -132,10 +134,6 @@ function(qt_internal_add_tool target_name)
         LINK_OPTIONS ${arg_LINK_OPTIONS}
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         DISABLE_AUTOGEN_TOOLS ${disable_autogen_tools}
-        ATTRIBUTION_ENTRY_INDEX "${arg_ATTRIBUTION_ENTRY_INDEX}"
-        ATTRIBUTION_FILE_PATHS ${arg_ATTRIBUTION_FILE_PATHS}
-        ATTRIBUTION_FILE_DIR_PATHS ${arg_ATTRIBUTION_FILE_DIR_PATHS}
-        SBOM_DEPENDENCIES ${arg_SBOM_DEPENDENCIES}
         TARGET_VERSION ${arg_TARGET_VERSION}
         TARGET_PRODUCT ${arg_TARGET_PRODUCT}
         TARGET_DESCRIPTION ${arg_TARGET_DESCRIPTION}
@@ -273,6 +271,18 @@ function(qt_internal_add_tool target_name)
     qt_internal_install_pdb_files(${target_name} "${install_dir}")
 
     if(QT_GENERATE_SBOM)
+        _qt_internal_forward_function_args(
+            FORWARD_APPEND
+            FORWARD_PREFIX arg
+            FORWARD_OUT_VAR sbom_args
+            FORWARD_OPTIONS
+                ${__qt_internal_sbom_optional_args}
+            FORWARD_SINGLE
+                ${__qt_internal_sbom_single_args}
+            FORWARD_MULTI
+                ${__qt_internal_sbom_multi_args}
+        )
+
         _qt_internal_extend_sbom(${target_name} ${sbom_args})
     endif()
 

@@ -138,10 +138,6 @@ function(qt_internal_add_executable name)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
-        ATTRIBUTION_ENTRY_INDEX "${arg_ATTRIBUTION_ENTRY_INDEX}"
-        ATTRIBUTION_FILE_PATHS ${arg_ATTRIBUTION_FILE_PATHS}
-        ATTRIBUTION_FILE_DIR_PATHS ${arg_ATTRIBUTION_FILE_DIR_PATHS}
-        SBOM_DEPENDENCIES ${arg_SBOM_DEPENDENCIES}
     )
     set_target_properties("${name}" PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${arg_OUTPUT_DIRECTORY}"
@@ -210,6 +206,23 @@ function(qt_internal_add_executable name)
                                       ${separate_debug_info_executable_arg}
                                       ADDITIONAL_INSTALL_ARGS ${additional_install_args})
         qt_internal_install_pdb_files(${name} "${arg_INSTALL_DIRECTORY}")
+    endif()
+
+    if(QT_GENERATE_SBOM)
+        set(sbom_args "")
+        _qt_internal_forward_function_args(
+            FORWARD_APPEND
+            FORWARD_PREFIX arg
+            FORWARD_OUT_VAR sbom_args
+            FORWARD_OPTIONS
+                ${__qt_internal_sbom_optional_args}
+            FORWARD_SINGLE
+                ${__qt_internal_sbom_single_args}
+            FORWARD_MULTI
+                ${__qt_internal_sbom_multi_args}
+        )
+
+        _qt_internal_extend_sbom(${name} ${sbom_args})
     endif()
 endfunction()
 

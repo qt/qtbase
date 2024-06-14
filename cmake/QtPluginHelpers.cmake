@@ -9,6 +9,7 @@ macro(qt_internal_get_internal_add_plugin_keywords option_args single_args multi
         ALLOW_UNDEFINED_SYMBOLS
         SKIP_INSTALL
         NO_UNITY_BUILD
+        ${__qt_internal_sbom_optional_args}
     )
     set(${single_args}
         OUTPUT_DIRECTORY
@@ -314,10 +315,6 @@ function(qt_internal_add_plugin target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
-        ATTRIBUTION_ENTRY_INDEX "${arg_ATTRIBUTION_ENTRY_INDEX}"
-        ATTRIBUTION_FILE_PATHS ${arg_ATTRIBUTION_FILE_PATHS}
-        ATTRIBUTION_FILE_DIR_PATHS ${arg_ATTRIBUTION_FILE_DIR_PATHS}
-        SBOM_DEPENDENCIES ${arg_SBOM_DEPENDENCIES}
     )
 
     qt_internal_add_repo_local_defines("${target}")
@@ -434,6 +431,18 @@ function(qt_internal_add_plugin target)
                 sbom_args
             )
         endforeach()
+
+        _qt_internal_forward_function_args(
+            FORWARD_APPEND
+            FORWARD_PREFIX arg
+            FORWARD_OUT_VAR sbom_args
+            FORWARD_OPTIONS
+                ${__qt_internal_sbom_optional_args}
+            FORWARD_SINGLE
+                ${__qt_internal_sbom_single_args}
+            FORWARD_MULTI
+                ${__qt_internal_sbom_multi_args}
+        )
 
         _qt_internal_extend_sbom(${target} ${sbom_args})
     endif()

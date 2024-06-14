@@ -18,6 +18,7 @@ macro(qt_internal_get_internal_add_module_keywords option_args single_args multi
         NO_HEADERSCLEAN_CHECK
         NO_GENERATE_CPP_EXPORTS
         NO_UNITY_BUILD
+        ${__qt_internal_sbom_optional_args}
     )
     set(${single_args}
         MODULE_INCLUDE_NAME
@@ -641,10 +642,6 @@ function(qt_internal_add_module target)
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
         PRECOMPILED_HEADER ${arg_PRECOMPILED_HEADER}
         NO_PCH_SOURCES ${arg_NO_PCH_SOURCES}
-        ATTRIBUTION_ENTRY_INDEX "${arg_ATTRIBUTION_ENTRY_INDEX}"
-        ATTRIBUTION_FILE_PATHS ${arg_ATTRIBUTION_FILE_PATHS}
-        ATTRIBUTION_FILE_DIR_PATHS ${arg_ATTRIBUTION_FILE_DIR_PATHS}
-        SBOM_DEPENDENCIES ${arg_SBOM_DEPENDENCIES}
     )
 
     # The public module define is not meant to be used when building the module itself,
@@ -920,9 +917,8 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
 
     qt_describe_module(${target})
 
-    set(sbom_args "")
-
     if(QT_GENERATE_SBOM)
+        set(sbom_args "")
         list(APPEND sbom_args TYPE QT_MODULE)
 
         qt_get_cmake_configurations(configs)
@@ -952,6 +948,18 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
                 sbom_args
             )
         endforeach()
+
+        _qt_internal_forward_function_args(
+            FORWARD_APPEND
+            FORWARD_PREFIX arg
+            FORWARD_OUT_VAR sbom_args
+            FORWARD_OPTIONS
+                ${__qt_internal_sbom_optional_args}
+            FORWARD_SINGLE
+                ${__qt_internal_sbom_single_args}
+            FORWARD_MULTI
+                ${__qt_internal_sbom_multi_args}
+        )
 
         _qt_internal_extend_sbom(${target} ${sbom_args})
     endif()
