@@ -104,7 +104,8 @@ public:
         Announcement         = 0x80D0,
         IdentifierChanged    = 0x80E0,
 
-        InvalidEvent
+        // was declared after AcceleratorChanged, without explicit value
+        InvalidEvent                    = AcceleratorChanged + 1,
     };
     Q_ENUM(Event)
 
@@ -369,10 +370,11 @@ public:
         Custom,
         Level,
     };
+    Q_ENUM(Attribute)
 
     enum class AnnouncementPriority {
         Polite,
-        Assertive
+        Assertive,
     };
     Q_ENUM(AnnouncementPriority)
 
