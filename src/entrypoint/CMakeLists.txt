@@ -49,6 +49,7 @@ qt_internal_add_module(EntryPointPrivate
     NO_PRIVATE_MODULE
     NO_ADDITIONAL_TARGET_INFO
     ${extra_cmake_includes_arg}
+    QT_LICENSE_ID QT_COMMERCIAL_OR_BSD3
 )
 
 set(export_targets EntryPointPrivate)
