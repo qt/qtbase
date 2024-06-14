@@ -11,7 +11,7 @@ import android.net.ConnectivityManager;
 import android.net.Proxy;
 import android.net.ProxyInfo;
 
-public class QtNetwork
+class QtNetwork
 {
     private static final String LOG_TAG = "QtNetwork";
     private static ProxyReceiver m_proxyReceiver = null;
@@ -29,7 +29,7 @@ public class QtNetwork
 
     private QtNetwork() {}
 
-    public static void registerReceiver(final Context context)
+    static void registerReceiver(final Context context)
     {
         synchronized (m_lock) {
             if (m_proxyReceiver == null) {
@@ -40,7 +40,7 @@ public class QtNetwork
         }
     }
 
-    public static void unregisterReceiver(final Context context)
+    static void unregisterReceiver(final Context context)
     {
         synchronized (m_lock) {
             if (m_proxyReceiver == null)
@@ -50,12 +50,12 @@ public class QtNetwork
         }
     }
 
-    public static ConnectivityManager getConnectivityManager(final Context context)
+    static ConnectivityManager getConnectivityManager(final Context context)
     {
         return (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
     }
 
-    public static ProxyInfo getProxyInfo(final Context context)
+    static ProxyInfo getProxyInfo(final Context context)
     {
         if (m_proxyInfo == null)
             m_proxyInfo = (ProxyInfo)getConnectivityManager(context).getDefaultProxy();
