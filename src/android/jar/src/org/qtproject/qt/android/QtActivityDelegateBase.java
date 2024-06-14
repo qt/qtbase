@@ -77,7 +77,7 @@ abstract class QtActivityDelegateBase
         return m_contextMenuVisible;
     }
 
-    public void startNativeApplication(String appParams, String mainLib)
+    void startNativeApplication(String appParams, String mainLib)
     {
         if (m_membersInitialized)
             return;
@@ -128,7 +128,7 @@ abstract class QtActivityDelegateBase
         }
     }
 
-    public void hideSplashScreen()
+    void hideSplashScreen()
     {
         hideSplashScreen(0);
     }

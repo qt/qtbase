@@ -25,19 +25,19 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
 {
 
     // keyboard methods
-    public static native void keyDown(int key, int unicode, int modifier, boolean autoRepeat);
-    public static native void keyUp(int key, int unicode, int modifier, boolean autoRepeat);
-    public static native void keyboardVisibilityChanged(boolean visibility);
-    public static native void keyboardGeometryChanged(int x, int y, int width, int height);
+    static native void keyDown(int key, int unicode, int modifier, boolean autoRepeat);
+    static native void keyUp(int key, int unicode, int modifier, boolean autoRepeat);
+    static native void keyboardVisibilityChanged(boolean visibility);
+    static native void keyboardGeometryChanged(int x, int y, int width, int height);
     // keyboard methods
 
     // dispatch events methods
-    public static native boolean dispatchGenericMotionEvent(MotionEvent event);
-    public static native boolean dispatchKeyEvent(KeyEvent event);
+    static native boolean dispatchGenericMotionEvent(MotionEvent event);
+    static native boolean dispatchKeyEvent(KeyEvent event);
     // dispatch events methods
 
     // handle methods
-    public static native void handleLocationChanged(int id, int x, int y);
+    static native void handleLocationChanged(int id, int x, int y);
     // handle methods
 
     private QtEditText m_currentEditText = null;
@@ -63,9 +63,9 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     private static final int CursorHandleShowEdit       = 0x100;
 
     // Handle IDs
-    public static final int IdCursorHandle = 1;
-    public static final int IdLeftHandle = 2;
-    public static final int IdRightHandle = 3;
+    static final int IdCursorHandle = 1;
+    static final int IdLeftHandle = 2;
+    static final int IdRightHandle = 3;
 
     private static Boolean m_tabletEventSupported = null;
 
@@ -79,7 +79,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     // Note: because of the circular call to updateFullScreen() from the delegate, we need
     // a listener to be able to do that call from the delegate, because that's where that
     // logic lives
-    public interface KeyboardVisibilityListener {
+    interface KeyboardVisibilityListener {
         void onKeyboardVisibilityChange();
     }
 
@@ -243,7 +243,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     }
     // QtInputConnectionListener methods
 
-    public boolean isKeyboardVisible()
+    boolean isKeyboardVisible()
     {
         return m_keyboardIsVisible;
     }
@@ -269,7 +269,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         QtInputDelegate.keyboardVisibilityChanged(visibility);
     }
 
-    public void setKeyboardVisibility(boolean visibility, long timeStamp)
+    void setKeyboardVisibility(boolean visibility, long timeStamp)
     {
         if (m_showHideTimeStamp > timeStamp)
             return;
@@ -427,7 +427,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         }
     }
 
-    public boolean onKeyDown(int keyCode, KeyEvent event)
+    boolean onKeyDown(int keyCode, KeyEvent event)
     {
         m_metaState = MetaKeyKeyListener.handleKeyDown(m_metaState, keyCode, event);
         int metaState = MetaKeyKeyListener.getMetaState(m_metaState) | event.getMetaState();
@@ -459,7 +459,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         return true;
     }
 
-    public boolean onKeyUp(int keyCode, KeyEvent event)
+    boolean onKeyUp(int keyCode, KeyEvent event)
     {
         if ((keyCode == KeyEvent.KEYCODE_VOLUME_UP
                 || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
@@ -481,7 +481,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         return true;
     }
 
-    public boolean handleDispatchKeyEvent(KeyEvent event)
+    boolean handleDispatchKeyEvent(KeyEvent event)
     {
         if (event.getAction() == KeyEvent.ACTION_MULTIPLE
                 && event.getCharacters() != null
@@ -496,7 +496,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         return dispatchKeyEvent(event);
     }
 
-    public boolean handleDispatchGenericMotionEvent(MotionEvent event)
+    boolean handleDispatchGenericMotionEvent(MotionEvent event)
     {
         return dispatchGenericMotionEvent(event);
     }
@@ -506,24 +506,24 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
     //////////////////////////////
 
     // tablet methods
-    public static native boolean isTabletEventSupported();
-    public static native void tabletEvent(int winId, int deviceId, long time, int action,
+    static native boolean isTabletEventSupported();
+    static native void tabletEvent(int winId, int deviceId, long time, int action,
                                           int pointerType, int buttonState, float x, float y,
                                           float pressure);
     // tablet methods
 
     // pointer methods
-    public static native void mouseDown(int winId, int x, int y, int mouseButtonState);
-    public static native void mouseUp(int winId, int x, int y, int mouseButtonState);
-    public static native void mouseMove(int winId, int x, int y);
-    public static native void mouseWheel(int winId, int x, int y, float hDelta, float vDelta);
-    public static native void touchBegin(int winId);
-    public static native void touchAdd(int winId, int pointerId, int action, boolean primary,
+    static native void mouseDown(int winId, int x, int y, int mouseButtonState);
+    static native void mouseUp(int winId, int x, int y, int mouseButtonState);
+    static native void mouseMove(int winId, int x, int y);
+    static native void mouseWheel(int winId, int x, int y, float hDelta, float vDelta);
+    static native void touchBegin(int winId);
+    static native void touchAdd(int winId, int pointerId, int action, boolean primary,
                                        int x, int y, float major, float minor, float rotation,
                                        float pressure);
-    public static native void touchEnd(int winId, int action);
-    public static native void touchCancel(int winId);
-    public static native void longPress(int winId, int x, int y);
+    static native void touchEnd(int winId, int action);
+    static native void touchCancel(int winId);
+    static native void longPress(int winId, int x, int y);
     // pointer methods
 
     static private int getAction(int index, MotionEvent event)
@@ -553,7 +553,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         return 2;
     }
 
-    static public void sendTouchEvent(MotionEvent event, int id)
+    static void sendTouchEvent(MotionEvent event, int id)
     {
         int pointerType = 0;
 
@@ -609,12 +609,12 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         }
     }
 
-    static public void sendTrackballEvent(MotionEvent event, int id)
+    static void sendTrackballEvent(MotionEvent event, int id)
     {
         sendMouseEvent(event,id);
     }
 
-    static public boolean sendGenericMotionEvent(MotionEvent event, int id)
+    static boolean sendGenericMotionEvent(MotionEvent event, int id)
     {
         int scrollOrHoverMove = MotionEvent.ACTION_SCROLL | MotionEvent.ACTION_HOVER_MOVE;
         int pointerDeviceModifier = (event.getSource() & InputDevice.SOURCE_CLASS_POINTER);
@@ -626,7 +626,7 @@ class QtInputDelegate implements QtInputConnection.QtInputConnectionListener, Qt
         return sendMouseEvent(event, id);
     }
 
-    static public boolean sendMouseEvent(MotionEvent event, int id)
+    static boolean sendMouseEvent(MotionEvent event, int id)
     {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_UP:

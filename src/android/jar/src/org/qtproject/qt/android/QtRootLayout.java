@@ -20,7 +20,7 @@ class QtRootLayout extends QtLayout
 {
     private int m_previousRotation = -1;
 
-    public QtRootLayout(Context context)
+    QtRootLayout(Context context)
     {
         super(context);
     }
@@ -51,7 +51,7 @@ class QtRootLayout extends QtLayout
         }
     }
 
-    public boolean isSameSizeForOrientations(int r1, int r2) {
+    boolean isSameSizeForOrientations(int r1, int r2) {
         return (r1 == r2) ||
                 (r1 == Surface.ROTATION_0 && r2 == Surface.ROTATION_180)
                 || (r1 == Surface.ROTATION_180 && r2 == Surface.ROTATION_0)

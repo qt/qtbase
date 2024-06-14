@@ -21,7 +21,7 @@ import java.util.ArrayList;
 abstract class QtView extends ViewGroup {
     private final static String TAG = "QtView";
 
-    public interface QtWindowListener {
+    interface QtWindowListener {
         // Called when the QWindow has been created and it's Java counterpart embedded into
         // QtView
         void onQtWindowLoaded();
@@ -49,7 +49,7 @@ abstract class QtView extends ViewGroup {
     * the Qt app.
     * @param context the hosting Context
    **/
-    public QtView(Context context) {
+    QtView(Context context) {
         super(context);
 
         m_viewInterface = QtEmbeddedViewInterfaceFactory.create(context);
@@ -77,7 +77,7 @@ abstract class QtView extends ViewGroup {
      * @param appLibName the name of the Qt app library to load and start. This corresponds to the
               target name set in Qt app's CMakeLists.txt
     **/
-    public QtView(Context context, String appLibName) throws InvalidParameterException {
+    QtView(Context context, String appLibName) throws InvalidParameterException {
         this(context);
         if (appLibName == null || appLibName.isEmpty()) {
             throw new InvalidParameterException("QtView: argument 'appLibName' may not be empty "+
@@ -138,7 +138,7 @@ abstract class QtView extends ViewGroup {
     }
 
 
-    public void setQtWindowListener(QtWindowListener listener) {
+    void setQtWindowListener(QtWindowListener listener) {
         m_windowListener = listener;
     }
 

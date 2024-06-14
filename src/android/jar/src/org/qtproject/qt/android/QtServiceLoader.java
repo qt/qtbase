@@ -11,7 +11,7 @@ import android.util.Log;
 class QtServiceLoader extends QtLoader {
     private final Service m_service;
 
-    public QtServiceLoader(Service service) {
+    QtServiceLoader(Service service) {
         super(new ContextWrapper(service));
         m_service = service;
 

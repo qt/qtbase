@@ -28,7 +28,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
 
     // Qt uses the upper half of the unsigned integers
     // all low positive ints should be fine.
-    public static final int INVALID_ID = 333; // half evil
+    static final int INVALID_ID = 333; // half evil
 
     // The platform might ask for the class implementing the "view".
     // Pretend to be an inner class of the QtSurface.
@@ -63,7 +63,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
     // e.g. one per window?
     // FIXME make QtAccessibilityDelegate window based or verify current way works
     // also for child windows: QTBUG-120685
-    public QtAccessibilityDelegate(QtLayout layout)
+    QtAccessibilityDelegate(QtLayout layout)
     {
         m_layout = layout;
 
@@ -156,13 +156,13 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         return true;
     }
 
-    public void notifyScrolledEvent(int viewId)
+    void notifyScrolledEvent(int viewId)
     {
         QtNative.runAction(() -> sendEventForVirtualViewId(viewId,
                 AccessibilityEvent.TYPE_VIEW_SCROLLED));
     }
 
-    public void notifyLocationChange(int viewId)
+    void notifyLocationChange(int viewId)
     {
         QtNative.runAction(() -> {
             if (m_focusedVirtualViewId == viewId)
@@ -170,7 +170,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         });
     }
 
-    public void notifyObjectHide(int viewId, int parentId)
+    void notifyObjectHide(int viewId, int parentId)
     {
         QtNative.runAction(() -> {
             // If the object had accessibility focus, we need to clear it.
@@ -189,7 +189,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         });
     }
 
-    public void notifyObjectShow(int parentId)
+    void notifyObjectShow(int parentId)
     {
         QtNative.runAction(() -> {
             // When the object is shown, we need to notify its parent about
@@ -198,7 +198,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         });
     }
 
-    public void notifyObjectFocus(int viewId)
+    void notifyObjectFocus(int viewId)
     {
         QtNative.runAction(() -> {
             if (m_view == null)
@@ -210,7 +210,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         });
     }
 
-    public void notifyValueChanged(int viewId, String value)
+    void notifyValueChanged(int viewId, String value)
     {
         QtNative.runAction(() -> {
             // Send a TYPE_ANNOUNCEMENT event with the new value
@@ -247,13 +247,13 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         });
     }
 
-    public void sendEventForVirtualViewId(int virtualViewId, int eventType)
+    void sendEventForVirtualViewId(int virtualViewId, int eventType)
     {
         final AccessibilityEvent event = getEventForVirtualViewId(virtualViewId, eventType);
         sendAccessibilityEvent(event);
     }
 
-    public void sendAccessibilityEvent(AccessibilityEvent event)
+    void sendAccessibilityEvent(AccessibilityEvent event)
     {
         if (event == null)
             return;
@@ -267,7 +267,7 @@ class QtAccessibilityDelegate extends View.AccessibilityDelegate
         group.requestSendAccessibilityEvent(m_view, event);
     }
 
-    public void invalidateVirtualViewId(int virtualViewId)
+    void invalidateVirtualViewId(int virtualViewId)
     {
         final AccessibilityEvent event = getEventForVirtualViewId(virtualViewId, AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED);
 

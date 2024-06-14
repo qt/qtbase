@@ -27,7 +27,7 @@ class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.OnLayout
     private CursorHandle m_leftSelectionHandle;
     private CursorHandle m_rightSelectionHandle;
 
-    public EditPopupMenu(Activity activity, View layout)
+    EditPopupMenu(Activity activity, View layout)
     {
         m_activity = activity;
         m_view = new EditContextView(activity, this);
@@ -53,7 +53,7 @@ class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.OnLayout
     }
 
     // Show the handle at a given position (or move it if it is already shown)
-    public void setPosition(final int x, final int y, final int buttons,
+    void setPosition(final int x, final int y, final int buttons,
                             CursorHandle cursorHandle, CursorHandle leftSelectionHandle, CursorHandle rightSelectionHandle)
     {
         initOverlay();
@@ -105,7 +105,7 @@ class EditPopupMenu implements ViewTreeObserver.OnPreDrawListener, View.OnLayout
         m_rightSelectionHandle = rightSelectionHandle;
     }
 
-    public void hide() {
+    void hide() {
         if (m_popup != null) {
             m_popup.dismiss();
             m_popup = null;

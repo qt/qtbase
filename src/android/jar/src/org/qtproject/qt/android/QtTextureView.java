@@ -16,7 +16,7 @@ class QtTextureView extends TextureView implements TextureView.SurfaceTextureLis
     private boolean m_staysOnTop;
     private Surface m_surface;
 
-    public QtTextureView(Context context, QtSurfaceInterface surfaceCallback, boolean isOpaque)
+    QtTextureView(Context context, QtSurfaceInterface surfaceCallback, boolean isOpaque)
     {
         super(context);
         setFocusable(false);

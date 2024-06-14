@@ -149,7 +149,7 @@ class ExtractStyle {
         return (config.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
     }
 
-    public static String setup(Context context, String extractOption, int dpi) {
+    static String setup(Context context, String extractOption, int dpi) {
 
         String dataDir = context.getApplicationInfo().dataDir;
         m_stylePath = dataDir + "/qt-reserved-files/android-style/" + dpi + "/";
@@ -189,7 +189,7 @@ class ExtractStyle {
         return m_stylePath;
     }
 
-    public static void runIfNeeded(Context context, boolean extractDarkMode) {
+    static void runIfNeeded(Context context, boolean extractDarkMode) {
         if (m_stylePath == null)
             return;
         if (extractDarkMode) {
@@ -203,7 +203,7 @@ class ExtractStyle {
         }
     }
 
-    public ExtractStyle(Context context, String extractPath, boolean minimal) {
+    ExtractStyle(Context context, String extractPath, boolean minimal) {
         m_minimal = minimal;
         m_extractPath = extractPath + "/";
         boolean dirCreated = new File(m_extractPath).mkdirs();
@@ -770,7 +770,7 @@ class ExtractStyle {
         return json;
     }
 
-    public JSONObject getDrawable(Object drawable, String filename, Rect padding) {
+    JSONObject getDrawable(Object drawable, String filename, Rect padding) {
         if (drawable == null || m_minimal)
             return null;
 
@@ -951,11 +951,11 @@ class ExtractStyle {
         return sortedAttrs;
     }
 
-    public void extractViewInformation(int styleName, JSONObject json, String qtClassName) {
+    void extractViewInformation(int styleName, JSONObject json, String qtClassName) {
         extractViewInformation(styleName, json, qtClassName, null);
     }
 
-    public void extractViewInformation(int styleName, JSONObject json, String qtClassName, AttributeSet attributeSet) {
+    void extractViewInformation(int styleName, JSONObject json, String qtClassName, AttributeSet attributeSet) {
         try {
             TypedValue typedValue = new TypedValue();
             Context ctx = new ContextThemeWrapper(m_context, m_theme);
@@ -1077,13 +1077,13 @@ class ExtractStyle {
         }
     }
 
-    public JSONObject extractTextAppearance(int styleName)
+    JSONObject extractTextAppearance(int styleName)
     {
         return extractTextAppearance(styleName, false);
     }
 
     @SuppressLint("ResourceType")
-    public JSONObject extractTextAppearance(int styleName, boolean subStyle)
+    JSONObject extractTextAppearance(int styleName, boolean subStyle)
     {
         final int[] attributes = new int[]{
                 android.R.attr.textSize,
@@ -1135,11 +1135,11 @@ class ExtractStyle {
         return json;
     }
 
-    public JSONObject extractTextAppearanceInformation(int styleName, String qtClass) {
+    JSONObject extractTextAppearanceInformation(int styleName, String qtClass) {
         return extractTextAppearanceInformation(styleName, qtClass, android.R.attr.textAppearance, null);
     }
 
-    public JSONObject extractTextAppearanceInformation(int styleName, String qtClass, int textAppearance, AttributeSet attributeSet) {
+    JSONObject extractTextAppearanceInformation(int styleName, String qtClass, int textAppearance, AttributeSet attributeSet) {
         JSONObject json = new JSONObject();
         extractViewInformation(styleName, json, qtClass, attributeSet);
 
@@ -1371,7 +1371,7 @@ class ExtractStyle {
         return json;
     }
 
-    public JSONObject extractImageViewInformation(int styleName, String qtClassName) {
+    JSONObject extractImageViewInformation(int styleName, String qtClassName) {
         JSONObject json = new JSONObject();
         try {
             extractViewInformation(styleName, json, qtClassName);
@@ -1805,11 +1805,11 @@ class ExtractStyle {
         private boolean m_addComma = false;
         private int m_indentLevel = 0;
 
-        public SimpleJsonWriter(String filePath) throws FileNotFoundException {
+        SimpleJsonWriter(String filePath) throws FileNotFoundException {
             m_writer = new OutputStreamWriter(new FileOutputStream(filePath));
         }
 
-        public void close() throws IOException {
+        void close() throws IOException {
             m_writer.close();
         }
 
@@ -1850,7 +1850,7 @@ class ExtractStyle {
     static class DrawableCache {
         JSONObject object;
         Object drawable;
-        public DrawableCache(JSONObject json, Object drawable) {
+        DrawableCache(JSONObject json, Object drawable) {
             object = json;
             this.drawable = drawable;
         }

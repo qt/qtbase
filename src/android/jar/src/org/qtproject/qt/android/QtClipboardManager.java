@@ -18,14 +18,14 @@ import java.util.concurrent.Semaphore;
 
 class QtClipboardManager
 {
-    public static native void onClipboardDataChanged(long nativePointer);
+    static native void onClipboardDataChanged(long nativePointer);
 
     private final static String TAG = "QtClipboardManager";
     private ClipboardManager m_clipboardManager = null;
     private boolean m_usePrimaryClip = false;
     private final long m_nativePointer;
 
-    public QtClipboardManager(Context context, long nativePointer)
+    QtClipboardManager(Context context, long nativePointer)
     {
         m_nativePointer = nativePointer;
         registerClipboardManager(context);
@@ -53,7 +53,7 @@ class QtClipboardManager
     }
 
     @UsedFromNativeCode
-    public void clearClipData()
+    void clearClipData()
     {
         if (m_clipboardManager != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -68,7 +68,7 @@ class QtClipboardManager
     }
 
     @UsedFromNativeCode
-    public void setClipboardText(Context context, String text)
+    void setClipboardText(Context context, String text)
     {
         if (m_clipboardManager != null) {
             ClipData clipData = ClipData.newPlainText("text/plain", text);
@@ -76,7 +76,7 @@ class QtClipboardManager
         }
     }
 
-    public static boolean hasClipboardText(Context context)
+    static boolean hasClipboardText(Context context)
     {
         ClipboardManager clipboardManager =
                 (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -98,13 +98,13 @@ class QtClipboardManager
     }
 
     @UsedFromNativeCode
-    public boolean hasClipboardText()
+    boolean hasClipboardText()
     {
         return hasClipboardMimeType("text/(.*)");
     }
 
     @UsedFromNativeCode
-    public String getClipboardText()
+    String getClipboardText()
     {
         try {
             if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
@@ -143,7 +143,7 @@ class QtClipboardManager
     }
 
     @UsedFromNativeCode
-    public void setClipboardHtml(Context context, String text, String html)
+    void setClipboardHtml(Context context, String text, String html)
     {
         if (m_clipboardManager != null) {
             ClipData clipData = ClipData.newHtmlText("text/html", text, html);
@@ -170,13 +170,13 @@ class QtClipboardManager
     }
 
     @UsedFromNativeCode
-    public boolean hasClipboardHtml()
+    boolean hasClipboardHtml()
     {
         return hasClipboardMimeType("text/html");
     }
 
     @UsedFromNativeCode
-    public String getClipboardHtml()
+    String getClipboardHtml()
     {
         try {
             if (m_clipboardManager != null && m_clipboardManager.hasPrimaryClip()) {
@@ -194,7 +194,7 @@ class QtClipboardManager
     }
 
     @UsedFromNativeCode
-    public void setClipboardUri(Context context, String uriString)
+    void setClipboardUri(Context context, String uriString)
     {
         if (m_clipboardManager != null) {
             ClipData clipData = ClipData.newUri(context.getContentResolver(), "text/uri-list",
@@ -204,7 +204,7 @@ class QtClipboardManager
     }
 
     @UsedFromNativeCode
-    public boolean hasClipboardUri()
+    boolean hasClipboardUri()
     {
         return hasClipboardMimeType("text/uri-list");
     }

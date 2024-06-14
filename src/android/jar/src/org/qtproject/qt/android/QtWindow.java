@@ -23,7 +23,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     private static native void setSurface(int windowId, Surface surface);
     static native void windowFocusChanged(boolean hasFocus, int id);
 
-    public QtWindow(Context context, QtWindow parentWindow,
+    QtWindow(Context context, QtWindow parentWindow,
                     QtInputConnection.QtInputConnectionListener listener)
     {
         super(context);
@@ -86,14 +86,14 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     }
 
     @UsedFromNativeCode
-    public void removeWindow()
+    void removeWindow()
     {
         if (m_parentWindow != null)
             m_parentWindow.removeChildWindow(getId());
     }
 
     @UsedFromNativeCode
-    public void createSurface(final boolean onTop,
+    void createSurface(final boolean onTop,
                               final int x, final int y, final int w, final int h,
                               final int imageDepth, final boolean isOpaque,
                               final int surfaceContainerType) // TODO constant for type
@@ -119,7 +119,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     }
 
     @UsedFromNativeCode
-    public void destroySurface()
+    void destroySurface()
     {
         QtNative.runAction(()-> {
             if (m_surfaceContainer != null) {
@@ -130,7 +130,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     }
 
     @UsedFromNativeCode
-    public void setGeometry(final int x, final int y, final int w, final int h)
+    void setGeometry(final int x, final int y, final int w, final int h)
     {
         QtNative.runAction(()-> {
             if (getContext() instanceof QtActivityBase)
@@ -138,7 +138,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         });
     }
 
-    public void addChildWindow(QtWindow window)
+    void addChildWindow(QtWindow window)
     {
         QtNative.runAction(()-> {
             m_childWindows.put(window.getId(), window);
@@ -146,7 +146,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
         });
     }
 
-    public void removeChildWindow(int id)
+    void removeChildWindow(int id)
     {
         QtNative.runAction(()-> {
             if (m_childWindows.containsKey(id))
@@ -155,7 +155,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     }
 
     @UsedFromNativeCode
-    public void setNativeView(final View view,
+    void setNativeView(final View view,
                               final int x, final int y, final int w, final int h)
     {
         QtNative.runAction(()-> {
@@ -171,7 +171,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     }
 
     @UsedFromNativeCode
-    public void bringChildToFront(int id)
+    void bringChildToFront(int id)
     {
         QtNative.runAction(()-> {
             View view = m_childWindows.get(id);
@@ -183,7 +183,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     }
 
     @UsedFromNativeCode
-    public void bringChildToBack(int id) {
+    void bringChildToBack(int id) {
         QtNative.runAction(()-> {
             View view = m_childWindows.get(id);
             if (view != null) {
@@ -193,7 +193,7 @@ class QtWindow extends QtLayout implements QtSurfaceInterface {
     }
 
     @UsedFromNativeCode
-    public void removeNativeView()
+    void removeNativeView()
     {
         QtNative.runAction(()-> {
             if (m_nativeView != null) {
