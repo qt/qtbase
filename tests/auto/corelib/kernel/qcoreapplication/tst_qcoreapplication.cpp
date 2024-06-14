@@ -1065,7 +1065,7 @@ static void createQObjectOnDestruction()
     // QThread) after the last QObject has been destroyed (especially after
     // QCoreApplication has).
 
-#if !defined(QT_QGUIAPPLICATIONTEST) && !defined(Q_OS_WIN)
+#if !defined(QT_QGUIAPPLICATIONTEST) && !defined(Q_OS_WIN) && !defined(Q_OS_VXWORKS)
     // QCoreApplicationData's global static destructor has run and cleaned up
     // the QAdoptedThrad.
     if (theMainThreadIsSet())
