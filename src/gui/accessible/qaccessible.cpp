@@ -452,20 +452,20 @@ Q_LOGGING_CATEGORY(lcAccessibilityCore, "qt.accessibility.core");
     \sa QAccessibleAttributesInterface
 */
 
-/*! \enum QAccessible::AnnouncementPriority
+/*! \enum QAccessible::AnnouncementPoliteness
     This enum describes the priority for announcements used by the
     \l QAccessibleAnnouncementEvent.
     \since 6.8
 
-    With \a QAccessible::AnouncementPriority::Polite, assistive technologies
+    With \a QAccessible::AnouncementPoliteness::Polite, assistive technologies
     should announce the message at the next graceful opportunity such as at the
     end of speaking the current sentence or when the user pauses typing.
 
-    When specifying \a QAccessible::AnouncementPriority::Assertive, assistive
+    When specifying \a QAccessible::AnouncementPoliteness::Assertive, assistive
     technologies should notify the user immediately.
 
     Because an interruption might disorient users or cause them to not complete
-    their current task, \a QAccessible::AnouncementPriority::Assertive should
+    their current task, \a QAccessible::AnouncementPoliteness::Assertive should
     not be used unless the interruption is imperative.
 
     \value Polite      The announcement has normal priority.
@@ -1827,17 +1827,19 @@ QAccessibleTextSelectionEvent::~QAccessibleTextSelectionEvent()
 /*! \fn QAccessibleAnnouncementEvent::QAccessibleAnnouncementEvent(QObject *object, const QString &message)
 
     Constructs a new QAccessibleAnnouncementEvent event for \a object
-    to request the announcement of \a message with priority \l QAccessible::AnnouncementPriority::Polite.
+    to request the announcement of \a message with politeness
+    \l QAccessible::AnnouncementPoliteness::Polite.
 
-    \l QAccessibleAnnouncementEvent::setPriority can be used to adjust the priority.
+    \l QAccessibleAnnouncementEvent::setPoliteness can be used to adjust the politeness.
 */
 
 /*! \fn QAccessibleAnnouncementEvent::QAccessibleAnnouncementEvent(QAccessibleInterface *iface, const QString &message)
 
     Constructs a new QAccessibleAnnouncementEvent event for \a iface
-    to request the announcement of \a message with priority \l QAccessible::AnnouncementPriority::Polite.
+    to request the announcement of \a message with politeness
+    \l QAccessible::AnnouncementPoliteness::Polite.
 
-    \l QAccessibleAnnouncementEvent::setPriority can be used to adjust the priority.
+    \l QAccessibleAnnouncementEvent::setPoliteness can be used to adjust the politeness.
 */
 
 /*! \fn QString QAccessibleAnnouncementEvent::message() const
@@ -1845,14 +1847,14 @@ QAccessibleTextSelectionEvent::~QAccessibleTextSelectionEvent()
     Returns the message.
 */
 
-/*! \fn QAccessible::AnnouncementPriority QAccessibleAnnouncementEvent::priority() const
+/*! \fn QAccessible::AnnouncementPoliteness QAccessibleAnnouncementEvent::politeness() const
 
-    Returns the priority.
+    Returns the politeness.
 */
 
-/*! \fn void QAccessibleAnnouncementEvent::setPriority(QAccessible::AnnouncementPriority priority)
+/*! \fn void QAccessibleAnnouncementEvent::setPoliteness(QAccessible::AnnouncementPoliteness politeness)
 
-    Sets the priority with which the announcement will be requested to \a priority.
+    Sets the politeness with which the announcement will be requested to \a politeness.
 */
 
 

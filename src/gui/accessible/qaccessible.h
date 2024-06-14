@@ -613,7 +613,7 @@ public:
     inline QAccessibleAnnouncementEvent(QObject *object, const QString &message)
         : QAccessibleEvent(object, QAccessible::InvalidEvent)
           , m_message(message)
-          , m_priority(QAccessible::AnnouncementPriority::Polite)
+          , m_politeness(QAccessible::AnnouncementPoliteness::Polite)
     {
         m_type = QAccessible::Announcement;
     }
@@ -621,7 +621,7 @@ public:
     inline QAccessibleAnnouncementEvent(QAccessibleInterface *iface, const QString &message)
         : QAccessibleEvent(iface, QAccessible::InvalidEvent)
           , m_message(message)
-          , m_priority(QAccessible::AnnouncementPriority::Polite)
+          , m_politeness(QAccessible::AnnouncementPoliteness::Polite)
     {
         m_type = QAccessible::Announcement;
     }
@@ -629,12 +629,12 @@ public:
     ~QAccessibleAnnouncementEvent();
 
     QString message() const { return m_message; }
-    QAccessible::AnnouncementPriority priority() const { return m_priority; }
-    void setPriority(QAccessible::AnnouncementPriority priority) { m_priority = priority; };
+    QAccessible::AnnouncementPoliteness politeness() const { return m_politeness; }
+    void setPoliteness(QAccessible::AnnouncementPoliteness politeness) { m_politeness = politeness; };
 
 protected:
     QString m_message;
-    QAccessible::AnnouncementPriority m_priority;
+    QAccessible::AnnouncementPoliteness m_politeness;
 };
 
 #ifndef Q_QDOC

@@ -210,8 +210,8 @@ void QWindowsUiaMainProvider::raiseNotification(QAccessibleAnnouncementEvent *ev
     if (QAccessibleInterface *accessible = event->accessibleInterface()) {
         if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
             BSTR message = bStrFromQString(event->message());
-            QAccessible::AnnouncementPriority prio = event->priority();
-            NotificationProcessing processing = (prio == QAccessible::AnnouncementPriority::Assertive)
+            QAccessible::AnnouncementPoliteness prio = event->politeness();
+            NotificationProcessing processing = (prio == QAccessible::AnnouncementPoliteness::Assertive)
                     ? NotificationProcessing_ImportantAll
                     : NotificationProcessing_All;
             BSTR activityId = bStrFromQString(QString::fromLatin1(""));

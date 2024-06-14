@@ -38,7 +38,7 @@ void QCocoaAccessibility::notifyAccessibilityUpdate(QAccessibleEvent *event)
     switch (event->type()) {
     case QAccessible::Announcement: {
         auto *announcementEvent = static_cast<QAccessibleAnnouncementEvent *>(event);
-        auto priorityLevel = (announcementEvent->priority() == QAccessible::AnnouncementPriority::Assertive)
+        auto priorityLevel = (announcementEvent->politeness() == QAccessible::AnnouncementPoliteness::Assertive)
                 ? NSAccessibilityPriorityHigh
                 : NSAccessibilityPriorityMedium;
         NSDictionary *announcementInfo = @{
