@@ -12,7 +12,7 @@ import android.net.NetworkCapabilities;
 import android.net.Network;
 import android.os.Build;
 
-public class QtAndroidNetworkInformation {
+class QtAndroidNetworkInformation {
     private static final String LOG_TAG = "QtAndroidNetworkInformation";
 
     private static native void networkConnectivityChanged(int connectivity);
@@ -40,8 +40,8 @@ public class QtAndroidNetworkInformation {
     }
 
     private static class QtNetworkInformationCallback extends NetworkCallback {
-        public AndroidConnectivity previousState = null;
-        public Transport previousTransport = null;
+        AndroidConnectivity previousState = null;
+        Transport previousTransport = null;
 
         QtNetworkInformationCallback() {
         }
@@ -116,14 +116,14 @@ public class QtAndroidNetworkInformation {
     private QtAndroidNetworkInformation() {
     }
 
-    public static AndroidConnectivity state() {
+    static AndroidConnectivity state() {
         if (m_callback != null && m_callback.previousState != null)
             return m_callback.previousState;
         return AndroidConnectivity.Unknown;
     }
 
     @SuppressLint("MissingPermission")
-    public static void registerReceiver(final Context context) {
+    static void registerReceiver(final Context context) {
         synchronized (m_lock) {
             if (m_callback == null) {
                 ConnectivityManager manager = getConnectivityManager(context);
@@ -145,7 +145,7 @@ public class QtAndroidNetworkInformation {
         }
     }
 
-    public static void unregisterReceiver(final Context context) {
+    static void unregisterReceiver(final Context context) {
         synchronized (m_lock) {
             if (m_callback != null) {
                 getConnectivityManager(context).unregisterNetworkCallback(m_callback);
@@ -154,7 +154,7 @@ public class QtAndroidNetworkInformation {
         }
     }
 
-    public static ConnectivityManager getConnectivityManager(final Context context) {
+    static ConnectivityManager getConnectivityManager(final Context context) {
         return (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
     }
 }
