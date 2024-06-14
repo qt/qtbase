@@ -1329,8 +1329,12 @@ void QHttp2Connection::handleRST_STREAM()
         return;
     }
 
-    // Anything greater than m_nextStreamID has not been started yet.
-    if (streamID >= m_nextStreamID) {
+    // Verify that whatever stream is being RST'd is not in the idle state:
+    const quint32 lastRelevantStreamID = [this, streamID]() {
+        quint32 peerMask = m_connectionType == Type::Client ? 0 : 1;
+        return ((streamID & 1) == peerMask) ? m_lastIncomingStreamID : m_nextStreamID - 2;
+    }();
+    if (streamID > lastRelevantStreamID) {
         // "RST_STREAM frames MUST NOT be sent for a stream
         // in the "idle" state. .. the recipient MUST treat this
         // as a connection error (Section 5.4.1) of type PROTOCOL_ERROR."
