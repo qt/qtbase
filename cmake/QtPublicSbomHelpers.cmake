@@ -262,11 +262,10 @@ function(_qt_internal_sbom_end_project)
     set_property(GLOBAL PROPERTY _qt_internal_sbom_repo_begin_called FALSE)
 endfunction()
 
-# Helper to get the options that _qt_internal_sbom_add_target understands.
-# Also used in qt_find_package_extend_sbom.
-macro(_qt_internal_get_sbom_add_target_options opt_args single_args multi_args)
+# Helper to get the options that _qt_internal_sbom_add_target understands, but that are also
+# a safe subset for qt_internal_add_module, qt_internal_extend_target, etc to understand.
+macro(_qt_internal_get_sbom_add_target_common_options opt_args single_args multi_args)
     set(${opt_args}
-        NO_INSTALL
         NO_CURRENT_DIR_ATTRIBUTION
         NO_DEFAULT_QT_LICENSE
         NO_DEFAULT_DIRECTORY_QT_LICENSE
@@ -275,7 +274,6 @@ macro(_qt_internal_get_sbom_add_target_options opt_args single_args multi_args)
         NO_DEFAULT_QT_SUPPLIER
     )
     set(${single_args}
-        TYPE
         PACKAGE_VERSION
         FRIENDLY_PACKAGE_NAME
         CPE_VENDOR
@@ -286,13 +284,32 @@ macro(_qt_internal_get_sbom_add_target_options opt_args single_args multi_args)
     )
     set(${multi_args}
         COPYRIGHTS
-        LIBRARIES
-        PUBLIC_LIBRARIES
         CPE
         SBOM_DEPENDENCIES
         ATTRIBUTION_FILE_PATHS
         ATTRIBUTION_FILE_DIR_PATHS
     )
+endmacro()
+
+# Helper to get the options that _qt_internal_sbom_add_target understands.
+# Also used in qt_find_package_extend_sbom.
+macro(_qt_internal_get_sbom_add_target_options opt_args single_args multi_args)
+    set(${opt_args}
+        NO_INSTALL
+    )
+    set(${single_args}
+        TYPE
+    )
+    set(${multi_args}
+        LIBRARIES
+        PUBLIC_LIBRARIES
+    )
+
+    _qt_internal_get_sbom_add_target_common_options(
+        common_opt_args common_single_args common_multi_args)
+    list(APPEND opt_args ${common_opt_args})
+    list(APPEND single_args ${common_single_args})
+    list(APPEND multi_args ${common_multi_args})
 
     _qt_internal_sbom_get_multi_config_single_args(multi_config_single_args)
     list(APPEND single_args ${multi_config_single_args})

@@ -9,6 +9,7 @@ function(qt_internal_add_app target)
         INSTALL_VERSIONED_LINK
         EXCEPTIONS
         NO_UNITY_BUILD
+        ${__qt_internal_sbom_optional_args}
     )
     set(single_args
         ${__default_target_info_args}
@@ -84,10 +85,6 @@ function(qt_internal_add_app target)
         MOC_OPTIONS ${arg_MOC_OPTIONS}
         ENABLE_AUTOGEN_TOOLS ${arg_ENABLE_AUTOGEN_TOOLS}
         DISABLE_AUTOGEN_TOOLS ${arg_DISABLE_AUTOGEN_TOOLS}
-        ATTRIBUTION_ENTRY_INDEX "${arg_ATTRIBUTION_ENTRY_INDEX}"
-        ATTRIBUTION_FILE_PATHS ${arg_ATTRIBUTION_FILE_PATHS}
-        ATTRIBUTION_FILE_DIR_PATHS ${arg_ATTRIBUTION_FILE_DIR_PATHS}
-        SBOM_DEPENDENCIES ${arg_SBOM_DEPENDENCIES}
         TARGET_VERSION ${arg_TARGET_VERSION}
         TARGET_PRODUCT ${arg_TARGET_PRODUCT}
         TARGET_DESCRIPTION ${arg_TARGET_DESCRIPTION}
@@ -144,6 +141,11 @@ function(qt_internal_add_app target)
             FORWARD_OUT_VAR sbom_args
             FORWARD_OPTIONS
                 NO_INSTALL
+                ${__qt_internal_sbom_optional_args}
+            FORWARD_SINGLE
+                ${__qt_internal_sbom_single_args}
+            FORWARD_MULTI
+                ${__qt_internal_sbom_multi_args}
         )
 
         _qt_internal_extend_sbom(${target} ${sbom_args})

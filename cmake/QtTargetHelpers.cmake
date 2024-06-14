@@ -41,11 +41,12 @@ function(qt_internal_extend_target target)
 
     set(option_args
         NO_UNITY_BUILD
+        ${__qt_internal_sbom_optional_args}
     )
     set(single_args
         PRECOMPILED_HEADER
         EXTRA_LINKER_SCRIPT_CONTENT
-        ATTRIBUTION_ENTRY_INDEX
+        ${__qt_internal_sbom_single_args}
     )
     set(multi_args
         ${__default_public_args}
@@ -55,9 +56,7 @@ function(qt_internal_extend_target target)
         CONDITION_INDEPENDENT_SOURCES
         COMPILE_FLAGS
         EXTRA_LINKER_SCRIPT_EXPORTS
-        SBOM_DEPENDENCIES
-        ATTRIBUTION_FILE_PATHS
-        ATTRIBUTION_FILE_DIR_PATHS
+        ${__qt_internal_sbom_multi_args}
     )
 
     cmake_parse_arguments(PARSE_ARGV 1 arg
@@ -226,28 +225,20 @@ function(qt_internal_extend_target target)
             )
         endif()
 
-        if(arg_SBOM_DEPENDENCIES)
-            _qt_internal_extend_sbom_dependencies(${target}
-                SBOM_DEPENDENCIES ${arg_SBOM_DEPENDENCIES}
+        if(QT_GENERATE_SBOM)
+            set(sbom_args "")
+            _qt_internal_forward_function_args(
+                FORWARD_APPEND
+                FORWARD_PREFIX arg
+                FORWARD_OUT_VAR sbom_args
+                FORWARD_OPTIONS
+                    ${__qt_internal_sbom_optional_args}
+                FORWARD_SINGLE
+                    ${__qt_internal_sbom_single_args}
+                FORWARD_MULTI
+                    ${__qt_internal_sbom_multi_args}
             )
-        endif()
-
-        if(NOT "${arg_ATTRIBUTION_ENTRY_INDEX}" STREQUAL "")
-            _qt_internal_extend_sbom(${target}
-                ATTRIBUTION_ENTRY_INDEX "${arg_ATTRIBUTION_ENTRY_INDEX}"
-            )
-        endif()
-
-        if(arg_ATTRIBUTION_FILE_PATHS)
-            _qt_internal_extend_sbom(${target}
-                ATTRIBUTION_FILE_PATHS ${arg_ATTRIBUTION_FILE_PATHS}
-            )
-        endif()
-
-        if(arg_ATTRIBUTION_FILE_DIR_PATHS)
-            _qt_internal_extend_sbom(${target}
-                ATTRIBUTION_FILE_DIR_PATHS ${arg_ATTRIBUTION_FILE_DIR_PATHS}
-            )
+            _qt_internal_extend_sbom(${target} ${sbom_args})
         endif()
 
         set(target_private "${target}Private")
@@ -438,13 +429,10 @@ macro(qt_internal_setup_default_target_function_options)
         TARGET_COPYRIGHT
     )
 
-    set(__qt_internal_sbom_single_args
-        ATTRIBUTION_ENTRY_INDEX
-    )
-    set(__qt_internal_sbom_multi_args
-        SBOM_DEPENDENCIES
-        ATTRIBUTION_FILE_PATHS
-        ATTRIBUTION_FILE_DIR_PATHS
+    _qt_internal_get_sbom_add_target_common_options(
+        __qt_internal_sbom_optional_args
+        __qt_internal_sbom_single_args
+        __qt_internal_sbom_multi_args
     )
 
     # Collection of arguments so they can be shared across qt_internal_add_executable
@@ -457,6 +445,7 @@ macro(qt_internal_setup_default_target_function_options)
         DELAY_TARGET_INFO
         QT_APP
         NO_UNITY_BUILD
+        ${__qt_internal_sbom_optional_args}
     )
     set(__qt_internal_add_executable_single_args
         CORE_LIBRARY

@@ -130,49 +130,27 @@ function(qt_internal_add_cmake_library target)
     )
 endfunction()
 
-macro(qt_internal_get_3rdparty_library_sbom_options option_args single_args multi_args)
-    set(${option_args} "")
-    set(${single_args}
-        PACKAGE_VERSION
-        CPE_VENDOR
-        CPE_PRODUCT
-        LICENSE_EXPRESSION
-        DOWNLOAD_LOCATION
-        ${__qt_internal_sbom_single_args}
-    )
-    set(${multi_args}
-        COPYRIGHTS
-        CPE # Common Platform Enumeration, free-form
-        ${__qt_internal_sbom_multi_args}
-    )
-endmacro()
-
 # This function replaces qmake's qt_helper_lib feature. It is intended to
 # compile 3rdparty libraries as part of the build.
 #
 function(qt_internal_add_3rdparty_library target)
     qt_internal_get_add_library_option_args(library_option_args)
-    qt_internal_get_3rdparty_library_sbom_options(
-        sbom_option_args
-        sbom_single_args
-        sbom_multi_args
-    )
 
     set(option_args
         EXCEPTIONS
         INSTALL
         SKIP_AUTOMOC
-        ${sbom_option_args}
-        )
+        ${__qt_internal_sbom_optional_args}
+    )
     set(single_args
         OUTPUT_DIRECTORY
         QMAKE_LIB_NAME
-        ${sbom_single_args}
+        ${__qt_internal_sbom_single_args}
     )
     set(multi_args
         ${__default_private_args}
         ${__default_public_args}
-        ${sbom_multi_args}
+        ${__qt_internal_sbom_multi_args}
     )
 
     cmake_parse_arguments(PARSE_ARGV 1 arg
@@ -394,10 +372,12 @@ function(qt_internal_add_3rdparty_library target)
             FORWARD_APPEND
             FORWARD_PREFIX arg
             FORWARD_OUT_VAR sbom_args
+            FORWARD_OPTIONS
+                ${__qt_internal_sbom_optional_args}
             FORWARD_SINGLE
-                ${sbom_single_args}
+                ${__qt_internal_sbom_single_args}
             FORWARD_MULTI
-                ${sbom_multi_args}
+                ${__qt_internal_sbom_multi_args}
         )
 
         _qt_internal_extend_sbom(${target} ${sbom_args})
