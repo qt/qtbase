@@ -391,7 +391,7 @@ function(_qt_internal_sbom_add_target target)
 
     # Allow setting a license expression per directory scope via a variable.
     if(is_qt_entity_type AND QT_SBOM_LICENSE_EXPRESSION AND NOT arg_NO_DEFAULT_DIRECTORY_QT_LICENSE)
-        set(qt_license_expression "${_qt_internal_sbom_get_default_qt_license_id}")
+        set(qt_license_expression "${QT_SBOM_LICENSE_EXPRESSION}")
         _qt_internal_sbom_join_two_license_ids_with_op(
             "${license_expression}" "AND" "${qt_license_expression}"
             license_expression)
