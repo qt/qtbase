@@ -63,12 +63,15 @@ async function qtLoad(config)
 {
     const throwIfEnvUsedButNotExported = (instance, config) =>
     {
-        const environment = config.environment;
+        const environment = config.qt.environment;
         if (!environment || Object.keys(environment).length === 0)
             return;
-        const isEnvExported = typeof instance.ENV === 'object';
-        if (!isEnvExported)
-            throw new Error('ENV must be exported if environment variables are passed');
+        const descriptor = Object.getOwnPropertyDescriptor(instance, 'ENV');
+        const isEnvExported = typeof descriptor.value === 'object';
+        if (!isEnvExported) {
+            throw new Error('ENV must be exported if environment variables are passed, ' +
+                            'add it to the QT_WASM_EXTRA_EXPORTED_METHODS CMake target property');
+        }
     };
 
     const throwIfFsUsedButNotExported = (instance, config) =>
