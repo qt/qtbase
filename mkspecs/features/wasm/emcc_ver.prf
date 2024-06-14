@@ -1,5 +1,5 @@
 defineReplace(qtEmccRecommendedVersion) {
-    return (3.1.50)
+    return (3.1.56)
 }
 
 defineReplace(qtSystemEmccVersion) {
