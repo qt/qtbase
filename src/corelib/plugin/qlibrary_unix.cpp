@@ -185,8 +185,6 @@ bool QLibraryPrivate::load_sys()
     Handle hnd = nullptr;
     for (int prefix = 0; retry && !hnd && prefix < prefixes.size(); prefix++) {
         for (int suffix = 0; retry && !hnd && suffix < suffixes.size(); suffix++) {
-            if (!prefixes.at(prefix).isEmpty() && name.startsWith(prefixes.at(prefix)))
-                continue;
             if (path.isEmpty() && prefixes.at(prefix).contains(u'/'))
                 continue;
             if (!suffixes.at(suffix).isEmpty() && name.endsWith(suffixes.at(suffix)))
