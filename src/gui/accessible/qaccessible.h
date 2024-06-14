@@ -610,7 +610,7 @@ protected:
 class Q_GUI_EXPORT QAccessibleAnnouncementEvent : public QAccessibleEvent
 {
 public:
-    inline QAccessibleAnnouncementEvent(QObject *object, const QString &message)
+    explicit QAccessibleAnnouncementEvent(QObject *object, const QString &message)
         : QAccessibleEvent(object, QAccessible::InvalidEvent)
           , m_message(message)
           , m_politeness(QAccessible::AnnouncementPoliteness::Polite)
@@ -618,7 +618,7 @@ public:
         m_type = QAccessible::Announcement;
     }
 
-    inline QAccessibleAnnouncementEvent(QAccessibleInterface *iface, const QString &message)
+    explicit QAccessibleAnnouncementEvent(QAccessibleInterface *iface, const QString &message)
         : QAccessibleEvent(iface, QAccessible::InvalidEvent)
           , m_message(message)
           , m_politeness(QAccessible::AnnouncementPoliteness::Polite)
@@ -626,7 +626,7 @@ public:
         m_type = QAccessible::Announcement;
     }
 
-    ~QAccessibleAnnouncementEvent();
+    ~QAccessibleAnnouncementEvent() override;
 
     QString message() const { return m_message; }
     QAccessible::AnnouncementPoliteness politeness() const { return m_politeness; }
