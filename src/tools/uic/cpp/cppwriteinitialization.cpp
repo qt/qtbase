@@ -127,35 +127,65 @@ namespace {
         return iconHasStatePixmaps(i) || !i->attributeTheme().isEmpty();
     }
 
-    // Checks on property names
-    bool isIdentifier(QChar c) { return c.isLetterOrNumber() || c == u'_'; }
-
-    bool checkPropertyName(const QString &name)
+    // An approximation of "Unicode Standard Annex #31" for checking property
+    // and enumeration identifiers to prevent code injection attacks.
+    // FIXME 6.9: Simplify according to QTBUG-126860
+    static bool isIdStart(QChar c)
     {
-        return !name.isEmpty() && name.at(0).isLetter()
-               && std::all_of(name.cbegin(), name.cend(), isIdentifier);
+        bool result = false;
+        switch (c.category()) {
+        case QChar::Letter_Uppercase:
+        case QChar::Letter_Lowercase:
+        case QChar::Letter_Titlecase:
+        case QChar::Letter_Modifier:
+        case QChar::Letter_Other:
+        case QChar::Number_Letter:
+            result = true;
+            break;
+        default:
+            result = c == u'_';
+            break;
+        }
+        return result;
     }
 
-    // Basic checks on enum/flag values
-    static bool isValidEnumValue(QChar c)
+    static bool isIdContinuation(QChar c)
     {
-        if (c.isLetterOrNumber())
-            return true;
-        switch (c.unicode()) {
-        case '|':
-        case ' ':
-        case ':':
-        case '_':
-            return true;
+        bool result = false;
+        switch (c.category()) {
+        case QChar::Letter_Uppercase:
+        case QChar::Letter_Lowercase:
+        case QChar::Letter_Titlecase:
+        case QChar::Letter_Modifier:
+        case QChar::Letter_Other:
+        case QChar::Number_Letter:
+        case QChar::Mark_NonSpacing:
+        case QChar::Mark_SpacingCombining:
+        case QChar::Number_DecimalDigit:
+        case QChar::Punctuation_Connector: // '_'
+            result = true;
+            break;
         default:
             break;
         }
-        return false;
+        return result;
     }
 
-    bool checkEnumValue(const QString &value)
+    static bool isEnumIdContinuation(QChar c)
     {
-        return std::all_of(value.cbegin(), value.cend(), isValidEnumValue);
+        return c == u':' || c == u'|' || c == u' ' || isIdContinuation(c);
+    }
+
+    bool checkPropertyName(QStringView name)
+    {
+        return !name.isEmpty() && isIdStart(name.at(0))
+               && std::all_of(name.cbegin() + 1, name.cend(), isIdContinuation);
+    }
+
+    bool checkEnumValue(QStringView name)
+    {
+        return !name.isEmpty() && isIdStart(name.at(0))
+               && std::all_of(name.cbegin() + 1, name.cend(), isEnumIdContinuation);
     }
 
     QString msgInvalidValue(const QString &name, const QString &value)
@@ -171,7 +201,8 @@ namespace {
                               const DomProperty *p) {
 
         const QString &name = p->attributeName();
-        if (!checkPropertyName(name)) {
+        const bool isDynamicProperty = p->hasAttributeStdset() && p->attributeStdset() == 0;
+        if (!isDynamicProperty && !checkPropertyName(name)) {
             qWarning("uic: Invalid property name: \"%s\".", qPrintable(name));
             return false;
         }
@@ -1402,8 +1433,8 @@ void WriteInitialization::writeProperties(const QString &varName,
                 str << language::derefPointer <<"set" << propertyName.at(0).toUpper()
                     << QStringView{propertyName}.mid(1) << '(';
             } else {
-                str << language::derefPointer << "setProperty(\""_L1
-                    << propertyName << "\", ";
+                str << language::derefPointer << "setProperty("_L1
+                    << language::charliteral(propertyName) << ", ";
                 if (language::language() == Language::Cpp) {
                     str << "QVariant";
                     if (p->kind() == DomProperty::Enum)
