@@ -20,9 +20,16 @@
 
     \snippet code/src_corelib_io_qdirlisting.cpp 0
 
-    Here's how to find and read all files filtered by name, recursively:
+    Here's how to find and read all regular files filtered by name, recursively:
 
     \snippet code/src_corelib_io_qdirlisting.cpp 1
+
+    Here's how to list only regular files, recursively:
+    \snippet code/src_corelib_io_qdirlisting.cpp 5
+
+    Here's how to list only regular files and symbolic links to regular
+    files, recursively:
+    \snippet code/src_corelib_io_qdirlisting.cpp 6
 
     Iterators constructed by QDirListing (QDirListing::const_iterator) are
     forward-only, single-pass iterators, that don't allow random access. They

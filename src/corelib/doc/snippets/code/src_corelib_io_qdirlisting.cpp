@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include <QDirListing>
+#include <QFile>
 
 using namespace Qt::StringLiterals;
 
@@ -22,13 +23,12 @@ for (const auto &dirEntry : QDirListing(u"/etc"_s, ItFlag::Recursive)) {
 
 {
 //! [1]
-using ItFlag = QDirListing::IteratorFlag;
-QDirListing dirList(u"/sys"_s, QStringList{u"scaling_cur_freq"_s},
-                    QDir::NoFilter, ItFlag::Recursive);
+using F = QDirListing::IteratorFlag;
+QDirListing dirList(u"/sys"_s, QStringList{u"scaling_cur_freq"_s}, F::FilesOnly | F::Recursive);
 for (const auto &dirEntry : dirList) {
     QFile f(dirEntry.filePath());
-    f.open(QIODevice::ReadOnly);
-    qDebug() << f.fileName() << f.readAll().trimmed().toDouble() / 1000 << "MHz";
+    if (f.open(QIODevice::ReadOnly))
+        qDebug() << f.fileName() << f.readAll().trimmed().toDouble() / 1000 << "MHz";
 }
 //! [1]
 }
@@ -68,4 +68,22 @@ for (const auto &dirEntry : QDirListing(u"/etc"_s, ItFlag::Recursive)) {
 //! [4]
 }
 
+{
+//! [5]
+using F = QDirListing::IteratorFlag;
+const auto flags = F::FilesOnly | F::Recursive;
+for (const auto &dirEntry : QDirListing(u"/etc"_s, flags)) {
+    // ...
+}
+//! [5]
+}
+
+{
+//! [6]
+using F = QDirListing::IteratorFlag;
+const auto flags = F::FilesOnly | F::Recursive | F::ResolveSymlinks;
+for (const auto &dirEntry : QDirListing(u"/etc"_s, flags)) {
+    // ...
+}
+//! [6]
 }
