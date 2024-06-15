@@ -525,12 +525,17 @@ static QBitArray sizedForOverwrite(const QBitArray &a1, const QBitArray &a2)
     QByteArrayData bytes(n, n);
 
     // initialize the count of bits in the last byte (see construction note)
-    if (n1 > n2)
+    // and the QByteArray null termination (some of our algorithms read it)
+    if (n1 > n2) {
         *bytes.ptr = *d1.ptr;
-    else if (n2 > n1)
+        bytes.ptr[n1] = 0;
+    } else if (n2 > n1) {
         *bytes.ptr = *d2.ptr;
-    else if (n1)        // n1 == n2
+        bytes.ptr[n2] = 0;
+    } else if (n1) {    // n1 == n2
         *bytes.ptr = qMin(*d1.ptr, *d2.ptr);
+        bytes.ptr[n1] = 0;
+    }
 
     result.data_ptr() = std::move(bytes);
     return result;
