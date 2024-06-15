@@ -375,6 +375,13 @@ void tst_QBitArray::operator_andeq_data()
                              << QStringToQBitArray(QString());
 }
 
+#define COMPARE_BITARRAY_EQ(actual, expected)       do {        \
+        QT_TEST_EQUALITY_OPS(actual, expected, true);           \
+        QCOMPARE(actual.count(), expected.count());             \
+        QCOMPARE(actual.count(true), expected.count(true));     \
+        QCOMPARE(actual.count(false), expected.count(false));   \
+    } while (false)
+
 void tst_QBitArray::operator_andeq()
 {
     QFETCH(QBitArray, input1);
@@ -383,32 +390,32 @@ void tst_QBitArray::operator_andeq()
 
     QBitArray result = input1;
     result &= input2;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input1;
     result &= std::move(input2);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input1;
     result &= detached(input2);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 
     // operation is commutative
     result = input2;
     result &= input1;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input2;
     result &= std::move(input1);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input2;
     result &= detached(input1);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 
     // operation is idempotent
     result &= result;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result &= std::move(result);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result &= detached(result);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 }
 
 void tst_QBitArray::operator_and()
@@ -418,27 +425,27 @@ void tst_QBitArray::operator_and()
     QFETCH(QBitArray, res);
 
     QBitArray result = input1 & input2;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input1 & QBitArray(input2);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input1 & detached(input2);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 
     // operation is commutative
     result = input2 & input1;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input2 & QBitArray(input1);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input2 & detached(input1);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 
     // operation is idempotent
     result = result & result;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = result & QBitArray(result);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = result & detached(result);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 }
 
 void tst_QBitArray::operator_oreq_data()
@@ -489,32 +496,32 @@ void tst_QBitArray::operator_oreq()
 
     QBitArray result = input1;
     result |= input2;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input1;
     result |= QBitArray(input2);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input1;
     result |= detached(input2);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 
     // operation is commutative
     result = input2;
     result |= input1;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input2;
     result |= QBitArray(input1);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input2;
     result |= detached(input1);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 
     // operation is idempotent
     result |= result;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result |= QBitArray(result);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result |= detached(result);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 }
 
 void tst_QBitArray::operator_or()
@@ -524,27 +531,27 @@ void tst_QBitArray::operator_or()
     QFETCH(QBitArray, res);
 
     QBitArray result = input1 | input2;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input1 | QBitArray(input2);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input1 | detached(input2);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 
     // operation is commutative
     result = input2 | input1;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input2 | QBitArray(input1);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input2 | detached(input1);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 
     // operation is idempotent
     result = result | result;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = result | QBitArray(result);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = result | detached(result);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 }
 
 void tst_QBitArray::operator_xoreq_data()
@@ -593,24 +600,24 @@ void tst_QBitArray::operator_xoreq()
 
     QBitArray result = input1;
     result ^= input2;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input1;
     result ^= QBitArray(input2);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input1;
     result ^= detached(input2);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 
     // operation is commutative
     result = input2;
     result ^= input1;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input2;
     result ^= QBitArray(input1);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input2;
     result ^= detached(input1);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 
     // XORing with oneself is nilpotent
     result = input1;
@@ -651,19 +658,19 @@ void tst_QBitArray::operator_xor()
     QFETCH(QBitArray, res);
 
     QBitArray result = input1 ^ input2;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input1 ^ QBitArray(input2);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input1 ^ detached(input2);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 
     // operation is commutative
     result = input2 ^ input1;
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input2 ^ QBitArray(input1);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
     result = input2 ^ detached(input1);
-    QT_TEST_EQUALITY_OPS(result, res, true);
+    COMPARE_BITARRAY_EQ(result, res);
 
     // XORing with oneself is nilpotent
     result = input1 ^ input1;
@@ -734,7 +741,7 @@ void tst_QBitArray::operator_neg()
 
     input = ~input;
 
-    QT_TEST_EQUALITY_OPS(input, res, true);
+    COMPARE_BITARRAY_EQ(input, res);
     QT_TEST_EQUALITY_OPS(~~input, res, true);     // performs two in-place negations
 }
 
@@ -795,9 +802,9 @@ void tst_QBitArray::datastream()
     QCOMPARE(array1.count(true), onBits);
     QCOMPARE(array1.count(false), numBits - onBits);
 
-    QT_TEST_EQUALITY_OPS(array1, bits, true);
-    QT_TEST_EQUALITY_OPS(array2, bits, true);
-    QT_TEST_EQUALITY_OPS(array3, bits, true);
+    COMPARE_BITARRAY_EQ(array1, bits);
+    COMPARE_BITARRAY_EQ(array2, bits);
+    COMPARE_BITARRAY_EQ(array3, bits);
 }
 
 void tst_QBitArray::invertOnNull() const
