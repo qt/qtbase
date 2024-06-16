@@ -42,11 +42,16 @@ void tst_qt_cmake_create::initTestCase()
 #ifdef Q_OS_WINDOWS
     m_shell = QString("cmd.exe");
     m_cmd = QString("%1/qt-cmake-create.bat").arg(binpath);
+    const QString cmake = QStandardPaths::findExecutable("cmake.exe");
 #else
     m_shell = QString("/bin/sh");
     m_cmd = QString("%1/qt-cmake-create").arg(binpath);
     QVERIFY(QFile::exists(m_shell));
+    const QString cmake = QStandardPaths::findExecutable("cmake");
 #endif
+
+    if (cmake.isEmpty())
+        QSKIP("CMake not found");
 
     QVERIFY(QFile::exists(m_cmd));
 }
