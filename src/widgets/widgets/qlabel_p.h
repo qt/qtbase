@@ -88,7 +88,6 @@ public:
     QString text;
     std::optional<QPixmap> pixmap;
     std::optional<QPixmap> scaledpixmap;
-    std::optional<QImage> cachedimage;
 #ifndef QT_NO_PICTURE
     std::optional<QPicture> picture;
 #endif

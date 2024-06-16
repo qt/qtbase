@@ -33,7 +33,6 @@ QLabelPrivate::QLabelPrivate()
       text(),
       pixmap(),
       scaledpixmap(),
-      cachedimage(),
 #ifndef QT_NO_PICTURE
       picture(),
 #endif
@@ -1096,13 +1095,9 @@ void QLabel::paintEvent(QPaintEvent *)
             QSize scaledSize = d->scaledcontents ? (cr.size() * dpr)
                                : (d->pixmap->size() * (dpr / d->pixmap->devicePixelRatio()));
             if (!d->scaledpixmap || d->scaledpixmap->size() != scaledSize) {
-                if (!d->cachedimage)
-                    d->cachedimage = d->pixmap->toImage();
-                d->scaledpixmap.reset();
-                QImage scaledImage =
-                    d->cachedimage->scaled(scaledSize,
-                                           Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-                d->scaledpixmap = QPixmap::fromImage(std::move(scaledImage));
+                d->scaledpixmap =
+                        d->pixmap->scaled(scaledSize,
+                                          Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
                 d->scaledpixmap->setDevicePixelRatio(dpr);
             }
             pix = *d->scaledpixmap;
@@ -1310,7 +1305,6 @@ void QLabelPrivate::clearContents()
     picture.reset();
 #endif
     scaledpixmap.reset();
-    cachedimage.reset();
     pixmap.reset();
 
     text.clear();
@@ -1456,7 +1450,6 @@ void QLabel::setScaledContents(bool enable)
     d->scaledcontents = enable;
     if (!enable) {
         d->scaledpixmap.reset();
-        d->cachedimage.reset();
     }
     update(contentsRect());
 }
