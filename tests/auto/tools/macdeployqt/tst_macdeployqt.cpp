@@ -224,6 +224,9 @@ void tst_macdeployqt::initTestCase()
     QSKIP("This test requires QProcess support");
 #endif
 
+    if (QProcess::execute("xcode-select", { "-p" }) != 0)
+        QSKIP("Xcode or Xcode command line tools not installed");
+
     // Set up test-global unique temporary directory
     g_temporaryDirectory = new QTemporaryDir();
     g_temporaryDirectory->setAutoRemove(!lcTests().isDebugEnabled());

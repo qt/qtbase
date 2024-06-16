@@ -93,6 +93,11 @@ static void copyDir(const QString &sourceDirPath, const QString &targetDirPath)
 
 void tst_qmake::initTestCase()
 {
+#if defined(Q_OS_APPLE)
+    if (QProcess::execute("xcode-select", { "-p" }) != 0)
+        QSKIP("Xcode or Xcode command line tools not installed");
+#endif
+
     QVERIFY2(tempWorkDir.isValid(), qPrintable(tempWorkDir.errorString()));
     QString binpath = QLibraryInfo::path(QLibraryInfo::BinariesPath);
     QString cmd = QString("%1/qmake").arg(binpath);
