@@ -176,8 +176,7 @@ void QPixmapIconEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode 
 {
     auto paintDevice = painter->device();
     qreal dpr = paintDevice ? paintDevice->devicePixelRatio() : qApp->devicePixelRatio();
-    const QSize pixmapSize = rect.size() * dpr;
-    QPixmap px = scaledPixmap(pixmapSize, mode, state, dpr);
+    QPixmap px = scaledPixmap(rect.size(), mode, state, dpr);
     painter->drawPixmap(rect, px);
 }
 
