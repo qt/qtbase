@@ -62,6 +62,9 @@ constexpr O reversed(O o) noexcept
 
 namespace Qt {
 
+class weak_ordering;
+class strong_ordering;
+
 class partial_ordering
 {
 public:
