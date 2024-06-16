@@ -2463,10 +2463,10 @@ void tst_qmakelib::addTestFunctions(const QString &qindir)
 #else
                "pwd"
 #endif
-               "> '" + QMakeEvaluator::quoteValue(ProString(QDir::toNativeSeparators(
-                            m_outdir + "/system_out.txt"))) + "): OK = 1\n"
-               "DIR = $$cat(" + QMakeEvaluator::quoteValue(ProString(
-                            m_outdir + "/system_out.txt")) + ")"
+               "> " + QMakeEvaluator::quoteValue(ProString(QDir::toNativeSeparators(
+                             m_outdir + "/system_out.txt"))) + "'): OK = 1\n"
+               "DIR = $$quote($$cat(" + QMakeEvaluator::quoteValue(ProString(
+                             m_outdir + "/system_out.txt")) + "))"
             << "OK = 1\nDIR = " + QMakeEvaluator::quoteValue(ProString(QDir::toNativeSeparators(m_indir)))
             << ""
             << true;
