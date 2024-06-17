@@ -318,8 +318,9 @@ QStringList QFileSelectorPrivate::platformSelectors()
     ret << QSysInfo::kernelType();  // "winnt"
 #elif defined(Q_OS_UNIX)
     ret << QStringLiteral("unix");
-#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_QNX)
+#  if !defined(Q_OS_ANDROID) && !defined(Q_OS_QNX) && !defined(Q_OS_VXWORKS)
     // we don't want "linux" for Android or two instances of "qnx" for QNX
+    // or two instances of "vxworks" for vxworks
     ret << QSysInfo::kernelType();
 #  endif
     QString productName = QSysInfo::productType();
