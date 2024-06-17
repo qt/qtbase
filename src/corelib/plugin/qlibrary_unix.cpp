@@ -236,8 +236,8 @@ bool QLibraryPrivate::load_sys()
 
     locker.relock();
     if (!hnd) {
-        errorString = QLibrary::tr("Cannot load library %1: %2").arg(fileName,
-                                                                     QLatin1StringView(dlerror()));
+        errorString = QLibrary::tr("Cannot load library %1: %2")
+                .arg(fileName, QString::fromLocal8Bit(dlerror()));
     }
     if (hnd) {
         qualifiedFileName = attempt;
@@ -262,8 +262,8 @@ bool QLibraryPrivate::unload_sys()
         if (!qstrcmp(error, "Shared objects still referenced")) // On QNX that's only "informative"
             return true;
 #endif
-        errorString = QLibrary::tr("Cannot unload library %1: %2").arg(fileName,
-                                                                       QLatin1StringView(error));
+        errorString = QLibrary::tr("Cannot unload library %1: %2")
+                .arg(fileName, QString::fromLocal8Bit(error));
         return false;
     }
     errorString.clear();
