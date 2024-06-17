@@ -9,6 +9,16 @@
 #include <QTableWidget>
 #include <QTest>
 
+QT_BEGIN_NAMESPACE
+QDebug operator<<(QDebug dbg, const QTableWidgetSelectionRange &range)
+{
+    QDebugStateSaver saver(dbg);
+    dbg.nospace() << "Range(" << range.topRow() << ","  << range.leftColumn() << "->"
+                              << range.bottomRow() << "," << range.rightColumn() << ")";
+    return dbg;
+}
+QT_END_NAMESPACE
+
 class QObjectTableItem : public QObject, public QTableWidgetItem
 {
     Q_OBJECT
@@ -578,7 +588,7 @@ void tst_QTableWidget::selectedSpannedCells_data()
 
     QTest::newRow("merge 2 cells in column, select those and one more")
             << QRect(1, 2, 1, 2) << QPoint(1, 1) << QPoint(1, 3)
-            << 3 << QTableWidgetSelectionRange(1, 1, 1, 1);
+            << 1 << QTableWidgetSelectionRange(1, 1, 3, 1);
 
     QTest::newRow("merge 2 cells in column, select rows above")
             << QRect(1, 2, 1, 2) << QPoint(0, 0) << QPoint(3, 1)
@@ -590,7 +600,7 @@ void tst_QTableWidget::selectedSpannedCells_data()
 
     QTest::newRow("merge 3 cells in row, select those and one more")
             << QRect(0, 1, 3, 1) << QPoint(0, 1) << QPoint(3, 1)
-            << 4 << QTableWidgetSelectionRange(1, 0, 1, 0);
+            << 1 << QTableWidgetSelectionRange(1, 0, 1, 3);
 
     QTest::newRow("merge 3 cells in row, select adjacent to right")
             << QRect(0, 1, 3, 1) << QPoint(3, 0) << QPoint(3, 2)
