@@ -2054,21 +2054,21 @@ void QTableView::setSelection(const QRect &rect, QItemSelectionModel::SelectionF
                     break;
             }
         } while (expanded);
-         if (intersectsSpan) {
-             selection.reserve((right - left + 1) * (bottom - top + 1));
-             for (int horizontal = left; horizontal <= right; ++horizontal) {
-                 int column = d->logicalColumn(horizontal);
-                 for (int vertical = top; vertical <= bottom; ++vertical) {
-                     int row = d->logicalRow(vertical);
-                     QModelIndex index = d->model->index(row, column, d->root);
-                     selection.append(QItemSelectionRange(index));
-                 }
-             }
-         } else {
-             QItemSelectionRange range(tl, br);
-             if (!range.isEmpty())
-                 selection.append(range);
-         }
+        if (intersectsSpan) {
+            selection.reserve((right - left + 1) * (bottom - top + 1));
+            for (int horizontal = left; horizontal <= right; ++horizontal) {
+                int column = d->logicalColumn(horizontal);
+                for (int vertical = top; vertical <= bottom; ++vertical) {
+                    int row = d->logicalRow(vertical);
+                    QModelIndex index = d->model->index(row, column, d->root);
+                    selection.append(QItemSelectionRange(index));
+                }
+            }
+        } else {
+            QItemSelectionRange range(tl, br);
+            if (!range.isEmpty())
+                selection.append(range);
+        }
     } else if (verticalMoved && horizontalMoved) {
          int top = d->visualRow(tl.row());
          int left = d->visualColumn(tl.column());
