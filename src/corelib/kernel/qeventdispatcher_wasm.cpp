@@ -8,6 +8,7 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qsocketnotifier.h>
 #include <QtCore/private/qstdweb_p.h>
+#include <sys/ioctl.h>
 
 #include "emscripten.h"
 #include <emscripten/html5.h>
@@ -337,6 +338,14 @@ void QEventDispatcherWasm::registerSocketNotifier(QSocketNotifier *notifier)
     g_socketNotifiers.insert({notifier->socket(), notifier});
     if (wasEmpty)
         runOnMainThread([] { setEmscriptenSocketCallbacks(); });
+
+    int count;
+    ioctl(notifier->socket(), FIONREAD, &count);
+
+    // message may have arrived already
+    if (count > 0 && notifier->type() == QSocketNotifier::Read) {
+        QCoreApplication::postEvent(notifier, new QEvent(QEvent::SockAct));
+    }
 }
 
 void QEventDispatcherWasm::unregisterSocketNotifier(QSocketNotifier *notifier)
