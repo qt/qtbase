@@ -333,9 +333,11 @@ inline ulong getTimeStamp(UIEvent *event)
 
     qImDebug() << self << "resigned first responder";
 
-    UIResponder *newResponder = FirstResponderCandidate::currentCandidate();
-    if ([self responderShouldTriggerWindowDeactivation:newResponder])
-        QWindowSystemInterface::handleFocusWindowChanged(nullptr, Qt::ActiveWindowFocusReason);
+    if (qGuiApp) {
+        UIResponder *newResponder = FirstResponderCandidate::currentCandidate();
+        if ([self responderShouldTriggerWindowDeactivation:newResponder])
+            QWindowSystemInterface::handleFocusWindowChanged(nullptr, Qt::ActiveWindowFocusReason);
+    }
 
     return YES;
 }
