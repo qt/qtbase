@@ -1,7 +1,7 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
-#undef QTEST_THROW_ON_FAILURE // fails ### investigate
+#undef QTEST_THROW_ON_FAIL    // fails ### investigate
 #undef QTEST_THROW_ON_SKIP    // fails ### investigate
 
 #include <QtCore/QCoreApplication>
