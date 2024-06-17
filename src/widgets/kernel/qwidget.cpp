@@ -1702,7 +1702,11 @@ void QWidgetPrivate::deleteSysExtra()
 
 void QWidgetPrivate::deleteTLSysExtra()
 {
+    Q_Q(QWidget);
     if (extra && extra->topextra) {
+        if (extra->hasWindowContainer)
+            QWindowContainer::toplevelAboutToBeDestroyed(q);
+
         delete extra->topextra->window;
         extra->topextra->window = nullptr;
     }
