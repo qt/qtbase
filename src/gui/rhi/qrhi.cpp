@@ -8248,7 +8248,8 @@ void QRhiImplementation::prepareForCreate(QRhi *rhi, QRhi::Implementation impl, 
 
 /*!
     \return a new QRhi instance with a backend for the graphics API specified
-    by \a impl with the specified \a flags.
+    by \a impl with the specified \a flags. \return \c nullptr if the
+    function fails.
 
     \a params must point to an instance of one of the backend-specific
     subclasses of QRhiInitParams, such as, QRhiVulkanInitParams,
