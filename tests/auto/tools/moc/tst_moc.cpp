@@ -878,7 +878,14 @@ signals:
     void sigWithUnsignedArg(unsigned foo);
     void sigWithSignedArg(signed foo);
     void sigWithConstSignedArg(const signed foo);
+#ifndef Q_MOC_RUN // QTBUG-126395
+    QT_WARNING_PUSH
+    QT_WARNING_DISABLE_GCC("-Wvolatile")
+#endif
     void sigWithVolatileConstSignedArg(volatile const signed foo);
+#ifndef Q_MOC_RUN // QTBUG-126395
+    QT_WARNING_POP
+#endif
     void sigWithCustomType(const MyStruct);
     void constSignal1() const;
     void constSignal2(int arg) const;
@@ -4710,4 +4717,7 @@ QTEST_MAIN(tst_Moc)
 #undef slots
 #undef emit
 
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wvolatile") // should moc itself add this in generated code?
 #include "tst_moc.moc"
+QT_WARNING_POP
