@@ -10339,7 +10339,7 @@ void tst_QNetworkReply::contentEncodingBigPayload()
     request.setDecompressedSafetyCheckThreshold(-1);
     QNetworkReplyPtr reply(manager.get(request));
 
-    QTRY_VERIFY2_WITH_TIMEOUT(reply->isFinished(), qPrintable(reply->errorString()), 15000);
+    QTRY_VERIFY2_WITH_TIMEOUT(reply->isFinished(), qPrintable(reply->errorString()), 15s);
     QCOMPARE(reply->error(), QNetworkReply::NoError);
 
     QFETCH(qint64, expectedSize);
@@ -10464,7 +10464,7 @@ void tst_QNetworkReply::contentEncodingError()
             QUrl(QLatin1String("http://localhost:%1").arg(QString::number(server.serverPort()))));
     QNetworkReplyPtr reply(manager.get(request));
 
-    QTRY_VERIFY2_WITH_TIMEOUT(reply->isFinished(), qPrintable(reply->errorString()), 15000);
+    QTRY_VERIFY2_WITH_TIMEOUT(reply->isFinished(), qPrintable(reply->errorString()), 15s);
     QTEST(reply->error(), "expectedError");
 }
 
@@ -10534,7 +10534,7 @@ void tst_QNetworkReply::notFoundWithCompression()
             QUrl(QLatin1String("http://localhost:%1").arg(QString::number(server.serverPort()))));
     QNetworkReplyPtr reply(manager.get(request));
 
-    QTRY_VERIFY2_WITH_TIMEOUT(reply->isFinished(), qPrintable(reply->errorString()), 15000);
+    QTRY_VERIFY2_WITH_TIMEOUT(reply->isFinished(), qPrintable(reply->errorString()), 15s);
     QCOMPARE(reply->error(), QNetworkReply::ContentNotFoundError);
 
     QFETCH(QByteArray, expected);
