@@ -26,7 +26,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_EXCEPTIONS
 
-#ifdef QTEST_THROW_ON_FAILURE
+#ifdef QTEST_THROW_ON_FAIL
 # define QTEST_FAIL_ACTION QTest::Internal::throwOnFail()
 #else
 # define QTEST_FAIL_ACTION do { QTest::Internal::maybeThrowOnFail(); return; } while (false)
@@ -39,8 +39,8 @@ QT_BEGIN_NAMESPACE
 #endif
 
 #else
-# if defined(QTEST_THROW_ON_FAILURE) || defined(QTEST_THROW_ON_SKIP)
-#  error QTEST_THROW_ON_FAILURE/SKIP require exception support enabled.
+# if defined(QTEST_THROW_ON_FAIL) || defined(QTEST_THROW_ON_SKIP)
+#  error QTEST_THROW_ON_FAIL/SKIP require exception support enabled.
 # endif
 #endif // QT_NO_EXCEPTIONS
 
