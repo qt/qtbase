@@ -167,6 +167,12 @@ QCocoaIntegration::QCocoaIntegration(const QStringList &paramList)
 
     connect(qGuiApp, &QGuiApplication::focusWindowChanged,
         this, &QCocoaIntegration::focusWindowChanged);
+
+    // Opening of a native menu should close all popup windows
+    m_menuTrackingObserver = QMacNotificationObserver(nil,
+        NSMenuDidBeginTrackingNotification, ^{
+            QGuiApplicationPrivate::instance()->closeAllPopups();
+        });
 }
 
 QCocoaIntegration::~QCocoaIntegration()
