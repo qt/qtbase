@@ -1729,18 +1729,17 @@ bool QCoreApplication::compressEvent(QEvent *event, QObject *receiver, QPostEven
     int receiverPostedEvents = receiver->d_func()->postedEvents.loadRelaxed();
     // compress posted timers to this object.
     if (event->type() == QEvent::Timer && receiverPostedEvents > 0) {
-        int timerId = static_cast<QTimerEvent *>(event)->timerId();
-        auto sameReceiver = [receiver](const QPostEvent &e) { return e.receiver == receiver; };
-        auto it = std::find_if(postedEvents->cbegin(), postedEvents->cend(), sameReceiver);
-        while (receiverPostedEvents > 0 && it != postedEvents->cend()) {
-            if (it->event && it->event->type() == QEvent::Timer
-                && static_cast<QTimerEvent *>(it->event)->timerId() == timerId) {
-                delete event;
-                return true;
+        const int timerId = static_cast<QTimerEvent *>(event)->timerId();
+        auto it = postedEvents->cbegin();
+        const auto end = postedEvents->cend();
+        while (it != end) {
+            if (it->event && it->event->type() == QEvent::Timer && it->receiver == receiver) {
+                if (static_cast<QTimerEvent *>(it->event)->timerId() == timerId) {
+                    delete event;
+                    return true;
+                }
             }
-
-            if (--receiverPostedEvents)
-                it = std::find_if(it + 1, postedEvents->cend(), sameReceiver);
+            ++it;
         }
         return false;
     }
