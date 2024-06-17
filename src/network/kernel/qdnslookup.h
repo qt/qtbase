@@ -322,10 +322,10 @@ public Q_SLOTS:
 Q_SIGNALS:
     void finished();
     void nameChanged(const QString &name);
-    void typeChanged(Type type);
+    void typeChanged(QDnsLookup::Type type);
     void nameserverChanged(const QHostAddress &nameserver);
     void nameserverPortChanged(quint16 port);
-    void nameserverProtocolChanged(Protocol protocol);
+    void nameserverProtocolChanged(QDnsLookup::Protocol protocol);
 
 private:
     Q_DECLARE_PRIVATE(QDnsLookup)

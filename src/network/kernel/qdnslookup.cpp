@@ -336,7 +336,7 @@ quint16 QDnsLookup::defaultPortForProtocol(Protocol protocol) noexcept
 */
 
 /*!
-    \fn void QDnsLookup::typeChanged(Type type)
+    \fn void QDnsLookup::typeChanged(QDnsLookup::Type type)
 
     This signal is emitted when the lookup \l type changes.
     \a type is the new lookup type.
