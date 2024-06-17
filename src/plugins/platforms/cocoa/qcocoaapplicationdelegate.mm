@@ -207,13 +207,20 @@ QT_USE_NAMESPACE
             [NSApplication.sharedApplication activateIgnoringOtherApps:YES];
         }
 
-        // Qt windows are typically shown in main(), at which point the application
-        // is not active yet. When the application is activated, either externally
-        // or via the override above, it will only bring the main and key windows
-        // forward, which differs from the behavior if these windows had been shown
-        // once the application was already active. To work around this, we explicitly
-        // activate the current application again, bringing all windows to the front.
-        [currentApplication activateWithOptions:NSApplicationActivateAllWindows];
+        if (QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSSonoma) {
+            // Qt windows are typically shown in main(), at which point the application
+            // is not active yet. When the application is activated, either externally
+            // or via the override above, it will only bring the main and key windows
+            // forward, which differs from the behavior if these windows had been shown
+            // once the application was already active. To work around this, we explicitly
+            // activate the current application again, bringing all windows to the front.
+            // We only do this on Sonoma and up, as earlier macOS versions have a bug where
+            // the app will deactivate as part of activating, even if it's active app,
+            // which in turn results in losing key window status for the key window.
+            // FIXME: Consider bringing our windows to the front via orderFront instead,
+            // or deferring the orderFront during setVisible until the app is active.
+            [currentApplication activateWithOptions:NSApplicationActivateAllWindows];
+        }
     }
 
     QCocoaMenuBar::insertWindowMenu();
