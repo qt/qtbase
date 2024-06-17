@@ -260,7 +260,7 @@ void tst_QGlobal::qtry()
 
 void tst_QGlobal::checkptr()
 {
-    int i;
+    int i = 0;
     QCOMPARE(q_check_ptr(&i), &i);
 
     const char *c = "hello";
