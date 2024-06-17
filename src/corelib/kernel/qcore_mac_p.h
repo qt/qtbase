@@ -336,8 +336,11 @@ public:
     template<typename Functor>
     QMacNotificationObserver(NSObject *object, NSNotificationName name, Functor callback) {
         observer = [[NSNotificationCenter defaultCenter] addObserverForName:name
-            object:object queue:nil usingBlock:^(NSNotification *) {
-                callback();
+            object:object queue:nil usingBlock:^(NSNotification *notification) {
+                if constexpr (std::is_invocable_v<Functor, NSNotification *>)
+                    callback(notification);
+                else
+                    callback();
             }
         ];
     }
