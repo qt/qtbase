@@ -10,4 +10,8 @@ endif()
 qt_internal_add_test(tst_qspan
     SOURCES
         tst_qspan.cpp
+    NO_BATCH # QTBUG-121815
+    DEFINES
+        QTEST_THROW_ON_FAIL
+        QTEST_THROW_ON_SKIP
 )
