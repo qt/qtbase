@@ -39,6 +39,12 @@ QIcon QAbstractFileIconProviderPrivate::getPlatformThemeIcon(QAbstractFileIconPr
     if (theme == nullptr)
         return {};
 
+    if (theme->themeHint(QPlatformTheme::PreferFileIconFromTheme).toBool()) {
+        const QIcon result = getIconThemeIcon(type);
+        if (!result.isNull())
+            return result;
+    }
+
     auto &cache = *iconTypeCache();
     auto it = cache.find(type);
     if (it == cache.end()) {
@@ -108,8 +114,14 @@ static inline QPlatformTheme::IconOptions toThemeIconOptions(QAbstractFileIconPr
 
 QIcon QAbstractFileIconProviderPrivate::getPlatformThemeIcon(const QFileInfo &info) const
 {
-    if (auto theme = QGuiApplicationPrivate::platformTheme())
+    if (auto theme = QGuiApplicationPrivate::platformTheme()) {
+        if (theme->themeHint(QPlatformTheme::PreferFileIconFromTheme).toBool()) {
+            const QIcon result = getIconThemeIcon(info);
+            if (!result.isNull())
+                return result;
+        }
         return theme->fileIcon(info, toThemeIconOptions(options));
+    }
     return {};
 }
 
@@ -211,8 +223,7 @@ QAbstractFileIconProvider::Options QAbstractFileIconProvider::options() const
 QIcon QAbstractFileIconProvider::icon(IconType type) const
 {
     Q_D(const QAbstractFileIconProvider);
-    const QIcon result = d->getIconThemeIcon(type);
-    return result.isNull() ? d->getPlatformThemeIcon(type) : result;
+    return d->getPlatformThemeIcon(type);
 }
 
 /*!
@@ -225,8 +236,7 @@ QIcon QAbstractFileIconProvider::icon(IconType type) const
 QIcon QAbstractFileIconProvider::icon(const QFileInfo &info) const
 {
     Q_D(const QAbstractFileIconProvider);
-    const QIcon result = d->getIconThemeIcon(info);
-    return result.isNull() ? d->getPlatformThemeIcon(info) : result;
+    return d->getPlatformThemeIcon(info);
 }
 
 
