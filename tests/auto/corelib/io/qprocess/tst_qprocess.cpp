@@ -1715,7 +1715,7 @@ void tst_QProcess::raiseInChildProcessModifier()
             sa.sa_flags = SA_RESETHAND;
             sa.sa_handler = [](int) {
                 static const char msg[] = "SIGUSR1 handler was run";
-                write(STDERR_FILENO, msg, strlen(msg));
+                (void)write(STDERR_FILENO, msg, strlen(msg));
                 raise(SIGUSR1);     // re-raise
             };
             sigaction(SIGUSR1, &sa, nullptr);
@@ -1897,8 +1897,8 @@ void tst_QProcess::unixProcessParametersAndChildModifier()
         process.setChildProcessModifier([=, &vforkControl] {
             const char *pgidmsg = "PGID mismatch. ";
             if (getpgrp() != oldpgid)
-                write(pipes[1], pgidmsg, strlen(pgidmsg));
-            write(pipes[1], message, strlen(message));
+                (void)write(pipes[1], pgidmsg, strlen(pgidmsg));
+            (void)write(pipes[1], message, strlen(message));
             vforkControl.storeRelaxed(1);
         });
         auto flags = QProcess::UnixProcessFlag::CloseFileDescriptors |
