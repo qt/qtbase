@@ -46,6 +46,7 @@ qt_internal_add_plugin(QWasmIntegrationPlugin
         Qt::GuiPrivate
     ATTRIBUTION_FILE_DIR_PATHS
         ../../../3rdparty/wasm
+    QT_LICENSE_ID QT_COMMERCIAL_OR_GPL3
 )
 
 # Resources:
