@@ -4721,3 +4721,4 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_GCC("-Wvolatile") // should moc itself add this in generated code?
 #include "tst_moc.moc"
 QT_WARNING_POP
+#include "moc_single_function_keyword.cpp" // prevents "undefined inline functions" warnings
