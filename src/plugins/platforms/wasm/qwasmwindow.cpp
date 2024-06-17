@@ -393,8 +393,27 @@ void QWasmWindow::onActivationChanged(bool active)
     dom::syncCSSClassWith(m_qtWindow, "inactive", !active);
 }
 
+// Fix top level window flags in case only the type flags are passed.
+static inline Qt::WindowFlags fixTopLevelWindowFlags(Qt::WindowFlags flags)
+{
+    if (!(flags.testFlag(Qt::CustomizeWindowHint))) {
+        if (flags.testFlag(Qt::Window)) {
+            flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint
+                  |Qt::WindowMaximizeButtonHint|Qt::WindowCloseButtonHint;
+        }
+        if (flags.testFlag(Qt::Dialog) || flags.testFlag(Qt::Tool))
+            flags |= Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint;
+
+        if ((flags & Qt::WindowType_Mask) == Qt::SplashScreen)
+            flags |= Qt::FramelessWindowHint;
+    }
+    return flags;
+}
+
 void QWasmWindow::setWindowFlags(Qt::WindowFlags flags)
 {
+    flags = fixTopLevelWindowFlags(flags);
+
     if (flags.testFlag(Qt::WindowStaysOnTopHint) != m_flags.testFlag(Qt::WindowStaysOnTopHint)
         || flags.testFlag(Qt::WindowStaysOnBottomHint)
                 != m_flags.testFlag(Qt::WindowStaysOnBottomHint)) {
