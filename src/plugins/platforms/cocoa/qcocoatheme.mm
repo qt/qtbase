@@ -453,7 +453,7 @@ QVariant QCocoaTheme::themeHint(ThemeHint hint) const
     case QPlatformTheme::SpellCheckUnderlineStyle:
         return QVariant(int(QTextCharFormat::DotLine));
     case QPlatformTheme::UseFullScreenForPopupMenu:
-        return QVariant(bool([[NSApplication sharedApplication] presentationOptions] & NSApplicationPresentationFullScreen));
+            return false;
     case QPlatformTheme::InteractiveResizeAcrossScreens:
         return !NSScreen.screensHaveSeparateSpaces;
     case QPlatformTheme::ShowDirectoriesFirst:
