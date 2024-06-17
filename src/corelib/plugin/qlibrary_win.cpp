@@ -23,11 +23,6 @@ QStringList QLibraryPrivate::suffixes_sys(const QString& fullVersion)
     return QStringList(QStringLiteral(".dll"));
 }
 
-QStringList QLibraryPrivate::prefixes_sys()
-{
-    return QStringList();
-}
-
 bool QLibraryPrivate::load_sys()
 {
     //avoid 'Bad Image' message box

@@ -79,7 +79,14 @@ public:
     static QLibraryPrivate *findOrCreate(const QString &fileName, const QString &version = QString(),
                                          QLibrary::LoadHints loadHints = { });
     static QStringList suffixes_sys(const QString &fullVersion);
-    static QStringList prefixes_sys();
+    static constexpr QStringView prefix_sys()
+    {
+#ifdef Q_OS_WIN
+        return {};
+#else
+        return u"lib";
+#endif
+    }
 
     QAtomicPointer<std::remove_pointer<QtPluginInstanceFunction>::type> instanceFactory;
     QAtomicPointer<std::remove_pointer<Handle>::type> pHnd;

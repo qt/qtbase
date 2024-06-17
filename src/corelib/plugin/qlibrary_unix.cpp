@@ -77,11 +77,6 @@ QStringList QLibraryPrivate::suffixes_sys(const QString &fullVersion)
     return suffixes;
 }
 
-QStringList QLibraryPrivate::prefixes_sys()
-{
-    return QStringList() << "lib"_L1;
-}
-
 bool QLibraryPrivate::load_sys()
 {
 #if defined(Q_OS_WASM) && defined(QT_STATIC)
@@ -103,7 +98,7 @@ bool QLibraryPrivate::load_sys()
     QStringList suffixes;
     QStringList prefixes;
     if (pluginState != IsAPlugin) {
-        prefixes = prefixes_sys();
+        prefixes << prefix_sys().toString();
         suffixes = suffixes_sys(fullVersion);
     }
     int dlFlags = 0;
