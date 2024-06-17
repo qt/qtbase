@@ -503,6 +503,8 @@ QVariant QGenericUnixTheme::themeHint(ThemeHint hint) const
         return QVariant(mouseCursorTheme());
     case QPlatformTheme::MouseCursorSize:
         return QVariant(mouseCursorSize());
+    case QPlatformTheme::PreferFileIconFromTheme:
+        return true;
     default:
         break;
     }
@@ -1108,6 +1110,8 @@ QVariant QKdeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(mouseCursorTheme());
     case QPlatformTheme::MouseCursorSize:
         return QVariant(mouseCursorSize());
+    case QPlatformTheme::PreferFileIconFromTheme:
+        return true;
     default:
         break;
     }
@@ -1385,6 +1389,8 @@ QVariant QGnomeTheme::themeHint(QPlatformTheme::ThemeHint hint) const
         return QVariant(mouseCursorTheme());
     case QPlatformTheme::MouseCursorSize:
         return QVariant(mouseCursorSize());
+    case QPlatformTheme::PreferFileIconFromTheme:
+        return true;
     default:
         break;
     }

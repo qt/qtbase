@@ -649,6 +649,8 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return true;
     case ShowIconsInMenus:
         return true;
+    case PreferFileIconFromTheme:
+        return false;
     }
 
     return QVariant();
