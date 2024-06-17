@@ -201,6 +201,7 @@ private slots:
     void loadCorruptElfOldPlugin();
 #  endif
 #endif
+    void archSpecificVersion();
     void loadMachO_data();
     void loadMachO();
     void relativePath();
@@ -849,6 +850,26 @@ void tst_QPluginLoader::loadCorruptElfOldPlugin()
 }
 #  endif // Qt 7
 #endif // Q_OF_ELF
+
+void tst_QPluginLoader::archSpecificVersion()
+{
+#if !defined(QT_SHARED)
+    QSKIP("This test requires Qt to create shared libraries.");
+#endif
+    QPluginLoader loader(sys_qualifiedLibraryName("theplugin"));
+    QVERIFY2(loader.load(), qPrintable(loader.errorString()));
+
+    QString expectedArch;
+#if defined(Q_PROCESSOR_X86_64) && defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
+    if (__builtin_cpu_supports("avx2") && __builtin_cpu_supports("fma"))
+        expectedArch = "x86-64-v3";
+#endif
+
+    PluginInterface* theplugin = qobject_cast<PluginInterface*>(loader.instance());
+    QVERIFY(theplugin);
+    QCOMPARE(theplugin->architectureName(), expectedArch);
+    QVERIFY(loader.unload());
+}
 
 void tst_QPluginLoader::loadMachO_data()
 {

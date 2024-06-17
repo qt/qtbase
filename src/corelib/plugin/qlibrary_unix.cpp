@@ -169,8 +169,10 @@ bool QLibraryPrivate::load_sys()
             // add ".avx2" to each suffix in the list
             transform(suffixes, [](QString *s) { s->append(".avx2"_L1); });
         } else {
-            // prepend "haswell/" to each prefix in the list
-            transform(prefixes, [](QString *s) { s->prepend("haswell/"_L1); });
+#  ifdef __GLIBC__
+            // prepend "glibc-hwcaps/x86-64-v3/" to each prefix in the list
+            transform(prefixes, [](QString *s) { s->prepend("glibc-hwcaps/x86-64-v3/"_L1); });
+#  endif
         }
     }
 #endif

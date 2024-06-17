@@ -63,6 +63,8 @@
 # define PREFIX         "lib"
 #endif
 
+using namespace Qt::StringLiterals;
+
 QT_FORWARD_DECLARE_CLASS(QLibrary)
 class tst_QLibrary : public QObject
 {
@@ -97,6 +99,8 @@ private slots:
     void version_data();
     void version();
     void loadTwoVersions();
+    void archSpecificVersion_data();
+    void archSpecificVersion();
     void setFileNameAndVersionTwice();
     void setFileNameAndVersionAfterFailedLoad_data() { version_data(); }
     void setFileNameAndVersionAfterFailedLoad();
@@ -227,6 +231,42 @@ void tst_QLibrary::loadTwoVersions()
 
     lib2.unload();
     lib1.unload();
+}
+
+void tst_QLibrary::archSpecificVersion_data()
+{
+#if !defined(__GLIBC__) || !defined(Q_PROCESSOR_X86_64)
+    QSKIP("Test not applicable on this platform");
+#endif
+
+    QTest::addColumn<QString>("lib");
+    QTest::addColumn<int>("version");
+
+    for (const char *prefix : { "", PREFIX }) {
+        QString libname = prefix + u"myarchlib"_s;
+        QTest::addRow("%s v1", qPrintable(libname)) << libname << 1;
+        QTest::addRow("%s.so.1", qPrintable(libname)) << (libname + SUFFIX + ".1") << -1;
+    }
+}
+
+void tst_QLibrary::archSpecificVersion()
+{
+    QFETCH(QString, lib);
+    QFETCH(int, version);
+    QString expectedArch;
+
+#if defined(__GLIBC__) && defined(Q_PROCESSOR_X86_64)
+    if (__builtin_cpu_supports("avx2") && __builtin_cpu_supports("fma"))
+        expectedArch = "x86-64-v3";
+#endif
+
+    QString appDir = directory;
+    QLibrary library(appDir + QLatin1Char('/') + lib, version);
+    QVERIFY2(library.load(), qPrintable(library.errorString()));
+
+    auto archfunction = (const char *(*)())library.resolve("archname");
+    QVERIFY(archfunction);
+    QCOMPARE(archfunction(), expectedArch);
 }
 
 void tst_QLibrary::setFileNameAndVersionTwice()
