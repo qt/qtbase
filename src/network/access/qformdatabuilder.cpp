@@ -46,6 +46,15 @@ static QByteArray nameToByteArray(QUtf8StringView view)
     return QByteArray::fromRawData(view.data(), view.size());
 }
 
+static void escapeNameAndAppend(QByteArray &dst, QByteArrayView src)
+{
+    for (auto c : src) {
+        if (c == '"' || c == '\\')
+            dst += '\\';
+        dst += c;
+    }
+}
+
 /*!
     Constructs a QFormDataPartBuilder object and sets \a name as the name
     parameter of the form-data.
@@ -58,11 +67,7 @@ QFormDataPartBuilder::QFormDataPartBuilder(QAnyStringView name, PrivateConstruct
     const auto enc = name.visit([](auto name) { return nameToByteArray(name); });
 
     m_headerValue += "form-data; name=\"";
-    for (auto c : enc) {
-        if (c == '"' || c == '\\')
-            m_headerValue += '\\';
-        m_headerValue += c;
-    }
+    escapeNameAndAppend(m_headerValue, enc);
     m_headerValue += "\"";
 }
 
@@ -201,11 +206,7 @@ QHttpPart QFormDataPartBuilder::build()
         const bool utf8 = !QtPrivate::isAscii(m_originalBodyName);
         const auto enc = utf8 ? m_originalBodyName.toUtf8() : m_originalBodyName.toLatin1();
         m_headerValue += "; filename=\"";
-        for (auto c : enc) {
-            if (c == '"' || c == '\\')
-                m_headerValue += '\\';
-            m_headerValue += c;
-        }
+        escapeNameAndAppend(m_headerValue, enc);
         m_headerValue += "\"";
         if (utf8) {
             // For 'filename*' production see
