@@ -28,6 +28,7 @@ private: // helpers
     static QJsonObject offscreenConfiguration();
 
 private slots:
+    void initTestCase();
     void cleanup();
     void qhighdpiscaling_data();
     void qhighdpiscaling();
@@ -111,7 +112,6 @@ QGuiApplication *tst_QHighDpi::createOffscreenApplication(const QByteArray &json
     // Write offscreen platform config file
     QFile configFile(QLatin1String("qt-offscreen-test-config.json"));
     if (!configFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
-        qFatal("Failed to open test config file: %s", qPrintable(configFile.errorString()));
     configFile.resize(0); // truncate
     if (configFile.write(jsonConfig) == -1)
         qFatal("Could not write config file: %s", qPrintable(configFile.errorString()));
@@ -150,6 +150,11 @@ QGuiApplication *tst_QHighDpi::createStandardOffscreenApp(const QJsonArray &scre
         {"screens" , screens},
     };
     return createOffscreenApplication(QJsonDocument(config).toJson());
+}
+
+void tst_QHighDpi::initTestCase()
+{
+    QDir::setCurrent(QDir::tempPath());
 }
 
 /// Auto test begins
