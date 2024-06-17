@@ -15,6 +15,7 @@ class ThePlugin : public QObject, public PluginInterface
 
 public:
     virtual QString pluginName() const override;
+    const char *architectureName() const override;
 };
 
 #endif // THEPLUGIN_H

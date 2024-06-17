@@ -8,6 +8,7 @@
 struct PluginInterface {
     virtual ~PluginInterface() {}
     virtual QString pluginName() const = 0;
+    virtual const char *architectureName() const { return ""; };
 };
 
 QT_BEGIN_NAMESPACE

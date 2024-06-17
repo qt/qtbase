@@ -7,6 +7,7 @@ if(NOT QT_BUILD_STANDALONE_TESTS AND NOT QT_BUILDING_QT)
     find_package(Qt6BuildInternals REQUIRED COMPONENTS STANDALONE_TEST)
 endif()
 
+add_subdirectory(archlib)
 add_subdirectory(lib)
 add_subdirectory(lib2)
 add_subdirectory(tst)
