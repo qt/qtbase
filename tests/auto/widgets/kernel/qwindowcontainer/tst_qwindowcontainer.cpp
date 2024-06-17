@@ -62,6 +62,7 @@ private slots:
     void testPlatformSurfaceEvent();
     void embedWidgetWindow();
     void testFocus();
+    void parentDestroyed();
     void cleanup();
 
 private:
@@ -528,6 +529,36 @@ void tst_QWindowContainer::testFocus()
     QCOMPARE(QGuiApplication::focusWindow(), embedded);
     QCOMPARE(QApplication::focusWidget(), container);
     QVERIFY(!lineEdit->hasFocus());
+}
+
+class CreateDestroyWidget : public QWidget
+{
+public:
+    void create() { QWidget::create(); }
+    void destroy() { QWidget::destroy(); }
+};
+
+void tst_QWindowContainer::parentDestroyed()
+{
+    CreateDestroyWidget topLevel;
+    topLevel.setAttribute(Qt::WA_NativeWindow);
+    QVERIFY(topLevel.windowHandle());
+
+    QPointer<QWindow> window = new QWindow;
+    QWidget *container = QWidget::createWindowContainer(window.get());
+    container->setParent(&topLevel);
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QCOMPARE(window->parent(), topLevel.windowHandle());
+
+    // Destroying the widget should not wipe out the contained QWindow
+    topLevel.destroy();
+    QVERIFY(window);
+
+    // Recreating the top level should once again reparent the contained window
+    topLevel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&topLevel));
+    QCOMPARE(window->parent(), topLevel.windowHandle());
 }
 
 QTEST_MAIN(tst_QWindowContainer)
