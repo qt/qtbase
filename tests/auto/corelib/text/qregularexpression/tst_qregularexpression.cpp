@@ -16,6 +16,10 @@
 #include <iostream>
 #include <optional>
 
+#ifndef QTEST_THROW_ON_FAIL
+# error This test requires QTEST_THROW_ON_FAIL being active.
+#endif
+
 Q_DECLARE_METATYPE(QRegularExpression::PatternOptions)
 Q_DECLARE_METATYPE(QRegularExpression::MatchType)
 Q_DECLARE_METATYPE(QRegularExpression::MatchOptions)
@@ -292,11 +296,7 @@ void consistencyCheck(const QRegularExpressionMatchIterator &iterator)
             QRegularExpressionMatch peeked = i.peekNext();
             QRegularExpressionMatch match = i.next();
             consistencyCheck(peeked);
-            if (QTest::currentTestFailed())
-                return;
             consistencyCheck(match);
-            if (QTest::currentTestFailed())
-                return;
             QVERIFY(match.isValid());
             QVERIFY(match.hasMatch() || match.hasPartialMatch());
             QCOMPARE(i.regularExpression(), match.regularExpression());
@@ -544,8 +544,6 @@ void tst_QRegularExpression::moveSemanticsMatch()
     QCOMPARE(match2.capturedStart(), 3);
     QCOMPARE(match2.capturedEnd(), 7);
     consistencyCheck(match2);
-    if (QTest::currentTestFailed())
-        return;
 
     QRegularExpressionMatch match3 = re.match("test1");
     QCOMPARE(match3.hasMatch(), true);
@@ -558,8 +556,6 @@ void tst_QRegularExpression::moveSemanticsMatch()
     QCOMPARE(match1.capturedStart(), 0);
     QCOMPARE(match1.capturedEnd(), 4);
     consistencyCheck(match1);
-    if (QTest::currentTestFailed())
-        return;
 
     // here match3 is in the moved-from state, so destructor call for moved-from
     // object is also checked
@@ -578,8 +574,6 @@ void tst_QRegularExpression::moveSemanticsMatchIterator()
     QVERIFY(it2.hasNext());
     QT_TEST_EQUALITY_OPS(it2.regularExpression(), re, true);
     consistencyCheck(it2);
-    if (QTest::currentTestFailed())
-        return;
 
     QRegularExpression re2("test");
     QRegularExpressionMatchIterator it3 = re2.globalMatch("123test456");
@@ -593,8 +587,6 @@ void tst_QRegularExpression::moveSemanticsMatchIterator()
     QVERIFY(it1.hasNext());
     QT_TEST_EQUALITY_OPS(it1.regularExpression(), re2, true);
     consistencyCheck(it1);
-    if (QTest::currentTestFailed())
-        return;
 
     // here it3 is in the moved-from state, so destructor call for moved-from
     // object is also checked
