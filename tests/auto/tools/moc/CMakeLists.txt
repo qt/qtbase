@@ -46,7 +46,6 @@ set(JSON_HEADERS
         related-metaobjects-name-conflict.h
         signal-with-default-arg.h
         single-quote-digit-separator-n3781.h
-        single_function_keyword.h
         slots-with-void-template.h
         task192552.h
         task234909.h
@@ -71,6 +70,7 @@ list(TRANSFORM comparison_relevant_moc_list  APPEND ".json" OUTPUT_VARIABLE moc_
 qt_internal_add_test(tst_moc
     SOURCES
         cxx-attributes.h
+        single_function_keyword.h
         tst_moc.cpp
         ${comparison_relevant_moc_list}
     INCLUDE_DIRECTORIES
