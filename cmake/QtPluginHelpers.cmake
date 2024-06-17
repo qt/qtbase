@@ -452,12 +452,10 @@ function(qt_finalize_plugin target)
         _qt_internal_generate_win32_rc_file("${target}")
     endif()
 
-    # Generate .prl and .pri files for static plugins.
+    # Generate .prl and .pri files for installed static plugins.
     get_target_property(target_type "${target}" TYPE)
-    if(target_type STREQUAL STATIC_LIBRARY)
-        if(arg_INSTALL_PATH)
-            qt_generate_prl_file(${target} "${arg_INSTALL_PATH}")
-        endif()
+    if(target_type STREQUAL STATIC_LIBRARY AND arg_INSTALL_PATH)
+        qt_generate_prl_file(${target} "${arg_INSTALL_PATH}")
 
         # There's no point in generating pri files for qml plugins.
         # We didn't do it in Qt5 times.
