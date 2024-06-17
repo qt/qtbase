@@ -27,6 +27,7 @@ private slots:
 
     void load_data();
     void load();
+    void loadLocale_data();
     void loadLocale();
     void threadLoad();
     void testLanguageChange();
@@ -116,12 +117,23 @@ void tst_QTranslator::load()
     }
 }
 
+void tst_QTranslator::loadLocale_data()
+{
+    QTest::addColumn<QString>("localeName");
+    QTest::addColumn<QStringList>("fileNames");
+
+    QTest::addRow("US English")
+                            << "en_US"
+                            << QStringList{"en_US.qm", "en_US", "en.qm", "en"};
+    QTest::addRow("Australia")
+                            << "en_AU"
+                            << QStringList{"en_Latn_AU.qm", "en_AU.qm", "en.qm"};
+}
+
 void tst_QTranslator::loadLocale()
 {
-    QLocale locale;
-    auto localeName = locale.uiLanguages(QLocale::TagSeparator::Underscore).value(0);
-    if (localeName.isEmpty())
-        QSKIP("This test requires at least one available UI language.");
+    QFETCH(const QString, localeName);
+    QFETCH(const QStringList, fileNames);
 
     QByteArray ba;
     {
@@ -134,36 +146,16 @@ void tst_QTranslator::loadLocale()
     QTemporaryDir dir;
     QVERIFY(dir.isValid());
 
-    auto path = dir.path();
+    const auto path = dir.path();
     QFile file(path + "/dummy");
     QVERIFY2(file.open(QFile::WriteOnly), qPrintable(file.errorString()));
     QCOMPARE(file.write(ba), ba.size());
     file.close();
 
-    /*
-        Test the following order:
-
-        /tmp/tmpDir/foo-en_US.qm
-        /tmp/tmpDir/foo-en_US
-        /tmp/tmpDir/foo-en.qm
-        /tmp/tmpDir/foo-en
-        /tmp/tmpDir/foo.qm
-        /tmp/tmpDir/foo-
-        /tmp/tmpDir/foo
-    */
-
     QStringList files;
-    while (true) {
-        files.append(path + "/foo-" + localeName + ".qm");
+    for (const auto &fileName : fileNames) {
+        files.append(path + "/foo-" + fileName);
         QVERIFY2(file.copy(files.last()), qPrintable(file.errorString()));
-
-        files.append(path + "/foo-" + localeName);
-        QVERIFY2(file.copy(files.last()), qPrintable(file.errorString()));
-
-        int rightmost = localeName.lastIndexOf(QLatin1Char('_'));
-        if (rightmost <= 0)
-            break;
-        localeName.truncate(rightmost);
     }
 
     files.append(path + "/foo.qm");
@@ -175,10 +167,14 @@ void tst_QTranslator::loadLocale()
     files.append(path + "/foo");
     QVERIFY2(file.rename(files.last()), qPrintable(file.errorString()));
 
+    QLocale locale(localeName);
     QTranslator tor;
     for (const auto &filePath : files) {
         QVERIFY(tor.load(locale, "foo", "-", path, ".qm"));
-        QCOMPARE(tor.filePath(), filePath);
+        // As the file system might be case insensitive, we can't guarantee that
+        // the casing of the file name is preserved. The order of loading
+        // en_AU vs en_au if both exist is undefined anyway.
+        QCOMPARE(tor.filePath().toLower(), filePath.toLower());
         QVERIFY2(file.remove(filePath), qPrintable(file.errorString()));
     }
 }
