@@ -328,7 +328,7 @@ QNetworkInformationBackend::~QNetworkInformationBackend() = default;
 */
 
 /*!
-    \fn void QNetworkInformationBackend::reachabilityChanged()
+    \fn void QNetworkInformationBackend::reachabilityChanged(NetworkInformation::Reachability reachability)
 
     You should not emit this signal manually, call setReachability()
     instead which will emit this signal when the value changes.

@@ -74,9 +74,9 @@ public:
     }
 
 Q_SIGNALS:
-    void reachabilityChanged(Reachability reachability);
+    void reachabilityChanged(QNetworkInformation::Reachability reachability);
     void behindCaptivePortalChanged(bool behindPortal);
-    void transportMediumChanged(TransportMedium medium);
+    void transportMediumChanged(QNetworkInformation::TransportMedium medium);
     void isMeteredChanged(bool isMetered);
 
 protected:

@@ -76,9 +76,9 @@ public:
     static QNetworkInformation *instance();
 
 Q_SIGNALS:
-    void reachabilityChanged(Reachability newReachability);
+    void reachabilityChanged(QNetworkInformation::Reachability newReachability);
     void isBehindCaptivePortalChanged(bool state);
-    void transportMediumChanged(TransportMedium current);
+    void transportMediumChanged(QNetworkInformation::TransportMedium current);
     void isMeteredChanged(bool isMetered);
 
 private:
