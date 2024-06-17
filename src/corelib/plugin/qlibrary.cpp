@@ -589,7 +589,9 @@ QtPluginInstanceFunction QLibraryPrivate::loadPlugin()
     if (load()) {
         auto ptr = reinterpret_cast<QtPluginInstanceFunction>(resolve("qt_plugin_instance"));
         instanceFactory.storeRelease(ptr); // two threads may store the same value
-        return ptr;
+        if (Q_LIKELY(ptr))
+            return ptr;
+        errorString = QLibrary::tr("Could not resolve 'qt_plugin_instance' function");
     }
     qCDebug(qt_lcDebugPlugins) << "QLibraryPrivate::loadPlugin failed on" << fileName << ":" << errorString;
     pluginState = IsNotAPlugin;
