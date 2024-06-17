@@ -46,13 +46,11 @@ function(qt_internal_set_warnings_are_errors_flags target target_scope)
         endif()
 
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11.0.0")
+            # Ditto
+            list(APPEND flags -Wno-error=stringop-overread)
+
             # We do mixed enum arithmetic all over the place:
             list(APPEND flags -Wno-error=deprecated-enum-enum-conversion -Wno-error=deprecated-enum-float-conversion)
-
-            # GCC has some false positive, and it specifically comes through in MINGW
-            if (MINGW)
-                list(APPEND flags -Wno-error=stringop-overread)
-            endif()
         endif()
 
         if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "11.0.0" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "11.2.0")
