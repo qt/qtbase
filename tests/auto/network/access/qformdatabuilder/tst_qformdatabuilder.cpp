@@ -1,6 +1,7 @@
 // Copyright (C) 2024 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GPL-3.0-only
 
+#include <QtNetwork/private/qhttpmultipart_p.h>
 #include <QtNetwork/qformdatabuilder.h>
 
 #include <QtCore/qbuffer.h>
@@ -8,11 +9,17 @@
 
 #include <QtTest/qtest.h>
 
+#ifndef QTEST_THROW_ON_FAIL
+# error This test requires QTEST_THROW_ON_FAIL being active.
+#endif
+
 using namespace Qt::StringLiterals;
 
 class tst_QFormDataBuilder : public QObject
 {
     Q_OBJECT
+
+    void checkBodyPartsAreEquivalent(QByteArrayView expected, QByteArrayView actual);
 
 private Q_SLOTS:
     void generateQHttpPartWithDevice_data();
@@ -32,7 +39,25 @@ private Q_SLOTS:
 
     void picksUtf8NameEncodingIfAsciiDoesNotSuffice_data();
     void picksUtf8NameEncodingIfAsciiDoesNotSuffice();
+
+    void moveSemantics();
 };
+
+void tst_QFormDataBuilder::checkBodyPartsAreEquivalent(QByteArrayView expected, QByteArrayView actual)
+{
+    qsizetype expectedCrlfPos = expected.indexOf("\r\n");
+    qsizetype expectedBoundaryPos = expected.lastIndexOf("--boundary_.oOo.");
+
+    qsizetype actualCrlfPos = actual.indexOf("\r\n");
+    qsizetype actualBoundaryPos = actual.lastIndexOf("--boundary_.oOo.");
+
+    qsizetype start = expectedCrlfPos + 2;
+    qsizetype end = expectedBoundaryPos - expectedCrlfPos - 2;
+
+    QCOMPARE(actualCrlfPos, expectedCrlfPos);
+    QCOMPARE(actualBoundaryPos, expectedBoundaryPos);
+    QCOMPARE(actual.sliced(start, end), expected.sliced(start, end));
+}
 
 void tst_QFormDataBuilder::generateQHttpPartWithDevice_data()
 {
@@ -356,6 +381,75 @@ void tst_QFormDataBuilder::picksUtf8NameEncodingIfAsciiDoesNotSuffice()
 
     QVERIFY2(msg.contains(expected_content_disposition_data),
              qPrintable(u"content-disposition not found : "_s + expected_content_disposition_data));
+}
+
+void tst_QFormDataBuilder::moveSemantics()
+{
+#if defined(QT_BUILD_INTERNAL) || !defined(QT_UNDEFINED_SANITIZER)
+    constexpr QByteArrayView expected = "--boundary_.oOo._4SUrZy7x9lPHMF3fbRSsE15hiWu5Sbmy\r\n"
+                                        "content-type: text/plain\r\ncontent-disposition: form-data; name=\"text\"; filename=\"rfc3252.txt\"\r\n\r\n"
+                                        "some text for reference\r\n"
+                                        "--boundary_.oOo._4SUrZy7x9lPHMF3fbRSsE15hiWu5Sbmy--\r\n";
+
+    const QString testData = QFileInfo(QFINDTESTDATA("rfc3252.txt")).absoluteFilePath();
+
+    // We get the expected
+    {
+        QFile data_file(testData);
+        QVERIFY2(data_file.open(QIODeviceBase::ReadOnly), qPrintable(data_file.errorString()));
+
+        QFormDataBuilder qfdb;
+        qfdb.part("text"_L1).setBodyDevice(&data_file, "rfc3252.txt");
+        std::unique_ptr<QHttpMultiPart> mp = qfdb.buildMultiPart();
+
+        auto mp_priv = QHttpMultiPartPrivate::get(mp.get());
+        mp_priv->device->open(QIODeviceBase::ReadOnly);
+        const QByteArray actual = mp_priv->device->readAll();
+
+        checkBodyPartsAreEquivalent(expected, actual);
+    }
+
+    // We get the expected from a move constructed qfdb
+    {
+        QFile data_file(testData);
+        QVERIFY2(data_file.open(QIODeviceBase::ReadOnly), qPrintable(data_file.errorString()));
+
+        QFormDataBuilder qfdb;
+        auto &p = qfdb.part("text"_L1);
+        auto qfdb_moved = std::move(qfdb);
+
+        p.setBodyDevice(&data_file, "rfc3252.txt");
+        std::unique_ptr<QHttpMultiPart> mp = qfdb_moved.buildMultiPart();
+
+        auto mp_priv = QHttpMultiPartPrivate::get(mp.get());
+        mp_priv->device->open(QIODeviceBase::ReadOnly);
+        const QByteArray actual = mp_priv->device->readAll();
+
+        checkBodyPartsAreEquivalent(expected, actual);
+    }
+
+    // We get the expected from a move assigned qfdb
+    {
+        QFile data_file(testData);
+        QVERIFY2(data_file.open(QIODeviceBase::ReadOnly), qPrintable(data_file.errorString()));
+
+        QFormDataBuilder qfdb;
+        QFormDataBuilder qfdb_moved;
+
+        qfdb.part("text"_L1).setBodyDevice(&data_file, "rfc3252.txt");
+
+        qfdb_moved = std::move(qfdb);
+        std::unique_ptr<QHttpMultiPart> mp = qfdb_moved.buildMultiPart();
+
+        auto mp_priv = QHttpMultiPartPrivate::get(mp.get());
+        mp_priv->device->open(QIODeviceBase::ReadOnly);
+        const QByteArray actual = mp_priv->device->readAll();
+
+        checkBodyPartsAreEquivalent(expected, actual);
+    }
+#else
+    QSKIP("This test requires -developer-build when --sanitize=undefined is active.");
+#endif
 }
 
 QTEST_MAIN(tst_QFormDataBuilder)
