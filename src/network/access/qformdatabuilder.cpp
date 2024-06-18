@@ -329,8 +329,7 @@ QFormDataPartBuilder &QFormDataBuilder::part(QAnyStringView name)
 }
 
 /*!
-    Constructs and returns a pointer to a QHttpMultipart object. The caller
-    takes ownership of the generated QHttpMultiPart object.
+    Constructs and returns a pointer to a QHttpMultipart object.
 
     \sa QHttpMultiPart
 */
