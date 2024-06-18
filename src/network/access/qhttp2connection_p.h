@@ -197,6 +197,7 @@ private:
     State m_state = State::Idle;
     HPack::HttpHeader m_headers;
     bool m_isReserved = false;
+    bool m_owningByteDevice = false;
 
     friend tst_QHttp2Connection;
 };

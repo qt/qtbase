@@ -266,7 +266,7 @@ void QHttp2Stream::sendDATA(const QByteArray &payload, bool endStream)
         return;
 
     auto *byteDevice = QNonContiguousByteDeviceFactory::create(payload);
-    connect(this, &QHttp2Stream::uploadFinished, byteDevice, &QObject::deleteLater);
+    m_owningByteDevice = true;
     byteDevice->setParent(this);
     sendDATA(byteDevice, endStream);
 }
@@ -296,7 +296,7 @@ void QHttp2Stream::sendDATA(QIODevice *device, bool endStream)
     qCDebug(qHttp2ConnectionLog, "[%p] starting sendDATA on stream %u, of device: %p",
             getConnection(), m_streamID, device);
     auto *byteDevice = QNonContiguousByteDeviceFactory::create(device);
-    connect(this, &QHttp2Stream::uploadFinished, byteDevice, &QObject::deleteLater);
+    m_owningByteDevice = true;
     byteDevice->setParent(this);
     m_uploadDevice = device;
     sendDATA(byteDevice, endStream);
@@ -442,6 +442,10 @@ void QHttp2Stream::finishSendDATA()
 
     disconnect(m_uploadByteDevice, nullptr, this, nullptr);
     m_uploadDevice = nullptr;
+    if (m_owningByteDevice) {
+        m_owningByteDevice = false;
+        delete m_uploadByteDevice;
+    }
     m_uploadByteDevice = nullptr;
     emit uploadFinished();
 }
