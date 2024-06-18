@@ -45,8 +45,9 @@ using QFloat16FormatterBaseType =
 
 QT_END_NAMESPACE
 
+namespace std {
 template <typename CharT>
-struct std::formatter<QT_PREPEND_NAMESPACE(qfloat16), CharT>
+struct formatter<QT_PREPEND_NAMESPACE(qfloat16), CharT>
     : std::formatter<QT_PREPEND_NAMESPACE(QtPrivate::QFloat16FormatterBaseType<CharT>), CharT>
 {
     template <typename FormatContext>
@@ -56,6 +57,7 @@ struct std::formatter<QT_PREPEND_NAMESPACE(qfloat16), CharT>
         return std::formatter<FloatType, CharT>::format(FloatType(val), ctx);
     }
 };
+} // namespace std
 
 #endif // QT_SUPPORTS_STD_FORMAT
 
