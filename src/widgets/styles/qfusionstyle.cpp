@@ -1220,6 +1220,8 @@ void QFusionStyle::drawControl(ControlElement element, const QStyleOption *optio
         painter->save();
         painter->setRenderHint(QPainter::Antialiasing, true);
         if (const QStyleOptionProgressBar *bar = qstyleoption_cast<const QStyleOptionProgressBar *>(option)) {
+            painter->translate(rect.topLeft());
+            rect.translate(-rect.topLeft());
             const auto indeterminate = (bar->minimum == 0 && bar->maximum == 0);
             const auto complete = bar->progress == bar->maximum;
             const auto vertical = !(bar->state & QStyle::State_Horizontal);
