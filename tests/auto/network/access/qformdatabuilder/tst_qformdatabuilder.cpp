@@ -22,6 +22,8 @@
 
 using namespace Qt::StringLiterals;
 
+const auto CRLF = "\r\n"_ba;
+
 Q_NEVER_INLINE static QByteArray
 serialized_impl([[maybe_unused]] qxp::function_ref<QFormDataBuilder &(QFormDataBuilder &)> operations)
 {
@@ -81,10 +83,10 @@ private Q_SLOTS:
 
 void tst_QFormDataBuilder::checkBodyPartsAreEquivalent(QByteArrayView expected, QByteArrayView actual)
 {
-    qsizetype expectedCrlfPos = expected.indexOf("\r\n");
+    qsizetype expectedCrlfPos = expected.indexOf(CRLF);
     qsizetype expectedBoundaryPos = expected.lastIndexOf("--boundary_.oOo.");
 
-    qsizetype actualCrlfPos = actual.indexOf("\r\n");
+    qsizetype actualCrlfPos = actual.indexOf(CRLF);
     qsizetype actualBoundaryPos = actual.lastIndexOf("--boundary_.oOo.");
 
     qsizetype start = expectedCrlfPos + 2;
