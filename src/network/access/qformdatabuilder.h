@@ -19,8 +19,6 @@
 QT_REQUIRE_CONFIG(http);
 #endif
 
-class tst_QFormDataBuilder;
-
 QT_BEGIN_NAMESPACE
 
 class QHttpPartPrivate;
@@ -75,7 +73,7 @@ private:
     Q_NETWORK_EXPORT QFormDataPartBuilder &setBodyHelper(const QByteArray &data,
                                                          QAnyStringView fileName,
                                                          QAnyStringView mimeType);
-    Q_NETWORK_EXPORT QHttpPart build();
+    QHttpPart build();
 
     QByteArray m_headerValue;
     QByteArray m_mimeType;
@@ -85,7 +83,6 @@ private:
     void *m_reserved = nullptr;
 
     friend class QFormDataBuilder;
-    friend class ::tst_QFormDataBuilder;
     friend void swap(QFormDataPartBuilder &lhs, QFormDataPartBuilder &rhs) noexcept
     { lhs.swap(rhs); }
 };

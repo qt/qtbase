@@ -398,31 +398,31 @@ void tst_QFormDataBuilder::specifyMimeType()
 void tst_QFormDataBuilder::picksUtf8NameEncodingIfAsciiDoesNotSuffice_data()
 {
     QTest::addColumn<QAnyStringView>("name_data");
-    QTest::addColumn<QString>("expected_content_disposition_data");
+    QTest::addColumn<QByteArray>("expected_content_disposition_data");
 
-    QTest::newRow("latin1-ascii") << QAnyStringView("text"_L1) << uR"(form-data; name="text")"_s;
-    QTest::newRow("u8-ascii") << QAnyStringView(u8"text") << uR"(form-data; name="text")"_s;
-    QTest::newRow("u-ascii") << QAnyStringView(u"text") << uR"(form-data; name="text")"_s;
+    QTest::newRow("latin1-ascii") << QAnyStringView("text"_L1) << R"(form-data; name="text")"_ba;
+    QTest::newRow("u8-ascii") << QAnyStringView(u8"text") << R"(form-data; name="text")"_ba;
+    QTest::newRow("u-ascii") << QAnyStringView(u"text") << R"(form-data; name="text")"_ba;
 
     // 0xF6 is 'ö', use hex value with Latin-1 to avoid interpretation as UTF-8
-    QTest::newRow("latin1-latin") << QAnyStringView("t\xF6xt"_L1) << uR"(form-data; name="töxt")"_s;
-    QTest::newRow("u8-latin") << QAnyStringView(u8"töxt") << uR"(form-data; name="töxt")"_s;
-    QTest::newRow("u-latin") << QAnyStringView(u"töxt") << uR"(form-data; name="töxt")"_s;
+    QTest::newRow("latin1-latin") << QAnyStringView("t\xF6xt"_L1) << R"(form-data; name="töxt")"_ba;
+    QTest::newRow("u8-latin") << QAnyStringView(u8"töxt") << R"(form-data; name="töxt")"_ba;
+    QTest::newRow("u-latin") << QAnyStringView(u"töxt") << R"(form-data; name="töxt")"_ba;
 
-    QTest::newRow("u8-u8") << QAnyStringView(u8"テキスト") << uR"(form-data; name="テキスト")"_s;
+    QTest::newRow("u8-u8") << QAnyStringView(u8"テキスト") << R"(form-data; name="テキスト")"_ba;
 }
 
 void tst_QFormDataBuilder::picksUtf8NameEncodingIfAsciiDoesNotSuffice()
 {
     QFETCH(const QAnyStringView, name_data);
-    QFETCH(const QString, expected_content_disposition_data);
+    QFETCH(const QByteArray, expected_content_disposition_data);
 
-    QFormDataBuilder qfdb;
-    QFormDataPartBuilder &qfdpb = qfdb.part(name_data).setBody("some"_ba);
-    auto msg = QDebug::toString(qfdpb.build());
+    const auto msg = serialized([&](auto &builder) {
+            builder.part(name_data).setBody("some"_ba);
+        });
 
     QVERIFY2(msg.contains(expected_content_disposition_data),
-             qPrintable(u"content-disposition not found : "_s + expected_content_disposition_data));
+             "content-disposition not found : " + expected_content_disposition_data);
 }
 
 void tst_QFormDataBuilder::moveSemantics()
