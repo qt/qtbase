@@ -222,58 +222,59 @@ void tst_QFormDataBuilder::picksUtf8FilenameEncodingIfAsciiDontSuffice_data()
 {
     QTest::addColumn<QLatin1StringView>("name_data");
     QTest::addColumn<QAnyStringView>("body_name_data");
-    QTest::addColumn<QString>("expected_content_type_data");
-    QTest::addColumn<QString>("expected_content_disposition_data");
-    QTest::addColumn<QString>("content_disposition_must_not_contain_data");
+    QTest::addColumn<QByteArray>("expected_content_type_data");
+    QTest::addColumn<QByteArray>("expected_content_disposition_data");
+    QTest::addColumn<QByteArray>("content_disposition_must_not_contain_data");
 
-    QTest::newRow("latin1-ascii") << "text"_L1 << QAnyStringView("rfc3252.txt"_L1) << u"text/plain"_s
-                                  << uR"(form-data; name="text"; filename="rfc3252.txt")"_s
-                                  << u"filename*"_s;
-    QTest::newRow("u8-ascii") << "text"_L1 << QAnyStringView(u8"rfc3252.txt") << u"text/plain"_s
-                              << uR"(form-data; name="text"; filename="rfc3252.txt")"_s
-                              << u"filename*"_s;
-    QTest::newRow("u-ascii") << "text"_L1 << QAnyStringView(u"rfc3252.txt") << u"text/plain"_s
-                             << uR"(form-data; name="text"; filename="rfc3252.txt")"_s
-                             << u"filename*"_s;
+    QTest::newRow("latin1-ascii") << "text"_L1 << QAnyStringView("rfc3252.txt"_L1) << "text/plain"_ba
+                                  << R"(form-data; name="text"; filename="rfc3252.txt")"_ba
+                                  << "filename*"_ba;
+    QTest::newRow("u8-ascii") << "text"_L1 << QAnyStringView(u8"rfc3252.txt") << "text/plain"_ba
+                              << R"(form-data; name="text"; filename="rfc3252.txt")"_ba
+                              << "filename*"_ba;
+    QTest::newRow("u-ascii") << "text"_L1 << QAnyStringView(u"rfc3252.txt") << "text/plain"_ba
+                             << R"(form-data; name="text"; filename="rfc3252.txt")"_ba
+                             << "filename*"_ba;
 
     // 0xF6 is 'ö', use hex value with Latin-1 to avoid interpretation as UTF-8 (0xC3 0xB6)
-    QTest::newRow("latin1-latin") << "text"_L1 << QAnyStringView("sz\xF6veg.txt"_L1) << u"text/plain"_s
-                                  << uR"(form-data; name="text"; filename="szöveg.txt"; filename*=UTF-8''sz%C3%B6veg.txt)"_s
-                                  << u""_s;
-    QTest::newRow("u8-latin") << "text"_L1 << QAnyStringView(u8"szöveg.txt") << u"text/plain"_s
-                              << uR"(form-data; name="text"; filename="szöveg.txt"; filename*=UTF-8''sz%C3%B6veg.txt)"_s
-                              << u""_s;
-    QTest::newRow("u-latin") << "text"_L1 << QAnyStringView(u"szöveg.txt") << u"text/plain"_s
-                             << uR"(form-data; name="text"; filename="szöveg.txt"; filename*=UTF-8''sz%C3%B6veg.txt)"_s
-                             << u""_s;
+    QTest::newRow("latin1-latin") << "text"_L1 << QAnyStringView("sz\xF6veg.txt"_L1) << "text/plain"_ba
+                                  << R"(form-data; name="text"; filename="szöveg.txt"; filename*=UTF-8''sz%C3%B6veg.txt)"_ba
+                                  << ""_ba;
+    QTest::newRow("u8-latin") << "text"_L1 << QAnyStringView(u8"szöveg.txt") << "text/plain"_ba
+                              << R"(form-data; name="text"; filename="szöveg.txt"; filename*=UTF-8''sz%C3%B6veg.txt)"_ba
+                              << ""_ba;
+    QTest::newRow("u-latin") << "text"_L1 << QAnyStringView(u"szöveg.txt") << "text/plain"_ba
+                             << R"(form-data; name="text"; filename="szöveg.txt"; filename*=UTF-8''sz%C3%B6veg.txt)"_ba
+                             << ""_ba;
 
-    QTest::newRow("u8-u8") << "text"_L1 << QAnyStringView(u8"テキスト.txt") << u"text/plain"_s
-                           << uR"(form-data; name="text"; filename="テキスト.txt"; filename*=UTF-8''%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.txt)"_s
-                           << u""_s;
+    QTest::newRow("u8-u8") << "text"_L1 << QAnyStringView(u8"テキスト.txt") << "text/plain"_ba
+                           << R"(form-data; name="text"; filename="テキスト.txt"; filename*=UTF-8''%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.txt)"_ba
+                           << ""_ba;
 }
 
 void tst_QFormDataBuilder::picksUtf8FilenameEncodingIfAsciiDontSuffice()
 {
     QFETCH(const QLatin1StringView, name_data);
     QFETCH(const QAnyStringView, body_name_data);
-    QFETCH(const QString, expected_content_type_data);
-    QFETCH(const QString, expected_content_disposition_data);
-    QFETCH(const QString, content_disposition_must_not_contain_data);
+    QFETCH(const QByteArray, expected_content_type_data);
+    QFETCH(const QByteArray, expected_content_disposition_data);
+    QFETCH(const QByteArray, content_disposition_must_not_contain_data);
 
     QBuffer buff;
-    QFormDataBuilder qfdb;
-    QFormDataPartBuilder &qfdpb = qfdb.part(name_data).setBodyDevice(&buff, body_name_data);
-    const QHttpPart httpPart = qfdpb.build();
+    QVERIFY(buff.open(QIODevice::ReadOnly));
 
-    const auto msg = QDebug::toString(httpPart);
+    const auto msg = serialized([&](auto &builder) {
+            builder.part(name_data).setBodyDevice(&buff, body_name_data);
+        });
+
     QVERIFY2(msg.contains(expected_content_type_data),
-             qPrintable(u"content-type not found : "_s + expected_content_type_data));
+             "content-type not found : " + expected_content_type_data);
     QVERIFY2(msg.contains(expected_content_disposition_data),
-             qPrintable(u"content-disposition not found : "_s + expected_content_disposition_data));
+             "content-disposition not found : " + expected_content_disposition_data);
     if (!content_disposition_must_not_contain_data.isEmpty()) {
         QVERIFY2(!msg.contains(content_disposition_must_not_contain_data),
-                 qPrintable(u"content-disposition contained data it shouldn't : "_s
-                            + content_disposition_must_not_contain_data));
+                 "content-disposition contained data it shouldn't : "
+                 + content_disposition_must_not_contain_data);
     }
 }
 
