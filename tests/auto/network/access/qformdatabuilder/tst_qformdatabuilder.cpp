@@ -178,42 +178,42 @@ void tst_QFormDataBuilder::escapesBackslashAndQuotesInFilenameAndName_data()
 {
     QTest::addColumn<QLatin1StringView>("name_data");
     QTest::addColumn<QString>("body_name_data");
-    QTest::addColumn<QString>("expected_content_type_data");
-    QTest::addColumn<QString>("expected_content_disposition_data");
+    QTest::addColumn<QByteArray>("expected_content_type_data");
+    QTest::addColumn<QByteArray>("expected_content_disposition_data");
 
-    QTest::newRow("quote") << "t\"ext"_L1 << uR"(rfc32"52.txt)"_s << u"text/plain"_s
-                           << uR"(form-data; name="t\"ext"; filename="rfc32\"52.txt")"_s;
+    QTest::newRow("quote") << "t\"ext"_L1 << uR"(rfc32"52.txt)"_s << "text/plain"_ba
+                           << R"(form-data; name="t\"ext"; filename="rfc32\"52.txt")"_ba;
 
-    QTest::newRow("slash") << "t\\ext"_L1 << uR"(rfc32\52.txt)"_s << u"text/plain"_s
-                           << uR"(form-data; name="t\\ext"; filename="rfc32\\52.txt")"_s;
+    QTest::newRow("slash") << "t\\ext"_L1 << uR"(rfc32\52.txt)"_s << "text/plain"_ba
+                           << R"(form-data; name="t\\ext"; filename="rfc32\\52.txt")"_ba;
 
-    QTest::newRow("quotes") << "t\"e\"xt"_L1 << uR"(rfc3"25"2.txt)"_s << u"text/plain"_s
-                            << uR"(form-data; name="t\"e\"xt"; filename="rfc3\"25\"2.txt")"_s;
+    QTest::newRow("quotes") << "t\"e\"xt"_L1 << uR"(rfc3"25"2.txt)"_s << "text/plain"_ba
+                            << R"(form-data; name="t\"e\"xt"; filename="rfc3\"25\"2.txt")"_ba;
 
-    QTest::newRow("slashes") << "t\\\\ext"_L1 << uR"(rfc32\\52.txt)"_s << u"text/plain"_s
-                             << uR"(form-data; name="t\\\\ext"; filename="rfc32\\\\52.txt")"_s;
+    QTest::newRow("slashes") << "t\\\\ext"_L1 << uR"(rfc32\\52.txt)"_s << "text/plain"_ba
+                             << R"(form-data; name="t\\\\ext"; filename="rfc32\\\\52.txt")"_ba;
 
-    QTest::newRow("quote-slash") << "t\"ex\\t"_L1 << uR"(rfc"32\52.txt)"_s << u"text/plain"_s
-                                 << uR"(form-data; name="t\"ex\\t"; filename="rfc\"32\\52.txt")"_s;
+    QTest::newRow("quote-slash") << "t\"ex\\t"_L1 << uR"(rfc"32\52.txt)"_s << "text/plain"_ba
+                                 << R"(form-data; name="t\"ex\\t"; filename="rfc\"32\\52.txt")"_ba;
 
-    QTest::newRow("quotes-slashes") << "t\"e\"x\\t\\"_L1 << uR"(r"f"c3\2\52.txt)"_s << u"text/plain"_s
-                                    << uR"(form-data; name="t\"e\"x\\t\\"; filename="r\"f\"c3\\2\\52.txt")"_s;
+    QTest::newRow("quotes-slashes") << "t\"e\"x\\t\\"_L1 << uR"(r"f"c3\2\52.txt)"_s << "text/plain"_ba
+                                    << R"(form-data; name="t\"e\"x\\t\\"; filename="r\"f\"c3\\2\\52.txt")"_ba;
 }
 
 void tst_QFormDataBuilder::escapesBackslashAndQuotesInFilenameAndName()
 {
     QFETCH(const QLatin1StringView, name_data);
     QFETCH(const QString, body_name_data);
-    QFETCH(const QString, expected_content_type_data);
-    QFETCH(const QString, expected_content_disposition_data);
+    QFETCH(const QByteArray, expected_content_type_data);
+    QFETCH(const QByteArray, expected_content_disposition_data);
 
-    QFile dummy_file(body_name_data);
+    QBuffer dummy_file;
+    QVERIFY(dummy_file.open(QIODevice::ReadOnly));
 
-    QFormDataBuilder qfdb;
-    QFormDataPartBuilder &qfdpb = qfdb.part(name_data).setBodyDevice(&dummy_file, body_name_data);
-    const QHttpPart httpPart = qfdpb.build();
+    const auto msg = serialized([&](auto &builder) {
+            builder.part(name_data).setBodyDevice(&dummy_file, body_name_data);
+        });
 
-    const auto msg = QDebug::toString(httpPart);
     QVERIFY(msg.contains(expected_content_type_data));
     QVERIFY(msg.contains(expected_content_disposition_data));
 }
