@@ -403,7 +403,7 @@ void tst_QFormDataBuilder::moveSemantics()
         std::unique_ptr<QHttpMultiPart> mp = qfdb.buildMultiPart();
 
         auto mp_priv = QHttpMultiPartPrivate::get(mp.get());
-        mp_priv->device->open(QIODeviceBase::ReadOnly);
+        QVERIFY(mp_priv->device->open(QIODeviceBase::ReadOnly));
         const QByteArray actual = mp_priv->device->readAll();
 
         checkBodyPartsAreEquivalent(expected, actual);
@@ -422,7 +422,7 @@ void tst_QFormDataBuilder::moveSemantics()
         std::unique_ptr<QHttpMultiPart> mp = qfdb_moved.buildMultiPart();
 
         auto mp_priv = QHttpMultiPartPrivate::get(mp.get());
-        mp_priv->device->open(QIODeviceBase::ReadOnly);
+        QVERIFY(mp_priv->device->open(QIODeviceBase::ReadOnly));
         const QByteArray actual = mp_priv->device->readAll();
 
         checkBodyPartsAreEquivalent(expected, actual);
@@ -442,7 +442,7 @@ void tst_QFormDataBuilder::moveSemantics()
         std::unique_ptr<QHttpMultiPart> mp = qfdb_moved.buildMultiPart();
 
         auto mp_priv = QHttpMultiPartPrivate::get(mp.get());
-        mp_priv->device->open(QIODeviceBase::ReadOnly);
+        QVERIFY(mp_priv->device->open(QIODeviceBase::ReadOnly));
         const QByteArray actual = mp_priv->device->readAll();
 
         checkBodyPartsAreEquivalent(expected, actual);
