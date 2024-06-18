@@ -361,15 +361,15 @@ void tst_QFormDataBuilder::specifyMimeType_data()
     QTest::addColumn<QLatin1StringView>("name_data");
     QTest::addColumn<QAnyStringView>("body_name_data");
     QTest::addColumn<QAnyStringView>("mime_type");
-    QTest::addColumn<QString>("expected_content_type_data");
+    QTest::addColumn<QByteArray>("expected_content_type_data");
 
     QTest::newRow("not-specified") << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
-        << QAnyStringView("text/plain"_L1) << uR"("content-type":"text/plain")"_s;
+        << QAnyStringView("text/plain"_L1) << "content-type: text/plain"_ba;
     QTest::newRow("mime-specified") << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
-        << QAnyStringView("text/plain"_L1) << uR"("content-type":"text/plain")"_s;
+        << QAnyStringView("text/plain"_L1) << "content-type: text/plain"_ba;
     // wrong mime type specified but it is not overridden by the deduction
     QTest::newRow("wrong-mime-specified") << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
-        << QAnyStringView("image/jpeg"_L1) << uR"("content-type":"image/jpeg)"_s;
+        << QAnyStringView("image/jpeg"_L1) << "content-type: image/jpeg"_ba;
 }
 
 void tst_QFormDataBuilder::specifyMimeType()
@@ -377,22 +377,22 @@ void tst_QFormDataBuilder::specifyMimeType()
     QFETCH(const QLatin1StringView, name_data);
     QFETCH(const QAnyStringView, body_name_data);
     QFETCH(const QAnyStringView, mime_type);
-    QFETCH(const QString, expected_content_type_data);
+    QFETCH(const QByteArray, expected_content_type_data);
 
     QBuffer buff;
+    QVERIFY(buff.open(QIODevice::ReadOnly));
 
-    QFormDataBuilder qfdb;
-    QFormDataPartBuilder &qfdpb = qfdb.part(name_data).setBodyDevice(&buff, body_name_data);
+    const auto msg = serialized([&](auto &builder) {
+            auto &qfdpb = builder.part(name_data).setBodyDevice(&buff, body_name_data);
 
-    if (!mime_type.empty())
-        qfdpb.setBodyDevice(&buff, body_name_data, mime_type);
-    else
-        qfdpb.setBodyDevice(&buff, body_name_data);
+            if (!mime_type.empty())
+                qfdpb.setBodyDevice(&buff, body_name_data, mime_type);
+            else
+                qfdpb.setBodyDevice(&buff, body_name_data);
+        });
 
-    const QHttpPart httpPart = qfdpb.build();
-
-    const auto msg = QDebug::toString(httpPart);
-    QVERIFY(msg.contains(expected_content_type_data));
+    QVERIFY2(msg.contains(CRLF + expected_content_type_data + CRLF),
+             msg + " does not contain " + expected_content_type_data);
 }
 
 void tst_QFormDataBuilder::picksUtf8NameEncodingIfAsciiDoesNotSuffice_data()
