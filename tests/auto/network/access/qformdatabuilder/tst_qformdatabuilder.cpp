@@ -100,55 +100,55 @@ void tst_QFormDataBuilder::generateQHttpPartWithDevice_data()
     QTest::addColumn<QLatin1StringView>("name_data");
     QTest::addColumn<QString>("real_file_name");
     QTest::addColumn<QString>("body_name_data");
-    QTest::addColumn<QString>("expected_content_type_data");
-    QTest::addColumn<QString>("expected_content_disposition_data");
-    QTest::addColumn<QString>("content_disposition_must_not_contain_data");
+    QTest::addColumn<QByteArray>("expected_content_type_data");
+    QTest::addColumn<QByteArray>("expected_content_disposition_data");
+    QTest::addColumn<QByteArray>("content_disposition_must_not_contain_data");
 
-    QTest::newRow("txt-ascii") << "text"_L1 << u"rfc3252.txt"_s << u"rfc3252.txt"_s << u"text/plain"_s
-                               << uR"(form-data; name="text"; filename="rfc3252.txt")"_s
-                               << u"filename*"_s;
-    QTest::newRow("txt-latin") << "text"_L1 << u"rfc3252.txt"_s << u"szöveg.txt"_s << u"text/plain"_s
-                               << uR"(form-data; name="text"; filename="szöveg.txt"; filename*=UTF-8''sz%C3%B6veg.txt)"_s
-                               << u""_s;
-    QTest::newRow("txt-unicode") << "text"_L1 << u"rfc3252.txt"_s << u"テキスト.txt"_s << u"text/plain"_s
-                                 << uR"(form-data; name="text"; filename="テキスト.txt"; filename*=UTF-8''%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.txt)"_s
-                                 << u""_s;
+    QTest::newRow("txt-ascii") << "text"_L1 << u"rfc3252.txt"_s << u"rfc3252.txt"_s << "text/plain"_ba
+                               << R"(form-data; name="text"; filename="rfc3252.txt")"_ba
+                               << "filename*"_ba;
+    QTest::newRow("txt-latin") << "text"_L1 << u"rfc3252.txt"_s << u"szöveg.txt"_s << "text/plain"_ba
+                               << R"(form-data; name="text"; filename="szöveg.txt"; filename*=UTF-8''sz%C3%B6veg.txt)"_ba
+                               << ""_ba;
+    QTest::newRow("txt-unicode") << "text"_L1 << u"rfc3252.txt"_s << u"テキスト.txt"_s << "text/plain"_ba
+                                 << R"(form-data; name="text"; filename="テキスト.txt"; filename*=UTF-8''%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.txt)"_ba
+                                 << ""_ba;
 
-    QTest::newRow("jpg-ascii") << "image"_L1 << u"image1.jpg"_s << u"image1.jpg"_s << u"image/jpeg"_s
-                               << uR"(form-data; name="image"; filename="image1.jpg")"_s
-                               << u"filename*"_s;
-    QTest::newRow("jpg-latin") << "image"_L1 << u"image1.jpg"_s << u"kép.jpg"_s << u"image/jpeg"_s
-                               << uR"(form-data; name="image"; filename="kép.jpg"; filename*=UTF-8''k%C3%A9p.jpg)"_s
-                               << u""_s;
-    QTest::newRow("jpg-unicode") << "image"_L1 << u"image1.jpg"_s << u"絵.jpg"_s << u"image/jpeg"_s
-                                 << uR"(form-data; name="image"; filename="絵.jpg"; filename*=UTF-8''%E7%B5%B5.jpg)"_s
-                                 << u""_s;
+    QTest::newRow("jpg-ascii") << "image"_L1 << u"image1.jpg"_s << u"image1.jpg"_s << "image/jpeg"_ba
+                               << R"(form-data; name="image"; filename="image1.jpg")"_ba
+                               << "filename*"_ba;
+    QTest::newRow("jpg-latin") << "image"_L1 << u"image1.jpg"_s << u"kép.jpg"_s << "image/jpeg"_ba
+                               << R"(form-data; name="image"; filename="kép.jpg"; filename*=UTF-8''k%C3%A9p.jpg)"_ba
+                               << ""_ba;
+    QTest::newRow("jpg-unicode") << "image"_L1 << u"image1.jpg"_s << u"絵.jpg"_s << "image/jpeg"_ba
+                                 << R"(form-data; name="image"; filename="絵.jpg"; filename*=UTF-8''%E7%B5%B5.jpg)"_ba
+                                 << ""_ba;
 
     QTest::newRow("doc-ascii") << "text"_L1 << u"document.docx"_s << u"word.docx"_s
-                               << u"application/vnd.openxmlformats-officedocument.wordprocessingml.document"_s
-                               << uR"(form-data; name="text"; filename="word.docx")"_s
-                               << u"filename*"_s;
+                               << "application/vnd.openxmlformats-officedocument.wordprocessingml.document"_ba
+                               << R"(form-data; name="text"; filename="word.docx")"_ba
+                               << "filename*"_ba;
     QTest::newRow("doc-latin") << "text"_L1 << u"document.docx"_s << u"szöveg.docx"_s
-                               << u"application/vnd.openxmlformats-officedocument.wordprocessingml.document"_s
-                               << uR"(form-data; name="text"; filename="szöveg.docx"; filename*=UTF-8''sz%C3%B6veg.docx)"_s
-                               << u""_s;
+                               << "application/vnd.openxmlformats-officedocument.wordprocessingml.document"_ba
+                               << R"(form-data; name="text"; filename="szöveg.docx"; filename*=UTF-8''sz%C3%B6veg.docx)"_ba
+                               << ""_ba;
     QTest::newRow("doc-unicode") << "text"_L1 << u"document.docx"_s << u"テキスト.docx"_s
-                                 << u"application/vnd.openxmlformats-officedocument.wordprocessingml.document"_s
-                                 << uR"(form-data; name="text"; filename="テキスト.docx"; filename*=UTF-8''%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.docx)"_s
-                                 << u""_s;
+                                 << "application/vnd.openxmlformats-officedocument.wordprocessingml.document"_ba
+                                 << R"(form-data; name="text"; filename="テキスト.docx"; filename*=UTF-8''%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.docx)"_ba
+                                 << ""_ba;
 
     QTest::newRow("xls-ascii") << "spreadsheet"_L1 << u"sheet.xlsx"_s << u"sheet.xlsx"_s
-                               << u"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"_s
-                               << uR"(form-data; name="spreadsheet"; filename="sheet.xlsx")"_s
-                               << u"filename*"_s;
+                               << "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"_ba
+                               << R"(form-data; name="spreadsheet"; filename="sheet.xlsx")"_ba
+                               << "filename*"_ba;
     QTest::newRow("xls-latin") << "spreadsheet"_L1 << u"sheet.xlsx"_s << u"szöveg.xlsx"_s
-                               << u"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"_s
-                               << uR"(form-data; name="spreadsheet"; filename="szöveg.xlsx"; filename*=UTF-8''sz%C3%B6veg.xlsx)"_s
-                               << u""_s;
+                               << "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"_ba
+                               << R"(form-data; name="spreadsheet"; filename="szöveg.xlsx"; filename*=UTF-8''sz%C3%B6veg.xlsx)"_ba
+                               << ""_ba;
     QTest::newRow("xls-unicode") << "spreadsheet"_L1 << u"sheet.xlsx"_s << u"テキスト.xlsx"_s
-                                 << u"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"_s
-                                 << uR"(form-data; name="spreadsheet"; filename="テキスト.xlsx"; filename*=UTF-8''%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.xlsx)"_s
-                                 << u""_s;
+                                 << "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"_ba
+                                 << R"(form-data; name="spreadsheet"; filename="テキスト.xlsx"; filename*=UTF-8''%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.xlsx)"_ba
+                                 << ""_ba;
 }
 
 void tst_QFormDataBuilder::generateQHttpPartWithDevice()
@@ -156,18 +156,18 @@ void tst_QFormDataBuilder::generateQHttpPartWithDevice()
     QFETCH(const QLatin1StringView, name_data);
     QFETCH(const QString, real_file_name);
     QFETCH(const QString, body_name_data);
-    QFETCH(const QString, expected_content_type_data);
-    QFETCH(const QString, expected_content_disposition_data);
-    QFETCH(const QString, content_disposition_must_not_contain_data);
+    QFETCH(const QByteArray, expected_content_type_data);
+    QFETCH(const QByteArray, expected_content_disposition_data);
+    QFETCH(const QByteArray, content_disposition_must_not_contain_data);
 
     QString testData = QFileInfo(QFINDTESTDATA(real_file_name)).absoluteFilePath();
     QFile data_file(testData);
+    QVERIFY2(data_file.open(QIODevice::ReadOnly), qPrintable(data_file.errorString()));
 
-    QFormDataBuilder qfdb;
-    QFormDataPartBuilder &qfdpb = qfdb.part(name_data).setBodyDevice(&data_file, body_name_data);
-    const QHttpPart httpPart = qfdpb.build();
+    const auto msg = serialized([&](auto &builder) {
+            builder.part(name_data).setBodyDevice(&data_file, body_name_data);
+        });
 
-    const auto msg = QDebug::toString(httpPart);
     QVERIFY(msg.contains(expected_content_type_data));
     QVERIFY(msg.contains(expected_content_disposition_data));
     if (!content_disposition_must_not_contain_data.isEmpty())
