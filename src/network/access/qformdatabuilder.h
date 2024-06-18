@@ -93,7 +93,7 @@ private:
 class QFormDataBuilder
 {
 public:
-    Q_NETWORK_EXPORT explicit QFormDataBuilder();
+    Q_NETWORK_EXPORT QFormDataBuilder();
 
     QFormDataBuilder(QFormDataBuilder &&other) noexcept : d_ptr(std::exchange(other.d_ptr, nullptr)) {}
 
