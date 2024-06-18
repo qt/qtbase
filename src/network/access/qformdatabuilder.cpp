@@ -191,6 +191,8 @@ QFormDataPartBuilder &QFormDataPartBuilder::setHeaders(const QHttpHeaders &heade
 }
 
 /*!
+    \internal
+
     Generates a QHttpPart and sets the content disposition header as form-data.
 
     When this function called, it uses the MIME database to deduce the type the
