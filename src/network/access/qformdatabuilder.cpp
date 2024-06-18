@@ -8,6 +8,8 @@
 #include "QtCore/qmimedatabase.h"
 #endif
 
+#include <vector>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -283,19 +285,30 @@ QHttpPart QFormDataPartBuilder::build()
     \sa QHttpPart, QHttpMultiPart, QFormDataPartBuilder
 */
 
+class QFormDataBuilderPrivate
+{
+public:
+    std::vector<QFormDataPartBuilder> parts;
+};
+
 /*!
     Constructs an empty QFormDataBuilder object.
 */
 
 QFormDataBuilder::QFormDataBuilder()
-    = default;
+    : d_ptr(new QFormDataBuilderPrivate())
+{
+
+}
 
 /*!
     Destroys the QFormDataBuilder object.
 */
 
 QFormDataBuilder::~QFormDataBuilder()
-    = default;
+{
+    delete d_ptr;
+}
 
 /*!
     \fn QFormDataBuilder::QFormDataBuilder(QFormDataBuilder &&other) noexcept
@@ -324,10 +337,9 @@ QFormDataBuilder::~QFormDataBuilder()
 
 QFormDataPartBuilder &QFormDataBuilder::part(QAnyStringView name)
 {
-    static_assert(std::is_nothrow_move_constructible_v<decltype(m_parts)>);
-    static_assert(std::is_nothrow_move_assignable_v<decltype(m_parts)>);
+    Q_D(QFormDataBuilder);
 
-    return m_parts.emplace_back(name, QFormDataPartBuilder::PrivateConstructor());
+    return d->parts.emplace_back(name, QFormDataPartBuilder::PrivateConstructor());
 }
 
 /*!
@@ -338,9 +350,11 @@ QFormDataPartBuilder &QFormDataBuilder::part(QAnyStringView name)
 
 std::unique_ptr<QHttpMultiPart> QFormDataBuilder::buildMultiPart()
 {
+    Q_D(QFormDataBuilder);
+
     auto multiPart = std::make_unique<QHttpMultiPart>(QHttpMultiPart::FormDataType);
 
-    for (auto &part : m_parts)
+    for (auto &part : d->parts)
         multiPart->append(part.build());
 
     return multiPart;

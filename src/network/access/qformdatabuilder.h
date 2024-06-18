@@ -14,7 +14,6 @@
 
 #include <memory>
 #include <variant>
-#include <vector>
 
 #ifndef Q_OS_WASM
 QT_REQUIRE_CONFIG(http);
@@ -27,6 +26,8 @@ QT_BEGIN_NAMESPACE
 class QHttpPartPrivate;
 class QHttpMultiPart;
 class QDebug;
+
+class QFormDataBuilderPrivate;
 
 class QFormDataPartBuilder
 {
@@ -94,32 +95,25 @@ class QFormDataBuilder
 public:
     Q_NETWORK_EXPORT explicit QFormDataBuilder();
 
-    QFormDataBuilder(QFormDataBuilder &&other) noexcept
-        : m_parts(std::move(other.m_parts)),
-          m_reserved(std::exchange(other.m_reserved, nullptr))
-    {
-
-    }
+    QFormDataBuilder(QFormDataBuilder &&other) noexcept : d_ptr(std::exchange(other.d_ptr, nullptr)) {}
 
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QFormDataBuilder)
     void swap(QFormDataBuilder &other) noexcept
     {
-        m_parts.swap(other.m_parts);
-        qt_ptr_swap(m_reserved, other.m_reserved);
+        qt_ptr_swap(d_ptr, other.d_ptr);
     }
 
     Q_NETWORK_EXPORT ~QFormDataBuilder();
     Q_NETWORK_EXPORT QFormDataPartBuilder &part(QAnyStringView name);
     Q_NETWORK_EXPORT std::unique_ptr<QHttpMultiPart> buildMultiPart();
 private:
-    std::vector<QFormDataPartBuilder> m_parts;
-    void *m_reserved = nullptr;
+    QFormDataBuilderPrivate *d_ptr;
 
-    friend void swap(QFormDataBuilder &lhs, QFormDataBuilder &rhs) noexcept
-    { lhs.swap(rhs); }
-
+    Q_DECLARE_PRIVATE(QFormDataBuilder)
     Q_DISABLE_COPY(QFormDataBuilder)
 };
+
+Q_DECLARE_SHARED(QFormDataBuilder)
 
 QT_END_NAMESPACE
 
