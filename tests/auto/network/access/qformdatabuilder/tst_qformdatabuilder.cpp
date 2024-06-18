@@ -286,37 +286,41 @@ void tst_QFormDataBuilder::setHeadersDoesNotAffectHeaderFieldsManagedByBuilder_d
     QTest::addColumn<QAnyStringView>("body_name_data");
     QTest::addColumn<bool>("overwrite");
     QTest::addColumn<bool>("extra_headers");
-    QTest::addColumn<QStringList>("expected_headers");
+    QTest::addColumn<QByteArrayList>("expected_headers");
 
     QTest::newRow("content-disposition-is-set-by-default")
             << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
             << false << false
-            << QStringList{
-                uR"("content-disposition":"form-data; name=\"text\"; filename=\"rfc3252.txt\"")"_s,
-                uR"("content-type":"text/plain")"_s};
+            << QList{
+                    R"(content-disposition: form-data; name="text"; filename="rfc3252.txt")"_ba ,
+                    "content-type: text/plain"_ba,
+               };
 
     QTest::newRow("default-overwrites-preset-content-disposition")
             << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
             << true << false
-            << QStringList{
-                uR"("content-disposition":"form-data; name=\"text\"; filename=\"rfc3252.txt\"")"_s,
-                uR"("content-type":"text/plain")"_s};
+            << QList{
+                    R"(content-disposition: form-data; name="text"; filename="rfc3252.txt")"_ba ,
+                    "content-type: text/plain"_ba,
+               };
 
     QTest::newRow("added-extra-header")
             << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
             << false << true
-            << QStringList{
-                uR"("content-disposition":"form-data; name=\"text\"; filename=\"rfc3252.txt\"")"_s,
-                uR"("content-type":"text/plain")"_s,
-                uR"("content-length":"70")"_s};
+            << QList{
+                    R"(content-disposition: form-data; name="text"; filename="rfc3252.txt")"_ba ,
+                    "content-type: text/plain"_ba,
+                    "content-length: 70"_ba,
+               };
 
     QTest::newRow("extra-header-and-overwrite")
             << "text"_L1 << QAnyStringView("rfc3252.txt"_L1)
             << true << true
-            << QStringList{
-                uR"("content-disposition":"form-data; name=\"text\"; filename=\"rfc3252.txt\"")"_s,
-                uR"("content-type":"text/plain")"_s,
-                uR"("content-length":"70")"_s};
+            << QList{
+                    R"(content-disposition: form-data; name="text"; filename="rfc3252.txt")"_ba ,
+                    "content-type: text/plain"_ba,
+                    "content-length: 70"_ba,
+               };
 }
 
 void tst_QFormDataBuilder::setHeadersDoesNotAffectHeaderFieldsManagedByBuilder()
@@ -325,32 +329,31 @@ void tst_QFormDataBuilder::setHeadersDoesNotAffectHeaderFieldsManagedByBuilder()
     QFETCH(const QAnyStringView, body_name_data);
     QFETCH(const bool, overwrite);
     QFETCH(const bool, extra_headers);
-    QFETCH(const QStringList, expected_headers);
+    QFETCH(const QByteArrayList, expected_headers);
 
     QBuffer buff;
+    QVERIFY(buff.open(QIODevice::ReadOnly));
 
-    QFormDataBuilder qfdb;
-    QFormDataPartBuilder &qfdpb = qfdb.part(name_data).setBodyDevice(&buff, body_name_data);
+    const auto msg = serialized([&](auto &builder) {
+            auto &qfdpb = builder.part(name_data).setBodyDevice(&buff, body_name_data);
 
-    if (overwrite || extra_headers) {
-        QHttpHeaders headers;
+            if (overwrite || extra_headers) {
+                QHttpHeaders headers;
 
-        if (overwrite) {
-            headers.append(QHttpHeaders::WellKnownHeader::ContentType, "attachment");
-            qfdpb.setHeaders(headers);
-        }
+                if (overwrite) {
+                    headers.append(QHttpHeaders::WellKnownHeader::ContentType, "attachment");
+                    qfdpb.setHeaders(headers);
+                }
 
-        if (extra_headers) {
-            headers.append(QHttpHeaders::WellKnownHeader::ContentLength, "70");
-            qfdpb.setHeaders(std::move(headers));
-        }
-    }
+                if (extra_headers) {
+                    headers.append(QHttpHeaders::WellKnownHeader::ContentLength, "70");
+                    qfdpb.setHeaders(std::move(headers));
+                }
+            }
+        });
 
-    const QHttpPart httpPart = qfdpb.build();
-
-    const auto msg = QDebug::toString(httpPart);
     for (const auto &header : expected_headers)
-        QVERIFY2(msg.contains(header), qPrintable(header));
+        QVERIFY2(msg.contains(CRLF + header + CRLF), header);
 }
 
 void tst_QFormDataBuilder::specifyMimeType_data()
