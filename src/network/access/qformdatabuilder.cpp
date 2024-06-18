@@ -34,7 +34,7 @@ class QFormDataPartBuilderPrivate
 {
 public:
     explicit QFormDataPartBuilderPrivate(QAnyStringView name);
-    QHttpPart build();
+    QHttpPart build(QFormDataBuilder::Options options);
 
     QString m_name;
     QByteArray m_mimeType;
@@ -260,9 +260,11 @@ QFormDataPartBuilder QFormDataPartBuilder::setHeaders(const QHttpHeaders &header
     header.
 */
 
-QHttpPart QFormDataPartBuilderPrivate::build()
+QHttpPart QFormDataPartBuilderPrivate::build(QFormDataBuilder::Options options)
 {
     QHttpPart httpPart;
+
+    using Opt = QFormDataBuilder::Option;
 
     QByteArray headerValue;
 
@@ -271,18 +273,39 @@ QHttpPart QFormDataPartBuilderPrivate::build()
     headerValue += "\"";
 
     if (!m_originalBodyName.isNull()) {
-        const bool utf8 = !QtPrivate::isAscii(m_originalBodyName);
-        const auto enc = utf8 ? m_originalBodyName.toUtf8() : m_originalBodyName.toLatin1();
+
+        enum class Encoding { ASCII, Latin1, Utf8 } encoding = Encoding::ASCII;
+        for (QChar c : std::as_const(m_originalBodyName)) {
+            if (c > u'\xff') {
+                encoding = Encoding::Utf8;
+                break;
+            } else if (c > u'\x7f') {
+                encoding = Encoding::Latin1;
+            }
+        }
+        QByteArray enc;
+        if ((options & Opt::PreferLatin1EncodedFilename) && encoding != Encoding::Utf8)
+            enc = m_originalBodyName.toLatin1();
+        else
+            enc = m_originalBodyName.toUtf8();
+
         headerValue += "; filename=\"";
-        escapeNameAndAppend(headerValue, enc);
+        if (options & Opt::UseRfc7578PercentEncodedFilename)
+            headerValue += enc.toPercentEncoding();
+        else
+            escapeNameAndAppend(headerValue, enc);
         headerValue += "\"";
-        if (utf8) {
+        if (encoding != Encoding::ASCII && !(options & Opt::OmitRfc8187EncodedFilename)) {
             // For 'filename*' production see
             // https://datatracker.ietf.org/doc/html/rfc5987#section-3.2.1
             // For providing both filename and filename* parameters see
             // https://datatracker.ietf.org/doc/html/rfc6266#section-4.3 and
             // https://datatracker.ietf.org/doc/html/rfc8187#section-4.2
-            headerValue += "; filename*=UTF-8''" + enc.toPercentEncoding();
+            if ((options & Opt::PreferLatin1EncodedFilename) && encoding == Encoding::Latin1)
+                headerValue += "; filename*=ISO-8859-1''";
+            else
+                headerValue += "; filename*=UTF-8''";
+            headerValue += enc.toPercentEncoding();
         }
     }
 
@@ -367,6 +390,56 @@ const QFormDataPartBuilderPrivate* QFormDataPartBuilder::d_func() const
 }
 
 /*!
+    \enum QFormDataBuilder::Option
+
+    Options controlling buildMultiPart().
+
+    Several current RFCs disagree on how, exactly, to format
+    \c{multipart/form-data}. Instead of hard-coding any one RFC, these options
+    give you control over which RFC to follow.
+
+    \value Default The default values, designed to maximize interoperability in
+        general. All options named below are off.
+
+    \value OmitRfc8187EncodedFilename
+        When a body-part's file-name contains non-US-ASCII characters,
+        \l{https://datatracker.ietf.org/doc/html/rfc6266#section-4.3}
+        {RFC 6266 Section 4.3} suggests to use
+        \l{https://datatracker.ietf.org/doc/html/rfc8187}{RFC 8187}-style
+        encoding (\c{filename*=utf-8''...}). The more recent
+        \l{https://datatracker.ietf.org/doc/html/rfc7578#section-4.2}
+        {RFC 7578 Section 4.2}, however, bans the use of that mechanism.
+        Both RFCs are current as of this writing, so this option allows you
+        to choose which one to follow. The default is to include the
+        RFC 8187-encoded \c{filename*} alongside the unencoded \c{filename},
+        as suggested by RFC 6266.
+
+    \value UseRfc7578PercentEncodedFilename
+        When a body-part's file-name contains non-US-ASCII characters,
+        \l{https://datatracker.ietf.org/doc/html/rfc7578#section-4.2}
+        {RFC 7578 Section 4.2} suggests to use percent-encoding of the octets
+        of the UTF-8-encoded file-name. It goes on to note that many
+        implementations, however, do \e{not} percent-encode the UTF-8-encoded
+        file-name, but just emit "raw" UTF-8 (with \c{"} and \c{\} escaped
+        using \c{\}). This is the default of QFormDataBuilder, too.
+
+    \value PreferLatin1EncodedFilename
+        \l{https://datatracker.ietf.org/doc/html/rfc5987#section-3.2}
+        {RFC 5987 Section 3.2} required recipients to support ISO-8859-1
+        ("Latin-1") encoding. When a body-part's file-name contains
+        non-US-ASCII characters that, however, fit into Latin-1, this option
+        prefers to use ISO-8859-1 encoding over UTF-8. The more recent
+        \{https://datatracker.ietf.org/doc/html/rfc8187#appendix-A}{RFC 8187}
+        no longer requires ISO-8859-1 support, so the default is to send all
+        non-US-ASCII file-names in UTF-8 encoding instead.
+
+    \value StrictRfc7578
+        This option combines other options to select strict
+        \l{https://datatracker.ietf.org/doc/html/rfc7578}{RFC 7578}
+        compliance.
+*/
+
+/*!
     Constructs an empty QFormDataBuilder object.
 */
 
@@ -419,19 +492,20 @@ QFormDataPartBuilder QFormDataBuilder::part(QAnyStringView name)
 }
 
 /*!
-    Constructs and returns a pointer to a QHttpMultipart object.
+    Constructs and returns a pointer to a QHttpMultipart object constructed
+    according to \a options.
 
     \sa QHttpMultiPart
 */
 
-std::unique_ptr<QHttpMultiPart> QFormDataBuilder::buildMultiPart()
+std::unique_ptr<QHttpMultiPart> QFormDataBuilder::buildMultiPart(Options options)
 {
     Q_D(QFormDataBuilder);
 
     auto multiPart = std::make_unique<QHttpMultiPart>(QHttpMultiPart::FormDataType);
 
     for (auto &part : d->parts)
-        multiPart->append(part.build());
+        multiPart->append(part.build(options));
 
     return multiPart;
 }

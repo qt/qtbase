@@ -9,6 +9,7 @@
 #include <QtNetwork/qhttpmultipart.h>
 
 #include <QtCore/qbytearray.h>
+#include <QtCore/qflags.h>
 #include <QtCore/qiodevice.h>
 #include <QtCore/qstring.h>
 
@@ -72,6 +73,16 @@ Q_DECLARE_SHARED(QFormDataPartBuilder)
 class QFormDataBuilder
 {
 public:
+    enum class Option {
+        Default                          = 0x00,
+        OmitRfc8187EncodedFilename       = 0x01,
+        UseRfc7578PercentEncodedFilename = 0x02,
+        PreferLatin1EncodedFilename      = 0x04,
+
+        StrictRfc7578 = OmitRfc8187EncodedFilename | UseRfc7578PercentEncodedFilename,
+    };
+    Q_DECLARE_FLAGS(Options, Option)
+
     Q_NETWORK_EXPORT QFormDataBuilder();
 
     QFormDataBuilder(QFormDataBuilder &&other) noexcept : d_ptr(std::exchange(other.d_ptr, nullptr)) {}
@@ -84,13 +95,14 @@ public:
 
     Q_NETWORK_EXPORT ~QFormDataBuilder();
     Q_NETWORK_EXPORT QFormDataPartBuilder part(QAnyStringView name);
-    Q_NETWORK_EXPORT std::unique_ptr<QHttpMultiPart> buildMultiPart();
+    Q_NETWORK_EXPORT std::unique_ptr<QHttpMultiPart> buildMultiPart(Options options = {});
 private:
     QFormDataBuilderPrivate *d_ptr;
 
     Q_DECLARE_PRIVATE(QFormDataBuilder)
     Q_DISABLE_COPY(QFormDataBuilder)
 };
+Q_DECLARE_OPERATORS_FOR_FLAGS(QFormDataBuilder::Options)
 
 Q_DECLARE_SHARED(QFormDataBuilder)
 
