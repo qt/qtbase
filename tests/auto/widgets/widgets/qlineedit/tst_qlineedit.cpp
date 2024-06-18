@@ -4907,7 +4907,7 @@ void tst_QLineEdit::shortcutOverrideOnReadonlyLineEdit_data()
     QTest::newRow("Left press") << QKeySequence(Qt::Key_Left) << true;
 
     QTest::newRow("Paste") << QKeySequence(QKeySequence::Paste) << false;
-    QTest::newRow("Paste") << QKeySequence(QKeySequence::Cut) << false;
+    QTest::newRow("Cut") << QKeySequence(QKeySequence::Cut) << false;
     QTest::newRow("Undo") << QKeySequence(QKeySequence::Undo) << false;
     QTest::newRow("Redo") << QKeySequence(QKeySequence::Redo) << false;
 
