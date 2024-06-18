@@ -18,6 +18,7 @@
 #endif
 
 #include <QtCore/qxpfunctional.h>
+#include <string>
 #include <type_traits>
 
 using namespace Qt::StringLiterals;
@@ -25,14 +26,15 @@ using namespace Qt::StringLiterals;
 const auto CRLF = "\r\n"_ba;
 
 Q_NEVER_INLINE static QByteArray
-serialized_impl([[maybe_unused]] qxp::function_ref<QFormDataBuilder &(QFormDataBuilder &)> operations)
+serialized_impl([[maybe_unused]] qxp::function_ref<QFormDataBuilder &(QFormDataBuilder &)> operations,
+                QFormDataBuilder::Options options = QFormDataBuilder::Option::Default)
 {
 #if defined(QT_UNDEFINED_SANITIZER) && !defined(QT_BUILD_INTERNAL)
     QSKIP("This test requires -developer-build when --sanitize=undefined is active.");
 #else
     QFormDataBuilder builder;
 
-    const std::unique_ptr<QHttpMultiPart> mp = operations(builder).buildMultiPart();
+    const std::unique_ptr<QHttpMultiPart> mp = operations(builder).buildMultiPart(options);
 
     auto *device = QHttpMultiPartPrivate::get(mp.get())->device;
     QVERIFY(device->open(QIODeviceBase::ReadOnly));
@@ -41,13 +43,14 @@ serialized_impl([[maybe_unused]] qxp::function_ref<QFormDataBuilder &(QFormDataB
 }
 
 template <typename Callable>
-static QByteArray serialized(Callable operation)
+static QByteArray serialized(Callable operation,
+                             QFormDataBuilder::Options options = QFormDataBuilder::Option::Default)
 {
     if constexpr (std::is_void_v<std::invoke_result_t<Callable&, QFormDataBuilder&>>) {
         return serialized_impl([&](auto &builder) {
                operation(builder);
                return std::ref(builder);
-            });
+            }, options);
     } else {
         return serialized_impl(std::move(operation));
     }
@@ -66,8 +69,8 @@ private Q_SLOTS:
     void escapesBackslashAndQuotesInFilenameAndName_data();
     void escapesBackslashAndQuotesInFilenameAndName();
 
-    void picksUtf8FilenameEncodingIfAsciiDontSuffice_data();
-    void picksUtf8FilenameEncodingIfAsciiDontSuffice();
+    void filenameEncoding_data();
+    void filenameEncoding();
 
     void setHeadersDoesNotAffectHeaderFieldsManagedByBuilder_data();
     void setHeadersDoesNotAffectHeaderFieldsManagedByBuilder();
@@ -221,54 +224,108 @@ void tst_QFormDataBuilder::escapesBackslashAndQuotesInFilenameAndName()
     QVERIFY(msg.contains(expected_content_disposition_data));
 }
 
-void tst_QFormDataBuilder::picksUtf8FilenameEncodingIfAsciiDontSuffice_data()
+void tst_QFormDataBuilder::filenameEncoding_data()
 {
+    static const auto contentType = "text/plain"_ba;
+    using Opts = QFormDataBuilder::Options;
+    using Opt = QFormDataBuilder::Option;
     QTest::addColumn<QLatin1StringView>("name_data");
     QTest::addColumn<QAnyStringView>("body_name_data");
     QTest::addColumn<QByteArray>("expected_content_type_data");
     QTest::addColumn<QByteArray>("expected_content_disposition_data");
     QTest::addColumn<QByteArray>("content_disposition_must_not_contain_data");
+    QTest::addColumn<QFormDataBuilder::Options>("filename_options");
 
-    QTest::newRow("latin1-ascii") << "text"_L1 << QAnyStringView("rfc3252.txt"_L1) << "text/plain"_ba
-                                  << R"(form-data; name="text"; filename="rfc3252.txt")"_ba
-                                  << "filename*"_ba;
-    QTest::newRow("u8-ascii") << "text"_L1 << QAnyStringView(u8"rfc3252.txt") << "text/plain"_ba
-                              << R"(form-data; name="text"; filename="rfc3252.txt")"_ba
-                              << "filename*"_ba;
-    QTest::newRow("u-ascii") << "text"_L1 << QAnyStringView(u"rfc3252.txt") << "text/plain"_ba
-                             << R"(form-data; name="text"; filename="rfc3252.txt")"_ba
-                             << "filename*"_ba;
+    auto addAsciiTestRows = [] (const std::string &rowName, Opts opts) {
+        QTest::newRow((rowName + "-L1").c_str())
+            << "text"_L1 << QAnyStringView("rfc3252.txt"_L1) << contentType
+            << R"(form-data; name="text"; filename="rfc3252.txt")"_ba
+            << "filename*"_ba << opts;
+        QTest::newRow((rowName + "-U8").c_str())
+            << "text"_L1 << QAnyStringView(u8"rfc3252.txt") << contentType
+            << R"(form-data; name="text"; filename="rfc3252.txt")"_ba
+            << "filename*"_ba << opts;
+        QTest::newRow((rowName + "-U").c_str())
+            << "text"_L1 << QAnyStringView(u"rfc3252.txt") << contentType
+            << R"(form-data; name="text"; filename="rfc3252.txt")"_ba
+            << "filename*"_ba << opts;
+    };
+    addAsciiTestRows("default-ascii", Opt::Default);
+    addAsciiTestRows("omit-rfc8187-ascii", Opt::OmitRfc8187EncodedFilename);
+    addAsciiTestRows("use-rfc7578-ascii", Opt::UseRfc7578PercentEncodedFilename);
+    addAsciiTestRows("strict-rfc7578-ascii", Opt::StrictRfc7578);
+    addAsciiTestRows("prefer-latin1-ascii", Opt::PreferLatin1EncodedFilename);
 
-    // 0xF6 is 'ö', use hex value with Latin-1 to avoid interpretation as UTF-8 (0xC3 0xB6)
-    QTest::newRow("latin1-latin") << "text"_L1 << QAnyStringView("sz\xF6veg.txt"_L1) << "text/plain"_ba
-                                  << R"(form-data; name="text"; filename="szöveg.txt"; filename*=UTF-8''sz%C3%B6veg.txt)"_ba
-                                  << ""_ba;
-    QTest::newRow("u8-latin") << "text"_L1 << QAnyStringView(u8"szöveg.txt") << "text/plain"_ba
-                              << R"(form-data; name="text"; filename="szöveg.txt"; filename*=UTF-8''sz%C3%B6veg.txt)"_ba
-                              << ""_ba;
-    QTest::newRow("u-latin") << "text"_L1 << QAnyStringView(u"szöveg.txt") << "text/plain"_ba
-                             << R"(form-data; name="text"; filename="szöveg.txt"; filename*=UTF-8''sz%C3%B6veg.txt)"_ba
-                             << ""_ba;
+    auto addLatin1TestRows = [] (const std::string &rowName, const QByteArray &resultFilename,
+                                 const QByteArray &mustNotContain, Opts opts) {
+        // 0xF6 is 'ö', use hex value with Latin-1 to avoid interpretation as UTF-8 (0xC3 0xB6)
+        QTest::newRow((rowName + "-L1").c_str())
+            << "text"_L1 << QAnyStringView("sz\xF6veg.txt"_L1) << contentType
+            << resultFilename << mustNotContain << opts;
+        QTest::newRow((rowName + "-U8").c_str())
+            << "text"_L1 << QAnyStringView(u8"szöveg.txt") << contentType
+            << resultFilename << mustNotContain << opts;
+        QTest::newRow((rowName + "-U").c_str())
+            << "text"_L1 << QAnyStringView(u"szöveg.txt") << contentType
+            << resultFilename << mustNotContain << opts;
+    };
+    addLatin1TestRows("default-latin1",
+                      R"(form-data; name="text"; filename="szöveg.txt"; filename*=UTF-8''sz%C3%B6veg.txt)"_ba,
+                      ""_ba, Opt::Default);
+    addLatin1TestRows("omit-rfc8187-latin1",
+                      R"(form-data; name="text"; filename="szöveg.txt")"_ba,
+                      "filename*"_ba, Opt::OmitRfc8187EncodedFilename);
+    addLatin1TestRows("use-rfc7578-latin1",
+                      R"(form-data; name="text"; filename="sz%C3%B6veg.txt"; filename*=UTF-8''sz%C3%B6veg.txt)"_ba,
+                      ""_ba, Opt::UseRfc7578PercentEncodedFilename);
+    addLatin1TestRows("strict-rfc7578-latin1",
+                      R"(form-data; name="text"; filename="sz%C3%B6veg.txt")"_ba,
+                      "filename*"_ba, Opt::StrictRfc7578);
+    addLatin1TestRows("prefer-latin1-latin1",
+                      "form-data; name=\"text\"; filename=\"sz\xF6veg.txt\"; filename*=ISO-8859-1''sz%F6veg.txt"_ba,
+                      ""_ba, Opt::PreferLatin1EncodedFilename);
 
-    QTest::newRow("u8-u8") << "text"_L1 << QAnyStringView(u8"テキスト.txt") << "text/plain"_ba
-                           << R"(form-data; name="text"; filename="テキスト.txt"; filename*=UTF-8''%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.txt)"_ba
-                           << ""_ba;
+    auto addUtf8TestRows = [] (const std::string &rowName, const QByteArray &resultFilename,
+                               const QByteArray &mustNotContain, Opts opts) {
+        QTest::newRow((rowName + "-U8").c_str())
+            << "text"_L1 << QAnyStringView(u8"テキスト.txt") << contentType
+            << resultFilename << mustNotContain << opts;
+    };
+    addUtf8TestRows("default-utf8",
+                    R"(form-data; name="text"; filename="テキスト.txt"; filename*=UTF-8''%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.txt)"_ba,
+                    ""_ba, Opt::Default);
+    addUtf8TestRows("omit-rfc8187-utf8",
+                    R"(form-data; name="text"; filename="テキスト.txt")"_ba,
+                    "filename*"_ba, Opt::OmitRfc8187EncodedFilename);
+    addUtf8TestRows("use-rfc7578-utf8",
+                    R"(form-data; name="text"; filename="%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.txt"; filename*=UTF-8''%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.txt)"_ba,
+                    ""_ba, Opt::UseRfc7578PercentEncodedFilename);
+    addUtf8TestRows("strict-rfc7578-utf8",
+                    R"(form-data; name="text"; filename="%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.txt")"_ba,
+                    "filename*"_ba, Opt::StrictRfc7578);
+    addUtf8TestRows("strict-rfc7578-utf8",
+                    R"(form-data; name="text"; filename="%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.txt")"_ba,
+                    "filename*"_ba, Opt::StrictRfc7578);
+    addUtf8TestRows("prefer-latin1-utf8",
+                    R"(form-data; name="text"; filename="テキスト.txt"; filename*=UTF-8''%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88.txt)"_ba,
+                    ""_ba, Opt::PreferLatin1EncodedFilename);
 }
 
-void tst_QFormDataBuilder::picksUtf8FilenameEncodingIfAsciiDontSuffice()
+void tst_QFormDataBuilder::filenameEncoding()
 {
     QFETCH(const QLatin1StringView, name_data);
     QFETCH(const QAnyStringView, body_name_data);
     QFETCH(const QByteArray, expected_content_type_data);
     QFETCH(const QByteArray, expected_content_disposition_data);
     QFETCH(const QByteArray, content_disposition_must_not_contain_data);
+    QFETCH(const QFormDataBuilder::Options, filename_options);
 
     QBuffer buff;
     QVERIFY(buff.open(QIODevice::ReadOnly));
 
     const auto msg = serialized([&](auto &builder) {
             builder.part(name_data).setBodyDevice(&buff, body_name_data);
-        });
+        }, filename_options);
 
     QVERIFY2(msg.contains(expected_content_type_data),
              "content-type not found : " + expected_content_type_data);
