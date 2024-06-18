@@ -60,6 +60,8 @@ private slots:
     void strokeLineCapValues();
     void strokeLineJoinValues_data();
     void strokeLineJoinValues();
+    void borderColor_data();
+    void borderColor();
 };
 
 void tst_QCssParser::scanner_data()
@@ -1812,6 +1814,57 @@ void tst_QCssParser::strokeLineJoinValues()
     QCOMPARE(rule.declarations.at(0).d->property, QLatin1String("-qt-stroke-linejoin"));
     QCOMPARE(rule.declarations.at(0).d->values.first().type, QCss::Value::KnownIdentifier);
     QCOMPARE(rule.declarations.at(0).d->values.first().toString(), value);
+}
+
+void tst_QCssParser::borderColor_data()
+{
+    QTest::addColumn<QString>("css");
+    QTest::addColumn<QColor>("expectedTopColor");
+    QTest::addColumn<QColor>("expectedRightColor");
+    QTest::addColumn<QColor>("expectedBottomColor");
+    QTest::addColumn<QColor>("expectedLeftColor");
+
+    QTest::newRow("four values") << "border-color: red green blue white" << QColor("red") << QColor("green") << QColor("blue") << QColor("white");
+    QTest::newRow("three values") << "border-color: red green blue" << QColor("red") << QColor("green") << QColor("blue") << QColor("green");
+    QTest::newRow("two values") << "border-color: red green" << QColor("red") << QColor("green") << QColor("red") << QColor("green");
+    QTest::newRow("one value") << "border-color: red" << QColor("red") << QColor("red") << QColor("red") << QColor("red");
+}
+
+void tst_QCssParser::borderColor()
+{
+    QFETCH(QString, css);
+    QFETCH(QColor, expectedTopColor);
+    QFETCH(QColor, expectedRightColor);
+    QFETCH(QColor, expectedBottomColor);
+    QFETCH(QColor, expectedLeftColor);
+
+    css.prepend("dummy {");
+    css.append(QLatin1Char('}'));
+
+    QCss::Parser parser(css);
+    QCss::StyleSheet sheet;
+    QVERIFY(parser.parse(&sheet));
+
+    QCOMPARE(sheet.styleRules.size() + sheet.nameIndex.size(), 1);
+    QCss::StyleRule rule =  (!sheet.styleRules.isEmpty()) ?
+            sheet.styleRules.at(0) : *sheet.nameIndex.begin();
+    const QList<QCss::Declaration> decls = rule.declarations;
+    QVERIFY(decls.size() == 1);
+    QVERIFY(decls[0].d->propertyId == QCss::BorderColor);
+
+    QBrush colors[4];
+
+    decls[0].brushValues(colors);
+    QCOMPARE(colors[QCss::TopEdge].color(), expectedTopColor);
+    QCOMPARE(colors[QCss::RightEdge].color(), expectedRightColor);
+    QCOMPARE(colors[QCss::BottomEdge].color(), expectedBottomColor);
+    QCOMPARE(colors[QCss::LeftEdge].color(), expectedLeftColor);
+
+    //QTBUG-126381 : a second evaluation should give the same results
+    QCOMPARE(colors[QCss::TopEdge].color(), expectedTopColor);
+    QCOMPARE(colors[QCss::RightEdge].color(), expectedRightColor);
+    QCOMPARE(colors[QCss::BottomEdge].color(), expectedBottomColor);
+    QCOMPARE(colors[QCss::LeftEdge].color(), expectedLeftColor);
 }
 
 QTEST_MAIN(tst_QCssParser)
