@@ -1213,7 +1213,13 @@ void QTextHtmlParserNode::applyCssDeclarations(const QList<QCss::Declaration> &d
             identifier = static_cast<QCss::KnownValue>(decl.d->values.constFirst().variant.toInt());
 
         switch (decl.d->propertyId) {
-        case QCss::BorderColor: borderBrush = QBrush(decl.colorValue()); break;
+        case QCss::BorderColor: {
+            QBrush bordersBrush[4];
+            decl.brushValues(bordersBrush);
+            if (bordersBrush[0].color().isValid())
+                borderBrush = bordersBrush[0];
+            break;
+        }
         case QCss::BorderStyles:
             if (decl.styleValue() != QCss::BorderStyle_Unknown && decl.styleValue() != QCss::BorderStyle_Native)
                 borderStyle = static_cast<QTextFrameFormat::BorderStyle>(decl.styleValue() - 1);
