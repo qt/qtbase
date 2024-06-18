@@ -131,7 +131,7 @@ public:
 
 
 
-class QHttpMultiPartPrivate: public QObjectPrivate
+class Q_AUTOTEST_EXPORT QHttpMultiPartPrivate: public QObjectPrivate
 {
 public:
 
