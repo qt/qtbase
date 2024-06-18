@@ -13,7 +13,43 @@
 # error This test requires QTEST_THROW_ON_FAIL being active.
 #endif
 
+#ifndef QTEST_THROW_ON_SKIP
+# error This test requires QTEST_THROW_ON_SKIP being active.
+#endif
+
+#include <QtCore/qxpfunctional.h>
+#include <type_traits>
+
 using namespace Qt::StringLiterals;
+
+Q_NEVER_INLINE static QByteArray
+serialized_impl([[maybe_unused]] qxp::function_ref<QFormDataBuilder &(QFormDataBuilder &)> operations)
+{
+#if defined(QT_UNDEFINED_SANITIZER) && !defined(QT_BUILD_INTERNAL)
+    QSKIP("This test requires -developer-build when --sanitize=undefined is active.");
+#else
+    QFormDataBuilder builder;
+
+    const std::unique_ptr<QHttpMultiPart> mp = operations(builder).buildMultiPart();
+
+    auto *device = QHttpMultiPartPrivate::get(mp.get())->device;
+    QVERIFY(device->open(QIODeviceBase::ReadOnly));
+    return device->readAll();
+#endif // QT_BUILD_INTERNAL || !QT_UNDEFINED_SANITIZER
+}
+
+template <typename Callable>
+static QByteArray serialized(Callable operation)
+{
+    if constexpr (std::is_void_v<std::invoke_result_t<Callable&, QFormDataBuilder&>>) {
+        return serialized_impl([&](auto &builder) {
+               operation(builder);
+               return std::ref(builder);
+            });
+    } else {
+        return serialized_impl(std::move(operation));
+    }
+}
 
 class tst_QFormDataBuilder : public QObject
 {
@@ -385,7 +421,6 @@ void tst_QFormDataBuilder::picksUtf8NameEncodingIfAsciiDoesNotSuffice()
 
 void tst_QFormDataBuilder::moveSemantics()
 {
-#if defined(QT_BUILD_INTERNAL) || !defined(QT_UNDEFINED_SANITIZER)
     constexpr QByteArrayView expected = "--boundary_.oOo._4SUrZy7x9lPHMF3fbRSsE15hiWu5Sbmy\r\n"
                                         "content-type: text/plain\r\ncontent-disposition: form-data; name=\"text\"; filename=\"rfc3252.txt\"\r\n\r\n"
                                         "some text for reference\r\n"
@@ -398,13 +433,9 @@ void tst_QFormDataBuilder::moveSemantics()
         QFile data_file(testData);
         QVERIFY2(data_file.open(QIODeviceBase::ReadOnly), qPrintable(data_file.errorString()));
 
-        QFormDataBuilder qfdb;
-        qfdb.part("text"_L1).setBodyDevice(&data_file, "rfc3252.txt");
-        std::unique_ptr<QHttpMultiPart> mp = qfdb.buildMultiPart();
-
-        auto mp_priv = QHttpMultiPartPrivate::get(mp.get());
-        QVERIFY(mp_priv->device->open(QIODeviceBase::ReadOnly));
-        const QByteArray actual = mp_priv->device->readAll();
+        const QByteArray actual = serialized([&](auto &builder) {
+                builder.part("text"_L1).setBodyDevice(&data_file, "rfc3252.txt");
+            });
 
         checkBodyPartsAreEquivalent(expected, actual);
     }
@@ -416,14 +447,10 @@ void tst_QFormDataBuilder::moveSemantics()
 
         QFormDataBuilder qfdb;
         auto &p = qfdb.part("text"_L1);
-        auto qfdb_moved = std::move(qfdb);
-
-        p.setBodyDevice(&data_file, "rfc3252.txt");
-        std::unique_ptr<QHttpMultiPart> mp = qfdb_moved.buildMultiPart();
-
-        auto mp_priv = QHttpMultiPartPrivate::get(mp.get());
-        QVERIFY(mp_priv->device->open(QIODeviceBase::ReadOnly));
-        const QByteArray actual = mp_priv->device->readAll();
+        const QByteArray actual = serialized([&, moved = std::move(qfdb)](auto &) mutable {
+                p.setBodyDevice(&data_file, "rfc3252.txt");
+                return std::ref(moved);
+            });
 
         checkBodyPartsAreEquivalent(expected, actual);
     }
@@ -433,23 +460,15 @@ void tst_QFormDataBuilder::moveSemantics()
         QFile data_file(testData);
         QVERIFY2(data_file.open(QIODeviceBase::ReadOnly), qPrintable(data_file.errorString()));
 
-        QFormDataBuilder qfdb;
-        QFormDataBuilder qfdb_moved;
+        QFormDataBuilder moved;
 
-        qfdb.part("text"_L1).setBodyDevice(&data_file, "rfc3252.txt");
-
-        qfdb_moved = std::move(qfdb);
-        std::unique_ptr<QHttpMultiPart> mp = qfdb_moved.buildMultiPart();
-
-        auto mp_priv = QHttpMultiPartPrivate::get(mp.get());
-        QVERIFY(mp_priv->device->open(QIODeviceBase::ReadOnly));
-        const QByteArray actual = mp_priv->device->readAll();
+        const QByteArray actual = serialized([&](auto &builder) {
+                builder.part("text"_L1).setBodyDevice(&data_file, "rfc3252.txt");
+                return std::ref(moved = std::move(builder));
+            });
 
         checkBodyPartsAreEquivalent(expected, actual);
     }
-#else
-    QSKIP("This test requires -developer-build when --sanitize=undefined is active.");
-#endif
 }
 
 QTEST_MAIN(tst_QFormDataBuilder)
