@@ -34,7 +34,7 @@ public:
     Q_NETWORK_EXPORT explicit QFormDataPartBuilder(QAnyStringView name, PrivateConstructor);
 
     QFormDataPartBuilder(QFormDataPartBuilder &&other) noexcept
-        : m_headerValue(std::move(other.m_headerValue)),
+        : m_name(std::move(other.m_name)),
           m_originalBodyName(std::move(other.m_originalBodyName)),
           m_httpHeaders(std::move(other.m_httpHeaders)),
           m_body(std::move(other.m_body)),
@@ -46,7 +46,7 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QFormDataPartBuilder)
     void swap(QFormDataPartBuilder &other) noexcept
     {
-        m_headerValue.swap(other.m_headerValue);
+        m_name.swap(other.m_name);
         m_originalBodyName.swap(other.m_originalBodyName);
         m_httpHeaders.swap(other.m_httpHeaders);
         m_body.swap(other.m_body);
@@ -75,7 +75,7 @@ private:
                                                          QAnyStringView mimeType);
     QHttpPart build();
 
-    QByteArray m_headerValue;
+    QString m_name;
     QByteArray m_mimeType;
     QString m_originalBodyName;
     QHttpHeaders m_httpHeaders;

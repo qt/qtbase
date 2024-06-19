@@ -30,24 +30,6 @@ QT_BEGIN_NAMESPACE
     \sa QHttpPart, QHttpMultiPart, QFormDataBuilder
 */
 
-static QByteArray nameToByteArray(QStringView view)
-{
-    return view.toUtf8();
-}
-
-static QByteArray nameToByteArray(QLatin1StringView view)
-{
-    if (!QtPrivate::isAscii(view))
-        return view.toString().toUtf8(); // ### optimize
-
-    return QByteArray::fromRawData(view.data(), view.size());
-}
-
-static QByteArray nameToByteArray(QUtf8StringView view)
-{
-    return QByteArray::fromRawData(view.data(), view.size());
-}
-
 static void escapeNameAndAppend(QByteArray &dst, QByteArrayView src)
 {
     for (auto c : src) {
@@ -57,20 +39,32 @@ static void escapeNameAndAppend(QByteArray &dst, QByteArrayView src)
     }
 }
 
+static void escapeNameAndAppend(QByteArray &dst, QStringView src)
+{
+    qsizetype last = 0;
+
+    // equivalent to for (auto chunk : qTokenize(src, any_of("\\\""))), if there was such a thing
+    for (qsizetype i = 0, end = src.size(); i != end; ++i) {
+        const auto c = src[i];
+        if (c == u'"' || c == u'\\') {
+            const auto chunk = src.sliced(last, i - last);
+            dst += QUtf8::convertFromUnicode(chunk); // ### optimize
+            dst += '\\';
+            last = i;
+        }
+    }
+    dst += QUtf8::convertFromUnicode(src.sliced(last));
+}
+
 /*!
     Constructs a QFormDataPartBuilder object and sets \a name as the name
     parameter of the form-data.
 */
 QFormDataPartBuilder::QFormDataPartBuilder(QAnyStringView name, PrivateConstructor /*unused*/)
+    : m_name{name.toString()}
 {
     static_assert(std::is_nothrow_move_constructible_v<decltype(m_body)>);
     static_assert(std::is_nothrow_move_assignable_v<decltype(m_body)>);
-
-    const auto enc = name.visit([](auto name) { return nameToByteArray(name); });
-
-    m_headerValue += "form-data; name=\"";
-    escapeNameAndAppend(m_headerValue, enc);
-    m_headerValue += "\"";
 }
 
 /*!
@@ -210,19 +204,25 @@ QHttpPart QFormDataPartBuilder::build()
 {
     QHttpPart httpPart;
 
+    QByteArray headerValue;
+
+    headerValue += "form-data; name=\"";
+    escapeNameAndAppend(headerValue, m_name);
+    headerValue += "\"";
+
     if (!m_originalBodyName.isNull()) {
         const bool utf8 = !QtPrivate::isAscii(m_originalBodyName);
         const auto enc = utf8 ? m_originalBodyName.toUtf8() : m_originalBodyName.toLatin1();
-        m_headerValue += "; filename=\"";
-        escapeNameAndAppend(m_headerValue, enc);
-        m_headerValue += "\"";
+        headerValue += "; filename=\"";
+        escapeNameAndAppend(headerValue, enc);
+        headerValue += "\"";
         if (utf8) {
             // For 'filename*' production see
             // https://datatracker.ietf.org/doc/html/rfc5987#section-3.2.1
             // For providing both filename and filename* parameters see
             // https://datatracker.ietf.org/doc/html/rfc6266#section-4.3 and
             // https://datatracker.ietf.org/doc/html/rfc8187#section-4.2
-            m_headerValue += "; filename*=UTF-8''" + enc.toPercentEncoding();
+            headerValue += "; filename*=UTF-8''" + enc.toPercentEncoding();
         }
     }
 
@@ -244,7 +244,7 @@ QHttpPart QFormDataPartBuilder::build()
     if (!m_mimeType.isEmpty())
         httpPart.setHeader(QNetworkRequest::ContentTypeHeader, m_mimeType);
 
-    httpPart.setHeader(QNetworkRequest::ContentDispositionHeader, m_headerValue);
+    httpPart.setHeader(QNetworkRequest::ContentDispositionHeader, std::move(headerValue));
 
     if (auto d = std::get_if<QIODevice*>(&m_body))
         httpPart.setBodyDevice(*d);
