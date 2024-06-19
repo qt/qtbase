@@ -26,9 +26,8 @@
 #if QT_CONFIG(movie)
 #include "qmovie.h"
 #endif
-#include "qimage.h"
-#include "qbitmap.h"
 #include "qpicture.h"
+#include "qpixmap.h"
 #if QT_CONFIG(menu)
 #include "qmenu.h"
 #endif
@@ -36,7 +35,6 @@
 #include <QtCore/qpointer.h>
 
 #include <array>
-#include <optional>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,31 +84,31 @@ public:
     mutable QSize sh;
     mutable QSize msh;
     QString text;
-    std::optional<QPixmap> pixmap;
-    std::optional<QPixmap> scaledpixmap;
+    QPixmap pixmap;
+    QPixmap scaledpixmap;
 #ifndef QT_NO_PICTURE
-    std::optional<QPicture> picture;
+    QPicture picture;
 #endif
 #if QT_CONFIG(movie)
     QPointer<QMovie> movie;
     std::array<QMetaObject::Connection, 2> movieConnections;
 #endif
-    mutable QWidgetTextControl *control;
+    mutable QWidgetTextControl *control = nullptr;
     mutable QTextCursor shortcutCursor;
 #ifndef QT_NO_CURSOR
     QCursor cursor;
 #endif
 #ifndef QT_NO_SHORTCUT
     QPointer<QWidget> buddy;
-    int shortcutId;
+    int shortcutId = 0;
 #endif
-    Qt::TextFormat textformat;
-    Qt::TextFormat effectiveTextFormat;
-    Qt::TextInteractionFlags textInteractionFlags;
+    Qt::TextFormat textformat = Qt::AutoText;
+    Qt::TextFormat effectiveTextFormat = Qt::PlainText;
+    Qt::TextInteractionFlags textInteractionFlags = Qt::LinksAccessibleByMouse;
     mutable QSizePolicy sizePolicy;
-    int margin;
-    ushort align;
-    short indent;
+    int margin = 0;
+    int align = Qt::AlignLeft | Qt::AlignVCenter | Qt::TextExpandTabs;
+    int indent = -1;
     mutable uint valid_hints : 1;
     uint scaledcontents : 1;
     mutable uint textLayoutDirty : 1;
@@ -123,7 +121,7 @@ public:
 #endif
     uint openExternalLinks : 1;
     // <-- space for more bit field values here
-    QTextDocument::ResourceProvider resourceProvider;
+    QTextDocument::ResourceProvider resourceProvider = nullptr;
 
     friend class QMessageBoxPrivate;
 };
