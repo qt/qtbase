@@ -52,8 +52,8 @@ public:
     static QNonContiguousByteDevice *create(QIODevice *device);
     static std::shared_ptr<QNonContiguousByteDevice> createShared(QIODevice *device);
 
-    static QNonContiguousByteDevice *create(QByteArray *byteArray);
-    static std::shared_ptr<QNonContiguousByteDevice> createShared(QByteArray *byteArray);
+    static QNonContiguousByteDevice *create(const QByteArray &byteArray);
+    static std::shared_ptr<QNonContiguousByteDevice> createShared(const QByteArray &byteArray);
 
     static QNonContiguousByteDevice *create(std::shared_ptr<QRingBuffer> ringBuffer);
     static std::shared_ptr<QNonContiguousByteDevice> createShared(std::shared_ptr<QRingBuffer> ringBuffer);
@@ -68,7 +68,7 @@ class QNonContiguousByteDeviceByteArrayImpl : public QNonContiguousByteDevice
 {
     Q_OBJECT
 public:
-    explicit QNonContiguousByteDeviceByteArrayImpl(QByteArray *ba);
+    explicit QNonContiguousByteDeviceByteArrayImpl(QByteArray ba);
     ~QNonContiguousByteDeviceByteArrayImpl();
     const char *readPointer(qint64 maximumLength, qint64 &len) override;
     bool advanceReadPointer(qint64 amount) override;
@@ -78,7 +78,7 @@ public:
     qint64 pos() const override;
 
 protected:
-    QByteArray *byteArray;
+    QByteArray byteArray;
     qint64 currentPosition;
 };
 
@@ -137,7 +137,6 @@ public:
     qint64 size() const override;
 
 protected:
-    QBuffer *buffer;
     QByteArray byteArray;
     QNonContiguousByteDeviceByteArrayImpl *arrayImpl;
 };
