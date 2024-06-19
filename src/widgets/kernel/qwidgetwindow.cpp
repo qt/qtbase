@@ -138,6 +138,9 @@ QWidgetWindow::QWidgetWindow(QWidget *widget)
 
 QWidgetWindow::~QWidgetWindow()
 {
+    // destroy while we are still alive
+    destroy();
+
     if (!m_widget)
         return;
 
