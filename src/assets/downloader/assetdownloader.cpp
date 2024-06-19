@@ -153,7 +153,13 @@ static QDir baseLocalDir(const QDir &preferredLocalDir)
 
 static QString pathFromUrl(const QUrl &url)
 {
-    return url.isLocalFile() ? url.toLocalFile() : url.toString();
+    if (url.isLocalFile())
+        return url.toLocalFile();
+
+    if (url.scheme() == u"qrc")
+        return u":" + url.path();
+
+    return url.toString();
 }
 
 static QList<QUrl> filterDownloadableAssets(const QList<QUrl> &assetFiles, const QDir &expectedDir)
@@ -200,8 +206,10 @@ QUrl AssetDownloader::preferredLocalDownloadDir() const
 
 void AssetDownloader::setPreferredLocalDownloadDir(const QUrl &localDir)
 {
-    if (!localDir.isLocalFile())
-        qWarning() << "preferredLocalDownloadDir Should be a local directory";
+    if (localDir.scheme() == u"qrc") {
+        qWarning() << "Cannot set a qrc as preferredLocalDownloadDir";
+        return;
+    }
 
     const QString path = pathFromUrl(localDir);
     if (d->m_preferredLocalDownloadDir != path) {
