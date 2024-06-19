@@ -12,12 +12,9 @@
 #include <QtCore/qsystemdetection.h>
 #include <QtCore/qtconfigmacros.h>
 
-#if __has_include(<format>)
-#  include <format>
-#endif
-
 #if (defined(__cpp_lib_format) && (__cpp_lib_format >= 202106L))
 
+#include <format>
 #define QT_SUPPORTS_STD_FORMAT  1
 
 #endif // __cpp_lib_format
