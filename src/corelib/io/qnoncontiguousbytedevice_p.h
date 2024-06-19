@@ -126,23 +126,6 @@ protected:
     qint64 initialPosition;
 };
 
-class QNonContiguousByteDeviceBufferImpl : public QNonContiguousByteDevice
-{
-    Q_OBJECT
-public:
-    explicit QNonContiguousByteDeviceBufferImpl(QBuffer *b);
-    ~QNonContiguousByteDeviceBufferImpl();
-    const char *readPointer(qint64 maximumLength, qint64 &len) override;
-    bool advanceReadPointer(qint64 amount) override;
-    bool atEnd() const override;
-    bool reset() override;
-    qint64 size() const override;
-
-protected:
-    QByteArray byteArray;
-    QNonContiguousByteDeviceByteArrayImpl *arrayImpl;
-};
-
 // ... and the reverse thing
 class QByteDeviceWrappingIoDevice : public QIODevice
 {

@@ -101,49 +101,6 @@ QNonContiguousByteDevice::~QNonContiguousByteDevice()
 {
 }
 
-// FIXME we should scrap this whole implementation and instead change the ByteArrayImpl to be able to cope with sub-arrays?
-QNonContiguousByteDeviceBufferImpl::QNonContiguousByteDeviceBufferImpl(QBuffer *b)
-    : QNonContiguousByteDevice(),
-      byteArray(QByteArray::fromRawData(b->buffer().constData() + b->pos(),
-                                        b->buffer().size() - b->pos())),
-      arrayImpl(new QNonContiguousByteDeviceByteArrayImpl(b->buffer()))
-{
-    arrayImpl->setParent(this);
-    connect(arrayImpl, &QNonContiguousByteDevice::readyRead, this,
-            &QNonContiguousByteDevice::readyRead);
-    connect(arrayImpl, &QNonContiguousByteDevice::readProgress, this,
-            &QNonContiguousByteDevice::readProgress);
-}
-
-QNonContiguousByteDeviceBufferImpl::~QNonContiguousByteDeviceBufferImpl()
-{
-}
-
-const char* QNonContiguousByteDeviceBufferImpl::readPointer(qint64 maximumLength, qint64 &len)
-{
-    return arrayImpl->readPointer(maximumLength, len);
-}
-
-bool QNonContiguousByteDeviceBufferImpl::advanceReadPointer(qint64 amount)
-{
-    return arrayImpl->advanceReadPointer(amount);
-}
-
-bool QNonContiguousByteDeviceBufferImpl::atEnd() const
-{
-    return arrayImpl->atEnd();
-}
-
-bool QNonContiguousByteDeviceBufferImpl::reset()
-{
-    return arrayImpl->reset();
-}
-
-qint64 QNonContiguousByteDeviceBufferImpl::size() const
-{
-    return arrayImpl->size();
-}
-
 QNonContiguousByteDeviceByteArrayImpl::QNonContiguousByteDeviceByteArrayImpl(QByteArray ba)
     : QNonContiguousByteDevice(), byteArray(std::move(ba)), view(byteArray)
 {
@@ -463,7 +420,7 @@ QNonContiguousByteDevice *QNonContiguousByteDeviceFactory::create(QIODevice *dev
 {
     // shortcut if it is a QBuffer
     if (QBuffer *buffer = qobject_cast<QBuffer *>(device)) {
-        return new QNonContiguousByteDeviceBufferImpl(buffer);
+        return new QNonContiguousByteDeviceByteArrayImpl(buffer);
     }
 
     // ### FIXME special case if device is a QFile that supports map()
@@ -483,7 +440,7 @@ std::shared_ptr<QNonContiguousByteDevice> QNonContiguousByteDeviceFactory::creat
 {
     // shortcut if it is a QBuffer
     if (QBuffer *buffer = qobject_cast<QBuffer*>(device))
-        return std::make_shared<QNonContiguousByteDeviceBufferImpl>(buffer);
+        return std::make_shared<QNonContiguousByteDeviceByteArrayImpl>(buffer);
 
     // ### FIXME special case if device is a QFile that supports map()
     // then we can actually deal with the file without using read/peek

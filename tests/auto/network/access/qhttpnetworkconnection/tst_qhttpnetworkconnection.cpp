@@ -249,7 +249,7 @@ void tst_QHttpNetworkConnection::put()
     QHttpNetworkRequest request(protocol + host + path, QHttpNetworkRequest::Put);
 
     QByteArray array = data.toLatin1();
-    QNonContiguousByteDevice *bd = QNonContiguousByteDeviceFactory::create(&array);
+    QNonContiguousByteDevice *bd = QNonContiguousByteDeviceFactory::create(array);
     bd->setParent(this);
     request.setUploadByteDevice(bd);
 
@@ -331,7 +331,7 @@ void tst_QHttpNetworkConnection::post()
     QHttpNetworkRequest request(protocol + host + path, QHttpNetworkRequest::Post);
 
     QByteArray array = data.toLatin1();
-    QNonContiguousByteDevice *bd = QNonContiguousByteDeviceFactory::create(&array);
+    QNonContiguousByteDevice *bd = QNonContiguousByteDeviceFactory::create(array);
     bd->setParent(this);
     request.setUploadByteDevice(bd);
 
