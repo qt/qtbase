@@ -30,6 +30,26 @@ QT_BEGIN_NAMESPACE
     \sa QHttpPart, QHttpMultiPart, QFormDataBuilder
 */
 
+class QFormDataPartBuilderPrivate
+{
+public:
+    explicit QFormDataPartBuilderPrivate(QAnyStringView name);
+    QHttpPart build();
+
+    QString m_name;
+    QByteArray m_mimeType;
+    QString m_originalBodyName;
+    QHttpHeaders m_httpHeaders;
+    std::variant<QIODevice*, QByteArray> m_body;
+};
+
+QFormDataPartBuilderPrivate::QFormDataPartBuilderPrivate(QAnyStringView name)
+    : m_name{name.toString()}
+{
+
+}
+
+
 static void escapeNameAndAppend(QByteArray &dst, QByteArrayView src)
 {
     for (auto c : src) {
@@ -57,17 +77,6 @@ static void escapeNameAndAppend(QByteArray &dst, QStringView src)
 }
 
 /*!
-    Constructs a QFormDataPartBuilder object and sets \a name as the name
-    parameter of the form-data.
-*/
-QFormDataPartBuilder::QFormDataPartBuilder(QAnyStringView name, PrivateConstructor /*unused*/)
-    : m_name{name.toString()}
-{
-    static_assert(std::is_nothrow_move_constructible_v<decltype(m_body)>);
-    static_assert(std::is_nothrow_move_assignable_v<decltype(m_body)>);
-}
-
-/*!
     \fn QFormDataPartBuilder::QFormDataPartBuilder(QFormDataPartBuilder &&other) noexcept
 
     Move-constructs a QFormDataPartBuilder instance, making it point at the same
@@ -81,11 +90,56 @@ QFormDataPartBuilder::QFormDataPartBuilder(QAnyStringView name, PrivateConstruct
 */
 
 /*!
-    Destroys the QFormDataPartBuilder object.
+    \fn QFormDataPartBuilder::QFormDataPartBuilder(const QFormDataPartBuilder &other)
+
+    Constructs a copy of \a other. The object is valid for as long as the associated
+    QFormDataBuilder has not been destroyed.
+
+    The data of the copy is shared (shallow copy): modifying one part will also change
+    the other.
+
+    \code
+        QFormDataPartBuilder foo()
+        {
+            QFormDataBuilder builder;
+            auto qfdpb1 = builder.part("First"_L1);
+            auto qfdpb2 = qfdpb1; // this creates a shallow copy
+
+            qfdpb2.setBodyDevice(&image, "cutecat.jpg"); // qfdpb1 is also modified
+
+            return qfdbp2;  // invalid, builder is destroyed at the end of the scope
+        }
+    \endcode
 */
 
-QFormDataPartBuilder::~QFormDataPartBuilder()
-    = default;
+/*!
+    \fn QFormDataPartBuilder& QFormDataPartBuilder::operator=(const QFormDataPartBuilder &other)
+
+    Assigns \a other to QFormDataPartBuilder and returns a reference to this
+    QFormDataPartBuilder. The object is valid for as long as the associated QFormDataBuilder
+    has not been destroyed.
+
+    The data of the copy is shared (shallow copy): modifying one part will also change the other.
+
+    \code
+        QFormDataPartBuilder foo()
+        {
+            QFormDataBuilder builder;
+            auto qfdpb1 = builder.part("First"_L1);
+            auto qfdpb2 = qfdpb1; // this creates a shallow copy
+
+            qfdpb2.setBodyDevice(&image, "cutecat.jpg"); // qfdpb1 is also modified
+
+            return qfdbp2;  // invalid, builder is destroyed at the end of the scope
+        }
+    \endcode
+*/
+
+/*!
+    \fn QFormDataPartBuilder::~QFormDataPartBuilder()
+
+    Destroys the QFormDataPartBuilder object.
+*/
 
 static void convertInto_impl(QByteArray &dst, QUtf8StringView in)
 {
@@ -110,13 +164,15 @@ static void convertInto(QByteArray &dst, QAnyStringView in)
     in.visit([&dst](auto in) { convertInto_impl(dst, in); });
 }
 
-QFormDataPartBuilder &QFormDataPartBuilder::setBodyHelper(const QByteArray &data,
-                                                          QAnyStringView name,
-                                                          QAnyStringView mimeType)
+QFormDataPartBuilder QFormDataPartBuilder::setBodyHelper(const QByteArray &data,
+                                                         QAnyStringView name,
+                                                         QAnyStringView mimeType)
 {
-    m_originalBodyName = name.toString();
-    convertInto(m_mimeType, mimeType);
-    m_body = data;
+    Q_D(QFormDataPartBuilder);
+
+    d->m_originalBodyName = name.toString();
+    convertInto(d->m_mimeType, mimeType);
+    d->m_body = data;
     return *this;
 }
 
@@ -136,9 +192,9 @@ QFormDataPartBuilder &QFormDataPartBuilder::setBodyHelper(const QByteArray &data
     \sa setBodyDevice()
 */
 
-QFormDataPartBuilder &QFormDataPartBuilder::setBody(QByteArrayView data,
-                                                    QAnyStringView fileName,
-                                                    QAnyStringView mimeType)
+QFormDataPartBuilder QFormDataPartBuilder::setBody(QByteArrayView data,
+                                                   QAnyStringView fileName,
+                                                   QAnyStringView mimeType)
 {
     return setBody(data.toByteArray(), fileName, mimeType);
 }
@@ -168,12 +224,14 @@ QFormDataPartBuilder &QFormDataPartBuilder::setBody(QByteArrayView data,
     \sa setBody(), QHttpPart::setBodyDevice()
   */
 
-QFormDataPartBuilder &QFormDataPartBuilder::setBodyDevice(QIODevice *body, QAnyStringView fileName,
-                                                          QAnyStringView mimeType)
+QFormDataPartBuilder QFormDataPartBuilder::setBodyDevice(QIODevice *body, QAnyStringView fileName,
+                                                         QAnyStringView mimeType)
 {
-    m_originalBodyName = fileName.toString();
-    convertInto(m_mimeType, mimeType);
-    m_body = body;
+    Q_D(QFormDataPartBuilder);
+
+    d->m_originalBodyName = fileName.toString();
+    convertInto(d->m_mimeType, mimeType);
+    d->m_body = body;
     return *this;
 }
 
@@ -184,9 +242,11 @@ QFormDataPartBuilder &QFormDataPartBuilder::setBodyDevice(QIODevice *body, QAnyS
     specified in \a headers, will be overwritten by the class.
 */
 
-QFormDataPartBuilder &QFormDataPartBuilder::setHeaders(const QHttpHeaders &headers)
+QFormDataPartBuilder QFormDataPartBuilder::setHeaders(const QHttpHeaders &headers)
 {
-    m_httpHeaders = headers;
+    Q_D(QFormDataPartBuilder);
+
+    d->m_httpHeaders = headers;
     return *this;
 }
 
@@ -200,7 +260,7 @@ QFormDataPartBuilder &QFormDataPartBuilder::setHeaders(const QHttpHeaders &heade
     header.
 */
 
-QHttpPart QFormDataPartBuilder::build()
+QHttpPart QFormDataPartBuilderPrivate::build()
 {
     QHttpPart httpPart;
 
@@ -292,8 +352,19 @@ QHttpPart QFormDataPartBuilder::build()
 class QFormDataBuilderPrivate
 {
 public:
-    std::vector<QFormDataPartBuilder> parts;
+    std::vector<QFormDataPartBuilderPrivate> parts;
 };
+
+QFormDataPartBuilderPrivate* QFormDataPartBuilder::d_func()
+{
+    return const_cast<QFormDataPartBuilderPrivate*>(std::as_const(*this).d_func());
+}
+
+const QFormDataPartBuilderPrivate* QFormDataPartBuilder::d_func() const
+{
+    Q_ASSERT(m_index < d->parts.size());
+    return &d->parts[m_index];
+}
 
 /*!
     Constructs an empty QFormDataBuilder object.
@@ -328,9 +399,9 @@ QFormDataBuilder::~QFormDataBuilder()
 */
 
 /*!
-    Constructs and returns a reference to a QFormDataPartBuilder object and sets
-    \a name as the name parameter of the form-data. The returned reference is
-    valid until the next call to this function.
+    Returns a newly-constructed QFormDataPartBuilder object using \a name as the
+    form-data's \c name parameter. The object is valid for as long as the
+    associated QFormDataBuilder has not been destroyed.
 
     Limiting \a name characters to US-ASCII is
     \l {https://datatracker.ietf.org/doc/html/rfc7578#section-5.1.1}{strongly recommended}
@@ -339,11 +410,12 @@ QFormDataBuilder::~QFormDataBuilder()
     \sa QFormDataPartBuilder, QHttpPart
 */
 
-QFormDataPartBuilder &QFormDataBuilder::part(QAnyStringView name)
+QFormDataPartBuilder QFormDataBuilder::part(QAnyStringView name)
 {
     Q_D(QFormDataBuilder);
 
-    return d->parts.emplace_back(name, QFormDataPartBuilder::PrivateConstructor());
+    d->parts.emplace_back(name);
+    return QFormDataPartBuilder(d, d->parts.size() - 1);
 }
 
 /*!

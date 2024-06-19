@@ -26,66 +26,48 @@ class QHttpMultiPart;
 class QDebug;
 
 class QFormDataBuilderPrivate;
+class QFormDataPartBuilderPrivate;
 
 class QFormDataPartBuilder
 {
-    struct PrivateConstructor { explicit PrivateConstructor() = default; };
+    QFormDataPartBuilder(QFormDataBuilderPrivate *qfdb, qsizetype idx) : d(qfdb), m_index(idx) {}
 public:
-    Q_NETWORK_EXPORT explicit QFormDataPartBuilder(QAnyStringView name, PrivateConstructor);
-
-    QFormDataPartBuilder(QFormDataPartBuilder &&other) noexcept
-        : m_name(std::move(other.m_name)),
-          m_originalBodyName(std::move(other.m_originalBodyName)),
-          m_httpHeaders(std::move(other.m_httpHeaders)),
-          m_body(std::move(other.m_body)),
-          m_reserved(std::exchange(other.m_reserved, nullptr))
-    {
-
-    }
-
-    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QFormDataPartBuilder)
     void swap(QFormDataPartBuilder &other) noexcept
     {
-        m_name.swap(other.m_name);
-        m_originalBodyName.swap(other.m_originalBodyName);
-        m_httpHeaders.swap(other.m_httpHeaders);
-        m_body.swap(other.m_body);
-        qt_ptr_swap(m_reserved, other.m_reserved);
+        qt_ptr_swap(d, other.d);
+        std::swap(m_index, other.m_index);
     }
 
-    Q_NETWORK_EXPORT ~QFormDataPartBuilder();
+    QFormDataPartBuilder() = default;
+    // Rule of zero applies
 
-    Q_WEAK_OVERLOAD QFormDataPartBuilder &setBody(const QByteArray &data,
-                                                  QAnyStringView fileName = {},
-                                                  QAnyStringView mimeType = {})
+    Q_WEAK_OVERLOAD QFormDataPartBuilder setBody(const QByteArray &data,
+                                                 QAnyStringView fileName = {},
+                                                 QAnyStringView mimeType = {})
     { return setBodyHelper(data, fileName, mimeType); }
 
-    Q_NETWORK_EXPORT QFormDataPartBuilder &setBody(QByteArrayView data,
-                                                   QAnyStringView fileName = {},
-                                                   QAnyStringView mimeType = {});
-    Q_NETWORK_EXPORT QFormDataPartBuilder &setBodyDevice(QIODevice *body,
-                                                         QAnyStringView fileName = {},
-                                                         QAnyStringView mimeType = {});
-    Q_NETWORK_EXPORT QFormDataPartBuilder &setHeaders(const QHttpHeaders &headers);
+    Q_NETWORK_EXPORT QFormDataPartBuilder setBody(QByteArrayView data,
+                                                  QAnyStringView fileName = {},
+                                                  QAnyStringView mimeType = {});
+    Q_NETWORK_EXPORT QFormDataPartBuilder setBodyDevice(QIODevice *body,
+                                                        QAnyStringView fileName = {},
+                                                        QAnyStringView mimeType = {});
+    Q_NETWORK_EXPORT QFormDataPartBuilder setHeaders(const QHttpHeaders &headers);
 private:
-    Q_DISABLE_COPY(QFormDataPartBuilder)
+    Q_NETWORK_EXPORT QFormDataPartBuilder setBodyHelper(const QByteArray &data,
+                                                        QAnyStringView fileName,
+                                                        QAnyStringView mimeType);
 
-    Q_NETWORK_EXPORT QFormDataPartBuilder &setBodyHelper(const QByteArray &data,
-                                                         QAnyStringView fileName,
-                                                         QAnyStringView mimeType);
-    QHttpPart build();
+    QFormDataPartBuilderPrivate* d_func();
+    const QFormDataPartBuilderPrivate* d_func() const;
 
-    QString m_name;
-    QByteArray m_mimeType;
-    QString m_originalBodyName;
-    QHttpHeaders m_httpHeaders;
-    std::variant<QIODevice*, QByteArray> m_body;
-    void *m_reserved = nullptr;
+    QFormDataBuilderPrivate *d;
+    size_t m_index;
 
     friend class QFormDataBuilder;
-    friend void swap(QFormDataPartBuilder &lhs, QFormDataPartBuilder &rhs) noexcept
-    { lhs.swap(rhs); }
 };
+
+Q_DECLARE_SHARED(QFormDataPartBuilder)
 
 class QFormDataBuilder
 {
@@ -101,7 +83,7 @@ public:
     }
 
     Q_NETWORK_EXPORT ~QFormDataBuilder();
-    Q_NETWORK_EXPORT QFormDataPartBuilder &part(QAnyStringView name);
+    Q_NETWORK_EXPORT QFormDataPartBuilder part(QAnyStringView name);
     Q_NETWORK_EXPORT std::unique_ptr<QHttpMultiPart> buildMultiPart();
 private:
     QFormDataBuilderPrivate *d_ptr;
