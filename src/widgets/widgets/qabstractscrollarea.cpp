@@ -1433,7 +1433,7 @@ QSize QAbstractScrollArea::sizeHint() const
         const int f = 2 * d->frameWidth;
         const QSize frame(f, f);
         const bool vbarHidden = !d->vbar->isVisibleTo(this) || d->vbarpolicy == Qt::ScrollBarAlwaysOff;
-        const bool hbarHidden = !d->vbar->isVisibleTo(this) || d->hbarpolicy == Qt::ScrollBarAlwaysOff;
+        const bool hbarHidden = !d->hbar->isVisibleTo(this) || d->hbarpolicy == Qt::ScrollBarAlwaysOff;
         const QSize scrollbars(vbarHidden ? 0 : d->vbar->sizeHint().width(),
                                hbarHidden ? 0 : d->hbar->sizeHint().height());
         d->sizeHint = frame + scrollbars + viewportSizeHint();
