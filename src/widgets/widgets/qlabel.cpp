@@ -3,21 +3,15 @@
 
 #include "qpainter.h"
 #include "qevent.h"
-#include "qdrawutil.h"
-#include "qapplication.h"
-#if QT_CONFIG(abstractbutton)
-#include "qabstractbutton.h"
-#endif
 #include "qstyle.h"
 #include "qstyleoption.h"
-#include <limits.h>
-#include "qclipboard.h"
-#include <qdebug.h>
-#include <qurl.h>
 #include "qlabel_p.h"
 #include "private/qstylesheetstyle_p.h"
 #include <qmath.h>
 
+#if QT_CONFIG(abstractbutton)
+#include "qabstractbutton.h"
+#endif
 #if QT_CONFIG(accessibility)
 #include <qaccessible.h>
 #endif
@@ -28,45 +22,17 @@ using namespace Qt::StringLiterals;
 
 QLabelPrivate::QLabelPrivate()
     : QFramePrivate(),
-      sh(),
-      msh(),
-      text(),
-      pixmap(),
-      scaledpixmap(),
-#ifndef QT_NO_PICTURE
-      picture(),
-#endif
-#if QT_CONFIG(movie)
-      movie(),
-#endif
-      control(nullptr),
-      shortcutCursor(),
-#ifndef QT_NO_CURSOR
-      cursor(),
-#endif
-#ifndef QT_NO_SHORTCUT
-      buddy(),
-      shortcutId(0),
-#endif
-      textformat(Qt::AutoText),
-      effectiveTextFormat(Qt::PlainText),
-      textInteractionFlags(Qt::LinksAccessibleByMouse),
-      sizePolicy(),
-      margin(0),
-      align(Qt::AlignLeft | Qt::AlignVCenter | Qt::TextExpandTabs),
-      indent(-1),
       valid_hints(false),
       scaledcontents(false),
       textLayoutDirty(false),
       textDirty(false),
       isTextLabel(false),
-      hasShortcut(/*???*/),
+      hasShortcut(false),
 #ifndef QT_NO_CURSOR
       validCursor(false),
       onAnchor(false),
 #endif
-      openExternalLinks(false),
-      resourceProvider(nullptr)
+      openExternalLinks(false)
 {
 }
 
@@ -172,9 +138,7 @@ QLabelPrivate::~QLabelPrivate()
 QPicture QLabel::picture() const
 {
     Q_D(const QLabel);
-    if (d->picture)
-        return *(d->picture);
-    return QPicture();
+    return d->picture;
 }
 #endif // QT_NO_PICTURE
 
@@ -338,7 +302,7 @@ void QLabel::clear()
 void QLabel::setPixmap(const QPixmap &pixmap)
 {
     Q_D(QLabel);
-    if (!d->pixmap || d->pixmap->cacheKey() != pixmap.cacheKey()) {
+    if (d->pixmap.cacheKey() != pixmap.cacheKey()) {
         d->clearContents();
         d->pixmap = pixmap;
     }
@@ -349,9 +313,7 @@ void QLabel::setPixmap(const QPixmap &pixmap)
 QPixmap QLabel::pixmap() const
 {
     Q_D(const QLabel);
-    if (d->pixmap)
-        return *(d->pixmap);
-    return QPixmap();
+    return d->pixmap;
 }
 
 /*!
@@ -404,9 +366,7 @@ void QLabel::setPicture(const QPicture &picture)
 
 void QLabel::setNum(int num)
 {
-    QString str;
-    str.setNum(num);
-    setText(str);
+    setText(QString::number(num));
 }
 
 /*!
@@ -424,9 +384,7 @@ void QLabel::setNum(int num)
 
 void QLabel::setNum(double num)
 {
-    QString str;
-    str.setNum(num);
-    setText(str);
+    setText(QString::number(num));
 }
 
 /*!
@@ -563,12 +521,12 @@ QSize QLabelPrivate::sizeForWidth(int w) const
     int vextra = hextra;
     QFontMetrics fm = q->fontMetrics();
 
-    if (pixmap && !pixmap->isNull()) {
-        br = pixmap->rect();
-        br.setSize(pixmap->deviceIndependentSize().toSize());
+    if (!pixmap.isNull()) {
+        br = pixmap.rect();
+        br.setSize(pixmap.deviceIndependentSize().toSize());
 #ifndef QT_NO_PICTURE
-    } else if (picture && !picture->isNull()) {
-        br = picture->boundingRect();
+    } else if (!picture.isNull()) {
+        br = picture.boundingRect();
 #endif
 #if QT_CONFIG(movie)
     } else if (movie && !movie->currentPixmap().isNull()) {
@@ -1063,15 +1021,15 @@ void QLabel::paintEvent(QPaintEvent *)
         }
     } else
 #ifndef QT_NO_PICTURE
-    if (d->picture) {
-        QRect br = d->picture->boundingRect();
+    if (!d->picture.isNull()) {
+        QRect br = d->picture.boundingRect();
         int rw = br.width();
         int rh = br.height();
         if (d->scaledcontents) {
             painter.save();
             painter.translate(cr.x(), cr.y());
             painter.scale((double)cr.width()/rw, (double)cr.height()/rh);
-            painter.drawPicture(-br.x(), -br.y(), *d->picture);
+            painter.drawPicture(-br.x(), -br.y(), d->picture);
             painter.restore();
         } else {
             int xo = 0;
@@ -1084,25 +1042,25 @@ void QLabel::paintEvent(QPaintEvent *)
                 xo = cr.width()-rw;
             else if (align & Qt::AlignHCenter)
                 xo = (cr.width()-rw)/2;
-            painter.drawPicture(cr.x()+xo-br.x(), cr.y()+yo-br.y(), *d->picture);
+            painter.drawPicture(cr.x()+xo-br.x(), cr.y()+yo-br.y(), d->picture);
         }
     } else
 #endif
-    if (d->pixmap && !d->pixmap->isNull()) {
+    if (!d->pixmap.isNull()) {
         QPixmap pix;
         const qreal dpr = devicePixelRatio();
-        if (d->scaledcontents || dpr != d->pixmap->devicePixelRatio()) {
+        if (d->scaledcontents || dpr != d->pixmap.devicePixelRatio()) {
             QSize scaledSize = d->scaledcontents ? (cr.size() * dpr)
-                               : (d->pixmap->size() * (dpr / d->pixmap->devicePixelRatio()));
-            if (!d->scaledpixmap || d->scaledpixmap->size() != scaledSize) {
+                               : (d->pixmap.size() * (dpr / d->pixmap.devicePixelRatio()));
+            if (d->scaledpixmap.size() != scaledSize) {
                 d->scaledpixmap =
-                        d->pixmap->scaled(scaledSize,
-                                          Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-                d->scaledpixmap->setDevicePixelRatio(dpr);
+                        d->pixmap.scaled(scaledSize,
+                                         Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                d->scaledpixmap.setDevicePixelRatio(dpr);
             }
-            pix = *d->scaledpixmap;
+            pix = d->scaledpixmap;
         } else
-            pix = *d->pixmap;
+            pix = d->pixmap;
         QStyleOption opt;
         opt.initFrom(this);
         if (!isEnabled())
@@ -1302,10 +1260,10 @@ void QLabelPrivate::clearContents()
     hasShortcut = false;
 
 #ifndef QT_NO_PICTURE
-    picture.reset();
+    picture = QPicture();
 #endif
-    scaledpixmap.reset();
-    pixmap.reset();
+    scaledpixmap = QPixmap();
+    pixmap = QPixmap();
 
     text.clear();
     Q_Q(QLabel);
@@ -1448,9 +1406,8 @@ void QLabel::setScaledContents(bool enable)
     if ((bool)d->scaledcontents == enable)
         return;
     d->scaledcontents = enable;
-    if (!enable) {
-        d->scaledpixmap.reset();
-    }
+    if (!enable)
+        d->scaledpixmap = QPixmap();
     update(contentsRect());
 }
 
