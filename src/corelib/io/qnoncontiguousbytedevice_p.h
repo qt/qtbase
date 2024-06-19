@@ -79,6 +79,7 @@ public:
 
 protected:
     QByteArray byteArray;
+    QByteArrayView view;
     qint64 currentPosition = 0;
 };
 

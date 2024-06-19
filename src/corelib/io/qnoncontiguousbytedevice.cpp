@@ -145,7 +145,7 @@ qint64 QNonContiguousByteDeviceBufferImpl::size() const
 }
 
 QNonContiguousByteDeviceByteArrayImpl::QNonContiguousByteDeviceByteArrayImpl(QByteArray ba)
-    : QNonContiguousByteDevice(), byteArray(std::move(ba))
+    : QNonContiguousByteDevice(), byteArray(std::move(ba)), view(byteArray)
 {
 }
 
@@ -165,7 +165,7 @@ const char* QNonContiguousByteDeviceByteArrayImpl::readPointer(qint64 maximumLen
     else
         len = size() - currentPosition;
 
-    return byteArray.constData() + currentPosition;
+    return view.data() + currentPosition;
 }
 
 bool QNonContiguousByteDeviceByteArrayImpl::advanceReadPointer(qint64 amount)
@@ -188,7 +188,7 @@ bool QNonContiguousByteDeviceByteArrayImpl::reset()
 
 qint64 QNonContiguousByteDeviceByteArrayImpl::size() const
 {
-    return byteArray.size();
+    return view.size();
 }
 
 qint64 QNonContiguousByteDeviceByteArrayImpl::pos() const
