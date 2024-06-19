@@ -6,6 +6,8 @@
 #include <qdebug.h>
 #include <qfile.h>
 
+#include <utility>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -102,10 +104,9 @@ QNonContiguousByteDevice::~QNonContiguousByteDevice()
 // FIXME we should scrap this whole implementation and instead change the ByteArrayImpl to be able to cope with sub-arrays?
 QNonContiguousByteDeviceBufferImpl::QNonContiguousByteDeviceBufferImpl(QBuffer *b)
     : QNonContiguousByteDevice(),
-      buffer(b),
-      byteArray(QByteArray::fromRawData(buffer->buffer().constData() + buffer->pos(),
-                                        buffer->size() - buffer->pos())),
-      arrayImpl(new QNonContiguousByteDeviceByteArrayImpl(&byteArray))
+      byteArray(QByteArray::fromRawData(b->buffer().constData() + b->pos(),
+                                        b->buffer().size() - b->pos())),
+      arrayImpl(new QNonContiguousByteDeviceByteArrayImpl(b->buffer().sliced(b->pos())))
 {
     arrayImpl->setParent(this);
     connect(arrayImpl, &QNonContiguousByteDevice::readyRead, this,
@@ -143,8 +144,8 @@ qint64 QNonContiguousByteDeviceBufferImpl::size() const
     return arrayImpl->size();
 }
 
-QNonContiguousByteDeviceByteArrayImpl::QNonContiguousByteDeviceByteArrayImpl(QByteArray *ba)
-    : QNonContiguousByteDevice(), byteArray(ba), currentPosition(0)
+QNonContiguousByteDeviceByteArrayImpl::QNonContiguousByteDeviceByteArrayImpl(QByteArray ba)
+    : QNonContiguousByteDevice(), byteArray(std::move(ba)), currentPosition(0)
 {
 }
 
@@ -164,7 +165,7 @@ const char* QNonContiguousByteDeviceByteArrayImpl::readPointer(qint64 maximumLen
     else
         len = size() - currentPosition;
 
-    return byteArray->constData() + currentPosition;
+    return byteArray.constData() + currentPosition;
 }
 
 bool QNonContiguousByteDeviceByteArrayImpl::advanceReadPointer(qint64 amount)
@@ -187,7 +188,7 @@ bool QNonContiguousByteDeviceByteArrayImpl::reset()
 
 qint64 QNonContiguousByteDeviceByteArrayImpl::size() const
 {
-    return byteArray->size();
+    return byteArray.size();
 }
 
 qint64 QNonContiguousByteDeviceByteArrayImpl::pos() const
@@ -515,7 +516,7 @@ QNonContiguousByteDeviceFactory::createShared(std::shared_ptr<QRingBuffer> ringB
 
     \internal
 */
-QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QByteArray *byteArray)
+QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(const QByteArray &byteArray)
 {
     return new QNonContiguousByteDeviceByteArrayImpl(byteArray);
 }
@@ -526,7 +527,7 @@ QNonContiguousByteDevice* QNonContiguousByteDeviceFactory::create(QByteArray *by
     \internal
 */
 std::shared_ptr<QNonContiguousByteDevice>
-QNonContiguousByteDeviceFactory::createShared(QByteArray *byteArray)
+QNonContiguousByteDeviceFactory::createShared(const QByteArray &byteArray)
 {
     return std::make_shared<QNonContiguousByteDeviceByteArrayImpl>(byteArray);
 }
