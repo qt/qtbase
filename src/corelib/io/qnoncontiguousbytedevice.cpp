@@ -149,6 +149,13 @@ QNonContiguousByteDeviceByteArrayImpl::QNonContiguousByteDeviceByteArrayImpl(QBy
 {
 }
 
+QNonContiguousByteDeviceByteArrayImpl::QNonContiguousByteDeviceByteArrayImpl(QBuffer *buffer)
+    : QNonContiguousByteDevice(),
+      byteArray(buffer->buffer()),
+      view(QByteArrayView(byteArray).sliced(buffer->pos(), buffer->size() - buffer->pos()))
+{
+}
+
 QNonContiguousByteDeviceByteArrayImpl::~QNonContiguousByteDeviceByteArrayImpl()
 {
 }

@@ -69,6 +69,7 @@ class QNonContiguousByteDeviceByteArrayImpl : public QNonContiguousByteDevice
     Q_OBJECT
 public:
     explicit QNonContiguousByteDeviceByteArrayImpl(QByteArray ba);
+    explicit QNonContiguousByteDeviceByteArrayImpl(QBuffer *buffer);
     ~QNonContiguousByteDeviceByteArrayImpl();
     const char *readPointer(qint64 maximumLength, qint64 &len) override;
     bool advanceReadPointer(qint64 amount) override;
