@@ -79,6 +79,7 @@ private Q_SLOTS:
     void picksUtf8NameEncodingIfAsciiDoesNotSuffice();
 
     void moveSemantics();
+    void keepResultOfCallingPartAliveAmongSubsequentCallsToPart();
 };
 
 void tst_QFormDataBuilder::checkBodyPartsAreEquivalent(QByteArrayView expected, QByteArrayView actual)
@@ -335,7 +336,7 @@ void tst_QFormDataBuilder::setHeadersDoesNotAffectHeaderFieldsManagedByBuilder()
     QVERIFY(buff.open(QIODevice::ReadOnly));
 
     const auto msg = serialized([&](auto &builder) {
-            auto &qfdpb = builder.part(name_data).setBodyDevice(&buff, body_name_data);
+            auto qfdpb = builder.part(name_data).setBodyDevice(&buff, body_name_data);
 
             if (overwrite || extra_headers) {
                 QHttpHeaders headers;
@@ -383,7 +384,7 @@ void tst_QFormDataBuilder::specifyMimeType()
     QVERIFY(buff.open(QIODevice::ReadOnly));
 
     const auto msg = serialized([&](auto &builder) {
-            auto &qfdpb = builder.part(name_data).setBodyDevice(&buff, body_name_data);
+            auto qfdpb = builder.part(name_data).setBodyDevice(&buff, body_name_data);
 
             if (!mime_type.empty())
                 qfdpb.setBodyDevice(&buff, body_name_data, mime_type);
@@ -452,7 +453,7 @@ void tst_QFormDataBuilder::moveSemantics()
         QVERIFY2(data_file.open(QIODeviceBase::ReadOnly), qPrintable(data_file.errorString()));
 
         QFormDataBuilder qfdb;
-        auto &p = qfdb.part("text"_L1);
+        auto p = qfdb.part("text"_L1);
         const QByteArray actual = serialized([&, moved = std::move(qfdb)](auto &) mutable {
                 p.setBodyDevice(&data_file, "rfc3252.txt");
                 return std::ref(moved);
@@ -475,6 +476,40 @@ void tst_QFormDataBuilder::moveSemantics()
 
         checkBodyPartsAreEquivalent(expected, actual);
     }
+}
+
+void tst_QFormDataBuilder::keepResultOfCallingPartAliveAmongSubsequentCallsToPart()
+{
+    QFormDataBuilder qfdb;
+    auto p1 = qfdb.part("1"_L1);
+    auto p2 = qfdb.part("2"_L1);
+    auto p3 = qfdb.part("3"_L1);
+    auto p4 = qfdb.part("4"_L1);
+    auto p5 = qfdb.part("5"_L1);
+    auto p6 = qfdb.part("6"_L1);
+    auto p7 = qfdb.part("7"_L1);
+    auto p8 = qfdb.part("8"_L1);
+    auto p9 = qfdb.part("9"_L1);
+    auto p10 = qfdb.part("10"_L1);
+    auto p11 = qfdb.part("11"_L1);
+    auto p12 = qfdb.part("12"_L1);
+
+    QByteArray dummyData = "totally_a_text_file"_ba;
+
+    p1.setBody(dummyData, "body1"_L1);
+    p2.setBody(dummyData, "body2"_L1);
+    p3.setBody(dummyData, "body3"_L1);
+    p4.setBody(dummyData, "body4"_L1);
+    p5.setBody(dummyData, "body5"_L1);
+    p6.setBody(dummyData, "body6"_L1);
+    p7.setBody(dummyData, "body7"_L1);
+    p8.setBody(dummyData, "body8"_L1);
+    p9.setBody(dummyData, "body9"_L1);
+    p10.setBody(dummyData, "body10"_L1);
+    p11.setBody(dummyData, "body11"_L1);
+    p12.setBody(dummyData, "body12"_L1);
+
+    qfdb.buildMultiPart();
 }
 
 QTEST_MAIN(tst_QFormDataBuilder)
