@@ -132,6 +132,7 @@ public Q_SLOTS:
     bool sendRST_STREAM(quint32 errorCode);
     bool sendHEADERS(const HPack::HttpHeader &headers, bool endStream,
                      quint8 priority = DefaultPriority);
+    void sendDATA(const QByteArray &payload, bool endStream);
     void sendDATA(QIODevice *device, bool endStream);
     void sendDATA(QNonContiguousByteDevice *device, bool endStream);
     void sendWINDOW_UPDATE(quint32 delta);

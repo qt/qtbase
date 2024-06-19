@@ -352,11 +352,8 @@ void tst_QHttp2Connection::WINDOW_UPDATE()
     // we can check the headers now immediately
     QCOMPARE(serverStream->receivedHeaders(), expectedRequestHeaders);
 
-    QBuffer *buffer = new QBuffer(clientStream);
     QByteArray uploadedData = "Hello World"_ba.repeated(1000);
-    buffer->setData(uploadedData);
-    buffer->open(QIODevice::ReadWrite);
-    clientStream->sendDATA(buffer, true);
+    clientStream->sendDATA(uploadedData, true);
 
     bool streamEnd = false;
     QByteArray serverReceivedData;
@@ -374,10 +371,7 @@ void tst_QHttp2Connection::WINDOW_UPDATE()
 
     const HPack::HttpHeader ExpectedResponseHeaders{ { ":status", "200" } };
     serverStream->sendHEADERS(ExpectedResponseHeaders, false);
-    QBuffer *serverBuffer = new QBuffer(serverStream);
-    serverBuffer->setData(uploadedData);
-    serverBuffer->open(QIODevice::ReadWrite);
-    serverStream->sendDATA(serverBuffer, true);
+    serverStream->sendDATA(uploadedData, true);
 
     QVERIFY(clientHeaderReceivedSpy.wait());
     const HPack::HttpHeader

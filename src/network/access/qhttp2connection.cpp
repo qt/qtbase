@@ -235,6 +235,25 @@ bool QHttp2Stream::sendRST_STREAM(quint32 errorCode)
 }
 
 /*!
+    Sends a DATA frame with the bytes obtained from \a payload.
+
+    This function will send as many DATA frames as needed to send all the data
+    from \a payload. If \a endStream is \c true, the END_STREAM flag will be
+    set.
+*/
+void QHttp2Stream::sendDATA(const QByteArray &payload, bool endStream)
+{
+    Q_ASSERT(!m_uploadByteDevice);
+    if (m_state != State::Open && m_state != State::HalfClosedRemote)
+        return;
+
+    auto *byteDevice = QNonContiguousByteDeviceFactory::create(payload);
+    connect(this, &QHttp2Stream::uploadFinished, byteDevice, &QObject::deleteLater);
+    byteDevice->setParent(this);
+    sendDATA(byteDevice, endStream);
+}
+
+/*!
     Sends a DATA frame with the bytes obtained from \a device.
 
     This function will send as many DATA frames as needed to send all the data
