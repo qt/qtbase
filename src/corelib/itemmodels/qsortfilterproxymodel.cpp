@@ -3174,8 +3174,8 @@ void QSortFilterProxyModel::invalidateRowsFilter()
 bool QSortFilterProxyModel::lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const
 {
     Q_D(const QSortFilterProxyModel);
-    QVariant l = (source_left.model() ? source_left.model()->data(source_left, d->sort_role) : QVariant());
-    QVariant r = (source_right.model() ? source_right.model()->data(source_right, d->sort_role) : QVariant());
+    const QVariant l = source_left.data(d->sort_role);
+    const QVariant r = source_right.data(d->sort_role);
     return QAbstractItemModelPrivate::isVariantLessThan(l, r, d->sort_casesensitivity, d->sort_localeaware);
 }
 
