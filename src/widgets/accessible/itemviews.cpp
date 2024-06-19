@@ -1192,7 +1192,7 @@ QAccessible::State QAccessibleTableCell::state() const
     if (view->selectionModel()->currentIndex() == m_index)
         st.focused = true;
 
-    QVariant checkState = m_index.model()->data(m_index, Qt::CheckStateRole);
+    const QVariant checkState = m_index.data(Qt::CheckStateRole);
     if (checkState.toInt() == Qt::Checked)
         st.checked = true;
 
