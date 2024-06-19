@@ -97,6 +97,7 @@ private slots:
     void testqToUnderlying();
     void nodiscard();
     void tagStructDefinitions();
+    void CXX20_constexpr_dtor();
 };
 
 extern "C" {        // functions in qglobal.c
@@ -993,6 +994,23 @@ void tst_QGlobal::tagStructDefinitions()
         [[maybe_unused]] constexpr auto tag = MyTag;
         static_assert(std::is_same_v<decltype(tag), const MyTag_t>);
     }
+}
+
+class DestructorTest {
+public:
+    explicit constexpr DestructorTest(int *arr) : m_arr(arr) {}
+    Q_DECL_CONSTEXPR_DTOR ~DestructorTest() { delete[] m_arr; }
+private:
+    int *m_arr;
+};
+
+[[maybe_unused]] Q_DECL_CONSTEXPR_DTOR DestructorTest dt(nullptr);
+
+void tst_QGlobal::CXX20_constexpr_dtor()
+{
+#if __cpp_constexpr >= 201907L
+    [[maybe_unused]] constexpr DestructorTest tmp(nullptr);
+#endif
 }
 
 QT_BEGIN_NAMESPACE

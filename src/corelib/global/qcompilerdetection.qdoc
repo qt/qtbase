@@ -275,7 +275,7 @@
     This macro can be used to declare variable that should be constructed at compile-time,
     or an inline function that can be computed at compile-time.
 
-    \sa Q_DECL_RELAXED_CONSTEXPR
+    \sa Q_DECL_RELAXED_CONSTEXPR, Q_DECL_CONSTEXPR_DTOR
 */
 
 /*!
@@ -286,7 +286,20 @@
     This macro can be used to declare an inline function that can be computed
     at compile-time according to the relaxed rules from C++14.
 
-    \sa Q_DECL_CONSTEXPR
+    \sa Q_DECL_CONSTEXPR, Q_DECL_CONSTEXPR_DTOR
+*/
+
+/*!
+    \macro Q_DECL_CONSTEXPR_DTOR
+    \relates <QtCompilerDetection>
+    \since 6.9
+
+    Expands to \c{constexpr} on compilers that support C++20, where
+    \c{__cpp_constexpr} has a value greater than or equal to \c{201907L}.
+    Otherwise, it expands to \c{inline}.
+
+    Use this macro to declare a destructor that can be computed at
+    compile-time in C++20 or later.
 */
 
 /*!

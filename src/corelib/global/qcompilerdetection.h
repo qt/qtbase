@@ -514,6 +514,8 @@
  *
  * For a full listing of feature test macros, see
  *  https://en.cppreference.com/w/cpp/feature_test
+ * Exceptions:
+ *  Q_DECL_CONSTEXPR_DTOR           constexpr in C++20 for explicit destructors __cpp_constexpr >= 201907L
  *
  * C++ extensions:
  *  Q_COMPILER_RESTRICTED_VLA       variable-length arrays, prior to __cpp_runtime_arrays
@@ -1002,6 +1004,14 @@
 
 #define Q_DECL_ENUMERATOR_DEPRECATED Q_DECL_DEPRECATED
 #define Q_DECL_ENUMERATOR_DEPRECATED_X(x) Q_DECL_DEPRECATED_X(x)
+
+#ifndef Q_DECL_CONSTEXPR_DTOR
+#  if __cpp_constexpr >= 201907L
+#    define Q_DECL_CONSTEXPR_DTOR constexpr
+#  else
+#    define Q_DECL_CONSTEXPR_DTOR inline
+#  endif
+#endif
 
 /*
  * Fallback macros to certain compiler features

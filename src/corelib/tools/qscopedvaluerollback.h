@@ -25,9 +25,7 @@ public:
         var = std::move(value);
     }
 
-#if __cpp_constexpr >= 201907L
-    constexpr
-#endif
+    Q_DECL_CONSTEXPR_DTOR
     ~QScopedValueRollback()
     {
         varRef = std::move(oldValue);
