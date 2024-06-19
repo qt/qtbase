@@ -145,7 +145,7 @@ qint64 QNonContiguousByteDeviceBufferImpl::size() const
 }
 
 QNonContiguousByteDeviceByteArrayImpl::QNonContiguousByteDeviceByteArrayImpl(QByteArray ba)
-    : QNonContiguousByteDevice(), byteArray(std::move(ba)), currentPosition(0)
+    : QNonContiguousByteDevice(), byteArray(std::move(ba))
 {
 }
 

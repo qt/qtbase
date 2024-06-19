@@ -79,7 +79,7 @@ public:
 
 protected:
     QByteArray byteArray;
-    qint64 currentPosition;
+    qint64 currentPosition = 0;
 };
 
 class QNonContiguousByteDeviceRingBufferImpl : public QNonContiguousByteDevice
