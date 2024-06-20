@@ -494,7 +494,15 @@ function(qt_internal_setup_cmake_config_postfix)
             set(default_cmake_debug_postfix "d")
         endif()
     elseif(APPLE)
-        set(default_cmake_debug_postfix "_debug")
+        # Only add a suffix for explicit no-framework builds.
+        # For framework builds the library inside the framework
+        # is always unsuffixed, and we want to match that for
+        # plugins and other non-framework (static) libraries.
+        if(NOT (QT_FEATURE_framework OR FEATURE_framework
+           # Account for default in configure.json being ON
+           OR (NOT DEFINED QT_FEATURE_framework AND NOT DEFINED FEATURE_framework)))
+            set(default_cmake_debug_postfix "_debug")
+        endif()
     endif()
 
     set(custom_postfix_vars "")

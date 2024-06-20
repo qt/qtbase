@@ -12,6 +12,8 @@
 #include <QScopeGuard>
 #include "theplugin/plugininterface.h"
 
+#include <QtCore/private/qglobal_p.h>
+
 #if defined(QT_BUILD_INTERNAL) && defined(Q_OF_MACH_O)
 #  include <QtCore/private/qmachparser_p.h>
 #endif
@@ -33,10 +35,10 @@ using namespace Qt::StringLiterals;
 # define bundle_VALID   true
 # define dylib_VALID    true
 # define so_VALID       true
-# ifdef QT_NO_DEBUG
-#  define SUFFIX         ".dylib"
-# else
+# if QT_CONFIG(debug) && !QT_CONFIG(framework)
 #  define SUFFIX         "_debug.dylib"
+# else
+#  define SUFFIX         ".dylib"
 # endif
 # define PREFIX         "lib"
 

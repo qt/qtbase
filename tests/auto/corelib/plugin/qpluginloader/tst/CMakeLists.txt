@@ -50,7 +50,7 @@ endif()
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(tst_qpluginloader CONDITION QT_FEATURE_private_tests
+qt_internal_extend_target(tst_qpluginloader
     LIBRARIES
         Qt::CorePrivate
 )
