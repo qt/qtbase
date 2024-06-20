@@ -186,7 +186,14 @@ static inline QRgba64 addWithSaturation(QRgba64 a, QRgba64 b)
     QRgba64 r;
     _mm_storel_epi64(reinterpret_cast<__m128i *>(&r), vr);
     return r;
+#elif defined(__ARM_NEON__)
+    const uint16x4_t va = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&a)));
+    const uint16x4_t vb = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&b)));
+    QRgba64 r;
+    vst1_u64(reinterpret_cast<uint64_t *>(&r), vreinterpret_u64_u16(vqadd_u16(va, vb)));
+    return r;
 #else
+
     return QRgba64::fromRgba64(qMin(a.red() + b.red(), 65535),
                                qMin(a.green() + b.green(), 65535),
                                qMin(a.blue() + b.blue(), 65535),
@@ -274,8 +281,7 @@ static inline QRgba64 rgbBlend(QRgba64 d, QRgba64 s, uint rgbAlpha)
     uint16x4_t vs = vreinterpret_u16_u64(vmov_n_u64(s));
     uint8x8_t va8 = vreinterpret_u8_u32(vmov_n_u32(ARGB2RGBA(rgbAlpha)));
     uint16x4_t va = vreinterpret_u16_u8(vzip_u8(va8, va8).val[0]);
-    uint16x4_t vb = vdup_n_u16(0xffff);
-    vb = vsub_u16(vb, va);
+    uint16x4_t vb = veor_u16(vdup_n_u16(0xffff), va);
 
     uint32x4_t vs32 = vmull_u16(vs, va);
     uint32x4_t vd32 = vmull_u16(vd, vb);
@@ -306,6 +312,12 @@ static inline void blend_pixel(QRgba64 &dst, QRgba64 src)
         const __m128i via = _mm_xor_si128(_mm_set1_epi16(-1), _mm_shufflelo_epi16(vs, _MM_SHUFFLE(3, 3, 3, 3)));
         const __m128i vr = _mm_add_epi16(vs, multiplyAlpha65535(vd, via));
         _mm_storel_epi64(reinterpret_cast<__m128i *>(&dst), vr);
+#elif defined(__ARM_NEON__)
+        const uint16x4_t vd = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&dst)));
+        const uint16x4_t vs = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&src)));
+        const uint16x4_t via = veor_u16(vdup_n_u16(0xffff), vdup_lane_u16(vs, 3));
+        const uint16x4_t vr = vadd_u16(vs, multiplyAlpha65535(vd, via));
+        vst1_u64(reinterpret_cast<uint64_t *>(&dst), vreinterpret_u64_u16(vr));
 #else
         dst = src + multiplyAlpha65535(dst, 65535 - src.alpha());
 #endif
@@ -324,6 +336,13 @@ static inline void blend_pixel(QRgba64 &dst, QRgba64 src, const int const_alpha)
         const __m128i via = _mm_xor_si128(_mm_set1_epi16(-1), _mm_shufflelo_epi16(vs, _MM_SHUFFLE(3, 3, 3, 3)));
         const __m128i vr = _mm_add_epi16(vs, multiplyAlpha65535(vd, via));
         _mm_storel_epi64(reinterpret_cast<__m128i *>(&dst), vr);
+#elif defined(__ARM_NEON__)
+        const uint16x4_t vd = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&dst)));
+        uint16x4_t vs = vreinterpret_u16_u64(vld1_u64(reinterpret_cast<const uint64_t *>(&src)));
+        vs = multiplyAlpha255(vs, const_alpha);
+        const uint16x4_t via = veor_u16(vdup_n_u16(0xffff), vdup_lane_u16(vs, 3));
+        const uint16x4_t vr = vadd_u16(vs, multiplyAlpha65535(vd, via));
+        vst1_u64(reinterpret_cast<uint64_t *>(&dst), vreinterpret_u64_u16(vr));
 #else
         src = multiplyAlpha255(src, const_alpha);
         dst = src + multiplyAlpha65535(dst, 65535 - src.alpha());
