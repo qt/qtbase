@@ -38,6 +38,8 @@ private slots:
     void parent();
     void hasChildren();
     void data();
+    void invalidModelIndexDataReturnsInvalidQVariant();
+    void invalidPersistentModelIndexDataReturnsInvalidQVariant();
     void headerData();
     void itemData();
     void itemFlags();
@@ -384,6 +386,33 @@ void tst_QAbstractItemModel::data()
 
     // Default does nothing
     QCOMPARE(model.setHeaderData(0, Qt::Horizontal, QVariant(0), 0), false);
+}
+
+void tst_QAbstractItemModel::invalidModelIndexDataReturnsInvalidQVariant()
+{
+    const QModelIndex invalid;
+    QVERIFY(!invalid.isValid());
+    QVERIFY(!invalid.data(Qt::ItemDataRole::DisplayRole).isValid());
+
+    QtTestModel model(1, 1);
+    const QModelIndex mi = model.index(0, 1);
+    QVERIFY(!mi.isValid());
+    QVERIFY(!mi.data(Qt::ItemDataRole::DisplayRole).isValid());
+}
+
+void tst_QAbstractItemModel::invalidPersistentModelIndexDataReturnsInvalidQVariant()
+{
+    const QPersistentModelIndex invalid;
+    QVERIFY(!invalid.isValid());
+    QVERIFY(!invalid.data(Qt::ItemDataRole::DisplayRole).isValid());
+
+    QtTestModel model(1, 1);
+    const QPersistentModelIndex pmi = model.index(0, 0);
+    QVERIFY(pmi.isValid());
+    QVERIFY(pmi.data(Qt::ItemDataRole::DisplayRole).isValid());
+    model.removeRows(0, 1);
+    QVERIFY(!pmi.isValid());
+    QVERIFY(!pmi.data(Qt::ItemDataRole::DisplayRole).isValid());
 }
 
 void tst_QAbstractItemModel::headerData()
