@@ -279,7 +279,7 @@ QHttpPart QFormDataPartBuilder::build()
         builder.part("n"_L1).setBody("2");
         builder.part("size"_L1).setBody("512x512");
 
-        std::unique_ptr<QHttpMultiPart> = builder.buildMultiPart();
+        std::unique_ptr<QHttpMultiPart> mp = builder.buildMultiPart();
     \endcode
 
     \sa QHttpPart, QHttpMultiPart, QFormDataPartBuilder
