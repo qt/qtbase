@@ -165,6 +165,7 @@ function(_qt_internal_sbom_begin_project)
 
     _qt_internal_sbom_begin_project_generate(
         OUTPUT "${repo_spdx_install_path}"
+        OUTPUT_RELATIVE_PATH "${repo_spdx_relative_install_path}"
         LICENSE "${repo_license}"
         COPYRIGHT "${repo_copyright}"
         SUPPLIER "${repo_supplier}" # This must not contain spaces!
@@ -191,6 +192,9 @@ function(_qt_internal_sbom_begin_project)
 
     set_property(GLOBAL PROPERTY _qt_internal_sbom_project_spdx_id
         "${repo_project_spdx_id}")
+
+    _qt_internal_get_current_project_sbom_dir(sbom_dir)
+    set_property(GLOBAL APPEND PROPERTY _qt_internal_sbom_dirs "${sbom_dir}")
 
     file(GLOB license_files "${PROJECT_SOURCE_DIR}/LICENSES/LicenseRef-*.txt")
     foreach(license_file IN LISTS license_files)
@@ -975,7 +979,22 @@ function(_qt_internal_sbom_add_external_target_dependency
 
         # Only add a reference to the external document package, if we haven't done so already.
         if(NOT known_external_document)
+            set(install_prefixes "")
+
             get_cmake_property(install_prefix _qt_internal_sbom_install_prefix)
+            list(APPEND install_prefixes "${install_prefix}")
+
+            # Add the current sbom build dirs as install prefixes, so that we can use ninja 'sbom'
+            # in top-level builds. This is needed because the external references will point
+            # to sbom docs in different build dirs, not just one.
+            if(QT_SUPERBUILD)
+                get_cmake_property(build_sbom_dirs _qt_internal_sbom_dirs)
+                if(build_sbom_dirs)
+                    foreach(build_sbom_dir IN LISTS build_sbom_dirs)
+                        list(APPEND install_prefixes "${build_sbom_dir}")
+                    endforeach()
+                endif()
+            endif()
 
             set(external_document "${relative_installed_repo_document_path}")
 
@@ -984,7 +1003,7 @@ function(_qt_internal_sbom_add_external_target_dependency
                 EXTERNAL "${dep_spdx_id}"
                 FILENAME "${external_document}"
                 SPDXID "${external_document_ref}"
-                INSTALL_PREFIXES ${install_prefix}
+                INSTALL_PREFIXES ${install_prefixes}
             )
 
             set_property(GLOBAL PROPERTY

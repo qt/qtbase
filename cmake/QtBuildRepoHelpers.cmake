@@ -252,6 +252,7 @@ macro(qt_build_repo_begin)
 
     qt_internal_read_repo_dependencies(qt_repo_deps "${PROJECT_SOURCE_DIR}")
     if(qt_repo_deps)
+        set_property(GLOBAL PROPERTY _qt_repo_deps_${project_name_lower} ${qt_repo_deps})
         foreach(qt_repo_dep IN LISTS qt_repo_deps)
             if(TARGET qt_plugins_${qt_repo_dep})
                 message(DEBUG
