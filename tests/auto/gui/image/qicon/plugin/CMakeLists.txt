@@ -5,16 +5,12 @@
 ## TestIconEngine Plugin:
 #####################################################################
 
-qt_internal_add_plugin(TestIconPlugin
+qt_add_plugin(TestIconPlugin
     STATIC
     OUTPUT_NAME qtesticonplugin
-    OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-    SKIP_INSTALL
     PLUGIN_TYPE iconengines
-    DEFAULT_IF TRUE
-    SOURCES
-        main.cpp
-    LIBRARIES
-        Qt::Core
-        Qt::Gui
+    main.cpp
 )
+
+qt_autogen_tools_initial_setup(TestIconPlugin)
+target_link_libraries(TestIconPlugin PRIVATE Qt::Core Qt::Gui)
