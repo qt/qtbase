@@ -61,7 +61,7 @@ protected:
     virtual void initPainter(QPainter *painter) const;
     virtual QPaintDevice *redirected(QPoint *offset) const;
     virtual QPainter *sharedPainter() const;
-    double getDecodedMetricF(PaintDeviceMetric metricA, PaintDeviceMetric metricB) const;
+    inline double getDecodedMetricF(PaintDeviceMetric metricA, PaintDeviceMetric metricB) const;
 
     ushort        painters;                        // refcount
 private:
@@ -84,7 +84,7 @@ inline int QPaintDevice::devType() const
 inline bool QPaintDevice::paintingActive() const
 { return painters != 0; }
 
-inline int QPaintDevice::encodeMetricF(PaintDeviceMetric metric, double value)
+int QPaintDevice::encodeMetricF(PaintDeviceMetric metric, double value)
 {
     qint32 buf[2];
     Q_STATIC_ASSERT(sizeof(buf) == sizeof(double));

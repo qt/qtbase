@@ -21,7 +21,7 @@ QPaintDevice::~QPaintDevice()
     \internal
 */
 // ### Qt 7: Replace this workaround mechanism: virtual devicePixelRatio() and virtual metricF()
-inline double QPaintDevice::getDecodedMetricF(PaintDeviceMetric metricA, PaintDeviceMetric metricB) const
+double QPaintDevice::getDecodedMetricF(PaintDeviceMetric metricA, PaintDeviceMetric metricB) const
 {
     qint32 buf[2];
     // The Encoded metric enum values come in pairs of one odd and one even value.
