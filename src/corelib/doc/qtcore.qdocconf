@@ -66,5 +66,5 @@ manifestmeta.highlighted.names = \
     "QtCore/Serialization Converter" \
     "QtCore/QXmlStream Bookmarks Example"
 
-# Temporarily allow warning: No such parameter 'other' in QFlags::operator=()
-warninglimit = 1
+# QTBUG-126546
+warninglimit = 2
