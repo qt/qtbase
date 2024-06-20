@@ -258,7 +258,7 @@ public:
     QIOSAssetEnumerator *m_enumerator;
 
     QIOSFileEngineIteratorAssetsLibrary(
-            const QString &path, QDir::Filters filters, const QStringList &nameFilters)
+            const QString &path, QDirListing::IteratorFlags filters, const QStringList &nameFilters)
         : QAbstractFileEngineIterator(path, filters, nameFilters)
         , m_enumerator(new QIOSAssetEnumerator([[[ALAssetsLibrary alloc] init] autorelease], ALAssetsGroupAll))
     {
@@ -440,7 +440,7 @@ void QIOSFileEngineAssetsLibrary::setFileName(const QString &file)
 
 QAbstractFileEngine::IteratorUniquePtr
 QIOSFileEngineAssetsLibrary::beginEntryList(
-    const QString &path, QDir::Filters filters, const QStringList &filterNames)
+    const QString &path, QDirListing::IteratorFlags filters, const QStringList &filterNames)
 {
     return std::make_unique<QIOSFileEngineIteratorAssetsLibrary>(path, filters, filterNames);
 }

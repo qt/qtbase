@@ -86,44 +86,12 @@ using namespace Qt::StringLiterals;
 
 class QDirIteratorPrivate
 {
-    static QDirListing::IteratorFlags toDirListingFlags(QDirIterator::IteratorFlags flags)
-    {
-        using F = QDirListing::IteratorFlag;
-        QDirListing::IteratorFlags listerFlags;
-
-        if (flags & QDirIterator::NoIteratorFlags)
-            listerFlags.setFlag(F::NoFlag);
-        if (flags & QDirIterator::FollowSymlinks)
-            listerFlags.setFlag(F::FollowSymlinks);
-        if (flags & QDirIterator::Subdirectories)
-            listerFlags.setFlag(F::Recursive);
-
-        return listerFlags;
-    }
-
 public:
-    QDirIteratorPrivate(const QDir &dir, QDirIterator::IteratorFlags flags)
-        : lister(dir, toDirListingFlags(flags))
-    {
-        init();
-    }
-    QDirIteratorPrivate(const QString &path, QDirIterator::IteratorFlags flags)
-        : lister(path, toDirListingFlags(flags))
-    {
-        init();
-    }
-    QDirIteratorPrivate(const QString &path, QDir::Filters filters,
-                        QDirIterator::IteratorFlags flags)
-        : lister(path, filters, toDirListingFlags(flags))
-    {
-        init();
-    }
-    QDirIteratorPrivate(const QString &path, const QStringList &nameFilters, QDir::Filters filters,
-                        QDirIterator::IteratorFlags flags)
-        : lister(path, nameFilters, filters, toDirListingFlags(flags))
-    {
-        init();
-    }
+    QDirIteratorPrivate(const QString &path, const QStringList &nameFilters = {},
+                        QDir::Filters filters = QDir::NoFilter,
+                        QDirIterator::IteratorFlags flags = QDirIterator::NoIteratorFlags)
+        : lister(path, nameFilters, filters.toInt(), flags.toInt())
+    { init(); }
 
     void init()
     {
@@ -162,7 +130,7 @@ public:
     \sa hasNext(), next(), IteratorFlags
 */
 QDirIterator::QDirIterator(const QDir &dir, IteratorFlags flags)
-    : d(new QDirIteratorPrivate(dir, flags))
+    : d(new QDirIteratorPrivate(dir.path(), dir.nameFilters(), dir.filter(), flags))
 {
 }
 
@@ -180,7 +148,7 @@ QDirIterator::QDirIterator(const QDir &dir, IteratorFlags flags)
     \sa hasNext(), next(), IteratorFlags
 */
 QDirIterator::QDirIterator(const QString &path, QDir::Filters filters, IteratorFlags flags)
-    : d(new QDirIteratorPrivate(path, filters, flags))
+    : d(new QDirIteratorPrivate(path, {}, filters, flags))
 {
 }
 
@@ -197,7 +165,7 @@ QDirIterator::QDirIterator(const QString &path, QDir::Filters filters, IteratorF
     \sa hasNext(), next(), IteratorFlags
 */
 QDirIterator::QDirIterator(const QString &path, IteratorFlags flags)
-    : d(new QDirIteratorPrivate(path, flags))
+    : d(new QDirIteratorPrivate(path, {}, QDir::NoFilter, flags))
 {
 }
 

@@ -207,7 +207,8 @@ void QTlsBackendOpenSSL::ensureCiphersAndCertsLoaded() const
     const QStringList symLinkFilter{
         u"[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].[0-9]"_s};
     for (const auto &dir : dirs) {
-        QDirListing dirList(QString::fromLatin1(dir), symLinkFilter, QDir::Files);
+        QDirListing dirList(QString::fromLatin1(dir), symLinkFilter,
+                            QDirListing::IteratorFlag::FilesOnly);
         if (dirList.cbegin() != dirList.cend()) { // Not empty
             QSslSocketPrivate::setRootCertOnDemandLoadingSupported(true);
             break;
@@ -390,11 +391,9 @@ QList<QSslCertificate> systemCaCertificates()
             QStringLiteral("/etc/pki/tls/certs/ca-bundle.crt"), // Fedora, Mandriva
             QStringLiteral("/usr/local/share/certs/ca-root-nss.crt") // FreeBSD's ca_root_nss
         };
-        QDir currentDir;
-        currentDir.setNameFilters(QStringList{QStringLiteral("*.pem"), QStringLiteral("*.crt")});
+        static const QStringList nameFilters = {u"*.pem"_s, u"*.crt"_s};
         for (const auto &directory : directories) {
-            currentDir.setPath(QLatin1StringView(directory));
-            for (const auto &dirEntry : QDirListing(currentDir)) {
+            for (const auto &dirEntry : QDirListing(directory, nameFilters)) {
                 // use canonical path here to not load the same certificate twice if symlinked
                 certFiles.insert(dirEntry.canonicalFilePath());
             }

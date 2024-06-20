@@ -473,8 +473,6 @@ qint64 QNetworkDiskCache::expire()
     // close file handle to prevent "in use" error when QFile::remove() is called
     d->lastItem.reset();
 
-    const QDir::Filters filters = QDir::AllDirs | QDir:: Files | QDir::NoDotAndDotDot;
-
     struct CacheItem
     {
         std::chrono::milliseconds msecs;
@@ -484,7 +482,7 @@ qint64 QNetworkDiskCache::expire()
     std::vector<CacheItem> cacheItems;
     qint64 totalSize = 0;
     using F = QDirListing::IteratorFlag;
-    for (const auto &dirEntry : QDirListing(cacheDirectory(), filters, F::Recursive)) {
+    for (const auto &dirEntry : QDirListing(cacheDirectory(), F::FilesOnly | F::Recursive)) {
         if (!dirEntry.fileName().endsWith(CACHE_POSTFIX))
             continue;
 

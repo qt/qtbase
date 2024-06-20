@@ -206,12 +206,14 @@ void tst_QDirIterator::dirlisting()
 {
     QFETCH(QByteArray, dirpath);
 
+    using F = QDirListing::IteratorFlag;
+
     int count = 0;
 
     QBENCHMARK {
         int c = 0;
 
-        QDirListing dir(dirpath, dirFilters, QDirListing::IteratorFlag::Recursive);
+        QDirListing dir(dirpath, F::Recursive | F::IncludeHidden);
 
         for (const auto &dirEntry : dir) {
             const auto path = dirEntry.filePath();

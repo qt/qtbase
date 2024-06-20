@@ -419,8 +419,10 @@ void QFileInfoGatherer::getFileInfos(const QString &path, const QStringList &fil
 
     QStringList allFiles;
     if (files.isEmpty()) {
+        // Use QDirListing::IteratorFlags when QFileSystemModel is
+        // changed to use them too
         constexpr auto dirFilters = QDir::AllEntries | QDir::System | QDir::Hidden;
-        for (const auto &dirEntry : QDirListing(path, dirFilters)) {
+        for (const auto &dirEntry : QDirListing(path, {}, dirFilters.toInt())) {
             if (isInterruptionRequested())
                 break;
             fileInfo = dirEntry.fileInfo();

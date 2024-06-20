@@ -681,8 +681,8 @@ QList<QSslCertificate> QSslCertificate::fromPath(const QString &path,
 #endif
 
     using F = QDirListing::IteratorFlag;
-    constexpr auto iterFlags = F::FollowSymlinks | F::Recursive;
-    for (const auto &dirEntry : QDirListing(pathPrefixString, QDir::Files, iterFlags)) {
+    constexpr auto iterFlags = F::FollowDirSymlinks | F::Recursive | F::FilesOnly;
+    for (const auto &dirEntry : QDirListing(pathPrefixString, iterFlags)) {
         QString filePath = dirEntry.filePath();
         if (startIndex > 0)
             filePath.remove(0, startIndex);

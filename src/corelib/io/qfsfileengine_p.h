@@ -88,6 +88,8 @@ public:
 #ifndef QT_NO_FILESYSTEMITERATOR
     IteratorUniquePtr beginEntryList(const QString &path, QDir::Filters filters,
                                      const QStringList &filterNames) override;
+    IteratorUniquePtr beginEntryList(const QString &path, QDirListing::IteratorFlags filters,
+                                     const QStringList &filterNames) override;
 #endif
 
     qint64 read(char *data, qint64 maxlen) override;

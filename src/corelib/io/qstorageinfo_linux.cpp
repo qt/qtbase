@@ -140,9 +140,7 @@ static inline quint64 retrieveDeviceId(const QByteArray &device, quint64 deviceI
 static QDirListing devicesByLabel()
 {
     static const char pathDiskByLabel[] = "/dev/disk/by-label";
-    static constexpr auto LabelFileFilter =
-            QDir::AllEntries | QDir::System | QDir::Hidden | QDir::NoDotAndDotDot;
-
+    static constexpr auto LabelFileFilter = QDirListing::IteratorFlag::IncludeHidden;
     return QDirListing(QLatin1StringView(pathDiskByLabel), LabelFileFilter);
 }
 

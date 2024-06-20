@@ -347,8 +347,10 @@ inline void QDirPrivate::initFileLists(const QDir &dir) const
     QMutexLocker locker(&fileCache.mutex);
     if (!fileCache.fileListsInitialized) {
         QFileInfoList l;
-        for (const auto &dirEntry : QDirListing(dir))
+        for (const auto &dirEntry : QDirListing(dir.path(), dir.nameFilters(),
+                                                dir.filter().toInt())) {
             l.emplace_back(dirEntry.fileInfo());
+        }
 
         sortFileList(sort, l, &fileCache.files, &fileCache.fileInfos);
         fileCache.fileListsInitialized = true;
@@ -1427,7 +1429,7 @@ QStringList QDir::entryList(const QStringList &nameFilters, Filters filters,
         }
     }
 
-    QDirListing dirList(d->dirEntry.filePath(), nameFilters, filters);
+    QDirListing dirList(d->dirEntry.filePath(), nameFilters, filters.toInt());
     QStringList ret;
     if (needsSorting) {
         QFileInfoList l;
@@ -1473,7 +1475,7 @@ QFileInfoList QDir::entryInfoList(const QStringList &nameFilters, Filters filter
     }
 
     QFileInfoList l;
-    for (const auto &dirEntry : QDirListing(d->dirEntry.filePath(), nameFilters, filters))
+    for (const auto &dirEntry : QDirListing(d->dirEntry.filePath(), nameFilters, filters.toInt()))
         l.emplace_back(dirEntry.fileInfo());
     QFileInfoList ret;
     d->sortFileList(sort, l, nullptr, &ret);
@@ -1645,8 +1647,7 @@ bool QDir::removeRecursively()
     bool success = true;
     const QString dirPath = path();
     // not empty -- we must empty it first
-    constexpr auto dirFilters = QDir::AllEntries | QDir::Hidden | QDir::System | QDir::NoDotAndDotDot;
-    for (const auto &dirEntry : QDirListing(dirPath, dirFilters)) {
+    for (const auto &dirEntry : QDirListing(dirPath, QDirListing::IteratorFlag::IncludeHidden)) {
         const QString &filePath = dirEntry.filePath();
         bool ok;
         if (dirEntry.isDir() && !dirEntry.isSymLink()) {
@@ -1969,7 +1970,7 @@ bool QDir::exists(const QString &name) const
 bool QDir::isEmpty(Filters filters) const
 {
     Q_D(const QDir);
-    QDirListing dirList(d->dirEntry.filePath(), d->nameFilters, filters);
+    QDirListing dirList(d->dirEntry.filePath(), d->nameFilters, filters.toInt());
     return dirList.cbegin() == dirList.cend();
 }
 #endif // !QT_BOOTSTRAPPED

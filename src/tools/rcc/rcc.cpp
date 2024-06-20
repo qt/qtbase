@@ -635,13 +635,13 @@ bool RCCResourceLibrary::interpretResourceFile(QIODevice *inputDevice,
                     absFileName.prepend(currentPath);
                 QFileInfo file(absFileName);
                 if (file.isDir()) {
-                    QDir dir(file.filePath());
                     if (!alias.endsWith(slash))
                         alias += slash;
 
                     QStringList filePaths;
                     using F = QDirListing::IteratorFlag;
-                    for (const auto &entry : QDirListing(dir, F::FollowSymlinks | F::Recursive)) {
+                    constexpr auto flags = F::FollowDirSymlinks | F::Recursive;
+                    for (const auto &entry : QDirListing(file.filePath(), flags)) {
                         const QString &fileName = entry.fileName();
                         if (fileName == "."_L1 || fileName == ".."_L1)
                             continue;

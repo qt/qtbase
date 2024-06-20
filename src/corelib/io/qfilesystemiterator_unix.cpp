@@ -32,6 +32,10 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry)
     }
 }
 
+QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDirListing::IteratorFlags)
+    : QFileSystemIterator(entry)
+{}
+
 QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Filters)
     : QFileSystemIterator(entry)
 {

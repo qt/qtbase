@@ -11,6 +11,7 @@
 #include <QtCore/QDataStream>
 #include <QtCore/QDateTime>
 #include <QtCore/QDirListing>
+#include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QCache>
 #include <QtCore/QMap>
@@ -113,14 +114,16 @@ static QTzTimeZoneHash loadTzTimeZones()
         }
     }
 
-    const QString path = tzif.fileName();
+    QString path = tzif.fileName();
     const qsizetype cut = path.lastIndexOf(u'/');
     Q_ASSERT(cut > 0);
-    const QDir zoneDir = QDir(path.first(cut));
-    for (const auto &info : QDirListing(zoneDir, QDirListing::IteratorFlag::Recursive)) {
+    path.truncate(cut + 1);
+    const qsizetype prefixLen = path.size();
+    for (const auto &info : QDirListing(path, QDirListing::IteratorFlag::Recursive)) {
         if (!(info.isFile() || info.isSymLink()))
             continue;
-        const QString name = zoneDir.relativeFilePath(info.filePath());
+        const QString infoAbsolutePath = info.absoluteFilePath();
+        const QString name = infoAbsolutePath.sliced(prefixLen);
         // Two sub-directories containing (more or less) copies of the zoneinfo tree.
         if (info.isDir() ? name == "posix"_L1 || name == "right"_L1
             : name.startsWith("posix/"_L1) || name.startsWith("right/"_L1)) {
@@ -130,7 +133,7 @@ static QTzTimeZoneHash loadTzTimeZones()
         // isTzFile() check; in practice current (2023) zoneinfo/ contains only
         // actual zone files and matches to that filter.
         const QByteArray id = QFile::encodeName(name);
-        if (!zonesHash.contains(id) && isTzFile(zoneDir.absoluteFilePath(name)))
+        if (!zonesHash.contains(id) && isTzFile(infoAbsolutePath))
             zonesHash.insert(id, QTzTimeZone());
     }
     return zonesHash;

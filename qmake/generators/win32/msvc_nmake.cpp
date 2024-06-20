@@ -314,9 +314,9 @@ void NmakeMakefileGenerator::writeImplicitRulesPart(QTextStream &t)
         const QStringList sourceFilesFilter = sourceFilesForImplicitRulesFilter();
         QStringList fixifiedSourceDirs = fileFixify(QList<QString>(source_directories.constBegin(), source_directories.constEnd()), FileFixifyAbsolute);
         fixifiedSourceDirs.removeDuplicates();
-        constexpr auto filters = QDir::Files | QDir::NoDotAndDotDot;
+        using F = QDirListing::IteratorFlag;
         for (const QString &sourceDir : std::as_const(fixifiedSourceDirs)) {
-            for (const auto &dirEntry : QDirListing(sourceDir, sourceFilesFilter, filters)) {
+            for (const auto &dirEntry : QDirListing(sourceDir, sourceFilesFilter, F::FilesOnly)) {
                 QString &duplicate = fileNames[dirEntry.completeBaseName()];
                 if (duplicate.isNull()) {
                     duplicate = dirEntry.filePath();

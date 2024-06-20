@@ -35,7 +35,8 @@ for (const auto &dirEntry : dirList) {
 
 {
 //! [2]
-QDirListing audioFileIt(u"/home/johndoe/"_s, {"*.mp3", "*.wav"}, QDir::Files);
+QDirListing audioFileIt(u"/home/johndoe/"_s, QStringList{u"*.mp3"_s, u"*.wav"_s},
+                        QDirListing::IteratorFlag::FilesOnly);
 //! [2]
 }
 
