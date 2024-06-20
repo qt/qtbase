@@ -144,7 +144,15 @@
 
     // Ideally we would plumb this situation through QPA in a way that lets
     // clients invalidate their own caches, recreate QBackingStore, etc.
-    // For now we trigger an expose, and let QCocoaBackingStore deal with
+
+    // QPA supports DPR (scale) change notifications. We are not sure
+    // based on this event that it is the scale that has changed (it
+    // could be the color space), however QPA will determine if it has
+    // actually changed.
+    QWindowSystemInterface::handleWindowDevicePixelRatioChanged
+        <QWindowSystemInterface::SynchronousDelivery>(m_platformWindow->window());
+
+    // Trigger an expose, and let QCocoaBackingStore deal with
     // buffer invalidation internally.
     [self setNeedsDisplay:YES];
 }
