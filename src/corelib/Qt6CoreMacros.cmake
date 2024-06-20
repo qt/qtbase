@@ -3355,11 +3355,9 @@ macro(qt6_standard_project_setup)
             REQUIRES
             SUPPORTS_UP_TO
             I18N_SOURCE_LANGUAGE
-            I18N_NATIVE_LANGUAGE # intermediate, remove after dependencies trickled through
         )
         set(__qt_sps_args_multi
             I18N_TRANSLATED_LANGUAGES
-            I18N_LANGUAGES  # intermediate, remove after dependencies trickled through
         )
         cmake_parse_arguments(__qt_sps_arg
             "${__qt_sps_args_option}"
@@ -3367,14 +3365,6 @@ macro(qt6_standard_project_setup)
             "${__qt_sps_args_multi}"
             ${ARGN}
         )
-
-        # intermediate, remove after dependencies trickled through
-        if(DEFINED arg_I18N_NATIVE_LANGUAGE)
-            set(arg_I18N_SOURCE_LANGUAGE ${arg_I18N_NATIVE_LANGUAGE})
-        endif()
-        if(DEFINED arg_I18N_LANGUAGES)
-            set(arg_I18N_TRANSLATED_LANGUAGES ${arg_I18N_LANGUAGES})
-        endif()
 
         if(__qt_sps_arg_UNPARSED_ARGUMENTS)
             message(FATAL_ERROR "Unexpected arguments: ${arg_UNPARSED_ARGUMENTS}")
