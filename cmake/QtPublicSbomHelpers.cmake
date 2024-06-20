@@ -1417,7 +1417,17 @@ function(_qt_internal_sbom_record_system_library_spdx_ids)
     foreach(target IN LISTS recorded_targets)
         get_property(args GLOBAL PROPERTY
             _qt_internal_sbom_recorded_system_library_spdx_options_${target})
-        _qt_internal_sbom_record_system_library_spdx_id(${target} ${args})
+
+        # qt_find_package PROVIDED_TARGETS might refer to non-existent targets in certain cases,
+        # like zstd::libzstd_shared for qt_find_package(WrapZSTD), because we are not sure what
+        # kind of zstd build was done. Make sure to check if the target exists before recording it.
+        if(TARGET "${target}")
+            _qt_internal_sbom_record_system_library_spdx_id(${target} ${args})
+        else()
+            message(DEBUG
+                "Skipping recording system library for SBOM because target does not exist: "
+                " ${target}")
+        endif()
     endforeach()
 endfunction()
 
