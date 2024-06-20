@@ -93,6 +93,7 @@ function(_qt_internal_sbom_begin_project_generate)
     set(opt_args "")
     set(single_args
         OUTPUT
+        OUTPUT_RELATIVE_PATH
         LICENSE
         COPYRIGHT
         DOWNLOAD_LOCATION
@@ -119,6 +120,8 @@ function(_qt_internal_sbom_begin_project_generate)
         "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATAROOTDIR}/${default_sbom_file_name}")
 
     qt_internal_sbom_set_default_option_value(OUTPUT "${default_install_sbom_path}")
+    qt_internal_sbom_set_default_option_value(OUTPUT_RELATIVE_PATH
+        "${default_sbom_file_name}")
 
     qt_internal_sbom_set_default_option_value(LICENSE "NOASSERTION")
     qt_internal_sbom_set_default_option_value(PROJECT_FOR_SPDX "${PROJECT_NAME}")
@@ -215,6 +218,7 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
 
     get_filename_component(computed_sbom_file_name "${arg_OUTPUT}" NAME_WLE)
     get_filename_component(computed_sbom_file_name_ext "${arg_OUTPUT}" LAST_EXT)
+    get_filename_component(computed_sbom_relative_dir "${arg_OUTPUT_RELATIVE_PATH}" DIRECTORY)
 
     get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
     if(is_multi_config)
@@ -226,7 +230,14 @@ Relationship: SPDXRef-DOCUMENT DESCRIBES ${project_spdx_id}
     set(computed_sbom_file_name
         "${computed_sbom_file_name}${multi_config_suffix}${computed_sbom_file_name_ext}")
 
-    set(build_sbom_path "${sbom_dir}/${computed_sbom_file_name}")
+    # In a super build, put all the build time sboms into the same dir in qtbase.
+    if(QT_SUPERBUILD)
+        set(build_sbom_dir "${QtBase_BINARY_DIR}/qt_sbom")
+    else()
+        set(build_sbom_dir "${sbom_dir}")
+    endif()
+    set(build_sbom_path
+        "${build_sbom_dir}/${computed_sbom_relative_dir}/${computed_sbom_file_name}")
 
     # Create cmake file to append the document intro spdx to the staging file.
     set(create_staging_file "${sbom_dir}/append_document_to_staging${multi_config_suffix}.cmake")
@@ -375,6 +386,17 @@ function(_qt_internal_sbom_end_project_generate)
         VERBATIM
         USES_TERMINAL # To avoid running two configs of the command in parallel
     )
+
+    get_cmake_property(qt_repo_deps _qt_repo_deps_${repo_project_name_lowercase})
+    if(qt_repo_deps)
+        foreach(repo_dep IN LISTS qt_repo_deps)
+            set(repo_dep_sbom "sbom_${repo_dep}")
+            if(TARGET "${repo_dep_sbom}")
+                add_dependencies(${repo_sbom_target} ${repo_dep_sbom})
+            endif()
+        endforeach()
+    endif()
+
     add_dependencies(sbom ${repo_sbom_target})
 
     set(extra_code_begin "")
