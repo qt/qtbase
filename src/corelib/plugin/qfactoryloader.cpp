@@ -368,13 +368,13 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
             // whereas the new one has a Qt version that fits
             // better
             constexpr int QtVersionNoPatch = QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, 0);
-            QLibraryPrivate *&previous = keyMap[key];
+            QLibraryPrivate *&keyMapEntry = keyMap[key];
             int prev_qt_version = 0;
-            if (previous)
-                prev_qt_version = int(previous->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
+            if (keyMapEntry)
+                prev_qt_version = int(keyMapEntry->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
             int qt_version = int(library->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
-            if (!previous || (prev_qt_version > QtVersionNoPatch && qt_version <= QtVersionNoPatch)) {
-                previous = library.get();    // we WILL .release()
+            if (!keyMapEntry || (prev_qt_version > QtVersionNoPatch && qt_version <= QtVersionNoPatch)) {
+                keyMapEntry = library.get();    // we WILL .release()
                 ++keyUsageCount;
             }
         }
