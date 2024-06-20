@@ -96,6 +96,7 @@ qt_internal_add_module(Core
         global/q20map.h
         global/q20memory.h
         global/q20type_traits.h
+        global/q20utility.h
         global/q20vector.h
         global/q23functional.h
         global/q23utility.cpp # remove once we have a user that tests this

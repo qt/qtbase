@@ -5,7 +5,7 @@
 
 #include <QtCore/qtconfigmacros.h>
 
-#include <utility>
+#include <QtCore/q20utility.h>
 
 //
 //  W A R N I N G
