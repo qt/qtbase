@@ -798,6 +798,12 @@ QFSFileEngine::beginEntryList(const QString &path, QDir::Filters filters,
     return std::make_unique<QFSFileEngineIterator>(path, filters, filterNames);
 }
 
+QAbstractFileEngine::IteratorUniquePtr
+QFSFileEngine::beginEntryList(const QString &path, QDirListing::IteratorFlags filters,
+                              const QStringList &filterNames)
+{
+    return std::make_unique<QFSFileEngineIterator>(path, filters, filterNames);
+}
 #endif // QT_NO_FILESYSTEMITERATOR
 
 /*!

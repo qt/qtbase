@@ -245,7 +245,7 @@ QString AndroidContentFileEngine::fileName(FileName f) const
 }
 
 QAbstractFileEngine::IteratorUniquePtr
-AndroidContentFileEngine::beginEntryList(const QString &path, QDir::Filters filters,
+AndroidContentFileEngine::beginEntryList(const QString &path, QDirListing::IteratorFlags filters,
                                          const QStringList &filterNames)
 {
     return std::make_unique<AndroidContentFileEngineIterator>(path, filters, filterNames);
@@ -265,7 +265,7 @@ AndroidContentFileEngineHandler::create(const QString &fileName) const
 }
 
 AndroidContentFileEngineIterator::AndroidContentFileEngineIterator(
-    const QString &path, QDir::Filters filters, const QStringList &filterNames)
+    const QString &path, QDirListing::IteratorFlags filters, const QStringList &filterNames)
     : QAbstractFileEngineIterator(path, filters, filterNames)
 {
 }

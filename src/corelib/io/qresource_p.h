@@ -51,6 +51,8 @@ public:
 
     IteratorUniquePtr beginEntryList(const QString &path, QDir::Filters filters,
                                      const QStringList &filterNames) override;
+    IteratorUniquePtr beginEntryList(const QString &path, QDirListing::IteratorFlags filters,
+                                     const QStringList &filterNames) override;
 
     bool extension(Extension extension, const ExtensionOption *option = nullptr, ExtensionReturn *output = nullptr) override;
     bool supportsExtension(Extension extension) const override;

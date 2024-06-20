@@ -15,6 +15,14 @@ QResourceFileEngineIterator::QResourceFileEngineIterator(const QString &path, QD
 {
 }
 
+QResourceFileEngineIterator::QResourceFileEngineIterator(const QString &path,
+                                                         QDirListing::IteratorFlags filters,
+                                                         const QStringList &filterNames)
+    : QAbstractFileEngineIterator(path, filters, filterNames),
+      index(-1)
+{
+}
+
 QResourceFileEngineIterator::~QResourceFileEngineIterator()
 {
 }

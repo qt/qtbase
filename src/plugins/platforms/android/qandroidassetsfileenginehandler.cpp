@@ -164,7 +164,7 @@ Q_CONSTINIT QMutex FolderIterator::m_assetsCacheMutex;
 class AndroidAbstractFileEngineIterator: public QAbstractFileEngineIterator
 {
 public:
-    AndroidAbstractFileEngineIterator(QDir::Filters filters,
+    AndroidAbstractFileEngineIterator(QDirListing::IteratorFlags filters,
                                       const QStringList &nameFilters,
                                       const QString &path)
         : QAbstractFileEngineIterator(path, filters, nameFilters)
@@ -351,8 +351,8 @@ public:
         m_assetsInfoCache.insert(m_fileName, newAssetInfoPtr);
     }
 
-    IteratorUniquePtr
-    beginEntryList(const QString &, QDir::Filters filters, const QStringList &filterNames) override
+    IteratorUniquePtr beginEntryList(const QString &, QDirListing::IteratorFlags filters,
+                                     const QStringList &filterNames) override
     {
         // AndroidAbstractFileEngineIterator use `m_fileName` as the path
         if (m_assetInfo && m_assetInfo->type == AssetItem::Type::Folder)

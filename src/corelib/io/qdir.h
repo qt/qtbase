@@ -6,6 +6,7 @@
 
 #include <QtCore/qcompare.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qdirlisting.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qstringlist.h>
@@ -244,6 +245,7 @@ private:
     Q_DECLARE_EQUALITY_COMPARABLE(QDir)
     friend class QDirIterator;
     friend class QDirListing;
+    friend class QDirListingPrivate;
     // Q_DECLARE_PRIVATE equivalent for shared data pointers
     QDirPrivate *d_func();
     const QDirPrivate *d_func() const { return d_ptr.constData(); }

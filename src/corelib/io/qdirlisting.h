@@ -5,7 +5,11 @@
 #ifndef QDILISTING_H
 #define QDILISTING_H
 
-#include <QtCore/qdir.h>
+#include <QtCore/qfiledevice.h>
+#include <QtCore/qflags.h>
+#include <QtCore/qtclasshelpermacros.h>
+#include <QtCore/qtcoreexports.h>
+#include <QtCore/qdatetime.h>
 
 #include <iterator>
 #include <memory>
@@ -13,24 +17,32 @@
 QT_BEGIN_NAMESPACE
 
 class QDirListingPrivate;
+class QFileInfo;
+class QDir;
+class QTimeZone;
 
 class Q_CORE_EXPORT QDirListing
 {
 public:
     enum class IteratorFlag {
-        NoFlag = 0x0,
-        FollowSymlinks = 0x1,
-        Recursive = 0x2
+        Default =               0x000000,
+        ExcludeFiles =          0x000004,
+        ExcludeDirs =           0x000008,
+        ExcludeSpecial =        0x000010,
+        ResolveSymlinks =       0x000020,
+        FilesOnly =             ExcludeDirs  | ExcludeSpecial,
+        DirsOnly =              ExcludeFiles | ExcludeSpecial,
+        IncludeHidden =         0x000040,
+        IncludeDotAndDotDot =   0x000080,
+        CaseSensitive =         0x000100,
+        Recursive =             0x000400,
+        FollowDirSymlinks =     0x000800,
     };
     Q_DECLARE_FLAGS(IteratorFlags, IteratorFlag)
 
-    QDirListing(const QDir &dir, IteratorFlags flags = IteratorFlag::NoFlag);
-    QDirListing(const QString &path, IteratorFlags flags = IteratorFlag::NoFlag);
-    QDirListing(const QString &path, QDir::Filters filter,
-                IteratorFlags flags = IteratorFlag::NoFlag);
-    QDirListing(const QString &path, const QStringList &nameFilters,
-                QDir::Filters filters = QDir::NoFilter,
-                IteratorFlags flags = IteratorFlag::NoFlag);
+    explicit QDirListing(const QString &path, IteratorFlags flags = IteratorFlag::Default);
+    explicit QDirListing(const QString &path, const QStringList &nameFilters,
+                         IteratorFlags flags = IteratorFlag::Default);
 
     QDirListing(QDirListing &&);
     QDirListing &operator=(QDirListing &&);
@@ -65,11 +77,15 @@ public:
         QString absolutePath() const;
         qint64 size() const;
 
-        QDateTime birthTime(const QTimeZone &tz) const { return fileTime(QFile::FileBirthTime, tz); }
-        QDateTime metadataChangeTime(const QTimeZone &tz) const { return fileTime(QFile::FileMetadataChangeTime, tz); }
-        QDateTime lastModified(const QTimeZone &tz) const { return fileTime(QFile::FileModificationTime, tz); }
-        QDateTime lastRead(const QTimeZone &tz) const { return fileTime(QFile::FileAccessTime, tz); }
-        QDateTime fileTime(QFile::FileTime type, const QTimeZone &tz) const;
+        QDateTime birthTime(const QTimeZone &tz) const
+        { return fileTime(QFileDevice::FileBirthTime, tz); }
+        QDateTime metadataChangeTime(const QTimeZone &tz) const
+        { return fileTime(QFileDevice::FileMetadataChangeTime, tz); }
+        QDateTime lastModified(const QTimeZone &tz) const
+        { return fileTime(QFileDevice::FileModificationTime, tz); }
+        QDateTime lastRead(const QTimeZone &tz) const
+        { return fileTime(QFileDevice::FileAccessTime, tz); }
+        QDateTime fileTime(QFileDevice::FileTime type, const QTimeZone &tz) const;
     };
 
     class const_iterator
@@ -111,8 +127,19 @@ public:
 private:
     Q_DISABLE_COPY(QDirListing)
 
+    // Private constructor that is used in deprecated code paths.
+    // `uint` instead of QDir::Filters and QDirIterator::IteratorFlags
+    // because qdir.h can't be included here; qdiriterator.h can't included
+    // either, because it includes qdir.h
+    QDirListing(const QString &path, const QStringList &nameFilters, uint dirFilters,
+                uint qdirIteratorFlags = 0); // QDirIterator::NoIteratorFlags == 0x0
+
     std::unique_ptr<QDirListingPrivate> d;
     friend class QDir;
+    friend class QDirPrivate;
+    friend class QDirIteratorPrivate;
+    friend class QAbstractFileEngine;
+    friend class QFileInfoGatherer;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDirListing::IteratorFlags)

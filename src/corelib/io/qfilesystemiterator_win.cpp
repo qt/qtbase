@@ -42,6 +42,13 @@ QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry, QDir::Fi
         onlyDirs = true;
 }
 
+QFileSystemIterator::QFileSystemIterator(const QFileSystemEntry &entry,
+                                         QDirListing::IteratorFlags flags)
+    : QFileSystemIterator(entry)
+{
+    onlyDirs = flags.testAnyFlags(QDirListing::IteratorFlag::DirsOnly);
+}
+
 QFileSystemIterator::~QFileSystemIterator()
 {
    if (findFileHandle != INVALID_HANDLE_VALUE)

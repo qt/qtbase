@@ -1589,6 +1589,13 @@ QResourceFileEngine::beginEntryList(const QString &path, QDir::Filters filters,
     return std::make_unique<QResourceFileEngineIterator>(path, filters, filterNames);
 }
 
+QAbstractFileEngine::IteratorUniquePtr
+QResourceFileEngine::beginEntryList(const QString &path, QDirListing::IteratorFlags filters,
+                                    const QStringList &filterNames)
+{
+    return std::make_unique<QResourceFileEngineIterator>(path, filters, filterNames);
+}
+
 bool QResourceFileEngine::extension(Extension extension, const ExtensionOption *option, ExtensionReturn *output)
 {
     Q_D(QResourceFileEngine);

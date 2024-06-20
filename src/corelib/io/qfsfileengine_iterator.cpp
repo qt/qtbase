@@ -16,6 +16,13 @@ QFSFileEngineIterator::QFSFileEngineIterator(const QString &path, QDir::Filters 
 {
 }
 
+QFSFileEngineIterator::QFSFileEngineIterator(const QString &path, QDirListing::IteratorFlags filters,
+                                             const QStringList &filterNames)
+    : QAbstractFileEngineIterator(path, filters, filterNames),
+      nativeIterator(new QFileSystemIterator(QFileSystemEntry(path), filters))
+{
+}
+
 QFSFileEngineIterator::~QFSFileEngineIterator()
 {
 }

@@ -30,7 +30,7 @@ public:
     QDateTime fileTime(QFile::FileTime time) const override;
     FileFlags fileFlags(FileFlags type = FileInfoAll) const override;
     QString fileName(FileName file = DefaultName) const override;
-    IteratorUniquePtr beginEntryList(const QString &path, QDir::Filters filters,
+    IteratorUniquePtr beginEntryList(const QString &path, QDirListing::IteratorFlags filters,
                                      const QStringList &filterNames) override;
 
 private:
@@ -53,7 +53,7 @@ public:
 class AndroidContentFileEngineIterator : public QAbstractFileEngineIterator
 {
 public:
-    AndroidContentFileEngineIterator(const QString &path, QDir::Filters filters,
+    AndroidContentFileEngineIterator(const QString &path, QDirListing::IteratorFlags filters,
                                      const QStringList &filterNames);
     ~AndroidContentFileEngineIterator();
 

@@ -18,6 +18,7 @@
 #include <QtCore/private/qglobal_p.h>
 #include "QtCore/qfile.h"
 #include "QtCore/qdir.h"
+#include "QtCore/qdirlisting.h"
 
 #include <memory>
 #include <optional>
@@ -106,6 +107,8 @@ public:
     virtual bool caseSensitive() const;
     virtual bool isRelativePath() const;
     virtual QStringList entryList(QDir::Filters filters, const QStringList &filterNames) const;
+    virtual QStringList entryList(QDirListing::IteratorFlags filters,
+                                  const QStringList &filterNames) const;
     virtual FileFlags fileFlags(FileFlags type=FileInfoAll) const;
     virtual bool setPermissions(uint perms);
     virtual QByteArray id() const;
@@ -127,6 +130,10 @@ public:
     virtual IteratorUniquePtr
     beginEntryList(const QString &path, QDir::Filters filters, const QStringList &filterNames);
     virtual IteratorUniquePtr endEntryList() { return {}; }
+
+    virtual IteratorUniquePtr
+    beginEntryList(const QString &path, QDirListing::IteratorFlags filters,
+                   const QStringList &filterNames);
 
     virtual qint64 read(char *data, qint64 maxlen);
     virtual qint64 readLine(char *data, qint64 maxlen);
@@ -203,6 +210,8 @@ class Q_CORE_EXPORT QAbstractFileEngineIterator
 public:
     QAbstractFileEngineIterator(const QString &path, QDir::Filters filters,
                                 const QStringList &nameFilters);
+    QAbstractFileEngineIterator(const QString &path, QDirListing::IteratorFlags filters,
+                                const QStringList &nameFilters);
     virtual ~QAbstractFileEngineIterator();
 
     virtual bool advance() = 0;
@@ -225,6 +234,7 @@ private:
     friend class QDirListingPrivate;
 
     QDir::Filters m_filters;
+    QDirListing::IteratorFlags m_listingFilters;
     QStringList m_nameFilters;
     QString m_path;
 };

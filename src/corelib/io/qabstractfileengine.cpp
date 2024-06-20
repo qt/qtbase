@@ -597,6 +597,21 @@ QStringList QAbstractFileEngine::entryList(QDir::Filters filters, const QStringL
     Q_UNUSED(filterNames);
     Q_UNREACHABLE_RETURN(ret);
 #else
+    for (const auto &dirEntry : QDirListing(fileName(), filterNames, filters.toInt()))
+        ret.emplace_back(dirEntry.fileName());
+    return ret;
+#endif
+}
+
+QStringList QAbstractFileEngine::entryList(QDirListing::IteratorFlags filters,
+                                           const QStringList &filterNames) const
+{
+    QStringList ret;
+#ifdef QT_BOOTSTRAPPED
+    Q_UNUSED(filters);
+    Q_UNUSED(filterNames);
+    Q_UNREACHABLE_RETURN(ret);
+#else
     for (const auto &dirEntry : QDirListing(fileName(), filterNames, filters))
         ret.emplace_back(dirEntry.fileName());
     return ret;
@@ -902,6 +917,15 @@ QAbstractFileEngineIterator::QAbstractFileEngineIterator(const QString &path, QD
 {
 }
 
+QAbstractFileEngineIterator::QAbstractFileEngineIterator(const QString &path,
+                                                         QDirListing::IteratorFlags filters,
+                                                         const QStringList &nameFilters)
+    : m_listingFilters(filters),
+      m_nameFilters(nameFilters),
+      m_path(appendSlashIfNeeded(path))
+{
+}
+
 /*!
     Destroys the QAbstractFileEngineIterator.
 
@@ -1009,6 +1033,16 @@ QFileInfo QAbstractFileEngineIterator::currentFileInfo() const
 */
 QAbstractFileEngine::IteratorUniquePtr
 QAbstractFileEngine::beginEntryList(const QString &path, QDir::Filters filters,
+                                    const QStringList &filterNames)
+{
+    Q_UNUSED(path);
+    Q_UNUSED(filters);
+    Q_UNUSED(filterNames);
+    return {};
+}
+
+QAbstractFileEngine::IteratorUniquePtr
+QAbstractFileEngine::beginEntryList(const QString &path, QDirListing::IteratorFlags filters,
                                     const QStringList &filterNames)
 {
     Q_UNUSED(path);

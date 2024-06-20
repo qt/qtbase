@@ -133,8 +133,9 @@ bool QtModuleInfoStore::populate(const QString &modulesDir, const QString &trans
         }
     }
 
+    using F = QDirListing::IteratorFlag;
     // Read modules, and assign a bit as ID.
-    for (const auto &dirEntry : QDirListing(modulesDir, {u"*.json"_s}, QDir::Files)) {
+    for (const auto &dirEntry : QDirListing(modulesDir, {u"*.json"_s}, F::FilesOnly)) {
         QtModule module = moduleFromJsonFile(dirEntry.filePath(), errorString);
         if (!errorString->isEmpty())
             return false;
