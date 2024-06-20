@@ -313,20 +313,7 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
 
     for (const auto &dirEntry : plugins) {
         const QString &fileName = dirEntry.fileName();
-#ifdef Q_OS_DARWIN
-        const bool isDebugPlugin = fileName.endsWith("_debug.dylib"_L1);
-        const bool isDebugLibrary =
-            #ifdef QT_DEBUG
-                true;
-            #else
-                false;
-            #endif
-
-        // Skip mismatching plugins so that we don't end up loading both debug and release
-        // versions of the same Qt libraries (due to the plugin's dependencies).
-        if (isDebugPlugin != isDebugLibrary)
-            continue;
-#elif defined(Q_PROCESSOR_X86)
+#if defined(Q_PROCESSOR_X86)
         if (fileName.endsWith(".avx2"_L1) || fileName.endsWith(".avx512"_L1)) {
             // ignore AVX2-optimized file, we'll do a bait-and-switch to it later
             continue;
