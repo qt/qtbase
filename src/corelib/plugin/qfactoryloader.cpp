@@ -350,20 +350,28 @@ inline void QFactoryLoaderPrivate::updateSinglePath(const QString &path)
 
         int keyUsageCount = 0;
         for (const QString &key : std::as_const(keys)) {
-            // first come first serve, unless the first
-            // library was built with a future Qt version,
-            // whereas the new one has a Qt version that fits
-            // better
-            constexpr int QtVersionNoPatch = QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, 0);
             QLibraryPrivate *&keyMapEntry = keyMap[key];
-            int prev_qt_version = 0;
-            if (keyMapEntry)
-                prev_qt_version = int(keyMapEntry->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
-            int qt_version = int(library->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger());
-            if (!keyMapEntry || (prev_qt_version > QtVersionNoPatch && qt_version <= QtVersionNoPatch)) {
-                keyMapEntry = library.get();    // we WILL .release()
-                ++keyUsageCount;
+            if (QLibraryPrivate *existingLibrary = keyMapEntry) {
+                static constexpr bool QtBuildIsDebug = QT_CONFIG(debug);
+                bool existingIsDebug = existingLibrary->metaData.value(QtPluginMetaDataKeys::IsDebug).toBool();
+                bool thisIsDebug = library->metaData.value(QtPluginMetaDataKeys::IsDebug).toBool();
+                bool configsAreDifferent = thisIsDebug != existingIsDebug;
+                bool thisConfigDoesNotMatchQt = thisIsDebug != QtBuildIsDebug;
+                if (configsAreDifferent && thisConfigDoesNotMatchQt)
+                    continue; // Existing library matches Qt's build config
+
+                // If the existing library was built with a future Qt version,
+                // whereas the one we're considering has a Qt version that fits
+                // better, we prioritize the better match.
+                static constexpr qint64 QtVersionNoPatch = QT_VERSION_CHECK(QT_VERSION_MAJOR, QT_VERSION_MINOR, 0);
+                int existingVersion = existingLibrary->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger();
+                int thisVersion = library->metaData.value(QtPluginMetaDataKeys::QtVersion).toInteger();
+                if (!(existingVersion > QtVersionNoPatch && thisVersion <= QtVersionNoPatch))
+                    continue; // Existing version is a better match
             }
+
+            keyMapEntry = library.get();
+            ++keyUsageCount;
         }
         if (keyUsageCount || keys.isEmpty()) {
             library->setLoadHints(QLibrary::PreventUnloadHint); // once loaded, don't unload
