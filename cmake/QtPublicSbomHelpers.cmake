@@ -1422,7 +1422,13 @@ function(_qt_internal_sbom_record_system_library_spdx_ids)
         # like zstd::libzstd_shared for qt_find_package(WrapZSTD), because we are not sure what
         # kind of zstd build was done. Make sure to check if the target exists before recording it.
         if(TARGET "${target}")
-            _qt_internal_sbom_record_system_library_spdx_id(${target} ${args})
+            set(target_unaliased "${target}")
+            get_target_property(aliased_target "${target}" ALIASED_TARGET)
+            if(aliased_target)
+                set(target_unaliased ${aliased_target})
+            endif()
+
+            _qt_internal_sbom_record_system_library_spdx_id(${target_unaliased} ${args})
         else()
             message(DEBUG
                 "Skipping recording system library for SBOM because target does not exist: "
@@ -1455,6 +1461,14 @@ function(_qt_internal_sbom_add_recorded_system_libraries)
     set(generated_package_names "")
 
     foreach(target IN LISTS consumed_targets)
+        # Some system targets like qtspeech SpeechDispatcher::SpeechDispatcher might be aliased,
+        # and we can't set properties on them, so unalias the target name.
+        set(target_original "${target}")
+        get_target_property(aliased_target "${target}" ALIASED_TARGET)
+        if(aliased_target)
+            set(target ${aliased_target})
+        endif()
+
         get_property(args GLOBAL PROPERTY
             _qt_internal_sbom_recorded_system_library_options_${target})
         get_property(package_name GLOBAL PROPERTY
@@ -1476,7 +1490,7 @@ function(_qt_internal_sbom_add_recorded_system_libraries)
         _qt_internal_extend_sbom(${target} ${args})
         _qt_internal_finalize_sbom(${target})
 
-        list(REMOVE_ITEM unconsumed_targets "${target}")
+        list(REMOVE_ITEM unconsumed_targets "${target_original}")
     endforeach()
 
     message(DEBUG "System libraries that were recorded, but not consumed: ${unconsumed_targets}")
