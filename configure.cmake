@@ -643,6 +643,8 @@ qt_feature("force_asserts" PUBLIC
 qt_feature("framework" PUBLIC
     LABEL "Build Apple Frameworks"
     AUTODETECT ON
+    # If changing this, please align with logic in
+    # qt_internal_setup_cmake_config_postfix.
     CONDITION APPLE
 )
 qt_feature_definition("framework" "QT_MAC_FRAMEWORK_BUILD")
