@@ -105,9 +105,6 @@ function(qt_internal_collect_third_party_dep_packages_info
         get_cmake_property(provided_targets _qt_find_package_${package_key}_provided_targets)
         if(provided_targets)
             set(key "__qt_${target}_third_party_package_${package_key}_provided_targets")
-
-            # Escape the semicolon, so it is preserved in the list(JOIN) below
-            string(REPLACE ";" "\;" provided_targets "${provided_targets}")
             string(APPEND packages_info "set(${key} \"${provided_targets}\")\n")
         endif()
     endforeach()
