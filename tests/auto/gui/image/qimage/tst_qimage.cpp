@@ -3652,24 +3652,28 @@ void tst_QImage::metadataPassthrough()
     a.setDotsPerMeterX(100);
     a.setDotsPerMeterY(80);
     a.setDevicePixelRatio(2.0);
+    a.setColorSpace(QColorSpace(QColorSpace::DisplayP3));
 
     QImage scaled = a.scaled(QSize(32, 32), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     QCOMPARE(scaled.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
     QCOMPARE(scaled.dotsPerMeterX(), a.dotsPerMeterX());
     QCOMPARE(scaled.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(scaled.devicePixelRatio(), a.devicePixelRatio());
+    QCOMPARE(scaled.colorSpace(), a.colorSpace());
 
     scaled = a.scaled(QSize(128, 128), Qt::IgnoreAspectRatio, Qt::FastTransformation);
     QCOMPARE(scaled.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
     QCOMPARE(scaled.dotsPerMeterX(), a.dotsPerMeterX());
     QCOMPARE(scaled.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(scaled.devicePixelRatio(), a.devicePixelRatio());
+    QCOMPARE(scaled.colorSpace(), a.colorSpace());
 
     QImage mirrored = a.mirrored();
     QCOMPARE(mirrored.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
     QCOMPARE(mirrored.dotsPerMeterX(), a.dotsPerMeterX());
     QCOMPARE(mirrored.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(mirrored.devicePixelRatio(), a.devicePixelRatio());
+    QCOMPARE(mirrored.colorSpace(), a.colorSpace());
 
     QTransform t;
     t.rotate(90);
@@ -3678,18 +3682,21 @@ void tst_QImage::metadataPassthrough()
     QCOMPARE(rotated.dotsPerMeterX(), a.dotsPerMeterX());
     QCOMPARE(rotated.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(rotated.devicePixelRatio(), a.devicePixelRatio());
+    QCOMPARE(rotated.colorSpace(), a.colorSpace());
 
     QImage swapped = a.rgbSwapped();
     QCOMPARE(swapped.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
     QCOMPARE(swapped.dotsPerMeterX(), a.dotsPerMeterX());
     QCOMPARE(swapped.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(swapped.devicePixelRatio(), a.devicePixelRatio());
+    QCOMPARE(swapped.colorSpace(), a.colorSpace());
 
     QImage converted = a.convertToFormat(QImage::Format_RGB32);
     QCOMPARE(converted.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
     QCOMPARE(converted.dotsPerMeterX(), a.dotsPerMeterX());
     QCOMPARE(converted.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(converted.devicePixelRatio(), a.devicePixelRatio());
+    QCOMPARE(converted.colorSpace(), a.colorSpace());
 
     QList<QRgb> clut({ 0xFFFF0000, 0xFF00FF00, 0xFF0000FF });
     QImage convertedWithClut = a.convertToFormat(QImage::Format_Indexed8, clut);
@@ -3697,12 +3704,14 @@ void tst_QImage::metadataPassthrough()
     QCOMPARE(convertedWithClut.dotsPerMeterX(), a.dotsPerMeterX());
     QCOMPARE(convertedWithClut.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(convertedWithClut.devicePixelRatio(), a.devicePixelRatio());
+    QCOMPARE(convertedWithClut.colorSpace(), a.colorSpace());
 
     QImage copied = a.copy(0, 0, a.width() / 2, a.height() / 2);
     QCOMPARE(copied.text(QStringLiteral("Test")), a.text(QStringLiteral("Test")));
     QCOMPARE(copied.dotsPerMeterX(), a.dotsPerMeterX());
     QCOMPARE(copied.dotsPerMeterY(), a.dotsPerMeterY());
     QCOMPARE(copied.devicePixelRatio(), a.devicePixelRatio());
+    QCOMPARE(copied.colorSpace(), a.colorSpace());
 
     QImage alphaMask = a.createAlphaMask();
     QCOMPARE(alphaMask.dotsPerMeterX(), a.dotsPerMeterX());
