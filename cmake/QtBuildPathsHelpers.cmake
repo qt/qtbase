@@ -116,35 +116,42 @@ function(qt_configure_process_path name default docstring)
     endif()
 
     # No value provided, set the default.
+    # Make sure to process the paths even for the defaults to ensure we have canonicalized paths
+    # on the first configure run and thus don't regenerate qconfig.cpp on a subsequent
+    # configure run when the paths might become different if we didn't do it on first run.
+    # e.g. './plugins' would get turned to 'plugins'.
     if(NOT DEFINED "${name}")
-        set("${name}" "${default}" CACHE STRING "${docstring}")
-    else()
-        get_filename_component(given_path_as_abs "${${name}}" ABSOLUTE BASE_DIR
-                               "${CMAKE_INSTALL_PREFIX}")
-        file(RELATIVE_PATH rel_path "${CMAKE_INSTALL_PREFIX}"
-                                    "${given_path_as_abs}")
-
-        # If absolute path given, check that it's inside the prefix (error out if not).
-        # TODO: Figure out if we need to support paths that are outside the prefix.
-        #
-        # If relative path given, it's relative to the install prefix (rather than the binary dir,
-        # which is what qmake does for some reason).
-        # In both cases, store the value as a relative path.
-        if("${rel_path}" STREQUAL "")
-            # file(RELATIVE_PATH) returns an empty string if the given absolute paths are equal
-            set(rel_path ".")
-        elseif(rel_path MATCHES "^\.\./")
-            # INSTALL_SYSCONFDIR is allowed to be outside the prefix.
-            if(NOT name STREQUAL "INSTALL_SYSCONFDIR")
-                message(FATAL_ERROR
-                    "Path component '${name}' is outside computed install prefix: ${rel_path} ")
-                return()
-            endif()
-            set("${name}" "${${name}}" CACHE STRING "${docstring}" FORCE)
-        else()
-            set("${name}" "${rel_path}" CACHE STRING "${docstring}" FORCE)
-        endif()
+        set("${name}" "${default}")
     endif()
+
+    get_filename_component(given_path_as_abs "${${name}}" ABSOLUTE BASE_DIR
+                           "${CMAKE_INSTALL_PREFIX}")
+    file(RELATIVE_PATH rel_path "${CMAKE_INSTALL_PREFIX}"
+                                "${given_path_as_abs}")
+
+    # If absolute path given, check that it's inside the prefix (error out if not).
+    # If relative path given, it's relative to the install prefix (rather than the binary dir,
+    # which is what qmake does for some reason).
+    # In both cases, store the value as a relative path, unless we're processing INSTALL_SYSCONFDIR
+    # which should stay abslute.
+    if("${rel_path}" STREQUAL "")
+        # file(RELATIVE_PATH) returns an empty string if the given absolute paths are equal,
+        # so manually set it to '.'
+        set(new_value ".")
+    elseif(rel_path MATCHES "^\.\./")
+        # INSTALL_SYSCONFDIR is allowed to be outside the prefix.
+        if(NOT name STREQUAL "INSTALL_SYSCONFDIR")
+            message(FATAL_ERROR
+                "Path component '${name}' is outside computed install prefix: ${rel_path} ")
+        endif()
+        # Keep the absolute path.
+        set(new_value "${${name}}")
+    else()
+        # Use the canonicalized path.
+        set(new_value "${rel_path}")
+    endif()
+
+    set("${name}" "${new_value}" CACHE STRING "${docstring}" FORCE)
 endfunction()
 
 macro(qt_internal_setup_configure_install_paths)
