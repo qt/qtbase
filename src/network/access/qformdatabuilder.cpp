@@ -167,6 +167,10 @@ QFormDataPartBuilder &QFormDataPartBuilder::setBody(QByteArrayView data,
     ownership of \a body, i.e. the device must be closed and destroyed if
     necessary.
 
+    \note If \a body is sequential (e.g. sockets, but not files),
+    QNetworkAccessManager::post() should be called after \a body has emitted
+    finished().
+
     \sa setBody(), QHttpPart::setBodyDevice()
   */
 
