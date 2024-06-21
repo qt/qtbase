@@ -1069,6 +1069,13 @@ function(_qt_internal_sbom_handle_target_binary_files target)
         return()
     endif()
 
+    get_target_property(excluded ${target} _qt_internal_excluded_from_default_target)
+    if(excluded)
+        message(DEBUG "Target ${target} has no binary files to reference in the SBOM "
+            "because it was excluded from the default 'all' target.")
+        return()
+    endif()
+
     if(NOT arg_SPDX_ID)
         message(FATAL_ERROR "SPDX_ID must be set")
     endif()
