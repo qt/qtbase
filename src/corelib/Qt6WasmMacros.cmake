@@ -135,12 +135,21 @@ function(_qt_internal_wasm_export_name_for_target out target)
     if(export_name)
         set(${out} "${export_name}" PARENT_SCOPE)
     else()
-        string(REGEX MATCH "[^a-zA-Z_]" has_invalid_char "${target}")
-        if(has_invalid_char)
-            set(${out} "_${target}_entry" PARENT_SCOPE)
+        # Modify target name to remove characters which are not valid in
+        # JavaScript identifiers.
+
+        # Prefix leading digit with '_' (2dpaint -> _2dpaint)
+        if("${target}" MATCHES "^[0-9]")
+            set(targ "_${target}")
         else()
-            set(${out} "${target}_entry" PARENT_SCOPE)
+            set(targ "${target}")
         endif()
+
+        # Replace remaining non-legal chars with '_' (target-foo -> target_foo)
+        string(REGEX REPLACE "[^a-zA-Z0-9_]" "_" targ "${targ}")
+
+        # Append "_entry" and return
+        set(${out} "${targ}_entry" PARENT_SCOPE)
     endif()
 endfunction()
 
