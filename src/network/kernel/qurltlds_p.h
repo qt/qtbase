@@ -15963,9 +15963,9 @@ static const char * const tldData[tldChunkCount] = {
 "szex.hu\0"
 "web.pk\0her.jp\0"
 "seika.kyoto.jp\0"
-"gob.pa\0"
-"univ.sn\0",
+"gob.pa\0",
 
+"univ.sn\0"
 "tawaramoto.nara.jp\0"
 "ismaili\0noor.jp\0"
 "gob.pe\0"
@@ -15995,7 +15995,7 @@ static const char * const tldData[tldChunkCount] = {
 "us.org\0"
 "mediatech.dev\0"
 };
-static constexpr quint32 tldChunks[tldChunkCount] = {65512, 131052, 131638};
+static constexpr quint32 tldChunks[tldChunkCount] = {65512, 131044, 131638};
 
 QT_END_NAMESPACE
 
