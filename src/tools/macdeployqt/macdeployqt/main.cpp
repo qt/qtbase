@@ -100,39 +100,49 @@ int main(int argc, char **argv)
             int index = argument.indexOf("=");
             bool ok = false;
             int number = argument.mid(index+1).toInt(&ok);
-            if (!ok)
+            if (!ok) {
                 LogError() << "Could not parse verbose level";
-            else
+                return 1;
+            } else {
                 logLevel = number;
+            }
         } else if (argument.startsWith(QByteArray("-executable"))) {
             LogDebug() << "Argument found:" << argument;
             int index = argument.indexOf('=');
-            if (index == -1)
+            if (index == -1) {
                 LogError() << "Missing executable path";
-            else
+                return 1;
+            } else {
                 additionalExecutables << argument.mid(index+1);
+            }
         } else if (argument.startsWith(QByteArray("-qmldir"))) {
             LogDebug() << "Argument found:" << argument;
             qmldirArgumentUsed = true;
             int index = argument.indexOf('=');
-            if (index == -1)
+            if (index == -1) {
                 LogError() << "Missing qml directory path";
-            else
+                return 1;
+            } else {
                 qmlDirs << argument.mid(index+1);
+            }
         } else if (argument.startsWith(QByteArray("-qmlimport"))) {
             LogDebug() << "Argument found:" << argument;
             int index = argument.indexOf('=');
-            if (index == -1)
+            if (index == -1) {
                 LogError() << "Missing qml import path";
-            else
+                return 1;
+            } else {
                 qmlImportPaths << argument.mid(index+1);
+            }
         } else if (argument.startsWith(QByteArray("-libpath"))) {
             LogDebug() << "Argument found:" << argument;
             int index = argument.indexOf('=');
-            if (index == -1)
+            if (index == -1) {
                 LogError() << "Missing library search path";
-            else
+                return 1;
+            } else {
                 librarySearchPath << argument.mid(index+1);
+            }
         } else if (argument == QByteArray("-always-overwrite")) {
             LogDebug() << "Argument found:" << argument;
             alwaysOwerwriteEnabled = true;
@@ -141,6 +151,7 @@ int main(int argc, char **argv)
             int index = argument.indexOf("=");
             if (index < 0 || index >= argument.size()) {
                 LogError() << "Missing code signing identity";
+                return 1;
             } else {
                 runCodesign = true;
                 codesignIdentiy = argument.mid(index+1);
@@ -150,6 +161,7 @@ int main(int argc, char **argv)
             int index = argument.indexOf("=");
             if (index < 0 || index >= argument.size()) {
                 LogError() << "Missing code signing identity";
+                return 1;
             } else {
                 runCodesign = true;
                 hardenedRuntime = true;
@@ -174,10 +186,12 @@ int main(int argc, char **argv)
         } else if (argument.startsWith(QByteArray("-fs"))) {
             LogDebug() << "Argument found:" << argument;
             int index = argument.indexOf('=');
-            if (index == -1)
+            if (index == -1) {
                 LogError() << "Missing filesystem type";
-            else
+                return 1;
+            } else {
                 filesystem = argument.mid(index+1);
+            }
         } else if (argument.startsWith("-")) {
             LogError() << "Unknown argument" << argument << "\n";
             return 1;
