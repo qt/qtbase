@@ -12,6 +12,8 @@
 #include <private/qdrawhelper_p.h>
 #include <private/qdrawhelper_x86_p.h>
 #include <private/qdrawingprimitive_sse2_p.h>
+#include <private/qdrawhelper_loongarch64_p.h>
+#include <private/qdrawingprimitive_lsx_p.h>
 #include <private/qdrawhelper_neon_p.h>
 #if defined(QT_COMPILER_SUPPORTS_MIPS_DSP) || defined(QT_COMPILER_SUPPORTS_MIPS_DSPR2)
 #include <private/qdrawhelper_mips_dsp_p.h>
@@ -4971,7 +4973,7 @@ void qBlendTexture(int count, const QT_FT_Span *spans, void *userData)
     case QImage::Format_RGB16:
         proc = processTextureSpansRGB16[blendType];
         break;
-#if defined(__SSE2__) || defined(__ARM_NEON__) || (Q_PROCESSOR_WORDSIZE == 8)
+#if defined(__SSE2__) || defined(__ARM_NEON__) || defined(QT_COMPILER_SUPPORTS_LSX) || (Q_PROCESSOR_WORDSIZE == 8)
     case QImage::Format_ARGB32:
     case QImage::Format_RGBA8888:
 #endif
@@ -5113,7 +5115,7 @@ void qBlendGradient(int count, const QT_FT_Span *spans, void *userData)
         if (isVerticalGradient && blend_vertical_gradient_argb(count, spans, userData))
             return;
         return blend_src_generic(count, spans, userData);
-#if defined(__SSE2__) || defined(__ARM_NEON__) || (Q_PROCESSOR_WORDSIZE == 8)
+#if defined(__SSE2__) || defined(__ARM_NEON__) || defined(QT_COMPILER_SUPPORTS_LSX) || (Q_PROCESSOR_WORDSIZE == 8)
     case QImage::Format_ARGB32:
     case QImage::Format_RGBA8888:
 #endif
@@ -6368,7 +6370,7 @@ DrawHelper qDrawHelper[] =
 
 static_assert(std::size(qDrawHelper) == QImage::NImageFormats);
 
-#if !defined(Q_PROCESSOR_X86)
+#if !defined(Q_PROCESSOR_X86) && !defined(QT_COMPILER_SUPPORTS_LSX)
 void qt_memfill64(quint64 *dest, quint64 color, qsizetype count)
 {
     qt_memfill_template<quint64>(dest, color, count);
@@ -6435,7 +6437,7 @@ void qt_memfill16(quint16 *dest, quint16 value, qsizetype count)
     qt_memfill32(reinterpret_cast<quint32*>(dest), value32, count / 2);
 }
 
-#if defined(Q_PROCESSOR_X86)
+#if defined(Q_PROCESSOR_X86) || defined(QT_COMPILER_SUPPORTS_LSX)
 void (*qt_memfill32)(quint32 *dest, quint32 value, qsizetype count) = nullptr;
 void (*qt_memfill64)(quint64 *dest, quint64 value, qsizetype count) = nullptr;
 #elif !defined(__ARM_NEON__) && !defined(__MIPS_DSP__)
@@ -6711,6 +6713,68 @@ static void qInitDrawhelperFunctions()
 #endif
 
 #endif // SSE2
+
+#if defined(QT_COMPILER_SUPPORTS_LSX)
+    if (qCpuHasFeature(LSX)) {
+        qt_memfill32 = qt_memfill32_lsx;
+        qt_memfill64 = qt_memfill64_lsx;
+
+        qDrawHelper[QImage::Format_RGB32].bitmapBlit = qt_bitmapblit32_lsx;
+        qDrawHelper[QImage::Format_ARGB32].bitmapBlit = qt_bitmapblit32_lsx;
+        qDrawHelper[QImage::Format_ARGB32_Premultiplied].bitmapBlit = qt_bitmapblit32_lsx;
+        qDrawHelper[QImage::Format_RGB16].bitmapBlit = qt_bitmapblit16_lsx;
+        qDrawHelper[QImage::Format_RGBX8888].bitmapBlit = qt_bitmapblit8888_lsx;
+        qDrawHelper[QImage::Format_RGBA8888].bitmapBlit = qt_bitmapblit8888_lsx;
+        qDrawHelper[QImage::Format_RGBA8888_Premultiplied].bitmapBlit = qt_bitmapblit8888_lsx;
+
+        extern void qt_scale_image_argb32_on_argb32_lsx(uchar *destPixels, int dbpl,
+                                                        const uchar *srcPixels, int sbpl, int srch,
+                                                        const QRectF &targetRect,
+                                                        const QRectF &sourceRect,
+                                                        const QRect &clip,
+                                                        int const_alpha);
+
+        qScaleFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_argb32_lsx;
+        qScaleFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_scale_image_argb32_on_argb32_lsx;
+        qScaleFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_scale_image_argb32_on_argb32_lsx;
+        qScaleFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_scale_image_argb32_on_argb32_lsx;
+
+        extern void qt_blend_rgb32_on_rgb32_lsx(uchar *destPixels, int dbpl,
+                                                const uchar *srcPixels, int sbpl,
+                                                int w, int h,
+                                                int const_alpha);
+
+        extern void qt_blend_argb32_on_argb32_lsx(uchar *destPixels, int dbpl,
+                                                  const uchar *srcPixels, int sbpl,
+                                                  int w, int h,
+                                                  int const_alpha);
+
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_lsx;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_lsx;
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_lsx;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_lsx;
+        qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_lsx;
+        qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBX8888] = qt_blend_rgb32_on_rgb32_lsx;
+        qBlendFunctions[QImage::Format_RGBX8888][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_lsx;
+        qBlendFunctions[QImage::Format_RGBA8888_Premultiplied][QImage::Format_RGBA8888_Premultiplied] = qt_blend_argb32_on_argb32_lsx;
+
+        extern const uint * QT_FASTCALL qt_fetch_radial_gradient_lsx(uint *buffer, const Operator *op, const QSpanData *data,
+                                                                     int y, int x, int length);
+
+        qt_fetch_radial_gradient = qt_fetch_radial_gradient_lsx;
+
+        extern void QT_FASTCALL comp_func_SourceOver_lsx(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+        extern void QT_FASTCALL comp_func_solid_SourceOver_lsx(uint *destPixels, int length, uint color, uint const_alpha);
+        extern void QT_FASTCALL comp_func_Source_lsx(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+        extern void QT_FASTCALL comp_func_solid_Source_lsx(uint *destPixels, int length, uint color, uint const_alpha);
+        extern void QT_FASTCALL comp_func_Plus_lsx(uint *destPixels, const uint *srcPixels, int length, uint const_alpha);
+        qt_functionForMode_C[QPainter::CompositionMode_SourceOver] = comp_func_SourceOver_lsx;
+        qt_functionForModeSolid_C[QPainter::CompositionMode_SourceOver] = comp_func_solid_SourceOver_lsx;
+        qt_functionForMode_C[QPainter::CompositionMode_Source] = comp_func_Source_lsx;
+        qt_functionForModeSolid_C[QPainter::CompositionMode_Source] = comp_func_solid_Source_lsx;
+        qt_functionForMode_C[QPainter::CompositionMode_Plus] = comp_func_Plus_lsx;
+    }
+#endif //QT_COMPILER_SUPPORTS_LSX
 
 #if defined(__ARM_NEON__)
     qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_neon;

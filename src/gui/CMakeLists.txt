@@ -183,6 +183,8 @@ qt_internal_add_module(Gui
         painting/qdrawhelper_p.h
         painting/qdrawhelper_x86_p.h
         painting/qdrawingprimitive_sse2_p.h
+        painting/qdrawhelper_loongarch64_p.h
+        painting/qdrawingprimitive_lsx_p.h
         painting/qemulationpaintengine.cpp painting/qemulationpaintengine_p.h
         painting/qfixed_p.h
         painting/qgrayraster.c painting/qgrayraster_p.h
@@ -653,6 +655,13 @@ qt_internal_add_simd_part(Gui SIMD neon
         image/qimage_neon.cpp
         painting/qdrawhelper_neon.cpp painting/qdrawhelper_neon_p.h
         painting/qimagescale_neon.cpp
+)
+
+qt_internal_add_simd_part(Gui SIMD lsx
+    SOURCES
+        image/qimage_lsx.cpp
+        painting/qdrawhelper_lsx.cpp
+        painting/qimagescale_lsx.cpp
 )
 
 if(NOT ANDROID)
