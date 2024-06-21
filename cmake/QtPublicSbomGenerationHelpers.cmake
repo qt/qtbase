@@ -944,38 +944,59 @@ endfunction()
 
 # Helper to find the python interpreter, to be able to run post-installation steps like NTIA
 # verification.
-macro(_qt_internal_sbom_find_python)
+#
+# Caches the found python executable in a separate cache var QT_INTERNAL_SBOM_PYTHON_EXECUTABLE, to
+# avoid conflicts with any other found python package.
+#
+# This is intentionally a function, and not a macro, to prevent overriding the Python3_EXECUTABLE
+# non-cache variable in a global scope in case if a different python is found and used for a
+# different purpose (e.g. qtwebengine or qtinterfaceframework).
+# The reason to use a different python is that an already found python might not be the version we
+# need.
+# https://gitlab.kitware.com/cmake/cmake/-/issues/21797#note_901621 claims that finding multiple
+# python versions in separate directory scopes is possible, and I claim a function scope is as
+# good as a directory scope.
+function(_qt_internal_sbom_find_python)
+    # Return early if we found a suitable python.
+    if(QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
+        return()
+    endif()
+
+    # Allow disabling looking for a python interpreter shipped as part of a macOS system framework.
     if(QT_INTERNAL_NO_SBOM_FIND_PYTHON_FRAMEWORK)
-        set(__qt_sbom_python_find_framework "${Python_FIND_FRAMEWORK}")
-        set(__qt_sbom_python3_find_framework "${Python3_FIND_FRAMEWORK}")
         set(Python_FIND_FRAMEWORK NEVER)
         set(Python3_FIND_FRAMEWORK NEVER)
     endif()
 
-    if(NOT Python3_EXECUTABLE)
+    # NTIA-compliance checker requires Python 3.9 or later.
+    set(required_version "3.9")
+
+    # Python3_VERSION would have been set by a previous find_package(Python3) call.
+    set(already_found_python_version "${Python3_VERSION}")
+
+    if(NOT already_found_python_version
+            OR "${already_found_python_version}" VERSION_LESS "${required_version}")
+        # Locally reset any executable that was possibly already found and is a lower version.
+        # We do this to ensure we re-do the lookup, rather than error out saying a low version was
+        # found.
+        set(Python3_EXECUTABLE "")
+
         if(QT_SBOM_PYTHON_INTERP)
-            set(__qt_sbom_python3_root_dir "${Python3_ROOT_DIR}")
             set(Python3_ROOT_DIR ${QT_SBOM_PYTHON_INTERP})
         endif()
 
-        # NTIA-compliance checker requires Python 3.9 or later.
-        find_package(Python3 3.9 REQUIRED COMPONENTS Interpreter)
+        find_package(Python3 ${required_version} REQUIRED COMPONENTS Interpreter)
 
-        if(QT_SBOM_PYTHON_INTERP)
-            set(Python3_ROOT_DIR ${__qt_sbom_python3_root_dir})
-        endif()
+        # We won't get here unless a version was found, because of the REQUIRED.
+        set(QT_INTERNAL_SBOM_PYTHON_EXECUTABLE "${Python3_EXECUTABLE}" CACHE STRING
+            "Python interpeter used for SBOM steps")
     endif()
-
-    if(QT_INTERNAL_NO_SBOM_FIND_PYTHON_FRAMEWORK)
-        set(Python_FIND_FRAMEWORK ${__qt_sbom_python_find_framework})
-        set(Python3_FIND_FRAMEWORK ${__qt_sbom_python3_find_framework})
-    endif()
-endmacro()
+endfunction()
 
 # Helper to find the various python package dependencies needed to run the post-installation NTIA
 # verification and the spdx format validation step.
 function(_qt_internal_sbom_find_python_dependencies)
-    if(NOT Python3_EXECUTABLE)
+    if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
         message(FATAL_ERROR "Python interpreter not found for sbom dependencies.")
     endif()
 
@@ -984,7 +1005,7 @@ function(_qt_internal_sbom_find_python_dependencies)
     endif()
     execute_process(
         COMMAND
-            ${Python3_EXECUTABLE} -c "
+            ${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE} -c "
 import spdx_tools.spdx.clitools.pyspdxtools
 import ntia_conformance_checker.main
 "
@@ -1045,14 +1066,14 @@ endfunction()
 # Helper to generate a json file. This also implies some additional validity checks, useful
 # to ensure a proper sbom file.
 function(_qt_internal_sbom_generate_json)
-    if(NOT Python3_EXECUTABLE)
+    if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
         message(FATAL_ERROR "Python interpreter not found for generating SBOM json file.")
     endif()
 
     set(content "
         message(STATUS \"Generating JSON: \${QT_SBOM_OUTPUT_PATH}.json\")
         execute_process(
-            COMMAND ${Python3_EXECUTABLE} -m spdx_tools.spdx.clitools.pyspdxtools
+            COMMAND ${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE} -m spdx_tools.spdx.clitools.pyspdxtools
             -i \"\${QT_SBOM_OUTPUT_PATH}\" -o \"\${QT_SBOM_OUTPUT_PATH}.json\"
             RESULT_VARIABLE res
         )
@@ -1070,14 +1091,14 @@ endfunction()
 
 # Helper to verify the generated sbom is valid and NTIA compliant.
 function(_qt_internal_sbom_verify_valid_and_ntia_compliant)
-    if(NOT Python3_EXECUTABLE)
+    if(NOT QT_INTERNAL_SBOM_PYTHON_EXECUTABLE)
         message(FATAL_ERROR "Python interpreter not found for verifying SBOM file.")
     endif()
 
     set(content "
         message(STATUS \"Verifying: \${QT_SBOM_OUTPUT_PATH}\")
         execute_process(
-            COMMAND ${Python3_EXECUTABLE} -m spdx_tools.spdx.clitools.pyspdxtools
+            COMMAND ${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE} -m spdx_tools.spdx.clitools.pyspdxtools
             -i \"\${QT_SBOM_OUTPUT_PATH}\"
             RESULT_VARIABLE res
         )
@@ -1086,7 +1107,7 @@ function(_qt_internal_sbom_verify_valid_and_ntia_compliant)
         endif()
 
         execute_process(
-            COMMAND ${Python3_EXECUTABLE} -m ntia_conformance_checker.main
+            COMMAND ${QT_INTERNAL_SBOM_PYTHON_EXECUTABLE} -m ntia_conformance_checker.main
             --file \"\${QT_SBOM_OUTPUT_PATH}\"
             RESULT_VARIABLE res
         )
