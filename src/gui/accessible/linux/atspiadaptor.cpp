@@ -46,8 +46,8 @@ QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 
-Q_LOGGING_CATEGORY(lcAccessibilityAtspi, "qt.accessibility.atspi")
-Q_LOGGING_CATEGORY(lcAccessibilityAtspiCreation, "qt.accessibility.atspi.creation")
+Q_STATIC_LOGGING_CATEGORY(lcAccessibilityAtspi, "qt.accessibility.atspi")
+Q_STATIC_LOGGING_CATEGORY(lcAccessibilityAtspiCreation, "qt.accessibility.atspi.creation")
 
 AtSpiAdaptor::AtSpiAdaptor(QAtSpiDBusConnection *connection, QObject *parent)
     : QDBusVirtualObject(parent), m_dbus(connection)

@@ -45,7 +45,7 @@ enum {
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(lcGlx, "qt.glx")
+Q_STATIC_LOGGING_CATEGORY(lcGlx, "qt.glx")
 
 QList<int> qglx_buildSpec(const QSurfaceFormat &format, int drawableBit, int flags)
 {

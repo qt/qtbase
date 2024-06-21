@@ -48,7 +48,7 @@
 
 QT_BEGIN_NAMESPACE
 #ifndef QT_NO_DBUS
-Q_LOGGING_CATEGORY(lcQpaThemeDBus, "qt.qpa.theme.dbus")
+Q_STATIC_LOGGING_CATEGORY(lcQpaThemeDBus, "qt.qpa.theme.dbus")
 #endif
 
 using namespace Qt::StringLiterals;
