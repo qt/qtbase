@@ -159,7 +159,10 @@ function(qt_internal_add_executable name)
             string(FIND "${CMAKE_CURRENT_SOURCE_DIR}" "${absolute_dir}" dir_starting_pos)
             if(dir_starting_pos EQUAL 0)
                 set(exclude_from_all TRUE)
-                set_target_properties("${name}" PROPERTIES EXCLUDE_FROM_ALL TRUE)
+                set_target_properties("${name}" PROPERTIES
+                    EXCLUDE_FROM_ALL TRUE
+                    _qt_internal_excluded_from_default_target TRUE
+                )
                 break()
             endif()
         endforeach()
