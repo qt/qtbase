@@ -183,6 +183,30 @@ public:
 
     friend constexpr bool operator!=(std::partial_ordering lhs, partial_ordering rhs) noexcept
     { return lhs != static_cast<std::partial_ordering>(rhs); }
+
+    friend constexpr bool operator==(partial_ordering lhs, std::strong_ordering rhs) noexcept
+    { return static_cast<std::partial_ordering>(lhs) == rhs; }
+
+    friend constexpr bool operator!=(partial_ordering lhs, std::strong_ordering rhs) noexcept
+    { return static_cast<std::partial_ordering>(lhs) != rhs; }
+
+    friend constexpr bool operator==(std::strong_ordering lhs, partial_ordering rhs) noexcept
+    { return lhs == static_cast<std::partial_ordering>(rhs); }
+
+    friend constexpr bool operator!=(std::strong_ordering lhs, partial_ordering rhs) noexcept
+    { return lhs != static_cast<std::partial_ordering>(rhs); }
+
+    friend constexpr bool operator==(partial_ordering lhs, std::weak_ordering rhs) noexcept
+    { return static_cast<std::partial_ordering>(lhs) == rhs; }
+
+    friend constexpr bool operator!=(partial_ordering lhs, std::weak_ordering rhs) noexcept
+    { return static_cast<std::partial_ordering>(lhs) != rhs; }
+
+    friend constexpr bool operator==(std::weak_ordering lhs, partial_ordering rhs) noexcept
+    { return lhs == static_cast<std::partial_ordering>(rhs); }
+
+    friend constexpr bool operator!=(std::weak_ordering lhs, partial_ordering rhs) noexcept
+    { return lhs != static_cast<std::partial_ordering>(rhs); }
 #endif // __cpp_lib_three_way_comparison
 
 private:
