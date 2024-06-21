@@ -53,62 +53,69 @@ struct QtJniTypes::Traits<QtJniTypes::Type##Tag> {              \
 };                                                              \
 
 #define Q_DECLARE_JNI_CLASS_3(NS0, NS1, Type)                   \
-inline namespace NS0 {                                                 \
-inline namespace NS1 {                                                 \
+namespace NS0 {                                                 \
+namespace NS1 {                                                 \
 Q_DECLARE_JNI_CLASS_2(Type, Q_UNUSED(0))                        \
 }                                                               \
 }                                                               \
 
-#define Q_DECLARE_JNI_CLASS_SPECIALIZATION_3(NS0, NS1, Type) \
-    Q_DECLARE_JNI_CLASS_SPECIALIZATION_2(NS0::NS1::Type, #NS0 "/" #NS1 "/" #Type)
+#define Q_DECLARE_JNI_CLASS_SPECIALIZATION_3(NS0, NS1, Type)    \
+    Q_DECLARE_JNI_CLASS_SPECIALIZATION_2(NS0::NS1::Type,        \
+        #NS0 "/" #NS1 "/" #Type)
 
 #define Q_DECLARE_JNI_CLASS_4(NS0, NS1, NS2, Type)              \
-inline namespace NS0 {                                                 \
+namespace NS0 {                                                 \
 Q_DECLARE_JNI_CLASS_3(NS1, NS2, Type)                           \
 }                                                               \
 
 #define Q_DECLARE_JNI_CLASS_SPECIALIZATION_4(NS0, NS1, NS2, Type) \
-    Q_DECLARE_JNI_CLASS_SPECIALIZATION_2(NS0::NS1::NS2::Type, #NS0 "/" #NS1 "/" #NS2 "/" #Type)
+    Q_DECLARE_JNI_CLASS_SPECIALIZATION_2(NS0::NS1::NS2::Type,   \
+        #NS0 "/" #NS1 "/" #NS2 "/" #Type)
 
 #define Q_DECLARE_JNI_CLASS_5(NS0, NS1, NS2, NS3, Type)         \
-inline namespace NS0 {                                                 \
+namespace NS0 {                                                 \
 Q_DECLARE_JNI_CLASS_4(NS1, NS2, NS3, Type)                      \
 }                                                               \
 
 #define Q_DECLARE_JNI_CLASS_SPECIALIZATION_5(NS0, NS1, NS2, NS3, Type) \
-    Q_DECLARE_JNI_CLASS_SPECIALIZATION_2(NS0::NS1::NS2::NS3::Type, #NS0 "/" #NS1 "/" #NS2 "/" #NS3 "/" #Type)
+    Q_DECLARE_JNI_CLASS_SPECIALIZATION_2(NS0::NS1::NS2::NS3::Type,  \
+        #NS0 "/" #NS1 "/" #NS2 "/" #NS3 "/" #Type)
 
 #define Q_DECLARE_JNI_CLASS_6(NS0, NS1, NS2, NS3, NS4, Type)    \
-inline namespace NS0 {                                                 \
+namespace NS0 {                                                 \
 Q_DECLARE_JNI_CLASS_5(NS1, NS2, NS3, NS4, Type)                 \
 }                                                               \
 
 #define Q_DECLARE_JNI_CLASS_SPECIALIZATION_6(NS0, NS1, NS2, NS3, NS4, Type) \
-    Q_DECLARE_JNI_CLASS_SPECIALIZATION_2(NS0::NS1::NS2::NS3::NS4::Type, #NS0 "/" #NS1 "/" #NS2 "/" #NS3 "/" #NS4 "/" #Type)
+    Q_DECLARE_JNI_CLASS_SPECIALIZATION_2(NS0::NS1::NS2::NS3::NS4::Type, \
+        #NS0 "/" #NS1 "/" #NS2 "/" #NS3 "/" #NS4 "/" #Type)
 
 #define Q_DECLARE_JNI_CLASS_7(NS0, NS1, NS2, NS3, NS4, NS5, Type) \
-inline namespace NS0 {                                                 \
+namespace NS0 {                                                 \
 Q_DECLARE_JNI_CLASS_6(NS1, NS2, NS3, NS4, NS5, Type)            \
 }                                                               \
 
 #define Q_DECLARE_JNI_CLASS_SPECIALIZATION_7(NS0, NS1, NS2, NS3, NS4, NS5, Type) \
-    Q_DECLARE_JNI_CLASS_SPECIALIZATION_2(NS0::NS1::NS2::NS3::NS4::NS5::Type, #NS0 "/" #NS1 "/" #NS2 "/" #NS3 "/" #NS4 "/" #NS5 "/" #Type)
+    Q_DECLARE_JNI_CLASS_SPECIALIZATION_2(NS0::NS1::NS2::NS3::NS4::NS5::Type,    \
+        #NS0 "/" #NS1 "/" #NS2 "/" #NS3 "/" #NS4 "/" #NS5 "/" #Type)
 
 #define Q_DECLARE_JNI_CLASS_8(NS0, NS1, NS2, NS3, NS4, NS5, NS6, Type) \
-inline namespace NS0 {                                                 \
+namespace NS0 {                                                 \
 Q_DECLARE_JNI_CLASS_7(NS1, NS2, NS3, NS4, NS5, NS6, Type)       \
 }                                                               \
 
 #define Q_DECLARE_JNI_CLASS_SPECIALIZATION_8(NS0, NS1, NS2, NS3, NS4, NS5, NS6, Type) \
-    Q_DECLARE_JNI_CLASS_SPECIALIZATION_2(NS0::NS1::NS2::NS3::NS4::NS5::NS6::Type, #NS0 "/" #NS1 "/" #NS2 "/" #NS3 "/" #NS4 "/" #NS5 "/" #NS6 "/" #Type)
+    Q_DECLARE_JNI_CLASS_SPECIALIZATION_2(NS0::NS1::NS2::NS3::NS4::NS5::NS6::Type,   \
+        #NS0 "/" #NS1 "/" #NS2 "/" #NS3 "/" #NS4 "/" #NS5 "/" #NS6 "/" #Type)
 
 #define Q_DECLARE_JNI_CLASS_9(NS0, NS1, NS2, NS3, NS4, NS5, NS6, NS7, Type) \
-inline namespace NS0 {                                                 \
+namespace NS0 {                                                 \
 Q_DECLARE_JNI_CLASS_8(NS1, NS2, NS3, NS4, NS5, NS6, NS7, Type)  \
 }                                                               \
 
 #define Q_DECLARE_JNI_CLASS_SPECIALIZATION_9(NS0, NS1, NS2, NS3, NS4, NS5, NS6, NS7, Type) \
-    Q_DECLARE_JNI_CLASS_SPECIALIZATION_2(NS0::NS1::NS2::NS3::NS4::NS5::NS6::NS7::Type, #NS0 "/" #NS1 "/" #NS2 "/" #NS3 "/" #NS4 "/" #NS5 "/" #NS6 "/" #NS7 "/" #Type)
+    Q_DECLARE_JNI_CLASS_SPECIALIZATION_2(NS0::NS1::NS2::NS3::NS4::NS5::NS6::NS7::Type,  \
+        #NS0 "/" #NS1 "/" #NS2 "/" #NS3 "/" #NS4 "/" #NS5 "/" #NS6 "/" #NS7 "/" #Type)
 
 #define Q_DECLARE_JNI_CLASS(...)                                \
 namespace QtJniTypes {                                          \
