@@ -73,16 +73,13 @@ static_assert(QtJniTypes::Traits<QtJniTypes::QtTextToSpeech>::className() == "or
 
 // declaring two types Size in different packages
 Q_DECLARE_JNI_CLASS(android, util, Size)
-// inline namespaces, so this works
-static_assert(QtJniTypes::Traits<QtJniTypes::Size>::className() == "android/util/Size");
+Q_DECLARE_JNI_CLASS(org, qtproject, android, Size)
 
-Q_DECLARE_JNI_CLASS(org, qtproject, Size)
-// this would now be ambiguous
-// static_assert(QtJniTypes::Traits<QtJniTypes::Size>::className() == "android/util/Size");
-
-// but client code can be explicit
 static_assert(QtJniTypes::Traits<QtJniTypes::android::util::Size>::className() == "android/util/Size");
-static_assert(QtJniTypes::Traits<QtJniTypes::org::qtproject::Size>::className() == "org/qtproject/Size");
+static_assert(QtJniTypes::Traits<QtJniTypes::org::qtproject::android::Size>::className() == "org/qtproject/android/Size");
+
+using namespace QtJniTypes::org::qtproject;
+static_assert(QtJniTypes::Traits<android::Size>::className() == "org/qtproject/android/Size");
 
 static_assert(QtJniTypes::fieldSignature<jint>() == "I");
 static_assert(QtJniTypes::fieldSignature<jint[]>() == "[I");
