@@ -4718,7 +4718,7 @@ static QImage rotated90(const QImage &image)
     QImage out(image.height(), image.width(), image.format());
     if (out.isNull())
         return out;
-    copyMetadata(&out, image);
+    copyMetadata(QImageData::get(out), QImageData::get(image));
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
@@ -4748,7 +4748,7 @@ static QImage rotated180(const QImage &image)
     QImage out(image.width(), image.height(), image.format());
     if (out.isNull())
         return out;
-    copyMetadata(&out, image);
+    copyMetadata(QImageData::get(out), QImageData::get(image));
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
@@ -4762,7 +4762,7 @@ static QImage rotated270(const QImage &image)
     QImage out(image.height(), image.width(), image.format());
     if (out.isNull())
         return out;
-    copyMetadata(&out, image);
+    copyMetadata(QImageData::get(out), QImageData::get(image));
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
