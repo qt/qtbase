@@ -9,6 +9,11 @@
 #   Qt's INSTALL_SBOMDIR
 # SUPPLIER, SUPPLIER_URL, DOCUMENT_NAMESPACE, COPYRIGHTS are self-explanatory.
 function(_qt_internal_sbom_begin_project)
+    # Allow opt out via an internal variable. Will be used in CI for repos like qtqa.
+    if(QT_INTERNAL_FORCE_NO_GENERATE_SBOM)
+        set(QT_GENERATE_SBOM OFF CACHE BOOL "Generate SBOM" FORCE)
+    endif()
+
     if(NOT QT_GENERATE_SBOM)
         return()
     endif()
