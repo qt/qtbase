@@ -1174,17 +1174,6 @@ static void copyMetadata(QImageData *dst, const QImageData *src)
     dst->colorSpace = src->colorSpace;
 }
 
-static void copyMetadata(QImage *dst, const QImage &src)
-{
-    dst->setDotsPerMeterX(src.dotsPerMeterX());
-    dst->setDotsPerMeterY(src.dotsPerMeterY());
-    dst->setDevicePixelRatio(src.devicePixelRatio());
-    const auto textKeys = src.textKeys();
-    for (const auto &key: textKeys)
-        dst->setText(key, src.text(key));
-
-}
-
 /*!
     \fn QImage QImage::copy(int x, int y, int width, int height) const
     \overload
@@ -4711,7 +4700,7 @@ static QImage rotated90(const QImage &image)
     QImage out(image.height(), image.width(), image.format());
     if (out.isNull())
         return out;
-    copyMetadata(&out, image);
+    copyMetadata(QImageData::get(out), QImageData::get(image));
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
@@ -4741,7 +4730,7 @@ static QImage rotated180(const QImage &image)
     QImage out(image.width(), image.height(), image.format());
     if (out.isNull())
         return out;
-    copyMetadata(&out, image);
+    copyMetadata(QImageData::get(out), QImageData::get(image));
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
@@ -4755,7 +4744,7 @@ static QImage rotated270(const QImage &image)
     QImage out(image.height(), image.width(), image.format());
     if (out.isNull())
         return out;
-    copyMetadata(&out, image);
+    copyMetadata(QImageData::get(out), QImageData::get(image));
     if (image.colorCount() > 0)
         out.setColorTable(image.colorTable());
     int w = image.width();
