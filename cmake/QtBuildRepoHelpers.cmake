@@ -381,6 +381,15 @@ macro(qt_build_repo_end)
 
     if(NOT QT_SUPERBUILD)
         qt_internal_qt_configure_end()
+        if(QT_WILL_INSTALL AND QT_INSTALL_CONFIG_INFO_FILES)
+            string(TOLOWER "${PROJECT_NAME}" repo_name)
+            qt_install(
+                FILES
+                    "${CMAKE_BINARY_DIR}/config_${repo_name}.opt"
+                    "${CMAKE_BINARY_DIR}/config_${repo_name}.summary"
+                DESTINATION ${INSTALL_DATADIR}
+            )
+        endif()
     endif()
 
     list(POP_BACK CMAKE_MESSAGE_CONTEXT)
