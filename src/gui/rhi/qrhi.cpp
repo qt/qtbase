@@ -5077,7 +5077,8 @@ QRhiResource::Type QRhiSwapChainRenderTarget::resourceType() const
 
     For multisample rendering the common approach is to use a renderbuffer as
     the color attachment and set the non-multisample destination texture as the
-    \c{resolve texture}.
+    \c{resolve texture}. For more information, read the detailed description of
+    the \l QRhiColorAttachment class.
 
     \note Textures used in combination with QRhiTextureRenderTarget must be
     created with the QRhiTexture::RenderTarget flag.
