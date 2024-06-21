@@ -1935,7 +1935,7 @@ bool fromIccProfile(const QByteArray &data, QColorSpace *colorSpace)
     QColorSpacePrivate *colorspaceDPtr = QColorSpacePrivate::get(*colorSpace);
 
     colorspaceDPtr->isPcsLab = (header.pcs == uint(Tag::Lab_));
-    if (tagIndex.contains(Tag::cicp)) {
+    if (tagIndex.contains(Tag::cicp) && header.inputColorSpace == uint(ColorSpaceType::Rgb)) {
         // Let cicp override nLut profiles if we fully recognize it.
         if (parseCicp(data, tagIndex[Tag::cicp], colorspaceDPtr))
             threeComponentMatrix = true;
