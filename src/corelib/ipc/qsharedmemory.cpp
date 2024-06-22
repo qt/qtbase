@@ -14,7 +14,11 @@
 #endif
 
 #ifndef MAX_PATH
-#  define MAX_PATH PATH_MAX
+#  ifdef PATH_MAX
+#    define MAX_PATH PATH_MAX
+#  else
+#    define MAX_PATH 1024
+#  endif
 #endif
 
 QT_BEGIN_NAMESPACE
