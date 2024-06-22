@@ -23,7 +23,7 @@ HTHEME QWindowsThemeData::handle()
         return nullptr;
 
     if (!htheme)
-        htheme = QWindowsVistaStylePrivate::createTheme(theme, QWindowsVistaStylePrivate::winId(widget));
+        htheme = QWindowsVistaStylePrivate::createTheme(theme, widget);
     return htheme;
 }
 
