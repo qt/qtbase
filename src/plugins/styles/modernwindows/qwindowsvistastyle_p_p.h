@@ -25,7 +25,7 @@
 #include <qpixmapcache.h>
 #include <qstyleoption.h>
 #include <QtWidgets/private/qwindowsstyle_p_p.h>
-#include <qmap.h>
+#include <QtCore/private/qflatmap_p.h>
 
 #if QT_CONFIG(pushbutton)
 #include <qpushbutton.h>
@@ -114,7 +114,7 @@ public:
     ~QWindowsVistaStylePrivate()
     { cleanup(); }
 
-    static HTHEME createTheme(int theme, HWND hwnd);
+    static HTHEME createTheme(int theme, const QWidget *widget);
     static QString themeName(int theme);
     static bool isItemViewDelegateLineEdit(const QWidget *widget);
     static int pixelMetricFromSystemDp(QStyle::PixelMetric pm, const QStyleOption *option = nullptr, const QWidget *widget = nullptr);
@@ -154,7 +154,7 @@ public:
     bool transitionsEnabled() const;
 
 private:
-    static bool initVistaTreeViewTheming();
+    static bool initVistaTreeViewTheming(const QScreen *screen);
     static void cleanupVistaTreeViewTheming();
 
     static QBasicAtomicInt ref;
@@ -168,7 +168,7 @@ private:
     int bufferW = 0;
     int bufferH = 0;
 
-    static HWND m_vistaTreeViewHelper;
+    static QVarLengthFlatMap<const QScreen *, HWND, 4> m_vistaTreeViewHelpers;
 };
 
 QT_END_NAMESPACE

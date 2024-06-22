@@ -54,7 +54,7 @@ static const int windowsRightBorder      = 15; // right border on windows
 
 // QWindowsVistaStylePrivate -------------------------------------------------------------------------
 // Static initializations
-HWND QWindowsVistaStylePrivate::m_vistaTreeViewHelper = nullptr;
+QVarLengthFlatMap<const QScreen *, HWND, 4> QWindowsVistaStylePrivate::m_vistaTreeViewHelpers;
 bool QWindowsVistaStylePrivate::useVistaTheme = false;
 Q_CONSTINIT QBasicAtomicInt QWindowsVistaStylePrivate::ref = Q_BASIC_ATOMIC_INITIALIZER(-1); // -1 based refcounting
 
@@ -100,7 +100,7 @@ static inline Qt::Orientation progressBarOrientation(const QStyleOption *option 
  * a non-visible window handle, open the theme on it and insert it into
  * the cache so that it is found by QWindowsThemeData::handle() first.
  */
-static inline HWND createTreeViewHelperWindow()
+static inline HWND createTreeViewHelperWindow(const QScreen *screen)
 {
     using QWindowsApplication = QNativeInterface::Private::QWindowsApplication;
 
@@ -108,6 +108,10 @@ static inline HWND createTreeViewHelperWindow()
     if (auto nativeWindowsApp = dynamic_cast<QWindowsApplication *>(QGuiApplicationPrivate::platformIntegration()))
         result = nativeWindowsApp->createMessageWindow(QStringLiteral("QTreeViewThemeHelperWindowClass"),
                                                        QStringLiteral("QTreeViewThemeHelperWindow"));
+    const auto topLeft = screen->geometry().topLeft();
+    // make it a top-level window and move it the the correct screen to paint with the correct dpr later on
+    SetParent(result, NULL);
+    MoveWindow(result, topLeft.x(), topLeft.y(), 10, 10, FALSE);
     return result;
 }
 
@@ -257,30 +261,26 @@ int QWindowsVistaStylePrivate::fixedPixelMetric(QStyle::PixelMetric pm)
     return QWindowsVistaStylePrivate::InvalidMetric;
 }
 
-bool QWindowsVistaStylePrivate::initVistaTreeViewTheming()
+bool QWindowsVistaStylePrivate::initVistaTreeViewTheming(const QScreen *screen)
 {
-    if (m_vistaTreeViewHelper)
+    if (m_vistaTreeViewHelpers.contains(screen))
         return true;
-
-    m_vistaTreeViewHelper = createTreeViewHelperWindow();
-    if (!m_vistaTreeViewHelper) {
-        qWarning("Unable to create the treeview helper window.");
-        return false;
-    }
-    if (FAILED(SetWindowTheme(m_vistaTreeViewHelper, L"explorer", nullptr))) {
+    HWND helper = createTreeViewHelperWindow(screen);
+    if (FAILED(SetWindowTheme(helper, L"explorer", nullptr)))
+    {
         qErrnoWarning("SetWindowTheme() failed.");
         cleanupVistaTreeViewTheming();
         return false;
     }
+    m_vistaTreeViewHelpers.insert(screen, helper);
     return true;
 }
 
 void QWindowsVistaStylePrivate::cleanupVistaTreeViewTheming()
 {
-    if (m_vistaTreeViewHelper) {
-        DestroyWindow(m_vistaTreeViewHelper);
-        m_vistaTreeViewHelper = nullptr;
-    }
+    for (auto it = m_vistaTreeViewHelpers.begin(); it != m_vistaTreeViewHelpers.end(); ++it)
+        DestroyWindow(it.value());
+    m_vistaTreeViewHelpers.clear();
 }
 
 /* \internal
@@ -294,10 +294,12 @@ void QWindowsVistaStylePrivate::cleanupHandleMap()
     QWindowsVistaStylePrivate::cleanupVistaTreeViewTheming();
 }
 
-HTHEME QWindowsVistaStylePrivate::createTheme(int theme, HWND hwnd)
+HTHEME QWindowsVistaStylePrivate::createTheme(int theme, const QWidget *widget)
 {
-    if (theme == VistaTreeViewTheme && QWindowsVistaStylePrivate::initVistaTreeViewTheming())
-        hwnd = QWindowsVistaStylePrivate::m_vistaTreeViewHelper;
+    const QScreen *screen = widget ? widget->screen() : qApp->primaryScreen();
+    HWND hwnd = QWindowsVistaStylePrivate::winId(widget);
+    if (theme == VistaTreeViewTheme && QWindowsVistaStylePrivate::initVistaTreeViewTheming(screen))
+        hwnd = QWindowsVistaStylePrivate::m_vistaTreeViewHelpers.value(screen);
     return QWindowsThemeCache::createTheme(theme, hwnd);
 }
 
