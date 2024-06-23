@@ -964,22 +964,22 @@ bool QODBCResult::reset (const QString& query)
 
     d->updateStmtHandleState();
 
-    if (isForwardOnly()) {
-        r = SQLSetStmtAttr(d->hStmt,
-                            SQL_ATTR_CURSOR_TYPE,
-                            (SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,
-                            SQL_IS_UINTEGER);
-    } else {
-        r = SQLSetStmtAttr(d->hStmt,
-                            SQL_ATTR_CURSOR_TYPE,
-                            (SQLPOINTER)SQL_CURSOR_STATIC,
-                            SQL_IS_UINTEGER);
-    }
+    // ODBCv3 version of setting a forward-only query
+    uint64_t sqlStmtVal = isForwardOnly() ? SQL_NONSCROLLABLE : SQL_SCROLLABLE;
+    r = SQLSetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_SCROLLABLE, SQLPOINTER(sqlStmtVal), SQL_IS_UINTEGER);
     if (!SQL_SUCCEEDED(r)) {
-        setLastError(qMakeError(QCoreApplication::translate("QODBCResult",
-            "QODBCResult::reset: Unable to set 'SQL_CURSOR_STATIC' as statement attribute. "
-            "Please check your ODBC driver configuration"), QSqlError::StatementError, d));
-        return false;
+        // ODBCv2 version of setting a forward-only query
+        sqlStmtVal = isForwardOnly() ? SQL_CURSOR_FORWARD_ONLY : SQL_CURSOR_STATIC;
+        r = SQLSetStmtAttr(d->hStmt, SQL_ATTR_CURSOR_TYPE, SQLPOINTER(sqlStmtVal), SQL_IS_UINTEGER);
+        if (!SQL_SUCCEEDED(r)) {
+            setLastError(qMakeError(
+                    QCoreApplication::translate("QODBCResult",
+                                                "QODBCResult::reset: Unable to set 'SQL_ATTR_CURSOR_TYPE' "
+                                                "as statement attribute. "
+                                                "Please check your ODBC driver configuration"),
+                    QSqlError::StatementError, d));
+            return false;
+        }
     }
 
     {
