@@ -80,7 +80,12 @@ public:
         return tryQueryInterface<TFirstInterface, TAdditionalInterfaces...>(riid, ppvObject);
     }
 
-    STDMETHODIMP_(ULONG) AddRef() override { return ++m_referenceCount; }
+    // clang-format off
+    STDMETHODIMP_(ULONG) AddRef() override
+    {
+        return ++m_referenceCount;
+    }
+    // clang-format on
 
     STDMETHODIMP_(ULONG) Release() override
     {
