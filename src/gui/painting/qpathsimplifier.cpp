@@ -312,7 +312,7 @@ private:
 
     void initElements(const QVectorPath &path, const QTransform &matrix);
     void removeIntersections();
-    void connectElements();
+    bool connectElements();
     void fillIndices();
     BVHNode *buildTree(Element **elements, int elementCount);
     bool intersectNodes(QDataBuffer<Element *> &elements, BVHNode *elementNode, BVHNode *treeNode);
@@ -461,11 +461,17 @@ PathSimplifier::PathSimplifier(const QVectorPath &path, QDataBuffer<QPoint> &ver
 {
     m_points->reset();
     m_indices->reset();
+    bool ok = true;
     initElements(path, matrix);
     if (!m_elements.isEmpty()) {
         removeIntersections();
-        connectElements();
-        fillIndices();
+        ok = connectElements();
+        if (ok)
+            fillIndices();
+    }
+    if (!ok) {
+        m_points->reset();
+        m_indices->reset();
     }
 }
 
@@ -650,7 +656,7 @@ void PathSimplifier::removeIntersections()
     m_bvh.free(); // The bounding volume hierarchy is not needed anymore.
 }
 
-void PathSimplifier::connectElements()
+bool PathSimplifier::connectElements()
 {
     Q_ASSERT(!m_elements.isEmpty());
     QDataBuffer<Event> events(m_elements.size() * 2);
@@ -830,7 +836,8 @@ void PathSimplifier::connectElements()
         }
 
         if (!orderedElements.isEmpty()) {
-            Q_ASSERT((orderedElements.size() & 1) == 0);
+            if (orderedElements.size() & 1) // Unexpected path structure
+                return false;
             int i = 0;
             Element *firstElement = orderedElements.at(0);
             if (m_points->at(firstElement->indices[0]) != eventPoint) {
@@ -856,6 +863,7 @@ void PathSimplifier::connectElements()
         Q_ASSERT((element->next == nullptr) == (element->previous == nullptr));
     }
 #endif
+    return true;
 }
 
 void PathSimplifier::fillIndices()
