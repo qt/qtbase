@@ -3669,6 +3669,25 @@ void tst_QString::assign()
     }
     // QString &assign(InputIterator, InputIterator)
     {
+        // This needs to be on its own to ensure we call them on empty str
+        QString str;
+
+        const char16_t c16[] = u"٩(⁎❛ᴗ❛⁎)۶ 🤷";
+        std::u16string c16str(c16);
+        str.assign(c16str.begin(), c16str.begin());
+        QCOMPARE(str.size(), 0);
+    }
+    {
+#ifndef QT_NO_CAST_FROM_ASCII
+        // This needs to be on its own to ensure we call them on empty str
+        QString str;
+        const char c8[] = "a©☻🂤"; // [1, 2, 3, 4] bytes in utf-8 code points
+        std::string c8str(c8);
+        str.assign(c8str.begin(), c8str.begin());
+        QCOMPARE(str.size(), 0);
+#endif
+    }
+    {
         // Forward iterator versions
         QString str;
         const QString tstr = QString::fromUtf8(u8"(ノಠ益ಠ)\0ノ彡┻━┻");
