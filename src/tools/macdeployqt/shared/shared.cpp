@@ -1176,13 +1176,15 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
         });
     }
 
+    // FIXME: Parse modules/Foo.json's plugin_types instead
     static const std::map<QString, std::vector<QString>> map {
         {QStringLiteral("Multimedia"), {QStringLiteral("multimedia")}},
         {QStringLiteral("3DRender"), {QStringLiteral("sceneparsers"), QStringLiteral("geometryloaders"), QStringLiteral("renderers")}},
         {QStringLiteral("3DQuickRender"), {QStringLiteral("renderplugins")}},
         {QStringLiteral("Positioning"), {QStringLiteral("position")}},
         {QStringLiteral("Location"), {QStringLiteral("geoservices")}},
-        {QStringLiteral("TextToSpeech"), {QStringLiteral("texttospeech")}}
+        {QStringLiteral("TextToSpeech"), {QStringLiteral("texttospeech")}},
+        {QStringLiteral("SerialBus"), {QStringLiteral("canbus")}},
     };
 
     for (const auto &it : map) {
