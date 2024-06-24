@@ -52,14 +52,6 @@
 #  define ONLY_WIN(expr) QSKIP("This is a Windows-only test")
 #endif
 
-#ifdef __cpp_impl_three_way_comparison
-#  define ONLY_3WAY(expr) expr
-#else
-#  define ONLY_3WAY(expr) \
-    QSKIP("This test requires C++20 spaceship operator (<=>) " \
-          "support enabled in the standard library.")
-#endif
-
 using namespace Qt::StringLiterals;
 
 template <typename T>
