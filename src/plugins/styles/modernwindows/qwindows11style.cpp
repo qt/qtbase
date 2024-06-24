@@ -47,6 +47,8 @@ enum WINUI3Color {
     controlStrokeOnAccentSecondary,   //Color of frame around Buttons in accent color
     controlFillSolid,                 //Color for solid fill
     surfaceStroke,                    //Color of MDI window frames
+    controlAccentDisabled,
+    textAccentDisabled
 };
 
 const static QColor WINUI3ColorsLight [] {
@@ -66,6 +68,8 @@ const static QColor WINUI3ColorsLight [] {
     QColor(0x00,0x00,0x00,0x66), //controlStrokeOnAccentSecondary
     QColor(0xFF,0xFF,0xFF,0xFF), //controlFillSolid
     QColor(0x75,0x75,0x75,0x66), //surfaceStroke
+    QColor(0x00,0x00,0x00,0x37), //controlAccentDisabled
+    QColor(0xFF,0xFF,0xFF,0xFF), //textAccentDisabled
 };
 
 const static QColor WINUI3ColorsDark[] {
@@ -85,6 +89,8 @@ const static QColor WINUI3ColorsDark[] {
     QColor(0xFF,0xFF,0xFF,0x14), //controlStrokeOnAccentSecondary
     QColor(0x45,0x45,0x45,0xFF), //controlFillSolid
     QColor(0x75,0x75,0x75,0x66), //surfaceStroke
+    QColor(0xFF,0xFF,0xFF,0x28), //controlAccentDisabled
+    QColor(0xFF,0xFF,0xFF,0x87), //textAccentDisabled
 };
 
 const static QColor* WINUI3Colors[] {
@@ -1132,6 +1138,8 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 const QString text = d->toolButtonElideText(toolbutton, rect, alignment);
                 if (toolbutton->state & State_Raised || toolbutton->palette.isBrushSet(QPalette::Current, QPalette::ButtonText))
                     painter->setPen(QPen(toolbutton->palette.buttonText().color()));
+                else if (!(toolbutton->state & State_Enabled))
+                    painter->setPen(flags & State_On ? QPen(WINUI3Colors[colorSchemeIndex][textAccentDisabled]) : QPen(toolbutton->palette.buttonText().color()));
                 else
                     painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][controlTextSecondary]));
                 proxy()->drawItemText(painter, rect, alignment, toolbutton->palette,
@@ -1186,6 +1194,8 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                     const QString text = d->toolButtonElideText(toolbutton, tr, alignment);
                     if (toolbutton->state & State_Raised || toolbutton->palette.isBrushSet(QPalette::Current, QPalette::ButtonText))
                         painter->setPen(QPen(toolbutton->palette.buttonText().color()));
+                    else if (!(toolbutton->state & State_Enabled))
+                        painter->setPen(flags & State_On ? QPen(WINUI3Colors[colorSchemeIndex][textAccentDisabled]) : QPen(toolbutton->palette.buttonText().color()));
                     else
                         painter->setPen(QPen(WINUI3Colors[colorSchemeIndex][controlTextSecondary]));
                     proxy()->drawItemText(painter, QStyle::visualRect(toolbutton->direction, rect, tr), alignment, toolbutton->palette,
@@ -1368,6 +1378,8 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
 
             if (btn->state & State_Sunken)
                 painter->setPen(flags & State_On ? QPen(WINUI3Colors[colorSchemeIndex][textOnAccentSecondary]) : QPen(WINUI3Colors[colorSchemeIndex][controlTextSecondary]));
+            else if (!(btn->state & State_Enabled))
+                painter->setPen(flags & State_On ? QPen(WINUI3Colors[colorSchemeIndex][textAccentDisabled]) : QPen(btn->palette.buttonText().color()));
             else
                 painter->setPen(flags & State_On ? QPen(WINUI3Colors[colorSchemeIndex][textOnAccentPrimary]) : QPen(btn->palette.buttonText().color()));
             proxy()->drawItemText(painter, textRect, tf, option->palette,btn->state & State_Enabled, btn->text);
@@ -1387,15 +1399,15 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
             } else {
                 QRectF rect = btn->rect.marginsRemoved(QMargins(2,2,2,2));
                 painter->setPen(Qt::NoPen);
-                painter->setBrush(flags & State_On ? option->palette.accent() : option->palette.button());
+                if (flags & (State_Sunken))
+                    painter->setBrush(flags & State_On ? option->palette.accent().color().lighter(120) : WINUI3Colors[colorSchemeIndex][controlFillTertiary]);
+                else if (flags & State_MouseOver)
+                    painter->setBrush(flags & State_On ? option->palette.accent().color().lighter(110) : WINUI3Colors[colorSchemeIndex][controlFillSecondary]);
+                else if (!(flags & State_Enabled))
+                    painter->setBrush(flags & State_On ? WINUI3Colors[colorSchemeIndex][controlAccentDisabled] : option->palette.button());
+                else
+                    painter->setBrush(flags & State_On ? option->palette.accent() : option->palette.button());
                 painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
-                if (flags.testFlags(State_Sunken | State_MouseOver)) {
-                    if (flags & (State_Sunken))
-                        painter->setBrush(flags & State_On ? option->palette.accent().color().lighter(120) : WINUI3Colors[colorSchemeIndex][controlFillTertiary]);
-                    else if (flags & State_MouseOver)
-                        painter->setBrush(flags & State_On ? option->palette.accent().color().lighter(110) : WINUI3Colors[colorSchemeIndex][controlFillSecondary]);
-                    painter->drawRoundedRect(rect, secondLevelRoundingRadius, secondLevelRoundingRadius);
-                }
 
                 rect.adjust(0.5,0.5,-0.5,-0.5);
                 painter->setBrush(Qt::NoBrush);
@@ -2057,6 +2069,17 @@ void QWindows11Style::polish(QWidget* widget)
         }
     } else if (widget->inherits("QAbstractButton") || widget->inherits("QToolButton")) {
         widget->setAutoFillBackground(false);
+        auto pal = widget->palette();
+        if (colorSchemeIndex == 0) {
+            pal.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(0x00,0x00,0x00,0x5C));
+            pal.setColor(QPalette::Disabled, QPalette::Button, QColor(0xF9,0xF9,0xF9,0x4D));
+        }
+        else {
+            pal.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(0xFF,0xFF,0xFF,0x87));
+            pal.setColor(QPalette::Disabled, QPalette::Button, QColor(0xFF,0xFF,0xFF,0x6B));
+        }
+        widget->setPalette(pal);
+
     } else if (qobject_cast<QGraphicsView *>(widget) && !qobject_cast<QTextEdit *>(widget)) {
         QPalette pal = widget->palette();
         pal.setColor(QPalette::Base, pal.window().color());
