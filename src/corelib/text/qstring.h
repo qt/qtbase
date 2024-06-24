@@ -504,11 +504,13 @@ public:
             return *this;
         } else if constexpr (QtPrivate::IsCompatibleChar8Type<V>::value) {
             assign_helper_char8(first, last);
-            d.data()[d.size] = u'\0';
+            if (d.constAllocatedCapacity())
+                d.data()[d.size] = u'\0';
             return *this;
         } else {
             d.assign(first, last, [](QChar ch) -> char16_t { return ch.unicode(); });
-            d.data()[d.size] = u'\0';
+            if (d.constAllocatedCapacity())
+                d.data()[d.size] = u'\0';
             return *this;
         }
     }
