@@ -205,6 +205,11 @@ static void ensureInitialized()
     Currently, for the HTTP protocol on desktop platforms, 6 requests are
     executed in parallel for one host/port combination.
 
+    \note QNetworkAccessManager doesn't handle RFC 2616 Section 8.2.2 properly,
+    in that it doesn't react to incoming data until it's done writing. For
+    example, the upload of a large file won't stop even if the server returns
+    a status code that instructs the client to not continue.
+
     A more involved example, assuming the manager is already existent,
     can be:
     \snippet code/src_network_access_qnetworkaccessmanager.cpp 1
