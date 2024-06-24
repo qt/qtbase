@@ -265,7 +265,7 @@ HRESULT QWindowsUiaTextRangeProvider::GetEnclosingElement(IRawElementProviderSim
     if (!accessible)
         return UIA_E_ELEMENTNOTAVAILABLE;
 
-    *pRetVal = QWindowsUiaMainProvider::providerForAccessible(accessible);
+    *pRetVal = QWindowsUiaMainProvider::providerForAccessible(accessible); // Detach
     return S_OK;
 }
 

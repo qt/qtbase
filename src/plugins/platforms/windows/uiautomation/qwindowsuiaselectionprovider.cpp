@@ -163,7 +163,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionProvider::get_FirstSelectedItem(__
 
     if (QWindowsUiaMainProvider *childProvider = QWindowsUiaMainProvider::providerForAccessible(firstSelectedChild))
     {
-        *pRetVal = static_cast<IRawElementProviderSimple *>(childProvider);
+        *pRetVal = static_cast<IRawElementProviderSimple *>(childProvider); // Detach
         return S_OK;
     }
 
@@ -208,7 +208,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionProvider::get_LastSelectedItem(__R
 
     if (QWindowsUiaMainProvider *childProvider = QWindowsUiaMainProvider::providerForAccessible(lastSelectedChild))
     {
-        *pRetVal = static_cast<IRawElementProviderSimple *>(childProvider);
+        *pRetVal = static_cast<IRawElementProviderSimple *>(childProvider); // Detach
         return S_OK;
     }
 
