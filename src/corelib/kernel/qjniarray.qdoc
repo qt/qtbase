@@ -328,7 +328,7 @@
 /*!
     \typedef QJniArray::const_iterator
 
-    A bi-directional, const iterator for QJniArray.
+    A random-access, const iterator for QJniArray.
 */
 
 /*!

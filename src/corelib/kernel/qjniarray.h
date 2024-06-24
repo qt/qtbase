@@ -37,12 +37,18 @@ struct QJniArrayIterator
     using pointer = T *;
     using reference = T; // difference to container requirements
     using const_reference = reference;
-    using iterator_category = std::bidirectional_iterator_tag;
+    using iterator_category = std::random_access_iterator_tag;
 
     const_reference operator*() const
     {
         return m_array->at(m_index);
     }
+
+    const_reference operator[](difference_type n) const
+    {
+        return m_array->at(m_index + n);
+    }
+
     friend QJniArrayIterator &operator++(QJniArrayIterator &that) noexcept
     {
         ++that.m_index;
