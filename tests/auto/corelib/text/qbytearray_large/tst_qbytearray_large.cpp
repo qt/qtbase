@@ -183,8 +183,8 @@ void tst_QByteArrayLarge::qCompressionZeroTermination()
 
 void tst_QByteArrayLarge::base64_2GiB()
 {
-#ifdef Q_OS_ANDROID
-    QSKIP("Android kills the test when using too much memory");
+#if defined Q_OS_ANDROID || defined Q_OS_WEBOS
+    QSKIP("Android and webOS device will kill the test when using too much memory");
 #endif
     if constexpr (sizeof(qsizetype) > sizeof(int)) {
         try {

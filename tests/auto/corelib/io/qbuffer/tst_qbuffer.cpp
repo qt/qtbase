@@ -633,6 +633,9 @@ void tst_QBuffer::writeOfMoreThan2GiB()
 
     [[maybe_unused]] constexpr size_t GiB = 1024 * 1024 * 1024;
 
+#if defined Q_OS_WEBOS
+    QSKIP("WebOS device will kill the test when using too much memory");
+#endif
 #ifndef QT_NO_EXCEPTIONS
 
     try {
