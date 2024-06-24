@@ -48,22 +48,53 @@ struct QJniArrayIterator
         ++that.m_index;
         return that;
     }
-    friend QJniArrayIterator operator++(QJniArrayIterator &that, int) noexcept
+    friend QJniArrayIterator operator++(QJniArrayIterator &that, difference_type) noexcept
     {
         auto copy = that;
         ++that;
         return copy;
+    }
+    friend QJniArrayIterator operator+(const QJniArrayIterator &that, difference_type n) noexcept
+    {
+        return {that.m_index + n, that.m_array};
+    }
+    friend QJniArrayIterator operator+(difference_type n, const QJniArrayIterator &that) noexcept
+    {
+        return that + n;
+    }
+    friend QJniArrayIterator &operator+=(QJniArrayIterator &that, difference_type n) noexcept
+    {
+        that.m_index += n;
+        return that;
     }
     friend QJniArrayIterator &operator--(QJniArrayIterator &that) noexcept
     {
         --that.m_index;
         return that;
     }
-    friend QJniArrayIterator operator--(QJniArrayIterator &that, int) noexcept
+    friend QJniArrayIterator operator--(QJniArrayIterator &that, difference_type) noexcept
     {
         auto copy = that;
         --that;
         return copy;
+    }
+    friend QJniArrayIterator operator-(const QJniArrayIterator &that, difference_type n) noexcept
+    {
+        return {that.m_index - n, that.m_array};
+    }
+    friend QJniArrayIterator operator-(difference_type n, const QJniArrayIterator &that) noexcept
+    {
+        return {n - that.m_index, that.m_array};
+    }
+    friend QJniArrayIterator &operator-=(QJniArrayIterator &that, difference_type n) noexcept
+    {
+        that.m_index -= n;
+        return that;
+    }
+    friend difference_type operator-(const QJniArrayIterator &lhs, const QJniArrayIterator &rhs)
+    {
+        Q_ASSERT(lhs.m_array == rhs.m_array);
+        return lhs.m_index - rhs.m_index;
     }
     void swap(QJniArrayIterator &other) noexcept
     {
