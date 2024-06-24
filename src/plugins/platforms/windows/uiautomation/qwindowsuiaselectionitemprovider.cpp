@@ -188,7 +188,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionItemProvider::get_SelectionContain
     if (accessible->role() == QAccessible::ListItem) {
         if (QAccessibleInterface *parent = accessible->parent()) {
             if (parent->role() == QAccessible::List) {
-                *pRetVal = QWindowsUiaMainProvider::providerForAccessible(parent);
+                *pRetVal = QWindowsUiaMainProvider::providerForAccessible(parent); // Detach
             }
         }
     }
