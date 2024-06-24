@@ -1516,7 +1516,7 @@ bool QFileSystemEngine::moveFileToTrash(const QFileSystemEntry &source,
         renamed = renameat(op.filesDirFd, op.tempTrashFileName, op.filesDirFd,
                            QFile::encodeName(uniqueTrashedName)) == 0;
         if (renamed)
-            removeFile(source, error);  // success, delete the original file
+            removeFile(sourcePath, error);  // success, delete the original file
     }
     if (!renamed) {
         error = QSystemError(errno, QSystemError::StandardLibraryError);

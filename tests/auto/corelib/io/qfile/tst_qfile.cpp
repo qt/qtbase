@@ -291,6 +291,9 @@ private slots:
     void moveToTrashDuplicateName();
     void moveToTrashOpenFile_data();
     void moveToTrashOpenFile();
+    void moveToTrashSymlinkToFile();
+    void moveToTrashSymlinkToDirectory_data();
+    void moveToTrashSymlinkToDirectory();
     void moveToTrashXdgSafety();
 
     void stdfilesystem();
@@ -4206,6 +4209,79 @@ void tst_QFile::moveToTrashOpenFile()
         QVERIFY(QFile::exists(origFileName));
         QCOMPARE(QFileInfo(origFileName).size(), contents.size());
     }
+}
+
+void tst_QFile::moveToTrashSymlinkToFile()
+{
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS) || defined(Q_OS_VXWORKS)
+    QSKIP("This platform doesn't implement a trash bin");
+#endif
+    QTemporaryFile temp(QDir::homePath() + "/tst_qfile.moveToTrashSymlinkFile.XXXXXX");
+    QVERIFY2(temp.open(), "Failed to create temporary file: " + temp.errorString().toLocal8Bit());
+
+    // Create the symlink
+    const QString linkName = temp.fileName() + ".lnk";
+    QVERIFY2(temp.link(linkName), "Failed to create link: " + temp.errorString().toLocal8Bit());
+    auto cleanLink = qScopeGuard([&]() {
+        QFile::remove(linkName);
+    });
+
+    // now trash it
+    QFile symlink(linkName);
+    QVERIFY(symlink.moveToTrash());
+    QCOMPARE_NE(symlink.fileName(), linkName);
+
+    // confirm that the target is still a symlink
+    QFileInfo fi(symlink.fileName());
+    QVERIFY(fi.isSymLink());
+    QVERIFY(fi.isFile());   // we used an absolute path, so it should not be broken!
+    symlink.remove();
+
+    // confirm that the symlink disappeared but the original file is still present
+    QVERIFY(QFile::exists(temp.fileName()));
+    QVERIFY(!QFile::exists(linkName));
+    cleanLink.dismiss();
+}
+
+void tst_QFile::moveToTrashSymlinkToDirectory_data()
+{
+    QTest::addColumn<bool>("appendSlash");
+    QTest::newRow("without-slash") << false;
+    QTest::newRow("with-slash") << true;
+}
+
+void tst_QFile::moveToTrashSymlinkToDirectory()
+{
+#if defined(Q_OS_ANDROID) || defined(Q_OS_WEBOS) || defined(Q_OS_VXWORKS)
+    QSKIP("This platform doesn't implement a trash bin");
+#endif
+    QFETCH(bool, appendSlash);
+    QTemporaryDir temp(QDir::homePath() + "/tst_qfile.moveToTrashSymlinkDir.XXXXXX");
+    QVERIFY2(temp.isValid(), "Failed to create temporary dir: " + temp.errorString().toLocal8Bit());
+
+    // Create the symlink
+    const QString linkName = temp.path() + ".lnk";
+    QVERIFY(QFile::link(temp.path(), linkName));
+    auto cleanLink = qScopeGuard([&]() {
+        QFile::remove(linkName);
+    });
+
+    // now trash it
+    QFile symlink(appendSlash ? linkName + u'/' : linkName);
+    QVERIFY(symlink.moveToTrash());
+    QCOMPARE_NE(symlink.fileName(), linkName);
+    QCOMPARE_NE(symlink.fileName(), linkName + u'/');
+
+    // confirm that the target is still a symlink
+    QFileInfo fi(symlink.fileName());
+    QVERIFY(fi.isSymLink());
+    QVERIFY(fi.isDir());    // we used an absolute path, so it should not be broken!
+    symlink.remove();
+
+    // confirm that the symlink disappeared but the original dir is still present
+    QVERIFY(QFile::exists(temp.path()));
+    QVERIFY(!QFile::exists(linkName));
+    cleanLink.dismiss();
 }
 
 void tst_QFile::moveToTrashXdgSafety()

@@ -462,7 +462,9 @@ QFile::remove(const QString &fileName)
 //! [move-to-trash-common]
     The time for this function to run is independent of the size of the file
     being trashed. If this function is called on a directory, it may be
-    proportional to the number of files being trashed.
+    proportional to the number of files being trashed. If the current
+    fileName() points to a symbolic link, this function will move the link to
+    the trash, possibly breaking it, not the target of the link.
 
     This function uses the Windows and \macos APIs to perform the trashing on
     those two operating systems. Elsewhere (Unix systems), this function
