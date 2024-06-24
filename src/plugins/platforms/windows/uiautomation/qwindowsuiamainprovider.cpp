@@ -235,8 +235,9 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaMainProvider::QueryInterface(REFIID iid, LP
         if (accessible && hwndForAccessible(accessible)) {
             result = S_OK;
         } else {
+            Release();
             result = E_NOINTERFACE;
-            iface = nullptr;
+            *iface = nullptr;
         }
     }
 
