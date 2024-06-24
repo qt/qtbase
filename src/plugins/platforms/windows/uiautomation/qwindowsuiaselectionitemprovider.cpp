@@ -178,7 +178,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionItemProvider::get_SelectionContain
 
     QAccessibleInterface *parent = accessible->parent();
     if (parent && parent->selectionInterface()) {
-        *pRetVal = QWindowsUiaMainProvider::providerForAccessible(parent);
+        *pRetVal = QWindowsUiaMainProvider::providerForAccessible(parent); // Detach
         return S_OK;
     }
 
@@ -190,7 +190,7 @@ HRESULT STDMETHODCALLTYPE QWindowsUiaSelectionItemProvider::get_SelectionContain
     if (parent) {
         if ((accessible->role() == QAccessible::ListItem && parent->role() == QAccessible::List)
                 || (accessible->role() == QAccessible::PageTab && parent->role() == QAccessible::PageTabList)) {
-            *pRetVal = QWindowsUiaMainProvider::providerForAccessible(parent);
+            *pRetVal = QWindowsUiaMainProvider::providerForAccessible(parent); // Detach
         }
     }
     return S_OK;
