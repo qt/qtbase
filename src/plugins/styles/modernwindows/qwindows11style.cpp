@@ -1653,7 +1653,6 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                     painter->drawLine(QPointF(option->rect.topLeft()) - QPointF(0.5,0.0),
                                       QPointF(option->rect.bottomLeft()) - QPointF(0.5,0.0));
                 }
-                painter->setPen(QPen(option->palette.buttonText().color()));
 
                 const bool isTreeView = qobject_cast<const QTreeView *>(widget);
 
@@ -1711,7 +1710,7 @@ void QWindows11Style::drawControl(ControlElement element, const QStyleOption *op
                 QIcon::State state = vopt->state & QStyle::State_Open ? QIcon::On : QIcon::Off;
                 vopt->icon.paint(painter, iconRect, vopt->decorationAlignment, mode, state);
 
-                painter->setPen(QPen(option->palette.buttonText().color()));
+                painter->setPen(QPen(option->palette.text().color()));
                 if (!view || !view->isPersistentEditorOpen(vopt->index))
                     d->viewItemDrawText(painter, vopt, textRect);
                 if (vopt->state & State_Selected
