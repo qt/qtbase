@@ -251,6 +251,9 @@ void tst_QJniArray::operators()
         QCOMPARE(*it, 'd');
         it = array.size() - it;
         QCOMPARE(*it, 'c');
+
+        QCOMPARE(it[1], 'd');
+        QCOMPARE(it[-1], 'b');
     }
     {
         auto it = array.rbegin();
