@@ -78,7 +78,13 @@ private:
         Q_ASSERT(lhs.m_array == rhs.m_array);
         return lhs.m_index == rhs.m_index;
     }
-    Q_DECLARE_EQUALITY_COMPARABLE(QJniArrayIterator)
+    friend constexpr Qt::strong_ordering compareThreeWay(const QJniArrayIterator &lhs,
+                                                         const QJniArrayIterator &rhs)
+    {
+        Q_ASSERT(lhs.m_array == rhs.m_array);
+        return Qt::compareThreeWay(lhs.m_index, rhs.m_index);
+    }
+    Q_DECLARE_STRONGLY_ORDERED(QJniArrayIterator)
 
     using VT = std::remove_const_t<T>;
     friend class QJniArray<VT>;

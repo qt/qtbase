@@ -20,6 +20,7 @@ private slots:
     void invalidArraysAreEmpty();
     void size();
     void operators();
+    void ordering();
     void toContainer();
 };
 
@@ -261,6 +262,18 @@ void tst_QJniArray::operators()
         QCOMPARE(value, bytes.at(index));
         ++index;
     }
+}
+
+void tst_QJniArray::ordering()
+{
+    QByteArray bytes("abcde");
+    QJniArray array(bytes);
+
+    auto arrayBegin = array.begin();
+    auto arrayEnd = array.end();
+    QCOMPARE(arrayBegin, arrayBegin);
+    QCOMPARE_LT(arrayBegin, arrayEnd);
+    QCOMPARE_GT(arrayEnd, arrayBegin);
 }
 
 void tst_QJniArray::toContainer()
