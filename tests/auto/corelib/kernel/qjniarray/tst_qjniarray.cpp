@@ -234,6 +234,23 @@ void tst_QJniArray::operators()
         it++;
         QCOMPARE(*it, 'e');
         QCOMPARE(++it, array.end());
+
+        it -= array.size();
+        QCOMPARE(it, array.begin());
+        it += 2;
+        QCOMPARE(*it, 'c');
+
+        const auto it2 = it + 2;
+        QCOMPARE(*it2, 'e');
+        QCOMPARE(it2 - it, 2);
+
+        it = it2 - 2;
+        QCOMPARE(*it, 'c');
+
+        it = 1 + it;
+        QCOMPARE(*it, 'd');
+        it = array.size() - it;
+        QCOMPARE(*it, 'c');
     }
     {
         auto it = array.rbegin();
