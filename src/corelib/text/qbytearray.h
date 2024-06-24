@@ -292,7 +292,8 @@ public:
     QByteArray &assign(InputIterator first, InputIterator last)
     {
         d.assign(first, last);
-        d.data()[d.size] = '\0';
+        if (d.data())
+            d.data()[d.size] = '\0';
         return *this;
     }
 

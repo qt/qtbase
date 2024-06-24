@@ -1016,6 +1016,11 @@ void tst_QByteArray::assign()
         QByteArrayView test;
 
         QList<char> l = {'\0', 'T', 'E', 'S', 'T'};
+
+        ba.assign(l.begin(), l.begin());
+        QVERIFY(ba.isEmpty());
+        QCOMPARE(*ba.constData(), '\0');
+
         ba.assign(l.begin(), l.end());
         test = "\0TEST"_ba;
         QCOMPARE(ba, test);
@@ -1032,6 +1037,10 @@ void tst_QByteArray::assign()
         test = "T\0ST"_ba;
         QCOMPARE(ba, test);
         QCOMPARE(ba.size(), test.size());
+
+        ba.assign(l.begin(), l.begin());
+        QVERIFY(ba.isEmpty());
+        QCOMPARE(*ba.constData(), '\0');
     }
     // Test chaining
     {
