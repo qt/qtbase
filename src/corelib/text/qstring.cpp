@@ -5700,6 +5700,25 @@ QByteArray QString::toLatin1_helper_inplace(QString &s)
     return QByteArray(std::move(ba_d));
 }
 
+/*!
+    \since 6.9
+    \internal
+    \relates QLatin1StringView
+
+    Returns a UTF-8 representation of \a string as a QByteArray.
+*/
+QByteArray QtPrivate::convertToUtf8(QLatin1StringView string)
+{
+    if (Q_UNLIKELY(string.isNull()))
+        return QByteArray();
+
+    QByteArray ba(string.size() * 2, Qt::Uninitialized);
+    const qsizetype sz = QUtf8::convertFromLatin1(ba.data(), string) - ba.data();
+    ba.truncate(sz);
+
+    return ba;
+}
+
 // QLatin1 methods that use helpers from qstring.cpp
 char16_t *QLatin1::convertToUnicode(char16_t *out, QLatin1StringView in) noexcept
 {
