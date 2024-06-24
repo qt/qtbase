@@ -146,6 +146,9 @@ void QWindowsUiaMainProvider::notifyValueChange(QAccessibleValueChangeEvent *eve
                 clearVariant(&oldVal);
                 setVariantString(event->value().toString(), &newVal);
                 UiaRaiseAutomationPropertyChangedEvent(provider, UIA_ValueValuePropertyId, oldVal, newVal);
+                HRESULT hr = VariantClear(&newVal); // Free string allocated by setVariantString
+                Q_ASSERT(hr == S_OK);
+                Q_UNUSED(hr)
             }
         } else if (QAccessibleValueInterface *valueInterface = accessible->valueInterface()) {
             if (QWindowsUiaMainProvider *provider = providerForAccessible(accessible)) {
