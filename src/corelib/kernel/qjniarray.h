@@ -39,14 +39,6 @@ struct QJniArrayIterator
     using const_reference = reference;
     using iterator_category = std::bidirectional_iterator_tag;
 
-    friend bool operator==(const QJniArrayIterator &lhs, const QJniArrayIterator &rhs) noexcept
-    {
-        return lhs.m_array == rhs.m_array && lhs.m_index == rhs.m_index;
-    }
-    friend bool operator!=(const QJniArrayIterator &lhs, const QJniArrayIterator &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
     const_reference operator*() const
     {
         return m_array->at(m_index);
@@ -80,6 +72,14 @@ struct QJniArrayIterator
     }
 
 private:
+    friend constexpr bool comparesEqual(const QJniArrayIterator &lhs,
+                                        const QJniArrayIterator &rhs)
+    {
+        Q_ASSERT(lhs.m_array == rhs.m_array);
+        return lhs.m_index == rhs.m_index;
+    }
+    Q_DECLARE_EQUALITY_COMPARABLE(QJniArrayIterator)
+
     using VT = std::remove_const_t<T>;
     friend class QJniArray<VT>;
 
