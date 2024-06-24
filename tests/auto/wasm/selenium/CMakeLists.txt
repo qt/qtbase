@@ -9,6 +9,7 @@ endif()
 qt_internal_add_test(tst_qwasmwindow_harness
     MANUAL
     NO_BATCH
+    NO_WASM_DEFAULT_FILES
     SOURCES
         tst_qwasmwindow_harness.cpp
     LIBRARIES
@@ -50,8 +51,8 @@ qt_internal_create_test_script(NAME tst_qwasmwindow_harness
 add_custom_command(
     TARGET tst_qwasmwindow_harness POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_SOURCE_DIR}/tst_qwasmwindow_harness.html
-            ${CMAKE_CURRENT_BINARY_DIR}/tst_qwasmwindow_harness.html
+            ${CMAKE_CURRENT_SOURCE_DIR}/tst_qwasmwindow_harness_run.html
+            ${CMAKE_CURRENT_BINARY_DIR}/tst_qwasmwindow_harness_run.html
 )
 
 add_custom_command(

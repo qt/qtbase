@@ -21,7 +21,7 @@ class WidgetTestCase(unittest.TestCase):
     def setUp(self):
         self._driver = Chrome(service=ChromeService(ChromeDriverManager().install()))
         self._driver.get(
-            'http://localhost:8001/tst_qwasmwindow_harness.html')
+            'http://localhost:8001/tst_qwasmwindow_harness_run.html')
         self._test_sandbox_element = WebDriverWait(self._driver, 30).until(
             presence_of_element_located((By.ID, 'test-sandbox'))
         )

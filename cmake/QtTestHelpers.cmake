@@ -217,6 +217,7 @@ function(qt_internal_get_test_arg_definitions optional_args single_value_args mu
         NO_BATCH
         NO_INSTALL
         BUNDLE_ANDROID_OPENSSL_LIBS
+        NO_WASM_DEFAULT_FILES
         PARENT_SCOPE
     )
     set(${single_value_args}
@@ -585,6 +586,13 @@ function(qt_internal_add_test name)
         if(EXISTS ${blacklist_file})
             _qt_internal_expose_source_file_to_ide("${name}" ${blacklist_file})
         endif()
+    endif()
+
+    if (arg_NO_WASM_DEFAULT_FILES)
+        set_target_properties(
+                ${name}
+            PROPERTIES
+                NO_WASM_DEFAULT_FILES  True)
     endif()
 
     foreach(path IN LISTS arg_QML_IMPORTPATH)
