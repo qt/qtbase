@@ -89,6 +89,19 @@ qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_cups AND UNIX AND NO
         kernel/qcups.cpp kernel/qcups_p.h
 )
 
+# qprint_p.h includes cups/ppd.h, so PrintSupportPrivate should add the related
+# interface include path.
+qt_internal_extend_target(PrintSupportPrivate CONDITION QT_FEATURE_cups AND UNIX AND NOT APPLE
+    PUBLIC_INCLUDE_DIRECTORIES
+        $<TARGET_PROPERTY:Cups::Cups,INTERFACE_INCLUDE_DIRECTORIES>
+)
+# Ensure that PrintSupport requires Cups if the 'cups' feature enabled and
+# Cups is never linked.
+if(QT_FEATURE_cups AND UNIX AND NOT APPLE)
+    qt_internal_add_target_include_dirs(PrintSupport Cups::Cups)
+    qt_record_extra_third_party_dependency(PrintSupport Cups::Cups)
+endif()
+
 qt_internal_extend_target(PrintSupport CONDITION QT_FEATURE_cupsjobwidget AND UNIX AND NOT APPLE
     SOURCES
         widgets/qcupsjobwidget.cpp widgets/qcupsjobwidget.ui widgets/qcupsjobwidget_p.h
